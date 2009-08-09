@@ -226,9 +226,8 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posx = constants->ModulePositionX(i);
 		Float_t posy = constants->ModulePositionY(i);
 		Float_t posz = constants->ModulePositionZ(i);	
-                Int_t moduleElectronicID = constants->ModuleElectronicChannel(i); 
 		
-		modules->AddNode(acomodule,moduleElectronicID,
+		modules->AddNode(acomodule,i,
 			new TGeoCombiTrans("aco01",posx,posy,posz,idrotm232));
 		count++;
 
@@ -239,9 +238,8 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posx = constants->ModulePositionX(i);
 		Float_t posy = constants->ModulePositionY(i);
 		Float_t posz = constants->ModulePositionZ(i);
-		Int_t moduleElectronicID = constants->ModuleElectronicChannel(i); 	
 
-		modules->AddNode(acomodule,moduleElectronicID,
+		modules->AddNode(acomodule,i,
 			new TGeoCombiTrans("aco01",posx,posy,posz,idrotm232));
 	}
 
@@ -252,9 +250,8 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posx = constants->ModulePositionX(i);
 		Float_t posy = constants->ModulePositionY(i);
 		Float_t posz = constants->ModulePositionZ(i);	
-		Int_t moduleElectronicID = constants->ModuleElectronicChannel(i); 
 
-		modules->AddNode(acomodule,moduleElectronicID,new TGeoTranslation("aco01",posx,posy,posz));
+		modules->AddNode(acomodule,i,new TGeoTranslation("aco01",posx,posy,posz));
 		count++;
 	}
 
@@ -265,9 +262,8 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posx = constants->ModulePositionX(i);
 		Float_t posy = constants->ModulePositionY(i);
 		Float_t posz = constants->ModulePositionZ(i);	
-		Int_t moduleElectronicID = constants->ModuleElectronicChannel(i); 
 
-		modules->AddNode(acomodule,moduleElectronicID,
+		modules->AddNode(acomodule,i,
 			new TGeoCombiTrans("aco01",posx,posy,posz,idrotm231));
 		count++;
 	}
@@ -279,13 +275,12 @@ void AliACORDEv1::CreateAcorde()
 		Float_t posx = constants->ModulePositionX(i);
 		Float_t posy = constants->ModulePositionY(i);
 		Float_t posz = constants->ModulePositionZ(i);	
-		Int_t moduleElectronicID = constants->ModuleElectronicChannel(i); 
 
 	if ((i==57) || (i==56)){
-		 modules->AddNode(acomodule,moduleElectronicID,
+		 modules->AddNode(acomodule,i,
 					new TGeoCombiTrans("aco01",posx,posy,posz,idrotm231));
 	}else{
-		modules->AddNode(acomodule,moduleElectronicID,
+		modules->AddNode(acomodule,i,
 			new TGeoCombiTrans("aco01",posx,posy,posz,idrotm231));
 		}count++;
 	}
@@ -295,22 +290,22 @@ void AliACORDEv1::CreateAcorde()
 
 	if (GetITSGeometry()) {
 
-		modules->AddNode(acomodule,constants->ModuleElectronicChannel(50),new TGeoTranslation("ITS-3",
+		modules->AddNode(acomodule,0,new TGeoTranslation("ITS-3",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(0)));
 
-		modules->AddNode(acomodule,constants->ModuleElectronicChannel(59),new TGeoTranslation("ITS-4",
+		modules->AddNode(acomodule,9,new TGeoTranslation("ITS-4",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(1)));
 
-		modules->AddNode(acomodule,constants->ModuleElectronicChannel(0),new TGeoTranslation("ITS-1",
+		modules->AddNode(acomodule,50,new TGeoTranslation("ITS-1",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(2)));
 
-		modules->AddNode(acomodule,constants->ModuleElectronicChannel(9),new TGeoTranslation("ITS-2",
+		modules->AddNode(acomodule,59,new TGeoTranslation("ITS-2",
 				constants->ExtraModulePositionX(),
 				constants->ExtraModulePositionY(),
 				constants->ExtraModulePositionZ(3)));
@@ -1269,7 +1264,7 @@ void AliACORDEv1::AddAlignableVolumes() const
 	TString vpstr1 = "ALIC_1/ACORDE_1/ALL_ACORDE_MODULES_4/ACORDE_MODULE_";
 	TString snstr1 = "ACORDE/Array";
 	TString volpath, symname;
-	for(Int_t dy=1; dy<61 ; dy++)
+	for(Int_t dy=0; dy<60 ; dy++)
 	{
 		volpath = vpstr1;
 		volpath += dy;
