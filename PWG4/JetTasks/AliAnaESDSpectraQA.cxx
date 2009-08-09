@@ -90,12 +90,12 @@ void AliAnaESDSpectraQA::InitHistPointers() {
   fPtAll = 0;
   fPtSel = 0;
   for (Int_t i=0; i< 4; i++) {
-    fHists[i].PhiPtNPointTPC = 0;
-    fHists[i].PhiPtNPointITS = 0;
-    fHists[i].PhiPtChisqC = 0;
-    fHists[i].PhiPtChisqTPC = 0;
-    fHists[i].PhiPtDCAR = 0;
-    fHists[i].PhiPtDCAZ = 0;
+    fHists[i].fPhiPtNPointTPC = 0;
+    fHists[i].fPhiPtNPointITS = 0;
+    fHists[i].fPhiPtChisqC = 0;
+    fHists[i].fPhiPtChisqTPC = 0;
+    fHists[i].fPhiPtDCAR = 0;
+    fHists[i].fPhiPtDCAZ = 0;
   }
 }
 
@@ -120,38 +120,38 @@ void AliAnaESDSpectraQA::CreateOutputObjects() {
   for (Int_t iSide = 0; iSide < 4; iSide++) {
     TString hname="PhiPtNpointTPC";
     hname += labels[iSide];
-    fHists[iSide].PhiPtNPointTPC = new TH3F(hname,hname+";#phi;p_{T} (GeV);N_{point,TPC}",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,160,0.5,160.5);
-    fHistList->Add(fHists[iSide].PhiPtNPointTPC);
+    fHists[iSide].fPhiPtNPointTPC = new TH3F(hname,hname+";#phi;p_{T} (GeV);N_{point,TPC}",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,160,0.5,160.5);
+    fHistList->Add(fHists[iSide].fPhiPtNPointTPC);
 
     hname="PhiPtNpointITS";
     hname += labels[iSide];
-    fHists[iSide].PhiPtNPointITS = new TH3F(hname,hname+";#phi;p_{T} (GeV);N_{point,ITS}",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,9,-0.5,8.5);
-    fHistList->Add(fHists[iSide].PhiPtNPointITS);
+    fHists[iSide].fPhiPtNPointITS = new TH3F(hname,hname+";#phi;p_{T} (GeV);N_{point,ITS}",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,9,-0.5,8.5);
+    fHistList->Add(fHists[iSide].fPhiPtNPointITS);
 
     hname="PhiPtChisqC";
     hname += labels[iSide];
-    fHists[iSide].PhiPtChisqC = new TH3F(hname,hname+";#phi;p_{T} (GeV);#Chi^{2}/NDF",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,160,0,80);
-    fHistList->Add(fHists[iSide].PhiPtChisqC);
+    fHists[iSide].fPhiPtChisqC = new TH3F(hname,hname+";#phi;p_{T} (GeV);#Chi^{2}/NDF",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,160,0,80);
+    fHistList->Add(fHists[iSide].fPhiPtChisqC);
 
     hname="PhiPtChisqTPC";
     hname += labels[iSide];
-    fHists[iSide].PhiPtChisqTPC = new TH3F(hname,hname+";#phi;p_{T} (GeV);#Chi^{2}/NDF",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,50,0,5);
-    fHistList->Add(fHists[iSide].PhiPtChisqTPC);
+    fHists[iSide].fPhiPtChisqTPC = new TH3F(hname,hname+";#phi;p_{T} (GeV);#Chi^{2}/NDF",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,50,0,5);
+    fHistList->Add(fHists[iSide].fPhiPtChisqTPC);
 
     hname="PhiPtDCAR";
     hname += labels[iSide];
-    fHists[iSide].PhiPtDCAR = new TH3F(hname,hname+";#phi;p_{T} (GeV);DCAR",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,200,-1,1);
-    fHistList->Add(fHists[iSide].PhiPtDCAR);
+    fHists[iSide].fPhiPtDCAR = new TH3F(hname,hname+";#phi;p_{T} (GeV);DCAR",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,200,-1,1);
+    fHistList->Add(fHists[iSide].fPhiPtDCAR);
 
     hname="PhiPtDCAZ";
     hname += labels[iSide];
-    fHists[iSide].PhiPtDCAZ = new TH3F(hname,hname+";#phi;p_{T} (GeV);DCAZ",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,200,-2,2);
-    fHistList->Add(fHists[iSide].PhiPtDCAZ);
+    fHists[iSide].fPhiPtDCAZ = new TH3F(hname,hname+";#phi;p_{T} (GeV);DCAZ",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,200,-2,2);
+    fHistList->Add(fHists[iSide].fPhiPtDCAZ);
 
     hname="PhiPtSigmaToVertex";
     hname += labels[iSide];
-    fHists[iSide].PhiPtSigmaToVertex = new TH3F(hname,hname+";#phi;p_{T} (GeV);n#sigma to vtx",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,50,0,5);
-    fHistList->Add(fHists[iSide].PhiPtSigmaToVertex);
+    fHists[iSide].fPhiPtSigmaToVertex = new TH3F(hname,hname+";#phi;p_{T} (GeV);n#sigma to vtx",fgkNPhiBins,kMinPhi,kMaxPhi,fgkNPtBins,fgkPtMin,fgkPtMax,50,0,5);
+    fHistList->Add(fHists[iSide].fPhiPtSigmaToVertex);
   }
 }
 
@@ -217,15 +217,15 @@ void AliAnaESDSpectraQA::Exec(Option_t *) {
       if (track->GetConstrainedParam())
 	chisqC = track->GetConstrainedChi2();
 
-      curTypeHists->PhiPtNPointTPC->Fill(phi,pt,track->GetTPCNcls());
-      curTypeHists->PhiPtNPointITS->Fill(phi,pt,nPointITS);
-      curTypeHists->PhiPtChisqC->Fill(phi,pt,chisqC);
+      curTypeHists->fPhiPtNPointTPC->Fill(phi,pt,track->GetTPCNcls());
+      curTypeHists->fPhiPtNPointITS->Fill(phi,pt,nPointITS);
+      curTypeHists->fPhiPtChisqC->Fill(phi,pt,chisqC);
       if(track->GetTPCNclsF()>5){
-	curTypeHists->PhiPtChisqTPC->Fill(phi,pt,track->GetTPCchi2()/(track->GetTPCNclsF()-5));
+	curTypeHists->fPhiPtChisqTPC->Fill(phi,pt,track->GetTPCchi2()/(track->GetTPCNclsF()-5));
       }      
-      curTypeHists->PhiPtDCAR->Fill(phi,pt,dca2D);
-      curTypeHists->PhiPtDCAZ->Fill(phi,pt,dcaZ);
-      curTypeHists->PhiPtSigmaToVertex->Fill(phi,pt,sigToVertex);
+      curTypeHists->fPhiPtDCAR->Fill(phi,pt,dca2D);
+      curTypeHists->fPhiPtDCAZ->Fill(phi,pt,dcaZ);
+      curTypeHists->fPhiPtSigmaToVertex->Fill(phi,pt,sigToVertex);
     }
   }
   
