@@ -4,6 +4,8 @@ set(SRCS
        JetTasks/AliAnalysisTaskUE.cxx
        JetTasks/AliAnalysisTaskJetSpectrum.cxx
        JetTasks/AliAnalysisTaskJFSystematics.cxx
+       JetTasks/AliAnalysisTaskJetCorrections.cxx;
+       JetTasks/AliAnalysisTaskThreeJets.cxx;
        JetTasks/AliAnalysisHelperJetTasks.cxx
        JetTasks/AliAnaESDSpectraQA.cxx
        JetTasks/AliAnalysisTaskPWG4PidDetEx.cxx
