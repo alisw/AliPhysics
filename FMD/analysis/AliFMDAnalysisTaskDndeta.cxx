@@ -262,36 +262,33 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
     }
     if(pars->GetProcessHits()) {
       for(Int_t j=0; j<particle->GetNumberOfTrackReferences();j++) {
-      
-      AliTrackReference* ref = particle->GetTrackReference(j);
-      UShort_t det,sec,strip;
-      Char_t   ring;
-      if(ref->DetectorId() != AliTrackReference::kFMD)
-	continue;
-      AliFMDStripIndex::Unpack(ref->UserId(),det,ring,sec,strip);
-      Float_t thisStripTrack = fLastTrackByStrip(det,ring,sec,strip);
-      if(particle->Charge() != 0 && i != thisStripTrack ) {
-	//Double_t x,y,z;
 	
-	Float_t   eta   = pars->GetEtaFromStrip(det,ring,sec,strip,vertex.At(2));//-1*TMath::Log(TMath::Tan(0.5*theta));
-	TH1F* hHits = (TH1F*)fOutputList->FindObject(Form("hHits_FMD%d%c_vtxbin%d",det,ring,vertexBin));
-	hHits->Fill(eta);
-	Float_t nstrips = (ring =='O' ? 256 : 512);
+	AliTrackReference* ref = particle->GetTrackReference(j);
+	UShort_t det,sec,strip;
+	Char_t   ring;
+	if(ref->DetectorId() != AliTrackReference::kFMD)
+	  continue;
+	AliFMDStripIndex::Unpack(ref->UserId(),det,ring,sec,strip);
+	Float_t thisStripTrack = fLastTrackByStrip(det,ring,sec,strip);
+	if(particle->Charge() != 0 && i != thisStripTrack ) {
+	  //Double_t x,y,z;
+	  
+	  Float_t   eta   = pars->GetEtaFromStrip(det,ring,sec,strip,vertex.At(2));//-1*TMath::Log(TMath::Tan(0.5*theta));
+	  TH1F* hHits = (TH1F*)fOutputList->FindObject(Form("hHits_FMD%d%c_vtxbin%d",det,ring,vertexBin));
+	  hHits->Fill(eta);
+	  Float_t nstrips = (ring =='O' ? 256 : 512);
+	  
+	  fLastTrackByStrip(det,ring,sec,strip) = (Float_t)i;
 	
-	fLastTrackByStrip(det,ring,sec,strip) = (Float_t)i;
-	
-	if(strip >0)
-	  fLastTrackByStrip(det,ring,sec,strip-1) = (Float_t)i;
-	if(strip < (nstrips - 1))
-	  fLastTrackByStrip(det,ring,sec,strip+1) = (Float_t)i;
-	
-	
-      }
+	  if(strip >0)
+	    fLastTrackByStrip(det,ring,sec,strip-1) = (Float_t)i;
+	  if(strip < (nstrips - 1))
+	    fLastTrackByStrip(det,ring,sec,strip+1) = (Float_t)i;
+	  
+	}
       }
     }
-    
   }
-  
 }
 //_____________________________________________________________________
 //

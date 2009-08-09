@@ -157,7 +157,9 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       TH2F* hMultInput = (TH2F*)fInputList->FindObject(Form("FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
       TH2F* hHits      = (TH2F*)fOutputList->FindObject(Form("hits_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
       
-      hHits->Add(hMultInput);
+      if(pars->GetProcessHits())
+	 hHits->Add(hMultInput);
+      
       TH2F* hBg        = pars->GetBackgroundCorrection(det, ringChar, vtxbin);
       
       hMultTotal->Add(hMultInput);
