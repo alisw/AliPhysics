@@ -189,8 +189,22 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskBackgroundCorrection::Terminate(Option_t */*option*/) {
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
+  Int_t nVtxbins = pars->GetNvtxBins();
   
+  for(UShort_t det=1;det<=3;det++) {
+    Int_t nRings = (det==1 ? 1 : 2);
+    for (UShort_t ir = 0; ir < nRings; ir++) {
+      Char_t ringChar = (ir == 0 ? 'I' : 'O');
+      for(Int_t i =0; i<nVtxbins; i++) {
+	TH2F* hHits      = (TH2F*)fOutputList->FindObject(Form("hits_FMD%d%c_vtxbin%d",det,ringChar,i));
+	TH1D* hHitsproj  = hHits->ProjectionX(Form("hits_FMD%d%c_vtxbin%d_proj",det,ringChar,i),1,hHits->GetNbinsY());
+	fHitList->Add(hHitsproj);
+	
+      }
+    }
+  }
 }
 //_____________________________________________________________________
 //

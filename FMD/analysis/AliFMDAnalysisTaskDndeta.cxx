@@ -105,7 +105,7 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
 			      hBg->GetXaxis()->GetXmax(),
 			      nSec, 0, 2*TMath::Pi());
 	    
-	    hHits  = new TH1F(Form("hHits_FMD%d%c_vtxbin%d",det,ringChar,i),Form("hHits_FMD%d%c_vtxbin%d",det,ringChar,i),
+	    hHits  = new TH1F(Form("hMCHits_FMD%d%c_vtxbin%d",det,ringChar,i),Form("hMCHits_FMD%d%c_vtxbin%d",det,ringChar,i),
 			      hBg->GetNbinsX(),
 			      hBg->GetXaxis()->GetXmin(),
 			      hBg->GetXaxis()->GetXmax());
@@ -274,7 +274,7 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
 	  //Double_t x,y,z;
 	  
 	  Float_t   eta   = pars->GetEtaFromStrip(det,ring,sec,strip,vertex.At(2));//-1*TMath::Log(TMath::Tan(0.5*theta));
-	  TH1F* hHits = (TH1F*)fOutputList->FindObject(Form("hHits_FMD%d%c_vtxbin%d",det,ring,vertexBin));
+	  TH1F* hHits = (TH1F*)fOutputList->FindObject(Form("hMCHits_FMD%d%c_vtxbin%d",det,ring,vertexBin));
 	  hHits->Fill(eta);
 	  Float_t nstrips = (ring =='O' ? 256 : 512);
 	  

@@ -101,6 +101,7 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
 {
+  fBackground.Terminate("");
   fDndeta.Terminate("");
 
 }
