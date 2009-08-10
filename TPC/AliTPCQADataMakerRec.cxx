@@ -406,6 +406,7 @@ void AliTPCQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // to handle the data and then in the end extract the data
   //
   
+  GetRawsData(0); // dummy call to init raw data
   rawReader->Reset() ; 
   if (! fTPCdataQA[AliRecoParam::AConvert(fEventSpecie)] ) {
     AliError("Something unexpected here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!") ; 
