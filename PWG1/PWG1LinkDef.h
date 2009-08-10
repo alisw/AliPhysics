@@ -44,6 +44,8 @@
 
 #pragma link C++ class AliAlignmentDataFilterITS+;
 #pragma link C++ class AliAnalysisTaskV0QA+;
+#pragma link C++ class AliMaterialBudget+;
+
 
 
 #endif
