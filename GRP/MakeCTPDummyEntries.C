@@ -6,8 +6,8 @@ void MakeCTPDummyEntries(){
 
 	AliCDBManager *man = AliCDBManager::Instance();
 	man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-	Char_t * filenameConfig = gSystem->ExpandPathName("$ALICE_ROOT/GRP/CTP/p-p.cfg");
-	Char_t * filenameScalers = gSystem->ExpandPathName("$ALICE_ROOT/GRP/CTP/xcounters.txt");
+	Char_t * filenameConfig = gSystem->ExpandPathName("$ALICE_ROOT/GRP/CTP/stdln.cfg");
+	Char_t * filenameScalers = gSystem->ExpandPathName("$ALICE_ROOT/GRP/CTP/stdln.cnt");
 
 	AliTriggerConfiguration *runcfg = AliTriggerConfiguration::LoadConfiguration(filenameConfig);
 	AliTriggerRunScalers *scalers = AliTriggerRunScalers::ReadScalers(filenameScalers);
