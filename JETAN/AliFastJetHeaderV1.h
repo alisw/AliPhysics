@@ -43,6 +43,7 @@ class AliFastJetHeaderV1 : public AliJetHeader
   Float_t                      GetMinCellEt()         const {return fMinCellEt;} 
   Bool_t                       GetDebug()             const {return fDebug;}
   Bool_t                       GetBGMode()            const {return fBGMode;}
+  Double_t                     GetRparamBkg()            const {return fRparamBkg;}
 
   // Setters
   void SetRparam(Double_t f)                           {fRparam = f;}
@@ -62,6 +63,8 @@ class AliFastJetHeaderV1 : public AliJetHeader
   void SetComment(TString com) {fComment=com;}
   void SetComment(const char* com) {AliJetHeader::SetComment(com);}
   
+  void SetRparamBkg(Double_t f)                           {fRparamBkg = f;}
+
   // others
   void PrintParameters() const;
 
@@ -69,6 +72,7 @@ class AliFastJetHeaderV1 : public AliJetHeader
 
   //fastjet::JetDefinition parameters
   Double_t fRparam;
+  Double_t fRparamBkg;//R param for bkg calculation
   fastjet::JetAlgorithm fAlgorithm; //fastjet::kt_algorithm
   fastjet::Strategy fStrategy;  //= fastjet::Best;
   fastjet::RecombinationScheme fRecombScheme; // = fastjet::BIpt_scheme;

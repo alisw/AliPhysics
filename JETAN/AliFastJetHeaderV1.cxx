@@ -35,12 +35,13 @@ ClassImp(AliFastJetHeaderV1)
 
 AliFastJetHeaderV1::AliFastJetHeaderV1():
     AliJetHeader("AliFastJetHeaderV1"),
-    fRparam(1.0), 
+    fRparam(0.4),
+    fRparamBkg(0.4),  
     fAlgorithm(fastjet::kt_algorithm),
     fStrategy(fastjet::Best),
     fRecombScheme(fastjet::BIpt_scheme),
     fGhostEtaMax(2.0),
-    fGhostArea(0.05),
+    fGhostArea(0.01),
     fActiveAreaRepeats(1),
     fAreaType(fastjet::active_area), 
     fPtMin(5.0),
