@@ -96,7 +96,7 @@ public:
   Bool_t   GetProcessHits() {return fProcessHits;}
   void     GetVertex(AliESDEvent* esd, Double_t* vertexXYZ);
   void     SetTriggerDefinition(Trigger trigger) {fTrigger = trigger;}
-  Int_t    SetTriggerDefinition() {return fTrigger;}
+  Trigger  GetTriggerDefinition() {return fTrigger;}
   Bool_t   IsEventTriggered(AliESDEvent* esd);
 protected:
   
