@@ -55,9 +55,6 @@ ClassImp(AliJetESDReader)
 AliJetESDReader::AliJetESDReader():
   AliJetReader(),  
   fGeom(0),
-  fChain(0x0),
-  fTree(0x0),
-  fESD(0x0),
   fHadCorr(0x0),
   fTpcGrid(0x0),
   fEmcalGrid(0x0),
@@ -68,7 +65,6 @@ AliJetESDReader::AliJetESDReader():
   fGrid4(0),
   fPtCut(0),
   fApplyElectronCorrection(kFALSE),
-  fEFlag(kFALSE),
   fApplyMIPCorrection(kTRUE),
   fApplyFractionHadronicCorrection(kFALSE),
   fFractionHadronicCorrection(0.3),
@@ -81,7 +77,6 @@ AliJetESDReader::AliJetESDReader():
   fDZ(0),
   fNeta(0),
   fNphi(0),
-  fArrayInitialised(0),
   fRefArray(0x0),
   fProcId(kFALSE)
 {

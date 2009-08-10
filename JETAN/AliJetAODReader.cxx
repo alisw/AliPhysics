@@ -287,6 +287,10 @@ void AliJetAODReader::SetFractionHadronicCorrection(Double_t val)
 //____________________________________________________________________________
 void AliJetAODReader::CreateTasks(TChain* tree)
 {
+  //
+  // For reader task initialization
+  //
+
   fDebug = fReaderHeader->GetDebug();
   fDZ = fReaderHeader->GetDZ();
   fTree = tree;

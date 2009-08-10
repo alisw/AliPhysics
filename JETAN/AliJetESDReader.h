@@ -37,7 +37,7 @@ class AliJetESDReader : public AliJetReader
   void       OpenInputFiles();
   void       InitUnitArray();
   void       CreateTasks(TChain* tree);
-  Bool_t     ExecTasks(Bool_t procid, TRefArray* refArray);
+  Bool_t     ExecTasks(const Bool_t procid, TRefArray* refArray);
 
   // Getters
   Float_t    GetTrackMass() const {return fMass;}  // returns mass of the track
@@ -56,9 +56,6 @@ class AliJetESDReader : public AliJetReader
 
  protected:
   AliJetDummyGeo             *fGeom;             //! EMCAL Geometry 
-  TChain                     *fChain;            //! chain for reconstructed tracks
-  TChain                     *fTree;             //! tree to get the EMCal geometry
-  AliESDEvent                *fESD;              //! pointer to esd
   AliJetHadronCorrection     *fHadCorr;          //! Pointer to Hadron Correction Object 
   AliJetGrid                 *fTpcGrid;          //! Pointer to grid object
   AliJetGrid                 *fEmcalGrid;        //! Pointer to grid object
@@ -69,7 +66,6 @@ class AliJetESDReader : public AliJetReader
   AliJetGrid                 *fGrid4;            // Pointer to grid object
   Float_t                     fPtCut;            // Pt cut for tracks to minimise background contribution
   Int_t                       fApplyElectronCorrection;      // Electron correction flag
-  Bool_t                      fEFlag;            // if (fEFlag == kFALSE) => fECorrection automatically setted
   Bool_t                      fApplyMIPCorrection; // Apply MIP or not ? Exclusive with fApplyFractionHadronicCorrection
   Bool_t                      fApplyFractionHadronicCorrection; // Another type of charged particle energy deposition in EMC
   Double_t                    fFractionHadronicCorrection; // Fraction of momentum of the TPC track to be subtracted from EMC tower
@@ -83,11 +79,8 @@ class AliJetESDReader : public AliJetReader
   Bool_t                      fDZ;               // Use or not dead zones
   Int_t                       fNeta;             // Number of bins in eta of tpc grid
   Int_t                       fNphi;             // Number of bins in phi of tpc grid
-  Bool_t                      fArrayInitialised; // To check that array of units is initialised
-  TRefArray                  *fRefArray;         // array of digit position and energy 
+  TRefArray                  *fRefArray;         // array of digit position and energy
   Bool_t                      fProcId;           // Bool_t for TProcessID synchronization
-
- private:
   Bool_t SetEMCALGeometry();
   void InitParameters();
   AliJetESDReader(const AliJetESDReader &det);
