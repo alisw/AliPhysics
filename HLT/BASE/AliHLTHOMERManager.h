@@ -2,8 +2,8 @@
 
 // $Id: AliHLTHOMERManager.h $
 
-#ifndef ALIEVEHOMERMANGER_H
-#define ALIEVEHOMERMANGER_H
+#ifndef ALIHLTHOMERMANAGER_H
+#define ALIHLTHOMERMANAGER_H
 
 /* This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -71,7 +71,7 @@ public:
    */
 
   /** Create Sources List from HOMER-Proxy 
-   *  @return 0 on success, <0 for failure
+   *  @return 0 on success, <0 for failure, 1 for no active service
    */
   virtual Int_t CreateSourcesList();
 

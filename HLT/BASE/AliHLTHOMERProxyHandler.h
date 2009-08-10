@@ -59,7 +59,9 @@ public:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Fill's source list, with entries */
+  /** Fill's source list, with entries 
+   *  @return 0 on success, <0 for failure, 1 for no active service
+   */
   Int_t FillSourceList(TList *srcList);
 
   ///////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +109,7 @@ private:
   Int_t RequestXmlRpcResponse();
 
   /** process xmlrpc response and fill the source list
-   *  @return 0 on success, <0 for failure
+   *  @return 0 on success, <0 for failure, 1 for no active service
    */
   Int_t ProcessXmlRpcResponse();
   

@@ -94,8 +94,9 @@ Int_t AliHLTHOMERProxyHandler::FillSourceList(TList *srcList) {
   if (!iResult)
     iResult = ProcessXmlRpcResponse();
 
-  if (iResult)
+  if (iResult < 0) {
     HLTError("Filling SourceList failed.");
+  }
 
   return iResult;
 }
@@ -292,7 +293,7 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
 
   if ( !xmlParser.GetXMLDocument()->GetRootNode()->HasChildren() ) {
     HLTInfo("No Services active.");
-    return 0;
+    return 1;
   }
 
   // -- Loop over all service nodes

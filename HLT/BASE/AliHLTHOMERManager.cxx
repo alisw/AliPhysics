@@ -135,8 +135,11 @@ Int_t AliHLTHOMERManager::CreateSourcesList() {
   fSourceList->SetOwner( kTRUE );
 
   iResult = fProxyHandler->FillSourceList( fSourceList );
-  if ( iResult ) {
+  if ( iResult < 0 ) {
     HLTWarning("There have been errors, while creating the sources list.");
+  }
+  else if ( iResult > 0 ) {
+    HLTWarning("No active services found.");
   }
   else {
     HLTInfo("New sources list created.");
