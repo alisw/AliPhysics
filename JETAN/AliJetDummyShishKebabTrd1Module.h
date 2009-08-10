@@ -61,15 +61,18 @@ class AliJetDummyShishKebabTrd1Module : public TNamed {
     } else      {xr = fOK1.Y(); zr = fOK1.X();
     }
   }
-  void GetCenterOfCellInLocalCoordinateofSM_3X3(Int_t ieta, Double_t &xr, Double_t &zr) const
-  { // 3X3 case - Nov 9,2006
+  void GetCenterOfCellInLocalCoordinateofSM3X3(Int_t ieta, Double_t &xr, Double_t &zr) const
+  {
+    // Center of cell   
+    // 3X3 case - Nov 9,2006
     ieta = ieta<0? 0 : ieta; // check index
     ieta = ieta>2? 2 : ieta;
     xr   = fOK3X3[2-ieta].Y();
     zr   = fOK3X3[2-ieta].X();
   }
-  void GetCenterOfCellInLocalCoordinateofSM_1X1(Double_t &xr, Double_t &zr) const
-  { // 1X1 case - Nov 27,2006
+  void GetCenterOfCellInLocalCoordinateofSM1X1(Double_t &xr, Double_t &zr) const
+  {
+    // 1X1 case - Nov 27,2006
     // Center of cell is center of module
     xr   = fOK.Y() - fgr;
     zr   = fOK.X();
@@ -115,8 +118,8 @@ class AliJetDummyShishKebabTrd1Module : public TNamed {
   TVector2 fOB1;    // ieta=1
   TVector2 fOB2;    // ieta=0
   // 3X3 case - Nov 9,2006
-  TVector2 fOK3X3[3];
-  Int_t    fDebug;
+  TVector2 fOK3X3[3]; // tower positions 3X3
+  Int_t    fDebug;    // debug flag
   ClassDef(AliJetDummyShishKebabTrd1Module,1) // TRD1 Shish-Kebab module 
 };
 

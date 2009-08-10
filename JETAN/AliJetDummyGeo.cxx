@@ -688,10 +688,10 @@ void AliJetDummyGeo::CreateListOfTrd1Modules()
         trd1->GetCenterOfCellInLocalCoordinateofSM(ic, xr, zr);      // case of 2X2
         GetCellPhiEtaIndexInSModule(0, nModule, 0, ic, iphiTemp, ieta); 
       } if(fNPHIdiv==3) {
-        trd1->GetCenterOfCellInLocalCoordinateofSM_3X3(ic, xr, zr);  // case of 3X3
+        trd1->GetCenterOfCellInLocalCoordinateofSM3X3(ic, xr, zr);  // case of 3X3
         GetCellPhiEtaIndexInSModule(0, nModule, 0, ic, iphiTemp, ieta); 
       } if(fNPHIdiv==1) {
-        trd1->GetCenterOfCellInLocalCoordinateofSM_1X1(xr, zr);      // case of 1X1
+        trd1->GetCenterOfCellInLocalCoordinateofSM1X1(xr, zr);      // case of 1X1
         GetCellPhiEtaIndexInSModule(0, nModule, 0, ic, iphiTemp, ieta); 
       }
       fCentersOfCellsXDir.AddAt(Float_t(xr) - fParSM[0],ieta);

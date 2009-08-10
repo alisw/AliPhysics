@@ -151,6 +151,8 @@ void AliJetDummyShishKebabTrd1Module::Init(Double_t A, Double_t B)
 //_____________________________________________________________________________
 void AliJetDummyShishKebabTrd1Module::DefineAllStaff()
 {
+//
+// Standard definitions
   DefineName(fTheta);
   // Centers of module - 2X2 case
   Double_t kk1 = (fga+fga2)/(2.*4.); // kk1=kk2 
