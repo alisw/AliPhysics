@@ -57,7 +57,7 @@
 #include "AliESDtrackCuts.h"
 class TBits;
 class AliESDtrack;
-class AliESD;
+class AliESDEvent;
 
 class AliCFTrackIsPrimaryCuts : public AliCFCutBase
 {
@@ -123,7 +123,7 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   void Initialise();			// sets everything to 0
   void FillHistograms(TObject* obj, Bool_t b);
 					// Fills histograms before and after cuts
-  AliESD*  fESD;			// pointer to event, needed for SPD vertex
+  AliESDEvent*  fESD;			// pointer to event, needed for SPD vertex
   Bool_t   fUseSPDvertex;		// flag: calculate dca to SPD-vertex, off by default
   Bool_t   fUseTPCvertex;		// flag: calculate dca to TPC-vertex, off by default
   Double_t fMinDCAToVertexXY;		// cut value: min distance to main vertex in transverse plane

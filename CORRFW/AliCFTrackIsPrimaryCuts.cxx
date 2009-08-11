@@ -54,7 +54,7 @@
 #include <TBits.h>
 
 #include <AliESDtrack.h>
-#include <AliESD.h>
+#include <AliESDEvent.h>
 #include <AliLog.h>
 #include "AliCFTrackIsPrimaryCuts.h"
 
@@ -362,18 +362,18 @@ void AliCFTrackIsPrimaryCuts::Copy(TObject &c) const
 //__________________________________________________________________________________
 void AliCFTrackIsPrimaryCuts::SetEvtInfo(TObject* esd) {
   //
-  // Sets pointer to esd event information (AliESD)
+  // Sets pointer to esd event information (AliESDEvent)
   //
   if (!esd) {
-    AliError("Pointer to AliESD !");
+    AliError("Pointer to AliESDEvent !");
     return;
   }
   TString className(esd->ClassName());
-  if (className.CompareTo("AliESD") != 0) {
-    AliError("argument must point to an AliESD !");
+  if (className.CompareTo("AliESDEvent") != 0) {
+    AliError("argument must point to an AliESDEvent !");
     return ;
   }
-  fESD = (AliESD*) esd;
+  fESD = (AliESDEvent*) esd;
 }
 //__________________________________________________________________________________
 void AliCFTrackIsPrimaryCuts::UseSPDvertex(Bool_t b) {
