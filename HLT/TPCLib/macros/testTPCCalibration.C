@@ -9,25 +9,28 @@
  *
  * Usage:
  * <pre>
+ *   aliroot -b -q testTPCCalibration.C'("./")' | tee testTPCCalibration.log
  *   aliroot -b -q testTPCCalibration.C'("./","calibtime")' | tee testTPCCalibration.log
  *   aliroot -b -q testTPCCalibration.C'("./","calibtimegain")' | tee testTPCCalibration.log
  * </pre>
  *
  * The macro assumes raw data to be available in the rawx folders, either
- * simulated or real data. A different input can be specified as parameter
+ * simulated or real data. If this is the only input specified, the macro
+ * will load the calibration analysis task. If the second argument is specified,
+ * then the individual calibration classes can be tested.
+ *
  * <pre>
  *   aliroot -b -q testTPCCalibration.C'("raw.root","calibtime")'
  * </pre>
- *
  *
  * The reconstruction is steered by the AliReconstruction object in the
  * usual way.
  *
  * @ingroup alihlt_tpc
- * @author Matthias.Richter@ift.uib.no
+ * @author Kalliopi.Kanaki@ift.uib.no
  */
 
-void testTPCCalibration(const char* input="./", const char* option=" "){
+void testTPCCalibration(const char* input="./", const char* option="task"){
 
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");  
@@ -62,10 +65,10 @@ void testTPCCalibration(const char* input="./", const char* option=" "){
   calibInput+="TPC-esd-converter";
   calibInput+=" ";
   calibInput+="seeds";
- 
-  
+    
   TString calibOption = option;
-  if     (calibOption.CompareTo("calibtime")==0)     AliHLTConfiguration calibtimeconf("calibTime",     "TPCCalibTime",     calibInput.Data(), "");
+  if     (calibOption.CompareTo("task")==0)          AliHLTConfiguration calibtimeconf("TPCcalib",      "TPCCalibration",   calibInput.Data(), "");
+  else if(calibOption.CompareTo("calibtime")==0)     AliHLTConfiguration calibtimeconf("calibTime",     "TPCCalibTime",     calibInput.Data(), "");
   else if(calibOption.CompareTo("calibtimegain")==0) AliHLTConfiguration calibtimeconf("calibTimeGain", "TPCCalibTimeGain", calibInput.Data(), "");
   else 
     {
@@ -93,8 +96,9 @@ void testTPCCalibration(const char* input="./", const char* option=" "){
   // has already been prepared. This step is currently not necessary for
   // this macro
   rec.SetFillESD("");
+  if     (calibOption.CompareTo("task")==0)          rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=TPCcalib"); 
   if     (calibOption.CompareTo("calibtime")==0)     rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=calibTime"); 
   else if(calibOption.CompareTo("calibtimegain")==0) rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=calibTimeGain");
- 
+
   rec.Run();
 }

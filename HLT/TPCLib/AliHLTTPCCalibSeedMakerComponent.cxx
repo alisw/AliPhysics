@@ -141,7 +141,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoDeinit() {
 // see header file for class documentation  
   
   if(fTPCGeomParam) delete fTPCGeomParam; fTPCGeomParam = NULL;          
-  if(fSeedArray)    delete fSeedArray;    fSeedArray    = NULL;          
+  if(fSeedArray)   {fSeedArray->Clear();  delete fSeedArray; }   fSeedArray    = NULL;          
   return 0;
 }
 
@@ -191,9 +191,9 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
   
   //------------------ Access to track data blocks --------------------//
   
-  //TObjArray *offClusterArray = new TObjArray;
+  TObjArray *offClusterArray = new TObjArray;
   //offClusterArray->SetOwner(kTRUE);
-  //offClusterArray->Clear();
+  offClusterArray->Clear();
   
   fSeedArray->Clear();
   
@@ -234,14 +234,9 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
     	  for (Int_t i=0;i<nrowlow;i++) xrow[i]         = fTPCGeomParam->GetPadRowRadiiLow(i);
     	  for (Int_t i=0;i<nrowup;i++)  xrow[i+nrowlow] = fTPCGeomParam->GetPadRowRadiiUp(i);
 
-    	  // sector rotation angles
-    	  Double_t angle_in        = fTPCGeomParam->GetInnerAngle();
-    	  Double_t angle_shift_in  = fTPCGeomParam->GetInnerAngleShift();
-    	  Double_t angle_out       = fTPCGeomParam->GetOuterAngle();
-    	  Double_t angle_shift_out = fTPCGeomParam->GetOuterAngleShift();
-   	  
-	  //offClusterArray->Clear();
-	  
+    	  // sector rotation angles - only one angle is needed
+    	  Double_t angle = fTPCGeomParam->GetInnerAngle();
+    	    
 	  const UInt_t *hitnum = element->GetPoints(); // store the clusters on each track in an array and loop over them
           for(UInt_t i=0; i<element->GetNumberOfPoints(); i++){
               
@@ -271,22 +266,16 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
     	      offClus->SetDetector(sector);
 	      usedSpacePoints++;
 	      
-	      //offClusterArray->Add(offClus);
-	      
-	      // the clusters are not sorted from max to min X	            
+	      offClusterArray->Add(offClus);
+	      	            
 	      rieman.AddPoint( offClus->GetX(),offClus->GetY(),offClus->GetZ(),TMath::Sqrt(offClus->GetSigmaY2()),TMath::Sqrt(offClus->GetSigmaZ2()) );    
               
 	      xmin = TMath::Min(xmin,xrow[offClus->GetRow()]); // min pad-row radius
-	      	      
-	      if(sector<36){ 
-                 //xmin = TMath::Min(xmin,xrow[offClus->GetRow()]); // min pad-row radius
-                 alpha = angle_shift_in+angle_in*(sector%18);
-              } else {
-                 //xmin = TMath::Min(xmin,xrow[nrowlow+offClus->GetRow()]); // min pad-row radius
-                 alpha = angle_shift_out+angle_out*(sector%18);
-              }
-              //if(sector<36) HLTInfo("detector: %d, row: %d, xrow[row]: %f", sector, offClus->GetRow(), xrow[offClus->GetRow()]);
-              //else          HLTInfo("detector: %d, row: %d, xrow[row]: %f", sector, offClus->GetRow(), xrow[nrowlow+offClus->GetRow()]);
+	      	    
+              alpha = 0.5*angle+angle*(sector%18); //sector rotation angle
+              
+              // HLTInfo("detector: %d, row: %d, xrow[row]: %f", sector, offClus->GetRow(), xrow[offClus->GetRow()]);  
+	     
           } // end of cluster loop
 
           // creation of AliTPCseed by means of a Riemann fit
@@ -294,23 +283,25 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
           rieman.GetExternalParameters(xmin,param,cov);  
 	  seed = new AliTPCseed(xmin,alpha,param,cov,0);
 	 
-	  // is it necessay to set the cluster pointers inside the seed??
-// 	  for(Int_t j=0; j<offClusterArray->GetEntries(); j++)  { 
-//                AliTPCclusterMI *cl = (AliTPCclusterMI*)offClusterArray->At(j);
-//                if(cl) seed->SetClusterPointer(cl->GetRow(),cl);
-//            }
+	  // set up of the cluster pointers inside the seed
+ 	  for(Int_t j=0; j<offClusterArray->GetEntries(); j++){ 
+              AliTPCclusterMI *cl = (AliTPCclusterMI*)offClusterArray->At(j);
+              if(cl) seed->SetClusterPointer(cl->GetRow(),cl);
+          }
 
+	  offClusterArray->Clear();	
+          HLTDebug("External track parameters: seed: 0x%08x, xmin: %f, alpha: %f, param[0]: %f, cov[0]: %f", seed, xmin, alpha, param[0], cov[0]);
+	  fSeedArray->Add(seed);	 
 
-          HLTInfo("External track parameters: seed: 0x%08x, xmin: %f, alpha: %f, param[0]: %f, cov[0]: %f", seed, xmin, alpha, param[0], cov[0]);
-	  fSeedArray->Add(seed);
-
-      }// end of vector track loop        
+      }// end of vector track loop           
   } // end of loop over blocks of merged tracks  
   
   HLTDebug("Used space points: %d", usedSpacePoints);
   HLTDebug("Number of entries in fSeedArray: %d", fSeedArray->GetEntries());
-
-
+  
+  if(offClusterArray) delete offClusterArray;
+  offClusterArray = NULL;
+ 
   fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( fMinSlice, fMaxSlice, fMinPartition, fMaxPartition );
   //PushBack((TObject*)offClusterArray, kAliHLTDataTypeTObjArray, fSpecification);
   PushBack((TObject*)fSeedArray,       kAliHLTDataTypeTObjArray, fSpecification);
