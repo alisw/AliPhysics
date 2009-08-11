@@ -48,7 +48,7 @@ AliTRDCalPIDLQ::AliTRDCalPIDLQ()
   //  The Default constructor
   //
 
-  Init();
+  //Init();
 
 }
 
@@ -144,7 +144,9 @@ TObject* AliTRDCalPIDLQ::GetModel(Int_t ip, Int_t iType, Int_t iplane) const    
 }
 
 //_________________________________________________________________________
-Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Float_t mom, Float_t *dedx, Float_t length, Int_t iplane) const
+Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Float_t mom
+                                      , const Float_t * const dedx
+                                      , Float_t length, Int_t iplane) const
 {
   //
 	// Core function of AliTRDCalPID class for calculating the
