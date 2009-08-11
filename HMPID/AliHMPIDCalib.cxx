@@ -44,15 +44,20 @@ fLdcId(0),
 fTimeStamp(0),
 fRunNum(0),
 fSigCut(0),
-fWritePads(0),
 fnDDLInStream(0x0),
 fnDDLOutStream(0x0),
 fLargeHisto(kFALSE),
-fSelectDDL(0)
+fSelectDDL(0),
+fDeadMap(0x0),
+fPedMeanMap(0x0),
+fPedSigMap(0x0),
+f1DPedMean(0x0),
+f1DPedSigma(0x0)
 {
   //
   //constructor
   //
+  
   faddl = new Bool_t[AliHMPIDRawStream::kNDDL];
   Int_t nPads =  (AliHMPIDParam::kMaxCh+1)*(AliHMPIDParam::kMaxPcx+1)*(AliHMPIDParam::kMaxPcy+1);
  
@@ -113,8 +118,6 @@ fSelectDDL(0)
   fPadAdc=new TH1I*[nPads];  
   fIsPad=new Bool_t[nPads];  
   for(Int_t np=0;np<nPads;np++) {fPadAdc[np]=0x0;   fIsPad[np]=kFALSE;}
-  fWritePads=kFALSE;
-
 
   Init();
 }
@@ -128,7 +131,8 @@ AliHMPIDCalib::~AliHMPIDCalib()
   if (fPadAdc)   { delete [] fPadAdc; fPadAdc=0x0;  }  
   if (fIsPad)    { delete [] fIsPad;  fIsPad=0x0;   }  
   if (fFile)     { delete    fFile;   fFile=0x0;    }  
- 
+  if (fDeadMap)  { delete    fDeadMap;fDeadMap=0x0; } 
+  
   for(Int_t iErr=0;iErr<AliHMPIDRawStream::kSumErr+1;iErr++) { delete [] fErr[iErr];}  delete [] fErr;
   
   for(Int_t iDDL=0; iDDL< AliHMPIDRawStream::kNDDL; iDDL++) 
@@ -171,9 +175,14 @@ AliHMPIDCalib::~AliHMPIDCalib()
   fTimeStamp=0;
   fRunNum=0;
   fSigCut=0;
-  fWritePads=0;
   fLargeHisto=kFALSE;
   fSelectDDL=0;
+  
+  if (fPedMeanMap)   { delete [] fPedMeanMap; fPedMeanMap=0x0;  }  
+  if (fPedSigMap)    { delete [] fPedSigMap;  fPedSigMap=0x0;   }  
+  if (f1DPedMean)    { delete [] f1DPedMean;  f1DPedMean=0x0;   }
+  if (f1DPedSigma)   { delete [] f1DPedSigma; f1DPedSigma=0x0;  }
+  
 }//dtor
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCalib::Init()
@@ -185,7 +194,8 @@ void AliHMPIDCalib::Init()
   //
     
   fSigCut=3;  //the standard cut
-       
+
+ 
   for(Int_t iDDL=0; iDDL< AliHMPIDRawStream::kNDDL; iDDL++) 
       {
          for(Int_t ierr=0; ierr <AliHMPIDRawStream::kSumErr ; ierr++) {
@@ -194,6 +204,32 @@ void AliHMPIDCalib::Init()
         
         faddl[iDDL]=kFALSE;
       }//DDL
+      
+     Int_t      nbins[4]={14, 24, 10, 48};
+     Double_t  binmin[4]={ 0,  1,  1,  0};
+     Double_t  binmax[4]={14, 25, 11, 48};
+     fDeadMap = new THnSparseD("fDeadMap","Dead Channel Map",4,nbins,binmin,binmax); 
+     
+   fPedMeanMap = new TH2F*[AliHMPIDParam::kMaxCh+1];
+   fPedSigMap  = new TH2F*[AliHMPIDParam::kMaxCh+1];
+   f1DPedMean  = new TH1F*[(AliHMPIDParam::kMaxCh+1)*(AliHMPIDParam::kMaxPc+1)];
+   f1DPedSigma = new TH1F*[(AliHMPIDParam::kMaxCh+1)*(AliHMPIDParam::kMaxPc+1)];
+   
+   Int_t mapmin,mapmax;
+   for(Int_t iCh=0;iCh<AliHMPIDParam::kMaxCh+1;iCh++)  
+   {
+    fPedMeanMap[iCh]=new TH2F(Form("fPedMeanMap%d",iCh),Form("fPedMeanMap%d;pad x;pad y;Mean pedestal (ADC)",iCh),160, 0,160,144,0,144);fPedMeanMap[iCh]->SetStats(kFALSE);
+    fPedSigMap[iCh] =new TH2F(Form("fPedSigMap%d",iCh), Form("fPedSigMap%d;pad x;pad y;Sigma pedestal (ADC)",iCh), 160, 0,160,144,0,144);fPedSigMap[iCh]->SetStats(kFALSE);
+   }
+   for(Int_t iCh=0;iCh<=AliHMPIDParam::kMaxCh;iCh++)
+   {
+    for(Int_t iFee=0;iFee<6;iFee++)
+     {
+      f1DPedMean[6*iCh+iFee]  = new TH1F(Form("f1DPedMean_Ch%d_FEE_%d" , iCh,iFee),Form("Mean Pedestals, RICH %d, FEE %d;Channels;Mean pedestal (ADC)" ,iCh,iFee),3840,0,3840);f1DPedMean[6*iCh+iFee]->SetStats(kFALSE);
+      f1DPedSigma[6*iCh+iFee] = new TH1F(Form("f1DPedSigma_Ch%d_FEE_%d" ,iCh,iFee),Form("Sigma Pedestal, RICH %d, FEE %d;Channels;Sigma pedestal (ADC)" ,iCh,iFee),3840,0,3840);f1DPedSigma[6*iCh+iFee]->SetStats(kFALSE);
+     } 
+   }
+     
 }//Init()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCalib::SetRunParams(ULong_t runNum,Int_t timeStamp, Int_t ldcId)
@@ -228,65 +264,36 @@ void AliHMPIDCalib::SetSigCutFromFile(TString hmpInFile)
   fSigCut=nSigCut; 
 }//SetSigCutFromFile()    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDCalib::InitHisto(Int_t q,Int_t histocnt,Char_t* name)
+void AliHMPIDCalib::SetDeadChannelMapFromFile(TString hmpInFile)
 {
   //
-  //Init the pad histos. For one DDL we have 11520 pads. ONLY if ENABLED!
-  //Arguments: q-charge, the absolute number of the histogram (AliHMPIDParam::kMaxCh+1)*(AliHMPIDParam::kMaxPcx+1)*(AliHMPIDParam::kMaxPcy+1) and the name of the histogram (unique) 
+  //Set Dead Channel Map Cut from the file on the LDC, if the input file is not present default value is set!
+  //Arguments: the name of the Dead Channel Map file on the LDC
   //Returns: none
   //
- if(fWritePads==kFALSE) return;
- fFile->cd();
- Double_t lowbin,highbin=0;
- lowbin=q-40.5; highbin=q+40.5;  
- 
- if(fIsPad[histocnt]==kTRUE) return;
- 
- if(fLargeHisto==kFALSE) fPadAdc[histocnt]=new TH1I(name,name,81,lowbin,highbin);
- if(fLargeHisto==kTRUE) fPadAdc[histocnt]=new TH1I(name,name,4093,-0.5,4092.5);
- fPadAdc[histocnt]->Sumw2();
- fIsPad[histocnt]=kTRUE;
- 
-}//InitHisto()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDCalib::FillHisto(Int_t histocnt,Int_t q)
-{
-  //
-  //Fill the ADC histograms for each pad
-  //Arguments:  q-charge, the absolute number of the histogram (AliHMPIDParam::kMaxCh+1)*(AliHMPIDParam::kMaxPcx+1)*(AliHMPIDParam::kMaxPcy+1)
-  //Returns: none
-  //
-  if(fIsPad[histocnt]==kFALSE) return;
-  fFile->cd();
-  fPadAdc[histocnt]->Fill(q);
- 
-}//InitHisto()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDCalib::InitFile(Int_t inVal)
-{
-  //
-  //Initialize the ADC histo output file (one per LDC)
-  //Arguments: LDC Id
-  //Returns: none
-  //
-  if(fWritePads==kFALSE ) return;
-  if(fLargeHisto==kFALSE) fFile=new TFile(Form("HmpidPadsOnLdc%2d.root",inVal),"RECREATE");
-  if(fLargeHisto==kTRUE)  fFile=new TFile(Form("Run%d_DDL%d.root",inVal,fSelectDDL),"RECREATE"); 
+  Char_t header[256];
+  Int_t ddl=0,row=0,dil=0,pad=0,ch=0,pc=0,chpadx=0,chpady=0,px=0,py=0,isitmasked=0;
+  UInt_t dw=0;
+  Double_t bin[4];
+  ifstream infile(hmpInFile.Data());
+  if(!infile.is_open()) {Printf("HMPID Dead Channel Map file cannot be opened!!!! No mask is applied!!!");return;}
+  infile.getline(header,256);
+  AliHMPIDDigit dig;
+  while(!infile.eof())
+    {
+    infile>>ch>>chpadx>>chpady>>isitmasked;                     //read in masked coordinates; coordinates are in the module coordinate system
+    pc=(chpadx/80)+2*(chpady/48);                               //get PC number
+    px=chpadx-80*(chpadx/80);                                   //get pad X in PC coordinates
+    py=chpady-48*(chpady/48);                                   //get pad Y in PC coordinates --- can we do it better??? -- just with one conversion???? clm
+    if(!dig.Set(ch,pc,px,py,0) && isitmasked) {                 //in the AliHMPIDDigit:Set there is already a check if the coordinates makes sense
+       dig.Raw(dw,ddl,row,dil,pad);
+       bin[0]=ddl; bin[1]=row; bin[2]=dil; bin[3]=pad;
+       fDeadMap->Fill(bin,1);
+      }
+    }
+   infile.close();
   
-}//InitFile()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDCalib::CloseFile()
-{
-  //
-  //Close the ADC histo output file (one per LDC)
-  //Arguments: LDC Id
-  //Returns: none
-  //
-  fFile->cd();
-  Int_t nPads = (AliHMPIDParam::kMaxCh+1)*(AliHMPIDParam::kMaxPcx+1)*(AliHMPIDParam::kMaxPcy+1);
-  for(Int_t np=0;np<nPads;np++) {if(fIsPad[np]==kTRUE) fPadAdc[np]->Write();} 
-  fFile->Close();
-}//CloseFile()
+}//SetDeadChannelMapFromFile()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCalib::FillPedestal(Int_t abspad,Int_t q)
 {
@@ -320,20 +327,7 @@ void AliHMPIDCalib::FillPedestal(Int_t abspad,Int_t q)
       }
       
      Int_t histocnt=0;   histocnt=(nDDL)*11520+(row-1)*480+(dil-1)*48+adr;             //Histo counter for a single DDL  
-     
-     if(fWritePads==kTRUE)                                                             //works but make it nicer later....
-     { 
-       if( fLargeHisto==kTRUE && nDDL==fSelectDDL) {              
-         InitHisto(q,histocnt,Form("hDDL_%d_Row_%d_Dil_%d_Pad_%d",nDDL,row,dil,adr));  //for large histos use hardware naming
-         FillHisto(histocnt,q);
-        }
-        if(fLargeHisto==kFALSE)
-        {
-         InitHisto(q,histocnt,Form("hPad_Ch_%d_Pc_%d_Px_%d_Py_%d",AliHMPIDParam::A2C(abspad),AliHMPIDParam::A2P(abspad),AliHMPIDParam::A2X(abspad),AliHMPIDParam::A2Y(abspad))); 
-         FillHisto(histocnt,q);  
-        }
-      }//fWritePads
-            
+    
 }//FillPedestal()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCalib::FillErrors(Int_t nDDL,Int_t eType, Int_t nErr)
@@ -419,6 +413,10 @@ Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Char_t *name2,Int_t
   ofstream out;                                            //to write the pedestal text files
   Int_t inhard;
   Int_t nEvPerPad=0;
+  Int_t pedbin=0;
+  
+  Int_t abspad,ch,pc,pcx,pcy,chX,chY,fee;
+  Int_t binSp[4]={0};
   out.open(name);
   out << Form("%8s %2d\n","RunNumber",(Int_t)fRunNum);                                                //read run number
   out << Form("%8s %2d\n","LdcId" ,         fLdcId);                                                  //read LDC Id
@@ -427,7 +425,7 @@ Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Char_t *name2,Int_t
   out << Form("%8s %2d\n","TotDDLEvt",      fnDDLInStream[nDDL]);                                     //read number of bad events for DDL # nDDL processed
   out << Form("%8s %2d\n","NumBadEvt",      fnDDLInStream[nDDL]-fnDDLOutStream[nDDL]);                //read number of bad events for DDL # nDDL processed
   out << Form("%8s %2f\n","NBadE(%)",       (fnDDLInStream[nDDL]-fnDDLOutStream[nDDL])*100.0/nEv);    //read number of bad events (in %) for DDL # nDDL processed
-  out << Form("%8s %d\n","#SigCut",      fSigCut);                                                 //# of sigma cuts
+  out << Form("%8s %d\n","#SigCut",      fSigCut);                                                    //# of sigma cuts
       
   for(Int_t row = 1; row <= AliHMPIDRawStream::kNRows; row++){
     feeInput << Form("0xabcdabcd \n");                                                                    //before each row we write a marker to separate the rows within a DDL                       
@@ -435,29 +433,51 @@ Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Char_t *name2,Int_t
    
     for(Int_t dil = 1; dil <= AliHMPIDRawStream::kNDILOGICAdd; dil++){
       for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
+        mean  = 50;sigma = 100;                                                   //init maen and sigma to a low value
+        nEvPerPad=fnpc[nDDL][row][dil][pad];                                      //check how many times the pad was read out
+        abspad=AliHMPIDRawStream::GetPad(nDDL,row,dil,pad);                       //get the absolute oad coordinate
+        ch=AliHMPIDParam::A2C(abspad);                                            //get chamber number
+        pc=AliHMPIDParam::A2P(abspad);                                            //get PC number
+        pcx=AliHMPIDParam::A2X(abspad);                                           //get pad x in PC
+        pcy=AliHMPIDParam::A2Y(abspad);                                           //get pad y in PC
+        chX = (pc%2)*AliHMPIDParam::kPadPcX+pcx;                                  //get pad x in Ch   
+        chY = (pc/2)*AliHMPIDParam::kPadPcY+pcy;                                  //get pad y in Ch
+        binSp[0]=nDDL+1;binSp[1]=row;binSp[2]=dil;binSp[3]=pad+1;                 //set dead map coordinates for check
         
-        mean  = 50;sigma = 100;
-        
-        nEvPerPad=fnpc[nDDL][row][dil][pad];
-        
-        if(nEvPerPad < 1 ) {                    //if the pad is bad then we assign 100  for the sigma and 50 for the mean
-          mean  = 4000;
-          sigma = 1000;
+       if(nEvPerPad < 1 ) {                                                      //if the pad is bad then we assign 100  for the sigma and 50 for the mean
+          mean  = AliHMPIDParam::kPadMeanZeroCharge;
+          sigma = AliHMPIDParam::kPadSigmaZeroCharge;
         }
-        else{        
+        else if(fDeadMap->GetBinContent(binSp)>0)                                 //check if channel is masked, if yes set maksed values
+        {
+          mean  = AliHMPIDParam::kPadMeanMasked;
+          sigma = AliHMPIDParam::kPadSigmaMasked;
+        }
+       else{            
          mean = fsq[nDDL][row][dil][pad]*1.0/nEvPerPad;
          qs2m = fsq2[nDDL][row][dil][pad]*1.0/nEvPerPad;
          qsm2 = TMath::Power(fsq[nDDL][row][dil][pad]*1.0/nEvPerPad,2); 
         sigma = TMath::Sqrt(TMath::Abs(qs2m-qsm2));
         }
-            
-        inhard=((Int_t(mean+fSigCut*sigma))<<9)+Int_t(mean); //right calculation, xchecked with Paolo 8/4/2008
+        inhard=((Int_t(mean+fSigCut*sigma))<<9)+Int_t(mean);                       //right calculation, xchecked with Paolo 8/4/2008
         out << Form("%2i %2i %2i %5.3f %5.3f %4.4x \n",row,dil,pad,mean,sigma,inhard);
-
-        feeInput << Form("0x%4.4x\n",inhard);                 
-       //if(sigma > 3.0) Printf("WARNING SIGMA DDL: %2d row: %2d dil: %2d pad: %2d mean: %3.2f sigma: %2.2f nEvPerPad: %02d fnDDLOutStream: %02d fpedQ0: %02d",nDDL,row,dil,pad,mean,sigma,nEvPerPad,fnDDLOutStream[nDDL],fpedQ0[nDDL][row][dil][pad]);         
-        }//adr
+        feeInput << Form("0x%4.4x\n",inhard);
         
+        // fill histograms to be exported to AMORE    
+        fPedMeanMap[ch]->SetTitle(Form("PedMeanMap%d RunNum: %d",ch,fRunNum));
+        fPedSigMap[ch]->SetTitle(Form("PedSigmaMap%d RunNum: %d",ch,fRunNum));
+        fPedMeanMap[ch]->Fill(chX,chY,mean);         
+        fPedSigMap[ch]->Fill(chX,chY,sigma);         
+        if(nDDL%2==0) pedbin = (24-row)*2*480+(10-dil)*48+pad;
+        if(nDDL%2!=0) pedbin = (row*2-1)*480+(10-dil)*48+pad;
+        pedbin = pedbin - 3840*(pedbin/3840);
+        fee=AliHMPIDRawStream::GetFee(nDDL,row);
+        f1DPedMean[6*(nDDL/2)+fee]->SetTitle(Form("PedMean_Ch%d_FEE_%d RunNum: %d",ch,fee,fRunNum));
+        f1DPedSigma[6*(nDDL/2)+fee]->SetTitle(Form("PedSigma_Ch%d_FEE_%d RunNum: %d",ch,fee,fRunNum));
+        f1DPedMean[6*(nDDL/2)+fee]->Fill(pedbin,mean);
+        f1DPedSigma[6*(nDDL/2)+fee]->Fill(pedbin,sigma);
+
+        }//adr==pad
         //we have to write up to 64 not 48 in the DILOGIC since they are daisy chained!
         //offset and format is defined for the Fe2C code
         for(Int_t idd=0;idd<16;idd++) feeInput << Form("0x%4.4x\n",idd+feeOffset);                 
@@ -471,65 +491,3 @@ Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Char_t *name2,Int_t
   return kTRUE;
 }//CaclPedestal()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliHMPIDCalib::CalcPedestalPaolo(Int_t nDDL, Char_t* /*name*/, Int_t nEv)    
-{
-  //
-  //Calculate pedestal for each pad  
-  //Arguments: nDDL-DDL number, name of the pedestal file and number of the read events
-  //Retutns: kTRUE/kFALSE
-  //
-  //----------------- write files in the format of Paolo -----------------------
-  if(faddl[nDDL]==kFALSE) return kFALSE;                   //if ddl is missing no ped file is created (and also for LDC selection). Check with Paolo what he checks for?!  
-  Int_t ddlOffset=1536;
-  Int_t cnt=0;
-  Double_t mean1=0,sigma1=0;
-  Double_t qs2m1=0,qsm21=0;
-  Double_t mean2=0,sigma2=0;
-  Double_t qs2m2=0,qsm22=0;
-  Int_t nEvPerPad1=0;
-  Int_t nEvPerPad2=0;
-    
-  ofstream pped[3]; 
-  for(Int_t iseg=1;iseg<4;iseg++) pped[iseg-1].open(Form("HmpidPed%d_%d.dat",nDDL+ddlOffset,iseg));
-    
-  for(Int_t row = 1; row <= AliHMPIDRawStream::kNRows/2; row++){
-     
-      //write header
-      pped[(row-1)/4]<<Form("ID_Nevt_NChan_Row_Row_P0_P1_S0_S1 \n");
-      pped[(row-1)/4]<<Form("%d  %d   %d    %d  %d %3.3lf %3.3lf %3.3lf %3.3lf \n",2*row-1,nEv,480,2*row-1,2*row,999.0,999.0,999.0,999.0);
-       
-      cnt=0; 
-      for(Int_t dil = 1; dil <= AliHMPIDRawStream::kNDILOGICAdd; dil++){
-      for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
-        
-         nEvPerPad1=fnpc[nDDL][2*row-1][dil][pad];
-         nEvPerPad2=fnpc[nDDL][2*row][dil][pad];
-        
-        if(nEvPerPad1 < 1 ) { mean1  = 4000; sigma1 = 1000; }
-        else 
-        {
-          mean1 = fsq[nDDL][2*row-1][dil][pad]*1.0/nEvPerPad1;
-          qs2m1 = fsq2[nDDL][2*row-1][dil][pad]*1.0/nEvPerPad1;
-          qsm21 = TMath::Power(fsq[nDDL][2*row-1][dil][pad]*1.0/nEvPerPad1,2); 
-         sigma1 = TMath::Sqrt(TMath::Abs(qs2m1-qsm21));
-        }
-        
-        if(nEvPerPad2 < 1 ) { mean2  = 4000; sigma2 = 1000; }
-        else
-        {        
-         mean2 = fsq[nDDL][2*row][dil][pad]*1.0/nEvPerPad2;
-         qs2m2 = fsq2[nDDL][2*row][dil][pad]*1.0/nEvPerPad2;
-         qsm22 = TMath::Power(fsq[nDDL][2*row][dil][pad]*1.0/nEvPerPad2,2); 
-        sigma2 = TMath::Sqrt(TMath::Abs(qs2m2-qsm22));
-      }
-        pped[(row-1)/4]<<Form("%d %3.3lf %3.3lf %3.3lf %3.3lf \n",cnt,mean1,sigma1,mean2,sigma2);cnt++;
-      }//pad
-      }//dil 
-     }//row    
-    for(Int_t ir=0;ir<3;ir++) {pped[ir].close();    }  
-   return kTRUE;
-}//CalcPedestalPaolo()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-

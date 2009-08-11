@@ -29,7 +29,8 @@ public:
   enum EChamberData{kMinCh=0,kMaxCh=6,kMinPc=0,kMaxPc=5};      //Segmenation
   enum EPadxData{kPadPcX=80,kMinPx=0,kMaxPx=79,kMaxPcx=159};   //Segmentation structure along x
   enum EPadyData{kPadPcY=48,kMinPy=0,kMaxPy=47,kMaxPcy=143};   //Segmentation structure along y 
-
+  enum EPedestalData{kPadMeanZeroCharge=4000,kPadSigmaZeroCharge=1000,kPadMeanMasked=4001,kPadSigmaMasked=1001}; //Pedestal pad data information
+      
   static Float_t SizePadX    (                               )     {return fgCellX;                                  }  //pad size x, [cm]  
   static Float_t SizePadY    (                               )     {return fgCellY;                                  }  //pad size y, [cm]  
 

@@ -13,12 +13,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TFile.h>
 #include "AliHMPIDParam.h"
 #include <AliBitPacking.h>
 #include <AliFstream.h>
 #include "AliHMPIDDigit.h"
 #include "AliDAQ.h"
 #include "AliRawDataHeaderSim.h"
+
 class AliRawReader;
 
 class AliHMPIDRawStream: public TObject {
@@ -33,9 +37,10 @@ class AliHMPIDRawStream: public TObject {
             void     InitVars(Int_t n);
             void     DelVars();
     
-   static  inline Int_t GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad);                                                                 //get absolute pad number
-   static  Int_t GetNDDL()     { return kNDDL;}                                 //return the number of max # of DDLs
-   static  Int_t GetNErrors()  { return kSumErr;}                               //return the number of max # of Error Types
+   static  inline Int_t GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad);               //get absolute pad number
+   static  inline Int_t GetFee(Int_t ddl,Int_t row);                                   //get the FEE number
+   static  Int_t GetNDDL()     { return kNDDL;}                                        //return the number of max # of DDLs
+   static  Int_t GetNErrors()  { return kSumErr;}                                      //return the number of max # of Error Types
 
   	    Int_t   GetNPads()         const { return fNPads;}                         //Get number of pads present in the stream
             Int_t*  GetPadArray()      const { return fPad;}                           //Get pad array from stream decoded
@@ -74,10 +79,12 @@ class AliHMPIDRawStream: public TObject {
 //    inline void    Raw            (UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a);                                              //digit->(w32,ddl,r,d,a)
 //    inline void    Raw            (Int_t ddl,Int_t r,Int_t d,Int_t a);                                                              //raw->abs pad number
 //    inline Bool_t  Raw            (UInt_t  w32,Int_t  ddl,AliRawReader *pRR);                                                       //(w32,ddl)->digit
-    inline void    WriteRaw       (TObjArray *pDigLst                             );                                                      //write as raw stream     
-    inline void   WriteRowMarker  (AliFstream *ddl,UInt_t size);
-    inline void   WriteEoE        (AliFstream *ddl,UInt_t row,UInt_t dil,UInt_t wordCnt);  
-    inline void   WriteSegMarker  (AliFstream *ddl,UInt_t row, Int_t nwInSeg);   
+
+    inline void   WriteRaw       (TObjArray *pDigLst                             );                 //write as raw stream     
+    inline void   WriteRowMarker  (AliFstream *ddl,UInt_t size);                                    //write row marker in simulation
+    inline void   WriteEoE        (AliFstream *ddl,UInt_t row,UInt_t dil,UInt_t wordCnt);           //write Enf Of Event word in simulation
+    inline void   WriteSegMarker  (AliFstream *ddl,UInt_t row, Int_t nwInSeg);                      //write Segment Marker word in simulation
+    inline void   Write5FirmwareWords(AliFstream *ddl);                                             //write the firmware control words in simulation
     
 //    inline TClonesArray  ReMap(TClonesArray *pDigIn);
 enum EDirection {kFwd,kBwd};
@@ -129,7 +136,7 @@ enum Ebits {kbit0,kbit1 , kbit2, kbit3, kbit4, kbit5, kbit6, kbit7, kbit8,
     Int_t           *fPos;                                               // for debug purposes
     Int_t            fiPos;                                              // counter for debug
     Bool_t           fTurbo;                                             // kTRUE = Turbo decoding is called. DEFAULT: kFALSE = normal decoding is called
-    ClassDef(AliHMPIDRawStream, 2)                                       // base class for reading HMPID raw digits
+    ClassDef(AliHMPIDRawStream, 3)                                       // base class for reading HMPID raw digits
 };
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     /*
@@ -197,10 +204,8 @@ Int_t AliHMPIDRawStream::GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad)
   // in case the charge from the channels
   // has not been read or invalid arguments
  
-  //assert(0<=ddl&&ddl<=13);  assert(1<=row&&row<=24);   assert(1<=dil&&dil<=10);     assert(0<=pad&&pad<=47);  
-  /* clm */ //corrupted data from ddl aborts the pedestal run at the assert
+ 
   if(ddl<0 || ddl >13 || row<1 || row >25 || dil<1 || dil >10 || pad<0 || pad >47 ) return -1;
-  /* clm */
   Int_t a2y[6]={3,2,4,1,5,0};     //pady for a given padress (for single DILOGIC chip)
   Int_t ch=ddl/2;
   Int_t tmp=(24-row)/8;
@@ -212,6 +217,24 @@ Int_t AliHMPIDRawStream::GetPad(Int_t ddl,Int_t row,Int_t dil,Int_t pad)
 
   return AliHMPIDParam::Abs(ch,pc,px,py);
 }//GetPad()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Int_t AliHMPIDRawStream::GetFee(Int_t ddl,Int_t row)
+{
+   // The method returns the FEE number or -1 
+   // in case of invalid argument(s)
+ 
+   if(ddl<0 || ddl >13 || row<1 || row >25  ) return -1;
+   Int_t fee=-1, kLeft=0, kRight=0;
+   if(ddl%2==0) {kLeft=1;kRight=0;}
+   if(ddl%2!=0) {kLeft=0;kRight=1;}
+   if((kLeft==1 && row<=24 && row>=21) || (kRight==1 && row<=4  && row>=1)) fee=0;    //calculation of FEE values based on Giacomos pedestal macro
+   if((kLeft==1 && row<=20 && row>=17) || (kRight==1 && row<=8  && row>=5)) fee=1;
+   if((kLeft==1 && row<=16 && row>=13) || (kRight==1 && row<=12 && row>=9)) fee=2;
+   if((kLeft==1 && row<=12 && row>=9)  || (kRight==1 && row<=16 && row>=13))fee=3;
+   if((kLeft==1 && row<=8  && row>=5)  || (kRight==1 && row<=20 && row>=17))fee=4;
+   if((kLeft==1 && row<=4  && row>=1)  || (kRight==1 && row<=24 && row>=21))fee=5;
+   return fee;
+}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::WriteRowMarker(AliFstream *ddl,UInt_t size)
 {
@@ -255,6 +278,24 @@ void AliHMPIDRawStream::WriteSegMarker(AliFstream *ddl,UInt_t row, Int_t nwInSeg
       ddl->WriteBuffer((char*)&w32,sizeof(w32)); 
       //Printf("Segment word created is: %x",w32);
 }      
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++     
+void AliHMPIDRawStream::Write5FirmwareWords(AliFstream *ddl)
+{
+  //Before each DDL payload 5 words are written: 
+  // 1.) Firmware version,              for sim = 999
+  // 2.) Status and error bits from CD, for sim = 0
+  // 3.) # FEE RESET received         , for sim = 0
+  // 4.) # TTC READY                  , for sim = 0  
+  // 5.) Spare/Reserved               , for sim = 0
+  //Returns:   nothing
+  UInt_t w32=0;
+  AliBitPacking::PackWord((UInt_t)999,w32,0,31); ddl->WriteBuffer((char*)&w32,sizeof(w32));              
+  AliBitPacking::PackWord((UInt_t) 10,w32,0,31); ddl->WriteBuffer((char*)&w32,sizeof(w32));              
+  AliBitPacking::PackWord((UInt_t) 11,w32,0,31); ddl->WriteBuffer((char*)&w32,sizeof(w32));              
+  AliBitPacking::PackWord((UInt_t) 12,w32,0,31); ddl->WriteBuffer((char*)&w32,sizeof(w32));              
+  AliBitPacking::PackWord((UInt_t) 13,w32,0,31); ddl->WriteBuffer((char*)&w32,sizeof(w32));              
+  
+}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++     
 Bool_t AliHMPIDRawStream::SetZeroSup (Bool_t isSup)
 {
@@ -316,6 +357,11 @@ void AliHMPIDRawStream::WriteRaw(TObjArray *pDigAll)
     
     UInt_t w32=0;                 //32 bits data word 
     digcnt=0;
+    
+    //added frimware control words
+    Write5FirmwareWords(ddlL);  cntL+=5;
+    Write5FirmwareWords(ddlR);  cntR+=5;
+   
     
     TClonesArray *pDigCh=(TClonesArray *)pDigAll->At(iCh); //list of digits for current chamber 
    

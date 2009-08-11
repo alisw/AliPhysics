@@ -16,6 +16,7 @@
 #include <TMath.h>
 #include <TFile.h>
 #include <TString.h>
+#include <THnSparse.h>
 #include "AliHMPIDParam.h"
 #include "AliHMPIDRawStream.h"
 
@@ -31,21 +32,18 @@ public:
           void FillErrors(Int_t nDDL,Int_t nErrType, Int_t nErr);           //Fill the errors from RawStream
           void FillDDLCnt(Int_t iddl,Int_t inDDL, Int_t outDDL);            //Fill the errors from RawStream
         Bool_t CalcPedestal(Int_t nDDL, Char_t* name, Char_t *name2,Int_t nEv);           //number of the DDL, name of the output file and the number of events processed
-        Bool_t CalcPedestalPaolo(Int_t nDDL, Char_t* name, Int_t nEv);      //number of the DDL, name of the output file and the number of events processed
         
         Bool_t WriteErrors(Int_t nDDL, Char_t* name, Int_t nEv);            //number of the DDL, name of the output file and the number of events processed
-         void InitHisto(Int_t q,Int_t histocnt,Char_t* name);               //Init the pad histograms
-         void FillHisto(Int_t histocnt,Int_t q);                            //Fill the ADC histograms
-         void InitFile(Int_t inVal);                                        //Init the ADC histo output file (one per LDC or one per DDL)
-         void CloseFile();                                                  //Close the file
          void SetRunParams(ULong_t runNum,Int_t timeStamp, Int_t ldcId);    //Set Run Parameters such as Run Number, TimeStamp, LDCid 
          void SetSigCut(Int_t nSigCut) { fSigCut=nSigCut;}                  //Set Sigma Cuts from Setter
          void SetSigCutFromFile(TString name);                              //Set Sigma Cuts from File
-         void SetWriteHistoPads(Bool_t isOn) {fWritePads=isOn;}             //Set wether ADC histos of pads are written or not
-         void SetWriteHistoPads(Bool_t isOn,Bool_t isLarge,Int_t nDDL) {fWritePads=isOn;fLargeHisto=isLarge;fSelectDDL=nDDL;}             //Set wether ADC histos of pads are written or not
-         Bool_t GetWritePads()       const{return fWritePads;}              //Set wether ADC histos of pads are written or not
-         Bool_t GetLargePads()       const{return fLargeHisto;}             //Set wether ADC histos of pads are written or not
-         Bool_t GetSelectedDDL()     const{return fSelectDDL;}              //Set wether ADC histos of pads are written or not
+         void SetDeadChannelMapFromFile(TString name);
+         Bool_t GetSelectedDDL()     const  {return fSelectDDL;}              //Set wether ADC histos of pads are written or not
+         TH2F   *GetPedMeanMap(Int_t iDDL)  {return fPedMeanMap[iDDL];}
+         TH2F   *GetPedSigMap(Int_t iDDL)   {return fPedSigMap[iDDL];}
+         TH1F   *GetPedMean(Int_t iChFee)   {return f1DPedMean[iChFee];}
+         TH1F   *GetPedSigma(Int_t iChFee)  {return f1DPedSigma[iChFee];}
+     THnSparse  *GetDeadMap()               {return fDeadMap;}
 protected: 
 
     Bool_t     *faddl;                                                         //check is ddl is filled
@@ -61,17 +59,22 @@ protected:
     UInt_t      fTimeStamp;                                                    //Time Stamp
     Int_t       fRunNum;                                                       //Run Number
     Int_t       fSigCut;                                                       //n. of pedestal distribution sigmas used to create zero suppresion table                          
-    Bool_t      fWritePads;                                                    //Select wether to write ADC pad histograms or not
     Int_t      *fnDDLInStream;                                                 // if the DDL is in the raw data
     Int_t      *fnDDLOutStream;                                                // if the DDL is in the raw data
     Bool_t      fLargeHisto;                                                   //Default is kFALSE.if kTRUE then write large pad histograms with 4093 bins!!!! Only if you have 2GB of RAM!!!   
     Int_t       fSelectDDL;                                                    //Select the DDL to write for the in the large histograms. Only ONE at one time!
-
-private:
-  AliHMPIDCalib(const AliHMPIDCalib& c);              //dummy copy constructor
-  AliHMPIDCalib &operator=(const AliHMPIDCalib& c);   //dummy assignment operator
-    
-    ClassDef(AliHMPIDCalib,3)                                                  //HMPID calibration and pedestal class        
+    THnSparse  *fDeadMap;                                                      //Dead Channel Map
+    TH2F       **fPedMeanMap;                                                  //2D mean pedestal map to export to AMORE
+    TH2F       **fPedSigMap;                                                   //2D pedestal sigma map to export to AMORE
+    TH1F      **f1DPedMean;                                                   //1D mean pedestal map to export to AMORE
+    TH1F      **f1DPedSigma;                                                   //1D pedestal sigma map to export to AMORE
+        
+  private:
+                                           
+  AliHMPIDCalib(const AliHMPIDCalib& c);                                       //dummy copy constructor
+  AliHMPIDCalib &operator=(const AliHMPIDCalib& c);                            //dummy assignment operator
+     
+    ClassDef(AliHMPIDCalib,4)                                                  //HMPID calibration and pedestal class        
 };
 #endif
 

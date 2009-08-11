@@ -173,16 +173,12 @@ void AliHMPIDDigit::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const
   a=y2a[PadPcY()%6]+6*(7-PadPcX()%8);   //ADDRESS 0..47        
     
   w32=0;   
-  //Printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-  //
-  //Printf("AliHMPIDDigit::Raw ddl: %d r: %d d: %d a: %d",ddl,r,d,a);
-  //Printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-//  Bool_t isOK=kTRUE; isOK=
+  if(r<1 || r>24 || d<1 || d>10 || a<0 || a>47) {w32=0;ddl=-1;r=-1;d=-1;a=-1; return;}    //clm: the assert is removed not to break the reconstruction code 
   AliBitPacking::PackWord((UInt_t)fQ,w32, 0,11);                      // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq        Qdc               bits (00..11) counts (0..4095)
-  assert(0<=a&&a<=47);AliBitPacking::PackWord(        a ,w32,12,17);  // 3322 2222 2222 1111 1111 1000 0000 0000        DILOGIC address   bits (12..17) counts (0..47)
-  assert(1<=d&&d<=10);AliBitPacking::PackWord(        d ,w32,18,21);  // 1098 7654 3210 9876 5432 1098 7654 3210        DILOGIC number    bits (18..21) counts (1..10)
-  assert(1<=r&&r<=24);AliBitPacking::PackWord(        r ,w32,22,26);  //                                                Row number        bits (22..26) counts (1..24)  
-                      AliBitPacking::PackWord((UInt_t)0, w32,27,27);  //To make sure set the 27th bit to Zero so we can distinguis it from the EoE
+  AliBitPacking::PackWord(        a ,w32,12,17);                      // 3322 2222 2222 1111 1111 1000 0000 0000        DILOGIC address   bits (12..17) counts (0..47)
+  AliBitPacking::PackWord(        d ,w32,18,21);                      // 1098 7654 3210 9876 5432 1098 7654 3210        DILOGIC number    bits (18..21) counts (1..10)
+  AliBitPacking::PackWord(        r ,w32,22,26);                      //                                                Row number        bits (22..26) counts (1..24)  
+  AliBitPacking::PackWord((UInt_t)0, w32,27,27);                      //To make sure set the 27th bit to Zero so we can distinguis it from the EoE
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDDigit::Set(Int_t ch,Int_t pc,Int_t px,Int_t py,Int_t tid)
@@ -190,8 +186,11 @@ Bool_t AliHMPIDDigit::Set(Int_t ch,Int_t pc,Int_t px,Int_t py,Int_t tid)
 // Manual creation of digit
 // Arguments: ch,pc,px,py,qdc,tid  
 //   Returns: kTRUE if wrong digit
+  if(ch<AliHMPIDParam::kMinCh || ch>AliHMPIDParam::kMaxCh) return kTRUE;
+  if(pc<AliHMPIDParam::kMinPc || pc>AliHMPIDParam::kMaxPc) return kTRUE;
   if(px<AliHMPIDParam::kMinPx || px>AliHMPIDParam::kMaxPx) return kTRUE;
   if(py<AliHMPIDParam::kMinPy || py>AliHMPIDParam::kMaxPy) return kTRUE;
+  
 
   fPad=AliHMPIDParam::Abs(ch,pc,px,py);fTracks[0]=tid;
   fQ=0;

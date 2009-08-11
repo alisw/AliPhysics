@@ -43,6 +43,43 @@
 
 ClassImp(AliHMPIDQAChecker)
 
+//____________________________________________________________________________
+Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index)
+{
+  
+ TObjArray **list;
+
+  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ;
+ Int_t count[AliRecoParam::kNSpecies]   = { 0 }; 
+ for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++){ // species loop 
+    rv[specie] = 1.0 ; 
+ 
+   TObjArray *dataList;  Int_t iList=0;  
+  
+   if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
+   continue ; 
+   if (!fDataSubDir) {
+     rv[specie] = 0. ; // nothing to check
+   } 
+    else if (!fRefSubDir && !fRefOCDBSubDir) {
+        rv[specie] = -1 ; // no reference data
+    } 
+    else {
+      TList * keyList = fDataSubDir->GetListOfKeys() ; 
+      TIter next(keyList) ; 
+      TKey * key ;
+      count[specie] = 0 ; 
+      while ( (key = static_cast<TKey *>(next())) ) {
+        iList++;
+        TObject * odata = fDataSubDir->Get(key->GetName()) ;
+        dataList->AddAt(odata,iList);
+    }// while
+  }// else 
+  list[specie] = dataList;
+ } //species loop
+ Check(index,list);
+ return rv;            
+}
 //_________________________________________________________________
 Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list) 
 {
@@ -55,27 +92,31 @@ Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
   AliInfo(Form("Fix needed ....."));
   char * detOCDBDir = Form("HMPID/%s/%s", AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
   AliCDBEntry *QARefRec = AliQAManager::QAManager()->Get(detOCDBDir);
-  if( !QARefRec){
+  if(!QARefRec){
     AliInfo("QA reference data NOT retrieved for Reconstruction check. No HMPIDChecker  ...exiting");
     return check;
   }
 
-// checking for empy histograms
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     check[specie] = 1.0;
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ; 
+    // checking for empy histograms
     if(CheckEntries(list[specie]) == 0)  {
       AliWarning("histograms are empty");
       check[specie] = 0.4;//-> Corresponds to kWARNING see AliQACheckerBase::Run
     }
   
+    //check sim
+    if(index == AliQAv1::kSIM) check[specie] = CheckSim(list[specie],(TObjArray *)QARefRec->GetObject());
+
     // checking rec points
-    if(index == AliQAv1::kREC) check[specie] = CheckRecPoints(list[specie],(TObjArray *)QARefRec->GetObject());
+    if(index == AliQAv1::kREC) check[specie] = CheckRec(list[specie],(TObjArray *)QARefRec->GetObject());
 
     //default check response. It will be changed when reasonable checks will be considered
     else check[specie] = 0.7 ; // /-> Corresponds to kINFO see AliQACheckerBase::Run 
-  }
+  } // species loop
+
   return check;
 
 }
@@ -121,8 +162,47 @@ Double_t AliHMPIDQAChecker::CheckEntries(TObjArray * list) const
   return test ; 
 }  
 //_________________________________________________________________
+Double_t AliHMPIDQAChecker::CheckSim(TObjArray *listsim, TObjArray *listref) const
+{
+  //
+  //  check on the HMPID RecPoints by using expo fit and Kolmogorov Test:
+  //
 
-Double_t AliHMPIDQAChecker::CheckRecPoints(TObjArray *listrec, TObjArray *listref) const
+   Float_t checkresponse = 0;
+
+   Float_t counter = 0 ;
+   TIter next(listsim) ;
+   TH1* histo;
+   while ( (histo = dynamic_cast<TH1 *>(next())) ) {
+     //PH The histogram should have at least 3 bins with entries
+     Int_t nbinsabove = 0;
+     for (Int_t ibin=histo->FindBin(1); ibin<=histo->FindBin(50); ibin++) { //1,50 is the fit region, see histo->Fit("expo","Q0","",1,50);
+       if (histo->GetBinContent(ibin)>0) nbinsabove++;
+     }
+
+   if( nbinsabove < 3 ) counter++;
+   else {
+    TString h = histo->GetTitle();
+    if(h.Contains("Zoom")){
+    histo->Fit("expo","LQ0","",1,50);
+    if(histo->GetFunction("expo")->GetParameter(1) !=0 ) if(TMath::Abs((-1./(histo->GetFunction("expo"))->GetParameter(1)) - 35 ) > 5) counter++;
+    }
+    if(h.Contains("size  MIP"))   if(TMath::Abs(histo->GetMean()-5) > 2) counter++;
+    if(h.Contains("size  Phots")) if(TMath::Abs(histo->GetMean()-2) > 2) counter++;
+    if(h.Contains("distribution")) if(histo->KolmogorovTest((TH1F *)listref->At(0))<0.8) counter++;
+    AliDebug(AliQAv1::GetQADebugLevel(),Form(" Kolm. test : %f ",histo->KolmogorovTest((TH1F *)listref->At(0))));  
+   }
+  }
+ Float_t response = counter/(7.+7.+42.+42.); // 7.+7.+42 +42 = N checked histograms (-> To be replaced by listsim->GetEntries())
+ 
+ if(response < 0.1) checkresponse = 0.7;      // <10% of the check histograms show a failing check -> Corresponds to kINFO see AliQACheckerBase::Run
+ else if(response < 0.5) checkresponse = 0.4; //  50%  of the check histograms show a failing check -> Corresponds to kWARNING see AliQACheckerBase::Run
+ else checkresponse = 0.001;                  // > 50% of the check histograms show a failing check -> Corresponds to kERROR see AliQACheckerBase::Run
+ return checkresponse;
+}
+
+//___________________________________________________________________________________________________
+Double_t AliHMPIDQAChecker::CheckRec(TObjArray *listrec, TObjArray *listref) const
 {
   //
   //  check on the HMPID RecPoints by using expo fit and Kolmogorov Test:
@@ -160,5 +240,4 @@ Double_t AliHMPIDQAChecker::CheckRecPoints(TObjArray *listrec, TObjArray *listre
  else checkresponse = 0.001;                  // > 50% of the check histograms show a failing check -> Corresponds to kERROR see AliQACheckerBase::Run
  return checkresponse;
 }
-//________________________________________________________________
 
