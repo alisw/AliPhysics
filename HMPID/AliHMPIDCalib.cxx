@@ -215,7 +215,7 @@ void AliHMPIDCalib::Init()
    f1DPedMean  = new TH1F*[(AliHMPIDParam::kMaxCh+1)*(AliHMPIDParam::kMaxPc+1)];
    f1DPedSigma = new TH1F*[(AliHMPIDParam::kMaxCh+1)*(AliHMPIDParam::kMaxPc+1)];
    
-   Int_t mapmin,mapmax;
+//   Int_t mapmin,mapmax;
    for(Int_t iCh=0;iCh<AliHMPIDParam::kMaxCh+1;iCh++)  
    {
     fPedMeanMap[iCh]=new TH2F(Form("fPedMeanMap%d",iCh),Form("fPedMeanMap%d;pad x;pad y;Mean pedestal (ADC)",iCh),160, 0,160,144,0,144);fPedMeanMap[iCh]->SetStats(kFALSE);
