@@ -219,7 +219,7 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
 
     if (!particle)
     {
-      Printf("UNEXPECTED: particle with label %d not found in stack (mc loop)", iMc);
+      if (fDebug > 0) Printf("UNEXPECTED: particle with label %d not found in stack (mc loop)", iMc);
       continue;
     }
 
@@ -270,7 +270,7 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
   for (Int_t iTracks = 0; iTracks < esd->GetNumberOfTracks(); iTracks++) {
     AliESDtrack* trackpos = esd->GetTrack(iTracks);
     if (!trackpos) {
-      Printf("ERROR: Could not receive track %d", iTracks);
+      if (fDebug > 0) Printf("ERROR: Could not receive track %d", iTracks);
       continue;
     }
     if (trackpos->GetSign() < 0) continue;
@@ -474,22 +474,22 @@ const AliESDVertex* AliResonanceKink::GetEventVertex(const AliESDEvent* esd) con
   }
   
   if(GetSigmaToVertex(localtrack) > fMaxNSigmaToVertex) {
-      Printf("IsAcceptedKink: Track rejected because it has a %lf sigmas to vertex TPC (max. requested: %lf)",   GetSigmaToVertex(localtrack),fMaxNSigmaToVertex);
+      if (fDebug > 1) Printf("IsAcceptedKink: Track rejected because it has a %lf sigmas to vertex TPC (max. requested: %lf)",   GetSigmaToVertex(localtrack),fMaxNSigmaToVertex);
       return kFALSE;
   }
   
   if(TMath::Abs(dca[0]) > fMaxDCAxy) {
-      Printf("IsAcceptedKink: Track rejected because it has a value of dca(xy) (TPC) of %lf (max. requested: %lf)", TMath::Abs(dca[0]), fMaxDCAxy);
+      if (fDebug > 1) Printf("IsAcceptedKink: Track rejected because it has a value of dca(xy) (TPC) of %lf (max. requested: %lf)", TMath::Abs(dca[0]), fMaxDCAxy);
       return kFALSE;
   }
     
   if(TMath::Abs(dca[1]) > fMaxDCAzaxis) {
-      Printf("IsAcceptedKink: Track rejected because it has a value of dca(z) of %lf (max. requested: %lf)", TMath::Abs(dca[1]), fMaxDCAzaxis);
+      if (fDebug > 1) Printf("IsAcceptedKink: Track rejected because it has a value of dca(z) of %lf (max. requested: %lf)", TMath::Abs(dca[1]), fMaxDCAzaxis);
       return kFALSE;
   }
   
   if(gPt < fMinPtTrackCut) {
-      Printf("IsAcceptedKink: Track rejected because it has a min value of pt of %lf (min. requested: %lf)", gPt, fMinPtTrackCut);
+      if (fDebug > 1) Printf("IsAcceptedKink: Track rejected because it has a min value of pt of %lf (min. requested: %lf)", gPt, fMinPtTrackCut);
       return kFALSE;
   } 
   
@@ -528,42 +528,42 @@ Bool_t AliResonanceKink::IsAcceptedForTrack(AliESDEvent *localesd,              
   localtrack->GetExternalCovariance(extCov);
   
   if((localtrack->GetStatus() & AliESDtrack::kTPCrefit) == 0) {
-      Printf("IsAccepted: Track rejected because of no refited in TPC");
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because of no refited in TPC");
       return kFALSE;
   } 
 
   if(nClustersTPC < fMinTPCclusters) {
-      Printf("IsAccepted: Track rejected because it has a value of nclusters (TPC) of %ld (min. requested: %ld)", nClustersTPC, fMinTPCclusters);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of nclusters (TPC) of %ld (min. requested: %ld)", nClustersTPC, fMinTPCclusters);
       return kFALSE;
   } 
   
   if(chi2perTPCcluster > fMaxChi2PerTPCcluster) {
-      Printf("IsAccepted: Track rejected because it has a value of chi2perTPCcluster of %lf (max. requested: %lf)", chi2perTPCcluster, fMaxChi2PerTPCcluster);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of chi2perTPCcluster of %lf (max. requested: %lf)", chi2perTPCcluster, fMaxChi2PerTPCcluster);
       return kFALSE;
   } 
 
   if(extCov[0] > fMaxCov0) {
-      Printf("IsAccepted: Track rejected because it has a value of cov[0] of %lf (max. requested: %lf)", cov[0], fMaxCov0);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[0] of %lf (max. requested: %lf)", cov[0], fMaxCov0);
       return kFALSE;
   }
   
   if(extCov[2] > fMaxCov2) {
-      Printf("IsAccepted: Track rejected because it has a value of cov[2] of %lf (max. requested: %lf)", cov[2], fMaxCov2);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[2] of %lf (max. requested: %lf)", cov[2], fMaxCov2);
       return kFALSE;
   }
     
   if(extCov[5] > fMaxCov5) {
-      Printf("IsAccepted: Track rejected because it has a value of cov[5] of %lf (max. requested: %lf)", cov[5], fMaxCov5);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[5] of %lf (max. requested: %lf)", cov[5], fMaxCov5);
       return kFALSE;
   }  
   
   if(extCov[9] > fMaxCov9) {
-      Printf("IsAccepted: Track rejected because it has a value of cov[9] of %lf (max. requested: %lf)", cov[9], fMaxCov9);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[9] of %lf (max. requested: %lf)", cov[9], fMaxCov9);
       return kFALSE;
   }  
   
   if(extCov[14] > fMaxCov14) {
-      Printf("IsAccepted: Track rejected because it has a value of cov[14] of %lf (max. requested: %lf)", cov[14], fMaxCov14);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[14] of %lf (max. requested: %lf)", cov[14], fMaxCov14);
       return kFALSE;
   } 
  

@@ -182,7 +182,7 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
      return;
   }
 
-  Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
+  if (fDebug > 0)   Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
 
   AliStack* stack=mcEvent->Stack();
   
@@ -213,7 +213,7 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
 
     AliESDtrack* track = esd->GetTrack(iTracks);
     if (!track) {
-      Printf("ERROR: Could not receive track %d", iTracks);
+      if (fDebug > 0) Printf("ERROR: Could not receive track %d", iTracks);
       continue;
     }
     
@@ -270,7 +270,7 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
     track->GetImpactParameters(bpos,bCovpos);
     
     if (bCovpos[0]<=0 || bCovpos[2]<=0) {
-     Printf("Estimated b resolution lower or equal zero!");
+     if (fDebug > 0) Printf("Estimated b resolution lower or equal zero!");
      bCovpos[0]=0; bCovpos[2]=0;
     }
 
