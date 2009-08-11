@@ -378,7 +378,10 @@ void AliCFTrackIsPrimaryCuts::SetEvtInfo(TObject* esd) {
 //__________________________________________________________________________________
 void AliCFTrackIsPrimaryCuts::UseSPDvertex(Bool_t b) {
   fUseSPDvertex = b;
-  if(fUseTPCvertex) fUseSPDvertex = kFALSE;
+  if(fUseTPCvertex && fUseSPDvertex) {
+	fUseSPDvertex = kFALSE;
+	AliError("SPD and TPC vertex chosen. TPC vertex is preferred.");
+  }
 }
 //__________________________________________________________________________________
 void AliCFTrackIsPrimaryCuts::UseTPCvertex(Bool_t b) {
