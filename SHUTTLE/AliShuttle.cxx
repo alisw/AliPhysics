@@ -2535,11 +2535,19 @@ Bool_t AliShuttle::Connect(Int_t system)
 	//
 
 	// check connection: if already connected return
+
 	if(fServer[system] && fServer[system]->IsConnected()) {
-		// ping the server --> automatic reconnection should occur if it was broken but the
-		// server is still alive
-	       	fServer[system]->Ping();
-		return kTRUE;
+		// ping the server	       	
+	        if (fServer[system]->PingVerify()==kTRUE){ // connection is still alive
+			return kTRUE;
+		}		
+		else{
+			AliWarning(Form("Connection got lost to FXS database for %s. Closing and reconnecting.",
+					AliShuttleInterface::GetSystemName(system)));
+			fServer[system]->Close();
+			delete fServer[system];
+			fServer[system] = 0x0;
+		}
 	}
 
 	TString dbHost, dbUser, dbPass, dbName;
