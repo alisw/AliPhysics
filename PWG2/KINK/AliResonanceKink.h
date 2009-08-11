@@ -34,6 +34,7 @@ class AliResonanceKink : public TObject {
   void Analyse(AliESDEvent* esd, AliMCEvent* mcEvent);  
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack) const ; 
   const AliESDVertex *GetEventVertex(const AliESDEvent* esd) const;
+  void SetDebugLevel(Int_t level) {fDebug = level;}
   void SetAnalysisType(TString type) {fAnalysisType=type;}
   void SetPDGCodes(Int_t d1, Int_t d2, Int_t res) {fdaughter1pdg=d1; fdaughter2pdg=d2; fresonancePDGcode=res;}
   void InitOutputHistograms(Int_t nbins, Float_t nlowx, Float_t nhighx);
@@ -100,6 +101,7 @@ class AliResonanceKink : public TObject {
      
  private:
  
+  Int_t       fDebug;        //  Debug flag
   TList       *fListOfHistos; // List 
   TH1D        *fOpeningAngle; // Opening  
   TH1D        *fInvariantMass; // invMass spectrum   

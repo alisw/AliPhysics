@@ -76,9 +76,10 @@ void AliAnalysisTaskKinkResonance::UserExec(Option_t *)
      return;
   }
 
-   fKinkResonance->Analyse(esd, mcEvent);
+  fKinkResonance->SetDebugLevel(fDebug);
+  fKinkResonance->Analyse(esd, mcEvent);
    
-   PostData(1, fList);
+  PostData(1, fList);
    
 }      
 
