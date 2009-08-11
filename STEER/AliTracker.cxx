@@ -345,7 +345,7 @@ Double_t AliTracker::MeanMaterialBudget(const Double_t *start, const Double_t *e
 
 Bool_t 
 AliTracker::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo, 
-Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp){
+			     Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp, Double_t sign){
   //----------------------------------------------------------------
   //
   // Propagates the track to the plane X=xk (cm) using the magnetic field map 
@@ -376,7 +376,7 @@ Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp){
     if (!track->PropagateTo(x,bz))  return kFALSE;
 
     MeanMaterialBudget(xyz0,xyz1,param);	
-    Double_t xrho=param[0]*param[4], xx0=param[1];
+    Double_t xrho=param[0]*param[4]*sign, xx0=param[1];
 
     if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
     if (rotateTo){
@@ -399,7 +399,7 @@ Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp){
 Bool_t 
 AliTracker::PropagateTrackToBxByBz(AliExternalTrackParam *track,
 Double_t xToGo, 
-Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp){
+				   Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp,Double_t sign){
   //----------------------------------------------------------------
   //
   // Propagates the track to the plane X=xk (cm)
@@ -431,7 +431,7 @@ Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp){
     if (!track->PropagateToBxByBz(x,b))  return kFALSE;
 
     MeanMaterialBudget(xyz0,xyz1,param);	
-    Double_t xrho=param[0]*param[4], xx0=param[1];
+    Double_t xrho=param[0]*param[4]*sign, xx0=param[1];
 
     if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
     if (rotateTo){
