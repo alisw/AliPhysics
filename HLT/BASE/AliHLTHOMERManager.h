@@ -25,7 +25,7 @@
 #include "AliHLTHOMERReader.h"
 #include "AliHLTHOMERProxyHandler.h"
 
-#include "AliHLTLogging.h"
+//#include "AliHLTLogging.h"
 
 class AliHLTHOMERLibManager;
 
@@ -44,7 +44,8 @@ class AliHLTHOMERLibManager;
  * @ingroup alihlt_homer
  */
 
-class AliHLTHOMERManager : public TObject, public AliHLTLogging {
+class AliHLTHOMERManager : public TObject//, public AliHLTLogging 
+{
 public:
   
   /*
@@ -95,7 +96,7 @@ public:
    *  @param detector    Detector to be connected to
    *  @return            0 on success, <0 for failure
    */
-  Int_t ConnectHOMER( TString detector );
+  Int_t ConnectHOMER( TString detector="ALL" );
 
   /** Disconnect from HOMER sources */
   void  DisconnectHOMER();

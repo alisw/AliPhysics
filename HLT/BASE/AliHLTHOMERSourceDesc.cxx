@@ -65,7 +65,7 @@ AliHLTHOMERSourceDesc::~AliHLTHOMERSourceDesc() {
 
 //#################################################################################
 void AliHLTHOMERSourceDesc::SetService( TString hostname, Int_t port, TString origin, 
-					TString type, TString /*spec*/ ) {
+					TString type, TString spec ) {
   // see header file for class documentation
 
   fHostname = hostname;
@@ -78,11 +78,11 @@ void AliHLTHOMERSourceDesc::SetService( TString hostname, Int_t port, TString or
   fDetector.Remove( TString::kTrailing, ' ' );
 
   // -- Temporary until Specification is set in service
-  fSpecification = 0;
+  fSpecification = spec.Atoi();
   fSubDetector = 0;
   fSubSubDetector = 0;
 
-  fSourceName.Form("%s_%s_%lu", fDetector.Data(), fDataType.Data(), fSpecification); 
+  fSourceName.Form("%s_%s_0x%08LX", fDetector.Data(), fDataType.Data(), fSpecification ); 
 
   return;
 }

@@ -45,7 +45,7 @@ Int_t HOMERManager() {
 
   printf( "== CONNECT HOMER ==\n" );
   
-  iResult = hM->ConnectHOMER("TPC");
+  iResult = hM->ConnectHOMER("TRD");
   if (iResult) return iResult;
   
   printf( "== NEXT EVENT ==\n" );
@@ -68,7 +68,7 @@ Int_t HOMERManager() {
     if ( block->IsTObject() )
       object = block->GetTObject();
     
-    printf("ClassName %s\n", block->GetClassName() );
+    printf("ClassName %s\n", block->GetClassName().Data() );
     
   }
 

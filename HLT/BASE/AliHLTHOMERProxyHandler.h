@@ -22,7 +22,7 @@
 // -- -- -- -- -- -- -- 
 #include "AliHLTHOMERSourceDesc.h"
 // -- -- -- -- -- -- -- 
-#include "AliHLTLogging.h"
+//#include "AliHLTLogging.h"
 
 /**
  * @class AliHLTHOMERProxyHandler
@@ -32,7 +32,7 @@
  * @ingroup alihlt_homer
  */
 
-class AliHLTHOMERProxyHandler : public TObject, public AliHLTLogging
+class AliHLTHOMERProxyHandler : public TObject//, public AliHLTLogging
 {
 public:
 
