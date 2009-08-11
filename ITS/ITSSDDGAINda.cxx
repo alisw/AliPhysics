@@ -260,7 +260,6 @@ int main(int argc, char **argv) {
   Int_t statusamore =0;
   statusamore += amoreDA.Send("TimeInfo",&timeinfo);
   statusamore += amoreDA.Send("Gain",gainHistos);
-  statusamore += amoreDA.Send("BadChannels",corrnHistos);
   if ( statusamore )
     printf("Warning: Failed to write Arrays in the AMORE database\n");
   else 
