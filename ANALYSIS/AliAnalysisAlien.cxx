@@ -792,6 +792,10 @@ Bool_t AliAnalysisAlien::CreateJDL()
       arr = fOutputFiles.Tokenize(" ");
       TIter next(arr);
       while ((os=(TObjString*)next())) {
+         // Ignore ouputs in jdl that are also in outputarchive
+         TString sout = os->GetString();
+         if (sout.Index("@")>0) sout.Remove(sout.Index("@"));
+         if (fOutputArchive.Contains(sout)) continue;
          if (!os->GetString().Contains("@") && fCloseSE.Length())
             fGridJDL->AddToOutputSandbox(Form("%s@%s",os->GetString().Data(), fCloseSE.Data())); 
          else
@@ -851,7 +855,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    } else {
       // One jdl to be submitted with 2 input parameters: data collection name and output dir prefix
       fGridJDL->AddToInputDataCollection(Form("LF:%s/$1,nodownload", workdir.Data()));
-      fGridJDL->SetOutputDirectory(Form("%s/$2#alien_counter_03i#", fGridOutputDir.Data()));
+      fGridJDL->SetOutputDirectory(Form("%s/$2/#alien_counter_03i#", fGridOutputDir.Data()));
    }
       
 
