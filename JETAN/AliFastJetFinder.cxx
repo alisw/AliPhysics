@@ -30,7 +30,6 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TArrayF.h>
-#include <TRandom.h>
 #include <TClonesArray.h>
 
 #include "AliFastJetFinder.h"
@@ -38,6 +37,9 @@
 #include "AliJetReaderHeader.h"
 #include "AliJetReader.h"
 #include "AliJetUnitArray.h"
+#include "AliFastJetInput.h"
+#include "AliJetBkg.h"
+#include "AliAODPWG4JetEventBackground.h"
 
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequenceArea.hh"
@@ -78,12 +80,11 @@ AliFastJetFinder::~AliFastJetFinder()
 //______________________________________________________________________________
 void AliFastJetFinder::FindJets()
 {
-  
+  cout<<"----------in AliFastJetFinder::FindJets() ------------------"<<endl;
   //pick up fastjet header
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
   Bool_t debug  = header->GetDebug();     // debug option
   Bool_t bgMode = header->GetBGMode();    // choose to subtract BG or not
-  Int_t fOpt    = fReader->GetReaderHeader()->GetDetector();
 
   // check if we are reading AOD jets
   TRefArray *refs = 0;
@@ -92,68 +93,17 @@ void AliFastJetFinder::FindJets()
   
   // RUN ALGORITHM  
   // read input particles -----------------------------
-  vector<fastjet::PseudoJet> inputParticles;
-  if(fOpt==0)
-    {
-      TClonesArray *lvArray = fReader->GetMomentumArray();
-      if(lvArray == 0) { cout << "Could not get the momentum array" << endl; return; }
-      Int_t nIn =  lvArray->GetEntries();
-      if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
-      Float_t px,py,pz,en;
-      // load input vectors
-      for(Int_t i = 0; i < nIn; i++){ // loop for all input particles
-	TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
-	px = lv->Px();
-	py = lv->Py();
-	pz = lv->Pz();
-	en = lv->Energy();
-    
-	fastjet::PseudoJet inputPart(px,py,pz,en); // create PseudoJet object
-	inputPart.set_user_index(i); //label the particle into Fastjet algortihm
-	inputParticles.push_back(inputPart);  // back of the inputParticles vector  
-      } // end loop 
-    }
-  else {
-    TClonesArray* fUnit = fReader->GetUnitArray();
-    if(fUnit == 0) { cout << "Could not get the momentum array" << endl; return; }
-    Int_t         nIn = fUnit->GetEntries();
-    if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
-    // Information extracted from fUnitArray
-    // load input vectors and calculate total energy in array
-    Float_t pt,eta,phi,theta,px,py,pz,en;
-    Int_t ipart = 0;
-    for(Int_t i=0; i<nIn; i++) 
-      {
-	AliJetUnitArray *uArray = (AliJetUnitArray*)fUnit->At(i);
-	
-	if(uArray->GetUnitEnergy()>0.){
-	  
-	  // It is not necessary anymore to cut on particle pt
-	  pt    = uArray->GetUnitEnergy();
-	  eta   = uArray->GetUnitEta();
-	  phi   = uArray->GetUnitPhi();
-	  theta = EtaToTheta(eta);
-	  en    = (TMath::Abs(TMath::Sin(theta)) == 0) ? pt : pt/TMath::Abs(TMath::Sin(theta));
-	  px    = TMath::Cos(phi)*pt;
-	  py    = TMath::Sin(phi)*pt;
-	  pz    = en*TMath::TanH(eta);
-	  if(debug) cout << "pt: " << pt << ", eta: " << eta << ", phi: " << phi << ", en: " << en << ", px: " << px << ", py: " << py << ", pz: " << pz << endl;
 
-	  fastjet::PseudoJet inputPart(px,py,pz,en); // create PseudoJet object
-	  inputPart.set_user_index(ipart); //label the particle into Fastjet algortihm
-	  inputParticles.push_back(inputPart);  // back of the inputParticles vector 
-	  ipart++;
-	}
-      } // End loop on UnitArray 
-  }
-  
+  vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
+
+
   // create an object that represents your choice of jet algorithm, and 
   // the associated parameters
   double rParam = header->GetRparam();
   fastjet::Strategy strategy = header->GetStrategy();
   fastjet::RecombinationScheme recombScheme = header->GetRecombScheme();
   fastjet::JetAlgorithm algorithm = header->GetAlgorithm(); 
-  fastjet::JetDefinition jet_def(algorithm, rParam, recombScheme, strategy);
+  fastjet::JetDefinition jetDef(algorithm, rParam, recombScheme, strategy);
 
   // create an object that specifies how we to define the area
   fastjet::AreaDefinition areaDef;
@@ -162,22 +112,22 @@ void AliFastJetFinder::FindJets()
   int    activeAreaRepeats = header->GetActiveAreaRepeats(); 
   
   // now create the object that holds info about ghosts
-  fastjet::GhostedAreaSpec ghost_spec(ghostEtamax, activeAreaRepeats, ghostArea);
+  fastjet::GhostedAreaSpec ghostSpec(ghostEtamax, activeAreaRepeats, ghostArea);
   // and from that get an area definition
   fastjet::AreaType areaType = header->GetAreaType();
-  areaDef = fastjet::AreaDefinition(areaType,ghost_spec);
+  areaDef = fastjet::AreaDefinition(areaType,ghostSpec);
   
   if(bgMode) // BG subtraction
     {
       //***************************** JETS FINDING AND EXTRACTION
       // run the jet clustering with the above jet definition
-      fastjet::ClusterSequenceArea clust_seq(inputParticles, jet_def, areaDef);
+      fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef, areaDef);
 
       // save a comment in the header
       
       TString comment = "Running FastJet algorithm with the following setup. ";
       comment+= "Jet definition: ";
-      comment+= TString(jet_def.description());
+      comment+= TString(jetDef.description());
       comment+= ". Area definition: ";
       comment+= TString(areaDef.description());
       comment+= ". Strategy adopted by FastJet: ";
@@ -235,14 +185,31 @@ void AliFastJetFinder::FindJets()
       }
     }
   else { // No BG subtraction
+   
+    TClonesArray* fUnit = fReader->GetUnitArray();
+    if(fUnit == 0) { cout << "Could not get the momentum array" << endl; return; }
+    Int_t         nIn = fUnit->GetEntries();
+    cout<<"===== check Unit Array in AliFastJetFinder ========="<<endl;
+    Int_t ppp=0;
+    for(Int_t ii=0; ii<nIn; ii++) 
+      {
+	AliJetUnitArray *uArray = (AliJetUnitArray*)fUnit->At(ii);
+	if(uArray->GetUnitEnergy()>0.){
+	  Float_t eta   = uArray->GetUnitEta();
+	  Float_t phi   = uArray->GetUnitPhi();
+	  cout<<"ipart = "<<ppp<<" eta="<<eta<<"  phi="<<phi<<endl;
+	  ppp++;
+	}
+      }
 
-    fastjet::ClusterSequence clust_seq(inputParticles, jet_def); 
-
+    //fastjet::ClusterSequence clust_seq(inputParticles, jetDef); 
+    fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef, areaDef);
+   
     // save a comment in the header
     
     TString comment = "Running FastJet algorithm with the following setup. ";
     comment+= "Jet definition: ";
-    comment+= TString(jet_def.description());
+    comment+= TString(jetDef.description());
     comment+= ". Strategy adopted by FastJet: ";
     comment+= TString(clust_seq.strategy_string());
     header->SetComment(comment);
@@ -263,14 +230,49 @@ void AliFastJetFinder::FindJets()
     for (size_t j = 0; j < jets.size(); j++) { // loop for jets     // Added by me
       
       printf("Jet found %5d %9.5f %8.5f %10.3f \n",(Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp());
-      
+
+      vector<fastjet::PseudoJet> constituents = clust_seq.constituents(jets[j]);
+      int nCon= constituents.size();
+      TArrayI ind(nCon);
+      Double_t area=clust_seq.area(jets[j]);
+      cout<<"area = "<<area<<endl;
       // go to write AOD  info
       AliAODJet aodjet (jets[j].px(), jets[j].py(), jets[j].pz(), jets[j].E());
+      aodjet.SetEffArea(area,0);
       //cout << "Printing jet " << endl;
       if(debug) aodjet.Print("");
-      //cout << "Adding jet ... " ;
+      // cout << "Adding jet ... " <<j<<endl;
+      for (int i=0; i < nCon; i++)
+	{
+	fastjet::PseudoJet mPart=constituents[i];
+	ind[i]=mPart.user_index();
+	//cout<<i<<"  index="<<ind[i]<<endl;
+	
+	//internal oop over all the unit cells
+	Int_t ipart = 0;
+	for(Int_t ii=0; ii<nIn; ii++) 
+	  {
+	    AliJetUnitArray *uArray = (AliJetUnitArray*)fUnit->At(ii);
+	    if(uArray->GetUnitEnergy()>0.){
+	      uArray->SetUnitTrackID(ipart);//used to have the index available in AliJEtBkg
+	      if(ipart==ind[i]){
+		aodjet.AddTrack(uArray);
+	      }
+	      ipart++;
+	    }
+	  }
+      }
+
       AddJet(aodjet);
       //cout << "added \n" << endl;
+
+
+      ///----> set in the aod the reference to the unit cells
+      //  in FastJetFinder: 1) loop over the unit array. 2) select those unit cells belonging to the jet (via user_index). 3) use AliAODJet->AddTrack(unitRef)
+      //  in AliJetBkg: 1) loop over the unit arrays --> get ind of the unit cell 2) internal loop on jet unit cells; 3) check if i_cell = UID of the trackRefs of the AODJet
+      // should work hopefully
+
+
       
     } // end loop for jets
   } 
@@ -307,7 +309,7 @@ void AliFastJetFinder::RunTest(const char* datafile)
   double rParam = 1.0;
   fastjet::Strategy strategy = fastjet::Best;
   fastjet::RecombinationScheme recombScheme = fastjet::BIpt_scheme;
-  fastjet::JetDefinition jet_def(fastjet::kt_algorithm, rParam, recombScheme, strategy);
+  fastjet::JetDefinition jetDef(fastjet::kt_algorithm, rParam, recombScheme, strategy);
   
   
  
@@ -319,18 +321,18 @@ void AliFastJetFinder::RunTest(const char* datafile)
   
 
   // now create the object that holds info about ghosts
-  fastjet::GhostedAreaSpec ghost_spec(ghostEtamax, activeAreaRepeats, ghostArea);
+  fastjet::GhostedAreaSpec ghostSpec(ghostEtamax, activeAreaRepeats, ghostArea);
   // and from that get an area definition
-  areaDef = fastjet::AreaDefinition(fastjet::active_area,ghost_spec);
+  areaDef = fastjet::AreaDefinition(fastjet::active_area,ghostSpec);
   
 
   // run the jet clustering with the above jet definition
-  fastjet::ClusterSequenceArea clust_seq(inputParticles, jet_def, areaDef);
+  fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef, areaDef);
   
   
   // tell the user what was done
   cout << "--------------------------------------------------------" << endl;
-  cout << "Jet definition was: " << jet_def.description() << endl;
+  cout << "Jet definition was: " << jetDef.description() << endl;
   cout << "Area definition was: " << areaDef.description() << endl;
   cout << "Strategy adopted by FastJet was "<< clust_seq.strategy_string()<<endl<<endl;
   cout << "--------------------------------------------------------" << endl;
@@ -397,4 +399,69 @@ void AliFastJetFinder::InitTask(TChain *tree)
   printf("Fast jet finder initialization ******************");
   fReader->CreateTasks(tree);
 
+}
+
+Bool_t AliFastJetFinder::ProcessEvent2()
+{
+  //
+  // Process one event
+  // Charged only or charged+neutral jets
+  //
+
+  TRefArray* ref = new TRefArray();
+  Bool_t procid = kFALSE;
+  Bool_t ok = fReader->ExecTasks(procid,ref);
+
+  // Delete reference pointer  
+  if (!ok) {delete ref; return kFALSE;}
+  
+  // Leading particles
+  fInputFJ->SetHeader(fHeader);
+  fInputFJ->SetReader(fReader);
+  fInputFJ->FillInput();
+  
+  // Jets
+  FindJets();
+  
+  fJetBkg->SetHeader(fHeader);
+  fJetBkg->SetReader(fReader);
+  fJetBkg->SetFastJetInput(fInputFJ);
+  Double_t bkg1=fJetBkg->BkgFastJet();
+  Double_t bkg2=fJetBkg->BkgChargedFastJet();
+  Double_t bkg3=fJetBkg->BkgFastJetCone(fAODjets);
+  Double_t bkg4=fJetBkg->BkgRemoveJetLeading(fAODjets);
+  
+  fAODEvBkg->SetBackground(0,bkg1);
+  fAODEvBkg->SetBackground(1,bkg2);
+  fAODEvBkg->SetBackground(2,bkg3);
+  fAODEvBkg->SetBackground(3,bkg4);
+  
+  Int_t nEntRef    = ref->GetEntries();
+
+  for(Int_t i=0; i<nEntRef; i++)
+    { 
+      // Reset the UnitArray content which were referenced
+      ((AliJetUnitArray*)ref->At(i))->SetUnitTrackID(0);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitEnergy(0.);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitCutFlag(kPtSmaller);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitCutFlag2(kPtSmaller);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitSignalFlag(kBad);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitSignalFlagC(kTRUE,kBad);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitDetectorFlag(kTpc);
+      ((AliJetUnitArray*)ref->At(i))->SetUnitFlag(kOutJet);
+      ((AliJetUnitArray*)ref->At(i))->ClearUnitTrackRef();
+
+      // Reset process ID
+      AliJetUnitArray* uA = (AliJetUnitArray*)ref->At(i);
+      uA->ResetBit(kIsReferenced);
+      uA->SetUniqueID(0);     
+    }
+
+  // Delete the reference pointer
+  ref->Delete();
+  delete ref;
+
+  Reset();
+
+  return kTRUE;
 }

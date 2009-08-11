@@ -33,7 +33,9 @@
 #include "AliFastJetHeaderV1.h"
 
 using namespace std;
-
+class AliFastJetInput;
+class AliJetBkg;
+class AliAODPWG4JetEventBackground;
 
 class AliFastJetFinder : public AliJetFinder
 {
@@ -43,17 +45,19 @@ class AliFastJetFinder : public AliJetFinder
   ~AliFastJetFinder();
 
   void    FindJets(); 
-  // others
   void    RunTest(const char* datafile); // a simple test
   void    WriteJHeaderToFile();
   Float_t EtaToTheta(Float_t arg);
   void    InitTask(TChain* tree);
-
+  Bool_t  ProcessEvent2();
+  
+      
   protected:
   AliFastJetFinder(const AliFastJetFinder& rfj);
   AliFastJetFinder& operator = (const AliFastJetFinder& rsfj);
-
-
+  AliFastJetInput*                fInputFJ;     //! input particles array
+  AliJetBkg*                      fJetBkg;      //! pointer to bkg class
+  AliAODPWG4JetEventBackground*   fAODEvBkg;    //! bkg object to be store
   ClassDef(AliFastJetFinder,2)
 };
 
