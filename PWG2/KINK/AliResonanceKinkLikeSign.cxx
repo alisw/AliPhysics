@@ -132,7 +132,7 @@ void AliResonanceKinkLikeSign::Exec(Option_t *)
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     AliESDtrack* trackpos = fESD->GetTrack(iTracks);
     if (!trackpos) {
-      Printf("ERROR: Could not receive track %d", iTracks);
+      if (fDebug > 0) Printf("ERROR: Could not receive track %d", iTracks);
       continue;
     }
     
@@ -147,7 +147,7 @@ void AliResonanceKinkLikeSign::Exec(Option_t *)
     trackpos->GetImpactParameters(bpos,bCovpos);
     
     if (bCovpos[0]<=0 || bCovpos[2]<=0) {
-     Printf("Estimated b resolution lower or equal zero!");
+     if (fDebug > 0) Printf("Estimated b resolution lower or equal zero!");
      bCovpos[0]=0; bCovpos[2]=0;
     }
 
@@ -231,7 +231,7 @@ void AliResonanceKinkLikeSign::Exec(Option_t *)
         Float_t bCovneg[3];
         trackneg->GetImpactParameters(bneg,bCovneg);
         if (bCovneg[0]<=0 || bCovneg[2]<=0) {
-          Printf("Estimated b resolution lower or equal zero!");
+          if (fDebug > 0) Printf("Estimated b resolution lower or equal zero!");
           bCovneg[0]=0; bCovneg[2]=0;
         }
 
