@@ -149,14 +149,14 @@ Int_t AliHLTTPCCalibrationComponent::InitCalibration() {
   fCalibTask = new AliHLTTPCAnalysisTaskcalib("TPC Calibration Task");
   
   if(fCalibTime) return EINPROGRESS;
-  fCalibTime = new AliTPCcalibTime("calibTimeGain","time dependent gain calibration",-2, 2, 1);
+  fCalibTime = new AliTPCcalibTime();
   
   fCalibTime->SetDebugLevel(20);
   fCalibTime->SetStreamLevel(10);
   fCalibTime->SetTriggerMask(-1,-1,kFALSE); //accept everything 
 
   if(fCalibTimeGain) return EINPROGRESS;
-  fCalibTimeGain = new AliTPCcalibTimeGain();
+  fCalibTimeGain = new AliTPCcalibTimeGain("calibTimeGain","time dependent gain calibration",-2, 2, 1);
   
   fCalibTask->AddJob(fCalibTime);
   fCalibTask->AddJob(fCalibTimeGain);
