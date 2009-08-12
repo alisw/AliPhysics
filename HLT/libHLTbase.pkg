@@ -63,6 +63,7 @@ MODULE_SRCS= 	AliHLT_C_Component_WrapperInterface.cxx \
 
 MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTDataTypes.h \
+		AliHLTLoggingVariadicFree.h \
 		AliHLTExternalTrackParam.h \
 		AliHLTCommonCDBEntries.h \
 		AliHLT_C_Component_WrapperInterface.h \
@@ -84,5 +85,5 @@ PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
 # the libHLTbase depends on the abstract interface of the monitoring reader
 # and needs include patch HLT/BASE/HOMER because of that. There is no library
-# dependency. Objects are intantianted dynamically.
+# dependency. Objects are instantianted dynamically.
 EINCLUDE := HLT/BASE HLT/BASE/HOMER
