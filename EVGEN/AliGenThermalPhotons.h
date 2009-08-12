@@ -64,8 +64,8 @@ class AliGenThermalPhotons : public AliGenerator
   virtual void SetYRange(Float_t ymin = -1., Float_t ymax=1.);
 
 // Setters
-    virtual void SetAProjectile(Float_t a = 208) {fAProjectile = a;}
-    virtual void SetATarget(Float_t a = 208)     {fATarget     = a;}
+    virtual void SetAProjectile(Int_t a = 208.) {fAProjectile = a;}
+    virtual void SetATarget(Int_t a = 208.)         {fATarget     = a;}
     virtual void SetEnergyCMS(Float_t energy = 5500.) {fEnergyCMS = energy;}
     virtual void    SetImpactParameterRange(Float_t bmin = 0., Float_t bmax = 0.)
 	{fMinImpactParam=bmin; fMaxImpactParam=bmax;}
@@ -76,9 +76,6 @@ class AliGenThermalPhotons : public AliGenerator
     virtual void    SetGhhg(Int_t   Ghhg = 8)               {fGhhg   = Ghhg;}
 
  protected:
-  Float_t fAProjectile;     // Projectile nucleus mass number
-  Float_t fATarget;         // Target nucleus mass number
-  Float_t fEnergyCMS;       // Center of mass energy
   Float_t fMinImpactParam;  // minimum impact parameter
   Float_t fMaxImpactParam;  // maximum impact parameter	
   Float_t fTau0;            // initial proper time, fm	

@@ -102,15 +102,15 @@ static Double_t rateQGP(Double_t *x, Double_t *par) {
 // tau EdR/d^3p = tau EdN/d^4xd^3p (fm fm^{-4}GeV^{-2}) 
 //---------------------------------------------------
   Double_t tau=x[0],yprime=x[1];
-  Double_t pT=par[0],y=par[1],tau0=par[2],T0=par[3],TC=par[4];
+  Double_t pT=par[0],y=par[1],tau0=par[2],t0=par[3],tc=par[4];
   Int_t iProcQGP=Int_t(par[5]), nFl=3;
 
-  Double_t E=pT*TMath::CosH(yprime-y),T=T0*TMath::Power(tau0/tau,1./3.);
+  Double_t e=pT*TMath::CosH(yprime-y),t=t0*TMath::Power(tau0/tau,1./3.);
 
   const Double_t alpha=1./137.;
 // factor to convert from GeV^2 to fm^{-4}GeV^{-2}: (1/hc)**4=(1/0.197)**4=659.921
   const Double_t factor=659.921;
-  Double_t alphaS=3.*TMath::TwoPi()/((33.-2.*nFl)*TMath::Log(8.*T/TC));
+  Double_t alphaS=3.*TMath::TwoPi()/((33.-2.*nFl)*TMath::Log(8.*t/tc));
   const Double_t abc[3]={0.0338, 0.0281, 0.0135} ; // a, b, c for nFf=3
   Double_t rate=1.;
 
@@ -118,17 +118,17 @@ static Double_t rateQGP(Double_t *x, Double_t *par) {
 
     case 0:
 // 1-loop
-      rate=factor*abc[iProcQGP]*alpha*alphaS*TMath::Exp(-E/T)*T*T*TMath::Log(0.2317*E/alphaS/T);
+      rate=factor*abc[iProcQGP]*alpha*alphaS*TMath::Exp(-e/t)*t*t*TMath::Log(0.2317*e/alphaS/t);
     break ;
 
     case 1:
 // 2-loop: bremsstrahlung
-      rate=factor*abc[iProcQGP]*alpha*alphaS*TMath::Exp(-E/T)*T*T;
+      rate=factor*abc[iProcQGP]*alpha*alphaS*TMath::Exp(-e/t)*t*t;
     break ;
 
     case 2:
 // 2-loop: annihilation with scattering
-      rate=factor*abc[iProcQGP]*alpha*alphaS*TMath::Exp(-E/T)*T*E;
+      rate=factor*abc[iProcQGP]*alpha*alphaS*TMath::Exp(-e/t)*t*e;
     break ;
   
     default:
@@ -155,11 +155,11 @@ static Double_t fromQGP(Double_t *x, Double_t *par) {
 // d^{2}N/(dp_t dy) (1/GeV)
 //---------------------------------------------------
   Double_t pT=x[0];
-  Double_t tau0=par[0],T0=par[1],tauCQGP=par[2],yNucl=par[3],TC=par[4],y=par[5];
+  Double_t tau0=par[0],t0=par[1],tauCQGP=par[2],yNucl=par[3],tc=par[4],y=par[5];
   Int_t iProcQGP=Int_t(par[6]);
 
   TF2 frateQGP("frateQGP",&rateQGP,tau0,tauCQGP,-yNucl,yNucl,6);
-  frateQGP.SetParameters(pT,y,tau0,T0,TC,iProcQGP);
+  frateQGP.SetParameters(pT,y,tau0,t0,tc,iProcQGP);
   frateQGP.SetParNames("transverse momentum","rapidity","initial time","initial temperature","critical temperature","process number");
   return TMath::TwoPi()*pT*frateQGP.Integral(tau0,tauCQGP,-yNucl,yNucl,1e-6);
 }   
@@ -178,15 +178,15 @@ static Double_t rateMixQ(Double_t *x, Double_t *par) {
 // EdR/d^3p = EdN/d^4xd^3p (fm fm^{-4}GeV^{-2}) 
 //---------------------------------------------------
   Double_t yprime=x[0];
-  Double_t pT=par[0],y=par[1],TC=par[2];
+  Double_t pT=par[0],y=par[1],tc=par[2];
   Int_t iProcQGP=Int_t(par[3]),nFl=3;
 
-  Double_t E=pT*TMath::CosH(yprime-y),T=TC;
+  Double_t e=pT*TMath::CosH(yprime-y),t=tc;
 
   const Double_t alpha=1./137.;
 // factor to convert from GeV^2 to fm^{-4}GeV^{-2}: (1/hc)**4=(1/0.197)**4=659.921
   const Double_t factor=659.921;
-  Double_t alphaS=3.*TMath::TwoPi()/((33.-2.*nFl)*TMath::Log(8.*T/TC));
+  Double_t alphaS=3.*TMath::TwoPi()/((33.-2.*nFl)*TMath::Log(8.*t/tc));
   const Double_t abc[3]={0.0338, 0.0281, 0.0135}; // a, b, c for nF=3
   Double_t rate=1.;
 
@@ -194,17 +194,17 @@ static Double_t rateMixQ(Double_t *x, Double_t *par) {
 
     case 0:
 // 1-loop
-      rate=factor*abc[iProcQGP]*alpha*alphaS*TMath::Exp(-E/T)*T*T*TMath::Log(0.2317*E/alphaS/T);
+      rate=factor*abc[iProcQGP]*alpha*alphaS*TMath::Exp(-e/t)*t*t*TMath::Log(0.2317*e/alphaS/t);
     break ;
 
     case 1:
 // 2-loop: bremsstrahlung
-      rate=factor*abc[iProcQGP]*alpha*alphaS*TMath::Exp(-E/T)*T*T;
+      rate=factor*abc[iProcQGP]*alpha*alphaS*TMath::Exp(-e/t)*t*t;
     break ;
 
     case 2:
 // 2-loop: annihilation with scattering
-      rate=factor*abc[iProcQGP]*alpha*alphaS*TMath::Exp(-E/T)*T*E;
+      rate=factor*abc[iProcQGP]*alpha*alphaS*TMath::Exp(-e/t)*t*e;
     break ;
   
     default:
@@ -229,11 +229,11 @@ static Double_t fromMixQ(Double_t *x, Double_t *par) {
 // d^{2}N/(dp_t dy) (1/GeV)
 //---------------------------------------------------
   Double_t pT=x[0];
-  Double_t lamQGP=par[0],yNucl=par[1],TC=par[2],y=par[3];
+  Double_t lamQGP=par[0],yNucl=par[1],tc=par[2],y=par[3];
   Int_t iProcQGP=Int_t(par[4]);
 
   TF1 frateMixQ("frateMixQ",&rateMixQ,-yNucl,yNucl,4);
-  frateMixQ.SetParameters(pT,y,TC,iProcQGP);
+  frateMixQ.SetParameters(pT,y,tc,iProcQGP);
   frateMixQ.SetParNames("transverse momentum","rapidity","critical temperature","process number");
   return TMath::TwoPi()*pT*lamQGP*frateMixQ.Integral(-yNucl,yNucl);
 }   
@@ -252,41 +252,41 @@ static Double_t rateMixH(Double_t *x, Double_t *par) {
 // EdR/d^3p = EdN/d^4xd^3p (fm^{-4}GeV^{-2}) 
 //---------------------------------------------------
   Double_t yprime=x[0];
-  Double_t pT=par[0],y=par[1],TC=par[2];
+  Double_t pT=par[0],y=par[1],tc=par[2];
   Int_t iProcHHG=Int_t(par[3]);
 
-  Double_t E=pT*TMath::CosH(yprime-y),T=TC;
+  Double_t e=pT*TMath::CosH(yprime-y),t=tc;
   const Double_t mPi=0.135;
-  Double_t xx=T/mPi,yy=E/mPi;
-  Double_t F,rate=1.,Emin,factor;
-  const Double_t mOm=0.783,width=0.00844,Br=0.085,E0=0.379,pi=TMath::Pi();
+  Double_t xx=t/mPi,yy=e/mPi;
+  Double_t f,rate=1.,emin,factor;
+  const Double_t mOm=0.783,width=0.00844,br=0.085,e0=0.379,pi=TMath::Pi();
   const Double_t hc=0.197,hc4=hc*hc*hc*hc; // GeV*fm
 
   switch (iProcHHG) {
 
     case 0:
 // pi rho --> pi gamma
-      F=-2.447+0.796*xx+(0.0338+0.0528*xx)*yy+(-21.447+8.2179*xx)/yy+(1.52436-0.38562*xx)/(yy*yy);
-      rate=T*T*TMath::Exp(-E/T+F);
+      f=-2.447+0.796*xx+(0.0338+0.0528*xx)*yy+(-21.447+8.2179*xx)/yy+(1.52436-0.38562*xx)/(yy*yy);
+      rate=t*t*TMath::Exp(-e/t+f);
     break ;
 
     case 1:
 // pi pi --> rho gamma
-      F=-12.055+4.387*xx+(0.3755+0.00826*xx)*yy+(-0.00777+0.000279*xx)*yy*yy+(5.7869-1.0258*xx)/yy+(-1.979+0.58*xx)/(yy*yy);
-      rate=T*T*TMath::Exp(-E/T+F);
+      f=-12.055+4.387*xx+(0.3755+0.00826*xx)*yy+(-0.00777+0.000279*xx)*yy*yy+(5.7869-1.0258*xx)/yy+(-1.979+0.58*xx)/(yy*yy);
+      rate=t*t*TMath::Exp(-e/t+f);
     break ;
 
     case 2:
 // rho --> pi pi gamma
-      F=-6.295+1.6459*xx+(-0.4015+0.089*xx)*yy+(-0.954+2.05777*xx)/yy;
-      rate=T*T*TMath::Exp(-E/T+F);
+      f=-6.295+1.6459*xx+(-0.4015+0.089*xx)*yy+(-0.954+2.05777*xx)/yy;
+      rate=t*t*TMath::Exp(-e/t+f);
     break ;
   
     case 3:
 // omega --> pi gamma
-      Emin=mOm*(E*E+E0*E0)/(2.*E*E0);
-      factor=(3.*mOm*width*Br)/(16.*pi*pi*pi*E0);
-      rate=factor*T*(Emin+T)*TMath::Exp(-Emin/T)/E/hc4;
+      emin=mOm*(e*e+e0*e0)/(2.*e*e0);
+      factor=(3.*mOm*width*br)/(16.*pi*pi*pi*e0);
+      rate=factor*t*(emin+t)*TMath::Exp(-emin/t)/e/hc4;
     break ;
   
     default:
@@ -311,11 +311,11 @@ static Double_t fromMixH(Double_t *x, Double_t *par) {
 // d^{2}N/(dp_t dy) (1/GeV)
 //---------------------------------------------------
   Double_t pT=x[0];
-  Double_t lamHHG=par[0],yNucl=par[1],TC=par[2],y=par[3];
+  Double_t lamHHG=par[0],yNucl=par[1],tc=par[2],y=par[3];
   Int_t iProcHHG=Int_t(par[4]);
 
   TF1 frateMixH("frateMixH",&rateMixH,-yNucl,yNucl,4);
-  frateMixH.SetParameters(pT,y,TC,iProcHHG);
+  frateMixH.SetParameters(pT,y,tc,iProcHHG);
   frateMixH.SetParNames("transverse momentum","rapidity","critical temperature","process number");
   return TMath::TwoPi()*pT*lamHHG*frateMixH.Integral(-yNucl,yNucl);
 }   
@@ -336,41 +336,41 @@ static Double_t rateHHG(Double_t *x, Double_t *par) {
 // EdR/d^3p = EdN/d^4xd^3p (fm^{-4}GeV^{-2}) 
 //---------------------------------------------------
   Double_t tau=x[0],yprime=x[1];
-  Double_t pT=par[0],y=par[1],tauCHHG=par[2],TC=par[3];
+  Double_t pT=par[0],y=par[1],tauCHHG=par[2],tc=par[3];
   Int_t iProcHHG=Int_t(par[4]);
 
-  Double_t E=pT*TMath::CosH(yprime-y),T=TC*TMath::Power(tauCHHG/tau,1./3.);
+  Double_t e=pT*TMath::CosH(yprime-y),t=tc*TMath::Power(tauCHHG/tau,1./3.);
   const Double_t mPi=0.135;
-  Double_t xx=T/mPi,yy=E/mPi;
-  Double_t F,rate=1.,Emin,factor;
-  const Double_t mOm=0.783,width=0.00844,Br=0.085,E0=0.379,pi=TMath::Pi();
+  Double_t xx=t/mPi,yy=e/mPi;
+  Double_t f,rate=1.,emin,factor;
+  const Double_t mOm=0.783,width=0.00844,br=0.085,e0=0.379,pi=TMath::Pi();
   const Double_t hc=0.197,hc4=hc*hc*hc*hc; // GeV*fm
 
   switch (iProcHHG) {
 
     case 0:
 // pi rho --> pi gamma
-      F=-2.447+0.796*xx+(0.0338+0.0528*xx)*yy+(-21.447+8.2179*xx)/yy+(1.52436-0.38562*xx)/(yy*yy);
-      rate=T*T*TMath::Exp(-E/T+F);
+      f=-2.447+0.796*xx+(0.0338+0.0528*xx)*yy+(-21.447+8.2179*xx)/yy+(1.52436-0.38562*xx)/(yy*yy);
+      rate=t*t*TMath::Exp(-e/t+f);
     break ;
 
     case 1:
 // pi pi --> rho gamma
-      F=-12.055+4.387*xx+(0.3755+0.00826*xx)*yy+(-0.00777+0.000279*xx)*yy*yy+(5.7869-1.0258*xx)/yy+(-1.979+0.58*xx)/(yy*yy);
-      rate=T*T*TMath::Exp(-E/T+F);
+      f=-12.055+4.387*xx+(0.3755+0.00826*xx)*yy+(-0.00777+0.000279*xx)*yy*yy+(5.7869-1.0258*xx)/yy+(-1.979+0.58*xx)/(yy*yy);
+      rate=t*t*TMath::Exp(-e/t+f);
     break ;
 
     case 2:
 // rho --> pi pi gamma
-      F=-6.295+1.6459*xx+(-0.4015+0.089*xx)*yy+(-0.954+2.05777*xx)/yy;
-      rate=T*T*TMath::Exp(-E/T+F);
+      f=-6.295+1.6459*xx+(-0.4015+0.089*xx)*yy+(-0.954+2.05777*xx)/yy;
+      rate=t*t*TMath::Exp(-e/t+f);
     break ;
   
     case 3:
 // omega --> pi gamma
-      Emin=mOm*(E*E+E0*E0)/(2.*E*E0);
-      factor=(3.*mOm*width*Br)/(16.*pi*pi*pi*E0);
-      rate=factor*T*(Emin+T)*TMath::Exp(-Emin/T)/E/hc4;
+      emin=mOm*(e*e+e0*e0)/(2.*e*e0);
+      factor=(3.*mOm*width*br)/(16.*pi*pi*pi*e0);
+      rate=factor*t*(emin+t)*TMath::Exp(-emin/t)/e/hc4;
     break ;
 
     default:
@@ -398,10 +398,10 @@ static Double_t fromHHG(Double_t *x, Double_t *par) {
 // d^{2}N/(dp_t dy) (1/GeV)
 //---------------------------------------------------
   Double_t pT=x[0];
-  Double_t tauCHHG=par[0],tauF=par[1],yNucl=par[2],TC=par[3],y=par[4],iProcHHG=par[5];
+  Double_t tauCHHG=par[0],tauF=par[1],yNucl=par[2],tc=par[3],y=par[4],iProcHHG=par[5];
 
   TF2 frateHHG("frateHHG",&rateHHG,tauCHHG,tauF,-yNucl,yNucl,5);
-  frateHHG.SetParameters(pT,y,tauCHHG,TC,iProcHHG);
+  frateHHG.SetParameters(pT,y,tauCHHG,tc,iProcHHG);
   frateHHG.SetParNames("transverse momentum","rapidity","start of HHG","criti temperature","process number");
   return TMath::TwoPi()*pT*frateHHG.Integral(tauCHHG,tauF,-yNucl,yNucl,1e-6);
 }   
@@ -417,21 +417,21 @@ static Double_t fOverlapAB(Double_t *x, Double_t *par)
 // par[1] - radius of B
 //-------------------------------------------------------------------------
 
-  Double_t b=x[0], RA=par[0], RB=par[1];
-  if(RB>RA) {RA=par[1]; RB=par[0];} // RA > RB
+  Double_t b=x[0], ra=par[0], rb=par[1];
+  if(rb>ra) {ra=par[1]; rb=par[0];} // ra > rb
 
-  if(b>(RA+RB)) {
+  if(b>(ra+rb)) {
     return 0.;
   }
 
-  if(b<=(RA-RB)) {
-    return TMath::Pi()*RB*RB;
+  if(b<=(ra-rb)) {
+    return TMath::Pi()*rb*rb;
   }
 
-  Double_t p=0.5*(b+RA+RB), S=TMath::Sqrt(p*(p-b)*(p-RA)*(p-RB)), h=2.*S/b;
-  Double_t sA=RA*RA*TMath::ASin(h/RA)-h*TMath::Sqrt(RA*RA-h*h);
-  Double_t sB=RB*RB*TMath::ASin(h/RB)-h*TMath::Sqrt(RB*RB-h*h);
-  if(RA>RB && b*b<RA*RA-RB*RB) sB=TMath::Pi()*RB*RB-sB;
+  Double_t p=0.5*(b+ra+rb), S=TMath::Sqrt(p*(p-b)*(p-ra)*(p-rb)), h=2.*S/b;
+  Double_t sA=ra*ra*TMath::ASin(h/ra)-h*TMath::Sqrt(ra*ra-h*h);
+  Double_t sB=rb*rb*TMath::ASin(h/rb)-h*TMath::Sqrt(rb*rb-h*h);
+  if(ra>rb && b*b<ra*ra-rb*rb) sB=TMath::Pi()*rb*rb-sB;
 
   return sA+sB;
 
@@ -440,9 +440,6 @@ static Double_t fOverlapAB(Double_t *x, Double_t *par)
 //_____________________________________________________________________________
 AliGenThermalPhotons::AliGenThermalPhotons()
     :AliGenerator(-1),
-        fAProjectile(0.),
-        fATarget(0.),
-        fEnergyCMS(0.),
         fMinImpactParam(0.),
         fMaxImpactParam(0.),
         fTau0(0.),
@@ -458,14 +455,14 @@ AliGenThermalPhotons::AliGenThermalPhotons()
     SetCutVertexZ();
     SetPtRange();
     SetYRange();
+    fProjectile = 208;
+    fTarget     = 208;
+    fEnergyCMS  = 5500.;
 }
 
 //_____________________________________________________________________________
 AliGenThermalPhotons::AliGenThermalPhotons(Int_t npart)
     :AliGenerator(npart),
-        fAProjectile(208),
-        fATarget(208),
-        fEnergyCMS(5500.),
         fMinImpactParam(0.),
         fMaxImpactParam(0.),
         fTau0(0.1),
@@ -485,6 +482,9 @@ AliGenThermalPhotons::AliGenThermalPhotons(Int_t npart)
     SetCutVertexZ();
     SetPtRange();
     SetYRange();
+    fProjectile = 208;
+    fTarget     = 208;
+    fEnergyCMS  = 5500.;
 }
 
 //_____________________________________________________________________________
@@ -592,10 +592,10 @@ void AliGenThermalPhotons::Generate()
 
     Int_t nGam;
     Float_t impPar,area,pt,rapidity,phi,ww;
-    Float_t r0=1.3,RA=r0*TMath::Power(fAProjectile,1./3.),RB=r0*TMath::Power(fATarget,1./3.);
+    Float_t r0=1.3,ra=r0*TMath::Power(fAProjectile,1./3.),rb=r0*TMath::Power(fATarget,1./3.);
 
     TF1 *funcOL = new TF1("funcOL",fOverlapAB,fMinImpactParam,fMaxImpactParam,2); 
-    funcOL->SetParameters(RA,RB);
+    funcOL->SetParameters(ra,rb);
     funcOL->SetParNames("radiusA","radiusB");
 
     impPar=TMath::Sqrt(fMinImpactParam*fMinImpactParam+(fMaxImpactParam*fMaxImpactParam-fMinImpactParam*fMinImpactParam)*gRandom->Rndm());
