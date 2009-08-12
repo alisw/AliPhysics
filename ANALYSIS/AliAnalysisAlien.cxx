@@ -804,7 +804,9 @@ Bool_t AliAnalysisAlien::CreateJDL()
       delete arr;
 //      fGridJDL->SetPrice((UInt_t)fPrice);
       fGridJDL->SetValue("Price", Form("\"%d\"", fPrice));
-      fGridJDL->SetValidationCommand(Form("%s/validate.sh", workdir.Data()));
+      TString validationScript = fExecutable;
+      validationScript.ReplaceAll(".sh", "_validation.sh");
+      fGridJDL->SetValidationCommand(Form("%s/%s", workdir.Data(),validationScript.Data()));
       if (fMasterResubmitThreshold) fGridJDL->SetValue("MasterResubmitThreshold", Form("\"%d%%\"", fMasterResubmitThreshold));
       // Write a jdl with 2 input parameters: collection name and output dir name.
       WriteJDL(copy);
@@ -1441,7 +1443,9 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       }
       delete list;
       gSystem->Exec(Form("bash %s 2>stderr", fExecutable.Data()));
-      gSystem->Exec("bash validate.sh");
+      TString validationScript = fExecutable;
+      validationScript.ReplaceAll(".sh", "_validation.sh");
+      gSystem->Exec(Form("bash %s",validationScript.Data()));
 //      gSystem->Exec("cat stdout");
       return kFALSE;
    }
@@ -1981,6 +1985,8 @@ void AliAnalysisAlien::WriteValidationScript()
 // Generate the alien validation script.
    // Generate the validation script
    TObjString *os;
+   TString validationScript = fExecutable;
+   validationScript.ReplaceAll(".sh", "_validation.sh");
    if (!Connect()) {
       Error("WriteValidationScript", "Alien connection required");
       return;
@@ -1989,7 +1995,7 @@ void AliAnalysisAlien::WriteValidationScript()
    if (!TestBit(AliAnalysisGrid::kTest)) out_stream = " >> stdout";
    if (!TestBit(AliAnalysisGrid::kSubmit)) {  
       ofstream out;
-      out.open("validate.sh", ios::out);
+      out.open(validationScript, ios::out);
       out << "#!/bin/bash" << endl;
       out << "##################################################" << endl;
       out << "validateout=`dirname $0`" << endl;
@@ -2077,8 +2083,8 @@ void AliAnalysisAlien::WriteValidationScript()
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
       workdir += fGridWorkingDir;
-      Info("CreateJDL", "\n#####   Copying validation script <validate.sh> to your AliEn working space");
-      if (FileExists("validate.sh")) gGrid->Rm("validate.sh");
-      TFile::Cp("file:validate.sh", Form("alien://%s/validate.sh", workdir.Data()));
+      Info("CreateJDL", "\n#####   Copying validation script <%s> to your AliEn working space", validationScript.Data());
+      if (FileExists(validationScript)) gGrid->Rm(validationScript);
+      TFile::Cp(Form("file:%s",validationScript.Data()), Form("alien://%s/%s", workdir.Data(),validationScript.Data()));
    } 
 }
