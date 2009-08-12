@@ -7,7 +7,6 @@ AliProtonAnalysis *GetProtonAnalysisObject(const char* analysisLevel = "ESD",
 
   AliProtonAnalysis *analysis = new AliProtonAnalysis();
   analysis->SetBaseAnalysis(baseAnalysis);
-  if(baseAnalysis->GetEtaMode()) analysis->SetEtaMode();
   if(baseAnalysis->GetAnalysisMode() == AliProtonAnalysisBase::kGlobal) {
     Double_t gY[17] = {-0.9,-0.75,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.75,0.9};
     Double_t gPt[18] = {0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.7,1.9,2.1,2.4,2.7,3.1};
