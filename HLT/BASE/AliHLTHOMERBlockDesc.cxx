@@ -33,8 +33,6 @@
 
 #include "AliHLTMessage.h"
 
-#include "AliLog.h"
-
 #include "TMath.h"
 #include "TClass.h"
 

@@ -23,7 +23,7 @@ class AliHLTMessage;
 #include "TString.h"
 #include "TObject.h"
 
-//#include "AliHLTLogging.h"
+#include "AliHLTLoggingVariadicFree.h"
 
 /**
  * @class AliHLTHOMERBlockDesc
@@ -35,7 +35,7 @@ class AliHLTMessage;
  * 
  * @ingroup alihlt_homer
  */
-class AliHLTHOMERBlockDesc : public TObject/*, public AliHLTLogging*/ {
+class AliHLTHOMERBlockDesc : public TObject, public AliHLTLogging {
 
 public:
 

@@ -38,7 +38,6 @@
 // -- -- -- -- -- -- -- 
 #include "AliHLTHOMERProxyHandler.h"
 // -- -- -- -- -- -- -- 
-#include "AliLog.h"
 
 ClassImp(AliHLTHOMERProxyHandler)
 
@@ -97,7 +96,7 @@ Int_t AliHLTHOMERProxyHandler::FillSourceList(TList *srcList) {
     iResult = ProcessXmlRpcResponse();
 
   if (iResult < 0) {
-    AliError(Form("Filling SourceList failed."));
+    HLTError(Form("Filling SourceList failed."));
   }
 
   return iResult;
@@ -158,12 +157,12 @@ Int_t AliHLTHOMERProxyHandler::RequestXmlRpcResponse() {
 
   TSocket *socket = new TSocket(fgkHOMERProxyNode[fRealm], proxyPort);
   if ( ! socket->IsValid() ) {
-    AliWarning(Form("Failed to create socket to %s:%d,",fgkHOMERProxyNode[fRealm], proxyPort));
-    AliWarning(Form("trying %s:%d now.", fgkHOMERProxyNode[fRealm+kHOMERRealmsMax],proxyPort));
+    HLTWarning(Form("Failed to create socket to %s:%d,",fgkHOMERProxyNode[fRealm], proxyPort));
+    HLTWarning(Form("trying %s:%d now.", fgkHOMERProxyNode[fRealm+kHOMERRealmsMax],proxyPort));
 
     socket = new TSocket(fgkHOMERProxyNode[fRealm+kHOMERRealmsMax], proxyPort);
     if ( ! socket->IsValid() ) {
-      AliError(Form("Failed to create socket to %s:%d and %s:%d.",
+      HLTError(Form("Failed to create socket to %s:%d and %s:%d.",
 		    fgkHOMERProxyNode[fRealm], proxyPort,
 		    fgkHOMERProxyNode[fRealm+kHOMERRealmsMax],proxyPort));
 
@@ -188,7 +187,7 @@ Content-Length: 68\r\n\
   iResult = socket->SendRaw( reqMsg, strlen(reqMsg) );
   if ( iResult < 1 || 
        iResult !=  static_cast<Int_t>(strlen(reqMsg))) {
-    AliError(Form("Error sending! -- send length %d  -- msg length %d.", iResult, static_cast<Int_t>(strlen(reqMsg)) ));
+    HLTError(Form("Error sending! -- send length %d  -- msg length %d.", iResult, static_cast<Int_t>(strlen(reqMsg)) ));
     socket->Close();
     return iResult;
   }
@@ -213,7 +212,7 @@ Content-Length: 68\r\n\
 
       iResult = socket->RecvRaw(&buffer[bufferLength], 1);
       if ( iResult < 0) {
-	AliError(Form("Error reading form socket."));
+	HLTError(Form("Error reading form socket."));
 	socket->Close();
 	return iResult;
       }
@@ -261,11 +260,11 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
   TDOMParser xmlParser;
   xmlParser.SetValidate(kFALSE);
 
-  AliInfo(Form("XMLResponse: %s",fXmlRpcResponse.Data()));
+  HLTInfo(Form("XMLResponse: %s",fXmlRpcResponse.Data()));
 
   iResult = xmlParser.ParseBuffer(fXmlRpcResponse.Data(), fXmlRpcResponse.Length());
   if ( iResult < 0 ) {
-    AliError(Form("Parsing buffer with error: %s", 
+    HLTError(Form("Parsing buffer with error: %s", 
 		  xmlParser.GetParseCodeMessage(xmlParser.GetParseCode()) ));
     
 
@@ -276,7 +275,7 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
     GetChildren()->GetChildren()->GetChildren()->GetChildren();
   
   if ( strcmp( node->GetNodeName(), "string" ) ) {
-    AliError(Form("No node 'string' in XmlRpcResponse."));
+    HLTError(Form("No node 'string' in XmlRpcResponse."));
     return -1;
   }
 
@@ -286,11 +285,11 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
   // -- Get Content
   TString xmlContent(node->GetText() );
 
-  AliInfo(Form("XMLContent: %s",xmlContent.Data()));
+  HLTInfo(Form("XMLContent: %s",xmlContent.Data()));
 
   iResult = xmlParser.ParseBuffer(xmlContent.Data(), xmlContent.Length());
   if ( iResult < 0 ) {
-    AliError(Form("Parsing buffer with error: %s", 
+    HLTError(Form("Parsing buffer with error: %s", 
 		  xmlParser.GetParseCodeMessage(xmlParser.GetParseCode()) ));
 
     return iResult;
@@ -298,7 +297,7 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
   
 
   if ( !xmlParser.GetXMLDocument()->GetRootNode()->HasChildren() ) {
-    AliWarning(Form("No Services active."));
+    HLTWarning(Form("No Services active."));
     return 1;
   }
 
@@ -312,7 +311,7 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
     // -- Add service to list
     iResult = AddService( serviceNode->GetChildren() );
     if ( iResult > 0 ) {
-      AliWarning(Form("Incomplete Service not added."));
+      HLTWarning(Form("Incomplete Service not added."));
       iResult = 0;
     }
   } while ( ( serviceNode = prevServiceNode->GetNextNode() ) && !iResult );
@@ -334,7 +333,7 @@ Int_t AliHLTHOMERProxyHandler::AddService(TXMLNode *innerNode) {
 
   Int_t iResult = 0;
 
-  AliInfo(Form(">> New service"));    
+  HLTInfo(Form(">> New service"));    
 
   // -- Loop over all service properties and 
   //    read them from the service tag
@@ -354,7 +353,7 @@ Int_t AliHLTHOMERProxyHandler::AddService(TXMLNode *innerNode) {
     if ( ! strcmp(innerNode->GetNodeName(), "text" ) )
       continue;
     
-    AliInfo(Form(" %s ++ %s", innerNode->GetNodeName(), innerNode->GetText() ));
+    HLTInfo(Form(" %s ++ %s", innerNode->GetNodeName(), innerNode->GetText() ));
     
     // -- hostname
     if ( ! strcmp( innerNode->GetNodeName(), "address") )
@@ -364,7 +363,7 @@ Int_t AliHLTHOMERProxyHandler::AddService(TXMLNode *innerNode) {
       if ( portS.IsDigit() )
 	port = portS.Atoi();
       else {
-	AliError(Form("Port %s is not a digit.", portS.Data()));
+	HLTError(Form("Port %s is not a digit.", portS.Data()));
 	iResult = -1;
       }
     }
@@ -387,7 +386,7 @@ Int_t AliHLTHOMERProxyHandler::AddService(TXMLNode *innerNode) {
   // -- Check for completeness of the source properties
   if ( hostname.IsNull() || !port || dataOrigin.IsNull() ||
        dataType.IsNull() || dataSpecification.IsNull() ) {
-    AliWarning(Form("Service provides not all values:\n\thostname\t\t %s\n\tport\t\t\t %d\n\tdataorigin\t\t %s\n\tdatatype\t\t %s\n\tdataspecification\t %s", 
+    HLTWarning(Form("Service provides not all values:\n\thostname\t\t %s\n\tport\t\t\t %d\n\tdataorigin\t\t %s\n\tdatatype\t\t %s\n\tdataspecification\t %s", 
 		  hostname.Data(), port, dataOrigin.Data(), dataType.Data(), dataSpecification.Data()));
 
     return 1;
@@ -401,7 +400,7 @@ Int_t AliHLTHOMERProxyHandler::AddService(TXMLNode *innerNode) {
 
   fSourceList->Add( source );
 
-  AliInfo(Form( "New Source added : %s", source->GetSourceName().Data()));
+  HLTInfo(Form( "New Source added : %s", source->GetSourceName().Data()));
   
   return iResult;
 }

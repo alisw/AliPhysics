@@ -25,7 +25,7 @@
 #include "AliHLTHOMERReader.h"
 #include "AliHLTHOMERProxyHandler.h"
 
-//#include "AliHLTLogging.h"
+#include "AliHLTLoggingVariadicFree.h"
 
 class AliHLTHOMERLibManager;
 
@@ -44,7 +44,7 @@ class AliHLTHOMERLibManager;
  * @ingroup alihlt_homer
  */
 
-class AliHLTHOMERManager : public TObject//, public AliHLTLogging 
+class AliHLTHOMERManager : public TObject, public AliHLTLogging 
 {
 public:
   

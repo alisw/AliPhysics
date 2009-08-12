@@ -40,7 +40,6 @@
 #include "AliHLTHOMERSourceDesc.h"
 #include "AliHLTHOMERBlockDesc.h"
 // -- -- -- -- -- -- -- 
-#include "AliLog.h"
 ClassImp(AliHLTHOMERManager)
 
 /*
@@ -106,11 +105,11 @@ Int_t AliHLTHOMERManager::Initialize() {
   if ( fProxyHandler ) {
     iResult = fProxyHandler->Initialize();
     if (iResult)
-      AliError(Form("Initialize of ProxyHandler failed."));
+      HLTError(Form("Initialize of ProxyHandler failed."));
   }
   else {
     iResult = -1;
-    AliError(Form("Creating of ProxyHandler failed."));
+    HLTError(Form("Creating of ProxyHandler failed."));
   }
  
   return iResult;
@@ -137,13 +136,13 @@ Int_t AliHLTHOMERManager::CreateSourcesList() {
 
   iResult = fProxyHandler->FillSourceList( fSourceList );
   if ( iResult < 0 ) {
-    AliWarning(Form("There have been errors, while creating the sources list."));
+    HLTWarning(Form("There have been errors, while creating the sources list."));
   }
   else if ( iResult > 0 ) {
-    AliWarning(Form("No active services found."));
+    HLTWarning(Form("No active services found."));
   }
   else {
-     AliInfo(Form("New sources list created."));
+     HLTInfo(Form("New sources list created."));
 
     // -- New SourceList has been created 
     // --> All Sources are new --> State has changed
@@ -179,7 +178,7 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
 
   // -- Check if already connected and state has not changed
   if ( fStateHasChanged == kFALSE && IsConnected() ) {
-    AliInfo(Form("No need for reconnection."));
+    HLTInfo(Form("No need for reconnection."));
     return iResult;
   }
 
@@ -194,7 +193,7 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
 
   CreateReadoutList( sourceHostnames, sourcePorts, sourceCount, detector );
   if ( sourceCount == 0 ) {
-    AliError(Form("No sources selected, aborting."));
+    HLTError(Form("No sources selected, aborting."));
     return -1;
   }
 
@@ -202,7 +201,7 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
   if ( !fReader && fLibManager )
     fReader = fLibManager->OpenReader( sourceCount, sourceHostnames, sourcePorts );
   else {
-    AliError(Form("No LibManager present."));
+    HLTError(Form("No LibManager present."));
     return -2;
   }
     
@@ -213,11 +212,11 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
     UInt_t ndx = fReader->GetErrorConnectionNdx();
 
     if ( ndx < sourceCount ) {
-      AliError(Form("Error establishing connection to TCP source %s:%hu: %s (%d)",
+      HLTError(Form("Error establishing connection to TCP source %s:%hu: %s (%d)",
 		    sourceHostnames[ndx], sourcePorts[ndx], strerror(iResult), iResult));
     }
     else {
-      AliError(Form("Error establishing connection to unknown source with index %d: %s (%d)",
+      HLTError(Form("Error establishing connection to unknown source with index %d: %s (%d)",
 		    ndx, strerror(iResult), iResult));
     }
 
@@ -229,7 +228,7 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
     // -- Connection ok - set reader
     fConnected = kTRUE;
 
-    AliInfo(Form("Connection established."));
+    HLTInfo(Form("Connection established."));
   }
 
   delete[] sourceHostnames;
@@ -252,7 +251,7 @@ void AliHLTHOMERManager::DisconnectHOMER(){
   fStateHasChanged = kTRUE;
   fConnected = kFALSE;
 
-  AliInfo(Form("Connection closed."));
+  HLTInfo(Form("Connection closed."));
 
   return;
 }
@@ -268,7 +267,7 @@ Int_t AliHLTHOMERManager::ReconnectHOMER( TString detector="" ){
 
   iResult = ConnectHOMER(detector);
   if ( iResult ) {
-    AliError(Form("Error reconnecting."));
+    HLTError(Form("Error reconnecting."));
   }
 
   return iResult;
@@ -289,7 +288,7 @@ Int_t AliHLTHOMERManager::NextEvent(){
   Int_t iRetryCount = 0;
 
   if ( !fReader || ! IsConnected() ) {
-    AliWarning(Form( "Not connected yet." ));
+    HLTWarning(Form( "Not connected yet." ));
     return -1;
   }
 
@@ -301,12 +300,12 @@ Int_t AliHLTHOMERManager::NextEvent(){
     iResult = fReader->ReadNextEvent( 40000000 /*timeout in us*/);
 
     if ( iResult == 111 || iResult == 32 || iResult == 6 ) {
-      AliError(Form("No Connection to source %d: %s (%d)", 
+      HLTError(Form("No Connection to source %d: %s (%d)", 
 		    fReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
       return -iResult;
     }
     else if ( iResult == 110 ) {
-      AliError(Form("Timout occured, reading event from source %d: %s (%d)", 
+      HLTError(Form("Timout occured, reading event from source %d: %s (%d)", 
 		    fReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
       return -iResult;
     }
@@ -314,18 +313,18 @@ Int_t AliHLTHOMERManager::NextEvent(){
       ++iRetryCount;
 
       if ( iRetryCount >= 20 ) {
-	AliError(Form("Retry Failed: Error reading event from source %d: %s (%d)", 
+	HLTError(Form("Retry Failed: Error reading event from source %d: %s (%d)", 
 		      fReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
 	return -iResult;
       }
       else {
-	AliError(Form("Retry: Error reading event from source %d: %s (%d)", 
+	HLTError(Form("Retry: Error reading event from source %d: %s (%d)", 
 		      fReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
 	continue;
       }
     }
     else if ( iResult ) {
-      AliError(Form("General Error reading event from source %d: %s (%d)", 
+      HLTError(Form("General Error reading event from source %d: %s (%d)", 
 		    fReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
       fConnected = kFALSE;
       return -iResult;
@@ -340,7 +339,7 @@ Int_t AliHLTHOMERManager::NextEvent(){
   fEventID = static_cast<ULong64_t>(fReader->GetEventID());
   fCurrentBlk = 0;
 
-  AliInfo(Form("Event 0x%016LX (%Lu) with %lu blocks", fEventID, fEventID, fNBlks));
+  HLTInfo(Form("Event 0x%016LX (%Lu) with %lu blocks", fEventID, fEventID, fNBlks));
 
 #if EVE_DEBUG
   // Loop for Debug only
@@ -354,18 +353,18 @@ Int_t AliHLTHOMERManager::NextEvent(){
     void *tmp21 = tmp2;
     ULong_t* tmp22 = static_cast<ULong_t*>(tmp21);
     *tmp22 = fReader->GetBlockDataOrigin(ii);
-    AliInfo(Form( "Block %lu length: %lu - type: %s - origin: %s - spec 0x%08X",
+    HLTInfo(Form( "Block %lu length: %lu - type: %s - origin: %s - spec 0x%08X",
 		  ii, fReader->GetBlockDataLength(ii), tmp1, tmp2, fReader->GetBlockDataSpec(ii) ));
   } // end for ( ULong_t ii = 0; ii < fNBlks; ii++ ) {
 #endif
 
   // -- Create BlockList
   if ( fNBlks > 0 ) {
-    AliInfo(Form("Create Block List"));
+    HLTInfo(Form("Create Block List"));
     CreateBlockList();
   }
   else {
-    AliWarning(Form("Event 0x%016LX (%Lu) with %lu blocks", fEventID, fEventID, fNBlks));
+    HLTWarning(Form("Event 0x%016LX (%Lu) with %lu blocks", fEventID, fEventID, fNBlks));
   }
     
   return iResult;
@@ -482,7 +481,7 @@ void* AliHLTHOMERManager::GetBlk( Int_t ndx ) {
   // Get pointer to current block in current event
    
   if ( !fReader || !IsConnected() ) {
-    AliError(Form("Not connected yet."));
+    HLTError(Form("Not connected yet."));
     return NULL;
   }
   if ( ndx < static_cast<Int_t>(fNBlks) )
@@ -496,7 +495,7 @@ ULong_t AliHLTHOMERManager::GetBlkSize( Int_t ndx ) {
   // see header file for class documentation
    
   if ( !fReader || !IsConnected() ) {
-    AliError(Form("Not connected yet."));
+    HLTError(Form("Not connected yet."));
     return 0;
   }
   
@@ -514,13 +513,13 @@ TString AliHLTHOMERManager::GetBlkOrigin( Int_t ndx ) {
 
   // -- Check for Connection
   if ( !fReader || ! IsConnected() ) {
-    AliError(Form("Not connected yet."));
+    HLTError(Form("Not connected yet."));
     return origin;
   }
 
   // -- Check block index
   if ( ndx >= static_cast<Int_t>(fNBlks) ) {
-    AliError(Form("Block index %d out of range.", ndx ));
+    HLTError(Form("Block index %d out of range.", ndx ));
     return origin;
   }
 
@@ -550,13 +549,13 @@ TString AliHLTHOMERManager::GetBlkType( Int_t ndx ) {
 
   // -- Check for Connection
   if ( !fReader || ! IsConnected() ) {
-    AliError(Form("Not connected yet."));
+    HLTError(Form("Not connected yet."));
     return type;
   }
 
   // -- Check block index
   if ( ndx >= static_cast<Int_t>(fNBlks) ) {
-    AliError(Form("Block index %d out of range.", ndx ));
+    HLTError(Form("Block index %d out of range.", ndx ));
     return type;
   }
 
@@ -584,13 +583,13 @@ ULong_t AliHLTHOMERManager::GetBlkSpecification( Int_t ndx ) {
 
   // -- Check for Connection
   if ( !fReader || ! IsConnected() ) {
-    AliError(Form("Not connected yet."));
+    HLTError(Form("Not connected yet."));
     return 0;
   }
 
   // -- Check block index
   if ( ndx >= static_cast<Int_t>(fNBlks) ) {
-    AliError(Form("Block index %d out of range.", ndx ));
+    HLTError(Form("Block index %d out of range.", ndx ));
     return 0;
   }
 
@@ -615,7 +614,7 @@ Bool_t AliHLTHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
     if ( ! source->IsSelected() )
       continue;
     else
-      AliError(Form("IS SELECTED"));
+      HLTError(Form("IS SELECTED"));
     
     // -- Check if detector matches
     if ( source->GetSourceName().CompareTo( block->GetBlockName() ) )
@@ -628,10 +627,10 @@ Bool_t AliHLTHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
   
 #if EVE_DEBUG
   if ( requested ) {
-    AliInfo(Form("Block requested : %s", block->GetBlockName().Data())); 
+    HLTInfo(Form("Block requested : %s", block->GetBlockName().Data())); 
   }
   else {
-    AliInfo(Form("Block NOT requested : %s", block->GetBlockName().Data())); 
+    HLTInfo(Form("Block NOT requested : %s", block->GetBlockName().Data())); 
   }
 #endif
 
