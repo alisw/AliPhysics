@@ -403,32 +403,32 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
   Double_t etaJet = jet.Eta();
   Double_t etaLead = leading.Eta();
   
-  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"Pt"+lastname))->
+  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sPt%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))->
     Fill(ptTrig,ptJet);
   
-  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"RatioPt"+lastname))->
+  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sRatioPt%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))->
     Fill(ptTrig,ptJet/ptTrig);
-  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"LeadingRatioPt"+lastname))->
+  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sLeadingRatioPt%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))->
     Fill(ptTrig,ptLead/ptJet);
-  //   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"Phi"+lastname))->
+  //   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sPhi%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))->
   //     Fill(ptTrig,phiJet);
-  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"DeltaPhi"+lastname))->
+  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sDeltaPhi%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))->
     Fill(ptTrig,phiJet-phiTrig);
-  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"LeadingDeltaPhi"+lastname))->
+  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sLeadingDeltaPhi%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))->
     Fill(ptTrig,phiJet-phiLead);
   
-  //   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"Eta"+lastname))->
+  //   dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sEta%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))->
   //     Fill(ptTrig,etaJet);
-  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"DeltaEta"+lastname))->
+  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sDeltaEta%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))->
     Fill(ptTrig,etaJet-etaTrig);
-  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"LeadingDeltaEta"+lastname))->
+  dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sLeadingDeltaEta%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))->
     Fill(ptTrig,etaJet-etaLead);
   
   //Construct fragmentation function
   TRefArray * pl = new TRefArray;
   
-  if(type == "Jet") pl = particle->GetRefArray(GetAODRefArrayName()+"Tracks");
-  else if(type == "Bkg") particle->GetRefArray(GetAODRefArrayName()+"TracksBkg");
+  if(type == "Jet") pl = particle->GetRefArray(Form("%sTracks",GetAODRefArrayName().Data()));
+  else if(type == "Bkg") particle->GetRefArray(Form("%sTracksBkg",GetAODRefArrayName().Data()));
   
   if(!pl) return ;
   
@@ -450,16 +450,16 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
     
     nTracksInCone++; 
     
-    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"FFz"+lastname))
+    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sFFz%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))
       ->Fill(ptTrig,p3.Pt()/ptTrig);
-    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"FFxi"+lastname))
+    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sFFxi%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))
       ->Fill(ptTrig,TMath::Log(ptTrig/p3.Pt()));
-    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"FFpt"+lastname))
+    dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sFFpt%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))
       ->Fill(ptTrig,p3.Pt());
     
   }//track loop
   
-  if(nTracksInCone > 0) dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(GetAddedHistogramsStringToName()+type+"NTracksInCone"+lastname))
+  if(nTracksInCone > 0) dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sNTracksInCone%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))
     ->Fill(ptTrig, nTracksInCone);
   
 }
@@ -717,47 +717,47 @@ TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
 	TString lastnametitle =", cone ="+fJetNameCones[icone]+", pt > " +fJetNamePtThres[ipt]+" GeV/c";
 	
 	//Jet Distributions
-	fhJetPts[icone][ipt] = new TH2F("JetPt"+lastnamehist,"p_{T  jet} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
+	fhJetPts[icone][ipt] = new TH2F(Form("JetPt%s",lastnamehist.Data()),Form("p_{T  jet} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
 	fhJetPts[icone][ipt]->SetYTitle("p_{T  jet}");
 	fhJetPts[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhJetRatioPts[icone][ipt] = new TH2F("JetRatioPt"+lastnamehist,"p_{T  jet}/p_{T trigger} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,120,0,2); 
+	fhJetRatioPts[icone][ipt] = new TH2F(Form("JetRatioPt%s",lastnamehist.Data()),Form("p_{T  jet}/p_{T trigger} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,120,0,2); 
 	fhJetRatioPts[icone][ipt]->SetYTitle("p_{T  jet}/p_{T trigger}");
 	fhJetRatioPts[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhJetDeltaPhis[icone][ipt] = new TH2F("JetDeltaPhi"+lastnamehist,"#phi_{jet} - #phi_{trigger} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,120,0,TMath::TwoPi()); 
+	fhJetDeltaPhis[icone][ipt] = new TH2F(Form("JetDeltaPhi%s",lastnamehist.Data()),Form("#phi_{jet} - #phi_{trigger} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,120,0,TMath::TwoPi()); 
 	fhJetDeltaPhis[icone][ipt]->SetYTitle("#Delta #phi (rad)");
 	fhJetDeltaPhis[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhJetDeltaEtas[icone][ipt] = new TH2F("JetDeltaEta"+lastnamehist,"#eta_{jet} - #eta_{trigger} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,120,-2,2); 
+	fhJetDeltaEtas[icone][ipt] = new TH2F(Form("JetDeltaEta%s",lastnamehist.Data()),Form("#eta_{jet} - #eta_{trigger} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,120,-2,2); 
 	fhJetDeltaEtas[icone][ipt]->SetYTitle("#Delta #eta");
 	fhJetDeltaEtas[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhJetLeadingRatioPts[icone][ipt] = new TH2F("JetLeadingRatioPt"+lastnamehist,"p_{T  jet} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,120,0,2); 
+	fhJetLeadingRatioPts[icone][ipt] = new TH2F(Form("JetLeadingRatioPt%s",lastnamehist.Data()),Form("p_{T  jet} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,120,0,2); 
 	fhJetLeadingRatioPts[icone][ipt]->SetYTitle("p_{T  leading}/p_{T jet}");
 	fhJetLeadingRatioPts[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhJetLeadingDeltaPhis[icone][ipt] = new TH2F("JetLeadingDeltaPhi"+lastnamehist,"#phi_{jet} - #phi_{leading} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,120,0,TMath::TwoPi()); 
+	fhJetLeadingDeltaPhis[icone][ipt] = new TH2F(Form("JetLeadingDeltaPhi%s",lastnamehist.Data()),Form("#phi_{jet} - #phi_{leading} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,120,0,TMath::TwoPi()); 
 	fhJetLeadingDeltaPhis[icone][ipt]->SetYTitle("#Delta #phi (rad)");
 	fhJetLeadingDeltaPhis[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhJetLeadingDeltaEtas[icone][ipt] = new TH2F("JetLeadingDeltaEta"+lastnamehist,"#eta_{jet} - #eta_{leading} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,120,-2,2); 
+	fhJetLeadingDeltaEtas[icone][ipt] = new TH2F(Form("JetLeadingDeltaEta%s",lastnamehist.Data()),Form("#eta_{jet} - #eta_{leading} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,120,-2,2); 
 	fhJetLeadingDeltaEtas[icone][ipt]->SetYTitle("#Delta #eta");
 	fhJetLeadingDeltaEtas[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhJetFFzs[icone][ipt] = new TH2F("JetFFz"+lastnamehist,"z = p_{T i charged}/p_{T trigger} vs p_{T trigger}", 120,0.,120.,200,0.,2); 
+	fhJetFFzs[icone][ipt] = new TH2F(Form("JetFFz%s",lastnamehist.Data()),"z = p_{T i charged}/p_{T trigger} vs p_{T trigger}", 120,0.,120.,200,0.,2); 
 	fhJetFFzs[icone][ipt]->SetYTitle("z");
 	fhJetFFzs[icone][ipt]->SetXTitle("p_{T trigger}");
 	
-	fhJetFFxis[icone][ipt] = new TH2F("JetFFxi"+lastnamehist,"#xi = ln(p_{T trigger}/p_{T i charged}) vs p_{T trigger}", 120,0.,120.,100,0.,10.); 
+	fhJetFFxis[icone][ipt] = new TH2F(Form("JetFFxi%s",lastnamehist.Data()),"#xi = ln(p_{T trigger}/p_{T i charged}) vs p_{T trigger}", 120,0.,120.,100,0.,10.); 
 	fhJetFFxis[icone][ipt]->SetYTitle("#xi");
 	fhJetFFxis[icone][ipt]->SetXTitle("p_{T trigger}");
 	
-	fhJetFFpts[icone][ipt] = new TH2F("JetFFpt"+lastnamehist,"p_{T charged hadron } in jet vs p_{T trigger}", 120,0.,120.,200,0.,50.); 
+	fhJetFFpts[icone][ipt] = new TH2F(Form("JetFFpt%s",lastnamehist.Data()),"p_{T charged hadron } in jet vs p_{T trigger}", 120,0.,120.,200,0.,50.); 
 	fhJetFFpts[icone][ipt]->SetYTitle("p_{T charged hadron}");
 	fhJetFFpts[icone][ipt]->SetXTitle("p_{T trigger}");
 	
-	fhJetNTracksInCones[icone][ipt] = new TH2F("JetNTracksInCone"+lastnamehist,"N particles in cone vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,5000,0, 5000); 
+	fhJetNTracksInCones[icone][ipt] = new TH2F(Form("JetNTracksInCone%s",lastnamehist.Data()),Form("N particles in cone vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,5000,0, 5000); 
 	fhJetNTracksInCones[icone][ipt]->SetYTitle("N tracks in jet cone");
 	fhJetNTracksInCones[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
@@ -774,47 +774,47 @@ TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
 	fOutCont->Add(fhJetNTracksInCones[icone][ipt]) ;
 	
 	//Bkg Distributions
-	fhBkgPts[icone][ipt] = new TH2F("BkgPt"+lastnamehist,"p_{T  bkg} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
+	fhBkgPts[icone][ipt] = new TH2F(Form("BkgPt%s",lastnamehist.Data()),Form("p_{T  bkg} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
 	fhBkgPts[icone][ipt]->SetYTitle("p_{T  bkg}");
 	fhBkgPts[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhBkgRatioPts[icone][ipt] = new TH2F("BkgRatioPt"+lastnamehist,"p_{T  bkg}/p_{T trigger} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,120,0,2); 
+	fhBkgRatioPts[icone][ipt] = new TH2F(Form("BkgRatioPt%s",lastnamehist.Data()),Form("p_{T  bkg}/p_{T trigger} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,120,0,2); 
 	fhBkgRatioPts[icone][ipt]->SetYTitle("p_{T  bkg}/p_{T trigger}");
 	fhBkgRatioPts[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhBkgDeltaPhis[icone][ipt] = new TH2F("BkgDeltaPhi"+lastnamehist,"#phi_{bkg} - #phi_{trigger} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,120,0,TMath::TwoPi()); 
+	fhBkgDeltaPhis[icone][ipt] = new TH2F(Form("BkgDeltaPhi%s",lastnamehist.Data()),Form("#phi_{bkg} - #phi_{trigger} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,120,0,TMath::TwoPi()); 
 	fhBkgDeltaPhis[icone][ipt]->SetYTitle("#Delta #phi (rad)");
 	fhBkgDeltaPhis[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhBkgDeltaEtas[icone][ipt] = new TH2F("BkgDeltaEta"+lastnamehist,"#eta_{bkg} - #eta_{trigger} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,120,-2,2); 
+	fhBkgDeltaEtas[icone][ipt] = new TH2F(Form("BkgDeltaEta%s",lastnamehist.Data()),Form("#eta_{bkg} - #eta_{trigger} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,120,-2,2); 
 	fhBkgDeltaEtas[icone][ipt]->SetYTitle("#Delta #eta");
 	fhBkgDeltaEtas[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhBkgLeadingRatioPts[icone][ipt] = new TH2F("BkgLeadingRatioPt"+lastnamehist,"p_{T  bkg} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,120,0,2); 
+	fhBkgLeadingRatioPts[icone][ipt] = new TH2F(Form("BkgLeadingRatioPt%s",lastnamehist.Data()),Form("p_{T  bkg} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,120,0,2); 
 	fhBkgLeadingRatioPts[icone][ipt]->SetYTitle("p_{T  leading}/p_{T bkg}");
 	fhBkgLeadingRatioPts[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhBkgLeadingDeltaPhis[icone][ipt] = new TH2F("BkgLeadingDeltaPhi"+lastnamehist,"#phi_{bkg} - #phi_{leading} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,120,0,TMath::TwoPi()); 
+	fhBkgLeadingDeltaPhis[icone][ipt] = new TH2F(Form("BkgLeadingDeltaPhi%s",lastnamehist.Data()),Form("#phi_{bkg} - #phi_{leading} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,120,0,TMath::TwoPi()); 
 	fhBkgLeadingDeltaPhis[icone][ipt]->SetYTitle("#Delta #phi (rad)");
 	fhBkgLeadingDeltaPhis[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhBkgLeadingDeltaEtas[icone][ipt] = new TH2F("BkgLeadingDeltaEta"+lastnamehist,"#eta_{bkg} - #eta_{leading} vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,120,-2,2); 
+	fhBkgLeadingDeltaEtas[icone][ipt] = new TH2F(Form("BkgLeadingDeltaEta%s",lastnamehist.Data()),Form("#eta_{bkg} - #eta_{leading} vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,120,-2,2); 
 	fhBkgLeadingDeltaEtas[icone][ipt]->SetYTitle("#Delta #eta");
 	fhBkgLeadingDeltaEtas[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
-	fhBkgFFzs[icone][ipt] = new TH2F("BkgFFz"+lastnamehist,"z = p_{T i charged}/p_{T trigger} vs p_{T trigger}", 120,0.,120.,200,0.,2); 
+	fhBkgFFzs[icone][ipt] = new TH2F(Form("BkgFFz%s",lastnamehist.Data()),"z = p_{T i charged}/p_{T trigger} vs p_{T trigger}", 120,0.,120.,200,0.,2); 
 	fhBkgFFzs[icone][ipt]->SetYTitle("z");
 	fhBkgFFzs[icone][ipt]->SetXTitle("p_{T trigger}");
 	
-	fhBkgFFxis[icone][ipt] = new TH2F("BkgFFxi"+lastnamehist,"#xi = ln(p_{T trigger}/p_{T i charged}) vs p_{T trigger}", 120,0.,120.,100,0.,10.); 
+	fhBkgFFxis[icone][ipt] = new TH2F(Form("BkgFFxi%s",lastnamehist.Data()),"#xi = ln(p_{T trigger}/p_{T i charged}) vs p_{T trigger}", 120,0.,120.,100,0.,10.); 
 	fhBkgFFxis[icone][ipt]->SetYTitle("#xi");
 	fhBkgFFxis[icone][ipt]->SetXTitle("p_{T trigger}");
 	
-	fhBkgFFpts[icone][ipt] = new TH2F("BkgFFpt"+lastnamehist,"p_{T charged hadron} in jet vs p_{T trigger}", 120,0.,120.,200,0.,50.); 
+	fhBkgFFpts[icone][ipt] = new TH2F(Form("BkgFFpt%s",lastnamehist.Data()),"p_{T charged hadron} in jet vs p_{T trigger}", 120,0.,120.,200,0.,50.); 
 	fhBkgFFpts[icone][ipt]->SetYTitle("p_{T charged hadron}");
 	fhBkgFFpts[icone][ipt]->SetXTitle("p_{T trigger}");
 	
-	fhBkgNTracksInCones[icone][ipt] = new TH2F("BkgNTracksInCone"+lastnamehist,"N particles in cone vs p_{T trigger}"+lastnametitle,nptbins,ptmin,ptmax,5000,0, 5000); 
+	fhBkgNTracksInCones[icone][ipt] = new TH2F(Form("BkgNTracksInCone%s",lastnamehist.Data()),Form("N particles in cone vs p_{T trigger} %s",lastnametitle.Data()),nptbins,ptmin,ptmax,5000,0, 5000); 
 	fhBkgNTracksInCones[icone][ipt]->SetYTitle("N tracks in bkg cone");
 	fhBkgNTracksInCones[icone][ipt]->SetXTitle("p_{T trigger} (GeV/c)");
 	
@@ -1483,12 +1483,12 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
   
   //Add referenced tracks to AOD
   if(reftracks->GetEntriesFast() > 0 ){
-    reftracks->SetName(GetAODRefArrayName()+"Tracks");
+    reftracks->SetName(Form("%sTracks",GetAODRefArrayName().Data()));
     particle->AddRefArray(reftracks);
   }
   else  if(GetDebug() > 2 ) printf("AliAnaParticleJetLeadingConeCorrelation::MakeAODJet() - No tracks in jet cone\n");
   if(reftracksbkg->GetEntriesFast() > 0 ){
-    reftracksbkg->SetName(GetAODRefArrayName()+"TracksBkg");
+    reftracksbkg->SetName(Form("%sTracksBkg",GetAODRefArrayName().Data()));
     particle->AddRefArray(reftracksbkg);
   }
   else  if(GetDebug() > 2 ) printf("AliAnaParticleJetLeadingConeCorrelation::MakeAODJet() - No background tracks in jet cone\n");
@@ -1541,12 +1541,12 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
   
   //Add referenced clusters to AOD
   if(refclusters->GetEntriesFast() > 0 ){
-    refclusters->SetName(GetAODRefArrayName()+"Clusters");
+    refclusters->SetName(Form("%sClusters",GetAODRefArrayName().Data()));
     particle->AddRefArray(refclusters);
   }
   else  if(GetDebug() > 2 ) printf("AliAnaParticleJetLeadingConeCorrelation::MakeAODJet() - No clusters in jet cone\n");
   if(refclustersbkg->GetEntriesFast() > 0 ){
-    refclustersbkg->SetName(GetAODRefArrayName()+"ClustersBkg");
+    refclustersbkg->SetName(Form("%sClustersBkg",GetAODRefArrayName().Data()));
     particle->AddRefArray(refclustersbkg);
   }
   else if(GetDebug() > 2 ) printf("AliAnaParticleJetLeadingConeCorrelation::MakeAODJet() - No background clusters in jet cone\n");
@@ -1576,10 +1576,10 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
   if(phil < 0) phil+=TMath::TwoPi();
   Double_t etal = pLeading.Eta();
   
-  TRefArray * refclusters = particle->GetRefArray(GetAODRefArrayName()+"Clusters");
-  TRefArray * reftracks   = particle->GetRefArray(GetAODRefArrayName()+"Tracks");
-  TRefArray * refclustersbkg = particle->GetRefArray(GetAODRefArrayName()+"ClustersBkg");
-  TRefArray * reftracksbkg   = particle->GetRefArray(GetAODRefArrayName()+"TracksBkg");
+  TRefArray * refclusters    = particle->GetRefArray(Form("Clusters"   ,GetAODRefArrayName().Data()));
+  TRefArray * reftracks      = particle->GetRefArray(Form("Tracks"     ,GetAODRefArrayName().Data()));
+  TRefArray * refclustersbkg = particle->GetRefArray(Form("ClustersBkg",GetAODRefArrayName().Data()));
+  TRefArray * reftracksbkg   = particle->GetRefArray(Form("TracksBkg"  ,GetAODRefArrayName().Data()));
   
   //Different pt cut for jet particles in different collisions systems
   Float_t ptcut = fJetPtThreshold;
