@@ -274,8 +274,10 @@ TString  AliCaloPID::GetPIDParametersList()  {
   parList+=onePar ;
   
   if(fPHOSWeightFormula){
-    parList+="PHOS Photon Weight Formula: "+(fPHOSPhotonWeightFormula->GetExpFormula("p"));
-    parList+="PHOS Pi0    Weight Formula: "+(fPHOSPi0WeightFormula->GetExpFormula("p"));
+	sprintf(onePar,"PHOS Photon Weight Formula: %s\n",(fPHOSPhotonWeightFormula->GetExpFormula("p")).Data()) ;
+    parList+=onePar;
+	sprintf(onePar,"PHOS Pi0    Weight Formula: %s\n",(fPHOSPi0WeightFormula->GetExpFormula("p")).Data()) ;
+	parList+=onePar;	  
   }
   
   return parList; 
