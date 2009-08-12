@@ -111,3 +111,16 @@ TObject* AliHLTMisc::ExtractObject(AliCDBEntry* /*entry*/)
   // see header file for function documentation
   return NULL;
 }
+
+ostream  &operator<<(ostream &out, const AliHLTComponentDataType &dt)
+{
+  // printout of AliHLTComponentDataType struct
+  char id[kAliHLTComponentDataTypefIDsize+1];
+  strncpy(id, dt.fID, kAliHLTComponentDataTypefIDsize);
+  id[kAliHLTComponentDataTypefIDsize]=0;
+  char origin[kAliHLTComponentDataTypefOriginSize+1];
+  strncpy(origin, dt.fOrigin, kAliHLTComponentDataTypefOriginSize);
+  origin[kAliHLTComponentDataTypefOriginSize]=0;
+  out << "{" << id << ":" << origin << "}";
+  return out;
+}

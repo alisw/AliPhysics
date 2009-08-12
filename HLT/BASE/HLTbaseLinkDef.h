@@ -54,6 +54,108 @@
 #pragma link C++ class AliHLTTriggerMenuSymbol+;
 #pragma link C++ class AliHLTRunStatistics+;
 #pragma link C++ class AliHLTMisc+;
+
+#pragma link C++ struct AliHLTComponentEventData+;
+#pragma link C++ struct AliHLTComponentBlockData+;
 #pragma link C++ struct AliHLTComponentDataType+;
 #pragma link C++ struct AliHLTEventDDL+;
+#pragma link C++ struct AliHLTRunDesc+;
+#pragma link C++ struct AliHLTComponentStatistics+;
+#pragma link C++ struct AliHLTComponentTableEntry;
+
+#pragma link C++ function operator==( const AliHLTComponentDataType&, const AliHLTComponentDataType&);
+#pragma link C++ function operator!=( const AliHLTComponentDataType&, const AliHLTComponentDataType&);
+#pragma link C++ function operator|(const AliHLTComponentDataType, const char*);
+#pragma link C++ function AliHLTComponentDataTypeInitializer(const char*, const char*);
+#pragma link C++ function AliHLTComponentDataTypeInitializer(const AliHLTComponentDataType, const char*);
+#pragma link C++ function operator<<(ostream &, const AliHLTComponentDataType &);
+
+#pragma link C++ global kAliHLTComponentDataTypefOriginSize;
+#pragma link C++ global kAliHLTComponentDataTypefIDsize;
+
+#pragma link C++ global kAliHLTDataOriginVoid;
+#pragma link C++ global kAliHLTDataOriginAny;
+#pragma link C++ global kAliHLTDataOriginOut;
+#pragma link C++ global kAliHLTDataOriginHLT;
+#pragma link C++ global kAliHLTDataOriginOffline;
+#pragma link C++ global kAliHLTDataOriginPrivate;
+#pragma link C++ global kAliHLTDataOriginTPC;
+#pragma link C++ global kAliHLTDataOriginPHOS;
+#pragma link C++ global kAliHLTDataOriginFMD;
+#pragma link C++ global kAliHLTDataOriginMUON;
+#pragma link C++ global kAliHLTDataOriginTRD;
+#pragma link C++ global kAliHLTDataOriginITS;
+#pragma link C++ global kAliHLTDataOriginITSSPD;
+#pragma link C++ global kAliHLTDataOriginITSSDD;
+#pragma link C++ global kAliHLTDataOriginITSSSD;
+#pragma link C++ global kAliHLTDataOriginSample;
+#pragma link C++ global kAliHLTDataOriginEMCAL;
+
+#pragma link C++ global kAliHLTMultipleDataType;
+#pragma link C++ global kAliHLTDataTypeFXSCalib;
+#pragma link C++ global kAliHLTDataTypeDDL;
+#pragma link C++ global kAliHLTDataTypeDAQRDOUT;
+#pragma link C++ global kAliHLTDataTypeClusters;
+#pragma link C++ global kAliHLTDataTypeSOR;
+#pragma link C++ global kAliHLTDataTypeEOR;
+#pragma link C++ global kAliHLTDataTypeRunType;
+#pragma link C++ global kAliHLTDataTypeEvent;
+#pragma link C++ global kAliHLTDataTypeECSParam;
+#pragma link C++ global kAliHLTDataTypeComConf;
+#pragma link C++ global kAliHLTDataTypeUpdtDCS;
+#pragma link C++ global kAliHLTDataTypeDDLRaw;
+#pragma link C++ global kAliHLTDataTypeMCObject;
+#pragma link C++ global kAliHLTDataTypeESDObject;
+#pragma link C++ global kAliHLTDataTypeESDTree;
+#pragma link C++ global kAliHLTDataTypeAliTreeD;
+#pragma link C++ global kAliHLTDataTypeAliTreeR;
+#pragma link C++ global kAliHLTDataTypeHwAddr16;
+#pragma link C++ global kAliHLTDataTypeEventStatistics;
+#pragma link C++ global kAliHLTDataTypeEventSummary;
+#pragma link C++ global kAliHLTDataTypeRunStatistics;
+#pragma link C++ global kAliHLTDataTypeRunSummary;
+#pragma link C++ global kAliHLTDataTypeTriggerDecision;
+#pragma link C++ global kAliHLTDataTypeGlobalTrigger;
+#pragma link C++ global kAliHLTDataTypeComponentStatistics;
+#pragma link C++ global kAliHLTDataTypeComponentTable;
+#pragma link C++ global kAliHLTDataTypeTObject;
+#pragma link C++ global kAliHLTDataTypeTObjArray;
+#pragma link C++ global kAliHLTDataTypeTTree;
+#pragma link C++ global kAliHLTDataTypeHistogram;
+#pragma link C++ global kAliHLTDataTypeTNtuple;
+#pragma link C++ global kAliHLTDataTypeTrack;
+#pragma link C++ global kAliHLTDataTypeTrackMC;
+#pragma link C++ global kAliHLTDataTypeExternalTrackParam;
+#pragma link C++ global kAliHLTDataTypeJet;
+
+#pragma link C++ global kAliHLTVoidEventID;
+#pragma link C++ global kAliHLTVoidDataSpec;
+#pragma link C++ global kAliHLTVoidRunNo;
+#pragma link C++ global kAliHLTVoidRunType;
+#pragma link C++ global kAliHLTVoidRunDesc;
+
+#pragma link C++ global gkAliEventTypeUnknown;
+#pragma link C++ global gkAliEventTypeStartOfRun;
+#pragma link C++ global gkAliEventTypeData;
+#pragma link C++ global gkAliEventTypeEndOfRun;
+#pragma link C++ global gkAliEventTypeCorruptID;
+#pragma link C++ global gkAliEventTypeCalibration;
+#pragma link C++ global gkAliEventTypeDataReplay;
+#pragma link C++ global gkAliEventTypeConfiguration;
+#pragma link C++ global gkAliEventTypeReadPreprocessor;
+#pragma link C++ global gkAliEventTypeTick;
+#pragma link C++ global gkAliEventTypeMax;
+
+#pragma link C++ global kHLTLogNone;
+#pragma link C++ global kHLTLogBenchmark;
+#pragma link C++ global kHLTLogDebug;
+#pragma link C++ global kHLTLogInfo;
+#pragma link C++ global kHLTLogWarning;
+#pragma link C++ global kHLTLogError;
+#pragma link C++ global kHLTLogFatal;
+#pragma link C++ global kHLTLogImportant;
+#pragma link C++ global kHLTLogAll;
+#pragma link C++ global kHLTLogDefault;
+
+
 #endif

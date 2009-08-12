@@ -14,9 +14,11 @@
 ///         loaded libraries
 
 #include "TObject.h"
+#include "AliHLTStdIncludes.h"
 
 class AliCDBManager;
 class AliCDBEntry;
+class AliHLTComponentDataType;
 
 class AliHLTMisc : public TObject {
  public:
@@ -77,4 +79,8 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+// direct printout of data type struct
+ostream  &operator<<(ostream &str, const AliHLTComponentDataType&);
+
 #endif //ALIHLTMISC_H
