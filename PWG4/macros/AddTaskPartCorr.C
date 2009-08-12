@@ -56,7 +56,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   qa->SetDebug(-1); //10 for lots of messages
   qa->SetCalorimeter(calorimeter);
   qa->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-  qa->AddToHistogramsName("AnaCaloQA_"+calorimeter);
+  qa->AddToHistogramsName(Form("AnaCaloQA_%s",calorimeter.Data()));
   qa->SetFidutialCut(fidCut);
   qa->SwitchOnFidutialCut();
   qa->Print("");	
@@ -71,12 +71,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaphoton1->SwitchOffCaloPID();
   anaphoton1->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
   anaphoton1->SwitchOffFidutialCut();
-  anaphoton1->SetOutputAODName("PhotonsForIM"+calorimeter);
+  anaphoton1->SetOutputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
   anaphoton1->Print("");
 
   AliAnaPi0 *anapi0 = new AliAnaPi0();
   anapi0->SetDebug(-1);//10 for lots of messages
-  anapi0->SetInputAODName("PhotonsForIM"+calorimeter);
+  anapi0->SetInputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
   anapi0->SetCaloPID(pid);
   anapi0->SetCalorimeter(calorimeter);
   anapi0->SwitchOnFidutialCut();
@@ -85,7 +85,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
 //  AliAnaNeutralMeson *ananeutral = new AliAnaNeutralMeson();
 //  ananeutral->SetDebug(-1);//10 for lots of messages
-//  ananeutral->SetInputAODName("PhotonsForIM"+calorimeter);
+//  ananeutral->SetInputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
 //  ananeutral->SetCaloPID(pid);
 //  //	ananeutral->SetNCentrBin(5); //number of bins in centrality 
 //  //	ananeutral->SetNZvertBin(5); //number of bins for vertex position
@@ -118,7 +118,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaphoton2->SwitchOnCaloPID();
   if(calorimeter == "EMCAL") anaphoton2->SwitchOnCaloPIDRecalculation();
   anaphoton2->SwitchOffFidutialCut();
-  anaphoton2->SetOutputAODName("DirectPhotons"+calorimeter);
+  anaphoton2->SetOutputAODName(Form("DirectPhotons%s",calorimeter.Data()));
   anaphoton2->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   anaphoton2->AddToHistogramsName("AnaPhotonCorr_");
   anaphoton2->Print("");
@@ -133,7 +133,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliAnaParticleIsolation *anaisol = new AliAnaParticleIsolation();
   anaisol->SetDebug(-1);
   //anaisol->SetMinPt(5);
-  anaisol->SetInputAODName("DirectPhotons"+calorimeter);
+  anaisol->SetInputAODName(Form("DirectPhotons%s",calorimeter.Data()));
   anaisol->SetCalorimeter(calorimeter);
   anaisol->SwitchOffDataMC() ;//Access MC stack and fill more histograms
   //Select clusters with no pair, if both clusters with pi0 mass
@@ -150,7 +150,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
   // ### Correlation with Jet Finder AOD output
   AliAnaParticleJetFinderCorrelation *anacorrjet = new AliAnaParticleJetFinderCorrelation();
-  anacorrjet->SetInputAODName("DirectPhotons"+calorimeter);
+  anacorrjet->SetInputAODName(Form("DirectPhotons%s",calorimeter.Data()));
   anacorrjet->SwitchOffFidutialCut();
   anacorrjet->SetDebug(-1);
   anacorrjet->SetConeSize(1);  
@@ -163,8 +163,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
   // ### Correlation with hadrons
   AliAnaParticleHadronCorrelation *anacorrhadron = new AliAnaParticleHadronCorrelation();
-  anacorrhadron->SetInputAODName("DirectPhotons"+calorimeter);
-  anacorrhadron->SetOutputAODName("CorrelatedPi0s"+calorimeter);
+  anacorrhadron->SetInputAODName(Form("DirectPhotons%s",calorimeter.Data()));
+  anacorrhadron->SetOutputAODName(Form("CorrelatedPi0s%s",calorimeter.Data()));
   anacorrhadron->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   anacorrhadron->SetDebug(-1);
   anacorrhadron->SwitchOffCaloPID();
@@ -201,7 +201,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
    // Create task
    //===========================================================================
-  AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation ("PartCorr"+calorimeter);
+  AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation (Form("PartCorr%s",calorimeter.Data()));
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
   task->SetAnalysisMaker(maker);				
