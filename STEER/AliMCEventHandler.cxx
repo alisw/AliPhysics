@@ -256,7 +256,7 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
     // Read the next event
 
     if (fEventsInContainer != 0) {
-	entry = (Long64_t) entry * Float_t(fNEvent) / Float_t (fEventsInContainer);
+	entry = (Long64_t) ( entry * Float_t(fNEvent) / Float_t (fEventsInContainer));
     }
 
 
