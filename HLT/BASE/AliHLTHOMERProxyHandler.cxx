@@ -311,8 +311,13 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
 
     // -- Add service to list
     iResult = AddService( serviceNode->GetChildren() );
-       
+    if ( iResult > 0 ) {
+      AliWarning(Form("Incomplete Service not added."));
+      iResult = 0;
+    }
   } while ( ( serviceNode = prevServiceNode->GetNextNode() ) && !iResult );
+
+
 
   return iResult;
 }
@@ -382,10 +387,10 @@ Int_t AliHLTHOMERProxyHandler::AddService(TXMLNode *innerNode) {
   // -- Check for completeness of the source properties
   if ( hostname.IsNull() || !port || dataOrigin.IsNull() ||
        dataType.IsNull() || dataSpecification.IsNull() ) {
-    AliError(Form("Service provides not all values:\n\thostname\t\t %s\n\tport\t\t\t %d\n\tdataorigin\t\t %s\n\tdatatype\t\t %s\n\tdataspecification\t %s", 
+    AliWarning(Form("Service provides not all values:\n\thostname\t\t %s\n\tport\t\t\t %d\n\tdataorigin\t\t %s\n\tdatatype\t\t %s\n\tdataspecification\t %s", 
 		  hostname.Data(), port, dataOrigin.Data(), dataType.Data(), dataSpecification.Data()));
 
-    return -2;
+    return 1;
   }
 
   // -- Create new source

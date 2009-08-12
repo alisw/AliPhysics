@@ -360,9 +360,14 @@ Int_t AliHLTHOMERManager::NextEvent(){
 #endif
 
   // -- Create BlockList
-  AliInfo(Form("Create Block List"));
-  CreateBlockList();
-
+  if ( fNBlks > 0 ) {
+    AliInfo(Form("Create Block List"));
+    CreateBlockList();
+  }
+  else {
+    AliWarning(Form("Event 0x%016LX (%Lu) with %lu blocks", fEventID, fEventID, fNBlks));
+  }
+    
   return iResult;
 }
 
@@ -382,8 +387,6 @@ void AliHLTHOMERManager::CreateReadoutList( const char** sourceHostnames, UShort
   // -- Read all sources and check if they should be read out
   TIter next( fSourceList );
   while ( ( source = dynamic_cast<AliHLTHOMERSourceDesc*>(next()) ) ) {
-
-    printf("DAT = %s\n",detector.Data());
 
     // -- If detector NO detector name given
     if ( ! detector.CompareTo("ALL") ) {
