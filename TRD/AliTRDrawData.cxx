@@ -956,6 +956,8 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
   // Vx of the raw data reading
   //
 
+  rawReader->Select("TRD"); //[mj]
+
   AliTRDarrayADC *digits = 0;
   AliTRDarrayDictionary *track0 = 0;
   AliTRDarrayDictionary *track1 = 0;

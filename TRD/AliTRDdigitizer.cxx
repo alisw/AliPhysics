@@ -1440,6 +1440,10 @@ Bool_t AliTRDdigitizer::Digits2SDigits(AliTRDdigitsManager * const manDig
     tracks1->Allocate(nRowMax,nColMax,nTimeTotal);
     tracks2->Allocate(nRowMax,nColMax,nTimeTotal);
 
+    if (!digits->HasData()) {
+      continue;
+    }
+
     // Create the sdigits for this chamber
     for (row  = 0; row  <  nRowMax; row++ ) {
       for (col  = 0; col  <  nColMax; col++ ) {
