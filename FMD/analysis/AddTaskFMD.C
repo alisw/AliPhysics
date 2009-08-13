@@ -19,9 +19,11 @@ AliFMDAnalysisTaskSE* AddTaskFMD() {
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   pars->Init();
-
-  AliAnalysisDataContainer *cout_fmd = mgr->CreateContainer("BackgroundCorrected", TList::Class(),
-                 AliAnalysisManager::kOutputContainer,"fmdana.root");                             
+  pars->SetProcessPrimary(kTRUE);
+  pars->SetProcessHits(kFALSE);
+  
+  
+  AliAnalysisDataContainer *cout_fmd = mgr->CreateContainer("BackgroundCorrected", TList::Class(), AliAnalysisManager::kOutputContainer,"fmdana.root");                             
   mgr->ConnectInput(taskfmd, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskfmd, 1, cout_fmd);
 
