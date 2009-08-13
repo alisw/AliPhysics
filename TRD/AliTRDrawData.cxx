@@ -46,7 +46,7 @@
 ClassImp(AliTRDrawData)
 
 Int_t AliTRDrawData::fgRawFormatVersion = AliTRDrawData::kRawNewFormat;
-Int_t AliTRDrawData::fgDataSuppressionLevel = 1;
+Int_t AliTRDrawData::fgDataSuppressionLevel = 0;
 
 //_____________________________________________________________________________
 AliTRDrawData::AliTRDrawData()
@@ -107,7 +107,7 @@ AliTRDrawData::~AliTRDrawData()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree, TTree *tracks )
+Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree, const TTree *tracks )
 {
   //
   // Initialize necessary parameters and call one
@@ -117,7 +117,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree, TTree *tracks )
   // will be supported in higher version simulator.
   //
 
-  AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
+  AliTRDdigitsManager* const digitsManager = new AliTRDdigitsManager();
 
   if (!digitsManager->ReadDigits(digitsTree)) {
     delete digitsManager;
@@ -195,61 +195,64 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
     Int_t npayloadbyte = 0;
 
 
-    if ( fgRawFormatVersion == 0 ){
+   if ( fgRawFormatVersion == 0 ){
     // GTU common data header (5x4 bytes per super module, shows link mask)
     for( Int_t stack = 0; stack < fGeo->Nstack(); stack++ ) {
-      UInt_t gtuCdh = (UInt_t)(0xe << 28);
-      for( Int_t layer = 0; layer < fGeo->Nlayer(); layer++) {
-    Int_t iDet = fGeo->GetDetector(layer, stack, sect);
+        UInt_t gtuCdh = (UInt_t)(0xe << 28);
+        for( Int_t layer = 0; layer < fGeo->Nlayer(); layer++) {
+            Int_t iDet = fGeo->GetDetector(layer, stack, sect);
 
-    // If chamber status is ok, we assume that the optical link is also OK.
-        // This is shown in the GTU link mask.
-    if ( AliTRDcalibDB::Instance()->GetChamberStatus(iDet) )
-      gtuCdh = gtuCdh | (3 << (2*layer));
-      }
-      of->WriteBuffer((char *) (& gtuCdh), sizeof(gtuCdh));
-      npayloadbyte += 4;
+            // If chamber status is ok, we assume that the optical link is also OK.
+            // This is shown in the GTU link mask.
+            if ( AliTRDcalibDB::Instance()->GetChamberStatus(iDet) )
+                gtuCdh = gtuCdh | (3 << (2*layer));
+        }
+        of->WriteBuffer((char *) (& gtuCdh), sizeof(gtuCdh));
+        npayloadbyte += 4;
     }
-    }
+   }
 
 
     // check the existance of the data
     // SM index word and Stack index word
    if ( fgRawFormatVersion == 1 ){
-    UInt_t *iwbuffer = new UInt_t[42]; // index word buffer; max 42 = 2 SM headers + 5*8 stack headers
+    UInt_t *iwbuffer = new UInt_t[109]; // index word buffer; max 109 = 2 SM headers + 67 dummy headers + 5*8 stack headers
     Int_t nheader = 0;
-    UInt_t StackMask = 0x0;
-    Bool_t StackHasData = kFALSE;
-    Bool_t SMHasData = kFALSE;
-    iwbuffer[nheader++] = 0x0001a020;   // SM index words 
+    UInt_t bStackMask = 0x0;
+    Bool_t bStackHasData = kFALSE;
+    Bool_t bSMHasData = kFALSE;
+
+    //iwbuffer[nheader++] = 0x0001a020;   // SM index words 
+    iwbuffer[nheader++] = 0x0044a020;   // SM index words | additional SM header:48 = 1 SM header + 47 dummy words(for future use)
     iwbuffer[nheader++] = 0x10404071;   // SM header
+    for ( Int_t i=0; i<66; i++ ) iwbuffer[nheader++] = 0x00000000;  // dummy words 
+    iwbuffer[nheader++] = 0x10000000;   // end of dummy words
 
     for ( Int_t stack= 0; stack < fGeo->Nstack(); stack++) {
-        UInt_t LinkMask = 0x0;
+        UInt_t linkMask = 0x0;
         for( Int_t layer = 0; layer < fGeo->Nlayer(); layer++) {
             Int_t iDet = fGeo->GetDetector(layer,stack,sect);
 			AliTRDarrayADC *digits = (AliTRDarrayADC *) digitsManager->GetDigits(iDet);
             if ( digits->HasData() ) {
-                StackMask = StackMask | ( 1 << stack ); // active stack mask for new stack
-                LinkMask = LinkMask | ( 3 << (2*layer) );    // 3 = 0011
-                StackHasData = kTRUE;
-                SMHasData = kTRUE;
+                bStackMask = bStackMask | ( 1 << stack ); // active stack mask for new stack
+                linkMask = linkMask | ( 3 << (2*layer) );    // 3 = 0011
+                bStackHasData = kTRUE;
+                bSMHasData = kTRUE;
             } // has data
         } // loop over layer
 
-        if ( fgDataSuppressionLevel==0 || StackHasData ){
-        //if ( StackHasData ){
-            iwbuffer[nheader++] = 0x0007a000 | LinkMask;    // stack index word + link masks
-            //if (fgDataSuppressionLevel==0) iwbuffer[nheader-1] = 0x0007afff;  // no suppression
+        if ( fgDataSuppressionLevel==0 || bStackHasData ){
+            iwbuffer[nheader++] = 0x0007a000 | linkMask;    // stack index word + link masks
+            if (fgDataSuppressionLevel==0) iwbuffer[nheader-1] = 0x0007afff;  // no suppression
             iwbuffer[nheader++] = 0x04045b01;               // stack header
             for (Int_t i=0;i<6;i++) iwbuffer[nheader++] = 0x00000000; // 6 dummy words
-            StackHasData = kFALSE;
+            bStackHasData = kFALSE;
         }
     } // loop over stack
 
-    if ( fgDataSuppressionLevel==0 || SMHasData ){
-        iwbuffer[0] = iwbuffer[0] | StackMask;  // add stack masks to SM index word
-        if (fgDataSuppressionLevel==0) iwbuffer[0] = 0x0001a03f;    // no suppression
+    if ( fgDataSuppressionLevel==0 || bSMHasData ){
+        iwbuffer[0] = iwbuffer[0] | bStackMask;  // add stack masks to SM index word
+        if (fgDataSuppressionLevel==0) iwbuffer[0] = 0x0044a03f;    // no suppression : all stacks are active
         of->WriteBuffer((char *) iwbuffer, nheader*4);
         AliDebug(11, Form("SM %d index word: %08x", iwbuffer[0]));
         AliDebug(11, Form("SM %d header: %08x", iwbuffer[1]));
@@ -332,7 +335,8 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
         hcwords = ProduceHcData(digits,1,iDet,hcBuffer,kMaxHcWords,newEvent,newSM);
         of->WriteBuffer((char *) hcBuffer, hcwords*4);
         npayloadbyte += hcwords*4;
-       } else {
+       } else {   // in case of no-suppression or NZS
+/*        
         hcBuffer[hcwords++] = fgkEndOfTrackletMarker;
         hcBuffer[hcwords++] = fgkEndOfTrackletMarker;
         hcBuffer[hcwords++] = (1<<31) | (0<<24) | (0<<17) | (1<<14) | (sect<<9) | (layer<<6) | (stack<<3) | (0<<2) | 1;
@@ -351,9 +355,14 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
         hcBuffer[hcwords++] = kEndofrawdatamarker;
         hcBuffer[hcwords++] = kEndofrawdatamarker;
         hcBuffer[hcwords++] = kEndofrawdatamarker;
+*/        
+        hcwords = ProduceHcDataNoSuppression(0,iDet,hcBuffer,kMaxHcWords); // side 0
+        of->WriteBuffer((char *) hcBuffer, hcwords*4);
         npayloadbyte += hcwords*4;
 
+        hcwords = ProduceHcDataNoSuppression(1,iDet,hcBuffer,kMaxHcWords); // side 1
         of->WriteBuffer((char *) hcBuffer, hcwords*4);
+        npayloadbyte += hcwords*4;
        }
     }
 
@@ -368,7 +377,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
     of->Seekp(hpos);         // Rewind to header position
     of->WriteBuffer((char *) (& header), sizeof(header));
     delete of;
-  }
+  } // loop over sector(SM)
 
   delete [] hcBuffer;
 
@@ -505,7 +514,7 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
   	Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
 	const Int_t kCtype = fGeo->GetStack(det) == 2 ? 0 : 1;                       // Chamber type (0:C0, 1:C1)
 
-	Bool_t tracklet_on = fFee->GetTracklet();     // tracklet simulation active?
+	Bool_t trackletOn = fFee->GetTracklet();     // tracklet simulation active?
 
   	AliDebug(1,Form("Producing raw data for sect=%d layer=%d stack=%d side=%d",sect,layer,stack,side));
         
@@ -514,7 +523,7 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 	UInt_t *tempBuffer = buf; // tempBuffer used to write ADC data
 	                          // different in case of tracklet writing
 	
-	if (tracklet_on) {
+	if (trackletOn) {
 	  tempBuffer = new UInt_t[maxSize];
           tempnw = new Int_t(0);
           tempof = new Int_t(0);
@@ -536,7 +545,7 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
             
             mcm->Init(det, iRob, iMcm);
             mcm->SetData(digits);     // no filtering done here (already done in digitizer)
-	    if (tracklet_on) {
+	    if (trackletOn) {
 	      mcm->Tracklet();
               Int_t tempNw = mcm->ProduceTrackletStream(&buf[nw], maxSize - nw);
 	      if(  tempNw < 0 ) {
@@ -565,7 +574,7 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 
 
 	// in case of tracklet writing copy temp data to final buffer
-	if (tracklet_on) {
+	if (trackletOn) {
 	  if (nw + *tempnw < maxSize) {
 	    memcpy(&buf[nw], tempBuffer, *tempnw * sizeof(UInt_t));
 	    nw += *tempnw;
@@ -577,15 +586,15 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 
   	// Write end of raw data marker
   	if (nw+3 < maxSize) {
-          buf[nw++] = 0x00000000; // fFee->GetRawDataEndmarker(); 
-          buf[nw++] = 0x00000000; // fFee->GetRawDataEndmarker(); 
-          buf[nw++] = 0x00000000; // fFee->GetRawDataEndmarker(); 
-          buf[nw++] = 0x00000000; // fFee->GetRawDataEndmarker(); 
+          buf[nw++] = fgkEndOfDataMarker; // fFee->GetRawDataEndmarker(); 
+          buf[nw++] = fgkEndOfDataMarker; // fFee->GetRawDataEndmarker(); 
+          //buf[nw++] = fgkEndOfDataMarker; // fFee->GetRawDataEndmarker(); 
+          //buf[nw++] = fgkEndOfDataMarker; // fFee->GetRawDataEndmarker(); 
   	} else {
           of++;
   	}
   	
-        if (tracklet_on) {
+        if (trackletOn) {
           delete [] tempBuffer;
           delete tempof;
           delete tempnw;
@@ -596,6 +605,69 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
   	}
 
   	return nw;
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDrawData::ProduceHcDataNoSuppression(Int_t side, Int_t det, UInt_t *buf, Int_t maxSize){
+
+    // This function generates below words for no-suppression option(same as real data format) 
+    //   1. end of tracklet marker
+    //   2. HC index word, HC header
+    //   3. MCM header, ADC mask
+    //   4. end of data marker
+    //
+
+    Int_t   nw = 0;         // number of written words
+    Int_t   of = 0;         // number of overflowed words
+    UInt_t  x  = 0;         // word buffer
+    //UInt_t *tempBuffer  = buf;   // temp buffer
+    Int_t  *tempnw      = &nw;   // temp number of written words
+    Int_t  *tempof      = &of;   // temp number of overflowed words
+
+    const Int_t kCtype = fGeo->GetStack(det) == 2 ? 0 : 1;   // Chamber type (0:C0, 1:C1)
+
+    WriteIntermediateWordsV2(buf, *tempnw, *tempof, maxSize, det, side);  // end of tracklet marker and HC headers
+
+    for (Int_t iRobRow = 0; iRobRow <= (kCtype + 3)-1; iRobRow++ ) {    // ROB number should be increasing
+        Int_t iRob = iRobRow * 2 + side;  // ROB position
+
+        for (Int_t iMcmRB = 0; iMcmRB < fGeo->MCMmax(); iMcmRB++ ) {    // MCM on ROB
+            Int_t iMcm = 16 - 4*(iMcmRB/4 + 1) + (iMcmRB%4);    // MCM position
+
+            if ( nw+2 < maxSize ){
+                x = 0;
+                x = (1<<31) | (iRob << 28) | (iMcm << 24) | ((fEventCounter % 0x100000) << 4) | 0xC;    // MCM header
+                buf[nw++] = x;
+
+                x = 0;
+                // Produce ADC mask : nncc cccm mmmm mmmm mmmm mmmm mmmm 1100
+                //                n : unused , c : ADC count, m : selected ADCs , where ccccc are inverted
+                x = x | (1 << 30) | (31 << 25) | 0xC;   // 11111 = 31
+                buf[nw++] = x;
+            } else {
+                of++;
+            }
+
+        }   // loop over MCM
+    }   // loop over ROB
+
+  	// Write end of raw data marker
+  	if (nw+1 < maxSize) {
+          buf[nw++] = fgkEndOfDataMarker; // fFee->GetRawDataEndmarker(); 
+          buf[nw++] = fgkEndOfDataMarker; // fFee->GetRawDataEndmarker(); 
+          //buf[nw++] = fgkEndOfDataMarker; // fFee->GetRawDataEndmarker(); 
+          //buf[nw++] = fgkEndOfDataMarker; // fFee->GetRawDataEndmarker(); 
+  	} else {
+          of++;
+  	}
+
+    if ( of != 0 ){     // if there is overflow
+        AliError("Buffer overflow. Data is truncated. Please increase buffer size and recompile.");
+    }
+
+    AliDebug(1, Form("Number of written words in this HC is %d",nw));
+
+    return nw;
 }
 
 //_____________________________________________________________________________
@@ -805,7 +877,7 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side , Int_t 
 
  
 
-  Bool_t tracklet_on = fFee->GetTracklet();     // **new**
+  Bool_t trackletOn = fFee->GetTracklet();     // **new**
 
   // Check the nCol and nRow.
   if ((nCol == 144) && 
@@ -827,7 +899,7 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side , Int_t 
   // raw-data in one go; if tracklet-processing is enabled, first all tracklet-words of a half-chamber have to be processed before the
   // additional words (tracklet-endmarker,headers,...)are written. Raw-data is written in a second loop;
   
-  if (!tracklet_on) {
+  if (!trackletOn) {
       WriteIntermediateWords(buf,nw,of,maxSize,det,side); 
   }
   
@@ -867,7 +939,7 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side , Int_t 
 //jkl	mcm[entry]->GeneratefZSM1Dim();
 //jkl	mcm[entry]->RestoreZeros();
 
-	if (tracklet_on) {
+	if (trackletOn) {
 	    mcm[entry]->Tracklet(); 
 	    Int_t tempNw =  mcm[entry]->ProduceTrackletStream( &buf[nw], maxSize - nw );
 	    //Int_t tempNw = 0;
@@ -902,7 +974,7 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side , Int_t 
   }
 
   // if tracklets are switched on, raw-data can be written only after all tracklets
-  if (tracklet_on) {
+  if (trackletOn) {
       WriteIntermediateWords(buf,nw,of,maxSize,det,side); 
   
   
@@ -1024,6 +1096,9 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 
 //_____________________________________________________________________________
 void AliTRDrawData::WriteIntermediateWords(UInt_t* buf, Int_t& nw, Int_t& of, const Int_t& maxSize, const Int_t& det, const Int_t& side) {
+    //
+    // write half-chamber headers 
+    //
     
     Int_t        layer = fGeo->GetLayer( det );   // Layer
     Int_t        stack = fGeo->GetStack( det );   // Stack
@@ -1082,13 +1157,17 @@ void AliTRDrawData::WriteIntermediateWords(UInt_t* buf, Int_t& nw, Int_t& of, co
 
 //_____________________________________________________________________________
 void AliTRDrawData::WriteIntermediateWordsV2(UInt_t* buf, Int_t& nw, Int_t& of, const Int_t& maxSize, const Int_t& det, const Int_t& side) {
+    // 
+    // write tracklet end marker(0x10001000) 
+    // and half chamber headers(H[0] and H[1])
+    //
     
     Int_t        layer = fGeo->GetLayer( det );   // Layer
     Int_t        stack = fGeo->GetStack( det );   // Stack
     Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
     Int_t           rv = fFee->GetRAWversion();
     const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
-	Bool_t tracklet_on = fFee->GetTracklet();
+	Bool_t trackletOn = fFee->GetTracklet();
     UInt_t           x = 0;
 
     // Write end of tracklet marker
@@ -1114,11 +1193,11 @@ void AliTRDrawData::WriteIntermediateWordsV2(UInt_t* buf, Int_t& nw, Int_t& of, 
 	Int_t majorv = 0;	// The major version number 
     Int_t minorv = 0;	// The minor version number
     Int_t add    = 1;	// The number of additional header words to follow : now 1, previous 2
-	Int_t TP	 = 0;	// test pattern (default=0)
-	Int_t ZS	 = (rv==3) ? 1 : 0;			// zero suppression
-	Int_t DT	 = (tracklet_on) ? 0 : 1; 	// disable tracklet 
+	Int_t tp	 = 0;	// test pattern (default=0)
+	Int_t zs	 = (rv==3) ? 1 : 0;			// zero suppression
+	Int_t dt	 = (trackletOn) ? 0 : 1; 	// disable tracklet 
 
-	majorv = (TP<<6) | (ZS<<5) | (DT<<4) | 1;	// major version
+	majorv = (tp<<6) | (zs<<5) | (dt<<4) | 1;	// major version
 
     x = (1<<31) | (majorv<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (layer<<6) | (stack<<3) | (side<<2) | 1;
     if (nw < maxSize) buf[nw++] = x; else of++;

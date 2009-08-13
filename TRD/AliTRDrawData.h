@@ -34,7 +34,7 @@ class AliTRDrawData : public TObject {
 
   AliTRDrawData &operator=(const AliTRDrawData &/*r*/) { return *this; }
 
-  virtual Bool_t       Digits2Raw(TTree *digits, TTree *tracks = NULL);
+  virtual Bool_t       Digits2Raw(TTree *digits, const TTree *tracks = NULL);
 
   virtual AliTRDdigitsManager *Raw2Digits(AliRawReader *rawReader);
   virtual AliTRDdigitsManager *Raw2DigitsOLD(AliRawReader *rawReader);
@@ -53,6 +53,7 @@ class AliTRDrawData : public TObject {
 
   virtual Bool_t       Digits2Raw(AliTRDdigitsManager* digitsManager); // for fRawVersion > 0
   virtual Int_t        ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent, Bool_t newSM);
+  virtual Int_t        ProduceHcDataNoSuppression(Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
   virtual Int_t        ProduceHcDataV1andV2(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
   virtual Int_t        ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent);
   //virtual Int_t      ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
@@ -78,6 +79,7 @@ class AliTRDrawData : public TObject {
 	static       Int_t  fgRawFormatVersion;           	  // simulation raw data version - 0:old , 1:new(real data format)
 	static       Int_t  fgDataSuppressionLevel;                 // Data suppression level - 0:no su, 1: su, 2: deep suppression 
  	static const UInt_t fgkEndOfTrackletMarker  = 0x10001000; // This marks the end of tracklet data words
+ 	static const UInt_t fgkEndOfDataMarker      = 0x00000000; // This marks the end of HC data words
 
 	Int_t   fSMindexPos;                // Position of SM index word
     Int_t   fStackindexPos;             // Position of SM index word
