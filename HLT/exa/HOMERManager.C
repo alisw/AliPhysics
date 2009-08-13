@@ -57,19 +57,23 @@ Int_t HOMERManager() {
 
   TObject * object =  NULL;  
 
+  //  TList* bl = hM->GetBlockList();
+  //bl->Dump();
+
+
   TIter next(hM->GetBlockList());
   AliHLTHOMERBlockDesc* block = NULL;
 
   while ((block = (AliHLTHOMERBlockDesc*)next())) {
    
-    printf ( "Det : %s\n" ,block->GetDetector().Data() );
+    printf ( "Detector : %s\n" ,block->GetDetector().Data() );
     printf ( "Datatype : %s\n" ,block->GetDataType().Data() );
     
-    if ( block->IsTObject() )
+    if ( block->IsTObject() ) {
       object = block->GetTObject();
-    
-    printf("ClassName %s\n", block->GetClassName().Data() );
-    
+      
+        printf("ClassName %s\n", block->GetClassName().Data() );
+    }
   }
 
   // -- Destroy hM object

@@ -457,8 +457,10 @@ void AliHLTHOMERManager::CreateBlockList() {
 		     GetBlkType(), GetBlkSpecification() );
     
     // -- Check sources list if block is requested
-    if ( CheckIfRequested( block ) )
+    if ( CheckIfRequested( block ) ) {
       fBlockList->Add( block );
+      
+    }
     else {
       delete block;
       block = NULL;
@@ -608,14 +610,10 @@ Bool_t AliHLTHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
   TIter next( fSourceList );
   while ( ( source = dynamic_cast<AliHLTHOMERSourceDesc*>(next()) ) ) {
     
-
-
     // -- Check if source is selected
     if ( ! source->IsSelected() )
       continue;
-    else
-      HLTError(Form("IS SELECTED"));
-    
+        
     // -- Check if detector matches
     if ( source->GetSourceName().CompareTo( block->GetBlockName() ) )
       continue;
@@ -625,7 +623,7 @@ Bool_t AliHLTHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
 
   } // while ( ( source = dynamic_cast<AliHLTHOMERSourceDesc*>(next()) ) ) {
   
-#if EVE_DEBUG
+#if 0 //EVE_DEBUG
   if ( requested ) {
     HLTInfo(Form("Block requested : %s", block->GetBlockName().Data())); 
   }
