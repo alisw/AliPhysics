@@ -9,7 +9,9 @@ SRCS= SPECTRA/AliProtonAnalysisBase.cxx \
       SPECTRA/AliAnalysisTaskCheckV0.cxx \
       SPECTRA/AliAnalysisTaskCheckCascade.cxx \
       SPECTRA/AliAnalysisTaskCheckPerformanceCascade.cxx \
-      SPECTRA/AliAnalysisTaskStrange.cxx
+      SPECTRA/AliAnalysisTaskStrange.cxx \
+      SPECTRA/AliProtonFeedDownAnalysisTask.cxx \
+      SPECTRA/AliProtonFeedDownAnalysis.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 
