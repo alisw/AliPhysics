@@ -1440,51 +1440,53 @@ Bool_t AliTRDdigitizer::Digits2SDigits(AliTRDdigitsManager * const manDig
     tracks1->Allocate(nRowMax,nColMax,nTimeTotal);
     tracks2->Allocate(nRowMax,nColMax,nTimeTotal);
 
-    if (!digits->HasData()) {
-      continue;
-    }
+    if (digits->HasData()) {
 
-    // Create the sdigits for this chamber
-    for (row  = 0; row  <  nRowMax; row++ ) {
-      for (col  = 0; col  <  nColMax; col++ ) {
+      digits->Expand();
 
-        // The gain factors
-        //Float_t padgain = calGainFactorDetValue 
-        //                * calGainFactorROC->GetValue(col,row);
+      // Create the sdigits for this chamber
+      for (row  = 0; row  <  nRowMax; row++ ) {
+        for (col  = 0; col  <  nColMax; col++ ) {
 
-        for (time = 0; time < nTimeTotal; time++) {
+          // The gain factors
+          //Float_t padgain = calGainFactorDetValue 
+          //                * calGainFactorROC->GetValue(col,row);
 
-          Double_t signal = (Double_t) digits->GetData(row,col,time);
+          for (time = 0; time < nTimeTotal; time++) {
 
-          // ADC -> signal in mV
-          signal /= adcConvert;
+            Short_t  adcVal = digits->GetData(row,col,time);
+            Double_t signal = (Double_t) adcVal;
+            // ADC -> signal in mV
+            signal /= adcConvert;
+            // Subtract baseline in mV
+            signal -= baseline;
+            // Signal in mV -> signal in #electrons
+            signal /= convert;
+            // Gain factor
+            //signal /= padgain; // Not needed for real data
+            // Pad and time coupling
+            signal /= coupling;
 
-          // Subtract baseline in mV
-          signal -= baseline;
+            sdigits->SetData(row,col,time,signal);
+            tracks0->SetData(row,col,time,0);
+            tracks1->SetData(row,col,time,0);
+            tracks2->SetData(row,col,time,0);
 
-          // Signal in mV -> signal in #electrons
-          signal /= convert;
+          } // for: time
 
-          // Gain factor
-          //signal /= padgain; // Not needed for real data
-
-          // Pad and time coupling
-          signal /= coupling;
-
-          sdigits->SetData(row,col,time,signal);
-          tracks0->SetData(row,col,time,0);
-          tracks1->SetData(row,col,time,0);
-          tracks2->SetData(row,col,time,0);
-
-        } // for: time
-
-      } // for: col
-    } // for: row
+        } // for: col
+      } // for: row
   
+    } // if: has data
+
     sdigits->Compress(0);
     tracks0->Compress();
     tracks1->Compress();
     tracks2->Compress();
+
+    // No compress just remove
+    manDig->RemoveDigits(det);
+    manDig->RemoveDictionaries(det);      
 
   } // for: det
 
