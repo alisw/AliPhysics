@@ -34,6 +34,7 @@ using namespace std;
 #include <TString.h>
 #include "TObjString.h"
 #include "TObjArray.h"
+#include "AliGeomManager.h"
 
 //#include <stdlib.h>
 //#include <cerrno>
@@ -105,6 +106,17 @@ AliHLTComponent* AliHLTITSClusterHistoComponent::Spawn()
 
 int AliHLTITSClusterHistoComponent::DoInit( int argc, const char** argv )
 {
+
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet()){
+    HLTError("Default CDB storage has not been set !");
+    return -ENOENT;
+  }
+
+  if(AliGeomManager::GetGeometry()==NULL){
+    AliGeomManager::LoadGeometry();
+  }
+
   fPlotCharge=kFALSE;   
   fPlotXY=kTRUE;
   fPlotPhieta=kFALSE; 
