@@ -14,11 +14,15 @@
 
 //-----------------------------------------------------------------
 //                 AliAnalysisTaskCheckCascade class
-//            This task is for QAing the Cascades from ESD and AOD 
-//            Origin   : Antonin Maire Fev2008, antonin.maire@ires.in2p3.fr
-//	      Modified : A.Maire June 2009
+//            (AliAnalysisTaskCheckCascade)
+//            This task has three roles :
+//              1. QAing the Cascades from ESD and AOD
+//                 Origin:  AliAnalysisTaskESDCheckV0 by B.H. Nov2007, hippolyt@in2p3.fr
+//              2. Prepare the plots which stand as raw material for yield extraction
+//              3. Rough azimuthal correlation study (Eta, Phi)
+//            Adapted to Cascade : A.Maire Mar2008, antonin.maire@ires.in2p3.fr
+//            Modified :           A.Maire Aug2009, antonin.maire@ires.in2p3.fr
 //-----------------------------------------------------------------
-
 
 
 
@@ -41,8 +45,11 @@ class AliAODv0;
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "THnSparse.h"
+#include "TVector3.h"
 #include "TCanvas.h"
 #include "TMath.h"
+
 
 #include "AliLog.h"
 
@@ -104,7 +111,10 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade()
     f2dHistXiRadiusVsEffMassOmegaMinus(0), f2dHistXiRadiusVsEffMassOmegaPlus(0),
     
     f3dHistXiPtVsEffMassVsYXiMinus(0), f3dHistXiPtVsEffMassVsYXiPlus(0),
-    f3dHistXiPtVsEffMassVsYOmegaMinus(0), f3dHistXiPtVsEffMassVsYOmegaPlus(0)
+    f3dHistXiPtVsEffMassVsYOmegaMinus(0), f3dHistXiPtVsEffMassVsYOmegaPlus(0),
+    
+    fHnSpAngularCorrXiMinus(0), fHnSpAngularCorrXiPlus(0), 
+    fHnSpAngularCorrOmegaMinus(0), fHnSpAngularCorrOmegaPlus(0)
 
 {
   // Dummy Constructor
@@ -162,7 +172,10 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade(const char *name)
     f2dHistXiRadiusVsEffMassOmegaMinus(0), f2dHistXiRadiusVsEffMassOmegaPlus(0),
     
     f3dHistXiPtVsEffMassVsYXiMinus(0), f3dHistXiPtVsEffMassVsYXiPlus(0),
-    f3dHistXiPtVsEffMassVsYOmegaMinus(0), f3dHistXiPtVsEffMassVsYOmegaPlus(0)
+    f3dHistXiPtVsEffMassVsYOmegaMinus(0), f3dHistXiPtVsEffMassVsYOmegaPlus(0),
+    
+    fHnSpAngularCorrXiMinus(0), fHnSpAngularCorrXiPlus(0), 
+    fHnSpAngularCorrOmegaMinus(0), fHnSpAngularCorrOmegaPlus(0)
 
 {
   // Constructor
@@ -543,6 +556,88 @@ if(! f3dHistXiPtVsEffMassVsYOmegaPlus) {
 }
 
 
+
+//-------
+
+if(! fHnSpAngularCorrXiMinus){
+	// Delta Phi(Casc,any trck) Vs Delta Eta(Casc,any trck) Vs Casc Pt Vs Pt of the tracks
+	// Delta Phi  = 360 bins de -180., 180.
+	// Delta Eta  = 120 bins de -3.0, 3.0
+	// Pt Cascade = 100 bins de 0., 10.0,
+	// Pt track = 150 bins de 0., 15.0
+	
+   Int_t    bins[5] = { 360, 120, 100, 150, 40};
+   Double_t xmin[5] = {-180, -3.,  0.,  0., 1.30};
+   Double_t xmax[5] = { 180., 3., 10., 15., 1.34};
+   fHnSpAngularCorrXiMinus = new THnSparseF("fHnSpAngularCorrXiMinus", "Angular Correlation for #Xi^{-}:", 5, bins, xmin, xmax);
+	fHnSpAngularCorrXiMinus->GetAxis(0)->SetTitle(" #Delta#phi(Casc,Track) (deg)");
+	fHnSpAngularCorrXiMinus->GetAxis(1)->SetTitle(" #Delta#eta(Casc,Track)");
+	fHnSpAngularCorrXiMinus->GetAxis(2)->SetTitle(" Pt_{Casc} (GeV/c)");
+	fHnSpAngularCorrXiMinus->GetAxis(3)->SetTitle(" Pt_{any track} (GeV/c)");
+	fHnSpAngularCorrXiMinus->GetAxis(4)->SetTitle(" Eff. Inv Mass (GeV/c^{2})");
+	fHnSpAngularCorrXiMinus->Sumw2();
+   fListHistCascade->Add(fHnSpAngularCorrXiMinus);
+}
+
+if(! fHnSpAngularCorrXiPlus){
+	// Delta Phi(Casc,any trck) Vs Delta Eta(Casc,any trck) Vs Casc Pt Vs Pt of the tracks
+	// Delta Phi  = 360 bins de -180., 180.
+	// Delta Eta  = 120 bins de -3.0, 3.0
+	// Pt Cascade = 100 bins de 0., 10.0,
+	// Pt track = 150 bins de 0., 15.0
+   Int_t    bins[5] = { 360, 120, 100, 150, 40};
+   Double_t xmin[5] = {-180, -3.,  0.,  0., 1.30};
+   Double_t xmax[5] = { 180., 3., 10., 15., 1.34};
+   fHnSpAngularCorrXiPlus = new THnSparseF("fHnSpAngularCorrXiPlus", "Angular Correlation for #Xi^{+}:", 5, bins, xmin, xmax);
+	fHnSpAngularCorrXiPlus->GetAxis(0)->SetTitle(" #Delta#phi(Casc,Track) (deg)");
+	fHnSpAngularCorrXiPlus->GetAxis(1)->SetTitle(" #Delta#eta(Casc,Track)");
+	fHnSpAngularCorrXiPlus->GetAxis(2)->SetTitle(" Pt_{Casc} (GeV/c)");
+	fHnSpAngularCorrXiPlus->GetAxis(3)->SetTitle(" Pt_{any track} (GeV/c)");
+	fHnSpAngularCorrXiPlus->GetAxis(4)->SetTitle(" Eff. Inv Mass (GeV/c^{2})");
+	fHnSpAngularCorrXiPlus->Sumw2();
+   fListHistCascade->Add(fHnSpAngularCorrXiPlus);
+}
+
+if(! fHnSpAngularCorrOmegaMinus){
+	// Delta Phi(Casc,any trck) Vs Delta Eta(Casc,any trck) Vs Casc Pt Vs Pt of the tracks
+	// Delta Phi  = 360 bins de -180., 180.
+	// Delta Eta  = 120 bins de -3.0, 3.0
+	// Pt Cascade = 100 bins de 0., 10.0,
+	// Pt track = 150 bins de 0., 15.0
+	
+   Int_t    bins[5] = { 360, 120, 100, 150, 40};
+   Double_t xmin[5] = {-180, -3.,  0.,  0., 1.65};
+   Double_t xmax[5] = { 180., 3., 10., 15., 1.69};
+   fHnSpAngularCorrOmegaMinus = new THnSparseF("fHnSpAngularCorrOmegaMinus", "Angular Correlation for #Omega^{-}:", 5, bins, xmin, xmax);
+	fHnSpAngularCorrOmegaMinus->GetAxis(0)->SetTitle(" #Delta#phi(Casc,Track) (deg)");
+	fHnSpAngularCorrOmegaMinus->GetAxis(1)->SetTitle(" #Delta#eta(Casc,Track)");
+	fHnSpAngularCorrOmegaMinus->GetAxis(2)->SetTitle(" Pt_{Casc} (GeV/c)");
+	fHnSpAngularCorrOmegaMinus->GetAxis(3)->SetTitle(" Pt_{any track} (GeV/c)");
+	fHnSpAngularCorrOmegaMinus->GetAxis(4)->SetTitle(" Eff. Inv Mass (GeV/c^{2})");
+	fHnSpAngularCorrOmegaMinus->Sumw2();
+   fListHistCascade->Add(fHnSpAngularCorrOmegaMinus);
+}
+
+if(! fHnSpAngularCorrOmegaPlus){
+	// Delta Phi(Casc,any trck) Vs Delta Eta(Casc,any trck) Vs Casc Pt Vs Pt of the tracks
+	// Delta Phi  = 360 bins de -180., 180.
+	// Delta Eta  = 120 bins de -3.0, 3.0
+	// Pt Cascade = 100 bins de 0., 10.0,
+	// Pt track = 150 bins de 0., 15.0
+   Int_t    bins[5] = { 360, 120, 100, 150, 40};
+   Double_t xmin[5] = {-180, -3.,  0.,  0., 1.65};
+   Double_t xmax[5] = { 180., 3., 10., 15., 1.69};
+   fHnSpAngularCorrOmegaPlus = new THnSparseF("fHnSpAngularCorrOmegaPlus", "Angular Correlation for #Omega^{+}:", 5, bins, xmin, xmax);
+	fHnSpAngularCorrOmegaPlus->GetAxis(0)->SetTitle(" #Delta#phi(Casc,Track) (deg)");
+	fHnSpAngularCorrOmegaPlus->GetAxis(1)->SetTitle(" #Delta#eta(Casc,Track)");
+	fHnSpAngularCorrOmegaPlus->GetAxis(2)->SetTitle(" Pt_{Casc} (GeV/c)");
+	fHnSpAngularCorrOmegaPlus->GetAxis(3)->SetTitle(" Pt_{any track} (GeV/c)");
+	fHnSpAngularCorrOmegaPlus->GetAxis(4)->SetTitle(" Eff. Inv Mass (GeV/c^{2})");
+	fHnSpAngularCorrOmegaPlus->Sumw2();
+   fListHistCascade->Add(fHnSpAngularCorrOmegaPlus);
+}
+
+
 }// end UserCreateOutputObjects
 
 
@@ -646,6 +741,9 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 
   Double_t lRapXi   = -20.0, lRapOmega = -20.0,  lEta = -20.0, lTheta = 360., lPhi = 720. ;
   Double_t lAlphaXi = -200., lPtArmXi  = -200.0;
+  
+  TVector3 lTVect3MomXi(0.,0.,0.);
+  Int_t    lArrTrackID[3] = {-1, -1, -1};
 
 
   
@@ -660,7 +758,7 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
   
   
   // ---------------------------------------------------------------
-  // I - General histos (filled for any event) - (ESD)
+  // I - General histos (filled for any event)
 
   fHistTrackMultiplicity  ->Fill( (InputEvent())->GetNumberOfTracks() );
   fHistCascadeMultiplicity->Fill( ncascades );
@@ -785,7 +883,7 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	AliESDtrack *nTrackXi		= lESDevent->GetTrack( lIdxNegXi );
 	AliESDtrack *bachTrackXi	= lESDevent->GetTrack( lBachIdx );
 	if (!pTrackXi || !nTrackXi || !bachTrackXi ) {
-		Printf("ERROR: Could not retrieve one of the 3 daughter tracks of the cascade ...");
+		Printf("ERROR: Could not retrieve one of the 3 ESD daughter tracks of the cascade ...");
 		continue;
 	}
 	
@@ -892,7 +990,7 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		
 		
 		// - II.Step 6 : extra info for QA (ESD)
-		// miscellaneous pieces onf info that may help regarding data quality assessment.
+		// miscellaneous pieces of info that may help regarding data quality assessment.
 		//-------------
 
 	xi->GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
@@ -914,6 +1012,15 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	lPhi      = xi->Phi()   *180.0/TMath::Pi();
 	lAlphaXi  = xi->AlphaXi();
 	lPtArmXi  = xi->PtArmXi();
+	
+	
+        	// II.Step 7 - Azimuthal correlation study
+		//-------------
+	
+	lTVect3MomXi.SetXYZ( lXiMomX, lXiMomY, lXiMomZ );
+	lArrTrackID[0] = pTrackXi   ->GetID();
+	lArrTrackID[1] = nTrackXi   ->GetID();
+	lArrTrackID[2] = bachTrackXi->GetID();
 	
 	
   }// end of ESD treatment
@@ -1009,17 +1116,17 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	if( lChargeXi > 0 )		lInvMassOmegaPlus 	= xi->MassOmega();
 
 	
-		// - II.Step 5 : PID on the bachelor
+		// - II.Step 5 : PID on the bachelor (To be developed ...)
 		//-------------
 	
-	/*
+	/* 
 	// Reasonable guess for the priors for the cascade track sample
 	Double_t lPriorsGuessXi[5]    = {0.0, 0.0, 2, 0, 1};
 	Double_t lPriorsGuessOmega[5] = {0.0, 0.0, 1, 1, 1};
 	AliPID pidXi;		pidXi.SetPriors(    lPriorsGuessXi    );
 	AliPID pidOmega;	pidOmega.SetPriors( lPriorsGuessOmega );
 	
-	const AliAODTrack *bachTrackXi = lAODevent->GetTrack( xi->GetBachID() );
+	const AliAODTrack *bachTrackXi = lAODevent->GetTrack( xi->GetBachID() ); // FIXME : GetBachID not implemented ?
 	
 	if( bachTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists, the AOD flags = a copy of the ESD ones
 		Double_t r[10]; bachTrackXi->GetPID(r);
@@ -1069,7 +1176,24 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	lAlphaXi  = xi->AlphaXi();
 	lPtArmXi  = xi->PtArmXi();
 
-	 
+	
+		// II.Step 7 - Azimuthal correlation study
+		//-------------
+	
+	lTVect3MomXi.SetXYZ( lXiMomX, lXiMomY, lXiMomZ );
+	
+	AliAODTrack *pTrackXi    = dynamic_cast<AliAODTrack*>( xi->GetDaughter(0) );
+	AliAODTrack *nTrackXi    = dynamic_cast<AliAODTrack*>( xi->GetDaughter(1) );
+	AliAODTrack *bachTrackXi = dynamic_cast<AliAODTrack*>( xi->GetDecayVertexXi()->GetDaughter(0) );	
+		if (!pTrackXi || !nTrackXi || !bachTrackXi ) {
+			Printf("ERROR: Could not retrieve one of the 3 AOD daughter tracks of the cascade ...");
+			continue;
+		}
+		
+	lArrTrackID[0] = pTrackXi   ->GetID();
+	lArrTrackID[1] = nTrackXi   ->GetID();
+	lArrTrackID[2] = bachTrackXi->GetID();
+	
   }// end of AOD treatment
 
 
@@ -1117,7 +1241,7 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	fHistDcaNegToPrimVertexXi	->Fill( lDcaNegToPrimVertexXi      );
 		
 	
-	// - III.Step 4+5
+	// - III.Step 4
 	if( lChargeXi < 0 ){
 					fHistMassXiMinus	       ->Fill( lInvMassXiMinus    );
 					fHistMassOmegaMinus	       ->Fill( lInvMassOmegaMinus );
@@ -1133,13 +1257,7 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	}
 	
 
-//	if( bachTrackXi->Charge() < 0 )	fHistMassXiMinus	->Fill( lInvMassXiMinus    );
-// 	if( bachTrackXi->Charge() > 0 )	fHistMassXiPlus		->Fill( lInvMassXiPlus     );
-// 	if( bachTrackXi->Charge() < 0 )	fHistMassOmegaMinus	->Fill( lInvMassOmegaMinus );
-// 	if( bachTrackXi->Charge() > 0 )	fHistMassOmegaPlus	->Fill( lInvMassOmegaPlus  );
-
-
-	// - III.Step 5
+	// - III.Step 6
 	fHistXiTransvMom	->Fill( lXiTransvMom   );
 	fHistXiTotMom		->Fill( lXiTotMom      );
 		
@@ -1157,6 +1275,7 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 
 	f2dHistArmenteros	->Fill( lAlphaXi, lPtArmXi   );
 		
+	// - III.Step 5
 	if( lChargeXi < 0 ) {
 		f2dHistEffMassLambdaVsEffMassXiMinus->Fill( lInvMassLambdaAsCascDghter, lInvMassXiMinus ); 
 		f2dHistEffMassXiVsEffMassOmegaMinus ->Fill( lInvMassXiMinus, lInvMassOmegaMinus );
@@ -1173,8 +1292,19 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		f3dHistXiPtVsEffMassVsYXiPlus       ->Fill( lXiTransvMom, lInvMassXiPlus,    lRapXi    );
 		f3dHistXiPtVsEffMassVsYOmegaPlus    ->Fill( lXiTransvMom, lInvMassOmegaPlus, lRapOmega );
 	}
-		
-   
+	
+	// - III.Step 7
+	
+	if( lChargeXi < 0 ){
+		DoAngularCorrelation("Xi-",    lInvMassXiMinus,    lArrTrackID, lTVect3MomXi, lEta);
+		DoAngularCorrelation("Omega-", lInvMassOmegaMinus, lArrTrackID, lTVect3MomXi, lEta);
+	}
+	else{
+		DoAngularCorrelation("Xi+",    lInvMassXiPlus,    lArrTrackID, lTVect3MomXi, lEta);
+		DoAngularCorrelation("Omega+", lInvMassOmegaPlus, lArrTrackID, lTVect3MomXi, lEta);
+	}
+	
+	
     }// end of the Cascade loop (ESD or AOD)
     
   
@@ -1183,7 +1313,62 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 }
 
 
+void AliAnalysisTaskCheckCascade::DoAngularCorrelation( const Char_t   *lCascType, 
+							      Double_t  lInvMassCascade, 
+							const Int_t    *lArrTrackID,
+							      TVector3 &lTVect3MomXi, 
+							      Double_t  lEtaXi ){
+	
+	TString lStrCascType( lCascType );
+	
+	Double_t lCascPdgMass = 0.0;
+	if( lStrCascType.Contains("Xi") )       lCascPdgMass = 1.3217;
+	if( lStrCascType.Contains("Omega") )    lCascPdgMass = 1.6724;
+	
+	if( lInvMassCascade > lCascPdgMass + 0.010) return;
+	if( lInvMassCascade < lCascPdgMass - 0.010) return;
+	// Check the Xi- candidate is within the proper mass window m0 +- 10 MeV
+	
+	for(Int_t TrckIdx = 0; TrckIdx < (InputEvent())->GetNumberOfTracks() ; TrckIdx++ )
+	{// Loop over all the tracks of the event
+	
+		AliVTrack *lCurrentTrck = dynamic_cast<AliVTrack*>( (InputEvent())->GetTrack( TrckIdx ) );
+			if (!lCurrentTrck ) {
+				Printf("ERROR Correl. Study : Could not retrieve a track while looping over the event tracks ...");
+				continue;
+			}
+				
+		// Room for improvement: //FIXME
+		// 1. Loop only on primary tracks ?	
+		// 2. Exclude the tracks that build the condisdered cascade = the bachelor + the V0 dghters
+		//     This may bias the outcome, especially for low multplicity events.
+		// Note : For ESD event, track ID == track index.
+			if(lCurrentTrck->GetID() == lArrTrackID[0]) continue;
+			if(lCurrentTrck->GetID() == lArrTrackID[1]) continue;
+			if(lCurrentTrck->GetID() == lArrTrackID[2]) continue;
+			
+		TVector3 lTVect3MomTrck(lCurrentTrck->Px(), lCurrentTrck->Py(), lCurrentTrck->Pz() );
+		
+		// 2 hypotheses made here :
+		//   - The Xi trajectory is a straight line,
+		//   - The Xi doesn't loose any energy by crossing the first layer(s) of ITS, if ever;
+		//      So, meaning hyp: vect p(Xi) at the emission = vect p(Xi) at the decay vertex
+	
+   		Double_t lHnSpFillVar[5] = {0.};
+		lHnSpFillVar[0] = lTVect3MomXi.DeltaPhi(lTVect3MomTrck) * 180.0/TMath::Pi(); // Delta phi(Casc,Track) (deg)
+		lHnSpFillVar[1] = lEtaXi - lCurrentTrck->Eta(); 			   // Delta eta(Casc,Track)
+		lHnSpFillVar[2] = lTVect3MomXi.Pt();					   // Pt_{Casc}
+		lHnSpFillVar[3] = lCurrentTrck->Pt();					   // Pt_{any track}
+		lHnSpFillVar[4] = lInvMassCascade;					   // Eff. Inv Mass (control var)
+		
+		if(      lStrCascType.Contains("Xi-") )      fHnSpAngularCorrXiMinus    ->Fill( lHnSpFillVar );
+		else if( lStrCascType.Contains("Xi+") )      fHnSpAngularCorrXiPlus     ->Fill( lHnSpFillVar );
+		else if( lStrCascType.Contains("Omega-") )   fHnSpAngularCorrOmegaMinus ->Fill( lHnSpFillVar );
+		else if( lStrCascType.Contains("Omega+") )   fHnSpAngularCorrOmegaPlus  ->Fill( lHnSpFillVar );
+	
+	}// end - Loop over all the tracks in the event
 
+}
 
 
 

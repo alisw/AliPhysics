@@ -6,16 +6,21 @@
 //-----------------------------------------------------------------
 //                 AliAnalysisTaskCheckCascade class
 //            (AliAnalysisTaskCheckCascade)
-//            This task is for QAing the Cascades from ESD and AOD
-//              Origin:  AliAnalysisTaskESDCheckV0 by B.H. Nov2007, hippolyt@in2p3.fr
+//            This task has three roles :
+//              1. QAing the Cascades from ESD and AOD
+//                 Origin:  AliAnalysisTaskESDCheckV0 by B.H. Nov2007, hippolyt@in2p3.fr
+//              2. Prepare the plots which stand as raw material for yield extraction
+//              3. Rough azimuthal correlation study (Eta, Phi)
 //            Adapted to Cascade : A.Maire Mar2008, antonin.maire@ires.in2p3.fr
-//	      Modified :           A.Maire Jun2009, antonin.maire@ires.in2p3.fr
+//            Modified :           A.Maire Aug2009, antonin.maire@ires.in2p3.fr
 //-----------------------------------------------------------------
 
 class TList;
 class TH1F;
 class TH2F;
 class TH3F;
+class TVector3;
+class THnSparse;
  
 
 #include "TString.h"
@@ -30,6 +35,11 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
+	  void   DoAngularCorrelation(const Char_t   *lCascType, 
+				            Double_t  lInvMassCascade, 
+				      const Int_t    *lArrTrackID,
+				            TVector3 &lTVect3MomXi, 
+				            Double_t  lEtaXi);
   virtual void   Terminate(Option_t *);
   
   void SetCollidingSystems(Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
@@ -66,7 +76,7 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 	TH2F	*f2dHistTrkgPrimVtxVsBestPrimVtx;	//!  Radius of prim. Vtx from tracks Vs Radius of best Prim. Vtx
 	
 	
-	
+	// PART 1 : Adavanced QA
 	// - Typical histos on the variables used for the selection of cascades
 	TH1F	*fHistEffMassXi;      			//! reconstructed cascade effective mass
 	TH1F	*fHistChi2Xi;         			//! chi2 value
@@ -126,15 +136,25 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 	TH2F	*f2dHistXiRadiusVsEffMassOmegaMinus;	//! transv. casc. decay radius Vs Omega- Eff mass, under Omega- hyp.
 	TH2F	*f2dHistXiRadiusVsEffMassOmegaPlus;	//! transv. casc. decay radius Vs Omega+ Eff mass, under Omega+ hyp.
 	
+	
+	// PART 2 : TH3F needed for pt spectrum and yield extraction
 	TH3F	*f3dHistXiPtVsEffMassVsYXiMinus;	//! casc. transv. momemtum Vs Xi- Eff mass Vs Y
 	TH3F	*f3dHistXiPtVsEffMassVsYXiPlus;		//! casc. transv. momemtum Vs Xi+ Eff mass Vs Y
 	TH3F	*f3dHistXiPtVsEffMassVsYOmegaMinus;	//! casc. transv. momemtum Vs Omega- Eff mass Vs Y
 	TH3F	*f3dHistXiPtVsEffMassVsYOmegaPlus;	//! casc. transv. momemtum Vs Omega+ Eff mass Vs Y
+	
+	
+	// PART 3 :  Azimuthal correlation study
+	THnSparseF	*fHnSpAngularCorrXiMinus;	//! Delta Phi(Casc,any trck) Vs Delta Eta(Casc,any trck) Vs Casc Pt Vs Pt of the tracks Vs Eff Mass
+	THnSparseF	*fHnSpAngularCorrXiPlus;	//! Delta Phi(Casc,any trck) Vs Delta Eta(Casc,any trck) Vs Casc Pt Vs Pt of the tracks Vs Eff Mass
+	THnSparseF	*fHnSpAngularCorrOmegaMinus;	//! Delta Phi(Casc,any trck) Vs Delta Eta(Casc,any trck) Vs Casc Pt Vs Pt of the tracks Vs Eff Mass
+	THnSparseF	*fHnSpAngularCorrOmegaPlus;	//! Delta Phi(Casc,any trck) Vs Delta Eta(Casc,any trck) Vs Casc Pt Vs Pt of the tracks Vs Eff Mass
+
 
   AliAnalysisTaskCheckCascade(const AliAnalysisTaskCheckCascade&);            // not implemented
   AliAnalysisTaskCheckCascade& operator=(const AliAnalysisTaskCheckCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascade, 4);
+  ClassDef(AliAnalysisTaskCheckCascade, 5);
 };
 
 #endif
