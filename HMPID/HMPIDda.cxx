@@ -2,14 +2,15 @@
 
 HMPID DA for online calibration
 
-Contact: Levente.Molnar@cern.ch, Giacomo.Volpe@ba.infn.it
-Link for validation file from AliEn: /alice/data/2008/LHC08c_HMPID/000047350/raw/08000047350020.10.root 
-Run Type: PEDESTAL -- but we select on the PHYSICS_EVENTS in th HMPIDda.cxx
-DA Type: LDC
-Number of events needed: ~ 1000 events
-Input Files: Raw pedestal file, EXTERNAL config files: HmpidSigmaCut.txt, HmpDeadChannelMap.txt on all HMPID LDCs
-Output Files: 2 x 14 txt files including pedestal and error values
-Trigger types used: PEDESTAL RUN (but selecting on PHYSICS_EVENT)
+Contact:                  Levente.Molnar@cern.ch, Giacomo.Volpe@ba.infn.it
+Link:                     https://twiki.cern.ch/twiki/bin/view/ALICE/DAInstructions
+Run Type:                 PEDESTAL -- but we select on the PHYSICS_EVENTS in the HMPIDda.cxx
+DA Type:                  LDC
+Refernce Run:             78734
+Number of events needed:  ~ 1000 events
+Input Files:              Raw pedestal file, EXTERNAL config files: HmpDaqDaConfig.txt, HmpDeadChannelMap.txt on all HMPID LDCs
+Output Files:             2 x 14 txt files including pedestal and error values
+Trigger types used:       CALIBRATION RUN (but selecting on PHYSICS_EVENT)
 
 */
 
@@ -45,7 +46,7 @@ extern "C" {
 
 int main(int argc, char **argv){ 
 
-  int status;
+  int status=0;
   const Char_t         *hmpConfigFile        = "HmpDaqDaConfig.txt"; 
   const Char_t         *hmpDeadChannelMapFile = "HmpDeadChannelMap.txt"; 
   const Int_t               ddlOffset = 1536;
@@ -67,10 +68,10 @@ int main(int argc, char **argv){
   /* copy locally a file from daq detector config db */
   
   hmpIn=Form("./%s",hmpConfigFile);
-  status+=daqDA_DB_getFile(hmpConfigFile,hmpIn.Data());
+  status=daqDA_DB_getFile(hmpConfigFile,hmpIn.Data()); 
   if (status) { printf("Failed to get HMPID config file status: %d\n",status);return -1; }
   hmpIn2=Form("./%s",hmpDeadChannelMapFile);
-  status+=daqDA_DB_getFile(hmpDeadChannelMapFile,hmpIn.Data());
+  status=daqDA_DB_getFile(hmpDeadChannelMapFile,hmpIn2.Data()); 
   if (status) { printf("Failed to get HMPID dead channel file status: %d\n",status);return -1; }
   
 
