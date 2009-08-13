@@ -27,9 +27,6 @@ class AliHLTComponentHandler;
 /* the logging macros can be used inside methods of classes which inherit from 
  * AliHLTLogging
  */
-// HLTMessage is not filtered
-#define HLTMessage( ... )   LoggingVarargs(kHLTLogNone,      NULL , NULL , __FILE__ , __LINE__ , __VA_ARGS__ )
-
 // function name
 #if defined(__GNUC__) || defined(__ICC) || defined(__ECC) || defined(__APPLE__)
 #define FUNCTIONNAME() __FUNCTION__
@@ -37,8 +34,11 @@ class AliHLTComponentHandler;
 #define FUNCTIONNAME() "???"
 #endif
 
-// the following macros are filtered by the Global and Local Log Filter
 #ifndef ALIHLTLOGGINGVARIADICFREE_H
+// HLTMessage is not filtered
+#define HLTMessage( ... )   LoggingVarargs(kHLTLogNone,      NULL , NULL , __FILE__ , __LINE__ , __VA_ARGS__ )
+
+// the following macros are filtered by the Global and Local Log Filter
 #define HLTBenchmark( ... ) LoggingVarargs(kHLTLogBenchmark, Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
 #ifdef __DEBUG
 #define HLTDebug( ... )     if (CheckFilter(kHLTLogDebug) && CheckGroup(Class_Name())) LoggingVarargs(kHLTLogDebug,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
@@ -54,6 +54,7 @@ class AliHLTComponentHandler;
 // the same macros are defined variadic free, in that case the message must be complete
 // include AliHLTLoggingVariadicFree.h
 #else //ALIHLTLOGGINGVARIADICFREE_H
+#define HLTMessage( message )   LoggingVarargs(kHLTLogNone,      NULL , NULL , __FILE__ , __LINE__ , message )
 #define HLTBenchmark( message ) LoggingVarargs(kHLTLogBenchmark, Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , message )
 #ifdef __DEBUG
 #define HLTDebug( message )     if (CheckFilter(kHLTLogDebug) && CheckGroup(Class_Name())) LoggingVarargs(kHLTLogDebug,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , message )
