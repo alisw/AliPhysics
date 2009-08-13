@@ -119,10 +119,11 @@ AliHMPIDRawStream::~AliHMPIDRawStream()
   fWord=0;
   fZeroSup=0;
   fTurbo=0;
-  for(Int_t i=0;i<kSumErr;i++) delete [] fNumOfErr[i]; 
+  for(Int_t i=0;i<kNDDL;i++) delete [] fNumOfErr[i]; 
   delete [] fNumOfErr; 
 
-  if(fnDDLInStream) { delete [] fnDDLInStream; fnDDLInStream = 0x0; }
+  delete [] fnDDLInStream;
+  delete [] fnDDLOutStream;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::Reset()

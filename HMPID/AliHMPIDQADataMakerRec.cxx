@@ -229,7 +229,7 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
        }      
      }
 
-   stream.Delete();
+    //   stream.Delete();
    
 }
 

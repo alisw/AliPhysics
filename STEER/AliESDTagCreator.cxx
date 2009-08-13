@@ -280,8 +280,8 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
 
   AliRunTag *tag = new AliRunTag();
   AliEventTag *evTag = new AliEventTag();
-  TTree ttag("T","A Tree with event tags");
-  TBranch * btag = ttag.Branch("AliTAG", &tag);
+  TTree * ttag = new TTree("T","A Tree with event tags");
+  TBranch * btag = ttag->Branch("AliTAG", &tag);
   btag->SetCompressionLevel(9);
 
   for(Int_t iEventNumber = 0; iEventNumber < chain->GetEntries(); iEventNumber++) {
@@ -525,13 +525,13 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
 
     if(fguid != fTempGuid) {
       fTempGuid = fguid;
-      ttag.Fill();
+      ttag->Fill();
       tag->Clear("");
     }
     tag->AddEventTag(*evTag);
     if(iEventNumber+1 == chain->GetEntries()) {
       //AliInfo(Form("File: %s",fturl.Data()));
-      ttag.Fill();
+      ttag->Fill();
       tag->Clear("");
     }      
   }//event loop
@@ -549,7 +549,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
 
   ftag->cd();
   tag->Clear();
-  ttag.Write();
+  ttag->Write();
   ftag->Close();
 
   //gSystem->GetMemInfo(meminfo);
@@ -607,8 +607,8 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
 
   AliRunTag *tag = new AliRunTag();
   AliEventTag *evTag = new AliEventTag();
-  TTree ttag("T","A Tree with event tags");
-  TBranch * btag = ttag.Branch("AliTAG", &tag);
+  TTree * ttag = new TTree("T","A Tree with event tags");
+  TBranch * btag = ttag->Branch("AliTAG", &tag);
   btag->SetCompressionLevel(9);
   gSystem->GetMemInfo(meminfo);
   AliInfo(Form("After the tag initialization - Memory used: %d MB",meminfo->fMemUsed));
@@ -904,9 +904,9 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
 
   TFile* ftag = TFile::Open(fileName, "recreate");
   ftag->cd();
-  ttag.Fill();
+  ttag->Fill();
   tag->Clear();
-  ttag.Write();
+  ttag->Write();
   ftag->Close();
 
   gSystem->GetMemInfo(meminfo);
@@ -962,8 +962,8 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
 
   AliRunTag *tag = new AliRunTag();
   AliEventTag *evTag = new AliEventTag();
-  TTree ttag("T","A Tree with event tags");
-  TBranch * btag = ttag.Branch("AliTAG", &tag);
+  TTree * ttag = new TTree("T","A Tree with event tags");
+  TBranch * btag = ttag->Branch("AliTAG", &tag);
   btag->SetCompressionLevel(9);
   
   AliInfo(Form("Creating the ESD tags......."));	
@@ -1243,9 +1243,9 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
 
   TFile* ftag = TFile::Open(fileName, "recreate");
   ftag->cd();
-  ttag.Fill();
+  ttag->Fill();
   tag->Clear();
-  ttag.Write();
+  ttag->Write();
   ftag->Close();
 
   delete ftag;
@@ -1336,8 +1336,8 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
  
   AliRunTag *tag = new AliRunTag();
   AliEventTag *evTag = new AliEventTag();
-  TTree ttag("T","A Tree with event tags");
-  TBranch * btag = ttag.Branch("AliTAG", &tag);
+  TTree * ttag = new TTree("T","A Tree with event tags");
+  TBranch * btag = ttag->Branch("AliTAG", &tag);
   btag->SetCompressionLevel(9);
 
   if(fLastEvent != -1) iNumberOfEvents = fLastEvent + 1;
@@ -1589,9 +1589,9 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   }
 	
   ftag->cd();
-  ttag.Fill();
+  ttag->Fill();
   tag->Clear();
-  ttag.Write();
+  ttag->Write();
   ftag->Close();
   file->cd();
   delete tag;

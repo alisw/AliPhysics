@@ -361,7 +361,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   GetRawsData(18)->Fill(sumQ_ZPC_lg);
   GetRawsData(19)->Fill(sumQ_ZPA_lg);
   //
-  stream.Delete();
+//   stream.Delete();
 }
 
 //___________________________________________________________________________
