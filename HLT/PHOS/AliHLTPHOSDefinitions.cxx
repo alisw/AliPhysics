@@ -55,5 +55,8 @@ const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkMIPDataType             
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkSandboxDataType               = { sizeof(AliHLTComponentDataType),       {'S','A','N','D','B','O','X','T'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkEmcCalibDataType              = { sizeof(AliHLTComponentDataType),       {'C','A','L','I','T','Y','P','E'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCaloClusterDataType           = { sizeof(AliHLTComponentDataType),       {'C','A','L','C','L','U','S','T'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkESDCaloClusterDataType        = { sizeof(AliHLTComponentDataType),       {'E','S','D','C','L','U','S','T'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkESDCaloCellsDataType          = { sizeof(AliHLTComponentDataType),       {'E','S','D','C','E','L','L','S'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkPhysicsHistogramsDataType     = { sizeof(AliHLTComponentDataType),       {'P','H','Y','S','H','I','S','T'},{'P','H','O','S'}};;
 
 

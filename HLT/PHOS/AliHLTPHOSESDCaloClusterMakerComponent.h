@@ -1,7 +1,4 @@
-//-*- Mode: C++ -*-
-// $Id$
-
-
+ 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
@@ -17,18 +14,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#ifndef ALIHLTPHOSHISTOGRAMPRODUCERCOMPONENT_H
-#define ALIHLTPHOSHISTOGRAMPRODUCERCOMPONENT_H
+#ifndef ALIHLTPHOSESDCALOCLUSTERMAKERCOMPONENT_H
+#define ALIHLTPHOSESDCALOCLUSTERMAKERCOMPONENT_H
+
 
 
 
 /**
- * 
+ * ESD maker component for PHOS HLT
  *
- * @file   AliHLTPHOSHistogramProducerComponent.cxx
+ * @file   AliHLTPHOSESDCaloClusterMakerComponent.h
  * @author Oystein Djuvsland
  * @date   
- * @brief  
+ * @brief  An ESD maker component for PHOS HLT
 */
 
 // see below for class documentation
@@ -39,34 +37,39 @@
 
 #include "AliHLTPHOSProcessor.h"
 
-class AliHLTPHOSPhysicsHistogramProducer;
+class AliHLTPHOSESDCaloClusterMaker;
+class AliHLTPHOSCaloClusterContainerStruct;
+class TClonesArray;
+
 /**
- * @class AliHLTPHOSHistogramProducerComponent
+ * @class AliHLTPHOSESDCaloClusterMakerComponent
  *
- * 
+ * HLT component for making AliESDEvent from AliHLTPHOSCaloClusterDataStructs 
+ *
  * @ingroup alihlt_phos
  */
-class AliHLTPHOSHistogramProducerComponent: public AliHLTPHOSProcessor
+class AliHLTPHOSESDCaloClusterMakerComponent: public AliHLTPHOSProcessor
 {
  public:
 
   /** Constructor */
-  AliHLTPHOSHistogramProducerComponent();
+
+  AliHLTPHOSESDCaloClusterMakerComponent();
 
   /** Destructor */
-  virtual ~AliHLTPHOSHistogramProducerComponent();
+  virtual ~AliHLTPHOSESDCaloClusterMakerComponent();
 
   /** Copy constructor */  
-  AliHLTPHOSHistogramProducerComponent(const AliHLTPHOSHistogramProducerComponent & ) : 
+  AliHLTPHOSESDCaloClusterMakerComponent(const AliHLTPHOSESDCaloClusterMakerComponent &) : 
     AliHLTPHOSProcessor(),
-    fPhysicsHistogramProducerPtr(0),
-    fPushModulo(0)
+    fESDCaloClusterMakerPtr(0),
+    fESDCaloClustersPtr(0)
   {
     //Copy constructor not implemented
   }
   
   /** Assignment */
-  AliHLTPHOSHistogramProducerComponent & operator = (const AliHLTPHOSHistogramProducerComponent)
+  AliHLTPHOSESDCaloClusterMakerComponent & operator = (const AliHLTPHOSESDCaloClusterMakerComponent)
   {
     //Assignment
     return *this; 
@@ -85,13 +88,9 @@ class AliHLTPHOSHistogramProducerComponent: public AliHLTPHOSProcessor
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
   /** interface function, see @ref AliHLTComponent for description */
-  
-  using  AliHLTPHOSProcessor::DoEvent;
+  using AliHLTPHOSProcessor::DoEvent;
+  Int_t DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
 
-  int DoEvent(const AliHLTComponentEventData& evtData, 
-	      AliHLTComponentTriggerData& trigData);
-    
-  // Int_t DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
   
@@ -102,12 +101,17 @@ protected:
 
   /** interface function, see @ref AliHLTComponent for description */
   int Deinit();
+ 
+private:
 
- private:
+  /** Pointer to the ESD maker it self */
+  AliHLTPHOSESDCaloClusterMaker* fESDCaloClusterMakerPtr; //! transient
 
-  AliHLTPHOSPhysicsHistogramProducer* fPhysicsHistogramProducerPtr;
-  UInt_t fPushModulo;
+  /** Pointer to the ESD calo cluster array*/
+  TClonesArray* fESDCaloClustersPtr; //! transient
 
 };
 
+
 #endif
+

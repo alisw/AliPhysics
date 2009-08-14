@@ -126,7 +126,7 @@ Int_t AliHLTPHOSRcuCalibrationProcessorComponent::ProcessCalibration(const AliHL
 
   UInt_t specification = 0;
   const AliHLTComponentBlockData* iter = 0;
-  iter = GetFirstInputBlock( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC);
+  iter = GetFirstInputBlock();
   AliHLTPHOSRcuCellEnergyDataStruct* cellDataPtr = 0;
   AliHLTPHOSValidCellDataStruct* currentChannel = 0;
   int totalSamples = 1;

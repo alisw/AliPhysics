@@ -19,7 +19,7 @@
  **************************************************************************/
 #include "AliHLTPHOSUtilities.h"
 #include <cstdlib>
-
+#include <cstdio>
 
 AliHLTPHOSUtilities::AliHLTPHOSUtilities()
 {

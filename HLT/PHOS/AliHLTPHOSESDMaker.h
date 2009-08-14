@@ -132,7 +132,7 @@ private:
   /** The AliHLTPHOSCaloClusterContainerStruct */               
   AliHLTPHOSCaloClusterContainerStruct* fCaloClusterContainerPtr;   //! transient
 
-  ClassDef(AliHLTPHOSESDMaker, 1);
+  ClassDef(AliHLTPHOSESDMaker, 0);
 };
 
 #endif

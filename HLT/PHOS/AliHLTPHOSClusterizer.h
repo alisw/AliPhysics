@@ -157,7 +157,7 @@ protected:
   /** Maximum difference in index to be a neighbour */
   Int_t fMaxDigitIndexDiff;                                    //COMMENT
 
-  ClassDef(AliHLTPHOSClusterizer, 1);
+  ClassDef(AliHLTPHOSClusterizer, 0);
 };
 
 #endif

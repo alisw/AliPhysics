@@ -1,6 +1,3 @@
-//-*- Mode: C++ -*-
-// $Id$
-
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -18,14 +15,14 @@
  **************************************************************************/
 
 
-#ifndef ALIHLTPHOSRAWANALYZERCOMPONENTV2_H
-#define ALIHLTPHOSRAWANALYZERCOMPONENTV2_H
+#ifndef ALIHLTPHOSRAWANALYZERCOMPONENTV3_H
+#define ALIHLTPHOSRAWANALYZERCOMPONENTV3_H
 
 
 /**
  * Raw data analyzer component base class for PHOS HLT
  *
- * @file   AliHLTPHOSRawAnalyzerComponentv2.h
+ * @file   AliHLTPHOSRawAnalyzerComponentv3.h
  * @author Oystein Djuvsland
  * @date   
  * @brief  A clusterizer component for PHOS HLT
@@ -44,20 +41,19 @@ class AliHLTPHOSRawAnalyzer;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSMapper;
 class AliHLTPHOSSanityInspector;
-class AliAltroDecoder;      
-class AliAltroData;         
-class AliAltroBunch;        
 class AliHLTPHOSDigitMaker;
 class AliHLTPHOSDigitContainerDataStruct;
+class AliRawReaderMemory;
+class AliAltroRawStreamV3;
 
 /**
- * @class AliHLTPHOSRawAnalyzerComponentv2
+ * @class AliHLTPHOSRawAnalyzerComponentv3
  * This the new and fast version of the component taking care of the decoding and energy and timing 
  * extraction of the raw data from PHOS.
  *
  * <h2>General properties:</h2>
  *
- * Component ID: \b PhosRawAnalyzerv2 <br>
+ * Component ID: \b PhosRawAnalyzerv3 <br>
  * Library: \b libAliHLTPHOS.so     <br>
  * Input Data Types: @ref <br>
  * Output Data Types: @ref AliHLTPHOSDefinitions::fgkChannelDataType<br>
@@ -93,20 +89,21 @@ class AliHLTPHOSDigitContainerDataStruct;
  * <h2>Output size:</h2>
  * Depends on the amount of data...
  *
- * More detailed description. (At some point...)
+ * More detailed description. (Soon)
  *
  * @ingroup alihlt_phos
  */ 
 
-class AliHLTPHOSRawAnalyzerComponentv2 : public AliHLTPHOSRcuProcessor
+
+class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTPHOSRcuProcessor
 {
  public:
 
   /** Standard constructor */
-  AliHLTPHOSRawAnalyzerComponentv2();
+  AliHLTPHOSRawAnalyzerComponentv3();
 
   /** Destructor */
-  virtual ~AliHLTPHOSRawAnalyzerComponentv2();
+  virtual ~AliHLTPHOSRawAnalyzerComponentv3();
 
   /** interface function, see @ref AliHLTComponent for description */
   virtual int DoInit(int argc =0, const char** argv  = 0);
@@ -134,7 +131,7 @@ class AliHLTPHOSRawAnalyzerComponentv2 : public AliHLTPHOSRcuProcessor
   /** interface function, see @ref AliHLTComponent for description */
   using AliHLTPHOSRcuProcessor::DoEvent;
 
-    /** interface function, see @ref AliHLTComponent for description */
+  /** interface function, see @ref AliHLTComponent for description */
   virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );  
@@ -156,25 +153,22 @@ class AliHLTPHOSRawAnalyzerComponentv2 : public AliHLTPHOSRcuProcessor
  private:
 
   /** Keep the copy constructor private since it should not be used */
-  AliHLTPHOSRawAnalyzerComponentv2(const AliHLTPHOSRawAnalyzerComponentv2 & );
+  AliHLTPHOSRawAnalyzerComponentv3(const AliHLTPHOSRawAnalyzerComponentv3 & );
 
   /** Keep the assignement operator private since it should not be used */
-  AliHLTPHOSRawAnalyzerComponentv2 & operator = (const AliHLTPHOSRawAnalyzerComponentv2 &);
+  AliHLTPHOSRawAnalyzerComponentv3 & operator = (const AliHLTPHOSRawAnalyzerComponentv3 &);
 
   /** Mapping from harware address to geometrical address */
-  AliHLTPHOSMapper *fMapperPtr;                       //COMMENT
+  AliHLTPHOSMapper *fMapperPtr;                       //!transient 
 
   /** Pointer to object which may check the integrity of the data */
-  AliHLTPHOSSanityInspector *fSanityInspectorPtr;     //COMMENT
+  AliHLTPHOSSanityInspector *fSanityInspectorPtr;     //!transient
 
-  /** Pointer to the decoder used to unpack the altro payload */
-  AliAltroDecoder *fDecoderPtr;                       //COMMENT
-
-  /** Pointer to struct containing all data from one altro channel */
-  AliAltroData    *fAltroDataPtr;                     //COMMENT
-
-  /** Pointer to struct containing information about single bunches in one altro channel */
-  AliAltroBunch   *fAltroBunchPtr;                    //COMMENT
+  /** Pointer to the raw data reader which reads from memory */
+  AliRawReaderMemory* fRawReaderMemoryPtr;            //!transient
+  
+  /** Pointer to the raw stream */
+  AliAltroRawStreamV3* fAltroRawStreamPtr;              //!transient
 
   /** Describing which algorithm we are using */
   Short_t fAlgorithm;                                 //COMMENT

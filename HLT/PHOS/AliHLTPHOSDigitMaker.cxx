@@ -39,7 +39,7 @@
 #include "AliHLTPHOSChannelDataHeaderStruct.h"
 #include "AliHLTPHOSDigitDataStruct.h"
 #include "AliHLTPHOSSharedMemoryInterfacev2.h" // added by PTH
-
+#include "AliPHOSEMCAGeometry.h"
 #include "TH2F.h"
 
 ClassImp(AliHLTPHOSDigitMaker);
@@ -69,7 +69,6 @@ AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
 	}
     }	  
   fMapperPtr = new AliHLTPHOSMapper();
-
 }
    
 AliHLTPHOSDigitMaker::~AliHLTPHOSDigitMaker() 
@@ -90,6 +89,7 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
   
   UShort_t coord1[4];
   UShort_t coord2[4];
+  Float_t locCoord[3];
   
   
   AliHLTPHOSChannelDataStruct* currentchannel = 0;
@@ -114,8 +114,8 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 
 	      if(currentchannel->fEnergy < MAXBINVALUE) // Make sure we don't have signal overflow
 		{
-
-		  AddDigit(currentchannel, coord1);
+		  AliHLTPHOSMapper::GetLocalCoord(currentchannel->fChannelID, locCoord);
+		  AddDigit(currentchannel, coord1, locCoord);
 		  j++;	      
 		  totSize += sizeof(AliHLTPHOSDigitDataStruct);
 
@@ -133,14 +133,15 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 
 	      else // Ooops, overflow, we try the next channel... 
 		{
+	
 		  currentchannel = fShmPtr->NextChannel();
 		  if(currentchannel != 0) // There was a next channel
 		    {
 		      AliHLTPHOSMapper::GetChannelCoord(currentchannel->fChannelID, coord2);
 		      if(coord2[0] == coord1[0] && coord2[1] == coord1[1]) // It is a low gain channel with the same coordinates, we may use it
 			{
-			  
-			  AddDigit(currentchannel, coord2);
+			  AliHLTPHOSMapper::GetLocalCoord(currentchannel->fChannelID, locCoord);
+			  AddDigit(currentchannel, coord2, locCoord);
 			  j++;
 			  totSize += sizeof(AliHLTPHOSDigitDataStruct);
 			  currentchannel = fShmPtr->NextChannel();		      
@@ -148,7 +149,8 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 		      
 		      else // No low gain channel with information about the overflow channel so we just use the overflowed one...
 			{
-			  AddDigit(tmpchannel, coord1);
+			  AliHLTPHOSMapper::GetLocalCoord(currentchannel->fChannelID, locCoord);
+			  AddDigit(tmpchannel, coord1, locCoord);
 			  j++;	      
 			  totSize += sizeof(AliHLTPHOSDigitDataStruct);
 			  // no need to get the next channel here, we already did...
@@ -158,8 +160,9 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 		}
 	    }
 	  else // Well, there seem to be missing a high gain channel for this crystal, let's use the low gain one
-	    {      
-	      AddDigit(tmpchannel, coord1);
+	    {    
+	      AliHLTPHOSMapper::GetLocalCoord(currentchannel->fChannelID, locCoord);  
+	      AddDigit(tmpchannel, coord1, locCoord);
 	      j++;	      
 	      totSize += sizeof(AliHLTPHOSDigitDataStruct);
 	      currentchannel = fShmPtr->NextChannel(); 
@@ -181,15 +184,17 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 		    {
 		      if(currentchannel->fEnergy < MAXBINVALUE)  // To overflow or not to overflow?
 			{
-
-			  AddDigit(currentchannel, coord2);
+			  AliHLTPHOSMapper::GetLocalCoord(currentchannel->fChannelID, locCoord);
+			  AddDigit(currentchannel, coord2, locCoord);
 			  j++;
 			  totSize += sizeof(AliHLTPHOSDigitDataStruct);
 			  currentchannel = fShmPtr->NextChannel();
 			}
 		      else // Oh well, better use the low gain channel then
 			{
-			  AddDigit(currentchannelLG, coord1);
+			  //			  cout << "Reverse: Overflow!" << endl;
+			  AliHLTPHOSMapper::GetLocalCoord(currentchannel->fChannelID, locCoord);
+			  AddDigit(currentchannelLG, coord1, locCoord);
 			  j++;
 			  totSize += sizeof(AliHLTPHOSDigitDataStruct);
 			  currentchannel = fShmPtr->NextChannel();
@@ -197,21 +202,24 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 		    }
 		  else // No available high gain channel for this crystal, adding the low gain one
 		    {
-		      AddDigit(currentchannelLG, coord1);
+		      AliHLTPHOSMapper::GetLocalCoord(currentchannel->fChannelID, locCoord);
+		      AddDigit(currentchannelLG, coord1, locCoord);
 		      j++;
 		      totSize += sizeof(AliHLTPHOSDigitDataStruct);
 		    }
 		}
 	      else //Fine, no more channels, better add this one...
 		{
-		  AddDigit(currentchannelLG, coord1);
+		  AliHLTPHOSMapper::GetLocalCoord(currentchannel->fChannelID, locCoord);
+		  AddDigit(currentchannelLG, coord1, locCoord);
 		  j++;
 		  totSize += sizeof(AliHLTPHOSDigitDataStruct);
 		}
 	    } 
 	  else // Cool, no annoying low gain channel for this channel
 	    {
-	      AddDigit(currentchannel, coord1);
+	      AliHLTPHOSMapper::GetLocalCoord(currentchannel->fChannelID, locCoord);
+	      AddDigit(currentchannel, coord1, locCoord);
 	      j++;
 	      currentchannel = fShmPtr->NextChannel();
 	    }

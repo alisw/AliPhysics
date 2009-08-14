@@ -131,17 +131,21 @@ private:
    * @param channelData is the channel data
    * @param coordinates is the coordinates of the channel, including gain and module
    */
-  void AddDigit(AliHLTPHOSChannelDataStruct* channelData, UShort_t* coordinates) 
+  void AddDigit(AliHLTPHOSChannelDataStruct* channelData, UShort_t* channelCoordinates, Float_t* localCoordinates)
   {
-    fDigitStructPtr->fX = coordinates[0];
-    fDigitStructPtr->fZ = coordinates[1];
-    if(coordinates[2] == HIGHGAIN)
-      fDigitStructPtr->fAmplitude = channelData->fEnergy*fHighGainFactors[coordinates[0]][coordinates[1]];
+    fDigitStructPtr->fX = localCoordinates[0];
+    fDigitStructPtr->fZ = localCoordinates[1];
+    if(channelCoordinates[2] == HIGHGAIN)
+      {
+	fDigitStructPtr->fEnergy = channelData->fEnergy*fHighGainFactors[channelCoordinates[0]][channelCoordinates[1]];
+      }
     else
-      fDigitStructPtr->fAmplitude = channelData->fEnergy*fLowGainFactors[coordinates[0]][coordinates[1]];
-    fDigitStructPtr->fTime = channelData->fTime * 0.0000001; //CRAP
+      {
+	fDigitStructPtr->fEnergy = channelData->fEnergy*fLowGainFactors[channelCoordinates[0]][channelCoordinates[1]];
+      }
+    fDigitStructPtr->fTime = channelData->fTime * 0.0000001; //TODO
     fDigitStructPtr->fCrazyness = channelData->fCrazyness;
-    fDigitStructPtr->fModule = coordinates[3];
+    fDigitStructPtr->fModule = channelCoordinates[3];
     fDigitStructPtr++;
   }
 
@@ -169,7 +173,8 @@ private:
   /** Bad channel mask */
   Float_t fBadChannelMask[NXCOLUMNSMOD][NZROWSMOD][NGAINS]; //COMMENT
 
-  ClassDef(AliHLTPHOSDigitMaker, 1); 
+
+  ClassDef(AliHLTPHOSDigitMaker, 0); 
 
 };
 

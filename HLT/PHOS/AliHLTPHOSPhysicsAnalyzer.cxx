@@ -47,17 +47,18 @@ AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():
 {
   //Constructor
   //See header file for documentation
-  AliPHOSGeometry *geom=AliPHOSGeometry::GetInstance("noCPV");
+  //  AliPHOSGeometry *geom=AliPHOSGeometry::GetInstance("noCPV");
+  AliPHOSGeometry *geom=AliPHOSGeometry::GetInstance("IHEP");
 
   //  fPHOSRadius = geom->GetIPtoCrystalSurface();
   fPHOSRadius = geom->GetIPtoCrystalSurface();
 
   for(int i = 0; i < NMODULES; i++)
     {
-//       fRotParametersCos[i] = cos((geom->GetPHOSAngle(i+1))*2*TMath::Pi()/360);
-//       fRotParametersSin[i] = sin((geom->GetPHOSAngle(i+1))*2*TMath::Pi()/360);
-      fRotParametersCos[i] = cos((geom->GetPHOSAngle(i))*2*TMath::Pi()/360);
-      fRotParametersSin[i] = sin((geom->GetPHOSAngle(i))*2*TMath::Pi()/360);
+       fRotParametersCos[i] = cos((geom->GetPHOSAngle(i+1))*2*TMath::Pi()/360);
+       fRotParametersSin[i] = sin((geom->GetPHOSAngle(i+1))*2*TMath::Pi()/360);
+//      fRotParametersCos[i] = cos((geom->GetPHOSAngle(i))*2*TMath::Pi()/360);
+//      fRotParametersSin[i] = sin((geom->GetPHOSAngle(i))*2*TMath::Pi()/360);
 
     }
 }
@@ -128,7 +129,7 @@ AliHLTPHOSPhysicsAnalyzer::GlobalPosition(Float_t* locPositionPtr, Float_t* posi
 
   positionPtr[1] = kCRYSTALSIZE*(locPositionPtr[0]-NXCOLUMNSMOD/2)*fRotParametersSin[module] - fPHOSRadius*fRotParametersCos[module];
   
-  positionPtr[2] = kCRYSTALSIZE*(locPositionPtr[1]-NZROWSMOD);
+  positionPtr[2] = kCRYSTALSIZE*(locPositionPtr[1]-NZROWSMOD/2);
 
 }
 

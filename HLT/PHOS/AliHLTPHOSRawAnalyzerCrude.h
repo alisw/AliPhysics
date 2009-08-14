@@ -16,6 +16,7 @@ class AliHLTPHOSRawAnalyzerCrude : public AliHLTPHOSRawAnalyzer
   AliHLTPHOSRawAnalyzerCrude();
   virtual ~AliHLTPHOSRawAnalyzerCrude();
   virtual void Evaluate(int start = 0, int lenght = 100);
+  virtual void EvaluateShort(int start = 0, int lenght = 100);
  private:
   //  ClassDef(AliHLTPHOSRawAnalyzerCrude, 2) 
   

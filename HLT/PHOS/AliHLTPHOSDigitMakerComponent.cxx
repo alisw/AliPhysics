@@ -1,4 +1,4 @@
-// $Id$
+ // $Id$
 
  /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
@@ -118,7 +118,6 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 					std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
   //see header file for documentation
-  UInt_t tSize            = 0;
   UInt_t offset           = 0; 
   UInt_t mysize           = 0;
   Int_t digitCount        = 0;
@@ -156,24 +155,21 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
       digitCount += ret; 
     }
   
-  mysize = digitCount*sizeof(AliHLTPHOSDigitDataStruct);
+  mysize += digitCount*sizeof(AliHLTPHOSDigitDataStruct);
 
   HLTDebug("# of digits: %d, used memory size: %d, available size: %d", digitCount, mysize, size);
-  
-  AliHLTComponentBlockData bd;
-  FillBlockData( bd );
-  bd.fOffset = offset;
-  bd.fSize = mysize;
-  bd.fDataType = AliHLTPHOSDefinitions::fgkDigitDataType;
-  bd.fSpecification = specification;
-  outputBlocks.push_back(bd);
-       
-  if( tSize > size )
-    {
-      Logging( kHLTLogFatal, "HLT::AliHLTPHOSDigitMakerComponent::DoEvent", "Too much data", "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.", tSize, size );
-      return EMSGSIZE;
-    }
 
+
+  if(mysize > 0) 
+    {
+      AliHLTComponentBlockData bd;
+      FillBlockData( bd );
+      bd.fOffset = offset;
+      bd.fSize = mysize;
+      bd.fDataType = AliHLTPHOSDefinitions::fgkDigitDataType;
+      bd.fSpecification = specification;
+      outputBlocks.push_back(bd);
+    }
   fDigitMakerPtr->Reset();
 
   size = mysize; 

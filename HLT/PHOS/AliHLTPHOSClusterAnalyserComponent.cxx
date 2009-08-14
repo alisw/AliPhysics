@@ -16,7 +16,7 @@
 
 #include "AliHLTPHOSClusterAnalyserComponent.h"
 #include "AliHLTPHOSClusterAnalyser.h"
-#include "AliHLTPHOSRecPointContainerStruct.h"
+#include "AliHLTPHOSRecPointHeaderStruct.h"
 #include "AliHLTPHOSCaloClusterDataStruct.h"
 #include "AliHLTPHOSCaloClusterHeaderStruct.h"
 
@@ -97,7 +97,7 @@ AliHLTPHOSClusterAnalyserComponent::GetOutputDataType()
 {
   //See headerfile for documentation
 
-  return AliHLTPHOSDefinitions::fgkClusterDataType;
+  return AliHLTPHOSDefinitions::fgkCaloClusterDataType;
 }
 
 void
@@ -149,6 +149,8 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
         }
       specification = specification|iter->fSpecification;
       fClusterAnalyserPtr->SetRecPointDataPtr(reinterpret_cast<AliHLTPHOSRecPointHeaderStruct*>(iter->fPtr));
+      HLTDebug("Number of rec points: %d", (reinterpret_cast<AliHLTPHOSRecPointHeaderStruct*>(iter->fPtr))->fNRecPoints);
+
       if(fDoDeconvolution)
 	{
 	  fClusterAnalyserPtr->DeconvoluteClusters();
@@ -166,6 +168,11 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
       HLTError("Running out of buffer, exiting for safety.");
       return -ENOBUFS;
     }
+  for(int i = 0; i < nClusters; i++)
+    {
+
+    }
+
   HLTDebug("Number of clusters: %d", nClusters); 
   caloClusterHeaderPtr->fNClusters = nClusters;
   mysize += sizeof(AliHLTPHOSCaloClusterHeaderStruct); 

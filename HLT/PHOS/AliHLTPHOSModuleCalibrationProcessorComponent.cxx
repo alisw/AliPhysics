@@ -120,7 +120,6 @@ Int_t AliHLTPHOSModuleCalibrationProcessorComponent::DeinitCalibration()
 {
    //See header file for documentation
 
-  cout << "Int_t AliHLTPHOSModuleCalibrationProcessorComponent::DeinitCalibration()"  << endl;
   //AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
   
   AliHLTComponentEventData dummyEvtData;
@@ -225,42 +224,35 @@ Int_t AliHLTPHOSModuleCalibrationProcessorComponent::ProcessCalibration(const Al
 
   
 Int_t 
-AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
+AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) 
+{
 
-  cout << "AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS TP0" << endl;
+
  
   //://:ShipDataToFXS(
 
   // see header file for class documentation
  
   // ** PushBack data to FXS ...
-  cout << "AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS TP0.1" << endl;
   Char_t filename[200];
 
   for(int i=0; i < 200; i++)
     {
       filename[i] = 0;
     }
-
-  cout << "AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS TP0.2" << endl;
  
   fPHOSDAPtr->GetModule();
 
   sprintf(filename, "PHOS_Module%d_Calib_HLT.root",  fPHOSDAPtr->GetModule() );
-  cout << "AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS TP0.3" << endl;
-  cout << "AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS TP1" << endl;
 
   for(Int_t x = 0; x < NXCOLUMNSRCU; x++)
     {
       for(Int_t z = 0; z < NZROWSRCU; z++)
 	{
-	  cout << "AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS TP2" << endl;
 	  PushToFXS( (TObject*) fPHOSDAPtr->GetHgLgRatioHistogram(x, z), "PHOS", filename);
 	  for(Int_t gain = 0; gain < NGAINS; gain++)
 	    {
-	      cout << "AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS TP3" << endl; 
 	      PushToFXS( (TObject*) fPHOSDAPtr->GetTimeEnergyHistogram(x, z, gain), "PHOS", filename);
-	      cout << "AliHLTPHOSModuleCalibrationProcessorComponent::ShipDataToFXS TP4" << endl;
 	    }
 	}
     }

@@ -24,6 +24,7 @@
 //
 //
 
+#include "AliPHOSEMCAGeometry.h"
 #include "AliHLTPHOSMapper.h"
 #include "AliHLTPHOSConstants.h"
 #include "AliHLTLogging.h"
@@ -36,9 +37,12 @@ AliHLTPHOSMapper::AliHLTPHOSMapper():  AliHLTLogging(),
 				       fHw2geomapPtr(0),
 				       fIsInitializedMapping(false),
 				       fSpecificationMapPtr(0)
+				       //			       fPHOSGeometry(0)
 {
   InitAltroMapping(); 
   InitDDLSpecificationMapping();
+  //  fPHOSGeometry = new AliPHOSEMCAGeometry();
+
 }
 
 
@@ -61,7 +65,7 @@ AliHLTPHOSMapper::InitAltroMapping()
   int tmpZRow = 0;
   int tmpXCol = 0;
   int tmpGain = 0;
-  int res = 0; //OD to get rid of warnings
+  int res = 0; 
   if(base !=0)
     {
       sprintf(fFilepath,"%s/PHOS/mapping/RCU0.data", base);
@@ -184,7 +188,7 @@ AliHLTPHOSMapper::GetChannelID(Int_t specification, Int_t hwAddress)
   else if(specification == 0x80000) index = 19;
 
   else HLTError("Specification 0x%X not consistent with single DDL in PHOS", specification);
-
+  
   return ((fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[index].fRcuXOffset) |
 	  ((fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[index].fRcuZOffset) << 6) |
 	  (fHw2geomapPtr[hwAddress].fGain << 12) |
@@ -198,4 +202,47 @@ AliHLTPHOSMapper::GetChannelCoord(UShort_t channelId, UShort_t* channelCoord)
   channelCoord[1] = (channelId >> 6)&0x3f;
   channelCoord[2] = (channelId >> 12)&0x1;
   channelCoord[3] = (channelId >> 13)&0x1f;
+}
+
+void
+AliHLTPHOSMapper::GetLocalCoord(UShort_t channelId, Float_t* channelCoord)
+{
+  channelCoord[0] = (static_cast<Float_t>(channelId&0x3f) - NXCOLUMNSMOD/2)* fCellStep;
+  channelCoord[1] = (static_cast<Float_t>((channelId >> 6)&0x3f) - NZROWSMOD/2) * fCellStep;
+  channelCoord[2] = (channelId >> 12)&0x1;
+  channelCoord[2] = (channelId >> 13)&0x1f;
+}
+
+Int_t 
+AliHLTPHOSMapper::GetDDLFromSpec(Int_t specification)
+{
+  Int_t index = -1;
+  if(specification == 0x00001) index = 0;
+  else if(specification == 0x00002) index = 1;
+  else if(specification == 0x00004) index = 2;
+  else if(specification == 0x00008) index = 3;
+
+  else if(specification == 0x00010) index = 4;
+  else if(specification == 0x00020) index = 5;
+  else if(specification == 0x00040) index = 6;
+  else if(specification == 0x00080) index = 7;
+
+  else if(specification == 0x00100) index = 8;
+  else if(specification == 0x00200) index = 9;
+  else if(specification == 0x00400) index = 10;
+  else if(specification == 0x00800) index = 11;
+
+  else if(specification == 0x01000) index = 12;
+  else if(specification == 0x02000) index = 13;
+  else if(specification == 0x04000) index = 14;
+  else if(specification == 0x08000) index = 15;
+
+  else if(specification == 0x10000) index = 16;
+  else if(specification == 0x20000) index = 17;
+  else if(specification == 0x40000) index = 18;
+  else if(specification == 0x80000) index = 19;
+
+  else HLTError("Specification 0x%X not consistent with single DDL in PHOS", specification);
+
+  return index;
 }

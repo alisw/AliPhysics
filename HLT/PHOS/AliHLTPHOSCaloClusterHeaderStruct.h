@@ -24,8 +24,7 @@
 
 struct AliHLTPHOSCaloClusterHeaderStruct
 {
-  //  Int_t fShmAddress;
-  Short_t fNClusters;         
+  Short_t fNClusters;
 };
 
 #endif

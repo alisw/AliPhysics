@@ -1,8 +1,6 @@
-//-*- Mode: C++ -*-
-// $Id$
 
-#ifndef ALIHLTPHOSBASE_H
-#define ALIHLTPHOSBASE_H
+#ifndef ALIHLTPHOSCALOCLUSTERREADER_H
+#define ALIHLTPHOSCALOCLUSTERREADER_H
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -22,42 +20,37 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <iostream>
-#include <Rtypes.h>
-#include "TString.h"
-#include "AliHLTDataTypes.h"
-#include "AliHLTPHOSConstants.h"
-#include "AliHLTPHOSConfig.h"
-#include "AliHLTPHOSAltroConfig.h"
-#include "AliHLTLogging.h"
+#include "Rtypes.h"
+#include "AliHLTPHOSBase.h"
 
-using namespace PhosHLTConst;
+class AliHLTPHOSCaloClusterDataStruct;
+class AliHLTPHOSCaloClusterHeaderStruct;
 
-
-//
-// Base class for all PHOS HLT classes.
-// The class contains some utility functions
-// and also loads data about the HLT configuration
-// and the altro/FEE configuration
-//
-
-
-class  AliHLTPHOSBase : public AliHLTPHOSConfig, public AliHLTPHOSAltroConfig
+class  AliHLTPHOSCaloClusterReader
 {
  public:
-  AliHLTPHOSBase();
-  virtual ~AliHLTPHOSBase();
+  AliHLTPHOSCaloClusterReader();
+  virtual ~AliHLTPHOSCaloClusterReader();
+  AliHLTPHOSCaloClusterDataStruct*   NextCluster();
+  void SetMemory(AliHLTPHOSCaloClusterHeaderStruct* clusterHeaderPtr);
+  void Reset();
 
+ private:
+  AliHLTPHOSCaloClusterReader(const  AliHLTPHOSCaloClusterReader & );
+  AliHLTPHOSCaloClusterReader & operator = (const  AliHLTPHOSCaloClusterReader &);
   
-protected:
-  AliHLTPHOSConfig *fConfigPtr;        // object holding HLT configuration data
-  AliHLTPHOSConfig *fAltroConfigPtr;   // object holding Altro configuration data
+  /* Pointer to the current cluster to be read */
+  AliHLTPHOSCaloClusterDataStruct* fCurrentClusterPtr; // !transient Pointer to the current cluster to be read
 
-private:
-  AliHLTLogging *fLogPtr;
+  /* Check if the memory has been set */
+  bool fIsSetMemory; //Check if the memory has been set
 
-  AliHLTPHOSBase(const AliHLTPHOSBase & );
-  AliHLTPHOSBase & operator = (const AliHLTPHOSBase &);
+  /* Max number of clusters */
+  int fMaxCnt;  // Max number of clusters
+
+  /* The current number of clusters */
+  int fCurrentCnt; // The current number of clusters
+
 };
 
 #endif

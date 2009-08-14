@@ -19,11 +19,12 @@
 #include "AliHLTPHOSRawAnalyzer.h"
 #include "AliHLTPHOSUtilities.h" 
 
-AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(),  
+AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(),   
 						 //	 fDoCorrectBaselineUsingFirstFiveSamples(false),
 						 fDoCorrectBaselineUsingFirstFiveSamples(true),
 						 fDoubleDataPtr(0), 
 						 fIntDataPtr(0), 
+						 fShortDataPtr(0),
 						 fSampleFrequency(10),
 						 fDTofGuess(-1),
 						 fDAmplGuess(-1),
@@ -31,7 +32,9 @@ AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(),
 						 fDTof(99999), 
 						 fDAmpl(99999),
 						 fStartIndex(0),
+						 fUseShortValues(false),
 						 fUtilitiesPtr(0)
+
 {
   //  fIntDataPtr = new UInt_t[1008];
 
@@ -57,6 +60,7 @@ AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double * /*dtaPtr*/, double fs): Al
 									      fDoCorrectBaselineUsingFirstFiveSamples(false),
 									      fDoubleDataPtr(0), 
 									      fIntDataPtr(0), 
+									      fShortDataPtr(0),
 									      fSampleFrequency(10),
 									      fDTofGuess(-1),
 									      fDAmplGuess(-1),
@@ -64,7 +68,9 @@ AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double * /*dtaPtr*/, double fs): Al
 									      fDTof(99999), 
 									      fDAmpl(99999),
 									      fStartIndex(0),
+									      fUseShortValues(false),
 									      fUtilitiesPtr(0)
+									      
 {
   fSampleFrequency = fs;
 } //end  
@@ -175,6 +181,23 @@ AliHLTPHOSRawAnalyzer::GetEnergy() const
  {
    fIntDataPtr = const_cast<UInt_t *>(data);
 
+   if(fDoCorrectBaselineUsingFirstFiveSamples == true)
+     {
+       CorrectBaselineUsingFirstFiveSamples(fIntDataPtr, length);
+     }
+
+   //   fIntDataPtr = data;
+
+ }
+
+void
+ AliHLTPHOSRawAnalyzer::SetData(const UShort_t *data, const int length) 
+ // AliHLTPHOSRawAnalyzer::SetData(UInt_t *data, const int length) 
+// AliHLTPHOSRawAnalyzer::SetData(int *data, const int length) 
+ {
+
+   fShortDataPtr = const_cast<UShort_t *>(data);
+   fUseShortValues = true;
    if(fDoCorrectBaselineUsingFirstFiveSamples == true)
      {
        CorrectBaselineUsingFirstFiveSamples(fIntDataPtr, length);

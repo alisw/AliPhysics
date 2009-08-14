@@ -19,14 +19,16 @@
 #include "AliHLTPHOSProcessor.h"
 #include "TH1D.h"
 #include "TNtuple.h"
+#include "TFile.h"
 #include "AliHLTPHOSHistogramProducer.h"
+#include "AliHLTPHOSPhysicsHistogramProducer.h"
 #include "AliHLTPHOSCaloClusterContainerStruct.h"
-
+#include "TClonesArray.h"
 /** 
  * @file   AliHLTPHOSHistogramProducerComponent.cxx
  * @author Oystein Djuvsland
  * @date   
- * @brief  A digit maker component for PHOS HLT
+ * @brief  A histogram producer component for PHOS HLT
 */
 
 // see below for class documentation
@@ -36,19 +38,12 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 
-const AliHLTComponentDataType AliHLTPHOSHistogramProducerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}};
-
 AliHLTPHOSHistogramProducerComponent gAliHLTPHOSHistogramProducerComponent;
 
 AliHLTPHOSHistogramProducerComponent::AliHLTPHOSHistogramProducerComponent() :
   AliHLTPHOSProcessor(),
-  fClusterEnergiesHistPtr(0),
-  fMultiplicitiesHistPtr(0),
-  fClusterNtuplePtr(0),
-  fDoFillClusterEnergies(false),
-  fDoFillMultiplicities(false),
-  fDoFillNtuple(false),
-  fHistogramProducerPtr(0)
+  fPhysicsHistogramProducerPtr(0),
+  fPushModulo(1)
 {
   //see header file for documentation
 }
@@ -62,6 +57,12 @@ int
 AliHLTPHOSHistogramProducerComponent::Deinit()
 { 
   //see header file for documentation
+  if(fPhysicsHistogramProducerPtr != 0)
+    {
+      delete fPhysicsHistogramProducerPtr;
+      fPhysicsHistogramProducerPtr = 0;
+    }
+
   return 0;
 }
 
@@ -78,13 +79,9 @@ AliHLTPHOSHistogramProducerComponent::GetInputDataTypes(vector<AliHLTComponentDa
 { 
   //see header file for documentation
   list.clear();
-  list.push_back(AliHLTPHOSDefinitions::fgkChannelDataType);
+  list.push_back(AliHLTPHOSDefinitions::fgkESDCaloClusterDataType);
+  list.push_back(AliHLTPHOSDefinitions::fgkESDCaloCellsDataType);
 
-//   const AliHLTComponentDataType* pType=fgkInputDataTypes;
-//   while (pType->fID!=0) {
-//     list.push_back(*pType); 
-//     pType++;
-//   }
 }
 
 AliHLTComponentDataType 
@@ -116,30 +113,30 @@ AliHLTPHOSHistogramProducerComponent::DoEvent(const AliHLTComponentEventData& /*
 {
   //see header file for documentation
 
-  //  UInt_t specification = 0;
-
-  //  AliHLTPHOSCaloClusterContainerStruct* tmpClusters = 0;
-
-  const AliHLTComponentBlockData* block = GetFirstInputBlock(AliHLTPHOSDefinitions::fgkClusterDataType);
+  const AliHLTComponentBlockData* block = GetFirstInputBlock(AliHLTPHOSDefinitions::fgkESDCaloClusterDataType);
   
-  while(block != 0)
+  if(block != 0)
     {
-      fHistogramProducerPtr->Fill(reinterpret_cast<AliHLTPHOSCaloClusterContainerStruct*>(block->fPtr));
-      block = GetNextInputBlock();
+      HLTError("Number of clusters: %d", reinterpret_cast<TClonesArray*>(const_cast<AliHLTComponentBlockData*>(block))->GetEntries());
+      fPhysicsHistogramProducerPtr->AnalyseClusters(reinterpret_cast<TClonesArray*>(const_cast<AliHLTComponentBlockData*>(block)));
     }
   
-  if(fDoFillClusterEnergies)
+  //  block = GetFirstInputBlock(AliHLTPHOSDefinitions::fgkESDCaloCellsDataType);
+			     
+
+  if(block != 0)
     {
-      PushBack(fClusterEnergiesHistPtr, AliHLTPHOSDefinitions::fgkPhosHistDataType);
+      
     }
-  if(fDoFillMultiplicities)
-    {
-      PushBack(fMultiplicitiesHistPtr, AliHLTPHOSDefinitions::fgkPhosHistDataType);
-    }
-  if(fDoFillNtuple)
-    {
-      PushBack(fClusterNtuplePtr, AliHLTPHOSDefinitions::fgkPhosHistDataType);
-    }
+  //  if(fEventCount%fPushModulo == 0)
+  //  {
+
+  HLTError("WRITING HISTOGRAMS!");
+  TFile* file = TFile::Open("/tmp/hist.root", "RECREATE");
+  (fPhysicsHistogramProducerPtr->GetHistograms())->Write();
+  file->Close();
+  PushBack(fPhysicsHistogramProducerPtr->GetHistograms(), AliHLTPHOSDefinitions::fgkPhysicsHistogramsDataType);
+      // }
     
   return 0;
 }
@@ -150,47 +147,16 @@ AliHLTPHOSHistogramProducerComponent::DoInit(int argc, const char** argv )
 {
   //see header file for documentation
 
-  fHistogramProducerPtr = new AliHLTPHOSHistogramProducer();
+  fPhysicsHistogramProducerPtr = new AliHLTPHOSPhysicsHistogramProducer();
   
   for(int i = 0; i < argc; i++)
     {
-      if(!strcmp("-dofillclusterenergies", argv[i]))
+      if(!strcmp("-pushmodulo", argv[i]))
 	{
-	  fHistogramProducerPtr->SetFillClusterEnergies(true);
-	  fDoFillClusterEnergies = true;
-	}
-      if(!strcmp("-dofillmultiplicities", argv[i]))
-	{
-	  fHistogramProducerPtr->SetFillMultiplicities(true);
-	  fDoFillMultiplicities = true;
-	}
-      if(!strcmp("-dofillntuple", argv[i]))
-	{
-	  fHistogramProducerPtr->SetFillClusterNtuple(true);
-	  fDoFillNtuple = true;
-	}
-      if(!strcmp("-maxntupleentries", argv[i]))
-	{
-	  fHistogramProducerPtr->SetMaxNtupleEntries(atoi(argv[i+1]));
+	
+	  fPushModulo = atoi(argv[i+1]);
 	}
     }
- 
-  fHistogramProducerPtr->InitializeObjects();
-
-  if(fDoFillClusterEnergies)
-    {
-      fClusterEnergiesHistPtr = fHistogramProducerPtr->GetClusterEnergiesHistogram();
-    }
-  if(fDoFillMultiplicities)
-    {
-      fMultiplicitiesHistPtr = fHistogramProducerPtr->GetMultiplicitiesHistogram();
-    }
-  if(fDoFillNtuple)
-    {
-      fClusterNtuplePtr = fHistogramProducerPtr->GetClusterNtuple();
-    }
-
-  //fDigitMakerPtr->SetDigitThreshold(2);
 
   return 0;
 }

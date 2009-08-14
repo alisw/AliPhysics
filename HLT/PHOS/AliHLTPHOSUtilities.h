@@ -23,7 +23,6 @@
  **************************************************************************/
 
 #include <iostream>
-#include <stdio.h>
 
 using namespace std;
 
@@ -49,12 +48,14 @@ class  AliHLTPHOSUtilities
 	{
 	  if((i%nPerLine == 0)  &&  (i != 0))
 	    {
-	      printf("\n");
+	      //printf("\n");
+	      cout << endl;
 	    }
 
 	  cout << array[i]<< "\t";
 	}
-      printf("\n");
+      //     printf("\n");
+      cout << endl;
     }
 
   template<typename T> 
@@ -78,7 +79,6 @@ class  AliHLTPHOSUtilities
 	      tmpMax = array[i];
 	    }
 	}
-  
       return tmpMax;
     }
 

@@ -41,7 +41,7 @@ class AliHLTPHOSRecPointHeaderStruct;
 class AliHLTPHOSRecPointDataStruct;
 class AliHLTPHOSCaloClusterHeaderStruct;
 class AliHLTPHOSCaloClusterDataStruct;
-class AliPHOSGeometry;
+class AliPHOSGeoUtils;
 
 /** 
  * @class AliHLTPHOSClusterAnalyser
@@ -196,7 +196,7 @@ private:
   AliHLTPHOSCaloClusterHeaderStruct *fCaloClusterHeaderPtr;   //! transient
 
   /** Instance of the PHOS geometry */
-  AliPHOSGeometry *fPHOSGeometry;                           //! transient
+  AliPHOSGeoUtils *fPHOSGeometry;                           //! transient
 
   //TODO: should not use PhysicsAnalyzer for global coord!
   /** */

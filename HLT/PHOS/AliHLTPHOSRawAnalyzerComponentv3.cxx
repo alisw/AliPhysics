@@ -1,4 +1,3 @@
-// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -16,24 +15,22 @@
  **************************************************************************/
 
 #include "AliHLTPHOSRawAnalyzer.h"
-#include "AliHLTPHOSRawAnalyzerComponentv2.h"
+#include "AliHLTPHOSRawAnalyzerComponentv3.h"
 #include "AliHLTPHOSChannelDataHeaderStruct.h"
 #include "AliHLTPHOSChannelDataStruct.h"
 #include "AliHLTPHOSMapper.h"
 #include "AliHLTPHOSSanityInspector.h"
-#include  "AliAltroDecoder.h"
-#include  "AliAltroData.h"   
-#include  "AliAltroBunch.h"  
+#include "AliAltroRawStreamV3.h"
+#include "AliRawReaderMemory.h"
 
 
-AliHLTPHOSRawAnalyzerComponentv2::AliHLTPHOSRawAnalyzerComponentv2():
+AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3():
   AliHLTPHOSRcuProcessor(), 
   fAnalyzerPtr(0), 
   fMapperPtr(0), 
   fSanityInspectorPtr(0),
-  fDecoderPtr(0),  
-  fAltroDataPtr(0),
-  fAltroBunchPtr(0),
+  fRawReaderMemoryPtr(0),
+  fAltroRawStreamPtr(0),
   fAlgorithm(0),
   fOffset(0),
   fBunchSizeCut(0),
@@ -42,24 +39,24 @@ AliHLTPHOSRawAnalyzerComponentv2::AliHLTPHOSRawAnalyzerComponentv2():
 {
   //comment
   fMapperPtr = new AliHLTPHOSMapper();
-  fAltroDataPtr = new AliAltroData();
-  fAltroBunchPtr = new AliAltroBunch();
-  fDecoderPtr = new AliAltroDecoder();
+
+  fRawReaderMemoryPtr = new AliRawReaderMemory();
+
+  fAltroRawStreamPtr = new AliAltroRawStreamV3(fRawReaderMemoryPtr);
+
   fSanityInspectorPtr = new AliHLTPHOSSanityInspector();
 
 }
 
 
-AliHLTPHOSRawAnalyzerComponentv2::~AliHLTPHOSRawAnalyzerComponentv2()
+AliHLTPHOSRawAnalyzerComponentv3::~AliHLTPHOSRawAnalyzerComponentv3()
 {
   //comment
   Deinit();
 }
 
-
-
 int 
-AliHLTPHOSRawAnalyzerComponentv2::Deinit()
+AliHLTPHOSRawAnalyzerComponentv3::Deinit()
 {
   //comment
   if(fAnalyzerPtr)
@@ -72,34 +69,29 @@ AliHLTPHOSRawAnalyzerComponentv2::Deinit()
       delete  fMapperPtr;
       fMapperPtr = 0;
     }
-  if(fAltroDataPtr)
+  if(fRawReaderMemoryPtr)
     {
-      delete fAltroDataPtr;
-      fAltroDataPtr = 0;
+      delete fRawReaderMemoryPtr;
+      fRawReaderMemoryPtr = 0;
     }
-  if(fAltroBunchPtr)
+  if(fAltroRawStreamPtr)
     {
-      delete fAltroBunchPtr;
-      fAltroBunchPtr = 0;
-    }
-  if(fDecoderPtr)
-    {
-      delete fDecoderPtr;
-      fDecoderPtr = 0;
+      delete fAltroRawStreamPtr;
+      fAltroRawStreamPtr = 0;
     }
   return 0;
 }
 
 const char* 
-AliHLTPHOSRawAnalyzerComponentv2::GetComponentID()
+AliHLTPHOSRawAnalyzerComponentv3::GetComponentID()
 {
   //comment
-  return "PhosRawAnalyzerv2";
+  return "PhosRawAnalyzerv3";
 }
 
 
 void
-AliHLTPHOSRawAnalyzerComponentv2::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+AliHLTPHOSRawAnalyzerComponentv3::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   //comment
   list.clear();
@@ -107,14 +99,14 @@ AliHLTPHOSRawAnalyzerComponentv2::GetInputDataTypes( vector<AliHLTComponentDataT
 }
 
 AliHLTComponentDataType 
-AliHLTPHOSRawAnalyzerComponentv2::GetOutputDataType()
+AliHLTPHOSRawAnalyzerComponentv3::GetOutputDataType()
 {
   //comment
   return AliHLTPHOSDefinitions::fgkChannelDataType;
 }
 
 void
-AliHLTPHOSRawAnalyzerComponentv2::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
+AliHLTPHOSRawAnalyzerComponentv3::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
 {
   //comment
   constBase = sizeof(AliHLTPHOSChannelDataHeaderStruct);
@@ -122,7 +114,7 @@ AliHLTPHOSRawAnalyzerComponentv2::GetOutputDataSize(unsigned long& constBase, do
 }
 
 int 
-AliHLTPHOSRawAnalyzerComponentv2::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& /*trigData*/, 
+AliHLTPHOSRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& /*trigData*/, 
 					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
   //comment
@@ -169,7 +161,7 @@ AliHLTPHOSRawAnalyzerComponentv2::DoEvent( const AliHLTComponentEventData& evtDa
 }//end DoEvent
 
 Int_t
-AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize)
+AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize)
 {
  
   //comment
@@ -185,50 +177,51 @@ AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, Ali
 
   //Adding to the total size of data written
   totSize += sizeof(AliHLTPHOSChannelDataHeaderStruct);
+
+  fRawReaderMemoryPtr->SetMemory(reinterpret_cast<UChar_t*>(iter->fPtr), static_cast<ULong_t>(size));
+  fRawReaderMemoryPtr->SetEquipmentID(fMapperPtr->GetDDLFromSpec(iter->fSpecification));
+  fRawReaderMemoryPtr->Reset();
+  fRawReaderMemoryPtr->NextEvent();
+
+  fAltroRawStreamPtr->NextDDL();
   
-  //Decoding data
-  fDecoderPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize);
-  fDecoderPtr->Decode();
-      
   //Looping over data
-  while(fDecoderPtr->NextChannel(fAltroDataPtr) == true )
+  while(fAltroRawStreamPtr->NextChannel())
     {          
-      if(fAltroDataPtr->GetDataSize() != 0 )
+      //Want to get the "first in time" "bunch"
+      while(fAltroRawStreamPtr->NextBunch()) {}
+      
+      totSize += sizeof(AliHLTPHOSChannelDataStruct);
+      if(totSize > size)
 	{
-	  //Want to get the "first in time" "bunch"
-	  while(fAltroDataPtr->NextBunch(fAltroBunchPtr) == true) {}
-	  
-	  //Skip strangely short bunches
-	  if(fAltroBunchPtr->GetBunchSize() >  fBunchSizeCut)
-	    {
-	      totSize += sizeof(AliHLTPHOSChannelDataStruct);
-	      if(totSize > size)
-		{
-		  HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
-		  return -1;
-		}
+	  HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
+	  return -1;
+	}
 	      
-	      nSamples = fAltroBunchPtr->GetBunchSize();
+      nSamples = fAltroRawStreamPtr->GetBunchLength();
 	      
-	      //crazyness = fSanityInspectorPtr->CheckInsanity(static_cast<const UInt_t*>(fAltroBunchPtr->GetData()), static_cast<const Int_t>(fAltroBunchPtr->GetBunchSize()));
+      //crazyness = fSanityInspectorPtr->CheckInsanity(static_cast<const UInt_t*>(fAltroBunchPtr->GetData()), static_cast<const Int_t>(fAltroBunchPtr->GetBunchSize()));
+      
+      for(int i = 0; i < nSamples; i++)
+	{
+	  cout << (fAltroRawStreamPtr->GetSignals())[i] << endl;
+	}
+
+      //Evalute signal amplitude and timing
+      fAnalyzerPtr->SetData(fAltroRawStreamPtr->GetSignals(), nSamples);
+      fAnalyzerPtr->Evaluate(0, nSamples);  
 	      
-	      //Evalute signal amplitude and timing
-	      fAnalyzerPtr->SetData(fAltroBunchPtr->GetData(), fAltroBunchPtr->GetBunchSize());   
-	      fAnalyzerPtr->Evaluate(0, fAltroBunchPtr->GetBunchSize());  
-	      
-	      //Checking for sane timing...
-	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
-		{
-		  // Writing to the output buffer
-		  channelDataPtr->fChannelID = fMapperPtr->GetChannelID(iter->fSpecification, fAltroDataPtr->GetHadd());
-		  //channelDataPtr->fChannelID = fMapperPtr->GetChannelID(1, fAltroDataPtr->GetHadd());
-		  channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
-		  channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
-		  channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
-		  channelCount++;
-		  channelDataPtr++; // Updating position of the free output.
-		}
-	    }
+      //Checking for sane timing...
+      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
+	{
+	  // Writing to the output buffer
+	  channelDataPtr->fChannelID = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress());
+	  //channelDataPtr->fChannelID = fMapperPtr->GetChannelID(1, fAltroDataPtr->GetHadd());
+	  channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
+	  channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
+	  channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
+	  channelCount++;
+	  channelDataPtr++; // Updating position of the free output.
 	}
     }
 
@@ -245,7 +238,7 @@ AliHLTPHOSRawAnalyzerComponentv2::DoIt(const AliHLTComponentBlockData* iter, Ali
 }
 
 int
-AliHLTPHOSRawAnalyzerComponentv2::DoInit( int argc, const char** argv )
+AliHLTPHOSRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 { 
 
   //See base class for documentation

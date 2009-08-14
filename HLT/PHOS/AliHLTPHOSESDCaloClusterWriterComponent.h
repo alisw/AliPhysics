@@ -1,7 +1,4 @@
-//-*- Mode: C++ -*-
-// $Id$
-
-
+ 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
@@ -17,18 +14,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#ifndef ALIHLTPHOSHISTOGRAMPRODUCERCOMPONENT_H
-#define ALIHLTPHOSHISTOGRAMPRODUCERCOMPONENT_H
-
-
+#ifndef ALIHLTPHOSESDCALOCLUSTERWRITERCOMPONENT_H
+#define ALIHLTPHOSESDCALOCLUSTERWRITERCOMPONENT_H
 
 /**
- * 
+ * ESD Calo cluster writer component for PHOS HLT
  *
- * @file   AliHLTPHOSHistogramProducerComponent.cxx
+ * @file   AliHLTPHOSESDCaloClusterWriterComponent.h
  * @author Oystein Djuvsland
  * @date   
- * @brief  
+ * @brief  An ESD maker component for PHOS HLT
 */
 
 // see below for class documentation
@@ -39,34 +34,41 @@
 
 #include "AliHLTPHOSProcessor.h"
 
-class AliHLTPHOSPhysicsHistogramProducer;
+class TClonesArray;
+class TTree;
+class TFile;
 /**
- * @class AliHLTPHOSHistogramProducerComponent
+ * @class AliHLTPHOSESDCaloClusterWriterComponent
  *
- * 
+ * HLT component for making AliESDEvent from AliHLTPHOSCaloClusterDataStructs 
+ *
  * @ingroup alihlt_phos
  */
-class AliHLTPHOSHistogramProducerComponent: public AliHLTPHOSProcessor
+class AliHLTPHOSESDCaloClusterWriterComponent: public AliHLTPHOSProcessor
 {
  public:
 
   /** Constructor */
-  AliHLTPHOSHistogramProducerComponent();
+
+  AliHLTPHOSESDCaloClusterWriterComponent();
 
   /** Destructor */
-  virtual ~AliHLTPHOSHistogramProducerComponent();
+  virtual ~AliHLTPHOSESDCaloClusterWriterComponent();
 
   /** Copy constructor */  
-  AliHLTPHOSHistogramProducerComponent(const AliHLTPHOSHistogramProducerComponent & ) : 
+  AliHLTPHOSESDCaloClusterWriterComponent(const AliHLTPHOSESDCaloClusterWriterComponent &) : 
     AliHLTPHOSProcessor(),
-    fPhysicsHistogramProducerPtr(0),
-    fPushModulo(0)
+    fOutfile(0),
+    fOutfileName(0),
+    fWriteModulo(1000),
+    fESDCaloClusterTreePtr(0),
+    fESDCaloClustersPtr(0)
   {
     //Copy constructor not implemented
   }
   
   /** Assignment */
-  AliHLTPHOSHistogramProducerComponent & operator = (const AliHLTPHOSHistogramProducerComponent)
+  AliHLTPHOSESDCaloClusterWriterComponent & operator = (const AliHLTPHOSESDCaloClusterWriterComponent)
   {
     //Assignment
     return *this; 
@@ -85,16 +87,15 @@ class AliHLTPHOSHistogramProducerComponent: public AliHLTPHOSProcessor
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
   /** interface function, see @ref AliHLTComponent for description */
-  
-  using  AliHLTPHOSProcessor::DoEvent;
+  using AliHLTPHOSProcessor::DoEvent;
+  Int_t DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
 
-  int DoEvent(const AliHLTComponentEventData& evtData, 
-	      AliHLTComponentTriggerData& trigData);
-    
-  // Int_t DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
   
+  /** Function for writing the tree containing the clusters */
+  int WriteTree();
+
 protected:
 
   /** interface function, see @ref AliHLTComponent for description */
@@ -102,12 +103,27 @@ protected:
 
   /** interface function, see @ref AliHLTComponent for description */
   int Deinit();
+ 
+private:
 
- private:
 
-  AliHLTPHOSPhysicsHistogramProducer* fPhysicsHistogramProducerPtr;
-  UInt_t fPushModulo;
+  /** The file to which we will write */
+  TFile* fOutfile;
+
+  /** The filename */
+  char* fOutfileName;
+
+  /** Write modulo */
+  UInt_t fWriteModulo;
+
+  /** Pointer to the ESD calo cluster tree*/
+  TTree* fESDCaloClusterTreePtr; //! transient
+
+  /** Pointer to the array of clusters */
+  TClonesArray* fESDCaloClustersPtr; //! transient
+
 
 };
+
 
 #endif

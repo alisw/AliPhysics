@@ -82,16 +82,53 @@ AliHLTPHOSRawAnalyzerCrude::Evaluate(int start, int length)
 
   //  DumpData(fDoubleDataPtr,50, 25);
 
+  if(fUseShortValues == true)
+    {
+      EvaluateShort(start, length);
+    }
+  else
+    {
+
+      double tmpAmplitudeMax =0; 
+      double tmpTime = 0;
+
+      for(int i=start; i<length; i++)
+	{
+	  //   if(fDoubleDataPtr[i] >  tmpAmplitudeMax && i > 5)
+	  if(fIntDataPtr[i] >  tmpAmplitudeMax && i > 5)
+	    {
+	      //	  tmpAmplitudeMax = fDoubleDataPtr[i];
+	      tmpAmplitudeMax = fIntDataPtr[i];
+	      tmpTime = i;		     
+	    }
+	}
+
+      fDAmpl = tmpAmplitudeMax;
+      fDTof =  tmpTime;
+    }
+ 
+  //thats all 
+} //end Crude
+
+void 
+AliHLTPHOSRawAnalyzerCrude::EvaluateShort(int start, int length)
+{
+  //  cout << "AliHLTPHOSRawAnalyzerCrude::Evaluate TP0"  << endl;
+
+  //DumpData(T
+
+  //  DumpData(fDoubleDataPtr,50, 25);
+
   double tmpAmplitudeMax =0; 
   double tmpTime = 0;
 
   for(int i=start; i<length; i++)
     {
         //   if(fDoubleDataPtr[i] >  tmpAmplitudeMax && i > 5)
-      if(fIntDataPtr[i] >  tmpAmplitudeMax && i > 5)
+      if(fShortDataPtr[i] >  tmpAmplitudeMax && i > 5)
 	{
 	  //	  tmpAmplitudeMax = fDoubleDataPtr[i];
-	  tmpAmplitudeMax = fIntDataPtr[i];
+	  tmpAmplitudeMax = fShortDataPtr[i];
 	  tmpTime = i;		     
 	}
     }

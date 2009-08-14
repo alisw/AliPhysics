@@ -6,6 +6,8 @@
 include $(MODDIR)/hlt.conf
 
 
+#CLASS_HDRS:=	  AliHLTPHOSAgent.h 
+
 CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSClusterizer.h \
 		  AliHLTPHOSClusterizerComponent.h \
@@ -19,9 +21,11 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSRawAnalyzerChiSquareFit.h \
 		  AliHLTPHOSRawAnalyzerComponent.h \
 		  AliHLTPHOSRawAnalyzerComponentv2.h \
+		  AliHLTPHOSRawAnalyzerComponentv3.h \
 		  AliHLTPHOSRawAnalyzerCrude.h \
 		  AliHLTPHOSRawAnalyzerCrudeComponent.h \
 		  AliHLTPHOSRawAnalyzerCrudeComponentv2.h \
+		  AliHLTPHOSRawAnalyzerCrudeComponentv3.h \
 		  AliHLTPHOSRawAnalyzerKLevel.h \
 		  AliHLTPHOSRawAnalyzerLMS.h \
 		  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
@@ -54,7 +58,13 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSFourierComponent.h \
 		  AliHLTPHOSHistogramProducer.h \
 		  AliHLTPHOSHistogramProducerComponent.h \
-		  AliHLTPHOSMonitorTriggerComponent.h 
+		  AliHLTPHOSMonitorTriggerComponent.h \
+		  AliHLTPHOSESDCaloClusterMaker.h \
+		  AliHLTPHOSESDEntriesMakerComponent.h \
+		  AliHLTPHOSESDCaloClusterWriterComponent.h \
+		  AliHLTPHOSCaloClusterReader.h \
+		  AliHLTPHOSPhysicsHistogramProducer.h
+#		  AliHLTPHOSESDCaloClusterMakerComponent.h 
 #		  AliHLTPHOSTreeMaker.h \
 #  		  AliHLTPHOSTreeMakerComponent.h \
 #		  AliHLTPHOSEmcCalibrationHistogramProducer.h 
@@ -66,7 +76,6 @@ MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
 MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSCommonDefs.h \
 		  AliHLTPHOSConstants.h \
-		  AliHLTPHOSRecPointDataStruct.h \
 	 	  AliHLTPHOSRawAnalyzer.h \
 		  AliHLTPHOSDefinitions.h \
 		  AliHLTPHOSModuleCellEnergyDataStruct.h\
@@ -77,6 +86,7 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
 		  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \
 		  AliHLTPHOSRcuCellAverageEnergyDataStruct.h \
+		  AliHLTPHOSRecPointDataStruct.h \
 		  AliHLTPHOSRecPointContainerStruct.h \
 		  AliHLTPHOSDigitContainerDataStruct.h \
 		  AliHLTPHOSRcuDigitContainerDataStruct.h \

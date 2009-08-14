@@ -39,6 +39,10 @@ public:
   static const AliHLTComponentDataType fgkSandboxDataType; //General data type
   static const AliHLTComponentDataType fgkEmcCalibDataType; //Calibration data type
   static const AliHLTComponentDataType fgkCaloClusterDataType; //Calo cluster data type
+  static const AliHLTComponentDataType fgkESDCaloClusterDataType; //Calo cluster data type
+  static const AliHLTComponentDataType fgkESDCaloCellsDataType; //Calo cells data type
+  static const AliHLTComponentDataType fgkPhysicsHistogramsDataType; //hist data type
+
 };
 
 #endif
