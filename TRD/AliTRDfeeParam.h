@@ -42,6 +42,7 @@ class AliTRDfeeParam : public TObject
   // Translation from MCM to Pad and vice versa
   virtual Int_t    GetPadRowFromMCM(Int_t irob, Int_t imcm) const;
   virtual Int_t    GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const;
+  virtual Int_t    GetExtendedPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const;
   virtual Int_t    GetMCMfromPad(Int_t irow, Int_t icol) const;
   virtual Int_t    GetROBfromPad(Int_t irow, Int_t icol) const;
   virtual Int_t    GetRobSide(Int_t irob) const;

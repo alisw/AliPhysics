@@ -11,6 +11,7 @@ SRCS= AliTRDarraySignal.cxx \
       AliTRDpadPlane.cxx \
       AliTRDrawOldStream.cxx \
       AliTRDrawStream.cxx \
+      AliTRDrawFastStream.cxx \
       AliTRDrawTPStream.cxx \
       AliTRDrawStreamBase.cxx \
       AliTRDtestBeam.cxx \

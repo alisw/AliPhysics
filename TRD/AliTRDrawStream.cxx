@@ -165,7 +165,7 @@ AliTRDrawStream::AliTRDrawStream()
   , fDecodedADCs(-1)
   , fEventCounter(0)
   , fLastEventCounter(0)
-  , fSharedPadsOn(kFALSE)
+  , fSharedPadsOn(kTRUE)
   , fMaxADCgeom(0)
   , fBufferRead(0)
   , fGeometry(0)
@@ -204,7 +204,7 @@ AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader)
   , fDecodedADCs(-1)
   , fEventCounter(0)
   , fLastEventCounter(0)
-  , fSharedPadsOn(kFALSE)
+  , fSharedPadsOn(kTRUE)
   , fMaxADCgeom(0)
   , fBufferRead(0)
   , fGeometry(0)
@@ -249,7 +249,7 @@ AliTRDrawStream::AliTRDrawStream(const AliTRDrawStream& /*st*/)
   , fDecodedADCs(-1)
   , fEventCounter(0)
   , fLastEventCounter(0)
-  , fSharedPadsOn(kFALSE)
+  , fSharedPadsOn(kTRUE)
   , fMaxADCgeom(0)
   , fBufferRead(0)
   , fGeometry(0)
@@ -557,6 +557,7 @@ void AliTRDrawStream::ResetPerADC()
   //
   fADC->fPos = NULL;
   fADC->fADCnumber = 0;
+  fADC->fExtendedCOL = 0;
   fADC->fCOL = 0;
   fADC->fIsShared = kTRUE;
   fADC->fCorrupted = 0;
@@ -662,7 +663,7 @@ Bool_t AliTRDrawStream::Next()
 }
 
 //------------------------------------------------------------
-Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UInt_t **trackletContainer) 
+Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UInt_t **trackletContainer, UShort_t **errorCodeContainer) 
 {
   //
   // Fills single chamber digit array 
@@ -771,7 +772,12 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
     // ntimebins data are ready to read
     for (it = 0; it < GetNumberOfTimeBins(); it++) {
        if (GetSignals()[it] > 0) {
-         digits->SetData(GetRow(), GetCol(), it, GetSignals()[it]);
+
+         if (fSharedPadsOn) 
+           digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), it, GetSignals()[it]);
+         else 
+           digits->SetData(GetRow(), GetCol(), it, GetSignals()[it]);
+
          indexes->AddIndexRC(GetRow(), GetCol());
          if (digitsManager->UsesDictionaries()) {
            track0->SetData(GetRow(), GetCol(), it, 0);
@@ -1564,6 +1570,7 @@ Bool_t AliTRDrawStream::DecodeHC()
                if (fMCM->fCorrupted < 4) fMCM->fCorrupted += 4; // benchmark mcm data corruption as 4
                if (fHC->fCorrupted < 4) fHC->fCorrupted += 4;   // benchmark hc data corruption as 4
                if (fADC->fIsShared && fADC->fCorrupted == 32) { // check if we are out of the det when the pad is shared
+                 fADC->fExtendedCOL = -1;
                  fADC->fCOL = -1;
                  fpPos = fADC->fPos + fMCM->fSingleADCwords;
                }
@@ -1579,6 +1586,7 @@ Bool_t AliTRDrawStream::DecodeHC()
                if (fMCM->fCorrupted < 4) fMCM->fCorrupted += 4; // benchmark mcm data corruption as 4
                if (fHC->fCorrupted < 4) fHC->fCorrupted += 4;   // benchmark hc data corruption as 4
                if (fADC->fIsShared && fADC->fCorrupted == 32) { // check if we are out of the det when the pad is shared
+                 fADC->fExtendedCOL = -1;
                  fADC->fCOL = -1;
                  fpPos = fADC->fPos + fMCM->fSingleADCwords;
                }
@@ -1661,10 +1669,13 @@ Bool_t AliTRDrawStream::DecodeADC()
   }
 
   if ( fADC->fADCnumber >= fMaxADCgeom - 1) {
+    fADC->fExtendedCOL = AliTRDfeeParam::Instance()->GetExtendedPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber - 1);
     fADC->fCOL = AliTRDfeeParam::Instance()->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber - 1);
+    fADC->fExtendedCOL--;
     fADC->fCOL--;
   }
   else {
+    fADC->fExtendedCOL = fTRDfeeParam->GetExtendedPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber);
     fADC->fCOL = fTRDfeeParam->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber);
   }
 
@@ -1742,10 +1753,13 @@ Bool_t AliTRDrawStream::DecodeADCExtended()
   }
 
   if ( fADC->fADCnumber >= fMaxADCgeom - 1) {
+    fADC->fExtendedCOL = AliTRDfeeParam::Instance()->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber - 1);
     fADC->fCOL = AliTRDfeeParam::Instance()->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber - 1);
+    fADC->fExtendedCOL--;
     fADC->fCOL--;
   }
   else {
+    fADC->fExtendedCOL = fTRDfeeParam->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber);
     fADC->fCOL = fTRDfeeParam->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber);
   }
 
@@ -2069,3 +2083,4 @@ const char *AliTRDrawStream::DumpMCMadcMask(const struct AliTRDrawMCM *mcm)
   tsreturn += "";
   return tsreturn.Data();
 }
+

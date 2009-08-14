@@ -241,7 +241,24 @@ Int_t AliTRDfeeParam::GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const
   if (iadc < 0 || iadc > fgkNadcMcm ) return -100;
   Int_t mcmcol = imcm%fgkNmcmRobInCol + GetRobSide(irob)*fgkNmcmRobInCol;  // MCM column number on ROC [0..7]
   Int_t padcol = mcmcol*fgkNcolMcm + fgkNcolMcm + 1 - iadc;
-  // if( padcol < 0 || padcol >= fgkNcol ) return -1;   // thisi s commented because of reson above KO
+  // if( padcol < 0 || padcol >= fgkNcol ) return -1;   // this is commented because of reason above OK
+
+  return padcol;
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDfeeParam::GetExtendedPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const
+{     
+  //
+  // Return which pad coresponds to the extended digit container pad numbering
+  // Extended digit container is designed to store all pad data including shared pad, 
+  // so we have to introduce new virtual pad numbering scheme for this purpose. 
+  //
+    
+  if (iadc < 0 || iadc > fgkNadcMcm ) return -100;
+  Int_t mcmcol = imcm%fgkNmcmRobInCol + GetRobSide(irob)*fgkNmcmRobInCol;  // MCM column number on ROC [0..7]
+  Int_t padcol = mcmcol*fgkNadcMcm + fgkNcolMcm + 1 - iadc;
 
   return padcol;
 

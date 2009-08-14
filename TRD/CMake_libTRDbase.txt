@@ -11,6 +11,7 @@ set(SRCS
       AliTRDrawData.cxx
       AliTRDpadPlane.cxx
       AliTRDrawOldStream.cxx
+      AliTRDrawFastStream.cxx
       AliTRDrawStream.cxx
       AliTRDrawTPStream.cxx
       AliTRDrawStreamBase.cxx
