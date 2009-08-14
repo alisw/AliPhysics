@@ -33,9 +33,7 @@
 #include "AliJetReaderHeader.h"
 #include "AliJetHeader.h"
 #include "AliJetReader.h"
-
-class TProcessID;
-class TClonesArray;
+#include "AliAODJetEventBackground.h"
 
 ClassImp(AliJetFinder)
 

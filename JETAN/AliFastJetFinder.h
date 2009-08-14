@@ -35,7 +35,6 @@
 using namespace std;
 class AliFastJetInput;
 class AliJetBkg;
-class AliAODPWG4JetEventBackground;
 
 class AliFastJetFinder : public AliJetFinder
 {

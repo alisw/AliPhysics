@@ -39,7 +39,7 @@
 #include "AliJetUnitArray.h"
 #include "AliFastJetInput.h"
 #include "AliJetBkg.h"
-#include "AliAODPWG4JetEventBackground.h"
+#include "AliAODJetEventBackground.h"
 
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequenceArea.hh"

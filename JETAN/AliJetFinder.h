@@ -22,7 +22,7 @@ class TChain;
 class TTree;
 class AliAODJet;
 class AliAODEvent;
-class AliAODPWG4JetEventBackground;
+class AliAODJetEventBackground;
 class AliJetHeader;
 class AliJetReader;
 class AliJetReaderHeader;
@@ -36,11 +36,11 @@ class AliJetFinder : public TObject
   // Getters
   virtual AliJetReader *GetReader() const {return fReader;}
   virtual AliJetHeader *GetHeader() const {return fHeader;}
-  virtual AliAODPWG4JetEventBackground* GetEventBackground() const {return fAODEvBkg;}
+  virtual AliAODJetEventBackground* GetEventBackground() const {return fAODEvBkg;}
   // Setters
   virtual void          SetJetReader(AliJetReader* r) {fReader=r;}
   virtual void          SetJetHeader(AliJetHeader* h) {fHeader=h;}
-  virtual void          SetEventBackground(AliAODPWG4JetEventBackground* bkg) {fAODEvBkg = bkg;}
+  virtual void          SetEventBackground(AliAODJetEventBackground* bkg) {fAODEvBkg = bkg;}
   // Others
   virtual void          AddJet(AliAODJet jet);
   virtual void          WriteRHeaderToFile();  
@@ -62,11 +62,11 @@ class AliJetFinder : public TObject
  protected:
   AliJetFinder(const AliJetFinder& rJetFinder);
   AliJetFinder& operator = (const AliJetFinder& rhsf);
-  AliJetReader* fReader;         //  pointer to reader
-  AliJetHeader* fHeader;         //  pointer to header
-  TClonesArray* fAODjets;        //! reconstructed jets
-  Int_t         fNAODjets;       //! number of reconstructed jets
-  AliAODPWG4JetEventBackground*   fAODEvBkg;    //! bkg object to be store
+  AliJetReader*             fReader;         //  pointer to reader
+  AliJetHeader*             fHeader;         //  pointer to header
+  TClonesArray*             fAODjets;        //! reconstructed jets
+  Int_t                     fNAODjets;       //! number of reconstructed jets
+  AliAODJetEventBackground* fAODEvBkg;       //! bkg object to be store
   ClassDef(AliJetFinder,2)
 };
 
