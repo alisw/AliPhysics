@@ -57,20 +57,20 @@ ClassImp(AliJetBkg)
 ////////////////////////////////////////////////////////////////////////
 
 AliJetBkg::AliJetBkg():
-fReader(0),
-fHeader(0),
-fInputFJ(0)
+  TObject(),
+  fReader(0),
+  fHeader(0),
+  fInputFJ(0)
 {
   // Default constructor
 
 }
 //______________________________________________________________________
 AliJetBkg::AliJetBkg(const AliJetBkg& input):
-
+  TObject(input),
     fReader(input.fReader),
     fHeader(input.fHeader),
-    fInputFJ(input.fInputFJ),
-    TObject()
+    fInputFJ(input.fInputFJ)
 {
   // copy constructor
 
