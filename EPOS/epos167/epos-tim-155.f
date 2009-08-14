@@ -426,7 +426,7 @@ c.....select flavor and z-value .....................................
       if(alfm.lt.rangen()*log(q2*z*(1.-z)/qcdlam)) goto 390
 
       if(ij(1).ne.j1.or.ij(2).eq.0)then
-        if(E.lt.sqrt(q2))goto 390
+        if(E.le.sqrt(q2))goto 390
         pzz=sqrt((E-sqrt(q2))*(E+sqrt(q2)))
         pt2=(E**2*(z*(1.-z)*q2-z*amm2(idflb)-(1.-z)*amm2(idfla))
      $       -.25*(amm2(idflb)-amm2(idfla)-q2)**2+q2*amm2(idfla))/pzz**2

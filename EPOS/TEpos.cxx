@@ -105,11 +105,11 @@ void TEpos::Initialize() {
 		IniModel(appli.model);
 	ebin.nrebin = 1;
 	ainit();
+	aseed(2);
 }
 
 void TEpos::GenerateEvent() {
-	cseed.seedj = gRandom->Rndm() * 1e10;
-	aseed(2);
+//	cseed.seedj = gRandom->Rndm() * 1e10;
 	Int_t n = 1;
 	evgen(n);
 }
