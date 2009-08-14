@@ -1,5 +1,5 @@
-#ifndef AliPWG4AODJETBACKGROUND_H
-#define AliPWG4AODJETBACKGROUND_H
+#ifndef AliAODJETBACKGROUND_H
+#define AliAODJETBACKGROUND_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -13,13 +13,13 @@
 #include "TString.h"
 
 
-class AliAODPWG4JetEventBackground : public TObject {
+class AliAODJetEventBackground : public TObject {
 
  public:
-    AliAODPWG4JetEventBackground();
-    virtual ~AliAODPWG4JetEventBackground();
-    AliAODPWG4JetEventBackground(const AliAODPWG4JetEventBackground& jet); 
-    AliAODPWG4JetEventBackground& operator=(const AliAODPWG4JetEventBackground& jet);
+    AliAODJetEventBackground();
+    virtual ~AliAODJetEventBackground();
+    AliAODJetEventBackground(const AliAODJetEventBackground& jet); 
+    AliAODJetEventBackground& operator=(const AliAODJetEventBackground& jet);
 
 
     virtual void SetBackground(Int_t i,Double_t back){
@@ -43,7 +43,7 @@ class AliAODPWG4JetEventBackground : public TObject {
  private:
     static TString fgkStdBranchName;                    // Standard branch name
     Double32_t      fBackground[kMaxBackground];        // Background from different schemes, normalized to area
-    ClassDef(AliAODPWG4JetEventBackground,1);
+    ClassDef(AliAODJetEventBackground,1);
 
 };
 

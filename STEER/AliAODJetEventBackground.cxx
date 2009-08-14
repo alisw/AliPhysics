@@ -14,23 +14,23 @@
  **************************************************************************/
 
 //-------------------------------------------------------------------------
-//     AOD class for PWG4 jet backgrounds
+//     AOD class for  jet backgrounds
 //     Author: Christian Klein-Boesing IKP Muenster
 //-------------------------------------------------------------------------
 
 
-#include "AliAODPWG4JetEventBackground.h"
+#include "AliAODJetEventBackground.h"
 
 using namespace std;
 
-ClassImp(AliAODPWG4JetEventBackground)
+ClassImp(AliAODJetEventBackground)
 
-TString AliAODPWG4JetEventBackground::fgkStdBranchName("jeteventbackground");
+TString AliAODJetEventBackground::fgkStdBranchName("jeteventbackground");
 
 
 
 //______________________________________________________________________________
-AliAODPWG4JetEventBackground::AliAODPWG4JetEventBackground() :
+AliAODJetEventBackground::AliAODJetEventBackground() :
     TObject()
 {
   for(int i = 0;i < kMaxBackground;++i){
@@ -39,7 +39,7 @@ AliAODPWG4JetEventBackground::AliAODPWG4JetEventBackground() :
 }
 
 //______________________________________________________________________________
-AliAODPWG4JetEventBackground::~AliAODPWG4JetEventBackground() 
+AliAODJetEventBackground::~AliAODJetEventBackground() 
 {
   //
   // destructor
@@ -47,7 +47,7 @@ AliAODPWG4JetEventBackground::~AliAODPWG4JetEventBackground()
 }
 
 //______________________________________________________________________________
-AliAODPWG4JetEventBackground::AliAODPWG4JetEventBackground(const AliAODPWG4JetEventBackground& back) :
+AliAODJetEventBackground::AliAODJetEventBackground(const AliAODJetEventBackground& back) :
     TObject(back)
 {
   //
@@ -60,7 +60,7 @@ AliAODPWG4JetEventBackground::AliAODPWG4JetEventBackground(const AliAODPWG4JetEv
 }
 
 //______________________________________________________________________________
-AliAODPWG4JetEventBackground& AliAODPWG4JetEventBackground::operator=(const AliAODPWG4JetEventBackground& back)
+AliAODJetEventBackground& AliAODJetEventBackground::operator=(const AliAODJetEventBackground& back)
 {
   //
   // Assignment operator
@@ -76,7 +76,7 @@ AliAODPWG4JetEventBackground& AliAODPWG4JetEventBackground::operator=(const AliA
   return *this;
 }
 
-void AliAODPWG4JetEventBackground::Print(Option_t* /*option*/) const 
+void AliAODJetEventBackground::Print(Option_t* /*option*/) const 
 {
   //
   // Print information of all data members

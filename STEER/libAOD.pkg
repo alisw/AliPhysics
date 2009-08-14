@@ -3,7 +3,7 @@
 SRCS = AliAODEvent.cxx AliAODHeader.cxx \
 	AliAODTrack.cxx AliAODPid.cxx AliAODVertex.cxx \
 	AliAODCluster.cxx AliAODCaloCluster.cxx AliAODPmdCluster.cxx AliAODFmdCluster.cxx \
-	AliAODJet.cxx AliAODPWG4JetEventBackground.cxx AliAODPhoton.cxx AliAODRedCov.cxx AliAODRecoDecay.cxx \
+	AliAODJet.cxx AliAODJetEventBackground.cxx AliAODPhoton.cxx AliAODRedCov.cxx AliAODRecoDecay.cxx \
 	AliAODHandler.cxx AliAODTracklets.cxx AliAODTagCreator.cxx \
 	AliAODv0.cxx AliAODcascade.cxx AliAODCaloCells.cxx AliAODInputHandler.cxx \
 	AliMultiAODInputHandler.cxx AliAODDiJet.cxx AliAODMCParticle.cxx AliAODMCHeader.cxx
