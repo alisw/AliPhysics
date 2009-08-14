@@ -232,8 +232,8 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     if (iJETANMC2 && useMC){ 
       gROOT->LoadMacro("AddTaskJets.C");
       AliAnalysisTaskJets *jetanaMC2 = AddTaskJets("MC2","UA1");
-      jetanaMC->SetDebugLevel(10);
-      jetanaMC->SetNonStdBranch("jetsMC2");
+      jetanaMC2->SetDebugLevel(10);
+      jetanaMC2->SetNonStdBranch("jetsMC2");
     }   
     // Dijet analysis
     if(iDIJETAN){
