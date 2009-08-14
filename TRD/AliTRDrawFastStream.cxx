@@ -1113,7 +1113,7 @@ Bool_t AliTRDrawFastStream::DecodeHC(AliTRDdigitsManager *digitsManager, AliTRDa
       fHC->fErrorCodes[fHC->fMCMmax+2] += (fMCM.fADCmaskCorrupted << 4);
       fHC->fErrorCodes[fHC->fMCMmax+2] += ((fMCM.fDataCorrupted & 1) << 6);
       fHC->fErrorCodes[fHC->fMCMmax+2] += (fMCM.fMCM << 7);  // encode MCM number
-      fHC->fErrorCodes[fHC->fMCMmax+2] += (fMCM.fROB << 13); // encode ROB number
+      fHC->fErrorCodes[fHC->fMCMmax+2] += (fMCM.fROB << 11); // encode ROB number
 
       fHC->fMCMmax++; // increase mcm counter to match with expected rob/mcm number
 
@@ -1576,7 +1576,7 @@ Bool_t AliTRDrawFastStream::DecodeADC(AliTRDdigitsManager *digitsManager, AliTRD
        if (!isWritten) { 
          fHC->fErrorCodes[index+66] += (fADCnumber << 4);; 
          fHC->fErrorCodes[index+66] += (fMCM.fMCM << 9);; 
-         fHC->fErrorCodes[index+66] += (fMCM.fROB << 15);; 
+         fHC->fErrorCodes[index+66] += (fMCM.fROB << 13);; 
          isWritten = kTRUE; 
        }
        fMCM.fDataCorrupted = kTRUE;
@@ -1784,3 +1784,4 @@ const char *AliTRDrawFastStream::DumpMCMadcMask(const struct AliTRDrawMCM *mcm)
   tsreturn += "";
   return tsreturn.Data();
 }
+
