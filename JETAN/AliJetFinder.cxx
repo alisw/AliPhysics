@@ -30,6 +30,9 @@
 #include "AliAODJet.h"
 #include "AliAODEvent.h"
 #include "AliJetUnitArray.h"
+#include "AliJetReaderHeader.h"
+#include "AliJetHeader.h"
+#include "AliJetReader.h"
 
 class TProcessID;
 class TClonesArray;
@@ -40,7 +43,8 @@ AliJetFinder::AliJetFinder():
     fReader(0x0),
     fHeader(0x0),
     fAODjets(0x0),
-    fNAODjets(0)
+    fNAODjets(0),
+    fAODEvBkg(0)
 {
   //
   // Constructor

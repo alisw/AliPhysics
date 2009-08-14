@@ -17,13 +17,15 @@
 
 #include <TObject.h>
 #include "AliAODJet.h"
-#include "AliJetReader.h"
-#include "AliJetHeader.h"
-#include "AliJetReaderHeader.h"
 
 class TChain;
+class TTree;
 class AliAODJet;
 class AliAODEvent;
+class AliAODPWG4JetEventBackground;
+class AliJetHeader;
+class AliJetReader;
+class AliJetReaderHeader;
 
 class AliJetFinder : public TObject 
 {
@@ -32,11 +34,13 @@ class AliJetFinder : public TObject
   virtual ~AliJetFinder();
 
   // Getters
-  virtual AliJetReader *GetReader() {return fReader;}
-  virtual AliJetHeader *GetHeader() {return fHeader;}
+  virtual AliJetReader *GetReader() const {return fReader;}
+  virtual AliJetHeader *GetHeader() const {return fHeader;}
+  virtual AliAODPWG4JetEventBackground* GetEventBackground() const {return fAODEvBkg;}
   // Setters
   virtual void          SetJetReader(AliJetReader* r) {fReader=r;}
   virtual void          SetJetHeader(AliJetHeader* h) {fHeader=h;}
+  virtual void          SetEventBackground(AliAODPWG4JetEventBackground* bkg) {fAODEvBkg = bkg;}
   // Others
   virtual void          AddJet(AliAODJet jet);
   virtual void          WriteRHeaderToFile();  
@@ -62,6 +66,7 @@ class AliJetFinder : public TObject
   AliJetHeader* fHeader;         //  pointer to header
   TClonesArray* fAODjets;        //! reconstructed jets
   Int_t         fNAODjets;       //! number of reconstructed jets
+  AliAODPWG4JetEventBackground*   fAODEvBkg;    //! bkg object to be store
   ClassDef(AliJetFinder,2)
 };
 

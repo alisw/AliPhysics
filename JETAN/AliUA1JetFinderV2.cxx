@@ -34,6 +34,9 @@
 #include "AliUA1JetFinderV2.h"
 #include "AliUA1JetHeaderV1.h"
 #include "AliJetUnitArray.h"
+#include "AliJetReaderHeader.h"
+#include "AliJetReader.h"
+#include "AliJetHeader.h"
 
 class TArrayF;
 class TFile;

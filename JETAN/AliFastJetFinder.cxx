@@ -67,8 +67,7 @@ ClassImp(AliFastJetFinder)
 AliFastJetFinder::AliFastJetFinder():
   AliJetFinder(),
   fInputFJ(0),
-  fJetBkg(0),
-  fAODEvBkg(0)
+  fJetBkg(0)
 {
   // Constructor
 }

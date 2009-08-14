@@ -57,7 +57,6 @@ class AliFastJetFinder : public AliJetFinder
   AliFastJetFinder& operator = (const AliFastJetFinder& rsfj);
   AliFastJetInput*                fInputFJ;     //! input particles array
   AliJetBkg*                      fJetBkg;      //! pointer to bkg class
-  AliAODPWG4JetEventBackground*   fAODEvBkg;    //! bkg object to be store
   ClassDef(AliFastJetFinder,2)
 };
 

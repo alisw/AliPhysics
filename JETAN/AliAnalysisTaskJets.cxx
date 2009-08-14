@@ -106,7 +106,9 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
       AddAODBranch("TClonesArray",&tca);
       fJetFinder->ConnectAODNonStd(AODEvent(), fNonStdBranch.Data()); 
     }
-  
+  AliAODPWG4JetEventBackground* evBkg = fJetFinder->GetEventBackground();
+  AddAODBranch("AliAODPWG4JetEventBackground",&evBkg);
+
   // Histograms
   OpenFile(1);
   fListOfHistos = new TList();

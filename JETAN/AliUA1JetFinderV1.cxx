@@ -33,6 +33,9 @@
 #include "AliUA1JetHeaderV1.h"
 #include "AliJetReaderHeader.h"
 #include "AliJetReader.h"
+#include "AliJetHeader.h"
+
+
 #include "AliAODJet.h"
 #include "AliLog.h"
 

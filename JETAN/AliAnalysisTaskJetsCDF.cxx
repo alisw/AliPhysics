@@ -32,6 +32,7 @@
 #include "AliESDInputHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "AliJetReader.h"
 
 #include "AliAnalysisTaskJetsCDF.h"
 
