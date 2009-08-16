@@ -675,9 +675,11 @@ int AliHLTComponent::ReserveEventDoneData( unsigned long size )
   // see header file for function documentation
   int iResult=0;
 
-  
-  if (size>fEventDoneDataSize) {
-    AliHLTComponentEventDoneData* newEDD = reinterpret_cast<AliHLTComponentEventDoneData*>( new AliHLTUInt8_t[ sizeof(AliHLTComponentEventDoneData)+size ] );
+  unsigned long capacity=fEventDoneDataSize;
+  if (fEventDoneData) capacity-=sizeof(AliHLTComponentEventDoneData)+fEventDoneData->fDataSize;
+  if (size>capacity) {
+    unsigned long newSize=sizeof(AliHLTComponentEventDoneData)+size+(fEventDoneDataSize-capacity);
+    AliHLTComponentEventDoneData* newEDD = reinterpret_cast<AliHLTComponentEventDoneData*>( new AliHLTUInt8_t[newSize] );
     if (!newEDD)
       return -ENOMEM;
     newEDD->fStructSize = sizeof(AliHLTComponentEventDoneData);
@@ -689,7 +691,7 @@ int AliHLTComponent::ReserveEventDoneData( unsigned long size )
       delete [] reinterpret_cast<AliHLTUInt8_t*>( fEventDoneData );
     }
     fEventDoneData = newEDD;
-    fEventDoneDataSize = size;
+    fEventDoneDataSize = newSize;
   }
   return iResult;
 
@@ -1812,6 +1814,8 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     // no output blocks, set size to 0
     size=0;
   }
+
+  // reset the internal EventData struct
   FillEventData(fCurrentEventData);
   return iResult;
 }
