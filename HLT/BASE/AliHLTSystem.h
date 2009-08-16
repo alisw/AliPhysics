@@ -302,6 +302,12 @@ class AliHLTSystem : public AliHLTLogging {
   static void* AllocMemory( void* param, unsigned long size );
 
   /**
+   * The allocation function for component EventDoneData.
+   * This function is part of the running environment of the components.
+   */
+  static int AllocEventDoneData( void* param, AliHLTEventID_t eventID, unsigned long size, AliHLTComponentEventDoneData** edd );
+
+  /**
    * AliRoot embedded reconstruction.
    * Main entry point to execute the HLT reconstruction from AliRoot. Called
    * either by the AliHLTReconstructor plugin during AliRoot reconstruction

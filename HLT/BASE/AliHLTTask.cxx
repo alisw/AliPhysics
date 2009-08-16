@@ -584,6 +584,13 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 	iResult=pComponent->ProcessEvent(evtData, &fBlockDataArray[0], trigData, pTgtBuffer, size, outputBlockCnt, outputBlocks, edd);
 	HLTDebug("component %s ProcessEvent finnished (%d): size=%d blocks=%d", pComponent->GetComponentID(), iResult, size, outputBlockCnt);
 
+	// EventDoneData is for the moment ignored in AliHLTSystem
+	if (edd) {
+	  HLTDebug("got EventDoneData size %d", edd->fDataSize);
+	  delete [] reinterpret_cast<char*>(edd);
+	  edd=NULL;
+	}
+
 	// remove event data block
 	fBlockDataArray.pop_back();
 

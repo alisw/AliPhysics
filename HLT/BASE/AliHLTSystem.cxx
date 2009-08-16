@@ -104,6 +104,7 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel, const char* name
     memset(&env, 0, sizeof(AliHLTAnalysisEnvironment));
     env.fStructSize=sizeof(AliHLTAnalysisEnvironment);
     env.fAllocMemoryFunc=AliHLTSystem::AllocMemory;
+    env.fGetEventDoneDataFunc=AliHLTSystem::AllocEventDoneData;
     env.fLoggingFunc=NULL;
     fpComponentHandler->SetEnvironment(&env);
     InitAliLogFunc(fpComponentHandler);
@@ -786,6 +787,21 @@ void* AliHLTSystem::AllocMemory( void* /*param*/, unsigned long size )
     log.LoggingVarargs(kHLTLogError, "AliHLTSystem" , "AllocMemory" , __FILE__ , __LINE__ , "exeption during memory allocation" );
   }
   return p;
+}
+
+int AliHLTSystem::AllocEventDoneData( void* param, AliHLTEventID_t eventID, unsigned long size, AliHLTComponentEventDoneData** edd )
+{
+  // see header file for class documentation
+  unsigned long blocksize=sizeof(AliHLTComponentEventDoneData)+size;
+  void* block=AllocMemory(NULL, blocksize);
+  if (!block) return -ENOMEM;
+  memset(block, 0, blocksize);
+  *edd=reinterpret_cast<AliHLTComponentEventDoneData*>(block);
+  (*edd)->fStructSize=sizeof(AliHLTComponentEventDoneData);
+  (*edd)->fDataSize=size;
+  (*edd)->fData=reinterpret_cast<AliHLTUInt8_t*>(block)+sizeof(AliHLTComponentEventDoneData);
+  
+  return 0;
 }
 
 int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader, 
