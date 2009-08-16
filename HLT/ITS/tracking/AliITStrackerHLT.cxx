@@ -147,6 +147,10 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
     AliWarning("\"geom\" is actually a dummy argument !");
   }
 
+  if(AliGeomManager::GetGeometry()==NULL){
+    AliGeomManager::LoadGeometry();
+  }
+
   fRecoParam = AliITSReconstructor::GetRecoParam();
   if( !fRecoParam ){
     AliITSReconstructor *tmp = new AliITSReconstructor();
