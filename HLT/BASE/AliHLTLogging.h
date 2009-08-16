@@ -39,6 +39,7 @@ class AliHLTComponentHandler;
 #define HLTMessage( ... )   LoggingVarargs(kHLTLogNone,      NULL , NULL , __FILE__ , __LINE__ , __VA_ARGS__ )
 
 // the following macros are filtered by the Global and Local Log Filter
+#define HLTLog( level, ... ) if (CheckFilter(level))         LoggingVarargs(level, Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
 #define HLTBenchmark( ... ) LoggingVarargs(kHLTLogBenchmark, Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
 #ifdef __DEBUG
 #define HLTDebug( ... )     if (CheckFilter(kHLTLogDebug) && CheckGroup(Class_Name())) LoggingVarargs(kHLTLogDebug,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
@@ -55,6 +56,7 @@ class AliHLTComponentHandler;
 // include AliHLTLoggingVariadicFree.h
 #else //ALIHLTLOGGINGVARIADICFREE_H
 #define HLTMessage( message )   LoggingVarargs(kHLTLogNone,      NULL , NULL , __FILE__ , __LINE__ , message )
+#define HLTLog( level, message) if (CheckFilter(level))          LoggingVarargs(level, Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , message )
 #define HLTBenchmark( message ) LoggingVarargs(kHLTLogBenchmark, Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , message )
 #ifdef __DEBUG
 #define HLTDebug( message )     if (CheckFilter(kHLTLogDebug) && CheckGroup(Class_Name())) LoggingVarargs(kHLTLogDebug,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , message )
