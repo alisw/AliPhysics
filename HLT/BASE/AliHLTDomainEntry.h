@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id:$
+// $Id$
 #ifndef ALIHLTDOMAINENTRY_H
 #define ALIHLTDOMAINENTRY_H
 /* This file is property of and copyright by the ALICE HLT Project        *
@@ -324,7 +324,14 @@ class AliHLTDomainEntry : public TObject
    * \returns  A string in the format \<type\>:\<origin\>:\<specification\>
    */
   TString AsString() const;
-  
+
+  /**
+   * Converts the three parameters into a 32 byte buffer
+   * As the PubSub expects the data type id and origin in reverse byte order
+   * those two are swapped. 
+   */
+  int AsBinary(AliHLTUInt32_t buffer[4]) const;
+
  private:
   
   Bool_t fExclude;  /// Indicates if the domain entry is exclusive, indicating data blocks that should not be readout.

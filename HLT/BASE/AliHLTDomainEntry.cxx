@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -35,6 +35,7 @@
 #include "Riostream.h"
 #include "TString.h"
 #include <cstring>
+#include <cerrno>
 
 ClassImp(AliHLTDomainEntry)
 
@@ -348,3 +349,37 @@ TString AliHLTDomainEntry::AsString() const
   return str;
 }
 
+int AliHLTDomainEntry::AsBinary(AliHLTUInt32_t buffer[4]) const
+{
+  // convert the data type and specification to a 32 byte buffer
+  if (!buffer) return -EINVAL;
+
+  AliHLTUInt32_t* tgt=buffer; 
+  unsigned ii=0;
+
+  // lower part of the data type id
+  *tgt=0;
+  for ( ii=0; ii<4; ii++ ) {
+    *tgt |= ((AliHLTUInt32_t)(fType.fID[8-1-ii])) << (ii*8);
+  }
+  tgt++;
+	  
+  // upper part of the data type id
+  *tgt=0;
+  for ( ii=0; ii<4; ii++ ) {
+    *tgt |= ((AliHLTUInt32_t)(fType.fID[8-5-ii])) << (ii*8);
+  }
+  tgt++;
+  
+  // data type origin
+  *tgt=0;
+  for ( ii=0; ii<4; ii++ ) {
+    *tgt |= ((AliHLTUInt32_t)(fType.fOrigin[4-1-ii])) << (ii*8);
+  }
+  tgt++;
+  
+  // specification
+  *tgt = fSpecification;
+
+  return 0;
+}

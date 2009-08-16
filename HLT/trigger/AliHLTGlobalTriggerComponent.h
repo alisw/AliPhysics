@@ -184,6 +184,11 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    * \returns  The error code suitable to return in DoInit. Zero on success.
    */
   int BuildSymbolList(const AliHLTTriggerMenu* menu, TClonesArray& list);
+
+  /**
+   * Print some statistics based on the trigger counters
+   */
+  int PrintStatistics(const AliHLTGlobalTrigger* pTrigger, AliHLTComponentLogSeverity level=kHLTLogInfo, int offset=1) const;
   
   AliHLTGlobalTrigger* fTrigger;  //! Trigger object which implements the global trigger menu.
   bool fDebugMode;  //! Indicates if the generated global trigger class should be in debug mode.

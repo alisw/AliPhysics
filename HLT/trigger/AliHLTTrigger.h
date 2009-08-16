@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTTRIGGER_H
 #define ALIHLTTRIGGER_H
 /* This file is property of and copyright by the ALICE HLT Project        *
@@ -264,6 +266,15 @@ class AliHLTTrigger : public AliHLTProcessor
    * \param value  The new value to use for the flag.
    */
   void ClearInfoForNewEvent(bool value = true) { fClearInfo = value; }
+
+  /**
+   * Create the EventDoneData and add the specified readout list
+   * from a Trigger domain object.
+   * @param domain   the domain as calculated by the (Global)trigger
+   * @param type     type of the readout list, defined by PubSub
+   *                  4 monitoring filter
+   */
+  int CreateEventDoneReadoutFilter(const AliHLTTriggerDomain& domain, unsigned type);
 
  private:
  

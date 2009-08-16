@@ -1006,3 +1006,8 @@ void AliHLTTriggerDomain::Optimise()
   RemoveMarkedEntries();
 }
 
+const AliHLTDomainEntry& AliHLTTriggerDomain::operator[](int index) const
+{
+  // Access individual entry of the domain
+  return dynamic_cast<AliHLTDomainEntry&>(*fEntries[index]);
+}

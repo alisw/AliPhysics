@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id:$
+// $Id$
 #ifndef ALIHLTTRIGGERDOMAIN_H
 #define ALIHLTTRIGGERDOMAIN_H
 /* This file is property of and copyright by the ALICE HLT Project        *
@@ -378,6 +378,14 @@ class AliHLTTriggerDomain : public TObject
    * Typecase operator to create a DDL readout list object from the trigger domain.
    */
   operator AliHLTReadoutList () const;
+
+  /**
+   * access of the individual entries
+   */
+  const AliHLTDomainEntry& operator[](int index) const;
+
+  /** get number of entries in the domain */
+  int GetNofEntries()const  {return fEntries.GetEntriesFast();}
   
  private:
   

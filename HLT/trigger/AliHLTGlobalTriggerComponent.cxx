@@ -289,7 +289,13 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     HLTFatal("Global trigger implementation object is NULL!");
     return -EIO;
   }
-  
+
+  AliHLTUInt32_t eventType=0;
+  if (!IsDataEvent(&eventType)) {
+    if (eventType==gkAliEventTypeEndOfRun) PrintStatistics(fTrigger, kHLTLogImportant, 0);
+    return 0;
+  }
+
   fTrigger->NewEvent();
   
   // Fill in the input data.
@@ -318,11 +324,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   TDatime time;
   if (time.Get()-lastTime>5) {
     lastTime=time.Get();
-    ULong64_t count=0;
-    for (int i=0; i<fTrigger->Counters().GetSize(); i++) {
-      count+=fTrigger->Counters()[i];
-    }
-    HLTInfo("total events: %d - triggered events: %lu", GetEventCount()+1, count);
+    PrintStatistics(fTrigger);
   }
   
   // Add the input objects used to the global decision.
@@ -339,7 +341,9 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     }
     obj = GetNextInputObject();
   }
-  
+
+  CreateEventDoneReadoutFilter(decision.TriggerDomain(), 3);
+  CreateEventDoneReadoutFilter(decision.TriggerDomain(), 4);
   TriggerEvent(&decision);
   return 0;
 }
@@ -808,3 +812,16 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
   return 0;
 }
 
+int AliHLTGlobalTriggerComponent::PrintStatistics(const AliHLTGlobalTrigger* pTrigger, AliHLTComponentLogSeverity level, int offset) const
+{
+  // print some statistics
+  ULong64_t count=0;
+  for (int i=0; i<pTrigger->Counters().GetSize(); i++) {
+    count+=pTrigger->Counters()[i];
+  }
+  int totalEvents=GetEventCount()+offset;
+  float ratio=0;
+  if (totalEvents>0) ratio=100*(float)count/totalEvents;
+  HLTLog(level, "total events: %d - triggered events: %llu (%.1f%%)", totalEvents, count, ratio);
+  return 0;
+}

@@ -1,3 +1,4 @@
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -25,6 +26,8 @@
 #include "AliHLTTrigger.h"
 #include "AliHLTTriggerDecision.h"
 #include "AliHLTReadoutList.h"
+#include "AliHLTTriggerDomain.h"
+#include "AliHLTDomainEntry.h"
 
 ClassImp(AliHLTTrigger)
 
@@ -152,3 +155,40 @@ int AliHLTTrigger::GetOutputDataTypes(AliHLTComponentDataTypeList& list)
   return list.size();
 }
 
+int AliHLTTrigger::CreateEventDoneReadoutFilter(const AliHLTTriggerDomain& domain, unsigned type)
+{
+  // add a readout filter to the EventDoneData
+  int iResult=0;
+  unsigned entries=domain.GetNofEntries();
+  // we need:
+  //   1 word eventually for the monitor event command
+  //   1 word for the readout filter command
+  //   1 word for the readout filter size
+  // 4*n words for the filter list
+  if ((iResult=ReserveEventDoneData((entries*4 + 3) * sizeof(AliHLTUInt32_t)))<0) return iResult;
+  AliHLTUInt32_t eddbuffer[4];
+  if (type==4) {
+    // in the case of the monitoring filter we also add the monitor event command
+    eddbuffer[0]=5;
+    if ((iResult=PushEventDoneData(eddbuffer[0]))<0) return iResult;
+  }
+
+  // now the readout list command and the block count
+  eddbuffer[0]=type;
+  if ((iResult=PushEventDoneData(eddbuffer[0]))<0) return iResult;
+  eddbuffer[0]=entries;
+  if ((iResult=PushEventDoneData(eddbuffer[0]))<0) return iResult;
+
+  for (unsigned block=0; block<entries; block++) {
+    // skip all DAQ readout entries as they are handled by the readout list
+    if (domain[block]==AliHLTDomainEntry(kAliHLTDataTypeDAQRDOUT)) continue;
+    if (domain[block].Exclusive()) {
+      HLTWarning("exclusive trigger domain entries are currently not handled, skipping entry %s", domain[block].AsString().Data());
+      continue;
+    }
+    domain[block].AsBinary(eddbuffer);
+    for (int n=0; n<4; n++)
+      if ((iResult=PushEventDoneData(eddbuffer[n]))<0) return iResult;
+  }
+  return iResult;
+}
