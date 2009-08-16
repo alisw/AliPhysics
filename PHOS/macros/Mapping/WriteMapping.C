@@ -52,13 +52,13 @@ WriteMapping()
 	  if (hwAddress > maxHWAddress[iRCU]) maxHWAddress[iRCU]=hwAddress;
 	  nHWaddress[iRCU]++;
 	  fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",
-		 hwAddress,xcell+iRCU*16,zcell*(1-2*iBranch)+27+iFEE*2,1);
+ 		  hwAddress,xcell+iRCU*16,zcell+27+(2*iBranch-1)+(iFEE-1)*2*(2*iBranch-1),1);
 
 	  hwAddress = chanLG | (altro<<4) | (iFEE<<7) | (iBranch<<11);
 	  if (hwAddress > maxHWAddress[iRCU]) maxHWAddress[iRCU]=hwAddress;
 	  nHWaddress[iRCU]++;
 	  fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",
-		 hwAddress,xcell+iRCU*16,zcell*(1-2*iBranch)+27+iFEE*2,0);
+ 		  hwAddress,xcell+iRCU*16,zcell+27+(2*iBranch-1)+(iFEE-1)*2*(2*iBranch-1),1);
 	}
       }
     }
