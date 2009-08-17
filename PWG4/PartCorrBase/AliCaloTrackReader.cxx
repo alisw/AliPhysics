@@ -40,7 +40,7 @@ ClassImp(AliCaloTrackReader)
   
 //____________________________________________________________________________
   AliCaloTrackReader::AliCaloTrackReader() : 
-    TObject(), fEventNumber(-1), fDataType(0), fDebug(0), 
+    TObject(), fEventNumber(-1), fCurrentFileName(""),fDataType(0), fDebug(0), 
     fFidutialCut(0x0),
     fCTSPtMin(0), fEMCALPtMin(0),fPHOSPtMin(0),
     fAODCTS(new TRefArray()), fAODEMCAL(new TRefArray()), fAODPHOS(new TRefArray()),
@@ -57,7 +57,8 @@ ClassImp(AliCaloTrackReader)
 
 //____________________________________________________________________________
 AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :   
-  TObject(g), fEventNumber(g.fEventNumber), fDataType(g.fDataType), fDebug(g.fDebug),
+  TObject(g), fEventNumber(g.fEventNumber), fCurrentFileName(g.fCurrentFileName), 
+  fDataType(g.fDataType), fDebug(g.fDebug),
   fFidutialCut(g.fFidutialCut),
   fCTSPtMin(g.fCTSPtMin), fEMCALPtMin(g.fEMCALPtMin),fPHOSPtMin(g.fPHOSPtMin), 
   fAODCTS(new TRefArray(*g.fAODCTS)),  
@@ -83,6 +84,7 @@ AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & 
   fDataType    = source.fDataType ;
   fDebug       = source.fDebug ;
   fEventNumber = source.fEventNumber ;
+  fCurrentFileName = source.fCurrentFileName ;
   fFidutialCut = source.fFidutialCut;
   
   fCTSPtMin   = source.fCTSPtMin ;
@@ -222,10 +224,12 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
 } 
 
 //___________________________________________________
-void AliCaloTrackReader::FillInputEvent(Int_t iEntry) {
+void AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * currentFileName) {
   //Fill the event counter and input lists that are needed, called by the analysis maker.
   
   fEventNumber = iEntry;
+  fCurrentFileName = TString(currentFileName);
+	
   if((fDataType != kAOD) && ((fOutputEvent->GetCaloClusters())->GetEntriesFast()!=0 ||(fOutputEvent->GetTracks())->GetEntriesFast()!=0)){
     printf("ABORT: AliCaloTrackReader::AODCaloClusters or AODTracks already filled by the filter, do not use the ESD reader, use the AOD reader\n");
     abort();

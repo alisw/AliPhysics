@@ -232,10 +232,12 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
 }
 
 //____________________________________________________________________________
-void AliCaloTrackMCReader::FillInputEvent(Int_t iEntry){
+void AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * currentFileName){
   //Fill the event counter and input lists that are needed, called by the analysis maker.
   
   fEventNumber = iEntry;
+  fCurrentFileName = TString(currentFileName);
+	
   Int_t iParticle = 0 ;
   Double_t charge = 0.;
   Int_t ncalo  = (fOutputEvent->GetCaloClusters())->GetEntriesFast();

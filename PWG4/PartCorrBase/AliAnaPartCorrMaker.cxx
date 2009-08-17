@@ -216,21 +216,25 @@ void AliAnaPartCorrMaker::Print(const Option_t * opt) const
 
 
 //____________________________________________________________________________
-Bool_t AliAnaPartCorrMaker::ProcessEvent(Int_t iEntry){
+Bool_t AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentFileName){
   //Process analysis for this event
   
   if(fMakeHisto && !fOutputContainer){
     printf("AliAnaPartCorrMaker::ProcessEvent() - Histograms not initialized\n");
     abort();
   }
-  if(fAnaDebug >= 0 ) printf("***  Event %d   ***  \n",iEntry);
-  
+	
+	if(fAnaDebug >= 0 ){ 
+		printf("***  Event %d   ***  \n",iEntry);
+		if(fAnaDebug > 1 ) 
+		  printf("AliAnaPartCorrMaker::Current File Name : %s\n", currentFileName);
+  }
   //Each event needs an empty branch	
   for(Int_t iaod = 0; iaod < fAODBranchList->GetEntries(); iaod++)
     fAODBranchList->At(iaod)->Clear();
   
   //Tell the reader to fill the data in the 3 detector lists
-  fReader->FillInputEvent(iEntry);
+  fReader->FillInputEvent(iEntry, currentFileName);
   
   //Loop on analysis algorithms
   if(fAnaDebug > 0 ) printf("*** Begin analysis *** \n");

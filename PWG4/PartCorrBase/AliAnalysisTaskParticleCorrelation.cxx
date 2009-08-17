@@ -142,8 +142,8 @@ void AliAnalysisTaskParticleCorrelation::UserExec(Option_t */*option*/)
   fAna->GetReader()->SetInputOutputMCEvent(InputEvent(), AODEvent(), MCEvent());
 
   //Process event
-  fAna->ProcessEvent((Int_t) Entry());
-  
+  fAna->ProcessEvent((Int_t) Entry(), CurrentFileName());
+  //printf("AliAnalysisTaskParticleCorrelation::Current Event %d; Current File Name : %s\n",(Int_t) Entry(), CurrentFileName());
   if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserExec() - End\n");
   
   PostData(1, fOutputContainer);
