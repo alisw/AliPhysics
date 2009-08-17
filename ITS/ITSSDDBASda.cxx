@@ -299,7 +299,7 @@ int main(int argc, char **argv) {
 #ifdef ALI_AMORE
   amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
   Int_t statusamore =0;
-  statusamore += amoreDA.Send("TimeInfo",&timeinfo);
+  statusamore += amoreDA.Send("TimeInfoPedestal",&timeinfo);
   statusamore += amoreDA.Send("Baselines",basHistos);
   statusamore += amoreDA.Send("RawNoise",noiseHistos);
   statusamore += amoreDA.Send("CommonMode",cmnHistos);

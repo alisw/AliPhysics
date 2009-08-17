@@ -258,7 +258,7 @@ int main(int argc, char **argv) {
 #ifdef ALI_AMORE
   amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
   Int_t statusamore =0;
-  statusamore += amoreDA.Send("TimeInfo",&timeinfo);
+  statusamore += amoreDA.Send("TimeInfoInject",&timeinfo);
   statusamore += amoreDA.Send("DriftSpeed",dspHistos);
   if ( statusamore )
     printf("Warning: Failed to write Arrays in the AMORE database\n");
