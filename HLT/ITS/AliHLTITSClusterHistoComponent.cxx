@@ -34,7 +34,6 @@ using namespace std;
 #include <TString.h>
 #include "TObjString.h"
 #include "TObjArray.h"
-#include "AliGeomManager.h"
 
 //#include <stdlib.h>
 //#include <cerrno>
@@ -48,8 +47,7 @@ fXY(NULL),
   fPhieta(NULL),                   
   fCharge(NULL),   
   fPlotCharge(kFALSE),   
-  fPlotXY(kTRUE),
-  fPlotPhieta(kFALSE) 
+  fPlotXYPhiEta(kTRUE)
 {
   // see header file for class documentation
   // or
@@ -106,24 +104,24 @@ AliHLTComponent* AliHLTITSClusterHistoComponent::Spawn()
 
 int AliHLTITSClusterHistoComponent::DoInit( int argc, const char** argv )
 {
-
-  AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet()){
-    HLTError("Default CDB storage has not been set !");
-    return -ENOENT;
-  }
-
-  if(AliGeomManager::GetGeometry()==NULL){
-    AliGeomManager::LoadGeometry();
-  }
-
   fPlotCharge=kFALSE;   
-  fPlotXY=kTRUE;
-  fPlotPhieta=kFALSE; 
+  fPlotXYPhiEta=kTRUE;
      
   if(fPlotCharge){fCharge = new TH1F("fCharge","Total Charge of clusters",2000,0,2000);}
-  if(fPlotXY){fXY = new TH2F("fXY","Global XY of ITS clusters",1600,-80,80,1600,-80,80);}
-  if(fPlotPhieta){fPhieta = new TH2F("fPhieta","Global Phieta of ITS clusters",30,-1.5,1.5,60,0,2*TMath::Pi());}
+  if(fPlotXYPhiEta){
+	fXY = new TH2F("fXY","Global XY of ITS clusters",1600,-80,80,1600,-80,80);
+  	Char_t name[50];
+	Char_t title[50];
+	fPhieta = new TH2F*[6];
+	for (Int_t iLay=0;iLay<6;iLay++) {
+		sprintf(name,"Phi_vs_Eta_ITS_Layer%d",iLay+1);
+		sprintf(title,"Phi vs Eta - ITS Layer %d",iLay+1);
+		fPhieta[iLay]=new TH2F(name,title,60,-1.5,1.5,60,0.,2*TMath::Pi());
+		fPhieta[iLay]->GetXaxis()->SetTitle("Pseudorapidity");
+		fPhieta[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
+ 	}
+
+  }
   
   int iResult=0;
   TString configuration="";
@@ -145,14 +143,18 @@ int AliHLTITSClusterHistoComponent::DoDeinit()
 {
   // see header file for class documentation
   if(fCharge!=NULL) delete fCharge;
-  if(fXY!=NULL) delete fXY;     
-  if(fPhieta!=NULL) delete fPhieta;
+  if(fXY!=NULL) {
+	delete fXY;
+	for(Int_t i=0;i<6;i++) delete fPhieta[5-i];
+  }
   return 0;
 }
 
 int AliHLTITSClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
   
+  static Int_t event = 0;
+  event++;
   int TotalSpacePoint = 0;
   
   const AliHLTComponentBlockData* iter = NULL;
@@ -162,6 +164,7 @@ int AliHLTITSClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
   
   for ( iter = GetFirstInputBlock(kAliHLTDataTypeClusters); iter != NULL; iter = GetNextInputBlock() ) {
     
+	
     if(iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSPD) && 
        iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSDD) && 
        iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSSD))
@@ -194,20 +197,18 @@ int AliHLTITSClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
       Float_t xyz[3];
       AliITSRecPoint recpoint(lab,hit,info);
       recpoint.GetGlobalXYZ(xyz);
-      if(fPlotXY){
-	fXY->Fill(xyz[0],xyz[1]);
-      }
-      if(fPlotPhieta){
-	Float_t rad=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]); 
-	Float_t theta=TMath::ATan2(rad,xyz[2]);
-	Float_t eta=-1*TMath::Log(TMath::Tan(theta/2.0));
-	Float_t phi=TMath::ATan2(xyz[1],xyz[0]);
-	if(phi<0.0){phi=2 * TMath::Pi() - TMath::Abs(phi);} 
-	//fPhieta->Fill(theta,phi);
-	fPhieta->Fill(eta,phi);
+	  Int_t layer = recpoint.GetLayer();
+      if(fPlotXYPhiEta){
+		fXY->Fill(xyz[0],xyz[1]);
+		Float_t rad=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]); 
+		Float_t theta=TMath::ATan2(rad,xyz[2]);
+		Float_t eta=-1*TMath::Log(TMath::Tan(theta/2.0));
+		Float_t phi=TMath::ATan2(xyz[1],xyz[0]);
+		if(phi<0.0){phi=2 * TMath::Pi() - TMath::Abs(phi);} 
+		fPhieta[layer]->Fill(eta,phi);
       }
       if(fPlotCharge){
-	fCharge->Fill(recpoint.GetQ());
+		fCharge->Fill(recpoint.GetQ());
       }
     }
   }
@@ -216,13 +217,11 @@ int AliHLTITSClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
     AliHLTUInt32_t fSpecification = 0x0;
     PushBack( (TObject*) fCharge,kAliHLTDataTypeHistogram,fSpecification);
   }
-  if(fPlotXY){
+  if(fPlotXYPhiEta){
     AliHLTUInt32_t fSpecification = 0x0;
     PushBack( (TObject*) fXY,kAliHLTDataTypeHistogram,fSpecification);
-  }
-  if(fPlotPhieta){
-    AliHLTUInt32_t fSpecification = 0x0;
-    PushBack( (TObject*) fPhieta,kAliHLTDataTypeHistogram,fSpecification);
+	for(Int_t ii=0;ii<6;ii++) 
+		PushBack( (TObject*) fPhieta[ii],kAliHLTDataTypeHistogram,fSpecification);
   }
   
   HLTInfo("ITSClusterHisto found %d Total Spacepoints", TotalSpacePoint);
@@ -249,23 +248,17 @@ int AliHLTITSClusterHistoComponent::Configure(const char* arguments)
       
       if (argument.CompareTo("-plot-all")==0) {
 	HLTInfo("Ploting all historgams");
-	fPlotXY = kTRUE;
-	fPlotPhieta = kTRUE;
+	fPlotXYPhiEta = kTRUE;
 	fPlotCharge = kTRUE;
 	continue;
       }
       
       else if (argument.CompareTo("-plot-xy")==0) {
 	HLTInfo("Ploting Global XY");
-	fPlotXY = kTRUE;
+	fPlotXYPhiEta = kTRUE;
 	continue;
       }
 
-      else if (argument.CompareTo("-plot-phieta")==0) {
-	HLTInfo("Ploting Global Phieta");
-	fPlotPhieta = kTRUE;
-	continue;
-      }
       else if (argument.CompareTo("-plot-charge")==0) {
 	HLTInfo("Ploting charge of clusters");
 	fPlotCharge = kTRUE;
@@ -282,8 +275,19 @@ int AliHLTITSClusterHistoComponent::Configure(const char* arguments)
   }
   
   if(!fCharge && fPlotCharge){fCharge = new TH1F("fCharge","Total Charge of clusters",2000,0,2000);}
-  if(!fXY && fPlotXY){fXY = new TH2F("fXY","Global XY of ITS clusters",1600,-80,80,1600,-80,80);}
-  if(!fPhieta && fPlotPhieta){fPhieta = new TH2F("fPhieta","Global Phieta of ITS clusters",30,-1.5,1.5,60,0,2*TMath::Pi());}
+  if(!fXY && fPlotXYPhiEta){
+	fXY = new TH2F("fXY","Global XY of ITS clusters",1600,-80,80,1600,-80,80);
+  	Char_t name[50];
+	Char_t title[50];
+	fPhieta = new TH2F*[6];
+	for (Int_t iLay=0;iLay<6;iLay++) {
+		sprintf(name,"Phi_vs_Eta_ITS_Layer%d",iLay+1);
+		sprintf(title,"Phi vs Eta - ITS Layer %d",iLay+1);
+		fPhieta[iLay]=new TH2F(name,title,30,-1.5,1.5,200,0.,2*TMath::Pi());
+		fPhieta[iLay]->GetXaxis()->SetTitle("Pseudorapidity");
+		fPhieta[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
+ 	}
+  }
   
   return iResult;
 }

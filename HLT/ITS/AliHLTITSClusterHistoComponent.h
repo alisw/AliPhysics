@@ -91,14 +91,13 @@ private:
   int Configure(const char* arguments);
   
   TH2F * fXY;                              //! transient
-  TH2F * fPhieta;                          //! transient
+  TH2F **fPhieta;                          //! transient
   TH1F * fCharge;                          //! transient
     
   Bool_t fPlotCharge;                      //! transient
-  Bool_t fPlotXY;                          //! transient
-  Bool_t fPlotPhieta;                      //! transient
+  Bool_t fPlotXYPhiEta;                    //! transient
    
-  ClassDef(AliHLTITSClusterHistoComponent, 1);
+  ClassDef(AliHLTITSClusterHistoComponent, 2);
 
 };
 #endif
