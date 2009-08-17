@@ -28,7 +28,6 @@
 #include "AliITSDriftSpeedSDD.h"
 #include "AliITSDriftSpeedArraySDD.h"
 #include "AliITSDCSAnalyzerSDD.h"
-#include "AliITSHLTforSDD.h"
 #include "AliShuttleInterface.h"
 #include "AliCDBEntry.h"
 #include "AliCDBMetaData.h"
