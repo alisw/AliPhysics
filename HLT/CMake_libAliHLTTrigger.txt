@@ -5,6 +5,8 @@ trigger/AliHLTTrigger.cxx
 trigger/AliHLTGlobalTrigger.cxx
 trigger/AliHLTGlobalTriggerConfig.cxx
 trigger/AliHLTGlobalTriggerComponent.cxx
+trigger/AliHLTTriggerBarrelMultiplicity.cxx
+trigger/AliHLTTriggerBarrelCosmic.cxx
 trigger/AliHLTTriggerAgent.cxx
 trigger/AliHLTEventSummary.cxx
 trigger/AliHLTEventSummaryProducerComponent.cxx
@@ -12,6 +14,7 @@ trigger/AliHLTRunSummary.cxx
 trigger/AliHLTRunSummaryProducerComponent.cxx
 trigger/AliHLTTriggerSelectiveReadoutComponent.cxx
 trigger/AliHLTTriggerMonitoringComponent.cxx
+trigger/AliHLTTriggerPhosClusterEnergy.cxx
 )
 
 # fill list of header files from list of source files

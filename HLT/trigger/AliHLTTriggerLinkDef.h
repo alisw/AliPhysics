@@ -16,4 +16,5 @@
 #pragma link C++ class AliHLTRunSummaryProducerComponent+;
 #pragma link C++ class AliHLTTriggerSelectiveReadoutComponent+;
 #pragma link C++ class AliHLTTriggerMonitoringComponent+;
+#pragma link C++ class AliHLTTriggerPhosClusterEnergy+;
 #endif
