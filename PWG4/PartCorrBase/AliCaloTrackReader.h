@@ -18,7 +18,7 @@
 #include "TObject.h" 
 class TRefArray ; 
 class TLorentzVector ;
-#include "TString.h" ;
+#include "TString.h"
 class TRefArray;
 class TArrayF;  
 
