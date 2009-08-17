@@ -2714,7 +2714,7 @@ Bool_t AliShuttle::UpdateTableSkippedCase(const char* detector)
 		if (detName == "ALL") whereClause = Form("where run=%d and time_processed IS NULL;",GetCurrentRun());
 		else whereClause = Form("where run=%d and detector=\"%s\" and time_processed IS NULL;",GetCurrentRun(), detector);
 
-		Log("SHUTTLE",Form(" whereClause = %s ",whereClause.Data()));
+		//Log("SHUTTLE",Form(" whereClause = %s ",whereClause.Data()));
 
 		TString sqlQuery = Form("update %s set time_processed=%d %s", fConfig->GetFXSdbTable(system),
 					now.GetSec(), whereClause.Data());
