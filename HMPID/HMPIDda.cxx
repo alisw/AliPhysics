@@ -68,10 +68,10 @@ int main(int argc, char **argv){
   /* copy locally a file from daq detector config db */
   
   hmpIn=Form("./%s",hmpConfigFile);
-  status=daqDA_DB_getFile(hmpConfigFile,hmpIn.Data()); 
+  status=daqDA_DB_getFile(hmpConfigFile,hmpIn.Data());
   if (status) { printf("Failed to get HMPID config file status: %d\n",status);return -1; }
   hmpIn2=Form("./%s",hmpDeadChannelMapFile);
-  status=daqDA_DB_getFile(hmpDeadChannelMapFile,hmpIn2.Data()); 
+  status=daqDA_DB_getFile(hmpDeadChannelMapFile,hmpIn.Data());
   if (status) { printf("Failed to get HMPID dead channel file status: %d\n",status);return -1; }
   
 
