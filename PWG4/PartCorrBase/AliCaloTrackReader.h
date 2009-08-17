@@ -18,7 +18,7 @@
 #include "TObject.h" 
 class TRefArray ; 
 class TLorentzVector ;
-class TString ;
+#include "TString.h" ;
 class TRefArray;
 class TArrayF;  
 
@@ -50,8 +50,9 @@ class AliCaloTrackReader : public TObject {
   virtual Int_t GetDataType()      const { return fDataType ; }
   virtual void  SetDataType(Int_t data ) { fDataType = data ; }
 
-  virtual Int_t GetEventNumber() const {return fEventNumber ; }
-
+  virtual Int_t   GetEventNumber()     const {return fEventNumber ; }
+  virtual TString GetCurrentFileName() const {return fCurrentFileName ; }
+	
   //Minimum pt setters and getters 
   virtual Float_t  GetEMCALPtMin() const { return fEMCALPtMin  ; }
   virtual Float_t  GetPHOSPtMin()  const { return fPHOSPtMin  ; }
@@ -83,7 +84,7 @@ class AliCaloTrackReader : public TObject {
   void SwitchOnPHOSCells()   {fFillPHOSCells = kTRUE ; }
   void SwitchOffPHOSCells()  {fFillPHOSCells = kFALSE ; }
 
-  virtual void FillInputEvent(Int_t iEntry)  ;
+  virtual void FillInputEvent(const Int_t iEntry, const char *currentFileName)  ;
   virtual void FillInputCTS()   {;}
   virtual void FillInputEMCAL() {;}
   virtual void FillInputPHOS()  {;}
@@ -117,6 +118,7 @@ class AliCaloTrackReader : public TObject {
 
  protected:
   Int_t	           fEventNumber; // Event number
+  TString          fCurrentFileName; // Current file name under analysis
   Int_t            fDataType ;   // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
   Int_t            fDebug;       // Debugging level
   AliFidutialCut * fFidutialCut; // Acceptance cuts
@@ -141,7 +143,7 @@ class AliCaloTrackReader : public TObject {
   Bool_t         fFillEMCALCells; // use data from EMCAL
   Bool_t         fFillPHOSCells;  // use data from PHOS
 
-  ClassDef(AliCaloTrackReader,3)
+  ClassDef(AliCaloTrackReader,4)
 } ;
 
 
