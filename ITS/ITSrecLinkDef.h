@@ -58,6 +58,7 @@
 #pragma link C++ class AliITSClusterFinderV2SDD+;
 #pragma link C++ class AliITSClusterFinderV2SPD+;
 #pragma link C++ class AliITSClusterFinderV2SSD+;
+#pragma link C++ class AliITSCorrectSDDPoints+;
 
 // Classes for PID
 #pragma link C++ class  AliITSPid+;

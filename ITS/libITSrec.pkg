@@ -6,6 +6,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSClusterFinderV2SPD.cxx \
 		AliITSClusterFinderV2SSD.cxx \
 		AliITSClusterParam.cxx \
+		AliITSCorrectSDDPoints.cxx \
 		AliITSclustererV2.cxx \
 		AliITSclusterSSD.cxx \
 		AliITSpackageSSD.cxx \
