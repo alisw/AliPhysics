@@ -9,7 +9,8 @@ ITS/AliHLTITSAgent.cxx
 ITS/AliHLTITSClusterFinderSPDComponent.cxx
 ITS/AliHLTITSClusterFinderSSDComponent.cxx
 ITS/AliHLTITSClusterHistoComponent.cxx
-ITS/AliHLTITSCompressRawDataSDDComponent.cxx
+ITS/AliHLTITSSSDQARecPointsComponent.cxx
+ITS/AliHLTITSQAComponent.cxx
 ITS/tracking/AliITStrackerHLT.cxx
 ITS/tracking/AliHLTITSDetector.cxx
 ITS/tracking/AliHLTITSLayer.cxx

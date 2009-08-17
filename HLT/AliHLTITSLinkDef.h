@@ -14,6 +14,8 @@
 #pragma link C++ class AliHLTITSClusterFinderSSDComponent+;
 #pragma link C++ class AliHLTITSClusterHistoComponent+;
 #pragma link C++ class AliHLTITSCompressRawDataSDDComponent+;
+#pragma link C++ class AliHLTITSSSDQARecPointsComponent+;
+#pragma link C++ class AliHLTITSQAComponent+;
 #pragma link C++ class AliITStrackerHLT+;
 #pragma link C++ class AliHLTITSDetector+;
 #pragma link C++ class AliHLTITSLayer+;
