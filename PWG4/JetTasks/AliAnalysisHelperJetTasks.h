@@ -23,11 +23,13 @@ class AliAnalysisHelperJetTasks : public TObject {
 			     Int_t *iGenIndex,
 			     Int_t *iRecIndex,
 			     Int_t iDebug, Float_t maxDist = 0.5);
+
+  static void MergeOutput(char* cFiles, char* cList = "pwg4spec"); // Merges the files in the input text file  needs the two histograms fh1PtHard_Trials, fh1Xsec and the name of the input list
   
 
   private:
   
-  ClassDef(AliAnalysisHelperJetTasks, 1) // 
+  ClassDef(AliAnalysisHelperJetTasks, 1) 
 };
 
 #endif // ALIANALYSISHELPERJETTASKS_H
