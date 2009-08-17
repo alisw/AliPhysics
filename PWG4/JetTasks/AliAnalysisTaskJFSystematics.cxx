@@ -330,7 +330,7 @@ void AliAnalysisTaskJFSystematics::UserCreateOutputObjects()
     
   fh2PtGenDeltaPhi = new TH2F("fh2PtGenDeltaPhi","delta phi vs. P_{T,gen};p_{T,gen} (GeV/c);#phi_{gen}-#phi_{rec}",
 			      nBinPt,binLimitsPt,100,-1.0,1.0);
-  fh2PtGenDeltaEta = new TH2F("fh2PtGenDeltaEta_j%d","delta eta vs. p_{T,gen};p_{T,gen} (GeV/c);#eta_{gen}-#eta_{rec}",
+  fh2PtGenDeltaEta = new TH2F("fh2PtGenDeltaEta","delta eta vs. p_{T,gen};p_{T,gen} (GeV/c);#eta_{gen}-#eta_{rec}",
 			      nBinPt,binLimitsPt,100,-1.0,1.0);
 
 
