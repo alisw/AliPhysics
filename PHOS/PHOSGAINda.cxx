@@ -1,12 +1,12 @@
 /*
 contact: Boris.Polishchuk@cern.ch
 link: see comments in the $ALICE_ROOT/PHOS/AliPHOSRcuDA1.cxx
-reference run: /castor/cern.ch/alice/phos/2007/10/04/18/07000008249001.1000.root
+reference run: /alice/data/2009/LHC09b_PHOS/000075883/raw/09000075883017.20.root
 run type: PHYSICS
 DA type: MON 
 number of events needed: 1000
-input files: RCU0.data  RCU1.data  RCU2.data  RCU3.data
-Output files: PHOS_Module2_Calib.root
+input files: RCU0.data  RCU1.data  RCU2.data  RCU3.data  zs.txt
+Output files: PHOS_ModuleN_Calib.root, where N is the module number (0-5).
 Trigger types used: PHYSICS
 */
 
@@ -30,7 +30,7 @@ extern "C" {
 #include "AliPHOSRawFitterv0.h"
 #include "AliCaloAltroMapping.h"
 #include "AliCaloRawStreamV3.h"
-
+#include "AliLog.h"
 
 /* Main routine
       Arguments: 
@@ -44,6 +44,9 @@ int main(int argc, char **argv) {
 					"RIO",
 					"TStreamerInfo()");
 
+  AliLog::SetGlobalDebugLevel(0) ;
+  AliLog::SetGlobalLogLevel(AliLog::kFatal);
+  
   int status;
   
   if (argc!=2) {
