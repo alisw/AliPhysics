@@ -169,6 +169,7 @@ Bool_t AliJetAODReader::FillMomentumArray()
   // Clear momentum array
   ClearArray();
   fRef->Clear();
+  
   fDebug = fReaderHeader->GetDebug();
   
   if (!fAOD) {
@@ -206,6 +207,8 @@ Bool_t AliJetAODReader::FillMomentumArray()
     if((filterMask>0)&&!(track->TestFilterBit(filterMask)))continue;
     if ( (eta > etaMax) || (eta < etaMin)) continue;      // checking eta cut
 
+    if (aodTrack == 0) new(fRef) TRefArray(TProcessID::GetProcessWithUID(track));
+    
     new ((*fMomentumArray)[aodTrack]) TLorentzVector(p3,p3.Mag());
     sflag[aodTrack] = (TMath::Abs(track->GetLabel()) < 10000) ? 1 : 0;
     cflag[aodTrack] = ( pt > ptMin ) ? 1: 0;
