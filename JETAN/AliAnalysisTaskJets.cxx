@@ -107,7 +107,7 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
       fJetFinder->ConnectAODNonStd(AODEvent(), fNonStdBranch.Data()); 
     }
   AliAODJetEventBackground* evBkg = fJetFinder->GetEventBackground();
-  AddAODBranch("AliAODJetEventBackground",&evBkg);
+  if (evBkg) AddAODBranch("AliAODJetEventBackground",&evBkg);
 
   // Histograms
   OpenFile(1);
@@ -168,8 +168,14 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
     jarray = dynamic_cast<TClonesArray*>(AODEvent()->FindListObject(fNonStdBranch.Data()));
     jarray->Delete();    // this is our responsibility, clear before filling again
   }
+  if (dynamic_cast<AliAODEvent*>(InputEvent()) !=  0) {
+      fJetFinder->GetReader()->SetInputEvent(InputEvent(), InputEvent(), MCEvent());
+  } else {
+      fJetFinder->GetReader()->SetInputEvent(InputEvent(), AODEvent(), MCEvent());
+  }
+  
+  
 
-  fJetFinder->GetReader()->SetInputEvent(InputEvent(), AODEvent(), MCEvent());
   if(fOpt==0) fJetFinder->ProcessEvent();
   else fJetFinder->ProcessEvent2();    // V2
  
