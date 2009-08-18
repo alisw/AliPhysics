@@ -2667,19 +2667,23 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, const AliTRDseed
       
         // try attaching clusters to tracklets
         Int_t mlayers = 0; 
-	      AliTRDcluster *cl = NULL;
+	AliTRDcluster *cl = NULL;
         for(int iLayer=0; iLayer<kNSeedPlanes; iLayer++){
           Int_t jLayer = planes[iLayer];
-	        Int_t nNotInChamber = 0;
+	  Int_t nNotInChamber = 0;
           if(!cseed[jLayer].AttachClusters(stack[jLayer], kTRUE)) continue;
-          cseed[jLayer].Fit();
-          cseed[jLayer].UpdateUsed();
-	        cseed[jLayer].ResetClusterIter();
-	        while((cl = cseed[jLayer].NextCluster())){
-	  	      if(!cl->IsInChamber()) nNotInChamber++;
-	        }
-          //printf("clusters[%d], used[%d], not in chamber[%d]\n", cseed[jLayer].GetN(), cseed[jLayer].GetNUsed(), nNotInChamber);
-	        if(cseed[jLayer].GetN() - (cseed[jLayer].GetNUsed() + nNotInChamber) < 5) continue; // checking for Cluster which are not in chamber is a much stronger restriction on real data
+	  if(fkReconstructor->IsHLT()){ 
+	    if(!cseed[jLayer].IsOK()) continue;
+	  }else{
+	    cseed[jLayer].Fit();
+	    cseed[jLayer].UpdateUsed();
+	    cseed[jLayer].ResetClusterIter();
+	    while((cl = cseed[jLayer].NextCluster())){
+	      if(!cl->IsInChamber()) nNotInChamber++;
+	    }
+	    //printf("clusters[%d], used[%d], not in chamber[%d]\n", cseed[jLayer].GetN(), cseed[jLayer].GetNUsed(), nNotInChamber);
+	    if(cseed[jLayer].GetN() - (cseed[jLayer].GetNUsed() + nNotInChamber) < 5) continue; // checking for Cluster which are not in chamber is a much stronger restriction on real data
+	  }
           mlayers++;
         }
 
@@ -2696,7 +2700,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, const AliTRDseed
             Int_t jLayer = planesExt[iLayer];
             if(!(chamber = stack[jLayer])) continue;
             cseed[jLayer].AttachClusters(chamber, kTRUE);
-            cseed[jLayer].Fit();
+            //cseed[jLayer].Fit();
           }
           fTrackQuality[ntracks] = 1.; // dummy value
           ntracks++;
@@ -2877,7 +2881,7 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(const AliTRDseedV1 * const seeds, Doub
       track.UnsetTracklet(jLayer);
       ptrTracklet = const_cast<AliTRDseedV1 *>(&seeds[jLayer]);
       if(!ptrTracklet->IsOK()) continue;
-      if(TMath::Abs(ptrTracklet->GetYref(1) - ptrTracklet->GetYfit(1)) >= .2) continue; // check this condition with Marian
+      //if(TMath::Abs(ptrTracklet->GetYref(1) - ptrTracklet->GetYfit(1)) >= .2) continue; // check this condition with Marian
       ptrTracklet = SetTracklet(ptrTracklet);
       ptrTracklet->UseClusters();
       track.SetTracklet(ptrTracklet, fTracklets->GetEntriesFast()-1);
