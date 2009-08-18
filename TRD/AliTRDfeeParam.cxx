@@ -258,7 +258,7 @@ Int_t AliTRDfeeParam::GetExtendedPadColFromADC(Int_t irob, Int_t imcm, Int_t iad
     
   if (iadc < 0 || iadc > fgkNadcMcm ) return -100;
   Int_t mcmcol = imcm%fgkNmcmRobInCol + GetRobSide(irob)*fgkNmcmRobInCol;  // MCM column number on ROC [0..7]
-  Int_t padcol = mcmcol*fgkNadcMcm + fgkNcolMcm + 1 - iadc;
+  Int_t padcol = mcmcol*fgkNadcMcm + fgkNcolMcm + 2 - iadc;
 
   return padcol;
 
