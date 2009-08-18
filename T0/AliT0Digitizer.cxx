@@ -301,6 +301,8 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  // max 200ns, HIJING  mean 50000phe -> 15000mv -> ln = 15 (s zapasom)
 	  // channel 25ps
 	  qt= al/ph2Mip;  // 50mv/Mip amp in mV 
+	  // before will we have calibration for high multiplicity 
+	  if (qt > 115.) qt =115.; //must be fix!!!
 	  //  fill TDC
 	  timeDelayCFD[i] = fParam->GetTimeDelayCFD(i);
  	  trCFD = Int_t (timeGaus[i]/channelWidth + timeDelayCFD[i]); 
@@ -316,7 +318,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  sumMult += Int_t (qtCh/sumMultCoeff)  ;
 	 
 	  // put slewing 
-	  TGraph *fu=(TGraph*) fParam ->GetWalk(i) ;
+	  TGraph *fu=(TGraph*) fParam ->GetWalk(i);
 	  Float_t slew=fu->Eval(Float_t(qtCh));
 
 	  //	  trCFD=trCFD-Int_t(fMaxValue[i]-slew);
