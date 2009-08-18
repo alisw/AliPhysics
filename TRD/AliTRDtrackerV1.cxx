@@ -2673,6 +2673,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, const AliTRDseed
 	  Int_t nNotInChamber = 0;
           if(!cseed[jLayer].AttachClusters(stack[jLayer], kTRUE)) continue;
 	  if(fkReconstructor->IsHLT()){ 
+	    cseed[jLayer].UpdateUsed();
 	    if(!cseed[jLayer].IsOK()) continue;
 	  }else{
 	    cseed[jLayer].Fit();
