@@ -13,9 +13,6 @@
 
 
 #include "AliHLTProcessor.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TH3F.h"
 #include "AliHLTITSSpacePointData.h"
 #include "TClonesArray.h"
 #include "AliITSRecPoint.h"
@@ -89,45 +86,7 @@ private:
   static const Int_t fgkSSDMODULESLAYER6 = 950; //total number of SSD modules - layer6
   static const Int_t fgkNumberOfPSideStrips = 768; //number of P-side strips
    
-  TH1F *fHistSSDModuleIdLayer5;
-  TH1F *fHistSSDModuleIdLayer6;       
-  TH1F *fHistSSDClusterPerEventLayer5;
-  TH1F *fHistSSDClusterPerEventLayer6;      
-  TH1F *fHistSSDLocalXLayer5;
-  TH1F *fHistSSDLocalXLayer6;
-  TH1F *fHistSSDLocalZLayer5;
-  TH1F *fHistSSDLocalZLayer6;
-  TH1F *fHistSSDGlobalXLayer5;
-  TH1F *fHistSSDGlobalXLayer6;
-  TH1F *fHistSSDGlobalYLayer5;
-  TH1F *fHistSSDGlobalYLayer6;
-  TH1F *fHistSSDGlobalZLayer5;
-  TH1F *fHistSSDGlobalZLayer6;
-  TH1F *fHistSSDPhiLayer5;
-  TH1F *fHistSSDPhiLayer6;
-  TH1F *fHistSSDThetaLayer5;
-  TH1F *fHistSSDThetaLayer6;
-  TH1F *fHistSSDRadiusLayer5;
-  TH1F *fHistSSDRadiusLayer6;
-  TH1F *fHistSSDClusterTypeLayer5;
-  TH1F *fHistSSDClusterTypeLayer6;
-  TH1F *fHistSSDChargeRatioLayer5;
-  TH1F *fHistSSDChargeRatioLayer6;
-  TH1F *fHistSSDChargekeVLayer5;
-  TH1F *fHistSSDChargekeVLayer6;
-  TH1F *fHistSSDChargePSideLayer5;
-  TH1F *fHistSSDChargePSideLayer6;
-  TH1F *fHistSSDChargeNSideLayer5;
-  TH1F *fHistSSDChargeNSideLayer6;
-  TH1F *fHistSSDChargeRatio2Layer5;
-  TH1F *fHistSSDChargeRatio2Layer6;
-  TH2F *fHistSSDChargePNSideLayer5;
-  TH2F *fHistSSDChargePNSideLayer6;
-  TH2F *fHistSSDChargeMapLayer5;
-  TH2F *fHistSSDChargeMapLayer6;
-  TH2F *fHistSSDClusterMapLayer5;  
-  TH2F *fHistSSDClusterMapLayer6; 
-  TObjArray *fHistArray;
+  TObjArray *fHistSSDArray; //TObjArray of the SSD QA histograms
    
   ClassDef(AliHLTITSSSDQARecPointsComponent, 0);
 
