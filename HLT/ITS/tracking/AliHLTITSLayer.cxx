@@ -17,6 +17,8 @@
 
 
 #include "AliHLTITSLayer.h"
+#include <algorithm>
+
 
 //------------------------------------------------------------------------
 AliHLTITSLayer::AliHLTITSLayer():
@@ -197,12 +199,15 @@ Int_t AliHLTITSLayer::InsertCluster(AliITSRecPoint *cl) {
 			     
   return 0;
 }
+
+
 //------------------------------------------------------------------------
 void  AliHLTITSLayer::SortClusters()
 {
   //
   //sort clusters
   //
+ 
   AliITSRecPoint **clusters = new AliITSRecPoint*[fN];
   Float_t *z                = new Float_t[fN];
   Int_t   * index           = new Int_t[fN];
@@ -211,6 +216,7 @@ void  AliHLTITSLayer::SortClusters()
     z[i] = fClusters[i]->GetZ();
   }
   TMath::Sort(fN,z,index,kFALSE);
+  
   for (Int_t i=0;i<fN;i++){
     clusters[i] = fClusters[index[i]];
   }

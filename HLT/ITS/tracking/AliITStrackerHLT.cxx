@@ -295,6 +295,10 @@ void AliITStrackerHLT::LoadClusters( std::vector<AliITSRecPoint> clusters)
  
   //SignDeltas(clusters,GetZ());
   //std::cout<<"CA ITS: NClusters "<<clusters.size()<<std::endl;
+  for( int i=0; i<AliITSgeomTGeo::GetNLayers(); i++ ){ 
+     fgLayers[i].ResetClusters(); //road defined by the cluster density
+  }
+
   for( unsigned int icl=0; icl<clusters.size(); icl++ ){
     //std::cout<<"CA ITS: icl "<<icl<<std::endl;
    
@@ -312,8 +316,8 @@ void AliITStrackerHLT::LoadClusters( std::vector<AliITSRecPoint> clusters)
     fgLayers[i].InsertCluster(new AliITSRecPoint(cl)); 
   }
 
-  for( int i=0; i<AliITSgeomTGeo::GetNLayers(); i++ ){
-    for( int detector = 0; detector<fgLayers[i].GetNdetectors(); detector++ ){
+  for( int i=0; i<AliITSgeomTGeo::GetNLayers(); i++ ){ 
+    if(0)for( int detector = 0; detector<fgLayers[i].GetNdetectors(); detector++ ){ //SG!!!
       // add dead zone "virtual" cluster in SPD, if there is a cluster within 
       // zwindow cm from the dead zone      
 

@@ -199,6 +199,7 @@ int AliHLTITSTrackerComponent::ReadCDBEntry( const char* cdbEntry, const char* c
   const char* defaultNotify = "";
 
   if ( !cdbEntry ) {
+    return 0;// need to add the HLT/ConfigITS/ITSTracker directory to cdb SG!!!
     cdbEntry = "HLT/ConfigITS/ITSTracker";
     defaultNotify = " (default)";
     chainId = 0;
@@ -382,8 +383,9 @@ int AliHLTITSTrackerComponent::DoEvent
   
   // set clusters to tracker
 
-  fTracker->LoadClusters( clusters );
 
+  fTracker->LoadClusters( clusters );
+  //timer.Stop();
   // Reconstruct the event
 
   TStopwatch timerReco;
@@ -393,7 +395,7 @@ int AliHLTITSTrackerComponent::DoEvent
   timerReco.Stop();
   
   // Fill output tracks
-
+  int nITSUpdated = 0;
   {
     unsigned int mySize = 0;    
      
@@ -409,10 +411,11 @@ int AliHLTITSTrackerComponent::DoEvent
 
     for ( int itr = 0; itr < nTracks; itr++ ) {
 
-      const AliExternalTrackParam &tp = fTracker->Tracks()[itr];
+      const AliExternalTrackParam &tp = fTracker->Tracks()[itr];      
       int id =  tracksTPCId[fTracker->Tracks()[itr].TPCtrackId()];
-
+      
       int nClusters = 0;
+      if( fTracker->Tracks()[itr].GetNumberOfClusters()>0 ) nITSUpdated++;
 
       unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + nClusters * sizeof( unsigned int );
 
@@ -450,7 +453,18 @@ int AliHLTITSTrackerComponent::DoEvent
     outputBlocks.push_back( resultData );
     size = resultData.fSize;  
     
-    HLTInfo( "ITS tracker:: output %d tracks",nTracks );
   }
+
+  timer.Stop();
+  fFullTime += timer.RealTime();
+  fRecoTime += timerReco.RealTime();
+  fNEvents++;
+
+  // Set log level to "Warning" for on-line system monitoring
+  int hz = ( int ) ( fFullTime > 1.e-10 ? fNEvents / fFullTime : 100000 );
+  int hz1 = ( int ) ( fRecoTime > 1.e-10 ? fNEvents / fRecoTime : 100000 );
+  HLTInfo( "ITS Tracker: output %d tracks;  input %d clusters, %d tracks; time: full %d / reco %d Hz",
+	      nITSUpdated, clusters.size(), tracksTPC.size(), hz, hz1 );
+
   return iResult;
 }
