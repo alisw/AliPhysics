@@ -338,6 +338,11 @@ Double_t AliHMPIDPreprocessor::ProcTrans(TMap* pMap)
     pVal=(AliDCSValue*)pWaveLenght->At(0);
     Double_t lambda = pVal->GetFloat();
 
+    if(lambda<150. || lambda>230.){ 
+        AliWarning(Form("Wrong value for HMP_DET/HMP_INFR/HMP_INFR_TRANPLANT/HMP_INFR_TRANPLANT_MEASURE.mesure%i.waveLenght  -----> Default E mean used!!!!!",i));
+        return DefaultEMean(); // to be checked
+      } 
+
     Double_t photEn = 1239.842609/lambda;     // 1239.842609 from nm to eV
     
     if(photEn<AliHMPIDParam::EPhotMin() || photEn>AliHMPIDParam::EPhotMax()) continue;
