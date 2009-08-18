@@ -37,6 +37,10 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius)
    if(radius>0)cRadius = Form("%02d",(int)(radius*10));
 
    jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s%s%s",jr,jf,cRadius));
+   TString type = mgr->GetInputEventHandler()->GetDataType();
+   if (type == "AOD") jetana->SetNonStdBranch(Form("jets%s",jf));
+
+   
    AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist%s%s%s",jr,jf,cRadius), TList::Class(),
 							     AliAnalysisManager::kOutputContainer, Form("jethist%s_%s%s.root",jr,jf,cRadius));
    // Connect jet finder to task.
