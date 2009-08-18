@@ -12,6 +12,9 @@
 
 #include <TEveTrack.h>
 
+class AliESDtrack;
+class AliAODTrack;
+
 //______________________________________________________________________________
 // Short description of AliEveTrack
 //
@@ -20,9 +23,11 @@ class AliEveTrack : public TEveTrack
 {
 public:
   AliEveTrack();
-  AliEveTrack(TParticle* t, Int_t label, TEveTrackPropagator* rs);
-  AliEveTrack(TEveMCTrack*  t, TEveTrackPropagator* rs);
-  AliEveTrack(TEveRecTrack* t, TEveTrackPropagator* rs);
+  AliEveTrack(TParticle* t, Int_t label, TEveTrackPropagator* prop=0);
+  AliEveTrack(TEveMCTrack*  t, TEveTrackPropagator* prop=0);
+  AliEveTrack(TEveRecTrack* t, TEveTrackPropagator* prop=0);
+  AliEveTrack(AliESDtrack*  t, TEveTrackPropagator* prop=0);
+  AliEveTrack(AliAODTrack*  t, TEveTrackPropagator* prop=0);
   AliEveTrack(const AliEveTrack& t);
   virtual ~AliEveTrack();
 

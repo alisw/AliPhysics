@@ -117,21 +117,7 @@ TEveTrack* esd_make_track(AliESDtrack *at, TEveTrackList* cont)
     innerTaken = kTRUE;
   }
 
-  Double_t pbuf[3], vbuf[3];
-  tp->GetXYZ(vbuf);
-  tp->GetPxPyPz(pbuf);
-
-  TEveRecTrack rt;
-  rt.fLabel  = at->GetLabel();
-  rt.fIndex  = at->GetID();
-  rt.fStatus = (Int_t) at->GetStatus();
-  rt.fSign   = at->GetSign();
-  rt.fV.Set(vbuf);
-  rt.fP.Set(pbuf);
-  Double_t ep = at->GetP(), mc = at->GetMass();
-  rt.fBeta = ep/TMath::Sqrt(ep*ep + mc*mc);
-
-  AliEveTrack* track = new AliEveTrack(&rt, cont->GetPropagator());
+  AliEveTrack* track = new AliEveTrack(at, cont->GetPropagator());
   track->SetAttLineAttMarker(cont);
   track->SetName(Form("AliEveTrack %d", at->GetID()));
   track->SetElementTitle(esd_track_title(at));

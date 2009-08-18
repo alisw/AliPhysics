@@ -9,6 +9,9 @@
 
 #include "AliEveTrack.h"
 
+#include "AliESDtrack.h"
+#include "AliAODTrack.h"
+
 #include <TROOT.h>
 
 //______________________________________________________________________________
@@ -25,24 +28,68 @@ AliEveTrack::AliEveTrack() :
 }
 
 //______________________________________________________________________________
-AliEveTrack::AliEveTrack(TParticle* t, Int_t label, TEveTrackPropagator* rs) :
-  TEveTrack(t, label, rs)
+AliEveTrack::AliEveTrack(TParticle* t, Int_t label, TEveTrackPropagator* prop) :
+  TEveTrack(t, label, prop)
 {
   // Constructor.
 }
 
 //______________________________________________________________________________
-AliEveTrack::AliEveTrack(TEveMCTrack*  t, TEveTrackPropagator* rs) :
-  TEveTrack(t, rs)
+AliEveTrack::AliEveTrack(TEveMCTrack*  t, TEveTrackPropagator* prop) :
+  TEveTrack(t, prop)
 {
   // Constructor.
 }
 
 //______________________________________________________________________________
-AliEveTrack::AliEveTrack(TEveRecTrack* t, TEveTrackPropagator* rs) :
-  TEveTrack(t, rs)
+AliEveTrack::AliEveTrack(TEveRecTrack* t, TEveTrackPropagator* prop) :
+  TEveTrack(t, prop)
 {
   // Constructor.
+}
+
+//______________________________________________________________________________
+AliEveTrack::AliEveTrack(AliESDtrack* t, TEveTrackPropagator* prop) :
+  TEveTrack()
+{
+  // Constructor.
+
+  Double_t buf[3];
+  t->GetXYZ(buf);    fV.Set(buf);
+  t->GetPxPyPz(buf); fP.Set(buf);
+
+  Double_t ep = t->GetP(), mc = t->GetMass();
+  fBeta = ep/TMath::Sqrt(ep*ep + mc*mc);
+  // fPdg = 0; // ??? Use PID ?
+  fCharge= t->GetSign();
+  
+  fLabel = t->GetLabel();
+  fIndex = t->GetID();
+  // fStatus = (Int_t) t->GetStatus(); // RRRR Uncomment for root-5.26.
+
+  SetPropagator(prop);
+}
+
+//______________________________________________________________________________
+AliEveTrack::AliEveTrack(AliAODTrack* t, TEveTrackPropagator* prop) :
+  TEveTrack()
+{
+  // Constructor.
+
+  Double_t buf[3];
+
+  t->GetXYZ(buf); fV.Set(buf);
+  t->PxPyPz(buf); fP.Set(buf);
+
+  // fBeta = 0; // Unknown, no mass function
+  // fPdg = 0;  // ??? Use PID ?
+  fCharge= t->Charge();
+  
+  fLabel = t->GetLabel();
+  fIndex = t->GetID();
+  // fStatus = (Int_t) t->GetStatus(); // RRRR Uncomment for root-5.26.
+
+  SetPropagator(prop);
 }
 
 //______________________________________________________________________________
