@@ -121,13 +121,13 @@ Bool_t AliMUONTrackReconstructorK::MakeTrackCandidates(AliMUONVClusterStore& clu
 	  fRecTracksPtr->Remove(track);
 	  fNRecTracks--;
 	} else if (fNRecTracks > GetRecoParam()->GetMaxTrackCandidates()) {
-	  AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks));
+	  AliError(Form("Too many track candidates (%d tracks). Stop tracking.", fNRecTracks));
 	  delete segments;
 	  return kFALSE;
 	}
       } else {
 	if ((fNRecTracks + segments->GetEntriesFast() - iSegment - 1) > GetRecoParam()->GetMaxTrackCandidates()) {
-	  AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks + segments->GetEntriesFast() - iSegment - 1));
+	  AliError(Form("Too many track candidates (%d tracks). Abandion tracking.", fNRecTracks + segments->GetEntriesFast() - iSegment - 1));
 	  delete segments;
 	  return kFALSE;
 	}
@@ -228,7 +228,7 @@ Bool_t AliMUONTrackReconstructorK::MakeMoreTrackCandidates(AliMUONVClusterStore&
 	
 	// abort tracking if there are too many candidates
 	if ((fNRecTracks + segments->GetEntriesFast() - iSegment - 1) > GetRecoParam()->GetMaxTrackCandidates()) {
-	  AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks + segments->GetEntriesFast() - iSegment - 1));
+	  AliError(Form("Too many track candidates (%d tracks). Stop tracking.", fNRecTracks + segments->GetEntriesFast() - iSegment - 1));
 	  delete segments;
 	  return kFALSE;
 	}
@@ -473,12 +473,12 @@ Bool_t AliMUONTrackReconstructorK::FollowTracks(AliMUONVClusterStore& clusterSto
       // abort tracking if there are too many candidates
       if (GetRecoParam()->RequestStation(station)) {
 	if (fNRecTracks > GetRecoParam()->GetMaxTrackCandidates()) {
-	  AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks));
+	  AliError(Form("Too many track candidates (%d tracks). Stop tracking.", fNRecTracks));
 	  return kFALSE;
 	}
       } else {
 	if ((fNRecTracks + currentNRecTracks - iRecTrack - 1) > GetRecoParam()->GetMaxTrackCandidates()) {
-	  AliError(Form("Too many track candidates (%d tracks). Abort tracking.", fNRecTracks + currentNRecTracks - iRecTrack - 1));
+	  AliError(Form("Too many track candidates (%d tracks). Stop tracking.", fNRecTracks + currentNRecTracks - iRecTrack - 1));
 	  return kFALSE;
 	}
       }
