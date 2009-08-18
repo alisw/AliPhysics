@@ -102,15 +102,15 @@ CXXFLAGS+=$(addprefix -I,$(filter-out %tgt_${ALICE_TARGET},$(filter-out %CVS,$(p
 ALIROOTALIBS+=$($(EXTRADAMODULE)ALIBS)
 endif
 
-DACONTACT=$(sort $(shell grep -i "Contact:" $(DASRC) | cut -d':' -f2))
-DALINKPAGE=$(sort $(subst Link:,,$(shell grep -i "Link:" $(DASRC))))
-DAREFRUN=$(sort $(shell grep -i "Reference Run:" $(DASRC) | cut -d':' -f2))
-DARUNTYPE=$(sort $(shell grep -i "Run Type:" $(DASRC) | cut -d':' -f2))
-DATYPE=$(sort $(shell grep -i "DA Type:" $(DASRC) | cut -d':' -f2))
-DANUMBEROFEVENTS=$(sort $(shell grep -i "Number of events needed:" $(DASRC) | cut -d':' -f2))
-DAINPUTFILES=$(sort $(shell grep -i "Input Files:" $(DASRC) | cut -d':' -f2))
-DAOUTPUTFILES=$(sort $(shell grep -i "Output Files:" $(DASRC) | cut -d':' -f2))
-DATRIGGERTYPE=$(sort $(shell grep -i "Trigger types used:" $(DASRC) | cut -d':' -f2))
+DACONTACT=$(shell grep -i "Contact:" $(DASRC) | sed -e "s/[^:]*:\s*//" | head -n 1)
+DALINKPAGE=$(shell grep -i "Link:" $(DASRC) | sed -e "s/[^:]*:\s*//" | head -n 1)
+DAREFRUN=$(shell grep -i "Reference Run:" $(DASRC) | sed -e "s/[^:]*:\s*//" | head -n 1)
+DARUNTYPE=$(shell grep -i "Run Type:" $(DASRC) | sed -e "s/[^:]*:\s*//" | head -n 1)
+DATYPE=$(shell grep -i "DA Type:" $(DASRC) | sed -e "s/[^:]*:\s*//" | head -n 1)
+DANUMBEROFEVENTS=$(shell grep -i "Number of events needed:" $(DASRC) | sed -e "s/[^:]*:\s*//" | head -n 1)
+DAINPUTFILES=$(shell grep -i "Input Files:" $(DASRC) | sed -e "s/[^:]*:\s*//" | head -n 1)
+DAOUTPUTFILES=$(shell grep -i "Output Files:" $(DASRC) | sed -e "s/[^:]*:\s*//" | head -n 1)
+DATRIGGERTYPE=$(shell grep -i "Trigger types used:" $(DASRC) | sed -e "s/[^:]*:\s*//" | head -n 1)
 
 $(DATARGETNAME): $(DAEXE)
 
