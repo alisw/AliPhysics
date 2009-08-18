@@ -43,43 +43,6 @@
 
 ClassImp(AliHMPIDQAChecker)
 
-//____________________________________________________________________________
-Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index)
-{
-  
- TObjArray **list;
-
-  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ;
- Int_t count[AliRecoParam::kNSpecies]   = { 0 }; 
- for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++){ // species loop 
-    rv[specie] = 1.0 ; 
- 
-   TObjArray *dataList;  Int_t iList=0;  
-  
-   if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
-   continue ; 
-   if (!fDataSubDir) {
-     rv[specie] = 0. ; // nothing to check
-   } 
-    else if (!fRefSubDir && !fRefOCDBSubDir) {
-        rv[specie] = -1 ; // no reference data
-    } 
-    else {
-      TList * keyList = fDataSubDir->GetListOfKeys() ; 
-      TIter next(keyList) ; 
-      TKey * key ;
-      count[specie] = 0 ; 
-      while ( (key = static_cast<TKey *>(next())) ) {
-        iList++;
-        TObject * odata = fDataSubDir->Get(key->GetName()) ;
-        dataList->AddAt(odata,iList);
-    }// while
-  }// else 
-  list[specie] = dataList;
- } //species loop
- Check(index,list);
- return rv;            
-}
 //_________________________________________________________________
 Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list) 
 {
