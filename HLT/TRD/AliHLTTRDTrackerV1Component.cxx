@@ -37,6 +37,7 @@ using namespace std;
 #include "AliGeomManager.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
 #include "AliESDEvent.h"
 #include "AliMagF.h"
 #include "AliESDfriend.h"
@@ -65,7 +66,15 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component():
   fTracker(NULL),
   fRecoParam(NULL),
   fReconstructor(NULL),
-  fESD(NULL)
+  fESD(NULL),
+  fRecoParamType(-1),
+  fNtimeBins(-1),
+  fMagneticField(-1),
+  fPIDmethod(1),
+  fgeometryFileName(""),
+  fieldStrength(-101),
+  fSlowTracking(kFALSE),
+  fOfflineMode(kFALSE)
 {
   // Default constructor
 
@@ -113,285 +122,33 @@ AliHLTComponent* AliHLTTRDTrackerV1Component::Spawn()
 int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
 {
   // perform initialization. We check whether our relative output size is specified in the arguments.
-  fOutputPercentage = 100;
-  int i = 0;
-  char* cpErr;
-  
-
-  Int_t iRecoParamType = -1; // default will be the low flux
-  Int_t iNtimeBins = -1;     // number of time bins for the tracker to use
-  Int_t iMagneticField = -1; // magnetic field: 0==OFF and 1==ON
-  Int_t iPIDmethod = 1;      // 0=LikelyHood(LH) 1=NeuronalNetwork(NN) 2=TruncatedMean(TM)
-  Bool_t bHLTMode = kTRUE, bWriteClusters = kFALSE;
-  string geometryFileName = "";
-  
-  while ( i < argc )
-    {
-      HLTDebug("argv[%d] == %s", i, argv[i] );
-      if ( !strcmp( argv[i], "output_percentage" ) )
-	{
-	  if ( i+1>=argc )
-	    {
-	      HLTError("Missing output_percentage parameter");
-	      return ENOTSUP;
-	    }
-	  HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
-	  fOutputPercentage = strtoul( argv[i+1], &cpErr, 0 );
-	  if ( *cpErr )
-	    {
-	      HLTError("Cannot convert output_percentage parameter '%s'", argv[i+1] );
-	      return EINVAL;
-	    }
-	  HLTInfo("Output percentage set to %i %%", fOutputPercentage );
-	  i += 2;
-	}
-      else if ( !strcmp( argv[i], "-NTimeBins" ) )
-	{
-	  if ( i+1>=argc )
-	    {
-	      HLTError("Missing -NTimeBins parameter");
-	      return ENOTSUP;
-	    }
-	  HLTDebug("Arguments", "argv[%d+1] == %s", i, argv[i+1] );
-	  iNtimeBins = strtoul( argv[i+1], &cpErr, 0 );
-	  if ( *cpErr )
-	    {
-	      HLTError("Wrong Argument. Cannot convert -NTimeBins parameter '%s'", argv[i+1] );
-	      return EINVAL;
-	    }	  
-	  i += 2; 
-	}
-      else if ( strcmp( argv[i], "-geometry" ) == 0)
-	{
-	  if ( i+1 >= argc )
-	    {
-	      HLTError("Missing -geometry argument");
-	      return ENOTSUP;	      
-	    }
-	  geometryFileName = argv[i+1];
-	  HLTInfo("GeomFile storage is %s", 
-		  geometryFileName.c_str() );
-	  i += 2;
-	}
-      // the flux parametrizations
-      else if ( strcmp( argv[i], "-lowflux" ) == 0)
-	{
-	  iRecoParamType = 0;	  
-	  HLTDebug("Low flux reco selected.");
-	  i++;
-	}
-      else if ( strcmp( argv[i], "-highflux" ) == 0)
-	{
-	  iRecoParamType = 1;	  
-	  HLTDebug("Low flux reco selected.");
-	  i++;
-	}
-      else if ( strcmp( argv[i], "-cosmics" ) == 0)
-	{
-	  iRecoParamType = 2;	  
-	  HLTDebug("Cosmic test reco selected.");
-	  i++;
-	}
-      else if ( strcmp( argv[i], "-magnetic_field_ON" ) == 0)
-	{
-	  iMagneticField = 1;
-	  i++;
-	}
-      else if ( strcmp( argv[i], "-magnetic_field_OFF" ) == 0)
-	{
-	  iMagneticField = 0;
-	  i++;
-	}
-      else if ( strcmp( argv[i], "-offlineMode" ) == 0)
-	{
-	  bHLTMode=kFALSE;
-	  HLTDebug("Using standard offline tracking.");
-	  i++;
-	}
-      else if ( strcmp( argv[i], "-PIDmethod" ) == 0)
-	{
-	  if ( i+1 >= argc )
-	    {
-	      HLTError("Missing -PIDmethod argument");
-	      return ENOTSUP;	      
-	    }
-	  if( strcmp(argv[i], "LH") )
-	    iPIDmethod=0;
-	  else if( strcmp(argv[i], "NN") )
-	    iPIDmethod=1;
-	  else if( strcmp(argv[i], "TM") )
-	    iPIDmethod=2;
-	  else {
-	    HLTError("Unknown -PIDmethod argument");
-	    return ENOTSUP;	      
-	  }
-	  i += 2;
-	}
-
-      else {
-	HLTError("Unknown option '%s'", argv[i] );
-	return EINVAL;
-      }
-      
-    }
-
-   // THE "REAL" INIT COMES HERE
-   // offline condition data base
-  
-  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-    HLTError("DefaultStorage is not Set in CDBManager");
-    return -1;
-  }
-  if(AliCDBManager::Instance()->GetRun()<0){
-    AliCDBManager *cdb = AliCDBManager::Instance();
-    if (cdb)
-      {
-  	cdb->SetRun(0);
-  	HLTWarning("Setting CDB Runnumber to 0. CDB instance 0x%x", cdb);
-      }
-    else
-      {
-  	HLTError("Could not get CDB instance", "cdb 0x%x", cdb);
-  	return -1;
-      }
-  }
-  HLTInfo("CDB default storage: %s; RunNo: %i", (AliCDBManager::Instance()->GetDefaultStorage()->GetBaseFolder()).Data(), AliCDBManager::Instance()->GetRun());
-  
-  if(!AliGeomManager::GetGeometry()){
-    if(!TFile::Open(geometryFileName.c_str())){
-      HLTInfo("Loading standard geometry file");
-      AliGeomManager::LoadGeometry();
-    }else{
-      HLTWarning("Loading non-standard geometry file");
-      AliGeomManager::LoadGeometry(geometryFileName.c_str());
-    }
-    if(!AliGeomManager::GetGeometry()){
-      HLTError("Cannot load geometry");
-      return EINVAL;
-    }
-  }
-  else{
-    HLTInfo("Geometry Already Loaded");
-  }
-
-  // check if the N of time bins make sense
-  if (iNtimeBins <= 0)
-    {
-      HLTError("Sorry. Tracker needs number of time bins. At the moment you have to provide it with -NTimeBins <value>. The simulation always had 24 and the real data 30. Take your pick. Make sure the information is correct. Ask offline to implement how to propagate this information into clusters/cluster tree.");
-      return -1;
-    }
-
-  if (iNtimeBins < 24 || iNtimeBins > 30)
-    {
-      HLTWarning("The number of time bins seems to be strange = %d. But okay. Let's try it...", iNtimeBins);
-    }
-
-  HLTDebug("The number of time bins = %d.", iNtimeBins);
-  AliTRDtrackerV1::SetNTimeBins(iNtimeBins);
-
-  // !!!! THIS IS IMPORTANT
-  // init alifield map - temporarly via parameter - should come from a DB or DCS ?
-  // !!!! 
-  if (iMagneticField < 0)
-    {
-      iMagneticField = 0;
-      HLTWarning("No magnetic field switch stated. Use -magnetic_field_ON or -magnetic_field_OFF flag. Defaulting to OFF = NO MAGNETIC FIELD");
-    }
-  
-  if (!TGeoGlobalMagField::Instance()->IsLocked()) {
-    if (iMagneticField == 0)
-      {
-	// magnetic field OFF
-	AliMagF* field = new AliMagF("Maps","Maps",2,0.,0., 10.,AliMagF::k5kGUniform);
-	TGeoGlobalMagField::Instance()->SetField(field);
-	HLTDebug("Magnetic field is OFF.");
-      }
-    
-    if (iMagneticField == 1)
-      {
-	// magnetic field ON
-	AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
-	TGeoGlobalMagField::Instance()->SetField(field);
-	HLTDebug("Magnetic field is ON.");
-      }
-  }
-  else {
-    HLTError("Magnetic field is already set and locked, cannot redefine it." );
-  }
-
-  // reconstruction parameters
-  if (iRecoParamType < 0 || iRecoParamType > 2)
-    {
-      HLTWarning("No reco param selected. Use -lowflux -highflux -cosmics flags. Defaulting to low flux.");
-      iRecoParamType = 0;
-    }
-
-  if (iRecoParamType == 0)
-    {
-      fRecoParam = AliTRDrecoParam::GetLowFluxParam();
-      HLTDebug("Low flux params init.");
-    }
-
-  if (iRecoParamType == 1)
-    {
-      fRecoParam = AliTRDrecoParam::GetHighFluxParam();
-      HLTDebug("High flux params init.");
-    }
-  
-  if (iRecoParamType == 2)
-    {
-      fRecoParam = AliTRDrecoParam::GetCosmicTestParam();
-      HLTDebug("Cosmic Test params init.");
-    }
-
-  if (fRecoParam == 0)
-    {
-      HLTError("No reco params initialized. Sniffing big trouble!");
-      return -1;
-    }
+  int iResult=0;
 
   fReconstructor = new AliTRDReconstructor();
-  //   fRecoParam->SetChi2Y(.1);
-  //   fRecoParam->SetChi2Z(5.);
-  fReconstructor->SetRecoParam(fRecoParam);
-  // write clusters [cw] = true
-  // track seeding (stand alone tracking) [sa] = true
-  // PID method in reconstruction (NN) [nn] = true
-  // write online tracklets [tw] = false
-  // drift gas [ar] = false
-  // sl_tr_0 = StreamLevel_task_Level
-  //  fReconstructor->SetOption("sa,!cw,hlt,sl_tr_0");
-  TString recoOptions="sa,sl_tr_0";
-  
-  if (bWriteClusters)
-    {
-      recoOptions += ",cw";
-    } 
-  else
-    {
-      recoOptions += ",!cw";
-    }
-  if (bHLTMode)
-    recoOptions += ",hlt";
+  HLTDebug("TRDReconstructor at 0x%x", fReconstructor);
 
-  switch(iPIDmethod){
-  case 0: recoOptions += ",!nn"; break;
-  case 1: recoOptions += ",nn"; break;
-  case 2: recoOptions += ",!nn"; break;
+  fESD = new AliESDEvent;
+  fESD->CreateStdContent();
+  
+  TString configuration="";
+  TString argument="";
+  for (int i=0; i<argc && iResult>=0; i++) {
+    argument=argv[i];
+    if (!configuration.IsNull()) configuration+=" ";
+    configuration+=argument;
   }
-  
-  fReconstructor->SetOption(recoOptions.Data());
-  HLTDebug("Reconstructor options are: %s",recoOptions.Data());
-  
-  // create the tracker
+
+  if (!configuration.IsNull()) {
+    iResult=Configure(configuration.Data());
+  } else {
+    iResult=Reconfigure(NULL, NULL);
+  }
+
   fTracker = new AliTRDtrackerV1();
   HLTDebug("TRDTracker at 0x%x", fTracker);
   fTracker->SetReconstructor(fReconstructor);
 
-  fESD = new AliESDEvent;
-  fESD->CreateStdContent();
-
-  return 0;
+  return iResult;
 }
 
 int AliHLTTRDTrackerV1Component::DoDeinit()
@@ -477,10 +234,9 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       TClonesArray* trdTracks = 0x0;
       //trdTracks = fTracker->GetListOfTracks();
       
-      AliHLTUInt32_t addedSize=0;
       if(nTracks>0){
 	HLTDebug("We have an output ESDEvent: 0x%x with %i tracks", fESD, nTracks);
-	addedSize= AliHLTTRDUtils::AddESDToOutput(fESD, (AliHLTUInt8_t*)(outputPtr+offset));
+	AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddESDToOutput(fESD, (AliHLTUInt8_t*)(outputPtr+offset));
 	totalSize += addedSize;
 	  
 	// Fill block 
@@ -543,4 +299,391 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
   size = totalSize;
   HLTDebug("Event is done. size written to the output is %i", size);
   return 0;
+}
+
+int AliHLTTRDTrackerV1Component::Configure(const char* arguments){
+  int iResult=0;
+  if (!arguments) return iResult;
+  
+  TString allArgs=arguments;
+  TString argument;
+  int bMissingParam=0;
+
+  TObjArray* pTokens=allArgs.Tokenize(" ");
+  if (pTokens) {
+    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
+      argument=((TObjString*)pTokens->At(i))->GetString();
+      if (argument.IsNull()) continue;
+      
+      if (argument.CompareTo("-OFFLINE")==0) {
+	fOfflineMode = kTRUE;
+	HLTFatal("You have selected OFFLINE mode!");
+	HLTFatal("This program shall NOT run on the HLT cluster like this!");
+	continue;
+      }
+      else if (argument.CompareTo("output_percentage")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Setting output percentage to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fOutputPercentage=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	continue;
+      } 
+      else if (argument.CompareTo("-solenoidBz")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	fieldStrength=((TObjString*)pTokens->At(i))->GetString().Atof();
+	HLTInfo("Setting Magnetic field to %.1f KGauss", fieldStrength);
+	continue;
+      } 
+      else if (argument.CompareTo("-NTimeBins")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Setting number of time bins to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fNtimeBins=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	continue;
+      } 
+      else if (argument.CompareTo("-geometry")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Setting geometry to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fgeometryFileName=((TObjString*)pTokens->At(i))->GetString();
+	continue;
+      } 
+      if (argument.CompareTo("-lowflux")==0) {
+	fRecoParamType = 0;
+	HLTInfo("Low flux reconstruction selected");
+	continue;
+      }
+      if (argument.CompareTo("-highflux")==0) {
+	fRecoParamType = 1;
+	HLTInfo("High flux reconstruction selected");
+	continue;
+      }
+      if (argument.CompareTo("-cosmics")==0) {
+	fRecoParamType = 2;
+	HLTInfo("Cosmics reconstruction selected");
+	continue;
+      }
+      if (argument.CompareTo("-magnetic_field_ON")==0) {
+ 	fMagneticField = 1;
+	HLTInfo("Reconstructon with magnetic field");
+	continue;
+      }
+      if (argument.CompareTo("-magnetic_field_OFF")==0) {
+	fMagneticField = 0;
+	HLTInfo("Reconstructon without magnetic field");
+	continue;
+      }
+      if (argument.CompareTo("-slowTracking")==0) {
+	fSlowTracking = kTRUE;
+	HLTInfo("Using slow tracking");
+	continue;
+      }
+      else if (argument.CompareTo("-PIDmethod")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();
+	if (toCompareTo.CompareTo("LH")==0){
+	  HLTInfo("Setting PID method to: %s", toCompareTo.Data());
+	  fPIDmethod=0;
+	}
+	else if (toCompareTo.CompareTo("NN")==0){
+	  HLTInfo("Setting PID method to: %s", toCompareTo.Data());
+	  fPIDmethod=1;
+	}
+	else if (toCompareTo.CompareTo("TM")==0){
+	  HLTInfo("Setting PID method to: %s", toCompareTo.Data());
+	  fPIDmethod=2;
+	}
+	else {
+	  HLTError("unknown argument for PID method: %s", toCompareTo.Data());
+	  iResult=-EINVAL;
+	  break;
+	}
+	continue;
+      } 
+      
+      else {
+	HLTError("unknown argument: %s", argument.Data());
+	iResult=-EINVAL;
+	break;
+      }
+    }
+    delete pTokens;
+  }
+  if (bMissingParam) {
+    HLTError("missing parameter for argument %s", argument.Data());
+    iResult=-EINVAL;
+  }
+  if(iResult>=0){
+    if(fOfflineMode)SetOfflineParams();
+    iResult=SetParams();
+  }
+  return iResult;
+}
+
+int AliHLTTRDTrackerV1Component::SetParams()
+{
+  Int_t iResult=0;
+  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
+    HLTError("DefaultStorage is not Set in CDBManager");
+    return -EINVAL;
+  }
+  if(AliCDBManager::Instance()->GetRun()<0){
+    HLTError("Run Number is not set in CDBManager");
+    return -EINVAL;
+  }
+  HLTInfo("CDB default storage: %s; RunNo: %i", (AliCDBManager::Instance()->GetDefaultStorage()->GetBaseFolder()).Data(), AliCDBManager::Instance()->GetRun());
+
+  if(!AliGeomManager::GetGeometry()){
+    if(!TFile::Open(fgeometryFileName.Data())){
+      HLTInfo("Loading standard geometry file");
+      AliGeomManager::LoadGeometry();
+    }else{
+      HLTWarning("Loading NON-standard geometry file");
+      AliGeomManager::LoadGeometry(fgeometryFileName.Data());
+    }
+    if(!AliGeomManager::GetGeometry()){
+      HLTError("Cannot load geometry");
+      return -EINVAL;
+    }
+  }
+  else{
+    HLTInfo("Geometry Already Loaded!");
+  }
+
+  if (fNtimeBins <= 0)
+    {
+      HLTError("Sorry. Tracker needs number of time bins. At the moment you have to provide it with -NTimeBins <value>. The simulation always had 24 and the real data 30. Take your pick. Make sure the information is correct. Ask offline to implement how to propagate this information into clusters/cluster tree.");
+      return -EINVAL;
+    }
+  if (fNtimeBins < 24 || fNtimeBins > 30)
+    {
+      HLTWarning("The number of time bins seems to be strange = %d. But okay. Let's try it...", fNtimeBins);
+    }
+  if (fNtimeBins != 24)
+    {
+      HLTWarning("All PID methods eagerly await 24 time bins, so PID will NOT work!", fNtimeBins);
+    }
+  HLTDebug("Setting number of time bins of the tracker to: %i", fNtimeBins);
+  AliTRDtrackerV1::SetNTimeBins(fNtimeBins);
+  
+  TString recoOptions="sa,sl_tr_0,!cw";
+  
+  if(!fSlowTracking)
+    recoOptions += ",hlt";
+
+  switch(fPIDmethod){
+  case 0: recoOptions += ",!nn"; break;
+  case 1: recoOptions += ",nn"; break;
+  case 2: recoOptions += ",!nn"; break;
+  }
+
+  if (fRecoParamType == 0)
+    {
+      HLTDebug("Low flux params init.");
+      fRecoParam = AliTRDrecoParam::GetLowFluxParam();
+    }
+
+  if (fRecoParamType == 1)
+    {
+      HLTDebug("High flux params init.");
+      fRecoParam = AliTRDrecoParam::GetHighFluxParam();
+    }
+  
+  if (fRecoParamType == 2)
+    {
+      HLTDebug("Cosmic Test params init.");
+      fRecoParam = AliTRDrecoParam::GetCosmicTestParam();
+    }
+
+  if (fRecoParam == 0)
+    {
+      HLTError("No reco params initialized. Sniffing big trouble!");
+      return -EINVAL;
+    }
+
+  fReconstructor->SetRecoParam(fRecoParam);
+
+  HLTDebug("Reconstructor options are: %s",recoOptions.Data());
+  fReconstructor->SetOption(recoOptions.Data());
+
+  if (fMagneticField >= 0)
+    {
+      HLTWarning("Setting magnetic field by hand!");
+    }
+  if (!TGeoGlobalMagField::Instance()->IsLocked()) {
+    AliMagF* field;
+    field = (AliMagF*) TGeoGlobalMagField::Instance()->GetField();
+    if(field)delete field;
+    if (fMagneticField == 0){
+      // magnetic field OFF
+      field = new AliMagF("Maps","Maps",2,0.,0., 10.,AliMagF::k5kGUniform);
+      TGeoGlobalMagField::Instance()->SetField(field);
+      HLTDebug("Magnetic field is OFF.");
+    }else{
+      // magnetic field ON
+      field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+      TGeoGlobalMagField::Instance()->SetField(field);
+      HLTDebug("Magnetic field is ON.");
+      if( fMagneticField < 0 )
+	iResult=ReconfigureField();
+    }
+  }else{
+    HLTError("Magnetic field is already set and locked, cannot redefine it." );
+  }
+  return iResult;
+}
+
+void AliHLTTRDTrackerV1Component::SetOfflineParams(){
+  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
+    HLTFatal("You are resetting the Default Storage of the CDBManager!");
+    HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
+    //AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  }else{
+    HLTError("DefaultStorage was already set!");
+  }
+  if(AliCDBManager::Instance()->GetRun()<0){
+    HLTFatal("You are resetting the CDB run number to 0!");
+    HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
+    //AliCDBManager::Instance()->SetRun(0);
+  }else{
+    HLTError("Run Number was already set!");
+  }
+}
+
+int AliHLTTRDTrackerV1Component::ReconfigureField()
+{
+  int iResult=0;
+  if(fieldStrength<-100){
+    const char* pathBField=kAliHLTCDBSolenoidBz;
+
+    if (pathBField) {
+      HLTInfo("reconfigure B-Field from entry %s", pathBField);
+      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(pathBField/*,GetRunNo()*/);
+      if (pEntry) {
+	TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+	if (pString) {
+	  HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
+	  TObjArray* pTokens=pString->GetString().Tokenize(" ");
+	  TString argument;
+	  int bMissingParam=0;
+	  if (pTokens) {
+	    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
+	      argument=((TObjString*)pTokens->At(i))->GetString();
+	      if (argument.IsNull()) continue;
+      
+	      if (argument.CompareTo("-solenoidBz")==0) {
+		if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+		HLTDebug("Magnetic field in CDB: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+		fieldStrength=((TObjString*)pTokens->At(i))->GetString().Atof();
+		continue;
+	      } else {
+		HLTError("unknown argument %s", argument.Data());
+		iResult=-EINVAL;
+		break;
+	      }
+	    }
+	    delete pTokens;
+	  }
+	} else {
+	  HLTError("configuration object \"%s\" has wrong type, required TObjString", pathBField);
+	}
+      } else {
+	HLTError("cannot fetch object \"%s\" from CDB", pathBField);
+      }
+    }
+  }
+  if(fieldStrength>=-100){
+    AliMagF* field = (AliMagF *) TGeoGlobalMagField::Instance()->GetField();
+    field->SetFactorSol(1);
+    Double_t initialFieldStrengh=field->SolenoidField();
+    HLTDebug("Magnetic field was: %f KGauss", initialFieldStrengh);
+    field->SetFactorSol(fieldStrength/initialFieldStrengh);
+    HLTDebug("Magnetic field reset to %f KGauss.", field->SolenoidField());
+  }
+  return iResult;
+}
+
+int AliHLTTRDTrackerV1Component::Reconfigure(const char* cdbEntry, const char* chainId)
+{
+  // see header file for class documentation
+
+  int iResult=0;
+  const char* path="HLT/ConfigTRD/TrackerV1Component";
+  const char* defaultNotify="";
+  if (cdbEntry) {
+    path=cdbEntry;
+    defaultNotify=" (default)";
+  }
+  if (path) {
+    HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+    if (pEntry) {
+      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+      if (pString) {
+  	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
+  	iResult=Configure(pString->GetString().Data());
+      } else {
+  	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
+      }
+    } else {
+      HLTError("cannot fetch object \"%s\" from CDB", path);
+    }
+  }
+
+  const char* pathBField=kAliHLTCDBSolenoidBz;
+
+  if (pathBField) {
+    HLTInfo("reconfigure B-Field from entry %s, chain id %s", pathBField,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(pathBField/*,GetRunNo()*/);
+    if (pEntry) {
+      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+      if (pString) {
+	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
+	iResult=Configure(pString->GetString().Data());
+      } else {
+	HLTError("configuration object \"%s\" has wrong type, required TObjString", pathBField);
+      }
+    } else {
+      HLTError("cannot fetch object \"%s\" from CDB", pathBField);
+    }
+  }
+  
+  return iResult;
+
+}
+
+int AliHLTTRDTrackerV1Component::ReadPreprocessorValues(const char* modules)
+{
+  // see header file for class documentation
+  
+  int iResult = 0;
+  TString str(modules);
+  if(str.Contains("HLT") || str.Contains("TRD") || str.Contains("GRP")){
+  
+    const char* pathBField=kAliHLTCDBSolenoidBz;
+    if (pathBField) {
+
+      HLTInfo("reconfigure B-Field from entry %s, modules %s", pathBField,(modules!=NULL && modules[0]!=0)?modules:"<none>");
+      //AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(pathBField/*,GetRunNo()*/);
+      
+      AliCDBPath path(pathBField);
+      
+      AliCDBStorage *stor = AliCDBManager::Instance()->GetDefaultStorage();
+      Int_t version    = stor->GetLatestVersion(pathBField, GetRunNo());
+      Int_t subVersion = stor->GetLatestSubVersion(pathBField, GetRunNo(), version);
+      AliCDBEntry *pEntry = stor->Get(path,GetRunNo(), version, subVersion);
+      
+      HLTImportant("RunNo %d, Version %d, subversion %d", GetRunNo(), version, subVersion);
+      
+      if (pEntry) {
+    	TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+    	if (pString) {
+   	  HLTImportant("received configuration object string: \'%s\'", pString->GetString().Data());
+   	  iResult=Configure(pString->GetString().Data());
+    	} else {
+   	  HLTError("configuration object \"%s\" has wrong type, required TObjString", pathBField);
+    	}
+      } else {
+    	HLTError("cannot fetch object \"%s\" from CDB", pathBField);
+      }
+    }
+  }  
+  return iResult;
 }

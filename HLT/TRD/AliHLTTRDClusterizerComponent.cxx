@@ -43,6 +43,7 @@ using namespace std;
 #include "AliTRDReconstructor.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
 #include "AliHLTTRDClusterizer.h"
 #include "AliTRDrecoParam.h"
 #include "AliTRDrawStreamBase.h"
@@ -70,7 +71,14 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent():
   fClusterizer(NULL),
   fRecoParam(NULL),
   fMemReader(NULL),
-  fReconstructor(NULL)
+  fReconstructor(NULL),
+  fRecoParamType(-1),
+  fRecoDataType(-1),
+  fRawDataVersion(2),
+  fyPosMethod(1),
+  fgeometryFileName(""),
+  fProcessTracklets(kFALSE),
+  fOfflineMode(kFALSE)
 {
   // Default constructor
 
@@ -128,245 +136,33 @@ AliHLTComponent* AliHLTTRDClusterizerComponent::Spawn()
 int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 {
   // perform initialization. We check whether our relative output size is specified in the arguments.
-  Int_t iRawDataVersion = 2;
-  int i = 0;
-  char* cpErr;
-
-  Int_t iRecoParamType = -1; // default will be the low flux
-
-  // the data type will become obsolete as soon as the formats are established
-  Int_t iRecoDataType = -1; // default will be simulation
-  Int_t iyPosMethod = 1;     // 0=COG 1=LUT 2=Gauss 
-  Bool_t bProcessTracklets = kFALSE;
-  string geometryFileName = "";
+  int iResult=0;
   
-  while ( i < argc )
-    {
-      HLTDebug("argv[%d] == %s", i, argv[i] );
-      if ( !strcmp( argv[i], "output_percentage" ) )
-	{
-	  if ( i+1>=argc )
-	    {
-	      HLTError("Missing output_percentage parameter");
-	      return ENOTSUP;
-	    }
-	  HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
-	  fOutputPercentage = strtoul( argv[i+1], &cpErr, 0 );
-	  if ( *cpErr )
-	    {
-	      HLTError("Cannot convert output_percentage parameter '%s'", argv[i+1] );
-	      return EINVAL;
-	    }
-	  HLTInfo("Output percentage set to %i %%", fOutputPercentage );
-	  i += 2;
-	}
-      else if ( strcmp( argv[i], "-lowflux" ) == 0)
-	{
-	  iRecoParamType = 0;	  
-	  HLTDebug("Low flux reco selected.");
-	  i++;
-	}
-      else if ( strcmp( argv[i], "-highflux" ) == 0)
-	{
-	  iRecoParamType = 1;	  
-	  HLTDebug("High flux reco selected.");
-	  i++;
-	}
-      else if ( strcmp( argv[i], "-cosmics" ) == 0)
-	{
-	  iRecoParamType = 2;	  
-	  HLTDebug("Cosmic test reco selected.");
-	  i++;
-	}
-      // raw data type - sim or experiment
-      else if ( strcmp( argv[i], "-simulation" ) == 0)
-	{
-	  iRecoDataType = 0;
-	  i++;
-	}
-      else if ( strcmp( argv[i], "-experiment" ) == 0)
-	{
-	  iRecoDataType = 1;
-	  i++;
-	}
-      else if ( strcmp( argv[i], "-rawver" ) == 0)
-	{
-	  if ( i+1 >= argc )
-	    {
-	      HLTError("Missing -rawver argument");
-	      return ENOTSUP;	      
-	    }
-	  iRawDataVersion = atoi( argv[i+1] );
-	  HLTInfo("Raw data version is %d", iRawDataVersion );	  
-	  i += 2;
-	  
-	}      
-
-      else if ( strcmp( argv[i], "-geometry" ) == 0)
-	{
-	  if ( i+1 >= argc )
-	    {
-	      HLTError("Missing -geometry argument");
-	      return ENOTSUP;	      
-	    }
-	  geometryFileName = argv[i+1];
-	  HLTInfo("GeomFile storage is %s", geometryFileName.c_str() );	  
-	  i += 2;
-	} 
-      else if ( strcmp( argv[i], "-processTracklets" ) == 0)
-	{
-	  bProcessTracklets = kTRUE;
- 	  i++; 
- 	}
-      else if ( strcmp( argv[i], "-yPosMethod" ) == 0)
-	{
-	  if ( i+1 >= argc )
-	    {
-	      HLTError("Missing -yPosMethod argument");
-	      return ENOTSUP;	      
-	    }
-	  if( strcmp(argv[i], "COG") )
-	    iyPosMethod=0;
-	  else if( strcmp(argv[i], "LUT") )
-	    iyPosMethod=1;
-	  else if( strcmp(argv[i], "Gauss") )
-	    iyPosMethod=2;
-	  else {
-	    HLTError("Unknown -yPosMethod argument");
-	    return ENOTSUP;	      
-	  }
-	  i += 2;
-	}
-      else if ( strcmp( argv[i], "-noZS" ) == 0) //no zero surpression in the input data
-	{
-	  fOutputPercentage = 100;
- 	  i++; 
- 	}
-      
-      else{
-	HLTError("Unknown option '%s'", argv[i] );
-	return EINVAL;
-      }
-      
-    }
-
-  // THE "REAL" INIT COMES HERE
-
-if (iRecoParamType < 0 || iRecoParamType > 2)
-    {
-      HLTWarning("No reco param selected. Use -lowflux or -highflux flag. Defaulting to low flux.");
-      iRecoParamType = 0;
-    }
-
-  if (iRecoParamType == 0)
-    {
-      fRecoParam = AliTRDrecoParam::GetLowFluxParam();
-      HLTDebug("Low flux params init.");
-    }
-
-  if (iRecoParamType == 1)
-    {
-      fRecoParam = AliTRDrecoParam::GetHighFluxParam();
-      HLTDebug("High flux params init.");
-    }
-
-  if (iRecoParamType == 2)
-    {
-      fRecoParam = AliTRDrecoParam::GetCosmicTestParam();
-      HLTDebug("Cosmic Test params init.");
-    }
-
-  if (fRecoParam == 0)
-    {
-      HLTError("No reco params initialized. Sniffing big trouble!");
-      return -1;
-    }
-
   fReconstructor = new AliTRDReconstructor();
-  fReconstructor->SetRecoParam(fRecoParam);
-  fReconstructor->SetStreamLevel(0, AliTRDReconstructor::kClusterizer); // default value
-  HLTInfo("Not writing clusters. I.e. output is a TClonesArray of clusters");
-  TString recoOptions="hlt,!cw,sl_cf_0";
-  switch(iRecoDataType){
-  case 0: recoOptions += ",tc"; break;
-  case 1: recoOptions += ",!tc"; break;
+  HLTDebug("TRDReconstructor at 0x%x", fReconstructor);
+
+  TString configuration="";
+  TString argument="";
+  for (int i=0; i<argc && iResult>=0; i++) {
+    argument=argv[i];
+    if (!configuration.IsNull()) configuration+=" ";
+    configuration+=argument;
   }
-  switch(iyPosMethod){
-  case 0: recoOptions += ",!gs,!lut"; break;
-  case 1: recoOptions += ",!gs,lut"; break;
-  case 2: recoOptions += ",gs,!lut"; break;
+
+  if (!configuration.IsNull()) {
+    iResult=Configure(configuration.Data());
+  } else {
+    iResult=Reconfigure(NULL, NULL);
   }
-  if(bProcessTracklets) recoOptions += ",tp";
-  else  recoOptions += ",!tp";
 
-  HLTInfo("Reconstructor options: %s",recoOptions.Data());
-  fReconstructor->SetOption(recoOptions.Data());
-  
-  // init the raw data type to be used...
-  // the switch here will become obsolete as soon as the data structures is fixed 
-  // both: in sim and reality
-  if (iRecoDataType < 0 || iRecoDataType > 1)
-    {
-      HLTWarning("No data type selected. Use -simulation or -experiment flag. Defaulting to simulation.");
-      iRecoDataType = 0;
-    }
-
-  if (iRecoDataType == 0)
-    {
-      AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDsimStream);
-      HLTDebug("Data type expected is SIMULATION!");
-    }
-
-  if (iRecoDataType == 1)
-    {
-      AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDrealStream);
-      HLTDebug("Data type expected is EXPERIMENT!");
-    }
-
-  // the DATA BASE STUFF
-  
-  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-    HLTError("DefaultStorage is not Set in CDBManager");
+  if(!fClusterizer){
+    HLTFatal("Clusterizer was not initialized!");
     return -1;
   }
-  if(AliCDBManager::Instance()->GetRun()<0){
-    AliCDBManager *cdb = AliCDBManager::Instance();
-    if (cdb)
-      {
-  	cdb->SetRun(0);
-  	HLTWarning("Setting CDB Runnumber to 0. CDB instance 0x%x", cdb);
-      }
-    else
-      {
-  	HLTError("Could not get CDB instance", "cdb 0x%x", cdb);
-  	return -1;
-      }
-  }
-  HLTInfo("CDB default storage: %s; RunNo: %i", (AliCDBManager::Instance()->GetDefaultStorage()->GetBaseFolder()).Data(), AliCDBManager::Instance()->GetRun());
-  
-  if(!AliGeomManager::GetGeometry()){
-    if(!TFile::Open(geometryFileName.c_str())){
-      HLTInfo("Loading standard geometry file");
-      AliGeomManager::LoadGeometry();
-    }else{
-      HLTWarning("Loading non-standard geometry file");
-      AliGeomManager::LoadGeometry(geometryFileName.c_str());
-    }
-    if(!AliGeomManager::GetGeometry()){
-      HLTError("Cannot load geometry");
-      return EINVAL;
-    }
-  }
-  else{
-    HLTInfo("Geometry Already Loaded");
-  }  
-  
-  fMemReader = new AliRawReaderMemory;
 
-  fClusterizer = new AliHLTTRDClusterizer("TRDCclusterizer", "TRDCclusterizer");
+  fMemReader = new AliRawReaderMemory;
   fClusterizer->SetReconstructor(fReconstructor);
   fClusterizer->SetUseLabels(kFALSE);
-  fClusterizer->SetRawVersion(iRawDataVersion);
 
   if(fReconstructor->IsProcessingTracklets())
     fOutputConst = fClusterizer->GetTrMemBlockSize();
@@ -450,8 +246,8 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
       
       Int_t id = 1024;
       
-      for ( Int_t ii = 0; ii < 18 ; ii++ ) {
-	if ( spec & 0x00000001 ) {
+      for ( Int_t ii = 1; ii < 19 ; ii++ ) {
+	if ( spec & 0x1 ) {
 	  id += ii;
 	  break;
 	}
@@ -550,4 +346,280 @@ void AliHLTTRDClusterizerComponent::PrintObject( TClonesArray* inClustersArray)
     HLTDebug("  LocalTimeBin =  %i; NPads = %i; maskedPosition: %s, status: %s", cluster->GetLocalTimeBin(), cluster->GetNPads(),cluster->GetPadMaskedPosition(),cluster->GetPadMaskedPosition());
   }
   
+}
+
+int AliHLTTRDClusterizerComponent::Configure(const char* arguments){
+  int iResult=0;
+  if (!arguments) return iResult;
+  
+  TString allArgs=arguments;
+  TString argument;
+  int bMissingParam=0;
+
+  TObjArray* pTokens=allArgs.Tokenize(" ");
+  if (pTokens) {
+    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
+      argument=((TObjString*)pTokens->At(i))->GetString();
+      if (argument.IsNull()) continue;
+      
+      if (argument.CompareTo("-OFFLINE")==0) {
+	fOfflineMode = kTRUE;
+	HLTFatal("You have selected OFFLINE mode!");
+	HLTFatal("This program shall NOT run on the HLT cluster like this!");
+	continue;
+      }
+      else if (argument.CompareTo("output_percentage")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Setting output percentage to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fOutputPercentage=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	continue;
+      } 
+      else if (argument.CompareTo("-geometry")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Setting geometry to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fgeometryFileName=((TObjString*)pTokens->At(i))->GetString();
+	continue;
+      } 
+      if (argument.CompareTo("-lowflux")==0) {
+	fRecoParamType = 0;
+	HLTInfo("Low flux reconstruction selected");
+	continue;
+      }
+      if (argument.CompareTo("-highflux")==0) {
+	fRecoParamType = 1;
+	HLTInfo("High flux reconstruction selected");
+	continue;
+      }
+      if (argument.CompareTo("-cosmics")==0) {
+	fRecoParamType = 2;
+	HLTInfo("Cosmics reconstruction selected");
+	continue;
+      }
+      if (argument.CompareTo("-simulation")==0) {
+	fRecoDataType = 0;
+	HLTInfo("Awaiting simulated data");
+	continue;
+      }
+      if (argument.CompareTo("-experiment")==0) {
+	fRecoDataType = 1;
+	HLTInfo("Awaiting real data");
+	continue;
+      }
+      if (argument.CompareTo("-processTracklets")==0) {
+	fProcessTracklets = kTRUE;
+	HLTInfo("Processing L1 Tracklets");
+	continue;
+      }
+      if (argument.CompareTo("-noZS")==0) {
+	fOutputPercentage = 100;
+	HLTInfo("Awaiting non zero surpressed data");
+	continue;
+      }
+      if (argument.CompareTo("-faststreamer")==0) {
+	fHLTstreamer = kTRUE;
+	HLTInfo("Useing fast raw streamer");
+	continue;
+      }
+      else if (argument.CompareTo("-rawver")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Raw data version is: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fRawDataVersion=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	continue;
+      } 
+      else if (argument.CompareTo("-yPosMethod")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();
+	if (toCompareTo.CompareTo("COG")==0){
+	  HLTInfo("Setting yPosMethod method to: %s", toCompareTo.Data());
+	  fyPosMethod=0;
+	}
+	else if (toCompareTo.CompareTo("LUT")==0){
+	  HLTInfo("Setting yPosMethod method to: %s", toCompareTo.Data());
+	  fyPosMethod=1;
+	}
+	else if (toCompareTo.CompareTo("Gauss")==0){
+	  HLTInfo("Setting yPosMethod method to: %s", toCompareTo.Data());
+	  fyPosMethod=2;
+	}
+	else {
+	  HLTError("unknown argument for yPosMethod: %s", toCompareTo.Data());
+	  iResult=-EINVAL;
+	  break;
+	}
+	continue;
+      } 
+      
+      else {
+	HLTError("unknown argument: %s", argument.Data());
+	iResult=-EINVAL;
+	break;
+      }
+    }
+    delete pTokens;
+  }
+  if (bMissingParam) {
+    HLTError("missing parameter for argument %s", argument.Data());
+    iResult=-EINVAL;
+  }
+  if(iResult>=0){
+    if(fOfflineMode)SetOfflineParams();
+    iResult=SetParams();
+  }
+  return iResult;
+}
+
+int AliHLTTRDClusterizerComponent::SetParams()
+{
+  Int_t iResult=0;
+  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
+    HLTError("DefaultStorage is not Set in CDBManager");
+    return -EINVAL;
+  }
+  if(AliCDBManager::Instance()->GetRun()<0){
+    HLTError("Run Number is not set in CDBManager");
+    return -EINVAL;
+  }
+  HLTInfo("CDB default storage: %s; RunNo: %i", (AliCDBManager::Instance()->GetDefaultStorage()->GetBaseFolder()).Data(), AliCDBManager::Instance()->GetRun());
+
+  if(!AliGeomManager::GetGeometry()){
+    if(!TFile::Open(fgeometryFileName.Data())){
+      HLTInfo("Loading standard geometry file");
+      AliGeomManager::LoadGeometry();
+    }else{
+      HLTWarning("Loading NON-standard geometry file");
+      AliGeomManager::LoadGeometry(fgeometryFileName.Data());
+    }
+    if(!AliGeomManager::GetGeometry()){
+      HLTError("Cannot load geometry");
+      return -EINVAL;
+    }
+  }
+  else{
+    HLTInfo("Geometry Already Loaded!");
+  }
+
+  TString recoOptions="hlt,!cw,sl_cf_0";
+
+  switch(fRecoDataType){
+  case 0: recoOptions += ",tc"; break;
+  case 1: recoOptions += ",!tc"; break;
+  }
+  switch(fyPosMethod){
+  case 0: recoOptions += ",!gs,!lut"; break;
+  case 1: recoOptions += ",!gs,lut"; break;
+  case 2: recoOptions += ",gs,!lut"; break;
+  }
+  if(fProcessTracklets) recoOptions += ",tp";
+  else  recoOptions += ",!tp";
+
+
+  if (fRecoParamType == 0)
+    {
+      HLTDebug("Low flux params init.");
+      fRecoParam = AliTRDrecoParam::GetLowFluxParam();
+    }
+
+  if (fRecoParamType == 1)
+    {
+      HLTDebug("High flux params init.");
+      fRecoParam = AliTRDrecoParam::GetHighFluxParam();
+    }
+  
+  if (fRecoParamType == 2)
+    {
+      HLTDebug("Cosmic Test params init.");
+      fRecoParam = AliTRDrecoParam::GetCosmicTestParam();
+    }
+
+  if (fRecoParam == 0)
+    {
+      HLTError("No reco params initialized. Sniffing big trouble!");
+      return -EINVAL;
+    }
+
+  fReconstructor->SetRecoParam(fRecoParam);
+  fReconstructor->SetStreamLevel(0, AliTRDReconstructor::kClusterizer);
+
+  HLTDebug("Reconstructor options are: %s",recoOptions.Data());
+  fReconstructor->SetOption(recoOptions.Data());
+
+  if (fRecoDataType < 0 || fRecoDataType > 1)
+    {
+      HLTWarning("No data type selected. Use -simulation or -experiment flag. Defaulting to simulation.");
+      fRecoDataType = 0;
+    }
+
+  if (fRecoDataType == 0)
+    {
+      AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDsimStream);
+      HLTDebug("Data type expected is SIMULATION!");
+    }
+
+  if (fRecoDataType == 1)
+    {
+      AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDrealStream);
+      HLTDebug("Data type expected is EXPERIMENT!");
+    }
+
+  if (fHLTstreamer)
+    {
+      AliTRDrawStreamBase::SetRawStreamVersion("FAST");
+      HLTDebug("fast rawstreamer used");  
+    }
+
+  if(!fClusterizer){
+    fClusterizer = new AliHLTTRDClusterizer("TRDCclusterizer", "TRDCclusterizer");  
+    HLTDebug("TRDClusterizer at 0x%x", fClusterizer);
+  }
+
+  fClusterizer->SetRawVersion(fRawDataVersion);
+
+  return iResult;
+}
+
+void AliHLTTRDClusterizerComponent::SetOfflineParams(){
+  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
+    HLTFatal("You are resetting the Default Storage of the CDBManager!");
+    HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
+    //AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  }else{
+    HLTError("DefaultStorage was already set!");
+  }
+  if(AliCDBManager::Instance()->GetRun()<0){
+    HLTFatal("You are resetting the CDB run number to 0!");
+    HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
+    //AliCDBManager::Instance()->SetRun(0);
+  }else{
+    HLTError("Run Number was already set!");
+  }
+}
+
+int AliHLTTRDClusterizerComponent::Reconfigure(const char* cdbEntry, const char* chainId)
+{
+  // see header file for class documentation
+
+  int iResult=0;
+  const char* path="HLT/ConfigTRD/ClusterizerComponent";
+  const char* defaultNotify="";
+  if (cdbEntry) {
+    path=cdbEntry;
+    defaultNotify=" (default)";
+  }
+  if (path) {
+    HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+    if (pEntry) {
+      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+      if (pString) {
+  	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
+  	iResult=Configure(pString->GetString().Data());
+      } else {
+  	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
+      }
+    } else {
+      HLTError("cannot fetch object \"%s\" from CDB", path);
+    }
+  }
+
+  return iResult;
 }

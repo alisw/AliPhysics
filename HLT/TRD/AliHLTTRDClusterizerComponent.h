@@ -54,11 +54,14 @@ protected:
   int DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
 	       AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 	       AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
-
+  int Reconfigure(const char* cdbEntry, const char* chainId);
   void PrintObject( TClonesArray* inClustersArray);
-  using AliHLTProcessor::DoEvent;
-	
 
+  using AliHLTProcessor::DoEvent;
+
+  int Configure(const char* arguments);
+  void SetOfflineParams();
+  int SetParams();
 	
 private:
   /** copy constructor prohibited */
@@ -76,8 +79,17 @@ private:
   AliTRDrecoParam *fRecoParam; //! Offline reco params
   AliRawReaderMemory *fMemReader; //! Input raw data reader
   AliTRDReconstructor *fReconstructor;
-	
-  ClassDef(AliHLTTRDClusterizerComponent, 1)
+
+  Int_t fRecoParamType;     // default will be the low flux
+  Int_t fRecoDataType;      // default will be simulation
+  Int_t fRawDataVersion;
+  Int_t fyPosMethod;        // 0=COG 1=LUT 2=Gauss 
+  TString fgeometryFileName;
+  Bool_t fProcessTracklets;
+  Bool_t fOfflineMode;
+  Bool_t fHLTstreamer;
+
+  ClassDef(AliHLTTRDClusterizerComponent, 2)
 
 };
 #endif

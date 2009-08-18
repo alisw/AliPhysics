@@ -59,7 +59,15 @@ protected:
 	       AliHLTUInt8_t* outputPtr, 
 	       AliHLTUInt32_t& size, 
 	       vector<AliHLTComponent_BlockData>& outputBlocks );
+  int Reconfigure(const char* cdbEntry, const char* chainId);
+  int ReadPreprocessorValues(const char* modules);
+
   using AliHLTProcessor::DoEvent;
+  
+  int Configure(const char* arguments);
+  void SetOfflineParams();
+  int SetParams();
+  int ReconfigureField();
 	
 private:
   /** copy constructor prohibited */
@@ -76,7 +84,16 @@ private:
   AliTRDReconstructor * fReconstructor;
   AliESDEvent*     fESD;
 
-  ClassDef(AliHLTTRDTrackerV1Component, 1)
+  Int_t fRecoParamType;     // default will be the low flux
+  Int_t fNtimeBins;         // number of time bins for the tracker to use
+  Int_t fMagneticField;     // magnetic field: 0==OFF and 1==ON
+  Int_t fPIDmethod;          // 0=LikelyHood(LH) 1=NeuronalNetwork(NN) 2=TruncatedMean(TM)
+  TString fgeometryFileName;
+  Double_t fieldStrength;
+  Bool_t fSlowTracking;
+  Bool_t fOfflineMode;
+
+  ClassDef(AliHLTTRDTrackerV1Component, 2)
 
 };
 #endif
