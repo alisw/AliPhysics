@@ -870,7 +870,7 @@ const char* AliShuttle::GetRefFilePrefix(const char* base, const char* detector)
 	//
 
 	TString offDetStr(GetOfflineDetName(detector));
-	TString dir;
+	static TString dir;
 	if (offDetStr == "ITS" || offDetStr == "MUON" || offDetStr == "PHOS")
 	{
 		dir.Form("%s/%s/%s", base, offDetStr.Data(), detector);
@@ -879,8 +879,6 @@ const char* AliShuttle::GetRefFilePrefix(const char* base, const char* detector)
 	}
 	
 	return dir.Data();
-	
-
 }
 
 //______________________________________________________________________________________________
