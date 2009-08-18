@@ -6,7 +6,7 @@ Contact:                  Levente.Molnar@cern.ch, Giacomo.Volpe@ba.infn.it
 Link:                     https://twiki.cern.ch/twiki/bin/view/ALICE/DAInstructions
 Run Type:                 PEDESTAL -- but we select on the PHYSICS_EVENTS in the HMPIDda.cxx
 DA Type:                  LDC
-Refernce Run:             78734
+Reference Run:             78734
 Number of events needed:  ~ 1000 events
 Input Files:              Raw pedestal file, EXTERNAL config files: HmpDaqDaConfig.txt, HmpDeadChannelMap.txt on all HMPID LDCs
 Output Files:             2 x 14 txt files including pedestal and error values
