@@ -1164,7 +1164,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
     
     // TopAnode1 -  layer 2 of 2
     par[2] = kHzTA12;    
-    gMC->Gsvolu("SQ09","BOX",idFR4,par,11); 
+    gMC->Gsvolu("SQ09","BOX",idFR4,par,3); 
 
     // TopAnode2 -  layer 1 of 2
     par[0] = kHzTA21;
