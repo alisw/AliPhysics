@@ -78,7 +78,8 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent():
   fyPosMethod(1),
   fgeometryFileName(""),
   fProcessTracklets(kFALSE),
-  fOfflineMode(kFALSE)
+  fOfflineMode(kFALSE),
+  fHLTstreamer(kFALSE)
 {
   // Default constructor
 
@@ -246,7 +247,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
       
       Int_t id = 1024;
       
-      for ( Int_t ii = 1; ii < 19 ; ii++ ) {
+      for ( Int_t ii = 0; ii < 18 ; ii++ ) {
 	if ( spec & 0x1 ) {
 	  id += ii;
 	  break;
