@@ -167,7 +167,7 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
     HLTDebug("We get the right data type: Block Ptr: 0x%x; Block Size: %i",
 	     iter->fPtr, iter->fSize);
 
-    TClonesArray* clusterArray = new TClonesArray("AliTRDcluster"); // would be nice to allocate memory for all clusters here.
+    TClonesArray* clusterArray = new TClonesArray("AliTRDcluster");
     AliHLTTRDUtils::ReadClusters(clusterArray, iter->fPtr, iter->fSize);
     HLTDebug("TClonesArray of clusters: nbEntries = %i", clusterArray->GetEntriesFast());
 
@@ -188,6 +188,10 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
       
       fClsAmpDriftDet[cls->GetDetector()]->Fill(cls->GetQ());
     }
+    
+    clusterArray->Delete();
+    delete clusterArray;
+    
   }
    
   fClsAmpDist->Reset();
@@ -206,7 +210,6 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
   //  AliHLTUInt32_t fSpecification = AliHLTTRDDefinitions::EncodeDataSpecification(0,35,2,5);
   //  PushBack( (TObject*) fTotalClusterChargeOROCAll,kAliHLTDataTypeHistogram,fSpecification);
   //}
-  
   
   return 0;
 }
