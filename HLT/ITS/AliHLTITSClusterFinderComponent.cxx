@@ -41,6 +41,8 @@ using namespace std;
 #include "AliITSClusterFinderV2SPD.h"
 #include "AliITSClusterFinderV2SDD.h"
 #include "AliITSClusterFinderV2SSD.h"
+#include "AliITSRecoParam.h"
+#include "AliITSReconstructor.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -169,6 +171,12 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int /*argc*/, const char** /*argv
   else{
      HLTFatal("No mode set for clusterfindercomponent");
   }
+
+  //Removed the warning for loading default RecoParam in HLT
+  AliITSRecoParam *par = AliITSRecoParam::GetLowFluxParam();
+  AliITSReconstructor *rec = new AliITSReconstructor();
+  rec->SetRecoParam(par);
+  
 
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man->IsDefaultStorageSet()){
