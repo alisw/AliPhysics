@@ -47,7 +47,8 @@ class AliAODJet : public AliVParticle {
     virtual Bool_t   IsTriggeredTRD(){return (fTrigger&kTRDTriggered)==kTRDTriggered;}
     virtual UChar_t  Trigger(){return fTrigger;}
 
-    virtual void     AddTrack(TObject *tr) {fRefTracks->Add(tr);}
+    virtual void     AddTrack(TObject *tr);
+    
     TObject* GetTrack(Int_t i) {return fRefTracks->At(i);}
     virtual void     SetBgEnergy(Double_t bgEnCh, Double_t bgEnNe)
 	{fBackgEnergy[0] = bgEnCh; fBackgEnergy[1] = bgEnNe;}
@@ -106,13 +107,13 @@ class AliAODJet : public AliVParticle {
 
 
  private:
-    Double32_t      fBackgEnergy[2];        // Subtracted background energy
-    Double32_t      fEffectiveArea[2];      // Effective jet area used for background subtraction
+    Double32_t      fBackgEnergy[2];         // Subtracted background energy
+    Double32_t      fEffectiveArea[2];       // Effective jet area used for background subtraction
     Double32_t      fEffectiveAreaError[2];  //[0,1,10] relative error of jet areas, 10 bit precision
-    Double32_t      fNeutralFraction;       //[0,1,12] Neutral fraction between 0 and 1 12 bit precision;
-    UChar_t         fTrigger;             // Bit mask to flag jets triggered by a certain detector  
-    TLorentzVector* fMomentum;           // Jet 4-momentum vector
-    TRefArray*      fRefTracks;          // array of references to the tracks belonging to the jet
+    Double32_t      fNeutralFraction;        //[0,1,12] Neutral fraction between 0 and 1 12 bit precision;
+    UChar_t         fTrigger;                // Bit mask to flag jets triggered by a certain detector  
+    TLorentzVector* fMomentum;               // Jet 4-momentum vector
+    TRefArray*      fRefTracks;              // array of references to the tracks belonging to the jet
 
     ClassDef(AliAODJet,5);
 

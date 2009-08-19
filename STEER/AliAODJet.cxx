@@ -170,6 +170,15 @@ Double_t AliAODJet::DeltaR(const AliVParticle* part){
 }
 
 
+void  AliAODJet::AddTrack(TObject *tr) {
+    // Add a track to the list of referenced tracks
+    if (fRefTracks->GetEntries() == 0) {
+	new(fRefTracks) TRefArray(TProcessID::GetProcessWithUID(tr));
+    }
+    
+    fRefTracks->Add(tr);
+}
+
 Int_t AliAODJet::Compare( const TObject* obj) const {
 
   // 
