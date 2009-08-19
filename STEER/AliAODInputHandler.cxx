@@ -66,7 +66,7 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
     TNamed* obj;
  
     if (!fTree) return kFALSE;
-   
+    fTree->GetEntry(0);
     TString aodTreeFName,aodFriendTreeFName;
 
     while((obj = (TNamed*)next())) {
@@ -77,11 +77,11 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 	  aodFriendTreeFName.ReplaceAll("AliAODs.root",obj->GetName());
 	  (fTree->GetTree())->AddFriend("aodTree", aodFriendTreeFName.Data());
 	} else {
-	  aodTreeFName = (fTree->GetCurrentFile())->GetName();
-	  aodFriendTreeFName = aodTreeFName;
-	  aodFriendTreeFName.ReplaceAll("AliAOD.root",obj->GetName());
-	  aodFriendTreeFName.ReplaceAll("AliAODs.root",obj->GetName());
-	  fTree->AddFriend("aodTree", aodFriendTreeFName.Data());
+	    aodTreeFName = (fTree->GetCurrentFile())->GetName();
+	    aodFriendTreeFName = aodTreeFName;
+	    aodFriendTreeFName.ReplaceAll("AliAOD.root",obj->GetName());
+	    aodFriendTreeFName.ReplaceAll("AliAODs.root",obj->GetName());
+	    fTree->AddFriend("aodTree", aodFriendTreeFName.Data());
 	}
     }
  
