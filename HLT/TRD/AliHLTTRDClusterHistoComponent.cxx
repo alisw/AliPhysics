@@ -32,7 +32,8 @@ using namespace std;
 #include <TFile.h>
 #include <TString.h>
 #include "TObjString.h"
-#include "TObjArray.h"
+#include "TClonesArray.h"
+#include "AliHLTTRDUtils.h"
 
 //#include "AliHLTTRD.h"
 //#include <stdlib.h>
@@ -159,18 +160,23 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
     return 0;
   
   const AliHLTComponentBlockData* iter = NULL;
-  AliTRDcluster *cls = new AliTRDcluster();
   
   for ( iter = GetFirstInputBlock(AliHLTTRDDefinitions::fgkClusterDataType); 
 	iter != NULL; iter = GetNextInputBlock() ) {
-    
-    AliHLTTRDCluster* clusterData = (AliHLTTRDCluster*) iter->fPtr;
-    Int_t nSpacepoint = 0; 
+
+    HLTDebug("We get the right data type: Block Ptr: 0x%x; Block Size: %i",
+	     iter->fPtr, iter->fSize);
+
+    TClonesArray* clusterArray = new TClonesArray("AliTRDcluster"); // would be nice to allocate memory for all clusters here.
+    AliHLTTRDUtils::ReadClusters(clusterArray, iter->fPtr, iter->fSize);
+    HLTDebug("TClonesArray of clusters: nbEntries = %i", clusterArray->GetEntriesFast());
+
+    AliTRDcluster *cls;
         
     // loop over clusters 
-    for(int i=0;i<nSpacepoint;i++) {
-      
-      clusterData[i].ExportTRDCluster(cls);
+    for(int i=0;i<clusterArray->GetEntriesFast();i++) {
+
+      cls=(AliTRDcluster*)clusterArray->At(i);
       
       fNClsDet->Fill(cls->GetDetector());
       fClsAmp->Fill(cls->GetQ());
@@ -183,14 +189,17 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
       fClsAmpDriftDet[cls->GetDetector()]->Fill(cls->GetQ());
     }
   }
-    
-  delete cls;
    
   fClsAmpDist->Reset();
   for(int det=0; det<540; det++)
     if (fClsAmpDriftDet[det]->GetSum() > 0) 
       fClsAmpDist->Fill(fClsAmpDriftDet[det]->GetMean());
 
+  PushBack((TObject*)fNClsDet, kAliHLTDataTypeHistogram, 0);   
+  PushBack((TObject*)fClsAmp, kAliHLTDataTypeHistogram, 0);  
+  PushBack((TObject*)fClsAmpDrift, kAliHLTDataTypeHistogram, 0);   
+  PushBack((TObject*)fClsTB, kAliHLTDataTypeHistogram, 0);  
+  PushBack((TObject*)fClsAmpDist, kAliHLTDataTypeHistogram, 0);  
 
   //delete til dodeinit
   // if(fPlotChargeOROCAll){
@@ -204,13 +213,10 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
 
 int AliHLTTRDClusterHistoComponent::Configure(const char* arguments)
 {
- 
   return 0;
 }
 
 int AliHLTTRDClusterHistoComponent::Reconfigure(const char* cdbEntry, const char* chainId)
 {
-
-
   return 0;
 }

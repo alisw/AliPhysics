@@ -88,6 +88,7 @@ int AliHLTTRDAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTRDTrackerV1Component);
   pHandler->AddComponent(new AliHLTTRDCalibrationComponent);
   pHandler->AddComponent(new AliHLTTRDEsdWriterComponent);
+  pHandler->AddComponent(new AliHLTTRDClusterHistoComponent);
   
   return 0;
 }
