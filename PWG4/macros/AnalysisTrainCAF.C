@@ -208,12 +208,12 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
 
     if (iESDfilter && !iAODanalysis) {
       gROOT->LoadMacro("AddTaskESDfilter.C");
-      AliAnalysisTaskESDfilter *esdfilter = esdfilter = AddTaskESDfilter();
+      AliAnalysisTaskESDfilter *esdfilter = AddTaskESDfilter();
     }   
     // Jet analysis from the AOD
     if (iJETAN) {
       gROOT->LoadMacro("AddTaskJets.C");
-      AliAnalysisTaskJets *jetanaAOD = jetanaAOD = AddTaskJets("AOD","UA1");
+      AliAnalysisTaskJets *jetanaAOD  = AddTaskJets("AOD","UA1");
     }   
     // JETANALYSIS from the ESD
     if (iJETANESD && !iAODanalysis) {
@@ -225,7 +225,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     // Jet analysisMC
     if (iJETANMC && useMC){ 
       gROOT->LoadMacro("AddTaskJets.C");
-      AliAnalysisTaskJets *jetanaMC = jetanaMC = AddTaskJets("MC","UA1MC");
+      AliAnalysisTaskJets *jetanaMC =  AddTaskJets("MC","UA1MC");
       jetanaMC->SetDebugLevel(10);
       jetanaMC->SetNonStdBranch("jetsMC");
     }   
@@ -238,7 +238,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     // Dijet analysis
     if(iDIJETAN){
       gROOT->LoadMacro("AddTaskDiJets.C");
-      AliAnalysisTaskDiJets *dijetana = dijetana = AddTaskDiJets();
+      AliAnalysisTaskDiJets *dijetana  = AddTaskDiJets();
     }
     if (iPWG4SPECTRUM) {
       gROOT->LoadMacro("AddTaskJetSpectrum.C");
