@@ -265,6 +265,9 @@ $(DASPECFILE): $(DATARGETDIR)
 	@echo "# Do not modify following scripts" >> $@
 	@echo "#################################################################" >> $@
 	@echo "" >> $@
+	@echo "%define debug_package %{nil}" >> $@
+	@echo "%define __os_install_post %{nil}" >> $@
+	@echo "" >> $@
 	@echo "# here is defined the installation root directory" >> $@
 	@echo "%define pkgname %{name}-%{version}" >> $@
 	@echo "%define destdir %{prefix}" >> $@
