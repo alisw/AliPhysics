@@ -22,7 +22,8 @@ CLASS_HDRS:= \
                 AliHLTRunSummaryProducerComponent.h         \
                 AliHLTTriggerSelectiveReadoutComponent.h    \
                 AliHLTTriggerMonitoringComponent.h          \
-		AliHLTTriggerPhosClusterEnergy.h            
+		AliHLTTriggerPhosClusterEnergy.h            \
+		AliHLTTriggerPhosMip.h            
 
 
 # library sources

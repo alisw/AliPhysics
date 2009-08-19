@@ -15,6 +15,7 @@ trigger/AliHLTRunSummaryProducerComponent.cxx
 trigger/AliHLTTriggerSelectiveReadoutComponent.cxx
 trigger/AliHLTTriggerMonitoringComponent.cxx
 trigger/AliHLTTriggerPhosClusterEnergy.cxx
+trigger/AliHLTTriggerPhosMip.cxx
 )
 
 # fill list of header files from list of source files
