@@ -38,22 +38,19 @@ WriteMapping()
 
   while (fgets(string,128,fd)) {
     if (string[0]=='*') {
-//       printf("%s",string);
       continue;
     }
     sscanf(string,"%d %d %d %d %d %d",&xcell,&zcell,&csp,&altro,&chanHG,&chanLG);
-//     printf("%2d %2d %2d %2d %2d %2d\n",
-// 	     xcell,zcell,csp,altro,chanHG,chanLG);
     for (Int_t iRCU=0; iRCU<4; iRCU++) {
       for (Int_t iBranch=0; iBranch<2; iBranch++) {
 	for (Int_t iFEE=1; iFEE<=14; iFEE++) {
-
+	  // High gain
 	  hwAddress = chanHG | (altro<<4) | (iFEE<<7) | (iBranch<<11);
 	  if (hwAddress > maxHWAddress[iRCU]) maxHWAddress[iRCU]=hwAddress;
 	  nHWaddress[iRCU]++;
 	  fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",
- 		  hwAddress,xcell+iRCU*16,zcell+27+(2*iBranch-1)+(iFEE-1)*2*(2*iBranch-1),1);
-
+ 		  hwAddress,xcell+iRCU*16,zcell+27+(2*iBranch-1)+(iFEE-1)*2*(2*iBranch-1),0);
+	  // Low gain
 	  hwAddress = chanLG | (altro<<4) | (iFEE<<7) | (iBranch<<11);
 	  if (hwAddress > maxHWAddress[iRCU]) maxHWAddress[iRCU]=hwAddress;
 	  nHWaddress[iRCU]++;
