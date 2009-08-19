@@ -11,5 +11,6 @@
 #pragma link C++ class AliHLTTRDEsdWriterComponent;
 #pragma link C++ class AliHLTTRDCalibrationComponent;
 #pragma link C++ class AliHLTTRDUtils;
+#pragme link C++ class AliHLTTRDClusterHistoComponent;
 #endif
 

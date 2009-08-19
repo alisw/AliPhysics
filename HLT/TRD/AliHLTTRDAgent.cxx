@@ -36,7 +36,7 @@ AliHLTTRDAgent gAliHLTTRDAgent;
 #include "AliHLTTRDTrackerV1Component.h"
 #include "AliHLTTRDCalibrationComponent.h"
 #include "AliHLTTRDEsdWriterComponent.h"
-
+#include "AliHLTTRDClusterHistoComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTRDAgent)

@@ -15,7 +15,8 @@ CLASS_HDRS:= \
 	AliHLTTRDTracklet.h \
 	AliHLTTRDTrack.h \
 	AliHLTTRDAgent.h \
-	AliHLTTRDUtils.h
+	AliHLTTRDUtils.h \
+	AliHLTTRDClusterHistoComponent.h
 
 # library sources
 MODULE_SRCS= \
