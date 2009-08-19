@@ -280,7 +280,6 @@ AliMUONTrackerIO::DecodeGains(TString data, AliMUONVStore& gainStore,
   Int_t* runs(0x0);
   Int_t* dac(0x0);
   Int_t nDAC(0);
-  Int_t iDAC(0);
   
   while ( in.getline(line,1024) )
   {
@@ -317,6 +316,7 @@ AliMUONTrackerIO::DecodeGains(TString data, AliMUONVStore& gainStore,
             in.getline(line,1024);
             in.getline(line,1024);
             // then get run and dac values
+	    Int_t iDAC(0);
             for ( Int_t i = 0; i < nDAC; ++i ) 
             {
               in.getline(line,1024);
