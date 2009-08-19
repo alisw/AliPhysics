@@ -509,8 +509,6 @@ int AliHLTTRDTrackerV1Component::SetParams()
     }
   if (!TGeoGlobalMagField::Instance()->IsLocked()) {
     AliMagF* field;
-    field = (AliMagF*) TGeoGlobalMagField::Instance()->GetField();
-    if(field)delete field;
     if (fMagneticField == 0){
       // magnetic field OFF
       field = new AliMagF("Maps","Maps",2,0.,0., 10.,AliMagF::k5kGUniform);
@@ -531,17 +529,18 @@ int AliHLTTRDTrackerV1Component::SetParams()
 }
 
 void AliHLTTRDTrackerV1Component::SetOfflineParams(){
+  HLTFatal("You have entered the OFFLINE configuration!");
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
     HLTFatal("You are resetting the Default Storage of the CDBManager!");
     HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
-    //AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   }else{
     HLTError("DefaultStorage was already set!");
   }
   if(AliCDBManager::Instance()->GetRun()<0){
     HLTFatal("You are resetting the CDB run number to 0!");
     HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
-    //AliCDBManager::Instance()->SetRun(0);
+    AliCDBManager::Instance()->SetRun(0);
   }else{
     HLTError("Run Number was already set!");
   }
