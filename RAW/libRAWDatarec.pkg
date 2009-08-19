@@ -11,7 +11,8 @@ SRCS:=  AliFilter.cxx \
 	AliCaloRawStreamV3.cxx \
 	AliVMERawStream.cxx \
 	AliAltroDecoder.cxx AliAltroData.cxx AliAltroBunch.cxx AliAltroRawStreamFast.cxx \
-	AliAltroRawStreamV3.cxx
+	AliAltroRawStreamV3.cxx \
+	AliCaloFastAltroFitv0.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
