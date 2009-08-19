@@ -431,7 +431,7 @@ int AliHLTTRDTrackerV1Component::SetParams()
   HLTInfo("CDB default storage: %s; RunNo: %i", (AliCDBManager::Instance()->GetDefaultStorage()->GetBaseFolder()).Data(), AliCDBManager::Instance()->GetRun());
 
   if(!AliGeomManager::GetGeometry()){
-    if(!TFile::Open(fgeometryFileName.Data())){
+    if(fgeometryFileName.CompareTo("")==0 || !TFile::Open(fgeometryFileName.Data())){
       HLTInfo("Loading standard geometry file");
       AliGeomManager::LoadGeometry();
     }else{
