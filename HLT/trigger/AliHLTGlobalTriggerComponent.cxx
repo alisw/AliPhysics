@@ -28,6 +28,7 @@
 #include "AliHLTGlobalTrigger.h"
 #include "AliHLTGlobalTriggerConfig.h"
 #include "AliHLTTriggerMenu.h"
+#include "AliHLTCTPData.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
@@ -82,6 +83,7 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   // Initialises the global trigger component.
   
   fDebugMode = false;
+  bool bSkipCTPCounters=false;
   const char* configFileName = NULL;
   const char* codeFileName = NULL;
   TString classname;
@@ -166,7 +168,14 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
       i += 2;
       continue;
     }
-    
+
+    if (strcmp(argv[i], "-skipctp") == 0)
+    {
+      HLTInfo("Skipping CTP counters in trigger decision");
+      bSkipCTPCounters=true;
+      continue;
+    }
+        
     HLTError("Unknown option '%s'.", argv[i]);
     return -EINVAL;
   } // for loop
@@ -242,7 +251,10 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   
   fTrigger->FillFromMenu(*menu);
   fTrigger->ResetCounters(menu->NumberOfItems());
-  
+
+  // setup the CTP accounting in AliHLTComponent
+  if (!bSkipCTPCounters) SetupCTPData();
+
   // Set the default values from the trigger menu.
   SetDescription(menu->DefaultDescription());
   SetTriggerDomain(menu->DefaultTriggerDomain());
@@ -341,6 +353,8 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     }
     obj = GetNextInputObject();
   }
+
+  if (CTPData()) decision.AddInputObject(CTPData());
 
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 3);
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 4);
