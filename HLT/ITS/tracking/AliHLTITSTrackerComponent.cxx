@@ -48,6 +48,7 @@ using namespace std;
 #include "AliHLTDataTypes.h"
 #include "AliHLTExternalTrackParam.h"
 #include "AliHLTGlobalBarrelTrack.h"
+#include "AliGeomManager.h"
 
 
 
