@@ -90,6 +90,7 @@ public:
   Float_t  GetMinR(Char_t ring) const;
   void     SetBackgroundPath(const Char_t* bgpath) {fBackgroundPath.Form(bgpath);}
   void     SetEnergyPath(const Char_t* epath) {fEnergyPath.Form(epath);}
+  void     SetEventSelectionPath(const Char_t* evpath) {fEventSelectionEffPath.Form(evpath);}
   void     SetProcessPrimary(Bool_t prim=kTRUE) {fProcessPrimary = prim;}
   void     SetProcessHits(Bool_t hits=kTRUE) {fProcessHits = hits;}
   Bool_t   GetProcessPrimary() {return fProcessPrimary;}
