@@ -3,6 +3,11 @@
 
 // macro for extremely simple analysis
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  TRD calibration class                                                    //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
@@ -25,9 +30,12 @@ class AliTRDcluster;
 class AliTRDtrackInfo;
 class AliTRDcalibration : public AliTRDrecoTask 
 {
+ 
+public:
+
   // Plots registered for this task
   enum{
-       kNbTrack        =  0     // Nb tracks per event
+    kNbTrack        =  0     // Nb tracks per event
       ,kNbTracklet     =  1     // Nb of traklets per detector
       ,kNbTimeBin      =  2     // Nb of clusters per timebin
       ,kNbClusters     =  3     // Nb of clusters per tracklet
@@ -46,7 +54,7 @@ class AliTRDcalibration : public AliTRDrecoTask
       ,kPRFFactor = 16                 //PRF Factor
       };
   
-public:
+
   AliTRDcalibration();
   virtual ~AliTRDcalibration();
   
@@ -56,9 +64,9 @@ public:
   virtual Bool_t  GetRefFigure(Int_t ifig);
   virtual Bool_t  PostProcess();
 
-  Bool_t FillGraphIndex(TObjArray *vectora, TGraph *graph) const;
-  Bool_t AddStatsPerDetector(TH2I *ch);
-  Bool_t AddStatsPerDetector(TProfile2D *ph, Int_t i);
+  Bool_t FillGraphIndex(const TObjArray *vectora, TGraph *graph) const;
+  Bool_t AddStatsPerDetector(const TH2I *ch);
+  Bool_t AddStatsPerDetector(const TProfile2D *ph, Int_t i);
 
   Bool_t SetNrphiFromTObject(const char *name, Int_t i, AliTRDCalibraMode *calibMode) const;
   Bool_t SetNzFromTObject(const char *name, Int_t i, AliTRDCalibraMode *calibMode) const;
@@ -84,7 +92,7 @@ public:
   void SetStandaloneTracks()                                        {fStandaloneTracks=kTRUE; fOfflineTracks=kFALSE; };
   void SetCompressPerDetector(Bool_t compressPerDetector=kTRUE)     {fCompressPerDetector=compressPerDetector; };
   void SetRunNumber(Int_t runNumber)                                {fRunNumber=runNumber; };
-  void SetNameDirectoryOutput(const char *nameDirectory)            {fNameDirectory=nameDirectory; };
+  void SetNameDirectoryOutput(const char *nameDirectory)            {fkNameDirectory=nameDirectory; };
 
 
   
@@ -134,7 +142,7 @@ private:
   Bool_t      fCompressPerDetector;              //! Compress per detector 
 
   Int_t       fRunNumber;                        //! Run number
-  const char *fNameDirectory;                    //! Name output directory fit parameters
+  const char *fkNameDirectory;                   //! Name output directory fit parameters
 
   TObjArray  *fGraph;                            //! array of graphs filled in PostProcess
   Bool_t      fPostProcess;                      //Post process 

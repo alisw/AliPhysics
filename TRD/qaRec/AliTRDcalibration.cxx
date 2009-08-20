@@ -14,8 +14,15 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-// macro for very simple analysis
-
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             
+// AliTRDcalibration                                                            
+//                                                                             
+// Task to run the calibration offline.
+// Author:
+//   R. Bailhache (rbailhache@ikf.uni-frankfurt.de, R.Bailhache@gsi.de)
+//           
+//////////////////////////////////////////////////////////////////////////////////
 
 
 #include "Riostream.h"
@@ -99,7 +106,7 @@ AliTRDcalibration::AliTRDcalibration()
   ,fStandaloneTracks(kFALSE)
   ,fCompressPerDetector(kFALSE)
   ,fRunNumber(0)
-  ,fNameDirectory("local://.")
+  ,fkNameDirectory("local://.")
   ,fGraph(0x0)
   ,fPostProcess(kFALSE)
 {
@@ -117,6 +124,7 @@ AliTRDcalibration::AliTRDcalibration()
 //________________________________________________________________________
 AliTRDcalibration::~AliTRDcalibration() 
 {
+  // Default destructor
 
   if(fNbTRDTrack) delete fNbTRDTrack;
   if(fNbTRDTrackOffline) delete fNbTRDTrackOffline;
@@ -134,13 +142,14 @@ AliTRDcalibration::~AliTRDcalibration()
   if(fCHSum) delete fCHSum;
   if(fDetSum) delete fDetSum;
   if(fDetSumVector) delete fDetSumVector;
-  if(fNameDirectory) delete fNameDirectory;
+  if(fkNameDirectory) delete fkNameDirectory;
   if(fGraph){fGraph->Delete(); delete fGraph;}
 
 }
 //________________________________________________________________________
 void AliTRDcalibration::CreateOutputObjects() 
 {
+  // Create output objects
 
   OpenFile(0, "RECREATE");
   
@@ -267,6 +276,9 @@ void AliTRDcalibration::CreateOutputObjects()
 //________________________________________________________________________
 void AliTRDcalibration::Exec(Option_t *) 
 {
+  //
+  // Execute function where the reference data are filled
+  //
 
   if(!fTracks) return;
   
@@ -397,7 +409,6 @@ void AliTRDcalibration::Terminate(Option_t *)
 //________________________________________________________
 Bool_t AliTRDcalibration::GetRefFigure(Int_t ifig)
 {
-
   //
   // Draw filled histos
   //
@@ -694,10 +705,10 @@ case kCH2DVector:{
 //________________________________________________________________________
 Bool_t AliTRDcalibration::PostProcess()
 {
-
   // 
   // Fit the filled histos
   //
+
   if(!fGraph){
     fGraph = new TObjArray(6);
     fGraph->SetOwner();
@@ -712,7 +723,7 @@ Bool_t AliTRDcalibration::PostProcess()
   // storage element
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBStorage* storLoc = man->GetStorage(fNameDirectory);
+  AliCDBStorage* storLoc = man->GetStorage(fkNameDirectory);
   if (!storLoc)
     return kFALSE;
   man->SetRun(fRunNumber);
@@ -970,9 +981,8 @@ Bool_t AliTRDcalibration::PostProcess()
 }
 
 //________________________________________________________________________
-Bool_t AliTRDcalibration::FillGraphIndex(TObjArray *vectora,TGraph *graph) const
+Bool_t AliTRDcalibration::FillGraphIndex(const TObjArray *vectora,TGraph *graph) const
 {
-
   //
   // Fill one value (the first one) per detector
   //
@@ -1005,10 +1015,12 @@ Bool_t AliTRDcalibration::FillGraphIndex(TObjArray *vectora,TGraph *graph) const
 
 }
 //________________________________________________________________________
-Bool_t AliTRDcalibration::AddStatsPerDetector(TH2I *ch) 
+Bool_t AliTRDcalibration::AddStatsPerDetector(const TH2I *ch) 
 {
-
-  // Use an AliTRDCalibraMode to know where we are
+  //
+  // Add statistic per detector
+  //
+  
   AliTRDCalibraMode calibMode = AliTRDCalibraMode();
   const char *name = ch->GetTitle();
   if(!SetNzFromTObject(name,0,&calibMode)) return 0x0;
@@ -1080,10 +1092,10 @@ Bool_t AliTRDcalibration::AddStatsPerDetector(TH2I *ch)
 
 }
 //_____________________________________________________________________________________________________________________
-Bool_t AliTRDcalibration::AddStatsPerDetector(TProfile2D *ph,Int_t i)
+Bool_t AliTRDcalibration::AddStatsPerDetector(const TProfile2D *ph,Int_t i)
 {
   //
-  //
+  // Add statistic per detector
   //
 
   AliTRDCalibraMode calibMode = AliTRDCalibraMode();
@@ -1204,8 +1216,10 @@ Bool_t AliTRDcalibration::AddStatsPerDetector(TProfile2D *ph,Int_t i)
 //_____________________________________________________________________________
 Bool_t AliTRDcalibration::SetNrphiFromTObject(const char *name, Int_t i, AliTRDCalibraMode *calibMode) const
 {
+  //
+  // Set the granularity from object
+  //  
   
-  // Some patterns
   const Char_t *patternrphi0 = "Nrphi0";
   const Char_t *patternrphi1 = "Nrphi1";
   const Char_t *patternrphi2 = "Nrphi2";
