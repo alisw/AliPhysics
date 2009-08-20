@@ -269,6 +269,11 @@ int AliHLTITSTrackerComponent::DoInit( int argc, const char** argv )
   // Configure the ITS tracker component
 
   if ( fTracker ) return EINPROGRESS;
+
+  if(AliGeomManager::GetGeometry()==NULL){
+    AliGeomManager::LoadGeometry();
+  }
+
   fTracker = new AliITStrackerHLT(0);
 
   TString arguments = "";
