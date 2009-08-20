@@ -761,7 +761,9 @@ Bool_t AliAnalysisAlien::CreateJDL()
       fGridJDL->SetInputDataListFormat(fInputFormat);
       fGridJDL->SetInputDataList("wn.xml");
       fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(), fAnalysisMacro.Data()));
-      fGridJDL->AddToInputSandbox(Form("LF:%s/analysis.root", workdir.Data()));
+      TString analysisFile = fExecutable;
+      analysisFile.ReplaceAll(".sh", ".root");
+      fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(),analysisFile.Data()));
       if (IsUsingTags() && !gSystem->AccessPathName("ConfigureCuts.C"))
          fGridJDL->AddToInputSandbox(Form("LF:%s/ConfigureCuts.C", workdir.Data()));
       if (fAdditionalLibs.Length()) {
@@ -1568,7 +1570,9 @@ void AliAnalysisAlien::SubmitNext()
 //______________________________________________________________________________
 void AliAnalysisAlien::WriteAnalysisFile()
 {
-// Write current analysis manager into the file analysis.root
+// Write current analysis manager into the file <analysisFile>
+   TString analysisFile = fExecutable;
+   analysisFile.ReplaceAll(".sh", ".root");
    if (!TestBit(AliAnalysisGrid::kSubmit)) {  
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       if (!mgr || !mgr->IsInitialized()) {
@@ -1584,13 +1588,13 @@ void AliAnalysisAlien::WriteAnalysisFile()
          if (handler->InheritsFrom("AliAODInputHandler")) TObject::SetBit(AliAnalysisGrid::kUseAOD);
       }
       TDirectory *cdir = gDirectory;
-      TFile *file = TFile::Open("analysis.root", "RECREATE");
+      TFile *file = TFile::Open(analysisFile, "RECREATE");
       if (file) {
          mgr->Write();
          delete file;
       }
       if (cdir) cdir->cd();
-      Info("WriteAnalysisFile", "\n#####   Analysis manager: %s wrote to file <analysis.root>\n", mgr->GetName());
+      Info("WriteAnalysisFile", "\n#####   Analysis manager: %s wrote to file <%s>\n", mgr->GetName(),analysisFile.Data());
    }   
    Bool_t copy = kTRUE;
    if (TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
@@ -1598,9 +1602,9 @@ void AliAnalysisAlien::WriteAnalysisFile()
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
       workdir += fGridWorkingDir;
-      Info("CreateJDL", "\n#####   Copying file <analysis.root> containing your initialized analysis manager to your alien workspace");
-      if (FileExists("analysis.root")) gGrid->Rm("analysis.root");
-      TFile::Cp("file:analysis.root", Form("alien://%s/analysis.root", workdir.Data()));
+      Info("CreateJDL", "\n#####   Copying file <%s> containing your initialized analysis manager to your alien workspace", analysisFile.Data());
+      if (FileExists(analysisFile)) gGrid->Rm(analysisFile);
+      TFile::Cp(Form("file:%s",analysisFile.Data()), Form("alien://%s/%s", workdir.Data(),analysisFile.Data()));
    }   
 }
 
@@ -1750,7 +1754,9 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          }  
       }   
       out << "// read the analysis manager from file" << endl;
-      out << "   TFile *file = TFile::Open(\"analysis.root\");" << endl;
+      TString analysisFile = fExecutable;
+      analysisFile.ReplaceAll(".sh", ".root");
+      out << "   TFile *file = TFile::Open(\"" << analysisFile << "\");" << endl;
       out << "   if (!file) return;" << endl; 
       out << "   TIter nextkey(file->GetListOfKeys());" << endl;
       out << "   AliAnalysisManager *mgr = 0;" << endl;
@@ -1760,7 +1766,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "         mgr = (AliAnalysisManager*)file->Get(key->GetName());" << endl;
       out << "   };" << endl;
       out << "   if (!mgr) {" << endl;
-      out << "      ::Error(\"" << func.Data() << "\", \"No analysis manager found in file analysis.root\");" << endl;
+      out << "      ::Error(\"" << func.Data() << "\", \"No analysis manager found in file" << analysisFile <<"\");" << endl;
       out << "      return;" << endl;
       out << "   }" << endl << endl;
       out << "   mgr->PrintStatus();" << endl;
