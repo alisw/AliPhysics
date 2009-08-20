@@ -93,8 +93,10 @@ fOnlyOneTrackletPerC1(0),
 fUpdateOncePerEventPlaneEff(0),
 fChipUpdatedInEvent(0),
 fPlaneEffSPD(0),
+fPlaneEffBkg(0),
 fReflectClusterAroundZAxisForLayer0(kFALSE),
 fReflectClusterAroundZAxisForLayer1(kFALSE),
+fLightBkgStudyInParallel(kFALSE),
 fMC(0),
 fUseOnlyPrimaryForPred(0),
 fUseOnlySecondaryForPred(0), 
@@ -162,6 +164,7 @@ fhClustersInModuleLay2(0)
   if (GetHistOn()) BookHistos();
 
   fPlaneEffSPD = new AliITSPlaneEffSPD();
+  SetLightBkgStudyInParallel();
 }
 //______________________________________________________________________
 AliITSTrackleterSPDEff::AliITSTrackleterSPDEff(const AliITSTrackleterSPDEff &mr) :  
@@ -205,8 +208,10 @@ fOnlyOneTrackletPerC1(mr.fOnlyOneTrackletPerC1),
 fUpdateOncePerEventPlaneEff(mr.fUpdateOncePerEventPlaneEff),
 fChipUpdatedInEvent(mr.fChipUpdatedInEvent),
 fPlaneEffSPD(mr.fPlaneEffSPD),
+fPlaneEffBkg(mr.fPlaneEffBkg),
 fReflectClusterAroundZAxisForLayer0(mr.fReflectClusterAroundZAxisForLayer0),
 fReflectClusterAroundZAxisForLayer1(mr.fReflectClusterAroundZAxisForLayer1),
+fLightBkgStudyInParallel(mr.fLightBkgStudyInParallel),
 fMC(mr.fMC),
 fUseOnlyPrimaryForPred(mr.fUseOnlyPrimaryForPred),
 fUseOnlySecondaryForPred(mr.fUseOnlySecondaryForPred),
@@ -291,11 +296,16 @@ AliITSTrackleterSPDEff::~AliITSTrackleterSPDEff(){
 
   // delete PlaneEff
   delete fPlaneEffSPD;
+  fPlaneEffSPD=0;
+  if(fPlaneEffBkg) {
+    delete fPlaneEffBkg;
+    fPlaneEffBkg=0;
+
+  }
 }
 //____________________________________________________________________
 void
-//AliITSTrackleterSPDEff::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t*, AliStack *pStack, TTree *tRef) {
-AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
+AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef, Bool_t lbkg) {
   //
   // - you have to take care of the following, before of using Reconstruct
   //   1) call LoadClusters(TTree* cl) that finds the position of the clusters (in global coord)
@@ -307,6 +317,16 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
   // - Check if there is a cluster near that point  
   //
   // reset counters
+  if(lbkg && !GetLightBkgStudyInParallel()) {
+    AliError("You asked for lightBackground in the Reconstruction without proper call to SetLightBkgStudyInParallel(1)"); 
+    return;
+  }
+  AliITSPlaneEffSPD *pe;
+  if(lbkg) {
+    pe=fPlaneEffBkg;
+  } else {
+    pe=fPlaneEffSPD;
+  }
   fNTracklets = 0; 
   // retrieve the vertex position
   Float_t vtx[3];
@@ -314,11 +334,11 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
   vtx[1]=(Float_t)GetY();
   vtx[2]=(Float_t)GetZ();
   // to study residual background (i.e. contribution from TT' to measured efficiency) 
-  if(fReflectClusterAroundZAxisForLayer0) ReflectClusterAroundZAxisForLayer(0);
-  if(fReflectClusterAroundZAxisForLayer1) ReflectClusterAroundZAxisForLayer(1);
+  if(fReflectClusterAroundZAxisForLayer0 && !lbkg) ReflectClusterAroundZAxisForLayer(0);
+  if(fReflectClusterAroundZAxisForLayer1 && !lbkg) ReflectClusterAroundZAxisForLayer(1);
   //
-  if(fMC && !pStack) {AliError("You asked for MC infos but AliStack not properly loaded"); return;}
-  if(fMC && !tRef) {AliError("You asked for MC infos but TrackRef Tree not properly loaded"); return;}
+  if(fMC && !pStack && !lbkg) {AliError("You asked for MC infos but AliStack not properly loaded"); return;}
+  if(fMC && !tRef   && !lbkg) {AliError("You asked for MC infos but TrackRef Tree not properly loaded"); return;}
   Bool_t found;
   Int_t nfTraPred1=0;  Int_t ntTraPred1=0;
   Int_t nfTraPred2=0;  Int_t ntTraPred2=0;
@@ -359,7 +379,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
     fChipPredOnLay2[iC1] = key;
     fAssociationFlag1[iC1] = kFALSE;
  
-    if (fHistOn) {
+    if (fHistOn && !lbkg) {
       Float_t eta=fClustersLay1[iC1][0];
       eta= TMath::Tan(eta/2.);
       eta=-TMath::Log(eta);
@@ -392,7 +412,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
     fChipPredOnLay1[iC2] = key;
     fAssociationFlag[iC2] = kFALSE;
  
-    if (fHistOn) {
+    if (fHistOn && !lbkg) {
       Float_t eta=fClustersLay2[iC2][0];
       eta= TMath::Tan(eta/2.);
       eta=-TMath::Log(eta);
@@ -422,7 +442,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
 
     // in any case, if MC has been required, store statistics of primaries and secondaries
     Bool_t primary=kFALSE; Bool_t secondary=kFALSE; // it is better to have both since chip might not be found
-    if (fMC) {
+    if (fMC && !lbkg) {
        Int_t lab1=(Int_t)fClustersLay1[iC1][3];
        Int_t lab2=(Int_t)fClustersLay1[iC1][4];
        Int_t lab3=(Int_t)fClustersLay1[iC1][5];
@@ -475,7 +495,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
 	Float_t r2    = fClustersLay2[iC2][2]/TMath::Cos(fClustersLay2[iC2][0]);
         Float_t dZeta = TMath::Cos(fClustersLay1[iC1][0])*r2 - fClustersLay2[iC2][2];
 
- 	if (fHistOn) {
+ 	if (fHistOn && !lbkg) {
 	  fhClustersDPhiAll->Fill(dPhi);    
 	  fhClustersDThetaAll->Fill(dTheta);    
 	  fhClustersDZetaAll->Fill(dZeta);    
@@ -502,7 +522,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
     
     if (distmin<100) { // This means that a cluster in layer 2 was found that matches with iC1
 
-      if (fHistOn) {
+      if (fHistOn && !lbkg) {
 	fhClustersDPhiAcc->Fill(dPhimin);
 	fhClustersDThetaAcc->Fill(dThetamin);    
 	fhClustersDZetaAcc->Fill(dZetamin);    
@@ -546,7 +566,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
         fTracklets[fNTracklets][3] = -2;
       }
 
-      if (fHistOn) {
+      if (fHistOn && !lbkg) {
 	Float_t eta=fTracklets[fNTracklets][0];
 	eta= TMath::Tan(eta/2.);
 	eta=-TMath::Log(eta);
@@ -564,7 +584,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
       nfClu2+=(Int_t)found; // this for debugging purpose
       ntClu2++;             // to check efficiency of the method FindChip
       if(key<1200) { // the Chip has been found
-        if(fMC) { // this part only for MC
+        if(fMC && !lbkg) { // this part only for MC
           // Int_t labc1=(Int_t)fClustersLay2[iC2WithBestDist][3];
           // Int_t labc2=(Int_t)fClustersLay2[iC2WithBestDist][4];
           // Int_t labc3=(Int_t)fClustersLay2[iC2WithBestDist][5];
@@ -578,17 +598,17 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
 
         if (key==fChipPredOnLay2[iC1]) { // this control seems too loose: has to be checked !
           				 // OK, success
-                fPlaneEffSPD->UpDatePlaneEff(kTRUE,key); // success
+                pe->UpDatePlaneEff(kTRUE,key); // success
                 fChipUpdatedInEvent[key]=kTRUE; 
-                if(fMC) {
+                if(fMC && !lbkg) {
                   if(primary)   fSuccessP[key]++;
                   if(secondary) fSuccessS[key]++;
                 }
         }
         else {
-                fPlaneEffSPD->UpDatePlaneEff(kTRUE,key); // this should not be a failure
+                pe->UpDatePlaneEff(kTRUE,key); // this should not be a failure
                 fChipUpdatedInEvent[key]=kTRUE;          // (might be in the tracking tollerance)
-                if(fMC) {
+                if(fMC && !lbkg) {
                   if(primary)   fSuccessP[key]++;
                   if(secondary) fSuccessS[key]++;
                 }
@@ -599,9 +619,9 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
 
     } // if any cluster found --> increment statistics by 1 failure (provided you have chip prediction)
     else if (fChipPredOnLay2[iC1]<1200) {
-      fPlaneEffSPD->UpDatePlaneEff(kFALSE,fChipPredOnLay2[iC1]);
+      pe->UpDatePlaneEff(kFALSE,fChipPredOnLay2[iC1]);
       fChipUpdatedInEvent[fChipPredOnLay2[iC1]]=kTRUE;
-      if(fMC) {
+      if(fMC && !lbkg) {
         if(primary)   fFailureP[fChipPredOnLay2[iC1]]++;
         if(secondary) fFailureS[fChipPredOnLay2[iC1]]++;
       }
@@ -630,7 +650,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
 
     // in any case, if MC has been required, store statistics of primaries and secondaries
     Bool_t primary=kFALSE; Bool_t secondary=kFALSE;
-    if (fMC) {
+    if (fMC && !lbkg) {
        Int_t lab1=(Int_t)fClustersLay2[iC2][3];
        Int_t lab2=(Int_t)fClustersLay2[iC2][4];
        Int_t lab3=(Int_t)fClustersLay2[iC2][5];
@@ -685,7 +705,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
         Float_t dZeta = TMath::Cos(fClustersLay2[iC2][0])*r1 - fClustersLay1[iC1][2];
 
 
- 	if (fHistOn) {
+ 	if (fHistOn && !lbkg) {
 	  fhClustersDPhiInterpAll->Fill(dPhi);    
 	  fhClustersDThetaInterpAll->Fill(dTheta);    
 	  fhClustersDZetaInterpAll->Fill(dZeta);    
@@ -711,7 +731,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
     
     if (distmin<100) { // This means that a cluster in layer 1 was found that matches with iC2
 
-      if (fHistOn) {
+      if (fHistOn && !lbkg) {
 	fhClustersDPhiInterpAcc->Fill(dPhimin);
 	fhClustersDThetaInterpAcc->Fill(dThetamin);    
 	fhClustersDZetaInterpAcc->Fill(dZetamin);    
@@ -765,7 +785,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
       nfClu1+=(Int_t)found; // this for debugging purpose
       ntClu1++;             // to check efficiency of the method FindChip
       if(key<1200) {
-        if(fMC) { // this part only for MC
+        if(fMC && !lbkg) { // this part only for MC
           // Int_t labc1=(Int_t)fClustersLay1[iC1WithBestDist][3];
           // Int_t labc2=(Int_t)fClustersLay1[iC1WithBestDist][4];
           // Int_t labc3=(Int_t)fClustersLay1[iC1WithBestDist][5];
@@ -779,16 +799,16 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
 
         if (key==fChipPredOnLay1[iC2]) { // this control seems too loose: has to be checked !
           				 // OK, success
-                fPlaneEffSPD->UpDatePlaneEff(kTRUE,key); // success
+                pe->UpDatePlaneEff(kTRUE,key); // success
                 fChipUpdatedInEvent[key]=kTRUE;
-                if(fMC) {
+                if(fMC && !lbkg) {
                   if(primary)   fSuccessP[key]++;
                   if(secondary) fSuccessS[key]++;
                 }
         } else {
-                fPlaneEffSPD->UpDatePlaneEff(kTRUE,key); // this should not be a failure
+                pe->UpDatePlaneEff(kTRUE,key); // this should not be a failure
                 fChipUpdatedInEvent[key]=kTRUE;          // (might be in the tracking tollerance)
-                if(fMC) {
+                if(fMC && !lbkg) {
                   if(primary)   fSuccessP[key]++;
                   if(secondary) fSuccessS[key]++;
                 }
@@ -799,9 +819,9 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef) {
 
     } // if no cluster found --> increment statistics by 1 failure (provided you have chip prediction)
     else if (fChipPredOnLay1[iC2]<1200) {
-      fPlaneEffSPD->UpDatePlaneEff(kFALSE,fChipPredOnLay1[iC2]);
+      pe->UpDatePlaneEff(kFALSE,fChipPredOnLay1[iC2]);
       fChipUpdatedInEvent[fChipPredOnLay1[iC2]]=kTRUE;
-      if(fMC) {
+      if(fMC && !lbkg) {
         if(primary)   fFailureP[fChipPredOnLay1[iC2]]++;
         if(secondary) fFailureS[fChipPredOnLay1[iC2]]++;
       }
@@ -1960,6 +1980,12 @@ Int_t AliITSTrackleterSPDEff::Clusters2Tracks(AliESDEvent *){
     tRefTree= runLoader->TreeTR();
   }
   Reconstruct(pStack,tRefTree);
+
+  if (GetLightBkgStudyInParallel()) {
+    AliStack *dummy1=0x0; TTree *dummy2=0x0;
+    ReflectClusterAroundZAxisForLayer(1);
+    Reconstruct(dummy1,dummy2,kTRUE);
+  }
   return 0;
 }
 //____________________________________________________________________________
@@ -1973,6 +1999,12 @@ Int_t AliITSTrackleterSPDEff::PostProcess(AliESDEvent *){
   Int_t rc=0;
   if(GetMC()) SavePredictionMC("TrackletsMCpred.root");
   if(GetHistOn()) rc=(Int_t)WriteHistosToFile();
+  if(GetLightBkgStudyInParallel()) {
+    TString name="AliITSPlaneEffSPDtrackletBkg.root";
+    TFile* pefile = TFile::Open(name, "RECREATE");
+    rc*=fPlaneEffBkg->Write();
+    pefile->Close();
+  }
   return rc;
 }
 //____________________________________________________________________
@@ -2059,4 +2091,28 @@ AliITSTrackleterSPDEff::LoadClusterArrays(TTree* itsClusterTree) {
   }
   AliDebug(1,Form("(clusters in layer 1 : %d,  layer 2: %d)",fNClustersLay1,fNClustersLay2));
 }
-
+//_________________________________________________________________________
+void
+AliITSTrackleterSPDEff::SetLightBkgStudyInParallel(Bool_t b) {
+//     This method:
+//  - set Bool_t fLightBackgroundStudyInParallel = b 
+//    a) if you set this kTRUE, then the estimation of the 
+//      SPD efficiency is done as usual for data, but in 
+//      parallel a light (i.e. without control histograms, etc.) 
+//      evaluation of combinatorial background is performed
+//      with the usual ReflectClusterAroundZAxisForLayer method.
+//    b) if you set this kFALSE, then you would not have a second 
+//      container for PlaneEfficiency statistics to be used for background 
+//      (fPlaneEffBkg=0). If you want to have a full evaluation of the 
+//      background (with all control histograms and additional data 
+//      members referring to the background) then you have to call the 
+//      method SetReflectClusterAroundZAxisForLayer(kTRUE) esplicitily
+  fLightBkgStudyInParallel=b; 
+  if(fLightBkgStudyInParallel) {
+    if(!fPlaneEffBkg) fPlaneEffBkg = new AliITSPlaneEffSPD();   
+  }
+  else {
+    delete fPlaneEffBkg;
+    fPlaneEffBkg=0;
+  }
+}

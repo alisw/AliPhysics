@@ -45,15 +45,21 @@ public:
   virtual AliCluster *GetCluster(Int_t) const {return NULL;}
 
   // Main method to perform the trackleter and the SPD efficiency evaluation
-  void Reconstruct(AliStack* pStack=0x0, TTree* tRef=0x0);
+  void Reconstruct(AliStack* pStack=0x0, TTree* tRef=0x0, Bool_t lbkg=kFALSE);
 
   void SetReflectClusterAroundZAxisForLayer(Int_t ilayer,Bool_t b=kTRUE){  // method to study residual background:
-    if(b) AliInfo(Form("All clusters on layer %d will be rotated by 180 deg around z",ilayer)); 
+    if(b) {AliInfo(Form("All clusters on layer %d will be rotated by 180 deg around z",ilayer)); 
+           SetLightBkgStudyInParallel(kFALSE);}
     if(ilayer==0) fReflectClusterAroundZAxisForLayer0=b;                   // a rotation by 180degree around the Z axis  
     else if(ilayer==1) fReflectClusterAroundZAxisForLayer1=b;              // (x->-x; y->-y) to all RecPoints on a 
     else AliInfo("Nothing done: input argument (ilayer) either 0 or 1");   // given layer is applied. In such a way 
   }                                                                        // you remove all the true tracklets.
-
+  void SetLightBkgStudyInParallel(Bool_t b = kTRUE); // if you set this on, then the estimation of the 
+						     // SPD efficiency is done as usual for data, but in 
+						     // parallel a light (i.e. without control histograms, etc.) 
+						     // evaluation of combinatorial background is performed
+						     // with the usual ReflectClusterAroundZAxisForLayer method.
+  Bool_t GetLightBkgStudyInParallel() const {return fLightBkgStudyInParallel;}
   void SetOnlyOneTrackletPerC2(Bool_t b = kTRUE) {fOnlyOneTrackletPerC2 = b;}
   void SetPhiWindowL2(Float_t w=0.08) {fPhiWindowL2=w;}
   void SetZetaWindowL2(Float_t w=1.) {fZetaWindowL2=w;}
@@ -204,8 +210,11 @@ protected:
   Bool_t*       fChipUpdatedInEvent;          //!  boolean (chip by chip) to flag which chip has been updated its efficiency
                                               //  in that event
   AliITSPlaneEffSPD* fPlaneEffSPD; //! pointer to SPD plane efficiency class
+  AliITSPlaneEffSPD* fPlaneEffBkg; //! pointer to SPD plane efficiency class for background evaluation
   Bool_t   fReflectClusterAroundZAxisForLayer0;  // if kTRUE, then a 180degree rotation around Z is applied to all 
   Bool_t   fReflectClusterAroundZAxisForLayer1;  // clusters on that layer (x->-x; y->-y)
+  Bool_t   fLightBkgStudyInParallel; // if this is kTRUE, the basic and correct evaluation of background is performed
+                                     // in paralell to standard SPD efficiency evaluation
   Bool_t   fMC; // Boolean to access Kinematics (only for MC events )
   Bool_t   fUseOnlyPrimaryForPred; // Only for MC: if this is true, build tracklet prediction using only primary particles
   Bool_t   fUseOnlySecondaryForPred; // Only for MC: if this is true build tracklet prediction using only secondary particles
@@ -273,7 +282,7 @@ protected:
 
   void LoadClusterArrays(TTree* tree);
 
-  ClassDef(AliITSTrackleterSPDEff,5)
+  ClassDef(AliITSTrackleterSPDEff,6)
 };
 // Input and output function for standard C++ input/output (for the cut values and MC statistics).
 ostream &operator<<(ostream &os,const AliITSTrackleterSPDEff &s);
