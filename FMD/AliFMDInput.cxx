@@ -442,11 +442,12 @@ AliFMDInput::Begin(Int_t event)
 
   // Possibly load FMD Digit information 
   if (TESTBIT(fTreeMask, kRaw) || TESTBIT(fTreeMask, kRawCalib)) {
+    Bool_t mon = fRawFile.Contains("mem://");
     // AliInfo("Getting FMD raw data digits");
-    std::cout << "Waiting for event ..." << std::endl;
+    if (mon) std::cout << "Waiting for event ..." << std::flush;
     do { 
       if (!fReader->NextEvent()) { 
-	if (fRawFile.Contains("mem://")) { 
+	if (mon) { 
 	  gSystem->Sleep(3);
 	  continue;
 	}
@@ -457,6 +458,7 @@ AliFMDInput::Begin(Int_t event)
 	 eventType == AliRawEventHeaderBase::kCalibrationEvent) 
 	break;
     } while (true);
+    if (mon) std::cout << "got it" << std::endl;
     // AliFMDRawReader r(fReader, 0);
     fArrayA->Clear();
     fFMDReader->ReadAdcs(fArrayA);
@@ -497,6 +499,8 @@ AliFMDInput::Event()
     if (!ProcessRecPoints()) return kFALSE;
   if (TESTBIT(fTreeMask, kESD))
     if (!ProcessESDs()) return kFALSE;
+  if (TESTBIT(fTreeMask, kUser))
+    if (!ProcessUsers()) return kFALSE;
   
   return kTRUE;
 }
@@ -775,6 +779,27 @@ AliFMDInput::ProcessESDs()
 	  if (!fESD->IsAngleCorrected()) 
 	    mult *= TMath::Abs(TMath::Cos(2.*TMath::ATan(TMath::Exp(-eta))));
 	  if (!ProcessESD(det, *rng, sec, str, eta, mult)) continue;
+	}
+      }
+    }
+  }
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDInput::ProcessUsers()
+{
+  // Process event summary data
+  for (UShort_t det = 1; det <= 3; det++) {
+    Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
+    for (Char_t* rng = rings; *rng != '\0'; rng++) {
+      UShort_t nsec = (*rng == 'I' ?  20 :  40);
+      UShort_t nstr = (*rng == 'I' ? 512 : 256);
+      for (UShort_t sec = 0; sec < nsec; sec++) {
+	for (UShort_t str = 0; str < nstr; str++) {
+	  Float_t v  = GetSignal(det,*rng,sec,str);
+	  if (!ProcessUser(det, *rng, sec, str, v)) continue;
 	}
       }
     }

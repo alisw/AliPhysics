@@ -116,7 +116,8 @@ public:
     kGeometry,        // Not really a tree 
     kTracks,	      // Hits and tracs - for BG study	
     kTrackRefs,       // Track references - also for BG study
-    kRawCalib         // Read raws and calibrate them
+    kRawCalib,        // Read raws and calibrate them
+    kUser
   };
   /** CTOR  */
   AliFMDInput();
@@ -194,6 +195,9 @@ public:
   /** Loop over all ESD data, and call ProcessESD for each entry.
       @return  @c false on error  */
   virtual Bool_t ProcessESDs();
+  /** Loop over all strips and ask user routine to supply the data.
+      @return  @c false on error  */
+  virtual Bool_t ProcessUsers();
 
   /** Process one hit, and optionally it's corresponding kinematics
       track.  Users should over this to process each hit. 
@@ -248,8 +252,18 @@ public:
       @param eta  Psuedo-rapidity 
       @param mult Psuedo-multiplicity 
       @return  @c false on error  */
-  virtual Bool_t ProcessESD(UShort_t, Char_t, UShort_t, UShort_t, 
-			    Float_t, Float_t);
+  virtual Bool_t ProcessESD(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
+			    Float_t eta, Float_t mult);
+  /** Process User data for the FMD.  Users should overload this to
+      deal with ESD data. 
+      @param d    Detector number (1-3)
+      @param r    Ring identifier ('I' or 'O')
+      @param s    Sector number (0-19, or 0-39)
+      @param t    Strip number (0-511, or 0-255)
+      @param v    Value
+      @return  @c false on error  */
+  virtual Bool_t ProcessUser(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
+			     Float_t v);
   /** Service function to make a logarithmic axis. 
       @param n    Number of bins 
       @param min  Minimum of axis 
@@ -301,6 +315,17 @@ protected:
   /** Assignement operator 
       @return  REference to this */
   AliFMDInput& operator=(const AliFMDInput&) { return *this; }
+  /** 
+   * Get user supplued data
+   * 
+   * @param d Detector
+   * @param r Ring
+   * @param s Sector
+   * @param t Strip
+   * 
+   * @return Value
+   */
+  virtual Float_t GetSignal(UShort_t d, Char_t r, UShort_t s, UShort_t t);
 
   TString          fGAliceFile; // File name of gAlice file
   AliRunLoader*    fLoader;     // Loader of FMD data 
@@ -348,6 +373,10 @@ inline Bool_t AliFMDInput::ProcessRawCalibDigit(AliFMDDigit*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessRecPoint(AliFMDRecPoint*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessESD(UShort_t,Char_t,UShort_t,UShort_t,
 				      Float_t,Float_t) { return kTRUE; }
+inline Bool_t AliFMDInput::ProcessUser(UShort_t,Char_t,UShort_t,UShort_t,
+				       Float_t) { return kTRUE; }
+inline Float_t AliFMDInput::GetSignal(UShort_t, Char_t, UShort_t, UShort_t) { 
+  return 0.; }
 
 
 #endif
