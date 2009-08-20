@@ -250,7 +250,7 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
       fIndex[i] = 0xffff;
     } else nClStack++;
   }
-  if(nClStack > kMaxClustersLayer) AliWarning(Form("Number of clusters in stack %d exceed buffer size %d. Truncating.", nClStack, kMaxClustersLayer));
+  if(nClStack > kMaxClustersLayer) AliInfo(Form("Number of clusters in stack %d exceed buffer size %d. Truncating.", nClStack, kMaxClustersLayer));
     
   // Nothing in this time bin. Reset indexes 
   if(!nClStack){
@@ -599,7 +599,7 @@ void AliTRDchamberTimeBin::GetClusters(const Double_t * const cond, Int_t *index
     //AliInfo(Form("z[%d] y [%d %d]", z, fPositions[z], upper));
     for(Int_t y = fPositions[z]; y < (Int_t)upper; y++){
       if(ncl == BufferSize){
-        AliWarning("Buffer size riched. Some clusters may be lost.");
+        AliInfo("Buffer size riched. Some clusters may be lost.");
         return;	//Buffer filled
       }
       
