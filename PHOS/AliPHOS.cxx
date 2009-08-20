@@ -498,22 +498,22 @@ void AliPHOS::Digits2Raw()
 
     Int_t row = relId[2]-1;
     Int_t col = relId[3]-1;
-
+    
     Int_t iRCU = -111;
-
+    
     //RCU0
-    if(0<=row&&row<32 && 0<=col&&col<28) iRCU=0;
-
+    if(0<=row&&row<16 && 0<=col&&col<56) iRCU=0;
+    
     //RCU1
-    if(0<=row&&row<32 && 28<=col&&col<56) iRCU=1;
+    if(16<=row&&row<32 && 0<=col&&col<56) iRCU=1;
 
     //RCU2
-    if(32<=row&&row<64 && 0<=col&&col<28) iRCU=2;
+    if(32<=row&&row<48 && 0<=col&&col<56) iRCU=2;
 
     //RCU3
-    if(32<=row&&row<64 && 28<=col&&col<56) iRCU=3;
-
-
+    if(48<=row&&row<64 && 0<=col&&col<56) iRCU=3;
+    
+    
     // PHOS EMCA has 4 DDL per module. Splitting is based on the (row,column) numbers.
     // PHOS internal convention: 1<module<5.
     Int_t iDDL = 4 * (module - 1) + iRCU;
