@@ -15,6 +15,7 @@
 //#include <TMath.h>
 //#include <AliTPCROC.h>
 #include "TLinearFitter.h"
+#include "TVectorD.h"
 //#include <iostream>
 
 
@@ -57,7 +58,8 @@ class AliTPCCalPad : public TNamed {
 
   AliTPCCalPad* LocalFit(const char* padName, Int_t rowRadius, Int_t padRadius, AliTPCCalPad* Padoutliers = 0, Bool_t robust = kFALSE, Double_t chi2Threshold = 5, Double_t robustFraction = 0.7, Bool_t printCurrentSector = kFALSE) const;
   AliTPCCalPad* GlobalFit(const char* padName, AliTPCCalPad* Padoutliers = 0, Bool_t robust = kFALSE, Int_t fitType = 1, Double_t chi2Threshold = 5, Double_t robustFraction = 0.7, Double_t err=1, TObjArray *fitParArr=0x0, TObjArray *fitCovArr=0x0);
-  void GlobalSidesFit(const AliTPCCalPad* PadOutliers, TVectorD &fitParamSideA, TVectorD &fitParamSideC, TMatrixD &covMatrixSideA, TMatrixD &covMatrixSideC, Float_t &chi2SideA, Float_t &chi2SideC, Int_t fitType = 1, Bool_t robust = kFALSE, Double_t chi2Threshold = 5, Double_t robustFraction = 0.7);
+  
+  void GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* fitFormula, TVectorD &fitParamSideA, TVectorD &fitParamSideC, TMatrixD &covMatrixSideA, TMatrixD &covMatrixSideC, Float_t &chi2SideA, Float_t &chi2SideC, Double_t pointError=1, Bool_t robust = kFALSE, Double_t robustFraction = 0.7);
 
  protected:
   AliTPCCalROC *fROC[kNsec];                    //  Array of ROC objects which contain the values per pad

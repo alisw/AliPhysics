@@ -179,14 +179,16 @@ Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStreamV3 *rawStreamV3)
 //   fAltroRawStream = static_cast<AliAltroRawStream*>(rawStreamV3);
   while ( rawStreamV3->NextDDL() ){
     if (AliLog::GetGlobalDebugLevel()>2) rawStreamV3->PrintRCUTrailer();
+    fPrevDDLNum=-1;
+    fCurrRCUId=rawStreamV3->GetRCUId();
+    fCurrDDLNum=rawStreamV3->GetDDLNumber();
     if (fUseL1Phase){
 //         fAltroL1Phase  = fAltroRawStream->GetL1Phase();
       fAltroL1Phase  = rawStreamV3->GetL1Phase();
       fAltroL1PhaseTB = (fAltroL1Phase*1e09/100.);
-      AliDebug(1, Form("L1Phase: %.2e\n",fAltroL1PhaseTB));
+      AliDebug(1, Form("L1Phase: %.2e (%03d)\n",fAltroL1PhaseTB,fCurrDDLNum));
     }
-    fCurrRCUId=rawStreamV3->GetRCUId();
-    fCurrDDLNum=rawStreamV3->GetDDLNumber();
+    UpdateDDL();
     while ( rawStreamV3->NextChannel() ){
       Int_t isector  = rawStreamV3->GetSector();                       //  current sector
       Int_t iRow     = rawStreamV3->GetRow();                          //  current row
@@ -289,10 +291,16 @@ Bool_t AliTPCCalibRawBase::ProcessEvent(eventHeaderStruct *event)
   //
   //  Event processing loop - date event
   //
-    AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-    Bool_t result=ProcessEvent(rawReader);
-    delete rawReader;
-    return result;
+
+  fRunNumber=event->eventRunNb;
+  fTimeStamp=event->eventTimestamp;
+  fEventType=event->eventType;
+  AliRawReader *rawReader = new AliRawReaderDate((void*)event);
+  AliTPCRawStreamV3 *rawStreamV3 = new AliTPCRawStreamV3(rawReader, (AliAltroMapping**)fMapping);
+  Bool_t result=ProcessEvent(rawStreamV3);
+  delete rawStreamV3;
+  delete rawReader;
+  return result;
 
 }
 //_____________________________________________________________________

@@ -29,6 +29,7 @@
 #include <TGButtonGroup.h>
 #include <TGLabel.h>
 #include <TGTab.h>
+#include <TString.h>
 class TROOTt;
 class AliTPCCalibViewer;
 class AliTPCPreprocessorOnline;
@@ -64,6 +65,7 @@ public:
    void Initialize(const char* fileName, const char* treeName = "calPads"); // initializes the GUI with default settings and opens tree for drawing
    void Initialize(AliTPCCalibViewer *viewer);                  // initializes the GUI with default settings and opens tree for drawing
    void Reload(){Initialize(fViewer);}                          // reload the viewr after it has been changed, e.g. added a new referenceTree, ...
+   void Reset();
    TString* GetDrawString();                                    // create the draw string out of selection
    TString* GetCutString();                                     // create the cut string out of selection
    TString* GetSectorString();                                  // create the sector string out of selection
@@ -75,6 +77,7 @@ public:
    void HandleButtonsStat(Int_t id = -1);    // handles statistic check boxes 
    void HandleButtonsCuts(Int_t id = -1);    // handles mutual radio button exclusions for right side
    void HandleButtonsNoRedraw(Int_t id = -1);// handles label & scaling checkboxes without redrawing
+   void ReplacePlaceHolders(TString &str);   // replace place holders of the draw variable and normalisation variable
    void DoNewSelection();                    // decides whether to redraw if user makes another selection
    void DoDraw();                            // main method for drawing according to user selection
    void DoFit();                             // main method for fitting

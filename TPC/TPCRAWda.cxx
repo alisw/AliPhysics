@@ -188,8 +188,8 @@ int main(int argc, char **argv) {
       // get the run number
       runNb = event->eventRunNb;
       //  Pulser calibration
-      AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-      calibRaw.ProcessEvent(rawReader);
+//       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
+      calibRaw.ProcessEvent(event);
       delete rawReader;
 
       /* free resources */

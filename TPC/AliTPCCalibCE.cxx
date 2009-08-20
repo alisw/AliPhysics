@@ -1627,7 +1627,6 @@ TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitT
   Int_t npoints=0;
 
     // sanity checks
-  if ( !GetHistoT0(sector) )            return 0x0; //Sector has not been filled 
   if ( (sector<-2) || (sector>71) )      return 0x0;
   if ( (xVariable<0) || (xVariable>2) ) return 0x0;
   if ( (fitType<0) || (fitType>3) )     return 0x0;

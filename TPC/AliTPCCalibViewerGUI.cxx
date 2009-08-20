@@ -1264,22 +1264,33 @@ void AliTPCCalibViewerGUI::Initialize(AliTPCCalibViewer *viewer) {
       if (fInitialized && currentStr->GetString() == selectedVariable) variableId = id;
       id++;
    }
-   delete iter;
-   arr->Delete();
-   delete arr;
 
    // fill fListNorm, list of normalization variables:
-   arr = fViewer->GetListOfNormalizationVariables();
-   iter = arr->MakeIterator();
-   iter->Reset();
+   TObjArray *arrNorm = fViewer->GetListOfNormalizationVariables();
+   TIterator *iterNorm = arrNorm->MakeIterator();
+   iterNorm->Reset();
    currentStr = 0;
    id = 0;
    fListNormalization->RemoveAll();
-   while ((currentStr = (TObjString*)(iter->Next()))) {
+   while ((currentStr = (TObjString*)(iterNorm->Next()))) {
       fListNormalization->AddEntry(currentStr->GetString().Data(), id);
       if (fInitialized && currentStr->GetString() == selectedNormalization) normalizationId = id;
       id++;
    }
+   currentStr = 0;
+   iter->Reset();
+   //Add draw variables to the list of normalisation
+   while ((currentStr = (TObjString*)(iter->Next()))) {
+      if (currentStr->GetString().BeginsWith("Map")) continue; //don't add mapping information
+      fListNormalization->AddEntry(currentStr->GetString().Data(), id);
+      if (fInitialized && currentStr->GetString() == selectedNormalization) normalizationId = id;
+      id++;
+   }
+
+   delete iterNorm;
+   arrNorm->Delete();
+   delete arrNorm;
+
    delete iter;
    arr->Delete();
    delete arr;
@@ -1301,6 +1312,15 @@ void AliTPCCalibViewerGUI::Initialize(AliTPCCalibViewer *viewer) {
 
 }
 
+void AliTPCCalibViewerGUI::Reset(){
+  //
+  // reset variables, delete calib viewer
+  //
+  if (fViewer) delete fViewer;
+  fListVariables->RemoveAll();
+  fListNormalization->RemoveAll();
+  fInitialized = kFALSE;
+}
 
 void AliTPCCalibViewerGUI::HandleButtonsGeneral(Int_t id) {
    //
@@ -1508,6 +1528,32 @@ void AliTPCCalibViewerGUI::HandleButtonsNoRedraw(Int_t id) {
    SetMinMaxLabel();
 }
 
+void AliTPCCalibViewerGUI::ReplacePlaceHolders(TString &str)
+{
+    //
+    // replace the defined placeholders in the custom draw string and cut string
+    //
+    TString drawPlaceHolder("#draw#");
+    TString normPlaceHolder("#norm#");
+
+    //current draw variable
+    TString desiredData("");
+    if (!fListVariables->GetSelectedEntry()) return;
+    desiredData += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
+//    desiredData += fViewer->GetAbbreviation();
+
+    //current normalisation
+    TString normalizationData("");
+    if (!fListNormalization->GetSelectedEntry()) return;
+    normalizationData += ((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle();
+    if (! (TString(((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle())).BeginsWith("Fit"))
+	if ( normalizationData.BeginsWith("_") ) normalizationData = desiredData+normalizationData;
+    if ( fListVariables->FindEntry(normalizationData.Data()) )
+	normalizationData+="~";
+
+    str.ReplaceAll(drawPlaceHolder,desiredData);
+    str.ReplaceAll(normPlaceHolder,normalizationData);
+}
 
 void AliTPCCalibViewerGUI::DoNewSelection() {
    //
@@ -1585,12 +1631,15 @@ TString* AliTPCCalibViewerGUI::GetDrawString() {
 
       desiredData += op;
       if (! (TString(((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle())).BeginsWith("Fit"))
-         desiredData += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
+         if ( normalizationData.BeginsWith("_") ) desiredData += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
+      if ( fListVariables->FindEntry(normalizationData.Data()) )
+          normalizationData+="~";
       desiredData += normalizationData;
    }
    else if (fRadioCustom->GetState() == kButtonDown) {
       desiredData = fComboCustom->GetTextEntry()->GetText();
       if (desiredData == "") return 0;
+      ReplacePlaceHolders(desiredData);
    }
    
    // try to add forgotten '~'
@@ -1643,8 +1692,11 @@ TString* AliTPCCalibViewerGUI::GetSectorString() {
       cutsStr += "!=0";
       if (fChkAddCuts->GetState() == kButtonDown) cutsStr += " && ";
    }
-   if (fChkAddCuts->GetState() == kButtonDown)
-      cutsStr += fComboAddCuts->GetTextEntry()->GetText();
+   if (fChkAddCuts->GetState() == kButtonDown){
+       cutsStr += fComboAddCuts->GetTextEntry()->GetText();
+       ReplacePlaceHolders(cutsStr);
+   }
+
    
    // try to add forgotten '~'
    if (fChkAutoAppend->GetState() == kButtonDown) 
@@ -1925,7 +1977,12 @@ void AliTPCCalibViewerGUI::ChangeSector(){
    // 
    // function that is called, when the number of the sector is changed
    // to change the sector label
-   // 
+   //
+   if ( fRadioROC->GetState()!=kButtonDown && fRadioSector->GetState()!=kButtonDown ){
+       fLblSector->SetText("not used");
+       return;
+   }
+
    Int_t sector = (Int_t)(fNmbSector->GetNumber());
    TString secLabel = "";
    if ( sector < 36 )
@@ -2027,7 +2084,7 @@ void AliTPCCalibViewerGUI::MouseMove(Int_t event, Int_t x, Int_t y, TObject *sel
    if (quadrant == 3) phi = pi + phi;
    if (quadrant == 4) phi = 2 * pi - phi;
    Double_t phiGrad = phi / pi * 180;
-   Int_t sector = (Int_t) phiGrad / 20;  // one sector coresponds to 20°
+   Int_t sector = (Int_t) phiGrad / 20;  // one sector coresponds to 20ï¿½
    // IROC starts at 84.5 cm
    // IROC ends at 135.5 cm, OROC begins
    // OROC ends at 250 cm

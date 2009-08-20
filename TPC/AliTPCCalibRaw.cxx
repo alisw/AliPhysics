@@ -137,19 +137,6 @@ Int_t AliTPCCalibRaw::Update(const Int_t isector, const Int_t iRow, const Int_t 
   if (iPad<0) return 0;
   if (iTimeBin<0) return 0;
   if (!fFirstTimeStamp) fFirstTimeStamp=GetTimeStamp();
-  if (fCurrDDLNum!=fPrevDDLNum){
-    TVectorF *arr=MakeArrL1PhaseRCU(fCurrDDLNum,kTRUE);
-    if (arr->GetNrows()<=fNevents) arr->ResizeTo(arr->GetNrows()+1000);
-    // phase as a position of a quarter time bin
-    Int_t phase=(Int_t)(GetL1PhaseTB()*4.);
-//     printf("DDL: %03d, phase: %d (%f))\n",fCurrDDLNum,phase,GetL1PhaseTB());
-    //Fill pahse information of current rcu and event
-    (arr->GetMatrixArray())[fNevents]=phase;
-    //increase phase counter 
-    ++((fArrCurrentPhaseDist.GetMatrixArray())[phase]);
-//     printf("RCUId: %03d (%03d), DDL: %03d, sector: %02d\n",fCurrRCUId, fPrevRCUId, fCurrDDLNum, isector);
-  }
-
   if ( (iTimeBin>fLastTimeBin) || (iTimeBin<fFirstTimeBin)   ) return 0;
   //don't process edge pads
   if (IsEdgePad(isector,iRow,iPad)) return 0;
@@ -188,6 +175,25 @@ Int_t AliTPCCalibRaw::Update(const Int_t isector, const Int_t iRow, const Int_t 
   fLastSignal=TMath::Nint(signal);
   fCurrentChannel = iChannel;
   return 0;
+}
+//_____________________________________________________________________
+void AliTPCCalibRaw::UpdateDDL(){
+  //
+  // fill ALTRO L1 information
+  //
+//   if (fCurrDDLNum!=fPrevDDLNum){
+    TVectorF *arr=MakeArrL1PhaseRCU(fCurrDDLNum,kTRUE);
+    if (arr->GetNrows()<=fNevents) arr->ResizeTo(arr->GetNrows()+1000);
+    // phase as a position of a quarter time bin
+    Int_t phase=(Int_t)(GetL1PhaseTB()*4.);
+    printf("DDL: %03d, phase: %d (%f))\n",fCurrDDLNum,phase,GetL1PhaseTB());
+    //Fill pahse information of current rcu and event
+    (arr->GetMatrixArray())[fNevents]=phase;
+    //increase phase counter
+    ++((fArrCurrentPhaseDist.GetMatrixArray())[phase]);
+//     printf("RCUId: %03d (%03d), DDL: %03d, sector: %02d\n",fCurrRCUId, fPrevRCUId, fCurrDDLNum, isector);
+//   }
+  
 }
 //_____________________________________________________________________
 void AliTPCCalibRaw::ResetEvent()
@@ -243,13 +249,23 @@ TH2C *AliTPCCalibRaw::MakeHistL1RCUEvents(Int_t type)
   //
   //type: 0=Failures, 1=Phases
   TH2C *h2 = new TH2C("hL1FailRCUEvents","L1 Failures;RCU;Event",216,0,216,GetNevents(),0,GetNevents());
+  Int_t add=0;
   for (Int_t ircu=0;ircu<216;++ircu) {
     const TVectorF *v=0;
-    if (type==0)      v=GetALTROL1PhaseFailEventsRCU(ircu);
-    else if (type==1) v=GetALTROL1PhaseEventsRCU(ircu);
+    if (type==0){
+      v=GetALTROL1PhaseFailEventsRCU(ircu);
+      add=1;
+      h2->SetMinimum(0);
+      h2->SetMaximum(2);
+    } else if (type==1) {
+      v=GetALTROL1PhaseEventsRCU(ircu);
+      add=0;
+      h2->SetMinimum(0);
+      h2->SetMaximum(4);
+    }
     if (!v) continue;
     for (Int_t iev=0;iev<GetNevents();++iev) {
-      h2->SetBinContent(ircu+1,iev+1,(*v)(iev)+1);
+      h2->SetBinContent(ircu+1,iev+1,(*v)(iev)+add);
     }
   }
   return h2;
@@ -268,7 +284,7 @@ TH2C *AliTPCCalibRaw::MakeHistL1RCUEventsIROC(Int_t type)
     else if (type==1) v=GetALTROL1PhaseEventsRCU(ircu);
     if (!v) continue;
     for (Int_t iev=0;iev<GetNevents();++iev) {
-      h2->SetBinContent(ircu+1,iev+1,(*v)(iev)+1);
+      h2->SetBinContent(ircu+1,iev+1,(*v)(iev));
     }
   }
   return h2;
@@ -287,7 +303,7 @@ TH2C *AliTPCCalibRaw::MakeHistL1RCUEventsOROC(Int_t type)
     else if (type==1) v=GetALTROL1PhaseEventsRCU(ircu);
     if (!v) continue;
     for (Int_t iev=0;iev<GetNevents();++iev) {
-      h2->SetBinContent(ircu-72+1,iev+1,(*v)(iev)+1);
+      h2->SetBinContent(ircu-72+1,iev+1,(*v)(iev));
     }
   }
   return h2;

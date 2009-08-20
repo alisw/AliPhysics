@@ -48,6 +48,7 @@ public:
   
   virtual Int_t Update(const Int_t /*isector*/, const Int_t /*iRow*/, const Int_t /*iPad*/,
                        const Int_t /*iTimeBin*/, const Float_t /*signal*/) { return 0; }
+  virtual void UpdateDDL() {return;}
   virtual void Analyse(){ return; }
   
     //Setters

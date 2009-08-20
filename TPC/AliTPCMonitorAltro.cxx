@@ -228,58 +228,58 @@ void AliTPCMonitorAltro::Decodeto10Bit(Int_t equipment)
   
   ofstream datout;
   if(fwrite10bit)
+  {
+    Char_t nameout[256] ; sprintf(nameout,"%s_PayloadEquipmentId_%03i.txt",ffilename,equipment);
+    datout.open(nameout);
+    AliInfo(Form("AliTPCMonitorAltro::decodeto10Bit :  Write Data to %s",nameout));
+    if(foffset==0) datout <<  "Payload without CDH in 10bit words " << endl;
+    else           datout  << "CDH in 32 bit hex words words (" << foffset << " lines )  followed by payload in 10 bit words " << endl;
+    for(Int_t ih = 0; ih< foffset ; ih++)
     {
-      Char_t nameout[256] ; sprintf(nameout,"%s_PayloadEquipmentId_%03i.txt",ffilename,equipment);
-      datout.open(nameout);
-      AliInfo(Form("AliTPCMonitorAltro::decodeto10Bit :  Write Data to %s",nameout));
-      if(foffset==0) datout <<  "Payload without CDH in 10bit words " << endl;
-      else           datout  << "CDH in 32 bit hex words words (" << foffset << " lines )  followed by payload in 10 bit words " << endl; 
-      for(Int_t ih = 0; ih< foffset ; ih++)
-	{
-	  datout << hex << fmemory[ih] << endl;
-	}
+      datout << hex << fmemory[ih] << endl;
     }
+  }
   
-  for(Int_t ind = 0; ind < Get40BitArraySize(); ind++) 
+  for(Int_t ind = 0; ind < Get40BitArraySize(); ind++)
+  {
+    rest = ind%4;
+    switch(rest)
     {
-      rest = ind%4; 
-      switch(rest) 
-	{
-	case 0:
-	  blackbox = (fmemory[foffset])     + (((Long64_t)(fmemory[foffset+1]&fgk08BitOn))<<32);
-	  foffset +=1;
-	  break;
-	case 1:
-	  blackbox = (fmemory[foffset]>>8 ) + (((Long64_t)(fmemory[foffset+1]&fgk16BitOn))<<24);
-	  foffset +=1;
-	  break;
-	case 2:
-	  blackbox = (fmemory[foffset]>>16) + (((Long64_t)(fmemory[foffset+1]&fgk24BitOn))<<16);
-	  foffset +=1;
-	  break;
-	case 3:
-	  blackbox = (fmemory[foffset]>>24) + (((Long64_t)(fmemory[foffset+1]         ))<< 8);
-	  foffset +=2;
-	  break;
-	default:
-	  blackbox = 0;
-	  break;
-	}
-      f10BitArray[ind*4+0] = (Short_t)( blackbox & fgkmask10 )    ;
-      f10BitArray[ind*4+1] = (Short_t)((blackbox & fgkmask20)>>10); 
-      f10BitArray[ind*4+2] = (Short_t)((blackbox & fgkmask30)>>20);
-      f10BitArray[ind*4+3] = (Short_t)((blackbox & fgkmask40)>>30);
+    case 0:
+      blackbox = (fmemory[foffset])     + (((Long64_t)(fmemory[foffset+1]&fgk08BitOn))<<32);
+      foffset +=1;
+      break;
+    case 1:
+      blackbox = (fmemory[foffset]>>8 ) + (((Long64_t)(fmemory[foffset+1]&fgk16BitOn))<<24);
+      foffset +=1;
+      break;
+    case 2:
+      blackbox = (fmemory[foffset]>>16) + (((Long64_t)(fmemory[foffset+1]&fgk24BitOn))<<16);
+      foffset +=1;
+      break;
+    case 3:
+      blackbox = (fmemory[foffset]>>24) + (((Long64_t)(fmemory[foffset+1]         ))<< 8);
+      foffset +=2;
+      break;
+    default:
+      blackbox = 0;
+      break;
     }
+    f10BitArray[ind*4+0] = (Short_t)( blackbox & fgkmask10 )    ;
+    f10BitArray[ind*4+1] = (Short_t)((blackbox & fgkmask20)>>10);
+    f10BitArray[ind*4+2] = (Short_t)((blackbox & fgkmask30)>>20);
+    f10BitArray[ind*4+3] = (Short_t)((blackbox & fgkmask40)>>30);
+  }
   if(fwrite10bit)
+  {
+    for(Int_t ind = 0; ind < Get40BitArraySize(); ind++)
     {
-      for(Int_t ind = 0; ind < Get40BitArraySize(); ind++) 
-	{
-	  datout << dec <<  f10BitArray[ind*4+0] << "\n";
-	  datout << dec <<  f10BitArray[ind*4+1] << "\n";
-	  datout << dec <<  f10BitArray[ind*4+2] << "\n";
-	  datout << dec <<  f10BitArray[ind*4+3] << "\n";
-	}
+      datout << dec <<  f10BitArray[ind*4+0] << "\n";
+      datout << dec <<  f10BitArray[ind*4+1] << "\n";
+      datout << dec <<  f10BitArray[ind*4+2] << "\n";
+      datout << dec <<  f10BitArray[ind*4+3] << "\n";
     }
+  }
   
   if(fwrite10bit) datout.close();
 }
@@ -289,7 +289,7 @@ Int_t AliTPCMonitorAltro::DecodeTrailer(Int_t pos)
 {
   // Decode the trailer word starting at position pos in fmemory
   // Check if information leads to proper next trailer position
-
+  if (GetAltroVersion()==0xaabb) return DecodeTrailerVbb(pos);
   fTrailerPos = pos;
   if(pos<=4) return 0;
   
@@ -324,5 +324,60 @@ Int_t AliTPCMonitorAltro::DecodeTrailer(Int_t pos)
   
 }
 
+//_____________________________________________________________________________________________
+Int_t AliTPCMonitorAltro::DecodeTrailerVbb(Int_t pos)
+{
+  // Decode the trailer word starting at position pos in fmemory
+  // Check if information leads to proper next trailer position
+    fTrailerPos = pos;
+  if(pos>Get10BitArraySize()-4) return 0;
+  
+  Long64_t  words         = 0;
+  Long64_t  tail          = 0;
+  Long64_t  trailer       = 0;
+  Long64_t  carry         = 0;
+  Long64_t  rest          = 0 ;
+  
+  for(Long64_t  iter = 0 ; iter<4;iter++)
+  {
+    carry =  f10BitArray[pos-iter] ;
+    carry = ( carry << (30- ((iter)*10)));
+    trailer += carry ;
+  }
+  
+  fTrailerHwAddress = (trailer & ((Long64_t )fgkTrailerMaskHardw)  );
+  words             = (Long64_t )( (trailer & ((Long64_t )fgkTrailerMaskNWords))>>16);
+  tail           = (Long64_t )( (trailer & ((Long64_t )fgkTrailerMaskTail   ))>>26 );
+
+    //Decide on read direction (sign) from the RCU trailer information
+  Int_t sign=-1;
+  if (GetAltroVersion()==0xaabb) sign=1;
+  
+  if(words%4!=0) rest =  4-(words%4);
+  fTrailerNWords      = words+rest ;
+  fTrailerDataPos     = pos +sign*(4+rest) ;
+  fTrailerBlockPos    = pos +sign*4 ;
+  fNextPos            = (pos +sign*(fTrailerNWords+4));
+  
+  if(       tail==fgkTrailerTailErr        ) {
+    AliError(Form("Found Altro header with error marker (2AEE)[%0x]: %i. Supp.next Trailer line (2AA)[%0x]: %i ",
+                  tail,pos,f10BitArray[fNextPos],fNextPos));
+    return -fNextPos;
+  } else if ( tail!=fgkTrailerTail        ) {
+    AliError(Form("Could not read Trailer. \"Write 10bit\" for this event. Last Trailer line (2AA)[%0x]: %i. Supp.next Trailer line (2AA)[%0x]: %i ",
+                  tail,pos,f10BitArray[fNextPos],fNextPos));    return -1;
+  } else if(     fNextPos==Get10BitArraySize()+3           ) { /* was last channel  */
+    return  0;
+  }  else if(     fNextPos >=Get10BitArraySize()            ) {
+    AliError(Form("Next Trailer position < 0 %i", fNextPos));
+    return -1;
+  } else if((f10BitArray[fNextPos]!=682)&&(f10BitArray[fNextPos]!=686)) {
+    AliError(Form("Could not find tail (2AA) at next supposed position %i",fNextPos));
+    return -1;
+  } else {
+    return fNextPos;
+  }
+  
+}
 
 

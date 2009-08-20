@@ -33,10 +33,11 @@ class AliTPCMonitorAltro : public TNamed {
     void         Decodeto10Bit(Int_t equipment = -1); 
 
     Int_t        DecodeTrailer(Int_t pos);
-
+    Int_t        DecodeTrailerVbb(Int_t pos);
+    
     Long64_t*    Get40BitArray();
     Short_t     *Get10BitArray();     
-    Int_t        Get40BitArraySize()     const { return fmemory[fsize-GetRCUTrailerSize()];}   //hier ändern
+    Int_t        Get40BitArraySize()     const { return fmemory[fsize-GetRCUTrailerSize()];}   //hier ï¿½ndern
     Int_t        Get10BitArraySize()     const { return fmemory[fsize-GetRCUTrailerSize()]*4;}  //number of 10 bit words from trailer
     Char_t*      GetActFileName()        const { return ffilename;}
     
@@ -56,7 +57,9 @@ class AliTPCMonitorAltro : public TNamed {
     Int_t        GetTrailerBlockPos()    const { return fTrailerBlockPos ;}
     Int_t        GetTrailerPos()         const { return fTrailerPos      ;} 
 
-    Int_t        GetRCUTrailerSize()     const { Int_t ts=(fmemory[fsize-1]>>16==0xaaaa)*(fmemory[fsize-1]&0x3F); return (ts>0)?ts:1;}
+  Int_t        GetRCUTrailerSize()     const { Int_t ts=(GetAltroVersion()==0xaaaa||GetAltroVersion()==0xaabb)*
+      (fmemory[fsize-1]&0x3F); return (ts>0)?ts:1;}
+  UInt_t        GetAltroVersion()       const { return fmemory[fsize-1]>>16; }
 
     void         SetDataOffset(Int_t val){ foffset     =val ;} 
     void         SetWrite10Bit(Int_t wr) { fwrite10bit =wr  ;}
@@ -99,7 +102,8 @@ class AliTPCMonitorAltro : public TNamed {
     static const Long64_t    fgkmask40                 = (Long64_t)0x000000FFC0000000ULL; // mask fourth  10 bit out of 4o0 bit word 
     
     static const Long64_t    fgkTrailerTail            = (Long64_t)0x0000000000002AAAULL; // Tail of the Trailer set to 2AAA 
-    static const Long64_t    fgkTrailerMaskTail        = (Long64_t)0x000000fffC000000ULL; // mask for trailer 
+    static const Long64_t    fgkTrailerTailErr         = (Long64_t)0x0000000000002AEEULL; // Tail of the Trailer set to 2AEE if an error occured
+    static const Long64_t    fgkTrailerMaskTail        = (Long64_t)0x000000fffC000000ULL; // mask for trailer
     static const Long64_t    fgkTrailerMaskHardw       = (Long64_t)0x0000000000000FFFULL; // mask for hardware address
     static const Long64_t    fgkTrailerMaskNWords      = (Long64_t)0x0000000003FF0000ULL; // mask for nwords  (number of 40 bit data words)
     

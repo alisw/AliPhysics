@@ -115,7 +115,7 @@ class AliTPCCalDet;
 #include "AliTPCTempMap.h"
 #include "AliTPCCalibVdrift.h"
 
-
+#include "AliTPCPreprocessorOnline.h"
 
 
 ClassImp(AliTPCcalibDB)
@@ -170,6 +170,9 @@ AliTPCcalibDB::AliTPCcalibDB():
   fPadTime0(0),
   fPadNoise(0),
   fPedestals(0),
+  fALTROConfigData(0),
+  fPulserData(0),
+  fCEData(0),
   fTemperature(0),
   fMapping(0),
   fParam(0),
@@ -203,6 +206,9 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fPadTime0(0),
   fPadNoise(0),
   fPedestals(0),
+  fALTROConfigData(0),
+  fPulserData(0),
+  fCEData(0),
   fTemperature(0),
   fMapping(0),
   fParam(0),
@@ -348,11 +354,31 @@ void AliTPCcalibDB::Update(){
 
   entry          = GetCDBEntry("TPC/Calib/ClusterParam");
   if (entry){
-    //if (fPadNoise) delete fPadNoise;
     entry->SetOwner(kTRUE);
     fClusterParam = (AliTPCClusterParam*)(entry->GetObject()->Clone());
   }
 
+  //ALTRO configuration data
+  entry          = GetCDBEntry("TPC/Calib/AltroConfig");
+  if (entry){
+    entry->SetOwner(kTRUE);
+    fALTROConfigData=(TObjArray*)(entry->GetObject());
+  }
+  
+  //Calibration Pulser data
+  entry          = GetCDBEntry("TPC/Calib/Pulser");
+  if (entry){
+    entry->SetOwner(kTRUE);
+    fPulserData=(TObjArray*)(entry->GetObject());
+  }
+  
+  //CE data
+  entry          = GetCDBEntry("TPC/Calib/CE");
+  if (entry){
+    entry->SetOwner(kTRUE);
+    fCEData=(TObjArray*)(entry->GetObject());
+  }
+  
   entry          = GetCDBEntry("TPC/Calib/Mapping");
   if (entry){
     //if (fPadNoise) delete fPadNoise;
@@ -361,7 +387,7 @@ void AliTPCcalibDB::Update(){
     if (array && array->GetEntriesFast()==6){
       fMapping = new AliTPCAltroMapping*[6];
       for (Int_t i=0; i<6; i++){
-	fMapping[i] =  dynamic_cast<AliTPCAltroMapping*>(array->At(i));
+        fMapping[i] =  dynamic_cast<AliTPCAltroMapping*>(array->At(i));
       }
     }
   }
@@ -1163,6 +1189,41 @@ Float_t AliTPCcalibDB::GetPressure(Int_t timeStamp, Int_t run, Int_t type){
   return sensor->GetValue(stamp);
 }
 
+Float_t AliTPCcalibDB::GetL3Current(Int_t run, Int_t statType){
+  //
+  // return L3 current
+  // stat type is: AliGRPObject::Stats: kMean = 0, kTruncMean = 1, kMedian = 2, kSDMean = 3, kSDMedian = 4
+  //
+  Float_t current=-1;
+  AliGRPObject *grp=AliTPCcalibDB::GetGRP(run);
+  if (grp) current=grp->GetL3Current((AliGRPObject::Stats)statType);
+  return current;
+}
+
+Float_t AliTPCcalibDB::GetBz(Int_t run){
+  //
+  // calculate BZ from L3 current
+  //
+  Float_t bz=-1;
+  Float_t current=AliTPCcalibDB::GetL3Current(run);
+  if (current>-1) bz=5*current/30000.;
+  return bz;
+}
+
+Char_t  AliTPCcalibDB::GetL3Polarity(Int_t run) {
+  //
+  // get l3 polarity from GRP
+  //
+  return AliTPCcalibDB::GetGRP(run)->GetL3Polarity();
+}
+
+TString AliTPCcalibDB::GetRunType(Int_t run){
+  //
+  // return run type from grp
+  //
+  return AliTPCcalibDB::GetGRP(run)->GetRunType();
+}
+
 Float_t AliTPCcalibDB::GetValueGoofie(Int_t timeStamp, Int_t run, Int_t type){
   //
   // GetPressure for given time stamp and runt
@@ -1400,5 +1461,43 @@ AliGRPObject * AliTPCcalibDB::MakeGRPObjectFromMap(TMap *map){
   return grpRun;
 }
 
+Bool_t AliTPCcalibDB::CreateGUITree(Int_t run, const char* filename)
+{
+  //
+  // Create a gui tree for run number 'run'
+  //
 
+  if (!AliCDBManager::Instance()->GetDefaultStorage()){
+    AliLog::Message(AliLog::kError, "Default Storage not set. Cannot create Calibration Tree!",
+                    MODULENAME(), "AliTPCcalibDB", FUNCTIONNAME(), __FILE__, __LINE__);
+    return kFALSE;
+  }
+  //db instance
+  AliTPCcalibDB *db=AliTPCcalibDB::Instance();
+  // retrieve cal pad objects
+  db->SetRun(run);
+  AliTPCPreprocessorOnline prep;
+  //noise and pedestals
+  prep.AddComponent(db->GetPedestals());
+  prep.AddComponent(db->GetPadNoise());
+  //pulser data
+  prep.AddComponent(db->GetPulserTmean());
+  prep.AddComponent(db->GetPulserTrms());
+  prep.AddComponent(db->GetPulserQmean());
+  //CE data
+  prep.AddComponent(db->GetCETmean());
+  prep.AddComponent(db->GetCETrms());
+  prep.AddComponent(db->GetCEQmean());
+  //Altro data
+  prep.AddComponent(db->GetALTROAcqStart() );
+  prep.AddComponent(db->GetALTROZsThr()    );
+  prep.AddComponent(db->GetALTROFPED()     );
+  prep.AddComponent(db->GetALTROAcqStop()  );
+  prep.AddComponent(db->GetALTROMasked()   );
+  //
+  TString file(filename);
+  if (file.IsNull()) file=Form("guiTreeRun_%d.root",run);
+  prep.DumpToFile(file.Data());
+  return kTRUE;
+}
 
