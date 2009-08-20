@@ -16,6 +16,7 @@ class TGCheckButton;
 class TGTextButton;
 class TGNumberEntry;
 class TGColorSelect;
+class TGPictureButton;
 
 class AliEveHOMERManager;
 
@@ -39,8 +40,7 @@ protected:
 
   TGTextButton     *fButtonConnect;   // Button to connect to HOMER.
   TGTextButton     *fButtonNextEvent; // Button to call next Event
-  TGTextButton     *fButtonEventLoop; // Button to start/stop event loop
-
+  TGPictureButton  *fButtonEventLoop; // Button to start/stop event loop, HLT LOGO.
 private:
   AliEveHOMERManagerEditor(const AliEveHOMERManagerEditor&);            // Not implemented
   AliEveHOMERManagerEditor& operator=(const AliEveHOMERManagerEditor&); // Not implemented

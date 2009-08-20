@@ -50,7 +50,8 @@ AliEveHOMERManagerEditor::AliEveHOMERManagerEditor(const TGWindow *p, Int_t widt
   AddFrame(fButtonNextEvent); //, new TGLayoutHints(...));
   fButtonNextEvent->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "NextEvent()");
 
-  fButtonEventLoop = new TGTextButton(this, "  not yet used  ");
+
+  fButtonEventLoop = new TGPictureButton(this, gClient->GetPicture("$ALICE_ROOT/EVE/hlt-macros/HLT-logo.png"));
   AddFrame(fButtonEventLoop); //, new TGLayoutHints(...));
   fButtonEventLoop->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "EventLoop()");
 
@@ -80,7 +81,7 @@ void AliEveHOMERManagerEditor::ConnectToHLT()
 {
   // Connects to HOMER sources -> to HLT.
 
-  fM->ConnectHOMER();
+  fM->ConnectEVEtoHOMER();
 }
 
 void AliEveHOMERManagerEditor::NextEvent()
@@ -92,7 +93,14 @@ void AliEveHOMERManagerEditor::NextEvent()
 
 void AliEveHOMERManagerEditor::EventLoop()
 {
-  // Start/stop event loop
 
-  fM->ConnectHOMER();
+  // Start/stop event loop
+  if ( !fEventLoopStarted ) {
+    gROOT->ProcessLineFast("loopEvent();");
+    fEventLoopStarted = kTRUE;
+  }
+  else {
+    gROOT->ProcessLineFast("stopLoopEvent();");
+    fEventLoopStarted = kFALSE;
+  }
 }

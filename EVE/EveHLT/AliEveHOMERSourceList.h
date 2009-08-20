@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+
 // $Id$
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 

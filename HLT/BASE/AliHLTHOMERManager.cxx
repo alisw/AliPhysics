@@ -51,6 +51,7 @@ ClassImp(AliHLTHOMERManager)
 //##################################################################################
   AliHLTHOMERManager::AliHLTHOMERManager() :
   fLibManager(new AliHLTHOMERLibManager),
+  fStateHasChanged(kTRUE),
   fProxyHandler(NULL),
   fReader(NULL),
   fSourceList(NULL),
@@ -58,8 +59,7 @@ ClassImp(AliHLTHOMERManager)
   fNBlks(0),
   fEventID(0),
   fCurrentBlk(0),
-  fConnected(kFALSE),
-  fStateHasChanged(kTRUE) {
+  fConnected(kFALSE) {
   // see header file for class documentation
   // or
   // refer to README to build package

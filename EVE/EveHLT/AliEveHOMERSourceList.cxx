@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+
 // $Id$
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
@@ -49,8 +51,6 @@ void AliEveHOMERSourceList::CreateByType()
 void AliEveHOMERSourceList::RebuildSourceReps()
 {
   DestroyElements();
-  // !!!! if fManager ?
-  // ???? fManager->CreateHOMERSourcesList();
   TList* srcList = fManager->GetSourceList();
   fSrcMap->FillMap(srcList, 1);
 
@@ -67,13 +67,13 @@ void AliEveHOMERSourceList::RebuildSourceReps()
     parentStack.back()->AddElement(src);
 
     parentStack.push_back(src); ++parentLvl;
-    /*
+    
     printf("%*s%s [state=%d, handle=0x%lx] {ssdet='%s'}\n", 4*i.level(), "",
 	   i.description().Data(), i.state().fState,
 	   (ULong_t) i.state().fHandle,
 	   i.id().fSSDet.Data());
 
-    */
+    
   }
 }
 
@@ -97,13 +97,13 @@ Bool_t AliEveHOMERSourceList::GetSelectedSources() {
     fManager->SetSourceState( (AliHLTHOMERSourceDesc*) iter.state().fHandle,iter.state().fState );
     bResult = kTRUE;
 
-    /*
+#if 0 // EVE_DEBUG   
     printf("%*s%s [state=%d, handle=0x%lx] {ssdet='%s'}\n", 4*iter.level(), "",
 	   iter.description().Data(), iter.state().fState,
 	   (ULong_t) iter.state().fHandle,
 	   iter.id().fSSDet.Data());
-    */
-
+    
+#endif
     
 
 

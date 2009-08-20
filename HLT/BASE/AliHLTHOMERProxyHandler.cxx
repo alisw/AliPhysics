@@ -260,8 +260,8 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
   TDOMParser xmlParser;
   xmlParser.SetValidate(kFALSE);
 
-  HLTInfo(Form("XMLResponse: %s",fXmlRpcResponse.Data()));
-
+  HLTDebug(Form("XMLResponse: %s",fXmlRpcResponse.Data()));
+  
   iResult = xmlParser.ParseBuffer(fXmlRpcResponse.Data(), fXmlRpcResponse.Length());
   if ( iResult < 0 ) {
     HLTError(Form("Parsing buffer with error: %s", 
@@ -285,7 +285,7 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
   // -- Get Content
   TString xmlContent(node->GetText() );
 
-  HLTInfo(Form("XMLContent: %s",xmlContent.Data()));
+  HLTDebug(Form("XMLContent: %s",xmlContent.Data()));
 
   iResult = xmlParser.ParseBuffer(xmlContent.Data(), xmlContent.Length());
   if ( iResult < 0 ) {

@@ -44,7 +44,7 @@ class AliHLTHOMERLibManager;
  * @ingroup alihlt_homer
  */
 
-class AliHLTHOMERManager : public TObject, public AliHLTLogging 
+class AliHLTHOMERManager : public AliHLTLogging 
 {
 public:
   
@@ -135,6 +135,10 @@ protected:
 
   /** Dynamic loader manager for the HOMER library */
   AliHLTHOMERLibManager* fLibManager;             //! transient
+
+  /** Indicates, if a sources have changes, 
+   *  so that one has to reconnect. */
+  Bool_t    fStateHasChanged;                     //  see above
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -289,9 +293,6 @@ private:
   /** Shows connection status */
   Bool_t    fConnected;                              //  see above
 
-  /** Indicates, if a sources have changes, 
-   *  so that one has to reconnect. */
-  Bool_t    fStateHasChanged;                        //  see above
 
   ClassDef(AliHLTHOMERManager, 0); // Manage connections to HLT data-sources.
 };
