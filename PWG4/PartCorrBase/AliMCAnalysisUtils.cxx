@@ -40,7 +40,7 @@
  //________________________________________________
   AliMCAnalysisUtils::AliMCAnalysisUtils() : 
     TObject(), fCurrentEvent(-1), fDebug(-1), 
-    fJetsList(new TList), fMCGenerator("PYTHIA")
+    fJetsList(new TList), fMCGenerator("PYTHIA"), fpTHardpTJetFactor(7)
 {
   //Ctor
 }
@@ -48,7 +48,7 @@
 //____________________________________________________________________________
 AliMCAnalysisUtils::AliMCAnalysisUtils(const AliMCAnalysisUtils & mcutils) :   
   TObject(mcutils), fCurrentEvent(mcutils.fCurrentEvent), fDebug(mcutils.fDebug),
-  fJetsList(mcutils.fJetsList), fMCGenerator(mcutils.fMCGenerator)
+  fJetsList(mcutils.fJetsList), fMCGenerator(mcutils.fMCGenerator), fpTHardpTJetFactor(mcutils.fpTHardpTJetFactor)
 {
   // cpy ctor
   
@@ -64,6 +64,7 @@ AliMCAnalysisUtils & AliMCAnalysisUtils::operator = (const AliMCAnalysisUtils & 
   fDebug        = mcutils.fDebug;
   fJetsList     = mcutils.fJetsList;
   fMCGenerator  = mcutils.fMCGenerator;
+  fpTHardpTJetFactor = mcutils.fpTHardpTJetFactor;
   
   return *this; 
 }
@@ -178,24 +179,24 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
 	else if (pPdg == 23) return kMCZDecay;   //parent is Z-boson
 	else if (pPdg == 24) return kMCWDecay;   //parent is W-boson
 	else { //check the electron's ancestors for B/C contribution
-	  Bool_t BAncestor = kFALSE;
-	  Bool_t CAncestor = kFALSE;
+	  Bool_t bAncestor = kFALSE;
+	  Bool_t cAncestor = kFALSE;
 	  TParticle * ancestors = stack->Particle(label);
 	  Int_t aPdg = TMath::Abs(ancestors->GetPdgCode());
 	  //Int_t aStatus = ancestors->GetStatusCode();
 	  Int_t iAncestors = ancestors->GetFirstMother();
 	  if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOrigin: Scaning the decay chain for bottom/charm generated electron");
 	  while(ancestors->IsPrimary()){//searching for ancestors 
-	    if((499 < aPdg && aPdg < 600)||(4999 < aPdg && aPdg < 6000)) BAncestor = kTRUE;
-	    if((399 < aPdg && aPdg < 500)||(3999 < aPdg && aPdg < 5000)) CAncestor = kTRUE;
-	    if(BAncestor && CAncestor) break;
+	    if((499 < aPdg && aPdg < 600)||(4999 < aPdg && aPdg < 6000)) bAncestor = kTRUE;
+	    if((399 < aPdg && aPdg < 500)||(3999 < aPdg && aPdg < 5000)) cAncestor = kTRUE;
+	    if(bAncestor && cAncestor) break;
 	    iAncestors = ancestors->GetFirstMother();
 	    ancestors = stack->Particle(iAncestors);
 	    aPdg = ancestors->GetPdgCode();
 	  }//searching for ancestors
-	  if(BAncestor && CAncestor) return kMCEFromCFromB;//Decay chain has both B and C
-	  else if(BAncestor && !CAncestor) return kMCEFromB;//Decay chain has only B
-	  else if(!BAncestor && CAncestor) return kMCEFromC;//Decay chain has only C 
+	  if(bAncestor && cAncestor) return kMCEFromCFromB;//Decay chain has both B and C
+	  else if(bAncestor && !cAncestor) return kMCEFromB;//Decay chain has only B
+	  else if(!bAncestor && cAncestor) return kMCEFromC;//Decay chain has only C 
 	}
 	//if it is not from W,Z or B/C ancestor, where is it from?
 	if     (pPdg == 111) return kMCPi0Decay;//Pi0 Dalitz decay
@@ -213,29 +214,29 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
 	//these histories for MC labels connected to a reco object.
 	//If you wanted to use this to sort through the kine stack
 	//directly, might it be a problem?
-	Bool_t EleFromEvGen = kFALSE;
-	Bool_t BAncestor = kFALSE;
-        Bool_t CAncestor = kFALSE;
+	Bool_t eleFromEvGen = kFALSE;
+	Bool_t bAncestor = kFALSE;
+	Bool_t cAncestor = kFALSE;
 
 	TParticle * ancestors = stack->Particle(label);
-        Int_t aPdg = TMath::Abs(ancestors->GetPdgCode());
-        Int_t aStatus = ancestors->GetStatusCode();
-        Int_t iAncestors = ancestors->GetFirstMother();
-        if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOrigin: Scaning the decay chain for bottom/charm electrons");
+	Int_t aPdg = TMath::Abs(ancestors->GetPdgCode());
+	Int_t aStatus = ancestors->GetStatusCode();
+	Int_t iAncestors = ancestors->GetFirstMother();
+	if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOrigin: Scaning the decay chain for bottom/charm electrons");
 	while(ancestors->IsPrimary()){//searching for ancestors
-	  if(aStatus == 1 && aPdg == 11) EleFromEvGen = kTRUE;
-	  if(EleFromEvGen && aPdg == 23) return kMCZDecay;
-	  if(EleFromEvGen && aPdg == 24) return kMCWDecay;
-	  if(EleFromEvGen && ((499 < aPdg && aPdg < 600)||(4999 < aPdg && aPdg < 6000))) BAncestor = kTRUE;
-	  if(EleFromEvGen && ((399 < aPdg && aPdg < 500)||(3999 < aPdg && aPdg < 5000))) CAncestor = kTRUE;
-	  if(BAncestor && CAncestor) break;
+	  if(aStatus == 1 && aPdg == 11) eleFromEvGen = kTRUE;
+	  if(eleFromEvGen && aPdg == 23) return kMCZDecay;
+	  if(eleFromEvGen && aPdg == 24) return kMCWDecay;
+	  if(eleFromEvGen && ((499 < aPdg && aPdg < 600)||(4999 < aPdg && aPdg < 6000))) bAncestor = kTRUE;
+	  if(eleFromEvGen && ((399 < aPdg && aPdg < 500)||(3999 < aPdg && aPdg < 5000))) cAncestor = kTRUE;
+	  if(bAncestor && cAncestor) break;
 	  iAncestors = ancestors->GetFirstMother();
           ancestors = stack->Particle(iAncestors);
           aPdg = ancestors->GetPdgCode();
         }//searching for ancestors
-	if(BAncestor && CAncestor) return kMCEFromCFromB;//Decay chain has both B and C
-	else if(BAncestor && !CAncestor) return kMCEFromB;//Decay chain has only B
-	else if(!BAncestor && CAncestor) return kMCEFromC;//Decay chain has only C
+	if(bAncestor && cAncestor) return kMCEFromCFromB;//Decay chain has both B and C
+	else if(bAncestor && !cAncestor) return kMCEFromB;//Decay chain has only B
+	else if(!bAncestor && cAncestor) return kMCEFromC;//Decay chain has only C
 	if(pPdg ==22 || pPdg ==11|| pPdg == 2112 ||  pPdg == 211 ||  
 	   pPdg == 321 ||  pPdg == 2212  ||  pPdg == 130  ||  pPdg == 13 ) 
 	  return kMCConversion ;
@@ -257,7 +258,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
 }
 
 //_________________________________________________________________________
-TList * AliMCAnalysisUtils::GetJets(Int_t iEvent, AliStack * stack, AliGenEventHeader * geh) {
+TList * AliMCAnalysisUtils::GetJets(const Int_t iEvent, AliStack * stack, const AliGenEventHeader * geh) {
  //Return list of jets (TParticles) and index of most likely parton that originated it.
 	
   if(fCurrentEvent!=iEvent){
@@ -401,6 +402,37 @@ TList * AliMCAnalysisUtils::GetJets(Int_t iEvent, AliStack * stack, AliGenEventH
   return fJetsList;
 }
 
+
+//_________________________________________________________________________
+Bool_t AliMCAnalysisUtils::ComparePtHardAndJetPt(const AliGenEventHeader * geh){
+	// Check the event, if the requested ptHard is much larger than the jet pT, then there is a problem.
+	// Only for PYTHIA.
+	
+    if(fMCGenerator == "PYTHIA"){
+		TParticle * jet =  new TParticle;
+		AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) geh;
+		Int_t nTriggerJets =  pygeh->NTriggerJets();
+		Float_t ptHard = pygeh->GetPtHard();
+
+		//if(fDebug > 1) printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %f\n",nTriggerJets, ptHard);
+	    Float_t tmpjet[]={0,0,0,0};
+		for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
+			pygeh->TriggerJet(ijet, tmpjet);
+			jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+			//Compare jet pT and pt Hard
+			//if(fDebug > 1) printf("AliMCAnalysisUtils:: %d pycell jet pT %f\n",ijet, jet->Pt());
+			if(jet->Pt() > fpTHardpTJetFactor * ptHard) {
+				printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
+						nTriggerJets, ptHard, jet->Pt(), fpTHardpTJetFactor);
+				return kFALSE;
+			}
+		}
+	}		
+ 
+	return kTRUE ;
+
+}
+
 //________________________________________________________________
 void AliMCAnalysisUtils::Print(const Option_t * opt) const
 {
@@ -413,7 +445,7 @@ void AliMCAnalysisUtils::Print(const Option_t * opt) const
  
  printf("Debug level    = %d\n",fDebug);
  printf("MC Generator   = %s\n",fMCGenerator.Data());
- 
+ printf("fpTHardpTJetFactor = %2.2f",fpTHardpTJetFactor);
  printf(" \n");
  
 } 

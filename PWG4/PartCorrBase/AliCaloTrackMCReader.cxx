@@ -17,6 +17,8 @@
 //_________________________________________________________________________
 // Class for reading data (Kinematics) in order to do prompt gamma 
 // or other particle identification and correlations
+// Separates generated particles into charged (CTS) 
+// and neutral (PHOS or EMCAL acceptance)
 //
 //*-- Author: Gustavo Conesa (LNF-INFN) 
 //////////////////////////////////////////////////////////////////////////////
@@ -28,6 +30,7 @@
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 #include <TArrayI.h>
+#include "TParticle.h"
 //#include "Riostream.h"
 
 //---- ANALYSIS system ----
@@ -36,9 +39,9 @@
 #include "AliStack.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODTrack.h"
-#include "AliFidutialCut.h"
 #include "AliAODEvent.h"
-#include "TParticle.h"
+#include "AliFidutialCut.h"
+#include "AliMCAnalysisUtils.h"
 
   ClassImp(AliCaloTrackMCReader)
 
@@ -232,11 +235,16 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
 }
 
 //____________________________________________________________________________
-void AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * currentFileName){
+Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * currentFileName){
   //Fill the event counter and input lists that are needed, called by the analysis maker.
   
   fEventNumber = iEntry;
   fCurrentFileName = TString(currentFileName);
+	
+  //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
+  if(fComparePtHardAndJetPt && GetStack()) {
+	if(!fMCUtils->ComparePtHardAndJetPt(GetGenEventHeader())) return kFALSE ;
+  }	
 	
   Int_t iParticle = 0 ;
   Double_t charge = 0.;
@@ -321,6 +329,9 @@ void AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * curre
   }//particle loop
   
   fIndex2ndPhoton = -1; //In case of overlapping studies, reset for each event	
+ 	
+  return kTRUE;	
+
 }
 
 //________________________________________________________________

@@ -34,6 +34,7 @@
 #include "AliFidutialCut.h"
 #include "AliAODEvent.h"
 #include "AliMCEvent.h"
+#include "AliMCAnalysisUtils.h"
 
 ClassImp(AliCaloTrackReader)
   
@@ -41,7 +42,7 @@ ClassImp(AliCaloTrackReader)
 //____________________________________________________________________________
   AliCaloTrackReader::AliCaloTrackReader() : 
     TObject(), fEventNumber(-1), fCurrentFileName(""),fDataType(0), fDebug(0), 
-    fFidutialCut(0x0),
+    fFidutialCut(0x0), fMCUtils(0x0), fComparePtHardAndJetPt(kFALSE),
     fCTSPtMin(0), fEMCALPtMin(0),fPHOSPtMin(0),
     fAODCTS(new TRefArray()), fAODEMCAL(new TRefArray()), fAODPHOS(new TRefArray()),
     fEMCALCells(0x0), fPHOSCells(0x0),
@@ -60,6 +61,7 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :
   TObject(g), fEventNumber(g.fEventNumber), fCurrentFileName(g.fCurrentFileName), 
   fDataType(g.fDataType), fDebug(g.fDebug),
   fFidutialCut(g.fFidutialCut),
+  fMCUtils(g.fMCUtils), fComparePtHardAndJetPt(g.fComparePtHardAndJetPt),
   fCTSPtMin(g.fCTSPtMin), fEMCALPtMin(g.fEMCALPtMin),fPHOSPtMin(g.fPHOSPtMin), 
   fAODCTS(new TRefArray(*g.fAODCTS)),  
   fAODEMCAL(new TRefArray(*g.fAODEMCAL)),
@@ -86,10 +88,12 @@ AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & 
   fEventNumber = source.fEventNumber ;
   fCurrentFileName = source.fCurrentFileName ;
   fFidutialCut = source.fFidutialCut;
+  fMCUtils     = source.fMCUtils;
+  fComparePtHardAndJetPt = source.fComparePtHardAndJetPt;
   
-  fCTSPtMin   = source.fCTSPtMin ;
-  fEMCALPtMin = source.fEMCALPtMin ;
-  fPHOSPtMin  = source.fPHOSPtMin ; 
+  fCTSPtMin    = source.fCTSPtMin ;
+  fEMCALPtMin  = source.fEMCALPtMin ;
+  fPHOSPtMin   = source.fPHOSPtMin ; 
   
   fAODCTS     = new TRefArray(*source.fAODCTS) ;
   fAODEMCAL   = new TRefArray(*source.fAODEMCAL) ;
@@ -116,7 +120,8 @@ AliCaloTrackReader::~AliCaloTrackReader() {
   //Dtor
   
   if(fFidutialCut) delete fFidutialCut ;
-  
+  if(fMCUtils)     delete fMCUtils ;
+	
   if(fAODCTS){
     fAODCTS->Clear() ; 
     delete fAODCTS ;
@@ -188,8 +193,8 @@ void AliCaloTrackReader::InitParameters()
   fDataType = kESD ;
 
   fCTSPtMin   = 0.2 ;
-  fEMCALPtMin   = 0.5 ;
-  fPHOSPtMin   = 0.5 ;
+  fEMCALPtMin = 0.2 ;
+  fPHOSPtMin  = 0.2 ;
 
   fFillEMCAL = kTRUE;
   fFillPHOS = kTRUE;
@@ -198,6 +203,7 @@ void AliCaloTrackReader::InitParameters()
   fFillPHOSCells = kFALSE;
 
   fFidutialCut = new AliFidutialCut();
+  fMCUtils = new AliMCAnalysisUtils();
 
 }
 
@@ -220,26 +226,35 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use PHOS        =     %d\n", fFillPHOS) ;
   printf("Use EMCAL Cells =     %d\n", fFillEMCALCells) ;
   printf("Use PHOS  Cells =     %d\n", fFillPHOSCells) ;
+  printf("Compare jet pt and pt hard to accept event = %d\n",fComparePtHardAndJetPt);
+	
   printf("    \n") ;
 } 
 
 //___________________________________________________
-void AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * currentFileName) {
+Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * currentFileName) {
   //Fill the event counter and input lists that are needed, called by the analysis maker.
   
   fEventNumber = iEntry;
   fCurrentFileName = TString(currentFileName);
 	
   if((fDataType != kAOD) && ((fOutputEvent->GetCaloClusters())->GetEntriesFast()!=0 ||(fOutputEvent->GetTracks())->GetEntriesFast()!=0)){
-    printf("ABORT: AliCaloTrackReader::AODCaloClusters or AODTracks already filled by the filter, do not use the ESD reader, use the AOD reader\n");
+    printf("AliCaloTrackReader::AODCaloClusters or AODTracks already filled by the filter, do not use the ESD reader, use the AOD reader, STOP\n");
     abort();
   }
+	
+  //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
+  if(fComparePtHardAndJetPt && GetStack()) {
+		if(!fMCUtils->ComparePtHardAndJetPt(GetGenEventHeader())) return kFALSE ;
+  }
+	
   if(fFillCTS)   FillInputCTS();
   if(fFillEMCAL) FillInputEMCAL();
   if(fFillPHOS)  FillInputPHOS();
   if(fFillEMCALCells) FillInputEMCALCells();
   if(fFillPHOSCells)  FillInputPHOSCells();
 
+  return kTRUE ;
 }
 
 //__________________________________________________

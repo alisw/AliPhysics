@@ -34,7 +34,9 @@ public:
   enum mcTypes {kMCPrompt, kMCFragmentation, kMCISR, kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCPi0, kMCEta, kMCElectron, kMCConversion, kMCUnknown, kMCEFromCFromB, kMCEFromC, kMCEFromB,kMCZDecay,kMCWDecay};
 	
 	Int_t CheckOrigin(const Int_t label, AliStack *  stack) const ;
-	TList * GetJets(Int_t iEvent, AliStack *  stack, AliGenEventHeader * geh) ;
+	TList * GetJets(const Int_t iEvent, AliStack *  stack, const AliGenEventHeader * geh) ;
+	
+	Bool_t ComparePtHardAndJetPt(const AliGenEventHeader * geh) ;
 	
 	void Print(const Option_t * opt)const;
   	
@@ -45,12 +47,13 @@ public:
 	TString GetMCGenerator() const {return fMCGenerator;}	
 
 private:
-	Int_t   fCurrentEvent; // Current Event
-	Int_t	fDebug;        // Debug level
-	TList * fJetsList;      // List of jets
-	TString fMCGenerator;  // MC geneator used to generate data in simulation
-
-	ClassDef(AliMCAnalysisUtils,1)
+	Int_t   fCurrentEvent;      // Current Event
+	Int_t	fDebug;             // Debug level
+	TList * fJetsList;          // List of jets
+	TString fMCGenerator;       // MC geneator used to generate data in simulation
+	Float_t fpTHardpTJetFactor; // Factor between ptHard and jet pT to reject event.
+	
+	ClassDef(AliMCAnalysisUtils,2)
 } ;
 
 

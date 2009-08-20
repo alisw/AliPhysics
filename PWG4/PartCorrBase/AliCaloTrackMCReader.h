@@ -5,8 +5,13 @@
 /* $Id:  $ */
 
 //_________________________________________________________________________
-// Class for reading data (Kinematics) in order to do prompt gamma or other particle  correlations
+// Class for reading data (Kinematics) in order to do prompt gamma 
+// or other particle  correlations
+// Separates generated particles into charged (CTS) 
+// and neutral (PHOS or EMCAL acceptance)
 //
+//*-- Author: Gustavo Conesa (LNF-INFN) 
+//////////////////////////////////////////////////////////////////////////////
 
 //-- Author: Gustavo Conesa (INFN-LNF)
 
@@ -59,7 +64,7 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   
   void GetVertex(Double_t v[3]) const ;
 
-  void FillInputEvent(const Int_t iEntry, const char * currentFileName) ;
+  Bool_t FillInputEvent(const Int_t iEntry, const char * currentFileName) ;
   AliVEvent*  GetInputEvent() const {return (AliVEvent *) GetMC();}
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ;
   
