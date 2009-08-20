@@ -100,8 +100,8 @@ int main(int argc, char **argv) {
 
 
   /* init some counters */
-  int nevents_physics=0;
-  int nevents_total=0;
+  int neventsphysics=0;
+  int neventstotal=0;
 
   //Instance of AliCDBManager: needed by AliTRDrawStream
   //AliCDBManager *man = AliCDBManager::Instance();
@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
       continue;
     }
 
-    if( ((Int_t)nevents_total)%1000 == 0 ) printf(" event number %d (physic event number %d) will be processed\n",(Int_t) nevents_total,(Int_t) nevents_physics);  
+    if( ((Int_t)neventstotal)%1000 == 0 ) printf(" event number %d (physic event number %d) will be processed\n",(Int_t) neventstotal,(Int_t) neventsphysics);  
 
 
     /* use event - here, just write event id to result file */
@@ -178,11 +178,11 @@ int main(int argc, char **argv) {
    
     if(eventT==PHYSICS_EVENT){
  
-      nevents_physics++;
+      neventsphysics++;
      
     }
     
-    nevents_total++;
+    neventstotal++;
 
 
     /* free resources */
@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
 
 
   /* report progress */
-  printf("%d events processed and %d used\n",nevents_total,nbvdrift);
+  printf("%d events processed and %d used\n",neventstotal,nbvdrift);
   
   //
   // Write a local file and put it on the FX 

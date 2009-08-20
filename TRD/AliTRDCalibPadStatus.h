@@ -37,7 +37,7 @@ public:
 
   Int_t ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t nocheck = kFALSE);
   Int_t ProcessEvent(AliRawReader    *rawReader, Bool_t nocheck = kFALSE);
-  Int_t ProcessEvent(eventHeaderStruct   *event, Bool_t nocheck = kFALSE);
+  Int_t ProcessEvent(const eventHeaderStruct   *event, Bool_t nocheck = kFALSE);
 
   void  Destroy();
   Int_t UpdateHisto(const Int_t idet, const Int_t iRow, const Int_t iCol,
@@ -107,4 +107,3 @@ public:
 
 };
 #endif
-

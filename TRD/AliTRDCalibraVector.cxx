@@ -1300,6 +1300,9 @@ AliTRDPrfInfo* AliTRDCalibraVector::GetMeanSquaresPRF(Int_t det
 //_____________________________________________________________________________
 Int_t AliTRDCalibraVector::GetTotalNumberOfBinsInDetector(Int_t det, Int_t i, Int_t nbBin) const
 {
+  //
+  // Get the total number of bins (Nb of bins*Nb of groups) in the detector det for the group i
+  //
 
   Int_t ngroup = 0;
   Int_t stack  = AliTRDgeometry::GetStack(det);
@@ -1312,6 +1315,9 @@ Int_t AliTRDCalibraVector::GetTotalNumberOfBinsInDetector(Int_t det, Int_t i, In
 //____________________________________________________________________________
 Int_t AliTRDCalibraVector::GetNz(Int_t i) const
 {
+  //
+  // Get Nz the granularity in row
+  //
 
   Int_t nz = 0;
   if(i==0) nz = (Int_t)(fModeCH>>4);
@@ -1324,6 +1330,9 @@ Int_t AliTRDCalibraVector::GetNz(Int_t i) const
 //____________________________________________________________________________
 Int_t AliTRDCalibraVector::GetNrphi(Int_t i) const
 {
+  //
+  // Get Nrphi the granularity in col
+  //
 
   Int_t nrphi = 0;
   if(i==0) nrphi = (Int_t)(fModeCH&15);
@@ -1336,6 +1345,9 @@ Int_t AliTRDCalibraVector::GetNrphi(Int_t i) const
 //_________________________________________________________________________________
 TString AliTRDCalibraVector::GetNamePH() const
 {
+  //
+  // Get the name of PH to know the granularity
+  //
   
   Int_t nz = GetNz(1);
   Int_t nrphi = GetNrphi(1);
@@ -1351,6 +1363,9 @@ TString AliTRDCalibraVector::GetNamePH() const
 //_________________________________________________________________________________
 TString AliTRDCalibraVector::GetNameCH() const
 {
+  //
+  // Get the name of CH to know the granularity
+  //
   
   Int_t nz = GetNz(0);
   Int_t nrphi = GetNrphi(0);
@@ -1366,7 +1381,10 @@ TString AliTRDCalibraVector::GetNameCH() const
 //_________________________________________________________________________________
 TString AliTRDCalibraVector::GetNamePRF() const
 {
-  
+  //
+  // Get the name of PRF to know the granularity
+  //
+
   Int_t nz = GetNz(2);
   Int_t nrphi = GetNrphi(2);
   
@@ -1381,7 +1399,11 @@ TString AliTRDCalibraVector::GetNamePRF() const
 
 }
 //____________________________________________________________________________
-void AliTRDCalibraVector::SetNzNrphi(Int_t i, Int_t nz, Int_t nrphi) {
+void AliTRDCalibraVector::SetNzNrphi(Int_t i, Int_t nz, Int_t nrphi) 
+{
+  //
+  // Set NzNrphi for the granularity
+  //
   
   if(i==0) {
     fModeCH = nz;
@@ -1400,4 +1422,3 @@ void AliTRDCalibraVector::SetNzNrphi(Int_t i, Int_t nz, Int_t nrphi) {
   }
   
 }
-

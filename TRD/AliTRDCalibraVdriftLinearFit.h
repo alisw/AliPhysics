@@ -28,7 +28,7 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
   AliTRDCalibraVdriftLinearFit(const AliTRDCalibraVdriftLinearFit &ped);
   AliTRDCalibraVdriftLinearFit(const TObjArray &obja);
   virtual ~AliTRDCalibraVdriftLinearFit();
-  virtual Long64_t Merge(TCollection* list);
+  virtual Long64_t Merge(const TCollection* list);
   virtual void Copy(TObject &c) const;
 
   AliTRDCalibraVdriftLinearFit& operator = (const  AliTRDCalibraVdriftLinearFit &source);
@@ -59,4 +59,3 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
 
 
 #endif
-

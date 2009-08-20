@@ -1,5 +1,5 @@
 #ifndef ALITRDCALIBRAFILLHISTO_H
-#define ALITRDCALIBRAFILLHISTOs_H
+#define ALITRDCALIBRAFILLHISTO_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -14,15 +14,10 @@
 #ifndef ROOT_TObject
 #  include <TObject.h>
 #endif
-#ifndef ROOT_TLinearFitter
-#  include <TLinearFitter.h> 
-#endif
 #ifndef ROOT_TProfile2D
 #  include <TProfile2D.h> 
 #endif
-#ifndef ROOT_TH2I
-#  include <TH2I.h> 
-#endif
+
 
 class TProfile2D;
 class TObjArray;
@@ -67,13 +62,13 @@ class AliTRDCalibraFillHisto : public TObject {
 
   // Functions for initialising and filling with AliTRDtrackV1
           Bool_t  Init2Dhistos();
-	  Bool_t  UpdateHistograms(AliTRDtrack *t);
-	  Bool_t  UpdateHistogramsV1(AliTRDtrackV1 *t);
+	  Bool_t  UpdateHistograms(const AliTRDtrack *t);
+	  Bool_t  UpdateHistogramsV1(const AliTRDtrackV1 *t);
  
   // Process events DAQ
 	  Int_t   ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
-	  Int_t   ProcessEventDAQ(eventHeaderStruct *event, Bool_t nocheck = kFALSE);
+	  Int_t   ProcessEventDAQ(const eventHeaderStruct *event, Bool_t nocheck = kFALSE);
 
   // Is Pad on
           Bool_t   IsPadOn(Int_t detector, Int_t row, Int_t col) const;
@@ -258,12 +253,12 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   // Calibration with AliTRDtrackV1
           void     FillTheInfoOfTheTrackPH();
           void     FillTheInfoOfTheTrackCH(Int_t nbclusters);
-	  Bool_t   FindP1TrackPHtracklet(AliTRDtrack *t, Int_t index0, Int_t index1);
+	  Bool_t   FindP1TrackPHtracklet(const AliTRDtrack *t, Int_t index0, Int_t index1);
 	  Bool_t   FindP1TrackPHtrackletV1(const AliTRDseedV1 *tracklet, Int_t nbclusters);
-	  Bool_t   HandlePRFtracklet(AliTRDtrack *t, Int_t index0, Int_t index1);
+	  Bool_t   HandlePRFtracklet(const AliTRDtrack *t, Int_t index0, Int_t index1);
 	  Bool_t   HandlePRFtrackletV1(const AliTRDseedV1 *tracklet, Int_t nbclusters);
 	  void     ResetfVariablestracklet();
-	  void     StoreInfoCHPHtrack(AliTRDcluster *cl, Double_t dqdl, Int_t *group, Int_t row, Int_t col);
+	  void     StoreInfoCHPHtrack(const AliTRDcluster *cl,const Double_t dqdl,const Int_t *group,const Int_t row,const Int_t col);
 	  void     FillCH2d(Int_t x, Float_t y);
 
   // Calibration on DAQ
@@ -274,8 +269,8 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
  // row col calibration groups stuff
           Bool_t   LocalisationDetectorXbins(Int_t detector);
 	  Int_t    CalculateTotalNumberOfBins(Int_t i);
-	  void     CheckGoodTrackletV0(Int_t detector, Int_t row, Int_t col);
-	  void     CheckGoodTrackletV1(AliTRDcluster *cl);
+	  void     CheckGoodTrackletV0(const Int_t detector,const Int_t row,const Int_t col);
+	  void     CheckGoodTrackletV1(const AliTRDcluster *cl);
 	  Int_t    CalculateCalibrationGroup(Int_t i, Int_t row, Int_t col) const;
 	  
   // Clear
@@ -302,5 +297,4 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 };
   
 #endif
-
 

@@ -13,8 +13,10 @@
 
 #ifndef ROOT_TObject
 # include <TObject.h>
+#endif
+#ifndef ROOT_TVectorD
+# include <TVectorD.h>
 #endif 
-#include <TVectorD.h>
 
 class TTree;
 class TProfile2D;
@@ -165,7 +167,7 @@ class AliTRDCalibraFit : public TObject {
 	 AliTRDFitInfo &operator=(const AliTRDFitInfo&)     { return *this;            }
 	 virtual ~AliTRDFitInfo()                           { if(fCoef) { delete [] fCoef;} }
 	 
-	 void      SetCoef(Float_t *coef)                   { fCoef = coef;            }
+	 void      SetCoef(Float_t *coef)             { fCoef = coef;            }
 	 void      SetDetector(Int_t detector)              { fDetector = detector;    }
 	 
 	 Float_t  *GetCoef() const                          { return fCoef;            }
@@ -348,5 +350,4 @@ class AliTRDCalibraFit : public TObject {
 };
   
 #endif
-
 

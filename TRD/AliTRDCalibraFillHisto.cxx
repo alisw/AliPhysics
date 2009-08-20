@@ -48,6 +48,7 @@
 #include <TDirectory.h>
 #include <TTreeStream.h>
 #include <TVectorD.h>
+#include <TLinearFitter.h>
 
 #include "AliLog.h"
 
@@ -476,7 +477,7 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
 
 }
 //____________Offline tracking in the AliTRDtracker____________________________
-Bool_t AliTRDCalibraFillHisto::UpdateHistograms(AliTRDtrack *t)
+Bool_t AliTRDCalibraFillHisto::UpdateHistograms(const AliTRDtrack *t)
 {
   //
   // Use AliTRDtrack for the calibration
@@ -613,7 +614,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistograms(AliTRDtrack *t)
   
 }
 //____________Offline tracking in the AliTRDtracker____________________________
-Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
+Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t)
 {
   //
   // Use AliTRDtrackV1 for the calibration
@@ -722,7 +723,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(AliTRDtrackV1 *t)
 // Routine inside the update with AliTRDtrack
 ///////////////////////////////////////////////////////////////////////////////////
 //____________Offine tracking in the AliTRDtracker_____________________________
-Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(AliTRDtrack *t, Int_t index0, Int_t index1)
+Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(const AliTRDtrack *t, Int_t index0, Int_t index1)
 {
   //
   // Drift velocity calibration:
@@ -1016,7 +1017,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   return kTRUE;
 }
 //____________Offine tracking in the AliTRDtracker_____________________________
-Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(AliTRDtrack *t, Int_t index0, Int_t index1)
+Bool_t AliTRDCalibraFillHisto::HandlePRFtracklet(const AliTRDtrack *t, Int_t index0, Int_t index1)
 {
   //
   // PRF width calibration
@@ -1665,7 +1666,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
 // Pad row col stuff: see if masked or not
 ///////////////////////////////////////////////////////////////////////////////////////
 //_____________________________________________________________________________
-void AliTRDCalibraFillHisto::CheckGoodTrackletV1(AliTRDcluster *cl)
+void AliTRDCalibraFillHisto::CheckGoodTrackletV1(const AliTRDcluster *cl)
 {
   //
   // See if we are not near a masked pad
@@ -1676,7 +1677,7 @@ void AliTRDCalibraFillHisto::CheckGoodTrackletV1(AliTRDcluster *cl)
   
 }
 //_____________________________________________________________________________
-void AliTRDCalibraFillHisto::CheckGoodTrackletV0(Int_t detector, Int_t row, Int_t col)
+void AliTRDCalibraFillHisto::CheckGoodTrackletV0(const Int_t detector,const Int_t row,const Int_t col)
 {
   //
   // See if we are not near a masked pad
@@ -1897,7 +1898,7 @@ void AliTRDCalibraFillHisto::SetNumberGroupsPRF(Short_t numberGroupsPRF)
 // Per tracklet: store or reset the info, fill the histos with the info
 //////////////////////////////////////////////////////////////////////////////////////////
 //_____________________________________________________________________________
-void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(AliTRDcluster *cl, Double_t dqdl, Int_t *group, Int_t row, Int_t col)
+void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(const AliTRDcluster *cl,const Double_t dqdl,const Int_t *group,const Int_t row,const Int_t col)
 {
   //
   // Store the infos in fAmpTotal, fPHPlace and fPHValue
@@ -2298,7 +2299,6 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bo
   // 0 timebin problem
   // 1 no input
   // 2 input
-  //
   // Same algorithm as TestBeam but different reader
   //
   
@@ -2476,10 +2476,10 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliRawReader *rawReader, Bool_t no
 //_________________________________________________________________________
 Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(
 #ifdef ALI_DATE
-					       eventHeaderStruct *event,
+					       const eventHeaderStruct *event,
 					       Bool_t nocheck
 #else
-					       eventHeaderStruct* /*event*/,
+					       const eventHeaderStruct* /*event*/,
 					       Bool_t /*nocheck*/
 	    
 #endif 
@@ -3186,4 +3186,3 @@ void AliTRDCalibraFillHisto::AnalyseLinearFitter()
     }
   }
 }
-

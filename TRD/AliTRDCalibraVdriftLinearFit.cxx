@@ -144,7 +144,7 @@ void AliTRDCalibraVdriftLinearFit::Copy(TObject &c) const
 
 }
 //_____________________________________________________________________________
-Long64_t AliTRDCalibraVdriftLinearFit::Merge(TCollection* list) 
+Long64_t AliTRDCalibraVdriftLinearFit::Merge(const TCollection* list) 
 {
   // Merge list of objects (needed by PROOF)
 
@@ -337,4 +337,3 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
   }
    
 }
-

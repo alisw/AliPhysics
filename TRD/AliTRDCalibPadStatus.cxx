@@ -57,12 +57,15 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+
 //Root includes
 #include <TObjArray.h>
 #include <TH2F.h>
 #include <TString.h>
 #include <TMath.h>
 #include <TRandom.h>
+
+//#include <TRandom.h>
 #include <TDirectory.h>
 #include <TFile.h>
 
@@ -234,9 +237,6 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDrawStreamBase *rawStream, Bool_t 
   // 0 time bin problem or zero suppression
   // 1 no input
   // 2 input
-  // 
-
-  //
   // Raw version number: 
   // [3,31] non zero suppressed
   // 2,4 and [32,63] zero suppressed 
@@ -363,10 +363,10 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliRawReader *rawReader, Bool_t nocheck
 //_________________________________________________________________________
 Int_t AliTRDCalibPadStatus::ProcessEvent(
 #ifdef ALI_DATE
-					  eventHeaderStruct *event,
+					  const eventHeaderStruct *event,
 					  Bool_t nocheck
 #else
-					  eventHeaderStruct* /*event*/,
+					  const eventHeaderStruct* /*event*/,
 					  Bool_t /*nocheck*/
 	    
 #endif 
@@ -897,5 +897,4 @@ Int_t AliTRDCalibPadStatus::GetSector(Int_t d) const
   return ((Int_t) (d / 30));
 
 }
-
 

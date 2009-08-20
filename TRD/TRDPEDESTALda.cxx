@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
   
 
   /* init some counters */
-  int nevents_total=0;
+  int neventstotal=0;
   int nevents      =0;
  
   //Instance of AliCDBManager: needed by AliTRDRawStream
@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
       
       }
 
-      nevents_total++;
+      neventstotal++;
 
       /* free resources */
       free(event);
@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
 
 
   /* report progress */
-  printf("%d events processed and %d used\n",nevents_total,nevents);
+  printf("%d events processed and %d used\n",neventstotal,nevents);
 
   /* write file in any case to see what happens in case of problems*/
   TFile *fileTRD = new TFile(RESULT_FILE,"recreate");
