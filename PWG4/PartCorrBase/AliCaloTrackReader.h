@@ -30,6 +30,7 @@ class AliVEvent;
 class AliAODEvent;  
 class AliMCEvent;
 class AliFidutialCut;
+class AliMCAnalysisUtils;
 
 class AliCaloTrackReader : public TObject {
 
@@ -84,7 +85,7 @@ class AliCaloTrackReader : public TObject {
   void SwitchOnPHOSCells()   {fFillPHOSCells = kTRUE ; }
   void SwitchOffPHOSCells()  {fFillPHOSCells = kFALSE ; }
 
-  virtual void FillInputEvent(const Int_t iEntry, const char *currentFileName)  ;
+  virtual Bool_t FillInputEvent(const Int_t iEntry, const char *currentFileName)  ;
   virtual void FillInputCTS()   {;}
   virtual void FillInputEMCAL() {;}
   virtual void FillInputPHOS()  {;}
@@ -114,6 +115,12 @@ class AliCaloTrackReader : public TObject {
   virtual AliFidutialCut * GetFidutialCut() const {return  fFidutialCut ;}
   virtual void SetFidutialCut(AliFidutialCut * fc) { fFidutialCut = fc ;}
 
+  virtual AliMCAnalysisUtils * GetMCAnalysisUtils() const {return  fMCUtils ;}
+  virtual void SetMCAnalysisUtils(AliMCAnalysisUtils * mcutils) { fMCUtils = mcutils ;}	
+	
+  virtual Bool_t IsPtHardAndJetPtComparisonSet() const {return  fComparePtHardAndJetPt ;}
+  virtual void SetPtHardAndJetPtComparison(Bool_t compare) { fComparePtHardAndJetPt = compare ;}	
+	
   virtual void SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) {;}
 
  protected:
@@ -122,7 +129,9 @@ class AliCaloTrackReader : public TObject {
   Int_t            fDataType ;   // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
   Int_t            fDebug;       // Debugging level
   AliFidutialCut * fFidutialCut; // Acceptance cuts
-		
+  AliMCAnalysisUtils * fMCUtils; // MonteCarlo Analysis utils 
+  Bool_t           fComparePtHardAndJetPt; //In MonteCarlo, jet events, reject fake events with wrong jet energy.
+	
   Float_t        fCTSPtMin;      // pT Threshold on charged particles 
   Float_t        fEMCALPtMin;    // pT Threshold on emcal clusters
   Float_t        fPHOSPtMin;     // pT Threshold on phos clusters
@@ -143,7 +152,7 @@ class AliCaloTrackReader : public TObject {
   Bool_t         fFillEMCALCells; // use data from EMCAL
   Bool_t         fFillPHOSCells;  // use data from PHOS
 
-  ClassDef(AliCaloTrackReader,4)
+  ClassDef(AliCaloTrackReader,5)
 } ;
 
 

@@ -63,7 +63,7 @@ class AliAnaPartCorrMaker : public TObject {
   
   void Print(const Option_t * opt) const;
   
-  Bool_t ProcessEvent(const Int_t iEntry, const char * currentFileName) ;
+  void ProcessEvent(const Int_t iEntry, const char * currentFileName) ;
   
  private:
   

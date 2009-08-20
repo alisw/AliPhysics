@@ -216,7 +216,7 @@ void AliAnaPartCorrMaker::Print(const Option_t * opt) const
 
 
 //____________________________________________________________________________
-Bool_t AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentFileName){
+void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentFileName){
   //Process analysis for this event
   
   if(fMakeHisto && !fOutputContainer){
@@ -234,7 +234,11 @@ Bool_t AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * curren
     fAODBranchList->At(iaod)->Clear();
   
   //Tell the reader to fill the data in the 3 detector lists
-  fReader->FillInputEvent(iEntry, currentFileName);
+  Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
+  if(!ok){
+	  printf("*** Skip event *** %d \n",iEntry);
+	  return ;
+  }
   
   //Loop on analysis algorithms
   if(fAnaDebug > 0 ) printf("*** Begin analysis *** \n");
@@ -252,8 +256,6 @@ Bool_t AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * curren
   fReader->ResetLists();
   
   if(fAnaDebug > 0 ) printf("*** End analysis *** \n");
-  
-  return kTRUE ;
   
 }
 
