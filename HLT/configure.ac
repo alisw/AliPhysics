@@ -551,6 +551,17 @@ save_LDFLAGS=$LDFLAGS
 save_LIBS=$LIBS
 
 dnl ------------------------------------------------------------------
+AC_MSG_NOTICE([-------------------------------------------------])
+AC_MSG_NOTICE([checking dependencies for HLTbase library])
+HLTBASE_CHECKLIBS='XMLParser'
+for CHECKLIB in $HLTBASE_CHECKLIBS ; do
+  LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR}"
+  LIBS="$save_LIBS $ROOTLIBS $ALIHLTBASE_LIBS"
+  AC_CHECK_LIB([$CHECKLIB],[_init], [ALIHLTBASE_LIBS="$ALIHLTBASE_LIBS -l$CHECKLIB"])
+done
+AC_SUBST([ALIHLTBASE_LIBS])
+
+dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to compile sample library])
 AH_TEMPLATE([HLT_SAMPLE],[hlt sample library])
 AC_ARG_ENABLE(sample,

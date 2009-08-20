@@ -47,6 +47,7 @@ pkginclude_HEADERS		= $(MODULE_HDRS)
 # linker flags
 libHLTbase_la_LDFLAGS		= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
+				  @ALIHLTBASE_LIBS@ \
 				  -version-info $(LIBRARY_VERSION)
 
 # automatic generation of data and time of library build
