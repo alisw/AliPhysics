@@ -31,7 +31,7 @@ TString AliAODJetEventBackground::fgkStdBranchName("jeteventbackground");
 
 //______________________________________________________________________________
 AliAODJetEventBackground::AliAODJetEventBackground() :
-    TObject()
+    TNamed()
 {
   for(int i = 0;i < kMaxBackground;++i){
     fBackground[i] = 0;
@@ -48,7 +48,7 @@ AliAODJetEventBackground::~AliAODJetEventBackground()
 
 //______________________________________________________________________________
 AliAODJetEventBackground::AliAODJetEventBackground(const AliAODJetEventBackground& back) :
-    TObject(back)
+    TNamed(back)
 {
   //
   // Copy constructor
@@ -63,11 +63,11 @@ AliAODJetEventBackground::AliAODJetEventBackground(const AliAODJetEventBackgroun
 AliAODJetEventBackground& AliAODJetEventBackground::operator=(const AliAODJetEventBackground& back)
 {
   //
-  // Assignment operator
+   // Assignment operator
   //
 
   if(this!=&back) {
-    TObject::operator=(back);
+    TNamed::operator=(back);
     for(int i = 0;i < kMaxBackground;++i){
       fBackground[i] = back.fBackground[i];
     } 
@@ -85,5 +85,15 @@ void AliAODJetEventBackground::Print(Option_t* /*option*/) const
   printf("Jet EventBackground :\n");
   for(int i = 0;i < kMaxBackground;++i){
     printf("%d: %3.E GeV \n",i,fBackground[i]);
+  } 
+}
+
+void AliAODJetEventBackground::Reset()  
+{
+  //
+  // reset information of all data members
+  //
+  for(int i = 0;i < kMaxBackground;++i){
+    fBackground[i] = 0;
   } 
 }

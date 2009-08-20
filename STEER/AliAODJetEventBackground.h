@@ -9,11 +9,11 @@
 //     Author: Christian Klein-Boesing, IKP Muenster
 //-------------------------------------------------------------------------
 
-#include "TObject.h"
+#include "TNamed.h"
 #include "TString.h"
 
 
-class AliAODJetEventBackground : public TObject {
+class AliAODJetEventBackground : public TNamed {
 
  public:
     AliAODJetEventBackground();
@@ -33,6 +33,7 @@ class AliAODJetEventBackground : public TObject {
 
     static const char* StdBranchName(){return fgkStdBranchName.Data();}
     virtual void       Print(Option_t* /*option*/) const;
+    virtual void       Reset();
 
     enum { kSmallR = 0,
 	   kOnlyCharged,
