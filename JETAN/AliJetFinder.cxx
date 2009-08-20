@@ -160,6 +160,7 @@ void AliJetFinder::ConnectAOD(AliAODEvent* aod)
 {
 // Connect to the AOD
     fAODjets = aod->GetJets();
+    fAODEvBkg = (AliAODJetEventBackground*)(aod->FindListObject(AliAODJetEventBackground::StdBranchName()));
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -167,6 +168,7 @@ void AliJetFinder::ConnectAODNonStd(AliAODEvent* aod,const char *bname)
 {
 
   fAODjets = dynamic_cast<TClonesArray*>(aod->FindListObject(bname));
-  // how is this is reset? Cleared?
+  fAODEvBkg = (AliAODJetEventBackground*)(aod->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),bname)));
+  // how is this is reset? Cleared? -> by the UserExec!!
 }
 

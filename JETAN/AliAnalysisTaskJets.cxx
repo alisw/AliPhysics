@@ -32,6 +32,7 @@
 #include "AliESDEvent.h"
 #include "AliESD.h"
 #include "AliAODEvent.h"
+#include "AliAODJetEventBackground.h"
 #include "AliAODHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliESDInputHandler.h"
@@ -94,6 +95,12 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
   if(fNonStdBranch.Length()==0)
     {
       //  Connec default AOD to jet finder
+      // create a new branch for the background
+      if(!AODEvent()->FindListObject(AliAODJetEventBackground::StdBranchName())){
+	AliAODJetEventBackground* evBkg = new AliAODJetEventBackground();
+	evBkg->SetName(AliAODJetEventBackground::StdBranchName());
+	AddAODBranch("AliAODJetEventBackground",&evBkg);
+      }
       fJetFinder->ConnectAOD(AODEvent());
     }
   else
@@ -104,10 +111,14 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
       TClonesArray *tca = new TClonesArray("AliAODJet", 0);
       tca->SetName(fNonStdBranch);
       AddAODBranch("TClonesArray",&tca);
+      if(!AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
+	AliAODJetEventBackground* evBkg = new AliAODJetEventBackground();
+	evBkg->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
+	AddAODBranch("AliAODJetEventBackground",&evBkg);
+      }
       fJetFinder->ConnectAODNonStd(AODEvent(), fNonStdBranch.Data()); 
     }
-  AliAODJetEventBackground* evBkg = fJetFinder->GetEventBackground();
-  if (evBkg) AddAODBranch("AliAODJetEventBackground",&evBkg);
+
 
   // Histograms
   OpenFile(1);
@@ -160,13 +171,18 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
   //
   // Fill control histos
   TClonesArray* jarray = 0;
+  AliAODJetEventBackground*  evBkg;
 
   if(fNonStdBranch.Length()==0) {
     jarray = AODEvent()->GetJets();
+    evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(AliAODJetEventBackground::StdBranchName()));
+    evBkg->Reset();
   }
   else {
     jarray = dynamic_cast<TClonesArray*>(AODEvent()->FindListObject(fNonStdBranch.Data()));
     jarray->Delete();    // this is our responsibility, clear before filling again
+    evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
+    evBkg->Reset();
   }
   if (dynamic_cast<AliAODEvent*>(InputEvent()) !=  0) {
       fJetFinder->GetReader()->SetInputEvent(InputEvent(), InputEvent(), MCEvent());
