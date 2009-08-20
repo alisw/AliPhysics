@@ -83,6 +83,7 @@ class TObjArray;
 class TStopwatch;
 class AliHLTComponent;
 class AliHLTMemoryFile;
+class AliHLTCTPData;
 
 /** list of component data type structures */
 typedef vector<AliHLTComponentDataType>   AliHLTComponentDataTypeList;
@@ -1356,6 +1357,22 @@ class AliHLTComponent : public AliHLTLogging {
   const char* GetChainId() const {return fChainId.c_str();}
 
   /**
+   * Setup the CTP accounting functionality of the base class.
+   * The method can be invoked from DoInit() for componenets which want to
+   * use the CTP functionality of the base class.
+   *
+   * The AliHLTCTPData is initialized with the trigger classes from the ECS
+   * parameters. The base class automatically increments the counters according
+   * to the trigger pattern in the CDH before the event processing. 
+   */
+  int SetupCTPData();
+
+  /**
+   * Get the instance of the CTP data.
+   */
+  const AliHLTCTPData* CTPData() const {return fpCTPData;}
+
+  /**
    * Check whether a combination of trigger classes is fired.
    * The expression can contain trigger class ids and logic operators
    * like &&, ||, !, and ^, and may be grouped by parentheses.
@@ -1658,8 +1675,8 @@ class AliHLTComponent : public AliHLTLogging {
   int fLastObjectSize;                                             //! transient
 
  /**  array of trigger class descriptors */
-  TObjArray* fpTriggerClasses;                                     //! transient
+  AliHLTCTPData* fpCTPData;                                        //! transient
 
-  ClassDef(AliHLTComponent, 11)
+  ClassDef(AliHLTComponent, 12)
 };
 #endif

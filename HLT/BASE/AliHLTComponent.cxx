@@ -30,6 +30,7 @@ using namespace std;
 #include "AliHLTComponent.h"
 #include "AliHLTComponentHandler.h"
 #include "AliHLTMessage.h"
+#include "AliHLTCTPData.h"
 #include "TString.h"
 #include "TMath.h"
 #include "TObjArray.h"
@@ -91,7 +92,7 @@ AliHLTComponent::AliHLTComponent()
   fEventDoneDataSize(0),
   fCompressionLevel(ALIHLTCOMPONENT_DEFAULT_OBJECT_COMPRESSION)
   , fLastObjectSize(0)
-  , fpTriggerClasses(NULL)
+  , fpCTPData(NULL)
 {
   // see header file for class documentation
   // or
@@ -134,11 +135,10 @@ AliHLTComponent::~AliHLTComponent()
     delete [] reinterpret_cast<AliHLTUInt8_t*>( fEventDoneData );
   fEventDoneData=NULL;
 
-  if (fpTriggerClasses) {
-    fpTriggerClasses->Delete();
-    delete fpTriggerClasses;
+  if (fpCTPData) {
+    delete fpCTPData;
   }
-  fpTriggerClasses=NULL;
+  fpCTPData=NULL;
 }
 
 AliHLTComponentHandler* AliHLTComponent::fgpComponentHandler=NULL;
@@ -282,11 +282,10 @@ int AliHLTComponent::Deinit()
     fpRunDesc=NULL;
     delete pRunDesc;
   }
-  if (fpTriggerClasses) {
-    fpTriggerClasses->Delete();
-    delete fpTriggerClasses;
+  if (fpCTPData) {
+    delete fpCTPData;
   }
-  fpTriggerClasses=NULL;
+  fpCTPData=NULL;
 
   fEventCount=0;
   return iResult;
@@ -1736,6 +1735,9 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   // for the private blocks
   if (fRequireSteeringBlocks) bSkipDataProcessing=0;
 
+  // increment CTP trigger counters if available
+  if (fpCTPData) fpCTPData->Increment(trigData);
+
   AliHLTComponentBlockDataList blockData;
   if (iResult>=0 && !bSkipDataProcessing)
   { // dont delete, sets the scope for the stopwatch guard
@@ -2375,96 +2377,31 @@ int AliHLTComponent::ScanECSParam(const char* ecsParam)
   return iResult;
 }
 
+int AliHLTComponent::SetupCTPData()
+{
+  // see header file for function documentation
+  if (fpCTPData) delete fpCTPData;
+  fpCTPData=new AliHLTCTPData;
+  if (!fpCTPData) return -ENOMEM;
+  return 0;
+}
+
 int AliHLTComponent::InitCTPTriggerClasses(const char* ctpString)
 {
   // see header file for function documentation
-  if (!ctpString) return -EINVAL;
-
-  if (fpTriggerClasses) {
-    fpTriggerClasses->Delete();
-  } else {
-    fpTriggerClasses=new TObjArray(gkNCTPTriggerClasses);
-  }
-  if (!fpTriggerClasses) return -ENOMEM;
-
-  // general format of the CTP_TRIGGER_CLASS parameter
-  // <bit position>:<Trigger class identifier string>:<detector-id-nr>-<detector-id-nr>-...,<bit position>:<Trigger class identifier string>:<detector-id-nr>-<detector-id-nr>-...,...
-  // the detector ids are ignored for the moment
-  HLTDebug(": %s", ctpString);
-  TString string=ctpString;
-  TObjArray* classEntries=string.Tokenize(",");
-  if (classEntries) {
-    for (int i=0; i<classEntries->GetEntries(); i++) {
-      TString entry=((TObjString*)classEntries->At(i))->GetString();
-      TObjArray* entryParams=entry.Tokenize(":");
-      if (entryParams) {
-	if (entryParams->GetEntries()==3 &&
-	    (((TObjString*)entryParams->At(0))->GetString()).IsDigit()) {
-	  int index=(((TObjString*)entryParams->At(0))->GetString()).Atoi();
-	  if (index<gkNCTPTriggerClasses) {
-	    fpTriggerClasses->AddAt(new TNamed("TriggerClass", (((TObjString*)entryParams->At(1))->GetString()).Data()), index);
-	  } else {
-	    // the trigger bitfield is fixed to 50 bits (gkNCTPTriggerClasses)
-	    HLTError("invalid trigger class entry %s, index width of trigger bitfield", entry.Data());
-	  }
-	} else {
-	  HLTError("invalid trigger class entry %s", entry.Data());
-	}
-	delete entryParams;
-      }
-    }
-    delete classEntries;
-  }
-  return 0;
+  if (!fpCTPData) return 0; // silently accept as the component has to announce that it want's the CTP info
+  return fpCTPData->InitCTPTriggerClasses(ctpString);
 }
 
 bool AliHLTComponent::EvaluateCTPTriggerClass(const char* expression, AliHLTComponentTriggerData& trigData) const
 {
   // see header file for function documentation
-  if (!fpTriggerClasses) {
-    HLTError("trigger classes not initialized");
+  if (!fpCTPData) {
+    static bool bWarningThrown=false;
+    if (!bWarningThrown) HLTError("Trigger classes not initialized, use SetupCTPData from DoInit()");
+    bWarningThrown=true;
     return false;
   }
 
-  if (trigData.fDataSize != sizeof(AliHLTEventTriggerData)) {
-    HLTError("invalid trigger data size: %d expected %d", trigData.fDataSize, sizeof(AliHLTEventTriggerData));
-    return false;
-  }
-
-  // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
-  AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
-  AliHLTUInt64_t triggerMask=evtData->fCommonHeader[6];
-  triggerMask<<=32;
-  triggerMask|=evtData->fCommonHeader[5];
-
-  // use a TFormula to interprete the expression
-  // all classname are replaced by '[n]' which means the n'th parameter in the formula
-  // the parameters are set to 0 or 1 depending on the bit in the trigger mask
-  //
-  // TODO: this will most likely fail for class names like 'base', 'baseA', 'baseB'
-  // the class names must be fully unique, none must be contained as substring in
-  // another class name. Probably not needed for the moment but needs to be extended.
-  vector<Double_t> par;
-  TString condition=expression;
-  for (int i=0; i<gkNCTPTriggerClasses; i++) {
-    if (fpTriggerClasses->At(i)) {
-      TString className=fpTriggerClasses->At(i)->GetTitle();
-      //HLTDebug("checking trigger class %s", className.Data());
-      if (condition.Contains(className)) {
-	TString replace; replace.Form("[%d]", par.size());
-	//HLTDebug("replacing %s with %s in \"%s\"", className.Data(), replace.Data(), condition.Data());
-	condition.ReplaceAll(className, replace);
-	if (triggerMask&((AliHLTUInt64_t)0x1<<i)) par.push_back(1.0);
-	else par.push_back(0.0);
-      }
-    }
-  }
-
-  TFormula form("trigger expression", condition);
-  if (form.Compile()!=0) {
-    HLTError("invalid expression %s", expression);
-    return false;
-  }
-  if (form.EvalPar(&par[0], &par[0])>0.5) return true;
-  return false;
+  return fpCTPData->EvaluateCTPTriggerClass(expression, trigData);
 }

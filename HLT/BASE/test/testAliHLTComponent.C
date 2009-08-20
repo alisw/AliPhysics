@@ -233,6 +233,7 @@ public:
   int InitCTPTest(const char* param) {
     // this quick test needs to be the functions of the base class to be
     // defined 'protected'
+    SetupCTPData();
     //return ScanECSParam(param);
     //return InitCTPTriggerClasses(param);
     return -ENOSYS;
@@ -261,6 +262,7 @@ public:
   };
 protected:
   int DoInit(int /*argc*/, const char** /*argv*/) {
+    SetupCTPData();
     return 0;
   }
 
@@ -446,9 +448,11 @@ int testCTPTrigger()
       continue;
     }
     if (!parameter.EndsWith("=")) parameter+=",";
-    parameter+=element->Bit(); parameter+=":";
+    if (element->Bit()<10) parameter+="0";
+    parameter+=element->Bit(); 
+    parameter+=":";
     parameter+=element->ClassName(); parameter+=":";
-    parameter+=0;
+    parameter+="05-01-06"; // just a test pattern for the detector ids, ignored for the moment
     element++;
   }
   parameter+=";HLT_MODE=A;RUN_NO=0";
@@ -459,6 +463,7 @@ int testCTPTrigger()
     cerr << "InitCTPTest failed :" << iResult << endl;
     return iResult;
   }
+  cout << "init ECS parameter: " << parameter << endl;
 
   AliHLTTriggerDataAccess trigData;
   for (int cycle=0; cycle<500 && iResult>=0; cycle++) {
