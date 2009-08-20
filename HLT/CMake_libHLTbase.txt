@@ -53,6 +53,7 @@ BASE/AliHLTTriggerMenuSymbol.h
 BASE/AliHLTRunStatistics.cxx
 BASE/AliHLT_C_Component_WrapperInterface.cxx
 BASE/AliHLTDataTypes.cxx 
+BASE/AliHLTCTPData.cxx 
 )
 
 # fill list of header files from list of source files
