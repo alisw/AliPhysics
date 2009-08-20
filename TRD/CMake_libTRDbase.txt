@@ -10,7 +10,6 @@ set(SRCS
       AliTRDdigitsManager.cxx
       AliTRDrawData.cxx
       AliTRDpadPlane.cxx
-      AliTRDrawOldStream.cxx
       AliTRDrawFastStream.cxx
       AliTRDrawStream.cxx
       AliTRDrawTPStream.cxx

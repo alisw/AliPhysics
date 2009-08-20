@@ -13,7 +13,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
-//#include "TString.h"
 #include "AliLog.h"
 
 class AliRawReader;
@@ -23,13 +22,6 @@ class AliTRDdigitsManager;
 #define TRDMAXADC   21
 #define TRDMAXMCM   4 * 16
 #define MAXTRACKLETSPERHC 256
-
-/* // old raw stream */
-/* #define TRD_OLD_STREAM -1 */
-/* // read simulated data */
-/* #define TRD_SIM_STREAM 0 */
-/* // read real data - including test beam 2007 */
-/* #define TRD_REAL_STREAM 1 */
 
 #define TRD_NOIMP() AliFatal("Not Implemented for this class. Use inherited.");
 
@@ -51,9 +43,10 @@ class AliTRDrawStreamBase : public TObject
     {
       kTRDsimStream  =  0,
       kTRDrealStream =  1,
-      kTRDfastStream =  2,
-      kTRDoldStream  = 99
+      kTRDfastStream =  2
     };
+
+  enum { kDDLOffset = 0x400 };                                // Offset for DDL numbers
 
   static   AliTRDrawStreamBase *GetRawStream();
   static   AliTRDrawStreamBase *GetRawStream(AliRawReader *reader);
@@ -106,6 +99,7 @@ class AliTRDrawStreamBase : public TObject
   virtual Int_t     GetCol() const {TRD_NOIMP(); return 0;}   
   virtual Int_t     GetRowMax() const {TRD_NOIMP(); return 0;}
   virtual Int_t     GetColMax() const {TRD_NOIMP(); return 0;}
+
   // compatibility
   virtual Int_t     GetMaxRow() const {TRD_NOIMP(); return 0;}
   virtual Int_t     GetMaxCol() const {TRD_NOIMP(); return 0;}

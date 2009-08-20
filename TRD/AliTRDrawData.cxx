@@ -37,7 +37,6 @@
 #include "AliTRDarrayDictionary.h"
 #include "AliTRDarrayADC.h"
 #include "AliTRDrawStreamBase.h"
-#include "AliTRDrawOldStream.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDfeeParam.h"
@@ -182,7 +181,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
   for (Int_t sect = 0; sect < fGeo->Nsector(); sect++) { 
 
     char name[1024];
-    sprintf(name,"TRD_%d.ddl",sect + AliTRDrawOldStream::kDDLOffset);
+    sprintf(name,"TRD_%d.ddl",sect + AliTRDrawStreamBase::kDDLOffset);
 
     AliFstream* of = new AliFstream(name);
 
@@ -1214,97 +1213,6 @@ void AliTRDrawData::WriteIntermediateWordsV2(UInt_t* buf, Int_t& nw, Int_t& of, 
     x = ((kNTBin)<<26) | (bcCtr<<10) | (ptCtr<<6) | (ptPhase<<2) | 1;
     if (nw < maxSize) buf[nw++] = x; else of++;
   
-}
-
-//_____________________________________________________________________________
-AliTRDdigitsManager *AliTRDrawData::Raw2DigitsOLD(AliRawReader *rawReader)
-{
-  //
-  // Vx of the raw data reading
-  //
-
-  AliTRDarrayADC *digits = 0;
-  AliTRDarrayDictionary *track0 = 0;
-  AliTRDarrayDictionary *track1 = 0;
-  AliTRDarrayDictionary *track2 = 0; 
-
-  AliTRDSignalIndex *indexes = 0;
-  // Create the digits manager
-  AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
-  digitsManager->CreateArrays();
-
-  AliTRDrawOldStream input(rawReader);
-  input.SetRawVersion( fFee->GetRAWversion() );
-  input.Init();
-
-  AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
-
-  // Loop through the digits
-  Int_t lastdet = -1;
-  Int_t det    = 0;
-  Int_t it = 0;
-  while (input.Next()) {
-
-      det    = input.GetDet();
-
-      if (det != lastdet) { // If new detector found
-	
-	  lastdet = det;
-
- 	  if (digits) digits->Compress();
- 	  if (track0) track0->Compress();       
- 	  if (track1) track1->Compress();       
- 	  if (track2) track2->Compress();
-	
-	  // Add a container for the digits of this detector
-	  digits = (AliTRDarrayADC *) digitsManager->GetDigits(det);
-	  track0 = (AliTRDarrayDictionary *) digitsManager->GetDictionary(det,0);
-	  track1 = (AliTRDarrayDictionary *) digitsManager->GetDictionary(det,1);
-	  track2 = (AliTRDarrayDictionary *) digitsManager->GetDictionary(det,2);
-
-	  // Allocate memory space for the digits buffer
-	  if (digits->GetNtime() == 0) 
-	    {
-	      digits->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
-	      track0->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
-	      track1->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
-	      track2->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
-	    }
-
-	  indexes = digitsManager->GetIndexes(det);
-	  indexes->SetSM(input.GetSM());
-	  indexes->SetStack(input.GetStack());
-	  indexes->SetLayer(input.GetLayer());
-	  indexes->SetDetNumber(det);
-	  if (indexes->IsAllocated() == kFALSE)
-	    indexes->Allocate(input.GetMaxRow(), input.GetMaxCol(), input.GetNumberOfTimeBins());
-	}
-    
-      // 3 timebin data are stored per word
-      for (it = 0; it < 3; it++)
-	{
-	  if ( input.GetTimeBin() + it < input.GetNumberOfTimeBins() )
-	    {
-	      if (input.GetSignals()[it] > 0)
-		{
-		  digits->SetData(input.GetRow(), input.GetCol(),input.GetTimeBin() + it, input.GetSignals()[it]);
-
-		  indexes->AddIndexRC(input.GetRow(), input.GetCol());
-		  track0->SetData(input.GetRow(), input.GetCol(), input.GetTimeBin() + it, 0);
-		  track1->SetData(input.GetRow(), input.GetCol(), input.GetTimeBin() + it, 0);
-		  track2->SetData(input.GetRow(), input.GetCol(), input.GetTimeBin() + it, 0);
-		}
-	    }
-	}
-  }
-
-  if (digits) digits->Compress();
-  if (track0) track0->Compress();        
-  if (track1) track1->Compress();       
-  if (track2) track2->Compress();
-
-  return digitsManager;
-
 }
 
 //_____________________________________________________________________________

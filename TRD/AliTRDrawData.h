@@ -24,6 +24,11 @@ class AliTRDgeometry;
 class AliTRDfeeParam;
 class AliTRDarrayADC;
 
+// Some constants:
+const UInt_t kEndoftrackletmarker = 0xAAAAAAAA; /*This marks the end of tracklet data words*/
+const UInt_t kEndofrawdatamarker  = 0x00000000; /*This marks the end of half-chamber-data*/
+const UInt_t kSizeWord            = sizeof(UInt_t);
+
 class AliTRDrawData : public TObject {
 
  public:
@@ -37,7 +42,7 @@ class AliTRDrawData : public TObject {
   virtual Bool_t       Digits2Raw(TTree *digits, const TTree *tracks = NULL);
 
   virtual AliTRDdigitsManager *Raw2Digits(AliRawReader *rawReader);
-  virtual AliTRDdigitsManager *Raw2DigitsOLD(AliRawReader *rawReader);
+  //virtual AliTRDdigitsManager *Raw2DigitsOLD(AliRawReader *rawReader);
   static void SetRawFormatVersion(Int_t iver){ fgRawFormatVersion=iver; };
   static void SetSuppressionLevel(Int_t ilevel){ fgDataSuppressionLevel=ilevel; };
   Bool_t WriteTracklets(Int_t det);

@@ -28,9 +28,6 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-//#include "AliRawReader.h"
-
-#include "AliTRDrawOldStream.h"
 #include "AliTRDrawStream.h"
 #include "AliTRDrawFastStream.h"
 
@@ -99,9 +96,6 @@ AliTRDrawStreamBase *AliTRDrawStreamBase::GetRawStream()
   // Returns the selected raw stream implementation
   //
 
-  if (fgRawStreamVersion == kTRDoldStream)
-    return new AliTRDrawOldStream();
-
   if (fgRawStreamVersion == kTRDrealStream)
     return new AliTRDrawStream();
 
@@ -120,9 +114,6 @@ AliTRDrawStreamBase *AliTRDrawStreamBase::GetRawStream(AliRawReader *reader)
   //
   // Returns the selected raw stream implementation
   //
-
-  if (fgRawStreamVersion == kTRDoldStream)
-    return new AliTRDrawOldStream(reader);
 
   if (fgRawStreamVersion == kTRDrealStream)
     return new AliTRDrawStream(reader);
@@ -154,9 +145,6 @@ void AliTRDrawStreamBase::SetRawStreamVersion(const char *opt)
 
   if (strstr(opt, "real" ) != 0 || strstr(opt, "REAL") != 0) 
     fgRawStreamVersion = kTRDrealStream; 
-
-  if (strstr(opt, "old" ) != 0 || strstr(opt, "OLD") != 0) 
-    fgRawStreamVersion = kTRDoldStream; 
 
   if (strstr(opt, "fast" ) != 0 || strstr(opt, "FAST") != 0)
     fgRawStreamVersion = kTRDfastStream;
