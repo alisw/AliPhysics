@@ -29,11 +29,14 @@
 #include <TObjString.h>
 #include <TGraph.h>
 
+#include <float.h>
+
 #include "AliGRPPreprocessor.h"
 #include "AliGRPObject.h"
 #include "AliDCSSensor.h"
 #include "AliSplineFit.h"
 #include "AliDCSSensorArray.h"
+//#include "AliRawEventHeaderVersions.h"
 
 #include "AliTriggerConfiguration.h"
 #include "AliTriggerRunScalers.h"
@@ -189,7 +192,7 @@ ClassImp(AliGRPPreprocessor)
 //_______________________________________________________________
 
 AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
-	AliPreprocessor("GRP",shuttle),  fPressure(0)
+	AliPreprocessor("GRP",shuttle),  fPressure(0), fmaxFloat(0), fminFloat(0),fmaxDouble(0), fminDouble(0), fmaxInt(0), fminInt(0), fmaxUInt(0), fminUInt(0)
 {
 	// constructor - shuttle must be instantiated!
 
@@ -208,6 +211,25 @@ AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
 	AddRunType("NOISE");
 	AddRunType("PULSER");
         AddRunType("STANDALONE_PULSER");
+
+	fmaxFloat = FLT_MAX;
+	fminFloat = -FLT_MAX;
+	fmaxDouble = DBL_MAX;
+	fminDouble = -DBL_MAX;
+	fmaxInt = kMaxInt;
+	fminInt = kMinInt;
+	fmaxUInt = kMaxUInt;
+	fminUInt = 0;
+
+	AliInfo(Form("Max allowed float = %6.5e",fmaxFloat));
+	AliInfo(Form("Min allowed float = %6.5e",fminFloat));
+	AliInfo(Form("Max allowed double = %6.5e",fmaxDouble));
+	AliInfo(Form("Min allowed double = %6.5e",fminDouble));
+	AliInfo(Form("Max allowed integer = %d",fmaxInt));
+	AliInfo(Form("Min allowed integer = %d",fminInt));
+	AliInfo(Form("Max allowed unsigned integer = %u",(Int_t)fmaxUInt));
+	AliInfo(Form("Min allowed unsigned integer = %u",(Int_t)fminUInt));
+
 }
 
 //_______________________________________________________________
@@ -228,6 +250,8 @@ void AliGRPPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   AliPreprocessor::Initialize(run, startTime, endTime);
 
   AliInfo("Initialization of the GRP preprocessor.");
+  AliInfo(Form("Start Time DCS = %d",GetStartTimeDCSQuery()));
+  AliInfo(Form("End Time DCS = %d",GetEndTimeDCSQuery()));
   TClonesArray * array = new TClonesArray("AliDCSSensor",kNumSensors); 
   for(Int_t j = 0; j < kNumSensors; j++) {
     AliDCSSensor * sens = new ((*array)[j])AliDCSSensor;
@@ -298,9 +322,9 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	//=================//
 	Log(Form("Starting DCS Query at %d and finishing at %d",GetStartTimeDCSQuery(),GetEndTimeDCSQuery()));
 	Int_t entries = ProcessDcsDPs( valueMap, grpobj );
-	Log(Form("entries found = %d",entries));
+	Log(Form("entries found = %d (should be %d)",entries, fgknDCSDP-4));
 	if( entries < fgknDCSDP-4 ) { // FIXME (!= ) LHState, LHCLuminosity, BeamIntensity, LH3_BSF4_H3 are not working yet...  
-		Log(Form("Problem with the DCS data points!!!"));
+		Log(Form("Problem with the DCS data points!!! Only %d/%d entries found",entries,fgknDCSDP-4));
 		error |= 8;
 	} else  Log(Form("DCS data points, successful!"));
 	
@@ -501,6 +525,7 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 {
 	//======DAQ FXS======//
 	
+	//	AliRawEventHeaderV3_9::Class()->IgnoreTObjectStreamer(); // to avoid trying reading TObject store in AliRawEventHeaderV3_9 - temporary fix 
 	TList* list = GetFileSources(kDAQ);  
 	if (!list) {
 		Log("No raw data tag list: connection problems with DAQ FXS logbook!");
@@ -687,6 +712,33 @@ Int_t AliGRPPreprocessor::ProcessL3DPs(const TMap* valueMap, AliGRPObject* grpOb
 	Int_t nL3Entries = 0;
 	TObjArray *array = 0x0;
 	Int_t indexDP = -1;
+	Bool_t isZero = kTRUE; // flag to monitor L3Current. If set to true, the magnet is OFF, and the polarity can change
+
+	AliInfo(Form("==========L3Current==========="));
+	Bool_t outOfRange = kFALSE;  // flag to monitor if any value collected by DCS is out of range
+	indexDP = kL3Current;
+	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
+	if(!array) {
+		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
+	} 
+	else {
+		if (array->GetEntries() == 0){
+			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
+		}
+		else {
+			Float_t *floatDCS = ProcessFloatAllMagnet(array, indexDP, isZero);
+			if (floatDCS != NULL){
+				grpObj->SetL3Current(floatDCS);
+			}
+			else{
+				outOfRange = kTRUE;
+			}	
+			delete floatDCS;
+		}
+		if (!outOfRange) nL3Entries++;
+	}
+
+	if (array) array = 0x0;
 
 	AliInfo(Form("==========L3Polarity==========="));
 	indexDP = kL3Polarity;
@@ -699,31 +751,21 @@ Int_t AliGRPPreprocessor::ProcessL3DPs(const TMap* valueMap, AliGRPObject* grpOb
 			AliError(Form("No entries found in array! setting %s Polarity to invalid...",fgkDCSDataPoints[indexDP]));
 		}
 		else {
-			Char_t charDCS = ProcessBool(array);
-			grpObj->SetL3Polarity(charDCS);
-			AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetL3Polarity())));
+			Bool_t change = kFALSE;
+			Char_t charDCS = ProcessBool(array,change);
+			if (!change){
+				grpObj->SetL3Polarity(charDCS);
+				AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetL3Polarity())));
+				nL3Entries++;
+			}
+			else if (isZero){
+				AliInfo(Form("%s set to invalid, but magnet was OFF, not ignoring DP",fgkDCSDataPoints[indexDP]));
+				nL3Entries++;
+			}
+			else {
+				AliError(Form("%s Polarity value changed within the run! setting it to invalid and ignoring DP",fgkDCSDataPoints[indexDP]));
+			}
 		}
-		nL3Entries++;
-	}
-
-	if (array) array = 0x0;
-
-	AliInfo(Form("==========L3Current==========="));
-	indexDP = kL3Current;
-	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
-	if(!array) {
-		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
-	} 
-	else {
-		if (array->GetEntries() == 0){
-			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
-		}
-		else {
-			Float_t *floatDCS = ProcessFloatAll(array);
-			grpObj->SetL3Current(floatDCS);
-			delete floatDCS;
-		}
-		nL3Entries++;
 	}
 
 	return nL3Entries;
@@ -740,6 +782,33 @@ Int_t AliGRPPreprocessor::ProcessDipoleDPs(const TMap* valueMap, AliGRPObject* g
 	Int_t nDipoleEntries = 0;
 	TObjArray *array = 0x0;
 	Int_t indexDP = -1;
+	Bool_t isZero = kTRUE; // flag to monitor L3Current. If set to true, the magnet is OFF, and the polarity can change
+
+	AliInfo(Form("==========DipoleCurrent==========="));
+	Bool_t outOfRange = kFALSE;  // flag to monitor if any value collected by DCS is out of range
+	indexDP = kDipoleCurrent;
+	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
+	if(!array) {
+		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
+	} 
+	else {
+		if (array->GetEntries() == 0){
+			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
+		}
+		else {
+			Float_t *floatDCS = ProcessFloatAllMagnet(array, indexDP, isZero);
+			if (floatDCS != NULL){
+				grpObj->SetDipoleCurrent(floatDCS);
+			} 
+			else{
+				outOfRange=kTRUE;
+			}
+			delete floatDCS;
+		}
+		if (!outOfRange) nDipoleEntries++;
+	}
+
+	if (array) array = 0x0;
 
 	AliInfo(Form("==========DipolePolarity==========="));
 	indexDP = kDipolePolarity;
@@ -752,31 +821,21 @@ Int_t AliGRPPreprocessor::ProcessDipoleDPs(const TMap* valueMap, AliGRPObject* g
 			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
 		}
 		else {
-			Char_t charDCS = ProcessBool(array);
-			grpObj->SetDipolePolarity(charDCS);
-			AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetDipolePolarity())));
+			Bool_t change = kFALSE;
+			Char_t charDCS = ProcessBool(array,change);
+			if (!change){
+				grpObj->SetDipolePolarity(charDCS);
+				AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetDipolePolarity())));
+				nDipoleEntries++;
+			}
+			else if (isZero){
+				AliInfo(Form("%s set to invalid, but magnet was OFF, not ignoring DP",fgkDCSDataPoints[indexDP]));
+				nDipoleEntries++;
+			}
+			else{
+				AliError(Form("%s Polarity value changed within the run! setting it to invalid and ignoring DP",fgkDCSDataPoints[indexDP]));
+			}
 		}
-		nDipoleEntries++;
-	}
-
-	if (array) array = 0x0;
-
-	AliInfo(Form("==========DipoleCurrent==========="));
-	indexDP = kDipoleCurrent;
-	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
-	if(!array) {
-		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
-	} 
-	else {
-		if (array->GetEntries() == 0){
-			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
-		}
-		else {
-			Float_t *floatDCS = ProcessFloatAll(array);
-			grpObj->SetDipoleCurrent(floatDCS);
-			delete floatDCS;
-		}
-		nDipoleEntries++;
 	}
 
 	return nDipoleEntries;
@@ -795,6 +854,7 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 	Int_t indexDP = -1;
 
 	AliInfo(Form("==========CavernTemperature==========="));
+	Bool_t outOfRange = kFALSE;  // flag to monitor if any value collected by DCS is out of range
 	indexDP = kCavernTemperature;
 	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
 	if(!array) {
@@ -806,10 +866,15 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 		}
 		else {
 			Float_t *floatDCS = ProcessFloatAll(array);
-			grpObj->SetCavernTemperature(floatDCS);
+			if (floatDCS != NULL){
+				grpObj->SetCavernTemperature(floatDCS);
+			}
+			else{
+				outOfRange = kTRUE;
+			}
 			delete floatDCS;
 		}
-		nEnvEntries++;
+		if (!outOfRange) nEnvEntries++;
 	}
 
 	if (array) array = 0x0;
@@ -863,11 +928,13 @@ Int_t AliGRPPreprocessor::ProcessHPDPs(const TMap* valueMap, AliGRPObject* grpOb
 	Int_t nHPEntries = 0;
 	TObjArray *array = 0x0;
 	Int_t indexDP = -1;
+	Bool_t outOfRange; // flag to monitor if any value collected by DCS is out of range
 
 	if (fgknDCSDPHallProbes != AliGRPObject::GetNumberOfHP()){
 		AliError(Form("Number of Hall probes expected in GRP Preprocessor (i.e. %d) different from number of Hall Probes foreseen in GRP object (i.e. %d). Looping on entries from GRP object anyway.", fgknDCSDPHallProbes, AliGRPObject::GetNumberOfHP()));
 	}
 	for (indexDP = 0; indexDP < AliGRPObject::GetNumberOfHP(); indexDP++){
+		outOfRange = kFALSE; // resetting outOfRange flag at each HP
 		AliInfo(Form("==========%s===========",AliGRPObject::GetHPDP(indexDP)));
 		array = (TObjArray *)valueMap->GetValue(AliGRPObject::GetHPDP(indexDP));
 		if(!array) {
@@ -879,14 +946,19 @@ Int_t AliGRPPreprocessor::ProcessHPDPs(const TMap* valueMap, AliGRPObject* grpOb
 			}
 			else {
 				Float_t *floatDCS = ProcessFloatAll(array);
-				AliDebug(2,Form("value[0] = %f, value[1] = %f, value[2] = %f, value[3] = %f, value[4] = %f",floatDCS[0],floatDCS[1],floatDCS[2],floatDCS[3],floatDCS[4])); 
-				grpObj->SetHallProbes((AliGRPObject::DP_HallProbes)indexDP,floatDCS);
-				for (Int_t kk = 0 ; kk< 5; kk++){
-					AliDebug(2,Form("HallProbe[%d][%d]=%f",indexDP,kk,grpObj->GetHallProbes((AliGRPObject::DP_HallProbes)indexDP,(AliGRPObject::Stats)kk)));
+				if (floatDCS != NULL){
+					AliDebug(2,Form("value[0] = %f, value[1] = %f, value[2] = %f, value[3] = %f, value[4] = %f",floatDCS[0],floatDCS[1],floatDCS[2],floatDCS[3],floatDCS[4])); 
+					grpObj->SetHallProbes((AliGRPObject::DP_HallProbes)indexDP,floatDCS);
+					for (Int_t kk = 0 ; kk< 5; kk++){
+						AliDebug(2,Form("HallProbe[%d][%d]=%f",indexDP,kk,grpObj->GetHallProbes((AliGRPObject::DP_HallProbes)indexDP,(AliGRPObject::Stats)kk)));
+					}
+				}
+				else{
+					outOfRange = kTRUE;
 				}
 				delete floatDCS;
 			}
-			nHPEntries++;
+			if (!outOfRange) nHPEntries++;
 		}
 	}
 		
@@ -951,6 +1023,7 @@ Int_t AliGRPPreprocessor::ProcessLHCDPs(const TMap* valueMap, AliGRPObject* grpO
 	if (array) array = 0x0;
 
 	AliInfo(Form("==========LHCLuminosity==========="));
+	Bool_t outOfRange = kFALSE; // flag to monitor if any value collected by DCS is out of range
 	indexDP = kLHCLuminosity;
 	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
 	if(!array) {
@@ -962,18 +1035,24 @@ Int_t AliGRPPreprocessor::ProcessLHCDPs(const TMap* valueMap, AliGRPObject* grpO
 		}
 		else {
 			Float_t *floatDCS = ProcessFloatAll(array);
-			grpObj->SetLHCLuminosity(floatDCS);
-			delete floatDCS;
-			AliSplineFit* splfit = GetSplineFit(array,fgkDCSDataPoints[indexDP]);
-			grpObj->SetLHCLuminositySplineFit(splfit);
+			if (floatDCS != NULL){
+				grpObj->SetLHCLuminosity(floatDCS);
+				AliSplineFit* splfit = GetSplineFit(array,fgkDCSDataPoints[indexDP]);
+				grpObj->SetLHCLuminositySplineFit(splfit);
 			//		delete splfit;
+			}
+			else {
+				outOfRange = kTRUE;
+			}
+			delete floatDCS;
 		}
-		nLHCEntries++;
+		if (!outOfRange) nLHCEntries++;
 	}
 
 	if (array) array = 0x0;
 
 	AliInfo(Form("==========BeamIntensity==========="));
+	if (outOfRange) outOfRange = kFALSE;  // resetting outOfRange if needed
 	indexDP = kBeamIntensity;
 	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
 	if(!array) {
@@ -985,13 +1064,18 @@ Int_t AliGRPPreprocessor::ProcessLHCDPs(const TMap* valueMap, AliGRPObject* grpO
 		}
 		else {
 			Float_t *floatDCS = ProcessFloatAll(array);
-			grpObj->SetBeamIntensity(floatDCS);
+			if (floatDCS != NULL){
+				grpObj->SetBeamIntensity(floatDCS);
+				AliSplineFit* splfit1 = GetSplineFit(array,fgkDCSDataPoints[indexDP]);
+				grpObj->SetBeamIntensitySplineFit(splfit1);
+				//delete splfit;
+			}
+			else{
+				outOfRange = kTRUE;
+			}
 			delete floatDCS;
-			AliSplineFit* splfit1 = GetSplineFit(array,fgkDCSDataPoints[indexDP]);
-			grpObj->SetBeamIntensitySplineFit(splfit1);
-			//delete splfit;
 		}
-		nLHCEntries++;
+		if (!outOfRange) nLHCEntries++;
 	}
 
 	return nLHCEntries;
@@ -1088,11 +1172,20 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 	Float_t *tempArray = new Float_t[nCounts];
 	for(Int_t i = 0; i < nCounts; i++) {
 		AliDCSValue *v = (AliDCSValue *)array->At(i);
+		if ((v->GetFloat() <= fminFloat) || (v->GetFloat() >= fmaxFloat)) {
+			AliError(Form("Error! Float value found in DCS map at %d-th entry is OUT OF RANGE: value = %6.5e",i,v->GetFloat()));
+			if (v->GetFloat() < fminFloat) AliInfo(Form("The value is smaller than %6.5e",fminFloat));
+			if (v->GetFloat() > fmaxFloat) AliInfo(Form("The value is greater than %6.5e",fmaxFloat));
+			return NULL;
+		}
 		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
 			aDCSArraySum += v->GetFloat();
 			tempArray[i] = v->GetFloat();
 			AliDebug(2,Form("%d-th entry = %f",i,tempArray[i]));
 			iCounts += 1;
+		}
+		else {
+			AliError(Form("DCS values for the parameter outside the queried interval"));
 		}
 	}
 
@@ -1106,12 +1199,12 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 		AliDebug(2,Form("maximum = %f, minimum = %f", aDCSArrayMean+3*aDCSArraySDMean, aDCSArrayMean-3*aDCSArraySDMean));
 		for (Int_t i = 0; i < iCounts; i++){
 			AliDCSValue *v = (AliDCSValue *)array->At(i);
-			AliDebug(2,Form("maximum = %f, minimum = %f", aDCSArrayMean+3*aDCSArraySDMean, aDCSArrayMean-3*aDCSArraySDMean));
-			AliDebug(2,Form("%i-th entry = %f",i, v->GetFloat())); 
+			AliDebug(3,Form("maximum = %f, minimum = %f", aDCSArrayMean+3*aDCSArraySDMean, aDCSArrayMean-3*aDCSArraySDMean));
+			AliDebug(3,Form("%i-th entry = %f",i, v->GetFloat())); 
 			if ((v->GetFloat()<=aDCSArrayMean+3*aDCSArraySDMean) && (v->GetFloat()>=aDCSArrayMean-3*aDCSArraySDMean)){
 				temp1+=v->GetFloat();
 				iCounts1++;
-				AliDebug(2,Form("temp1 = %f, iCounts1 = %i",temp1,iCounts1));
+				AliDebug(3,Form("temp1 = %f, iCounts1 = %i",temp1,iCounts1));
 			}
     			temp += (v->GetFloat()-aDCSArrayMedian)*(v->GetFloat()-aDCSArrayMedian);
 		}
@@ -1135,7 +1228,128 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 		aDCSArrayMedian = AliGRPObject::GetInvalidFloat();
 		aDCSArraySDMean = AliGRPObject::GetInvalidFloat();
 	}
-	AliDebug(2,Form("iCounts1 = %d and temp1 = %f",iCounts1, temp1));
+	AliDebug(3,Form("iCounts1 = %d and temp1 = %f",iCounts1, temp1));
+	if (iCounts1 > 0) {
+		aDCSArrayTruncMean = temp1/iCounts1;
+	}
+	else{
+		aDCSArrayTruncMean = AliGRPObject::GetInvalidFloat();
+	}
+	
+	
+	
+	AliDebug(2,Form("mean within %d counts = %f ",iCounts,aDCSArrayMean));
+	AliDebug(2,Form("truncated mean within %d counts = %f (%i values used)",iCounts,aDCSArrayTruncMean,iCounts1));
+	AliDebug(2,Form("median within %d counts = %f ",iCounts,aDCSArrayMedian));
+	AliDebug(2,Form("standard deviation with mean within %d counts = %f ",iCounts,aDCSArraySDMean));
+	AliDebug(2,Form("standard deviation with median within %d counts = %f ",iCounts,aDCSArraySDMedian));
+	
+    	parameters[0] = aDCSArrayMean;
+	parameters[1] = aDCSArrayTruncMean;
+	parameters[2] = aDCSArrayMedian;
+	parameters[3] = aDCSArraySDMean;
+	parameters[4] = aDCSArraySDMedian;
+
+	AliDebug(2,Form("mean = %f, truncated mean = %f, median = %f, SD wrt mean = %f, SD wrt median = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
+    	//AliInfo(Form("mean = %f, truncated mean = %f, median = %f, SD wrt mean = %f, SD wrt median = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
+
+	return parameters;
+}
+
+
+
+//__________________________________________________________________________________________________________________
+
+Float_t* AliGRPPreprocessor::ProcessFloatAllMagnet(const TObjArray* array, Int_t indexDP, Bool_t &isZero)
+{
+	// 
+	// processing Float values using Mean, Median, Standard Deviation wrt Mean, Standar Deviation wrt Median 
+	// used for L3 and Dipole magnets, using isZero flag to decide whther the magnet was OFF/ON
+	// threshold for L3 = 350 A (value provided by DCS)
+	// threshold for Dipole = 450 A (value provided by DCS)
+	//
+	// parameters[0] = mean
+	// parameters[1] = truncated mean (calculated excluding points outside +/- 3RMS from mean
+	// parameters[2] = median
+	// parameters[3] = standard deviation wrt mean
+	// parameters[4] = standard deviation wrt median
+	//
+
+	AliInfo(Form("indexDP = %d",indexDP)); 
+	Float_t* parameters = new Float_t[5];
+	Double_t aDCSArrayMean = 0;     // Mean
+	Double_t aDCSArrayTruncMean = 0;// Truncated Mean
+	Double_t aDCSArrayMedian = 0;   // Median
+	Double_t aDCSArraySDMean = 0;   // Standard Deviation wrt Mean
+	Double_t aDCSArraySDMedian = 0; // Standard Deviation wrt Median
+	Float_t aDCSArraySum = 0.0;
+	Int_t iCounts = 0;
+	Int_t iCounts1 = 0;
+	Float_t temp = 0;
+	Float_t temp1 = 0;
+	Int_t nCounts = array->GetEntries();
+	Float_t *tempArray = new Float_t[nCounts];
+	for(Int_t i = 0; i < nCounts; i++) {
+		AliDCSValue *v = (AliDCSValue *)array->At(i);
+		if ((v->GetFloat() <= fminFloat) || (v->GetFloat() >= fmaxFloat)) {
+			AliError(Form("Error! Float value found in DCS map at %d-th entry is OUT OF RANGE: value = %6.5e",i,v->GetFloat()));
+if (v->GetFloat() < fminFloat) AliInfo(Form("The value is smaller than %6.5e",fminFloat));
+if (v->GetFloat() > fmaxFloat) AliInfo(Form("The value is greater than %6.5e",fmaxFloat));
+			return NULL;
+		}
+		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
+			aDCSArraySum += v->GetFloat();
+			tempArray[i] = v->GetFloat();
+			AliDebug(2,Form("%d-th entry = %f",i,tempArray[i]));
+			iCounts += 1;
+			if (indexDP == kL3Polarity && v->GetFloat() > 350 && isZero == kTRUE) isZero==kFALSE; 
+			if (indexDP == kDipolePolarity && v->GetFloat() > 450 && isZero == kTRUE) isZero==kFALSE; 
+		}
+		else {
+			AliError(Form("DCS values for the parameter outside the queried interval"));
+		}
+	}
+
+	AliDebug(2,Form("Using %i entries, starting from %i entries",iCounts,nCounts));
+    	if(iCounts != 0) {
+		aDCSArrayMean = TMath::Mean(iCounts,tempArray);
+		aDCSArrayMedian = TMath::Median(iCounts,tempArray);
+		aDCSArraySDMean = TMath::RMS(iCounts,tempArray);
+		AliDebug(2,Form("SD = %f",aDCSArraySDMean));
+		// computing standard deviation wrt median
+		AliDebug(2,Form("maximum = %f, minimum = %f", aDCSArrayMean+3*aDCSArraySDMean, aDCSArrayMean-3*aDCSArraySDMean));
+		for (Int_t i = 0; i < iCounts; i++){
+			AliDCSValue *v = (AliDCSValue *)array->At(i);
+			AliDebug(3,Form("maximum = %f, minimum = %f", aDCSArrayMean+3*aDCSArraySDMean, aDCSArrayMean-3*aDCSArraySDMean));
+			AliDebug(3,Form("%i-th entry = %f",i, v->GetFloat())); 
+			if ((v->GetFloat()<=aDCSArrayMean+3*aDCSArraySDMean) && (v->GetFloat()>=aDCSArrayMean-3*aDCSArraySDMean)){
+				temp1+=v->GetFloat();
+				iCounts1++;
+				AliDebug(3,Form("temp1 = %f, iCounts1 = %i",temp1,iCounts1));
+			}
+    			temp += (v->GetFloat()-aDCSArrayMedian)*(v->GetFloat()-aDCSArrayMedian);
+		}
+		AliDebug(3,Form("temp before the ratio = %f, with %d counts", temp, iCounts));
+		temp/=iCounts;
+		AliDebug(3,Form("temp after the ratio = %f", temp));
+    		if (temp>0) {
+			aDCSArraySDMedian = TMath::Sqrt(temp);
+		}
+		else if (temp==0) {
+			AliInfo(Form("Radical = 0 in computing standard deviation wrt median! Setting it to zero...."));
+			aDCSArraySDMedian = 0;
+		}
+		else{
+			AliError(Form("Radical < 0 in computing standard deviation! Setting it to invalid...."));
+			aDCSArraySDMedian = AliGRPObject::GetInvalidFloat();
+		}
+	}
+	else {
+		aDCSArrayMean = AliGRPObject::GetInvalidFloat();
+		aDCSArrayMedian = AliGRPObject::GetInvalidFloat();
+		aDCSArraySDMean = AliGRPObject::GetInvalidFloat();
+	}
+	AliDebug(3,Form("iCounts1 = %d and temp1 = %f",iCounts1, temp1));
 	if (iCounts1 > 0) {
 		aDCSArrayTruncMean = temp1/iCounts1;
 	}
@@ -1166,7 +1380,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 
 //_______________________________________________________________
 
-Char_t AliGRPPreprocessor::ProcessBool(const TObjArray* array)
+Char_t AliGRPPreprocessor::ProcessBool(const TObjArray* array, Bool_t &change)
 {
 	// 
 	// processing Boolean values
@@ -1185,6 +1399,7 @@ Char_t AliGRPPreprocessor::ProcessBool(const TObjArray* array)
 		if (iCount > 0) {
 			if (aDCSBool != v->GetBool())
 			AliError(Form("DCS values for the parameter changed from %d to %d within the queried interval", (UInt_t)aDCSBool, (UInt_t)v->GetBool()));
+			change = kTRUE;
 		}
 		aDCSBool = v->GetBool(); // always keeping last value
 		AliDebug(2,Form("Bool = %d",(Int_t)aDCSBool));
@@ -1201,6 +1416,8 @@ Float_t AliGRPPreprocessor::ProcessInt(const TObjArray* array)
 {
 	// 
 	// processing Int values, returning mean
+	// AliGRPObject::GetInvalidFloat() is returned if any of the DCS values
+	// are outside the queried time interval or their value is out of range
 	//
 
 	Float_t aDCSArraySum = 0.0;
@@ -1210,6 +1427,10 @@ Float_t AliGRPPreprocessor::ProcessInt(const TObjArray* array)
 
 	for(Int_t iCount = 0; iCount < array->GetEntries(); iCount++) {
 		v = (AliDCSValue *)array->At(iCount);
+		if ((v->GetInt() < fminInt) || (v->GetInt() > fmaxInt)) {
+			AliError(Form("Error! Int value found in DCS map at %d-th entry is OUT OF RANGE: value = %d",iCount, v->GetInt()));
+			return AliGRPObject::GetInvalidFloat();
+		}
 		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
 			aDCSArraySum += v->GetInt();
 			iCounts += 1;
@@ -1227,7 +1448,9 @@ Float_t AliGRPPreprocessor::ProcessInt(const TObjArray* array)
 Float_t AliGRPPreprocessor::ProcessUInt(const TObjArray* array)
 {
 	// 
-	// processing Int values, returning mean
+	// processing Int values, returning mean 
+	// AliGRPObject::GetInvalidFloat() is returned if any of the DCS values
+	// are outside the queried time interval or their value is out of range
 	//
 
 	Float_t aDCSArraySum = 0.0;
@@ -1237,6 +1460,10 @@ Float_t AliGRPPreprocessor::ProcessUInt(const TObjArray* array)
 
 	for(Int_t iCount = 0; iCount < array->GetEntries(); iCount++) {
 		v = (AliDCSValue *)array->At(iCount);
+		if ((v->GetUInt() < fminUInt) || (v->GetUInt() > fmaxUInt)) {
+			AliError(Form("Error! UInt value found in DCS map at %d-th entry is OUT OF RANGE: value = %u",iCount,v->GetUInt()));
+			return AliGRPObject::GetInvalidFloat();
+		}
 		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
 			aDCSArraySum += v->GetUInt();
 			iCounts += 1;

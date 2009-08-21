@@ -91,10 +91,11 @@ class AliGRPPreprocessor: public AliPreprocessor {
    AliSplineFit* GetSplineFit(const TObjArray *array, const TString& stringID);
    //AliSplineFit* GetSplineFit(TMap* mapDCS, const TString& stringID);
    TString ProcessChar(const TObjArray *array);
-   Char_t ProcessBool(const TObjArray *array);
+   Char_t ProcessBool(const TObjArray *array, Bool_t &change);
    Float_t ProcessInt(const TObjArray *array);
    Float_t ProcessUInt(const TObjArray *array);
    Float_t* ProcessFloatAll(const TObjArray* array);
+   Float_t* ProcessFloatAllMagnet(const TObjArray* array, Int_t indexDP, Bool_t &isZero);
 
  private:
  
@@ -108,8 +109,18 @@ class AliGRPPreprocessor: public AliPreprocessor {
 
   AliDCSSensorArray*   fPressure; //pressure array
 
-                       AliGRPPreprocessor(const AliGRPPreprocessor&); // Not implemented
-                       AliGRPPreprocessor& operator=(const AliGRPPreprocessor&); // Not implemented
+  AliGRPPreprocessor(const AliGRPPreprocessor&); // Not implemented
+  AliGRPPreprocessor& operator=(const AliGRPPreprocessor&); // Not implemented
+
+  Float_t fmaxFloat; // maximum float accepted
+  Float_t fminFloat; // minimum float accepted
+  Double_t fmaxDouble; // maximum double accepted
+  Double_t fminDouble; // minimum double accepted
+  Int_t fmaxInt; // maximum int accepted
+  Int_t fminInt; // minimum int accepted
+  UInt_t fmaxUInt; // maximum uint accepted
+  UInt_t fminUInt; // minimum uint accepted
+
 
   ClassDef(AliGRPPreprocessor, 0);
 };
