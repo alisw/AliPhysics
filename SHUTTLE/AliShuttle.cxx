@@ -3316,6 +3316,7 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 		body = Form("Dear  %s FXS experts, \n\n",sys.Data());
 		body += Form("SHUTTLE couldn\'t retrieve data from the FXS for detector %s "
 			     "in run %d!!\n\n", fCurrentDetector.Data(), GetCurrentRun());
+		body += Form("The contacted server was:\nDB: %s\nFXS:%s\n\n", fConfig->GetFXSdbHost(system), fConfig->GetFXSHost(system));
 	}
 	else {
 		subject = Form("%s %s Shuttle preprocessor FAILED in run %d (run type = %s)!",
