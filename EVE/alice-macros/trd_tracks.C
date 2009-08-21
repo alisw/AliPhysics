@@ -2,7 +2,6 @@
 #include <TGLViewer.h>
 #include <TEveManager.h>
 #include <EveBase/AliEveEventManager.h>
-#include "TRD/AliTRDdataArrayI.h"
 #include "TRD/AliTRDarrayADC.h"
 #include <EveDet/AliEveTRDTrackList.h>
 
