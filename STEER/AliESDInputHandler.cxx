@@ -47,6 +47,9 @@ AliESDInputHandler::AliESDInputHandler() :
   fEvent(0x0),
   fAnalysisType(0),
   fNEvents(0),
+  fHLTEvent(0x0),
+  fHLTTree(0x0),
+  fUseHLT(kFALSE),
   fUseTags(kFALSE),
   fChainT(0),
   fTreeT(0),
@@ -65,7 +68,7 @@ AliESDInputHandler::~AliESDInputHandler()
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
     AliInputEventHandler(name, title), fEvent(0x0), fAnalysisType(0),
-     fNEvents(0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0)
+     fNEvents(0),  fHLTEvent(0x0), fHLTTree(0x0), fUseHLT(kFALSE), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0)
 {
     // Constructor
 }
@@ -77,6 +80,8 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     fTree         = tree;
     
     if (!fTree) return kFALSE;
+    fTree->GetEntry(0);
+    
     // Get pointer to ESD event
     SwitchOffBranches();
     SwitchOnBranches();
@@ -89,10 +94,27 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
 
     fEvent->ReadFromTree(fTree);
     fNEvents = fTree->GetEntries();
+
+    if (fUseHLT) {
+	// Get HLTesdTree from current file
+	TTree* cTree = tree;
+	if (fTree->GetTree()) cTree = fTree->GetTree();
+	TFile* cFile = cTree->GetCurrentFile();
+	cFile->GetObject("HLTesdTree", fHLTTree);
+	if (fHLTEvent) {
+	    delete fHLTEvent;
+	    fHLTEvent = 0;
+	}
+	if (fHLTTree) {
+	    fHLTEvent = new AliESDEvent();
+	    fHLTEvent->ReadFromTree(fHLTTree);
+	}
+    }
+    
     return kTRUE;
 }
 
-Bool_t AliESDInputHandler::BeginEvent(Long64_t /*entry*/)
+Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
 {
     // Copy from old to new format if necessary
   AliESD* old = ((AliESDEvent*) fEvent)->GetAliESDOld();
@@ -100,6 +122,11 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t /*entry*/)
 	((AliESDEvent*)fEvent)->CopyFromOldESD();
 	old->Reset();
   }
+
+  if (fHLTTree) {
+      fHLTTree->GetEntry(entry);
+  }
+  
   return kTRUE;
 }
 
@@ -148,7 +175,7 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     }
     
     printf("AliESDInputHandler::Notify() Path: %s\n", pathName.Data());
-    
+
     if (fRunTag) {
 	fRunTag->Clear();
     } else {
@@ -156,7 +183,7 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     }
     
     delete fTreeT; fTreeT = 0;
-
+    
     if (fChainT) {
 	delete fChainT;
 	fChainT = 0;

@@ -32,7 +32,10 @@ class AliESDInputHandler : public AliInputEventHandler {
     AliESDEvent         *GetEvent()        const {return fEvent;}
     Option_t            *GetAnalysisType() const {return fAnalysisType;}
     Option_t            *GetDataType() const;
-
+    // HLT analysis
+    AliESDEvent         *GetHLTEvent()     const {return fHLTEvent;}
+    TTree               *GetHLTTree()      const {return fHLTTree;}    
+    void                SetReadHLT()             {fUseHLT = kTRUE;}
     // Tag analysis
     void SetReadTags() {fUseTags = kTRUE;}
     AliRunTag           *GetRunTag() const {return fRunTag;}
@@ -44,13 +47,17 @@ class AliESDInputHandler : public AliInputEventHandler {
     // ESD event
     AliESDEvent    *fEvent;        //! Pointer to the event
     Option_t       *fAnalysisType; //! local, proof, grid
-    Int_t           fNEvents;      //! Number of events in the current tree 
+    Int_t           fNEvents;      //! Number of events in the current tree
+    // HLT event
+    AliESDEvent    *fHLTEvent;     //! Pointer to the HLT Event (if present)
+    TTree          *fHLTTree;      //! Pointer to the HLT Event (if present)
+    Bool_t          fUseHLT;       //  Flag to access HLT Events
     // ESD Tags (optional)
     Bool_t          fUseTags;    //  Flag to use tags
     TChain         *fChainT;     //! File with event tags
     TTree          *fTreeT;      //! Tree of tags
     AliRunTag      *fRunTag;     //! Pointer to the run tag
-    ClassDef(AliESDInputHandler, 3);
+    ClassDef(AliESDInputHandler, 4);
 };
 
 #endif
