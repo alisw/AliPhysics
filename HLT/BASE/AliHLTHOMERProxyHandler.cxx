@@ -285,7 +285,7 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
   // -- Get Content
   TString xmlContent(node->GetText() );
 
-  HLTDebug(Form("XMLContent: %s",xmlContent.Data()));
+  HLTInfo(Form("XMLContent: %s",xmlContent.Data()));
 
   iResult = xmlParser.ParseBuffer(xmlContent.Data(), xmlContent.Length());
   if ( iResult < 0 ) {
@@ -335,6 +335,8 @@ Int_t AliHLTHOMERProxyHandler::AddService(TXMLNode *innerNode) {
 
   HLTInfo(Form(">> New service"));    
 
+  TXMLNode* serviceNode = innerNode;
+
   // -- Loop over all service properties and 
   //    read them from the service tag
   // -----------------------------------------
@@ -347,18 +349,22 @@ Int_t AliHLTHOMERProxyHandler::AddService(TXMLNode *innerNode) {
 
   TXMLNode* prevInnerNode = NULL;
 
+  // -- Retrieve hostname and port
+  // -------------------------------
+
   do {
     prevInnerNode = innerNode;
     
     if ( ! strcmp(innerNode->GetNodeName(), "text" ) )
       continue;
-    
-    HLTInfo(Form(" %s ++ %s", innerNode->GetNodeName(), innerNode->GetText() ));
-    
+        
     // -- hostname
-    if ( ! strcmp( innerNode->GetNodeName(), "address") )
+    if ( ! strcmp( innerNode->GetNodeName(), "address") ) {
+      HLTInfo(Form("  > %s ++ %s", innerNode->GetNodeName(), innerNode->GetText() ));
       hostname = innerNode->GetText();
+    }
     else if ( ! strcmp( innerNode->GetNodeName(), "port") ) {
+      HLTInfo(Form("  > %s ++ %s", innerNode->GetNodeName(), innerNode->GetText() ));
       TString portS(innerNode->GetText());
       if ( portS.IsDigit() )
 	port = portS.Atoi();
@@ -367,40 +373,104 @@ Int_t AliHLTHOMERProxyHandler::AddService(TXMLNode *innerNode) {
 	iResult = -1;
       }
     }
-    else if ( ! strcmp( innerNode->GetNodeName(), "dataorigin") )
-      dataOrigin = innerNode->GetText();
-    else if ( ! strcmp( innerNode->GetNodeName(), "datatype") )
-      dataType = innerNode->GetText();
-    else if ( ! strcmp( innerNode->GetNodeName(), "dataspecification") )
-      dataSpecification = innerNode->GetText();    
-  
   } while ( ( innerNode = prevInnerNode->GetNextNode() ) && !iResult );
 
-  // -- Check the service properties
-  // ---------------------------------
 
   // -- Change hostame from service with proxy, if outside HLT
   if ( fRealm != kHLT || fRealm != kHLT+kHOMERRealmsMax )
     hostname = fgkHOMERProxyNode[fRealm];
 
-  // -- Check for completeness of the source properties
-  if ( hostname.IsNull() || !port || dataOrigin.IsNull() ||
-       dataType.IsNull() || dataSpecification.IsNull() ) {
-    HLTWarning(Form("Service provides not all values:\n\thostname\t\t %s\n\tport\t\t\t %d\n\tdataorigin\t\t %s\n\tdatatype\t\t %s\n\tdataspecification\t %s", 
-		  hostname.Data(), port, dataOrigin.Data(), dataType.Data(), dataSpecification.Data()));
 
-    return 1;
-  }
+  // -- Get Data Specifications from blocks
+  // ----------------------------------------
 
-  // -- Create new source
-  // ----------------------
+  do {
+    prevInnerNode = serviceNode;
 
-  AliHLTHOMERSourceDesc * source = new AliHLTHOMERSourceDesc();
-  source->SetService( hostname, port, dataOrigin, dataType, dataSpecification );
+    if ( strcmp( serviceNode->GetNodeName(), "blocks") )
+      continue;
+ 
+    TXMLNode* blocks = serviceNode->GetChildren();
 
-  fSourceList->Add( source );
+    if ( ! blocks ) {
+      HLTError(Form("No blocks present"));
+      return 1;
+    }
+      
+    TXMLNode* blockNode = blocks->GetNextNode();
+    TXMLNode* prevBlockNode = NULL;
 
-  HLTInfo(Form( "New Source added : %s", source->GetSourceName().Data()));
+    if ( ! blockNode ) {
+      HLTError(Form("No block present in the blocks tag"));
+      return 1;
+    }
+      
+    // -- blocks loop 
+    
+    do {
+      prevBlockNode = blockNode;
+      
+      if ( strcmp( blockNode->GetNodeName(), "block") )
+	continue;
+
+      TXMLNode *dataNode = blockNode->GetChildren();
+      TXMLNode *prevDataNode = NULL;
+
+      if ( ! dataNode ) {
+	HLTError(Form("No data specification tags present in block tag."));
+	return 1;
+      }
+      // -- data spec loop
+      
+      do {
+	prevDataNode = dataNode;
+
+	if ( ! strcmp(dataNode->GetNodeName(), "text" ) )
+	  continue;
+
+	HLTInfo(Form(" %s ++ %s", dataNode->GetNodeName(), dataNode->GetText() ));	
+
+	if ( ! strcmp( dataNode->GetNodeName(), "dataorigin") ) {
+	  dataOrigin = dataNode->GetText();
+	}
+	else if ( ! strcmp( dataNode->GetNodeName(), "datatype") ) {
+	  dataType = dataNode->GetText();
+	}
+	else if ( ! strcmp( dataNode->GetNodeName(), "dataspecification") ) {
+	  dataSpecification = dataNode->GetText();    
+	}
+      } while ( ( dataNode = prevDataNode->GetNextNode() ) && !iResult );
+      
+      // -- data spec loop
+
+      // -- Check the service properties
+      // ---------------------------------
+      
+      // -- Check for completeness of the source properties
+      if ( hostname.IsNull() || !port || dataOrigin.IsNull() ||
+	   dataType.IsNull() || dataSpecification.IsNull() ) {
+	HLTWarning(Form("Service provides not all values:\n\thostname\t\t %s\n\tport\t\t\t %d\n\tdataorigin\t\t %s\n\tdatatype\t\t %s\n\tdataspecification\t 0x%08X", 
+			hostname.Data(), port, dataOrigin.Data(), dataType.Data(), dataSpecification.Atoi()));
+	
+	return 1;
+      }
+
+      // -- Create new source
+      // ----------------------
+      
+      AliHLTHOMERSourceDesc * source = new AliHLTHOMERSourceDesc();
+      source->SetService( hostname, port, dataOrigin, dataType, dataSpecification );
+      
+      fSourceList->Add( source );
+      
+      HLTInfo(Form( "New Source added : %s", source->GetSourceName().Data()));
+
+    } while ( ( blockNode = prevBlockNode->GetNextNode() ) && !iResult );
+
+
+    // -- blocks loop
+    
+  } while ( ( serviceNode = prevInnerNode->GetNextNode() ) && !iResult );
   
   return iResult;
 }

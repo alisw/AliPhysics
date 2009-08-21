@@ -82,8 +82,8 @@ void AliHLTHOMERSourceDesc::SetService( TString hostname, Int_t port, TString or
   fSubDetector = 0;
   fSubSubDetector = 0;
 
-  //  fSourceName.Form("%s_%s_0x%08LX", fDetector.Data(), fDataType.Data(), fSpecification ); 
-  fSourceName.Form("%s_%s_0", fDetector.Data(), fDataType.Data() ); 
+  fSourceName.Form("%s_%s_0x%08X", fDetector.Data(), fDataType.Data(), fSpecification ); 
+  //fSourceName.Form("%s_%s_0", fDetector.Data(), fDataType.Data() ); 
 
   return;
 }
