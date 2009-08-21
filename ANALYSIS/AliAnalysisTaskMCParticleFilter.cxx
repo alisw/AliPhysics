@@ -110,8 +110,6 @@ void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
 
     // MC header...
     AliAODMCHeader *mcHeader = new AliAODMCHeader();
-    Printf("AODMCHeader %p",mcHeader);
-    Printf("AODMCHeader ** %p",&mcHeader);
     mcHeader->SetName(AliAODMCHeader::StdBranchName());
     AddAODBranch("AliAODMCHeader",&mcHeader);    
 
@@ -249,20 +247,19 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
     if((TMath::Abs(part->GetPdgCode()))==411){
       // cases 
       iCharm++;
-      Printf("Decay Mother %s",part->GetPDG()->GetName());
       Int_t d0 =  mcpart->GetFirstDaughter();
       Int_t d1 =  mcpart->GetLastDaughter();
       if(d0>0&&d1>0){
 	for(int id = d0;id <= d1;id++){
 	  AliMCParticle* daughter =  mcE->GetTrack(id);
-	  Printf("Decay Daughter %s",daughter->Particle()->GetPDG()->GetName());
 	  iAll++;
 	  if(mcH->IsParticleSelected(id))iTaken++;
 	}
       }
     }
   }
-  Printf("Taken daughters %d/%d of %d charm",iTaken,iAll,iCharm);
+
+  AliInfo(Form("Taken daughters %d/%d of %d charm",iTaken,iAll,iCharm));
 
 
   return;
