@@ -199,7 +199,10 @@ void AliCFManager::SetEventCutsList(Int_t isel, TObjArray* array) {
 
   Int_t nstep = fNStepEvt;
 
-  if (!fEvtCutList) fEvtCutList = new TObjArray*[nstep] ;
+  if (!fEvtCutList) {
+    fEvtCutList = new TObjArray*[nstep] ;
+    for (Int_t i=0; i<nstep; ++i) fEvtCutList[i] = 0;
+  }
   if (isel >= nstep) {
     AliWarning(Form("Selection index out of Range! isel=%i, max. number of selections= %i", isel,nstep));
     return;
