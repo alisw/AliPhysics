@@ -59,6 +59,8 @@ public:
   
   enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR };
   
+  enum Energy { k900 , k10000, k14000 };
+  
   /** Singleton access
       @return  single to */
   static AliFMDAnaParameters* Instance();
@@ -99,6 +101,8 @@ public:
   void     SetTriggerDefinition(Trigger trigger) {fTrigger = trigger;}
   Trigger  GetTriggerDefinition() {return fTrigger;}
   Bool_t   IsEventTriggered(AliESDEvent* esd);
+  void     SetEnergy(Energy energy) {fEnergy = energy;}
+  char*    GetPath(const char* species);
 protected:
   
   AliFMDAnaParameters();
@@ -116,7 +120,8 @@ protected:
       fEventSelectionEffPath(o.fEventSelectionEffPath),
       fProcessPrimary(o.fProcessPrimary),
       fProcessHits(o.fProcessHits),
-      fTrigger(o.fTrigger)
+      fTrigger(o.fTrigger),
+      fEnergy(o.fEnergy)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}
@@ -155,6 +160,7 @@ protected:
   Bool_t   fProcessPrimary;
   Bool_t   fProcessHits; 
   Trigger  fTrigger;
+  Energy   fEnergy;
   
   ClassDef(AliFMDAnaParameters,0) // Manager of parameters
 };

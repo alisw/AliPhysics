@@ -230,7 +230,7 @@ void AliFMDAnalysisTaskCollector::ReadFromFile(const Char_t* filename, Bool_t st
   fin.Close();
   
   if(store) {
-    TFile fcalib("$ALICE_ROOT/FMD/Correction/EnergyDistribution/energydistributions.root","RECREATE");
+    TFile fcalib(pars->GetPath(pars->GetEdistID() ),"RECREATE");
     EnergyDist->Write(AliFMDAnaParameters::GetEdistID());
     fcalib.Close();
   }

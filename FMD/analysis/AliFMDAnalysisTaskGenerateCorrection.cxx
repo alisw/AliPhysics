@@ -114,7 +114,8 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
   TH1F* hEventsAll    = new TH1F("EventsAll","EventsAll",fNvtxBins,0,fNvtxBins);
   //  TH1F* hTriggered    = new TH1F("Triggered","Triggered",fNvtxBins,0,fNvtxBins);
   // TH1F* hTriggeredAll = new TH1F("TriggeredAll","TriggeredAll",fNvtxBins,0,fNvtxBins);
-  
+  hEventsSelected->Sumw2();
+  hEventsAll->Sumw2();
   fListOfHits.Add(hEventsSelected);
   fListOfPrimaries.Add(hEventsAll);
   
@@ -269,7 +270,25 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
   TH1F* hEventsSelected    = (TH1F*)fListOfHits.FindObject("EventsSelected");
   TH1F* hEventsAll         = (TH1F*)fListOfPrimaries.FindObject("EventsAll");
   
-  hEventsSelected->Divide(hEventsAll);
+  //hEventsSelected->Divide(hEventsSelected,hEventsAll,1,1,"B");
+  
+  for(Int_t i = 1; i<=hEventsSelected->GetNbinsX(); i++) {
+    if(hEventsSelected->GetBinContent(i) == 0 )
+      continue;
+    Float_t a    = hEventsSelected->GetBinContent(i);
+    Float_t da   = hEventsSelected->GetBinError(i);
+    Float_t sum  = hEventsAll->GetBinContent(i);
+    Float_t dsum = hEventsAll->GetBinError(i);
+    Float_t b    = sum-a;
+    Float_t db   = TMath::Sqrt(TMath::Power(da,2) + TMath::Power(dsum,2));
+    
+    Float_t cor  = a / sum;
+    Float_t ecor = TMath::Sqrt(TMath::Power(b*da,2) + TMath::Power(a*db,2)) / TMath::Power(sum,2);
+    
+    hEventsSelected->SetBinContent(i,cor);
+    hEventsSelected->SetBinError(i,ecor);
+    
+  }
   
   fEventSelectionEff->SetCorrection(hEventsSelected);
   
@@ -287,6 +306,17 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
 	TH2F* hPrimary  = (TH2F*)fListOfPrimaries.FindObject( Form("hPrimary_FMD_%c_vtx%d",ring,vertexBin));
 	TH2F* hCorrection = (TH2F*)hHits->Clone(Form("FMD%d%c_vtxbin_%d_correction",det,ring,vertexBin));
 	hCorrection->Divide(hPrimary);
+	/*for(Int_t i = 1; i<=hCorrection->GetNbinsX();i++)  {
+	  for(Int_t j=1; j<=hCorrection->GetNbinsY();j++) {
+	    if(hCorrection()->GetBinContent(i,j) == 0)
+	      continue;
+	    Float_t a = h 
+	    
+	    
+	  }
+	}
+	*/
+	
 	hCorrection->SetTitle(hCorrection->GetName());
 	fListOfCorrection.Add(hCorrection);
 	fBackground->SetBgCorrection(det,ring,vertexBin,hCorrection);
@@ -302,7 +332,7 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskGenerateCorrection::ReadFromFile(const Char_t* filename, Bool_t storeInOCDB, Int_t /*runNo*/) {
-
+  
   TFile infile(filename);
   TH1F* hVertex = (TH1F*)infile.Get("VertexBins");
   fZvtxCut = hVertex->GetXaxis()->GetXmax();
@@ -354,12 +384,12 @@ void AliFMDAnalysisTaskGenerateCorrection::ReadFromFile(const Char_t* filename, 
   fVertexBins.Write();
   
   fout.Close();
-  
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   if(storeInOCDB) {
-    TFile fbg("$ALICE_ROOT/FMD/Correction/Background/background.root","RECREATE");
+    TFile fbg(pars->GetPath(pars->GetBackgroundID()),"RECREATE");
     fBackground->Write(AliFMDAnaParameters::GetBackgroundID());
     fbg.Close();
-    TFile feselect("$ALICE_ROOT/FMD/Correction/EventSelectionEfficiency/eventselectionefficiency.root","RECREATE");
+    TFile feselect(pars->GetPath(pars->GetEventSelectionEffID()),"RECREATE");
     fEventSelectionEff->Write(AliFMDAnaParameters::GetEventSelectionEffID());
     feselect.Close();
     

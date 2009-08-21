@@ -67,18 +67,33 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fEventSelectionEfficiency(0),
   fCorner1(4.2231, 26.6638),
   fCorner2(1.8357, 27.9500),
-  fEnergyPath("$ALICE_ROOT/FMD/Correction/EnergyDistribution/energydistributions.root"),
-  fBackgroundPath("$ALICE_ROOT/FMD/Correction/Background/background.root"),
-  fEventSelectionEffPath("$ALICE_ROOT/FMD/Correction/EventSelectionEfficiency/eventselectionefficiency.root"),
+  fEnergyPath("$ALICE_ROOT/FMD/Correction/EnergyDistribution"),
+  fBackgroundPath("$ALICE_ROOT/FMD/Correction/Background"),
+  fEventSelectionEffPath("$ALICE_ROOT/FMD/Correction/EventSelectionEfficiency"),
   fProcessPrimary(kFALSE),
   fProcessHits(kFALSE),
-  fTrigger(kMB1)
+  fTrigger(kMB1),
+  fEnergy(k10000)
 {
   
   
   //fVerticies.Add(new TVector2(4.2231, 26.6638));
   // fVerticies.Add(new TVector2(1.8357, 27.9500));
   // Default constructor 
+}
+//____________________________________________________________________
+char* AliFMDAnaParameters::GetPath(const char* species) {
+  
+  char* path ;
+  
+  if(species == fgkBackgroundID)
+    path = Form("%s/%s_%d.root",fBackgroundPath.Data(),fgkBackgroundID,fEnergy);
+  if(species == fgkEnergyDistributionID)
+    path = Form("%s/%s_%d.root",fEnergyPath.Data(),fgkEnergyDistributionID,fEnergy);
+  if(species == fgkEventSelectionEffID)
+    path = Form("%s/%s_%d_%d.root",fEventSelectionEffPath.Data(),fgkEventSelectionEffID,fEnergy,fTrigger);
+
+  return path;
 }
 //____________________________________________________________________
 void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
@@ -98,7 +113,8 @@ void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
 void AliFMDAnaParameters::InitBackground() {
   
   //AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
-  TFile* fin = TFile::Open(fBackgroundPath.Data());
+  
+  TFile* fin = TFile::Open(GetPath(fgkBackgroundID));
   
   if (!fin) return;
   
@@ -111,7 +127,7 @@ void AliFMDAnaParameters::InitBackground() {
 
 void AliFMDAnaParameters::InitEnergyDists() {
   
-  TFile* fin = TFile::Open(fEnergyPath.Data());
+  TFile* fin = TFile::Open(GetPath(fgkEnergyDistributionID));
   //AliCDBEntry*   edist = GetEntry(fgkEnergyDists);
   if (!fin) return;
   
@@ -126,8 +142,8 @@ void AliFMDAnaParameters::InitEnergyDists() {
 void AliFMDAnaParameters::InitEventSelectionEff() {
   
   //AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
-  TFile* fin = TFile::Open(fEventSelectionEffPath.Data());
-  
+  TFile* fin = TFile::Open(GetPath(fgkEventSelectionEffID));
+			    
   if (!fin) return;
   
   fEventSelectionEfficiency = dynamic_cast<AliFMDAnaCalibEventSelectionEfficiency*>(fin->Get(fgkEventSelectionEffID));
