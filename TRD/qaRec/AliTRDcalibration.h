@@ -9,9 +9,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
-#endif
 
 class TList;
 class TObject;
@@ -28,6 +26,7 @@ class AliTRDCalibraVector;
 class AliTRDCalibraMode;
 class AliTRDcluster;
 class AliTRDtrackInfo;
+
 class AliTRDcalibration : public AliTRDrecoTask 
 {
  
@@ -93,10 +92,6 @@ public:
   void SetCompressPerDetector(Bool_t compressPerDetector=kTRUE)     {fCompressPerDetector=compressPerDetector; };
   void SetRunNumber(Int_t runNumber)                                {fRunNumber=runNumber; };
   void SetNameDirectoryOutput(const char *nameDirectory)            {fkNameDirectory=nameDirectory; };
-
-
-  
-
   
 private:
   AliTRDtrackInfo  *fTrackInfo;                  //track info
@@ -152,7 +147,5 @@ private:
 
   ClassDef(AliTRDcalibration, 1) // calibration task
 };
-
 #endif
-
 
