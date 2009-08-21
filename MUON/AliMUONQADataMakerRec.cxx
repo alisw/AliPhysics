@@ -443,7 +443,8 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
     
     // Display trigger histos in a more user friendly way
     DisplayTriggerInfo(task);
-  }
+
+  } // loop on specie
   
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQAv1::kMUON, task, list) ;
@@ -689,11 +690,9 @@ void AliMUONQADataMakerRec::InitRecPointsTrigger()
 							  0, 0, "Local board triggers / event");
     Add2RecPointsList(h4, kTriggerBoardsDisplay, !expert, image);
 
-    Int_t nSpecies = AliRecoParam::kNSpecies;
-    TH1F* h5 = new TH1F("hNAnalyzedEvents", "Number of analyzed events per specie", nSpecies, -0.5, (Float_t)nSpecies - 0.5);
-    for(Int_t ispecie=0; ispecie<nSpecies; ispecie++){
-      h5->GetXaxis()->SetBinLabel(1+ispecie, AliRecoParam::GetEventSpecieName(ispecie));
-    }
+    TH1F* h5 = new TH1F("hNAnalyzedEvents", "Number of analyzed events per specie", 1, 0.5, 1.5);
+    Int_t esindex = AliRecoParam::AConvert(fEventSpecie);
+    h5->GetXaxis()->SetBinLabel(1, AliRecoParam::GetEventSpecieName(esindex));
     h5->GetYaxis()->SetTitle("Number of analyzed events");
     Add2RecPointsList(h5, kNAnalyzedEvents, !expert, image);
 }
@@ -938,6 +937,9 @@ void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     /// make QA for rawdata
 
     // Check id histograms already created for this Event Specie
+
+  AliDebug(AliQAv1::GetQADebugLevel(),
+	   Form("RAW event type %s", AliRawEventHeaderBase::GetTypeName(rawReader->GetType())));
   
   if ( rawReader->GetType() == AliRawEventHeaderBase::kPhysicsEvent ) 
   {
@@ -982,6 +984,8 @@ void AliMUONQADataMakerRec::MakeRawsTrigger(AliRawReader* rawReader)
       // If not a scaler event, do nothing
       Bool_t scalerEvent =  rawReader->GetDataHeader()->GetL1TriggerMessage() & 0x1;
       if ( !scalerEvent ) continue;
+
+      AliDebug(AliQAv1::GetQADebugLevel(),"Filling trigger scalers");
 
       AliMUONDDLTrigger* ddlTrigger = rawStreamTrig.GetDDLTrigger();
       AliMUONDarcHeader* darcHeader = ddlTrigger->GetDarcHeader();
@@ -1049,6 +1053,9 @@ void AliMUONQADataMakerRec::MakeDigits(TTree* digitsTree)
 {
   /// makes data from Digits
 
+  // Do nothing in case of calibration event
+  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
+
   if (!fDigitStore)
     fDigitStore = AliMUONVDigitStore::Create(*digitsTree);
   fDigitStore->Connect(*digitsTree, false);
@@ -1069,8 +1076,11 @@ void AliMUONQADataMakerRec::MakeDigits(TTree* digitsTree)
 void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 {
 	/// Fill histograms from treeR
+
+  // Do nothing in case of calibration event
+  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
 	
-  GetRecPointsData(kNAnalyzedEvents)->Fill(AliRecoParam::AConvert(fEventSpecie));
+  GetRecPointsData(kNAnalyzedEvents)->Fill(1.);
 
   MakeRecPointsTracker(clustersTree);
 	MakeRecPointsTrigger(clustersTree);
@@ -1180,6 +1190,9 @@ void AliMUONQADataMakerRec::MakeRecPointsTrigger(TTree* clustersTree)
 void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
 {
   /// make QA data from ESDs
+
+  // Do nothing in case of calibration event
+  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
   
   // load ESD event in the interface
   AliMUONESDInterface esdInterface;
@@ -1329,8 +1342,7 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQAv1::TASKINDEX_t task)
         scaleValue = ((TH1F*)GetRawsData(kTriggerScalersTime))->GetBinContent(1);
       }
       else if ( task == AliQAv1::kRECPOINTS ) {
-	Int_t ibin = GetRecPointsData(kNAnalyzedEvents)->FindBin(AliRecoParam::AConvert(fEventSpecie));
-	scaleValue = GetRecPointsData(kNAnalyzedEvents)->GetBinContent(ibin);
+	scaleValue = GetRecPointsData(kNAnalyzedEvents)->GetBinContent(1);
       }
       if(scaleValue>0.) histoDisplayStrips->Scale(1./scaleValue);
     } // iChamber
@@ -1340,8 +1352,7 @@ void AliMUONQADataMakerRec::DisplayTriggerInfo(AliQAv1::TASKINDEX_t task)
     TH1F* histoBoards = (TH1F*)GetRecPointsData(kTriggeredBoards);
     TH2F* histoDisplayBoards = (TH2F*)GetRecPointsData(kTriggerBoardsDisplay);
     triggerDisplay.FillDisplayHistogram(histoBoards, histoDisplayBoards, AliMUONTriggerDisplay::kDisplayBoards, 0, 0);
-    Int_t ibin = GetRecPointsData(kNAnalyzedEvents)->FindBin(AliRecoParam::AConvert(fEventSpecie));
-    Float_t scaleValue = GetRecPointsData(kNAnalyzedEvents)->GetBinContent(ibin);
+    Float_t scaleValue = GetRecPointsData(kNAnalyzedEvents)->GetBinContent(1);
     if(scaleValue>0.) histoDisplayBoards->Scale(1./scaleValue);
   }
 }
