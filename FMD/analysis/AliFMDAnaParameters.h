@@ -61,6 +61,8 @@ public:
   
   enum Energy { k900 , k10000, k14000 };
   
+  enum MagField {k0G, k5G};
+  
   /** Singleton access
       @return  single to */
   static AliFMDAnaParameters* Instance();
@@ -102,6 +104,7 @@ public:
   Trigger  GetTriggerDefinition() {return fTrigger;}
   Bool_t   IsEventTriggered(AliESDEvent* esd);
   void     SetEnergy(Energy energy) {fEnergy = energy;}
+  void     SetMagField(MagField magfield) {fMagField = magfield;}
   char*    GetPath(const char* species);
 protected:
   
@@ -121,7 +124,8 @@ protected:
       fProcessPrimary(o.fProcessPrimary),
       fProcessHits(o.fProcessHits),
       fTrigger(o.fTrigger),
-      fEnergy(o.fEnergy)
+      fEnergy(o.fEnergy),
+      fMagField(o.fMagField)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}
@@ -161,6 +165,7 @@ protected:
   Bool_t   fProcessHits; 
   Trigger  fTrigger;
   Energy   fEnergy;
+  MagField fMagField;
   
   ClassDef(AliFMDAnaParameters,0) // Manager of parameters
 };

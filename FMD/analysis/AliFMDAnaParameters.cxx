@@ -73,7 +73,8 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fProcessPrimary(kFALSE),
   fProcessHits(kFALSE),
   fTrigger(kMB1),
-  fEnergy(k10000)
+  fEnergy(k10000),
+  fMagField(k5G)
 {
   
   
@@ -87,11 +88,11 @@ char* AliFMDAnaParameters::GetPath(const char* species) {
   char* path ;
   
   if(species == fgkBackgroundID)
-    path = Form("%s/%s_%d.root",fBackgroundPath.Data(),fgkBackgroundID,fEnergy);
+    path = Form("%s/%s_%d_%d_%d.root",fBackgroundPath.Data(),fgkBackgroundID,fEnergy,fTrigger,fMagField);
   if(species == fgkEnergyDistributionID)
-    path = Form("%s/%s_%d.root",fEnergyPath.Data(),fgkEnergyDistributionID,fEnergy);
+    path = Form("%s/%s_%d_%d_%d.root",fEnergyPath.Data(),fgkEnergyDistributionID,fEnergy,fTrigger,fMagField);
   if(species == fgkEventSelectionEffID)
-    path = Form("%s/%s_%d_%d.root",fEventSelectionEffPath.Data(),fgkEventSelectionEffID,fEnergy,fTrigger);
+    path = Form("%s/%s_%d_%d_%d.root",fEventSelectionEffPath.Data(),fgkEventSelectionEffID,fEnergy,fTrigger,fMagField);
 
   return path;
 }
