@@ -398,7 +398,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	// storing AliGRPObject in OCDB
 
 	AliCDBMetaData md;
-	md.SetResponsible("Ernesto Lopez Torres");
+	md.SetResponsible("Chiara Zampolli");
 	md.SetComment("Output parameters from the GRP preprocessor.");
 	
 	Bool_t result = kTRUE;
