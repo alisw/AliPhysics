@@ -35,6 +35,7 @@ AliAODMCHeader::AliAODMCHeader() :
   AliVHeader()
   ,fGenerator("")
   ,fImpactPar(0)
+  ,fPtHard(0)
   ,fEventType(0)
 {
   // default constructor
@@ -53,6 +54,7 @@ AliAODMCHeader::AliAODMCHeader(const AliAODMCHeader &header) :
   AliVHeader(header)
   ,fGenerator(header.fGenerator)
   ,fImpactPar(header.fImpactPar)
+  ,fPtHard(header.fPtHard)
   ,fEventType(header.fEventType)
 {
   // copy constructor
@@ -69,6 +71,7 @@ AliAODMCHeader& AliAODMCHeader::operator=(const AliAODMCHeader &header)
     fGenerator = header.fGenerator;
     for(int i = 0;i<3;++i)fVertex[i] = header.fVertex[i];
     fImpactPar = header.fImpactPar;
+    fPtHard = header.fPtHard;
     fEventType = header.fEventType;
   } 
   return *this;
@@ -96,6 +99,7 @@ void AliAODMCHeader::Reset()
   fGenerator = "";
   fImpactPar = 0;
   fEventType = 0;
+  fPtHard = 0;
   fVertex[0] = fVertex[1] = fVertex[2] = 0;  
 }
 
@@ -103,10 +107,10 @@ void AliAODMCHeader::Reset()
 void AliAODMCHeader::Print(const Option_t *) const
 {
   // Print some data members
-  Printf("MC EventHeader Generator: %s # EventType %d  Vtx = (%3.3f,%3.3f,%3.3f) Impactparameter %3.3f  \n",
+  Printf("MC EventHeader Generator: %s # EventType %d  Vtx = (%3.3f,%3.3f,%3.3f) ptHard = %3.3f GeV Impact parameter %3.3f  \n",
 	 GetGeneratorName(),
 	 GetEventType(),
-	 GetVtxX(),GetVtxY(),GetVtxZ(),
+	 GetVtxX(),GetVtxY(),GetVtxZ(),GetPtHard(),
 	 GetImpactParameter());
 }
 

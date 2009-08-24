@@ -43,6 +43,9 @@ public:
   virtual void      SetImpactParameter(Double_t b){fImpactPar = b;}
   virtual Double_t  GetImpactParameter() const {return fImpactPar;}
 
+  virtual void      SetPtHard(Double_t f){fPtHard = f;}
+  virtual Double_t  GetPtHard() const {return fPtHard;}
+
   virtual void      SetEventType(UInt_t eventType){fEventType = eventType;}
   virtual UInt_t    GetEventType() const {return fEventType;}
 
@@ -66,10 +69,11 @@ private:
   TString      fGenerator;         // Name of the generator, combination of names in case of gen cocktail 
   Double32_t   fVertex[3];         // MC vertex
   Double32_t   fImpactPar;         // Impact parameter in case of Pb+Pb
+  Double32_t   fPtHard;            // [0,0,12] Pt hard for jet events
   UInt_t       fEventType;         // MC Process Type of Event
 
   
-  ClassDef(AliAODMCHeader,1)
+  ClassDef(AliAODMCHeader,2)
 
 };
 

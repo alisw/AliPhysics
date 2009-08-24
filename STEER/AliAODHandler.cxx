@@ -515,6 +515,7 @@ void  AliAODHandler::SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader 
   AliGenPythiaEventHeader *pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
     if (pythiaGenHeader) {
       mcHeader->SetEventType(pythiaGenHeader->ProcessType());
+      mcHeader->SetPtHard(pythiaGenHeader->GetPtHard());
       return;
     }
     
