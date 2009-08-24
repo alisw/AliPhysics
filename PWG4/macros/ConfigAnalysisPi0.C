@@ -42,12 +42,12 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	
 	//Switch on or off the detectors information that you want
 	reader->SwitchOnEMCAL();
-	reader->SwitchOnCTS();
-	reader->SwitchOnPHOS();
+	reader->SwitchOffCTS();
+	reader->SwitchOffPHOS();
 	
 	//Min particle pT
 	//reader->SetEMCALPtMin(0.5); 
-	reader->SetPHOSPtMin(0.5);
+	//reader->SetPHOSPtMin(0.5);
 	//reader->SetCTSPtMin(0.2);
 	
 	reader->SetFidutialCut(fidCut);
@@ -79,7 +79,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
 	anaphoton->SetCaloPID(pid);
 	//anaphoton->SetFidutialCut(fidCut2); //More acceptance selections if needed at this level
-	anaphoton->SetCalorimeter("PHOS");
+	anaphoton->SetCalorimeter("EMCAL");
 	anaphoton->SwitchOffDataMC() ;//Access MC stack and fill more histograms
 	anaphoton->SwitchOffCaloPID();
 	anaphoton->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
@@ -105,8 +105,8 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 //	anapi0->SetNCentrBin(5); //number of bins in centrality 
 //	anapi0->SetNZvertBin(5); //number of bins for vertex position
 //	anapi0->SetNRPBin(6); //number of bins in reaction plain
-//	anapi0->SetNMaxEvMix(20);//Maximal number of events for mixing
-	anapi0->SetCalorimeter("PHOS");
+	anapi0->SetNMaxEvMix(2);//Maximal number of events for mixing
+	anapi0->SetCalorimeter("EMCAL");
 	anapi0->SetFidutialCut(fidCut2); //More acceptance selections if needed at this level. Not used if real geometry
 	anapi0->SwitchOnFidutialCut();
 	anapi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms

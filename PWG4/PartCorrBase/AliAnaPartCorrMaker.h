@@ -36,15 +36,15 @@ class AliAnaPartCorrMaker : public TObject {
   TList * GetOutputContainer() ;
 
   Int_t GetAnaDebug() const  { return fAnaDebug ; }
-  void SetAnaDebug(Int_t d)   { fAnaDebug = d ; }
+  void SetAnaDebug(Int_t d)  { fAnaDebug = d ; }
 
-  Bool_t AreHistogramsMade() const  { return fMakeHisto ; }
+  Bool_t AreHistogramsMade() const { return fMakeHisto ; }
   void SwitchOnHistogramsMaker()   { fMakeHisto = kTRUE ; }
-  void SwitchOffHistogramsMaker()   { fMakeHisto = kFALSE ; }
+  void SwitchOffHistogramsMaker()  { fMakeHisto = kFALSE ; }
  
-  Bool_t AreAODsMade() const  { return fMakeAOD ; }
+  Bool_t AreAODsMade() const { return fMakeAOD ; }
   void SwitchOnAODsMaker()   { fMakeAOD = kTRUE ; }
-  void SwitchOffAODsMaker()   { fMakeAOD = kFALSE ; }
+  void SwitchOffAODsMaker()  { fMakeAOD = kFALSE ; }
   
   void Terminate(TList * outputList);
 
@@ -56,7 +56,7 @@ class AliAnaPartCorrMaker : public TObject {
   
   AliCaloTrackReader * GetReader() const {return fReader ; }
   void SetReader(AliCaloTrackReader * reader) { fReader = reader ; }
-  
+  	
   //Others
   void Init();
   void InitParameters();
@@ -77,7 +77,7 @@ class AliAnaPartCorrMaker : public TObject {
  
   AliCaloTrackReader *  fReader ;   // Pointer to reader 
   TList * fAODBranchList ;          //! List with AOD branches created and needed in analysis
-  
+	
   ClassDef(AliAnaPartCorrMaker,2)
 } ;
  

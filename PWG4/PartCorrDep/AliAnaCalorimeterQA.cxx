@@ -24,7 +24,7 @@
 
 // --- ROOT system ---
 #include "Riostream.h"
-#include "TRefArray.h"
+#include "TObjArray.h"
 #include "TParticle.h"
 #include "TDatabasePDG.h"
 #include "TCanvas.h"
@@ -869,7 +869,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	}
 	
 	//Get List with clusters  
-	TRefArray * partList = new TRefArray();
+	TObjArray * partList = new TObjArray();
 	if(fCalorimeter == "EMCAL") partList = GetAODEMCAL();
 	else if(fCalorimeter == "PHOS") partList = GetAODPHOS();
 	else {

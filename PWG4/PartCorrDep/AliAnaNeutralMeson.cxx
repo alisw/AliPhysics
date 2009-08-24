@@ -39,9 +39,13 @@
 #include "AliStack.h"
 #include "AliFidutialCut.h"
 #include "AliVEvent.h"
-#ifdef __PHOSGEO__
+#ifdef __PHOSUTIL__
    #include "AliPHOSGeoUtils.h"
 #endif
+#ifdef __EMCALUTIL__
+   #include "AliEMCALGeoUtils.h"
+#endif
+
 
 ClassImp(AliAnaNeutralMeson)
 
@@ -69,6 +73,12 @@ fhPrimEtaPt(0), fhPrimEtaAccPt(0), fhPrimEtaY(0), fhPrimEtaAccY(0), fhPrimEtaPhi
 fhPrimOmegaPt(0), fhPrimOmegaAccPt(0), fhPrimOmegaY(0), fhPrimOmegaAccY(0), 
 fhPrimOmegaPhi(0), fhPrimOmegaAccPhi(0),
 fCalorimeter("")
+#ifdef __PHOSUTIL__
+,fPHOSGeo(0x0)
+#endif
+#ifdef __EMCALUTIL__
+,fEMCALGeo(0x0)
+#endif
 {
  //Default Ctor
  InitParameters();
@@ -102,6 +112,12 @@ fhPrimEtaAccY(ex.fhPrimEtaAccY), fhPrimEtaPhi(ex.fhPrimEtaPhi), fhPrimEtaAccPhi(
 fhPrimOmegaPt(ex.fhPrimOmegaPt), fhPrimOmegaAccPt(ex.fhPrimOmegaAccPt), fhPrimOmegaY(ex.fhPrimOmegaY),
 fhPrimOmegaAccY(ex.fhPrimOmegaAccY), fhPrimOmegaPhi(ex.fhPrimOmegaPhi), fhPrimOmegaAccPhi(ex.fhPrimOmegaAccPhi),
 fCalorimeter("")
+#ifdef __PHOSUTIL__
+,fPHOSGeo(ex.fPHOSGeo)
+#endif
+#ifdef __EMCALUTIL__
+,fEMCALGeo(ex.fEMCALGeo)
+#endif
 {
  // cpy ctor
  //Do not need it
@@ -160,8 +176,11 @@ AliAnaNeutralMeson::~AliAnaNeutralMeson() {
      fEventsListOmega=0 ;
  }	
 
-#ifdef __PHOSGEO__
+#ifdef __PHOSUTIL__
     if(fPHOSGeo) delete fPHOSGeo ;
+#endif	
+#ifdef __EMCALUTIL__
+    if(fEMCALGeo) delete fEMCALGeo ;
 #endif	
 }
 
@@ -234,11 +253,16 @@ void AliAnaNeutralMeson::Init()
   fEventsListPi0Eta = new TList ;
   fEventsListOmega = new TList ;
 	
-#ifdef __PHOSGEO__
+#ifdef __PHOSUTIL__
   printf("PHOS geometry initialized!\n");
   fPHOSGeo = new AliPHOSGeoUtils("PHOSgeo") ;
 #endif	
 	
+#ifdef __EMCALUTIL__
+  printf("EMCAL geometry initialized!\n");
+  fEMCALGeo = new AliEMCALGeoUtils("EMCALgeo") ;
+#endif	
+
 }
 
 //______________________________________________________________________________
@@ -630,13 +654,18 @@ void AliAnaNeutralMeson::MakeAnalysisFillHistograms()
  }          
 
  if(fCalorimeter=="PHOS" && (IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC)) ){
-     AliStack * stack = GetMCStack();
-     //photon acceptance
-     PhotonAcceptance(stack);
-     //pi0 and eta acceptance
-     Pi0EtaAcceptance(stack);
-     //omega acceptance      
-     OmegaAcceptance(stack);
+	 if(GetReader()->ReadStack()){
+		 AliStack * stack = GetMCStack();
+		 //photon acceptance
+		 PhotonAcceptance(stack);
+		 //pi0 and eta acceptance
+		 Pi0EtaAcceptance(stack);
+		 //omega acceptance      
+		 OmegaAcceptance(stack);
+	 }
+	else if(GetReader()->ReadAODMCParticles()){
+		  printf("AliAnaNeutralMeson::MakeAnalysisFillHistograms() - Acceptance calculation with MCParticles not implemented yet\n");
+	}
  }
 
 }
@@ -647,20 +676,39 @@ Bool_t AliAnaNeutralMeson::IsPhotonSelected(AliAODPWG4Particle *p1, Int_t ipid, 
  //select the photon to be analyzed based on pid and which module 
 
  TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
+ Int_t mod = 20 ;
 
  if(fCalorimeter == "PHOS"){
-     Int_t mod = 20 ;
-#ifdef __PHOSGEO__
-	Double_t vtx[3]={0,0,0};   
+#ifdef __PHOSUTIL__
+          Double_t vtx[3]={0,0,0};   
 //        if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(vtx);
 	Double_t x = 0 ,z = 0 ;
 	fPHOSGeo->ImpactOnEmc(vtx,p1->Theta(),p1->Phi(), mod,z,x) ;
 #endif
-	  if(mod<=nmod && p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) {return kTRUE;}
-	}
+ }
 	 
-  else if(fCalorimeter == "EMCAL" && p1->IsPIDOK(ipid,AliCaloPID::kPhoton) ) {return kTRUE;} //default EMCAL module
-	return kFALSE;
+
+ else if(fCalorimeter == "EMCAL"){
+  
+#ifdef __EMCALUTIL__
+  Int_t AbsID=0;
+  //TVector3 vtx(p1->Vx(),p1->Vy(),p1->Vz());//CHECK
+  TVector3 vtx(0,0,0);
+  TVector3 vimpact(0,0,0);
+  fEMCALGeo->ImpactOnEmcal(vtx,p1->Theta(),p1->Phi(),AbsID,vimpact);
+
+  //Get from the absid the supermodule, tower and eta/phi numbers
+  Int_t tower = -1;
+  Int_t phiT = -1;
+  Int_t etaT = -1;
+  fEMCALGeo->GetCellIndex(AbsID,mod,tower,phiT,etaT); 
+
+#endif
+  }
+
+  if(mod<=nmod && p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) return kTRUE;
+  else return kFALSE;
+
 }
 
 //______________________________________________________________________________
@@ -1050,17 +1098,41 @@ void AliAnaNeutralMeson::PhotonAcceptance(AliStack * stack)
               fhPrimPhotonPhi->Fill(phi) ;
               //Check if both photons hit Calorimeter
               Bool_t inacceptance = kFALSE;
-#ifdef __PHOSGEO__
-              Int_t mod1 ;
-              Double_t x1,z1;
-              if(fCalorimeter == "PHOS" && fPHOSGeo->ImpactOnEmc(prim,mod1,z1,x1) )   inacceptance = kTRUE;
-              //printf("In REAL PHOS acceptance? %d\n",inacceptance);
+
+	if(fCalorimeter == "PHOS"){
+
+#ifdef __PHOSUTIL__
+	    Int_t mod ;
+	    Double_t x,z ;
+	    if(fPHOSGeo->ImpactOnEmc(prim,mod,z,x)) 
+	      inacceptance = kTRUE;
+	    //printf("In REAL PHOS acceptance? %d\n",inacceptance);
 #else
-              TLorentzVector lv1;
-              prim->Momentum(lv1);
-              if(GetFidutialCut()->IsInFidutialCut(lv1,fCalorimeter) )    inacceptance = kTRUE ;
-              //printf("In %s fFidutial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-#endif
+	    TLorentzVector lv1;
+	    prim->Momentum(lv1);
+	    if(GetFidutialCut()->IsInFidutialCut(lv1,fCalorimeter)) 
+	      inacceptance = kTRUE ;
+	     if(GetDebug() > 2) printf("In %s fidutial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+#endif							  			 			  
+
+}	   
+
+	else if(fCalorimeter == "EMCAL"){
+
+#ifdef __EMCALUTIL__
+
+	    if(fEMCALGeo->Impact(prim)) 
+	      inacceptance = kTRUE;
+	    if(GetDebug() > 2) printf("In REAL EMCAL acceptance? %d\n",inacceptance);
+#else
+	    TLorentzVector lv1;
+	    prim->Momentum(lv1);
+	    if(GetFidutialCut()->IsInFidutialCut(lv1,fCalorimeter)) 
+	      inacceptance = kTRUE ;
+	    //printf("In %s fidutial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+#endif							  			 			  
+	}	  
+
               if(inacceptance){
                   fhPrimPhotonAccPt->Fill(photonPt) ;
                   fhPrimPhotonAccPhi->Fill(phi) ;
@@ -1102,11 +1174,14 @@ void AliAnaNeutralMeson::Pi0EtaAcceptance(AliStack * stack)
             TParticle * phot1 = stack->Particle(iphot1) ;
             TParticle * phot2 = stack->Particle(iphot2) ;
             if(phot1 && phot2 && phot1->GetPdgCode()==22 && phot2->GetPdgCode()==22){
-                Bool_t inacceptance = kFALSE;                
-#ifdef __PHOSGEO__
+                Bool_t inacceptance = kFALSE;              
+
+                if(fCalorimeter == "PHOS"){
+  
+#ifdef __PHOSUTIL__
                  Int_t mod, mod1,mod2 ;        
                  Double_t x, z, x1,z1,x2,z2;
-                 if(fCalorimeter == "PHOS" && fPHOSGeo->ImpactOnEmc(prim, mod, z,x)                                                         && fPHOSGeo->ImpactOnEmc(phot1,mod1,z1,x1) 
+                 if(fPHOSGeo->ImpactOnEmc(prim, mod, z,x)  && fPHOSGeo->ImpactOnEmc(phot1,mod1,z1,x1) 
                           && fPHOSGeo->ImpactOnEmc(phot2,mod2,z2,x2))  inacceptance = kTRUE;
                                     
                  //printf("In REAL PHOS acceptance? %d\n",inacceptance);
@@ -1119,6 +1194,27 @@ void AliAnaNeutralMeson::Pi0EtaAcceptance(AliStack * stack)
                     &&GetFidutialCut()->IsInFidutialCut(lv1,fCalorimeter) 
                     && GetFidutialCut()->IsInFidutialCut(lv3,fCalorimeter))  inacceptance = kTRUE ;
 #endif
+	}
+
+
+                else if(fCalorimeter == "EMCAL"){
+  
+#ifdef __EMCALUTIL__
+                 if(fEMCALGeo->Impact(prim)  && fEMCALGeo->Impact(phot1) 
+                          && fEMCALGeo->Impact(phot2))  inacceptance = kTRUE;
+                                    
+                 //printf("In REAL EMCAL acceptance? %d\n",inacceptance);
+#else 
+                 TLorentzVector lv0, lv1, lv3;
+                 prim->Momentum(lv0);
+                 phot1->Momentum(lv1);
+                 phot2->Momentum(lv3);
+                 if(GetFidutialCut()->IsInFidutialCut(lv0,fCalorimeter) 
+                    &&GetFidutialCut()->IsInFidutialCut(lv1,fCalorimeter) 
+                    && GetFidutialCut()->IsInFidutialCut(lv3,fCalorimeter))  inacceptance = kTRUE ;
+#endif
+	}
+
 //                printf("In %s fFidutial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
                  if(inacceptance){
                     if(pdg==111){
@@ -1171,11 +1267,13 @@ void AliAnaNeutralMeson::OmegaAcceptance(AliStack * stack)
                   Int_t pdg4 = phot4->GetPdgCode();
                   if(phot3 && pdg3==22 && phot4 && pdg4==22){ //fff
                      Bool_t inacceptance = kFALSE;
-#ifdef __PHOSGEO__
+
+	if(fCalorimeter == "PHOS"){
+#ifdef __PHOSUTIL__
                      Int_t mod, mod1,mod2,mod3 ;
                      Double_t x,z, x1,z1,x2,z2, x3,z3 ;
                      //3 gammas hit Calorimeter
-                     if(fCalorimeter == "PHOS" && fPHOSGeo->ImpactOnEmc(prim,mod,z,x) 
+                     if(fPHOSGeo->ImpactOnEmc(prim,mod,z,x) 
                                                && fPHOSGeo->ImpactOnEmc(phot1,mod1,z1,x1) 
                                                && fPHOSGeo->ImpactOnEmc(phot3,mod2,z2,x2) 
                                                && fPHOSGeo->ImpactOnEmc(phot4,mod3,z3,x3))
@@ -1193,6 +1291,31 @@ void AliAnaNeutralMeson::OmegaAcceptance(AliStack * stack)
                          GetFidutialCut()->IsInFidutialCut(lv3,fCalorimeter))  
                       inacceptance = kTRUE ;
 #endif
+	}
+
+	else if(fCalorimeter == "EMCAL"){
+#ifdef __EMCALUTIL__
+                     //3 gammas hit Calorimeter
+                     if(fEMCALGeo->Impact(prim) 
+                                               && fEMCALGeo->Impact(phot1) 
+                                               && fEMCALGeo->Impact(phot3) 
+                                               && fEMCALGeo->Impact(phot4))
+                      inacceptance = kTRUE;
+ 
+#else
+                      TLorentzVector lv0,lv1, lv2, lv3;                                                         
+                      prim->Momentum(lv0);
+                      phot1->Momentum(lv1);
+                      phot3->Momentum(lv2);
+                      phot4->Momentum(lv3);
+                      if(GetFidutialCut()->IsInFidutialCut(lv0,fCalorimeter) &&
+                         GetFidutialCut()->IsInFidutialCut(lv1,fCalorimeter) && 
+                         GetFidutialCut()->IsInFidutialCut(lv2,fCalorimeter) && 
+                         GetFidutialCut()->IsInFidutialCut(lv3,fCalorimeter))  
+                      inacceptance = kTRUE ;
+#endif
+	     }
+
                       if(inacceptance){ //ggg
                          fhPrimOmegaAccPt->Fill(pt) ;
                          fhPrimOmegaAccPhi->Fill(phi) ;

@@ -23,9 +23,14 @@ class AliESDEvent ;
 #include "AliAnaPartCorrBaseClass.h"
 class TParticle;
 
-#ifdef __PHOSGEO__
+#ifdef __PHOSUTIL__
   class AliPHOSGeoUtils;
 #endif
+
+#ifdef __EMCALUTIL__
+  class AliEMCALGeoUtils;
+#endif
+
 
 class AliAnaNeutralMeson : public AliAnaPartCorrBaseClass {
   
@@ -170,8 +175,11 @@ class AliAnaNeutralMeson : public AliAnaPartCorrBaseClass {
 
   TString fCalorimeter ;     //Select Calorimeter       
     
-#ifdef __PHOSGEO__
+#ifdef __PHOSUTIL__
   AliPHOSGeoUtils * fPHOSGeo ; //! PHOS geometry pointer
+#endif	
+#ifdef __EMCALUTIL__
+  AliEMCALGeoUtils * fEMCALGeo ; //! EMCAL geometry pointer
 #endif	
   
   ClassDef(AliAnaNeutralMeson,1)

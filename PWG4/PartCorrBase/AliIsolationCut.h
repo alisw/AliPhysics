@@ -5,17 +5,18 @@
 /* $Id:  */
 
 //_________________________________________________________________________
-
 // Class containing methods for the isolation cut. 
+// An AOD candidate (AliAODPWG4ParticleCorrelation type)
+// is passed. Look in a cone around the candidate and study
+// the hadronic activity inside to decide if the candidate is isolated
 //
 //
 // 
-
 // -- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system --- 
 #include <TObject.h>
-class TRefArray ;
+class TObjArray ;
 
 // --- ANALYSIS system ---
 class AliAODPWG4ParticleCorrelation ;
@@ -37,8 +38,8 @@ class AliIsolationCut : public TObject {
   Int_t      GetICMethod()        const {return fICMethod ; }
   TString    GetICParametersList() ; 
   
-  void MakeIsolationCut(TRefArray * plCTS, TRefArray * plNe, Double_t * vertex, 
-			const Bool_t fillAOD, AliAODPWG4ParticleCorrelation  * pCandidate, const TString aodRefArrayName,
+  void MakeIsolationCut(TObjArray * plCTS, TObjArray * plNe, Double_t * vertex, 
+			const Bool_t fillAOD, AliAODPWG4ParticleCorrelation  * pCandidate, const TString aodObjArrayName,
 			Int_t &n, Int_t & nfrac, Float_t &ptsum, Bool_t & isolated) const ;  
   
   void Print(const Option_t * opt)const;

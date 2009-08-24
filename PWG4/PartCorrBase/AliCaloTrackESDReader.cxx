@@ -20,6 +20,8 @@
 // or other particle identification and correlations
 //
 //
+//
+//
 //*-- Author: Gustavo Conesa (LNF-INFN) 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +48,12 @@ AliCaloTrackReader()
 	
 	//Initialize parameters
 	fDataType=kESD;
-	
+	fReadStack          = kTRUE;
+	fReadAODMCParticles = kFALSE;
+	//We want tracks fitted in the detectors:
+	fTrackStatus=AliESDtrack::kTPCrefit;
+    fTrackStatus|=AliESDtrack::kITSrefit;
+
 }
 
 //____________________________________________________________________________
@@ -70,57 +77,76 @@ AliCaloTrackESDReader::AliCaloTrackESDReader(const AliCaloTrackESDReader & g) :
 //____________________________________________________________________________
 void AliCaloTrackESDReader::FillInputCTS() {
   //Return array with CTS tracks
-  //TRefArray * fAODCTS = new TRefArray();
+  //TObjArray * fAODCTS = new TObjArray();
   Int_t nTracks   = fInputEvent->GetNumberOfTracks() ;
   Int_t naod = 0;
   Double_t pos[3];
   Double_t p[3];
   Double_t covTr[21];
   Double_t pid[10];
+  Double_t bfield = ((AliESDEvent*)fInputEvent)->GetMagneticField();
+
+  //To be replaced by call to AliEMCALGeoUtils when the class becomes available
+  Double_t radius = 441.0; //[cm] EMCAL radius +13cm
+
   for (Int_t itrack =  0; itrack <  nTracks; itrack++) {////////////// track loop
     AliESDtrack * track = (AliESDtrack*) ((AliESDEvent*)fInputEvent)->GetTrack(itrack) ; // retrieve track from esd
     
-    //We want tracks fitted in the detectors:
-    ULong_t status=AliESDtrack::kTPCrefit;
-    status|=AliESDtrack::kITSrefit;
-    
-    if ( (track->GetStatus() & status) == status) {//Check if the bits we want are set
+    //We want tracks fitted in the detectors: TPCrefit, ITSrefit ... check the set bits.
+	if (fTrackStatus && !((track->GetStatus() & fTrackStatus) == fTrackStatus)) continue ;
       
-      track->GetPxPyPz(p) ;
-      TLorentzVector momentum(p[0],p[1],p[2],0);
+	track->GetPxPyPz(p) ;
+	TLorentzVector momentum(p[0],p[1],p[2],0);
       
-      if(fCTSPtMin < momentum.Pt() &&fFidutialCut->IsInFidutialCut(momentum,"CTS")){
+	if(fCTSPtMin < momentum.Pt() &&fFidutialCut->IsInFidutialCut(momentum,"CTS")){
 	
-	if(fDebug > 3 && momentum.Pt() > 0.2) printf("AliCaloTrackESDReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
+		if(fDebug > 3 && momentum.Pt() > 0.2) printf("AliCaloTrackESDReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						    momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	
-	track->GetXYZ(pos);
-	track->GetCovarianceXYZPxPyPz(covTr);
-	track->GetESDpid(pid);
+		track->GetXYZ(pos);
+		track->GetCovarianceXYZPxPyPz(covTr);
+		track->GetESDpid(pid);
 	
-	Float_t impactXY, impactZ;
+		Float_t impactXY, impactZ;
 	
-	track->GetImpactParameters(impactXY,impactZ);
+		track->GetImpactParameters(impactXY,impactZ);
 	
-	if (impactXY<3) {
-	  // track inside the beam pipe
-	  //Put new aod object in file in AOD tracks array
-	  AliAODTrack *aodTrack = new((*(fOutputEvent->GetTracks()))[naod++]) 
-	    AliAODTrack(track->GetID(), track->GetLabel(), p, kTRUE, pos, kFALSE,covTr, (Short_t)track->GetSign(), track->GetITSClusterMap(), 
-			pid,
-			0x0,//primary,
-			kTRUE, // check if this is right
-			kTRUE, // check if this is right
-			AliAODTrack::kPrimary, 
-			0);
+		if (impactXY<3) {
+			// track inside the beam pipe
+			//Put new aod object in file in AOD tracks array
+			AliAODTrack *aodTrack = new((*(fOutputEvent->GetTracks()))[naod++]) 
+				AliAODTrack(track->GetID(), track->GetLabel(), p, kTRUE, pos, kFALSE,covTr, (Short_t)track->GetSign(), track->GetITSClusterMap(), 
+							pid,
+							0x0,//primary,
+							kTRUE, // check if this is right
+							kTRUE, // check if this is right
+							AliAODTrack::kPrimary, 
+							0);
 	  
-	  aodTrack->SetFlags(track->GetStatus());
-	  aodTrack->ConvertAliPIDtoAODPID();
-	  
-	  fAODCTS->Add(aodTrack);					}
-	else continue;   // outside the beam pipe: orphan track	
+			aodTrack->SetFlags(track->GetStatus());
+			aodTrack->ConvertAliPIDtoAODPID();
+			
+			//Extrapolate track to EMCAL surface for AOD-level track-cluster matching
+			AliAODPid *aodpid = new AliAODPid;
+			Double_t emcpos[3] = {0.,0.,0.};
+			Double_t emcmom[3] = {0.,0.,0.};
+			aodpid->SetEMCALPosition(emcpos);
+			aodpid->SetEMCALMomentum(emcmom);
+			
+			AliExternalTrackParam *outerparam = (AliExternalTrackParam*)track->GetOuterParam();
+			if(!outerparam) return;
+						
+			Bool_t okpos = outerparam->GetXYZAt(radius,bfield,emcpos);
+			Bool_t okmom = outerparam->GetPxPyPzAt(radius,bfield,emcmom);
+			if(!(okpos && okmom)) return;
+			
+			aodpid->SetEMCALPosition(emcpos);
+			aodpid->SetEMCALMomentum(emcmom);
+						
+		    aodTrack->SetDetPID(aodpid);
+		}
+		else continue;   // outside the beam pipe: orphan track	
       }//Pt and Fidutial cut passed. 
-    }// track status
   }// track loop
   
   //Put references to selected tracks in array
@@ -328,7 +354,7 @@ void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* a
   // Connect the data pointers
   
   if(strcmp(esd->GetName(),"AliESDEvent")){
-    printf("AliCaloTrackESDReader::SetInputOutputMCEvent() - ABORT::Wrong reader, here only ESDs. Input name: %s != AliESDEvent \n",esd->GetName());
+    printf("AliCaloTrackESDReader::SetInputOutputMCEvent() - STOP ::Wrong reader, here only ESDs. Input name: %s != AliESDEvent \n",esd->GetName());
     abort();
   }
   

@@ -4,7 +4,7 @@
 //------------------------------------
 // Configuration macro example:
 //
-// Do photon identification analysis with ESDs
+// Do photon identification analysis with Generator data
 // Gamma in PHOS. For EMCAL clusters change 
 // PHOS by EMCAL where necessary
 //
@@ -23,9 +23,9 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   
   //Detector Fidutial Cuts
   AliFidutialCut * fidCut = new AliFidutialCut();
-  fidCut->DoCTSFidutialCut(kFALSE) ;
-  fidCut->DoEMCALFidutialCut(kFALSE) ;
-  fidCut->DoPHOSFidutialCut(kFALSE) ;
+  fidCut->DoCTSFidutialCut(kTRUE) ;
+  fidCut->DoEMCALFidutialCut(kTRUE) ;
+  fidCut->DoPHOSFidutialCut(kTRUE) ;
   
   //fidCut->SetSimpleCTSFidutialCut(0.9,0.,360.);
   //fidCut->SetSimpleEMCALFidutialCut(0.7,80.,190.);
@@ -48,8 +48,22 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   //reader->SetEMCALPtMin(0.5); 
   reader->SetPHOSPtMin(0.5);
   //reader->SetCTSPtMin(0.2);
-  
+  reader->SwitchOnStack(); //On by default, remember to SwitchOnMCData() in analysis classes
+  //In case of generating jet events (with PYTHIA), if pt hard bin is small
+  //reject events with large difference between ptHard and triggered jet	
+  //reader->SetPtHardAndJetPtComparison(kTRUE);
+	
   reader->SetFidutialCut(fidCut);
+
+  //Anaysis of final particles, not pi0/eta etc.
+  TArrayI statusArray(1) ;
+  statusArray.SetAt(1,0); 
+  reader->AddStatusArray(statusArray)  ;
+  reader->SwitchOnStatusSelection() ;
+
+  //Keep pi0 in the list and not the 2 photon if decay angle is small.
+  reader->SwitchOffOverlapCheck();        	
+	
   reader->Print("");
   
   
@@ -69,20 +83,6 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 
   fidCut2->Print("");
 
-  AliCaloPID * pid = new AliCaloPID();
-  // use selection with simple weights
-  pid->SetPHOSPhotonWeight(0.7);    pid->SetPHOSPi0Weight(0.7); 
-  // use more complicated selection, particle weight depending on cluster energy
-//   pid->UsePHOSPIDWeightFormula(kTRUE);
-//   TFormula * photonF = new TFormula("photonWeight","0.98*(x<40)+ 0.68*(x>=100)+(x>=40 && x<100)*(0.98+x*(6e-3)-x*x*(2e-04)+x*x*x*(1.1e-06))");
-//   TFormula * pi0F = new TFormula("pi0Weight","0.98*(x<65)+ 0.915*(x>=100)+(x>=65 && x-x*(1.95e-3)-x*x*(4.31e-05)+x*x*x*(3.61e-07))");
-//   pid->SetPHOSPhotonWeightFormula(photonF);
-//   pid->SetPHOSPi0WeightFormula(pi0F);
-
-  pid->SetDispersionCut(1.5);
-  pid->SetTOFCut(5.e-9);
-  pid->SetDebug(-1);
-  pid->Print("");
 
   AliAnaPhoton *ana = new AliAnaPhoton();
   ana->SetDebug(-1);
@@ -92,9 +92,9 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   ana->SetFidutialCut(fidCut2);
   ana->SetCalorimeter("PHOS");
   ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-  ana->SwitchOffCaloPID();
-  ana->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
-  ana->SwitchOnTrackMatchRejection(); //Only in use when OnCaloPID
+  ana->SwitchOffCaloPID(); //No need with MC reader
+  ana->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL, no need with MC reader
+  ana->SwitchOffTrackMatchRejection(); //Only in use when OnCaloPID
   ana->SwitchOffFidutialCut();
   ana->SetOutputAODName("Photons");
   ana->SetOutputAODClassName("AliAODPWG4Particle");
