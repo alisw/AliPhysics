@@ -541,7 +541,14 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
 //______________________________________________________________________________
 void AliAODEvent::Print(Option_t *) const
 {
-  // Something meaningful should be implemented here.
+  // Print the names of the all branches
+  TIter next(fAODObjects);
+  TNamed *el;
+  Printf(">>>>>  AOD  Content <<<<<");    
+  while((el=(TNamed*)next())){
+    Printf(">> %s ",el->GetName());      
+  }
+  Printf(">>>>>                <<<<<");    
   
   return;
 }
