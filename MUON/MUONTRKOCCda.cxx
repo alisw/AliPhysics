@@ -41,7 +41,7 @@
 #include "AliMUONRawStreamTrackerHP.h"
 #include "AliMpConstants.h"
 #include "AliRawEventHeaderBase.h"
-#include "AliRawReader.h"
+#include "AliRawReaderDate.h"
 #include "Riostream.h"
 #include "TPluginManager.h"
 #include "TROOT.h"
@@ -50,6 +50,7 @@
 #include "TStopwatch.h"
 #include "daqDA.h"
 #include "event.h"
+#include "monitor.h"
 
 #ifdef ALI_AMORE
 #include <AmoreDA.h>
@@ -157,9 +158,6 @@ int main(int argc, char **argv)
     return -1;
   }
   
-#ifdef ALI_AMORE
-  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-#endif
   // needed for streamer application
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
                                         "*",
@@ -179,24 +177,62 @@ int main(int argc, char **argv)
 
   for ( Int_t i = 1; i < argc; ++i ) 
   {    
-    AliRawReader* rawReader = AliRawReader::Create(argv[i]);
-
-    while ( rawReader->NextEvent() ) 
+    int status;
+    AliRawReaderDate* rawReader(0x0);
+    
+// define data source : 
+   status=monitorSetDataSource(argv[1]);
+    if (status!=0) 
     {
+      printf("MCH Occupancy DA ERROR: monitorSetDataSource() failed: %s\n", monitorDecodeError(status));
+      return -1;
+    }
+    
+// Declare monitoring program 
+    status=monitorDeclareMp("MUON_TRK_OCC");
+    if (status!=0) 
+    {
+      printf("MCH Occupancy DA ERROR: monitorDeclareMp() failed: %s\n", monitorDecodeError(status));
+      return -1;
+    }
+// Define wait event timeout - 1s max
+    monitorSetNowait();
+    monitorSetNoWaitNetworkTimeout(1000);
+    
+    for(;;)
+    {
+      struct eventHeaderStruct *event;
+      eventTypeType eventT;
+      
+      status=monitorGetEventDynamic((void **)&event);
+      if (status!=0)
+      {
+	printf("MCH Occupancy DA ERROR: %s\n", monitorDecodeError(status));
+	break;
+      }
+
       /* check shutdown condition */
       if (daqDA_checkShutdown()) break;
-    
-      ++numberOfEvents;
-     
-      if ( rawReader->GetType() == AliRawEventHeaderBase::kEndOfRun )
+      
+// Check if one gets the event properly
+      if (status!=0)
       {
-        printf("EOR event detected\n");
-        break;
+        printf("MCH Occupancy DA ERROR: monitorGetEventDynamic() failed: %s\n", monitorDecodeError(status));
+        return -1;
       }
-    
-      if ( rawReader->GetType() != AliRawEventHeaderBase::kPhysicsEvent ) continue;
-    
+
+      /* retry if got no event */
+      if (event==NULL) continue;
+
+      ++numberOfEvents;
+
+      eventT=event->eventType;
+      if ((eventT == END_OF_RUN)||(eventT == END_OF_RUN_FILES)) break;
+      if (eventT != PHYSICS_EVENT) continue;
+                 
       ++numberOfPhysicsEvent;
+      
+      rawReader = new AliRawReaderDate((void*)event);
       
       if ( rawReader->GetRunNumber() != runNumber )
       {
@@ -221,7 +257,7 @@ int main(int argc, char **argv)
       UShort_t adc;
       
       stream.First();
-      
+            
       while ( stream.Next(buspatchId,manuId,manuChannel,adc,kTRUE) )
       {    
         AliMUONVCalibParam* one = static_cast<AliMUONVCalibParam*>(oneEventData.FindObject(buspatchId,manuId));
@@ -264,6 +300,7 @@ int main(int argc, char **argv)
 #ifdef ALI_AMORE
   
   // Send occupancy store (as a big string) to the AMORE DB
+  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
   
   ostringstream str;
   
