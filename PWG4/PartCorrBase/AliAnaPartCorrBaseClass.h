@@ -12,7 +12,7 @@
 
 //ROOT
 class TClonesArray ;
-class TRefArray ;
+class TObjArray ;
 #include <TList.h> 
 #include <TObject.h>
 
@@ -65,7 +65,10 @@ public:
   virtual void SetDebug(Int_t d)   { fDebug = d ; }
   
   virtual Int_t GetEventNumber() const ;
-  
+	
+  virtual Int_t GetLabelShift() const  { return fLabelShift ; }
+  virtual void SetLabelShift(Int_t shift)   { fLabelShift = shift ; }
+	
   virtual AliCaloTrackReader * GetReader() const {return fReader ; }
   virtual void SetReader(AliCaloTrackReader * reader) { fReader = reader ; }
   
@@ -81,8 +84,8 @@ public:
   virtual TString GetOutputAODClassName() const {return fOutputAODClassName;}
   virtual void SetOutputAODClassName(TString name) {fOutputAODClassName = name; }
   
-  virtual TString GetAODRefArrayName() const {return fAODRefArrayName;}
-  virtual void SetAODRefArrayName(TString name) {fAODRefArrayName = name; }
+  virtual TString GetAODObjArrayName() const {return fAODObjArrayName;}
+  virtual void SetAODObjArrayName(TString name) {fAODObjArrayName = name; }
 
   virtual TClonesArray* GetInputAODBranch() const {return fInputAODBranch ;}
   virtual TClonesArray* GetOutputAODBranch() const {return fOutputAODBranch ;}
@@ -92,9 +95,9 @@ public:
   virtual TClonesArray* GetAODTracks() const ;	
   virtual AliAODCaloCells* GetAODCaloCells() const {return fAODCaloCells ;}
   
-  virtual TRefArray* GetAODCTS() const ;
-  virtual TRefArray* GetAODEMCAL() const ;
-  virtual TRefArray* GetAODPHOS() const ;
+  virtual TObjArray* GetAODCTS() const ;
+  virtual TObjArray* GetAODEMCAL() const ;
+  virtual TObjArray* GetAODPHOS() const ;
   
   virtual TString	GetBaseParametersList();
   
@@ -184,7 +187,8 @@ public:
   Bool_t  fRecalculateCaloPID ; // Recalculate PID or use PID weights in calorimeters
   Float_t fMinPt ;              // Maximum pt of (trigger) particles in the analysis
   Float_t fMaxPt ;              // Minimum pt of (trigger) particles in the analysis
-  
+  Int_t   fLabelShift;          // In case AOD analysis with 2 input, shift in lable of second input.
+	
   AliCaloTrackReader * fReader; // Acces to ESD/AOD/MC data
   
   TClonesArray* fInputAODBranch ;    //! Selected input particles branch
@@ -193,7 +197,7 @@ public:
   Bool_t        fNewAOD ;            //  Flag, new aod branch added to the analysis or not.
   TString       fOutputAODName ;     //  Name of output AOD branch;
   TString       fOutputAODClassName; //  Type of aod objects to be stored in the TClonesArray (AliAODPWG4Particle, AliAODPWG4ParticleCorrelation ...)	
-  TString       fAODRefArrayName ;   // Name of ref array kept in a TList in AliAODParticleCorrelation with clusters or track references.
+  TString       fAODObjArrayName ;   // Name of ref array kept in a TList in AliAODParticleCorrelation with clusters or track references.
   TString       fAddToHistogramsName;// Add this string to histograms name
   
   //TClonesArray* fAODCaloClusters ;  //! selected PHOS/EMCAL CaloClusters
@@ -217,7 +221,7 @@ public:
   Float_t fHistoEtaMax ;   // Maximum value of eta histogram range
   Float_t fHistoEtaMin ;   // Minimum value of eta histogram range
   
-  ClassDef(AliAnaPartCorrBaseClass,3)
+  ClassDef(AliAnaPartCorrBaseClass,4)
     } ;
 
 

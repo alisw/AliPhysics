@@ -56,6 +56,7 @@ class AliAODPWG4Particle : public AliVParticle {
   
   virtual Int_t   GetPdg()               const {return fPdg ; }
   virtual Int_t   GetTag()               const {return fTag ; }
+  virtual Int_t   GetBtag()              const {return fBtag ; }
   virtual Int_t   GetLabel()             const {return fLabel ; }
   virtual Int_t   GetCaloLabel (Int_t i) const {return fCaloLabel[i] ; }
   virtual Int_t   GetTrackLabel(Int_t i) const {return fTrackLabel[i] ; }
@@ -71,6 +72,7 @@ class AliAODPWG4Particle : public AliVParticle {
   
   virtual void SetPdg(Int_t pdg)        { fPdg = pdg ; }
   virtual void SetTag(Int_t tag)        { fTag = tag ; }
+  virtual void SetBtag(Int_t tag)       { fBtag = tag ; }
   virtual void SetDetector(TString d)   { fDetector = d ; }
   virtual void SetDispBit(Bool_t disp)  { fDisp = disp ; } 
   virtual void SetTOFBit(Bool_t tof)    { fTof = tof ;} 
@@ -85,7 +87,8 @@ class AliAODPWG4Particle : public AliVParticle {
  private:
   TLorentzVector* fMomentum;  // Photon 4-momentum vector
   Int_t      fPdg ;          // id of particle
-  Int_t      fTag ;          // tag of particle (decay, fragment, prompt photon)
+  Int_t      fTag ;          // tag of particle (decay, fragment, prompt photon), MC
+  Int_t      fBtag;          // tag particle from B.
   Int_t      fLabel ;        // MC label
   Int_t      fCaloLabel[2];  // CaloCluster index, 1 for photons, 2 for pi0.
   Int_t      fTrackLabel[2]; // Track lable, 1 for pions, 2 for conversion photons 
@@ -95,7 +98,7 @@ class AliAODPWG4Particle : public AliVParticle {
   Bool_t     fCharged ;      //Charged bit
   Int_t      fBadDist ;      //Distance to bad module in module units
   
-  ClassDef(AliAODPWG4Particle,1);
+  ClassDef(AliAODPWG4Particle,2);
 };
 
 inline Double_t AliAODPWG4Particle::Phi() const

@@ -28,7 +28,7 @@
 
 // --- ROOT system ---
 //#include "Riostream.h"
-#include "TRefArray.h"
+#include "TObjArray.h"
 #include "TParticle.h"
 #include "TCanvas.h"
 #include "TPad.h"
@@ -206,7 +206,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
   }
   
   //Get List with tracks or clusters  
-  TRefArray * partList = new TRefArray();
+  TObjArray * partList = new TObjArray();
   if(fDetector == "CTS") partList = GetAODCTS();
   else if(fDetector == "EMCAL") partList = GetAODEMCAL();
   else if(fDetector == "PHOS") partList = GetAODPHOS();
@@ -271,7 +271,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
       }
       
       if(!esdCell) {
-	printf("AliAnaExample::MakeAnalysisFillAOD() - ABORT: No CELLS available for analysis");
+	printf("AliAnaExample::MakeAnalysisFillAOD() - STOP: No CELLS available for analysis");
 	abort();
       }
       //Some prints
@@ -340,23 +340,33 @@ void  AliAnaExample::MakeAnalysisFillHistograms()
     
     if(IsDataMC()){
       //Play with the MC stack if available
-      AliStack * stack =  GetMCStack() ;
+	  Float_t ptprim  = 0;
+	  Float_t phiprim = 0;
+	  Float_t etaprim = 0;
+	  if(GetReader()->ReadStack()){
+		  AliStack * stack =  GetMCStack() ;
       
-      if(ph->GetLabel() < 0 || !stack) {
-	printf("AliAnaExample::MakeAnalysisFillHistograms() *** bad label or no stack ***:  label %d \n", ph->GetLabel());
-	continue;
-      }
+		  if(ph->GetLabel() < 0 || !stack) {
+			  printf("AliAnaExample::MakeAnalysisFillHistograms() *** bad label or no stack ***:  label %d \n", ph->GetLabel());
+			  continue;
+		  }
       
-      if(ph->GetLabel() >=  stack->GetNtrack()) {
-	printf("AliAnaExample::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", ph->GetLabel(), stack->GetNtrack());
-	continue ;
-      }
+		  if(ph->GetLabel() >=  stack->GetNtrack()) {
+			  printf("AliAnaExample::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", ph->GetLabel(), stack->GetNtrack());
+			  continue ;
+		  }
       
-      TParticle * mom = GetMCStack()->Particle(ph->GetLabel());
-      
-      fh2Pt->Fill(ph->Pt(), mom->Pt());
-      fh2Phi->Fill(ph->Phi(), mom->Phi());
-      fh2Eta->Fill(ph->Eta(), mom->Eta());
+		  TParticle * mom = GetMCStack()->Particle(ph->GetLabel());
+      	  ptprim  = mom->Pt();
+		  phiprim = mom->Phi();
+		  etaprim = mom->Eta();
+	  }
+	  else if(GetReader()->ReadAODMCParticles()){
+	  	  printf("AliAnaExample::MakeAnalysisFillHistograms() - Acceptance calculation with MCParticles not implemented yet\n");
+	  }
+	  fh2Pt->Fill(ph->Pt(), ptprim);
+	  fh2Phi->Fill(ph->Phi(), phiprim);
+	  fh2Eta->Fill(ph->Eta(), etaprim);
     }//Work with stack also
   }// aod branch loop
   

@@ -57,6 +57,8 @@ AliCaloTrackMCReader::AliCaloTrackMCReader() :
   //Initialize parameters
   InitParameters();
   fDataType = kMC;  
+  fReadStack          = kTRUE;
+  fReadAODMCParticles = kFALSE;
   
 }
 
@@ -243,8 +245,8 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
 	
   //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
   if(fComparePtHardAndJetPt && GetStack()) {
-	if(!fMCUtils->ComparePtHardAndJetPt(GetGenEventHeader())) return kFALSE ;
-  }	
+	if(!ComparePtHardAndJetPt()) return kFALSE ;
+  }
 	
   Int_t iParticle = 0 ;
   Double_t charge = 0.;

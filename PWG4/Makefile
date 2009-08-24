@@ -36,7 +36,12 @@ endif
 
 ifneq ($(PHOSUtils_INCLUDE),)
   ALICEINC += -I../$(PHOSUtils_INCLUDE)
-  CXXFLAGS+=-D__PHOSGEO__
+  CXXFLAGS+=-D__PHOSUTIL__
+endif
+
+ifneq ($(EMCALUtils_INCLUDE),)
+  ALICEINC += -I../$(EMCALUtils_INCLUDE)
+  CXXFLAGS+=-D__EMCALUTIL__
 endif
 
 ifneq ($(PWG4PartCorrBase_INCLUDE),)
@@ -66,6 +71,8 @@ endif
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
     ALICEINC += -I$(ALICE_ROOT)/JETAN   # some extra includes
+    ALICEINC += -I$(ALICE_ROOT)/PHOS
+    ALICEINC += -I$(ALICE_ROOT)/EMCAL
   endif
 #endif
 

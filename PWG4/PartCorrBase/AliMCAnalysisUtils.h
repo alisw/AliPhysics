@@ -19,8 +19,8 @@ class TString ;
 class TList ;
 
 //--- AliRoot system ---
+class AliCaloTrackReader ;
 class AliStack ;
-class AliGenEventHeader ;
 
 class AliMCAnalysisUtils : public TObject {
 	
@@ -31,12 +31,25 @@ public:
 	AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & g) ;//cpy assignment
 	virtual ~AliMCAnalysisUtils() ;//virtual dtor
 	
-  enum mcTypes {kMCPrompt, kMCFragmentation, kMCISR, kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCPi0, kMCEta, kMCElectron, kMCConversion, kMCUnknown, kMCEFromCFromB, kMCEFromC, kMCEFromB,kMCZDecay,kMCWDecay};
+    enum mcTypes {kMCPhoton, kMCPrompt, kMCFragmentation, kMCISR, kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCPi0, kMCEta, kMCElectron, kMCConversion, kMCEFromCFromB, kMCEFromC, kMCEFromB,kMCZDecay,kMCWDecay,kMCUnknown};
 	
-	Int_t CheckOrigin(const Int_t label, AliStack *  stack) const ;
-	TList * GetJets(const Int_t iEvent, AliStack *  stack, const AliGenEventHeader * geh) ;
+	Int_t   CheckOrigin(const Int_t label, AliCaloTrackReader * reader, const Int_t input) ;
+	Int_t   CheckOriginInStack(const Int_t label, AliStack * stack) ;
+	Int_t   CheckOriginInAOD(const Int_t label, TClonesArray* mcparticles) ;
 	
-	Bool_t ComparePtHardAndJetPt(const AliGenEventHeader * geh) ;
+	TList * GetJets(AliCaloTrackReader * reader) ;
+	
+	void SetTagBit(Int_t &tag, const UInt_t set) {
+		// Set bit of type set (mcTypes) in tag
+		tag |= (1<<set) ; 
+	} 
+	
+	Bool_t CheckTagBit(const Int_t tag, const UInt_t test) const {
+		// Check if in tag the bit test (mcTypes) is set.
+		if (tag & (1<<test) ) return  kTRUE ;    
+		else return kFALSE ;
+   }
+  
 	
 	void Print(const Option_t * opt)const;
   	
@@ -47,13 +60,12 @@ public:
 	TString GetMCGenerator() const {return fMCGenerator;}	
 
 private:
-	Int_t   fCurrentEvent;      // Current Event
-	Int_t	fDebug;             // Debug level
-	TList * fJetsList;          // List of jets
-	TString fMCGenerator;       // MC geneator used to generate data in simulation
-	Float_t fpTHardpTJetFactor; // Factor between ptHard and jet pT to reject event.
+	Int_t   fCurrentEvent;        // Current Event
+	Int_t	fDebug;               // Debug level
+	TList * fJetsList;            // List of jets
+	TString fMCGenerator;         // MC geneator used to generate data in simulation
 	
-	ClassDef(AliMCAnalysisUtils,2)
+	ClassDef(AliMCAnalysisUtils,3)
 } ;
 
 

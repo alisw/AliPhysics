@@ -6,7 +6,9 @@
 
 //_________________________________________________________________________
 // Class for reading data (AODs) in order to do prompt gamma or other particle
-// identification and correlations
+// identification and correlations.
+// Mixing analysis can be done, input AOD with events
+// is opened in the AliCaloTrackReader::Init()
 //
 //
 // -- Author: Gustavo Conesa (INFN-LNF)

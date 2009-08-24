@@ -343,11 +343,11 @@ void AliAnaElectron::Init()
   //Init
   //Do some checks
 //  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn()){
-//    printf("AliAnaElectron::Init() - !!ABORT: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
+//    printf("AliAnaElectron::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
 //    abort();
 //  }
 //  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn()){
-//    printf("AliAnaElectron::Init() - !!ABORT: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
+//    printf("AliAnaElectron::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
 //    abort();
 //  }
   
@@ -386,7 +386,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   //TRefArray * ctsData = new TRefArray();
 	cout<<"Event type "<<GetReader()->GetInputEvent()->GetName()<<endl;
 	if((strcmp(GetReader()->GetInputEvent()->GetName(),"AliESDEvent"))) {
-		printf("AliAnaElectron::MakeAnalysisFillAOD() - !!ABORT: Analysis working only with ESDs!!\n");
+		printf("AliAnaElectron::MakeAnalysisFillAOD() - !!STOP: Analysis working only with ESDs!!\n");
 		abort();
 	}
 
@@ -548,7 +548,10 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	if(IsDataMC()){
 	  
 	  //FIXME:  Need to re-think this for track-oriented analysis
-	  tr.SetTag(GetMCAnalysisUtils()->CheckOrigin(clus->GetLabel(),GetMCStack()));
+		Int_t input = 0;
+		//Input from second AOD?
+		if(GetReader()->GetAODEMCALNormalInputEntries() <= iCluster) input = 1;
+	  tr.SetTag(GetMCAnalysisUtils()->CheckOrigin(clus->GetLabel(),GetReader(),input));
 	  
 	  if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillAOD() - Origin of candidate %d\n",tr.GetTag());
 	}//Work with stack also   
@@ -600,48 +603,48 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     
     if(IsDataMC()){
       Int_t tag = ele->GetTag();
-      if(tag == AliMCAnalysisUtils::kMCConversion){
+      if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)){
 	fhPtConversion  ->Fill(ptele);
 	fhPhiConversion ->Fill(ptele,phiele);
 	fhEtaConversion ->Fill(ptele,etaele);
       }
-      else if(tag==AliMCAnalysisUtils::kMCEFromB)
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromB))
 	{
 	  fhPtBottom  ->Fill(ptele);
 	  fhPhiBottom ->Fill(ptele,phiele);
 	  fhEtaBottom ->Fill(ptele,etaele);
 	}
-      else if(tag==AliMCAnalysisUtils::kMCEFromC)
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromC))
 	{
 	  fhPtCharm  ->Fill(ptele);
 	  fhPhiCharm ->Fill(ptele,phiele);
 	  fhEtaCharm ->Fill(ptele,etaele);
 	}
-      else if(tag==AliMCAnalysisUtils::kMCEFromCFromB)
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromCFromB))
 	{
 	  fhPtCFromB  ->Fill(ptele);
 	  fhPhiCFromB ->Fill(ptele,phiele);
 	  fhEtaCFromB ->Fill(ptele,etaele);
 	}
-      else if(tag==AliMCAnalysisUtils::kMCPi0Decay || tag==AliMCAnalysisUtils::kMCEtaDecay || tag==AliMCAnalysisUtils::kMCOtherDecay)
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
 	{
 	  fhPtDalitz  ->Fill(ptele);
 	  fhPhiDalitz ->Fill(ptele,phiele);
 	  fhEtaDalitz ->Fill(ptele,etaele);
 	}
-      else if(tag==AliMCAnalysisUtils::kMCWDecay)
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCWDecay))
 	{
 	  fhPtWDecay  ->Fill(ptele);
 	  fhPhiWDecay ->Fill(ptele,phiele);
 	  fhEtaWDecay ->Fill(ptele,etaele);
 	}
-      else if(tag==AliMCAnalysisUtils::kMCZDecay)
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCZDecay))
 	{
 	  fhPtZDecay  ->Fill(ptele);
 	  fhPhiZDecay ->Fill(ptele,phiele);
 	  fhEtaZDecay ->Fill(ptele,etaele);
 	}
-      else if(tag==AliMCAnalysisUtils::kMCElectron)
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))
 	{
 	  fhPtPrompt  ->Fill(ptele);
 	  fhPhiPrompt ->Fill(ptele,phiele);
@@ -660,10 +663,21 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
   //Fill histograms of pure MC kinematics from the stack//
   ////////////////////////////////////////////////////////
   if(IsDataMC()) {
-    AliStack * stack =  GetMCStack() ;
+	  
+	  
+	  if(GetReader()->ReadStack()){
+		AliStack * stack =  GetMCStack() ;
 
-    if(!stack)
-      printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no stack ***: \n");
+		  if(!stack)
+			  printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no stack ***: \n");
+
+	  }
+	  else if(GetReader()->ReadAODMCParticles()){
+		  Int_t input = 0; //Fix input, check if AOD has 2 inputs
+		  TClonesArray * mcparticles = GetReader()->GetAODMCParticles(input);
+		  if(!mcparticles)
+			  printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no MCParticles ***: \n");
+	  }
 
     //FIXME:  Fill pure kine histograms here
 

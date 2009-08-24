@@ -37,6 +37,7 @@
 #include "AliCaloPID.h"
 #include "AliFidutialCut.h"
 #include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 
 ClassImp(AliAnaChargedParticles)
   
@@ -293,9 +294,22 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     
     if(IsDataMC()){
       //Play with the MC stack if available		
-      TParticle * mom = GetMCStack()->Particle(tr->GetLabel());
-      Int_t mompdg =TMath::Abs(mom->GetPdgCode());
-      
+	  Int_t mompdg = -1;
+	  Int_t label  = -1;
+	  if(GetReader()->ReadStack()){
+		  TParticle * mom = GetMCStack()->Particle(label);
+		  mompdg =TMath::Abs(mom->GetPdgCode());
+      }
+	if(GetReader()->ReadAODMCParticles()){
+		AliAODMCParticle * aodmom = 0;
+		//Get the list of MC particles
+	    if(label < GetLabelShift()) aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(0))->At(label);
+		else if(GetReader()->GetSecondInputAODTree()){
+			label -=GetLabelShift();
+			mompdg =TMath::Abs(aodmom->GetPdgCode());
+		}
+	}
+		
       if(mompdg==211){
 	fhPtPion->Fill(tr->Pt());
 	fhPhiPion->Fill(tr->Pt(), tr->Phi());

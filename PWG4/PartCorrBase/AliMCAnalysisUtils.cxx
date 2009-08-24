@@ -28,19 +28,21 @@
 // --- ROOT system ---
 #include <TMath.h>
 #include <TList.h>
+#include "TParticle.h"
 
 //---- ANALYSIS system ----
 #include "AliMCAnalysisUtils.h"
+#include "AliCaloTrackReader.h"
 #include "AliStack.h"
-#include "TParticle.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliAODMCParticle.h"
 
   ClassImp(AliMCAnalysisUtils)
 
  //________________________________________________
   AliMCAnalysisUtils::AliMCAnalysisUtils() : 
     TObject(), fCurrentEvent(-1), fDebug(-1), 
-    fJetsList(new TList), fMCGenerator("PYTHIA"), fpTHardpTJetFactor(7)
+    fJetsList(new TList), fMCGenerator("PYTHIA")
 {
   //Ctor
 }
@@ -48,7 +50,7 @@
 //____________________________________________________________________________
 AliMCAnalysisUtils::AliMCAnalysisUtils(const AliMCAnalysisUtils & mcutils) :   
   TObject(mcutils), fCurrentEvent(mcutils.fCurrentEvent), fDebug(mcutils.fDebug),
-  fJetsList(mcutils.fJetsList), fMCGenerator(mcutils.fMCGenerator), fpTHardpTJetFactor(mcutils.fpTHardpTJetFactor)
+  fJetsList(mcutils.fJetsList), fMCGenerator(mcutils.fMCGenerator)
 {
   // cpy ctor
   
@@ -64,7 +66,6 @@ AliMCAnalysisUtils & AliMCAnalysisUtils::operator = (const AliMCAnalysisUtils & 
   fDebug        = mcutils.fDebug;
   fJetsList     = mcutils.fJetsList;
   fMCGenerator  = mcutils.fMCGenerator;
-  fpTHardpTJetFactor = mcutils.fpTHardpTJetFactor;
   
   return *this; 
 }
@@ -80,13 +81,30 @@ AliMCAnalysisUtils::~AliMCAnalysisUtils()
   }     
 }
 
+
 //_________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const {
-  //Play with the MC stack if available
-  //Check origin of the candidates, good for PYTHIA
-  
+Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliCaloTrackReader* reader, const Int_t input = 0) {
+	//Play with the montecarlo particles if available
+	Int_t tag = 0;
+	
+	//Select where the information is, ESD-galice stack or AOD mcparticles branch
+	if(reader->ReadStack()){
+		tag = CheckOriginInStack(label, reader->GetStack());
+	}
+	else if(reader->ReadAODMCParticles()){
+		tag = CheckOriginInAOD(label, reader->GetAODMCParticles(input));
+	}
+	
+	return tag ;
+}	
+
+//_________________________________________________________________________
+Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack) {
+  // Play with the MC stack if available. Tag particles depending on their origin.
+  // Do same things as in CheckOriginInAOD but different input.
+	
   if(!stack) {
-    printf("AliMCAnalysisUtils::CheckOrigin() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
+    printf("AliMCAnalysisUtils::CheckOriginInStack() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
     abort();
   }
   //  printf("label %d, ntrack %d, nprim %d\n",label, stack->GetNtrack(), stack->GetNprimary());
@@ -94,13 +112,16 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
   //      TParticle *particle =   stack->Particle(i);
   // 			//particle->Print();
   //   }
+	
+
+  Int_t tag = 0;
   if(label >= 0 && label <  stack->GetNtrack()){
     //Mother
     TParticle * mom = stack->Particle(label);
     Int_t mPdg = TMath::Abs(mom->GetPdgCode());
     Int_t mStatus =  mom->GetStatusCode() ;
     Int_t iParent =  mom->GetFirstMother() ;
-    if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOrigin: Mother is parton %d\n",iParent);
+    if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Mother is parton %d\n",iParent);
     
     //GrandParent
     TParticle * parent = new TParticle ;
@@ -111,22 +132,46 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
       pPdg = TMath::Abs(parent->GetPdgCode());
       pStatus = parent->GetStatusCode();  
     }
-    else if(fDebug > 0 ) printf("AliMCAnalysisUtils::CheckOrigin: Parent with label %d\n",iParent);
+    else if(fDebug > 0 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Parent with label %d\n",iParent);
     
-    //return tag
+	//Check if mother is converted, if not, get the first non converted mother
+	if((mPdg == 22 || mPdg == 11) && (pPdg == 22 || pPdg == 11) && mStatus == 0){
+		SetTagBit(tag,kMCConversion);
+		//Check if the mother is photon or electron with status not stable
+		while ((pPdg == 22 || pPdg == 11) && mStatus != 1) {
+			//Mother
+			mom = stack->Particle(mom->GetFirstMother());
+			mPdg = TMath::Abs(mom->GetPdgCode());
+			mStatus =  mom->GetStatusCode() ;
+			iParent =  mom->GetFirstMother() ;
+			if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Mother is parton %d\n",iParent);
+		
+			//GrandParent
+			if(iParent > 0){
+				parent = stack->Particle(iParent);
+				pPdg = TMath::Abs(parent->GetPdgCode());
+				pStatus = parent->GetStatusCode();  
+			}
+		}//while	  
+	  }//mother and parent are electron or photon and have status 0
+	  
+	// conversion fo electrons/photons checked  
+	  
     if(mPdg == 22){ //photon
+	  SetTagBit(tag,kMCPhoton);
       if(mStatus == 1){ //undecayed particle
 	if(fMCGenerator == "PYTHIA"){
 	  if(iParent < 8 && iParent > 5) {//outgoing partons
-	    if(pPdg == 22) return kMCPrompt;
-	    else  return kMCFragmentation;
+		  if(pPdg == 22) SetTagBit(tag,kMCPrompt);
+		  else SetTagBit(tag,kMCFragmentation);
 	  }//Outgoing partons
 	  else if(pStatus == 11){//Decay
-	    if(pPdg == 111) return kMCPi0Decay ;
-	    else if (pPdg == 221)  return kMCEtaDecay ;
-	    else  return kMCOtherDecay ;
+		  if(pPdg == 111) SetTagBit(tag,kMCPi0Decay);
+		  else if (pPdg == 221) SetTagBit(tag, kMCEtaDecay);
+		  else SetTagBit(tag,kMCOtherDecay);
 	  }//Decay
-	  else return kMCISR; //Initial state radiation
+	  else  SetTagBit(tag, kMCISR); //Initial state radiation
+		
 	}//PYTHIA
 
 	else if(fMCGenerator == "HERWIG"){	  
@@ -140,44 +185,53 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
 	    }//Look for the parton
 	    
 	    if(iParent < 8 && iParent > 5) {
-	      if(pPdg == 22) return kMCPrompt;
-	      else  return kMCFragmentation;
+	      if(pPdg == 22) SetTagBit(tag,kMCPrompt);
+	      else SetTagBit(tag,kMCFragmentation);
 	    }
-	    return kMCISR;//Initial state radiation
+	    else SetTagBit(tag,kMCISR);//Initial state radiation
 	  }//Not decay
 	  else{//Decay
-	    if(pPdg == 111) return kMCPi0Decay ;
-	    else if (pPdg == 221)  return kMCEtaDecay ;
-	    else  return kMCOtherDecay ;
+	    if(pPdg == 111) SetTagBit(tag,kMCPi0Decay); 
+	    else if (pPdg == 221) SetTagBit(tag,kMCEtaDecay);
+	    else SetTagBit(tag,kMCOtherDecay);
 	  }//Decay
+		
 	}//HERWIG
-	else return  kMCUnknown;
-      }//Status 1 : Pythia generated
-      else if(mStatus == 0){
-	if(pPdg ==22 || pPdg ==11|| pPdg == 2112 ||  pPdg == 211 ||  
+		  
+	else SetTagBit(tag,kMCUnknown);
+		  
+	}//Status 1 : Pythia generated
+		
+	else if(mStatus == 0){
+		
+	  if(pPdg ==22 || pPdg ==11 || pPdg == 2112 ||  pPdg == 211 ||  
 	   pPdg == 321 ||  pPdg == 2212  ||  pPdg == 130  ||  pPdg == 13 ) 
-	  return kMCConversion ;
-	if(pPdg == 111) return kMCPi0Decay ;
-	else if (pPdg == 221)  return kMCEtaDecay ;
-	else  return kMCOtherDecay ;
+		SetTagBit(tag,kMCConversion);
+	
+		
+	  if(pPdg == 111) SetTagBit(tag,kMCPi0Decay); 
+	  else if (pPdg == 221) SetTagBit(tag,kMCEtaDecay);
+	  else  SetTagBit(tag,kMCOtherDecay);
+		
       }//status 0 : geant generated
+		
     }//Mother Photon
-    else if(mPdg == 111)  return kMCPi0 ;
-    else if(mPdg == 221)  return kMCEta ;
+    else if(mPdg == 111) SetTagBit(tag,kMCPi0);
+    else if(mPdg == 221) SetTagBit(tag,kMCEta);
 
     //cluster's mother is an electron.  Where did that electron come from?
     else if(mPdg == 11){ //electron
-
-      if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOrigin: Checking ancestors of electrons");
+		SetTagBit(tag,kMCElectron);	
+      if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInStack() - Checking ancestors of electrons");
 
       //check first for B and C ancestry, then other possibilities.
       //An electron from a photon parent could have other particles in
       //its history and we would want to know that, right?
 
-      if(mStatus == 1) { //electron from event generator
-	if      (pPdg == -1) return kMCElectron; //no parent
-	else if (pPdg == 23) return kMCZDecay;   //parent is Z-boson
-	else if (pPdg == 24) return kMCWDecay;   //parent is W-boson
+	if(mStatus == 1) { //electron from event generator
+	//if      (pPdg == -1) return kMCElectron; //no parent
+	if      (pPdg == 23) SetTagBit(tag,kMCZDecay);  //parent is Z-boson
+	else if (pPdg == 24) SetTagBit(tag,kMCWDecay);  //parent is W-boson
 	else { //check the electron's ancestors for B/C contribution
 	  Bool_t bAncestor = kFALSE;
 	  Bool_t cAncestor = kFALSE;
@@ -185,7 +239,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
 	  Int_t aPdg = TMath::Abs(ancestors->GetPdgCode());
 	  //Int_t aStatus = ancestors->GetStatusCode();
 	  Int_t iAncestors = ancestors->GetFirstMother();
-	  if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOrigin: Scaning the decay chain for bottom/charm generated electron");
+	  if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInStack() - Scaning the decay chain for bottom/charm generated electron");
 	  while(ancestors->IsPrimary()){//searching for ancestors 
 	    if((499 < aPdg && aPdg < 600)||(4999 < aPdg && aPdg < 6000)) bAncestor = kTRUE;
 	    if((399 < aPdg && aPdg < 500)||(3999 < aPdg && aPdg < 5000)) cAncestor = kTRUE;
@@ -194,16 +248,17 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
 	    ancestors = stack->Particle(iAncestors);
 	    aPdg = ancestors->GetPdgCode();
 	  }//searching for ancestors
-	  if(bAncestor && cAncestor) return kMCEFromCFromB;//Decay chain has both B and C
-	  else if(bAncestor && !cAncestor) return kMCEFromB;//Decay chain has only B
-	  else if(!bAncestor && cAncestor) return kMCEFromC;//Decay chain has only C 
+	  if(bAncestor && cAncestor) SetTagBit(tag,kMCEFromCFromB);//Decay chain has both B and C
+	  else if(bAncestor && !cAncestor) SetTagBit(tag,kMCEFromB);//Decay chain has only B
+	  else if(!bAncestor && cAncestor) SetTagBit(tag,kMCEFromC);//Decay chain has only C 
 	}
 	//if it is not from W,Z or B/C ancestor, where is it from?
-	if     (pPdg == 111) return kMCPi0Decay;//Pi0 Dalitz decay
-	else if(pPdg == 221) return kMCEtaDecay;//Eta Dalitz decay
-	else                 return kMCOtherDecay;
+	if     (pPdg == 111) SetTagBit(tag,kMCPi0Decay);//Pi0 Dalitz decay
+	else if(pPdg == 221) SetTagBit(tag,kMCEtaDecay);//Eta Dalitz decay
+	else                 SetTagBit(tag,kMCOtherDecay);
 
-      } else if (mStatus == 0) { //electron from GEANT
+	} 
+   else if (mStatus == 0) { //electron from GEANT
 
 	//Rewind ancestry and check for electron with status == 1
 	//if we find one, we'll assume that this object is from an
@@ -222,11 +277,11 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
 	Int_t aPdg = TMath::Abs(ancestors->GetPdgCode());
 	Int_t aStatus = ancestors->GetStatusCode();
 	Int_t iAncestors = ancestors->GetFirstMother();
-	if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOrigin: Scaning the decay chain for bottom/charm electrons");
+	if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInStack() - Scaning the decay chain for bottom/charm electrons");
 	while(ancestors->IsPrimary()){//searching for ancestors
 	  if(aStatus == 1 && aPdg == 11) eleFromEvGen = kTRUE;
-	  if(eleFromEvGen && aPdg == 23) return kMCZDecay;
-	  if(eleFromEvGen && aPdg == 24) return kMCWDecay;
+	  if(eleFromEvGen && aPdg == 23) SetTagBit(tag,kMCZDecay);
+	  if(eleFromEvGen && aPdg == 24) SetTagBit(tag,kMCWDecay);
 	  if(eleFromEvGen && ((499 < aPdg && aPdg < 600)||(4999 < aPdg && aPdg < 6000))) bAncestor = kTRUE;
 	  if(eleFromEvGen && ((399 < aPdg && aPdg < 500)||(3999 < aPdg && aPdg < 5000))) cAncestor = kTRUE;
 	  if(bAncestor && cAncestor) break;
@@ -234,33 +289,227 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliStack * stack) const
           ancestors = stack->Particle(iAncestors);
           aPdg = ancestors->GetPdgCode();
         }//searching for ancestors
-	if(bAncestor && cAncestor) return kMCEFromCFromB;//Decay chain has both B and C
-	else if(bAncestor && !cAncestor) return kMCEFromB;//Decay chain has only B
-	else if(!bAncestor && cAncestor) return kMCEFromC;//Decay chain has only C
+	if(bAncestor && cAncestor) SetTagBit(tag,kMCEFromCFromB);//Decay chain has both B and C
+	else if(bAncestor && !cAncestor) SetTagBit(tag,kMCEFromB);//Decay chain has only B
+	else if(!bAncestor && cAncestor) SetTagBit(tag,kMCEFromC);//Decay chain has only C
 	if(pPdg ==22 || pPdg ==11|| pPdg == 2112 ||  pPdg == 211 ||  
 	   pPdg == 321 ||  pPdg == 2212  ||  pPdg == 130  ||  pPdg == 13 ) 
-	  return kMCConversion ;
-	if(pPdg == 111) return kMCPi0Decay ;
-	else if (pPdg == 221)  return kMCEtaDecay ;
-	else  return kMCOtherDecay ;
+	 SetTagBit(tag,kMCConversion);
+	if(pPdg == 111) SetTagBit(tag,kMCPi0Decay);
+	else if (pPdg == 221) SetTagBit(tag,kMCEtaDecay);
+	else SetTagBit(tag,kMCOtherDecay);
       } //GEANT check
     }//electron check
-    else return kMCUnknown;
+    else SetTagBit(tag,kMCUnknown);
   }//Good label value
   else{
-    if(label < 0 ) printf("AliMCAnalysisUtils::CheckOrigin: *** bad label or no stack ***:  label %d \n", label);
-    if(label >=  stack->GetNtrack()) printf("AliMCAnalysisUtils::CheckOrigin: *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
-    return kMCUnknown;
+    if(label < 0 ) printf("AliMCAnalysisUtils::CheckOriginInStack() *** bad label or no stack ***:  label %d \n", label);
+    if(label >=  stack->GetNtrack()) printf("AliMCAnalysisUtils::CheckOriginInStack() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
+    SetTagBit(tag,kMCUnknown);
   }//Bad label
 	
-  return kMCUnknown;
+  return tag;
   
 }
 
+
 //_________________________________________________________________________
-TList * AliMCAnalysisUtils::GetJets(const Int_t iEvent, AliStack * stack, const AliGenEventHeader * geh) {
- //Return list of jets (TParticles) and index of most likely parton that originated it.
+Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcparticles) {
+	// Play with the MCParticles in AOD if available. Tag particles depending on their origin.
+	// Do same things as in CheckOriginInStack but different input.
+	if(!mcparticles) {
+		printf("AliMCAnalysisUtils::CheckOriginInAOD() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
+		
+	}
+
+	//	printf(">>>>>>>>> Second Event, AODMCParticles, nMC %d\n", (GetAODMCParticles(1))->GetEntriesFast());
+	//	for(Int_t i = 0; i< (GetAODMCParticles(1))->GetEntriesFast(); i++){
+	//			AliAODMCParticle *particle = (AliAODMCParticle*) (GetAODMCParticles(1))->At(i);
+	//			printf("** index %d, PDG %d, Flag %d, Mother %d, Daughter %d and %d, E %2.3f, pT %2.3f, phi %2.3f, eta %2.3f\n", 
+	//				   i, particle->GetPdgCode(), particle->GetFlag(), particle->GetMother(), particle->GetDaughter(0),particle->GetDaughter(1),
+	//				   particle->E(),particle->Pt(), particle->Phi()*TMath::RadToDeg(), particle->Eta());
+	//		if(particle->IsPhysicalPrimary()) printf("Is Physical Primary !\n");
+	//		if(!particle->IsPrimary()) printf("Not Primary !\n");
+	//   }
+ 
 	
+	Int_t tag = 0;
+	if(label >= 0 && label <  mcparticles->GetEntriesFast()){
+		//Mother
+		AliAODMCParticle * mom = (AliAODMCParticle *) mcparticles->At(label);
+		Int_t mPdg = TMath::Abs(mom->GetPdgCode());
+		Int_t iParent =  mom->GetMother() ;
+		if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent);
+		
+		//GrandParent
+		AliAODMCParticle * parent = new AliAODMCParticle ;
+		Int_t pPdg = -1;
+		if(iParent > 0){
+			parent = (AliAODMCParticle *) mcparticles->At(iParent);
+			pPdg = TMath::Abs(parent->GetPdgCode());
+		}
+		else if(fDebug > 0 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Parent with label %d\n",iParent);
+		
+		//Check if mother is converted, if not, get the first non converted mother
+		if((mPdg == 22 || mPdg == 11) && (pPdg == 22 || pPdg == 11) && !mom->IsPrimary()){
+			SetTagBit(tag,kMCConversion);
+			//Check if the mother is photon or electron with status not stable
+			while ((pPdg == 22 || pPdg == 11) && !mom->IsPhysicalPrimary()) {
+				//Mother
+				mom = (AliAODMCParticle *) mcparticles->At(mom->GetMother());
+				mPdg = TMath::Abs(mom->GetPdgCode());
+				iParent =  mom->GetMother() ;
+				if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent);
+				
+				//GrandParent
+				if(iParent > 0){
+					parent = (AliAODMCParticle *) mcparticles->At(iParent);
+					pPdg = TMath::Abs(parent->GetPdgCode());
+				}
+			}//while	  
+		}//mother and parent are electron or photon and have status 0
+		
+		// conversion fo electrons/photons checked  
+		
+		if(mPdg == 22){ //photon
+			SetTagBit(tag,kMCPhoton);
+			if(mom->IsPhysicalPrimary()){ //undecayed particle
+					if(iParent < 8 && iParent > 5) {//outgoing partons
+						if(pPdg == 22) SetTagBit(tag,kMCPrompt);
+						else SetTagBit(tag,kMCFragmentation);
+					}//Outgoing partons
+					else if(parent->IsPrimary() && !parent->IsPhysicalPrimary()){//Decay
+						if(pPdg == 111) SetTagBit(tag,kMCPi0Decay);
+						else if (pPdg == 221) SetTagBit(tag, kMCEtaDecay);
+						else SetTagBit(tag,kMCOtherDecay);
+					}//Decay
+					else  SetTagBit(tag, kMCISR); //Initial state radiation
+			}// Pythia generated
+			else if(!mom->IsPrimary()){
+				
+				if(pPdg ==22 || pPdg ==11 || pPdg == 2112 ||  pPdg == 211 ||  
+				   pPdg == 321 ||  pPdg == 2212  ||  pPdg == 130  ||  pPdg == 13 ) 
+					SetTagBit(tag,kMCConversion);
+				
+				if(pPdg == 111) SetTagBit(tag,kMCPi0Decay); 
+				else if (pPdg == 221) SetTagBit(tag,kMCEtaDecay);
+				else  SetTagBit(tag,kMCOtherDecay);
+				
+			}//not primary : geant generated
+			else  {
+//				printf("UNKNOWN 1, mom  pdg %d, primary %d, physical primary %d; parent %d, pdg %d, primary %d, physical primary %d \n",
+//				mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary(), iParent, pPdg, parent->IsPrimary(), parent->IsPhysicalPrimary());
+				SetTagBit(tag,kMCUnknown);
+			}
+		}//Mother Photon
+		else if(mPdg == 111) SetTagBit(tag,kMCPi0);
+		else if(mPdg == 221) SetTagBit(tag,kMCEta);
+		
+		//cluster's mother is an electron.  Where did that electron come from?
+		else if(mPdg == 11){ //electron
+			SetTagBit(tag,kMCElectron);	
+			if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Checking ancestors of electrons");
+			
+			//check first for B and C ancestry, then other possibilities.
+			//An electron from a photon parent could have other particles in
+			//its history and we would want to know that, right?
+			
+			if(mom->IsPhysicalPrimary()) { //electron from event generator
+				//if      (pPdg == -1) return kMCElectron; //no parent
+				if      (pPdg == 23) SetTagBit(tag,kMCZDecay);  //parent is Z-boson
+				else if (pPdg == 24) SetTagBit(tag,kMCWDecay);  //parent is W-boson
+				else { //check the electron's ancestors for B/C contribution
+					Bool_t bAncestor = kFALSE;
+					Bool_t cAncestor = kFALSE;
+					AliAODMCParticle * ancestors = (AliAODMCParticle *) mcparticles->At(label);
+					Int_t aPdg = TMath::Abs(ancestors->GetPdgCode());
+					//Int_t aStatus = ancestors->GetFlag();
+					Int_t iAncestors = ancestors->GetMother();
+					if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Scaning the decay chain for bottom/charm generated electron");
+					while(ancestors->IsPrimary()){//searching for ancestors 
+						if((499 < aPdg && aPdg < 600)||(4999 < aPdg && aPdg < 6000)) bAncestor = kTRUE;
+						if((399 < aPdg && aPdg < 500)||(3999 < aPdg && aPdg < 5000)) cAncestor = kTRUE;
+						if(bAncestor && cAncestor) break;
+						iAncestors = ancestors->GetMother();
+						ancestors = (AliAODMCParticle *) mcparticles->At(iAncestors);
+						aPdg = ancestors->GetPdgCode();
+					}//searching for ancestors
+					if(bAncestor && cAncestor) SetTagBit(tag,kMCEFromCFromB);//Decay chain has both B and C
+					else if(bAncestor && !cAncestor) SetTagBit(tag,kMCEFromB);//Decay chain has only B
+					else if(!bAncestor && cAncestor) SetTagBit(tag,kMCEFromC);//Decay chain has only C 
+				}
+				//if it is not from W,Z or B/C ancestor, where is it from?
+				if     (pPdg == 111) SetTagBit(tag,kMCPi0Decay);//Pi0 Dalitz decay
+				else if(pPdg == 221) SetTagBit(tag,kMCEtaDecay);//Eta Dalitz decay
+				else                 SetTagBit(tag,kMCOtherDecay);
+				
+			} 
+			else if (!mom->IsPrimary()) { //electron from GEANT
+				
+				//Rewind ancestry and check for electron with status == 1
+				//if we find one, we'll assume that this object is from an
+				//electron but that it may have gone through some showering in
+				//material before the detector
+				
+				//Not a double-counting problem because we are only accessing
+				//these histories for MC labels connected to a reco object.
+				//If you wanted to use this to sort through the kine stack
+				//directly, might it be a problem?
+				Bool_t eleFromEvGen = kFALSE;
+				Bool_t bAncestor = kFALSE;
+				Bool_t cAncestor = kFALSE;
+				
+				AliAODMCParticle * ancestors = (AliAODMCParticle *) mcparticles->At(label);
+				Int_t aPdg = TMath::Abs(ancestors->GetPdgCode());
+				//Int_t aStatus = ancestors->GetFlag();
+				Int_t iAncestors = ancestors->GetMother();
+				if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Scaning the decay chain for bottom/charm electrons");
+				while(ancestors->IsPrimary()){//searching for ancestors
+					if(ancestors->IsPhysicalPrimary() && aPdg == 11) eleFromEvGen = kTRUE;
+					if(eleFromEvGen && aPdg == 23) SetTagBit(tag,kMCZDecay);
+					if(eleFromEvGen && aPdg == 24) SetTagBit(tag,kMCWDecay);
+					if(eleFromEvGen && ((499 < aPdg && aPdg < 600)||(4999 < aPdg && aPdg < 6000))) bAncestor = kTRUE;
+					if(eleFromEvGen && ((399 < aPdg && aPdg < 500)||(3999 < aPdg && aPdg < 5000))) cAncestor = kTRUE;
+					if(bAncestor && cAncestor) break;
+					iAncestors = ancestors->GetMother();
+					ancestors = (AliAODMCParticle *) mcparticles->At(iAncestors);
+					aPdg = ancestors->GetPdgCode();
+				}//searching for ancestors
+				if(bAncestor && cAncestor) SetTagBit(tag,kMCEFromCFromB);//Decay chain has both B and C
+				else if(bAncestor && !cAncestor) SetTagBit(tag,kMCEFromB);//Decay chain has only B
+				else if(!bAncestor && cAncestor) SetTagBit(tag,kMCEFromC);//Decay chain has only C
+				if(pPdg ==22 || pPdg ==11|| pPdg == 2112 ||  pPdg == 211 ||  
+				   pPdg == 321 ||  pPdg == 2212  ||  pPdg == 130  ||  pPdg == 13 ) 
+					SetTagBit(tag,kMCConversion);
+				if(pPdg == 111) SetTagBit(tag,kMCPi0Decay);
+				else if (pPdg == 221) SetTagBit(tag,kMCEtaDecay);
+				else SetTagBit(tag,kMCOtherDecay);
+			} //GEANT check
+		}//electron check
+		else {
+//			printf("UNKNOWN 2, mom  pdg %d, primary %d, physical primary %d; parent %d, pdg %d, primary %d, physical primary %d \n",
+//			mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary(), iParent, pPdg, parent->IsPrimary(), parent->IsPhysicalPrimary());
+			SetTagBit(tag,kMCUnknown);
+		}
+	}//Good label value
+	else{
+		if(label < 0 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() *** bad label or no stack ***:  label %d \n", label);
+		if(label >=  mcparticles->GetEntriesFast()) printf("AliMCAnalysisUtils::CheckOriginInAOD() *** large label ***:  label %d, n tracks %d \n", label, mcparticles->GetEntriesFast());
+		SetTagBit(tag,kMCUnknown);
+	}//Bad label
+	
+	return tag;
+	
+}
+
+
+
+//_________________________________________________________________________
+TList * AliMCAnalysisUtils::GetJets(AliCaloTrackReader * reader){
+ //Return list of jets (TParticles) and index of most likely parton that originated it.
+  AliStack * stack = reader->GetStack();
+  Int_t iEvent = reader->GetEventNumber();	
+  AliGenEventHeader * geh = reader->GetGenEventHeader();
   if(fCurrentEvent!=iEvent){
     fCurrentEvent = iEvent;
     fJetsList = new TList;
@@ -403,36 +652,6 @@ TList * AliMCAnalysisUtils::GetJets(const Int_t iEvent, AliStack * stack, const 
 }
 
 
-//_________________________________________________________________________
-Bool_t AliMCAnalysisUtils::ComparePtHardAndJetPt(const AliGenEventHeader * geh){
-	// Check the event, if the requested ptHard is much larger than the jet pT, then there is a problem.
-	// Only for PYTHIA.
-	
-    if(fMCGenerator == "PYTHIA"){
-		TParticle * jet =  new TParticle;
-		AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) geh;
-		Int_t nTriggerJets =  pygeh->NTriggerJets();
-		Float_t ptHard = pygeh->GetPtHard();
-
-		//if(fDebug > 1) printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %f\n",nTriggerJets, ptHard);
-	    Float_t tmpjet[]={0,0,0,0};
-		for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
-			pygeh->TriggerJet(ijet, tmpjet);
-			jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
-			//Compare jet pT and pt Hard
-			//if(fDebug > 1) printf("AliMCAnalysisUtils:: %d pycell jet pT %f\n",ijet, jet->Pt());
-			if(jet->Pt() > fpTHardpTJetFactor * ptHard) {
-				printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
-						nTriggerJets, ptHard, jet->Pt(), fpTHardpTJetFactor);
-				return kFALSE;
-			}
-		}
-	}		
- 
-	return kTRUE ;
-
-}
-
 //________________________________________________________________
 void AliMCAnalysisUtils::Print(const Option_t * opt) const
 {
@@ -445,7 +664,6 @@ void AliMCAnalysisUtils::Print(const Option_t * opt) const
  
  printf("Debug level    = %d\n",fDebug);
  printf("MC Generator   = %s\n",fMCGenerator.Data());
- printf("fpTHardpTJetFactor = %2.2f",fpTHardpTJetFactor);
  printf(" \n");
  
 } 

@@ -25,7 +25,6 @@ AliAnalysisTaskPHOSPi0CalibSelection *AddTaskPHOSPi0Calib()
    //===========================================================================
 
   AliAnalysisTaskPHOSPi0CalibSelection * pi0calib = new AliAnalysisTaskPHOSPi0CalibSelection ("PHOSPi0Calibration");
-  //pi0calib->CopyAOD(kTRUE);
   mgr->AddTask(pi0calib);
   
   

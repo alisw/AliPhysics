@@ -84,7 +84,7 @@ AliAnaPartCorrMaker & AliAnaPartCorrMaker::operator = (const AliAnaPartCorrMaker
   
   fReader             = source.fReader ;
   fAODBranchList      = source.fAODBranchList;
-  
+	
   return *this;
   
 }
@@ -178,7 +178,10 @@ void AliAnaPartCorrMaker::Init()
     printf("AliAnaPartCorrMaker::GetOutputInit() - Analysis job list not initialized\n");
     abort();
   }
-  
+
+  //Initialize reader
+  fReader->Init();
+	
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
     
     AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
@@ -196,7 +199,7 @@ void AliAnaPartCorrMaker::InitParameters()
   fMakeHisto = kTRUE;
   fMakeAOD = kTRUE; 
   fAnaDebug = 0; // No debugging info displayed by default
-  
+	
 }
 
 //__________________________________________________________________
@@ -211,7 +214,7 @@ void AliAnaPartCorrMaker::Print(const Option_t * opt) const
   printf("Debug level                =     %d\n", fAnaDebug) ;
   printf("Produce Histo              =     %d\n", fMakeHisto) ;
   printf("Produce AOD                =     %d\n", fMakeAOD) ;
-  
+ 
 } 
 
 

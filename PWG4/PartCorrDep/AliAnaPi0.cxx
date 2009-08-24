@@ -43,8 +43,12 @@
 #include "AliAODCaloCluster.h"
 #include "AliVEvent.h"
 
-#ifdef __PHOSGEO__
+#ifdef __PHOSUTIL__
 	#include "AliPHOSGeoUtils.h"
+#endif
+
+#ifdef __EMCALUTIL__
+	#include "AliEMCALGeoUtils.h"
 #endif
 
 ClassImp(AliAnaPi0)
@@ -56,6 +60,13 @@ fNPID(0),fNmaxMixEv(0), fZvtxCut(0.),fCalorimeter(""),
 fEventsList(0x0), fhEtalon(0x0),
 fhRe1(0x0),fhMi1(0x0),fhRe2(0x0),fhMi2(0x0),fhRe3(0x0),fhMi3(0x0),fhEvents(0x0),
 fhPrimPt(0x0), fhPrimAccPt(0x0), fhPrimY(0x0), fhPrimAccY(0x0), fhPrimPhi(0x0), fhPrimAccPhi(0x0)
+#ifdef __PHOSUTIL__
+,fPHOSGeo(0x0)
+#endif
+#ifdef __EMCALUTIL__
+,fEMCALGeo(0x0)
+#endif
+
 {
 //Default Ctor
  InitParameters();
@@ -70,6 +81,12 @@ fEventsList(ex.fEventsList), fhEtalon(ex.fhEtalon),
 fhRe1(ex.fhRe1),fhMi1(ex.fhMi1),fhRe2(ex.fhRe2),fhMi2(ex.fhMi2),fhRe3(ex.fhRe3),fhMi3(ex.fhMi3),fhEvents(ex.fhEvents),
 fhPrimPt(ex.fhPrimPt), fhPrimAccPt(ex.fhPrimAccPt), fhPrimY(ex.fhPrimY), 
 fhPrimAccY(ex.fhPrimAccY), fhPrimPhi(ex.fhPrimPhi), fhPrimAccPhi(ex.fhPrimAccPhi)
+#ifdef __PHOSUTIL__
+,fPHOSGeo(ex.fPHOSGeo)
+#endif
+#ifdef __EMCALUTIL__
+,fEMCALGeo(ex.fEMCALGeo)
+#endif
 {
   // cpy ctor
   //Do not need it
@@ -111,9 +128,14 @@ AliAnaPi0::~AliAnaPi0() {
     fEventsList=0 ;
   }
   
-#ifdef __PHOSGEO__
+#ifdef __PHOSUTIL__
   if(fPHOSGeo) delete fPHOSGeo ;
-#endif	
+#endif
+
+#ifdef __EMCALUTIL__
+  if(fEMCALGeo) delete fEMCALGeo ;
+#endif
+	
 }
 
 //________________________________________________________________________________________________________________________________________________
@@ -166,11 +188,16 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   }
   
   //If Geometry library loaded, do geometry selection during analysis.
-#ifdef __PHOSGEO__
+#ifdef __PHOSUTIL__
   printf("AliAnaPi0::GetCreateOutputObjects() - PHOS geometry initialized!\n");
   fPHOSGeo = new AliPHOSGeoUtils("PHOSgeo") ;
 #endif	
   
+#ifdef __EMCALUTIL__
+  printf("AliAnaPi0::GetCreateOutputObjects() - EMCAL geometry initialized!\n");
+  fEMCALGeo = new AliEMCALGeoUtils("EMCALgeo") ;
+#endif
+
   TList * outputContainer = new TList() ; 
   outputContainer->SetName(GetName()); 
   
@@ -428,36 +455,40 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   }
   
   //Acceptance
-  AliStack * stack = GetMCStack();
-  if(stack && (IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC)) ){
-    for(Int_t i=0 ; i<stack->GetNprimary(); i++){
-      TParticle * prim = stack->Particle(i) ;
-      if(prim->GetPdgCode() == 111){
-	Double_t pi0Pt = prim->Pt() ;
-	//printf("pi0, pt %2.2f\n",pi0Pt);
-	if(prim->Energy() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception	  
-	Double_t pi0Y  = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
-	Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
-	if(TMath::Abs(pi0Y) < 0.5){
-	  fhPrimPt->Fill(pi0Pt) ;
-	}
-	fhPrimY  ->Fill(pi0Y) ;
-	fhPrimPhi->Fill(phi) ;
+  if(GetReader()->ReadStack()){	
+	  AliStack * stack = GetMCStack();
+	  if(stack && (IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC)) ){
+	     for(Int_t i=0 ; i<stack->GetNprimary(); i++){
+	         TParticle * prim = stack->Particle(i) ;
+			 if(prim->GetPdgCode() == 111){
+		     Double_t pi0Pt = prim->Pt() ;
+		     //printf("pi0, pt %2.2f\n",pi0Pt);
+		    if(prim->Energy() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception	  
+		    Double_t pi0Y  = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
+		    Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
+	        if(TMath::Abs(pi0Y) < 0.5){
+	           fhPrimPt->Fill(pi0Pt) ;
+	        }
+	        fhPrimY  ->Fill(pi0Y) ;
+		    fhPrimPhi->Fill(phi) ;
 	
-	//Check if both photons hit Calorimeter
-	Int_t iphot1=prim->GetFirstDaughter() ;
-	Int_t iphot2=prim->GetLastDaughter() ;
-	if(iphot1>-1 && iphot1<stack->GetNtrack() && iphot2>-1 && iphot2<stack->GetNtrack()){
-	  TParticle * phot1 = stack->Particle(iphot1) ;
-	  TParticle * phot2 = stack->Particle(iphot2) ;
-	  if(phot1 && phot2 && phot1->GetPdgCode()==22 && phot2->GetPdgCode()==22){
-	    //printf("2 photons: photon 1: pt %2.2f, phi %3.2f, eta %1.2f; photon 2: pt %2.2f, phi %3.2f, eta %1.2f\n",
-	    //	phot1->Pt(), phot1->Phi()*180./3.1415, phot1->Eta(), phot2->Pt(), phot2->Phi()*180./3.1415, phot2->Eta());
-	    Bool_t inacceptance = kFALSE;
-#ifdef __PHOSGEO__
+	        //Check if both photons hit Calorimeter
+	        Int_t iphot1=prim->GetFirstDaughter() ;
+	        Int_t iphot2=prim->GetLastDaughter() ;
+	        if(iphot1>-1 && iphot1<stack->GetNtrack() && iphot2>-1 && iphot2<stack->GetNtrack()){
+	           TParticle * phot1 = stack->Particle(iphot1) ;
+	           TParticle * phot2 = stack->Particle(iphot2) ;
+	           if(phot1 && phot2 && phot1->GetPdgCode()==22 && phot2->GetPdgCode()==22){
+	           //printf("2 photons: photon 1: pt %2.2f, phi %3.2f, eta %1.2f; photon 2: pt %2.2f, phi %3.2f, eta %1.2f\n",
+			   //	phot1->Pt(), phot1->Phi()*180./3.1415, phot1->Eta(), phot2->Pt(), phot2->Phi()*180./3.1415, phot2->Eta());
+	           Bool_t inacceptance = kFALSE;
+
+			   if(fCalorimeter == "PHOS"){
+
+#ifdef __PHOSUTIL__
 	    Int_t mod ;
 	    Double_t x,z ;
-	    if(fCalorimeter == "PHOS" && fPHOSGeo->ImpactOnEmc(phot1,mod,z,x) && fPHOSGeo->ImpactOnEmc(phot1,mod,z,x)) 
+	    if(fPHOSGeo->ImpactOnEmc(phot1,mod,z,x) && fPHOSGeo->ImpactOnEmc(phot2,mod,z,x)) 
 	      inacceptance = kTRUE;
 	    //printf("In REAL PHOS acceptance? %d\n",inacceptance);
 #else
@@ -466,18 +497,41 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 	    phot2->Momentum(lv2);
 	    if(GetFidutialCut()->IsInFidutialCut(lv1,fCalorimeter) && GetFidutialCut()->IsInFidutialCut(lv2,fCalorimeter)) 
 	      inacceptance = kTRUE ;
+	     if(GetDebug() > 2) printf("In %s fidutial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+#endif							  			 			  
+
+}	   
+
+			   else if(fCalorimeter == "EMCAL"){
+
+#ifdef __EMCALUTIL__
+	    if(fEMCALGeo->Impact(phot1) && fEMCALGeo->Impact(phot2)) 
+	      inacceptance = kTRUE;
+	    if(GetDebug() > 2) printf("In REAL EMCAL acceptance? %d\n",inacceptance);
+#else
+	    TLorentzVector lv1, lv2;
+	    phot1->Momentum(lv1);
+	    phot2->Momentum(lv2);
+	    if(GetFidutialCut()->IsInFidutialCut(lv1,fCalorimeter) && GetFidutialCut()->IsInFidutialCut(lv2,fCalorimeter)) 
+	      inacceptance = kTRUE ;
 	    //printf("In %s fidutial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
 #endif							  			 			  
-	    if(inacceptance){
-	      fhPrimAccPt->Fill(pi0Pt) ;
-	      fhPrimAccPhi->Fill(phi) ;
-	      fhPrimAccY->Fill(pi0Y) ;
-	    }//Accepted
-	  }// 2 photons      
-	}//Check daughters exist
-      }// Primary pi0
-    }//loop on primaries	
-  }//stack exists and data is MC
+	           }	  
+		
+	           if(inacceptance){
+	              fhPrimAccPt->Fill(pi0Pt) ;
+	              fhPrimAccPhi->Fill(phi) ;
+	              fhPrimAccY->Fill(pi0Y) ;
+	           }//Accepted
+	       }// 2 photons      
+	     }//Check daughters exist
+       }// Primary pi0
+     }//loop on primaries	
+   }//stack exists and data is MC
+  }//read stack
+  else if(GetReader()->ReadAODMCParticles()){
+	  printf("AliAnaPi0::MakeAnalysisFillHistograms() - Acceptance calculation with MCParticles not implemented yet\n");
+  }	
   
 }	
 

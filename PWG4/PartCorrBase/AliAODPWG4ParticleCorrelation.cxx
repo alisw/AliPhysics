@@ -33,7 +33,7 @@ ClassImp(AliAODPWG4ParticleCorrelation)
  AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation() :
    AliAODPWG4Particle(), fIsolated(kFALSE),
    fLeadingDetector(""), fLeading(), fCorrJet(),  fCorrBkg(), fRefJet(0),
-   fListOfRefArrays(new TList)
+   fListOfObjArrays(new TList)
 {
   // constructor
 }
@@ -42,7 +42,7 @@ ClassImp(AliAODPWG4ParticleCorrelation)
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(Double_t px, Double_t py, Double_t pz, Double_t e):
   AliAODPWG4Particle(), fIsolated(kFALSE),
   fLeadingDetector(""),  fLeading(), fCorrJet(),
-  fCorrBkg(), fRefJet(0),  fListOfRefArrays(new TList)
+  fCorrBkg(), fRefJet(0),  fListOfObjArrays(new TList)
 {
   // constructor
   SetMomentum(new TLorentzVector(px, py, pz, e));
@@ -51,7 +51,7 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(Double_t px, Double
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(TLorentzVector & p):
   AliAODPWG4Particle(p), fIsolated(kFALSE),
-  fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(), fRefJet(0),  fListOfRefArrays(new TList)
+  fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(), fRefJet(0),  fListOfObjArrays(new TList)
 {
   // constructor
 }
@@ -59,7 +59,7 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(TLorentzVector & p)
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(AliAODPWG4Particle & p):
   AliAODPWG4Particle(p), fIsolated(kFALSE),
-  fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0),   fListOfRefArrays(new TList)
+  fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0),   fListOfObjArrays(new TList)
 {
   // constructor
   
@@ -69,9 +69,9 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(AliAODPWG4Particle 
 AliAODPWG4ParticleCorrelation::~AliAODPWG4ParticleCorrelation() 
 {
   // destructor
-  if(fListOfRefArrays){
-    fListOfRefArrays->Clear();
-    delete   fListOfRefArrays ;
+  if(fListOfObjArrays){
+    fListOfObjArrays->Clear();
+    delete   fListOfObjArrays ;
   }
 }
 
@@ -80,7 +80,7 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(const AliAODPWG4Par
   AliAODPWG4Particle(part), fIsolated(part.fIsolated),
   fLeadingDetector(part.fLeadingDetector), fLeading(part.fLeading),  
   fCorrJet(part.fCorrJet), fCorrBkg(part.fCorrBkg), fRefJet(part.fRefJet),   
-  fListOfRefArrays(part.fListOfRefArrays)
+  fListOfObjArrays(part.fListOfObjArrays)
 {
   // Copy constructor
 
@@ -98,7 +98,7 @@ AliAODPWG4ParticleCorrelation& AliAODPWG4ParticleCorrelation::operator=(const Al
     fLeading  = part.fLeading;
     fCorrJet  = part.fCorrJet ;
     fCorrBkg  = part.fCorrBkg; 
-    fListOfRefArrays = fListOfRefArrays;
+    fListOfObjArrays = fListOfObjArrays;
 
   }
   
@@ -122,5 +122,5 @@ void AliAODPWG4ParticleCorrelation::Print(Option_t* /*option*/) const
   printf("     Py = %13.3f",   fLeading.Py());
   printf("     Pz = %13.3f\n", fLeading.Pz());
 
-  if( fListOfRefArrays)   fListOfRefArrays->Print("");
+  if( fListOfObjArrays)   fListOfObjArrays->Print("");
 }

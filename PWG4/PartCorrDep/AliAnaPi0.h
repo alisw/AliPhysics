@@ -21,8 +21,12 @@ class AliAODEvent ;
 class AliESDEvent ;
 #include "AliAnaPartCorrBaseClass.h"
 
-#ifdef __PHOSGEO__
+#ifdef __PHOSUTIL__
   class AliPHOSGeoUtils;
+#endif
+
+#ifdef __EMCALUTIL__
+  class AliEMCALGeoUtils;
 #endif
 
 class AliAnaPi0 : public AliAnaPartCorrBaseClass {
@@ -98,11 +102,15 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH1D * fhPrimPhi ;   //! Azimutal distribution of primary particles
   TH1D * fhPrimAccPhi; //! Azimutal distribution of primary with accepted daughters	
   
-#ifdef __PHOSGEO__
+#ifdef __PHOSUTIL__
   AliPHOSGeoUtils * fPHOSGeo ; //! PHOS geometry pointer
 #endif	
   
-  ClassDef(AliAnaPi0,3)
+#ifdef __EMCALUTIL__
+  AliEMCALGeoUtils * fEMCALGeo ; //! EMCAL geometry pointer
+#endif	
+
+  ClassDef(AliAnaPi0,4)
 } ;
 
 

@@ -82,6 +82,10 @@ public:
   TH2F * fh2E  ; //! E distribution, Reco vs MC
   TH2F * fh2Pt ; //! pT distribution, Reco vs MC
   
+  TH1F * fhPtMCPhoton;   //! Number of identified gamma 
+  TH2F * fhPhiMCPhoton;  //! Phi of identified gamma
+  TH2F * fhEtaMCPhoton;  //! eta of identified gamma	
+	
   TH1F * fhPtPrompt;   //! Number of identified prompt gamma 
   TH2F * fhPhiPrompt;  //! Phi of identified  prompt gamma
   TH2F * fhEtaPrompt;  //! eta of identified  prompt gamma
@@ -110,7 +114,7 @@ public:
   TH2F * fhPhiUnknown;  //! Phi of identified  Unknown gamma
   TH2F * fhEtaUnknown;  //! eta of identified  Unknown gamma
 
-   ClassDef(AliAnaPhoton,4)
+   ClassDef(AliAnaPhoton,5)
 
 } ;
  

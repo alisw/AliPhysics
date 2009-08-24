@@ -156,7 +156,7 @@ void AliAnaParticlePartonCorrelation::InitParameters()
   
   //Initialize the parameters of the analysis.
   SetInputAODName("PWG4Particle");
-  SetAODRefArrayName("Partons");  
+  SetAODObjArrayName("Partons");  
   AddToHistogramsName("AnaPartonCorr_");
 
 }
@@ -213,23 +213,17 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
     
     //Fill AOD reference only with partons
     TParticle * parton = new TParticle ;
-    Bool_t first = kTRUE;
 
     //Array with reference to partons, initialize
-    TRefArray * refarray  = new TRefArray;
+    TObjArray * objarray  = new TObjArray;
 
     for(Int_t ipr = 0;ipr < 8; ipr ++ ){
       parton = stack->Particle(ipr) ;
-      
-      if(first) {
-	new (refarray) TRefArray(TProcessID::GetProcessWithUID(parton)); 
-	first = kFALSE;
-      }
-      refarray->Add(parton);
+	  objarray->Add(parton);
     }//parton loop
 	
-    refarray->SetName(GetAODRefArrayName());
-    if(refarray->GetEntriesFast() > 0) particle->AddRefArray(refarray);
+    objarray->SetName(GetAODObjArrayName());
+    if(objarray->GetEntriesFast() > 0) particle->AddObjArray(objarray);
 
   }//Aod branch loop
   
@@ -269,8 +263,8 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     Int_t iparent  = 2000;
     Int_t iawayparent = -1;
 
-    TRefArray * refarray = particle->GetRefArray(GetAODRefArrayName());
-    if(!(refarray) || (refarray->GetEntriesFast() < 7) ) {
+    TObjArray * objarray = particle->GetObjArray(GetAODObjArrayName());
+    if(!(objarray) || (objarray->GetEntriesFast() < 7) ) {
       printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - Reference list with partons not filled, STOP analysis\n");
       abort();
     }
@@ -289,7 +283,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
       }   
     }
     
-    if(GetDebug() > 1) printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - N reference partons %d; labels:  mother %d, parent %d \n", refarray->GetEntriesFast(), imom, iparent);
+    if(GetDebug() > 1) printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - N reference partons %d; labels:  mother %d, parent %d \n", objarray->GetEntriesFast(), imom, iparent);
     
     
     if(iparent < 0 || iparent > 8) { 
@@ -298,7 +292,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     }
 
     //Near parton is the parton that fragmented and created the mother    
-    TParticle * nearParton = (TParticle*) refarray->At(iparent);
+    TParticle * nearParton = (TParticle*) objarray->At(iparent);
     Float_t  ptNearParton    = nearParton->Pt();
     Float_t  phiNearParton   = nearParton->Phi() ;
     Float_t  etaNearParton   = nearParton->Eta() ;
@@ -316,7 +310,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     }
 
     //Away parton is the other final parton.
-    TParticle * awayParton = (TParticle*) refarray->At(iawayparent);
+    TParticle * awayParton = (TParticle*) objarray->At(iawayparent);
     Float_t  ptAwayParton    = awayParton->Pt();
     Float_t  phiAwayParton   = awayParton->Phi() ;
     Float_t  etaAwayParton   = awayParton->Eta() ;

@@ -38,6 +38,7 @@
 #include "AliMCAnalysisUtils.h"
 #include "TParticle.h"
 #include "AliStack.h"
+#include "AliAODMCParticle.h"
 
 ClassImp(AliAnaParticleHadronCorrelation)
 
@@ -358,7 +359,7 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   
   //Initialize the parameters of the analysis.
   SetInputAODName("PWG4Particle");
-  SetAODRefArrayName("Hadrons");  
+  SetAODObjArrayName("Hadrons");  
   AddToHistogramsName("AnaHadronCorr_");
 
   //Correlation with neutrals
@@ -399,7 +400,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
   //Particle-Hadron Correlation Analysis, fill AODs
   
   if(!GetInputAODBranch()){
-    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s >, ABORT \n",GetInputAODName().Data());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s >, STOP \n",GetInputAODName().Data());
     abort();
   }
 	
@@ -453,7 +454,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   //Particle-Hadron Correlation Analysis, fill histograms
   
   if(!GetInputAODBranch()){
-    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - No input particles in AOD with name branch < %s >, ABORT \n",GetInputAODName().Data());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - No input particles in AOD with name branch < %s >, STOP \n",GetInputAODName().Data());
     abort();
   }
   
@@ -471,7 +472,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if(OnlyIsolated() && !particle->IsIsolated()) continue;
     
     //Make correlation with charged hadrons
-    TRefArray * reftracks   = particle->GetRefArray(GetAODRefArrayName()+"Tracks");
+    TObjArray * reftracks   = particle->GetObjArray(GetAODObjArrayName()+"Tracks");
     if(reftracks){
       if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Particle %d, In Track Refs  entries %d\n", iaod, reftracks->GetEntriesFast());
       if(reftracks->GetEntriesFast() > 0) MakeChargedCorrelation(particle, reftracks,kTRUE);
@@ -490,7 +491,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
 }
 
 //____________________________________________________________________________
-void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle, TRefArray* pl, const Bool_t bFillHisto)
+void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle, TObjArray* pl, const Bool_t bFillHisto)
 {  
    // Charged Hadron Correlation Analysis
    if(GetDebug() > 1)printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Make trigger particle - charged hadron correlation \n");
@@ -502,11 +503,10 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
    Double_t phi  = -100. ;
    Double_t eta  = -100. ;
    Double_t p[3];
-   Bool_t   first=kTRUE;
   
-    TRefArray * reftracks    =0x0;
+    TObjArray * reftracks    =0x0;
    if(!bFillHisto) 
-     reftracks    = new TRefArray;
+     reftracks    = new TObjArray;
   
    //Track loop, select tracks with good pt, phi and fill AODs or histograms
    for(Int_t ipr = 0;ipr < pl->GetEntries() ; ipr ++ ){
@@ -568,39 +568,31 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
 
      }
      else{
-       //Fill AODs
-      
-       if(first) {
- 	new (reftracks) TRefArray(TProcessID::GetProcessWithUID(track)); 
- 	first = kFALSE;
-       }
-      
        reftracks->Add(track);
-      
      }//aod particle loop
    }// track loop
   
    //Fill AOD with reference tracks, if not filling histograms
    if(!bFillHisto && reftracks->GetEntriesFast() > 0) {
-     reftracks->SetName(GetAODRefArrayName()+"Tracks");
-     aodParticle->AddRefArray(reftracks);
+     reftracks->SetName(GetAODObjArrayName()+"Tracks");
+     aodParticle->AddObjArray(reftracks);
    }
   
 }  
 
 //____________________________________________________________________________
-void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4ParticleCorrelation * aodParticle,TRefArray* pl, TString detector)  
+void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4ParticleCorrelation * aodParticle,TObjArray* pl, TString detector)  
 {  
   // Neutral Pion Correlation Analysis, find pi0, put them in new output aod, if correlation cuts passed
   if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Make trigger particle - neutral hadron correlation \n");
   
   if(!NewOutputAOD()){
-    printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Output aod not created, set AOD class name and branch name in the configuration file, ABORT! \n");
+    printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Output aod not created, set AOD class name and branch name in the configuration file, STOP! \n");
     abort();
   }
   
   Double_t phiTrig = aodParticle->Phi();
-  Int_t	tag = -1;
+  Int_t	tag = 0;
   TLorentzVector gammai;
   TLorentzVector gammaj;
   
@@ -639,7 +631,12 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
       pi0.SetDetector(detector);
       
       if(IsDataMC()){
-	pi0.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetMCStack()));
+		  Int_t input = 0;
+		  //Input from second AOD?
+		  if     (detector == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1;
+		  else if(detector == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) input = 1;
+		  
+	pi0.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetReader(),input));
 	if(GetDebug() > 0) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Origin of candidate %d\n",pi0.GetTag());
       }//Work with stack also 
       //Set the indeces of the original caloclusters  
@@ -685,28 +682,50 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
 	    pi0.SetDetector(detector);	
 	    if(IsDataMC()){
 	      //Check origin of the candidates
-	      Int_t tag1 = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),  GetMCStack());
-	      Int_t tag2 = GetMCAnalysisUtils()->CheckOrigin(calo2->GetLabel(0), GetMCStack());
-	      
+		  Int_t input1 = 0;
+		  Int_t input2 = 0;
+		  //Input from second AOD?
+		  if     (detector == "EMCAL"){ 
+					if(GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input1 = 1;
+					if(GetReader()->GetAODEMCALNormalInputEntries() <= jclus) input2 = 1;
+		  }
+		  else if(detector == "PHOS"){ 
+			    if(GetReader()->GetAODPHOSNormalInputEntries() <= iclus) input1 = 1;
+				if(GetReader()->GetAODPHOSNormalInputEntries() <= jclus) input2 = 1;
+		  }
+			
+		  Int_t label1 = calo->GetLabel(0);
+		  Int_t label2 = calo2->GetLabel(0);
+	      Int_t tag1 = GetMCAnalysisUtils()->CheckOrigin(label1,  GetReader(), input1);
+	      Int_t tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), input2);
+
 	      if(GetDebug() > 0) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
-	      if(tag1 == AliMCAnalysisUtils::kMCPi0Decay && tag2 == AliMCAnalysisUtils::kMCPi0Decay){
+	      if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay) && GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0Decay)){
 		
-		//Check if pi0 mother is the same
-		Int_t label1 = calo->GetLabel(0);
-		TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
-		label1 = mother1->GetFirstMother();
-		//mother1 = GetMCStack()->Particle(label1);//pi0
+			  //Check if pi0 mother is the same
+			  if(GetReader()->ReadStack()){ 
+					TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
+					label1 = mother1->GetFirstMother();
+					//mother1 = GetMCStack()->Particle(label1);//pi0
+				  
+					TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
+					label2 = mother2->GetFirstMother();
+					//mother2 = GetMCStack()->Particle(label2);//pi0
+			  }
+			  else if(GetReader()->ReadAODMCParticles()){
+					AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(input1))->At(label1);//photon in kine tree
+					label1 = mother1->GetMother();
+					//mother1 = GetMCStack()->Particle(label1);//pi0
+					AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(input2))->At(label2);//photon in kine tree
+					label2 = mother2->GetMother();
+					//mother2 = GetMCStack()->Particle(label2);//pi0
+			  }
 		
-		Int_t label2 = calo2->GetLabel(0);
-		TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
-		label2 = mother2->GetFirstMother();
-		//mother2 = GetMCStack()->Particle(label2);//pi0
-		
-		//printf("mother1 %d, mother2 %d\n",label1,label2);
-		if(label1 == label2)
-		  tag = AliMCAnalysisUtils::kMCPi0;
+			  //printf("mother1 %d, mother2 %d\n",label1,label2);
+			  if(label1 == label2)
+				  GetMCAnalysisUtils()->SetTagBit(tag,AliMCAnalysisUtils::kMCPi0);
 	      }
-	    }//Work with stack also   
+	    }//Work with mc information also   
 	    pi0.SetTag(tag);
 	    //Set the indeces of the original caloclusters  
 	    pi0.SetCaloLabel(calo->GetID(), calo2->GetID());

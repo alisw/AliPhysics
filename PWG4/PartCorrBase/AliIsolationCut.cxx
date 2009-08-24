@@ -16,6 +16,9 @@
 
 //_________________________________________________________________________
 // Class containing methods for the isolation cut. 
+// An AOD candidate (AliAODPWG4ParticleCorrelation type)
+// is passed. Look in a cone around the candidate and study
+// the hadronic activity inside to decide if the candidate is isolated
 //
 //
 //*-- Author: Gustavo Conesa (LNF-INFN) 
@@ -25,7 +28,7 @@
 // --- ROOT system --- 
 //#include <Riostream.h>
 #include <TLorentzVector.h>
-#include <TRefArray.h>
+#include <TObjArray.h>
 
 // --- AliRoot system --- 
 #include "AliIsolationCut.h" 
@@ -112,7 +115,7 @@ void AliIsolationCut::InitParameters()
 }
 
 //__________________________________________________________________
-void  AliIsolationCut::MakeIsolationCut(TRefArray * plCTS,  TRefArray * plNe, Double_t * vertex, 
+void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,  TObjArray * plNe, Double_t * vertex, 
 					const Bool_t fillAOD, AliAODPWG4ParticleCorrelation  *pCandidate, 
 					const TString aodArrayRefName,
 					Int_t & n, Int_t & nfrac, Float_t &coneptsum,  Bool_t  &isolated) const
@@ -125,18 +128,17 @@ void  AliIsolationCut::MakeIsolationCut(TRefArray * plCTS,  TRefArray * plNe, Do
   Float_t eta   = -100.  ;
   Float_t phi    = -100.  ;
   Float_t rad   = -100 ;
-  Bool_t first   = kTRUE;
   n = 0 ;
   coneptsum = 0.; 
   isolated = kFALSE;
 
   //Initialize the array with refrences
-  TRefArray * refclusters = 0x0;
-  TRefArray * reftracks    =0x0;
+  TObjArray * refclusters = 0x0;
+  TObjArray * reftracks    =0x0;
 
   if(fillAOD) {
-    refclusters = new TRefArray;
-    reftracks    = new TRefArray;
+    refclusters = new TObjArray;
+    reftracks    = new TObjArray;
   }
 
   //Check charged particles in cone.
@@ -157,10 +159,6 @@ void  AliIsolationCut::MakeIsolationCut(TRefArray * plCTS,  TRefArray * plNe, Do
       
       if(rad < fConeSize){
 	if(fillAOD) {
-	  if(first) {
-	    new (reftracks) TRefArray(TProcessID::GetProcessWithUID(track)); 
-	    first = kFALSE;
-	  }
 	  reftracks->Add(track);
 	}
 	//printf("charged in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
@@ -173,7 +171,6 @@ void  AliIsolationCut::MakeIsolationCut(TRefArray * plCTS,  TRefArray * plNe, Do
   
   //Check neutral particles in cone.  
   if(plNe){
-    first= kTRUE;
     TLorentzVector mom ;
     for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ ){
       AliAODCaloCluster * calo = (AliAODCaloCluster *)(plNe->At(ipr)) ;
@@ -193,10 +190,6 @@ void  AliIsolationCut::MakeIsolationCut(TRefArray * plCTS,  TRefArray * plNe, Do
       rad = TMath::Sqrt((eta-etaC)*(eta-etaC)+ (phi-phiC)*(phi-phiC));
       if(rad < fConeSize){
 	if(fillAOD) {
-	  if(first) {
-	    new (refclusters) TRefArray(TProcessID::GetProcessWithUID(calo)); 
-	    first = kFALSE;
-	  }
 	  refclusters->Add(calo);
 	}
 	//printf("neutral in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
@@ -213,11 +206,11 @@ void  AliIsolationCut::MakeIsolationCut(TRefArray * plCTS,  TRefArray * plNe, Do
   if(fillAOD) {
 	if(refclusters->GetEntriesFast() > 0){ 
 		refclusters->SetName(aodArrayRefName+"Clusters");
-		pCandidate->AddRefArray(refclusters);
+		pCandidate->AddObjArray(refclusters);
 	}
 	if(reftracks->GetEntriesFast()   > 0){
 		reftracks->SetName(aodArrayRefName+"Tracks");
-		pCandidate->AddRefArray(reftracks);
+		pCandidate->AddObjArray(reftracks);
 	} 
   }
 

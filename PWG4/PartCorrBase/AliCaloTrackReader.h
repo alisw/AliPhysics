@@ -8,29 +8,31 @@
 // Base class for reading data: MonteCarlo, ESD or AOD, of PHOS EMCAL and 
 // Central Barrel Tracking detectors.
 // Not all MC particles/tracks/clusters are kept, some kinematical restrictions are done.
-// Mother class of : AliCaloTrackESDReader: Fills ESD data in 3 TRefArrays (PHOS, EMCAL, CTS)
-//                 : AliCaloTrackMCReader: Fills Kinematics data in 3 TRefArrays (PHOS, EMCAL, CTS)
-//                 : AliCaloTrackAODReader: Fills AOD data in 3 TRefArrays (PHOS, EMCAL, CTS) 
+// Mother class of : AliCaloTrackESDReader: Fills ESD data in 3 TObjArrays (PHOS, EMCAL, CTS)
+//                 : AliCaloTrackMCReader: Fills Kinematics data in 3 TObjArrays (PHOS, EMCAL, CTS)
+//                 : AliCaloTrackAODReader: Fills AOD data in 3 TObjArrays (PHOS, EMCAL, CTS) 
 //                          
 // -- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
 #include "TObject.h" 
-class TRefArray ; 
+class TObjArray ; 
 class TLorentzVector ;
 #include "TString.h"
-class TRefArray;
+class TObjArray;
 class TArrayF;  
+//#include "TTree.h"
+class TTree ;
 
 //--- ANALYSIS system ---
 class AliStack ; 
 class AliHeader ; 
 class AliGenEventHeader ; 
 class AliVEvent;
-class AliAODEvent;  
+#include "AliAODEvent.h"
 class AliMCEvent;
 class AliFidutialCut;
-class AliMCAnalysisUtils;
+class AliAODMCHeader;
 
 class AliCaloTrackReader : public TObject {
 
@@ -43,6 +45,13 @@ class AliCaloTrackReader : public TObject {
 
   enum inputDataType {kESD, kAOD, kMC};
   
+  //Select generated events, depending on comparison of pT hard and jets.
+  virtual Bool_t ComparePtHardAndJetPt() ;
+  virtual Bool_t IsPtHardAndJetPtComparisonSet() const {return  fComparePtHardAndJetPt ;}
+  virtual void SetPtHardAndJetPtComparison(Bool_t compare) { fComparePtHardAndJetPt = compare ;}	
+  virtual Float_t GetPtHardAndJetFactor() const {return  fPtHardAndJetPtFactor ;}
+  virtual void SetPtHardAndJetPtFactor(Float_t factor) { fPtHardAndJetPtFactor = factor ;}		
+	
   virtual void InitParameters();
   virtual void Print(const Option_t * opt) const;
 
@@ -92,20 +101,28 @@ class AliCaloTrackReader : public TObject {
   virtual void FillInputEMCALCells() {;}
   virtual void FillInputPHOSCells()  {;}
 
-  virtual TRefArray* GetAODCTS()   const {return fAODCTS ;}
-  virtual TRefArray* GetAODEMCAL() const {return fAODEMCAL ;}
-  virtual TRefArray* GetAODPHOS()  const {return fAODPHOS ;}
+  virtual TObjArray* GetAODCTS()   const {return fAODCTS ;}
+  virtual TObjArray* GetAODEMCAL() const {return fAODEMCAL ;}
+  virtual TObjArray* GetAODPHOS()  const {return fAODPHOS ;}
   virtual TNamed* GetEMCALCells()  const {return fEMCALCells ;}
   virtual TNamed* GetPHOSCells()   const {return fPHOSCells ;}
 
+  //Get MC  informatio
+  //Kinematics and galice.root available 
   virtual AliStack*    GetStack()      const ;
   virtual AliHeader*   GetHeader()     const ;
   virtual AliGenEventHeader* GetGenEventHeader() const ;
+  //Filtered kinematics in AOD	
+  virtual TClonesArray*   GetAODMCParticles(Int_t input = 0) const ;
+  virtual AliAODMCHeader* GetAODMCHeader(Int_t input = 0)    const ;
+	
   virtual AliVEvent*   GetInputEvent()  const {return fInputEvent;}
   virtual AliAODEvent* GetOutputEvent() const {return fOutputEvent;}
   virtual AliMCEvent*  GetMC()          const {return fMC;}
   virtual void         GetVertex(Double_t * ) const {;}
-
+	
+  virtual void Init();
+	
   virtual void SetInputEvent(AliVEvent* input)  {fInputEvent  = input;}
   virtual void SetOutputEvent(AliAODEvent* aod) {fOutputEvent = aod;}
   virtual void SetMC(AliMCEvent* mc)            {fMC  = mc;}
@@ -114,31 +131,56 @@ class AliCaloTrackReader : public TObject {
 
   virtual AliFidutialCut * GetFidutialCut() const {return  fFidutialCut ;}
   virtual void SetFidutialCut(AliFidutialCut * fc) { fFidutialCut = fc ;}
-
-  virtual AliMCAnalysisUtils * GetMCAnalysisUtils() const {return  fMCUtils ;}
-  virtual void SetMCAnalysisUtils(AliMCAnalysisUtils * mcutils) { fMCUtils = mcutils ;}	
-	
-  virtual Bool_t IsPtHardAndJetPtComparisonSet() const {return  fComparePtHardAndJetPt ;}
-  virtual void SetPtHardAndJetPtComparison(Bool_t compare) { fComparePtHardAndJetPt = compare ;}	
 	
   virtual void SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) {;}
+	
+  //Methods for mixing with external input file (AOD)
+  virtual TTree* GetSecondInputAODTree() const {return  fSecondInputAODTree ; } 
+  //virtual void SetSecondInputAODTree(TTree * tree) {fSecondInputAODTree = tree ;
+  //												  fSecondInputAODEvent->ReadFromTree(tree);}//Connect tree and AOD event.
+					
+  virtual AliAODEvent* GetSecondInputAODEvent() const { return fSecondInputAODEvent ; } 
+	
+  TString GetSecondInputFileName() const    {return fSecondInputFileName ; }
+  void SetSecondInputFileName(TString name) { fSecondInputFileName = name ; }
 
+  Int_t GetSecondInputFirstEvent() const    {return fSecondInputFirstEvent ; }
+  void SetSecondInputFirstEvent(Int_t iEvent0) { fSecondInputFirstEvent = iEvent0 ; }	
+	
+  Int_t GetAODCTSNormalInputEntries()   {if(!fSecondInputAODTree) { fAODCTSNormalInputEntries   = fAODCTS->GetEntriesFast()  ;}
+										 return fAODCTSNormalInputEntries ; }
+  Int_t GetAODEMCALNormalInputEntries() {if(!fSecondInputAODTree) { fAODEMCALNormalInputEntries = fAODEMCAL->GetEntriesFast();}
+										 return fAODEMCALNormalInputEntries ; }
+  Int_t GetAODPHOSNormalInputEntries()  {if(!fSecondInputAODTree) { fAODPHOSNormalInputEntries  = fAODPHOS->GetEntriesFast() ;}
+										 return fAODPHOSNormalInputEntries ; }
+	
+  ULong_t GetTrackStatus() const    {return fTrackStatus ; }
+  void SetTrackStatus(ULong_t bit) { fTrackStatus = bit ; }		
+	
+  void SwitchOnStack()              { fReadStack          = kTRUE  ; }
+  void SwitchOffStack()             { fReadStack          = kFALSE ; }
+  void SwitchOnAODMCParticles()     { fReadAODMCParticles = kTRUE  ; }
+  void SwitchOffAODMCParticles()    { fReadAODMCParticles = kFALSE ; }
+  Bool_t ReadStack()          const { return fReadStack            ; }
+  Bool_t ReadAODMCParticles() const { return fReadAODMCParticles   ; }
+	
  protected:
   Int_t	           fEventNumber; // Event number
   TString          fCurrentFileName; // Current file name under analysis
   Int_t            fDataType ;   // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
   Int_t            fDebug;       // Debugging level
   AliFidutialCut * fFidutialCut; // Acceptance cuts
-  AliMCAnalysisUtils * fMCUtils; // MonteCarlo Analysis utils 
-  Bool_t           fComparePtHardAndJetPt; //In MonteCarlo, jet events, reject fake events with wrong jet energy.
 	
+  Bool_t           fComparePtHardAndJetPt;  // In MonteCarlo, jet events, reject fake events with wrong jet energy.
+  Float_t          fPtHardAndJetPtFactor;   // Factor between ptHard and jet pT to reject/accept event.
+
   Float_t        fCTSPtMin;      // pT Threshold on charged particles 
   Float_t        fEMCALPtMin;    // pT Threshold on emcal clusters
   Float_t        fPHOSPtMin;     // pT Threshold on phos clusters
 
-  TRefArray *    fAODCTS ;        //! temporal referenced array with tracks
-  TRefArray *    fAODEMCAL ;      //! temporal referenced array with EMCAL CaloClusters
-  TRefArray *    fAODPHOS ;       //! temporal referenced array with PHOS CaloClusters
+  TObjArray *    fAODCTS ;        //! temporal referenced array with tracks
+  TObjArray *    fAODEMCAL ;      //! temporal referenced array with EMCAL CaloClusters
+  TObjArray *    fAODPHOS ;       //! temporal referenced array with PHOS CaloClusters
   TNamed *       fEMCALCells ;    //! temporal array with EMCAL CaloCells, ESD or AOD
   TNamed *       fPHOSCells ;     //! temporal array with PHOS CaloCells, ESD or AOD
 
@@ -152,7 +194,20 @@ class AliCaloTrackReader : public TObject {
   Bool_t         fFillEMCALCells; // use data from EMCAL
   Bool_t         fFillPHOSCells;  // use data from PHOS
 
-  ClassDef(AliCaloTrackReader,5)
+  TTree *        fSecondInputAODTree;    // Tree with second input AOD, for mixing analysis.	
+  AliAODEvent*   fSecondInputAODEvent;   //! pointer to second input AOD event.
+  TString        fSecondInputFileName;   // File with AOD data to mix with normal stream of data.
+  Int_t          fSecondInputFirstEvent; // First event to be considered in the mixing.
+	
+  Int_t          fAODCTSNormalInputEntries;   // Number of entries in CTS   in case of standard input, larger with mixing.
+  Int_t          fAODEMCALNormalInputEntries; // Number of entries in EMCAL in case of standard input, larger with mixing.
+  Int_t          fAODPHOSNormalInputEntries;  // Number of entries in PHOS  in case of standard input, larger with mixing.
+	
+  ULong_t        fTrackStatus        ; // Track selection bit, select tracks refitted in TPC, ITS ...
+  Bool_t         fReadStack          ; // Access kine information from stack
+  Bool_t	     fReadAODMCParticles ; // Access kine information from filtered AOD MC particles
+	
+  ClassDef(AliCaloTrackReader,6)
 } ;
 
 
