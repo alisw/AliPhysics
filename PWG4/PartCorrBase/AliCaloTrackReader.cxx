@@ -314,7 +314,14 @@ void AliCaloTrackReader::Init()
 	if(fSecondInputFileName!=""){
 		if(fDataType == kAOD){
 			TFile * input2   = new TFile(fSecondInputFileName,"read");
+			printf("AliCaloTrackReader::Init() - Second input file opened: %s, size %d \n", input2->GetName(), (Int_t) input2->GetSize());
 			fSecondInputAODTree = (TTree*) input2->Get("aodTree");
+			if(fSecondInputAODTree) printf("AliCaloTrackReader::Init() - Second input tree opened: %s, entries %d \n", 
+										   fSecondInputAODTree->GetName(), (Int_t) fSecondInputAODTree->GetEntries());
+			else{
+			 printf("AliCaloTrackReader::Init() - Second input tree not available, STOP \n");
+			 abort();
+			}
 			fSecondInputAODEvent = new AliAODEvent;
 			fSecondInputAODEvent->ReadFromTree(fSecondInputAODTree);
 			if(fSecondInputFirstEvent >= fSecondInputAODTree->GetEntriesFast()){
