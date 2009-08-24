@@ -334,7 +334,8 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
  
 	
 	Int_t tag = 0;
-	if(label >= 0 && label <  mcparticles->GetEntriesFast()){
+    Int_t nprimaries = mcparticles->GetEntriesFast();
+	if(label >= 0 && label < nprimaries ){
 		//Mother
 		AliAODMCParticle * mom = (AliAODMCParticle *) mcparticles->At(label);
 		Int_t mPdg = TMath::Abs(mom->GetPdgCode());
@@ -344,7 +345,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
 		//GrandParent
 		AliAODMCParticle * parent = new AliAODMCParticle ;
 		Int_t pPdg = -1;
-		if(iParent > 0){
+		if(iParent >= 0){
 			parent = (AliAODMCParticle *) mcparticles->At(iParent);
 			pPdg = TMath::Abs(parent->GetPdgCode());
 		}
@@ -362,7 +363,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
 				if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent);
 				
 				//GrandParent
-				if(iParent > 0){
+				if(iParent >= 0){
 					parent = (AliAODMCParticle *) mcparticles->At(iParent);
 					pPdg = TMath::Abs(parent->GetPdgCode());
 				}
@@ -431,6 +432,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
 						if((399 < aPdg && aPdg < 500)||(3999 < aPdg && aPdg < 5000)) cAncestor = kTRUE;
 						if(bAncestor && cAncestor) break;
 						iAncestors = ancestors->GetMother();
+						if(iAncestors ==-1 ) break; // check what happens here.
 						ancestors = (AliAODMCParticle *) mcparticles->At(iAncestors);
 						aPdg = ancestors->GetPdgCode();
 					}//searching for ancestors
@@ -472,6 +474,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
 					if(eleFromEvGen && ((399 < aPdg && aPdg < 500)||(3999 < aPdg && aPdg < 5000))) cAncestor = kTRUE;
 					if(bAncestor && cAncestor) break;
 					iAncestors = ancestors->GetMother();
+					if(iAncestors ==-1 ) break; // check what happens here.
 					ancestors = (AliAODMCParticle *) mcparticles->At(iAncestors);
 					aPdg = ancestors->GetPdgCode();
 				}//searching for ancestors
