@@ -67,7 +67,7 @@ const char* AliMpDCSNamer::fgkDCSSwitchSt345Pattern = "MchDE%04dsw%d.inValue";
 
 const char* AliMpDCSNamer::fgkDCSChannelTriggerPattern[] = {"MTR_%3sSIDE_MT%2i_RPC%i_HV.%s", "MTR_%2sSIDE_MT%2i_RPC%i_HV.%s"};
 const char* AliMpDCSNamer::fgkDCSSideTriggerName[] = { "OUT", "IN" };
-const char* AliMpDCSNamer::fgkDCSMeasureName[] = { "actual.iMon", "vEff" };
+const char* AliMpDCSNamer::fgkDCSMeasureName[] = { "vEff", "actual.iMon" };
 
 const char* AliMpDCSNamer::fgkDetectorName[] = { "TRACKER", "TRIGGER" };
 
