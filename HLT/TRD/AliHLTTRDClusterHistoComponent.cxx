@@ -90,8 +90,8 @@ void AliHLTTRDClusterHistoComponent::GetOutputDataSize( unsigned long& constBase
 {
   // see header file for class documentation
   // XXX TODO: Find more realistic values.
-  constBase = 80000;
-  inputMultiplier = 1;
+  constBase = 5000;
+  inputMultiplier = 3;
 }
 
 AliHLTComponent* AliHLTTRDClusterHistoComponent::Spawn()
