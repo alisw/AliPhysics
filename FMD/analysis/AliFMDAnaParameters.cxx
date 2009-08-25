@@ -89,7 +89,7 @@ char* AliFMDAnaParameters::GetPath(const char* species) {
   char* path ;
   
   if(species == fgkBackgroundID)
-    path = Form("%s/%s_%d_%d_%d.root",
+    path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
 		fBackgroundPath.Data(),
 		fgkBackgroundID,
 		fEnergy,
@@ -99,7 +99,7 @@ char* AliFMDAnaParameters::GetPath(const char* species) {
 		0,
 		0);
   if(species == fgkEnergyDistributionID)
-    path = Form("%s/%s_%d_%d_%d.root",
+    path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
 		fEnergyPath.Data(),
 		fgkEnergyDistributionID,
 		fEnergy,
@@ -109,7 +109,7 @@ char* AliFMDAnaParameters::GetPath(const char* species) {
 		0,
 		0);
   if(species == fgkEventSelectionEffID)
-    path = Form("%s/%s_%d_%d_%d.root",
+    path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
 		fEventSelectionEffPath.Data(),
 		fgkEventSelectionEffID,
 		fEnergy,
