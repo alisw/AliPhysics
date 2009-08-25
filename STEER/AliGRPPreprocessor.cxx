@@ -1312,8 +1312,8 @@ Float_t* AliGRPPreprocessor::ProcessFloatAllMagnet(const TObjArray* array, Int_t
 		AliDCSValue *v = (AliDCSValue *)array->At(i);
 		if ((v->GetFloat() <= fminFloat) || (v->GetFloat() >= fmaxFloat)) {
 			AliError(Form("Error! Float value found in DCS map at %d-th entry is OUT OF RANGE: value = %6.5e",i,v->GetFloat()));
-if (v->GetFloat() < fminFloat) AliInfo(Form("The value is smaller than %6.5e",fminFloat));
-if (v->GetFloat() > fmaxFloat) AliInfo(Form("The value is greater than %6.5e",fmaxFloat));
+			if (v->GetFloat() < fminFloat) AliInfo(Form("The value is smaller than %6.5e",fminFloat));
+			if (v->GetFloat() > fmaxFloat) AliInfo(Form("The value is greater than %6.5e",fmaxFloat));
 			return NULL;
 		}
 		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
