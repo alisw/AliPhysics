@@ -18,7 +18,12 @@ TEveGeoShape* geom_gentle_hlt(Bool_t register_as_global=kTRUE) {
   elTRD->SetRnrState(kFALSE);
 
   TEveElement* elHMPID = gsre->FindChild("HMPID");
-  elHMPID->SetRnrState(kFALSE);
+  elHMPID->SetRnrState(kTRUE);
+
+  TEveElement* elPHOS = gsre->FindChild("PHOS");
+  elPHOS->SetRnrState(kTRUE);
+  elPHOS->FindChild("PHOS_4")->SetRnrState(kFALSE);
+  elPHOS->FindChild("PHOS_5")->SetRnrState(kFALSE);
 
   if (register_as_global) {
     gEve->AddGlobalElement(gsre);
@@ -35,6 +40,11 @@ TEveGeoShape* geom_gentle_rphi() {
   TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle");
   TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
   f.Close();
+
+  TEveElement* elPHOS = gsre->FindChild("PHOS");
+  elPHOS->SetRnrState(kTRUE);
+  elPHOS->FindChild("PHOS_4")->SetRnrState(kFALSE);
+  elPHOS->FindChild("PHOS_5")->SetRnrState(kFALSE);
 
   return gsre;
 }

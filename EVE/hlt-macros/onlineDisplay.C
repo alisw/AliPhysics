@@ -221,7 +221,6 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   TEveBrowser *browser = gEve->GetBrowser();
   browser->ShowCloseTab(kFALSE);
 
-
   TEveViewer *threeDView  = 0;
   TEveViewer *rPhiView = 0;
   TEveViewer *rhoZView = 0;
