@@ -762,11 +762,11 @@ Int_t AliGRPPreprocessor::ProcessL3DPs(const TMap* valueMap, AliGRPObject* grpOb
 				nL3Entries++;
 			}
 			else if (isZero){
-				AliInfo(Form("%s set to invalid, but magnet was OFF, not ignoring DP",fgkDCSDataPoints[indexDP]));
+				AliInfo(Form("%s set to invalid, but magnet was OFF (according to the current), DP not considered wrong",fgkDCSDataPoints[indexDP]));
 				nL3Entries++;
 			}
 			else {
-				AliError(Form("%s Polarity value changed within the run! setting it to invalid and ignoring DP",fgkDCSDataPoints[indexDP]));
+				AliError(Form("%s value changed within the run, while the magnet was ON (according to the current), setting it to invalid and considering the DP as wrong",fgkDCSDataPoints[indexDP]));
 			}
 		}
 	}
@@ -835,11 +835,11 @@ Int_t AliGRPPreprocessor::ProcessDipoleDPs(const TMap* valueMap, AliGRPObject* g
 				nDipoleEntries++;
 			}
 			else if (isZero){
-				AliInfo(Form("%s set to invalid, but magnet was OFF, not ignoring DP",fgkDCSDataPoints[indexDP]));
+				AliInfo(Form("%s set to invalid, but magnet was OFF (according to the current), DP not considered wrong",fgkDCSDataPoints[indexDP]));
 				nDipoleEntries++;
 			}
 			else{
-				AliError(Form("%s Polarity value changed within the run! setting it to invalid and ignoring DP",fgkDCSDataPoints[indexDP]));
+				AliError(Form("%s value changed within the run while the magnet was ON (according to the current), setting it to invalid and considering the DP as wrong", fgkDCSDataPoints[indexDP]));
 			}
 		}
 	}
@@ -906,7 +906,7 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 		} 
 		//if (sensorP2) delete sensorP2;
 		else {
-			Log(Form("ERROR Sensor Fit for %s not found: ", fgkDCSDataPoints[indexDP] ));
+			Log(Form("ERROR Sensor Fit for %s not found ", fgkDCSDataPoints[indexDP] ));
 		}
 		AliInfo(Form("==========SurfaceAtmosPressure==========="));
 		indexDP = kSurfaceAtmosPressure;
@@ -919,7 +919,7 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 		} 
 		//if (sensorP2) delete sensorP2;
 		else {
-			Log(Form("ERROR Sensor Fit for %s not found: ", fgkDCSDataPoints[indexDP] ));
+			Log(Form("ERROR Sensor Fit for %s not found ", fgkDCSDataPoints[indexDP] ));
 		}
 		
 	}
@@ -1283,8 +1283,9 @@ Float_t* AliGRPPreprocessor::ProcessFloatAllMagnet(const TObjArray* array, Int_t
 	// 
 	// processing Float values using Mean, Median, Standard Deviation wrt Mean, Standar Deviation wrt Median 
 	// used for L3 and Dipole magnets, using isZero flag to decide whther the magnet was OFF/ON
-	// threshold for L3 = 350 A (value provided by DCS)
-	// threshold for Dipole = 450 A (value provided by DCS)
+	// the flag is set according to the L3/Dipole current value
+	// current threshold for L3 = 350 A (value provided by DCS)
+	// current threshold for Dipole = 450 A (value provided by DCS)
 	//
 	// parameters[0] = mean
 	// parameters[1] = truncated mean (calculated excluding points outside +/- 3RMS from mean
@@ -1320,8 +1321,8 @@ if (v->GetFloat() > fmaxFloat) AliInfo(Form("The value is greater than %6.5e",fm
 			tempArray[i] = v->GetFloat();
 			AliDebug(2,Form("%d-th entry = %f",i,tempArray[i]));
 			iCounts += 1;
-			if (indexDP == kL3Polarity && v->GetFloat() > 350 && isZero == kTRUE) isZero=kFALSE; 
-			if (indexDP == kDipolePolarity && v->GetFloat() > 450 && isZero == kTRUE) isZero=kFALSE; 
+			if (indexDP == kL3Current && v->GetFloat() > 350 && isZero == kTRUE) isZero=kFALSE; 
+			if (indexDP == kDipoleCurrent && v->GetFloat() > 450 && isZero == kTRUE) isZero=kFALSE; 
 		}
 		else {
 			AliError(Form("DCS values for the parameter outside the queried interval"));
