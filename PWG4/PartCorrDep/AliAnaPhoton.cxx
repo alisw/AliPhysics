@@ -205,13 +205,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhRatioPt);    
 
     fh2E  = new TH2F ("h2E","E distribution, reconstructed vs generated", nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
-    fh2E->SetYTitle("E_{rec} (GeV)");
-    fh2E->SetXTitle("E_{gen} (GeV)");
+    fh2E->SetXTitle("E_{rec} (GeV)");
+    fh2E->SetYTitle("E_{gen} (GeV)");
     outputContainer->Add(fh2E);          
     
     fh2Pt  = new TH2F ("h2Pt","p_T distribution, reconstructed vs generated", nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
-    fh2Pt->SetYTitle("p_{T,rec} (GeV/c)");
-    fh2Pt->SetXTitle("p_{T,gen} (GeV/c)");
+    fh2Pt->SetXTitle("p_{T,rec} (GeV/c)");
+    fh2Pt->SetYTitle("p_{T,gen} (GeV/c)");
     outputContainer->Add(fh2Pt);
    
 	fhPtMCPhoton  = new TH1F("hPtMCPhoton","Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
@@ -726,8 +726,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 		
 	}
 	
-	fh2E     ->Fill(eprim,ecluster);
-	fh2Pt    ->Fill(ptprim, ptcluster);     
+	fh2E     ->Fill(ecluster, eprim);
+	fh2Pt    ->Fill(ptcluster, ptprim);     
 	fhDeltaE ->Fill(eprim-ecluster);
 	fhDeltaPt->Fill(ptprim-ptcluster);     
 	if(eprim > 0)  fhRatioE  ->Fill(ecluster/eprim);
