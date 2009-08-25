@@ -170,8 +170,8 @@ void AliMUONRecoParam::SetLowFluxParam()
   
   SetNameTitle("Low Flux","Low Flux");
   SetEventSpecie(AliRecoParam::kLowMult);
-  fMinBendingMomentum = 1.;
-  fMaxBendingMomentum = 3000.;
+  fMinBendingMomentum = 0.8;
+  fMaxBendingMomentum = 1.e10;
   fMaxNonBendingSlope = 0.3;
   fMaxBendingSlope = 0.4;
   fSelectTrackOnSlope = kFALSE;
@@ -213,8 +213,8 @@ void AliMUONRecoParam::SetHighFluxParam()
   
   SetNameTitle("High Flux","High Flux");
   SetEventSpecie(AliRecoParam::kHighMult);
-  fMinBendingMomentum = 1.;
-  fMaxBendingMomentum = 3000.;
+  fMinBendingMomentum = 0.8;
+  fMaxBendingMomentum = 1.e10;
   fMaxNonBendingSlope = 0.3;
   fMaxBendingSlope = 0.4;
   fSelectTrackOnSlope = kFALSE;
@@ -256,13 +256,13 @@ void AliMUONRecoParam::SetCosmicParam()
   
   SetNameTitle("Cosmic","Cosmic");
   SetEventSpecie(AliRecoParam::kCosmic);
-  fMinBendingMomentum = 1.;
-  fMaxBendingMomentum = 10000000.;
-  fMaxNonBendingSlope = 0.4;
-  fMaxBendingSlope = 0.7;
+  fMinBendingMomentum = 0.8;
+  fMaxBendingMomentum = 1.e10;
+  fMaxNonBendingSlope = 0.3;
+  fMaxBendingSlope = 0.4;
   fSelectTrackOnSlope = kTRUE;
-  fNonBendingVertexDispersion = 200.;
-  fBendingVertexDispersion = 200.;
+  fNonBendingVertexDispersion = 170.;
+  fBendingVertexDispersion = 170.;
   fMaxNonBendingDistanceToTrack = 1.;
   fMaxBendingDistanceToTrack = 1.;
   fSigmaCutForTracking = 7.;
@@ -284,12 +284,12 @@ void AliMUONRecoParam::SetCosmicParam()
   fSaveFullClusterInESD = kTRUE;
   for (Int_t iCh = 0; iCh < 10; iCh++) {
     fUseChamber[iCh] = kTRUE;
-    fDefaultNonBendingReso[iCh] = 0.152;
-    fDefaultBendingReso[iCh] = 0.027;
+    fDefaultNonBendingReso[iCh] = 0.4;
+    fDefaultBendingReso[iCh] = 0.4;
   }
-  fRequestStation[0] = kFALSE;
-  fRequestStation[1] = kFALSE;
-  fRequestStation[2] = kFALSE;
+  fRequestStation[0] = kTRUE;
+  fRequestStation[1] = kTRUE;
+  fRequestStation[2] = kTRUE;
   fRequestStation[3] = kTRUE;
   fRequestStation[4] = kTRUE;
   fBypassSt45 = 0;
