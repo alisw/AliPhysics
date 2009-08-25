@@ -7,6 +7,7 @@ EXTRA_DIST	=
 
 check_PROGRAMS	= testAliHLTBlockDataCollection \
 		  testAliHLTComponent \
+		  testAliHLTCTPData \
 		  dtOperators \
 		  testDefaultDataTypes
 
@@ -26,5 +27,9 @@ testDefaultDataTypes_LDADD = $(top_builddir)/BASE/libHLTbase.la
 
 testAliHLTComponent_SOURCES = testAliHLTComponent.C
 testAliHLTComponent_LDADD = $(top_builddir)/BASE/libHLTbase.la
+
+testAliHLTCTPData_SOURCES = testAliHLTCTPData.C
+testAliHLTCTPData_LDADD = $(top_builddir)/BASE/libHLTbase.la \
+			  $(top_builddir)/rec/libHLTrec.la
 
 TESTS		= $(check_PROGRAMS)
