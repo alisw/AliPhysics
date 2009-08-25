@@ -32,7 +32,7 @@
    using namespace std;
 #endif
 
-#define EVE_DEBUG 1
+#define EVE_DEBUG 0
 
 #include "AliHLTHOMERManager.h"
 // -- -- -- -- -- -- -- 
@@ -141,6 +141,10 @@ Int_t AliHLTHOMERManager::CreateSourcesList() {
   else if ( iResult > 0 ) {
     HLTWarning(Form("No active services found."));
   }
+  else if ( fSourceList->IsEmpty() ) {
+    HLTWarning(Form("No active services in the list."));
+    iResult = 2;
+  }
   else {
      HLTInfo(Form("New sources list created."));
 
@@ -176,35 +180,37 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
 
   Int_t iResult = 0;
 
+  // -- Check if LibManager is present
+  if ( ! fLibManager ) {
+    HLTError(Form("No LibManager present."));
+    return -1;
+  }
+  
   // -- Check if already connected and state has not changed
   if ( fStateHasChanged == kFALSE && IsConnected() ) {
     HLTInfo(Form("No need for reconnection."));
     return iResult;
   }
-
+  
   // -- If already connected, disconnect before connect
   if ( IsConnected() )
     DisconnectHOMER();
-
+  
   // -- Create the Readoutlist
   UShort_t* sourcePorts = new UShort_t [fSourceList->GetEntries()];
   const char ** sourceHostnames = new const char* [fSourceList->GetEntries()];
   UInt_t sourceCount = 0;
-
+  
   CreateReadoutList( sourceHostnames, sourcePorts, sourceCount, detector );
   if ( sourceCount == 0 ) {
     HLTError(Form("No sources selected, aborting."));
-    return -1;
+    return -2;
   }
 
   // *** Connect to data sources
-  if ( !fReader && fLibManager )
+  if ( !fReader )
     fReader = fLibManager->OpenReader( sourceCount, sourceHostnames, sourcePorts );
-  else {
-    HLTError(Form("No LibManager present."));
-    return -2;
-  }
-    
+  
   iResult = fReader->GetConnectionStatus();
   if ( iResult ) {
     // -- Connection failed
@@ -279,15 +285,17 @@ Int_t AliHLTHOMERManager::ReconnectHOMER( TString detector="" ){
  * ---------------------------------------------------------------------------------
  */
 
-
 //##################################################################################
 Int_t AliHLTHOMERManager::NextEvent(){
   // see header file for class documentation
 
   Int_t iResult = 0;
   Int_t iRetryCount = 0;
-
-  if ( !fReader || ! IsConnected() ) {
+  
+  if ( !IsConnected() || fStateHasChanged )
+    ConnectHOMER();
+  
+  if ( !fReader || !IsConnected() ) {
     HLTWarning(Form( "Not connected yet." ));
     return -1;
   }
@@ -459,11 +467,12 @@ void AliHLTHOMERManager::CreateBlockList() {
     // -- Check sources list if block is requested
     if ( CheckIfRequested( block ) ) {
       fBlockList->Add( block );
-      
     }
     else {
-      delete block;
-      block = NULL;
+      // XXX HACK Jochen
+      fBlockList->Add( block );
+      //      delete block;
+      //      block = NULL;
     }
  
   } while( GetNextBlk() );
@@ -613,7 +622,7 @@ Bool_t AliHLTHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
     // -- Check if source is selected
     if ( ! source->IsSelected() )
       continue;
-        
+    
     // -- Check if detector matches
     if ( source->GetSourceName().CompareTo( block->GetBlockName() ) )
       continue;
@@ -623,7 +632,7 @@ Bool_t AliHLTHOMERManager::CheckIfRequested( AliHLTHOMERBlockDesc * block ) {
 
   } // while ( ( source = dynamic_cast<AliHLTHOMERSourceDesc*>(next()) ) ) {
   
-#if 0 //EVE_DEBUG
+#if EVE_DEBUG
   if ( requested ) {
     HLTInfo(Form("Block requested : %s", block->GetBlockName().Data())); 
   }

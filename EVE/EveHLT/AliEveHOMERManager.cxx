@@ -17,6 +17,8 @@
    using namespace std;
 #endif
 
+#include "unistd.h"
+
 #include "AliEveHOMERManager.h"
 
 
@@ -32,7 +34,9 @@ ClassImp(AliEveHOMERManager)
 AliEveHOMERManager::AliEveHOMERManager() :
   AliHLTHOMERManager(), 
   TEveElementList("Homer Manager"),
-  fSrcList(NULL) {
+  fSrcList(NULL),
+  fRetryCount(1),
+  fRetrySleeptime(10) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -80,23 +84,47 @@ Int_t AliEveHOMERManager::CreateEveSourcesList() {
   fSrcList->CreateByType();
     
   return iResult;
- 
 }
 
+//##################################################################################
+Int_t AliEveHOMERManager::CreateEveSourcesListLoop() {
+  // see header file for class documentation
+
+  Int_t iResult = 0;
+
+  for ( Int_t retry = 0; retry < fRetryCount ; retry++ ) {
+  
+    iResult = CreateEveSourcesList();
+    if (!iResult) 
+      break;
+    
+    else if (iResult == 1) {
+      HLTWarning( Form("Couldn't find active services, sleeping %d s\n", fRetryCount) ) ;
+    }   
+    else if (iResult == 2) {
+      HLTWarning( Form("Services List empty, sleeping %d s\n", fRetryCount) ) ;
+    }
+    else {
+      HLTError( Form("Other problem ... \n") ); 
+      return iResult;
+    } 
+    
+    sleep(fRetrySleeptime);
+  }
+
+  if ( iResult ) {
+    HLTError( Form("Couldn't find active services.\n") );
+    return iResult;
+  } 
+  
+  return iResult;
+}
 
 //##################################################################################
 Int_t AliEveHOMERManager::ConnectEVEtoHOMER() {
   // see header file for class documentation
 
-  Int_t iResult = 0;
-  
   fStateHasChanged = fSrcList->GetSelectedSources();
   
-  cout<<"In ConnectEVEtoHOMER"<<endl;
-
-  iResult = ConnectHOMER();
-
-  
-  return iResult;
- 
+  return ConnectHOMER();
 }

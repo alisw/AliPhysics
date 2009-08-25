@@ -43,8 +43,6 @@ public:
   virtual ~AliEveHOMERManager();
 
 
-
-
   /*
    * ---------------------------------------------------------------------------------
    *                            Source Handling - public
@@ -55,8 +53,12 @@ public:
    *  @return 0 on success, <0 for failure, 1 for no active service
    */
   Int_t CreateEveSourcesList();
+
+  Int_t CreateEveSourcesListLoop();
   
   Int_t ConnectEVEtoHOMER();
+
+  void SetRetryCount(Int_t count, Int_t sleeptime) { fRetryCount = count; fRetrySleeptime = sleeptime; }
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -76,6 +78,10 @@ private:
 
   // == sources ==
   AliEveHOMERSourceList* fSrcList;                // List of Connected HOMER Sources
+
+  Int_t fRetryCount;
+
+  Int_t fRetrySleeptime;
 
   ClassDef(AliEveHOMERManager, 0); // Manage connections to HLT data-sources.
 

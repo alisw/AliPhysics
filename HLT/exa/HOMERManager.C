@@ -45,7 +45,9 @@ Int_t HOMERManager() {
 
   printf( "== CONNECT HOMER ==\n" );
   
-  iResult = hM->ConnectHOMER("TRD");
+  // Empty argument should connect to all
+  //iResult = hM->ConnectHOMER();
+    iResult = hM->ConnectHOMER("HLT");
   if (iResult) return iResult;
   
   printf( "== NEXT EVENT ==\n" );
@@ -56,10 +58,6 @@ Int_t HOMERManager() {
   printf( "== LOOP OVER BLOCKS ==\n" );
 
   TObject * object =  NULL;  
-
-  //  TList* bl = hM->GetBlockList();
-  //bl->Dump();
-
 
   TIter next(hM->GetBlockList());
   AliHLTHOMERBlockDesc* block = NULL;

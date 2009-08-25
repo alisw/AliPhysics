@@ -96,8 +96,7 @@ void AliHLTHOMERBlockDesc::SetBlock( void * data, ULong_t size, TString origin,
   fDataType = dataType;
   fSpecification = specification; 
 
-  //  fBlockName.Form("%s_%s_0x%08LX", fDetector.Data(), fDataType.Data(), fSpecification ); 
-  fBlockName.Form("%s_%s_0", fDetector.Data(), fDataType.Data() ); 
+  fBlockName.Form("%s_%s_0x%08X", fDetector.Data(), fDataType.Data(), fSpecification ); 
 
   // -- Set block parameters
   SetBlockParameters();

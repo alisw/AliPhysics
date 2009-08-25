@@ -13,7 +13,7 @@
   gSystem->Load("libAliHLTUtil");
   gSystem->Load("libHLTinterface");
   gSystem->Load("libAliHLTMUON");
-   gSystem->Load("libAliHLTTPC");
+  gSystem->Load("libAliHLTTPC");
  
   cout << "Setting include path ..." << endl;
   TString includePath = "-I${ALICE_ROOT}/include ";

@@ -285,7 +285,7 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
   // -- Get Content
   TString xmlContent(node->GetText() );
 
-  HLTInfo(Form("XMLContent: %s",xmlContent.Data()));
+  HLTDebug(Form("XMLContent: %s",xmlContent.Data()));
 
   iResult = xmlParser.ParseBuffer(xmlContent.Data(), xmlContent.Length());
   if ( iResult < 0 ) {
@@ -295,7 +295,6 @@ Int_t AliHLTHOMERProxyHandler::ProcessXmlRpcResponse() {
     return iResult;
   }
   
-
   if ( !xmlParser.GetXMLDocument()->GetRootNode()->HasChildren() ) {
     HLTWarning(Form("No Services active."));
     return 1;
