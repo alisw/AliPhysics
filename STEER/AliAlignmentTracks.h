@@ -80,6 +80,8 @@ class AliAlignmentTracks : public TObject {
   void WriteRealignObjArray(TString outfilename,AliGeomManager::ELayerID layerRangeMin,AliGeomManager::ELayerID layerRangeMax);
   Int_t GetLastIndex(Int_t iLayer,Int_t iModule) const { return fLastIndex[iLayer][iModule]; }  
 
+  Bool_t Misalign(const char *misalignObjFileName, const char* arrayName);
+
  protected:
 
   void InitIndex();
@@ -95,8 +97,6 @@ class AliAlignmentTracks : public TObject {
 
   AliTrackFitter *CreateFitter();
   AliTrackResiduals *CreateMinimizer();
-
-  Bool_t Misalign(const char *misalignObjFileName, const char* arrayName);
 
   TChain           *fESDChain;       //! Chain with ESDs
   TString           fPointsFilename; //  Name of the file containing the track point arrays
