@@ -38,7 +38,7 @@ Bool_t gShowMUONRhoZ = kTRUE;
 
 Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
-void visscan_init(Bool_t show_extra_geo=kFALSE)
+void visscan_init(const TString& path=".", Bool_t show_extra_geo=kFALSE)
 {
   if (!show_extra_geo)
   {
@@ -48,7 +48,7 @@ void visscan_init(Bool_t show_extra_geo=kFALSE)
   AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
 
   TEveUtil::LoadMacro("alieve_init.C");
-  alieve_init(".", -1);
+  alieve_init(path, -1);
 
   // TEveLine::SetDefaultSmooth(1);
 
