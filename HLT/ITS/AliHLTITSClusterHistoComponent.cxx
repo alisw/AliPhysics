@@ -17,7 +17,7 @@
 
 /** @file   AliHLTITSClusterHistoComponent.cxx
     @author Gaute Ovrebekk
-    @brief  Component for ploting charge in clusters
+    @brief  Component for plotting charge in clusters
 */
 
 #if __GNUC__>= 3
@@ -28,6 +28,7 @@ using namespace std;
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliGeomManager.h"
 #include "AliITSRecPoint.h"
 #include "TMath.h"
 #include <TFile.h>
@@ -35,15 +36,12 @@ using namespace std;
 #include "TObjString.h"
 #include "TObjArray.h"
 
-//#include <stdlib.h>
-//#include <cerrno>
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTITSClusterHistoComponent)
 
 AliHLTITSClusterHistoComponent::AliHLTITSClusterHistoComponent()
-:
-fXY(NULL),                     
+  :
+  fXY(NULL),                     
   fPhieta(NULL),                   
   fCharge(NULL),   
   fPlotCharge(kFALSE),   
@@ -54,26 +52,21 @@ fXY(NULL),
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
 }
 
-AliHLTITSClusterHistoComponent::~AliHLTITSClusterHistoComponent()
-{
+AliHLTITSClusterHistoComponent::~AliHLTITSClusterHistoComponent(){
   // see header file for class documentation
 }
 
 // Public functions to implement AliHLTComponent's interface.
 // These functions are required for the registration process
 
-const char* AliHLTITSClusterHistoComponent::GetComponentID()
-{
+const char* AliHLTITSClusterHistoComponent::GetComponentID(){
   // see header file for class documentation
-  
   return "ITSClusterHisto";
 }
 
-void AliHLTITSClusterHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
-{
+void AliHLTITSClusterHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list){
   // see header file for class documentation
   list.clear();
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD );
@@ -81,157 +74,154 @@ void AliHLTITSClusterHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeLi
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD );
 }
 
-AliHLTComponentDataType AliHLTITSClusterHistoComponent::GetOutputDataType()
-{
+AliHLTComponentDataType AliHLTITSClusterHistoComponent::GetOutputDataType(){
   // see header file for class documentation
   return kAliHLTDataTypeHistogram;
-
 }
 
-void AliHLTITSClusterHistoComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
-{
+void AliHLTITSClusterHistoComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ){
   // see header file for class documentation
   // XXX TODO: Find more realistic values.
-  constBase = 80000;
-  inputMultiplier = 10;
+  constBase = 5000;
+  inputMultiplier = 2;
 }
 
-AliHLTComponent* AliHLTITSClusterHistoComponent::Spawn()
-{
+AliHLTComponent* AliHLTITSClusterHistoComponent::Spawn(){
   // see header file for class documentation
   return new AliHLTITSClusterHistoComponent;
 }
 
-int AliHLTITSClusterHistoComponent::DoInit( int argc, const char** argv )
-{
-  fPlotCharge=kFALSE;   
-  fPlotXYPhiEta=kTRUE;
+int AliHLTITSClusterHistoComponent::DoInit( int argc, const char** argv ){  
+  // see header file for class documentation
      
-  if(fPlotCharge){fCharge = new TH1F("fCharge","Total Charge of clusters",2000,0,2000);}
+  if(AliGeomManager::GetGeometry()==NULL){
+    AliGeomManager::LoadGeometry();
+  }
+  
+  fPlotCharge   = kFALSE;   
+  fPlotXYPhiEta = kTRUE;
+     
+  if(fPlotCharge) fCharge = new TH1F("fCharge","Total Charge of clusters",2000,0,2000);
   if(fPlotXYPhiEta){
-	fXY = new TH2F("fXY","Global XY of ITS clusters",1600,-80,80,1600,-80,80);
-  	Char_t name[50];
-	Char_t title[50];
-	fPhieta = new TH2F*[6];
-	for (Int_t iLay=0;iLay<6;iLay++) {
-		sprintf(name,"Phi_vs_Eta_ITS_Layer%d",iLay+1);
-		sprintf(title,"Phi vs Eta - ITS Layer %d",iLay+1);
-		fPhieta[iLay]=new TH2F(name,title,60,-1.5,1.5,60,0.,2*TMath::Pi());
-		fPhieta[iLay]->GetXaxis()->SetTitle("Pseudorapidity");
-		fPhieta[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
- 	}
-
+     fXY = new TH2F("fXY","Global XY of ITS clusters",1600,-80,80,1600,-80,80);
+     Char_t name[50];
+     Char_t title[50];
+     fPhieta = new TH2F*[6];
+     for (Int_t iLay=0;iLay<6;iLay++){
+     	     sprintf(name,"Phi_vs_Eta_ITS_Layer%d",iLay+1);
+     	     sprintf(title,"Phi vs Eta - ITS Layer %d",iLay+1);
+     	     fPhieta[iLay]=new TH2F(name,title,60,-1.5,1.5,60,0.,2*TMath::Pi());
+     	     fPhieta[iLay]->GetXaxis()->SetTitle("Pseudorapidity");
+     	     fPhieta[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
+     }
   }
   
   int iResult=0;
   TString configuration="";
   TString argument="";
-  for (int i=0; i<argc && iResult>=0; i++) {
+
+  for(int i=0; i<argc && iResult>=0; i++){
     argument=argv[i];
     if (!configuration.IsNull()) configuration+=" ";
     configuration+=argument;
   }
   
-  if (!configuration.IsNull()) {
+  if(!configuration.IsNull()){
     iResult=Configure(configuration.Data());
   }  
 
   return iResult; 
 }
   
-int AliHLTITSClusterHistoComponent::DoDeinit()
-{
+int AliHLTITSClusterHistoComponent::DoDeinit(){
   // see header file for class documentation
   if(fCharge!=NULL) delete fCharge;
   if(fXY!=NULL) {
-	delete fXY;
-	for(Int_t i=0;i<6;i++) delete fPhieta[5-i];
+     delete fXY;
+     for(Int_t i=0;i<6;i++) delete fPhieta[5-i];
   }
   return 0;
 }
 
-int AliHLTITSClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
-{
-  
+int AliHLTITSClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/){
+  // see header file for class documentation
+   
   static Int_t event = 0;
   event++;
   int TotalSpacePoint = 0;
   
   const AliHLTComponentBlockData* iter = NULL;
   
-  if(!IsDataEvent())
-    return 0;
+  if(!IsDataEvent()) return 0;
   
-  for ( iter = GetFirstInputBlock(kAliHLTDataTypeClusters); iter != NULL; iter = GetNextInputBlock() ) {
-    
-	
-    if(iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSPD) && 
-       iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSDD) && 
-       iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSSD))
-       continue;
+  for(iter = GetFirstInputBlock(kAliHLTDataTypeClusters); iter != NULL; iter = GetNextInputBlock()){
+  
+      if(iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSPD) && 
+         iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSDD) && 
+         iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSSD))
+         continue;
 
-    const AliHLTITSClusterData* clusterData = (const AliHLTITSClusterData*) iter->fPtr;
-    Int_t nSpacepoint = (Int_t) clusterData->fSpacePointCnt;
-    TotalSpacePoint += nSpacepoint;
-    AliHLTITSSpacePointData *clusters = (AliHLTITSSpacePointData*) clusterData->fSpacePoints;
+      const AliHLTITSClusterData* clusterData = (const AliHLTITSClusterData*) iter->fPtr;
+      Int_t nSpacepoint = (Int_t) clusterData->fSpacePointCnt;
+      TotalSpacePoint += nSpacepoint;
+      AliHLTITSSpacePointData *clusters = (AliHLTITSSpacePointData*) clusterData->fSpacePoints;
 
-    for(int i=0;i<nSpacepoint;i++){
-      Int_t lab[4]={0,0,0,0};
-      Float_t hit[6]={0,0,0,0,0,0};
-      Int_t info[3]={0,0,0};
-      
-      lab[0]=clusters[i].fTracks[0];
-      lab[1]=clusters[i].fTracks[1];
-      lab[2]=clusters[i].fTracks[2];
-      lab[3]=clusters[i].fIndex;
-      hit[0]=clusters[i].fY;
-      hit[1]=clusters[i].fZ;
-      hit[2]=clusters[i].fSigmaY2;
-      hit[3]=clusters[i].fSigmaZ2;
-      hit[4]=clusters[i].fQ;
-      hit[5]=clusters[i].fSigmaYZ;
-      info[0]=clusters[i].fNy;
-      info[1]=clusters[i].fNz;
-      info[2]=clusters[i].fLayer;
-
-      Float_t xyz[3];
-      AliITSRecPoint recpoint(lab,hit,info);
-      recpoint.GetGlobalXYZ(xyz);
-	  Int_t layer = recpoint.GetLayer();
-      if(fPlotXYPhiEta){
-		fXY->Fill(xyz[0],xyz[1]);
-		Float_t rad=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]); 
-		Float_t theta=TMath::ATan2(rad,xyz[2]);
-		Float_t eta=-1*TMath::Log(TMath::Tan(theta/2.0));
-		Float_t phi=TMath::ATan2(xyz[1],xyz[0]);
-		if(phi<0.0){phi=2 * TMath::Pi() - TMath::Abs(phi);} 
-		fPhieta[layer]->Fill(eta,phi);
-      }
-      if(fPlotCharge){
-		fCharge->Fill(recpoint.GetQ());
-      }
+      for(int i=0;i<nSpacepoint;i++){
+         
+	  Int_t lab[4]   = {0,0,0,0};
+          Float_t hit[6] = {0,0,0,0,0,0};
+          Int_t info[3]  = {0,0,0};
+          
+          lab[0]  = clusters[i].fTracks[0];
+          lab[1]  = clusters[i].fTracks[1];
+          lab[2]  = clusters[i].fTracks[2];
+          lab[3]  = clusters[i].fIndex;
+          hit[0]  = clusters[i].fY;
+          hit[1]  = clusters[i].fZ;
+          hit[2]  = clusters[i].fSigmaY2;
+          hit[3]  = clusters[i].fSigmaZ2;
+          hit[4]  = clusters[i].fQ;
+          hit[5]  = clusters[i].fSigmaYZ;
+          info[0] = clusters[i].fNy;
+          info[1] = clusters[i].fNz;
+          info[2] = clusters[i].fLayer;
+ 
+          Float_t xyz[3];
+          AliITSRecPoint recpoint(lab,hit,info);
+          recpoint.GetGlobalXYZ(xyz);
+    	  Int_t layer = recpoint.GetLayer();
+          
+	  if(fPlotXYPhiEta){
+    	     fXY->Fill(xyz[0],xyz[1]);
+    	     Float_t rad=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]); 
+    	     Float_t theta=TMath::ATan2(rad,xyz[2]);
+    	     Float_t eta=-1*TMath::Log(TMath::Tan(theta/2.0));
+    	     Float_t phi=TMath::ATan2(xyz[1],xyz[0]);
+    	     if(phi<0.0){phi=2 * TMath::Pi() - TMath::Abs(phi);} 
+    	     fPhieta[layer]->Fill(eta,phi);
+          }
+          if(fPlotCharge) fCharge->Fill(recpoint.GetQ());
     }
   }
   
   if(fPlotCharge){
-    AliHLTUInt32_t fSpecification = 0x0;
-    PushBack( (TObject*) fCharge,kAliHLTDataTypeHistogram,fSpecification);
+     AliHLTUInt32_t fSpecification = 0x0;
+     PushBack( (TObject*) fCharge,kAliHLTDataTypeHistogram|kAliHLTDataOriginITS,fSpecification);
   }
   if(fPlotXYPhiEta){
-    AliHLTUInt32_t fSpecification = 0x0;
-    PushBack( (TObject*) fXY,kAliHLTDataTypeHistogram,fSpecification);
-	for(Int_t ii=0;ii<6;ii++) 
-		PushBack( (TObject*) fPhieta[ii],kAliHLTDataTypeHistogram,fSpecification);
+     AliHLTUInt32_t fSpecification = 0x0;
+     PushBack( (TObject*) fXY,kAliHLTDataTypeHistogram|kAliHLTDataOriginITS,fSpecification);
+     for(Int_t ii=0;ii<6;ii++) PushBack( (TObject*) fPhieta[ii],kAliHLTDataTypeHistogram|kAliHLTDataOriginITS,fSpecification);
   }
   
-  HLTInfo("ITSClusterHisto found %d Total Spacepoints", TotalSpacePoint);
+  HLTDebug("ITSClusterHisto found %d Total Spacepoints", TotalSpacePoint);
   
   return 0;
 }
 
-int AliHLTITSClusterHistoComponent::Configure(const char* arguments)
-{
-  
+int AliHLTITSClusterHistoComponent::Configure(const char* arguments){
+  // see header file for class documentation
+   
   int iResult=0;
   
   if (!arguments) return iResult;
@@ -292,8 +282,7 @@ int AliHLTITSClusterHistoComponent::Configure(const char* arguments)
   return iResult;
 }
 
-int AliHLTITSClusterHistoComponent::Reconfigure(const char* cdbEntry, const char* chainId)
-{
+int AliHLTITSClusterHistoComponent::Reconfigure(const char* cdbEntry, const char* chainId){
   // see header file for class documentation
   int iResult=0;
   
