@@ -130,7 +130,6 @@ AliAODEvent & AliAODEvent::operator=(const AliAODEvent& aod) {
     fFmdClusters     = new TClonesArray(*aod.fFmdClusters);
     fPmdClusters     = new TClonesArray(*aod.fPmdClusters);
     
-    fAODObjects = new TList();
     
     AddObject(fHeader);
     AddObject(fTracks);
