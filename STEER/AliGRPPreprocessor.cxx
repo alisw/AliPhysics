@@ -733,7 +733,10 @@ Int_t AliGRPPreprocessor::ProcessL3DPs(const TMap* valueMap, AliGRPObject* grpOb
 			else{
 				outOfRange = kTRUE;
 			}	
-			delete floatDCS;
+			if (floatDCS){
+				delete[] floatDCS;
+				floatDCS = 0x0;
+			}
 		}
 		if (!outOfRange) nL3Entries++;
 	}
@@ -803,7 +806,10 @@ Int_t AliGRPPreprocessor::ProcessDipoleDPs(const TMap* valueMap, AliGRPObject* g
 			else{
 				outOfRange=kTRUE;
 			}
-			delete floatDCS;
+			if (floatDCS){
+				delete[] floatDCS;
+				floatDCS = 0x0;
+			}
 		}
 		if (!outOfRange) nDipoleEntries++;
 	}
@@ -872,7 +878,10 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 			else{
 				outOfRange = kTRUE;
 			}
-			delete floatDCS;
+			if (floatDCS){
+				delete[] floatDCS;
+				floatDCS = 0x0;
+			}
 		}
 		if (!outOfRange) nEnvEntries++;
 	}
@@ -956,7 +965,10 @@ Int_t AliGRPPreprocessor::ProcessHPDPs(const TMap* valueMap, AliGRPObject* grpOb
 				else{
 					outOfRange = kTRUE;
 				}
-				delete floatDCS;
+				if (floatDCS){
+					delete[] floatDCS;
+					floatDCS = 0x0;
+				}
 			}
 			if (!outOfRange) nHPEntries++;
 		}
@@ -1044,7 +1056,10 @@ Int_t AliGRPPreprocessor::ProcessLHCDPs(const TMap* valueMap, AliGRPObject* grpO
 			else {
 				outOfRange = kTRUE;
 			}
-			delete floatDCS;
+			if (floatDCS){
+				delete[] floatDCS;
+				floatDCS = 0x0;
+			}
 		}
 		if (!outOfRange) nLHCEntries++;
 	}
@@ -1073,7 +1088,10 @@ Int_t AliGRPPreprocessor::ProcessLHCDPs(const TMap* valueMap, AliGRPObject* grpO
 			else{
 				outOfRange = kTRUE;
 			}
-			delete floatDCS;
+			if (floatDCS){
+				delete[] floatDCS;
+				floatDCS = 0x0;
+			}
 		}
 		if (!outOfRange) nLHCEntries++;
 	}
