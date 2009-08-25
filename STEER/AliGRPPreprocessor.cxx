@@ -1320,8 +1320,8 @@ if (v->GetFloat() > fmaxFloat) AliInfo(Form("The value is greater than %6.5e",fm
 			tempArray[i] = v->GetFloat();
 			AliDebug(2,Form("%d-th entry = %f",i,tempArray[i]));
 			iCounts += 1;
-			if (indexDP == kL3Polarity && v->GetFloat() > 350 && isZero == kTRUE) isZero==kFALSE; 
-			if (indexDP == kDipolePolarity && v->GetFloat() > 450 && isZero == kTRUE) isZero==kFALSE; 
+			if (indexDP == kL3Polarity && v->GetFloat() > 350 && isZero == kTRUE) isZero=kFALSE; 
+			if (indexDP == kDipolePolarity && v->GetFloat() > 450 && isZero == kTRUE) isZero=kFALSE; 
 		}
 		else {
 			AliError(Form("DCS values for the parameter outside the queried interval"));
