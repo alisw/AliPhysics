@@ -41,7 +41,7 @@ ClassImp(AliHLTReadoutList)
 
 
 AliHLTReadoutList::AliHLTReadoutList() :
-	TObject(),
+        TNamed("AliHLTReadoutList", "Readout list object used for manipulating and storing an AliHLTEventDDL structure."),
 	fReadoutList()
 {
   // Default constructor.
@@ -52,7 +52,7 @@ AliHLTReadoutList::AliHLTReadoutList() :
 
 
 AliHLTReadoutList::AliHLTReadoutList(Int_t enabledDetectors) :
-	TObject(),
+        TNamed("AliHLTReadoutList", "Readout list object used for manipulating and storing an AliHLTEventDDL structure."),
 	fReadoutList()
 {
   // Constructor to select which detectors to enable for readout.
@@ -65,7 +65,7 @@ AliHLTReadoutList::AliHLTReadoutList(Int_t enabledDetectors) :
 
 
 AliHLTReadoutList::AliHLTReadoutList(const char* enabledList) :
-	TObject(),
+        TNamed("AliHLTReadoutList", "Readout list object used for manipulating and storing an AliHLTEventDDL structure."),
 	fReadoutList()
 {
   // Constructor to select which detectors and DDLs to enable for readout.
@@ -114,7 +114,7 @@ AliHLTReadoutList::AliHLTReadoutList(const char* enabledList) :
 
 
 AliHLTReadoutList::AliHLTReadoutList(const AliHLTEventDDL& list) :
-	TObject(),
+        TNamed("AliHLTReadoutList", "Readout list object used for manipulating and storing an AliHLTEventDDL structure."),
 	fReadoutList()
 {
   // Constructor to create readout list from AliHLTEventDDL structure.
@@ -127,7 +127,7 @@ AliHLTReadoutList::AliHLTReadoutList(const AliHLTEventDDL& list) :
 
 
 AliHLTReadoutList::AliHLTReadoutList(const AliHLTReadoutList& list) :
-	TObject(list),
+	TNamed(list),
 	fReadoutList()
 {
   // Copy constructor performs a deep copy.

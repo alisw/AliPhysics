@@ -24,8 +24,8 @@
 */
 
 #include "AliHLTCTPData.h"
+#include "AliHLTReadoutList.h"
 #include "TClass.h"
-#include "TNamed.h"
 #include "TObjString.h"
 #include "TFormula.h"
 
@@ -33,10 +33,10 @@
 ClassImp(AliHLTCTPData)
 
 AliHLTCTPData::AliHLTCTPData()
-: TNamed("AliHLTCTPData", "HLT counters for the CTP")
+  : TNamed("AliHLTCTPData", "HLT counters for the CTP")
   , AliHLTLogging()
   , fMask(0)
-  , fClassIds(TNamed::Class(), gkNCTPTriggerClasses)
+  , fClassIds(AliHLTReadoutList::Class(), gkNCTPTriggerClasses)
   , fCounters()
 {
   // see header file for class documentation
@@ -50,7 +50,7 @@ AliHLTCTPData::AliHLTCTPData(const char* parameter)
   : TNamed("AliHLTCTPData", "HLT counters for the CTP")
   , AliHLTLogging()
   , fMask(0)
-  , fClassIds(TNamed::Class(), gkNCTPTriggerClasses)
+  , fClassIds(AliHLTReadoutList::Class(), gkNCTPTriggerClasses)
   , fCounters()
 {
   // see header file for class documentation
@@ -74,25 +74,42 @@ int AliHLTCTPData::InitCTPTriggerClasses(const char* ctpString)
 
   // general format of the CTP_TRIGGER_CLASS parameter
   // <bit position>:<Trigger class identifier string>:<detector-id-nr>-<detector-id-nr>-...,<bit position>:<Trigger class identifier string>:<detector-id-nr>-<detector-id-nr>-...,...
-  // the detector ids are ignored for the moment
   HLTDebug(": %s", ctpString);
   TString string=ctpString;
+  if (string.BeginsWith("CTP_TRIGGER_CLASS=")) string.ReplaceAll("CTP_TRIGGER_CLASS=", "");
   TObjArray* classEntries=string.Tokenize(",");
   if (classEntries) {
+    enum {kBit=0, kName, kDetectors};
     for (int i=0; i<classEntries->GetEntries(); i++) {
       TString entry=((TObjString*)classEntries->At(i))->GetString();
       TObjArray* entryParams=entry.Tokenize(":");
       if (entryParams) {
 	if (entryParams->GetEntries()==3 &&
-	    (((TObjString*)entryParams->At(0))->GetString()).IsDigit()) {
-	  int index=(((TObjString*)entryParams->At(0))->GetString()).Atoi();
+	    (((TObjString*)entryParams->At(kBit))->GetString()).IsDigit()) {
+	  int index=(((TObjString*)entryParams->At(kBit))->GetString()).Atoi();
 	  if (index<gkNCTPTriggerClasses) {
-	    fMask|=(AliHLTUInt64_t)0x1 << index;
-	    ((TNamed*)fClassIds.At(index))->SetTitle("TriggerClass");
-	    ((TNamed*)fClassIds.At(index))->SetName((((TObjString*)entryParams->At(1))->GetString()).Data());
+	    AliHLTReadoutList* pCTPClass=dynamic_cast<AliHLTReadoutList*>(fClassIds.At(index));
+	    if (pCTPClass) {
+	      fMask|=(AliHLTUInt64_t)0x1 << index;
+	      pCTPClass->SetTitle("CTP Class");
+	      pCTPClass->SetName((((TObjString*)entryParams->At(kName))->GetString()).Data());
+	      TObjArray* detectors=(((TObjString*)entryParams->At(kDetectors))->GetString()).Tokenize("-");
+	      if (detectors) {
+		for (int dix=0; dix<detectors->GetEntriesFast(); dix++) {
+		  if (!(((TObjString*)detectors->At(dix))->GetString()).IsDigit()) {
+		    HLTError("invalid detector list format: trigger class entry %s", entry.Data());
+		    break;
+		  }
+		  // see AliHLTReadoutList::EDetectorId for defines of detectors
+		  pCTPClass->Enable(0x1<<(((TObjString*)detectors->At(dix))->GetString()).Atoi());
+		}
+		delete detectors;
+	      }
+	    } else {
+	    }
 	  } else {
 	    // the trigger bitfield is fixed to 50 bits (gkNCTPTriggerClasses)
-	    HLTError("invalid trigger class entry %s, index width of trigger bitfield", entry.Data());
+	    HLTError("invalid trigger class entry %s, index width of trigger bitfield exceeded (%d)", entry.Data(), gkNCTPTriggerClasses);
 	  }
 	} else {
 	  HLTError("invalid trigger class entry %s", entry.Data());
@@ -246,6 +263,33 @@ const char* AliHLTCTPData::Name(int index) const
   // see header file for function documentation
   if (index>fClassIds.GetLast()) return NULL;
   return fClassIds.At(index)->GetName();
+}
+
+AliHLTEventDDL AliHLTCTPData::ReadoutList(const AliHLTComponentTriggerData& trigData) const
+{
+  // see header file for function documentation
+  if (trigData.fDataSize != sizeof(AliHLTEventTriggerData)) {
+    HLTError("invalid trigger data size: %d expected %d", trigData.fDataSize, sizeof(AliHLTEventTriggerData));
+    AliHLTEventDDL dummy;
+    memset(&dummy, 0, sizeof(AliHLTEventDDL));
+    return dummy;
+  }
+
+  // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
+  AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
+  AliHLTUInt64_t triggerMask=evtData->fCommonHeader[6];
+  triggerMask<<=32;
+  triggerMask|=evtData->fCommonHeader[5];
+
+  // take an 'OR' of all active trigger classes 
+  AliHLTReadoutList list;
+  for (int i=0; i<gkNCTPTriggerClasses; i++) {
+    if (i>fClassIds.GetLast()) break;
+    if ((triggerMask&((AliHLTUInt64_t)0x1<<i))==0) continue;
+    list|=*((AliHLTReadoutList*)fClassIds.At(i));
+  }
+
+  return list;
 }
 
 void AliHLTCTPData::Print(Option_t* /*option*/) const

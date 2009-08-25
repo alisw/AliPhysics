@@ -11,7 +11,7 @@
 /// @date   19 Nov 2008
 /// @brief  Declaration of the AliHLTReadoutList class used to handle AliHLTEventDDL structures.
 
-#include "TObject.h"
+#include "TNamed.h"
 #include "AliHLTDataTypes.h"
 
 /**
@@ -32,7 +32,7 @@
  *  -  unsets the bits in readout list A that are set in readout list B.
  *      This effectively applies A & (A ^ B).
  */
-class AliHLTReadoutList : public TObject
+class AliHLTReadoutList : public TNamed
 {
  public:
   
@@ -338,7 +338,7 @@ class AliHLTReadoutList : public TObject
   
   AliHLTEventDDL fReadoutList; /// The DDL readout list structure.
   
-  ClassDef(AliHLTReadoutList, 1) // Readout list object used for manipulating and storing an AliHLTEventDDL structure.
+  ClassDef(AliHLTReadoutList, 2) // Readout list object used for manipulating and storing an AliHLTEventDDL structure.
 
 };
 
