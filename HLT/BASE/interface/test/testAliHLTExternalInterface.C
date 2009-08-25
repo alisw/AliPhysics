@@ -25,6 +25,7 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTExternalInterface.h"
 #include <cstring>
+#include <cstdlib>
 #include <dlfcn.h>
 #include <iostream>
 
