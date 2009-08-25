@@ -63,6 +63,8 @@ public:
   
   enum MagField {k0G, k5G};
   
+  enum Species {kPP, kPbPb};
+  
   /** Singleton access
       @return  single to */
   static AliFMDAnaParameters* Instance();
@@ -125,7 +127,8 @@ protected:
       fProcessHits(o.fProcessHits),
       fTrigger(o.fTrigger),
       fEnergy(o.fEnergy),
-      fMagField(o.fMagField)
+      fMagField(o.fMagField),
+      fSpecies(o.fSpecies)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}
@@ -166,6 +169,7 @@ protected:
   Trigger  fTrigger;
   Energy   fEnergy;
   MagField fMagField;
+  Species  fSpecies;
   
   ClassDef(AliFMDAnaParameters,0) // Manager of parameters
 };
