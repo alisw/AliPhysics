@@ -29,5 +29,7 @@
 #pragma link C++ class  AliQAHistViewer+;
 #pragma link C++ class  AliQADirList+;
 #pragma link C++ class  AliQADirListItem+;
+#pragma link C++ class  AliOnlineRecoTrigger+;
+#pragma link C++ class  TerminateSignalHandler+;
 #endif
 
