@@ -64,6 +64,7 @@ public:
   virtual void SetRecoParam(AliTPCRecoParam *recoParam=0);//set reconstruction parameters
 
   virtual void SetTimeStamp(UInt_t timestamp){ fTimeStamp = timestamp; }
+  virtual void SetRun(UInt_t run){ fRun = run; }
 
   //setters for cluster finder parameters
   virtual void SetZeroSup(Int_t v){fZeroSup=v;}//set zero suppresion parameter
@@ -121,6 +122,7 @@ public:
   TH2F * GetHistoRowPad(){return fHistoRowPad;}
 
   UInt_t GetTimeStamp() const {return fTimeStamp;}
+  UInt_t GetRun() const {return fRun;}
 
 private:
   void MakeClusters(TObjArray * maximaInSector, Int_t iSec, Int_t &clusterCounter);
@@ -161,7 +163,8 @@ private:
   TH2F *fHistoRowPad;//!debug histo for rows and pads
 
   UInt_t fTimeStamp; //!time stamp from event header
-  ClassDef(AliTPCclustererKr,7)  // Time Projection Chamber Kr clusters
+  UInt_t fRun; //!run from event header
+  ClassDef(AliTPCclustererKr,8)  // Time Projection Chamber Kr clusters
 };
 
 

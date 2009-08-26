@@ -262,8 +262,9 @@ AliTPCclustererKr::AliTPCclustererKr()
   fHistoRow(0),
   fHistoPad(0),
   fHistoTime(0),
-  fHistoRowPad(0),
-  fTimeStamp(0)
+   fHistoRowPad(0),
+   fTimeStamp(0),
+  fRun(0)
 {
 //
 // default constructor
@@ -297,7 +298,8 @@ AliTPCclustererKr::AliTPCclustererKr(const AliTPCclustererKr &param)
   fHistoPad(0),
   fHistoTime(0),
   fHistoRowPad(0),
-  fTimeStamp(0)
+   fTimeStamp(0),
+   fRun(0)
 {
 //
 // copy constructor
@@ -328,6 +330,7 @@ AliTPCclustererKr::AliTPCclustererKr(const AliTPCclustererKr &param)
   fHistoTime   = param.fHistoTime;
   fHistoRowPad = param.fHistoRowPad;
   fTimeStamp = param.fTimeStamp;
+  fRun = param.fRun;
 
 } 
 
@@ -362,6 +365,7 @@ AliTPCclustererKr & AliTPCclustererKr::operator = (const AliTPCclustererKr & par
   fHistoTime   = param.fHistoTime;
   fHistoRowPad = param.fHistoRowPad;
   fTimeStamp = param.fTimeStamp;
+  fRun = param.fRun;
   return (*this);
 }
 
@@ -453,6 +457,7 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
   AliRawEventHeaderBase* eventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
   if (eventHeader){
     fTimeStamp = eventHeader->Get("Timestamp");
+    fRun = rawReader->GetRunNumber();
   }
 
 
@@ -626,6 +631,7 @@ Int_t AliTPCclustererKr::FinderIOold(AliRawReader* rawReader)
   AliRawEventHeaderBase* eventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
   if (eventHeader){
     fTimeStamp = eventHeader->Get("Timestamp");
+    fRun = rawReader->GetRunNumber();
   }
   
   Bool_t isAltro=kFALSE;
@@ -1093,6 +1099,7 @@ void AliTPCclustererKr::MakeClusters(TObjArray * maximaInSector, Int_t iSec, Int
     clusterKr.Set1D();//Set size in pads and timebins
 
     clusterKr.SetTimeStamp(fTimeStamp);
+    clusterKr.SetRun(fRun);
 
     clusterCounter++;
     
