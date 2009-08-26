@@ -612,6 +612,10 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
            AliError(Form("Invalid trigger cluster syntax (%s)!",strLine.Data()));
            return kFALSE;
          }
+	 if (((TObjString*)tokens->At(1))->String().Atoi() <= 0) {
+           AliError(Form("Invalid trigger cluster syntax (%s)!",strLine.Data()));
+           return kFALSE;
+         }
 	 TString strTemp;
 	 for(Int_t i = 2; i < ntokens; i++) {
 	   strTemp += ((TObjString*)tokens->At(i))->String();
