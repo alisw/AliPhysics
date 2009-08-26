@@ -73,6 +73,10 @@
   AliXRDPROOFtoolkit tool;
   TChain * chainDrift = tool.MakeChain("laser.txt","driftv",0,10200);
   chainDrift->Lookup();
+  TChain * chainDriftN = tool.MakeChain("laser.txt","driftvN",0,10200);
+  chainDriftN->Lookup();
+
+
 
   TChain * chain = tool.MakeChain("laser.txt","Residuals",0,10200);
   chain->Lookup();
@@ -118,6 +122,7 @@
 #include "AliTPCLaserTrack.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
+#include "AliTPCParamSR.h"
 #include "TTimeStamp.h"
 #include "AliDCSSensorArray.h"
 #include "AliDCSSensor.h"
@@ -563,6 +568,7 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   if (counter<kMinTracks) return;
 
   FitDriftV();
+  FitDriftV(0.5);
   if (!fFullCalib) return;
   static Bool_t init=kFALSE;
   if (!init){
@@ -690,8 +696,7 @@ void AliTPCcalibLaser::FitDriftV(){
   TVectorD fitA(3),fitC(3),fitAC(4);
   
   AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
-  AliTPCParam  * tpcparam    = calib->GetParameters(); 
-   
+  AliTPCParam  * tpcparam    = calib->GetParameters();    
   //
   for (Int_t id=0; id<336; id++) fFitZ[id]=0;
 
@@ -869,6 +874,273 @@ void AliTPCcalibLaser::FitDriftV(){
     }
   }
 }
+Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
+  //
+  // Fit corrections to the drift velocity - linear approximation in the z and global y
+  //The transfromatiom from the drift time to the z position done in AliTPCTracnsform class
+  // 
+  /*
+    Formulas:
+    
+    z  = s* (z0 - vd*(t-t0))
+    
+    s  - side -1 and +1 
+    t0 - time 0
+    vd - nominal drift velocity
+    zs - miscalibrated position
+    
+    zs = s*(z0 - vd*(1+vr)*(t-(t0+dt))
+    vr  - relative change of the drift velocity
+    dzt - vd*dt
+    dr  = zz0-s*z
+    ..
+    ==>
+    zs ~ z - s*vr*(z0-s*z)+s*dzt
+    --------------------------------
+    1. Correction function vr constant:
+    
+    
+    dz = zs-z = -s*vr *(z0-s*z)+s*dzt         
+    dzs/dl = dz/dl +s*s*vr*dz/dl 
+    d(dz/dl) = vr*dz/dl     
+  */
+  const Int_t   knLaser      = 336;    //n laser tracks
+  const Float_t kFraction    = 0.9;   // robust fit fraction
+  const Float_t kSaturCut    = 0.05;   // remove saturated lasers - cut on fraction of saturated 
+  const Float_t kDistCut     = 6;      // distance sigma cut
+  const Float_t kDistCutAbs  = 0.25;  
+  const Float_t kMinClusters = 60;     // minimal amount of the clusters
+  const Float_t kMinSignal   = 16;     // minimal mean height of the signal
+  const Float_t kChi2Cut     = 0.1;    // chi2 cut to accept drift fit
+  //
+  static TLinearFitter fdriftA(3,"hyp2");
+  static TLinearFitter fdriftC(3,"hyp2");
+  static TLinearFitter fdriftAC(4,"hyp3");
+  TVectorD fitA(3),fitC(3),fitAC(4);
+  
+  AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
+  AliTPCParam  * tpcparam    = calib->GetParameters();    
+  //
+  // reset old data
+  //
+  for (Int_t id=0; id<336; id++) fFitZ[id]=0;
+  if (fFitAside->GetNoElements()<5) fFitAside->ResizeTo(5);
+  if (fFitCside->GetNoElements()<5) fFitCside->ResizeTo(5);
+  for (Int_t i=0;i<5; i++){
+    (*fFitCside)[i]=0;
+    (*fFitAside)[i]=0;
+  }
+  //
+  //
+  Float_t chi2A = 10;
+  Float_t chi2C = 10;
+  Float_t chi2AC = 10;
+  Int_t npointsA=0;
+  Int_t npointsC=0;
+  Int_t npointsAC=0;
+  Int_t nbA[4]={0,0,0,0};
+  Int_t nbC[4]={0,0,0,0};
+  //
+  for (Int_t id=0; id<336; id++){
+    if (!fTracksEsdParam.At(id)) continue;
+    if (!AcceptLaser(id)) continue;
+    if ( fClusterSatur[id]>kSaturCut)  continue;
+    if ( fClusterCounter[id]<kMinClusters)  continue;
+    AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
+    if (ltrp->GetSide()==0){
+      npointsA++;
+      nbA[ltrp->GetBundle()]++;
+    }
+    if (ltrp->GetSide()==1){
+      npointsA++;
+      nbC[ltrp->GetBundle()]++;
+    }
+  }
+  //
+  // reject  "bad events"
+  //
+  Bool_t isOK=kTRUE;
+  Int_t  naA=0;
+  Int_t  naC=0;
+  if (npointsA<minFraction*0.5*knLaser && npointsC<minFraction*0.5*knLaser)
+    isOK=kFALSE;
+  for (Int_t i=0;i<4;i++){
+    //count accepted for all layers
+    if (nbA[i]>minFraction*0.5*0.25*knLaser) naA++;
+    if (nbC[i]>minFraction*0.5*0.25*knLaser) naC++;
+  }
+  if (naA<3 &&naC<3) isOK=kFALSE;
+  if (isOK==kFALSE) return kFALSE;
+  
+  //
+  //
+  //
+  for (Int_t iter=0; iter<2; iter++){
+    fdriftA.ClearPoints();
+    fdriftC.ClearPoints();
+    fdriftAC.ClearPoints();
+    //
+    for (Int_t id=0; id<336; id++){
+      if (!fTracksEsdParam.At(id)) continue;
+      if (!AcceptLaser(id)) continue;
+      if ( fClusterSatur[id]>kSaturCut)  continue;
+      if ( fClusterCounter[id]<kMinClusters)  continue;
+      AliESDtrack   *track    = (AliESDtrack*)fTracksEsd.At(id);
+      if (track->GetTPCsignal()<kMinSignal) continue;
+      AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
+      AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
+
+      Double_t xyz[3];
+      Double_t pxyz[3];
+      Double_t lxyz[3];
+      Double_t lpxyz[3];
+      param->GetXYZ(xyz);
+      param->GetPxPyPz(pxyz);
+      ltrp->GetXYZ(lxyz);
+      ltrp->GetPxPyPz(lpxyz);
+      Float_t sz = (ltrp->GetSide()==0) ? TMath::Sqrt(chi2A): TMath::Sqrt(chi2C);
+      if (npointsAC>0) sz =TMath::Sqrt(chi2AC); 
+      if (TMath::Abs(fFitZ[id])>sz*kDistCut) continue;
+      if (iter>0 && TMath::Abs(fFitZ[id])>kDistCutAbs) continue;
+
+      // drift distance
+      Double_t zlength =  tpcparam->GetZLength(0);
+      Double_t ldrift = zlength-TMath::Abs(lxyz[2]);
+      Double_t mdrift = zlength-TMath::Abs(xyz[2]);
+      Double_t xxx[2] = {ldrift,lxyz[1]*ldrift/(zlength*250.)};
+      if (ltrp->GetSide()==0){
+	fdriftA.AddPoint(xxx,mdrift,1);
+      }else{
+	fdriftC.AddPoint(xxx,mdrift,1);
+      }
+      Double_t xxx2[3] = {ltrp->GetSide(), ldrift,lxyz[1]*ldrift/(zlength*250.)};
+      fdriftAC.AddPoint(xxx2,mdrift,1);
+    }
+    //
+    if (fdriftA.GetNpoints()>minFraction*0.5*knLaser){
+      //
+      fdriftA.Eval();
+      npointsA= fdriftA.GetNpoints();
+      chi2A = fdriftA.GetChisquare()/fdriftA.GetNpoints();
+      fdriftA.EvalRobust(kFraction);
+      fdriftA.GetParameters(fitA);
+      if (chi2A<kChi2Cut ||(*fFitAside)[0]==0 ) {
+	if (fFitAside->GetNoElements()<5) fFitAside->ResizeTo(5);
+	(*fFitAside)[0] = fitA[0];
+	(*fFitAside)[1] = fitA[1];
+	(*fFitAside)[2] = fitA[2];
+	(*fFitAside)[3] = fdriftA.GetNpoints();
+	(*fFitAside)[4] = chi2A;	
+      }
+    }
+    if (fdriftC.GetNpoints()>minFraction*0.5*knLaser){
+      fdriftC.Eval();
+      npointsC= fdriftC.GetNpoints();
+      chi2C = fdriftC.GetChisquare()/fdriftC.GetNpoints();
+      fdriftC.EvalRobust(kFraction);
+      fdriftC.GetParameters(fitC);
+      if (chi2C<kChi2Cut||(*fFitCside)[0]==0) {	
+	if (fFitCside->GetNoElements()<5) fFitCside->ResizeTo(5);
+	(*fFitCside)[0] = fitC[0];
+	(*fFitCside)[1] = fitC[1];
+	(*fFitCside)[2] = fitC[2];
+	(*fFitCside)[3] = fdriftC.GetNpoints();
+	(*fFitCside)[4] = chi2C;	
+      }
+    }
+
+    if (fdriftAC.GetNpoints()>minFraction*knLaser){
+      fdriftAC.Eval();
+      npointsAC= fdriftAC.GetNpoints();
+      chi2AC = fdriftAC.GetChisquare()/fdriftAC.GetNpoints();
+      fdriftAC.EvalRobust(kFraction);
+      fdriftAC.GetParameters(fitAC);
+      if (chi2AC<kChi2Cut||(*fFitACside)[0]==0) (*fFitACside) = fitAC;
+      (*fFitACside)[0] = fitAC[0];
+      (*fFitACside)[1] = fitAC[1];
+      (*fFitACside)[2] = fitAC[2];
+      (*fFitACside)[3] = fdriftAC.GetNpoints();
+      (*fFitACside)[4] = chi2AC;
+    }
+    
+    for (Int_t id=0; id<336; id++){
+      if (!fTracksEsdParam.At(id)) continue;
+      //
+      AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
+      AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
+      Double_t xyz[3];
+      Double_t pxyz[3];
+      Double_t lxyz[3];
+      Double_t lpxyz[3];
+      param->GetXYZ(xyz);
+      param->GetPxPyPz(pxyz);
+      ltrp->GetXYZ(lxyz);
+      ltrp->GetPxPyPz(lpxyz); 
+      Double_t zlength =  tpcparam->GetZLength(0);
+      Double_t ldrift = zlength-TMath::Abs(lxyz[2]);
+      Double_t mdrift = zlength-TMath::Abs(xyz[2]);
+
+      Float_t fz =0;
+      if (ltrp->GetSide()==0){
+	fz = (fitA)[0]+(fitA)[1]*ldrift+(fitA)[2]*lxyz[1]*ldrift/(zlength*250.);
+      }else{
+	fz = (fitC)[0]+(fitC)[1]*ldrift+(fitC)[2]*lxyz[1]*ldrift/(zlength*250.);	
+      }
+      if (npointsAC>10){
+	fz = (fitAC)[0]+(fitAC)[1]*ltrp->GetSide()+(fitAC)[2]*ldrift+(fitAC)[3]*lxyz[1]*ldrift/(zlength*250.);
+      }
+      fFitZ[id]=mdrift-fz;
+    }
+    if (fStreamLevel>0){
+      TTreeSRedirector *cstream = GetDebugStreamer();
+      TTimeStamp tstamp(fTime);
+      Float_t valuePressure0  = AliTPCcalibDB::GetPressure(tstamp,fRun,0);
+      Float_t valuePressure1 = AliTPCcalibDB::GetPressure(tstamp,fRun,1);
+      Double_t ptrelative0   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
+      Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
+      Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
+      Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
+      TVectorD vecGoofie(20);
+      AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
+      if (goofieArray) 
+	for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
+	  AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
+	  if (gsensor) vecGoofie[isensor]=gsensor->GetValue(tstamp);
+	}
+
+      if (cstream){
+	(*cstream)<<"driftvN"<<
+	  "run="<<fRun<<              //  run number
+	  "event="<<fEvent<<          //  event number
+	  "time="<<fTime<<            //  time stamp of event
+	  "trigger="<<fTrigger<<      //  trigger
+	  "mag="<<fMagF<<             //  magnetic field
+	  // Environment values
+	  "press0="<<valuePressure0<<
+	  "press1="<<valuePressure1<<
+	  "pt0="<<ptrelative0<<
+	  "pt1="<<ptrelative1<<
+	  "temp0="<<temp0<<
+	  "temp1="<<temp1<<
+	  "vecGoofie.="<<&vecGoofie<<
+	  //
+	  //
+	  "iter="<<iter<<
+	  "driftA.="<<fFitAside<<
+	  "driftC.="<<fFitCside<<
+	  "driftAC.="<<fFitACside<<
+	  "chi2A="<<chi2A<<
+	  "chi2C="<<chi2C<<
+	  "chi2AC="<<chi2AC<<
+	  "nA="<<npointsA<<
+	  "nC="<<npointsC<<
+	  "nAC="<<npointsAC<<
+	  "\n";
+      }
+    }
+  }
+  return kTRUE;
+}
 
 Float_t AliTPCcalibLaser::GetDistance(AliExternalTrackParam *param, AliTPCLaserTrack *ltrp){
   //
@@ -968,6 +1240,8 @@ Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
   //
   Int_t countercl=0;
   Float_t counterSatur=0;
+  Int_t csideA =0;
+  Int_t csideC =0;
   for (Int_t irow=158;irow>-1;--irow) {
     AliTPCclusterMI *c=seed->GetClusterPointer(irow);
     if (!c) continue;
@@ -976,9 +1250,16 @@ Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
     if (pedgeY<3) continue;
     if (pedgeX<3) continue;
     countercl++;
+    if (c->GetDetector()%36<18) csideA++;
+    if (c->GetDetector()%36>=18) csideC++;
     if (c->GetMax()>900) counterSatur++;
   }
   counterSatur/=(countercl+1);
+  //
+  //
+  //
+  if (csideA>0.1*seed->GetNumberOfClusters() && ltrp->GetSide()==1) return -1;
+  if (csideC>0.1*seed->GetNumberOfClusters() && ltrp->GetSide()==0) return -1;
   //
   if (counterSatur>fClusterSatur[id]) fClusterSatur[id]=counterSatur;
   //
@@ -1687,9 +1968,9 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
 	Double_t yfit2 = vecY2[irow];
 	Double_t x    = vecX[irow];
 	Double_t yabsbeam = -1000;
-	if(vecSec[irow]==outerSector && (outerSector%36)==fBeamSectorOuter[id])
+	if(vecSec[irow]==outerSector && outerSector==fBeamSectorOuter[id])
 	  yabsbeam = fBeamSlopeYOuter[id]*x + fBeamOffsetYOuter[id];
-	else if((innerSector%36)==fBeamSectorInner[id])
+	else if(innerSector==fBeamSectorInner[id])
 	  yabsbeam = fBeamSlopeYInner[id]*x + fBeamOffsetYInner[id];
 
 	//	Double_t yfit3 = vecY2[irow];
@@ -1842,6 +2123,26 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run){
   AliTPCcalibLaser *laser = this;
   TTreeSRedirector *pcstream = new TTreeSRedirector("laserMean.root");
   TF1 fg("fg","gaus");
+
+  // start set up for absolute residuals analysis
+  //AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
+  //  AliTPCParam  * tpcparam    = calib->GetParameters(); 
+  AliTPCParam  * tpcparam    = 0; 
+  if (!tpcparam) tpcparam    = new AliTPCParamSR;
+  tpcparam->Update();
+  SetBeamParameters(fBeamOffsetYOuter, fBeamSlopeYOuter, fBeamSectorOuter,0);
+  SetBeamParameters(fBeamOffsetYInner, fBeamSlopeYInner, fBeamSectorInner,1);
+  TLinearFitter lfabsyInner(2);
+  lfabsyInner.SetFormula("1 ++ x");
+  TLinearFitter lfabszInner(2);
+  lfabszInner.SetFormula("1 ++ x");
+
+  TLinearFitter lfabsyOuter(2);
+  lfabsyOuter.SetFormula("1 ++ x");
+  TLinearFitter lfabszOuter(2);
+  lfabszOuter.SetFormula("1 ++ x");
+  // end set up for absolute residuals analysis
+
   //
   //
   for (Int_t id=0; id<336; id++){
@@ -2089,10 +2390,238 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run){
     Float_t  mPz3vP2IO  = his->GetMean();
     Float_t  rPz3vP2IO  = his->GetRMS();
     delete his;
+
+    // Fit absolute laser residuals
+    TH2F* histAbsY = (TH2F*)laser->fDeltaYresAbs[id];
+    TH2F* histAbsZ = (TH2F*)laser->fDeltaZresAbs[id];
+
+    Int_t secInner = TMath::Nint(fBeamSectorInner[id]); 
+    Int_t secOuter = TMath::Nint(fBeamSectorOuter[id]); 
+
+    TVectorD vecX(159);        // X
+    TVectorD vecY(159);        // Y
+    TVectorD vecR(159);        // R
+    TVectorD vecDY(159);       // absolute residuals in Y
+    TVectorD vecDZ(159);       // absolute residuals in Z
+    TVectorD vecN(159);        // number of clusters
+    TVectorD vecEy(159);       //error y
+    TVectorD vecEz(159);       //error z
+    TVectorD vecPhi(159);      // local tangent
+    TVectorD vecPhiR(159);     // local tangent
+
+    lfabsyInner.ClearPoints();    
+    lfabszInner.ClearPoints();    
+    lfabsyOuter.ClearPoints();    
+    lfabszOuter.ClearPoints();    
+    // dummy fit values
+    Int_t    nClInY         = 0;
+    Float_t  yAbsInOffset  = -100;
+    Float_t  yAbsInSlope   = -100;
+    Float_t  yAbsInDeltay  = -100;
+    Int_t    nClInZ         = 0;
+    Float_t  zAbsInOffset  = -100;
+    Float_t  zAbsInSlope   = -100;
+    Float_t  zAbsInDeltaz  = -100;
+    Int_t    nClOutY         = 0;
+    Float_t  yAbsOutOffset  = -100;
+    Float_t  yAbsOutSlope   = -100;
+    Float_t  yAbsOutDeltay  = -100;
+    Int_t    nClOutZ         = 0;
+    Float_t  zAbsOutOffset  = -100;
+    Float_t  zAbsOutSlope   = -100;
+    Float_t  zAbsOutDeltaz  = -100;
+
+    Float_t  lasTanPhiLocIn = -100;
+    Float_t  lasTanPhiLocOut = -100;
+
+    if(histAbsY->GetEntries()>0) {
+      
+      Double_t rotAngOut = 10;
+      Double_t rotAngIn = 10;
+      if((secInner%36)!=(secOuter%36))
+	rotAngIn += 20; // 30 degrees
+      
+      // Calculate laser mirror X position in local frame
+      Double_t laserposOut = 
+	TMath::Abs(ltrp->GetX()*TMath::Cos(rotAngOut*TMath::DegToRad()));
+      Double_t laserposIn = 
+	TMath::Abs(ltrp->GetX()*TMath::Cos(rotAngIn*TMath::DegToRad()));
+      
+      // Calculate laser tan phi in local frame
+      lasTanPhiLocOut  = TMath::ASin(ltrp->GetSnp());
+      if(lasTanPhiLocOut<0) {
+	lasTanPhiLocIn  = lasTanPhiLocOut - rotAngIn*TMath::DegToRad();
+	lasTanPhiLocOut -= rotAngOut*TMath::DegToRad();
+      } else {
+	
+	lasTanPhiLocIn  = lasTanPhiLocOut + rotAngIn*TMath::DegToRad();
+	lasTanPhiLocOut += rotAngOut*TMath::DegToRad();
+      }
+      
+      lasTanPhiLocIn = TMath::Tan(lasTanPhiLocIn);
+      lasTanPhiLocOut = TMath::Tan(lasTanPhiLocOut);
+      
+      TProfile* yprof  = histAbsY->ProfileX("yprof");
+      TProfile* zprof  = histAbsZ->ProfileX("zprof");
+      
+      for(Int_t bin = 1; bin<=159; bin++) {
+	
+	if(yprof->GetBinEntries(bin)<10&&
+	   zprof->GetBinEntries(bin)<10) {
+	  continue;	
+	}
+	
+	// There is a problem in defining inner and outer sectors for
+	// the outer beams (0 and 6) where both sectors are OROCs. To
+	// make sure there is no overlap row 94 to 99 are cutted.
+	if(((ltrp->GetBeam()==0)||(ltrp->GetBeam()==6))&&bin>=95&&bin<=100)
+	  continue;
+	
+	Int_t row = (bin-1);
+	if(row>62)
+	  row -= 63;
+
+	Bool_t isOuter = kTRUE;
+	Int_t sector = TMath::Nint(fBeamSectorOuter[id]);
+	
+	if(bin<=62 ||                                        
+	   (((ltrp->GetBeam()==0)||(ltrp->GetBeam()==6))&&bin<=95)) {
+
+	  isOuter = kFALSE;
+	  sector = TMath::Nint(fBeamSectorInner[id]);
+	}
+
+
+	Double_t x = tpcparam->GetPadRowRadii(sector, row); // slope
+	vecN[bin-1] =yprof->GetBinEntries(bin);
+	vecEy[bin-1]=yprof->GetBinError(bin);
+	vecEz[bin-1]=zprof->GetBinError(bin);
+	vecX[bin-1] = x;
+	vecDY[bin-1] = yprof->GetBinContent(bin);
+	vecDZ[bin-1] = zprof->GetBinContent(bin);
+	if(!isOuter) { // inner	  
+	  vecPhi[bin-1]=lasTanPhiLocIn;
+	  // Calculate local y from residual and database
+	  Double_t y  = fBeamSlopeYInner[id]*x + fBeamOffsetYInner[id]
+	    + vecDY[bin-1];
+	  vecY[bin-1] = y;
+	  Double_t r  = TMath::Sqrt(x*x + y*y);
+	  vecR[bin-1] = r;
+	  // Find angle between laser vector and R vector
+	  // cos angle = (x,y).(1,fBeamSlopeYInner)/R/sqrt(1+fBeamSlopeYInner**2)
+	  Double_t cosPhi = x + y*fBeamSlopeYInner[id];
+	  cosPhi /= r*TMath::Sqrt(1+fBeamSlopeYInner[id]*fBeamSlopeYInner[id]);
+	  vecPhiR[bin-1] = TMath::Tan(TMath::ACos(cosPhi));
+	  if(lasTanPhiLocIn<0)
+	    vecPhiR[bin-1]*=-1; // to have the same sign
+	  
+	  if(yprof->GetBinEntries(bin)>=10) {
+	    lfabsyInner.AddPoint(&x, yprof->GetBinContent(bin), 
+				  TMath::Max(yprof->GetBinError(bin), 0.001));
+	  } 
+	  if(zprof->GetBinEntries(bin)>=10) {
+	    lfabszInner.AddPoint(&x, zprof->GetBinContent(bin), 
+				  TMath::Max(zprof->GetBinError(bin), 0.001));
+	  }
+	} else { // outer
+	  vecPhi[bin-1]=lasTanPhiLocOut;	  
+	  // Calculate local y from residual and database
+	  Double_t y  = fBeamSlopeYOuter[id]*x + fBeamOffsetYOuter[id]
+	    + vecDY[bin-1];
+	  vecY[bin-1] = y;
+	  Double_t r  = TMath::Sqrt(x*x + y*y);
+	  vecR[bin-1] = r;
+
+	  Double_t cosPhi = x + y*fBeamSlopeYOuter[id];
+	  cosPhi /= r*TMath::Sqrt(1+fBeamSlopeYOuter[id]*fBeamSlopeYOuter[id]);
+	  vecPhiR[bin-1] = TMath::Tan(TMath::ACos(cosPhi));
+	  if(lasTanPhiLocOut<0)
+	    vecPhiR[bin-1]*=-1; // to have the same sign
+
+	  if(yprof->GetBinEntries(bin)>=10) {
+	    lfabsyOuter.AddPoint(&x, yprof->GetBinContent(bin), 
+				  TMath::Max(yprof->GetBinError(bin), 0.001));
+	  }
+	  if(zprof->GetBinEntries(bin)>=10) {
+	    lfabszOuter.AddPoint(&x, zprof->GetBinContent(bin), 
+				  TMath::Max(zprof->GetBinError(bin), 0.001));
+	  }
+	}
+
+      }
+	
+      delete yprof; delete zprof;
+
+      
+      // Fit laser abs residuals with linear robust fit (exclude 5% outliers)
+      nClInY = lfabsyInner.GetNpoints();
+      if(lfabsyInner.GetNpoints()>10) {
+	lfabsyInner.EvalRobust(0.95);
+	
+	TVectorD result(2);
+	lfabsyInner.GetParameters(result);
+	yAbsInOffset = result[0];
+	yAbsInSlope  = result[1];
+	yAbsInDeltay = yAbsInSlope*laserposIn + yAbsInOffset;
+      }
+      nClInZ = lfabszInner.GetNpoints();
+      if(lfabszInner.GetNpoints()>10) {
+	lfabszInner.EvalRobust(0.95);
+	
+	TVectorD result(2);
+	lfabszInner.GetParameters(result);
+	zAbsInOffset = result[0];
+	zAbsInSlope  = result[1];
+	zAbsInDeltaz = zAbsInSlope*laserposIn + zAbsInOffset;
+      } 
+      nClOutY = lfabsyOuter.GetNpoints();
+      if(lfabsyOuter.GetNpoints()>10) {
+	lfabsyOuter.EvalRobust(0.95);
+	
+	TVectorD result(2);
+	lfabsyOuter.GetParameters(result);
+	yAbsOutOffset = result[0];
+	yAbsOutSlope  = result[1];
+	yAbsOutDeltay = yAbsOutSlope*laserposOut + yAbsOutOffset;
+      }
+      nClOutZ = lfabszOuter.GetNpoints();
+      if(lfabszOuter.GetNpoints()>10) {
+	lfabszOuter.EvalRobust(0.95);
+	
+	TVectorD result(2);
+	lfabszOuter.GetParameters(result);
+	zAbsOutOffset = result[0];
+	zAbsOutSlope  = result[1];
+	zAbsOutDeltaz = zAbsOutSlope*laserposOut + zAbsOutOffset;
+      }
+    }
+
     
+    Int_t itime=-1;
+    Float_t  coverIA=AliTPCcalibDB::GetCoverVoltage(run,0,itime);
+    Float_t  coverIC=AliTPCcalibDB::GetCoverVoltage(run,18,itime);
+    Float_t  coverOA=AliTPCcalibDB::GetCoverVoltage(run,36,itime);
+    Float_t  coverOC=AliTPCcalibDB::GetCoverVoltage(run,54,itime);
+    //
+    Float_t  skirtA=AliTPCcalibDB::GetSkirtVoltage(run,0,itime);
+    Float_t  skirtC=AliTPCcalibDB::GetSkirtVoltage(run,18,itime);
+    //
+    Float_t  ggOffA=AliTPCcalibDB::GetGGoffsetVoltage(run,0,itime);
+    Float_t  ggOffC=AliTPCcalibDB::GetGGoffsetVoltage(run,18,itime);
+
     //
     (*pcstream)<<"Mean"<<
       "run="<<run<<               //
+      //voltages
+      "UcIA="<<coverIA<<
+      "UcIC="<<coverIC<<
+      "UcOA="<<coverOA<<
+      "UcOC="<<coverOC<<
+      "UsA="<<skirtA<<
+      "UsC="<<skirtC<<
+      "UggA="<<ggOffA<<
+      "UggC="<<ggOffC<<
+      //
       "isOK="<<isOK<<             //
       "id="<<id<<                 // track id
       "entries="<<entries<<       // number of entries
@@ -2210,7 +2739,40 @@ void AliTPCcalibLaser::DumpMeanInfo(Float_t bfield, Int_t run){
       "gp32="<<gp32<<            //gaus rms  -tgl
       "gp41="<<gp41<<            //gaus mean - P4
       "gp42="<<gp42<<            //gaus rms  - P4
-
+      // Parameters from abs res analysis
+      "SecIn="<<secInner<<              // inner sector
+      "SecOut="<<secOuter<<             // outer sector
+      "lasTanPhiLocIn="<<lasTanPhiLocIn<< // laser tan phi in local frame (inner)
+      "lasTanPhiLocOut="<<lasTanPhiLocOut<<// laser tan phi in local frame (outer)
+      "X.="<<&vecX<<       // local x 
+      "Y.="<<&vecY<<       // local y 
+      "R.="<<&vecR<<       // radius 
+      "dY.="<<&vecDY<<     // abs y residuals
+      "dZ.="<<&vecDZ<<     // abs z residuals
+      "eY.="<<&vecEy<<     // error of y residuals
+      "eZ.="<<&vecEz<<     // error of z residuals
+      "kY.="<<&vecPhi<<    // local tangent y (fixed for sector)
+      "kYR.="<<&vecPhiR<<  // tangent between laser and R vector (varies inside sector) 
+      "nCl.="<<&vecN<<     // number of clusters
+      //
+      "nClInY="<<nClInY<<               // Number of clusters for inner y
+      "yAbsInOffset="<<yAbsInOffset<< // fitted offset absres (inner y)
+      "yAbsInSlope="<<yAbsInSlope <<  // fitted slope absres (inner y)
+      "yAbsInDeltay="<<yAbsInDeltay<< // fitted laser offset absres (inner y)
+      "nClInZ="<<nClInZ<<               // Number of clusters for inner z
+      "zAbsInOffset="<<zAbsInOffset<< // fitted offset absres (inner z)
+      "zAbsInSlope="<<zAbsInSlope <<  // fitted slope absres (inner z)
+      "zAbsInDeltaz="<<zAbsInDeltaz<< // fitted laser offset absres (inner z)
+      //
+      "nClOutY="<<nClOutY<<               // Number of clusters for outer y
+      "yAbsOutOffset="<<yAbsOutOffset<< // fitted offset absres (outer y)
+      "yAbsOutSlope="<<yAbsOutSlope <<  // fitted slope absres (outer y)
+      "yAbsOutDeltay="<<yAbsOutDeltay<< // fitted laser offset absres (outer y)
+      "nClOutZ="<<nClOutZ<<               // Number of clusters for outer z
+      "zAbsOutOffset="<<zAbsOutOffset<< // fitted offset absres (outer z)
+      "zAbsOutSlope="<<zAbsOutSlope <<  // fitted slope absres (outer z)
+      "zAbsOutDeltaz="<<zAbsOutDeltaz<< // fitted laser offset absres (outer z)
+      //
       "\n";
   }
   delete pcstream;
@@ -3193,6 +3755,11 @@ void AliTPCcalibLaser::SetBeamParameters(TVectorD& meanOffset,
       sector -= 18;
     if(ltrp->GetSide()==1) // C side
       sector += 18;
+    if(option==0 || option==2)
+      sector += 36;
+    if((option==1||option==3)&&(ltrp->GetBeam()==0||ltrp->GetBeam()==6)) 
+      sector += 36;
+
     sectorArray[id] = sector;
 
     const Double_t x0 = 0;

@@ -47,6 +47,8 @@ public:
   virtual void DumpLaser(Int_t id);
   virtual void RefitLaserJW(Int_t id);
   void         FitDriftV();
+  Bool_t       FitDriftV(Float_t minFraction);
+  //
   void         MakeDistHisto(Int_t id);
   void         AddCut(Double_t xcut, Double_t ycut, Double_t ncl){fEdgeXcuts[fNcuts]=xcut; fEdgeYcuts[fNcuts]=ycut; fNClCuts[fNcuts]=ncl; fNcuts++;}
 
