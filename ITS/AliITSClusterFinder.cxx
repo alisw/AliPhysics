@@ -270,6 +270,7 @@ void AliITSClusterFinder::CheckLabels2(Int_t lab[10]) {
   // Tries to find mother's labels
   //------------------------------------------------------------
   AliRunLoader *rl = AliRunLoader::Instance();
+  if(!rl) return;
   TTree *trK=(TTree*)rl->TreeK();
 
   if(trK){
