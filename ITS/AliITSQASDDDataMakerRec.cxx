@@ -345,9 +345,7 @@ Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
       fAliITSQADataMakerRec->GetRawsData(2+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(det,lad);}  
     
     Short_t iside = stream->GetChannel();
-    
-
-    
+   
 
     if(fkOnline) {
 
@@ -360,7 +358,7 @@ Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
         AliDebug(AliQAv1::GetQADebugLevel(),Form("Wrong index number %d - patched to 0\n",index1));
 	index1 = 0;
       }      
-      fAliITSQADataMakerRec->GetRawsData(3+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(2*(stream->GetCarlosId())+iside,iddl);
+
       if(fSDDhRawsTask > 4 + index1) {                                  
         ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(4 + index1 +fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])))->Fill(coord2, coord1, signal);     
         ((TProfile2D *)(fAliITSQADataMakerRec->GetRawsData(4 + index1 + 260*2 +fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])))->Fill(coord2, coord1, signal); 
@@ -649,9 +647,9 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
 		//AliInfo(Form("modnumb %d, npoints %d, total points %d\n",module, recpoints->GetEntries(),npoints));
 		AliITSgeomTGeo::GetModuleId(module, lay, lad, det);
 		//AliInfo(Form("modnumb %d, lay %d, lad %d, det %d \n",module, lay, lad, det));
-		Bool_t kSDD = kFALSE;
-		if(lay == 3 || lay == 4) kSDD = kTRUE;
-		if(!kSDD) continue;
+		//Bool_t kSDD = kFALSE;
+		//if(lay == 3 || lay == 4) kSDD = kTRUE;
+		//if(!kSDD) continue;
 		//AliInfo(Form("modnumb %d, entries %d\n",module, recpoints->GetEntries()));
 		for(Int_t j=0;j<recpoints->GetEntries();j++){
 			//AliInfo(Form("modnumb %d, entry %d \n",module, j));

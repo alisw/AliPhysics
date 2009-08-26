@@ -266,23 +266,27 @@ void AliITSQADataMakerRec::InitRecPoints()
 		fSSDDataMaker->InitRecPoints();
 	}
 
-	Int_t offset = fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries();
-	const Bool_t expert   = kTRUE ; 
-	const Bool_t image    = kTRUE ; 
-	Char_t name[50];
-	Char_t title[50];
-	TH2F**hPhiEta = new TH2F*[6];
-	for (Int_t iLay=0;iLay<6;iLay++) {
-		sprintf(name,"Phi_vs_Eta_ITS_Layer%d",iLay+1);
-		sprintf(title,"Phi vs Eta - ITS Layer %d",iLay+1);
-		hPhiEta[iLay]=new TH2F(name,title,30,-1.5,1.5,200,0.,2*TMath::Pi());
-		hPhiEta[iLay]->GetXaxis()->SetTitle("Pseudorapidity");
-		hPhiEta[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
-		Add2RecPointsList((new TH2F(*hPhiEta[iLay])), iLay + offset, !expert, image);
 
-		delete hPhiEta[iLay];
+	if(fSubDetector == 0){
+	  Int_t offset = fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries();
+	  const Bool_t expert   = kTRUE ; 
+	  const Bool_t image    = kTRUE ; 
+	  Char_t name[50];
+	  Char_t title[50];
+	  TH2F**hPhiEta = new TH2F*[6];
+	  for (Int_t iLay=0;iLay<6;iLay++) {
+	    sprintf(name,"Phi_vs_Eta_ITS_Layer%d",iLay+1);
+	    sprintf(title,"Phi vs Eta - ITS Layer %d",iLay+1);
+	    hPhiEta[iLay]=new TH2F(name,title,30,-1.5,1.5,200,0.,2*TMath::Pi());
+	    hPhiEta[iLay]->GetXaxis()->SetTitle("Pseudorapidity");
+	    hPhiEta[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
+	    Add2RecPointsList((new TH2F(*hPhiEta[iLay])), iLay + offset, !expert, image);
+	    
+	    delete hPhiEta[iLay];
+	  }
+	  
  	}
-
+	
 }
 
 //____________________________________________________________________________ 
@@ -302,41 +306,43 @@ void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 
 
 
-
-	// Check id histograms already created for this Event Specie
-	TBranch *branchRecP = clustersTree->GetBranch("ITSRecPoints");
-	if (!branchRecP) {
-		AliError("can't get the branch with the ITS clusters !");
-		return;
+  if(fSubDetector == 0){
+    // Check id histograms already created for this Event Specie
+    TBranch *branchRecP = clustersTree->GetBranch("ITSRecPoints");
+    if (!branchRecP) {
+      AliError("can't get the branch with the ITS clusters !");
+      return;
+    }
+    
+    Int_t offset = fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries();
+    Float_t cluGlo[3] = {0.,0.,0.};
+    Int_t lay, lad, det; 
+    static TClonesArray statRecpoints("AliITSRecPoint") ;
+    TClonesArray *recpoints = &statRecpoints;
+    branchRecP->SetAddress(&recpoints);
+    // Fill QA for recpoints
+    for(Int_t module=0; module<clustersTree->GetEntries();module++){
+      //  AliInfo(Form("Module %d\n",module));
+      branchRecP->GetEvent(module);
+      AliITSgeomTGeo::GetModuleId(module, lay, lad, det);
+      for(Int_t j=0;j<recpoints->GetEntries();j++){
+	AliITSRecPoint *rcp = (AliITSRecPoint*)recpoints->At(j);    
+	//Check id histograms already created for this Event Specie
+	rcp->GetGlobalXYZ(cluGlo);
+	Double_t rad=TMath::Sqrt(cluGlo[0]*cluGlo[0]+cluGlo[1]*cluGlo[1]+cluGlo[2]*cluGlo[2]);
+	Double_t phi= TMath::Pi() + TMath::ATan2(-cluGlo[1],-cluGlo[0]);
+	Double_t theta = TMath::ACos(cluGlo[2]/rad);
+	Double_t eta = 100.;
+	if(AreEqual(rad,0.) == kFALSE) {
+	  if(theta<=1.e-14){ eta=30.; }
+	  else { eta = -TMath::Log(TMath::Tan(theta/2.));}
 	}
-
-	Int_t offset = fRecPointsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries();
-	Float_t cluGlo[3] = {0.,0.,0.};
-	Int_t lay, lad, det; 
-	static TClonesArray statRecpoints("AliITSRecPoint") ;
-	TClonesArray *recpoints = &statRecpoints;
-	branchRecP->SetAddress(&recpoints);
-	// Fill QA for recpoints
-	for(Int_t module=0; module<clustersTree->GetEntries();module++){
-		branchRecP->GetEvent(module);
-		AliITSgeomTGeo::GetModuleId(module, lay, lad, det);
-		for(Int_t j=0;j<recpoints->GetEntries();j++){
-			AliITSRecPoint *rcp = (AliITSRecPoint*)recpoints->At(j);    
-			//Check id histograms already created for this Event Specie
-			rcp->GetGlobalXYZ(cluGlo);
-			Double_t rad=TMath::Sqrt(cluGlo[0]*cluGlo[0]+cluGlo[1]*cluGlo[1]+cluGlo[2]*cluGlo[2]);
-			Double_t phi= TMath::Pi() + TMath::ATan2(-cluGlo[1],-cluGlo[0]);
-			Double_t theta = TMath::ACos(cluGlo[2]/rad);
-			Double_t eta = 100.;
-			if(AreEqual(rad,0.) == kFALSE) {
-			  if(theta<=1.e-14){ eta=30.; }
-			  else { eta = -TMath::Log(TMath::Tan(theta/2.));}
-			}
-			(GetRecPointsData( rcp->GetLayer() + offset - 6))->Fill(eta,phi);
-		}
-	}
-
-
+	//	printf("=========================>hlt   rcp->GetLayer() = %d \n",rcp->GetLayer());
+	(GetRecPointsData( rcp->GetLayer() + offset - 6))->Fill(eta,phi);
+      }
+    }
+  }
+  
 }
 
 //____________________________________________________________________________ 
