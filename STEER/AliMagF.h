@@ -20,6 +20,7 @@ class AliMagF : public TVirtualMagField
  public:
   enum BMap_t      {k2kG, k5kG, k5kGUniform};
   enum BeamType_t  {kBeamTypeAA, kBeamTypepp, kNoBeamField};
+  enum PolarityConvention_t {kConvMap2005,kConvDCS2008,kConvLHC};
   //
   AliMagF();
   AliMagF(const char *name, const char* title, Int_t integ, 
@@ -39,10 +40,10 @@ class AliMagF : public TVirtualMagField
   AliMagWrapCheb* GetMeasuredMap()                              const {return fMeasuredMap;}
   //
   // former AliMagF methods or their aliases
-  void         SetFactorSol(Float_t fc=1.)                            {fFactorSol = fc;}
-  void         SetFactorDip(Float_t fc=1.)                            {fFactorDip = fc;}
-  Double_t     GetFactorSol()                                   const {return fFactorSol;}
-  Double_t     GetFactorDip()                                   const {return fFactorSol;}
+  void         SetFactorSol(Float_t fc=1.);
+  void         SetFactorDip(Float_t fc=1.);
+  Double_t     GetFactorSol()                                   const;
+  Double_t     GetFactorDip()                                   const;
   Double_t     Factor()                                         const {return GetFactorSol();}
   Bool_t       IsUniform()                                      const {return fMapType == k5kGUniform;}
   //
@@ -61,6 +62,7 @@ class AliMagF : public TVirtualMagField
   void         SetParamName(const Char_t* nm)                         {fParNames.SetTitle(nm);}
   //
   Bool_t       LoadParameterization();
+  static Int_t GetPolarityConvention()                                {return Int_t(fgkPolarityConvention);}
   //
  protected:
   // not supposed to be changed during the run, set only at the initialization via constructor
@@ -90,7 +92,8 @@ class AliMagF : public TVirtualMagField
   //
   TNamed           fParNames;        // file and parameterization loadad
   //
-  static const Double_t  fgkSol2DipZ;    // conventional Z of transition from L3 to Dipole field 
+  static const Double_t  fgkSol2DipZ;    // conventional Z of transition from L3 to Dipole field
+  static const UShort_t  fgkPolarityConvention; // convention for the mapping of the curr.sign on main component sign
   //   
   ClassDef(AliMagF, 2)           // Class for all Alice MagField wrapper for measured data + Tosca parameterization
 };

@@ -25,7 +25,25 @@
 ClassImp(AliMagF)
 
 const Double_t AliMagF::fgkSol2DipZ    =  -700.;  
+const UShort_t AliMagF::fgkPolarityConvention = kConvLHC;
 
+/*
+ Explanation for polarity conventions: these are the mapping between the
+ current signs and main field components in L3 (Bz) and Dipole (Bx) (in Alice frame)
+ 1) kConvMap2005: used for the field mapping in 2005
+ positive L3  current -> negative Bz
+ positive Dip current -> positive Bx 
+ 2) kConvMapDCS2008: defined by the microswitches/cabling of power converters as of 2008 - 1st half 2009
+ positive L3  current -> positive Bz
+ positive Dip current -> positive Bx
+ 3) kConvLHC : defined by LHC
+ positive L3  current -> negative Bz
+ positive Dip current -> negative Bx
+ 
+ Note: only "negative Bz(L3) with postive Bx(Dipole)" and its inverse was mapped in 2005. Hence 
+ the GRP Manager will reject the runs with the current combinations (in the convention defined by the
+ static Int_t AliMagF::GetPolarityConvention()) which do not lead to such field polarities.
+*/
 //_______________________________________________________________________
 AliMagF::AliMagF():
   TVirtualMagField(),
@@ -347,5 +365,49 @@ void AliMagF::GetTPCIntCyl(const Double_t *rphiz, Double_t *b) const
   if (fMeasuredMap) {
     fMeasuredMap->GetTPCIntCyl(rphiz,b);
     for (int i=3;i--;) b[i] *= fFactorSol;
+  }
+}
+
+//_______________________________________________________________________
+void AliMagF::SetFactorSol(Float_t fc)
+{
+  // set the sign/scale of the current in the L3 according to fgkPolarityConvention
+  switch (fgkPolarityConvention) {
+  case kConvDCS2008: fFactorSol = -fc; break;
+  case kConvLHC    : fFactorSol = -fc; break;
+  default          : fFactorSol =  fc; break;  // case kConvMap2005: fFactorSol =  fc; break;
+  }
+}
+
+//_______________________________________________________________________
+void AliMagF::SetFactorDip(Float_t fc)
+{
+  // set the sign*scale of the current in the Dipole according to fgkPolarityConvention
+  switch (fgkPolarityConvention) {
+  case kConvDCS2008: fFactorDip =  fc; break;
+  case kConvLHC    : fFactorDip = -fc; break;
+  default          : fFactorDip =  fc; break;  // case kConvMap2005: fFactorDip =  fc; break;
+  }
+}
+
+//_______________________________________________________________________
+Double_t AliMagF::GetFactorSol() const
+{
+  // return the sign*scale of the current in the Dipole according to fgkPolarityConventionthe 
+  switch (fgkPolarityConvention) {
+  case kConvDCS2008: return -fFactorSol;
+  case kConvLHC    : return -fFactorSol;
+  default          : return  fFactorSol;       //  case kConvMap2005: return  fFactorSol;
+  }
+}
+
+//_______________________________________________________________________
+Double_t AliMagF::GetFactorDip() const
+{
+  // return the sign*scale of the current in the Dipole according to fgkPolarityConventionthe 
+  switch (fgkPolarityConvention) {
+  case kConvDCS2008: return  fFactorDip;
+  case kConvLHC    : return -fFactorDip;
+  default          : return  fFactorDip;       //  case kConvMap2005: return  fFactorDip;
   }
 }

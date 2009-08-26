@@ -253,8 +253,12 @@ Bool_t AliGRPManager::SetFieldMap(Float_t l3Cur, Float_t diCur, Float_t l3Pol,
     return kFALSE;
   }
   //
-  if (l3Pol!=diPol && (map==AliMagF::k5kG || map==AliMagF::k2kG) && fcDip!=0) {
-    AliError("L3 and Dipole polarities must be the same");
+  if (fcDip!=0 && (map==AliMagF::k5kG || map==AliMagF::k2kG) && 
+      ((AliMagF::GetPolarityConvention()==AliMagF::kConvMap2005 && l3Pol!=diPol) ||
+       (AliMagF::GetPolarityConvention()==AliMagF::kConvDCS2008 && l3Pol==diPol) ||
+       (AliMagF::GetPolarityConvention()==AliMagF::kConvLHC     && l3Pol!=diPol)) ) {
+    AliError(Form("Wrong combination for L3/Dipole polarities (%c/%c) for convention %d",
+		  l3Pol>0?'+':'-',diPol>0?'+':'-',AliMagF::GetPolarityConvention()));
     return kFALSE;
   }
   //
