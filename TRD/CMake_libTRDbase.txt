@@ -8,6 +8,7 @@ set(SRCS
       AliTRDgeometry.cxx
       AliTRDdigit.cxx
       AliTRDdigitsManager.cxx
+      AliTRDdigitsParam.cxx
       AliTRDrawData.cxx
       AliTRDpadPlane.cxx
       AliTRDrawFastStream.cxx

@@ -86,8 +86,6 @@ class AliTRDdigitizer : public AliDigitizer {
 
  protected:
 
-  virtual Bool_t       Init();
-
   AliRunLoader        *fRunLoader;          //! Local pointer
   AliTRDdigitsManager *fDigitsManager;      //! Manager for the output digits
   AliTRDdigitsManager *fSDigitsManager;     //! Manager for the summed input s-digits
@@ -101,7 +99,7 @@ class AliTRDdigitizer : public AliDigitizer {
           Bool_t       fSDigits;            //  Switch for the summable digits
           Bool_t       fMergeSignalOnly;    //  Merge only detectors that contain a signal
 
-  ClassDef(AliTRDdigitizer,19)              //  Produces TRD-Digits
+  ClassDef(AliTRDdigitizer,20)              //  Produces TRD-Digits
 
 };
 #endif

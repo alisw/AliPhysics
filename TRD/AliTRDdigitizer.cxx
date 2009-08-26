@@ -66,6 +66,8 @@
 #include "AliTRDCommonParam.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDmcmSim.h"
+#include "AliTRDdigitsParam.h"
+
 #include "Cal/AliTRDCalROC.h"
 #include "Cal/AliTRDCalDet.h"
 
@@ -90,8 +92,6 @@ AliTRDdigitizer::AliTRDdigitizer()
   // AliTRDdigitizer default constructor
   //
   
-  Init();
-
 }
 
 //_____________________________________________________________________________
@@ -112,8 +112,6 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
   //
   // AliTRDdigitizer constructor
   //
-
-  Init();
 
 }
 
@@ -137,8 +135,6 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager
   // AliTRDdigitizer constructor
   //
 
-  Init();
-
 }
 
 //_____________________________________________________________________________
@@ -159,32 +155,6 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager)
   //
   // AliTRDdigitizer constructor
   //
-
-  Init();
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDdigitizer::Init()
-{
-  //
-  // Initialize the digitizer with default values
-  //
-
-  fRunLoader          = 0;
-  fDigitsManager      = 0;
-  fSDigitsManager     = 0;
-  fSDigitsManagerList = 0;
-  fTRD                = 0;
-  fGeo                = 0;
-
-  fEvent              = 0;
-  fMasks              = 0;
-  fCompress           = kTRUE;
-  fSDigits            = kFALSE;
-  fMergeSignalOnly    = kFALSE;
-  
-  return AliDigitizer::Init();
 
 }
 
@@ -221,7 +191,7 @@ AliTRDdigitizer::~AliTRDdigitizer()
     fDigitsManager      = 0;
   }
 
-  if (fDigitsManager) {              //typo? fSDigitsManager?
+  if (fSDigitsManager) {
     delete fSDigitsManager;
     fSDigitsManager     = 0;
   }
@@ -860,7 +830,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det
                   * commonParam->GetSamplingFrequency())) - 1;
   }
 
-  Int_t   nTimeTotal   = calibration->GetNumberOfTimeBins();
+  Int_t   nTimeTotal   = fDigitsManager->GetDigitsParam()->GetNTimeBins();
   Float_t samplingRate = commonParam->GetSamplingFrequency();
   Float_t elAttachProp = simParam->GetElAttachProp() / 100.0; 
 
@@ -1214,7 +1184,7 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
 
   Int_t nRowMax    = fGeo->GetPadPlane(det)->GetNrows();
   Int_t nColMax    = fGeo->GetPadPlane(det)->GetNcols();
-  Int_t nTimeTotal = calibration->GetNumberOfTimeBins();
+  Int_t nTimeTotal = fDigitsManager->GetDigitsParam()->GetNTimeBins();
 
   // The gainfactor calibration objects
   const AliTRDCalDet *calGainFactorDet      = calibration->GetGainFactorDet();  
@@ -1330,7 +1300,7 @@ Bool_t AliTRDdigitizer::Signal2SDigits(Int_t det, AliTRDarraySignal *signals)
 
   Int_t nRowMax    = fGeo->GetPadPlane(det)->GetNrows();
   Int_t nColMax    = fGeo->GetPadPlane(det)->GetNcols();
-  Int_t nTimeTotal = calibration->GetNumberOfTimeBins();
+  Int_t nTimeTotal = fDigitsManager->GetDigitsParam()->GetNTimeBins();
 
   // Get the container for the digits of this detector
 

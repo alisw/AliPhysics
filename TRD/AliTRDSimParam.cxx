@@ -99,6 +99,7 @@ AliTRDSimParam::AliTRDSimParam()
   ,fTimeCoupling(0.0)
   ,fTimeStructOn(kFALSE)
   ,fPRFOn(kFALSE)
+  ,fNTimeBins(0)
 {
   //
   // Default constructor
@@ -152,6 +153,9 @@ void AliTRDSimParam::Init()
   // The pad response function
   fPRFOn             = kTRUE;
 
+  // The number of time bins
+  fNTimeBins         = 24;
+
   ReInit();
 
 }
@@ -199,6 +203,7 @@ AliTRDSimParam::AliTRDSimParam(const AliTRDSimParam &p)
   ,fTimeCoupling(p.fTimeCoupling)
   ,fTimeStructOn(p.fTimeStructOn)
   ,fPRFOn(p.fPRFOn)
+  ,fNTimeBins(p.fNTimeBins)
 {
   //
   // Copy constructor
@@ -269,6 +274,7 @@ void AliTRDSimParam::Copy(TObject &p) const
   target->fPadCoupling        = fPadCoupling;
   target->fTimeCoupling       = fTimeCoupling;
   target->fPRFOn              = fPRFOn;
+  target->fNTimeBins          = fNTimeBins;
 
   if (target->fTRFsmp) {
     delete[] target->fTRFsmp;

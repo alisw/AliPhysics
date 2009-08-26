@@ -31,6 +31,8 @@
 #include "AliTRDarrayADC.h"
 #include "AliTRDarraySignal.h"
 #include "AliTRDdigit.h"
+#include "AliTRDdigitsParam.h"
+#include "AliTRDSimParam.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDSignalIndex.h"
 
@@ -50,25 +52,25 @@ AliTRDdigitsManager::AliTRDdigitsManager(Bool_t rawRec)
   ,fHasSDigits(0)
   ,fSignalIndexes(NULL)
   ,fUseDictionaries(kTRUE)
-  ,fTreeD(0)
-  ,fBranch(0)
   ,fDets(AliTRDgeometry::Ndet())
   ,fRawRec(rawRec)
+  ,fDigitsParam(0)
 {
   //
   // Default constructor
   //
   
-  if(fRawRec)
+  if (fRawRec)
     {
-      fDets=1;
-      fRawRec=kTRUE;
+      fDets   = 1;
+      fRawRec = kTRUE;
     }
 
   for (Int_t iDict = 0; iDict < kNDict; iDict++) 
     {
       fDict[iDict] = NULL;
-    }  
+    }
+  
 }
 
 //_____________________________________________________________________________
@@ -80,10 +82,9 @@ AliTRDdigitsManager::AliTRDdigitsManager(const AliTRDdigitsManager &m)
   ,fHasSDigits(m.fHasSDigits)
   ,fSignalIndexes(NULL)
   ,fUseDictionaries(kTRUE)
-  ,fTreeD(m.fTree)
-  ,fBranch(m.fBranch)
   ,fDets(m.fDets)
   ,fRawRec(m.fRawRec)
+  ,fDigitsParam(NULL)
 {
   //
   // AliTRDdigitsManager copy constructor
@@ -123,6 +124,12 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
       fSignalIndexes = NULL;
     }
 
+  if (fDigitsParam)
+    {
+      delete fDigitsParam;
+      fDigitsParam = NULL;
+    }
+
 }
 
 //_____________________________________________________________________________
@@ -150,15 +157,16 @@ void AliTRDdigitsManager::Copy(TObject &m) const
 
   ((AliTRDdigitsManager &) m).fEvent           = fEvent;
   ((AliTRDdigitsManager &) m).fHasSDigits      = fHasSDigits;
-  ((AliTRDdigitsManager &) m).fDigits          = fDigits;
-  for(Int_t i=0; i<kNDict; i++)
+  ((AliTRDdigitsManager &) m).fDigits          = NULL;
+  for(Int_t i = 0; i < kNDict; i++)
     {
-      ((AliTRDdigitsManager &) m).fDict[i]  = fDict[i];
+      ((AliTRDdigitsManager &) m).fDict[i]  = NULL;
     }
-  ((AliTRDdigitsManager &) m).fSignalIndexes   = fSignalIndexes;
+  ((AliTRDdigitsManager &) m).fSignalIndexes   = NULL;
   ((AliTRDdigitsManager &) m).fUseDictionaries = fUseDictionaries;
   ((AliTRDdigitsManager &) m).fDets            = fDets;
-  ((AliTRDdigitsManager &) m).fRawRec           = fRawRec;
+  ((AliTRDdigitsManager &) m).fRawRec          = fRawRec;
+  ((AliTRDdigitsManager &) m).fDigitsParam     = NULL;
 
   TObject::Copy(m);
 
@@ -173,51 +181,65 @@ void AliTRDdigitsManager::CreateArrays()
 
   if (fHasSDigits) 
     {
-      if(fDigits)                                        
+      if (fDigits)                                        
 	{                                                   
 	  fDigits->Delete();                                
 	  delete fDigits;                                   
 	}                                                    
       fDigits = new TObjArray(fDets);
       for (Int_t index = 0; index < fDets; index++) 
-	fDigits->AddAt(new AliTRDarraySignal(),index);
+	{
+	  fDigits->AddAt(new AliTRDarraySignal(),index);
+	}
     }
   else 
     {
-      if(fDigits)                                          
+      if (fDigits)                                          
 	{                                                    
 	  fDigits->Delete();                                
 	  delete fDigits;                                   
 	}                                                   
       fDigits = new TObjArray(fDets);    
-      for (Int_t index = 0; index < fDets;index++) 
-	fDigits->AddAt(new AliTRDarrayADC(),index);
+      for (Int_t index = 0; index < fDets; index++) 
+	{
+	  fDigits->AddAt(new AliTRDarrayADC(),index);
+	}
     }
 
   if (fUseDictionaries) 
     {
-      for(Int_t iDict = 0; iDict < kNDict; iDict++)
-	if(fDict[iDict])                                           
-	  {
-	    fDict[iDict]->Delete();                                
-	    delete fDict[iDict];                                    
-	  }
-      for(Int_t iDict = 0; iDict < kNDict; iDict++)
-	fDict[iDict] = new TObjArray(fDets);
-
       for (Int_t iDict = 0; iDict < kNDict; iDict++)
-	for (Int_t index = 0; index < fDets; index++) 
-	  fDict[iDict]->AddAt(new AliTRDarrayDictionary(),index);
+	{
+	  if (fDict[iDict])                                   
+	    {
+	      fDict[iDict]->Delete();                                
+	      delete fDict[iDict];                                    
+	    }
+	  fDict[iDict] = new TObjArray(fDets);
+	  for (Int_t index = 0; index < fDets; index++) 
+	    {
+	      fDict[iDict]->AddAt(new AliTRDarrayDictionary(),index);
+	    }
+	}
     }
   
-  if(fSignalIndexes)
+  if (fSignalIndexes)
     {
       fSignalIndexes->Delete();
       delete fSignalIndexes;
     }
   fSignalIndexes = new TObjArray(fDets);
-  for (Int_t i = 0; i < fDets; i++) 
-    fSignalIndexes->AddLast(new AliTRDSignalIndex());
+  for (Int_t i = 0; i < fDets; i++)
+    {
+      fSignalIndexes->AddLast(new AliTRDSignalIndex());
+    }
+
+  if (fDigitsParam)
+    {
+      delete fDigitsParam;
+    }
+  fDigitsParam = new AliTRDdigitsParam();
+  fDigitsParam->SetNTimeBins(AliTRDSimParam::Instance()->GetNTimeBins());
 
 }
 
@@ -237,13 +259,17 @@ void AliTRDdigitsManager::ResetArrays()
     {
       fDigits = new TObjArray(fDets);     
       for (Int_t index = 0; index < fDets; index++) 
-	fDigits->AddAt(new AliTRDarraySignal(),index);
+	{
+	  fDigits->AddAt(new AliTRDarraySignal(),index);
+	}
     }
   else
     {
       fDigits = new TObjArray(fDets);
       for (Int_t index = 0; index < fDets; index++)
-	fDigits->AddAt(new AliTRDarrayADC(),index);
+	{
+	  fDigits->AddAt(new AliTRDarrayADC(),index);
+	}
     }
   
   for (Int_t iDict = 0; iDict < kNDict; iDict++)
@@ -252,27 +278,32 @@ void AliTRDdigitsManager::ResetArrays()
 	{
 	  fDict[iDict]->Delete();
 	  delete fDict[iDict];
-	  fDict[iDict]=NULL;
+	  fDict[iDict] = NULL;
 	}
     }
   if (fUseDictionaries) 
     {
-      for(Int_t iDict = 0; iDict < kNDict; iDict++)
-	fDict[iDict] = new TObjArray(fDets);
-      
       for (Int_t iDict = 0; iDict < kNDict; iDict++)
-	for (Int_t index = 0; index < fDets; index++)
-	  fDict[iDict]->AddAt(new AliTRDarrayDictionary(),index);
+	{
+	  fDict[iDict] = new TObjArray(fDets);
+	  for (Int_t index = 0; index < fDets; index++)
+	    {
+	      fDict[iDict]->AddAt(new AliTRDarrayDictionary(),index);
+	    }
+	}
     }
   
-  if(fSignalIndexes)
+  if (fSignalIndexes)
     {
       fSignalIndexes->Delete();
       delete fSignalIndexes;
     }
   fSignalIndexes = new TObjArray(fDets);
   for (Int_t i = 0; i < fDets; i++)
-    fSignalIndexes->AddLast(new AliTRDSignalIndex());
+    {
+      fSignalIndexes->AddLast(new AliTRDSignalIndex());
+    }
+
 }
 
 //_____________________________________________________________________________
@@ -289,17 +320,24 @@ void AliTRDdigitsManager::ResetArrays(Int_t det)
   RemoveIndexes(recoDet);
 
   if (fHasSDigits)
-    fDigits->AddAt(new AliTRDarraySignal(),recoDet);
+    {
+      fDigits->AddAt(new AliTRDarraySignal(),recoDet);
+    }
   else
-    fDigits->AddAt(new AliTRDarrayADC(),recoDet);
+    {
+      fDigits->AddAt(new AliTRDarrayADC(),recoDet);
+    }
 
   if (fUseDictionaries) 
     {
       for (Int_t iDict = 0; iDict < kNDict; iDict++)
-	fDict[iDict]->AddAt(new AliTRDarrayDictionary(),recoDet);
+	{
+	  fDict[iDict]->AddAt(new AliTRDarrayDictionary(),recoDet);
+	}
     }
   
   fSignalIndexes->AddAt(new AliTRDSignalIndex(),recoDet);
+
 }
 
 //_____________________________________________________________________________
@@ -346,15 +384,18 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree * const tree)
   // Make the branch for the digits
   if (fDigits) 
     {
-      if(fHasSDigits)
+      if (fHasSDigits)
 	{
 	  const AliTRDarraySignal *kDigits = (AliTRDarraySignal *) fDigits->At(0); 
 	  if (kDigits) 
 	    {
 	      if (!fTree) return kFALSE;
 	      AliDebug(1,"Making branch for SDigits!\n");
-	      TBranch* branch = fTree->GetBranch("TRDdigits");
-	      if (!branch) fTree->Branch("TRDdigits","AliTRDarraySignal",&kDigits,buffersize,99);
+	      TBranch *branch = fTree->GetBranch("TRDdigits");
+	      if (!branch)
+		{
+                  fTree->Branch("TRDdigits","AliTRDarraySignal",&kDigits,buffersize,99);
+		}
 	      AliDebug(1,"Making branch TRDdigits\n");
 	    }
 	  else 
@@ -363,15 +404,18 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree * const tree)
 	    }
 	}
 
-      if(!fHasSDigits)
+      if (!fHasSDigits)
 	{
 	  const AliTRDarrayADC *kDigits = (AliTRDarrayADC *) fDigits->At(0);
 	  if (kDigits) 
 	    {
 	      if (!fTree) return kFALSE;
 	      AliDebug(1,"Making branch for Digits!\n");
-	      TBranch* branch = fTree->GetBranch("TRDdigits");
-	      if (!branch) fTree->Branch("TRDdigits","AliTRDarrayADC",&kDigits,buffersize,99);
+	      TBranch *branch = fTree->GetBranch("TRDdigits");
+	      if (!branch) 
+		{
+                  fTree->Branch("TRDdigits","AliTRDarrayADC",&kDigits,buffersize,99);
+		}
 	      AliDebug(1,"Making branch TRDdigits\n");	      
 	    }
 	  else 
@@ -380,10 +424,12 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree * const tree)
 	    }
 	}
 
-    }    
+    }
   else
     {
+
       status = kFALSE;
+
     }
   
   if (fUseDictionaries) 
@@ -400,8 +446,11 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree * const tree)
 		{
 		  if (!fTree) return kFALSE;
 		  AliDebug(2,"Making branch for dictionary!\n");
-		  TBranch* branch = fTree->GetBranch(branchname);
-		  if (!branch) fTree->Branch(branchname,"AliTRDarrayDictionary",&kDictionary,buffersize,99);
+		  TBranch *branch = fTree->GetBranch(branchname);
+		  if (!branch) 
+		    {
+                      fTree->Branch(branchname,"AliTRDarrayDictionary",&kDictionary,buffersize,99);
+		    }
 		  AliDebug(1,Form("Making branch %s\n",branchname));
 		}
 	      else 
@@ -415,7 +464,19 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree * const tree)
 	    }
 	}
     }
-  
+
+  if (fDigitsParam)
+    {
+      const AliTRDdigitsParam *kDigitsParam = fDigitsParam;
+      if (!fTree) return kFALSE;
+      TBranch *branch = fTree->GetBranch("TRDdigitsParam");
+      if (!branch) 
+	{
+          fTree->Branch("TRDdigitsParam","AliTRDdigitsParam",&kDigitsParam,buffersize,99);
+	}
+      AliDebug(1,"Making branch AliTRDdigitsParam\n");
+    }
+
   return status;
 
 }
@@ -440,25 +501,30 @@ Bool_t AliTRDdigitsManager::ReadDigits(TTree * const tree)
       CreateArrays();
     }
 
-  status = LoadArray(fDigits,"TRDdigits",fTree);
+  status = LoadArrayDigits();
 
   if (fUseDictionaries) 
     {
-      for (Int_t iDict = 0; iDict < kNDict; iDict++) 
+      status = LoadArrayDict();
+      if (status == kFALSE) 
 	{
-	  Char_t branchname[15];
-	  sprintf(branchname,"TRDdictionary%d",iDict);
-	  status = LoadArrayDict(fDict[iDict],branchname,fTree);
-	  if (status == kFALSE) 
-	    {
-	      fUseDictionaries = kFALSE;
-	      AliWarning("Unable to load dict arrays. Will not use them.\n");
-	      break;
-	    }
-	}  
-    }
+	  fUseDictionaries = kFALSE;
+	  AliWarning("Unable to load dict arrays. Will not use them.\n");
+	}
+    }  
 
-  return kTRUE;
+  if (!LoadDigitsParam()) {
+    AliWarning("Could not read digits parameter.");
+    if (fDigitsParam) {
+      delete fDigitsParam;
+    }
+    AliWarning(Form("Create default version of digits parameter (NTimeBin=%d).\n"
+		   ,AliTRDSimParam::Instance()->GetNTimeBins()));
+    fDigitsParam = new AliTRDdigitsParam();
+    fDigitsParam->SetNTimeBins(AliTRDSimParam::Instance()->GetNTimeBins());
+  }
+
+  return status;
 
 }
 
@@ -469,25 +535,18 @@ Bool_t AliTRDdigitsManager::WriteDigits()
   // Writes out the TRD-digits and the dictionaries
   //
 
-  // Store the contents of the detector array in the tree
-
-  if (!StoreArray(fDigits,"TRDdigits",fTree))
+  if (!StoreArrayDigits())
     {
-      AliError("Error while storing digits in branch TRDdigits\n");
+      AliError("Error while storing digits\n");
       return kFALSE;
     }
 
   if (fUseDictionaries) 
     {
-      for (Int_t iDict = 0; iDict < kNDict; iDict++)
+      if (!StoreArrayDict())
 	{
-	  Char_t branchname[15];
-	  sprintf(branchname,"TRDdictionary%d",iDict);
-	  if (!StoreArrayDict(fDict[iDict],branchname,fTree)) 
-	    {
-	      AliError(Form("Error while storing dictionary in branch %s\n",branchname));
-	      return kFALSE;
-	    }
+	  AliError("Error while storing dictionaries in branch\n");
+	  return kFALSE;
 	}
     }
   
@@ -720,7 +779,6 @@ void AliTRDdigitsManager::RemoveIndexes(Int_t det)
 
 }
 
-
 //_____________________________________________________________________________
 void AliTRDdigitsManager::ClearIndexes(Int_t det) 
 {
@@ -757,7 +815,7 @@ Bool_t AliTRDdigitsManager::BuildIndexes(Int_t det)
       digits = (AliTRDarrayADC *) GetDigits(det);
     }
 
-  //digits should be expanded by now!!!
+  // digits should be expanded by now!!!
   if (digits->GetNtime() > 0) 
     {      
       digits->Expand(); 
@@ -802,58 +860,52 @@ Bool_t AliTRDdigitsManager::BuildIndexes(Int_t det)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::LoadArray(TObjArray * const object
-                                    , const Char_t *branchname
-                                    , TTree * const tree)
+Bool_t AliTRDdigitsManager::LoadArrayDigits()
 {
   //
-  // Loads all detectors of the array from the branch <branchname> of
-  // the digits tree <tree>
-  // Adapted from code of the class AliTRDsegmentArray
+  // Loads the (s-)digits arrays for all detectors
   //
 
-  fTreeD = tree;
-
-  if (!fTreeD) 
+  if (!fTree) 
     {
       AliError("Digits tree is not defined\n");
       return kFALSE;
     }
 
+  Bool_t status = kTRUE;
+
   // Get the branch
-  fBranch = fTreeD->GetBranch(branchname);
-  if (!fBranch) 
+  TBranch *branch = fTree->GetBranch("TRDdigits");
+  if (!branch) 
     {
-      AliError(Form("Branch %s is not defined\n",branchname));
+      AliError("Branch TRDdigits is not defined\n");
       return kFALSE;
     }
 
   // Loop through all detectors and read them from the tree
-  Bool_t status = kTRUE;
   for (Int_t iDet = 0; iDet < fDets; iDet++) 
     {
-      if(fHasSDigits)
+      if (fHasSDigits)
 	{
-	  AliTRDarraySignal *dataArray = (AliTRDarraySignal *) object->At(iDet);
+	  AliTRDarraySignal *dataArray = (AliTRDarraySignal *) fDigits->At(iDet);
 	  if (!dataArray) 
 	    {
 	      status = kFALSE;
 	      break;    
 	    }
-
-	  fBranch->SetAddress(&dataArray);
-	  fBranch->GetEntry(iDet);
+	  branch->SetAddress(&dataArray);
+	  branch->GetEntry(iDet);
 	}
       else
 	{
-	  AliTRDarrayADC *dataArray = (AliTRDarrayADC *) object->At(iDet);
+	  AliTRDarrayADC    *dataArray = (AliTRDarrayADC *)    fDigits->At(iDet);
 	  if (!dataArray) 
 	    {
 	      status = kFALSE;
-	      break;    
+	      break;
 	    }
-	  fBranch->SetAddress(&dataArray);
-	  fBranch->GetEntry(iDet);
+	  branch->SetAddress(&dataArray);
+	  branch->GetEntry(iDet);
 	}
     }
 
@@ -862,44 +914,46 @@ Bool_t AliTRDdigitsManager::LoadArray(TObjArray * const object
 }
 
 //________________________________________________________________________________________________
-Bool_t AliTRDdigitsManager::LoadArrayDict(TObjArray * const object
-                                        , const Char_t *branchname
-                                        , TTree * const tree)
+Bool_t AliTRDdigitsManager::LoadArrayDict()
 {
   //
-  // Loads all detectors of the array from the branch <branchname> of
-  // the dictionary tree <tree>
-  // Adapted from code of the class AliTRDsegmentArray
+  // Loads dictionary arrays for all detectors
   //
 
-  fTreeD = tree;
-
-  if (!fTreeD) 
+  if (!fTree) 
     {
       AliError("Digits tree is not defined\n");
       return kFALSE;
     }
 
-  // Get the branch
-  fBranch = fTreeD->GetBranch(branchname);
-  if (!fBranch) 
-    {
-      AliError(Form("Branch %s is not defined\n",branchname));
-      return kFALSE;
-    }
-
-  // Loop through all detectors and read them from the tree
   Bool_t status = kTRUE;
-  for (Int_t iDet = 0; iDet < fDets; iDet++) 
+
+  for (Int_t iDict = 0; iDict < kNDict; iDict++) 
     {
-      AliTRDarrayDictionary *dataArray = (AliTRDarrayDictionary *) object->At(iDet);
-      if (!dataArray) 
-	{
-	  status = kFALSE;
-	  break;    
-	}
-      fBranch->SetAddress(&dataArray);
-      fBranch->GetEntry(iDet);
+
+      // Get the branch
+      Char_t branchname[15];
+      sprintf(branchname,"TRDdictionary%d",iDict);
+      TBranch *branch = fTree->GetBranch(branchname);
+      if (!branch) 
+        {
+          AliError(Form("Branch %s is not defined\n",branchname));
+          return kFALSE;
+        }
+
+      // Loop through all detectors and read them from the tree
+      for (Int_t iDet = 0; iDet < fDets; iDet++) 
+        {
+          AliTRDarrayDictionary *dataArray = (AliTRDarrayDictionary *) fDict[iDict]->At(iDet);
+          if (!dataArray) 
+	    {
+	      status = kFALSE;
+	      break;    
+	    }
+          branch->SetAddress(&dataArray);
+          branch->GetEntry(iDet);
+        }
+
     }
 
   return status;
@@ -907,17 +961,11 @@ Bool_t AliTRDdigitsManager::LoadArrayDict(TObjArray * const object
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::StoreArray(TObjArray * const array1
-                                     , const Char_t *branchname
-                                     , TTree * const tree)
+Bool_t AliTRDdigitsManager::LoadDigitsParam()
 {
   //
-  // Stores all the detectors of the array in the branch <branchname> of 
-  // the digits tree <tree>
-  // Adapted from code of the class AliTRDsegmentArray
+  // Loads the digits parameter object from the digits tree
   //
-
-  fTree = tree;
 
   if (!fTree) 
     {
@@ -926,10 +974,45 @@ Bool_t AliTRDdigitsManager::StoreArray(TObjArray * const array1
     }
 
   // Get the branch
-  fBranch = fTree->GetBranch(branchname);
-  if (!fBranch) 
+  TBranch *branch = fTree->GetBranch("TRDdigitsParam");
+  if (!branch) 
     {
-      AliError(Form("Branch %s is not defined\n",branchname));
+      AliError("Branch TRDdigitsParam is not defined\n");
+      return kFALSE;
+    }
+
+  // Read the parameter object
+  AliTRDdigitsParam *digitsParam = fDigitsParam;
+  if (!digitsParam)
+    {
+      return kFALSE;
+    }
+
+  branch->SetAddress(&digitsParam);
+  branch->GetEntry();
+
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDdigitsManager::StoreArrayDigits()
+{
+  //
+  // Stores the digit arrays for all detectors
+  //
+
+  if (!fTree) 
+    {
+      AliError("Digits tree is not defined\n");
+      return kFALSE;
+    }
+
+  // Get the branch
+  TBranch *branch = fTree->GetBranch("TRDdigits");
+  if (!branch) 
+    {
+      AliError("Branch TRDdigits is not defined\n");
       return kFALSE;
     }
 
@@ -939,25 +1022,25 @@ Bool_t AliTRDdigitsManager::StoreArray(TObjArray * const array1
     {
       if (fHasSDigits)
 	{
-	  const AliTRDarraySignal *kDataArray = (AliTRDarraySignal *) array1->At(iDet);
+	  const AliTRDarraySignal *kDataArray = (AliTRDarraySignal *) fDigits->At(iDet);
 	  if (!kDataArray) 
 	    {
 	      status = kFALSE;
 	      break;
 	    }
-	  fBranch->SetAddress(&kDataArray);
-	  fBranch->Fill();
+	  branch->SetAddress(&kDataArray);
+	  branch->Fill();
 	}
       else
 	{
-	  const AliTRDarrayADC *kDataArray = (AliTRDarrayADC *) array1->At(iDet); 
+	  const AliTRDarrayADC    *kDataArray = (AliTRDarrayADC *)    fDigits->At(iDet); 
 	  if (!kDataArray) 
 	    {
 	      status = kFALSE;
 	      break;
 	    }
-	  fBranch->SetAddress(&kDataArray);
-	  fBranch->Fill();
+	  branch->SetAddress(&kDataArray);
+	  branch->Fill();
 	}
     }
 
@@ -966,18 +1049,58 @@ Bool_t AliTRDdigitsManager::StoreArray(TObjArray * const array1
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitsManager::StoreArrayDict(TObjArray * const array3
-                                         , const Char_t *branchname
-                                         , TTree * const tree)
+Bool_t AliTRDdigitsManager::StoreArrayDict()
 {
   //
-  // Stores all the dictionary arrays of the detectors of the array in the branch <branchname> of 
-  // the dictionary tree <tree>
-  // Adapted from code of the class AliTRDsegmentArray
+  // Stores the dictionary arrays for all detectors
   //
 
-  //  AliDebug(1,"Storing Arrays of Dictionary");
-  fTree = tree;
+  if (!fTree) 
+    {
+      AliError("Digits tree is not defined\n");
+      return kFALSE;
+    }
+
+  Bool_t status = kTRUE;
+
+  for (Int_t iDict = 0; iDict < kNDict; iDict++)
+     {
+
+       // Get the branch
+       Char_t branchname[15];
+       sprintf(branchname,"TRDdictionary%d",iDict);
+       TBranch *branch = fTree->GetBranch(branchname);
+       if (!branch) 
+         {
+           AliError(Form("Branch %s is not defined\n",branchname));
+           return kFALSE;
+         }
+
+       // Loop through all detectors and fill them into the tree
+       for (Int_t iDet = 0; iDet < fDets; iDet++) 
+         {
+           const AliTRDarrayDictionary *kDataArray = (AliTRDarrayDictionary *) fDict[iDict]->At(iDet);
+           if (!kDataArray) 
+	     {
+	       status = kFALSE;
+	       break;
+	     }
+           branch->SetAddress(&kDataArray);
+           branch->Fill();
+         }
+
+     }
+
+  return status;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDdigitsManager::StoreDigitsParam()
+{
+  //
+  // Stores the digits parameter object from the digits tree
+  //
 
   if (!fTree) 
     {
@@ -986,27 +1109,23 @@ Bool_t AliTRDdigitsManager::StoreArrayDict(TObjArray * const array3
     }
 
   // Get the branch
-  fBranch = fTree->GetBranch(branchname);
-  if (!fBranch) 
+  TBranch *branch = fTree->GetBranch("TRDdigitsParam");
+  if (!branch) 
     {
-      AliError(Form("Branch %s is not defined\n",branchname));
+      AliError("Branch TRDdigitsParam is not defined\n");
       return kFALSE;
     }
 
-  // Loop through all detectors and fill them into the tree
-  Bool_t status = kTRUE;
-  for (Int_t iDet = 0; iDet < fDets; iDet++) 
+  // Fill the digits object in the tree
+  const AliTRDdigitsParam *kDigitsParam = fDigitsParam;
+  if (!kDigitsParam)
     {
-      const AliTRDarrayDictionary *kDataArray = (AliTRDarrayDictionary *) array3->At(iDet);
-      if (!kDataArray) 
-	{
-	  status = kFALSE;
-	  break;
-	}
-      fBranch->SetAddress(&kDataArray);
-      fBranch->Fill();
+      return kFALSE;
     }
+  branch->SetAddress(&kDigitsParam);
+  branch->Fill();
 
-  return status;
+  return kTRUE;
 
 }
+

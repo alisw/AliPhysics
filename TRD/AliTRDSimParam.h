@@ -45,6 +45,7 @@ class AliTRDSimParam : public TObject {
           void     SetTimeCoupling(Float_t v)                { fTimeCoupling      = v;                }
           void     SetTimeStruct(Bool_t tsOn = 1)            { fTimeStructOn      = tsOn;             }
           void     SetPadResponse(Int_t prfOn = 1)           { fPRFOn             = prfOn;            }
+          void     SetNTimeBins(Int_t ntb)                   { fNTimeBins         = ntb;              }
     
           Float_t  GetGasGain() const                        { return fGasGain;                       }
           Float_t  GetNoise() const                          { return fNoise;                         }
@@ -56,6 +57,7 @@ class AliTRDSimParam : public TObject {
           Float_t  GetTRFhi() const                          { return fTRFhi;                         }
           Float_t  GetPadCoupling() const                    { return fPadCoupling;                   }
           Float_t  GetTimeCoupling() const                   { return fTimeCoupling;                  }
+          Int_t    GetNTimeBins() const                      { return fNTimeBins;                     }
 
           Bool_t   DiffusionOn() const                       { return fDiffusionOn;                   }
           Bool_t   ElAttachOn() const                        { return fElAttachOn;                    } 
@@ -106,6 +108,8 @@ class AliTRDSimParam : public TObject {
   
           Int_t    fPRFOn;             //  Switch for the pad response
 
+          Int_t    fNTimeBins;         //  Number of time bins
+
  private:
 
   // This is a singleton, constructor is private!  
@@ -115,7 +119,7 @@ class AliTRDSimParam : public TObject {
           void Init();
           void SampleTRF();
   
-  ClassDef(AliTRDSimParam,4)          // The TRD simulation parameters
+  ClassDef(AliTRDSimParam,5)          // The TRD simulation parameters
 
 };
 

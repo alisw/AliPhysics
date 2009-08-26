@@ -20,6 +20,7 @@
 
 #pragma link C++ class  AliTRDdigit+;
 #pragma link C++ class  AliTRDdigitsManager+;
+#pragma link C++ class  AliTRDdigitsParam+;
 
 #pragma link C++ class  AliTRDrawData+;
 

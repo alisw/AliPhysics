@@ -7,6 +7,7 @@ SRCS= AliTRDarraySignal.cxx \
       AliTRDgeometry.cxx \
       AliTRDdigit.cxx \
       AliTRDdigitsManager.cxx \
+      AliTRDdigitsParam.cxx \
       AliTRDrawData.cxx \
       AliTRDpadPlane.cxx \
       AliTRDrawStream.cxx \
