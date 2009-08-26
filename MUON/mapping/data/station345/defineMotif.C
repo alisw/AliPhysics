@@ -1,5 +1,5 @@
 //Given a list of gassiplex (manas) channel ranges, defines
-//a motif.dat file.
+//a motif.dat file (starting from bottom left)
 
 #include <fstream>
 #include <vector>

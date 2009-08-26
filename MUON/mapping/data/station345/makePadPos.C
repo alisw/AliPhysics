@@ -24,7 +24,7 @@ std::vector<std::pair<int,int> > make_pattern(const std::string& what)
       cols.push_back(std::make_pair<int,int>(0,8));
     }
   else if ( what == "O9" || what == "O10" || what == "O11" || what == "O12" 
-	    || what == "O17" || what == "O18" || what == "O19" || what == "O20" )
+	    || what == "O18" || what == "O19" || what == "O20" )
     {
       add(cols,0,32);
       add(cols,0,32);

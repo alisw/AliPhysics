@@ -34,6 +34,12 @@
 #include <TROOT.h>
 #include <TStyle.h>
 
+#include "AliMpDataProcessor.h"
+#include "AliMpDataMap.h"
+#include "AliMpDataStreams.h"
+#include "AliMpDDLStore.h"
+
+
 //______________________________________________________________________________
 Int_t Usage()
 {
@@ -43,6 +49,7 @@ Int_t Usage()
   cout << "  --use filename.root : reuse a previously saved (from this program) root file. Several --use can be used ;-)" << endl;
   cout << "  --geometry #x#+#+# : manually specify the geometry of the window, ala X11..., e.g. --geometry 1280x900+1600+0 will" << endl;
   cout << "    get a window of size 1280x900, located at (1600,0) from the top-left of the (multihead) display " << endl;
+  cout << "  --asciimapping : load mapping from ASCII files instead of OCDB (for debug and experts only...)" << endl;
   return -1;
 }
 
@@ -63,7 +70,8 @@ int main(int argc, char** argv)
   Bool_t isGeometryFixed(kFALSE);
   Int_t gix, giy;
   Int_t gox,goy;
-
+  Bool_t ASCIImapping(kFALSE);
+  
   for ( Int_t i = 0; i <= args.GetLast(); ++i ) 
   {
     TString a(static_cast<TObjString*>(args.At(i))->String());
@@ -87,6 +95,10 @@ int main(int argc, char** argv)
       nok += 2;
       ++i;
     }
+    else if ( a == "--asciimapping" )
+    {
+      ASCIImapping = kTRUE;
+    }
     
     else
     {
@@ -104,6 +116,14 @@ int main(int argc, char** argv)
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(0);
  
+  if ( ASCIImapping ) 
+  {
+    AliMpDataProcessor mp;
+    AliMpDataMap* map = mp.CreateDataMap("data");
+    AliMpDataStreams dataStreams(map);
+    AliMpDDLStore::ReadData(dataStreams);
+  }
+  
   gROOT->SetStyle("Plain");  
   gStyle->SetPalette(1);
   Int_t n = gStyle->GetNumberOfColors();

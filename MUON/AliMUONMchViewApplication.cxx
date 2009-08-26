@@ -353,6 +353,11 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("0.98");
+  rn->AddLine("");
+  rn->AddLine("Added --asciimapping option");
+  rn->AddLine("");
+  
   rn->AddLine("0.97");
   rn->AddLine("");
   rn->AddLine("Adding calibration option with Emelec (aka injection) gain");
