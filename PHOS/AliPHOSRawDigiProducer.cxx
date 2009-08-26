@@ -148,10 +148,9 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
  
   Int_t iDigit=0 ;
   Int_t relId[4], absId=-1, caloFlag=-1;
-
+  
   const Double_t baseLine=1. ; //Minimal energy of digit in ADC ch. 
-  const Double_t highLowDiff=2.; //Maximal difference between High and Low channels in LG adc channels 
-
+  
   //Temporary array for LowGain digits
   TClonesArray tmpLG("AliPHOSDigit",10000) ;
   Int_t ilgDigit=0 ;
@@ -239,19 +238,10 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
 	  digHG->SetTime(digLG->GetTime()) ;
 	  digHG->SetEnergy(digLG->GetEnergy()) ;
 	}
-	else{ //Make approximate comparison of HG and LG energies
-	  Double_t de = (digHG->GetEnergy()-digLG->GetEnergy()) ; 
-	  if(TMath::Abs(de)>CalibrateE(double(highLowDiff),relId,1)){ //too strong difference, remove digit
-	    digits->RemoveAt(iDig) ;
-	  }
-	}
       }
       else{ //no pair - remove
-	// temporary fix for dead LG channels
-	if(relId[2]%2==1 && relId[3]%16==4) 
-	  continue ;
-	if(digHG->GetEnergy()>CalibrateE(double(5.),relId,1)) //One can not always find LG with Amp<5 ADC ch.
-	  digits->RemoveAt(iDig) ;                                                                                                            
+	if(digHG->GetEnergy()<0.) //no pair, in saturation
+	  digits->RemoveAt(iDig) ;                                                          
       }
     }
   } // End of NextDDL()
