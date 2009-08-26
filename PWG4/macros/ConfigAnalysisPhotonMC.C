@@ -36,7 +36,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   //-----------------------------------------------------------  
   // Reader
   //-----------------------------------------------------------
-  AliCaloTrackESDReader *reader = new AliCaloTrackESDReader();
+  AliCaloTrackMCReader *reader = new AliCaloTrackMCReader();
   reader->SetDebug(-1);
 
   //Switch on or off the detectors information that you want
@@ -83,12 +83,10 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 
   fidCut2->Print("");
 
-
   AliAnaPhoton *ana = new AliAnaPhoton();
   ana->SetDebug(-1);
   ana->SetMinPt(5.);
   ana->SetMinDistanceToBadChannel(2, 4, 5);
-  ana->SetCaloPID(pid);
   ana->SetFidutialCut(fidCut2);
   ana->SetCalorimeter("PHOS");
   ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms
