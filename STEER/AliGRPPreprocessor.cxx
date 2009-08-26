@@ -756,7 +756,7 @@ Int_t AliGRPPreprocessor::ProcessL3DPs(const TMap* valueMap, AliGRPObject* grpOb
 		else {
 			Bool_t change = kFALSE;
 			Char_t charDCS = ProcessBool(array,change);
-			if (!change){
+			if (change == kFALSE){
 				grpObj->SetL3Polarity(charDCS);
 				AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetL3Polarity())));
 				nL3Entries++;
@@ -1416,9 +1416,10 @@ Char_t AliGRPPreprocessor::ProcessBool(const TObjArray* array, Bool_t &change)
 			continue;
 		}
 		if (iCount > 0) {
-			if (aDCSBool != v->GetBool())
-			AliError(Form("DCS values for the parameter changed from %d to %d within the queried interval", (UInt_t)aDCSBool, (UInt_t)v->GetBool()));
-			change = kTRUE;
+			if (aDCSBool != v->GetBool()) {
+				AliError(Form("DCS values for the parameter changed from %d to %d within the queried interval", (UInt_t)aDCSBool, (UInt_t)v->GetBool()));
+				change = kTRUE;
+			}
 		}
 		aDCSBool = v->GetBool(); // always keeping last value
 		AliDebug(2,Form("Bool = %d",(Int_t)aDCSBool));
