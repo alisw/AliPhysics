@@ -30,7 +30,7 @@ class AliZDCPreprocessor : public AliPreprocessor
 
   private:
     UInt_t ProcessDCSData(TMap* dcsAliasMap);
-    UInt_t ProcessChMap(TString runType);
+    UInt_t ProcessChMap();
     UInt_t ProcessppData();
     UInt_t ProcessCalibData();
     UInt_t ProcessPedestalData();

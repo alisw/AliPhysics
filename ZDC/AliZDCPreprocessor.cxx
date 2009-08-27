@@ -30,18 +30,24 @@
 
 // ******************************************************************
 //    RETURN CODES:
-// return=0 : everything OK
-// return=1 : no DCS input data Map
-// return=2 : error when storing in RefData DCS processed data
-// return=3 : error in storing alignment object in OCDB
-// return=4 : error retrieving/reading data file from DAQ FXS
-// return=5 : error when storing ADC ch. mapping in OCDB
-// return=6 : error when storing energy calibration coefficients
-// return=7 : error when storing tower inter-calibration coefficients
-// return=8 : error when storing pedestal parameters in OCDB
-// return=9 : error when storing pedestal histos in RefData
-// return=10: error when storing laser coefficients in OCDB
-// return=11: error when storing laser histos in RefData
+// return 0 : everything OK
+// return 1 : no DCS input data Map
+// return 2 : error storing DCS data in RefData 
+// return 3 : error storing alignment object in OCDB
+// return 4 : error in ZDCMapping.dat file retrieved from DAQ FXS (not existing|empty|corrupted)
+// return 5 : error storing mapping obj. in OCDB
+// return 6 : error storing energy calibration obj. in OCDB
+// return 7 : error storing tower inter-calibration obj. in OCDB
+// return 8 : error in ZDCEnergyCalib.dat file retrieved from DAQ FXS 
+// return 9 : error in ZDCTowerCalib.dat file retrieved from DAQ FXS 
+// return 10: error in ZDCPedestal.dat file retrieved from DAQ FXS 
+// return 11: error storing pedestal calibration obj. in OCDB
+// return 12: error in ZDCPedHisto.root file retrieved from DAQ FXS 
+// return 13: error storing pedestal histos in RefData 
+// return 14: error in ZDCLaserCalib.dat file retrieved from DAQ FXS 
+// return 15: error storing laser calibration obj. in OCDB
+// return 16: error in ZDCLaserHisto.root file retrieved from DAQ FXS 
+// return 17: error storing laser histos in RefData 
 // ******************************************************************
 
 ClassImp(AliZDCPreprocessor)
@@ -74,8 +80,7 @@ AliZDCPreprocessor::~AliZDCPreprocessor()
 
 
 //______________________________________________________________________________________________
-void AliZDCPreprocessor::Initialize(Int_t run, UInt_t startTime,
-	UInt_t endTime)
+void AliZDCPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
   // Creates AliZDCDataDCS object
 
@@ -167,17 +172,18 @@ UInt_t AliZDCPreprocessor::ProcessDCSData(TMap* dcsAliasMap)
 }
 
 //______________________________________________________________________________________________
-UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
+UInt_t AliZDCPreprocessor::ProcessChMap()
 { 
   const int kNch = 48;
   
   // Reading the file for mapping from FXS
-  TList* daqSource = GetFileSources(kDAQ, runType.Data());
+  TList* daqSource = GetFileSources(kDAQ, "MAPPING");
   if(!daqSource){
-    AliError(Form("No sources run %d for run type %s!", fRun, runType.Data()));
+    AliError(Form("No sources for file ZDCChMapping.dat in run %d ", fRun));
     return 4;
   }
-  Log("\t List of DAQ sources for mapping "); daqSource->Print();
+  if(daqSource->GetEntries()==0) return 4;
+  Log("\t List of DAQ sources for MAPPING id: "); daqSource->Print();
   //
   TIter iter(daqSource);
   TObjString* source = 0;
@@ -185,8 +191,8 @@ UInt_t AliZDCPreprocessor::ProcessChMap(TString runType)
   Int_t readMap[kNch][6]; 
   //
   while((source = dynamic_cast<TObjString*> (iter.Next()))){
-     Log(Form("\n\t Getting file #%d\n",++isou));
      TString fileName = "ZDCChMapping.dat";
+     Log(Form("\t Getting file #%d: ZDCChMapping.dat from %s\n",++isou, source->GetName()));
 
      if(fileName.Length() <= 0){
        Log(Form("No file from source %s!", source->GetName()));
@@ -336,51 +342,52 @@ UInt_t AliZDCPreprocessor::ProcessppData()
 //______________________________________________________________________________________________
 UInt_t AliZDCPreprocessor::ProcessCalibData()
 {
-  TList* daqSources = GetFileSources(kDAQ, "ENERGYCALIB");
+  TList* daqSources = GetFileSources(kDAQ, "EMDENERGYCALIB");
   if(!daqSources){
     AliError(Form("No sources for CALIBRATION_EMD run %d !", fRun));
-    return 4;
+    return 8;
   }
-  Log("\t List of DAQ sources for CALIBRATION_EMD run");
-  daqSources->Print();
+  Log("\t List of DAQ sources for EMDENERGYCALIB id: "); daqSources->Print();
   //
   TIter iter2(daqSources);
   TObjString* source = 0;
   Int_t i=0;
-  Bool_t resEnCal=kTRUE;
+  Bool_t resEnCal=kTRUE, resTowCal=kTRUE;
+  
   while((source = dynamic_cast<TObjString*> (iter2.Next()))){
-    Log(Form("\n\t Getting file #%d\n",++i));
-    TString stringEMDFileName = GetFile(kDAQ, "ENERGYCALIB", source->GetName());
+    TString stringEMDFileName = GetFile(kDAQ, "EMDENERGYCALIB", source->GetName());
     if(stringEMDFileName.Length() <= 0){
       Log(Form("No file from source %s!", source->GetName()));
-      return 4;
+      return 8;
     }
+    const char* emdFileName = stringEMDFileName.Data();
+    Log(Form("\t Getting file #%d: %s from %s\n",++i,emdFileName,source->GetName()));
+    //
     // --- Initializing energy calibration object
     AliZDCEnCalib *eCalib = new AliZDCEnCalib("ZDC");
-    // --- Reading file with pedestal calibration data
-    const char* emdFileName = stringEMDFileName.Data();
+    // --- Reading file with calibration data
     if(emdFileName){
       FILE *file;
       if((file = fopen(emdFileName,"r")) == NULL){
-    	printf("Cannot open file %s \n",emdFileName);
-    	return 4;
+        printf("Cannot open file %s \n",emdFileName);
+        return 8;
       }
       Log(Form("File %s connected to process data from EM dissociation events", emdFileName));
       //
       Float_t fitValEMD[6];
       for(Int_t j=0; j<6; j++){        
-    	if(j<6){
-    	  int iread = fscanf(file,"%f",&fitValEMD[j]);
-	  if(iread==0) AliDebug(3," Failing reading daa from EMD calibration data file");
-    	  eCalib->SetEnCalib(j,fitValEMD[j]);
-    	}
+        if(j<6){
+          int iread = fscanf(file,"%f",&fitValEMD[j]);
+          if(iread==0) AliDebug(3," Failing reading daa from EMD calibration data file");
+          eCalib->SetEnCalib(j,fitValEMD[j]);
+        }
       }
       //
       fclose(file);
     }
     else{
       Log(Form("File %s not found", emdFileName));
-      return 4;
+      return 8;
     }
     //eCalib->Print("");
     // 
@@ -393,56 +400,52 @@ UInt_t AliZDCPreprocessor::ProcessCalibData()
     if(resEnCal==kFALSE) return 6;
   }
   delete daqSources; daqSources = 0;
-   
-
-  TList* daqSourcesH = GetFileSources(kDAQ, "TOWERCALIB");
+  
+  TList* daqSourcesH = GetFileSources(kDAQ, "EMDTOWERCALIB");
   if(!daqSourcesH){
     AliError(Form("No sources for CALIBRATION_EMD run %d !", fRun));
-    return 4;
+    return 9;
   }
-  Log("\t List of DAQ sources for CALIBRATION_EMD run");
-  daqSourcesH->Print();
+  Log("\t List of DAQ sources for EMDTOWERCALIB id: "); daqSourcesH->Print();
   //
   TIter iter2H(daqSourcesH);
   TObjString* sourceH = 0;
   Int_t iH=0;
-  Bool_t resTowCal=kTRUE;
   while((sourceH = dynamic_cast<TObjString*> (iter2H.Next()))){
-    Log(Form("\n\t Getting file #%d\n",++iH));
-    TString stringEMDFileName = GetFile(kDAQ, "TOWERCALIB", sourceH->GetName());
-    if(stringEMDFileName.Length() <= 0){
+    TString stringtowEMDFileName = GetFile(kDAQ, "EMDTOWERCALIB", sourceH->GetName());
+    if(stringtowEMDFileName.Length() <= 0){
       Log(Form("No file from source %s!", sourceH->GetName()));
-      return 4;
+      return 9;
     }
+    const char * towEMDFileName = stringtowEMDFileName.Data();
+    Log(Form("\t Getting file #%d: %s from source %s\n",++iH,towEMDFileName,sourceH->GetName()));
     // --- Initializing energy calibration object
     AliZDCTowerCalib *towCalib = new AliZDCTowerCalib("ZDC");
-    // --- Reading file with pedestal calibration data
-    const char* emdFileName = stringEMDFileName.Data();
-    if(emdFileName){
+    // --- Reading file with calibration data
+    if(towEMDFileName){
       FILE *file;
-      if((file = fopen(emdFileName,"r")) == NULL){
-    	printf("Cannot open file %s \n",emdFileName);
-    	return 4;
+      if((file = fopen(towEMDFileName,"r")) == NULL){
+        printf("Cannot open file %s \n",towEMDFileName);
+        return 9;
       }
-      Log(Form("File %s connected to process data from EM dissociation events", emdFileName));
       //
       Float_t equalCoeff[4][5];
       for(Int_t j=0; j<4; j++){        
-    	 for(Int_t k=0; k<5; k++){
-    	    int leggi = fscanf(file,"%f",&equalCoeff[j][k]);
-	    if(leggi==0) AliDebug(3," Failing reading data from EMD calibration file");
-    	    if(j==0)	  towCalib->SetZN1EqualCoeff(k, equalCoeff[j][k]);
-    	    else if(j==1) towCalib->SetZP1EqualCoeff(k, equalCoeff[j][k]);
-    	    else if(j==2) towCalib->SetZN2EqualCoeff(k, equalCoeff[j][k]);
-    	    else if(j==3) towCalib->SetZP2EqualCoeff(k, equalCoeff[j][k]);  
-    	 }
+         for(Int_t k=0; k<5; k++){
+           int leggi = fscanf(file,"%f",&equalCoeff[j][k]);
+           if(leggi==0) AliDebug(3," Failing reading data from EMD calibration file");
+           if(j==0)	 towCalib->SetZN1EqualCoeff(k, equalCoeff[j][k]);
+           else if(j==1) towCalib->SetZP1EqualCoeff(k, equalCoeff[j][k]);
+           else if(j==2) towCalib->SetZN2EqualCoeff(k, equalCoeff[j][k]);
+           else if(j==3) towCalib->SetZP2EqualCoeff(k, equalCoeff[j][k]);  
+         }
       }
       //
       fclose(file);
     }
     else{
-      Log(Form("File %s not found", emdFileName));
-      return 4;
+      Log(Form("File %s not found", towEMDFileName));
+      return 9;
     }
     //towCalib->Print("");
     // 
@@ -454,8 +457,9 @@ UInt_t AliZDCPreprocessor::ProcessCalibData()
     resTowCal = Store("Calib","TowerCalib",towCalib, &metaData, 0, 1);
     if(resTowCal==kFALSE) return 7;
   }
-  delete daqSources; daqSources = 0;
+  delete daqSourcesH; daqSourcesH = 0;
   
+     
   return 0;
 }
 
@@ -465,54 +469,54 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
   TList* daqSources = GetFileSources(kDAQ, "PEDESTALDATA");
   if(!daqSources){
     Log(Form("No source for STANDALONE_PEDESTAL run %d !", fRun));
-    return 4;
+    return 10;
   }
-  Log("\t List of DAQ sources for STANDALONE_PEDESTAL run");
-  daqSources->Print();
+  if(daqSources->GetEntries()==0) return 10;
+  Log("\t List of DAQ sources for PEDESTALDATA id: "); daqSources->Print();
   //
   TIter iter(daqSources);
-  TObjString* source = 0;
+  TObjString* source;
   Int_t i=0;
-  Bool_t resPedCal=kTRUE;
+  Bool_t resPedCal=kTRUE, resPedHist=kTRUE;
+  
   while((source = dynamic_cast<TObjString*> (iter.Next()))){
-     Log(Form("\n\t Getting file #%d\n",++i));
      TString stringPedFileName = GetFile(kDAQ, "PEDESTALDATA", source->GetName());
      if(stringPedFileName.Length() <= 0){
-     	Log(Form("No PEDESTAL file from source %s!", source->GetName()));
-        return 4;
+     	Log(Form("No PEDESTALDATA file from source %s!", source->GetName()));
+        return 10;
      }
-     // calibration data
+     const char* pedFileName = stringPedFileName.Data();
+     Log(Form("\t Getting file #%d: %s from %s\n",++i,pedFileName,source->GetName()));
+     //
      // --- Initializing pedestal calibration object
      AliZDCPedestals *pedCalib = new AliZDCPedestals("ZDC");
      // --- Reading file with pedestal calibration data
-     const char* pedFileName = stringPedFileName.Data();
      // no. ADCch = (22 signal ch. + 2 reference PMs) * 2 gain chain = 48
      const Int_t knZDCch = 48;
-
      FILE *file;
      if((file = fopen(pedFileName,"r")) == NULL){
        printf("Cannot open file %s \n",pedFileName);
-       return 4;
+       return 10;
      }
      Log(Form("File %s connected to process pedestal data", pedFileName));
      Float_t pedVal[(2*knZDCch)][2];
      for(Int_t k=0; k<(2*knZDCch); k++){
-     	for(Int_t j=0; j<2; j++){
-     	   int aleggi = fscanf(file,"%f",&pedVal[k][j]);
-	   if(aleggi==0) AliDebug(3," Failing reading data from pedestal file");
-     	   //if(j==1) printf("pedVal[%d] -> %f, %f \n",k,pedVal[k][0],pedVal[k][1]);
-     	}
-     	if(k<knZDCch){
-     	  pedCalib->SetMeanPed(k,pedVal[k][0]);
-     	  pedCalib->SetMeanPedWidth(k,pedVal[k][1]);
-     	}
-     	else if(k>=knZDCch && k<(2*knZDCch)){
-     	  pedCalib->SetOOTPed(k-knZDCch,pedVal[k][0]);
-     	  pedCalib->SetOOTPedWidth(k-knZDCch,pedVal[k][1]);
-     	}
-     	else if(k>=(2*knZDCch) && k<(3*knZDCch)){
-     	  pedCalib->SetPedCorrCoeff(k-(2*knZDCch),pedVal[k][0],pedVal[k][1]);
-     	}
+        for(Int_t j=0; j<2; j++){
+           int aleggi = fscanf(file,"%f",&pedVal[k][j]);
+           if(aleggi==0) AliDebug(3," Failing reading data from pedestal file");
+           //if(j==1) printf("pedVal[%d] -> %f, %f \n",k,pedVal[k][0],pedVal[k][1]);
+        }
+        if(k<knZDCch){
+          pedCalib->SetMeanPed(k,pedVal[k][0]);
+          pedCalib->SetMeanPedWidth(k,pedVal[k][1]);
+        }
+        else if(k>=knZDCch && k<(2*knZDCch)){
+          pedCalib->SetOOTPed(k-knZDCch,pedVal[k][0]);
+          pedCalib->SetOOTPedWidth(k-knZDCch,pedVal[k][1]);
+        }
+        else if(k>=(2*knZDCch) && k<(3*knZDCch)){
+          pedCalib->SetPedCorrCoeff(k-(2*knZDCch),pedVal[k][0],pedVal[k][1]);
+        }
      }
      fclose(file);
      //pedCalib->Print("");
@@ -523,40 +527,32 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
      metaData.SetComment("Filling AliZDCPedestals object");  
      //
      resPedCal = Store("Calib","Pedestals",pedCalib, &metaData, 0, 1);
-     if(resPedCal==kFALSE) return 8;
+     if(resPedCal==kFALSE) return 11;
   }
   delete daqSources; daqSources = 0;
-
-  //
-  Bool_t resPedHist=kTRUE;
-  TList* daqSourceH = GetFileSources(kDAQ, "PEDHISTOS");
+  
+  TList* daqSourceH = GetFileSources(kDAQ, "PEDESTALHISTOS");
   if(!daqSourceH){
-    Log(Form("No source for STANDALONE_PEDESTAL run %d !", fRun));
-    return 4;
+    Log(Form("No source for PEDESTALHISTOS id run %d !", fRun));
+    return 12;
   }
-  Log("\t List of DAQ sources for STANDALONE_PEDESTAL run");
-  daqSourceH->Print();
+  Log("\t List of DAQ sources for PEDESTALHISTOS id: "); daqSourceH->Print();
   //
   TIter iterH(daqSourceH);
   TObjString* sourceH = 0;
   Int_t iH=0;
   while((sourceH = dynamic_cast<TObjString*> (iterH.Next()))){
-     Log(Form("\n\t Getting file #%d\n",++iH));
-     TString stringPedFileName = GetFile(kDAQ, "PEDHISTOS", sourceH->GetName());
+     TString stringPedFileName = GetFile(kDAQ, "PEDESTALHISTOS", sourceH->GetName());
      if(stringPedFileName.Length() <= 0){
-     	Log(Form("No PEDESTAL file from source %s!", sourceH->GetName()));
-        return 4;
+     	Log(Form("No PEDESTALHISTOS file from source %s!", sourceH->GetName()));
+        return 12;
      }
-     TFile *histoFile = TFile::Open(stringPedFileName.Data());
-     //
-     AliCDBMetaData metadata1;
-     metadata1.SetResponsible("Chiara Oppedisano");
-     metadata1.SetComment("Pedestal histos");
-     resPedHist = StoreReferenceData("Histos","Pedestal", histoFile, &metadata1);
-     if(resPedHist==kFALSE) return 9;
+     const char* pedFileName = stringPedFileName.Data();
+     Log(Form("\t Getting file #%d: %s from %s\n",++iH, pedFileName, sourceH->GetName()));
+     resPedHist = StoreReferenceFile(pedFileName, "pedestalReference.root");
+     if(resPedHist==kFALSE) return 13;
   }
-  delete daqSourceH; daqSourceH = 0;
-  
+  delete daqSourceH; daqSourceH=0;
   
   return 0;
 }
@@ -567,39 +563,41 @@ UInt_t AliZDCPreprocessor::ProcessLaserData()
   TList* daqSources = GetFileSources(kDAQ, "LASERDATA");
   if(!daqSources){
     AliError(Form("No sources for STANDALONE_LASER run %d !", fRun));
-    return 1;
+    return 14;
   }
-  Log("\t List of DAQ sources for STANDALONE_LASER run");
-  daqSources->Print();
+  if(daqSources->GetEntries()==0) return 14;
+  Log("\t List of DAQ sources for LASERDATA id: "); daqSources->Print();
   //
   TIter iter2(daqSources);
   TObjString* source = 0;
   Int_t i=0;
-  Bool_t resLaserCal=kTRUE;
+  Bool_t resLaserCal=kTRUE, resLaserHist=kTRUE;
+  
   while((source = dynamic_cast<TObjString*> (iter2.Next()))){
-     Log(Form("\n\t Getting file #%d\n",++i));
-     TString stringLASERFileName = GetFile(kDAQ, "LASERDATA", source->GetName());
-     if(stringLASERFileName.Length() <= 0){
+     TString stringLaserFileName = GetFile(kDAQ, "LASERDATA", source->GetName());
+     if(stringLaserFileName.Length() <= 0){
        Log(Form("No LASER file from source %s!", source->GetName()));
-       return 1;
+       return 14;
      }
+     const char* laserFileName = stringLaserFileName.Data();
+     Log(Form("\t Getting file #%d: %s from %s\n",++i,laserFileName,source->GetName()));
+     //
      // --- Initializing pedestal calibration object
      AliZDCLaserCalib *lCalib = new AliZDCLaserCalib("ZDC");
      // --- Reading file with pedestal calibration data
-     const char* laserFileName = stringLASERFileName.Data();
      if(laserFileName){
        FILE *file;
        if((file = fopen(laserFileName,"r")) == NULL){
          printf("Cannot open file %s \n",laserFileName);
-         return 1;
+         return 14;
        }
        Log(Form("File %s connected to process data from LASER events", laserFileName));
        //
        Float_t ivalRead[22][4]; 
        for(Int_t j=0; j<22; j++){
-     	  for(Int_t k=0; k<4; k++){
-     	    int aleggi = fscanf(file,"%f",&ivalRead[j][k]);
-	    if(aleggi==0) AliDebug(3," Failng reading data from laser file");
+          for(Int_t k=0; k<4; k++){
+            int aleggi = fscanf(file,"%f",&ivalRead[j][k]);
+            if(aleggi==0) AliDebug(3," Failng reading data from laser file");
             //printf(" %d %1.0f  ",k, ivalRead[j][k]);
           }
           lCalib->SetDetector(j, (Int_t) ivalRead[j][0]);
@@ -611,7 +609,7 @@ UInt_t AliZDCPreprocessor::ProcessLaserData()
      }
      else{
        Log(Form("File %s not found", laserFileName));
-       return 1;
+       return 14;
      }
      //lCalib->Print("");
      // 
@@ -621,38 +619,30 @@ UInt_t AliZDCPreprocessor::ProcessLaserData()
      metaData.SetComment("Filling AliZDCLaserCalib object");  
      //
      resLaserCal = Store("Calib","LaserCalib",lCalib, &metaData, 0, 1);
-     if(resLaserCal==kFALSE) return 10;
+     if(resLaserCal==kFALSE) return 15;
   }
   delete daqSources; daqSources = 0;
-  
-  
+
   TList* daqSourceH = GetFileSources(kDAQ, "LASERHISTOS");
   if(!daqSourceH){
     AliError(Form("No sources for STANDALONE_LASER run %d !", fRun));
-    return 1;
+    return 16;
   }
-  Log("\t List of DAQ sources for STANDALONE_LASER run");
-  daqSourceH->Print();
+  Log("\t List of DAQ sources for LASERHISTOS id: "); daqSourceH->Print();
   //
   TIter iter2H(daqSourceH);
   TObjString* sourceH = 0;
   Int_t iH=0;
-  Bool_t resPedHist = kTRUE;
   while((sourceH = dynamic_cast<TObjString*> (iter2H.Next()))){
-     Log(Form("\n\t Getting file #%d\n",++iH));
-     TString stringLASERFileName = GetFile(kDAQ, "LASERHISTOS", sourceH->GetName());
-     if(stringLASERFileName.Length() <= 0){
+     Log(Form("\t Getting file #%d\n",++iH));
+     TString stringLaserFileName = GetFile(kDAQ, "LASERHISTOS", sourceH->GetName());
+     if(stringLaserFileName.Length() <= 0){
        Log(Form("No LASER file from source %s!", sourceH->GetName()));
-       return 1;
+       return 16;
      }
-     TFile *histoFile = TFile::Open(stringLASERFileName.Data());
+     resLaserHist = StoreReferenceFile(stringLaserFileName.Data(), "laserReference.root");
      //
-     AliCDBMetaData metadata2;
-     metadata2.SetResponsible("Chiara Oppedisano");
-     metadata2.SetComment("Laser run histos");
-     resPedHist = StoreReferenceData("Histos", "Laser", histoFile, &metadata2);
-     //
-     if(resPedHist==kFALSE) return 11;
+     if(resLaserHist==kFALSE) return 17;
   }
   delete daqSourceH; daqSourceH = 0;
   
@@ -673,35 +663,35 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
 
  const char* beamType = GetRunParameter("beamType");
  TString runType = GetRunType();
- printf("\n\t AliZDCPreprocessor -> beamType %s, runType %s\n",beamType,runType.Data());
+ printf("\t **** AliZDCPreprocessor -> beamType %s, runType %s ****\n",beamType,runType.Data());
 
  // ******************************************
  //   ADC channel mapping
  // ******************************************
- resChMap = ProcessChMap(runType);
+ resChMap = ProcessChMap();
  
  // ******************************************
  //   Calibration param. for p-p data (all = 1)
  // ******************************************
  // NO ENERGY CALIBRATION -> coefficients set to 1.
  // Temp -> also inter-calibration coefficients are set to 1.
- if(strcmp(beamType,"P-P")==0) resEnergyCalib = ProcessppData();
+ if((strcmp(beamType,"p-p")==0) || (strcmp(beamType,"P-P")==0)) resEnergyCalib = ProcessppData();
  
  // *****************************************************
  //  EMD EVENTS -> Energy calibration and equalization
  // *****************************************************
- if(runType=="CALIBRATION_EMD" && strcmp(beamType,"A-A")==0) 
+ else if((strcmp(beamType,"A-A")==0) && (runType.CompareTo("CALIBRATION_EMD")==0)) 
    resEnergyCalib =  ProcessCalibData();
  
  // *****************************************************
  // STANDALONE_PEDESTALS -> Pedestal subtraction 
  // *****************************************************
- if(runType=="STANDALONE_PEDESTAL") resPedestalCalib = ProcessPedestalData();
+ if(runType.CompareTo("STANDALONE_PEDESTAL")==0) resPedestalCalib = ProcessPedestalData();
  
  // *****************************************************
  // STANDALONE_LASER -> Signal stability and ageing 
  // *****************************************************
- if(runType=="STANDALONE_LASER") resLaserCalib = ProcessLaserData();
+ if(runType.CompareTo("STANDALONE_LASER")==0) resLaserCalib = ProcessLaserData();
  
 
  if(resDCS!=0)  	      return resDCS;
