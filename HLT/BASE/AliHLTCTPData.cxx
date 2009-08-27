@@ -68,6 +68,8 @@ int AliHLTCTPData::InitCTPTriggerClasses(const char* ctpString)
   // see header file for function documentation
   if (!ctpString) return -EINVAL;
 
+  HLTImportant("Parameter: %s", ctpString);
+
   fMask=0;
   fClassIds.Delete();
   fClassIds.ExpandCreate(gkNCTPTriggerClasses);
@@ -135,12 +137,13 @@ bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, AliHLTCompon
 
   // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
   AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
-  AliHLTUInt64_t triggerMask=evtData->fCommonHeader[6];
+  AliHLTUInt64_t triggerMask=evtData->fCommonHeader[6]&0x3ffff;
   triggerMask<<=32;
   triggerMask|=evtData->fCommonHeader[5];
 
   if (fMask!=0 && (triggerMask & fMask)==0) {
-    HLTWarning("invalid trigger mask 0x%llx, unknown CTP trigger", triggerMask);
+    HLTWarning("invalid trigger mask 0x%llx, unknown CTP trigger, initialized 0x%llx", triggerMask, fMask);
+    for (int i=0; i<8; i++) HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
     return false;
   }
 
@@ -234,12 +237,13 @@ int AliHLTCTPData::Increment(AliHLTComponentTriggerData& trigData)
 
   // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
   AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
-  AliHLTUInt64_t triggerMask=evtData->fCommonHeader[6];
+  AliHLTUInt64_t triggerMask=evtData->fCommonHeader[6]&0x3ffff;
   triggerMask<<=32;
   triggerMask|=evtData->fCommonHeader[5];
 
   if (fMask!=0 && (triggerMask & fMask)==0) {
     HLTWarning("invalid trigger mask 0x%llx, unknown CTP trigger, initialized 0x%llx", triggerMask, fMask);
+    for (int i=0; i<8; i++) HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
   }
   Increment(triggerMask);
   return 0;
@@ -277,16 +281,29 @@ AliHLTEventDDL AliHLTCTPData::ReadoutList(const AliHLTComponentTriggerData& trig
 
   // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
   AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
-  AliHLTUInt64_t triggerMask=evtData->fCommonHeader[6];
+  AliHLTUInt64_t triggerMask=evtData->fCommonHeader[6]&0x3ffff;
   triggerMask<<=32;
   triggerMask|=evtData->fCommonHeader[5];
+
+  if (fMask!=0 && (triggerMask & fMask)==0) {
+    HLTWarning("invalid trigger mask 0x%llx, unknown CTP trigger, initialized 0x%llx", triggerMask, fMask);
+    for (int i=0; i<8; i++) HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
+  }
 
   // take an 'OR' of all active trigger classes 
   AliHLTReadoutList list;
   for (int i=0; i<gkNCTPTriggerClasses; i++) {
     if (i>fClassIds.GetLast()) break;
     if ((triggerMask&((AliHLTUInt64_t)0x1<<i))==0) continue;
-    list|=*((AliHLTReadoutList*)fClassIds.At(i));
+    AliHLTReadoutList* tcrl=(AliHLTReadoutList*)fClassIds.At(i);
+    // 2009-08-27: this is a temorary bugfix:
+    // the operator functions of the AliHLTReadoutList class did not work
+    // when running online on the HLT cluster. The fix for the moment is
+    // to send out the readout list only for the first matching trigger
+    // class instead of merging the list. This is sufficient for the
+    // current trigger setups but needs to be corrected
+    return *tcrl;
+    list|=*tcrl;
   }
 
   return list;
