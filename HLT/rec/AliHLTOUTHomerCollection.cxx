@@ -191,6 +191,10 @@ AliHLTHOMERReader* AliHLTOUTHomerCollection::OpenReader(UChar_t* pSrc, unsigned 
     return NULL;
   }
 
+  AliHLTUInt64_t eventId=pHLTHeader->fEventIDHigh;
+  eventId = eventId<<32;
+  eventId|=pHLTHeader->fEventIDLow;
+  SetEventId(eventId);
   return fpManager->OpenReaderBuffer(pSrc+offset, pHLTHeader->fLength-offset);
 }
 

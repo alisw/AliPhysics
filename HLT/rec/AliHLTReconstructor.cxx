@@ -378,6 +378,20 @@ void AliHLTReconstructor::ProcessHLTOUT(AliRawReader* pRawReader, AliESDEvent* p
     AliHLTOUTRawReader* pHLTOUT=new AliHLTOUTRawReader(pRawReader, event, fpEsdManager);
     if (pHLTOUT) {
       AliInfo(Form("event %d", event));
+      // the two event fields contain: period - orbit - bunch crossing counter
+      //        id[0]               id[1]
+      // |32                0|32                0|
+      //
+      // |28              |20                | 12|
+      //        period          orbit         bcc
+      AliHLTUInt64_t eventId=0;
+      const UInt_t* rawreaderEventId=pRawReader->GetEventId();
+      if (rawreaderEventId) {
+	eventId=rawreaderEventId[0];
+	eventId=eventId<<32;
+	eventId|=rawreaderEventId[1];
+      }
+      AliInfo(Form("Event Id from rawreader:\t 0x%016llx", eventId));
       ProcessHLTOUT(pHLTOUT, pEsd, true);
       delete pHLTOUT;
     } else {
@@ -392,6 +406,7 @@ void AliHLTReconstructor::PrintHLTOUTContent(AliHLTOUT* pHLTOUT) const
   if (!pHLTOUT) return;
   int iResult=0;
 
+  AliInfo(Form("Event Id from hltout:\t 0x%016llx", pHLTOUT->EventId()));
   for (iResult=pHLTOUT->SelectFirstDataBlock();
        iResult>=0;
        iResult=pHLTOUT->SelectNextDataBlock()) {

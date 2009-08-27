@@ -368,6 +368,11 @@ class AliHLTOUT {
   int Reset();
 
   /**
+   * Get the current event id
+   */
+  AliHLTUInt64_t EventId() {return fCurrentEventId;}
+
+  /**
    * Get number of data blocks in the HLTOUT data
    */
   int GetNofDataBlocks();
@@ -604,6 +609,11 @@ class AliHLTOUT {
   int AddBlockDescriptor(const AliHLTOUTBlockDescriptor desc);
 
   /**
+   * Set the event id, only for child classes
+   */
+  void SetEventId(AliHLTUInt64_t id);
+
+  /**
    * Print output or suppress.
    */
   bool BeVerbose() {return fbVerbose;}
@@ -780,6 +790,9 @@ class AliHLTOUT {
   const AliHLTUInt8_t* fpObjectBuffer; //!
   AliHLTUInt32_t fObjectBufferSize; //!
 
-  ClassDef(AliHLTOUT, 5)
+  /** current event id */
+  AliHLTUInt64_t fCurrentEventId; //!
+
+  ClassDef(AliHLTOUT, 6)
 };
 #endif

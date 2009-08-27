@@ -48,6 +48,7 @@ AliHLTOUT::AliHLTOUT()
   , fpDataObject(NULL)
   , fpObjectBuffer(NULL)
   , fObjectBufferSize(0)
+  , fCurrentEventId(kAliHLTVoidEventID)
 {
   // see header file for class documentation
   // or
@@ -817,6 +818,7 @@ int AliHLTOUT::Reset()
   }
 
   ResetInput();
+  fCurrentEventId=kAliHLTVoidEventID;
 
   return iResult;
 }
@@ -878,4 +880,13 @@ int AliHLTOUT::ReleaseDataObject(TObject* pObject)
   fObjectBufferSize=0;
 
   return 0;
+}
+
+void AliHLTOUT::SetEventId(AliHLTUInt64_t id)
+{
+  // see header file for class documentation
+  if (fCurrentEventId!=kAliHLTVoidEventID && fCurrentEventId!=id) {
+    fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "SetEventId" , __FILE__ , __LINE__ , "event id was already set to 0x%llx, setting now to 0x%llx", fCurrentEventId, id);
+  }
+  fCurrentEventId=id;
 }
