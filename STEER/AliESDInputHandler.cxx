@@ -86,11 +86,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     SwitchOffBranches();
     SwitchOnBranches();
     
-    if (fEvent) {
-      delete fEvent;
-      fEvent = 0;
-    }
-    fEvent = new AliESDEvent();
+    if (!fEvent) fEvent = new AliESDEvent();
 
     fEvent->ReadFromTree(fTree);
     fNEvents = fTree->GetEntries();

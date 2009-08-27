@@ -1327,7 +1327,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     if(fESDFriendOld)AddObject(fESDFriendOld);
     // we are not owner of the list objects 
     // must not delete it
-    fESDObjects->SetOwner(kFALSE);
+    fESDObjects->SetOwner(kTRUE);
     fESDObjects->SetName("ESDObjectsConnectedToTree");
     tree->GetUserInfo()->Add(fESDObjects);
     fConnected = true;
@@ -1342,6 +1342,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
   esdEvent = (AliESDEvent*)tree->GetTree()->GetUserInfo()->FindObject("AliESDEvent");
   if(esdEvent){   
       // Check if already connected to tree
+    esdEvent->Reset();
     TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("ESDObjectsConnectedToTree"));
 
     
@@ -1359,12 +1360,10 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     if (!(strcmp(opt, "reconnect"))) fESDObjects->Delete();
     
     if(!fUseOwnList){
-      delete fESDObjects;
-      fESDObjects = 0;
       // create a new TList from the UserInfo TList... 
       // copy constructor does not work...
       fESDObjects = (TList*)(esdEvent->GetList()->Clone());
-      fESDObjects->SetOwner(kFALSE);
+      fESDObjects->SetOwner(kTRUE);
     }
     else if ( fESDObjects->GetEntries()==0){
       // at least create the std content if we want to read to our list
@@ -1410,13 +1409,14 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it
-    fESDObjects->SetOwner(kFALSE);
+    fESDObjects->SetOwner(kTRUE);
     fESDObjects->SetName("ESDObjectsConnectedToTree");
     // we are not owner of the list objects 
     // must not delete it
     tree->GetUserInfo()->Add(fESDObjects);
+    tree->GetUserInfo()->SetOwner(kFALSE);
     fConnected = true;
-  }// no esdEvent
+  }// no esdEvent -->
   else {
     // we can't get the list from the user data, create standard content
     // and set it by hand (no ESDfriend at the moment
