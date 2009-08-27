@@ -68,7 +68,8 @@ class AliGRPPreprocessor: public AliPreprocessor {
                                   const char* dbName,
                                   const char* user,
                                   const char* password,
-                                  const char *cdbRoot
+                                  const char *cdbRoot,
+				  TString &gdc
                                  );
 
  protected:

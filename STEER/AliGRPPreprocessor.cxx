@@ -1524,7 +1524,7 @@ AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap)
 
   
 //_______________________________________________________________
-Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* dbHost, Int_t dbPort, const char* dbName, const char* user, const char* password, const char *cdbRoot)
+Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* dbHost, Int_t dbPort, const char* dbName, const char* user, const char* password, const char *cdbRoot, TString &gdc)
 {
 	//
 	// Retrieves logbook and trigger information from the online logbook
@@ -1594,6 +1594,8 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	UInt_t detectorMask = (UInt_t)(detectorMaskString.Atoi());
 	Float_t l3Current = (Float_t)(TMath::Abs(l3CurrentString.Atof()));
 	Float_t dipoleCurrent = (Float_t)(TMath::Abs(dipoleCurrentString.Atof()));
+	Char_t l3Polarity = (l3CurrentString.Atof() < 0) ? 1 : 0;
+	Char_t dipolePolarity = (dipoleCurrentString.Atof() < 0) ? 1 : 0;
 	
 	AliGRPObject * grpObj = new AliGRPObject();
 	grpObj->SetTimeStart(timeStart); 
@@ -1601,6 +1603,8 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	grpObj->SetDetectorMask(detectorMask);
 	grpObj->SetL3Current(l3Current,(AliGRPObject::Stats)0);
 	grpObj->SetDipoleCurrent(dipoleCurrent,(AliGRPObject::Stats)0);
+	grpObj->SetL3Polarity(l3Polarity);
+	grpObj->SetDipolePolarity(dipolePolarity);
 
 	delete row;
 	row = 0;
@@ -1681,6 +1685,42 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 			return -15;
 		}
 	
+
+	// Receive list of GDCs for this run
+	sqlQuery.Form("SELECT GDC FROM logbook_stats_GDC WHERE run = %d", run);
+	result = server->Query(sqlQuery);
+	if (!result)
+		{
+			Printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
+			return -24;
+		}
+	
+	if (result->GetRowCount() == 0)
+		{
+			Printf("ERROR: Run %d not found in logbook_stats_GDC", run);
+			delete result;
+			return -25;
+		}
+	
+	row = result->Next();
+	if (!row)
+		{
+			Printf("ERROR: Could not receive logbook_stats_GDC data from run %d", run);
+			delete result;
+			return -26;
+		}
+	
+	// For the moment take the first GDC in the list
+	gdc = row->GetField(0);
+	
+	delete row;
+	row = 0;
+	
+	delete result;
+	result = 0;
+	
+	Printf("Found GDC: %s", gdc.Data());
+
 	// get last run with same run type that was already processed by the SHUTTLE
 	
 	sqlQuery.Form("SELECT max(logbook.run) FROM logbook LEFT JOIN logbook_shuttle ON logbook_shuttle.run = logbook.run WHERE run_type = '%s' AND shuttle_done = 1", runType.Data());

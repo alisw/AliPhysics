@@ -21,28 +21,27 @@ UInt_t onlineReco(const char* param = "listen",const char *recMacroPath = "$ALIC
   }
 
   if (run > 0) {
-    TString gdcList;
-    if (grp(run) > 0) {
+    TString gdc;
+    if (grp(run,gdc) > 0) {
 
       // "t" stores the token on this disk, otherwise the alien connection is not thread/process-safe
       TGrid::Connect("alien://", 0, 0, "t");
 
-      TObjArray *gdcs = gdcList.Tokenize(" ");
-      Int_t ngdcs = tokens->GetEntriesFast();
-      if (ngdcs > 0) {
+      if (!gdc.IsNull()) {
 
-	TString dataSource = ((TObjString*)gdcs->At(0))->String();
+	TString dataSource = gdc;
 	dataSource.Prepend("mem://@");
-	datasource.Append(":");
+	dataSource.Append(":");
 
 	// Setting CDB
 	AliCDBManager * man = AliCDBManager::Instance();
-	man->SetDefaultStorage("raw://");
+	//	man->SetDefaultStorage("raw://");
+	man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 	man->SetSpecificStorage("GRP/GRP/Data",
 			      Form("local://%s",gSystem->pwd()));
 	man->SetSpecificStorage("GRP/CTP/Config",
 			      Form("local://%s",gSystem->pwd()));
-	man->Lock();
+	man->SetLock(kTRUE);
 
 	gSystem->mkdir(Form("run%d",run));
 	gSystem->cd(Form("run%d",run));
@@ -66,11 +65,11 @@ UInt_t onlineReco(const char* param = "listen",const char *recMacroPath = "$ALIC
 
 }
 
-Int_t grp(UInt_t run, TString &gdcList) {
+Int_t grp(UInt_t run, TString &gdc) {
 
   Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(run, "aldaqdb", 0, "LOGBOOK", "logbook", "alice",
 							    Form("local://%s",gSystem->pwd()),
-							    gdcList);
+							    gdc);
   if(ret>0) cout << "Last run of the same type is: " << ret << endl;
   else if(ret==0) cout << "No previous run of the same type found" << endl;
   else if(ret<0) cout << "Error code while retrieving GRP parameters returned: " << ret << endl;
