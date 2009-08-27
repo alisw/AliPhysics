@@ -3,7 +3,7 @@
 SRCS =  AliFastJetFinder.cxx AliFastJetHeaderV1.cxx AliFastJetInput.cxx AliJetBkg.cxx\
         AliSISConeJetFinder.cxx AliSISConeJetHeader.cxx
 ifneq ($(FASTJET_ROOT),)
-        EINCLUDE += $(FASTJET)_ROOT/include		
+        EINCLUDE += $(FASTJET_ROOT)/include		
 else	
 	FASTJET_ROOT=$(ALICE_ROOT)/JETAN
         EINCLUDE += $(FASTJET_ROOT)/fastjet		
