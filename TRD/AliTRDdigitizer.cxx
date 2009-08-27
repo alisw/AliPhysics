@@ -192,7 +192,7 @@ AliTRDdigitizer::~AliTRDdigitizer()
   }
 
   if (fSDigitsManager) {
-    delete fSDigitsManager;
+    // s-digitsmanager will be deleted via list
     fSDigitsManager     = 0;
   }
 
