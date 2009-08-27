@@ -1736,7 +1736,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   if (fRequireSteeringBlocks) bSkipDataProcessing=0;
 
   // increment CTP trigger counters if available
-  if (fpCTPData) fpCTPData->Increment(trigData);
+  if (fpCTPData && IsDataEvent()) fpCTPData->Increment(trigData);
 
   AliHLTComponentBlockDataList blockData;
   if (iResult>=0 && !bSkipDataProcessing)
