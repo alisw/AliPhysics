@@ -806,11 +806,17 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       
       if (TMath::Abs(xt)<hwSSD+0.01)
       if (TMath::Abs(zt)<hlSSD+0.01*(neg[j].GetNd()+pos[i].GetNd())) {
-	negativepair[i*10+cnegative[i]] =j;  //index
-	positivepair[j*10+cpositive[j]] =i;
-	cnegative[i]++;  //counters
-	cpositive[j]++;	
-	fgPairs[i*nn+j]=100;
+	Int_t in = i*10+cnegative[i];
+	Int_t ip = j*10+cpositive[j];
+	if ((in < 10*np) && (ip < 10*nn)) {
+	  negativepair[in] =j;  //index
+	  positivepair[ip] =i;
+	  cnegative[i]++;  //counters
+	  cpositive[j]++;	
+	  fgPairs[i*nn+j]=100;
+	}
+	else
+	  AliError(Form("Index out of range: ip=%d, in=%d",ip,in));
       }
     }
   }
@@ -835,11 +841,17 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	// tag 1Dcluster (eventually will produce low quality recpoint)
 	if (cnegative[i]==0) pos[i].SetNd(100);  // not available pair
 	if (cpositive[j]==0) neg[j].SetNd(100);  // not available pair
-	negativepair[i*10+cnegative[i]] =j;  //index
-	positivepair[j*10+cpositive[j]] =i;
-	cnegative[i]++;  //counters
-	cpositive[j]++;	
-	fgPairs[i*nn+j]=100;
+	Int_t in = i*10+cnegative[i];
+	Int_t ip = j*10+cpositive[j];
+	if ((in < 10*np) && (ip < 10*nn)) {
+	  negativepair[in] =j;  //index
+	  positivepair[ip] =i;
+	  cnegative[i]++;  //counters
+	  cpositive[j]++;	
+	  fgPairs[i*nn+j]=100;
+	}
+	else
+	  AliError(Form("Index out of range: ip=%d, in=%d",ip,in));
       }
     }
   }
