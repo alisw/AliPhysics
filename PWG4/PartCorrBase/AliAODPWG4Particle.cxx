@@ -33,7 +33,7 @@ ClassImp(AliAODPWG4Particle)
 AliAODPWG4Particle::AliAODPWG4Particle() :
 AliVParticle(),
 fMomentum(0),fPdg(-1), fTag(0), fBtag(0), fLabel(-1), fCaloLabel(), fTrackLabel(),
-fDetector(""), fDisp(0), fTof(0), fCharged(0), fBadDist(0)
+fDetector(""), fDisp(0), fTof(0), fCharged(0), fBadDist(0), fInputFileIndex(0)
 {
   // constructor
   fCaloLabel [0] = -1;
@@ -46,7 +46,7 @@ fDetector(""), fDisp(0), fTof(0), fCharged(0), fBadDist(0)
 AliAODPWG4Particle::AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Double_t e):
   AliVParticle(),
   fMomentum(0),fPdg(-1), fTag(0), fBtag(0), fLabel(-1),fCaloLabel(), fTrackLabel(),
-  fDetector(""), fDisp(0),fTof(0),fCharged(0), fBadDist(0)
+  fDetector(""), fDisp(0),fTof(0),fCharged(0), fBadDist(0), fInputFileIndex(0)
 {
   // constructor
   fMomentum = new TLorentzVector(px, py, pz, e);
@@ -61,7 +61,7 @@ AliAODPWG4Particle::AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Do
 AliAODPWG4Particle::AliAODPWG4Particle(TLorentzVector & p):
   AliVParticle(),
   fMomentum(0),fPdg(-1), fTag(0), fBtag(0), fLabel(-1),fCaloLabel(), fTrackLabel(),
-  fDetector(""), fDisp(0),fTof(0),fCharged(0),fBadDist(0)
+  fDetector(""), fDisp(0),fTof(0),fCharged(0),fBadDist(0), fInputFileIndex(0)
 {
   // constructor
   fMomentum = new TLorentzVector(p);
@@ -85,8 +85,8 @@ AliAODPWG4Particle::AliAODPWG4Particle(const AliAODPWG4Particle& part) :
   AliVParticle(part),
   fMomentum(0), fPdg(part.fPdg), fTag(part.fTag), fBtag(part.fBtag), fLabel(part.fLabel), 
   fCaloLabel(), fTrackLabel(), fDetector(part.fDetector),fDisp(part.fDisp), 
-  fTof(part.fTof), fCharged(part.fCharged),  fBadDist(part.fBadDist)
-    
+  fTof(part.fTof), fCharged(part.fCharged),  fBadDist(part.fBadDist), 
+  fInputFileIndex(part.fInputFileIndex)
 {
   // Copy constructor
   fMomentum = new TLorentzVector(*part.fMomentum);
@@ -118,7 +118,8 @@ AliAODPWG4Particle& AliAODPWG4Particle::operator=(const AliAODPWG4Particle& part
     fTof      = part.fTof; 
     fCharged  = part.fCharged; 
     fBadDist  = part.fBadDist;
-
+	fInputFileIndex =  part.fInputFileIndex;
+	  
     if (fMomentum ) delete fMomentum;	
     fMomentum = new TLorentzVector(*part.fMomentum);
   }
@@ -165,6 +166,7 @@ void AliAODPWG4Particle::Print(Option_t* /*option*/) const
   printf("Tag       : %d\n",fTag); 
   printf("Btag      : %d\n",fBtag);  
   printf("Dist. to bad channel : %d\n",fBadDist);  
+  printf("Input File Index : %d\n",fInputFileIndex);  
   printf("Detector  : %s\n",fDetector.Data());
   
 }

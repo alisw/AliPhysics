@@ -16,10 +16,14 @@
 // --- ROOT system ---
 class TH2F ;
 class TString ;
+class TNtuple ;
+class TH3F;
 
 // --- ANALYSIS system ---
 #include "AliAnaPartCorrBaseClass.h"
 
+class AliCaloTrackReader;
+class AliAODTrack;
 class TList ;
 
 class AliAnaElectron : public AliAnaPartCorrBaseClass {
@@ -39,16 +43,22 @@ public:
   
   void MakeAnalysisFillHistograms() ; 
   
+  //B-tagging
+  Double_t ComputeSignDca(AliAODTrack *track, AliAODTrack *track2 , float cut1);
+  Int_t GetBtag(AliAODTrack * tr);
+
   void Print(const Option_t * opt)const;
   
   TString GetCalorimeter()   const {return fCalorimeter ; }
   Double_t GetpOverEmin()   const {return fpOverEmin ; }
   Double_t GetpOverEmax()   const {return fpOverEmax ; }
+  Bool_t GetWriteNtuple()   const {return fWriteNtuple ; }
 
   void SetCalorimeter(TString det)    {fCalorimeter = det ; }
   void SetpOverEmin(Double_t min)     {fpOverEmin = min ; }
   void SetpOverEmax(Double_t max)     {fpOverEmax = max ; }
   void SetResidualCut(Double_t cut)     {fResidualCut = cut ; }
+  void SetWriteNtuple(Bool_t val)     {fWriteNtuple = val ; }
 
   void InitParameters();
 
@@ -63,6 +73,20 @@ public:
   Double_t fpOverEmax;    //! Maximum p/E value for Electrons
   Double_t fResidualCut;  //! Track-cluster matching distance
 
+  //B-tagging
+  Float_t fDrCut;       //max dR
+  Float_t fPairDcaCut;  //max pair-DCA
+  Float_t fDecayLenCut; //max 3d-decaylength
+  Float_t fImpactCut;   //max track impact param
+  Float_t fAssocPtCut;  //min associated pt
+  Float_t fMassCut;     //min Minv cut
+  Float_t fSdcaCut;     //min signDca
+  Int_t   fITSCut;      //min ITS hits (both)
+
+  Bool_t  fWriteNtuple; //flag for filling ntuple or not
+
+  TNtuple* fEleNtuple; //! testing ntuple
+
   //matching checks   
   TH1F *fh1pOverE;     //! p/E for track-cluster matches
   TH1F *fh1dR;         //! distance between projected track and cluster
@@ -73,14 +97,11 @@ public:
   TH2F *fh2dEtadPhiMatched;   //! DeltaEta vs. DeltaPhi of matched
 				//! track/cluster pairs
   TH2F *fh2dEtadPhiUnmatched;   //! DeltaEta vs. DeltaPhi of unmatched track/cluster pairs
-  TH2F *fh2OuterPtVsExtrapPt;
-  TH2F *fh2OuterPhiVsExtrapPhi;
-  TH2F *fh2OuterEtaVsExtrapEta;
 
-  TH2F* fh2TrackPVsClusterE;
-  TH2F* fh2TrackPtVsClusterE;
-  TH2F* fh2TrackPhiVsClusterPhi;
-  TH2F* fh2TrackEtaVsClusterEta;
+  TH2F* fh2TrackPVsClusterE;     //!track momentum vs. cluster energy
+  TH2F* fh2TrackPtVsClusterE;    //!track pt vs. cluster energy
+  TH2F* fh2TrackPhiVsClusterPhi; //!track phi vs. cluster phi
+  TH2F* fh2TrackEtaVsClusterEta; //!track eta vs. cluster eta
 
   //Reconstructed
   TH1F * fhPtElectron;  //! Number of identified electron vs transverse momentum 
@@ -123,50 +144,15 @@ public:
   TH2F * fhPhiUnknown; //! Azimuthal angle of unknown  electron vs transverse momentum 
   TH2F * fhEtaUnknown; //! Pseudorapidity of unknown electron vs tranvserse momentum 
 
-  /*
+  //B-tagging
+  TH2F * fhBtagCut1; //! B-tagging result for cut1 (minv>1.0)
+  TH2F * fhBtagCut2; //! B-tagging result for cut2 (minv>1.5)
+  TH2F * fhBtagCut3; //! B-tagging result for cut3 (minv>1.8)
+
   //MC
-  TH1F * fhMCPtElectron;   //! pT of MC electrons 
-  TH2F * fhMCPhiElectron;  //! Phi of MC electrons
-  TH2F * fhMCEtaElectron;  //! eta of MC electrons
+  TNtuple *fMCEleNtuple; //! Ntuple of MC electrons
 
-  TH1F * fhMCPtConversion;  //! Number of TRACKABLE MC conversion electron vs transverse momentum 
-  TH2F * fhMCPhiConversion; //! Azimuthal angle of TRACKABLE MC conversion  electron vs transverse momentum 
-  TH2F * fhMCEtaConversion; //! Pseudorapidity of TRACKABLE MC conversion electron vs tranvserse momentum 
-
-  TH1F * fhMCPtBottom;  //! Number of MC bottom electron vs transverse momentum 
-  TH2F * fhMCPhiBottom; //! Azimuthal angle of MC bottom  electron vs transverse momentum 
-  TH2F * fhMCEtaBottom; //! Pseudorapidity of MC bottom electron vs tranvserse momentum 
-
-  TH1F * fhMCPtCharm;  //! Number of MC charm electron vs transverse momentum 
-  TH2F * fhMCPhiCharm; //! Azimuthal angle of MC charm  electron vs transverse momentum 
-  TH2F * fhMCEtaCharm; //! Pseudorapidity of MC charm electron vs tranvserse momentum 
-
-  TH1F * fhMCPtCFromB;  //! Number of MC charm from bottom electron vs transverse momentum 
-  TH2F * fhMCPhiCFromB; //! Azimuthal angle of MC charm from bottom electron vs transverse momentum
-  TH2F * fhMCEtaCFromB; //! Pseudorapidity of MC charm from bottom electron vs tranvserse momentum 
-
-  TH1F * fhMCPtDalitz;  //! Number of MC dalitz electron vs transverse momentum 
-  TH2F * fhMCPhiDalitz; //! Azimuthal angle of MC dalitz  electron vs transverse momentum 
-  TH2F * fhMCEtaDalitz; //! Pseudorapidity of MC dalitz electron vs tranvserse momentum 
-
-  TH1F * fhMCPtWDecay;  //! Number of MC W-boson electron vs transverse momentum 
-  TH2F * fhMCPhiWDecay; //! Azimuthal angle of MC W-boson  electron vs transverse momentum 
-  TH2F * fhMCEtaWDecay; //! Pseudorapidity of MC W-boson electron vs tranvserse momentum 
-  		
-  TH1F * fhMCPtZDecay;  //! Number of MC Z-boson electron vs transverse momentum 
-  TH2F * fhMCPhiZDecay; //! Azimuthal angle of MC Z-boson  electron vs transverse momentum 
-  TH2F * fhMCEtaZDecay; //! Pseudorapidity of MC Z-boson electron vs tranvserse momentum 
-
-  TH1F * fhMCPtPrompt;  //! Number of prompt MC electron vs transverse momentum 
-  TH2F * fhMCPhiPrompt; //! Azimuthal angle of prompt MC electron vs transverse momentum 
-  TH2F * fhMCEtaPrompt; //! Pseudorapidity of prompt MC electron vs tranvserse momentum 
-
-  TH1F * fhMCPtUnknown;  //! Number of unknown MC electron vs transverse momentum 
-  TH2F * fhMCPhiUnknown; //! Azimuthal angle of unknown MC electron vs transverse momentum 
-  TH2F * fhMCEtaUnknown; //! Pseudorapidity of unknown MC electron vs tranvserse momentum 
-  */
-
-  ClassDef(AliAnaElectron,1)
+  ClassDef(AliAnaElectron,2)
 
 } ;
  

@@ -455,16 +455,15 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       if(! in ) continue ;
     }
 	
-	//Input from second AOD?
-	Int_t input = 0;
-	if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) input = 1;
-	else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;
 
 	//Create AOD for analysis
     AliAODPWG4Particle aodph = AliAODPWG4Particle(mom);
 	Int_t label = calo->GetLabel(0);
-	if(input == 1) label+=GetLabelShift();
     aodph.SetLabel(label);
+	//Input from second AOD?
+	if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) aodph.SetInputFileIndex(1);
+	else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) aodph.SetInputFileIndex(1);
+
     //printf("Index %d, Id %d\n",icalo, calo->GetID());
     //Set the indeces of the original caloclusters  
     aodph.SetCaloLabel(calo->GetID(),-1);
@@ -523,7 +522,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //Check origin of the candidates
     if(IsDataMC()){
 		
-      aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetReader(), input));
+      aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetReader(), aodph.GetInputFileIndex()));
       if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
     }//Work with stack also   
     
@@ -692,7 +691,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 	}
 	else if(GetReader()->ReadAODMCParticles()){
 		//Check which is the input
-		if(label < GetLabelShift()){
+		if(ph->GetInputFileIndex() == 0){
 			if(!mcparticles0) continue;
 			if(label >=  mcparticles0->GetEntriesFast()) {
 				if(GetDebug() > 2)  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", 
@@ -705,7 +704,6 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 		}
 		else {//Second input
 			if(!mcparticles1) continue;
-			label-=GetLabelShift();
 			if(label >=  mcparticles1->GetEntriesFast()) {
 				if(GetDebug() > 2)  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", 
 										   label, mcparticles1->GetEntriesFast());

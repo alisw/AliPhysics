@@ -65,20 +65,22 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual Bool_t  GetTOFBit(void)        const {return fTof ; }
   virtual Bool_t  GetChargedBit(void)    const {return fCharged ; }
   virtual Int_t   DistToBad()            const {return fBadDist ; } 
-  
+  virtual Int_t   GetInputFileIndex()    const {return fInputFileIndex ; }
+ 
   virtual void SetLabel(Int_t l)         { fLabel = l ; }
   virtual void SetCaloLabel (Int_t a, Int_t b) { fCaloLabel [0] = a; fCaloLabel [1] = b  ; }
   virtual void SetTrackLabel(Int_t a, Int_t b) { fTrackLabel[0] = a; fTrackLabel[1] = b  ; }
   
-  virtual void SetPdg(Int_t pdg)        { fPdg = pdg ; }
-  virtual void SetTag(Int_t tag)        { fTag = tag ; }
-  virtual void SetBtag(Int_t tag)       { fBtag = tag ; }
-  virtual void SetDetector(TString d)   { fDetector = d ; }
-  virtual void SetDispBit(Bool_t disp)  { fDisp = disp ; } 
-  virtual void SetTOFBit(Bool_t tof)    { fTof = tof ;} 
-  virtual void SetChargedBit(Bool_t ch) { fCharged = ch ; }
-  virtual void SetDistToBad(Int_t dist) { fBadDist=dist ;} 
-  
+  virtual void SetPdg(Int_t pdg)         { fPdg = pdg ; }
+  virtual void SetTag(Int_t tag)         { fTag = tag ; }
+  virtual void SetBtag(Int_t tag)        { fBtag = tag ; }
+  virtual void SetDetector(TString d)    { fDetector = d ; }
+  virtual void SetDispBit(Bool_t disp)   { fDisp = disp ; } 
+  virtual void SetTOFBit(Bool_t tof)     { fTof = tof ;} 
+  virtual void SetChargedBit(Bool_t ch)  { fCharged = ch ; }
+  virtual void SetDistToBad(Int_t dist)  { fBadDist=dist ;} 
+  virtual void SetInputFileIndex(Int_t i){ fInputFileIndex = i;}
+	
   TLorentzVector * Momentum() const                { return fMomentum ; }
   virtual void     SetMomentum(TLorentzVector *lv) { fMomentum = lv ; }
   
@@ -93,11 +95,13 @@ class AliAODPWG4Particle : public AliVParticle {
   Int_t      fCaloLabel[2];  // CaloCluster index, 1 for photons, 2 for pi0.
   Int_t      fTrackLabel[2]; // Track lable, 1 for pions, 2 for conversion photons 
   TString    fDetector ;     // Detector where particle was measured.
-  Bool_t     fDisp ;         //Dispersion bit
-  Bool_t     fTof ;          //TOF bit
-  Bool_t     fCharged ;      //Charged bit
-  Int_t      fBadDist ;      //Distance to bad module in module units
-  
+  Bool_t     fDisp ;         // Dispersion bit
+  Bool_t     fTof ;          // TOF bit
+  Bool_t     fCharged ;      // Charged bit
+  Int_t      fBadDist ;      // Distance to bad module in module units
+  Int_t      fInputFileIndex;// 0, standard input, 1 first input added. 
+	                         // Only possible one for now, more in future?
+	
   ClassDef(AliAODPWG4Particle,2);
 };
 
