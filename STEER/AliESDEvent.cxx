@@ -1439,7 +1439,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it
-    fESDObjects->SetOwner(kFALSE);
+    fESDObjects->SetOwner(kTRUE);
   }
 }
 

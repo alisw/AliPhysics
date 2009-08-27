@@ -90,11 +90,7 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
     SwitchOnBranches();
     
     // Get pointer to AOD event
-    if (fEvent) {
-      delete fEvent;
-      fEvent = 0;
-    }
-    fEvent = new AliAODEvent();
+    if (!fEvent) fEvent = new AliAODEvent();
 
     fEvent->ReadFromTree(fTree);
     return kTRUE;

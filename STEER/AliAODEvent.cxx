@@ -442,8 +442,6 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
     TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("AODObjectsConnectedToTree"));
     if (connectedList && (strcmp(opt, "reconnect"))) {
 	// If connected use the connected list of objects
-	printf("Delete and reconnect \n");
-	
 	fAODObjects->Delete();
 	fAODObjects = connectedList;
 	GetStdContent(); 
@@ -453,12 +451,11 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
     // Connect to tree
     // prevent a memory leak when reading back the TList
     if (!(strcmp(opt, "reconnect"))) fAODObjects->Delete();
-    delete fAODObjects;
-    fAODObjects = 0;
+
     // create a new TList from the UserInfo TList... 
     // copy constructor does not work...
     fAODObjects = (TList*)(aodEvent->GetList()->Clone());
-    fAODObjects->SetOwner(kFALSE);
+    fAODObjects->SetOwner(kTRUE);
     if(fAODObjects->GetEntries()<kAODListN){
       printf("%s %d AliAODEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",
 	     (char*)__FILE__,__LINE__,fAODObjects->GetEntries(),kAODListN);
@@ -513,7 +510,7 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it
-    fAODObjects->SetOwner(kFALSE);
+    fAODObjects->SetOwner(kTRUE);
     fAODObjects->SetName("AODObjectsConnectedToTree");
     // we are not owner of the list objects 
     // must not delete it
@@ -533,7 +530,7 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it
-    fAODObjects->SetOwner(kFALSE);
+    fAODObjects->SetOwner(kTRUE);
   }
 }
 
