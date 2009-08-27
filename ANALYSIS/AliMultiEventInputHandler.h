@@ -29,7 +29,7 @@ class AliMultiEventInputHandler : public AliInputEventHandler {
     Bool_t IsBufferReady()           const {return (fNBuffered >= (fBufferSize -1));}
     Bool_t IsFreshBuffer()           const {return (fIndex == (fBufferSize - 1));}
     AliVEventPool           *GetEventPool()      const {return fEventPool;}
-    virtual AliVEvent       *GetEvent()          const {return 0;}
+    virtual AliVEvent       *GetEvent()          const {return GetLatestEvent();}
     virtual AliVEvent       *GetEvent(Int_t iev) const;
     AliVEvent               *GetLatestEvent()    const {return fEventBuffer[fIndex];}
     // From the interface
