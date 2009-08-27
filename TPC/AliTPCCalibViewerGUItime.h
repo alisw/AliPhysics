@@ -49,6 +49,7 @@ class TTree;
 class TGraph;
 
 class AliTPCCalibViewerGUI;
+class AliTPCConfigParser;
 
 
 
@@ -59,15 +60,15 @@ public:
   
   static TObjArray* ShowGUI(const char* fileName = 0);             // initialize and show GUI standalone
 
-  void DrawGUI(const TGWindow *p, UInt_t w, UInt_t h);
+  void DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h);
   
   void UseFile(const char* fileName);
-  void Reload();
-  void SetInitialValues();
+  void Reload(Int_t first=1);
 
   
   void SetCalibViewerGUI(AliTPCCalibViewerGUI *gui) {fCalibViewerGUI=gui;}
   void SetCalibViewerGUItab(TGTabElement *tab) {fCalibViewerGUItab=tab;}
+  void SetConfigFile(const char* file) {fConfigFile=file;}
   const char* GetDrawString();
   const char* GetCutString();
   //Slots
@@ -77,8 +78,9 @@ public:
   void DoCustomCutsDraw();
   void DoParLimitChange();
   void DoNewSelection();                    // decides whether to redraw if user makes another selection
+  void DoChangeSelectionList() {Reload(0);}
   void HandleButtonsDrawSel(Int_t id = -1);              
-  void MouseMove(Int_t event, Int_t x, Int_t y, TObject *selected);
+  void MouseMove(Int_t event, Int_t x, Int_t y, TObject */*selected*/);
   
 private:
   TFile*  fFile;                          //file that keeps the tree
@@ -90,6 +92,8 @@ private:
   Int_t   fCurrentRunDetails;             //run number for wich details are currently shown
   TString fOutputCacheDir;                //output cache diretory for AliTPCCalibViewerGUI trees, created on the fly
   TString fDrawString;                    //current draw string
+  TString fConfigFile;                    //configuration file keeping active branches and branch descriptions
+  AliTPCConfigParser *fConfigParser;      //configuration parser
   Bool_t  fIsCustomDraw;                  //if custom draw string is selected
   TVectorD fRunNumbers;                   //run numbers of current selection
   TVectorD fTimeStamps;                   //timr stamps of current selection
@@ -109,10 +113,12 @@ private:
   TGRadioButton       *fRadioXrun;          // Radio button x-variable: run
   TGRadioButton       *fRadioXtime;         // Radio button x-variable: time
   TGListBox           *fListVariables;      // listbox with possible variables
-  TGComboBox          *fComboRunType;       // parameter number
-  TGLabel             *fLblRunType;         // parameter name
+  TGComboBox          *fComboRunType;       // run type selection box
+  TGLabel             *fLblRunType;         // run type label
   TGNumberEntry       *fNmbPar;             // parameter number
   TGLabel             *fLblPar;             // parameter name
+  TGListBox           *fListCalibType;      // calibration type selection box
+  TGGroupFrame        *fContCalibType;      // calibration type label
   //content centre
   TGCompositeFrame    *fContCenter;         // container for GUI elements at the center
   TRootEmbeddedCanvas *fCanvMain;           // main drawing canvas
@@ -137,9 +143,15 @@ private:
   TGComboBox          *fComboCustomCuts;    // combo box custom cuts string
   
   enum { kRadioXhist=10, kRadioXrun=11, kRadioXtime=12 };
+  enum { kBranchOnOff=0, kBranchTitle=1, kCalibType=2, kParamNames=3 };
   
   void UpdateParLimits();
+  void UpdateParName();
   void SetGuiTree(Int_t run);
+  void FillRunTypes();
+  void FillCalibTypes();
+  void SetInitialValues();
+  const char* SubstituteUnderscores(const char* in);
   
   AliTPCCalibViewerGUItime(const AliTPCCalibViewerGUItime &v);
   AliTPCCalibViewerGUItime &operator = (const AliTPCCalibViewerGUItime &v);         // assignment operator

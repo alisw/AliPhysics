@@ -223,10 +223,6 @@ int main(int argc, char **argv) {
       // get the run number
       runNb = event->eventRunNb;
       //  Pedestal calibration
-//       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-//       if ( fastDecoding ) calibPedestal.ProcessEventFast(rawReader);
-//       else calibPedestal.ProcessEvent(rawReader);
-//       delete rawReader;
       calibPedestal.ProcessEvent(event);
 
       /* free resources */

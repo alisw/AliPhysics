@@ -30,6 +30,7 @@
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TObjString.h>
+#include <TSystem.h>
 #include <TVector.h>
 #include <TH1.h>
 #include <TCut.h>
@@ -58,8 +59,10 @@
 #include <TGString.h>
 
 //AliRoot includes
+#include <AliLog.h>
 #include "AliTPCCalibViewerGUI.h"
 #include "AliTPCcalibDB.h"
+#include "AliTPCConfigParser.h"
 
 #include "AliTPCCalibViewerGUItime.h"
 
@@ -76,6 +79,8 @@ TGCompositeFrame(p,w,h),
   fCurrentRunDetails(-1),
   fOutputCacheDir("/tmp"),
   fDrawString(""),
+  fConfigFile("$ALICE_ROOT/TPC/CalibMacros/calibVarDescription.txt"),
+  fConfigParser(0x0),
   fIsCustomDraw(kFALSE),
   fRunNumbers(10),
   fTimeStamps(10),
@@ -98,6 +103,8 @@ TGCompositeFrame(p,w,h),
   fLblRunType(0x0),
   fNmbPar(0x0),
   fLblPar(0x0),
+  fListCalibType(0x0),
+  fContCalibType(0x0),
   //content centre
   fContCenter(0x0),
   fCanvMain(0x0),
@@ -135,7 +142,7 @@ AliTPCCalibViewerGUItime::~AliTPCCalibViewerGUItime(){
 
 }
 //______________________________________________________________________________
-void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
+void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
    //
    // draw the GUI
    //
@@ -144,7 +151,6 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
    // ======================================================================
   
   SetCleanup(kDeepCleanup);
-  p = p; // to avoid compiler warnings
   
    // *****************************************************************************
    // ************************* content of this MainFrame *************************
@@ -220,7 +226,8 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
   fContDrawSel->AddFrame(fListVariables, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
   fListVariables->Connect("Selected(Int_t)", "AliTPCCalibViewerGUItime", this, "DoNewSelection()");
 
-  //-------------------- rynType selection ------------------------
+  
+//-------------------- run type selection ------------------------
   // Parameter label
   fLblRunType = new TGLabel(fContDrawSel, "Run Type:");
   fLblRunType->SetTextJustify(kTextLeft);
@@ -244,6 +251,19 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
   fNmbPar->Connect("ValueSet(Long_t)", "AliTPCCalibViewerGUItime", this, "DoParLimitChange()");
   fNmbPar->SetState(kFALSE);
   
+  //-------------------- calibration type selection ------------------------
+  // label
+  // draw selection group
+  fContCalibType = new TGGroupFrame(fContLeft, "Calib type selection", kVerticalFrame | kFitWidth | kFitHeight);
+  fContLeft->AddFrame(fContCalibType, new TGLayoutHints(kLHintsExpandX , 0, 0, 10, 0));
+    
+    // list of variables
+  fListCalibType = new TGListBox(fContCalibType);
+  fContCalibType->AddFrame(fListCalibType, new TGLayoutHints(kLHintsNormal | kLHintsExpandX , 0, 0, 0, 0));
+  fListCalibType->Connect("Selected(Int_t)", "AliTPCCalibViewerGUItime", this, "DoChangeSelectionList()");
+  fListCalibType->Resize(0,88);
+  fListCalibType->SetMultipleSelections();
+  
   
      // ==========================================================================
    // ************************* content of fContCenter *************************
@@ -254,7 +274,8 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
   fCanvMain->GetCanvas()->Connect("ProcessedEvent(Int_t, Int_t, Int_t, TObject*)", "AliTPCCalibViewerGUItime", this, "MouseMove(Int_t, Int_t, Int_t, TObject*)");
 //   fCanvMain->GetCanvas()->Connect("RangeAxisChanged()", "AliTPCCalibViewerGUItime", this, "GetMinMax()");
   fCanvMain->GetCanvas()->SetToolTipText("The Main_Canvas, here your plots are displayed.");
-  
+  fCanvMain->GetCanvas()->SetRightMargin(0.062);
+  fCanvMain->GetCanvas()->SetLeftMargin(0.15);
   
    // =========================================================================
    // ************************* content of fContRight *************************
@@ -300,7 +321,7 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
   fContValues->AddFrame(fLblValueYVal, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
    // draw button
   fBtnDumpRuns = new TGTextButton(fContRight, "&Dump runs");
-  fContRight->AddFrame(fBtnDumpRuns, new TGLayoutHints(kLHintsExpandX, 10, 10, 0, 0));
+  fContRight->AddFrame(fBtnDumpRuns, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
   fBtnDumpRuns->Connect("Clicked()", "AliTPCCalibViewerGUItime", this, "DoDumpRuns()");
   fBtnDumpRuns->SetToolTipText("Press to dump the run numbers of the current selection.");
   
@@ -341,8 +362,8 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
   fComboCustomCuts->Resize(0, 22);
   fComboCustomCuts->EnableTextInput(kTRUE);
   fContCustomCuts->AddFrame(fComboCustomCuts, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
-  fComboCustomCuts->Connect("ReturnPressed()", "AliTPCCalibViewerGUItime", this, "DoCustomDraw()");
-  fComboCustomCuts->Connect("Selected(Int_t)", "AliTPCCalibViewerGUItime", this, "DoCustomDraw()");
+  fComboCustomCuts->Connect("ReturnPressed()", "AliTPCCalibViewerGUItime", this, "DoCustomCutsDraw()");
+  fComboCustomCuts->Connect("Selected(Int_t)", "AliTPCCalibViewerGUItime", this, "DoCustomCutsDraw()");
 
   SetWindowName("AliTPCCalibViewer GUI - Time");
   MapSubwindows();
@@ -366,32 +387,26 @@ void AliTPCCalibViewerGUItime::UseFile(const char* fileName) {
   TDirectory *save=gDirectory;
   if (fFile) delete fFile;
   fFile = TFile::Open(fileName);
+  if (!fFile) return;
+  if (!fFile->IsOpen()) return;
   fTree=(TTree*)fFile->Get("dcs");
+  if (!fTree){
+    AliError(Form("Could not get tree from file '%s'",fileName));
+    return;
+  }
   save->cd();
+  if (fConfigParser) delete fConfigParser;
+  fConfigParser=new AliTPCConfigParser(gSystem->ExpandPathName(fConfigFile.Data()));
   Reload();
 }
 //______________________________________________________________________________
-void AliTPCCalibViewerGUItime::Reload(){
+void AliTPCCalibViewerGUItime::FillRunTypes()
+{
   //
-  // reload the gui contents, this is needed after the input tree has changed
+  //Loop over the tree entries and fill the run types
   //
-
-  //reset variables list
-  fListVariables->RemoveAll();
-  
-  if ( !fTree ) return;
-  TObjArray *branchList = fTree->GetListOfBranches();
-  if ( !branchList ) return;
-  TIter nextBranch(branchList);
+  if (!fTree) return;
   Int_t id=0;
-  TObject *objBranch=0;
-  while ( (objBranch=nextBranch()) ){
-    TString branchName(objBranch->GetName());
-    if (branchName == "run" || branchName == "time" || branchName == "runType.") continue;
-    fListVariables->AddEntry(branchName.Data(),id++);
-  }
-  //create entris for run types
-  id=0;
   fComboRunType->RemoveAll();
   fComboRunType->AddEntry("ALL",id++);
   fComboRunType->Select(0,kFALSE);
@@ -411,24 +426,131 @@ void AliTPCCalibViewerGUItime::Reload(){
   fTree->SetBranchStatus("*",1);
 }
 //______________________________________________________________________________
+void AliTPCCalibViewerGUItime::FillCalibTypes()
+{
+  //
+  // loop over configuration and fill calibration types
+  //
+  if (!fConfigParser) return;
+  Int_t id=0;
+  fListCalibType->RemoveAll();
+  TObject *o=0x0;
+  fConfigParser->ResetIter();
+  TString type;
+  while ( (o=fConfigParser->NextKey()) ){
+    type=fConfigParser->GetData(o,kCalibType);
+    //remove whitespcaces
+    type.Remove(TString::kBoth,' ');
+    type.Remove(TString::kBoth,'\t');
+    if (type.IsNull()) type="UNSPECIFIED";
+//     printf("CalibType: '%s'\n",type.Data());
+    if (!fListCalibType->FindEntry(type.Data())) {
+      fListCalibType->AddEntry(type,id);
+      fListCalibType->Select(id++);
+    }
+  }
+  //add type for unspecified calibration type
+  type="UNSPECIFIED";
+  if (!fListCalibType->FindEntry(type.Data())) {
+    fListCalibType->AddEntry(SubstituteUnderscores(type.Data()),id);
+    fListCalibType->Select(id++);
+  }
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItime::Reload(Int_t first){
+  //
+  // reload the gui contents, this is needed after the input tree has changed
+  //
+
+  if ( !fTree ) return;
+  //in case of the first call create run type and calibration type entries
+  if (first){
+    FillRunTypes();
+    FillCalibTypes();
+  }
+  //activate all branches
+  fTree->SetBranchStatus("*",1);
+  //reset variables list
+  fListVariables->RemoveAll();
+  //get selected calibration types
+  TList calibTypes;
+  fListCalibType->GetSelectedEntries(&calibTypes);
+  
+  TObjArray *branchList = fTree->GetListOfBranches();
+  if ( !branchList ) return;
+  TIter nextBranch(branchList);
+  Int_t idCount=0,id=0;
+  TObject *objBranch=0;
+  while ( (objBranch=nextBranch()) ){
+    TString branchName(objBranch->GetName());
+    TString branchTitle(objBranch->GetName());
+    if (branchName == "run" || branchName == "time" || branchName == "runType.") continue;
+    Bool_t active=kTRUE;
+    TString calibType="UNSPECIFIED";
+    if (fConfigParser){
+      const TObject *key=(*fConfigParser)(branchName.Data());
+      if (key){
+        //test if branch is active
+        active=fConfigParser->GetValue(branchName.Data(),kBranchOnOff);
+        id=(*fConfigParser)()->IndexOf(key);
+        branchTitle=fConfigParser->GetData(key,kBranchTitle);
+        calibType=fConfigParser->GetData(key,kCalibType);
+      }
+      else{
+        id=1000+idCount;
+      }
+    } else {
+      id=idCount;
+    }
+    //check if branch is in selected calibration types
+    //if not, don't show it in the list and deactivate the branch.
+    Bool_t calibActive=kFALSE;
+    TIter nextCalib(&calibTypes);
+    TObject *objCalib=0;
+    while (objCalib=nextCalib())
+      if (calibType==objCalib->GetTitle()) calibActive=kTRUE;
+    active&=calibActive;
+    if (!active){
+      TString s=branchName;
+      if (branchName.EndsWith(".")) s+="*";
+      fTree->SetBranchStatus(s.Data(),0);
+      continue;
+    }
+    fListVariables->AddEntry(SubstituteUnderscores(branchTitle.Data()),id);
+    ++idCount;
+  }
+  //trick to display modifications
+  if (!first){
+    fListVariables->Resize(fListVariables->GetWidth()-1, fListVariables->GetHeight());
+    fListVariables->Resize(fListVariables->GetWidth()+1, fListVariables->GetHeight());
+  }
+}
+//______________________________________________________________________________
 const char* AliTPCCalibViewerGUItime::GetDrawString(){
   //
   // create draw string for ttree by combining the user requestsa
   //
   
   TString selectedVariable="";
-  if (fListVariables->GetSelectedEntry()) selectedVariable = fListVariables->GetSelectedEntry()->GetTitle();
+  Int_t id=-1;
+  if (!fListVariables->GetSelectedEntry()) return "";
+  selectedVariable = fListVariables->GetSelectedEntry()->GetTitle();
+  id=fListVariables->GetSelectedEntry()->EntryId();
+//   printf("id: %d\n",id);
+  TString branchName=selectedVariable;
+  const TObject *key=(*fConfigParser)(id);
+  if (key) branchName=(*fConfigParser)(id)->GetName();
   //treat case of TVector
-  if (selectedVariable.EndsWith(".")){
+  if (branchName.EndsWith(".")){
     Int_t par = (Int_t)(fNmbPar->GetNumber());
-    selectedVariable.Append(Form("fElements[%d]",par));
+    branchName.Append(Form("fElements[%d]",par));
   }
 //   if (fRadioXrun->GetState()==kButtonDown)
 //     selectedVariable.Append(":run");
 //   if (fRadioXtime->GetState()==kButtonDown)
 //     selectedVariable.Append(":time");
   
-  return selectedVariable.Data();
+  return branchName.Data();
 }
 //______________________________________________________________________________
 const char* AliTPCCalibViewerGUItime::GetCutString(){
@@ -482,12 +604,27 @@ void AliTPCCalibViewerGUItime::DoDraw() {
     }
   }else{
     drawGraph=kTRUE;
+    TString yname=fDrawString.Data();
+    if (fConfigParser ){
+      Int_t id=fListVariables->GetSelectedEntry()->EntryId();
+      if ((*fConfigParser)(id)) yname=fConfigParser->GetData((*fConfigParser)(id),kBranchTitle);
+      yname=SubstituteUnderscores(yname.Data());
+      if (fNmbPar->GetButtonUp()->GetState()!=kButtonDisabled){
+        yname+=": ";
+        Int_t par = (Int_t)(fNmbPar->GetNumber());
+        if (fConfigParser && (*fConfigParser)(id)) {
+          TString yparname=fConfigParser->GetData((*fConfigParser)(id),par+kParamNames);
+          yparname=SubstituteUnderscores(yparname);
+          yname+=yparname;
+        }
+      }
+    }
     if (fRadioXrun->GetState()==kButtonDown){
       fValuesX.SetElements(fTree->GetV1());
-      title=Form("%s:Run;Run;%s",fDrawString.Data(),fDrawString.Data());
+      title=Form("%s:Run;Run;%s",fDrawString.Data(),yname.Data());
     } else if (fRadioXtime->GetState()==kButtonDown){
       fValuesX.SetElements(fTree->GetV2());
-      title=Form("%s:Time;Time;%s",fDrawString.Data(),fDrawString.Data());
+      title=Form("%s:Time;Time;%s",fDrawString.Data(),yname.Data());
     } else {
       drawGraph=kFALSE;
     }
@@ -506,8 +643,6 @@ void AliTPCCalibViewerGUItime::DoDraw() {
     fCurrentHist->Draw();
   }
   
-//   fCurrentHist=fTree->GetHistogram();
-//   fCurrentGraph=(TGraph*)gPad->GetPrimitive("Graph");
   //Set time axis if choosen as x-variables
   if (fRadioXtime->GetState()==kButtonDown&&!fIsCustomDraw){
     TAxis *xaxis=fCurrentHist->GetXaxis();
@@ -521,6 +656,8 @@ void AliTPCCalibViewerGUItime::DoDraw() {
     fCurrentGraph->SetMarkerStyle(20);
     fCurrentGraph->SetMarkerSize(0.5);
   }
+  //Set title offset
+  fCurrentHist->GetYaxis()->SetTitleOffset(1.5);
   gPad->Modified();
   gPad->Update();
   padsave->cd();
@@ -532,9 +669,17 @@ void AliTPCCalibViewerGUItime::DoDumpRuns()
   //
   // Dump the current run numbers to stdout
   //
-  for (Int_t irun=0;irun<fRunNumbers.GetNrows();++irun){
-    std::cout << Form("%.0f",fRunNumbers[irun]) << std::endl;
+  Int_t npoints=fRunNumbers.GetNrows();
+  Int_t    *sortIndex = new Int_t[npoints];
+  TMath::Sort(npoints,fRunNumbers.GetMatrixArray(),sortIndex,kFALSE);
+  Int_t run=0, prevRun=-1;
+  
+  for (Int_t irun=0;irun<npoints;++irun){
+    run=(Int_t)fRunNumbers.GetMatrixArray()[sortIndex[irun]];
+    if (run!=prevRun) std::cout << Form("%d",run) << std::endl;
+    prevRun=run;
   }
+  delete sortIndex;
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoParLimitChange()
@@ -542,10 +687,7 @@ void AliTPCCalibViewerGUItime::DoParLimitChange()
   //
   //
   //
-  Int_t par = (Int_t)(fNmbPar->GetNumber());
-  fLblPar->SetText(Form("Parameter: %02d",par));
-  fDrawString=GetDrawString();
-  fIsCustomDraw=kFALSE;
+  UpdateParName();
   DoDraw();
 }
 //______________________________________________________________________________
@@ -621,8 +763,24 @@ void AliTPCCalibViewerGUItime::HandleButtonsDrawSel(Int_t id)
     }
     break;
   }
-  if (doDraw) DoNewSelection();
+  if (doDraw) DoCustomCutsDraw();
 }
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItime::UpdateParName()
+{
+  //
+  // change parameter name
+  //
+  
+  Int_t par = (Int_t)(fNmbPar->GetNumber());
+  TString parName=par;
+  Int_t id=fListVariables->GetSelectedEntry()->EntryId();
+  if (fConfigParser && (*fConfigParser)(id)) parName=fConfigParser->GetData((*fConfigParser)(id),par+kParamNames);
+  fLblPar->SetText(Form("Parameter: %s",parName.Data()));
+  fDrawString=GetDrawString();
+  fIsCustomDraw=kFALSE;
+}
+
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::UpdateParLimits()
 {
@@ -630,10 +788,19 @@ void AliTPCCalibViewerGUItime::UpdateParLimits()
   // Adjust limits for TVectorT based variables
   //
   if (!fTree) return;
-  TString selectedVariable="";
-  if (fListVariables->GetSelectedEntry()) selectedVariable = fListVariables->GetSelectedEntry()->GetTitle();
+  TString selectedVariableTitle="";
+  Int_t id=-1;
+  if (!fListVariables->GetSelectedEntry()) return;
+  selectedVariableTitle = fListVariables->GetSelectedEntry()->GetTitle();
+  id=fListVariables->GetSelectedEntry()->EntryId();
+//   printf("id: %d\n",id);
+  TString selectedVariable=selectedVariableTitle;
+  const TObject *key=(*fConfigParser)(id);
+  if (key) selectedVariable=(*fConfigParser)(id)->GetName();
+  
   if (selectedVariable.IsNull()||!selectedVariable.EndsWith(".")) {
     fNmbPar->SetState(kFALSE);
+    fLblPar->SetText("Parameter: none");
     return;
   }
   TVectorD *vD=0x0;
@@ -658,16 +825,14 @@ void AliTPCCalibViewerGUItime::UpdateParLimits()
   fNmbPar->SetNumber(0);
   fNmbPar->SetLimitValues(0,maxPar-1);
   fNmbPar->SetState(kTRUE);
+  UpdateParName();
 }
 //______________________________________________________________________________
-void AliTPCCalibViewerGUItime::MouseMove(Int_t event, Int_t x, Int_t y, TObject *selected)
+void AliTPCCalibViewerGUItime::MouseMove(Int_t event, Int_t x, Int_t y, TObject */*selected*/)
 {
   //
   // handle mouse events in the draw canvas
   //
-  
-  //avoid compiler warnings
-  selected=selected;
   UInt_t dd=0,mm=0,yy=0,HH=0,MM=0,SS=0,run=0;
   Double_t valx=0.,valy=0.;
   if (!fCurrentGraph) {
@@ -688,7 +853,7 @@ void AliTPCCalibViewerGUItime::MouseMove(Int_t event, Int_t x, Int_t y, TObject 
   for (Int_t i=0;i<n;++i){
     Int_t pxp = gPad->XtoAbsPixel(gPad->XtoPad(arr[i]));
     Int_t pyp = gPad->YtoAbsPixel(gPad->YtoPad(fValuesY[i]));
-    Int_t d   = (Int_t)TMath::Sqrt(TMath::Abs(pxp-x) + TMath::Abs(pyp-y));
+    Int_t d   = TMath::Sqrt(TMath::Abs(pxp-x) + TMath::Abs(pyp-y));
     if (d < minDist) {
       minDist  = d;
       minPoint = i;
@@ -754,6 +919,18 @@ void AliTPCCalibViewerGUItime::SetGuiTree(Int_t run)
     fCalibViewerGUI->Reset();
     if (fCalibViewerGUItab) fCalibViewerGUItab->SetText(new TGString(Form("Detail - XXXXX")));
   }
+}
+//______________________________________________________________________________
+const char* AliTPCCalibViewerGUItime::SubstituteUnderscores(const char* in)
+{
+  //
+  //
+  //
+  TString s(in);
+  s.ReplaceAll("_{","|{");
+  s.ReplaceAll("_"," ");
+  s.ReplaceAll("|{","_{");
+  return s.Data();
 }
 //______________________________________________________________________________
 TObjArray* AliTPCCalibViewerGUItime::ShowGUI(const char* fileName) {

@@ -3,13 +3,13 @@ TPC DA for online calibration
 
 Contact: Jens.Wiechula@cern.ch
 Link:
-Run Type: 
-DA Type: 
-Number of events needed: 
-Input Files: 
+Run Type: PHYSICS STANDALONE
+DA Type: MON
+Number of events needed: 200
+Input Files: /castor/cern.ch/alice/raw/global/2009/08/22/11/09000080958023.30.root
 Output Files: tpcCalibRaw.root, to be exported to the DAQ FXS
-fileId:   pulser
-Trigger types used: 
+fileId:   tpcCalibRaw
+Trigger types used: PHYSICS_EVENT
 
 */
 
@@ -75,7 +75,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 */
 int main(int argc, char **argv) {
   /* log start of process */
-  printf("TPC Pulser DA started - %s\n",__FILE__);
+  printf("TPC RAW DA started - %s\n",__FILE__);
 
   if (argc<2) {
     printf("Wrong number of arguments\n");
@@ -187,10 +187,8 @@ int main(int argc, char **argv) {
       nevents++;
       // get the run number
       runNb = event->eventRunNb;
-      //  Pulser calibration
-//       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
+      //  Raw calibration
       calibRaw.ProcessEvent(event);
-      delete rawReader;
 
       /* free resources */
       free(event);

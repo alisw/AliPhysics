@@ -6,7 +6,7 @@ Link:
 Run Type: PHYSICS STANDALONE DAQ
 DA Type: MON
 Number of events needed: 500
-Input Files: 
+Input Files: /castor/cern.ch/alice/raw/global/2009/08/22/11/09000080958023.30.root
 Output Files: tpcQA.root, to be exported to the DAQ FXS
 fileId:   QA
 Trigger types used: PHYSICS_EVENT

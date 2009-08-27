@@ -1,0 +1,59 @@
+#CalibViewerTime Configuration file
+#key val0,val1,val2, ...
+#the key and the values are separated by spaces or tabs,
+#the values must not contain whitespace characters use '_' instead.
+#description:
+#Key: BranchName
+#Value0:   Branch On/Off (0,1)
+#value1:   Branch Title (shown in the gui selection list)
+#value2:   Calibration Type (one may switch between different types in the GUI)
+#value3-n: Parameter description for TVectorT based branches
+
+VIROC.		1,IROC_anode_voltage_[V], HV, A00, A01, A02, A03, A04, A05, A06, A07, A08, A09, A10, A11, A12, A13, A14, A15, A16, A17, C00, C01, C02, C03, C04, C05, C06, C07, C08, C09, C10, C11, C12, C13, C14, C15, C16, C17
+VOROC.		1,OROC_anode_voltage_[V], HV, A00, A01, A02, A03, A04, A05, A06, A07, A08, A09, A10, A11, A12, A13, A14, A15, A16, A17, C00, C01, C02, C03, C04, C05, C06, C07, C08, C09, C10, C11, C12, C13, C14, C15, C16, C17
+medianVIROC	1, IROC_anode_voltage_Median_[V], HV
+medianVOROC	1, OROC_anode_voltage_Median_[V], HV
+coverIA		1, Cover_voltage_IROC_A-Side_[V], HV
+coverIC		1, Cover_voltage_IROC_C-Side_[V], HV
+coverOA		1, Cover_voltage_OROC_A-Side_[V], HV
+coverOC		1, Cover_voltage_OROC_C-Side_[V], HV
+skirtA		1, Skirt_voltage_A-Side_[V], HV
+skirtC		1, Skirt_voltage_C-Side_[V], HV
+ggOffA		1, GG_offset_voltage_A-Side_[V], HV
+ggOffC		1, GG_offset_voltage_C-Side_[V], HV
+ptrel0		1, Relative_P0/T, Environment
+ptrel1		1, Relative_P1/T, Environment
+goofie.		1, Goofie_Values, Environment, 0, 1, CO2_[%], Drift_Velocity_[cm/#mus], FCage_HV_[V], Gain_Far, Gain_Near, N2_[%], Number_of_Sparks, Peak_area_Far, Peak_area_Near, Peak_pos_Far, Peak_pos_Near, Pickup_HV, Pressure_[mbar], T1/P, T2/P, T/P, Temperature_S1_[K]
+goofieE.		1, Goofie_E_Values, Environment, 0, 1, CO2_[%], Drift_Velocity_[cm/#mus], FCage_HV_[V], Gain_Far, Gain_Near, N2_[%], Number_of_Sparks, Peak_area_Far, Peak_area_Near, Peak_pos_Far, Peak_pos_Near, Pickup_HV, Pressure_[mbar], T1/P, T2/P, T/P, Temperature_S1_[K]
+goofieMean.		1, Goofie_Mean_Values, Environment, 0, 1, CO2_[%], Drift_Velocity_[cm/#mus], FCage_HV_[V], Gain_Far, Gain_Near, N2_[%], Number_of_Sparks, Peak_area_Far, Peak_area_Near, Peak_pos_Far, Peak_pos_Near, Pickup_HV, Pressure_[mbar], T1/P, T2/P, T/P, Temperature_S1_[K]
+goofieMedian.	1, Goofie_Median_Values, Environment, 0, 1, CO2_[%], Drift_Velocity_[cm/#mus], FCage_HV_[V], Gain_Far, Gain_Near, N2_[%], Number_of_Sparks, Peak_area_Far, Peak_area_Near, Peak_pos_Far, Peak_pos_Near, Pickup_HV, Pressure_[mbar], T1/P, T2/P, T/P, Temperature_S1_[K]
+goofieRMS.		0, Goofie_RMS_Values, Environment, 0, 1, CO2_[%], Drift_Velocity_[cm/#mus], FCage_HV_[V], Gain_Far, Gain_Near, N2_[%], Number_of_Sparks, Peak_area_Far, Peak_area_Near, Peak_pos_Far, Peak_pos_Near, Pickup_HV, Pressure_[mbar], T1/P, T2/P, T/P, Temperature_S1_[K]
+press		1, Pressure1, Environment
+press2		1, Pressure2, Environment
+temp00.		1, TempFit_ROC_A-Side, Environment, Mean_Temp_[#circC], dT/dgx_[K/cm], dT/dgy_[K/cm]
+temp10.		1, TempFit_OFC_A-Side, Environment, Mean_Temp_[#circC], dT/dz_[K/cm], dT/d#phi_[K/rad]
+temp20.		1, TempFit_IFC+TS_A-Side, Environment, Mean_Temp_[#circC], dT/dz_[K/cm], dT/d#phi_[K/rad]
+temp30.		1, TempFit_Skirt_A-Side, Environment, Mean_Temp_[#circC], dT/dgx_[K/cm], dT/dgy_[K/cm]
+temp40.		1, TempFit_IFC_A-Side, Environment, Mean_Temp_[#circC], dT/dz_[K/cm], dT/d#phi_[K/rad]
+temp01.		1, TempFit_ROC_C-Side, Environment, Mean_Temp_[#circC], dT/dgx_[K/cm], dT/dgy_[K/cm]
+temp11.		1, TempFit_OFC_C-Side, Environment, Mean_Temp_[#circC], dT/dz_[K/cm], dT/d#phi_[K/rad]
+temp21.		1, TempFit_IFC+TS_C-Side, Environment, Mean_Temp_[#circC], dT/dz_[K/cm], dT/d#phi_[K/rad]
+temp31.		1, TempFit_Skirt_C-Side, Environment, Mean_Temp_[#circC], dT/dgx_[K/cm], dT/dgy_[K/cm]
+temp41.		1, TempFit_IFC_C-Side, Environment, Mean_Temp_[#circC], dT/dz_[K/cm], dT/d#phi_[K/rad]
+tempSkirtA.		1, Temp_Skirt_A, Environment, A00, A01, A02, A03, A04, A05, A06, A07, A08, A09, A10, A11, A12, A13, A14, A15, A16, A17
+tempSkirtC.		1, Temp_Skirt_C, Environment, C00, C01, C02, C03, C04, C05, C06, C07, C08, C09, C10, C11, C12, C13, C14, C15, C16, C17
+meanNoise.		1, Mean_Noise, Noise_Pedestals, All_Pads, IROCs, OROCs_small_pads, OROCs_large_pads
+meanNoiseSen.		1, Mean_Noise_in_sensitive_regions, Noise_Pedestals, All_Pads, IROCs, OROCs_small_pads, OROCs_large_pads
+rmsNoise.		1, RMS_Noise, Noise_Pedestals, All_Pads, IROCs, OROCs_small_pads, OROCs_large_pads
+rmsNoiseSen.		1, RMS_Noise_in_sensitive_regions, Noise_Pedestals, All_Pads, IROCs, OROCs_small_pads, OROCs_large_pads
+zeroNoise		1, Pads_with_zero_noise, Noise_Pedestals
+nMasked		1, Number_of_masked_pads, ALTRO
+nOffPulser		1, Pads_without_pulser_signal
+CEfitA.		1, CE_Fit_A-Side, CE, Offset, dt/dgx_[timebins/cm], dt/dgy_[timebins/cm], dt/dlx_[timebins/cm], dt/dlx^{2}_[timebins/cm^{2}]
+CEfitC.		1, CE_Fit_C-Side, CE, Offset, dt/dgx_[timebins/cm], dt/dgy_[timebins/cm], dt/dlx_[timebins/cm], dt/dlx^{2}_[timebins/cm^{2}]
+Bz		1, Magnetic_Field_[T]
+L3polarity		1, L3_polarity, Environment
+nalien		1, Number_of_ESDs_in_alien, reco
+nRawAlien    1, Number_of_Raw_in_alien, reco
+nlocal		1, Number_of_ESDs_local, reco
+nRawLocal 1, Number_of_Raw_local, reco

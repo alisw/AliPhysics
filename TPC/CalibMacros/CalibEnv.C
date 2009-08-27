@@ -65,7 +65,7 @@ void ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseMeanSenRegions,
                       TVectorD &vNoiseRMS, TVectorD &vNoiseRMSSenRegions,
                      Int_t &nonMaskedZero);
 void ProcessPulser(Int_t &nMasked, Int_t &nonMaskedZero);
-void GetProductionInfo(Int_t run, Int_t &nalien, Int_t &nlocal);
+void GetProductionInfo(Int_t run, Int_t &nalien, Int_t &nRawAlien, Int_t &nlocal, Int_t &nRawLocal);
   
 void Init(){
   //
@@ -73,10 +73,10 @@ void Init(){
   //
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT/OCDB");
-  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/HighVoltage","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///lustre/alice/alien/alice/data/2009/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature","local:///lustre/alice/alien/alice/data/2009/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/HighVoltage","local:///lustre/alice/alien/alice/data/2009/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie","local:///lustre/alice/alien/alice/data/2009/OCDB/");
   AliCDBManager::Instance()->SetRun(1);
 }
 
@@ -121,6 +121,8 @@ void CalibEnv(const char * runList){
     //
     Int_t startTime = sensorPressure->GetStartTime();
     Int_t endTime = sensorPressure->GetEndTime();
+    Int_t startTimeGRP = AliTPCcalibDB::GetGRP(irun)->GetTimeStart();
+    Int_t stopTimeGRP  = AliTPCcalibDB::GetGRP(irun)->GetTimeEnd();
     Int_t dtime = TMath::Max((endTime-startTime)/20,10*60);
     //CE data processing - see ProcessCEdata function for description of the results
     TVectorD fitResultsA, fitResultsC;
@@ -137,8 +139,8 @@ void CalibEnv(const char * runList){
     Int_t nOffChannels=0;
     ProcessPulser(nMasked,nOffChannels);
     //production information
-    Int_t nalien=0,nlocal=0;
-    GetProductionInfo(irun, nalien, nlocal);
+    Int_t nalien=0,nRawAlien=0,nlocal=0,nRawLocal=0;
+    GetProductionInfo(irun, nalien, nRawAlien, nlocal,nRawLocal);
     //run type
     TObjString runType(AliTPCcalibDB::GetRunType(irun).Data());
     
@@ -207,9 +209,11 @@ void CalibEnv(const char * runList){
       
       
       //tempMap->GetLinearFitter(0,0,itime);
-      (*pcstream)<<"dcs"<<
+      TTreeStream &mistream = (*pcstream)<<"dcs"<<
         "run="<<irun<<
         "time="<<itime<<
+        "startTimeGRP="<<startTimeGRP<<
+        "stopTimeGRP="<<stopTimeGRP<<
         //run type
         "runType.="<<&runType<<
         // voltage setting
@@ -247,8 +251,10 @@ void CalibEnv(const char * runList){
         "temp31.="<<&vecTemp[8]<<
         "temp41.="<<&vecTemp[9]<<
         "tempSkirtA.="<<&vecSkirtTempA<<
-        "tempSkirtC.="<<&vecSkirtTempC<<
+        "tempSkirtC.="<<&vecSkirtTempC;
+	
         //noise data
+      mistream<<
         "meanNoise.="<<&vNoiseMean<<
         "meanNoiseSen.="<<&vNoiseMeanSenRegions<<
         "rmsNoise.="<<&vNoiseRMS<<
@@ -265,7 +271,9 @@ void CalibEnv(const char * runList){
         "L3polarity="<<l3pol<<
         // production information
         "nalien="<<nalien<<
+        "nRawAlien="<<nRawAlien<<
         "nlocal="<<nlocal<<
+        "nRawLocal="<<nRawLocal<<
         "\n";
     }
   }
@@ -518,12 +526,14 @@ void ProcessPulser(Int_t &nMasked, Int_t &nonMaskedZero)
   nMasked=0;
   //retrieve pulser and ALTRO data
   AliTPCCalPad *pulserTmean=AliTPCcalibDB::Instance()->GetPulserTmean();
+  if (!pulserTmean) return;
 //   AliTPCCalPad *pulserTrms=AliTPCcalibDB::Instance()->GetPulserTrms();
 //   AliTPCCalPad *pulserQmean=AliTPCcalibDB::Instance()->GetPulserQmean();
   AliTPCCalPad *padMasked=AliTPCcalibDB::Instance()->GetALTROMasked();
   //create IROC, OROC1, OROC2 and sensitive region masks
   for (UInt_t isec=0;isec<AliTPCCalPad::kNsec;++isec){
     AliTPCCalROC *tmeanROC=pulserTmean->GetCalROC(isec);
+    if (!tmeanROC) continue;
 //     AliTPCCalROC *trmsROC=pulserTrms->GetCalROC(isec);
 //     AliTPCCalROC *qmeanROC=pulserQmean->GetCalROC(isec);
     Float_t tmeanMedian=tmeanROC->GetMedian();
@@ -545,31 +555,41 @@ void ProcessPulser(Int_t &nMasked, Int_t &nonMaskedZero)
   }
 }
 
-void GetProductionInfo(Int_t run, Int_t &nalien, Int_t &nlocal){
+void GetProductionInfo(Int_t run, Int_t &nalien, Int_t &nRawAlien, Int_t &nlocal, Int_t &nRawLocal){
   //
   // find number of ESDs in central and local production for run
   //
 
   nalien=0;
+  nRawAlien=0;
   nlocal=0;
+  nRawLocal=0;
   TString sNlines;
   FILE *pipe = 0x0;
   //find number of ESDs in alien
   TString command="alien_find /alice/data/2009 ";
   command += Form("%09d",run);
   command += " | grep AliESDs.root | wc -l";
-  pipe=gSystem->OpenPipe(command.Data(),"r");
-  sNlines.Gets(pipe);
-  gSystem->ClosePipe(pipe);
+  sNlines = gSystem->GetFromPipe(command.Data());
   nalien=sNlines.Atoi();
-  //find number of ESDs local
-  command="find /lustre/alice/alien/alice/data/2009 -name ";
+  //find number of raw files on alien
+  command="alien_find /alice/data/2009 ";
   command += Form("%09d",run);
-  command += " | grep AliESDs.root | wc -l";
-  pipe = gSystem->OpenPipe(command.Data(),"r");
-  sNlines.Gets(pipe);
-  gSystem->ClosePipe(pipe);
+  command += " | grep raw | grep -v tag | wc -l";
+  sNlines = gSystem->GetFromPipe(command.Data());
+  nRawAlien=sNlines.Atoi();
+  //find number of ESDs local
+  command="find /lustre/alice/alien/alice/data/2009 -name AliESDs.root | grep ";
+  command += Form("%09d",run);
+  command += " | wc -l";
+  sNlines = gSystem->GetFromPipe(command.Data());
   nlocal=sNlines.Atoi();
+  //find number of local raw data files
+  command="find /lustre/alice/alien/alice/data/2009 -name \"*.root\" | grep ";
+  command += Form("%09d",run);
+  command += " | grep raw | grep -v tag | wc -l";
+  sNlines = gSystem->GetFromPipe(command.Data());
+  nRawLocal=sNlines.Atoi();
 }
 
 void FilterMag(const char * runList){

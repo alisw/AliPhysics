@@ -173,6 +173,57 @@ Float_t AliTPCConfigParser::GetValue(const char *key, UInt_t position)
   return sval.Atof();
 }
 //_____________________________________________________________________
+const char* AliTPCConfigParser::GetData(const char *key, UInt_t position)
+{
+  //
+  //Get value for the speciefied key
+  //
+  TObject *val=((TObjArray*)fConfigMap->FindObject(key))->At(position);
+  if ( !val ) {
+    return "";
+  }
+  return (((TObjString*)val)->GetString()).Data();
+}
+//_____________________________________________________________________
+Float_t AliTPCConfigParser::GetValue(const TObject *key, UInt_t position)
+{
+  //
+  //Get value for the speciefied key
+  //
+  TObject *val=((TObjArray*)fConfigMap->FindObject(key))->At(position);
+  if ( !val ) return -999.;
+  TString sval(((TObjString*)val)->GetString());
+  return sval.Atof();
+}
+//_____________________________________________________________________
+const char* AliTPCConfigParser::GetData(const TObject *key, UInt_t position)
+{
+  //
+  //Get value for the speciefied key
+  //
+  TObject *val=((TObjArray*)fConfigMap->FindObject(key))->At(position);
+  if ( !val ) {
+    return "";
+  }
+  return (((TObjString*)val)->GetString()).Data();
+}
+//_____________________________________________________________________
+Int_t AliTPCConfigParser::GetNumberOfValues(const char* key) const
+{
+  //
+  // return the number of values for key
+  //
+  return ((TObjArray*)fConfigMap->FindObject(key))->GetEntries();
+}
+//_____________________________________________________________________
+Int_t AliTPCConfigParser::GetNumberOfValues(TObject* key) const
+{
+  //
+  // return the number of values for key
+  //
+  return ((TObjArray*)fConfigMap->FindObject(key))->GetEntries();
+}
+//_____________________________________________________________________
 TObject* AliTPCConfigParser::NextKey(){
   if (!fKeyIter) fKeyIter=fConfigMap->MakeIterator();
   TObject *obj=fKeyIter->Next();
