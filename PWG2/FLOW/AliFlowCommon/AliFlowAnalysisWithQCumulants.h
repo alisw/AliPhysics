@@ -129,7 +129,7 @@ class AliFlowAnalysisWithQCumulants{
   TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
   
   // 2.) weights:
-  void SetWeightsList(TList* wlist) {this->fWeightsList = wlist;}
+  void SetWeightsList(TList* wlist) {this->fWeightsList = (TList*)wlist->Clone();}
   TList* GetWeightsList() const {return this->fWeightsList;}  
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};

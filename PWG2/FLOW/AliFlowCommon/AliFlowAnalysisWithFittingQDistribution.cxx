@@ -49,7 +49,6 @@ class TLatex;
 class TMarker;
 class TObjArray;
 class TList;
-class TCanvas;
 class TSystem;
 class TROOT;
 class AliFlowVector;
@@ -294,7 +293,7 @@ void AliFlowAnalysisWithFittingQDistribution::GetOutputHistograms(TList *outputL
   
   // 3.) distributions and 4.) final results of fitting:
   TString pWeightsFlag[2] = {"pWeights not used","pWeights used"};
-  TString sigmaFlag[2] = {"#sigma^{2} not fixed","#sigma^{2} fixed"};
+  TString sigmaFlag[2] = {"#sigma^{2} not fitted","#sigma^{2} fitted"};
   
   // q-distribution:
   TString qDistributionName = "fqDistribution";
@@ -308,11 +307,15 @@ void AliFlowAnalysisWithFittingQDistribution::GetOutputHistograms(TList *outputL
   // sigma^2:
   TString sigma2Name = "fSigma2";
   sigma2Name += fAnalysisLabel->Data();
+  // chi^2:
+  TString chi2Name = "fChi2";
+  chi2Name += fAnalysisLabel->Data();
   
   TH1D *qDistribution[2] = {NULL};
   TH1D *sumOfParticleWeights[2] = {NULL};
   TH1D *intFlow[2][2] = {{NULL}};
   TH1D *sigma2[2][2] = {{NULL}};
+  TH1D *chi2[2][2] = {{NULL}};
    
   for(Int_t pW=0;pW<1+(Int_t)(bUsePhiWeights||bUsePtWeights||bUseEtaWeights);pW++)
   {
@@ -361,6 +364,18 @@ void AliFlowAnalysisWithFittingQDistribution::GetOutputHistograms(TList *outputL
        cout<<"pW = "<<pW<<endl;
        cout<<"f  = "<<f<<endl;
       } 
+    // chi^2:
+    chi2[pW][f] = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("%s, %s, %s",chi2Name.Data(),pWeightsFlag[pW].Data(),sigmaFlag[f].Data())));
+    if(chi2[pW][f])
+    {
+     this->SetChi2(chi2[pW][f],pW,f);
+    } else 
+      {
+       cout<<"WARNING: chi2[pW][f] is NULL in AFAWFQD::GOH() !!!!"<<endl;
+       cout<<"pW = "<<pW<<endl;
+       cout<<"f  = "<<f<<endl;
+      }  
+      
    } // end of for(Int_t f=0;f<2;f++)
   } // end of for(Int_t pW=0;pW<1+(Int_t)(bUsePhiWeights||bUsePtWeights||bUseEtaWeights);pW++)
   
@@ -420,26 +435,26 @@ void AliFlowAnalysisWithFittingQDistribution::Finish(Bool_t doFit)
  if(doFit) 
  {
   // particle weights not used:
-  // a) sigma^2 not fixed:
-  this->DoFit(kFALSE,kTRUE);
-  // b) sigma^2 fixed to 0.5:
+  // a) sigma^2 not fitted (fixed to 0.5):
   this->DoFit(kFALSE,kFALSE);
+  // b) sigma^2 fitted:
+  this->DoFit(kFALSE,kTRUE);
   // particle weights used:
   if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)      
   {
-   // a) sigma^2 not fixed:
-   this->DoFit(kTRUE,kTRUE);  
-   // b) sigma^2 fixed:
+   // a) sigma^2 not fitted (fixed to 0.5):
    this->DoFit(kTRUE,kFALSE);  
+   // b) sigma^2 fitted:
+   this->DoFit(kTRUE,kTRUE);  
   }
   
-  // fill common hist results (by default fill results obtained with sigma^2 not fixed):
+  // fill common hist results (by default fill results obtained with sigma^2 fitted):
   if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
   {
-   this->FillCommonHistResultsIntFlow(kTRUE,kFALSE); 
+   this->FillCommonHistResultsIntFlow(kTRUE,kTRUE); 
   } else
     {
-     this->FillCommonHistResultsIntFlow(kFALSE,kFALSE);    
+     this->FillCommonHistResultsIntFlow(kFALSE,kTRUE);    
     } 
   
   // print final results on the screen:
@@ -488,10 +503,11 @@ void AliFlowAnalysisWithFittingQDistribution::InitializeArrays()
  {
   fSumOfParticleWeights[pW] = NULL;
   fqDistribution[pW] = NULL; 
-  for(Int_t f=0;f<2;f++) // sigma^2 not fixed or fixed
+  for(Int_t f=0;f<2;f++) // sigma^2 not fitted (0) or fitted (1)
   {
    fIntFlow[pW][f] = NULL;
    fSigma2[pW][f] = NULL;
+   fChi2[pW][f] = NULL;
   }
  } 
 
@@ -633,7 +649,7 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
  // book histograms for distributions
  
  TString pWeightsFlag[2] = {"pWeights not used","pWeights used"};
- TString sigmaFlag[2] = {"#sigma^{2} not fixed","#sigma^{2} fixed"};
+ TString sigmaFlag[2] = {"#sigma^{2} not fitted","#sigma^{2} fitted"};
  // q-distribution:
  TString fqDistributionName = "fqDistribution";
  fqDistributionName += fAnalysisLabel->Data();
@@ -646,6 +662,9 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
  // sigma^2:
  TString fSigma2Name = "fSigma2";
  fSigma2Name += fAnalysisLabel->Data();
+ // chi^2:
+ TString fChi2Name = "fChi2";
+ fChi2Name += fAnalysisLabel->Data();
  
  for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // pW not used or used
  {
@@ -660,7 +679,7 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
   fSumOfParticleWeights[pW]->SetYTitle("Counts");
   fHistList->Add(fSumOfParticleWeights[pW]);
   
-  for(Int_t f=0;f<2;f++) // sigma^2 not fixed or fixed
+  for(Int_t f=0;f<2;f++) // sigma^2 not fitted (0) or fitted (1)
   {
    // final results for integrated flow:
    fIntFlow[pW][f] = new TH1D(Form("%s, %s, %s",fIntFlowName.Data(),pWeightsFlag[pW].Data(),sigmaFlag[f].Data()),"Integrated Flow",1,0,1);
@@ -672,6 +691,12 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
    fSigma2[pW][f]->SetLabelSize(0.08);
    (fSigma2[pW][f]->GetXaxis())->SetBinLabel(1,"#sigma^{2}");
    fHistList->Add(fSigma2[pW][f]);
+   // chi^2:
+   fChi2[pW][f] = new TH1D(Form("%s, %s, %s",fChi2Name.Data(),pWeightsFlag[pW].Data(),sigmaFlag[f].Data()),"#chi^{2} (obtained from Minuit)",1,0,1);
+   fChi2[pW][f]->SetLabelSize(0.08);
+   (fChi2[pW][f]->GetXaxis())->SetLabelOffset(0.01);
+   (fChi2[pW][f]->GetXaxis())->SetBinLabel(1,"#chi^{2}");
+   fHistList->Add(fChi2[pW][f]);
   } // end of for(Int_t f=0;f<2;f++) // sigma^2 not fixed or fixed
   
  } // end of for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // pW not used or used
@@ -697,13 +722,13 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
 //================================================================================================================================
 
 
-void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, Bool_t sigma2NotFixed)
+void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, Bool_t sigma2Fitted)
 {
  // do final fit to q-distribution
  
  // shortcuts for flags:
  Int_t pW = (Int_t)(useParticleWeights);
- Int_t s2NF = 1-(Int_t)(sigma2NotFixed);
+ Int_t s2F = (Int_t)(sigma2Fitted);
  
  for(Int_t f=0;f<2;f++)
  {
@@ -745,12 +770,12 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
  fittingFun->SetParameters(fvStart*pow(AvM,0.5),fSigma2Start,norm); // to be improved (add setter for starting v)         
  fittingFun->SetParLimits(0,fvMin*pow(AvM,0.5),fvMax*pow(AvM,0.5)); // to be improved (add setters for vmin and vmax)
  
- if(s2NF == 0)
+ if(s2F == 0)
  {
-  fittingFun->SetParLimits(1,fSigma2Min,fSigma2Max); // to be improved (add setters for sigma^2_min and sigma^2_max)      
+  fittingFun->FixParameter(1,0.5);
  } else
    {
-    fittingFun->FixParameter(1,0.5);
+    fittingFun->SetParLimits(1,fSigma2Min,fSigma2Max); // to be improved (add setters for sigma^2_min and sigma^2_max)          
    }
  fittingFun->FixParameter(2,norm);  
 
@@ -764,48 +789,66 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
  Double_t vError = 0.; // error of integrated flow 
  Double_t sigma2 = 0.; // sigma^2
  Double_t sigma2Error = 0.; // error of sigma^2
+ Double_t chi2 = 0; // chi^2 from Minuit
  
  if(AvM)
  { 
   v = fittingFun->GetParameter(0)/pow(AvM,0.5);
   vError = fittingFun->GetParError(0)/pow(AvM,0.5);
   // store the results:
-  fIntFlow[pW][s2NF]->SetBinContent(1,v);
-  fIntFlow[pW][s2NF]->SetBinError(1,vError);
+  fIntFlow[pW][s2F]->SetBinContent(1,v); // s2F = sigma^2 fitted
+  fIntFlow[pW][s2F]->SetBinError(1,vError); // s2F = sigma^2 fitted
  }
- if(s2NF == 0)
+ 
+ if(s2F == 0) // sigma^2 not fitted, but fixed to 0.5
  {
-  sigma2 = fittingFun->GetParameter(1);
-  sigma2Error = fittingFun->GetParError(1);
-  // store the results:
+  // sigma^2:
+  sigma2 = 0.5;
   fSigma2[pW][0]->SetBinContent(1,sigma2);  
-  fSigma2[pW][0]->SetBinError(1,sigma2Error);  
- } else // sigma^2 not fitted, but fixed to 0.5
+  fSigma2[pW][0]->SetBinError(1,0.);
+  // chi^2:
+  chi2 = fittingFun->GetChisquare();
+  fChi2[pW][0]->SetBinContent(1,chi2);  
+  fChi2[pW][0]->SetBinError(1,0.);  
+ } else // sigma^2 fitted
    {
-    sigma2 = 0.5;
+    // sigma^2:
+    sigma2 = fittingFun->GetParameter(1);
+    sigma2Error = fittingFun->GetParError(1);
     fSigma2[pW][1]->SetBinContent(1,sigma2);  
-    fSigma2[pW][1]->SetBinError(1,0.);
+    fSigma2[pW][1]->SetBinError(1,sigma2Error);    
+    // chi^2:
+    chi2 = fittingFun->GetChisquare();
+    fChi2[pW][1]->SetBinContent(1,chi2);  
+    fChi2[pW][1]->SetBinError(1,0.);  
    }
  
  if(fPlotResults)
  {
-  if(s2NF == 0)
+  // set ranges:
+  Int_t firstNonEmptyBin = fqDistribution[pW]->FindFirstBinAbove(0);
+  Double_t lowRange = fqDistribution[pW]->GetBinLowEdge(firstNonEmptyBin);
+  Int_t lastNonEmptyBin = fqDistribution[pW]->FindLastBinAbove(0);
+  Double_t upperRange = fqDistribution[pW]->GetBinLowEdge(lastNonEmptyBin+10);
+  (fqDistribution[pW]->GetXaxis())->SetRangeUser(lowRange,upperRange);
+  
+  if(s2F == 0)
   { 
+   // to be improved (perhaps there is a better way to implement this?)
    fqDistribution[pW]->SetFillColor(16);  
    fqDistribution[pW]->SetTitle("Fitted q-distribution");
    fqDistribution[pW]->Draw("");
-   fLegend->AddEntry(fqDistribution[pW],"q-distribution","f"); 
-   fittingFun->SetLineColor(2); // 2 = red color   
-   fittingFun->Draw("SAME");
-   fLegend->AddEntry("fittingFun","#sigma^{2} fitted","l");
+   fLegend->AddEntry(fqDistribution[pW],"q-distribution","f");
+   TF1 *fittingFunTemp = (TF1*)fittingFun->Clone("fittingFunTemp");
+   fittingFunTemp->SetLineColor(4); // 4 = blue color
+   fittingFunTemp->Draw("SAME"); 
+   fLegend->AddEntry("fittingFunTemp","#sigma^{2} fixed","l");
+   fLegend->Draw("SAME");      
   } else
-    {
-     // to be improved (perhaps there is a better way to implement this?)
-     TF1 *fittingFunTemp = (TF1*)fittingFun->Clone("fittingFunTemp");
-     fittingFunTemp->SetLineColor(4); // 4 = blue color
-     fittingFunTemp->Draw("SAME"); 
-     fLegend->AddEntry("fittingFunTemp","#sigma^{2} fixed","l");
-     fLegend->Draw("SAME");      
+    {    
+     fittingFun->SetLineColor(2); // 2 = red color   
+     fittingFun->Draw("SAME");
+     fLegend->AddEntry("fittingFun","#sigma^{2} fitted","l");    
     } 
  } // end of if(fPlotResults)
 
@@ -815,19 +858,19 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
 //================================================================================================================================ 
 
 
-void AliFlowAnalysisWithFittingQDistribution::FillCommonHistResultsIntFlow(Bool_t useParticleWeights, Bool_t sigma2NotFixed)
+void AliFlowAnalysisWithFittingQDistribution::FillCommonHistResultsIntFlow(Bool_t useParticleWeights, Bool_t sigma2Fitted)
 {
  // fill in AliFlowCommonHistResults histograms relevant for 'NONAME' integrated flow (to be improved (name))
  
  // shortcuts for the flags:
  Int_t pW = (Int_t)(useParticleWeights); // 0 = pWeights not useed, 1 = pWeights used
- Int_t s2NF = (Int_t)(sigma2NotFixed); // 0 = sigma^2 not fixed, 1 = sigma^2 fixed to 0.5
+ Int_t s2F = (Int_t)(sigma2Fitted); // 0 = sigma^2 not fitted (but fixed to 0.5), 1 = sigma^2 fitted
  
- if(!fIntFlow[pW][s2NF])
+ if(!fIntFlow[pW][s2F])
  {
-  cout<<"WARNING: fIntFlow[pW][s2NF] is NULL in AFAWFQD::FCHRIF() !!!!"<<endl;
-  cout<<"pW   = "<<pW<<endl;
-  cout<<"s2NF = "<<s2NF<<endl;
+  cout<<"WARNING: fIntFlow[pW][s2F] is NULL in AFAWFQD::FCHRIF() !!!!"<<endl;
+  cout<<"pW  = "<<pW<<endl;
+  cout<<"s2F = "<<s2F<<endl;
   exit(0); 
  }  
  
@@ -845,12 +888,12 @@ void AliFlowAnalysisWithFittingQDistribution::FillCommonHistResultsIntFlow(Bool_
  }
   
  // fill integrated flow:
- Double_t v = fIntFlow[pW][s2NF]->GetBinContent(1); 
- Double_t vError = fIntFlow[pW][s2NF]->GetBinError(1);
+ Double_t v = fIntFlow[pW][s2F]->GetBinContent(1); 
+ Double_t vError = fIntFlow[pW][s2F]->GetBinError(1);
  
  fCommonHistsResults->FillIntegratedFlow(v,vError);   
  
- // fill chi:
+ // fill chi (this chi stands for resolution, not to be confused with chi2 used before):
  Double_t AvM = fSumOfParticleWeights[pW]->GetMean(1);
  Double_t chi = AvM*pow(v,2); 
  if(chi>=0)
@@ -869,8 +912,8 @@ void AliFlowAnalysisWithFittingQDistribution::PrintFinalResultsForIntegratedFlow
 {
  // print the final results for integrated flow on the screen
  
- // shortcuts: pW   = particle weights 
- //            s2NF = sigma^2 not fixed  
+ // shortcuts: pW  = particle weights 
+ //            s2F = sigma^2 fitted 
  
  for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++)
  {
@@ -880,13 +923,13 @@ void AliFlowAnalysisWithFittingQDistribution::PrintFinalResultsForIntegratedFlow
    cout<<"pW = "<<pW<<endl;
    exit(0);
   }
-  for(Int_t s2NF=0;s2NF<2;s2NF++)
+  for(Int_t s2F=0;s2F<2;s2F++)
   {
-   if(!fIntFlow[pW][s2NF])
+   if(!fIntFlow[pW][s2F])
    {
-    cout<<"WARNING: fIntFlow[pW][s2NF] is NULL in AFAWFQD::FCHRIF() !!!!"<<endl;
-    cout<<"pW   = "<<pW<<endl;
-    cout<<"s2NF = "<<s2NF<<endl;
+    cout<<"WARNING: fIntFlow[pW][s2F] is NULL in AFAWFQD::FCHRIF() !!!!"<<endl;
+    cout<<"pW  = "<<pW<<endl;
+    cout<<"s2F = "<<s2F<<endl;
     exit(0); 
    }
   }  
@@ -918,19 +961,31 @@ void AliFlowAnalysisWithFittingQDistribution::PrintFinalResultsForIntegratedFlow
 
  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
  {
-  cout<<"  v_"<<n<<"{FQD} = "<<fIntFlow[1][0]->GetBinContent(1)<<" +/- "<<fIntFlow[1][0]->GetBinError(1)
-    <<" (sigma^2 fitted = "<<fSigma2[1][0]->GetBinContent(1)<<")"<<endl; 
-  cout<<"  v_"<<n<<"{FQD} = "<<fIntFlow[1][1]->GetBinContent(1)<<" +/- "<<fIntFlow[1][1]->GetBinError(1)
-    <<" (sigma^2 fixed = 0.5"<<")"<<endl; 
+  cout<<"1.) sigma^2 not fitted: "<<endl;
+  cout<<"  v_"<<n<<"{FQD} = "<<fIntFlow[1][0]->GetBinContent(1)<<" +/- "<<fIntFlow[1][0]->GetBinError(1)<<endl;
+  cout<<"  sigma^2 = 0.5 +/- 0 "<<endl; 
+  cout<<"  chi^2 = "<<fChi2[1][0]->GetBinContent(1)<<" (Minuit)"<<endl; 
+  cout<<" "<<endl;   
+  cout<<"2.) sigma^2 fitted: "<<endl;
+  cout<<"  v_"<<n<<"{FQD} = "<<fIntFlow[1][1]->GetBinContent(1)<<" +/- "<<fIntFlow[1][1]->GetBinError(1)<<endl;
+  cout<<"  sigma^2 = "<<fSigma2[1][1]->GetBinContent(1)<<" +/- "<<fSigma2[1][1]->GetBinError(1)<<endl; 
+  cout<<"  chi^2 = "<<fChi2[1][1]->GetBinContent(1)<<" (Minuit)"<<endl; 
   cout<<" "<<endl; 
   cout<<"      nEvts = "<<fSumOfParticleWeights[1]->GetEntries()<<", AvM = "<<fSumOfParticleWeights[1]->GetMean()<<endl;
   cout<<" "<<endl;
  } else
    { 
-    cout<<"  v_"<<n<<"{FQD} = "<<fIntFlow[0][0]->GetBinContent(1)<<" +/- "<<fIntFlow[0][0]->GetBinError(1)
-     <<" (sigma^2 fitted = "<<fSigma2[0][0]->GetBinContent(1)<<")"<<endl; 
-    cout<<"  v_"<<n<<"{FQD} = "<<fIntFlow[0][1]->GetBinContent(1)<<" +/- "<<fIntFlow[0][1]->GetBinError(1)
-     <<" (sigma^2 fixed = 0.5"<<")"<<endl; 
+    cout<<"1.) sigma^2 not fitted: "<<endl;
+    cout<<endl;
+    cout<<"  v_"<<n<<"{FQD} = "<<fIntFlow[0][0]->GetBinContent(1)<<" +/- "<<fIntFlow[0][0]->GetBinError(1)<<endl;
+    cout<<"  sigma^2 = 0.5 +/- 0 "<<endl; 
+    cout<<"  chi^2 = "<<fChi2[0][0]->GetBinContent(1)<<" (Minuit)"<<endl;  
+    cout<<" "<<endl;   
+    cout<<"2.) sigma^2 fitted: "<<endl;
+    cout<<endl;
+    cout<<"  v_"<<n<<"{FQD} = "<<fIntFlow[0][1]->GetBinContent(1)<<" +/- "<<fIntFlow[0][1]->GetBinError(1)<<endl;
+    cout<<"  sigma^2 = "<<fSigma2[0][1]->GetBinContent(1)<<" +/- "<<fSigma2[0][1]->GetBinError(1)<<endl; 
+    cout<<"  chi^2 = "<<fChi2[0][1]->GetBinContent(1)<<" (Minuit)"<<endl; 
     cout<<" "<<endl;  
     cout<<"      nEvts = "<<fSumOfParticleWeights[0]->GetEntries()<<", AvM = "<<fSumOfParticleWeights[0]->GetMean()<<endl;
     cout<<" "<<endl;
@@ -938,7 +993,8 @@ void AliFlowAnalysisWithFittingQDistribution::PrintFinalResultsForIntegratedFlow
     
  cout<<"***************************************"<<endl;
  cout<<"***************************************"<<endl; 
- 
+ cout<<endl;
+  
 } // end of void AliFlowAnalysisWithFittingQDistribution::PrintFinalResultsForIntegratedFlow()
 
 
