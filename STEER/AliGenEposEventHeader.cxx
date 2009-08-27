@@ -7,7 +7,7 @@
  */
 
 #include "AliGenEposEventHeader.h"
-#include "TEpos.h"
+#include "TGenerator.h"
 
 ClassImp(AliGenEposEventHeader)
 
@@ -63,7 +63,9 @@ AliGenEposEventHeader::AliGenEposEventHeader() :     fBimevt(0),
 
 }
 
-void AliGenEposEventHeader::FillInternalFields(TEpos *epos) {
+
+void AliGenEposEventHeader::FillInternalFields(TGenerator */*epos*/) {
+/*
     fBimevt = epos->GetBimevt();
     fPhievt = epos->GetPhievt();
     fKolevt = epos->GetKolevt();
@@ -85,7 +87,7 @@ void AliGenEposEventHeader::FillInternalFields(TEpos *epos) {
     fNglevt = epos->GetNglevt();
     fZppevt = epos->GetZppevt();
     fZptevt = epos->GetZptevt();
-
+*/
 }
 
 Float_t AliGenEposEventHeader::GetBimevt() { return fBimevt; }

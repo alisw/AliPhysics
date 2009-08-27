@@ -5,12 +5,12 @@ epos167/epostimer.cxx		\
 TEpos.cxx AliGenEpos.cxx \
 AliGenEposIsajetToPdgConverter.cxx
 
-HDRS=TEpos.h AliGenEpos.h AliGenEposEventHeader.h   \
+HDRS=TEpos.h AliGenEpos.h \
 AliGenEposIsajetToPdgConverter.h
 
 DHDR:=EPOSLinkDef.h
 
-EXPORT:=TEpos.h AliGenEpos.h AliGenEposEventHeader.h  \
+EXPORT:=TEpos.h AliGenEpos.h \
 AliGenEposIsajetToPdgConverter.h
 
 EINCLUDE:=EVGEN

@@ -11,8 +11,8 @@
 
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
+class TGenerator;
 
-class TEpos;
 
 class AliGenEposEventHeader : public AliGenEventHeader, public AliCollisionGeometry
 {
@@ -43,7 +43,7 @@ public:
 	Float_t GetZppevt();
 	Float_t GetZptevt();
 
-	void FillInternalFields(TEpos *epos);
+	void FillInternalFields(TGenerator *epos);
 
 protected:
 
