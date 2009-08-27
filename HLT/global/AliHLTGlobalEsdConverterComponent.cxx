@@ -224,7 +224,7 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
     pTree->SetDirectory(0);
   }
 
-  if ((iResult=ProcessBlocks(pTree, pESD))>0) {
+  if ((iResult=ProcessBlocks(pTree, pESD))>=0) {
     // TODO: set the specification correctly
     if (pTree) {
       // the esd structure is written to the user info and is
@@ -279,7 +279,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
     vector<AliHLTGlobalBarrelTrack> tracks;
-    if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
+    if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>=0) {
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
 	   element!=tracks.end(); element++) {
 	Float_t points[4] = {
