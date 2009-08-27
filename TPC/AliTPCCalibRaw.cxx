@@ -186,7 +186,7 @@ void AliTPCCalibRaw::UpdateDDL(){
     if (arr->GetNrows()<=fNevents) arr->ResizeTo(arr->GetNrows()+1000);
     // phase as a position of a quarter time bin
     Int_t phase=(Int_t)(GetL1PhaseTB()*4.);
-    printf("DDL: %03d, phase: %d (%f))\n",fCurrDDLNum,phase,GetL1PhaseTB());
+//     printf("DDL: %03d, phase: %d (%f))\n",fCurrDDLNum,phase,GetL1PhaseTB());
     //Fill pahse information of current rcu and event
     (arr->GetMatrixArray())[fNevents]=phase;
     //increase phase counter
