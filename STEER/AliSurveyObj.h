@@ -12,15 +12,11 @@
 /////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-//#include <sstream>
 
 #include <TString.h>
 #include <TObjArray.h>
 
-//#include "AliLog.h"
-//#include "AliSurveyPoint.h"
 class AliSurveyPoint;
-
 class TGridResult;
 
 class AliSurveyObj: public TObject {
