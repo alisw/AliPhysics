@@ -538,7 +538,7 @@ AliMUONClusterFinderMLEM::CheckOverlaps()
                         cout << " Surface = " << pixelI->Size(0)*pixelI->Size(1)*4 << endl;
                         pixelJ->Print();
                         cout << " Surface = " << pixelJ->Size(0)*pixelJ->Size(1)*4 << endl;
-                        cout << " Area surface = " << area.GetDimensionX()*area.*4 << endl;
+                        cout << " Area surface = " << area.GetDimensionX()*area.GetDimensionY()*4 << endl;
                         cout << "-------" << endl;
                         );
 	*/        
