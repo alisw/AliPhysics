@@ -2,7 +2,7 @@
 
 set(SRCS
 epos167/epostimer.cxx
-TEpos.cxx AliGenEpos.cxx AliGenEposEventHeader.cxx
+TEpos.cxx AliGenEpos.cxx
 AliGenEposIsajetToPdgConverter.cxx
 )
 

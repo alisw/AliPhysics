@@ -2,7 +2,7 @@
 
 SRCS:= \
 epos167/epostimer.cxx		\
-TEpos.cxx AliGenEpos.cxx AliGenEposEventHeader.cxx  \
+TEpos.cxx AliGenEpos.cxx \
 AliGenEposIsajetToPdgConverter.cxx
 
 HDRS=TEpos.h AliGenEpos.h AliGenEposEventHeader.h   \
@@ -38,7 +38,8 @@ epos167/epos-uti-165.f  \
 epos167/epos-xan-154.f  \
 epos167/epos-xpr-165.f  \
 epos167/eposm.f         \
-epos167/eposu.f
+epos167/eposu.f         \
+itrans.f
 
 EXTFILES:= \
 epos167/epos.inc  \

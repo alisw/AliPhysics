@@ -6,6 +6,5 @@
 
 #pragma link C++ class TEpos+;
 #pragma link C++ class AliGenEpos+;
-#pragma link C++ class AliGenEposEventHeader+;
 #pragma link C++ class AliGenEposIsajetToPdgConverter+;
 #endif

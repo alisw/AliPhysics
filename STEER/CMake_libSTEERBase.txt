@@ -18,7 +18,7 @@ set(SRCS
   AliGenPythiaEventHeader.cxx AliGenCocktailEventHeader.cxx
   AliGenGeVSimEventHeader.cxx
   AliGenHijingEventHeader.cxx AliCollisionGeometry.cxx
-  AliGenDPMjetEventHeader.cxx
+  AliGenDPMjetEventHeader.cxx AliGenEposEventHeader.cxx
   AliStack.cxx AliMCEventHandler.cxx AliInputEventHandler.cxx
   AliTrackReference.cxx AliSysInfo.cxx
   AliMCEvent.cxx AliMCParticle.cxx
