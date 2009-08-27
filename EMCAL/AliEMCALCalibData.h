@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
+#include "AliEMCALGeoParams.h"
 
 class AliEMCALCalibData: public TNamed {
 
@@ -30,8 +31,8 @@ class AliEMCALCalibData: public TNamed {
   void SetADCpedestal(Int_t module, Int_t column, Int_t row, Float_t value);
 
  protected:
-  Float_t  fADCchannel[12][48][24] ;  // width of one ADC channel in GeV ([mod][col][row])
-  Float_t  fADCpedestal[12][48][24] ; // value of the  ADC pedestal ([mod][col][row])
+  Float_t  fADCchannel [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // width of one ADC channel in GeV ([mod][col][row])
+  Float_t  fADCpedestal[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // value of the  ADC pedestal ([mod][col][row])
   //
   ClassDef(AliEMCALCalibData,1)    // EMCAL Calibration data
 };

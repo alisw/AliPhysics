@@ -5,7 +5,6 @@ AliEMCALGeometry.cxx
 AliEMCALHit.cxx 
 AliEMCALLoader.cxx 
 AliEMCALShishKebabModule.cxx 
-AliEMCALShishKebabTrd1Module.cxx 
 AliEMCALWsuCosmicRaySetUp.cxx 
 AliEMCALRecPoint.cxx 
 AliEMCALClusterizer.cxx 

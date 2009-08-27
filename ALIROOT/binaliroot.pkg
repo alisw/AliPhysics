@@ -15,7 +15,7 @@ ELIBS:= MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONc
 	ACORDEbase ACORDEsim ACORDErec \
         HMPIDbase HMPIDrec HMPIDsim \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
-        EMCALbase EMCALsim EMCALrec BCM \
+        EMCALUtils EMCALbase EMCALsim EMCALrec BCM \
         STRUCT T0base T0sim T0rec EVGEN STEERBase ESD AOD CDB STEER \
         THijing hijing \
         FASTSIM microcern \
@@ -59,6 +59,7 @@ ARLIBS:= \
    VZERO/tgt_$(ALICE_TARGET)/G__VZERObase.o $(LIBPATH)/libVZERObase.a \
    VZERO/tgt_$(ALICE_TARGET)/G__VZEROsim.o $(LIBPATH)/libVZEROsim.a \
    VZERO/tgt_$(ALICE_TARGET)/G__VZEROrec.o $(LIBPATH)/libVZEROrec.a \
+   EMCAL/tgt_$(ALICE_TARGET)/G__EMCALUtils.o $(LIBPATH)/libEMCALUtils.a \
    EMCAL/tgt_$(ALICE_TARGET)/G__EMCALbase.o $(LIBPATH)/libEMCALbase.a \
    EMCAL/tgt_$(ALICE_TARGET)/G__EMCALsim.o $(LIBPATH)/libEMCALsim.a \
    EMCAL/tgt_$(ALICE_TARGET)/G__EMCALrec.o $(LIBPATH)/libEMCALrec.a \

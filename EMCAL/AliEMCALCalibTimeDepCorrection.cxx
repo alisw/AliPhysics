@@ -40,7 +40,7 @@ AliEMCALCalibTimeDepCorrection::AliEMCALCalibTimeDepCorrection() :
 }
 
 //____________________________________________________________________________
-void AliEMCALCalibTimeDepCorrection::InitCorrection(Int_t nSM, Int_t nBins, Float_t val=1.0)
+void AliEMCALCalibTimeDepCorrection::InitCorrection(Int_t nSM, Int_t nBins, Float_t val)
 {
   // This methods assumes that you are using SuperModules 0..nSM-1
   fNSuperModule = nSM;

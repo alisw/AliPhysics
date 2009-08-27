@@ -127,6 +127,27 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry)
 }
 
 //____________________________________________________________________________
+AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry, AliEMCALCalibData * calib)
+: AliEMCALClusterizer(),
+fGeom(geometry),
+fDefaultInit(kFALSE),
+fToUnfold(kFALSE),
+fNumberOfECAClusters(0),fCalibData(calib),
+fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
+fECAW0(0.),fTimeCut(0.),fMinECut(0.)
+{
+	// ctor, geometry and calibration are initialized elsewhere.
+	
+	if (!fGeom)
+		AliFatal("Geometry not initialized.");
+		
+	if(!gMinuit)
+		gMinuit = new TMinuit(100) ;
+	
+}
+
+
+//____________________________________________________________________________
   AliEMCALClusterizerv1::~AliEMCALClusterizerv1()
 {
   // dtor

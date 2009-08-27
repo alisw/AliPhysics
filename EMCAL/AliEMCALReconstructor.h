@@ -12,13 +12,16 @@
 //*--         Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 
 // --- ROOT system ---
-#include "AliEMCALRecParam.h"
-#include "AliReconstructor.h" 
-#include "AliEMCALTracker.h" 
-
 class TList;
 class TClonesArray;
 class TTree;
+
+
+// --- AliRoot header files ---
+#include "AliReconstructor.h" 
+#include "AliEMCALTracker.h" 
+#include "AliEMCALRecParam.h"
+
 
 class AliEMCALDigitizer ;
 class AliEMCALClusterizer ;
@@ -28,10 +31,11 @@ class AliESDEvent ;
 class AliRawReader ;
 class AliEMCALRawUtils;
 class AliEMCALGeometry;
+class AliEMCALCalibData ;
 
 // --- Standard library ---
 
-// --- AliRoot header files ---
+
 
 class AliEMCALReconstructor : public AliReconstructor {
 
@@ -74,6 +78,8 @@ public:
 
   static TClonesArray* GetDigitsArr() {return fgDigitsArr;}
 
+  void FillMisalMatrixes(AliESDEvent* esd)const ;
+
 private:
   
   Bool_t fDebug; //! verbosity controller
@@ -87,8 +93,9 @@ private:
   static AliEMCALRawUtils*   fgRawUtils;  // raw utilities class -
 					  // only need one per reco
   static TClonesArray*       fgDigitsArr; // Array with EMCAL digits
+  AliEMCALCalibData * fCalibData  ;   //! Calibration database if aval
 
-  ClassDef(AliEMCALReconstructor,6)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliEMCALReconstructor,7)  // Reconstruction algorithm class (Base Class)
 
 }; 
 

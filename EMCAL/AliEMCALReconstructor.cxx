@@ -28,6 +28,8 @@
 #include <TList.h>
 #include <TClonesArray.h>
 #include <TH2.h>
+#include "TGeoManager.h"
+#include "TGeoMatrix.h"
 
 // --- Standard library ---
 
@@ -53,7 +55,7 @@
 #include "AliEMCAL.h"
 #include "AliEMCALHistoUtilities.h"
 #include "AliESDVZERO.h"
-
+#include "AliCDBManager.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
 
@@ -65,12 +67,11 @@ AliEMCALClusterizer* AliEMCALReconstructor::fgClusterizer = 0;   // EMCAL cluste
 TClonesArray*     AliEMCALReconstructor::fgDigitsArr = 0;  // shoud read just once at event
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
-  : fDebug(kFALSE), fList(0), fGeom(0) 
+  : fDebug(kFALSE), fList(0), fGeom(0),fCalibData(0) 
 {
   // ctor
 
   fgRawUtils = new AliEMCALRawUtils;
-  fgClusterizer = new AliEMCALClusterizerv1;
 
   //To make sure we match with the geometry in a simulation file,
   //let's try to get it first.  If not, take the default geometry
@@ -82,6 +83,20 @@ AliEMCALReconstructor::AliEMCALReconstructor()
     fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
   }
 
+  //Get calibration parameters	
+  if(!fCalibData)
+    {
+		AliCDBEntry *entry = (AliCDBEntry*) 
+		AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
+		if (entry) fCalibData =  (AliEMCALCalibData*) entry->GetObject();
+    }
+	
+  if(!fCalibData)
+		AliFatal("Calibration parameters not found in CDB!");
+	
+  //Init the clusterizer with geometry and calibration pointers, avoid doing it twice.
+  fgClusterizer = new AliEMCALClusterizerv1(fGeom, fCalibData); 
+	
   if(!fGeom) AliFatal(Form("Could not get geometry!"));
 
 } 
@@ -91,7 +106,8 @@ AliEMCALReconstructor::AliEMCALReconstructor(const AliEMCALReconstructor & rec)
   : AliReconstructor(rec),
     fDebug(rec.fDebug),
     fList(rec.fList),
-    fGeom(rec.fGeom)
+    fGeom(rec.fGeom),
+	fCalibData(rec.fCalibData) 
 {
   //copy ctor
 }
@@ -125,7 +141,7 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   ReadDigitsArrayFromTree(digitsTree);
   fgClusterizer->InitParameters();
   fgClusterizer->SetOutput(clustersTree);
-
+	
   if(fgDigitsArr && fgDigitsArr->GetEntries()) {
 
     fgClusterizer->SetInput(digitsTree);
@@ -273,7 +289,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   TClonesArray *digits = new TClonesArray("AliEMCALDigit",1000);
   TBranch *branchdig = digitsTree->GetBranch("EMCAL");
   if (!branchdig) { 
-    AliError("can't get the branch with the PHOS digits !");
+    AliError("can't get the branch with the EMCAL digits !");
     return;
   }
   branchdig->SetAddress(&digits);
@@ -284,10 +300,12 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   AliESDCaloCells &emcCells = *(esd->GetEMCALCells());
   emcCells.CreateContainer(nDigits);
   emcCells.SetType(AliESDCaloCells::kEMCALCell);
+  Float_t energy = 0;
   for (Int_t idig = 0 ; idig < nDigits ; idig++) {
     const AliEMCALDigit * dig = (const AliEMCALDigit*)digits->At(idig);
     if(dig->GetAmp() > 0 ){
-      emcCells.SetCell(idignew,dig->GetId(),dig->GetAmp(), dig->GetTime());   
+	  energy = (static_cast<AliEMCALClusterizerv1*> (fgClusterizer))->Calibrate(dig->GetAmp(),dig->GetId());
+      emcCells.SetCell(idignew,dig->GetId(),energy, dig->GetTime());   
       idignew++;
     }
   }
@@ -424,7 +442,46 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   delete clusters;
   
   // printf(" ## AliEMCALReconstructor::FillESD() is ended : ncl %i -> %i ### \n ",nClusters, nClustersNew); 
+
+  //Store EMCAL misalignment matrixes
+  FillMisalMatrixes(esd) ;
+
 }
+
+//==================================================================================
+void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
+	//Store EMCAL matrixes in ESD Header
+	
+	//Check, if matrixes was already stored
+	for(Int_t sm = 0 ; sm < 12; sm++){
+		if(esd->GetEMCALMatrix(sm)!=0)
+			return ;
+	}
+	
+	//Create and store matrixes
+	if(!gGeoManager){
+		AliError("Can not store misal. matrixes: no gGeoManager! \n") ;
+		return ;
+	}
+	//Note, that owner of copied marixes will be header
+	char path[255] ;
+	TGeoHMatrix * m ;
+	for(Int_t sm = 0; sm < 12; sm++){
+		sprintf(path,"/ALIC_1/XEN1_1/SMOD_%d",sm+1) ; //In Geometry modules numbered 1,2,.,5
+		if(sm >= 10) sprintf(path,"/ALIC_1/XEN1_1/SM10_%d",sm-10+1) ;
+		
+		if (gGeoManager->cd(path)){
+			m = gGeoManager->GetCurrentMatrix() ;
+			esd->SetEMCALMatrix(new TGeoHMatrix(*m),sm) ;
+		}
+		else{
+			esd->SetEMCALMatrix(NULL,sm) ;
+		}
+	}
+	
+}
+
+
 
 //__________________________________________________________________________
 void AliEMCALReconstructor::ReadDigitsArrayFromTree(TTree *digitsTree) const

@@ -7,18 +7,18 @@ AliEMCALClusterizerv1.cxx \
 AliEMCALTrack.cxx \
 AliEMCALTracker.cxx \
 AliEMCALPID.cxx \
-AliEMCALQADataMakerRec.cxx
+AliEMCALQADataMakerRec.cxx AliEMCALAodCluster.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
-CINTHDRS:= $(HDRS) AliEMCALGeometry.h 
+CINTHDRS:= $(HDRS) AliEMCALGeometry.h AliEMCALGeoUtils.h 
 
 DHDR:=EMCALrecLinkDef.h
 # have to tune
-EINCLUDE:=PYTHIA6 RAW EVGEN THijing
+EINCLUDE:=PYTHIA6 RAW EVGEN THijing 
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lEMCALbase -lEMCALsim -lSTEER -lESD -lCDB -lSTEERBase \
+                         -lEMCALUtils -lEMCALbase -lEMCALsim -lSTEER -lESD -lCDB -lSTEERBase \
                          -L$(shell root-config --libdir) -lMinuit
 endif

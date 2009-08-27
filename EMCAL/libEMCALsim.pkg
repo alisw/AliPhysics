@@ -17,11 +17,11 @@ HDRS= $(SRCS:.cxx=.h)
 
 DHDR:=EMCALsimLinkDef.h
 # have to tune
-EINCLUDE:=PYTHIA6 RAW EVGEN THijing
+EINCLUDE:=PYTHIA6 RAW EVGEN THijing 
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
-                         -lEMCALbase -lSTEER -lSTEERBase \
+                         -lEMCALUtils -lEMCALbase -lSTEER -lSTEERBase \
                          -lRAWDatarec -lRAWDatasim  -lRAWDatabase \
                          -L$(shell root-config --libdir) -lVMC -lGeom
 endif

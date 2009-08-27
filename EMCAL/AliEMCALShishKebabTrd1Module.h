@@ -14,11 +14,11 @@
 #include <TMath.h>
 #include <TVector2.h>
 
-class AliEMCALGeometry;
+class AliEMCALEMCGeometry;
 
 class AliEMCALShishKebabTrd1Module : public TNamed {
  public:
-  AliEMCALShishKebabTrd1Module(Double_t theta=0.0, AliEMCALGeometry *g=0);
+  AliEMCALShishKebabTrd1Module(Double_t theta=0.0, AliEMCALEMCGeometry *g=0);
   AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd1Module &leftNeighbor);
   void Init(Double_t A, Double_t B);
   void DefineAllStaff();
@@ -54,18 +54,14 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
     } else      {xr = fOK1.Y(); zr = fOK1.X();
     }
   }
-  void GetCenterOfCellInLocalCoordinateofSM_3X3(Int_t ieta, Double_t &xr, Double_t &zr) const
+  void GetCenterOfCellInLocalCoordinateofSM3X3(Int_t ieta, Double_t &xr, Double_t &zr) const
   { // 3X3 case - Nov 9,2006
-    if(ieta < 0) ieta = 0;
-    if(ieta > 2) ieta = 2;
-    //    ieta = ieta<0? ieta=0 : ieta; // check index
-    //ieta = ieta>2? ieta=2 : ieta;
-    xr   = fOK3X3[2-ieta].Y();
-    zr   = fOK3X3[2-ieta].X();
+    if(ieta < 0) ieta = 0; //ieta = ieta<0? ieta=0 : ieta; // check index
+    if(ieta > 2) ieta = 2; //ieta = ieta>2? ieta=2 : ieta;
+    xr   = fOK3X3[2-ieta].Y(); zr   = fOK3X3[2-ieta].X();
   }
-  void GetCenterOfCellInLocalCoordinateofSM_1X1(Double_t &xr, Double_t &zr) const
-  { // 1X1 case - Nov 27,2006
-    // Center of cell is center of module
+  void GetCenterOfCellInLocalCoordinateofSM1X1(Double_t &xr, Double_t &zr) const
+  { // 1X1 case - Nov 27,2006 // Center of cell is center of module
     xr   = fOK.Y() - fgr;
     zr   = fOK.X();
   }
@@ -90,7 +86,7 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
 
  protected:
   // geometry info
-  static AliEMCALGeometry *fgGeometry; //!
+  static AliEMCALEMCGeometry *fgGeometry; //!
   static Double_t fga;        // 2*dx1=2*dy1
   static Double_t fga2;       // 2*dx2
   static Double_t fgb;        // 2*dz1
@@ -117,7 +113,7 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   // 3X3 case - Nov 9,2006
   TVector2 fOK3X3[3];
   // public:
-  ClassDef(AliEMCALShishKebabTrd1Module,2) // TRD1 Shish-Kebab module 
+  ClassDef(AliEMCALShishKebabTrd1Module,3) // TRD1 Shish-Kebab module 
 };
 
 #endif

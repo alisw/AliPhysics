@@ -10,7 +10,7 @@ Set(LIBS MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw
          PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec TRDfast FMDbase FMDsim FMDrec
          TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim
          ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase
-         VZEROsim VZEROrec EMCALbase EMCALsim EMCALrec BCM STRUCT T0base T0sim
+         VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec BCM STRUCT T0base T0sim
          T0rec EVGEN STEERBase ESD AOD CDB STEER THijing hijing FASTSIM microcern
          RAWDatabase RAWDatarec RAWDatasim MUONevaluation HLTbase )
 

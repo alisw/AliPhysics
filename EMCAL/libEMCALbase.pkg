@@ -5,7 +5,6 @@ AliEMCALGeometry.cxx \
 AliEMCALHit.cxx \
 AliEMCALLoader.cxx \
 AliEMCALShishKebabModule.cxx \
-AliEMCALShishKebabTrd1Module.cxx \
 AliEMCALWsuCosmicRaySetUp.cxx \
 AliEMCALRecPoint.cxx \
 AliEMCALClusterizer.cxx \
@@ -15,6 +14,7 @@ AliEMCALDigit.cxx \
 AliEMCALCalibData.cxx \
 AliEMCALCalibHistoProducer.cxx \
 AliEMCALCalibTimeDep.cxx \
+AliEMCALCalibTimeDepCorrection.cxx \
 AliEMCALPreprocessor.cxx \
 AliEMCALSensorTemp.cxx \
 AliEMCALSensorTempArray.cxx \
@@ -25,22 +25,19 @@ AliEMCALRecParam.cxx \
 AliEMCALQAChecker.cxx \
 AliEMCALSpaceFrame.cxx \
 AliEMCALSTURawStream.cxx \
-AliEMCALBiasAPD.cxx \
-AliEMCALCalibMapAPD.cxx \
-AliEMCALCalibAbs.cxx \
-AliEMCALCalibTimeDepCorrection.cxx \
 SMcalib/AliEMCALCCUSBRawStream.cxx 
-
+# AliEMCALShishKebabTrd1Module.cxx \
 
 
 HDRS= $(SRCS:.cxx=.h) 
 
 DHDR:=EMCALbaseLinkDef.h
 # have to tune
-EINCLUDE:=PYTHIA6 RAW EVGEN THijing
+EINCLUDE:=PYTHIA6 RAW EVGEN THijing 
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+			 -lEMCALUtils \
                          -lSTEERBase -lCDB -lSTEER \
                          -lRAWDatarec -lRAWDatabase \
                          -L$(shell root-config --libdir) -lVMC -lGeom -lMinuit

@@ -37,7 +37,8 @@ public:
   
   AliEMCALClusterizerv1() ;         
   AliEMCALClusterizerv1(AliEMCALGeometry* geometry);
-
+  AliEMCALClusterizerv1(AliEMCALGeometry* geometry, AliEMCALCalibData * calib);
+	
   virtual ~AliEMCALClusterizerv1()  ;
 
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
@@ -61,7 +62,7 @@ public:
   virtual void SetMinECut(Float_t mine)                  { fMinECut = mine; }
   virtual void SetECALocalMaxCut(Float_t cut)            { fECALocMaxCut = cut ; }
   virtual void SetECALogWeight(Float_t w)                { fECAW0 = w ; }
-  virtual void SetTimeCut(Float_t gate)                 { fTimeCut = gate ;}
+  virtual void SetTimeCut(Float_t gate)                  { fTimeCut = gate ;}
   virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    {fToUnfold = toUnfold ;}  
   static Double_t ShowerShape(Double_t x, Double_t y) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
@@ -70,7 +71,8 @@ public:
   virtual const char * Version() const { return "clu-v1" ; }  
 
   void   PrintRecoInfo();                        //*MENU*
-
+  void   SetCalibrationParameters(AliEMCALCalibData * calib) { fCalibData = calib ; }
+	
 protected:
 
   virtual void   MakeClusters();            

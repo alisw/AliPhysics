@@ -7,6 +7,7 @@
 /* $Id: $ */
 
 #include <TObject.h>
+#include <TArrayF.h>
 #include "AliEMCALGeoParams.h"
 class TString;
 class TArrayF;
@@ -21,7 +22,7 @@ public:
   AliEMCALCalibTimeDepCorrection();
 
   // interface methods; getting the whole struct should be more efficient though
-  void InitCorrection(Int_t nSM, Int_t nBins, Float_t val); // assign a certain value to all 
+  void InitCorrection(Int_t nSM, Int_t nBins, Float_t val=1.0); // assign a certain value to all 
   // use the methods below with caution: take care that your argument ranges are valid
   void SetCorrection(Int_t smIndex, Int_t iCol, Int_t iRow, Int_t iBin, Float_t val=1.0); // assign a certain value to a given bin
   Float_t GetCorrection(Int_t smIndex, Int_t iCol, Int_t iRow, Int_t iBin) const; // assign a certain value to a given bin

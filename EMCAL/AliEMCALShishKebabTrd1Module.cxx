@@ -26,15 +26,13 @@
 
 #include "AliLog.h"
 #include "AliEMCALShishKebabTrd1Module.h"
-#include "AliEMCALGeometry.h"
+#include "AliEMCALEMCGeometry.h"
 
 #include <cassert>
 
-#include <Riostream.h>
-
 ClassImp(AliEMCALShishKebabTrd1Module)
 
-  AliEMCALGeometry *AliEMCALShishKebabTrd1Module::fgGeometry=0; 
+  AliEMCALEMCGeometry *AliEMCALShishKebabTrd1Module::fgGeometry=0; 
   Double_t AliEMCALShishKebabTrd1Module::fga=0.; 
   Double_t AliEMCALShishKebabTrd1Module::fga2=0.; 
   Double_t AliEMCALShishKebabTrd1Module::fgb=0.; 
@@ -43,7 +41,7 @@ ClassImp(AliEMCALShishKebabTrd1Module)
   Double_t AliEMCALShishKebabTrd1Module::fgtanBetta=0; //
 
 //_____________________________________________________________________________
-AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEMCALGeometry *g) 
+AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEMCALEMCGeometry *g) 
   : TNamed(),
     fOK(),
     fA(0.),
@@ -68,7 +66,7 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
     }
   } else Warning("AliEMCALShishKebabTrd1Module(theta)","You should call this constractor just once !!");
   DefineName(fTheta);
-  AliDebug(1,Form("First module:  theta %1.4f geometry %s",fTheta,g->GetName()));  
+  AliInfo(Form("AliEMCALShishKebabTrd1Module - first module:  theta %1.4f geometry %s",fTheta,g->GetName()));  
 }
 
 //_____________________________________________________________________________
@@ -147,6 +145,7 @@ void AliEMCALShishKebabTrd1Module::Init(Double_t A, Double_t B)
 
 void AliEMCALShishKebabTrd1Module::DefineAllStaff()
 {
+  //Define some parameters	
   DefineName(fTheta);
   // Centers of cells - 2X2 case
   Double_t kk1 = (fga+fga2)/(2.*4.); // kk1=kk2 
@@ -208,14 +207,15 @@ void AliEMCALShishKebabTrd1Module::DefineName(Double_t theta)
 //_____________________________________________________________________________
 Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
 {
- // Get needing module parameters from EMCAL geometry
-  if(!fgGeometry) fgGeometry = AliEMCALGeometry::GetInstance();
+  
+  // Get needing module parameters from EMCAL geometry
   TString sn(fgGeometry->GetName()); // 2-Feb-05
   sn.ToUpper();
   if(!fgGeometry) {
     Warning("GetParameters()"," No geometry ");
     return kFALSE; 
   }
+  
 
   fga        = (Double_t)fgGeometry->GetEtaModuleSize();
   fgb        = (Double_t)fgGeometry->GetLongModuleSize();

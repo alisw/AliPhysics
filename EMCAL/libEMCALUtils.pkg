@@ -1,0 +1,17 @@
+#-*- Mode: Makefile -*-
+
+SRCS          =  AliEMCALGeoUtils.cxx AliEMCALEMCGeometry.cxx  \
+                 AliEMCALShishKebabTrd1Module.cxx AliEMCALPIDUtils.cxx
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR= EMCALUtilsLinkDef.h
+
+EXPORT:=AliEMCALGeoUtils.h AliEMCALEMCGeometry.h AliEMCALShishKebabTrd1Module.h AliEMCALPIDUtils.h
+
+CXXFLAGS+=-D__EMCALUTIL__
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -L$(shell root-config --libdir) -lGeom 
+endif

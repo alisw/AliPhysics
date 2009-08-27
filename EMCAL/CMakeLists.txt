@@ -13,15 +13,19 @@ ${CMAKE_SOURCE_DIR}/ANALYSIS
 ${ROOT_INCLUDE_DIR}
 )
 
+# Make sure the compiler can find files from our library
 include_directories( ${INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ) 
 
+# Make sure the linker can find the library once it is built
 link_directories( ${LINK_DIRECTORIES})
 
 SetModule()
+
+include(CMake_libEMCALUtils.txt)
 
 include(CMake_libEMCALrec.txt)
 
@@ -30,5 +34,3 @@ include(CMake_libEMCALbase.txt)
 include(CMake_libEMCALsim.txt)
 
 include(CMake_libEMCALcalib.txt)
-
-

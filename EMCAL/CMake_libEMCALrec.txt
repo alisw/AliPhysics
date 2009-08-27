@@ -7,6 +7,7 @@ AliEMCALTrack.cxx
 AliEMCALTracker.cxx
 AliEMCALPID.cxx
 AliEMCALQADataMakerRec.cxx
+AliEMCALAodCluster.cxx
 )
 
 # fill list of header files from list of source files

@@ -1,0 +1,16 @@
+# -*- mode: cmake -*-
+
+set(SRCS
+AliEMCALGeoUtils.cxx
+AliEMCALEMCGeometry.cxx
+AliEMCALShishKebabTrd1Module.cxx
+AliEMCALPIDUtils.cxx
+)
+
+# fill list of header files from list of source files
+# by exchanging the file extension
+String(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Create a library called EMCALUtils which includes the source files SRCS
+# The extension is already found. Any nu;ber of sources could be listed here
+AddLibrary(EMCALUtils "${SRCS}" "${HDRS}")
