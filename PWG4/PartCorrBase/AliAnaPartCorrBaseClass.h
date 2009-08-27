@@ -65,10 +65,7 @@ public:
   virtual void SetDebug(Int_t d)   { fDebug = d ; }
   
   virtual Int_t GetEventNumber() const ;
-	
-  virtual Int_t GetLabelShift() const  { return fLabelShift ; }
-  virtual void SetLabelShift(Int_t shift)   { fLabelShift = shift ; }
-	
+		
   virtual AliCaloTrackReader * GetReader() const {return fReader ; }
   virtual void SetReader(AliCaloTrackReader * reader) { fReader = reader ; }
   
@@ -187,7 +184,6 @@ public:
   Bool_t  fRecalculateCaloPID ; // Recalculate PID or use PID weights in calorimeters
   Float_t fMinPt ;              // Maximum pt of (trigger) particles in the analysis
   Float_t fMaxPt ;              // Minimum pt of (trigger) particles in the analysis
-  Int_t   fLabelShift;          // In case AOD analysis with 2 input, shift in lable of second input.
 	
   AliCaloTrackReader * fReader; // Acces to ESD/AOD/MC data
   
@@ -221,7 +217,7 @@ public:
   Float_t fHistoEtaMax ;   // Maximum value of eta histogram range
   Float_t fHistoEtaMin ;   // Minimum value of eta histogram range
   
-  ClassDef(AliAnaPartCorrBaseClass,4)
+  ClassDef(AliAnaPartCorrBaseClass,5)
     } ;
 
 

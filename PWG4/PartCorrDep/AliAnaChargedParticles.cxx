@@ -25,7 +25,6 @@
 
 
 // --- ROOT system ---
-#include "TClonesArray.h"
 #include "TParticle.h"
 #include "TH2F.h"
 
@@ -34,7 +33,6 @@
 #include "AliCaloTrackReader.h"
 #include "AliAODPWG4Particle.h"
 #include "AliStack.h"
-#include "AliCaloPID.h"
 #include "AliFidutialCut.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
@@ -230,7 +228,7 @@ void AliAnaChargedParticles::Init()
   //Init
   //Do some checks
   if(!GetReader()->IsCTSSwitchedOn()){
-    printf("AliAnaChargedParticles::Init() - !!ABORT: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!\n");
+    printf("AliAnaChargedParticles::Init() - STOP!: You want to use CTS tracks in analysis but not read!! \n!!Check the configuration file!!\n");
     abort();
   }
   
@@ -269,6 +267,9 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       tr.SetDetector("CTS");
       tr.SetLabel(track->GetLabel());
       tr.SetTrackLabel(track->GetID(),-1);
+	  //Input from second AOD?
+	  if(GetReader()->GetAODCTSNormalInputEntries() <= i) tr.SetInputFileIndex(1);
+		
       AddAODParticle(tr);
     }//selection
   }//loop
@@ -295,22 +296,19 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     if(IsDataMC()){
       //Play with the MC stack if available		
 	  Int_t mompdg = -1;
-	  Int_t label  = -1;
+	  Int_t label  = tr->GetLabel();
 	  if(GetReader()->ReadStack()){
 		  TParticle * mom = GetMCStack()->Particle(label);
 		  mompdg =TMath::Abs(mom->GetPdgCode());
       }
-	if(GetReader()->ReadAODMCParticles()){
+	  else if(GetReader()->ReadAODMCParticles()){
 		AliAODMCParticle * aodmom = 0;
 		//Get the list of MC particles
-	    if(label < GetLabelShift()) aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(0))->At(label);
-		else if(GetReader()->GetSecondInputAODTree()){
-			label -=GetLabelShift();
-			mompdg =TMath::Abs(aodmom->GetPdgCode());
-		}
-	}
+	    aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(tr->GetInputFileIndex()))->At(label);
+		mompdg =TMath::Abs(aodmom->GetPdgCode());
+	 }
 		
-      if(mompdg==211){
+	 if(mompdg==211){
 	fhPtPion->Fill(tr->Pt());
 	fhPhiPion->Fill(tr->Pt(), tr->Phi());
 	fhEtaPion->Fill(tr->Pt(), tr->Eta());

@@ -20,27 +20,28 @@
 // Clusters from EMCAL matched to tracks
 // and kept in the AOD. Few histograms produced.
 //
-// -- Author: J.L. Klay (Cal Poly)
+// -- Author: J.L. Klay (Cal Poly), M. Heinz (Yale)
 //////////////////////////////////////////////////////////////////////////////
-  
   
 // --- ROOT system --- 
 #include <TH2F.h>
+#include <TParticle.h>
+#include <TNtuple.h>
 #include <TClonesArray.h>
 #include <TObjString.h>
-#include <Riostream.h>
+//#include <Riostream.h>
 
 // --- Analysis system --- 
 #include "AliAnaElectron.h" 
 #include "AliCaloTrackReader.h"
 #include "AliMCAnalysisUtils.h"
+#include "AliAODCaloCluster.h"
 #include "AliFidutialCut.h"
-#include "AliESDCaloCluster.h"
-//#include "AliESDCaloCells.h"
-#include "AliESDtrack.h"
-#include "AliESDEvent.h"
+#include "AliAODTrack.h"
+#include "AliAODPid.h"
 #include "AliCaloPID.h"
-#include "AliVEvent.h"
+#include "AliAODMCParticle.h"
+#include "AliStack.h"
 
 ClassImp(AliAnaElectron)
   
@@ -48,14 +49,16 @@ ClassImp(AliAnaElectron)
 AliAnaElectron::AliAnaElectron() 
  : AliAnaPartCorrBaseClass(), fCalorimeter(""),
   fpOverEmin(0.),fpOverEmax(0.),fResidualCut(0.),
+  fDrCut(0.),fPairDcaCut(0.),fDecayLenCut(0.),fImpactCut(0.),
+  fAssocPtCut(0.),fMassCut(0.),fSdcaCut(0.),fITSCut(0),
+  fWriteNtuple(kFALSE),
   //matching checks
+  fEleNtuple(0),
   fh1pOverE(0),fh1dR(0),fh2EledEdx(0),fh2MatchdEdx(0),fh2dEtadPhi(0),
   fh2dEtadPhiMatched(0),fh2dEtadPhiUnmatched(0),
-  fh2OuterPtVsExtrapPt(0),fh2OuterPhiVsExtrapPhi(0),fh2OuterEtaVsExtrapEta(0),
   fh2TrackPVsClusterE(0),fh2TrackPtVsClusterE(0),fh2TrackPhiVsClusterPhi(0),fh2TrackEtaVsClusterEta(0),
   //reco
   fhPtElectron(0),fhPhiElectron(0),fhEtaElectron(0),
-  //MC
   fhPtConversion(0),fhPhiConversion(0),fhEtaConversion(0),
   fhPtBottom(0),fhPhiBottom(0),fhEtaBottom(0),
   fhPtCharm(0),fhPhiCharm(0),fhEtaCharm(0),
@@ -64,8 +67,11 @@ AliAnaElectron::AliAnaElectron()
   fhPtWDecay(0),fhPhiWDecay(0),fhEtaWDecay(0),
   fhPtZDecay(0),fhPhiZDecay(0),fhEtaZDecay(0),
   fhPtPrompt(0),fhPhiPrompt(0),fhEtaPrompt(0),
-  fhPtUnknown(0),fhPhiUnknown(0),fhEtaUnknown(0)
-//  fhMCElePt(0),fhMCElePhi(0),fhMCEleEta(0)
+  fhPtUnknown(0),fhPhiUnknown(0),fhEtaUnknown(0),
+  //B-tagging
+  fhBtagCut1(0),fhBtagCut2(0),fhBtagCut3(0),
+  //MC
+  fMCEleNtuple(0)
 {
   //default ctor
   
@@ -78,17 +84,18 @@ AliAnaElectron::AliAnaElectron()
 AliAnaElectron::AliAnaElectron(const AliAnaElectron & g) 
  : AliAnaPartCorrBaseClass(g), fCalorimeter(g.fCalorimeter),
    fpOverEmin(g.fpOverEmin),fpOverEmax(g.fpOverEmax),fResidualCut(g.fResidualCut),
+   fDrCut(g.fDrCut),fPairDcaCut(g.fPairDcaCut),fDecayLenCut(g.fDecayLenCut),fImpactCut(g.fImpactCut),
+   fAssocPtCut(g.fAssocPtCut),fMassCut(g.fMassCut),fSdcaCut(g.fSdcaCut),fITSCut(g.fITSCut),
+   fWriteNtuple(g.fWriteNtuple),
    //matching checks
+   fEleNtuple(g.fEleNtuple),
    fh1pOverE(g.fh1pOverE),fh1dR(g.fh1dR),
    fh2EledEdx(g.fh2EledEdx),fh2MatchdEdx(g.fh2MatchdEdx),fh2dEtadPhi(g.fh2dEtadPhi),
    fh2dEtadPhiMatched(g.fh2dEtadPhiMatched),fh2dEtadPhiUnmatched(g.fh2dEtadPhiUnmatched),
-   fh2OuterPtVsExtrapPt(g.fh2OuterPtVsExtrapPt),fh2OuterPhiVsExtrapPhi(g.fh2OuterPhiVsExtrapPhi),
-   fh2OuterEtaVsExtrapEta(g.fh2OuterEtaVsExtrapEta),
    fh2TrackPVsClusterE(g.fh2TrackPVsClusterE),fh2TrackPtVsClusterE(g.fh2TrackPtVsClusterE),
    fh2TrackPhiVsClusterPhi(g.fh2TrackPhiVsClusterPhi),fh2TrackEtaVsClusterEta(g.fh2TrackEtaVsClusterEta),   
    //reco
    fhPtElectron(g.fhPtElectron),fhPhiElectron(g.fhPhiElectron),fhEtaElectron(g.fhEtaElectron),
-   //MC
    fhPtConversion(g.fhPtConversion),fhPhiConversion(g.fhPhiConversion),fhEtaConversion(g.fhEtaConversion),
    fhPtBottom(g.fhPtBottom),fhPhiBottom(g.fhPhiBottom),fhEtaBottom(g.fhEtaBottom),
    fhPtCharm(g.fhPtCharm),fhPhiCharm(g.fhPhiCharm),fhEtaCharm(g.fhEtaCharm),
@@ -97,8 +104,11 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
    fhPtWDecay(g.fhPtWDecay),fhPhiWDecay(g.fhPhiWDecay),fhEtaWDecay(g.fhEtaWDecay),
    fhPtZDecay(g.fhPtZDecay),fhPhiZDecay(g.fhPhiZDecay),fhEtaZDecay(g.fhEtaZDecay),
    fhPtPrompt(g.fhPtPrompt),fhPhiPrompt(g.fhPhiPrompt),fhEtaPrompt(g.fhEtaPrompt),
-   fhPtUnknown(g.fhPtUnknown),fhPhiUnknown(g.fhPhiUnknown),fhEtaUnknown(g.fhEtaUnknown)
-   //   fhMCElePt(g.fhMCElePt),fhMCElePhi(g.fhMCElePhi),fhMCEleEta(g.fhMCEleEta)
+   fhPtUnknown(g.fhPtUnknown),fhPhiUnknown(g.fhPhiUnknown),fhEtaUnknown(g.fhEtaUnknown),
+   //B-tagging
+   fhBtagCut1(g.fhBtagCut1),fhBtagCut2(g.fhBtagCut2),fhBtagCut3(g.fhBtagCut3),
+   //MC
+   fMCEleNtuple(g.fMCEleNtuple)
 {
   // cpy ctor
   
@@ -114,10 +124,16 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fpOverEmin = g.fpOverEmin;
   fpOverEmax = g.fpOverEmax;
   fResidualCut = g.fResidualCut;
-  //fhEnergy = g.fhEnergy;
-  //fhClusMult = g.fhClusMult;
-  //fhClusters = g.fhClusters;
-  //fhDigitsEvent = g.fhDigitsEvent;
+  fDrCut = g.fDrCut;
+  fPairDcaCut = g.fPairDcaCut;
+  fDecayLenCut = g.fDecayLenCut;
+  fImpactCut = g.fImpactCut;
+  fAssocPtCut = g.fAssocPtCut;
+  fMassCut = g.fMassCut;
+  fSdcaCut = g.fSdcaCut;
+  fITSCut = g.fITSCut;
+  fWriteNtuple = g.fWriteNtuple;
+  fEleNtuple = g.fEleNtuple;
   fh1pOverE = g.fh1pOverE;
   fh1dR = g.fh1dR;
   fh2EledEdx = g.fh2EledEdx;
@@ -125,9 +141,6 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fh2dEtadPhi = g.fh2dEtadPhi;
   fh2dEtadPhiMatched = g.fh2dEtadPhiMatched;
   fh2dEtadPhiUnmatched = g.fh2dEtadPhiUnmatched;
-  fh2OuterPtVsExtrapPt = g.fh2OuterPtVsExtrapPt;
-  fh2OuterPhiVsExtrapPhi = g.fh2OuterPhiVsExtrapPhi;
-  fh2OuterEtaVsExtrapEta = g.fh2OuterEtaVsExtrapEta;
   fh2TrackPVsClusterE = g.fh2TrackPVsClusterE;
   fh2TrackPtVsClusterE = g.fh2TrackPtVsClusterE;
   fh2TrackPhiVsClusterPhi = g.fh2TrackPhiVsClusterPhi;
@@ -162,12 +175,12 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fhPtUnknown = g.fhPtUnknown;
   fhPhiUnknown = g.fhPhiUnknown;
   fhEtaUnknown = g.fhEtaUnknown;
+  fMCEleNtuple = g.fMCEleNtuple;
 
-  /*
-  fhMCElePt = g.fhMCElePt;
-  fhMCElePhi = g.fhMCElePhi;
-  fhMCEleEta = g.fhMCEleEta;
-  */
+  //B-tagging
+  fhBtagCut1 = g.fhBtagCut1;
+  fhBtagCut2 = g.fhBtagCut2;
+  fhBtagCut3 = g.fhBtagCut3;
 
   return *this;
   
@@ -189,6 +202,12 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ElectronHistos") ; 
   
+  //created ele ntuple for further analysis
+  if(fWriteNtuple) {
+    fEleNtuple = new TNtuple("EleNtuple","Electron Ntuple","mclabel:pt:phi:eta:p:E:deta:dphi:nCells:dEdx:eProb:impXY:impZ");//14 vars
+    outputContainer->Add(fEleNtuple) ;
+  }
+
   Int_t nptbins  = GetHistoNPtBins();
   Int_t nphibins = GetHistoNPhiBins();
   Int_t netabins = GetHistoNEtaBins();
@@ -206,9 +225,6 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   fh2dEtadPhi = new TH2F("h2dEtadPhi","#Delta#eta vs. #Delta#phi for all track-cluster pairs",200,0.,1.4,300,0.,TMath::Pi());
   fh2dEtadPhiMatched = new TH2F("h2dEtadPhiMatched","#Delta#eta vs. #Delta#phi for matched track-cluster pairs",200,0.,1.4,300,0.,TMath::Pi());
   fh2dEtadPhiUnmatched = new TH2F("h2dEtadPhiUnmatched","#Delta#eta vs. #Delta#phi for unmatched track-cluster pairs",200,0.,1.4,300,0.,TMath::Pi());
-  fh2OuterPtVsExtrapPt = new TH2F("h2OuterPtVsExtrapPt","h2OuterPtVsExtrapPt",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
-  fh2OuterPhiVsExtrapPhi = new TH2F("h2OuterPhiVsExtrapPhi","h2OuterPhiVsExtrapPhi",nphibins,phimin,phimax,nphibins,phimin,phimax);
-  fh2OuterEtaVsExtrapEta = new TH2F("h2OuterEtaVsExtrapEta","h2OuterEtaVsExtrapEta",netabins,etamin,etamax,netabins,etamin,etamax);
 
   fh2TrackPVsClusterE = new TH2F("h2TrackPVsClusterE","h2TrackPVsClusterE",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
   fh2TrackPtVsClusterE = new TH2F("h2TrackPtVsClusterE","h2TrackPtVsClusterE",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
@@ -222,9 +238,6 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fh2dEtadPhi) ;
   outputContainer->Add(fh2dEtadPhiMatched) ;
   outputContainer->Add(fh2dEtadPhiUnmatched) ;
-  outputContainer->Add(fh2OuterPtVsExtrapPt) ;
-  outputContainer->Add(fh2OuterPhiVsExtrapPhi) ;
-  outputContainer->Add(fh2OuterEtaVsExtrapEta) ;
   outputContainer->Add(fh2TrackPVsClusterE) ;
   outputContainer->Add(fh2TrackPtVsClusterE) ;
   outputContainer->Add(fh2TrackPhiVsClusterPhi) ;
@@ -237,6 +250,15 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhPtElectron) ; 
   outputContainer->Add(fhPhiElectron) ; 
   outputContainer->Add(fhEtaElectron) ;
+
+  //B-tagging
+  fhBtagCut1 = new TH2F("hbtag_cut1","B-tag result cut1", 10,0,10 ,nptbins,ptmin,ptmax);
+  fhBtagCut2 = new TH2F("hbtag_cut2","B-tag result cut2", 10,0,10 ,nptbins,ptmin,ptmax);
+  fhBtagCut3 = new TH2F("hbtag_cut3","B-tag result cut3", 10,0,10 ,nptbins,ptmin,ptmax);
+  
+  outputContainer->Add(fhBtagCut1) ;
+  outputContainer->Add(fhBtagCut2) ;
+  outputContainer->Add(fhBtagCut3) ;
   
   if(IsDataMC()){
     
@@ -295,16 +317,12 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     outputContainer->Add(fhPtUnknown);
     outputContainer->Add(fhPhiUnknown);
     outputContainer->Add(fhEtaUnknown);
-
-  /*
-    fhMCElePt = new TH1F("hMCElePt","MC Electron pT",nptbins,ptmin,ptmax);
-    fhMCElePhi = new TH2F("hMCElePhi","MC Electron phi",nptbins,ptmin,ptmax,nphibins,phimin,phimax);
-    fhMCEleEta = new TH2F("hMCEleEta","MC Electron eta",nptbins,ptmin,ptmax,netabins,etamin,etamax);
     
-    outputContainer->Add(fhMCElePt) ; 
-    outputContainer->Add(fhMCElePhi) ; 
-    outputContainer->Add(fhMCEleEta) ;
-  */
+    //created ele ntuple for further analysis
+    if(fWriteNtuple) {
+      fMCEleNtuple = new TNtuple("MCEleNtuple","MC Electron Ntuple","mclabel:pt:phi:eta:x:y:z");
+      outputContainer->Add(fMCEleNtuple) ;
+    }
 
   }//Histos with MC
   
@@ -339,18 +357,17 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
 //____________________________________________________________________________
 void AliAnaElectron::Init()
 {
-  
-  //Init
-  //Do some checks
-//  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn()){
-//    printf("AliAnaElectron::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
-//    abort();
-//  }
-//  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn()){
-//    printf("AliAnaElectron::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
-//    abort();
-//  }
-  
+
+  //do some initialization
+  if(fCalorimeter == "PHOS") {
+    printf("AliAnaElectron::Init() - !!STOP: You want to use PHOS in analysis but this is not (yet) supported!!\n!!Check the configuration file!!\n");
+    fCalorimeter = "EMCAL";
+  }
+  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn()){
+    printf("AliAnaElectron::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!!\n!!Check the configuration file!!\n");
+    abort();
+  }
+
 }
 
 
@@ -368,6 +385,15 @@ void AliAnaElectron::InitParameters()
   fpOverEmin = 0.5;
   fpOverEmax = 1.5;
   fResidualCut = 0.02;
+  //B-tagging
+  fDrCut       = 1.0; 
+  fPairDcaCut  = 0.02;
+  fDecayLenCut = 1.0;
+  fImpactCut   = 0.5;
+  fAssocPtCut  = 1.0;
+  fMassCut     = 1.5;
+  fSdcaCut     = 0.1;
+  fITSCut      = 4;
 
 }
 
@@ -381,118 +407,63 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   // Also fill some QA histograms
   //
 
-  //Search for electrons in fCalorimeter 
-  //TRefArray * caloData = new TRefArray(); 
-  //TRefArray * ctsData = new TRefArray();
-	cout<<"Event type "<<GetReader()->GetInputEvent()->GetName()<<endl;
-	if((strcmp(GetReader()->GetInputEvent()->GetName(),"AliESDEvent"))) {
-		printf("AliAnaElectron::MakeAnalysisFillAOD() - !!STOP: Analysis working only with ESDs!!\n");
-		abort();
-	}
+  TObjArray *cl = new TObjArray();
 
   //Get vertex for cluster momentum calculation
   Double_t vertex[]={0,0,0} ; //vertex ;
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
-  //Get bfield for track extrapolation to Calorimeter
-  Double_t bfield = GetReader()->GetInputEvent()->GetMagneticField();  //from V0 finder
-  Double_t radius = 0.;
 
-  //Get the CTS tracks
-  //ctsData = GetAODCTS();
-  //Select the Calorimeter of the electron
+  //Select the calorimeter of the electron
   if(fCalorimeter == "PHOS") {
-    //caloData = GetAODPHOS();
-    radius = 425.0;  //FIXME
-  } else if (fCalorimeter == "EMCAL") {
-    //caloData = GetAODEMCAL();
-    radius = 441.0;  //[cm] EMCAL radius +13cm FIXME
+    cl = GetAODPHOS();
   }
-
-  //if(!(ctsData && caloData) || (ctsData->GetEntriesFast() == 0 || caloData->GetEntriesFast() == 0)) return;
-  //if(!caloData ||  caloData->GetEntriesFast() == 0) return;
+  else if (fCalorimeter == "EMCAL") {
+    cl = GetAODEMCAL();
+  }
 
   ////////////////////////////////////////////////
   //Start from tracks and get associated clusters 
-  //
-  //Note: an alternative method would be to start from clusters and get associated tracks -
-  //which is better?  For electrons, probably tracks-->clusters
   ////////////////////////////////////////////////
-//  for(Int_t itrk = 0; itrk < ctsData->GetEntriesFast(); itrk++){
-//    AliAODTrack *track = (AliAODTrack*)ctsData->At(itrk);
+  if(!GetAODCTS() || GetAODCTS()->GetEntriesFast() == 0) return ;
+  Int_t ntracks = GetAODCTS()->GetEntriesFast();
+  if(GetDebug() > 0)
+    printf("AliAnaElectron::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
 
-    AliESDEvent *esd = (AliESDEvent*) GetReader()->GetInputEvent();
-    Int_t nTracks   = esd->GetNumberOfTracks() ;
-    for (Int_t itrk =  0; itrk <  nTracks; itrk++) {////////////// track loop
-      AliESDtrack * track = (AliESDtrack*) esd->GetTrack(itrk) ;
-      //extrapolate track to Calorimeter
-      Double_t emcmom[3] = {0.,0.,0.};
-      Double_t emcpos[3] = {0.,0.,0.};
-      AliExternalTrackParam *outerparam = (AliExternalTrackParam*)track->GetOuterParam();
-      if(!outerparam) continue;
-      
-      Bool_t okpos = outerparam->GetXYZAt(radius,bfield,emcpos);
-      Bool_t okmom = outerparam->GetPxPyPzAt(radius,bfield,emcmom);
-      if(!(okpos && okmom)) continue;
-      
-      TVector3 pos(emcpos[0],emcpos[1],emcpos[2]);
-      TVector3 mom(emcmom[0],emcmom[1],emcmom[2]);
-      Double_t tphi = pos.Phi();
-      Double_t teta = pos.Eta();
-      Double_t tmom = mom.Mag();
-      
-      TLorentzVector mom2(mom,0.);
-      Bool_t in =  GetFidutialCut()->IsInFidutialCut(mom2,fCalorimeter) ;
-      if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, eta %2.2f in fidutial cut %d\n",track->Pt(), track->Phi(), track->Eta(), in);
-      if(mom.Pt() > GetMinPt() && in) {
+  //Unfortunately, AliAODTracks don't have associated EMCAL clusters.
+  //we have to redo track-matching, I guess
+  Int_t iCluster = -999;
 
-        printf("\tExtrapolated pt %2.2f, phi %2.2f, eta %2.2f \n",mom.Pt(),mom.Phi(),mom.Eta());
-	fh2OuterPtVsExtrapPt->Fill(mom.Pt(),track->Pt());
-	fh2OuterPhiVsExtrapPhi->Fill(mom.Phi(),track->Phi());
-	fh2OuterEtaVsExtrapEta->Fill(mom.Eta(),track->Eta());
+  for (Int_t itrk =  0; itrk <  ntracks; itrk++) {////////////// track loop
+    iCluster = -999; //start with no match
+    AliAODTrack * track = (AliAODTrack*) (GetAODCTS()->At(itrk)) ;
+    AliAODPid* pid = (AliAODPid*) track->GetDetPid();
 
-	Int_t ntot = esd->GetNumberOfCaloClusters();//caloData->GetEntriesFast();
-	Double_t res = 999.;
-	Double_t pOverE = -999.;
-	
-	//For tracks in EMCAL acceptance, pair them with all clusters
-	//and fill the dEta vs dPhi for these pairs:
-	for(Int_t iclus = 0; iclus < esd->GetNumberOfCaloClusters(); iclus++) {
-	  AliESDCaloCluster * clus = (AliESDCaloCluster*) esd->GetCaloCluster(iclus);
-	  if(!clus) continue;
-	  if(fCalorimeter == "PHOS"  && !clus->IsPHOS())  continue;
-	  if(fCalorimeter == "EMCAL" && !clus->IsEMCAL()) continue;
-	  
-	  Float_t x[3];
-	  clus->GetPosition(x);
-	  TVector3 cluspos(x[0],x[1],x[2]);
-	  Double_t deta = teta - cluspos.Eta();
-	  Double_t dphi = tphi - cluspos.Phi();
-	  if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
-	  if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
-	  if(track->GetEMCALcluster() < -9000) fh2dEtadPhiUnmatched->Fill(deta,dphi);
-	  fh2dEtadPhi->Fill(deta,dphi);
-	  fh2TrackPVsClusterE->Fill(clus->E(),track->P());
-	  fh2TrackPtVsClusterE->Fill(clus->E(),track->Pt());
-	  fh2TrackPhiVsClusterPhi->Fill(cluspos.Phi(),mom.Phi());
-	  fh2TrackEtaVsClusterEta->Fill(cluspos.Eta(),mom.Eta());
-	}
-	
-	/////////////////////////////////
-	//Perform electron cut analysis//
-	/////////////////////////////////
-	Bool_t isElectron = kFALSE;
-	
-	Int_t iCluster = track->GetEMCALcluster();
-	if(iCluster < -9000) {printf("NOT MATCHED"); continue; }//no match
-	if(iCluster > ntot) continue; //index out of range; shouldn't happen
-	if(iCluster < 0 && iCluster > -9000) { //this should only happen in MC events
-	  printf("AliAnaElectron::MakeAnalysisFillAOD() - Track has a fake match: %d\n",iCluster);
-	  continue;
-	}
-	AliESDCaloCluster * clus = (AliESDCaloCluster*) esd->GetCaloCluster(iCluster);
+    Double_t emcpos[3];
+    pid->GetEMCALPosition(emcpos);
+    Double_t emcmom[3];
+    pid->GetEMCALMomentum(emcmom);
+    
+    TVector3 pos(emcpos[0],emcpos[1],emcpos[2]);
+    TVector3 mom(emcmom[0],emcmom[1],emcmom[2]);
+    Double_t tphi = pos.Phi();
+    Double_t teta = pos.Eta();
+    Double_t tmom = mom.Mag();
+
+    TLorentzVector mom2(mom,0.);
+    Bool_t in =  GetFidutialCut()->IsInFidutialCut(mom2,fCalorimeter) ;
+    if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, eta %2.2f in fidutial cut %d\n",track->Pt(), track->Phi(), track->Eta(), in);
+    if(mom.Pt() > GetMinPt() && in) {
+            
+      Int_t ntot = cl->GetEntriesFast();
+      Double_t res = 999.;
+      Double_t pOverE = -999.;
+
+      Bool_t isElectron = kFALSE;      
+      //For tracks in EMCAL acceptance, pair them with all clusters
+      //and fill the dEta vs dPhi for these pairs:
+      for(Int_t iclus = 0; iclus < ntot; iclus++) {
+	AliAODCaloCluster * clus = (AliAODCaloCluster*) (cl->At(iclus));
 	if(!clus) continue;
-	if(fCalorimeter == "PHOS"  && !clus->IsPHOS())  continue;
-	if(fCalorimeter == "EMCAL" && !clus->IsEMCAL()) continue;
 	
 	Float_t x[3];
 	clus->GetPosition(x);
@@ -501,63 +472,100 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	Double_t dphi = tphi - cluspos.Phi();
 	if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
 	if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
+	fh2dEtadPhi->Fill(deta,dphi);
+	fh2TrackPVsClusterE->Fill(clus->E(),track->P());
+	fh2TrackPtVsClusterE->Fill(clus->E(),track->Pt());
+	fh2TrackPhiVsClusterPhi->Fill(cluspos.Phi(),mom.Phi());
+	fh2TrackEtaVsClusterEta->Fill(cluspos.Eta(),mom.Eta());
+
 	res = sqrt(dphi*dphi + deta*deta);
 	fh1dR->Fill(res);
 	fh2dEtadPhiMatched->Fill(deta,dphi);
-	
+
+	/////////////////////////////////
+	//Perform electron cut analysis//
+	/////////////////////////////////
+	//Good match
 	if(res < fResidualCut) {
-	  //Good match
-	  fh2MatchdEdx->Fill(track->P(),track->GetTPCsignal());
+	  iCluster = iclus;
+
+	  Double_t xyz[3];
+	  track->XYZAtDCA(xyz);
+	  Float_t xy = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+	  Float_t z = xyz[2];
+
+	  //Double_t tpcProb[5]; //e,pi,mu,k,p
+	  //pid->GetTPCpid(tpcProb);
+	  
+	  Float_t mclabel = -1;
+
+	  if(IsDataMC()) {
+	    //Input from second AOD?
+		Int_t input = 0;
+	    if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) input = 1;
+	    mclabel = (Float_t)GetMCAnalysisUtils()->CheckOrigin(track->GetLabel(),GetReader(),input);
+		//Do you want the cluster or the track label?
+//		if(GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1;
+//		mclabel = (Float_t)GetMCAnalysisUtils()->CheckOrigin(clus->GetLabel(0),GetReader(),input);
+		  
+	  }
+
+	  if(fWriteNtuple) {
+	    fEleNtuple->Fill(mclabel,track->Pt(),track->Phi(),track->Eta(),track->P(),clus->E(),deta,dphi,clus->GetNCells(),pid->GetTPCsignal(),0.,xy,z);
+	  }
+	  
+	  fh2MatchdEdx->Fill(track->P(),pid->GetTPCsignal());
 	  
 	  Double_t energy = clus->E(); 
 	  if(energy > 0) pOverE = tmom/energy;
 	  fh1pOverE->Fill(pOverE);
 	  
-	  Int_t mult = clus->GetNumberOfDigits();
-	  //	Int_t mcClus = clus->GetLabel();
-	  AliESDCaloCluster * esdcalo = (AliESDCaloCluster*) esd->GetCaloCluster(clus->GetID());
-	  Int_t matchIndex = esdcalo->GetTrackMatched();
-	  
-	  if(matchIndex != itrk) printf("Track and cluster don't agree! track %d, cluster %d",itrk,matchIndex);
-	  if(mult < 2) printf("Single digit cluster.");
+	  Int_t mult = clus->GetNCells();
+	  if(mult < 2 &&  GetDebug() > 0) printf("Single digit cluster.\n");
 	  
 	  //////////////////////////////
 	  //Electron cuts happen here!//
 	  //////////////////////////////
 	  if(pOverE > fpOverEmin && pOverE < fpOverEmax) isElectron = kTRUE;
+	} else {
+	  fh2dEtadPhiUnmatched->Fill(deta,dphi);
+	}
 	  
-	} //good matching residual
-	
-	///////////////////////////
-	//Fill AOD with electrons//
-	///////////////////////////
-	if(isElectron) {
-	  
-	  fh2EledEdx->Fill(track->P(),track->GetTPCsignal());
+      } //calocluster loop
 
+      ///////////////////////////
+      //Fill AOD with electrons//
+      ///////////////////////////
+      if(isElectron) {
+
+	//B-tagging
+	Int_t btag = GetBtag(track);
+	
+	fh2EledEdx->Fill(track->P(),pid->GetTPCsignal());
+	
 	Double_t eMass = 0.511/1000; //mass in GeV
 	Double_t eleE = sqrt(track->P()*track->P() + eMass*eMass);
 	AliAODPWG4Particle tr = AliAODPWG4Particle(track->Px(),track->Py(),track->Pz(),eleE);
-	tr.SetLabel(tr.GetLabel());
-	tr.SetCaloLabel(clus->GetID(),-1); //sets the indices of the original caloclusters
+	tr.SetLabel(track->GetLabel());
+	tr.SetCaloLabel(iCluster,-1); //sets the indices of the original caloclusters
+	tr.SetTrackLabel(track->GetID(),-1); //sets the indices of the original tracks
 	tr.SetDetector(fCalorimeter);
+	if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
 	tr.SetPdg(11);
-	
+	tr.SetBtag(btag);
+
 	//Play with the MC stack if available
 	//Check origin of the candidates
 	if(IsDataMC()){
 	  
 	  //FIXME:  Need to re-think this for track-oriented analysis
-		Int_t input = 0;
-		//Input from second AOD?
-		if(GetReader()->GetAODEMCALNormalInputEntries() <= iCluster) input = 1;
-	  tr.SetTag(GetMCAnalysisUtils()->CheckOrigin(clus->GetLabel(),GetReader(),input));
+	  tr.SetTag(GetMCAnalysisUtils()->CheckOrigin(tr.GetLabel(),GetReader(),tr.GetInputFileIndex()));
 	  
 	  if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillAOD() - Origin of candidate %d\n",tr.GetTag());
 	}//Work with stack also   
-
+	
 	AddAODParticle(tr);
-
+	
 	if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Electron selection cuts passed: pT %3.2f, pdg %d\n",tr.Pt(),tr.GetPdg());	
       }//electron
     }//pt, fiducial selection                                                                                  
@@ -565,15 +573,45 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   
   //FIXME:  Should we also check from the calocluster side, just in
   //case?
-
+  
   if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD()  End fill AODs \n");  
-
+  
 }
 
 //__________________________________________________________________
 void  AliAnaElectron::MakeAnalysisFillHistograms() 
 {
   //Do analysis and fill histograms
+
+  AliStack * stack = 0x0;
+  TParticle * primary = 0x0;
+  TClonesArray * mcparticles0 = 0x0;
+  TClonesArray * mcparticles1 = 0x0;
+  AliAODMCParticle * aodprimary = 0x0;
+
+  if(IsDataMC()) {
+    if(GetReader()->ReadStack()){
+      stack =  GetMCStack() ;
+      
+      if(!stack)
+	printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no stack ***: \n");
+      
+    }
+    else if(GetReader()->ReadAODMCParticles()){
+      //Get the list of MC particles
+      mcparticles0 = GetReader()->GetAODMCParticles(0);
+      if(!mcparticles0 && GetDebug() > 0)     {
+	printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
+      }
+      if(GetReader()->GetSecondInputAODTree()){
+	mcparticles1 = GetReader()->GetAODMCParticles(1);
+	if(!mcparticles1 && GetDebug() > 0)     {
+	  printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
+	}
+      }
+      
+    }
+  }// is data and MC
   
   //Loop on stored AOD electrons
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
@@ -663,28 +701,198 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
   //Fill histograms of pure MC kinematics from the stack//
   ////////////////////////////////////////////////////////
   if(IsDataMC()) {
-	  
-	  
-	  if(GetReader()->ReadStack()){
-		AliStack * stack =  GetMCStack() ;
+    if(GetReader()->ReadStack()) {
+      for(Int_t ipart = 0; ipart < stack->GetNtrack(); ipart++) {
+	primary = stack->Particle(ipart);
+	Int_t pdgcode = primary->GetPdgCode();
+	//we only care about electrons
+	if(abs(pdgcode) != 11) continue;
+	//we only want TRACKABLE electrons (TPC 85-250cm)
+	if(primary->R() > 200.) continue;
+	
+	//find out what the ancestry of this electron is
+	Float_t mclabel = -1;
+	Int_t input = 0;
+	mclabel = (Float_t)GetMCAnalysisUtils()->CheckOrigin(ipart,GetReader(),input);
 
-		  if(!stack)
-			  printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no stack ***: \n");
-
-	  }
-	  else if(GetReader()->ReadAODMCParticles()){
-		  Int_t input = 0; //Fix input, check if AOD has 2 inputs
-		  TClonesArray * mcparticles = GetReader()->GetAODMCParticles(input);
-		  if(!mcparticles)
-			  printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no MCParticles ***: \n");
-	  }
-
-    //FIXME:  Fill pure kine histograms here
-
-  }
-
+	//fill ntuple
+	if(fWriteNtuple) {
+	  fMCEleNtuple->Fill(mclabel,primary->Pt(),primary->Phi(),primary->Eta(),primary->Vx(),primary->Vy(),primary->Vz());
+	}
+	
+      }
+      
+    } else if(GetReader()->ReadAODMCParticles()) {
+      Int_t npart0 = mcparticles0->GetEntriesFast();
+	  Int_t npart1 = 0;
+	  if(mcparticles1) npart1 = mcparticles1->GetEntriesFast();
+      Int_t npart = npart0+npart1;
+      for(Int_t ipart = 0; ipart < npart; ipart++) {
+	if(ipart < npart0) aodprimary = (AliAODMCParticle*)mcparticles0->At(ipart);
+	else aodprimary = (AliAODMCParticle*)mcparticles1->At(ipart-npart0);
+	if(!aodprimary) {
+	  printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", ipart);
+	  continue;
+	}
+	Int_t pdgcode = aodprimary->GetPdgCode();
+	//we only care about electrons
+	if(abs(pdgcode) != 11) continue;
+	//we only want TRACKABLE electrons (TPC 85-250cm)
+	Double_t radius = TMath::Sqrt(aodprimary->Xv()*aodprimary->Xv() + aodprimary->Yv()*aodprimary->Yv());
+	if(radius > 200.) continue;
+	
+	//find out what the ancestry of this electron is
+	Float_t mclabel = -1;
+	Int_t input = 0;
+	Int_t ival = ipart;
+	if(ipart > npart0) { ival -= npart0; input = 1;}
+	mclabel = (Float_t)GetMCAnalysisUtils()->CheckOrigin(ival,GetReader(),input);
+	
+	//fill ntuple
+	if(fWriteNtuple) {
+	  fMCEleNtuple->Fill(mclabel,aodprimary->Pt(),aodprimary->Phi(),aodprimary->Eta(),aodprimary->Xv(),aodprimary->Yv(),aodprimary->Zv());
+	}
+	
+      }
+    }
+  } //pure MC kine histos
+    
 }
 
+//__________________________________________________________________
+Int_t AliAnaElectron::GetBtag(AliAODTrack * tr )
+{
+  
+  //UChar_t itsmap = tr->GetITSClusterMap();
+  //JLK 
+  //DON'T KNOW HOW TO USE THIS???
+  //if (itsmap < fITSCut) return 0;
+  //JLK
+  Double_t x[3];
+  Bool_t gotit = tr->XYZAtDCA(x);
+  if(!gotit) { printf("##Problem getting impact parameter!"); return 0; }
+
+  Double_t d1 = TMath::Sqrt(x[0]*x[0] + x[1]*x[1]);
+  if (TMath::Abs(d1) > fImpactCut ) return 0;
+  if (TMath::Abs(x[2]) > fImpactCut ) return 0;
+
+  Double_t p1[3]={0,0,0};
+  gotit = tr->PxPyPzAtDCA(p1);
+  if(!gotit) { printf("##Problem getting inner P"); return 0;}
+
+  TVector3 mom1(p1[0],p1[1],p1[2]) ;
+  int nvtx1 = 0;
+  int nvtx2 = 0;
+  int nvtx3 = 0;
+
+  for (int k2 =0; k2 < GetAODCTS()->GetEntriesFast() ; k2++) {
+    //loop over assoc
+    AliAODTrack* track2 = (AliAODTrack*) (GetAODCTS()->At(k2));
+    int id1 = tr->GetID();
+    int id2 = track2->GetID();
+    if(id1 == id2) continue;
+
+    gotit = tr->XYZAtDCA(x);
+    if(!gotit) { printf("##Problem getting impact parameter!"); continue; }
+
+    d1 = TMath::Sqrt(x[0]*x[0] + x[1]*x[1]);
+    if (TMath::Abs(d1) > fImpactCut ) continue;
+    if (TMath::Abs(x[2]) > fImpactCut ) continue;
+
+    //JLK
+    //HOW TO IMPLEMENT?
+    //if (track2->GetITSclusters(0) < fITSCut) continue;
+    //JLK
+
+    Double_t p2[3]={0,0,0};
+    gotit = track2->PxPyPzAtDCA(p2);
+    if(!gotit) { printf("###Problem getting inner P"); continue; }
+
+    TVector3 mom2(p2[0],p2[1],p2[2]) ;
+    if (mom2.Perp() <fAssocPtCut) continue;
+    
+    float dphi = mom2.Phi() - mom1.Phi();
+    float deta = mom2.Eta() - mom1.Eta();
+    float dr = sqrt(deta*deta + dphi*dphi);
+
+    if (dr> fDrCut) continue;
+    
+    Double_t sDca1 = ComputeSignDca(tr, track2, 1.0);
+    printf("### sec vtx-signdca :%f",sDca1);
+    if (sDca1 > 0.1) nvtx1++;
+    Double_t sDca2 = ComputeSignDca(tr, track2, 1.5);
+    printf("### sec vtx-signdca :%f",sDca2);
+    if (sDca2 > 0.1) nvtx2++;
+    Double_t sDca3 = ComputeSignDca(tr, track2, 1.8);
+    printf("### sec vtx-signdca :%f",sDca3);
+    if (sDca3 > 0.1) nvtx3++;
+  } //loop over hadrons
+
+  if (nvtx1>0) printf("result1 of btagging: %d \n",nvtx1);
+  if (nvtx2>0) printf("result2 of btagging: %d \n",nvtx2);
+  if (nvtx3>0) printf("result3 of btagging: %d \n",nvtx3);
+
+  //fill QA histograms
+  fhBtagCut1->Fill(nvtx1,mom1.Perp());
+  fhBtagCut2->Fill(nvtx2,mom1.Perp());
+  fhBtagCut3->Fill(nvtx3,mom1.Perp());
+
+  return nvtx2;
+}
+
+//__________________________________________________________________
+Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , float masscut)
+{
+  //Compute the signed dca between two tracks
+  //and return the result
+  //This method needs to be fixed to work with AODS
+
+  Double_t signDca=-999;
+  //Do something to avoid compiler warning
+  if(GetDebug() > 1 ) printf("Labels: track1 %d, track2 %d, masscut %f", tr->GetLabel(), tr2->GetLabel(), masscut);
+  /*
+  //=====Now calculate DCA between both tracks=======  
+  float massE = 0.000511;
+  float massK = 0.493677;
+
+  //No bfield member in AliCaloTrackReader...
+  float bfield = ev->GetMagneticField();
+
+  Double_t vertex[3] ;
+  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
+  TVector3 PV(vertex[0],vertex[1],vertex[2]) ;
+
+  double xplane1=0; double xplane2=0;
+  double pairdca = tr->GetDCA(tr2,bfield,xplane1,xplane2);
+
+  AliExternalTrackParam innerparam1(*tr);
+  AliExternalTrackParam innerparam2(*track2);
+  AliESDv0 bvertex(innerparam1,id1,innerparam2,id2);
+  double vx,vy,vz;
+  bvertex.GetXYZ(vx,vy,vz);
+  double emom[3];
+  double hmom[3];
+  innerparam1.GetPxPyPz(emom);
+  innerparam2.GetPxPyPz(hmom);
+  TVector3 emomAtB(emom[0],emom[1],emom[2]);
+  TVector3 hmomAtB(hmom[0],hmom[1],hmom[2]);
+  TVector3 secvtxpt(vx,vy,vz);
+  TVector3 decayvector(0,0,0);
+  decayvector = secvtxpt - PV; //decay vector from PrimVtx
+  float decaylength = decayvector.Mag();
+
+  if (emomAtB.Mag()>0 && pairdca < fPairDcaCut && decaylength < fDecayLenCut ) {
+    TVector3 sumMom = emomAtB+hmomAtB;
+    float ener1 = sqrt(pow(emomAtB.Mag(),2) + massE*massE);
+    float ener2 = sqrt(pow(hmomAtB.Mag(),2) + massK*massK);
+    float mass = sqrt(pow((ener1+ener2),2) - pow(sumMom.Mag(),2));
+    if (mass > masscut) signDca = decayvector.Dot(emomAtB)/emomAtB.Mag();
+    printf("### sec vtx-signdca :%f",signDca);
+  }
+  */
+  
+  return signDca;
+}
 
 //__________________________________________________________________
 void AliAnaElectron::Print(const Option_t * opt) const
@@ -734,7 +942,7 @@ void  AliAnaElectron::Terminate(TList* outputList)
   //distributed analysis.                
   //ReadHistograms(outputList);
 
-  printf(" AliAnaElectron::Terminate()  *** %s Report: %d outputs", GetName(), outputList->GetEntries()) ;
+  printf(" AliAnaElectron::Terminate()  *** %s Report: %d outputs\n", GetName(), outputList->GetEntries()) ;
 
 }
 

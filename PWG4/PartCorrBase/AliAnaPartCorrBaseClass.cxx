@@ -41,7 +41,7 @@ ClassImp(AliAnaPartCorrBaseClass)
 //_______________________________________________
   AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass() : 
     TObject(), fDataMC(0), fDebug(0), fCheckFidCut(0),
-    fCheckCaloPID(0), fRecalculateCaloPID(0), fMinPt(0), fMaxPt(0), fLabelShift(0),
+    fCheckCaloPID(0), fRecalculateCaloPID(0), fMinPt(0), fMaxPt(0),
     fReader(0x0), fInputAODBranch(0x0), fInputAODName(""),
     fOutputAODBranch(0x0), fNewAOD(kFALSE),
     fOutputAODName(""), fOutputAODClassName(""),
@@ -69,7 +69,7 @@ AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass &
   TObject(), fDataMC(abc.fDataMC), fDebug(abc.fDebug),
   fCheckFidCut(abc.fCheckFidCut),  fCheckCaloPID(abc. fCheckCaloPID),
   fRecalculateCaloPID(abc.fRecalculateCaloPID),
-  fMinPt(abc.fMinPt), fMaxPt(abc.fMaxPt), fLabelShift(abc.fLabelShift), fReader(abc.fReader),  
+  fMinPt(abc.fMinPt), fMaxPt(abc.fMaxPt), fReader(abc.fReader),  
   fInputAODBranch(new TClonesArray(*abc.fInputAODBranch)), fInputAODName(abc.fInputAODName),
   fOutputAODBranch(new TClonesArray(*abc.fOutputAODBranch)),fNewAOD(abc.fNewAOD), 
   fOutputAODName(abc.fOutputAODName), fOutputAODClassName(abc.fOutputAODClassName),
@@ -106,7 +106,6 @@ AliAnaPartCorrBaseClass & AliAnaPartCorrBaseClass::operator = (const AliAnaPartC
   
   fMinPt   = abc.fMinPt;
   fMaxPt   = abc.fMaxPt;
-  fLabelShift = abc.fLabelShift;
   fCaloPID = abc.fCaloPID;  
   fFidCut  = abc.fFidCut;
   fIC      = abc.fIC;
@@ -392,9 +391,7 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fInputAODName = "PartCorr";
   fAddToHistogramsName = "";
   fAODObjArrayName="Ref";
-	
-  fLabelShift = 1000000;
-  
+	  
   //Histogrammes settings
   fHistoNPtBins = 240 ;
   fHistoPtMax   = 120 ;
@@ -429,7 +426,6 @@ void AliAnaPartCorrBaseClass::Print(const Option_t * opt) const
   printf("Check Fidutial cut  =     %d\n",     fCheckFidCut) ;
   printf("Check MC labels     =     %d\n",     fDataMC);
   printf("Debug Level         =     %d\n",     fDebug);
-  printf("Label shift         =     %d\n",     fLabelShift);
   printf("Histograms: %3.1f < pT < %3.1f,  Nbin = %d\n", fHistoPtMin,  fHistoPtMax,  fHistoNPtBins);
   printf("Histograms: %3.1f < phi < %3.1f, Nbin = %d\n", fHistoPhiMin, fHistoPhiMax, fHistoNPhiBins);
   printf("Histograms: %3.1f < eta < %3.1f, Nbin = %d\n", fHistoEtaMin, fHistoEtaMax, fHistoNEtaBins);
