@@ -301,8 +301,9 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     if (cl->GetX()<80) continue;
     Int_t sector = cl->GetDetector();
     Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackIn.GetAlpha();
-    if (TMath::Abs(dalpha)>0.01)
-      trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.));
+    if (TMath::Abs(dalpha)>0.01){
+      if (!trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
+    }
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
     AliTPCseed::GetError(cl, &trackIn,cov[0],cov[2]);
@@ -331,8 +332,9 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     Int_t sector = cl->GetDetector();
     Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackOut.GetAlpha();
 
-    if (TMath::Abs(dalpha)>0.01)
-      trackOut.Rotate(TMath::DegToRad()*(sector%18*20.+10.));
+    if (TMath::Abs(dalpha)>0.01){
+      if (!trackOut.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
+    }
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
 
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation    
@@ -363,8 +365,9 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
     if (cl->GetX()<80) continue;
     Int_t sector = cl->GetDetector();
     Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackIn.GetAlpha();
-    if (TMath::Abs(dalpha)>0.01)
-      trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.));
+    if (TMath::Abs(dalpha)>0.01){
+      if (!trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
+    }
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
     Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation
     AliTPCseed::GetError(cl, &trackIn,cov[0],cov[2]);
@@ -443,7 +446,7 @@ Bool_t AliTPCcalibCalib::RejectCluster(AliTPCclusterMI* cl, AliExternalTrackPara
 
   Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation    
   AliTPCseed::GetError(cl, param,cov[0],cov[2]);
-  if (param->GetSigmaY2()<0 || param->GetSigmaZ2()){
+  if (param->GetSigmaY2()<0 || param->GetSigmaZ2()<0){
     AliError("Wrong parameters");
     return kFALSE;
   }
