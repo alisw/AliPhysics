@@ -906,7 +906,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
            t2    = GetTilt()*GetTilt();
   //define roads
   Double_t kroady = 1., //fkReconstructor->GetRecoParam() ->GetRoad1y();
-           kroadz = GetPadLength() * 1.5 + 1.;
+           kroadz = GetPadLength() * fkReconstructor->GetRecoParam()->GetRoadzMultiplicator() + 1.;
   // define probing cluster (the perfect cluster) and default calibration
   Short_t sig[] = {0, 0, 10, 30, 10, 0,0};
   AliTRDcluster cp(fDet, 6, 75, 0, sig, 0);

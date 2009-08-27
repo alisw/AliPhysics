@@ -45,6 +45,7 @@ public:
   Double_t GetRoad1z() const                { return fkRoad1z;   }
   Double_t GetRoad2y() const                { return fkRoad2y;   }
   Double_t GetRoad2z() const                { return fkRoad2z;   }
+  Double_t GetRoadzMultiplicator() const    { return fkRoadzMultiplicator; }
   Double_t GetTrackLikelihood() const       { return fkTrackLikelihood;       }
   inline void GetSysCovMatrix(Double_t *sys) const;  
   Double_t GetMinMaxCutSigma() const        { return fMinMaxCutSigma;     };
@@ -97,6 +98,7 @@ private:
   Double_t  fkRoad2z;                // Road in z for extrapolated cluster
   
   Double_t  fkPlaneQualityThreshold; // Quality threshold
+  Double_t  fkRoadzMultiplicator;    // Multiplicator for the Roads in z 
   Double_t  fkFindable;              // minimum ratio of clusters per tracklet supposed to be attached.
   Double_t  fkChi2Z;                 // Max chi2 on the z direction for seeding clusters fit
   Double_t  fkChi2Y;                 // Max chi2 on the y direction for seeding clusters Rieman fit

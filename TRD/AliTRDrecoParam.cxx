@@ -43,6 +43,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fkRoad2y(3.0)
   ,fkRoad2z(20.0)
   ,fkPlaneQualityThreshold(5.0)// 4.2? under Investigation
+  ,fkRoadzMultiplicator(1.5)
   ,fkFindable(.333)
   ,fkChi2Z(30./*14.*//*12.5*/)
   ,fkChi2Y(.25)
@@ -88,6 +89,7 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fkRoad2y(ref.fkRoad2y)
   ,fkRoad2z(ref.fkRoad2z)
   ,fkPlaneQualityThreshold(ref.fkPlaneQualityThreshold)
+  ,fkRoadzMultiplicator(ref.fkRoadzMultiplicator)
   ,fkFindable(ref.fkFindable)
   ,fkChi2Z(ref.fkChi2Z)
   ,fkChi2Y(ref.fkChi2Y)
@@ -161,6 +163,7 @@ AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
   par->fkMaxPhi         = 2.7475;
   par->fkNMeanClusters  = 12.89;
   par->fkNSigmaClusters = 2.095;
+  par->fkRoadzMultiplicator = 3.;
   return par;
 
 }

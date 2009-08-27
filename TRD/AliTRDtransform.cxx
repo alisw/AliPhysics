@@ -221,6 +221,7 @@ Bool_t AliTRDtransform::Transform(AliTRDcluster *c)
   Double_t vd  = fCalVdriftDetValue * fCalVdriftROC->GetValue(col,row);
   // t0
   Double_t t0  = fCalT0DetValue     + fCalT0ROC->GetValue(col,row);
+  t0 /= fSamplingFrequency;
   // ExB correction
   Double_t exb = AliTRDCommonParam::Instance()->GetOmegaTau(vd);
 
