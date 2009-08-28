@@ -55,6 +55,8 @@ class AliHFMassFitter : public TNamed {
   Double_t GetMean() const {return fMass;}
   Double_t GetSigma()const {return fSigmaSgn;}
   Double_t GetChiSquare() const;
+  Double_t GetReducedChiSquare() const;
+  void     GetSideBandsBounds(Int_t&, Int_t&) const;
 
   void     InitNtuParam(char *ntuname="ntupar");
   void     FillNtuParam();
@@ -79,6 +81,7 @@ class AliHFMassFitter : public TNamed {
  private:
 
   void     ComputeParSize();
+  Bool_t   SideBandsBounds();
 
   TH1F    *fhistoInvMass;  // histogram to fit
   Double_t fminMass;       // lower mass limit
@@ -94,9 +97,11 @@ class AliHFMassFitter : public TNamed {
   Double_t fMass;          // signal gaussian mean value
   Double_t fSigmaSgn;      // signal gaussian sigma
   Bool_t   fSideBands;     // kTRUE = only side bands considered
+  Int_t    fSideBandl;     // left side band limit (bin number)
+  Int_t    fSideBandr;     // right side band limit (bin number)
   Int_t    fcounter;       // internal counter
 
-  ClassDef(AliHFMassFitter,1); // class for invariant mass fit
+  ClassDef(AliHFMassFitter,2); // class for invariant mass fit
 };
 
 #endif
