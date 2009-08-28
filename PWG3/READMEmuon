@@ -340,3 +340,52 @@ To run the analysis task in local mode with the example macro simply run the com
 where AliESDs.root can be replaced with the full path and name of the appropriate ESD
 file you wish to process. This command can also be run via AliRoot.
 
+
+===================================================
+ Analysis task to create mixed AOD events, containing a 
+ pair of muon tracks coming from two different real AOD events.
+ Alessandro De Falco and Antonio Uras, INFN Cagliari 
+---------------------------------------------------------------
+
+IMPORTANT: The AliAnalysisTaskCreateMixedDimuons analysis task needs
+           the class AliEventPoolMuon.
+
+In class AliEventPoolMuon the definition of the pools to be used 
+in the mixing is implemented. Up to now, it is possible to create 
+pools diving events by:
+ - total multiplicity
+ - forward muons multiplicity
+ - z-position of the primary vertex
+
+In class AliAnalysisTaskCreateMixedDimuons the mixing is performed between
+each pair of events which can be built up picking events from the internal 
+buffer: if the buffer contains n events, n(n-1)/2 mixed events are created 
+within the same call of the task.
+
+Some more details:
+ - the mixing task asks a completely fresh buffer for each call
+ - the mixing task creates output events from scratch
+ - output events are filled with two muon tracks (picked randomly
+   from the events being mixed and a vertex having its z-position in the middle
+   of the z-vertex bin defining the pool. Due to technical reasons,
+   the tracks are NOT connected with the vertex
+ - standard AOD are created as output, nearly completely empty
+
+Files:
+
+AliAnalysisTaskCreateMixedDimuons.(h,cxx)  - The analysis task class.
+AliEventPoolMuon.(h,cxx)                   - The class implementing the pool.
+
+AnalysisTrainCreateMixedDimuons.C - An example macro enabling connections between
+the pool manager, the input event handler, the input and output containers, 
+via the Analysis Manager. Input arguments: - directory containing AOD tag file
+                                           - name of the output file
+                                           - number of events to be loaded
+                                             in the internal buffer
+
+How to run:
+
+To run the analysis task in local mode with the example macro, simply run
+the AnalysisTrainCreateMixedDimuons.C macro (without compiling it) with 
+appropriate arguments.
+
