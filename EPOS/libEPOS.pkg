@@ -38,8 +38,8 @@ epos167/epos-uti-165.f  \
 epos167/epos-xan-154.f  \
 epos167/epos-xpr-165.f  \
 epos167/eposm.f         \
-epos167/eposu.f         \
-itrans.f
+epos167/eposu.f
+
 
 EXTFILES:= \
 epos167/epos.inc  \
