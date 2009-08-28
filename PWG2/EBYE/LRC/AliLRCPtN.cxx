@@ -47,7 +47,7 @@ AliLRCPtN::~AliLRCPtN() {
 AliLRCPtN::AliLRCPtN(char *name, TH2D* sourceHist, double ptd, TH2D* nb):AliLRCAnalysis() {
 //Make PtN form 2d histogram
     SetGraphics();
-    CreateHist(name, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"n_{F}", (char*)"Pt_{B}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<Pt_{B}>_{n_{F}}}{<Pt_{B}>}", sourceHist);
+    CreateHist(name, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"Pt_{F}", (char*)"<n_{B}>_{Pt_{F}}", (char*)"#frac{Pt_{F}}{<Pt_{F}>}", (char*)"#frac{<n_{B}>_{Pt_{F}}}{<n_{B}>}", sourceHist);
     SetErrors(sourceHist, name, ptd, nb);
 }
 
@@ -56,16 +56,42 @@ AliLRCPtN::AliLRCPtN(char *fileHistname, char *histname, char *profname, double 
     SetGraphics();
     fileHist = new TFile(fileHistname);
     TH2D* sourceHist = (TH2D*) fileHist->Get(histname);
-    TH2D* nb = (TH2D*) fileHist->Get(errhistname);
-    CreateHist(profname, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"n_{F}", (char*)"Pt_{B}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<Pt_{B}>_{n_{F}}}{<Pt_{B}>}", sourceHist);
-    SetErrors(sourceHist, profname, ptd, nb);
     
+    CreateHist(profname, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"Pt_{F}", (char*)"<n_{B}>_{Pt_{F}}", (char*)"#frac{Pt_{F}}{<Pt_{F}>}", (char*)"#frac{<n_{B}>_{Pt_{F}}}{<n_{B}>}", sourceHist);
+	TProfile* nbP = (TProfile*) fileHist->Get(errhistname);
+	SetErrors(sourceHist, profname, ptd, nbP);
+	
+}
+
+AliLRCPtN::AliLRCPtN(TList *LHist, char *histname, char *profname, char *ptdname, char *errhistname):AliLRCAnalysis() {
+//Make PtN form 2d histogram from root file
+    SetGraphics();
+    TH2D* sourceHist = (TH2D*) LHist->FindObject(histname);
+    CreateHist(profname, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"Pt_{F}", (char*)"<n_{B}>_{Pt_{F}}", (char*)"#frac{Pt_{F}}{<Pt_{F}>}", (char*)"#frac{<n_{B}>_{Pt_{F}}}{<n_{B}>}", sourceHist);
+	TProfile* nbP = (TProfile*) LHist->FindObject(errhistname);
+	TProfile *dPtB = (TProfile*) LHist->FindObject(ptdname);
+	double dptb=dPtB->GetBinError(1)*sqrt(dPtB->GetBinEntries(1));
+	SetErrors(sourceHist, profname, dptb, nbP);
+}
+
+AliLRCPtN::AliLRCPtN(char *name, TH2D* sourceHist, double ptd, TProfile* nb):AliLRCAnalysis() {
+//Make PtN form 2d histogram
+    SetGraphics();
+    CreateHist(name, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"Pt_{F}", (char*)"<n_{B}>_{Pt_{F}}", (char*)"#frac{Pt_{F}}{<Pt_{F}>}", (char*)"#frac{<n_{B}>_{Pt_{F}}}{<n_{B}>}", sourceHist);
+    SetErrors(sourceHist, name, ptd, nb);
 }
 
 void AliLRCPtN::MakeHistogramm(char *name, TH2D* sourceHist, double ptd, TH2D* nb) {
 //Make PtN form 2d histogram
     SetGraphics();
-    CreateHist(name, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"n_{F}", (char*)"Pt_{B}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<Pt_{B}>_{n_{F}}}{<Pt_{B}>}", sourceHist);
+    CreateHist(name, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"Pt_{F}", (char*)"<n_{B}>_{Pt_{F}}", (char*)"#frac{Pt_{F}}{<Pt_{F}>}", (char*)"#frac{<n_{B}>_{Pt_{F}}}{<n_{B}>}", sourceHist);
+    SetErrors(sourceHist, name, ptd, nb);
+}
+
+void AliLRCPtN::MakeHistogramm(char *name, TH2D* sourceHist, double ptd, TProfile* nb) {
+//Make PtN form 2d histogram
+    SetGraphics();
+    CreateHist(name, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"Pt_{F}", (char*)"<n_{B}>_{Pt_{F}}", (char*)"#frac{Pt_{F}}{<Pt_{F}>}", (char*)"#frac{<n_{B}>_{Pt_{F}}}{<n_{B}>}", sourceHist);
     SetErrors(sourceHist, name, ptd, nb);
 }
 
@@ -74,7 +100,18 @@ void AliLRCPtN::MakeHistogramm(char *fileHistname, char *histname, char *profnam
     SetGraphics();
     fileHist = new TFile(fileHistname);
     TH2D* sourceHist = (TH2D*) fileHist->Get(histname);
-    TH2D* nb = (TH2D*) fileHist->Get(errhistname);
-    CreateHist(profname, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"n_{F}", (char*)"Pt_{B}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<Pt_{B}>_{n_{F}}}{<Pt_{B}>}", sourceHist);
-    SetErrors(sourceHist, profname, ptd, nb);
+    CreateHist(profname, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"Pt_{F}", (char*)"<n_{B}>_{Pt_{F}}", (char*)"#frac{Pt_{F}}{<Pt_{F}>}", (char*)"#frac{<n_{B}>_{Pt_{F}}}{<n_{B}>}", sourceHist);
+	TProfile* nbP = (TProfile*) fileHist->Get(errhistname);
+	SetErrors(sourceHist, profname, ptd, nbP);
+}
+
+void AliLRCPtN::MakeHistogramm(TList *LHist, char *histname, char *profname, char *ptdname, char *errhistname) {
+//Make PtN form 2d histogram from root file
+    SetGraphics();
+    TH2D* sourceHist = (TH2D*) LHist->FindObject(histname);
+    CreateHist(profname, (char*)"PtN_abs", (char*)"PtN_rel", (char*)"Pt_{F}", (char*)"<n_{B}>_{Pt_{F}}", (char*)"#frac{Pt_{F}}{<Pt_{F}>}", (char*)"#frac{<n_{B}>_{Pt_{F}}}{<n_{B}>}", sourceHist);
+	TProfile* nbP = (TProfile*) LHist->FindObject(errhistname);
+	TProfile *dPtB = (TProfile*) LHist->FindObject(ptdname);
+	double dptb=dPtB->GetBinError(1)*sqrt(dPtB->GetBinEntries(1));
+	SetErrors(sourceHist, profname, dptb, nbP);
 }

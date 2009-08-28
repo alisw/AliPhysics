@@ -1,4 +1,4 @@
-void runLRCAnalysis(const char* mode = "GRID", const char* inputName= "wn.xml") {
+void runLRCAnalysis(const char* mode = "GRID", const char* inputName= "wn.xml",Bool_t LoadTaskLocal=kFALSE) {
 // This macro runs AliAnalysisTaskLRC in three modes : "Local" , "Interactive", "PROOF", "GRID" 
 // ESD-only
 // inputName refers to :
@@ -6,11 +6,19 @@ void runLRCAnalysis(const char* mode = "GRID", const char* inputName= "wn.xml") 
 // "Intaractive","GRID" - XML collection name
 // "PROOF" - dataset name 
 //  ---------------------------------------------------------
-// This macro needs AliRoot-v4-17-03 or later 
+// This macro needs AliRoot-v4-17 or later 
 // and macro AddTaskLRC.C in workdir
 
 // For PROOF run PARS(ANALYSISalice.par  ANALYSIS.par  AOD.par  ESD.par  PWG2ebye.par  
-// STEERBase.par ) from AliRoot-v4-17-03 or later are to be in workdir.
+// STEERBase.par ) are to be in workdir.
+
+
+// Author : Andrey Ivanov , St.Peterburg State University
+// Email: Andrey.Ivanov@cern.ch
+
+// Version line : 3.5
+// Version 3.5.5
+
 
 if(mode!="Local" && mode!="Interactive" && mode!="PROOF" && mode!="GRID")
 {
@@ -19,15 +27,15 @@ cout<<" ! Unknown mode :"<<mode<< " \n";
 return;
 }
 
-if(mode=="Local")runLRCLocal(inputName);
-if(mode=="PROOF")runLRCProof(inputName);
-if(mode=="Interactive")runLRCInteractive(inputName);
-if(mode=="GRID")runLRCInteractive(inputName);
+if(mode=="Local")runLRCLocal(inputName,LoadTaskLocal);
+if(mode=="PROOF")runLRCProof(inputName,LoadTaskLocal);
+if(mode=="Interactive")runLRCInteractive(inputName,LoadTaskLocal);
+if(mode=="GRID")runLRCInteractive(inputName,LoadTaskLocal);
 
 
 }
 
-void runLRCLocal(const char* inputName= "ESDs.lst") {
+void runLRCLocal(const char* inputName= "ESDs.lst",Bool_t LoadTaskLocal=kFALSE) {
   printf("  ------------------------------------------\n");
   printf("  # LRC local run manager \n");
   cout<<"  # Task from :"<<gSystem->pwd()<<"\n";
@@ -45,14 +53,18 @@ void runLRCLocal(const char* inputName= "ESDs.lst") {
   gSystem->Load("libAOD.so");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libPWG2ebye.so");
+  if(!LoadTaskLocal)gSystem->Load("libPWG2ebye.so");
   
   
   //___________Compile analysis task using AClic____________//
  
-  //gROOT->ProcessLine(".include $ALICE_ROOT/include");
-  //cout<<"  # Compiling analysis task\n";
-  //gROOT->LoadMacro("AliAnalysisTaskLRC.cxx+g");
+  if(LoadTaskLocal){
+  	gROOT->ProcessLine(".include $ALICE_ROOT/include");
+	cout<<"  # Compiling AliLRCProcess\n";
+	gROOT->LoadMacro("AliLRCProcess.cxx+g");
+	cout<<"  # Compiling LRC analysis task\n";
+  	gROOT->LoadMacro("AliAnalysisTaskLRC.cxx+g");
+	}
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
   gROOT->LoadMacro("AddTaskLRC.C");
   TChain* chain = CreateESDChain(inputName);
@@ -63,7 +75,7 @@ void runLRCLocal(const char* inputName= "ESDs.lst") {
   AliESDInputHandler* esdH = new AliESDInputHandler();
   mgr->SetInputEventHandler(esdH);  
   
-  AddLRCTaskSet();
+  AddTaskLRC();
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
@@ -73,7 +85,7 @@ void runLRCLocal(const char* inputName= "ESDs.lst") {
   timer.Print();
 }
 
-void runLRCProof(const char* inputName= "/COMMON/COMMON/tutorial_small")
+void runLRCProof(const char* inputName= "/COMMON/COMMON/tutorial_small",Bool_t LoadTaskLocal=kFALSE,const char* proofLink="alicecaf")
 {
   printf("  ------------------------------------------\n");
   printf(" # LRC PROOF run manager \n");
@@ -81,7 +93,7 @@ void runLRCProof(const char* inputName= "/COMMON/COMMON/tutorial_small")
   cout<<"  # Dataset :"<<inputName<<"\n";
 
 
-	TProof::Open("alicecaf");
+	TProof::Open(proofLink);
 	//TProof::Open("anivanov@localhost");
 
 	
@@ -93,7 +105,7 @@ gProof->UploadPackage("ESD");
 gProof->UploadPackage("AOD");
 gProof->UploadPackage("ANALYSIS");
 gProof->UploadPackage("ANALYSISalice");
-gProof->UploadPackage("PWG2ebye");
+if(!LoadTaskLocal)gProof->UploadPackage("PWG2ebye");
 
 
 gProof->EnablePackage("STEERBase");
@@ -101,24 +113,27 @@ gProof->EnablePackage("ESD");
 gProof->EnablePackage("AOD");
 gProof->EnablePackage("ANALYSIS");
 gProof->EnablePackage("ANALYSISalice");
-gProof->EnablePackage("PWG2ebye");
+if(!LoadTaskLocal)gProof->EnablePackage("PWG2ebye");
 
- gROOT->LoadMacro("AddTaskLRC.C");  
+   
   
   // Use AliRoot includes to compile our task
-  //gROOT->ProcessLine(".include $ALICE_ROOT/include");
-
-  //cout<<"  # Compiling analysis task\n";
+  if(LoadTaskLocal){
+ 	gROOT->ProcessLine(".include $ALICE_ROOT/include");
+	cout<<"  # Compiling AliLRCProcess\n";
+	gProof->Load("AliLRCProcess.cxx+g");
+  	cout<<"  # Compiling analysis task\n";
+  	gProof->Load("AliAnalysisTaskLRC.cxx++g");   
+  }
   
-  
-  //gProof->Load("AliAnalysisTaskLRC.cxx++g");   
   // Create the analysis manager
   mgr = new AliAnalysisManager("TestLRCManagerProof");
    
   AliESDInputHandler* esdH = new AliESDInputHandler();
   mgr->SetInputEventHandler(esdH);
 
-  AddLRCTaskSet();
+  gROOT->LoadMacro("AddTaskLRC.C");
+  AddTaskLRC();
    
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
@@ -129,7 +144,7 @@ gProof->EnablePackage("PWG2ebye");
 
 };
 
-void runLRCInteractive(const char* inputName= "wn.xml") {
+void runLRCInteractive(const char* inputName= "wn.xml",Bool_t LoadTaskLocal=kFALSE) {
   
   printf("  ------------------------------------------\n");
   printf(" # LRC local-interactive/GRID run manager \n");
@@ -153,16 +168,18 @@ void runLRCInteractive(const char* inputName= "wn.xml") {
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   
-  gSystem->Load("libPWG2ebye.so");
+  if(!LoadTaskLocal)gSystem->Load("libPWG2ebye.so");
   
-  //gROOT->ProcessLine(".include $ALICE_ROOT/include");
+ 
   
+ if(LoadTaskLocal){
+ gROOT->ProcessLine(".include $ALICE_ROOT/include");
+ 	cout<<"  # Compiling AliLRCProcess\n";
+	gROOT->LoadMacro("AliLRCProcess.cxx+g");
+	cout<<"  # Compiling analysis task\n";
+ 	gROOT->LoadMacro("AliAnalysisTaskLRC.cxx+g");
   
- //___________Compile analysis task using AClic____________//
- cout<<"  # Compiling analysis task\n";
- // gROOT->LoadMacro("AliAnalysisTaskLRC.cxx+g");
-  
-  
+  }
    
     TAlienCollection * myCollection = 
 	new TAlienCollection("wn.xml",100000) ; 
@@ -189,7 +206,7 @@ void runLRCInteractive(const char* inputName= "wn.xml") {
  
   gROOT->LoadMacro("AddTaskLRC.C");
    
-  AddLRCTaskSet();
+  AddTaskLRC();
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();

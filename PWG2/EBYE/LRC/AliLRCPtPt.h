@@ -23,9 +23,12 @@
 #include "TH2D.h"
 #include "TFile.h"
 #include "TProfile.h"
+#include "TList.h"
 #include "math.h"
+#include <typeinfo>
 
 class TH2D;
+class TList;
 
 class AliLRCPtPt:public AliLRCAnalysis
 {
@@ -33,9 +36,13 @@ class AliLRCPtPt:public AliLRCAnalysis
 	AliLRCPtPt();
 	~AliLRCPtPt();
 	AliLRCPtPt(char *name, TH2D* sourceHist, double ptd, TH2D* nb);
+	AliLRCPtPt(char *name, TH2D* sourceHist, double ptd, TProfile* nb);
 	AliLRCPtPt(char *fileHistname, char *histname, char *profname, double ptd, char *errhistname);	
+	AliLRCPtPt(TList *LHist, char *histname, char *profname, char *ptdname, char *errhistname);
 	void MakeHistogramm(char *name, TH2D* sourceHist, double ptd, TH2D* nb);
-	void MakeHistogramm(char *fileHistname, char *histname, char *profname, double ptd, char *errhistname) ;	
+	void MakeHistogramm(char *name, TH2D* sourceHist, double ptd, TProfile* nb);
+	void MakeHistogramm(char *fileHistname, char *histname, char *profname, double ptd, char *errhistname) ;
+	void MakeHistogramm(TList *LHist, char *histname, char *profname, char *ptdname, char *errhistname) ;		
 	ClassDef(AliLRCPtPt,0)                 // macro for rootcint
 
 };

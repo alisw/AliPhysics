@@ -12,5 +12,6 @@
 #pragma link C++ class AliLRCNN+;
 #pragma link C++ class AliLRCPtN+;
 #pragma link C++ class AliLRCPtPt+;
+#pragma link C++ class AliLRCProcess+;
 
 #endif

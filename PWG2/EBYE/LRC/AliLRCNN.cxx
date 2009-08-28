@@ -41,7 +41,7 @@ AliLRCNN::~AliLRCNN() {
 AliLRCNN::AliLRCNN(char *name, TH2D* sourceHist):AliLRCAnalysis() {
 //Make NN from 2d histogramm
     SetGraphics();
-    CreateHist(name, (char*)"NN_abs", (char*)"NN_rel", (char*)"n_{F}", (char*)"n_{B}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<n_{B}>_{n_{F}}}{<n_{B}>}", sourceHist);
+    CreateHist(name, (char*)"NN_abs", (char*)"NN_rel", (char*)"n_{F}", (char*)"<n_{B}>_{n_{F}}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<n_{B}>_{n_{F}}}{<n_{B}>}", sourceHist);
     SetErrors(sourceHist, name);
 }
 
@@ -50,14 +50,23 @@ AliLRCNN::AliLRCNN(char *fileHistname, char *histname, char *profname):AliLRCAna
     SetGraphics();
     fileHist = new TFile(fileHistname);
     TH2D* sourceHist = (TH2D*) fileHist->Get(histname);
-    CreateHist(profname, (char*)"NN_abs", (char*)"NN_rel", (char*)"n_{F}", (char*)"n_{B}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<n_{B}>_{n_{F}}}{<n_{B}>}", sourceHist);
+    CreateHist(profname, (char*)"NN_abs", (char*)"NN_rel", (char*)"n_{F}", (char*)"<n_{B}>_{n_{F}}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<n_{B}>_{n_{F}}}{<n_{B}>}", sourceHist);
     SetErrors(sourceHist, profname);
 }
+
+AliLRCNN::AliLRCNN(TList *LHist, char *histname, char *profname):AliLRCAnalysis() {
+//Make NN from 2d histogramm from root file
+    SetGraphics();
+    TH2D* sourceHist = (TH2D*) LHist->FindObject(histname);
+    CreateHist(profname, (char*)"NN_abs", (char*)"NN_rel", (char*)"n_{F}", (char*)"<n_{B}>_{n_{F}}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<n_{B}>_{n_{F}}}{<n_{B}>}", sourceHist);
+    SetErrors(sourceHist, profname);
+}
+
 
 void AliLRCNN::MakeHistogramm(char *name, TH2D* sourceHist) {
 //Make NN from 2d histogramm
     SetGraphics();
-    CreateHist(name, (char*)"NN_abs", (char*)"NN_rel", (char*)"n_{F}", (char*)"n_{B}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<n_{B}>_{n_{F}}}{<n_{B}>}", sourceHist);
+    CreateHist(name, (char*)"NN_abs", (char*)"NN_rel", (char*)"n_{F}", (char*)"<n_{B}>_{n_{F}}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<n_{B}>_{n_{F}}}{<n_{B}>}", sourceHist);
     SetErrors(sourceHist, name);
 }
 
@@ -66,10 +75,16 @@ void AliLRCNN::MakeHistogramm(char *fileHistname, char *histname, char *profname
     SetGraphics();
     fileHist = new TFile(fileHistname);
     TH2D* sourceHist = (TH2D*) fileHist->Get(histname);
-    CreateHist(profname, (char*)"NN_abs", (char*)"NN_rel", (char*)"n_{F}", (char*)"n_{B}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<n_{B}>_{n_{F}}}{<n_{B}>}", sourceHist);
+    CreateHist(profname, (char*)"NN_abs", (char*)"NN_rel", (char*)"n_{F}", (char*)"<n_{B}>_{n_{F}}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<n_{B}>_{n_{F}}}{<n_{B}>}", sourceHist);
     SetErrors(sourceHist, profname);
 }
 
-
+void AliLRCNN::MakeHistogramm(TList *LHist, char *histname, char *profname) {
+//Make NN from 2d histogramm from root file
+    SetGraphics();
+    TH2D* sourceHist = (TH2D*) LHist->FindObject(histname);
+    CreateHist(profname, (char*)"NN_abs", (char*)"NN_rel", (char*)"n_{F}", (char*)"<n_{B}>_{n_{F}}", (char*)"#frac{n_{F}}{<n_{F}>}", (char*)"#frac{<n_{B}>_{n_{F}}}{<n_{B}>}", sourceHist);
+    SetErrors(sourceHist, profname);
+}
 
 

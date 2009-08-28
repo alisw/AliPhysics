@@ -8,6 +8,7 @@ set(SRCS
        EBYE/LRC/AliLRCNN.cxx 
        EBYE/LRC/AliLRCPtN.cxx 
        EBYE/LRC/AliLRCPtPt.cxx
+       EBYE/LRC/AliLRCProcess.cxx
 )
 
 # fill list of header files from list of source files
