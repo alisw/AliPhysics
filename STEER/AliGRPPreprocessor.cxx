@@ -183,7 +183,7 @@ ClassImp(AliGRPPreprocessor)
                    "",
                    "(DAQ logbook ERROR)",
                    "(DAQ FXS ERROR)",
-                   "(DCS FXS ERROR)",
+                   "(Trigger Scalers not found in DCS FXS - ERROR)",
                    "(DCS data points ERROR)",
                    "(Trigger Configuration ERROR)",
                    "(DAQ logbook ERROR determining partition of the run)"
@@ -614,7 +614,7 @@ UInt_t AliGRPPreprocessor::ProcessDcsFxs(TString partition, TString detector)
 	// Get the CTP counters information
 
 	if (partition.IsNull() && !detector.IsNull()){ // standalone partition
-		Log("STANDALONE partition for current run, using Trigger Configuration dummy value");
+		Log("STANDALONE partition for current run, using Trigger Scalers dummy value");
 		AliCDBEntry *cdbEntry = GetFromOCDB("CTP","DummyScalers");
 		if (!cdbEntry) {
 			Log(Form("No dummy CTP scalers entry found, going into error..."));
