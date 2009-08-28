@@ -1,5 +1,4 @@
 // $Id$
-
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -56,7 +55,7 @@ const char* AliHLTSystem::fgkHLTDefaultLibs[]= {
   "libAliHLTRCU.so", 
   "libAliHLTTPC.so", 
   //  "libAliHLTSample.so",
-  "libAliHLTPHOS.so",
+  //  "libAliHLTPHOS.so",
   "libAliHLTMUON.so",
   "libAliHLTTRD.so",
   "libAliHLTITS.so",
@@ -789,7 +788,7 @@ void* AliHLTSystem::AllocMemory( void* /*param*/, unsigned long size )
   return p;
 }
 
-int AliHLTSystem::AllocEventDoneData( void* param, AliHLTEventID_t eventID, unsigned long size, AliHLTComponentEventDoneData** edd )
+int AliHLTSystem::AllocEventDoneData( void* /*param*/, AliHLTEventID_t /*eventID*/, unsigned long size, AliHLTComponentEventDoneData** edd )
 {
   // see header file for class documentation
   unsigned long blocksize=sizeof(AliHLTComponentEventDoneData)+size;
