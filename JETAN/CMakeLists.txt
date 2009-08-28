@@ -23,6 +23,6 @@ SetModule()
 
 include (CMake_libJETAN.txt)
 
-include (CMake_libJETANMC.txt)
+# include (CMake_libJETANMC.txt)
 
 
