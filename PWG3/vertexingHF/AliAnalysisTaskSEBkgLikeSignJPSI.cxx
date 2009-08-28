@@ -252,25 +252,26 @@ void AliAnalysisTaskSEBkgLikeSignJPSI::UserExec(Option_t */*option*/)
     }
     Int_t okBtoJPSIls=0;
     if(d->SelectBtoJPSI(fVHF->GetBtoJPSICuts(),okBtoJPSIls)) {
+       AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
        fHistMassLS->Fill(d->InvMassJPSIee());
        fHistCPtaLS->Fill(d->CosPointingAngle());
        fHistd0d0LS->Fill(1e8*d->Prodd0d0());
-       fHistCtsLS->Fill(d->CosThetaStarJPSI());
        fHistDCALS->Fill(100*d->GetDCA());
-       PostData(1,fOutput);
-       AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
+       //PostData(1,fOutput);
        if(!trk0) {
           trk0=aod->GetTrack(trkIDtoEntry[d->GetProngID(0)]);
           printf("references to standard AOD not available \n");
        }
        if((trk0->Charge())==1) {
           nPosPairs++;
-          fHistCtsLSpos->Fill(d->CosThetaStarJPSI());
-          PostData(1,fOutput);
+          fHistCtsLS->Fill(d->CosThetaStar(0,443,11,11));
+          fHistCtsLSpos->Fill(d->CosThetaStar(0,443,11,11));
+          //PostData(1,fOutput);
         } else {
           nNegPairs++;
+          fHistCtsLS->Fill(d->CosThetaStarJPSI());
           fHistCtsLSneg->Fill(d->CosThetaStarJPSI());
-          PostData(1,fOutput);
+          //PostData(1,fOutput);
         }
        PostData(1,fOutput);
     }
