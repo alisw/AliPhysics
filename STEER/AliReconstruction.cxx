@@ -1743,6 +1743,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   
     // fill Event header information from the RawEventHeader
     if (fRawReader){FillRawEventHeaderESD(fesd);}
+    if (fRawReader){FillRawEventHeaderESD(fhltesd);}
 
     // combined PID
     AliESDpid::MakePID(fesd);
@@ -1982,7 +1983,7 @@ void AliReconstruction::SlaveTerminate()
     ftree->SetBranchStatus("ESDfriend*",0);
   // we want to have only one tree version number
   ftree->Write(ftree->GetName(),TObject::kOverwrite);
-  fhlttree->Write();
+  fhlttree->Write(fhlttree->GetName(),TObject::kOverwrite);
 
 // Finish with Plane Efficiency evaluation: before of CleanUp !!!
   if (fRunPlaneEff && !FinishPlaneEff()) {
