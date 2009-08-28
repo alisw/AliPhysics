@@ -2,7 +2,7 @@
 
 source ~/.bashrc
 
-export BASE_DIR=/home/offline/onlineReco
+export BASE_DIR=/local/home/offline/onlineReco
 export RECO_DIR=$BASE_DIR/reco
 
 ## enabling core dumps
@@ -33,12 +33,10 @@ CURPID=`pgrep $PROCNAME`
 echo "current process pid = " $CURPID 
 echo $CURPID > $PIDFILE
 
-cd $BASE_DIR
-
 #------------------------------------------------------------------------
 # init GRID environment
 
-echo; echo 'Init GRID environment...'
+#echo; echo 'Init GRID environment...'
 #root_alien_setup
 
 #------------------------------------------------------------------------
@@ -47,27 +45,35 @@ echo; echo 'Init GRID environment...'
 echo;
 
 export BUILD_DIR=$BASE_DIR/build
-source $BUILD_DIR/SetAliRoot.sh
+source $BUILD_DIR/setenv.sh
+source /opt/date/setup.sh
+source /opt/dim/setup.sh
 
 echo;
-
 echo Root is: `root-config --version`
 echo AliRoot is: `aliroot --version`
 echo;
 
-cd $BASE_DIR
-
 if [ ! -e $RECO_DIR/log ]
 then
-	mkdir $RECO_DIR/log
+	mkdir -p $RECO_DIR/log
 fi
 
-while [ 1 ] 
-do
-    cd $RECO_DIR/log
-    aliroot -q $ALICE_ROOT/MONITOR/onlineReco.C\(\"listen\",\"$ALICE_ROOT/test/cosmic/rec.C\"\) | tee rec.log
-#    mv rec.log log/run%%_rec.log
-done
+if [ ! $1 ]
+then
+    while [ 1 ] 
+      do
+      cd $RECO_DIR
+      aliroot -q $ALICE_ROOT/MONITOR/onlineReco.C\(\"listen\",\"$ALICE_ROOT/test/cosmic/rec.C\"\) | tee rec.log
+	  RUNNUMBER=`grep "I-AliCDBManager::Print: Run number =" rec.log | cut -d ";" -f 1 | awk '{print $5}'`
+	  mv rec.log log/run$RUNNUMBER.log
+    done
+else
+      cd $RECO_DIR
+      aliroot -q $ALICE_ROOT/MONITOR/onlineReco.C\(\"$1\",\"$ALICE_ROOT/test/cosmic/rec.C\"\) | tee rec.log
+	  RUNNUMBER=`grep "I-AliCDBManager::Print: Run number =" rec.log | cut -d ";" -f 1 | awk '{print $5}'`
+	  mv rec.log log/run$RUNNUMBER.log
+fi
 
 cd $BASE_DIR
 

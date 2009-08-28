@@ -10,6 +10,7 @@ UInt_t onlineReco(const char* param = "listen",const char *recMacroPath = "$ALIC
   if (paramStr.IsDigit()) {
     run = paramStr.Atoi();
   } else if (paramStr == "listen") {
+    gSystem->Load("libMONITOR");
     AliOnlineRecoTrigger trigger;
     run = trigger.Run();
   } else {
@@ -54,7 +55,6 @@ UInt_t onlineReco(const char* param = "listen",const char *recMacroPath = "$ALIC
       else {
 	cout << "No GDCs defined in the logbook entry for run " << run << endl;
       }
-      delete gdcs;
     }
   }
 
