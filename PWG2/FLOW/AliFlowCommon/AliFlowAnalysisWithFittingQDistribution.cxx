@@ -41,7 +41,6 @@
 #include "AliFlowTrackSimple.h"
 #include "AliFlowAnalysisWithFittingQDistribution.h"
 
-
 class TH1;
 class TGraph;
 class TPave;
@@ -84,14 +83,14 @@ AliFlowAnalysisWithFittingQDistribution::AliFlowAnalysisWithFittingQDistribution
  fPhiWeights(NULL),
  fPtWeights(NULL),
  fEtaWeights(NULL),
- // fitting parameters with default values:
+ // fitting parameters with default values harwired here (use dedicated macro fqd.C to change them):
  fFittingParameters(NULL), 
  fTreshold(5),
  fvStart(0.05),
  fvMin(0.0),
  fvMax(0.25),
  fSigma2Start(0.75),
- fSigma2Min(0.5), // (should be kept fixed at 0.5 according to theorists...)
+ fSigma2Min(0.5), 
  fSigma2Max(2.5),
  fPlotResults(kFALSE),
  // rest:
@@ -162,12 +161,12 @@ void AliFlowAnalysisWithFittingQDistribution::Make(AliFlowEventSimple* anEvent)
 {
  // loop over data
  
- // a) fill the common control histograms
- // b) loop over data and calculate non-weighted and weighted Q-vector and sum of particle weights
- // c) fill histograms for distribution
- // d) reset e-b-e quantities
+ // a) fill the common control histograms;
+ // b) loop over data and calculate non-weighted and weighted Q-vector and sum of particle weights;
+ // c) fill histograms for q-distribution;
+ // d) reset e-b-e quantities.
  
- // fill the common control histograms
+ // a) fill the common control histograms:
  fCommonHists->FillControlHistograms(anEvent); 
  
  Double_t dPhi = 0.; // azimuthal angle in the laboratory frame
@@ -187,10 +186,11 @@ void AliFlowAnalysisWithFittingQDistribution::Make(AliFlowEventSimple* anEvent)
  
  Double_t dReQ[2] = {0.}; // real part of Q-vector [0=particle weights not used, 1=particle weights used]
  Double_t dImQ[2] = {0.}; // imaginary part of Q-vector [0=particle weights not used, 1=particle weights used]
- Double_t dSumOfParticleWeights[2]; // [0=particle weights not used, 1=particle weights used] 
+ Double_t dSumOfParticleWeights[2] = {0.}; // [0=particle weights not used, 1=particle weights used] 
                                                                                                                                
  AliFlowTrackSimple *aftsTrack = NULL;                                          
-                                           
+ 
+ // b) loop over data and calculate non-weighted and weighted Q-vector and sum of particle weights:                                          
  for(Int_t i=0;i<nPrim;i++) 
  { 
   aftsTrack=anEvent->GetTrack(i);
@@ -216,22 +216,22 @@ void AliFlowAnalysisWithFittingQDistribution::Make(AliFlowEventSimple* anEvent)
    } 
     
    // calculate real and imaginary part of non-weighted and weighted Q-vector and sum of particle weights for this event:
-   for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // pW not used or used
+   for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // particle weights not used (0) or used (1)
    {
     // Q-vector:
     dReQ[pW]+=pow(wPhi*wPt*wEta,pW)*TMath::Cos(n*dPhi); 
     dImQ[pW]+=pow(wPhi*wPt*wEta,pW)*TMath::Sin(n*dPhi);
     // sum of particle weights:
-    dSumOfParticleWeights[pW] += pow(wPhi*wPt*wEta,pW); // if pW = 0, this sum gives nRP
+    dSumOfParticleWeights[pW] += pow(wPhi*wPt*wEta,pW); // if pW = 0, this sum gives # of RPs, i.e. multiplicity
    } 
    
   } // end of if(aftsTrack)
  } // end of for(Int_t i=0;i<nPrim;i++)                                      
                                            
- // calculate q = Q\sqrt{sum of particle weights}:
- // Remark: if particle weights are unit than sum of particle weights = multiplicity
+ // c) fill histograms for q-distribution:
+ // calculating first q = Q\sqrt{sum of particle weights} (Remark: if particle weights are unit than sum of particle weights = multiplicity)
  Double_t q=0;                                          
- for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // pW not used or used
+ for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // particle weights not used (0) or used (1)
  {
   if(dSumOfParticleWeights[pW])
   {
@@ -242,15 +242,77 @@ void AliFlowAnalysisWithFittingQDistribution::Make(AliFlowEventSimple* anEvent)
   }
  } 
  
- // reset e-b-e quantities:
- for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // pW not used or used
+ // d) reset e-b-e quantities:
+ for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // particle weights not used (0) or used (1)
  {
   dReQ[pW] = 0.;
   dImQ[pW] = 0.;
   dSumOfParticleWeights[pW] = 0.;
  }
 
-}//end of Make()
+} // end of Make()
+
+
+//================================================================================================================
+
+
+void AliFlowAnalysisWithFittingQDistribution::Finish(Bool_t doFit)
+{
+ // calculate the final results
+ 
+ // a) acces the constants and all fitting paremeters;
+ // b) access the flags for particle weights;
+ // c) do final fit;
+ // d) fill common hist results;
+ // e) print on the screen the final results.
+ 
+ // a) access the constants and all fitting paremeters:
+ this->AccessConstants();
+ this->AccessFittingParameters();
+ 
+ // b) access the flags for particle weights: 
+ fUsePhiWeights = (Bool_t)fUseParticleWeights->GetBinContent(1); 
+ fUsePtWeights = (Bool_t)fUseParticleWeights->GetBinContent(2); 
+ fUseEtaWeights = (Bool_t)fUseParticleWeights->GetBinContent(3);
+
+ // to be improved (moved somewhere else):
+ if(fPlotResults)
+ {
+  fLegend = new TLegend(0.6,0.55,0.85,0.7); 
+ }
+
+ // c) do final fit:             
+ if(doFit) 
+ {
+  // particle weights not used:
+  // 1) sigma^2 not fitted (fixed to 0.5):
+  this->DoFit(kFALSE,kFALSE);
+  // 2) sigma^2 fitted:
+  this->DoFit(kFALSE,kTRUE);
+  // particle weights used:
+  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)      
+  {
+   // 1) sigma^2 not fitted (fixed to 0.5):
+   this->DoFit(kTRUE,kFALSE);  
+   // 2) sigma^2 fitted:
+   this->DoFit(kTRUE,kTRUE);  
+  }
+  
+  // d) fill common hist results (by default fill results obtained with sigma^2 fitted):
+  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
+  {
+   this->FillCommonHistResultsIntFlow(kTRUE,kTRUE); 
+  } else
+    {
+     this->FillCommonHistResultsIntFlow(kFALSE,kTRUE);    
+    } 
+  
+  // e) print on the screen the final results:
+  this->PrintFinalResultsForIntegratedFlow();  
+  
+ } // end of if(doFit)
+   
+} // end of void AliFlowAnalysisWithFittingQDistribution::Finish(Bool_t doFit)
 
 
 //================================================================================================================
@@ -406,67 +468,6 @@ void AliFlowAnalysisWithFittingQDistribution::GetOutputHistograms(TList *outputL
 //================================================================================================================
 
 
-void AliFlowAnalysisWithFittingQDistribution::Finish(Bool_t doFit)
-{
- // calculate the final results
- 
- // a) acces the constants and fitting paremeters;
- // b) access the flags;
- // c) do final fit;
- // d) fill common hist results;
- // e) print on the screen the final results.
- 
- // access the constants and fitting paremeters:
- this->AccessConstants();
- this->AccessFittingParameters();
- 
- // access the flags: 
- fUsePhiWeights = (Int_t)fUseParticleWeights->GetBinContent(1); 
- fUsePtWeights = (Int_t)fUseParticleWeights->GetBinContent(2); 
- fUseEtaWeights = (Int_t)fUseParticleWeights->GetBinContent(3);
-
- // to be improved (moved somewhere else):
- if(fPlotResults)
- {
-  fLegend = new TLegend(0.6,0.55,0.85,0.7); 
- }
-
- // do final fit:             
- if(doFit) 
- {
-  // particle weights not used:
-  // a) sigma^2 not fitted (fixed to 0.5):
-  this->DoFit(kFALSE,kFALSE);
-  // b) sigma^2 fitted:
-  this->DoFit(kFALSE,kTRUE);
-  // particle weights used:
-  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)      
-  {
-   // a) sigma^2 not fitted (fixed to 0.5):
-   this->DoFit(kTRUE,kFALSE);  
-   // b) sigma^2 fitted:
-   this->DoFit(kTRUE,kTRUE);  
-  }
-  
-  // fill common hist results (by default fill results obtained with sigma^2 fitted):
-  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
-  {
-   this->FillCommonHistResultsIntFlow(kTRUE,kTRUE); 
-  } else
-    {
-     this->FillCommonHistResultsIntFlow(kFALSE,kTRUE);    
-    } 
-  
-  // print final results on the screen:
-  this->PrintFinalResultsForIntegratedFlow();  
- } // end of if(doFit)
-   
-} // end of void AliFlowAnalysisWithFittingQDistribution::Finish(Bool_t doFit)
-
-
-//================================================================================================================
-
-
 void AliFlowAnalysisWithFittingQDistribution::WriteHistograms(TString* outputFileName)
 {
  //store the final results in output .root file
@@ -499,7 +500,7 @@ void AliFlowAnalysisWithFittingQDistribution::InitializeArrays()
 {
  // initialize all arrays
  
- for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // pW not used or used
+ for(Int_t pW=0;pW<2;pW++) // particle weights not used (0) or used (1)
  {
   fSumOfParticleWeights[pW] = NULL;
   fqDistribution[pW] = NULL; 
@@ -533,7 +534,7 @@ void AliFlowAnalysisWithFittingQDistribution::BookCommonHistograms()
  fCommonHistsResults = new AliFlowCommonHistResults(commonHistResName.Data());
  fHistList->Add(fCommonHistsResults); 
 
-} // end of void AliFlowAnalysisWithFittingQDistribution::BookCommonHistograms(
+} // end of void AliFlowAnalysisWithFittingQDistribution::BookCommonHistograms()
 
 
 //================================================================================================================
@@ -552,7 +553,7 @@ void AliFlowAnalysisWithFittingQDistribution::BookAndFillWeightsHistograms()
  TString fUseParticleWeightsName = "fUseParticleWeightsFQD";
  fUseParticleWeightsName += fAnalysisLabel->Data();
  fUseParticleWeights = new TProfile(fUseParticleWeightsName.Data(),"0 = particle weight not used, 1 = particle weight used ",3,0,3);
- fUseParticleWeights->SetLabelSize(0.06);
+ fUseParticleWeights->SetLabelSize(0.08);
  (fUseParticleWeights->GetXaxis())->SetBinLabel(1,"w_{#phi}");
  (fUseParticleWeights->GetXaxis())->SetBinLabel(2,"w_{p_{T}}");
  (fUseParticleWeights->GetXaxis())->SetBinLabel(3,"w_{#eta}");
@@ -666,7 +667,7 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
  TString fChi2Name = "fChi2";
  fChi2Name += fAnalysisLabel->Data();
  
- for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // pW not used or used
+ for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // particle weights not used (0) or used (1)
  {
   // q-distribution:
   fqDistribution[pW] = new TH1D(Form("%s, %s",fqDistributionName.Data(),pWeightsFlag[pW].Data()),"q-distribution",10000,0,1000);
@@ -674,7 +675,7 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
   fqDistribution[pW]->SetYTitle("Counts");
   fHistList->Add(fqDistribution[pW]);
   // sum of particle weights: 
-  fSumOfParticleWeights[pW] = new TH1D(Form("%s, %s",fSumOfParticleWeightsName.Data(),pWeightsFlag[pW].Data()),"Sum of particle weights",1000,0,10000);
+  fSumOfParticleWeights[pW] = new TH1D(Form("%s, %s",fSumOfParticleWeightsName.Data(),pWeightsFlag[pW].Data()),"Sum of particle weights",10000,0,10000);
   fSumOfParticleWeights[pW]->SetXTitle("#sum_{i=1}^{N} w_{i}");
   fSumOfParticleWeights[pW]->SetYTitle("Counts");
   fHistList->Add(fSumOfParticleWeights[pW]);
@@ -692,21 +693,21 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
    (fSigma2[pW][f]->GetXaxis())->SetBinLabel(1,"#sigma^{2}");
    fHistList->Add(fSigma2[pW][f]);
    // chi^2:
-   fChi2[pW][f] = new TH1D(Form("%s, %s, %s",fChi2Name.Data(),pWeightsFlag[pW].Data(),sigmaFlag[f].Data()),"#chi^{2} (obtained from Minuit)",1,0,1);
+   fChi2[pW][f] = new TH1D(Form("%s, %s, %s",fChi2Name.Data(),pWeightsFlag[pW].Data(),sigmaFlag[f].Data()),"#chi^{2} (Minuit)",1,0,1);
    fChi2[pW][f]->SetLabelSize(0.08);
    (fChi2[pW][f]->GetXaxis())->SetLabelOffset(0.01);
    (fChi2[pW][f]->GetXaxis())->SetBinLabel(1,"#chi^{2}");
    fHistList->Add(fChi2[pW][f]);
-  } // end of for(Int_t f=0;f<2;f++) // sigma^2 not fixed or fixed
+  } // end of for(Int_t f=0;f<2;f++) // sigma^2 not fitted or fitted
   
- } // end of for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // pW not used or used
+ } // end of for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // particle weights not used (0) or used (1)
  
- // book profile fFittingParameters whiuch will hols fitting parameters:
+ // book profile fFittingParameters which will hold all fitting parameters:
  TString fFittingParametersName = "fFittingParameters";
  fFittingParametersName += fAnalysisLabel->Data(); 
  fFittingParameters = new TProfile(fFittingParametersName.Data(),"Parameters for fitting q-distribution",8,0,8);
  fFittingParameters->SetLabelSize(0.05);
- (fFittingParameters->GetXaxis())->SetBinLabel(1,"Treshold");
+ (fFittingParameters->GetXaxis())->SetBinLabel(1,"treshold");
  (fFittingParameters->GetXaxis())->SetBinLabel(2,"starting v_{n}");
  (fFittingParameters->GetXaxis())->SetBinLabel(3,"min. v_{n}");
  (fFittingParameters->GetXaxis())->SetBinLabel(4,"max. v_{n}");
@@ -724,30 +725,28 @@ void AliFlowAnalysisWithFittingQDistribution::BookEverythingForDistributions()
 
 void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, Bool_t sigma2Fitted)
 {
- // do final fit to q-distribution
+ // do final fit for q-distribution
  
  // shortcuts for flags:
  Int_t pW = (Int_t)(useParticleWeights);
  Int_t s2F = (Int_t)(sigma2Fitted);
  
- for(Int_t f=0;f<2;f++)
- {
-  if(!(fqDistribution[pW] && fSumOfParticleWeights[pW] && fIntFlow[pW][f] && fSigma2[pW][f])) 
-  { 
-   cout<<"WARNING: fqDistribution[pW] && fSumOfParticleWeights[pW] && fIntFlow[pW][f] && fSigma2[pw][f] is NULL in AFAWFQD::DoFit() !!!!"<<endl;
-   cout<<"pW = "<<pW<<endl;
-   cout<<"f  = "<<f<<endl;
-   exit(0);
-  }
+ if(!(fqDistribution[pW] && fSumOfParticleWeights[pW] && fIntFlow[pW][s2F] && fSigma2[pW][s2F] && fChi2[pW][s2F])) 
+ { 
+  cout<<"WARNING: fqDistribution[pW] && fSumOfParticleWeights[pW] && fIntFlow[pW][s2F] && fSigma2[pW][s2F] && fChi2[pW][s2F] is NULL in AFAWFQD::DoFit() !!!!"<<endl;
+  cout<<"pW  = "<<pW<<endl;
+  cout<<"s2F = "<<s2F<<endl;
+  exit(0);
  }
  
  // average multiplicity and number of events:
  Double_t AvM = fSumOfParticleWeights[pW]->GetMean(1);
  //Int_t nEvts = (Int_t)fSumOfParticleWeights[pW]->GetEntries();
  
- // for fitting take into account only bins with at least fTreshold entries:
- Int_t binMin = fqDistribution[pW]->FindFirstBinAbove(fTreshold); // to be improved (add setter for this)  
- Int_t binMax = fqDistribution[pW]->FindLastBinAbove(fTreshold); // to be improved (add setter for this) 
+ // start fitting from the bin with at least fTreshold entries, 
+ // finish fitting at the bin with at least fTreshold entries:
+ Int_t binMin = fqDistribution[pW]->FindFirstBinAbove(fTreshold);  
+ Int_t binMax = fqDistribution[pW]->FindLastBinAbove(fTreshold);
  Double_t binWidth = fqDistribution[pW]->GetBinWidth(4); // assuming that all bins have the same width 
  if(binWidth == 0) 
  {
@@ -767,15 +766,15 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
  TF1 *fittingFun = new TF1("fittingFun","[2]*(x/[1])*exp(-(x*x+[0]*[0])/(2.*[1]))*TMath::BesselI0(x*[0]/[1])",qmin,qmax); 
  
  fittingFun->SetParNames("v*sqrt{sum of particle weights}","sigma^2","norm");
- fittingFun->SetParameters(fvStart*pow(AvM,0.5),fSigma2Start,norm); // to be improved (add setter for starting v)         
- fittingFun->SetParLimits(0,fvMin*pow(AvM,0.5),fvMax*pow(AvM,0.5)); // to be improved (add setters for vmin and vmax)
+ fittingFun->SetParameters(fvStart*pow(AvM,0.5),fSigma2Start,norm);         
+ fittingFun->SetParLimits(0,fvMin*pow(AvM,0.5),fvMax*pow(AvM,0.5)); 
  
  if(s2F == 0)
  {
   fittingFun->FixParameter(1,0.5);
  } else
    {
-    fittingFun->SetParLimits(1,fSigma2Min,fSigma2Max); // to be improved (add setters for sigma^2_min and sigma^2_max)          
+    fittingFun->SetParLimits(1,fSigma2Min,fSigma2Max);          
    }
  fittingFun->FixParameter(2,norm);  
 
@@ -793,11 +792,11 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
  
  if(AvM)
  { 
+  // integrated flow:
   v = fittingFun->GetParameter(0)/pow(AvM,0.5);
   vError = fittingFun->GetParError(0)/pow(AvM,0.5);
-  // store the results:
-  fIntFlow[pW][s2F]->SetBinContent(1,v); // s2F = sigma^2 fitted
-  fIntFlow[pW][s2F]->SetBinError(1,vError); // s2F = sigma^2 fitted
+  fIntFlow[pW][s2F]->SetBinContent(1,v); // s2F is shortcut for "sigma^2 fitted"
+  fIntFlow[pW][s2F]->SetBinError(1,vError); // s2F is shortcut for "sigma^2 fitted"
  }
  
  if(s2F == 0) // sigma^2 not fitted, but fixed to 0.5
@@ -809,7 +808,7 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
   // chi^2:
   chi2 = fittingFun->GetChisquare();
   fChi2[pW][0]->SetBinContent(1,chi2);  
-  fChi2[pW][0]->SetBinError(1,0.);  
+  //fChi2[pW][0]->SetBinError(1,0.);  
  } else // sigma^2 fitted
    {
     // sigma^2:
@@ -820,12 +819,12 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
     // chi^2:
     chi2 = fittingFun->GetChisquare();
     fChi2[pW][1]->SetBinContent(1,chi2);  
-    fChi2[pW][1]->SetBinError(1,0.);  
+    //fChi2[pW][1]->SetBinError(1,0.);  
    }
  
- if(fPlotResults)
+ if(fPlotResults && !(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)) // to be improved (plot also the plot when particle weights are used)
  {
-  // set ranges:
+  // set ranges: // to be improved (there is certainly a better way to implement this)
   Int_t firstNonEmptyBin = fqDistribution[pW]->FindFirstBinAbove(0);
   Double_t lowRange = fqDistribution[pW]->GetBinLowEdge(firstNonEmptyBin);
   Int_t lastNonEmptyBin = fqDistribution[pW]->FindLastBinAbove(0);
@@ -834,7 +833,7 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t useParticleWeights, B
   
   if(s2F == 0)
   { 
-   // to be improved (perhaps there is a better way to implement this?)
+   // to be improved (there is certainly a better way to implement this)
    fqDistribution[pW]->SetFillColor(16);  
    fqDistribution[pW]->SetTitle("Fitted q-distribution");
    fqDistribution[pW]->Draw("");
@@ -863,7 +862,7 @@ void AliFlowAnalysisWithFittingQDistribution::FillCommonHistResultsIntFlow(Bool_
  // fill in AliFlowCommonHistResults histograms relevant for 'NONAME' integrated flow (to be improved (name))
  
  // shortcuts for the flags:
- Int_t pW = (Int_t)(useParticleWeights); // 0 = pWeights not useed, 1 = pWeights used
+ Int_t pW = (Int_t)(useParticleWeights); // particle weights not used (0) or used (1)
  Int_t s2F = (Int_t)(sigma2Fitted); // 0 = sigma^2 not fitted (but fixed to 0.5), 1 = sigma^2 fitted
  
  if(!fIntFlow[pW][s2F])
@@ -1013,6 +1012,7 @@ void AliFlowAnalysisWithFittingQDistribution::StoreFittingParameters()
  // 5th bin: fSigma2Start
  // 6th bin: fSigma2Min
  // 7th bin: fSigma2Max
+ // 8th bin: fPlotResults
  
  if(!fFittingParameters)
  {
@@ -1028,7 +1028,7 @@ void AliFlowAnalysisWithFittingQDistribution::StoreFittingParameters()
  fFittingParameters->Fill(4.5,fSigma2Start);
  fFittingParameters->Fill(5.5,fSigma2Min);
  fFittingParameters->Fill(6.5,fSigma2Max);
- fFittingParameters->Fill(7.5,fPlotResults);
+ fFittingParameters->Fill(7.5,(Int_t)fPlotResults);
  
 } // end of void AliFlowAnalysisWithFittingQDistribution::StoreFittingParameters()
 
