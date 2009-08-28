@@ -251,27 +251,28 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
     }
     Int_t okD0ls=0; Int_t okD0barls=0;
     if(d->SelectD0(fVHF->GetD0toKpiCuts(),okD0ls,okD0barls)) {
-       if(okD0ls)fHistMassLS->Fill(d->InvMassD0(),0.5);
-       if(okD0barls)fHistMassLS->Fill(d->InvMassD0bar(),0.5);
-       fHistCPtaLS->Fill(d->CosPointingAngle());
-       fHistd0d0LS->Fill(1e8*d->Prodd0d0());
-       if(okD0ls)fHistCtsLS->Fill(d->CosThetaStarD0(),0.5);
-       if(okD0barls)fHistCtsLS->Fill(d->CosThetaStarD0bar(),0.5);
-       fHistDCALS->Fill(100*d->GetDCA());
-       PostData(1,fOutput);
        AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
-       if(!trk0) {
+       AliAODTrack *trk1 = (AliAODTrack*)d->GetDaughter(1);
+       if(!trk0 || !trk1) {
           trk0=aod->GetTrack(trkIDtoEntry[d->GetProngID(0)]);
+          trk1=aod->GetTrack(trkIDtoEntry[d->GetProngID(1)]);
           printf("references to standard AOD not available \n");
        }
+       if((trk0->Charge())==1){fHistMassLS->Fill(d->InvMassD0(),0.5);} else{fHistMassLS->Fill(d->InvMassD0bar(),0.5);}
+       fHistCPtaLS->Fill(d->CosPointingAngle());
+       fHistd0d0LS->Fill(1e8*d->Prodd0d0());
+       if((trk0->Charge()==1)){fHistCtsLS->Fill(d->CosThetaStar(0,421,321,211),0.5);}
+           else{fHistCtsLS->Fill(d->CosThetaStar(1,421,211,321),0.5);}
+       fHistDCALS->Fill(100*d->GetDCA());
+       //PostData(1,fOutput);
        if((trk0->Charge())==1) {
           nPosPairs++;
           fHistCtsLSpos->Fill(d->CosThetaStarD0());
-          PostData(1,fOutput);
+          //PostData(1,fOutput);
         } else {
           nNegPairs++;
           fHistCtsLSneg->Fill(d->CosThetaStarD0());
-          PostData(1,fOutput);
+          //PostData(1,fOutput);
         }
       PostData(1,fOutput);
       }
@@ -297,10 +298,10 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
     }
     Int_t okD0=0; Int_t okD0bar=0;
     if(d->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
-      if(okD0)fHistMassD0->Fill(d->InvMassD0(),0.5);
-      if(okD0bar)fHistMassD0->Fill(d->InvMassD0bar(),0.5);
-      if(okD0)fHistCtsD0->Fill(d->CosThetaStarD0(),0.5);
-      if(okD0bar)fHistCtsD0->Fill(d->CosThetaStarD0bar(),0.5);
+      fHistMassD0->Fill(d->InvMassD0(),0.5);
+      fHistMassD0->Fill(d->InvMassD0bar(),0.5);
+      fHistCtsD0->Fill(d->CosThetaStarD0(),0.5);
+      fHistCtsD0->Fill(d->CosThetaStarD0bar(),0.5);
       fHistd0d0D0->Fill(1e8*d->Prodd0d0());
       fHistCPtaD0->Fill(d->CosPointingAngle());
       fHistDCAD0->Fill(100*d->GetDCA());
@@ -327,18 +328,18 @@ void AliAnalysisTaskSEBkgLikeSignD0::Terminate(Option_t */*option*/)
 
   fLsNormalization = 2.*TMath::Sqrt(fTotPosPairs*fTotNegPairs); 
 
-  fHistMassD0 = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMassD0"));
-  fHistMassLS = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMassLS"));
-  fHistCtsD0 = dynamic_cast<TH1F*>(fOutput->FindObject("fHistCtsD0"));
-  fHistCtsLS = dynamic_cast<TH1F*>(fOutput->FindObject("fHistCtsLS"));
+  fHistMassD0   = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMassD0"));
+  fHistMassLS   = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMassLS"));
+  fHistCtsD0    = dynamic_cast<TH1F*>(fOutput->FindObject("fHistCtsD0"));
+  fHistCtsLS    = dynamic_cast<TH1F*>(fOutput->FindObject("fHistCtsLS"));
   fHistCtsLSpos = dynamic_cast<TH1F*>(fOutput->FindObject("fHistCtsLSpos"));
   fHistCtsLSneg = dynamic_cast<TH1F*>(fOutput->FindObject("fHistCtsLSneg"));
-  fHistCPtaD0 = dynamic_cast<TH1F*>(fOutput->FindObject("fHistCPtaD0"));
-  fHistCPtaLS = dynamic_cast<TH1F*>(fOutput->FindObject("fHistCPtaLS"));
-  fHistd0d0D0 = dynamic_cast<TH1F*>(fOutput->FindObject("fHistd0d0D0"));
-  fHistd0d0LS = dynamic_cast<TH1F*>(fOutput->FindObject("fHistd0d0LS"));
-  fHistDCAD0 = dynamic_cast<TH1F*>(fOutput->FindObject("fHistDCAD0"));
-  fHistDCALS = dynamic_cast<TH1F*>(fOutput->FindObject("fHistDCALS"));
+  fHistCPtaD0   = dynamic_cast<TH1F*>(fOutput->FindObject("fHistCPtaD0"));
+  fHistCPtaLS   = dynamic_cast<TH1F*>(fOutput->FindObject("fHistCPtaLS"));
+  fHistd0d0D0   = dynamic_cast<TH1F*>(fOutput->FindObject("fHistd0d0D0"));
+  fHistd0d0LS   = dynamic_cast<TH1F*>(fOutput->FindObject("fHistd0d0LS"));
+  fHistDCAD0    = dynamic_cast<TH1F*>(fOutput->FindObject("fHistDCAD0"));
+  fHistDCALS    = dynamic_cast<TH1F*>(fOutput->FindObject("fHistDCALS"));
 
   if(fLsNormalization>0) {
     fHistMassLS->Scale((1/fLsNormalization)*fHistMassLS->GetEntries());
