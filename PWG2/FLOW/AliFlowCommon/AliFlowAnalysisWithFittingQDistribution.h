@@ -75,7 +75,6 @@ class AliFlowAnalysisWithFittingQDistribution{
   Int_t GetHarmonic() const {return this->fHarmonic;};
   void SetAnalysisLabel(const char *aLabel) {this->fAnalysisLabel->Append(*aLabel);};
   TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
-  
   // 2.) weights:
   void SetWeightsList(TList* wlist) {this->fWeightsList = (TList*)wlist->Clone();};
   TList* GetWeightsList() const {return this->fWeightsList;}  
@@ -125,12 +124,9 @@ class AliFlowAnalysisWithFittingQDistribution{
   void SetPlotResults(Bool_t const pr) {this->fPlotResults = pr;};
   Double_t GetPlotResults() const {return this->fPlotResults;};
   
-  
-
  private:
   AliFlowAnalysisWithFittingQDistribution(const AliFlowAnalysisWithFittingQDistribution &afawfqd);
-  AliFlowAnalysisWithFittingQDistribution& operator=(const AliFlowAnalysisWithFittingQDistribution &afawfqd);
-             
+  AliFlowAnalysisWithFittingQDistribution& operator=(const AliFlowAnalysisWithFittingQDistribution &afawfqd);           
   // 0.) base:
   TList *fHistList; // base list to hold all output object
   // 1.) common:
@@ -157,8 +153,8 @@ class AliFlowAnalysisWithFittingQDistribution{
   Bool_t fUseEtaWeights; // use eta weights
   TProfile *fUseParticleWeights; // profile with three bins to hold values of fUsePhiWeights, fUsePtWeights and fUseEtaWeights
   TH1F *fPhiWeights; // histogram holding phi weights
-  TH1D *fPtWeights; // histogram holding phi weights
-  TH1D *fEtaWeights; // histogram holding phi weights 
+  TH1D *fPtWeights; // histogram holding pt weights
+  TH1D *fEtaWeights; // histogram holding eta weights 
   // 3.) distributions:
   TH1D *fSumOfParticleWeights[2]; // [0=particle weights are unit (not used), 1=particle weights are used]
   TH1D *fqDistribution[2]; // distribution of Q/sqrt{sum of particle weights} [0=particle weights are unit (not used), 1=particle weights are used]
@@ -168,14 +164,14 @@ class AliFlowAnalysisWithFittingQDistribution{
   TH1D *fChi2[2][2]; // final results for chi^2 from Minuit [0=pWeights are unit (not used), 1=pWeights are used][0=sigma^2 not fitted, 1=sigma^2 fitted]
   // 5.) fitting parameters:
   TProfile *fFittingParameters; // profile to hold all fitting parameters
-  Double_t fTreshold; // add comment here
+  Double_t fTreshold; // the first bin taken for the fitting is the first bin with nEntries >= fTreshold (analogously for the last bin)
   Double_t fvStart; // fitting of v will start from this point
   Double_t fvMin; // v range, lower boundary
   Double_t fvMax; // v range, upper boundary
   Double_t fSigma2Start; // fitting of sigma2 will start from this point
-  Double_t fSigma2Min; // sigma2 range, lower boundary (this should be kept fixed at 0.5 according to theorists...)
+  Double_t fSigma2Min; // sigma2 range, lower boundary (this should be kept above 0.5 according to theorists...)
   Double_t fSigma2Max; // sigma2 range, upper boundary
-  Bool_t fPlotResults; // plot q-distribution and resulting fitting function
+  Bool_t fPlotResults; // plot or not q-distribution and resulting fitting function
   // 6.) rest:
   TLegend *fLegend; // legend // to be improved (do I need this as data member?)
   

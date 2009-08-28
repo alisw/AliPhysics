@@ -5922,7 +5922,7 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForIntFlow()
 {
  // initialize all arrays needed to calculate the integrated flow
  
- for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // not weighted or weighted
+ for(Int_t pW=0;pW<2;pW++) // particle weights not used (0) or used (1)
  {
   fQCorrelationsEBE[pW] = NULL;
   for(Int_t sc=0;sc<2;sc++)
@@ -5969,7 +5969,7 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDiffFlow()
  for(Int_t t=0;t<2;t++)
  {
   fDFPType[t] = NULL;
-  for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++)
+  for(Int_t pW=0;pW<2;pW++) // particle weights not used (0) or used (1)
   {
    fDFPParticleWeights[t][pW] = NULL;
    for(Int_t eW=0;eW<2;eW++)
@@ -5988,7 +5988,7 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDiffFlow()
  // profiles in nested lists in fDiffFlowProfiles:
  for(Int_t t=0;t<2;t++) // type: RP or POI
  { 
-  for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // particle weights: not used or used 
+  for(Int_t pW=0;pW<2;pW++) // particle weights not used (0) or used (1)
   {
    for(Int_t eW=0;eW<2;eW++)
    {
@@ -6018,7 +6018,7 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDiffFlow()
  for(Int_t t=0;t<2;t++)
  {
   fDFRType[t] = NULL;
-  for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++)
+  for(Int_t pW=0;pW<2;pW++) // particle weights not used (0) or used (1)
   {
    fDFRParticleWeights[t][pW] = NULL;
    for(Int_t eW=0;eW<2;eW++)
@@ -6045,7 +6045,7 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDiffFlow()
   {
    fNonEmptyBins1D[t][pe] = NULL;
   }
-  for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++)
+  for(Int_t pW=0;pW<2;pW++) // particle weights not used (0) or used (1)
   {
    for(Int_t eW=0;eW<2;eW++)
    {
@@ -7305,7 +7305,7 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDistributions()
 {
  // initialize arrays used for distributions:
  
- for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // non-weighted or weighted
+ for(Int_t pW=0;pW<2;pW++) // particle weights not used (0) or used (1)
  {
   for(Int_t eW=0;eW<2;eW++)
   {
