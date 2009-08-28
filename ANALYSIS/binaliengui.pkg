@@ -13,7 +13,7 @@ ELIBS    := Aliengui \
   ACORDEbase ACORDEsim ACORDErec \
   HMPIDbase HMPIDrec HMPIDsim \
   ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
-  EMCALbase EMCALsim EMCALrec \
+  EMCALbase EMCALsim EMCALrec EMCALUtils \
   STRUCT T0base T0sim T0rec EVGEN STEERBase ESD AOD CDB STEER \
   THijing hijing THbtp TEPEMGEN \
   FASTSIM microcern \
