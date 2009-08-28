@@ -62,7 +62,6 @@
 
 ClassImp(AliITStrackerHLT)
 
-
 Bool_t AliITStrackerHLT::TransportToX( AliExternalTrackParam *t, double x ) const
 {
   return t->PropagateTo( x, t->GetBz() );
@@ -109,11 +108,10 @@ Int_t AliITStrackerHLT::UpdateMI(AliHLTITSTrack* track, const AliITSRecPoint* cl
 }
 
 
-AliHLTITSLayer AliITStrackerHLT::fgLayers[AliITSgeomTGeo::kNLayers]; // ITS layers
-
 AliITStrackerHLT::AliITStrackerHLT()
   :AliTracker(),
    fRecoParam(0),
+   fLayers(new AliHLTITSLayer[AliITSgeomTGeo::kNLayers]),
    fEsd(0),
    fUseTGeo(3),
    fxOverX0Pipe(-1.),
@@ -132,6 +130,7 @@ AliITStrackerHLT::AliITStrackerHLT()
 AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom) 
 : AliTracker(),
   fRecoParam(0),
+  fLayers(new AliHLTITSLayer[AliITSgeomTGeo::kNLayers]),
   fEsd(0),
   fUseTGeo(3),
   fxOverX0Pipe(-1.),
@@ -176,7 +175,7 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
     r += TMath::Sqrt(x*x + y*y);
     r*=0.25;
 
-    new (fgLayers+i-1) AliHLTITSLayer(r,poff,zoff,nlad,ndet);
+    new (fLayers+i-1) AliHLTITSLayer(r,poff,zoff,nlad,ndet);
 
     for (Int_t j=1; j<nlad+1; j++) {
       for (Int_t k=1; k<ndet+1; k++) { //Fill this layer with detectors
@@ -192,7 +191,7 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
         if (phi<0) phi+=TMath::TwoPi();
         else if (phi>=TMath::TwoPi()) phi-=TMath::TwoPi();
 
-        AliHLTITSDetector &det=fgLayers[i-1].GetDetector((j-1)*ndet + k-1); 
+        AliHLTITSDetector &det=fLayers[i-1].GetDetector((j-1)*ndet + k-1); 
         new(&det) AliHLTITSDetector(r,phi); 
 	// compute the real radius (with misalignment)
         TGeoHMatrix mmisal(*(AliITSgeomTGeo::GetMatrix(i,j,k)));
@@ -243,6 +242,7 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
 AliITStrackerHLT::AliITStrackerHLT(const AliITStrackerHLT &tracker)
 :AliTracker(tracker),
  fRecoParam( tracker.fRecoParam),
+ fLayers(new AliHLTITSLayer[AliITSgeomTGeo::kNLayers]),
  fEsd(tracker.fEsd),
  fUseTGeo(tracker.fUseTGeo),
  fxOverX0Pipe(tracker.fxOverX0Pipe),
@@ -283,6 +283,7 @@ AliITStrackerHLT::~AliITStrackerHLT()
     delete fDebugStreamer;
   }
   if(fITSChannelStatus) delete fITSChannelStatus;
+  delete [] fLayers;
 }
 
 
@@ -296,7 +297,7 @@ void AliITStrackerHLT::LoadClusters( std::vector<AliITSRecPoint> clusters)
   //SignDeltas(clusters,GetZ());
   //std::cout<<"CA ITS: NClusters "<<clusters.size()<<std::endl;
   for( int i=0; i<AliITSgeomTGeo::GetNLayers(); i++ ){ 
-     fgLayers[i].ResetClusters(); //road defined by the cluster density
+     fLayers[i].ResetClusters(); //road defined by the cluster density
   }
 
   for( unsigned int icl=0; icl<clusters.size(); icl++ ){
@@ -310,14 +311,14 @@ void AliITStrackerHLT::LoadClusters( std::vector<AliITSRecPoint> clusters)
 
 
     Int_t i=cl.GetLayer();
-    //Int_t ndet=fgLayers[i].GetNdetectors();
+    //Int_t ndet=fLayers[i].GetNdetectors();
     //Int_t detector=cl.GetDetectorIndex();    
     if (!cl.Misalign()) AliWarning("Can't misalign this cluster !"); //SG!!!
-    fgLayers[i].InsertCluster(new AliITSRecPoint(cl)); 
+    fLayers[i].InsertCluster(new AliITSRecPoint(cl)); 
   }
 
   for( int i=0; i<AliITSgeomTGeo::GetNLayers(); i++ ){ 
-    if(0)for( int detector = 0; detector<fgLayers[i].GetNdetectors(); detector++ ){ //SG!!!
+    if(0)for( int detector = 0; detector<fLayers[i].GetNdetectors(); detector++ ){ //SG!!!
       // add dead zone "virtual" cluster in SPD, if there is a cluster within 
       // zwindow cm from the dead zone      
 
@@ -336,28 +337,28 @@ void AliITStrackerHLT::LoadClusters( std::vector<AliITSRecPoint> clusters)
 	  Bool_t local   = kTRUE;
 	  Double_t zwindow = fRecoParam->GetZWindowDeadZone();
 	  hit[1] = fSPDdetzcentre[0]+0.5*AliITSRecoParam::GetSPDdetzlength();
-	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
-	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  if (TMath::Abs(fLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	  hit[1] = fSPDdetzcentre[1]-0.5*AliITSRecoParam::GetSPDdetzlength();
-	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
-	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  if (TMath::Abs(fLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	  hit[1] = fSPDdetzcentre[1]+0.5*AliITSRecoParam::GetSPDdetzlength();
-	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
-	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  if (TMath::Abs(fLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	  hit[1] = fSPDdetzcentre[2]-0.5*AliITSRecoParam::GetSPDdetzlength();
-	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
-	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  if (TMath::Abs(fLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	  hit[1] = fSPDdetzcentre[2]+0.5*AliITSRecoParam::GetSPDdetzlength();
-	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
-	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  if (TMath::Abs(fLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	  hit[1] = fSPDdetzcentre[3]-0.5*AliITSRecoParam::GetSPDdetzlength();
-	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
-	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  if (TMath::Abs(fLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	}
       } // "virtual" clusters in SPD    
     }
-    fgLayers[i].ResetRoad(); //road defined by the cluster density
-    fgLayers[i].SortClusters();
+    fLayers[i].ResetRoad(); //road defined by the cluster density
+    fLayers[i].SortClusters();
   }  
 }
 
@@ -379,8 +380,8 @@ Int_t AliITStrackerHLT::LoadClusters(TTree *cTree) {
   Int_t i=0,j=0,ndet=0;
   Int_t detector=0;
   for (i=0; i<AliITSgeomTGeo::GetNLayers(); i++) {
-    ndet=fgLayers[i].GetNdetectors();
-    Int_t jmax = j + fgLayers[i].GetNladders()*ndet;
+    ndet=fLayers[i].GetNdetectors();
+    Int_t jmax = j + fLayers[i].GetNladders()*ndet;
     for (; j<jmax; j++) {           
       if (!cTree->GetEvent(j)) continue;
       Int_t ncl=clusters->GetEntriesFast();
@@ -392,7 +393,7 @@ Int_t AliITStrackerHLT::LoadClusters(TTree *cTree) {
 
 	if (!c->Misalign()) AliWarning("Can't misalign this cluster !");
 
-        fgLayers[i].InsertCluster(new AliITSRecPoint(*c));
+        fLayers[i].InsertCluster(new AliITSRecPoint(*c));
       }
       clusters->Delete();
       // add dead zone "virtual" cluster in SPD, if there is a cluster within 
@@ -410,30 +411,30 @@ Int_t AliITStrackerHLT::LoadClusters(TTree *cTree) {
 	  Bool_t local   = kTRUE;
 	  Double_t zwindow = fRecoParam->GetZWindowDeadZone();
 	  hit[1] = fSPDdetzcentre[0]+0.5*AliITSRecoParam::GetSPDdetzlength();
-	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
-	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  if (TMath::Abs(fLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	  hit[1] = fSPDdetzcentre[1]-0.5*AliITSRecoParam::GetSPDdetzlength();
-	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
-	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  if (TMath::Abs(fLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	  hit[1] = fSPDdetzcentre[1]+0.5*AliITSRecoParam::GetSPDdetzlength();
-	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
-	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  if (TMath::Abs(fLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	  hit[1] = fSPDdetzcentre[2]-0.5*AliITSRecoParam::GetSPDdetzlength();
-	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
-	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  if (TMath::Abs(fLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	  hit[1] = fSPDdetzcentre[2]+0.5*AliITSRecoParam::GetSPDdetzlength();
-	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
-	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  if (TMath::Abs(fLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	  hit[1] = fSPDdetzcentre[3]-0.5*AliITSRecoParam::GetSPDdetzlength();
-	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
-	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
+	  if (TMath::Abs(fLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
+	    fLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	}
       } // "virtual" clusters in SPD
       
     }
     //
-    fgLayers[i].ResetRoad(); //road defined by the cluster density
-    fgLayers[i].SortClusters();
+    fLayers[i].ResetRoad(); //road defined by the cluster density
+    fLayers[i].SortClusters();
   }
 
   dummy.Clear();
@@ -445,7 +446,7 @@ void AliITStrackerHLT::UnloadClusters() {
   //--------------------------------------------------------------------
   //This function unloads ITS clusters
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fgLayers[i].ResetClusters();
+  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fLayers[i].ResetClusters();
 }
 
 
@@ -585,7 +586,7 @@ AliCluster *AliITStrackerHLT::GetCluster(Int_t index) const {
   //--------------------------------------------------------------------
   Int_t l=(index & 0xf0000000) >> 28;
   Int_t c=(index & 0x0fffffff) >> 00;
-  return fgLayers[l].GetCluster(c);
+  return fLayers[l].GetCluster(c);
 }
 //------------------------------------------------------------------------
 Bool_t AliITStrackerHLT::GetTrackPoint(Int_t index, AliTrackPoint& p) const {
@@ -595,7 +596,7 @@ Bool_t AliITStrackerHLT::GetTrackPoint(Int_t index, AliTrackPoint& p) const {
 
   Int_t l=(index & 0xf0000000) >> 28;
   Int_t c=(index & 0x0fffffff) >> 00;
-  AliITSRecPoint *cl = fgLayers[l].GetCluster(c);
+  AliITSRecPoint *cl = fLayers[l].GetCluster(c);
   Int_t idet = cl->GetDetectorIndex();
 
   Float_t xyz[3];
@@ -643,10 +644,10 @@ Bool_t AliITStrackerHLT::GetTrackPointTrackingError(Int_t index,
 
   Int_t l=(index & 0xf0000000) >> 28;
   Int_t c=(index & 0x0fffffff) >> 00;
-  const AliITSRecPoint *cl = fgLayers[l].GetCluster(c);
+  const AliITSRecPoint *cl = fLayers[l].GetCluster(c);
   Int_t idet = cl->GetDetectorIndex();
 
-  const AliHLTITSDetector &det=fgLayers[l].GetDetector(idet);
+  const AliHLTITSDetector &det=fLayers[l].GetDetector(idet);
 
   // tgphi and tglambda of the track in tracking frame with alpha=det.GetPhi
   Float_t detxy[2];
@@ -716,7 +717,7 @@ void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track )
   for (Int_t ilayer=5; ilayer>=0; ilayer--) {
     //cout<<"\nLayer "<<ilayer<<endl;
     
-    AliHLTITSLayer &layer=fgLayers[ilayer];
+    AliHLTITSLayer &layer=fLayers[ilayer];
   
     //cout<<" shield material.. "<<endl;
 
@@ -898,7 +899,7 @@ AliHLTITSLayer & AliITStrackerHLT::GetLayer(Int_t layer) const
   //--------------------------------------------------------------------
   //
   //
-  return fgLayers[layer];
+  return fLayers[layer];
 }
 
 
@@ -1355,7 +1356,7 @@ Int_t AliITStrackerHLT::CorrectForLayerMaterial(AliHLTITSTrack *t,
 
   Float_t  dir = (direction.Contains("inward") ? 1. : -1.);
 
-  Double_t r=fgLayers[layerindex].GetR();
+  Double_t r=fLayers[layerindex].GetR();
   Double_t deltar=(layerindex<2 ? 0.10*r : 0.05*r);
 
   Double_t rToGo=TMath::Sqrt(t->GetX()*t->GetX()+t->GetY()*t->GetY())-deltar*dir;
@@ -1374,7 +1375,7 @@ Int_t AliITStrackerHLT::CorrectForLayerMaterial(AliHLTITSTrack *t,
 
   switch(mode) {
   case 0:
-    xOverX0 = fgLayers[layerindex].GetThickness(t->GetY(),t->GetZ(),x0);
+    xOverX0 = fLayers[layerindex].GetThickness(t->GetY(),t->GetZ(),x0);
     lengthTimesMeanDensity = xOverX0*x0;
     lengthTimesMeanDensity *= dir;
     // Bring the track beyond the material
@@ -1432,7 +1433,7 @@ Bool_t AliITStrackerHLT::LocalModuleCoord(Int_t ilayer,Int_t idet,
 
   Double_t xyzGlob[3],xyzLoc[3];
 
-  AliHLTITSDetector &detector = fgLayers[ilayer].GetDetector(idet);
+  AliHLTITSDetector &detector = fLayers[ilayer].GetDetector(idet);
   // take into account the misalignment: xyz at real detector plane
   if(!track->GetXYZAt(detector.GetRmisal(),GetBz(),xyzGlob)) return kFALSE;
 
@@ -1451,7 +1452,7 @@ Bool_t AliITStrackerHLT::ComputeRoad(AliHLTITSTrack* track,Int_t ilayer,Int_t id
   //--------------------------------------------------------------------
 
 
-  AliHLTITSDetector &det = fgLayers[ilayer].GetDetector(idet);
+  AliHLTITSDetector &det = fLayers[ilayer].GetDetector(idet);
   // take into account the misalignment: propagate track to misaligned detector plane
   if (!TransportToPhiX( track, det.GetPhi(),det.GetRmisal() ) ) return kFALSE;
 
@@ -1485,7 +1486,7 @@ Bool_t AliITStrackerHLT::ComputeRoad(AliHLTITSTrack* track,Int_t ilayer,Int_t id
   dy = TMath::Sqrt(dy*dy + fRecoParam->GetRoadMisal()*fRecoParam->GetRoadMisal());
   dz = TMath::Sqrt(dz*dz + fRecoParam->GetRoadMisal()*fRecoParam->GetRoadMisal());
 
-  Double_t r = fgLayers[ilayer].GetR();
+  Double_t r = fLayers[ilayer].GetR();
   zmin = track->GetZ() - dz; 
   zmax = track->GetZ() + dz;
   ymin = track->GetY() + r*det.GetPhi() - dy;

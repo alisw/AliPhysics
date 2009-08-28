@@ -45,9 +45,9 @@ public:
   virtual Bool_t GetTrackPointTrackingError(Int_t index, 
 			AliTrackPoint& p, const AliESDtrack *t);
   AliITSRecPoint *GetClusterLayer(Int_t layn, Int_t ncl) const
-                  {return fgLayers[layn].GetCluster(ncl);}
+                  {return fLayers[layn].GetCluster(ncl);}
   Int_t GetNumberOfClustersLayer(Int_t layn) const 
-                        {return fgLayers[layn].GetNumberOfClusters();}
+                        {return fLayers[layn].GetNumberOfClusters();}
   Int_t LoadClusters(TTree *cf);
   void UnloadClusters();
   
@@ -98,7 +98,7 @@ protected:
 
   const AliITSRecoParam *fRecoParam;
 
-  static AliHLTITSLayer fgLayers[AliITSgeomTGeo::kNLayers];// ITS layers
+  AliHLTITSLayer* fLayers; //!
   
   AliESDEvent  * fEsd;                   //! pointer to the ESD event
   Double_t fSPDdetzcentre[4];            // centres of SPD modules in z
