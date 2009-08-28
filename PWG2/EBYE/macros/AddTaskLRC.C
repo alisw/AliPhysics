@@ -1,14 +1,16 @@
-AliAnalysisTaskLRC *AddTaskLRC(double loForwardETA,double hiForwardETA,double loBackwardETA, double hiBackwardETA)
+AliAnalysisTaskLRC *AddTaskLRC(Bool_t RunKine=kFALSE)
 {
 // This macro adds AliAnalysisTaskLRC to existing AnalysisManager
-// Paramiters are : loForwardETA - lover ETA for Forward window 
-// hiForwardETA - higer ETA for Forward window
-// loBackwardETA, hiBackwardETA - same for Bakward window
-// Ex: AddTaskLRC(-0.8, -0.6,0.6, 0.8); 
+// RunKine paramiter switch task to kinematics analysis 
+
+// Author : Andrey Ivanov , St.Peterburg State University
+// Email: Andrey.Ivanov@cern.ch
+
+// Version line : 3.5
+// Version 3.5.5
 
 
-
-  
+ 
    // A. Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -26,70 +28,55 @@ AliAnalysisTaskLRC *AddTaskLRC(double loForwardETA,double hiForwardETA,double lo
    }  
    TString type = mgr->GetInputEventHandler()->GetDataType(); 
    
-   if(type!="ESD")
-   {
-   Error("AddTaskLRC","ESD is only supported now");
-   return NULL;  
+   cout<<" # TaskLRC - input :"<<type<<"\n";
    
-   }
+  
 
-   // Creating task and output container name 
-   TString lF,hF,lB,hB;
-   lF+=loForwardETA; lF.Remove(TString::kBoth,' ');
-   hF+=hiForwardETA; hF.Remove(TString::kBoth,' ');
-   lB+=loBackwardETA; lB.Remove(TString::kBoth,' ');
-   hB+=hiBackwardETA; hB.Remove(TString::kBoth,' ');
-   
-   TString taskname="TaskLRCw"+lF+"to"+hF+"vs"+lB+"to"+hB;
-    
-   
-   
+     
    // C. Create the task, add it to manager.
    //===========================================================================
-   AliAnalysisTaskLRC *taskLRC = new AliAnalysisTaskLRC(taskname);
+   AliAnalysisTaskLRC *taskLRC = new AliAnalysisTaskLRC("Tak_LRC",RunKine);
    mgr->AddTask(taskLRC);
 
+   taskLRC->fMinPtLimit=0.2;    // 200MeV minimal Pt (5GeV max Pt by default)
+      
    // D. Configure the analysis task. Extra parameters can be used via optional
    // arguments of the AddTaskXXX() function.
    //===========================================================================
  
-   taskLRC->SetETAWindows(loForwardETA,hiForwardETA,loBackwardETA,hiBackwardETA);
-  
+   //Adding LRC processors to the task
+   
+ //FB
+taskLRC->AddLRCProcess(new AliLRCProcess(-0.2,-0.0,0.0,0.2));
+taskLRC->AddLRCProcess(new AliLRCProcess(-0.4,-0.0,0.0,0.4));
+taskLRC->AddLRCProcess(new AliLRCProcess(-0.6,-0.0,0.0,0.6));
+taskLRC->AddLRCProcess(new AliLRCProcess(-0.8,-0.0,0.0,0.8));
+//0.2 gap
+taskLRC->AddLRCProcess(new AliLRCProcess(-0.4,-0.2,0.2,0.4));
+taskLRC->AddLRCProcess(new AliLRCProcess(-0.6,-0.4,0.4,0.6));
+taskLRC->AddLRCProcess(new AliLRCProcess(-0.8,-0.6,0.6,0.8));
+//0.4 gap
+taskLRC->AddLRCProcess(new AliLRCProcess(-0.6,-0.2,0.2,0.6));
+taskLRC->AddLRCProcess(new AliLRCProcess(-0.8,-0.4,0.4,0.8));
+//0.6 gap
+taskLRC->AddLRCProcess(new AliLRCProcess(-0.8,-0.2,0.2,0.8));
+
+//FULL
+taskLRC->AddLRCProcess(new AliLRCProcess(-0.8,0.8,-0.8,0.8));
+
+TString OutName;
+OutName="LRC_out_"+type;
+
+   
    // E. Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *cout_LRC = mgr->CreateContainer(taskname, TList::Class(),
-                 AliAnalysisManager::kOutputContainer,"LRC.ESD.C.root");                             
+   AliAnalysisDataContainer *cout_LRC = mgr->CreateContainer(OutName, TList::Class(),
+                 AliAnalysisManager::kOutputContainer,"LRC.C.root");                             
    mgr->ConnectInput(taskLRC, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput(taskLRC, 0, cout_LRC);
+   mgr->ConnectOutput(taskLRC, 1, cout_LRC);
 
    // Return task pointer at the end
    return taskLRC;
-};
-
-TList *AddLRCTaskSet()
-{// This routine uses AddTaskLRC to add a set of AliAnalysisTaskLRC 
-//corresponding standary windows set  to existing analysis manager 
-
-TList *TaskList = new TList();
-
-//FB
-TaskList->Add(AddTaskLRC(-0.2,-0.0,0.0,0.2));
-TaskList->Add(AddTaskLRC(-0.4,-0.0,0.0,0.4));
-TaskList->Add(AddTaskLRC(-0.6,-0.0,0.0,0.6));
-TaskList->Add(AddTaskLRC(-0.8,-0.0,0.0,0.8));
-//0.2 gap
-TaskList->Add(AddTaskLRC(-0.4,-0.2,0.2,0.4));
-TaskList->Add(AddTaskLRC(-0.6,-0.4,0.4,0.6));
-TaskList->Add(AddTaskLRC(-0.8,-0.6,0.6,0.8));
-//0.4 gap
-TaskList->Add(AddTaskLRC(-0.6,-0.2,0.2,0.6));
-TaskList->Add(AddTaskLRC(-0.8,-0.4,0.4,0.8));
-//0.6 gap
-TaskList->Add(AddTaskLRC(-0.8,-0.2,0.2,0.8));
-
-//FULL
-TaskList->Add(AddTaskLRC(-0.8,0.8,-0.8,0.8));
-
-return TaskList;
 }
+

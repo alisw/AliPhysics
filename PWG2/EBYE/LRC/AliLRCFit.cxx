@@ -131,8 +131,8 @@ double AliLRCFit::Getda1() const {return fda1;}
 double AliLRCFit::Getdb1() const {return fdb1;}
 double AliLRCFit::Gethi2() const {return fhi2;}
 double AliLRCFit::Getf() const {return f;}
-double AliLRCFit::Getxmin() const {return fxmax;}
-double AliLRCFit::Getxmax() const {return fxmin;}
+double AliLRCFit::Getxmin() const {return fxmin;}
+double AliLRCFit::Getxmax() const {return fxmax;}
 int AliLRCFit::GetN() const {return fN;}
 
 
