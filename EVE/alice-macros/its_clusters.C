@@ -42,18 +42,27 @@ TEvePointSet* its_clusters(TEveElement* cont=0, Float_t maxR=50)
   TEvePointSet* clusters = new TEvePointSet(10000);
   clusters->SetOwnIds(kTRUE);
 
-  Int_t nentr=(Int_t)cTree->GetEntries();
-  for (Int_t i=0; i<nentr; i++) {
+  Int_t nentr = (Int_t) cTree->GetEntries();
+  for (Int_t i=0; i<nentr; i++)
+  {
     if (!cTree->GetEvent(i)) continue;
 
-    Int_t ncl=cl->GetEntriesFast();
+    Int_t ncl = cl->GetEntriesFast();
 
     Float_t maxRsqr = maxR*maxR;
-    while (ncl--) {
-      AliCluster *c=(AliCluster*)cl->UncheckedAt(ncl);
+    for (Int_t icl = 0; icl < ncl; ++icl)
+    {
+      AliCluster *c = (AliCluster*) cl->UncheckedAt(icl);
+      // This really should not happen, but did in online display once.
+      if (c == 0)
+      {
+	::Warning("its_clusters", "Got NULL AliCluster*, idx=%d, N=%d.",
+		  icl, ncl);
+	continue;
+      }
       Float_t g[3]; //global coordinates
       c->GetGlobalXYZ(g);
-      if (g[0]*g[0]+g[1]*g[1] < maxRsqr)
+      if (g[0]*g[0] + g[1]*g[1] < maxRsqr)
       {
 	clusters->SetNextPoint(g[0], g[1], g[2]);
 	AliCluster *atp = new AliCluster(*c);
