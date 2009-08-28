@@ -40,6 +40,7 @@ using namespace std;
 #include "TMath.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliGeomManager.h"
 #include "TObjString.h"
 #include "TObjArray.h"
 #include "AliITStrackerHLT.h"

@@ -6,8 +6,6 @@ ITS/AliHLTITStracker.cxx
 ITS/AliHLTITSVertexerZ.cxx
 ITS/AliHLTITSclusterer.cxx
 ITS/AliHLTITSAgent.cxx
-ITS/AliHLTITSClusterFinderSPDComponent.cxx
-ITS/AliHLTITSClusterFinderSSDComponent.cxx
 ITS/AliHLTITSClusterHistoComponent.cxx
 ITS/AliHLTITSSSDQARecPointsComponent.cxx
 ITS/AliHLTITSQAComponent.cxx
@@ -15,7 +13,6 @@ ITS/tracking/AliITStrackerHLT.cxx
 ITS/tracking/AliHLTITSDetector.cxx
 ITS/tracking/AliHLTITSLayer.cxx
 ITS/tracking/AliHLTITSTrack.cxx
-ITS/tracking/AliHLTVertexer.cxx
 )
 
 # fill list of header files from list of source files
