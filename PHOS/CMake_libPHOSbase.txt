@@ -12,7 +12,6 @@ set(SRCS
                  AliPHOSCpvCalibData.cxx
                  AliPHOSEmcCalibData.cxx
                  AliPHOSPulseGenerator.cxx
-                 AliPHOSRawFitter.cxx
                  AliPHOSRawFitterv1.cxx
                  AliPHOSRawFitterv2.cxx
                  AliPHOSRawDigiProducer.cxx

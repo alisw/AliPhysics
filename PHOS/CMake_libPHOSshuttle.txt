@@ -1,7 +1,6 @@
 # -*- mode: cmake -*-
 
 set(SRCS
-                 AliPHOSCalibHistoProducer.cxx 
                  AliPHOSPreprocessor.cxx 
 		 AliPHOSRcuDA1.cxx 
 		 AliPHOSDA1.cxx 
