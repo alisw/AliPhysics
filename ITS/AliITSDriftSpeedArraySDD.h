@@ -28,6 +28,8 @@ class AliITSDriftSpeedArraySDD : public TObject{
   void AddDriftSpeed(AliITSDriftSpeedSDD* drSpeed);
 
   void PrintAll() const;
+  UInt_t GetTimestamp(Int_t iElement);
+
   Double_t GetDriftSpeed(Int_t iEvent, Double_t iAnode);
 
  protected:  

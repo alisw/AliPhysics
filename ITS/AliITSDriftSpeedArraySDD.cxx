@@ -59,6 +59,14 @@ void AliITSDriftSpeedArraySDD::PrintAll() const{
   }
 }
 //______________________________________________________________________
+UInt_t AliITSDriftSpeedArraySDD::GetTimestamp(Int_t iElement){
+  // returns time stamp
+  if(!fDriftSpeedSDD.IsSorted()) fDriftSpeedSDD.Sort();
+  if(fNEvents<iElement) return 0;
+  AliITSDriftSpeedSDD *d=(AliITSDriftSpeedSDD*)fDriftSpeedSDD.At(iElement);
+  return d->GetEventTimestamp();
+}
+//______________________________________________________________________
 Double_t AliITSDriftSpeedArraySDD::GetDriftSpeed(Int_t iEvent, Double_t iAnode){
   // returns drift speed for given event number and anode
   if(!fDriftSpeedSDD.IsSorted()) fDriftSpeedSDD.Sort();
