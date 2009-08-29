@@ -299,16 +299,11 @@ void AliCaloTrackReader::Init()
 	
 	//Get the file with second input events if the filename is given
 	//Get the tree and connect the AODEvent. Only with AODs
-	
+
 	if(fReadStack && fReadAODMCParticles){
 		printf("AliCaloTrackReader::Init() - Cannot access stack and mcparticles at the same time, change them \n");
 		fReadStack = kFALSE;
 		fReadAODMCParticles = kFALSE;
-	}
-	
-	if(fReadStack && !fMC) {
-		printf("AliCaloTrackReader::Init() - MC handler not available, switch off stack reading\n");
-		fReadStack = kFALSE;
 	}
 	
 	if(fSecondInputFileName!=""){
