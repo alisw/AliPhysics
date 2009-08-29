@@ -35,6 +35,7 @@
 #include "AliESDCaloCluster.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODTrack.h"
+#include "AliAODPid.h"
 #include "AliAODEvent.h"
 #include "AliFidutialCut.h"
 
@@ -85,6 +86,7 @@ void AliCaloTrackESDReader::FillInputCTS() {
   Double_t covTr[21];
   Double_t pid[10];
   Double_t bfield = ((AliESDEvent*)fInputEvent)->GetMagneticField();
+  Double_t      timezero        = 0;   //TO BE FIXED
 
   //To be replaced by call to AliEMCALGeoUtils when the class becomes available
   Double_t radius = 441.0; //[cm] EMCAL radius +13cm
@@ -112,41 +114,57 @@ void AliCaloTrackESDReader::FillInputCTS() {
 		track->GetImpactParameters(impactXY,impactZ);
 	
 		if (impactXY<3) {
-			// track inside the beam pipe
-			//Put new aod object in file in AOD tracks array
-			AliAODTrack *aodTrack = new((*(fOutputEvent->GetTracks()))[naod++]) 
-				AliAODTrack(track->GetID(), track->GetLabel(), p, kTRUE, pos, kFALSE,covTr, (Short_t)track->GetSign(), track->GetITSClusterMap(), 
-							pid,
-							0x0,//primary,
-							kTRUE, // check if this is right
-							kTRUE, // check if this is right
-							AliAODTrack::kPrimary, 
-							0);
-	  
-			aodTrack->SetFlags(track->GetStatus());
-			aodTrack->ConvertAliPIDtoAODPID();
-			
-			//Extrapolate track to EMCAL surface for AOD-level track-cluster matching
-			AliAODPid *aodpid = new AliAODPid;
-			Double_t emcpos[3] = {0.,0.,0.};
-			Double_t emcmom[3] = {0.,0.,0.};
-			aodpid->SetEMCALPosition(emcpos);
-			aodpid->SetEMCALMomentum(emcmom);
-			
-			AliExternalTrackParam *outerparam = (AliExternalTrackParam*)track->GetOuterParam();
-			if(!outerparam) return;
-						
-			Bool_t okpos = outerparam->GetXYZAt(radius,bfield,emcpos);
-			Bool_t okmom = outerparam->GetPxPyPzAt(radius,bfield,emcmom);
-			if(!(okpos && okmom)) return;
-			
-			aodpid->SetEMCALPosition(emcpos);
-			aodpid->SetEMCALMomentum(emcmom);
-						
-		    aodTrack->SetDetPID(aodpid);
+		  // track inside the beam pipe
+		  //Put new aod object in file in AOD tracks array
+		  AliAODTrack *aodTrack = new((*(fOutputEvent->GetTracks()))[naod++]) 
+		    AliAODTrack(track->GetID(), track->GetLabel(), p, kTRUE, pos, kFALSE,covTr, (Short_t)track->GetSign(), track->GetITSClusterMap(), 
+				pid,
+				0x0,//primary,
+				kTRUE, // check if this is right
+				kTRUE, // check if this is right
+				AliAODTrack::kPrimary, 
+				0);
+		  
+		  aodTrack->SetFlags(track->GetStatus());
+		  aodTrack->ConvertAliPIDtoAODPID();
+
+		  //fill needed AliAODPid information, including
+		  //Extrapolate track to EMCAL surface for AOD-level track-cluster matching
+		  AliAODPid *aodpid = new AliAODPid;
+		  aodpid->SetITSsignal(track->GetITSsignal());
+		  aodpid->SetTPCsignal(track->GetTPCsignal());
+		  //n TRD planes = 6
+		  Int_t nslices = track->GetNumberOfTRDslices()*6;
+		  Double_t *trdslices = new Double_t[nslices];
+		  for(Int_t iSl =0; iSl < track->GetNumberOfTRDslices(); iSl++) {
+		    for(Int_t iPl =0; iPl<6; iPl++) trdslices[iPl*track->GetNumberOfTRDslices()+iSl] = track->GetTRDslice(iPl,iSl);
+		  }
+		  aodpid->SetTRDsignal(track->GetNumberOfTRDslices()*6,trdslices);
+		  Double_t times[AliAODPid::kSPECIES]; track->GetIntegratedTimes(times);
+		  aodpid->SetIntegratedTimes(times);
+
+		  aodpid->SetTOFsignal(track->GetTOFsignal()-timezero); // to be fixed 
+		  aodpid->SetHMPIDsignal(track->GetHMPIDsignal());
+
+		  Double_t emcpos[3] = {0.,0.,0.};
+		  Double_t emcmom[3] = {0.,0.,0.};
+		  aodpid->SetEMCALPosition(emcpos);
+		  aodpid->SetEMCALMomentum(emcmom);
+		  
+		  AliExternalTrackParam *outerparam = (AliExternalTrackParam*)track->GetOuterParam();
+		  if(!outerparam) return;
+		  
+		  Bool_t okpos = outerparam->GetXYZAt(radius,bfield,emcpos);
+		  Bool_t okmom = outerparam->GetPxPyPzAt(radius,bfield,emcmom);
+		  if(!(okpos && okmom)) return;
+		  
+		  aodpid->SetEMCALPosition(emcpos);
+		  aodpid->SetEMCALMomentum(emcmom);
+		  
+		  aodTrack->SetDetPID(aodpid);
 		}
 		else continue;   // outside the beam pipe: orphan track	
-      }//Pt and Fidutial cut passed. 
+	}//Pt and Fidutial cut passed. 
   }// track loop
   
   //Put references to selected tracks in array
