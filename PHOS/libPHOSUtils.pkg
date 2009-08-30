@@ -10,6 +10,8 @@ DHDR= PHOSUtilsLinkDef.h
 
 EXPORT:=AliPHOSGeoUtils.h
 
+CXXFLAGS+=-D__PHOSUTIL__
+
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -L$(shell root-config --libdir) -lGeom 
