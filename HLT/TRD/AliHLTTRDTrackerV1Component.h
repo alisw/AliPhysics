@@ -1,10 +1,12 @@
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTTRDTRACKERV1COMPONENT_H
 #define ALIHLTTRDTRACKERV1COMPONENT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTTRDTrackerV1Component.h
-    @author Timm Steinbeck, Matthias Richter
+    @author 
     @date   
     @brief  Declaration of a TRDTracker component. */
 
@@ -44,9 +46,6 @@ public:
   AliHLTComponent* Spawn();
 	
 protected:
-  AliHLTUInt32_t TransportTracks(TClonesArray *inTracksArray, AliHLTUInt8_t* output,
-				 vector<AliHLTComponent_BlockData>& outputBlocks, AliHLTUInt32_t inOffset, AliHLTUInt32_t inSpec);
-	
   // Protected functions to implement AliHLTComponent's interface.
   // These functions provide initialization as well as the actual processing
   // capabilities of the component. 
@@ -65,7 +64,6 @@ protected:
   using AliHLTProcessor::DoEvent;
   
   int Configure(const char* arguments);
-  void SetOfflineParams();
   int SetParams();
   int ReconfigureField();
 	
@@ -91,9 +89,8 @@ private:
   TString fgeometryFileName;
   Double_t fieldStrength;
   Bool_t fSlowTracking;
-  Bool_t fOfflineMode;
 
-  ClassDef(AliHLTTRDTrackerV1Component, 2)
+  ClassDef(AliHLTTRDTrackerV1Component, 3)
 
 };
 #endif

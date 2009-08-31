@@ -89,7 +89,6 @@ AliHLTComponentDataType AliHLTTRDClusterHistoComponent::GetOutputDataType()
 void AliHLTTRDClusterHistoComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
   // see header file for class documentation
-  // XXX TODO: Find more realistic values.
   constBase = 5000;
   inputMultiplier = 3;
 }
@@ -100,7 +99,7 @@ AliHLTComponent* AliHLTTRDClusterHistoComponent::Spawn()
   return new AliHLTTRDClusterHistoComponent;
 }
 
-int AliHLTTRDClusterHistoComponent::DoInit( int argc, const char** argv )
+int AliHLTTRDClusterHistoComponent::DoInit(int /*argc*/, const char** /*argv*/ )
 {
   // Initialize histograms
 
@@ -112,25 +111,6 @@ int AliHLTTRDClusterHistoComponent::DoInit( int argc, const char** argv )
 
   for(int i=0; i<540; i++)
     fClsAmpDriftDet[i] = new TH1D(Form("trdClsDriftDet_%d",i), "", 200, -0.5, 199.5);
-
-  /*
-  // configure
-
-  int iResult=0;
-  TString configuration="";
-  TString argument="";
-  for (int i=0; i<argc && iResult>=0; i++) {
-    argument=argv[i];
-    if (!configuration.IsNull()) configuration+=" ";
-    configuration+=argument;
-  }
-  
-  if (!configuration.IsNull()) {
-    iResult=Configure(configuration.Data());
-  }  
-
-  return iResult; 
-    */
     
     return 0;
 }
@@ -204,22 +184,7 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
   PushBack((TObject*)fClsAmpDrift, kAliHLTDataTypeHistogram, 0);   
   PushBack((TObject*)fClsTB, kAliHLTDataTypeHistogram, 0);  
   PushBack((TObject*)fClsAmpDist, kAliHLTDataTypeHistogram, 0);  
-
-  //delete til dodeinit
-  // if(fPlotChargeOROCAll){
-  //  AliHLTUInt32_t fSpecification = AliHLTTRDDefinitions::EncodeDataSpecification(0,35,2,5);
-  //  PushBack( (TObject*) fTotalClusterChargeOROCAll,kAliHLTDataTypeHistogram,fSpecification);
-  //}
   
   return 0;
 }
 
-int AliHLTTRDClusterHistoComponent::Configure(const char* arguments)
-{
-  return 0;
-}
-
-int AliHLTTRDClusterHistoComponent::Reconfigure(const char* cdbEntry, const char* chainId)
-{
-  return 0;
-}

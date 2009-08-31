@@ -1,25 +1,26 @@
 // $Id$
 
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
- *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
- *          for The ALICE Off-line Project.                               *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors:                                                       *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTRDClusterizerComponent.cxx
-    @author Timm Steinbeck, Matthias Richter
+    @author 
     @date   
-    @brief  A TRDClusterizer processing component for the HLT. */
+    @brief  A TRDClusterizer processing component for the HLT. 
+*/
 
 // see header file for class documentation                                   //
 // or                                                                        //
@@ -78,7 +79,6 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent():
   fyPosMethod(1),
   fgeometryFileName(""),
   fProcessTracklets(kFALSE),
-  fOfflineMode(kFALSE),
   fHLTstreamer(kFALSE)
 {
   // Default constructor
@@ -161,13 +161,16 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
     return -1;
   }
 
+  if(iResult<0) return iResult;
+
   fMemReader = new AliRawReaderMemory;
   fClusterizer->SetReconstructor(fReconstructor);
   fClusterizer->SetUseLabels(kFALSE);
 
   if(fReconstructor->IsProcessingTracklets())
     fOutputConst = fClusterizer->GetTrMemBlockSize();
-  return 0;
+  
+  return iResult;
 }
 
 int AliHLTTRDClusterizerComponent::DoDeinit()
@@ -240,7 +243,16 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 		   block.fSize);
 	}
       
-      //      fMemReader->Reset();
+#ifndef NDEBUG
+      unsigned long constBase;
+      double inputMultiplier;
+      GetOutputDataSize(constBase,inputMultiplier);
+      if(size<(constBase+block.fSize*inputMultiplier)){
+	HLTWarning("Memory Block given might be too small: %i < %i; Event %Lu", size, constBase+block.fSize*inputMultiplier, evtData.fEventID);
+      }
+#endif
+
+      // fMemReader->Reset();
       fMemReader->SetMemory((UChar_t*) block.fPtr, block.fSize);
 
       AliHLTUInt32_t spec = block.fSpecification;
@@ -363,13 +375,7 @@ int AliHLTTRDClusterizerComponent::Configure(const char* arguments){
       argument=((TObjString*)pTokens->At(i))->GetString();
       if (argument.IsNull()) continue;
       
-      if (argument.CompareTo("-OFFLINE")==0) {
-	fOfflineMode = kTRUE;
-	HLTFatal("You have selected OFFLINE mode!");
-	HLTFatal("This program shall NOT run on the HLT cluster like this!");
-	continue;
-      }
-      else if (argument.CompareTo("output_percentage")==0) {
+      if (argument.CompareTo("output_percentage")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("Setting output percentage to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	fOutputPercentage=((TObjString*)pTokens->At(i))->GetString().Atoi();
@@ -463,7 +469,6 @@ int AliHLTTRDClusterizerComponent::Configure(const char* arguments){
     iResult=-EINVAL;
   }
   if(iResult>=0){
-    if(fOfflineMode)SetOfflineParams();
     iResult=SetParams();
   }
   return iResult;
@@ -473,7 +478,7 @@ int AliHLTTRDClusterizerComponent::SetParams()
 {
   Int_t iResult=0;
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-    HLTError("DefaultStorage is not Set in CDBManager");
+    HLTError("DefaultStorage is not set in CDBManager");
     return -EINVAL;
   }
   if(AliCDBManager::Instance()->GetRun()<0){
@@ -491,7 +496,7 @@ int AliHLTTRDClusterizerComponent::SetParams()
       AliGeomManager::LoadGeometry(fgeometryFileName.Data());
     }
     if(!AliGeomManager::GetGeometry()){
-      HLTError("Cannot load geometry");
+      HLTError("Could not load geometry");
       return -EINVAL;
     }
   }
@@ -576,24 +581,6 @@ int AliHLTTRDClusterizerComponent::SetParams()
   fClusterizer->SetRawVersion(fRawDataVersion);
 
   return iResult;
-}
-
-void AliHLTTRDClusterizerComponent::SetOfflineParams(){
-  HLTFatal("You have entered the OFFLINE configuration!");
-  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-    HLTFatal("You are resetting the Default Storage of the CDBManager!");
-    HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  }else{
-    HLTError("DefaultStorage was already set!");
-  }
-  if(AliCDBManager::Instance()->GetRun()<0){
-    HLTFatal("You are resetting the CDB run number to 0!");
-    HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
-    AliCDBManager::Instance()->SetRun(0);
-  }else{
-    HLTError("Run Number was already set!");
-  }
 }
 
 int AliHLTTRDClusterizerComponent::Reconfigure(const char* cdbEntry, const char* chainId)

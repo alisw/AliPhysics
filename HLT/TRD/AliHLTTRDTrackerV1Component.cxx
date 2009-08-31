@@ -1,25 +1,26 @@
 // $Id: AliHLTTRDTrackerV1Component.cxx 23618 2008-01-29 13:07:38Z hristov $
 
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
- *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
- *          for The ALICE Off-line Project.                               *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors:                                                       *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /** @file   AliHLTTRDTrackerV1Component.cxx
-    @author Timm Steinbeck, Matthias Richter
+    @author 
     @date   
-    @brief  A TRDTrackerV1 processing component for the HLT. */
+    @brief  A TRDTrackerV1 processing component for the HLT.
+*/
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -73,8 +74,7 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component():
   fPIDmethod(1),
   fgeometryFileName(""),
   fieldStrength(-101),
-  fSlowTracking(kFALSE),
-  fOfflineMode(kFALSE)
+  fSlowTracking(kFALSE)
 {
   // Default constructor
 
@@ -143,6 +143,8 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
   } else {
     iResult=Reconfigure(NULL, NULL);
   }
+
+  if(iResult<0) return iResult;
 
   fTracker = new AliTRDtrackerV1();
   HLTDebug("TRDTracker at 0x%x", fTracker);
@@ -220,7 +222,15 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 		 block.fSize);
       }
       
-      
+#ifndef NDEBUG
+      unsigned long constBase;
+      double inputMultiplier;
+      GetOutputDataSize(constBase,inputMultiplier);
+      if(size<(constBase+block.fSize*inputMultiplier)){
+	HLTWarning("Memory Block given might be too small: %i < %i; Event %Lu", size, constBase+block.fSize*inputMultiplier, evtData.fEventID);
+      }
+#endif      
+
       TClonesArray* clusterArray = new TClonesArray("AliTRDcluster"); // would be nice to allocate memory for all clusters here.
       AliHLTTRDUtils::ReadClusters(clusterArray, block.fPtr, block.fSize);
       HLTDebug("TClonesArray of clusters: nbEntries = %i", clusterArray->GetEntriesFast());
@@ -294,7 +304,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       clusterArray->Delete();
       delete clusterArray;
       
-      }
+    }
       
   size = totalSize;
   HLTDebug("Event is done. size written to the output is %i", size);
@@ -315,13 +325,7 @@ int AliHLTTRDTrackerV1Component::Configure(const char* arguments){
       argument=((TObjString*)pTokens->At(i))->GetString();
       if (argument.IsNull()) continue;
       
-      if (argument.CompareTo("-OFFLINE")==0) {
-	fOfflineMode = kTRUE;
-	HLTFatal("You have selected OFFLINE mode!");
-	HLTFatal("This program shall NOT run on the HLT cluster like this!");
-	continue;
-      }
-      else if (argument.CompareTo("output_percentage")==0) {
+      if (argument.CompareTo("output_percentage")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("Setting output percentage to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	fOutputPercentage=((TObjString*)pTokens->At(i))->GetString().Atoi();
@@ -411,7 +415,6 @@ int AliHLTTRDTrackerV1Component::Configure(const char* arguments){
     iResult=-EINVAL;
   }
   if(iResult>=0){
-    if(fOfflineMode)SetOfflineParams();
     iResult=SetParams();
   }
   return iResult;
@@ -421,7 +424,7 @@ int AliHLTTRDTrackerV1Component::SetParams()
 {
   Int_t iResult=0;
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-    HLTError("DefaultStorage is not Set in CDBManager");
+    HLTError("DefaultStorage is not set in CDBManager");
     return -EINVAL;
   }
   if(AliCDBManager::Instance()->GetRun()<0){
@@ -439,7 +442,7 @@ int AliHLTTRDTrackerV1Component::SetParams()
       AliGeomManager::LoadGeometry(fgeometryFileName.Data());
     }
     if(!AliGeomManager::GetGeometry()){
-      HLTError("Cannot load geometry");
+      HLTError("Could not load geometry");
       return -EINVAL;
     }
   }
@@ -528,24 +531,6 @@ int AliHLTTRDTrackerV1Component::SetParams()
   return iResult;
 }
 
-void AliHLTTRDTrackerV1Component::SetOfflineParams(){
-  HLTFatal("You have entered the OFFLINE configuration!");
-  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-    HLTFatal("You are resetting the Default Storage of the CDBManager!");
-    HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  }else{
-    HLTError("DefaultStorage was already set!");
-  }
-  if(AliCDBManager::Instance()->GetRun()<0){
-    HLTFatal("You are resetting the CDB run number to 0!");
-    HLTFatal("Let's hope that this program is NOT running on the HLT cluster!");
-    AliCDBManager::Instance()->SetRun(0);
-  }else{
-    HLTError("Run Number was already set!");
-  }
-}
-
 int AliHLTTRDTrackerV1Component::ReconfigureField()
 {
   int iResult=0;
@@ -588,13 +573,14 @@ int AliHLTTRDTrackerV1Component::ReconfigureField()
       }
     }
   }
+
   if(fieldStrength>=-100){
     AliMagF* field = (AliMagF *) TGeoGlobalMagField::Instance()->GetField();
+    HLTDebug("Magnetic field before change: %f KGauss", field->SolenoidField());
     field->SetFactorSol(1);
     Double_t initialFieldStrengh=field->SolenoidField();
-    HLTDebug("Magnetic field was: %f KGauss", initialFieldStrengh);
     field->SetFactorSol(fieldStrength/initialFieldStrengh);
-    HLTDebug("Magnetic field reset to %f KGauss.", field->SolenoidField());
+    HLTDebug("Magnetic field was changed to %f KGauss.", field->SolenoidField());
   }
   return iResult;
 }
@@ -660,21 +646,21 @@ int AliHLTTRDTrackerV1Component::ReadPreprocessorValues(const char* modules)
     if (pathBField) {
 
       HLTInfo("reconfigure B-Field from entry %s, modules %s", pathBField,(modules!=NULL && modules[0]!=0)?modules:"<none>");
-      //AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(pathBField/*,GetRunNo()*/);
+      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(pathBField/*,GetRunNo()*/);
       
-      AliCDBPath path(pathBField);
+      // AliCDBPath path(pathBField);
       
-      AliCDBStorage *stor = AliCDBManager::Instance()->GetDefaultStorage();
-      Int_t version    = stor->GetLatestVersion(pathBField, GetRunNo());
-      Int_t subVersion = stor->GetLatestSubVersion(pathBField, GetRunNo(), version);
-      AliCDBEntry *pEntry = stor->Get(path,GetRunNo(), version, subVersion);
+      // AliCDBStorage *stor = AliCDBManager::Instance()->GetDefaultStorage();
+      // Int_t version    = stor->GetLatestVersion(pathBField, GetRunNo());
+      // Int_t subVersion = stor->GetLatestSubVersion(pathBField, GetRunNo(), version);
+      // AliCDBEntry *pEntry = stor->Get(path,GetRunNo(), version, subVersion);
       
-      HLTImportant("RunNo %d, Version %d, subversion %d", GetRunNo(), version, subVersion);
+      // HLTInfo("RunNo %d, Version %d, subversion %d", GetRunNo(), version, subVersion);
       
       if (pEntry) {
     	TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
     	if (pString) {
-   	  HLTImportant("received configuration object string: \'%s\'", pString->GetString().Data());
+   	  HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
    	  iResult=Configure(pString->GetString().Data());
     	} else {
    	  HLTError("configuration object \"%s\" has wrong type, required TObjString", pathBField);

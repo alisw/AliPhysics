@@ -58,8 +58,6 @@ protected:
   /** interface function, see AliHLTComponent for description */
   int DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& trigData );
 
-  int Reconfigure(const char* cdbEntry, const char* chainId);
-
   using AliHLTProcessor::DoEvent;
   
 private:
@@ -72,7 +70,6 @@ private:
    * Parse a string for the configuration arguments and set the component
    * properties.
    */ 
-  int Configure(const char* arguments);
 
   TH1D *fNClsDet;
   TH1D *fClsAmp;

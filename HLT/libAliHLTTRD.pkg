@@ -16,6 +16,8 @@ CLASS_HDRS:= \
 	AliHLTTRDTrack.h \
 	AliHLTTRDAgent.h \
 	AliHLTTRDUtils.h \
+	AliHLTTRDOfflineClusterizerComponent.h \
+	AliHLTTRDOfflineTrackerV1Component.h \
 	AliHLTTRDClusterHistoComponent.h
 
 # library sources

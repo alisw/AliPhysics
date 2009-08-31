@@ -1,14 +1,17 @@
+//-*- Mode: C++ -*-
 // $Id$
 
 #ifndef ALIHLTTRDCLUSTERIZERCOMPONENT_H
 #define ALIHLTTRDCLUSTERIZERCOMPONENT_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTRDClusterizerComponent.h
-    @author Timm Steinbeck, Matthias Richter
+    @author 
     @date   
-    @brief  Declaration of a TRDClusterizer component. */
+    @brief  Declaration of a TRDClusterizer component.
+*/
 
 
 #include "AliHLTProcessor.h"
@@ -60,7 +63,6 @@ protected:
   using AliHLTProcessor::DoEvent;
 
   int Configure(const char* arguments);
-  void SetOfflineParams();
   int SetParams();
 	
 private:
@@ -86,10 +88,9 @@ private:
   Int_t fyPosMethod;        // 0=COG 1=LUT 2=Gauss 
   TString fgeometryFileName;
   Bool_t fProcessTracklets;
-  Bool_t fOfflineMode;
   Bool_t fHLTstreamer;
 
-  ClassDef(AliHLTTRDClusterizerComponent, 2)
+  ClassDef(AliHLTTRDClusterizerComponent, 3)
 
 };
 #endif
