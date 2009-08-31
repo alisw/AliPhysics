@@ -46,6 +46,7 @@ class TGTabElement;
 
 class TFile;
 class TTree;
+class TChain;
 class TGraph;
 
 class AliTPCCalibViewerGUI;
@@ -69,6 +70,8 @@ public:
   void SetCalibViewerGUI(AliTPCCalibViewerGUI *gui) {fCalibViewerGUI=gui;}
   void SetCalibViewerGUItab(TGTabElement *tab) {fCalibViewerGUItab=tab;}
   void SetConfigFile(const char* file) {fConfigFile=file;}
+  void SetCacheDir(const char* cachedir) {fOutputCacheDir=cachedir;}
+  
   const char* GetDrawString();
   const char* GetCutString();
   //Slots
@@ -82,9 +85,9 @@ public:
   void HandleButtonsDrawSel(Int_t id = -1);              
   void MouseMove(Int_t event, Int_t x, Int_t y, TObject */*selected*/);
   
-private:
+// private:
   TFile*  fFile;                          //file that keeps the tree
-  TTree*  fTree;                          //internal tree
+  TChain*  fTree;                          //internal tree
   AliTPCCalibViewerGUI *fCalibViewerGUI;  //calib viewer gui used to display verbose information for one run
   TGTabElement *fCalibViewerGUItab;       //tab the calib view gui redies in
   TH1*    fCurrentHist;                   //histogram currently drawn in main canvas

@@ -99,7 +99,10 @@ int main(int argc, char **argv) {
     printf("monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
     return -1;
   }
-
+  //Set network timeout
+  monitorSetNowait();
+  monitorSetNoWaitNetworkTimeout(1000);
+  
   // variables 
   AliTPCmapper *mapping = 0;   // The TPC mapping
   char localfile[255];

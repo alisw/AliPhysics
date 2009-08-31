@@ -73,10 +73,10 @@ void Init(){
   //
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT/OCDB");
-  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///lustre/alice/alien/alice/data/2009/OCDB/");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature","local:///lustre/alice/alien/alice/data/2009/OCDB/");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/HighVoltage","local:///lustre/alice/alien/alice/data/2009/OCDB/");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie","local:///lustre/alice/alien/alice/data/2009/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/HighVoltage","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
+  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
   AliCDBManager::Instance()->SetRun(1);
 }
 
@@ -131,7 +131,7 @@ void CalibEnv(const char * runList){
     TVectorD vNoiseMean, vNoiseMeanSenRegions, vNoiseRMS, vNoiseRMSSenRegions;
     Int_t nonMaskedZero=0;
     ProcessNoiseData(vNoiseMean, vNoiseMeanSenRegions, vNoiseRMS, vNoiseRMSSenRegions, nonMaskedZero);
-    //L3 data
+    //L3 data 
     Float_t bz=AliTPCcalibDB::GetBz(irun);
     Char_t  l3pol=AliTPCcalibDB::GetL3Polarity(irun);
     //calibration Pulser data processing
@@ -140,7 +140,7 @@ void CalibEnv(const char * runList){
     ProcessPulser(nMasked,nOffChannels);
     //production information
     Int_t nalien=0,nRawAlien=0,nlocal=0,nRawLocal=0;
-    GetProductionInfo(irun, nalien, nRawAlien, nlocal,nRawLocal);
+//     GetProductionInfo(irun, nalien, nRawAlien, nlocal,nRawLocal);
     //run type
     TObjString runType(AliTPCcalibDB::GetRunType(irun).Data());
     
@@ -209,7 +209,7 @@ void CalibEnv(const char * runList){
       
       
       //tempMap->GetLinearFitter(0,0,itime);
-      TTreeStream &mistream = (*pcstream)<<"dcs"<<
+      (*pcstream)<<"dcs"<<
         "run="<<irun<<
         "time="<<itime<<
         "startTimeGRP="<<startTimeGRP<<
@@ -251,10 +251,8 @@ void CalibEnv(const char * runList){
         "temp31.="<<&vecTemp[8]<<
         "temp41.="<<&vecTemp[9]<<
         "tempSkirtA.="<<&vecSkirtTempA<<
-        "tempSkirtC.="<<&vecSkirtTempC;
-	
+        "tempSkirtC.="<<&vecSkirtTempC<<
         //noise data
-      mistream<<
         "meanNoise.="<<&vNoiseMean<<
         "meanNoiseSen.="<<&vNoiseMeanSenRegions<<
         "rmsNoise.="<<&vNoiseRMS<<
@@ -346,7 +344,7 @@ void ProcessCEdata(const char* fitFormula, TVectorD &fitResultsA, TVectorD &fitR
   // the return TVectorD arrays contian the results of the fit
   //
   const Float_t irocToffset=0.2;
-  const Float_t tMaxLimit=1.2;
+  const Float_t tMaxLimit=1.5;
   //retrieve CE and ALTRO data
   AliTPCCalPad *cet0=AliTPCcalibDB::Instance()->GetCETmean();
   if (!cet0){
@@ -413,6 +411,7 @@ void ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseMeanSenRegions,
   par.Update();
   //retrieve noise and ALTRO data
   AliTPCCalPad *noise=AliTPCcalibDB::Instance()->GetPadNoise();
+  if (!noise) return;
   AliTPCCalPad *padMasked=AliTPCcalibDB::Instance()->GetALTROMasked();
   //create IROC, OROC1, OROC2 and sensitive region masks
   for (UInt_t isec=0;isec<AliTPCCalPad::kNsec;++isec){
@@ -423,9 +422,20 @@ void ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseMeanSenRegions,
       for (UInt_t ipad=0;ipad<npads;++ipad){
         Int_t masked=(Int_t)padMasked->GetCalROC(isec)->GetValue(irow,ipad);
         Float_t noiseVal=noiseROC->GetValue(irow,ipad);
-        if (masked) continue; // don't use inactive pads
+        if (masked) {
+//           printf("masked\n");
+          continue; // don't use inactive pads
+        }
         //check if noise==0
-        if (noiseVal==0) ++nonMaskedZero;
+        if (noiseVal==0) {
+          ++nonMaskedZero;
+          continue;
+        }
+        //check for nan
+        if ( !(noiseVal<100000000000) ){
+          printf ("Warning: nan detected in (sec,row,pad - val): %02d,%02d,%03d - %.1f\n",isec,irow,ipad,noiseVal);
+          continue;
+        }
         Int_t cpad=(Int_t)ipad-(Int_t)npads/2;
         Int_t masksen=1; // sensitive pards are not masked (0)
         if (ipad<2||npads-ipad-1<2) masksen=0; //don't mask edge pads (sensitive)
@@ -498,6 +508,7 @@ void ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseMeanSenRegions,
     Double_t rmsSen=0;
     
     if (c[i]>verySmall){
+//       printf ("i: %d - m: %.3f, c: %.0f, r: %.3f\n",i,vNoiseMean[i],c[i],vNoiseRMS[i]);
       mean=vNoiseMean[i]/c[i];
       rms=vNoiseRMS[i];
       rms=TMath::Sqrt(TMath::Abs(rms/c[i]-mean*mean));
@@ -521,12 +532,15 @@ void ProcessPulser(Int_t &nMasked, Int_t &nonMaskedZero)
   // Process the Pulser information
   //
 
-  //reset counters
-  nonMaskedZero=0;
-  nMasked=0;
+  //reset counters to error number
+  nonMaskedZero=-100;
+  nMasked=-100;
   //retrieve pulser and ALTRO data
   AliTPCCalPad *pulserTmean=AliTPCcalibDB::Instance()->GetPulserTmean();
   if (!pulserTmean) return;
+  //reset counters
+  nonMaskedZero=0;
+  nMasked=0;
 //   AliTPCCalPad *pulserTrms=AliTPCcalibDB::Instance()->GetPulserTrms();
 //   AliTPCCalPad *pulserQmean=AliTPCcalibDB::Instance()->GetPulserQmean();
   AliTPCCalPad *padMasked=AliTPCcalibDB::Instance()->GetALTROMasked();

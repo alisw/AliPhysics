@@ -1202,11 +1202,11 @@ Float_t AliTPCcalibDB::GetL3Current(Int_t run, Int_t statType){
 
 Float_t AliTPCcalibDB::GetBz(Int_t run){
   //
-  // calculate BZ from L3 current
+  // calculate BZ in T from L3 current
   //
   Float_t bz=-1;
   Float_t current=AliTPCcalibDB::GetL3Current(run);
-  if (current>-1) bz=5*current/30000.;
+  if (current>-1) bz=5*current/30000.*.1;
   return bz;
 }
 

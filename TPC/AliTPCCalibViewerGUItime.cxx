@@ -36,6 +36,7 @@
 #include <TCut.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TChain.h>
 #include <TBranch.h>
 #include <TIterator.h>
 #include <TGraph.h>
@@ -384,7 +385,23 @@ void AliTPCCalibViewerGUItime::UseFile(const char* fileName) {
   //
   // retrieve tree from file
   //
-  TDirectory *save=gDirectory;
+  //  TString s=gSystem->GetFromPipe(Form("ls %s",fileName));
+  TString s=fileName;
+  TObjArray *arr=s.Tokenize("\n");
+  TIter next(arr);
+  TObject *o=0;
+  if (fTree) delete fTree;
+  fTree=new TChain("dcs");
+  while ( (o=next()) ){
+    fTree->AddFile(o->GetName());
+  }
+  delete arr;
+  fTree->Lookup();
+  if (fTree->GetEntries()==0){
+    AliError("No entries found in chain");
+    return;
+  }
+/*  TDirectory *save=gDirectory;
   if (fFile) delete fFile;
   fFile = TFile::Open(fileName);
   if (!fFile) return;
@@ -395,9 +412,11 @@ void AliTPCCalibViewerGUItime::UseFile(const char* fileName) {
     return;
   }
   save->cd();
+  */
   if (fConfigParser) delete fConfigParser;
   fConfigParser=new AliTPCConfigParser(gSystem->ExpandPathName(fConfigFile.Data()));
   Reload();
+  
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::FillRunTypes()
@@ -412,17 +431,23 @@ void AliTPCCalibViewerGUItime::FillRunTypes()
   fComboRunType->Select(0,kFALSE);
   TObjString *runType=0x0;
   Int_t nevets=fTree->GetEntries();
-  TBranch *branch=fTree->GetBranch("runType.");
-  if (!branch) return;
-  branch->SetAddress(&runType);
   fTree->SetBranchStatus("*",0);
   fTree->SetBranchStatus("runType.*",1);
+//   TBranch *branch=fTree->GetBranch("runType.");
+//   if (!branch) {
+//     branch->ResetAddress();
+//     fTree->SetBranchStatus("*",1);
+//     return;
+//   }
+//  branch->SetAddress(&runType);
+  fTree->SetBranchAddress("runType.",&runType);
   for (Int_t iev=0;iev<nevets;++iev){
     fTree->GetEntry(iev);
     TString type=runType->String();
     if (!type.IsNull()&&!fComboRunType->FindEntry(type)) fComboRunType->AddEntry(type,id++);
   }
-  branch->ResetAddress();
+//   branch->ResetAddress();
+  fTree->ResetBranchAddresses();
   fTree->SetBranchStatus("*",1);
 }
 //______________________________________________________________________________
@@ -502,12 +527,13 @@ void AliTPCCalibViewerGUItime::Reload(Int_t first){
     } else {
       id=idCount;
     }
+    if (calibType.IsNull()) calibType="UNSPECIFIED";
     //check if branch is in selected calibration types
     //if not, don't show it in the list and deactivate the branch.
     Bool_t calibActive=kFALSE;
     TIter nextCalib(&calibTypes);
     TObject *objCalib=0;
-    while (objCalib=nextCalib())
+    while ( (objCalib=nextCalib()) )
       if (calibType==objCalib->GetTitle()) calibActive=kTRUE;
     active&=calibActive;
     if (!active){
@@ -632,7 +658,7 @@ void AliTPCCalibViewerGUItime::DoDraw() {
   //create graph according to selection
   if (drawGraph){
     fCurrentGraph=new TGraph(fValuesX,fValuesY);
-    fCurrentGraph->Draw("alp");
+    fCurrentGraph->Draw(fIsCustomDraw?"ap":"alp");
     fCurrentHist=fCurrentGraph->GetHistogram();
     fCurrentHist->SetTitle(title.Data());
   } else {
@@ -806,22 +832,31 @@ void AliTPCCalibViewerGUItime::UpdateParLimits()
   TVectorD *vD=0x0;
   TVectorF *vF=0x0;
   Int_t maxPar=0;
-  TBranch *branch=fTree->GetBranch(selectedVariable.Data());
+  fTree->GetEntry(1);
+  TBranch *branch=fTree->GetTree()->GetBranch(selectedVariable.Data());
   TString branchClass=branch->GetClassName();
+  Int_t event=0;
   if (branchClass=="TVectorT<double>"){
-    branch->SetAddress(&vD);
-    fTree->GetEntry(0);
-    maxPar=vD->GetNrows();
+//     branch->SetAddress(&vD);
+    fTree->SetBranchAddress(selectedVariable.Data(),&vD);
+    while (maxPar<2&&event<fTree->GetEntries()){
+      fTree->GetEntry(event++);
+      maxPar=vD->GetNrows();
+    }
   } else if (branchClass=="TVectorT<float>"){
-    branch->SetAddress(&vF);
-    fTree->GetEntry(0);
-    maxPar=vF->GetNrows();
+//     branch->SetAddress(&vF);
+    fTree->SetBranchAddress(selectedVariable.Data(),&vF);
+    while (maxPar<2&&event<fTree->GetEntries()){
+      fTree->GetEntry(event++);
+      maxPar=vF->GetNrows();
+    }
   } else {
     //class not known
     fNmbPar->SetState(kFALSE);
     return;
   }
-  branch->ResetAddress();
+//   branch->ResetAddress();
+  fTree->ResetBranchAddresses();
   fNmbPar->SetNumber(0);
   fNmbPar->SetLimitValues(0,maxPar-1);
   fNmbPar->SetState(kTRUE);
@@ -837,7 +872,7 @@ void AliTPCCalibViewerGUItime::MouseMove(Int_t event, Int_t x, Int_t y, TObject 
   Double_t valx=0.,valy=0.;
   if (!fCurrentGraph) {
     fLblRunNumberVal->SetText(Form("%05u",run));
-    fLblRunTimeVal->SetText(Form("%02u.%02u.%04u\n%02u.%02u.%02u",dd,mm,yy,HH,MM,SS));
+    fLblRunTimeVal->SetText(Form("%02u.%02u.%04u\n%02u:%02u:%02u",dd,mm,yy,HH,MM,SS));
     fLblValueXVal->SetText(Form("%.3f", valx));
     fLblValueYVal->SetText(Form("%.3f", valy));
     return;
@@ -853,7 +888,7 @@ void AliTPCCalibViewerGUItime::MouseMove(Int_t event, Int_t x, Int_t y, TObject 
   for (Int_t i=0;i<n;++i){
     Int_t pxp = gPad->XtoAbsPixel(gPad->XtoPad(arr[i]));
     Int_t pyp = gPad->YtoAbsPixel(gPad->YtoPad(fValuesY[i]));
-    Int_t d   = TMath::Sqrt(TMath::Abs(pxp-x) + TMath::Abs(pyp-y));
+    Int_t d   = TMath::Nint(TMath::Sqrt(TMath::Abs(pxp-x) + TMath::Abs(pyp-y)));
     if (d < minDist) {
       minDist  = d;
       minPoint = i;
