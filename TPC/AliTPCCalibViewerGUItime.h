@@ -155,7 +155,8 @@ public:
   void FillCalibTypes();
   void SetInitialValues();
   const char* SubstituteUnderscores(const char* in);
-  
+
+private:  
   AliTPCCalibViewerGUItime(const AliTPCCalibViewerGUItime &v);
   AliTPCCalibViewerGUItime &operator = (const AliTPCCalibViewerGUItime &v);         // assignment operator
   
