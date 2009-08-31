@@ -64,13 +64,13 @@ then
     while [ 1 ] 
       do
       cd $RECO_DIR
-      aliroot -q $ALICE_ROOT/MONITOR/onlineReco.C\(\"listen\",\"$ALICE_ROOT/test/cosmic/rec.C\"\) | tee rec.log
+      aliroot -b -q $ALICE_ROOT/MONITOR/onlineReco.C\(\"listen\",\"$ALICE_ROOT/test/cosmic/rec.C\"\) | tee rec.log
 	  RUNNUMBER=`grep "I-AliCDBManager::Print: Run number =" rec.log | cut -d ";" -f 1 | awk '{print $5}'`
 	  mv rec.log log/run$RUNNUMBER.log
     done
 else
       cd $RECO_DIR
-      aliroot -q $ALICE_ROOT/MONITOR/onlineReco.C\(\"$1\",\"$ALICE_ROOT/test/cosmic/rec.C\"\) | tee rec.log
+      aliroot -b -q $ALICE_ROOT/MONITOR/onlineReco.C\(\"$1\",\"$ALICE_ROOT/test/cosmic/rec.C\"\) | tee rec.log
 	  RUNNUMBER=`grep "I-AliCDBManager::Print: Run number =" rec.log | cut -d ";" -f 1 | awk '{print $5}'`
 	  mv rec.log log/run$RUNNUMBER.log
 fi
