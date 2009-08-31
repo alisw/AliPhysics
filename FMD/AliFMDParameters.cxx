@@ -105,7 +105,9 @@ AliFMDParameters::AliFMDParameters()
     fPulseGain(0), 
     fDeadMap(0), 
     fAltroMap(0), 
-    fStripRange(0)
+    fStripRange(0),
+    fOfflineTriggerLowCut(0.1),
+    fOfflineTriggerHitCut(0.6)
 {
   // Default constructor 
   SetVA1MipRange();

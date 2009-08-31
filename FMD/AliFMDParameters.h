@@ -492,6 +492,12 @@ public:
   static const char* GetPedestalShuttleID()   {return fkPedestalShuttleID;}
   static const char* GetGainShuttleID()       {return fkGainShuttleID;}
   static const char* GetConditionsShuttleID()   {return fkConditionsShuttleID;}
+  
+  Float_t GetOfflineTriggerLowCut() {return fOfflineTriggerLowCut;}
+  Float_t GetOfflineTriggerHitCut() {return fOfflineTriggerHitCut;}
+  void    SetOfflineTriggerLowCut(Float_t cut) {fOfflineTriggerLowCut = cut;}
+  void    SetOfflineTriggerHitCut(Float_t cut) {fOfflineTriggerHitCut = cut;}
+
 protected:
   /** CTOR  */
   AliFMDParameters();
@@ -523,7 +529,9 @@ protected:
       fPulseGain(o.fPulseGain),
       fDeadMap(o.fDeadMap),
       fAltroMap(o.fAltroMap),
-      fStripRange(o.fStripRange)
+      fStripRange(o.fStripRange),
+      fOfflineTriggerLowCut(o.fOfflineTriggerLowCut),
+      fOfflineTriggerHitCut(o.fOfflineTriggerHitCut)
   {}
   /** Assignement operator 
       @return Reference to this */
@@ -608,6 +616,9 @@ protected:
   AliFMDCalibDeadMap*         fDeadMap;         // Pulser gain
   AliFMDAltroMapping*         fAltroMap;        // Map of hardware
   AliFMDCalibStripRange*      fStripRange;      // Strip range
+  
+  Float_t                fOfflineTriggerLowCut; //offline trigger low cut
+  Float_t                fOfflineTriggerHitCut; //offline trigger hit cut
   
   ClassDef(AliFMDParameters,6) // Manager of parameters
 };

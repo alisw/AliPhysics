@@ -160,6 +160,17 @@ public:
    * @param use If true, make the diagnostics file 
    */
   void SetDiagnose(Bool_t use=kTRUE) { fDiagnostics = use; }
+   /** 
+   * Functions to use the FMD as an offline trigger. The idea is to read
+   * the data until we are certain we have one particle. If no particle is 
+   * found the functions return kFALSE. These functions were added as a 
+   * result of the discussions in the First Physics Working Group.
+   *    *
+   * @param AliESDFMD* fmd the FMD data from one event.
+   */
+  static Bool_t GetFMDAsideBit(AliESDFMD* fmd);
+  static Bool_t GetFMDCsideBit(AliESDFMD* fmd);
+  
 protected:
   /** 
    * Copy CTOR 
