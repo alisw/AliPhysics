@@ -18,7 +18,7 @@ AliAnalysisTaskSECompareHF *AddTaskCompareHF()
   
   // Aanalysis task    
   AliAnalysisTaskSECompareHF *hfTask = new AliAnalysisTaskSECompareHF("CompareHFAnalysis");
-  hfTask->SetDebugLevel(2);
+  hfTask->SetDebugLevel(0);
   mgr->AddTask(hfTask);
   
   //

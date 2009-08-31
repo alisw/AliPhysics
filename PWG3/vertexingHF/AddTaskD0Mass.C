@@ -19,7 +19,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass()
   
   // Aanalysis task    
   AliAnalysisTaskSED0Mass *massD0Task = new AliAnalysisTaskSED0Mass("D0MassAnalysis");
-  massD0Task->SetDebugLevel(2);
+  massD0Task->SetDebugLevel(0);
   mgr->AddTask(massD0Task);
   
   //

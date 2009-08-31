@@ -240,7 +240,7 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
   // loop over Like sign candidates
   Int_t nPosPairs=0,nNegPairs=0;
   Int_t nLikeSign = arrayLikeSign->GetEntriesFast();
-  printf("+++\n+++Number of like sign pairs ---> %d \n+++\n", nLikeSign);
+  if(fDebug>1) printf("+++\n+++Number of like sign pairs ---> %d \n+++\n", nLikeSign);
 
   for(Int_t iLikeSign = 0; iLikeSign < nLikeSign; iLikeSign++) {
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)arrayLikeSign->UncheckedAt(iLikeSign);
@@ -279,15 +279,15 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
 
-  printf("------------ N. of positive pairs in Event ----- %d \n", nPosPairs);
-  printf("------------ N. of negative pairs in Event ----- %d \n", nNegPairs);
+  if(fDebug>1) printf("------------ N. of positive pairs in Event ----- %d \n", nPosPairs);
+  if(fDebug>1) printf("------------ N. of negative pairs in Event ----- %d \n", nNegPairs);
 
   fTotPosPairs += nPosPairs;
   fTotNegPairs += nNegPairs;
 
   // loop over D0 candidates
   Int_t nD0toKpi = arrayD0toKpi->GetEntriesFast();
-  printf("Number of like D0 -> Kpi candidates ---> %d \n", nD0toKpi);
+  if(fDebug>1) printf("Number of like D0 -> Kpi candidates ---> %d \n", nD0toKpi);
 
   for (Int_t iD0toKpi = 0; iD0toKpi < nD0toKpi; iD0toKpi++) {
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->UncheckedAt(iD0toKpi);

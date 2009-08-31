@@ -196,7 +196,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 
   // loop over vertices
   Int_t nVertices = inputArrayVertices->GetEntriesFast();
-  printf("Number of vertices: %d\n",nVertices);
+  if(fDebug>1) printf("Number of vertices: %d\n",nVertices);
 
   for (Int_t iVtx = 0; iVtx < nVertices; iVtx++) {
     AliAODVertex *vtx = (AliAODVertex*)inputArrayVertices->UncheckedAt(iVtx);

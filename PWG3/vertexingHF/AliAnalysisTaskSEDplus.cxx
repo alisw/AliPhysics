@@ -177,7 +177,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     return;
   }
     Int_t n3Prong = array3Prong->GetEntriesFast();
-    printf("Number of D+->Kpipi: %d\n",n3Prong);
+    if(fDebug>1) printf("Number of D+->Kpipi: %d\n",n3Prong);
 
 
     for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {

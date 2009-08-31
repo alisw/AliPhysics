@@ -187,7 +187,7 @@ void AliAnalysisTaskSEBtoJPSItoEle::UserExec(Option_t */*option*/)
 
   // loop over J/Psi->ee candidates
   Int_t nInJPSItoEle = inputArrayJPSItoEle->GetEntriesFast();
-  printf("Number of B->JPSI->e+e-: %d\n",nInJPSItoEle);
+  if(fDebug>1) printf("Number of B->JPSI->e+e-: %d\n",nInJPSItoEle);
 
   for (Int_t iJPSItoEle = 0; iJPSItoEle < nInJPSItoEle; iJPSItoEle++) {
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArrayJPSItoEle->UncheckedAt(iJPSItoEle);

@@ -17,7 +17,7 @@ AliAnalysisTaskSEBkgLikeSignD0 *AddTaskBkgLikeSignD0()
 
   // Like-sign background analysis task    
   AliAnalysisTaskSEBkgLikeSignD0 *lsD0Task = new AliAnalysisTaskSEBkgLikeSignD0("CmpLikeSignD0Analysis");
-  lsD0Task->SetDebugLevel(2);
+  lsD0Task->SetDebugLevel(0);
 
   mgr->AddTask(lsD0Task);
 

@@ -241,7 +241,7 @@ void AliAnalysisTaskSEBkgLikeSignJPSI::UserExec(Option_t */*option*/)
   // loop over Like sign candidates
   Int_t nPosPairs=0,nNegPairs=0;
   Int_t nLikeSign = arrayLikeSign->GetEntriesFast();
-  printf("+++\n+++Number of like sign pairs ---> %d \n+++\n", nLikeSign);
+  if(fDebug>1) printf("+++\n+++Number of like sign pairs ---> %d \n+++\n", nLikeSign);
 
   for(Int_t iLikeSign = 0; iLikeSign < nLikeSign; iLikeSign++) {
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)arrayLikeSign->UncheckedAt(iLikeSign);
@@ -278,15 +278,15 @@ void AliAnalysisTaskSEBkgLikeSignJPSI::UserExec(Option_t */*option*/)
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
 
-  printf("------------ N. of positive pairs in Event ----- %d \n", nPosPairs);
-  printf("------------ N. of negative pairs in Event ----- %d \n", nNegPairs);
+  if(fDebug>1) printf("------------ N. of positive pairs in Event ----- %d \n", nPosPairs);
+  if(fDebug>1) printf("------------ N. of negative pairs in Event ----- %d \n", nNegPairs);
 
   fTotPosPairs += nPosPairs;
   fTotNegPairs += nNegPairs;
 
   // loop over JPSI candidates
   Int_t nBtoJpsiToEle = arrayJPSItoEle->GetEntriesFast();
-  printf("Number of like JPSI -> ee candidates ---> %d \n", nBtoJpsiToEle);
+  if(fDebug>1) printf("Number of like JPSI -> ee candidates ---> %d \n", nBtoJpsiToEle);
 
   for (Int_t iBtoJpsiToEle = 0; iBtoJpsiToEle < nBtoJpsiToEle; iBtoJpsiToEle++) {
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)arrayJPSItoEle->UncheckedAt(iBtoJpsiToEle);
