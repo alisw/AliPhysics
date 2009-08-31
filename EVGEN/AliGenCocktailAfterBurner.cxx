@@ -105,6 +105,7 @@ AddAfterBurner(AliGenerator *AfterBurner, char* Name, Float_t RateExp)
     AfterBurner->SetSigma(fOsigma[0], fOsigma[1], fOsigma[2]);
     AfterBurner->SetVertexSmear(fVertexSmear);
     AfterBurner->SetTrackingFlag(fTrackIt);    
+    AfterBurner->SetVertexSource(kContainer);
 //
 //  Add AfterBurner to list   
     
@@ -164,6 +165,13 @@ void AliGenCocktailAfterBurner::Generate()
     if (fHeader) delete fHeader;
     fHeader = new AliGenCocktailEventHeader("Cocktail Header");
     //
+    //
+//  Generate the vertex position used by all generators
+//    
+    if(fVertexSmear == kPerEvent) Vertex();
+    TArrayF eventVertex;
+    eventVertex.Set(3);
+    for (Int_t j=0; j < 3; j++) eventVertex[j] = fVertex[j];
 
     Int_t i; //iterator
     AliStack * stack;
@@ -206,26 +214,27 @@ void AliGenCocktailAfterBurner::Generate()
 /***********************************************/
 //First generator for all evenets, than second for all events, etc...
         for(i=0;i<numberOfEvents + fNBgEvents;i++) 
-          {  
-	      cout<<"                  EVENT "<<i << endl;
+	{  
+	    cout<<"                  EVENT "<<i << endl;
             stack = GetStack(i);
             partArray = stack->Particles();
             fCurrentGenerator = entry->Generator();
             fCurrentGenerator->SetStack(stack);
             if (igen ==1) 
-              {
+	    {
                 entry->SetFirst(0);
-              } 
+	    } 
             else 
-              {
+	    {
                 entry->SetFirst((partArray->GetEntriesFast())+1);
-              }
-                fCurrentGenerator->Generate();
-                entry->SetLast(partArray->GetEntriesFast());
-		
-		if (fCurrentGenerator->ProvidesCollisionGeometry())  fCollisionGeometries[i] = fCurrentGenerator->CollisionGeometry();
-		
-           }
+	    }
+	    fCurrentGenerator->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+	    fCurrentGenerator->Generate();
+	    entry->SetLast(partArray->GetEntriesFast());
+	    
+	    if (fCurrentGenerator->ProvidesCollisionGeometry())  fCollisionGeometries[i] = fCurrentGenerator->CollisionGeometry();
+	    
+	}
 /***********************************************/
       }
       next.Reset();
@@ -270,6 +279,7 @@ void AliGenCocktailAfterBurner::Generate()
 	
 /*********************************************************************/
       // Pass the header to gAlice
+      fHeader->SetPrimaryVertex(eventVertex);
       gAlice->SetGenEventHeader(fHeader); 
     }//else generated
 }
