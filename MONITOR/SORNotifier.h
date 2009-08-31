@@ -21,7 +21,7 @@ class SORNotifier: public DimUpdatedInfo
 {
 public:
         SORNotifier(AliOnlineRecoTrigger* trigger): 
-	  DimUpdatedInfo("/LOGBOOK/SUBSCRIBE/ECS_SOR_PHYSICS", -1), fRun(-1), fTrigger(trigger) {}
+	  DimUpdatedInfo("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS", -1), fRun(-1), fTrigger(trigger) {}
 
 	void infoHandler();
 
