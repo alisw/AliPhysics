@@ -18,7 +18,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus()
 
   // Aanalysis task                                                                                                                     
   AliAnalysisTaskSEDplus *dplusTask = new AliAnalysisTaskSEDplus("DplusAnalysis");
-  dplusTask->SetDebugLevel(2);
+  dplusTask->SetDebugLevel(0);
   mgr->AddTask(dplusTask);
 
   //                                                                                                                                    

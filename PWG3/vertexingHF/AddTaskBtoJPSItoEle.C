@@ -16,7 +16,7 @@ AliAnalysisTaskSEBtoJPSItoEle *AddTaskBtoJPSItoEle()
 
   // Cdf unbinned log-likelihood fit analysis task    
   AliAnalysisTaskSEBtoJPSItoEle *hfTask = new AliAnalysisTaskSEBtoJPSItoEle("CdfFitAnalysis");
-  hfTask->SetDebugLevel(2);
+  hfTask->SetDebugLevel(0);
 
   mgr->AddTask(hfTask);
 
