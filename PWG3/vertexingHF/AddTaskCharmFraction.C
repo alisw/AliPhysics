@@ -7,7 +7,7 @@ AliAnalysisTaskCharmFraction* AddTaskCharmFraction(
 	 Bool_t setcheckMC_fromB=kFALSE,
 	 Bool_t setcheckMC_D0=kTRUE,
 	 Bool_t setcheckMC_2prongs=kTRUE,
-	 Bool_t setSkipD0star=kTRUE,
+	 Bool_t setSkipD0star=kFALSE,
 	 Bool_t setStudyPureBack=kFALSE)
 {  
   //
