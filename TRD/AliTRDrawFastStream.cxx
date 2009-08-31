@@ -40,6 +40,7 @@
 #include "AliTRDarrayDictionary.h"
 #include "AliTRDarrayADC.h"
 #include "AliTRDSignalIndex.h"
+#include "AliTRDdigitsParam.h"
 #include "AliTRDrawTPStream.h"
 
 #include "AliLog.h"
@@ -115,7 +116,7 @@ Bool_t AliTRDrawFastStream::fgCleanDataOnly = kFALSE;
 Bool_t AliTRDrawFastStream::fgDebugFlag = kTRUE;
 Bool_t AliTRDrawFastStream::fgEnableMemoryReset = kTRUE;
 Bool_t AliTRDrawFastStream::fgStackNumberChecker = kTRUE;
-Bool_t AliTRDrawFastStream::fgStackLinkNumberChecker = kTRUE;
+Bool_t AliTRDrawFastStream::fgStackLinkNumberChecker = kFALSE;
 Bool_t AliTRDrawFastStream::fgSkipData = kTRUE;
 Bool_t AliTRDrawFastStream::fgEnableDecodeConfigData = kFALSE;
 Int_t AliTRDrawFastStream::fgDumpHead = -1;
@@ -145,11 +146,16 @@ AliTRDrawFastStream::AliTRDrawFastStream()
   , fSM()
   , fStack(0)
   , fHC(0)
+  , fLastHC(0)
   , fMCM()
   , fpPos(0)
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
+  , fpPosTemp(0)
+  , fGlobalNTimeBins(0)
+  , fIsTimeBinSet(kFALSE)
+  , fIsGlobalDigitsParamSet(kFALSE)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fLinkTrackletCounter(-1)
@@ -185,11 +191,16 @@ AliTRDrawFastStream::AliTRDrawFastStream(AliRawReader *rawReader)
   , fSM()
   , fStack(0)
   , fHC(0)
+  , fLastHC(0)
   , fMCM()
   , fpPos(0)
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
+  , fpPosTemp(0)
+  , fGlobalNTimeBins(0)
+  , fIsTimeBinSet(kFALSE)
+  , fIsGlobalDigitsParamSet(kFALSE)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fLinkTrackletCounter(-1)
@@ -229,11 +240,16 @@ AliTRDrawFastStream::AliTRDrawFastStream(const AliTRDrawFastStream& /*st*/)
   , fSM()
   , fStack(0)
   , fHC(0)
+  , fLastHC(0)
   , fMCM()
   , fpPos(0)
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
+  , fpPosTemp(0)
+  , fGlobalNTimeBins(0)
+  , fIsTimeBinSet(kFALSE)
+  , fIsGlobalDigitsParamSet(kFALSE)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fLinkTrackletCounter(-1)
@@ -611,6 +627,7 @@ Int_t AliTRDrawFastStream::NextChamber(AliTRDdigitsManager *digitsManager, UInt_
   AliTRDarrayDictionary *track1 = 0;
   AliTRDarrayDictionary *track2 = 0; 
   AliTRDSignalIndex *indexes = 0;
+  AliTRDdigitsParam *digitsparam = 0;
 
   Int_t lastdet = -1;
   Int_t det     = -1;
@@ -637,8 +654,8 @@ Int_t AliTRDrawFastStream::NextChamber(AliTRDdigitsManager *digitsManager, UInt_
 
     if (det != lastdet) {
       // If new detector found
-      if (lastdet == -1) lastdet = det;
-      else {fStackLinkNumber--; return lastdet;}
+      if (lastdet == -1) {lastdet = det; fLastHC = fHC;}
+      else {fStackLinkNumber--; fHC = fLastHC ; return lastdet;}
 
       if (det < 0 || det >= AliTRDgeometry::kNdet) continue;
 
@@ -655,8 +672,15 @@ Int_t AliTRDrawFastStream::NextChamber(AliTRDdigitsManager *digitsManager, UInt_
 
       Int_t rowMax = GetRowMax();
       Int_t colMax = GetColMax();
-      //Int_t ntbins = GetNumberOfTimeBins();
-      Int_t ntbins = 30; //[mj temp]
+      Int_t ntbins = GetGlobalNTimeBins(); 
+
+      // Set number of timebin into digitparam
+      if (!fIsGlobalDigitsParamSet){
+        digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
+        digitsparam->SetCheckOCDB(kFALSE);
+        digitsparam->SetNTimeBins(ntbins);
+        fIsGlobalDigitsParamSet = kTRUE;
+      } 
 
       // Allocate memory space for the digits buffer
       if (digits->GetNtime() == 0) {
@@ -863,6 +887,13 @@ Bool_t AliTRDrawFastStream::DecodeSMHeader(void *buffer, UInt_t length)
 	      fHC->fColMax = fGeometry->GetColMax(fHC->fROC);
 	   }
   }	
+
+  // set number of timebin to be used in the digit container 
+  if (!fIsTimeBinSet) {
+    fpPosTemp = fpPos;
+    SetGlobalNTimebins();
+    fIsTimeBinSet = kTRUE;
+  }
 
   ResetIterators(); // need to do it again for Next() function
 
@@ -1166,9 +1197,22 @@ Bool_t AliTRDrawFastStream::DecodeHC(AliTRDdigitsManager *digitsManager, AliTRDa
            return kFALSE;
          }
 
-         if (DecodeADC(digitsManager, digits, track0, track1, track2, indexes) == kFALSE) {
-           return kFALSE;
+         //if (GetGlobalNTimeBins() < 31){
+         if (fHC->fTimeBins < 31){
+           if (DecodeADC(digitsManager, digits, track0, track1, track2, indexes) == kFALSE) {
+             return kFALSE;
+           }
          }
+         //else if (GetGlobalNTimeBins() > 32) {
+         else if (fHC->fTimeBins > 32) {
+           if (DecodeADCExtended(digitsManager, digits, track0, track1, track2, indexes) == kFALSE) {
+             return kFALSE;
+           }
+         }
+         else { // nsamples = 31, 32 are not implemented in the TRAP and should never happen  
+           if (fgWarnError) AliError("nsamples are 31 or 32. These are not implemented in the TRAP and should never happen!");
+         }
+
       } // iadc
     }
     else { // if there is no adc activated
@@ -1306,7 +1350,7 @@ Bool_t AliTRDrawFastStream::IsHCheaderOK()
   }
 
   if (fgStackLinkNumberChecker) {
-    if (fHC->fLayerHCheader != fHC->fLayer) {
+    if (fHC->fLayerHCheader * 2 + fHC->fSideHCheader != fHC->fLayer * 2 + fHC->fSide) {
       if (fgDebugFlag) AliDebug(11,Form("Missmatch: Layer number between HC header %d and GTU link mask %d | %s",
                                         fHC->fLayerHCheader, fHC->fLayer, DumpStackInfo(fStack)));
       return kFALSE;
@@ -1613,6 +1657,94 @@ Bool_t AliTRDrawFastStream::DecodeADC(AliTRDdigitsManager *digitsManager, AliTRD
 }
 
 //------------------------------------------------------------
+Bool_t AliTRDrawFastStream::DecodeADCExtended(AliTRDdigitsManager *digitsManager, AliTRDarrayADC *digits, 
+                              AliTRDarrayDictionary *track0, AliTRDarrayDictionary *track1, AliTRDarrayDictionary *track2, 
+                              AliTRDSignalIndex *indexes)
+{
+  //
+  // decode single ADC channel
+  //
+  if(fADCnumber%2==1) fMaskADCword = ADC_WORD_MASK(ADCDATA_VAL1);
+  if(fADCnumber%2==0) fMaskADCword = ADC_WORD_MASK(ADCDATA_VAL2);
+
+  Bool_t isWritten = kFALSE; //for error code recording
+
+  fTbinADC = ((*fpPos & 0x000000fc) >>  2);
+  fMCM.fSingleADCwords  = ((*fpPos & 0x00000f00) >>  8);
+  
+  Int_t adcFirst2Signals[2];
+  adcFirst2Signals[0] = ((*fpPos & 0x003ff000) >> 12) - fgCommonAdditive;
+  adcFirst2Signals[1] = ((*fpPos & 0xffc00000) >> 22) - fgCommonAdditive;
+
+  for (Int_t i = 0; i < 2; i++) {
+     if (adcFirst2Signals[i] > 0) {
+       if (fSharedPadsOn)
+         digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), fTbinADC + i, adcFirst2Signals[i]);
+       else
+         digits->SetData(GetRow(), GetCol(), fTbinADC + i, adcFirst2Signals[i]);
+         indexes->AddIndexRC(GetRow(), GetCol());
+     }
+     if (digitsManager->UsesDictionaries()) {
+       track0->SetData(GetRow(), GetCol(), fTbinADC + i, 0);
+       track1->SetData(GetRow(), GetCol(), fTbinADC + i, 0);
+       track2->SetData(GetRow(), GetCol(), fTbinADC + i, 0);
+     }
+  } // i
+
+  fpPos++;
+  for (Int_t iw = 0; iw < fMCM.fSingleADCwords-1; iw++) {
+     if (HC_HEADER_MASK_ERR(*fpPos) == 0 || *fpPos == END_OF_TRACKLET_MARKERNEW) {
+       if (fgWarnError) AliError(Form("There should be ADC data. We meet HC header or END_OF_TRACKLET_MARKER 0x%08x",*fpPos));
+       fHC->fEOTECorrupted = kTRUE; 
+       fpPos--;
+       return kFALSE;
+     }
+     if (fMaskADCword != ADC_WORD_MASK(*fpPos)) {
+       if (fgDebugFlag) AliDebug(11,Form("Wrong ADC data mask! [Expected mask: 0x%08x  Current mask: 0x%08x] ADC channel number: %02d MCM= %s ",
+                                         fMaskADCword, ADC_WORD_MASK(*fpPos), fADCnumber, DumpMCMinfo(&fMCM)));
+      // encode adc level error codes
+       Int_t index = 21*(fMCM.fMCM + 16*int(fMCM.fROB/2)) + fADCnumber;
+       fHC->fErrorCodes[index+66] += 1; 
+       if (!isWritten) { 
+         fHC->fErrorCodes[index+66] += (fADCnumber << 4);; 
+         fHC->fErrorCodes[index+66] += (fMCM.fMCM << 9);; 
+         fHC->fErrorCodes[index+66] += (fMCM.fROB << 13);; 
+         isWritten = kTRUE; 
+       }
+       fMCM.fDataCorrupted = kTRUE;
+       fHC->fDataCorrupted = kTRUE;
+       fpPos++;
+       continue;
+     }
+     // decode and put into the digit container
+     Int_t adcSignals[3];
+     adcSignals[0] = ((*fpPos & 0x00000ffc) >>  2) - fgCommonAdditive;
+     adcSignals[1] = ((*fpPos & 0x003ff000) >> 12) - fgCommonAdditive;
+     adcSignals[2] = ((*fpPos & 0xffc00000) >> 22) - fgCommonAdditive;
+
+     if(GetCol() < 0 || (!fSharedPadsOn & fIsShared)) {fpPos++; continue;};	
+     for (Int_t i = 0; i < 3; i++) {
+        if (adcSignals[i] > 0) { 
+	        if (fSharedPadsOn) 
+            digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), fTbinADC + i, adcSignals[i]);
+	        else 
+            digits->SetData(GetRow(), GetCol(), fTbinADC + i, adcSignals[i]);
+	        indexes->AddIndexRC(GetRow(), GetCol());
+	      }	
+        if (digitsManager->UsesDictionaries()) {
+          track0->SetData(GetRow(), GetCol(), fTbinADC + 2 + i, 0);
+          track1->SetData(GetRow(), GetCol(), fTbinADC + 2 + i, 0);
+          track2->SetData(GetRow(), GetCol(), fTbinADC + 2 + i, 0);
+        }
+     } // i
+     fTbinADC += 3;
+     fpPos++;
+  } // iw
+
+  return kTRUE;
+}
+
+//------------------------------------------------------------
 Bool_t AliTRDrawFastStream::SeekEndOfData()
 {
   //
@@ -1682,6 +1814,44 @@ Bool_t AliTRDrawFastStream::SkipMCMdata(UInt_t iw)
 
   if (fgDebugFlag) AliDebug(11,"Met ENDOFRAWDATAMARKER");
   return kFALSE;
+}
+
+//------------------------------------------------------------
+Bool_t AliTRDrawFastStream::SetGlobalNTimebins()
+{
+  Int_t nHCs=0;
+  while (SetNTimebins()==kFALSE){
+    if (fgDebugFlag) AliDebug(11,Form("Failed to get number of time bin information from the %sth HC",nHCs));
+    nHCs++;
+  }
+
+  return kTRUE;
+}
+
+//------------------------------------------------------------
+Bool_t AliTRDrawFastStream::SetNTimebins()
+{
+  // goes to the HC header position
+  while (!(*fpPosTemp == END_OF_TRACKLET_MARKERNEW) && fpPosTemp < fpEnd) {
+    fpPosTemp++;
+  }
+  while (*fpPosTemp == END_OF_TRACKLET_MARKERNEW) {
+    fpPosTemp++;
+  }
+  // skip H0 
+  fpPosTemp++;
+
+  UInt_t vword = *fpPosTemp;
+
+  // get the number of time bins 
+  if (HC_HEADER_MASK_ERR(vword) == 0) {
+    fGlobalNTimeBins = HC_NTIMEBINS(vword);
+    if (fGlobalNTimeBins > 64 || fGlobalNTimeBins < 10) return kFALSE; // minimal protection
+  }
+  else
+    return kFALSE;
+
+  return kTRUE;
 }
 
 //------------------------------------------------------------

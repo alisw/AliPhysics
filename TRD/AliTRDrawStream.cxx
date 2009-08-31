@@ -39,6 +39,7 @@
 #include "AliTRDarrayDictionary.h"
 #include "AliTRDarrayADC.h"
 #include "AliTRDSignalIndex.h"
+#include "AliTRDdigitsParam.h"
 #include "AliTRDrawTPStream.h"
 
 //#include "AliLog.h"
@@ -113,7 +114,7 @@ Bool_t AliTRDrawStream::fgCleanDataOnly = kFALSE;
 Bool_t AliTRDrawStream::fgDebugFlag = kTRUE;
 Bool_t AliTRDrawStream::fgEnableMemoryReset = kTRUE;
 Bool_t AliTRDrawStream::fgStackNumberChecker = kTRUE;
-Bool_t AliTRDrawStream::fgStackLinkNumberChecker = kTRUE;
+Bool_t AliTRDrawStream::fgStackLinkNumberChecker = kFALSE;
 Bool_t AliTRDrawStream::fgSkipData = kTRUE;
 Bool_t AliTRDrawStream::fgEnableDecodeConfigData = kFALSE;
 Int_t AliTRDrawStream::fgDumpHead = -1;
@@ -147,12 +148,14 @@ AliTRDrawStream::AliTRDrawStream()
   , fSM()
   , fStack(0)
   , fHC(0)
+  , fLastHC(0)
   , fMCM(0)
   , fADC(0)
   , fpPos(0)
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
+  , fIsGlobalDigitsParamSet(kFALSE)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fhcMCMcounter(0)
@@ -186,12 +189,14 @@ AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader)
   , fSM()
   , fStack(0)
   , fHC(0)
+  , fLastHC(0)
   , fMCM(0)
   , fADC(0)
   , fpPos(0)
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
+  , fIsGlobalDigitsParamSet(kFALSE)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fhcMCMcounter(0)
@@ -231,12 +236,14 @@ AliTRDrawStream::AliTRDrawStream(const AliTRDrawStream& /*st*/)
   , fSM()
   , fStack(0)
   , fHC(0)
+  , fLastHC(0)
   , fMCM(0)
   , fADC(0)
   , fpPos(0)
   , fpBegin(0)
   , fpEnd(0)
   , fWordLength(0)
+  , fIsGlobalDigitsParamSet(kFALSE)
   , fStackNumber(-1)
   , fStackLinkNumber(-1)
   , fhcMCMcounter(0)
@@ -674,6 +681,7 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
   AliTRDarrayDictionary *track1 = 0;
   AliTRDarrayDictionary *track2 = 0; 
   AliTRDSignalIndex *indexes = 0;
+  AliTRDdigitsParam *digitsparam = 0;
 
   // Loop through the digits
   Int_t lastdet = -1;
@@ -711,9 +719,11 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
       // If new detector found
       if (lastdet == -1) {
         lastdet = det;
+        fLastHC = fHC;
       }
       else {
         fmcmADCcounter--; 
+        fHC = fLastHC ;
         return lastdet;
       }
 
@@ -749,6 +759,14 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
       Int_t rowMax = GetRowMax();
       Int_t colMax = GetColMax();
       Int_t ntbins = GetNumberOfTimeBins();
+
+      // Set number of timebin into digitparam
+      if (!fIsGlobalDigitsParamSet){
+        digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
+        digitsparam->SetCheckOCDB(kFALSE);
+        digitsparam->SetNTimeBins(ntbins);
+        fIsGlobalDigitsParamSet = kTRUE;
+      }
 
       // Allocate memory space for the digits buffer
       if (digits->GetNtime() == 0) {
@@ -1396,9 +1414,9 @@ Bool_t AliTRDrawStream::IsHCheaderOK()
   }
 
   if (fgStackLinkNumberChecker) {
-    //if (fHC->fLayer * 2 + fHC->fSide != fStackLinkNumber) 
+    if (fHC->fLayer * 2 + fHC->fSide != fStackLinkNumber) {
     // let it make flexible to consider known fiber swapping
-    if ((fHC->fLayer * 2 != fStackLinkNumber) && (fHC->fLayer * 2 != fStackLinkNumber - 1)) { 
+    //if ((fHC->fLayer * 2 != fStackLinkNumber) && (fHC->fLayer * 2 != fStackLinkNumber - 1)) { 
       if (fgDebugFlag) AliDebug(11,Form("Missmatch: Layer number between HC header %d and GTU link mask %d | %s", 
                                         fHC->fLayer, fStackLinkNumber, DumpStackInfo(fStack)));
       fStackLinkNumber = -1;
@@ -1744,6 +1762,10 @@ Bool_t AliTRDrawStream::DecodeADCExtended()
      fTbinADC += 3;
      fpPos++;
   } // iw
+
+//  for(int i=0; i )
+//  printf();
+
 
   if (fADC->fADCnumber <= 1 || fADC->fADCnumber == fMaxADCgeom - 1) {
     fADC->fIsShared = kTRUE;
