@@ -129,7 +129,8 @@ AliCDBManager::AliCDBManager():
   fRaw(kFALSE),
   fStartRunLHCPeriod(-1),
   fEndRunLHCPeriod(-1),
-  fLHCPeriod("")
+  fLHCPeriod(""),
+  fKey(0)
 {
 // default constuctor
 	fFactories.SetOwner(1);
@@ -1250,13 +1251,32 @@ Bool_t AliCDBManager::IsShortLived(const char* path)
 }
 
 //______________________________________________________________________________________________
-void AliCDBManager::SetLock(Bool_t lock){
-
-	if(fLock == kTRUE && lock == kFALSE) {
-		AliFatal("Lock is ON: cannot reset it!");
-	}
-	
-	fLock=lock;
+ULong_t AliCDBManager::SetLock(Bool_t lock, ULong_t key){
+  // To lock/unlock user must provide the key. A new key is provided after
+  // each successful lock. User should always backup the returned key and
+  // use it on next access.
+  if (fLock == lock) return 0;  // nothing to be done
+  if (lock) {
+    // User wants to lock - check his identity
+    if (fKey) {
+      // Lock has a user - check his key
+      if (fKey != key) {
+        AliFatal("Wrong key provided to lock CDB. Please remove CDB lock access from your code !");
+        return 0;
+      }  
+    }  
+    // Provide new key 
+    fKey = gSystem->Now();
+    fLock = kTRUE;
+    return fKey;
+  }
+  // User wants to unlock - check the provided key
+  if (key != fKey) {
+    AliFatal("Lock is ON: wrong key provided");
+    return 0;
+  }  
+  fLock = kFALSE;
+  return key;  
 }
 
 ///////////////////////////////////////////////////////////
