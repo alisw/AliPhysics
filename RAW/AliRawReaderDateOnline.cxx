@@ -74,7 +74,12 @@ AliRawReaderDateOnline::AliRawReaderDateOnline(
   /* define wait event timeout - 1s max */
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
-  
+
+  const Char_t* table[]  = {"ALL", "yes", "*", "*",
+                            "EOR", "all","*", "*",
+                            NULL, NULL, NULL, NULL};
+  monitorDeclareTableExtended(const_cast<char**>(table));
+
 #else
   Fatal("AliRawReaderDateOnline", "this class was compiled without DATE");
 #endif
@@ -171,8 +176,9 @@ void AliRawReaderDateOnline::SelectEvents(Int_t type,
   // library
 #ifdef ALI_DATE
   const Char_t* table[]  = {"ALL", "no", "*", "*",
-			    "PHY", "all","*", "*",
-			    NULL, NULL, NULL, NULL};
+			    "PHY", "yes","*", "*",
+                            "EOR", "all","*", "*",
+ 			    NULL, NULL, NULL, NULL};
   TString trSelection;
   for (Int_t i = 0; i < 50; i++) {
     if (triggerMask & (1ull << i)) {
