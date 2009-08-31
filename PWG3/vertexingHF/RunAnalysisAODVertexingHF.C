@@ -200,7 +200,7 @@ void RunAnalysisAODVertexingHF()
   AliAnalysisTaskCharmFraction *cFractTaskSignal   = AddTaskCharmFraction("d0D0_Signal.root");
   AliAnalysisTaskCharmFraction *cFractTaskNoMCSel  = AddTaskCharmFraction("d0D0NoMCSel.root",kFALSE,kTRUE,kFALSE);
   AliAnalysisTaskCharmFraction *cFractTaskNoMCSel  = AddTaskCharmFraction("d0D0NoMCSel_SideBand.root",kTRUE,kTRUE,kFALSE);
-  AliAnalysisTaskCharmFraction *cFractTaskPureBack = AddTaskCharmFraction("d0D0_PureBack.root",kFALSE,kTRUE,kTRUE,kTRUE,kFALSE,kTRUE,kTRUE,kTRUE,kTRUE);
+  AliAnalysisTaskCharmFraction *cFractTaskPureBack = AddTaskCharmFraction("d0D0_PureBack.root",kFALSE,kTRUE,kTRUE,kTRUE,kFALSE,kTRUE,kTRUE,kFALSE,kTRUE);
   AliAnalysisTaskCharmFraction *cFractTaskFromB    = AddTaskCharmFraction("d0D0_FromB.root",kFALSE,kTRUE,kTRUE,kFALSE,kTRUE);
 
   // attach a private task (not committed)
@@ -250,18 +250,19 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    plugin->SetNtestFiles(1);
    // Set versions of used packages
    plugin->SetAPIVersion("V2.4");
-   plugin->SetROOTVersion("v5-23-02");
-   plugin->SetAliROOTVersion("v4-17-00");
+   plugin->SetROOTVersion("v5-24-00");
+   plugin->SetAliROOTVersion("v4-18-01-AN");
    // Declare input data to be processed.
    // Method 1: Create automatically XML collections using alien 'find' command.
    // Define production directory LFN
    //plugin->SetGridDataDir("/alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/");
-   plugin->SetGridDataDir("/alice/cern.ch/user/m/mgheata/analysisESD/output_train_default_28May2009_09h33/");
+   //plugin->SetGridDataDir("/alice/cern.ch/user/m/mgheata/analysisESD/output_train_default_28May2009_09h33/");
+   plugin->SetGridDataDir("/alice/sim/PDC_09/LHC09a6/AOD/");
    // Set data search pattern
    plugin->SetDataPattern("AliAOD.root");
    plugin->SetFriendChainName("AliAOD.VertexingHF.root");
    // ...then add run numbers to be considered
-   plugin->AddRunNumber(529007);
+   //plugin->AddRunNumber(529007);
    //  or
    //plugin->SetRunRange(529000,529007);
    // Method 2: Declare existing data files (raw collections, xml collections, root file)
@@ -296,7 +297,8 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    }
    // Declare the output file names separated by blancs.
    // (can be like: file.root or file.root@ALICE::Niham::File)
-   plugin->SetOutputFiles("CmpHF.root");
+   plugin->SetDefaultOutputs(kTRUE);
+   //plugin->SetOutputFiles("output.root CmpHF.root CmpHFnt.root D0InvMass.root InvMassDplus.root InvMassDplus_nt1.root InvMassDplus_nt2.root");
    // Optionally define the files to be archived.
    //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:*.root@ALICE::NIHAM::File");
    plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
@@ -319,7 +321,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    // Optionally modify split mode (default 'se')    
    plugin->SetSplitMode("se");
    // Optionally set the preferred SE    
-   plugin->SetPreferedSE("ALICE::Legnaro::SE");
+   plugin->SetPreferedSE("ALICE::Torino::DPM");
    
    return plugin;
 }
