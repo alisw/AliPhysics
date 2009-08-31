@@ -29,7 +29,7 @@ public:
   AliT0QAChecker(const AliT0QAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
  // dtor
  virtual ~AliT0QAChecker() {;}
- Double_t CheckRaw(TObjArray *listrec /*, TObjArray *listref*/) const ;
+ Double_t CheckRaw(TObjArray *listrec , TObjArray *listref) const ;
 private:
   virtual Double_t * Check(AliQAv1::ALITASK_t, TObjArray ** list) ;
   
