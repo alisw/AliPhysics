@@ -21,7 +21,12 @@
 #include <TChain.h>
 #include <TFile.h>
 #include "TParticle.h"
+#include "TParameter.h"
 #include "TString.h"
+#include "TList.h"
+#include "TProfile.h"
+#include "TH1F.h"
+
 
 #include "AliAnalysisTaskMCParticleFilter.h"
 #include "AliAnalysisManager.h"
@@ -47,20 +52,75 @@ ClassImp(AliAnalysisTaskMCParticleFilter)
 //____________________________________________________________________
 AliAnalysisTaskMCParticleFilter::AliAnalysisTaskMCParticleFilter():
 AliAnalysisTaskSE(),
-  fTrackFilterMother(0x0)
+  fTrackFilterMother(0x0),
+  fHistList(0x0)
 {
   // Default constructor
 }
+
+Bool_t AliAnalysisTaskMCParticleFilter::Notify()
+{
+  //
+  // Implemented Notify() to read the cross sections
+  // and number of trials from pyxsec.root
+  // 
+  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+  Double_t xsection = 0;
+  UInt_t   ntrials  = 0;
+  if(tree){
+    TFile *curfile = tree->GetCurrentFile();
+    if (!curfile) {
+      Error("Notify","No current file");
+      return kFALSE;
+    }
+
+    TString fileName(curfile->GetName());
+    if(fileName.Contains("AliESDs.root")){
+        fileName.ReplaceAll("AliESDs.root", "pyxsec.root");
+    }
+    else if(fileName.Contains("AliAOD.root")){
+        fileName.ReplaceAll("AliAOD.root", "pyxsec.root");
+    }
+    else if(fileName.Contains("galice.root")){
+        // for running with galice and kinematics alone...                      
+        fileName.ReplaceAll("galice.root", "pyxsec.root");
+    }
+
+
+    TFile *fxsec = TFile::Open(fileName.Data());
+    if(!fxsec){
+      AliInfo(Form("%s:%d %s not found in the Input",(char*)__FILE__,__LINE__,fileName.Data()));
+      // not a severe condition we just do not have the information...
+      return kTRUE;
+    }
+    TTree *xtree = (TTree*)fxsec->Get("Xsection");
+    if(!xtree){
+      Printf("%s:%d tree not found in the pyxsec.root",(char*)__FILE__,__LINE__);
+      return kTRUE;
+    }
+    xtree->SetBranchAddress("xsection",&xsection);
+    xtree->SetBranchAddress("ntrials",&ntrials);
+    xtree->GetEntry(0);
+    ((TProfile*)(fHistList->FindObject("h1Xsec")))->Fill("<#sigma>",xsection);
+    ((TH1F*)(fHistList->FindObject("h1Trials")))->Fill("#sum{ntrials}",ntrials); 
+
+  }
+  return kTRUE;
+}
+
+
 
 //____________________________________________________________________
 AliAnalysisTaskMCParticleFilter::AliAnalysisTaskMCParticleFilter(const char* name):
     AliAnalysisTaskSE(name),
-    fTrackFilterMother(0x0)
+    fTrackFilterMother(0x0),
+    fHistList(0x0)
 {
   // Default constructor
+  DefineOutput(1,TList::Class());  
 }
 
-
+/*
 //____________________________________________________________________
 AliAnalysisTaskMCParticleFilter::AliAnalysisTaskMCParticleFilter(const AliAnalysisTaskMCParticleFilter& obj):
     AliAnalysisTaskSE(obj),
@@ -68,14 +128,14 @@ AliAnalysisTaskMCParticleFilter::AliAnalysisTaskMCParticleFilter(const AliAnalys
 {
   // Copy constructor
 }
-
+*/
 //____________________________________________________________________
 AliAnalysisTaskMCParticleFilter::~AliAnalysisTaskMCParticleFilter()
 {
   //  if( fTrackFilterMother ) delete fTrackFilterMother;
 }
 
-
+/*
 //____________________________________________________________________
 AliAnalysisTaskMCParticleFilter& AliAnalysisTaskMCParticleFilter::operator=(const AliAnalysisTaskMCParticleFilter& other)
 {
@@ -86,7 +146,7 @@ AliAnalysisTaskMCParticleFilter& AliAnalysisTaskMCParticleFilter::operator=(cons
   }
   return *this;
 }
-
+*/
 //____________________________________________________________________
 void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
 {
@@ -122,6 +182,22 @@ void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
       return;
     }
     aodH->SetMCEventHandler(mcH);
+
+
+    // these are histograms, for averaging and summing
+    // do it via histograms to be PROOF-proof
+    // which merges the results from different workers
+    // histos are not saved reside only in memory
+    
+    
+
+    fHistList = new TList();
+    TProfile *h1Xsec = new TProfile("h1Xsec","xsec from pyxsec.root",1,0,1);
+    h1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
+    fHistList->Add(h1Xsec);
+    TH1F* h1Trials = new TH1F("h1Trials","trials from pyxsec.root",1,0,1);
+    h1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+    fHistList->Add(h1Trials);
 
     
 }
@@ -251,7 +327,7 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
       Int_t d1 =  mcpart->GetLastDaughter();
       if(d0>0&&d1>0){
 	for(int id = d0;id <= d1;id++){
-	  AliMCParticle* daughter =  mcE->GetTrack(id);
+	  // AliMCParticle* daughter =  mcE->GetTrack(id);
 	  iAll++;
 	  if(mcH->IsParticleSelected(id))iTaken++;
 	}
@@ -261,8 +337,48 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 
   AliInfo(Form("Taken daughters %d/%d of %d charm",iTaken,iAll,iCharm));
 
+  PostData(1,fHistList);
 
   return;
+}
+
+void AliAnalysisTaskMCParticleFilter::Terminate(Option_t */*option*/){
+  //
+  // Terminate the execution save the PYTHIA x_section to the UserInfo()
+  //
+
+
+  TTree *tree = (TTree*)GetOutputData(0);
+  fHistList = (TList*)GetOutputData(1);
+  if(!fHistList){
+    Printf("%s:%d Output list not found",(char*)__FILE__,__LINE__);
+    return;
+  }
+
+  if(!tree){
+    Printf("%s:%d Output tree not found",(char*)__FILE__,__LINE__);
+    return;
+  }
+
+  TProfile *hXsec = ((TProfile*)(fHistList->FindObject("h1Xsec")));
+  TH1F* hTrials  = ((TH1F*)(fHistList->FindObject("h1Trials")));
+  if(!hXsec)return;
+  if(!hTrials)return;
+
+  Float_t xsec = hXsec->GetBinContent(1);
+  Float_t trials = hTrials->Integral();
+  AliInfo(Form("Average -section %.4E and total number of trials %E",xsec,trials));
+  
+  // This only works if the tree is not a special output
+  // in this case it is already written
+  /*
+  TParameter<float> *x = new TParameter<float>("xsection",xsec);
+  tree->GetUserInfo()->Add(x);
+  TParameter<float> *t = new TParameter<float>("trials",trials);
+  tree->GetUserInfo()->Add(t);
+  */
+  
+
 }
 
 Bool_t AliAnalysisTaskMCParticleFilter::Select(TParticle* part, Float_t rv, Float_t zv)

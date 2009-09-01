@@ -96,6 +96,9 @@ void runAODFilterMC()
       if(bKineFilter){
 	mgr->ConnectInput  (kinefilter,     0, cinput1  );
 	mgr->ConnectOutput (kinefilter,     0, coutput1 );
+	AliAnalysisDataContainer *coutputEx = mgr->CreateContainer("cFilterList", TList::Class(),
+								   AliAnalysisManager::kOutputContainer,"pyxsec_hists.root");
+	mgr->ConnectOutput (kinefilter,     1, coutputEx );
       }
 
 	mgr->ConnectInput  (esdfilter,     0, cinput1  );
