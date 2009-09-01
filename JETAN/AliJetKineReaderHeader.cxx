@@ -29,7 +29,8 @@ ClassImp(AliJetKineReaderHeader)
 AliJetKineReaderHeader::AliJetKineReaderHeader():
   AliJetReaderHeader("AliJetKineReaderHeader"),
   fFastSimTPC(kFALSE),
-  fFastSimEMCAL(kFALSE)
+  fFastSimEMCAL(kFALSE),
+  fChargedOnly(kFALSE)
 {
   // Default constructor
 

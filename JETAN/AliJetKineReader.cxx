@@ -111,6 +111,15 @@ Bool_t AliJetKineReader::FillMomentumArray()
 	Float_t p0      = p;
 	Float_t eta     = part->Eta();
 	Float_t phi     = part->Phi();
+
+
+	if (((AliJetKineReaderHeader*)fReaderHeader)->ChargedOnly()) {
+	    // Charged particles only
+	    Float_t charge = 
+		TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+	    if (charge == 0)               continue;
+	} // End charged only
+
 	
 	// Fast simulation of TPC if requested
 	if (((AliJetKineReaderHeader*)fReaderHeader)->FastSimTPC()) {

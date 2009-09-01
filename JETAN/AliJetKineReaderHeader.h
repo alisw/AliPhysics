@@ -20,18 +20,21 @@ class AliJetKineReaderHeader : public AliJetReaderHeader
   // Setters
   void SetFastSimTPC(Bool_t flag = kTRUE) {fFastSimTPC = flag;} // if TPC fast simulation
   void SetFastSimEMCAL(Bool_t flag = kTRUE) {fFastSimEMCAL = flag;} // if EMCAL fast simulation
+  void SetChargedOnly(Bool_t flag = kTRUE) {fChargedOnly = flag;} // for charged particles only, no smearing and no acceptance cuts
 
   // Getter
   Bool_t  FastSimTPC() const  {return fFastSimTPC;}
   Bool_t  FastSimEMCAL() const  {return fFastSimEMCAL;}
+  Bool_t  ChargedOnly() const  {return fChargedOnly;}
 
 	  
  protected:
   //parameters set by user
   Bool_t fFastSimTPC;
   Bool_t fFastSimEMCAL;
+  Bool_t fChargedOnly;
 
-  ClassDef(AliJetKineReaderHeader,1);
+  ClassDef(AliJetKineReaderHeader,2);
 };
  
 #endif

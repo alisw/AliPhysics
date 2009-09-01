@@ -7,7 +7,7 @@ void testFastJet(const char* file="testdata.dat")
       gSystem->Load("libVMC.so");
       gSystem->Load("libPhysics.so");
 
-      gSystem->Load("libCGAL.so");
+      gSystem->Load("libCGAL.dylib");
 
       gSystem->Load("libfastjet.so");
       gSystem->Load("libSISConePlugin.so");
