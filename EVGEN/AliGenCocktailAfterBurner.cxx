@@ -196,7 +196,7 @@ void AliGenCocktailAfterBurner::Generate()
 	   fInternalStacks->Add(stack);
 	   Vertex();
 	   for (Int_t j = 0; j < 3; j++) eventVertex[3 * i +  j] = fVertex[j];
-
+	   fHeaders[i] = new AliGenCocktailEventHeader();
        }
 /*********************************************************************/ 
       TIter next(fEntries);
