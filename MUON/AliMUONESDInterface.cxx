@@ -450,9 +450,13 @@ void AliMUONESDInterface::ResetTracker(const AliMUONRecoParam* recoParam)
   } else {
     
     fgRecoParam = AliMUONRecoParam::GetLowFluxParam();
-    fgRecoParam->SetTrackingMode("KALMAN");
-    fgRecoParam->UseSmoother(kTRUE);
-    fgRecoParam->SetBendingVertexDispersion(10.);
+    
+    cout<<"W-AliMUONESDInterface::ResetTracker: RecoParam not provided. Will use default LowFlux parametrization:"<<endl;
+    cout<<"                                     --> Tracking mode = "<<fgRecoParam->GetTrackingMode()<<endl;
+    if (fgRecoParam->UseSmoother()) cout<<"                                     --> Use Smoother"<<endl;
+    else cout<<"                                     --> Do not use smoother"<<endl;
+    cout<<"                                     --> Vertex dispersion in bending direction = "
+        <<fgRecoParam->GetBendingVertexDispersion()<<" cm"<<endl;
     
   }
   
@@ -712,7 +716,7 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
     
     // refit the track to get better parameters and covariances at each cluster (temporary disable track improvement)
     if (!fgTracker) ResetTracker();
-    if (!fgTracker->RefitTrack(track, kFALSE)) track.UpdateCovTrackParamAtCluster();
+    if (!fgTracker->RefitTrack(track, kFALSE) && track.GetGlobalChi2() < AliMUONTrack::MaxChi2()) track.UpdateCovTrackParamAtCluster();
     
   } else {
     

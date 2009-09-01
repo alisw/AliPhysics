@@ -35,8 +35,8 @@ class AliMUONTrack : public TObject
   TClonesArray* GetTrackParamAtCluster() const;
   void          AddTrackParamAtCluster(const AliMUONTrackParam &trackParam, AliMUONVCluster &cluster, Bool_t copy = kFALSE); 
   void          RemoveTrackParamAtCluster(AliMUONTrackParam *trackParam);
-  void          UpdateTrackParamAtCluster();
-  void          UpdateCovTrackParamAtCluster();
+  Bool_t        UpdateTrackParamAtCluster();
+  Bool_t        UpdateCovTrackParamAtCluster();
   
   Bool_t IsValid(UInt_t requestedStationMask);
   
@@ -133,10 +133,15 @@ class AliMUONTrack : public TObject
   virtual void Print(Option_t* opt="") const;
 
   virtual void Clear(Option_t* opt="");
+  
+  // return the maximum chi2 above which the track can be considered as abnormal (due to extrapolation failure, ...)
+  static Double_t MaxChi2() {return fgkMaxChi2;}
 
 
  private:
- 
+  
+  static const Double_t fgkMaxChi2; ///< maximum chi2 above which the track can be considered as abnormal
+  
   mutable TClonesArray* fTrackParamAtCluster; ///< Track parameters at cluster
   
   Bool_t   fFitWithVertex;   //!< kTRUE if using the vertex to constrain the fit, kFALSE if not

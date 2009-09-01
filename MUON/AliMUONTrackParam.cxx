@@ -471,7 +471,8 @@ void AliMUONTrackParam::Print(Option_t* opt) const
       "," <<  setw(5) << setprecision(3) << fZ <<
       ") cm, (px,py,pz)=(" << setw(5) << setprecision(3) << Px() <<
       "," << setw(5) << setprecision(3) << Py() <<
-      "," << setw(5) << setprecision(3) << Pz() << ") GeV/c" << endl;
+      "," << setw(5) << setprecision(3) << Pz() << ") GeV/c"
+      "," << "local chi2=" << GetLocalChi2() << endl;
   }
   else {
     cout << "<AliMUONTrackParam>"  << endl;

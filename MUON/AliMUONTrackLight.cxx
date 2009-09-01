@@ -226,9 +226,9 @@ TParticle* AliMUONTrackLight::FindRefTrack(
       // otherwise check only parameters at the z position of the first trackRef
       AliMUONTrackParam *refParam = (AliMUONTrackParam*) trackRef->GetTrackParamAtCluster()->First();
       AliMUONTrackParam recoParam(*((AliMUONTrackParam*) trackReco->GetTrackParamAtCluster()->First()));
-      AliMUONTrackExtrap::ExtrapToZCov(&recoParam, refParam->GetZ());
       Double_t chi2;
-      if (refParam->CompatibleTrackParam(recoParam, kSigmaCut, chi2)) compTrack = kTRUE;
+      if (AliMUONTrackExtrap::ExtrapToZCov(&recoParam, refParam->GetZ()) &&
+	  refParam->CompatibleTrackParam(recoParam, kSigmaCut, chi2)) compTrack = kTRUE;
       
     }
       

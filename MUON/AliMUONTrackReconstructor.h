@@ -34,8 +34,8 @@ class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor
   virtual Bool_t MakeMoreTrackCandidates(AliMUONVClusterStore& clusterStore);
   virtual Bool_t FollowTracks(AliMUONVClusterStore& clusterStore);
   virtual Bool_t ComplementTracks(const AliMUONVClusterStore& clusterStore);
-  virtual void ImproveTrack(AliMUONTrack &track);
-  virtual void FinalizeTrack(AliMUONTrack &track);
+  virtual void   ImproveTrack(AliMUONTrack &track);
+  virtual Bool_t FinalizeTrack(AliMUONTrack &track);
   
 
  private:

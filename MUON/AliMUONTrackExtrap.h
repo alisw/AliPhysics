@@ -43,10 +43,10 @@ class AliMUONTrackExtrap : public TObject
   static void LinearExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator = kFALSE);
   
   // Extrapolate track parameters in magnetic field
-  static void ExtrapToZ(AliMUONTrackParam *trackParam, Double_t zEnd);
+  static Bool_t ExtrapToZ(AliMUONTrackParam *trackParam, Double_t zEnd);
   
   // Extrapolate track parameters and covariances in magnetic field
-  static void ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator = kFALSE);
+  static Bool_t ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator = kFALSE);
   
   // Extrapolate track parameters to vertex, corrected for multiple scattering and energy loss effects
   // Add branson correction resolution and energy loss fluctuation to parameter covariances
@@ -93,8 +93,8 @@ class AliMUONTrackExtrap : public TObject
   /// Not implemented
   AliMUONTrackExtrap& operator=(const AliMUONTrackExtrap& trackExtrap);
 
-  static void ExtrapToZHelix(AliMUONTrackParam *trackParam, Double_t Z);
-  static void ExtrapToZRungekutta(AliMUONTrackParam *trackParam, Double_t Z);
+  static Bool_t ExtrapToZHelix(AliMUONTrackParam *trackParam, Double_t Z);
+  static Bool_t ExtrapToZRungekutta(AliMUONTrackParam *trackParam, Double_t Z);
   
   static void ConvertTrackParamForExtrap(AliMUONTrackParam* trackParam, Double_t forwardBackward, Double_t *v3);
   static void RecoverTrackParam(Double_t *v3, Double_t Charge, AliMUONTrackParam* trackParam);

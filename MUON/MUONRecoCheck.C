@@ -164,15 +164,12 @@ void MUONRecoCheck (Int_t nEvent = -1, char* geoFilename = "geometry.root",
 	  // check only parameters at the z position of the first trackRef
 	  AliMUONTrackParam *refParam = (AliMUONTrackParam*) trackRef->GetTrackParamAtCluster()->First();
 	  AliMUONTrackParam recoParam(*((AliMUONTrackParam*) trackReco->GetTrackParamAtCluster()->First()));
-	  AliMUONTrackExtrap::ExtrapToZCov(&recoParam, refParam->GetZ());
 	  Double_t chi2;
-	  if (refParam->CompatibleTrackParam(recoParam, sigmaCut, chi2)) {
-	    
-	    if (chi2 < maxChi2) {
+	  if (AliMUONTrackExtrap::ExtrapToZCov(&recoParam, refParam->GetZ()) &&
+	      refParam->CompatibleTrackParam(recoParam, sigmaCut, chi2) && chi2 < maxChi2)
+	  {
 	      maxChi2 = chi2;
 	      trackOK = trackReco;
-	    }
-	    
 	  }
 	  
 	}

@@ -127,7 +127,7 @@ Bool_t AliMUONTrackReconstructorK::MakeTrackCandidates(AliMUONVClusterStore& clu
 	}
       } else {
 	if ((fNRecTracks + segments->GetEntriesFast() - iSegment - 1) > GetRecoParam()->GetMaxTrackCandidates()) {
-	  AliError(Form("Too many track candidates (%d tracks). Abandion tracking.", fNRecTracks + segments->GetEntriesFast() - iSegment - 1));
+	  AliError(Form("Too many track candidates (%d tracks). Stop tracking.", fNRecTracks + segments->GetEntriesFast() - iSegment - 1));
 	  delete segments;
 	  return kFALSE;
 	}
@@ -150,11 +150,8 @@ Bool_t AliMUONTrackReconstructorK::MakeTrackCandidates(AliMUONVClusterStore& clu
     // skip empty slots
     if(!track) continue;
     
-    // retrace tracks using Kalman filter
-    RetraceTrack(*track,kTRUE);
-    
-    // remove tracks out of limits
-    if (!IsAcceptable(*((AliMUONTrackParam*)track->GetTrackParamAtCluster()->First()))) {
+    // retrace tracks using Kalman filter and remove the ones for which extrap failed or that are out of limits
+    if (!RetraceTrack(*track,kTRUE) || !IsAcceptable(*((AliMUONTrackParam*)track->GetTrackParamAtCluster()->First()))) {
       fRecTracksPtr->Remove(track);
       fNRecTracks--;
     }
@@ -248,11 +245,8 @@ Bool_t AliMUONTrackReconstructorK::MakeMoreTrackCandidates(AliMUONVClusterStore&
     // skip empty slots
     if(!track) continue;
     
-    // retrace tracks using Kalman filter
-    RetraceTrack(*track,kTRUE);
-    
-    // remove tracks with absolute bending momentum out of limits
-    if (!IsAcceptable(*((AliMUONTrackParam*)track->GetTrackParamAtCluster()->First()))) {
+    // retrace tracks using Kalman filter and remove the ones for which extrap failed or that are out of limits
+    if (!RetraceTrack(*track,kTRUE) || !IsAcceptable(*((AliMUONTrackParam*)track->GetTrackParamAtCluster()->First()))) {
       fRecTracksPtr->Remove(track);
       fNRecTracks--;
     }
@@ -270,9 +264,10 @@ Bool_t AliMUONTrackReconstructorK::MakeMoreTrackCandidates(AliMUONVClusterStore&
 }
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructorK::RetraceTrack(AliMUONTrack &trackCandidate, Bool_t resetSeed)
+Bool_t AliMUONTrackReconstructorK::RetraceTrack(AliMUONTrack &trackCandidate, Bool_t resetSeed)
 {
   /// Re-run the kalman filter from the most downstream cluster to the most uptream one
+  /// Return kFALSE in case of failure (i.e. extrapolation problem)
   AliDebug(1,"Enter RetraceTrack");
   
   AliMUONTrackParam* lastTrackParam = (AliMUONTrackParam*) trackCandidate.GetTrackParamAtCluster()->Last();
@@ -342,14 +337,15 @@ void AliMUONTrackReconstructorK::RetraceTrack(AliMUONTrack &trackCandidate, Bool
   }
   
   // Redo the tracking
-  RetracePartialTrack(trackCandidate, lastTrackParam);
+  return RetracePartialTrack(trackCandidate, lastTrackParam);
   
 }
 
   //__________________________________________________________________________
-void AliMUONTrackReconstructorK::RetracePartialTrack(AliMUONTrack &trackCandidate, const AliMUONTrackParam* startingTrackParam)
+Bool_t AliMUONTrackReconstructorK::RetracePartialTrack(AliMUONTrack &trackCandidate, const AliMUONTrackParam* startingTrackParam)
 {
   /// Re-run the kalman filter from the cluster attached to startingTrackParam to the most uptream cluster
+  /// Return kFALSE in case of failure (i.e. extrapolation problem)
   AliDebug(1,"Enter RetracePartialTrack");
   
   // Printout for debuging
@@ -361,6 +357,7 @@ void AliMUONTrackReconstructorK::RetracePartialTrack(AliMUONTrack &trackCandidat
   trackCandidate.SetGlobalChi2(startingTrackParam->GetTrackChi2());
   
   // loop over attached clusters until the first one and recompute track parameters and covariances using kalman filter
+  Bool_t extrapStatus = kTRUE;
   Int_t expectedChamber = startingTrackParam->GetClusterPtr()->GetChamberId() - 1;
   Int_t currentChamber;
   Double_t addChi2TrackAtCluster;
@@ -382,16 +379,16 @@ void AliMUONTrackReconstructorK::RetracePartialTrack(AliMUONTrack &trackCandidat
     currentChamber = trackParamAtCluster->GetClusterPtr()->GetChamberId();
     while (currentChamber < expectedChamber) {
       // extrapolation to the missing chamber (update the propagator)
-      AliMUONTrackExtrap::ExtrapToZCov(trackParamAtCluster, AliMUONConstants::DefaultChamberZ(expectedChamber),
-				       GetRecoParam()->UseSmoother());
+      if (!AliMUONTrackExtrap::ExtrapToZCov(trackParamAtCluster, AliMUONConstants::DefaultChamberZ(expectedChamber),
+					    GetRecoParam()->UseSmoother())) extrapStatus = kFALSE;
       // add MCS effect
       AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(),1.);
       expectedChamber--;
     }
     
     // extrapolation to the plane of the cluster attached to the current trackParamAtCluster (update the propagator)
-    AliMUONTrackExtrap::ExtrapToZCov(trackParamAtCluster, trackParamAtCluster->GetClusterPtr()->GetZ(),
-				     GetRecoParam()->UseSmoother());
+    if (!AliMUONTrackExtrap::ExtrapToZCov(trackParamAtCluster, trackParamAtCluster->GetClusterPtr()->GetZ(),
+					  GetRecoParam()->UseSmoother())) extrapStatus = kFALSE;
     
     if (GetRecoParam()->UseSmoother()) {
       // save extrapolated parameters for smoother
@@ -418,6 +415,10 @@ void AliMUONTrackReconstructorK::RetracePartialTrack(AliMUONTrack &trackCandidat
   if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructorK") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
     cout << "RetracePartialTrack: track chi2 after re-tracking: " << trackCandidate.GetGlobalChi2() << endl;
   }
+  
+  // set global chi2 to max value in case of problem during track extrapolation
+  if (!extrapStatus) trackCandidate.SetGlobalChi2(2.*AliMUONTrack::MaxChi2());
+  return extrapStatus;
   
 }
 
@@ -512,7 +513,7 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInChamber(AliMUONTrack &trackCandi
   Double_t maxChi2OfCluster = 2. * GetRecoParam()->GetSigmaCutForTracking() *
 				   GetRecoParam()->GetSigmaCutForTracking(); // 2 because 2 quantities in chi2
   Double_t addChi2TrackAtCluster;
-  Double_t bestAddChi2TrackAtCluster = 1.e10;
+  Double_t bestAddChi2TrackAtCluster = AliMUONTrack::MaxChi2();
   Bool_t foundOneCluster = kFALSE;
   AliMUONTrack *newTrack = 0x0;
   AliMUONVCluster *cluster;
@@ -542,15 +543,15 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInChamber(AliMUONTrack &trackCandi
   while (currentChamber > nextChamber + 1) {
     // extrapolation to the missing chamber
     currentChamber--;
-    AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(currentChamber),
-				     GetRecoParam()->UseSmoother());
+    if (!AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(currentChamber),
+					  GetRecoParam()->UseSmoother())) return kFALSE;
     // add MCS effect
     AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),1.);
   }
   
   //Extrapolate trackCandidate to chamber
-  AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(nextChamber),
-				   GetRecoParam()->UseSmoother());
+  if (!AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(nextChamber),
+					GetRecoParam()->UseSmoother())) return kFALSE;
   
   // Printout for debuging
   if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructorK") >= 2) || (AliLog::GetGlobalDebugLevel() >= 2)) {
@@ -686,8 +687,8 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
 				   GetRecoParam()->GetSigmaCutForTracking(); // 2 because 2 quantities in chi2
   Double_t addChi2TrackAtCluster1;
   Double_t addChi2TrackAtCluster2;
-  Double_t bestAddChi2TrackAtCluster1 = 1.e10;
-  Double_t bestAddChi2TrackAtCluster2 = 1.e10;
+  Double_t bestAddChi2TrackAtCluster1 = AliMUONTrack::MaxChi2();
+  Double_t bestAddChi2TrackAtCluster2 = AliMUONTrack::MaxChi2();
   Bool_t foundOneCluster = kFALSE;
   Bool_t foundTwoClusters = kFALSE;
   AliMUONTrack *newTrack = 0x0;
@@ -699,13 +700,7 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
   AliMUONTrackParam bestTrackParamAtCluster1;
   AliMUONTrackParam bestTrackParamAtCluster2;
   
-  Int_t nClusters = clusterStore.GetSize();
-  Bool_t *clusterCh1Used = new Bool_t[nClusters];
-  for (Int_t i = 0; i < nClusters; i++) clusterCh1Used[i] = kFALSE;
-  Int_t iCluster1;
-  
   // Get track parameters according to the propagation direction
-  
   if (nextStation==4) extrapTrackParamAtCh = *(AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->Last();
   else extrapTrackParamAtCh = *(AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->First();
   
@@ -727,15 +722,15 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
   while (ch1 < ch2 && currentChamber > ch2 + 1) {
     // extrapolation to the missing chamber
     currentChamber--;
-    AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(currentChamber),
-				     GetRecoParam()->UseSmoother());
+    if (!AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(currentChamber),
+					  GetRecoParam()->UseSmoother())) return kFALSE;
     // add MCS effect
     AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),1.);
   }
   
   //Extrapolate trackCandidate to chamber "ch2"
-  AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(ch2),
-				   GetRecoParam()->UseSmoother());
+  if (!AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(ch2),
+					GetRecoParam()->UseSmoother())) return kFALSE;
   
   // Printout for debuging
   if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructorK") >= 2) || (AliLog::GetGlobalDebugLevel() >= 2)) {
@@ -754,6 +749,11 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
   if (GetRecoParam()->CombineClusterTrackReco()) {
     if (nextStation < 3) AskForNewClustersInStation(extrapTrackParamAtCh, clusterStore, nextStation);
   }
+  
+  Int_t nClusters = clusterStore.GetSize();
+  Bool_t *clusterCh1Used = new Bool_t[nClusters];
+  for (Int_t i = 0; i < nClusters; i++) clusterCh1Used[i] = kFALSE;
+  Int_t iCluster1;
   
   // Create iterators to loop over clusters in both chambers
   TIter nextInCh1(clusterStore.CreateChamberIterator(ch1,ch1));
@@ -804,8 +804,8 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
       if (GetRecoParam()->UseSmoother()) extrapTrackParam.ResetPropagator();
       
       //Extrapolate track parameters to chamber "ch1"
-      AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParam, AliMUONConstants::DefaultChamberZ(ch1),
-				       GetRecoParam()->UseSmoother());
+      Bool_t normalExtrap = AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParam, AliMUONConstants::DefaultChamberZ(ch1),
+							     GetRecoParam()->UseSmoother());
       
       // reset cluster iterator of chamber 1
       nextInCh1.Reset();
@@ -813,7 +813,7 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
       
       // look for second candidates in chamber 1
       Bool_t foundSecondCluster = kFALSE;
-      while ( ( clusterCh1 = static_cast<AliMUONVCluster*>(nextInCh1()) ) ) {
+      if (normalExtrap) while ( ( clusterCh1 = static_cast<AliMUONVCluster*>(nextInCh1()) ) ) {
 	iCluster1++;
 	
     	// try to add the current cluster fast
@@ -916,8 +916,8 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
     AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),1.);
     
     //Extrapolate trackCandidate to chamber "ch1"
-    AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(ch1),
-				     GetRecoParam()->UseSmoother());
+    Bool_t normalExtrap = AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(ch1),
+							   GetRecoParam()->UseSmoother());
     
     // Printout for debuging
     if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructorK") >= 2) || (AliLog::GetGlobalDebugLevel() >= 2)) {
@@ -936,7 +936,7 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
     iCluster1 = -1;
     
     // look for second candidates in chamber 1
-    while ( ( clusterCh1 = static_cast<AliMUONVCluster*>(nextInCh1()) ) ) {
+    if (normalExtrap) while ( ( clusterCh1 = static_cast<AliMUONVCluster*>(nextInCh1()) ) ) {
       iCluster1++;
       
       if (clusterCh1Used[iCluster1]) continue; // Skip clusters already used
@@ -1064,7 +1064,7 @@ Double_t AliMUONTrackReconstructorK::RunKalmanFilter(AliMUONTrackParam &trackPar
     paramWeight.Invert();
   } else {
     AliWarning(" Determinant = 0");
-    return 1.e10;
+    return 2.*AliMUONTrack::MaxChi2();
   }
   
   // Compute the new cluster weight (U)
@@ -1079,7 +1079,7 @@ Double_t AliMUONTrackReconstructorK::RunKalmanFilter(AliMUONTrackParam &trackPar
     newParamCov.Invert();
   } else {
     AliWarning(" Determinant = 0");
-    return 1.e10;
+    return 2.*AliMUONTrack::MaxChi2();
   }
   
   // Save the new parameters covariance matrix
@@ -1219,7 +1219,7 @@ Bool_t AliMUONTrackReconstructorK::RecoverTrack(AliMUONTrack &trackCandidate, Al
   trackCandidate.RemoveTrackParamAtCluster((AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->UncheckedAt(worstClusterNumber));
   
   // Re-calculate track parameters at the (new) first cluster
-  RetracePartialTrack(trackCandidate,(AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->UncheckedAt(1));
+  if (!RetracePartialTrack(trackCandidate,(AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->UncheckedAt(1))) return kFALSE;
   
   // skip track out of limits
   if (!IsAcceptable(*((AliMUONTrackParam*)trackCandidate.GetTrackParamAtCluster()->First()))) return kFALSE;
@@ -1334,7 +1334,8 @@ Bool_t AliMUONTrackReconstructorK::ComplementTracks(const AliMUONVClusterStore& 
   /// Complete tracks by adding missing clusters (if there is an overlap between
   /// two detection elements, the track may have two clusters in the same chamber).
   /// Recompute track parameters and covariances at each clusters.
-  /// Return kTRUE if one or more tracks have been complemented.
+  /// Remove tracks getting abnormal (i.e. extrapolation failed...) after being complemented.
+  /// Return kTRUE if one or more tracks have been complemented or removed.
   AliDebug(1,"Enter ComplementTracks");
   
   Int_t chamberId, detElemId;
@@ -1344,6 +1345,7 @@ Bool_t AliMUONTrackReconstructorK::ComplementTracks(const AliMUONVClusterStore& 
   Bool_t foundOneCluster, trackModified, hasChanged = kFALSE;
   AliMUONVCluster *cluster;
   AliMUONTrackParam *trackParam, *previousTrackParam, *nextTrackParam, trackParamAtCluster, bestTrackParamAtCluster;
+  AliMUONTrack *nextTrack;
   
   AliMUONTrack *track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
@@ -1353,7 +1355,7 @@ Bool_t AliMUONTrackReconstructorK::ComplementTracks(const AliMUONVClusterStore& 
     previousTrackParam = trackParam;
     while (trackParam) {
       foundOneCluster = kFALSE;
-      bestAddChi2TrackAtCluster = 1.e10;
+      bestAddChi2TrackAtCluster = AliMUONTrack::MaxChi2();
       chamberId = trackParam->GetClusterPtr()->GetChamberId();
       detElemId = trackParam->GetClusterPtr()->GetDetElemId();
       
@@ -1419,10 +1421,17 @@ Bool_t AliMUONTrackReconstructorK::ComplementTracks(const AliMUONVClusterStore& 
       trackParam = nextTrackParam;
     }
     
-    // re-compute track parameters using kalman filter if needed
-    if (trackModified) RetraceTrack(*track,kTRUE);
+    // prepare next track
+    nextTrack = (AliMUONTrack*) fRecTracksPtr->After(track);
     
-    track = (AliMUONTrack*) fRecTracksPtr->After(track);
+    // re-compute track parameters using kalman filter if needed
+    if (trackModified && !RetraceTrack(*track,kTRUE)) {
+      AliWarning("track modified but problem occur during refitting --> remove track");
+      fRecTracksPtr->Remove(track);
+      fNRecTracks--;
+    }
+    
+    track = nextTrack;
   }
   
   return hasChanged;
@@ -1435,6 +1444,7 @@ void AliMUONTrackReconstructorK::ImproveTrack(AliMUONTrack &track)
   /// Improve the given track by removing removable clusters with local chi2 highter than the defined cut
   /// Removable clusters are identified by the method AliMUONTrack::TagRemovableClusters()
   /// Recompute track parameters and covariances at the remaining clusters
+  /// and if something goes wrong (i.e. extrapolation failed...) set track chi2 to max value
   AliDebug(1,"Enter ImproveTrack");
   
   Double_t localChi2, worstLocalChi2;
@@ -1457,7 +1467,12 @@ void AliMUONTrackReconstructorK::ImproveTrack(AliMUONTrack &track)
     if (!smoothed) {
       
       // Update track parameters and covariances
-      track.UpdateCovTrackParamAtCluster();
+      if (!track.UpdateCovTrackParamAtCluster()) {
+	AliWarning("unable to update track parameters and covariances --> stop improvement");
+	// restore the kalman parameters
+	RetraceTrack(track,kTRUE);
+	break;
+      }
       
       // Compute local chi2 of each clusters
       track.ComputeLocalChi2(kTRUE);
@@ -1508,6 +1523,7 @@ void AliMUONTrackReconstructorK::ImproveTrack(AliMUONTrack &track)
     // - from the cluster immediately downstream the one suppressed
     // - or from the begining - if parameters have been re-computed using the standard method (kalman parameters have been lost)
     //                        - or if the removed cluster was used to compute the tracking seed
+    Bool_t normalExtrap;
     if (smoothed && nextTrackParam) {
       
       nextChamber = nextTrackParam->GetClusterPtr()->GetChamberId();
@@ -1519,10 +1535,16 @@ void AliMUONTrackReconstructorK::ImproveTrack(AliMUONTrack &track)
 	
       } while (next2nextTrackParam && (next2nextChamber == nextChamber));
       
-      if (next2nextChamber == nextChamber) RetraceTrack(track,kTRUE);
-      else RetracePartialTrack(track,nextTrackParam);
+      if (next2nextChamber == nextChamber) normalExtrap = RetraceTrack(track,kTRUE);
+      else normalExtrap = RetracePartialTrack(track,nextTrackParam);
       
-    } else RetraceTrack(track,kTRUE);
+    } else normalExtrap = RetraceTrack(track,kTRUE);
+    
+    // stop in case of extrapolation problem
+    if (!normalExtrap) {
+      AliWarning("track partially improved but problem occur during refitting --> stop improvement");
+      break;
+    }
     
     // Printout for debuging
     if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructorK") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
@@ -1534,23 +1556,27 @@ void AliMUONTrackReconstructorK::ImproveTrack(AliMUONTrack &track)
 }
 
 //__________________________________________________________________________
-void AliMUONTrackReconstructorK::FinalizeTrack(AliMUONTrack &track)
+Bool_t AliMUONTrackReconstructorK::FinalizeTrack(AliMUONTrack &track)
 {
   /// Update track parameters and covariances at each attached cluster
   /// using smoother if required, if not already done
+  /// return kFALSE if the track cannot be extrapolated uo to the last chamber
   
   AliMUONTrackParam *trackParamAtCluster;
   Bool_t smoothed = kFALSE;
   
   // update track parameters (using smoother if required) if not already done
-  if (!track.IsImproved()) {
-    smoothed = kFALSE;
+  if (track.IsImproved()) smoothed = GetRecoParam()->UseSmoother();
+  else {
     if (GetRecoParam()->UseSmoother()) smoothed = RunSmoother(track);
     if (!smoothed) {
-      track.UpdateCovTrackParamAtCluster();
-      track.ComputeLocalChi2(kTRUE);
+      if (track.UpdateCovTrackParamAtCluster()) track.ComputeLocalChi2(kTRUE);
+      else {
+	AliWarning("finalization failed due to extrapolation problem");
+	return kFALSE;
+      }
     }
-  } else smoothed = GetRecoParam()->UseSmoother();
+  }
   
   // copy smoothed parameters and covariances if any
   if (smoothed) {
@@ -1565,6 +1591,8 @@ void AliMUONTrackReconstructorK::FinalizeTrack(AliMUONTrack &track)
     }
     
   }
+  
+  return kTRUE;
   
 }
 
@@ -1581,16 +1609,21 @@ Bool_t AliMUONTrackReconstructorK::RefitTrack(AliMUONTrack &track, Bool_t enable
   }
   
   // re-compute track parameters and covariances using Kalman filter
-  RetraceTrack(track,kTRUE);
+  if (!RetraceTrack(track,kTRUE)) {
+    AliWarning("bad track refitting due to extrapolation failure");
+    return kFALSE;
+  }
   
   // Improve the reconstructed tracks if required
   track.SetImproved(kFALSE);
   if (enableImprovement && GetRecoParam()->ImproveTracks()) ImproveTrack(track);
   
   // Fill AliMUONTrack data members
-  FinalizeTrack(track);
-  
-  return kTRUE;
+  if (track.GetGlobalChi2() < AliMUONTrack::MaxChi2()) return FinalizeTrack(track);
+  else {
+    AliWarning("track not finalized due to extrapolation failure");
+    return kFALSE;
+  }
   
 }
 

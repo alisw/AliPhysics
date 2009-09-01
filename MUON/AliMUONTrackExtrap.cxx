@@ -154,21 +154,24 @@ void AliMUONTrackExtrap::LinearExtrapToZCov(AliMUONTrackParam* trackParam, Doubl
 }
 
 //__________________________________________________________________________
-void AliMUONTrackExtrap::ExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
+Bool_t AliMUONTrackExtrap::ExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
 {
   /// Interface to track parameter extrapolation to the plane at "Z" using Helix or Rungekutta algorithm.
   /// On return, the track parameters resulting from the extrapolation are updated in trackParam.
-  if (!fgFieldON) AliMUONTrackExtrap::LinearExtrapToZ(trackParam,zEnd);
-  else if (fgkUseHelix) AliMUONTrackExtrap::ExtrapToZHelix(trackParam,zEnd);
-  else AliMUONTrackExtrap::ExtrapToZRungekutta(trackParam,zEnd);
+  if (!fgFieldON) {
+    AliMUONTrackExtrap::LinearExtrapToZ(trackParam,zEnd);
+    return kTRUE;
+  }
+  else if (fgkUseHelix) return AliMUONTrackExtrap::ExtrapToZHelix(trackParam,zEnd);
+  else return AliMUONTrackExtrap::ExtrapToZRungekutta(trackParam,zEnd);
 }
 
 //__________________________________________________________________________
-void AliMUONTrackExtrap::ExtrapToZHelix(AliMUONTrackParam* trackParam, Double_t zEnd)
+Bool_t AliMUONTrackExtrap::ExtrapToZHelix(AliMUONTrackParam* trackParam, Double_t zEnd)
 {
   /// Track parameter extrapolation to the plane at "Z" using Helix algorithm.
   /// On return, the track parameters resulting from the extrapolation are updated in trackParam.
-  if (trackParam->GetZ() == zEnd) return; // nothing to be done if same Z
+  if (trackParam->GetZ() == zEnd) return kTRUE; // nothing to be done if same Z
   Double_t forwardBackward; // +1 if forward, -1 if backward
   if (zEnd < trackParam->GetZ()) forwardBackward = 1.0; // spectro. z<0 
   else forwardBackward = -1.0;
@@ -214,14 +217,15 @@ void AliMUONTrackExtrap::ExtrapToZHelix(AliMUONTrackParam* trackParam, Double_t 
   }
   // Recover track parameters (charge back for forward motion)
   RecoverTrackParam(v3, chargeExtrap * forwardBackward, trackParam);
+  return kTRUE;
 }
 
 //__________________________________________________________________________
-void AliMUONTrackExtrap::ExtrapToZRungekutta(AliMUONTrackParam* trackParam, Double_t zEnd)
+Bool_t AliMUONTrackExtrap::ExtrapToZRungekutta(AliMUONTrackParam* trackParam, Double_t zEnd)
 {
   /// Track parameter extrapolation to the plane at "Z" using Rungekutta algorithm.
   /// On return, the track parameters resulting from the extrapolation are updated in trackParam.
-  if (trackParam->GetZ() == zEnd) return; // nothing to be done if same Z
+  if (trackParam->GetZ() == zEnd) return kTRUE; // nothing to be done if same Z
   Double_t forwardBackward; // +1 if forward, -1 if backward
   if (zEnd < trackParam->GetZ()) forwardBackward = 1.0; // spectro. z<0 
   else forwardBackward = -1.0;
@@ -232,17 +236,22 @@ void AliMUONTrackExtrap::ExtrapToZRungekutta(AliMUONTrackParam* trackParam, Doub
   Double_t dZ, step;
   Int_t stepNumber = 0;
   
-  // Extrapolation loop (until within tolerance)
+  // Extrapolation loop (until within tolerance or the track turn around)
   Double_t residue = zEnd - trackParam->GetZ();
+  Bool_t uturn = kFALSE;
+  Bool_t tooManyStep = kFALSE;
   while (TMath::Abs(residue) > fgkRungeKuttaMaxResidue && stepNumber <= fgkMaxStepNumber) {
+    
     dZ = zEnd - trackParam->GetZ();
     // step lenght assuming linear trajectory
     step = dZ * TMath::Sqrt(1.0 + trackParam->GetBendingSlope()*trackParam->GetBendingSlope() +
 			    trackParam->GetNonBendingSlope()*trackParam->GetNonBendingSlope());
     ConvertTrackParamForExtrap(trackParam, forwardBackward, v3);
+    
     do { // reduce step lenght while zEnd oversteped
       if (stepNumber > fgkMaxStepNumber) {
         cout<<"W-AliMUONTrackExtrap::ExtrapToZRungekutta: Too many trials: "<<stepNumber<<endl;
+	tooManyStep = kTRUE;
 	break;
       }
       stepNumber ++;
@@ -251,13 +260,42 @@ void AliMUONTrackExtrap::ExtrapToZRungekutta(AliMUONTrackParam* trackParam, Doub
       residue = zEnd - v3New[2];
       step *= dZ/(v3New[2]-trackParam->GetZ());
     } while (residue*dZ < 0 && TMath::Abs(residue) > fgkRungeKuttaMaxResidue);
-    RecoverTrackParam(v3New, chargeExtrap * forwardBackward, trackParam);
+    
+    if (v3New[5]*v3[5] < 0) { // the track turned around
+      cout<<"W-AliMUONTrackExtrap::ExtrapToZRungekutta: The track turned around"<<endl;
+      uturn = kTRUE;
+      break;
+    } else RecoverTrackParam(v3New, chargeExtrap * forwardBackward, trackParam);
+    
   }
   
   // terminate the extropolation with a straight line up to the exact "zEnd" value
-  trackParam->SetNonBendingCoor(trackParam->GetNonBendingCoor() + residue * trackParam->GetNonBendingSlope());
-  trackParam->SetBendingCoor(trackParam->GetBendingCoor() + residue * trackParam->GetBendingSlope());
-  trackParam->SetZ(zEnd);
+  if (uturn) {
+    
+    // track ends +-100 meters away in the bending direction
+    dZ = zEnd - v3[2];
+    Double_t bendingSlope = TMath::Sign(1.e4,-fgSimpleBValue*trackParam->GetInverseBendingMomentum()) / dZ;
+    Double_t pZ = TMath::Abs(1. / trackParam->GetInverseBendingMomentum()) / TMath::Sqrt(1.0 + bendingSlope * bendingSlope);
+    Double_t nonBendingSlope = TMath::Sign(TMath::Abs(v3[3]) * v3[6] / pZ, trackParam->GetNonBendingSlope());
+    trackParam->SetNonBendingCoor(trackParam->GetNonBendingCoor() + dZ * nonBendingSlope);
+    trackParam->SetNonBendingSlope(nonBendingSlope);
+    trackParam->SetBendingCoor(trackParam->GetBendingCoor() + dZ * bendingSlope);
+    trackParam->SetBendingSlope(bendingSlope);
+    trackParam->SetZ(zEnd);
+    
+    return kFALSE;
+    
+  } else {
+    
+    // track extrapolated normally
+    trackParam->SetNonBendingCoor(trackParam->GetNonBendingCoor() + residue * trackParam->GetNonBendingSlope());
+    trackParam->SetBendingCoor(trackParam->GetBendingCoor() + residue * trackParam->GetBendingSlope());
+    trackParam->SetZ(zEnd);
+    
+    return !tooManyStep;
+    
+  }
+  
 }
 
 //__________________________________________________________________________
@@ -293,24 +331,23 @@ void AliMUONTrackExtrap::RecoverTrackParam(Double_t *v3, Double_t charge, AliMUO
 }
 
 //__________________________________________________________________________
-void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator)
+Bool_t AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator)
 {
   /// Track parameters and their covariances extrapolated to the plane at "zEnd".
   /// On return, results from the extrapolation are updated in trackParam.
   
-  if (trackParam->GetZ() == zEnd) return; // nothing to be done if same z
+  if (trackParam->GetZ() == zEnd) return kTRUE; // nothing to be done if same z
   
   if (!fgFieldON) { // linear extrapolation if no magnetic field
     AliMUONTrackExtrap::LinearExtrapToZCov(trackParam,zEnd,updatePropagator);
-    return;
+    return kTRUE;
   }
   
   // No need to propagate the covariance matrix if it does not exist
   if (!trackParam->CovariancesExist()) {
     cout<<"W-AliMUONTrackExtrap::ExtrapToZCov: Covariance matrix does not exist"<<endl;
     // Extrapolate track parameters to "zEnd"
-    ExtrapToZ(trackParam,zEnd);
-    return;
+    return ExtrapToZ(trackParam,zEnd);
   }
   
   // Save the actual track parameters
@@ -322,12 +359,14 @@ void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zE
   const TMatrixD& kParamCov = trackParam->GetCovariances();
 	
   // Extrapolate track parameters to "zEnd"
-  ExtrapToZ(trackParam,zEnd);
+  // Do not update the covariance matrix if the extrapolation failed
+  if (!ExtrapToZ(trackParam,zEnd)) return kFALSE;
   
   // Get reference to the extrapolated parameters
   const TMatrixD& extrapParam = trackParam->GetParameters();
   
   // Calculate the jacobian related to the track parameters extrapolation to "zEnd"
+  Bool_t extrapStatus = kTRUE;
   TMatrixD jacob(5,5);
   jacob.Zero();
   TMatrixD dParam(5,1);
@@ -350,7 +389,10 @@ void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zE
     trackParamSave.SetZ(zBegin);
     
     // Extrapolate new track parameters to "zEnd"
-    ExtrapToZ(&trackParamSave,zEnd);
+    if (!ExtrapToZ(&trackParamSave,zEnd)) {
+      cout<<"W-AliMUONTrackExtrap::ExtrapToZCov: Bad covariance matrix"<<endl;
+      extrapStatus = kFALSE;
+    }
     
     // Calculate the jacobian
     TMatrixD jacobji(trackParamSave.GetParameters(),TMatrixD::kMinus,extrapParam);
@@ -365,6 +407,8 @@ void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zE
   
   // Update the propagator if required
   if (updatePropagator) trackParam->UpdatePropagator(jacob);
+  
+  return extrapStatus;
 }
 
 //__________________________________________________________________________

@@ -41,6 +41,10 @@
 ClassImp(AliMUONTrack) // Class implementation in ROOT context
 /// \endcond
 
+
+const Double_t AliMUONTrack::fgkMaxChi2 = 1.e10; ///< maximum chi2 above which the track can be considered as abnormal
+
+
 //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack()
   : TObject(),
@@ -382,15 +386,17 @@ void AliMUONTrack::RemoveTrackParamAtCluster(AliMUONTrackParam *trackParam)
 }
 
   //__________________________________________________________________________
-void AliMUONTrack::UpdateTrackParamAtCluster()
+Bool_t AliMUONTrack::UpdateTrackParamAtCluster()
 {
   /// Update track parameters at each attached cluster
+  /// Return kFALSE in case of failure (i.e. extrapolation problem)
   
   if (GetNClusters() == 0) {
     AliWarning("no cluster attached to the track");
-    return;
+    return kFALSE;
   }
   
+  Bool_t extrapStatus = kTRUE;
   AliMUONTrackParam* startingTrackParam = (AliMUONTrackParam*) fTrackParamAtCluster->First();
   AliMUONTrackParam* trackParamAtCluster = (AliMUONTrackParam*) fTrackParamAtCluster->After(startingTrackParam);
   while (trackParamAtCluster) {
@@ -400,26 +406,32 @@ void AliMUONTrack::UpdateTrackParamAtCluster()
     trackParamAtCluster->SetZ(startingTrackParam->GetZ());
     
     // extrapolation to the given z
-    AliMUONTrackExtrap::ExtrapToZ(trackParamAtCluster, trackParamAtCluster->GetClusterPtr()->GetZ());
+    if (!AliMUONTrackExtrap::ExtrapToZ(trackParamAtCluster, trackParamAtCluster->GetClusterPtr()->GetZ())) extrapStatus = kFALSE;
     
     // prepare next step
     startingTrackParam = trackParamAtCluster;
     trackParamAtCluster = (AliMUONTrackParam*) (fTrackParamAtCluster->After(trackParamAtCluster));
   }
 
+  // set global chi2 to max value in case of problem during track extrapolation
+  if (!extrapStatus) SetGlobalChi2(2.*MaxChi2());
+  return extrapStatus;
+  
 }
 
   //__________________________________________________________________________
-void AliMUONTrack::UpdateCovTrackParamAtCluster()
+Bool_t AliMUONTrack::UpdateCovTrackParamAtCluster()
 {
   /// Update track parameters and their covariances at each attached cluster
   /// Include effects of multiple scattering in chambers
+  /// Return kFALSE in case of failure (i.e. extrapolation problem)
   
   if (GetNClusters() == 0) {
     AliWarning("no cluster attached to the track");
-    return;
+    return kFALSE;
   }
   
+  Bool_t extrapStatus = kTRUE;
   AliMUONTrackParam* startingTrackParam = (AliMUONTrackParam*) fTrackParamAtCluster->First();
   AliMUONTrackParam* trackParamAtCluster = (AliMUONTrackParam*) fTrackParamAtCluster->After(startingTrackParam);
   Int_t expectedChamber = startingTrackParam->GetClusterPtr()->GetChamberId() + 1;
@@ -438,20 +450,24 @@ void AliMUONTrack::UpdateCovTrackParamAtCluster()
     currentChamber = trackParamAtCluster->GetClusterPtr()->GetChamberId();
     while (currentChamber > expectedChamber) {
       // extrapolation to the missing chamber
-      AliMUONTrackExtrap::ExtrapToZCov(trackParamAtCluster, AliMUONConstants::DefaultChamberZ(expectedChamber));
+      if (!AliMUONTrackExtrap::ExtrapToZCov(trackParamAtCluster, AliMUONConstants::DefaultChamberZ(expectedChamber))) extrapStatus = kFALSE;
       // add MCS effect
       AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(),1.);
       expectedChamber++;
     }
     
     // extrapolation to the z of the current cluster
-    AliMUONTrackExtrap::ExtrapToZCov(trackParamAtCluster, trackParamAtCluster->GetClusterPtr()->GetZ());
+    if (!AliMUONTrackExtrap::ExtrapToZCov(trackParamAtCluster, trackParamAtCluster->GetClusterPtr()->GetZ())) extrapStatus = kFALSE;
     
     // prepare next step
     expectedChamber = currentChamber + 1;
     startingTrackParam = trackParamAtCluster;
     trackParamAtCluster = (AliMUONTrackParam*) (fTrackParamAtCluster->After(trackParamAtCluster));
   }
+  
+  // set global chi2 to max value in case of problem during track extrapolation
+  if (!extrapStatus) SetGlobalChi2(2.*MaxChi2());
+  return extrapStatus;
   
 }
 
@@ -704,12 +720,12 @@ Double_t AliMUONTrack::ComputeGlobalChi2(Bool_t accountForMCS)
   /// Compute the chi2 of the track accounting for multiple scattering or not according to the flag
   /// - Assume that track parameters at each cluster are corrects
   /// - Assume the cluster weights matrices are corrects
-  /// - Return negative value if chi2 computation failed
+  /// - Return a value of chi2 higher than the maximum allowed if computation failed
   AliDebug(1,"Enter ComputeGlobalChi2");
   
   if (!fTrackParamAtCluster) {
     AliWarning("no cluster attached to this track");
-    return 1.e10;
+    return 2.*MaxChi2();
   }
   
   Double_t chi2 = 0.;
@@ -1046,7 +1062,7 @@ Double_t AliMUONTrack::GetNormalizedChi2() const
   /// return the chi2 value divided by the number of degrees of freedom (or FLT_MAX if ndf <= 0)
   
   Double_t ndf = (Double_t) GetNDF();
-  return (ndf > 0.) ? fGlobalChi2 / ndf : FLT_MAX;
+  return (ndf > 0.) ? fGlobalChi2 / ndf : 2.*MaxChi2();
 }
 
   //__________________________________________________________________________

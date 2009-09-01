@@ -83,7 +83,7 @@ class AliMUONVTrackReconstructor : public TObject {
   virtual void ImproveTrack(AliMUONTrack &track) = 0;
   void Finalize();
   /// Finalize the given track
-  virtual void FinalizeTrack(AliMUONTrack &track) = 0;
+  virtual Bool_t FinalizeTrack(AliMUONTrack &track) = 0;
   
   Bool_t IsAcceptable(AliMUONTrackParam &trackParam);
   

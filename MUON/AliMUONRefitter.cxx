@@ -325,7 +325,7 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(const AliMUONTrack& track)
   
   // refit the tracks and pick up the best one
   AliMUONTrack *currentTrack, *bestTrack = 0x0;
-  Double_t currentChi2, bestChi2 = 1.e10;
+  Double_t currentChi2, bestChi2 = AliMUONTrack::MaxChi2();
   Int_t currentNCluster, bestNClusters = 0;
   TIter next(newTrackStore->CreateIterator());
   while ((currentTrack = static_cast<AliMUONTrack*>(next()))) {

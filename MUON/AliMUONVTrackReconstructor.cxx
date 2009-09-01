@@ -179,8 +179,10 @@ void AliMUONVTrackReconstructor::EventReconstruct(AliMUONVClusterStore& clusterS
   for (Int_t i=0; i<fNRecTracks; ++i) 
   {
     AliMUONTrack * track = (AliMUONTrack*) fRecTracksPtr->At(i);
-    track->SetUniqueID(i+1);
-    trackStore.Add(*track);
+    if (track->GetGlobalChi2() < AliMUONTrack::MaxChi2()) {
+      track->SetUniqueID(i+1);
+      trackStore.Add(*track);
+    } else AliWarning("problem occur somewhere during track refitting --> discard track");
   }
 }
 
@@ -574,7 +576,7 @@ void AliMUONVTrackReconstructor::AskForNewClustersInChamber(const AliMUONTrackPa
   
   // extrapolate track parameters to the chamber
   AliMUONTrackParam extrapTrackParam(trackParam);
-  AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParam, AliMUONConstants::DefaultChamberZ(chamber));
+  if (!AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParam, AliMUONConstants::DefaultChamberZ(chamber))) return;
   
   // build the searching area using the track and chamber resolutions and the maximum-distance-to-track value
   const TMatrixD& kParamCov = extrapTrackParam.GetCovariances();
@@ -616,11 +618,11 @@ Double_t AliMUONVTrackReconstructor::TryOneCluster(const AliMUONTrackParam &trac
 /// return trackParamAtCluster
   
   // extrapolate track parameters and covariances at the z position of the tested cluster
+  // and set pointer to cluster into trackParamAtCluster
   trackParamAtCluster = trackParam;
-  AliMUONTrackExtrap::ExtrapToZCov(&trackParamAtCluster, cluster->GetZ(), updatePropagator);
-  
-  // set pointer to cluster into trackParamAtCluster
   trackParamAtCluster.SetClusterPtr(cluster);
+  if (!AliMUONTrackExtrap::ExtrapToZCov(&trackParamAtCluster, cluster->GetZ(), updatePropagator))
+    return 2.*AliMUONTrack::MaxChi2();
   
   // Set differences between trackParam and cluster in the bending and non bending directions
   Double_t dX = cluster->GetX() - trackParamAtCluster.GetNonBendingCoor();
@@ -634,7 +636,7 @@ Double_t AliMUONVTrackReconstructor::TryOneCluster(const AliMUONTrackParam &trac
   Double_t det     = sigmaX2 * sigmaY2 - covXY * covXY;
   
   // Compute chi2
-  if (det == 0.) return 1.e10;
+  if (det == 0.) return 2.*AliMUONTrack::MaxChi2();
   return (dX * dX * sigmaY2 + dY * dY * sigmaX2 - 2. * dX * dY * covXY) / det;
   
 }
@@ -702,7 +704,7 @@ Double_t AliMUONVTrackReconstructor::TryTwoClustersFast(const AliMUONTrackParam 
   // Compute chi2
   Double_t detX = sigma2X1 * sigma2X2 - covX1X2 * covX1X2;
   Double_t detY = sigma2Y1 * sigma2Y2 - covY1Y2 * covY1Y2;
-  if (detX == 0. || detY == 0.) return 1.e10;
+  if (detX == 0. || detY == 0.) return 2.*AliMUONTrack::MaxChi2();
   return   (dX1 * dX1 * sigma2X2 + dX2 * dX2 * sigma2X1 - 2. * dX1 * dX2 * covX1X2) / detX
   	 + (dY1 * dY1 * sigma2Y2 + dY2 * dY2 * sigma2Y1 - 2. * dY1 * dY2 * covY1Y2) / detY;
   
@@ -721,7 +723,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInChamber(AliMUONTrack &trac
   /// return kTRUE if new cluster(s) have been found (otherwise return kFALSE)
   AliDebug(1,Form("Enter FollowLinearTrackInChamber(1..) %d", nextChamber+1));
   
-  Double_t chi2WithOneCluster = 1.e10;
+  Double_t chi2WithOneCluster = AliMUONTrack::MaxChi2();
   Double_t maxChi2WithOneCluster = 2. * GetRecoParam()->GetSigmaCutForTracking() *
 					GetRecoParam()->GetSigmaCutForTracking(); // 2 because 2 quantities in chi2
   Double_t bestChi2WithOneCluster = maxChi2WithOneCluster;
@@ -856,8 +858,8 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
     ch2 = 2*nextStation+1;
   }
   
-  Double_t chi2WithOneCluster = 1.e10;
-  Double_t chi2WithTwoClusters = 1.e10;
+  Double_t chi2WithOneCluster = AliMUONTrack::MaxChi2();
+  Double_t chi2WithTwoClusters = AliMUONTrack::MaxChi2();
   Double_t maxChi2WithOneCluster = 2. * GetRecoParam()->GetSigmaCutForTracking() *
 					GetRecoParam()->GetSigmaCutForTracking(); // 2 because 2 quantities in chi2
   Double_t maxChi2WithTwoClusters = 4. * GetRecoParam()->GetSigmaCutForTracking() *
@@ -1174,19 +1176,29 @@ void AliMUONVTrackReconstructor::Finalize()
 {
   /// Recompute track parameters and covariances at each attached cluster from those at the first one
   /// Set the label pointing to the corresponding MC track
+  /// Remove the track if finalization failed
   
-  AliMUONTrack *track;
+  AliMUONTrack *track, *nextTrack;
+  Bool_t trackRemoved = kFALSE;
   
   track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
     
-    FinalizeTrack(*track);
+    nextTrack = (AliMUONTrack*) fRecTracksPtr->After(track);
     
-    track->FindMCLabel();
+    if (FinalizeTrack(*track)) track->FindMCLabel();
+    else {
+      fRecTracksPtr->Remove(track);
+      fNRecTracks--;
+      trackRemoved = kTRUE;
+    }
     
-    track = (AliMUONTrack*) fRecTracksPtr->After(track);
+    track = nextTrack;
     
   }
+  
+  // compress array of tracks if needed
+  if (trackRemoved) fRecTracksPtr->Compress();
   
 }
 
