@@ -14,6 +14,9 @@
   gSystem->Load("libHLTinterface");
   gSystem->Load("libAliHLTMUON");
   gSystem->Load("libAliHLTTPC");
+  gSystem->Load("libAliHLTTRD");
+  gSystem->Load("libTRDbase");
+  gSystem->Load("libTRDrec");
  
   cout << "Setting include path ..." << endl;
   TString includePath = "-I${ALICE_ROOT}/include ";
@@ -24,7 +27,9 @@
   includePath        += "-I${ALICE_ROOT}/HLT/BASE ";
   includePath        += "-I${ALICE_ROOT}/HLT/TPCLib ";
   includePath        += "-I${ALICE_ROOT}/HLT/BASE/HOMER ";
+  includePath        += "-I${ALICE_ROOT}/HLT/TRD ";
   includePath        += "-I${ALICE_ROOT}/TPC ";
+  includePath        += "-I${ALICE_ROOT}/TRD ";
   includePath        += "-I${ALICE_ROOT}/RAW ";
   includePath        += "-I${ALICE_ROOT}/MUON ";
   includePath        += "-I${ALICE_ROOT}/MUON/mapping ";
