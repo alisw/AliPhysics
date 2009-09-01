@@ -2075,6 +2075,7 @@ void AliTRDrawStream::MCMADCwordsWithTbins(UInt_t fTbins, struct AliTRDrawMCM *m
   if (mcm->fADCmax > 0) {
     mcm->fSingleADCwords = mcm->fMCMADCWords/mcm->fADCmax;
   }
+  if (fTbins > 32) mcm->fSingleADCwords = 10; // if the timebin is more than 30, then fix the number of adc words to 10
 }
   
 //--------------------------------------------------------
