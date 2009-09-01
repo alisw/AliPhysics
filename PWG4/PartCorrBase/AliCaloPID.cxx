@@ -15,9 +15,26 @@
 /* $Id: AliCaloPID.cxx 21839 2007-10-29 13:49:42Z gustavo $ */
 
 //_________________________________________________________________________
-// Class for track/cluster acceptance selection
-// Selection in Central barrel, EMCAL and PHOS
-//                
+// Class for PID selection with calorimeters
+// The Output of the 2 main methods GetPdg is a PDG number identifying the cluster, 
+// being kPhoton, kElectron, kPi0 ... as defined in the header file
+//   - GetPdg(const TString calo, const Double_t * pid, const Float_t energy)
+//      Reads the PID weights array of the ESDs and depending on its magnitude identifies the particle
+//   - GetPdg(const TString calo,const TLorentzVector mom, const AliAODCaloCluster * cluster)
+//      Recalcultes PID, the bayesian or any new one to be implemented in the future
+//      Right now only the possibility to recalculate EMCAL with bayesian and simple PID.
+//      In order to recalculate Bayesian, it is necessary to load the EMCALUtils library
+//      and do SwitchOnBayesianRecalculation().
+//      To change the PID parameters from Low to High like the ones by default, use the constructor 
+//      AliCaloPID(flux)
+//      where flux is AliCaloPID::kLow or AliCaloPID::kHigh
+//      If it is necessary to change the parameters use the constructor 
+//      AliCaloPID(AliEMCALPIDUtils *utils) and set the parameters before.
+//   - SetPIDBits: Simple PID, depending on the thresholds fDispCut fTOFCut and even the
+//     result of the PID bayesian a different PID bit is set. 
+//
+//  All these methods can be called in the analysis you are interested.
+//
 //*-- Author: Gustavo Conesa (LNF-INFN) 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -31,7 +48,9 @@
 #include "AliCaloPID.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODPWG4Particle.h"
-
+#ifdef __EMCALUTIL__
+#include "AliEMCALPIDUtils.h"
+#endif
 ClassImp(AliCaloPID)
 
 
@@ -44,12 +63,58 @@ fPHOSPhotonWeight(0.), fPHOSPi0Weight(0.),
 fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) , 
 fPHOSNeutralWeight(0.), fPHOSWeightFormula(0), 
 fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
-fDispCut(0.),fTOFCut(0.), fDebug(-1)
+fDispCut(0.),fTOFCut(0.), fDebug(-1), 
+fRecalculateBayesian(kFALSE), fParticleFlux(kLow)
+#ifdef __EMCALUTIL__
+, fEMCALPIDUtils(new AliEMCALPIDUtils)
+#endif
 {
   //Ctor
   
   //Initialize parameters
   InitParameters();
+}
+
+//________________________________________________
+AliCaloPID::AliCaloPID(const Int_t flux) : 
+TObject(), fEMCALPhotonWeight(0.), fEMCALPi0Weight(0.),  
+fEMCALElectronWeight(0.),  fEMCALChargeWeight(0.),
+fEMCALNeutralWeight(0.),
+fPHOSPhotonWeight(0.), fPHOSPi0Weight(0.),  
+fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) , 
+fPHOSNeutralWeight(0.), fPHOSWeightFormula(0), 
+fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
+fDispCut(0.),fTOFCut(0.), fDebug(-1), 
+fRecalculateBayesian(kTRUE), fParticleFlux(flux)
+#ifdef __EMCALUTIL__
+, fEMCALPIDUtils(new AliEMCALPIDUtils)
+#endif
+{
+	//Ctor
+	
+	//Initialize parameters
+	InitParameters();
+}
+
+//________________________________________________
+AliCaloPID::AliCaloPID(const TTask * emcalpid) : 
+TObject(), fEMCALPhotonWeight(0.), fEMCALPi0Weight(0.),  
+fEMCALElectronWeight(0.),  fEMCALChargeWeight(0.),
+fEMCALNeutralWeight(0.),
+fPHOSPhotonWeight(0.), fPHOSPi0Weight(0.),  
+fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) , 
+fPHOSNeutralWeight(0.), fPHOSWeightFormula(0), 
+fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
+fDispCut(0.),fTOFCut(0.), fDebug(-1), 
+fRecalculateBayesian(kTRUE), fParticleFlux(-1)
+#ifdef __EMCALUTIL__
+, fEMCALPIDUtils( (AliEMCALPIDUtils*) emcalpid)
+#endif
+{
+	//Ctor
+	
+	//Initialize parameters
+	InitParameters();
 }
 
 //____________________________________________________________________________
@@ -68,7 +133,11 @@ fPHOSWeightFormula(pid.fPHOSWeightFormula),
 fPHOSPhotonWeightFormula(pid.fPHOSPhotonWeightFormula), 
 fPHOSPi0WeightFormula(pid.fPHOSPi0WeightFormula), 
 fDispCut(pid.fDispCut),fTOFCut(pid.fTOFCut),
-fDebug(pid.fDebug)
+fDebug(pid.fDebug), fRecalculateBayesian(pid.fRecalculateBayesian),
+fParticleFlux(pid.fParticleFlux)
+#ifdef __EMCALUTIL__
+, fEMCALPIDUtils(pid.fEMCALPIDUtils)
+#endif
 {
   // cpy ctor
 	
@@ -101,6 +170,13 @@ AliCaloPID & AliCaloPID::operator = (const AliCaloPID & pid)
   fTOFCut   = pid.fTOFCut;
   fDebug    = pid.fDebug;
   
+  fRecalculateBayesian = pid.fRecalculateBayesian;
+  fParticleFlux        = pid.fParticleFlux;
+#ifdef __EMCALUTIL__
+  fEMCALPIDUtils       = pid.fEMCALPIDUtils;
+#endif
+	
+	
   return *this;
   
 }
@@ -111,7 +187,9 @@ AliCaloPID::~AliCaloPID() {
   
   if(fPHOSPhotonWeightFormula) delete  fPHOSPhotonWeightFormula ;
   if(fPHOSPi0WeightFormula) delete  fPHOSPi0WeightFormula ;
-  
+#ifdef __EMCALUTIL__
+	if(fEMCALPIDUtils) delete fEMCALPIDUtils ;
+#endif
 }
 
 
@@ -142,6 +220,19 @@ void AliCaloPID::InitParameters()
   fDispCut  = 1.5;
   fTOFCut   = 5.e-9;
   fDebug = -1;
+	
+  if(fRecalculateBayesian){
+#ifdef __EMCALUTIL__
+	if(fParticleFlux == kLow){
+		printf("AliCaloPID::Init() - SetLOWFluxParam\n");
+		fEMCALPIDUtils->SetLowFluxParam() ;
+	}
+	else if (fParticleFlux == kHigh){
+		printf("AliCaloPID::Init() - SetHIGHFluxParam\n");
+		fEMCALPIDUtils->SetHighFluxParam() ;
+	}
+#endif
+  }
 }
 
 //_______________________________________________________________
@@ -202,6 +293,7 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
       pdg = kNeutralUnknown ;
   }
   else{//EMCAL
+
     if(pid[AliAODCluster::kPhoton]+pid[AliAODCluster::kElectron]  > wPh) pdg = kPhoton ; //temporal sollution until track matching for electrons is considered
     //if(pid[AliAODCluster::kPhoton]  > wPh) pdg = kPhoton ;
     else if(pid[AliAODCluster::kPi0] > wPi0) pdg = kPi0 ; 
@@ -221,12 +313,38 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
 //_______________________________________________________________
 Int_t AliCaloPID::GetPdg(const TString calo,const TLorentzVector mom, const AliAODCaloCluster * cluster) const {
   //Recalculated PID with all parameters
-  if(fDebug > 0)printf("AliCaloPID::GetPdg: Calorimeter %s, E %3.2f, l0 %3.2f, l1 %3.2f, disp %3.2f, tof %1.11f, distCPV %3.2f, distToBC %1.1f, NMax %d\n",
-		       calo.Data(),mom.E(),cluster->GetM02(),cluster->GetM20(),cluster->GetDispersion(),cluster->GetTOF(), 
-		       cluster->GetEmcCpvDistance(), cluster->GetDistToBadChannel(),cluster->GetNExMax());
-  
+  Float_t lambda0 = cluster->GetM02();
+  Float_t energy = mom.E();	
+
+  if(fDebug > 0) printf("AliCaloPID::GetPdg: Calorimeter %s, E %3.2f, l0 %3.2f, l1 %3.2f, disp %3.2f, tof %1.11f, distCPV %3.2f, distToBC %1.1f, NMax %d\n",
+						calo.Data(),energy,lambda0,cluster->GetM20(),cluster->GetDispersion(),cluster->GetTOF(), 
+						cluster->GetEmcCpvDistance(), cluster->GetDistToBadChannel(),cluster->GetNExMax());
+
   if(calo == "EMCAL") {
-    if(cluster->GetM02() < 0.25) return kPhoton ;
+	  //Recalculate Bayesian
+	  if(fRecalculateBayesian){	  
+#ifdef __EMCALUTIL__
+		 
+		  if(fDebug > 0)  {
+			  const Double_t  *pid0 = cluster->PID();
+			  printf("AliCaloPID::GetPdg: BEFORE calo %s, ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, hadrons: pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
+								 calo.Data(),pid0[AliAODCluster::kPhoton], pid0[AliAODCluster::kPi0],
+								 pid0[AliAODCluster::kElectron], pid0[AliAODCluster::kEleCon],
+								 pid0[AliAODCluster::kPion], pid0[AliAODCluster::kKaon], pid0[AliAODCluster::kProton],
+								 pid0[AliAODCluster::kNeutron], pid0[AliAODCluster::kKaon0]);
+		  }
+		  
+		 fEMCALPIDUtils->ComputePID(energy, lambda0);
+		 Double_t pid[AliPID::kSPECIESN];
+		 for(Int_t i = 0; i < AliPID::kSPECIESN; i++) pid[i] = fEMCALPIDUtils->GetPIDFinal(i);
+		 return GetPdg(calo, pid, energy);
+		  
+#endif
+	  
+	}
+	  
+	// If no use of bayesian, simple PID  
+    if(lambda0 < 0.25) return kPhoton ;
     //else return  kNeutralHadron ; 
 	else return  kPi0 ;
   }
@@ -310,7 +428,8 @@ void AliCaloPID::Print(const Option_t * opt) const
   printf("TOF cut        = %e\n",fTOFCut);
   printf("Dispersion cut = %2.2f\n",fDispCut);
   printf("Debug level    = %d\n",fDebug);
-  
+  printf("Recalculate Bayesian?    = %d\n",fRecalculateBayesian);
+ if(fRecalculateBayesian) printf("Particle Flux?    = %d\n",fParticleFlux);
   printf(" \n");
   
 } 

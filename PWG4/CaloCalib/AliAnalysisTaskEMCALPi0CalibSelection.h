@@ -36,7 +36,7 @@ public:
   
   void SetClusterMinEnergy(Float_t emin) {fEmin=emin;}
   void SetLogWeight(Float_t weight) {fLogWeight=weight;}
-  void SetCalibCorrections(AliEMCALCalibData* cdata);
+  void SetCalibCorrections(AliEMCALCalibData* const cdata);
   void CreateAODFromESD();
   void CreateAODFromAOD();	
 
@@ -51,7 +51,7 @@ public:
  	
 private:
 
-  void MaxEnergyCellPos(AliAODCaloCells *cells, AliAODCaloCluster* clu, Int_t& maxId);
+  void MaxEnergyCellPos(AliAODCaloCells* const cells, AliAODCaloCluster* const clu, Int_t& maxId);
 
 private:
 
