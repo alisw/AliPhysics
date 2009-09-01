@@ -1023,7 +1023,7 @@ Bool_t AliTRDrawStream::DecodeSM(void * const buffer, UInt_t length)
                                                       // we don't seek ENDOFRAWDATAMARKER
           if (fgWarnError) {
             AliError(Form("Failed HC : %s", DumpHCinfoH0(fHC)));
-            AliError(Form("Failed HC : %s", DumpHCinfoH1(fHC)));
+            //AliError(Form("Failed HC : %s", DumpHCinfoH1(fHC)));
           }
                 
           continue;
