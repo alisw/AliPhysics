@@ -52,9 +52,9 @@ fEMCALGeoName("EMCAL_COMPLETE"), fOldData(kFALSE),fOutputContainer(0x0),fHmgg(0x
 {
   //Default constructor.
 
-  for(Int_t iMod=0; iMod<5; iMod++) {
-    for(Int_t iX=0; iX<64; iX++) {
-      for(Int_t iZ=0; iZ<56; iZ++) {
+  for(Int_t iMod=0; iMod < 12; iMod++) {
+    for(Int_t iX=0; iX<24; iX++) {
+      for(Int_t iZ=0; iZ<48; iZ++) {
 	fHmpi0[iMod][iX][iZ]=0;
       }
     } 
@@ -71,9 +71,9 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
   
   DefineOutput(1,TList::Class());
   
-  for(Int_t iMod=0; iMod<5; iMod++) {
-    for(Int_t iX=0; iX<64; iX++) {
-      for(Int_t iZ=0; iZ<56; iZ++) {
+  for(Int_t iMod=0; iMod < 12; iMod++) {
+    for(Int_t iX=0; iX<24; iX++) {
+      for(Int_t iZ=0; iZ<48; iZ++) {
 	fHmpi0[iMod][iX][iZ]=0;
       }
     } 
@@ -431,7 +431,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   else{	
     if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Load Misaligned matrices. \n");
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
-    for(Int_t mod=0; mod<5; mod++){ 
+    for(Int_t mod=0; mod < 12; mod++){ 
       if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
     }
   }
@@ -561,7 +561,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
 }
 
 //__________________________________________________
-void AliAnalysisTaskEMCALPi0CalibSelection::MaxEnergyCellPos(AliAODCaloCells *cells, AliAODCaloCluster* clu, Int_t& maxId)
+void AliAnalysisTaskEMCALPi0CalibSelection::MaxEnergyCellPos(AliAODCaloCells* const cells, AliAODCaloCluster* const clu, Int_t& maxId)
 {
   //For a given CaloCluster calculates the absId of the cell 
   //with maximum energy deposit.
@@ -580,7 +580,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::MaxEnergyCellPos(AliAODCaloCells *ce
 }
 
 //__________________________________________________
-void AliAnalysisTaskEMCALPi0CalibSelection::SetCalibCorrections(AliEMCALCalibData* cdata)
+void AliAnalysisTaskEMCALPi0CalibSelection::SetCalibCorrections(AliEMCALCalibData* const cdata)
 {
   //Set new correction factors (~1) to calibration coefficients, delete previous.
 

@@ -5,8 +5,25 @@
 /* $Id:  $ */
 
 //_________________________________________________________________________
-// Class for track/cluster acceptance selection
-// Selection in Central barrel, EMCAL and PHOS
+// Class for PID selection with calorimeters
+// The Output of the 2 main methods GetPdg is a PDG number identifying the cluster, 
+// being kPhoton, kElectron, kPi0 ... as defined in the header file
+//   - GetPdg(const TString calo, const Double_t * pid, const Float_t energy)
+//      Reads the PID weights array of the ESDs and depending on its magnitude identifies the particle
+//   - GetPdg(const TString calo,const TLorentzVector mom, const AliAODCaloCluster * cluster)
+//      Recalcultes PID, the bayesian or any new one to be implemented in the future
+//      Right now only the possibility to recalculate EMCAL with bayesian and simple PID.
+//      In order to recalculate Bayesian, it is necessary to load the EMCALUtils library
+//      and do SwitchOnBayesianRecalculation().
+//      To change the PID parameters from Low to High like the ones by default, use the constructor 
+//      AliCaloPID(flux)
+//      where flux is AliCaloPID::kLow or AliCaloPID::kHigh
+//      If it is necessary to change the parameters use the constructor 
+//      AliCaloPID(AliEMCALPIDUtils *utils) and set the parameters before.
+//   - SetPIDBits: Simple PID, depending on the thresholds fDispCut fTOFCut and even the
+//     result of the PID bayesian a different PID bit is set. 
+//
+//  All these methods can be called in the analysis you are interested.
 //
 //*-- Author: Gustavo Conesa (INFN-LNF)
 
@@ -15,16 +32,22 @@
 class TString ;
 class TLorentzVector ;
 class TFormula ;
+class TTask;
 
 //--- AliRoot system ---
 class AliAODCaloCluster;
 class AliAODPWG4Particle;
+#ifdef __EMCALUTIL__
+class AliEMCALPIDUtils;
+#endif
 
 class AliCaloPID : public TObject {
 	
  public: 
   
   AliCaloPID() ; // ctor
+  AliCaloPID(const Int_t particleFlux) ; // ctor, to be used when recalculating bayesian PID
+  AliCaloPID(const TTask * emcalpid) ; // ctor, to be used when recalculating bayesian PID and need different parameters
   AliCaloPID(const AliCaloPID & g) ; // cpy ctor
   AliCaloPID & operator = (const AliCaloPID & g) ;//cpy assignment
   virtual ~AliCaloPID() ;//virtual dtor
@@ -84,8 +107,8 @@ class AliCaloPID : public TObject {
   void SetPHOSNeutralWeight(Float_t  w){  fPHOSNeutralWeight = w ; }
   
   void UsePHOSPIDWeightFormula(Bool_t par)  { fPHOSWeightFormula  = par; } 
-  void SetPHOSPhotonWeightFormula(TFormula * photon)    {  fPHOSPhotonWeightFormula  = photon; } 
-  void SetPHOSPi0WeightFormula(TFormula * pi0)   {  fPHOSPi0WeightFormula  = pi0; }
+  void SetPHOSPhotonWeightFormula(TFormula * const photon)    {  fPHOSPhotonWeightFormula  = photon; } 
+  void SetPHOSPi0WeightFormula(TFormula * const pi0)   {  fPHOSPi0WeightFormula  = pi0; }
   
   //PID bits setters and getters
   void SetDispersionCut(Float_t dcut ) {fDispCut = dcut; }
@@ -97,6 +120,12 @@ class AliCaloPID : public TObject {
   void SetDebug(Int_t deb) {fDebug=deb;}
   Int_t GetDebug() const {return fDebug;}	
   
+  void SwitchOnBayesianRecalculation()  {fRecalculateBayesian = kTRUE ; }
+  void SwitchOffBayesianRecalculation() {fRecalculateBayesian = kFALSE; }
+  enum eventType{kLow,kHigh};
+  void SetLowParticleFlux()  {fParticleFlux = kLow;}
+  void SetHighParticleFlux() {fParticleFlux = kHigh;}
+
  private:
   
   Float_t      fEMCALPhotonWeight; //Bayesian PID weight for photons in EMCAL 
@@ -118,8 +147,15 @@ class AliCaloPID : public TObject {
   Float_t fTOFCut;     //Cut on TOF, used in PID evaluation
   
   Int_t	 fDebug; //Debug level
-  
-  ClassDef(AliCaloPID,3)
+	
+  Bool_t fRecalculateBayesian; // Recalculate PID bayesian or use simple PID?
+  Int_t  fParticleFlux;        // Particle flux for setting PID parameters
+#ifdef __EMCALUTIL__
+	AliEMCALPIDUtils * fEMCALPIDUtils; //Pointer to EMCALPID to redo the PID Bayesian calculation
+#endif
+	
+	
+  ClassDef(AliCaloPID,4)
     } ;
 
 
