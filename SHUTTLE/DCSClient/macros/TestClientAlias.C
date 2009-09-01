@@ -103,17 +103,10 @@ TMap* TestClientAlias(const char* host, Int_t port, const char* request,
 	TTimeStamp currentTime;
 
 	
-/*	
 	TMap* values = GetValues(host, port, request,
 		currentTime.GetSec() - startShift, 
 		currentTime.GetSec() - endShift, multiSplit);
-*/
 		
-// SHUTTLE query interval 
-	
-	TMap* values = GetValues(host, port, request,
-		1181300060, 1181307260, multiSplit);
-
 	if(values) values->Print();
 
 	cout << endl;
