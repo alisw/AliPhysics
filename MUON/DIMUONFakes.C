@@ -57,22 +57,22 @@ void DIMUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent
   // File for histograms and histogram booking
   TFile *histoFile = new TFile("DiFakes.root", "RECREATE");
   
-  TH1F *hMass = new TH1F("hMass", "Muon mass distribution (GeV/c^{2})", 100, 0., 12.);
+  TH1F *hMass = new TH1F("hMass", "Dimuon mass distribution (GeV/c^{2})", 100, 0., 12.);
   TH1F *hMassM = new TH1F("hMassM", "matched track mass distribution (GeV/c^{2})", 100, 0., 12.);
   TH1F *hMassF = new TH1F("hMassF", "fake track mass distribution (GeV/c^{2})", 100, 0., 12.);
-  TH1F *hP = new TH1F("hP", "Muon P distribution (GeV/c)", 100, 0., 200.);
+  TH1F *hP = new TH1F("hP", "Dimuon P distribution (GeV/c)", 100, 0., 200.);
   TH1F *hPM = new TH1F("hPM", "matched track P distribution (GeV/c)", 100, 0., 200.);
   TH1F *hPF = new TH1F("hPF", "fake track P distribution (GeV/c)", 100, 0., 200.);
-  TH1F *hPt = new TH1F("hPt", "Muon Pt distribution (GeV/c)", 100, 0., 20.);
+  TH1F *hPt = new TH1F("hPt", "Dimuon Pt distribution (GeV/c)", 100, 0., 20.);
   TH1F *hPtM = new TH1F("hPtM", "matched track Pt distribution (GeV/c)", 100, 0., 20.);
   TH1F *hPtF = new TH1F("hPtF", "fake track Pt distribution (GeV/c)", 100, 0., 20.);
-  TH1F *hY = new TH1F("hY"," Muon rapidity distribution",100,-10,0);
+  TH1F *hY = new TH1F("hY"," Dimuon rapidity distribution",100,-10,0);
   TH1F *hYM = new TH1F("hYM"," matched track rapidity distribution",100,-10,0);
   TH1F *hYF = new TH1F("hYF"," fake track rapidity distribution",100,-10,0);
-  TH1F *hEta = new TH1F("hEta"," Muon pseudo-rapidity distribution",100,-10,0);
+  TH1F *hEta = new TH1F("hEta"," Dimuon pseudo-rapidity distribution",100,-10,0);
   TH1F *hEtaM = new TH1F("hEtaM"," matched track pseudo-rapidity distribution",100,-10,0);
   TH1F *hEtaF = new TH1F("hEtaF"," fake track pseudo-rapidity distribution",100,-10,0);
-  TH1F *hPhi = new TH1F("hPhi"," Muon phi distribution",100,-1.,9.);
+  TH1F *hPhi = new TH1F("hPhi"," Dimuon phi distribution",100,-1.,9.);
   TH1F *hPhiM = new TH1F("hPhiM"," matched track phi distribution",100,-1.,9.);
   TH1F *hPhiF = new TH1F("hPhiF"," fake track phi distribution",100,-1.,9.);
   
@@ -171,7 +171,7 @@ void DIMUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent
 	Float_t pt = vDiMu.Pt();
 	Float_t y = vDiMu.Rapidity();
 	Float_t eta = vDiMu.Eta();
-	Float_t phi = vMu1.Phi();
+	Float_t phi = vDiMu.Phi();
 	if (phi < 0) phi += 2.*TMath::Pi();
 	
 	// fill global histograms

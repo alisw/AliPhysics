@@ -8,6 +8,7 @@
 #include <TROOT.h>
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
+#include <TArrayI.h>
 
 // STEER includes
 #include "AliLog.h"
@@ -100,12 +101,20 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
   AliMUONRecoCheck rc(esdFileName, SimDir);
   
   // initialize global counters
+  Int_t nReconstructibleTracks = 0;
+  Int_t nReconstructedTracks = 0;
+  Int_t nEventsWithTrackReconstructedYet = 0;
   Int_t nEventsWithFake = 0;
   Int_t nEventsWithAdditionalFake = 0;
   Int_t nTotMatchedTracks = 0;
   Int_t nTotTracksReconstructedYet = 0;
   Int_t nTotFakeTracks = 0;
+  Int_t nTotConnectedTracks = 0;
   Int_t nTotAdditionalTracks = 0;
+  Bool_t trackReconstructedYet;
+  TArrayI eventsWithTrackReconstructedYet(10);
+  TArrayI eventsWithFake(10);
+  TArrayI eventsWithAdditionalFake(10);
   
   // Loop over ESD events
   FirstEvent = TMath::Max(0, FirstEvent);
@@ -122,8 +131,16 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
     // convert TrackRef to MUON tracks
     AliMUONVTrackStore* trackRefStore = rc.TrackRefs(iEvent);
     
+    // count the number of reconstructible tracks
+    TIter next(trackRefStore->CreateIterator());
+    AliMUONTrack* trackRef;
+    while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) ) {
+      if (IsRecontructible(*trackRef,*recoParam)) nReconstructibleTracks++;
+    }
+    
     // loop over ESD tracks
     Int_t nTrackerTracks = 0;
+    trackReconstructedYet = kFALSE;
     AliMUONVTrackStore *fakeTrackStore = AliMUONESDInterface::NewTrackStore();
     Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks() ;
     for (Int_t iTrack = 0; iTrack <  nTracks;  iTrack++) {
@@ -159,7 +176,10 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
 	
 	// global counter
 	nTotMatchedTracks++;
-	if (!IsRecontructible(*matchedTrackRef,*recoParam)) nTotTracksReconstructedYet++;
+	if (!IsRecontructible(*matchedTrackRef,*recoParam)) {
+	  trackReconstructedYet = kTRUE;
+	  nTotTracksReconstructedYet++;
+	}
 	
 	// fill histograms
 	hFractionOfMatchedClusters->Fill(fractionOfMatchCluster);
@@ -196,6 +216,8 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
     
     // fill histograms
     hNumberOfTracks->Fill(nTrackerTracks);
+    nReconstructedTracks += nTrackerTracks;
+    if (trackReconstructedYet) eventsWithTrackReconstructedYet[nEventsWithTrackReconstructedYet++] = iEvent;
     
     // count the number the additional fake tracks
     if (fakeTrackStore->GetSize() > 0) {
@@ -208,8 +230,10 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
       Int_t nAdditionalTracks = fakeTrackStore->GetSize() - nFreeMissingTracks;
       
       // fill histograms
+      eventsWithFake[nEventsWithFake] = iEvent;
       nEventsWithFake++;
       if (nAdditionalTracks > 0) {
+	eventsWithAdditionalFake[nEventsWithAdditionalFake] = iEvent;
 	nEventsWithAdditionalFake++;
 	nTotAdditionalTracks += nAdditionalTracks;
 	hNumberOfAdditionalTracks->Fill(nAdditionalTracks);
@@ -220,6 +244,9 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
     delete fakeTrackStore;
     
   } // end of loop over events
+
+  // total number of connected tracks
+  nTotConnectedTracks = hFractionOfConnectedClusters->GetEntries();
   
   // plot results
   TCanvas cFakesSummary("cFakesSummary","cFakesSummary",900,600);
@@ -293,12 +320,36 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
   
   // print results
   cout << endl;
+  cout << "- Number of reconstructible tracks: " << nReconstructibleTracks << endl;
+  cout << "- Number of reconstructed tracks: " << nReconstructedTracks << endl;
   cout << "- Number of matched tracks: " << nTotMatchedTracks << endl;
-  cout << "  (including " << nTotTracksReconstructedYet << " tracks matched with a TrackRef that is not reconstructible)" << endl;
+  cout << "  (including " << nTotTracksReconstructedYet << " track(s) matched with a TrackRef that is not reconstructible";
+  if (nTotTracksReconstructedYet > 0) {
+    for(Int_t i=0; i<nEventsWithTrackReconstructedYet; i++){
+      if (i==0) cout << " (eventID = " << eventsWithTrackReconstructedYet[i];
+      else cout << ", " << eventsWithTrackReconstructedYet[i];
+    }
+    cout << "))" << endl;
+  } else cout << ")" << endl;
   cout << "- Number of fake tracks: " << nTotFakeTracks << endl;
-  cout << "  (including " << nTotAdditionalTracks << " additional tracks (compared to the number of expected ones))" << endl;
-  cout << "- Number of events with fake track(s): " << nEventsWithFake << endl;
-  cout << "  (including " << nEventsWithAdditionalFake << " events with additional tracks)" << endl;
+  cout << "  (including " << nTotConnectedTracks << " track(s) still connected to a reconstructible one)" << endl;
+  cout << "  (including " << nTotAdditionalTracks << " additional track(s) (compared to the number of expected ones))" << endl;
+  cout << "- Number of events with fake track(s): " << nEventsWithFake;
+  if (nEventsWithFake > 0) {
+    for(Int_t i=0; i<nEventsWithFake; i++){
+      if (i==0) cout << " (eventID = " << eventsWithFake[i];
+      else cout << ", " << eventsWithFake[i];
+    }
+    cout << ")" << endl;
+  } else cout << endl;
+  cout << "  (including " << nEventsWithAdditionalFake << " events with additional track(s)";
+  if (nEventsWithAdditionalFake > 0) {
+    for(Int_t i=0; i<nEventsWithAdditionalFake; i++){
+      if (i==0) cout << " (eventID = " << eventsWithAdditionalFake[i];
+      else cout << ", " << eventsWithAdditionalFake[i];
+    }
+    cout << "))" << endl;
+  } else cout << ")" << endl;
   cout << endl;
   cout << "REMINDER: results are relevent provided that you use the same recoParams as for the reconstruction" << endl;
   cout << endl;
