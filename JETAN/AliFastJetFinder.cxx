@@ -66,8 +66,8 @@ ClassImp(AliFastJetFinder)
 
 AliFastJetFinder::AliFastJetFinder():
   AliJetFinder(),
-  fInputFJ(0),
-  fJetBkg(0)
+  fInputFJ(new AliFastJetInput()),
+  fJetBkg(new  AliJetBkg())
 {
   // Constructor
 }
@@ -77,6 +77,8 @@ AliFastJetFinder::AliFastJetFinder():
 AliFastJetFinder::~AliFastJetFinder()
 {
   // destructor
+  delete  fInputFJ; fInputFJ = 0;
+  delete  fJetBkg; fJetBkg = 0;
 }
 
 //______________________________________________________________________________
@@ -400,6 +402,41 @@ void AliFastJetFinder::InitTask(TChain *tree)
 
   printf("Fast jet finder initialization ******************");
   fReader->CreateTasks(tree);
+
+}
+
+
+Bool_t AliFastJetFinder::ProcessEvent()
+{
+  //
+  // Process one event
+  // from meomntum array
+
+  Bool_t ok = fReader->FillMomentumArray();
+
+  if (!ok) return kFALSE;
+  fInputFJ->SetHeader(fHeader);
+  fInputFJ->SetReader(fReader);
+  fInputFJ->FillInput();
+  // Jets
+  FindJets(); 
+
+  fJetBkg->SetHeader(fHeader);
+  fJetBkg->SetReader(fReader);
+  /*
+  fJetBkg->SetFastJetInput(fInputFJ);
+  Double_t bkg1=fJetBkg->BkgFastJet();
+  Double_t bkg2=fJetBkg->BkgChargedFastJet();
+  Double_t bkg3=fJetBkg->BkgFastJetCone(fAODjets);
+  Double_t bkg4=fJetBkg->BkgRemoveJetLeading(fAODjets);
+  
+  fAODEvBkg->SetBackground(0,bkg1);
+  fAODEvBkg->SetBackground(1,bkg2);
+  fAODEvBkg->SetBackground(2,bkg3);
+  fAODEvBkg->SetBackground(3,bkg4);
+  */
+  Reset();  
+  return kTRUE;
 
 }
 

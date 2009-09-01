@@ -43,12 +43,13 @@ class AliFastJetFinder : public AliJetFinder
   AliFastJetFinder();
   ~AliFastJetFinder();
 
-  void    FindJets(); 
+  virtual void    FindJets(); 
   void    RunTest(const char* datafile); // a simple test
-  void    WriteJHeaderToFile();
+  virtual void    WriteJHeaderToFile();
   Float_t EtaToTheta(Float_t arg);
   void    InitTask(TChain* tree);
-  Bool_t  ProcessEvent2();
+  virtual Bool_t ProcessEvent();
+  virtual Bool_t  ProcessEvent2();
   
       
   protected:
