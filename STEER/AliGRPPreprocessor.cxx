@@ -36,7 +36,7 @@
 #include "AliDCSSensor.h"
 #include "AliSplineFit.h"
 #include "AliDCSSensorArray.h"
-//#include "AliRawEventHeaderVersions.h"
+#include "AliRawEventHeaderVersions.h"
 
 #include "AliTriggerConfiguration.h"
 #include "AliTriggerRunScalers.h"
@@ -525,7 +525,7 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 {
 	//======DAQ FXS======//
 	
-	//	AliRawEventHeaderV3_9::Class()->IgnoreTObjectStreamer(); // to avoid trying reading TObject store in AliRawEventHeaderV3_9 - temporary fix 
+	AliRawEventHeaderV3_9::Class()->IgnoreTObjectStreamer(); // to avoid trying reading TObject store in AliRawEventHeaderV3_9 - temporary fix 
 	TList* list = GetFileSources(kDAQ);  
 	if (!list) {
 		Log("No raw data tag list: connection problems with DAQ FXS logbook!");
