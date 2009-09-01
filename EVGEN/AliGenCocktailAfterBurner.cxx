@@ -55,6 +55,7 @@ ClassImp(AliGenCocktailAfterBurner)
 	fGenerationDone(kFALSE),
 	fInternalStacks(0),
 	fCollisionGeometries(0),
+	fHeaders(0),
 	fCurrentEvent(0),
 	fActiveStack(0),
 	fActiveEvent(-1),
@@ -81,6 +82,7 @@ AliGenCocktailAfterBurner::~AliGenCocktailAfterBurner()
     }
     if (fAfterBurnerEntries) delete fAfterBurnerEntries; //delete entries
     delete[] fCollisionGeometries;
+    delete[] fHeaders;
   }
 /*********************************************************************/ 
 /*********************************************************************/ 
@@ -162,17 +164,7 @@ void AliGenCocktailAfterBurner::Generate()
           <<"#AliGenCocktailAfterBurner::Generate#"<<endl
           <<"#####################################"<<endl;
     // Initialize header
-    if (fHeader) delete fHeader;
-    fHeader = new AliGenCocktailEventHeader("Cocktail Header");
     //
-    //
-//  Generate the vertex position used by all generators
-//    
-    if(fVertexSmear == kPerEvent) Vertex();
-    TArrayF eventVertex;
-    eventVertex.Set(3);
-    for (Int_t j=0; j < 3; j++) eventVertex[j] = fVertex[j];
-
     Int_t i; //iterator
     AliStack * stack;
     
@@ -180,23 +172,31 @@ void AliGenCocktailAfterBurner::Generate()
     {//if generation is done (in first call) 
      //just copy particles from the stack to the gAlice
       SetTracks(++fCurrentEvent);
-      cout<<"Returning event "<<fCurrentEvent<<endl;
+      fHeader = fHeaders[fCurrentEvent];
+      gAlice->SetGenEventHeader(fHeader); 
+      cout<<"Returning event " << fCurrentEvent<<endl;
       return;  
     }
     else
     { //Here we are in the first call of the method
-      fCurrentEvent=0;
-      Int_t numberOfEvents = AliRunLoader::Instance()->GetNumberOfEventsPerRun();
-      cout << "Number of events per run" <<  numberOfEvents << endl;
-      
+	Int_t numberOfEvents = AliRunLoader::Instance()->GetNumberOfEventsPerRun();
+	cout << "Number of events per run" <<  numberOfEvents << endl;
+	TArrayF eventVertex;
+	eventVertex.Set(3 * (numberOfEvents + fNBgEvents));
+	fCurrentEvent=0;
       //Create stacks
-      fInternalStacks      = new TObjArray(numberOfEvents + fNBgEvents); //Create array of internal stacks
-      fCollisionGeometries = new AliCollisionGeometry*[numberOfEvents + fNBgEvents]; //Create array of collision geometries
-      for(i=0;i<numberOfEvents + fNBgEvents;i++) 
+	fInternalStacks      = new TObjArray(numberOfEvents + fNBgEvents); //Create array of internal stacks
+	fCollisionGeometries = new AliCollisionGeometry*[numberOfEvents + fNBgEvents]; //Create array of collision geometries
+	fHeaders             = new AliGenCocktailEventHeader*[numberOfEvents + fNBgEvents]; //Create array of headers   
+
+	for(i = 0; i < numberOfEvents + fNBgEvents; i++) 
        {	
-        stack = new AliStack(10000);
-        stack->Reset();
-        fInternalStacks->Add(stack);
+	   stack = new AliStack(10000);
+	   stack->Reset();
+	   fInternalStacks->Add(stack);
+	   Vertex();
+	   for (Int_t j = 0; j < 3; j++) eventVertex[3 * i +  j] = fVertex[j];
+
        }
 /*********************************************************************/ 
       TIter next(fEntries);
@@ -213,7 +213,7 @@ void AliGenCocktailAfterBurner::Generate()
         cout<<"Generator "<<igen<<"  : "<<entry->GetName()<<endl;
 /***********************************************/
 //First generator for all evenets, than second for all events, etc...
-        for(i=0;i<numberOfEvents + fNBgEvents;i++) 
+        for(i = 0; i < numberOfEvents + fNBgEvents; i++) 
 	{  
 	    cout<<"                  EVENT "<<i << endl;
             stack = GetStack(i);
@@ -228,15 +228,24 @@ void AliGenCocktailAfterBurner::Generate()
 	    {
                 entry->SetFirst((partArray->GetEntriesFast())+1);
 	    }
-	    fCurrentGenerator->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+	    // Set the vertex for the generator
+	    Int_t ioff = 3 * i;
+	    fCurrentGenerator->SetVertex(eventVertex.At(ioff), eventVertex.At(ioff + 1), eventVertex.At(ioff + 2));
+	    fHeader = fHeaders[i];
+	    // Set the vertex for the cocktail
+	    TArrayF v(3);
+	    for (Int_t j=0; j<3; j++) v[j] = eventVertex.At(ioff + j);
+	    fHeader->SetPrimaryVertex(v);
+	    // Generate event
 	    fCurrentGenerator->Generate();
+	    //
 	    entry->SetLast(partArray->GetEntriesFast());
 	    
 	    if (fCurrentGenerator->ProvidesCollisionGeometry())  fCollisionGeometries[i] = fCurrentGenerator->CollisionGeometry();
 	    
-	}
+	} // event loop
 /***********************************************/
-      }
+      } // generator loop
       next.Reset();
       while((entry = (AliGenCocktailEntry*)next())) 
         {
@@ -279,9 +288,9 @@ void AliGenCocktailAfterBurner::Generate()
 	
 /*********************************************************************/
       // Pass the header to gAlice
-      fHeader->SetPrimaryVertex(eventVertex);
+      fHeader = fHeaders[0];
       gAlice->SetGenEventHeader(fHeader); 
-    }//else generated
+    } //else generated
 }
 /*********************************************************************/
 /*********************************************************************/ 
@@ -371,9 +380,7 @@ void AliGenCocktailAfterBurner::SetTracks(Int_t stackno)
 
       gAlice->GetMCApp()->PushTrack(done, parent, pdg, px, py, pz, e, vx, vy, vz, tof,polx, poly, polz, mech, ntr, weight);
 
-// ANDREAS MORSCH ---------------------------------------------------(
       SetHighWaterMark(ntr) ; 
-// ANDREAS MORSCH ---------------------------------------------------)
 
     }
 }

@@ -17,10 +17,9 @@
 
 class AliGenCocktailEntry;
 class AliStack;
-
-// ANDREAS MORSCH ------------------------------------- (
 class AliCollisionGeometry;
-// ANDREAS MORSCH ------------------------------------- )
+class AliGenCocktailEventHeader;
+
 
 class AliGenCocktailAfterBurner : public  AliGenCocktail
 {
@@ -43,9 +42,7 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
     AliStack*     GetStack(Int_t n) const;
     AliStack*     GetActiveStack() const{return fActiveStack;}
 
-// ANDREAS MORSCH ------------------------------------- (
     AliCollisionGeometry* GetCollisionGeometry(Int_t n) const;
-// ANDREAS MORSCH ------------------------------------- )
  
     AliGenerator* GetCurrentGenerator() const;
     virtual void  SetActiveEventNumber(Int_t actev);
@@ -64,9 +61,8 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
                                 //   
     TObjArray *fInternalStacks; //! List of internal stacks
 
-// ANDREAS MORSCH ------------------------------------- (
-    AliCollisionGeometry** fCollisionGeometries; //! List of Collision Geometries
-// ANDREAS MORSCH ------------------------------------- )
+    AliCollisionGeometry**      fCollisionGeometries; //! List of Collision Geometries
+    AliGenCocktailEventHeader** fHeaders;             //! List of Headers
     
     Int_t fCurrentEvent;        //  Number of current event/stack
     
