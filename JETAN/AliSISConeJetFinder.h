@@ -29,7 +29,7 @@
 #include <vector> 
 #include <cmath> 
 
-#include "AliFastJetHeader.h"
+#include "AliFastJetHeaderV1.h"
 #include "AliJetFinder.h"
 
 using namespace std;
