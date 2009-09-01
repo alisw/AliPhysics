@@ -99,10 +99,10 @@ Int_t AliEveHOMERManager::CreateEveSourcesListLoop() {
       break;
     
     else if (iResult == 1) {
-      HLTWarning( Form("Couldn't find active services, sleeping %d s\n", fRetryCount) ) ;
+      HLTWarning( Form("Couldn't find active services, sleeping %d s", fRetryCount) ) ;
     }   
     else if (iResult == 2) {
-      HLTWarning( Form("Services List empty, sleeping %d s\n", fRetryCount) ) ;
+      HLTWarning( Form("Services List empty, sleeping %d s", fRetryCount) ) ;
     }
     else {
       HLTError( Form("Other problem ... \n") ); 
@@ -113,7 +113,7 @@ Int_t AliEveHOMERManager::CreateEveSourcesListLoop() {
   }
 
   if ( iResult ) {
-    HLTError( Form("Couldn't find active services.\n") );
+    HLTWarning( Form("Couldn't find active services.") );
     return iResult;
   } 
   
@@ -121,10 +121,10 @@ Int_t AliEveHOMERManager::CreateEveSourcesListLoop() {
 }
 
 //##################################################################################
-Int_t AliEveHOMERManager::ConnectEVEtoHOMER() {
+Int_t AliEveHOMERManager::ConnectEVEtoHOMER( TString detector ) {
   // see header file for class documentation
 
   fStateHasChanged = fSrcList->GetSelectedSources();
   
-  return ConnectHOMER();
+  return ConnectHOMER(detector);
 }

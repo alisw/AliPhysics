@@ -32,7 +32,7 @@
    using namespace std;
 #endif
 
-#define EVE_DEBUG 0
+#define EVE_DEBUG 1
 
 #include "AliHLTHOMERManager.h"
 // -- -- -- -- -- -- -- 
@@ -313,7 +313,7 @@ Int_t AliHLTHOMERManager::NextEvent(){
       return -iResult;
     }
     else if ( iResult == 110 ) {
-      HLTError(Form("Timout occured, reading event from source %d: %s (%d)", 
+      HLTError(Form("Timeout occured, reading event from source %d: %s (%d)", 
 		    fReader->GetErrorConnectionNdx(), strerror(iResult), iResult));
       return -iResult;
     }

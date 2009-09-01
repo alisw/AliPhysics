@@ -56,7 +56,7 @@ public:
 
   Int_t CreateEveSourcesListLoop();
   
-  Int_t ConnectEVEtoHOMER();
+  Int_t ConnectEVEtoHOMER(TString detector="ALL");
 
   void SetRetryCount(Int_t count, Int_t sleeptime) { fRetryCount = count; fRetrySleeptime = sleeptime; }
 
