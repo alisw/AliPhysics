@@ -225,6 +225,10 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 
 	  AliJetUnitArray *uArray = (AliJetUnitArray*)fUnitArray->At(idTPC-1);
 	  TRefArray *reference = uArray->GetUnitTrackRef();
+	  if (reference->GetEntries() == 0)  {
+	      new(reference) TRefArray(TProcessID::GetProcessWithUID(track));
+	  }
+	      
 	  reference->Add(track);
 
 	  Float_t unitEnergy = 0.;
@@ -294,6 +298,10 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 		    Int_t id0 = fGrid0->GetIndex(phi,eta)-1;
 		    AliJetUnitArray *uArray0 = (AliJetUnitArray*)fUnitArray->At(id0+fNumUnits+nElements);
 		    TRefArray *reference0 = uArray0->GetUnitTrackRef();
+		    if (reference0->GetEntries() == 0) {
+			new(reference0) TRefArray(TProcessID::GetProcessWithUID(track));
+		    }
+
 		    reference0->Add(track);
 		    uArray0->SetUnitTrackID(it);
 
@@ -331,6 +339,10 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 		    Int_t id1 = fGrid1->GetIndex(phi,eta)-1+n0;
 		    AliJetUnitArray *uArray1 = (AliJetUnitArray*)fUnitArray->At(id1+fNumUnits+nElements);
 		    TRefArray *reference1 = uArray1->GetUnitTrackRef();
+		    if (reference1->GetEntries() == 0) {
+			new(reference1) TRefArray(TProcessID::GetProcessWithUID(track));
+		    }
+
 		    reference1->Add(track);
 
 		    Float_t uEnergy1 = uArray1->GetUnitEnergy();
@@ -367,6 +379,10 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 		    Int_t id2 = fGrid2->GetIndex(phi,eta)-1+n0+n1;
 		    AliJetUnitArray *uArray2 = (AliJetUnitArray*)fUnitArray->At(id2+fNumUnits+nElements);
 		    TRefArray *reference2 = uArray2->GetUnitTrackRef();
+		    if (reference2->GetEntries() == 0) {
+			new(reference2) TRefArray(TProcessID::GetProcessWithUID(track));
+		    }
+
 		    reference2->Add(track);
 
 		    Float_t uEnergy2 = uArray2->GetUnitEnergy();
@@ -403,6 +419,10 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 		    Int_t id3 = fGrid3->GetIndex(phi,eta)-1+n0+n1+n2;
 		    AliJetUnitArray *uArray3 = (AliJetUnitArray*)fUnitArray->At(id3+fNumUnits+nElements);
 		    TRefArray *reference3 = uArray3->GetUnitTrackRef();
+		    if (reference3->GetEntries() == 0) {
+			new(reference3) TRefArray(TProcessID::GetProcessWithUID(track));
+		    }
+
 		    reference3->Add(track);
 
 		    Float_t uEnergy3 = uArray3->GetUnitEnergy();
@@ -439,6 +459,10 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 		    Int_t id4 = fGrid4->GetIndex(phi,eta)-1+n0+n1+n2+n3;
 		    AliJetUnitArray *uArray4 = (AliJetUnitArray*)fUnitArray->At(id4+fNumUnits+nElements);
 		    TRefArray *reference4 = uArray4->GetUnitTrackRef();
+		    if (reference4->GetEntries() == 0) {
+			new(reference4) TRefArray(TProcessID::GetProcessWithUID(track));
+		    }
+
 		    reference4->Add(track);
 
 		    Float_t uEnergy4 = uArray4->GetUnitEnergy();
@@ -478,6 +502,10 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 	      
 	      AliJetUnitArray *uArray = (AliJetUnitArray*)fUnitArray->At(towerID);
 	      TRefArray *reference = uArray->GetUnitTrackRef();
+	      if (reference->GetEntries() == 0) {
+		  new(reference) TRefArray(TProcessID::GetProcessWithUID(track));
+	      }
+
 	      reference->Add(track);
 
 	      Float_t unitEnergy = uArray->GetUnitEnergy(); 
@@ -530,6 +558,9 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 
 	    AliJetUnitArray *uArray = (AliJetUnitArray*)fUnitArray->At(fNumUnits-1+idTPC);
 	    TRefArray *reference = uArray->GetUnitTrackRef();
+	    if (reference->GetEntries() == 0) {
+		new(reference) TRefArray(TProcessID::GetProcessWithUID(track));
+	    }
 	    reference->Add(track);
 
 	    Float_t unitEnergy2 = uArray->GetUnitEnergy(); // check if fNumUnits or fNumUnits-1
