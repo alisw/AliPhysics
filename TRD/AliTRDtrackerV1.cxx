@@ -1071,7 +1071,7 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
       nPoints++;
     }
   }
-  fitter->Eval();
+  if(fitter->Eval()) return 1.E10;
 
   // Calculate curvature
   Double_t a = fitter->GetParameter(0);
@@ -1186,7 +1186,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
       nPoints++;
     }
   }
-  fitter->Eval();
+  if(fitter->Eval()) return 1.E10;
   zfitter.Eval();
 
   Double_t offset = fitter->GetParameter(3);
@@ -1207,7 +1207,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
     Double_t zmf	= zfitter.GetFunctionValue(&xref);
     fgTiltedRieman->FixParameter(3, zmf);
     fgTiltedRieman->FixParameter(4, dzmf);
-    fitter->Eval();
+    if (fitter->Eval()) return 1.E10;
     fitter->ReleaseParameter(3);
     fitter->ReleaseParameter(4);
     offset = fitter->GetParameter(3);
@@ -1512,7 +1512,7 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1
     Double_t zmf	= zfitter.GetFunctionValue(&xref);
     fitter->FixParameter(3, zmf);
     fitter->FixParameter(4, dzmf);
-    fitter->Eval();
+    if(fitter->Eval()) return 1.E10;
     fitter->ReleaseParameter(3);
     fitter->ReleaseParameter(4);
     z0   = fitter->GetParameter(3); // = zmf ?
