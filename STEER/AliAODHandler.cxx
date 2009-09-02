@@ -232,7 +232,7 @@ void AliAODHandler::StoreMCParticles(){
   for(int i = 0; i < np; ++i){
       if(fMCEventH->IsParticleSelected(i)){
 	  Int_t flag = 0;
-	  AliMCParticle* mcpart =  mcEvent->GetTrack(i);
+	  AliMCParticle* mcpart =  (AliMCParticle*) mcEvent->GetTrack(i);
 	  if(i<nprim)flag |= AliAODMCParticle::kPrimary;
 	  
 	  if(mcEvent->IsPhysicalPrimary(i))flag |= AliAODMCParticle::kPhysicalPrim;
