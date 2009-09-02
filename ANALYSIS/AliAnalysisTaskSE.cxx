@@ -100,7 +100,6 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
     fOutputAOD    = obj.fOutputAOD;
     fMCEvent      = obj.fMCEvent;
     fTreeA        = obj.fTreeA;    
-    printf("Constructor (3) \n");
 }
 
 
@@ -133,8 +132,9 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
 //
     AliMCEventHandler*    mcH = 0;
     mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-    if (mcH) fMCEvent = mcH->MCEvent();
-    
+    if (mcH) {
+	fMCEvent = mcH->MCEvent();
+    } 
     
     if (fInputHandler) {
          fInputEvent = fInputHandler->GetEvent();
@@ -235,8 +235,12 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 //
 // Exec analysis of one event
     if (fDebug > 1) AliInfo("AliAnalysisTaskSE::Exec() \n");
-    if( fInputHandler ) 
+
+    if( fInputHandler ) {
        fEntry = fInputHandler->GetReadEntry();
+    }
+    
+	   
     else if( fMCEvent )
        fEntry = fMCEvent->Header()->GetEvent(); 
     if ( !((Entry()-1)%100) && fDebug > 0) 
@@ -247,6 +251,8 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
 
     if (handler && aodH) {
+	fMCEvent = aodH->MCEvent();
+	
 	if (!(handler->IsStandard()) && !(handler->AODIsReplicated())) {
 	    if ((handler->NeedsHeaderReplication()) && (fgAODHeader))
 	    {

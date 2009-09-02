@@ -12,8 +12,10 @@
 
 #include "AliInputEventHandler.h"
 #include "AliAODEvent.h"
+#include "AliMCEvent.h"
 
 class TList;
+class AliMCEvent;
 
 class AliAODInputHandler : public AliInputEventHandler {
 
@@ -24,6 +26,7 @@ class AliAODInputHandler : public AliInputEventHandler {
     virtual Bool_t       Init(Option_t* /*opt*/) {return kTRUE;}
     virtual Bool_t       Init(TTree* tree, Option_t* opt);
     AliAODEvent         *GetEvent() const {return fEvent;}
+    AliMCEvent          *MCEvent()  const {return fMCEvent;}
     virtual void         AddFriend(char* filename);
     virtual Bool_t       BeginEvent(Long64_t entry);
     Option_t            *GetDataType() const;
@@ -32,6 +35,7 @@ class AliAODInputHandler : public AliInputEventHandler {
     AliAODInputHandler& operator=(const AliAODInputHandler& handler);  
  private:
     AliAODEvent    *fEvent;   //! Pointer to the event
+    AliMCEvent     *fMCEvent; //! Pointer to the MCEvent
     TList          *fFriends; //  List of friend trees 
     ClassDef(AliAODInputHandler, 1);
 };

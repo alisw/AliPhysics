@@ -36,6 +36,7 @@ static Option_t *gAODDataType = "AOD";
 AliAODInputHandler::AliAODInputHandler() :
     AliInputEventHandler(),
     fEvent(0),
+    fMCEvent(new AliMCEvent()),
     fFriends(new TList())
 {
   // Default constructor
@@ -45,6 +46,7 @@ AliAODInputHandler::AliAODInputHandler() :
 AliAODInputHandler::AliAODInputHandler(const char* name, const char* title):
   AliInputEventHandler(name, title),
   fEvent(0),
+  fMCEvent(new AliMCEvent()),
   fFriends(new TList())
 {
     // Constructor
@@ -93,13 +95,15 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
     if (!fEvent) fEvent = new AliAODEvent();
 
     fEvent->ReadFromTree(fTree);
+
     return kTRUE;
 }
 
 Bool_t AliAODInputHandler::BeginEvent(Long64_t /*entry*/)
 {
     //
-    //if (fTree) fTree->BranchRef();
+    TClonesArray* mcParticles = (TClonesArray*) (fEvent->FindListObject("mcparticles"));
+    if (mcParticles) fMCEvent->SetParticleArray(mcParticles);
     return kTRUE;
 }
 
