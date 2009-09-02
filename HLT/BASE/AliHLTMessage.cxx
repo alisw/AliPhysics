@@ -29,13 +29,17 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "AliHLTMessage.h"
+#include "TVirtualStreamerInfo.h"
 #include "Bytes.h"
 #include "TFile.h"
+#include "TProcessID.h"
 #include "TClass.h"
 
 extern "C" void R__zip (Int_t cxlevel, Int_t *nin, char *bufin, Int_t *lout, char *bufout, Int_t *nout);
 extern "C" void R__unzip(Int_t *nin, UChar_t *bufin, Int_t *lout, char *bufout, Int_t *nout);
 const Int_t kMAXBUF = 0xffffff;
+
+Bool_t AliHLTMessage::fgEvolution = kFALSE;
 
 ClassImp(AliHLTMessage)
 
@@ -55,6 +59,9 @@ AliHLTMessage::AliHLTMessage(UInt_t what)
   fBufCompCur(0),
   fCompPos(0)
   , fBufUncompressed(0)
+  , fBitsPIDs(0)
+  , fInfos(NULL)
+  , fEvolution(kFALSE)
 {
    // Create a AliHLTMessage object for storing objects. The "what" integer
    // describes the type of message. Predifined ROOT system message types
@@ -72,6 +79,7 @@ AliHLTMessage::AliHLTMessage(UInt_t what)
 
    *this << what;
 
+   SetBit(kCannotHandleMemberWiseStreaming);
 }
 
 const Int_t AliHLTMessage::fgkMinimumSize=30;
@@ -93,6 +101,9 @@ AliHLTMessage::AliHLTMessage(void *buf, Int_t bufsize)
   fBufCompCur(0),
   fCompPos(0)
   , fBufUncompressed(0)
+  , fBitsPIDs(0)
+  , fInfos(NULL)
+  , fEvolution(kFALSE)
 {
    // Create a AliHLTMessage object for reading objects. The objects will be
    // read from buf. Use the What() method to get the message type.
@@ -135,6 +146,34 @@ AliHLTMessage::~AliHLTMessage()
 }
 
 //______________________________________________________________________________
+void AliHLTMessage::EnableSchemaEvolutionForAll(Bool_t enable)
+{
+   // Static function enabling or disabling the automatic schema evolution.
+   // By default schema evolution support is off.
+
+   fgEvolution = enable;
+}
+
+//______________________________________________________________________________
+Bool_t AliHLTMessage::UsesSchemaEvolutionForAll()
+{
+   // Static function returning status of global schema evolution.
+
+   return fgEvolution;
+}
+
+//______________________________________________________________________________
+void AliHLTMessage::ForceWriteInfo(TVirtualStreamerInfo *info, Bool_t /* force */)
+{
+   // Force writing the TStreamerInfo to the message.
+
+   if (fgEvolution || fEvolution) {
+      if (!fInfos) fInfos = new TList();
+      fInfos->Add(info);
+   }
+}
+
+//______________________________________________________________________________
 void AliHLTMessage::Forward()
 {
    // Change a buffer that was received into one that can be send, i.e.
@@ -143,10 +182,24 @@ void AliHLTMessage::Forward()
    if (IsReading()) {
       SetWriteMode();
       SetBufferOffset(fBufSize);
+      SetBit(kCannotHandleMemberWiseStreaming);
 
       if (fBufComp) {
          fCompPos = fBufCur;
       }
+   }
+}
+
+//______________________________________________________________________________
+void AliHLTMessage::IncrementLevel(TVirtualStreamerInfo *info)
+{
+   // Increment level.
+
+   TBufferFile::IncrementLevel(info);
+
+   if (fgEvolution || fEvolution) {
+      if (!fInfos) fInfos = new TList();
+      fInfos->Add(info);
    }
 }
 
@@ -344,6 +397,47 @@ Int_t AliHLTMessage::Uncompress()
    fCompress = 1;
 
    return 0;
+}
+
+//______________________________________________________________________________
+void AliHLTMessage::WriteObject(const TObject *obj)
+{
+   // Write object to message buffer.
+   // When support for schema evolution is enabled the list of TStreamerInfo
+   // used to stream this object is kept in fInfos. This information is used
+   // by TSocket::Send that sends this list through the socket. This list is in
+   // turn used by TSocket::Recv to store the TStreamerInfo objects in the
+   // relevant TClass in case the TClass does not know yet about a particular
+   // class version. This feature is implemented to support clients and servers
+   // with either different ROOT versions or different user classes versions.
+
+   if (fgEvolution || fEvolution) {
+      if (fInfos)
+         fInfos->Clear();
+      else
+         fInfos = new TList();
+   }
+
+   fBitsPIDs.ResetAllBits();
+   WriteObjectAny(obj, TObject::Class());
+}
+
+//______________________________________________________________________________
+UShort_t AliHLTMessage::WriteProcessID(TProcessID *pid)
+{
+   // Check if the ProcessID pid is already in the message.
+   // If not, then:
+   //   - mark bit 0 of fBitsPIDs to indicate that a ProcessID has been found
+   //   - mark bit uid+1 where uid id the uid of the ProcessID
+
+   if (fBitsPIDs.TestBitNumber(0)) return 0;
+   if (!pid)
+      pid = TProcessID::GetPID();
+   if (!pid) return 0;
+   fBitsPIDs.SetBitNumber(0);
+   UInt_t uid = pid->GetUniqueID();
+   fBitsPIDs.SetBitNumber(uid+1);
+   return 1;
 }
 
 AliHLTMessage* AliHLTMessage::Stream(TObject* pSrc, Int_t compression, unsigned verbosity)
