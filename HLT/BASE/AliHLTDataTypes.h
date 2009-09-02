@@ -1012,6 +1012,11 @@ extern "C" {
    */	
   extern const AliHLTComponentDataType fgkITSTracksDataType;
 
+  /** Container of calorimeter clusters
+   * @ingroup alihlt_component_datatypes
+   */	
+  extern const AliHLTComponentDataType kAliHLTDataTypeCaloCluster; 
+
   //////////////////////////////////////////////////////////////////////////
   //
   // FXS subscriber meta information
