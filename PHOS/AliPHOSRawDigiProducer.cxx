@@ -165,8 +165,11 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
       relId[2] = fRawStream->GetCellX()  + 1; // counts from 1 to 64
       relId[3] = fRawStream->GetCellZ()  + 1; // counts from 1 to 56
       caloFlag = fRawStream->GetCaloFlag();   // 0=LG, 1=HG, 2=TRU
+      
+      if(caloFlag!=0 && caloFlag!=1) continue; //TRU data!
+      
       fGeom->RelToAbsNumbering(relId, absId);
-
+      
       Int_t nBunches = 0;
       while (fRawStream->NextBunch()) {
 	nBunches++;
