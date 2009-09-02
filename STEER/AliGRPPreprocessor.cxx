@@ -1701,18 +1701,20 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 			delete result;
 			return -25;
 		}
-	
-	row = result->Next();
-	if (!row)
-		{
-			Printf("ERROR: Could not receive logbook_stats_GDC data from run %d", run);
-			delete result;
-			return -26;
-		}
-	
-	// For the moment take the first GDC in the list
-	gdc = row->GetField(0);
-	
+
+	gdc = "";
+	for (Int_t iGDC = 0; iGDC < result->GetRowCount(); iGDC++) {
+	  row = result->Next();
+	  if (!row)
+	    {
+	      Printf("ERROR: Could not receive logbook_stats_GDC data from run %d", run);
+	      delete result;
+	      return -26;
+	    }
+	  gdc += row->GetField(0);
+	  gdc += " ";
+	}
+
 	delete row;
 	row = 0;
 	

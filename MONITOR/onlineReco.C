@@ -30,7 +30,9 @@ UInt_t onlineReco(const char* param = "listen",const char *recMacroPath = "$ALIC
 
       if (!gdc.IsNull()) {
 
-	TString dataSource = gdc;
+	gSystem->Setenv("DATE_RUN_NUMBER",Form("%d",run));
+
+	TString dataSource = "*";
 	dataSource.Prepend("mem://@");
 	dataSource.Append(":");
 
