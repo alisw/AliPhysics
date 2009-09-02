@@ -1134,7 +1134,7 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS)
      metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
      metaData.SetComment("Preprocessor AliTPC data base entries.");
 
-     Bool_t storeOK = Store("Calib", "AltroConfig", altroObjects, &metaData, 0, kTRUE);
+     Bool_t storeOK = Store("Calib", "AltroConfig", altroObjects, &metaData, 0, kFALSE);
      if ( !storeOK ) ++result;
     }  
 
