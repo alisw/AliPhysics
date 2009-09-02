@@ -133,8 +133,8 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
       }
       else
       {
-        //FIXME : should insure here that values are only the ones within run
-        //limits (startTime<timestamp<endTime)
+	RemoveValuesOutsideRun(values);
+
         hv.Add(new TObjString(aliasName.Data()),values);
       }
     }

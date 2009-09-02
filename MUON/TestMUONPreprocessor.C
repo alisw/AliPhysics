@@ -29,6 +29,7 @@
 /// the rootlogon.C there) before compiling this macro :
 /// <pre>
 /// gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
+/// gSystem->Load("$ALICE_ROOT/MUON/libMUONshuttle");
 /// </pre>
 ///
 /// Having $ALICE_ROOT/SHUTTLE/TestShuttle directory in your LD_LIBRARY_PATH

@@ -36,6 +36,7 @@
 
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
+#include "AliDCSValue.h"
 
 #include "Riostream.h"
 #include "TMap.h"
@@ -119,8 +120,8 @@ AliMUONTriggerDCSSubprocessor::Process(TMap* dcsAliasMap)
       else
       {
 	TObjArray* values = static_cast<TObjArray*>(dcsMapPair->Value()->Clone());
-        //FIXME : should insure here that values are only the ones within run
-        //limits (startTime<timestamp<endTime)
+	RemoveValuesOutsideRun(values);
+
         dcsMap.Add(new TObjString(aliasName.Data()),values);
       }
     }

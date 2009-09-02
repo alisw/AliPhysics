@@ -15,6 +15,8 @@
 
 // $Id$
 
+#include "TObjArray.h"
+#include "AliDCSValue.h"
 #include "AliMUONVSubprocessor.h"
 
 //-----------------------------------------------------------------------------
@@ -36,7 +38,9 @@ ClassImp(AliMUONVSubprocessor)
 AliMUONVSubprocessor::AliMUONVSubprocessor(AliMUONPreprocessor* master,
                                            const char* name,
                                            const char* title)
-: TNamed(name,title), fMaster(master)
+  : TNamed(name,title), fMaster(master),
+    fStartTime(0),
+    fEndTime(0)
 {
   /// ctor
 }
@@ -50,9 +54,34 @@ AliMUONVSubprocessor::~AliMUONVSubprocessor()
 //_____________________________________________________________________________
 void
 AliMUONVSubprocessor::Initialize(Int_t /*run*/, 
-                                 UInt_t /*startTime*/, 
-                                 UInt_t /*endTime*/)
+                                 UInt_t startTime, 
+                                 UInt_t endTime)
 {
   /// optional
+  fStartTime = startTime;
+  fEndTime = endTime;
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMUONVSubprocessor::RemoveValuesOutsideRun(TObjArray* values)
+{
+  /// Remove values outside run time limits
+
+  TIter next(values);
+  AliDCSValue* val = 0x0;
+
+  Bool_t removedValues = kFALSE;
+	
+  while ( ( val = static_cast<AliDCSValue*>(next()) ) )
+  {
+    if ( val->GetTimeStamp() < fStartTime || val->GetTimeStamp() > fEndTime ) {
+      values->Remove(val);
+      removedValues = kTRUE;
+    }
+  }
+  values->Compress();
+
+  return removedValues;
 }
 

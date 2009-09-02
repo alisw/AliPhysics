@@ -17,6 +17,7 @@
 #endif
 
 class TMap;
+class TObjectArray;
 class AliMUONPreprocessor;
 
 class AliMUONVSubprocessor : public TNamed
@@ -34,6 +35,8 @@ public:
 protected:
   /// Return the pointer to our master
   AliMUONPreprocessor* Master() const { return fMaster; }
+
+  Bool_t RemoveValuesOutsideRun ( TObjArray* values );
   
   /// Not implemented
   AliMUONVSubprocessor();
@@ -44,8 +47,10 @@ protected:
   
 private:
   AliMUONPreprocessor* fMaster; ///< Pointer to our master
+  UInt_t fStartTime; ///< Start time of run
+  UInt_t fEndTime;   ///< End time of run
   
-  ClassDef(AliMUONVSubprocessor,1) // Base class of MUON shuttle sub(pre)processors
+  ClassDef(AliMUONVSubprocessor,2) // Base class of MUON shuttle sub(pre)processors
 };
 
 #endif
