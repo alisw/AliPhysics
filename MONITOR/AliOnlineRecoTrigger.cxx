@@ -18,7 +18,7 @@
 #include <TSystem.h>
 
 #include "AliLog.h"
-#ifdef ALI_DATE
+#ifdef ALI_DIM
 #include "SORNotifier.h"
 #endif
 
@@ -106,7 +106,7 @@ Int_t AliOnlineRecoTrigger::Run() {
 
 	fTerminate = kFALSE;
 
-#ifdef ALI_DATE
+#ifdef ALI_DIM
 	SORNotifier* notifier = new SORNotifier(this);
 #endif
 	Int_t received=0;
@@ -125,7 +125,7 @@ Int_t AliOnlineRecoTrigger::Run() {
 	fMutex.UnLock();
 
 	Int_t run = -1;
-#ifdef ALI_DATE
+#ifdef ALI_DIM
 	run = notifier->GetRun();
 	delete notifier;
 #endif

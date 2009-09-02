@@ -73,6 +73,11 @@ CINTFLAGS += $(DATEFLAGS)
 DEPINC    += $(DATEFLAGS)
 endif
 
+#-------------------------------------------------------------------------------
+# Check if DIM is installed
+ifdef DIMDIR
+CXXFLAGS  += -DALI_DIM
+endif
 
 #-------------------------------------------------------------------------------
 # ROOT Stuff
