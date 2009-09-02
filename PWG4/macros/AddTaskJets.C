@@ -61,6 +61,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius)
 }
 
 AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
+  AliJetFinder *jetFinder = 0;
 
   switch (jf) {
   case "CDF":
@@ -83,12 +84,12 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     break;
 
 
-  case "Fastjet":
-    AliFastJetHeader *jh = new AliFastJetHeader();
-    jh->SetRparam(0.7); // setup parameters                                  
-
+  case "FASTJET":
+    AliFastJetHeaderV1 *jh = new AliFastJetHeaderV1();
+    jh->SetRparam(0.4); // setup parameters                                  
+    if(radius>0)jh->SetRparam(radius);
+    jh->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
     jetFinder = new AliFastJetFinder();
-    jetFinder->SetOutputFile("jets.root");
     if (jh) jetFinder->SetJetHeader(jh);
     break;
 
@@ -125,13 +126,12 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetMinJetEt(10.);
     jh->SetJetEtaMax(1.5);
     jh->SetJetEtaMin(-1.5);
-
     jetFinder = new AliUA1JetFinderV1();
     if (jh) jetFinder->SetJetHeader(jh);
     break;
-  case default:
-    ::Error("AddTaskJets", "Wrong jet finder selected\n");
-    return 0;
+  default:
+    Printf("\n >>>>>>> AddTaskJets Error Wrong jet finder selected\n");
+    break;
   }
 
   return jetFinder;
