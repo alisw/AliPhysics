@@ -327,6 +327,7 @@ private:
 	AliHLTFloat32_t *fAvgChargeX, *fAvgChargeY;              // average charge on central pad found using CG method
 	AliHLTFloat32_t *fTotChargeX, *fTotChargeY;              // Total charge in bending and nonbending direction
 	AliHLTInt32_t *fNofBChannel, *fNofNBChannel;             // number of channels bending and non-bending.
+	AliHLTInt32_t *fNofYNeighbour;                           // number of neighbour pad in y direction, needed for y-resolution correction
 	AliHLTInt32_t fGetIdTotalData[336][237][2];              // an array of idManuChannel with argument of centralX, centralY and planeType.
 	AliHLTInt32_t fNofFiredDetElem,fMaxFiredPerDetElem[130];  // counter for detector elements that are fired
 	const IdManuChannelToEntry* fIdToEntry;   // Mapping between Linenumber to IdManuChannel (The object is not owned by this component).

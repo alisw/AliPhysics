@@ -85,6 +85,7 @@ AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor() :
 	fTotChargeY(NULL),
 	fNofBChannel(NULL),
 	fNofNBChannel(NULL),
+	fNofYNeighbour(NULL),
 	fNofFiredDetElem(0),
 	fIdToEntry(),
 	fMaxEntryPerBusPatch(0),
@@ -380,6 +381,7 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
   assert( fTotChargeY == NULL );
   assert( fNofBChannel == NULL );
   assert( fNofNBChannel == NULL );
+  assert( fNofYNeighbour == NULL );
   
   bool resultOk = false;
   
@@ -465,6 +467,8 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
         HLTDebug("Allocated fNofBChannel with %d elements.", fCentralCountB);
         fNofNBChannel = new int[fCentralCountNB];
         HLTDebug("Allocated fNofNBChannel with %d elements.", fCentralCountNB);
+        fNofYNeighbour = new int[fCentralCountB];
+        HLTDebug("Allocated fNofBChannel with %d elements.", fCentralCountB);
         resultOk = true;
       }
       catch(const std::bad_alloc&){
@@ -552,6 +556,12 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
       delete [] fNofNBChannel;
       HLTDebug("Released fNofNBChannel array.");
       fNofNBChannel = NULL;
+    }
+    if (fNofYNeighbour != NULL)
+    {
+      delete [] fNofYNeighbour;
+      HLTDebug("Released fNofYNeighbour array.");
+      fNofYNeighbour = NULL;
     }
   }
 
@@ -672,6 +682,7 @@ void AliHLTMUONHitReconstructor::RecXRecY()
   assert( fTotChargeY != NULL );
   assert( fNofBChannel != NULL );
   assert( fNofNBChannel != NULL );
+  assert( fNofYNeighbour  != NULL );
 
   int b,nb;
   int idCentral;
@@ -704,12 +715,17 @@ void AliHLTMUONHitReconstructor::RecXRecY()
     fTotChargeY[b] = (fPadData[idCentral].fCharge + fPadData[idUpper].fCharge + fPadData[idLower].fCharge);
  
     fNofBChannel[b] = 0;
-    if(fPadData[idLower].fCharge>0)
+    fNofYNeighbour[b] = 0;
+    if(fPadData[idLower].fCharge>0){
       fNofBChannel[b]++ ;
+      fNofYNeighbour[b]++;
+    }
     if(fPadData[idCentral].fCharge>0)
       fNofBChannel[b]++ ;
-    if(fPadData[idUpper].fCharge>0)
+    if(fPadData[idUpper].fCharge>0){
       fNofBChannel[b]++ ;
+      fNofYNeighbour[b]++;
+    }
    
     //collect left coloumn
     if((fPadData[idCentral].fIX-1)>=0){
@@ -881,6 +897,7 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
   assert( fTotChargeY != NULL );
   assert( fNofBChannel != NULL );
   assert( fNofNBChannel != NULL );
+  assert( fNofYNeighbour  != NULL );
 
   int idCentralB,idCentralNB ;
   float padCenterXB;
@@ -997,10 +1014,22 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
 
 	  if(diffX < halfPadLengthX && diffY < halfPadLengthY ){//&& fPadData[idCentralB].fIY != 0){
 
-	    if(fNofBChannel[b]==3)
-	      fRecY[b] += 0.025*sin(12.0*(fRecY[b] - fPadData[idCentralB].fRealY)) ;
+	    if(fNofYNeighbour[b]==2){
+	      if(fPadData[idCentralB].fDetElemId<104)
+		fRecY[b] += 0.02*sin(14.5*(fRecY[b] - fPadData[idCentralB].fRealY)) ;
+	      else if(fPadData[idCentralB].fDetElemId>=200 && fPadData[idCentralB].fDetElemId<204)
+		fRecY[b] += 0.02*sin(14.0*(fRecY[b] - fPadData[idCentralB].fRealY)) ;
+	      else
+		fRecY[b] += 0.025*sin(12.0*(fRecY[b] - fPadData[idCentralB].fRealY)) ;
+	    }
 	    
-	    fRecX[nb] += 0.075*sin(9.5*(fRecX[nb] - fPadData[idCentralNB].fRealX)) ;
+	    if(fPadData[idCentralNB].fDetElemId<204)
+	      fRecX[nb] += 0.095*sin(10.5*(fRecX[nb] - fPadData[idCentralNB].fRealX)) ;
+	    else if(fPadData[idCentralNB].fDetElemId>=300 && fPadData[idCentralNB].fDetElemId<404)
+	      fRecX[nb] += 0.085*sin(9.0*(fRecX[nb] - fPadData[idCentralNB].fRealX)) ;
+	    else
+	      fRecX[nb] += 0.075*sin(9.5*(fRecX[nb] - fPadData[idCentralNB].fRealX)) ;
+	    
 	    
 	    // First check that we have not overflowed the buffer.
 	    if((*fRecPointsCount) == fMaxRecPointsCount){
