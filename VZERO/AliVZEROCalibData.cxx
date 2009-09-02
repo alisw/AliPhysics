@@ -194,7 +194,9 @@ Float_t AliVZEROCalibData::GetMIPperADC(Int_t channel) const {
 	
 	// High Voltage retrieval from Calibration Data Base:  
 	Float_t  HV = fMeanHV[channel];  
-	Float_t MIP = 0.5/TMath::Exp((TMath::Log(HV) - P0[channel] )/P1[channel]);
+	Float_t MIP = -1;
+	if (HV>0)
+	  MIP = 0.5/TMath::Exp((TMath::Log(HV) - P0[channel] )/P1[channel]);
 	return MIP; 
 	
 }
