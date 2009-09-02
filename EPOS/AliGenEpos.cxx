@@ -159,11 +159,32 @@ void AliGenEpos::Generate() {
 
 	// Event Vertex
 	  header->SetPrimaryVertex(fVertex);
-	  header->FillInternalFields(GetTEpos());
-	  AddHeader(header);
-	  fCollisionGeometry = (AliGenEposEventHeader*)  header;
-
-	  delete[] idsOnStack;
+	  
+	  header->SetBimevt(GetTEpos()->GetBimevt());
+	  header->SetPhievt(GetTEpos()->GetPhievt());
+	  header->SetKolevt(GetTEpos()->GetKolevt());
+	  header->SetKoievt(GetTEpos()->GetKoievt());
+	  header->SetPmxevt(GetTEpos()->GetPmxevt());
+	  header->SetEgyevt(GetTEpos()->GetEgyevt());
+	  header->SetNpjevt(GetTEpos()->GetNpjevt());
+	  header->SetNtgevt(GetTEpos()->GetNtgevt());
+	  header->SetNpnevt(GetTEpos()->GetNpnevt());
+	  header->SetNppevt(GetTEpos()->GetNppevt());
+	  header->SetNtnevt(GetTEpos()->GetNtnevt());
+	  header->SetNtpevt(GetTEpos()->GetNtpevt());
+	  header->SetJpnevt(GetTEpos()->GetJpnevt());
+	  header->SetJppevt(GetTEpos()->GetJppevt());
+	  header->SetJtnevt(GetTEpos()->GetJtnevt());
+	  header->SetJtpevt(GetTEpos()->GetJtpevt());
+	  header->SetXbjevt(GetTEpos()->GetXbjevt());
+	  header->SetQsqevt(GetTEpos()->GetQsqevt());
+	  header->SetNglevt(GetTEpos()->GetNglevt());
+	  header->SetZppevt(GetTEpos()->GetZppevt());
+	  header->SetZptevt(GetTEpos()->GetZptevt());
+    AddHeader(header);
+    fCollisionGeometry = (AliGenEposEventHeader*)  header;
+    
+    delete[] idsOnStack;
 }
 
 AliGenEpos::~AliGenEpos() {

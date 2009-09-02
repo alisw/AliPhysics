@@ -64,51 +64,47 @@ AliGenEposEventHeader::AliGenEposEventHeader() :     fBimevt(0),
 }
 
 
-void AliGenEposEventHeader::FillInternalFields(TGenerator */*epos*/) {
-/*
-    fBimevt = epos->GetBimevt();
-    fPhievt = epos->GetPhievt();
-    fKolevt = epos->GetKolevt();
-    fKoievt = epos->GetKoievt();
-    fPmxevt = epos->GetPmxevt();
-    fEgyevt = epos->GetEgyevt();
-    fNpjevt = epos->GetNpjevt();
-    fNtgevt = epos->GetNtgevt();
-    fNpnevt = epos->GetNpnevt();
-    fNppevt = epos->GetNppevt();
-    fNtnevt = epos->GetNtnevt();
-    fNtpevt = epos->GetNtpevt();
-    fJpnevt = epos->GetJpnevt();
-    fJppevt = epos->GetJppevt();
-    fJtnevt = epos->GetJtnevt();
-    fJtpevt = epos->GetJtpevt();
-    fXbjevt = epos->GetXbjevt();
-    fQsqevt = epos->GetQsqevt();
-    fNglevt = epos->GetNglevt();
-    fZppevt = epos->GetZppevt();
-    fZptevt = epos->GetZptevt();
-*/
-}
-
 Float_t AliGenEposEventHeader::GetBimevt() { return fBimevt; }
 Float_t AliGenEposEventHeader::GetPhievt() { return fPhievt; }
-Int_t AliGenEposEventHeader::GetKolevt() { return fKolevt; }
-Int_t AliGenEposEventHeader::GetKoievt() { return fKoievt; }
+Int_t AliGenEposEventHeader::GetKolevt()   { return fKolevt; }
+Int_t AliGenEposEventHeader::GetKoievt()   { return fKoievt; }
 Float_t AliGenEposEventHeader::GetPmxevt() { return fPmxevt; }
 Float_t AliGenEposEventHeader::GetEgyevt() { return fEgyevt; }
-Int_t AliGenEposEventHeader::GetNpjevt() { return fNpjevt; }
-Int_t AliGenEposEventHeader::GetNtgevt() { return fNtgevt; }
-Int_t AliGenEposEventHeader::GetNpnevt() { return fNpnevt; }
-Int_t AliGenEposEventHeader::GetNppevt() { return fNppevt; }
-Int_t AliGenEposEventHeader::GetNtnevt() { return fNtnevt; }
-Int_t AliGenEposEventHeader::GetNtpevt() { return fNtpevt; }
-Int_t AliGenEposEventHeader::GetJpnevt() { return fJpnevt; }
-Int_t AliGenEposEventHeader::GetJppevt() { return fJppevt; }
-Int_t AliGenEposEventHeader::GetJtnevt() { return fJtnevt; }
-Int_t AliGenEposEventHeader::GetJtpevt() { return fJtpevt; }
+Int_t AliGenEposEventHeader::GetNpjevt()   { return fNpjevt; }
+Int_t AliGenEposEventHeader::GetNtgevt()   { return fNtgevt; }
+Int_t AliGenEposEventHeader::GetNpnevt()   { return fNpnevt; }
+Int_t AliGenEposEventHeader::GetNppevt()   { return fNppevt; }
+Int_t AliGenEposEventHeader::GetNtnevt()   { return fNtnevt; }
+Int_t AliGenEposEventHeader::GetNtpevt()   { return fNtpevt; }
+Int_t AliGenEposEventHeader::GetJpnevt()   { return fJpnevt; }
+Int_t AliGenEposEventHeader::GetJppevt()   { return fJppevt; }
+Int_t AliGenEposEventHeader::GetJtnevt()   { return fJtnevt; }
+Int_t AliGenEposEventHeader::GetJtpevt()   { return fJtpevt; }
 Float_t AliGenEposEventHeader::GetXbjevt() { return fXbjevt; }
 Float_t AliGenEposEventHeader::GetQsqevt() { return fQsqevt; }
-Int_t AliGenEposEventHeader::GetNglevt() { return fNglevt; }
+Int_t AliGenEposEventHeader::GetNglevt()   { return fNglevt; }
 Float_t AliGenEposEventHeader::GetZppevt() { return fZppevt; }
 Float_t AliGenEposEventHeader::GetZptevt() { return fZptevt; }
+
+void AliGenEposEventHeader::SetBimevt(Float_t value) { fBimevt = value; }
+void AliGenEposEventHeader::SetPhievt(Float_t value) { fPhievt = value; }
+void AliGenEposEventHeader::SetKolevt(Int_t value)   { fKolevt = value; }
+void AliGenEposEventHeader::SetKoievt(Int_t value)   { fKoievt = value; }
+void AliGenEposEventHeader::SetPmxevt(Float_t value) { fPmxevt = value; }
+void AliGenEposEventHeader::SetEgyevt(Float_t value) { fEgyevt = value; }
+void AliGenEposEventHeader::SetNpjevt(Int_t value)   { fNpjevt = value; }
+void AliGenEposEventHeader::SetNtgevt(Int_t value)   { fNtgevt = value; }
+void AliGenEposEventHeader::SetNpnevt(Int_t value)   { fNpnevt = value; }
+void AliGenEposEventHeader::SetNppevt(Int_t value)   { fNppevt = value; }
+void AliGenEposEventHeader::SetNtnevt(Int_t value)   { fNtnevt = value; }
+void AliGenEposEventHeader::SetNtpevt(Int_t value)   { fNtpevt = value; }
+void AliGenEposEventHeader::SetJpnevt(Int_t value)   { fJpnevt = value; }
+void AliGenEposEventHeader::SetJppevt(Int_t value)   { fJppevt = value; }
+void AliGenEposEventHeader::SetJtnevt(Int_t value)   { fJtnevt = value; }
+void AliGenEposEventHeader::SetJtpevt(Int_t value)   { fJtpevt = value; }
+void AliGenEposEventHeader::SetXbjevt(Float_t value) { fXbjevt = value; }
+void AliGenEposEventHeader::SetQsqevt(Float_t value) { fQsqevt = value; }
+void AliGenEposEventHeader::SetNglevt(Int_t value)   { fNglevt = value; }
+void AliGenEposEventHeader::SetZppevt(Float_t value) { fZppevt = value; }
+void AliGenEposEventHeader::SetZptevt(Float_t value) { fZptevt = value; }
 

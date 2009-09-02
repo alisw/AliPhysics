@@ -43,7 +43,27 @@ public:
 	Float_t GetZppevt();
 	Float_t GetZptevt();
 
-	void FillInternalFields(TGenerator *epos);
+	void SetBimevt(Float_t value);
+	void SetPhievt(Float_t value);
+	void SetKolevt(Int_t value);
+	void SetKoievt(Int_t value);
+	void SetPmxevt(Float_t value);
+	void SetEgyevt(Float_t value);
+	void SetNpjevt(Int_t value);
+	void SetNtgevt(Int_t value);
+	void SetNpnevt(Int_t value);
+	void SetNppevt(Int_t value);
+	void SetNtnevt(Int_t value);
+	void SetNtpevt(Int_t value);
+	void SetJpnevt(Int_t value);
+	void SetJppevt(Int_t value);
+	void SetJtnevt(Int_t value);
+	void SetJtpevt(Int_t value);
+	void SetXbjevt(Float_t value);
+	void SetQsqevt(Float_t value);
+	void SetNglevt(Int_t value);
+	void SetZppevt(Float_t value);
+	void SetZptevt(Float_t value);
 
 protected:
 
