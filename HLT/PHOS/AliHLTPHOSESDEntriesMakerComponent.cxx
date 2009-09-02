@@ -17,13 +17,13 @@
 #include <iostream>
 
 #include "AliHLTPHOSESDEntriesMakerComponent.h"
-#include "AliHLTPHOSESDCaloClusterMaker.h"
-#include "AliHLTPHOSCaloClusterHeaderStruct.h"
+#include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTPHOSDigitDataStruct.h"
 #include "AliESDEvent.h"
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTDataTypes.h"
 #include "AliESDCaloCluster.h"
+#include "AliHLTESDCaloClusterMaker.h"
 
 /** @file   AliHLTPHOSESDEntriesMakerComponent.cxx
     @author Oystein Djuvsland
@@ -112,7 +112,7 @@ AliHLTPHOSESDEntriesMakerComponent::DoEvent( const AliHLTComponentEventData& /*e
  
   fESDCaloClustersPtr->Delete();
   //fESDCaloClustersPtr = new TClonesArray(AliESDCaloCluster::Class(), 10);
-  AliHLTPHOSCaloClusterHeaderStruct* caloClusterHeaderPtr = 0;
+  AliHLTCaloClusterHeaderStruct* caloClusterHeaderPtr = 0;
 
   const AliHLTComponentBlockData* iter = 0;
   UInt_t nClusters = 0;
@@ -124,9 +124,9 @@ AliHLTPHOSESDEntriesMakerComponent::DoEvent( const AliHLTComponentEventData& /*e
   for ( iter = GetFirstInputBlock(AliHLTPHOSDefinitions::fgkCaloClusterDataType); iter != 0; iter = GetNextInputBlock()) 
     {
       clusterSpecification = clusterSpecification|iter->fSpecification;
-      caloClusterHeaderPtr = reinterpret_cast<AliHLTPHOSCaloClusterHeaderStruct*>(iter->fPtr);
+      caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(iter->fPtr);
       HLTDebug("%d HLT clusters", caloClusterHeaderPtr->fNClusters);
-      nClusters = fESDCaloClusterMakerPtr->FillESDCaloClusters(fESDCaloClustersPtr, caloClusterHeaderPtr);
+      //      nClusters = fESDCaloClusterMakerPtr->FillESDCaloClusters(fESDCaloClustersPtr, caloClusterHeaderPtr);
     }
 
 //   for(iter = GetFirstInputBlock(AliHLTPHOSDefinitions::fgkDigitDataType); iter != 0; iter =GetNextInputBlock())
@@ -157,7 +157,7 @@ AliHLTPHOSESDEntriesMakerComponent::DoInit(int argc, const char** argv )
 {
   //See headerfile for documentation
 
-  fESDCaloClusterMakerPtr = new AliHLTPHOSESDCaloClusterMaker();
+  fESDCaloClusterMakerPtr = new AliHLTESDCaloClusterMaker();
 
   fESDCaloClustersPtr = new TClonesArray(AliESDCaloCluster::Class(), 10);
 

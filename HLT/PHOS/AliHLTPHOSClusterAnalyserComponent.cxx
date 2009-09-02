@@ -17,8 +17,7 @@
 #include "AliHLTPHOSClusterAnalyserComponent.h"
 #include "AliHLTPHOSClusterAnalyser.h"
 #include "AliHLTPHOSRecPointHeaderStruct.h"
-#include "AliHLTPHOSCaloClusterDataStruct.h"
-#include "AliHLTPHOSCaloClusterHeaderStruct.h"
+#include "AliHLTCaloClusterDataStruct.h"
 
 /** @file   AliHLTPHOSClusterAnalyserComponent.cxx
     @author Oystein Djuvsland
@@ -106,7 +105,7 @@ AliHLTPHOSClusterAnalyserComponent::GetOutputDataSize(unsigned long& constBase, 
 {
   //See headerfile for documentation
 
-  constBase = sizeof(AliHLTPHOSCaloClusterHeaderStruct) + sizeof(AliHLTPHOSCaloClusterDataStruct) + (6 << 7); //Reasonable estimate... (6 = sizeof(Short_t) + sizeof(Float_t);
+  constBase = sizeof(AliHLTCaloClusterHeaderStruct) + sizeof(AliHLTCaloClusterDataStruct) + (6 << 7); //Reasonable estimate... (6 = sizeof(Short_t) + sizeof(Float_t);
   inputMultiplier = 1.2;
 }
 
@@ -137,9 +136,9 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
 
   UInt_t specification = 0;
 
-  AliHLTPHOSCaloClusterHeaderStruct* caloClusterHeaderPtr = reinterpret_cast<AliHLTPHOSCaloClusterHeaderStruct*>(outBPtr);
+  AliHLTCaloClusterHeaderStruct* caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(outBPtr);
 
-  fClusterAnalyserPtr->SetCaloClusterDataPtr(reinterpret_cast<AliHLTPHOSCaloClusterDataStruct*>(outBPtr + sizeof(AliHLTPHOSCaloClusterHeaderStruct)));
+  fClusterAnalyserPtr->SetCaloClusterDataPtr(reinterpret_cast<AliHLTCaloClusterDataStruct*>(outBPtr + sizeof(AliHLTCaloClusterHeaderStruct)));
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx; 
@@ -175,7 +174,7 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
 
   HLTDebug("Number of clusters: %d", nClusters); 
   caloClusterHeaderPtr->fNClusters = nClusters;
-  mysize += sizeof(AliHLTPHOSCaloClusterHeaderStruct); 
+  mysize += sizeof(AliHLTCaloClusterHeaderStruct); 
   
   AliHLTComponentBlockData bd;
   FillBlockData( bd );

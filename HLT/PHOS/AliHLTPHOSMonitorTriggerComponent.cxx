@@ -17,8 +17,7 @@
 #include <iostream>
 
 #include "AliHLTPHOSMonitorTriggerComponent.h"
-#include "AliHLTPHOSCaloClusterHeaderStruct.h"
-#include "AliHLTPHOSCaloClusterDataStruct.h"
+#include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTDataTypes.h"
 
 /** @file   AliHLTPHOSMonitorTriggerComponent.h
@@ -131,7 +130,7 @@ AliHLTPHOSMonitorTriggerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 	}
       specification |= iter->fSpecification;
 
-      monitorflag += CheckClusters(reinterpret_cast<AliHLTPHOSCaloClusterHeaderStruct*>(iter->fPtr));
+      monitorflag += CheckClusters(reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(iter->fPtr));
 	
     }
 
@@ -189,16 +188,16 @@ AliHLTPHOSMonitorTriggerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 }
 
 Bool_t
-AliHLTPHOSMonitorTriggerComponent::CheckClusters(AliHLTPHOSCaloClusterHeaderStruct* clusterHeaderPtr)
+AliHLTPHOSMonitorTriggerComponent::CheckClusters(AliHLTCaloClusterHeaderStruct* clusterHeaderPtr)
 {
   //See headerfile for documentation
   
   UInt_t nClusters = clusterHeaderPtr->fNClusters;
   Float_t* ampFracPtr = 0;
 
-  AliHLTPHOSCaloClusterDataStruct* clusterPtr = 0;
+  AliHLTCaloClusterDataStruct* clusterPtr = 0;
 
-  clusterPtr = reinterpret_cast<AliHLTPHOSCaloClusterDataStruct*>(clusterHeaderPtr + sizeof(AliHLTPHOSCaloClusterHeaderStruct));
+  clusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(clusterHeaderPtr + sizeof(AliHLTCaloClusterHeaderStruct));
       
   for(UInt_t n = 0; n < nClusters; n++)
     {
@@ -219,7 +218,7 @@ AliHLTPHOSMonitorTriggerComponent::CheckClusters(AliHLTPHOSCaloClusterHeaderStru
 	      return true;
 	    }
 	}
-      clusterPtr += sizeof(AliHLTPHOSCaloClusterDataStruct) + 5*clusterPtr->fNCells; //5 = sizeof(Short_t) + sizeof(Float_t) - 1(pair already included)
+      clusterPtr += sizeof(AliHLTCaloClusterDataStruct) + 5*clusterPtr->fNCells; //5 = sizeof(Short_t) + sizeof(Float_t) - 1(pair already included)
     }
 
   return false;

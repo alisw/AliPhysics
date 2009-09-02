@@ -31,8 +31,7 @@
 #include "AliHLTPHOSClusterAnalyser.h"
 #include "AliHLTPHOSRecPointHeaderStruct.h"
 #include "AliHLTPHOSRecPointDataStruct.h"
-#include "AliHLTPHOSCaloClusterHeaderStruct.h"
-#include "AliHLTPHOSCaloClusterDataStruct.h"
+#include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTPHOSPhysicsAnalyzer.h"
 #include "AliPHOSGeoUtils.h"
 #include "TMath.h"
@@ -67,7 +66,7 @@ AliHLTPHOSClusterAnalyser::~AliHLTPHOSClusterAnalyser()
 }
 
 void 
-AliHLTPHOSClusterAnalyser::SetCaloClusterDataPtr(AliHLTPHOSCaloClusterDataStruct *caloClusterDataPtr)
+AliHLTPHOSClusterAnalyser::SetCaloClusterDataPtr(AliHLTCaloClusterDataStruct *caloClusterDataPtr)
 { 
   //see header file for documentation
   fCaloClusterDataPtr = caloClusterDataPtr; 
@@ -138,7 +137,7 @@ AliHLTPHOSClusterAnalyser::CalculateRecPointMoments()
 }
 
 Int_t 
-AliHLTPHOSClusterAnalyser::CalculateClusterMoments(AliHLTPHOSRecPointDataStruct */*recPointPtr*/, AliHLTPHOSCaloClusterDataStruct* /*clusterPtr*/)
+AliHLTPHOSClusterAnalyser::CalculateClusterMoments(AliHLTPHOSRecPointDataStruct */*recPointPtr*/, AliHLTCaloClusterDataStruct* /*clusterPtr*/)
 {
   //See header file for documentation
   return 0;
@@ -157,12 +156,12 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
 {
   //See header file for documentation
 
-  UInt_t maxClusterSize = sizeof(AliHLTPHOSCaloClusterDataStruct) + (6 << 7); //Reasonable estimate... (6 = sizeof(Short_t) + sizeof(Float_t)
+  UInt_t maxClusterSize = sizeof(AliHLTCaloClusterDataStruct) + (6 << 7); //Reasonable estimate... (6 = sizeof(Short_t) + sizeof(Float_t)
 
   AliHLTPHOSRecPointDataStruct* recPointPtr = fRecPointDataPtr;
   AliHLTPHOSDigitDataStruct* digitPtr = &(recPointPtr->fDigits);  
  
-  AliHLTPHOSCaloClusterDataStruct* caloClusterPtr = fCaloClusterDataPtr;
+  AliHLTCaloClusterDataStruct* caloClusterPtr = fCaloClusterDataPtr;
   UShort_t* cellIDPtr = &(caloClusterPtr->fCellsAbsId);
   Float_t* cellAmpFracPtr = &(caloClusterPtr->fCellsAmpFraction);
   
@@ -247,11 +246,11 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
 	}
 
       caloClusterPtr->fClusterType = '\0';
-      //      totSize += sizeof(AliHLTPHOSCaloClusterDataStruct) + (caloClusterPtr->fNCells)*(sizeof(Short_t) +sizeof(Float_t)-1);   
-      totSize += sizeof(AliHLTPHOSCaloClusterDataStruct) + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));   
+      //      totSize += sizeof(AliHLTCaloClusterDataStruct) + (caloClusterPtr->fNCells)*(sizeof(Short_t) +sizeof(Float_t)-1);   
+      totSize += sizeof(AliHLTCaloClusterDataStruct) + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));   
 
-      //      caloClusterPtr = reinterpret_cast<AliHLTPHOSCaloClusterDataStruct*>(cellAmpFracPtr);
-      caloClusterPtr = reinterpret_cast<AliHLTPHOSCaloClusterDataStruct*>(cellIDPtr);
+      //      caloClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(cellAmpFracPtr);
+      caloClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(cellIDPtr);
       recPointPtr = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(digitPtr);
       digitPtr = &(recPointPtr->fDigits);  
     }

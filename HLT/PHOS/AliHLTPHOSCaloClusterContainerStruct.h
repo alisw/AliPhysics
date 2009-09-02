@@ -27,7 +27,7 @@
  * @brief  Rec point container struct for PHOS HLT
  */
 
-#include "AliHLTPHOSCaloClusterDataStruct.h"
+#include "AliHLTCaloClusterDataStruct.h"
 
 /**
  * @struct AliHLTPHOSCaloClusterContainerStruct
@@ -45,7 +45,7 @@ struct AliHLTPHOSCaloClusterContainerStruct
   UInt_t fNCaloClusters; 
 
   /** Array of rec points in the container */
-  AliHLTPHOSCaloClusterDataStruct fCaloClusterArray[100];
+  AliHLTCaloClusterDataStruct fCaloClusterArray[100];
 
 };
 

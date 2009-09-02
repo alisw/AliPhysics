@@ -1,8 +1,6 @@
-//-*- Mode: C++ -*-
-// $Id$
 
-#ifndef ALIHLTPHOSCALOCLUSTERHEADERSTRUCT_H
-#define ALIHLTPHOSCALOCLUSTERHEADERSTRUCT_H
+#ifndef ALIHLTCALOCLUSTERHEADERSTRUCT_H
+#define ALIHLTCALOCLUSTERHEADERSTRUCT_H
 
 /**************************************************************************
  * Copyright(c) 2007, ALICE Experiment at CERN, All rights reserved.      *
@@ -18,11 +16,33 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-//#include "AliHLTPHOSCommonDefs.h"
+
+/**
+ * Calo cluster struct for  HLT
+ *
+ * @file   AliHLTCaloClusterHeaderStruct
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Calorimeter cluster header for HLT
+ */
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
+/**
+ * @struct AliHLTCaloClusterHeaderStruct
+ * Calorimeter cluster header describing the number of 
+ * clusters in the following block
+ *
+ * @ingroup alihlt_phos
+ */
 
 #include "Rtypes.h"
 
-struct AliHLTPHOSCaloClusterHeaderStruct
+struct AliHLTCaloClusterHeaderStruct
 {
   Short_t fNClusters;
 };

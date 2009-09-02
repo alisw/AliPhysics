@@ -29,7 +29,7 @@
 #include "AliHLTPHOSHistogramProducer.h"
 #include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSCaloClusterContainerStruct.h"
-#include "AliHLTPHOSCaloClusterDataStruct.h"
+#include "AliHLTCaloClusterDataStruct.h"
 
 #include "TH1D.h"
 #include "TNtuple.h"
@@ -71,7 +71,7 @@ Int_t
 AliHLTPHOSHistogramProducer::Fill(AliHLTPHOSCaloClusterContainerStruct* clusterContainerPtr)
 {
   //comment
-  AliHLTPHOSCaloClusterDataStruct* tmpClusterPtr = 0;
+  AliHLTCaloClusterDataStruct* tmpClusterPtr = 0;
 
   for(UInt_t i = 0; i < clusterContainerPtr->fNCaloClusters; i++)
     {

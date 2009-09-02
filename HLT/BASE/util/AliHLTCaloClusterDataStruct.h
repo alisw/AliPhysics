@@ -1,5 +1,3 @@
-//-*- Mode: C++ -*-
-// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -16,16 +14,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#ifndef ALIHLTPHOSCALOCLUSTERDATASTRUCT_H
-#define ALIHLTPHOSCALOCLUSTERDATASTRUCT_H
+#ifndef ALIHLTCALOCLUSTERDATASTRUCT_H
+#define ALIHLTCALOCLUSTERDATASTRUCT_H
 
 /**
- * Rec point data struct for PHOS HLT
+ * Calo cluster struct for  HLT
  *
- * @file   AliHLTPHOSClusterDataStruct.h
+ * @file   AliHLTCaloClusterDataStruct.h
  * @author Oystein Djuvsland
  * @date
- * @brief  Rec point data struct for PHOS HLT
+ * @brief  Calo cluster struct for HLT
  */
 
 // see below for class documentation
@@ -37,13 +35,26 @@
 #include "AliPID.h"
 
 /**
- * @struct AliHLTPHOSCaloClusterDataStruct
- * Calorimeter cluster data struct for PHOS HLT
+ * @struct AliHLTCaloClusterHeaderStruct
+ * Calorimeter cluster header describing the number of 
+ * clusters in the following block
  *
  * @ingroup alihlt_phos
  */
 
-struct AliHLTPHOSCaloClusterDataStruct
+struct AliHLTCaloClusterHeaderStruct
+{
+  Short_t fNClusters;
+};
+
+/**
+ * @struct AliHLTCaloClusterDataStruct
+ * Calorimeter cluster data struct for  HLT
+ * Similar to the AliESDCaloCluster class
+ * @ingroup alihlt_phos
+ */
+
+struct AliHLTCaloClusterDataStruct
 {
 
   /** Number of cells in the cluster */
@@ -94,7 +105,7 @@ struct AliHLTPHOSCaloClusterDataStruct
   /** Distance to nearest bad channel */
   Float_t fDistanceToBadChannel;              //COMMENT
 
-  /** */
+  /** The absolute IDs of the cells*/
   UShort_t fCellsAbsId;                      //COMMENT
 
   /** */

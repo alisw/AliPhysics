@@ -59,10 +59,8 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSHistogramProducer.h \
 		  AliHLTPHOSHistogramProducerComponent.h \
 		  AliHLTPHOSMonitorTriggerComponent.h \
-		  AliHLTPHOSESDCaloClusterMaker.h \
 		  AliHLTPHOSESDEntriesMakerComponent.h \
 		  AliHLTPHOSESDCaloClusterWriterComponent.h \
-		  AliHLTPHOSCaloClusterReader.h \
 		  AliHLTPHOSPhysicsHistogramProducer.h
 #		  AliHLTPHOSESDCaloClusterMakerComponent.h 
 #		  AliHLTPHOSTreeMaker.h \
@@ -91,8 +89,6 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSDigitContainerDataStruct.h \
 		  AliHLTPHOSRcuDigitContainerDataStruct.h \
 		  AliHLTPHOSDigitDataStruct.h \
-		  AliHLTPHOSCaloClusterDataStruct.h \
-		  AliHLTPHOSCaloClusterContainerStruct.h \
 		  AliHLTPHOSRcuFFTDataStruct.h \
 		  AliHLTPHOSChannelDataStruct.h \
 		  AliHLTPHOSChannelDataHeaderStruct.h

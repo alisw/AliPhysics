@@ -14,16 +14,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#ifndef ALIHLTPHOSESDCALOCLUSTERMAKER_H
-#define ALIHLTPHOSESDCALOCLUSTERMAKER_H
+#ifndef ALIHLTESDCALOCLUSTERMAKER_H
+#define ALIHLTESDCALOCLUSTERMAKER_H
 
 /**
  * Class writes ESDs
  *
- * @file   AliHLTPHOSESDCaloClusterMaker.h
+ * @file   AliHLTESDCaloClusterMaker.h
  * @author Oystein Djuvsland
  * @date
- * @brief  ESD writer for PHOS HLT
+ * @brief  ESD writer for  HLT
  */
 
 // see header file for class documentation
@@ -32,66 +32,57 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSBase.h"
-
-class AliHLTPHOSCaloClusterHeaderStruct;
-class AliHLTPHOSCaloClusterReader;
+class AliESDEvent;
+class AliHLTCaloClusterHeaderStruct;
+class AliHLTCaloClusterReader;
 class TClonesArray;
 class AliESDCaloCluster;
 
 /** 
- * @class AliHLTPHOSESDCaloClusterMaker
- * Makes ESD Clusters out of AliHLTPHOSCaloClusterContainerStructs
+ * @class AliHLTESDCaloClusterMaker
+ * Makes ESD Clusters out of AliHLTCaloClusterDataStructs
  * @ingroup alihlt_phos
  */
 
-class AliHLTPHOSESDCaloClusterMaker : public AliHLTPHOSBase
+class AliHLTESDCaloClusterMaker 
 {
 
  public:
   
   
   /** Constructor */
-  AliHLTPHOSESDCaloClusterMaker();
+  AliHLTESDCaloClusterMaker();
   
   /** Destructor */
-  virtual ~AliHLTPHOSESDCaloClusterMaker();
+  virtual ~AliHLTESDCaloClusterMaker();
 
   /** Copy constructor */  
-  AliHLTPHOSESDCaloClusterMaker(const AliHLTPHOSESDCaloClusterMaker &) : 
-    AliHLTPHOSBase(),
-    fNCaloClusters(0),
-    fClusterReaderPtr(0),
-    fESDCaloClusterPtr(0)
+  AliHLTESDCaloClusterMaker(const AliHLTESDCaloClusterMaker &) : 
+    fClusterReaderPtr(0)
     {
       //Copy constructor not implemented
     }
   
   /** Assignment */
-  AliHLTPHOSESDCaloClusterMaker & operator = (const AliHLTPHOSESDCaloClusterMaker)
+  AliHLTESDCaloClusterMaker & operator = (const AliHLTESDCaloClusterMaker)
     {
       //Assignment
       return *this; 
     }
 
-  /** 
-   * Create AliESDCaloClusters from the AliHLTPHOSCaloClusterContainerStruct
-   * @return number of clusters created
+  /**
+   * Convert AliHLTCaloClusterDataStruct clusters and fill an ESDEvent object with 
+   * AliESDCaloCluster clusters
+   * @return number of clusters converted and filled
    */
-  Int_t FillESDCaloClusters(TClonesArray* esdClusters, AliHLTPHOSCaloClusterHeaderStruct* clusterContainer);
+  Int_t FillESD(AliESDEvent *esdPtr, const AliHLTCaloClusterHeaderStruct *clusterHeader);
 
  private: 
-  
-  /* Number of clusters */
-  Int_t fNCaloClusters;  // Number of clusters
 
-  /* The reader */
-  AliHLTPHOSCaloClusterReader* fClusterReaderPtr; // !transient The reader
+  /* The cluster struct reader */
+  AliHLTCaloClusterReader* fClusterReaderPtr; // !transient The reader
 
-  /* An ESD Calo Cluster */
-  AliESDCaloCluster* fESDCaloClusterPtr; // !transient An ESD Calo Cluster
-
-  ClassDef(AliHLTPHOSESDCaloClusterMaker, 0);
+  ClassDef(AliHLTESDCaloClusterMaker, 0);
 };
 
 #endif

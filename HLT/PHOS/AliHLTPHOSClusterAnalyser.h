@@ -39,8 +39,8 @@
 class AliHLTPHOSPhysicsAnalyzer;
 class AliHLTPHOSRecPointHeaderStruct;
 class AliHLTPHOSRecPointDataStruct;
-class AliHLTPHOSCaloClusterHeaderStruct;
-class AliHLTPHOSCaloClusterDataStruct;
+class AliHLTCaloClusterHeaderStruct;
+class AliHLTCaloClusterDataStruct;
 class AliPHOSGeoUtils;
 
 /** 
@@ -98,7 +98,7 @@ public:
    * Set the calo cluster output buffer
    * @param caloClusterDataPtr is a pointer to the calo cluster buffer
    */
-  void SetCaloClusterDataPtr(AliHLTPHOSCaloClusterDataStruct *caloClusterDataPtr);
+  void SetCaloClusterDataPtr(AliHLTCaloClusterDataStruct *caloClusterDataPtr);
 
   /** 
    * Calculates the center of gravity for the reconstruction points in the container
@@ -116,7 +116,7 @@ public:
    * Calculates the moments for a certain cluster
    * @return 
    */
-  Int_t CalculateClusterMoments(AliHLTPHOSRecPointDataStruct *recPointPtr, AliHLTPHOSCaloClusterDataStruct* clusterPtr);
+  Int_t CalculateClusterMoments(AliHLTPHOSRecPointDataStruct *recPointPtr, AliHLTCaloClusterDataStruct* clusterPtr);
 
   /** 
    * Deconvolute the clusters in an AliHLTPHOSRecPointContainerStruct
@@ -149,14 +149,14 @@ public:
    * param clusterPtr is the pointer to the emc cluster
    * @return 
    */
-  Int_t DoParticleIdentification(AliHLTPHOSCaloClusterDataStruct* /*clusterPtr*/) { return 0; }
+  Int_t DoParticleIdentification(AliHLTCaloClusterDataStruct* /*clusterPtr*/) { return 0; }
   
   /**
    * Get the distance to the neares bad channel
    * param clusterPtr is a pointer to the calo cluster
    * @return the distance
    */
-  Float_t GetDistanceToBadChannel(AliHLTPHOSCaloClusterDataStruct* /*clusterPtr*/) { return 0; }
+  Float_t GetDistanceToBadChannel(AliHLTCaloClusterDataStruct* /*clusterPtr*/) { return 0; }
 
   /**
    * Set do cluster fit
@@ -190,10 +190,10 @@ private:
   Int_t fNRecPoints;                                      //COMMENT
 
   /** Pointer to the cluster buffer */
-  AliHLTPHOSCaloClusterDataStruct *fCaloClusterDataPtr;   //! transient
+  AliHLTCaloClusterDataStruct *fCaloClusterDataPtr;   //! transient
 
   /** Pointer to the cluster header */
-  AliHLTPHOSCaloClusterHeaderStruct *fCaloClusterHeaderPtr;   //! transient
+  AliHLTCaloClusterHeaderStruct *fCaloClusterHeaderPtr;   //! transient
 
   /** Instance of the PHOS geometry */
   AliPHOSGeoUtils *fPHOSGeometry;                           //! transient

@@ -36,7 +36,7 @@
 
 #include "AliHLTPHOSProcessor.h"
 
-class AliHLTPHOSCaloClusterHeaderStruct;
+class AliHLTCaloClusterHeaderStruct;
 
 /**
  * @class AliHLTPHOSMonitorTriggerComponent
@@ -107,7 +107,7 @@ protected:
   /** interface function, see @ref AliHLTComponent for description */
   int Deinit();
   
-  Bool_t CheckClusters(AliHLTPHOSCaloClusterHeaderStruct* clusterHeader);
+  Bool_t CheckClusters(AliHLTCaloClusterHeaderStruct* clusterHeader);
 
 private:
   

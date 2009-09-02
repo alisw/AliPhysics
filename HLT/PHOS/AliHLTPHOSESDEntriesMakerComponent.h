@@ -37,7 +37,7 @@
 
 #include "AliHLTPHOSProcessor.h"
 
-class AliHLTPHOSESDCaloClusterMaker;
+class AliHLTESDCaloClusterMaker;
 class AliHLTPHOSCaloClusterContainerStruct;
 class TClonesArray;
 
@@ -60,7 +60,7 @@ class AliHLTPHOSESDEntriesMakerComponent: public AliHLTPHOSProcessor
   virtual ~AliHLTPHOSESDEntriesMakerComponent();
 
   /** Copy constructor */  
-  AliHLTPHOSESDEntriesMakerComponent(const AliHLTPHOSESDEntriesMakerComponent &) : 
+  AliHLTPHOSESDEntriesMakerComponent(const AliHLTPHOSESDEntriesMakerComponent &): 
     AliHLTPHOSProcessor(),
     fESDCaloClusterMakerPtr(0),
     fESDCaloClustersPtr(0)
@@ -105,7 +105,7 @@ protected:
 private:
 
   /** Pointer to the ESD cluster maker */
-  AliHLTPHOSESDCaloClusterMaker* fESDCaloClusterMakerPtr; //! transient
+  AliHLTESDCaloClusterMaker* fESDCaloClusterMakerPtr; //! transient
 
   /** Pointer to the ESD calo cluster array*/
   TClonesArray* fESDCaloClustersPtr; //! transient
