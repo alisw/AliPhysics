@@ -266,9 +266,6 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
   
   AliCodeTimerAuto("");
   
-  // Display trigger histos in a more user friendly way
-  DisplayTriggerInfo(task);
-         
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
   {
     if (! IsValidEventSpecie(specie, list)  ) 
