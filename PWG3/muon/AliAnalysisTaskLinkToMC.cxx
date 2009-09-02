@@ -521,7 +521,7 @@ void AliAnalysisTaskLinkToMC::FillHistsFromMC()
 	
 	for (Int_t i = 0; i < MCEvent()->GetNumberOfTracks(); i++)
 	{
-		AliMCParticle* mcTrack = MCEvent()->GetTrack(i);
+		AliMCParticle* mcTrack = (AliMCParticle*) MCEvent()->GetTrack(i);
 		
 		// Select only reconstructible tracks to fill into findable hist.
 		if (IsFindable(mcTrack))

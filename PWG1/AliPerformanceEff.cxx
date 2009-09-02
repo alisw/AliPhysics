@@ -659,7 +659,7 @@ Bool_t AliPerformanceEff::IsFindable(AliMCEvent *mcEvent, Int_t label)
 {
 if(!mcEvent) return kFALSE;
 
-  AliMCParticle *mcParticle = mcEvent->GetTrack(label);
+  AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(label);
   if(!mcParticle) return kFALSE;
 
   Int_t counter; 

@@ -16,9 +16,11 @@
 
 #include <TTree.h>
 #include <TRefArray.h>
+#include <TClonesArray.h>
 
 #include <AliVEvent.h>
 #include "AliVHeader.h"
+#include "AliVParticle.h"
 #include "AliMCParticle.h"
 
 class AliStack;
@@ -63,7 +65,7 @@ public:
     
   
     virtual Int_t    GetRunNumber()          const         {return 0;}
-    virtual UInt_t   GetPeriodNumber()       const {return 0;}
+    virtual UInt_t   GetPeriodNumber()       const         {return 0;}
     virtual Double_t GetMagneticField()      const         {return 0.;}
 
     // Setters not needed
@@ -73,10 +75,10 @@ public:
     virtual void      SetTriggerMask(ULong64_t /*n*/)      {;}
     virtual void      SetTriggerCluster(UChar_t /*n*/)     {;} 
 
-    virtual UInt_t    GetOrbitNumber()       const {return 0;}
-    virtual UShort_t  GetBunchCrossNumber()  const {return 0;}
+    virtual UInt_t    GetOrbitNumber()        const {return 0;}
+    virtual UShort_t  GetBunchCrossNumber()   const {return 0;}
     
-    virtual UInt_t    GetEventType()         const {return 0;}
+    virtual UInt_t    GetEventType()          const {return 0;}
 
     virtual ULong64_t GetTriggerMask()        const {return 0;}
     virtual UChar_t   GetTriggerCluster()     const {return 0;}
@@ -87,7 +89,7 @@ public:
     virtual Double_t  GetZDCEMEnergy(Int_t /*i*/) 
                                               const {return 0.;}
     // Tracks
-    virtual AliMCParticle *GetTrack(Int_t i) const;
+    virtual AliVParticle *GetTrack(Int_t i) const;
     virtual Int_t     GetNumberOfTracks()    const {return fNparticles;}
     virtual Int_t     GetNumberOfV0s()       const {return -1;}
     virtual Int_t     GetNumberOfCascades()  const {return -1;}
@@ -117,11 +119,16 @@ public:
     virtual Bool_t    IsPhysicalPrimary(Int_t i);
     virtual Int_t     BgLabelToIndex(Int_t label);
     static  Int_t     BgLabelOffset() {return fgkBgLabelOffset;}
-
+    // External particle array
+    virtual void      SetParticleArray(TClonesArray* mcParticles) 
+	{fMCParticles = mcParticles; fNparticles = fMCParticles->GetEntries(); fExternal = kTRUE;}
+    
+     
 private:
     virtual void      ReorderAndExpandTreeTR();
     virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const;
 private: 
+    // Stanndard implementation for ESD production
     AliStack         *fStack;            // Current pointer to stack
     TClonesArray     *fMCParticles;      // Pointer to list of particles
     TRefArray        *fMCParticleMap;    // Map of MC Particles
@@ -136,6 +143,7 @@ private:
     TList            *fSubsidiaryEvents; // List of possible subsidiary events (for example merged underlying event) 
     Int_t             fPrimaryOffset;    // Offset for primaries
     Int_t             fSecondaryOffset;  // Offset for secondaries
+    Bool_t            fExternal;         // True if external particle array
     static Int_t      fgkBgLabelOffset;  // Standard branch name    
     ClassDef(AliMCEvent, 1)  // AliVEvent realisation for MC data
 };

@@ -234,7 +234,7 @@ void AliTRDinfoGen::Exec(Option_t *){
         continue; 
       }
       AliMCParticle *mcParticle = 0x0; 
-      if(!(mcParticle = fMC->GetTrack(alab))){
+      if(!(mcParticle = (AliMCParticle*) fMC->GetTrack(alab))){
         AliError(Form("MC particle label[%d] missing for Ev[%d] Trk[%d].", label, (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), itrk));
         continue;
       }
@@ -329,7 +329,7 @@ void AliTRDinfoGen::Exec(Option_t *){
   
     for(Int_t itk = 0; itk < nTracksMC; itk++){
       if(trackMap[itk]) continue;
-      AliMCParticle *mcParticle = fMC->GetTrack(TMath::Abs(itk));
+      AliMCParticle *mcParticle =  (AliMCParticle*) fMC->GetTrack(TMath::Abs(itk));
       Int_t fPdg = mcParticle->Particle()->GetPdgCode();
       Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
       Int_t iref = 0; AliTrackReference *ref = 0x0; 

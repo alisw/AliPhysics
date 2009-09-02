@@ -154,7 +154,7 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 
   // loop on the MC event
   for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
-    AliMCParticle *mcPart  = fMCEvent->GetTrack(ipart);
+    AliMCParticle *mcPart  = (AliMCParticle*) fMCEvent->GetTrack(ipart);
  
     TParticle *part = mcPart->Particle(); 
     TParticle *part0 = mcPart->Particle();

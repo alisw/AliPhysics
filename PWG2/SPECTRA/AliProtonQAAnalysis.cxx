@@ -3028,7 +3028,7 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
   TArrayI labelMCArray(nMCParticles);
 
   for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfTracks(); iTracks++) {
-    AliMCParticle *mcTrack = mcEvent->GetTrack(iTracks);
+    AliMCParticle *mcTrack = (AliMCParticle*) mcEvent->GetTrack(iTracks);
     if (!mcTrack) {
       Printf("ERROR: Could not receive track %d (mc loop)", iTracks);
       continue;
@@ -3096,7 +3096,7 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 	Int_t lPartMother = -1;
 	Int_t motherPDGCode = -1;
 	lPartMother = particle->GetFirstMother();
-	AliMCParticle *mcMotherTrack = mcEvent->GetTrack(lPartMother);
+	AliMCParticle *mcMotherTrack = (AliMCParticle*) mcEvent->GetTrack(lPartMother);
 	TParticle *motherParticle = mcMotherTrack->Particle();
 	if(motherParticle) motherPDGCode = motherParticle->GetPdgCode();
 	

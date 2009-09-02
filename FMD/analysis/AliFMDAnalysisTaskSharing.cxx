@@ -388,7 +388,7 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   Int_t nTracks = stack->GetNprimary();
   TH1F* nMCevents = (TH1F*)fDiagList->FindObject("nMCEventsNoCuts");
   for(Int_t i = 0 ;i<nTracks;i++) {
-    particle = mcEvent->GetTrack(i);
+    particle = (AliMCParticle*) mcEvent->GetTrack(i);
     if(!particle)
       continue;
     

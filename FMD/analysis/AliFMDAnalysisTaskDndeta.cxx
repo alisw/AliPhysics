@@ -244,7 +244,7 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
     nTracks = stack->GetNtrack();
   
   for(Int_t i = 0 ;i<nTracks;i++) {
-    particle = mcEvent->GetTrack(i);
+    particle = (AliMCParticle*) mcEvent->GetTrack(i);
     if(!particle)
       continue;
    

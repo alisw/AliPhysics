@@ -362,7 +362,7 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
   // Loop MC
   //
   for(Int_t imc = fMC->GetNumberOfTracks(); imc--;){
-    mctrack = fMC->GetTrack(imc);
+    mctrack = (AliMCParticle*) fMC->GetTrack(imc);
 
     container[0] = mctrack->Pt();
     container[1] = mctrack->Eta();
@@ -426,7 +426,7 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
     
 
     // Check if it is signal electrons
-    if(!(mctrack = fMC->GetTrack(TMath::Abs(track->GetLabel())))) continue;
+    if(!(mctrack = (AliMCParticle*) fMC->GetTrack(TMath::Abs(track->GetLabel())))) continue;
     
     container[3] = mctrack->Pt();
     container[4] = mctrack->Eta();

@@ -247,7 +247,7 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 
   Int_t j=0;
   for (Int_t ip = 0; ip < np; ip++){
-    AliMCParticle* mcpart =  mcE->GetTrack(ip);
+    AliMCParticle* mcpart = (AliMCParticle*) mcE->GetTrack(ip);
     TParticle* part = mcpart->Particle();
     Float_t xv = part->Vx();
     Float_t yv = part->Vy();
@@ -265,11 +265,11 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
       AliMCParticle* mother = mcpart;
       Int_t imo = mcpart->GetMother();
       while((imo >= nprim) && (mother->GetUniqueID() == 4)) {
-	mother = mcE->GetTrack(imo);
+	mother =  (AliMCParticle*) mcE->GetTrack(imo);
 	imo =  mother->GetMother();
       }
       // Select according to pseudorapidity and production point of primary ancestor
-      if (imo < nprim && Select(mcE->GetTrack(imo)->Particle(), rv, zv))write = kTRUE;         
+      if (imo < nprim && Select(((AliMCParticle*) mcE->GetTrack(imo))->Particle(), rv, zv))write = kTRUE;         
     } else if (part->GetUniqueID() == 5) {
       // Now look for pair production
       Int_t imo = mcpart->GetMother();
@@ -278,10 +278,10 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 	write = kTRUE;
       } else {
 	// Check if the gamma comes from the decay chain of a primary particle
-	AliMCParticle* mother = mcE->GetTrack(imo);
+	AliMCParticle* mother =  (AliMCParticle*) mcE->GetTrack(imo);
 	imo = mother->GetMother();
 	while((imo >= nprim) && (mother->GetUniqueID() == 4)) {
-	  mother =  mcE->GetTrack(imo);
+	  mother =   (AliMCParticle*) mcE->GetTrack(imo);
 	  imo =  mother->GetMother();
 	}
 	// Select according to pseudorapidity and production point 
@@ -316,7 +316,7 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
   static int  iAll = 0;
   static int  iCharm = 0;
   for (Int_t ip = 0; ip < np; ip++){
-    AliMCParticle* mcpart =  mcE->GetTrack(ip);
+    AliMCParticle* mcpart =   (AliMCParticle*) mcE->GetTrack(ip);
     TParticle* part = mcpart->Particle();
 
     //    if((TMath::Abs(part->GetPdgCode())/400)==1){

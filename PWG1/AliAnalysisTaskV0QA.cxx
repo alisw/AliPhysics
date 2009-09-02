@@ -825,7 +825,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
        TParticle* ePosTPC;
        mctruth->MCEvent()->GetParticleAndTR(posiGIndex,ePosTPC,clRefsP);
 
-       AliMCParticle *mcParticlePos = mctruth->MCEvent()->GetTrack(posiGIndex);
+       AliMCParticle *mcParticlePos = (AliMCParticle*) (mctruth->MCEvent()->GetTrack(posiGIndex));
        if(!mcParticlePos) continue;
 
        Int_t counter; 
@@ -862,7 +862,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
        TParticle* eNegTPC;
        mctruth->MCEvent()->GetParticleAndTR(elecGIndex,eNegTPC,clRefsN);
 
-       AliMCParticle *mcParticleNeg = mctruth->MCEvent()->GetTrack(elecGIndex);
+       AliMCParticle *mcParticleNeg = (AliMCParticle*) (mctruth->MCEvent()->GetTrack(elecGIndex));
        if(!mcParticleNeg) continue;
 
        Int_t counterN; 
@@ -949,7 +949,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
        TParticle* ePosTPC;
        mctruth->MCEvent()->GetParticleAndTR(piPosK0Index,ePosTPC,clRefsP);
 
-       AliMCParticle *mcParticlePos = mctruth->MCEvent()->GetTrack(piPosK0Index);
+       AliMCParticle *mcParticlePos = (AliMCParticle*) (mctruth->MCEvent()->GetTrack(piPosK0Index));
        if(!mcParticlePos) continue;
 
        Int_t counter; 
@@ -984,7 +984,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
        TParticle* eNegTPC;
        mctruth->MCEvent()->GetParticleAndTR(piNegK0Index,eNegTPC,clRefsN);
 
-       AliMCParticle *mcParticleNeg = mctruth->MCEvent()->GetTrack(piNegK0Index);
+       AliMCParticle *mcParticleNeg = (AliMCParticle*) (mctruth->MCEvent()->GetTrack(piNegK0Index));
        if(!mcParticleNeg) continue;
 
        Int_t counterN; 
@@ -1071,7 +1071,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
        TParticle* ePosTPC;
        mctruth->MCEvent()->GetParticleAndTR(pPosLIndex,ePosTPC,clRefsP);
 
-       AliMCParticle *mcParticlePos = mctruth->MCEvent()->GetTrack(pPosLIndex);
+       AliMCParticle *mcParticlePos = (AliMCParticle*) (mctruth->MCEvent()->GetTrack(pPosLIndex));
        if(!mcParticlePos) continue;
 
        Int_t counter; 
@@ -1106,7 +1106,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
        TParticle* eNegTPC;
        mctruth->MCEvent()->GetParticleAndTR(piNegLIndex,eNegTPC,clRefsN);
 
-       AliMCParticle *mcParticleNeg = mctruth->MCEvent()->GetTrack(piNegLIndex);
+       AliMCParticle *mcParticleNeg = (AliMCParticle*) (mctruth->MCEvent()->GetTrack(piNegLIndex));
        if(!mcParticleNeg) continue;
 
        Int_t counterN; 
@@ -1198,7 +1198,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
        TParticle* ePosTPC;
        mctruth->MCEvent()->GetParticleAndTR(piPosALIndex,ePosTPC,clRefsP);
 
-       AliMCParticle *mcParticlePos = mctruth->MCEvent()->GetTrack(piPosALIndex);
+       AliMCParticle *mcParticlePos = (AliMCParticle*) (mctruth->MCEvent()->GetTrack(piPosALIndex));
        if(!mcParticlePos) continue;
 
        Int_t counter; 
@@ -1230,7 +1230,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
        TParticle* eNegTPC;
        mctruth->MCEvent()->GetParticleAndTR(apNegALIndex,eNegTPC,clRefsN);
 
-       AliMCParticle *mcParticleNeg = mctruth->MCEvent()->GetTrack(apNegALIndex);
+       AliMCParticle *mcParticleNeg = (AliMCParticle*) (mctruth->MCEvent()->GetTrack(apNegALIndex));
        if(!mcParticleNeg) continue;
 
        Int_t counterN; 

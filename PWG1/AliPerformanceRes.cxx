@@ -512,7 +512,7 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   if(!mcEvent) return;
 
   Int_t label = TMath::Abs(esdTrack->GetLabel()); 
-  AliMCParticle *mcParticle = mcEvent->GetTrack(label);
+  AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(label);
   if(!mcParticle) return;
 
   // get the first TPC track reference
@@ -611,7 +611,7 @@ void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *
   if(!mcEvent) return;
 
   Int_t label = TMath::Abs(esdTrack->GetLabel()); 
-  AliMCParticle *mcParticle = mcEvent->GetTrack(label);
+  AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(label);
   if(!mcParticle) return;
 
   // get the last TPC track reference

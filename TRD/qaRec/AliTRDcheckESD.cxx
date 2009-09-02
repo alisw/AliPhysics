@@ -203,7 +203,7 @@ void AliTRDcheckESD::Exec(Option_t *){
     
     // read MC particle
     AliMCParticle *mcParticle = 0x0; 
-    if(!(mcParticle = fMC->GetTrack(TMath::Abs(fLabel)))){
+    if(!(mcParticle = (AliMCParticle*) fMC->GetTrack(TMath::Abs(fLabel)))){
       AliWarning(Form("MC particle missing. Label[ %d].", fLabel));
       continue;
     }

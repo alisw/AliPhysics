@@ -88,7 +88,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, Ali
     //loop over tracks
     while (iGoodTracks < iN && itrkN < iNumberOfInputTracks) {
       //get input particle
-      AliMCParticle* pParticle = anInput->GetTrack(itrkN);   
+      AliMCParticle* pParticle = (AliMCParticle*) anInput->GetTrack(itrkN);   
       //make new AliFlowTrackSimple
       AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
       pTrack->SetPt(pParticle->Pt() );
@@ -359,7 +359,7 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
       //get Label
       Int_t iLabel = pParticle->GetLabel();
       //match to mc particle
-      AliMCParticle* pMcParticle = anInputMc->GetTrack(TMath::Abs(iLabel));
+      AliMCParticle* pMcParticle = (AliMCParticle*) anInputMc->GetTrack(TMath::Abs(iLabel));
       
       //check
       if (TMath::Abs(pParticle->GetLabel())!=pMcParticle->Label()) cout<<"pParticle->GetLabel()!=pMcParticle->Label() "<<pParticle->GetLabel()<<"  "<<pMcParticle->Label()<<endl;
@@ -568,7 +568,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput)
 
   //normal loop
   while (iGoodTracks < iN && itrkN < iNumberOfInputTracks) {
-    AliMCParticle* pParticle = anInput->GetTrack(itrkN);   //get input particle
+    AliMCParticle* pParticle = (AliMCParticle*) anInput->GetTrack(itrkN);   //get input particle
     //cut on tracks
     if (TMath::Abs(pParticle->Eta()) < 0.9)
       {
@@ -779,7 +779,7 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
     //get Label
     Int_t iLabel = pParticle->GetLabel();
     //match to mc particle
-    AliMCParticle* pMcParticle = anInputMc->GetTrack(TMath::Abs(iLabel));
+    AliMCParticle* pMcParticle = (AliMCParticle*) anInputMc->GetTrack(TMath::Abs(iLabel));
     
     //check
     if (TMath::Abs(pParticle->GetLabel())!=pMcParticle->Label()) cout<<"pParticle->GetLabel()!=pMcParticle->Label() "<<pParticle->GetLabel()<<"  "<<pMcParticle->Label()<<endl;

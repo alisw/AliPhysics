@@ -43,7 +43,7 @@ Int_t AliMCEvent::fgkBgLabelOffset(10000000);
 AliMCEvent::AliMCEvent():
     AliVEvent(),
     fStack(0),
-    fMCParticles(new TClonesArray("AliMCParticle",1000)),
+    fMCParticles(0),
     fMCParticleMap(0),
     fHeader(new AliHeader()),
     fTRBuffer(0),
@@ -55,7 +55,8 @@ AliMCEvent::AliMCEvent():
     fNparticles(-1),
     fSubsidiaryEvents(0),
     fPrimaryOffset(0),
-    fSecondaryOffset(0)
+    fSecondaryOffset(0),
+    fExternal(0)
 {
     // Default constructor
 }
@@ -75,7 +76,8 @@ AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
     fNparticles(mcEvnt.fNparticles),
     fSubsidiaryEvents(0),
     fPrimaryOffset(0),
-    fSecondaryOffset(0)
+    fSecondaryOffset(0),
+    fExternal(0)
 { 
 // Copy constructor
 }
@@ -100,6 +102,8 @@ void AliMCEvent::ConnectTreeE (TTree* tree)
 void AliMCEvent::ConnectTreeK (TTree* tree)
 {
     // Connect the kinematics tree to the stack
+    if (!fMCParticles) fMCParticles = new TClonesArray("AliMCParticle",1000);
+    //
     fStack = fHeader->Stack();
     fStack->ConnectTree(tree);
     //
@@ -454,12 +458,18 @@ void AliMCEvent::ReorderAndExpandTreeTR()
     fTreeTR = fTmpTreeTR;
 }
 
-AliMCParticle* AliMCEvent::GetTrack(Int_t i) const
+AliVParticle* AliMCEvent::GetTrack(Int_t i) const
 {
     // Get MC Particle i
     //
+
+    if (fExternal) {
+	return ((AliVParticle*) (fMCParticles->At(i)));
+    }
+    
     //
     // Check first if this explicitely accesses the subsidiary event
+    
     if (i >= BgLabelOffset()) {
 	if (fSubsidiaryEvents) {
 	    AliMCEvent* bgEvent = (AliMCEvent*) (fSubsidiaryEvents->At(1));
