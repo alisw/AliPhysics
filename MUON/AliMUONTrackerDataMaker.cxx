@@ -387,7 +387,7 @@ Bool_t AliMUONTrackerDataMaker::ProcessEvent()
     {
       if ( fDigitCalibrator->IsValidDigit(detElemId, manuId, manuChannel) )
       {
-        charge = fDigitCalibrator->CalibrateDigit(detElemId, manuId, manuChannel,adc,3.0);
+        charge = fDigitCalibrator->CalibrateDigit(detElemId, manuId, manuChannel,adc);
       }
       else
       {

@@ -169,6 +169,11 @@ AliMUONDigitCalibrator::Ctor(const char* calibMode,
     
     fChargeSigmaCut = recoParams->ChargeSigmaCut();
 	}
+  else
+  {
+    fLogger->Log("No RecoParam available");
+    fLogger->Log(Form("SigmaCut=%e",fChargeSigmaCut));
+  }
   
   Bool_t deferredInitialization = kTRUE;
   
@@ -270,6 +275,13 @@ AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manu
   /// Calibrate one digit
   /// Return the digit charge, in fC
   
+  if ( nsigmas < 0 ) 
+  {
+    nsigmas = fChargeSigmaCut;
+  }
+
+  fLogger->Log(Form("ChargeSigmaCut used = %e",nsigmas));
+
   AliMUONVCalibParam* pedestal = static_cast<AliMUONVCalibParam*>
   (fPedestals->FindObject(detElemId,manuId));
   

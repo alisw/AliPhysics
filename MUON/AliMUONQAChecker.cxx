@@ -170,6 +170,7 @@ AliMUONQAChecker::CheckRaws(TObjArray ** list)
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
     rv[specie] = 1.0 ; 
  
+  Bool_t IsAnyTrackerDataPresent = kFALSE;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     TIter next(list[specie]);
     TObject* object;
@@ -185,10 +186,11 @@ AliMUONQAChecker::CheckRaws(TObjArray ** list)
 
     if ( !data ) 
       {
-        AliError("Did not find TrackerData in the list !");
-        return NULL;
+        AliWarning(Form("Did not find TrackerData for specie %s !",AliRecoParam::GetEventSpecieName(specie)));
+        continue;
       }
   
+    IsAnyTrackerDataPresent = kTRUE;
     AliMpManuIterator it;
     Int_t detElemId;
     Int_t manuId;
@@ -204,7 +206,7 @@ AliMUONQAChecker::CheckRaws(TObjArray ** list)
         if (occ >= 0.75 ) ++n75;    
       }
 
-    AliInfo(Form("n %d n50 %d n75 %d",n,n50,n75));
+    AliDebug(1,Form("n %d n50 %d n75 %d",n,n50,n75));
   
     if ( n == 0 ) 
       {
@@ -224,6 +226,13 @@ AliMUONQAChecker::CheckRaws(TObjArray ** list)
         rv[specie] =  0.9;
       }
   }
+  
+  if ( !IsAnyTrackerDataPresent ) 
+    {
+      AliError("Did not find any TrackerData in the list !");
+      return NULL;
+    }
+  
   return rv;
 }
 

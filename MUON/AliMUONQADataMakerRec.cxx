@@ -47,6 +47,7 @@
 #include "AliMpDDLStore.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
+#include "AliMpDetElement.h"
 #include "AliMpLocalBoard.h"
 #include "AliMpStationType.h"
 #include "AliMpTriggerCrate.h"
@@ -72,7 +73,10 @@
 #include <TH1F.h> 
 #include <TH1I.h> 
 #include <TH2F.h>
+#include <TLine.h>
+#include <TPaveText.h>
 #include <Riostream.h>
+#include <TMath.h>
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONQADataMakerRec
@@ -85,6 +89,97 @@
 ClassImp(AliMUONQADataMakerRec)
 /// \endcond
            
+
+namespace {
+  
+  int trim(Int_t n, 
+           Double_t* x,
+           Double_t alpha,
+           Double_t& tmean,
+           Double_t& tvar,
+           Double_t& min,
+           Double_t& max)
+  {
+    //
+    // Calculates the trimmed (tmean) mean
+    // of a sample (x) and estimates the variance (tvar)
+    // of that mean.
+    //
+    
+    // First check input parameters
+    
+    // number of observations
+    if ( n < 2 )
+    {
+      return -1;
+    }
+    
+    if ( alpha < 0 || alpha >= 0.5 )
+      // proportion of observations
+      // to be trimmed at each end of the sorted sample
+    {
+      return -2;
+    }
+    
+    // Input parameters are good. Let's move on.
+    
+    // Insure we use a sample sorted into ascending order.
+    
+    Int_t* indices = new Int_t[n];
+    
+    TMath::Sort(n,x,indices,kFALSE);
+    
+    Double_t* sx = new Double_t[n];
+    
+    for ( Int_t i = 0; i < n; ++i )
+    {
+      sx[i] = x[indices[i]];
+    }
+    delete[] indices;
+    
+  
+    // Number of observations trimmed at each end.
+    
+    Int_t k = static_cast<Int_t>(floorf(alpha * n));
+    
+    double sum = 0.0;
+    
+    for ( Int_t i = k; i < n - k ; ++i )
+    {
+      sum += sx[i];
+    }
+    
+    tmean = sum / ( n - 2 * k );
+  
+    double t2 = 0.0;
+    
+    for ( Int_t i = k; i < n - k; ++i )
+    {
+      t2 += (sx[i] - tmean) * (sx[i] - tmean);
+    }
+    
+    tvar = (
+            t2 +
+            k * (sx[k] - tmean) * (sx[k] - tmean) +
+            k * (sx[n - k - 1] - tmean) * (sx[n - k - 1] - tmean)
+            ) / (n * n);
+    
+    // get the min and max for the non-rejected values
+    min = DBL_MAX;
+    max = 0.0;
+    
+    for ( Int_t i = k; i < n-k; ++i ) 
+    {
+      min = TMath::Min(min,sx[i]);
+      max = TMath::Max(max,sx[i]);
+    }
+    
+    delete[] sx;
+    
+    return 0;
+  }
+}
+
 //____________________________________________________________________________ 
 AliMUONQADataMakerRec::AliMUONQADataMakerRec() : 
 AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kMUON), "MUON Quality Assurance Data Maker"),
@@ -170,15 +265,17 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
   ///Detector specific actions at end of cycle
   
   AliCodeTimerAuto("");
-
+  
+  // Display trigger histos in a more user friendly way
+  DisplayTriggerInfo(task);
+         
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
   {
     if (! IsValidEventSpecie(specie, list)  ) 
-      continue ;
+      continue ;      
     SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
     if ( task == AliQAv1::kRAWS && fTrackerDataMaker ) 
       {
-
         if ( !GetRawsData(kTrackerBusPatchOccupancy) ) continue;
         
         TIter next(list[specie]);
@@ -191,7 +288,7 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
           }
         if (!alreadyThere && fTrackerDataMaker) 
           {
-          AliDebug(AliQAv1::GetQADebugLevel(), "Adding fTrackerDataMaker to the list of qa objects");
+          AliDebug(AliQAv1::GetQADebugLevel(), "Adding fTrackerData to the list of qa objects");
             list[specie]->AddAt(fTrackerDataMaker->Data(),(Int_t)kTrackerData);
           }
           if ( fTrackerDataMaker ) 
@@ -207,8 +304,10 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
                 {
                   Int_t busPatchId = bp->GetId();
                   Int_t bin = hbp->FindBin(busPatchId);
-                  hbp->SetBinContent(bin,data->BusPatch(busPatchId,occDim));
+                  hbp->SetBinContent(bin,data->BusPatch(busPatchId,occDim)*100.0); // occupancy, in percent
                 }
+              
+              BeautifyTrackerBusPatchOccupancy(*hbp);
             }
       }
     
@@ -443,9 +542,8 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
     
     // Display trigger histos in a more user friendly way
     DisplayTriggerInfo(task);
-
   } // loop on specie
-  
+    
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQAv1::kMUON, task, list) ;
 }
@@ -497,21 +595,34 @@ void AliMUONQADataMakerRec::InitRaws()
 	h10->GetYaxis()->SetTitle("Cumulated scaler time (s)");
 	Add2RawsList(h10, kTriggerScalersTime, !expert, !image, !saveCorr);
 	
-  Int_t nbp(0);
+  Int_t bpmin(999999);
+  Int_t bpmax(0);
+  
   TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
-  while (next())
+  AliMpBusPatch* bp(0x0);
+  while ( ( bp = static_cast<AliMpBusPatch*>(next())) )
   {
-    ++nbp;
+    bpmin = TMath::Min(bpmin,bp->GetId());
+    bpmax = TMath::Max(bpmax,bp->GetId());
   }
   
-  TH1* hbp = new TH1F("hTrackerBusPatchOccupancy","Occupancy of bus patches",
-                      nbp,-0.5,nbp-0.5);
+  Double_t xmin = bpmin-0.5;
+  Double_t xmax = bpmax+0.5;
+  Int_t nbins = bpmax-bpmin+1;
   
+  TH1* hbp = new TH1F("hTrackerBusPatchOccupancy","Occupancy of bus patches",nbins,xmin,xmax);
+
+  TH1* hbpnpads = new TH1F("kTrackerBusPatchNofPads","Number of pads per bus patch",nbins,xmin,xmax);
+
+  TH1* hbpnmanus = new TH1F("kTrackerBusPatchNofManus","Number of manus per bus patch",nbins,xmin,xmax);
+
   Add2RawsList(hbp,kTrackerBusPatchOccupancy, !expert, image, !saveCorr);
+  Add2RawsList(hbpnpads,kTrackerBusPatchNofPads, expert, !image, !saveCorr);
+  Add2RawsList(hbpnmanus,kTrackerBusPatchNofManus, expert, !image, !saveCorr);
 
   const Bool_t histogram(kFALSE);
 
-  fTrackerDataMaker = new AliMUONTrackerDataMaker(GetMUONRecoParam(),
+  if(!fTrackerDataMaker) fTrackerDataMaker = new AliMUONTrackerDataMaker(GetMUONRecoParam(),
                                                   AliCDBManager::Instance()->GetRun(),
                                                   0x0,
                                                   "",
@@ -1491,3 +1602,145 @@ AliMUONVTrackerData* AliMUONQADataMakerRec::GetTrackerData() const
   return fTrackerDataMaker->Data(); 
   
 }
+
+//____________________________________________________________________________ 
+void
+AliMUONQADataMakerRec::BeautifyTrackerBusPatchOccupancy(TH1& hbp)
+{
+  /// Put labels, limits and so on on the TrackerBusPatchOccupancy histogram
+  
+  hbp.SetXTitle("Absolute Bus Patch Id");
+  hbp.SetYTitle("Occupancy (percent)");
+  hbp.SetStats(kFALSE);
+  
+  Double_t xmin = hbp.GetXaxis()->GetXmin();
+  Double_t xmax = hbp.GetXaxis()->GetXmax();
+  
+  Double_t occMax(0.1); // 0.1% y-limit for the plot
+  Double_t occError(1.0); // 1.0% y-limit to count the "errors"
+  
+  TLine* line = new TLine(xmin,occError,xmax,occError);
+  line->SetLineColor(2);
+  line->SetLineWidth(3);
+  
+  hbp.GetListOfFunctions()->Add(line);
+  
+  TH1* hnpads = GetRawsData(kTrackerBusPatchNofPads);
+  hnpads->SetStats(kFALSE);
+  TH1* hnmanus = GetRawsData(kTrackerBusPatchNofManus);
+  hnmanus->SetStats(kFALSE);
+  
+  TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
+  AliMpBusPatch* bp(0x0);
+  while ( ( bp = static_cast<AliMpBusPatch*>(next())) )
+  {
+    Int_t n(0);
+    for ( Int_t imanu = 0; imanu < bp->GetNofManus(); ++imanu )
+    {
+      Int_t manuId = bp->GetManuId(imanu);
+      AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(bp->GetDEId());      
+      n += de->NofChannelsInManu(manuId);
+    }
+    hnpads->Fill(bp->GetId(),n*1.0);
+    hnmanus->Fill(bp->GetId(),bp->GetNofManus()*1.0);
+  }
+  
+  next.Reset();
+  
+  Int_t nMissingPads(0);
+  Int_t nPads(0);
+  Int_t nBusPatches(0);
+  Int_t nMissingBusPatches(0);
+
+  while ( ( bp = static_cast<AliMpBusPatch*>(next())) )
+  {
+    Int_t bin = hbp.FindBin(bp->GetId());
+    Int_t n = hnpads->GetBinContent(bin);
+    
+    ++nBusPatches;
+
+    nPads += n;
+    
+    if ( hbp.GetBinContent(bin) <= 0 ) 
+    {
+      nMissingPads += n;
+      ++nMissingBusPatches;
+    }
+  }
+
+  next.Reset();
+  
+  Double_t* x = new Double_t[nBusPatches];
+  Int_t n(0);
+  Int_t nBusPatchesAboveLimit(0);
+  
+  while ( ( bp = static_cast<AliMpBusPatch*>(next())) )
+  {
+    Int_t bin = hbp.FindBin(bp->GetId());
+    if ( hbp.GetBinContent(bin) > 0 )
+    {
+      x[n] = hbp.GetBinContent(bin);
+      ++n;
+    }
+    if ( hbp.GetBinContent(bin) > occError )
+    {
+      ++nBusPatchesAboveLimit;
+    }
+  }
+  
+  Double_t alpha(0.1); // trim 10% of data
+  Double_t tmean,tvar;
+  Double_t ymin,ymax;
+  
+  // computed the truncated mean of the occupancy values, in order to get a 
+  // reasonable y-range for the histogram (without giant peaks to the roof 
+  // for misbehaving buspatches).
+  Int_t ok = trim(nBusPatches,x,alpha,tmean,tvar,ymin,ymax);
+  
+  if ( ok < 0 ) 
+  {
+    ymax = occMax;
+  }
+  else
+  {
+    ymax = TMath::Max(ymax,occMax);
+  }
+  
+  hbp.SetMaximum(ymax*1.4);
+  
+  TPaveText* text = new TPaveText(0.55,0.85,0.99,0.99,"NDC");
+  
+  if (ok < 0 ) 
+  {
+    text->AddText("Could not compute truncated mean. Not enough events ?");
+    text->SetFillColor(2);
+  }
+  else if (!nPads || !nBusPatches)
+  {
+    text->AddText("Could not get the total number of pads. ERROR !!!");
+    text->SetFillColor(2);
+  }
+  else
+  {
+    Float_t missingPadFraction = nMissingPads*100.0/nPads;
+    Float_t missingBusPatchFraction = nMissingBusPatches*100.0/nBusPatches;
+    Float_t aboveLimitFraction = nBusPatchesAboveLimit*100.0/nBusPatches;
+    
+    text->AddText(Form("%5.2f %% of missing buspatches (%d out of %d)",missingBusPatchFraction,nMissingBusPatches,nBusPatches));
+    text->AddText(Form("%5.2f %% of missing pads (%d out of %d)",missingPadFraction,nMissingPads,nPads));
+    text->AddText(Form("%5.2f %% bus patches above the %5.2f %% limit",aboveLimitFraction,occError));
+    text->AddText(Form("Truncated mean at %2d %% is %7.2f %%",(Int_t)(alpha*100),tmean));
+    
+    if ( missingPadFraction > 10.0 || aboveLimitFraction > 5.0 ) 
+    {
+      text->SetFillColor(2);
+    }
+    else
+    {
+      text->SetFillColor(3);
+    }
+  }
+  
+  hbp.GetListOfFunctions()->Add(text);
+}
+

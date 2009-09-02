@@ -54,6 +54,9 @@
 ClassImp(AliMUONCalibrationData)
 /// \endcond
 
+AliMUONVStore* AliMUONCalibrationData::fBypassPedestals(0x0);
+AliMUONVStore* AliMUONCalibrationData::fBypassGains(0x0);
+
 //_____________________________________________________________________________
 AliMUONCalibrationData::AliMUONCalibrationData(Int_t runNumber, 
                                                Bool_t deferredInitialization) 
@@ -275,6 +278,8 @@ AliMUONVStore*
 AliMUONCalibrationData::Gains() const
 {
   /// Create (if needed) and return the internal store for gains.
+  if (fBypassGains) return fBypassGains;
+  
   if (!fGains)
   {
     fGains = CreateGains(fRunNumber);
@@ -400,10 +405,23 @@ AliMUONCalibrationData::RejectList() const
 }
 
 //_____________________________________________________________________________
+void
+AliMUONCalibrationData::BypassStores(AliMUONVStore* ped, AliMUONVStore* gain)
+{
+  /// Force the use of those pedestals and gains
+  fBypassPedestals = ped;
+  fBypassGains = gain;
+  
+}
+
+//_____________________________________________________________________________
 AliMUONVStore*
 AliMUONCalibrationData::Pedestals() const
 {
   /// Return pedestals
+  
+  if (fBypassPedestals) return fBypassPedestals;
+  
   if (!fPedestals)
   {
     fPedestals = CreatePedestals(fRunNumber);

@@ -30,14 +30,15 @@ public:
   virtual ~AliMUONQADataMakerRec();
   
   AliMUONVTrackerData* GetTrackerData() const;
-  
+
+  virtual void InitRaws(); 
+  virtual void InitRecPoints(); 
+
 protected:
 	
   virtual void StartOfDetectorCycle(); 
 
-  virtual void InitRaws(); 
   virtual void InitDigits(); 
-  virtual void InitRecPoints(); 
   virtual void InitESDs(); 
   
   virtual void MakeRaws(AliRawReader* rawReader); 
@@ -55,6 +56,8 @@ private:
   enum ERaw { 
     kTrackerData              = 3,  ///< Accumulated data
     kTrackerBusPatchOccupancy = 4, ///< Bus patch occupancies
+    kTrackerBusPatchNofPads   = 5, ///< Number of pads per bus patch
+    kTrackerBusPatchNofManus  = 6, ///< Number of manus per bus patch
     kTriggerScalers           = 22, ///< Trigger scalers histogram per plane index
     kTriggerScalersDisplay    = 30, ///< Trigger scalers display histogram per plane index
     kTriggerScalersTime       = 38, ///< Trigger scalers acquisition time index
@@ -150,6 +153,9 @@ private:
   };
   
 private:
+  void BeautifyTrackerBusPatchOccupancy(TH1& hbp);
+  
+private:
 	
   void Ctor();
   void DisplayTriggerInfo(AliQAv1::TASKINDEX_t task);
@@ -171,7 +177,7 @@ private:
 	
   AliMUONVTrackerDataMaker* fTrackerDataMaker; //!< tracker data accumulation
   
-  ClassDef(AliMUONQADataMakerRec,6)  // MUON Quality assurance data maker
+  ClassDef(AliMUONQADataMakerRec,7)  // MUON Quality assurance data maker
 
 };
 #endif

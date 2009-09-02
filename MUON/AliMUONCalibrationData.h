@@ -136,6 +136,8 @@ public:
   
   static void Check(Int_t runNumber);
   
+  static void BypassStores(AliMUONVStore* ped, AliMUONVStore* gain);
+  
 protected:
   /// Not implemented
   AliMUONCalibrationData(const AliMUONCalibrationData& other);
@@ -161,8 +163,11 @@ private:
   mutable AliMUONVStore* fOccupancyMap; //!< occupancy map
   
   mutable AliMUONRejectList* fRejectList; //!< reject list
-  
-  ClassDef(AliMUONCalibrationData,11) // Storage for all MUON calibration data.
+
+  static AliMUONVStore* fBypassPedestals;
+  static AliMUONVStore* fBypassGains;
+    
+  ClassDef(AliMUONCalibrationData,12) // Storage for all MUON calibration data.
 };
 
 #endif

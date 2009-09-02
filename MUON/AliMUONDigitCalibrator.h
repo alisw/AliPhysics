@@ -45,7 +45,7 @@ public:
                       Int_t* statusMap=0x0) const;
 
   Float_t CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manuChannel,
-                         Float_t adc, Float_t nsigmas, 
+                         Float_t adc, Float_t nsigmas=-1, 
                          Bool_t* isSaturated=0x0) const;
                      
   Int_t PadStatus(Int_t detElemId, Int_t manuId, Int_t manuChannel) const;
