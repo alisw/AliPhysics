@@ -907,7 +907,7 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
 	   TGraph *grT=calCE->MakeGraphTimeCE(sector,0,2); // T time graph
            if ( grT ) rocTtime->AddAt(grT,sector);         
 	   TGraph *grQ=calCE->MakeGraphTimeCE(sector,0,3); // Q time graph
-           if ( grQ ) rocTtime->AddAt(grQ,sector);         
+           if ( grQ ) rocQtime->AddAt(grQ,sector);         
         }
 
        TGraph *grT=calCE->MakeGraphTimeCE(-1,0,2); // A side average
