@@ -221,14 +221,14 @@ void AliRsnAnalysisEffSE::ProcessEventMC(AliRsnPairDef *pairDef)
   // in this case, we first take the resonance from MC
   // and then we find its daughters and compute cuts on them
   for (ipart = 0; ipart < stack->GetNprimary(); ipart++) {
-    mother = fMCEvent->GetTrack(ipart);
+    mother = (AliMCParticle*) fMCEvent->GetTrack(ipart);
     if (mother->Particle()->GetNDaughters() != 2) continue;
 
     i[0] = mother->Particle()->GetFirstDaughter();
     i[1] = mother->Particle()->GetLastDaughter();
 
     for (j = 0; j < 2; j++) {
-      daughter = fMCEvent->GetTrack(i[j]);
+      daughter = (AliMCParticle*) fMCEvent->GetTrack(i[j]);
       fDaughter[j].SetRef(daughter);
       fDaughter[j].SetParticle(daughter->Particle());
       fDaughter[j].FindMotherPDG(stack);

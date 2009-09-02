@@ -337,7 +337,7 @@ void  AliMaterialBudget::ProcessMCInfo(){
   //
   for (Int_t ipart=0;ipart<npart;ipart++){
     Int_t status = fMCinfo->GetParticleAndTR(ipart, particle, trefs);
-    AliMCParticle * pp = fMCinfo->GetTrack(ipart);
+    AliMCParticle * pp = (AliMCParticle*) fMCinfo->GetTrack(ipart);
     if (!pp) continue;
     if (particle->P()<kPcut) continue;
     Double_t mass = particle->GetMass();
@@ -767,7 +767,7 @@ void AliMaterialBudget::FindPairs(AliESDEvent * event) {
       // HERE WE WILL PUT THE ACCESS TO THE MC TRACKS AND MATCH THESE !!!!
       //
       Int_t label0 = TMath::Abs(track0->GetLabel());
-      AliMCParticle *mcParticle0 = fMCinfo->GetTrack(label0);
+      AliMCParticle *mcParticle0 = (AliMCParticle*) fMCinfo->GetTrack(label0);
       TParticle *particle0 = mcParticle0->Particle();
       AliTrackReference *ref0 = GetFirstTPCTrackRef(mcParticle0); // get the first TPC track reference
       if (!ref0) continue;
@@ -775,7 +775,7 @@ void AliMaterialBudget::FindPairs(AliESDEvent * event) {
       paramMC0 = MakeTrack(ref0, particle0);
       //
       Int_t label1 = TMath::Abs(track1->GetLabel());
-      AliMCParticle *mcParticle1 = fMCinfo->GetTrack(label1);
+      AliMCParticle *mcParticle1 = (AliMCParticle*) fMCinfo->GetTrack(label1);
       TParticle *particle1 = mcParticle1->Particle();
       AliTrackReference *ref1 = GetFirstTPCTrackRef(mcParticle1); // get the first TPC track reference
       if (!ref1) continue;

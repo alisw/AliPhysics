@@ -240,7 +240,7 @@ void AliPerformanceMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const /*esdE
     if(!part) continue;
     if(!trefs) continue;
 
-    AliMCParticle *mcParticle = mcEvent->GetTrack(iPart);
+    AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(iPart);
     if(!mcParticle) continue;
 
     TParticle *particle = mcParticle->Particle();

@@ -174,7 +174,7 @@ void AliRsnAnalysisTrackEffSE::ProcessEventMC()
   // and then we find its daughters and compute cuts on them
   for (ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++)
   {
-    part = fMCEvent->GetTrack(ipart);
+    part = (AliMCParticle*) fMCEvent->GetTrack(ipart);
 
     fDaughter.SetRef(part);
     fDaughter.SetParticle(part->Particle());

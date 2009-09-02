@@ -690,7 +690,7 @@ void AliAnalysisTaskSPDdNdEta::Exec(Option_t *)
 
       fHistoPt->Fill(ptgen[multMCCharged]);
 
-      AliMCParticle* mcpart = mcEvent->GetTrack(imc);
+      AliMCParticle* mcpart = (AliMCParticle*) mcEvent->GetTrack(imc);
       Int_t nref = mcpart->GetNumberOfTrackReferences();
 
       // Detectable primaries 
