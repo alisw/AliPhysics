@@ -825,7 +825,7 @@ void AliTRDseedV1::Calibrate()
     }
   }
 
-  fT0    = t0Det->GetValue(fDet) + t0ROC->GetValue(col,row);
+  fT0    = (t0Det->GetValue(fDet) + t0ROC->GetValue(col,row)) / AliTRDCommonParam::Instance()->GetSamplingFrequency();
   fVD    = vdDet->GetValue(fDet) * vdROC->GetValue(col, row);
   fS2PRF = calib->GetPRFWidth(fDet, col, row); fS2PRF *= fS2PRF;
   fExB   = AliTRDCommonParam::Instance()->GetOmegaTau(fVD);

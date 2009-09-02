@@ -95,7 +95,7 @@ public:
   
   static Double_t FitRiemanTilt(const AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = NULL, Bool_t err=0, Int_t np = 0, AliTrackPoint *points = NULL);
   static Double_t FitLine(const AliTRDtrackV1 *trk, AliTRDseedV1 *tracklets = NULL, Bool_t err=0, Int_t np = 0, AliTrackPoint *points = NULL);
-  static Double_t FitKalman(AliTRDtrackV1 *trk, const AliTRDseedV1 * const tracklets = NULL, Bool_t up=0, Int_t np = 0, AliTrackPoint *points = NULL);
+  static Double_t FitKalman(AliTRDtrackV1 *trk, AliTRDseedV1 * const tracklets = NULL, Bool_t up=0, Int_t np = 0, AliTrackPoint *points = NULL);
 
   Bool_t          IsClustersOwner() const    { return TestBit(kOwner);}
   Bool_t          HasRemoveContainers() const    { return TestBit(kRemoveContainers);}
@@ -182,8 +182,8 @@ protected:
   AliTRDseedV1*  GetTracklet(AliTRDtrackV1 *const trk, Int_t plane, Int_t &idx);
   Bool_t         GetTrackPoint(Int_t index, AliTrackPoint &p) const;	
   Float_t        GetR4Layer(Int_t ly) const { return fR[ly];}
-  Int_t          MakeSeeds(AliTRDtrackingChamber **stack, const AliTRDseedV1 * const sseed, const Int_t * const ipar);
-  AliTRDtrackV1* MakeTrack(const AliTRDseedV1 * const seeds, Double_t *params);
+  Int_t          MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * const sseed, const Int_t * const ipar);
+  AliTRDtrackV1* MakeTrack(AliTRDseedV1 * const seeds, Double_t *params);
   AliTRDtrackV1* SetTrack(const AliTRDtrackV1 * const track);
   AliTRDseedV1*  SetTracklet(const AliTRDseedV1 * const tracklet);
 

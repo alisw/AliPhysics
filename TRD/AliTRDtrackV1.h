@@ -66,7 +66,7 @@ public:
   };
 
   AliTRDtrackV1();
-  AliTRDtrackV1(const AliTRDseedV1 * const trklts, const Double_t p[5], const Double_t cov[15], Double_t x, Double_t alpha);
+  AliTRDtrackV1(AliTRDseedV1 * const trklts, const Double_t p[5], const Double_t cov[15], Double_t x, Double_t alpha);
   AliTRDtrackV1(const AliESDtrack &ref);
   AliTRDtrackV1(const AliTRDtrackV1 &ref);
   virtual ~AliTRDtrackV1();

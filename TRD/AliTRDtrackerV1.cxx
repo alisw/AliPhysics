@@ -1071,7 +1071,7 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
       nPoints++;
     }
   }
-  if(fitter->Eval()) return 1.E10;
+  fitter->Eval();
 
   // Calculate curvature
   Double_t a = fitter->GetParameter(0);
@@ -1186,7 +1186,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
       nPoints++;
     }
   }
-  if(fitter->Eval()) return 1.E10;
+  fitter->Eval();
   zfitter.Eval();
 
   Double_t offset = fitter->GetParameter(3);
@@ -1207,7 +1207,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
     Double_t zmf	= zfitter.GetFunctionValue(&xref);
     fgTiltedRieman->FixParameter(3, zmf);
     fgTiltedRieman->FixParameter(4, dzmf);
-    if (fitter->Eval()) return 1.E10;
+    fitter->Eval();
     fitter->ReleaseParameter(3);
     fitter->ReleaseParameter(4);
     offset = fitter->GetParameter(3);
@@ -1512,7 +1512,7 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1
     Double_t zmf	= zfitter.GetFunctionValue(&xref);
     fitter->FixParameter(3, zmf);
     fitter->FixParameter(4, dzmf);
-    if(fitter->Eval()) return 1.E10;
+    fitter->Eval();
     fitter->ReleaseParameter(3);
     fitter->ReleaseParameter(4);
     z0   = fitter->GetParameter(3); // = zmf ?
@@ -1569,7 +1569,7 @@ Double_t AliTRDtrackerV1::FitRiemanTilt(const AliTRDtrackV1 *track, AliTRDseedV1
 
 
 //____________________________________________________________________
-Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, const AliTRDseedV1 * const tracklets, Bool_t up, Int_t np, AliTrackPoint *points)
+Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 * const tracklets, Bool_t up, Int_t np, AliTrackPoint *points)
 {
 //   Kalman filter implementation for the TRD.
 //   It returns the positions of the fit in the array "points"
@@ -1595,7 +1595,7 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, const AliTRDseedV1 * c
     // GET TRACKLET OR BUILT IT		
     Int_t iplane = up ? jplane : kNPlanes - 1 - jplane;
     if(tracklets){ 
-      if(!(ptrTracklet = const_cast<AliTRDseedV1 *>(&tracklets[iplane]))) continue;
+      if(!(ptrTracklet = &tracklets[iplane])) continue;
     }else{
       if(!(ptrTracklet  = track->GetTracklet(iplane))){ 
       /*AliTRDtrackerV1 *tracker = NULL;
@@ -2433,7 +2433,7 @@ Double_t AliTRDtrackerV1::BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int
 }
 
 //____________________________________________________________________
-Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, const AliTRDseedV1 * const sseed, const Int_t * const ipar)
+Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * const sseed, const Int_t * const ipar)
 {
 //
 // Seed tracklets and build candidate TRD tracks. The procedure is used during barrel tracking to account for tracks which are 
@@ -2497,7 +2497,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, const AliTRDseed
 
   AliTRDtrackingChamber *chamber = NULL;
   AliTRDcluster *c[kNSeedPlanes] = {NULL, NULL, NULL, NULL}; // initilize seeding clusters
-  AliTRDseedV1 *cseed = const_cast<AliTRDseedV1 *>(&sseed[0]); // initialize tracklets for first track
+  AliTRDseedV1 *cseed = &sseed[0]; // initialize tracklets for first track
   Int_t ncl, mcl; // working variable for looping over clusters
   Int_t index[AliTRDchamberTimeBin::kMaxClustersLayer], jndex[AliTRDchamberTimeBin::kMaxClustersLayer];
   // chi2 storage
@@ -2835,7 +2835,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, const AliTRDseed
 }
 
 //_____________________________________________________________________________
-AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(const AliTRDseedV1 * const seeds, Double_t *params)
+AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 * const seeds, Double_t *params)
 {
 //
 // Build a TRD track out of tracklet candidates
@@ -2880,7 +2880,7 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(const AliTRDseedV1 * const seeds, Doub
   if(fkReconstructor->IsHLT()){ 
     for (Int_t jLayer = 0; jLayer < AliTRDgeometry::kNlayer; jLayer++) {
       track.UnsetTracklet(jLayer);
-      ptrTracklet = const_cast<AliTRDseedV1 *>(&seeds[jLayer]);
+      ptrTracklet = &seeds[jLayer];
       if(!ptrTracklet->IsOK()) continue;
       //if(TMath::Abs(ptrTracklet->GetYref(1) - ptrTracklet->GetYfit(1)) >= .2) continue; // check this condition with Marian
       ptrTracklet = SetTracklet(ptrTracklet);

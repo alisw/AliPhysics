@@ -143,7 +143,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliESDtrack &t) : AliKalmanTrack()
 }
 
 //_______________________________________________________________
-AliTRDtrackV1::AliTRDtrackV1(const AliTRDseedV1 * const trklts, const Double_t p[5], const Double_t cov[15]
+AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 * const trklts, const Double_t p[5], const Double_t cov[15]
              , Double_t x, Double_t alpha) : AliKalmanTrack()
   ,fStatus(0)
   ,fDE(0.)
@@ -193,7 +193,7 @@ AliTRDtrackV1::AliTRDtrackV1(const AliTRDseedV1 * const trklts, const Double_t p
     fTrackletIndex[iplane] = 0xffff;
 		if(!trklts[iplane].IsOK()) fTracklet[iplane] = NULL;
     else{ 
-      fTracklet[iplane] = const_cast<AliTRDseedV1 *>(&trklts[iplane]);
+      fTracklet[iplane] = &trklts[iplane];
       ncls += fTracklet[iplane]->GetN();
     }
 	}
