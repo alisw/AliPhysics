@@ -20,82 +20,97 @@ WriteMapping()
 
   char string[128];
   UInt_t xcell,zcell,csp,altro,chanHG,chanLG;
-  UInt_t hwAddress, maxHWAddress[4]={0,0,0,0}, nHWaddress[4]={0,0,0,0};
-  FILE *fd = fopen("CSP2ALTRO.dat","r");
-  if (fd != 0) 
-    printf("Input file CSP2ALTRO.dat is opened successfully\n");
-  else {
-    printf("Cannot open the input file CSP2ALTRO.dat\n");
-    return -1;
-  }
+  UInt_t hwAddress, maxHWAddress[4], nHWaddress[4];
+  const char *FEEmapping[2] = {"CSP2ALTRO_new.dat", "CSP2ALTRO_old.dat"};
+  Int_t map=0;
 
-  FILE *fRCU[4];
-
-  for (Int_t iRCU=0; iRCU<4; iRCU++) {
-    TString rcuFileName = Form("RCU%d.data.unsorted",iRCU);
-    fRCU[iRCU] = fopen(rcuFileName.Data(),"w");
-  }
-
-  while (fgets(string,128,fd)) {
-    if (string[0]=='*') {
-      continue;
+  for (Int_t module=0; module<5; module++) {
+    printf("\n\n====> Mapping file is created for the module %d\n",module);
+    if      (module <4) map=0;
+    else if (module==4) map=1;
+    FILE *fd = fopen(FEEmapping[map],"r");
+    if (fd != 0) 
+      printf("Input file %s is opened successfully\n",FEEmapping[map]);
+    else {
+      printf("Cannot open the input file %s\n",FEEmapping[map]);
+      return -1;
     }
-    sscanf(string,"%d %d %d %d %d %d",&xcell,&zcell,&csp,&altro,&chanHG,&chanLG);
+    
+    FILE *fRCU[4];
+
     for (Int_t iRCU=0; iRCU<4; iRCU++) {
-      for (Int_t iBranch=0; iBranch<2; iBranch++) {
-	for (Int_t iFEE=1; iFEE<=14; iFEE++) {
-	  // High gain
-	  hwAddress = chanHG | (altro<<4) | (iFEE<<7) | (iBranch<<11);
-	  if (hwAddress > maxHWAddress[iRCU]) maxHWAddress[iRCU]=hwAddress;
-	  nHWaddress[iRCU]++;
-	  fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",
- 		  hwAddress,xcell+iRCU*16,zcell+27+(2*iBranch-1)+(iFEE-1)*2*(2*iBranch-1),0);
-	  // Low gain
-	  hwAddress = chanLG | (altro<<4) | (iFEE<<7) | (iBranch<<11);
-	  if (hwAddress > maxHWAddress[iRCU]) maxHWAddress[iRCU]=hwAddress;
-	  nHWaddress[iRCU]++;
-	  fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",
- 		  hwAddress,xcell+iRCU*16,zcell+27+(2*iBranch-1)+(iFEE-1)*2*(2*iBranch-1),1);
+      TString rcuFileName = Form("Mod%dRCU%d.data.unsorted",module,iRCU);
+      fRCU[iRCU] = fopen(rcuFileName.Data(),"w");
+      maxHWAddress[iRCU]=0;
+      nHWaddress[iRCU]=0;
+    }
+    
+    while (fgets(string,128,fd)) {
+      if (string[0]=='*') {
+	continue;
+      }
+      sscanf(string,"%d %d %d %d %d %d",
+	     &xcell,&zcell,&csp,&altro,&chanHG,&chanLG);
+      for (Int_t iRCU=0; iRCU<4; iRCU++) {
+	for (Int_t iBranch=0; iBranch<2; iBranch++) {
+	  for (Int_t iFEE=1; iFEE<=14; iFEE++) {
+	    // High gain
+	    hwAddress = chanHG | (altro<<4) | (iFEE<<7) | (iBranch<<11);
+	    if (hwAddress > maxHWAddress[iRCU]) maxHWAddress[iRCU]=hwAddress;
+	    nHWaddress[iRCU]++;
+	    fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",
+		    hwAddress,
+		    xcell+iRCU*16,
+		    zcell+27+(2*iBranch-1)+(iFEE-1)*2*(2*iBranch-1),0);
+	    // Low gain
+	    hwAddress = chanLG | (altro<<4) | (iFEE<<7) | (iBranch<<11);
+	    if (hwAddress > maxHWAddress[iRCU]) maxHWAddress[iRCU]=hwAddress;
+	    nHWaddress[iRCU]++;
+	    fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",
+		    hwAddress,
+		    xcell+iRCU*16,
+		    zcell+27+(2*iBranch-1)+(iFEE-1)*2*(2*iBranch-1),1);
+	  }
 	}
       }
     }
-  }
-  printf("End of input file\n");
-  fclose(fd);
+    printf("End of input file\n");
+    fclose(fd);
 
-  for (Int_t iRCU=0; iRCU<4; iRCU++) {
-    fclose(fRCU[iRCU]);
-  }
-
-  // Post-process the RCU mapping files
-
-  for (Int_t iRCU=0; iRCU<4; iRCU++) {
-
-    // Add the number of channels and maximum HW address
-
-    TString rcuFileName = Form("RCU%d.data",iRCU);
-    fRCU[iRCU] = fopen(rcuFileName.Data(),"w");
-    fprintf(fRCU[iRCU],"%d\n%d\n",nHWaddress[iRCU]+256,maxHWAddress[iRCU]);
-
-    // TRU mapping
-
-    for (int i=0; i<128; i++) {
-      fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",i,iRCU,i,2);
+    for (Int_t iRCU=0; iRCU<4; iRCU++) {
+      fclose(fRCU[iRCU]);
     }
-    for (int i=0; i<128; i++) {
-      fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",i+2048,iRCU,i+2048,2);
+    
+    // Post-process the RCU mapping files
+    
+    for (Int_t iRCU=0; iRCU<4; iRCU++) {
+      
+      // Add the number of channels and maximum HW address
+      
+      TString rcuFileName = Form("Mod%dRCU%d.data",module,iRCU);
+      fRCU[iRCU] = fopen(rcuFileName.Data(),"w");
+      fprintf(fRCU[iRCU],"%d\n%d\n",nHWaddress[iRCU]+256,maxHWAddress[iRCU]);
+      
+      // TRU mapping
+      
+      for (int i=0; i<128; i++) {
+	fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",i,iRCU,i,2);
+      }
+      for (int i=0; i<128; i++) {
+	fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",i+2048,iRCU,i+2048,2);
+      }
+      fclose(fRCU[iRCU]);
+      
+      // Sort HW addresses
+      
+      TString cmd = Form("sort -n Mod%dRCU%d.data.unsorted >> %s", 
+			 module,iRCU,rcuFileName.Data());
+      gSystem->Exec(cmd);
+      
+      cmd = Form("rm -f Mod%dRCU%d.data.unsorted", module,iRCU);
+      gSystem->Exec(cmd);
+      
+      printf("RCU mapping file %s is created\n",rcuFileName.Data());
     }
-    fclose(fRCU[iRCU]);
-
-    // Sort HW addresses
-
-    TString cmd = Form("sort -n RCU%d.data.unsorted >> %s", iRCU,rcuFileName.Data());
-    gSystem->Exec(cmd);
-
-    cmd = Form("rm -f RCU%d.data.unsorted", iRCU);
-    gSystem->Exec(cmd);
-
-    printf("RCU mapping file %s is created\n",rcuFileName.Data());
   }
-
 }
