@@ -134,8 +134,8 @@ void AliCFPairAcceptanceCuts::SelectionBitMap(TObject* obj)
 
   Int_t lab0 = part->GetDaughter(0);
   Int_t lab1 = part->GetDaughter(1);
-  AliMCParticle* negDaughter = fMCInfo->GetTrack(lab0) ;
-  AliMCParticle* posDaughter = fMCInfo->GetTrack(lab1) ;
+  AliMCParticle* negDaughter =  (AliMCParticle*) fMCInfo->GetTrack(lab0) ;
+  AliMCParticle* posDaughter =  (AliMCParticle*) fMCInfo->GetTrack(lab1) ;
 
   Int_t iCutBit = 0;
 
