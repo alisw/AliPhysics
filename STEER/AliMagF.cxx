@@ -124,6 +124,11 @@ AliMagF::AliMagF(const char *name, const char* title, Int_t integ,
   fSolenoid = GetBz(xyz);
   SetFactorSol(factorSol);
   SetFactorDip(factorDip);
+  AliInfo(Form("Alice   B fields: Solenoid %.0f kG (factor %+.2f), Dipole %s (factor %+.2f) %s",
+	       (fMapType==k5kG||fMapType==k5kGUniform)?5.:2.,factorSol,
+	       fDipoleOFF ? "OFF":"ON",factorDip,fMapType==k5kGUniform?" |Constant Field!":""));
+  AliInfo(Form("Machine B fields for %s beam (%.0f GeV): QGrad: %.4f Dipole: %.4f",
+	       bt==kBeamTypeAA ? "A-A":(bt==kBeamTypepp ? "p-p":"OFF"),be,fQuadGradient,fDipoleField));
 }
 
 //_______________________________________________________________________
