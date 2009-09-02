@@ -13,7 +13,7 @@
 # SET THE FOLLOWING PARAMETERS IF NEEDED: 
 # ---------------------------------------
 YEAR=09
-DIALOG=/usr/bin/dialog
+DIALOG=`which dialog`
 # ---------------------------------------
 
 RUNNUM=$1
@@ -33,11 +33,11 @@ TITLE="Standalone reconstruction of Grid rawdata chunks. v$VERSION"
 # Retrieve the list of chunks from AliEn.......
 BASEDIR="/alice/data/20"$YEAR
 PATTERN="/raw/"$YEAR"0000"$RUNNUM"*0.root"
-gbbox find $BASEDIR $PATTERN | head --lines=-1 > collection.tmp
+gbbox find $BASEDIR $PATTERN | head -n 500 > collection.tmp
 
-[ $(stat -c%s collection.tmp) -eq 0 ] && { echo "No chunks found for the given run"; exit 1; }
+[ $(wc -l collection.tmp) -eq 0 ] && { echo "No chunks found for the given run"; exit 1; }
 rm -f collection.tmp2
-for ifile in `cat collection.tmp | head --lines=500` ; do printf $ifile" "\|" "0" " >> collection.tmp2 ; done
+for ifile in `cat collection.tmp | head -n 500` ; do printf $ifile" "\|" "0" " >> collection.tmp2 ; done
 list=`cat collection.tmp2`
 rm -f collection.tmp2 
 totChunks=`cat collection.tmp | wc -l`
