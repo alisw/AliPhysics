@@ -45,7 +45,7 @@ class AliGenPythia;
 #include "STEER/AliConfig.h"
 #include "PYTHIA6/AliDecayerPythia.h"
 #include "PYTHIA6/AliGenPythia.h"
-#include "STEER/AliMagFMaps.h"
+#include "STEER/AliMagF.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -542,19 +542,19 @@ void Config()
   }
   // FIELD
   
-  printf("\n \n Comment: %s \n \n", comment.Data());
+  AliMagF* field = 0x0;
   if (mag == kNoField) {
     comment = comment.Append(" | L3 field 0.0 T");
-    field = new AliMagWrapCheb("Maps","Maps", 2, 0., 10., AliMagWrapCheb::k2kG);
+    field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k5kGUniform);
   } else if (mag == k5kG) {
     comment = comment.Append(" | L3 field 0.5 T");
     //    field = new AliMagWrapCheb("Maps","Maps", 2, 1., 10., AliMagWrapCheb::k5kG);
-	field = new AliMagWrapCheb("Maps","Maps", 2, 1., 10., AliMagWrapCheb::k5kG,kTRUE,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
+    field = new AliMagF("Maps","Maps", 2, -1., -1., 10., AliMagF::k5kG);
   }
 
   printf("\n \n Comment: %s \n \n", comment.Data());
+  TGeoGlobalMagField::Instance()->SetField(field);
   rl->CdGAFile();
-  gAlice->SetField(field);
 
 
 

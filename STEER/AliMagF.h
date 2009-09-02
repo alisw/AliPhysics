@@ -20,7 +20,7 @@ class AliMagF : public TVirtualMagField
  public:
   enum BMap_t      {k2kG, k5kG, k5kGUniform};
   enum BeamType_t  {kBeamTypeAA, kBeamTypepp, kNoBeamField};
-  enum PolarityConvention_t {kConvMap2005,kConvDCS2008,kConvLHC};
+  enum PolarityConvention_t {kConvLHC,kConvDCS2008,kConvMap2005};
   //
   AliMagF();
   AliMagF(const char *name, const char* title, Int_t integ, 

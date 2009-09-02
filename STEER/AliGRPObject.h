@@ -24,6 +24,8 @@ class AliGRPObject : public TObject {
  public:
 
 	enum Stats {kMean = 0, kTruncMean = 1, kMedian = 2, kSDMean = 3, kSDMedian = 4};
+ 	
+ 	enum StatusBits {kPolConvLHC = BIT(14), kUniformBMap = BIT(15)};
 
 	enum DP_HallProbes { 
 		 khpL3bsf17H1= 0 , khpL3bsf17H2, khpL3bsf17H3, khpL3bsf17Temperature, 
@@ -45,6 +47,8 @@ class AliGRPObject : public TObject {
 
 	// getters
 
+ 	Bool_t    IsPolarityConventionLHC() const {return TestBit(kPolConvLHC);}
+ 	Bool_t    IsUniformBMap() const {return TestBit(kUniformBMap);}
 	time_t    GetTimeStart() const {return fTimeStart;}
 	time_t    GetTimeEnd() const {return fTimeEnd;}
 	Float_t   GetBeamEnergy() const {return fBeamEnergy;}
@@ -80,6 +84,8 @@ class AliGRPObject : public TObject {
 
 	// setters
 
+ 	void SetPolarityConventionLHC(Bool_t v=kTRUE) {return SetBit(kPolConvLHC,v);}
+ 	void SetUniformBMap(Bool_t v=kTRUE) {return SetBit(kUniformBMap,v);}
 	void SetTimeStart(time_t timeStart)  {fTimeStart = timeStart;}
 	void SetTimeEnd(time_t timeEnd)  {fTimeEnd = timeEnd;}
 	void SetBeamEnergy(Float_t beamEnergy)  {fBeamEnergy = beamEnergy;}

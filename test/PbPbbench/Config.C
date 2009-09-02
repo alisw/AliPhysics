@@ -267,7 +267,7 @@ void Config()
     
     
 // Field
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., smag));
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, -1., -1., 10., smag));
     rl->CdGAFile();
 //
     Int_t   iABSO   = 1;

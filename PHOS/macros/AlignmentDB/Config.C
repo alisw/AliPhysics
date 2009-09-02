@@ -157,8 +157,8 @@ void Config()
     // track by track
     //
     //gener->SetVertexSmear(perTrack); 
-    // Field (L3 0.4 T)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
+    // Field (L3 0.5 T)
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, -1., -1., 10., AliMagF::k5kG));
 
     Int_t   iABSO  =  0;
     Int_t   iDIPO  =  0;

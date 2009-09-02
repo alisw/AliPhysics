@@ -83,8 +83,9 @@ public:
 
   //*** Magnetic field setters
   Bool_t SetFieldMap(Float_t l3Current=30000., Float_t diCurrent=6000., 
-		     Float_t l3Pol=1., Float_t dipPol=1., Float_t benergy=7000., 
-		     const Char_t* btype="pp",  
+		     Float_t l3Pol=-1., Float_t dipPol=-1.,
+		     Int_t convention=0, Bool_t uniform = kFALSE, 
+		     Float_t benergy=7000., const Char_t* btype="pp",
 		     const Char_t* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
 
   //*** Global reconstruction flag setters

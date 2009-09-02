@@ -907,15 +907,16 @@ void AliReconstruction::SetRecoParam(const char* detector, AliDetectorRecoParam 
 
 //_____________________________________________________________________________
 Bool_t AliReconstruction::SetFieldMap(Float_t l3Cur, Float_t diCur, Float_t l3Pol, 
-				      Float_t diPol, Float_t beamenergy, 
-				      const Char_t *beamtype, const Char_t *path) 
+				  Float_t diPol, Int_t convention, Bool_t uniform,
+				  Float_t beamenergy, const Char_t *beamtype, const Char_t *path) 
 {
   //------------------------------------------------
   // The magnetic field map, defined externally...
   // L3 current 30000 A  -> 0.5 T
   // L3 current 12000 A  -> 0.2 T
   // dipole current 6000 A
-  // The polarities must be the same
+  // The polarities must match the convention (LHC or DCS2008) 
+  // unless the special uniform map was used for MC
   //------------------------------------------------
   const Float_t l3NominalCurrent1=30000.; // (A)
   const Float_t l3NominalCurrent2=12000.; // (A)
@@ -924,55 +925,46 @@ Bool_t AliReconstruction::SetFieldMap(Float_t l3Cur, Float_t diCur, Float_t l3Po
   const Float_t tolerance=0.03; // relative current tolerance
   const Float_t zero=77.;       // "zero" current (A)
   //
-  TString s=(l3Pol < 0) ? "L3: -" : "L3: +";
-  //
-  AliMagF::BMap_t map = AliMagF::k5kG;
-  //
-  double fcL3,fcDip;
+  AliMagF::BMap_t map;
+  double sclL3,sclDip;
   //
   l3Cur = TMath::Abs(l3Cur);
-  if (TMath::Abs(l3Cur-l3NominalCurrent1)/l3NominalCurrent1 < tolerance) {
-    fcL3 = l3Cur/l3NominalCurrent1;
-    map  = AliMagF::k5kG;
-    s   += "0.5 T;  ";
-  } else if (TMath::Abs(l3Cur-l3NominalCurrent2)/l3NominalCurrent2 < tolerance) {
-    fcL3 = l3Cur/l3NominalCurrent2;
-    map  = AliMagF::k2kG;
-    s   += "0.2 T;  ";
-  } else if (l3Cur <= zero) {
-    fcL3 = 0;
-    map  = AliMagF::k5kGUniform;
-    s   += "0.0 T;  ";
-  } else {
-    AliError(Form("Wrong L3 current (%f A)!",l3Cur));
-    return kFALSE;
-  }
-  //
   diCur = TMath::Abs(diCur);
-  if (TMath::Abs(diCur-diNominalCurrent)/diNominalCurrent < tolerance) {
-    // 3% current tolerance...
-    fcDip = diCur/diNominalCurrent;
-    s    += "Dipole ON";
-  } else if (diCur <= zero) { // some small current..
-    fcDip = 0.;
-    s    += "Dipole OFF";
-  } else {
-    AliError(Form("Wrong dipole current (%f A)!",diCur));
-    return kFALSE;
+  //
+  if (TMath::Abs((sclDip=diCur/diNominalCurrent)-1.) > tolerance && !uniform) {
+    if (diCur <= zero) sclDip = 0.; // some small current.. -> Dipole OFF
+    else {
+      AliError(Form("Wrong dipole current (%f A)!",diCur));
+      return kFALSE;
+    }
   }
   //
+  if (uniform) { 
+    // special treatment of special MC with uniform mag field (normalized to 0.5 T)
+    // no check for scaling/polarities are done
+    map   = AliMagF::k5kGUniform;
+    sclL3 = l3Cur/l3NominalCurrent1; 
+  }
+  else {
+    if      (TMath::Abs((sclL3=l3Cur/l3NominalCurrent1)-1.) < tolerance) map  = AliMagF::k5kG;
+    else if (TMath::Abs((sclL3=l3Cur/l3NominalCurrent2)-1.) < tolerance) map  = AliMagF::k2kG;
+    else if (l3Cur <= zero)                                { sclL3 = 0;  map  = AliMagF::k5kGUniform;}
+    else {
+      AliError(Form("Wrong L3 current (%f A)!",l3Cur));
+      return kFALSE;
+    }
+  }
   //
-  if (fcDip!=0 && (map==AliMagF::k5kG || map==AliMagF::k2kG) && 
-      ((AliMagF::GetPolarityConvention()==AliMagF::kConvMap2005 && l3Pol!=diPol) ||
-       (AliMagF::GetPolarityConvention()==AliMagF::kConvDCS2008 && l3Pol==diPol) ||
-       (AliMagF::GetPolarityConvention()==AliMagF::kConvLHC     && l3Pol!=diPol)) ) {
+  if (sclDip!=0 && (map==AliMagF::k5kG || map==AliMagF::k2kG) &&
+      ((convention==AliMagF::kConvLHC     && l3Pol!=diPol) ||
+       (convention==AliMagF::kConvDCS2008 && l3Pol==diPol)) ) { 
     AliError(Form("Wrong combination for L3/Dipole polarities (%c/%c) for convention %d",
 		  l3Pol>0?'+':'-',diPol>0?'+':'-',AliMagF::GetPolarityConvention()));
     return kFALSE;
   }
   //
-  if (l3Pol<0) fcL3  = -fcL3;
-  if (diPol<0) fcDip = -fcDip;
+  if (l3Pol<0) sclL3  = -sclL3;
+  if (diPol<0) sclDip = -sclDip;
   //
   AliMagF::BeamType_t btype = AliMagF::kNoBeamField;
   TString btypestr = beamtype;
@@ -984,15 +976,16 @@ Bool_t AliReconstruction::SetFieldMap(Float_t l3Cur, Float_t diCur, Float_t l3Po
   else {
     AliInfo(Form("Cannot determine the beam type from %s, assume no LHC magnet field",beamtype));
   }
-  
-  AliMagF* fld = new AliMagF("MagneticFieldMap", s.Data(), 2, fcL3, fcDip, 10., map, path, 
+  char ttl[50];
+  sprintf(ttl,"L3: %+5d Dip: %+4d kA; %s",(int)TMath::Sign(l3Cur,float(sclL3)),
+	  (int)TMath::Sign(diCur,float(sclDip)),uniform ? " Constant":"");
+  AliMagF* fld = new AliMagF("MagneticFieldMap", ttl, 2, sclL3, sclDip, 10., map, path, 
 			     btype,beamenergy);
   TGeoGlobalMagField::Instance()->SetField( fld );
   TGeoGlobalMagField::Instance()->Lock();
   //
   return kTRUE;
 }
-
 
 Bool_t AliReconstruction::InitGRP() {
   //------------------------------------
@@ -1131,42 +1124,17 @@ Bool_t AliReconstruction::InitGRP() {
       ok = kFALSE;
     }
 
-    /*
-    TObjString *l3Current=
-       dynamic_cast<TObjString*>(fGRPData->GetValue("fL3Current"));
-    if (!l3Current) {
-      AliError("GRP/GRP/Data entry:  missing value for the L3 current !");
-      ok = kFALSE;
-    }
-    TObjString *l3Polarity=
-       dynamic_cast<TObjString*>(fGRPData->GetValue("fL3Polarity"));
-    if (!l3Polarity) {
-      AliError("GRP/GRP/Data entry:  missing value for the L3 polarity !");
-      ok = kFALSE;
-    }
-    
-    // Dipole
-    TObjString *diCurrent=
-       dynamic_cast<TObjString*>(fGRPData->GetValue("fDipoleCurrent"));
-    if (!diCurrent) {
-      AliError("GRP/GRP/Data entry:  missing value for the dipole current !");
-      ok = kFALSE;
-    }
-    TObjString *diPolarity=
-       dynamic_cast<TObjString*>(fGRPData->GetValue("fDipolePolarity"));
-    if (!diPolarity) {
-      AliError("GRP/GRP/Data entry:  missing value for the dipole polarity !");
-      ok = kFALSE;
-    }
-    */
+    // read special bits for the polarity convention and map type
+    Int_t  polConvention = fGRPData->IsPolarityConventionLHC() ? AliMagF::kConvLHC : AliMagF::kConvDCS2008;
+    Bool_t uniformB = fGRPData->IsUniformBMap();
 
     if (ok) { 
-      if ( !SetFieldMap(l3Current, diCurrent, l3Polarity ? -1:1, diPolarity ? -1:1) )
+      if ( !SetFieldMap(l3Current, diCurrent, l3Polarity ? -1:1, diPolarity ? -1:1, 
+			polConvention,uniformB,beamEnergy, beamType.Data()))
 	AliFatal("Failed to creat a B field map ! Exiting...");
       AliInfo("Running with the B field constructed out of GRP !");
     }
     else AliFatal("B field is neither set nor constructed from GRP ! Exitig...");
-    
   }
   
   //*** Get the diamond profiles from OCDB

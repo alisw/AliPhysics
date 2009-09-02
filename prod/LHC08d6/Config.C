@@ -260,7 +260,7 @@ void Config()
     gener->Init();
 
     // Field (L3 0.5 T)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 10., mag));
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, -1., -1., 10., mag));
 
     Int_t   iABSO   = 1;
     Int_t   iDIPO   = 1;

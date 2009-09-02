@@ -184,8 +184,7 @@ void Config()
   }
   printf("\n \n Comment: %s \n \n", comment.Data());
     
-  AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,mag);
-  field->SetL3ConstField(0); //Using const. field in the barrel
+  AliMagF* field = new AliMagF("Maps","Maps",2, -1.,-1., 10.,mag);
   TGeoGlobalMagField::Instance()->SetField(field);
 
   rl->CdGAFile();

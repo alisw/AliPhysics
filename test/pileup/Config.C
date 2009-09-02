@@ -241,10 +241,10 @@ void Config()
   AliMagF* field = 0x0;
   if (mag == kNoField) {
     comment = comment.Append(" | L3 field 0.0 T");
-    field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k2kG);
+    field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k5kGUniform);
   } else if (mag == k5kG) {
     comment = comment.Append(" | L3 field 0.5 T");
-    field = new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG);
+    field = new AliMagF("Maps","Maps", 2, -1., -1., 10., AliMagF::k5kG);
   }
   printf("\n \n Comment: %s \n \n", comment.Data());
   TGeoGlobalMagField::Instance()->SetField(field);

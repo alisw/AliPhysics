@@ -187,7 +187,7 @@ void Config(char directory[100]="", char option[6]="param", const char* digitsto
   }  
   //============================================================= 
   // Field (L3 0.5 T)
-  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1, 10., AliMagF::k5kG));
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, -1., -1, 10., AliMagF::k5kG));
   //============================================================= 
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY","Alice envelop");

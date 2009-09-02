@@ -357,7 +357,7 @@ void Config()
   // FIELD
   //
 
-  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 10., mag));
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, -1., -1., 10., mag));
 
   printf("\n \n Comment: %s \n \n", comment.Data());
 

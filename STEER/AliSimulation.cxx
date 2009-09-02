@@ -2262,27 +2262,24 @@ void AliSimulation::WriteGRPEntry()
   grpObj->SetLHCState("STABLE_BEAMS");
   grpObj->SetLHCLuminosity(0,(AliGRPObject::Stats)0);
   grpObj->SetBeamIntensity(0,(AliGRPObject::Stats)0);
-
+  //
   AliMagF *field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   Float_t solenoidField = field ? TMath::Abs(field->SolenoidField()) : 0;
-  Float_t factor =        field ? field->Factor() : 0;
-  Float_t l3current = TMath::Abs(factor)*solenoidField*30000./5.;
-  grpObj->SetL3Current(l3current,(AliGRPObject::Stats)0);
-  
-  if (factor > 0) {
-    grpObj->SetL3Polarity(0);
-    grpObj->SetDipolePolarity(0);
-  }
-  else {
-    grpObj->SetL3Polarity(1);
-    grpObj->SetDipolePolarity(1);
-  }
 
-  if (TMath::Abs(factor) != 0)
-    grpObj->SetDipoleCurrent(6000,(AliGRPObject::Stats)0);
-  else 
-    grpObj->SetDipoleCurrent(0,(AliGRPObject::Stats)0);
-
+  Float_t factorSol     = field ? field->GetFactorSol() : 0;
+  Float_t currentSol    = TMath::Abs(factorSol)>1E-6 ? 
+    TMath::Nint(TMath::Abs(solenoidField/factorSol))/5.*30000.*TMath::Abs(factorSol) : 0;
+  //
+  Float_t factorDip     = field ? field->GetFactorDip() : 0;
+  Float_t currentDip    = 6000.*TMath::Abs(factorDip);
+  //
+  grpObj->SetL3Current(currentSol,(AliGRPObject::Stats)0);
+  grpObj->SetDipoleCurrent(currentDip,(AliGRPObject::Stats)0);  
+  grpObj->SetL3Polarity(factorSol>0 ? 0:1);  
+  grpObj->SetDipolePolarity(factorDip>0 ? 0:1);
+  grpObj->SetUniformBMap(field->IsUniform());            // for special MC with k5kGUniform map
+  grpObj->SetPolarityConventionLHC();                    // LHC convention +/+ current -> -/- field main components
+  //
   grpObj->SetCavernTemperature(0,(AliGRPObject::Stats)0);
   
   //grpMap->Add(new TObjString("fCavernPressure"),new TObjString("0")); ---> not inserted in simulation with the new object, since it is now an AliDCSSensor

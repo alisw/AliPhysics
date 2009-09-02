@@ -168,8 +168,8 @@ void Config()
                                                                                 
 // Field (L3 0.4 T)
     //Zero magnetic field
-    AliMagF* field = new AliMagF("Maps","Maps", 2, 0., 1., 10., AliMagF::k5kG);
-    field->SetL3ConstField(0); //Using const. field in the barrel
+    AliMagF* field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k5kGUniform);
+    //    AliMagF* field = new AliMagF("Maps","Maps", 2, -1., -1., 10., smag);
     TGeoGlobalMagField::Instance()->SetField(field);
 
     rl->CdGAFile();
