@@ -1594,7 +1594,8 @@ Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
 
   if(!alObjsLoaded.IsNull()) AliInfoClass(Form("Alignment objects loaded for: %s",
 					       alObjsLoaded.Data()));
-  if(!alObjsNotLoaded.IsNull()) AliInfoClass(Form("Didn't/couldn't load alignment objects for: %s",
+  if(!alObjsNotLoaded.IsNull())
+      AliFatalClass(Form("Could not load alignment objects from OCDB for: %s",
 						  alObjsNotLoaded.Data()));
  
   return ApplyAlignObjsToGeom(alignObjArray);
