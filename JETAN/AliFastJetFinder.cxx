@@ -99,7 +99,10 @@ void AliFastJetFinder::FindJets()
   // read input particles -----------------------------
 
   vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
-
+  if(inputParticles.size()==0){
+    Printf("%s:%d No input particles found, skipping event",(char*)__FILE__,__LINE__);
+    return;
+  }
 
   // create an object that represents your choice of jet algorithm, and 
   // the associated parameters
