@@ -744,7 +744,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   //Get vertex for photon momentum calculation
   Double_t vertex[]={0,0,0} ; //vertex ;
   Double_t vertex2[]={0,0,0} ; //vertex ;
-  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) {
+  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
 	  GetReader()->GetVertex(vertex);
 	  if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
   }	

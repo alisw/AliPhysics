@@ -599,7 +599,7 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
   //Get vertex for photon momentum calculation
   Double_t vertex[]  = {0,0,0} ; //vertex 
   Double_t vertex2[] = {0,0,0} ; //vertex of second input aod
-  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) 
+  if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
   {
 	 GetReader()->GetVertex(vertex);
 	 if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);

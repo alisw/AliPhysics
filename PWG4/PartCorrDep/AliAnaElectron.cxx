@@ -923,7 +923,7 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
   Double_t massK = 0.493677;
 
   Double_t bfield = 5.; //kG
-  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
+  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
 
   Double_t vertex[]  = {-999.,-999.,-999.} ; //vertex 
   Double_t vertex2[] = {-999.,-999.,-999.} ; //vertex of second input AOD if exist;
@@ -989,7 +989,7 @@ Bool_t AliAnaElectron::IsItPhotonic(AliAODPWG4Particle* const part) {
 
   Double_t massE = 0.000511;
   Double_t bfield = 5.; //kG
-  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
+  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
 
   Int_t trackId = part->GetTrackLabel(0);
   AliAODTrack* track = (AliAODTrack*)GetAODCTS()->At(trackId);
