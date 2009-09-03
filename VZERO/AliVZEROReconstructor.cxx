@@ -104,7 +104,7 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   if (rawStream.Next()) {  
      Float_t ADC_max[64], adc[64]; 
      Bool_t BBFlag[64], BGFlag[64], integrator[64]; 
-     Float_t time[64], width[64],;  
+     Float_t time[64], width[64];  
      for(Int_t i=0; i<64; i++) {
          // Search for the maximum charge in the train of 21 LHC clocks 
          // regardless of the integrator which has been operated:
