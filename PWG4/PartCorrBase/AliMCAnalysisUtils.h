@@ -46,9 +46,9 @@ public:
 	Int_t   CheckOriginInStack(const Int_t label, AliStack * stack) ;
 	Int_t   CheckOriginInAOD(const Int_t label, TClonesArray* mcparticles) ;
 	
-	TList * GetJets(AliCaloTrackReader * reader) ;
+	TList * GetJets(AliCaloTrackReader * const reader) ;
 	
-	void SetTagBit(Int_t &tag, const UInt_t set) {
+	void SetTagBit(Int_t &tag, const UInt_t set) const {
 		// Set bit of type set (mcTypes) in tag
 		tag |= (1<<set) ; 
 	} 

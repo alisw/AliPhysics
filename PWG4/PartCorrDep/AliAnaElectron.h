@@ -47,6 +47,8 @@ public:
   Double_t ComputeSignDca(AliAODTrack *track, AliAODTrack *track2 , float cut1);
   Int_t GetBtag(AliAODTrack * tr);
 
+  Bool_t IsItPhotonic(AliAODPWG4Particle* const part);
+
   void Print(const Option_t * opt)const;
   
   TString GetCalorimeter()   const {return fCalorimeter ; }
@@ -103,10 +105,22 @@ public:
   TH2F* fh2TrackPhiVsClusterPhi; //!track phi vs. cluster phi
   TH2F* fh2TrackEtaVsClusterEta; //!track eta vs. cluster eta
 
+  //Photonic Electron checks
+  TH1F* fh1OpeningAngle; //!opening angle between pairs of photon candidates
+  TH1F* fh1MinvPhoton;   //!invariant mass distribution of electron pairs
+
   //Reconstructed
   TH1F * fhPtElectron;  //! Number of identified electron vs transverse momentum 
   TH2F * fhPhiElectron; //! Azimuthal angle of identified  electron vs transverse momentum 
   TH2F * fhEtaElectron; //! Pseudorapidity of identified  electron vs tranvserse momentum 
+
+  TH1F * fhPtNPE;  //! Number of non-photonic electron vs transverse momentum 
+  TH2F * fhPhiNPE; //! Azimuthal angle of non-photonic electron vs transverse momentum 
+  TH2F * fhEtaNPE; //! Pseudorapidity of non-photonic electron vs tranvserse momentum 
+
+  TH1F * fhPtPE;  //! Number of photonic electron vs transverse momentum 
+  TH2F * fhPhiPE; //! Azimuthal angle of photonic electron vs transverse momentum 
+  TH2F * fhEtaPE; //! Pseudorapidity of photonic electron vs tranvserse momentum 
 
   TH1F * fhPtConversion;  //! Number of conversion electron vs transverse momentum 
   TH2F * fhPhiConversion; //! Azimuthal angle of conversion  electron vs transverse momentum 
@@ -152,7 +166,7 @@ public:
   //MC
   TNtuple *fMCEleNtuple; //! Ntuple of MC electrons
 
-  ClassDef(AliAnaElectron,2)
+  ClassDef(AliAnaElectron,3)
 
 } ;
  

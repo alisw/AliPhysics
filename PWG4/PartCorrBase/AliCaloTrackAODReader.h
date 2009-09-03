@@ -34,6 +34,8 @@ public:
   void FillInputPHOSCells()  ;
   
   void GetVertex(Double_t v[3]) const ;
+  Double_t GetBField() const;
+
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
   
   

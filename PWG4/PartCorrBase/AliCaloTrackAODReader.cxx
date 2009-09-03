@@ -266,6 +266,15 @@ void AliCaloTrackAODReader::GetVertex(Double_t  v[3]) const {
   v[2] = ((AliAODEvent*)fInputEvent)->GetVertex(0)->GetZ() ;//CHECK!!!
 }
 
+//____________________________________________________________________________
+Double_t AliCaloTrackAODReader::GetBField() const {
+  //Return magnetic field
+
+  Double_t bfield =  ((AliAODEvent*)fInputEvent)->GetMagneticField();
+
+  return bfield;
+
+}
 
 //____________________________________________________________________________
 void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent* aod, AliMCEvent* mc) {
