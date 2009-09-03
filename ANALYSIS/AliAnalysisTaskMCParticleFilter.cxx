@@ -41,7 +41,8 @@
 #include "AliAODHandler.h"
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
-
+#include "AliCollisionGeometry.h"
+#include "AliGenCocktailEventHeader.h"
 
 #include "AliLog.h"
 
@@ -241,7 +242,30 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
   Int_t np    = mcE->GetNumberOfTracks();
   Int_t nprim = mcE->GetNumberOfPrimaries();
   // TODO ADD MC VERTEX
-  
+
+  AliAODMCHeader *aodMCHo = (AliAODMCHeader *) aod->FindListObject("mcHeader");
+  printf("Found AOD MC Header %p\n", (void *) aodMCHo);
+
+  // Get the proper MC Collision Geometry
+  AliGenEventHeader* mcEH = mcE->GenEventHeader();
+  AliCollisionGeometry *colG = dynamic_cast<AliCollisionGeometry *>(mcEH);
+
+  if (!colG) {
+    AliGenCocktailEventHeader *ccEH = dynamic_cast<AliGenCocktailEventHeader *>(mcEH);
+    if (ccEH) {
+      TList *genHeaders = ccEH->GetHeaders();
+      for (int imch=0; imch<genHeaders->GetEntries(); imch++) {
+	colG = dynamic_cast<AliCollisionGeometry *>(genHeaders->At(imch));
+	if (colG) break;
+      }
+    }
+  }
+
+  if (colG) {
+    aodMCHo->SetReactionPlaneAngle(colG->ReactionPlaneAngle());
+    printf("Found Collision Geometry. Got Reaction Plane %lf\n", colG->ReactionPlaneAngle());
+  }
+
   // We take all real primaries
 
 
