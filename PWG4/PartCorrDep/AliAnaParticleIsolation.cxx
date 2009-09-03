@@ -47,7 +47,7 @@ ClassImp(AliAnaParticleIsolation)
   
 //____________________________________________________________________________
   AliAnaParticleIsolation::AliAnaParticleIsolation() : 
-    AliAnaPartCorrBaseClass(), fCalorimeter(""), fVertex(),
+    AliAnaPartCorrBaseClass(), fCalorimeter(""), 
     fReMakeIC(0), fMakeSeveralIC(0), fMakeInvMass(0),
     fhPtIso(0),fhPhiIso(0),fhEtaIso(0), fhConeSumPt(0), fhPtInCone(0),
     //Several IC
@@ -73,9 +73,7 @@ ClassImp(AliAnaParticleIsolation)
   
   //Initialize parameters
   InitParameters();
-  
-  fVertex[0] = 0.;  fVertex[1] = 0.;  fVertex[2] = 0.;  
-  
+  	
   for(Int_t i = 0; i < 5 ; i++){ 
     fConeSizes[i] = 0 ; 
     fhPtSumIsolated[i] = 0 ;  
@@ -118,7 +116,7 @@ ClassImp(AliAnaParticleIsolation)
 
 //____________________________________________________________________________
 AliAnaParticleIsolation::AliAnaParticleIsolation(const AliAnaParticleIsolation & g) : 
-  AliAnaPartCorrBaseClass(g), fCalorimeter(g.fCalorimeter),fVertex(),
+  AliAnaPartCorrBaseClass(g), fCalorimeter(g.fCalorimeter),
   fReMakeIC(g.fReMakeIC), fMakeSeveralIC(g.fMakeSeveralIC),  fMakeInvMass(g.fMakeInvMass),
   fhPtIso(g.fhPtIso),fhPhiIso(g.fhPhiIso),fhEtaIso(g.fhEtaIso), 
   fhConeSumPt(g.fhConeSumPt), fhPtInCone(g.fhPtInCone),
@@ -143,11 +141,7 @@ AliAnaParticleIsolation::AliAnaParticleIsolation(const AliAnaParticleIsolation &
   fHistoNPtInConeBins(g.fHistoNPtInConeBins), fHistoPtInConeMax(g.fHistoPtInConeMax), fHistoPtInConeMin(g.fHistoPtInConeMin)
 {  
   // cpy ctor
-  
-  fVertex[0] = g.fVertex[0];  
-  fVertex[1] = g.fVertex[1];  
-  fVertex[2] = g.fVertex[2];  
-  
+	
   //Several IC
   for(Int_t i = 0; i < fNCones ; i++){
     fConeSizes[i] =  g.fConeSizes[i];
@@ -195,37 +189,34 @@ AliAnaParticleIsolation & AliAnaParticleIsolation::operator = (const AliAnaParti
   
   if(&g == this) return *this;
   
-  fReMakeIC = g.fReMakeIC ;
+  fReMakeIC      = g.fReMakeIC ;
   fMakeSeveralIC = g.fMakeSeveralIC ;
-  fMakeInvMass = g.fMakeInvMass ;
-  fCalorimeter = g.fCalorimeter ;
-  fVertex[0] = g.fVertex[0];  
-  fVertex[1] = g.fVertex[1];  
-  fVertex[2] = g.fVertex[2]; 
+  fMakeInvMass   = g.fMakeInvMass ;
+  fCalorimeter   = g.fCalorimeter ;
+	
+  fhConeSumPt   = g.fhConeSumPt ;
+  fhPtInCone    = g.fhPtInCone;
   
-  fhConeSumPt = g.fhConeSumPt ;
-  fhPtInCone = g.fhPtInCone;
-  
-  fhPtIso = g.fhPtIso ; 
+  fhPtIso  = g.fhPtIso ; 
   fhPhiIso = g.fhPhiIso ;
   fhEtaIso = g.fhEtaIso ;
   
-  fhPtIsoPrompt = g.fhPtIsoPrompt;
+  fhPtIsoPrompt  = g.fhPtIsoPrompt;
   fhPhiIsoPrompt = g.fhPhiIsoPrompt;
   fhEtaIsoPrompt = g.fhEtaIsoPrompt; 
-  fhPtIsoFragmentation = g.fhPtIsoFragmentation;
+  fhPtIsoFragmentation  = g.fhPtIsoFragmentation;
   fhPhiIsoFragmentation = g.fhPhiIsoFragmentation;
   fhEtaIsoFragmentation = g.fhEtaIsoFragmentation; 
-  fhPtIsoPi0Decay = g.fhPtIsoPi0Decay;
+  fhPtIsoPi0Decay  = g.fhPtIsoPi0Decay;
   fhPhiIsoPi0Decay = g.fhPhiIsoPi0Decay;
   fhEtaIsoPi0Decay = g.fhEtaIsoPi0Decay; 
-  fhPtIsoOtherDecay = g.fhPtIsoOtherDecay;
+  fhPtIsoOtherDecay  = g.fhPtIsoOtherDecay;
   fhPhiIsoOtherDecay = g.fhPhiIsoOtherDecay;
   fhEtaIsoOtherDecay = g.fhEtaIsoOtherDecay; 
-  fhPtIsoConversion = g. fhPtIsoConversion;
+  fhPtIsoConversion  = g. fhPtIsoConversion;
   fhPhiIsoConversion = g.fhPhiIsoConversion;
   fhEtaIsoConversion = g.fhEtaIsoConversion; 
-  fhPtIsoUnknown = g.fhPtIsoUnknown;
+  fhPtIsoUnknown  = g.fhPtIsoUnknown;
   fhPhiIsoUnknown = g.fhPhiIsoUnknown;
   fhEtaIsoUnknown = g.fhEtaIsoUnknown; 
   
@@ -291,7 +282,7 @@ AliAnaParticleIsolation::~AliAnaParticleIsolation()
   delete [] fConeSizes ; 
   delete [] fPtThresholds ; 
   delete [] fPtFractions ; 
-  delete [] fVertex ;
+
 }
 
 //_________________________________________________________________________
@@ -712,9 +703,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   else if (fCalorimeter == "EMCAL")
     pl = GetAODEMCAL();
   
-  //Get vertex for photon momentum calculation
-  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(fVertex);
-  
   //Loop on AOD branch, filled previously in AliAnaPhoton
   TLorentzVector mom ;
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
@@ -732,7 +720,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
 
     //After cuts, study isolation
     n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
-    GetIsolationCut()->MakeIsolationCut(GetAODCTS(),pl,fVertex, kTRUE, aodinput, GetAODObjArrayName(), n,nfrac,coneptsum, isolated);
+    GetIsolationCut()->MakeIsolationCut(GetAODCTS(),pl,GetReader(), kTRUE, aodinput, GetAODObjArrayName(), n,nfrac,coneptsum, isolated);
     aodinput->SetIsolated(isolated);
     if(GetDebug() > 1 && isolated) printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() : Particle %d IS ISOLATED \n",iaod);  
 	  
@@ -749,11 +737,18 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   Int_t n = 0, nfrac = 0;
   Bool_t isolated = kFALSE ; 
   Float_t coneptsum = 0 ;
-  //cout<<"MakeAnalysisFillHistograms"<<endl;
-  
   //Loop on stored AOD 
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Histo aod branch entries %d\n", naod);
+
+  //Get vertex for photon momentum calculation
+  Double_t vertex[]={0,0,0} ; //vertex ;
+  Double_t vertex2[]={0,0,0} ; //vertex ;
+  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) {
+	  GetReader()->GetVertex(vertex);
+	  if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+  }	
+	
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4ParticleCorrelation* aod =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
 
@@ -773,7 +768,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     else if(fReMakeIC){
       //In case a more strict IC is needed in the produced AOD
       n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
-      GetIsolationCut()->MakeIsolationCut(reftracks, refclusters, fVertex, kFALSE, aod, "", n,nfrac,coneptsum, isolated);
+      GetIsolationCut()->MakeIsolationCut(reftracks, refclusters, GetReader(), kFALSE, aod, "", n,nfrac,coneptsum, isolated);
       fhConeSumPt->Fill(ptcluster,coneptsum);    
 	  if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Energy Sum in Isolation Cone %2.2f\n", coneptsum);    
 	}
@@ -794,7 +789,14 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
 		TLorentzVector mom ;
         for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++){
             AliAODCaloCluster* calo = (AliAODCaloCluster *) refclusters->At(icalo);
-            calo->GetMomentum(mom,fVertex);//Assume that come from vertex in straight line
+			Int_t input = 0;
+			if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) input = 1 ;
+			else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;
+			
+			//Get Momentum vector, 
+			if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
+			else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
+			
             fhPtInCone->Fill(ptcluster, mom.Pt());
             coneptsum+=mom.Pt();
        }
@@ -919,7 +921,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
       GetIsolationCut()->SetPtThreshold(fPtThresholds[ipt]);
       GetIsolationCut()->MakeIsolationCut(ph->GetObjArray(GetAODObjArrayName()+"Tracks"), 
 				  ph->GetObjArray(GetAODObjArrayName()+"Clusters"),
-				  fVertex, kFALSE, ph, "",n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
+				  GetReader(), kFALSE, ph, "",n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
 
       //Normal ptThreshold cut
       if(n[icone][ipt] == 0) {

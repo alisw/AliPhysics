@@ -175,6 +175,7 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 
   //If second input event available, add the clusters.
   if(fSecondInputAODTree && fSecondInputAODEvent){
+	  GetSecondInputAODVertex(v);
 	  nclusters = ((AliAODEvent*)fSecondInputAODEvent)->GetNCaloClusters();
 	  if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputEMCAL() - Add second input clusters, entries %d\n", nclusters) ;
 		for (Int_t iclus =  0; iclus < nclusters; iclus++) {
@@ -240,7 +241,8 @@ void AliCaloTrackAODReader::FillInputPHOS() {
   if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputPHOS()  - aod entries %d\n", fAODPHOSNormalInputEntries);
 
   //If second input event available, add the clusters.
-  if(fSecondInputAODTree && fSecondInputAODEvent){
+  if(fSecondInputAODTree && fSecondInputAODEvent){  
+	  GetSecondInputAODVertex(v);
 	  nclusters = ((AliAODEvent*)fSecondInputAODEvent)->GetNCaloClusters();
 	  if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputPHOS()  - Add second input clusters, entries %d\n", nclusters);
 		for (Int_t iclus =  0; iclus < nclusters; iclus++) {
@@ -291,6 +293,15 @@ void AliCaloTrackAODReader::GetVertex(Double_t  v[3]) const {
   v[0] = ((AliAODEvent*)fInputEvent)->GetVertex(0)->GetX() ;//CHECK!!!
   v[1] = ((AliAODEvent*)fInputEvent)->GetVertex(0)->GetY() ;//CHECK!!!
   v[2] = ((AliAODEvent*)fInputEvent)->GetVertex(0)->GetZ() ;//CHECK!!!
+}
+
+//____________________________________________________________________________
+void AliCaloTrackAODReader::GetSecondInputAODVertex(Double_t  v[3]) const {
+	//Return vertex position of second AOD input
+	
+	v[0] = ((AliAODEvent*)fSecondInputAODEvent)->GetVertex(0)->GetX() ;//CHECK!!!
+	v[1] = ((AliAODEvent*)fSecondInputAODEvent)->GetVertex(0)->GetY() ;//CHECK!!!
+	v[2] = ((AliAODEvent*)fSecondInputAODEvent)->GetVertex(0)->GetZ() ;//CHECK!!!
 }
 
 //____________________________________________________________________________

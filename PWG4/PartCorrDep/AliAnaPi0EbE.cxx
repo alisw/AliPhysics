@@ -449,9 +449,14 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   TObjArray * pl = new TObjArray; 
   
   //Get vertex for photon momentum calculation
-  Double_t vertex[]={0,0,0} ; //vertex ;
-  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
-  
+  Double_t vertex[]  = {0,0,0} ; //vertex 
+  Double_t vertex2[] = {0,0,0} ; //vertex from second aod input
+  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) 
+  {
+	  GetReader()->GetVertex(vertex);
+	  if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+  }
+	
   //Select the Calorimeter of the photon
   if(fCalorimeter == "PHOS")
     pl = GetAODPHOS();
@@ -463,9 +468,17 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     AliAODCaloCluster * calo = (AliAODCaloCluster*) (pl->At(icalo));	
     
     //Cluster selection, not charged, with pi0 id and in fidutial cut
-    //Get Momentum vector, 
-    calo->GetMomentum(mom,vertex);//Assume that come from vertex in straight line
-    //If too small or big pt, skip it
+	  
+	//Input from second AOD?
+	Int_t input = 0;
+	if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) input = 1 ;
+	else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;
+	  
+	//Get Momentum vector, 
+	if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
+	else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
+	  
+	//If too small or big pt, skip it
     if(mom.Pt() < GetMinPt() || mom.Pt() > GetMaxPt() ) continue ; 
     //Check acceptance selection
     if(IsFidutialCutOn()){
@@ -534,14 +547,10 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     //Check origin of the candidates
     if(IsDataMC()){
       if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
-	 GetReader()->GetDataType() != AliCaloTrackReader::kMC){
-		  
-	 //Input from second AOD?
-	 if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) aodpi0.SetInputFileIndex(1);
-	 else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) aodpi0.SetInputFileIndex(1);
-		  
-	aodpi0.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetReader(), aodpi0.GetInputFileIndex()));
-	if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",aodpi0.GetTag());
+		 GetReader()->GetDataType() != AliCaloTrackReader::kMC){
+		  aodpi0.SetInputFileIndex(input);
+		  aodpi0.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetReader(), aodpi0.GetInputFileIndex()));
+		  if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",aodpi0.GetTag());
       }
     }//Work with stack also   
     

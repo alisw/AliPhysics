@@ -113,8 +113,8 @@ public:
   Bool_t IsJetSelected(const Double_t ptTrig, const Double_t ptjet) const ;
   Bool_t IsParticleInJetCone(const Double_t eta, Double_t phi, const Double_t etal, Double_t phil) const ;
   
-  void GetLeadingCharge(AliAODPWG4ParticleCorrelation *particle, TLorentzVector & pLeading) const ;
-  void GetLeadingPi0   (AliAODPWG4ParticleCorrelation *particle, TLorentzVector & pLeading)  const ;
+  void GetLeadingCharge(AliAODPWG4ParticleCorrelation* const particle, TLorentzVector & pLeading) const ;
+  void GetLeadingPi0   (AliAODPWG4ParticleCorrelation* const particle, TLorentzVector & pLeading)  const ;
   Bool_t GetLeadingParticle(AliAODPWG4ParticleCorrelation *particle, TLorentzVector &  pLeading) const ;
   
   void MakeAnalysisFillAOD();

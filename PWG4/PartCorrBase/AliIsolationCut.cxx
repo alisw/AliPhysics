@@ -35,6 +35,7 @@
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliAODTrack.h"
 #include "AliAODCaloCluster.h"
+#include "AliCaloTrackReader.h"
 
 ClassImp(AliIsolationCut)
   
@@ -115,7 +116,7 @@ void AliIsolationCut::InitParameters()
 }
 
 //__________________________________________________________________
-void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,  TObjArray * plNe, Double_t * vertex, 
+void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * const plNe, AliCaloTrackReader * const reader, 
 					const Bool_t fillAOD, AliAODPWG4ParticleCorrelation  *pCandidate, 
 					const TString aodArrayRefName,
 					Int_t & n, Int_t & nfrac, Float_t &coneptsum,  Bool_t  &isolated) const
@@ -138,7 +139,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,  TObjArray * plNe, Do
 
   if(fillAOD) {
     refclusters = new TObjArray;
-    reftracks    = new TObjArray;
+    reftracks   = new TObjArray;
   }
 
   //Check charged particles in cone.
@@ -171,6 +172,15 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,  TObjArray * plNe, Do
   
   //Check neutral particles in cone.  
   if(plNe){
+	  
+	//Get vertex for photon momentum calculation
+	Double_t vertex[]  = {0,0,0} ; //vertex ;
+	Double_t vertex2[] = {0,0,0} ; //vertex second AOD input ;
+	if(!reader->GetDataType()== AliCaloTrackReader::kMC) 
+	{
+		reader->GetVertex(vertex);
+		if(reader->GetSecondInputAODTree()) reader->GetSecondInputAODVertex(vertex2);
+	}
     TLorentzVector mom ;
     for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ ){
       AliAODCaloCluster * calo = (AliAODCaloCluster *)(plNe->At(ipr)) ;
@@ -179,9 +189,16 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,  TObjArray * plNe, Do
       if(calo->GetID() == pCandidate->GetCaloLabel(0) || calo->GetID() == pCandidate->GetCaloLabel(1)) continue ;      //Skip matched clusters with tracks
       
       if(calo->GetNTracksMatched() > 0) continue ; 
-      
-      calo->GetMomentum(mom,vertex);//Assume that come from vertex in straight line
-      pt   = mom.Pt();
+      	//Input from second AOD?
+		Int_t input = 0;
+		if     (pCandidate->GetDetector() == "EMCAL" && reader->GetAODEMCALNormalInputEntries() <= ipr) input = 1 ;
+		else if(pCandidate->GetDetector() == "PHOS"  && reader->GetAODPHOSNormalInputEntries()  <= ipr) input = 1;
+		
+		//Get Momentum vector, 
+		if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
+		else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
+
+	  pt   = mom.Pt();
       eta  = mom.Eta();
       phi  = mom.Phi() ;
       if(phi<0) phi+=TMath::TwoPi();

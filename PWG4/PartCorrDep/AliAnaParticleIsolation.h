@@ -99,7 +99,6 @@ public:
  private:
   
   TString  fCalorimeter ;   // Calorimeter where neutral particles in cone for isolation are;
-  Double_t fVertex[3] ;     //! Event Vertex
   Bool_t   fReMakeIC ;      // Do isolation analysis
   Bool_t   fMakeSeveralIC ; // Do analysis for different IC
   Bool_t   fMakeInvMass;    // Select candidate if no pair from decay
@@ -170,7 +169,7 @@ public:
   Float_t fHistoPtInConeMax;   // PtInCone maximum in histogram
   Float_t fHistoPtInConeMin;   // PtInCone maximum in histogram 
   
-  ClassDef(AliAnaParticleIsolation,2)
+  ClassDef(AliAnaParticleIsolation,3)
     } ;
 
 

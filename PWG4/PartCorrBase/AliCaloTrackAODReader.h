@@ -32,13 +32,15 @@ public:
   void FillInputPHOS()  ;
   void FillInputEMCALCells() ;
   void FillInputPHOSCells()  ;
-  
-  void GetVertex(Double_t v[3]) const ;
+	
   Double_t GetBField() const;
+
+  void GetSecondInputAODVertex(Double_t v[3]) const ;
+  void GetVertex(Double_t v[3]) const ;
 
   void SwitchOnWriteAOD()  {fWriteOutputAOD = kTRUE;}
   void SwitchOffWriteAOD() {fWriteOutputAOD = kFALSE;}
-	
+  
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
   
 private:
