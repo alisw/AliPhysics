@@ -17,6 +17,7 @@
 */
 
 
+#include "TClonesArray.h"
 #include "TString.h"
 #include "TList.h"
 
@@ -26,6 +27,8 @@
 #include "AliHLTHOMERProxyHandler.h"
 
 #include "AliHLTLoggingVariadicFree.h"
+
+#define BUFFERSIZE 10
 
 class AliHLTHOMERLibManager;
 
@@ -124,11 +127,28 @@ public:
   virtual Int_t NextCycle() { return NextEvent(); }
 
   /** Get event ID */
-  ULong_t GetEventID() { return fEventID; }    // Get event ID
+  ULong_t GetEventID() { return fEventID[fCurrentBufferIdx]; }
 
-  /** Get pointer to block List */
-  TList* GetBlockList() { return fBlockList; } // Get pointer to block List
-  
+  /* ---------------------------------------------------------------------------------
+   *                           Buffer Handling - public
+   * ---------------------------------------------------------------------------------
+   */
+
+  /** Get pointer to last requested BlockList 
+   *  @return     ptr to buffer, NULL if buffer boundary reached                
+   */
+  TList* GetBlockList() { return GetBlockListEventBuffer(fCurrentBufferIdx); }
+
+  /** Navigate backwards in event buffer 
+   *  @return      index in buffer, -1 if boundary reached                
+   */
+  Int_t NavigateEventBufferBack();
+
+  /** Navigate forwards in event buffer 
+   *  @return      index in buffer, -1 if boundary reached                
+   */
+  Int_t NavigateEventBufferFwd();
+
   ///////////////////////////////////////////////////////////////////////////////////
 
 protected:
@@ -169,13 +189,18 @@ private:
   Bool_t IsConnected() { return fConnected; }  
   
   /* ---------------------------------------------------------------------------------
-   *                            Event Handling - private
+   *                           Buffer Handling - private
    * ---------------------------------------------------------------------------------
    */
 
-  /** Create a TList of blocks, which have been readout */
-  void CreateBlockList();
+  /** Create and add Block List to Buffer */
+  void AddBlockListToBuffer();
 
+  /** Get pointer to block list in event buffer 
+   *  @return     ptr to buffer, NULL if not present
+   */
+  TList* GetBlockListEventBuffer( Int_t idx );
+    
   /*
    * ---------------------------------------------------------------------------------
    *                            Block Handling - private
@@ -260,41 +285,53 @@ private:
    */
 
   /** Proxy Handler to get the list of sources */
-  AliHLTHOMERProxyHandler *fProxyHandler;            //! transient 
+  AliHLTHOMERProxyHandler *fProxyHandler;               //! transient 
 
   // == connection ==
 
   /** Pointer to HOMER reader */
-  AliHLTHOMERReader* fReader;                        //! transient 
+  AliHLTHOMERReader       *fReader;                     //! transient 
 
   // == sources ==
 
   /** List to HOMER sources */
-  TList    *fSourceList;                             //! transient
-  
-  // == blocks ==
-
-  /** List to HOMER blocks */
-  TList    *fBlockList;                              //! transient
+  TList                   *fSourceList;                 //! transient
 
   // == events ==
 
   /** Number of blockes in current event */
-  ULong_t   fNBlks;                                  //  see above
+  ULong_t                  fNBlks;                      //  see above
 
   /** EventID of current event */
-  ULong64_t fEventID;                                //  see above
+  ULong64_t                fEventID[BUFFERSIZE];                    //  see above
 
   /** Current block in current event */
-  ULong_t   fCurrentBlk;                             //  see above
+  ULong_t                  fCurrentBlk;                 //  see above
 
+  // == event buffer ==
+
+  /** Event Buffer */
+  TClonesArray            *fEventBuffer;                //  see above
+
+  /** Buffer index to last received event */
+  Int_t                    fBufferTopIdx;               //  see above
+
+  /** Buffer index to last received event */
+  Int_t                    fBufferLowIdx;               //  see above
+
+  /** Buffer index to current event */
+  Int_t                    fCurrentBufferIdx;           //  see above
+
+  /** Navigate index through event buffer */
+  Int_t                    fNavigateBufferIdx;          //  see above
+  
   // == states ==
   
   /** Shows connection status */
-  Bool_t    fConnected;                              //  see above
+  Bool_t        fConnected;                              //  see above
 
 
-  ClassDef(AliHLTHOMERManager, 0); // Manage connections to HLT data-sources.
+  ClassDef(AliHLTHOMERManager, 1); // Manage connections to HLT data-sources.
 };
 
 #endif

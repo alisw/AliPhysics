@@ -34,13 +34,19 @@ public:
   void NextEvent();
   void EventLoop();
 
+  void NavigateBack();
+  void NavigateFwd();
 
 protected:
   AliEveHOMERManager  *fM; // Model object.
 
-  TGTextButton     *fButtonConnect;   // Button to connect to HOMER.
-  TGTextButton     *fButtonNextEvent; // Button to call next Event
+  TGTextButton     *fButtonConnect;      // Button to connect to HOMER.
+  TGTextButton     *fButtonNextEvent;    // Button to call next Even
+  TGTextButton     *fButtonNavigateBack; // Button to navigate back
+  TGTextButton     *fButtonNavigateFwd;  // Button to navigate fwd
+
   TGPictureButton  *fButtonEventLoop; // Button to start/stop event loop, HLT LOGO.
+
 private:
   AliEveHOMERManagerEditor(const AliEveHOMERManagerEditor&);            // Not implemented
   AliEveHOMERManagerEditor& operator=(const AliEveHOMERManagerEditor&); // Not implemented

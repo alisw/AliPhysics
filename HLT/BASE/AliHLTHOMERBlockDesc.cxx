@@ -77,6 +77,9 @@ AliHLTHOMERBlockDesc::~AliHLTHOMERBlockDesc() {
     delete fMessage;
   fMessage = NULL;
 
+  if ( fData )
+    delete [] fData;
+  fData = NULL;
 }
 
 /*
@@ -90,7 +93,9 @@ void AliHLTHOMERBlockDesc::SetBlock( void * data, ULong_t size, TString origin,
 				     TString dataType, ULong_t specification ) {
   // see header file for class documentation
 
-  fData = data;
+  fData = new Char_t[size];
+  memcpy( fData, data, size);
+  
   fSize = size;
   fDetector = origin; 
   fDataType = dataType;

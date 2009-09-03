@@ -8,7 +8,6 @@
 // - geom_gentle_muon.C
 // ***************************************************
 
-
 #ifndef __CINT__
 #include "unistd.h"
 #include <TEvePointSet.h>
@@ -87,7 +86,6 @@ TEveText*                                 gHLTText         = 0;
 // -- Tracks members
 TEveTrackList*                            gTPCTrack        = 0;
 
-
 // -- Canvas for histos
 TCanvas*                                  gCanvas          = 0;
 
@@ -97,7 +95,7 @@ TCanvas*                                  gCanvas          = 0;
 
 Int_t initializeEveViewer( Bool_t showExtraGeo );
 
-Int_t nextEvent();
+Int_t processEvent();
 
 //Int_t processPHOSClusters( AliHLTHOMERBlockDesc* block);
 
@@ -115,7 +113,6 @@ Int_t processTPCClusters (AliHLTHOMERBlockDesc * block, TEvePointSet cont );
 
 // -----------------------------------------------------------------
 void onlineDisplay(Bool_t showMuonGeo=kFALSE) {
-
 
   // -- Loading Geometry
   // ---------------------
@@ -172,11 +169,9 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   // Geometry, scenes, projections and viewers
   //==============================================================================
 
-
   TEveBrowser         *browser = gEve->GetBrowser();
   browser->ShowCloseTab(kFALSE);
   
-
   // -- Disable extra geometry
   // ---------------------------
   if ( ! showMuonGeo ) {
@@ -377,20 +372,16 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
 }
 
 // -----------------------------------------------------------------
-Int_t nextEvent() {
+Int_t processEvent() {
 
   Int_t iResult = 0;
 
+  cout << "===============" << endl;
+  cout << " PROCESS EVENT " << endl;
+  cout << "===============" << endl;
+
   gStyle->SetPalette(1, 0);
   gEve->DisableRedraw();
-
-  Bool_t enableReDraw = kFALSE;
-
-  // -- Get Next Event from HOMER
-  // ------------------------------
-  if ( ( iResult = gHomerManager->NextEvent()) ){
-    return iResult;
-  }
 
   // -- Reset
   // ----------
@@ -398,9 +389,13 @@ Int_t nextEvent() {
   if ( gPHOSClusters ) gPHOSClusters->Reset();
   if ( gTPCTrack )    gTPCTrack->DestroyElements();
 
+  if ( gHomerManager == NULL) {
+    printf ("No BlockList ... ");
+    return -1;
+  }
   if (gHomerManager->GetBlockList()->IsEmpty() ) {
     printf ("No Blocks in list ... ");
-    return;
+    return -2;
   }
 
   TIter next(gHomerManager->GetBlockList());
@@ -409,13 +404,15 @@ Int_t nextEvent() {
   // -- Iterate over blocks in the block list
   // ------------------------------------------
   while ((block = (AliHLTHOMERBlockDesc*)next())) {
-    
-    //    printf( "------------------- xxxxxxxxxxxxxxx ----------------------\n");
-    //  printf( "Detector           : %s\n", block->GetDetector().Data() );
-    //  printf( "Datatype           : %s\n", block->GetDataType().Data() );
-    // if (block->IsTObject() )
-    //  printf( "Is TObject of class: %s\n", block->GetClassName().Data() );
-    //    printf( "------------------- xxxxxxxxxxxxxxx ----------------------\n");
+        
+#if 0
+    printf( "------------------- xxxxxxxxxxxxxxx ----------------------\n");
+    printf( "Detector           : %s\n", block->GetDetector().Data() );
+    printf( "Datatype           : %s\n", block->GetDataType().Data() );
+    if (block->IsTObject() )
+      printf( "Is TObject of class: %s\n", block->GetClassName().Data() );
+    printf( "------------------- xxxxxxxxxxxxxxx ----------------------\n");
+#endif
 
     // -- CHECK SOURCE
     // -----------------------------------------------------
@@ -426,15 +423,12 @@ Int_t nextEvent() {
 
       // -- ESDTREE
       if ( ! block->GetDataType().CompareTo("ALIESDV0") ) {
-	cout << "ALIESDV0 ------- ALIESDV0 ------ ALIESDV0" << endl;
-
 	if(!gTPCTrack){
 	  gTPCTrack = new TEveTrackList("ESD Tracks");
 	  gTPCTrack->SetMainColor(6);
 	  gEve->AddElement(gTPCTrack);
 	}
 	iResult = processEsdTracks(block, gTPCTrack);
-	enableReDraw = kTRUE;
       }
       
       // -- Process ROOTObj
@@ -455,9 +449,6 @@ Int_t nextEvent() {
 	//cout<<"Readlist"<<endl;
 	//processHLTRDLST( block );
       }
-
-    
-      
     } // if ( ! block->GetDetector().CompareTo("HLT") ) {
 
     // ++ TPC BLOCK
@@ -466,7 +457,6 @@ Int_t nextEvent() {
       
       // -- Process TPC Clusters
       if ( ! block->GetDataType().CompareTo("CLUSTERS") ) {
- 	cout <<"Processing clusters"<<endl;
 	if(!gTPCClusters){
 	  gTPCClusters = new TEvePointSet("TPC Clusters");
 	  gTPCClusters->SetMainColor(kRed);
@@ -505,48 +495,39 @@ Int_t nextEvent() {
   if ( gSPDClusters ) gSPDClusters->ResetBBox();
   if ( gTPCTrack ) gTPCTrack->ElementChanged();
 
-  
-#if 0
-  TTimeStamp ts(esd->GetTimeStamp());
-  TString win_title("Eve Main Window -- Timestamp: ");
-  win_title += ts.AsString("s");
-  win_title += "; Event # in ESD file: ";
-  win_title += esd->GetEventNumberInFile();
-  gEve->GetBrowser()->SetWindowName(win_title);
-#endif
+
+  // -- Set EventID in Window Title  
+  // --------------------------------------------
+
+  TString winTitle("Eve Main Window -- Event ID : ");
+  winTitle += Form("0x%016X ", gHomerManager->GetEventID() );
+  gEve->GetBrowser()->SetWindowName(winTitle);
 
   // -- Set Projections
   // --------------------------------------------
-  TEveElement* top = gEve->GetCurrentEvent();
 
   // XXX Primary vertex ... to be retrieved from the ESD
   // Double_t x[3] = { 0, 0, 0 };
 
-
-
   TEveElement* top = gEve->GetCurrentEvent();
 
-  if (gRPhiMgr && top)
-  {
+  if (gRPhiMgr && top) {
     gRPhiEventScene->DestroyElements();
     if (gCenterProjectionsAtPrimaryVertex)
       gRPhiMgr->SetCenter(x[0], x[1], x[2]);
     gRPhiMgr->ImportElements(top, gRPhiEventScene);
   }
-  if (gRhoZMgr && top)
-  {
+  
+  if (gRhoZMgr && top) {
     gRhoZEventScene->DestroyElements();
     if (gCenterProjectionsAtPrimaryVertex)
       gRhoZMgr->SetCenter(x[0], x[1], x[2]);
     gRhoZMgr->ImportElements(top, gRhoZEventScene);
   }
 
-
   // --------------------------------------------
-  //  if (enableReDraw) {
-    gEve->Redraw3D(0,1); // (0, 1)
-    //gEve->DoRedraw3D(); // (0, 1)
-    //}
+
+  gEve->Redraw3D(0,1); // (0, 1)
   gEve->EnableRedraw(); 
 
   return iResult;
@@ -554,7 +535,7 @@ Int_t nextEvent() {
 
 // -----------------------------------------------------------------
 void loopEvent() {
-  eventTimer.SetCommand("nextEvent()");
+  eventTimer.SetCommand("processEvent()");
   eventTimer.Start(6000);
 }
 
@@ -593,12 +574,12 @@ Int_t processROOTTOBJ(AliHLTHOMERBlockDesc* block, TEveText* et) {
   if ( ! block->GetClassName().CompareTo("AliHLTGlobalTriggerDecision") ) {
 
     AliHLTGlobalTriggerDecision *trig = dynamic_cast<AliHLTGlobalTriggerDecision*> block->GetTObject();
-    trig->Print(); 
+    //    trig->Print(); 
     
-    et->SetText("balle");;
+    // et->SetText("balle");;
 
-   //    TEveText* tt = new TEveText("Trigger: Class is known ;-) ");
-    //gEve->AddElement(tt);
+    // TEveText* tt = new TEveText("Trigger: Class is known ;-) ");
+    // gEve->AddElement(tt);
 
   }
   else {
@@ -629,34 +610,25 @@ Int_t processEsdTracks( AliHLTHOMERBlockDesc* block, TEveTrackList* cont ) {
   return 0;
 }
 
-
-
- Int_t processTPCClusters(AliHLTHOMERBlockDesc* block, TEvePointSet *  cont) {
-  
-   Int_t iResult = 0;
+// -----------------------------------------------------------------
+Int_t processTPCClusters(AliHLTHOMERBlockDesc* block, TEvePointSet* cont) {
   
   Int_t   slice = block->GetSubDetector();
   Int_t   patch = block->GetSubSubDetector();
   Float_t phi   = ( slice + 0.5 ) * TMath::Pi() / 9.0;  
   Float_t cos   = TMath::Cos( phi );
   Float_t sin   = TMath::Sin( phi );
-    
-  AliHLTTPCClusterData *cd = (AliHLTTPCClusterData*) block->GetData();
-  UChar_t *data            = (UChar_t*) cd->fSpacePoints;
+  
+  AliHLTTPCClusterData *cd = reinterpret_cast<AliHLTTPCClusterData*> (block->GetData());
+  UChar_t *data            = reinterpret_cast<UChar_t*> (cd->fSpacePoints);
 
-  if ( cd->fSpacePointCnt == 0 ) {
-    printf ("No Clusters found in sector %d patch %d.\n", slice, patch );
-    iResult = -1;
-  } 
-  else {
-    
-    for (Int_t ii = 0; ii < cd->fSpacePointCnt; ++ii, data += sizeof(AliHLTTPCSpacePointData)) {
-      AliHLTTPCSpacePointData *sp = (AliHLTTPCSpacePointData *) data;
-      
+  if ( cd->fSpacePointCnt != 0 ) {
+    for (Int_t iter = 0; iter < cd->fSpacePointCnt; ++iter, data += sizeof(AliHLTTPCSpacePointData)) {
+      AliHLTTPCSpacePointData *sp = reinterpret_cast<AliHLTTPCSpacePointData*> (data);
       cont->SetNextPoint(cos*sp->fX - sin*sp->fY, sin*sp->fX + cos*sp->fY, sp->fZ);
     }
   }
   
-  return iResult;
+  return 0;
 }
  

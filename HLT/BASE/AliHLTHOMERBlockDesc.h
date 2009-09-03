@@ -187,7 +187,7 @@ private:
   // ----------------------
 
   /** Pointer to data of the block */
-  void*   fData;                    //! transient
+  Char_t* fData;                    //! transient
 	      
   /** Size of data */
   ULong_t fSize;                    // see above

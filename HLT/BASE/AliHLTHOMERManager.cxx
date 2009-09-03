@@ -32,7 +32,7 @@
    using namespace std;
 #endif
 
-#define EVE_DEBUG 1
+#define EVE_DEBUG 0
 
 #include "AliHLTHOMERManager.h"
 // -- -- -- -- -- -- -- 
@@ -55,10 +55,14 @@ ClassImp(AliHLTHOMERManager)
   fProxyHandler(NULL),
   fReader(NULL),
   fSourceList(NULL),
-  fBlockList(NULL),
   fNBlks(0),
-  fEventID(0),
+  fEventID(),
   fCurrentBlk(0),
+  fEventBuffer(NULL),
+  fBufferTopIdx(-1),
+  fBufferLowIdx(-1),
+  fCurrentBufferIdx(-1),
+  fNavigateBufferIdx(-1),
   fConnected(kFALSE) {
   // see header file for class documentation
   // or
@@ -88,9 +92,11 @@ AliHLTHOMERManager::~AliHLTHOMERManager() {
     delete fSourceList;
   fSourceList = NULL;
 
-  if ( fBlockList != NULL )
-    delete fBlockList;
-  fBlockList = NULL;
+  if ( fEventBuffer ) {
+    fEventBuffer->Clear();
+    delete fEventBuffer;
+  }
+
 }
 
 //##################################################################################
@@ -112,6 +118,18 @@ Int_t AliHLTHOMERManager::Initialize() {
     HLTError(Form("Creating of ProxyHandler failed."));
   }
  
+  // -- Initialize Event Buffer
+  if ( !fEventBuffer ) {
+    fEventBuffer = new TClonesArray( "TList", BUFFERSIZE );
+  }
+
+  for ( Int_t idx; idx < BUFFERSIZE; ++idx ) {
+    new ((*fEventBuffer)[idx]) TList();
+    (reinterpret_cast<TList*>((*fEventBuffer)[idx]))->SetOwner(kTRUE);
+
+    fEventID[idx] = 0;
+  }
+
   return iResult;
 }
 
@@ -170,7 +188,7 @@ void AliHLTHOMERManager::SetSourceState( AliHLTHOMERSourceDesc * source, Bool_t 
 
 /*
  * ---------------------------------------------------------------------------------
- *                         Connection Handling -oublic
+ *                         Connection Handling - public
  * ---------------------------------------------------------------------------------
  */
 
@@ -344,10 +362,10 @@ Int_t AliHLTHOMERManager::NextEvent(){
 
   // -- Get blockCnt and eventID
   fNBlks = static_cast<ULong_t>(fReader->GetBlockCnt());
-  fEventID = static_cast<ULong64_t>(fReader->GetEventID());
+  ULong_t eventID = static_cast<ULong64_t>(fReader->GetEventID());  
   fCurrentBlk = 0;
 
-  HLTInfo(Form("Event 0x%016LX (%Lu) with %lu blocks", fEventID, fEventID, fNBlks));
+  HLTInfo(Form("Event 0x%016LX (%Lu) with %lu blocks", eventID,eventID, fNBlks));
 
 #if EVE_DEBUG
   // Loop for Debug only
@@ -368,15 +386,56 @@ Int_t AliHLTHOMERManager::NextEvent(){
 
   // -- Create BlockList
   if ( fNBlks > 0 ) {
-    HLTInfo(Form("Create Block List"));
-    CreateBlockList();
+    HLTInfo(Form("Add Block List to buffer"));
+    AddBlockListToBuffer();
   }
   else {
-    HLTWarning(Form("Event 0x%016LX (%Lu) with %lu blocks", fEventID, fEventID, fNBlks));
+    HLTWarning(Form("Event 0x%016LX (%Lu) with %lu blocks", eventID, eventID, fNBlks));
   }
     
   return iResult;
 }
+
+/* ---------------------------------------------------------------------------------
+ *                           Buffer Handling - public
+ * ---------------------------------------------------------------------------------
+ */
+
+//##################################################################################
+Int_t AliHLTHOMERManager::NavigateEventBufferBack() { 
+  // see header file for class documentation
+
+  // -- reached the end of the buffer
+  if ( fNavigateBufferIdx == fBufferLowIdx )
+    return -1;
+
+  Int_t newIdx = fNavigateBufferIdx - 1;
+  if ( newIdx == -1 )
+    newIdx = BUFFERSIZE-1;
+
+  fCurrentBufferIdx = fNavigateBufferIdx = newIdx;
+
+  return newIdx;
+}
+
+//##################################################################################
+Int_t AliHLTHOMERManager::NavigateEventBufferFwd() {
+  // see header file for class documentation
+
+  // -- reached the top of the buffer
+  if ( fNavigateBufferIdx == fBufferTopIdx )
+    return -1;
+
+  Int_t newIdx = fNavigateBufferIdx + 1;
+  if ( newIdx == BUFFERSIZE )
+    newIdx = 0;
+  
+  fCurrentBufferIdx = fNavigateBufferIdx = newIdx;
+
+  return newIdx;
+}
+
+ ///////////////////////////////////////////////////////////////////////////////////
 
 /*
  * ---------------------------------------------------------------------------------
@@ -437,22 +496,35 @@ void AliHLTHOMERManager::CreateReadoutList( const char** sourceHostnames, UShort
 
 /*
  * ---------------------------------------------------------------------------------
- *                            Event Handling
+ *                          Buffer Handling - private
  * ---------------------------------------------------------------------------------
  */
 
-
 //##################################################################################
-void AliHLTHOMERManager::CreateBlockList() {
+void AliHLTHOMERManager::AddBlockListToBuffer() {
   // see header file for class documentation
 
-  // -- Initialize block list
-  if ( fBlockList != NULL )
-    delete fBlockList;
-  fBlockList = NULL;
+  // -- Set Top mark 
+  ++fBufferTopIdx;
+  if ( fBufferTopIdx == BUFFERSIZE )
+    fBufferTopIdx = 0;
 
-  fBlockList = new TList();
-  fBlockList->SetOwner(kTRUE);
+  // -- Change the low mark if necessary
+  if ( fBufferLowIdx == -1 )
+    fBufferLowIdx = 0;
+  else if ( fBufferTopIdx == fBufferLowIdx ) {
+    ++fBufferLowIdx;
+    if ( fBufferLowIdx == BUFFERSIZE )
+      fBufferLowIdx = 0;
+  }
+
+  fNavigateBufferIdx = fCurrentBufferIdx = fBufferTopIdx;    
+
+  // -- Fill EventID
+  fEventID[fBufferTopIdx] = static_cast<ULong64_t>(fReader->GetEventID());
+
+  // -- Clear Buffer slot
+  (reinterpret_cast<TList*>((*fEventBuffer)[fBufferTopIdx]))->Clear();
 
   GetFirstBlk();
 
@@ -466,23 +538,33 @@ void AliHLTHOMERManager::CreateBlockList() {
     
     // -- Check sources list if block is requested
     if ( CheckIfRequested( block ) ) {
-      fBlockList->Add( block );
+      (reinterpret_cast<TList*>((*fEventBuffer)[fBufferTopIdx]))->Add( block );
     }
     else {
       // XXX HACK Jochen
-      fBlockList->Add( block );
+      (reinterpret_cast<TList*>((*fEventBuffer)[fBufferTopIdx]))->Add( block );
       //      delete block;
       //      block = NULL;
     }
  
   } while( GetNextBlk() );
-    
+
   return;
+}
+
+//##################################################################################
+TList* AliHLTHOMERManager::GetBlockListEventBuffer( Int_t idx ) {
+  // see header file for class documentation
+  
+  if ( idx == -1 )
+    return NULL;
+
+  return reinterpret_cast<TList*>((*fEventBuffer)[idx]);
 }
 
 /*
  * ---------------------------------------------------------------------------------
- *                            BlockHandling
+ *                          Block Handling - private
  * ---------------------------------------------------------------------------------
  */
 
