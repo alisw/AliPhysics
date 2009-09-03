@@ -27,7 +27,6 @@
 
 
 // --- ROOT system ---
-#include <TObjArray.h>
 #include "TFile.h"
 
 //---- ANALYSIS system ----
@@ -36,7 +35,7 @@
 #include "AliMCEvent.h"
 #include "AliAODMCHeader.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliAODMCParticle.h"
+#include "AliAODEvent.h"
 
 ClassImp(AliCaloTrackReader)
   

@@ -19,9 +19,8 @@
 class TObjArray ; 
 class TLorentzVector ;
 #include "TString.h"
-class TObjArray;
+#include "TObjArray.h"
 class TArrayF;  
-//#include "TTree.h"
 class TTree ;
 
 //--- ANALYSIS system ---
@@ -29,7 +28,7 @@ class AliStack ;
 class AliHeader ; 
 class AliGenEventHeader ; 
 class AliVEvent;
-#include "AliAODEvent.h"
+class AliAODEvent;
 class AliMCEvent;
 class AliFidutialCut;
 class AliAODMCHeader;
@@ -120,17 +119,18 @@ class AliCaloTrackReader : public TObject {
   virtual AliAODEvent* GetOutputEvent() const {return fOutputEvent;}
   virtual AliMCEvent*  GetMC()          const {return fMC;}
   virtual void         GetVertex(Double_t * ) const {;}
+  virtual Double_t     GetBField() const { return 0.;}
 	
   virtual void Init();
 	
-  virtual void SetInputEvent(AliVEvent* input)  {fInputEvent  = input;}
-  virtual void SetOutputEvent(AliAODEvent* aod) {fOutputEvent = aod;}
-  virtual void SetMC(AliMCEvent* mc)            {fMC  = mc;}
+  virtual void SetInputEvent(AliVEvent* const input)  {fInputEvent  = input;}
+  virtual void SetOutputEvent(AliAODEvent* const aod) {fOutputEvent = aod;}
+  virtual void SetMC(AliMCEvent* const mc)            {fMC  = mc;}
 
   virtual void ResetLists();
 
   virtual AliFidutialCut * GetFidutialCut() const {return  fFidutialCut ;}
-  virtual void SetFidutialCut(AliFidutialCut * fc) { fFidutialCut = fc ;}
+  virtual void SetFidutialCut(AliFidutialCut * const fc) { fFidutialCut = fc ;}
 	
   virtual void SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) {;}
 	

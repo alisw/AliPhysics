@@ -19,7 +19,11 @@
 // Class for reading data (ESDs) in order to do prompt gamma 
 // or other particle identification and correlations
 //
-//
+// It is a filtering class, transforms ESD tracks or CaloClusters
+// into AOD tracks and calocluters, which are the basic input of the analysis
+// classes in this frame.
+// It is recommended to use the official filter AliAnalysisTaskESDfilter, and 
+// then the reader for AODs AliCaloTrackAODReader.
 //
 //
 //*-- Author: Gustavo Conesa (LNF-INFN) 
@@ -86,6 +90,7 @@ void AliCaloTrackESDReader::FillInputCTS() {
   Double_t covTr[21];
   Double_t pid[10];
   Double_t bfield = ((AliESDEvent*)fInputEvent)->GetMagneticField();
+
   Double_t      timezero        = 0;   //TO BE FIXED
 
   //To be replaced by call to AliEMCALGeoUtils when the class becomes available
@@ -364,6 +369,16 @@ void AliCaloTrackESDReader::GetVertex(Double_t  v[3]) const {
   
   ((AliESDEvent*)fInputEvent)->GetVertex()->GetXYZ(v) ;
   
+}
+
+
+//____________________________________________________________________________
+Double_t AliCaloTrackESDReader::GetBField() const {
+  //Return magnetic field
+
+  Double_t bfield = ((AliESDEvent*)fInputEvent)->GetMagneticField();
+
+  return bfield;
 }
 
 
