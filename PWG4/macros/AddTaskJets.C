@@ -185,7 +185,16 @@ AliJetReader *CreateJetReader(Char_t *jr){
     er = new AliJetAODReader();
     er->SetReaderHeader(jrh);
     break;
-
+  case "AODMC":
+    AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
+    jrh->SetComment("AOD MC Reader");
+    jrh->SetPtCut(0.);
+    jrh->SetFiducialEta(-2.1,2.1); // to take all MC particles default is 0.9
+    jrh->SetReadAODMC(1);// 1 all primary MC , 2 all primary charged
+    // Define reader and set its header
+    er = new AliJetAODReader();
+    er->SetReaderHeader(jrh);
+    break;
   default:
     ::Error("AddTaskJets", "Wrong jet reader selected\n");
     return 0;
