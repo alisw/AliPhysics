@@ -149,10 +149,9 @@ Bool_t AliGRPManager::SetMagField()
     if (beamEnergy==AliGRPObject::GetInvalidFloat()) {
       AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
       beamEnergy = 0;
-      ok = kFALSE;
+      //ok = kFALSE;  // temprorary suppressed to make read cosmics data
     }
-    // LHC: "multiply by 120 to get the energy in MeV"
-    beamEnergy *= 0.120;
+    beamEnergy /= 120E3;       // energy is provided in MeV*120
 
     // read special bits for the polarity convention and map type
     Int_t  polConvention = fGRPData->IsPolarityConventionLHC() ? AliMagF::kConvLHC : AliMagF::kConvDCS2008;
@@ -285,12 +284,13 @@ Bool_t AliGRPManager::SetFieldMap(Float_t l3Cur, Float_t diCur, Float_t l3Pol,
   TPRegexp ionBeam("(lead|pb|ion|a)\\s*-?\\s*\\1");
   if (btypestr.Contains(ionBeam)) btype = AliMagF::kBeamTypeAA;
   else if (btypestr.Contains(protonBeam)) btype = AliMagF::kBeamTypepp;
-  else {
-    AliInfo(Form("Cannot determine the beam type from %s, assume no LHC magnet field",beamtype));
-  }
-  char ttl[50];
-  sprintf(ttl,"L3: %+5d Dip: %+4d kA; %s",(int)TMath::Sign(l3Cur,float(sclL3)),
-	  (int)TMath::Sign(diCur,float(sclDip)),uniform ? " Constant":"");
+  else AliInfo(Form("Assume no LHC magnet field for the beam type %s, ",beamtype));
+  char ttl[80];
+  sprintf(ttl,"L3: %+5d Dip: %+4d kA; %s | Polarities in %s convention",(int)TMath::Sign(l3Cur,float(sclL3)),
+	  (int)TMath::Sign(diCur,float(sclDip)),uniform ? " Constant":"",
+	  convention==AliMagF::kConvLHC ? "LHC":"DCS2008");
+  // LHC and DCS08 conventions have opposite dipole polarities
+  if ( AliMagF::GetPolarityConvention() != convention) sclDip = -sclDip;
   AliMagF* fld = new AliMagF("MagneticFieldMap", ttl, 2, sclL3, sclDip, 10., map, path, 
 			     btype,beamenergy);
   TGeoGlobalMagField::Instance()->SetField( fld );

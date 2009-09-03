@@ -958,8 +958,8 @@ Bool_t AliReconstruction::SetFieldMap(Float_t l3Cur, Float_t diCur, Float_t l3Po
   if (sclDip!=0 && (map==AliMagF::k5kG || map==AliMagF::k2kG) &&
       ((convention==AliMagF::kConvLHC     && l3Pol!=diPol) ||
        (convention==AliMagF::kConvDCS2008 && l3Pol==diPol)) ) { 
-    AliError(Form("Wrong combination for L3/Dipole polarities (%c/%c) for convention %d",
-		  l3Pol>0?'+':'-',diPol>0?'+':'-',AliMagF::GetPolarityConvention()));
+    AliError(Form("Wrong combination for L3/Dipole polarities (%c/%c) in %s convention",
+		  l3Pol>0?'+':'-',diPol>0?'+':'-',convention==AliMagF::kConvDCS2008?"DCS2008":"LHC"));
     return kFALSE;
   }
   //
@@ -973,12 +973,15 @@ Bool_t AliReconstruction::SetFieldMap(Float_t l3Cur, Float_t diCur, Float_t l3Po
   TPRegexp ionBeam("(lead|pb|ion|a)\\s*-?\\s*\\1");
   if (btypestr.Contains(ionBeam)) btype = AliMagF::kBeamTypeAA;
   else if (btypestr.Contains(protonBeam)) btype = AliMagF::kBeamTypepp;
-  else {
-    AliInfo(Form("Cannot determine the beam type from %s, assume no LHC magnet field",beamtype));
-  }
-  char ttl[50];
-  sprintf(ttl,"L3: %+5d Dip: %+4d kA; %s",(int)TMath::Sign(l3Cur,float(sclL3)),
-	  (int)TMath::Sign(diCur,float(sclDip)),uniform ? " Constant":"");
+  else AliInfo(Form("Assume no LHC magnet field for the beam type %s, ",beamtype));
+  //
+  char ttl[80];
+  sprintf(ttl,"L3: %+5d Dip: %+4d kA; %s | Polarities in %s convention",(int)TMath::Sign(l3Cur,float(sclL3)),
+	  (int)TMath::Sign(diCur,float(sclDip)),uniform ? " Constant":"",
+	  convention==AliMagF::kConvLHC ? "LHC":"DCS2008");
+  // LHC and DCS08 conventions have opposite dipole polarities
+  if ( AliMagF::GetPolarityConvention() != convention) sclDip = -sclDip;
+  //
   AliMagF* fld = new AliMagF("MagneticFieldMap", ttl, 2, sclL3, sclDip, 10., map, path, 
 			     btype,beamenergy);
   TGeoGlobalMagField::Instance()->SetField( fld );
@@ -1039,8 +1042,8 @@ Bool_t AliReconstruction::InitGRP() {
     AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
     beamEnergy = 0;
   }
-  // LHC: "multiply by 120 to get the energy in MeV"
-  beamEnergy *= 0.120;
+  // energy is provided in MeV*120
+  beamEnergy /= 120E3;
 
   TString runType = fGRPData->GetRunType();
   if (runType==AliGRPObject::GetInvalidString()) {
@@ -2763,7 +2766,6 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
   if (reconstructor) {
     TObject* obj = fOptions.FindObject(detName.Data());
     if (obj) reconstructor->SetOption(obj->GetTitle());
-    reconstructor->SetRunInfo(fRunInfo);
     reconstructor->Init();
     fReconstructor[iDet] = reconstructor;
   }
