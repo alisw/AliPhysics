@@ -86,19 +86,20 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
   hPrimary->Sumw2();
   fOutputList->Add(hPrimary);
   Int_t nVtxbins = pars->GetNvtxBins();
-  
-  
-  for(Int_t det =1; det<=3;det++)
-    {
-      Int_t nRings = (det==1 ? 1 : 2);
-      for(Int_t ring = 0;ring<nRings;ring++)
-	{
-	  Char_t ringChar = (ring == 0 ? 'I' : 'O');
-	  Int_t  nSec     = (ring == 0 ? 20 : 40);
-	  
-	  
-	  for(Int_t i = 0; i< nVtxbins; i++) {
-	    TH2F* hBg = pars->GetBackgroundCorrection(det, ringChar, i);
+  TH2F* hBg = 0;
+  for(Int_t i = 0; i< nVtxbins; i++) {
+     
+    for(Int_t det =1; det<=3;det++)
+      {
+	Int_t nRings = (det==1 ? 1 : 2);
+	for(Int_t ring = 0;ring<nRings;ring++)
+	  {
+	    Char_t ringChar = (ring == 0 ? 'I' : 'O');
+	    Int_t  nSec     = (ring == 0 ? 20 : 40);
+	    
+	    
+	    
+	    hBg = pars->GetBackgroundCorrection(det, ringChar, i);
 	    hMult  = new TH2F(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i),Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i),
 			      hBg->GetNbinsX(),
 			      hBg->GetXaxis()->GetXmin(),
@@ -109,17 +110,15 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
 			      hBg->GetNbinsX(),
 			      hBg->GetXaxis()->GetXmin(),
 			      hBg->GetXaxis()->GetXmax());
-			    
-	    
+	    hHits->Sumw2();
+	    fOutputList->Add(hHits);
 	    
 	    hMult->Sumw2();
-	    hHits->Sumw2();
 	    fOutputList->Add(hMult);
-	    fOutputList->Add(hHits);
-	    	    
+	    
 	  }
-	} 
-    }
+      } 
+  }
   
   for(Int_t i = 0; i< nVtxbins; i++) {
    
@@ -198,7 +197,8 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
 	TH2F* hMultTotal = (TH2F*)fOutputList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i));
 	TH2F* hMultTrVtx = (TH2F*)hMultTotal->Clone(Form("dNdeta_FMD%d%c_TrVtx_vtxbin%d",det,ringChar,i));
 	
-	hMultTotal->Scale(pars->GetEventSelectionEfficiency(i));
+	hMultTotal->Scale(1/pars->GetEventSelectionEfficiency(i));
+		
 	TH1D* hMultProj   = hMultTotal->ProjectionX(Form("dNdeta_FMD%d%c_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
 	TH1D* hMultProjTrVtx   = hMultTrVtx->ProjectionX(Form("dNdeta_FMD%d%c_TrVtx_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
 	fOutputList->Add(hMultTrVtx);
@@ -261,6 +261,7 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
     
     }
     if(pars->GetProcessHits()) {
+           
       for(Int_t j=0; j<particle->GetNumberOfTrackReferences();j++) {
 	
 	AliTrackReference* ref = particle->GetTrackReference(j);
@@ -275,7 +276,10 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
 	  
 	  Float_t   eta   = pars->GetEtaFromStrip(det,ring,sec,strip,vertex.At(2));//-1*TMath::Log(TMath::Tan(0.5*theta));
 	  TH1F* hHits = (TH1F*)fOutputList->FindObject(Form("hMCHits_FMD%d%c_vtxbin%d",det,ring,vertexBin));
+	  
+	
 	  hHits->Fill(eta);
+	  
 	  Float_t nstrips = (ring =='O' ? 256 : 512);
 	  
 	  fLastTrackByStrip(det,ring,sec,strip) = (Float_t)i;
@@ -286,8 +290,15 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
 	    fLastTrackByStrip(det,ring,sec,strip+1) = (Float_t)i;
 	  
 	}
+      
+	
       }
+      
+      
     }
+
+      
+      
   }
 }
 //_____________________________________________________________________

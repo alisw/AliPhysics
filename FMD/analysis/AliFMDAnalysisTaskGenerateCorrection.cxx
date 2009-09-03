@@ -270,27 +270,28 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
   TH1F* hEventsSelected    = (TH1F*)fListOfHits.FindObject("EventsSelected");
   TH1F* hEventsAll         = (TH1F*)fListOfPrimaries.FindObject("EventsAll");
   
-  //hEventsSelected->Divide(hEventsSelected,hEventsAll,1,1,"B");
+  //  hEventsAll->Divide(hEventsAll,hEventsSelected,1,1,"B");
+ 
   
   for(Int_t i = 1; i<=hEventsSelected->GetNbinsX(); i++) {
     if(hEventsSelected->GetBinContent(i) == 0 )
       continue;
-    Float_t a    = hEventsSelected->GetBinContent(i);
-    Float_t da   = hEventsSelected->GetBinError(i);
+    Float_t b    = hEventsSelected->GetBinContent(i);
+    Float_t db   = hEventsSelected->GetBinError(i);
     Float_t sum  = hEventsAll->GetBinContent(i);
     Float_t dsum = hEventsAll->GetBinError(i);
-    Float_t b    = sum-a;
-    Float_t db   = TMath::Sqrt(TMath::Power(da,2) + TMath::Power(dsum,2));
+    Float_t a    = sum-b;
+    Float_t da   = TMath::Sqrt(TMath::Power(db,2) + TMath::Power(dsum,2));
     
-    Float_t cor  = a / sum;
-    Float_t ecor = TMath::Sqrt(TMath::Power(b*da,2) + TMath::Power(a*db,2)) / TMath::Power(sum,2);
+    Float_t cor  = sum / b;
+    Float_t ecor = TMath::Sqrt(TMath::Power(da,2) + TMath::Power(a/(b*db),2)) / b;
     
-    hEventsSelected->SetBinContent(i,cor);
-    hEventsSelected->SetBinError(i,ecor);
+    hEventsAll->SetBinContent(i,cor);
+    hEventsAll->SetBinError(i,ecor);
     
   }
   
-  fEventSelectionEff->SetCorrection(hEventsSelected);
+  fEventSelectionEff->SetCorrection(hEventsAll);
   
   for(Int_t det= 1; det <=3; det++) {
     Int_t nRings = (det==1 ? 1 : 2);
@@ -299,8 +300,10 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
       Char_t ring = (iring == 0 ? 'I' : 'O');
       TH1F* allHits = (TH1F*)fListOfHits.FindObject(Form("allHits_FMD%d%c",det,ring));
       TH1F* doubleHits = (TH1F*)fListOfHits.FindObject(Form("DoubleHits_FMD%d%c",det,ring));
-      fBackground->SetDoubleHitCorrection(det,ring,doubleHits);
-      doubleHits->Divide(allHits);
+      allHits->Divide(doubleHits);
+      
+      fBackground->SetDoubleHitCorrection(det,ring,allHits);
+      
       for(Int_t vertexBin=0;vertexBin<fNvtxBins  ;vertexBin++) {
 	TH2F* hHits          = (TH2F*)fListOfHits.FindObject(Form("hHits_FMD%d%c_vtx%d", det,ring,vertexBin));
 	TH2F* hPrimary  = (TH2F*)fListOfPrimaries.FindObject( Form("hPrimary_FMD_%c_vtx%d",ring,vertexBin));

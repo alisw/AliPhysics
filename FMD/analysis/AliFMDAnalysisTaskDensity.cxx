@@ -167,11 +167,11 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 			  
 	  Float_t phi = pars->GetPhiFromSector(det,ring,sec);
 	  Float_t eta = pars->GetEtaFromStrip(det,ring,sec,strip,vertex[2]);
-		  
-	  Float_t mult_cut = 0.15;//m-2*s;//0.15;//0.2;//m-3*s;// 0.2;//0.01;//m-2*s;//0.2;
-	  if(ring == 'I')
-	    mult_cut = 0.10;
 	  
+	  Float_t mult_cut = 0.15;//m-2*s;//0.15;//0.2;//m-3*s;// 0.2;//0.01;//m-2*s;//0.2;
+	    if(ring == 'I')
+	      mult_cut = 0.10;
+	  //Float_t mult_cut = pars->GetMPV(det,ring,eta) - 5*pars->GetSigma(det,ring,eta);
 	  Float_t nParticles = 0;
 	  if(fESD->GetUniqueID() == kTRUE) {
 	    //proton + proton
@@ -217,7 +217,7 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	    TH1F* hDoubleHitCorrection = pars->GetDoubleHitCorrection(det,ring);
 	    
 	    if(hDoubleHitCorrection->GetBinContent(hDoubleHitCorrection->FindBin(eta)) != 0)
-	      correction = correction / hDoubleHitCorrection->GetBinContent(hDoubleHitCorrection->FindBin(eta));
+	      correction = correction*hDoubleHitCorrection->GetBinContent(hDoubleHitCorrection->FindBin(eta));
 	    
 	  }
 	  
