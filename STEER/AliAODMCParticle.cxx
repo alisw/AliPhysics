@@ -46,7 +46,8 @@ AliVParticle(),
   fE(0),
   fVx(0),
   fVy(0),
-  fVz(0)
+  fVz(0),
+  fVt(0)
 {
   // Default Constructor
   fDaughter[0] =   fDaughter[1] = 0;
@@ -65,7 +66,8 @@ AliAODMCParticle::AliAODMCParticle(AliMCParticle* mcpart, Int_t label,Int_t flag
     fE(mcpart->Particle()->Energy()),
     fVx(mcpart->Particle()->Vx()),
     fVy(mcpart->Particle()->Vy()),
-    fVz(mcpart->Particle()->Vz())
+    fVz(mcpart->Particle()->Vz()),
+    fVt(mcpart->Particle()->T())
 {
   fDaughter[0] =  mcpart->GetFirstDaughter(); 
   fDaughter[1] =  mcpart->GetLastDaughter();
@@ -86,7 +88,8 @@ AliAODMCParticle::AliAODMCParticle(const AliAODMCParticle& mcPart) :
     fE(mcPart.fE),
     fVx(mcPart.fVx),
     fVy(mcPart.fVy),
-    fVz(mcPart.fVz)
+    fVz(mcPart.fVz),
+    fVt(mcPart.fVt)
 {
   // Copy constructor
   fDaughter[0] = mcPart.fDaughter[0]; 
@@ -110,6 +113,7 @@ AliAODMCParticle& AliAODMCParticle::operator=(const AliAODMCParticle& mcPart)
     fVx         = mcPart.fVx;
     fVy         = mcPart.fVy;
     fVz         = mcPart.fVz;
+    fVt         = mcPart.fVt;
     fDaughter[0] = mcPart.fDaughter[0]; 
     fDaughter[1] = mcPart.fDaughter[1]; 
   }  
@@ -146,6 +150,6 @@ void AliAODMCParticle::Print(const Option_t */*opt*/) const {
   else{
     Printf(">>> PDG (%d) : %s",fPdgCode,"Unknown");
   }
-  Printf(">>  P(%3.3f,%3.3f,%3.3f) V((%3.3f,%3.3f,%3.3f)",fPx,fPy,fPz,fVx,fVy,fVz);  
+  Printf(">>  P(%3.3f,%3.3f,%3.3f) V((%3.3f,%3.3f,%3.3f,%3.3f)",fPx,fPy,fPz,fVx,fVy,fVz,fVt);  
   Printf(">   Mother %d, First Daughter %d Last Daughter %d Process %d",fMother,fDaughter[0],fDaughter[1],TObject::GetUniqueID());
 }

@@ -48,6 +48,7 @@ class AliAODMCParticle: public AliVParticle {
     virtual Double_t Yv() const;
     virtual Double_t Zv() const;
     virtual Bool_t   XvYvZv(Double_t x[3]) const;  
+    virtual Double_t T() const;
 
     virtual Double_t E()          const;
     virtual Double_t M()          const;
@@ -57,8 +58,8 @@ class AliAODMCParticle: public AliVParticle {
     
     virtual Short_t Charge()      const;
 
-    virtual Int_t      Label()       const;
-    virtual Int_t      GetLabel() const {return Label();} 
+    virtual Int_t   Label()       const;
+    virtual Int_t   GetLabel()    const {return Label();} 
 	    
     // PID
     virtual const Double_t *PID() const {return 0;} // return PID object (to be defined, still)
@@ -108,6 +109,7 @@ class AliAODMCParticle: public AliVParticle {
   Double32_t       fVx;                   // [0.,0.,12] x of production vertex
   Double32_t       fVy;                   // [0.,0.,12] y of production vertex
   Double32_t       fVz;                   // [0.,0.,12] z of production vertex
+  Double32_t       fVt;                   // [0.,0.,12] t of production vertex
 
   // Copy the uniquID to another data member? unique ID is correctly handled 
   // via TOBject Copy construct but not by AliVParticle ctor (no passing of 
@@ -140,12 +142,13 @@ inline Double_t AliAODMCParticle::Pt()        const {return TMath::Sqrt(fPx*fPx+
 inline Double_t AliAODMCParticle::P()         const {return TMath::Sqrt(fPx*fPx+fPy*fPy+fPz*fPz); }
 inline Double_t AliAODMCParticle::OneOverPt() const {return 1. / Pt();}
 inline Bool_t   AliAODMCParticle::PxPyPz(Double_t p[3]) const { p[0] = fPx; p[1] = fPy; p[2] = fPz; return kTRUE; }
-inline Double_t AliAODMCParticle::Phi()       const { return TMath::Pi()+TMath::ATan2(-fPy,-fPx); }  // note that Phi() returns an angle between 0 and 2pi
-inline Double_t AliAODMCParticle::Theta()     const { return (fPz==0)?TMath::PiOver2():TMath::ACos(fPz/P()); }
+inline Double_t AliAODMCParticle::Phi()       const {return TMath::Pi()+TMath::ATan2(-fPy,-fPx); }  // note that Phi() returns an angle between 0 and 2pi
+inline Double_t AliAODMCParticle::Theta()     const {return (fPz==0)?TMath::PiOver2():TMath::ACos(fPz/P()); }
 inline Double_t AliAODMCParticle::Xv()        const {return fVx;}
 inline Double_t AliAODMCParticle::Yv()        const {return fVy;}
 inline Double_t AliAODMCParticle::Zv()        const {return fVz;}
 inline Bool_t   AliAODMCParticle::XvYvZv(Double_t x[3]) const { x[0] = fVx; x[1] = fVy; x[2] = fVz; return kTRUE; }
+inline Double_t AliAODMCParticle::T()         const {return fVt;}
 inline Double_t AliAODMCParticle::E()         const {return fE;}
 inline Double_t AliAODMCParticle::Eta()       const {  
   Double_t pmom = P();
