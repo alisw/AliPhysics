@@ -36,12 +36,17 @@ public:
   void GetVertex(Double_t v[3]) const ;
   Double_t GetBField() const;
 
+  void SwitchOnWriteAOD()  {fWriteOutputAOD = kTRUE;}
+  void SwitchOffWriteAOD() {fWriteOutputAOD = kFALSE;}
+	
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
   
-  
-  ClassDef(AliCaloTrackAODReader,1)
-    } ;
-
+private:
+	
+  Bool_t	fWriteOutputAOD; //Write selected tracks and caloclusters in output AOD
+	
+  ClassDef(AliCaloTrackAODReader,2)
+} ;
 
 #endif //ALICALOTRACKAODREADER_H
 

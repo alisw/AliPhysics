@@ -141,8 +141,8 @@ TList *AliAnaPartCorrMaker::GetOutputContainer()
 {
 // Fill the output list of histograms during the CreateOutputObjects stage.
   if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0){
-    printf("AliAnaPartCorrMaker::GetOutputContainer() - Analysis job list not initialized\n");
-    abort();
+    printf("AliAnaPartCorrMaker::GetOutputContainer() - Analysis job list not initialized!!!\n");
+    //abort();
   }
 
   char newname[128];
@@ -175,8 +175,8 @@ void AliAnaPartCorrMaker::Init()
   // Fill the output list of histograms during the CreateOutputObjects stage.
  
   if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0){
-    printf("AliAnaPartCorrMaker::GetOutputInit() - Analysis job list not initialized\n");
-    abort();
+    printf("AliAnaPartCorrMaker::GetOutputInit() - Analysis job list not initialized!!!\n");
+    //abort();
   }
 
   //Initialize reader
