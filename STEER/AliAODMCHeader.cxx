@@ -31,12 +31,14 @@ ClassImp(AliAODMCHeader)
 TString AliAODMCHeader::fgkStdBranchName("mcHeader");
 
 //______________________________________________________________________________
+
 AliAODMCHeader::AliAODMCHeader() :
   AliVHeader()
   ,fGenerator("")
   ,fImpactPar(0)
   ,fPtHard(0)
   ,fEventType(0)
+  ,fReactionPlaneAngle(0)  
 {
   // default constructor
   fVertex[0] = fVertex[1] = fVertex[2] = 0;  
@@ -56,6 +58,7 @@ AliAODMCHeader::AliAODMCHeader(const AliAODMCHeader &header) :
   ,fImpactPar(header.fImpactPar)
   ,fPtHard(header.fPtHard)
   ,fEventType(header.fEventType)
+  ,fReactionPlaneAngle(header.fReactionPlaneAngle)  
 {
   // copy constructor
   for(int i = 0;i<3;++i)fVertex[i] = header.fVertex[i];
@@ -73,6 +76,7 @@ AliAODMCHeader& AliAODMCHeader::operator=(const AliAODMCHeader &header)
     fImpactPar = header.fImpactPar;
     fPtHard = header.fPtHard;
     fEventType = header.fEventType;
+    fReactionPlaneAngle = header.fReactionPlaneAngle;
   } 
   return *this;
 }
@@ -101,6 +105,7 @@ void AliAODMCHeader::Reset()
   fEventType = 0;
   fPtHard = 0;
   fVertex[0] = fVertex[1] = fVertex[2] = 0;  
+  fReactionPlaneAngle = 0;
 }
 
 //______________________________________________________________________________

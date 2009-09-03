@@ -46,6 +46,9 @@ public:
   virtual void      SetPtHard(Double_t f){fPtHard = f;}
   virtual Double_t  GetPtHard() const {return fPtHard;}
 
+  virtual void      SetReactionPlaneAngle(Double_t b){fReactionPlaneAngle = b;}
+  virtual Double_t  GetReactionPlaneAngle() const {return fReactionPlaneAngle;}
+
   virtual void      SetEventType(UInt_t eventType){fEventType = eventType;}
   virtual UInt_t    GetEventType() const {return fEventType;}
 
@@ -71,7 +74,7 @@ private:
   Double32_t   fImpactPar;         // Impact parameter in case of Pb+Pb
   Double32_t   fPtHard;            // [0,0,12] Pt hard for jet events
   UInt_t       fEventType;         // MC Process Type of Event
-
+  Double32_t   fReactionPlaneAngle;// MC Reaction Plane Angle
   
   ClassDef(AliAODMCHeader,2)
 
