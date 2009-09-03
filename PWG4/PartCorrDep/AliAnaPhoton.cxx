@@ -428,8 +428,14 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   TObjArray * pl = new TObjArray(); 
   
   //Get vertex for photon momentum calculation
-  Double_t vertex[]={0,0,0} ; //vertex ;
-  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
+  Double_t vertex[]  = {0,0,0} ; //vertex 
+  Double_t vertex2[] = {0,0,0} ; //vertex from second input aod
+  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) 
+  {
+	  GetReader()->GetVertex(vertex);
+	  if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+  }
+	
   //Select the Calorimeter of the photon
   if(fCalorimeter == "PHOS")
     pl = GetAODPHOS();
@@ -441,9 +447,18 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   
   for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){
     AliAODCaloCluster * calo =  (AliAODCaloCluster*) (pl->At(icalo));	
+	  
     //Cluster selection, not charged, with photon id and in fidutial cut
+	  
+	//Input from second AOD?
+	Int_t input = 0;
+	if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) input = 1 ;
+	else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;
+	  
     //Get Momentum vector, 
-    calo->GetMomentum(mom,vertex);//Assume that come from vertex in straight line
+    if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
+	else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
+	  
     //If too small or big pt, skip it
     if(mom.Pt() < GetMinPt() || mom.Pt() > GetMaxPt() ) continue ; 
 	  
@@ -455,14 +470,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       if(! in ) continue ;
     }
 	
-
 	//Create AOD for analysis
     AliAODPWG4Particle aodph = AliAODPWG4Particle(mom);
 	Int_t label = calo->GetLabel(0);
     aodph.SetLabel(label);
-	//Input from second AOD?
-	if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) aodph.SetInputFileIndex(1);
-	else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) aodph.SetInputFileIndex(1);
+	aodph.SetInputFileIndex(input);
 
     //printf("Index %d, Id %d\n",icalo, calo->GetID());
     //Set the indeces of the original caloclusters  

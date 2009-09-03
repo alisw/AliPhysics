@@ -461,9 +461,12 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   TObjArray *cl = new TObjArray();
 
   //Get vertex for cluster momentum calculation
-  Double_t vertex[]={-999.,-999.,-999.} ; //vertex ;
-  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
-
+  Double_t vertex[]  = {-999.,-999.,-999.} ; //vertex ;
+  Double_t vertex2[] = {-999.,-999.,-999.} ; //vertex of second input AOD if exist;
+  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
+	  GetReader()->GetVertex(vertex);
+	  if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+  }
   Double_t bfield = 0.;
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
 
@@ -922,8 +925,14 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
   Double_t bfield = 5.; //kG
   if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
 
-  Double_t vertex[3] = {-999.,-999.,-999};
-  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
+  Double_t vertex[]  = {-999.,-999.,-999.} ; //vertex 
+  Double_t vertex2[] = {-999.,-999.,-999.} ; //vertex of second input AOD if exist;
+  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
+	  GetReader()->GetVertex(vertex);
+	  if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+  }
+  
+  //HERE CHECK WHICH VERTEX
   TVector3 pv(vertex[0],vertex[1],vertex[2]) ;
   if(GetDebug() > 5) printf(">>ComputeSdca:: primary vertex = %2.2f,%2.2f,%2.2f \n",vertex[0],vertex[1],vertex[2]) ;
 

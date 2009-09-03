@@ -47,9 +47,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   
   void Print(const Option_t * opt) const;
   
-  void MakeChargedCorrelation(AliAODPWG4ParticleCorrelation * aodParticle,TObjArray* pl, const Bool_t bFillHisto) ;
-  void MakeNeutralCorrelationFillAOD(AliAODPWG4ParticleCorrelation * aodParticle, TObjArray* pl, TString detector)  ;
-  void MakeNeutralCorrelationFillHistograms(AliAODPWG4ParticleCorrelation * aodParticle)  ;
+  void MakeChargedCorrelation(AliAODPWG4ParticleCorrelation * aodParticle,TObjArray* const pl, const Bool_t bFillHisto) ;
+  void MakeNeutralCorrelationFillAOD(AliAODPWG4ParticleCorrelation* const aodParticle, TObjArray* const pl, TString detector)  ;
+  void MakeNeutralCorrelationFillHistograms(AliAODPWG4ParticleCorrelation* const aodParticle)  ;
 	
   void MakeAnalysisFillAOD()  ;
   void MakeAnalysisFillHistograms() ; 

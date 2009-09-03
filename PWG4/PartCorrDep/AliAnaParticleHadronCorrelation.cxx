@@ -491,7 +491,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
 }
 
 //____________________________________________________________________________
-void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle, TObjArray* pl, const Bool_t bFillHisto)
+void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle, TObjArray* const pl, const Bool_t bFillHisto)
 {  
    // Charged Hadron Correlation Analysis
    if(GetDebug() > 1)printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Make trigger particle - charged hadron correlation \n");
@@ -581,7 +581,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
 }  
 
 //____________________________________________________________________________
-void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4ParticleCorrelation * aodParticle,TObjArray* pl, TString detector)  
+void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4ParticleCorrelation* const aodParticle,TObjArray* const pl, TString detector)  
 {  
   // Neutral Pion Correlation Analysis, find pi0, put them in new output aod, if correlation cuts passed
   if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Make trigger particle - neutral hadron correlation \n");
@@ -596,18 +596,30 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
   TLorentzVector gammai;
   TLorentzVector gammaj;
   
-  Double_t vertex[] = {0,0,0};
-  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(vertex);
-  
+  //Get vertex for photon momentum calculation
+  Double_t vertex[]  = {0,0,0} ; //vertex 
+  Double_t vertex2[] = {0,0,0} ; //vertex of second input aod
+  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) 
+  {
+	 GetReader()->GetVertex(vertex);
+	 if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+  }
+	
   //Cluster loop, select pairs with good pt, phi and fill AODs or histograms
   //Int_t iEvent= GetReader()->GetEventNumber() ;
   Int_t nclus = pl->GetEntriesFast();
   for(Int_t iclus = 0;iclus < nclus ; iclus ++ ){
     AliAODCaloCluster * calo = (AliAODCaloCluster *) (pl->At(iclus)) ;
     
-    //Cluster selection, not charged, with photon or pi0 id and in fidutial cut
+	//Input from second AOD?
+	Int_t inputi = 0;
+	if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) inputi = 1 ;
+	else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) inputi = 1;
+	  
+	//Cluster selection, not charged, with photon or pi0 id and in fidutial cut
     Int_t pdg=0;
-    if(!SelectCluster(calo, vertex, gammai, pdg)) continue ;
+	if     (inputi == 0 && !SelectCluster(calo, vertex,  gammai, pdg))  continue ;
+	else if(inputi == 1 && !SelectCluster(calo, vertex2, gammai, pdg))  continue ;
 
 	if(GetDebug() > 2)
       printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Neutral cluster in %s: pt %f, phi %f, phi trigger %f. Cuts:  delta phi min %2.2f,  max %2.2f, pT min %2.2f \n",
@@ -631,14 +643,9 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
       pi0.SetDetector(detector);
       
       if(IsDataMC()){
-		  Int_t input = 0;
-		  //Input from second AOD?
-		  if     (detector == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1;
-		  else if(detector == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) input = 1;
-		  
-	pi0.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetReader(),input));
-	if(GetDebug() > 0) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Origin of candidate %d\n",pi0.GetTag());
-      }//Work with stack also 
+	    pi0.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetReader(),inputi));
+	    if(GetDebug() > 0) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Origin of candidate %d\n",pi0.GetTag());
+	  }//Work with stack also 
       //Set the indeces of the original caloclusters  
       pi0.SetCaloLabel(calo->GetID(),-1);
       AddAODParticle(pi0);
@@ -655,8 +662,16 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
       for(Int_t jclus = iclus+1; jclus < pl->GetEntries() ; jclus ++ ){
 	AliAODCaloCluster * calo2 = (AliAODCaloCluster *) (pl->At(jclus)) ;
 	
+	//Input from second AOD?
+	Int_t inputj = 0;
+	if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= jclus) inputj = 1;
+	else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= jclus) inputj = 1;
+		  
 	//Cluster selection, not charged with photon or pi0 id and in fidutial cut
 	Int_t pdgj=0;
+	if     (inputj == 0 && !SelectCluster(calo2, vertex,  gammaj, pdgj))  continue ;
+	else if(inputj == 1 && !SelectCluster(calo2, vertex2, gammaj, pdgj))  continue ;
+	  
 	if(!SelectCluster(calo2,vertex, gammaj, pdgj)) continue ;
 	
 	if(pdgj == AliCaloPID::kPhoton ){
@@ -682,22 +697,11 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
 	    pi0.SetDetector(detector);	
 	    if(IsDataMC()){
 	      //Check origin of the candidates
-		  Int_t input1 = 0;
-		  Int_t input2 = 0;
-		  //Input from second AOD?
-		  if     (detector == "EMCAL"){ 
-					if(GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input1 = 1;
-					if(GetReader()->GetAODEMCALNormalInputEntries() <= jclus) input2 = 1;
-		  }
-		  else if(detector == "PHOS"){ 
-			    if(GetReader()->GetAODPHOSNormalInputEntries() <= iclus) input1 = 1;
-				if(GetReader()->GetAODPHOSNormalInputEntries() <= jclus) input2 = 1;
-		  }
 			
 		  Int_t label1 = calo->GetLabel(0);
 		  Int_t label2 = calo2->GetLabel(0);
-	      Int_t tag1 = GetMCAnalysisUtils()->CheckOrigin(label1,  GetReader(), input1);
-	      Int_t tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), input2);
+	      Int_t tag1 = GetMCAnalysisUtils()->CheckOrigin(label1, GetReader(), inputi);
+	      Int_t tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), inputj);
 
 	      if(GetDebug() > 0) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
 	      if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay) && GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0Decay)){
@@ -713,10 +717,10 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
 					//mother2 = GetMCStack()->Particle(label2);//pi0
 			  }
 			  else if(GetReader()->ReadAODMCParticles()){
-					AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(input1))->At(label1);//photon in kine tree
+					AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(inputi))->At(label1);//photon in kine tree
 					label1 = mother1->GetMother();
 					//mother1 = GetMCStack()->Particle(label1);//pi0
-					AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(input2))->At(label2);//photon in kine tree
+					AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(inputj))->At(label2);//photon in kine tree
 					label2 = mother2->GetMother();
 					//mother2 = GetMCStack()->Particle(label2);//pi0
 			  }
@@ -743,7 +747,7 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
 }
 
 //____________________________________________________________________________
-void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillHistograms(AliAODPWG4ParticleCorrelation * aodParticle)  
+void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillHistograms(AliAODPWG4ParticleCorrelation * const aodParticle)  
 {  
   // Neutral Pion Correlation Analysis
   if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillHistogramS() - Make trigger particle - pi0 correlation, %d pi0's \n",GetOutputAODBranch()->GetEntriesFast());

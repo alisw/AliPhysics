@@ -20,6 +20,7 @@ class TObjArray ;
 
 // --- ANALYSIS system ---
 class AliAODPWG4ParticleCorrelation ;
+class AliCaloTrackReader ;
 
 class AliIsolationCut : public TObject {
   
@@ -38,7 +39,7 @@ class AliIsolationCut : public TObject {
   Int_t      GetICMethod()        const {return fICMethod ; }
   TString    GetICParametersList() ; 
   
-  void MakeIsolationCut(TObjArray * plCTS, TObjArray * plNe, Double_t * vertex, 
+  void MakeIsolationCut(TObjArray * const plCTS, TObjArray * const plNe, AliCaloTrackReader * const reader, 
 			const Bool_t fillAOD, AliAODPWG4ParticleCorrelation  * pCandidate, const TString aodObjArrayName,
 			Int_t &n, Int_t & nfrac, Float_t &ptsum, Bool_t & isolated) const ;  
   

@@ -118,7 +118,8 @@ class AliCaloTrackReader : public TObject {
   virtual AliVEvent*   GetInputEvent()  const {return fInputEvent;}
   virtual AliAODEvent* GetOutputEvent() const {return fOutputEvent;}
   virtual AliMCEvent*  GetMC()          const {return fMC;}
-  virtual void         GetVertex(Double_t * ) const {;}
+  virtual void         GetVertex(Double_t *) const {;}
+  virtual void         GetSecondInputAODVertex(Double_t *) const {;}
   virtual Double_t     GetBField() const { return 0.;}
 	
   virtual void Init();
