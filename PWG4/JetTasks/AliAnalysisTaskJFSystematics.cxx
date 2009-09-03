@@ -190,6 +190,9 @@ Bool_t AliAnalysisTaskJFSystematics::Notify()
     if(fileName.Contains("AliESDs.root")){
         fileName.ReplaceAll("AliESDs.root", "");
     }
+    else if(fileName.Contains("AliAOD.root")){
+        fileName.ReplaceAll("AliAOD.root", "");
+    }
     else if(fileName.Contains("AliAODs.root")){
         fileName.ReplaceAll("AliAODs.root", "");
     }
