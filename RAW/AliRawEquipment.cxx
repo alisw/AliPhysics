@@ -95,6 +95,20 @@ AliRawEquipment::~AliRawEquipment()
 }
 
 //______________________________________________________________________________
+void AliRawEquipment::CloneRawData()
+{
+  // Load raw-data part of the object via the TRef
+  // flush the Tref and clone the raw data
+
+  if (!fRawData) {
+    if (fRawDataRef.IsValid())
+      fRawData = (AliRawData*)fRawDataRef.GetObject();
+  }
+  fRawDataRef = NULL;
+  if (fRawData) fRawData = (AliRawData*)fRawData->Clone();
+}
+
+//______________________________________________________________________________
 void AliRawEquipment::Streamer(TBuffer &R__b)
 {
    // Stream an object of class AliRawEquipment.

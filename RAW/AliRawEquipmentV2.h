@@ -51,6 +51,8 @@ public:
    void                           Reset();
    AliRawData                    *NextRawData(AliRawDataArrayV2 *array);
 
+   virtual void                   CloneRawData();
+
 private:
    AliRawEquipmentHeader  fEqpHdr;      // equipment header
    AliRawData            *fRawData;     //! raw data container

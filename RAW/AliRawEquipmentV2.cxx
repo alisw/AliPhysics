@@ -115,3 +115,14 @@ AliRawData *AliRawEquipmentV2::NextRawData(AliRawDataArrayV2 *array)
 
   return raw;
 }
+
+//______________________________________________________________________________
+void AliRawEquipmentV2::CloneRawData()
+{
+  // Load raw-data part of the object via the TRef
+  // flush the Tref and clone the raw data
+
+  GetRawData();
+  fRawDataRef = NULL;
+  if (fRawData) fRawData = (AliRawData*)fRawData->Clone();
+}

@@ -52,7 +52,9 @@ public:
    virtual AliRawEquipmentHeader *GetEquipmentHeader();
    virtual AliRawData            *GetRawData();
 
-private:
+   virtual void                   CloneRawData();
+
+ private:
    AliRawEquipmentHeader *fEqpHdr;      // equipment header
    AliRawData            *fRawData;     // raw data container
    TRef                   fRawDataRef;  // reference to raw data container
