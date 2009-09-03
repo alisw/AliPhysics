@@ -157,7 +157,7 @@ void AliGenExtFile::Generate()
 	    origin[2] = fVertex[2] + jparticle->Vz();
 	}
 	
-	Int_t doTracking = fTrackIt && selected && !(jparticle->TestBit(kTransportBit));
+	Int_t doTracking = fTrackIt && selected && (jparticle->TestBit(kTransportBit));
 	Int_t parent     = jparticle->GetFirstMother();
 	
 	PushTrack(doTracking, parent, idpart, p, origin, polar, 0, kPPrimary, nt);
