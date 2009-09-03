@@ -303,8 +303,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 	  FillBlockData( bd );
 	  bd.fOffset = offset;
 	  bd.fSize = addedSize;
-	  //bd.fSpecification = spec;
-	  bd.fSpecification = gkAliEventTypeData;
+	  bd.fSpecification = block.fSpecification;
 	  bd.fDataType = AliHLTTRDDefinitions::fgkMCMtrackletDataType;
 	  outputBlocks.push_back( bd );
 	  HLTDebug( "BD fPtr 0x%x, fOffset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);
@@ -329,8 +328,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 	FillBlockData( bd );
 	bd.fOffset = offset;
 	bd.fSize = addedSize;
-	//bd.fSpecification = spec;
-	bd.fSpecification = gkAliEventTypeData;
+	bd.fSpecification = block.fSpecification;
 	bd.fDataType = AliHLTTRDDefinitions::fgkClusterDataType;
 	outputBlocks.push_back( bd );
 	HLTDebug( "BD fPtr 0x%x, fOffset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);

@@ -68,6 +68,7 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component():
   fRecoParam(NULL),
   fReconstructor(NULL),
   fESD(NULL),
+  fClusterArray(NULL),
   fRecoParamType(-1),
   fNtimeBins(-1),
   fMagneticField(-1),
@@ -150,6 +151,8 @@ int AliHLTTRDTrackerV1Component::DoInit( int argc, const char** argv )
   HLTDebug("TRDTracker at 0x%x", fTracker);
   fTracker->SetReconstructor(fReconstructor);
 
+  fClusterArray = new TClonesArray("AliTRDcluster"); // would be nice to allocate memory for all clusters here.
+
   return iResult;
 }
 
@@ -160,6 +163,9 @@ int AliHLTTRDTrackerV1Component::DoDeinit()
   fTracker->SetClustersOwner(kFALSE);
   delete fTracker;
   fTracker = 0x0;
+
+  fClusterArray->Delete();
+  delete fClusterArray;
   
   // We need to set clusters in Reconstructor to null to prevent from 
   // double deleting, since we delete TClonesArray by ourself in DoEvent.
@@ -231,10 +237,9 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       }
 #endif      
 
-      TClonesArray* clusterArray = new TClonesArray("AliTRDcluster"); // would be nice to allocate memory for all clusters here.
-      AliHLTTRDUtils::ReadClusters(clusterArray, block.fPtr, block.fSize);
-      HLTDebug("TClonesArray of clusters: nbEntries = %i", clusterArray->GetEntriesFast());
-      fTracker->LoadClusters(clusterArray);
+      AliHLTTRDUtils::ReadClusters(fClusterArray, block.fPtr, block.fSize);
+      HLTDebug("TClonesArray of clusters: nbEntries = %i", fClusterArray->GetEntriesFast());
+      fTracker->LoadClusters(fClusterArray);
 
       fTracker->Clusters2Tracks(fESD);
 
@@ -246,7 +251,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       
       if(nTracks>0){
 	HLTDebug("We have an output ESDEvent: 0x%x with %i tracks", fESD, nTracks);
-	AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddESDToOutput(fESD, (AliHLTUInt8_t*)(outputPtr+offset));
+	AliHLTUInt32_t addedSize = AliHLTTRDUtils::AddESDToOutput(fESD, outputPtr+offset);
 	totalSize += addedSize;
 	  
 	// Fill block 
@@ -255,7 +260,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	//bd.fPtr = outputPtr;
 	bd.fOffset = offset;
 	bd.fSize = addedSize;
-	bd.fSpecification = dBlockSpecification;
+	bd.fSpecification = block.fSpecification;
 	bd.fDataType = kAliHLTDataTypeTrack | kAliHLTDataOriginTRD;
 	outputBlocks.push_back( bd );
 	HLTDebug("BD fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x", bd.fPtr, bd.fOffset, bd.fSize, bd.fSpecification);
@@ -266,7 +271,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	  //if (nbTracks>0){
 	  HLTDebug("We have an output array: pointer to trdTracks = 0x%x, nbEntries = %i", trdTracks, trdTracks->GetEntriesFast());
 	  
-	  addedSize = AliHLTTRDUtils::AddTracksToOutput(trdTracks, (AliHLTUInt8_t*)(outputPtr+offset));
+	  addedSize = AliHLTTRDUtils::AddTracksToOutput(trdTracks, outputPtr+offset);
 	  totalSize += addedSize;
 	  
 	  // Fill block 
@@ -274,20 +279,13 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	  //bd.fPtr = outputPtr;
 	  bd.fOffset = offset;
 	  bd.fSize = addedSize;
-	  bd.fSpecification = dBlockSpecification;
+	  bd.fSpecification = block.fSpecification;
 	  bd.fDataType = AliHLTTRDDefinitions::fgkTRDSATracksDataType;
 	  outputBlocks.push_back( bd );
 	  HLTDebug("BD fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x", bd.fPtr, bd.fOffset, bd.fSize, bd.fSpecification);
 	  offset = totalSize;
 	}
       }
-      
-      
-      // if (trdTracks)
-      // 	totalSize += TransportTracks(trdTracks, outputPtr, outputBlocks, offset, dBlockSpecification);
-      // else {
-      // 	  HLTDebug("Bad array trdTracks = 0x%x", trdTracks);
-      // }
       
       HLTDebug("totalSize: %i", totalSize);
       
@@ -301,8 +299,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       //here we are deleting clusters (but not the TClonesArray itself)
       fTracker->UnloadClusters();
       AliTRDReconstructor::SetClusters(0x0);
-      clusterArray->Delete();
-      delete clusterArray;
+      fClusterArray->Delete();
       
     }
       

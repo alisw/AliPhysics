@@ -22,6 +22,7 @@ class AliTRDtrackerV1;
 class AliTRDrecoParam;
 class AliTRDReconstructor;
 class AliESDEvent;
+class TClonesArray;
 
 /**
  * @class AliHLTTRDTrackerV1Component
@@ -81,6 +82,8 @@ private:
   AliTRDrecoParam *fRecoParam; //! Offline reco params
   AliTRDReconstructor * fReconstructor;
   AliESDEvent*     fESD;
+
+  TClonesArray* fClusterArray;
 
   Int_t fRecoParamType;     // default will be the low flux
   Int_t fNtimeBins;         // number of time bins for the tracker to use
