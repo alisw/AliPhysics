@@ -14,9 +14,9 @@ AliESDVZERO::AliESDVZERO()
    // Default constructor 
    for(Int_t j=0; j<64; j++){ 
       fMultiplicity[j] = 0.0;   
-      fAdc[j]   = 0;   
-      fTime[j]  = 0; 
-      fWidth[j] = 0; 
+      fAdc[j]   = 0.0;   
+      fTime[j]  = 0.0; 
+      fWidth[j] = 0.0; 
       fBBFlag[j]= kFALSE;
       fBGFlag[j]= kFALSE;  
    }
@@ -44,8 +44,8 @@ AliESDVZERO::AliESDVZERO(const AliESDVZERO &o)
 //__________________________________________________________________________
 AliESDVZERO::AliESDVZERO(UInt_t BBtriggerV0A, UInt_t BGtriggerV0A,
 	      UInt_t BBtriggerV0C, UInt_t BGtriggerV0C,
-	      Float_t *Multiplicity, Short_t *Adc, 
-	      Short_t *Time, Short_t *Width, Bool_t *BBFlag, Bool_t *BGFlag)
+	      Float_t *Multiplicity, Float_t *Adc, 
+	      Float_t *Time, Float_t *Width, Bool_t *BBFlag, Bool_t *BGFlag)
   :TObject(),
    fBBtriggerV0A(BBtriggerV0A),
    fBGtriggerV0A(BGtriggerV0A),
@@ -109,7 +109,7 @@ Float_t AliESDVZERO::GetMTotV0A()
 {
   Float_t mul=0.0;
   for(Int_t i=32;i<64;i++) 
-    mul+= (Float_t) fMultiplicity[i];
+    mul+=  fMultiplicity[i];
   return mul;
 }
 
@@ -118,7 +118,7 @@ Float_t AliESDVZERO::GetMTotV0C()
 {
   Float_t mul=0.0;
   for(Int_t i=0;i<32;i++) 
-    mul+= (Float_t) fMultiplicity[i];
+    mul+=  fMultiplicity[i];
   return mul;
 }
 
@@ -148,10 +148,10 @@ Float_t AliESDVZERO::GetMRingV0A(Int_t ring)
   if (OutOfRange(ring, "AliESDVZERO:::GetMRingV0A",4)) return -1;
   Float_t mul =0.0;
 
-  if (ring == 0) for(Int_t i=32;i<40;i++) mul += (Float_t) fMultiplicity[i];
-  if (ring == 1) for(Int_t i=40;i<48;i++) mul += (Float_t) fMultiplicity[i];
-  if (ring == 2) for(Int_t i=48;i<56;i++) mul += (Float_t) fMultiplicity[i];
-  if (ring == 3) for(Int_t i=56;i<64;i++) mul += (Float_t) fMultiplicity[i];
+  if (ring == 0) for(Int_t i=32;i<40;i++) mul +=  fMultiplicity[i];
+  if (ring == 1) for(Int_t i=40;i<48;i++) mul +=  fMultiplicity[i];
+  if (ring == 2) for(Int_t i=48;i<56;i++) mul +=  fMultiplicity[i];
+  if (ring == 3) for(Int_t i=56;i<64;i++) mul +=  fMultiplicity[i];
   return mul ;
 }
 
@@ -161,10 +161,10 @@ Float_t AliESDVZERO::GetMRingV0C(Int_t ring)
   if (OutOfRange(ring, "AliESDVZERO:::GetMRingV0C",4)) return -1;
   Float_t mul =0.0;
 
-  if (ring == 0) for(Int_t i=0;i<8;i++)   mul += (Float_t) fMultiplicity[i];
-  if (ring == 1) for(Int_t i=8;i<16;i++)  mul += (Float_t) fMultiplicity[i];
-  if (ring == 2) for(Int_t i=16;i<24;i++) mul += (Float_t) fMultiplicity[i];
-  if (ring == 3) for(Int_t i=24;i<32;i++) mul += (Float_t) fMultiplicity[i];
+  if (ring == 0) for(Int_t i=0;i<8;i++)   mul +=  fMultiplicity[i];
+  if (ring == 1) for(Int_t i=8;i<16;i++)  mul +=  fMultiplicity[i];
+  if (ring == 2) for(Int_t i=16;i<24;i++) mul +=  fMultiplicity[i];
+  if (ring == 3) for(Int_t i=24;i<32;i++) mul +=  fMultiplicity[i];
   return mul ;
 }
 
@@ -193,7 +193,7 @@ Float_t AliESDVZERO::GetMultiplicityV0C(Int_t i)
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetAdc(Int_t i)
+Float_t AliESDVZERO::GetAdc(Int_t i)
 
 {
   if (OutOfRange(i, "AliESDVZERO::GetAdc:",64)) return -1;
@@ -201,7 +201,7 @@ Int_t AliESDVZERO::GetAdc(Int_t i)
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetAdcV0A(Int_t i)
+Float_t AliESDVZERO::GetAdcV0A(Int_t i)
 
 {
   if (OutOfRange(i, "AliESDVZERO::GetAdcV0A:",32)) return -1;
@@ -209,7 +209,7 @@ Int_t AliESDVZERO::GetAdcV0A(Int_t i)
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetAdcV0C(Int_t i)
+Float_t AliESDVZERO::GetAdcV0C(Int_t i)
 
 {
   if (OutOfRange(i, "AliESDVZERO::GetAdcV0C:",32)) return -1;
@@ -217,7 +217,7 @@ Int_t AliESDVZERO::GetAdcV0C(Int_t i)
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetTime(Int_t i)
+Float_t AliESDVZERO::GetTime(Int_t i)
 
 {
   if (OutOfRange(i, "AliESDVZERO::GetTime:",64)) return -1;
@@ -225,7 +225,7 @@ Int_t AliESDVZERO::GetTime(Int_t i)
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetTimeV0A(Int_t i)
+Float_t AliESDVZERO::GetTimeV0A(Int_t i)
 
 {
   if (OutOfRange(i, "AliESDVZERO::GetTimeV0A:",32)) return -1;
@@ -233,7 +233,7 @@ Int_t AliESDVZERO::GetTimeV0A(Int_t i)
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetTimeV0C(Int_t i)
+Float_t AliESDVZERO::GetTimeV0C(Int_t i)
 
 {
   if (OutOfRange(i, "AliESDVZERO::GetTimeV0C:",32)) return -1;
@@ -241,7 +241,7 @@ Int_t AliESDVZERO::GetTimeV0C(Int_t i)
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetWidth(Int_t i)
+Float_t AliESDVZERO::GetWidth(Int_t i)
 
 {
   if (OutOfRange(i, "AliESDVZERO::GetWidth:",64)) return -1;
@@ -249,7 +249,7 @@ Int_t AliESDVZERO::GetWidth(Int_t i)
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetWidthV0A(Int_t i)
+Float_t AliESDVZERO::GetWidthV0A(Int_t i)
 
 {
   if (OutOfRange(i, "AliESDVZERO::GetWidthV0A:",32)) return -1;
@@ -257,7 +257,7 @@ Int_t AliESDVZERO::GetWidthV0A(Int_t i)
 }
 
 //__________________________________________________________________________
-Int_t AliESDVZERO::GetWidthV0C(Int_t i)
+Float_t AliESDVZERO::GetWidthV0C(Int_t i)
 
 {
   if (OutOfRange(i, "AliESDVZERO::GetWidthV0C:",32)) return -1;

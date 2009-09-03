@@ -18,6 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include <TMath.h>
 
 class AliRawReader;
 
@@ -50,9 +51,11 @@ class AliVZERORawStream: public TObject {
        
 // Getters of ADC signals, ADC pedestals, time information and corresponding flags :
 
-    UShort_t          GetADC(Int_t channel) const
-      { return fADC[channel][kNEvOfInt/2]; }
-    UShort_t          GetPedestal(Int_t channel, Int_t event) const
+    Float_t           GetADC(Int_t channel) const
+      { return TMath::MaxElement(kNEvOfInt, fADC[channel]); }    // maximum value instead of central clock
+//    { return fADC[channel][kNEvOfInt/2]; }
+            
+    Float_t           GetPedestal(Int_t channel, Int_t event) const
       { return fADC[channel][event]; }
     Bool_t            GetIntegratorFlag(Int_t channel, Int_t event) const
       { return fIsInt[channel][event]; }
@@ -60,9 +63,9 @@ class AliVZERORawStream: public TObject {
       { return fIsBB[channel][event]; } 
     Bool_t            GetBGFlag(Int_t channel, Int_t event) const
       { return fIsBG[channel][event]; }   
-    UInt_t            GetTime(Int_t channel) const
+    Float_t           GetTime(Int_t channel) const
       { return fTime[channel]; }
-    UInt_t            GetWidth(Int_t channel) const
+    Float_t           GetWidth(Int_t channel) const
       { return fWidth[channel]; }
 
     UShort_t          GetTriggerInputs() const
@@ -113,12 +116,12 @@ class AliVZERORawStream: public TObject {
     Bool_t        fIsBBMB[kNChannels][kNBunches];   // 'Beam-Beam' flag for all channels for the previous 10 MB events
     Bool_t        fIsBGMB[kNChannels][kNBunches];   // 'Beam-Gas' for all channels for the previous 10 MB events
 
-    UShort_t      fADC[kNChannels][kNEvOfInt];   // ADC counts for all channels and all events of interest
+    Float_t       fADC[kNChannels][kNEvOfInt];   // ADC counts for all channels and all events of interest
     Bool_t        fIsInt[kNChannels][kNEvOfInt]; // 'Integrator' flag for all channels 
     Bool_t        fIsBB[kNChannels][kNEvOfInt];  // 'Beam-Beam' flag for all channels
     Bool_t        fIsBG[kNChannels][kNEvOfInt];  // 'Beam-Gas' flag for all channels
-    Int_t         fTime[kNChannels];             // leading time for all channels - from HPTDC
-    Int_t         fWidth[kNChannels];            // pulse width for all channels - from HPTDC
+    Float_t       fTime[kNChannels];             // leading time for all channels - from HPTDC - in nanoseconds
+    Float_t       fWidth[kNChannels];            // pulse width for all channels - from HPTDC - in nanoseconds
 
     UShort_t      fTrigger;        // VZERO trigger inputs
     UShort_t      fTriggerMask;    // VZERO trigger inputs mask

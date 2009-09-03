@@ -42,18 +42,18 @@ AliESDVZEROfriend::AliESDVZEROfriend():
     fBGScalers[iChannel] = 0;
     for (Int_t iBunch = 0; iBunch < kNBunches; iBunch++) {
       fChargeMB[iChannel][iBunch] = 0;
-      fIsIntMB[iChannel][iBunch] = kFALSE;
-      fIsBBMB[iChannel][iBunch] = kFALSE;
-      fIsBGMB[iChannel][iBunch] = kFALSE;
+      fIsIntMB[iChannel][iBunch]  = kFALSE;
+      fIsBBMB[iChannel][iBunch]   = kFALSE;
+      fIsBGMB[iChannel][iBunch]   = kFALSE;
     }
     for (Int_t iEv = 0; iEv < kNEvOfInt; iEv++) {
-      fADC[iChannel][iEv] = 0;
+      fADC[iChannel][iEv]   = 0.0;
       fIsInt[iChannel][iEv] = kFALSE;
-      fIsBB[iChannel][iEv] = kFALSE;
-      fIsBG[iChannel][iEv] = kFALSE;
+      fIsBB[iChannel][iEv]  = kFALSE;
+      fIsBG[iChannel][iEv]  = kFALSE;
     }
-    fTime[iChannel] = 0;
-    fWidth[iChannel] = 0;
+    fTime[iChannel]  = 0.0;
+    fWidth[iChannel] = 0.0;
   }
 }
 
@@ -81,17 +81,17 @@ AliESDVZEROfriend::AliESDVZEROfriend(const AliESDVZEROfriend& vzerofriend):
     fBGScalers[iChannel] = vzerofriend.fBGScalers[iChannel];
     for (Int_t iBunch = 0; iBunch < kNBunches; iBunch++) {
       fChargeMB[iChannel][iBunch] = vzerofriend.fChargeMB[iChannel][iBunch];
-      fIsIntMB[iChannel][iBunch] = vzerofriend.fIsIntMB[iChannel][iBunch];
-      fIsBBMB[iChannel][iBunch] = vzerofriend.fIsBBMB[iChannel][iBunch];
-      fIsBGMB[iChannel][iBunch] = vzerofriend.fIsBGMB[iChannel][iBunch];
+      fIsIntMB[iChannel][iBunch]  = vzerofriend.fIsIntMB[iChannel][iBunch];
+      fIsBBMB[iChannel][iBunch]   = vzerofriend.fIsBBMB[iChannel][iBunch];
+      fIsBGMB[iChannel][iBunch]   = vzerofriend.fIsBGMB[iChannel][iBunch];
     }
     for (Int_t iEv = 0; iEv < kNEvOfInt; iEv++) {
-      fADC[iChannel][iEv] = vzerofriend.fADC[iChannel][iEv];
+      fADC[iChannel][iEv]   = vzerofriend.fADC[iChannel][iEv];
       fIsInt[iChannel][iEv] = vzerofriend.fIsInt[iChannel][iEv];
-      fIsBB[iChannel][iEv] = vzerofriend.fIsBB[iChannel][iEv];
-      fIsBG[iChannel][iEv] = vzerofriend.fIsBG[iChannel][iEv];
+      fIsBB[iChannel][iEv]  = vzerofriend.fIsBB[iChannel][iEv];
+      fIsBG[iChannel][iEv]  = vzerofriend.fIsBG[iChannel][iEv];
     }
-    fTime[iChannel] = vzerofriend.fTime[iChannel];
+    fTime[iChannel]  = vzerofriend.fTime[iChannel];
     fWidth[iChannel] = vzerofriend.fWidth[iChannel];
   }
 }
@@ -117,17 +117,17 @@ AliESDVZEROfriend& AliESDVZEROfriend::operator = (const AliESDVZEROfriend& vzero
     fBGScalers[iChannel] = vzerofriend.fBGScalers[iChannel];
     for (Int_t iBunch = 0; iBunch < kNBunches; iBunch++) {
       fChargeMB[iChannel][iBunch] = vzerofriend.fChargeMB[iChannel][iBunch];
-      fIsIntMB[iChannel][iBunch] = vzerofriend.fIsIntMB[iChannel][iBunch];
-      fIsBBMB[iChannel][iBunch] = vzerofriend.fIsBBMB[iChannel][iBunch];
-      fIsBGMB[iChannel][iBunch] = vzerofriend.fIsBGMB[iChannel][iBunch];
+      fIsIntMB[iChannel][iBunch]  = vzerofriend.fIsIntMB[iChannel][iBunch];
+      fIsBBMB[iChannel][iBunch]   = vzerofriend.fIsBBMB[iChannel][iBunch];
+      fIsBGMB[iChannel][iBunch]   = vzerofriend.fIsBGMB[iChannel][iBunch];
     }
     for (Int_t iEv = 0; iEv < kNEvOfInt; iEv++) {
-      fADC[iChannel][iEv] = vzerofriend.fADC[iChannel][iEv];
+      fADC[iChannel][iEv]   = vzerofriend.fADC[iChannel][iEv];
       fIsInt[iChannel][iEv] = vzerofriend.fIsInt[iChannel][iEv];
-      fIsBB[iChannel][iEv] = vzerofriend.fIsBB[iChannel][iEv];
-      fIsBG[iChannel][iEv] = vzerofriend.fIsBG[iChannel][iEv];
+      fIsBB[iChannel][iEv]  = vzerofriend.fIsBB[iChannel][iEv];
+      fIsBG[iChannel][iEv]  = vzerofriend.fIsBG[iChannel][iEv];
     }
-    fTime[iChannel] = vzerofriend.fTime[iChannel];
+    fTime[iChannel]  = vzerofriend.fTime[iChannel];
     fWidth[iChannel] = vzerofriend.fWidth[iChannel];
   }
 
@@ -151,18 +151,18 @@ void AliESDVZEROfriend::Reset()
     fBGScalers[iChannel] = 0;
     for (Int_t iBunch = 0; iBunch < kNBunches; iBunch++) {
       fChargeMB[iChannel][iBunch] = 0;
-      fIsIntMB[iChannel][iBunch] = kFALSE;
-      fIsBBMB[iChannel][iBunch] = kFALSE;
-      fIsBGMB[iChannel][iBunch] = kFALSE;
+      fIsIntMB[iChannel][iBunch]  = kFALSE;
+      fIsBBMB[iChannel][iBunch]   = kFALSE;
+      fIsBGMB[iChannel][iBunch]   = kFALSE;
     }
     for (Int_t iEv = 0; iEv < kNEvOfInt; iEv++) {
-      fADC[iChannel][iEv] = 0;
+      fADC[iChannel][iEv]   = 0.0;
       fIsInt[iChannel][iEv] = kFALSE;
-      fIsBB[iChannel][iEv] = kFALSE;
-      fIsBG[iChannel][iEv] = kFALSE;
+      fIsBB[iChannel][iEv]  = kFALSE;
+      fIsBG[iChannel][iEv]  = kFALSE;
     }
-    fTime[iChannel] = 0;
-    fWidth[iChannel] = 0;
+    fTime[iChannel]  = 0.0;
+    fWidth[iChannel] = 0.0;
   }
   
 }

@@ -43,9 +43,9 @@ class AliESDVZEROfriend: public TObject {
        
 // Getters of ADC signals, ADC pedestals, time information and corresponding flags :
 
-    UShort_t          GetADC(Int_t channel) const
+    Float_t           GetADC(Int_t channel) const
       { return fADC[channel][kNEvOfInt/2]; }
-    UShort_t          GetPedestal(Int_t channel, Int_t event) const
+    Float_t           GetPedestal(Int_t channel, Int_t event) const
       { return fADC[channel][event]; }
     Bool_t            GetIntegratorFlag(Int_t channel, Int_t event) const
       { return fIsInt[channel][event]; }
@@ -53,9 +53,9 @@ class AliESDVZEROfriend: public TObject {
       { return fIsBB[channel][event]; } 
     Bool_t            GetBGFlag(Int_t channel, Int_t event) const
       { return fIsBG[channel][event]; }   
-    UInt_t            GetTime(Int_t channel) const
+    Float_t            GetTime(Int_t channel) const
       { return fTime[channel]; }
-    UInt_t            GetWidth(Int_t channel) const
+    Float_t            GetWidth(Int_t channel) const
       { return fWidth[channel]; }
 
     // Setters
@@ -76,7 +76,7 @@ class AliESDVZEROfriend: public TObject {
     void              SetBGMBFlag(Int_t channel,Int_t num_bunch, Bool_t flag)
       { fIsBGMB[channel][num_bunch] = flag; }
 
-    void              SetPedestal(Int_t channel, Int_t event, UShort_t adc)
+    void              SetPedestal(Int_t channel, Int_t event, Float_t adc)
       { fADC[channel][event] = adc; }
     void              SetIntegratorFlag(Int_t channel, Int_t event, Bool_t flag)
       { fIsInt[channel][event] = flag; }
@@ -84,9 +84,9 @@ class AliESDVZEROfriend: public TObject {
       { fIsBB[channel][event] = flag; }
     void              SetBGFlag(Int_t channel, Int_t event, Bool_t flag)
       { fIsBB[channel][event] = flag; }
-    void              SetTime(Int_t channel, UInt_t time)
+    void              SetTime(Int_t channel, Float_t time)
       { fTime[channel] = time; }
-    void              SetWidth(Int_t channel, UInt_t width)
+    void              SetWidth(Int_t channel, Float_t width)
       { fWidth[channel] = width; }
 
     UShort_t          GetTriggerInputs() const
@@ -116,17 +116,17 @@ class AliESDVZEROfriend: public TObject {
     Bool_t        fIsBBMB[kNChannels][kNBunches];   // 'Beam-Beam' flag for all channels for the previous 10 MB events
     Bool_t        fIsBGMB[kNChannels][kNBunches];   // 'Beam-Gas' for all channels for the previous 10 MB events
 
-    UShort_t      fADC[kNChannels][kNEvOfInt];   // ADC counts for all channels and all events of interest
+    Float_t       fADC[kNChannels][kNEvOfInt];   // ADC counts for all channels and all events of interest
     Bool_t        fIsInt[kNChannels][kNEvOfInt]; // 'Integrator' flag for all channels 
     Bool_t        fIsBB[kNChannels][kNEvOfInt];  // 'Beam-Beam' flag for all channels
     Bool_t        fIsBG[kNChannels][kNEvOfInt];  // 'Beam-Gas' flag for all channels
-    Int_t         fTime[kNChannels];             // leading time for all channels - from HPTDC
-    Int_t         fWidth[kNChannels];            // pulse width for all channels - from HPTDC
+    Float_t       fTime[kNChannels];             // leading time for all channels - from HPTDC - in nanoseconds
+    Float_t       fWidth[kNChannels];            // pulse width for all channels - from HPTDC - in nanoseconds
 
     UShort_t      fTrigger;        // VZERO trigger inputs
     UShort_t      fTriggerMask;    // VZERO trigger inputs mask
 
-    ClassDef(AliESDVZEROfriend, 1) // container class for VZERO DDL raw data
+    ClassDef(AliESDVZEROfriend, 2) // container class for VZERO DDL raw data
 };
 
 #endif

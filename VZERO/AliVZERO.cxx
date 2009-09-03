@@ -300,9 +300,9 @@ void AliVZERO::Digits2Raw()
    // digits!!
 
    Int_t nEntries = Int_t(digits->GetEntries());
-   UInt_t ADC[64];
+   Float_t ADC[64];
    Int_t PMNumber[64];
-   UInt_t Time[64];
+   Float_t Time[64];
    Bool_t Integrator[64];
   
    for (Int_t i = 0; i < nEntries; i++) {
@@ -315,17 +315,17 @@ void AliVZERO::Digits2Raw()
      for(Int_t k=0; k<ndig; k++){
          AliVZEROdigit* fVZERODigit = (AliVZEROdigit*) VZEROdigits->At(k);
          // Convert aliroot channel k into FEE channel iChannel before writing data
-	 Int_t iChannel = buffer->GetOnlineChannel(k);		
-	 ADC[iChannel]       = (UInt_t) fVZERODigit->ADC();
+	 Int_t iChannel      = buffer->GetOnlineChannel(k);		
+	 ADC[iChannel]       = fVZERODigit->ADC();
 	 PMNumber[iChannel]  = fVZERODigit->PMNumber();
-	 Time[iChannel]      = (UInt_t) fVZERODigit->Time();
+	 Time[iChannel]      = fVZERODigit->Time();
 	 Integrator[iChannel]= fVZERODigit->Integrator(); 
          if(verbose == 1) { cout <<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
 	                    <<PMNumber[k]<<"\tADC: "<< ADC[k] << "\tTime: "<< Time[k] << endl;} 
 	 if(verbose == 2) {
 	      ftxt<<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
 	                   <<PMNumber[k]<<"\tADC: "<< ADC[k] << "\tTime: "<< Time[k] << endl;}	      
-//	 printf("DDL: %s, channel: %d, PM: %d, ADC: %d, Time: %d \n", 
+//	 printf("DDL: %s, channel: %d, PM: %d, ADC: %f, Time: %f \n", 
 //	            fileName,k,PMNumber[k],ADC[k],Time[k]); 
      }        
    if(verbose==2) ftxt.close();
@@ -339,15 +339,16 @@ void AliVZERO::Digits2Raw()
   
       for(Int_t iChannel_Offset = iCIU*8; iChannel_Offset < (iCIU*8)+8; iChannel_Offset=iChannel_Offset+4) { 
          for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
-             buffer->WriteChannel(iChannel, ADC[iChannel], Time[iChannel], Integrator[iChannel]);       
+             buffer->WriteChannel(iChannel, (Int_t) ADC[iChannel], Time[iChannel], Integrator[iChannel]);       
          }
          buffer->WriteBeamFlags(); 
          buffer->WriteMBInfo(); 
          buffer->WriteMBFlags();   
          buffer->WriteBeamScalers(); 
       } 
-      for(Int_t iChannel=0; iChannel < 8; iChannel++) {
-          buffer->WriteTiming(iChannel, ADC[iChannel], Time[iChannel]); 
+//      for(Int_t iChannel=0; iChannel < 8; iChannel++) {
+      for(Int_t iChannel=7; iChannel >= 0; iChannel--) {
+          buffer->WriteTiming(iChannel, (Int_t) ADC[iChannel], Time[iChannel]); 
       }
 
     // End of decoding of one CIU card
@@ -387,14 +388,14 @@ Bool_t AliVZERO::Raw2SDigits(AliRawReader* rawReader){
   if (!rawStream->Next()) return kFALSE; // No VZERO data found
   
   for(Int_t i=0; i<64; i++) {
-      new(pdigit) AliVZEROdigit(i, (Int_t)rawStream->GetADC(i), (Int_t)rawStream->GetTime(i)); 
+      new(pdigit) AliVZEROdigit(i, rawStream->GetADC(i), rawStream->GetTime(i)); 
       treeD->Fill();
   }
  
 // Checks if everything is OK by printing results 
 
 //   for(int i=0;i<64;i++) {
-// 	printf("Channel %d : %d %d \n",i,rawStream->GetADC(i),rawStream->GetTime(i)); }
+// 	printf("Channel %d : %f %f \n",i,rawStream->GetADC(i),rawStream->GetTime(i)); }
 //   treeD->Print(); printf(" \n"); 
    	
   fLoader->WriteDigits("OVERWRITE");

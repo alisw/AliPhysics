@@ -26,12 +26,12 @@ public:
   void    WriteTriggerInfo(UInt_t trigger);
   void    WriteTriggerScalers();
   void    WriteBunchNumbers();  
-  void    WriteChannel(Int_t cell,UInt_t ADC, UInt_t Time, Bool_t integrator);
+  void    WriteChannel(Int_t cell,UInt_t ADC, Float_t Time, Bool_t integrator);
   void    WriteBeamFlags();
   void    WriteMBInfo();
   void    WriteMBFlags();  
   void    WriteBeamScalers();
-  void    WriteTiming(Int_t cell,UInt_t ADC, UInt_t Time);
+  void    WriteTiming(Int_t cell,UInt_t ADC, Float_t Time);
 
   void    SetVerbose(Int_t val){fVerbose=val;}
   Int_t   GetVerbose() const{return  fVerbose;} 

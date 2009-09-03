@@ -102,40 +102,42 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   rawReader->Reset();
   AliVZERORawStream rawStream(rawReader);
   if (rawStream.Next()) {  
-     Int_t ADC_max[64], adc[64], time[64], width[64], BBFlag[64], BGFlag[64], integrator[64];   
+     Float_t ADC_max[64], adc[64]; 
+     Bool_t BBFlag[64], BGFlag[64], integrator[64]; 
+     Float_t time[64], width[64],;  
      for(Int_t i=0; i<64; i++) {
          // Search for the maximum charge in the train of 21 LHC clocks 
          // regardless of the integrator which has been operated:
-         ADC_max[i] = 0;
+         ADC_max[i] = 0.0;
 	 Int_t imax = 0;
          for(Int_t iClock=0; iClock<21; iClock++){
-             if((Int_t)rawStream.GetPedestal(i,iClock) > ADC_max[i])  
-	        {ADC_max[i]=(Int_t)rawStream.GetPedestal(i,iClock);
+             if(rawStream.GetPedestal(i,iClock) > ADC_max[i])  
+	        {ADC_max[i]= rawStream.GetPedestal(i,iClock);
 		 imax      = iClock;}
          }
 	 // Convert i (FEE channel numbering) to j (aliroot channel numbering)
-	 Int_t j   =  rawStream.GetOfflineChannel(i);
-	 adc[j]    =  ADC_max[i];
-	 time[j]   =  rawStream.GetTime(i);
-	 width[j]  =  rawStream.GetWidth(i);
-	 BBFlag[j] =  rawStream.GetBBFlag(i,imax);
-	 BGFlag[j] =  rawStream.GetBGFlag(i,imax); 
+	 Int_t j       =  rawStream.GetOfflineChannel(i);
+	 adc[j]        =  ADC_max[i];
+	 time[j]       =  rawStream.GetTime(i);
+	 width[j]      =  rawStream.GetWidth(i);
+	 BBFlag[j]     =  rawStream.GetBBFlag(i,imax);
+	 BGFlag[j]     =  rawStream.GetBGFlag(i,imax); 
 	 integrator[j] =  rawStream.GetIntegratorFlag(i,imax); 
 
 	 // Filling the esd friend object
 	 fESDVZEROfriend->SetBBScalers(j,rawStream.GetBBScalers(i));
 	 fESDVZEROfriend->SetBGScalers(j,rawStream.GetBGScalers(i));
 	 for (Int_t iBunch = 0; iBunch < AliESDVZEROfriend::kNBunches; iBunch++) {
-	   fESDVZEROfriend->SetChargeMB(j,iBunch,rawStream.GetChargeMB(i,iBunch));
-	   fESDVZEROfriend->SetIntMBFlag(j,iBunch,rawStream.GetIntMBFlag(i,iBunch));
-	   fESDVZEROfriend->SetBBMBFlag(j,iBunch,rawStream.GetBBMBFlag(i,iBunch));
-	   fESDVZEROfriend->SetBGMBFlag(j,iBunch,rawStream.GetBGMBFlag(i,iBunch));
+	     fESDVZEROfriend->SetChargeMB(j,iBunch,rawStream.GetChargeMB(i,iBunch));
+	     fESDVZEROfriend->SetIntMBFlag(j,iBunch,rawStream.GetIntMBFlag(i,iBunch));
+	     fESDVZEROfriend->SetBBMBFlag(j,iBunch,rawStream.GetBBMBFlag(i,iBunch));
+	     fESDVZEROfriend->SetBGMBFlag(j,iBunch,rawStream.GetBGMBFlag(i,iBunch));
 	 }
 	 for (Int_t iEv = 0; iEv < AliESDVZEROfriend::kNEvOfInt; iEv++) {
-	   fESDVZEROfriend->SetPedestal(j,iEv,rawStream.GetPedestal(i,iEv));
-	   fESDVZEROfriend->SetIntegratorFlag(j,iEv,rawStream.GetIntegratorFlag(i,iEv));
-	   fESDVZEROfriend->SetBBFlag(j,iEv,rawStream.GetBBFlag(i,iEv));
-	   fESDVZEROfriend->SetBGFlag(j,iEv,rawStream.GetBGFlag(i,iEv));
+	     fESDVZEROfriend->SetPedestal(j,iEv,rawStream.GetPedestal(i,iEv));
+	     fESDVZEROfriend->SetIntegratorFlag(j,iEv,rawStream.GetIntegratorFlag(i,iEv));
+	     fESDVZEROfriend->SetBBFlag(j,iEv,rawStream.GetBBFlag(i,iEv));
+	     fESDVZEROfriend->SetBGFlag(j,iEv,rawStream.GetBGFlag(i,iEv));
 	 }
 	 fESDVZEROfriend->SetTime(j,rawStream.GetTime(i));
 	 fESDVZEROfriend->SetWidth(j,rawStream.GetWidth(i));
@@ -146,10 +148,10 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
      fESDVZEROfriend->SetTriggerInputsMask(rawStream.GetTriggerInputsMask());
 
      for(Int_t iScaler = 0; iScaler < AliESDVZEROfriend::kNScalers; iScaler++)
-       fESDVZEROfriend->SetTriggerScalers(iScaler,rawStream.GetTriggerScalers(iScaler));
+         fESDVZEROfriend->SetTriggerScalers(iScaler,rawStream.GetTriggerScalers(iScaler));
 
-     for (Int_t iBunch = 0; iBunch < AliESDVZEROfriend::kNBunches; iBunch++)
-       fESDVZEROfriend->SetBunchNumbersMB(iBunch,rawStream.GetBunchNumbersMB(iBunch));
+     for(Int_t iBunch = 0; iBunch < AliESDVZEROfriend::kNBunches; iBunch++)
+         fESDVZEROfriend->SetBunchNumbersMB(iBunch,rawStream.GetBunchNumbersMB(iBunch));
      
 
      // Channels(aliroot numbering) will be ordered in the tree
@@ -179,17 +181,17 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   digitBranch->SetAddress(&digitsArray);
 
   Float_t   mult[64];  
-  Short_t    adc[64]; 
-  Short_t   time[64]; 
-  Short_t  width[64];
+  Float_t    adc[64]; 
+  Float_t   time[64]; 
+  Float_t  width[64];
   Bool_t  BBFlag[64];
   Bool_t  BGFlag[64];
    
   for (Int_t i=0; i<64; i++){
-       adc[i]    = 0;
+       adc[i]    = 0.0;
        mult[i]   = 0.0;
-       time[i]   = 0;
-       width[i]  = 0;
+       time[i]   = 0.0;
+       width[i]  = 0.0;
        BBFlag[i] = kFALSE;
        BGFlag[i] = kFALSE;
   }
@@ -205,22 +207,22 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
         AliVZEROdigit* digit = (AliVZEROdigit*)digitsArray->At(d);      
         Int_t  pmNumber      = digit->PMNumber(); 
         // Pedestal retrieval and suppression: 
-        Int_t  pedestal      = int(fCalibData->GetPedestal(d));
-        adc[pmNumber]   = (Short_t) digit->ADC() - pedestal; 
-        time[pmNumber]  = (Short_t) digit->Time();
-	width[pmNumber] = (Short_t) digit->Width();
-	BBFlag[pmNumber]= digit->BBFlag();
-	BGFlag[pmNumber]= digit->BGFlag();
+        Float_t  pedestal      = fCalibData->GetPedestal(d);
+        adc[pmNumber]   =  digit->ADC() - pedestal; 
+        time[pmNumber]  =  digit->Time();
+	width[pmNumber] =  digit->Width();
+	BBFlag[pmNumber]=  digit->BBFlag();
+	BGFlag[pmNumber]=  digit->BGFlag();
         // printf("PM = %d,  MIP per ADC channel = %f \n",pmNumber, fCalibData->GetMIPperADC(pmNumber));
-		//AliInfo(Form("PM = %d,  ADC = %d TDC %d",pmNumber, digit->ADC(),digit->Time()));
+		//AliInfo(Form("PM = %d,  ADC = %f TDC %f",pmNumber, digit->ADC(),digit->Time()));
         // cut of ADC at 1MIP/2 
 	if(fCollisionMode >0) { 
 	   Float_t MIP = 2.0;  
-           if (adc[pmNumber] > (int(MIP) /2) ) mult[pmNumber] += float(adc[pmNumber])*(1.0/MIP) ;
+           if (adc[pmNumber] > (MIP/2.) ) mult[pmNumber] += adc[pmNumber]*(1.0/MIP) ;
 	   }
            else{    
-           if (adc[pmNumber] > (int(1.0/fCalibData->GetMIPperADC(pmNumber)) /2) ) 
-	       mult[pmNumber] += float(adc[pmNumber])*fCalibData->GetMIPperADC(pmNumber);
+           if (adc[pmNumber] > (1.0/fCalibData->GetMIPperADC(pmNumber) /2.) ) 
+	       mult[pmNumber] += adc[pmNumber]*fCalibData->GetMIPperADC(pmNumber);
         } 	    
     } // end of loop over digits
   } // end of loop over events in digits tree

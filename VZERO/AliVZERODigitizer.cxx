@@ -133,9 +133,9 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 {   
   // Creates digits from hits
      
-  Int_t       map[80];    // 48 values on V0C + 32 on V0A
+  Float_t     map[80];    // 48 values on V0C + 32 on V0A
 //  Int_t       pmNumber[80];
-  Int_t       adc[64];    // 32 PMs on V0C + 32 PMs on V0A
+  Float_t     adc[64];    // 32 PMs on V0C + 32 PMs on V0A
   Float_t     time[80], time_ref[80], time2[64];
   Float_t     adc_gain[80]; 
   Float_t     adc_pedestal[64],adc_sigma[64];    
@@ -170,7 +170,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
   }
 	    
   for(Int_t i=48; i<80; i++){ 
-	  adc_gain[i] = fCalibData->GetGain(i-16); 
+	adc_gain[i] = fCalibData->GetGain(i-16); 
 	cPM[i]      = fPhotoCathodeEfficiency * pmGain_smeared[i-16];
   };
   
@@ -244,7 +244,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 			 AliVZEROhit* hit = (AliVZEROhit *)hits->UncheckedAt(iHit);
 			 Int_t nPhot = hit->Nphot();
 			 Int_t cell  = hit->Cell();                          
-			 map[cell] += nPhot;
+			 map[cell] += Float_t(nPhot);
 			 Float_t dt_scintillator = gRandom->Gaus(0,0.7);
 			 Float_t t = dt_scintillator + 1e9*hit->Tof();
 			 if (t > 0.0) {
@@ -266,29 +266,27 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
         Float_t pmResponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
         + noise*1e-3; 	
 	if(fCollisionMode >0) adc_gain[i] = adc_gain[i]/70.0; // reduce dynamics in Ion Collision Mode
-        map[i] = Int_t( pmResponse * adc_gain[i]);
+        map[i] =  pmResponse * adc_gain[i];
         Float_t MIP = 1.0/fCalibData->GetMIPperADC(GetPMNumber(i));
 	if(fCollisionMode >0) MIP=2.0;
 //	printf("cell = %d,  ADC = %d, TDC = %f \n",i,map[i], time[i]*10.0 );
-        if(map[i] > (int(( MIP/2 ) + 0.5)) )
-	          {map[i] = Int_t(gRandom->Gaus(map[i], (int(( MIP/6 ) + 0.5)) ));}
+        if(map[i] > (MIP/2.) )
+	          {map[i] = gRandom->Gaus(map[i], (MIP/6.) );}
    }
       
 // Now transforms 80 cell responses into 64 photomultiplier responses
 // Also adds the ADC pedestals taken out of the calibration data base
 	
    for (Int_t j=0; j<16; j++){
-        adc[j]  = static_cast<Int_t>(map [j] + gRandom->Gaus(adc_pedestal[j], adc_sigma[j]));
+        adc[j]  = map [j] + gRandom->Gaus(adc_pedestal[j], adc_sigma[j]);
 	time2[j]= time[j];}
 	
    for (Int_t j=48; j<80; j++){
-        adc[j-16]  = static_cast<Int_t>(map [j] 
-					+ gRandom->Gaus(adc_pedestal[j-16],adc_sigma[j-16]));
+        adc[j-16]  = map [j] + gRandom->Gaus(adc_pedestal[j-16],adc_sigma[j-16]);
 	time2[j-16]= time[j]; }
 	
    for (Int_t j=0; j<16; j++){
-        adc[16+j] = static_cast<Int_t>(map [16+2*j]+ map [16+2*j+1] 
-				       + gRandom->Gaus(adc_pedestal[16+j], adc_sigma[16+j]));
+        adc[16+j] = map [16+2*j]+ map [16+2*j+1] + gRandom->Gaus(adc_pedestal[16+j], adc_sigma[16+j]);
 	Float_t min_time = TMath::Min(time [16+2*j],time [16+2*j+1]);
 	time2[16+j] = min_time;
 	if(min_time==0.0){time2[16+j]=TMath::Max(time[16+2*j],time[16+2*j+1]);}
@@ -303,7 +301,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 //                    outRunLoader->GetEventNumber(),i, adc[i], Int_t((time2[i]*10.0) +0.5));
 //           multiply by 10 to have 100 ps per channel :
 		  
-		  AddDigit(i, adc[i], Int_t((time2[i]*10.0) +0.5)) ;
+		  AddDigit(i, adc[i], (time2[i]*10.0) ) ;
 	  }      
    }
   treeD->Fill();
@@ -313,7 +311,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 }
 
 //____________________________________________________________________________
-void AliVZERODigitizer::AddDigit(Int_t PMnumber, Int_t adc, Int_t time) 
+void AliVZERODigitizer::AddDigit(Int_t PMnumber, Float_t adc, Float_t time) 
  { 
  
 // Adds Digit 
