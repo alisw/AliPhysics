@@ -1,5 +1,6 @@
 TChain *MakeAODInputChain(const char* collectionfileAOD,
-			  const char* collectionfileAODfriend,Int_t nfiles=-1) {
+			  const char* collectionfileAODfriend,Int_t nfiles=-1,
+			  Bool_t stdoutCheck=kTRUE) {
   //
   // Check one-to-one correspondence of the two collections
   // Create AOD chain with friend AODVertexingHF chain
@@ -93,8 +94,7 @@ TChain *MakeAODInputChain(const char* collectionfileAOD,
 	}
       }
     }
-  }
-  else {
+  } else {
     nmaxentr=tagResultAOD->GetEntries();
     if(nfiles>0&&nmaxentr>nfiles)nmaxentr=nfiles;
     TString aodlfn,vertexlfn;
@@ -104,6 +104,10 @@ TChain *MakeAODInputChain(const char* collectionfileAOD,
       vertexlfn.ReplaceAll("AliAOD.root","");
       TGridResult *r=gGrid->Query(vertexlfn.Data(),"AliAOD.VertexingHF.root");
       if(r->GetEntries()!=1)continue;
+      // check error in the stdout
+      if(stdoutCheck) {
+	if(!CheckStdout(aodlfn)) continue;
+      }
       printf("Adding file : %s \n",tagResultAOD->GetKey(ifile,"turl"));
       chainAOD->Add(tagResultAOD->GetKey(ifile,"turl"));
       printf("Adding friend file : %s \n \n",r->GetKey(0,"turl"));
@@ -115,7 +119,7 @@ TChain *MakeAODInputChain(const char* collectionfileAOD,
   
   return chainAOD;
 }
-  //----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 TChain *MakeAODInputChain(const char* pathname="",
 			  Int_t firstdir=1,Int_t lastdir=-1) {
   //
@@ -171,7 +175,8 @@ TChain *MakeAODInputChain(const char* pathname="",
 }
 //----------------------------------------------------------------------------
 TFileCollection* MakeRootArchFileCollection(const char* collectionfileAOD,
-					    Int_t nfiles=-1){
+					    Int_t nfiles=-1,
+					    Bool_t stdoutCheck=kTRUE) {
 
   // METHOD USEFUL FOR ANALYSIS ON THE CAF
   // Check the presence of both AliAOD.root and AODVertexingHF.root files
@@ -187,17 +192,30 @@ TFileCollection* MakeRootArchFileCollection(const char* collectionfileAOD,
   TFileCollection *proofColl=new TFileCollection("proofColl","proofColl");
   
   nmaxentr=tagResultAOD->GetEntries();
+  printf("Number of files %d\n",nmaxentr);
     if(nfiles>0&&nmaxentr>nfiles)nmaxentr=nfiles;
     TString aodlfn;
     for(Int_t ifile=0; ifile<nmaxentr; ifile++) {
+      printf("file %d\n",ifile);
       aodlfn=tagResultAOD->GetKey(ifile,"lfn");
+      TString aodlfncopy=aodlfn;
       aodlfn.ReplaceAll("AliAOD.root","");
       aodlfn.ReplaceAll("AliAODs.root","");
       TGridResult *r=gGrid->Query(aodlfn.Data(),"AliAOD.VertexingHF.root");
-        if(r->GetEntries()!=1)continue;     
-      r=gGrid->Query(aodlfn.Data(),"root_archive.zip");
-      if(r->GetEntries()!=1)continue;       
-      aodlfn.Append("root_archive.zip");      
+      if(r->GetEntries()!=1)continue;     
+      r=gGrid->Query(aodlfn.Data(),"aod_archive.zip");
+      if(r->GetEntries()!=1)continue;
+      // check error in the stdout
+      if(stdoutCheck) {
+	if(!CheckStdout(aodlfncopy)) {
+	  FILE *fout=fopen("errors.txt","a");
+	  aodlfncopy.ReplaceAll("AliAOD.root","AliAOD.VertexingHF.root");
+	  fprintf(fout,"%s\n",aodlfncopy.Data());
+	  fclose(fout);
+	  continue;
+	}
+      }
+      aodlfn.Append("aod_archive.zip");      
       printf("Adding file %s\n",aodlfn.Data());
       proofColl->Add(r->GetKey(0,"turl"));
     }
@@ -214,7 +232,6 @@ void StageToCAF(TString xmlcoll="collAODLHC08x.xml",
 
   //gROOT->LoadMacro("MakeAODInputChain.C");
 
-
   TGrid::Connect("alien://");
 
   // find -x collAODLHC08x -z /alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/* AliAOD.root > collAODLHC08x.xml
@@ -228,4 +245,25 @@ void StageToCAF(TString xmlcoll="collAODLHC08x.xml",
   gProof->ShowDataSets();
 
   return;
+}
+//---------------------------------------------------------------------------
+Bool_t CheckStdout(TString aodlfn) {
+  
+  TString stderrlfn=aodlfn;
+  stderrlfn.ReplaceAll("AliAOD.root","stdout");
+  TString aliencp=".! alien_cp -t 10 alien://";
+  aliencp.Append(stderrlfn.Data());
+  aliencp.Append(" file:stdoutput");
+  gROOT->ProcessLine(aliencp.Data());
+  gROOT->ProcessLine(".! grep \"no debugging symbols found\" stdoutput > result");
+  FILE *fileres=fopen("result","r");
+  if(!fileres) return kFALSE;
+  Char_t text[100];
+  Int_t ncol = fscanf(fileres,"%s %s %s %s",&text,&text,&text,&text);
+  //printf("%d  %s\n",ncol,text);
+  fclose(fileres);
+  gROOT->ProcessLine(".! rm stdoutput result");
+  if(ncol>=0) return kFALSE;
+  
+  return kTRUE;
 }
