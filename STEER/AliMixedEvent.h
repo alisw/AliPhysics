@@ -41,7 +41,6 @@ public:
     // Specific Services
     virtual void AddEvent(AliVEvent* evt);
     virtual void SetPrimaryVertex(AliVVertex* newVertex) {fMeanVertex = newVertex;}
-    AliVVertex* GetPrimaryVtx(){return fMeanVertex;}
     virtual void Reset();
     virtual void Init();
     const AliVVertex* GetEventVertex(Int_t i) const;
@@ -57,7 +56,8 @@ public:
     
     virtual Int_t    GetRunNumber()     const  {return -999 ;} 
     virtual UInt_t   GetPeriodNumber()  const  {return    0 ;} 
-    virtual Double_t GetMagneticField() const  {return -999.;} 
+    virtual Double_t GetMagneticField() const;
+    
     
     virtual Double_t GetDiamondX() const {return -999.;}
     virtual Double_t GetDiamondY() const {return -999.;}
@@ -92,7 +92,7 @@ public:
     virtual Int_t        EventIndex(Int_t itrack);
 
   // Primary vertex
-    virtual const AliVVertex   *GetPrimaryVertex() const {return 0;}
+    virtual const AliVVertex   *GetPrimaryVertex() const {return fMeanVertex;}
     virtual void ComputeVtx(TObjArray *vertices,Double_t *pos,Double_t *sig); 
 private:
     TList   fEventList;         //! List of Events

@@ -169,3 +169,12 @@ void AliMixedEvent::ComputeVtx(TObjArray *vertices, Double_t *pos,Double_t *sig)
     return;
 }
 
+
+Double_t AliMixedEvent::GetMagneticField() const
+{
+    // Return magnetic field of the first event in the list
+    if (fEventList.GetEntries() == 0) return -999.;
+    
+    AliVEvent* evt = (AliVEvent*) (fEventList.At(0));
+    return evt->GetMagneticField();
+}
