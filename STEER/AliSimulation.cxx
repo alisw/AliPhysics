@@ -2208,7 +2208,7 @@ void AliSimulation::WriteGRPEntry()
 
   const AliGenerator *gen = gAlice->GetMCApp()->Generator();
   if (gen) {
-    grpObj->SetBeamEnergy(gen->GetEnergyCMS());
+    grpObj->SetBeamEnergy(gen->GetEnergyCMS()/0.120);
     TString projectile;
     Int_t a,z;
     gen->GetProjectile(projectile,a,z);
