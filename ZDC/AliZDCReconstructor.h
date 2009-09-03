@@ -48,7 +48,7 @@ public:
   Int_t   GetRecoMode() {return fRecoMode;}
   Float_t GetBeamEnergy() {return fBeamEnergy;}
   
-  static const AliZDCRecoParam* GetRecoParam() {return fRecoParam;}
+  static const AliZDCRecoParam* GetRecoParam() {return dynamic_cast<const AliZDCRecoParam*>(AliReconstructor::GetRecoParam(9));}
 
   void  SetPedSubMode(Int_t pedsubMode) {fPedSubMode=pedsubMode;}
   Int_t GetPedSubMode() {return fPedSubMode;}

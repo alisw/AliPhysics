@@ -46,6 +46,7 @@
 #include "AliZDCRecoParam.h"
 #include "AliZDCRecoParampp.h"
 #include "AliZDCRecoParamPbPb.h"
+#include "AliRunInfo.h"
 
 
 ClassImp(AliZDCReconstructor)
@@ -72,7 +73,7 @@ AliZDCReconstructor:: AliZDCReconstructor() :
 AliZDCReconstructor::~AliZDCReconstructor()
 {
 // destructor
-   if(fRecoParam)    delete fRecoParam;
+//   if(fRecoParam)    delete fRecoParam;
    if(fPedData)      delete fPedData;    
    if(fEnCalibData)  delete fEnCalibData;
    if(fTowCalibData) delete fTowCalibData;
@@ -84,80 +85,54 @@ void AliZDCReconstructor::Init()
   // Setting reconstruction mode
   // Getting beam type and beam energy from GRP calibration object
   
-  if(fRecoMode==0 && fBeamEnergy==0.){
-    // Initialization of the GRP entry 
-    AliCDBEntry*  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
-    AliGRPObject* grpData = 0x0;
-    if(entry){
-      TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
-      if(m){
-        //m->Print();
-        grpData = new AliGRPObject();
-        grpData->ReadValuesFromMap(m);
-      }
-      else{
-        grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
-      }
-      entry->SetOwner(0);
-      AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
-    }
-    if(!grpData) AliError("No GRP entry found in OCDB!");
-  
-    TString runType = grpData->GetRunType();
-    if(runType==AliGRPObject::GetInvalidString()){
-      AliWarning("GRP/GRP/Data entry:  missing value for the run type ! Using UNKNOWN");
-      runType = "UNKNOWN";
-    }
-    if((runType.CompareTo("CALIBRATION_MB")) == 0){
-      fIsCalibrationMB = kTRUE;
-    }
+  TString runType = GetRunInfo()->GetRunType();
+
+  if((runType.CompareTo("CALIBRATION_MB")) == 0){
+    fIsCalibrationMB = kTRUE;
+  }
     
-    TString beamType = grpData->GetBeamType();
-    // This is a temporary solution to allow reconstruction in tests without beam
-    if(((beamType.CompareTo("UNKNOWN"))==0) && ((runType.CompareTo("PHYSICS")) == 0)){
-      fRecoMode=1;
-    }
-    else if(beamType==AliGRPObject::GetInvalidString()){
-      AliWarning("GRP/GRP/Data entry:  missing value for the beam type !");
-      AliError("\t ZDC does not reconstruct event 4 UNKNOWN beam type\n");
-      return;
-    }
-    //
-    if(((beamType.CompareTo("pp"))==0) || ((beamType.CompareTo("p-p"))==0)
+  TString beamType = GetRunInfo()->GetBeamType();
+  // This is a temporary solution to allow reconstruction in tests without beam
+  if(((beamType.CompareTo("UNKNOWN"))==0) && ((runType.CompareTo("PHYSICS")) == 0)){
+    fRecoMode=1;
+  }
+  else if(beamType==AliGRPObject::GetInvalidString()){
+    AliWarning("GRP/GRP/Data entry:  missing value for the beam type !");
+    AliError("\t ZDC does not reconstruct event 4 UNKNOWN beam type\n");
+    return;
+  }
+
+  if(((beamType.CompareTo("pp"))==0) || ((beamType.CompareTo("p-p"))==0)
      ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)) fRecoMode=1;
-    else if((beamType.CompareTo("A-A")) == 0){
-      fRecoMode=2;
-      if(fIsCalibrationMB == kTRUE){ 
-        fRecoParam = new AliZDCRecoParamPbPb();
-        //
-        TH2F* hZDCvsZEM = new TH2F("hZDCvsZEM","hZDCvsZEM",100,0.,10.,100,0.,1000.);
-        hZDCvsZEM->SetXTitle("E_{ZEM} (TeV)"); hZDCvsZEM->SetYTitle("E_{ZDC} (TeV)");
-        fRecoParam->SetZDCvsZEM(hZDCvsZEM);
-        //
-        TH2F* hZDCCvsZEM = new TH2F("hZDCCvsZEM","hZDCCvsZEM",100,0.,10.,100,0.,500.);
-        hZDCCvsZEM->SetXTitle("E_{ZEM} (TeV)"); hZDCCvsZEM->SetYTitle("E_{ZDCC} (TeV)");
-        fRecoParam->SetZDCCvsZEM(hZDCCvsZEM);
-        //
-        TH2F* hZDCAvsZEM = new TH2F("hZDCAvsZEM","hZDCAvsZEM",100,0.,10.,100,0.,500.);
-        hZDCAvsZEM->SetXTitle("E_{ZEM} (TeV)"); hZDCAvsZEM->SetYTitle("E_{ZDCA} (TeV)"); 
-        fRecoParam->SetZDCAvsZEM(hZDCAvsZEM);
-        //
-	AliInfo("\n ***** CALIBRATION_MB data -> building AliZDCRecoParamPbPb object *****");
-      }
+  else if((beamType.CompareTo("A-A")) == 0){
+    fRecoMode=2;
+    if(fIsCalibrationMB == kTRUE){ 
+      fRecoParam = new AliZDCRecoParamPbPb();
+      //
+      TH2F* hZDCvsZEM = new TH2F("hZDCvsZEM","hZDCvsZEM",100,0.,10.,100,0.,1000.);
+      hZDCvsZEM->SetXTitle("E_{ZEM} (TeV)"); hZDCvsZEM->SetYTitle("E_{ZDC} (TeV)");
+      fRecoParam->SetZDCvsZEM(hZDCvsZEM);
+      //
+      TH2F* hZDCCvsZEM = new TH2F("hZDCCvsZEM","hZDCCvsZEM",100,0.,10.,100,0.,500.);
+      hZDCCvsZEM->SetXTitle("E_{ZEM} (TeV)"); hZDCCvsZEM->SetYTitle("E_{ZDCC} (TeV)");
+      fRecoParam->SetZDCCvsZEM(hZDCCvsZEM);
+      //
+      TH2F* hZDCAvsZEM = new TH2F("hZDCAvsZEM","hZDCAvsZEM",100,0.,10.,100,0.,500.);
+      hZDCAvsZEM->SetXTitle("E_{ZEM} (TeV)"); hZDCAvsZEM->SetYTitle("E_{ZDCA} (TeV)"); 
+      fRecoParam->SetZDCAvsZEM(hZDCAvsZEM);
+      //
+      AliInfo("\n ***** CALIBRATION_MB data -> building AliZDCRecoParamPbPb object *****");
     }
-    
-    fBeamEnergy = grpData->GetBeamEnergy();
-    if(fBeamEnergy==AliGRPObject::GetInvalidFloat()){
-      AliWarning("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0.");
-      fBeamEnergy = 0.;
-    }
-    
-    if(fIsCalibrationMB==kFALSE)  
-      printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f GeV *****\n\n",beamType.Data(), fBeamEnergy);
   }
-  else{
-    AliError(" ATTENTION!!!!!! No beam type nor beam energy has been set!!!!!!\n");
+    
+  fBeamEnergy = GetRunInfo()->GetBeamEnergy();
+  if(fBeamEnergy==AliGRPObject::GetInvalidFloat()){
+    AliWarning("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0.");
+    fBeamEnergy = 0.;
   }
+    
+  if(fIsCalibrationMB==kFALSE)  
+    printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f GeV *****\n\n",beamType.Data(), fBeamEnergy);
   
 }
 
@@ -866,6 +841,9 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     // Ch. debug
     //fRecoParam->Print("");
     //
+ 
+    if (!fRecoParam) fRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam()); 
+ 
     TH2F *hZDCvsZEM  = fRecoParam->GethZDCvsZEM();
     TH2F *hZDCCvsZEM = fRecoParam->GethZDCCvsZEM();
     TH2F *hZDCAvsZEM = fRecoParam->GethZDCAvsZEM();
