@@ -451,7 +451,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   //Get vertex for photon momentum calculation
   Double_t vertex[]  = {0,0,0} ; //vertex 
   Double_t vertex2[] = {0,0,0} ; //vertex from second aod input
-  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) 
+  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) 
   {
 	  GetReader()->GetVertex(vertex);
 	  if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);

@@ -430,12 +430,13 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   //Get vertex for photon momentum calculation
   Double_t vertex[]  = {0,0,0} ; //vertex 
   Double_t vertex2[] = {0,0,0} ; //vertex from second input aod
-  if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) 
+  if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
   {
 	  GetReader()->GetVertex(vertex);
 	  if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
   }
-	
+  //printf("Vertex 0: %f,%f,%f\n",vertex[0],vertex[1],vertex[2]);
+  //printf("Vertex 1: %f,%f,%f\n",vertex2[0],vertex2[1],vertex2[2]);
   //Select the Calorimeter of the photon
   if(fCalorimeter == "PHOS")
     pl = GetAODPHOS();

@@ -958,7 +958,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleC
 	//Get vertex for photon momentum calculation
 	Double_t vertex [] = {0,0,0} ; //vertex 
 	Double_t vertex2[] = {0,0,0} ; //vertex of second input AOD 
-	if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) 
+	if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) 
 	{
 		GetReader()->GetVertex(vertex);
 		if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
@@ -1508,7 +1508,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
 	//Get vertex for photon momentum calculation
 	Double_t vertex[]  = {0,0,0} ; //vertex 
 	Double_t vertex2[] = {0,0,0} ; //vertex of second input aod
-	if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) 
+	if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
 	{
 		GetReader()->GetVertex(vertex);
 		if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
@@ -1626,7 +1626,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
 	//Get vertex for photon momentum calculation
 	Double_t vertex[]  = {0,0,0} ; //vertex 
 	Double_t vertex2[] = {0,0,0} ; //vertex of second input aod
-	if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) 
+	if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
 	{
 		GetReader()->GetVertex(vertex);
 		if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);

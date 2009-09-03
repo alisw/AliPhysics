@@ -681,7 +681,7 @@ Bool_t AliAnaNeutralMeson::IsPhotonSelected(AliAODPWG4Particle *p1, Int_t ipid, 
  if(fCalorimeter == "PHOS"){
 #ifdef __PHOSUTIL__
           Double_t vtx[3]={0,0,0};   
-//        if(!GetReader()->GetDataType()== AliCaloTrackReader::kMC) GetReader()->GetVertex(vtx);
+//        if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) GetReader()->GetVertex(vtx);
 	Double_t x = 0 ,z = 0 ;
 	fPHOSGeo->ImpactOnEmc(vtx,p1->Theta(),p1->Phi(), mod,z,x) ;
 #endif
