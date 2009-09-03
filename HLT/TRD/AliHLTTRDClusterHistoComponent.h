@@ -23,6 +23,7 @@
  *
  * @ingroup alihlt_tpc_components
  */
+class TClonesArray;
 class AliHLTTRDClusterHistoComponent : public AliHLTProcessor
 {
 public:
@@ -71,6 +72,8 @@ private:
    * properties.
    */ 
 
+  TClonesArray* fClusterArray;
+
   TH1D *fNClsDet;
   TH1D *fClsAmp;
   TH1D *fClsAmpDrift;
@@ -78,6 +81,8 @@ private:
 
   TH1D *fClsAmpDriftDet[540];
   TH1D *fClsAmpDist; 
+
+  TH1D *fSClsDist;
 
   ClassDef(AliHLTTRDClusterHistoComponent, 0);
 };
