@@ -41,7 +41,7 @@ ClassImp(AliCaloTrackAODReader)
 
 //____________________________________________________________________________
 AliCaloTrackAODReader::AliCaloTrackAODReader() : 
-  AliCaloTrackReader()
+  AliCaloTrackReader(), fWriteOutputAOD(kFALSE)
 {
   //Default Ctor
   
@@ -56,8 +56,8 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
 }
 
 //____________________________________________________________________________
-AliCaloTrackAODReader::AliCaloTrackAODReader(const AliCaloTrackAODReader & g) :   
-  AliCaloTrackReader(g)
+AliCaloTrackAODReader::AliCaloTrackAODReader(const AliCaloTrackAODReader & aodr) :   
+  AliCaloTrackReader(aodr),fWriteOutputAOD(aodr.fWriteOutputAOD)
 {
   // cpy ctor
 }
@@ -78,6 +78,7 @@ void AliCaloTrackAODReader::FillInputCTS() {
   //Return array with Central Tracking System (CTS) tracks
 
   Int_t nTracks   = fInputEvent->GetNumberOfTracks() ;
+  Int_t naod = 0;
   Double_t p[3];
   for (Int_t itrack =  0; itrack <  nTracks; itrack++) {////////////// track loop
     AliAODTrack * track = ((AliAODEvent*)fInputEvent)->GetTrack(itrack) ; // retrieve track from esd
@@ -92,8 +93,12 @@ void AliCaloTrackAODReader::FillInputCTS() {
       
       if(fDebug > 2 && momentum.Pt() > 0.1) printf("AliCaloTrackAODReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						  momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
- 
-      fAODCTS->Add(track);
+	  
+	  if(fWriteOutputAOD){
+		   AliAODTrack* newtrack = new((*(fOutputEvent->GetTracks()))[naod++]) AliAODTrack(*track);
+		   fAODCTS->Add(newtrack); //Use AOD stored in output for references.
+	  }
+	  else fAODCTS->Add(track);
     }//Pt and Fidutial cut passed. 
   }// track loop
 	
@@ -118,7 +123,11 @@ void AliCaloTrackAODReader::FillInputCTS() {
 			  if(fDebug > 2 && momentum.Pt() > 0.1) printf("AliCaloTrackAODReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 														   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 			  
-			  fAODCTS->Add(track);
+			  if(fWriteOutputAOD){
+				  AliAODTrack* newtrack = new((*(fOutputEvent->GetTracks()))[naod++]) AliAODTrack(*track);
+				  fAODCTS->Add(newtrack); //Use AOD stored in output for references.
+			  }
+			  else fAODCTS->Add(track);
 			  
 		  }//Pt and Fidutial cut passed. 
 	  }// track loop
@@ -135,7 +144,8 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
   //Get vertex for momentum calculation  
   Double_t v[3] ; //vertex ;
   GetVertex(v);
-  
+
+  Int_t naod =  (fOutputEvent->GetCaloClusters())->GetEntriesFast();
   //Loop to select clusters in fidutial cut and fill container with aodClusters
   Int_t nclusters = ((AliAODEvent*)fInputEvent)->GetNCaloClusters();
   for (Int_t iclus =  0; iclus <  nclusters; iclus++) {
@@ -150,7 +160,11 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 	  if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	  
-	  fAODEMCAL->Add(clus);	
+	  if(fWriteOutputAOD){
+		AliAODCaloCluster * newclus = new((*(fOutputEvent->GetCaloClusters()))[naod++])AliAODCaloCluster(*clus);
+		fAODEMCAL->Add(newclus);	
+	  }
+	  else fAODEMCAL->Add(clus);	
 	}//Pt and Fidutial cut passed.
       }//EMCAL cluster
     }// cluster exists
@@ -174,7 +188,11 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 						
 						if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 																	momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
-						fAODEMCAL->Add(clus);	
+						if(fWriteOutputAOD){
+							AliAODCaloCluster * newclus = new((*(fOutputEvent->GetCaloClusters()))[naod++])AliAODCaloCluster(*clus);
+						    fAODEMCAL->Add(newclus);	
+						}
+						else fAODEMCAL->Add(clus);	
 					}//Pt and Fidutial cut passed.
 				}//EMCAL cluster
 			}// cluster exists
@@ -192,7 +210,8 @@ void AliCaloTrackAODReader::FillInputPHOS() {
   //Get vertex for momentum calculation  
   Double_t v[3] ; //vertex ;
   GetVertex(v);
-
+	
+  Int_t naod =  (fOutputEvent->GetCaloClusters())->GetEntriesFast();
   //Loop to select clusters in fidutial cut and fill container with aodClusters
   Int_t nclusters = ((AliAODEvent*)fInputEvent)->GetNCaloClusters();
   for (Int_t iclus =  0; iclus < nclusters; iclus++) {
@@ -207,7 +226,11 @@ void AliCaloTrackAODReader::FillInputPHOS() {
 	  if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 
-	  fAODPHOS->Add(clus);	
+		if(fWriteOutputAOD){
+			AliAODCaloCluster * newclus = new((*(fOutputEvent->GetCaloClusters()))[naod++])AliAODCaloCluster(*clus);
+			fAODPHOS->Add(newclus);	
+		}
+		else fAODPHOS->Add(clus);	
 	}//Pt and Fidutial cut passed.
       }//PHOS cluster
     }//cluster exists
@@ -231,7 +254,11 @@ void AliCaloTrackAODReader::FillInputPHOS() {
 						
 						if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 																	momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
-						fAODPHOS->Add(clus);	
+						if(fWriteOutputAOD){
+							AliAODCaloCluster * newclus = new((*(fOutputEvent->GetCaloClusters()))[naod++])AliAODCaloCluster(*clus);
+						    fAODPHOS->Add(newclus);	
+						}
+						else fAODPHOS->Add(clus);	
 					}//Pt and Fidutial cut passed.
 				}//PHOS cluster
 			}// cluster exists

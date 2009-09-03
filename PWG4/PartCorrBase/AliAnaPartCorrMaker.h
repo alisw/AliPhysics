@@ -7,7 +7,7 @@
 //_________________________________________________________________________
 // Steering class for particle (gamma, hadron) identification and correlation analysis
 // It is called by the task class AliAnalysisTaskParticleCorrelation and it connects the input 
-// (ESD/AOD/MonteCarlo) got with AliCaloTrackReader (produces TClonesArrays of AODs 
+// (ESD/AOD/MonteCarlo) got with AliCaloTrackReader (produces TObjArrays of AODs 
 // (TParticles in MC case if requested)), with the 
 // analysis classes that derive from AliAnaPartCorrBaseClass
 //
@@ -55,7 +55,7 @@ class AliAnaPartCorrMaker : public TObject {
   }
   
   AliCaloTrackReader * GetReader() const {return fReader ; }
-  void SetReader(AliCaloTrackReader * reader) { fReader = reader ; }
+  void SetReader(AliCaloTrackReader * const reader) { fReader = reader ; }
   	
   //Others
   void Init();
