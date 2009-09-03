@@ -56,6 +56,7 @@ class AliAnalysisTask;
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenGeVSimEventHeader.h"
+#include "AliGenEposEventHeader.h"
 
 // Interface to make the Flow Event Simple used in the flow analysis methods
 #include "AliFlowEventSimpleMaker.h"
@@ -249,6 +250,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   if (eventHandler) {
     mcEvent = eventHandler->MCEvent();
     if (mcEvent) {
+
       //COCKTAIL with HIJING
       if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Cocktail Header")) { //returns 0 if matches
 	AliGenCocktailEventHeader *headerC = dynamic_cast<AliGenCocktailEventHeader *> (mcEvent-> GenEventHeader()); 
@@ -264,6 +266,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 	}
 	//else { cout<<"headerC is NULL"<<endl; }
       }
+
       //GEVSIM
       else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"GeVSim header")) { //returns 0 if matches
 	AliGenGeVSimEventHeader* headerG = (AliGenGeVSimEventHeader*)(mcEvent->GenEventHeader());
@@ -273,6 +276,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 	}
 	//else { cout<<"headerG is NULL"<<endl; }
       }
+     
       //HIJING
       else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Hijing")) { //returns 0 if matches
 	AliGenHijingEventHeader* headerH = (AliGenHijingEventHeader*)(mcEvent->GenEventHeader());
@@ -282,6 +286,17 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
 	}
 	//else { cout<<"headerH is NULL"<<endl; }
       }
+
+      //EPOS
+      else if (!strcmp(mcEvent->GenEventHeader()->GetName(),"EPOS")) {
+	AliGenEposEventHeader* headerE = (AliGenEposEventHeader*)(mcEvent->GenEventHeader());
+	if (headerE) {
+	  fRP = headerE->ReactionPlaneAngle();
+	  //cout<<"The reactionPlane from EPOS is: "<< fR <<endl;
+	}
+	//else { cout<<"headerE is NULL"<<endl; }
+      }
+
     }
     //else {cout<<"No MC event!"<<endl; }
     
