@@ -18,6 +18,7 @@ class AliJetDummyGeo;
 class AliJetHadronCorrection;
 class AliJetAODReaderHeader;
 class AliJetReaderHeader;
+class AliAODMCParticle;
 class AliAODEvent;
 class TRefArray;
 
@@ -30,6 +31,8 @@ class AliJetAODReader : public AliJetReader
   TRefArray*   GetReferences() const {return fRef;}
 
   Bool_t FillMomentumArray(); 
+  static Bool_t AcceptAODMCParticle(AliAODMCParticle *mcP,Short_t flag);
+
   void   OpenInputFiles();
   void   ConnectTree(TTree* tree, TObject* data);
   void   InitUnitArray();
@@ -50,6 +53,9 @@ class AliJetAODReader : public AliJetReader
 
  private:
   Bool_t SetEMCALGeometry();
+  Bool_t FillMomentumArrayMC();
+
+
   void InitParameters();
   AliJetAODReader(const AliJetAODReader &det);
   AliJetAODReader &operator=(const AliJetAODReader &det);

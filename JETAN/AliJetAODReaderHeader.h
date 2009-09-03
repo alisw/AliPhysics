@@ -24,12 +24,17 @@ class AliJetAODReaderHeader : public AliJetReaderHeader
   // Setters
   virtual void SetNumberOfAOD(Int_t i=1) {fNaod = i;}    
   virtual void SetTestFilterMask(UInt_t i){fTestFilterMask = i;}
+  virtual void SetReadAODMC(Short_t i){fReadMC = i;}
+  virtual Short_t GetReadAODMC(){return fReadMC;}
+
+  enum { kDefault = 0, kAllMC = 1 , kChargedMC = 2};
 
  protected:
   Int_t   fNaod;           // number of aods
   UInt_t  fTestFilterMask; // Filter Mask for jets, not tested if 0
+  Short_t fReadMC;      // Flag for reading the AODMC infomration, NB. this is not available on the flight...
   
-  ClassDef(AliJetAODReaderHeader,2);
+  ClassDef(AliJetAODReaderHeader,3);
 };
  
 #endif

@@ -36,6 +36,7 @@
 #include "AliJetAODReaderHeader.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 #include "AliJetDummyGeo.h"
 #include "AliJetAODFillUnitArrayTracks.h"
 #include "AliJetAODFillUnitArrayEMCalDigits.h"
@@ -162,6 +163,95 @@ void AliJetAODReader::ConnectTree(TTree* tree, TObject* /*data*/) {
      }
 }
 
+
+Bool_t AliJetAODReader::AcceptAODMCParticle(AliAODMCParticle *mcP,Short_t flag){
+
+  //
+  // filter for charge and for charged and neutral, no detector
+  // response yet
+  // physical priamries already selected
+
+  Int_t   pdg     = TMath::Abs(mcP->GetPdgCode());
+
+  // exclude neutrinos anyway   
+  if((pdg == 12 || pdg == 14 || pdg == 16)) return kFALSE;
+
+  if(flag==AliJetAODReaderHeader::kAllMC)return kTRUE;
+  if(flag==AliJetAODReaderHeader::kChargedMC){
+    if(mcP->Charge()==0)return kFALSE;
+    return kTRUE;
+  }
+
+  return kTRUE;
+
+}
+ 
+
+Bool_t AliJetAODReader::FillMomentumArrayMC(){
+
+  // 
+  // This routine fetches the MC particles from the AOD
+  // Depending on the flag all particles except neurinos are use
+  // or only charged particles
+  //
+
+  TClonesArray *mcArray = (TClonesArray*)fAOD->FindListObject(AliAODMCParticle::StdBranchName());
+  if(!mcArray){
+    Printf("%s:%d No MC particle branch found",(char*)__FILE__,__LINE__);
+    return kFALSE;
+  }
+  
+  Int_t nMC = mcArray->GetEntriesFast();
+  
+  // get number of tracks in event (for the loop)
+  if(fDebug>0)printf("AOD MC tracks: %5d \t", nMC);
+  
+  // temporary storage of signal and pt cut flag
+  Int_t* sflag  = new Int_t[nMC];
+  Int_t* cflag  = new Int_t[nMC];
+  
+  // get cuts set by user
+  Float_t ptMin =  fReaderHeader->GetPtCut();
+  Float_t etaMin = fReaderHeader->GetFiducialEtaMin();
+  Float_t etaMax = fReaderHeader->GetFiducialEtaMax();  
+  Int_t mcTrack = 0;
+  Float_t pt, eta;
+  TVector3 p3;
+
+  Short_t readerFlag = ((AliJetAODReaderHeader*)fReaderHeader)->GetReadAODMC();
+
+
+  for (Int_t it = 0; it < nMC; it++) {
+    AliAODMCParticle *track = (AliAODMCParticle*)mcArray->At(it);
+    if(!track->IsPhysicalPrimary())continue;
+
+    p3.SetXYZ(track->Px(),track->Py(),track->Pz());
+    eta = p3.Eta();
+    if ( (eta > etaMax) || (eta < etaMin)) continue;      // checking eta cut
+    if(!AcceptAODMCParticle(track,readerFlag))continue;
+    pt = p3.Pt();
+
+
+    
+
+    if (mcTrack == 0) new(fRef) TRefArray(TProcessID::GetProcessWithUID(track));
+    new ((*fMomentumArray)[mcTrack]) TLorentzVector(p3,p3.Mag());
+    sflag[mcTrack] = 1;
+    cflag[mcTrack] = ( pt > ptMin ) ? 1: 0;
+    fRef->Add(track);
+    mcTrack++;
+  }
+  if(fDebug>0)printf("Used MC tracks: %5d \n", mcTrack);
+  // set the signal flags
+  fSignalFlag.Set(mcTrack,sflag);
+  fCutFlag.Set(mcTrack,cflag);
+
+  delete [] sflag;
+  delete [] cflag;
+
+  return kTRUE;
+}
+
 //____________________________________________________________________________
 
 Bool_t AliJetAODReader::FillMomentumArray()
@@ -169,8 +259,13 @@ Bool_t AliJetAODReader::FillMomentumArray()
   // Clear momentum array
   ClearArray();
   fRef->Clear();
-  
   fDebug = fReaderHeader->GetDebug();
+
+  if(((AliJetAODReaderHeader*)fReaderHeader)->GetReadAODMC()){
+    return FillMomentumArrayMC();
+  }
+  
+
   
   if (!fAOD) {
       return kFALSE;
@@ -178,7 +273,7 @@ Bool_t AliJetAODReader::FillMomentumArray()
   
   // get number of tracks in event (for the loop)
   Int_t nt = fAOD->GetNTracks();
-  printf("AOD tracks: %5d \t", nt);
+  if(fDebug>0)printf("AOD tracks: %5d \t", nt);
   
   // temporary storage of signal and pt cut flag
   Int_t* sflag  = new Int_t[nt];
@@ -215,7 +310,7 @@ Bool_t AliJetAODReader::FillMomentumArray()
     aodTrack++;
     fRef->Add(track);
   }
-  printf("Used AOD tracks: %5d \n", aodTrack);
+  if(fDebug>0)printf("Used AOD tracks: %5d \n", aodTrack);
   // set the signal flags
   fSignalFlag.Set(aodTrack,sflag);
   fCutFlag.Set(aodTrack,cflag);
@@ -582,3 +677,4 @@ void AliJetAODReader::InitUnitArray()
     } // end grid type == 1
   fArrayInitialised = 1;
 }
+
