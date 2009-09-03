@@ -2096,6 +2096,30 @@ AliHLTUInt32_t AliHLTComponent::GetRunType() const
   return fpRunDesc->fRunType;
 }
 
+AliHLTUInt32_t    AliHLTComponent::GetTimeStamp() const
+{
+  // see header file for function documentation
+  return fCurrentEventData.fEventCreation_s>0? fCurrentEventData.fEventCreation_s:1;
+}
+
+AliHLTUInt32_t    AliHLTComponent::GetPeriodNumber() const
+{
+  // see header file for function documentation
+  return (GetEventId()>>36)&0xfffffff;
+}
+
+AliHLTUInt32_t    AliHLTComponent::GetOrbitNumber() const
+{
+  // see header file for function documentation
+  return (GetEventId()>>12)&0xffffff;
+}
+
+AliHLTUInt16_t    AliHLTComponent::GetBunchCrossNumber() const
+{
+  // see header file for function documentation
+  return GetEventId()&0xfff;
+}
+
 bool AliHLTComponent::IsDataEvent(AliHLTUInt32_t* pTgt)
 {
   // see header file for function documentation

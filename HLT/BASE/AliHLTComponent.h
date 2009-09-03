@@ -1357,6 +1357,30 @@ class AliHLTComponent : public AliHLTLogging {
   const char* GetChainId() const {return fChainId.c_str();}
 
   /**
+   * Get a timestamp of the current event
+   * Exact format needs to be documented.
+   */
+  AliHLTUInt32_t    GetTimeStamp() const;
+
+  /**
+   * Get the period number.
+   * Upper 28 bits (36 to 63) of the 64-bit event id 
+   */
+  AliHLTUInt32_t    GetPeriodNumber() const;
+
+  /**
+   * Get the period number.
+   * 24 bits, 12 to 35 of the 64-bit event id 
+   */
+  AliHLTUInt32_t    GetOrbitNumber() const;
+
+  /**
+   * Get the bunch crossing number.
+   * 12 bits, 0 to 12 of the 64-bit event id 
+   */
+  AliHLTUInt16_t    GetBunchCrossNumber() const;
+
+  /**
    * Setup the CTP accounting functionality of the base class.
    * The method can be invoked from DoInit() for componenets which want to
    * use the CTP functionality of the base class.

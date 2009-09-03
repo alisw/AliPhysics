@@ -215,6 +215,10 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
 
   pESD->Reset(); 
   pESD->SetMagneticField(fSolenoidBz);
+  pESD->SetPeriodNumber(GetPeriodNumber());
+  pESD->SetOrbitNumber(GetOrbitNumber());
+  pESD->SetBunchCrossNumber(GetBunchCrossNumber());
+  pESD->SetTimeStamp(GetTimeStamp());
 
   TTree* pTree = NULL;
   if (fWriteTree)
