@@ -206,9 +206,24 @@ Int_t AliDataLoader::OpenFile(Option_t* opt)
     {
       if(fFile->IsOpen() == kTRUE)
 	{
-	  AliWarning(Form("File %s already opened by sombody else. First close it.",
-			  fFile->GetName()));
-	  return 0;
+	  TString option1 = fFile->GetOption();
+	  if (option1.CompareTo("read",TString::kIgnoreCase) == 0)
+	    {
+	      AliInfo(Form("File %s already opened in read mode.",fFile->GetName()));
+	    }
+	  else
+	    {
+	      TString option2 = opt;
+	      if (option2.CompareTo("read",TString::kIgnoreCase) == 0)
+		{
+		  AliInfo(Form("Open already opened file %s in read mode.",fFile->GetName()));
+		}
+	      else {
+		AliWarning(Form("File %s already opened by sombody else. First close it.",
+				fFile->GetName()));
+		return 0;
+	      }
+	    }
 	}
     }
   
@@ -457,7 +472,7 @@ void AliDataLoader::SetFileNameSuffix(const TString& suffix)
   AliDebug(1, Form("suffix=%s",suffix.Data()));
   AliDebug(1, Form("   Digits File Name before: %s",fFileName.Data()));
   
-  static TString dotroot(".root");
+  static const TString dotroot(".root");
   const TString& suffixdotroot = suffix + dotroot;
   fFileName = fFileName.ReplaceAll(dotroot,suffixdotroot);
   
