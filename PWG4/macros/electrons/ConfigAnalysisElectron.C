@@ -97,10 +97,21 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   AliAnaElectron *anaelectron = new AliAnaElectron();
   anaelectron->SetDebug(-1); //10 for lots of messages
   anaelectron->SetCalorimeter("EMCAL");
+  anaelectron->SetWriteNtuple(kTRUE);
+  //matching cuts
   anaelectron->SetpOverEmin(0.8);
   anaelectron->SetpOverEmax(1.2);
   anaelectron->SetResidualCut(0.05);
-  anaelectron->SetWriteNtuple(kTRUE);
+  //B-tagging cuts
+  anaelectron->SetDrCut(1.0);
+  anaelectron->SetPairDcaCut(0.02);
+  anaelectron->SetDecayLenCut(1.0);
+  anaelectron->SetImpactCut(0.5);
+  anaelectron->SetAssocPtCut(1.0);
+  anaelectron->SetMassCut(1.5);
+  anaelectron->SetSdcaCut(0.1);
+  anaelectron->SetITSCut(4);
+
   anaelectron->SwitchOnDataMC();  //Access MC stack and fill more histograms
   anaelectron->SetMinPt(1.);
   anaelectron->SetOutputAODName("Electrons");
@@ -110,7 +121,6 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   anaelectron->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
   anaelectron->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;	
   anaelectron->Print("");
-		
 	
   //---------------------------------------------------------------------
   // Set  analysis algorithm and reader

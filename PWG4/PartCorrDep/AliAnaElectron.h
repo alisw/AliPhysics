@@ -47,7 +47,7 @@ public:
   Double_t ComputeSignDca(AliAODTrack *track, AliAODTrack *track2 , float cut1);
   Int_t GetBtag(AliAODTrack * tr);
 
-  Bool_t IsItPhotonic(AliAODPWG4Particle* const part);
+  Bool_t IsItPhotonic(const AliAODPWG4Particle* part);
 
   void Print(const Option_t * opt)const;
   
@@ -56,11 +56,29 @@ public:
   Double_t GetpOverEmax()   const {return fpOverEmax ; }
   Bool_t GetWriteNtuple()   const {return fWriteNtuple ; }
 
+  Double_t GetDrCut() const { return fDrCut; }
+  Double_t GetPairDcaCut() const { return fPairDcaCut; }
+  Double_t GetDecayLenCut() const { return fDecayLenCut; }
+  Double_t GetImpactCut() const { return fImpactCut; }
+  Double_t GetAssocPtCut() const { return fAssocPtCut; }
+  Double_t GetMassCut() const { return fMassCut; }
+  Double_t GetSdcaCut() const { return fSdcaCut; }
+  Int_t   GetITSCut() const { return fITSCut; }
+
   void SetCalorimeter(TString det)    {fCalorimeter = det ; }
   void SetpOverEmin(Double_t min)     {fpOverEmin = min ; }
   void SetpOverEmax(Double_t max)     {fpOverEmax = max ; }
   void SetResidualCut(Double_t cut)     {fResidualCut = cut ; }
   void SetWriteNtuple(Bool_t val)     {fWriteNtuple = val ; }
+
+  void SetDrCut(Double_t dr)  { fDrCut = dr; }
+  void SetPairDcaCut(Double_t pdca) { fPairDcaCut = pdca; }
+  void SetDecayLenCut(Double_t dlen) { fDecayLenCut = dlen; }
+  void SetImpactCut(Double_t imp) { fImpactCut = imp; }
+  void SetAssocPtCut(Double_t pt) { fAssocPtCut = pt; }
+  void SetMassCut(Double_t mass) { fMassCut = mass; }
+  void SetSdcaCut(Double_t sdca) { fSdcaCut = sdca; }
+  void SetITSCut(Int_t its) { fITSCut = its; }
 
   void InitParameters();
 
@@ -76,14 +94,14 @@ public:
   Double_t fResidualCut;  //! Track-cluster matching distance
 
   //B-tagging
-  Float_t fDrCut;       //max dR
-  Float_t fPairDcaCut;  //max pair-DCA
-  Float_t fDecayLenCut; //max 3d-decaylength
-  Float_t fImpactCut;   //max track impact param
-  Float_t fAssocPtCut;  //min associated pt
-  Float_t fMassCut;     //min Minv cut
-  Float_t fSdcaCut;     //min signDca
-  Int_t   fITSCut;      //min ITS hits (both)
+  Double_t fDrCut;       //max dR
+  Double_t fPairDcaCut;  //max pair-DCA
+  Double_t fDecayLenCut; //max 3d-decaylength
+  Double_t fImpactCut;   //max track impact param
+  Double_t fAssocPtCut;  //min associated pt
+  Double_t fMassCut;     //min Minv cut
+  Double_t fSdcaCut;     //min signDca
+  Int_t   fITSCut;       //min ITS hits (both)
 
   Bool_t  fWriteNtuple; //flag for filling ntuple or not
 

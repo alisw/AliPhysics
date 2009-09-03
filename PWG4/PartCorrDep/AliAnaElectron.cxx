@@ -440,11 +440,11 @@ void AliAnaElectron::InitParameters()
   fDrCut       = 1.0; 
   fPairDcaCut  = 0.02;
   fDecayLenCut = 1.0;
-  fImpactCut   = 99999;
+  fImpactCut   = 0.5;
   fAssocPtCut  = 1.0;
   fMassCut     = 1.5;
   fSdcaCut     = 0.1;
-  fITSCut      = -1;
+  fITSCut      = 4;
 
 }
 
@@ -460,13 +460,6 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 
   TObjArray *cl = new TObjArray();
 
-  //Get vertex for cluster momentum calculation
-  Double_t vertex[]  = {-999.,-999.,-999.} ; //vertex ;
-  Double_t vertex2[] = {-999.,-999.,-999.} ; //vertex of second input AOD if exist;
-  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
-	  GetReader()->GetVertex(vertex);
-	  if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
-  }
   Double_t bfield = 0.;
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
 
@@ -521,8 +514,8 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       Bool_t isNotDCA = track->GetPosition(xyz);
       if(isNotDCA) printf("##Problem getting impact parameter!\n");
       //printf("\tTRACK POSITION AT DCA: %2.2f,%2.2f,%2.2f\n",xyz[0],xyz[1],xyz[2]);
-      Float_t xy = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-      Float_t z = xyz[2];
+      Double_t xy = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+      Double_t z = xyz[2];
             
       Int_t ntot = cl->GetEntriesFast();
       Double_t res = 999.;
@@ -535,7 +528,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	AliAODCaloCluster * clus = (AliAODCaloCluster*) (cl->At(iclus));
 	if(!clus) continue;
 	
-	Float_t x[3];
+	Double_t x[3];
 	clus->GetPosition(x);
 	TVector3 cluspos(x[0],x[1],x[2]);
 	Double_t deta = teta - cluspos.Eta();
@@ -559,18 +552,19 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	if(res < fResidualCut) {
 	  iCluster = iclus;
 
-	  Float_t tmctag = -1;
-	  Float_t cmctag = -1;
+	  Int_t tmctag = -1;
+	  Int_t cmctag = -1;
 
 	  if(IsDataMC()) {
 	    //Input from second AOD?
 	    Int_t input = 0;
 	    if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) input = 1;
-	    tmctag = (Float_t)GetMCAnalysisUtils()->CheckOrigin(track->GetLabel(),GetReader(),input);
+	    tmctag = GetMCAnalysisUtils()->CheckOrigin(track->GetLabel(),GetReader(),input);
+
 	    //Do you want the cluster or the track label?
 	    input = 0;
 	    if(GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1;
-	    cmctag = (Float_t)GetMCAnalysisUtils()->CheckOrigin(clus->GetLabel(0),GetReader(),input);
+	    cmctag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabel(0),GetReader(),input);
 	  }
 
 	  if(fWriteNtuple) {
@@ -615,7 +609,9 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	tr.SetTrackLabel(track->GetID(),-1); //sets the indices of the original tracks
 	tr.SetDetector(fCalorimeter);
 	if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
-	tr.SetPdg(11);
+	//Make this preserve sign of particle
+	if(track->Charge() < 0) tr.SetPdg(11); //electron is 11
+	else  tr.SetPdg(-11); //positron is -11
 	tr.SetBtag(btag);
 
 	//Play with the MC stack if available
@@ -690,7 +686,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     if(GetDebug() > 3) 
       printf("AliAnaElectron::MakeAnalysisFillHistograms() - PDG %d, MC TAG %d, Calorimeter %s\n", ele->GetPdg(),ele->GetTag(), (ele->GetDetector()).Data()) ;
     
-    if(pdg != AliCaloPID::kElectron) continue; 
+    if(TMath::Abs(pdg) != AliCaloPID::kElectron) continue; 
     if(ele->GetDetector() != fCalorimeter) continue;
     
     if(GetDebug() > 1) 
@@ -789,7 +785,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	primary = stack->Particle(ipart);
 	Int_t pdgcode = primary->GetPdgCode();
 	//we only care about electrons
-	if(abs(pdgcode) != 11) continue;
+	if(TMath::Abs(pdgcode) != 11) continue;
 	//we only want TRACKABLE electrons (TPC 85-250cm)
 	if(primary->R() > 200.) continue;
 	//Ignore low pt electrons
@@ -821,11 +817,13 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	}
 	Int_t pdgcode = aodprimary->GetPdgCode();
 	//we only care about electrons
-	if(abs(pdgcode) != 11) continue;
+	if(TMath::Abs(pdgcode) != 11) continue;
 	//we only want TRACKABLE electrons (TPC 85-250cm)
 	Double_t radius = TMath::Sqrt(aodprimary->Xv()*aodprimary->Xv() + aodprimary->Yv()*aodprimary->Yv());
 	if(radius > 200.) continue;
 	
+	if(aodprimary->Pt() < 0.2) continue;
+
 	//find out what the ancestry of this electron is
 	Int_t mctag = -1;
 	Int_t input = 0;
@@ -847,42 +845,45 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 //__________________________________________________________________
 Int_t AliAnaElectron::GetBtag(AliAODTrack * tr )
 {
-  
-  //UChar_t itsmap = tr->GetITSClusterMap();
-  //JLK 
-  //DON'T KNOW HOW TO USE THIS???
-  //if (itsmap < fITSCut) return 0;
-  //JLK
+  //This method uses the Displaced Vertex between electron-hadron
+  //pairs and the primary vertex to determine whether an electron is
+  //likely from a B hadron.
+
+  Int_t ncls1 = 0;
+  for(Int_t l = 0; l < 6; l++) if(TESTBIT(tr->GetITSClusterMap(),l)) ncls1++;
+  if (ncls1 < fITSCut) return 0;
+
   Double_t x[3];
   //Note: 02-Sep-2009, Must use GetPosition, not XYZAtDCA
   //Bool_t gotit = tr->XYZAtDCA(x);
   Bool_t isNotDCA = tr->GetPosition(x);
   if(isNotDCA) { printf("##Problem getting impact parameter!\n"); return 0; }
 
-  //Double_t d1 = TMath::Sqrt(x[0]*x[0] + x[1]*x[1]);
-  //if (TMath::Abs(d1)   > fImpactCut ) return 0;
-  //if (TMath::Abs(x[2]) > fImpactCut ) return 0;
+  Double_t d1 = TMath::Sqrt(x[0]*x[0] + x[1]*x[1]);
+  if (TMath::Abs(d1)   > fImpactCut ) return 0;
+  if (TMath::Abs(x[2]) > fImpactCut ) return 0;
   //printf("----- impact parameter: x=%f, y=%f, z=%f -------\n",x[0],x[1], x[2]);
 
-  int nvtx1 = 0;
-  int nvtx2 = 0;
-  int nvtx3 = 0;
+  Int_t nvtx1 = 0;
+  Int_t nvtx2 = 0;
+  Int_t nvtx3 = 0;
 
-  for (int k2 =0; k2 < GetAODCTS()->GetEntriesFast() ; k2++) {
+  for (Int_t k2 =0; k2 < GetAODCTS()->GetEntriesFast() ; k2++) {
     //loop over assoc
     AliAODTrack* track2 = (AliAODTrack*) (GetAODCTS()->At(k2));
-    int id1 = tr->GetID();
-    int id2 = track2->GetID();
+    Int_t id1 = tr->GetID();
+    Int_t id2 = track2->GetID();
     if(id1 == id2) continue;
 
-    //JLK
-    //HOW TO IMPLEMENT?
-    //if (track2->GetITSclusters(0) < fITSCut) continue;
-    //JLK
+    Int_t ncls2 = 0;
+    for(Int_t l = 0; l < 6; l++) if(TESTBIT(track2->GetITSClusterMap(),l)) ncls2++;
+    if (ncls2 < fITSCut) return 0;
 
     if(track2->Pt() < fAssocPtCut) continue;
 
     Double_t dphi = tr->Phi() - track2->Phi();
+    if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
+    if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
     Double_t deta = tr->Eta() - track2->Eta();
     Double_t dr = sqrt(deta*deta + dphi*dphi);
 
@@ -897,9 +898,11 @@ Int_t AliAnaElectron::GetBtag(AliAODTrack * tr )
 
   } //loop over hadrons
 
-  if (nvtx1>0) printf("result1 of btagging: %d \n",nvtx1);
-  if (nvtx2>0) printf("result2 of btagging: %d \n",nvtx2);
-  if (nvtx3>0) printf("result3 of btagging: %d \n",nvtx3);
+  if(GetDebug() > 0) {
+    if (nvtx1>0) printf("result1 of btagging: %d \n",nvtx1);
+    if (nvtx2>0) printf("result2 of btagging: %d \n",nvtx2);
+    if (nvtx3>0) printf("result3 of btagging: %d \n",nvtx3);
+  }
 
   //fill QA histograms
   fhBtagCut1->Fill(nvtx1,tr->Pt());
@@ -915,7 +918,7 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
   //Compute the signed dca between two tracks
   //and return the result
 
-  Double_t signDca=-999;
+  Double_t signDca=-999.;
   if(GetDebug() > 2 ) printf(">>ComputeSdca:: track1 %d, track2 %d, masscut %f \n", tr->GetLabel(), tr2->GetLabel(), masscut);
 
   //=====Now calculate DCA between both tracks=======  
@@ -925,22 +928,24 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
   Double_t bfield = 5.; //kG
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
 
-  Double_t vertex[]  = {-999.,-999.,-999.} ; //vertex 
-  Double_t vertex2[] = {-999.,-999.,-999.} ; //vertex of second input AOD if exist;
+  Double_t vertex[3] = {-999.,-999.,-999}; //vertex
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
-	  GetReader()->GetVertex(vertex);
-	  if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+    GetReader()->GetVertex(vertex); //If only one file, get the vertex from there
+    //FIXME:  Add a check for whether file 2 is PYTHIA or HIJING
+    //If PYTHIA, then set the vertex from file 2, if not, use the
+    //vertex from file 1
+    if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex);
   }
   
-  //HERE CHECK WHICH VERTEX
-  TVector3 pv(vertex[0],vertex[1],vertex[2]) ;
+  TVector3 primV(vertex[0],vertex[1],vertex[2]) ;
+
   if(GetDebug() > 5) printf(">>ComputeSdca:: primary vertex = %2.2f,%2.2f,%2.2f \n",vertex[0],vertex[1],vertex[2]) ;
 
   AliExternalTrackParam *param1 = new AliExternalTrackParam(tr);
   AliExternalTrackParam *param2 = new AliExternalTrackParam(tr2);
 
-  double xplane1=0; double xplane2=0;
-  double pairdca = param1->GetDCA(param2,bfield,xplane1,xplane2);
+  Double_t xplane1 = 0.; Double_t xplane2 = 0.;
+  Double_t pairdca = param1->GetDCA(param2,bfield,xplane1,xplane2);
 
   Int_t id1 = 0, id2 = 0;
   AliESDv0 bvertex(*param1,id1,*param2,id2);
@@ -955,7 +960,7 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
   TVector3 hmomAtB(hmom[0],hmom[1],hmom[2]);
   TVector3 secvtxpt(vx,vy,vz);
   TVector3 decayvector(0,0,0);
-  decayvector = secvtxpt - pv; //decay vector from PrimVtx
+  decayvector = secvtxpt - primV; //decay vector from PrimVtx
   Double_t decaylength = decayvector.Mag();
 
   if(GetDebug() > 0) {
@@ -983,8 +988,11 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
 }
 
 //__________________________________________________________________
-Bool_t AliAnaElectron::IsItPhotonic(AliAODPWG4Particle* const part) {
-  //Check if this is a photon. Change comment!!!
+Bool_t AliAnaElectron::IsItPhotonic(const AliAODPWG4Particle* part) 
+{
+  //This method checks the opening angle and invariant mass of
+  //electron pairs to see if they are likely to be photonic electrons
+
   Bool_t itIS = kFALSE;
 
   Double_t massE = 0.000511;
@@ -993,17 +1001,20 @@ Bool_t AliAnaElectron::IsItPhotonic(AliAODPWG4Particle* const part) {
 
   Int_t trackId = part->GetTrackLabel(0);
   AliAODTrack* track = (AliAODTrack*)GetAODCTS()->At(trackId);
+  Int_t pdg1 = part->GetPdg();
 
   AliExternalTrackParam *param1 = new AliExternalTrackParam(track);
 
   //Loop on stored AOD electrons and compute the angle differences and Minv
-  for (int k2 =0; k2 < GetOutputAODBranch()->GetEntriesFast() ; k2++) {
+  for (Int_t k2 =0; k2 < GetOutputAODBranch()->GetEntriesFast() ; k2++) {
     AliAODPWG4Particle* part2 = (AliAODPWG4Particle*) GetOutputAODBranch()->At(k2);
-    Int_t pdg = part2->GetPdg(); //Note:  Are they stored as Abs or
-				 //not?
-    if(pdg != AliCaloPID::kElectron) continue;
+    Int_t pdg2 = part2->GetPdg();
+    if(TMath::Abs(pdg2) != AliCaloPID::kElectron) continue;
     if(part2->GetDetector() != fCalorimeter) continue;
-    
+
+    //JLK: Check opp. sign pairs only ?
+    if(pdg1*pdg2 < 0) continue;
+
     //propagate to common vertex and check opening angle
     Int_t track2Id = part2->GetTrackLabel(0);
     AliExternalTrackParam *param2 = new AliExternalTrackParam((AliAODTrack*)GetAODCTS()->At(track2Id));
