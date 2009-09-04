@@ -606,7 +606,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	AliAODPWG4Particle tr = AliAODPWG4Particle(track->Px(),track->Py(),track->Pz(),eleE);
 	tr.SetLabel(track->GetLabel());
 	tr.SetCaloLabel(iCluster,-1); //sets the indices of the original caloclusters
-	tr.SetTrackLabel(track->GetID(),-1); //sets the indices of the original tracks
+	tr.SetTrackLabel(itrk,-1); //sets the indices of the original tracks
 	tr.SetDetector(fCalorimeter);
 	if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
 	//Make this preserve sign of particle
@@ -999,9 +999,13 @@ Bool_t AliAnaElectron::IsItPhotonic(const AliAODPWG4Particle* part)
   Double_t bfield = 5.; //kG
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
 
+  Int_t pdg1 = part->GetPdg();
   Int_t trackId = part->GetTrackLabel(0);
   AliAODTrack* track = (AliAODTrack*)GetAODCTS()->At(trackId);
-  Int_t pdg1 = part->GetPdg();
+  if(!track) {
+    if(GetDebug() > 0) printf("AliAnaElectron::IsItPhotonic - can't get the AOD Track from the particle!  Skipping the photonic check");
+    return kFALSE; //Don't proceed because we can't get the track
+  }
 
   AliExternalTrackParam *param1 = new AliExternalTrackParam(track);
 
@@ -1017,7 +1021,12 @@ Bool_t AliAnaElectron::IsItPhotonic(const AliAODPWG4Particle* part)
 
     //propagate to common vertex and check opening angle
     Int_t track2Id = part2->GetTrackLabel(0);
-    AliExternalTrackParam *param2 = new AliExternalTrackParam((AliAODTrack*)GetAODCTS()->At(track2Id));
+    AliAODTrack* track2 = (AliAODTrack*)GetAODCTS()->At(track2Id);
+    if(!track2) {
+      if(GetDebug() >0) printf("AliAnaElectron::IsItPhotonic - problem getting the partner track.  Continuing on to the next one");
+      continue;
+    }
+    AliExternalTrackParam *param2 = new AliExternalTrackParam(track2);
     Int_t id1 = 0, id2 = 0;
     AliESDv0 photonVtx(*param1,id1,*param2,id2);
     Double_t vx,vy,vz;
