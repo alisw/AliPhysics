@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #include "AliOnlineReco.h"
-#include "AliChildReaper.h"
+#include "AliChildProcTerminator.h"
 #include "AliDimIntNotifier.h"
 
 #include <TGListBox.h>
@@ -63,7 +63,7 @@ AliOnlineReco::AliOnlineReco() :
 
   // Signal handlers
   // ROOT's TSignalHAndler works not SIGCHLD ...
-  AliChildReaper::Instance()->Connect("ChildDeath(Int_t,Int_t)", "AliOnlineReco", this, "ChildDeath(Int_t,Int_t)");
+  AliChildProcTerminator::Instance()->Connect("ChildProcTerm(Int_t,Int_t)", "AliOnlineReco", this, "ChildProcTerm(Int_t,Int_t)");
 }
 
 AliOnlineReco::mIntInt_i AliOnlineReco::FindMapEntryByPid(Int_t pid)
@@ -130,9 +130,9 @@ void AliOnlineReco::EndOfRun(Int_t run)
 // Handlers of OS signals.
 //------------------------------------------------------------------------------
 
-void AliOnlineReco::ChildDeath(Int_t pid, Int_t status)
+void AliOnlineReco::ChildProcTerm(Int_t pid, Int_t status)
 {
-  printf("child death pid=%d, statues=%d...\n", pid, status);
+  printf("child process termination pid=%d, status=%d...\n", pid, status);
 
   mIntInt_i i = FindMapEntryByPid(pid);
   if (i != fRun2PidMap.end())
@@ -152,7 +152,7 @@ void AliOnlineReco::ChildDeath(Int_t pid, Int_t status)
   }
   else
   {
-    Warning("ChildDeath", "Process with pid=%d not registered.", pid);
+    Warning("ChildProcTerm", "Process with pid=%d not registered.", pid);
   }
 }
 

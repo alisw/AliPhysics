@@ -47,7 +47,7 @@ public:
   // Handlers of OS signals.
   //------------------------------------------------------------------------------
 
-  void ChildDeath(Int_t pid, Int_t status);
+  void ChildProcTerm(Int_t pid, Int_t status);
 
   //------------------------------------------------------------------------------
   // Handlers of button signals.

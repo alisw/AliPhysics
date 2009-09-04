@@ -33,7 +33,7 @@
 #pragma link C++ class  TerminateSignalHandler+;
 
 #pragma link C++ class AliDimIntNotifier+;
-#pragma link C++ class AliChildReaper+;
+#pragma link C++ class AliChildProcTerminator+;
 #pragma link C++ class AliOnlineReco+;
 #pragma link C++ class AliTestChildProc+;
 

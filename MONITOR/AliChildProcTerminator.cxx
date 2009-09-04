@@ -7,26 +7,26 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#include "AliChildReaper.h"
+#include "AliChildProcTerminator.h"
 
 #include <sys/wait.h>
 
 //______________________________________________________________________________
-// Full description of AliChildReaper
+// Full description of AliChildProcTerminator
 //
 
-ClassImp(AliChildReaper)
+ClassImp(AliChildProcTerminator)
 
-AliChildReaper* AliChildReaper::fgTheOne = 0;
+AliChildProcTerminator* AliChildProcTerminator::fgTheOne = 0;
 
-AliChildReaper* AliChildReaper::Instance()
+AliChildProcTerminator* AliChildProcTerminator::Instance()
 {
   if (fgTheOne == 0)
-    fgTheOne = new AliChildReaper;
+    fgTheOne = new AliChildProcTerminator;
   return fgTheOne;
 }
 
-AliChildReaper::AliChildReaper()
+AliChildProcTerminator::AliChildProcTerminator()
 {
   struct sigaction sac;
   sac.sa_handler = sig_handler;
@@ -35,18 +35,18 @@ AliChildReaper::AliChildReaper()
   sigaction(SIGCHLD, &sac, 0);
 }
 
-void AliChildReaper::sig_handler(int /*sig*/)
+void AliChildProcTerminator::sig_handler(int /*sig*/)
 {
   int   status;
   pid_t pid = wait(&status);
-  Instance()->ChildDeath(pid, status);
+  Instance()->ChildProcTerm(pid, status);
 }
 
-void AliChildReaper::ChildDeath(Int_t pid, Int_t status)
+void AliChildProcTerminator::ChildProcTerm(Int_t pid, Int_t status)
 {
    Long_t args[2];
    args[0] = (Long_t) pid;
    args[1] = (Long_t) status;
 
-   Emit("ChildDeath(Int_t,Int_t)", args);
+   Emit("ChildProcTerm(Int_t,Int_t)", args);
 }

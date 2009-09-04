@@ -7,36 +7,36 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef AliChildReaper_H
-#define AliChildReaper_H
+#ifndef AliChildProcTerminator_H
+#define AliChildProcTerminator_H
 
 #include "TObject.h"
 #include "TQObject.h"
 
 //______________________________________________________________________________
-// Short description of AliChildReaper
+// Short description of AliChildProcTerminator
 //
 
-class AliChildReaper : public TObject,
+class AliChildProcTerminator : public TObject,
 		       public TQObject
 {
 public:
-  void ChildDeath(Int_t pid, Int_t status); // *SIGNAL*
+  void ChildProcTerm(Int_t pid, Int_t status); // *SIGNAL*
 
-  static AliChildReaper* Instance();
+  static AliChildProcTerminator* Instance();
 
 private:
-  AliChildReaper();
-  virtual ~AliChildReaper() {}
+  AliChildProcTerminator();
+  virtual ~AliChildProcTerminator() {}
 
-  AliChildReaper(const AliChildReaper&);            // Not implemented
-  AliChildReaper& operator=(const AliChildReaper&); // Not implemented
+  AliChildProcTerminator(const AliChildProcTerminator&);            // Not implemented
+  AliChildProcTerminator& operator=(const AliChildProcTerminator&); // Not implemented
 
   static void sig_handler(int sig);
 
-  static AliChildReaper* fgTheOne;
+  static AliChildProcTerminator* fgTheOne;
 
-  ClassDef(AliChildReaper, 0);
+  ClassDef(AliChildProcTerminator, 0);
 };
 
 #endif

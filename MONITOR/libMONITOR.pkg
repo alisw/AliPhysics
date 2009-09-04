@@ -9,7 +9,7 @@ SRCS:=  AliMonitorPlot.cxx AliMonitorHisto.cxx AliMonitorTrend.cxx \
 	AliMonitorDialog.cxx AliMonitorClient.cxx \
 	AliQAHistNavigator.cxx AliQAHistViewer.cxx \
 	AliOnlineRecoTrigger.cxx \
-	AliDimIntNotifier.cxx AliChildReaper.cxx AliOnlineReco.cxx AliTestChildProc.cxx
+	AliDimIntNotifier.cxx AliChildProcTerminator.cxx AliOnlineReco.cxx AliTestChildProc.cxx
 
 CINTHDRS:= $(SRCS:.cxx=.h)
 
