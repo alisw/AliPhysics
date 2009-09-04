@@ -3,10 +3,7 @@
 
 CLASS_HDRS:=  AliHLTTPCCalibrationComponent.h \
               AliHLTTPCAnalysisTaskcalib.h \
-  	      AliHLTTPCCalibCEComponent.h \
-  	      AliHLTTPCCalibPulserComponent.h \
-  	      AliHLTTPCCalibPedestalComponent.h \
-  	      AliHLTTPCCalibSeedMakerComponent.h \
+   	      AliHLTTPCCalibSeedMakerComponent.h \
   	      AliHLTTPCCalibTimeComponent.h \
   	      AliHLTTPCCalibTimeGainComponent.h
   	     
@@ -21,6 +18,10 @@ EINCLUDE 	:= HLT/TPCLib \
 		   HLT/BASE \
 		   HLT/BASE/util \
 		   HLT/TPCLib/calibration
+		   TPC \
+		   ANALYSIS \
+		   STEER 
+		
 
 LIBRARY_DEP := -lHLTbase -lAliHLTTPC
 
