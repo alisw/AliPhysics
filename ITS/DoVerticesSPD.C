@@ -86,7 +86,7 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
   }
   esd->ReadFromTree(tree);
   tree->GetEvent(0);
-  Int_t fieldkG=(Int_t)(esd->GetMagneticField()+0.001);
+  Int_t fieldkG=(Int_t)(TMath::Abs(esd->GetMagneticField())+0.001);
   
   if(fieldkG==5){
     TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
