@@ -13,13 +13,14 @@ void RunAnalysisAODVertexingHF()
   // "grid" mode added by R.Bala, bala@to.infn.it
   //
 
+  gSystem->SetIncludePath("-I- -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/vertexingHF -g"); 
   //
   TString analysisMode = "grid"; // "local", "grid", or "proof"
   TString inputMode    = "list"; // "list", "xml", or "dataset"
   Long64_t nentries=1234567890,firstentry=0;
   Bool_t useParFiles=kFALSE;
   Bool_t useAlienPlugin=kTRUE;
-  TString pluginmode="full";
+  TString pluginmode="test";
   TString loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/";
   //TString loadMacroPath="./"; // this is normally needed for CAF
   //
@@ -29,7 +30,7 @@ void RunAnalysisAODVertexingHF()
     TGrid::Connect("alien://");
   } else if(analysisMode=="proof") {
     // Connect to the PROOF cluster
-    if(inputMode.Data()!="dataset") {printf("Input mode must be dataset, for proof analysis\n"); return;}
+    if(inputMode!="dataset") {printf("Input mode must be dataset, for proof analysis\n"); return;}
     gEnv->SetValue("XSec.GSI.DelegProxy","2");
     TProof::Open("alicecaf");
     //TProof::Reset("alicecaf");
@@ -215,6 +216,13 @@ void RunAnalysisAODVertexingHF()
   gROOT->LoadMacro("AddMyTask.C");
   MyTask *myTask = AddMyTask();
   */
+  if(analysisMode.Data()=="proof") {
+    gProof->LoadMacro("AliCFHeavyFlavourTaskMultiVarMultiStepLc.cxx++g");
+  } else {
+    gROOT->LoadMacro("AliCFHeavyFlavourTaskMultiVarMultiStepLc.cxx++g");
+  }
+  gROOT->LoadMacro("AddTaskCFMultiVarMultiStepLc.C");
+  AliCFHeavyFlavourTaskMultiVarMultiStepLc *myTask = AddTaskCFMultiVarMultiStepLc();
 
   //-------------------------------------------------------------------
 
@@ -278,9 +286,10 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    // Declare the analysis source files names separated by blancs. To be compiled runtime
    // using ACLiC on the worker nodes.
    //plugin->SetAnalysisSource("MyTask.cxx");
+   plugin->SetAnalysisSource("AliCFHeavyFlavourTaskMultiVarMultiStepLc.cxx");
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->SetAdditionalLibs("libPWG3vertexingHF.so libPWG3base.so libPWG3muon.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so MakeAODInputChain.C"/* MyTask.cxx MyTask.h" */);
+   plugin->SetAdditionalLibs("libPWG3vertexingHF.so libPWG3base.so libPWG3muon.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so MakeAODInputChain.C AliCFHeavyFlavourTaskMultiVarMultiStepLc.cxx AliCFHeavyFlavourTaskMultiVarMultiStepLc.h"/* MyTask.cxx MyTask.h" */);
    // use par files
    if(useParFiles) {
      plugin->EnablePackage("STEERBase.par");
@@ -295,6 +304,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
      plugin->EnablePackage("PWG4PartCorrBase.par");
      plugin->EnablePackage("PWG4PartCorrDep.par");
    }
+   plugin->AddIncludePath("-I- -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/vertexingHF -g");
    // Declare the output file names separated by blancs.
    // (can be like: file.root or file.root@ALICE::Niham::File)
    plugin->SetDefaultOutputs(kTRUE);
