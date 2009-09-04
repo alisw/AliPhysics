@@ -355,8 +355,8 @@ AliMUONDDLTrigger* AliMUONRawStreamTriggerHP::GetDDLTrigger() const
 				// ID in the structure with the calculated one returned by GetId().
 				AliMUONLocalInfoStruct* strptr = reinterpret_cast<AliMUONLocalInfoStruct*>( localStruct.GetData() );
 				UInt_t triggerBits = strptr->fTriggerBits;
-				triggerBits &= (0xF << 19);
-				strptr->fTriggerBits = triggerBits | (lstruct->GetId() << 19);
+				triggerBits &= ~(0xF << 19);
+				strptr->fTriggerBits = triggerBits | ((lstruct->GetId() & 0xF) << 19);
 			}
 			fDDLObject->AddLocStruct(localStruct, iReg);
 			lstruct = lstruct->Next();
