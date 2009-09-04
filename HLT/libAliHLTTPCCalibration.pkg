@@ -1,0 +1,43 @@
+#-*- Mode: Makefile -*-
+# $Id: $
+
+CLASS_HDRS:=  AliHLTTPCCalibrationComponent.h \
+              AliHLTTPCAnalysisTaskcalib.h \
+  	      AliHLTTPCCalibCEComponent.h \
+  	      AliHLTTPCCalibPulserComponent.h \
+  	      AliHLTTPCCalibPedestalComponent.h \
+  	      AliHLTTPCCalibSeedMakerComponent.h \
+  	      AliHLTTPCCalibTimeComponent.h \
+  	      AliHLTTPCCalibTimeGainComponent.h
+  	     
+MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
+
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+MODULE_DHDR:=
+
+EINCLUDE 	:= HLT/TPCLib \
+		   HLT/TPCLib/offline \
+		   HLT/BASE \
+		   HLT/BASE/util \
+		   HLT/TPCLib/calibration
+
+LIBRARY_DEP := -lHLTbase -lAliHLTTPC
+
+###############################################################################
+#
+# do not change anything below this line
+#
+include $(MODDIR)/hlt.conf
+
+SRCS:=$(patsubst %,TPCLib/calibration/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,TPCLib/calibration/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,TPCLib/calibration/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,TPCLib/calibration/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+PACKSOFLAGS  := $(HLTSOFLAGS)
