@@ -199,10 +199,10 @@ Bool_t AliHMPIDRawStream::Next()
   */
 
   fPosition = 0;
-  Bool_t status=kTRUE;
+  Bool_t status=kFALSE;
   Int_t  rawDataSize=0;        
+  fDDLNumber = fRawReader->GetDDLID();
   if(fRawReader->GetType() == 7 || fRawReader->GetType() == 8 )  {           //New: Select Physics events, Old: Raw data size is not 0 and not 47148 (pedestal)
-    fDDLNumber = fRawReader->GetDDLID();
     fnDDLInStream[fDDLNumber]=1; fnDDLOutStream[fDDLNumber]=0;
     
     fLDCNumber = fRawReader->GetLDCId();
