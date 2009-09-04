@@ -231,6 +231,11 @@ Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)
   gaus1->SetParameter("Mean",max);
   gaus1->SetParameter("Sigma",1.);
   gaus1->SetLineColor(kBlue);
+  
+  Double_t mean_min = h1->GetXaxis()->GetXmin();
+  Double_t mean_max = h1->GetXaxis()->GetXmax();
+  gaus1->SetParLimits(1,mean_min,mean_max);
+  
   h1->Fit(gaus1,"LERQ+");
 
   AliInfo(Form("%s: %.1f entries, mean=%.3f, peak=%.3f, rms= %.3f. HG/LG = %.3f\n",
