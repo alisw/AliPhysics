@@ -216,13 +216,6 @@ void RunAnalysisAODVertexingHF()
   gROOT->LoadMacro("AddMyTask.C");
   MyTask *myTask = AddMyTask();
   */
-  if(analysisMode.Data()=="proof") {
-    gProof->LoadMacro("AliCFHeavyFlavourTaskMultiVarMultiStepLc.cxx++g");
-  } else {
-    gROOT->LoadMacro("AliCFHeavyFlavourTaskMultiVarMultiStepLc.cxx++g");
-  }
-  gROOT->LoadMacro("AddTaskCFMultiVarMultiStepLc.C");
-  AliCFHeavyFlavourTaskMultiVarMultiStepLc *myTask = AddTaskCFMultiVarMultiStepLc();
 
   //-------------------------------------------------------------------
 
@@ -286,10 +279,9 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    // Declare the analysis source files names separated by blancs. To be compiled runtime
    // using ACLiC on the worker nodes.
    //plugin->SetAnalysisSource("MyTask.cxx");
-   plugin->SetAnalysisSource("AliCFHeavyFlavourTaskMultiVarMultiStepLc.cxx");
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->SetAdditionalLibs("libPWG3vertexingHF.so libPWG3base.so libPWG3muon.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so MakeAODInputChain.C AliCFHeavyFlavourTaskMultiVarMultiStepLc.cxx AliCFHeavyFlavourTaskMultiVarMultiStepLc.h"/* MyTask.cxx MyTask.h" */);
+   plugin->SetAdditionalLibs("libPWG3vertexingHF.so libPWG3base.so libPWG3muon.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so MakeAODInputChain.C"/* MyTask.cxx MyTask.h" */);
    // use par files
    if(useParFiles) {
      plugin->EnablePackage("STEERBase.par");
