@@ -5,7 +5,6 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
-//*                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -37,7 +36,7 @@ AliHLTCTPData::AliHLTCTPData()
   , AliHLTLogging()
   , fMask(0)
   , fClassIds(AliHLTReadoutList::Class(), gkNCTPTriggerClasses)
-  , fCounters()
+  , fCounters(gkNCTPTriggerClasses)
 {
   // see header file for class documentation
   // or
@@ -51,7 +50,7 @@ AliHLTCTPData::AliHLTCTPData(const char* parameter)
   , AliHLTLogging()
   , fMask(0)
   , fClassIds(AliHLTReadoutList::Class(), gkNCTPTriggerClasses)
-  , fCounters()
+  , fCounters(gkNCTPTriggerClasses)
 {
   // see header file for class documentation
   InitCTPTriggerClasses(parameter);
@@ -61,6 +60,95 @@ AliHLTCTPData::~AliHLTCTPData()
 {
   // see header file for class documentation
   fClassIds.Delete();
+}
+
+AliHLTCTPData::AliHLTCTPData(const AliHLTCTPData& src)
+  : TNamed(src.GetName(), src.GetTitle())
+  , AliHLTLogging()
+  , fMask(src.Mask())
+  , fClassIds(src.fClassIds)
+  , fCounters(src.Counters())
+{
+  // see header file for class documentation
+}
+
+AliHLTCTPData& AliHLTCTPData::operator=(const AliHLTCTPData& src)
+{
+  // see header file for class documentation
+  if (this!=&src) {
+    SetName(src.GetName());
+    SetTitle(src.GetTitle());
+    fMask=src.Mask();
+    fClassIds.Delete();
+    fClassIds.ExpandCreate(gkNCTPTriggerClasses);
+    for (int i=0; i<gkNCTPTriggerClasses; i++) {
+      ((TNamed*)fClassIds.At(i))->SetName(src.fClassIds.At(i)->GetName());
+      ((TNamed*)fClassIds.At(i))->SetTitle(src.fClassIds.At(i)->GetTitle());
+    }
+    fCounters=src.Counters();
+  }
+
+  return *this;
+}
+
+int AliHLTCTPData::Add(const AliHLTCTPData& src, int factor, int &skipped)
+{
+  // see header file for class documentation
+  
+  skipped=0;
+  for (int i=0; i<gkNCTPTriggerClasses; i++) {
+    TString c;
+    c=fClassIds.At(i)->GetName();
+    if (c.IsNull()) continue;
+    if (c.CompareTo(src.fClassIds.At(i)->GetName())==0) {
+      fCounters[i]+=factor*src.Counter(i);
+    } else {
+      skipped++;
+    }
+  }
+  return 0;
+}
+
+AliHLTCTPData& AliHLTCTPData::operator += (const AliHLTCTPData& src)
+{
+  // see header file for class documentation
+  
+  int nofInconsistencies=0;
+  Add(src, 1, nofInconsistencies);
+  if (nofInconsistencies>0) {
+    HLTError("Inconsistent operants: skipping %d of %d CTP classes for operation", nofInconsistencies, gkNCTPTriggerClasses);
+  }
+  return *this;
+}
+
+AliHLTCTPData& AliHLTCTPData::operator -= (const AliHLTCTPData& src)
+{
+  // see header file for class documentation
+  
+  int nofInconsistencies=0;
+  Add(src, -1, nofInconsistencies);
+  if (nofInconsistencies>0) {
+    HLTError("Inconsistent operants: skipping %d of %d CTP classes for operation", nofInconsistencies, gkNCTPTriggerClasses);
+  }
+  return *this;
+}
+
+AliHLTCTPData AliHLTCTPData::operator + (const AliHLTCTPData& src) const
+{
+  // see header file for class documentation
+
+  AliHLTCTPData result(*this);
+  result+=src;
+  return result;
+}
+
+AliHLTCTPData AliHLTCTPData::operator - (const AliHLTCTPData& src) const
+{
+  // see header file for class documentation
+
+  AliHLTCTPData result(*this);
+  result-=src;
+  return result;
 }
 
 int AliHLTCTPData::InitCTPTriggerClasses(const char* ctpString)
@@ -312,7 +400,7 @@ AliHLTEventDDL AliHLTCTPData::ReadoutList(const AliHLTComponentTriggerData& trig
 void AliHLTCTPData::Print(Option_t* /*option*/) const
 {
   // see header file for function documentation
-  cout << "CTP counters:" << endl;
+  cout << GetTitle() << endl;
   int count=0;
   for (int i=0; i<gkNCTPTriggerClasses; i++) {
     if (i>=Counters().GetSize()) break;

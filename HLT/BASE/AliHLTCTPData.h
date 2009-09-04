@@ -46,8 +46,22 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
   AliHLTCTPData();
   /// standard constructor including initialization from CTP_TRIGGER_CLASS
   AliHLTCTPData(const char* parameter);
+  /// copy constructor
+  AliHLTCTPData(const AliHLTCTPData&);
+  ///assignment operator
+  AliHLTCTPData& operator=(const AliHLTCTPData&);
   /// destructor
   virtual ~AliHLTCTPData();
+
+  /// Add counters
+  AliHLTCTPData& operator += (const AliHLTCTPData&);
+  /// Add counters
+  AliHLTCTPData operator + (const AliHLTCTPData&) const;
+
+  /// Subtract counters
+  AliHLTCTPData& operator -= (const AliHLTCTPData&);
+  /// Subtract counters
+  AliHLTCTPData operator - (const AliHLTCTPData&) const;
 
   /**
    * Init the class ids and mapping from the CTP_TRIGGER_CLASS parameter.
@@ -114,10 +128,14 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
 
  protected:
  private:
-  /// copy constructor prohibited
-  AliHLTCTPData(const AliHLTCTPData&);
-  ///assignment operator prohibited
-  AliHLTCTPData& operator=(const AliHLTCTPData&);
+  /**
+   * Add counters.
+   * Base methods for operators.
+   * @param src    instance to add
+   * @param factor +1/-1 for addition/subtraction
+   * @skipped      target to get the numner of not matching class names
+   */
+  int Add(const AliHLTCTPData& src, int factor, int &skipped);
 
   AliHLTUInt64_t fMask;      /// mask of initialized trigger classes
   TClonesArray   fClassIds;  /// array of trigger class ids
