@@ -91,7 +91,8 @@ public:
   int Add(const TObject* pObject);
 
   /// Find an object
-  virtual TObject *FindObject(const char *name) const;
+  virtual TObject *FindObject(const char *name) const {
+    return fMyObjects.FindObject(name); }
 
 private:
 
