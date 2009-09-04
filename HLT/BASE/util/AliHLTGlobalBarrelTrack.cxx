@@ -73,6 +73,7 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTExternalTrackParam&
   // the members have the some order, fY is the first one
   Set(p.fX, p.fAlpha, &p.fY, p.fC);
   SetPoints(p.fPointIDs, p.fNPoints);
+  SetNumberOfClusters(p.fNPoints);
 }
 
 template <class c>

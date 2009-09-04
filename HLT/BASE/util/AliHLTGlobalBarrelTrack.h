@@ -75,7 +75,7 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
  private:
   /// inherited from AliKalmanTrack, dummy implementation
   virtual Int_t GetClusterIndex(Int_t) const { 
-    return 0;
+    return -1;
   } 
   /// inherited from AliKalmanTrack, dummy implementation
   virtual Double_t GetPIDsignal() const {
