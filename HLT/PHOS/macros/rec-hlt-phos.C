@@ -29,9 +29,8 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
   int moduleEnd = 4;
   int rcuStart = 0;
   int rcuEnd = 3;
-  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so loglevel=0x7f chains=ESD_WRITER";
-  //TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so loglevel=0x7f chains=PHS-HIST_PROD";
-  //TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so loglevel=0x7f chains=PHS-EM";
+  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so libAliHLTGlobal.so loglevel=0x7f chains=ESD-FILE";
+  TString ecInput;
   TString emInput;
   
   for (int module = moduleStart; module <= moduleEnd; module++) 
@@ -44,58 +43,54 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
 	  // raw data publisher components
 	  publisher.Form("PHS-RP_%02d_%d", module, rcu);
 	  arg.Form("-minid %d -datatype 'DDL_RAW ' 'PHOS'  -dataspec 0x%x ", 1792 + module*(PhosHLTConst::NRCUSPERMODULE) + rcu, 0x1 << (module*PhosHLTConst::NRCUSPERMODULE + rcu));
-	  cout << arg << endl;
 	  AliHLTConfiguration pubConf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
 	  
 	  // Raw analyzer
 	  arg = "";
 	  ra.Form("PHS-RA_%02d_%d", module, rcu);
-	  AliHLTConfiguration rawConf(ra.Data(), "PhosRawCrudev2", publisher.Data(), arg.Data());
+	  //	  AliHLTConfiguration rawConf(ra.Data(), "PhosRawCrudev2", publisher.Data(), arg.Data())
+;	  AliHLTConfiguration rawConf(ra.Data(), "PhosRawCrudev2", publisher.Data(), arg.Data());
 	  
 	  // digit maker components
 	  dm.Form("PHS-DM_%02d_%d", module, rcu);
 	  arg="";
 	  arg.Form("-sethighgainfactor 0.005 -setlowgainfactor 0.08 -setdigitthresholds 0.005 0.002");
-	  cout << arg << endl;
 	  AliHLTConfiguration dmConf(dm.Data(), "PhosDigitMaker", ra.Data(), arg.Data());
 
 	  if(clInput.Length() > 0) clInput += " ";
 	  clInput+=dm;
 	}
-      //cout << clInput << endl;
-      TString arg, cl, ca;
+        TString arg, cl, ca;
 
       cl.Form("PHS-CL_%02d", module);
       arg = "";
       arg.Form("-digitthreshold 0.005 -recpointthreshold 0.1 -modulemode");
-      cout << arg << endl;
       AliHLTConfiguration clConf(cl.Data(), "PhosClusterizer", clInput.Data(), arg.Data());
 	
       ca.Form("PHS-CA_%02d", module);
       arg = "";
       AliHLTConfiguration caConf(ca.Data(), "PhosClusterAnalyser", cl.Data(), arg.Data());
 
-      if(emInput.Length() > 0) emInput += " ";
-      emInput += ca;
+      if(ecInput.Length() > 0) ecInput += " ";
+      ecInput += ca;
     }
       
-  TString arg, em, hp;
+  emInput = ecInput;
+
+  TString arg, ec, em, hp, ef;
   
-  // tracker finder components
-  em.Form("PHS-EM");
+  em.Form("ESD-MAKER");
+
+  ec.Form("ESD-CONVERTER");
   arg = "";
 
-  AliHLTConfiguration emConf(em.Data(), "PhosEsdEntriesMaker", emInput.Data(), " ");
+  AliHLTConfiguration emConf(em.Data(), "PhosEsdEntriesMaker", ecInput.Data(), "");
+
+  AliHLTConfiguration esdcconf(ec.Data(), "GlobalEsdConverter"   , ecInput.Data(), "");
   
-  hp.Form("PHS-HIST_PROD");
-  arg = "";
-
-  AliHLTConfiguration histConf(hp.Data(), "PhosHistoProducer", em.Data(), " ");
-
-  //  AliHLTConfiguration writerConf("ESD_WRITER", "PhosEsdCaloClusterWriter", em.Data(), "-filename test.root -writemodulo 5");
-
-  //  AliHLTConfiguration esdWriter("ESD_WRITER", "ROOTFileWriter"   , "PHS-EM", "PhosEsdEntriesMaker", "-datafile ESDClusters -concatenate-events -overwrite");
-  AliHLTConfiguration esdWriter("ESD_WRITER", "ROOTFileWriter"   , em.Data(), "-datafile ESDClusters -concatenate-events -overwrite");
+  // the root file writer configuration
+  ef.Form("ESD-FILE");
+  AliHLTConfiguration sink(ef.Data(), "EsdCollector", ec.Data(), "-directory hlt-phos-esd");
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
@@ -119,7 +114,6 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
   //  rec.SetRunLocalReconstruction("PHOS") ;
 
   rec.SetFillESD("PHOS");
-    rec.SetOption("HLT", option);
-  //  rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTPHOS.so loglevel=0x7f chains=ESD_WRITER" )
+  rec.SetOption("HLT", option);
   rec.Run();
 }

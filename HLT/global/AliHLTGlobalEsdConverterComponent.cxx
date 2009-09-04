@@ -40,6 +40,10 @@
 #include "AliPID.h"
 #include "TTree.h"
 #include "TList.h"
+#include "AliHLTESDCaloClusterMaker.h"
+#include "AliHLTCaloClusterDataStruct.h"
+#include "AliHLTCaloClusterReader.h"
+#include "AliESDCaloCluster.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -136,6 +140,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   // see header file for class documentation
   list.push_back(kAliHLTDataTypeTrack);
   list.push_back(kAliHLTDataTypeTrackMC);
+  list.push_back(kAliHLTDataTypeCaloCluster);
 }
 
 AliHLTComponentDataType AliHLTGlobalEsdConverterComponent::GetOutputDataType()
@@ -369,6 +374,22 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);
     }
   }
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS); pBlock!=NULL; pBlock=GetNextInputBlock()) 
+    {
+      AliHLTCaloClusterHeaderStruct *caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
+
+      HLTDebug("%d HLT clusters from spec: 0x%X", caloClusterHeaderPtr->fNClusters, pBlock->fSpecification);
+
+      AliHLTCaloClusterReader reader;
+      reader.SetMemory(caloClusterHeaderPtr);
+
+      AliHLTESDCaloClusterMaker clusterMaker;
+
+      int nClusters = clusterMaker.FillESD(pESD, caloClusterHeaderPtr);
+
+      HLTInfo("converted %d cluster(s) to AliESDCaloCluster and added to ESD", nClusters);
+      iAddedDataBlocks++;
+    }
       
       // primary vertex & V0's 
       /*
