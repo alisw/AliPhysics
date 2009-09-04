@@ -36,6 +36,7 @@ using namespace std;
 #include <cassert>
 #include <iostream>
 #include <string>
+#include <ctime>
 #include "AliHLTTask.h"
 #include "AliHLTConfiguration.h"
 #include "AliHLTComponent.h"
@@ -560,6 +561,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
       AliHLTComponent::FillEventData(evtData);
       if (eventNo>=0)
 	evtData.fEventID=(AliHLTEventID_t)eventNo;
+      evtData.fEventCreation_s=static_cast<AliHLTUInt32_t>(time(NULL));
       AliHLTComponentTriggerData trigData;
       trigData.fStructSize=sizeof(trigData);
       trigData.fDataSize=0;
