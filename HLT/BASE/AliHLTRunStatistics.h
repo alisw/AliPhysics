@@ -19,7 +19,8 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
-#include "TObject.h"
+#include "TNamed.h"
+#include "TObjArray.h"
 #include "TString.h"
 
 #include "AliHLTDataTypes.h"
@@ -42,56 +43,65 @@
  * @ingroup alihlt_run_statistics alihlt_trigger
  */
 
-class AliHLTRunStatistics : public TObject {
+class AliHLTRunStatistics : public TNamed {
   
 public:
   
   /** constructor */
   AliHLTRunStatistics();
+  /** copy constructor */
+  AliHLTRunStatistics (const AliHLTRunStatistics&);
+  /** assignment operator */
+  AliHLTRunStatistics& operator= (const AliHLTRunStatistics&);
   /** destructor */
   virtual ~AliHLTRunStatistics();
 
-  /** Get detector name
-   *  @return name of detector
-   */
-  TString GetDetectorName()              { return fDetectorName; }
+  /// Get detector name
+  TString GetDetectorName() const        { return GetName(); }
 
-  /** Set Total number of tracks 
-   *  @param s name of detector
-   */
-  void SetDetectorName( TString s )      { fDetectorName = s; }
+  /// Set detector name
+  void SetDetectorName( TString s )      { SetName(s); }
+  /// Set detector name
+  void SetDetectorName(const char* name) { SetName(name); }
+
+  /// inherited from TObject
+  virtual void Print(Option_t* option) const;
+
+  /// inherited from TObject, copy to the target object
+  virtual void Copy(TObject &object) const;
+
+  /// Inherited from TObject. Create a new clone.
+  virtual TObject *Clone(const char *newname="") const;
+
+  /// Inherited from TObject. Clear content.
+  virtual void  Clear(Option_t * option ="");
 
   // -- event parameters ------------------------
 
-  /** Set Number of events 
-   *  @param i number of events
-   */
+  /// Set Number of events 
   void SetNEvents( ULong_t i )           { fNEvents = i; }
 
-  /** Add events */
-  void AddNEvents()                      { fNEvents++; }
+  /// Increment event count
+  void IncrementNEvents()                { fNEvents++; }
 
-  /** Get number of events
-   *  @return number of events
-   */
-  ULong_t GetNEvents()                   { return fNEvents; }
+  /// Get number of events
+  ULong_t GetNEvents() const             { return fNEvents; }
+
+  /// Add clone of object
+  int Add(const TObject* pObject);
+
+  /// Find an object
+  virtual TObject *FindObject(const char *name) const;
 
 private:
-
-  /** copy constructor prohibited */
-  AliHLTRunStatistics (const AliHLTRunStatistics&);
-
-  /** assignment operator prohibited */
-  AliHLTRunStatistics& operator= (const AliHLTRunStatistics&);
-
-  /** Detector Name */
-  TString fDetectorName;                         // see above
 
   /** Number of events */
   ULong_t fNEvents;                              // see above
 
-  ClassDef(AliHLTRunStatistics, 0);
+  /// array of statistics objects owned by the array
+  TObjArray fMyObjects;                          // see above
+
+  ClassDef(AliHLTRunStatistics, 1);
 
 };
 #endif
-

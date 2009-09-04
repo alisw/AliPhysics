@@ -33,12 +33,16 @@ using namespace std;
 #endif
 
 #include "AliHLTRunStatistics.h"
+#include <iostream>
+#include <cerrno>
 
 ClassImp(AliHLTRunStatistics)
     
-AliHLTRunStatistics::AliHLTRunStatistics() :
-  fDetectorName(),
-  fNEvents(0) {
+AliHLTRunStatistics::AliHLTRunStatistics()
+  : TNamed("HLT", "HLT Run Statistics")
+  , fNEvents(0)
+  , fMyObjects()
+{
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -46,6 +50,76 @@ AliHLTRunStatistics::AliHLTRunStatistics() :
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTRunStatistics::~AliHLTRunStatistics() {
+AliHLTRunStatistics::AliHLTRunStatistics (const AliHLTRunStatistics& src)
+  : TNamed(src)
+  , fNEvents(src.fNEvents)
+  , fMyObjects()
+{
   // see header file for class documentation
+  for (int i=0; i<src.fMyObjects.GetEntriesFast(); i++) {
+    fMyObjects.Add(src.fMyObjects.Clone());
+  }
+  fMyObjects.SetOwner(kTRUE);
+}
+
+AliHLTRunStatistics& AliHLTRunStatistics::operator= (const AliHLTRunStatistics& src)
+{
+  // see header file for class documentation
+  this->~AliHLTRunStatistics();
+  new (this) AliHLTRunStatistics(src);
+  return *this;
+}
+
+AliHLTRunStatistics::~AliHLTRunStatistics()
+{
+  // see header file for class documentation
+  fMyObjects.Delete();
+}
+
+void AliHLTRunStatistics::Print(Option_t* option) const
+{
+  // see header file for class documentation
+  cout << "============ " << GetTitle() << " ============" << endl;
+  cout << "\t" << GetNEvents() << " event(s)" << endl;
+  for (int i=0; i<fMyObjects.GetEntriesFast(); i++) {
+    fMyObjects.Print(option);
+  }
+  cout << "==============================================" << endl;
+}
+
+void AliHLTRunStatistics::Copy(TObject &object) const
+{
+  // copy this to the specified object
+
+  AliHLTRunStatistics* pStatistics=dynamic_cast<AliHLTRunStatistics*>(&object);
+  if (pStatistics) {
+    // copy members if target is a AliHLTTriggerDecision
+    *pStatistics=*this;
+  }
+
+  // copy the base class
+  TObject::Copy(object);
+}
+
+TObject *AliHLTRunStatistics::Clone(const char */*newname*/) const
+{
+  // create a new clone, classname is ignored
+
+  return new AliHLTRunStatistics(*this);
+}
+
+void  AliHLTRunStatistics::Clear(Option_t * /*option*/)
+{
+  // clear the content
+  fNEvents=0;
+  fMyObjects.Clear();
+}
+
+int AliHLTRunStatistics::Add(const TObject* pObject)
+{
+  // Add clone of object
+
+  if (!pObject) return -EINVAL;
+  fMyObjects.Add(pObject->Clone());
+  return 0;
 }

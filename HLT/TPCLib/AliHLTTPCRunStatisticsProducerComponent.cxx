@@ -140,7 +140,7 @@ Int_t AliHLTTPCRunStatisticsProducerComponent::DoEvent( const AliHLTComponentEve
   }
 
   // ** increase number of events
-  fRunStat->AddNEvents();
+  fRunStat->IncrementNEvents();
 
 
   PushBack ( (TObject*) GetRunStatistics(), sizeof(AliHLTTPCRunStatistics), kAliHLTDataTypeRunStatistics|kAliHLTDataOriginTPC, (AliHLTUInt32_t) 0 );
