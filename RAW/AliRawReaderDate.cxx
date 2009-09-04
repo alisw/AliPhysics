@@ -129,8 +129,8 @@ AliRawReaderDate::~AliRawReaderDate()
 // destructor
 
 #ifdef ALI_DATE
+  if (fEvent) delete[] fEvent;
   if (fFile) {
-    delete[] fEvent;
     fclose(fFile);
   }
 #endif
@@ -635,4 +635,27 @@ Int_t AliRawReaderDate::CheckData() const
 
 #endif
   return 0;
+}
+
+AliRawReader* AliRawReaderDate::CloneSingleEvent() const
+{
+  // Clones the current event and
+  // creates raw-reader for the cloned event
+  // Can be used in order to make asynchronious
+  // access to the current raw data within
+  // several threads (online event display/reco)
+
+#ifdef ALI_DATE
+  if (fEvent) {
+    UInt_t evSize = fEvent->eventSize;
+    if (evSize) {
+      UChar_t *newEvent = new UChar_t[evSize];
+      memcpy(newEvent,fEvent,evSize);
+      return new AliRawReaderDate((void *)newEvent);
+    }
+  }
+#else
+  Fatal("AliRawReaderDate", "this class was compiled without DATE");
+#endif
+  return NULL;
 }

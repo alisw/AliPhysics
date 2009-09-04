@@ -168,6 +168,8 @@ class AliRawReader: public TObject {
 
     void             LoadTriggerClass(const char* name, Int_t index);
 
+    virtual AliRawReader* CloneSingleEvent() const { return NULL; }
+
   protected :
     virtual void     SelectEvents(Int_t type, ULong64_t triggerMask = 0, const char *triggerExpr = NULL);
     Bool_t           IsSelected() const;

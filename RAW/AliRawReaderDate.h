@@ -52,6 +52,8 @@ class AliRawReaderDate: public AliRawReader {
 
     virtual Int_t    CheckData() const;
 
+    virtual AliRawReader* CloneSingleEvent() const;
+
   protected :
     FILE*            fFile;         // DATE file
     eventHeaderStruct* fEvent;      // raw data super event
