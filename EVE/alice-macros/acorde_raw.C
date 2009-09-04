@@ -33,6 +33,12 @@ void acorde_raw()
 
   printf ("ACORDE event 0x%08x 0x%08x 0x%08x 0x%08x\n", dy[0], dy[1], dy[2], dy[3]);
 
+  if (acorde_module_path(0).IsNull())
+  {
+    Warning("acorde_raw", "Missing / wrong ACORDE module geometry.");
+    return;
+  }
+
   TEveElementList* acorde = new TEveElementList("ACORDE Raw");
 
   gEve->AddElement(acorde);
@@ -44,7 +50,7 @@ void acorde_raw()
 
     if ( ! gGeoManager->cd(path))
     {
-      Warning("acorde_raw", "Module id=%d, path='%s' not found.\n", module, path.Data());
+      Warning("acorde_raw", "Module id=%d, path='%s' not found.", module, path.Data());
       continue;
     }
 
@@ -83,7 +89,7 @@ TString acorde_module_path(Int_t module)
   }
 
   TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(Form("ACORDE/Array%d", module + 1));
-  if(!pne) return "missing_pne";
+  if (!pne) return "";
 
   return Form("%s/ACORDE2_5", pne->GetTitle());
 }
