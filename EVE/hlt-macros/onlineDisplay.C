@@ -95,6 +95,8 @@ TCanvas*                                  gCanvas          = 0;
 
 Int_t initializeEveViewer( Bool_t showExtraGeo );
 
+Int_t nextEvent();
+
 Int_t processEvent();
 
 //Int_t processPHOSClusters( AliHLTHOMERBlockDesc* block);
@@ -159,7 +161,6 @@ void onlineDisplay(Bool_t showMuonGeo=kFALSE) {
   gEve->Redraw3D(kTRUE);
 
   gHomerManager->ConnectEVEtoHOMER("TPC" );
-
 }
 
 // -----------------------------------------------------------------
@@ -191,8 +192,8 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
     gGeomGentleMUON = geom_gentle_muon(kFALSE);
   }
 
-
-  // Scenes
+  // -- Scenes
+  // -----------
 
   gRPhiGeomScene  = gEve->SpawnNewScene("RPhi Geometry",
                     "Scene holding projected geometry for the RPhi view.");
@@ -203,8 +204,8 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   gRhoZEventScene = gEve->SpawnNewScene("RhoZ Event Data",
 		    "Scene holding projected geometry for the RhoZ view.");
 
-
-  // Projection managers
+  // -- Projection managers
+  // ------------------------
 
   gRPhiMgr = new TEveProjectionManager();
   gRPhiMgr->SetProjection(TEveProjection::kPT_RPhi);
@@ -244,7 +245,8 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   if (gShowTRD)      gRhoZMgr->ImportElements(gGeomGentleTRD, gRhoZGeomScene);
   if (gShowMUONRhoZ) gRhoZMgr->ImportElements(gGeomGentleMUON, gRhoZGeomScene);
 
-  // Viewers
+  // -- Viewers
+  // ------------
 
   TEveWindowSlot *slot = 0;
   TEveWindowPack *pack = 0;
@@ -273,8 +275,8 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   gRhoZView->AddScene(gRhoZGeomScene);
   gRhoZView->AddScene(gRhoZEventScene);
 
-
-  // List of Viewers
+  // -- List of Viewers
+  // --------------------
 
   TEveViewerList *viewerlist = new TEveViewerList();
   viewerlist->AddElement(gEve->GetDefaultViewer());
@@ -362,23 +364,28 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   //==============================================================================
   
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
-  TEveWindowTab *store_tab = slot->MakeTab();
+  TEveWindowTab *storeTab = slot->MakeTab();
   store_tab->SetElementNameTitle("WindowStore",
    				 "Undocked windows whose previous container is not known\n"
  				 "are placed here when the main-frame is closed.");
-  gEve->GetWindowManager()->SetDefaultContainer(store_tab);
+  gEve->GetWindowManager()->SetDefaultContainer(storeTab);
   
   return 0;
+}
+
+// -----------------------------------------------------------------
+void nextEvent() {
+
+  if ( gHomerManager->NextEvent() )
+    return;
+  
+  processEvent();
 }
 
 // -----------------------------------------------------------------
 Int_t processEvent() {
 
   Int_t iResult = 0;
-
-  cout << "===============" << endl;
-  cout << " PROCESS EVENT " << endl;
-  cout << "===============" << endl;
 
   gStyle->SetPalette(1, 0);
   gEve->DisableRedraw();
@@ -498,7 +505,6 @@ Int_t processEvent() {
 
   // -- Set EventID in Window Title  
   // --------------------------------------------
-
   TString winTitle("Eve Main Window -- Event ID : ");
   winTitle += Form("0x%016X ", gHomerManager->GetEventID() );
   gEve->GetBrowser()->SetWindowName(winTitle);
@@ -533,9 +539,11 @@ Int_t processEvent() {
   return iResult;
 }
 
+
 // -----------------------------------------------------------------
 void loopEvent() {
-  eventTimer.SetCommand("processEvent()");
+  
+  eventTimer.SetCommand("nextEvent()");
   eventTimer.Start(6000);
 }
 
@@ -574,7 +582,7 @@ Int_t processROOTTOBJ(AliHLTHOMERBlockDesc* block, TEveText* et) {
   if ( ! block->GetClassName().CompareTo("AliHLTGlobalTriggerDecision") ) {
 
     AliHLTGlobalTriggerDecision *trig = dynamic_cast<AliHLTGlobalTriggerDecision*> block->GetTObject();
-    //    trig->Print(); 
+    trig->Print(); 
     
     // et->SetText("balle");;
 

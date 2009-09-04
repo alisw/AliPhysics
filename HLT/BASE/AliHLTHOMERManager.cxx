@@ -123,7 +123,7 @@ Int_t AliHLTHOMERManager::Initialize() {
     fEventBuffer = new TClonesArray( "TList", BUFFERSIZE );
   }
 
-  for ( Int_t idx; idx < BUFFERSIZE; ++idx ) {
+  for ( Int_t idx = 0; idx < BUFFERSIZE; ++idx ) {
     new ((*fEventBuffer)[idx]) TList();
     (reinterpret_cast<TList*>((*fEventBuffer)[idx]))->SetOwner(kTRUE);
 
