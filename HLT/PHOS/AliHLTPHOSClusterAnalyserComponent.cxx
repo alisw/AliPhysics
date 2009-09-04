@@ -96,7 +96,7 @@ AliHLTPHOSClusterAnalyserComponent::GetOutputDataType()
 {
   //See headerfile for documentation
 
-  return AliHLTPHOSDefinitions::fgkCaloClusterDataType;
+  return kAliHLTDataTypeCaloCluster;
 }
 
 void
@@ -148,7 +148,7 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
         }
       specification = specification|iter->fSpecification;
       fClusterAnalyserPtr->SetRecPointDataPtr(reinterpret_cast<AliHLTPHOSRecPointHeaderStruct*>(iter->fPtr));
-      HLTDebug("Number of rec points: %d", (reinterpret_cast<AliHLTPHOSRecPointHeaderStruct*>(iter->fPtr))->fNRecPoints);
+      //      HLTDebug("Number of rec points: %d", (reinterpret_cast<AliHLTPHOSRecPointHeaderStruct*>(iter->fPtr))->fNRecPoints);
 
       if(fDoDeconvolution)
 	{
@@ -172,15 +172,16 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
 
     }
 
-  HLTDebug("Number of clusters: %d", nClusters); 
-  caloClusterHeaderPtr->fNClusters = nClusters;
+  HLTDebug("Number of clusters: %d", nClusters);
+  //  caloClusterHeaderPtr->fNClusters = nClusters;
+  reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(outBPtr)->fNClusters = nClusters;
   mysize += sizeof(AliHLTCaloClusterHeaderStruct); 
   
   AliHLTComponentBlockData bd;
   FillBlockData( bd );
   bd.fOffset = offset;
   bd.fSize = mysize;
-  bd.fDataType = AliHLTPHOSDefinitions::fgkCaloClusterDataType;
+  bd.fDataType = kAliHLTDataTypeCaloCluster;
   bd.fSpecification = specification;
   outputBlocks.push_back( bd );
  

@@ -87,9 +87,12 @@ AliHLTPHOSMapper::InitAltroMapping()
 	  for(int i=0; i<nChannels; i ++)
 	    {
 	      res = fscanf(fp, "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
-	      fHw2geomapPtr[tmpHwaddr].fXCol   = tmpXCol;
-	      fHw2geomapPtr[tmpHwaddr].fZRow   = tmpZRow;
-	      fHw2geomapPtr[tmpHwaddr].fGain  = tmpGain;
+	      if(tmpGain < 2)
+		{
+		  fHw2geomapPtr[tmpHwaddr].fXCol   = tmpXCol;
+		  fHw2geomapPtr[tmpHwaddr].fZRow   = tmpZRow;
+		  fHw2geomapPtr[tmpHwaddr].fGain  = tmpGain;
+		} 
 	    }
 	  fIsInitializedMapping = true;	  
 	  fclose(fp);
@@ -122,19 +125,19 @@ AliHLTPHOSMapper::InitDDLSpecificationMapping()
       
       else if(ddl%4 == 1)
 	{
-	  fSpecificationMapPtr[ddl].fRcuX = 0; 
-	  fSpecificationMapPtr[ddl].fRcuZ = 1;
+	  fSpecificationMapPtr[ddl].fRcuX = 1; 
+	  fSpecificationMapPtr[ddl].fRcuZ = 0;
 	}
       
       else if( ddl%4 == 2)
 	{
-	  fSpecificationMapPtr[ddl].fRcuX = 1; 
+	  fSpecificationMapPtr[ddl].fRcuX = 2; 
 	  fSpecificationMapPtr[ddl].fRcuZ = 0;
 	}
       else
 	{
-	  fSpecificationMapPtr[ddl].fRcuX = 1; 
-	  fSpecificationMapPtr[ddl].fRcuZ = 1;
+	  fSpecificationMapPtr[ddl].fRcuX = 3; 
+	  fSpecificationMapPtr[ddl].fRcuZ = 0;
 	}
       
       fSpecificationMapPtr[ddl].fRcuZOffset = NZROWSRCU*(fSpecificationMapPtr[ddl].fRcuZ);
@@ -188,7 +191,10 @@ AliHLTPHOSMapper::GetChannelID(Int_t specification, Int_t hwAddress)
   else if(specification == 0x80000) index = 19;
 
   else HLTError("Specification 0x%X not consistent with single DDL in PHOS", specification);
-  
+  //  HLTError("Channel ID: 0x%X Coordinates: x = %d, z = %d, gain = %d", ((fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[index].fRcuXOffset) |((fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[index].fRcuZOffset) << 6) | (fHw2geomapPtr[hwAddress].fGain << 12) | fSpecificationMapPtr[index].fModId << 13),
+  //	   fHw2geomapPtr[hwAddress].fXCol,
+  //	   fHw2geomapPtr[hwAddress].fZRow, 
+  //	   fHw2geomapPtr[hwAddress].fGain);
   return ((fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[index].fRcuXOffset) |
 	  ((fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[index].fRcuZOffset) << 6) |
 	  (fHw2geomapPtr[hwAddress].fGain << 12) |
@@ -202,6 +208,7 @@ AliHLTPHOSMapper::GetChannelCoord(UShort_t channelId, UShort_t* channelCoord)
   channelCoord[1] = (channelId >> 6)&0x3f;
   channelCoord[2] = (channelId >> 12)&0x1;
   channelCoord[3] = (channelId >> 13)&0x1f;
+  //  printf("Channel ID: 0x%X Coordinates: x = %d, z = %d, gain = %d\n", channelId, channelCoord[0], channelCoord[1], channelCoord[2]);
 }
 
 void
@@ -209,8 +216,7 @@ AliHLTPHOSMapper::GetLocalCoord(UShort_t channelId, Float_t* channelCoord)
 {
   channelCoord[0] = (static_cast<Float_t>(channelId&0x3f) - NXCOLUMNSMOD/2)* fCellStep;
   channelCoord[1] = (static_cast<Float_t>((channelId >> 6)&0x3f) - NZROWSMOD/2) * fCellStep;
-  channelCoord[2] = (channelId >> 12)&0x1;
-  channelCoord[2] = (channelId >> 13)&0x1f;
+  //  printf("Local coordinates: x = %f, z = %f\n", channelCoord[0], channelCoord[1]);
 }
 
 Int_t 

@@ -34,6 +34,7 @@
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTPHOSPhysicsAnalyzer.h"
 #include "AliPHOSGeoUtils.h"
+#include "AliESDCaloCluster.h"
 #include "TMath.h"
 #include "TVector3.h"
 
@@ -175,13 +176,8 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
 	{
 	  return -1; //Might get out of buffer, exiting
 	}
-      //      localPos[0] = recPointPtr->fX;
-      //      localPos[1] = recPointPtr->fZ;
-      //       fAnalyzerPtr->GlobalPosition( localPos, globalPos, recPointPtr->fModule);
-      
-
       //      cout << "Local Position (x:z:module): " << recPointPtr->fX << " : "<< recPointPtr->fZ << " : " << recPointPtr->fModule << endl;
-      fPHOSGeometry->Local2Global(recPointPtr->fModule + 1, recPointPtr->fX, recPointPtr->fZ, globalPos);
+      fPHOSGeometry->Local2Global(recPointPtr->fModule, recPointPtr->fX, recPointPtr->fZ, globalPos);
       // cout << "Global Position (x:y:z): " << globalPos[0] << " : "<< globalPos[1] << " : " << globalPos[2] << endl << endl;
 
       caloClusterPtr->fGlobalPos[0] = globalPos[0];
@@ -195,7 +191,7 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
      
       for(UInt_t j = 0; j < caloClusterPtr->fNCells; j++)
 	{
-	  fPHOSGeometry->RelPosToAbsId((Int_t)(recPointPtr->fModule + 1), (double)(digitPtr->fX), (double)(digitPtr->fZ), id);
+	  fPHOSGeometry->RelPosToAbsId((Int_t)(recPointPtr->fModule), (double)(digitPtr->fX), (double)(digitPtr->fZ), id);
 	  *cellIDPtr = id;
 	  *cellAmpFracPtr = digitPtr->fEnergy/recPointPtr->fAmp;
 	  digitPtr++;
@@ -204,7 +200,7 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
 	}
 
       caloClusterPtr->fEnergy = recPointPtr->fAmp;
-      //      cout << "CA: Energy End: " << caloClusterPtr->fEnergy << endl;
+
       if(fDoClusterFit)
 	{
 	  FitCluster(recPointPtr);
@@ -215,7 +211,7 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
 	  caloClusterPtr->fFitQuality = 0;
 	  caloClusterPtr->fM20 = 0;
 	  caloClusterPtr->fM02 = 0;
-	  //	  caloClusterPtr->fM11 = 0;
+
 	}
       if(fHaveCPVInfo)
 	{
@@ -245,7 +241,7 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
 	  caloClusterPtr->fDistanceToBadChannel = -1;
 	}
 
-      caloClusterPtr->fClusterType = '\0';
+      caloClusterPtr->fClusterType = (AliESDCaloCluster::kPHOSCluster);
       //      totSize += sizeof(AliHLTCaloClusterDataStruct) + (caloClusterPtr->fNCells)*(sizeof(Short_t) +sizeof(Float_t)-1);   
       totSize += sizeof(AliHLTCaloClusterDataStruct) + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));   
 

@@ -35,8 +35,8 @@ namespace PhosHLTConst
  //  const int ALTROMAXTRALERSIZE = 7;  
   //  const int  DDLBLOCKSIZE = 5;
 
-  const int NZROWSRCU     =   28;                    /**<Number of rows per module*/       
-  const int NXCOLUMNSRCU  =   32; 
+  const int NZROWSRCU     =   56;                    /**<Number of rows per module*/       
+  const int NXCOLUMNSRCU  =   16; 
   const int NZROWSMOD      =  56;                    /**<Number of rows per module*/       
   const int NXCOLUMNSMOD   =  64;                 /**<Number of columns per module*/ 
   const int NGAINS         =   2;                             /**<Number of gains per ALTRO channel*/

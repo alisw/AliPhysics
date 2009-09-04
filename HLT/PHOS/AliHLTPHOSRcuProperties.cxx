@@ -109,45 +109,21 @@ AliHLTPHOSRcuProperties::InitializeCoordinates(AliHLTUInt16_t /*equippmentID*/)
 
   if( fRcuID  == 1)
     {
-      fRcuX = 0; 
-      fRcuZ = 1;
+      fRcuX = 1; 
+      fRcuZ = 0;
     }
  
   if( fRcuID == 2)
     {
-      fRcuX = 1; 
+      fRcuX = 2; 
       fRcuZ = 0;
     }
 
   if( fRcuID == 3)
     {
-      fRcuX = 1; 
-      fRcuZ = 1;
+      fRcuX = 3; 
+      fRcuZ = 0;
     }
- 
-  // if( fRcuID  == 0)
-  //   {
-  //     fRcuX = 0; 
-  //     fRcuZ = 0;
-  //   }
-
-  // if( fRcuID  == 1)
-  //   {
-  //     fRcuX = 1; 
-  //     fRcuZ = 0;
-  //   }
- 
-  // if( fRcuID == 2)
-  //   {
-  //     fRcuX = 2; 
-  //     fRcuZ = 0;
-  //   }
-
-  // if( fRcuID == 3)
-  //   {
-  //     fRcuX = 3; 
-  //     fRcuZ = 0;
-  //   }
 
   fRcuZOffset =  NZROWSRCU*fRcuZ;
   fRcuXOffset =  NXCOLUMNSRCU*fRcuX;

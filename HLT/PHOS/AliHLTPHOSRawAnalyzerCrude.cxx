@@ -124,6 +124,7 @@ AliHLTPHOSRawAnalyzerCrude::EvaluateShort(int start, int length)
 
   for(int i=start; i<length; i++)
     {
+      cout << "sample index: " << i << endl;
         //   if(fDoubleDataPtr[i] >  tmpAmplitudeMax && i > 5)
       if(fShortDataPtr[i] >  tmpAmplitudeMax && i > 5)
 	{

@@ -44,10 +44,10 @@
 struct AliHLTPHOSDigitDataStruct
 {
   /** The x coordinate */
-  Int_t fX;
+  Float_t fX;
 
   /** The x coordinate */
-  Int_t fZ;
+  Float_t fZ;
 
   /** The module number */
   Int_t fModule;
