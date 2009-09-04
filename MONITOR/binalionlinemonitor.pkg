@@ -1,7 +1,6 @@
 #-*- Mode: Makefile -*-
-# $Id$
 
-SRCS:=monitorCheck.cxx
+SRCS  := alionlinemonitor.cxx
 
 EINCLUDE+= TPC ITS RAW
 

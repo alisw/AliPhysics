@@ -1,7 +1,6 @@
 #-*- Mode: Makefile -*-
-# $Id$
 
-SRCS:=monitorCheck.cxx
+SRCS  := alitestproc.cxx
 
 EINCLUDE+= TPC ITS RAW
 

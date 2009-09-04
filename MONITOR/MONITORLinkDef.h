@@ -31,5 +31,10 @@
 #pragma link C++ class  AliQADirListItem+;
 #pragma link C++ class  AliOnlineRecoTrigger+;
 #pragma link C++ class  TerminateSignalHandler+;
-#endif
 
+#pragma link C++ class AliDimIntNotifier+;
+#pragma link C++ class AliChildReaper+;
+#pragma link C++ class AliOnlineReco+;
+#pragma link C++ class AliTestChildProc+;
+
+#endif

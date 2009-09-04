@@ -6,6 +6,8 @@ EINCLUDE+= TPC ITS RAW
 
 PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
 
+ELIBS:= MONITOR
+
 SRCS += root2date.cxx
 ELIBSDIR:=
 ELIBS:=STEERBase ESD AOD CDB STEER RAWDatabase RAWDatarec RAWDatasim TPCbase TPCsim TPCrec HLTbase ITSbase ITSsim ITSrec MUONsim MUONrec MUONbase MUONgeometry MUONraw MUONcalib MUONmapping MUONtrigger MUONevaluation MUONcore
