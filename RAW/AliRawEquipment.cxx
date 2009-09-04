@@ -95,17 +95,13 @@ AliRawEquipment::~AliRawEquipment()
 }
 
 //______________________________________________________________________________
-void AliRawEquipment::CloneRawData()
+void AliRawEquipment::CloneRawData(const AliRawData *rawData)
 {
-  // Load raw-data part of the object via the TRef
-  // flush the Tref and clone the raw data
+  // Clone the input raw data and
+  // flush the TRef
 
-  if (!fRawData) {
-    if (fRawDataRef.IsValid())
-      fRawData = (AliRawData*)fRawDataRef.GetObject();
-  }
   fRawDataRef = NULL;
-  if (fRawData) fRawData = (AliRawData*)fRawData->Clone();
+  if (rawData) rawData = (AliRawData*)rawData->Clone();
 }
 
 //______________________________________________________________________________

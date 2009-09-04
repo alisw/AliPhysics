@@ -669,16 +669,22 @@ AliRawReader* AliRawReaderRoot::CloneSingleEvent() const
   // access to the current raw data within
   // several threads (online event display/reco)
 
-  if (GetEvent()) {
+  if (fEvent) {
     // Root formatted raw data
-    AliRawVEvent *gdcRootEvent = (AliRawVEvent*) GetEvent()->Clone();
+    AliRawVEvent *gdcRootEvent = (AliRawVEvent*)fEvent->Clone();
     for (Int_t ldcCounter=0; ldcCounter < gdcRootEvent->GetNSubEvents(); ldcCounter++) {
       AliRawVEvent *ldcRootEvent = gdcRootEvent->GetSubEvent(ldcCounter);
+      AliRawVEvent *subEvent = fEvent->GetSubEvent(ldcCounter);
       for (Int_t eqCounter=0; eqCounter < ldcRootEvent->GetNEquipments(); eqCounter++) {
 	AliRawVEquipment *equipment=ldcRootEvent->GetEquipment(eqCounter);
-	equipment->CloneRawData();
+	AliRawVEquipment *eq = subEvent->GetEquipment(eqCounter);
+	equipment->CloneRawData(eq->GetRawData());
       }
     }
+    // Reset original event and newly
+    // produced one
+    gdcRootEvent->GetSubEvent(-1);
+    fEvent->GetSubEvent(-1);
     return new AliRawReaderRoot(gdcRootEvent);
   }
   return NULL;

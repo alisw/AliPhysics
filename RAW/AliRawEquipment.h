@@ -52,7 +52,7 @@ public:
    virtual AliRawEquipmentHeader *GetEquipmentHeader();
    virtual AliRawData            *GetRawData();
 
-   virtual void                   CloneRawData();
+   virtual void                   CloneRawData(const AliRawData *rawData);
 
  private:
    AliRawEquipmentHeader *fEqpHdr;      // equipment header

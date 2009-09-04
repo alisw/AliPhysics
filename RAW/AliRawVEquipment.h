@@ -46,7 +46,7 @@ public:
    virtual AliRawEquipmentHeader *GetEquipmentHeader() = 0;
    virtual AliRawData            *GetRawData() = 0;
 
-   virtual void                   CloneRawData() = 0;
+   virtual void                   CloneRawData(const AliRawData *rawData) = 0;
 
 private:
 
