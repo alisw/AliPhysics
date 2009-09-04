@@ -382,7 +382,7 @@ void AliHLTReconstructor::ProcessHLTOUT(AliRawReader* pRawReader, AliESDEvent* p
       //        id[0]               id[1]
       // |32                0|32                0|
       //
-      // |28              |20                | 12|
+      // |      28 bit    |       24 bit     | 12|
       //        period          orbit         bcc
       AliHLTUInt64_t eventId=0;
       const UInt_t* rawreaderEventId=pRawReader->GetEventId();
