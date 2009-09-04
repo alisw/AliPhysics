@@ -17,7 +17,7 @@ EINCLUDE 	:= HLT/TPCLib \
 		   HLT/TPCLib/offline \
 		   HLT/BASE \
 		   HLT/BASE/util \
-		   HLT/TPCLib/calibration
+		   HLT/TPCLib/calibration \
 		   TPC \
 		   ANALYSIS \
 		   STEER 
