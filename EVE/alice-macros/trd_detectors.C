@@ -49,8 +49,8 @@ TEveElementList* trd_detectors(Int_t sector = -1, TEveElement *cont = 0)
 
   rl->LoadDigits("TRD");
   TTree *tD = rl->GetTreeD("TRD", kFALSE);
-  if (!tD) return 0;
-  AliTRDdigitsManager dm; dm.ReadDigits(tD);
+  AliTRDdigitsManager dm;
+  if (tD) dm.ReadDigits(tD);
 
   AliTRDgeometry *geo = new AliTRDgeometry();
   
@@ -78,7 +78,7 @@ TEveElementList* trd_detectors(Int_t sector = -1, TEveElement *cont = 0)
     stk->AddElement(chm = new AliEveTRDChamber(idet));
     chm->SetGeometry(geo);
     chm->LoadClusters(clusters);
-    chm->LoadDigits(&dm);
+    if (tD) chm->LoadDigits(&dm);
 
     //clusters->Clear();
   }
