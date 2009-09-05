@@ -369,10 +369,10 @@ Bool_t AliShuttleTrigger::SendMailDiskSpace(Short_t percentage)
 	TString subject;
 	TString body;
 
-	subject = Form("%s CRITICAL Disk Space usage exceeds %d%c!",
-		       tmpStr.Data(),percentage,'%');
-	AliDebug(2, Form("subject: %s", subject.Data()));
 	Int_t percentage_used = 100 - percentage; 	
+	subject = Form("%s CRITICAL Disk Space usage exceeds %d%c!",
+		       tmpStr.Data(),percentage_used,'%');
+	AliDebug(2, Form("subject: %s", subject.Data()));
 
 	body = "Dear SHUTTLE experts, \n\n";
 	body += "The usage of the disk space on the shuttle machine has overcome \n"; 
