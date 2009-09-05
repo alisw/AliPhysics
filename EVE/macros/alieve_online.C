@@ -35,11 +35,13 @@ void alieve_online_init()
 
   gROOT->LoadMacro("its_clusters.C++");
   gROOT->LoadMacro("tpc_clusters.C++");
+  gROOT->LoadMacro("tof_clusters.C++");
   gROOT->LoadMacro("hmpid_clusters.C++");
 
   gROOT->LoadMacro("acorde_raw.C");
   gROOT->LoadMacro("its_raw.C");
   gROOT->LoadMacro("tpc_raw.C");
+  gROOT->LoadMacro("tof_raw.C");
 
   TEveUtil::AssertMacro("VizDB_scan.C");
 
@@ -143,6 +145,10 @@ void alieve_online_on_new_event()
   if (AliEveEventManager::HasRawReader())
     tpc_raw();
   tpc_clusters();
+
+  if (AliEveEventManager::HasRawReader())
+    tof_raw();
+  tof_clusters();
 
   hmpid_clusters();
 

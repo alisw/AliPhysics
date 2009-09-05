@@ -59,6 +59,8 @@ TEvePointSet* tof_clusters(TEveElement* cont=0, Float_t maxR=390)
     }
   }
 
+  rl->UnloadRecPoints("TOF");
+
   if (clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
     Warning("tof_clusters.C", "No TOF clusters");
     delete clusters;
@@ -131,6 +133,8 @@ TEvePointSet* tof_clusters_sec(Int_t selectedSector,
 
     }
   }
+
+  rl->UnloadRecPoints("TOF");
 
   if (clusters->Size() == 0 && gEve->GetKeepEmptyCont() == kFALSE) {
     Warning("tof_clusters.C", "No TOF clusters");
