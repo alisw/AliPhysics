@@ -304,7 +304,18 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	element->SetLabel( mcLabel );
 
 	AliESDtrack iotrack;
+
+	// for the moment, the number of clusters are not set when processing the
+	// kTPCin update, only at kTPCout
+	// there ar emainly three parameters updated for kTPCout
+	//   number of clusters
+	//   chi2
+	//   pid signal
+	// The first one can be updated already at that stage here, while the two others
+	// eventually require to update from the ITS tracks before. The exact scheme
+	// needs to be checked 
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCin);
+	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCout);
 	iotrack.SetTPCPoints(points);
 
 	pESD->AddTrack(&iotrack);
