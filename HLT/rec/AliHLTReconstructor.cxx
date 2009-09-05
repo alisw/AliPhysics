@@ -43,6 +43,7 @@ AliHLTReconstructor::AliHLTReconstructor()
   fFctProcessHLTOUT(NULL),
   fpEsdManager(NULL),
   fpPluginBase(new AliHLTPluginBase)
+  , fFlags(0)
 { 
   //constructor
 }
@@ -53,6 +54,7 @@ AliHLTReconstructor::AliHLTReconstructor(const char* options)
   fFctProcessHLTOUT(NULL),
   fpEsdManager(NULL),
   fpPluginBase(new AliHLTPluginBase)
+  , fFlags(0)
 { 
   //constructor
   if (options) Init(options);
@@ -131,6 +133,8 @@ void AliHLTReconstructor::Init()
 	}
       } else if (token.Contains("alilog=off")) {
 	pSystem->SwitchAliLog(0);
+      } else if (token.CompareTo("ignore-hltout")==0) {
+	fFlags|=kAliHLTReconstructorIgnoreHLTOUT;
       } else if (token.Contains("esdmanager=")) {
 	token.ReplaceAll("esdmanager=", "");
 	token.ReplaceAll(","," ");
@@ -235,7 +239,11 @@ void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree
     }
     pSystem->FillESD(-1, NULL, esd);
 
-    AliHLTOUTRawReader* pHLTOUT=new AliHLTOUTRawReader(rawReader, esd->GetEventNumberInFile(), fpEsdManager);
+    AliRawReader* input=NULL;
+    if ((fFlags&kAliHLTReconstructorIgnoreHLTOUT) == 0 ) {
+      input=rawReader;
+    }
+    AliHLTOUTRawReader* pHLTOUT=new AliHLTOUTRawReader(input, esd->GetEventNumberInFile(), fpEsdManager);
     if (pHLTOUT) {
       ProcessHLTOUT(pHLTOUT, esd);
       delete pHLTOUT;

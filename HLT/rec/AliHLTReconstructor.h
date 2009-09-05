@@ -276,6 +276,12 @@ public:
    */
   void PrintHLTOUTContent(AliHLTOUT* pHLTOUT) const;
 
+  enum {
+    /// ignore the blocks from the HLTOUT payload
+    kAliHLTReconstructorIgnoreHLTOUT = 0x1,
+    kAliHLTReconstructorLastFlag
+  };
+
 private:
   /** copy constructor prohibited */
   AliHLTReconstructor(const AliHLTReconstructor& src);
@@ -291,7 +297,9 @@ private:
   /** base class for AliRoot HLT plugins */
   AliHLTPluginBase* fpPluginBase;                                     //!transient
 
-  ClassDef(AliHLTReconstructor, 6)   // class for the HLT reconstruction
+  UInt_t fFlags; //! transient
+
+  ClassDef(AliHLTReconstructor, 7)   // class for the HLT reconstruction
 
 };
 
