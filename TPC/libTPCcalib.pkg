@@ -5,7 +5,8 @@ SRCS = AliTPCcalibTracksCuts.cxx   AliTPCcalibTracks.cxx   AliTPCcalibTracksGain
 	AliTPCcalibV0.cxx AliTPCCalibKr.cxx AliTPCcalibBase.cxx AliTPCAnalysisTaskcalib.cxx  \
 	AliTPCCalibKrTask.cxx AliTPCcalibLaser.cxx AliTPCcalibCosmic.cxx AliTPCLaserTrack.cxx \
 	AliTPCcalibCalib.cxx   AliTPCcalibTime.cxx AliTPCcalibUnlinearity.cxx \
-	AliTPCcalibPID.cxx AliTPCcalibTimeGain.cxx AliTPCMisAligner.cxx
+	AliTPCcalibPID.cxx AliTPCcalibTimeGain.cxx AliTPCMisAligner.cxx \
+        AliTPCcalibTrigger.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
