@@ -563,9 +563,12 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 	evtData.fEventID=(AliHLTEventID_t)eventNo;
       evtData.fEventCreation_s=static_cast<AliHLTUInt32_t>(time(NULL));
       AliHLTComponentTriggerData trigData;
+      AliHLTEventTriggerData evtTrigData;
       trigData.fStructSize=sizeof(trigData);
-      trigData.fDataSize=0;
-      trigData.fData=NULL;
+      trigData.fDataSize=sizeof(AliHLTEventTriggerData);
+      memset(&evtTrigData, 0, trigData.fDataSize);
+      evtTrigData.fCommonHeaderWordCnt=gkAliHLTCommonHeaderCount;
+      trigData.fData=&evtTrigData;
       iLastOutputDataSize=iOutputDataSize;
       AliHLTUInt32_t size=iOutputDataSize;
       AliHLTUInt32_t outputBlockCnt=0;
