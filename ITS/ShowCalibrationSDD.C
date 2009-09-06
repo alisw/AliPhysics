@@ -1,13 +1,16 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TFile.h>
 #include <TH1F.h>
+#include <TH2I.h>
 #include <TGraph.h>
 #include <TStyle.h>
 #include <TGrid.h>
+#include <TLine.h>
 #include <TCanvas.h>
 #include <TObjArray.h>
 #include "AliCDBEntry.h"
 #include "AliITSCalibrationSDD.h"
+#include "AliITSgeomTGeo.h"
 #endif
 
 // Macro to plot the calibration parameters from the OCDB file 
@@ -23,6 +26,22 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
 
   TFile *f=TFile::Open(filnam);
   AliCDBEntry *ent=(AliCDBEntry*)f->Get("AliCDBEntry");
+  TH2I* hlay3=new TH2I("hlay3","Layer 3",6,-0.5,5.5,14,-0.5,13.5);
+  hlay3->GetXaxis()->SetTitle("Detector");
+  hlay3->GetYaxis()->SetTitle("Ladder");
+  hlay3->GetXaxis()->SetTickLength(0);
+  hlay3->GetYaxis()->SetTickLength(0);
+  hlay3->SetStats(0);
+  hlay3->SetMinimum(-1);
+  TH2I* hlay4=new TH2I("hlay4","Layer 4",8,-0.5,7.5,22,-0.5,21.5);
+  hlay4->GetXaxis()->SetTitle("Detector");
+  hlay4->GetYaxis()->SetTitle("Ladder");
+  hlay4->GetXaxis()->SetTickLength(0);
+  hlay4->GetYaxis()->SetTickLength(0);
+  hlay4->GetYaxis()->SetTitle("Ladder");
+  hlay4->SetStats(0);
+  hlay4->SetMinimum(-1);
+
   TObjArray *calSDD = (TObjArray *)ent->GetObject();
   printf("Entries in array=%d\n",calSDD->GetEntriesFast());
   TH1F* hmodstatus=new TH1F("hmodstatus","",260,0.5,260.5);
@@ -46,18 +65,29 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
     cal=(AliITSCalibrationSDD*)calSDD->At(i);
     if(cal==0) continue;
     printf("Module %d (%d)   status = ",i,i+240);
+    Int_t lay,lad,det;
+    AliITSgeomTGeo::GetModuleId(i+240,lay,lad,det);
     if(cal->IsBad()){ 
       printf("BAD\t");
-      if(i<84) badModCounter3++;
-      else badModCounter4++;
+      if(lay==3){ 
+	badModCounter3++;
+	hlay3->SetBinContent(det,lad,0);
+      }else if(lay==4){ 
+	badModCounter4++;
+	hlay4->SetBinContent(det,lad,0);
+      }
       hmodstatus->SetBinContent(i+1,0);
-    }
-    else{ 
+    }else{ 
       printf("OK\t");
       hmodstatus->SetBinContent(i+1,1);
-      if(i<84) badAnodeCounterGoodMod3+=cal->GetDeadChannels();
-      else badAnodeCounterGoodMod4+=cal->GetDeadChannels();
-    }
+      if(lay==3){ 
+	badAnodeCounterGoodMod3+=cal->GetDeadChannels();
+ 	hlay3->SetBinContent(det,lad,1);
+      }else{ 
+	badAnodeCounterGoodMod4+=cal->GetDeadChannels();
+	hlay4->SetBinContent(det,lad,1);
+      }
+     }
     printf("   Chip Status (0=OK, 1=BAD): ");  
     for(Int_t ic=0; ic<8;ic++){ 
       printf("%d ",cal->IsChipBad(ic));
@@ -134,7 +164,7 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
   hbase->GetXaxis()->SetTitle("Baseline after equalization");
   hbase->GetXaxis()->CenterTitle();  
   c1->cd(2);
-  hnoise->Draw();
+  hnoise->Draw(); 
   hnoise->GetXaxis()->SetTitle("Noise");
   hnoise->GetXaxis()->CenterTitle();  
   c1->cd(3);
@@ -145,6 +175,46 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
   hchstatus->Draw();
   hchstatus->GetXaxis()->SetTitle("Anode status (0=bad, 1=OK)");
   hchstatus->GetXaxis()->CenterTitle();
+  Int_t palette[3]={kGray,2,3};
+  gStyle->SetPalette(3,palette);
+  
+  TLine* lin=new TLine(0,0,0,23);  
+  TCanvas* clay=new TCanvas("clay","Layer status",900,600);
+  clay->Divide(2,1);
+  clay->cd(1);
+  hlay3->Draw("col");
+  for(Int_t i=0;i<6;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(13.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<14;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(5.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+  clay->cd(2);
+  hlay4->Draw("col");
+  for(Int_t i=0;i<8;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(21.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<22;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(7.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+
+
 
 
   // Plot quantities for specified module
