@@ -85,7 +85,7 @@ int AliHLTTPCCAGPUTracker::InitGPU(int sliceCount, int forceDeviceID)
 	{
 		cudaGetDeviceProperties(&fCudaDeviceProp, i);
 		if (fDebugLevel >= 2) std::cout << fCudaDeviceProp.name << " (" << i << ")     ";
-		if (fCudaDeviceProp.major < 9 && (fCudaDeviceProp.major < 1 || (fCudaDeviceProp.major == 1 && fCudaDeviceProp.minor < 2)) && fCudaDeviceProp.multiProcessorCount * fCudaDeviceProp.clockRate > bestDeviceSpeed)
+		if (fCudaDeviceProp.major < 9 && !(fCudaDeviceProp.major < 1 || (fCudaDeviceProp.major == 1 && fCudaDeviceProp.minor < 2)) && fCudaDeviceProp.multiProcessorCount * fCudaDeviceProp.clockRate > bestDeviceSpeed)
 		{
 			bestDevice = i;
 			bestDeviceSpeed = fCudaDeviceProp.multiProcessorCount * fCudaDeviceProp.clockRate;
@@ -675,7 +675,7 @@ int AliHLTTPCCAGPUTracker::Reconstruct(AliHLTTPCCATracker* tracker, int fSliceCo
 		}
 
 		if (fDebugLevel >= 5) printf("Running WriteOutput\n");
-		//tracker[iSlice].WriteOutput();
+		tracker[iSlice].WriteOutput();
 	}
 
 	StandalonePerfTime(10);
