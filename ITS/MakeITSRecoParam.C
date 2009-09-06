@@ -28,8 +28,8 @@ void MakeITSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     //  itsRecoParam->SetLayerToSkip(<N>);
     //  itsRecoParam->SetLayerToSkip(4);
     //  itsRecoParam->SetLayerToSkip(5);
-    itsRecoParam->SetLayerToSkip(2);
-    itsRecoParam->SetLayerToSkip(3);
+    //    itsRecoParam->SetLayerToSkip(2);
+    //    itsRecoParam->SetLayerToSkip(3);
     //itsRecoParam->SetSAOnePointTracks();
     itsRecoParam->SetClusterMisalError(0.1); // [cm]
     itsRecoParam->SetSAUseAllClusters();
