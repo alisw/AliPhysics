@@ -36,6 +36,12 @@ public:
   void   AddHisto(const char *trigger, THnSparse *his); 
   THnSparse *MakeHisto(const char* trigger);
   //
+  TTree * MakeTree(const char *fname);
+  void   MakeTree(TTreeStream &pcstream, const char *tname);
+  Bool_t HasTOF(TObjString *tname);
+  Bool_t HasACORDE(TObjString *tname);
+  Bool_t HasPIXEL(TObjString *tname);
+  Bool_t HasTRD(TObjString *tname);
 public:
   TMap *fHisMap;      // map of the histogram per trigger class 
   ClassDef(AliTPCcalibTrigger, 1); 

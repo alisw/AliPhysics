@@ -17,15 +17,24 @@
 /*
   // Load libraries
   gSystem->Load("libANALYSIS");
-    gSystem->Load("libTPCcalib");
- 
-
-    .x ~/NimStyle.C
+  gSystem->Load("libTPCcalib");
+  
+  
+  .x ~/NimStyle.C
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
 
   TFile f("CalibObjects.root");
   AliTPCcalibTrigger *calibTrigger = (AliTPCcalibTrigger *)f->Get("TPCCalib")->FindObject("calibTrigger");
+
+
+  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
+  AliXRDPROOFtoolkit tool;
+  TChain * chainTrack = tool.MakeChain("trigger.txt","Track",0,10200);
+  chainTrack->Lookup();
+  TChain * chainEvent = tool.MakeChain("trigger.txt","Event",0,10200);
+  chainEvent->Lookup();
 
 
 */
@@ -106,17 +115,20 @@ Long64_t AliTPCcalibTrigger::Merge(TCollection *li) {
     if(!addMap) return 0;
     TIterator* iterator = addMap->MakeIterator();
     iterator->Reset();
-    TPair* addPair=0;
-    while((addPair=(TPair *)(addMap->FindObject(iterator->Next())))){
-      THnSparse* addHist=dynamic_cast<THnSparseF*>(addPair->Value());
-      if (!addHist) continue;
-      addHist->Print();
-      THnSparse* localHist=dynamic_cast<THnSparseF*>(fHisMap->GetValue(addHist->GetName()));
-      if(!localHist){
-        localHist=MakeHisto(addHist->GetName());
-        fHisMap->Add(new TObjString(addHist->GetName()),localHist);
+    //    TPair* addPair=0;
+    TObject *object=0;
+    //
+    while((object=iterator->Next())){
+      THnSparse* his1 = dynamic_cast<THnSparseF*>(cal->fHisMap->GetValue(object->GetName()));
+      if (!his1) continue;      
+      his1->Print();
+      THnSparse* his0 = dynamic_cast<THnSparseF*>(fHisMap->GetValue(object->GetName()));
+
+      if(!his0){
+        his0=MakeHisto(object->GetName());
+        fHisMap->Add(new TObjString(object->GetName()),his0);
       }
-      localHist->Add(addHist);
+      his0->Add(his1);
     }
   }
   return 0;
@@ -130,6 +142,13 @@ void AliTPCcalibTrigger::Process(AliESDEvent *event){
   //
   if (!event) return;
   const TString &trigger = event->GetFiredTriggerClasses();
+  TTreeSRedirector * cstream =  GetDebugStreamer();
+  //
+  TObjString str(event->GetFiredTriggerClasses());
+  Bool_t hasPIXEL=HasPIXEL(&str);
+  Bool_t hasTRD=HasTRD(&str);
+  Bool_t hasTOF=HasTOF(&str);
+  Bool_t hasACORDE=HasACORDE(&str);
   //
   if (!GetHisto(trigger.Data())){
     AddHisto(trigger.Data(),MakeHisto(trigger.Data()));
@@ -140,10 +159,11 @@ void AliTPCcalibTrigger::Process(AliESDEvent *event){
 
   THnSparse *histoAll = GetHisto("all");
   THnSparse *histo = GetHisto(trigger.Data());
-  Double_t xcont[8]={0,0,0,0,0,0,0,0};
+  Double_t xcont[9]={0,0,0,0,0,0,0,0,0};
   
   Int_t ntracks = event->GetNumberOfTracks();
   xcont[0] = ntracks;
+  xcont[8] = 1;
   //
   // GetLongest track
   //  
@@ -156,36 +176,63 @@ void AliTPCcalibTrigger::Process(AliESDEvent *event){
     nclmax = track->GetTPCNcls();
     longest= track;
   }
-  //
-  // get inof of longest track
-  /*TString  axisName[8]={
-    "ntracks",
-    "nclMax",
-    "dcaR",
-    "dcaZ",
-    "alpha",
-    "theta",
-    "pt",
-    "dEdx"
-  };
-  */
-  if (longest){
-    Float_t dca[2];
-    Double_t pxyz[3];
-    longest->GetDZ(0.,0.,0.,event->GetMagneticField(),dca);
-    Bool_t status = longest->GetPxPyPz(pxyz);
-    xcont[1]=nclmax;
-    xcont[2]=dca[0];
-    xcont[3]=dca[1];
-    xcont[4]=TMath::ATan2(pxyz[1],pxyz[0]);
-    xcont[5]=longest->GetParameter()[3];
-    xcont[6]=longest->Pt();
-    xcont[7]=longest->GetTPCsignal();    
-  }
-  //
+  xcont[1]  =nclmax;
   histoAll->Fill(xcont);
   histo->Fill(xcont);
-  
+  if (cstream) {
+    (*cstream) << "Event" <<
+      "run="<<fRun<<
+      "time="<<fTime<<
+      "pixel="<<hasPIXEL<<
+      "trd="<<hasTRD<<
+      "tof="<<hasTOF<<
+      "acorde="<<hasACORDE<<
+      "ntracks="<<ntracks<<
+      "\n";
+  }
+  //
+  xcont[8] = -1.;
+  for (Int_t itrack=0; itrack<ntracks; itrack++){
+    AliESDtrack *track=event->GetTrack(itrack);
+    if (!track) continue;
+    Float_t dca[2];
+    Double_t pxyz[3];
+    track->GetDZ(0.,0.,0.,event->GetMagneticField(),dca);
+    Bool_t status = track->GetPxPyPz(pxyz);
+    Double_t alpha = TMath::ATan2(pxyz[1],pxyz[0]);
+    xcont[1]=track->GetTPCNcls();
+    xcont[2]=dca[0];
+    xcont[3]=dca[1];
+    xcont[4]=alpha;
+    xcont[5]=track->GetParameter()[3];
+    xcont[6]=track->Pt();
+    xcont[7]=track->GetTPCsignal();    
+    histoAll->Fill(xcont);
+    histo->Fill(xcont);
+    //
+    //
+    if (cstream) {
+      Double_t mpt = track->GetParameter()[4];
+      (*cstream) << "Track" <<
+	"run="<<fRun<<
+	"time="<<fTime<<
+	"status="<<status<<
+	"ntracks="<<ntracks<<
+	"pixel="<<hasPIXEL<<
+	"trd="<<hasTRD<<
+	"tof="<<hasTOF<<
+	"acorde="<<hasACORDE<<
+	"ncl="<<xcont[1]<<
+	"dcaR="<<xcont[2]<<
+	"dcaZ="<<xcont[3]<<
+	"alpha="<<xcont[4]<<
+	"theta="<<xcont[5]<<
+	"pt="<<xcont[6]<<
+	"dEdx="<<xcont[7]<<	
+	"mpt="<<mpt<<
+	"\n";
+    }
+  }
 }
 
 THnSparse *AliTPCcalibTrigger::MakeHisto(const char* trigger){
@@ -193,22 +240,23 @@ THnSparse *AliTPCcalibTrigger::MakeHisto(const char* trigger){
   // Make event/track histograms
   // trigger histo 
   //
-  //                 ntracks  nclMax dcaR dcaZ alpha   theta pt dEdx
-  Int_t    bins[8] = {50,     20,    20,  20,  18,     25,   25, 25 };
-  //Int_t    bins[8] = {50*     20*  25*  25*  18*     25*   25* 25 };
-  Double_t xmin[8] = {0.,     0,      0,  0,   -3.14, -1.5,  0, 0};
-  Double_t xmax[8] = {50,     160,  150,  250, 3.14,  1.5,   100, 100};
-  TString  axisName[8]={
+  //                 ntracks  nclMax dcaR dcaZ alpha   theta pt dEdx ev
+  Int_t    bins[9] = {50,     40,    20,  20,  18,     25,   25, 25, 2 };
+  //Int_t    bins[9] = {50*   20*    25*  25*  18*     25*   25* 25 };
+  Double_t xmin[9] = {0.,     0,      0,  -250,   -3.14, -1.5,  0, 0, -1.};
+  Double_t xmax[9] = {50,     160,  150,  250, 3.14,  1.5,   100, 100, 1.};
+  TString  axisName[9]={
     "ntracks",
-    "nclMax",
+    "ncl",
     "dcaR",
     "dcaZ",
     "alpha",
     "theta",
     "pt",
-    "dEdx"
+    "dEdx",
+    "ev"
   };
-  TString  axisTitle[8]={
+  TString  axisTitle[9]={
     "Number of tracks",
     "N_{cl}",
     "dca_{R} (cm)",
@@ -216,12 +264,13 @@ THnSparse *AliTPCcalibTrigger::MakeHisto(const char* trigger){
     "alpha (mrad)",
     "theta",
     "p_{t} (GeV/c)",
-    "dEdx (a.u.)"
+    "dEdx (a.u.)",
+    "ev"
   };
 
   
-  THnSparse *sparse = new THnSparseF(Form("his_%s",trigger), Form("his_%s",trigger), 8, bins, xmin, xmax);
-  for (Int_t iaxis=0; iaxis<8; iaxis++){
+  THnSparse *sparse = new THnSparseF(Form("his_%s",trigger), Form("his_%s",trigger), 9, bins, xmin, xmax);
+  for (Int_t iaxis=0; iaxis<9; iaxis++){
     sparse->GetAxis(iaxis)->SetName(axisName[iaxis]);
     sparse->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
   }
@@ -241,3 +290,89 @@ void   AliTPCcalibTrigger::AddHisto(const char *trigger, THnSparse *his) {
     fHisMap->Add(pstr,his);
   }
 }
+
+TTree * AliTPCcalibTrigger::MakeTree(const char * fname){
+  //
+  //
+  //
+  TTreeSRedirector * sred = new TTreeSRedirector(fname);
+  TTreeStream &pcstream = (*sred)<<"Trigger";
+  //
+  //
+  TIterator* iterator = fHisMap->MakeIterator();
+  TObject * object=0;
+  //
+  while((object=iterator->Next())){
+    MakeTree(pcstream, object->GetName());
+  }
+  delete sred;
+  TFile *f = new TFile(fname);
+  TTree *tree = (TTree*)f->Get("Trigger");
+  return tree;
+}
+
+
+void AliTPCcalibTrigger::MakeTree(TTreeStream &pcstream, const char *tname){
+  //
+  //  TTreeSRedirector * sred = new TTreeSRedirector("trigger.root");
+  //  TTreeStream &pcstream = (*sred)<<"Trigger";
+  //
+  //AliTPCcalibTrigger *calibTrigger = this;
+  Double_t value;
+  THnSparse * his = GetHisto(tname);
+  if (!his) return;
+  //
+  Int_t *bins = new Int_t[100];
+  Int_t ndim = his->GetNdimensions();
+  Double_t position[10];
+  //
+  TObjString str(tname);
+  Bool_t isAll  = str.String().Contains("all");
+  Bool_t hasPIXEL=HasPIXEL(&str);
+  Bool_t hasTRD=HasTRD(&str);
+  Bool_t hasTOF=HasTOF(&str);
+  Bool_t hasACORDE=HasACORDE(&str);
+  for (Long64_t i = 0; i < his->GetNbins(); ++i) {
+    value = his->GetBinContent(i, bins);
+    pcstream<<"val="<<value;
+    pcstream<<"tname.="<<&str;
+    //
+    pcstream<<"all="<<isAll;
+    pcstream<<"pixel="<<hasPIXEL;
+    pcstream<<"trd="<<hasTRD;
+    pcstream<<"tof="<<hasTOF;
+    pcstream<<"acorde="<<hasACORDE;
+    //
+    for (Int_t idim = 0; idim < ndim; idim++) {
+      position[idim] = his->GetAxis(idim)->GetBinCenter(bins[idim]);
+      pcstream<<Form("%s=",his->GetAxis(idim)->GetName())<<position[idim];
+    }
+    pcstream<<"\n";
+  }
+}
+
+
+Bool_t AliTPCcalibTrigger::HasTOF(TObjString *tname){
+  //
+  Bool_t result = kFALSE;
+  result|=(tname->String().Contains("0OB")>0);
+  result|=(tname->String().Contains("0OC")>0);
+  return result;
+}
+
+Bool_t AliTPCcalibTrigger::HasACORDE(TObjString *tname){
+  Bool_t result = kFALSE;
+  result|=(tname->String().Contains("0ASL")>0);
+  result|=(tname->String().Contains("0AMU")>0);
+  result|=(tname->String().Contains("0ASC")>0);
+  return result;
+}
+
+Bool_t AliTPCcalibTrigger::HasPIXEL(TObjString *tname){
+  return (tname->String().Contains("0SCO")>0);
+}
+
+Bool_t AliTPCcalibTrigger::HasTRD(TObjString *tname){
+  return (tname->String().Contains("1H")>0);
+}
+
