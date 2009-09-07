@@ -85,9 +85,10 @@ const char* AliHLTTPCCalibrationComponent::GetComponentID() {
 void AliHLTTPCCalibrationComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
 // see header file for class documentation
 
-  list.clear();   
-  list.push_back( kAliHLTDataTypeTObjArray ); // output of TPCCalibSeedMaker
-  list.push_back( kAliHLTDataTypeESDObject ); // output of TPCEsdConverter 
+  list.clear();     
+  list.push_back( kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC );  // output of TPCCalibSeedMaker
+  list.push_back( kAliHLTDataTypeESDObject|kAliHLTDataOriginOut ); // output of global esd converter 
+
 }
 
 AliHLTComponentDataType AliHLTTPCCalibrationComponent::GetOutputDataType() {
