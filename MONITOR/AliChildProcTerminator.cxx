@@ -10,6 +10,7 @@
 #include "AliChildProcTerminator.h"
 
 #include <sys/wait.h>
+#include <signal.h>
 
 //______________________________________________________________________________
 // Full description of AliChildProcTerminator
