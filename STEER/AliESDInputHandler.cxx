@@ -90,21 +90,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     fEvent->ReadFromTree(fTree);
     fNEvents = fTree->GetEntries();
 
-    if (fUseHLT) {
-	// Get HLTesdTree from current file
-	TTree* cTree = tree;
-	if (fTree->GetTree()) cTree = fTree->GetTree();
-	TFile* cFile = cTree->GetCurrentFile();
-	cFile->GetObject("HLTesdTree", fHLTTree);
-	if (fHLTEvent) {
-	    delete fHLTEvent;
-	    fHLTEvent = 0;
-	}
-	if (fHLTTree) {
-	  if (!fHLTEvent) fHLTEvent = new AliESDEvent();
-	  fHLTEvent->ReadFromTree(fHLTTree);
-	}
-    }
+
     return kTRUE;
 }
 
@@ -136,6 +122,19 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     // Notify a directory change
     AliInfo(Form("Directory change %s \n", path));
     //
+    if (fUseHLT) {
+	// Get HLTesdTree from current file
+	TTree* cTree = fTree;
+	if (fTree->GetTree()) cTree = fTree->GetTree();
+	TFile* cFile = cTree->GetCurrentFile();
+	cFile->GetObject("HLTesdTree", fHLTTree);
+	
+	if (fHLTTree) {
+	  if (!fHLTEvent) fHLTEvent = new AliESDEvent();
+	  fHLTEvent->ReadFromTree(fHLTTree);
+	}
+    }
+
     if (!fUseTags) return (kTRUE);
     
     Bool_t zip = kFALSE;
