@@ -63,13 +63,14 @@ protected:
   Int_t            fColumn;   // index of current column
   Int_t            fCaloFlag; // low (0) or (1) high gain; see enum EAliCaloFlag above
   Int_t            fFilter;   // default 0 = let everything through
+  Int_t            fNModules; // number of (super)modules
   Int_t            fNRCU;     // number of RCU per (super)module
   Int_t            fNSides;   // Division of EMCal in "A" "C" sides
   TString          fCalo;     // Calorimeter name
-  Bool_t           fExternalMapping;   // use external mapping or create a default one
-  AliAltroMapping *fMapping[4];   // pointers to ALTRO mapping
+  Bool_t           fExternalMapping; // use external mapping or create a default one
+  AliAltroMapping *fMapping[20];     // pointers to ALTRO mapping
 
-  ClassDef(AliCaloRawStreamV3, 1)   // class for reading PHOS/EMCAL raw digits
+  ClassDef(AliCaloRawStreamV3, 2)   // class for reading PHOS/EMCAL raw digits
 
 };
 

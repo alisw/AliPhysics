@@ -36,6 +36,7 @@
 #include <TString.h>
 #include <TSystem.h>
 
+#include "AliLog.h"
 #include "AliCaloRawStreamV3.h"
 #include "AliRawReader.h"
 #include "AliCaloAltroMapping.h"
@@ -51,6 +52,7 @@ AliCaloRawStreamV3::AliCaloRawStreamV3(AliRawReader* rawReader, TString calo, Al
   fColumn(-1),
   fCaloFlag(0),
   fFilter(0),
+  fNModules(0),
   fNRCU(0),
   fNSides(0),
   fCalo(calo),
@@ -59,34 +61,52 @@ AliCaloRawStreamV3::AliCaloRawStreamV3(AliRawReader* rawReader, TString calo, Al
   // create an object to read PHOS/EMCAL raw digits
   SelectRawData(calo);
 
-  // PHOS and EMCAL have differen number of RCU per module
-  //For PHOS
-  fNRCU = 4;
-  fNSides = 1;
-  //For EMCAL
-  TString sides[]={"A","C"};
-  if(fCalo == "EMCAL")  {
-    fNRCU = 2;
-    fNSides = 2;
+  // PHOS and EMCAL have different number of RCU per module
+  //For PHOS (different mappings for different modules)
+  if(fCalo == "PHOS")  {
+    fNModules = 5;
+    fNRCU     = 4;
+    fNSides   = 1;
   }
+  //For EMCAL (the same mapping for all modules)
+  if(fCalo == "EMCAL")  {
+    fNModules = 1;
+    fNRCU     = 2;
+    fNSides   = 2;
+  }
+  TString sides[]={"A","C"};
 
   if (mapping == NULL) {
+    // Read mapping files from $ALICE_ROOT/CALO/mapping/*.data
     TString path = gSystem->Getenv("ALICE_ROOT");
-    path += "/"+fCalo+"/mapping/RCU";
-    TString path2;
-    for(Int_t j = 0; j < fNSides; j++){
-      for(Int_t i = 0; i < fNRCU; i++) {
-	path2 = path;
-	path2 += i;
-	if(fCalo == "EMCAL") path2 += sides[j];
-	path2 += ".data";
-	fMapping[j*fNRCU+ i] = new AliCaloAltroMapping(path2.Data());
+    path += "/"+fCalo+"/mapping/";
+    TString path1, path2;
+    for(Int_t m = 0; m < fNModules; m++) {
+      path1 = path;
+      if     (fCalo == "EMCAL") {
+	path1 += "RCU";
+      }
+      else if(fCalo == "PHOS" ) {
+	path1 += "Mod";
+	path1 += m;
+	path1 += "RCU";
+      }
+      for(Int_t j = 0; j < fNSides; j++){
+	for(Int_t i = 0; i < fNRCU; i++) {
+	  path2 = path1;
+	  path2 += i;
+	  if(fCalo == "EMCAL") path2 += sides[j];
+	  path2 += ".data";
+	  AliDebug(2,Form("Mapping file: %s",path2.Data()));
+	  fMapping[m*fNSides*fNRCU + j*fNRCU + i] = new AliCaloAltroMapping(path2.Data());
+	}
       }
     }
   }
   else {
+    // Mapping is supplied by reconstruction
     fExternalMapping = kTRUE;
-    for(Int_t i = 0; i < fNRCU*fNSides; i++)
+    for(Int_t i = 0; i < fNModules*fNRCU*fNSides; i++)
       fMapping[i] = mapping[i];
   }
 }
@@ -99,11 +119,13 @@ AliCaloRawStreamV3::AliCaloRawStreamV3(const AliCaloRawStreamV3& stream) :
   fColumn(-1),
   fCaloFlag(0),
   fFilter(0),
+  fNModules(0),
   fNRCU(0),
   fNSides(0),
   fCalo(""),
   fExternalMapping(kFALSE)
 {  
+  // Dummy copy constructor
   Fatal("AliCaloRawStreamV3", "copy constructor not implemented");
 }
 
@@ -111,6 +133,7 @@ AliCaloRawStreamV3::AliCaloRawStreamV3(const AliCaloRawStreamV3& stream) :
 AliCaloRawStreamV3& AliCaloRawStreamV3::operator = (const AliCaloRawStreamV3& 
 					      /* stream */)
 {
+  // Dummy assignment operator
   Fatal("operator =", "assignment operator not implemented");
   return *this;
 }
@@ -121,14 +144,14 @@ AliCaloRawStreamV3::~AliCaloRawStreamV3()
 // destructor
 
   if (!fExternalMapping)
-    for(Int_t i = 0; i < fNRCU*fNSides; i++)
+    for(Int_t i = 0; i < fNModules*fNRCU*fNSides; i++)
       delete fMapping[i];
 }
 
 //_____________________________________________________________________________
 void AliCaloRawStreamV3::Reset()
 {
-  // reset phos/emcal raw stream params
+  // reset PHOS/EMCAL raw stream params
   AliAltroRawStreamV3::Reset();
   fModule = fRow = fColumn = -1;
   fFilter = fCaloFlag = 0;
@@ -168,6 +191,7 @@ void AliCaloRawStreamV3::ApplyAltroMapping()
 
   Int_t rcuIndex = ddlNumber % fNRCU;
 
+  if( fNModules > 1) rcuIndex += fModule*fNRCU*fNSides;
   if( fNRCU == 2 ){ // EMCAL may need to increase RCU index for the maps
     if (fModule%2 == 1) { rcuIndex += 2; } // other='C' side maps
   }
