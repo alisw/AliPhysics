@@ -48,7 +48,8 @@ AliFMD1::AliFMD1(AliFMDRing* inner)
   Double_t off = 0; // -0.25
   if (off != 0) 
     AliWarning(Form("FMD1 is off by %fcm", off));
-  SetInnerZ(320. + off);
+  SetInnerZ(321.5 + off);
+      
 }
 
 //____________________________________________________________________
