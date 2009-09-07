@@ -60,9 +60,11 @@ void testTPCCalibration(const char* input="./", const char* option="task"){
 
   AliHLTConfiguration seedconf("seeds", "TPCCalibSeedMaker", seedMakerInput.Data(), "");
 
+  AliHLTConfiguration esdconf("esd", "GlobalEsdConverter", "TPC-globalmerger", "");
+
   TString calibInput;
   if(calibInput.Length()>0) calibInput+=" ";
-  calibInput+="TPC-esd-converter";
+  calibInput+="esd";
   calibInput+=" ";
   calibInput+="seeds";
     
@@ -89,6 +91,9 @@ void testTPCCalibration(const char* input="./", const char* option="task"){
   rec.SetRunTracking("");
   rec.SetLoadAlignFromCDB(0);
   rec.SetRunQA(":");
+  rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  rec.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
+
 
   // NOTE: FillESD is a step in the AliReconstruction sequence and has
   // nothing to do with the fact that this macro writes ESD output
@@ -96,9 +101,9 @@ void testTPCCalibration(const char* input="./", const char* option="task"){
   // has already been prepared. This step is currently not necessary for
   // this macro
   rec.SetFillESD("");
-  if     (calibOption.CompareTo("task")==0)          rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=TPCcalib"); 
-  if     (calibOption.CompareTo("calibtime")==0)     rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=calibTime"); 
-  else if(calibOption.CompareTo("calibtimegain")==0) rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so loglevel=0x7c chains=calibTimeGain");
+  if     (calibOption.CompareTo("task")==0)          rec.SetOption("HLT", "libAliHLTTPCCalibration.so libAliHLTTPC.so libAliHLTGlobal.so loglevel=0x7c chains=TPCcalib"); 
+  if     (calibOption.CompareTo("calibtime")==0)     rec.SetOption("HLT", "libAliHLTTPCCalibration.so libAliHLTTPC.so libAliHLTGlobal.so loglevel=0x7c chains=calibTime"); 
+  else if(calibOption.CompareTo("calibtimegain")==0) rec.SetOption("HLT", "libAliHLTTPCCalibration.so libAliHLTTPC.so libAliHLTGlobal.so loglevel=0x7c chains=calibTimeGain");
 
   rec.Run();
 }
