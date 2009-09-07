@@ -27,6 +27,7 @@
 ///
 /// Cvetan Cheshkov 1/04/2008
 ///////////////////////////////////////////////////////////////////////////////
+#include <TSystem.h>
 
 #include "AliRawReaderDateOnline.h"
 #include "AliLog.h"
@@ -44,7 +45,8 @@ AliRawReaderDateOnline::AliRawReaderDateOnline(
 				   const char* /* filename */
 #endif
 				   ) :
-  AliRawReaderDate((void*)NULL)
+  AliRawReaderDate((void*)NULL),
+  fStop(kFALSE)
 {
 
 // Constructor
@@ -80,6 +82,9 @@ AliRawReaderDateOnline::AliRawReaderDateOnline(
                             NULL, NULL, NULL, NULL};
   monitorDeclareTableExtended(const_cast<char**>(table));
 
+  // install SIGUSR1 handler to allow clean end-of-events loop
+  gSystem->AddSignalHandler(new AliRawReaderDateIntHandler(this));
+
 #else
   Fatal("AliRawReaderDateOnline", "this class was compiled without DATE");
 #endif
@@ -91,6 +96,12 @@ Bool_t AliRawReaderDateOnline::NextEvent()
 // from shared memory
 
 #ifdef ALI_DATE
+
+  // Stop on SIGUSR1
+  if (fStop) {
+    AliInfo("Raw-data reading stopped by SIGUSR1");
+    return kFALSE;
+  }
 
   // Event already loaded no need take a new one
   if (AliRawReaderDate::NextEvent()) return kTRUE;
@@ -192,4 +203,12 @@ void AliRawReaderDateOnline::SelectEvents(Int_t type,
   
 #endif
   AliRawReader::SelectEvents(type,triggerMask,triggerExpr);
+}
+
+//______________________________________________________________________________
+void AliRawReaderDateOnline::Stop()
+{
+  // Stop the event loop (called on SIGUSR1)
+
+  fStop = kTRUE; 
 }

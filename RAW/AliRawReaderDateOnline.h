@@ -18,6 +18,8 @@
 /// Cvetan Cheshkov 1/04/2008
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TSysEvtHandler.h>
+
 #include "AliRawReaderDate.h"
 
 class AliRawReaderDateOnline: public AliRawReaderDate {
@@ -33,12 +35,36 @@ class AliRawReaderDateOnline: public AliRawReaderDate {
     // activated only for AliRawReaderDateOnline.
     virtual Bool_t   UseAutoSaveESD() const { return kTRUE; }
 
+    // Method triggered by signal hanlder
+    // Set fStop to false in which case
+    // NextEvent() returns fFALSE and the
+    // processing of raw data stops
+    virtual void     Stop();
+
   protected:
+    class AliRawReaderDateIntHandler : public TSignalHandler {
+    public:
+    AliRawReaderDateIntHandler(AliRawReaderDateOnline *rawReader):
+      TSignalHandler(kSigUser1, kFALSE), fRawReader(rawReader) { }
+      Bool_t Notify() {
+	Info("Notify", "received a SIGUSR1 signal");
+	fRawReader->Stop();
+	return kTRUE;
+      }
+    private:
+      AliRawReaderDateOnline *fRawReader;   // raw-reader to signal
+
+      AliRawReaderDateIntHandler(const AliRawReaderDateIntHandler& handler); // Not implemented
+      AliRawReaderDateIntHandler& operator=(const AliRawReaderDateIntHandler& handler); // Not implemented
+    };
+
     virtual void     SelectEvents(Int_t type, ULong64_t triggerMask = 0, const char *triggerExpr = NULL);
 
   private:
     AliRawReaderDateOnline(const AliRawReaderDateOnline& rawReader);
     AliRawReaderDateOnline& operator = (const AliRawReaderDateOnline& rawReader);
+
+    Bool_t           fStop; // raw-reader signaled to stop
 
     ClassDef(AliRawReaderDateOnline, 0) // class for reading DATE raw data from shared memory
 };
