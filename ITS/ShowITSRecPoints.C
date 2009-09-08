@@ -5,6 +5,9 @@
 #include <TGraph2D.h>
 #include <TGeoManager.h>
 #include <TH1.h>
+#include <TH2.h>
+#include <TLatex.h>
+#include <TStyle.h>
 #include <TInterpreter.h>
 #include "AliGeomManager.h"
 #include "AliHeader.h"
@@ -64,8 +67,10 @@ Int_t ShowITSRecPoints(Int_t nevfordisp=0){
   TH1F** hzg=new TH1F*[6];
   TH1F** hr=new TH1F*[6];
   TH1F** hphi=new TH1F*[6];
+  TH2F** hzphi=new TH2F*[6];
   TH1F** hq=new TH1F*[6];
-
+  TH1F** hdrtime=new TH1F*[6];
+  
   Char_t name[10];
   for(Int_t iLay=0;iLay<6;iLay++){
     sprintf(name,"hmod%d",iLay+1);
@@ -104,6 +109,15 @@ Int_t ShowITSRecPoints(Int_t nevfordisp=0){
     hq[iLay]=new TH1F(name,"",100,0.,300.);    
     hq[iLay]->GetXaxis()->SetTitle("Charge (keV)");
     hq[iLay]->GetXaxis()->CenterTitle();
+    sprintf(name,"hdtim%d",iLay+1);
+    hdrtime[iLay]=new TH1F(name,"",100,0.,7000.);    
+    hdrtime[iLay]->GetXaxis()->SetTitle("Drift Time (ns)");
+    hdrtime[iLay]->GetXaxis()->CenterTitle();
+    sprintf(name,"hzphi%d",iLay+1);
+    hzphi[iLay]=new TH2F(name,Form("Layer %d",iLay+1),50,-TMath::Pi(),TMath::Pi(),50,-zlim[iLay],zlim[iLay]);
+    hzphi[iLay]->GetXaxis()->SetTitle("#varphi (rad)");
+    hzphi[iLay]->GetYaxis()->SetTitle("Zglob (cm)");
+    hzphi[iLay]->SetStats(0);
   }
 
   TGraph *gptsXY=new TGraph(0);
@@ -152,6 +166,8 @@ Int_t ShowITSRecPoints(Int_t nevfordisp=0){
 	  hr[lay]->Fill(rad);
 	  hphi[lay]->Fill(phi);
 	  hq[lay]->Fill(recp->GetQ());
+	  hdrtime[lay]->Fill(recp->GetDriftTime());
+	  hzphi[lay]->Fill(phi,cluglo[2]);
 	}
       }
     }
@@ -183,6 +199,43 @@ Int_t ShowITSRecPoints(Int_t nevfordisp=0){
     c[iLay]->cd(9);
     hq[iLay]->Draw();    
   }
+
+  TCanvas* cdrtim=new TCanvas("cdrtim","SDD drift time",1000,600);
+  cdrtim->Divide(2,1);
+  cdrtim->cd(1);
+  hdrtime[2]->Draw();
+  cdrtim->cd(2);
+  hdrtime[3]->Draw();
+
+  gStyle->SetPalette(1);
+  TLatex* tstat=new TLatex();
+  tstat->SetNDC();
+  TCanvas* cspd=new TCanvas("cspd","SPD",1000,600);
+  cspd->Divide(2,1);
+  cspd->cd(1);
+  hzphi[0]->Draw("colz");
+  tstat->DrawLatex(0.6,0.92,Form("# Clusters = %d",int(hzphi[0]->GetEntries())));
+  cspd->cd(2);
+  hzphi[1]->Draw("colz");
+  tstat->DrawLatex(0.6,0.92,Form("# Clusters = %d",int(hzphi[1]->GetEntries())));
+
+  TCanvas* csdd=new TCanvas("csdd","SDD",1000,600);
+  csdd->Divide(2,1);
+  csdd->cd(1);
+  hzphi[2]->Draw("colz");
+  tstat->DrawLatex(0.6,0.92,Form("# Clusters = %d",int(hzphi[2]->GetEntries())));  
+  csdd->cd(2);
+  hzphi[3]->Draw("colz");
+  tstat->DrawLatex(0.6,0.92,Form("# Clusters = %d",int(hzphi[3]->GetEntries())));  
+
+  TCanvas* cssd=new TCanvas("cssd","SSD",1000,600);
+  cssd->Divide(2,1);
+  cssd->cd(1);
+  hzphi[4]->Draw("colz");
+  tstat->DrawLatex(0.6,0.92,Form("# Clusters = %d",int(hzphi[4]->GetEntries())));  
+  cssd->cd(2);
+  hzphi[5]->Draw("colz");
+  tstat->DrawLatex(0.6,0.92,Form("# Clusters = %d",int(hzphi[5]->GetEntries())));  
 
   TCanvas *cev0;
   sprintf(ctit,"Event %d XY",nevfordisp);
