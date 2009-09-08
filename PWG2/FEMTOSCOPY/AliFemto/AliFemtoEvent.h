@@ -66,6 +66,8 @@ public:
   
   unsigned long int     TriggerMask() const;     
   unsigned char      TriggerCluster() const;  
+
+  float ReactionPlaneAngle() const;
   
   void SetEventNumber(const unsigned short& s);
   void SetRunNumber(const int& i);
@@ -84,6 +86,8 @@ public:
   
   void SetTriggerMask(const unsigned long int& i);     
   void SetTriggerCluster(const unsigned char& c); 
+
+  void SetReactionPlaneAngle(const float& a);
   
   double UncorrectedNumberOfNegativePrimaries() const;
   double UncorrectedNumberOfPrimaries() const;
@@ -111,6 +115,8 @@ private:
   
   unsigned long int     fTriggerMask;     // Trigger Type (mask)
   unsigned char      fTriggerCluster;  // Trigger cluster (mask)
+
+  float      fReactionPlaneAngle; // reconstructed reaction plane angle
 };
 
 

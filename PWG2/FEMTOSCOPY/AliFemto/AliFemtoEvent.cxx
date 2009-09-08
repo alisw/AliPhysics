@@ -42,7 +42,8 @@ AliFemtoEvent::AliFemtoEvent():
   fZDCEMEnergy(0),   
   fZDCParticipants(0),
   fTriggerMask(0),  
-  fTriggerCluster(0)
+  fTriggerCluster(0),
+  fReactionPlaneAngle(0)
 {
   // Default constructor
   fPrimVertPos[0]=-999.0;
@@ -79,7 +80,8 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fZDCEMEnergy(0),   
   fZDCParticipants(0),
   fTriggerMask(0),  
-  fTriggerCluster(0)
+  fTriggerCluster(0),
+  fReactionPlaneAngle(0)
 { // copy constructor with track and v0 cuts
   //cout << "AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, AliFemtoV0Cut* vCut, AliFemtoV0Cut* kCut)" << endl;
   fEventNumber = ev.fEventNumber;
@@ -98,6 +100,8 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   
   fTriggerMask=ev.fTriggerMask;     // Trigger Type (mask)
   fTriggerCluster=ev.fTriggerCluster;
+  fReactionPlaneAngle=ev.fReactionPlaneAngle;
+
   // create collections
   fTrackCollection = new AliFemtoTrackCollection;
   fV0Collection = new AliFemtoV0Collection;
@@ -152,7 +156,8 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fZDCEMEnergy(0),   
   fZDCParticipants(0),
   fTriggerMask(0),  
-  fTriggerCluster(0)
+  fTriggerCluster(0),
+  fReactionPlaneAngle(0)
 { 
   // copy constructor 
   fEventNumber = ev.fEventNumber;
@@ -171,6 +176,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   
   fTriggerMask=ev.fTriggerMask;     // Trigger Type (mask)
   fTriggerCluster=ev.fTriggerCluster;
+  fReactionPlaneAngle=ev.fReactionPlaneAngle;
   // create collections
   fTrackCollection = new AliFemtoTrackCollection;
   fV0Collection = new AliFemtoV0Collection;
@@ -219,6 +225,7 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
   
   fTriggerMask=aEvent.fTriggerMask;     // Trigger Type (mask)
   fTriggerCluster=aEvent.fTriggerCluster;
+  fReactionPlaneAngle=aEvent.fReactionPlaneAngle;
   // create collections
   fTrackCollection = new AliFemtoTrackCollection;
   fV0Collection = new AliFemtoV0Collection;
@@ -338,6 +345,9 @@ float AliFemtoEvent::ZDCP2Energy() const {return fZDCP2Energy;}
 float AliFemtoEvent::ZDCEMEnergy() const {return fZDCEMEnergy;}   
 unsigned int  AliFemtoEvent::ZDCParticipants() const {return fZDCParticipants;}
 
+void AliFemtoEvent::SetReactionPlaneAngle(const float& a) { fReactionPlaneAngle = a;}
+float AliFemtoEvent::ReactionPlaneAngle() const { return fReactionPlaneAngle; }
+
 //----------------------------- below here is only for star
 
 double AliFemtoEvent::UncorrectedNumberOfNegativePrimaries() const
@@ -349,5 +359,3 @@ double AliFemtoEvent::UncorrectedNumberOfPrimaries() const
 {
   return NumberOfTracks();
 }
-
-

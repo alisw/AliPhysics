@@ -19,6 +19,7 @@
 #include "AliAODEvent.h"
 #include <list>
 #include "AliPWG2AODTrack.h"
+#include "AliAODMCParticle.h"
 
 class AliFemtoEvent;
 class AliFemtoTrack;
@@ -36,6 +37,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   AliFemtoString Report();
   void SetInputFile(const char* inputFile);
   void SetFilterBit(UInt_t ibit);
+  void SetReadMC(unsigned char a);
 
  protected:
   virtual void CopyAODtoFemtoEvent(AliFemtoEvent *tEvent);
@@ -50,8 +52,12 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   TBits          fAllFalse;         // Bit set with all false bits
   UInt_t         fFilterBit;        // Bitmap bit for AOD filters
   TClonesArray*  fPWG2AODTracks;    // Link to PWG2 specific AOD information (if it exists)
+  
+  unsigned char  fReadMC;           // Attempt to read the MC information from the AOD
 
  private:
+
+  AliAODMCParticle* GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel); 
 
   string         fInputFile;        // name of input file with AOD filenames
   string         fFileName;         // name of current AOD file
@@ -62,7 +68,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   ClassDef(AliFemtoEventReaderAOD, 11)
 #endif
 
-    };
+};
   
 #endif
 

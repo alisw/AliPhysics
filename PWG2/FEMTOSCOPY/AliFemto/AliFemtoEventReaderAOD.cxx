@@ -14,6 +14,7 @@
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAODVertex.h"
+#include "AliAODMCHeader.h"
 
 #include "AliFmPhysicalHelixD.h"
 #include "AliFmThreeVectorF.h"
@@ -22,6 +23,7 @@
 
 #include "AliFemtoEvent.h"
 #include "AliFemtoModelHiddenInfo.h"
+#include "AliFemtoModelGlobalHiddenInfo.h"
 
 ClassImp(AliFemtoEventReaderAOD)
 
@@ -40,6 +42,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fAllFalse(160),
   fFilterBit(0),
   fPWG2AODTracks(0x0),
+  fReadMC(0),
   fInputFile(" "),
   fFileName(" "),
   fTree(0x0),
@@ -59,6 +62,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAllFalse(160),
   fFilterBit(0),
   fPWG2AODTracks(0x0),
+  fReadMC(0),
   fInputFile(" "),
   fFileName(" "),
   fTree(0x0),
@@ -128,7 +132,6 @@ void AliFemtoEventReaderAOD::SetInputFile(const char* inputFile)
   //it takes only this files which have good trees
   char buffer[256];
   fInputFile=string(inputFile);
-  cout<<"Input File set on "<<fInputFile<<endl;
   ifstream infile(inputFile);
 
   fTree = new TChain("aodTree");
@@ -145,7 +148,7 @@ void AliFemtoEventReaderAOD::SetInputFile(const char* inputFile)
 	      TTree* tree = (TTree*) aodFile->Get("aodTree");
 	      if (tree!=0x0)
 		{
-		  cout<<"putting file  "<<string(buffer)<<" into analysis"<<endl;
+// 		  cout<<"putting file  "<<string(buffer)<<" into analysis"<<endl;
 		  fTree->AddFile(buffer);
 		  delete tree;
 		}
@@ -179,7 +182,7 @@ AliFemtoEvent* AliFemtoEventReaderAOD::ReturnHbtEvent()
 	  }
 
 	  fNumberofEvent=fTree->GetEntries();
-	  cout<<"Number of Entries in file "<<fNumberofEvent<<endl;
+	  //	  cout<<"Number of Entries in file "<<fNumberofEvent<<endl;
 	  fCurEvent=0;
 	}
       else //no more data to read
@@ -192,7 +195,7 @@ AliFemtoEvent* AliFemtoEventReaderAOD::ReturnHbtEvent()
 
   cout<<"starting to read event "<<fCurEvent<<endl;
   fTree->GetEvent(fCurEvent);//getting next event
-  cout << "Read event " << fEvent << " from file " << fTree << endl;
+  //  cout << "Read event " << fEvent << " from file " << fTree << endl;
 	
   hbtEvent = new AliFemtoEvent;
 
@@ -220,7 +223,38 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   tEvent->SetZDCParticipants(0);
   tEvent->SetTriggerMask(fEvent->GetTriggerMask());
   tEvent->SetTriggerCluster(fEvent->GetTriggerCluster());
-	
+
+  // Attempt to access MC header
+  AliAODMCHeader *mcH;
+  TClonesArray *mcP;
+  if (fReadMC) {
+    mcH = (AliAODMCHeader *) fEvent->FindListObject(AliAODMCHeader::StdBranchName());
+    if (!mcH) {
+      cout << "AOD MC information requested, but no header found!" << endl;
+    }
+
+    mcP = (TClonesArray *) fEvent->FindListObject(AliAODMCParticle::StdBranchName());
+    if (!mcP) {
+      cout << "AOD MC information requested, but no particle array found!" << endl;
+    }
+  }
+
+  Int_t *motherids;
+  if (mcP) {
+    motherids = new Int_t[((AliAODMCParticle *) mcP->At(mcP->GetEntries()-1))->GetLabel()];
+    for (int ip=0; ip<mcP->GetEntries(); ip++) motherids[ip] = 0;
+
+    // Read in mother ids
+    AliAODMCParticle *motherpart;
+    for (int ip=0; ip<mcP->GetEntries(); ip++) {
+      motherpart = (AliAODMCParticle *) mcP->At(ip);
+      if (motherpart->GetDaughter(0) > 0)
+	motherids[motherpart->GetDaughter(0)] = ip;
+      if (motherpart->GetDaughter(1) > 0)
+	motherids[motherpart->GetDaughter(1)] = ip;
+    }
+  }
+
   // Primary Vertex position
   double fV1[3];
   fEvent->GetPrimaryVertex()->GetPosition(fV1);
@@ -238,7 +272,6 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     nofTracks=fEvent->GetNumberOfTracks();
 
   int realnofTracks=0;   // number of track which we use in a analysis
-  cout << "Event has " << nofTracks << " tracks " << endl;
 
   for (int i=0;i<nofTracks;i++)
     {
@@ -258,6 +291,95 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	
 	CopyAODtoFemtoTrack(aodtrack, trackCopy, pwg2aodtrack);
 	
+	if (mcP) {
+	  // Fill the hidden information with the simulated data
+	  Int_t pLabel = aodtrack->GetLabel();
+	  AliAODMCParticle *tPart = GetParticleWithLabel(mcP, (TMath::Abs(aodtrack->GetLabel())));
+
+	  // Check the mother information
+	  
+	  // Using the new way of storing the freeze-out information
+	  // Final state particle is stored twice on the stack
+	  // one copy (mother) is stored with original freeze-out information
+	  //   and is not tracked
+	  // the other one (daughter) is stored with primary vertex position
+	  //   and is tracked
+	  
+	  // Freeze-out coordinates
+	  double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
+	  fpx = tPart->Xv() - fV1[0];
+	  fpy = tPart->Yv() - fV1[1];
+	  fpz = tPart->Zv() - fV1[2];
+	  fpt = tPart->T();
+
+	  AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
+	  tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
+
+	  fpx *= 1e13;
+	  fpy *= 1e13;
+	  fpz *= 1e13;
+	  fpt *= 1e13;
+	  
+	  //      cout << "Looking for mother ids " << endl;
+	  if (motherids[TMath::Abs(aodtrack->GetLabel())]>0) {
+	    //	cout << "Got mother id" << endl;
+	    AliAODMCParticle *mother = GetParticleWithLabel(mcP, motherids[TMath::Abs(aodtrack->GetLabel())]);
+	    // Check if this is the same particle stored twice on the stack
+	    if ((mother->GetPdgCode() == tPart->GetPdgCode() || (mother->Px() == tPart->Px()))) {
+	      // It is the same particle
+	      // Read in the original freeze-out information
+	      // and convert it from to [fm]
+	      
+	      // EPOS style 
+	      // 	  fpx = mother->Xv()*1e13*0.197327;
+	      // 	  fpy = mother->Yv()*1e13*0.197327;
+	      // 	  fpz = mother->Zv()*1e13*0.197327;
+	      // 	  fpt = mother->T() *1e13*0.197327*0.5;
+	      
+	      
+	      // Therminator style 
+	      fpx = mother->Xv()*1e13;
+	      fpy = mother->Yv()*1e13;
+	      fpz = mother->Zv()*1e13;
+	      fpt = mother->T() *1e13*3e10;
+	      
+	    }
+	  }
+	  
+//       if (fRotateToEventPlane) {
+// 	double tPhi = TMath::ATan2(fpy, fpx);
+// 	double tRad = TMath::Hypot(fpx, fpy);
+	
+// 	fpx = tRad*TMath::Cos(tPhi - tReactionPlane);
+// 	fpy = tRad*TMath::Sin(tPhi - tReactionPlane);
+//       }
+
+	  tInfo->SetPDGPid(tPart->GetPdgCode());
+
+// 	  if (fRotateToEventPlane) {
+// 	    double tPhi = TMath::ATan2(tPart->Py(), tPart->Px());
+// 	    double tRad = TMath::Hypot(tPart->Px(), tPart->Py());
+	    
+// 	    tInfo->SetTrueMomentum(tRad*TMath::Cos(tPhi - tReactionPlane),
+// 				   tRad*TMath::Sin(tPhi - tReactionPlane),
+// 				   tPart->Pz());
+// 	  }
+//       else
+	  tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
+	  Double_t mass2 = (tPart->E() *tPart->E() -
+			    tPart->Px()*tPart->Px() -
+			    tPart->Py()*tPart->Py() -
+			    tPart->Pz()*tPart->Pz());
+	  if (mass2>0.0)
+	    tInfo->SetMass(TMath::Sqrt(mass2));
+	  else 
+	    tInfo->SetMass(0.0);
+	  
+	  tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
+	  trackCopy->SetHiddenInfo(tInfo);
+
+	}
+
 	double pxyz[3];
 	aodtrack->PxPyPz(pxyz);//reading noconstarined momentum
 	const AliFmThreeVectorD ktP(pxyz[0],pxyz[1],pxyz[2]);
@@ -272,11 +394,113 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	// Read in the normal AliAODTracks 
 	const AliAODTrack *aodtrack=fEvent->GetTrack(i); // getting the AODtrack directly
 	
-	if (!aodtrack->TestFilterBit(fFilterBit))
-	  continue;
+// 	if (!aodtrack->TestFilterBit(fFilterBit))
+// 	  continue;
 	
 	CopyAODtoFemtoTrack(aodtrack, trackCopy, 0);
 	
+	if (mcP) {
+	  // Fill the hidden information with the simulated data
+	  Int_t pLabel = aodtrack->GetLabel();
+	  AliAODMCParticle *tPart = GetParticleWithLabel(mcP, (TMath::Abs(aodtrack->GetLabel())));
+	  
+	  AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
+	  double fpx=0.0, fpy=0.0, fpz=0.0, fpt=0.0;
+	  if (!tPart) {
+	    fpx = fV1[0];
+	    fpy = fV1[1];
+	    fpz = fV1[2];
+	    tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
+	    tInfo->SetPDGPid(0);
+	    tInfo->SetTrueMomentum(0.0, 0.0, 0.0);
+	    tInfo->SetEmissionPoint(0.0, 0.0, 0.0, 0.0);
+	    tInfo->SetMass(0);
+	  }
+	  else {
+	    // Check the mother information
+	  
+	    // Using the new way of storing the freeze-out information
+	    // Final state particle is stored twice on the stack
+	    // one copy (mother) is stored with original freeze-out information
+	    //   and is not tracked
+	    // the other one (daughter) is stored with primary vertex position
+	    //   and is tracked
+	    
+	    // Freeze-out coordinates
+	    fpx = tPart->Xv() - fV1[0];
+	    fpy = tPart->Yv() - fV1[1];
+	    fpz = tPart->Zv() - fV1[2];
+	    //	  fpt = tPart->T();
+	    
+	    tInfo->SetGlobalEmissionPoint(fpx, fpy, fpz);
+	    
+	    fpx *= 1e13;
+	    fpy *= 1e13;
+	    fpz *= 1e13;
+	    //	  fpt *= 1e13;
+	    
+	    //      cout << "Looking for mother ids " << endl;
+	    if (motherids[TMath::Abs(aodtrack->GetLabel())]>0) {
+	      //	cout << "Got mother id" << endl;
+	      AliAODMCParticle *mother = GetParticleWithLabel(mcP, motherids[TMath::Abs(aodtrack->GetLabel())]);
+	      // Check if this is the same particle stored twice on the stack
+	      if (mother) {
+		if ((mother->GetPdgCode() == tPart->GetPdgCode() || (mother->Px() == tPart->Px()))) {
+		  // It is the same particle
+		  // Read in the original freeze-out information
+		  // and convert it from to [fm]
+		  
+		  // EPOS style 
+		  // 	  fpx = mother->Xv()*1e13*0.197327;
+		  // 	  fpy = mother->Yv()*1e13*0.197327;
+		  // 	  fpz = mother->Zv()*1e13*0.197327;
+		  // 	  fpt = mother->T() *1e13*0.197327*0.5;
+		  
+		  
+		  // Therminator style 
+		  fpx = mother->Xv()*1e13;
+		  fpy = mother->Yv()*1e13;
+		  fpz = mother->Zv()*1e13;
+		  //	      fpt = mother->T() *1e13*3e10;
+		  
+		}
+	      }
+	    }
+	    
+	    //       if (fRotateToEventPlane) {
+	    // 	double tPhi = TMath::ATan2(fpy, fpx);
+	    // 	double tRad = TMath::Hypot(fpx, fpy);
+	    
+	    // 	fpx = tRad*TMath::Cos(tPhi - tReactionPlane);
+	    // 	fpy = tRad*TMath::Sin(tPhi - tReactionPlane);
+	    //       }
+	    
+	    tInfo->SetPDGPid(tPart->GetPdgCode());
+	    
+	    // 	  if (fRotateToEventPlane) {
+	    // 	    double tPhi = TMath::ATan2(tPart->Py(), tPart->Px());
+	    // 	    double tRad = TMath::Hypot(tPart->Px(), tPart->Py());
+	    
+	    // 	    tInfo->SetTrueMomentum(tRad*TMath::Cos(tPhi - tReactionPlane),
+	    // 				   tRad*TMath::Sin(tPhi - tReactionPlane),
+	    // 				   tPart->Pz());
+	    // 	  }
+	    //       else
+	    tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
+	    Double_t mass2 = (tPart->E() *tPart->E() -
+			      tPart->Px()*tPart->Px() -
+			      tPart->Py()*tPart->Py() -
+			      tPart->Pz()*tPart->Pz());
+	    if (mass2>0.0)
+	      tInfo->SetMass(TMath::Sqrt(mass2));
+	    else 
+	      tInfo->SetMass(0.0);
+	    
+	    tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
+	  }
+	  trackCopy->SetHiddenInfo(tInfo);
+	}
+
 	double pxyz[3];
 	aodtrack->PxPyPz(pxyz);//reading noconstarined momentum
 	const AliFmThreeVectorD ktP(pxyz[0],pxyz[1],pxyz[2]);
@@ -293,6 +517,8 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     }
 
   tEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
+
+  if (mcP) delete motherids;
 
   cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
 }
@@ -353,9 +579,9 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack,
   tFemtoTrack->SetITSncls(1);     
   tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());       
   tFemtoTrack->SetTPCncls(1);       
-  tFemtoTrack->SetTPCnclsF(-1);      
-  tFemtoTrack->SetTPCsignalN(-1); 
-  tFemtoTrack->SetTPCsignalS(-1); 
+  tFemtoTrack->SetTPCnclsF(1);      
+  tFemtoTrack->SetTPCsignalN(1); 
+  tFemtoTrack->SetTPCsignalS(1); 
 
   if (tPWG2AODTrack) {
     // Copy the PWG2 specific information if it exists
@@ -390,6 +616,41 @@ void AliFemtoEventReaderAOD::SetFilterBit(UInt_t ibit)
   fFilterBit = (1 << (ibit));
 }
 
+void AliFemtoEventReaderAOD::SetReadMC(unsigned char a)
+{
+  fReadMC = a;
+}
+
+AliAODMCParticle* AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel)
+{
+  if (aLabel < 0) return 0;
+  AliAODMCParticle *aodP;
+  Int_t posstack = 0;
+  if (aLabel > mcP->GetEntries())
+    posstack = mcP->GetEntries();
+  else
+    posstack = aLabel;
+
+  aodP = (AliAODMCParticle *) mcP->At(posstack);
+  if (aodP->GetLabel() > posstack) {
+    do {
+      aodP = (AliAODMCParticle *) mcP->At(posstack);
+      if (aodP->GetLabel() == aLabel) return aodP;
+      posstack--;
+    }
+    while (posstack > 0);
+  }
+  else {
+    do {
+      aodP = (AliAODMCParticle *) mcP->At(posstack);
+      if (aodP->GetLabel() == aLabel) return aodP;
+      posstack++;
+    }
+    while (posstack < mcP->GetEntries());
+  }
+  
+  return 0;
+}
 
 
 
