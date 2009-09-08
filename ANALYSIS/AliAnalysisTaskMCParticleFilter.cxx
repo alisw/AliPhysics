@@ -244,8 +244,6 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
   // TODO ADD MC VERTEX
 
   AliAODMCHeader *aodMCHo = (AliAODMCHeader *) aod->FindListObject("mcHeader");
-  printf("Found AOD MC Header %p\n", (void *) aodMCHo);
-
   // Get the proper MC Collision Geometry
   AliGenEventHeader* mcEH = mcE->GenEventHeader();
   AliCollisionGeometry *colG = dynamic_cast<AliCollisionGeometry *>(mcEH);
