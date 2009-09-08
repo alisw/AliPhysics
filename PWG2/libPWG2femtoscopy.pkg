@@ -4,7 +4,6 @@ SRCS= FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoLikeSignAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoVertexAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoVertexMultAnalysis.cxx \
-      FEMTOSCOPY/AliFemto/AliFemtoAnalysisReactionPlane.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoBPLCMS3DCorrFctn.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoQinvCorrFctn.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoBasicEventCut.cxx \
