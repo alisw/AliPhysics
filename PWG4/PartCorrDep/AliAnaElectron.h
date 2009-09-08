@@ -176,15 +176,25 @@ public:
   TH2F * fhPhiUnknown; //! Azimuthal angle of unknown  electron vs transverse momentum 
   TH2F * fhEtaUnknown; //! Pseudorapidity of unknown electron vs tranvserse momentum 
 
+  TH1F* fhPtHadron;     //!Pt distribution of reco charged hadrons
+			//!(pi,k,p) in EMCAL acceptance
+  TH1F* fhPtEleTrkDet;  //!Pt distribution of reco electrons using
+			//!pid info from tracking detectors only in
+			//!EMCAL acceptance
+
   //B-tagging
   TH2F * fhBtagCut1; //! B-tagging result for cut1 (minv>1.0)
   TH2F * fhBtagCut2; //! B-tagging result for cut2 (minv>1.5)
   TH2F * fhBtagCut3; //! B-tagging result for cut3 (minv>1.8)
+  TH2F * fhBtagQA1;  //! B-tagging : QA of pairDca vs decaylength
+  TH2F * fhBtagQA2;  //! B-tagging : QA of signDca vs mass
 
   //MC
   TNtuple *fMCEleNtuple; //! Ntuple of MC electrons
+  TH1F* fhPtMCHadron;    //! Pt distribution of MC charged hadrons
+			 //! (pi,k,p) in EMCAL acceptance
 
-  ClassDef(AliAnaElectron,3)
+  ClassDef(AliAnaElectron,4)
 
 } ;
  

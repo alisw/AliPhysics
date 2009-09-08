@@ -1,4 +1,4 @@
- /**************************************************************************
+/**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -74,10 +74,11 @@ AliAnaElectron::AliAnaElectron()
   fhPtZDecay(0),fhPhiZDecay(0),fhEtaZDecay(0),
   fhPtPrompt(0),fhPhiPrompt(0),fhEtaPrompt(0),
   fhPtUnknown(0),fhPhiUnknown(0),fhEtaUnknown(0),
+  fhPtHadron(0),fhPtEleTrkDet(0),
   //B-tagging
-  fhBtagCut1(0),fhBtagCut2(0),fhBtagCut3(0),
+  fhBtagCut1(0),fhBtagCut2(0),fhBtagCut3(0),fhBtagQA1(0),fhBtagQA2(0),
   //MC
-  fMCEleNtuple(0)
+  fMCEleNtuple(0),fhPtMCHadron(0)
 {
   //default ctor
   
@@ -115,10 +116,12 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
    fhPtZDecay(g.fhPtZDecay),fhPhiZDecay(g.fhPhiZDecay),fhEtaZDecay(g.fhEtaZDecay),
    fhPtPrompt(g.fhPtPrompt),fhPhiPrompt(g.fhPhiPrompt),fhEtaPrompt(g.fhEtaPrompt),
    fhPtUnknown(g.fhPtUnknown),fhPhiUnknown(g.fhPhiUnknown),fhEtaUnknown(g.fhEtaUnknown),
+   fhPtHadron(g.fhPtHadron),fhPtEleTrkDet(g.fhPtEleTrkDet),
    //B-tagging
    fhBtagCut1(g.fhBtagCut1),fhBtagCut2(g.fhBtagCut2),fhBtagCut3(g.fhBtagCut3),
+   fhBtagQA1(g.fhBtagQA1),fhBtagQA2(g.fhBtagQA2),
    //MC
-   fMCEleNtuple(g.fMCEleNtuple)
+    fMCEleNtuple(g.fMCEleNtuple),fhPtMCHadron(g.fhPtMCHadron)
 {
   // cpy ctor
   
@@ -193,12 +196,19 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fhPtUnknown = g.fhPtUnknown;
   fhPhiUnknown = g.fhPhiUnknown;
   fhEtaUnknown = g.fhEtaUnknown;
-  fMCEleNtuple = g.fMCEleNtuple;
+
+  fhPtHadron = g.fhPtHadron;
+  fhPtEleTrkDet = g.fhPtEleTrkDet;
 
   //B-tagging
   fhBtagCut1 = g.fhBtagCut1;
   fhBtagCut2 = g.fhBtagCut2;
   fhBtagCut3 = g.fhBtagCut3;
+  fhBtagQA1 = g.fhBtagQA1;
+  fhBtagQA2 = g.fhBtagQA2;
+
+  fMCEleNtuple = g.fMCEleNtuple;
+  fhPtMCHadron = g.fhPtMCHadron;
 
   return *this;
   
@@ -262,8 +272,8 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fh2TrackEtaVsClusterEta) ;
   
   //photonic electron checks
-  fh1OpeningAngle = new TH1F("hOpeningAngle","Opening angle between electron pairs",100,0.,TMath::Pi());
-  fh1MinvPhoton = new TH1F("hMinvPhoton","Invariant mass of electron pairs",100,0.,2.);
+  fh1OpeningAngle = new TH1F("hOpeningAngle","Opening angle between e+e- pairs",100,0.,TMath::Pi());
+  fh1MinvPhoton = new TH1F("hMinvPhoton","Invariant mass of e+e- pairs",200,0.,2.);
 
   outputContainer->Add(fh1OpeningAngle);
   outputContainer->Add(fh1MinvPhoton);
@@ -288,14 +298,24 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhPhiPE) ; 
   outputContainer->Add(fhEtaPE) ;
 
+  fhPtHadron = new TH1F("hPtHadron","Charged hadrons w/in EMCAL acceptance",nptbins,ptmin,ptmax);
+  fhPtEleTrkDet = new TH1F("hPtEleTrkDet","Electrons identified by tracking detectors w/in EMCAL acceptance",nptbins,ptmin,ptmax);
+
+  outputContainer->Add(fhPtHadron);
+  outputContainer->Add(fhPtEleTrkDet);
+
   //B-tagging
   fhBtagCut1 = new TH2F("hbtag_cut1","B-tag result cut1", 10,0,10 ,nptbins,ptmin,ptmax);
   fhBtagCut2 = new TH2F("hbtag_cut2","B-tag result cut2", 10,0,10 ,nptbins,ptmin,ptmax);
   fhBtagCut3 = new TH2F("hbtag_cut3","B-tag result cut3", 10,0,10 ,nptbins,ptmin,ptmax);
-  
+  fhBtagQA1  = new TH2F("hbtag_qa1" ,"B-tag QA: pairDCA vs length", 100,0,0.2 ,100,0,1.0);
+  fhBtagQA2  = new TH2F("hbtag_qa2" ,"B-tag QA: signDCA vs mass"  , 200,-0.5,0.5 ,100,0,10);
+
   outputContainer->Add(fhBtagCut1) ;
   outputContainer->Add(fhBtagCut2) ;
   outputContainer->Add(fhBtagCut3) ;
+  outputContainer->Add(fhBtagQA1) ;
+  outputContainer->Add(fhBtagQA2) ;
 
   if(IsDataMC()){
     
@@ -360,6 +380,10 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       fMCEleNtuple = new TNtuple("MCEleNtuple","MC Electron Ntuple","mctag:pt:phi:eta:x:y:z");
       outputContainer->Add(fMCEleNtuple) ;
     }
+
+    fhPtMCHadron = new TH1F("hPtMCHadron","MC Charged hadrons w/in EMCAL acceptance",nptbins,ptmin,ptmax);
+
+    outputContainer->Add(fhPtMCHadron);
 
   }//Histos with MC
   
@@ -521,6 +545,10 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       Double_t res = 999.;
       Double_t pOverE = -999.;
 
+      Int_t pidProb = track->GetMostProbablePID();
+      if(pidProb == AliAODTrack::kPion || pidProb == AliAODTrack::kKaon || pidProb == AliAODTrack::kProton) fhPtHadron->Fill(track->Pt());
+      if(pidProb == AliAODTrack::kElectron) fhPtEleTrkDet->Fill(track->Pt());
+
       Bool_t isElectron = kFALSE;      
       //For tracks in EMCAL acceptance, pair them with all clusters
       //and fill the dEta vs dPhi for these pairs:
@@ -543,13 +571,13 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 
 	res = sqrt(dphi*dphi + deta*deta);
 	fh1dR->Fill(res);
-	fh2dEtadPhiMatched->Fill(deta,dphi);
 
 	/////////////////////////////////
 	//Perform electron cut analysis//
 	/////////////////////////////////
 	//Good match
 	if(res < fResidualCut) {
+	  fh2dEtadPhiMatched->Fill(deta,dphi);
 	  iCluster = iclus;
 
 	  Int_t tmctag = -1;
@@ -568,7 +596,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	  }
 
 	  if(fWriteNtuple) {
-	    fEleNtuple->Fill(tmctag,cmctag,track->Pt(),track->Phi(),track->Eta(),track->P(),clus->E(),deta,dphi,clus->GetNCells(),dEdx,track->GetMostProbablePID(),xy,z);
+	    fEleNtuple->Fill(tmctag,cmctag,track->Pt(),track->Phi(),track->Eta(),track->P(),clus->E(),deta,dphi,clus->GetNCells(),dEdx,pidProb,xy,z);
 	  }
 	  
 	  fh2MatchdEdx->Fill(track->P(),dEdx);
@@ -726,7 +754,6 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       }
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromB))
 	{
-	  printf("\t\tTAG VALUE = %d\n",tag);
 	  fhPtBottom  ->Fill(ptele);
 	  fhPhiBottom ->Fill(ptele,phiele);
 	  fhEtaBottom ->Fill(ptele,etaele);
@@ -783,14 +810,23 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     if(GetReader()->ReadStack()) {
       for(Int_t ipart = 0; ipart < stack->GetNtrack(); ipart++) {
 	primary = stack->Particle(ipart);
+	TLorentzVector mom;
+	primary->Momentum(mom);
+	Bool_t in = GetFidutialCut()->IsInFidutialCut(mom,fCalorimeter);
+	if(primary->Pt() < GetMinPt()) continue;
+	if(!in) continue;
+
 	Int_t pdgcode = primary->GetPdgCode();
+	if(TMath::Abs(pdgcode) == 211 || TMath::Abs(pdgcode) == 321 || TMath::Abs(pdgcode) == 2212)
+	  fhPtMCHadron->Fill(primary->Pt());
+
 	//we only care about electrons
 	if(TMath::Abs(pdgcode) != 11) continue;
 	//we only want TRACKABLE electrons (TPC 85-250cm)
 	if(primary->R() > 200.) continue;
 	//Ignore low pt electrons
 	if(primary->Pt() < 0.2) continue;
-
+	
 	//find out what the ancestry of this electron is
 	Int_t mctag = -1;
 	Int_t input = 0;
@@ -805,8 +841,8 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       
     } else if(GetReader()->ReadAODMCParticles()) {
       Int_t npart0 = mcparticles0->GetEntriesFast();
-	  Int_t npart1 = 0;
-	  if(mcparticles1) npart1 = mcparticles1->GetEntriesFast();
+      Int_t npart1 = 0;
+      if(mcparticles1) npart1 = mcparticles1->GetEntriesFast();
       Int_t npart = npart0+npart1;
       for(Int_t ipart = 0; ipart < npart; ipart++) {
 	if(ipart < npart0) aodprimary = (AliAODMCParticle*)mcparticles0->At(ipart);
@@ -815,7 +851,18 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	  printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", ipart);
 	  continue;
 	}
+
+	Double_t mom[3] = {0.,0.,0.};
+	aodprimary->PxPyPz(mom);
+	TLorentzVector mom2(mom,0.);	
+	Bool_t in = GetFidutialCut()->IsInFidutialCut(mom2,fCalorimeter);
+	if(aodprimary->Pt() < GetMinPt()) continue;
+	if(!in) continue;
+
 	Int_t pdgcode = aodprimary->GetPdgCode();
+	if(TMath::Abs(pdgcode) == 211 || TMath::Abs(pdgcode) == 321 || TMath::Abs(pdgcode) == 2212)
+	  fhPtMCHadron->Fill(aodprimary->Pt());
+
 	//we only care about electrons
 	if(TMath::Abs(pdgcode) != 11) continue;
 	//we only want TRACKABLE electrons (TPC 85-250cm)
@@ -823,6 +870,27 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	if(radius > 200.) continue;
 	
 	if(aodprimary->Pt() < 0.2) continue;
+
+	/*
+	if(aodprimary->GetDaughter(0) > 0) {
+	  Int_t dindex = aodprimary->GetDaughter(0);
+	  //printf("####AODMCparticle daughter index %d and flag value %d\n",dindex,aodprimary->GetFlag());
+	  Double_t dxv = 0.;
+	  Double_t dyv = 0.;
+	  if(ipart < npart0) {
+	    dxv =  ((AliAODMCParticle*)mcparticles0->At(dindex))->Xv();
+	    dyv =  ((AliAODMCParticle*)mcparticles0->At(dindex))->Yv();
+	  } else {
+	    dxv =  ((AliAODMCParticle*)mcparticles1->At(dindex))->Xv();
+	    dyv =  ((AliAODMCParticle*)mcparticles1->At(dindex))->Yv();
+	  }
+	  Double_t dradius = TMath::Sqrt(dxv*dxv+dyv*dyv);
+	  //printf("\tDaughter production radius = %2.2f\n",dradius); 
+	  //if you convert/decay within the trackable zone, discard
+	  //from ntuple ?
+	  //	  if(dradius < 200.) continue;
+	}
+	*/
 
 	//find out what the ancestry of this electron is
 	Int_t mctag = -1;
@@ -877,7 +945,7 @@ Int_t AliAnaElectron::GetBtag(AliAODTrack * tr )
 
     Int_t ncls2 = 0;
     for(Int_t l = 0; l < 6; l++) if(TESTBIT(track2->GetITSClusterMap(),l)) ncls2++;
-    if (ncls2 < fITSCut) return 0;
+    if (ncls2 < fITSCut) continue;
 
     if(track2->Pt() < fAssocPtCut) continue;
 
@@ -968,6 +1036,8 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
     printf(">>ComputeSdca:: pairDCA=%f, length=%f \n", pairdca,decaylength );
   }
 
+  if (masscut<1.1) fhBtagQA1->Fill(pairdca,decaylength);
+
   if (emomAtB.Mag()>0 && pairdca < fPairDcaCut && decaylength < fDecayLenCut ) {
     TVector3 sumMom = emomAtB+hmomAtB;
     Double_t ener1 = sqrt(pow(emomAtB.Mag(),2) + massE*massE);
@@ -975,7 +1045,12 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
     Double_t ener3 = sqrt(pow(hmomAtB.Mag(),2) + massE*massE);
     Double_t mass = sqrt(pow((ener1+ener2),2) - pow(sumMom.Mag(),2));
     Double_t massPhot = sqrt(pow((ener1+ener3),2) - pow(sumMom.Mag(),2));
-    if (mass > masscut && massPhot > 0.1) signDca = decayvector.Dot(emomAtB)/emomAtB.Mag();
+    Double_t sDca = decayvector.Dot(emomAtB)/emomAtB.Mag();
+
+    if (masscut<1.1) fhBtagQA2->Fill(sDca, mass);
+
+    if (mass > masscut && massPhot > 0.1) signDca = sDca;
+    
     if(GetDebug() > 0) printf("\t>>ComputeSdca:: mass=%f \n", mass);
     if(GetDebug() > 0) printf("\t>>ComputeSdca:: sec vtx-signdca :%f\n",signDca);
   }
@@ -1012,15 +1087,16 @@ Bool_t AliAnaElectron::IsItPhotonic(const AliAODPWG4Particle* part)
   //Loop on stored AOD electrons and compute the angle differences and Minv
   for (Int_t k2 =0; k2 < GetOutputAODBranch()->GetEntriesFast() ; k2++) {
     AliAODPWG4Particle* part2 = (AliAODPWG4Particle*) GetOutputAODBranch()->At(k2);
+    Int_t track2Id = part2->GetTrackLabel(0);
+    if(trackId == track2Id) continue;
     Int_t pdg2 = part2->GetPdg();
     if(TMath::Abs(pdg2) != AliCaloPID::kElectron) continue;
     if(part2->GetDetector() != fCalorimeter) continue;
 
-    //JLK: Check opp. sign pairs only ?
-    if(pdg1*pdg2 < 0) continue;
+    //JLK: Check opp. sign pairs only
+    if(pdg1*pdg2 > 0) continue; //skip same-sign pairs
 
     //propagate to common vertex and check opening angle
-    Int_t track2Id = part2->GetTrackLabel(0);
     AliAODTrack* track2 = (AliAODTrack*)GetAODCTS()->At(track2Id);
     if(!track2) {
       if(GetDebug() >0) printf("AliAnaElectron::IsItPhotonic - problem getting the partner track.  Continuing on to the next one");
