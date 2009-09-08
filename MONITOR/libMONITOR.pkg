@@ -13,12 +13,6 @@ SRCS:=  AliMonitorPlot.cxx AliMonitorHisto.cxx AliMonitorTrend.cxx \
 
 CINTHDRS:= $(SRCS:.cxx=.h)
 
-ifdef DIMDIR
-
-SRCS += SORNotifier.cxx
-
-endif
-
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MONITORLinkDef.h
@@ -27,9 +21,12 @@ EINCLUDE:= TPC ITS RAW
 
 ifdef DIMDIR
 
-EINCLUDE += $(DIMDIR)/dim
-ELIBS := dim
-ELIBSDIR := $(DIMDIR)/$(ALICE_TARGET)
+SRCS          += SORNotifier.cxx
+EINCLUDE      += $(DIMDIR)/dim
+ELIBS         := dim
+ELIBSDIR      := $(DIMDIR)/$(ALICE_TARGET)
+PACKCXXFLAGS  := $(CXXFLAGS) -DALI_DIM
+PACKDCXXFLAGS := $(CXXFLAGSNO) -DALI_DIM
 
 endif
 
