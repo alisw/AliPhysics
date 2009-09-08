@@ -1646,40 +1646,40 @@ Bool_t AliGeomManager::LoadAlignObjsFromCDBSingleDet(const char* detName, TObjAr
 //_____________________________________________________________________________
 Bool_t AliGeomManager::ApplyAlignObjsToGeom(TObjArray& alignObjArray, Bool_t ovlpcheck)
 {
-  // Read collection of alignment objects (AliAlignObj derived) saved
-  // in the TClonesArray alObjArray and apply them to gGeoManager
-  //
-  alignObjArray.Sort();
-  Int_t nvols = alignObjArray.GetEntriesFast();
+    // Read collection of alignment objects (AliAlignObj derived) saved
+    // in the TClonesArray alObjArray and apply them to gGeoManager
+    //
+    alignObjArray.Sort();
+    Int_t nvols = alignObjArray.GetEntriesFast();
 
-  Bool_t flag = kTRUE;
+    Bool_t flag = kTRUE;
 
-  for(Int_t j=0; j<nvols; j++)
-  {
-    AliAlignObj* alobj = (AliAlignObj*) alignObjArray.UncheckedAt(j);
-    flag = alobj->ApplyToGeometry(ovlpcheck);
-    if(!flag)
+    for(Int_t j=0; j<nvols; j++)
     {
-      AliDebugClass(5,Form("Error applying alignment object for volume %s !",alobj->GetSymName()));
-    }else{
-      AliDebugClass(5,Form("Alignment object for volume %s applied successfully",alobj->GetSymName()));
+	AliAlignObj* alobj = (AliAlignObj*) alignObjArray.UncheckedAt(j);
+	if(!alobj->ApplyToGeometry(ovlpcheck))
+	{
+	    flag = kFALSE;
+	    AliDebugClass(5,Form("Error applying alignment object for volume %s !",alobj->GetSymName()));
+	}else{
+	    AliDebugClass(5,Form("Alignment object for volume %s applied successfully",alobj->GetSymName()));
+	}
+
     }
 
-  }
+    if (AliDebugLevelClass() > 5) {
+	fgGeometry->CheckOverlaps(0.001);
+	TObjArray* ovexlist = fgGeometry->GetListOfOverlaps();
+	if(ovexlist->GetEntriesFast()){  
+	    AliErrorClass("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
+	    fgGeometry->PrintOverlaps();
+	}
+    }
 
-  if (AliDebugLevelClass() > 5) {
-    fgGeometry->CheckOverlaps(0.001);
-    TObjArray* ovexlist = fgGeometry->GetListOfOverlaps();
-    if(ovexlist->GetEntriesFast()){  
-      AliErrorClass("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
-      fgGeometry->PrintOverlaps();
-   }
-  }
+    // Update the TGeoPhysicalNodes
+    fgGeometry->RefreshPhysicalNodes();
 
-  // Update the TGeoPhysicalNodes
-  fgGeometry->RefreshPhysicalNodes();
-
-  return flag;
+    return flag;
 
 }
 
