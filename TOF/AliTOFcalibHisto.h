@@ -109,6 +109,9 @@ public TObject
   static const Float_t fgkFlatCableLength[91]; /* strip flat-cable length */
   static const Float_t fgkInterfaceCardLength[48]; /* interface card length */
 
+  static Bool_t fgCableCorrectionFlag[kNcorrections]; // cable correction flag
+  static Bool_t fgFullCorrectionFlag[kNcorrections]; // full correction flag
+
   TH1F *fCalibConst[kNcalibConsts]; // calib const array
   TH1F *fCalibMap[kNcalibMaps]; // calib map array
   TH1F *fCalibPar[kNcalibPars]; // calib par array
@@ -135,6 +138,8 @@ public TObject
   /* setters */
   static void SetCalibHistoFileName(const Char_t *value) {fgCalibHistoFileName = value;}; /* set calib histo file name */
   static void SetCalibParFileName(const Char_t *value) {fgCalibParFileName = value;}; /* set calib par file name */
+  static void SetCableCorrectionFlag(Int_t i, Bool_t flag) {if (i < kNcorrections) fgCableCorrectionFlag[i] = flag;}; // set cable correction flag
+  static void SetFullCorrectionFlag(Int_t i, Bool_t flag) {if (i < kNcorrections) fgFullCorrectionFlag[i] = flag;}; // set full correction flag
 
   /* methods */
   static Int_t GetIndexEO(Int_t ddl, Int_t trm, Int_t chain, Int_t tdc, Int_t channel) {return (channel + 8 * tdc + 120 * chain + 240 * trm + 2400 * ddl);}; /* get index EO */
@@ -147,6 +152,9 @@ public TObject
   Float_t GetCorrection(Int_t corr, Int_t index, Float_t tot = 0.); /* get correction */
   Float_t GetNominalCorrection(Int_t index); /* get nominal correction */
   void ApplyNominalCorrection(AliESDtrack *track); /* apply nominal corrections */
+
+  Float_t GetCableCorrection(Int_t index); /* get cable correction */
+  Float_t GetFullCorrection(Int_t index); /* get full correction */
   
   ClassDef(AliTOFcalibHisto, 1);
   

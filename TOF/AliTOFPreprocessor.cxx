@@ -1171,11 +1171,10 @@ AliTOFPreprocessor::FillWithCosmicCalibration(AliTOFChannelOnlineArray *cal)
   
   /* loop over channel index */
   for (Int_t iIndex = 0; iIndex < fNChannels; iIndex++) {
-    cal->SetDelay(iIndex, calibHisto.GetNominalCorrection(iIndex));
+    cal->SetDelay(iIndex, calibHisto.GetFullCorrection(iIndex));
   }
   
 }
-
 
 //_____________________________________________________________________________
 

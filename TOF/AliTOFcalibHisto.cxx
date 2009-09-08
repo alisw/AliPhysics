@@ -168,6 +168,36 @@ const Float_t AliTOFcalibHisto::fgkInterfaceCardLength[48] = {
 
 //__________________________________________________________________________
 
+Bool_t AliTOFcalibHisto::fgCableCorrectionFlag[kNcorrections] = {
+  kFALSE, // kDDLBCcorr
+  kTRUE, // kAmphenolCableCorr
+  kTRUE, // kFlatCableCorr
+  kTRUE, // kInterfaceCardCorr
+  kFALSE, // kDDLdelayCorr
+  kFALSE, // kHPTDCdelayCorr
+  kFALSE, // kFEAchDelayCorr
+  kFALSE, // kFEAdelayCorr
+  kFALSE, // kTRMdelayCorr
+  kFALSE, // kTimeSlewingCorr
+};
+
+//__________________________________________________________________________
+
+Bool_t AliTOFcalibHisto::fgFullCorrectionFlag[kNcorrections] = {
+  kFALSE, // kDDLBCcorr
+  kTRUE, // kAmphenolCableCorr
+  kTRUE, // kFlatCableCorr
+  kTRUE, // kInterfaceCardCorr
+  kTRUE, // kDDLdelayCorr
+  kTRUE, // kHPTDCdelayCorr
+  kTRUE, // kFEAchDelayCorr
+  kTRUE, // kFEAdelayCorr
+  kTRUE, // kTRMdelayCorr
+  kFALSE, // kTimeSlewingCorr
+};
+
+//__________________________________________________________________________
+
 AliTOFcalibHisto::AliTOFcalibHisto() :
   TObject(),
   fCalibConst(),
@@ -493,5 +523,31 @@ AliTOFcalibHisto::ApplyNominalCorrection(AliESDtrack *track)
   Int_t index = track->GetTOFCalChannel();
   Double_t time = rawTime - 1.e3 * GetNominalCorrection(index);
   track->SetTOFsignal(time);
+}
+
+//__________________________________________________________________________
+
+Float_t
+AliTOFcalibHisto::GetCableCorrection(Int_t index)
+{
+  /* get cable correction */
+  Float_t corr = 0;
+  for (Int_t iCorr = 0; iCorr < kNcorrections; iCorr++)
+    if (fgCableCorrectionFlag[iCorr])
+      corr += GetCorrection(iCorr, index);
+  return corr;
+}
+
+//__________________________________________________________________________
+
+Float_t
+AliTOFcalibHisto::GetFullCorrection(Int_t index)
+{
+  /* get full correction */
+  Float_t corr = 0;
+  for (Int_t iCorr = 0; iCorr < kNcorrections; iCorr++)
+    if (fgFullCorrectionFlag[iCorr])
+      corr += GetCorrection(iCorr, index);
+  return corr;
 }
 
