@@ -10,6 +10,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TList.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
@@ -25,6 +26,7 @@
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoModelGlobalHiddenInfo.h"
 #include "AliGenHijingEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
 
 #include "AliVertexerTracks.h"
 
@@ -45,7 +47,8 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine():
   fCurFile(0),
   fEvent(0x0),
   fStack(0x0),
-  fGenHeader(0x0)
+  fGenHeader(0x0),
+  fRotateToEventPlane(0)
 {
   //constructor with 0 parameters , look at default settings 
 }
@@ -61,7 +64,8 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   fCurFile(0),
   fEvent(0x0),
   fStack(0x0),
-  fGenHeader(0x0)
+  fGenHeader(0x0),
+  fRotateToEventPlane(0)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -71,6 +75,7 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   fCurFile = aReader.fCurFile;
   fEvent = new AliESDEvent();
   fStack = aReader.fStack;
+  fRotateToEventPlane = aReader.fRotateToEventPlane;
 }
 //__________________
 AliFemtoEventReaderESDChainKine::~AliFemtoEventReaderESDChainKine()
@@ -95,7 +100,7 @@ AliFemtoEventReaderESDChainKine& AliFemtoEventReaderESDChainKine::operator=(cons
   fEvent = new AliESDEvent();
   fStack = aReader.fStack;
   fGenHeader = aReader.fGenHeader;
-
+  fRotateToEventPlane = aReader.fRotateToEventPlane;
   return *this;
 }
 //__________________
@@ -195,12 +200,24 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
   hbtEvent->SetPrimVertPos(vertex);
   hbtEvent->SetPrimVertCov(fVCov);
 
-  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
-	
   Double_t tReactionPlane = 0;
+
+  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);	
+  if (!hdh) {
+    AliGenCocktailEventHeader *cdh = dynamic_cast<AliGenCocktailEventHeader *> (fGenHeader);
+    if (cdh) {
+      TList *tGenHeaders = cdh->GetHeaders();
+      for (int ihead = 0; ihead<tGenHeaders->GetEntries(); ihead++) {
+	hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);	
+	if (hdh) break;
+      }
+    }
+  }
+
   if (hdh)
     {
       tReactionPlane = hdh->ReactionPlaneAngle();
+      cout << "Got reaction plane " << tReactionPlane << endl;
     }
   //starting to reading tracks
   int nofTracks=0;  //number of reconstructed tracks in event
@@ -234,6 +251,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 
   for (int i=0;i<nofTracks;i++)
     {
+      //      cout << "Reading track " << i << endl;
       bool  tGoodMomentum=true; //flaga to chcek if we can read momentum of this track
 		
       AliFemtoTrack* trackCopy = new AliFemtoTrack();	
@@ -270,12 +288,21 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	param->PropagateToDCA(fEvent->GetPrimaryVertexTPC(), (fEvent->GetMagneticField()), 10000, impact, covimpact);
 	param->GetPxPyPz(pxyz);//reading noconstarined momentum
 
+	if (fRotateToEventPlane) {
+	  double tPhi = TMath::ATan2(pxyz[1], pxyz[0]);
+	  double tRad = TMath::Hypot(pxyz[0], pxyz[1]);
+	  
+	  pxyz[0] = tRad*TMath::Cos(tPhi - tReactionPlane);
+	  pxyz[1] = tRad*TMath::Sin(tPhi - tReactionPlane);
+	}
+
 	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
 	if (v.mag() < 0.0001) {
 	  //	  cout << "Found 0 momentum ???? " << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
 	  delete trackCopy;
 	  continue;
 	}
+
 	trackCopy->SetP(v);//setting momentum
 	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
 
@@ -301,12 +328,22 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	else
 	  tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
 	
+
+	if (fRotateToEventPlane) {
+	  double tPhi = TMath::ATan2(pxyz[1], pxyz[0]);
+	  double tRad = TMath::Hypot(pxyz[0], pxyz[1]);
+	  
+	  pxyz[0] = tRad*TMath::Cos(tPhi - tReactionPlane);
+	  pxyz[1] = tRad*TMath::Sin(tPhi - tReactionPlane);
+	}
+
 	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
 	if (v.mag() < 0.0001) {
 	  //	  cout << "Found 0 momentum ???? "  << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
 	  delete trackCopy;
 	  continue;
 	}
+
 	trackCopy->SetP(v);//setting momentum
 	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
 	const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
@@ -390,25 +427,54 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       fpx *= 1e13;
       fpy *= 1e13;
       fpz *= 1e13;
-      fpt *= 1e13*3e10;
+      fpt *= 1e13;
 
+      //      cout << "Looking for mother ids " << endl;
       if (motherids[TMath::Abs(esdtrack->GetLabel())]>0) {
+	//	cout << "Got mother id" << endl;
  	TParticle *mother = fStack->Particle(motherids[TMath::Abs(esdtrack->GetLabel())]);
  	// Check if this is the same particle stored twice on the stack
   	if ((mother->GetPdgCode() == tPart->GetPdgCode() || (mother->Px() == tPart->Px()))) {
 	  // It is the same particle
 	  // Read in the original freeze-out information
 	  // and convert it from to [fm]
+
+	  // EPOS style 
+// 	  fpx = mother->Vx()*1e13*0.197327;
+// 	  fpy = mother->Vy()*1e13*0.197327;
+// 	  fpz = mother->Vz()*1e13*0.197327;
+// 	  fpt = mother->T() *1e13*0.197327*0.5;
+	  
+
+	  // Therminator style 
  	  fpx = mother->Vx()*1e13;
  	  fpy = mother->Vy()*1e13;
  	  fpz = mother->Vz()*1e13;
- 	  fpt = mother->T()*1e13*3e10;
+ 	  fpt = mother->T() *1e13*3e10;
 	  
 	}
       }
 
+      if (fRotateToEventPlane) {
+	double tPhi = TMath::ATan2(fpy, fpx);
+	double tRad = TMath::Hypot(fpx, fpy);
+	
+	fpx = tRad*TMath::Cos(tPhi - tReactionPlane);
+	fpy = tRad*TMath::Sin(tPhi - tReactionPlane);
+      }
+
       tInfo->SetPDGPid(tPart->GetPdgCode());
-      tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
+
+      if (fRotateToEventPlane) {
+	double tPhi = TMath::ATan2(tPart->Py(), tPart->Px());
+	double tRad = TMath::Hypot(tPart->Px(), tPart->Py());
+	
+	tInfo->SetTrueMomentum(tRad*TMath::Cos(tPhi - tReactionPlane),
+			       tRad*TMath::Sin(tPhi - tReactionPlane),
+			       tPart->Pz());
+      }
+      else
+	tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
       Double_t mass2 = (tPart->Energy() *tPart->Energy() -
 			tPart->Px()*tPart->Px() -
 			tPart->Py()*tPart->Py() -
@@ -420,6 +486,8 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 
       tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
       trackCopy->SetHiddenInfo(tInfo);
+
+      //      cout << "Got freeze-out " << fpx << " " << fpy << " " << fpz << " " << fpt << " " <<  mass2 << " " << tPart->GetPdgCode() << endl; 
       
       //decision if we want this track
       //if we using diffrent labels we want that this label was use for first time 
@@ -436,6 +504,8 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	}
 		
     }
+
+  delete motherids;
   
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
   fCurEvent++;	
@@ -468,6 +538,10 @@ void AliFemtoEventReaderESDChainKine::SetGenEventHeader(AliGenEventHeader *aGenH
 void AliFemtoEventReaderESDChainKine::SetUseTPCOnly(const bool usetpconly)
 {
   fUseTPCOnly=usetpconly;
+}
+void AliFemtoEventReaderESDChainKine::SetRotateToEventPlane(short dorotate)
+{
+  fRotateToEventPlane=dorotate;
 }
 
 bool AliFemtoEventReaderESDChainKine::GetUseTPCOnly() const
