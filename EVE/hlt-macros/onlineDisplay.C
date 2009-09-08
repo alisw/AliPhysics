@@ -8,14 +8,96 @@
 // - geom_gentle_muon.C
 // ***************************************************
 
-#ifndef __CINT__
-#include "unistd.h"
-#include <TEvePointSet.h>
-#include "EveBase/AliEveEventManager.h"
-#include <AliCluster.h>
-#include <TPC/AliTPCClustersRow.h>
-#include <EveHLT/AliEveHOMERManager.h>
-#include <TTimer.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+//*****************  ROOT ******************************************
+#include "TTimer.h"
+#include "TRandom.h"
+#include "TVirtualPad.h"
+#include "TGLViewer.h"
+#include "TThread.h"
+#include "TGFileBrowser.h"
+#include "TStyle.h"
+#include "TList.h"
+#include "TDirectory.h"
+#include "TFile.h"
+#include "TH2.h"
+#include "TCanvas.h"
+#include "TColor.h"
+
+//******************* ROOT/EVE ****************************************
+#include "TEveManager.h"
+#include "TEvePointSet.h"
+#include "TEveTrack.h"
+#include "TEveVSDStructs.h"
+#include "TEveTrackPropagator.h"
+#include "TEveScene.h"
+#include "TEveElement.h"
+#include "TEveUtil.h"
+#include "TEveEventManager.h"
+#include "TEveProjectionAxes.h"
+#include "TEveWindowManager.h"
+#include "TEveViewer.h"
+#include "TEveText.h"
+#include "TEveProjectionManager.h"
+#include "TEveGeoShape.h"
+
+//******************** AliRoot ***************************************
+#include "AliESDEvent.h"
+#include "AliCDBManager.h"
+#include "AliRawReaderMemory.h"
+#include "AliTPCRawStream.h"
+#include "AliGeomManager.h"
+//********************* AliRoot/EVE **************************************
+#include "AliHLTHOMERManager.h"
+#include "AliEveHOMERManager.h"
+#include "AliEveTPCLoader.h" 
+#include "AliEveTPCData.h"
+#include "AliEveITSDigitsInfo.h"
+#include "AliEveITSModule.h"
+#include "AliEveMacroExecutor.h"
+#include "AliEveMacro.h"
+#include "AliEveTrack.h"
+//***********************AliRoot/HLT ************************************
+#include "AliHLTHOMERBlockDesc.h"
+#include "AliHLTHOMERReader.h"
+
+#include <AliHLTMUONUtils.h>
+#include "AliHLTMUONDataBlockReader.h"
+#include "AliHLTTriggerDecision.h"
+
+#include "AliHLTGlobalTriggerDecision.h"
+
+#include "tracking-ca/AliHLTTPCCATrackParam.h"
+
+//*********************AliRoot/MUON **************************************
+#include "AliMUONCalibrationData.h"
+#include "AliMUONVCalibParam.h"
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONGeometryDetElement.h"
+
+#include "AliMpCDB.h"
+#include "AliMpDDLStore.h"
+#include "AliMpDetElement.h"
+#include "AliMpDEIterator.h"
+#include "AliMpVSegmentation.h"
+#include "AliMpSegmentation.h"
+#include "AliMpTriggerCrate.h"
+#include "AliMpLocalBoard.h"
+//***********************************************************
+
+#include "hlt_structs.C"
+#include "hlt_alieve_init.C"
+#include "geom_gentle_hlt.C"
+#include "alice-macros/esd_tracks.C"
+
+//**************************AliRoot TRD *********************
+#include "AliHLTTRDCluster.h"
+#include "AliTRDcluster.h"
+
+
+
+//***********************************************************
 #endif
 
 class TEveTrackList;
@@ -28,6 +110,7 @@ class TEveElement;
 class TEveText;
 class AliHLTTriggerDecision;
 class TEvePointSet;
+class TEvePointSetArray;
 class AliHLTHOMERBlockDesc;
 
 class TEveViewer;
@@ -65,12 +148,15 @@ Bool_t gShowTRD      = kFALSE;
 
 Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
+Int_t gHistoCount = 0;
+
 // -----------------------------------------------------------------
 // --                         Members                            --
 // -----------------------------------------------------------------
 
 // -- Timer for automatic event loop
 TTimer                                    eventTimer;
+TTimer                                    eventTimerFast;
 
 // -- HOMERManager
 AliEveHOMERManager*                       gHomerManager    = 0;
@@ -78,7 +164,10 @@ AliEveHOMERManager*                       gHomerManager    = 0;
 // -- Cluster members
 TEvePointSet*                             gPHOSClusters    = 0;
 TEvePointSet*                             gTPCClusters     = 0;
+TEvePointSet*                             gTRDClusters     = 0;
+TEvePointSetArray*                        gTRDColClusters  = 0;
 TEvePointSet*                             gSPDClusters     = 0;
+TEvePointSet*                             gMUONClusters    = 0;
 
 // -- Text output members
 TEveText*                                 gHLTText         = 0;
@@ -86,16 +175,24 @@ TEveText*                                 gHLTText         = 0;
 // -- Tracks members
 TEveTrackList*                            gTPCTrack        = 0;
 
-// -- Canvas for histos
-TCanvas*                                  gCanvas          = 0;
+// -- Canvas for histograms
+TCanvas*                                  gTRDCanvas      = 0;
+TCanvas*                                  gCanvas         = 0;
+
+// -- TRD event counter
+Int_t                                     gTRDEvents      = 0;
+Int_t                                     gTRDBins        = 12;
+
+// --- Flag if eventloop is running
+Bool_t                                    gEventLoopStarted = kFALSE;
 
 // -----------------------------------------------------------------
 // --                          Methods                            --
 // -----------------------------------------------------------------
 
-Int_t initializeEveViewer( Bool_t showExtraGeo );
+Int_t initializeEveViewer( Bool_t TPCMode, Bool_t MUONMode, Bool_t TRDMode );
 
-Int_t nextEvent();
+void nextEvent();
 
 Int_t processEvent();
 
@@ -105,16 +202,23 @@ Int_t processEsdTracks( AliHLTHOMERBlockDesc* block, TEveTrackList* cont );
 
 Int_t processHLTRDLST( AliHLTHOMERBlockDesc* block );
 
-Int_t processROOTTOBJ( AliHLTHOMERBlockDesc* block );
+Int_t processROOTTOBJ( AliHLTHOMERBlockDesc* block, TEveText* text );
 
-Int_t processTPCClusters (AliHLTHOMERBlockDesc * block, TEvePointSet cont );
+Int_t processTPCClusters (AliHLTHOMERBlockDesc * block, TEvePointSet *cont );
+
+Int_t processTRDClusters (AliHLTHOMERBlockDesc * block, TEvePointSet * cont, TEvePointSetArray *contCol);
+
+Int_t processTRDHistograms (AliHLTHOMERBlockDesc * block, TCanvas * canvas );
+
+Int_t processMUONClusters( AliHLTHOMERBlockDesc* block);
+
 
 // #################################################################
 // #################################################################
 // #################################################################
 
 // -----------------------------------------------------------------
-void onlineDisplay(Bool_t showMuonGeo=kFALSE) {
+void onlineDisplay(Bool_t TPCMode = kTRUE, Bool_t MUONMode = kFALSE, Bool_t TRDMode = kFALSE) {
 
   // -- Loading Geometry
   // ---------------------
@@ -148,23 +252,31 @@ void onlineDisplay(Bool_t showMuonGeo=kFALSE) {
 
   // -- Initialize pointsets and add macros
   // ----------------------------------------
-  TEveUtil::LoadMacro("hlt_alieve_init.C");
-  hlt_alieve_init(".", -1);
+  //TEveUtil::LoadMacro("hlt_alieve_init.C");
+  //hlt_alieve_init(".", -1);
 
   // -- Initialize Eve
   // -------------------
-  initializeEveViewer( showMuonGeo );
+  initializeEveViewer( TPCMode, MUONMode, TRDMode);
 
   // -- Finalize Eve
   // -----------------
   gSystem->ProcessEvents();
   gEve->Redraw3D(kTRUE);
 
-  gHomerManager->ConnectEVEtoHOMER("TPC" );
+  if ( TPCMode ) {
+    gHomerManager->ConnectEVEtoHOMER("TPC" );
+  } else if ( MUONMode ) {
+    gHomerManager->ConnectEVEtoHOMER("MUON");
+  } else if( TRDMode ) {
+    gHomerManager->ConnectEVEtoHOMER("TRD");  
+  } else {
+    cout<<" No detectors selected, nothing will be displayed"<<endl;
+  }	
 }
 
-// -----------------------------------------------------------------
-Int_t initializeEveViewer( Bool_t showMuonGeo ) {
+// -------------------------------------------------------------------------
+Int_t initializeEveViewer( Bool_t TPCMode, Bool_t MUONMode, Bool_t TRDMode) {
   
   //==============================================================================
   // Geometry, scenes, projections and viewers
@@ -175,10 +287,11 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   
   // -- Disable extra geometry
   // ---------------------------
-  if ( ! showMuonGeo ) {
+  if ( ! MUONMode ) {
     gShowMUON = gShowMUONRPhi = gShowMUONRhoZ = kFALSE;
   }
-  
+
+
   // -- Load Geometry
   // ------------------
   TEveUtil::LoadMacro("geom_gentle_hlt.C");
@@ -188,12 +301,11 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   gGeomGentleTRD  = geom_gentle_trd();
 
   if (gShowMUON) {
-    TEveUtil::LoadMacro("geom_gentle_muon.C");
     gGeomGentleMUON = geom_gentle_muon(kFALSE);
   }
 
-  // -- Scenes
-  // -----------
+
+  // Scenes
 
   gRPhiGeomScene  = gEve->SpawnNewScene("RPhi Geometry",
                     "Scene holding projected geometry for the RPhi view.");
@@ -204,8 +316,8 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   gRhoZEventScene = gEve->SpawnNewScene("RhoZ Event Data",
 		    "Scene holding projected geometry for the RhoZ view.");
 
-  // -- Projection managers
-  // ------------------------
+
+  // Projection managers
 
   gRPhiMgr = new TEveProjectionManager();
   gRPhiMgr->SetProjection(TEveProjection::kPT_RPhi);
@@ -223,7 +335,7 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   gRPhiMgr->SetCurrentDepth(-10);
   gRPhiMgr->ImportElements(gGeomGentleRPhi, gRPhiGeomScene);
   gRPhiMgr->SetCurrentDepth(0);
-  if (gShowTRD)      gRPhiMgr->ImportElements(gGeomGentleTRD, gRPhiGeomScene);
+  gRPhiMgr->ImportElements(gGeomGentleTRD, gRPhiGeomScene);
   if (gShowMUONRPhi) gRPhiMgr->ImportElements(gGeomGentleMUON, gRPhiGeomScene);
 
   gRhoZMgr = new TEveProjectionManager();
@@ -245,8 +357,8 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   if (gShowTRD)      gRhoZMgr->ImportElements(gGeomGentleTRD, gRhoZGeomScene);
   if (gShowMUONRhoZ) gRhoZMgr->ImportElements(gGeomGentleMUON, gRhoZGeomScene);
 
-  // -- Viewers
-  // ------------
+  // Viewers
+
 
   TEveWindowSlot *slot = 0;
   TEveWindowPack *pack = 0;
@@ -275,8 +387,8 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   gRhoZView->AddScene(gRhoZGeomScene);
   gRhoZView->AddScene(gRhoZEventScene);
 
-  // -- List of Viewers
-  // --------------------
+
+  // List of Viewers
 
   TEveViewerList *viewerlist = new TEveViewerList();
   viewerlist->AddElement(gEve->GetDefaultViewer());
@@ -349,15 +461,20 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
 
   // -- QA Viewer
   // --------------
+# endif
 
-
+  // Histograms
+if(TRDMode){
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
   slot->StartEmbedding();
   
-//  gCanvas = new TCanvas("c1","c1", 600, 400);
-  slot->StopEmbedding("QA histograms");
-#endif
-
+  gTRDCanvas = new TCanvas("c2","c2", 600, 400);
+  gTRDCanvas->Divide(3,2);
+  slot->StopEmbedding("TRD histograms");
+}
+ else if(TPCMode){
+   ;
+ }
 
   //==============================================================================
   // Additional GUI components
@@ -365,7 +482,7 @@ Int_t initializeEveViewer( Bool_t showMuonGeo ) {
   
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
   TEveWindowTab *storeTab = slot->MakeTab();
-  store_tab->SetElementNameTitle("WindowStore",
+  storeTab->SetElementNameTitle("WindowStore",
    				 "Undocked windows whose previous container is not known\n"
  				 "are placed here when the main-frame is closed.");
   gEve->GetWindowManager()->SetDefaultContainer(storeTab);
@@ -393,10 +510,26 @@ Int_t processEvent() {
   // -- Reset
   // ----------
   if ( gTPCClusters ) gTPCClusters->Reset();
+  if ( gMUONClusters ) gMUONClusters->Reset();
+  if ( gTRDClusters ) gTRDClusters->Reset();
+
+  if ( gTRDColClusters ) {
+    for (Int_t ii = 1; ii <= gTRDBins; ++ii) 
+      gTRDColClusters->GetBin(ii)->Reset();
+  }
+
+
+  if ( gTRDCanvas )   gTRDCanvas->Clear();
   if ( gPHOSClusters ) gPHOSClusters->Reset();
   if ( gTPCTrack )    gTPCTrack->DestroyElements();
 
-  if ( gHomerManager == NULL) {
+ if ( gTRDCanvas ) {
+    gTRDCanvas->Clear();
+    gTRDCanvas->Divide(3,2);
+  }
+  gHistoCount = 0;
+
+  if ( gHomerManager->GetBlockList() == NULL) {
     printf ("No BlockList ... ");
     return -1;
   }
@@ -474,6 +607,79 @@ Int_t processEvent() {
       }
     } // else if ( ! block->GetDetector().CompareTo("TPC") ) {
 
+    // ++ TRD BLOCK
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    else if ( ! block->GetDetector().CompareTo("TRD") ) {
+       
+      // -- Process TRD Clusters
+      if ( ! block->GetDataType().CompareTo("CLUSTERS") ) {
+
+	if(!gTRDClusters){
+	  gTRDClusters = new TEvePointSet("TRD Clusters");
+	  gTRDClusters->SetMainColor(kBlue);
+	  gTRDClusters->SetMarkerStyle((Style_t)kFullDotSmall);
+	  // gEve->AddElement(gTRDClusters);
+	} 
+	//	gTRDClusters->ElementChanged();
+
+	if(!gTRDColClusters){
+
+	  gTRDColClusters = new TEvePointSetArray("TRD Clusters Colorized");
+	  gTRDColClusters->SetMainColor(kRed);
+	  gTRDColClusters->SetMarkerStyle(4); // antialiased circle
+	  //	  gTRDColClusters->SetMarkerStyle((Style_t)kFullDotSmall);
+	  gTRDColClusters->SetMarkerSize(0.8);
+	  gTRDColClusters->InitBins("Cluster Charge", gTRDBins, 0., gTRDBins*100.);
+
+	  TColor::SetPalette(1, 0); // Spectrum palette
+	  const Int_t nCol = TColor::GetNumberOfColors();
+	  for (Int_t ii = 0; ii < gTRDBins+1; ++ii)
+	    gTRDColClusters->GetBin(ii)->SetMainColor(TColor::GetColorPalette(ii * nCol / (gTRDBins+2)));
+
+	  gEve->AddElement(gTRDColClusters);
+	} 
+
+	iResult = processTRDClusters( block, gTRDClusters, gTRDColClusters );
+
+	//	gTRDClusters->ElementChanged();
+	gTRDColClusters->ElementChanged();
+      }
+
+      // -- Process TRD Histograms
+      else if ( block->GetDataType().CompareTo("ROOTHIST") == 0 ) {
+	iResult = processTRDHistograms( block, gTRDCanvas );     
+      }
+
+    } // else if ( ! block->GetDetector().CompareTo("TRD") ) {
+    
+
+
+    // ++ MUON BLOCK
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    else if ( ! block->GetDetector().CompareTo("MUON") ) {
+		if (gShowMUON) {
+      // -- MUON
+      //-----------------------------------------------------
+      if ( (block->GetDataType().CompareTo("RECHITS") == 0) || (block->GetDataType().CompareTo("TRIGRECS") == 0) ) {
+
+	if ( !gMUONClusters ) {
+	  gMUONClusters = new TEvePointSet("MUON RecHits");
+	  gMUONClusters->SetMainColor(kBlue);
+	  gMUONClusters->SetMarkerStyle(20);
+	  gEve->AddElement(gMUONClusters);
+	}
+	
+	// ** Process Clusters
+ 	processMUONClusters( block );
+	
+ 	gMUONClusters->ElementChanged();
+	
+      }//MUON Clusters
+	}	
+    }
+
+
 
     // ++ SPD  BLOCK
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -498,10 +704,13 @@ Int_t processEvent() {
 
 
   if ( gTPCClusters ) gTPCClusters->ResetBBox();
+  if ( gTRDClusters ) gTRDClusters->ResetBBox();
+  //  if ( gTRDColClusters ) gTRDColClusters->ResetBBox();
   if ( gPHOSClusters ) gPHOSClusters->ResetBBox();
+  if ( gMUONClusters ) gMUONClusters->ResetBBox();
   if ( gSPDClusters ) gSPDClusters->ResetBBox();
   if ( gTPCTrack ) gTPCTrack->ElementChanged();
-
+  if ( gTRDCanvas) gTRDCanvas->Update();
 
   // -- Set EventID in Window Title  
   // --------------------------------------------
@@ -513,7 +722,7 @@ Int_t processEvent() {
   // --------------------------------------------
 
   // XXX Primary vertex ... to be retrieved from the ESD
-  // Double_t x[3] = { 0, 0, 0 };
+   Double_t x[3] = { 0, 0, 0 };
 
   TEveElement* top = gEve->GetCurrentEvent();
 
@@ -553,15 +762,28 @@ void stopLoopEvent() {
 }
 
 // -----------------------------------------------------------------
+void loopEventFast() {
+  eventTimerFast.SetCommand("nextEvent()");
+  eventTimerFast.Start(500);
+}
+
+// -----------------------------------------------------------------
+void stopLoopEventFast() {
+  eventTimerFast.Stop();
+}
+
+
+// -----------------------------------------------------------------
 Int_t processITSHist(AliHLTHOMERBlockDesc* block) {
-  TH2F* hist = block->GetTObject();
+  TH2F* hist =  dynamic_cast<TH2F*> (block->GetTObject());
   
   gCanvas->cd();
   hist->Draw();
   return 0;
 }
+
 // -----------------------------------------------------------------
-Int_t processHLTRDLST(AliHLTHOMERBlockDesc* block) {
+Int_t processHLTRDLST(AliHLTHOMERBlockDesc* /*block*/) {
 
   return 0;
 }
@@ -569,19 +791,19 @@ Int_t processHLTRDLST(AliHLTHOMERBlockDesc* block) {
 // -----------------------------------------------------------------
 Int_t processISPDClusters(AliHLTHOMERBlockDesc* block) {
   cout<<"ISPD dump:"<<endl;
-  TObject ob = block->GetTObject();
-  ob.Dump();
+  TObject *ob = block->GetTObject();
+  ob->Dump();
   
   return 0;
 }
 
 // -----------------------------------------------------------------
-Int_t processROOTTOBJ(AliHLTHOMERBlockDesc* block, TEveText* et) {
+Int_t processROOTTOBJ(AliHLTHOMERBlockDesc* block, TEveText* /*et*/) {
   
   // -- AliHLTGlobalTriggerDecision
   if ( ! block->GetClassName().CompareTo("AliHLTGlobalTriggerDecision") ) {
 
-    AliHLTGlobalTriggerDecision *trig = dynamic_cast<AliHLTGlobalTriggerDecision*> block->GetTObject();
+    AliHLTGlobalTriggerDecision *trig = dynamic_cast<AliHLTGlobalTriggerDecision*>( block->GetTObject());
     trig->Print(); 
     
     // et->SetText("balle");;
@@ -608,7 +830,7 @@ Int_t processEsdTracks( AliHLTHOMERBlockDesc* block, TEveTrackList* cont ) {
   printf( "Number of ESD Tracks : %d \n", esd->GetNumberOfTracks());
 
   for (Int_t iter = 0; iter < esd->GetNumberOfTracks(); ++iter) {
-    AliEveTrack* track = esd_make_track(esd->GetTrack(iter), cont);
+    AliEveTrack* track = dynamic_cast<AliEveTrack*>(esd_make_track(esd->GetTrack(iter), cont));
     cont->AddElement(track);
   }
   
@@ -622,7 +844,7 @@ Int_t processEsdTracks( AliHLTHOMERBlockDesc* block, TEveTrackList* cont ) {
 Int_t processTPCClusters(AliHLTHOMERBlockDesc* block, TEvePointSet* cont) {
   
   Int_t   slice = block->GetSubDetector();
-  Int_t   patch = block->GetSubSubDetector();
+  //Int_t   patch = block->GetSubSubDetector();
   Float_t phi   = ( slice + 0.5 ) * TMath::Pi() / 9.0;  
   Float_t cos   = TMath::Cos( phi );
   Float_t sin   = TMath::Sin( phi );
@@ -639,4 +861,159 @@ Int_t processTPCClusters(AliHLTHOMERBlockDesc* block, TEvePointSet* cont) {
   
   return 0;
 }
+
+
+//****************************************************************************
  
+Int_t processMUONClusters(AliHLTHOMERBlockDesc* block) {
+
+  Int_t iResult = 0;
+  
+  unsigned long size = block->GetSize();
+  int * buffer ;
+
+  buffer = (int *)block->GetData();
+//   cout<<"block size : "<<size<<", buffer : "<<buffer<<", DataType : "<<block->GetDataType()<<endl;
+
+// //   for(int idata=0;idata<int(size);idata++)
+// //     printf("\tbuffer[%d] : %d\n",idata,buffer[idata]);
+  
+  
+  
+  if(block->GetDataType().CompareTo("RECHITS") == 0){
+
+    AliHLTMUONRecHitsBlockReader trackblock((char*)buffer, size);
+    const AliHLTMUONRecHitStruct* hit = trackblock.GetArray();
+    
+    for(AliHLTUInt32_t ientry = 0; ientry < trackblock.Nentries(); ientry++){
+//       cout << setw(13) << left << hit->fX << setw(0);
+//       cout << setw(13) << left << hit->fY << setw(0);
+//       cout << hit->fZ << setw(0) << endl;
+      if(hit->fX!=0.0 && hit->fY!=0.0 && hit->fZ!=0.0)
+	gMUONClusters->SetNextPoint(hit->fX,hit->fY,hit->fZ);
+      hit++;
+      
+    }// track hit loop
+  }
+
+  else{// if rechits
+    //     if(!strcmp((BlockType(ULong64_t(reader->GetBlockDataType(i)))).Data(),"TRIGRECS")){
+  
+    AliHLTMUONTriggerRecordsBlockReader trigblock(buffer, size);
+    const AliHLTMUONTriggerRecordStruct* trigrec = trigblock.GetArray();
+    for(AliHLTUInt32_t ientry = 0; ientry < trigblock.Nentries(); ientry++){
+      
+      const AliHLTMUONRecHitStruct* hit = &trigrec->fHit[0];
+      for(AliHLTUInt32_t ch = 0; ch < 4; ch++)
+	{
+	  cout << setw(10) << left << ch + 11 << setw(0);
+	  cout << setw(13) << left << hit->fX << setw(0);
+	  cout << setw(13) << left << hit->fY << setw(0);
+	  cout << hit->fZ << setw(0) << endl;
+	  if(hit->fX!=0.0 && hit->fY!=0.0 && hit->fZ!=0.0)
+	    gMUONClusters->SetNextPoint(hit->fX,hit->fY,hit->fZ);
+	  hit++;
+	}// trig chamber loop
+      trigrec++;
+    }//trig hit loop
+  }//else trigger
+
+  return iResult;
+}
+
+ 
+// -----------------------------------------------------------------
+Int_t processTRDClusters(AliHLTHOMERBlockDesc* block, TEvePointSet *cont, TEvePointSetArray *contCol) {
+  
+  Int_t iResult = 0;
+
+  Int_t   sm = block->GetSubDetector();
+  if ( sm == 6 ) sm = 7;
+
+  Float_t phi   = ( sm + 0.5 ) * TMath::Pi() / 9.0;  
+  Float_t cos   = TMath::Cos( phi );
+  Float_t sin   = TMath::Sin( phi );
+  
+  AliHLTTRDCluster* ptrData = reinterpret_cast<AliHLTTRDCluster*> (block->GetData());
+  UInt_t ptrSize = block->GetSize();
+
+  for (UInt_t size = 0; size+sizeof(AliHLTTRDCluster) <= ptrSize; size+=sizeof(AliHLTTRDCluster) ) {
+    AliHLTTRDCluster *cluster = reinterpret_cast<AliHLTTRDCluster*>(&(ptrData[size]));
+   
+    AliTRDcluster *trdCluster = new AliTRDcluster;
+    cluster->ExportTRDCluster( trdCluster );
+   
+    contCol->Fill(cos*trdCluster->GetX() - sin*trdCluster->GetY(), 
+		   sin*trdCluster->GetX() + cos*trdCluster->GetY(), 
+		   trdCluster->GetZ(),
+		   trdCluster->GetQ() );    
+     
+    cont->SetNextPoint(cos*trdCluster->GetX() - sin*trdCluster->GetY(), 
+    		       sin*trdCluster->GetX() + cos*trdCluster->GetY(), trdCluster->GetZ());    
+  
+  }
+  
+  return iResult;
+}
+
+// -----------------------------------------------------------------
+Int_t processTRDHistograms(AliHLTHOMERBlockDesc* block, TCanvas * canvas) {
+
+  Int_t iResult = 0;
+
+  if ( ! block->GetClassName().CompareTo("TH1D")) {
+    TH1D* histo = reinterpret_cast<TH1D*>(block->GetTObject());
+    //    list->Add(hist->Clone());
+
+    ++gHistoCount;
+  
+    TVirtualPad* pad = canvas->cd(gHistoCount);
+    histo->Draw();
+    pad->SetGridy();
+    pad->SetGridx();
+
+    if ( ! strcmp(histo->GetName(), "nscls") ) {
+      gTRDEvents = static_cast<Int_t>(histo->GetEntries());
+	 histo->GetXaxis()->SetRangeUser(0.,15.);
+    }
+
+    if ( ! strcmp(histo->GetName(),"sclsdist") ||
+	 ! strcmp(histo->GetName(),"qClsCand") )
+      pad->SetLogy();
+  }
+  else if ( ! block->GetClassName().CompareTo("TH2F")) {
+    TH2F *hista = reinterpret_cast<TH2F*>(block->GetTObject());
+    //    list->Add(hist->Clone());
+
+    ++gHistoCount;
+    
+    TVirtualPad* pad = canvas->cd(gHistoCount);
+
+    if (gTRDEvents > 0)
+      hista->Scale(1./gTRDEvents);
+
+    hista->Draw("COLZ");
+    pad->SetLogz();
+    pad->SetGridy();
+    pad->SetGridx();
+  }
+
+  return iResult;
+}
+
+// -----------------------------------------------------------------
+void EventLoopFast() {
+  
+  // Start/stop event loop
+  if ( gEventLoopStarted ) {
+    loopEventFast();
+    gEventLoopStarted = kTRUE;
+  }
+  else {
+    stopLoopEventFast();
+    gEventLoopStarted = kFALSE;
+  }
+}
+
+
+//****************************************************************************

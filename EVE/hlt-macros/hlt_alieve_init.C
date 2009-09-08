@@ -6,33 +6,33 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TString.h"
+#include "TFolder.h"
+#include "TPRegexp.h"
+#include "TEveUtil.h"
 
-void hlt_alieve_init(const Text_t* path   = ".", Int_t event=0,
-                 const Text_t* esdfile = 0,
-                 const Text_t* aodfile = 0,
-                 const Text_t* rawfile = 0,
-		 const Text_t* cdburi  = 0,
-		 Bool_t assert_runloader = kFALSE,
-                 Bool_t assert_esd       = kFALSE,
-                 Bool_t assert_aod       = kFALSE,
-                 Bool_t assert_raw       = kFALSE)
-{
-  Info("alieve_init", "Adding standard macros.");
-  TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
-  alieve_init_import_macros();
-  gSystem->cd(hack);
+#include "TEveManager.h"
+#include "TEvePointSet.h"
+#include "TEveBrowser.h"
 
-  alieve_init_basic_vizdb();
-  // Temporarily assert also default vizdb.
-  TEveUtil::AssertMacro("VizDB_scan.C");
+#include "TSystemDirectory.h"
+#include "TGFileBrowser.h"
+#include "TEveMacro.h"
+#endif
 
-  gSystem->ProcessEvents();
-}
+using namespace std;
+
+typedef list<string> StringList;
+
 
 void alieve_init_import_macros()
 {
   // Put macros in the list of browsables, add a macro browser to
   // top-level GUI.
+  typedef list<string> StringList;
 
   TString macdir("$(ALICE_ROOT)/EVE/alice-macros");
   gSystem->ExpandPathName(macdir);
@@ -43,8 +43,8 @@ void alieve_init_import_macros()
   {
     char* filename;
     TPMERegexp re("\\.C$");
-    std::list<string> names; // This form understood by cint (fails with std::string).
-    while ((filename = gSystem->GetDirEntry(dirhandle)) != 0)
+    StringList names; // This form understood by cint (fails with std::string).
+    while ((filename = (char*)gSystem->GetDirEntry(dirhandle)) != 0)
     {
       if (re.Match(filename))
 	names.push_back(filename);
@@ -55,7 +55,7 @@ void alieve_init_import_macros()
     //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
     // f->Add(new TEveMacro(Form("%s/%s", macdir.Data(), filename)));
     char fullName[1000];
-    for (std::list<string>::iterator si=names.begin(); si!=names.end(); ++si)
+    for (StringList::iterator si=names.begin(); si!=names.end(); ++si)
     {
       sprintf(fullName,"%s/%s", macdir.Data(), si->c_str());
       f->Add(new TEveMacro(fullName));
@@ -94,3 +94,20 @@ void alieve_init_basic_vizdb()
   ps->SetMarkerStyle(2);
   gEve->InsertVizDBEntry("Clusters", ps);
 }
+
+void hlt_alieve_init()
+{
+  typedef list<string> StringList;
+
+  Info("alieve_init", "Adding standard macros.");
+  TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
+  alieve_init_import_macros();
+  gSystem->cd(hack);
+
+  alieve_init_basic_vizdb();
+  // Temporarily assert also default vizdb.
+  TEveUtil::AssertMacro("VizDB_scan.C");
+
+  gSystem->ProcessEvents();
+}
+
