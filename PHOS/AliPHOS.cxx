@@ -524,12 +524,7 @@ void AliPHOS::Digits2Raw()
 	// open new file and write dummy header
 	TString fileName = AliDAQ::DdlFileName("PHOS",iDDL);
 
-	TString path = gSystem->Getenv("ALICE_ROOT");
-	path += "/PHOS/mapping/RCU";
-	path += iRCU;
-	path += ".data";
-
-	mapping[iDDL] = (AliAltroMapping*)maps->At(iRCU);
+	mapping[iDDL] = (AliAltroMapping*)maps->At(iDDL);
 	buffer[iDDL]  = new AliAltroBuffer(fileName.Data(),mapping[iDDL]);
 	buffer[iDDL]->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
       }
