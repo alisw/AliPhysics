@@ -158,9 +158,9 @@ void AliFemtoModelBPLCMSCorrFctn::AddRealPair( AliFemtoPair* pair)
   
   Double_t weight = fManager->GetWeight(pair);
 
-  double qOut = fabs(pair->QOutCMS());
-  double qSide = fabs(pair->QSideCMS());
-  double qLong = fabs(pair->QLongCMS());
+  double qOut = (pair->QOutCMS());
+  double qSide = (pair->QSideCMS());
+  double qLong = (pair->QLongCMS());
 
   fNumerator3DTrue->Fill(qOut, qSide, qLong, weight);
   fNumeratorTrue->Fill(pair->QInv(), weight);
@@ -174,9 +174,9 @@ void AliFemtoModelBPLCMSCorrFctn::AddMixedPair( AliFemtoPair* pair){
 
   Double_t weight = fManager->GetWeight(pair);
 
-  double qOut = fabs(pair->QOutCMS());
-  double qSide = fabs(pair->QSideCMS());
-  double qLong = fabs(pair->QLongCMS());
+  double qOut = (pair->QOutCMS());
+  double qSide = (pair->QSideCMS());
+  double qLong = (pair->QLongCMS());
 
   fNumerator3DFake->Fill(qOut, qSide, qLong, weight);
   fDenominator3D->Fill(qOut, qSide, qLong, 1.0);
