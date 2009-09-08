@@ -95,9 +95,6 @@ void AliCaloFastAltroFitv0::FastFit(Int_t* t, Int_t* y, Int_t nPoints, Double_t 
   fTau = tau;
   fPed = ped;
 
-  if(fTfit) delete [] fTfit;
-  if(fAmpfit) delete [] fAmpfit;
-
   Int_t ii=0;
   CutRightPart(t,y,nPoints,tMax, ii);
   nPoints = ii;
@@ -133,7 +130,7 @@ Double_t ped, Double_t tMax)
 
   if(h==0) return;
   Int_t nPoints = h->GetNbinsX();
-  if(nPoints<=0) return;
+  if(nPoints<2) return; // Sep 07, 09
 
   Int_t* t = new Int_t[nPoints];
   Int_t* y = new Int_t[nPoints];
@@ -158,6 +155,9 @@ void AliCaloFastAltroFitv0::Reset()
   fAmp  = fAmpErr = fT0 = fT0Err = 0.0;
   fChi2 = -1.;
   fNDF  = fNfit = 0;
+
+  if(fTfit)   delete [] fTfit;
+  if(fAmpfit) delete [] fAmpfit;
   fTfit = fAmpfit = 0;
 }
 
@@ -185,7 +185,7 @@ void AliCaloFastAltroFitv0::GetFittedPoints(Int_t &nfit, Double_t* ar[2]) const
 // 
 void  AliCaloFastAltroFitv0::CutRightPart(Int_t *t,Int_t *y,Int_t nPoints,Double_t tMax, Int_t &ii)
 {
-  // Cut right part of altro sample
+  // Cut right part of altro sample : static function
   Int_t tt=0;
   for(Int_t i=0; i<nPoints; i++) {
     tt = t[i];
@@ -201,7 +201,7 @@ void  AliCaloFastAltroFitv0::CutRightPart(Int_t *t,Int_t *y,Int_t nPoints,Double
 void AliCaloFastAltroFitv0::DeductPedestal(Int_t* t, Int_t* y, Int_t n, Double_t tau, Double_t ped, 
   Double_t* tn, Double_t* yn, Int_t &nn)
 {
-  // Pedestal deduction if ped is positive.
+  // Pedestal deduction if ped is positive : static function
   // Discard part od samle if it is not compact.
   static Double_t yMinUnderPed=2.; // should be tune
   Int_t ymax=0, nmax=0;
@@ -253,6 +253,7 @@ void AliCaloFastAltroFitv0::FastFit(const Double_t* t, const Double_t* y, const 
                                     const Double_t sig, const Double_t tau,
                                     Double_t &amp, Double_t &eamp, Double_t &t0, Double_t &et0, Double_t &chi2)
 {
+  // static function
   // It is case of n=k=2 : fnn = x*x*exp(2 - 2*x)
   // Input: 
   //     n  - number of points 
@@ -338,7 +339,8 @@ Bool_t AliCaloFastAltroFitv0::QuadraticRoots(const Double_t a, const Double_t b,
 
   if(dtmp>=dtmpCut && dtmp<0.0) {
     if(ierr<5 || ierr%1000==0)
-      printf("QuadraticRoots : %i small negative square : dtmp %12.5e \n", ierr++, dtmp);
+      printf("%i small neg. sq. : dtmp %12.5e \n", ierr, dtmp);
+    ierr++;
     dtmp = 0.0;
   }
   if(dtmp>=0.0) {
@@ -350,7 +352,9 @@ Bool_t AliCaloFastAltroFitv0::QuadraticRoots(const Double_t a, const Double_t b,
     return kTRUE;
   } else {
     x1 = dtmp;
-    printf("QuadraticRoots : negative square : dtmp %12.5e \n", dtmp);
+    if(ierr<5 || ierr%1000==0)
+      printf(" %i neg. sq. : dtmp %12.5e \n", ierr, dtmp);
+    ierr++;
     return kFALSE;
   }
 }
@@ -469,7 +473,7 @@ TCanvas* AliCaloFastAltroFitv0::DrawFastFunction()
 
 Double_t AliCaloFastAltroFitv0::StdResponseFunction(const Double_t *x, const Double_t *par)
 {
-  // Standard Response Function : 
+  // Static Standard Response Function : 
   // look to Double_t AliEMCALRawUtils::RawResponseFunction(Double_t *x, Double_t *par)
   // Using for drawing only.
   // 
