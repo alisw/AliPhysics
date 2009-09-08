@@ -138,10 +138,24 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 	
 	
 	// PART 2 : TH3F needed for pt spectrum and yield extraction
-	TH3F	*f3dHistXiPtVsEffMassVsYXiMinus;	//! casc. transv. momemtum Vs Xi- Eff mass Vs Y
-	TH3F	*f3dHistXiPtVsEffMassVsYXiPlus;		//! casc. transv. momemtum Vs Xi+ Eff mass Vs Y
-	TH3F	*f3dHistXiPtVsEffMassVsYOmegaMinus;	//! casc. transv. momemtum Vs Omega- Eff mass Vs Y
-	TH3F	*f3dHistXiPtVsEffMassVsYOmegaPlus;	//! casc. transv. momemtum Vs Omega+ Eff mass Vs Y
+	// Without any PID
+	TH3F	*f3dHistXiPtVsEffMassVsYXiMinus;        //! casc. transv. momemtum Vs Xi- Eff mass Vs Y
+	TH3F	*f3dHistXiPtVsEffMassVsYXiPlus;         //! casc. transv. momemtum Vs Xi+ Eff mass Vs Y
+	TH3F	*f3dHistXiPtVsEffMassVsYOmegaMinus;     //! casc. transv. momemtum Vs Omega- Eff mass Vs Y
+	TH3F	*f3dHistXiPtVsEffMassVsYOmegaPlus;      //! casc. transv. momemtum Vs Omega+ Eff mass Vs Y
+	
+	// With single PID : proton PID for Xi (pion = useless) / bachelor PID for Omega
+	// = a priori, the most important PID info for each species
+	TH3F	*f3dHistXiPtVsEffMassVsYWithCombPIDXiMinus;     //! casc. transv. momemtum Vs Xi- Eff mass Vs Y
+	TH3F	*f3dHistXiPtVsEffMassVsYWithCombPIDXiPlus;      //! casc. transv. momemtum Vs Xi+ Eff mass Vs Y
+	TH3F	*f3dHistXiPtVsEffMassVsYWithCombPIDOmegaMinus;  //! casc. transv. momemtum Vs Omega- Eff mass Vs Y
+	TH3F	*f3dHistXiPtVsEffMassVsYWithCombPIDOmegaPlus;   //! casc. transv. momemtum Vs Omega+ Eff mass Vs Y
+	
+	// With double PID : proton PID + bachelor PID for Omega
+	// = "second order" refinement for omegas
+	TH3F	*f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaMinus; //! casc. transv. momemtum Vs Omega- Eff mass Vs Y
+	TH3F	*f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaPlus;  //! casc. transv. momemtum Vs Omega+ Eff mass Vs Y
+	
 	
 	
 	// PART 3 :  Azimuthal correlation study
@@ -154,7 +168,7 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascade(const AliAnalysisTaskCheckCascade&);            // not implemented
   AliAnalysisTaskCheckCascade& operator=(const AliAnalysisTaskCheckCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascade, 5);
+  ClassDef(AliAnalysisTaskCheckCascade, 6);
 };
 
 #endif
