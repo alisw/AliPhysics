@@ -41,6 +41,7 @@ using namespace std;
 #include "AliHLTMemoryFile.h"
 #include "AliHLTMisc.h"
 #include <cassert>
+#include <ctime>
 #include <stdint.h>
 
 /**
@@ -277,6 +278,8 @@ int AliHLTComponent::Deinit()
     // AliHLTRunDesc is set before the SOR event in the SetRunDescription
     // method. A couple of state flags should be defined but that is a bit more
     // work to do. For the moment disable the warning (2009-07-01)
+    // 2009-09-08: now, the info is not cleared in the ProcessEvent, because it
+    // might be needed by components during the event processing.
     //HLTWarning("did not receive EOR for run %d", fpRunDesc->fRunNo);
     AliHLTRunDesc* pRunDesc=fpRunDesc;
     fpRunDesc=NULL;
@@ -1695,9 +1698,10 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	      HLTDebug("EOR run no %d", fpRunDesc->fRunNo);
 	    }
 	  }
-	  AliHLTRunDesc* pRunDesc=fpRunDesc;
-	  fpRunDesc=NULL;
-	  delete pRunDesc;
+	  // we do not unload the fpRunDesc struct here in order to have the run information
+	  // available during the event processing
+	  // https://savannah.cern.ch/bugs/?39711
+	  // the info will be cleared in DeInit
 	}
       } else {
 	HLTWarning("did not receive SOR, ignoring EOR");
@@ -2099,7 +2103,11 @@ AliHLTUInt32_t AliHLTComponent::GetRunType() const
 AliHLTUInt32_t    AliHLTComponent::GetTimeStamp() const
 {
   // see header file for function documentation
-  return fCurrentEventData.fEventCreation_s>0? fCurrentEventData.fEventCreation_s:1;
+  if (fCurrentEventData.fEventCreation_s) {
+    return  fCurrentEventData.fEventCreation_s;
+  }
+  // using the actual UTC if the time stamp was not set by the framework
+  return static_cast<AliHLTUInt32_t>(time(NULL));
 }
 
 AliHLTUInt32_t    AliHLTComponent::GetPeriodNumber() const
