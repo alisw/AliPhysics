@@ -8,7 +8,6 @@
 #pragma link C++ class AliFemtoLikeSignAnalysis+;
 #pragma link C++ class AliFemtoVertexAnalysis+;
 #pragma link C++ class AliFemtoVertexMultAnalysis+;
-#pragma link C++ class AliFemtoAnalysisReactionPlane+;
 #pragma link C++ class AliFemtoSimpleAnalysis+;
 #pragma link C++ class AliFemtoEventCut+;
 #pragma link C++ class AliFemtoEventReader+;
