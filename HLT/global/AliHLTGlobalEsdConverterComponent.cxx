@@ -33,6 +33,7 @@
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTExternalTrackParam.h"
 #include "AliHLTTrackMCLabel.h"
+#include "AliHLTCTPData.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliCDBEntry.h"
@@ -195,6 +196,8 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
     } else {
       iResult=-ENOMEM;
     }
+
+    SetupCTPData();
   }
 
   return iResult;
@@ -210,7 +213,7 @@ int AliHLTGlobalEsdConverterComponent::DoDeinit()
 }
 
 int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, 
-					       AliHLTComponentTriggerData& /*trigData*/)
+					       AliHLTComponentTriggerData& trigData)
 {
   // see header file for class documentation
   int iResult=0;
@@ -220,10 +223,21 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
 
   pESD->Reset(); 
   pESD->SetMagneticField(fSolenoidBz);
+  pESD->SetRunNumber(GetRunNo());
   pESD->SetPeriodNumber(GetPeriodNumber());
   pESD->SetOrbitNumber(GetOrbitNumber());
   pESD->SetBunchCrossNumber(GetBunchCrossNumber());
   pESD->SetTimeStamp(GetTimeStamp());
+
+  const AliHLTCTPData* pCTPData=CTPData();
+  if (pCTPData) {
+    AliHLTUInt64_t mask=pCTPData->ActiveTriggers(trigData);
+    for (int index=0; index<gkNCTPTriggerClasses; index++) {
+      if ((mask&((AliHLTUInt64_t)0x1<<index)) == 0) continue;
+      pESD->SetTriggerClass(pCTPData->Name(index), index);
+    }
+    pESD->SetTriggerMask(mask);
+  }
 
   TTree* pTree = NULL;
   if (fWriteTree)
