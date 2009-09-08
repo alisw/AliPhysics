@@ -309,7 +309,7 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h
   fLblValueX->SetTextJustify(kTextLeft);
   fContValues->AddFrame(fLblValueX, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
   //value x
-  fLblValueXVal = new TGLabel(fContValues, "00000.000");
+  fLblValueXVal = new TGLabel(fContValues, "00.000e+00");
   fLblValueXVal->SetTextJustify(kTextRight);
   fContValues->AddFrame(fLblValueXVal, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
   //value label y
@@ -317,7 +317,7 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h
   fLblValueY->SetTextJustify(kTextLeft);
   fContValues->AddFrame(fLblValueY, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
   //value y
-  fLblValueYVal = new TGLabel(fContValues, "00000.000");
+  fLblValueYVal = new TGLabel(fContValues, "00.000e+00");
   fLblValueYVal->SetTextJustify(kTextRight);
   fContValues->AddFrame(fLblValueYVal, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
    // draw button
@@ -385,8 +385,8 @@ void AliTPCCalibViewerGUItime::UseFile(const char* fileName) {
   //
   // retrieve tree from file
   //
-  //  TString s=gSystem->GetFromPipe(Form("ls %s",fileName));
-  TString s=fileName;
+  //TString s=gSystem->GetFromPipe(Form("ls %s",fileName));
+  TString s(fileName);
   TObjArray *arr=s.Tokenize("\n");
   TIter next(arr);
   TObject *o=0;
@@ -518,7 +518,7 @@ void AliTPCCalibViewerGUItime::Reload(Int_t first){
         //test if branch is active
         active=fConfigParser->GetValue(branchName.Data(),kBranchOnOff);
         id=(*fConfigParser)()->IndexOf(key);
-        branchTitle=fConfigParser->GetData(key,kBranchTitle);
+//         branchTitle=fConfigParser->GetData(key,kBranchTitle);
         calibType=fConfigParser->GetData(key,kCalibType);
       }
       else{
@@ -601,11 +601,14 @@ void AliTPCCalibViewerGUItime::DoDraw() {
   if (fCurrentGraph) {
     delete fCurrentGraph;
     fCurrentGraph=0x0;
-    //fCurrentHist in case of graph is the internal histogram,
-    //  which is deletet by the graph itself.
+    //fCurrentHist in case of graph is the interrnal histogram,
+    //  which is deleted by the graph itself.
     fCurrentHist=0x0;
   }
-  if (fCurrentHist)  delete fCurrentHist;
+  if (fCurrentHist)  {
+    delete fCurrentHist;
+    fCurrentHist=0x0;
+  }
   //select data
   fTree->Draw(drawString.Data(),cutString.Data(),optString.Data());
   if (fTree->GetSelectedRows()==-1) return;
@@ -653,6 +656,7 @@ void AliTPCCalibViewerGUItime::DoDraw() {
       title=Form("%s:Time;Time;%s",fDrawString.Data(),yname.Data());
     } else {
       drawGraph=kFALSE;
+      title=Form("%s:%s",fDrawString.Data(),yname.Data());
     }
   }
   //create graph according to selection
@@ -664,7 +668,7 @@ void AliTPCCalibViewerGUItime::DoDraw() {
   } else {
     fCurrentGraph=0x0;
     Float_t add=TMath::Abs(fValuesY.Min()*.05);
-    fCurrentHist=new TH1D("hist",Form("%s;%s",fDrawString.Data(),fDrawString.Data()),100,fValuesY.Min()-add,fValuesY.Max()+add);
+    fCurrentHist=new TH1D("hist",title.Data(),100,fValuesY.Min()-add,fValuesY.Max()+add);
     fCurrentHist->FillN(fValuesY.GetNrows(),fValuesY.GetMatrixArray(),0);
     fCurrentHist->Draw();
   }
@@ -873,8 +877,8 @@ void AliTPCCalibViewerGUItime::MouseMove(Int_t event, Int_t x, Int_t y, TObject 
   if (!fCurrentGraph) {
     fLblRunNumberVal->SetText(Form("%05u",run));
     fLblRunTimeVal->SetText(Form("%02u.%02u.%04u\n%02u:%02u:%02u",dd,mm,yy,HH,MM,SS));
-    fLblValueXVal->SetText(Form("%.3f", valx));
-    fLblValueYVal->SetText(Form("%.3f", valy));
+    fLblValueXVal->SetText(Form("%.3e", valx));
+    fLblValueYVal->SetText(Form("%.3e", valy));
     return;
   }
   TVirtualPad *padsave=gPad;
@@ -909,7 +913,7 @@ void AliTPCCalibViewerGUItime::MouseMove(Int_t event, Int_t x, Int_t y, TObject 
   fLblRunNumberVal->SetText(Form("%05u",run));
   fLblRunTimeVal->SetText(Form("%02u.%02u.%04u\n%02u.%02u.%02u",dd,mm,yy,HH,MM,SS));
   if (fIsCustomDraw){
-    fLblValueXVal->SetText(Form("%.3f", valx));
+    fLblValueXVal->SetText(Form("%.3e", valx));
   }else{
     if (fRadioXrun->GetState()==kButtonDown){
       fLblValueXVal->SetText("Run");
@@ -917,7 +921,7 @@ void AliTPCCalibViewerGUItime::MouseMove(Int_t event, Int_t x, Int_t y, TObject 
       fLblValueXVal->SetText("Time");
     }
   }
-  fLblValueYVal->SetText(Form("%.3f", valy));
+  fLblValueYVal->SetText(Form("%.3e", valy));
   padsave->cd();
   if (run==0) return;
   if (event == kButton1Double ){

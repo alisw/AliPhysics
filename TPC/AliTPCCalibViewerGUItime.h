@@ -85,7 +85,7 @@ public:
   void HandleButtonsDrawSel(Int_t id = -1);              
   void MouseMove(Int_t event, Int_t x, Int_t y, TObject */*selected*/);
   
-// private:
+private:
   TFile*  fFile;                          //file that keeps the tree
   TChain*  fTree;                          //internal tree
   AliTPCCalibViewerGUI *fCalibViewerGUI;  //calib viewer gui used to display verbose information for one run
@@ -155,8 +155,7 @@ public:
   void FillCalibTypes();
   void SetInitialValues();
   const char* SubstituteUnderscores(const char* in);
-
-private:  
+  
   AliTPCCalibViewerGUItime(const AliTPCCalibViewerGUItime &v);
   AliTPCCalibViewerGUItime &operator = (const AliTPCCalibViewerGUItime &v);         // assignment operator
   

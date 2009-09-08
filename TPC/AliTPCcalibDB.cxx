@@ -967,6 +967,62 @@ AliTPCCalibVdrift *     AliTPCcalibDB::GetVdrift(Int_t run){
   return vdrift;
 }
 
+Float_t AliTPCcalibDB::GetCEdriftTime(Int_t run, Int_t sector, Double_t timeStamp, Int_t *entries)
+{
+  //
+  // GetCE drift time information for 'sector'
+  // sector 72 is the mean drift time of the A-Side
+  // sector 73 is the mean drift time of the C-Side
+  // it timestamp==-1 return mean value
+  //
+  AliTPCcalibDB::Instance()->SetRun(run);
+  TGraph *gr=AliTPCcalibDB::Instance()->GetCErocTgraph(sector);
+  if (!gr||sector<0||sector>73) {
+    if (entries) *entries=0;
+    return 0.;
+  }
+  Float_t val=0.;
+  if (timeStamp==-1.){
+    val=gr->GetMean(2);
+  }else{
+    for (Int_t ipoint=0;ipoint<gr->GetN();++ipoint){
+      Double_t x,y;
+      gr->GetPoint(ipoint,x,y);
+      if (x<timeStamp) continue;
+      val=y;
+      break;
+    }
+  }
+  return val;
+}
+  
+Float_t AliTPCcalibDB::GetCEchargeTime(Int_t run, Int_t sector, Double_t timeStamp, Int_t *entries)
+{
+  //
+  // GetCE mean charge for 'sector'
+  // it timestamp==-1 return mean value
+  //
+  AliTPCcalibDB::Instance()->SetRun(run);
+  TGraph *gr=AliTPCcalibDB::Instance()->GetCErocQgraph(sector);
+  if (!gr||sector<0||sector>71) {
+    if (entries) *entries=0;
+    return 0.;
+  }
+  Float_t val=0.;
+  if (timeStamp==-1.){
+    val=gr->GetMean(2);
+  }else{
+    for (Int_t ipoint=0;ipoint<gr->GetN();++ipoint){
+      Double_t x,y;
+      gr->GetPoint(ipoint,x,y);
+      if (x<timeStamp) continue;
+      val=y;
+      break;
+    }
+  }
+  return val;
+}
+
 Float_t AliTPCcalibDB::GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp, const char * sensorName, Int_t sigDigits)
 {
   //
@@ -976,7 +1032,38 @@ Float_t AliTPCcalibDB::GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp
   const TString sensorNameString(sensorName);
   AliDCSSensor *sensor = arr->GetSensor(sensorNameString);
   if (!sensor) return val;
-  val=sensor->GetValue(timeStamp);
+  //use the dcs graph if possible
+  TGraph *gr=sensor->GetGraph();
+  if (gr){
+    for (Int_t ipoint=0;ipoint<gr->GetN();++ipoint){
+      Double_t x,y;
+      gr->GetPoint(ipoint,x,y);
+      Int_t time=sensor->GetStartTime()+x*3600; //time in graph is hours
+      if (time<timeStamp) continue;
+      val=y;
+      break;
+    }
+    //if val is still 0, test if if the requested time if within 5min of the first/last
+    //data point. If this is the case return the firs/last entry
+    //the timestamps might not be syncronised for all calibration types, sometimes a 'pre'
+    //and 'pos' period is requested. Especially to the HV this is not the case!
+    //first point
+    if (val==0 ){
+      Double_t x,y;
+      gr->GetPoint(0,x,y);
+      Int_t time=sensor->GetStartTime()+x*3600; //time in graph is hours
+      if ((time-timeStamp)<5*60) val=y;
+    }
+    //last point
+    if (val==0 ){
+      Double_t x,y;
+      gr->GetPoint(gr->GetN()-1,x,y);
+      Int_t time=sensor->GetStartTime()+x*3600; //time in graph is hours
+      if ((timeStamp-time)<5*60) val=y;
+    }
+  } else {
+    val=sensor->GetValue(timeStamp);
+  }
   if (sigDigits>=0){
     val=(Float_t)TMath::Floor(val * TMath::Power(10., sigDigits) + .5) / TMath::Power(10., sigDigits);
   }
@@ -992,20 +1079,21 @@ Float_t AliTPCcalibDB::GetDCSSensorMeanValue(AliDCSSensorArray *arr, const char 
   const TString sensorNameString(sensorName);
   AliDCSSensor *sensor = arr->GetSensor(sensorNameString);
   if (!sensor) return val;
-  
-  //current hack until the spline fit problem is solved
-  if (!sensor->GetFit()) return val;
-  Int_t nKnots=sensor->GetFit()->GetKnots();
-  Double_t tMid=(sensor->GetEndTime()-sensor->GetStartTime())/2.;
-  for (Int_t iKnot=0;iKnot<nKnots;++iKnot){
-    if (sensor->GetFit()->GetX()[iKnot]>tMid/3600.) break;
-    val=(Float_t)sensor->GetFit()->GetY0()[iKnot];
+
+  //use dcs graph if it exists
+  TGraph *gr=sensor->GetGraph();
+  if (gr){
+    val=gr->GetMean(2);
+  } else {
+    //if we don't have the dcs graph, try to get some meaningful information
+    if (!sensor->GetFit()) return val;
+    Int_t nKnots=sensor->GetFit()->GetKnots();
+    Double_t tMid=(sensor->GetEndTime()-sensor->GetStartTime())/2.;
+    for (Int_t iKnot=0;iKnot<nKnots;++iKnot){
+      if (sensor->GetFit()->GetX()[iKnot]>tMid/3600.) break;
+      val=(Float_t)sensor->GetFit()->GetY0()[iKnot];
+    }
   }
-/*  
-  TGraph *gr=sensor->MakeGraph();
-  if (gr) val=(Float_t)gr->GetMean(2);
-  delete gr;
-  */
   if (sigDigits>=0){
     val/=10;
     val=(Float_t)TMath::Floor(val * TMath::Power(10., sigDigits) + .5) / TMath::Power(10., sigDigits);
@@ -1286,149 +1374,6 @@ Double_t AliTPCcalibDB::GetPTRelative(UInt_t timeSec, Int_t run, Int_t side){
   if (!vdrift) return 0;
   return vdrift->GetPTRelative(timeSec,side);
 }
-
-
-void AliTPCcalibDB::ProcessEnv(const char * runList){
-  //
-  // Example test function  - how to use the environment variables
-  // runList  -  ascii file with run numbers
-  // output   -  dcsTime.root file with tree 
-
-  ifstream in;
-  in.open(runList);
-  Int_t irun=0;
-  TTreeSRedirector *pcstream = new TTreeSRedirector("dcsTime.root");
-  while(in.good()) {
-    in >> irun;
-    if (irun==0) continue;
-    printf("Processing run %d\n",irun);
-    AliDCSSensor * sensorPressure = AliTPCcalibDB::Instance()->GetPressureSensor(irun);
-    if (!sensorPressure) continue;
-    AliTPCSensorTempArray * tempArray = AliTPCcalibDB::Instance()->GetTemperatureSensor(irun);
-    AliTPCTempMap * tempMap = new AliTPCTempMap(tempArray);
-    AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(irun);
-    //
-    Int_t startTime = sensorPressure->GetStartTime();
-    Int_t endTime = sensorPressure->GetEndTime();
-    Int_t dtime = TMath::Max((endTime-startTime)/20,10*60);
-    for (Int_t itime=startTime; itime<endTime; itime+=dtime){
-      //
-      TTimeStamp tstamp(itime);
-      Float_t valuePressure = sensorPressure->GetValue(tstamp);
-
-      TLinearFitter * fitter = 0;
-      TVectorD vecTemp[10];
-      if (itime<tempArray->GetStartTime().GetSec() || itime>tempArray->GetEndTime().GetSec()){	
-      }else{
-	for (Int_t itype=0; itype<5; itype++)
-	  for (Int_t iside=0; iside<2; iside++){
-	    fitter= tempMap->GetLinearFitter(itype,iside,tstamp);
-	    if (!fitter) continue;
-	    fitter->Eval(); fitter->GetParameters(vecTemp[itype+iside*5]);
-	    delete fitter;
-	  }
-      }
-      
-      TVectorD vecGoofie, vecEntries, vecMean, vecMedian,vecRMS;
-      if (goofieArray){	
-	vecGoofie.ResizeTo(goofieArray->NumSensors());
-	ProcessGoofie(goofieArray, vecEntries ,vecMedian, vecMean, vecRMS);
-  //
-	for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
-	  AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
-	  if (gsensor){
-	    vecGoofie[isensor] = gsensor->GetValue(tstamp);
-	  }
-	}
-      }
-
-
-      //tempMap->GetLinearFitter(0,0,itime);
-      (*pcstream)<<"dcs"<<
-	"run="<<irun<<
-	"time="<<itime<<
-	"goofie.="<<&vecGoofie<<
-	"goofieE.="<<&vecEntries<<
-	"goofieMean.="<<&vecMean<<
-	"goofieMedian.="<<&vecMedian<<
-	"goofieRMS.="<<&vecRMS<<
-	"press="<<valuePressure<<
-	"temp00.="<<&vecTemp[0]<<
-	"temp10.="<<&vecTemp[1]<<
-	"temp20.="<<&vecTemp[2]<<
-	"temp30.="<<&vecTemp[3]<<
-	"temp40.="<<&vecTemp[4]<<
-	"temp01.="<<&vecTemp[5]<<
-	"temp11.="<<&vecTemp[6]<<
-	"temp21.="<<&vecTemp[7]<<
-	"temp31.="<<&vecTemp[8]<<
-	"temp41.="<<&vecTemp[9]<<
-	"\n";
-    }
-  }
-  delete pcstream;
-}
-
-
-void AliTPCcalibDB::ProcessGoofie( AliDCSSensorArray* goofieArray, TVectorD & vecEntries, TVectorD & vecMedian, TVectorD &vecMean, TVectorD &vecRMS){
-  /*
-    
-  1       TPC_ANODE_I_A00_STAT
-  2       TPC_DVM_CO2
-  3       TPC_DVM_DriftVelocity
-  4       TPC_DVM_FCageHV
-  5       TPC_DVM_GainFar
-  6       TPC_DVM_GainNear
-  7       TPC_DVM_N2
-  8       TPC_DVM_NumberOfSparks
-  9       TPC_DVM_PeakAreaFar
-  10      TPC_DVM_PeakAreaNear
-  11      TPC_DVM_PeakPosFar
-  12      TPC_DVM_PeakPosNear
-  13      TPC_DVM_PickupHV
-  14      TPC_DVM_Pressure
-  15      TPC_DVM_T1_Over_P
-  16      TPC_DVM_T2_Over_P
-  17      TPC_DVM_T_Over_P
-  18      TPC_DVM_TemperatureS1
-   */
-  //
-  //
-  //  TVectorD  vecMedian; TVectorD  vecEntries; TVectorD  vecMean; TVectorD  vecRMS;
-  Double_t kEpsilon=0.0000000001;
-  Double_t kBig=100000000000.;
-  Int_t nsensors = goofieArray->NumSensors();
-  vecEntries.ResizeTo(nsensors);
-  vecMedian.ResizeTo(nsensors);
-  vecMean.ResizeTo(nsensors);
-  vecRMS.ResizeTo(nsensors);
-  TVectorF values;
-  for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
-    AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
-    if (gsensor &&  gsensor->GetGraph()){
-      Int_t npoints = gsensor->GetGraph()->GetN();
-      // filter zeroes
-      values.ResizeTo(npoints);
-      Int_t nused =0;
-      for (Int_t ipoint=0; ipoint<npoints; ipoint++){
-	if (TMath::Abs(gsensor->GetGraph()->GetY()[ipoint])>kEpsilon && 
-	   TMath::Abs(gsensor->GetGraph()->GetY()[ipoint])<kBig ){
-	  values[nused]=gsensor->GetGraph()->GetY()[ipoint];
-	  nused++;
-	}
-      }
-      //
-      vecEntries[isensor]= nused;      
-      if (nused>1){
-	vecMedian[isensor] = TMath::Median(nused,values.GetMatrixArray());
-	vecMean[isensor]   = TMath::Mean(nused,values.GetMatrixArray());
-	vecRMS[isensor]    = TMath::RMS(nused,values.GetMatrixArray());
-      }
-    }
-  }
-}
-
-
 
 AliGRPObject * AliTPCcalibDB::MakeGRPObjectFromMap(TMap *map){
   //

@@ -78,6 +78,8 @@ class AliTPCcalibDB : public TObject
   TObjArray*    GetCErocQtime() const {return fCEData?static_cast<TObjArray*>(fCEData->FindObject("rocQtime")):0;}
   TGraph*       GetCErocTgraph(const Int_t roc)const {return GetCErocTtime()?static_cast<TGraph*>(GetCErocTtime()->At(roc)):0;}
   TGraph*       GetCErocQgraph(const Int_t roc)const {return GetCErocQtime()?static_cast<TGraph*>(GetCErocQtime()->At(roc)):0;}
+  static Float_t GetCEdriftTime(Int_t run, Int_t sector, Double_t timeStamp=-1., Int_t *entries=0);
+  static Float_t GetCEchargeTime(Int_t run, Int_t sector, Double_t timeStamp=-1., Int_t *entries=0);
 //
   AliTPCSensorTempArray* GetTemperature() {return fTemperature;}
   AliTPCParam*  GetParameters(){return fParam;}
@@ -123,8 +125,6 @@ class AliTPCcalibDB : public TObject
   static void RegisterExB(Int_t index, Float_t bz, Bool_t bdelete);
   //
   //
-  static  void ProcessGoofie( AliDCSSensorArray* goofieArray, TVectorD & vecEntries, TVectorD & vecMedian, TVectorD &vecMean, TVectorD &vecRMS);
-  static void ProcessEnv(const char * runList);
 
   AliGRPObject * MakeGRPObjectFromMap(TMap *map);
   //Create a tree suited for diplaying with the AliTPCCalibViewerGUI
