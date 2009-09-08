@@ -113,6 +113,10 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade()
     f3dHistXiPtVsEffMassVsYXiMinus(0), f3dHistXiPtVsEffMassVsYXiPlus(0),
     f3dHistXiPtVsEffMassVsYOmegaMinus(0), f3dHistXiPtVsEffMassVsYOmegaPlus(0),
     
+    f3dHistXiPtVsEffMassVsYWithCombPIDXiMinus(0), f3dHistXiPtVsEffMassVsYWithCombPIDXiPlus(0),
+    f3dHistXiPtVsEffMassVsYWithCombPIDOmegaMinus(0),  f3dHistXiPtVsEffMassVsYWithCombPIDOmegaPlus(0),
+    f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaMinus(0), f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaPlus(0),
+    
     fHnSpAngularCorrXiMinus(0), fHnSpAngularCorrXiPlus(0), 
     fHnSpAngularCorrOmegaMinus(0), fHnSpAngularCorrOmegaPlus(0)
 
@@ -173,6 +177,11 @@ AliAnalysisTaskCheckCascade::AliAnalysisTaskCheckCascade(const char *name)
     
     f3dHistXiPtVsEffMassVsYXiMinus(0), f3dHistXiPtVsEffMassVsYXiPlus(0),
     f3dHistXiPtVsEffMassVsYOmegaMinus(0), f3dHistXiPtVsEffMassVsYOmegaPlus(0),
+    
+    f3dHistXiPtVsEffMassVsYWithCombPIDXiMinus(0), f3dHistXiPtVsEffMassVsYWithCombPIDXiPlus(0),
+    f3dHistXiPtVsEffMassVsYWithCombPIDOmegaMinus(0),  f3dHistXiPtVsEffMassVsYWithCombPIDOmegaPlus(0),
+    f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaMinus(0), f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaPlus(0),
+    
     
     fHnSpAngularCorrXiMinus(0), fHnSpAngularCorrXiPlus(0), 
     fHnSpAngularCorrOmegaMinus(0), fHnSpAngularCorrOmegaPlus(0)
@@ -334,7 +343,7 @@ if(! fHistXiRadius ){
 
 
 if (! fHistMassLambdaAsCascDghter) {
-     fHistMassLambdaAsCascDghter = new TH1F("fHistMassLambdaAsCascDghter","#Lambda associated to Casc. candidates;Eff. Mass (GeV/c^{2});Counts", 160,1.00,1.8);
+     fHistMassLambdaAsCascDghter = new TH1F("fHistMassLambdaAsCascDghter","#Lambda associated to Casc. candidates;Eff. Mass (GeV/c^{2});Counts", 300,1.00,1.3);
     fListHistCascade->Add(fHistMassLambdaAsCascDghter);
 }
 
@@ -533,31 +542,64 @@ if(! f2dHistXiRadiusVsEffMassOmegaPlus) {
 }
 
 
-//-------
+// Part 2 : Raw material for yield extraction -------
 
 if(! f3dHistXiPtVsEffMassVsYXiMinus) {
-	f3dHistXiPtVsEffMassVsYXiMinus = new TH3F( "f3dHistXiPtVsEffMassVsYXiMinus", "Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}; Pt_{cascade} (GeV/c); M( #Lambda , #pi^{-} ) (GeV/c^{2}) ;Y_{#Xi} ", 100, 0., 10.0, 200, 1.2, 2.0, 48, -1.2,1.2);
+	f3dHistXiPtVsEffMassVsYXiMinus = new TH3F( "f3dHistXiPtVsEffMassVsYXiMinus", "Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}; Pt_{cascade} (GeV/c); M( #Lambda , #pi^{-} ) (GeV/c^{2}) ;Y_{#Xi} ", 100, 0., 10.0, 400, 1.2, 2.0, 48, -1.2,1.2);
 	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYXiMinus);
 }
 
 if(! f3dHistXiPtVsEffMassVsYXiPlus) {
-	f3dHistXiPtVsEffMassVsYXiPlus = new TH3F( "f3dHistXiPtVsEffMassVsYXiPlus", "Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}; Pt_{cascade} (GeV/c); M( #Lambda , #pi^{+} ) (GeV/c^{2}); Y_{#Xi}", 100, 0., 10.0, 200, 1.2, 2.0, 48, -1.2,1.2);
+	f3dHistXiPtVsEffMassVsYXiPlus = new TH3F( "f3dHistXiPtVsEffMassVsYXiPlus", "Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}; Pt_{cascade} (GeV/c); M( #Lambda , #pi^{+} ) (GeV/c^{2}); Y_{#Xi}", 100, 0., 10.0, 400, 1.2, 2.0, 48, -1.2,1.2);
 	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYXiPlus);
 }
 
 if(! f3dHistXiPtVsEffMassVsYOmegaMinus) {
-	f3dHistXiPtVsEffMassVsYOmegaMinus = new TH3F( "f3dHistXiPtVsEffMassVsYOmegaMinus", "Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}; Pt_{cascade} (GeV/c); M( #Lambda , K^{-} ) (GeV/c^{2}); Y_{#Omega}", 100, 0., 10.0, 250, 1.5, 2.5, 48, -1.2,1.2);
+	f3dHistXiPtVsEffMassVsYOmegaMinus = new TH3F( "f3dHistXiPtVsEffMassVsYOmegaMinus", "Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}; Pt_{cascade} (GeV/c); M( #Lambda , K^{-} ) (GeV/c^{2}); Y_{#Omega}", 100, 0., 10.0, 500, 1.5, 2.5, 48, -1.2,1.2);
 	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYOmegaMinus);
 }
 
 if(! f3dHistXiPtVsEffMassVsYOmegaPlus) {
-	f3dHistXiPtVsEffMassVsYOmegaPlus = new TH3F( "f3dHistXiPtVsEffMassVsYOmegaPlus", "Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}; Pt_{cascade} (GeV/c); M( #Lambda , K^{+} ) (GeV/c^{2}); Y_{#Omega}", 100, 0., 10.0, 250, 1.5, 2.5, 48, -1.2,1.2);
+	f3dHistXiPtVsEffMassVsYOmegaPlus = new TH3F( "f3dHistXiPtVsEffMassVsYOmegaPlus", "Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}; Pt_{cascade} (GeV/c); M( #Lambda , K^{+} ) (GeV/c^{2}); Y_{#Omega}", 100, 0., 10.0, 500, 1.5, 2.5, 48, -1.2,1.2);
 	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYOmegaPlus);
+}
+
+//--
+if(! f3dHistXiPtVsEffMassVsYWithCombPIDXiMinus) {
+	f3dHistXiPtVsEffMassVsYWithCombPIDXiMinus = new TH3F( "f3dHistXiPtVsEffMassVsYWithCombPIDXiMinus", "Pt_{cascade} Vs M_{#Xi^{-} candidates, with PID} Vs Y_{#Xi}; Pt_{cascade} (GeV/c); M( #Lambda , #pi^{-} ) (GeV/c^{2}) ;Y_{#Xi} ", 100, 0., 10.0, 400, 1.2, 2.0, 48, -1.2,1.2);
+	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYWithCombPIDXiMinus);
+}
+
+if(! f3dHistXiPtVsEffMassVsYWithCombPIDXiPlus) {
+	f3dHistXiPtVsEffMassVsYWithCombPIDXiPlus = new TH3F( "f3dHistXiPtVsEffMassVsYWithCombPIDXiPlus", "Pt_{cascade} Vs M_{#Xi^{+} candidates, with PID} Vs Y_{#Xi}; Pt_{cascade} (GeV/c); M( #Lambda , #pi^{+} ) (GeV/c^{2}); Y_{#Xi}", 100, 0., 10.0, 400, 1.2, 2.0, 48, -1.2,1.2);
+	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYWithCombPIDXiPlus);
+}
+
+if(! f3dHistXiPtVsEffMassVsYWithCombPIDOmegaMinus) {
+	f3dHistXiPtVsEffMassVsYWithCombPIDOmegaMinus = new TH3F( "f3dHistXiPtVsEffMassVsYWithCombPIDOmegaMinus", "Pt_{cascade} Vs M_{#Omega^{-} candidates, with PID} Vs Y_{#Omega}; Pt_{cascade} (GeV/c); M( #Lambda , K^{-} ) (GeV/c^{2}); Y_{#Omega}", 100, 0., 10.0, 500, 1.5, 2.5, 48, -1.2,1.2);
+	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYWithCombPIDOmegaMinus);
+}
+
+if(! f3dHistXiPtVsEffMassVsYWithCombPIDOmegaPlus) {
+	f3dHistXiPtVsEffMassVsYWithCombPIDOmegaPlus = new TH3F( "f3dHistXiPtVsEffMassVsYWithCombPIDOmegaPlus", "Pt_{cascade} Vs M_{#Omega^{+} candidates, with PID} Vs Y_{#Omega}; Pt_{cascade} (GeV/c); M( #Lambda , K^{+} ) (GeV/c^{2}); Y_{#Omega}", 100, 0., 10.0, 500, 1.5, 2.5, 48, -1.2,1.2);
+	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYWithCombPIDOmegaPlus);
+}
+
+//--
+if(! f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaMinus) {
+	f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaMinus = new TH3F( "f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaMinus", "Pt_{cascade} Vs M_{#Omega^{-} candidates, with 2 PID} Vs Y_{#Omega}; Pt_{cascade} (GeV/c); M( #Lambda , K^{-} ) (GeV/c^{2}); Y_{#Omega}", 100, 0., 10.0, 500, 1.5, 2.5, 48, -1.2,1.2);
+	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaMinus);
+}
+
+if(! f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaPlus) {
+	f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaPlus = new TH3F( "f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaPlus", "Pt_{cascade} Vs M_{#Omega^{+} candidates, with 2 PID} Vs Y_{#Omega}; Pt_{cascade} (GeV/c); M( #Lambda , K^{+} ) (GeV/c^{2}); Y_{#Omega}", 100, 0., 10.0, 500, 1.5, 2.5, 48, -1.2,1.2);
+	fListHistCascade->Add(f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaPlus);
 }
 
 
 
-//-------
+
+// Part 3 : Angular correlation study -------
 
 if(! fHnSpAngularCorrXiMinus){
 	// Delta Phi(Casc,any trck) Vs Delta Eta(Casc,any trck) Vs Casc Pt Vs Pt of the tracks
@@ -567,8 +609,8 @@ if(! fHnSpAngularCorrXiMinus){
 	// Pt track = 150 bins de 0., 15.0
 	
    Int_t    bins[5] = { 360, 120, 100, 150, 40};
-   Double_t xmin[5] = {-180, -3.,  0.,  0., 1.30};
-   Double_t xmax[5] = { 180., 3., 10., 15., 1.34};
+   Double_t xmin[5] = {-50., -3.,  0.,  0., 1.30};
+   Double_t xmax[5] = { 310., 3., 10., 15., 1.34};
    fHnSpAngularCorrXiMinus = new THnSparseF("fHnSpAngularCorrXiMinus", "Angular Correlation for #Xi^{-}:", 5, bins, xmin, xmax);
 	fHnSpAngularCorrXiMinus->GetAxis(0)->SetTitle(" #Delta#phi(Casc,Track) (deg)");
 	fHnSpAngularCorrXiMinus->GetAxis(1)->SetTitle(" #Delta#eta(Casc,Track)");
@@ -586,8 +628,8 @@ if(! fHnSpAngularCorrXiPlus){
 	// Pt Cascade = 100 bins de 0., 10.0,
 	// Pt track = 150 bins de 0., 15.0
    Int_t    bins[5] = { 360, 120, 100, 150, 40};
-   Double_t xmin[5] = {-180, -3.,  0.,  0., 1.30};
-   Double_t xmax[5] = { 180., 3., 10., 15., 1.34};
+   Double_t xmin[5] = {-50., -3.,  0.,  0., 1.30};
+   Double_t xmax[5] = { 310., 3., 10., 15., 1.34};
    fHnSpAngularCorrXiPlus = new THnSparseF("fHnSpAngularCorrXiPlus", "Angular Correlation for #Xi^{+}:", 5, bins, xmin, xmax);
 	fHnSpAngularCorrXiPlus->GetAxis(0)->SetTitle(" #Delta#phi(Casc,Track) (deg)");
 	fHnSpAngularCorrXiPlus->GetAxis(1)->SetTitle(" #Delta#eta(Casc,Track)");
@@ -606,8 +648,8 @@ if(! fHnSpAngularCorrOmegaMinus){
 	// Pt track = 150 bins de 0., 15.0
 	
    Int_t    bins[5] = { 360, 120, 100, 150, 40};
-   Double_t xmin[5] = {-180, -3.,  0.,  0., 1.65};
-   Double_t xmax[5] = { 180., 3., 10., 15., 1.69};
+   Double_t xmin[5] = {-50., -3.,  0.,  0., 1.65};
+   Double_t xmax[5] = { 310., 3., 10., 15., 1.69};
    fHnSpAngularCorrOmegaMinus = new THnSparseF("fHnSpAngularCorrOmegaMinus", "Angular Correlation for #Omega^{-}:", 5, bins, xmin, xmax);
 	fHnSpAngularCorrOmegaMinus->GetAxis(0)->SetTitle(" #Delta#phi(Casc,Track) (deg)");
 	fHnSpAngularCorrOmegaMinus->GetAxis(1)->SetTitle(" #Delta#eta(Casc,Track)");
@@ -625,8 +667,8 @@ if(! fHnSpAngularCorrOmegaPlus){
 	// Pt Cascade = 100 bins de 0., 10.0,
 	// Pt track = 150 bins de 0., 15.0
    Int_t    bins[5] = { 360, 120, 100, 150, 40};
-   Double_t xmin[5] = {-180, -3.,  0.,  0., 1.65};
-   Double_t xmax[5] = { 180., 3., 10., 15., 1.69};
+   Double_t xmin[5] = {-50., -3.,  0.,  0., 1.65};
+   Double_t xmax[5] = { 310., 3., 10., 15., 1.69};
    fHnSpAngularCorrOmegaPlus = new THnSparseF("fHnSpAngularCorrOmegaPlus", "Angular Correlation for #Omega^{+}:", 5, bins, xmin, xmax);
 	fHnSpAngularCorrOmegaPlus->GetAxis(0)->SetTitle(" #Delta#phi(Casc,Track) (deg)");
 	fHnSpAngularCorrOmegaPlus->GetAxis(1)->SetTitle(" #Delta#eta(Casc,Track)");
@@ -721,10 +763,13 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
   Double_t lInvMassOmegaMinus = 0.;
   Double_t lInvMassOmegaPlus  = 0.;
   
-  	// - 4th part of initialisation : PID treatment of the bachelor track
-  Bool_t   lIsBachelorKaon    = kFALSE;
-  Bool_t   lIsBachelorPion    = kFALSE;
-
+  	// - 4th part of initialisation : PID treatment
+  Bool_t   lIsPosInXiProton    = kFALSE;
+  Bool_t   lIsPosInOmegaProton = kFALSE;
+  Bool_t   lIsNegInXiProton    = kFALSE;
+  Bool_t   lIsNegInOmegaProton = kFALSE;
+  Bool_t   lIsBachelorKaon     = kFALSE;
+  Bool_t   lIsBachelorPion     = kFALSE;
 
 	// - 5th part of initialisation : extra info for QA
   
@@ -965,29 +1010,77 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	// Reasonable guess for the priors for the cascade track sample
 	Double_t lPriorsGuessXi[5]    = {0.0, 0.0, 2, 0, 1};
 	Double_t lPriorsGuessOmega[5] = {0.0, 0.0, 1, 1, 1};
-	AliPID pidXi;		pidXi.SetPriors(    lPriorsGuessXi    );
-	AliPID pidOmega;	pidOmega.SetPriors( lPriorsGuessOmega );
+	
+	// VO positive daughter PID
+	AliPID pPidXi;		pPidXi.SetPriors(    lPriorsGuessXi    );
+	AliPID pPidOmega;	pPidOmega.SetPriors( lPriorsGuessOmega );
+		
+	if( pTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
+		Double_t r[10] = {0.}; pTrackXi->GetESDpid(r);
+		pPidXi.SetProbabilities(r);
+		pPidOmega.SetProbabilities(r);
+		// Check if the V0 positive track is a proton (case for Xi-)
+		Double_t pproton = pPidXi.GetProbability(AliPID::kProton);
+		if (pproton > pPidXi.GetProbability(AliPID::kElectron) &&
+		    pproton > pPidXi.GetProbability(AliPID::kMuon)     &&
+		    pproton > pPidXi.GetProbability(AliPID::kPion)     &&
+		    pproton > pPidXi.GetProbability(AliPID::kKaon)     )     lIsPosInXiProton = kTRUE;
+		// Check if the V0 positive track is a proton (case for Omega-)
+		pproton = 0.;
+		         pproton = pPidOmega.GetProbability(AliPID::kProton);
+		if (pproton > pPidOmega.GetProbability(AliPID::kElectron) &&
+		    pproton > pPidOmega.GetProbability(AliPID::kMuon)     &&
+		    pproton > pPidOmega.GetProbability(AliPID::kPion)     &&
+		    pproton > pPidOmega.GetProbability(AliPID::kKaon)     )  lIsPosInOmegaProton = kTRUE;
+	}// end if V0 positive track with existing combined PID	
+	
+	// VO negative daughter PID
+	AliPID nPidXi;		nPidXi.SetPriors(    lPriorsGuessXi    );
+	AliPID nPidOmega;	nPidOmega.SetPriors( lPriorsGuessOmega );
+		
+	if( nTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
+		Double_t r[10] = {0.}; nTrackXi->GetESDpid(r);
+		nPidXi.SetProbabilities(r);
+		nPidOmega.SetProbabilities(r);
+		// Check if the V0 negative track is an anti-proton (case for Xi+)
+		Double_t pproton = nPidXi.GetProbability(AliPID::kProton);
+		if (pproton > nPidXi.GetProbability(AliPID::kElectron) &&
+		    pproton > nPidXi.GetProbability(AliPID::kMuon)     &&
+		    pproton > nPidXi.GetProbability(AliPID::kPion)     &&
+		    pproton > nPidXi.GetProbability(AliPID::kKaon)     )     lIsNegInXiProton = kTRUE;
+		// Check if the V0 negative track is an anti-proton (case for Omega+)
+		pproton = 0.;
+		         pproton = nPidOmega.GetProbability(AliPID::kProton);
+		if (pproton > nPidOmega.GetProbability(AliPID::kElectron) &&
+		    pproton > nPidOmega.GetProbability(AliPID::kMuon)     &&
+		    pproton > nPidOmega.GetProbability(AliPID::kPion)     &&
+		    pproton > nPidOmega.GetProbability(AliPID::kKaon)     )  lIsNegInOmegaProton = kTRUE;
+	}// end if V0 negative track with existing combined PID	
+	
+		
+	// Bachelor PID
+	AliPID bachPidXi;	bachPidXi.SetPriors(    lPriorsGuessXi    );
+	AliPID bachPidOmega;	bachPidOmega.SetPriors( lPriorsGuessOmega );
 	
 	if( bachTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
-		Double_t r[10]; bachTrackXi->GetESDpid(r);
-		pidXi.SetProbabilities(r);
-		pidOmega.SetProbabilities(r);
+		Double_t r[10] = {0.}; bachTrackXi->GetESDpid(r);
+		bachPidXi.SetProbabilities(r);
+		bachPidOmega.SetProbabilities(r);
 		// Check if the bachelor track is a pion
-		Double_t ppion = pidXi.GetProbability(AliPID::kPion);
-		if (ppion > pidXi.GetProbability(AliPID::kElectron) &&
-		    ppion > pidXi.GetProbability(AliPID::kMuon)     &&
-		    ppion > pidXi.GetProbability(AliPID::kKaon)     &&
-		    ppion > pidXi.GetProbability(AliPID::kProton)   )     lIsBachelorPion = kTRUE;
+		Double_t ppion = bachPidXi.GetProbability(AliPID::kPion);
+		if (ppion > bachPidXi.GetProbability(AliPID::kElectron) &&
+		    ppion > bachPidXi.GetProbability(AliPID::kMuon)     &&
+		    ppion > bachPidXi.GetProbability(AliPID::kKaon)     &&
+		    ppion > bachPidXi.GetProbability(AliPID::kProton)   )     lIsBachelorPion = kTRUE;
 		// Check if the bachelor track is a kaon
-		Double_t pkaon = pidOmega.GetProbability(AliPID::kKaon);
-		if (pkaon > pidOmega.GetProbability(AliPID::kElectron) &&
-		    pkaon > pidOmega.GetProbability(AliPID::kMuon)     &&
-		    pkaon > pidOmega.GetProbability(AliPID::kPion)     &&
-		    pkaon > pidOmega.GetProbability(AliPID::kProton)   )  lIsBachelorKaon = kTRUE;
-		
+		Double_t pkaon = bachPidOmega.GetProbability(AliPID::kKaon);
+		if (pkaon > bachPidOmega.GetProbability(AliPID::kElectron) &&
+		    pkaon > bachPidOmega.GetProbability(AliPID::kMuon)     &&
+		    pkaon > bachPidOmega.GetProbability(AliPID::kPion)     &&
+		    pkaon > bachPidOmega.GetProbability(AliPID::kProton)   )  lIsBachelorKaon = kTRUE;	
 	}// end if bachelor track with existing combined PID
 	
-		
+	
 		
 		// - II.Step 6 : extra info for QA (ESD)
 		// miscellaneous pieces of info that may help regarding data quality assessment.
@@ -1123,27 +1216,27 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	// Reasonable guess for the priors for the cascade track sample
 	Double_t lPriorsGuessXi[5]    = {0.0, 0.0, 2, 0, 1};
 	Double_t lPriorsGuessOmega[5] = {0.0, 0.0, 1, 1, 1};
-	AliPID pidXi;		pidXi.SetPriors(    lPriorsGuessXi    );
-	AliPID pidOmega;	pidOmega.SetPriors( lPriorsGuessOmega );
+	AliPID bachPidXi;	bachPidXi.SetPriors(    lPriorsGuessXi    );
+	AliPID bachPidOmega;	bachPidOmega.SetPriors( lPriorsGuessOmega );
 	
 	const AliAODTrack *bachTrackXi = lAODevent->GetTrack( xi->GetBachID() ); // FIXME : GetBachID not implemented ?
 	
 	if( bachTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists, the AOD flags = a copy of the ESD ones
 		Double_t r[10]; bachTrackXi->GetPID(r);
-		pidXi.SetProbabilities(r);
-		pidOmega.SetProbabilities(r);
+		bachPidXi.SetProbabilities(r);
+		bachPidOmega.SetProbabilities(r);
 		// Check if the bachelor track is a pion
-		Double_t ppion = pidXi.GetProbability(AliPID::kPion);
-		if (ppion > pidXi.GetProbability(AliPID::kElectron) &&
-		    ppion > pidXi.GetProbability(AliPID::kMuon)     &&
-		    ppion > pidXi.GetProbability(AliPID::kKaon)     &&
-		    ppion > pidXi.GetProbability(AliPID::kProton)   )     lIsBachelorPion = kTRUE;
+		Double_t ppion = bachPidXi.GetProbability(AliPID::kPion);
+		if (ppion > bachPidXi.GetProbability(AliPID::kElectron) &&
+		    ppion > bachPidXi.GetProbability(AliPID::kMuon)     &&
+		    ppion > bachPidXi.GetProbability(AliPID::kKaon)     &&
+		    ppion > bachPidXi.GetProbability(AliPID::kProton)   )     lIsBachelorPion = kTRUE;
 		// Check if the bachelor track is a kaon
-		Double_t pkaon = pidOmega.GetProbability(AliPID::kKaon);
-		if (pkaon > pidOmega.GetProbability(AliPID::kElectron) &&
-		    pkaon > pidOmega.GetProbability(AliPID::kMuon)     &&
-		    pkaon > pidOmega.GetProbability(AliPID::kPion)     &&
-		    pkaon > pidOmega.GetProbability(AliPID::kProton)   )  lIsBachelorKaon = kTRUE;
+		Double_t pkaon = bachPidOmega.GetProbability(AliPID::kKaon);
+		if (pkaon > bachPidOmega.GetProbability(AliPID::kElectron) &&
+		    pkaon > bachPidOmega.GetProbability(AliPID::kMuon)     &&
+		    pkaon > bachPidOmega.GetProbability(AliPID::kPion)     &&
+		    pkaon > bachPidOmega.GetProbability(AliPID::kProton)   )  lIsBachelorKaon = kTRUE;
 		
 	}// end if bachelor track with existing combined PID
 	*/
@@ -1283,6 +1376,9 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		f2dHistXiRadiusVsEffMassOmegaMinus  ->Fill( lXiRadius, lInvMassOmegaMinus );
 		f3dHistXiPtVsEffMassVsYXiMinus      ->Fill( lXiTransvMom, lInvMassXiMinus,    lRapXi    );
 		f3dHistXiPtVsEffMassVsYOmegaMinus   ->Fill( lXiTransvMom, lInvMassOmegaMinus, lRapOmega );
+		if(lIsPosInXiProton)  				f3dHistXiPtVsEffMassVsYWithCombPIDXiMinus     ->Fill( lXiTransvMom, lInvMassXiMinus,    lRapXi    );
+		if(lIsBachelorKaon)  				f3dHistXiPtVsEffMassVsYWithCombPIDOmegaMinus  ->Fill( lXiTransvMom, lInvMassOmegaMinus, lRapOmega );
+		if(lIsBachelorKaon && lIsPosInOmegaProton)  	f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaMinus ->Fill( lXiTransvMom, lInvMassOmegaMinus, lRapOmega );
 	}
 	else{
 		f2dHistEffMassLambdaVsEffMassXiPlus ->Fill( lInvMassLambdaAsCascDghter, lInvMassXiPlus );
@@ -1291,7 +1387,14 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		f2dHistXiRadiusVsEffMassOmegaPlus   ->Fill( lXiRadius, lInvMassOmegaPlus );
 		f3dHistXiPtVsEffMassVsYXiPlus       ->Fill( lXiTransvMom, lInvMassXiPlus,    lRapXi    );
 		f3dHistXiPtVsEffMassVsYOmegaPlus    ->Fill( lXiTransvMom, lInvMassOmegaPlus, lRapOmega );
+		if(lIsNegInXiProton)  				f3dHistXiPtVsEffMassVsYWithCombPIDXiPlus     ->Fill( lXiTransvMom, lInvMassXiPlus,    lRapXi    );
+		if(lIsBachelorKaon )			   	f3dHistXiPtVsEffMassVsYWithCombPIDOmegaPlus  ->Fill( lXiTransvMom, lInvMassOmegaPlus, lRapOmega );
+		if(lIsBachelorKaon && lIsNegInOmegaProton)   	f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaPlus ->Fill( lXiTransvMom, lInvMassOmegaPlus, lRapOmega );
 	}
+	
+	   
+
+
 	
 	// - III.Step 7
 	
@@ -1318,6 +1421,8 @@ void AliAnalysisTaskCheckCascade::DoAngularCorrelation( const Char_t   *lCascTyp
 							const Int_t    *lArrTrackID,
 							      TVector3 &lTVect3MomXi, 
 							      Double_t  lEtaXi ){
+  // Perform the Delta(Phi)Delta(Eta) analysis 
+  // by properly filling the THnSparseF 
 	
 	TString lStrCascType( lCascType );
 	
@@ -1329,6 +1434,25 @@ void AliAnalysisTaskCheckCascade::DoAngularCorrelation( const Char_t   *lCascTyp
 	if( lInvMassCascade < lCascPdgMass - 0.010) return;
 	// Check the Xi- candidate is within the proper mass window m0 +- 10 MeV
 	
+	
+	// 1st loop: check there is no track with a higher pt ...
+	// = The cascade is meant to be a leading particle : Pt(Casc) > any track in the event
+	for(Int_t TrckIdx = 0; TrckIdx < (InputEvent())->GetNumberOfTracks() ; TrckIdx++ )
+	{// Loop over all the tracks of the event
+	
+		AliVTrack *lCurrentTrck = dynamic_cast<AliVTrack*>( (InputEvent())->GetTrack( TrckIdx ) );
+			if (!lCurrentTrck ) {
+				Printf("ERROR Correl. Study : Could not retrieve a track while looping over the event tracks ...");
+				continue;
+			}
+		if(lTVect3MomXi.Pt() < lCurrentTrck->Pt() ) return;	
+		// Room for improvement: //FIXME
+		// 1. There is a given resolution on pt : maybe release the cut Pt(casc) < Pt(track)*90% ?
+		// 2. Apply this cut only when DeltaPhi(casc, track) > 90 deg = when track is in the away-side ?
+			
+	}// end control loop
+	
+	// 2nd loop: filling loop
 	for(Int_t TrckIdx = 0; TrckIdx < (InputEvent())->GetNumberOfTracks() ; TrckIdx++ )
 	{// Loop over all the tracks of the event
 	
@@ -1353,9 +1477,12 @@ void AliAnalysisTaskCheckCascade::DoAngularCorrelation( const Char_t   *lCascTyp
 		//   - The Xi trajectory is a straight line,
 		//   - The Xi doesn't loose any energy by crossing the first layer(s) of ITS, if ever;
 		//      So, meaning hyp: vect p(Xi) at the emission = vect p(Xi) at the decay vertex
+		//      By doing this, we introduce a systematic error on the cascade Phi ...
+		// Room for improvement: take into account the curvature of the Xi trajectory //FIXME
 	
    		Double_t lHnSpFillVar[5] = {0.};
 		lHnSpFillVar[0] = lTVect3MomXi.DeltaPhi(lTVect3MomTrck) * 180.0/TMath::Pi(); // Delta phi(Casc,Track) (deg)
+		if(lHnSpFillVar[0] < -50.0) lHnSpFillVar[0] += 360.0; 		
 		lHnSpFillVar[1] = lEtaXi - lCurrentTrck->Eta(); 			   // Delta eta(Casc,Track)
 		lHnSpFillVar[2] = lTVect3MomXi.Pt();					   // Pt_{Casc}
 		lHnSpFillVar[3] = lCurrentTrck->Pt();					   // Pt_{any track}
