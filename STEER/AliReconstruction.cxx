@@ -1042,8 +1042,8 @@ Bool_t AliReconstruction::InitGRP() {
     AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
     beamEnergy = 0;
   }
-  // energy is provided in MeV*120
-  beamEnergy /= 120E3;
+  // LHC: "multiply by 120 to get the energy in MeV"
+  beamEnergy *= 0.120;
 
   TString runType = fGRPData->GetRunType();
   if (runType==AliGRPObject::GetInvalidString()) {
@@ -2766,6 +2766,7 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
   if (reconstructor) {
     TObject* obj = fOptions.FindObject(detName.Data());
     if (obj) reconstructor->SetOption(obj->GetTitle());
+    reconstructor->SetRunInfo(fRunInfo);
     reconstructor->Init();
     fReconstructor[iDet] = reconstructor;
   }
