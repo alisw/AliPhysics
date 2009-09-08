@@ -6,7 +6,7 @@ run type: LED
 DA type: MON 
 number of events needed: 1000
 input files: RCU0.data  RCU1.data  RCU2.data  RCU3.data  zs.txt
-Output files: PHOS_ModuleN_LED.root, where N is the module number (0-5).
+Output files: PHOS_LED.root.
 Trigger types used: CALIBRATION_EVENT
 */
 
@@ -268,12 +268,13 @@ int main(int argc, char **argv) {
   Int_t iZmax=-1;
   Int_t iModMax=-1;
   
+  sprintf(localfile,"PHOS_LED.root");
+  TFile* f = new TFile(localfile,"recreate");
+
   for(Int_t iMod=0; iMod<5; iMod++) {
     if(!dAs[iMod]) continue;
   
     printf("DA1 for module %d detected.\n",iMod);
-    sprintf(localfile,"PHOS_Module%d_LED.root",iMod);
-    TFile* f = new TFile(localfile,"recreate");
     
     for(Int_t iX=0; iX<64; iX++) {
       for(Int_t iZ=0; iZ<56; iZ++) {
@@ -291,16 +292,17 @@ int main(int argc, char **argv) {
 	  h2 = dAs[iMod]->GetTimeEnergyHistogram(iX,iZ,iGain); // Time vs Energy
 	  if(h2) h2->Write();
 	}
-      
+	
       }
     }
     
-    fFiredCells.Write();
-    f->Close();
-    
-    /* Store output files to the File Exchange Server */
-    daqDA_FES_storeFile(localfile,"LED");
+    fFiredCells.Write();    
   }
+  
+  f->Close();
+  
+  /* Store output files to the File Exchange Server */
+  daqDA_FES_storeFile(localfile,"LED");
   
   printf("%d physics events of %d total processed.\n",nevents_physics,nevents_total);
   printf("%d histograms has >10 entries in maximum, max. is %d entries ",nGood,nMax);
