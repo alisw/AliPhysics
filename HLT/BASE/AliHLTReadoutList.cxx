@@ -414,6 +414,14 @@ AliHLTReadoutList& AliHLTReadoutList::operator |= (const AliHLTReadoutList& list
 {
   // This operator performs a bitwise inclusive or operation on all DDL bits.
   // See header file for more details.
+  this->OrEq(list);
+  return *this;
+}
+
+AliHLTReadoutList& AliHLTReadoutList::OrEq(const AliHLTReadoutList& list)
+{
+  // a bitwise inclusive or operation on all DDL bits.
+  // See header file for more details.
   
   assert( fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize );
   for (Int_t i = 0; i < gkAliHLTDDLListSize; i++)
@@ -427,6 +435,15 @@ AliHLTReadoutList& AliHLTReadoutList::operator |= (const AliHLTReadoutList& list
 AliHLTReadoutList& AliHLTReadoutList::operator ^= (const AliHLTReadoutList& list)
 {
   // This operator performs a bitwise exclusive or (xor) operation on all DDL bits.
+  // See header file for more details.
+
+  this->XorEq(list);
+  return *this;
+}
+
+AliHLTReadoutList& AliHLTReadoutList::XorEq(const AliHLTReadoutList& list)
+{
+  // bitwise exclusive or (xor) operation on all DDL bits.
   // See header file for more details.
   
   assert( fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize );
@@ -442,7 +459,16 @@ AliHLTReadoutList& AliHLTReadoutList::operator &= (const AliHLTReadoutList& list
 {
   // This operator performs a bitwise and operation on all DDL bits.
   // See header file for more details.
-  
+
+  this->AndEq(list);
+  return *this;
+}
+
+AliHLTReadoutList& AliHLTReadoutList::AndEq(const AliHLTReadoutList& list)
+{
+  // bitwise and operation on all DDL bits.
+  // See header file for more details.
+
   assert( fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize );
   for (Int_t i = 0; i < gkAliHLTDDLListSize; i++)
   {
@@ -450,7 +476,6 @@ AliHLTReadoutList& AliHLTReadoutList::operator &= (const AliHLTReadoutList& list
   }
   return *this;
 }
-
 
 AliHLTReadoutList& AliHLTReadoutList::operator -= (const AliHLTReadoutList& list)
 {

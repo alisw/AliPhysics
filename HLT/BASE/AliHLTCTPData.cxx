@@ -215,6 +215,20 @@ int AliHLTCTPData::InitCTPTriggerClasses(const char* ctpString)
   return 0;
 }
 
+AliHLTUInt64_t AliHLTCTPData::ActiveTriggers(const AliHLTComponentTriggerData& trigData)
+{
+  // extract active triggers from the trigger data
+ 
+  if (trigData.fDataSize != sizeof(AliHLTEventTriggerData)) return (AliHLTUInt64_t)0;
+
+  // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
+  AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
+  AliHLTUInt64_t triggerMask=evtData->fCommonHeader[6]&0x3ffff;
+  triggerMask<<=32;
+  triggerMask|=evtData->fCommonHeader[5];
+  return triggerMask;
+}
+
 bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, AliHLTComponentTriggerData& trigData) const
 {
   // see header file for function documentation

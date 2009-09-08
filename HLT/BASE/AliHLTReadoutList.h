@@ -240,6 +240,9 @@ class AliHLTReadoutList : public TNamed
    * \return  A reference to this object.
    */
   AliHLTReadoutList& operator |= (const AliHLTReadoutList& list);
+
+  /// same as operator |=
+  AliHLTReadoutList& OrEq(const AliHLTReadoutList& list);
   
   /**
    * This operator performs a bitwise exclusive or (xor) operation on all DDL
@@ -248,6 +251,9 @@ class AliHLTReadoutList : public TNamed
    * \return  A reference to this object.
    */
   AliHLTReadoutList& operator ^= (const AliHLTReadoutList& list);
+
+  /// same as operator ^=
+  AliHLTReadoutList& XorEq(const AliHLTReadoutList& list);
   
   /**
    * This operator performs a bitwise and operation on all DDL bits between
@@ -256,6 +262,9 @@ class AliHLTReadoutList : public TNamed
    * \return  A reference to this object.
    */
   AliHLTReadoutList& operator &= (const AliHLTReadoutList& list);
+
+  /// same as operator &=
+  AliHLTReadoutList& AndEq(const AliHLTReadoutList& list);
   
   /**
    * This operator performs the effective operation of "this and (this xor list)".

@@ -69,6 +69,9 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
    */
   int InitCTPTriggerClasses(const char* ctpString);
 
+  /// etract the active trigger mask from the trigger data
+  static AliHLTUInt64_t ActiveTriggers(const AliHLTComponentTriggerData& trigData);
+
   /**
    * Evaluate an expression of trigger class ids with respect to the trigger mask.
    */
