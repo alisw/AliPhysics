@@ -398,14 +398,7 @@ AliHLTEventDDL AliHLTCTPData::ReadoutList(const AliHLTComponentTriggerData& trig
     if (i>fClassIds.GetLast()) break;
     if ((triggerMask&((AliHLTUInt64_t)0x1<<i))==0) continue;
     AliHLTReadoutList* tcrl=(AliHLTReadoutList*)fClassIds.At(i);
-    // 2009-08-27: this is a temorary bugfix:
-    // the operator functions of the AliHLTReadoutList class did not work
-    // when running online on the HLT cluster. The fix for the moment is
-    // to send out the readout list only for the first matching trigger
-    // class instead of merging the list. This is sufficient for the
-    // current trigger setups but needs to be corrected
-    return *tcrl;
-    list|=*tcrl;
+    list.OrEq(*tcrl);
   }
 
   return list;

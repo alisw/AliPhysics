@@ -338,13 +338,10 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   if (pCTPData && pCTPData->Mask()) {
     AliHLTEventDDL eventDDL=pCTPData->ReadoutList(*GetTriggerData());
     AliHLTReadoutList ctpreadout(eventDDL);
-//     AliHLTReadoutList maskedList=decision.ReadoutList();
-//     maskedList&=ctpreadout;
-
-    // bugfix 2009-08-27: since the AliHLTReadoutList operator function did not
-    // work properly (no clue why), we just use the readout list created from the
-    // detectors of the active CTP trigger class(es) 
-    decision.ReadoutList(ctpreadout);
+    ctpreadout.Enable(AliHLTReadoutList::kHLT);
+    AliHLTReadoutList maskedList=decision.ReadoutList();
+    maskedList.AndEq(ctpreadout);
+    decision.ReadoutList(maskedList);
   }
 
   decision.SetCounters(fTrigger->Counters(), GetEventCount()+1);
