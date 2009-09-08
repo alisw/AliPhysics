@@ -121,7 +121,7 @@ void AliTPCLaserTrack::LoadTracks()
 }
 
 
-Int_t AliTPCLaserTrack::IdentifyTrack(AliExternalTrackParam *track)
+Int_t AliTPCLaserTrack::IdentifyTrack(AliExternalTrackParam *track, Int_t side)
 {
   //
   // Find the laser track which is corresponding closest to 'track'
@@ -139,13 +139,14 @@ Int_t AliTPCLaserTrack::IdentifyTrack(AliExternalTrackParam *track)
   Double_t pxyz0[3];
   Double_t pxyz1[3];
   track->GetXYZ(lxyz0);
-  track->GetPxPyPz(pxyz0);
+  track->GetDirection(pxyz0);
   //
-  Float_t mindist=40; // maxima minimal distance
+  Float_t mindist=10; // maxima minimal distance
   Int_t id = -1;
   AliExternalTrackParam*  ltr0= (AliExternalTrackParam*)arrTracks->UncheckedAt(0);
-  for (Int_t itrack=0; itrack<fgkNLaserTracks; itrack++){
-    AliExternalTrackParam *ltr = (AliExternalTrackParam*)arrTracks->UncheckedAt(itrack);
+  for (Int_t itrack=0; itrack<fgkNLaserTracks; itrack++){    
+    AliTPCLaserTrack *ltr = (AliTPCLaserTrack*)arrTracks->UncheckedAt(itrack);
+    if (side>=0) if (ltr->GetSide()!=side) continue;
     Double_t * kokot = (Double_t*)ltr->GetParameter();
     kokot[4]=-0.0000000001;
     //
@@ -156,15 +157,16 @@ Int_t AliTPCLaserTrack::IdentifyTrack(AliExternalTrackParam *track)
     Double_t phi1 = TMath::ATan2(lxyz1[1],lxyz1[0]);
     if (TMath::Abs(phi0-phi1)>kMaxdphi) continue;
     // phi direction
-    ltr->GetPxPyPz(pxyz1);
-    Float_t distdir = (ltr->GetParameter()[2]-track->GetParameter()[2])*90; //distance at entrance
-    if (TMath::Abs(ltr->GetParameter()[2]-track->GetParameter()[2])>kMaxdphiP)
+    ltr->GetDirection(pxyz1);
+    Float_t direction= pxyz0[0]*pxyz1[0] + pxyz0[1]*pxyz1[1] + pxyz0[2]*pxyz1[2];
+    Float_t distdir = (1-TMath::Abs(direction))*90.; //distance at entrance
+    if (1-TMath::Abs(direction)>kMaxdphiP)
       continue;
     //
     Float_t dist=0;
     dist+=TMath::Abs(lxyz1[0]-lxyz0[0]);
     dist+=TMath::Abs(lxyz1[1]-lxyz0[1]);
-    dist+=TMath::Abs(lxyz1[2]-lxyz0[2]);
+    //    dist+=TMath::Abs(lxyz1[2]-lxyz0[2]); //z is not used for distance calculation
     dist+=distdir;
     //    
     if (id<0)  {

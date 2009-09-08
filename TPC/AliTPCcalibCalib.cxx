@@ -160,15 +160,15 @@ void     AliTPCcalibCalib::Process(AliESDEvent *event){
       if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
     }
     if (!seed) continue;
-    RefitTrack(track, seed);
+    RefitTrack(track, seed,event->GetMagneticField());
   }
   return;
 }
 
-Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
+Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Float_t magesd){
   //
   // Refit track
-  //
+  // if magesd==0 forget the curvature
 
   //
   // 0 - Setup transform object
@@ -278,8 +278,10 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
   covar[2]=10.*10.;
   covar[5]=10.*10./(64.*64.);
   covar[9]=10.*10./(64.*64.);
-  covar[14]=1*1;
-
+  covar[14]=0.3*0.3;
+  if (TMath::Abs(magesd)<0.05) {
+     covar[14]=0.025*0.025;
+  }
   // 
   // And now do refit
   //
@@ -287,7 +289,10 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
   AliExternalTrackParam * trackOutOld = (AliExternalTrackParam*)track->GetOuterParam();
 
   AliExternalTrackParam trackIn  = *trackOutOld;
-  trackIn.ResetCovariance(200.);
+  if (TMath::Abs(magesd)<0.05) {
+    ((Double_t&)(trackIn.GetParameter()[4]))=0.000000001;
+  }  
+  trackIn.ResetCovariance(20.);
   trackIn.AddCovariance(covar);
   Double_t xyz[3];
   Int_t nclIn=0,nclOut=0;
@@ -319,7 +324,10 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed){
   }
   //
   AliExternalTrackParam trackOut = trackIn;
-  trackOut.ResetCovariance(200.);
+  if (TMath::Abs(magesd)<0.05) {
+    ((Double_t&)(trackOut.GetParameter()[4]))=0.000000001;
+  }
+  trackOut.ResetCovariance(20.);
   trackOut.AddCovariance(covar);
   //
   // Refit out

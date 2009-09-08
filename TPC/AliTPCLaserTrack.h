@@ -26,7 +26,7 @@ public:
   static void LoadTracks();
   static TObjArray* GetTracks() {return fgArrLaserTracks;}
   
-  static Int_t IdentifyTrack(AliExternalTrackParam *track);
+  static Int_t IdentifyTrack(AliExternalTrackParam *track, Int_t side=-1);
   
   Int_t GetId()     const {return fId;     }
   Int_t GetSide()   const {return fSide;   }

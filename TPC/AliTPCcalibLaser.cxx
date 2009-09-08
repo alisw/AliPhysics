@@ -527,6 +527,8 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   // Loop over tracks and call  Process function
   //
   Int_t kMinTracks=20;
+  Float_t posCE=-10000;
+
   fESD = event;
   if (!fESD) {
     return;
@@ -537,6 +539,26 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   }
   if (fESD->GetNumberOfTracks()<kMinTracks) return; //not enough tracks
   AliDebug(4,Form("Event number in current file: %d",event->GetEventNumberInFile()));
+  //
+  // find CE background if present
+  //
+  if (AliTPCLaserTrack::GetTracks()==0) AliTPCLaserTrack::LoadTracks();
+  if (fESD->GetNumberOfTracks()>1.0*AliTPCLaserTrack::GetTracks()->GetEntries()){
+    TH1D hisCE("hhisCE","hhisCE",100,-50,50);
+    for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
+      AliESDtrack *track=fESD->GetTrack(i);
+      if (!track) continue;
+      hisCE.Fill(track->GetZ());
+    }
+    Int_t nmax = TMath::Nint(hisCE.GetBinContent(hisCE.GetMaximumBin()));
+    if (nmax>AliTPCLaserTrack::GetTracks()->GetEntries()*0.5){
+      posCE=hisCE.GetBinCenter(hisCE.GetMaximumBin());
+    }
+  }
+  //
+  //
+
+
   fTracksTPC.Clear();
   fTracksEsd.Clear();
   fTracksEsdParam.Delete();
@@ -552,6 +574,7 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
     AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
     if (!friendTrack) continue;
     AliESDtrack *track=fESD->GetTrack(i);
+    if (TMath::Abs(track->GetZ()-posCE)<3) continue;  // remove fake CE track
     TObject *calibObject=0;
     AliTPCseed *seed=0;
     for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
@@ -568,7 +591,7 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   if (counter<kMinTracks) return;
 
   FitDriftV();
-  FitDriftV(0.5);
+  FitDriftV(0.4);
   if (!fFullCalib) return;
   static Bool_t init=kFALSE;
   if (!init){
@@ -879,6 +902,14 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
   // Fit corrections to the drift velocity - linear approximation in the z and global y
   //The transfromatiom from the drift time to the z position done in AliTPCTracnsform class
   // 
+  // Source of outlyers : 
+  // 0. Track in the saturation - postpeak
+  // 1. gating grid close the part of the signal for first bundle
+
+  // The robust fit is performed in 2 itterations /robust fraction controlled by kFraction/
+  // 1. Robust fit is used in the itteration number 0
+  // only fraction of laser uted
+  // 2. Only the tracks close to the fit used in the second itteration
   /*
     Formulas:
     
@@ -904,14 +935,15 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
     dzs/dl = dz/dl +s*s*vr*dz/dl 
     d(dz/dl) = vr*dz/dl     
   */
-  const Int_t   knLaser      = 336;    //n laser tracks
-  const Float_t kFraction    = 0.9;   // robust fit fraction
-  const Float_t kSaturCut    = 0.05;   // remove saturated lasers - cut on fraction of saturated 
-  const Float_t kDistCut     = 6;      // distance sigma cut
-  const Float_t kDistCutAbs  = 0.25;  
-  const Float_t kMinClusters = 60;     // minimal amount of the clusters
-  const Float_t kMinSignal   = 16;     // minimal mean height of the signal
-  const Float_t kChi2Cut     = 0.1;    // chi2 cut to accept drift fit
+  const Int_t   knLaser      = 336;     //n laser tracks
+  const Float_t kFraction[2] = {0.70,0.95};    // robust fit fraction
+
+  const Float_t kSaturCut    = 0.05;    // remove saturated lasers - cut on fraction of saturated 
+  const Float_t kDistCut     = 3.;      // distance sigma cut - 3 sigma
+  const Float_t kDistCutAbs  = 1.;      // absolute cut 1 cm
+  const Float_t kMinClusters = 60.;      // minimal amount of the clusters
+  const Float_t kMinSignal   = 10.;      // minimal mean height of the signal
+  const Float_t kChi2Cut     = 1.0;     // chi2 cut to accept drift fit
   //
   static TLinearFitter fdriftA(3,"hyp2");
   static TLinearFitter fdriftC(3,"hyp2");
@@ -1022,7 +1054,7 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
       fdriftA.Eval();
       npointsA= fdriftA.GetNpoints();
       chi2A = fdriftA.GetChisquare()/fdriftA.GetNpoints();
-      fdriftA.EvalRobust(kFraction);
+      fdriftA.EvalRobust(kFraction[iter]);
       fdriftA.GetParameters(fitA);
       if (chi2A<kChi2Cut ||(*fFitAside)[0]==0 ) {
 	if (fFitAside->GetNoElements()<5) fFitAside->ResizeTo(5);
@@ -1037,7 +1069,7 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
       fdriftC.Eval();
       npointsC= fdriftC.GetNpoints();
       chi2C = fdriftC.GetChisquare()/fdriftC.GetNpoints();
-      fdriftC.EvalRobust(kFraction);
+      fdriftC.EvalRobust(kFraction[iter]);
       fdriftC.GetParameters(fitC);
       if (chi2C<kChi2Cut||(*fFitCside)[0]==0) {	
 	if (fFitCside->GetNoElements()<5) fFitCside->ResizeTo(5);
@@ -1053,7 +1085,7 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
       fdriftAC.Eval();
       npointsAC= fdriftAC.GetNpoints();
       chi2AC = fdriftAC.GetChisquare()/fdriftAC.GetNpoints();
-      fdriftAC.EvalRobust(kFraction);
+      fdriftAC.EvalRobust(kFraction[iter]);
       fdriftAC.GetParameters(fitAC);
       if (chi2AC<kChi2Cut||(*fFitACside)[0]==0) (*fFitACside) = fitAC;
       (*fFitACside)[0] = fitAC[0];
@@ -1200,7 +1232,7 @@ Bool_t  AliTPCcalibLaser::AcceptLaser(Int_t id){
   if (TMath::Abs(param->GetParameter()[1]-ltrp->GetParameter()[1])>30) return kFALSE;    // cutZ -P1
   if (TMath::Abs(param->GetParameter()[2]-ltrp->GetParameter()[2])>0.03) return kFALSE;  // cut -P2
   if (TMath::Abs(param->GetParameter()[3])>0.05) return kFALSE;   // cut Tl -P3
-  if (TMath::Abs(param->GetParameter()[4])>0.1) return kFALSE;   // cut Pt  -P4
+  //  if (TMath::Abs(param->GetParameter()[4])>0.1) return kFALSE;   // cut Pt  -P4
   //
   //
 
@@ -1212,32 +1244,10 @@ Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
   // Find corresponding mirror
   // add the corresponding tracks
  
+  if (!track->GetOuterParam()) return -1;
 
   Float_t kRadius0  = 252;
-  Float_t kRadius   = 253.4;
-
-  if (!track->GetOuterParam()) return -1;
-  AliExternalTrackParam param(*(track->GetOuterParam()));
-  AliTracker::PropagateTrackTo(&param,kRadius0,0.10566,3,kTRUE);
-  AliTracker::PropagateTrackTo(&param,kRadius,0.10566,0.1,kTRUE);
-  AliTPCLaserTrack ltr;
-  AliTPCLaserTrack *ltrp=0x0;
-  //  AliTPCLaserTrack *ltrpjw=0x0;
-  //
-  Int_t id   = AliTPCLaserTrack::IdentifyTrack(&param);
- // Int_t idjw = AliTPCLaserTrack::IdentifyTrackJW(&param);
-  //AliDebug(4,Form("Identified Track: %03d (%03d)",id,idjw));
-
-  if (id!=-1 && (AliTPCLaserTrack::GetTracks()->UncheckedAt(id)))
-    ltrp=(AliTPCLaserTrack*)AliTPCLaserTrack::GetTracks()->UncheckedAt(id);
-  else
-    ltrp=&ltr;
-
-  if (id<0) return id;
-  fCounter[id]++;
-  //
-  //
-  //
+  Float_t kRadius   = 254.2;
   Int_t countercl=0;
   Float_t counterSatur=0;
   Int_t csideA =0;
@@ -1258,15 +1268,41 @@ Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
   //
   //
   //
-  if (csideA>0.1*seed->GetNumberOfClusters() && ltrp->GetSide()==1) return -1;
-  if (csideC>0.1*seed->GetNumberOfClusters() && ltrp->GetSide()==0) return -1;
+  if (csideA<0.9*seed->GetNumberOfClusters() && csideC<0.9*seed->GetNumberOfClusters()) return 0;  // cross laser track can not happen
+
+  Int_t side= 0;
+  if (csideC>0.5*seed->GetNumberOfClusters()) side=1;
+
+
+  AliExternalTrackParam param(*(track->GetOuterParam()));
+  AliTracker::PropagateTrackTo(&param,kRadius0,0.10566,3,kTRUE);
+  AliTracker::PropagateTrackTo(&param,kRadius,0.10566,0.1,kTRUE);
+  AliTPCLaserTrack ltr;
+  AliTPCLaserTrack *ltrp=0x0;
+  //  AliTPCLaserTrack *ltrpjw=0x0;
+  //
+  Int_t id   = AliTPCLaserTrack::IdentifyTrack(&param,side);
+ // Int_t idjw = AliTPCLaserTrack::IdentifyTrackJW(&param);
+  //AliDebug(4,Form("Identified Track: %03d (%03d)",id,idjw));
+
+  if (id!=-1 && (AliTPCLaserTrack::GetTracks()->UncheckedAt(id)))
+    ltrp=(AliTPCLaserTrack*)AliTPCLaserTrack::GetTracks()->UncheckedAt(id);
+  else
+    ltrp=&ltr;
+
+  if (id<0) return -1;
+  if (ltrp->GetSide()!=side) return -1;
+  fCounter[id]++;
+  //
+  //
+  //
   //
   if (counterSatur>fClusterSatur[id]) fClusterSatur[id]=counterSatur;
   //
   //
   Float_t radius=TMath::Abs(ltrp->GetX());
-  AliTracker::PropagateTrackTo(&param,radius,0.10566,0.01,kTRUE);
   param.Rotate(ltrp->GetAlpha());
+  AliTracker::PropagateTrackTo(&param,radius,0.10566,0.01,kFALSE);
   //
   if (!fTracksMirror.At(id)) fTracksMirror.AddAt(ltrp,id);
   Bool_t accept=kTRUE;  
