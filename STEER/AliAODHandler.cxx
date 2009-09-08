@@ -194,6 +194,8 @@ void AliAODHandler::StoreMCParticles(){
 
   // get the MC vertex
   AliGenEventHeader* genHeader = header->GenEventHeader();
+  if (!genHeader) return;
+  
   TArrayF vtxMC(3);
   genHeader->PrimaryVertex(vtxMC);
   mcHeader->SetVertex(vtxMC[0],vtxMC[1],vtxMC[2]);
