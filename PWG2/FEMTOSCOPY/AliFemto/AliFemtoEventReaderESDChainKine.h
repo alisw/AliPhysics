@@ -42,6 +42,7 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
   void SetESDSource(AliESDEvent *aESD);
   void SetStackSource(AliStack *aStack);
   void SetGenEventHeader(AliGenEventHeader *aGenHeader);
+  void SetRotateToEventPlane(short dorotate);
 
  protected:
 
@@ -55,6 +56,8 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
   AliESDEvent*   fEvent;         // ESD event
   AliStack      *fStack;         // Kinematics stack pointer
   AliGenEventHeader *fGenHeader; // Link to the generator event header
+
+  short          fRotateToEventPlane; // Rotate the event so that event plane is at x=0
 
   Float_t GetSigmaToVertex(double *impact, double *covar);
 
