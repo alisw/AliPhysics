@@ -26,14 +26,14 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
 
   TFile *f=TFile::Open(filnam);
   AliCDBEntry *ent=(AliCDBEntry*)f->Get("AliCDBEntry");
-  TH2I* hlay3=new TH2I("hlay3","Layer 3",6,-0.5,5.5,14,-0.5,13.5);
+  TH2I* hlay3=new TH2I("hlay3","Layer 3",12,-0.5,5.5,14,-0.5,13.5);
   hlay3->GetXaxis()->SetTitle("Detector");
   hlay3->GetYaxis()->SetTitle("Ladder");
   hlay3->GetXaxis()->SetTickLength(0);
   hlay3->GetYaxis()->SetTickLength(0);
   hlay3->SetStats(0);
   hlay3->SetMinimum(-1);
-  TH2I* hlay4=new TH2I("hlay4","Layer 4",8,-0.5,7.5,22,-0.5,21.5);
+  TH2I* hlay4=new TH2I("hlay4","Layer 4",16,-0.5,7.5,22,-0.5,21.5);
   hlay4->GetXaxis()->SetTitle("Detector");
   hlay4->GetYaxis()->SetTitle("Ladder");
   hlay4->GetXaxis()->SetTickLength(0);
@@ -67,14 +67,17 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
     printf("Module %d (%d)   status = ",i,i+240);
     Int_t lay,lad,det;
     AliITSgeomTGeo::GetModuleId(i+240,lay,lad,det);
+    Int_t index=1+(det-1)*2;
     if(cal->IsBad()){ 
       printf("BAD\t");
       if(lay==3){ 
 	badModCounter3++;
-	hlay3->SetBinContent(det,lad,0);
+	hlay3->SetBinContent(index,lad,0);
+	hlay3->SetBinContent(index+1,lad,0);
       }else if(lay==4){ 
 	badModCounter4++;
-	hlay4->SetBinContent(det,lad,0);
+	hlay4->SetBinContent(index,lad,0);
+	hlay4->SetBinContent(index+1,lad,0);
       }
       hmodstatus->SetBinContent(i+1,0);
     }else{ 
@@ -82,10 +85,28 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
       hmodstatus->SetBinContent(i+1,1);
       if(lay==3){ 
 	badAnodeCounterGoodMod3+=cal->GetDeadChannels();
- 	hlay3->SetBinContent(det,lad,1);
+	if(cal->IsChipBad(0) && cal->IsChipBad(1) && cal->IsChipBad(2) && cal->IsChipBad(3)){
+	  hlay3->SetBinContent(index,lad,0);
+	}else{
+	  hlay3->SetBinContent(index,lad,1);
+	}
+	if(cal->IsChipBad(4) && cal->IsChipBad(5) && cal->IsChipBad(6) && cal->IsChipBad(7)){
+	  hlay3->SetBinContent(index+1,lad,0);
+	}else{
+	  hlay3->SetBinContent(index+1,lad,1);
+	}
       }else{ 
 	badAnodeCounterGoodMod4+=cal->GetDeadChannels();
-	hlay4->SetBinContent(det,lad,1);
+	if(cal->IsChipBad(0) && cal->IsChipBad(1) && cal->IsChipBad(2) && cal->IsChipBad(3)){
+	  hlay4->SetBinContent(index,lad,0);
+	}else{
+	  hlay4->SetBinContent(index,lad,1);
+	}
+	if(cal->IsChipBad(4) && cal->IsChipBad(5) && cal->IsChipBad(6) && cal->IsChipBad(7)){
+	  hlay4->SetBinContent(index+1,lad,0);
+	}else{
+	  hlay4->SetBinContent(index+1,lad,1);
+	}
       }
      }
     printf("   Chip Status (0=OK, 1=BAD): ");  

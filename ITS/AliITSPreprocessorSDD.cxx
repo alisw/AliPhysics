@@ -123,9 +123,10 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
   delete sourceList;
   // Read ADC sampling frequency from fee.conf
   Int_t amSamplFreq=40;
+  Int_t retfscf;
   FILE* feefil=fopen("fee.conf","r");
   if(feefil){
-    fscanf(feefil,"%d \n",&amSamplFreq);
+    retfscf=fscanf(feefil,"%d \n",&amSamplFreq);
     fclose(feefil);
     Log(Form("AM sampling frequency = %d MHz",amSamplFreq));
   }else{
@@ -141,6 +142,8 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
       if(amSamplFreq!=40) cal->SetAMAt20MHz();
       numOfBadChannels[modID]=0;
       Int_t badch[kNumberOfChannels];
+      Bool_t sid0ok=kTRUE;
+      Bool_t sid1ok=kTRUE;
       for(Int_t isid=0;isid<=1;isid++){
 	TString inpFileName;
 	inpFileName.Form("./SDDbase_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
@@ -148,17 +151,36 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
 	FILE* basFil = fopen(inpFileName,"read");
 	if (basFil == 0) {
 	  Log(Form("File %s not found.",inpFileName.Data()));
-	  cal->SetBad();
+	  if(isid==0){
+	    sid0ok=kFALSE;
+	    for(Int_t iChip=0; iChip<4; iChip++) cal->SetChipBad(iChip);
+	    cal->SetDeadChannels(cal->GetDeadChannels()+256);
+	    for(Int_t iAnode=0; iAnode<256; iAnode++) cal->SetBadChannel(iAnode,iAnode);
+	  }else{
+	    sid1ok=kFALSE;
+	    for(Int_t iChip=4; iChip<8; iChip++) cal->SetChipBad(iChip);
+	    cal->SetDeadChannels(cal->GetDeadChannels()+256);
+	    for(Int_t iAnode=0; iAnode<256; iAnode++) cal->SetBadChannel(iAnode,iAnode+256);
+	  }
 	  continue;
 	}
-	fscanf(basFil,"%d %d %d\n",&im,&is,&isgoodmod);
-	if(!isgoodmod) cal->SetBad();
-	fscanf(basFil,"%d\n",&th);
-	fscanf(basFil,"%d\n",&tl);
+
+	retfscf=fscanf(basFil,"%d %d %d\n",&im,&is,&isgoodmod);
+	if(!isgoodmod){
+	  if(isid==0){
+	    sid0ok=kFALSE;
+	    for(Int_t iChip=0; iChip<4; iChip++) cal->SetChipBad(iChip);
+	  }else{
+	    sid1ok=kFALSE;
+	    for(Int_t iChip=4; iChip<8; iChip++) cal->SetChipBad(iChip);
+	  }
+	}
+	retfscf=fscanf(basFil,"%d\n",&th);
+	retfscf=fscanf(basFil,"%d\n",&tl);
 	cal->SetZSLowThreshold(isid,tl);
 	cal->SetZSHighThreshold(isid,th);
 	for(Int_t ian=0;ian<(kNumberOfChannels/2);ian++){
-	  fscanf(basFil,"%d %d %f %d %d %f %f %f %f\n",&i,&isgoodan,&baseline,&basmin,&basoff,&rawnoise,&cmn,&corn,&gain);
+	  retfscf=fscanf(basFil,"%d %d %f %d %d %f %f %f %f\n",&i,&isgoodan,&baseline,&basmin,&basoff,&rawnoise,&cmn,&corn,&gain);
 	  Int_t ich=ian;
 	  if(isid==1) ich+=256;
 	  if(!isgoodan){ 
@@ -176,6 +198,7 @@ UInt_t AliITSPreprocessorSDD::ProcessPulser(AliITSDDLModuleMapSDD* ddlmap){
 	}
 	fclose(basFil);
       }
+      if(!sid0ok && !sid1ok) cal->SetBad();
       Log(Form("Put calib obj for module %d (DDL %d  Carlos %d)",modID,iddl,imod));
       calSDD.AddAt(cal,modID);
     }
@@ -229,7 +252,7 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
     ind++;
   }
   delete sourceList;
-
+  Int_t retfscf;
 
   for(Int_t iddl=0;iddl<kNumberOfDDL;iddl++){
     for(Int_t imod=0;imod<kModulesPerDDL;imod++){
@@ -248,12 +271,12 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 	  vdrift.AddAt(arr,2*modID+isid);
 	  continue;
 	}
-	fscanf(injFil,"%d",&polDeg);
+	retfscf=fscanf(injFil,"%d",&polDeg);
 	while (!feof(injFil)){
-	  fscanf(injFil,"%d %u ",&evNumb,&timeStamp);
+	  retfscf=fscanf(injFil,"%d %u ",&evNumb,&timeStamp);
 	  if(feof(injFil)) break;
 	  for(Int_t ic=0;ic<4;ic++){ 
-	    fscanf(injFil,"%f ",&auxP);
+	    retfscf=fscanf(injFil,"%f ",&auxP);
 	    param[ic]=auxP;
 	  }
 
