@@ -276,8 +276,7 @@ void AliEMCAL::CreateMaterials()
   fBirkC1 =  0.013/dP;
   fBirkC2 =  9.6e-6/(dP * dP);
 
-  // Call just in case of Geant3; What to do in case of Geant4 ?
-  if(gMC->InheritsFrom("TGeant3")) DefineMediumParameters(); // Feb 20, 2007
+  DefineMediumParameters(); // Feb 20, 2007
 }
 //____________________________________________________________________________
 void AliEMCAL::Digits2Raw() {
