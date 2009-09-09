@@ -2,7 +2,8 @@
 
 SRCS:=	 muondep/AliAnalysisTaskMuonTrackingEff.cxx \
          muondep/AliCheckMuonDetEltResponse.cxx \
-         muondep/AliAnalysisTaskRecoCheck.cxx
+         muondep/AliAnalysisTaskRecoCheck.cxx \
+         muondep/AliAnalysisTaskESDMCLabelAddition.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
