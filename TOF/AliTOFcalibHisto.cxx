@@ -18,6 +18,7 @@
  * AliTOFcalibHisto - class to handle TOF calibration histograms,
  *                    map histograms and more
  *
+ *
  * autors:   Roberto Preghenella (R+)
  * concacts: preghenella@bo.infn.it
  *
@@ -94,7 +95,7 @@ const TString AliTOFcalibHisto::fgkCalibParName[kNcalibPars] = {
 //__________________________________________________________________________
 
 /* LHC clock period [ns] */
-const Float_t AliTOFcalibHisto::fgkLHCperiod = 25.; /* SET THE CORRECT VALUE !!! */
+const Float_t AliTOFcalibHisto::fgkLHCperiod = (24.4e-3 * 1024); /* ns */
 
 //__________________________________________________________________________
 
@@ -140,7 +141,7 @@ const Int_t AliTOFcalibHisto::fgkDDLBCshift[72] = {
   2, 2, -2, -2,
   2, 2, -1, -1,
   2, 2, -1, -1,
-  2, 2, -1, -1,
+  2, 2, -1, -1
 };
 
 //__________________________________________________________________________
