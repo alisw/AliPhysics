@@ -190,33 +190,33 @@ void AliAODHandler::StoreMCParticles(){
   // 
 
   AliHeader* header = fMCEventH->MCEvent()->Header();
-  if (!header)return;
+   // get the MC vertex
+  AliGenEventHeader* genHeader = 0;
+  if (header) genHeader = header->GenEventHeader();
+  if (genHeader) {
+      TArrayF vtxMC(3);
+      genHeader->PrimaryVertex(vtxMC);
+      mcHeader->SetVertex(vtxMC[0],vtxMC[1],vtxMC[2]);
 
-  // get the MC vertex
-  AliGenEventHeader* genHeader = header->GenEventHeader();
-  if (!genHeader) return;
+      // we search the MCEventHeaders first 
+      // Two cases, cocktail or not...
+      AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(genHeader);
+      if(genCocktailHeader){
+	  // we have a coktail header
+	  mcHeader->AddGeneratorName(genHeader->GetName());
+	  // Loop from the back so that the first one sets the process type
+	  TList* headerList = genCocktailHeader->GetHeaders();
+	  for(int i = headerList->GetEntries()-1;i>=0;--i){
+	      AliGenEventHeader *headerEntry = dynamic_cast<AliGenEventHeader*>(headerList->At(i));
+	      SetMCHeaderInfo(mcHeader,headerEntry);
+	  }
+      }
+      else{
+	  // No Cocktail just take the first one
+	  SetMCHeaderInfo(mcHeader,genHeader);
+      }
+  }
   
-  TArrayF vtxMC(3);
-  genHeader->PrimaryVertex(vtxMC);
-  mcHeader->SetVertex(vtxMC[0],vtxMC[1],vtxMC[2]);
-
-  // we search the MCEventHeaders first 
-  // Two cases, cocktail or not...
-  AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(genHeader);
-  if(genCocktailHeader){
-    // we have a coktail header
-    mcHeader->AddGeneratorName(genHeader->GetName());
-    // Loop from the back so that the first one sets the process type
-    TList* headerList = genCocktailHeader->GetHeaders();
-    for(int i = headerList->GetEntries()-1;i>=0;--i){
-      AliGenEventHeader *headerEntry = dynamic_cast<AliGenEventHeader*>(headerList->At(i));
-      SetMCHeaderInfo(mcHeader,headerEntry);
-    }
-  }
-  else{
-    // No Cocktail just take the first one
-    SetMCHeaderInfo(mcHeader,genHeader);
-  }
 
 
 
