@@ -10,19 +10,40 @@
 #include <TArrayF.h>
 #include "AliEMCALGeoParams.h"
 class TString;
-class TArrayF;
+class TTree;
 
 /*
-  Objects of this class read txt file with APD data
-  AliEMCALCalibTimeDepCorrection inherits TObject only to use AliLog "functions".
+  Objects of this class contain info on time-dependent corrections
 */
 
+// ******* internal class definition *************
+// 1 SuperModule's worth of info
+class AliEMCALSuperModuleCalibTimeDepCorrection : public TObject {
+ public:
+  AliEMCALSuperModuleCalibTimeDepCorrection() : TObject(), // just init values
+    fSuperModuleNum(0)
+    {
+      for (int icol=0; icol<AliEMCALGeoParams::fgkEMCALCols; icol++) {
+	for (int irow=0; irow<AliEMCALGeoParams::fgkEMCALRows; irow++) {
+	  fCorrection[icol][irow].Reset();
+	}
+      }
+    }
+
+ public:
+  Int_t fSuperModuleNum;
+  TArrayF fCorrection[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+
+  ClassDef(AliEMCALSuperModuleCalibTimeDepCorrection, 1) // help class
+};
+// ******* end of internal class definition *************
+
 class AliEMCALCalibTimeDepCorrection : public TObject {
-public:
+ public:
   AliEMCALCalibTimeDepCorrection();
 
   // interface methods; getting the whole struct should be more efficient though
-  void InitCorrection(Int_t nSM, Int_t nBins, Float_t val=1.0); // assign a certain value to all 
+  void InitCorrection(Int_t nSM, Int_t nBins, Float_t val); // assign a certain value to all 
   // use the methods below with caution: take care that your argument ranges are valid
   void SetCorrection(Int_t smIndex, Int_t iCol, Int_t iRow, Int_t iBin, Float_t val=1.0); // assign a certain value to a given bin
   Float_t GetCorrection(Int_t smIndex, Int_t iCol, Int_t iRow, Int_t iBin) const; // assign a certain value to a given bin
@@ -30,16 +51,13 @@ public:
 
   // Read and Write txt I/O methods are normally not used, but are useful for 
   // filling the object before it is saved in OCDB 
-  void ReadCalibTimeDepCorrectionInfo(Int_t nSM, const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-
-  void WriteCalibTimeDepCorrectionInfo(const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void ReadTextInfo(Int_t nSM, const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void WriteTextInfo(const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void ReadRootInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void ReadTreeInfo(TTree *treeGlob, TTree *treeCorr, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void WriteRootInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
 
   virtual ~AliEMCALCalibTimeDepCorrection();
-
-  struct AliEMCALSuperModuleCalibTimeDepCorrection {
-    Int_t fSuperModuleNum;
-    TArrayF fCorrection[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
-  };
 
   // pointer to stored info.
   Int_t GetNSuperModule() const { return fNSuperModule; }; 
@@ -58,6 +76,8 @@ public:
   Int_t GetNTimeBins() const { return fNTimeBins; } // 
   Int_t GetTimeBinSize() const { return fTimeBinSize; } // 
 
+  static Int_t GetMaxTimeBins() { return fgkMaxTimeBins; }
+
 protected:
 
   Int_t 	  fNSuperModule; // Number of supermodules.
@@ -71,6 +91,8 @@ private:
   UInt_t fStartTime; // timestamp for start of run/first bin
   Int_t fNTimeBins; // how many timestamp bins do we have
   Int_t fTimeBinSize; // seconds per time-bin
+
+  static const Int_t fgkMaxTimeBins = 50; // we are not going to have more correction time bins than this for a single runnumber.. 
 
   ClassDef(AliEMCALCalibTimeDepCorrection, 2) //
 };

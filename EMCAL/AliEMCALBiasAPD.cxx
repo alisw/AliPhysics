@@ -20,6 +20,8 @@
 
 #include <fstream>
 #include <TString.h>
+#include <TFile.h>
+#include <TTree.h>
 
 #include "AliEMCALBiasAPD.h"
 
@@ -36,8 +38,8 @@ AliEMCALBiasAPD::AliEMCALBiasAPD() :
 }
 
 //____________________________________________________________________________
-void AliEMCALBiasAPD::ReadBiasAPDInfo(Int_t nSM, const TString &txtFileName,
-				      Bool_t swapSides)
+void AliEMCALBiasAPD::ReadTextBiasAPDInfo(Int_t nSM, const TString &txtFileName,
+					  Bool_t swapSides)
 {
   //Read data from txt file. ; coordinates given on SuperModule basis
 
@@ -92,8 +94,8 @@ void AliEMCALBiasAPD::ReadBiasAPDInfo(Int_t nSM, const TString &txtFileName,
 }
 
 //____________________________________________________________________________
-void AliEMCALBiasAPD::WriteBiasAPDInfo(const TString &txtFileName,
-				       Bool_t swapSides)
+void AliEMCALBiasAPD::WriteTextBiasAPDInfo(const TString &txtFileName,
+					   Bool_t swapSides)
 {
   // write data to txt file. ; coordinates given on SuperModule basis
 
@@ -142,13 +144,138 @@ void AliEMCALBiasAPD::WriteBiasAPDInfo(const TString &txtFileName,
 }
 
 //____________________________________________________________________________
+void AliEMCALBiasAPD::ReadRootBiasAPDInfo(const TString &rootFileName,
+					  Bool_t swapSides)
+{
+  //Read data from root file. ; coordinates given on SuperModule basis
+  TFile inputFile(rootFileName, "read");  
+
+  TTree *tree = (TTree*) inputFile.Get("tree");
+
+  ReadTreeBiasAPDInfo(tree, swapSides);
+
+  inputFile.Close();
+
+  return;
+}
+
+//____________________________________________________________________________
+void AliEMCALBiasAPD::ReadTreeBiasAPDInfo(TTree *tree,
+					  Bool_t swapSides)
+{
+ // how many SuperModule's worth of entries / APDs do we have?
+  Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
+  fNSuperModule = tree->GetEntries() / nAPDPerSM;
+
+  if (fSuperModuleData) delete [] fSuperModuleData;
+  fSuperModuleData = new AliEMCALSuperModuleBiasAPD[fNSuperModule];
+
+  Int_t iSM = 0; // SuperModule index
+  Int_t iCol = 0;
+  Int_t iRow = 0;
+  // list of values to be read
+  Int_t iElecId = 0;
+  Int_t iDAC = 0;
+  Float_t voltage = 0;     
+  // end - all values
+
+  // declare the branches
+  tree->SetBranchAddress("iSM", &iSM);
+  tree->SetBranchAddress("iCol", &iCol);
+  tree->SetBranchAddress("iRow", &iRow);
+  tree->SetBranchAddress("iElecId", &iElecId);
+  tree->SetBranchAddress("iDAC", &iDAC);
+  tree->SetBranchAddress("voltage", &voltage);
+
+  for (int ient=0; ient<tree->GetEntries(); ient++) {
+    tree->GetEntry(ient);
+
+    // assume the index SuperModules come in order: i=iSM
+    AliEMCALSuperModuleBiasAPD &t = fSuperModuleData[iSM];
+    t.fSuperModuleNum = iSM;
+
+    // assume that this info is already swapped and done for this basis?
+    if (swapSides) {
+      // C side, oriented differently than A side: swap is requested
+      iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
+      iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
+    }
+
+    t.fElecId[iCol][iRow] = iElecId;
+    t.fDAC[iCol][iRow] = iDAC;
+    t.fVoltage[iCol][iRow] = voltage;
+
+  } // 
+
+  return;
+}
+
+//____________________________________________________________________________
+void AliEMCALBiasAPD::WriteRootBiasAPDInfo(const TString &rootFileName,
+					   Bool_t swapSides)
+{
+  // write data to root file. ; coordinates given on SuperModule basis
+  TFile destFile(rootFileName, "recreate");  
+  if (destFile.IsZombie()) {
+    return;
+  }  
+  destFile.cd();
+
+  TTree *tree = new TTree("tree","");
+
+  // variables for filling the TTree
+  Int_t iSM = 0; // SuperModule index
+  Int_t iCol = 0;
+  Int_t iRow = 0;
+  Int_t iElecId = 0;
+  Int_t iDAC = 0;
+  Float_t voltage = 0;
+  // declare the branches
+  tree->Branch("iSM", &iSM, "iSM/I");
+  tree->Branch("iCol", &iCol, "iCol/I");
+  tree->Branch("iRow", &iRow, "iRow/I");
+  tree->Branch("iElecId", &iElecId, "iElecId/I");
+  tree->Branch("iDAC", &iDAC, "iDAC/I");
+  tree->Branch("voltage", &voltage, "voltage/F");
+
+  Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
+
+  for (iSM = 0; iSM < fNSuperModule; iSM++) {
+    AliEMCALSuperModuleBiasAPD &t = fSuperModuleData[iSM];
+
+    for (Int_t j=0; j<nAPDPerSM; j++) {
+      iCol = j / AliEMCALGeoParams::fgkEMCALRows;
+      iRow = j % AliEMCALGeoParams::fgkEMCALRows;
+
+      iElecId = t.fElecId[iCol][iRow];
+      iDAC = t.fDAC[iCol][iRow];
+      voltage = t.fVoltage[iCol][iRow];
+
+      if (swapSides) {
+	// C side, oriented differently than A side: swap is requested
+	iCol = AliEMCALGeoParams::fgkEMCALCols-1 - iCol;
+	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
+      }
+
+      tree->Fill();
+    }
+
+  } // i, SuperModule
+
+  tree->Write();
+  destFile.Close();
+
+  return;
+}
+
+//____________________________________________________________________________
 AliEMCALBiasAPD::~AliEMCALBiasAPD()
 {
   delete [] fSuperModuleData;
 }
 
 //____________________________________________________________________________
-AliEMCALBiasAPD::AliEMCALSuperModuleBiasAPD AliEMCALBiasAPD::GetSuperModuleBiasAPDId(Int_t supModIndex)const
+AliEMCALSuperModuleBiasAPD AliEMCALBiasAPD::GetSuperModuleBiasAPDId(Int_t supModIndex)const
 {
   AliEMCALSuperModuleBiasAPD t;  // just to maybe prevent a crash, but we are returning something not-initialized so maybe not better really..
   if (!fSuperModuleData)
@@ -158,7 +285,7 @@ AliEMCALBiasAPD::AliEMCALSuperModuleBiasAPD AliEMCALBiasAPD::GetSuperModuleBiasA
 }
 
 //____________________________________________________________________________
-AliEMCALBiasAPD::AliEMCALSuperModuleBiasAPD AliEMCALBiasAPD::GetSuperModuleBiasAPDNum(Int_t supModIndex)const
+AliEMCALSuperModuleBiasAPD AliEMCALBiasAPD::GetSuperModuleBiasAPDNum(Int_t supModIndex)const
 {
   AliEMCALSuperModuleBiasAPD t;  // just to maybe prevent a crash, but we are returning something not-initialized so maybe not better really..
   if (!fSuperModuleData)

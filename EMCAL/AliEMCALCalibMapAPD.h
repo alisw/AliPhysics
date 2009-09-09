@@ -10,12 +10,76 @@
 #include "AliEMCALGeoParams.h"
 #include <cmath>
 class TString;
+class TTree;
 
 /*
-  Objects of this class read txt file with APD data
-  AliEMCALCalibMapAPD inherits TObject only to use AliLog "functions".
+  Objects of this class contain info on APD calibration and map info
 */
 
+// ******* internal class definition *************
+// values per single APD
+class AliEMCALCalibMapAPDVal : public TObject {
+
+ public:
+  AliEMCALCalibMapAPDVal() : TObject(), // just init values
+    fHardWareId(0),
+    fAPDNum(0),
+    fV30(0),
+    fBreakDown(0),
+    fDarkCurrent(0) 
+    {
+      Init();
+    }
+  
+  void Init() {
+    fHardWareId = 0;
+    fAPDNum = 0;
+    fV30 = 0;
+    fBreakDown = 0;
+    fDarkCurrent = 0; 
+    for (int i=0; i<3; i++) {
+      fPar[i] = 0;
+      fParErr[i] = 0;
+    }
+    return;
+  }
+  
+ public:
+  Int_t fHardWareId; // HardWareIndex
+  // info from APD calibrations
+  Int_t fAPDNum;    // assigned APD-PA number; Catania 10000-, Houston: 20000-
+  Float_t fV30;      // Catania/Houston Voltage V30 (V) at T = 25 deg C
+  Float_t fPar[3];   // fit parameters, p0,p1,p2 - for ADC vs bias measurement
+  Float_t fParErr[3]; // error on fit parameters	
+  
+  Int_t fBreakDown; // Hamamatsu Breakdown Voltage (V)	
+  Float_t fDarkCurrent; // Hamamatsu Dark Current (A)	
+  
+  ClassDef(AliEMCALCalibMapAPDVal, 1) // help class
+}; // AliEMCALCalibAPDVal
+
+// 1 SuperModule's worth of info: info on where the different APDs are
+class AliEMCALSuperModuleCalibMapAPD : public TObject {
+ public:
+  //    AliEMCALSuperModuleCalibMapAPD(Int_t nSM = 0);
+  AliEMCALSuperModuleCalibMapAPD() : TObject(), // just init values
+    fSuperModuleNum(0)
+    {
+      for (int icol=0; icol<AliEMCALGeoParams::fgkEMCALCols; icol++) {
+	for (int irow=0; irow<AliEMCALGeoParams::fgkEMCALRows; irow++) {
+	  fAPDVal[icol][irow].Init();
+	}
+      }
+    }
+  
+ public:
+  Int_t fSuperModuleNum;
+  AliEMCALCalibMapAPDVal fAPDVal[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];
+  
+  ClassDef(AliEMCALSuperModuleCalibMapAPD, 1) // help class
+};
+// ******* end of internal class definition *************    
+    
 class AliEMCALCalibMapAPD : public TObject {
 
 public:
@@ -26,34 +90,15 @@ public:
 
   // Read and Write txt I/O methods are normally not used, but are useful for 
   // filling the object before it is saved in OCDB 
-  void ReadCalibMapAPDInfo(Int_t nSM, const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-
-  void WriteCalibMapAPDInfo(const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void ReadTextCalibMapAPDInfo(Int_t nSM, const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void WriteTextCalibMapAPDInfo(const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void ReadRootCalibMapAPDInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void ReadTreeCalibMapAPDInfo(TTree *tree, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void WriteRootCalibMapAPDInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
 
   virtual ~AliEMCALCalibMapAPD();
 
-  // values per single APD
-  struct AliEMCALCalibMapAPDVal {
-
-    Int_t fHardWareId; // HardWareIndex
-    // info from APD calibrations
-    Int_t fAPDNum;    // assigned APD-PA number; Catania 10000-, Houston: 20000-
-    Float_t fV30;      // Catania/Houston Voltage V30 (V) at T = 25 deg C
-    Float_t fPar[3];   // fit parameters, p0,p1,p2 - for ADC vs bias measurement
-    Float_t fParErr[3]; // error on fit parameters	
-
-    Int_t fBreakDown; // Hamamatsu Breakdown Voltage (V)	
-    Float_t fDarkCurrent; // Hamamatsu Dark Current (A)	
-  };
-
-  // 1 SuperModule's worth of info: info on where the different APDs are
-  struct AliEMCALSuperModuleCalibMapAPD {
-    Int_t fSuperModuleNum;
-    AliEMCALCalibMapAPDVal fAPDVal[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];
-  };
-
   // pointer to stored info.
-
   Int_t GetNSuperModule() const { return fNSuperModule; }; 
   AliEMCALSuperModuleCalibMapAPD * GetSuperModuleData() const { return fSuperModuleData; };
 
@@ -78,7 +123,7 @@ private:
   AliEMCALCalibMapAPD(const AliEMCALCalibMapAPD &);
   AliEMCALCalibMapAPD &operator = (const AliEMCALCalibMapAPD &);
 
-  ClassDef(AliEMCALCalibMapAPD, 1) //MapAPD data reader
+  ClassDef(AliEMCALCalibMapAPD, 2) //CalibMapAPD data info
 };
 
 #endif
