@@ -24,7 +24,7 @@ class AliITSVertexerCosmics : public AliITSVertexer {
   virtual void PrintStatus() const;
   void SetFirstLastModules(Int_t ilayer=0,Int_t m1=0,Int_t m2=79) 
     {fFirst[ilayer] = m1; fLast[ilayer] = m2;}
-  void SetMaxDistOnOuterLayer(Double_t max=0.1) {fMaxDistOnOuterLayer=max;}
+  void SetMaxDistOnOuterLayer(Double_t max=1.0) {fMaxDistOnOuterLayer=max;}
   Double_t GetMaxDistOnOuterLayer() const {return fMaxDistOnOuterLayer;}
   void SetMaxVtxRadius(Int_t ilayer=0,Double_t maxr=3.5) {fMaxVtxRadius[ilayer]=maxr;}
   Double_t GetMaVtxRadius(Int_t ilayer=0) const {return fMaxVtxRadius[ilayer];}
