@@ -9,6 +9,8 @@
 #include "AliFemtoModelBPLCMSCorrFctn.h"
 #include "AliFemtoPair.h"
 #include "AliFemtoModelManager.h"
+#include "AliFemtoKTPairCut.h"
+#include "AliFemtoAnalysisReactionPlane.h"
 #include <cstdio>
 
 #ifdef __ROOT__ 
@@ -23,7 +25,8 @@ AliFemtoModelBPLCMSCorrFctn::AliFemtoModelBPLCMSCorrFctn(char* title, const int&
   fNumerator3DFake(0),
   fDenominator3D(0),
   fQinvHisto(0),
-  fPairCut(0)
+  fPairCut(0),
+  fUseRPSelection(0)
 {
   // set up true numerator
   char tTitNumT[100] = "Num3DTrue";
@@ -54,7 +57,8 @@ AliFemtoModelBPLCMSCorrFctn::AliFemtoModelBPLCMSCorrFctn(const AliFemtoModelBPLC
   fNumerator3DFake(0),
   fDenominator3D(0),
   fQinvHisto(0),
-  fPairCut(0)
+  fPairCut(0),
+  fUseRPSelection(0)
 {
   // Copy constructor
   fNumerator3DTrue = new TH3D(*aCorrFctn.fNumerator3DTrue);
@@ -153,8 +157,27 @@ void AliFemtoModelBPLCMSCorrFctn::AddRealPair( AliFemtoPair* pair)
 {
   // Store a real pair in numerator
   if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+    if (fUseRPSelection) {
+      AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
+      if (!ktc) { 
+	cout << "RP aware cut requested, but not connected to the CF" << endl;
+	if (!(fPairCut->Pass(pair))) return;
+      }
+      else {
+	AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
+	if (!arp) {
+	  cout << "RP aware cut requested, but not connected to the CF" << endl;
+	  if (!(fPairCut->Pass(pair))) return;
+	}
+	if (!(ktc->Pass(pair, arp->GetCurrentReactionPlane()))) return;
+      }
+    }
+    else
+      if (!(fPairCut->Pass(pair))) return;
   }
+//   if (fPairCut){
+//     if (!(fPairCut->Pass(pair))) return;
+//   }
   
   Double_t weight = fManager->GetWeight(pair);
 
@@ -169,8 +192,27 @@ void AliFemtoModelBPLCMSCorrFctn::AddRealPair( AliFemtoPair* pair)
 void AliFemtoModelBPLCMSCorrFctn::AddMixedPair( AliFemtoPair* pair){
   // store mixed pair in denominator
   if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+    if (fUseRPSelection) {
+      AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
+      if (!ktc) { 
+	cout << "RP aware cut requested, but not connected to the CF" << endl;
+	if (!(fPairCut->Pass(pair))) return;
+      }
+      else {
+	AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
+	if (!arp) {
+	  cout << "RP aware cut requested, but not connected to the CF" << endl;
+	  if (!(fPairCut->Pass(pair))) return;
+	}
+	if (!(ktc->Pass(pair, arp->GetCurrentReactionPlane()))) return;
+      }
+    }
+    else
+      if (!(fPairCut->Pass(pair))) return;
   }
+//   if (fPairCut){
+//     if (!(fPairCut->Pass(pair))) return;
+//   }
 
   Double_t weight = fManager->GetWeight(pair);
 
@@ -196,4 +238,9 @@ AliFemtoModelCorrFctn* AliFemtoModelBPLCMSCorrFctn::Clone()
 void AliFemtoModelBPLCMSCorrFctn::SetSpecificPairCut(AliFemtoPairCut* aCut)
 {
   fPairCut = aCut;
+}
+
+void AliFemtoModelBPLCMSCorrFctn::SetUseRPSelection(unsigned short aRPSel)
+{
+  fUseRPSelection = aRPSel;
 }

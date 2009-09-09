@@ -13,6 +13,8 @@
 #include "AliFemtoModelGausLCMSFreezeOutGenerator.h"
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoModelCorrFctnSource.h"
+#include "AliFemtoKTPairCut.h"
+#include "AliFemtoAnalysisReactionPlane.h"
     
 //_______________________
 AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(): 
@@ -21,7 +23,10 @@ AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource():
   fHistRSide(0),
   fHistRLong(0),
   fHistRStar(0),
-  fHistdNdR(0)
+  fHistdNdR(0),
+  fHistNumWS(0),
+  fHistDenWS(0),
+  fUseRPSelection(0)
 {
   // default constructor
   char buf[100];
@@ -37,6 +42,11 @@ AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource():
   sprintf(buf, "%sdNdR", title);
   fHistdNdR = new TH1D(buf,buf,100,-50.0,50.0);
 
+  sprintf(buf, "%sNWS", title);
+  fHistNumWS = new TH2D(buf,buf,50,0.0,0.5,100,0.0,2.0);
+  sprintf(buf, "%sDWS", title);
+  fHistDenWS = new TH2D(buf,buf,50,0.0,0.5,100,0.0,2.0);
+
   fHistROut->Sumw2();
   fHistRSide->Sumw2();
   fHistRLong->Sumw2();
@@ -50,7 +60,10 @@ AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(const char *title, Int_
   fHistRSide(0),
   fHistRLong(0),
   fHistRStar(0),
-  fHistdNdR(0)
+  fHistdNdR(0),
+  fHistNumWS(0),
+  fHistDenWS(0),
+  fUseRPSelection(0)
 {
   // basic constructor
   char buf[100];
@@ -65,6 +78,11 @@ AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(const char *title, Int_
   sprintf(buf, "%sdNdR", title);
   fHistdNdR = new TH1D(buf,buf,100,-50.0,50.0);
 
+  sprintf(buf, "%sNWS", title);
+  fHistNumWS = new TH2D(buf,buf,50,0.0,0.5,100,0.0,2.0);
+  sprintf(buf, "%sDWS", title);
+  fHistDenWS = new TH2D(buf,buf,50,0.0,0.5,100,0.0,2.0);
+
   fHistROut->Sumw2();
   fHistRSide->Sumw2();
   fHistRLong->Sumw2();
@@ -78,7 +96,10 @@ AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(const AliFemtoModelCorr
   fHistRSide(0),
   fHistRLong(0),
   fHistRStar(0),
-  fHistdNdR(0)
+  fHistdNdR(0),
+  fHistNumWS(0),
+  fHistDenWS(0),
+  fUseRPSelection(0)
 {
   // copy constructor
   fHistROut = new TH1D (*aCorrFctn.fHistROut);
@@ -86,6 +107,10 @@ AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(const AliFemtoModelCorr
   fHistRLong = new TH1D(*aCorrFctn.fHistRLong);
   fHistRStar = new TH1D(*aCorrFctn.fHistRStar);
   fHistdNdR = new TH1D(*aCorrFctn.fHistdNdR);
+  fHistNumWS = new TH2D(*aCorrFctn.fHistNumWS);
+  fHistDenWS = new TH2D(*aCorrFctn.fHistDenWS);
+
+  fUseRPSelection = aCorrFctn.fUseRPSelection;
 }
 //_______________________
 AliFemtoModelCorrFctnSource::~AliFemtoModelCorrFctnSource()
@@ -96,6 +121,8 @@ AliFemtoModelCorrFctnSource::~AliFemtoModelCorrFctnSource()
   if (fHistRLong) delete fHistRLong;
   if (fHistRStar) delete fHistRStar;
   if (fHistdNdR) delete fHistdNdR;
+  if (fHistNumWS) delete fHistNumWS;
+  if (fHistDenWS) delete fHistDenWS;
   if (fNumeratorTrue) delete fNumeratorTrue;
   if (fNumeratorFake) delete fNumeratorFake;
   if (fDenominator) delete fDenominator;
@@ -122,6 +149,14 @@ AliFemtoModelCorrFctnSource& AliFemtoModelCorrFctnSource::operator=(const AliFem
   if (aCorrFctn.fHistdNdR)
     fHistdNdR = new TH1D(*aCorrFctn.fHistdNdR);
   else fHistdNdR = 0;
+  if (aCorrFctn.fHistNumWS)
+    fHistNumWS = new TH2D(*aCorrFctn.fHistNumWS);
+  else fHistNumWS = 0;
+  if (aCorrFctn.fHistDenWS)
+    fHistDenWS = new TH2D(*aCorrFctn.fHistDenWS);
+  else fHistDenWS = 0;
+
+  fUseRPSelection = aCorrFctn.fUseRPSelection;
 
   return *this;
 }
@@ -138,19 +173,72 @@ AliFemtoString AliFemtoModelCorrFctnSource::Report()
 void AliFemtoModelCorrFctnSource::AddRealPair(AliFemtoPair* aPair)
 {
   // add real (effect) pair
+//   if (fPairCut){
+//     if (!(fPairCut->Pass(aPair))) return;
+//   }
+  if (fPairCut){
+    if (fUseRPSelection) {
+      AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
+      if (!ktc) { 
+	cout << "RP aware cut requested, but not connected to the CF" << endl;
+	if (!(fPairCut->Pass(aPair))) return;
+      }
+      else {
+	AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
+	if (!arp) {
+	  cout << "RP aware cut requested, but not connected to the CF" << endl;
+	  if (!(fPairCut->Pass(aPair))) return;
+	}
+	if (!(ktc->Pass(aPair, arp->GetCurrentReactionPlane()))) return;
+      }
+    }
+    else
+      if (!(fPairCut->Pass(aPair))) return;
+  }
+  
   AliFemtoModelCorrFctn::AddRealPair(aPair);
+
 }
 //_______________________
 void AliFemtoModelCorrFctnSource::AddMixedPair(AliFemtoPair* aPair)
 {
   // add mixed (background) pair
+//   if (fPairCut){
+//     if (!(fPairCut->Pass(aPair))) return;
+//   }
+  if (fPairCut){
+    if (fUseRPSelection) {
+      AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
+      if (!ktc) { 
+	cout << "RP aware cut requested, but not connected to the CF" << endl;
+	if (!(fPairCut->Pass(aPair))) return;
+      }
+      else {
+	AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
+	if (!arp) {
+	  cout << "RP aware cut requested, but not connected to the CF" << endl;
+	  if (!(fPairCut->Pass(aPair))) return;
+	}
+	if (!(ktc->Pass(aPair, arp->GetCurrentReactionPlane()))) return;
+      }
+    }
+    else
+      if (!(fPairCut->Pass(aPair))) return;
+  }
+  
   AliFemtoModelCorrFctn::AddMixedPair(aPair);
   // save the generated positions
-  fHistROut->Fill (fManager->GetWeightGenerator()->GetRStarOut());
-  fHistRSide->Fill(fManager->GetWeightGenerator()->GetRStarSide());
-  fHistRLong->Fill(fManager->GetWeightGenerator()->GetRStarLong());
-  fHistRStar->Fill(fManager->GetWeightGenerator()->GetRStar());
-  fHistdNdR->Fill (fManager->GetWeightGenerator()->GetRStar(),1.0/(fManager->GetWeightGenerator()->GetRStar()*fManager->GetWeightGenerator()->GetRStar()));
+  if (aPair->KStar() < 0.2) {
+    fHistROut->Fill (fManager->GetWeightGenerator()->GetRStarOut());
+    fHistRSide->Fill(fManager->GetWeightGenerator()->GetRStarSide());
+    fHistRLong->Fill(fManager->GetWeightGenerator()->GetRStarLong());
+    fHistRStar->Fill(fManager->GetWeightGenerator()->GetRStar());
+    fHistdNdR->Fill (fManager->GetWeightGenerator()->GetRStar(),1.0/(fManager->GetWeightGenerator()->GetRStar()*fManager->GetWeightGenerator()->GetRStar()));
+  }
+
+  fHistDenWS->Fill(aPair->QInv(), 1.0);
+  Double_t weight = fManager->GetWeight(aPair);
+  fHistNumWS->Fill(aPair->QInv(), weight);
 }
 //_______________________
 void AliFemtoModelCorrFctnSource::Write()
@@ -161,7 +249,9 @@ void AliFemtoModelCorrFctnSource::Write()
   fHistRLong->Write();
   fHistRStar->Write();
   fHistdNdR->Write();
-  
+  fHistNumWS->Write();
+  fHistDenWS->Write();
+
   AliFemtoModelCorrFctn::Write();
 }
 //________________________
@@ -175,6 +265,8 @@ TList* AliFemtoModelCorrFctnSource::GetOutputList()
   tOutputList->Add(fHistRLong);  
   tOutputList->Add(fHistRStar);  
   tOutputList->Add(fHistdNdR);  
+  tOutputList->Add(fHistDenWS);
+  tOutputList->Add(fHistNumWS);
 
   return tOutputList;
 }
@@ -187,3 +279,7 @@ AliFemtoModelCorrFctn* AliFemtoModelCorrFctnSource::Clone()
   return tCopy;
 }
 
+void AliFemtoModelCorrFctnSource::SetUseRPSelection(unsigned short aRPSel)
+{
+  fUseRPSelection = aRPSel;
+}

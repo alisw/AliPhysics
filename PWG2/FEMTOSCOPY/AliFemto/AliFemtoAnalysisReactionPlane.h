@@ -6,8 +6,8 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALIFEMTOVERTEXMULTANALYSIS_H
-#define ALIFEMTOVERTEXMULTANALYSIS_H
+#ifndef ALIFEMTOANALYSISREACTIONPLANE_H
+#define ALIFEMTOANALYSISREACTIONPLANE_H
 
 #include "AliFemtoSimpleAnalysis.h"        // base analysis class
 

@@ -42,10 +42,14 @@ public:
   virtual TList *ListSettings();
   AliFemtoPairCut* Clone();
   void SetKTRange(double ktmin, double ktmax);
-  
+  void SetPhiRange(double phimin, double phimax);
+  bool Pass(const AliFemtoPair* pair, double aRPAngle);
+
  protected:
   Double_t fKTMin;          // Minimum allowed pair transverse momentum
   Double_t fKTMax;          // Maximum allowed pair transverse momentum 
+  Double_t fPhiMin;         // Minimum angle vs. reaction plane 
+  Double_t fPhiMax;         // Maximum angle vs. reaction plane
 
 #ifdef __ROOT__
   ClassDef(AliFemtoKTPairCut, 0)

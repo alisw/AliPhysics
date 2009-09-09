@@ -9,6 +9,7 @@
 #ifndef ALIFEMTOMODELCORRFCTNSOURCE_H
 #define ALIFEMTOMODELCORRFCTNSOURCE_H
 
+#include "TH2D.h"
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoPair.h"
 #include "AliFemtoModelManager.h"
@@ -34,6 +35,7 @@ public:
 
   virtual AliFemtoModelCorrFctn* Clone();
 
+  void SetUseRPSelection(unsigned short aRPSel);
 protected:
 
   TH1D *fHistROut;     // Distribution of Rout
@@ -41,8 +43,12 @@ protected:
   TH1D *fHistRLong;    // Distribution of Rlong
   TH1D *fHistRStar;    // Distribution of RStar
   TH1D *fHistdNdR;     // Distribution of RStar weighted by Jacobian 
+  TH2D *fHistNumWS;    // Weight spread for numerator
+  TH2D *fHistDenWS;    // Weight spread for denominator
 
 private:
+
+  unsigned short fUseRPSelection;  // The pair cut uses RP selection
 
 #ifdef __ROOT__
   ClassDef(AliFemtoModelCorrFctnSource, 1)
