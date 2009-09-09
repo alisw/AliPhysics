@@ -19,7 +19,7 @@ ifdef DIMDIR
 
 EINCLUDE += $(DIMDIR)/dim
 ELIBS += dim
-ELIBSDIR += $(DIMDIR)/$(ALICE_TARGET)
+ELIBSDIR += $(DIMDIR)/$(ODIR)
 
 endif
 

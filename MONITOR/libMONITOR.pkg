@@ -24,7 +24,7 @@ ifdef DIMDIR
 SRCS          += SORNotifier.cxx
 EINCLUDE      += $(DIMDIR)/dim
 ELIBS         := dim
-ELIBSDIR      := $(DIMDIR)/$(ALICE_TARGET)
+ELIBSDIR      := $(DIMDIR)/$(ODIR)
 PACKCXXFLAGS  := $(CXXFLAGS) -DALI_DIM
 PACKDCXXFLAGS := $(CXXFLAGSNO) -DALI_DIM
 
