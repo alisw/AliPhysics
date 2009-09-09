@@ -1599,11 +1599,11 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit2(Int_t ofwhat, Bool_t perdetec
       for (Int_t col = 0; col < colMax; col++) {
 	value = coef[(Int_t)(col*rowMax+row)];
 	if(value > 70.0) {
-	  if((ofwhat == 0) && (meanAll > 0.0)) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
+	  if((ofwhat == 0) && (meanAll > -1.5)) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
 	  if(ofwhat == 1){
-	    if(meanDetector[detector] > 0.0) coef[(Int_t)(col*rowMax+row)] = meanDetector[detector]+100.0;
-	    else if(meanSupermodule[sector] > 0.0) coef[(Int_t)(col*rowMax+row)] = meanSupermodule[sector]+100.0;
-	    else if(meanAll > 0.0) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
+	    if(meanDetector[detector] > -1.5) coef[(Int_t)(col*rowMax+row)] = meanDetector[detector]+100.0;
+	    else if(meanSupermodule[sector] > -1.5) coef[(Int_t)(col*rowMax+row)] = meanSupermodule[sector]+100.0;
+	    else if(meanAll > -1.5) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
 	  }  
 	}
 	// Debug

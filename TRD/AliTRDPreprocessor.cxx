@@ -341,9 +341,12 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
 	    }
 	  }// det loop
 
-	  if((ldc==0) || (ldc==1) || (ldc==2) || (ldc==9) || (ldc==10) || (ldc==11)) ldc = 1;
-	  if((ldc==3) || (ldc==4) || (ldc==5) || (ldc==12) || (ldc==13) || (ldc==14)) ldc = 2;
-	  if((ldc==6) || (ldc==7) || (ldc==8) || (ldc==15) || (ldc==16) || (ldc==17)) ldc = 3;
+	  if((ldc==0) || (ldc==1) || (ldc==2)) ldc = 1;
+	  if((ldc==3) || (ldc==4) || (ldc==5)) ldc = 2;
+	  if((ldc==6) || (ldc==7) || (ldc==8)) ldc = 3;
+	  if((ldc==9) || (ldc==10) || (ldc==11)) ldc = 4;
+	  if((ldc==12) || (ldc==13) || (ldc==14)) ldc = 5;
+	  if((ldc==15) || (ldc==16) || (ldc==17)) ldc = 6;
 	
 	  // store as reference data
 	  TString name("PadStatus");

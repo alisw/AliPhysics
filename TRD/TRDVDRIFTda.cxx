@@ -116,6 +116,7 @@ int main(int argc, char **argv) {
    // setting
   // AliTRDrawStream::SetNoDebug();
   AliTRDrawStream::SetNoErrorWarning();
+  AliTRDrawStream::SetSubtractBaseline(0); 
   //AliTRDrawStream::SetForceCleanDataOnly();
   AliTRDrawStream::AllowCorruptedData();
   AliTRDrawStream::DisableStackNumberChecker();
