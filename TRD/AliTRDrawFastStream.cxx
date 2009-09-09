@@ -1174,17 +1174,8 @@ Bool_t AliTRDrawFastStream::DecodeHC(AliTRDdigitsManager *digitsManager, AliTRDa
       fADCnumber = 0;
       for (Int_t iadc = 0; iadc < fMCM.fADCmax; iadc++) {
          fADCnumber = fMCM.fADCchannel[iadc];
-
-         if ( fADCnumber >= fMaxADCgeom - 1) {
-	         fExtendedCOL = fTRDfeeParam->GetExtendedPadColFromADC(fMCM.fROB, fMCM.fMCM, fADCnumber-1);
-	         fExtendedCOL--;
-	         fCOL = fTRDfeeParam->GetPadColFromADC(fMCM.fROB, fMCM.fMCM, fADCnumber-1);
-	         fCOL--;
-	       }
-	       else {
            fExtendedCOL = fTRDfeeParam->GetExtendedPadColFromADC(fMCM.fROB, fMCM.fMCM, fADCnumber);
            fCOL = fTRDfeeParam->GetPadColFromADC(fMCM.fROB, fMCM.fMCM, fADCnumber);
-         }
 
          if (fADCnumber <= 1 || fADCnumber == fMaxADCgeom - 1)  // if adc number = 0, 1, 20
 		       fIsShared = kTRUE;
@@ -1727,9 +1718,9 @@ Bool_t AliTRDrawFastStream::DecodeADCExtended(AliTRDdigitsManager *digitsManager
      for (Int_t i = 0; i < 3; i++) {
         if (adcSignals[i] > 0) { 
 	        if (fSharedPadsOn) 
-            digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), fTbinADC + i, adcSignals[i]);
+            digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), fTbinADC + 2 + i, adcSignals[i]);
 	        else 
-            digits->SetData(GetRow(), GetCol(), fTbinADC + i, adcSignals[i]);
+            digits->SetData(GetRow(), GetCol(), fTbinADC + 2 + i, adcSignals[i]);
 	        indexes->AddIndexRC(GetRow(), GetCol());
 	      }	
         if (digitsManager->UsesDictionaries()) {

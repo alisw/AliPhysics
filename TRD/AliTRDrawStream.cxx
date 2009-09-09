@@ -25,6 +25,7 @@
 // Several getters provide information about the current digit.              //
 //                                                                           //
 // Author: M. Ploskon (ploskon@ikf.uni-frankfurt.de)                         //
+// Author: MinJung Kweon (minjung@physi.uni-heidelberg.de)                   //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -569,8 +570,8 @@ void AliTRDrawStream::ResetPerADC()
   fADC->fIsShared = kTRUE;
   fADC->fCorrupted = 0;
 
-  memset(fADC->fSignals, 0, GetNumberOfTimeBins()*sizeof(Int_t));
-  //memset(fADC->fSignals, 0, TRDMAXTBINS*sizeof(Int_t)); //[mj temp]
+  //memset(fADC->fSignals, 0, GetNumberOfTimeBins()*sizeof(Int_t));
+  memset(fADC->fSignals, 0, TRDMAXTBINS*sizeof(Int_t)); 
 }
 
 //------------------------------------------------------------
@@ -1686,16 +1687,8 @@ Bool_t AliTRDrawStream::DecodeADC()
     fADC->fIsShared = kFALSE;
   }
 
-  if ( fADC->fADCnumber >= fMaxADCgeom - 1) {
-    fADC->fExtendedCOL = AliTRDfeeParam::Instance()->GetExtendedPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber - 1);
-    fADC->fCOL = AliTRDfeeParam::Instance()->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber - 1);
-    fADC->fExtendedCOL--;
-    fADC->fCOL--;
-  }
-  else {
     fADC->fExtendedCOL = fTRDfeeParam->GetExtendedPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber);
     fADC->fCOL = fTRDfeeParam->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber);
-  }
 
   if (fADC->fCOL >= fHC->fColMax || fADC->fCOL < 0) {
     if (fADC->fIsShared == kFALSE) {
@@ -1774,16 +1767,8 @@ Bool_t AliTRDrawStream::DecodeADCExtended()
     fADC->fIsShared = kFALSE;
   }
 
-  if ( fADC->fADCnumber >= fMaxADCgeom - 1) {
-    fADC->fExtendedCOL = AliTRDfeeParam::Instance()->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber - 1);
-    fADC->fCOL = AliTRDfeeParam::Instance()->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber - 1);
-    fADC->fExtendedCOL--;
-    fADC->fCOL--;
-  }
-  else {
-    fADC->fExtendedCOL = fTRDfeeParam->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber);
+  fADC->fExtendedCOL = fTRDfeeParam->GetExtendedPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber);
     fADC->fCOL = fTRDfeeParam->GetPadColFromADC(fMCM->fROB, fMCM->fMCM, fADC->fADCnumber);
-  }
 
   if (fADC->fCOL >= fHC->fColMax || fADC->fCOL < 0) {
     if (fADC->fIsShared == kFALSE) {
