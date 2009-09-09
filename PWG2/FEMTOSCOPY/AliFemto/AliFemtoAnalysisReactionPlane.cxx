@@ -171,7 +171,7 @@ void AliFemtoAnalysisReactionPlane::ProcessEvent(const AliFemtoEvent* hbtEvent) 
   // get right mixing buffer
   double vertexZ = hbtEvent->PrimVertPos().z();
   double mult = hbtEvent->UncorrectedNumberOfPrimaries();
-  fCurrentRP = hbtEvent->GetReactionPlaneAngle();
+  fCurrentRP = hbtEvent->ReactionPlaneAngle();
   
   fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ,mult,fCurrentRP); 
   if (!fMixingBuffer) {
@@ -185,7 +185,7 @@ void AliFemtoAnalysisReactionPlane::ProcessEvent(const AliFemtoEvent* hbtEvent) 
   AliFemtoSimpleAnalysis::ProcessEvent(hbtEvent);
 }
 
-double AliFemtoSimpleAnalysis::GetCurrentReactionPlane()
+double AliFemtoAnalysisReactionPlane::GetCurrentReactionPlane()
 {
   return fCurrentRP;
 }

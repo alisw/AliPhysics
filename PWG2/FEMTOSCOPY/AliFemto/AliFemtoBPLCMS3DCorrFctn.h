@@ -48,6 +48,7 @@ public:
   //  void SetCoulombCorrection(AliFemtoCoulomb* Correction);
 
   void SetSpecificPairCut(AliFemtoPairCut* aCut);
+  void SetUseRPSelection(unsigned short aRPSel);
 
   //  void SetSmearPair(AliFemtoSmearPair*);
   void SetRout(double guess);
@@ -91,8 +92,10 @@ private:
   unsigned long int fNumRealsNorm; // pairs in numerator in Qinv normalization range
   unsigned long int fNumMixedNorm; // pairs in denominator in Qinv normalization range
 
-  //  AliFemtoCoulomb* fCorrection; //!
+  unsigned short fUseRPSelection;  // The pair cut uses RP selection
 
+  //  AliFemtoCoulomb* fCorrection; //!
+  
 
 #ifdef __ROOT__
   ClassDef(AliFemtoBPLCMS3DCorrFctn, 1)

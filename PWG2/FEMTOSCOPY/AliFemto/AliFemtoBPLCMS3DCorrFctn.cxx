@@ -11,6 +11,8 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliFemtoBPLCMS3DCorrFctn.h"
+#include "AliFemtoKTPairCut.h"
+#include "AliFemtoAnalysisReactionPlane.h"
 //#include "AliFemtoHisto.h"
 #include <cstdio>
 
@@ -41,7 +43,8 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
   fQinvNormLo(0),
   fQinvNormHi(0),
   fNumRealsNorm(0),
-  fNumMixedNorm(0)
+  fNumMixedNorm(0),
+  fUseRPSelection(0)
 {
   // Basic constructor
   // set some stuff...
@@ -58,23 +61,23 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
   // set up numerator
   char tTitNum[100] = "Num";
   strcat(tTitNum,title);
-  fNumerator = new TH3D(tTitNum,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  fNumerator = new TH3D(tTitNum,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up denominator
   char tTitDen[100] = "Den";
   strcat(tTitDen,title);
-  fDenominator = new TH3D(tTitDen,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  fDenominator = new TH3D(tTitDen,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up uncorrected denominator
   char tTitDenUncoul[100] = "DenNoCoul";
   strcat(tTitDenUncoul,title);
-  //  fUncorrectedDenominator = new TH3D(tTitDenUncoul,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  //  fUncorrectedDenominator = new TH3D(tTitDenUncoul,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up ratio
   char tTitRat[100] = "Rat";
   strcat(tTitRat,title);
-  fRatio = new TH3D(tTitRat,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  fRatio = new TH3D(tTitRat,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up ave qInv
   char tTitQinv[100] = "Qinv";
   strcat(tTitQinv,title);
-  fQinvHisto = new TH3D(tTitQinv,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  fQinvHisto = new TH3D(tTitQinv,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 
   // to enable error bar calculation...
   fNumerator->Sumw2();
@@ -87,13 +90,13 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
   // here comes the "idea" numerator and denominator and ratio...
   char tTitNumID[100] = "IDNum";
   strcat(tTitNumID,title);
-  fIDNumHisto = new TH3D(tTitNumID,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  fIDNumHisto = new TH3D(tTitNumID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   char tTitDenID[100] = "IDDen";
   strcat(tTitDenID,title);
-  fIDDenHisto = new TH3D(tTitDenID,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  fIDDenHisto = new TH3D(tTitDenID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   char tTitRatID[100] = "IDRat";
   strcat(tTitRatID,title);
-  fIDRatHisto = new TH3D(tTitRatID,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  fIDRatHisto = new TH3D(tTitRatID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 
   fIDNumHisto->Sumw2();
   fIDDenHisto->Sumw2();
@@ -103,13 +106,13 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
   // here comes the "smeared" numerator and denominator...
   char tTitNumSM[100] = "SMNum";
   strcat(tTitNumSM,title);
-  fSMNumHisto = new TH3D(tTitNumSM,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  fSMNumHisto = new TH3D(tTitNumSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   char tTitDenSM[100] = "SMDen";
   strcat(tTitDenSM,title);
-  fSMDenHisto = new TH3D(tTitDenSM,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  fSMDenHisto = new TH3D(tTitDenSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   char tTitRatSM[100] = "SMRat";
   strcat(tTitRatSM,title);
-  fSMRatHisto = new TH3D(tTitRatSM,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  fSMRatHisto = new TH3D(tTitRatSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   //
   fSMNumHisto->Sumw2();
   fSMDenHisto->Sumw2();
@@ -118,12 +121,12 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
   // here comes the correction factor (which is just ratio of ideal ratio to smeared ratio)
   char tTitCorrection[100] = "CorrectionFactor";
   strcat(tTitCorrection,title);
-  fCorrectionHisto = new TH3D(tTitCorrection,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);  
+  fCorrectionHisto = new TH3D(tTitCorrection,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);  
   fCorrectionHisto->Sumw2();
   // here comes the fully corrected correlation function
   char tTitCorrCF[100] = "CorrectedCF";
   strcat(tTitCorrCF,title);
-  fCorrCFHisto = new TH3D(tTitCorrCF,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
+  fCorrCFHisto = new TH3D(tTitCorrCF,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   fCorrCFHisto->Sumw2();
 
   // user can (and should) override these defaults...
@@ -156,7 +159,8 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(const AliFemtoBPLCMS3DCorrFct
   fQinvNormLo(0),
   fQinvNormHi(0),
   fNumRealsNorm(0),
-  fNumMixedNorm(0)
+  fNumMixedNorm(0),
+  fUseRPSelection(0)
 {
   // Copy constructor
   fIDNumHisto = new TH3D(*aCorrFctn.fIDNumHisto);
@@ -180,6 +184,7 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(const AliFemtoBPLCMS3DCorrFct
   fQinvNormHi = aCorrFctn.fQinvNormHi;
   fNumRealsNorm = aCorrFctn.fNumRealsNorm;
   fNumMixedNorm = aCorrFctn.fNumMixedNorm;
+  fUseRPSelection = aCorrFctn.fUseRPSelection;
 }
 //____________________________
 AliFemtoBPLCMS3DCorrFctn::~AliFemtoBPLCMS3DCorrFctn(){
@@ -238,7 +243,8 @@ AliFemtoBPLCMS3DCorrFctn& AliFemtoBPLCMS3DCorrFctn::operator=(const AliFemtoBPLC
   fQinvNormHi = aCorrFctn.fQinvNormHi;
   fNumRealsNorm = aCorrFctn.fNumRealsNorm;
   fNumMixedNorm = aCorrFctn.fNumMixedNorm;
-  
+  fUseRPSelection = aCorrFctn.fUseRPSelection;
+
   return *this;
 }
 
@@ -361,22 +367,57 @@ AliFemtoString AliFemtoBPLCMS3DCorrFctn::Report(){
 void AliFemtoBPLCMS3DCorrFctn::AddRealPair( AliFemtoPair* pair){
   // perform operations on real pairs
   if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+    if (fUseRPSelection) {
+      AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
+      if (!ktc) { 
+	cout << "RP aware cut requested, but not connected to the CF" << endl;
+	if (!(fPairCut->Pass(pair))) return;
+      }
+      else {
+	AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
+	if (!arp) {
+	  cout << "RP aware cut requested, but not connected to the CF" << endl;
+	  if (!(fPairCut->Pass(pair))) return;
+	}
+	if (!(ktc->Pass(pair, arp->GetCurrentReactionPlane()))) return;
+      }
+    }
+    else
+      if (!(fPairCut->Pass(pair))) return;
   }
 
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   if ((tQinv < fQinvNormHi) && (tQinv > fQinvNormLo)) fNumRealsNorm++;
-  double qOut = fabs(pair->QOutCMS());
-  double qSide = fabs(pair->QSideCMS());
-  double qLong = fabs(pair->QLongCMS());
+  double qOut = (pair->QOutCMS());
+  double qSide = (pair->QSideCMS());
+  double qLong = (pair->QLongCMS());
 
   fNumerator->Fill(qOut,qSide,qLong);
 }
 //____________________________
 void AliFemtoBPLCMS3DCorrFctn::AddMixedPair( AliFemtoPair* pair){
   // perform operations on mixed pairs
+//   if (fPairCut){
+//     if (!(fPairCut->Pass(pair))) return;
+//   }
   if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+    if (fUseRPSelection) {
+      AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
+      if (!ktc) { 
+	cout << "RP aware cut requested, but not connected to the CF" << endl;
+	if (!(fPairCut->Pass(pair))) return;
+      }
+      else {
+	AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
+	if (!arp) {
+	  cout << "RP aware cut requested, but not connected to the CF" << endl;
+	  if (!(fPairCut->Pass(pair))) return;
+	}
+	if (!(ktc->Pass(pair, arp->GetCurrentReactionPlane()))) return;
+      }
+    }
+    else
+      if (!(fPairCut->Pass(pair))) return;
   }
 
   //  double CoulombWeight = (fCorrection ? fCorrection->CoulombCorrect(pair) : 1.0);
@@ -384,9 +425,9 @@ void AliFemtoBPLCMS3DCorrFctn::AddMixedPair( AliFemtoPair* pair){
 
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   if ((tQinv < fQinvNormHi) && (tQinv > fQinvNormLo)) fNumMixedNorm++;
-  double qOut = fabs(pair->QOutCMS());
-  double qSide = fabs(pair->QSideCMS());
-  double qLong = fabs(pair->QLongCMS());
+  double qOut = (pair->QOutCMS());
+  double qSide = (pair->QSideCMS());
+  double qLong = (pair->QLongCMS());
 
   fDenominator->Fill(qOut,qSide,qLong,tCoulombWeight);
   //  fUncorrectedDenominator->Fill(qOut,qSide,qLong,1.0);
@@ -419,3 +460,7 @@ void AliFemtoBPLCMS3DCorrFctn::AddMixedPair( AliFemtoPair* pair){
 }
 
 
+void AliFemtoBPLCMS3DCorrFctn::SetUseRPSelection(unsigned short aRPSel)
+{
+  fUseRPSelection = aRPSel;
+}

@@ -22,7 +22,8 @@ class AliFemtoModelBPLCMSCorrFctn : public AliFemtoModelCorrFctn {
     fNumerator3DFake(0),
     fDenominator3D(0),
     fQinvHisto(0),
-    fPairCut(0){}
+    fPairCut(0),
+    fUseRPSelection(0){}
   AliFemtoModelBPLCMSCorrFctn(char* title, const int& nbins, const float& QLo, const float& QHi);
   AliFemtoModelBPLCMSCorrFctn(const AliFemtoModelBPLCMSCorrFctn& aCorrFctn);
   virtual ~AliFemtoModelBPLCMSCorrFctn();
@@ -39,6 +40,7 @@ class AliFemtoModelBPLCMSCorrFctn : public AliFemtoModelCorrFctn {
   virtual TList* GetOutputList();
 
   void SetSpecificPairCut(AliFemtoPairCut* aCut);
+  void SetUseRPSelection(unsigned short aRPSel);
 
   virtual AliFemtoModelCorrFctn* Clone();
 
@@ -51,6 +53,7 @@ protected:
 
   AliFemtoPairCut* fPairCut;    //! this is a PairCut specific to THIS CorrFctn, not the Analysis
 
+  unsigned short fUseRPSelection;  // The pair cut uses RP selection
 #ifdef __ROOT__
   ClassDef(AliFemtoModelBPLCMSCorrFctn, 1)
 #endif
