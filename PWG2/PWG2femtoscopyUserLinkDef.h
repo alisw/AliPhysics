@@ -11,6 +11,7 @@
 #pragma link C++ class AliFemtoTPCInnerCorrFctn;
 #pragma link C++ class AliFemtoChi2CorrFctn;
 #pragma link C++ class AliFemtoModelCorrFctnSource;
+#pragma link C++ class AliFemtoModelCorrFctnDEtaDPhi;
 #pragma link C++ class AliFemtoModelBPLCMSCorrFctn;
 #pragma link C++ class AliFemtoModelGausRinvFreezeOutGenerator;
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ;
@@ -34,3 +35,4 @@
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhi;
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDG;
 #pragma link C++ class AliFemtoCutMonitorParticleEtCorr;
+#pragma link C++ class AliFemtoPhiPairCut;
