@@ -8,6 +8,7 @@ SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoTPCInnerCorrFctn.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoChi2CorrFctn.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnSource.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnDEtaDPhi.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelBPLCMSCorrFctn.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelGausRinvFreezeOutGenerator.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnTrueQ.cxx \
@@ -24,6 +25,7 @@ SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityQAPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityCorrFctn.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoYlm.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoPhiPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnDirectYlm.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnDirectYlm.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCutMonitorParticlePtPDG.cxx \
