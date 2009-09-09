@@ -12,8 +12,7 @@
 
 #include <TCanvas.h>
 #include <TDatime.h>
-#include <TGraph.h>
-#include <TH1.h>
+#include <TString.h>
 #include <TObjString.h>
 #include <TStyle.h>
 #include <TTimeStamp.h>
@@ -28,7 +27,6 @@ AliZDCDataDCS::AliZDCDataDCS():
    fEndTime(0),
    fStartTimeDCSQuery(0),
    fEndTimeDCSQuery(0),
-   fGraphs("TGraph",kNGraphs),
    fIsProcessed(kFALSE)
 {
   // Default constructor
@@ -48,7 +46,6 @@ AliZDCDataDCS::AliZDCDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime,
    fEndTime(endTime),
    fStartTimeDCSQuery(startTimeDCSQuery),
    fEndTimeDCSQuery(endTimeDCSQuery),
-   fGraphs("TGraph",kNGraphs),
    fIsProcessed(kFALSE)
 {
    // Standard constructor
@@ -71,7 +68,6 @@ AliZDCDataDCS::AliZDCDataDCS(const AliZDCDataDCS & data):
   fEndTime(data.fEndTime),
   fStartTimeDCSQuery(data.fStartTimeDCSQuery),
   fEndTimeDCSQuery(data.fEndTimeDCSQuery),
-  fGraphs(data.fGraphs),
   fIsProcessed(data.fIsProcessed)
 {
 
@@ -112,7 +108,6 @@ AliZDCDataDCS& AliZDCDataDCS:: operator=(const AliZDCDataDCS & data) {
 AliZDCDataDCS::~AliZDCDataDCS() 
 {
   // Destructor
-  fGraphs.Clear("C");
 }
 
 //---------------------------------------------------------------
@@ -120,37 +115,39 @@ Bool_t AliZDCDataDCS::ProcessData(TMap& aliasMap)
 {
    // Data processing
 
-   if (fEndTime==fStartTime){
-     AliError(Form(" Run with null time length: start time = %i = end time = %i",fStartTime,fEndTime));
-     return kFALSE;
-   }
+   if(!(fAliasNames[0])) Init();
    
    AliInfo(Form(" Start Time = %i",fStartTime));
    AliInfo(Form(" End Time = %i",fEndTime));
    AliInfo(Form(" Start Time DCS Query= %i",fStartTimeDCSQuery));
    AliInfo(Form(" End Time DCS Query= %i",fEndTimeDCSQuery));
+
+   if (fEndTime==fStartTime){
+     AliError(Form(" Run with null time length: start time = %i = end time = %i",fStartTime,fEndTime));
+     return kFALSE;
+   }
    
-   TObjArray *aliasArr;
-   AliDCSValue* aValue;
+   TObjArray   *aliasArr;
+   AliDCSValue *aValue;
   
    for(int j=0; j<kNAliases; j++){
-      aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
+      aliasArr = dynamic_cast<TObjArray*> (aliasMap.GetValue(fAliasNames[j].Data()));
       if(!aliasArr){
    	AliWarning(Form("Alias %s not found!", fAliasNames[j].Data()));
    	return kFALSE;
       }
       Introduce(j, aliasArr);
 
-      if(aliasArr->GetEntries()<=2){
+      TIter iterarray(aliasArr);
+      Int_t nentries = aliasArr->GetEntries();
+      if(nentries<=2){
    	AliWarning(Form("Alias %s has just %d entries!",
-   			fAliasNames[j].Data(),aliasArr->GetEntries()));
+   			fAliasNames[j].Data(), nentries));
    	continue;
       }
 
-      TIter iterarray(aliasArr);
-
-      Double_t *time = new Double_t[aliasArr->GetEntries()];
-      Double_t *val = new Double_t[aliasArr->GetEntries()];
+      Float_t *time = new Float_t[nentries];
+      Float_t *val  = new Float_t[nentries];
 
       UInt_t ne=0;
       while((aValue = (AliDCSValue*) iterarray.Next())) {
@@ -161,8 +158,6 @@ Bool_t AliZDCDataDCS::ProcessData(TMap& aliasMap)
    	ne++;
       }
       
-//      if(j>=4) CreateGraph(j, aliasArr->GetEntries(), time, val); // fill graphs 
-      //
       delete[] val;
       delete[] time;	      
    }
@@ -176,11 +171,6 @@ Bool_t AliZDCDataDCS::ProcessData(TMap& aliasMap)
 void AliZDCDataDCS::Init()
 {
    // Initialization
-   
-   TH1::AddDirectory(kFALSE);
-
-   fGraphs.SetOwner(1);
-
    fAliasNames[0] = "ZDC_ZNA_POS.actual.position";
    fAliasNames[1] = "ZDC_ZPA_POS.actual.position";
    fAliasNames[2] = "ZDC_ZNC_POS.actual.position";
@@ -224,70 +214,7 @@ void AliZDCDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)
    // Getting array of DCS aliases
    
    int entries = aliasArr->GetEntries();
-   AliDebug(2,Form("************ Alias: %s **********",fAliasNames[numAlias].Data()));
-   AliDebug(2,Form("	   %d DP values collected",entries));
+   AliDebug(2,Form("************ Alias: %s has  %d DP values collected\n",
+   	fAliasNames[numAlias].Data(),entries));
 
 }
-
-
-//---------------------------------------------------------------
-void AliZDCDataDCS::CreateGraph(int i, int dim, const Double_t *x, const Double_t *y)
-{
-
-   // Create graphics
-   
-   TGraph *gr = new(fGraphs[fGraphs.GetEntriesFast()]) TGraph(dim, x, y);
-
-   gr->GetXaxis()->SetTimeDisplay(1);
-   gr->SetTitle(fAliasNames[i].Data());
-//   AliDebug(2,Form("Array entries: %d",fGraphs.GetEntriesFast()));
-
-
-}
-
-//---------------------------------------------------------------
-void AliZDCDataDCS::Draw(const Option_t* /*option*/)
-{
-  // Draw graphics
-
-  fIsProcessed=1;
-  if(!fIsProcessed) return;
-  
-  if(fGraphs.GetEntries()==0)  return;
-  
-  TCanvas *cg1;
-  TString canvas1Name="ZN1_HVs";
-  cg1=new TCanvas(canvas1Name,canvas1Name,40,40,600,600);
-  cg1->Divide(2,2);
-  cg1->cd(1);
-  ((TGraph*) fGraphs.UncheckedAt(0))->SetMarkerStyle(20);
-  ((TGraph*) fGraphs.UncheckedAt(0))->Draw("ALP");
-  cg1->cd(2);
-  ((TGraph*) fGraphs.UncheckedAt(1))->SetMarkerStyle(20);
-  ((TGraph*) fGraphs.UncheckedAt(1))->Draw("ALP");
-  cg1->cd(3);
-  ((TGraph*) fGraphs.UncheckedAt(2))->SetMarkerStyle(20);
-  ((TGraph*) fGraphs.UncheckedAt(2))->Draw("ALP");
-  cg1->cd(4);
-  ((TGraph*) fGraphs.UncheckedAt(3))->SetMarkerStyle(20);
-  ((TGraph*) fGraphs.UncheckedAt(3))->Draw("ALP");
-  
-  TCanvas *cg2;
-  TString canvas2Name="ZP1_HVs";
-  cg2=new TCanvas(canvas2Name,canvas2Name,80,80,600,600);
-  cg2->Divide(2,2);
-  cg2->cd(1);
-  ((TGraph*) fGraphs.UncheckedAt(5))->SetMarkerStyle(20);
-  ((TGraph*) fGraphs.UncheckedAt(5))->Draw("ALP");
-  cg2->cd(2);
-  ((TGraph*) fGraphs.UncheckedAt(6))->SetMarkerStyle(20);
-  ((TGraph*) fGraphs.UncheckedAt(6))->Draw("ALP");
-  cg2->cd(3);
-  ((TGraph*) fGraphs.UncheckedAt(7))->SetMarkerStyle(20);
-  ((TGraph*) fGraphs.UncheckedAt(7))->Draw("ALP");
-  cg2->cd(4);
-  ((TGraph*) fGraphs.UncheckedAt(8))->SetMarkerStyle(20);
-  ((TGraph*) fGraphs.UncheckedAt(8))->Draw("ALP");
- 
-}
-

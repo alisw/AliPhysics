@@ -8,7 +8,7 @@
 //   ReadDCSAliasMap() reads from a file
 //   CreateInputFilesMap() creates a list of local files, that can be accessed by the shuttle
 
-void TestZDCPreprocessor(const char* runType="STANDALONE_PEDESTAL")
+void TestZDCPreprocessor(const char* runType="PHYSICS")
 {
   // load library
   gSystem->Load("libTestShuttle.so");
@@ -36,12 +36,13 @@ void TestZDCPreprocessor(const char* runType="STANDALONE_PEDESTAL")
   //     the format of the file is explained in ReadDCSAliasMap()
   //     To use it uncomment the following line:
   //
-  //TMap* dcsAliasMap = ReadDCSAliasMap();
+  TMap* dcsAliasMap = ReadDCSAliasMap();
+  //dcsAliasMap->Print("");
   //
   // (b) generated in this macro: Use CreateDCSAliasMap() and its documentation
   //     To use it uncomment the following line:
   //
-  TMap* dcsAliasMap = CreateDCSAliasMap();
+  //TMap* dcsAliasMap = CreateDCSAliasMap();
   //WriteDCSAliasMap();
 
   // now give the alias map to the shuttle
@@ -193,9 +194,8 @@ TMap* CreateDCSAliasMap()
     //printf("\n\n alias: %s\n\n",aliasName.Data());
 
     Float_t simVal = (Float_t) (random.Rndm()*0.025+random.Rndm()*0.1);
-    for(int i=0;i<3;i++)
-    {
-      int timeStamp1[3] = {0,500,1000};
+    int timeStamp1[3] = {0,500,1000};
+    for(int i=0;i<3;i++){
       AliDCSValue* dcsVal = new AliDCSValue(simVal, timeStamp1[i]);
       //printf("%s\n",dcsVal->ToString());
       valueSet->Add(dcsVal);
@@ -262,7 +262,11 @@ TMap* ReadDCSAliasMap()
   // The file contains an AliCDBEntry that contains a TMap with the DCS structure.
   // An explanation of the structure can be found in CreateDCSAliasMap()
 
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get("ZDC/DCS/Data", 0);
+  AliCDBManager *manager = AliCDBManager::Instance();
+  AliCDBStorage *sto = manager->GetStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/");
+  AliCDBId id("ZDC/DCS/Data",0,999999999);
+  AliCDBEntry *entry = sto->Get("ZDC/DCS/Data", 0, 0, 0);
+  if(!entry) printf("TestZDCPreprocessor.C -> ERROR! No entry found as DCS Map! \n");
   return dynamic_cast<TMap*> (entry->GetObject());
 }
 
@@ -277,7 +281,7 @@ void WriteDCSAliasMap()
 	metaData.SetResponsible("Chiara Oppedisano");
 	metaData.SetComment("Test object for TestZDCPreprocessor.C");
 
-  AliCDBId id("ZDC/DCS/Data", 0, 0);
+  AliCDBId id("ZDC/DCS/Data", 0, 999999999);
 
   // initialize location of CDB
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB");

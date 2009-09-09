@@ -117,15 +117,20 @@ UInt_t AliZDCPreprocessor::ProcessDCSData(TMap* dcsAliasMap)
 {
   
   // Fills data into a AliZDCDataDCS object
-  if(!dcsAliasMap) return 1;
+  if(!dcsAliasMap){
+    Log(" No DCS map found: ZDC exiting from Shuttle");
+    return 1;
+  }
+
   Log(Form("Processing data from DCS"));
- 
+   
   // The processing of the DCS input data is forwarded to AliZDCDataDCS
-  Float_t dcsValues[28]; // DCSAliases=28
-  fData->SetCalibData(dcsValues);
-  Bool_t resDCSProcess = fData->ProcessData(*dcsAliasMap);
   //dcsAliasMap->Print(""); 
-  if(resDCSProcess==kFALSE) Log(" Problems in processing DCS DP");
+  Bool_t resDCSProcess = fData->ProcessData(*dcsAliasMap);
+  if(resDCSProcess==kFALSE){
+    Log(" Problems in processing DCS DP");
+    return 1;
+  }
   
   // Store DCS data for reference
   AliCDBMetaData metadata;
@@ -142,10 +147,10 @@ UInt_t AliZDCPreprocessor::ProcessDCSData(TMap* dcsAliasMap)
   AliAlignObjParams a;
   Double_t dx=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
   // Vertical table position in mm from DCS
-  Double_t dyZN1 = (Double_t) (dcsValues[0]/10.);
-  Double_t dyZP1 = (Double_t) (dcsValues[1]/10.);
-  Double_t dyZN2 = (Double_t) (dcsValues[2]/10.);
-  Double_t dyZP2 = (Double_t) (dcsValues[3]/10.);
+  Double_t dyZN1 = (Double_t) (fData->GetCalibData(0)/10.);
+  Double_t dyZP1 = (Double_t) (fData->GetCalibData(1)/10.);
+  Double_t dyZN2 = (Double_t) (fData->GetCalibData(2)/10.);
+  Double_t dyZP2 = (Double_t) (fData->GetCalibData(3)/10.);
   //
   const char *n1ZDC="ZDC/NeutronZDC_C";  
   const char *p1ZDC="ZDC/ProtonZDC_C";
