@@ -25,7 +25,6 @@ SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityQAPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityCorrFctn.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoYlm.cxx \
-      FEMTOSCOPY/AliFemtoUser/AliFemtoPhiPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnDirectYlm.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnDirectYlm.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCutMonitorParticlePtPDG.cxx \
@@ -33,6 +32,7 @@ SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnDEtaDPhi.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCutMonitorParticleEtCorr.cxx
 
+#      FEMTOSCOPY/AliFemtoUser/AliFemtoPhiPairCut.cxx \
 #      FEMTOSCOPY/AliFemtoUser/AliFemtoEventReaderESDKine.cxx \
 #      FEMTOSCOPY/AliFemtoUser/AliFemtoEventReaderAllESDKine.cxx \
 
