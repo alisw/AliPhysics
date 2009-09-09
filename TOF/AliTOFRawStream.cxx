@@ -125,24 +125,24 @@ ClassImp(AliTOFRawStream)
 
 const Int_t AliTOFRawStream::fgkddlBCshift[72] = 
 {
-  2, 2, -1, -1,
-  2, 2,  0,  0,
-  2, 2,  0,  0,
-  2, 2,  0,  0,
-  2, 2,  0,  0,
-  2, 2,  0,  0,
-  2, 2,  0,  0,
-  2, 2,  0,  0,
-  2, 2,  0,  0,
-  2, 2,  0,  0,
-  2, 2, -1, -1,
-  2, 2, -1, -1,
-  2, 2, -2, -2,
-  2, 2, -2, -2,
-  2, 2, -2, -2,
-  2, 2, -1, -1,
-  2, 2, -1, -1,
-  2, 2, -1, -1
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0
 };
 
 Bool_t AliTOFRawStream::fgApplyBCCorrections = kTRUE;
@@ -210,8 +210,6 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
       fChainBunchID[jj][ii] = -1;
     }
   }
-
-  fEventID = (Int_t)fRawReader->GetBCID(); //bunch crossing
 
 }
 
@@ -438,6 +436,8 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
   //
   // To load raw data
   //
+
+  fEventID = (Int_t)fRawReader->GetBCID(); //bunch crossing
 
   fTOFrawData->Clear();
 
@@ -748,10 +748,7 @@ Bool_t AliTOFRawStream::Next()
 	  AliDebug(2,"Apply nominal DDL BC time-shift correction");
 	  AliDebug(2,"Apply deltaBC time-shift correction");
 	  AliDebug(2,Form(" fChainBunchID[%d][%d] = %d ,fEventID = %d",fTRM,fTRMchain,fChainBunchID[fTRM][fTRMchain],fEventID));
-	  fTime +=
-	    (Int_t)(fgkddlBCshift[fDDL]*25./AliTOFGeometry::TdcBinWidth()*1.E+03)
-	    +
-	    (Int_t)((fChainBunchID[fTRM][fTRMchain]-fEventID)*25./AliTOFGeometry::TdcBinWidth()*1.E+03);
+	  fTime += fgkddlBCshift[fDDL] * 1024 + (fChainBunchID[fTRM][fTRMchain] - fEventID) * 1024;
 	}
 	break;
 
@@ -766,10 +763,7 @@ Bool_t AliTOFRawStream::Next()
 	  AliDebug(2,"Apply nominal DDL BC time-shift correction");
 	  AliDebug(2,"Apply deltaBC time-shift correction");
 	  AliDebug(2,Form(" fChainBunchID[%d][%d] = %d ,fEventID = %d",fTRM,fTRMchain,fChainBunchID[fTRM][fTRMchain],fEventID));
-	  fLeadingEdge +=
-	    (Int_t)(fgkddlBCshift[fDDL]*25./AliTOFGeometry::TdcBinWidth()*1.E+03)
-	    +
-	    (Int_t)((fChainBunchID[fTRM][fTRMchain]-fEventID)*25./AliTOFGeometry::TdcBinWidth()*1.E+03);
+	  fLeadingEdge += fgkddlBCshift[fDDL] * 1024 + (fChainBunchID[fTRM][fTRMchain] - fEventID) * 1024;
 	}
 	break;
 
@@ -784,10 +778,7 @@ Bool_t AliTOFRawStream::Next()
 	  AliDebug(2,"Apply nominal DDL BC time-shift correction");
 	  AliDebug(2,"Apply deltaBC time-shift correction");
 	  AliDebug(2,Form(" fChainBunchID[%d][%d] = %d ,fEventID = %d",fTRM,fTRMchain,fChainBunchID[fTRM][fTRMchain],fEventID));
-	  fTrailingEdge +=
-	    (Int_t)(fgkddlBCshift[fDDL]*25./AliTOFGeometry::TdcBinWidth()*1.E+03)
-	    +
-	    (Int_t)((fChainBunchID[fTRM][fTRMchain]-fEventID)*25./AliTOFGeometry::TdcBinWidth()*1.E+03);
+	  fTrailingEdge += fgkddlBCshift[fDDL] * 1024 + (fChainBunchID[fTRM][fTRMchain] - fEventID) * 1024;
 	}
 	break;
 
@@ -801,10 +792,7 @@ Bool_t AliTOFRawStream::Next()
 	  AliDebug(2,"Apply nominal DDL BC time-shift correction");
 	  AliDebug(2,"Apply deltaBC time-shift correction");
 	  AliDebug(2,Form(" fChainBunchID[%d][%d] = %d ,fEventID = %d",fTRM,fTRMchain,fChainBunchID[fTRM][fTRMchain],fEventID));
-	  fTime +=
-	    (Int_t)(fgkddlBCshift[fDDL]*25./AliTOFGeometry::TdcBinWidth()*1.E+03)
-	    +
-	    (Int_t)((fChainBunchID[fTRM][fTRMchain]-fEventID)*25./AliTOFGeometry::TdcBinWidth()*1.E+03);
+	  fTime += fgkddlBCshift[fDDL] * 1024 + (fChainBunchID[fTRM][fTRMchain] - fEventID) * 1024;
 	}
 	break;
 
@@ -1483,9 +1471,9 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
 
     if (fgApplyBCCorrections) {
       /* DDL BC shift time correction */
-      hitTimeBin += fgkddlBCshift[indexDDL];
+      hitTimeBin += 1024 * fgkddlBCshift[indexDDL];
       /* deltaBC shift time correction */
-      hitTimeBin += hitData->GetDeltaBunchID();
+      hitTimeBin += 1024 * hitData->GetDeltaBunchID();
     }
 
     Int_t hitLeading = hitData->GetTimeBin();
