@@ -487,6 +487,9 @@ void AliGenMUONCocktailpp::Generate()
     AliGenCocktailEntry *preventry = 0;
     AliGenerator* gen = 0;
 
+    if (fHeader) delete fHeader;
+    fHeader = new AliGenCocktailEventHeader("MUON Cocktail Header");
+
     const TObjArray *partArray = gAlice->GetMCApp()->Particles();
     
 // Generate the vertex position used by all generators    
@@ -545,9 +548,21 @@ void AliGenMUONCocktailpp::Generate()
 	    }
 	  }
 	}	
-	if (numberOfMuons >= fMuonMultiplicity) primordialTrigger = kTRUE;
+	if (numberOfMuons >= fMuonMultiplicity) {
+	  primordialTrigger = kTRUE;
+	  fHeader->SetNProduced(maxPart);
+	}
+
     }
     fNSucceded++;
+
+    TArrayF eventVertex;
+    eventVertex.Set(3);
+    for (Int_t j=0; j < 3; j++) eventVertex[j] = fVertex[j];
+
+    fHeader->SetPrimaryVertex(eventVertex);
+
+    gAlice->SetGenEventHeader(fHeader);
 
 //     AliInfo(Form("Generated Events are %d and Succeeded Events are %d",fNGenerated,fNSucceded));
     AliDebug(5,Form("Generated Events are %d and Succeeded Events are %d",fNGenerated,fNSucceded));
