@@ -43,10 +43,12 @@ class AliVertexerTracks : public TObject {
   AliESDVertex* FindPrimaryVertex(TObjArray *trkArrayOrig,UShort_t *idOrig);
   AliESDVertex* VertexForSelectedTracks(TObjArray *trkArray,UShort_t *id,
 					Bool_t optUseFitter=kTRUE,
-					Bool_t optPropagate=kTRUE);
+					Bool_t optPropagate=kTRUE,
+					Bool_t optUseDiamondConstraint=kFALSE);
   AliESDVertex* VertexForSelectedESDTracks(TObjArray *trkArray,
 					Bool_t optUseFitter=kTRUE,
-					Bool_t optPropagate=kTRUE);
+					Bool_t optPropagate=kTRUE,
+					Bool_t optUseDiamondConstraint=kFALSE);
   AliESDVertex* RemoveTracksFromVertex(AliESDVertex *inVtx,
 				       TObjArray *trkArray,UShort_t *id,
 				       Float_t *diamondxy) const; 

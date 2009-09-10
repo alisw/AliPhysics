@@ -1623,30 +1623,43 @@ void AliVertexerTracks::VertexFitter()
 AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray,
 							 UShort_t *id,
 							 Bool_t optUseFitter,
-							 Bool_t optPropagate) 
+							 Bool_t optPropagate,
+							 Bool_t optUseDiamondConstraint) 
 {
 //
 // Return vertex from tracks (AliExternalTrackParam) in array
 //
   fCurrentVertex = 0;
-  SetConstraintOff();
+  // set optUseDiamondConstraint=TRUE only if you are reconstructing the 
+  // primary vertex!
+  if(optUseDiamondConstraint) {
+    SetConstraintOn();
+  } else {    
+    SetConstraintOff();
+  }
 
   // get tracks and propagate them to initial vertex position
   fIdSel = new UShort_t[(Int_t)trkArray->GetEntriesFast()];
   Int_t nTrksSel = PrepareTracks(*trkArray,id,0);
-  if(nTrksSel <  TMath::Max(2,fMinTracks)) {
+  if((!optUseDiamondConstraint && nTrksSel<TMath::Max(2,fMinTracks)) ||
+     (optUseDiamondConstraint && nTrksSel<1)) {
     TooFewTracks();
     return fCurrentVertex;
   }
  
   // vertex finder
-  switch (fAlgo) {
-    case 1: StrLinVertexFinderMinDist(1); break;
-    case 2: StrLinVertexFinderMinDist(0); break;
-    case 3: HelixVertexFinder();          break;
-    case 4: VertexFinder(1);              break;
-    case 5: VertexFinder(0);              break;
-    default: printf("Wrong algorithm\n"); break;  
+  if(nTrksSel==1) {
+    AliDebug(1,"Just one track");
+    OneTrackVertFinder();
+  } else {
+    switch (fAlgo) {
+      case 1: StrLinVertexFinderMinDist(1); break;
+      case 2: StrLinVertexFinderMinDist(0); break;
+      case 3: HelixVertexFinder();          break;
+      case 4: VertexFinder(1);              break;
+      case 5: VertexFinder(0);              break;
+      default: printf("Wrong algorithm\n"); break;  
+    }
   }
   AliDebug(1," Vertex finding completed\n");
 
@@ -1694,8 +1707,10 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray,
 }
 //----------------------------------------------------------------------------
 AliESDVertex* AliVertexerTracks::VertexForSelectedESDTracks(TObjArray *trkArray,
-							 Bool_t optUseFitter,
-							 Bool_t optPropagate) 
+							    Bool_t optUseFitter,
+							    Bool_t optPropagate,
+							    Bool_t optUseDiamondConstraint)
+
 {
 //
 // Return vertex from array of ESD tracks
@@ -1710,7 +1725,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedESDTracks(TObjArray *trkArray,
     id[i] = (UShort_t)esdt->GetID();
   }
     
-  VertexForSelectedTracks(trkArray,id,optUseFitter,optPropagate);
+  VertexForSelectedTracks(trkArray,id,optUseFitter,optPropagate,optUseDiamondConstraint);
 
   delete id; id=NULL;
 
