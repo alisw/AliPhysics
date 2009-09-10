@@ -86,7 +86,7 @@ void AliZDCPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 
   AliPreprocessor::Initialize(run, startTime, endTime);
 
-  AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s \n\tStartTime DCS Query %s \n\tEndTime DCS Query %s", run,
+  AliDebug(2,Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s \n\tStartTime DCS Query %s \n\tEndTime DCS Query %s", run,
 		TTimeStamp(startTime).AsString(),
 		TTimeStamp(endTime).AsString(), ((TTimeStamp)GetStartTimeDCSQuery()).AsString(), ((TTimeStamp)GetEndTimeDCSQuery()).AsString()));
 
@@ -119,6 +119,10 @@ UInt_t AliZDCPreprocessor::ProcessDCSData(TMap* dcsAliasMap)
   // Fills data into a AliZDCDataDCS object
   if(!dcsAliasMap){
     Log(" No DCS map found: ZDC exiting from Shuttle");
+    if(fData){
+      delete fData;
+      fData = 0;
+    }
     return 1;
   }
 
@@ -130,14 +134,14 @@ UInt_t AliZDCPreprocessor::ProcessDCSData(TMap* dcsAliasMap)
   if(resDCSProcess==kFALSE){
     Log(" Problems in processing DCS DP");
     return 1;
-  }
+  }  
   
-  // Store DCS data for reference
+  // Store DCS data as reference
   AliCDBMetaData metadata;
   metadata.SetResponsible("Chiara Oppedisano");
-  metadata.SetComment("DCS data for ZDC");
+  metadata.SetComment("DCS DP TMap for ZDC");
   Bool_t resDCSRef = kTRUE;
-  resDCSRef = StoreReferenceData("DCS","Data",fData,&metadata);
+  resDCSRef = StoreReferenceData("DCS","Data", dcsAliasMap, &metadata);
   
   if(resDCSRef==kFALSE) return 2;
 
@@ -147,10 +151,10 @@ UInt_t AliZDCPreprocessor::ProcessDCSData(TMap* dcsAliasMap)
   AliAlignObjParams a;
   Double_t dx=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
   // Vertical table position in mm from DCS
-  Double_t dyZN1 = (Double_t) (fData->GetCalibData(0)/10.);
-  Double_t dyZP1 = (Double_t) (fData->GetCalibData(1)/10.);
-  Double_t dyZN2 = (Double_t) (fData->GetCalibData(2)/10.);
-  Double_t dyZP2 = (Double_t) (fData->GetCalibData(3)/10.);
+  Double_t dyZN1 = (Double_t) (fData->GetAlignData(0)/10.);
+  Double_t dyZP1 = (Double_t) (fData->GetAlignData(1)/10.);
+  Double_t dyZN2 = (Double_t) (fData->GetAlignData(2)/10.);
+  Double_t dyZP2 = (Double_t) (fData->GetAlignData(3)/10.);
   //
   const char *n1ZDC="ZDC/NeutronZDC_C";  
   const char *p1ZDC="ZDC/ProtonZDC_C";

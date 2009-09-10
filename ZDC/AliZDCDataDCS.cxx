@@ -27,14 +27,13 @@ AliZDCDataDCS::AliZDCDataDCS():
    fEndTime(0),
    fStartTimeDCSQuery(0),
    fEndTimeDCSQuery(0),
+//   fTimeStamp(0x0), 
+//   fHVData(0x0), 
    fIsProcessed(kFALSE)
 {
   // Default constructor
-  for(Int_t i=0; i<kNAliases; i++){   
-     fAliasNames[i] = "";
-     fCalibData[i] = 0.; 
-     fTimeStamp[i] = 0.; 
-  }
+  for(Int_t i=0; i<kNAliases; i++) fAliasNames[i] = "";
+  for(Int_t i=0; i<kNAlignDet; i++) fAlignData[i] = 0.;
 }
 
 //---------------------------------------------------------------
@@ -46,6 +45,8 @@ AliZDCDataDCS::AliZDCDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime,
    fEndTime(endTime),
    fStartTimeDCSQuery(startTimeDCSQuery),
    fEndTimeDCSQuery(endTimeDCSQuery),
+//   fTimeStamp(0x0), 
+//   fHVData(0x0), 
    fIsProcessed(kFALSE)
 {
    // Standard constructor
@@ -68,15 +69,15 @@ AliZDCDataDCS::AliZDCDataDCS(const AliZDCDataDCS & data):
   fEndTime(data.fEndTime),
   fStartTimeDCSQuery(data.fStartTimeDCSQuery),
   fEndTimeDCSQuery(data.fEndTimeDCSQuery),
+//  fTimeStamp(data.fTimeStamp), 
+//  fHVData(data.fHVData), 
   fIsProcessed(data.fIsProcessed)
 {
 
   // copy constructor
 
-  for(int i=0;i<kNAliases;i++) {
-    fAliasNames[i]=data.fAliasNames[i];
-  }
-  
+  for(int i=0;i<kNAliases;i++) fAliasNames[i] = data.fAliasNames[i];
+  for(int i=0;i<kNAlignDet;i++) fAlignData[i] = data.fAlignData[i];
     
 }
 
@@ -94,12 +95,12 @@ AliZDCDataDCS& AliZDCDataDCS:: operator=(const AliZDCDataDCS & data) {
   fEndTime = data.GetEndTime();
   fStartTimeDCSQuery = data.GetStartTimeDCSQuery();
   fEndTimeDCSQuery = data.GetEndTimeDCSQuery();
+//  fTimeStamp  = data.GetTimeStamp();
+//  fHVData  = data.GetHVData();
+  fIsProcessed = data.fIsProcessed; 
 
-  for(int i=0;i<kNAliases;i++) {
-    fAliasNames[i]=data.GetAliasName(i);
-    fCalibData[i]=data.GetCalibData(i);
-    fTimeStamp[i]=data.GetTimeStamp(i);
-  }
+  for(int i=0;i<kNAliases;i++) fAliasNames[i] = data.GetAliasName(i);
+  for(int i=0;i<kNAlignDet;i++) fAlignData[i] = data.GetAlignData(i);
 
   return *this;
 }
@@ -131,46 +132,61 @@ Bool_t AliZDCDataDCS::ProcessData(TMap& aliasMap)
    AliDCSValue *aValue;
   
    for(int j=0; j<kNAliases; j++){
-      aliasArr = dynamic_cast<TObjArray*> (aliasMap.GetValue(fAliasNames[j].Data()));
+      //printf(" Processing alias %d  aliasName %s \n", j, fAliasNames[j].Data());
+      
+      aliasArr = (TObjArray*) (aliasMap.GetValue(fAliasNames[j].Data()));
       if(!aliasArr){
    	AliWarning(Form("Alias %s not found!", fAliasNames[j].Data()));
-   	return kFALSE;
+   	//printf(" AliZDCDataDCS: Alias %s not found!\n", fAliasNames[j].Data());
+	continue;
       }
+
       Introduce(j, aliasArr);
 
-      TIter iterarray(aliasArr);
       Int_t nentries = aliasArr->GetEntries();
       if(nentries<=2){
-   	AliWarning(Form("Alias %s has just %d entries!",
-   			fAliasNames[j].Data(), nentries));
-   	continue;
+        AliWarning(Form("Alias %s has just %d entries!", fAliasNames[j].Data(), nentries));
+//        continue;
       }
 
       Float_t *time = new Float_t[nentries];
       Float_t *val  = new Float_t[nentries];
 
+      TIter iterarray(aliasArr);
+      
       UInt_t ne=0;
-      while((aValue = (AliDCSValue*) iterarray.Next())) {
-   	val[ne] = aValue->GetFloat();
-   	time[ne] = (Float_t) (aValue->GetTimeStamp());
-   	fCalibData[ne] = val[ne];
-   	fTimeStamp[ne] = time[ne];
-   	ne++;
+      Float_t sum=0.;
+      Int_t nMeasures=0;
+      while((aValue = (AliDCSValue*) iterarray.Next())){
+        val[ne] = aValue->GetFloat();
+        time[ne] = (Float_t) (aValue->GetTimeStamp());
+        if(j<4){
+	  sum += val[ne];
+	  nMeasures++;
+	}
+	else{
+	  //fHVData[ne] = val[ne];
+          //fTimeStamp[ne] = time[ne];
+	}
+        ne++;
       }
+      //
+      if(j<4 && nMeasures!=0) fAlignData[j] = sum/nMeasures;
       
       delete[] val;
-      delete[] time;	      
+      delete[] time;   
    }
-   //
+  
    fIsProcessed=kTRUE;
-   
    return kTRUE;
+   
 }
 
 //---------------------------------------------------------------
 void AliZDCDataDCS::Init()
 {
    // Initialization
+
    fAliasNames[0] = "ZDC_ZNA_POS.actual.position";
    fAliasNames[1] = "ZDC_ZPA_POS.actual.position";
    fAliasNames[2] = "ZDC_ZNC_POS.actual.position";
@@ -214,7 +230,7 @@ void AliZDCDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)
    // Getting array of DCS aliases
    
    int entries = aliasArr->GetEntries();
-   AliDebug(2,Form("************ Alias: %s has  %d DP values collected\n",
-   	fAliasNames[numAlias].Data(),entries));
+   printf("************ Alias: %s has  %d DP values collected\n",
+   	fAliasNames[numAlias].Data(),entries);
 
 }

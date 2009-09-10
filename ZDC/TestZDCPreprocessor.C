@@ -37,12 +37,12 @@ void TestZDCPreprocessor(const char* runType="PHYSICS")
   //     To use it uncomment the following line:
   //
   TMap* dcsAliasMap = ReadDCSAliasMap();
-  //dcsAliasMap->Print("");
   //
   // (b) generated in this macro: Use CreateDCSAliasMap() and its documentation
   //     To use it uncomment the following line:
   //
   //TMap* dcsAliasMap = CreateDCSAliasMap();
+  //dcsAliasMap->Print("");
   //WriteDCSAliasMap();
 
   // now give the alias map to the shuttle
@@ -185,8 +185,7 @@ TMap* CreateDCSAliasMap()
   aliasNames[2] = "ZDC_ZNC_POS.actual.position";
   aliasNames[3] = "ZDC_ZPC_POS.actual.position";
   //
-  for(int nAlias=0; nAlias<4; nAlias++)
-  {
+  for(int nAlias=0; nAlias<4; nAlias++){
     TObjArray* valueSet = new TObjArray;
     valueSet->SetOwner(1);
 
@@ -194,8 +193,8 @@ TMap* CreateDCSAliasMap()
     //printf("\n\n alias: %s\n\n",aliasName.Data());
 
     Float_t simVal = (Float_t) (random.Rndm()*0.025+random.Rndm()*0.1);
-    int timeStamp1[3] = {0,500,1000};
-    for(int i=0;i<3;i++){
+    int timeStamp1[5] = {0,500,1000,1500,2000};
+    for(int i=0;i<5;i++){
       AliDCSValue* dcsVal = new AliDCSValue(simVal, timeStamp1[i]);
       //printf("%s\n",dcsVal->ToString());
       valueSet->Add(dcsVal);
@@ -233,22 +232,22 @@ TMap* CreateDCSAliasMap()
   aliasNames[26]  = "ZDC_REFA_HV.actual.vMon";
   aliasNames[27]  = "ZDC_REFC_HV.actual.vMon";
   //
-  for(int nAlias=4;nAlias<28;nAlias++)
-  {
-    TObjArray* valueSet = new TObjArray;
-    valueSet->SetOwner(1);
+  for(int nAlias=4;nAlias<28;nAlias++){
+   if(nAlias<14 || nAlias>18){
+     TObjArray* valueSet = new TObjArray;
+     valueSet->SetOwner(1);
    
-    TString aliasName = aliasNames[nAlias];
-    //printf("\n\n alias: %s\n\n",aliasName.Data());
+     TString aliasName = aliasNames[nAlias];
+     printf("\n\n alias: %s\n\n",aliasName.Data());
 
-    for(int timeStamp=0;timeStamp<=1000;timeStamp+=500)
-    {
-      Float_t simVal = (Float_t) (random.Gaus()*600.+1800.);
-      AliDCSValue* dcsVal = new AliDCSValue(simVal, timeStamp);
-      //printf("%s\n",dcsVal->ToString());
-      valueSet->Add(dcsVal);
-    }
-    aliasMap->Add(new TObjString(aliasName), valueSet);
+     for(int timeStamp=0;timeStamp<=2000;timeStamp+=500){
+       Float_t simVal = (Float_t) (random.Gaus()*600.+1800.);
+       AliDCSValue* dcsVal = new AliDCSValue(simVal, timeStamp);
+       //printf("%s\n",dcsVal->ToString());
+       valueSet->Add(dcsVal);
+     }
+     aliasMap->Add(new TObjString(aliasName), valueSet);
+   }
   }
 
   return aliasMap;
@@ -265,7 +264,7 @@ TMap* ReadDCSAliasMap()
   AliCDBManager *manager = AliCDBManager::Instance();
   AliCDBStorage *sto = manager->GetStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/");
   AliCDBId id("ZDC/DCS/Data",0,999999999);
-  AliCDBEntry *entry = sto->Get("ZDC/DCS/Data", 0, 0, 0);
+  AliCDBEntry *entry = sto->Get("ZDC/DCS/Data", 0);
   if(!entry) printf("TestZDCPreprocessor.C -> ERROR! No entry found as DCS Map! \n");
   return dynamic_cast<TMap*> (entry->GetObject());
 }

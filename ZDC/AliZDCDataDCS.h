@@ -10,7 +10,7 @@
 
 class AliZDCDataDCS : public TObject {
 public:
-    enum {kNAliases=28};
+    enum {kNAliases=28, kNAlignDet=4, kNHVChannels=24};
 
     AliZDCDataDCS();
     AliZDCDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, 
@@ -24,18 +24,15 @@ public:
     void SetEndTime(Int_t endTime) {fEndTime = endTime;}
     void SetStartTimeDCSQuery(Int_t startTimeDCSQuery) {fStartTimeDCSQuery = startTimeDCSQuery;}
     void SetEndTimeDCSQuery(Int_t endTimeDCSQuery) {fEndTimeDCSQuery = endTimeDCSQuery;}
-    void SetCalibData(Float_t *val) {for(Int_t i=0; i<kNAliases; i++) fCalibData[i] = val[i];}
-    void SetCalibData(Int_t i, Float_t val) {fCalibData[i] = val;} 
     //
     Int_t GetRun() const {return fRun;}
     Int_t GetStartTime() const {return fStartTime;}
     Int_t GetEndTime() const {return fEndTime;}
     Int_t GetStartTimeDCSQuery() const {return fStartTimeDCSQuery;}
     Int_t GetEndTimeDCSQuery() const {return fEndTimeDCSQuery;}
-    Float_t GetCalibData() const {return *fCalibData;}
-    Float_t GetCalibData(Int_t i) const {return fCalibData[i];}
-    Float_t GetTimeStamp() const {return *fTimeStamp;}
-    Float_t GetTimeStamp(Int_t i) const {return fTimeStamp[i];}
+    Float_t GetAlignData(Int_t i) const {return fAlignData[i];}
+//    Float_t* GetTimeStamp() const {return (float*)fTimeStamp;}
+//    Float_t* GetHVData() const {return (float*)fHVData;}
 
     Bool_t ProcessData(TMap& aliasMap);
 
@@ -52,13 +49,14 @@ private:
     Int_t  fStartTimeDCSQuery; // start time DCSQuery
     Int_t  fEndTimeDCSQuery;   // end time DCSQuery
 
-    TString  fAliasNames[kNAliases];// Name of the aliases provided by the DCS
-    Double_t fCalibData[kNAliases]; // Array containing calibration data
-    Float_t  fTimeStamp[kNAliases]; // Array containing time stamps
+    TString fAliasNames[kNAliases]; // Name of the aliases provided by the DCS
+    Float_t fAlignData[kNAlignDet]; // Array containing alignment data
+//    Float_t *fTimeStamp; 	    // Array containing time stamps
+//    Float_t *fHVData;    	    // Array containing HV values
 
     Bool_t fIsProcessed;	    // Flag set when data are processed
 
-    ClassDef(AliZDCDataDCS, 5);
+    ClassDef(AliZDCDataDCS, 6);
 };
 
 #endif
