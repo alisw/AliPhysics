@@ -66,7 +66,6 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
   ,fTransform(new AliTRDtransform(0))
   ,fDigits(NULL)
   ,fIndexes(NULL)
-  ,fADCthresh(0)
   ,fMaxThresh(0)
   ,fSigThresh(0)
   ,fMinMaxCutSigma(0)
@@ -124,7 +123,6 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title, co
   ,fTransform(new AliTRDtransform(0))
   ,fDigits(NULL)
   ,fIndexes(NULL)
-  ,fADCthresh(0)
   ,fMaxThresh(0)
   ,fSigThresh(0)
   ,fMinMaxCutSigma(0)
@@ -177,7 +175,6 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
   ,fTransform(NULL)
   ,fDigits(NULL)
   ,fIndexes(NULL)
-  ,fADCthresh(0)
   ,fMaxThresh(0)
   ,fSigThresh(0)
   ,fMinMaxCutSigma(0)
@@ -272,7 +269,6 @@ void AliTRDclusterizer::Copy(TObject &c) const
   ((AliTRDclusterizer &) c).fTransform     = NULL;
   ((AliTRDclusterizer &) c).fDigits      = NULL;
   ((AliTRDclusterizer &) c).fIndexes       = NULL;
-  ((AliTRDclusterizer &) c).fADCthresh     = 0;
   ((AliTRDclusterizer &) c).fMaxThresh     = 0;
   ((AliTRDclusterizer &) c).fSigThresh     = 0;
   ((AliTRDclusterizer &) c).fMinMaxCutSigma= 0;
@@ -639,6 +635,8 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   }
 
   AliTRDrawStreamBase *input = AliTRDrawStreamBase::GetRawStream(rawReader);
+  if(fReconstructor->IsHLT())
+    input->SetSharedPadReadout(kFALSE);
 
   AliInfo(Form("Stream version: %s", input->IsA()->GetName()));
   
@@ -748,14 +746,10 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     return kFALSE;  
   }
 
-  fADCthresh = 0; 
-
   if (!fReconstructor){
     AliError("Reconstructor not set\n");
     return kFALSE;
   }
-
-  TTreeSRedirector *fDebugStream = fReconstructor->GetDebugStream(AliTRDReconstructor::kClusterizer);
 
   fMaxThresh            = fReconstructor->GetRecoParam()->GetClusMaxThresh();
   fSigThresh            = fReconstructor->GetRecoParam()->GetClusSigThresh();
@@ -804,11 +798,11 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   
   // Calibration object with the pad status
   fCalPadStatusROC       = calibration->GetPadStatusROC(fDet);
-  
+
   SetBit(kLUT, fReconstructor->UseLUT());
   SetBit(kGAUS, fReconstructor->UseGAUS());
   SetBit(kHLT, fReconstructor->IsHLT());
-
+  
   firstClusterROC = -1;
   fClusterROC     =  0;
 
@@ -837,6 +831,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   if(last.Row>-1) CreateCluster(last);
 
   if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kClusterizer) > 2){
+    TTreeSRedirector* fDebugStream = fReconstructor->GetDebugStream(AliTRDReconstructor::kClusterizer);
     (*fDebugStream) << "MakeClusters"
       << "Detector="   << det
       << "NMaxima="    << nMaximas
@@ -1231,7 +1226,7 @@ void AliTRDclusterizer::TailCancelation()
       for(iTime = 0; iTime < fTimeTotal; iTime++)//while (fIndexes->NextTbinIndex(iTime))
         {
           // Store the amplitude of the digit if above threshold
-          if (outADC[iTime] > fADCthresh)
+          if (outADC[iTime] > 0)
 	    fDigits->SetData(iRow,iCol,iTime,TMath::Nint(outADC[iTime]));
 	  else
 	    fDigits->SetData(iRow,iCol,iTime,0);
