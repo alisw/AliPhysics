@@ -11,6 +11,7 @@ class TTree;
 class TChain;
 class AliAODEvent;
 class AliJetHistos;
+class AliAODExtension;
 
 
 class AliAnalysisTaskJets : public AliAnalysisTaskSE
@@ -28,6 +29,7 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
     virtual void SetConfigFile(const char *c) {fConfigFile = c;}
     virtual void SetJetFinder(AliJetFinder *finder) {fJetFinder = finder;}
     virtual void SetNonStdBranch(const char *c){fNonStdBranch = c;}
+    virtual void SetNonStdOutputFile(const char *c){fNonStdFile = c;}
     virtual void Terminate(Option_t *option);
 
  private:
@@ -36,14 +38,16 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
     
  private:
   TString       fConfigFile;      // the name of the ConfigFile
-  TString       fNonStdBranch;    // the name of the non-std branch name//commented by syssy
+  TString       fNonStdBranch;    // the name of the non-std branch name
+  TString       fNonStdFile;      // The optional name of the output file the non-std brnach is written to
   AliJetFinder* fJetFinder;       //  Pointer to the jet finder 
   AliJetHistos* fHistos;          //  Histogram manager class
+  AliAODExtension* fAODExtension; //  AOD extension we in case we write a non-sdt brnach to a separate file and the aod is standard
   TList*        fListOfHistos;    //  Output list of histograms
   TChain*       fChain;           //  Chain 
   Int_t         fOpt;             //  Detector configuration used
 
-  ClassDef(AliAnalysisTaskJets, 3); // Analysis task for standard jet analysis
+  ClassDef(AliAnalysisTaskJets, 4); // Analysis task for standard jet analysis
 };
  
 #endif

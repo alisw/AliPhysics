@@ -48,8 +48,10 @@ AliAnalysisTaskJets::AliAnalysisTaskJets():
   AliAnalysisTaskSE(),
   fConfigFile("ConfigJetAnalysis.C"),
   fNonStdBranch(""), 
+  fNonStdFile(""),
   fJetFinder(0x0),
   fHistos(0x0),
+  fAODExtension(0x0),
   fListOfHistos(0x0),
   fChain(0x0),
   fOpt(0)
@@ -61,8 +63,10 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
   AliAnalysisTaskSE(name),
   fConfigFile("ConfigJetAnalysis.C"),
   fNonStdBranch(""),
+  fNonStdFile(""),
   fJetFinder(0x0),
   fHistos(0x0),
+  fAODExtension(0x0),
   fListOfHistos(0x0),
   fChain(0x0),
   fOpt(0)
@@ -75,8 +79,10 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name, TChain* chain):
   AliAnalysisTaskSE(name),
   fConfigFile("ConfigJetAnalysis.C"),
   fNonStdBranch(""),
+  fNonStdFile(""),
   fJetFinder(0x0),
   fHistos(0x0),
+  fAODExtension(0x0),
   fListOfHistos(0x0),
   fChain(chain),
   fOpt(0)
@@ -91,7 +97,10 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
   // Create the output container
   //
   if (fDebug > 1) printf("AnalysisTaskJets::CreateOutPutData() \n");
-  
+
+  // we already have a non standard output, need not to book a new file... 
+  if (!IsStandardAOD())fNonStdFile  = "";
+
   if(fNonStdBranch.Length()==0)
     {
       //  Connec default AOD to jet finder
@@ -108,15 +117,40 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
       // Create a new branch for jets...
       // how is this reset? -> cleared in the UserExec....
       // Can this be handled by the framework?
+      // here we can also have the case that the brnaches are written to a separate file
+
       TClonesArray *tca = new TClonesArray("AliAODJet", 0);
-      tca->SetName(fNonStdBranch);
-      AddAODBranch("TClonesArray",&tca);
+      tca->SetName(fNonStdBranch.Data());
+      AddAODBranch("TClonesArray",&tca,fNonStdFile.Data());
       if(!AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
 	AliAODJetEventBackground* evBkg = new AliAODJetEventBackground();
 	evBkg->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
-	AddAODBranch("AliAODJetEventBackground",&evBkg);
+	AddAODBranch("AliAODJetEventBackground",&evBkg,fNonStdFile.Data());
       }
-      fJetFinder->ConnectAODNonStd(AODEvent(), fNonStdBranch.Data()); 
+
+      if(fNonStdFile.Length()!=0){
+	// 
+	// case that we have an AOD extension we need to fetch the jets from the extended output
+	// we identifay the extension aod event by looking for the branchname
+	AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+	TObjArray* extArray = aodH->GetExtensions();
+	if (extArray) {
+	  TIter next(extArray);
+	  while ((fAODExtension=(AliAODExtension*)next())){
+	    TObject *obj = fAODExtension->GetAOD()->FindListObject(fNonStdBranch.Data());
+	    fAODExtension->GetAOD()->Dump();
+	    if(obj){
+	      if(fDebug>1)Printf("AODExtension found for %s",fNonStdBranch.Data());
+	      break;
+	    }
+	    fAODExtension = 0;
+	  }
+	}
+	if(fAODExtension)fJetFinder->ConnectAODNonStd(fAODExtension->GetAOD(), fNonStdBranch.Data()); 
+      }
+      else{
+	fJetFinder->ConnectAODNonStd(AODEvent(), fNonStdBranch.Data()); 
+      }
     }
 
 
@@ -139,7 +173,8 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
       fH->SetName(Form("AliJetHeader_%s",fNonStdBranch.Data()));
     }
   }
-  OutputTree()->GetUserInfo()->Add(fH);
+  if(!fAODExtension)OutputTree()->GetUserInfo()->Add(fH);
+  else fAODExtension->GetTree()->GetUserInfo()->Add(fH);
 }
 
 //----------------------------------------------------------------
@@ -164,6 +199,7 @@ void AliAnalysisTaskJets::Init()
   fJetFinder->WriteHeaders();
 }
 
+
 //----------------------------------------------------------------
 void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
 {
@@ -179,11 +215,14 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
     evBkg->Reset();
   }
   else {
-    jarray = dynamic_cast<TClonesArray*>(AODEvent()->FindListObject(fNonStdBranch.Data()));
+    jarray = (TClonesArray*)(AODEvent()->FindListObject(fNonStdBranch.Data()));
+    if(!jarray)jarray = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(fNonStdBranch.Data()));
     jarray->Delete();    // this is our responsibility, clear before filling again
     evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
+    if(!evBkg)  evBkg = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
     evBkg->Reset();
   }
+
   if (dynamic_cast<AliAODEvent*>(InputEvent()) !=  0) {
       fJetFinder->GetReader()->SetInputEvent(InputEvent(), InputEvent(), MCEvent());
   } else {
@@ -200,6 +239,7 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
 
   // Post the data
   PostData(1, fListOfHistos);
+  return;
 }
 
 
