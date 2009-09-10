@@ -126,7 +126,7 @@ private:
   Int_t     fNumberOfPresamples;     // number of presamples 
   Int_t     fNumberOfPostsamples;     // number of postsamples 
 
-  ClassDef(AliTRDrecoParam, 7)       // Reconstruction parameters for TRD detector
+  ClassDef(AliTRDrecoParam, 8)       // Reconstruction parameters for TRD detector
 
 };
 
