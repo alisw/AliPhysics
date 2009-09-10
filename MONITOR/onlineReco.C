@@ -39,7 +39,7 @@ UInt_t onlineReco(const char* param = "listen",const char *recMacroPath = "$ALIC
 	// Setting CDB
 	AliCDBManager * man = AliCDBManager::Instance();
 	//	man->SetDefaultStorage("raw://");
-	man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+	man->SetDefaultStorage("local:///local/cdb");
 	man->SetSpecificStorage("GRP/GRP/Data",
 			      Form("local://%s",gSystem->pwd()));
 	man->SetSpecificStorage("GRP/CTP/Config",
