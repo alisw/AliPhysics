@@ -25,6 +25,9 @@
  *
  * The reconstruction is steered by the AliReconstruction object in the
  * usual way.
+ * 
+ * !!!!!!! The user should be cautious to set correctly the paths for the 
+ * default and specific storage. !!!
  *
  * @ingroup alihlt_tpc
  * @author Kalliopi.Kanaki@ift.uib.no
@@ -101,9 +104,9 @@ void testTPCCalibration(const char* input="./", const char* option="task"){
   // has already been prepared. This step is currently not necessary for
   // this macro
   rec.SetFillESD("");
-  if     (calibOption.CompareTo("task")==0)          rec.SetOption("HLT", "libAliHLTTPCCalibration.so libAliHLTTPC.so libAliHLTGlobal.so loglevel=0x7c chains=TPCcalib"); 
-  if     (calibOption.CompareTo("calibtime")==0)     rec.SetOption("HLT", "libAliHLTTPCCalibration.so libAliHLTTPC.so libAliHLTGlobal.so loglevel=0x7c chains=calibTime"); 
-  else if(calibOption.CompareTo("calibtimegain")==0) rec.SetOption("HLT", "libAliHLTTPCCalibration.so libAliHLTTPC.so libAliHLTGlobal.so loglevel=0x7c chains=calibTimeGain");
+  if     (calibOption.CompareTo("task")==0)          rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTTPC.so libAliHLTGlobal.so libAliHLTTPCCalibration.so loglevel=0x7c chains=TPCcalib"); 
+  if     (calibOption.CompareTo("calibtime")==0)     rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTTPC.so libAliHLTGlobal.so libAliHLTTPCCalibration.so loglevel=0x7c chains=calibTime"); 
+  else if(calibOption.CompareTo("calibtimegain")==0) rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTTPC.so libAliHLTGlobal.so libAliHLTTPCCalibration.so loglevel=0x7c chains=calibTimeGain");
 
   rec.Run();
 }
