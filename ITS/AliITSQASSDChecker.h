@@ -31,6 +31,9 @@ public:
   AliITSQASSDChecker& operator = (const AliITSQASSDChecker& qac) ; //operator =
   virtual ~AliITSQASSDChecker() {;} // dtor
   Double_t Check(AliQAv1::ALITASK_t /*index*/, TObjArray * /*list*/);
+
+  void CheckRaws(TH1 *);
+  void CheckRecPoints(TH1 *);
   void SetTaskOffset(Int_t TaskOffset);
 
 
