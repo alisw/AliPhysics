@@ -55,7 +55,11 @@ AliAnalysisTaskESDfilter *AddTaskESDfilter(bool bUseKineFilter = true)
    if (bUseKineFilter) {
      mgr->ConnectInput  (kinefilter,  0, mgr->GetCommonInputContainer());
      mgr->ConnectOutput (kinefilter,  0, mgr->GetCommonOutputContainer());
-   }
+     AliAnalysisDataContainer *coutputEx = mgr->CreateContainer("cFilterList", TList::Class(),
+								AliAnalysisManager::kOutputContainer,"pyxsec_hists.root");
+     mgr->ConnectOutput (kinefilter,  1,coutputEx);
+   }   
+
 
 
    return esdfilter;
@@ -71,7 +75,7 @@ AliESDtrackCuts *CreateCuts(Int_t iCut){
     esdTrackCuts->SetRequireTPCRefit(kTRUE);
     esdTrackCuts->SetMaxNsigmaToVertex(3);
     esdTrackCuts->SetRequireSigmaToVertex(kTRUE);
-    esdTrackCuts->SetAcceptKingDaughters(kFALSE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
   }
   
   return esdTrackCuts;
