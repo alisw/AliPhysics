@@ -802,6 +802,7 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   
   // clean up
 
+  delete data;
   AliInfo("sucessfull execution of QA for TRD raw data");
   //printf("sucessfull execution of QA for TRD raw data\n");
   
