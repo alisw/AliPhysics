@@ -11,6 +11,7 @@
 #define AliOnlineReco_H
 
 #include "TObject.h"
+#include "TString.h"
 #include <TGFrame.h>
 
 #include <map>
@@ -58,6 +59,8 @@ public:
   void DoXyzz();
 
   virtual void CloseWindow();
+
+  Int_t RetrieveGRP(UInt_t run, TString &gdc);
 
 private:
   AliOnlineReco(const AliOnlineReco&);            // Not implemented

@@ -10,6 +10,8 @@
 #include "AliOnlineReco.h"
 #include "AliChildProcTerminator.h"
 #include "AliDimIntNotifier.h"
+#include "AliCDBManager.h"
+#include "AliGRPPreprocessor.h"
 
 #include <TGListBox.h>
 #include <TGButton.h>
@@ -196,8 +198,42 @@ void AliOnlineReco::DoStart()
       }
       else
       {
-	// !!!! Cvetan, add proper args here ...
-	s = execlp("alieve", "alieve", TString::Format("%d", run).Data(), (char*) 0);
+	Int_t procPID = gSystem->GetPid();
+	TString logFile = Form("%s/reco/log/run%d_%d.log",
+			       gSystem->Getenv("ONLINERECO_BASE_DIR"),
+			       run,
+			       (Int_t)procPID);
+	Info("DoStart","Reconstruction log will be written to %s",logFile.Data());
+	gSystem->RedirectOutput(logFile.Data());
+
+	gSystem->cd(Form("%s/reco",gSystem->Getenv("ONLINERECO_BASE_DIR")));
+
+	TString gdcs;
+	if ((RetrieveGRP(run,gdcs) <= 0) ||
+	    gdcs.IsNull()) 
+	  gSystem->Exit(1);
+
+	gSystem->Setenv("DATE_RUN_NUMBER",Form("%d",run));
+	// Setting CDB
+// 	AliCDBManager * man = AliCDBManager::Instance();
+// 	man->SetDefaultStorage("local:///local/cdb");
+// 	man->SetSpecificStorage("GRP/GRP/Data",
+// 			      Form("local://%s",gSystem->pwd()));
+// 	man->SetSpecificStorage("GRP/CTP/Config",
+// 			      Form("local://%s",gSystem->pwd()));
+// 	man->SetSpecificStorage("ACORDE/Align/Data",
+// 				"local://$ALICE_ROOT/OCDB");
+
+	gSystem->mkdir(Form("run%d_%d",run,(Int_t)procPID));
+	gSystem->cd(Form("run%d_%d",run,(Int_t)procPID));
+
+	const char *recMacroPath = "$ALICE_ROOT/test/cosmic/rec.C";
+
+	s = execlp("alieve",
+		   "alieve",
+		   "-q",
+		   Form("%s(\"mem://@*:\")",gSystem->ExpandPathName(recMacroPath)),
+		   (char*) 0);
       }
 
       if (s == -1)
@@ -251,4 +287,15 @@ void AliOnlineReco::DoXyzz()
 void AliOnlineReco::CloseWindow()
 {
   gSystem->ExitLoop();
+}
+
+Int_t AliOnlineReco::RetrieveGRP(UInt_t run, TString &gdc) {
+
+  Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(run, "aldaqdb", 0, "LOGBOOK", "logbook", "alice",
+							    Form("local://%s",gSystem->pwd()),
+							    gdc);
+  if(ret>0) Info("RetrieveGRP","Last run of the same type is: %d",ret);
+  else if(ret==0) Warning("RetrieveGRP","No previous run of the same type found");
+  else if(ret<0) Error("Retrieve","Error code while retrieving GRP parameters returned: %d",ret);
+  return(ret);
 }

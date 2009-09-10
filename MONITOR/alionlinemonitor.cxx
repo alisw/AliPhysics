@@ -33,6 +33,12 @@ int main(int argc, char **argv)
   }
   else {
 
+    TString baseDir = gSystem->Getenv("ONLINERECO_BASE_DIR");
+    if (baseDir.IsNull()) {
+      printf("ERROR: ONLINERECO_BASE_DIR is not set. Exiting...");
+      return 0;
+    }
+
     const char *dbHost = "aldaqdb";
     Int_t dbPort = 3306;
     const char *dbName = "LOGBOOK";
@@ -47,7 +53,9 @@ int main(int argc, char **argv)
     TString sqlQuery;
     TTimeStamp ts;
     sqlQuery.Form("SELECT run FROM logbook WHERE DAQ_time_start > %u AND DAQ_time_end IS NULL AND partition = 'PHYSICS'",
-		  ts.GetSec()-86400);
+    		  ts.GetSec()-86400);
+    //    sqlQuery.Form("SELECT run FROM logbook WHERE DAQ_time_start > %u AND DAQ_time_end IS NULL",
+    //		  ts.GetSec()-86400);
     TSQLResult* result = server->Query(sqlQuery);
     if (!result) {
       printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
