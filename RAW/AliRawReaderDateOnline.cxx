@@ -100,6 +100,8 @@ Bool_t AliRawReaderDateOnline::NextEvent()
   // Stop on SIGUSR1
   if (fStop) {
     AliInfo("Raw-data reading stopped by SIGUSR1");
+    if (fEvent) free(fEvent);
+    fEvent = NULL;
     return kFALSE;
   }
 
@@ -144,6 +146,7 @@ Bool_t AliRawReaderDateOnline::NextEvent()
     
     if (!IsEventSelected()) {
       free(fEvent);
+      fEvent = NULL;
       continue;
     }
 
