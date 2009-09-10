@@ -34,7 +34,7 @@ void MakeACORDEFullMisAlignment(){
   }
   //  AliGeomManager::LoadGeometry("geometry.root");  
 
-  TClonesArray *array = new TClonesArray("AliAlignObjParams",64);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",60);
   TClonesArray &alobj = *array;
   
   TRandom *rnd = new TRandom(4321);
@@ -53,7 +53,7 @@ void MakeACORDEFullMisAlignment(){
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
-  for (Int_t imod=1; imod<61; imod++){
+  for (Int_t imod=0; imod<60; imod++){
     dx = rnd->Gaus(0.,sigmatr);
     dy = rnd->Gaus(0.,sigmatr);
     dz = rnd->Gaus(0.,sigmatr);

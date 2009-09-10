@@ -54,7 +54,7 @@ void MakeACORDEResMisAlignment(){
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
-  for (Int_t imod=1; imod<61; imod++){
+  for (Int_t imod=0; imod<60; imod++){
     dx = rnd->Gaus(0.,sigmatr);
     dy = rnd->Gaus(0.,sigmatr);
     dz = rnd->Gaus(0.,sigmatr);

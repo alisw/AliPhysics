@@ -4,7 +4,7 @@ void MakeACORDEZeroMisAlignment(){
   const char* macroname = "MakeACORDEZeroMisAlignment.C";
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
-  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB/ACORDE/Align/Data");
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
   
   AliCDBStorage* storage;
@@ -51,7 +51,7 @@ void MakeACORDEZeroMisAlignment(){
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
-  for (Int_t imod=1; imod<61; imod++){
+  for (Int_t imod=0; imod<60; imod++){
     symname = basename;
     symname += imod;    
     new(alobj[j++]) AliAlignObjParams(symname, volid, dx, dy, dz,dpsi, dtheta, dphi, kFALSE);
