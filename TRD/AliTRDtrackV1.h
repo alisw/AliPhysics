@@ -24,6 +24,7 @@ class AliESDtrack;
 class AliTRDReconstructor;
 class AliTRDtrackV1 : public AliKalmanTrack
 {
+  friend class AliHLTTRDTrack;
 public:
   enum ETRDtrackSize { 
     kNdet      = AliTRDgeometry::kNdet

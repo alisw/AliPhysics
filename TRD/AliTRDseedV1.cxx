@@ -919,11 +919,12 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
   const Int_t kNrows = 16;
   const Int_t kNcls  = 3*kNclusters; // buffer size
   AliTRDcluster *clst[kNrows][kNcls];
+  Bool_t blst[kNrows][kNcls];
   Double_t cond[4], dx, dy, yt, zt, yres[kNrows][kNcls];
   Int_t idxs[kNrows][kNcls], ncl[kNrows], ncls = 0;
   memset(ncl, 0, kNrows*sizeof(Int_t));
   memset(yres, 0, kNrows*kNcls*sizeof(Double_t));
-  memset(clst, 0, kNrows*kNcls*sizeof(AliTRDcluster*));
+  memset(blst, 0, kNrows*kNcls*sizeof(Bool_t));   //this is 8 times faster to memset than "memset(clst, 0, kNrows*kNcls*sizeof(AliTRDcluster*))"
 
   // Do cluster projection
   AliTRDcluster *c = NULL;
@@ -962,6 +963,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
       Int_t r = c->GetPadRow();
       if(kPRINT) printf("\t\t%d dy[%f] yc[%f] r[%d]\n", ic, TMath::Abs(dy), c->GetY(), r);
       clst[r][ncl[r]] = c;
+      blst[r][ncl[r]] = kTRUE;
       idxs[r][ncl[r]] = idx[ic];
       yres[r][ncl[r]] = dy;
       ncl[r]++; ncls++;
@@ -1016,7 +1018,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
     Bool_t kFOUND = kFALSE;
     for(Int_t ic = ncl[ir]; ic--;){
       if(yres[ir][ic] - mean > 3. * syDis){ 
-        clst[ir][ic] = NULL; continue;
+        blst[ir][ic] = kFALSE; continue;
       }
       nrow[nr]++; kFOUND = kTRUE;
     }
@@ -1058,7 +1060,8 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
     Int_t jr = row + ir*lr; 
     if(kPRINT) printf("\tattach %d clusters for row %d\n", ncl[jr], jr);
     for (Int_t ic = 0; ic < ncl[jr]; ic++) {
-      if(!(c = clst[jr][ic])) continue;
+      if(!blst[jr][ic])continue;
+      c = clst[jr][ic];
       Int_t it = c->GetPadTime();
       // TODO proper indexing of clusters !!
       fIndexes[it+kNtb*ir]  = chamber->GetTB(it)->GetGlobalIndex(idxs[jr][ic]);
@@ -1281,9 +1284,10 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     if(tilt) yc[n] -= (GetTilt()*(zc[n] - zt)); 
 
     fitterY.AddPoint(&xc[n], yc[n], TMath::Sqrt(sy[n]));
-    fitterZ.AddPoint(&xc[n], qc[n], 1.);
+    if(IsRowCross())fitterZ.AddPoint(&xc[n], qc[n], 1.);
     n++;
   }
+
   // to few clusters
   if (n < kClmin) return kFALSE; 
 

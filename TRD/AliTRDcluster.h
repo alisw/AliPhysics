@@ -16,8 +16,9 @@
 class AliTRDtrackletWord;
 
 class AliTRDcluster : public AliCluster {
-public:
+  friend class AliHLTTRDCluster;
 
+public:
   enum ETRDclusterStatus { 
     kInChamber = BIT(16) // Out of fiducial volume of chamber (signal tails)
    ,kFivePad   = BIT(17) // Deconvoluted clusters

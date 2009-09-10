@@ -47,6 +47,8 @@ class AliTRDtrackV1;
 class AliTRDpadPlane;
 class AliTRDseedV1 : public AliTRDtrackletBase
 {
+  friend class AliHLTTRDTracklet;
+
 public:
   enum ETRDtrackletBuffers {    
     kNtb       = 31     // max clusters/pad row
