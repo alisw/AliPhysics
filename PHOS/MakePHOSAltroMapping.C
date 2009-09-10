@@ -7,7 +7,7 @@ void MakePHOSAltroMapping(){
   // should be committed to SVN and submitted to AliEn production manager
   //
   // Yuri Kharlov. 10 September 2009
-
+  // $Id$
 
   const char* macroname = "MakePHOSAltroMapping.C";
 
