@@ -93,6 +93,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
       mgr->ConnectOutput (kinefilter,  0, mgr->GetCommonOutputContainer());
       AliAnalysisDataContainer *coutputEx = mgr->CreateContainer("cFilterList", TList::Class(),
 								   AliAnalysisManager::kOutputContainer,"pyxsec_hists.root");
+      mgr->ConnectOutput (kinefilter,  1,coutputEx);
    }   
    return esdfilter;
 }   
