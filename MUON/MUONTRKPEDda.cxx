@@ -342,18 +342,15 @@ int main(Int_t argc, Char_t **argv)
 		    }
 		  else
 		    {
-		      char bpname[256];
 		      AliMUONErrorCounter* errorCounter;
 		      // Bad buspatch -> not used (just print)
 		      filcout<<"bpId "<<busPatch->GetBusPatchId()<<" words "<<busPatch->GetLength()
 				 <<" parity errors "<<errorCount<<endl;
 		      // Number of events where this buspatch is missing
-		      sprintf(bpname,"bp%d",busPatch->GetBusPatchId());						
-		      if (!(errorCounter = (AliMUONErrorCounter*) (muonPedestal->GetErrorBuspatchTable()->FindObject(bpname))))
+		      if (!(errorCounter = (AliMUONErrorCounter*) (muonPedestal->GetErrorBuspatchTable()->FindObject(busPatch->GetBusPatchId()))))
 			{
 			  // New buspatch
 			  errorCounter = new AliMUONErrorCounter(busPatch->GetBusPatchId());
-			  errorCounter->SetName(bpname);
 			  muonPedestal->GetErrorBuspatchTable()->Add(errorCounter);
 			}
 		      else

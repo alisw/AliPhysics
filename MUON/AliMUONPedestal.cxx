@@ -22,8 +22,6 @@
 #include "AliMUONCalibParamND.h"
 
 #include <TString.h>
-#include <THashTable.h>
-#include <THashList.h>
 #include <TTimeStamp.h>
 #include <TMath.h>
 #include <TTree.h>
@@ -56,11 +54,11 @@ fNEvents(0),
 fRunNumber(0),
 fNChannel(0),
 fNManu(0),
-fErrorBuspatchTable(new THashTable(100,2)),
-fManuBuspatchTable(new THashTable(100,2)),
+fErrorBuspatchTable(new AliMUON2DMap(kFALSE)),
+fManuBuspatchTable(new AliMUON2DMap(kFALSE)),
 fDate(new TTimeStamp()),
 fFilcout(0),
-fPedestalStore(new AliMUON2DMap(kFALSE)),
+fPedestalStore(new AliMUON2DMap(kTRUE)),
 fIndex(-1)
 {
 /// Default constructor
@@ -73,6 +71,8 @@ fIndex(-1)
 AliMUONPedestal::~AliMUONPedestal()
 {
 /// Destructor
+  delete fErrorBuspatchTable;
+  delete fManuBuspatchTable;
   delete fPedestalStore;
 }
 
@@ -99,15 +99,12 @@ void AliMUONPedestal::MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, I
   ped->SetValueAsDouble(channelId, 0, pedMean);
   ped->SetValueAsDouble(channelId, 1, pedSigma);
 
-  char bpmanuname[256];
   AliMUONErrorCounter* manuCounter;
-  sprintf(bpmanuname,"bp%dmanu%d",busPatchId,manuId);		
-  if (!(manuCounter = (AliMUONErrorCounter*)GetManuBuspatchTable()->FindObject(bpmanuname)))
+  if (!(manuCounter = static_cast<AliMUONErrorCounter*>(fManuBuspatchTable->FindObject(busPatchId,manuId))))
     {
       // New (buspatch,manu)
       manuCounter = new AliMUONErrorCounter(busPatchId,manuId);
-      manuCounter->SetName(bpmanuname);
-      GetManuBuspatchTable()->Add(manuCounter);
+      fManuBuspatchTable->Add(manuCounter);
     }
   else
     {
@@ -130,14 +127,13 @@ void AliMUONPedestal::Finalize()
   {
     cout<<"\n* Buspatches with less statistics (due to parity errors)"<<endl;
     (*fFilcout)<<"\n* Buspatches with less statistics (due to parity errors)"<<endl;
-    TIterator* iter = fErrorBuspatchTable->MakeIterator();
+    TIter nextParityError(fErrorBuspatchTable->CreateIterator());
     AliMUONErrorCounter* parityerror;
-    while((parityerror = (AliMUONErrorCounter*) iter->Next()))
+    while((parityerror = static_cast<AliMUONErrorCounter*>(nextParityError())))
     {
       cout<<"  bp "<<parityerror->BusPatch()<<": events used = "<<fNEvents-parityerror->Events()<<endl;
       (*fFilcout)<<"  bp "<<parityerror->BusPatch()<<": events used = "<<fNEvents-parityerror->Events()<<endl;
     }
-
   }
 
 // iterator over pedestal
@@ -155,10 +151,8 @@ void AliMUONPedestal::Finalize()
       }
     Int_t eventCounter;
     // Correct the number of events for buspatch with errors
-    char bpname[256];
     AliMUONErrorCounter* errorCounter;
-    sprintf(bpname,"bp%d",busPatchId);
-    if ((errorCounter = (AliMUONErrorCounter*)fErrorBuspatchTable->FindObject(bpname)))
+    if ((errorCounter = (AliMUONErrorCounter*)fErrorBuspatchTable->FindObject(busPatchId)))
     {
       eventCounter = fNEvents - errorCounter->Events();
     }
@@ -169,15 +163,13 @@ void AliMUONPedestal::Finalize()
 
     Int_t occupancy;
     // value of (buspatch, manu) occupancy
-    char bpmanuname[256];
     AliMUONErrorCounter* manuCounter;
-    sprintf(bpmanuname,"bp%dmanu%d",busPatchId,manuId);
-    manuCounter = (AliMUONErrorCounter*)fManuBuspatchTable->FindObject(bpmanuname);
+    manuCounter = static_cast<AliMUONErrorCounter*>(fManuBuspatchTable->FindObject(busPatchId,manuId));
     occupancy = manuCounter->Events()/64/eventCounter;
     if(occupancy>1)
     {
- 	cout << " !!! BIG WARNING: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy << endl;
-	(*fFilcout) << " !!! BIG WARNING: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy <<endl;
+      cout << " !!! BIG WARNING: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy << endl;
+      (*fFilcout) << " !!! BIG WARNING: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy <<endl;
     }
 
     for (channelId = 0; channelId < ped->Size() ; ++channelId) 
@@ -222,9 +214,9 @@ void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
   {
     out<<"//"<<endl;
     out<<"//       * Buspatches with less statistics (due to parity errors)"<<endl;
-    TIterator* iter = fErrorBuspatchTable->MakeIterator();
+    TIter next(fErrorBuspatchTable->CreateIterator());
     AliMUONErrorCounter* parityerror;
-    while((parityerror = (AliMUONErrorCounter*) iter->Next()))
+    while((parityerror = static_cast<AliMUONErrorCounter*>(next())))
     {
       out<<"//         bp "<<parityerror->BusPatch()<<" events used "<<fNEvents-parityerror->Events()<<endl;
     }

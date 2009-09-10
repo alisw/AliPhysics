@@ -34,10 +34,12 @@ ClassImp(AliMUONErrorCounter)
 
 //______________________________________________________________________________
 AliMUONErrorCounter::AliMUONErrorCounter(Int_t bp, Int_t manu, Int_t ev) 
-  : fBusPatch(bp), 
-    fManuId(manu), 
-    fEvents(ev) 
+: TNamed(Form("bp%dmanu%d",bp,manu),""),
+fBusPatch(bp), 
+fManuId(manu), 
+fEvents(ev) 
 {
+  SetUniqueID( ( manu << 16 ) | bp );
 }
 
 //______________________________________________________________________________

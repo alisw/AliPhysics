@@ -19,7 +19,6 @@
 class AliMUONVStore;
 
 class TTimeStamp;
-class THashTable;
 
 // global variables
 const Int_t kNChannels = AliMpConstants::ManuNofChannels();
@@ -42,9 +41,7 @@ class AliMUONPedestal : public TObject
     /// return date and time
     TTimeStamp* GetDate() {return fDate;}
     /// Count parity errors per Buspatch
-    THashTable* GetErrorBuspatchTable() {return fErrorBuspatchTable;}
-    /// Occupancy rate per each couple (Buspatch, Manu)
-    THashTable* GetManuBuspatchTable() {return fManuBuspatchTable;}
+    AliMUONVStore* GetErrorBuspatchTable() {return fErrorBuspatchTable;}
     /// return the name of DAPedestal .root file
     Char_t* GetHistoFileName() {return fHistoFileName;}
     void MakePed(Int_t bp,Int_t manu,Int_t ch,Int_t charge);
@@ -66,8 +63,8 @@ class AliMUONPedestal : public TObject
     Int_t fRunNumber; ///< run number
     Int_t fNChannel; ///< Nb of channels (pads)
     Int_t fNManu; ///<  Nb of Manu
-    THashTable* fErrorBuspatchTable; ///< Table for buspatches with parity errors 
-    THashTable* fManuBuspatchTable; ///< Table for (buspatch, manu)
+    AliMUONVStore* fErrorBuspatchTable; ///< Table for buspatches with parity errors 
+    AliMUONVStore* fManuBuspatchTable; ///< Occupancy rate for each (buspatch, manu)
  
     TTimeStamp* fDate; ///< date
     ofstream* fFilcout; ///< .log output file
@@ -82,7 +79,7 @@ class AliMUONPedestal : public TObject
     /// Not implemented
     AliMUONPedestal& operator = (const AliMUONPedestal& rhs);
 
-  ClassDef(AliMUONPedestal,1) // 
+  ClassDef(AliMUONPedestal,2) // 
 };
 
 #endif
