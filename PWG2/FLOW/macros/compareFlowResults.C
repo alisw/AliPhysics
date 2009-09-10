@@ -12,6 +12,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   // load needed libraries:                       
   LoadPlotLibraries(mode);
 
+  Bool_t plotLegendIntFlow = kTRUE; // plot legend with average multiplicity and number of events for each method in all plots for integrated flow
 
   //==================================================================================
   //             set here which plots will be shown by default
@@ -1343,11 +1344,13 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
  {
   TCanvas* intFlowAllCanvas = new TCanvas("Integrated Flow","Integrated Flow",1000,600);
  
-  intFlowAllCanvas->Divide(2,1);
- 
-  // 1st pad is for plot:
-  (intFlowAllCanvas->cd(1))->SetPad(0.0,0.0,0.75,1.0);
-  
+  if(plotLegendIntFlow) 
+  {
+   intFlowAllCanvas->Divide(2,1);
+   // 1st pad is for plot:
+   (intFlowAllCanvas->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+  } 
+    
   if(intFlowAll)
   {
    if(dMin>0. && dMax>0.)
@@ -1371,12 +1374,15 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   if(flowResults) flowResults->Draw("PSAME");
 
   // 2nd pad is for legend:
-  (intFlowAllCanvas->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+  if(plotLegendIntFlow)
+  {
+   (intFlowAllCanvas->cd(2))->SetPad(0.75,0.0,1.0,1.0);
  
-  if(textDefault) textDefault->Draw();
+   if(textDefault) textDefault->Draw();
  
-  if(textResults) textResults->Draw();
- 
+   if(textResults) textResults->Draw();
+  }
+  
  }// end of if(plotIntFlow) 
  //----------------------------------------------------------------------------------
  
@@ -1416,10 +1422,13 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
  {
   TCanvas* intFlowAllCanvasRP = new TCanvas("Integrated Flow RP","Integrated Flow RP",1000,600);
  
-  intFlowAllCanvasRP->Divide(2,1);
+  if(plotLegendIntFlow)
+  {
+   intFlowAllCanvasRP->Divide(2,1);
  
-  //1st pad is for plot:
-  (intFlowAllCanvasRP->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+   //1st pad is for plot:
+   (intFlowAllCanvasRP->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+  }
  
   TH1D *intFlowAllRP = new TH1D(*intFlowAll);
   intFlowAllRP->SetMarkerStyle(markerStyleRP);
@@ -1461,12 +1470,16 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
    
   if(flowResultsRP) flowResultsRP->Draw("PSAME");
 
-  //2nd pad is for legend:
-  (intFlowAllCanvasRP->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+  if(plotLegendIntFlow)
+  {
+   //2nd pad is for legend:
+   (intFlowAllCanvasRP->cd(2))->SetPad(0.75,0.0,1.0,1.0);
   
-  if(textDefault) textDefault->Draw();
+   if(textDefault) textDefault->Draw();
  
-  if(textResultsRP) textResultsRP->Draw();
+   if(textResultsRP) textResultsRP->Draw();
+  }
+   
  }//end of if(plotIntFlowRP} 
  //----------------------------------------------------------------------------------
  
@@ -1506,10 +1519,13 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
  {
   TCanvas* intFlowAllCanvasPOI = new TCanvas("Integrated Flow POI","Integrated Flow POI",1000,600);
   
-  intFlowAllCanvasPOI->Divide(2,1);
+  if(plotLegendIntFlow)
+  {
+   intFlowAllCanvasPOI->Divide(2,1);
  
-  //1st pad is for plot:
-  (intFlowAllCanvasPOI->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+   //1st pad is for plot:
+   (intFlowAllCanvasPOI->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+  }
   
   TH1D *intFlowAllPOI = new TH1D(*intFlowAll);
   intFlowAllPOI->SetMarkerStyle(markerStylePOI);
@@ -1551,12 +1567,16 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
    
   if(flowResultsPOI) flowResultsPOI->Draw("PSAME");
  
-  //2nd pad is for legend:
-  (intFlowAllCanvasPOI->cd(2))->SetPad(0.75,0.0,1.0,1.0);
- 
-  if(textDefault) textDefault->Draw();
+  if(plotLegendIntFlow)
+  {
+   //2nd pad is for legend:
+   (intFlowAllCanvasPOI->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+  
+   if(textDefault) textDefault->Draw();
 
-  if(textResultsPOI) textResultsPOI->Draw();
+   if(textResultsPOI) textResultsPOI->Draw();
+  } 
+   
  }// end of if(plotIntFlowPOI) 
  //----------------------------------------------------------------------------------      
  
@@ -2614,13 +2634,11 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
  }// end of if(plotDiffFlowEtaRP)
  //----------------------------------------------------------------------------------
  
- */
- 
  //----------------------------------------------------------------------------------
  // final drawing for plot |(v{method}-v{MC})/v{MC}| as a function of pt for RPs  
  if(plotDiffFlowPtRelativeToMCRP)
  {  
-  TCanvas* diffFlowPtRelativeToMCRP = new TCanvas("Differential Flow (Pt) of RPs relative to MC","Differ1ential Flow (Pt) of RPs relative to MC",1000,600);
+  TCanvas* diffFlowPtRelativeToMCRP = new TCanvas("Differential Flow (Pt) of RPs relative to MC","Differential Flow (Pt) of RPs relative to MC",1000,600);
   
   diffFlowPtRelativeToMCRP->Divide(2,1);
  
