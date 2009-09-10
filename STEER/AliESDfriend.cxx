@@ -51,7 +51,7 @@ AliESDfriend& AliESDfriend::operator=(const AliESDfriend& esd)
     fTracks = esd.fTracks;
 
     delete fESDVZEROfriend; fESDVZEROfriend = NULL;
-    if (esd.fESDVZEROfriend) fESDVZEROfriend = new AliESDVZEROfriend(*esd.fESDVZEROfriend);
+    if (!esd.fESDVZEROfriend) fESDVZEROfriend = new AliESDVZEROfriend(*esd.fESDVZEROfriend);
 
     return *this;
 }
