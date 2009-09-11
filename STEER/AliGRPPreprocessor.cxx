@@ -63,7 +63,7 @@ ClassImp(AliGRPPreprocessor)
 
 //_______________________________________________________________
 
-  const Int_t AliGRPPreprocessor::fgknDAQLbPar = 8; // num parameters in the logbook for PHYSICS runs, when beamType from DAQ logbook != Cosmics
+  const Int_t AliGRPPreprocessor::fgknDAQLbPar = 8; // num parameters in the logbook for PHYSICS runs, when beamType from DAQ logbook == NULL
   const Int_t AliGRPPreprocessor::fgknDAQLbParReduced = 7; // num parameters in the logbook for the other cases
   const Int_t AliGRPPreprocessor::fgknDCSDP = 50;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknDCSDPHallProbes = 40;   // number of dcs dps
@@ -285,7 +285,8 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	Int_t iDaqLB = ProcessDaqLB(grpobj);
 	TString runType = (TString)GetRunType();
 	TString beamType = (TString)GetRunParameter("beamType");
-	if((runType == "PHYSICS" && iDaqLB == fgknDAQLbPar && beamType!="Cosmics") ||  (runType == "PHYSICS" && iDaqLB == fgknDAQLbParReduced && beamType=="Cosmics") || (runType != "PHYSICS" && iDaqLB == fgknDAQLbParReduced)) {
+	//if((runType == "PHYSICS" && iDaqLB == fgknDAQLbPar && beamType!="Cosmics") ||  (runType == "PHYSICS" && iDaqLB == fgknDAQLbParReduced && beamType=="Cosmics") || (runType != "PHYSICS" && iDaqLB == fgknDAQLbParReduced)) {
+	if((runType == "PHYSICS" && iDaqLB == fgknDAQLbPar && !beamType.IsNull()) ||  (runType == "PHYSICS" && iDaqLB == fgknDAQLbParReduced && beamType.IsNull()) || (runType != "PHYSICS" && iDaqLB == fgknDAQLbParReduced)) {
 		Log(Form("DAQ Logbook, successful!"));
 	} else {
 		Log(Form("DAQ Logbook, could not get all expected entries!!!"));
@@ -458,16 +459,18 @@ Int_t AliGRPPreprocessor::ProcessDaqLB(AliGRPObject* grpObj)
 	if (beamEnergy != 0){
 		grpObj->SetBeamEnergy(beamEnergy);
 		Log(Form("Beam Energy for run %d: %f",fRun, beamEnergy));
-		if ((runType == "PHYSICS" && beamType!="Cosmics")){
-			nparameter++; // increasing nparameters only in case we're in PHYSICS runs with beamType != Cosmics
+		//if ((runType == "PHYSICS" && beamType!="Cosmics")){
+		if ((runType == "PHYSICS" && !beamType.IsNull())){   // if beamType is NOT Null, then we're not in a Cosmics run
+			nparameter++; // increasing nparameters only in case we're in PHYSICS runs with beamType != NULL
 		}
 	} 
 	else {
-		if ((runType == "PHYSICS" && beamType!="Cosmics")){
+		//if ((runType == "PHYSICS" && beamType!="Cosmics")){
+		if ((runType == "PHYSICS" && !beamType.IsNull())){ // if beamType is NOT Null, then we're not in a Cosmics run
 			Log(Form("Beam Energy not put in logbook, setting to invalid in GRP entry, and producing an error (beamType = %s, runType = %s)",beamType.Data(), runType.Data()));
 		}
 		else{
-			Log(Form("Beam Energy not put in logbook, setting to invalid in GRP entry, but not producing any error (beamType = %s, runType = %s)",beamType.Data(), runType.Data()));
+			Log(Form("Beam Energy not put in logbook, setting to invalid in GRP entry, but not producing any error (beamType = NULL, runType = %s)", runType.Data()));
 		}
 	}
 
@@ -478,7 +481,8 @@ Int_t AliGRPPreprocessor::ProcessDaqLB(AliGRPObject* grpObj)
 		nparameter++; 
 	} 
 	else {
-		Log(Form("Beam Type not put in logbook, setting to invalid in GRP entry!"));
+		Log(Form("Beam Type not put in logbook, setting to invalid in GRP entry! Not producing any error, considering this as a Cosmics run"));
+		nparameter++;
 	}
 		
 	if (numberOfDetectors != 0){
