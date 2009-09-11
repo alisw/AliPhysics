@@ -499,6 +499,10 @@ Bool_t AliFMDAnaParameters::IsEventTriggered(AliESDEvent *esd) {
       return kTRUE;
     break;
   }
+  case kTEST_NOCTP: {
+    return kTRUE;
+    break;
+  }
   }//switch
 
   return kFALSE;

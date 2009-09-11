@@ -57,7 +57,7 @@ public:
     kEventSelectionEfficiency     = 0x4  // Event Selection Efficiency
   };
   
-  enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR };
+  enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR, kTEST_NOCTP };
   
   enum Energy { k900 , k10000, k14000 };
   
