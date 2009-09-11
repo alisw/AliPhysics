@@ -31,7 +31,8 @@ class AliZDCRawStream: public TObject {
 
     virtual void ReadCDHHeader();
 
-    UInt_t GetRawBuffer()	const {return fBuffer;}
+    UInt_t GetRawBuffer()      const {return fBuffer;}
+    Int_t  GetReadOutCard()    const {return fReadOutCard;}
     
     Int_t  GetDeadfaceOffset() const {return fDeadfaceOffset;}
     Int_t  GetDeadbeefOffset() const {return fDeadbeefOffset;}
@@ -146,7 +147,8 @@ class AliZDCRawStream: public TObject {
     AliRawReader* fRawReader;    // object for reading the raw data
     
     // Data for buffer decoding
-    UInt_t fBuffer;	      // DARC header + ADC buffer
+    UInt_t fBuffer;	      // [DARC header +] ADC buffer
+    Int_t  fReadOutCard;      // 0 for DARC, 1 for ZRC
     UInt_t fEvType;	      // Event type
     Int_t  fPosition;	      // bit position in buffer data word
     
@@ -161,10 +163,6 @@ class AliZDCRawStream: public TObject {
     Bool_t fSODReading;	      // True when reading SOD (DA)
     Bool_t fIsMapRead; 	      // True if map is already read
     
-    // From CDH
-    UInt_t fDARCEvBlockLenght;  // DARC block length
-    UInt_t fDARCBlockAttributes;// DARC block attributes
-
     Int_t  fDeadfaceOffset;   // deadface offset
     Int_t  fDeadbeefOffset;   // deadbeef offset
     Int_t  fDataOffset;       // data offset
@@ -234,7 +232,7 @@ class AliZDCRawStream: public TObject {
     Bool_t fIsL0BitSet;    // true if L0 bit in history words = 1 
     Bool_t fIsPileUpEvent; // true if pile up bits in history words = 0
     
-    ClassDef(AliZDCRawStream, 14)    // class for reading ZDC raw data
+    ClassDef(AliZDCRawStream, 15)    // class for reading ZDC raw data
 };
 
 #endif
