@@ -68,8 +68,13 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   // charged multiplicity in the pixel layers
   if(fMult){delete fMult; fMult = 0;}
   Bool_t success=kTRUE;
+  Bool_t cosmics=kFALSE; 
   if(!fCurrentVertex)success=kFALSE;
   if(fCurrentVertex && fCurrentVertex->GetNContributors()<1)success=kFALSE;
+  if(fCurrentVertex && strstr(fCurrentVertex->GetTitle(),"cosmics")) {
+    success=kFALSE; 
+    cosmics=kTRUE;
+  } 
 
   // get the FastOr bit mask
   TBits fastOrFiredMap = fDetTypeRec->GetFastOrFiredMap();
@@ -77,8 +82,10 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   AliITSMultReconstructor multReco;
 
   if(!success){
-    AliWarning("Tracklets multiplicity not determined because the primary vertex was not found");
-    AliWarning("Just counting the number of cluster-fired chips on the SPD layers");
+    if(!cosmics) {     
+      AliWarning("Tracklets multiplicity not determined because the primary vertex was not found");
+      AliWarning("Just counting the number of cluster-fired chips on the SPD layers");
+    }
     if (!itsClusterTree) {
       AliError(" Invalid ITS cluster tree !\n");
       return;
