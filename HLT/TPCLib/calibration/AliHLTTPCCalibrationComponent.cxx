@@ -36,18 +36,19 @@ using namespace std;
 #include "AliHLTTPCAnalysisTaskcalib.h"
 
 #include "AliAnalysisManager.h"
-#include "AliESDInputHandler.h"
+#include "AliESDEvent.h"
+//#include "AliESDInputHandler.h"
 
 #include "AliTPCcalibTime.h"
 #include "AliTPCcalibTimeGain.h"
-#include "AliESDEvent.h"
-
-#include <cstdlib>
-#include <cerrno>
+#include "AliTPCseed.h"
 
 #include "TString.h"
 #include "TObjArray.h"
 #include "TTimeStamp.h"
+
+#include <cstdlib>
+#include <cerrno>
 
 ClassImp(AliHLTTPCCalibrationComponent) // ROOT macro for the implementation of ROOT specific class methods
 
@@ -137,20 +138,13 @@ Int_t AliHLTTPCCalibrationComponent::ScanArgument( Int_t argc, const char** argv
 
 Int_t AliHLTTPCCalibrationComponent::InitCalibration() {
 // see header file for class documentation
-    
-  //TTimeStamp startTime(2008,9,0,0,0,0);
-  //TTimeStamp stopTime(2008,11,0,0,0,0);
   
-//   AliAnalysisManager *mgr  = new AliAnalysisManager("TestManager");
-//   AliESDInputHandler *esdH = new AliESDInputHandler;
-//   esdH->SetActiveBranches("ESDfriend");
-//   mgr->SetInputEventHandler(esdH);  
-
   if(fCalibTask) return EINPROGRESS;
   fCalibTask = new AliHLTTPCAnalysisTaskcalib("TPC Calibration Task");
   
   if(fCalibTime) return EINPROGRESS;
-  fCalibTime = new AliTPCcalibTime();
+  //fCalibTime = new AliTPCcalibTime();
+  fCalibTime = new AliTPCcalibTime("calibTime","time dependent Vdrift calibration",-2, 2, 1);
   
   fCalibTime->SetDebugLevel(20);
   fCalibTime->SetStreamLevel(10);
@@ -181,40 +175,49 @@ Int_t AliHLTTPCCalibrationComponent::ProcessCalibration( const AliHLTComponentEv
   
   if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )) return 0;
 
-  TObject *iterESD, *iterSEED = NULL;
+  TObject *iter = NULL;
 
-  //----------- loop over output of TPCEsdConverter ----------------//
+  //--------------- output over TObjArray of AliTPCseed objects (output of TPCSeedMaker) -------------------//
   
-  for(iterESD = (TObject*)GetFirstInputObject(kAliHLTDataTypeESDObject|kAliHLTDataOriginTPC); iterESD != NULL; iterESD = (TObject*)GetNextInputObject()){   
-       
-      if(GetDataType(iterSEED) != (kAliHLTDataTypeESDObject | kAliHLTDataOriginTPC)) continue;
+  for(iter = (TObject*)GetFirstInputObject(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC); iter != NULL; iter = (TObject*)GetNextInputObject()){  
+              
+      if(GetDataType(iter) != (kAliHLTDataTypeTObjArray | kAliHLTDataOriginTPC)) continue;
+      fSeedArray = dynamic_cast<TObjArray*>(iter); 
+  }
   
-      AliHLTUInt8_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(iterESD)); 
-      AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(GetSpecification(iterESD));
+  //----------- loop over output of global esd converter ----------------//
+  
+  for(iter = (TObject*)GetFirstInputObject(kAliHLTDataTypeESDObject | kAliHLTDataOriginOut); iter != NULL; iter = (TObject*)GetNextInputObject()){   
+      
+      if(GetDataType(iter) != (kAliHLTDataTypeESDObject | kAliHLTDataOriginOut)) continue;
+  
+      AliHLTUInt8_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(iter)); 
+      AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(GetSpecification(iter));
       
       if( partition < fMinPartition ) fMinPartition = partition;
       if( partition > fMaxPartition ) fMaxPartition = partition;
       if( slice < fMinSlice ) fMinSlice = slice;
       if( slice > fMaxSlice ) fMaxSlice = slice;
       
-      fESDEvent = dynamic_cast<AliESDEvent*>(iterESD);
+      fESDEvent = dynamic_cast<AliESDEvent*>(iter);
       fESDEvent->CreateStdContent();
-  } 
-
- 
-  //--------------- output over TObjArray of AliTPCseed objects (output of TPCSeedMaker) -------------------//
-  
-  for(iterSEED = (TObject*)GetFirstInputObject(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC); iterSEED != NULL; iterSEED = (TObject*)GetNextInputObject()){  
-              
-       if(GetDataType(iterSEED) != (kAliHLTDataTypeTObjArray | kAliHLTDataOriginTPC)) continue;
-
-       fSeedArray = dynamic_cast<TObjArray*>(iterSEED); 
-  }
+     
+      HLTDebug("# Seeds: %i\n", fSeedArray->GetEntriesFast());
+      
+      for(Int_t i=0; i<fSeedArray->GetEntriesFast(); i++){
+          
+	  AliTPCseed *seed = (AliTPCseed*)fSeedArray->UncheckedAt(i);
+          if(!seed) continue;
+	  AliESDtrack *esd = fESDEvent->GetTrack(i);	
+	  AliTPCseed *seedCopy = new AliTPCseed(*seed, kTRUE); 
+	  esd->AddCalibObject(seedCopy);
+      }      
+ }   
   
   fCalibTask->Process(fESDEvent);
 
   fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( fMinSlice, fMaxSlice, fMinPartition, fMaxPartition );
-  PushBack( (TObject*) fCalibTask, AliHLTTPCDefinitions::fgkCalibCEDataType, fSpecification);
+  PushBack( (TObject*) fCalibTask, AliHLTTPCDefinitions::fgkCalibCEDataType | kAliHLTDataOriginOut, fSpecification);
   
   return 0;
 }

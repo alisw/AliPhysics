@@ -108,7 +108,7 @@ int AliHLTTPCCalibSeedMakerComponent::GetOutputDataTypes(AliHLTComponentDataType
 
   tgtList.clear();
   //tgtList.push_back(AliHLTTPCDefinitions::fgkAliHLTDataTypeTPCSeed);
-  tgtList.push_back(kAliHLTDataTypeTObjArray);
+  tgtList.push_back(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC);
   return tgtList.size();
 }
 
@@ -303,8 +303,8 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
   offClusterArray = NULL;
  
   fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( fMinSlice, fMaxSlice, fMinPartition, fMaxPartition );
-  //PushBack((TObject*)offClusterArray, kAliHLTDataTypeTObjArray, fSpecification);
-  PushBack((TObject*)fSeedArray,       kAliHLTDataTypeTObjArray, fSpecification);
+  //PushBack((TObject*)offClusterArray, kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC, fSpecification);
+  PushBack((TObject*)fSeedArray,       kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC, fSpecification);
  
   return 0;
 } // end DoEvent()
