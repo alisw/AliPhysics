@@ -37,10 +37,10 @@
 
 // component header file
 
-#include "AliHLTTPCCalibCEComponent.h"
-#include "AliHLTTPCCalibPulserComponent.h"
-#include "AliHLTTPCCalibPedestalComponent.h"
-#include "AliHLTTPCCalibTracksComponent.h"
+//#include "AliHLTTPCCalibCEComponent.h"
+//#include "AliHLTTPCCalibPulserComponent.h"
+//#include "AliHLTTPCCalibPedestalComponent.h"
+//#include "AliHLTTPCCalibTracksComponent.h"
 
 #include "AliHLTTPCCalibSeedMakerComponent.h"
 #include "AliHLTTPCCalibTimeComponent.h"
@@ -108,14 +108,14 @@ Int_t AliHLTTPCCalibrationAgent::RegisterComponents(AliHLTComponentHandler* pHan
 
   if (!pHandler) return -EINVAL;
 
-  pHandler->AddComponent(new AliHLTTPCCalibCEComponent);
-  pHandler->AddComponent(new AliHLTTPCCalibPulserComponent);
-  pHandler->AddComponent(new AliHLTTPCCalibPedestalComponent);
+  //pHandler->AddComponent(new AliHLTTPCCalibCEComponent);
+  //pHandler->AddComponent(new AliHLTTPCCalibPulserComponent);
+  //pHandler->AddComponent(new AliHLTTPCCalibPedestalComponent);
+  //pHandler->AddComponent(new AliHLTTPCCalibTracksComponent);
   pHandler->AddComponent(new AliHLTTPCCalibSeedMakerComponent);
   pHandler->AddComponent(new AliHLTTPCCalibTimeComponent);
   pHandler->AddComponent(new AliHLTTPCCalibTimeGainComponent);
   pHandler->AddComponent(new AliHLTTPCCalibrationComponent);
-  pHandler->AddComponent(new AliHLTTPCCalibTracksComponent);
   
   return 0;
 }

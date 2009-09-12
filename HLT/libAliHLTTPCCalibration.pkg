@@ -5,7 +5,8 @@ CLASS_HDRS:=  AliHLTTPCCalibrationComponent.h \
               AliHLTTPCAnalysisTaskcalib.h \
    	      AliHLTTPCCalibSeedMakerComponent.h \
   	      AliHLTTPCCalibTimeComponent.h \
-  	      AliHLTTPCCalibTimeGainComponent.h
+  	      AliHLTTPCCalibTimeGainComponent.h \
+	      AliHLTTPCCalibrationAgent.h
   	     
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
 
