@@ -18,10 +18,12 @@
 #include "AliTPCROC.h"
 
 class TH2C;
+class TMap;
 
 class AliTPCCalibRaw : public AliTPCCalibRawBase {
 public:
   AliTPCCalibRaw();
+  AliTPCCalibRaw(const TMap *config);
   
   virtual ~AliTPCCalibRaw();
 

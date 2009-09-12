@@ -21,6 +21,7 @@ TPCQAda.cxx - algorithm for TPC RAW QA
 06/12/2007  haavard.helstrup@cern.ch  :  created CE DA based on pulser code
 09/06/2008  peter.christiansen@hep.lu.se and haavard.helstrup@cern.ch  :  created QA DA based on AliTPCdataQA code
 
+10/09/2009  Jens.Wiechula@cern.ch:     Export object to AMOREdb after a defined update interval for QA
 contact: marian.ivanov@cern.ch, peter.christiansen@hep.lu.se
 
 
@@ -45,9 +46,11 @@ and save results in a file (named from RESULT_FILE define - see below).
 //Root includes
 //
 #include <TFile.h>
-#include "TROOT.h"
-#include "TPluginManager.h"
-#include "TSystem.h"
+#include <TROOT.h>
+#include <TPluginManager.h>
+#include <TSystem.h>
+#include <TStopwatch.h>
+#include <TObject.h>
 //
 //AliRoot includes
 //
@@ -61,11 +64,17 @@ and save results in a file (named from RESULT_FILE define - see below).
 #include "TTreeStream.h"
 #include "AliLog.h"
 #include "AliTPCConfigDA.h"
-
+//
+//AMORE
+//
+#include <AmoreDA.h>
 //
 // TPC calibration algorithm includes
 //
 #include "AliTPCdataQA.h"
+
+//functios, implementation below
+void SendToAmoreDB(TObject *o, unsigned long32 runNb);
 
 /* Main routine
       Arguments: list of DATE raw data files
@@ -86,6 +95,7 @@ int main(int argc, char **argv) {
   //variables 
   int i,status;
   AliTPCmapper *mapping = 0;   // The TPC mapping
+  unsigned long32 runNb=0;      //run number
   // configuration options
   Bool_t fastDecoding = kFALSE;
  // if  test setup get parameters from $DAQDA_TEST_DIR 
@@ -127,7 +137,7 @@ int main(int argc, char **argv) {
   }
 
 
-  AliTPCdataQA calibQA(config.GetConfigurationMap());   // pedestal and noise calibration
+  AliTPCdataQA calibQA(config.GetConfigurationMap());   // qa object
 
   if (argc<2) {
     printf("Wrong number of arguments\n");
@@ -149,7 +159,13 @@ int main(int argc, char **argv) {
     printf("monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
     return -1;
   }
-
+  //amore update interval
+  Double_t updateInterval=30; //seconds
+  Double_t valConf=config.GetValue("AmoreUpdateInterval");
+  if ( valConf>0 ) updateInterval=valConf;
+  //timer
+  TStopwatch stopWatch;
+  
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
 
@@ -189,14 +205,21 @@ int main(int argc, char **argv) {
         continue;
       }
       nevents++;
-
-      //  Pulser calibration
-
+      // get the run number
+      runNb = event->eventRunNb;
+      //  QA
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       if ( fastDecoding ) calibQA.ProcessEventFast(rawReader);   
       else calibQA.ProcessEvent(rawReader);
       delete rawReader;
-
+      // sending to AMOREdb
+      if (stopWatch.RealTime()>updateInterval){
+        SendToAmoreDB(&calibQA,runNb);
+        stopWatch.Start();
+      } else {
+        stopWatch.Continue();
+      }
+      
       /* free resources */
       free(event);
     }
@@ -216,6 +239,39 @@ int main(int argc, char **argv) {
   if (status) {
     status = -2;
   }
-
+  //
+  //Send objects to the AMORE DB
+  //
+  printf ("AMORE part\n");
+  SendToAmoreDB(&calibQA, runNb);
+  
   return status;
+}
+
+void SendToAmoreDB(TObject *o, unsigned long32 runNb)
+{
+  //AMORE
+  const char *amoreDANameorig=gSystem->Getenv("AMORE_DA_NAME");
+  //cheet a little -- temporary solution (hopefully)
+  //
+  //currently amoreDA uses the environment variable AMORE_DA_NAME to create the mysql
+  //table in which the calib objects are stored. This table is dropped each time AmoreDA
+  //is initialised. This of course makes a problem if we would like to store different
+  //calibration entries in the AMORE DB. Therefore in each DA which writes to the AMORE DB
+  //the AMORE_DA_NAME env variable is overwritten.
+  
+  gSystem->Setenv("AMORE_DA_NAME","TPC-dataQA");
+  //
+  // end cheet
+  TDatime time;
+  TObjString info(Form("Run: %u; Date: %s",runNb,time.AsString()));
+  
+  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+  Int_t statusDA=0;
+  statusDA+=amoreDA.Send("DataQA",o);
+  statusDA+=amoreDA.Send("Info",&info);
+  if ( statusDA!=0 )
+    printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
+  // reset env var
+  if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
 }

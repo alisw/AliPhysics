@@ -15,10 +15,11 @@ Trigger types used: PHYSICS_EVENT
 
 /*
 
-TPCRAWda.cxx - calibration algorithm for TPC pulser events
+TPCRAWda.cxx - calibration algorithm for L1 phase monitoring and drift velocity from last time bin determination
 
-30/09/2009  J.Wiechula@gsi.de:     First implementation. 
-
+30/07/2009  Jens.Wiechula@cern.ch:     First implementation.
+10/09/2009  Jens.Wiechula@cern.ch:     Add configuration file support. Export object to AMOREdb
+                                       after a defined update interval for QA
 
 This process reads RAW data from the files provided as command line arguments
 and save results in a file (named from RESULT_FILE define - see below).
@@ -42,11 +43,13 @@ and save results in a file (named from RESULT_FILE define - see below).
 //Root includes
 //
 #include <TFile.h>
-#include "TROOT.h"
-#include "TPluginManager.h"
-#include "TString.h"
-#include "TObjString.h"
-#include "TDatime.h"
+#include <TROOT.h>
+#include <TPluginManager.h>
+#include <TString.h>
+#include <TObjString.h>
+#include <TDatime.h>
+#include <TStopwatch.h>
+#include <TObject.h>
 //
 //AliRoot includes
 //
@@ -60,7 +63,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 #include "TTreeStream.h"
 #include "AliLog.h"
 #include "TSystem.h"
-// #include "AliTPCConfigDA.h"
+#include "AliTPCConfigDA.h"
 //
 //AMORE
 //
@@ -69,6 +72,10 @@ and save results in a file (named from RESULT_FILE define - see below).
 // TPC calibration algorithm includes
 //
 #include "AliTPCCalibRaw.h"
+
+
+//functions, implementation below
+void SendToAmoreDB(TObject *o, unsigned long32 runNb);
 
 /* Main routine
       Arguments: list of DATE raw data files
@@ -137,19 +144,25 @@ int main(int argc, char **argv) {
   // DA configuration from configuration file
   //
  //retrieve configuration file
-//   sprintf(localfile,"./%s",CONFIG_FILE);
-//   status = daqDA_DB_getFile(CONFIG_FILE,localfile);
-//   if (status) {
-//     printf("Failed to get configuration file (%s) from DAQdetDB, status=%d\n", CONFIG_FILE, status);
-//     return -1;
-//   }
-//   AliTPCConfigDA config(CONFIG_FILE);
+  sprintf(localfile,"./%s",CONFIG_FILE);
+  status = daqDA_DB_getFile(CONFIG_FILE,localfile);
+  if (status) {
+    printf("Failed to get configuration file (%s) from DAQdetDB, status=%d\n", CONFIG_FILE, status);
+    return -1;
+  }
+  AliTPCConfigDA config(CONFIG_FILE);
 
   // create calibration object
 //   AliTPCCalibRaw calibRaw(config.GetConfigurationMap());   // pulser calibration algorithm
-  AliTPCCalibRaw calibRaw;   // pulser calibration algorithm
+  AliTPCCalibRaw calibRaw(config.GetConfigurationMap());   // pulser calibration algorithm
   calibRaw.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
-
+  
+  //amore update interval
+  Double_t updateInterval=30; //seconds
+  Double_t valConf=config.GetValue("AmoreUpdateInterval");
+  if ( valConf>0 ) updateInterval=valConf;
+  //timer
+  TStopwatch stopWatch;
   //===========================//
   // loop over RAW data files //
   //==========================//
@@ -192,7 +205,14 @@ int main(int argc, char **argv) {
       runNb = event->eventRunNb;
       //  Raw calibration
       calibRaw.ProcessEvent(event);
-
+      // sending to AMOREdb
+      if (stopWatch.RealTime()>updateInterval){
+        SendToAmoreDB(&calibRaw,runNb);
+        stopWatch.Start();
+      } else {
+        stopWatch.Continue();
+      }
+        
       /* free resources */
       free(event);
     }
@@ -219,29 +239,35 @@ int main(int argc, char **argv) {
   //Send objects to the AMORE DB
   //
   printf ("AMORE part\n");
+  SendToAmoreDB(&calibRaw, runNb);
+  
+  return status;
+}
+
+void SendToAmoreDB(TObject *o, unsigned long32 runNb)
+{
+  //AMORE
   const char *amoreDANameorig=gSystem->Getenv("AMORE_DA_NAME");
   //cheet a little -- temporary solution (hopefully)
-  // 
+  //
   //currently amoreDA uses the environment variable AMORE_DA_NAME to create the mysql
   //table in which the calib objects are stored. This table is dropped each time AmoreDA
   //is initialised. This of course makes a problem if we would like to store different
   //calibration entries in the AMORE DB. Therefore in each DA which writes to the AMORE DB
-  //the AMORE_DA_NAME env variable is overwritten.  
- 
+  //the AMORE_DA_NAME env variable is overwritten.
+  
   gSystem->Setenv("AMORE_DA_NAME","TPC-RAW");
-  // 
+  //
   // end cheet
   TDatime time;
   TObjString info(Form("Run: %u; Date: %s",runNb,time.AsString()));
-    
+  
   amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-  Int_t statusDA=0;  
-  statusDA+=amoreDA.Send("CalibRaw",&calibRaw);
+  Int_t statusDA=0;
+  statusDA+=amoreDA.Send("CalibRaw",o);
   statusDA+=amoreDA.Send("Info",&info);
   if ( statusDA!=0 )
     printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
-  // reset env var  
+  // reset env var
   if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
-
-  return status;
 }

@@ -62,12 +62,13 @@ h2f->Draw("col");
 
 //Root includes
 #include <TH2C.h>
+#include <TMap.h>
+#include <TObjString.h>
 
 //AliRoot includes
 #include "AliTPCCalROC.h"
 #include "AliAltroRawStream.h"
 #include "AliLog.h"
-
 //class header
 #include "AliTPCCalibRaw.h"
 
@@ -104,8 +105,45 @@ AliTPCCalibRaw::AliTPCCalibRaw() :
   SetNameTitle("AliTPCCalibRaw","AliTPCCalibRaw");
   CreateDVhist();
   fFirstTimeBin=850;
-  fLastTimeBin=1000;
+  fLastTimeBin=1020;
 }
+//_____________________________________________________________________
+AliTPCCalibRaw::AliTPCCalibRaw(const TMap *config) :
+AliTPCCalibRawBase(),
+fPeakDetMinus(1),
+fPeakDetPlus(2),
+fNFailL1Phase(0),
+fFirstTimeStamp(0),
+fNSecTime(600), //default 10 minutes
+fNBinsTime(60), //default 60*10 minutes = 10 hours
+fPadProcessed(kFALSE),
+fCurrentChannel(-1),
+fCurrentSector(-1),
+fLastSector(-2),
+fCurrentRow(-1),
+fCurrentPad(-1),
+fLastTimeBinProc(0),
+fPeakTimeBin(0),
+fLastSignal(0),
+fNOkPlus(0),
+fNOkMinus(0),
+fArrCurrentPhaseDist(4),
+fArrALTROL1Phase(1000),
+fArrALTROL1PhaseEvent(216),
+fArrALTROL1PhaseFailEvent(216),
+fHnDrift(0x0)
+{
+  //
+  // Default ctor
+  //
+  SetNameTitle("AliTPCCalibRaw","AliTPCCalibRaw");
+  CreateDVhist();
+  fFirstTimeBin=850;
+  fLastTimeBin=1020;
+  if (config->GetValue("FirstTimeBin")) fFirstTimeBin = ((TObjString*)config->GetValue("FirstTimeBin"))->GetString().Atoi();
+  if (config->GetValue("LastTimeBin")) fLastTimeBin = ((TObjString*)config->GetValue("LastTimeBin"))->GetString().Atoi();
+}
+
 //_____________________________________________________________________
 AliTPCCalibRaw::~AliTPCCalibRaw()
 {
@@ -317,9 +355,9 @@ void AliTPCCalibRaw::CreateDVhist()
   if (fHnDrift) return;
   //HnSparse bins
   //time bin, roc, time
-  Int_t    bins[kHnBinsDV] = {1000, 72, fNBinsTime};
-  Double_t xmin[kHnBinsDV] = {0,0,0};
-  Double_t xmax[kHnBinsDV] = {1000,72,fNBinsTime};
+  Int_t    bins[kHnBinsDV] = {fLastTimeBin-fFirstTimeBin, 72, fNBinsTime};
+  Double_t xmin[kHnBinsDV] = {fFirstTimeBin,0,0};
+  Double_t xmax[kHnBinsDV] = {fLastTimeBin,72,fNBinsTime};
   fHnDrift=new THnSparseI("fHnDrift",Form("Drift velocity using last time bin;time bin[#times 100ns];ROC;Time bin [#times %us]",fNSecTime),kHnBinsDV, bins, xmin, xmax);
     
 }
