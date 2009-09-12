@@ -18,7 +18,7 @@ void DisplaySDDRawData(TString filename, Int_t firstEv=0, Int_t lastEv=5){
 
   Bool_t writtenoutput=kFALSE;
   AliITSDDLModuleMapSDD* ddlmap=new AliITSDDLModuleMapSDD();
-  ddlmap->SetJun08Map();
+  ddlmap->SetJun09Map();
 
   TH2F* hzphi3=new TH2F("hzphi3","Layer 3",1536,-0.5,1535.5,3584,-0.5,3584.5);
   TH2F* hzphi4=new TH2F("hzphi4","Layer 4",2048,-0.5,2047.5,5632,-0.5,5631.5);

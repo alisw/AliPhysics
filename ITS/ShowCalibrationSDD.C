@@ -117,6 +117,7 @@ void ShowCalibrationSDD(Int_t iMod=0, Char_t *filnam="$ALICE_ROOT/ITS/Calib/Cali
 	else badChipCounter4++;
       }
     }
+    printf(" # bad anodes = %d  ",cal->GetDeadChannels());
     if(cal->IsAMAt20MHz()) printf("      20 MHz sampling");
     else printf("      40 MHz sampling");
     printf("\n");

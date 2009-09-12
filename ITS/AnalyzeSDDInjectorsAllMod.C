@@ -42,7 +42,7 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
   Bool_t writtenoutput=kFALSE;
 
   AliITSDDLModuleMapSDD* dmap=new AliITSDDLModuleMapSDD();
-  dmap->SetJun08Map();
+  dmap->SetJun09Map();
 
   TH2F** histo = new TH2F*[kTotDDL*kModPerDDL*kSides];
   Int_t nWrittenEv[kTotDDL*kModPerDDL*kSides];
