@@ -54,10 +54,10 @@ void trd_tracks(TEveElement *cont = 0)
 
   gEve->Redraw3D();
 
-  TGLViewer *v = gEve->GetDefaultGLViewer();
-  v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-  ((TGLOrthoCamera&)v->CurrentCamera()).SetEnableRotate(kTRUE);
-  v->UpdateScene();
+  //  TGLViewer *v = gEve->GetDefaultGLViewer();
+  //  v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+  //  ((TGLOrthoCamera&)v->CurrentCamera()).SetEnableRotate(kTRUE);
+  //  v->UpdateScene();
 
   return;
 }

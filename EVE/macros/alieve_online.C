@@ -30,7 +30,8 @@ void alieve_online_init()
 
   gROOT->LoadMacro("primary_vertex.C");
   gROOT->LoadMacro("esd_tracks.C");
-  gROOT->LoadMacro("trd_tracks.C++");
+  //  Disabled due to memory leaks
+  //  gROOT->LoadMacro("trd_tracks.C++");
   gROOT->LoadMacro("trd_detectors.C++");
 
   gROOT->LoadMacro("its_clusters.C++");
@@ -158,7 +159,9 @@ void alieve_online_on_new_event()
   primary_vertex();
   esd_tracks();
 
-  if (AliEveEventManager::HasESDfriend()) trd_tracks();
+  //  Disabled due to memory leaks
+  //  if (AliEveEventManager::HasESDfriend()) trd_tracks();
+  //  AliSysInfo::AddStamp("EveTRDTr");
   trd_detectors();
 
   AliESDEvent* esd = AliEveEventManager::AssertESD();
