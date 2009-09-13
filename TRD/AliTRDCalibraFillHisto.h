@@ -61,7 +61,7 @@ class AliTRDCalibraFillHisto : public TObject {
   AliTRDCalibraFillHisto &operator=(const AliTRDCalibraFillHisto &) { return *this; }
 
   // Functions for initialising and filling with AliTRDtrackV1
-          Bool_t  Init2Dhistos();
+          Bool_t  Init2Dhistos(Int_t nboftimebin = -1);
 	  Bool_t  UpdateHistograms(const AliTRDtrack *t);
 	  Bool_t  UpdateHistogramsV1(const AliTRDtrackV1 *t);
  
@@ -297,4 +297,3 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 };
   
 #endif
-

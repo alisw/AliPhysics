@@ -342,7 +342,7 @@ void AliTRDCalibraFillHisto::ClearHistos()
 // calibration with AliTRDtrackV1: Init, Update 
 //////////////////////////////////////////////////////////////////////////////////
 //____________Functions for initialising the AliTRDCalibraFillHisto in the code_________
-Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
+Bool_t AliTRDCalibraFillHisto::Init2Dhistos(Int_t nboftimebin)
 {
   //
   // Init the histograms and stuff to be filled 
@@ -362,7 +362,8 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
   }
 
   // Some parameters
-  fTimeMax            = cal->GetNumberOfTimeBins();
+  if(nboftimebin > 0) fTimeMax = nboftimebin;
+  else fTimeMax = cal->GetNumberOfTimeBins();
   fSf                 = parCom->GetSamplingFrequency();
   if(!fNormalizeNbOfCluster) fRelativeScale = 20.0;
   else fRelativeScale = 1.18;
