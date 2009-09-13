@@ -32,5 +32,8 @@ void tof_raw(Bool_t newDecoder = kFALSE)
 
   }
 
+  delete di;
+  delete g;
+
   gEve->EnableRedraw();
 }

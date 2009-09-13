@@ -192,7 +192,6 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Bool_t newDecoder)
 
   //ftxt.close();
 
-  cableLength = 0x0;
   delete cableLength;
 
 }
