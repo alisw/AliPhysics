@@ -67,7 +67,6 @@
 
 #include <iostream>
 #include <fstream>
-//#include <string>
 
 #include "TMath.h"
 #include "TFile.h"
@@ -85,7 +84,6 @@
 #include "AliCDBStorage.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBEntry.h"
-#include "AliCDBId.h"
 #include "AliSurveyObj.h"
 #include "AliSurveyPoint.h"
 
@@ -405,7 +403,7 @@ void AliTRDalignment::SetChResidual()
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::PrintSm(int i, FILE *fp) const 
+void AliTRDalignment::PrintSm(int i, FILE * const fp) const 
 {
   //
   // print the supermodule data
@@ -418,7 +416,7 @@ void AliTRDalignment::PrintSm(int i, FILE *fp) const
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::PrintCh(int i, FILE *fp) const 
+void AliTRDalignment::PrintCh(int i, FILE * const fp) const 
 {
   //
   // print the chamber data
@@ -431,7 +429,7 @@ void AliTRDalignment::PrintCh(int i, FILE *fp) const
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::ReadAscii(char *filename) 
+void AliTRDalignment::ReadAscii(const char * const filename) 
 {
   //
   // read the alignment data from ascii file
@@ -563,7 +561,7 @@ void AliTRDalignment::ReadCurrentGeo()
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::ReadRoot(char *filename) 
+void AliTRDalignment::ReadRoot(const char * const filename) 
 {
   //
   // read the alignment data from root file
@@ -583,7 +581,7 @@ void AliTRDalignment::ReadRoot(char *filename)
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::ReadDB(char *filename) 
+void AliTRDalignment::ReadDB(const char * const filename) 
 {
   //
   // read the alignment data from database file
@@ -606,8 +604,8 @@ void AliTRDalignment::ReadDB(char *filename)
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::ReadDB(char *db, char *path, int run
-                           , int version, int subversion)
+void AliTRDalignment::ReadDB(const char * const db, const char * const path, 
+			     int run, int version, int subversion)
 {
   //
   // read the alignment data from database
@@ -649,7 +647,7 @@ Bool_t AliTRDalignment::DecodeSurveyPointName(TString pna, Int_t &sm, Int_t &iz,
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::ReadSurveyReport(char *filename) 
+void AliTRDalignment::ReadSurveyReport(const char * const filename) 
 {
   //
   // Read survey report and store the numbers in fSurveyX, fSurveyY, fSurveyZ, 
@@ -759,7 +757,7 @@ void AliTRDalignment::ReadSurveyReport(char *filename)
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::ReadSurveyReport(AliSurveyObj *so) 
+void AliTRDalignment::ReadSurveyReport(const AliSurveyObj * const so) 
 {
   //
   // Read survey report and store the numbers in fSurveyX, fSurveyY, fSurveyZ, 
@@ -850,7 +848,7 @@ void AliTRDalignment::ReadSurveyReport(AliSurveyObj *so)
 }
 
 //_____________________________________________________________________________
-double AliTRDalignment::SurveyChi2(int i, double *a) {
+double AliTRDalignment::SurveyChi2(int i, const double * const a) {
 
   //
   // Compare the survey results to the ideal positions of the survey marks
@@ -919,7 +917,7 @@ void trdAlignmentFcn(int &npar, double *g, double &f, double *par, int iflag) {
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::SurveyToAlignment(int i,char *flag) {
+void AliTRDalignment::SurveyToAlignment(int i, const char * const flag) {
 
   //
   // Find the supermodule alignment parameters needed to make the survey 
@@ -967,7 +965,7 @@ void AliTRDalignment::SurveyToAlignment(int i,char *flag) {
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::ReadAny(char *filename) 
+void AliTRDalignment::ReadAny(const char * const filename) 
 {
   //
   // read the alignment data from any kind of file
@@ -984,7 +982,7 @@ void AliTRDalignment::ReadAny(char *filename)
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::WriteAscii(char *filename) const
+void AliTRDalignment::WriteAscii(const char * const filename) const
 {
   //
   // store the alignment data on ascii file
@@ -1004,7 +1002,7 @@ void AliTRDalignment::WriteAscii(char *filename) const
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::WriteRoot(char *filename) 
+void AliTRDalignment::WriteRoot(const char * const filename) 
 {
   //
   // store the alignment data on root file
@@ -1025,7 +1023,7 @@ void AliTRDalignment::WriteRoot(char *filename)
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::WriteDB(char *filename, int run0, int run1) 
+void AliTRDalignment::WriteDB(const char * const filename, int run0, int run1) 
 {
   //
   // dumping on a DB-like file
@@ -1055,7 +1053,7 @@ void AliTRDalignment::WriteDB(char *filename, int run0, int run1)
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::WriteDB(char *db, char *path, int run0, int run1) 
+void AliTRDalignment::WriteDB(char * const db, const char * const path, int run0, int run1) 
 {
   //
   // store the alignment data in database
@@ -1153,7 +1151,7 @@ void AliTRDalignment::PrintChRMS() const
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::ArToNumbers(TClonesArray *ar) 
+void AliTRDalignment::ArToNumbers(TClonesArray * const ar) 
 {
   //
   // for each of the alignment objects in array ar extract the six local 
@@ -1173,7 +1171,7 @@ void AliTRDalignment::ArToNumbers(TClonesArray *ar)
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::NumbersToAr(TClonesArray *ar) 
+void AliTRDalignment::NumbersToAr(TClonesArray * const ar) 
 {
   //
   // build array of AliAlignObj objects based on fSm and fCh data

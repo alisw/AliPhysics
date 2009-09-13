@@ -32,7 +32,7 @@ class AliTRDalignment : public TObject {
   Bool_t operator==(const AliTRDalignment& source) const;  
   virtual ~AliTRDalignment() {};
 
-  // setting 
+  // setters 
 
   void SetSmZero();                                  // reset to zero supermodule data
   void SetChZero();                                  // reset to zero chamber data
@@ -50,34 +50,39 @@ class AliTRDalignment : public TObject {
   void SetResidual()                                 {SetSmResidual(); SetChResidual();}
   void SetComment(char *s)                           {fComment.SetString(s);} 
 
+  // simple getters (for other getters see below)
+
+  void GetSm(int sm, double * const a)               {for (int i = 0; i < 6; i++) a[i] = fSm[sm][i];}
+  void GetCh(int ch, double * const a)               {for (int i = 0; i < 6; i++) a[i] = fCh[ch][i];}
+  
   // dumping on screen
 
-  void PrintSm(int sm, FILE *fp = stdout) const;     // print data of a supermodule
-  void PrintCh(int ch, FILE *fp = stdout) const;     // print data of a chamber
-  void PrintSm(FILE *fp = stdout) const              {for (int i = 0; i <  18; i++)  PrintSm(i,fp);}
-  void PrintCh(FILE *fp = stdout) const              {for (int i = 0; i < 540; i++)  PrintCh(i,fp);}
-  void Print(FILE *fp = stdout) const                {PrintSm(fp); PrintCh(fp);                    }
+  void PrintSm(int sm, FILE * const fp = stdout) const;   // print data of a supermodule
+  void PrintCh(int ch, FILE * const fp = stdout) const;   // print data of a chamber
+  void PrintSm(FILE * const fp = stdout) const       {for (int i = 0; i <  18; i++)  PrintSm(i,fp);}
+  void PrintCh(FILE * const fp = stdout) const       {for (int i = 0; i < 540; i++)  PrintCh(i,fp);}
+  void Print(FILE * const fp = stdout) const         {PrintSm(fp); PrintCh(fp);                    }
   void Print(Option_t *) const                       {Print();                                     } 
 
   // reading-in from file
 
-  void ReadAscii(char *filename);                    // read from ascii file
-  void ReadCurrentGeo();                             // read from currently loaded geometry
-  void ReadRoot(char *filename);                     // read from root file
-  void ReadDB(char *filename);                       // read from DB file
-  void ReadDB(char *db, char *path, int run, int version=-1, int subversion=-1);
+  void ReadAscii(const char * const filename);           // read from ascii file
+  void ReadCurrentGeo();                                 // read from currently loaded geometry
+  void ReadRoot(const char * const filename);            // read from root file
+  void ReadDB(const char * const filename);              // read from DB file
+  void ReadDB(const char * const db, const char * const path, int run, int version=-1, int subversion=-1);
   Bool_t DecodeSurveyPointName(TString pna, Int_t &sm, Int_t &iz,Int_t &ir, Int_t &iphi);
-  void ReadSurveyReport(char *filename);             // read from survey report
-  void ReadSurveyReport(AliSurveyObj *so);           // read from survey object 
-  void ReadAny(char *filename);                      // read from any kind of file
+  void ReadSurveyReport(const char * const filename);    // read from survey report
+  void ReadSurveyReport(const AliSurveyObj * const so);  // read from survey object 
+  void ReadAny(const char * const  filename);            // read from any kind of file
 
   // writing on file
 
-  void WriteAscii(char *filename) const;             // store data on ascii file
-  void WriteRoot(char *filename);                    // store data on root file
-  void WriteDB(char *filename, int run0, int run1);  // store data on a local DB-like file
-  void WriteDB(char *db, char *pa, int r0, int r1);  // store data on DB file
-  void WriteGeo(char *filename);                     // apply misalignment and store geometry 
+  void WriteAscii(const char * const filename) const;                    // store data on ascii file
+  void WriteRoot(const char * const filename);                           // store data on root file
+  void WriteDB(const char * const filename, int run0, int run1);         // store data on a local DB-like file
+  void WriteDB(char * const db, const char * const pa, int r0, int r1);  // store data on DB file
+  void WriteGeo(char *filename);                                         // apply misalignment and store geometry 
 
   // geometry and symbolic names getters
 
@@ -110,15 +115,15 @@ class AliTRDalignment : public TObject {
   void   PrintChRMS() const;                         // print rms of fCh
   void   PrintRMS() const                            {PrintSmRMS(); PrintChRMS();}
 
-  double SurveyChi2(int i, double *a);               // compare survey with ideal, return chi2
-  double SurveyChi2(double *a)                       {return SurveyChi2(fIbuffer[0],a);}
-  void   SurveyToAlignment(int i, char *flag);       // determine alignment of supermodule i based on survey
-  void   SurveyToAlignment(char *flag)               {for (int i=0; i<18; i++) SurveyToAlignment(i,flag);}
+  double SurveyChi2(int i, const double * const a);  // compare survey with ideal, return chi2
+  double SurveyChi2(const double * const a)          {return SurveyChi2(fIbuffer[0],a);}
+  void   SurveyToAlignment(int i, const char * const flag);  // determine alignment of supermodule i based on survey
+  void   SurveyToAlignment(const char * const flag)  {for (int i=0; i<18; i++) SurveyToAlignment(i,flag);}
 
  protected:
 
-  void   ArToNumbers(TClonesArray *ar);              // read ar and fill fSm and fCh
-  void   NumbersToAr(TClonesArray *ar);              // build ar using fSm and fCh data
+  void   ArToNumbers(TClonesArray * const ar);       // read ar and fill fSm and fCh
+  void   NumbersToAr(TClonesArray * const ar);       // build ar using fSm and fCh data
   int    IsGeoLoaded();                              // check if geometry is loaded
 
  protected:
