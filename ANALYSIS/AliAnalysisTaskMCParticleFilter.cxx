@@ -264,7 +264,12 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
     printf("Found Collision Geometry. Got Reaction Plane %lf\n", colG->ReactionPlaneAngle());
   }
 
-  // We take all real primaries
+
+
+  // check varibales for charm need all daughters
+  static int  iTaken = 0;
+  static int  iAll = 0;
+  static int  iCharm = 0;
 
 
   Int_t j=0;
@@ -329,31 +334,19 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
     if (write) {
       if(mcH)mcH->SelectParticle(ip);
       j++;
-    }
-  }
-
-
-    // check for charm daughters
-  static int  iTaken = 0;
-  static int  iAll = 0;
-  static int  iCharm = 0;
-  for (Int_t ip = 0; ip < np; ip++){
-    AliMCParticle* mcpart =   (AliMCParticle*) mcE->GetTrack(ip);
-    TParticle* part = mcpart->Particle();
-
-    //    if((TMath::Abs(part->GetPdgCode())/400)==1){
-    if((TMath::Abs(part->GetPdgCode()))==411){
-      // cases 
-      iCharm++;
-      Int_t d0 =  mcpart->GetFirstDaughter();
-      Int_t d1 =  mcpart->GetLastDaughter();
-      if(d0>0&&d1>0){
-	for(int id = d0;id <= d1;id++){
-	  // AliMCParticle* daughter =  mcE->GetTrack(id);
-	  iAll++;
-	  if(mcH->IsParticleSelected(id))iTaken++;
+      
+      // debug info to check fro charm daugthers
+      if((TMath::Abs(part->GetPdgCode()))==411){
+	iCharm++;
+	Int_t d0 =  mcpart->GetFirstDaughter();
+	Int_t d1 =  mcpart->GetLastDaughter();
+	if(d0>0&&d1>0){
+	  for(int id = d0;id <= d1;id++){
+	    iAll++;
+	    if(mcH->IsParticleSelected(id))iTaken++;
+	  }
 	}
-      }
+      }// if charm
     }
   }
 
