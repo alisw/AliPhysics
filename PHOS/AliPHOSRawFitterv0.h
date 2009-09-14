@@ -39,6 +39,8 @@ public:
   Int_t    GetCellZ()         const { return fCellZ;       }
   Int_t    GetCaloFlag()      const { return fCaloFlag;    }
   Bool_t   IsOverflow()       const { return fOverflow;    }
+  Int_t    GetAmpOffset()     const { return fAmpOffset;   }
+  Int_t    GetAmpThreshold()  const { return fAmpThreshold;}
 
   void SetCalibData(AliPHOSCalibData * cdata){ fCalibData=cdata ;}
 
