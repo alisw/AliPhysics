@@ -131,7 +131,7 @@ class AliAODMCParticle: public AliVParticle {
  
 
 
-  ClassDef(AliAODMCParticle,2)  // AliVParticle realisation for AODMCParticles
+  ClassDef(AliAODMCParticle,3)  // AliVParticle realisation for AODMCParticles
 
 };
 

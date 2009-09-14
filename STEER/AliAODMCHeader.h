@@ -76,7 +76,7 @@ private:
   UInt_t       fEventType;         // MC Process Type of Event
   Double32_t   fReactionPlaneAngle;// MC Reaction Plane Angle
   
-  ClassDef(AliAODMCHeader,2)
+  ClassDef(AliAODMCHeader,3)
 
 };
 
