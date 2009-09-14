@@ -31,7 +31,7 @@
 
 ClassImp(AliESDV0Params)
 
-Int_t    AliESDV0Params::fgStreamLevel     = 0;        // stream (debug) level
+
 
 
 AliESDV0Params::AliESDV0Params() :
@@ -66,7 +66,61 @@ AliESDV0Params::AliESDV0Params() :
   fPMinAP0(0.003),
   fPMinFractionD0(0.5),
   fPMaxFractionD0(1.5),
-  fPMinD0(0.05)
+  fPMinD0(0.05),
+  fkMaxDist0(0.1),
+  fkMaxDist1(0.1),
+  fkMaxDist(1.),
+  fkMinPointAngle(0.85),
+  fkMinPointAngle2(0.99),
+  fkMinR(0.5),
+  fkMaxR(220.),
+  fkMinPABestConst(0.9999),
+  fkMaxRBestConst(10.),
+  fkCausality0Cut(0.19),
+  fkLikelihood01Cut(0.45),
+  fkLikelihood1Cut(0.5),
+  fkCombinedCut(0.55),
+  fkMinClFullTrk(5.0),
+  fkMinTgl0(1.05),
+  
+  fkMinClForb0(4.5),
+  fkMinRTgl0(40.), 
+  fkMinNormDistForbTgl0(3.0),
+  fkMinNormDistForb1(3.0),
+  fkMinNormDistForb2(2.0),
+  fkMinNormDistForb3(1.0),
+  fkMinNormDistForb4(4.0),
+  fkMinNormDistForb5(5.0),
+  
+  fkMinRTPCdensity(40.),
+  fkMaxRTPCdensity0(110.),
+  fkMaxRTPCdensity10(120.),
+  fkMaxRTPCdensity20(130.),
+  fkMaxRTPCdensity30(140.),
+  
+  fkMinTPCdensity(0.6),
+  fkMinTgl1(1.1),
+  fkMinTgl2(1.),
+  fkMinchi2before0(16.),
+  fkMinchi2before1(16.),
+  fkMinchi2after0(16.),
+  fkMinchi2after1(16.),
+  fkAddchi2SharedCl(18.),
+  fkAddchi2NegCl0(25.),
+  fkAddchi2NegCl1(30.),
+  
+  fkSigp0Par0(0.0001),
+  fkSigp0Par1(0.001),
+  fkSigp0Par2(0.1),
+  fkSigpPar0(0.5),
+  fkSigpPar1(0.6),
+  fkSigpPar2(0.4),
+  fkMaxDcaLh0(0.5),
+  
+  fkChi2KF(100.),
+  fkRobustChi2KF(100.),
+  fgStreamLevel(0)
+
   //
 
 {

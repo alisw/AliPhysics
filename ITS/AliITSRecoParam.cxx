@@ -214,12 +214,30 @@ fESDV0Params(NULL)
   fESDV0Params->SetMinPointAngle2(0.99);
   fESDV0Params->SetMinR(0.5);
   fESDV0Params->SetMaxR(220.);
+  fESDV0Params->SetMinPABestConst(0.9999);
+  fESDV0Params->SetMaxRBestConst(10.);
   fESDV0Params->SetCausality0Cut(0.19);
   fESDV0Params->SetLikelihood01Cut(0.45);
   fESDV0Params->SetLikelihood1Cut(0.5);  
   fESDV0Params->SetCombinedCut(0.55);
   fESDV0Params->SetMinClFullTrk(5.0);
   fESDV0Params->SetMinTgl0(1.05);
+  fESDV0Params->SetMinRTgl0(40.0);
+
+  fESDV0Params->SetMinNormDistForbTgl0(3.0);
+  fESDV0Params->SetMinClForb0(4.5);
+  fESDV0Params->SetMinNormDistForb1(3.0);
+  fESDV0Params->SetMinNormDistForb2(2.0);
+  fESDV0Params->SetMinNormDistForb3(1.0);
+  fESDV0Params->SetMinNormDistForb4(4.0);
+  fESDV0Params->SetMinNormDistForb5(5.0);
+
+  fESDV0Params->SetMinRTPCdensity(40.);
+  fESDV0Params->SetMaxRTPCdensity0(110.);
+  fESDV0Params->SetMaxRTPCdensity10(120.);
+  fESDV0Params->SetMaxRTPCdensity20(130.);
+  fESDV0Params->SetMaxRTPCdensity30(140.);
+
   fESDV0Params->SetMinTPCdensity(0.6);
   fESDV0Params->SetMinTgl1(1.1);
   fESDV0Params->SetMinTgl2(1.0);
@@ -236,6 +254,7 @@ fESDV0Params(NULL)
   fESDV0Params->SetSigpPar0(0.5);
   fESDV0Params->SetSigpPar1(0.6);
   fESDV0Params->SetSigpPar2(0.4);
+  fESDV0Params->SetMaxDcaLh0(0.5);
   fESDV0Params->SetStreamLevel(0);
   fESDV0Params->SetChi2KF(100);
   fESDV0Params->SetRobustChi2KF(100);
@@ -349,6 +368,8 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   param->fSigmaXDeadZoneHit2 = 0.004/12.;
   param->fSigmaZDeadZoneHit2 = 0.001/12.;
   param->fXPassDeadZoneHits = 0.018;
+
+
   
   return param;
 }
@@ -452,6 +473,21 @@ AliITSRecoParam *AliITSRecoParam::GetLowFluxParam()
   param->SetNLoopsSA(20);
   param->fMaxPhiSA = 0.07;
   param->fMaxLambdaSA = 0.04;
+
+ 
+  param->GetESDV0Params()->SetMinRTgl0(0.5);
+  param->GetESDV0Params()->SetMaxDist(1.5);
+  param->GetESDV0Params()->SetMaxDcaLh0(1.5);
+  param->GetESDV0Params()->SetMaxRBestConst(80);
+  param->GetESDV0Params()->SetMinPABestConst(0.99);
+  param->GetESDV0Params()->SetMinNormDistForbTgl0(1.);
+  param->GetESDV0Params()->SetMinNormDistForb1(2.);
+  param->GetESDV0Params()->SetLikelihood01Cut(0.3);
+  param->GetESDV0Params()->SetLikelihood1Cut(0.35);
+  param->GetESDV0Params()->SetCombinedCut(0.4);
+
+
+
   return param;
 }
 //_____________________________________________________________________________

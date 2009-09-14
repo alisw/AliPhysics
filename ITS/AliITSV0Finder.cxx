@@ -39,6 +39,7 @@
 #include "AliITStrackerMI.h"
 #include "AliITSV0Finder.h"
 #include "AliKFParticle.h"
+#include "AliKFVertex.h"
 
 ClassImp(AliITSV0Finder)
 
@@ -186,12 +187,31 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   const Float_t kMinPointAngle2 = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinPointAngle2();
   const Float_t kMinR = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinR();
   const Float_t kMaxR = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxR();
+  const Float_t kMinPABestConst = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinPABestConst();
+  const Float_t kMaxRBestConst = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxRBestConst();
   const Float_t kCausality0Cut = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetCausality0Cut();
   const Float_t kLikelihood01Cut = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetLikelihood01Cut();
   const Float_t kLikelihood1Cut = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetLikelihood1Cut();
   const Float_t kCombinedCut = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetCombinedCut();
   const Float_t kMinClFullTrk= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinClFullTrk();
   const Float_t kMinTgl0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinTgl0();
+  const Float_t kMinRTgl0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinRTgl0();
+
+  const Float_t kMinNormDistForbTgl0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinNormDistForbTgl0();
+  const Float_t kMinClForb0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinClForb0();
+  const Float_t kMinNormDistForb1= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinNormDistForb1();
+  const Float_t kMinNormDistForb2= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinNormDistForb2();
+  const Float_t kMinNormDistForb3= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinNormDistForb3();
+  const Float_t kMinNormDistForb4= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinNormDistForb4();
+  const Float_t kMinNormDistForb5= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinNormDistForb5();
+
+  const Float_t kMinRTPCdensity= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinRTPCdensity();
+  const Float_t kMaxRTPCdensity0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxRTPCdensity0();
+  const Float_t kMaxRTPCdensity10= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxRTPCdensity10();
+  const Float_t kMaxRTPCdensity20= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxRTPCdensity20();
+  const Float_t kMaxRTPCdensity30= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxRTPCdensity30();
+
+
   const Float_t kMinTPCdensity= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinTPCdensity();
   const Float_t kMinTgl1= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinTgl1();
 
@@ -210,7 +230,8 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   const Float_t kSigpPar0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetSigpPar0();
   const Float_t kSigpPar1= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetSigpPar1();
   const Float_t kSigpPar2= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetSigpPar2();
- 
+  const Float_t kMaxDcaLh0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxDcaLh0();
+
 
   TObjArray *trackHypothesys = tracker->GetTrackHypothesys();
   TObjArray *bestHypothesys  = tracker->GetBestHypothesys();
@@ -228,6 +249,9 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   TObjArray trackarray(ntracks+2);     //array with tracks - with vertex constrain
   TObjArray trackarrayc(ntracks+2);    //array of "best    tracks" - without vertex constrain
   TObjArray trackarrayl(ntracks+2);    //array of "longest tracks" - without vertex constrain
+  //Change from Bool_t to Int_t for optimization
+  //  Int_t forbN=0;
+  //  Int_t * forbidden   = new Int_t [ntracks+2];
   Bool_t * forbidden   = new Bool_t [ntracks+2];
   Int_t   *itsmap      = new Int_t  [ntracks+2];
   Float_t *dist        = new Float_t[ntracks+2];
@@ -250,6 +274,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   //
   for (Int_t itrack=0;itrack<ntracks+2;itrack++) {
     itsmap[itrack]        = -1;
+    //    forbidden[itrack]     = 0;
     forbidden[itrack]     = kFALSE;
     maxr[itrack]          = kMaxR;
     minr[itrack]          = kMinR;
@@ -298,7 +323,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       AliITStrackMI * trackh = (AliITStrackMI*)array->At(ih);
       if (!trackh->GetConstrain()) continue;
       if (!bestConst) bestConst = trackh;
-      if (trackh->GetNumberOfClusters()>kMinClFullTrk){
+      if (trackh->GetNumberOfClusters()>kMinClFullTrk ){
 	bestConst  = trackh;                         // full track -  with minimal chi2
 	break;
       }
@@ -327,6 +352,8 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
     new (&trackat0) AliITStrackMI(*bestLong);
     Double_t xx,yy,zz,alpha; 
     if (!bestLong->GetGlobalXYZat(bestLong->GetX(),xx,yy,zz)) continue;
+    
+
     alpha = TMath::ATan2(yy,xx);    
     //    if (!trackat0.Propagate(alpha,0)) continue;    
     trackat0.Propagate(alpha,0); //PH The check on the return value is temporarily disabled (bug 45751) 
@@ -362,13 +389,19 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
 	normdist1[itsindex] = TMath::Abs((trackat0.GetZ()-primvertex[2])/(ptfac*TMath::Sqrt(trackat0.GetSigmaZ2())));
 	normdist[itsindex]  = TMath::Sqrt(normdist0[itsindex]*normdist0[itsindex]+normdist1[itsindex]*normdist1[itsindex]);
 	if (TMath::Abs(trackat0.GetTgl())>kMinTgl0){
-	  if (normdist[itsindex]<3) forbidden[itsindex]=kTRUE;
-	  if (normdist[itsindex]>3) {
-	    minr[itsindex] = TMath::Max(Float_t(40.),minr[itsindex]);
+	  if (normdist[itsindex]<kMinNormDistForbTgl0){
+	    //	    forbN=1;
+	    //	    forbidden[itsindex]+=1<<forbN;
+	    forbidden[itsindex]=kTRUE;
+	  }
+	  if (normdist[itsindex]>kMinNormDistForbTgl0) {
+	    minr[itsindex] = TMath::Max(kMinRTgl0,minr[itsindex]);
 	  }
 	}
       }
     }
+
+
     //
     //-----------------------------------------------------------
     //Forbid primary track candidates - 
@@ -381,15 +414,39 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
     //treetr->SetAlias("forbidden5","ND<5&&Tr1.fNormChi2[0]<1");
     //-----------------------------------------------------------
     if (bestConst){
-      if (bestLong->GetNumberOfClusters()<4       && bestConst->GetNumberOfClusters()+bestConst->GetNDeadZone()>4.5)               forbidden[itsindex]=kTRUE;
-      if (normdist[itsindex]<3 && bestConst->GetNumberOfClusters()+bestConst->GetNDeadZone()>5.5)               forbidden[itsindex]=kTRUE;
-      if (normdist[itsindex]<2 && bestConst->GetClIndex(0)>=0 && bestConst->GetClIndex(1)>=0 ) forbidden[itsindex]=kTRUE;
-      if (normdist[itsindex]<1 && bestConst->GetClIndex(0)>=0)                              forbidden[itsindex]=kTRUE;
-      if (normdist[itsindex]<4 && bestConst->GetNormChi2(0)<2)                             forbidden[itsindex]=kTRUE;
-      if (normdist[itsindex]<5 && bestConst->GetNormChi2(0)<1)                             forbidden[itsindex]=kTRUE;      
+      if (bestLong->GetNumberOfClusters()<4 && bestConst->GetNumberOfClusters()+bestConst->GetNDeadZone()>kMinClForb0){
+	//	forbN=2;
+	//	forbidden[itsindex]+=1<<forbN;
+	forbidden[itsindex]=kTRUE;
+      }
+      if (normdist[itsindex]<kMinNormDistForb1 && bestConst->GetNumberOfClusters()+bestConst->GetNDeadZone()>5.5){
+	//	forbN=3;
+	//	forbidden[itsindex]+=1<<forbN;
+	forbidden[itsindex]=kTRUE;
+      }
+      if (normdist[itsindex]<kMinNormDistForb2 && bestConst->GetClIndex(0)>=0 && bestConst->GetClIndex(1)>=0 ){
+	//	forbN=4;
+	//	forbidden[itsindex]+=1<<forbN;
+	forbidden[itsindex]=kTRUE;
+      }
+      if (normdist[itsindex]<kMinNormDistForb3 && bestConst->GetClIndex(0)>=0){
+	//	forbN=5;
+	//	forbidden[itsindex]+=1<<forbN;
+	forbidden[itsindex]=kTRUE;
+      }
+      if (normdist[itsindex]<kMinNormDistForb4 && bestConst->GetNormChi2(0)<2){
+	//	forbN=6;
+	//	forbidden[itsindex]+=1<<forbN;
+	forbidden[itsindex]=kTRUE;
+      }
+      if (normdist[itsindex]<kMinNormDistForb5 && bestConst->GetNormChi2(0)<1){
+	//	forbN=7;
+	//	forbidden[itsindex]+=1<<forbN;
+	forbidden[itsindex]=kTRUE;
+      }
       if (bestConst->GetNormChi2(0)<2.5) {
-	minPointAngle[itsindex]= 0.9999;
-	maxr[itsindex]         = 10;
+	minPointAngle[itsindex]= kMinPABestConst;
+	maxr[itsindex]         = kMaxRBestConst;
       }
     }
     //
@@ -416,14 +473,15 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
     //
     // Causality cuts in TPC volume
     //
-    if (esdtrack->GetTPCdensity(0,10) >kMinTPCdensity)  maxr[itsindex] = TMath::Min(Float_t(110),maxr[itsindex]);
-    if (esdtrack->GetTPCdensity(10,30)>kMinTPCdensity)  maxr[itsindex] = TMath::Min(Float_t(120),maxr[itsindex]);
-    if (esdtrack->GetTPCdensity(20,40)>kMinTPCdensity)  maxr[itsindex] = TMath::Min(Float_t(130),maxr[itsindex]);
-    if (esdtrack->GetTPCdensity(30,50)>kMinTPCdensity)  maxr[itsindex] = TMath::Min(Float_t(140),maxr[itsindex]);
+    if (esdtrack->GetTPCdensity(0,10) >kMinTPCdensity)  maxr[itsindex] = TMath::Min(Float_t(kMaxRTPCdensity0),maxr[itsindex]);
+    if (esdtrack->GetTPCdensity(10,30)>kMinTPCdensity)  maxr[itsindex] = TMath::Min(Float_t(kMaxRTPCdensity10),maxr[itsindex]);
+    if (esdtrack->GetTPCdensity(20,40)>kMinTPCdensity)  maxr[itsindex] = TMath::Min(Float_t(kMaxRTPCdensity20),maxr[itsindex]);
+    if (esdtrack->GetTPCdensity(30,50)>kMinTPCdensity)  maxr[itsindex] = TMath::Min(Float_t(kMaxRTPCdensity30),maxr[itsindex]);
     //
-    if (esdtrack->GetTPCdensity(0,60)<0.4&&bestLong->GetNumberOfClusters()<3) minr[itsindex]=100;    
+    if (esdtrack->GetTPCdensity(0,60)<0.4&&bestLong->GetNumberOfClusters()<3) minr[itsindex]=kMinRTPCdensity;    
     //
     //
+
     if (AliITSReconstructor::GetRecoParam()->GetESDV0Params()->StreamLevel()>0){
       cstream<<"Track"<<
 	"Tr0.="<<best<<
@@ -450,28 +508,33 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   //
   // first iterration of V0 finder
   //
-
-
+  // AM Comment out for optimization
+  //  Int_t rejectBase=0;
+  //  Int_t cutN=0;
 
   for (Int_t iesd0=0;iesd0<ntracks;iesd0++){
     Int_t itrack0 = itsmap[iesd0];
+    //-AM comment for optimization and store the forbidden value in the debug streamer
     if (forbidden[itrack0]) continue;
     AliITStrackMI * btrack0 = (AliITStrackMI*)trackarray.At(itrack0);
     if (!btrack0) continue;    
-    if (btrack0->GetSign()>0 && !AliITSReconstructor::GetRecoParam()->GetStoreLikeSignV0s()) continue;
     AliITStrackMI *trackc0 = (AliITStrackMI*)trackarrayc.At(itrack0);
     //
     for (Int_t iesd1=iesd0+1;iesd1<ntracks;iesd1++){
       Int_t itrack1 = itsmap[iesd1];
+      //-AM comment for optimization and store the forbidden value in the debug streamer
       if (forbidden[itrack1]) continue;
 
       AliITStrackMI * btrack1 = (AliITStrackMI*)trackarray.At(itrack1); 
       if (!btrack1) continue;
-      if (btrack1->GetSign()<0 && !AliITSReconstructor::GetRecoParam()->GetStoreLikeSignV0s()) continue;
+
+      if ( (btrack0->GetSign()==btrack1->GetSign()) && !AliITSReconstructor::GetRecoParam()->GetStoreLikeSignV0s()) continue;
+
       Bool_t isGold = kFALSE;
       if (TMath::Abs(TMath::Abs(btrack0->GetLabel())-TMath::Abs(btrack1->GetLabel()))==1){
 	isGold = kTRUE;
       }
+      //      rejectBase=0;
       AliITStrackMI *trackc1 = (AliITStrackMI*)trackarrayc.At(itrack1);
       AliHelix &h1 = helixes[itrack0];
       AliHelix &h2 = helixes[itrack1];
@@ -483,7 +546,11 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       //
       Double_t phase[2][2],radius[2];
       Int_t  points = h1.GetRPHIintersections(h2, phase, radius);
-      if    (points==0)  continue;
+      if    (points==0) {
+	//	cutN=1;
+	//	rejectBase+=1<<cutN;
+	continue;
+      }
       Double_t delta[2]={1000000,1000000};        
       rmin = radius[0];
       h1.ParabolicDCA(h2,phase[0][0],phase[0][1],radius[0],delta[0]);
@@ -503,12 +570,28 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
 	radiusC  = TMath::Sqrt(radius[1]);
 	iphase=1;
       }
-      if (radiusC<TMath::Max(minr[itrack0],minr[itrack1]))    continue;
-      if (radiusC>TMath::Min(maxr[itrack0],maxr[itrack1]))     continue; 
+      if (radiusC<TMath::Max(minr[itrack0],minr[itrack1])){
+	//	cutN=2;
+	//rejectBase+=1<<cutN;
+	continue;
+      }
+      if (radiusC>TMath::Min(maxr[itrack0],maxr[itrack1])){
+	//	cutN=3;
+	//	rejectBase+=1<<cutN;
+	continue;
+      } 
       Float_t maxDist  = TMath::Min(kMaxDist,Float_t(kMaxDist0+radiusC*kMaxDist1));      
-      if (distance>maxDist) continue;
+      if (distance>maxDist){
+	//	cutN=4;
+	//	rejectBase+=1<<cutN;
+	continue;
+      }
       Float_t pointAngle = h1.GetPointAngle(h2,phase[iphase],primvertex);
-      if (pointAngle<TMath::Max(minPointAngle[itrack0],minPointAngle[itrack1])) continue;
+      if (pointAngle<TMath::Max(minPointAngle[itrack0],minPointAngle[itrack1])) {
+	//	cutN=5;
+	//	rejectBase+=1<<cutN;
+	continue;
+      }
       //
       //
       //      Double_t distance = TestV0(h1,h2,pvertex,rmin);
@@ -534,18 +617,95 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       pvertex->Update(primvertex);
       pvertex->SetClusters(track0->ClIndex(),track1->ClIndex());  // register clusters
 
-      AliKFParticle negKF( *(pvertex->GetParamN()) ,11);
-      AliKFParticle posKF( *(pvertex->GetParamP()) ,-11);
+      // Define gamma, K0, lambda and lambda_bar from the decay particles and calculate the chi2      
+      AliKFVertex vertexKF;
 
-      AliKFParticle v0KF(negKF,posKF);
-      Float_t v0KFchi2= v0KF.GetChi2();
+      vertexKF.X() = tracker->GetX();
+      vertexKF.Y() = tracker->GetY();
+      vertexKF.Z() = tracker->GetZ();
+      vertexKF.Covariance(0,0) = tracker->GetSigmaX()*tracker->GetSigmaX();
+      vertexKF.Covariance(1,2) = tracker->GetSigmaY()*tracker->GetSigmaY();
+      vertexKF.Covariance(2,2) = tracker->GetSigmaZ()*tracker->GetSigmaZ();
+      
+      AliKFParticle elecKF( *(pvertex->GetParamN()) ,11);
+      AliKFParticle posiKF( *(pvertex->GetParamP()) ,-11);
+      AliKFParticle pipKF( *(pvertex->GetParamN()) , 211);
+      AliKFParticle pinKF( *(pvertex->GetParamP()) ,-211);
+      AliKFParticle protKF( *(pvertex->GetParamP()) ,2212);
+      AliKFParticle aproKF ( *(pvertex->GetParamN()) ,-2212);
 
 
-      if (pvertex->GetRr()<kMinR) continue;
-      if (pvertex->GetRr()>kMaxR) continue;
-      if (pvertex->GetV0CosineOfPointingAngle()<kMinPointAngle) continue;
+      // Gamma
+      AliKFParticle gamKF(elecKF,posiKF);
+      gamKF.SetProductionVertex(vertexKF);
+
+      Float_t gamKFchi2 = 1000;
+      if ( gamKF.GetNDF()!=0 ){
+	gamKFchi2 = gamKF.GetChi2()/gamKF.GetNDF();
+      }
+
+      Float_t massG=0.;
+      Float_t sigmaMG=0.001;
+      gamKF.SetMassConstraint(massG,sigmaMG);
+
+      Float_t gamKFchi2C = 1000;
+      if ( gamKF.GetNDF()!=0 ){
+	gamKFchi2C = gamKF.GetChi2()/gamKF.GetNDF();
+      }
+
+      //K0 short
+      AliKFParticle k0KF(pipKF,pinKF);
+      k0KF.SetProductionVertex(vertexKF);
+
+      Float_t k0KFchi2 = 1000;
+      if ( k0KF.GetNDF()!=0 ){
+	k0KFchi2 = k0KF.GetChi2()/k0KF.GetNDF();
+      }
+
+      //Lambda
+      AliKFParticle lambdaKF(protKF,pinKF);
+      lambdaKF.SetProductionVertex(vertexKF);
+
+      Float_t lambdaKFchi2 = 1000;
+      if ( lambdaKF.GetNDF()!=0 ){
+	lambdaKFchi2 = lambdaKF.GetChi2()/lambdaKF.GetNDF();
+      }
+
+      //Lambda_bar
+      AliKFParticle alambKF(aproKF,pipKF);
+      alambKF.SetProductionVertex(vertexKF);
+
+      Float_t alambKFchi2 = 1000;
+      if ( alambKF.GetNDF()!=0 ){
+	alambKFchi2 = alambKF.GetChi2()/alambKF.GetNDF();
+      }
+
+
+
+
+
+      if (pvertex->GetRr()<kMinR){
+	//	cutN=6;
+	//	rejectBase+=1<<cutN;
+	continue;
+      }
+      if (pvertex->GetRr()>kMaxR){
+	//	cutN=7;
+	//	rejectBase+=1<<cutN;
+	continue;
+      }
+      if (pvertex->GetV0CosineOfPointingAngle()<kMinPointAngle){
+	//	cutN=8;
+	//	rejectBase+=1<<cutN;
+	continue;
+      }
 //Bo:      if (pvertex->GetDist2()>maxDist) continue;
-      if (pvertex->GetDcaV0Daughters()>maxDist) continue;
+
+      if (pvertex->GetDcaV0Daughters()>maxDist){
+	//	cutN=9;
+	//	rejectBase+=1<<cutN;
+	continue;
+      }
 //Bo:        pvertex->SetLab(0,track0->GetLabel());
 //Bo:        pvertex->SetLab(1,track1->GetLabel());
       pvertex->SetIndex(0,track0->GetESDtrack()->GetID());
@@ -741,7 +901,13 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       //
       //  Likelihood calculations  - apply cuts
       //         
+ 
+      // AM - Comment out for optimization and store the v0OK value
+      //      Int_t v0OK = 0;
+      //      Int_t cutOKN=0;
       Bool_t v0OK = kTRUE;
+
+
       Float_t p12 = pvertex->GetParamP()->GetParameter()[4]*pvertex->GetParamP()->GetParameter()[4];
       p12        += pvertex->GetParamN()->GetParameter()[4]*pvertex->GetParamN()->GetParameter()[4];
       p12         = TMath::Sqrt(p12);                             // "mean" momenta
@@ -756,18 +922,33 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
       //
       //Bo:      Float_t likelihood0 = (TMath::Exp(-pvertex->GetDistNorm())+0.1) *(pvertex->GetDist2()<0.5)*(pvertex->GetDistNorm()<5);
       Float_t lDistNorm = pvertex->GetDcaV0Daughters()/pvertex->GetDistSigma();
-      Float_t likelihood0 = (TMath::Exp(-lDistNorm)+0.1) *(pvertex->GetDcaV0Daughters()<0.5)*(lDistNorm<5);
+      Float_t likelihood0 = (TMath::Exp(-lDistNorm)+0.1) *(pvertex->GetDcaV0Daughters()<kMaxDcaLh0)*(lDistNorm<5);
 
       Float_t likelihood1 = TMath::Exp(-(1.0001-pvertex->GetV0CosineOfPointingAngle())/sigmap)+
 	0.4*TMath::Exp(-(1.0001-pvertex->GetV0CosineOfPointingAngle())/(4.*sigmap))+
 	0.4*TMath::Exp(-(1.0001-pvertex->GetV0CosineOfPointingAngle())/(8.*sigmap))+
 	0.1*TMath::Exp(-(1.0001-pvertex->GetV0CosineOfPointingAngle())/0.01);
       //
-      if (causalityA<kCausality0Cut)                                          v0OK = kFALSE;
-      if (TMath::Sqrt(likelihood0*likelihood1)<kLikelihood01Cut)              v0OK = kFALSE;
-      if (likelihood1<kLikelihood1Cut)                                        v0OK = kFALSE;
-      if (TMath::Power(likelihood0*likelihood1*causalityB,0.33)<kCombinedCut) v0OK = kFALSE;
-      
+      if (causalityA<kCausality0Cut){
+	//	cutOKN=1;
+	//	v0OK += 1<<cutOKN;
+	v0OK = kFALSE;
+      }
+      if (TMath::Sqrt(likelihood0*likelihood1)<kLikelihood01Cut){
+	//	cutOKN=2;
+	//	v0OK += 1<<cutOKN;
+	v0OK = kFALSE;
+      }
+      if (likelihood1<kLikelihood1Cut){
+	//	cutOKN=3;
+	//	v0OK += 1<<cutOKN;
+	v0OK = kFALSE;
+      }
+      if (TMath::Power(likelihood0*likelihood1*causalityB,0.33)<kCombinedCut){
+	//	cutOKN=4;
+	//	v0OK += 1<<cutOKN;
+	v0OK = kFALSE;
+      }
       //
       //
       if (AliITSReconstructor::GetRecoParam()->GetESDV0Params()->StreamLevel()>0){	
@@ -775,8 +956,8 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
 	cstream<<"It0"<<
 	  "Tr0.="<<track0<<                       //best without constrain
 	  "Tr1.="<<track1<<                       //best without constrain  
-	  "posKF.="<<&posKF<<                       //KF from track0
-	  "negKF.="<<&negKF<<                       //KF from track1
+	  "posiKF.="<<&posiKF<<                       //KF from track0
+	  "elecKF.="<<&elecKF<<                       //KF from track1
 	  "Tr0B.="<<track0b<<                     //best without constrain  after vertex
 	  "Tr1B.="<<track1b<<                     //best without constrain  after vertex 
 	  "Tr0C.="<<htrackc0<<                    //best with constrain     if exist
@@ -787,18 +968,28 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
 	  "Esd1.="<<track1->GetESDtrack()<<           // esd track1 params
 	  "V0.="<<pvertex<<                       //vertex properties
 	  "V0b.="<<&vertex2<<                       //vertex properties at "best" track
-	  "v0KF.="<<&v0KF<<                          //KF from pvertex
-	  "chiKF.="<<v0KFchi2<<              // chi2 from KF
+	  "gamKF.="<<&gamKF<<                          //KF from pvertex
+	  "k0KF.="<<&k0KF<<                          //KF from pvertex
+	  "lambdaKF.="<<&lambdaKF<<                          //KF from pvertex
+	  "alambKF.="<<&lambdaKF<<                          //KF from pvertex
+	  "gamKFchi2="<<gamKFchi2<<    //Normalized chi2 from KF assuming gamma momther
+	  "gamKFchi2C="<<gamKFchi2C<<    //Normalized chi2 from KF assuming gamma mother+mass constraint
+	  "k0KFchi2="<<k0KFchi2<<    //Normalized chi2 from KF assuming K0 mother
+	  "lambdaKFchi2="<<lambdaKFchi2<<    //Normalized chi2 from KF assuming Lambda mother
+	  "alambKFchi2="<<alambKFchi2<<    //Normalized chi2 from KF assuming lambda_bar mother
 	  "ND0="<<normdist[itrack0]<<             //normalize distance for track0
 	  "ND1="<<normdist[itrack1]<<             //normalize distance for track1
 	  "Gold="<<gold<<                         //
-	  //	  "RejectBase="<<rejectBase<<             //rejection in First itteration
+	  // "RejectBase="<<rejectBase<<             //rejection in First itteration
 	  "OK="<<v0OK<<
 	  "rmin="<<rmin<<
 	  "sigmad="<<sigmad<<
+	  "Forbid0="<<forbidden[itrack0]<<
+	  "Forbid1="<<forbidden[itrack1]<<
 	  "\n";
       }      
-      //if (rejectBase) continue;
+      //      if (rejectBase>0) continue;
+      //if (forbidden[itrack0]>0 ||forbidden[itrack1]>0) continue; 
       //
       pvertex->SetStatus(0);
       //      if (rejectBase) {
@@ -808,6 +999,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
 	//Bo:	  pvertex->SetESDindexes(track0->GetESDtrack()->GetID(),track1->GetESDtrack()->GetID());
 	pvertex->SetIndex(0,track0->GetESDtrack()->GetID());//Bo: consistency 0 for neg
 	pvertex->SetIndex(1,track1->GetESDtrack()->GetID());//Bo: consistency 1 for pos
+	//	if (v0OK==0){
 	if (v0OK){
 	  //	  AliV0vertex vertexjuri(*track0,*track1);
 	  //	  vertexjuri.SetESDindexes(track0->fESDtrack->GetID(),track1->fESDtrack->GetID());
