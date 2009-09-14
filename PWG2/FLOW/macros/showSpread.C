@@ -7,9 +7,11 @@ void showSpread(TString type="", Int_t mode=mLocal)
  // mode:  if mode=mLocal analyze data on your computer using aliroot
  //        if mode=mLocalSource analyze data on your computer using root + source files
  
+ Bool_t plotLegend = kTRUE; // plot legend on the plot
+ 
  // load needed libraries:                       
  LoadSpreadLibraries(mode);  
- 
+
  // access the path of current directory:
  TString pwd(gSystem->pwd());
  pwd+="/"; 
@@ -1143,7 +1145,7 @@ void showSpread(TString type="", Int_t mode=mLocal)
  
  // booking the style histogram for the integrated flow results from all methods for NONAME, RPs and POIs:
  TH1D* intFlowAll = new TH1D("intFlowAll","Integrated Flow",nMethods,0,nMethods);      
- //intFlowAll->SetLabelSize(0.036,"X");
+ if(!plotLegend) intFlowAll->SetLabelSize(0.044,"X");
  //intFlowAll->SetLabelSize(0.036,"Y");
  //intFlowAll->SetMarkerStyle(markerStyle);
  //intFlowAll->SetMarkerColor(markerColor);
@@ -1577,10 +1579,13 @@ void showSpread(TString type="", Int_t mode=mLocal)
  
  TCanvas* intFlowCanvasNONAME = new TCanvas("Integrated Flow NONAME","Integrated Flow NONAME",1000,600);
  
- intFlowCanvasNONAME->Divide(2,1);
- 
- // 1st pad is for plot:
- (intFlowCanvasNONAME->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+ if(plotLegend)
+ {
+  intFlowCanvasNONAME->Divide(2,1);
+  
+  // 1st pad is for plot:
+  (intFlowCanvasNONAME->cd(1))->SetPad(0.0,0.0,0.75,1.0);
+ }
  
  if(intFlowNONAME) 
  {
@@ -1682,8 +1687,11 @@ void showSpread(TString type="", Int_t mode=mLocal)
  if(lyz1prodTGraphNONAME) lyz1prodTGraphNONAME->Draw("PSAME");
  if(lyz1prodMeanNONAME) lyz1prodMeanNONAME->Draw("PSAME"); 
  
- // 2nd pad is for legend:   
- (intFlowCanvasNONAME->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+ if(plotLegend)
+ {
+  // 2nd pad is for legend:   
+  (intFlowCanvasNONAME->cd(2))->SetPad(0.75,0.0,1.0,1.0);
+ }
 
  // count real estimates:
  Int_t mcepCountRealNONAME = 0;
@@ -1891,10 +1899,12 @@ void showSpread(TString type="", Int_t mode=mLocal)
   if(textResultsNONAME)textResultsNONAME->AddText(entryIntFlowLYZEPNONAME->Data());
  }
  
- if(textDefaultNONAME) textDefaultNONAME->Draw();
- if(textResultsNONAME) textResultsNONAME->Draw();
- if(textAvMNevtsNONAME) textAvMNevtsNONAME->Draw();
- 
+ if(plotLegend)
+ {
+  if(textDefaultNONAME) textDefaultNONAME->Draw();
+  if(textResultsNONAME) textResultsNONAME->Draw();
+  if(textAvMNevtsNONAME) textAvMNevtsNONAME->Draw();
+ }
 }
 
 void LoadSpreadLibraries(const libModes mode) {

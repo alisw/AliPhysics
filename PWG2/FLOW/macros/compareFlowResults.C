@@ -6,7 +6,7 @@ enum libModes {mLocal,mLocalSource};
 //mLocalSource: Analyze data on your computer using root + source files
 
 //void compareFlowResults(TString type="",Int_t mode=mLocalSource)
-void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
+void compareFlowResults(TString type="",Int_t mode=mLocal)
 { 
 
   // load needed libraries:                       
@@ -364,7 +364,7 @@ void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
   
   // booking the histogram for the integrated flow results from all methods:
   TH1D* intFlowAll = new TH1D("intFlowAll","Integrated Flow",nMethods,0,nMethods);      
-  // intFlowAll->SetLabelSize(0.036,"X");
+  if(!plotLegendIntFlow) intFlowAll->SetLabelSize(0.044,"X");
   // intFlowAll->SetLabelSize(0.036,"Y");
   intFlowAll->SetMarkerStyle(markerStyle);
   intFlowAll->SetMarkerColor(markerColor);
