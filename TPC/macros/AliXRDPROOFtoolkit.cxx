@@ -669,14 +669,92 @@ Bool_t  AliXRDPROOFtoolkit::FilterList(const char*inputList, const char*fileList
   while(finput.good()) {
     finput >> currentFile;
     if (!currentFile.Contains("root")) continue; // protection
-    //    Bool_t isZip = currentFile.Contains("#");
+    Bool_t isZip = currentFile.Contains("#");
     const char * dirname = gSystem->DirName(currentFile.Data());
+    Int_t status = 0;
+    //
+    for (Int_t i=0; i<array->GetEntries(); i+=2){
+      char fname[1000];
+      if (!isZip){
+	sprintf(fname, "%s/%s",dirname,array->At(i)->GetName());
+      }
+      if (isZip) {
+	const char * fileName   =  gSystem->BaseName(currentFile.Data());
+	TString fstring=fileName;
+	fstring[fstring.First("#")]=0;
+	sprintf(fname, "%s/%s#%s",dirname,fstring.Data(),array->At(i)->GetName());
+	printf(fname, "To check %s%s#%s\n",dirname,fstring.Data(),array->At(i)->GetName());
+      }
+
+      printf("\nFile to be checked %s",fname);
+      //cout <<"\n arguments: "<< array->At(i+1)->GetName()<<" "<<checkLevel<<endl;
+      Int_t cstatus = CheckTreeInFile(fname, array->At(i+1)->GetName(), checkLevel,0);
+      //printf("  CheckTreeInFile returns %d",cstatus);
+      if (cstatus!=0) {
+	status = cstatus; 
+	break;
+      }
+    }
+    if (status==0){
+      focGood<<currentFile<<endl;
+    }else{
+      focBad<<currentFile<<endl;
+    }
+    counter++;    
+  }
+  finput.close();
+}
+
+
+Bool_t  AliXRDPROOFtoolkit::FilterListZip(const char*inputList, const char*fileList, Int_t checkLevel){
+  //
+  // Filter the list  
+  // inputList - list of original file names
+  // fileList  - list of file to be checked
+  //           - 0 - fileName
+  //           - 1 - treeName (if * not checked)
+  //           - 2 - fileName 
+  //                 ....
+  // checkLevel - 0 - check only existance of the files and tree's + 
+  //                  simple file corruption
+  //            > 1 - check the content of the tree - 
+  //                  (can crash as there do not exest exception handling in ROOT)
+  // Output -  two streams are created - file with good entries
+  // "%s.Good a,d file with bad entries %s.Bad
+  //EXAMPLE:
+  // AliXRDPROOFtoolkit::FilterList("ppgrid2.txt","AliESDs.root esdTree AliESDfriends.root * Kinematics.root *",1) 
+
+  fstream finput;
+  finput.open(inputList, ios_base::in);
+  fstream focGood;
+  fstream focBad;
+  focGood.open(Form("%s.Good",inputList), ios_base::out|ios_base::trunc);
+  focBad.open(Form("%s.Bad",inputList), ios_base::out|ios_base::trunc);
+  //
+  if(!finput.is_open()) {
+    cout<<"Can't open file "<<inputList<<endl;
+    return kFALSE;
+  }
+  //
+  // Read the input list of files and add them to the chain
+  //
+  TObjArray *array = (TString(fileList)).Tokenize(" ");
+  TString currentFile;
+  Int_t counter=0;
+  while(finput.good()) {
+    finput >> currentFile;
+    if (!currentFile.Contains("root")) continue; // protection
+    Bool_t isZip = currentFile.Contains("#");
+    const char * dirname = gSystem->DirName(currentFile.Data());
+    const char * fileName   =  gSystem->BaseName(currentFile.Data());
+    TString fstring=fileName;
+    fstring[fstring.First("#")]=0;
     Int_t status = 0;
     for (Int_t i=0; i<array->GetEntries(); i+=2){
       char fname[1000];
       //if (isZip) sprintf(fname,
-      sprintf(fname, "%s/%s",dirname,array->At(i)->GetName());
-      printf("\nFile to be checked %s/%s",dirname,array->At(i)->GetName());
+      sprintf(fname, "%s/%s#%s",dirname,fstring.Data(),array->At(i)->GetName());
+      printf(fname, "To check %s%s#%s\n",dirname,fstring.Data(),array->At(i)->GetName());
       //cout <<"\n arguments: "<< array->At(i+1)->GetName()<<" "<<checkLevel<<endl;
       Int_t cstatus = CheckTreeInFile(fname, array->At(i+1)->GetName(), checkLevel,0);
       //printf("  CheckTreeInFile returns %d",cstatus);

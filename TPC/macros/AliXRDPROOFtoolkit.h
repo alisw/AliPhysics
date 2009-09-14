@@ -40,6 +40,7 @@ class AliXRDPROOFtoolkit : public TObject
   //
   Bool_t ListOfFiles(const char*fileName, const char*path, const char*filter,  Bool_t displayMachine);
   static Bool_t FilterList(const char*inputList, const char*fileList, Int_t checkLevel);
+  static Bool_t FilterListZip(const char*inputList, const char*fileList, Int_t checkLevel);
   //
   //
   //
