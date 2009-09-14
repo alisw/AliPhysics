@@ -84,12 +84,13 @@ AliFastJetFinder::~AliFastJetFinder()
 //______________________________________________________________________________
 void AliFastJetFinder::FindJets()
 {
-  cout<<"----------in AliFastJetFinder::FindJets() ------------------"<<endl;
+
   //pick up fastjet header
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
   Bool_t debug  = header->GetDebug();     // debug option
   Bool_t bgMode = header->GetBGMode();    // choose to subtract BG or not
 
+  if(debug)cout<<"----------in AliFastJetFinder::FindJets() ------------------"<<endl;
   // check if we are reading AOD jets
   TRefArray *refs = 0;
   Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
@@ -179,7 +180,7 @@ void AliFastJetFinder::FindJets()
 	double area     = clust_seq.area(jets[j]);
 	double areaError = clust_seq.area_error(jets[j]);
 	
-	printf("Jet found %5d %9.5f %8.5f %10.3f %8.3f +- %6.3f\n", (Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp(), area, areaError);
+	if(debug)printf("Jet found %5d %9.5f %8.5f %10.3f %8.3f +- %6.3f\n", (Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp(), area, areaError);
 	
 	// go to write AOD  info
 	AliAODJet aodjet (jets[j].px(), jets[j].py(), jets[j].pz(), jets[j].E());
@@ -196,7 +197,7 @@ void AliFastJetFinder::FindJets()
     TClonesArray* fUnit = fReader->GetUnitArray();
     if(fUnit == 0) { cout << "Could not get the momentum array" << endl; return; }
     Int_t         nIn = fUnit->GetEntries();
-    cout<<"===== check Unit Array in AliFastJetFinder ========="<<endl;
+    if(debug)cout<<"===== check Unit Array in AliFastJetFinder ========="<<endl;
     Int_t ppp=0;
     for(Int_t ii=0; ii<nIn; ii++) 
       {
@@ -236,13 +237,13 @@ void AliFastJetFinder::FindJets()
     vector<fastjet::PseudoJet> jets = sorted_by_pt(inclusiveJets); // Added by me
     for (size_t j = 0; j < jets.size(); j++) { // loop for jets     // Added by me
       
-      printf("Jet found %5d %9.5f %8.5f %10.3f \n",(Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp());
+      if(debug)printf("Jet found %5d %9.5f %8.5f %10.3f \n",(Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp());
 
       vector<fastjet::PseudoJet> constituents = clust_seq.constituents(jets[j]);
       int nCon= constituents.size();
       TArrayI ind(nCon);
       Double_t area=clust_seq.area(jets[j]);
-      cout<<"area = "<<area<<endl;
+      if(debug)cout<<"area = "<<area<<endl;
       // go to write AOD  info
       AliAODJet aodjet (jets[j].px(), jets[j].py(), jets[j].pz(), jets[j].E());
       aodjet.SetEffArea(area,0);
