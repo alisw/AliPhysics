@@ -50,6 +50,7 @@
 
 
 #include "THerwig6.h"
+#include "HCommon.h"
 #include "TClonesArray.h"
 #include "TParticle.h"
 #include "TObjArray.h"
@@ -58,55 +59,12 @@
 ClassImp(THerwig6)
 
 extern "C" {
-  void*  herwig6_common_block_address_(char*, int len);
   void   herwig6_open_fortran_file_ (int* lun, char* name, int);
   void   herwig6_close_fortran_file_(int* lun);
 }
 
 
-THerwig6::THerwig6() : TGenerator("Herwig6","Herwig6"),
-  fHepevt((Hepevt_t*) herwig6_common_block_address_((char*)"HEPEVT",6)),
-  fHwbeam((Hwbeam_t*) herwig6_common_block_address_((char*)"HWBEAM",6)),
-  fHwbmch((Hwbmch_t*) herwig6_common_block_address_((char*)"HWBMCH",6)),
-  fHwproc((Hwproc_t*) herwig6_common_block_address_((char*)"HWPROC",6)),
-  fHwpram((Hwpram_t*) herwig6_common_block_address_((char*)"HWPRAM",6)),
-  fHwprch((Hwprch_t*) herwig6_common_block_address_((char*)"HWPRCH",6)),
-  fHwpart((Hwpart_t*) herwig6_common_block_address_((char*)"HWPART",6)),
-  fHwparp((Hwparp_t*) herwig6_common_block_address_((char*)"HWPARP",6)),
-  fHwbosc((Hwbosc_t*) herwig6_common_block_address_((char*)"HWBOSC",6)),
-  fHwparc((Hwparc_t*) herwig6_common_block_address_((char*)"HWPARC",6)),
-  fHwbrch((Hwbrch_t*) herwig6_common_block_address_((char*)"HWBRCH",6)),
-  fHwevnt((Hwevnt_t*) herwig6_common_block_address_((char*)"HWEVNT",6)),
-  fHwhard((Hwhard_t*) herwig6_common_block_address_((char*)"HWHARD",6)),
-  fHwprop((Hwprop_t*) herwig6_common_block_address_((char*)"HWPROP",6)),
-  fHwunam((Hwunam_t*) herwig6_common_block_address_((char*)"HWUNAM",6)),
-  fHwupdt((Hwupdt_t*) herwig6_common_block_address_((char*)"HWUPDT",6)),
-  fHwuwts((Hwuwts_t*) herwig6_common_block_address_((char*)"HWUWTS",6)),
-  fHwuclu((Hwuclu_t*) herwig6_common_block_address_((char*)"HWUCLU",6)),
-  fHwdist((Hwdist_t*) herwig6_common_block_address_((char*)"HWDIST",6)),
-  fHwqdks((Hwqdks_t*) herwig6_common_block_address_((char*)"HWQDKS",6)),
-  fHwusud((Hwusud_t*) herwig6_common_block_address_((char*)"HWUSUD",6)),
-  fHwsusy((Hwsusy_t*) herwig6_common_block_address_((char*)"HWSUSY",6)),
-  fHwrpar((Hwrpar_t*) herwig6_common_block_address_((char*)"HWRPAR",6)),
-  fHwminb((Hwminb_t*) herwig6_common_block_address_((char*)"HWMINB",6)),
-  fHwclus((Hwclus_t*) herwig6_common_block_address_((char*)"HWCLUS",6)),
-  fHwgrav((Hwgrav_t*) herwig6_common_block_address_((char*)"HWGRAV",6)),
-  fHw6202((Hw6202_t*) herwig6_common_block_address_((char*)"HW6202",6)),
-  fHw6203((Hw6203_t*) herwig6_common_block_address_((char*)"HW6203",6)),
-  fHw6300((Hw6300_t*) herwig6_common_block_address_((char*)"HW6300",6)),
-  fHwpmrs((Hwpmrs_t*) herwig6_common_block_address_((char*)"HWPMRS",6)),
-  fHwcirc((Hwcirc_t*) herwig6_common_block_address_((char*)"HWCIRC",6)),
-  fHwdspb((Hwdspb_t*) herwig6_common_block_address_((char*)"HWDSPB",6)),
-  fHwdsp2((Hwdsp2_t*) herwig6_common_block_address_((char*)"HWDSP2",6)),
-  fHwdsp3((Hwdsp3_t*) herwig6_common_block_address_((char*)"HWDSP3",6)),
-  fHwdsp4((Hwdsp4_t*) herwig6_common_block_address_((char*)"HWDSP4",6)),
-  fHwdspn((Hwdspn_t*) herwig6_common_block_address_((char*)"HWDSPN",6)),
-  fHwspin((Hwspin_t*) herwig6_common_block_address_((char*)"HWSPIN",6)),
-  fHwstau((Hwstau_t*) herwig6_common_block_address_((char*)"HWSTAU",6)),
-  fHwgupr((Hwgupr_t*) herwig6_common_block_address_((char*)"HWGUPR",6)),
-  fHw6500((Hw6500_t*) herwig6_common_block_address_((char*)"HW6500",6)),
-  fHw6504((Hw6504_t*) herwig6_common_block_address_((char*)"HW6504",6)),
-  fHw6506((Hw6506_t*) herwig6_common_block_address_((char*)"HW6506",6))
+THerwig6::THerwig6() : TGenerator("Herwig6","Herwig6")
 {
 
 // THerwig6 constructor: creates a TClonesArray in which it will store all
@@ -119,49 +77,7 @@ THerwig6::THerwig6() : TGenerator("Herwig6","Herwig6"),
   // initialize common-blocks
  }
 
-THerwig6::THerwig6(const THerwig6 & source): TGenerator(source),
-  fHepevt((Hepevt_t*) herwig6_common_block_address_((char*)"HEPEVT",6)),
-  fHwbeam((Hwbeam_t*) herwig6_common_block_address_((char*)"HWBEAM",6)),
-  fHwbmch((Hwbmch_t*) herwig6_common_block_address_((char*)"HWBMCH",6)),
-  fHwproc((Hwproc_t*) herwig6_common_block_address_((char*)"HWPROC",6)),
-  fHwpram((Hwpram_t*) herwig6_common_block_address_((char*)"HWPRAM",6)),
-  fHwprch((Hwprch_t*) herwig6_common_block_address_((char*)"HWPRCH",6)),
-  fHwpart((Hwpart_t*) herwig6_common_block_address_((char*)"HWPART",6)),
-  fHwparp((Hwparp_t*) herwig6_common_block_address_((char*)"HWPARP",6)),
-  fHwbosc((Hwbosc_t*) herwig6_common_block_address_((char*)"HWBOSC",6)),
-  fHwparc((Hwparc_t*) herwig6_common_block_address_((char*)"HWPARC",6)),
-  fHwbrch((Hwbrch_t*) herwig6_common_block_address_((char*)"HWBRCH",6)),
-  fHwevnt((Hwevnt_t*) herwig6_common_block_address_((char*)"HWEVNT",6)),
-  fHwhard((Hwhard_t*) herwig6_common_block_address_((char*)"HWHARD",6)),
-  fHwprop((Hwprop_t*) herwig6_common_block_address_((char*)"HWPROP",6)),
-  fHwunam((Hwunam_t*) herwig6_common_block_address_((char*)"HWUNAM",6)),
-  fHwupdt((Hwupdt_t*) herwig6_common_block_address_((char*)"HWUPDT",6)),
-  fHwuwts((Hwuwts_t*) herwig6_common_block_address_((char*)"HWUWTS",6)),
-  fHwuclu((Hwuclu_t*) herwig6_common_block_address_((char*)"HWUCLU",6)),
-  fHwdist((Hwdist_t*) herwig6_common_block_address_((char*)"HWDIST",6)),
-  fHwqdks((Hwqdks_t*) herwig6_common_block_address_((char*)"HWQDKS",6)),
-  fHwusud((Hwusud_t*) herwig6_common_block_address_((char*)"HWUSUD",6)),
-  fHwsusy((Hwsusy_t*) herwig6_common_block_address_((char*)"HWSUSY",6)),
-  fHwrpar((Hwrpar_t*) herwig6_common_block_address_((char*)"HWRPAR",6)),
-  fHwminb((Hwminb_t*) herwig6_common_block_address_((char*)"HWMINB",6)),
-  fHwclus((Hwclus_t*) herwig6_common_block_address_((char*)"HWCLUS",6)),
-  fHwgrav((Hwgrav_t*) herwig6_common_block_address_((char*)"HWGRAV",6)),
-  fHw6202((Hw6202_t*) herwig6_common_block_address_((char*)"HW6202",6)),
-  fHw6203((Hw6203_t*) herwig6_common_block_address_((char*)"HW6203",6)),
-  fHw6300((Hw6300_t*) herwig6_common_block_address_((char*)"HW6300",6)),
-  fHwpmrs((Hwpmrs_t*) herwig6_common_block_address_((char*)"HWPMRS",6)),
-  fHwcirc((Hwcirc_t*) herwig6_common_block_address_((char*)"HWCIRC",6)),
-  fHwdspb((Hwdspb_t*) herwig6_common_block_address_((char*)"HWDSPB",6)),
-  fHwdsp2((Hwdsp2_t*) herwig6_common_block_address_((char*)"HWDSP2",6)),
-  fHwdsp3((Hwdsp3_t*) herwig6_common_block_address_((char*)"HWDSP3",6)),
-  fHwdsp4((Hwdsp4_t*) herwig6_common_block_address_((char*)"HWDSP4",6)),
-  fHwdspn((Hwdspn_t*) herwig6_common_block_address_((char*)"HWDSPN",6)),
-  fHwspin((Hwspin_t*) herwig6_common_block_address_((char*)"HWSPIN",6)),
-  fHwstau((Hwstau_t*) herwig6_common_block_address_((char*)"HWSTAU",6)),
-  fHwgupr((Hwgupr_t*) herwig6_common_block_address_((char*)"HWGUPR",6)),
-  fHw6500((Hw6500_t*) herwig6_common_block_address_((char*)"HW6500",6)),
-  fHw6504((Hw6504_t*) herwig6_common_block_address_((char*)"HW6504",6)),
-  fHw6506((Hw6506_t*) herwig6_common_block_address_((char*)"HW6506",6))
+THerwig6::THerwig6(const THerwig6 & source): TGenerator(source)
 {
     Fatal("THerwig6","Copy constructor not implemented yet");
 }
@@ -268,15 +184,15 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
 
    // initialization:
    // type of beams
-   strncpy(fHwbmch->PART1,beam,8);
-   strncpy(fHwbmch->PART2,target,8);
+   strncpy(HWBMCH.PART1,beam,8);
+   strncpy(HWBMCH.PART2,target,8);
    // momentum of beams
-   fHwproc->PBEAM1=pbeam1;
-   fHwproc->PBEAM2=pbeam2;
+   HWPROC.PBEAM1=pbeam1;
+   HWPROC.PBEAM2=pbeam2;
    // process to generate
-   fHwproc->IPROC=iproc;
+   HWPROC.IPROC=iproc;
    // not used in the class definition
-   fHwproc->MAXEV=1;
+   HWPROC.MAXEV=1;
    
    // reset all parameters
    hwigin_();
@@ -351,15 +267,15 @@ void THerwig6::InitializeJimmy(const char *beam, const char *target, double pbea
 
    // initialization:
    // type of beams
-   strncpy(fHwbmch->PART1,beam,8);
-   strncpy(fHwbmch->PART2,target,8);
+   strncpy(HWBMCH.PART1,beam,8);
+   strncpy(HWBMCH.PART2,target,8);
    // momentum of beams
-   fHwproc->PBEAM1=pbeam1;
-   fHwproc->PBEAM2=pbeam2;
+   HWPROC.PBEAM1=pbeam1;
+   HWPROC.PBEAM2=pbeam2;
    // process to generate
-   fHwproc->IPROC=iproc;
+   HWPROC.IPROC=iproc;
    // not used in the class definition
-   fHwproc->MAXEV=1;
+   HWPROC.MAXEV=1;
 
    // reset all parameters
    hwigin_();
@@ -404,51 +320,51 @@ TObjArray* THerwig6::ImportParticles(Option_t *option)
 //  If the option = "All", all the particles are stored.
 //
   fParticles->Clear();
-  Int_t numpart = fHepevt->NHEP;
+  Int_t numpart = HEPEVT.NHEP;
   TClonesArray &a = *((TClonesArray*)fParticles);
   if (!strcmp(option,"") || !strcmp(option,"Final")) {
     for (Int_t i = 0; i < numpart; i++) {
-      if (fHepevt->ISTHEP[i] == 1) {
+      if (HEPEVT.ISTHEP[i] == 1) {
 //
 //  Use the common block values for the TParticle constructor
 //
         new(a[i]) TParticle(
-                                   fHepevt->IDHEP[i],
-                                   fHepevt->ISTHEP[i],
-                                   fHepevt->JMOHEP[i][0]-1,
-                                   fHepevt->JMOHEP[i][1]-1,
-                                   fHepevt->JDAHEP[i][0]-1,
-                                   fHepevt->JDAHEP[i][1]-1,
+                                   HEPEVT.IDHEP[i],
+                                   HEPEVT.ISTHEP[i],
+                                   HEPEVT.JMOHEP[i][0]-1,
+                                   HEPEVT.JMOHEP[i][1]-1,
+                                   HEPEVT.JDAHEP[i][0]-1,
+                                   HEPEVT.JDAHEP[i][1]-1,
 
-                                   fHepevt->PHEP[i][0],
-                                   fHepevt->PHEP[i][1],
-                                   fHepevt->PHEP[i][2],
-                                   fHepevt->PHEP[i][3],
-                                   fHepevt->VHEP[i][0],
-                                   fHepevt->VHEP[i][1],
-                                   fHepevt->VHEP[i][2],
-                                   fHepevt->VHEP[i][3]);
+                                   HEPEVT.PHEP[i][0],
+                                   HEPEVT.PHEP[i][1],
+                                   HEPEVT.PHEP[i][2],
+                                   HEPEVT.PHEP[i][3],
+                                   HEPEVT.VHEP[i][0],
+                                   HEPEVT.VHEP[i][1],
+                                   HEPEVT.VHEP[i][2],
+                                   HEPEVT.VHEP[i][3]);
         }
      }
   }
   else if (!strcmp(option,"All")) {
     for (Int_t i = 0; i < numpart; i++) {
       new(a[i]) TParticle(
-                                   fHepevt->IDHEP[i],
-                                   fHepevt->ISTHEP[i],
-                                   fHepevt->JMOHEP[i][0]-1,
-                                   fHepevt->JMOHEP[i][1]-1,
-                                   fHepevt->JDAHEP[i][0]-1,
-                                   fHepevt->JDAHEP[i][1]-1,
+                                   HEPEVT.IDHEP[i],
+                                   HEPEVT.ISTHEP[i],
+                                   HEPEVT.JMOHEP[i][0]-1,
+                                   HEPEVT.JMOHEP[i][1]-1,
+                                   HEPEVT.JDAHEP[i][0]-1,
+                                   HEPEVT.JDAHEP[i][1]-1,
 
-                                   fHepevt->PHEP[i][0],
-                                   fHepevt->PHEP[i][1],
-                                   fHepevt->PHEP[i][2],
-                                   fHepevt->PHEP[i][3],
-                                   fHepevt->VHEP[i][0],
-                                   fHepevt->VHEP[i][1],
-                                   fHepevt->VHEP[i][2],
-                                   fHepevt->VHEP[i][3]);
+                                   HEPEVT.PHEP[i][0],
+                                   HEPEVT.PHEP[i][1],
+                                   HEPEVT.PHEP[i][2],
+                                   HEPEVT.PHEP[i][3],
+                                   HEPEVT.VHEP[i][0],
+                                   HEPEVT.VHEP[i][1],
+                                   HEPEVT.VHEP[i][2],
+                                   HEPEVT.VHEP[i][3]);
     }
   }
   return fParticles;
@@ -471,50 +387,50 @@ Int_t THerwig6::ImportParticles(TClonesArray *particles, Option_t *option)
   if (particles == 0) return 0;
   TClonesArray &refParticles = *particles;
   refParticles.Clear();
-  Int_t numpart = fHepevt->NHEP;
+  Int_t numpart = HEPEVT.NHEP;
   if (!strcmp(option,"") || !strcmp(option,"Final")) {
     for (Int_t i = 0; i < numpart; i++) {
-      if (fHepevt->ISTHEP[i] == 1) {
+      if (HEPEVT.ISTHEP[i] == 1) {
 //
 //  Use the common block values for the TParticle constructor
 //
         new(refParticles[i]) TParticle(
-                                   fHepevt->IDHEP[i],
-                                   fHepevt->ISTHEP[i],
-                                   fHepevt->JMOHEP[i][0]-1,
-                                   fHepevt->JMOHEP[i][1]-1,
-                                   fHepevt->JDAHEP[i][0]-1,
-                                   fHepevt->JDAHEP[i][1]-1,
+                                   HEPEVT.IDHEP[i],
+                                   HEPEVT.ISTHEP[i],
+                                   HEPEVT.JMOHEP[i][0]-1,
+                                   HEPEVT.JMOHEP[i][1]-1,
+                                   HEPEVT.JDAHEP[i][0]-1,
+                                   HEPEVT.JDAHEP[i][1]-1,
 
-                                   fHepevt->PHEP[i][0],
-                                   fHepevt->PHEP[i][1],
-                                   fHepevt->PHEP[i][2],
-                                   fHepevt->PHEP[i][3],
-                                   fHepevt->VHEP[i][0],
-                                   fHepevt->VHEP[i][1],
-                                   fHepevt->VHEP[i][2],
-                                   fHepevt->VHEP[i][3]);
+                                   HEPEVT.PHEP[i][0],
+                                   HEPEVT.PHEP[i][1],
+                                   HEPEVT.PHEP[i][2],
+                                   HEPEVT.PHEP[i][3],
+                                   HEPEVT.VHEP[i][0],
+                                   HEPEVT.VHEP[i][1],
+                                   HEPEVT.VHEP[i][2],
+                                   HEPEVT.VHEP[i][3]);
         }
      }
   }
   else if (!strcmp(option,"All")) {
     for (Int_t i = 0; i< numpart; i++) {
       new(refParticles[i]) TParticle(
-                                   fHepevt->IDHEP[i],
-                                   fHepevt->ISTHEP[i],
-                                   fHepevt->JMOHEP[i][0]-1,
-                                   fHepevt->JMOHEP[i][1]-1,
-                                   fHepevt->JDAHEP[i][0]-1,
-                                   fHepevt->JDAHEP[i][1]-1,
+                                   HEPEVT.IDHEP[i],
+                                   HEPEVT.ISTHEP[i],
+                                   HEPEVT.JMOHEP[i][0]-1,
+                                   HEPEVT.JMOHEP[i][1]-1,
+                                   HEPEVT.JDAHEP[i][0]-1,
+                                   HEPEVT.JDAHEP[i][1]-1,
 
-                                   fHepevt->PHEP[i][0],
-                                   fHepevt->PHEP[i][1],
-                                   fHepevt->PHEP[i][2],
-                                   fHepevt->PHEP[i][3],
-                                   fHepevt->VHEP[i][0],
-                                   fHepevt->VHEP[i][1],
-                                   fHepevt->VHEP[i][2],
-                                   fHepevt->VHEP[i][3]);
+                                   HEPEVT.PHEP[i][0],
+                                   HEPEVT.PHEP[i][1],
+                                   HEPEVT.PHEP[i][2],
+                                   HEPEVT.PHEP[i][3],
+                                   HEPEVT.VHEP[i][0],
+                                   HEPEVT.VHEP[i][1],
+                                   HEPEVT.VHEP[i][2],
+                                   HEPEVT.VHEP[i][3]); // 
     }
   }
   return numpart;
@@ -658,8 +574,123 @@ void THerwig6::Jmefin()
   jmefin_();
 }
 
+void THerwig6::PrintEvt()
+{
+    hwuepr_();
+    
+}
+
+  // acces to hep common block
+int         THerwig6::GetNEVHEP        () const     { return HEPEVT.NEVHEP; }
+int         THerwig6::GetNhep          () const     { return HEPEVT.NHEP; }
+int         THerwig6::GetISTHEP    (int i)const     { return HEPEVT.ISTHEP[i-1]; }
+int         THerwig6::GetIDHEP     (int i)const     { return HEPEVT.IDHEP[i-1]; }
+int         THerwig6::GetJMOHEP (int i, int j) const
+{ return HEPEVT.JMOHEP[i-1][j-1]; }
+int         THerwig6::GetJDAHEP (int i, int j) const
+{ return HEPEVT.JDAHEP[i-1][j-1]; }
+double      THerwig6::GetPHEP   (int i, int j) const
+{ return HEPEVT.PHEP[i-1][j-1]; }
+double      THerwig6::GetVHEP   (int i, int j) const
+{ return HEPEVT.VHEP[i-1][j-1]; }
+
+// access to Herwig6 common-blocks
+// WARNING: Some arrays start in 1, others in 0. Look up the manual!
+
+// /HWBEAM/
+
+int         THerwig6::GetIPART1        () const     { return HWBEAM.IPART1; }
+int         THerwig6::GetIPART2        () const     { return HWBEAM.IPART2; }
+
+// /HWBMCH/
+char*       THerwig6::GetPART1         () const     { return HWBMCH.PART1; }
+char*       THerwig6::GetPART2         () const     { return HWBMCH.PART2; }
 
 
+// /HWPROC/
+double      THerwig6::GetEBEAM1        () const     { return HWPROC.EBEAM1; }
+double      THerwig6::GetEBEAM2        () const     { return HWPROC.EBEAM2; }
+double      THerwig6::GetPBEAM1        () const     { return HWPROC.PBEAM1; }
+double      THerwig6::GetPBEAM2        () const     { return HWPROC.PBEAM2; }
+int         THerwig6::GetIPROC         () const     { return HWPROC.IPROC; }
+int         THerwig6::GetMAXEV         () const     { return HWPROC.MAXEV; }
+
+// /HWPRAM/
+double      THerwig6::GetQCDLAM        () const     { return HWPRAM.QCDLAM; }
+void        THerwig6::SetQCDLAM   (double q)        { HWPRAM.QCDLAM = q; }
+double      THerwig6::GetVQCUT         () const     { return HWPRAM.VQCUT; }
+void        THerwig6::SetVQCUT    (double v)        { HWPRAM.VQCUT = v; }
+double      THerwig6::GetVGCUT         () const     { return HWPRAM.VGCUT; }
+void        THerwig6::SetVGCUT    (double v)        { HWPRAM.VGCUT = v; }
+double      THerwig6::GetVPCUT         () const     { return HWPRAM.VPCUT; }
+void        THerwig6::SetVPCUT    (double v)        { HWPRAM.VPCUT = v; }
+double      THerwig6::GetCLMAX         () const     { return HWPRAM.CLMAX; }
+void        THerwig6::SetCLMAX    (double c)        { HWPRAM.CLMAX = c; }
+double      THerwig6::GetCLPOW         () const     { return HWPRAM.CLPOW; }
+void        THerwig6::SetCLPOW    (double c)        { HWPRAM.CLPOW = c; }
+double      THerwig6::GetPSPLT    (int i) const     { return HWPRAM.PSPLT[i-1];}
+void        THerwig6::SetPSPLT    (int i, double p) { HWPRAM.PSPLT[i-1] = p;}
+double      THerwig6::GetQDIQK         () const     { return HWPRAM.QDIQK; }
+void        THerwig6::SetQDIQK    (double q)        { HWPRAM.QDIQK = q; }
+double      THerwig6::GetPDIQK         () const     { return HWPRAM.PDIQK; }
+void        THerwig6::SetPDIQK    (double p)        { HWPRAM.PDIQK = p; }
+double      THerwig6::GetQSPAC         () const     { return HWPRAM.QSPAC; }
+void        THerwig6::SetQSPAC    (double q)        { HWPRAM.QSPAC = q; }
+double      THerwig6::GetPTRMS         () const     { return HWPRAM.PTRMS; }
+void        THerwig6::SetPTRMS    (double p)        { HWPRAM.PTRMS = p; }
+double      THerwig6::GetENSOF         () const     { return HWPRAM.ENSOF; }
+void        THerwig6::SetENSOF    (double e)        { HWPRAM.ENSOF = e; }
+int         THerwig6::GetIPRINT        () const     { return HWPRAM.IPRINT; }
+void        THerwig6::SetIPRINT   (int i)           { HWPRAM.IPRINT = i; }
+int         THerwig6::GetMODPDF   (int i) const     { return HWPRAM.MODPDF[i-1];}
+void        THerwig6::SetMODPDF   (int i, int j)  { HWPRAM.MODPDF[i-1] = j; }
+int         THerwig6::GetNSTRU         () const     { return HWPRAM.NSTRU; }
+void        THerwig6::SetNSTRU    (int i)          { HWPRAM.NSTRU = i; }
+
+// /HWPRCH/
+char*       THerwig6::GetAUTPDF     (int i)         { return HWPRCH.AUTPDF[i-1]; }
+void        THerwig6::SetAUTPDF(int i,const char* s){ strncpy(HWPRCH.AUTPDF[i-1],s,20);}
+char*       THerwig6::GetBDECAY        ()           { return HWPRCH.BDECAY; }
+
+// /HWEVNT/
+double      THerwig6::GetAVWGT         () const     { return HWEVNT.AVWGT; }
+int         THerwig6::GetMAXPR         () const     { return HWEVNT.MAXPR; }
+void        THerwig6::SetMAXPR    (int i)           { HWEVNT.MAXPR = i; }
+int         THerwig6::GetMAXER         () const     { return HWEVNT.MAXER; }
+void        THerwig6::SetMAXER    (int i)           { HWEVNT.MAXER = i; }
+int         THerwig6::GetNRN      (int i) const     { return HWEVNT.NRN[i-1]; }
+void        THerwig6::SetNRN    (int i, int j)      { HWEVNT.NRN[i-1] = j; }
+double      THerwig6::GetEVWGT         () const     { return HWEVNT.EVWGT; }
+
+int         THerwig6::GetIDHW     (int i) const     { return HWEVNT.IDHW[i]; }
+
+int         THerwig6::GetIERROR        () const     { return HWEVNT.IERROR; }
+
+// /HWHARD/
+double      THerwig6::GetPTMIN         () const     { return HWHARD.PTMIN; }
+void        THerwig6::SetPTMIN    (double d)        { HWHARD.PTMIN = d; }
+double      THerwig6::GetPTMAX         () const     { return HWHARD.PTMAX; }
+void        THerwig6::SetPTMAX    (double d)        { HWHARD.PTMAX = d; }
+double      THerwig6::GetPTPOW         () const     { return HWHARD.PTPOW; }
+void        THerwig6::SetPTPOW    (double d)        { HWHARD.PTPOW = d; }
+double      THerwig6::GetYJMIN         () const     { return HWHARD.YJMIN; }
+void        THerwig6::SetYJMIN    (double d)        { HWHARD.YJMIN = d; }
+double      THerwig6::GetYJMAX         () const     { return HWHARD.YJMAX; }
+void        THerwig6::SetYJMAX    (double d)        { HWHARD.YJMAX = d; }
+double      THerwig6::GetQ2MIN         () const     { return HWHARD.Q2MIN; }
+void        THerwig6::SetQ2MIN    (double d)        { HWHARD.Q2MIN = d; }
+double      THerwig6::GetQ2MAX         () const     { return HWHARD.Q2MAX; }
+void        THerwig6::SetQ2MAX    (double d)        { HWHARD.Q2MAX = d; }
+double      THerwig6::GetYBMIN         () const     { return HWHARD.YBMIN; }
+void        THerwig6::SetYBMIN    (double d)        { HWHARD.YBMIN = d; }
+double      THerwig6::GetYBMAX         () const     { return HWHARD.YBMAX; }
+void        THerwig6::SetYBMAX    (double d)        { HWHARD.YBMAX = d; }
+double      THerwig6::GetZJMAX        ()  const     { return HWHARD.ZJMAX; }
+void        THerwig6::SetZJMAX    (double d)        { HWHARD.ZJMAX = d; }
+
+// /HWPROP/
+double      THerwig6::GetRMASS      (int i) const   { return HWPROP.RMASS[i]; }
+void        THerwig6::SetRMASS    (int i, double r) { HWPROP.RMASS[i] = r; }
 
 
-
+void        THerwig6::GetRNAME (int i, char a[9])   { for (int j=0;j<8;j++) a[j] = HWUNAM.RNAME[i][j]; a[8] = '\0';}

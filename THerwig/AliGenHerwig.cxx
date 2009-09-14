@@ -124,8 +124,8 @@ AliGenHerwig::~AliGenHerwig()
 
 void AliGenHerwig::SetEventListRange(Int_t eventFirst, Int_t eventLast)
 {
-  fEv1Pr = ++eventFirst;
-  fEv2Pr = ++eventLast;
+  fEv1Pr = eventFirst;
+  fEv2Pr = eventLast;
   if ( fEv2Pr == -1 ) fEv2Pr = fEv2Pr;
 }
 
@@ -137,7 +137,7 @@ void AliGenHerwig::Init()
   SetMC(new THerwig6());
   fHerwig=(THerwig6*) fMCEvGen;
   // initialize common blocks
-  fHerwig->Initialize(fProjectile, fTarget, fMomentum1, fMomentum2, fProcess);
+  fHerwig->Initialize(fProjectile.Data(), fTarget.Data(), fMomentum1, fMomentum2, fProcess); // 
   // reset parameters according to user needs
   InitPDF();
   fHerwig->SetPTMIN(fPtHardMin);
@@ -146,10 +146,6 @@ void AliGenHerwig::Init()
   fHerwig->SetMAXPR(fMaxPr);
   fHerwig->SetMAXER(fMaxErrors);
   fHerwig->SetENSOF(fEnSoft);
-
-  fHerwig->SetEV1PR(fEv1Pr);
-  fHerwig->SetEV2PR(fEv2Pr);
-
 // C---D,U,S,C,B,T QUARK AND GLUON MASSES (IN THAT ORDER)
 //       RMASS(1)=0.32
 //       RMASS(2)=0.32
@@ -186,9 +182,6 @@ void AliGenHerwig::InitJimmy()
   fHerwig->SetMAXPR(fMaxPr);
   fHerwig->SetMAXER(fMaxErrors);
   fHerwig->SetENSOF(fEnSoft);
-
-  fHerwig->SetEV1PR(fEv1Pr);
-  fHerwig->SetEV2PR(fEv2Pr);
 
 // C---D,U,S,C,B,T QUARK AND GLUON MASSES (IN THAT ORDER)
 //       RMASS(1)=0.32
@@ -316,6 +309,14 @@ void AliGenHerwig::Generate()
 	  if (!CheckParton(parton1, parton2))  continue ;
 	} 
 
+	// 
+	if (gAlice) {
+	    if (gAlice->GetEvNumber()>=fEv1Pr &&
+		gAlice->GetEvNumber()<=fEv2Pr) fHerwig->PrintEvt();
+
+	}
+
+	
 	Int_t nc=0;
 
 	Int_t * newPos = new Int_t[np];
