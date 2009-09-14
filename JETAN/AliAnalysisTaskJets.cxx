@@ -69,7 +69,8 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
   fAODExtension(0x0),
   fListOfHistos(0x0),
   fChain(0x0),
-  fOpt(0)
+  fOpt(0),
+  fReadAODFromOutput(0)
 {
   // Default constructor
   DefineOutput(1, TList::Class());
@@ -85,7 +86,8 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name, TChain* chain):
   fAODExtension(0x0),
   fListOfHistos(0x0),
   fChain(chain),
-  fOpt(0)
+  fOpt(0),
+  fReadAODFromOutput(0)
 {
   // Default constructor
   DefineOutput(1, TList::Class());
@@ -223,9 +225,11 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
     evBkg->Reset();
   }
 
-  if (dynamic_cast<AliAODEvent*>(InputEvent()) !=  0) {
+  if (dynamic_cast<AliAODEvent*>(InputEvent()) !=  0 && !fReadAODFromOutput) {
+// AOD is input event..........................................V                                       
       fJetFinder->GetReader()->SetInputEvent(InputEvent(), InputEvent(), MCEvent());
   } else {
+// AOD is read from output ....................................V      
       fJetFinder->GetReader()->SetInputEvent(InputEvent(), AODEvent(), MCEvent());
   }
   
