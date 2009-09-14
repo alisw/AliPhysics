@@ -18,7 +18,7 @@
 
 //forward declarations
 class AliHLTTPCSpacePointData;
-class AliTPCParamSR;
+class AliTPCParam;
 class TObjArray;
 
 /**
@@ -78,7 +78,7 @@ class AliHLTTPCCalibSeedMakerComponent : public AliHLTProcessor {
       AliHLTUInt8_t   fMaxSlice;      //!transient
       AliHLTUInt8_t   fMinPartition;  //!transient
       AliHLTUInt8_t   fMaxPartition;  //!transient
-      AliTPCParamSR  *fTPCGeomParam;   //!transient
+      AliTPCParam    *fTPCGeomParam;  //!transient
       
       AliHLTTPCSpacePointData *fClustersArray[36][6]; //! transient
       UInt_t                   fNSpacePoints[36][6];  //! transient

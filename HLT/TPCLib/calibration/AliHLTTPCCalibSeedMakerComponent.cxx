@@ -38,7 +38,7 @@ using namespace std;
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
 #include "AliTPCcalibDB.h"
-#include "AliTPCParamSR.h"
+#include "AliTPCParam.h"
 
 #include "AliRieman.h"
 
@@ -128,8 +128,8 @@ AliHLTComponent* AliHLTTPCCalibSeedMakerComponent::Spawn() {
 int AliHLTTPCCalibSeedMakerComponent::DoInit( int /*argc*/, const char** /*argv*/ ) { 
 // see header file for class documentation
  
-  fTPCGeomParam = new AliTPCParamSR;
-  if(fTPCGeomParam) fTPCGeomParam->ReadGeoMatrices();  
+  fTPCGeomParam = AliTPCcalibDB::Instance()->GetParameters();
+  if(!fTPCGeomParam) HLTError("TPC Parameters are not loaded.");
   
   fSeedArray = new TObjArray;
   fSeedArray->SetOwner(kTRUE);
@@ -230,10 +230,10 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
     	  Double_t xrow[160]; for(Int_t i=0; i<160; i++) xrow[i] = 0.;
     	  Int_t nrowlow = fTPCGeomParam->GetNRowLow();
     	  Int_t nrowup  = fTPCGeomParam->GetNRowUp();
-
+	
     	  for (Int_t i=0;i<nrowlow;i++) xrow[i]         = fTPCGeomParam->GetPadRowRadiiLow(i);
     	  for (Int_t i=0;i<nrowup;i++)  xrow[i+nrowlow] = fTPCGeomParam->GetPadRowRadiiUp(i);
-
+	  
     	  // sector rotation angles - only one angle is needed
     	  Double_t angle = fTPCGeomParam->GetInnerAngle();
     	    
