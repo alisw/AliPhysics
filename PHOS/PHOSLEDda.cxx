@@ -5,7 +5,7 @@ reference run: /alice/data/2009/LHC09b_PHOS/000075883/raw/09000075883017.20.root
 run type: LED
 DA type: MON 
 number of events needed: 1000
-input files: RCU0.data  RCU1.data  RCU2.data  RCU3.data  zs.txt
+input files: Mod0RCU0.data Mod0RCU1.data Mod0RCU2.data Mod0RCU3.data Mod1RCU0.data Mod1RCU1.data Mod1RCU2.data Mod1RCU3.data Mod2RCU0.data Mod2RCU1.data Mod2RCU2.data Mod2RCU3.data Mod3RCU0.data Mod3RCU1.data Mod3RCU2.data Mod3RCU3.data Mod4RCU0.data Mod4RCU1.data Mod4RCU2.data Mod4RCU3.data zs.txt
 Output files: PHOS_LED.root.
 Trigger types used: CALIBRATION_EVENT
 */
@@ -59,17 +59,38 @@ int main(int argc, char **argv) {
   const char* zsfile = "zs.txt";
   int failZS = daqDA_DB_getFile(zsfile, zsfile);
   
-  Int_t offset,threshold;
+  short offset,threshold;
   
   if(!failZS) {
     FILE *f = fopen(zsfile,"r");
     int scan = fscanf(f,"%d %d",&offset,&threshold);
   }
-
+  
   /* Retrieve mapping files from DAQ DB */ 
-  const char* mapFiles[4] = {"RCU0.data","RCU1.data","RCU2.data","RCU3.data"};
+  const char* mapFiles[20] = {
+    "Mod0RCU0.data",
+    "Mod0RCU1.data",
+    "Mod0RCU2.data",
+    "Mod0RCU3.data",
+    "Mod1RCU0.data",
+    "Mod1RCU1.data",
+    "Mod1RCU2.data",
+    "Mod1RCU3.data",
+    "Mod2RCU0.data",
+    "Mod2RCU1.data",
+    "Mod2RCU2.data",
+    "Mod2RCU3.data",
+    "Mod3RCU0.data",
+    "Mod3RCU1.data",
+    "Mod3RCU2.data",
+    "Mod3RCU3.data",
+    "Mod4RCU0.data",
+    "Mod4RCU1.data",
+    "Mod4RCU2.data",
+    "Mod4RCU3.data"
+  };
 
-  for(Int_t iFile=0; iFile<4; iFile++) {
+  for(Int_t iFile=0; iFile<20; iFile++) {
     int failed = daqDA_DB_getFile(mapFiles[iFile], mapFiles[iFile]);
     if(failed) { 
       printf("Cannot retrieve file %s from DAQ DB. Exit.\n",mapFiles[iFile]);
@@ -78,18 +99,28 @@ int main(int argc, char **argv) {
   }
   
   /* Open mapping files */
-  AliAltroMapping *mapping[4];
+  AliAltroMapping *mapping[20];
   TString path = "./";
-  path += "RCU";
+
+  path += "Mod";
   TString path2;
-  for(Int_t i = 0; i < 4; i++) {
+  TString path3;
+  Int_t iMap = 0;
+
+  for(Int_t iMod = 0; iMod < 5; iMod++) {
     path2 = path;
-    path2 += i;
-    path2 += ".data";
-    mapping[i] = new AliCaloAltroMapping(path2.Data());
+    path2 += iMod;
+    path2 += "RCU";
+
+    for(Int_t iRCU=0; iRCU<4; iRCU++) {
+      path3 = path2;
+      path3 += iRCU;
+      path3 += ".data";
+      mapping[iMap] = new AliCaloAltroMapping(path3.Data());
+      iMap++;
+    }
   }
   
-
   /* define data source : this is argument 1 */  
   status=monitorSetDataSource( argv[1] );
   if (status!=0) {
@@ -189,6 +220,20 @@ int main(int argc, char **argv) {
       
       while (stream.NextDDL()) {
 	while (stream.NextChannel()) {
+	  
+	  /* Retrieve ZS parameters from data*/
+	  if(failZS) {
+	    short value = stream.GetAltroCFG1();
+	    bool ZeroSuppressionEnabled = (value >> 15) & 0x1;
+	    bool AutomaticBaselineSubtraction = (value >> 14) & 0x1;
+	    if(ZeroSuppressionEnabled) {
+	      offset = (value >> 10) & 0xf;
+	      threshold = value & 0x3ff;
+	      fitter.SubtractPedestals(kFALSE);
+	      fitter.SetAmpOffset(offset);
+	      fitter.SetAmpThreshold(threshold);
+	    }
+	  }
 	  
 	  cellX    = stream.GetCellX();
 	  cellZ    = stream.GetCellZ();
