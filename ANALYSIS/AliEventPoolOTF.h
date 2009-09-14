@@ -17,6 +17,7 @@ class AliLHCTagCuts;
 class AliDetectorTagCuts;
 class AliEventTagCuts;
 class AliTagAnalysis;
+class TGridResult;
 
 typedef enum {kMultiplicity, kZVertex, kEventPlane, kLeadingParticleEta, kUser1, kUser2}  EventPoolAxis_t;
 
@@ -46,6 +47,7 @@ class AliEventPoolOTF : public AliVEventPool
 
     //
     void SetTagDirectory(const char* dirname) {fTagDirectory = dirname;};
+    void SetGridResult(TGridResult*  gridTag) {fGridTags = gridTag;};
     virtual Int_t BinNumber() const {return fBinNumber;}
 	    
  private:
@@ -54,12 +56,13 @@ class AliEventPoolOTF : public AliVEventPool
     void InitArrays();
     
  protected:
-    AliTagAnalysis*      fTagAnalysis;  // Pointer to tag analysis
-    AliRunTagCuts*       fRunCuts;      // Run      cuts
-    AliLHCTagCuts*       fLHCCuts;      // LHC      cuts
-    AliDetectorTagCuts*  fDetectorCuts; // Detector cuts
-    AliEventTagCuts*     fEventCuts;    // Event    cuts
-    const char*          fTagDirectory; // Directory with local tag files
+    AliTagAnalysis*      fTagAnalysis;   // Pointer to tag analysis
+    AliRunTagCuts*       fRunCuts;       // Run      cuts
+    AliLHCTagCuts*       fLHCCuts;       // LHC      cuts
+    AliDetectorTagCuts*  fDetectorCuts;  // Detector cuts
+    AliEventTagCuts*     fEventCuts;     // Event    cuts
+    TGridResult*         fGridTags;      // Tags from a grid file collection
+    const char*          fTagDirectory;  // Directory with local tag files
     // Common pool cuts
     // Multiplicity
     Float_t              fValueMin[6];  // Minimum value

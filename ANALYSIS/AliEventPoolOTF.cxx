@@ -30,6 +30,7 @@
 #include "AliTagAnalysis.h"
 
 #include <TMath.h>
+#include <TGridResult.h>
 
 ClassImp(AliEventPoolOTF)
 
@@ -43,6 +44,7 @@ AliEventPoolOTF::AliEventPoolOTF():
     fLHCCuts(0),
     fDetectorCuts(0),
     fEventCuts(0),
+    fGridTags(0),
     fTagDirectory(0),
     fValueMin(),
     fValueMax(),
@@ -63,6 +65,7 @@ AliEventPoolOTF::AliEventPoolOTF(const char* name, const char* title):
     fLHCCuts(new AliLHCTagCuts()),
     fDetectorCuts(new AliDetectorTagCuts()),
     fEventCuts(new AliEventTagCuts()),
+    fGridTags(0),
     fTagDirectory("."),
     fValueMin(),
     fValueMax(),
@@ -107,7 +110,13 @@ AliEventPoolOTF& AliEventPoolOTF::operator=(const AliEventPoolOTF& other)
 void AliEventPoolOTF::Init()
 {
     //
-    fTagAnalysis->ChainLocalTags(fTagDirectory);
+    if (!fGridTags) {
+	fTagAnalysis->ChainLocalTags(fTagDirectory);
+    } else {
+	fTagAnalysis->ChainGridTags(fGridTags);
+    }
+    
+    
     for (Int_t i = 0; i < 4; i++) fValue[i] = fValueMin[i];    
 }
 
