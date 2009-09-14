@@ -70,6 +70,7 @@ public:
   void SetAcceptKinkDaughters(Bool_t b=kTRUE)   {fCutAcceptKinkDaughters=b;}
   void SetMaxCovDiagonalElements(Float_t c1=1e10, Float_t c2=1e10, Float_t c3=1e10, Float_t c4=1e10, Float_t c5=1e10) 
     {fCutMaxC11=c1; fCutMaxC22=c2; fCutMaxC33=c3; fCutMaxC44=c4; fCutMaxC55=c5;}
+  void SetMaxRel1PtUncertainty(Float_t max=1e10)      {fCutMaxRel1PtUncertainty=max;}
 
   // track to vertex cut setters
   void SetMaxNsigmaToVertex(Float_t sigma=1e10)       {fCutNsigmaToVertex = sigma; SetRequireSigmaToVertex(kTRUE);}
@@ -99,6 +100,7 @@ public:
   Bool_t  GetAcceptKinkDaughters()   const   { return fCutAcceptKinkDaughters;}
   void    GetMaxCovDiagonalElements(Float_t& c1, Float_t& c2, Float_t& c3, Float_t& c4, Float_t& c5) 
       {c1 = fCutMaxC11; c2 = fCutMaxC22; c3 = fCutMaxC33; c4 = fCutMaxC44; c5 = fCutMaxC55;}
+  Float_t GetMaxRel1PtUncertainty()  const   { return fCutMaxRel1PtUncertainty;}
   Float_t GetMaxNsigmaToVertex()     const   { return fCutNsigmaToVertex;}
   Float_t GetMaxDCAToVertexXY()      const   { return fCutMaxDCAToVertexXY;}
   Float_t GetMaxDCAToVertexZ()       const   { return fCutMaxDCAToVertexZ;}
@@ -144,7 +146,7 @@ protected:
   void Init(); // sets everything to 0
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2);
   
-  enum { kNCuts = 31 };
+  enum { kNCuts = 32 }; 
 
   //######################################################
   // esd track quality cuts
@@ -163,6 +165,8 @@ protected:
   Float_t fCutMaxC33;                 // max cov. matrix diag. elements (res. sin(phi)^2)
   Float_t fCutMaxC44;                 // max cov. matrix diag. elements (res. tan(theta_dip)^2)
   Float_t fCutMaxC55;                 // max cov. matrix diag. elements (res. 1/pt^2)
+
+  Float_t fCutMaxRel1PtUncertainty;   // max relative uncertainty of 1/pt
 
   Bool_t  fCutAcceptKinkDaughters;    // accepting kink daughters?
   Bool_t  fCutRequireTPCRefit;        // require TPC refit
@@ -203,6 +207,8 @@ protected:
   TH1F* fhC44[2];                     //->
   TH1F* fhC55[2];                     //->
 
+  TH1F* fhRel1PtUncertainty[2];       //-> rel. uncertainty of 1/pt
+
   TH1F* fhDXY[2];                     //->
   TH1F* fhDZ[2];                      //->
   TH1F* fhDXYDZ[2];                   //-> absolute distance sqrt(dxy**2 + dz**2) to vertex; if 2D cut is set, normalized to given values
@@ -221,7 +227,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 6)
+  ClassDef(AliESDtrackCuts, 7)
 };
 
 

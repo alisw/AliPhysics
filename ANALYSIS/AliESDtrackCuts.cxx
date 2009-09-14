@@ -63,7 +63,8 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "SPD cluster requirement",
  "SDD cluster requirement",
  "SSD cluster requirement",
- "require ITS stand-alone"
+ "require ITS stand-alone",
+ "rel 1/pt uncertainty"
 };
 
 //____________________________________________________________________
@@ -77,6 +78,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutMaxC33(0),
   fCutMaxC44(0),
   fCutMaxC55(0),
+  fCutMaxRel1PtUncertainty(0),
   fCutAcceptKinkDaughters(0),
   fCutRequireTPCRefit(0),
   fCutRequireITSRefit(0),
@@ -119,7 +121,8 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetMinNClustersITS();
   SetMaxChi2PerClusterTPC();
   SetMaxChi2PerClusterITS();  				    
-  SetMaxCovDiagonalElements();  				    
+  SetMaxCovDiagonalElements();
+  SetMaxRel1PtUncertainty();
   SetRequireTPCRefit();
   SetRequireITSRefit();
   SetRequireITSStandAlone(kFALSE);
@@ -155,6 +158,7 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutMaxC33(0),
   fCutMaxC44(0),
   fCutMaxC55(0),
+  fCutMaxRel1PtUncertainty(0),
   fCutAcceptKinkDaughters(0),
   fCutRequireTPCRefit(0),
   fCutRequireITSRefit(0),
@@ -217,7 +221,10 @@ AliESDtrackCuts::~AliESDtrackCuts()
     if (fhC44[i])
       delete fhC44[i];                     
     if (fhC55[i])
-    delete fhC55[i];                     
+      delete fhC55[i];
+
+    if (fhRel1PtUncertainty[i])
+      delete fhRel1PtUncertainty[i];
     
     if (fhDXY[i])
       delete fhDXY[i];                     
@@ -271,6 +278,8 @@ void AliESDtrackCuts::Init()
   fCutMaxC33 = 0;
   fCutMaxC44 = 0;
   fCutMaxC55 = 0;
+  
+  fCutMaxRel1PtUncertainty = 0;
 
   fCutAcceptKinkDaughters = 0;
   fCutRequireTPCRefit = 0;
@@ -316,6 +325,8 @@ void AliESDtrackCuts::Init()
     fhC33[i] = 0;
     fhC44[i] = 0;
     fhC55[i] = 0;
+
+    fhRel1PtUncertainty[i] = 0;
 
     fhDXY[i] = 0;
     fhDZ[i] = 0;
@@ -373,6 +384,8 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutMaxC44 = fCutMaxC44;
   target.fCutMaxC55 = fCutMaxC55;
 
+  target.fCutMaxRel1PtUncertainty = fCutMaxRel1PtUncertainty;
+
   target.fCutAcceptKinkDaughters = fCutAcceptKinkDaughters;
   target.fCutRequireTPCRefit = fCutRequireTPCRefit;
   target.fCutRequireITSRefit = fCutRequireITSRefit;
@@ -416,6 +429,8 @@ void AliESDtrackCuts::Copy(TObject &c) const
     if (fhC33[i]) target.fhC33[i] = (TH1F*) fhC33[i]->Clone();
     if (fhC44[i]) target.fhC44[i] = (TH1F*) fhC44[i]->Clone();
     if (fhC55[i]) target.fhC55[i] = (TH1F*) fhC55[i]->Clone();
+
+    if (fhRel1PtUncertainty[i]) target.fhRel1PtUncertainty[i] = (TH1F*) fhRel1PtUncertainty[i]->Clone();
 
     if (fhDXY[i]) target.fhDXY[i] = (TH1F*) fhDXY[i]->Clone();
     if (fhDZ[i]) target.fhDZ[i] = (TH1F*) fhDZ[i]->Clone();
@@ -474,7 +489,9 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
       fhC22[i]               ->Add(entry->fhC22[i]              ); 
       fhC33[i]               ->Add(entry->fhC33[i]              ); 
       fhC44[i]               ->Add(entry->fhC44[i]              ); 
-      fhC55[i]               ->Add(entry->fhC55[i]              ); 
+      fhC55[i]               ->Add(entry->fhC55[i]              );
+
+      fhRel1PtUncertainty[i] ->Add(entry->fhRel1PtUncertainty[i]);
       					  			    
       fhDXY[i]               ->Add(entry->fhDXY[i]              ); 
       fhDZ[i]                ->Add(entry->fhDZ[i]               ); 
@@ -644,7 +661,8 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
     eta = 0.5*TMath::Log((momentum + p[2])/(momentum - p[2]));
   if((energy != TMath::Abs(p[2]))&&(momentum != 0))
     y = 0.5*TMath::Log((energy + p[2])/(energy - p[2]));
-
+    
+  Float_t relUncertainty1Pt = TMath::Sqrt(extCov[14])*pt;
   
   //########################################################################
   // cut the track?
@@ -716,6 +734,9 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   if (fCutRequireITSStandAlone && ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)))
     cuts[30]=kTRUE;
   
+  if (relUncertainty1Pt > fCutMaxRel1PtUncertainty)
+     cuts[31]=kTRUE;
+  
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 
     if (cuts[i]) {cut = kTRUE;}
@@ -763,6 +784,8 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
       fhC33[id]->Fill(extCov[5]);
       fhC44[id]->Fill(extCov[9]);
       fhC55[id]->Fill(extCov[14]);
+
+      fhRel1PtUncertainty[id]->Fill(relUncertainty1Pt);
 
       fhPt[id]->Fill(pt);
       fhEta[id]->Fill(eta);
@@ -960,6 +983,8 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
     fhC44[i]                 = new TH1F("covMatrixDiagonal44","",1000,0,0.1);
     fhC55[i]                 = new TH1F("covMatrixDiagonal55","",1000,0,5);
 
+    fhRel1PtUncertainty[i]   = new TH1F("rel1PtUncertainty","",1000,0,5);
+
     fhDXY[i]                 = new TH1F("dXY"    ,"",500,-10,10);
     fhDZ[i]                  = new TH1F("dZ"     ,"",500,-10,10);
     fhDXYDZ[i]               = new TH1F("dXYDZ"  ,"",500,0,10);
@@ -985,6 +1010,8 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
     fhC44[i]->SetTitle("cov 44 : #sigma_{tan(#theta_{dip})}^{2}");
     fhC55[i]->SetTitle("cov 55 : #sigma_{1/p_{T}}^{2} [(c/GeV)^2]");
 
+    fhRel1PtUncertainty[i]->SetTitle("rel. uncertainty of 1/p_{T}");
+
     fhDXY[i]->SetXTitle("transverse impact parameter (cm)");
     fhDZ[i]->SetXTitle("longitudinal impact parameter (cm)");
     fhDXYDZ[i]->SetTitle("absolute impact parameter;sqrt(dXY**2 + dZ**2)  (cm)");
@@ -1007,6 +1034,8 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
     fhC33[i]->SetLineColor(color);   fhC33[i]->SetLineWidth(2);
     fhC44[i]->SetLineColor(color);   fhC44[i]->SetLineWidth(2);
     fhC55[i]->SetLineColor(color);   fhC55[i]->SetLineWidth(2);
+
+    fhRel1PtUncertainty[i]->SetLineColor(color); fhRel1PtUncertainty[i]->SetLineWidth(2);
 
     fhDXY[i]->SetLineColor(color);   fhDXY[i]->SetLineWidth(2);
     fhDZ[i]->SetLineColor(color);    fhDZ[i]->SetLineWidth(2);
@@ -1061,6 +1090,8 @@ Bool_t AliESDtrackCuts::LoadHistograms(const Char_t* dir)
     fhC33[i] = dynamic_cast<TH1F*> (gDirectory->Get("covMatrixDiagonal33"));
     fhC44[i] = dynamic_cast<TH1F*> (gDirectory->Get("covMatrixDiagonal44"));
     fhC55[i] = dynamic_cast<TH1F*> (gDirectory->Get("covMatrixDiagonal55"));
+
+    fhRel1PtUncertainty[i] = dynamic_cast<TH1F*> (gDirectory->Get("rel1PtUncertainty"));
 
     fhDXY[i] =     dynamic_cast<TH1F*> (gDirectory->Get("dXY"    ));
     fhDZ[i] =      dynamic_cast<TH1F*> (gDirectory->Get("dZ"     ));
@@ -1126,6 +1157,8 @@ void AliESDtrackCuts::SaveHistograms(const Char_t* dir) {
     fhC33[i]                 ->Write();
     fhC44[i]                 ->Write();
     fhC55[i]                 ->Write();
+
+    fhRel1PtUncertainty[i]   ->Write();
 
     fhDXY[i]                 ->Write();
     fhDZ[i]                  ->Write();
@@ -1196,6 +1229,11 @@ void AliESDtrackCuts::DrawHistograms()
   fhC55[0]->SetStats(kFALSE);
   gPad->SetLogy();
   fhC55[0]->Draw();
+
+  canvas2->cd(6);
+  fhRel1PtUncertainty[0]->SetStats(kFALSE);
+  gPad->SetLogy();
+  fhRel1PtUncertainty[0]->Draw();
 
   canvas2->SaveAs(Form("%s_%s.gif", GetName(), canvas2->GetName()));
 
