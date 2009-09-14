@@ -50,6 +50,7 @@ const TString kAmandaTemp = "TPC_PT_%d_TEMPERATURE"; // Amanda string for temper
 //const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required              
 const Double_t kFitFraction = -1.0;          // Don't require minimum number of fits in commissioning run 
 
+
 //
 // This class is the SHUTTLE preprocessor for the TPC detector.
 //
@@ -215,56 +216,51 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   TObject * status;
 
   UInt_t dcsResult=0;
-  if (errorHandling == "OFF" ) {
-    if (!dcsAliasMap) dcsResult=1;
-    if (dcsAliasMap->GetEntries() == 0 ) dcsResult=1;  
-    status = new TParameter<int>("dcsResult",dcsResult);
-    resultArray->Add(status);
-  } else {
-    if (!dcsAliasMap) return 9;
-    if (dcsAliasMap->GetEntries() == 0 ) return 9;
-  }
+  if (!dcsAliasMap) dcsResult=1;
+  if (dcsAliasMap->GetEntries() == 0 ) dcsResult=1;  
+  status = new TParameter<int>("dcsResult",dcsResult);
+  resultArray->Add(status);
 
-
-  
 
   TString runType = GetRunType();
 
+  if ( dcsResult == 0 ) {
+
   // Temperature sensors are processed by AliTPCCalTemp
 
-  TString tempConf = fConfEnv->GetValue("Temperature","ON");
-  tempConf.ToUpper();
-  if (tempConf != "OFF" ) {
-    UInt_t tempResult = MapTemperature(dcsAliasMap);
-    result=tempResult;
-    status = new TParameter<int>("tempResult",tempResult);
-    resultArray->Add(status);
-  }
+    TString tempConf = fConfEnv->GetValue("Temperature","ON");
+    tempConf.ToUpper();
+    if (tempConf != "OFF" ) {
+      UInt_t tempResult = MapTemperature(dcsAliasMap);
+      result=tempResult;
+      status = new TParameter<int>("tempResult",tempResult);
+      resultArray->Add(status);
+    }
 
   // High Voltage recordings
 
 
-  TString hvConf = fConfEnv->GetValue("HighVoltage","ON");
-  hvConf.ToUpper();
-  if (hvConf != "OFF" ) { 
-   UInt_t hvResult = MapHighVoltage(dcsAliasMap);
-   result+=hvResult;
-   status = new TParameter<int>("hvResult",hvResult);
-   resultArray->Add(status);
- }
+    TString hvConf = fConfEnv->GetValue("HighVoltage","ON");
+    hvConf.ToUpper();
+    if (hvConf != "OFF" ) { 
+     UInt_t hvResult = MapHighVoltage(dcsAliasMap);
+     result+=hvResult;
+     status = new TParameter<int>("hvResult",hvResult);
+     resultArray->Add(status);
+    }
 
-  // Goofie values
+    // Goofie values
 
 
-  TString goofieConf = fConfEnv->GetValue("Goofie","ON");
-  goofieConf.ToUpper();
-  if (goofieConf != "OFF" ) { 
-   UInt_t goofieResult = MapGoofie(dcsAliasMap);
-   result+=goofieResult;
-   status = new TParameter<int>("goofieResult",goofieResult);
-   resultArray->Add(status);
- }
-
+    TString goofieConf = fConfEnv->GetValue("Goofie","ON");
+    goofieConf.ToUpper();
+    if (goofieConf != "OFF" ) { 
+     UInt_t goofieResult = MapGoofie(dcsAliasMap);
+     result+=goofieResult;
+     status = new TParameter<int>("goofieResult",goofieResult);
+     resultArray->Add(status);
+    }
+  }
   // Other calibration information will be retrieved through FXS files
   //  examples:
   //    TList* fileSourcesDAQ = GetFile(AliShuttleInterface::kDAQ, "pedestals");
@@ -360,7 +356,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 
 
   TString altroConf = fConfEnv->GetValue("AltroConf","ON");
-  goofieConf.ToUpper();
+  altroConf.ToUpper();
   if (altroConf != "OFF" ) { 
    UInt_t altroResult = ExtractAltro(AliShuttleInterface::kDCS);
    result+=altroResult;
@@ -659,7 +655,7 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
      if ( !storeOK ) ++result;
     }
   } else {
-    Log ("Error: no entries in input file list!");
+    Log ("Error: no entries in pedestal file list!");
     result = 1;
   }
 
@@ -763,7 +759,7 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
      if ( !storeOK ) ++result;
     }  
   } else {
-    Log ("Error: no entries in input file list!");
+    Log ("Error: no entries in pulser file list!");
     result = 1;
   }
 
@@ -824,7 +820,7 @@ UInt_t AliTPCPreprocessor::ExtractRaw(Int_t sourceFXS)
      Bool_t storeOK = Store("Calib", "Raw", rawArray, &metaData, 0, kTRUE);
      if ( !storeOK ) ++result;
   } else {
-    Log ("Error: no entries in input file list!");
+    Log ("Error: no entries in raw file list!");
     result = 1;
   }
 
@@ -934,7 +930,7 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
     if ( !storeOK ) ++result;
     
   } else {
-    Log ("Error: no entries!");
+    Log ("Error: no CE entries available from FXS!");
     result = 1;
   }
 
@@ -981,7 +977,7 @@ UInt_t AliTPCPreprocessor::ExtractQA(Int_t sourceFXS)
 	   metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
            metaData.SetComment("Preprocessor AliTPC data base entries.");
 
-           Bool_t storeOK = Store("Calib", "QA", calQA, &metaData, 0, kTRUE);
+           Bool_t storeOK = Store("Calib", "QA", calQA, &metaData, 0, kFALSE);
            if ( !storeOK ) ++result;
 	  }
         }
@@ -1011,6 +1007,9 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS)
  AliTPCCalPad *acqStop=0;
  AliTPCCalPad *FPED=0;
  AliTPCCalPad *masked=0;
+ AliTPCCalPad *k1=0, *k2=0, *k3=0;
+ AliTPCCalPad *l1=0, *l2=0, *l3=0;
+ TMap *mapRCUconfig=0;
 
  AliCDBEntry* entry = GetFromOCDB("Calib", "AltroConfig");
  if (entry) altroObjects = (TObjArray*)entry->GetObject();
@@ -1044,7 +1043,42 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS)
     masked = new AliTPCCalPad("Masked","Masked");
     altroObjects->Add(masked);
  }
-
+ k1 = (AliTPCCalPad*)altroObjects->FindObject("K1");
+ if ( !k1 )  { 
+    k1 = new AliTPCCalPad("K1","K1");
+    altroObjects->Add(k1);
+ }
+ k2 = (AliTPCCalPad*)altroObjects->FindObject("K2");
+ if ( !k2 )  { 
+    k2 = new AliTPCCalPad("K2","K2");
+    altroObjects->Add(k2);
+ }
+ k3 = (AliTPCCalPad*)altroObjects->FindObject("K3");
+ if ( !k3 )  { 
+    k3 = new AliTPCCalPad("K3","K3");
+    altroObjects->Add(k3);
+ }
+ l1 = (AliTPCCalPad*)altroObjects->FindObject("L1");
+ if ( !l1 )  { 
+    l1 = new AliTPCCalPad("L1","L1");
+    altroObjects->Add(l1);
+ }
+ l2 = (AliTPCCalPad*)altroObjects->FindObject("L2");
+ if ( !l2 )  { 
+    l2 = new AliTPCCalPad("L2","L2");
+    altroObjects->Add(l2);
+ }
+ l3 = (AliTPCCalPad*)altroObjects->FindObject("L3");
+ if ( !l3 )  { 
+    l3 = new AliTPCCalPad("L3","L3");
+    altroObjects->Add(l3);
+ }
+ mapRCUconfig = (TMap*)altroObjects->FindObject("RCUconfig");
+ if (!mapRCUconfig) {
+    mapRCUconfig = new TMap();
+    mapRCUconfig->SetName("RCUconfig");
+    altroObjects->Add(mapRCUconfig);
+ }
 
 
  UInt_t result=0;
@@ -1088,7 +1122,15 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS)
         AliTPCCalPad *acqStopFXS=(AliTPCCalPad*)altroFXS->FindObject("AcqStop");
         AliTPCCalPad *FPEDFXS=(AliTPCCalPad*)altroFXS->FindObject("FPED");
         AliTPCCalPad *maskedFXS=(AliTPCCalPad*)altroFXS->FindObject("Masked");
-
+        AliTPCCalPad *k1FXS=(AliTPCCalPad*)altroFXS->FindObject("K1");
+        AliTPCCalPad *k2FXS=(AliTPCCalPad*)altroFXS->FindObject("K2");
+        AliTPCCalPad *k3FXS=(AliTPCCalPad*)altroFXS->FindObject("K3");
+        AliTPCCalPad *l1FXS=(AliTPCCalPad*)altroFXS->FindObject("L1");
+        AliTPCCalPad *l2FXS=(AliTPCCalPad*)altroFXS->FindObject("L2");
+        AliTPCCalPad *l3FXS=(AliTPCCalPad*)altroFXS->FindObject("L3");
+        TMap *mapRCUconfigFXS = (TMap*)altroFXS->FindObject("RCUconfig");
+        TIterator *mapFXSiter = mapRCUconfigFXS->MakeIterator();
+	
         changed=true;
         for (Int_t sector=0; sector<nSectors; sector++) {
             
@@ -1112,6 +1154,56 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS)
               AliTPCCalROC *rocMasked=maskedFXS->GetCalROC(sector);
               if ( rocMasked )  masked->SetCalROC(rocMasked,sector);
 	   }
+	   if (k1FXS) {
+              AliTPCCalROC *rocK1=k1FXS->GetCalROC(sector);
+              if ( rocK1 )  k1->SetCalROC(rocK1,sector);
+	   }
+	   if (k2FXS) {
+              AliTPCCalROC *rocK2=k2FXS->GetCalROC(sector);
+              if ( rocK2 )  k2->SetCalROC(rocK2,sector);
+	   }
+	   if (k3FXS) {
+              AliTPCCalROC *rocK3=k3FXS->GetCalROC(sector);
+              if ( rocK3 )  k3->SetCalROC(rocK3,sector);
+	   }
+	   if (l1FXS) {
+              AliTPCCalROC *rocL1=l1FXS->GetCalROC(sector);
+              if ( rocL1 )  l1->SetCalROC(rocL1,sector);
+	   }
+	   if (l2FXS) {
+              AliTPCCalROC *rocL2=l2FXS->GetCalROC(sector);
+              if ( rocL2 )  l2->SetCalROC(rocL2,sector);
+	   }
+	   if (l3FXS) {
+              AliTPCCalROC *rocL3=l3FXS->GetCalROC(sector);
+              if ( rocL3 )  l3->SetCalROC(rocL3,sector);
+	   }
+	 }
+	 if (mapRCUconfigFXS) {
+          Int_t mapEntries = mapRCUconfigFXS->GetEntries();
+          TObjString* keyFXS;
+	  TVectorF* vecFXS;
+	  TVectorF* vec;              // nSectors = 72  (total number of inner/outer sectors)
+	  for (Int_t i=0; i<mapEntries; ++i) {
+	    keyFXS=(TObjString*)mapFXSiter->Next();
+            vecFXS=(TVectorF*)mapRCUconfigFXS->GetValue(keyFXS);
+            vec=(TVectorF*)mapRCUconfig->GetValue(keyFXS);
+	    if (!vec) {
+	      vec = new TVectorF(3*nSectors);
+	      *vec = -1;
+	      mapRCUconfig->Add(keyFXS,vec);
+	    }
+	    if (vec->GetNoElements() != 3*nSectors ) {
+	      vec->ResizeTo(3*nSectors);
+            }
+	    if (id==0) {                        // A side
+	      vec->SetSub(0,vecFXS->GetSub(0,nSectors/2-1));
+	      vec->SetSub(nSectors,vecFXS->GetSub(nSectors,2*nSectors-1));
+	    } else {                             // C side
+	      vec->SetSub(nSectors/2,vecFXS->GetSub(nSectors/2,nSectors-1));
+	      vec->SetSub(2*nSectors,vecFXS->GetSub(2*nSectors,3*nSectors-1));
+	    }
+	  }
         }
        delete altroFXS;
        f->Close();
@@ -1119,7 +1211,7 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS)
      ++index;
      }  // while(list)
     } else {
-      Log ("Error: no entries in input file list!");
+      Log ("Error: no entries in AltroConfig file list!");
       result = 1;
     }
 
