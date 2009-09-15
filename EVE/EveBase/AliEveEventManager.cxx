@@ -1176,6 +1176,24 @@ void AliEveEventManager::SetAutoLoad(Bool_t autoLoad)
   }
 }
 
+void AliEveEventManager::SetTrigSel(Int_t trig)
+{
+  static const TEveException kEH("AliEveEventManager::SetTrigSel ");
+
+  if (!fRawReader)
+    {
+    Warning(kEH, "No Raw-reader exists. Ignoring the call.");
+    return;
+  }
+  else
+  {
+    ULong64_t trigMask = 0;
+    if (trig >= 0) trigMask = (1ull << trig);
+    Info(kEH,"Trigger selection: 0x%llx",trigMask);
+    fRawReader->SelectEvents(-1,trigMask,NULL);
+  }
+}
+
 void AliEveEventManager::StartAutoLoadTimer()
 {
   // Start the auto-load timer.

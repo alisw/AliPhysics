@@ -107,6 +107,7 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
   fInfoLabel    (0),
   fAutoLoad     (0),
   fAutoLoadTime (0),
+  fTrigSel      (0),
   fEventInfo    (0)
 {
   // Constructor.
@@ -157,6 +158,12 @@ AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr) :
     fAutoLoadTime->SetToolTip("Automatic event loading time in seconds.");
     fAutoLoadTime->Connect("ValueSet(Double_t)", cls, this, "DoSetAutoLoadTime()");
 
+    fTrigSel = new TGComboBox(f);
+    fTrigSel->Resize(4*width,b->GetDefaultHeight());
+    fTrigSel->AddEntry("No trigger selection",-1);
+    fTrigSel->Select(-1,kFALSE);
+    f->AddFrame(fTrigSel, new TGLayoutHints(kLHintsNormal, 10, 5, 0, 0));
+    fTrigSel->Connect("Selected(char*)", cls, this, "DoSetTrigSel()");
   }
 
   fEventInfo = new TGTextView(this, 400, 600);
@@ -242,6 +249,14 @@ void AliEveEventManagerWindow::DoSetAutoLoadTime()
 }
 
 //______________________________________________________________________________
+void AliEveEventManagerWindow::DoSetTrigSel()
+{
+  // Set the trigger selection
+
+  fM->SetTrigSel(fTrigSel->GetSelectedEntry()->EntryId());
+}
+
+//______________________________________________________________________________
 void AliEveEventManagerWindow::Update()
 {
   // Update current event, number of available events, list of active triggers
@@ -262,6 +277,23 @@ void AliEveEventManagerWindow::Update()
 
   fAutoLoad->SetState(fM->GetAutoLoad() ? kButtonDown : kButtonUp);
   fAutoLoadTime->SetValue(fM->GetAutoLoadTime());
+
+  // Loop over active trigger classes
+  if (fM->GetESD()) {
+    for(Int_t iTrig = 0; iTrig < AliESDRun::kNTriggerClasses; iTrig++) {
+      TString trigName = fM->GetESD()->GetESDRun()->GetTriggerClass(iTrig);
+      if (trigName.IsNull()) {
+	if (fTrigSel->GetListBox()->GetEntry(iTrig)) {
+	  if (fTrigSel->GetSelected() == iTrig) fTrigSel->Select(-1);
+	  fTrigSel->RemoveEntry(iTrig);
+	}
+	continue;
+      }
+      if (!fTrigSel->FindEntry(trigName.Data()))
+	fTrigSel->AddEntry(trigName.Data(),iTrig);
+    }
+  }
+  fTrigSel->SetEnabled(!evNavOn);
 
   fEventInfo->LoadBuffer(fM->GetEventInfoHorizontal());
 

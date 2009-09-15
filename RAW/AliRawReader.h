@@ -23,6 +23,7 @@ class AliRawEventHeaderBase;
 class AliRawVEvent;
 
 class AliRawReader: public TObject {
+  friend class AliEveEventManager;
   public :
     AliRawReader();
     AliRawReader(const AliRawReader& rawReader);

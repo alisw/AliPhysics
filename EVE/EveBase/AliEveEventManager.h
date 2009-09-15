@@ -108,6 +108,7 @@ public:
   Bool_t        GetAutoLoad()            const { return fAutoLoad;     }
   void          SetAutoLoadTime(Float_t time);
   void          SetAutoLoad(Bool_t autoLoad);
+  void          SetTrigSel(Int_t trig);
   void          AutoLoadNextEvent();
 
   Bool_t        AreEventFilesOpened()    const { return fIsOpen;       }

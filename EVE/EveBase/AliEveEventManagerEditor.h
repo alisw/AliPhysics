@@ -80,6 +80,7 @@ public:
   void DoRefresh();
   void DoSetAutoLoad();
   void DoSetAutoLoadTime();
+  void DoSetTrigSel();
 
   void Update();
 
@@ -97,6 +98,8 @@ protected:
 
   TGCheckButton        *fAutoLoad;     // Check-box for automatic loading of events
   TEveGValuator        *fAutoLoadTime; // Time for automatic loading of events
+
+  TGComboBox           *fTrigSel;      // Trigger selection combo box
 
   TGTextView           *fEventInfo;    // Text box with event info
 
