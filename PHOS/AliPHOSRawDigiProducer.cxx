@@ -168,6 +168,18 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
       
       if(caloFlag!=0 && caloFlag!=1) continue; //TRU data!
       
+      if(fitter->GetAmpOffset()==0 && fitter->GetAmpThreshold()==0) {
+	short value = fRawStream->GetAltroCFG1();
+	bool ZeroSuppressionEnabled = (value >> 15) & 0x1;
+	if(ZeroSuppressionEnabled) {
+	  short offset = (value >> 10) & 0xf;
+	  short threshold = value & 0x3ff;
+	  fitter->SubtractPedestals(kFALSE);
+	  fitter->SetAmpOffset(offset);
+	  fitter->SetAmpThreshold(threshold);
+	}
+      }
+      
       fGeom->RelToAbsNumbering(relId, absId);
       
       Int_t nBunches = 0;
