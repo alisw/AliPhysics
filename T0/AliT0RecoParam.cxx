@@ -97,6 +97,11 @@ AliT0RecoParam *AliT0RecoParam::GetLowFluxParam()
   AliT0RecoParam *param = new AliT0RecoParam();
   param->fRefAmp = 1;
   param->fRefPoint = 0;
+  for (Int_t i=0; i<500; i++)
+    {
+     param-> fLow[i]=0.;
+     param-> fHigh[i]=10000.;
+    }
   param->SetName("Low Flux");
   param->SetTitle("Low Flux");
   return param;
@@ -113,6 +118,11 @@ AliT0RecoParam *AliT0RecoParam::GetHighFluxParam()
   AliT0RecoParam *param = new AliT0RecoParam();
   param->fRefAmp = 5;
   param->fRefPoint = 0;
+  for (Int_t i=0; i<500; i++)
+    {
+     param-> fLow[i]=0.;
+     param-> fHigh[i]=20000.;
+    }
   //
   param->SetName("High Flux");
   param->SetTitle("High Flux");
@@ -130,12 +140,18 @@ AliT0RecoParam *AliT0RecoParam::GetLaserTestParam()
   AliT0RecoParam *param = new AliT0RecoParam();
   param->fRefAmp = 1;
   param->fRefPoint = 1;
+  for (Int_t i=0; i<500; i++)
+    {
+     param-> fLow[i]=0.;
+     param-> fHigh[i]=12000.;
+    }
   //
   param->SetName("Laser Flux");
   param->SetTitle("Laser Flux");
   return param;
 }
 //_____________________________________________________________________________
+
 void AliT0RecoParam::PrintParameters() const
 {
   //
@@ -143,5 +159,6 @@ void AliT0RecoParam::PrintParameters() const
   //
   AliInfo(Form(" Reference amplitude for walk corerection : %f", fRefAmp));
   AliInfo(Form(" Reference point in channel  : %i", fRefPoint));
- 
+  cout<<" AliT0RecoParam::PrintParameters() "<<endl;
+  for (Int_t i=0; i<500; i++) cout<<i<<" "<<fLow[i]<<" "<<fHigh[i]<<endl; 
 }
