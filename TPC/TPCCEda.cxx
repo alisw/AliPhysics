@@ -194,13 +194,14 @@ int main(int argc, char **argv) {
         break;
       }
       
+      /* retry if got no event */
+      if (event==NULL)
+        continue;
+      
       /* skip start/end of run events */
       if ( (event->eventType != physicsEvent) && (event->eventType != calibrationEvent) )
         continue;
 
-      /* retry if got no event */
-      if (event==NULL)
-        continue;
       
       nevents++;
       // get the run number
@@ -247,7 +248,7 @@ int main(int argc, char **argv) {
   //
   // end cheet
   TDatime time;
-  TObjString info(Form("Run: %u; Date: %s",runNb,time.AsString()));
+  TObjString info(Form("Run: %u; Date: %s",runNb,time.AsSQLString()));
   amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
   Int_t statusDA=0;
   statusDA+=amoreDA.Send("CET0",calibCE.GetCalPadT0());

@@ -153,8 +153,7 @@ int main(int argc, char **argv) {
   AliTPCConfigDA config(CONFIG_FILE);
 
   // create calibration object
-//   AliTPCCalibRaw calibRaw(config.GetConfigurationMap());   // pulser calibration algorithm
-  AliTPCCalibRaw calibRaw(config.GetConfigurationMap());   // pulser calibration algorithm
+  AliTPCCalibRaw calibRaw(config.GetConfigurationMap());   // raw calibration algorithm
   calibRaw.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
   
   //amore update interval
@@ -260,7 +259,7 @@ void SendToAmoreDB(TObject *o, unsigned long32 runNb)
   //
   // end cheet
   TDatime time;
-  TObjString info(Form("Run: %u; Date: %s",runNb,time.AsString()));
+  TObjString info(Form("Run: %u; Date: %s",runNb,time.AsSQLString()));
   
   amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
   Int_t statusDA=0;

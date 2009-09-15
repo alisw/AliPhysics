@@ -8,7 +8,7 @@ gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
 
 .L $ALICE_ROOT/TPC/CalibMacros/CalibEnv.C+
 Init();
-CalibEnv("listAll.txt");
+CalibEnv("run.list");
 GetTree();
 
 TFile f("dcsTime.root")
@@ -56,13 +56,14 @@ if (!gGrid) TGrid::Connect("alien://",0,0,"t");
 #include "AliTPCTempMap.h"
 #include "TVectorD.h"
 #include "TMatrixD.h"
+#include "AliTPCCalibRaw.h"
 
 
 TTree * dcsTree=0;
 
 void GetProductionInfo(Int_t run, Int_t &nalien, Int_t &nRawAlien, Int_t &nlocal, Int_t &nRawLocal);
   
-void Init(){
+void Init2008(){
   //
   //
   //
@@ -75,6 +76,10 @@ void Init(){
   AliCDBManager::Instance()->SetRun(1);
 }
 
+void Init(){  
+  AliCDBManager::Instance()->SetDefaultStorage("local:///lustre/alice/alien/alice/data/2009/OCDB/");
+  AliCDBManager::Instance()->SetRun(1);
+}
 
 void InitAlien(const char *path="LHC08b"){
   //
@@ -106,6 +111,7 @@ void CalibEnv(const char * runList){
   //  for (Int_t irun=startRun; irun<stopRun; irun++){
   while(in.good()) {
     in >> irun;
+    if (in.eof()) break;
     if (irun==0) continue;
     printf("Processing run %d ...\n",irun);
     AliTPCcalibDB::Instance()->SetRun(irun);
@@ -148,6 +154,10 @@ void CalibEnv(const char * runList){
     //ALTRO data
     Int_t nMasked=0;
     dbutil.ProcessALTROConfig(nMasked);
+    //Calib RAW data
+    Int_t nFailL1=-1;
+    if (calibDB->GetCalibRaw())
+      nFailL1=calibDB->GetCalibRaw()->GetNFailL1Phase();
     //production information
     Int_t nalien=0,nRawAlien=0,nlocal=0,nRawLocal=0;
 //     GetProductionInfo(irun, nalien, nRawAlien, nlocal,nRawLocal);
@@ -261,7 +271,9 @@ void CalibEnv(const char * runList){
         "temp31.="<<&vecTemp[8]<<
         "temp41.="<<&vecTemp[9]<<
         "tempSkirtA.="<<&vecSkirtTempA<<
-        "tempSkirtC.="<<&vecSkirtTempC<<
+        "tempSkirtC.="<<&vecSkirtTempC;
+      
+      (*pcstream)<<"dcs"<<	
         //noise data
         "meanNoise.="<<&vNoiseMean<<
         "meanNoiseSen.="<<&vNoiseMeanSenRegions<<
@@ -286,16 +298,10 @@ void CalibEnv(const char * runList){
         "CEgrQMean.="<<&vecQMean<<
         "CEgrQRMS.="<<&vecQRMS<<
         "CEgrQMedian.="<<&vecQMedian<<
-        "CEgrTEntries.="<<&vecTEntries<<
-        "CEgrTMean.="<<&vecTMean<<
-        "CEgrTRMS.="<<&vecTRMS<<
-        "CEgrTMedian.="<<&vecTMedian<<
-        "CEgrQEntries.="<<&vecQEntries<<
-        "CEgrQMean.="<<&vecQMean<<
-        "CEgrQRMS.="<<&vecQRMS<<
-        "CEgrQMedian.="<<&vecQMedian<<
         "CEgrDriftA="<<driftTimeA<<
         "CEgrDriftC="<<driftTimeC<<
+        //calib raw data
+        "nFailL1="<<nFailL1<<
         // b field
         "Bz="<< bz <<
         "L3polarity="<<l3pol<<

@@ -48,6 +48,7 @@ class TFile;
 class TTree;
 class TChain;
 class TGraph;
+class TObjArray;
 
 class AliTPCCalibViewerGUI;
 class AliTPCConfigParser;
@@ -59,21 +60,26 @@ public:
   AliTPCCalibViewerGUItime(const TGWindow *p, UInt_t w, UInt_t h);
   virtual ~AliTPCCalibViewerGUItime();
   
-  static TObjArray* ShowGUI(const char* fileName = 0);             // initialize and show GUI standalone
-
+  static TObjArray* ShowGUI(const char* fileName = 0, const char* treeName="dcs");             // initialize and show GUI standalone
+  static TObjArray* ShowGUI(TChain* chain);                                         // initialize and show GUI standalone
+  
   void DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h);
   
-  void UseFile(const char* fileName);
+  void UseFile(const char* fileName, const char* treeName);
+  void UseChain(TChain *chain);
+  void UseConfigFile(const char* file="");
   void Reload(Int_t first=1);
 
   
   void SetCalibViewerGUI(AliTPCCalibViewerGUI *gui) {fCalibViewerGUI=gui;}
   void SetCalibViewerGUItab(TGTabElement *tab) {fCalibViewerGUItab=tab;}
-  void SetConfigFile(const char* file) {fConfigFile=file;}
   void SetCacheDir(const char* cachedir) {fOutputCacheDir=cachedir;}
+  void SetConfigFileName(const char* file) {fConfigFile=file;}
   
   const char* GetDrawString();
-  const char* GetCutString();
+  const char* GetDrawOption();
+  void GetCutString(TString &cutStr);
+  TChain* GetChain() const {return fTree;}
   //Slots
   void DoDraw();
   void DoDumpRuns();
@@ -87,7 +93,7 @@ public:
   
 private:
   TFile*  fFile;                          //file that keeps the tree
-  TChain*  fTree;                          //internal tree
+  TChain*  fTree;                         //internal tree
   AliTPCCalibViewerGUI *fCalibViewerGUI;  //calib viewer gui used to display verbose information for one run
   TGTabElement *fCalibViewerGUItab;       //tab the calib view gui redies in
   TH1*    fCurrentHist;                   //histogram currently drawn in main canvas
@@ -102,7 +108,9 @@ private:
   TVectorD fTimeStamps;                   //timr stamps of current selection
   TVectorD fValuesX;                      //values of current selection
   TVectorD fValuesY;                      //values of current selection
-  
+  //
+  Bool_t  fNoGraph;                       //Whether to create a graph
+  Long64_t fGraphLimitEntries;            //limit in number of entries in the chain for producing a graph
   //GUI elements
   //main canvas Top part, bottom part
   TGCompositeFrame    *fContTopBottom;      // container for all GUI elements, vertical divided
@@ -110,6 +118,9 @@ private:
   TGCompositeFrame    *fContLCR;            // container for all GUI elements, horizontal divided
   //content left
   TGCompositeFrame    *fContLeft;           // container for GUI elements on left side
+  TGGroupFrame        *fContDrawOpt;        // Subgroup for draw selection
+  TGCheckButton       *fChkDrawOptSame;     // draw option 'same'
+  TGComboBox          *fComboAddDrawOpt;    // additional draw options combo box
   TGGroupFrame        *fContDrawSel;        // Subgroup for draw selection
   TGCompositeFrame    *fContDrawSelSubRunTime; //Radio button subframe
   TGRadioButton       *fRadioXhist;         // Radio button x-variable: show only 1D distribution
@@ -144,6 +155,8 @@ private:
   TGLabel             *fLblCustomCuts;      // label for custom cuts string
   TGComboBox          *fComboCustomDraw;    // combo box custom draw string
   TGComboBox          *fComboCustomCuts;    // combo box custom cuts string
+  //
+  TObjArray *fTrashBox;                   //graphics objects to be deleted (histograms, graphs,...)
   
   enum { kRadioXhist=10, kRadioXrun=11, kRadioXtime=12 };
   enum { kBranchOnOff=0, kBranchTitle=1, kCalibType=2, kParamNames=3 };
@@ -154,8 +167,12 @@ private:
   void FillRunTypes();
   void FillCalibTypes();
   void SetInitialValues();
+  void CheckDrawGraph();
+  Bool_t CheckChain();
+  void UpdateValueArrays(Bool_t withGraph);
   const char* SubstituteUnderscores(const char* in);
-  
+  void GetHistogramTitle(TString &title);
+private:
   AliTPCCalibViewerGUItime(const AliTPCCalibViewerGUItime &v);
   AliTPCCalibViewerGUItime &operator = (const AliTPCCalibViewerGUItime &v);         // assignment operator
   

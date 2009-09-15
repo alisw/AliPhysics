@@ -36,6 +36,7 @@
 #include <TString.h>
 #include <TIterator.h>
 #include <TList.h>
+#include <TSystem.h>
 //AliRoot includes
 
 //header
@@ -107,8 +108,8 @@ Int_t AliTPCConfigParser::ParseConfigFileTxt(const char* cfgfile)
  //
  // Function to parse a configuration file
  //
-  
-  ifstream file(cfgfile);
+  ResetMap();
+  ifstream file(gSystem->ExpandPathName(cfgfile));
   if ( !file.is_open() ){
     Error("ParseConfigFileTxt","File '%s' could not be opened!", cfgfile);
     return 1;

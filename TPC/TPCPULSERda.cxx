@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
   // 
   // end cheet
   TDatime time;
-  TObjString info(Form("Run: %u; Date: %s",runNb,time.AsString()));
+  TObjString info(Form("Run: %u; Date: %s",runNb,time.AsSQLString()));
     
   amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
   Int_t statusDA=0;  

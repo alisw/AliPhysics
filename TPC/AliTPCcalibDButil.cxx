@@ -37,6 +37,7 @@
 #include "AliTPCROC.h"
 #include "AliTPCmapper.h"
 #include "AliTPCParam.h"
+#include "AliTPCCalibRaw.h"
 
 #include "AliTPCcalibDButil.h"
 
@@ -54,6 +55,7 @@ AliTPCcalibDButil::AliTPCcalibDButil() :
   fCETrms(0x0),
   fCEQmean(0x0),
   fALTROMasked(0x0),
+  fCalibRaw(0x0),
   fGoofieArray(0x0),
   fMapper(new AliTPCmapper(0x0)),
   fNpulserOutliers(-1),
@@ -92,6 +94,7 @@ void AliTPCcalibDButil::UpdateFromCalibDB()
   fCEQmean=fCalibDB->GetCEQmean();
   fALTROMasked=fCalibDB->GetALTROMasked();
   fGoofieArray=fCalibDB->GetGoofieSensors(fCalibDB->GetRun());
+  fCalibRaw=fCalibDB->GetCalibRaw();
   UpdatePulserOutlierMap();
 }
 //_____________________________________________________________________________________
@@ -125,7 +128,10 @@ void AliTPCcalibDButil::ProcessCEdata(const char* fitFormula, TVectorD &fitResul
     AliTPCCalROC *rocData=fCETmean->GetCalROC(iroc);
     if (fALTROMasked) rocMasked=fALTROMasked->GetCalROC(iroc);
     AliTPCCalROC *rocOut=out.GetCalROC(iroc);
-    if (!rocData) continue;
+    if (!rocData) {
+      noutliersCE+=AliTPCROC::Instance()->GetNChannels(iroc);
+      continue;
+    }
     //add time offset to IROCs
     if (iroc<AliTPCROC::Instance()->GetNInnerSector())
       rocData->Add(fIrocTimeOffset);
@@ -198,8 +204,9 @@ void AliTPCcalibDButil::ProcessCEgraphs(TVectorD &vecTEntries, TVectorD &vecTMea
       Int_t npoints = gr->GetN();
       values.ResizeTo(npoints);
       Int_t nused =0;
-      for (Int_t ipoint=0; ipoint<npoints; ipoint++){
-        if (gr->GetY()[ipoint]>500 && gr->GetY()[ipoint]<1000 ){
+      //skip first points, theres always some problems with finding the CE position
+      for (Int_t ipoint=4; ipoint<npoints; ipoint++){
+        if (gr->GetY()[ipoint]>500 && gr->GetY()[ipoint]<1020 ){
           values[nused]=gr->GetY()[ipoint];
           nused++;
         }
@@ -220,7 +227,7 @@ void AliTPCcalibDButil::ProcessCEgraphs(TVectorD &vecTEntries, TVectorD &vecTMea
     }
   }
   if (arrQ){
-    for (Int_t isec=0;isec<72;++isec){
+    for (Int_t isec=0;isec<arrQ->GetEntriesFast();++isec){
       TGraph *gr=(TGraph*)arrQ->At(isec);
       if (!gr) continue;
       TVectorD values;
@@ -234,7 +241,7 @@ void AliTPCcalibDButil::ProcessCEgraphs(TVectorD &vecTEntries, TVectorD &vecTMea
         }
       }
       //
-      vecTEntries[isec]= nused;
+      vecQEntries[isec]= nused;
       if (nused>1){
         vecQMedian[isec] = TMath::Median(nused,values.GetMatrixArray());
         vecQMean[isec]   = TMath::Mean(nused,values.GetMatrixArray());

@@ -114,6 +114,7 @@ class AliTPCCalDet;
 #include "AliTPCExBFirst.h"
 #include "AliTPCTempMap.h"
 #include "AliTPCCalibVdrift.h"
+#include "AliTPCCalibRaw.h"
 
 #include "AliTPCPreprocessorOnline.h"
 
@@ -170,6 +171,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fPadTime0(0),
   fPadNoise(0),
   fPedestals(0),
+  fCalibRaw(0),
   fALTROConfigData(0),
   fPulserData(0),
   fCEData(0),
@@ -206,6 +208,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fPadTime0(0),
   fPadNoise(0),
   fPedestals(0),
+  fCalibRaw(0),
   fALTROConfigData(0),
   fPulserData(0),
   fCEData(0),
@@ -377,6 +380,13 @@ void AliTPCcalibDB::Update(){
   if (entry){
     entry->SetOwner(kTRUE);
     fCEData=(TObjArray*)(entry->GetObject());
+  }
+  //RAW calibration data
+  entry          = GetCDBEntry("TPC/Calib/Raw");
+  if (entry){
+    entry->SetOwner(kTRUE);
+    TObjArray *arr=(TObjArray*)(entry->GetObject());
+    if (arr) fCalibRaw=(AliTPCCalibRaw*)arr->At(0);
   }
   
   entry          = GetCDBEntry("TPC/Calib/Mapping");

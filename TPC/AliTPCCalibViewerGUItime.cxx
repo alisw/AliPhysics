@@ -19,6 +19,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+
 #include <iostream>
 //Root includes
 #include <TROOT.h>
@@ -80,13 +81,15 @@ TGCompositeFrame(p,w,h),
   fCurrentRunDetails(-1),
   fOutputCacheDir("/tmp"),
   fDrawString(""),
-  fConfigFile("$ALICE_ROOT/TPC/CalibMacros/calibVarDescription.txt"),
-  fConfigParser(0x0),
+  fConfigFile(""),
+  fConfigParser(new AliTPCConfigParser),
   fIsCustomDraw(kFALSE),
   fRunNumbers(10),
   fTimeStamps(10),
   fValuesX(10),
   fValuesY(10),
+  fNoGraph(kFALSE),
+  fGraphLimitEntries(10000),
   //GUI elements
   //main canvas Top part, bottom part
   fContTopBottom(0x0),
@@ -94,6 +97,9 @@ TGCompositeFrame(p,w,h),
   fContLCR(0x0),
   //content left
   fContLeft(0x0),
+  fContDrawOpt(0x0),
+  fChkDrawOptSame(0x0),
+  fComboAddDrawOpt(0x0),
   fContDrawSel(0x0),
   fContDrawSelSubRunTime(0x0),
   fRadioXhist(0x0),
@@ -127,12 +133,15 @@ TGCompositeFrame(p,w,h),
   fLblCustomDraw(0x0),
   fLblCustomCuts(0x0),
   fComboCustomDraw(0x0),
-  fComboCustomCuts(0x0)
+  fComboCustomCuts(0x0),
+  fTrashBox(new TObjArray)
 {
   //
   // ctor
   //
   DrawGUI(p,w,h);
+  gStyle->SetMarkerStyle(20);
+  gStyle->SetMarkerSize(0.5);
   SetInitialValues();
 }
 //______________________________________________________________________________
@@ -140,7 +149,8 @@ AliTPCCalibViewerGUItime::~AliTPCCalibViewerGUItime(){
   //
   // dtor
   //
-
+  delete fConfigParser;
+  delete fTrashBox;
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
@@ -193,7 +203,20 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h
    // ************************* content of fContLeft *************************
    // ========================================================================
    // --- draw button and tabLeft ---
-
+  // draw options
+  fContDrawOpt = new TGGroupFrame(fContLeft, "Draw options", kVerticalFrame | kFitWidth | kFitHeight);
+  fContLeft->AddFrame(fContDrawOpt, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
+  fChkDrawOptSame = new TGCheckButton(fContDrawOpt, "Same");
+  fContDrawOpt->AddFrame(fChkDrawOptSame, new TGLayoutHints(kLHintsNormal, 0, 2, 0, 0));
+  fChkDrawOptSame->SetToolTipText("Add draw option 'same'");
+  // additional draw options combo box
+  fComboAddDrawOpt = new TGComboBox(fContDrawOpt);
+  fComboAddDrawOpt->Resize(0, 22);
+  fComboAddDrawOpt->EnableTextInput(kTRUE);
+  fContDrawOpt->AddFrame(fComboAddDrawOpt, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
+//   fComboAddDrawOpt->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtonsGeneral(=14)");
+//   fComboAddDrawOpt->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+  
   // draw selection group
   fContDrawSel = new TGGroupFrame(fContLeft, "Draw selection", kVerticalFrame | kFitWidth | kFitHeight);
   fContLeft->AddFrame(fContDrawSel, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 10, 0));
@@ -381,42 +404,65 @@ void AliTPCCalibViewerGUItime::SetInitialValues(){
 }
 
 //______________________________________________________________________________
-void AliTPCCalibViewerGUItime::UseFile(const char* fileName) {
+void AliTPCCalibViewerGUItime::UseFile(const char* fileName, const char* treeName) {
   //
   // retrieve tree from file
   //
-  //TString s=gSystem->GetFromPipe(Form("ls %s",fileName));
-  TString s(fileName);
+  TString s=gSystem->GetFromPipe(Form("ls %s",fileName));
+//   TString s(fileName);
   TObjArray *arr=s.Tokenize("\n");
   TIter next(arr);
   TObject *o=0;
   if (fTree) delete fTree;
-  fTree=new TChain("dcs");
+  fTree=new TChain(treeName);
   while ( (o=next()) ){
     fTree->AddFile(o->GetName());
   }
   delete arr;
-  fTree->Lookup();
-  if (fTree->GetEntries()==0){
-    AliError("No entries found in chain");
-    return;
-  }
-/*  TDirectory *save=gDirectory;
-  if (fFile) delete fFile;
-  fFile = TFile::Open(fileName);
-  if (!fFile) return;
-  if (!fFile->IsOpen()) return;
-  fTree=(TTree*)fFile->Get("dcs");
-  if (!fTree){
-    AliError(Form("Could not get tree from file '%s'",fileName));
-    return;
-  }
-  save->cd();
-  */
-  if (fConfigParser) delete fConfigParser;
-  fConfigParser=new AliTPCConfigParser(gSystem->ExpandPathName(fConfigFile.Data()));
+  if (!CheckChain()) return;
+  UseConfigFile(fConfigFile.Data());
   Reload();
   
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItime::UseChain(TChain* chain  = 0)
+{
+  //
+  //
+  //
+  fTree=chain;
+  if (!CheckChain()) return;
+  //set configuration file
+  UseConfigFile(fConfigFile.Data());
+  Reload();
+}
+//______________________________________________________________________________
+Bool_t AliTPCCalibViewerGUItime::CheckChain()
+{
+  //
+  // check whether cahin has entries
+  // decide whether to draw graphs in 2D
+  //
+  if (!fTree) return kFALSE;
+  fTree->Lookup();
+  Long64_t entries=fTree->GetEntries();
+  if (entries==0){
+    AliError("No entries found in chain");
+    return kFALSE;
+  }
+  //check whether to draw graphs
+  CheckDrawGraph();
+  return kTRUE;
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItime::UseConfigFile(const char* file)
+{
+  //
+  // Use 'file' as configuration file
+  //
+  fConfigFile=file;
+  fConfigParser->ParseConfigFileTxt(fConfigFile.Data());
+  FillCalibTypes();
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::FillRunTypes()
@@ -429,24 +475,17 @@ void AliTPCCalibViewerGUItime::FillRunTypes()
   fComboRunType->RemoveAll();
   fComboRunType->AddEntry("ALL",id++);
   fComboRunType->Select(0,kFALSE);
+  if (!fTree->GetBranch("runType.")) return;
   TObjString *runType=0x0;
   Int_t nevets=fTree->GetEntries();
   fTree->SetBranchStatus("*",0);
   fTree->SetBranchStatus("runType.*",1);
-//   TBranch *branch=fTree->GetBranch("runType.");
-//   if (!branch) {
-//     branch->ResetAddress();
-//     fTree->SetBranchStatus("*",1);
-//     return;
-//   }
-//  branch->SetAddress(&runType);
   fTree->SetBranchAddress("runType.",&runType);
   for (Int_t iev=0;iev<nevets;++iev){
     fTree->GetEntry(iev);
     TString type=runType->String();
     if (!type.IsNull()&&!fComboRunType->FindEntry(type)) fComboRunType->AddEntry(type,id++);
   }
-//   branch->ResetAddress();
   fTree->ResetBranchAddresses();
   fTree->SetBranchStatus("*",1);
 }
@@ -456,7 +495,6 @@ void AliTPCCalibViewerGUItime::FillCalibTypes()
   //
   // loop over configuration and fill calibration types
   //
-  if (!fConfigParser) return;
   Int_t id=0;
   fListCalibType->RemoveAll();
   TObject *o=0x0;
@@ -482,7 +520,19 @@ void AliTPCCalibViewerGUItime::FillCalibTypes()
   }
 }
 //______________________________________________________________________________
-void AliTPCCalibViewerGUItime::Reload(Int_t first){
+void AliTPCCalibViewerGUItime::CheckDrawGraph()
+{
+  //
+  // Check whether to draw graphs in 2D mode based on the number of entries in the chain
+  // GetEstimate() returns the maximum size of the arrays stored in GetV1()...
+  //
+  if (!fTree) return;
+  fNoGraph=kTRUE;
+  if (fTree->GetEntries()<fTree->GetEstimate()) fNoGraph=kFALSE;
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItime::Reload(Int_t first)
+{
   //
   // reload the gui contents, this is needed after the input tree has changed
   //
@@ -579,7 +629,18 @@ const char* AliTPCCalibViewerGUItime::GetDrawString(){
   return branchName.Data();
 }
 //______________________________________________________________________________
-const char* AliTPCCalibViewerGUItime::GetCutString(){
+const char* AliTPCCalibViewerGUItime::GetDrawOption(){
+  //
+  // get user selected draw options
+  //
+  TString drawOpt;
+  if (fComboAddDrawOpt->GetSelectedEntry()) drawOpt=fComboAddDrawOpt->GetSelectedEntry()->GetTitle();
+  if (fChkDrawOptSame->GetState()==kButtonDown && !drawOpt.Contains("same",TString::kIgnoreCase))
+    drawOpt+="same";
+  return drawOpt.Data();
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItime::GetCutString(TString &cutStr){
   //
   // create cut string
   //
@@ -587,90 +648,183 @@ const char* AliTPCCalibViewerGUItime::GetCutString(){
   TString runType="";
   if (fComboRunType->GetSelectedEntry()) runType=fComboRunType->GetSelectedEntry()->GetTitle();
   if (runType!="ALL"&&!runType.IsNull()) cuts+=Form("runType.String().Data()==\"%s\"",runType.Data());
-  return cuts.GetTitle();
+  cutStr=cuts.GetTitle();
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItime::UpdateValueArrays(Bool_t withGraph)
+{
+  //
+  //
+  //
+  if (!withGraph){
+    fValuesX.ResizeTo(1);
+    fValuesY.ResizeTo(1);
+    fRunNumbers.ResizeTo(1);
+    fTimeStamps.ResizeTo(1);
+  } else {
+    fValuesX.ResizeTo(fTree->GetSelectedRows());
+    fValuesY.ResizeTo(fTree->GetSelectedRows());
+    fRunNumbers.ResizeTo(fTree->GetSelectedRows());
+    fTimeStamps.ResizeTo(fTree->GetSelectedRows());
+    fValuesY.SetElements(fTree->GetV3());
+    fRunNumbers.SetElements(fTree->GetV1());
+    fTimeStamps.SetElements(fTree->GetV2());
+  }
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItime::GetHistogramTitle(TString &title)
+{
+  //
+  // Create string for histogram title
+  //
+
+  title=fDrawString;
+  Int_t pos=title.First(">>");
+  if (pos>0) title=title(0,pos);
+  if (!fIsCustomDraw){
+    if (fRadioXrun->GetState()==kButtonDown){
+      title+=":Run";
+    } else if (fRadioXtime->GetState()==kButtonDown){
+      title+=":Date";
+    }
+  }
+  TString cuts;
+  GetCutString(cuts);
+  TObjArray *arr=title.Tokenize(":");
+  TObject *o=0x0;
+  title+=" {";
+  title+=cuts;
+  title+="}";
+  TIter next(arr,kIterBackward);
+  while ( (o=next()) ){
+    TString varName=o->GetName();
+    title+=";";
+    //substitue variable names with names in configuration file if available
+    if ((*fConfigParser)()->GetEntries()){
+      TString branchName=varName;
+      Int_t par=0;
+      if (branchName.Contains('.')) branchName=branchName(0,branchName.First('.')+1);
+      //chek if a configuration for that branch is available
+      const TObject *oBranch=(*fConfigParser)(branchName.Data());
+      if (oBranch){
+        TString branchTitle=fConfigParser->GetData(oBranch,kBranchTitle);
+        if (!branchTitle.IsNull()){
+          //check for TVectorT type branch
+          //add parameter name if available
+          if (varName.Contains("fElements")){
+            TString parStr=varName(varName.First('[')+1,varName.Length()-varName.First('[')-2);
+            par=parStr.Atoi();
+            branchTitle+=": ";
+            TString yparname=fConfigParser->GetData(oBranch,par+kParamNames);
+            if (!yparname.IsNull()){
+              branchTitle+=yparname;
+            } else {
+              branchTitle+="[";
+              branchTitle+=par;
+              branchTitle+="]";
+            }
+          }
+        }
+        varName=SubstituteUnderscores(branchTitle.Data());
+      }
+    }
+    title+=varName;
+  }
+  delete arr;
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoDraw() {
   TString drawString=fDrawString;
-  drawString.Prepend("run:time:");
-  TString cutString  = GetCutString();
-  TString optString  = "goff";
+  TString cutString;
+  GetCutString(cutString);
+  TString optString  = GetDrawOption();
+  Bool_t graphOutput=!fNoGraph;  //ttree buffer for V1, V2... too small
+  graphOutput&=(drawString.First(">>")<0); //histogram output in custom draw
+  graphOutput&=fRadioXhist->GetState()!=kButtonDown; //histogram drawing selected
+  graphOutput&=!(fIsCustomDraw&&!fDrawString.Contains(":")); //custom draw 1D
+  Bool_t drawSame=optString.Contains("same",TString::kIgnoreCase);
+//   optString+="goff";
+  if (graphOutput) {
+    drawString.Prepend("run:time:");
+    optString="goff";
+  }else{
+    if (!fIsCustomDraw){
+      if (fRadioXrun->GetState()==kButtonDown){
+        drawString+=":run";
+      } else if (fRadioXtime->GetState()==kButtonDown){
+        drawString+=":time";
+      }
+    }
+  }
   TVirtualPad *padsave=gPad;
   fCanvMain->GetCanvas()->cd();
-  //delete old histogram and graph
-  if (fCurrentGraph) {
-    delete fCurrentGraph;
+  //delete old histograms and graphs
+  if (!drawSame){
+    fTrashBox->Delete();
     fCurrentGraph=0x0;
-    //fCurrentHist in case of graph is the interrnal histogram,
-    //  which is deleted by the graph itself.
     fCurrentHist=0x0;
   }
-  if (fCurrentHist)  {
-    delete fCurrentHist;
-    fCurrentHist=0x0;
-  }
+//   if (fCurrentGraph) {
+//     delete fCurrentGraph;
+//     fCurrentGraph=0x0;
+//     //fCurrentHist in case of graph is the interrnal histogram,
+//     //  which is deleted by the graph itself.
+//     fCurrentHist=0x0;
+//   }
+//   if (fCurrentHist)  {
+//     delete fCurrentHist;
+//     fCurrentHist=0x0;
+//   }
   //select data
   fTree->Draw(drawString.Data(),cutString.Data(),optString.Data());
   if (fTree->GetSelectedRows()==-1) return;
-  fValuesX.ResizeTo(fTree->GetSelectedRows());
-  fValuesY.ResizeTo(fTree->GetSelectedRows());
-  fRunNumbers.ResizeTo(fTree->GetSelectedRows());
-  fTimeStamps.ResizeTo(fTree->GetSelectedRows());
-  fValuesY.SetElements(fTree->GetV3());
-  fRunNumbers.SetElements(fTree->GetV1());
-  fTimeStamps.SetElements(fTree->GetV2());
-  TString title="";
+  UpdateValueArrays(graphOutput);
+  TString title;
+  GetHistogramTitle(title);
   Bool_t drawGraph=kFALSE;
-  if (fIsCustomDraw){
-    if (fDrawString.Contains(":")){
-      fValuesX.SetElements(fTree->GetV4());
-      TString yname=fDrawString(0,fDrawString.First(':'));
-      TString xname=fDrawString(fDrawString.First(':')+1,fDrawString.Length());
-      title=Form("%s;%s;%s",fDrawString.Data(),xname.Data(),yname.Data());
+  if (graphOutput){
+    if (fIsCustomDraw){
+      if (fDrawString.Contains(":")){
+        fValuesX.SetElements(fTree->GetV4());
+        drawGraph=kTRUE;
+      } else {
+        drawGraph=kFALSE;
+      }
+    }else{
       drawGraph=kTRUE;
-    } else {
-      drawGraph=kFALSE;
-    }
-  }else{
-    drawGraph=kTRUE;
-    TString yname=fDrawString.Data();
-    if (fConfigParser ){
-      Int_t id=fListVariables->GetSelectedEntry()->EntryId();
-      if ((*fConfigParser)(id)) yname=fConfigParser->GetData((*fConfigParser)(id),kBranchTitle);
-      yname=SubstituteUnderscores(yname.Data());
-      if (fNmbPar->GetButtonUp()->GetState()!=kButtonDisabled){
-        yname+=": ";
-        Int_t par = (Int_t)(fNmbPar->GetNumber());
-        if (fConfigParser && (*fConfigParser)(id)) {
-          TString yparname=fConfigParser->GetData((*fConfigParser)(id),par+kParamNames);
-          yparname=SubstituteUnderscores(yparname);
-          yname+=yparname;
-        }
+      if (fRadioXrun->GetState()==kButtonDown){
+        fValuesX.SetElements(fTree->GetV1());
+      } else if (fRadioXtime->GetState()==kButtonDown){
+        fValuesX.SetElements(fTree->GetV2());
+      } else {
+        drawGraph=kFALSE;
       }
     }
-    if (fRadioXrun->GetState()==kButtonDown){
-      fValuesX.SetElements(fTree->GetV1());
-      title=Form("%s:Run;Run;%s",fDrawString.Data(),yname.Data());
-    } else if (fRadioXtime->GetState()==kButtonDown){
-      fValuesX.SetElements(fTree->GetV2());
-      title=Form("%s:Time;Time;%s",fDrawString.Data(),yname.Data());
-    } else {
-      drawGraph=kFALSE;
-      title=Form("%s:%s",fDrawString.Data(),yname.Data());
-    }
-  }
-  //create graph according to selection
+  }//create graph according to selection
   if (drawGraph){
-    fCurrentGraph=new TGraph(fValuesX,fValuesY);
-    fCurrentGraph->Draw(fIsCustomDraw?"ap":"alp");
-    fCurrentHist=fCurrentGraph->GetHistogram();
-    fCurrentHist->SetTitle(title.Data());
+    TGraph *graph=new TGraph(fValuesX,fValuesY);
+    TString grDraw="p";
+    if (!drawSame) grDraw+="a";
+    if (!fIsCustomDraw) grDraw+="l";
+    graph->Draw(grDraw.Data());
+    graph->SetEditable(kFALSE);
+    TH1 *hist=graph->GetHistogram();
+    hist->SetTitle(title.Data());
+    fTrashBox->Add(graph);
+    graph->SetLineColor(fTrashBox->GetEntries());
+    graph->SetMarkerColor(fTrashBox->GetEntries());
+    if (!drawSame) {
+      fCurrentGraph=graph;
+      fCurrentHist=hist;
+    }
   } else {
-    fCurrentGraph=0x0;
-    Float_t add=TMath::Abs(fValuesY.Min()*.05);
-    fCurrentHist=new TH1D("hist",title.Data(),100,fValuesY.Min()-add,fValuesY.Max()+add);
-    fCurrentHist->FillN(fValuesY.GetNrows(),fValuesY.GetMatrixArray(),0);
-    fCurrentHist->Draw();
+    TH1 *hist=fTree->GetHistogram();
+    hist->SetTitle(title.Data());
+//     hist->Draw(optString.Data());
+    fTrashBox->Add(hist);
+    hist->SetLineColor(fTrashBox->GetEntries());
+    hist->SetMarkerColor(fTrashBox->GetEntries());
+    if (!drawSame) fCurrentHist=hist;
   }
   
   //Set time axis if choosen as x-variables
@@ -681,13 +835,8 @@ void AliTPCCalibViewerGUItime::DoDraw() {
     xaxis->SetLabelOffset(xaxis->GetLabelOffset()*3);
     xaxis->SetLabelSize(xaxis->GetLabelSize()/1.3);
   }
-  if (fCurrentGraph){
-    fCurrentGraph->SetEditable(kFALSE);
-    fCurrentGraph->SetMarkerStyle(20);
-    fCurrentGraph->SetMarkerSize(0.5);
-  }
   //Set title offset
-  fCurrentHist->GetYaxis()->SetTitleOffset(1.5);
+  if (!drawSame) fCurrentHist->GetYaxis()->SetTitleOffset(1.5);
   gPad->Modified();
   gPad->Update();
   padsave->cd();
@@ -737,10 +886,11 @@ void AliTPCCalibViewerGUItime::DoCustomDraw()
   //
   //
   fDrawString=fComboCustomDraw->GetTextEntry()->GetText();
-  if (fDrawString.Contains(">>")){
-    Warning("DoCustomDraw","Currently no user defined histograms allowed!");
-    return;
-  }
+//   if (fDrawString.Contains(">>")){
+//     Warning("DoCustomDraw","Currently no user defined histograms allowed!");
+//     return;
+//   }
+  fNmbPar->SetState(kFALSE);
   fIsCustomDraw=kTRUE;
   DoDraw();
 }
@@ -860,7 +1010,7 @@ void AliTPCCalibViewerGUItime::UpdateParLimits()
     return;
   }
 //   branch->ResetAddress();
-  fTree->ResetBranchAddresses();
+  fTree->SetBranchAddress(selectedVariable.Data(),0x0);
   fNmbPar->SetNumber(0);
   fNmbPar->SetLimitValues(0,maxPar-1);
   fNmbPar->SetState(kTRUE);
@@ -946,6 +1096,7 @@ void AliTPCCalibViewerGUItime::SetGuiTree(Int_t run)
   if (f.IsOpen()){
     f.Close();
     fCalibViewerGUI->Initialize(fileName.Data());
+    fCalibViewerGUI->Reload();
     if (fCalibViewerGUItab) fCalibViewerGUItab->SetText(new TGString(Form("Detail - %05d",run)));
     return;
   }
@@ -953,6 +1104,7 @@ void AliTPCCalibViewerGUItime::SetGuiTree(Int_t run)
   Bool_t sucess=AliTPCcalibDB::CreateGUITree(run,fileName.Data());
   if (sucess){
     fCalibViewerGUI->Initialize(fileName.Data());
+    fCalibViewerGUI->Reload();
     if (fCalibViewerGUItab) fCalibViewerGUItab->SetText(new TGString(Form("Detail - %05d",run)));
   }else{
     fCalibViewerGUI->Reset();
@@ -972,7 +1124,7 @@ const char* AliTPCCalibViewerGUItime::SubstituteUnderscores(const char* in)
   return s.Data();
 }
 //______________________________________________________________________________
-TObjArray* AliTPCCalibViewerGUItime::ShowGUI(const char* fileName) {
+TObjArray* AliTPCCalibViewerGUItime::ShowGUI(const char* fileName, const char* treeName) {
    //
    // Initialize and show GUI for presentation for demonstration purposes
    // or for fast standalone use
@@ -989,7 +1141,8 @@ TObjArray* AliTPCCalibViewerGUItime::ShowGUI(const char* fileName) {
   
   AliTPCCalibViewerGUItime* calibViewerTime = new AliTPCCalibViewerGUItime(tabCont1, 1000, 600);
   tabCont1->AddFrame(calibViewerTime, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
-  calibViewerTime->UseFile(fileName);
+  calibViewerTime->SetConfigFileName("$ALICE_ROOT/TPC/CalibMacros/calibVarDescription.txt");
+  calibViewerTime->UseFile(fileName, treeName);
   
   AliTPCCalibViewerGUI* calibViewer = new AliTPCCalibViewerGUI(tabCont2, 1000, 600, 0);
   tabCont2->AddFrame(calibViewer, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
@@ -1008,3 +1161,31 @@ TObjArray* AliTPCCalibViewerGUItime::ShowGUI(const char* fileName) {
   return guiArray;
 }
 
+//______________________________________________________________________________
+TObjArray* AliTPCCalibViewerGUItime::ShowGUI(TChain *chain) {
+   //
+   // Initialize and show GUI for presentation for demonstration purposes
+   // or for fast standalone use
+   //
+  TGMainFrame* frmMain = new TGMainFrame(gClient->GetRoot(), 1000, 600);
+  frmMain->SetWindowName("AliTPCCalibViewer GUItime");
+  frmMain->SetCleanup(kDeepCleanup);
+
+  TGTab* tabMain = new TGTab(frmMain, 1000, 600);
+  frmMain->AddFrame(tabMain, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+
+  TGCompositeFrame* tabCont1 = tabMain->AddTab("Time");
+
+  AliTPCCalibViewerGUItime* calibViewerTime = new AliTPCCalibViewerGUItime(tabCont1, 1000, 600);
+  tabCont1->AddFrame(calibViewerTime, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+  calibViewerTime->UseChain(chain);
+
+  TObjArray *guiArray = new TObjArray();
+  guiArray->Add(calibViewerTime);
+
+  frmMain->MapSubwindows();
+  frmMain->Resize();
+  frmMain->MapWindow();
+
+  return guiArray;
+}

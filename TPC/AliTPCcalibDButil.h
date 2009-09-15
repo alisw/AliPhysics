@@ -17,6 +17,7 @@ class AliDCSSensorArray;
 class AliTPCcalibDB;
 class AliTPCCalPad;
 class AliTPCmapper;
+class AliTPCCalibRaw;
 
 class AliTPCcalibDButil : public TObject
 {
@@ -66,6 +67,8 @@ private:
   AliTPCCalPad  *fCETrms;             //central electrode rms time information
   AliTPCCalPad  *fCEQmean;            //central electrode mean q information
   AliTPCCalPad  *fALTROMasked;        //ALTRO masked channels information
+  //
+  AliTPCCalibRaw *fCalibRaw;          //raw calibration object
   //
   AliDCSSensorArray* fGoofieArray;    //Goofie Data
   //

@@ -30,6 +30,7 @@ class AliDCSSensor;
 class AliDCSSensorArray;
 class AliTPCCalibVdrift;
 class AliGRPObject;
+class AliTPCCalibRaw;
 class TMap;
 //class AliCDBStorage;
 
@@ -69,7 +70,7 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetPulserTmean() const {return fPulserData?static_cast<AliTPCCalPad*>(fPulserData->FindObject("PulserTmean")):0;}
   AliTPCCalPad* GetPulserTrms()  const {return fPulserData?static_cast<AliTPCCalPad*>(fPulserData->FindObject("PulserTrms")):0;}
   AliTPCCalPad* GetPulserQmean() const {return fPulserData?static_cast<AliTPCCalPad*>(fPulserData->FindObject("PulserQmean")):0;}
-//CE data
+  //CE data
   TObjArray*    GetCEData()     const {return fCEData;}
   AliTPCCalPad* GetCETmean()    const {return fCEData?static_cast<AliTPCCalPad*>(fCEData->FindObject("CETmean")):0;}
   AliTPCCalPad* GetCETrms()     const {return fCEData?static_cast<AliTPCCalPad*>(fCEData->FindObject("CETrms")):0;}
@@ -80,7 +81,9 @@ class AliTPCcalibDB : public TObject
   TGraph*       GetCErocQgraph(const Int_t roc)const {return GetCErocQtime()?static_cast<TGraph*>(GetCErocQtime()->At(roc)):0;}
   static Float_t GetCEdriftTime(Int_t run, Int_t sector, Double_t timeStamp=-1., Int_t *entries=0);
   static Float_t GetCEchargeTime(Int_t run, Int_t sector, Double_t timeStamp=-1., Int_t *entries=0);
-//
+  //Raw calibration
+  AliTPCCalibRaw* GetCalibRaw() const {return fCalibRaw;}
+  //
   AliTPCSensorTempArray* GetTemperature() {return fTemperature;}
   AliTPCParam*  GetParameters(){return fParam;}
   AliTPCAltroMapping ** GetMapping(){ return fMapping;}
@@ -145,6 +148,7 @@ protected:
   AliTPCCalPad* fPadTime0;        // Time0 calibration entry
   AliTPCCalPad* fPadNoise;        // Noise calibration entry
   AliTPCCalPad* fPedestals;       // Pedestal calibration entry
+  AliTPCCalibRaw *fCalibRaw;      // raw data calibration entry
   TObjArray *fALTROConfigData;    // ALTRO configuration data
   TObjArray *fPulserData;         // Calibration Pulser data
   TObjArray *fCEData;             // CE data
