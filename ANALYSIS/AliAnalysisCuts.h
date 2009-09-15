@@ -23,8 +23,11 @@ class AliAnalysisCuts : public TNamed
     virtual Bool_t IsSelected(TObject* obj)  = 0;
     virtual Bool_t IsSelected(TList*  list)  = 0;
     virtual void   Init() {;}
+    virtual void   SetFilterMask(UInt_t mask) {fFilterMask = mask;}
+    virtual UInt_t GetFilterMask()   const    {return fFilterMask;}	    
  private:
-    ClassDef(AliAnalysisCuts, 3); // Base class for filter decisions on ESD objects
+    UInt_t fFilterMask; // Mask to use one of the previous decisions inside a filter
+    ClassDef(AliAnalysisCuts, 4); // Base class for filter decisions on ESD objects
 };
  
 #endif

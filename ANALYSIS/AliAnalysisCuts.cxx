@@ -29,13 +29,13 @@ ClassImp(AliAnalysisCuts)
 ////////////////////////////////////////////////////////////////////////
 
 AliAnalysisCuts::AliAnalysisCuts():
-    TNamed()
+    TNamed(), fFilterMask(0)
 {
   // Default constructor
 }
 
 AliAnalysisCuts::AliAnalysisCuts(const char* name, const char* title):
-    TNamed(name, title)
+    TNamed(name, title), fFilterMask(0)
 {
   // Constructor
 }
