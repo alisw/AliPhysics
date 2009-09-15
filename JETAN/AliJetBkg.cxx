@@ -477,21 +477,19 @@ Double_t AliJetBkg::CalcRho(vector<fastjet::PseudoJet> inputParticles,Double_t r
   double ptmin = header->GetPtMin(); 
   vector<fastjet::PseudoJet> inclusiveJets = clust_seq.inclusive_jets(ptmin);
   vector<fastjet::PseudoJet> jets = sorted_by_pt(inclusiveJets); 
-  cout<<"# of BKG jets = "<<jets.size()<<endl;
-  for (size_t j = 0; j < jets.size(); j++) { // loop for jets   
-      
-    printf("BKG Jet found %5d %9.5f %8.5f %10.3f %4.4f \n",(Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp(),clust_seq.area(jets[j]));
-  }
 
-  // double phiMax = header->GetPhiMax();
-  //double phiMin = header->GetPhiMin();
+  if (debug) {
+      cout<<"# of BKG jets = "<<jets.size()<<endl;
+      for (size_t j = 0; j < jets.size(); j++) { // loop for jets   
+	  printf("BKG Jet found %5d %9.5f %8.5f %10.3f %4.4f \n",(Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp(),clust_seq.area(jets[j]));
+      }
+  }
+  
   double phiMin = 0, phiMax = 0, rapMin = 0, rapMax = 0;
 
   if (method.Contains("All")){
     phiMin = 80.*TMath::Pi()/180+rParamBkg;
     phiMax = 190.*TMath::Pi()/180-rParamBkg;
-    //phiMin = 0;
-    //phiMax = 2*TMath::Pi();
   }
   if (method.Contains("Charg")){
     phiMin = 0;
