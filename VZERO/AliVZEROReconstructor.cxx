@@ -295,29 +295,23 @@ void AliVZEROReconstructor::GetCollisionMode()
 // Retrieves the collision mode from GRP data
 
 // Initialization of the GRP entry 
+// To be replace by a call to AliRunInfo object
   
-   Int_t run = AliCDBManager::Instance()->GetRun();
-  
-//   printf("\n ++++++ Run Number retrieved as %d \n",run);
-  
-   AliCDBEntry*  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data",run);
-   AliGRPObject* grpData = 0x0;
+  AliCDBEntry*  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliGRPObject* grpData = 0x0;
    
   if(entry){
     TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
     if(m){
-       m->Print();
        grpData = new AliGRPObject();
        grpData->ReadValuesFromMap(m);
     }
     else{
        grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
-       entry->SetOwner(0);
     }
-    AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
   }
 
-   if(!grpData) { AliError("No GRP entry found in OCDB!");
+  if(!grpData) { AliError("No GRP entry found in OCDB!");
                   return; }
 
 // Retrieval of simulated collision mode 
