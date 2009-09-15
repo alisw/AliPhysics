@@ -203,7 +203,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 		Int_t pdgGranma = CheckOrigin(mcPart, mcArray);
 		Int_t abspdgGranma = TMath::Abs(pdgGranma);
 		if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
-			AliInfo(Form("Particle has a b-meson, or b-baryon mother (pdg code mother = %d )--> not coming from a c-quark, skipping...", pdgGranma));
+			AliDebug(2,Form("Particle has a b-meson, or b-baryon mother (pdg code mother = %d )--> not coming from a c-quark, skipping...", pdgGranma));
 			continue;  // skipping particles that don't come from c quark
 		}
 		
@@ -272,7 +272,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			continue;
 		}
  	}
-	if (cquarks<2) AliInfo(Form("Event found with %d c-quarks", cquarks));
+	if (cquarks<2) AliDebug(2,Form("Event found with %d c-quarks", cquarks));
 	
 	AliDebug(2, Form("Found %i MC particles that are D0!!",icountMC));
 	AliDebug(2, Form("Found %i MC particles that are D0 and satisfy Acc cuts!!",icountAcc));
@@ -310,7 +310,12 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				AliWarning("Could not find associated MC in AOD MC tree");
 				continue;
 			}
-					
+			// check whether the daughters are K- and pi+
+			AliAODMCParticle* dg0MC=(AliAODMCParticle*)mcArray->At(mcVtxHF->GetDaughter(0));
+			AliAODMCParticle* dg1MC=(AliAODMCParticle*)mcArray->At(mcVtxHF->GetDaughter(1));
+			if(!(TMath::Abs(dg0MC->GetPdgCode())==321 && TMath::Abs(dg1MC->GetPdgCode())==211) && 
+			   !(TMath::Abs(dg0MC->GetPdgCode())==211 && TMath::Abs(dg1MC->GetPdgCode())==321)) continue;
+
 			// check whether the daughters have kTPCrefit set
 			AliAODTrack *track0 = (AliAODTrack*)d0tokpi->GetDaughter(0);
 			AliAODTrack *track1 = (AliAODTrack*)d0tokpi->GetDaughter(1);
@@ -334,7 +339,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			Int_t pdgGranma = CheckOrigin(mcVtxHF, mcArray);
 			Int_t abspdgGranma = TMath::Abs(pdgGranma);
 			if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
-				AliInfo(Form("At Reco level, from MC info: Particle has a b-meson, or b-baryon mother (pdg code mother = %d )--> not coming from a c-quark, skipping...", pdgGranma));
+				AliDebug(2,Form("At Reco level, from MC info: Particle has a b-meson, or b-baryon mother (pdg code mother = %d )--> not coming from a c-quark, skipping...", pdgGranma));
 				continue;  // skipping particles that don't come from c quark
 			}
 
