@@ -54,7 +54,9 @@ ClassImp(AliEMCALQADataMakerRec)
     AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kEMCAL), "EMCAL Quality Assurance Data Maker"),
     fSuperModules(4), // FIXME!!! number of SuperModules; 4 for 2009; update default to 12 for later runs..
     fFirstPedestalSample(0),
-    fLastPedestalSample(15)
+    fLastPedestalSample(15),
+    fMinSignalHG(0),
+    fMaxSignalHG(AliEMCALGeoParams::fgkSampleMax)
 {
   // ctor
 }
@@ -64,7 +66,9 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qad
   AliQADataMakerRec(), 
   fSuperModules(qadm.GetSuperModules()), 
   fFirstPedestalSample(qadm.GetFirstPedestalSample()), 
-  fLastPedestalSample(qadm.GetLastPedestalSample())  
+  fLastPedestalSample(qadm.GetLastPedestalSample()),  
+  fMinSignalHG(qadm.GetMinSignalHG()),
+  fMaxSignalHG(qadm.GetMaxSignalHG())
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
@@ -348,7 +352,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   int n2x2PerSM = AliEMCALGeoParams::fgkEMCALTRUsPerSM * AliEMCALGeoParams::fgkEMCAL2x2PerTRU; // number of TRU 2x2's per SuperModule
 
   int sampleMin = 0; 
-  int sampleMax = 0x3ff; // 1023 = 10-bit range
+  int sampleMax = AliEMCALGeoParams::fgkSampleMax; // 0x3ff = 1023 = 10-bit range
 
   // for the pedestal calculation
   Bool_t selectPedestalSamples = kTRUE;
@@ -443,8 +447,13 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  else if ( in.IsHighGain() ) {       	
 	    //fill the high gain ones
 	    nTotalSMHG[iSM]++; // one more channel found
-	    GetRawsData(kSigHG)->Fill(towerId, max - min);
-	    GetRawsData(kTimeHG)->Fill(towerId, maxTime);
+	    int signal = max - min;
+	    // only fill the max-min signal info and maxTime, if the
+	    // signal was in the selected range 
+	    if ( (signal > fMinSignalHG) && (signal < fMaxSignalHG) ) { 
+	      GetRawsData(kSigHG)->Fill(towerId, signal);
+	      GetRawsData(kTimeHG)->Fill(towerId, maxTime);
+	    } // signal
 	    if (nSum>0) { // only fill pedestal info in case it could be calculated
 	      GetRawsData(kPedHG)->Fill(towerId, meanPed);
 	      GetRawsData(kPedRMSHG)->Fill(towerId, rmsPed);
