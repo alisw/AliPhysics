@@ -50,7 +50,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
    mgr->AddTask(esdmuonfilter);
    
    // Cuts on primary tracks
-   AliESDtrackCuts* esdTrackCutsL = new AliESDtrackCuts("AliESDtrackCuts", "Standard");
+   AliESDtrackCuts* esdTrackCutsL = new AliESDtrackCuts("Standard Track Cuts", "ESD Track Cuts");
    esdTrackCutsL->SetMinNClustersTPC(50);
    esdTrackCutsL->SetMaxChi2PerClusterTPC(3.5);
    esdTrackCutsL->SetRequireTPCRefit(kTRUE);
@@ -60,7 +60,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
    esdTrackCutsL->SetRequireSigmaToVertex(kFALSE);
    esdTrackCutsL->SetAcceptKinkDaughters(kFALSE);
    // ITS stand-alone tracks
-   AliESDtrackCuts* esdTrackCutsITSsa = new AliESDtrackCuts("AliESDtrackCuts", "ITS stand-alone");
+   AliESDtrackCuts* esdTrackCutsITSsa = new AliESDtrackCuts("ITS stand-alone Track Cuts", "ESD Track Cuts");
    esdTrackCutsITSsa->SetRequireITSStandAlone(kTRUE);
 
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
@@ -68,7 +68,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
    trackFilter->AddCuts(esdTrackCutsITSsa);
 
    // Cuts on V0s
-   AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("AliESDv0Cuts", "Standard pp");
+   AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("Standard V0 Cuts pp", "ESD V0 Cuts");
    esdV0Cuts->SetMinRadius(0.2);
    esdV0Cuts->SetMaxRadius(100);
    esdV0Cuts->SetMinDcaPosToVertex(0.05);
