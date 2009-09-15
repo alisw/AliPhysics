@@ -14,7 +14,7 @@ void MakeT0RecoParam(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity
   // t0RecoParam->Dump();
   cout<<" t0RecoParam->GetEventSpecie "<< t0RecoParam->GetEventSpecie()<<endl;
   //  t0RecoParam->Dump();
-  //      t0RecoParam->PrintParameters();
+  t0RecoParam->PrintParameters();
   recoParamArray->AddLast(t0RecoParam);
 
 
@@ -22,22 +22,28 @@ void MakeT0RecoParam(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity
   t0RecoParam = AliT0RecoParam::GetLowFluxParam();
   t0RecoParam->SetEventSpecie(AliRecoParam::kLowMult);
   cout<<" t0RecoParam->GetEventSpecie "<< t0RecoParam->GetEventSpecie()<<endl;
-  // t0RecoParam->Dump();
- //  t0RecoParam->PrintParameters();
+  t0RecoParam->SetLow(10,-1000);
+  t0RecoParam->PrintParameters();
   recoParamArray->AddLast(t0RecoParam);
 
   t0RecoParam = AliT0RecoParam::GetLaserTestParam();
   t0RecoParam->SetEventSpecie(AliRecoParam::kCalib);
   // t0RecoParam->Dump();
   cout<<" t0RecoParam->GetEventSpecie "<< t0RecoParam->GetEventSpecie()<<endl;
+  for (Int_t i=98; i<149; i++) {
+    t0RecoParam->SetLow(i,-1000);
+    t0RecoParam->SetHigh(i,1000);
+  }
   //  t0RecoParam->Dump();
-  //      t0RecoParam->PrintParameters();
+  t0RecoParam->SetRefPoint(1);
+  t0RecoParam->PrintParameters();
   recoParamArray->AddLast(t0RecoParam);
+
 
   // Set the default
  Bool_t defaultIsSet = kFALSE;
-  cout<<"recoParamArray->GetEntriesFast() "<<recoParamArray.GetEntriesFast()<<endl;
-  TIter next(recoParamArray.MakeIterator());
+ //  cout<<"recoParamArray->GetEntriesFast() "<<recoParamArray.GetEntriesFast()<<endl;
+  TIter next(recoParamArray->MakeIterator());
   while ( (param = static_cast<AliT0RecoParam*>(next())) ) {
     if (!param) continue;
       if (defaultParam ==  param->GetEventSpecie()) {
