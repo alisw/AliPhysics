@@ -856,9 +856,24 @@ void AliTPCdataQA::CleanArrays(){
   //
 
   for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
-    //
-    Int_t maxBin = (fTimeBinsMax+4)*(fPadsMax+4); 
-    memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
+
+    // To speed up the performance by a factor 2 on cosmic data (and
+    // presumably pp data as well) where the ocupancy is low, the
+    // memset is only called if there is more than 1000 signals for a
+    // row (of the order 1% occupancy)
+    if(fAllNSigBins[iRow]<1000) {
+      
+      Float_t* allBins = fAllBins[iRow];
+      Int_t* sigBins   = fAllSigBins[iRow];
+      const Int_t nSignals = fAllNSigBins[iRow];
+      for(Int_t i = 0; i < nSignals; i++)
+	allBins[sigBins[i]]=0;
+      
+    } else {
+      Int_t maxBin = (fTimeBinsMax+4)*(fPadsMax+4); 
+      memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
+    }
+
     fAllNSigBins[iRow]=0;
   }
 }
