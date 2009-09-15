@@ -9,6 +9,7 @@
 
 #include "AliDimIntNotifier.h"
 
+#include <signal.h>
 
 //______________________________________________________________________________
 // Full description of AliDimIntNotifier
@@ -36,6 +37,7 @@ void AliDimIntNotifier::StartTimer()
 {
   fReThreader.Reset();
   fReThreader.TurnOn();
+  pthread_kill(fgMainThreadId, SIGALRM); 
 }
 
 void AliDimIntNotifier::StopTimer()
