@@ -113,7 +113,7 @@ AliPHOSEmcRecPoint::~AliPHOSEmcRecPoint()
 }
 
 //____________________________________________________________________________
-void AliPHOSEmcRecPoint::AddDigit(AliPHOSDigit & digit, Float_t Energy)
+void AliPHOSEmcRecPoint::AddDigit(AliPHOSDigit & digit, Float_t Energy, Float_t time)
 {
   // Adds a digit to the RecPoint
   // and accumulates the total amplitude and the multiplicity 
@@ -147,11 +147,24 @@ void AliPHOSEmcRecPoint::AddDigit(AliPHOSDigit & digit, Float_t Energy)
     delete [] tempoE ; 
   } // if
   
+  //time
+  Bool_t isMax=kTRUE ;
+  for(Int_t index = 0 ; index < fMulDigit ; index++ ){
+    if(fEnergyList[index]>Energy){
+      isMax=kFALSE ;
+      break ;
+    }
+  }
+  if(isMax){
+    fTime=time ;
+  }
+  //Alternative time calculation - still to be validated
+  // fTime = (fTime*fAmp + time*Energy)/(fAmp+Energy) ;
+
   fDigitsList[fMulDigit]   = digit.GetIndexInList()  ; 
   fEnergyList[fMulDigit]   = Energy ;
   fMulDigit++ ; 
   fAmp += Energy ; 
-
   EvalPHOSMod(&digit) ;
 }
 
@@ -935,10 +948,12 @@ Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax( AliPHOSDigit **  maxAt, Float_t 
   return iDigitN ;
 }
 //____________________________________________________________________________
-void AliPHOSEmcRecPoint::EvalTime(TClonesArray * digits)
+void AliPHOSEmcRecPoint::EvalTime(TClonesArray * /*digits*/)
 {
   // Define a rec.point time as a time in the cell with the maximum energy
+  //Time already evaluated during AddDigit()
 
+/*
   Float_t maxE = 0;
   Int_t maxAt = 0;
   for(Int_t idig=0; idig < fMulDigit; idig++){
@@ -948,7 +963,7 @@ void AliPHOSEmcRecPoint::EvalTime(TClonesArray * digits)
     }
   }
   fTime = ((AliPHOSDigit*) digits->At(fDigitsList[maxAt]))->GetTime() ;
-  
+*/  
 }
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::Purify(Float_t threshold){

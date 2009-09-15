@@ -459,6 +459,9 @@ void AliPHOS::Digits2Raw()
 
   // Create a shaper pulse object
   AliPHOSPulseGenerator *pulse = new AliPHOSPulseGenerator();
+
+  //Set Time step of sample
+  pulse->SetTimeStep(TMath::Abs(fgCalibData->GetSampleTimeStep())) ;
   
   Int_t *adcValuesLow = new Int_t[pulse->GetRawFormatTimeBins()];
   Int_t *adcValuesHigh= new Int_t[pulse->GetRawFormatTimeBins()];
@@ -559,6 +562,7 @@ void AliPHOS::Digits2Raw()
       pulse->SetHG2LGRatio(r) ;
       pulse->MakeSamples();
       pulse->GetSamples(adcValuesHigh, adcValuesLow) ; 
+
       buffer[iDDL]->WriteChannel(relId[3]-1, relId[2]-1, 0, 
 			   pulse->GetRawFormatTimeBins(), adcValuesLow , kAdcThreshold);
       buffer[iDDL]->WriteChannel(relId[3]-1, relId[2]-1, 1, 

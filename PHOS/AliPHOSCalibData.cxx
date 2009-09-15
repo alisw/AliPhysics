@@ -344,6 +344,28 @@ void AliPHOSCalibData::SetTimeShiftEmc(Int_t module, Int_t column, Int_t row, Fl
   fCalibDataEmc->SetTimeShiftEmc(module,column,row,value);
 }
 //________________________________________________________________
+Float_t AliPHOSCalibData::GetSampleTimeStep() const 
+{
+  //Get conversion coeff. from sample time step to seconds.
+  //Negative value means that it is not used in reconstruction
+  //but only in simulation of raw.
+  if(fCalibDataEmc)
+    return fCalibDataEmc->GetSampleTimeStep();
+  else
+    return 0.0; // default width of one EMC ADC channel in GeV
+}
+//________________________________________________________________
+void   AliPHOSCalibData::SetSampleTimeStep(Float_t step)
+{
+  //Set conversion coeff. from sample time step to seconds.
+  //Negative value means that it is not used in reconstruction
+  //but only in simulation of raw.
+  if(!fCalibDataEmc)
+    fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
+
+  fCalibDataEmc->SetSampleTimeStep(step) ;
+}
+//________________________________________________________________
 Int_t AliPHOSCalibData::GetAltroOffsetEmc(Int_t module, Int_t column, Int_t row) const
 {
   // Return ALTRO pedestal coefficient
@@ -479,7 +501,6 @@ void AliPHOSCalibData::RandomCpv(Float_t ccMin, Float_t ccMax)
     }
   }
 }
-
 //________________________________________________________________
 Bool_t AliPHOSCalibData::IsBadChannelEmc(Int_t module, Int_t col, Int_t row) const
 {
@@ -499,7 +520,6 @@ Int_t AliPHOSCalibData::GetNumOfEmcBadChannels() const
   else
     return 0;
 }
-
 //________________________________________________________________
 void AliPHOSCalibData::EmcBadChannelIds(Int_t *badIds)
 {

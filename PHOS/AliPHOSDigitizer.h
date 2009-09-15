@@ -88,6 +88,7 @@ private:
   //  Float_t FrontEdgeTime(TClonesArray * ticks) const ; 
   //Calculate digitized signal with gived ADC parameters
   Float_t Calibrate(Float_t amp, Int_t absId) ;
+  Float_t CalibrateT(Float_t time, Int_t absId) ;
   void    Decalibrate(AliPHOSDigit * digit);
   Int_t   DigitizeCPV(Float_t charge, Int_t absId) ;
 

@@ -47,8 +47,8 @@ public:
   //This virtual function has signature different from AliPHOSRecPoint::AddDigit
   //it hides, not overrides. using - declaration should fix the problem, at least for
   //g++
-  using AliPHOSRecPoint::AddDigit;
-  virtual void  AddDigit(AliPHOSDigit & digit, Float_t Energy) ;          // add a digit to the digits list  
+//  using AliPHOSRecPoint::AddDigit;
+  virtual void  AddDigit(AliPHOSDigit & digit, Float_t Energy, Float_t time=0.) ;          // add a digit to the digits list  
   Int_t       Compare(const TObject * obj) const;                         // method for sorting  
 
   virtual void  EvalAll(TClonesArray * digits) ; //Those tasks which can be done without vertex

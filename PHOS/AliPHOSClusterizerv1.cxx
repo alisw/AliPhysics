@@ -396,7 +396,7 @@ void AliPHOSClusterizerv1::InitParameters()
   fW0                      = recoParam->GetEMCLogWeight();
   fW0CPV                   = recoParam->GetCPVLogWeight();
 
-  fEmcTimeGate             = 1.e-6 ; 
+  fEmcTimeGate             = 1.e-6 ;  //10 sample steps
   fEcoreRadius             = recoParam->GetEMCEcoreRadius();
   
   fToUnfold                = recoParam->EMCToUnfold() ;
@@ -577,7 +577,7 @@ void AliPHOSClusterizerv1::MakeClusters()
         fEMCRecPoints->AddAt(new  AliPHOSEmcRecPoint(""), fNumberOfEmcClusters) ;
         clu = static_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(fNumberOfEmcClusters) ) ; 
 	fNumberOfEmcClusters++ ; 
-	clu->AddDigit(*digit, Calibrate(digit->GetEnergy(),digit->GetId())) ;
+	clu->AddDigit(*digit, Calibrate(digit->GetEnergy(),digit->GetId()),CalibrateT(digit->GetTime(),digit->GetId())) ;
         clusterdigitslist[iDigitInCluster] = digit->GetIndexInList() ;
         iDigitInCluster++ ;
         fDigitsUsed[i]=kTRUE ; 
@@ -589,7 +589,7 @@ void AliPHOSClusterizerv1::MakeClusters()
         fCPVRecPoints->AddAt(new AliPHOSCpvRecPoint(""), fNumberOfCpvClusters) ;
         clu =  static_cast<AliPHOSCpvRecPoint *>( fCPVRecPoints->At(fNumberOfCpvClusters) ) ;  
         fNumberOfCpvClusters++ ; 
-        clu->AddDigit(*digit,  Calibrate(digit->GetEnergy(),digit->GetId())) ;
+        clu->AddDigit(*digit,  Calibrate(digit->GetEnergy(),digit->GetId()),0.) ; // no timing information in CPV
         clusterdigitslist[iDigitInCluster] = digit->GetIndexInList()  ;        
         iDigitInCluster++ ; 
         fDigitsUsed[i]=kTRUE ;
@@ -619,7 +619,7 @@ void AliPHOSClusterizerv1::MakeClusters()
           case 0 :   // not a neighbour
             break ;
           case 1 :   // are neighbours 
-	    clu->AddDigit(*digitN, Calibrate(digitN->GetEnergy(),digit->GetId())) ;
+	    clu->AddDigit(*digitN, Calibrate(digitN->GetEnergy(),digit->GetId()),CalibrateT(digitN->GetTime(),digit->GetId())) ;
             clusterdigitslist[iDigitInCluster] = j ; 
             iDigitInCluster++ ; 
             fDigitsUsed[j]=kTRUE ;
@@ -833,7 +833,7 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
 //      ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar,vIncid) / efit[iDigit] ; 
       ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar) / efit[iDigit] ; 
       eDigit = emcEnergies[iDigit] * ratio ;
-      emcRP->AddDigit( *digit, eDigit ) ;
+      emcRP->AddDigit( *digit, eDigit,CalibrateT(digit->GetTime(),digit->GetId()) ) ;
     }        
   }
  
@@ -1089,7 +1089,7 @@ void AliPHOSClusterizerv1::SetDistancesToBadChannels()
 
 }
 //==================================================================================
-Float_t AliPHOSClusterizerv1::Calibrate(Float_t amp, Int_t absId){
+Float_t AliPHOSClusterizerv1::Calibrate(Float_t amp, Int_t absId) const{
   // Calibrate EMC digit, i.e. multiply its Amp by a factor read from CDB
 
   const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
@@ -1109,3 +1109,24 @@ Float_t AliPHOSClusterizerv1::Calibrate(Float_t amp, Int_t absId){
     return amp*calibration ;
   }
 }
+//==================================================================================
+Float_t AliPHOSClusterizerv1::CalibrateT(Float_t time, Int_t absId)const{
+  // Calibrate time in EMC digit
+
+  const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
+
+  //Determine rel.position of the cell absolute ID
+  Int_t relId[4];
+  geom->AbsToRelNumbering(absId,relId);
+  Int_t module=relId[0];
+  Int_t row   =relId[2];
+  Int_t column=relId[3];
+  if(relId[1]){ //CPV
+    return 0. ;
+  }
+  else{ //EMC
+    time += fgCalibData->GetTimeShiftEmc(module,column,row);
+    return time ;
+  }
+}
+

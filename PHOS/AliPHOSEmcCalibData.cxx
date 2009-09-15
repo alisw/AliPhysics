@@ -110,7 +110,7 @@ void AliPHOSEmcCalibData::Reset()
       }
     }
   }
-
+  fSampleTimeStep=100.e-9 ; //100 ns
 }
 
 //________________________________________________________________
@@ -222,6 +222,14 @@ Float_t AliPHOSEmcCalibData::GetTimeShiftEmc(Int_t module, Int_t column, Int_t r
   return fTimeShiftEmc[module-1][column-1][row-1];
 }
 //________________________________________________________________
+Float_t AliPHOSEmcCalibData::GetSampleTimeStep()const
+{
+   //Returns conversion coefficient from ALTRO smaple time step and secods
+   //Negative value not used in reconstruction (conversion taken from TRU trailer)
+   //and only in raw simulation
+   return fSampleTimeStep ;
+}
+//________________________________________________________________
 Int_t AliPHOSEmcCalibData::GetAltroOffsetEmc(Int_t module, Int_t column, Int_t row) const
 {
   //Return EMC altro offsets
@@ -273,3 +281,12 @@ void AliPHOSEmcCalibData::SetAltroOffsetEmc(Int_t module, Int_t column, Int_t ro
   //module 1:5, column 1:56, row 1:64
   fAltroOffsets[module-1][column-1][row-1] = value;
 }
+//________________________________________________________________
+void AliPHOSEmcCalibData::SetSampleTimeStep(Float_t step)
+{
+   //Sets conversion coefficient from ALTRO smaple time step and secods
+   //Negative value not used in reconstruction (conversion taken from TRU trailer)
+   //and only in raw simulation
+   fSampleTimeStep = step ;
+}
+

@@ -52,6 +52,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer():
   fEmcMinE(0.),
   fCpvMinE(0.),
   fSampleQualityCut(1.),
+  fSampleToSec(0.),
   fEmcCrystals(0),
   fGeom(0),
   fPulseGenerator(0),
@@ -75,6 +76,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(AliRawReader *rawReader,
   fEmcMinE(0.),
   fCpvMinE(0.),
   fSampleQualityCut(1.),
+  fSampleToSec(0.),
   fEmcCrystals(0),
   fGeom(0),
   fPulseGenerator(0),
@@ -99,6 +101,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp)
   fEmcMinE(0.),
   fCpvMinE(0.),
   fSampleQualityCut(1.),
+  fSampleToSec(0.),
   fEmcCrystals(0),
   fGeom(0),
   fPulseGenerator(0),
@@ -110,6 +113,7 @@ AliPHOSRawDigiProducer::AliPHOSRawDigiProducer(const AliPHOSRawDigiProducer &dp)
   fEmcMinE = dp.fEmcMinE ;
   fCpvMinE = dp.fCpvMinE ;
   fSampleQualityCut = dp.fSampleQualityCut;
+  fSampleToSec = dp.fSampleToSec ;
   fEmcCrystals = dp.fEmcCrystals ;
   fPulseGenerator = new AliPHOSPulseGenerator();
   fGeom = dp.fGeom ;
@@ -124,6 +128,7 @@ AliPHOSRawDigiProducer& AliPHOSRawDigiProducer::operator= (const AliPHOSRawDigiP
   fEmcMinE = dp.fEmcMinE ;
   fCpvMinE = dp.fCpvMinE ;
   fSampleQualityCut = dp.fSampleQualityCut ;
+  fSampleToSec = dp.fSampleToSec ;
   fEmcCrystals = dp.fEmcCrystals ;
   fGeom = dp.fGeom ;
   if(fPulseGenerator) delete fPulseGenerator ;
@@ -150,6 +155,14 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
   Int_t relId[4], absId=-1, caloFlag=-1;
   
   const Double_t baseLine=1. ; //Minimal energy of digit in ADC ch. 
+
+  //Calculate conversion coeff. from Sample time step to seconds
+  //If OCDB contains negative or zero value - use one from RCU trailer
+  //Negative value in OCDB is used only for simulation of raw digits
+  if(fgCalibData->GetSampleTimeStep()>0.)
+    fSampleToSec=fgCalibData->GetSampleTimeStep() ;
+  else
+    fSampleToSec=fRawStream->GetTSample() ;
   
   //Temporary array for LowGain digits
   TClonesArray tmpLG("AliPHOSDigit",10000) ;
@@ -211,6 +224,9 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
       
 //       energy = CalibrateE(energy,relId,lowGainFlag) ;
 //       time   = CalibrateT(time,relId,lowGainFlag) ;
+
+      //convert time from sample bin units to s
+      time*=fSampleToSec ;
       
       if(energy <= 0.) 
 	continue;

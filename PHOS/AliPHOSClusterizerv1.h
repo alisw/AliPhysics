@@ -124,7 +124,8 @@ protected:
   virtual Bool_t IsInCpv (AliPHOSDigit * digit)const ;     // Tells if id digit is in CPV
   void           CleanDigits(TClonesArray * digits) ;
   void           SetDistancesToBadChannels();
-  virtual Float_t Calibrate(Float_t amp, Int_t absId) ;  // Tranforms ADC counts to energy   
+  virtual Float_t Calibrate(Float_t amp, Int_t absId) const ;  // Tranforms ADC counts to energy   
+  virtual Float_t CalibrateT(Float_t amp, Int_t absId) const ;  //Tranforms Sample counts to sec.
    
 private:
   AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & clu) ;

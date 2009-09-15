@@ -436,6 +436,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   	    curSDigit = dynamic_cast<AliPHOSDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
             if(AliPHOSSimParam::GetInstance()->IsStreamDigits(i)){ //This is Digits Stream
               curSDigit->SetEnergy(Calibrate(curSDigit->GetEnergy(),curSDigit->GetId())) ;
+              curSDigit->SetTime(CalibrateT(curSDigit->GetTime(),curSDigit->GetId())) ;
             }
           }
 	  else
@@ -587,6 +588,9 @@ void AliPHOSDigitizer::Digitize(Int_t event)
       digits->RemoveAt(i) ;
       continue ;
     }
+
+    digit->SetEnergy(TMath::Ceil(digit->GetEnergy())-0.9999) ;
+
     Float_t tres = TimeResolution(digit->GetEnergy()) ; 
     digit->SetTime(gRandom->Gaus(digit->GetTime(), tres) ) ;
   }
@@ -644,7 +648,24 @@ void AliPHOSDigitizer::Decalibrate(AliPHOSDigit *digit)
     Float_t calibration = fcdb->GetADCchannelEmc(module,column,row);
     Float_t energy = digit->GetEnergy()/calibration;
     digit->SetEnergy(energy); //Now digit measures E in ADC counts
+    Float_t time = digit->GetTime() ;
+    time-=fcdb->GetTimeShiftEmc(module,column,row);
+    digit->SetTime(time) ;
   }
+}
+//____________________________________________________________________________
+Float_t AliPHOSDigitizer::CalibrateT(Float_t time,Int_t absId){
+  //Apply time calibration
+  const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
+
+  //Determine rel.position of the cell absolute ID
+  Int_t relId[4];
+  geom->AbsToRelNumbering(absId,relId);
+  Int_t module=relId[0];
+  Int_t row   =relId[2];
+  Int_t column=relId[3];
+  time += fcdb->GetTimeShiftEmc(module,column,row);
+  return time ;
 }
 //____________________________________________________________________________
 Int_t AliPHOSDigitizer::DigitizeCPV(Float_t charge, Int_t absId)

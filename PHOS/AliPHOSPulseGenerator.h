@@ -33,6 +33,7 @@ public:
   void      SetAmplitude(Double_t  a) {fAmplitude = a   ; Reset();}
   void      SetTZero    (Double_t t0) {fTZero     = t0  ; Reset();}
   void      SetHG2LGRatio(Double_t r=16.){fHG2LGratio = r ;}
+  void      SetTimeStep(Double_t step=100.e-9){fgTimeTrigger=step ;} 
   void      Reset();
 
   // Raw Read Out

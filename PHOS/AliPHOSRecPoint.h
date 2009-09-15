@@ -33,10 +33,10 @@ class AliPHOSRecPoint : public AliCluster {
   
   virtual ~AliPHOSRecPoint();
 
-  virtual  void   AddDigit(AliDigitNew &){
-   Fatal("AddDigit", "use AddDigit(AliPHOSDigit & digit, Float_t Energy)") ; 
-  }
-  virtual  void   AddDigit(AliPHOSDigit & digit, Float_t Energy) = 0 ; 
+//  virtual  void   AddDigit(AliDigitNew &){
+//   Fatal("AddDigit", "use AddDigit(AliPHOSDigit & digit, Float_t Energy)") ; 
+//  }
+  virtual  void   AddDigit(AliPHOSDigit & digit, Float_t Energy, Float_t time=0) = 0 ; 
   virtual Int_t   Compare(const TObject * obj) const = 0 ;   
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;

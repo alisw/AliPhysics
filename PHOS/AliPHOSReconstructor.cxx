@@ -235,7 +235,8 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     const AliPHOSDigit * dig = (const AliPHOSDigit*)fgDigitsArray->At(idig);
     if(dig->GetId() <= knEMC && 
        Calibrate(dig->GetEnergy(),dig->GetId()) > GetRecoParam()->GetEMCMinE() ){
-      phsCells.SetCell(idignew,dig->GetId(), Calibrate(dig->GetEnergy(),dig->GetId()), dig->GetTime());   
+      phsCells.SetCell(idignew,dig->GetId(), Calibrate(dig->GetEnergy(),dig->GetId()),
+                                             CalibrateT(dig->GetTime(),dig->GetId()));   
       idignew++;
     }
   }
@@ -301,7 +302,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     ec->SetNExMax(emcRP->GetNExMax());          //number of local maxima
     ec->SetEmcCpvDistance(ts->GetCpvDistance("r")); //Only radius, what about separate x,z????
     ec->SetClusterChi2(-1);                     //not yet implemented
-    ec->SetTOF(emcRP->GetTime()); //Time of flight
+    ec->SetTOF(emcRP->GetTime());               //Time of flight - already calibrated in EMCRecPoint
 
     //Cells contributing to clusters
     ec->SetNCells(cellMult);
@@ -430,6 +431,26 @@ Float_t AliPHOSReconstructor::Calibrate(Float_t amp, Int_t absId)const{
   else{ //EMC
     Float_t calibration = fgCalibData->GetADCchannelEmc(module,column,row);
     return amp*calibration ;
+  }
+}
+//==================================================================================
+Float_t AliPHOSReconstructor::CalibrateT(Float_t time, Int_t absId)const{
+  // Calibrate EMC digit, i.e. multiply its Amp by a factor read from CDB
+
+  const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
+
+  //Determine rel.position of the cell absolute ID
+  Int_t relId[4];
+  geom->AbsToRelNumbering(absId,relId);
+  Int_t module=relId[0];
+  Int_t row   =relId[2];
+  Int_t column=relId[3];
+  if(relId[1]){ //CPV
+    return 0. ;
+  }
+  else{ //EMC
+    time += fgCalibData->GetTimeShiftEmc(module,column,row);
+    return time ;
   }
 }
 //==================================================================================

@@ -169,10 +169,10 @@ void AliPHOSPulseGenerator::AddPretriggerSamples(Int_t nPresamples)
 //-----------------------------------------------------------------------------
 void AliPHOSPulseGenerator::Digitize()
 {
-  // Emulates ADC: rounds down to nearest integer value all amplitudes
+  // Emulates ADC: rounds up to nearest integer value all amplitudes
   for (Int_t i=0; i<fkTimeBins; i++) {
-    fDataHG[i] = (Double_t) ((Int_t)fDataHG[i]);
-    fDataLG[i] = (Double_t) ((Int_t)fDataLG[i]);
+    fDataHG[i] = TMath::Ceil(fDataHG[i]);
+    fDataLG[i] = TMath::Ceil(fDataLG[i]);
   }
 }
 

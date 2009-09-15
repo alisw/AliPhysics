@@ -51,6 +51,7 @@ private:
   Float_t fEmcMinE ;                 // minimum energy of digit (ADC)
   Float_t fCpvMinE ;                 // minimum energy of digit (ADC)
   Float_t fSampleQualityCut;         // Cut on sample shapes: 0: no samples; 1: default parameterization; 999: accept even obviously bad
+  Float_t fSampleToSec ;             // Conversion coeff from sample time step to seconds
   Int_t fEmcCrystals ;               //  number of EMC crystals
   AliPHOSGeometry * fGeom ;          //! PHOS geometry
   static AliPHOSCalibData * fgCalibData ;     //! Calibration database if avalable
