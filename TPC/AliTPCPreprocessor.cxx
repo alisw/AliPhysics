@@ -93,6 +93,8 @@ AliTPCPreprocessor::~AliTPCPreprocessor()
 
   delete fTemp;
   delete fHighVoltage;
+  delete fHighVoltageStat;
+  delete fGoofie;
 }
 //______________________________________________________________________________________________
 AliTPCPreprocessor& AliTPCPreprocessor::operator = (const AliTPCPreprocessor& )
@@ -430,8 +432,10 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
     metaData.SetComment("Preprocessor AliTPC status.");
     Store("Calib", "PreprocStatus", resultArray, &metaData, 0, kFALSE);
     resultArray->Delete();
+    delete resultArray;
     return 0;
   } else { 
+    delete resultArray;
     return result;
   }
 }
@@ -659,6 +663,9 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
     result = 1;
   }
 
+  delete calPadPed;
+  delete calPadRMS;
+
   return result;
 }
 
@@ -762,6 +769,8 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
     Log ("Error: no entries in pulser file list!");
     result = 1;
   }
+  pulserObjects->Delete();
+  delete pulserObjects;
 
   return result;
 }
@@ -823,6 +832,9 @@ UInt_t AliTPCPreprocessor::ExtractRaw(Int_t sourceFXS)
     Log ("Error: no entries in raw file list!");
     result = 1;
   }
+  
+  rawArray->Delete();
+  delete rawArray;
 
   return result;
 }
@@ -934,6 +946,9 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
     result = 1;
   }
 
+  ceObjects->Delete();
+  delete ceObjects;
+  
   return result;
 }
 //______________________________________________________________________________________________
@@ -979,6 +994,8 @@ UInt_t AliTPCPreprocessor::ExtractQA(Int_t sourceFXS)
 
            Bool_t storeOK = Store("Calib", "QA", calQA, &metaData, 0, kFALSE);
            if ( !storeOK ) ++result;
+
+           delete calQA;
 	  }
         }
     } else {
@@ -1230,5 +1247,8 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS)
      if ( !storeOK ) ++result;
     }  
 
+  altroObjects->Delete();
+  delete altroObjects;
+  
   return result;
 }
