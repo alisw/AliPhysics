@@ -78,6 +78,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
   
   TH2F* hMult = 0;
   TH2F* hHits = 0;
+  TH2F* hHitsNoCuts = 0;
   Int_t nVtxbins = pars->GetNvtxBins();
   
   for(Int_t det =1; det<=3;det++)
@@ -103,9 +104,20 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
 			      hBg->GetXaxis()->GetXmax(),
 			      nSec, 0, 2*TMath::Pi());
 	    
+	    /*  hHitsNoCuts  = new TH2F(Form("hits_NoCuts_FMD%d%c_vtxbin%d",det,ringChar,i),Form("hits_NoCuts_FMD%d%c_vtxbin%d",det,ringChar,i),
+				    hBg->GetNbinsX(),
+				    hBg->GetXaxis()->GetXmin(),
+				    hBg->GetXaxis()->GetXmax(),
+				    nSec, 0, 2*TMath::Pi());
+	    
+	    */
 	    hHits->Sumw2();
+	    //hHitsNoCuts->Sumw2();
+	    
 	    fHitList->Add(hHits);
 	    fOutputList->Add(hHits);
+	    // fHitList->Add(hHitsNoCuts);
+	    //  fOutputList->Add(hHitsNoCuts);
 	    
 	  }
 	} 
@@ -200,7 +212,11 @@ void AliFMDAnalysisTaskBackgroundCorrection::Terminate(Option_t */*option*/) {
       for(Int_t i =0; i<nVtxbins; i++) {
 	TH2F* hHits      = (TH2F*)fOutputList->FindObject(Form("hits_FMD%d%c_vtxbin%d",det,ringChar,i));
 	TH1D* hHitsproj  = hHits->ProjectionX(Form("hits_FMD%d%c_vtxbin%d_proj",det,ringChar,i),1,hHits->GetNbinsY());
+	TH1D* hHitsNoCuts = (TH1D*)hHitsproj->Clone(Form("hits_NoCuts_FMD%d%c_vtxbin%d_proj",det,ringChar,i));
+	
+	hHitsNoCuts->Scale(1/pars->GetEventSelectionEfficiency(i));
 	fHitList->Add(hHitsproj);
+	fHitList->Add(hHitsNoCuts);
 	
       }
     }

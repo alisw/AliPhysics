@@ -235,7 +235,7 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
   Double_t delta           = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
   Double_t vertexBinDouble = (vertex.At(2) + pars->GetVtxCutZ()) / delta;
   Int_t    vertexBin       = (Int_t)vertexBinDouble;
-  
+    
   Bool_t firstTrack = kTRUE;
   
   // we loop over the primaries only unless we need the hits (diagnostics running slowly)

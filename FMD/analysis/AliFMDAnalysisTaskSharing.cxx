@@ -24,6 +24,7 @@
 #include "AliHeader.h"
 #include "AliStack.h"
 #include "AliMCParticle.h"
+#include "AliFMDStripIndex.h"
 
 ClassImp(AliFMDAnalysisTaskSharing)
 
@@ -39,7 +40,8 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing()
   fDiagList(0),
   fStandalone(kTRUE),
   fEsdVertex(0),
-  fStatus(kTRUE)
+  fStatus(kTRUE),
+  fLastTrackByStrip(0)
 {
   // Default constructor
   DefineInput (0, AliESDEvent::Class());
@@ -61,7 +63,8 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing(const char* name, Bool_t SE
     fDiagList(0),
     fStandalone(kTRUE),
     fEsdVertex(0),
-    fStatus(kTRUE)
+    fStatus(kTRUE),
+    fLastTrackByStrip(0)
 {
   fStandalone = SE;
   if(fStandalone) {
@@ -95,6 +98,7 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
   hPrimary->Sumw2();
   fDiagList->Add(hPrimary);
   TH1F* hPrimVertexBin = 0;
+  TH1F* hHits = 0;
   for(Int_t i = 0; i< pars->GetNvtxBins(); i++) {
     
     hPrimVertexBin = new TH1F(Form("primmult_NoCuts_vtxbin%d",i),
@@ -126,7 +130,17 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
       fDiagList->Add(hEdist);
       fDiagList->Add(hEdist_after);
       //fDiagList->Add(hNstripsHit);
+      
+      for(Int_t i = 0; i< pars->GetNvtxBins(); i++) {
+	hHits  = new TH1F(Form("hMCHits_nocuts_FMD%d%c_vtxbin%d",det,ringChar,i),Form("hMCHits_FMD%d%c_vtxbin%d",det,ringChar,i),
+			  hBg->GetNbinsX(),
+			  hBg->GetXaxis()->GetXmin(),
+			  hBg->GetXaxis()->GetXmax());
+	hHits->Sumw2();
+	fDiagList->Add(hHits);
 
+      }
+      
     }
   }
   TH1F*  nMCevents = new TH1F("nMCEventsNoCuts","nMCEventsNoCuts",pars->GetNvtxBins(),0,pars->GetNvtxBins());
@@ -161,12 +175,12 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
     ProcessPrimary();
   
   Bool_t isTriggered = pars->IsEventTriggered(fESD);
-  
+ 
   if(!isTriggered) {
     fStatus = kFALSE;
     return;
-  }
-  else
+   }
+   else
     fStatus = kTRUE;
   
   if(vertex[0] == 0 && vertex[1] == 0 && vertex[2] == 0) {
@@ -361,7 +375,7 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   AliMCEvent* mcEvent = eventHandler->MCEvent();
   if(!mcEvent)
     return;
-  
+  fLastTrackByStrip.Reset(-1);
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
   AliMCParticle* particle = 0;
@@ -376,6 +390,7 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   
   TArrayF vertex;
   genHeader->PrimaryVertex(vertex);
+  
   if(TMath::Abs(vertex.At(2)) > pars->GetVtxCutZ())
     return;
   
@@ -386,6 +401,8 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   Bool_t firstTrack = kTRUE;
   
   Int_t nTracks = stack->GetNprimary();
+  if(pars->GetProcessHits())
+    nTracks = stack->GetNtrack();
   TH1F* nMCevents = (TH1F*)fDiagList->FindObject("nMCEventsNoCuts");
   for(Int_t i = 0 ;i<nTracks;i++) {
     particle = (AliMCParticle*) mcEvent->GetTrack(i);
@@ -405,6 +422,43 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
       }
     
     }
+     if(pars->GetProcessHits()) {
+           
+      for(Int_t j=0; j<particle->GetNumberOfTrackReferences();j++) {
+	
+	AliTrackReference* ref = particle->GetTrackReference(j);
+	UShort_t det,sec,strip;
+	Char_t   ring;
+	if(ref->DetectorId() != AliTrackReference::kFMD)
+	  continue;
+	AliFMDStripIndex::Unpack(ref->UserId(),det,ring,sec,strip);
+	Float_t thisStripTrack = fLastTrackByStrip(det,ring,sec,strip);
+	if(particle->Charge() != 0 && i != thisStripTrack ) {
+	  //Double_t x,y,z;
+	  
+	  Float_t   eta   = pars->GetEtaFromStrip(det,ring,sec,strip,vertex.At(2));//-1*TMath::Log(TMath::Tan(0.5*theta));
+	  TH1F* hHits = (TH1F*)fDiagList->FindObject(Form("hMCHits_nocuts_FMD%d%c_vtxbin%d",det,ring,vertexBin));
+	  
+	
+	  hHits->Fill(eta);
+	  
+	  Float_t nstrips = (ring =='O' ? 256 : 512);
+	  
+	  fLastTrackByStrip(det,ring,sec,strip) = (Float_t)i;
+	
+	  if(strip >0)
+	    fLastTrackByStrip(det,ring,sec,strip-1) = (Float_t)i;
+	  if(strip < (nstrips - 1))
+	    fLastTrackByStrip(det,ring,sec,strip+1) = (Float_t)i;
+	  
+	}
+      
+	
+      }
+      
+      
+    }
+    
   }
 
 }

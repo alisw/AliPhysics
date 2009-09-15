@@ -10,6 +10,7 @@
 #include "AliESDFMD.h"
 #include "TTree.h"
 #include "AliESDEvent.h"
+#include "AliFMDFloatMap.h"
 class TChain;
 class AliAODEvent;
 class AliESDVertex;
@@ -73,7 +74,8 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
     Bool_t        fStandalone;
     AliESDVertex* fEsdVertex;
     Bool_t        fStatus;
-
+    AliFMDFloatMap fLastTrackByStrip;
+    
     ClassDef(AliFMDAnalysisTaskSharing, 0); // Analysis task for FMD analysis
 };
  
