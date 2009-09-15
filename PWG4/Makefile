@@ -34,6 +34,10 @@ ifneq ($(JETAN_INCLUDE),)
   ALICEINC += -I../$(JETAN_INCLUDE)
 endif
 
+ifneq ($(CORRFW_INCLUDE),)
+  ALICEINC += -I../$(CORRFW_INCLUDE)
+endif
+
 ifneq ($(PHOSUtils_INCLUDE),)
   ALICEINC += -I../$(PHOSUtils_INCLUDE)
   CXXFLAGS+=-D__PHOSUTIL__
