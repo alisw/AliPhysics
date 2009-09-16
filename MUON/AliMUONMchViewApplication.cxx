@@ -353,6 +353,11 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("0.99");
+  rn->AddLine("");
+  rn->AddLine("The chamberid in the label (top right of panel) is now starting at 1 as in common usage");  
+  rn->AddLine("");
+  
   rn->AddLine("0.98");
   rn->AddLine("");
   rn->AddLine("Added --asciimapping option");

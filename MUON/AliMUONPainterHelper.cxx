@@ -621,7 +621,7 @@ TString
 AliMUONPainterHelper::ChamberName(Int_t chamberId) const
 {
   /// Build a name for one chamber
-  return Form("Chamber%1d",chamberId);
+  return Form("Chamber%1d",chamberId+1);
 }
 
 //_____________________________________________________________________________
