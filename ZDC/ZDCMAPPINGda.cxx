@@ -191,10 +191,11 @@ int main(int argc, char **argv) {
       }
       
       iev++; 
+
+      /* free resources */
+      free(event);
     }    
       
-    /* free resources */
-    //free(event);
   }
   
   /* store the result files on FES */

@@ -189,6 +189,9 @@ int main(int argc, char **argv) {
   int nevents_physics=0;
   int nevents_total=0;
 
+  struct eventHeaderStruct *event;
+  eventTypeType eventT;
+
   /* read the data files */
   int n;
   for(n=1;n<argc;n++) {
@@ -205,8 +208,6 @@ int main(int argc, char **argv) {
 
     /* read the file */
     for(;;) {
-      struct eventHeaderStruct *event;
-      eventTypeType eventT;
 
       /* get next event */
       status=monitorGetEventDynamic((void **)&event);
@@ -303,7 +304,7 @@ int main(int argc, char **argv) {
         fclose(mapFile4Shuttle);
       }// SOD event
 
-      if(eventT==PHYSICS_EVENT){
+      else if(eventT==PHYSICS_EVENT){
  	// --- Reading data header
         reader->ReadHeader();
         const AliRawDataHeader* header = reader->GetDataHeader();
@@ -418,12 +419,20 @@ int main(int argc, char **argv) {
          delete rawStreamZDC;
 
       }//(if PHYSICS_EVENT) 
-      nevents_total++;
 
-      /* free resources */
-      free(event);
+      /* exit when last event received, no need to wait for TERM signal */
+      else if(eventT==END_OF_RUN) {
+        printf(" -> EOR event detected\n");
+        break;
+      }
+      
+      
+      nevents_total++;
     
     }
+	  
+    /* free resources */
+    free(event);
   }  
   
   /* Analysis of the histograms */

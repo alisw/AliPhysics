@@ -288,7 +288,7 @@ int main(int argc, char **argv) {
         fclose(mapFile4Shuttle);
       }// SOD event
       
-      if(eventT==PHYSICS_EVENT){
+      else if(eventT==PHYSICS_EVENT){
 	// --- Reading data header
         reader->ReadHeader();
         const AliRawDataHeader* header = reader->GetDataHeader();
@@ -389,20 +389,26 @@ int main(int argc, char **argv) {
   	      hPedCorrlg[k]->Fill(RawADCootlg[k], RawADClg[k]);
   	    }
   	  }
-         }
-         //
-         nevents_physics++;
-         //
-	 delete reader;
-         delete rawStreamZDC;
+        }
+        nevents_physics++;
+        //
+	delete reader;
+        delete rawStreamZDC;
 
       }//(if PHYSICS_EVENT) 
+      
+      /* exit when last event received, no need to wait for TERM signal */
+      else if(eventT==END_OF_RUN) {
+        printf(" -> EOR event detected\n");
+        break;
+      }
+      
       nevents_total++;
-
-      /* free resources */
-//      free(event);
     
     }
+	  
+    /* free resources */
+    free(event);
   }  
   
   /* Analysis of the histograms */
