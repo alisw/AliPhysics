@@ -131,7 +131,7 @@ void AliPHOSRawFitterv0::SetChannelGeo(const Int_t module, const Int_t cellX,
 }
 //-----------------------------------------------------------------------------
 
-Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t /*sigStart*/, Int_t sigLength)
+Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t sigStart, Int_t sigLength)
 {
   // Calculate signal parameters (energy, time, quality) from array of samples
   // Energy is a maximum sample minus pedestal 9
@@ -154,7 +154,7 @@ Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t /*sigStart*/, Int_
   Int_t    nMax      = 0;
 
   for (Int_t i=0; i<sigLength; i++) {
-    if (i<kPreSamples) {
+    if (i>sigLength-kPreSamples) { //inverse signal time order
       nPed++;
       pedMean += signal[i];
       pedRMS  += signal[i]*signal[i] ;
@@ -162,30 +162,26 @@ Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t /*sigStart*/, Int_
     if(signal[i] >  maxSample) maxSample = signal[i];
     if(signal[i] == maxSample) nMax++;
 
-    if(fPedSubtract) {
-      if( (signal[i]-(Float_t)(pedMean/nPed)) >kBaseLine ) fTime = (Double_t)i;
-    }
-    else //ZS
-      if( (signal[i]-(Float_t)fAmpOffset    ) >kBaseLine ) fTime = (Double_t)i;
   }
-//   fTime += sigStart;
+  
   
   fEnergy = (Double_t)maxSample;
   if (maxSample > 900 && nMax > 2) fOverflow = kTRUE;
 
+  Double_t pedestal = 0 ;
   if (fPedSubtract) {
     if (nPed > 0) {
       fPedestalRMS=(pedRMS - pedMean*pedMean/nPed)/nPed ;
       if(fPedestalRMS > 0.) 
 	fPedestalRMS = TMath::Sqrt(fPedestalRMS) ;
-      fEnergy -= (Double_t)(pedMean/nPed); // pedestal subtraction
+      pedestal = (Double_t)(pedMean/nPed);
     }
     else
       return kFALSE;
   }
   else {
     //take pedestals from DB
-    Double_t pedestal = (Double_t) fAmpOffset ;
+    pedestal = (Double_t) fAmpOffset ;
     if (fCalibData) {
       Float_t truePed       = fCalibData->GetADCpedestalEmc(fModule, fCellZ, fCellX) ;
       Int_t   altroSettings = fCalibData->GetAltroOffsetEmc(fModule, fCellZ, fCellX) ;
@@ -194,10 +190,85 @@ Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t /*sigStart*/, Int_
     else{
       AliWarning(Form("Can not read data from OCDB")) ;
     }
-    fEnergy-=pedestal ;
   }
+  fEnergy-=pedestal ;
   if (fEnergy < kBaseLine) fEnergy = 0;
-  
+
+  //Evaluate time
+  Int_t iStart = sigLength-1;
+  while(iStart>=0 && signal[iStart]-pedestal <kBaseLine) iStart-- ;
+  fTime = sigStart-iStart-2; //2: 1 due to oversubtraction in line above, another 1 due to signal started before amp increased
+  const Int_t nLine= 6 ;        //Parameters of fitting
+  const Float_t eMinTOF = 10. ; //Choosed from beam-test and cosmic analyis
+  const Float_t kAmp=0.35 ;     //Result slightly depends on them, so no getters
+  // Avoid too low peak:
+  if(fEnergy < eMinTOF){
+     return kTRUE;
+  }
+
+  // Find index posK (kLevel is a level of "timestamp" point Tk):
+  Int_t posK =sigLength-1 ; //last point before crossing k-level
+  Double_t levelK = pedestal + kAmp*fEnergy;
+  while(signal[posK] <= levelK && posK>=0){
+     posK-- ;
+  }
+  posK++ ;
+
+  if(posK == 0 || posK==sigLength-1){
+    return kTRUE; 
+  }
+
+  // Find crosing point by solving linear equation (least squares method)
+  Int_t np = 0;
+  Int_t iup=posK-1 ;
+  Int_t idn=posK ;
+  Double_t sx = 0., sy = 0., sxx = 0., sxy = 0.;
+  Double_t x,y ;
+
+  while(np<nLine){
+    //point above crossing point
+    if(iup>=0){
+      x = sigLength-iup-1;
+      y = signal[iup];
+      sx += x;
+      sy += y;
+      sxx += (x*x);
+      sxy += (x*y);
+      np++ ;
+      iup-- ;
+    }
+    //Point below crossing point
+    if(idn<sigLength){
+      if(signal[idn]<pedestal){
+        idn=sigLength-1 ; //do not scan further
+        continue ;
+      }
+      x = sigLength-idn-1;
+      y = signal[idn];
+      sx += x;
+      sy += y;
+      sxx += (x*x);
+      sxy += (x*y);
+      np++;
+      idn++ ;
+    }
+    if(idn>=sigLength && iup<0){
+      break ; //can not fit futher
+    }
+  }
+
+  Double_t det = np*sxx - sx*sx;
+  if(det == 0){
+    return kTRUE;
+  }
+  Double_t c1 = (np*sxy - sx*sy)/det;  //slope
+  Double_t c0 = (sy-c1*sx)/np; //offset
+  if(c1 == 0){
+    return kTRUE;
+  }
+
+  // Find where the line cross kLevel:
+  fTime += (levelK - c0)/c1-5. ; //5: mean offset between k-Level and start times
   return kTRUE;
 
 }
