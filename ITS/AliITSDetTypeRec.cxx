@@ -913,10 +913,6 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
                         strstr(opt,"SSD")};
   
-  // Reset Fast-OR fired map
-  ResetFastOrFiredMap();
-  
-  AliITSClusterFinder *rec     = 0;
   Int_t id=0;
 
   TClonesArray *array=new TClonesArray("AliITSRecPoint",1000);
@@ -927,14 +923,9 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   for (Int_t iModule = 0; iModule < GetITSgeom()->GetIndexMax(); iModule++) {
     clusters[iModule] = NULL;
   }
-  for(id=0;id<3;id++){
-    if (!all && !det[id]) continue;
-    rec = (AliITSClusterFinder*)GetReconstructionModel(id);
-    if (!rec)
-      AliFatal("The reconstruction class was not instantiated");
-    rec->SetDetTypeRec(this);
-    rec->RawdataToClusters(rawReader,clusters);    
-  } 
+
+  DigitsToRecPoints(rawReader,clusters,opt);
+
   Int_t nClusters =0;
   TClonesArray *emptyArray=new TClonesArray("AliITSRecPoint");
   for(Int_t iModule=0;iModule<GetITSgeom()->GetIndexMax();iModule++){
@@ -960,12 +951,44 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   Info("DigitsToRecPoints", "total number of found recpoints in ITS: %d\n", 
        nClusters);
   
+}
+//______________________________________________________________________
+void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TClonesArray** clusters,Option_t *opt){
+  // cluster finding and reconstruction of space points
+  // the condition below will disappear when the geom class will be
+  // initialized for all versions - for the moment it is only for v5 !
+  // 7 is the SDD beam test version
+  // Inputs:
+  //      AliRawReader *rawReader  Pointer to the raw-data reader
+  //      TClonesArray **clusters  Clusters Array
+  // Outputs:
+  //      none.
+  // Return:
+  //      none.
+  const char *all = strstr(opt,"All");
+  const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
+                        strstr(opt,"SSD")};
+  
+  // Reset Fast-OR fired map
+  ResetFastOrFiredMap();
+  
+  AliITSClusterFinder *rec     = 0;
+  Int_t id=0;
+
+  for(id=0;id<3;id++){
+    if (!all && !det[id]) continue;
+    rec = (AliITSClusterFinder*)GetReconstructionModel(id);
+    if (!rec)
+      AliFatal("The reconstruction class was not instantiated");
+    rec->SetDetTypeRec(this);
+    rec->RawdataToClusters(rawReader,clusters);    
+  } 
+   
   // Remove PIT in-active chips from Fast-OR fired map
   if (all || det[0]) { // SPD present
     RemoveFastOrFiredInActive();
   }  
 }
-
 //______________________________________________________________________
 void AliITSDetTypeRec::ReadOldSSDNoise(const TObjArray *array, 
 				       AliITSNoiseSSDv2 *noiseSSD) {
