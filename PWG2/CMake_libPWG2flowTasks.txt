@@ -10,6 +10,7 @@ set(SRCS
   FLOW/AliFlowTasks/AliAnalysisTaskLeeYangZeros.cxx
   FLOW/AliFlowTasks/AliAnalysisTaskFittingQDistribution.cxx 
   FLOW/AliFlowTasks/AliAnalysisTaskFlowEvent.cxx
+  FLOW/AliFlowTasks/AliAnalysisTaskFlowEventforRP.cxx
 )
 
 # fill list of header files from list of source files
