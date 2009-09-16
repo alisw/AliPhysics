@@ -63,7 +63,7 @@ class AliRsnPair : public TObject
   private:
 
     AliRsnPair(const AliRsnPair &copy) : TObject(copy),
-        fIsMixed(kFALSE),fPairType(kPairTypes),fPIDMethod(AliRsnDaughter::kRealistic),
+        fOnlyTrue(kFALSE),fIsMixed(kFALSE),fPairType(kPairTypes),fPIDMethod(AliRsnDaughter::kRealistic),
         fPairDef(0x0),fCutMgr(0x0),fFunctions("AliRsnFunction",0),fTrack1(),fTrack2(),fPairParticle() {}
     AliRsnPair& operator=(const AliRsnPair&) {return *this;}
 

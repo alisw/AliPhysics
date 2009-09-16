@@ -35,10 +35,10 @@ class AliRsnCutPrimaryVertex : public AliRsnCut
     AliRsnCutPrimaryVertex(const char *name, Int_t minContributors);
     virtual ~AliRsnCutPrimaryVertex() {;};
 
-    virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnDaughter *daughter) const;
-    virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnPairParticle *pair) const;
+    virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnDaughter *daughter);
+    virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnPairParticle *pair);
     virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *event);
-    virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2) const;
+    virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2);
 
   protected:
 
