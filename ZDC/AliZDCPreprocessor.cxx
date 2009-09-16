@@ -200,7 +200,7 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
   Int_t readMap[kNch][6]; 
   //
   while((source = dynamic_cast<TObjString*> (iter.Next()))){
-     TString fileName = "ZDCChMapping.dat";
+     TString fileName = GetFile(kDAQ, "MAPPING", source->GetName());
      Log(Form("\t Getting file #%d: ZDCChMapping.dat from %s\n",++isou, source->GetName()));
 
      if(fileName.Length() <= 0){
