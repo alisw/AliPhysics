@@ -28,6 +28,7 @@
 #include <AliRawReader.h>
 #include <AliITSRawStreamSPD.h>
 #include <AliITSRawStreamSDD.h>
+#include <AliITSRawStreamSDDCompressed.h>
 #include <AliITSRawStreamSSD.h>
 
 #include <TGeoMatrix.h>
@@ -233,25 +234,22 @@ void AliEveITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
 
   if ((mode & 4) || (mode & 8))
   {
-    AliITSRawStreamSDD input(raw);
-    input.SetDDLModuleMap(fDDLMapSDD);
+    AliITSRawStream* inputSDD=AliITSRawStreamSDD::CreateRawStreamSDD(raw);
+    inputSDD->SetDDLModuleMap(fDDLMapSDD);
     TClonesArray* digits = 0;
-    while (input.Next())
+    while (inputSDD->Next())
     {
-      Int_t module = input.GetModuleID();
+      Int_t module = inputSDD->GetModuleID();
 
-      if (input.IsNewModule())
-      {
-	digits = fSDDmap[module];
-	if (digits == 0)
-	  fSDDmap[module] = digits = new TClonesArray("AliITSdigit", 0);
-      }
+      digits = fSDDmap[module];
+      if (digits == 0)
+	fSDDmap[module] = digits = new TClonesArray("AliITSdigit", 0);      
 
-      if (input.IsCompletedModule()==kFALSE)
+      if (inputSDD->IsCompletedModule()==kFALSE && inputSDD->IsCompletedDDL()==kFALSE)
       {
-	Int_t anode  = input.GetAnode()+input.GetChannel()*AliITSsegmentationSDD::GetNAnodesPerHybrid();
-	Int_t time   = input.GetTime();
-	Int_t signal = input.GetSignal();
+	Int_t anode  = inputSDD->GetCoord1()+inputSDD->GetChannel()*AliITSsegmentationSDD::GetNAnodesPerHybrid();
+	Int_t time   = inputSDD->GetCoord2();
+	Int_t signal = inputSDD->GetSignal();
 	AliITSdigit* d = new ((*digits)[digits->GetEntriesFast()]) AliITSdigit();
 	d->SetCoord1(anode);
 	d->SetCoord2(time);
@@ -259,6 +257,7 @@ void AliEveITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
       }
       // printf("SDD: %d %d %d %d\n",module,anode,time,signal);
     }
+    delete inputSDD;
     raw->Reset();
   }
 
