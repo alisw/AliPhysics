@@ -262,30 +262,33 @@ int main(int argc, char **argv) {
 
   //find processed sector
   Char_t sideName='A';
-  Int_t sector = 0;
+  Int_t sector = -1;
   for ( Int_t roc = 0; roc < 72; roc++ ) {
     if ( !calibPedestal.GetCalRocPedestal(roc) ) continue;
     if (mapping->GetSideFromRoc(roc)==1) sideName='C';
     sector = mapping->GetSectorFromRoc(roc);
   }
   gSystem->Setenv("AMORE_DA_NAME",Form("TPC-%c%02d-%s",sideName,sector,FILE_ID));
-
+  
   //
   // end cheet
-  TDatime time;
-  TObjString info(Form("Run: %u; Date: %s",runNb,time.AsSQLString()));
-
-  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-  Int_t statusDA=0;  
-  statusDA+=amoreDA.Send("Pedestals",calibPedestal.GetCalPadPedestal());
-  statusDA+=amoreDA.Send("Noise",calibPedestal.GetCalPadRMS());
-  statusDA+=amoreDA.Send("Info",&info);
-  if ( statusDA )
-    printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
+  if (sector>-1){
+    TDatime time;
+    TObjString info(Form("Run: %u; Date: %s",runNb,time.AsSQLString()));
+    
+    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+    Int_t statusDA=0;
+    statusDA+=amoreDA.Send("Pedestals",calibPedestal.GetCalPadPedestal());
+    statusDA+=amoreDA.Send("Noise",calibPedestal.GetCalPadRMS());
+    statusDA+=amoreDA.Send("Info",&info);
+    if ( statusDA )
+      printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
+  }  else {
+    printf("Waring: No data found!\n");
+  }
   // reset env var
   if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
-
-
+  
   //
   // Now prepare ASCII files for local ALTRO configuration through DDL.
   //
