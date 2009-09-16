@@ -2,7 +2,6 @@
 
 This program reads the DAQ data files passed as argument using the monitoring library.
 
-
 The program reports about its processing progress.
 
 Messages on stdout are exported to DAQ log system.
@@ -14,7 +13,7 @@ Link:
 Run Type: STANDALONE_PEDESTAL_RUN
 DA Type: LDC
 Number of events needed: no constraint (tipically ~10^3)
-Input Files:  
+Input Files: none
 Output Files: ZDCPedestal.dat, ZDCChMapping.dat
 Trigger Types Used: Standalone Trigger
 
@@ -182,6 +181,9 @@ int main(int argc, char **argv) {
   int nevents_physics=0;
   int nevents_total=0;
 
+  struct eventHeaderStruct *event;
+  eventTypeType eventT;
+
   /* read the data files */
   int n;
   for(n=1;n<argc;n++){
@@ -198,8 +200,6 @@ int main(int argc, char **argv) {
 
     /* read the file */
     for(;;) {
-      struct eventHeaderStruct *event;
-      eventTypeType eventT;
 
       /* get next event */
       status=monitorGetEventDynamic((void **)&event);
@@ -229,9 +229,9 @@ int main(int argc, char **argv) {
       eventT=event->eventType;
       
       Int_t iScCh=0;
-      Int_t scMod[2*kNScChannels], scCh[2*kNScChannels], scSigCode[2*kNScChannels];
-      Int_t scDet[2*kNScChannels], scSec[2*kNScChannels];
-      for(Int_t y=0; y<2*kNScChannels; y++){
+      Int_t scMod[kNScChannels], scCh[kNScChannels], scSigCode[kNScChannels];
+      Int_t scDet[kNScChannels], scSec[kNScChannels];
+      for(Int_t y=0; y<kNScChannels; y++){
         scMod[y]=scCh[y]=scSigCode[y]=scDet[y]=scSec[y]=0;
       }
       //
@@ -299,8 +299,8 @@ int main(int argc, char **argv) {
             //printf("\t STANDALONE_PEDESTAL RUN raw data found\n");
          }
          else{
-            //printf("ZDCPEDESTALda.cxx -> NO STANDALONE_PEDESTAL RUN raw data found\n");
-            //return -1;
+            printf("ZDCPEDESTALda.cxx -> NO STANDALONE_PEDESTAL RUN raw data found\n");
+            return -1;
          }
         }
         else{
@@ -400,7 +400,7 @@ int main(int argc, char **argv) {
       nevents_total++;
 
       /* free resources */
-      free(event);
+//      free(event);
     
     }
   }  
@@ -461,7 +461,7 @@ int main(int argc, char **argv) {
   
   // --- Correlations
 
-/*  Float_t CorrCoeff0[2*kNChannels], CorrCoeff1[2*kNChannels];
+  Float_t CorrCoeff0[2*kNChannels], CorrCoeff1[2*kNChannels];
   TProfile *hPedCorrProfhg[kNChannels], *hPedCorrProflg[kNChannels];
   TF1 *ffunchg[kNChannels], *ffunclg[kNChannels];
   char namhist4[50];
@@ -488,7 +488,7 @@ int main(int argc, char **argv) {
      //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",
      //		i+kNChannels, CorrCoeff0[i+kNChannels], i+kNChannels, CorrCoeff1[i+kNChannels]);
   }    
-*/
+
   //						       
   fclose(fileShuttle);
   //

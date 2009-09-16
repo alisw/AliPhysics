@@ -222,7 +222,7 @@ void AliZDCRawStream::ReadChMap()
 {
   // Reading channel map
   const int kNch = 48;
-  //printf("\t Reading ZDC ADC mapping from OCDB\n");
+  AliDebug(2,"\t Reading ZDC ADC mapping from OCDB\n");
   AliZDCChMap * chMap = GetChMap();
   //chMap->Print("");
   for(Int_t i=0; i<kNch; i++){
@@ -246,10 +246,10 @@ void AliZDCRawStream::ReadCDHHeader()
       return;
   }
   else{
-    printf("\t AliZDCRawStream::ReadCDHHeader -> Data Size = %x\n",fRawReader->GetDataSize());
+    //printf("\t AliZDCRawStream::ReadCDHHeader -> Data Size = %x\n",fRawReader->GetDataSize());
 
     UChar_t message = header->GetAttributes();
-    printf("\t AliZDCRawStream::ReadCDHHeader -> Attributes %x\n",message);
+    //printf("\t AliZDCRawStream::ReadCDHHeader -> Attributes %x\n",message);
     
     if(message == 0x0){ // PHYSICS RUN
        //printf("\t PHYSICS RUN raw data found\n");
@@ -280,16 +280,18 @@ void AliZDCRawStream::ReadCDHHeader()
     if((message & 0x08) == 0){  // ** DARC card
        fReadOutCard = 0;
        fIsDARCHeader = kTRUE;
+       AliInfo("\t ZDC readout card used: DARC");
     }
     else if((message & 0x08) == 1){  // ** ZRC card
        fReadOutCard = 1;
+       AliInfo("\t ZDC readout card used: ZRC");
     }
 
     if(header->GetL1TriggerMessage() & 0x1){ // Calibration bit set in CDH
       fIsCalib = kTRUE;
     }
-    printf("\t AliZDCRawStream::ReadCDHHeader -> L1TriggerMessage %x\n",header->GetL1TriggerMessage());
-    printf("\t AliZDCRawStream::ReadCDHHeader -> Calibration bit = %d\n",fIsCalib);    
+    //printf("\t AliZDCRawStream::ReadCDHHeader -> L1TriggerMessage %x\n",header->GetL1TriggerMessage());
+    //printf("\t AliZDCRawStream::ReadCDHHeader -> Calibration bit = %d\n",fIsCalib);    
     
     UInt_t status = header->GetStatus();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> status = %d\n",status);
@@ -359,7 +361,6 @@ Bool_t AliZDCRawStream::Next()
   fEvType = fRawReader->GetType();
   if(fPosition==0){
     //if(fEvType==7 || fEvType ==8){ //Physics or calibration event
-      //ReadEventHeader();
       ReadCDHHeader();
     //}
     fCurrentCh=0; fCurrScCh=0; fNChannelsOn=0;
@@ -372,7 +373,7 @@ Bool_t AliZDCRawStream::Next()
   
   // *** End of ZDC event
   if(fBuffer == 0xcafefade){
-    //printf("\n-> AliZDCRawStream::Next() ***** End of ZDC event *****\n\n");
+    //printf("\n  AliZDCRawStream::Next() ***** End of ZDC event *****\n\n");
     return kFALSE;
   }
   
@@ -418,7 +419,7 @@ Bool_t AliZDCRawStream::Next()
       }
       else if((fBuffer&0xff000002) == 0xff000002){ // ************** Threshold settings
         fPosition++;
-	return kFALSE;
+	return kFALSE; // !!!!!!!!!!!!!!!!!!!!!  For the moment thresholds are not read
       }
       else if((fBuffer&0x80000000)>>31 == 1){ // --- Mapping header
         fIsHeaderMapping = kTRUE;
@@ -432,7 +433,7 @@ Bool_t AliZDCRawStream::Next()
 	fADCChannel = ((fBuffer & 0x3fff0000)>>16);
 	fCabledSignal = (fBuffer&0xffff);
         //
-	if(fModType==1){ // ******** ADCs ********************************
+	if(fModType == kV965){ // ******** ADCs ********************************
            // Channel signal
 	  if((fBuffer&0x40000000)>>30==0){ // high range chain ADC
             fIsChMapping = kTRUE;
@@ -451,7 +452,7 @@ Bool_t AliZDCRawStream::Next()
 	      || fCabledSignal==24 || fCabledSignal==48){
 	      fMapADC[fCurrentCh][3] = 4; //ZNA
 	      //
-	      if(fCabledSignal==2 || fCabledSignal==26)       fMapADC[fCurrentCh][4]=0;
+	      if(fCabledSignal==kZNAC || fCabledSignal==kZNACoot)   fMapADC[fCurrentCh][4]=0;
 	      else if(fCabledSignal==3 || fCabledSignal==27)  fMapADC[fCurrentCh][4]=1;
 	      else if(fCabledSignal==4 || fCabledSignal==28)  fMapADC[fCurrentCh][4]=2;
 	      else if(fCabledSignal==5 || fCabledSignal==29)  fMapADC[fCurrentCh][4]=3;
@@ -501,7 +502,7 @@ Bool_t AliZDCRawStream::Next()
 	    //
 	  } // high range channels
         }// ModType=1 (ADC mapping)
-        else if(fModType==2){  // ******** VME scaler **************************
+        else if(fModType == kV830){  // ******** VME scaler **************************
           fIsChMapping = kTRUE;
 	  fScalerMap[fCurrScCh][0] = fADCModule;
 	  fScalerMap[fCurrScCh][1] = fADCChannel;
@@ -562,15 +563,15 @@ Bool_t AliZDCRawStream::Next()
 	  
           fCurrScCh++;
         }
-	else if(fModType==3){ // **** scalers from trigger card
+	/*else if(fModType == kTRG){ // **** scalers from trigger card
       	  //printf("\t Trigger scaler mod. %d ch. %d, signal %d\n",fADCModule,fADCChannel,fCabledSignal);	  
         }
-	else if(fModType==4){ // **** trigger history from trigger card
+	else if(fModType == kTRGI){ // **** trigger history from trigger card
       	  //printf("\t Trigger card ch. %d, signal %d\n",fADCChannel,fCabledSignal);
         }
-	else if(fModType==5){ // **** pattern unit
+	else if(fModType == kPU){ // **** pattern unit
       	  //printf("\t P.U. mod. %d ch. %d, signal %d\n",fADCModule,fADCChannel,fCabledSignal);
-        }
+        }*/
       }//reading channel mapping
     }
     fPosition++;

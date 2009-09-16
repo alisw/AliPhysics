@@ -2,14 +2,11 @@
 
 This program reads the DAQ data files passed as argument using the monitoring library.
 
-It computes the average event size and populates local "./result.txt" file with the 
-result.
-
 The program reports about its processing progress.
 
 Messages on stdout are exported to DAQ log system.
 
-DA to write mapping for the ZDC ADCs
+DA to write mapping for ADC modules and VME scaler
 
 Contact: Chiara.Oppedisano@to.infn.it
 Link: 
@@ -49,6 +46,7 @@ int main(int argc, char **argv) {
   
   int status = 0;
   int const kNChannels = 24;
+  int const kNScChannels = 32;
 
   /* log start of process */
   printf("\nZDC MAPPING program started\n");  
@@ -106,6 +104,7 @@ int main(int argc, char **argv) {
       
       // Initalize raw-data reading and decoding
       AliRawReader *reader = new AliRawReaderDate((void*)event);
+      reader->Select("ZDC");
       // --- Reading event header
       //UInt_t evtype = reader->GetType();
       //printf("\t ZDCMAPPINGda -> run # %d\n",reader->GetRunNumber());
@@ -116,12 +115,25 @@ int main(int argc, char **argv) {
       /* use event - here, just write event id to result file */
       eventT=event->eventType;
       
+  
       Int_t ich=0;
       Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
       Int_t det[2*kNChannels], sec[2*kNChannels];
+      for(Int_t y=0; y<2*kNChannels; y++){
+        adcMod[y]=adcCh[y]=sigCode[y]=det[y]=sec[y]=0;
+      }
+      
+      Int_t iScCh=0;
+      Int_t scMod[kNScChannels], scCh[kNScChannels], scSigCode[kNScChannels];
+      Int_t scDet[kNScChannels], scSec[kNScChannels];
+      for(Int_t y=0; y<kNScChannels; y++){
+        scMod[y]=scCh[y]=scSigCode[y]=scDet[y]=scSec[y]=0;
+      }
+      //
+      Int_t modNum=-1, modType=-1;
       
       if(eventT==START_OF_DATA){
-	sodRead = kTRUE;
+	  	
 	rawStreamZDC->SetSODReading(kTRUE);
 	
 	// --------------------------------------------------------
@@ -129,26 +141,47 @@ int main(int argc, char **argv) {
         mapFile4Shuttle = fopen(MAPDATA_FILE,"w");
 	if(!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
         else{
-	  while((rawStreamZDC->Next()) && (ich<2*kNChannels)){
-            if(rawStreamZDC->IsChMapping()){
-	      adcMod[ich] = rawStreamZDC->GetADCModFromMap(ich);
-	      adcCh[ich] = rawStreamZDC->GetADCChFromMap(ich);
-	      sigCode[ich] = rawStreamZDC->GetADCSignFromMap(ich);
-	      det[ich] = rawStreamZDC->GetDetectorFromMap(ich);
-	      sec[ich] = rawStreamZDC->GetTowerFromMap(ich);
-	      //
-	      fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",
-	        ich,adcMod[ich],adcCh[ich],sigCode[ich],det[ich],sec[ich]);
-	      //
-	      //printf("ZDCMAPPINGda.cxx -> %d mod %d ch %d code %d det %d sec %d\n",
-	      //   ich,adcMod[ich],adcCh[ich],sigCode[ich],det[ich],sec[ich]);
-	      //
-	      ich++;
+	  while((rawStreamZDC->Next())){
+            if(rawStreamZDC->IsHeaderMapping()){ // mapping header
+	       modNum = rawStreamZDC->GetADCModule();
+	       modType = rawStreamZDC->GetModType();
+	    }
+            if(rawStreamZDC->IsChMapping()){ 
+	      if(modType==1){ // ADC mapping ----------------------
+	        adcMod[ich]  = rawStreamZDC->GetADCModFromMap(ich);
+	        adcCh[ich]   = rawStreamZDC->GetADCChFromMap(ich);
+	        sigCode[ich] = rawStreamZDC->GetADCSignFromMap(ich);
+	        det[ich]     = rawStreamZDC->GetDetectorFromMap(ich);
+	        sec[ich]     = rawStreamZDC->GetTowerFromMap(ich);
+	        //
+	        fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",
+	          ich,adcMod[ich],adcCh[ich],sigCode[ich],det[ich],sec[ich]);
+	        //
+	        //printf("  Mapping DA -> %d ADC: mod %d ch %d, code %d det %d, sec %d\n",
+	        //  ich,adcMod[ich],adcCh[ich],sigCode[ich],det[ich],sec[ich]);
+	        //
+	        ich++;
+	      }
+	      else if(modType==2){ //VME scaler mapping --------------------
+	        scMod[iScCh]     = rawStreamZDC->GetScalerModFromMap(iScCh);
+	        scCh[iScCh]      = rawStreamZDC->GetScalerChFromMap(iScCh);
+	        scSigCode[iScCh] = rawStreamZDC->GetScalerSignFromMap(iScCh);
+	        scDet[iScCh]     = rawStreamZDC->GetScDetectorFromMap(iScCh);
+	        scSec[iScCh]     = rawStreamZDC->GetScTowerFromMap(iScCh);
+	        //
+	        fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",
+	          iScCh,scMod[iScCh],scCh[iScCh],scSigCode[iScCh],scDet[iScCh],scSec[iScCh]);
+	        //
+	        //printf("  Mapping DA -> %d Scaler: mod %d ch %d, code %d det %d, sec %d\n",
+	        //  iScCh,scMod[iScCh],scCh[iScCh],scSigCode[iScCh],scDet[iScCh],scSec[iScCh]);
+	        //
+	        iScCh++;
+	      }
 	    }
 	  }
 	}
         fclose(mapFile4Shuttle);
-      } // SOD event
+      }// SOD event
       else{ 
         if(sodRead){
 	  printf("\t SOR read -> exiting from DA\n");

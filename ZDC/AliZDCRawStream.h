@@ -23,6 +23,46 @@ class AliRawDataHeader;
 
 class AliZDCRawStream: public TObject {
   public :
+    
+    // Module type codes
+    enum{kV965=1, kV830=2, kTRG=3, kTRGI=4, kPU=5}; 
+    
+    // Signal codes for ZDC 
+    // Same codes used in DAQ configuration file
+    // To be changed ONLY IF this file is changed!!! 
+    // **** DO NOT CHANGE THE FOLLOWING LINES!!! ****
+    enum ZDCSignal{kNotConnected=0, kVoid=1,
+	 kZNAC=2, kZNA1=3, kZNA2=4, kZNA3=5, kZNA4=6,
+	 kZPAC=7, kZPA1=8, kZPA2=9, kZPA3=10, kZPA4=11,
+	 kZNCC=12, kZNC1=13, kZNC2=14, kZNC3=15, kZNC4=16,
+	 kZPCC=17, kZPC1=18, kZPC2=19, kZPC3=20, kZPC4=21,
+	 kZEM1=22, kZEM2=23,
+	 kZDCAMon=24, kZDCCMon=25,
+	 kZNACoot=26, kZNA1oot=27, kZNA2oot=28, kZNA3oot=29, kZNA4oot=30,
+	 kZPACoot=31, kZPA1oot=32, kZPA2oot=33, kZPA3oot=34, kZPA4oot=35,
+	 kZNCCoot=36, kZNC1oot=37, kZNC2oot=38, kZNC3oot=39, kZNC4oot=40,
+	 kZPCCoot=41, kZPC1oot=42, kZPC2oot=43, kZPC3oot=44, kZPC4oot=45,
+	 kZEM1oot=46, kZEM2oot=47,
+	 kZDCAMonoot=48, kZDCCMonoot=49,
+	 kL1MBI=50, kL1CNI=51, kL1SCI=52, kL1EMDI=53, kL0I=54, 
+	 kL1MBO=55, kL1CNO=56, kL1SCO=57, kL1EMDO=58, 
+	 kHMBCN=59, kHSCEMD=60,
+	 kZNACD=61, kZNA1CD=62, kZNA2D=63, kZNA3D=64, kZNA4D=65,
+	 kZPACD=66, kZPA1CD=67, kZPA2D=68, kZPA3D=69, kZPA4D=70,
+	 kZNCCD=71, kZNC1CD=72, kZNC2D=73, kZNC3D=74, kZNC4D=75,
+	 kZPCCD=76, kZPC1CD=77, kZPC2D=78, kZPC3D=79, kZPC4D=80,
+	 kZEM1D=81, kZEM2D=82,
+	 kZDCAMonD=83, kZDCCMonD=84,
+	 kZNAD=85, kZPAD=86, kZNCD=87, kZPCD=88, kZEMD=89};
+    
+    // Error codes in raw data streaming
+    enum EZDCRawStreamError{
+       kCDHError = 1,
+       kDARCError = 2,
+       kZDCDataError = 3,
+       kInvalidADCModule = 4,
+       kInvalidSector = 5};
+	 
     AliZDCRawStream(AliRawReader* rawReader); 
     virtual ~AliZDCRawStream();
     virtual Bool_t   Next();
@@ -107,39 +147,7 @@ class AliZDCRawStream: public TObject {
     void SetMapTow(Int_t iraw, Int_t itow)    {fMapADC[iraw][4]=itow;}
     
     void SetSODReading(Bool_t iset) {fSODReading = iset;}
-    
-    // Error codes in raw data streaming
-    enum EZDCRawStreamError{
-       kCDHError = 1,
-       kDARCError = 2,
-       kZDCDataError = 3,
-       kInvalidADCModule = 4,
-       kInvalidSector = 5};
-    
-    // Module type codes
-    enum{kV965=1, kV830=2, kTRG=3, kTRGI=4, kPU=5}; 
-    
-    // Signal codes for ZDC 
-    // Same codes used in DAQ configuration file
-    // To be changed ONLY IF this file is changed!!! 
-    // **** DO NOT CHANGE THE FOLLOWING LINES!!! ****
-    enum ZDCSignal{kNotConnected=0, kVoid=1,
-	 kZNAC=2, kZNA1=3, kZNA2=4, kZNA3=5, kZNA4=6,
-	 kZPAC=7, kZPA1=8, kZPA2=9, kZPA3=10, kZPA4=11,
-	 kZNCC=12, kZNC1=13, kZNC2=14, kZNC3=15, kZNC4=16,
-	 kZPCC=17, kZPC1=18, kZPC2=19, kZPC3=20, kZPC4=21,
-	 kZEM1=22, kZEM2=23,
-	 kZDCAMon=24, kZDCCMon=25,
-	 kZNACoot=26, kZNA1oot=27, kZNA2oot=28, kZNA3oot=29, kZNA4oot=30,
-	 kZPACoot=31, kZPA1oot=32, kZPA2oot=33, kZPA3oot=34, kZPA4oot=35,
-	 kZNCCoot=36, kZNC1oot=37, kZNC2oot=38, kZNC3oot=39, kZNC4oot=40,
-	 kZPCCoot=41, kZPC1oot=42, kZPC2oot=43, kZPC3oot=44, kZPC4oot=45,
-	 kZEM1oot=46, kZEM2oot=47,
-	 kZDCAMonoot=48, kZDCCMonoot=49,
-	 kL1MBI=50, kL1CNI=51, kL1SCI=52, kL1EMDI=53, kL0I=54, 
-	 kL1MBO=55, kL1CNO=56, kL1SCO=57, kL1EMDO=58, 
-	 kHMBCN=59, kHSCEMD=60};
-    
+     
   private :
     AliZDCRawStream(const AliZDCRawStream& stream);
     AliZDCRawStream& operator = (const AliZDCRawStream& stream);

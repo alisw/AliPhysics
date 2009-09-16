@@ -46,6 +46,9 @@ TNamed()
     fADCChannel[i] = 0;
     fDetector[i] = 0;
     fSector[i] = 0;
+    fScalerChannel[i] = 0;
+    fScDetector[i] = 0;
+    fScSector[i] = 0;
   }
   
   
@@ -64,6 +67,11 @@ AliZDCChMap::AliZDCChMap(const AliZDCChMap& calibda) :
      fADCChannel[t] = calibda.GetADCChannel(t);
      fDetector[t]   = calibda.GetDetector(t);
      fSector[t]     = calibda.GetSector(t);
+     if(t<32){
+       fScalerChannel[t] = calibda.GetScChannel(t);
+       fScDetector[t]    = calibda.GetScDetector(t);
+       fScSector[t]      = calibda.GetScSector(t);
+     }
   }
 }
 
@@ -79,6 +87,11 @@ AliZDCChMap &AliZDCChMap::operator =(const AliZDCChMap& calibda)
      fADCChannel[t] = calibda.GetADCChannel(t);
      fDetector[t]   = calibda.GetDetector(t);
      fSector[t]     = calibda.GetSector(t);
+     if(t<32){
+       fScalerChannel[t] = calibda.GetScChannel(t);
+       fScDetector[t]    = calibda.GetScDetector(t);
+       fScSector[t]      = calibda.GetScSector(t);
+     }
   }
 
   return *this;
@@ -97,6 +110,9 @@ void AliZDCChMap::Reset()
   memset(fADCChannel,0,48*sizeof(Int_t));
   memset(fDetector,0,48*sizeof(Int_t));
   memset(fSector,0,48*sizeof(Int_t));
+  memset(fScalerChannel,0,32*sizeof(Int_t));
+  memset(fScDetector,0,32*sizeof(Int_t));
+  memset(fScSector,0,32*sizeof(Int_t));
 }                                                                                       
 
 
@@ -106,8 +122,11 @@ void  AliZDCChMap::Print(Option_t *) const
    // Printing of calibration object
    printf("\n\n\t ******************* AliZDCChMap object *******************\n\n");
    for(Int_t i=0; i<48; i++) 
-     printf(" ADCmod. %d ch. %d -> detector %d sector %d\n",
-     fADCModule[i], fADCChannel[i],fDetector[i], fSector[i]);
+     printf(" ADC - mod. %d ch. %d -> detector %d sector %d\n",
+      fADCModule[i], fADCChannel[i],fDetector[i], fSector[i]);
+   for(Int_t i=0; i<32; i++) 
+     printf(" SCALER - ch. %d -> detector %d sector %d\n",
+      fScalerChannel[i],fScDetector[i], fScSector[i]);
    printf("\n\n\t **********************************************************\n\n");
  
 } 
