@@ -221,7 +221,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       }
       else 
       {
-        for(Int_t ipar=0;ipar,5;ipar++) distParams[ipar]=AliHMPIDReconstructor::GetRecoParam()->GetHmpTrackMatchingDistParam(ipar);      //prevision: distance cut is function of momentum
+        for(Int_t ipar=0;ipar<5;ipar++) distParams[ipar]=AliHMPIDReconstructor::GetRecoParam()->GetHmpTrackMatchingDistParam(ipar);      //prevision: distance cut is function of momentum
         distCut=distParams[0]+distParams[1]*TMath::Power(distParams[2]*pTrk->GetP(),distParams[3]); //prevision: change functional form to be more precise
       }
     }
