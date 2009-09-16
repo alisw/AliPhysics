@@ -38,6 +38,10 @@ AliTRDdigitsParam::AliTRDdigitsParam()
   // Default constructor
   //
 
+  for (Int_t i = 0; i < 540; i++) {
+    fPretriggerPhase[i] = 0;
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -58,6 +62,10 @@ AliTRDdigitsParam::AliTRDdigitsParam(const AliTRDdigitsParam &p)
   //
   // Copy constructor
   //
+
+  for (Int_t i = 0; i < 540; i++) {
+    fPretriggerPhase[i] = p.fPretriggerPhase[i];
+  }
 
 }
 
@@ -90,6 +98,10 @@ void AliTRDdigitsParam::Copy(TObject &p) const
 
   target->fCheckOCDB = fCheckOCDB;
   target->fNTimeBins = fNTimeBins;
+
+  for (Int_t i = 0; i < 540; i++) {
+    target->fPretriggerPhase[i] = fPretriggerPhase[i];
+  }
 
 }
 
