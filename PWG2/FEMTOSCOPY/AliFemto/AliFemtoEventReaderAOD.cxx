@@ -226,7 +226,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
   // Attempt to access MC header
   AliAODMCHeader *mcH;
-  TClonesArray *mcP;
+  TClonesArray *mcP=0;
   if (fReadMC) {
     mcH = (AliAODMCHeader *) fEvent->FindListObject(AliAODMCHeader::StdBranchName());
     if (!mcH) {
@@ -241,7 +241,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
   tEvent->SetReactionPlaneAngle(fEvent->GetHeader()->GetQTheta(0)/2.0);
 
-  Int_t *motherids;
+  Int_t *motherids=0;
   if (mcP) {
     motherids = new Int_t[((AliAODMCParticle *) mcP->At(mcP->GetEntries()-1))->GetLabel()];
     for (int ip=0; ip<mcP->GetEntries(); ip++) motherids[ip] = 0;
@@ -295,7 +295,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	
 	if (mcP) {
 	  // Fill the hidden information with the simulated data
-	  Int_t pLabel = aodtrack->GetLabel();
+	  //	  Int_t pLabel = aodtrack->GetLabel();
 	  AliAODMCParticle *tPart = GetParticleWithLabel(mcP, (TMath::Abs(aodtrack->GetLabel())));
 
 	  // Check the mother information
@@ -403,7 +403,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	
 	if (mcP) {
 	  // Fill the hidden information with the simulated data
-	  Int_t pLabel = aodtrack->GetLabel();
+	  //	  Int_t pLabel = aodtrack->GetLabel();
 	  AliAODMCParticle *tPart = GetParticleWithLabel(mcP, (TMath::Abs(aodtrack->GetLabel())));
 	  
 	  AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
