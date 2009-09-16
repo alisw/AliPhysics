@@ -29,9 +29,10 @@
 #include <AliLog.h>                //
 #include "AliHMPIDRawStream.h"     //ConvertDigits()
 #include "AliHMPIDRecoParam.h"     //ctor
+
 ClassImp(AliHMPIDReconstructor)
 
-AliHMPIDRecoParam* AliHMPIDReconstructor::fgkRecoParam =0;  // 
+//AliHMPIDRecoParam* AliHMPIDReconstructor::fgkRecoParam =0;  // 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fDaqSig(0),fDig(0),fClu(0)
 {
@@ -39,6 +40,7 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
 //ctor
 //
   AliHMPIDParam::Instance();                                                        //geometry loaded for reconstruction
+
   fUserCut = new Int_t[7];
   fClu=new TObjArray(AliHMPIDParam::kMaxCh+1); fClu->SetOwner(kTRUE);
   fDig=new TObjArray(AliHMPIDParam::kMaxCh+1); fDig->SetOwner(kTRUE);
@@ -49,19 +51,23 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
     pClus->SetUniqueID(i);
     fClu->AddAt(pClus,i);
   }
-
-   if(fgkRecoParam!=0x0 && fgkRecoParam->GetUserCutMode()==kTRUE) {
+ 
+   
+   if(AliHMPIDReconstructor::GetRecoParam()) {
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
-      fUserCut[iCh] = fgkRecoParam->GetUserCut(iCh);
+      fUserCut[iCh] = AliHMPIDReconstructor::GetRecoParam()->GetHmpUserCut(iCh);
       AliDebug(1,Form("UserCut successfully loaded (from RecoParam) for chamber %i -> %i ",iCh,fUserCut[iCh]));
     }
-  }  
+  }
   else {
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
       fUserCut[iCh] = 3;                                                                             // minimal requirement for sigma cut
       AliDebug(1,Form("UserCut loaded from defaults for chamber %i -> %i ",iCh,fUserCut[iCh]));
+      AliDebug(1,Form("Cannot get AliHMPIDRecoParam!"));
+      }
     }
-  } 
+
+  
 
   AliCDBEntry *pDaqSigEnt =AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");  //contains TObjArray of TObjArray 14 TMatrixF sigmas values for pads 
   if(!pDaqSigEnt) AliFatal("No pedestals from DAQ!");

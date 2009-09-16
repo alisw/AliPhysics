@@ -691,16 +691,15 @@ void HmpConfig::WriteBatch()
     //---------------------------------------------
     if     (fTrkBG->GetButton(kRecoPar)->GetState())
       { 
-         fprintf(fp,"  AliHMPIDRecoParam * hmpidRecoParam = AliHMPIDRecoParam::GetUserModeParam(); //Get the HMPID reco param\n"); 
-         fprintf(fp,"  hmpidRecoParam->SetUserCutMode(kTRUE);                                      //Switch to RecoParam\n");
-         fprintf(fp,"  hmpidRecoParam->SetUserCut(0,4);                                            //eg cut for UserCutSigma (Values: ch0)\n");
-         fprintf(fp,"  hmpidRecoParam->SetUserCut(1,4);                                            //eg cut for UserCutSigma (Values: ch1)\n");
-         fprintf(fp,"  hmpidRecoParam->SetUserCut(2,4);                                            //eg cut for UserCutSigma (Values: ch2)\n");
-         fprintf(fp,"  hmpidRecoParam->SetUserCut(3,4);                                            //eg cut for UserCutSigma (Values: ch3)\n");
-         fprintf(fp,"  hmpidRecoParam->SetUserCut(4,4);                                            //eg cut for UserCutSigma (Values: ch4)\n");
-         fprintf(fp,"  hmpidRecoParam->SetUserCut(5,4);                                            //eg cut for UserCutSigma (Values: ch5)\n");
-         fprintf(fp,"  hmpidRecoParam->SetUserCut(6,4);                                            //eg cut for UserCutSigma (Values: ch6)\n");
-         fprintf(fp,"  AliHMPIDReconstructor::SetRecoParam(hmpidRecoParam);                        //Pass the RecoPar to the Reconstructor\n");
+         fprintf(fp,"  AliHMPIDRecoParam *hmpidRecoParam=AliHMPIDReconstructor::GetRecoParam();    //Get the HMPID reco param\n"); 
+         fprintf(fp,"  hmpidRecoParam->SetHmpUserCut(0,4);                                            //eg cut for UserCutSigma (Values: ch0)\n");
+         fprintf(fp,"  hmpidRecoParam->SetHmpUserCut(1,4);                                            //eg cut for UserCutSigma (Values: ch1)\n");
+         fprintf(fp,"  hmpidRecoParam->SetHmpUserCut(2,4);                                            //eg cut for UserCutSigma (Values: ch2)\n");
+         fprintf(fp,"  hmpidRecoParam->SetHmpUserCut(3,4);                                            //eg cut for UserCutSigma (Values: ch3)\n");
+         fprintf(fp,"  hmpidRecoParam->SetHmpUserCut(4,4);                                            //eg cut for UserCutSigma (Values: ch4)\n");
+         fprintf(fp,"  hmpidRecoParam->SetHmpUserCut(5,4);                                            //eg cut for UserCutSigma (Values: ch5)\n");
+         fprintf(fp,"  hmpidRecoParam->SetHmpUserCut(6,4);                                            //eg cut for UserCutSigma (Values: ch6)\n");
+         fprintf(fp,"  AliHMPIDReconstructor::SetRecoParam(hmpidRecoParam);                          //Pass the RecoPar to the Reconstructor\n");
       }
     //---------------------------------------------                                                    
                                                     

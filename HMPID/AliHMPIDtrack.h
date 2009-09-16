@@ -35,7 +35,7 @@ public:
    Int_t    GetProlongation(Double_t xk, Double_t &y, Double_t &z);
    Bool_t   Intersect(Double_t pnt[3], Double_t norm[3]) const;                                  //HMPID method moved from AliExternalTrackParam
    Bool_t   Update(const AliHMPIDCluster *pClu, Double_t chi2, Int_t index);
-              
+   
 protected:
    Bool_t   Update(const AliCluster */*c*/, Double_t /*chi2*/, Int_t /*idx*/) {return 0;}
    Double_t GetPredictedChi2(const AliCluster */*c*/) const {return 0.;}
