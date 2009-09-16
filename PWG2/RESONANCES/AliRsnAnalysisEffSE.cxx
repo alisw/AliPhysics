@@ -48,7 +48,13 @@ AliRsnAnalysisEffSE::AliRsnAnalysisEffSE(const char *name) :
 AliRsnAnalysisEffSE::AliRsnAnalysisEffSE(const AliRsnAnalysisEffSE& copy) :
   AliRsnVAnalysisTaskSE(copy),
   fEventCuts(copy.fEventCuts),
-  fContainerList(copy.fContainerList)
+  fStepListMC(copy.fStepListMC),
+  fStepListESD(copy.fStepListESD),
+  fAxisList(copy.fAxisList),
+  fPairDefList(copy.fPairDefList),
+  fContainerList(copy.fContainerList),
+  fVar(0),
+  fPair()
 {
 //
 // Copy constrtuctor

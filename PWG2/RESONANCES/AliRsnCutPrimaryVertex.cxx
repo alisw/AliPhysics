@@ -56,7 +56,7 @@ AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget /*tgt*/, AliRsnDaughter*/*const track*/) const
+Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget /*tgt*/, AliRsnDaughter*/*const track*/)
 {
 //
 // Cut checker.
@@ -66,7 +66,7 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget /*tgt*/, AliRsnDaug
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget, AliRsnPairParticle*/*const pair*/) const
+Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget, AliRsnPairParticle*/*const pair*/)
 {
 //
 // Cut checker
@@ -108,7 +108,7 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget, AliRsnEvent*event)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget, AliRsnEvent*/*ev1*/, AliRsnEvent*/*ev2*/) const
+Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget, AliRsnEvent*/*ev1*/, AliRsnEvent*/*ev2*/)
 {
 //
 // Cut checker

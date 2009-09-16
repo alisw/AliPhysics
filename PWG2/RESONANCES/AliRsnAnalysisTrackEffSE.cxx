@@ -27,7 +27,8 @@ AliRsnAnalysisTrackEffSE::AliRsnAnalysisTrackEffSE(const char *name) :
   fStepListMC(0),
   fStepListESD(0),
   fAxisList(0),
-  fVar(0)
+  fVar(0),
+  fDaughter()
 {
 //
 // Default constructor.
@@ -50,7 +51,8 @@ AliRsnAnalysisTrackEffSE::AliRsnAnalysisTrackEffSE(const AliRsnAnalysisTrackEffS
   fStepListMC(copy.fStepListMC),
   fStepListESD(copy.fStepListESD),
   fAxisList(copy.fAxisList),
-  fVar(0)
+  fVar(0),
+  fDaughter()
 {
 //
 // Copy constrtuctor
