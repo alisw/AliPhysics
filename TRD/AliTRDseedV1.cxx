@@ -995,8 +995,8 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
       continue;
     } 
 
-    if(fkReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 3){
-      TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
+    if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && fkReconstructor->IsDebugStreaming()){
+      TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
       TVectorD vdy(ncl[ir], yres[ir]);
       UChar_t stat(0);
       if(IsKink()) SETBIT(stat, 0);
@@ -1277,7 +1277,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     c->SetSigmaY2(fS2PRF, fDiffT, fExB, xc[n], zcorr?zt:-1., dydx);
     sy[n]  = TMath::Sqrt(c->GetSigmaY2());
 
-    yc[n]   = fkReconstructor->UseGAUS() ? 
+    yc[n]   = fkReconstructor->GetRecoParam()->UseGAUS() ? 
       c->GetYloc(y0, sy[n], GetPadWidth()): c->GetY();
     zc[n]   = c->GetZ();
     //optional tilt correction

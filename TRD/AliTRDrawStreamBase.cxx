@@ -37,6 +37,7 @@
 ClassImp(AliTRDrawStreamBase)
 
 Int_t AliTRDrawStreamBase::fgRawStreamVersion = AliTRDrawStreamBase::kTRDrealStream;
+Int_t AliTRDrawStreamBase::fgCommonAdditive = 0;
 
 //_____________________________________________________________________________
 AliTRDrawStreamBase::AliTRDrawStreamBase()

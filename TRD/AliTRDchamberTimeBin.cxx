@@ -316,9 +316,9 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
     fX += cl->GetX(); 
     
     // Debug Streaming
-    if(fkReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) >= 3){
+    if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) >= 3){
       AliTRDcluster dcl(*cl);
-      TTreeSRedirector &cstream = *fkReconstructor->GetDebugStream(AliTRDReconstructor::kTracker);
+      TTreeSRedirector &cstream = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
       cstream << "BuildIndices"
       << "Plane="    << fPlane
       << "Stack="    << fStack

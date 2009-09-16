@@ -31,6 +31,7 @@
 #include "AliTRDReconstructor.h"
 #include "AliTRDclusterizer.h"
 #include "AliTRDrawData.h"
+#include "AliTRDrawStreamBase.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDtrackerV1.h"
 
@@ -43,49 +44,29 @@ TClonesArray *AliTRDReconstructor::fgClusters = 0x0;
 TClonesArray *AliTRDReconstructor::fgTracklets = 0x0;
 Char_t* AliTRDReconstructor::fgSteerNames[kNsteer] = {
   "DigitsConversion       "
- ,"Tail Cancellation      "
- ,"Clusters LUT           "
- ,"Clusters GAUSS         "
- ,"Clusters Sharing       "
- ,"NN PID                 "
- ,"8 dEdx slices in ESD   "
  ,"Write Clusters         "
  ,"Write Online Tracklets "
- ,"Drift Gas Argon        "
  ,"Stand Alone Tracking   "
- ,"Vertex Constrain       "
- ,"Tracklet Improve       "
- ,"HLT Mode              "
- ,"Cosmic Reconstruction "
+ ,"HLT Mode               "
  ,"Process Online Tracklets"
+ ,"Debug Streaming        "
 };
 Char_t* AliTRDReconstructor::fgSteerFlags[kNsteer] = {
   "dc"// digits conversion [false]
- ,"tc"// apply tail cancellation [true]
- ,"lut"// look-up-table for cluster shape in the r-phi direction
- ,"gs"// gauss cluster shape in the r-phi direction
- ,"sh"// cluster sharing between tracks
- ,"nn"// PID method in reconstruction (NN) [true]
- ,"8s"// 8 dEdx slices in ESD [true] 
  ,"cw"// write clusters [true]
  ,"tw"// write online tracklets [false]
- ,"ar"// drift gas [false] - do not update the number of exponentials in the TC !
  ,"sa"// track seeding (stand alone tracking) [true]
- ,"vc"// vertex constrain on stand alone track finder [false]
- ,"ti"// improve tracklets in stand alone track finder [true]
  ,"hlt"// HLT reconstruction [false]
- ,"cos"// Cosmic Reconstruction [false]
  ,"tp"// also use online tracklets for reconstruction [false]
+ ,"deb"// Write debug stream [false]
 };
-Char_t* AliTRDReconstructor::fgTaskNames[kNtasks] = {
-  "RawReader"
- ,"Clusterizer"
+Char_t* AliTRDReconstructor::fgTaskNames[AliTRDrecoParam::kTRDreconstructionTasks] = {
+  "Clusterizer"
  ,"Tracker"
  ,"PID"
 };
-Char_t* AliTRDReconstructor::fgTaskFlags[kNtasks] = {
-  "rr"
- ,"cl"
+Char_t* AliTRDReconstructor::fgTaskFlags[AliTRDrecoParam::kTRDreconstructionTasks] = {
+  "cl"
  ,"tr"
  ,"pd"
 };
@@ -102,31 +83,8 @@ AliTRDReconstructor::AliTRDReconstructor()
   SETFLG(fSteerParam, kWriteClusters);
   // track seeding (stand alone tracking) [sa]
   SETFLG(fSteerParam, kSeeding);
-  // PID method in reconstruction (NN) [nn]
-  SETFLG(fSteerParam, kSteerPID);
-  // number of dEdx slices in the ESD track [8s]
-  SETFLG(fSteerParam, kEightSlices);
-  // vertex constrain for stand alone track finder
-  SETFLG(fSteerParam, kVertexConstrained);
-  // improve tracklets for stand alone track finder
-  SETFLG(fSteerParam, kImproveTracklet);
-  // use look up table for cluster r-phi position
-  SETFLG(fSteerParam, kLUT);
-  // use tail cancellation
-  SETFLG(fSteerParam, kTC);
 
-  memset(fStreamLevel, 0, kNtasks*sizeof(UChar_t));
-  memset(fDebugStream, 0, sizeof(TTreeSRedirector *) * kNtasks);
-  // Xe tail cancellation parameters
-  fTCParams[0] = 1.156; // r1
-  fTCParams[1] = 0.130; // r2
-  fTCParams[2] = 0.114; // c1
-  fTCParams[3] = 0.624; // c2
-  // Ar tail cancellation parameters
-  fTCParams[4] = 6.;    // r1
-  fTCParams[5] = 0.62;  // r2
-  fTCParams[6] = 0.0087;// c1
-  fTCParams[7] = 0.07;  // c2
+  memset(fDebugStream, 0, sizeof(TTreeSRedirector *) * AliTRDrecoParam::kTRDreconstructionTasks);
 }
 
 //_____________________________________________________________________________
@@ -138,9 +96,7 @@ AliTRDReconstructor::AliTRDReconstructor(const AliTRDReconstructor &r)
   // Copy constructor
   //
 
-  memcpy(fStreamLevel, r.fStreamLevel, kNtasks*sizeof(UChar_t));
-  memcpy(fTCParams, r.fTCParams, 8*sizeof(Double_t));
-  memcpy(fDebugStream, r.fDebugStream, sizeof(TTreeSRedirector *) *kNtasks);
+  memcpy(fDebugStream, r.fDebugStream, sizeof(TTreeSRedirector *) *AliTRDrecoParam::kTRDreconstructionTasks);
   // ownership of debug streamers is not taken
   CLRFLG(fSteerParam, kOwner);
 }
@@ -159,7 +115,7 @@ AliTRDReconstructor::~AliTRDReconstructor()
     fgTracklets->Delete(); delete fgTracklets;
   }
   if(fSteerParam&kOwner){
-    for(Int_t itask = 0; itask < kNtasks; itask++)
+    for(Int_t itask = 0; itask < AliTRDrecoParam::kTRDreconstructionTasks; itask++)
       if(fDebugStream[itask]) delete fDebugStream[itask];
   }
 }
@@ -171,7 +127,17 @@ void AliTRDReconstructor::Init(){
   // Init Options
   //
   SetOption(GetOption());
-  Options(fSteerParam, fStreamLevel);
+  Options(fSteerParam);
+
+  // Make Debug Streams when Debug Streaming
+  if(IsDebugStreaming()){
+    for(Int_t task = 0; task < AliTRDrecoParam::kTRDreconstructionTasks; task++){
+      TDirectory *savedir = gDirectory;
+      fDebugStream[task] = new TTreeSRedirector(Form("TRD.Debug%s.root", fgTaskNames[task]));
+      savedir->cd();
+      SETFLG(fSteerParam, kOwner);
+    }
+  }
 }
 
 //_____________________________________________________________________________
@@ -188,6 +154,8 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
   rawReader->Reset();
   rawReader->Select("TRD");
   rawData.OpenOutput();
+  AliTRDrawStreamBase::SetRawStreamVersion(GetRecoParam()->GetRawStreamVersion()->Data());
+  AliTRDrawStreamBase::SetSubtractBaseline(10);
   AliTRDdigitsManager *manager = rawData.Raw2Digits(rawReader);
   manager->MakeBranch(digitsTree);
   manager->WriteDigits();
@@ -208,9 +176,10 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
 
   rawReader->Reset();
   rawReader->Select("TRD");
+  AliTRDrawStreamBase::SetRawStreamVersion(GetRecoParam()->GetRawStreamVersion()->Data());
 
   // New (fast) cluster finder
-  AliTRDclusterizer clusterer(fgTaskNames[kClusterizer], fgTaskNames[kClusterizer]);
+  AliTRDclusterizer clusterer(fgTaskNames[AliTRDrecoParam::kClusterizer], fgTaskNames[AliTRDrecoParam::kClusterizer]);
   clusterer.SetReconstructor(this);
   clusterer.OpenOutput(clusterTree);
   clusterer.OpenTrackletOutput();
@@ -237,8 +206,8 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   //
 
   //AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
-
-  AliTRDclusterizer clusterer(fgTaskNames[kClusterizer], fgTaskNames[kClusterizer]);
+  
+  AliTRDclusterizer clusterer(fgTaskNames[AliTRDrecoParam::kClusterizer], fgTaskNames[AliTRDrecoParam::kClusterizer]);
   clusterer.SetReconstructor(this);
   clusterer.OpenOutput(clusterTree);
   clusterer.ReadDigits(digitsTree);
@@ -302,28 +271,6 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
       processed = kTRUE;
       break;	
     }
-    // extra rules
-    if(sopt.Contains("gs") && !sopt.Contains("!")){
-      CLRFLG(fSteerParam, kLUT); processed = kTRUE;
-    }
-
-    if(processed) continue;
-
-    if(sopt.Contains("sl")){
-      TObjArray *stl = sopt.Tokenize("_");
-      if(stl->GetEntriesFast() < 3) continue;
-      TString taskstr(((TObjString*)(*stl)[1])->String());
-      TString levelstring(((TObjString*)(*stl)[2])->String());
-      Int_t level = levelstring.Atoi();
-
-      // Set the stream Level
-      processed = kFALSE;
-      for(Int_t it=0; it<kNtasks; it++){
-        if(taskstr.CompareTo(fgTaskFlags[it]) != 0) continue;
-        SetStreamLevel(level, ETRDReconstructorTask(it));
-        processed = kTRUE;
-      }
-    } 
     if(processed) continue;
 
     AliWarning(Form("Unknown option flag %s.", sopt.Data()));
@@ -331,24 +278,7 @@ void AliTRDReconstructor::SetOption(Option_t *opt)
 }
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::SetStreamLevel(Int_t level, ETRDReconstructorTask task){
-  //
-  // Set the Stream Level for one of the tasks Clusterizer, Tracker or PID
-  //
-  const Int_t minLevel[4] = {1, 1, 2, 1}; // the minimum debug level upon which a debug stream is created for different tasks
-  //AliInfo(Form("Setting Stream Level for Task %s to %d", taskname.Data(),level));
-  fStreamLevel[(Int_t)task] = level;
-  // Initialize DebugStreamer if not yet done
-  if(level >= minLevel[task] && !fDebugStream[task]){
-    TDirectory *savedir = gDirectory;
-    fDebugStream[task] = new TTreeSRedirector(Form("TRD.Debug%s.root", fgTaskNames[task]));
-    savedir->cd();
-    SETFLG(fSteerParam, kOwner);
-  }
-}
-
-//_____________________________________________________________________________
-void AliTRDReconstructor::Options(UInt_t steer, UChar_t *stream)
+void AliTRDReconstructor::Options(UInt_t steer)
 {
   //
   // Print the options
@@ -357,8 +287,5 @@ void AliTRDReconstructor::Options(UInt_t steer, UChar_t *stream)
   for(Int_t iopt=0; iopt<kNsteer; iopt++){
     AliDebugGeneral("AliTRDReconstructor", 1, Form(" %s[%s]%s", fgSteerNames[iopt], fgSteerFlags[iopt], steer ?(((steer>>iopt)&1)?" : ON":" : OFF"):""));
   }
-  AliDebugGeneral("AliTRDReconstructor", 1, " Debug Streaming"); 
-  for(Int_t it=0; it<kNtasks; it++) 
-    AliDebugGeneral("AliTRDReconstructor", 1, Form(" %s [sl_%s] %d", fgTaskNames[it], fgTaskFlags[it], stream ? stream[it] : 0));
 }
 

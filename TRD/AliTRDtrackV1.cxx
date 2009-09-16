@@ -808,7 +808,7 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   // Update the TRD PID information in the ESD track
   //
 
-  Int_t nslices = fkReconstructor->IsEightSlices() ? (Int_t)AliTRDpidUtil::kNNslices : (Int_t)AliTRDpidUtil::kLQslices;
+  Int_t nslices = fkReconstructor->GetRecoParam()->IsEightSlices() ? (Int_t)AliTRDpidUtil::kNNslices : (Int_t)AliTRDpidUtil::kLQslices;
   // number of tracklets used for PID calculation
   UChar_t nPID = GetNumberOfTrackletsPID();
   // number of tracklets attached to the track

@@ -61,7 +61,7 @@ ClassImp(AliTRDmcmSim)
 Bool_t AliTRDmcmSim::fgApplyCut = kTRUE;
 
 Float_t AliTRDmcmSim::fgChargeNorm = 65000.;
-Int_t AliTRDmcmSim::fgAddBaseline = 0;
+Int_t AliTRDmcmSim::fgAddBaseline = 10;
 
 Int_t AliTRDmcmSim::fgPidNBinsQ0 = 40;
 Int_t AliTRDmcmSim::fgPidNBinsQ1 = 50;

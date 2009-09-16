@@ -385,12 +385,12 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
   fakeLayer->BuildIndices();
   //fakeLayer->Print();
   
-  if(rec->GetStreamLevel(AliTRDReconstructor::kTracker) >= 3){
+  if(rec->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) >= 3){
     //TMatrixD hist(nRows, nCols);
     //for(Int_t i = 0; i < nRows; i++)
     //	for(Int_t j = 0; j < nCols; j++)
     //		hist(i,j) = histogram[i][j];
-    TTreeSRedirector &cstreamer = *rec->GetDebugStream(AliTRDReconstructor::kTracker);
+    TTreeSRedirector &cstreamer = *rec->GetDebugStream(AliTRDrecoParam::kTracker);
     cstreamer << "GetSeedingLayer"
     << "layer="      << layer
     << "ymin="       << ymin

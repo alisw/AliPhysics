@@ -18,9 +18,28 @@
 #include "Cal/AliTRDCalPID.h"
 #endif
 
+class TString;
+
 class AliTRDrecoParam : public AliDetectorRecoParam
 {
 public:
+  enum ETRDReconstructionTask{
+    kClusterizer = 0,
+    kTracker = 1,
+    kPID = 2,
+    kTRDreconstructionTasks = 3
+  };
+  enum ETRDflags {
+    kDriftGas,
+    kVertexConstraint,
+    kTailCancelation,
+    kImproveTracklet, 
+    kLUT, 
+    kGAUS,
+    kClusterSharing,
+    kSteerPID,
+    kEightSlices  
+   };
   AliTRDrecoParam();
   AliTRDrecoParam(const AliTRDrecoParam &rec);
   ~AliTRDrecoParam() { }
@@ -48,36 +67,63 @@ public:
   Double_t GetRoadzMultiplicator() const    { return fkRoadzMultiplicator; }
   Double_t GetTrackLikelihood() const       { return fkTrackLikelihood;       }
   inline void GetSysCovMatrix(Double_t *sys) const;  
+  inline void GetTCParams(Double_t *par) const;
+  inline Int_t GetStreamLevel(ETRDReconstructionTask task) const;
+  const TString *GetRawStreamVersion() const  { return &fRawStreamVersion; };
+  Int_t    GetADCBaseline() const           { return fADCBaseline; }
   Double_t GetMinMaxCutSigma() const        { return fMinMaxCutSigma;     };
   Double_t GetMinLeftRightCutSigma() const  { return fMinLeftRightCutSigma;  };
   Double_t GetClusMaxThresh() const         { return fClusMaxThresh;   };
   Double_t GetClusSigThresh() const         { return fClusSigThresh;   };
   Int_t    GetTCnexp() const                { return fTCnexp;          };
-  Int_t     GetNumberOfPresamples()  const {return fNumberOfPresamples;}
-  Int_t    GetNumberOfPostsamples() const {return fNumberOfPostsamples;}
-
+  Int_t    GetNumberOfPresamples()  const   {return fNumberOfPresamples;}
+  Int_t    GetNumberOfPostsamples() const   {return fNumberOfPostsamples;}
+  Bool_t   IsArgon() const { return TESTBIT(fFlags, kDriftGas); }
+  Bool_t   IsXenon() const { return !TESTBIT(fFlags, kDriftGas); }
+  Bool_t   IsPIDNeuralNetwork() const       { return TESTBIT(fFlags, kSteerPID);}
+  Bool_t   IsVertexConstrained() const       { return TESTBIT(fFlags, kVertexConstraint); }
+  Bool_t   IsEightSlices() const            { return TESTBIT(fFlags, kEightSlices);}
+  Bool_t   HasImproveTracklets() const      { return TESTBIT(fFlags, kImproveTracklet);}
+  Bool_t   UseClusterSharing() const        { return TESTBIT(fFlags, kClusterSharing);}
+  Bool_t   UseLUT() const                   { return TESTBIT(fFlags, kLUT);}
+  Bool_t   UseGAUS() const                  { return TESTBIT(fFlags, kGAUS);}
+  Bool_t   UseTailCancelation() const       { return TESTBIT(fFlags, kTailCancelation); }
         
   static   AliTRDrecoParam *GetLowFluxParam();
   static   AliTRDrecoParam *GetHighFluxParam();
   static   AliTRDrecoParam *GetCosmicTestParam();
 
-  void     SetMaxTheta(Double_t maxTheta) {fkMaxTheta = maxTheta;}
-  void     SetMaxPhi(Double_t maxPhi) {fkMaxPhi = maxPhi;}
-  void     SetFindableClusters(Double_t r) {fkFindable = r;}
-  void     SetChi2Y(Double_t chi2) {fkChi2Y = chi2;}
-  void     SetChi2Z(Double_t chi2) {fkChi2Z = chi2;}
-  void     SetChi2YSlope(Double_t chi2YSlope) {fkChi2YSlope = chi2YSlope;}
-  void     SetChi2ZSlope(Double_t chi2ZSlope) {fkChi2ZSlope = chi2ZSlope;}
-	void	   SetChi2YCut(Double_t chi2Cut) {fkChi2YCut = chi2Cut; }
-  void     SetPhiSlope(Double_t phiSlope) {fkPhiSlope = phiSlope;}
-  void     SetNMeanClusters(Double_t meanNclusters) {fkNMeanClusters = meanNclusters;}
-  void     SetNSigmaClusters(Double_t sigmaNclusters) {fkNSigmaClusters = sigmaNclusters;} 
+  void     SetArgon()                                         {SETBIT(fFlags, kDriftGas);}
+  void     SetClusterSharing()                                {SETBIT(fFlags, kClusterSharing);}
+  void     SetEightSlices()                                   {SETBIT(fFlags, kEightSlices);}
+  void     SetImproveTracklets()                              {SETBIT(fFlags, kImproveTracklet);}
+  void     SetLUT()                                           {SETBIT(fFlags, kLUT);}
+  void     SetGAUS()                                          {SETBIT(fFlags, kGAUS);}
+  void     SetPIDNeuralNetwork()                              {SETBIT(fFlags, kSteerPID);}
+  void     SetTailCancelation()                               {SETBIT(fFlags, kTailCancelation);}
+  void     SetXenon()                                         {CLRBIT(fFlags, kDriftGas);}
+  void     SetVertexConstrained()                             {SETBIT(fFlags, kVertexConstraint);}
+  void     SetMaxTheta(Double_t maxTheta)                     {fkMaxTheta = maxTheta;}
+  void     SetMaxPhi(Double_t maxPhi)                         {fkMaxPhi = maxPhi;}
+  void     SetFindableClusters(Double_t r)                    {fkFindable = r;}
+  void     SetChi2Y(Double_t chi2)                            {fkChi2Y = chi2;}
+  void     SetChi2Z(Double_t chi2)                            {fkChi2Z = chi2;}
+  void     SetChi2YSlope(Double_t chi2YSlope)                 {fkChi2YSlope = chi2YSlope;}
+  void     SetChi2ZSlope(Double_t chi2ZSlope)                 {fkChi2ZSlope = chi2ZSlope;}
+	void	   SetChi2YCut(Double_t chi2Cut)                      {fkChi2YCut = chi2Cut; }
+  void     SetPhiSlope(Double_t phiSlope)                     {fkPhiSlope = phiSlope;}
+  void     SetNMeanClusters(Double_t meanNclusters)           {fkNMeanClusters = meanNclusters;}
+  void     SetNSigmaClusters(Double_t sigmaNclusters)         {fkNSigmaClusters = sigmaNclusters;} 
+  void     SetRawStreamVersion(const Char_t *version)         { fRawStreamVersion = version; }
+  void     SetADCBaseline(Int_t baseline)                  { fADCBaseline = baseline; }
   void     SetMinMaxCutSigma(Float_t minMaxCutSigma)          { fMinMaxCutSigma   = minMaxCutSigma; }
   void     SetMinLeftRightCutSigma(Float_t minLeftRightCutSigma) { fMinLeftRightCutSigma   = minLeftRightCutSigma; };
   void     SetClusMaxThresh(Float_t thresh)                   { fClusMaxThresh   = thresh; };
   void     SetClusSigThresh(Float_t thresh)                   { fClusSigThresh   = thresh; };
   inline void SetPIDThreshold(Double_t *pid);
   void     SetNexponential(Int_t nexp)                        { fTCnexp          = nexp;   };
+  inline void SetTCParams(Double_t *par);
+  inline void SetStreamLevel(ETRDReconstructionTask task, Int_t level);
   inline void SetSysCovMatrix(Double_t *sys);
   void     SetNumberOfPresamples(Int_t n)                     { fNumberOfPresamples = n;}
   void     SetNumberOfPostsamples(Int_t n)                    { fNumberOfPostsamples = n;}
@@ -115,18 +161,27 @@ private:
   Double_t  fSysCovMatrix[5];        // Systematic uncertainty from calibration and alignment for each tracklet
   Double_t  fPIDThreshold[AliTRDCalPID::kNMom];   // PID Thresholds for Electron candidate decision
 
+  // Reconstruction Options for TRD reconstruction
+  Int_t     fStreamLevel[kTRDreconstructionTasks]; // Stream Level
+  Long64_t  fFlags;                  // option Flags
+  
+  // Raw Reader Params
+  TString   fRawStreamVersion;       // Raw Reader version
+  Int_t     fADCBaseline;            // ADC Baseline
+
   // Clusterization parameter
   Double_t  fMinMaxCutSigma;         // Threshold sigma noise pad middle
   Double_t  fMinLeftRightCutSigma;   // Threshold sigma noise sum pad
   Double_t  fClusMaxThresh;          // Threshold value for cluster maximum
   Double_t  fClusSigThresh;          // Threshold value for cluster signal
   Int_t     fTCnexp;                 // Number of exponentials, digital filter
+  Double_t  fTCParams[8];            // Tail Cancellation parameters for drift gases 
   
   // ADC parameter
   Int_t     fNumberOfPresamples;     // number of presamples 
   Int_t     fNumberOfPostsamples;     // number of postsamples 
 
-  ClassDef(AliTRDrecoParam, 8)       // Reconstruction parameters for TRD detector
+  ClassDef(AliTRDrecoParam, 9)       // Reconstruction parameters for TRD detector
 
 };
 
@@ -151,5 +206,30 @@ inline void AliTRDrecoParam::SetPIDThreshold(Double_t *pid)
   memcpy(fPIDThreshold, pid, AliTRDCalPID::kNMom*sizeof(Double_t));
 }
 
+//___________________________________________________
+inline void AliTRDrecoParam::SetStreamLevel(ETRDReconstructionTask task, Int_t level){
+  if(task >= kTRDreconstructionTasks) return;
+  fStreamLevel[static_cast<Int_t>(task)] = level;
+}
 
+//___________________________________________________
+inline Int_t AliTRDrecoParam::GetStreamLevel(ETRDReconstructionTask task) const{
+  if(task >= kTRDreconstructionTasks) return 0;
+  return fStreamLevel[static_cast<Int_t>(task)];
+}
+
+//___________________________________________________
+inline void AliTRDrecoParam::GetTCParams(Double_t *par) const
+{
+  if(!par) return;
+  if(IsArgon()) memcpy(par, &fTCParams[4], 4*sizeof(Double_t));
+  else memcpy(par, &fTCParams[0], 4*sizeof(Double_t));
+}
+
+//___________________________________________________
+inline void AliTRDrecoParam::SetTCParams(Double_t *par)
+{
+  if(!par) return;
+  memcpy(fTCParams, par, 8*sizeof(Double_t));
+}
 #endif

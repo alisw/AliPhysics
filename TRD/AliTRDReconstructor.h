@@ -12,6 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliReconstructor.h"
+#include "AliRecoParam.h"
 #include "AliDetectorRecoParam.h"
 #include "AliTRDpidUtil.h"
 #include "AliTRDrecoParam.h"
@@ -24,36 +25,15 @@ class AliTRDReconstructor: public AliReconstructor
 public:
   enum ETRDReconstructorSteer {
     kDigitsConversion= BIT(0)
-    ,kTC             = BIT(1) // tail cancelation
-    ,kLUT            = BIT(2) // look up table for cluster position determination 
-    ,kGAUS           = BIT(3) // look up table for cluster position determination 
-    ,kClusterSharing = BIT(4) // Toggle cluster sharing
-    ,kSteerPID       = BIT(5)
-    ,kEightSlices    = BIT(6)
-    ,kWriteClusters  = BIT(7)
-    ,kWriteTracklets = BIT(8)
-    ,kDriftGas       = BIT(9)
-    ,kSeeding        = BIT(10)
-    ,kVertexConstrained = BIT(11) // Perform vertex constrained fit
-    ,kImproveTracklet   = BIT(12) // Improve tracklet in the SA TRD track finder 
-    ,kHLT            = BIT(13)
-    ,kCosmic         = BIT(14)
-    ,kProcTracklets  = BIT(15) // process online tracklets
-    ,kOwner          = BIT(16)
-    ,kNsteer         = 16       // number of tasks
+    ,kWriteClusters  = BIT(1)
+    ,kWriteTracklets = BIT(2)
+    ,kSeeding        = BIT(3)
+    ,kHLT            = BIT(4)
+    ,kProcTracklets  = BIT(5) // process online tracklets
+    ,kDebug          = BIT(6)
+    ,kOwner          = BIT(7)
+    ,kNsteer         = 7       // number of tasks
   };
-  enum ETRDReconstructorTask {
-    kRawReader    = 0
-    ,kClusterizer = 1
-    ,kTracker     = 2
-    ,kPID         = 3
-    ,kNtasks      = 4  // number of reconsruction tasks
-  };
-  enum ETRDReconstructorGas {
-    kXe = 0
-    ,kAr = 1
-  };
-
   AliTRDReconstructor();
   AliTRDReconstructor(const AliTRDReconstructor &r);
   virtual ~AliTRDReconstructor();
@@ -63,52 +43,39 @@ public:
 
   virtual void        ConvertDigits(AliRawReader *rawReader, TTree *digitsTree) const;
   virtual AliTracker* CreateTracker() const;
-  TTreeSRedirector*   GetDebugStream(ETRDReconstructorTask task) const { return task < kNtasks ? fDebugStream[task] : 0x0; }
+  TTreeSRedirector*   GetDebugStream(AliTRDrecoParam::ETRDReconstructionTask task) const { return task < AliTRDrecoParam::kTRDreconstructionTasks ? fDebugStream[task] : 0x0; }
 
   virtual void        FillESD(AliRawReader *, TTree *clusterTree, AliESDEvent *esd) const { FillESD((TTree * )NULL, clusterTree, esd);                    }
   virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
   static TClonesArray* GetClusters() {return fgClusters;}
   static TClonesArray* GetTracklets() {return fgTracklets;}
   Int_t               GetNdEdxSlices() const     { return (Int_t)AliTRDpidUtil::GetNdEdxSlices(GetPIDMethod());}
-  ETRDReconstructorGas GetDriftGas() const        { return fSteerParam&kDriftGas ? kAr : kXe;}
-  AliTRDpidUtil::ETRDPIDMethod       GetPIDMethod() const       { return fSteerParam&kSteerPID ? AliTRDpidUtil::kNN : AliTRDpidUtil::kLQ;}
+  AliTRDpidUtil::ETRDPIDMethod       GetPIDMethod() const       { return GetRecoParam()->IsPIDNeuralNetwork() ? AliTRDpidUtil::kNN : AliTRDpidUtil::kLQ;}
   static const AliTRDrecoParam* GetRecoParam() { return dynamic_cast<const AliTRDrecoParam*>(AliReconstructor::GetRecoParam(2)); }
-  Int_t               GetStreamLevel(ETRDReconstructorTask task) const    { return fStreamLevel[task];} 
-  inline void         GetTCParams(Double_t *par) const;
   virtual Bool_t      HasDigitConversion() const { return fSteerParam&kDigitsConversion;  };
-  Bool_t              HasVertexConstrained() const { return fSteerParam&kVertexConstrained; }
-  Bool_t              HasImproveTracklets() const  { return fSteerParam&kImproveTracklet; }
+  Bool_t              IsCosmic() const { return GetRecoParam()->GetEventSpecie() & AliRecoParam::kCosmic;}
   Bool_t              IsWritingClusters() const  { return fSteerParam&kWriteClusters;}
   Bool_t              IsWritingTracklets() const { return fSteerParam&kWriteTracklets;}
   Bool_t              IsHLT() const              { return fSteerParam&kHLT;}
   Bool_t              IsSeeding() const          { return fSteerParam&kSeeding;}
-  Bool_t              IsCosmic() const           { return fSteerParam&kCosmic;}
-  Bool_t              IsEightSlices() const      { return fSteerParam&kEightSlices;}
-  Bool_t              UseClusterSharing() const  { return fSteerParam&kClusterSharing;}
-  Bool_t              UseLUT() const             { return fSteerParam&kLUT;}
-  Bool_t              UseGAUS() const             { return fSteerParam&kGAUS;}
-  Bool_t              UseTailCancelation() const { return fSteerParam&kTC;}
   Bool_t              IsProcessingTracklets() const { return fSteerParam&kProcTracklets;}
-  
-  static void         Options(UInt_t steer=0, UChar_t *stream=0x0);
+  Bool_t              IsDebugStreaming() const { return fSteerParam&kDebug;}
+
+  static void         Options(UInt_t steer=0);
   virtual void        Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;
   virtual void        Reconstruct(TTree *digitsTree, TTree *clusterTree) const;
 
   static void         SetClusters(TClonesArray *clusters) {fgClusters = clusters;} 
   static void         SetTracklets(TClonesArray *tracklets) {fgTracklets = tracklets;}
   void	              SetOption(Option_t *opt);
-  inline void         SetTCParams(Double_t *par);
-  void                SetStreamLevel(Int_t level, ETRDReconstructorTask task= kTracker);
 
 private:
   static Char_t    *fgSteerNames[kNsteer];//! steering names
   static Char_t    *fgSteerFlags[kNsteer];//! steering flags
-  static Char_t    *fgTaskNames[kNtasks]; //! tasks names
-  static Char_t    *fgTaskFlags[kNtasks]; //! tasks flags
-  UChar_t           fStreamLevel[kNtasks];// stream level for each reconstruction task
+  static Char_t    *fgTaskNames[AliTRDrecoParam::kTRDreconstructionTasks]; //! tasks names
+  static Char_t    *fgTaskFlags[AliTRDrecoParam::kTRDreconstructionTasks]; //! tasks flags
   UInt_t            fSteerParam;          // steering bits
-  Double_t          fTCParams[8];         // Tail Cancellation parameters for drift gases 
-  TTreeSRedirector *fDebugStream[kNtasks];// Debug Streamer container;
+  TTreeSRedirector *fDebugStream[AliTRDrecoParam::kTRDreconstructionTasks];// Debug Streamer container;
  
   static TClonesArray *fgClusters;    // list of clusters for local reconstructor
   static TClonesArray *fgTracklets;   // list of online tracklets for local reconstructor
@@ -117,19 +84,6 @@ private:
 
 };
 
-//___________________________________________________
-inline void AliTRDReconstructor::GetTCParams(Double_t *par) const
-{
-  if(!par) return;
-  if(GetDriftGas()==kAr) memcpy(par, &fTCParams[4], 4*sizeof(Double_t));
-  else memcpy(par, &fTCParams[0], 4*sizeof(Double_t));
-}
 
-//___________________________________________________
-inline void AliTRDReconstructor::SetTCParams(Double_t *par)
-{
-  if(!par) return;
-  memcpy(fTCParams, par, 8*sizeof(Double_t));
-}
 
 #endif

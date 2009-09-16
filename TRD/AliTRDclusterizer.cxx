@@ -99,7 +99,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
 
   // Initialize debug stream
   if(fReconstructor){
-    if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kClusterizer) > 1){
+    if(fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 1){
       TDirectory *savedir = gDirectory; 
       //fgGetDebugStream    = new TTreeSRedirector("TRD.ClusterizerDebug.root");
       savedir->cd();
@@ -634,6 +634,7 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
     fTrackletContainer[1] = new UInt_t[kTrackletChmb]; 
   }
 
+  AliTRDrawStreamBase::SetSubtractBaseline(10);
   AliTRDrawStreamBase *input = AliTRDrawStreamBase::GetRawStream(rawReader);
   if(fReconstructor->IsHLT())
     input->SetSharedPadReadout(kFALSE);
@@ -799,15 +800,15 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Calibration object with the pad status
   fCalPadStatusROC       = calibration->GetPadStatusROC(fDet);
 
-  SetBit(kLUT, fReconstructor->UseLUT());
-  SetBit(kGAUS, fReconstructor->UseGAUS());
+  SetBit(kLUT, fReconstructor->GetRecoParam()->UseLUT());
+  SetBit(kGAUS, fReconstructor->GetRecoParam()->UseGAUS());
   SetBit(kHLT, fReconstructor->IsHLT());
   
   firstClusterROC = -1;
   fClusterROC     =  0;
 
   // Apply the gain and the tail cancelation via digital filter
-  if(fReconstructor->UseTailCancelation()) TailCancelation();
+  if(fReconstructor->GetRecoParam()->UseTailCancelation()) TailCancelation();
 
   MaxStruct curr, last;
   Int_t nMaximas = 0, nCorrupted = 0;
@@ -830,8 +831,8 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   }
   if(last.Row>-1) CreateCluster(last);
 
-  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kClusterizer) > 2){
-    TTreeSRedirector* fDebugStream = fReconstructor->GetDebugStream(AliTRDReconstructor::kClusterizer);
+  if(fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 2 && fReconstructor->IsDebugStreaming()){
+    TTreeSRedirector* fDebugStream = fReconstructor->GetDebugStream(AliTRDrecoParam::kClusterizer);
     (*fDebugStream) << "MakeClusters"
       << "Detector="   << det
       << "NMaxima="    << nMaximas
@@ -1189,7 +1190,7 @@ void AliTRDclusterizer::TailCancelation()
   Double_t *outADC = new Double_t[fTimeTotal];  // ADC data after tail cancellation
 
   fIndexes->ResetCounters();
-  TTreeSRedirector *fDebugStream = fReconstructor->GetDebugStream(AliTRDReconstructor::kClusterizer);
+  TTreeSRedirector *fDebugStream = fReconstructor->GetDebugStream(AliTRDrecoParam::kClusterizer);
   while(fIndexes->NextRCIndex(iRow, iCol))
     {
       Float_t  fCalGainFactorROCValue = fCalGainFactorROC->GetValue(iCol,iRow);
@@ -1204,7 +1205,7 @@ void AliTRDclusterizer::TailCancelation()
           if (fCalPadStatusROC->GetStatus(iCol, iRow)) corrupted = kTRUE;
           inADC[iTime]  /= gain;
           outADC[iTime]  = inADC[iTime];
-      	  if(fReconstructor->GetStreamLevel(AliTRDReconstructor::kClusterizer) > 7){
+      	  if(fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 7 && fReconstructor->IsDebugStreaming()){
       	    (*fDebugStream) << "TailCancellation"
   			      << "col="  << iCol
   			      << "row="  << iRow
@@ -1266,7 +1267,7 @@ void AliTRDclusterizer::DeConvExp(const Double_t *const source, Double_t *const 
   }
   if (nexp == 2) {   // 2 Exponentials
     Double_t par[4];
-    fReconstructor->GetTCParams(par);
+    fReconstructor->GetRecoParam()->GetTCParams(par);
     r1 = par[0];//1.156;
     r2 = par[1];//0.130;
     c1 = par[2];//0.114;

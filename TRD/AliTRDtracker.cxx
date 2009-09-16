@@ -530,7 +530,7 @@ Int_t AliTRDtracker::PropagateBack(AliESDEvent *event)
 		// Debug part of tracking
 		TTreeSRedirector &cstream = *fDebugStreamer;
 		Int_t eventNrInFile = event->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number.
-		if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0) {
+		if (fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0) {
 			if (track->GetBackupTrack()) {
 				cstream << "Tracks"
 				<< "EventNrInFile="  << eventNrInFile
@@ -778,7 +778,7 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
 
       // Add TRD track to ESDfriendTrack - maybe this tracks are
       // not useful for post-processing - TODO make decision
-      if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0)  {
+      if (fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0)  {
         seed->AddCalibObject(new AliTRDtrack(*pt2/*, kTRUE*/));
       }
       delete pt2;
@@ -786,7 +786,7 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
     }
 
     // Add TRD track to ESDfriendTrack
-    if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0)  {
+    if (fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0)  {
       seed->AddCalibObject(new AliTRDtrack(*pt/*, kTRUE*/));
     }
     delete pt;
@@ -1564,7 +1564,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
               isFake = kTRUE;
 	    }
 
-	    if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0) {
+	    if (fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0) {
 	      if ((!isFake) || ((icl3%10) == 0)) {  // Debugging print
 		TTreeSRedirector &cstream = *fDebugStreamer;
 		cstream << "Seeds0"
@@ -2202,7 +2202,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 	    if (1 || (!isFake)) {
 	      Float_t zvertex = GetZ();
 	      TTreeSRedirector &cstream = *fDebugStreamer;
-	      if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0) {
+	      if (fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0) {
 	        cstream << "Seeds1"
 			<< "isFake="     << isFake
 			<< "Vertex="     << zvertex
@@ -2423,7 +2423,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 	  esdtrack.UpdateTrackParams(track,AliESDtrack::kTRDout);
 	  esdtrack.SetLabel(label);
 	  esd->AddTrack(&esdtrack);	
-	  if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0) {
+	  if (fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0) {
 	    cstream << "Tracks"
 		    << "EventNrInFile="  << eventNrInFile
 		    << "ESD.="     << &esdtrack
@@ -2433,7 +2433,7 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESDEvent *esd)
 	  }
 	}
 
-	if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0) {
+	if (fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0) {
 	  cstream << "Seeds2"
 		  << "Iter="      << jter
 		  << "Track.="    << track
@@ -3665,7 +3665,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
   TGraph graphy(t1-t0,x,yt);
   TGraph graphz(t1-t0,x,zt);
 
-  if (fReconstructor->GetStreamLevel(AliTRDReconstructor::kTracker) > 0) {
+  if (fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 0) {
     cstream << "tracklet"
 	    << "track.="      << track              // Track parameters
 	    << "tany="        << tany               // Tangent of the local track angle 

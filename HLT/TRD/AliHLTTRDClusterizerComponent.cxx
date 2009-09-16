@@ -541,8 +541,8 @@ int AliHLTTRDClusterizerComponent::SetParams()
       return -EINVAL;
     }
 
+  fRecoParam->SetStreamLevel(AliTRDrecoParam::kClusterizer, 0);
   fReconstructor->SetRecoParam(fRecoParam);
-  fReconstructor->SetStreamLevel(0, AliTRDReconstructor::kClusterizer);
 
   HLTDebug("Reconstructor options are: %s",recoOptions.Data());
   fReconstructor->SetOption(recoOptions.Data());
