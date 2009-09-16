@@ -112,6 +112,10 @@ AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
   fOverThreshold10(0),
   fOverThreshold20(0),
   fOverThreshold30(0),
+  fHistQVsTimeSideA(0),
+  fHistQVsTimeSideC(0),
+  fHistQMaxVsTimeSideA(0),
+  fHistQMaxVsTimeSideC(0),
   fEventCounter(0),
   fIsAnalysed(kFALSE),
   fAllBins(0),
@@ -145,6 +149,10 @@ fTimePosition(0),
 fOverThreshold10(0),
 fOverThreshold20(0),
 fOverThreshold30(0),
+fHistQVsTimeSideA(0),
+fHistQVsTimeSideC(0),
+fHistQMaxVsTimeSideA(0),
+fHistQMaxVsTimeSideC(0),
 fEventCounter(0),
 fIsAnalysed(kFALSE),
 fAllBins(0),
@@ -179,6 +187,10 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
   fOverThreshold10(0),
   fOverThreshold20(0),
   fOverThreshold30(0),
+  fHistQVsTimeSideA(0),
+  fHistQVsTimeSideC(0),
+  fHistQMaxVsTimeSideA(0),
+  fHistQMaxVsTimeSideC(0),
   fEventCounter(ped.GetEventCounter()),
   fIsAnalysed(ped.GetIsAnalysed()),
   fAllBins(0),
@@ -211,6 +223,14 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
     fOverThreshold20  = new AliTPCCalPad(*ped.GetOverThreshold20());
   if(ped.GetOverThreshold30())
     fOverThreshold30  = new AliTPCCalPad(*ped.GetOverThreshold30());
+  if(ped.GetHistQVsTimeSideA())
+    fHistQVsTimeSideA = new TProfile(*ped.GetHistQVsTimeSideA());
+  if(ped.GetHistQVsTimeSideC())
+    fHistQVsTimeSideC = new TProfile(*ped.GetHistQVsTimeSideC());
+  if(ped.GetHistQMaxVsTimeSideA())
+    fHistQMaxVsTimeSideA = new TProfile(*ped.GetHistQMaxVsTimeSideA());
+  if(ped.GetHistQMaxVsTimeSideC())
+    fHistQMaxVsTimeSideC = new TProfile(*ped.GetHistQMaxVsTimeSideC());
 }
 
 //_____________________________________________________________________
@@ -233,6 +253,10 @@ AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/
   fOverThreshold10(0),
   fOverThreshold20(0),
   fOverThreshold30(0),
+  fHistQVsTimeSideA(0),
+  fHistQVsTimeSideC(0),
+  fHistQMaxVsTimeSideA(0),
+  fHistQMaxVsTimeSideC(0),
   fEventCounter(0),
   fIsAnalysed(kFALSE),
   fAllBins(0),
@@ -285,6 +309,10 @@ AliTPCdataQA::~AliTPCdataQA() /*FOLD00*/
   delete fOverThreshold10;
   delete fOverThreshold20;
   delete fOverThreshold30;
+  delete fHistQVsTimeSideA;
+  delete fHistQVsTimeSideC;
+  delete fHistQMaxVsTimeSideA;
+  delete fHistQMaxVsTimeSideC;
 
   for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
     delete [] fAllBins[iRow];
@@ -546,6 +574,15 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
   if (!fOverThreshold10) fOverThreshold10 = new AliTPCCalPad("OverThreshold10","OverThreshold10");
   if (!fOverThreshold20) fOverThreshold20 = new AliTPCCalPad("OverThreshold20","OverThreshold20");
   if (!fOverThreshold30) fOverThreshold30 = new AliTPCCalPad("OverThreshold30","OverThreshold30");
+  if (!fHistQVsTimeSideA)
+    fHistQVsTimeSideA  = new TProfile("hQVsTimeSideA", "Q vs time (side A); Time [Timebin]; Q [ADC ch]", 100, 0, 1000);
+  if (!fHistQVsTimeSideC)
+    fHistQVsTimeSideC  = new TProfile("hQVsTimeSideC", "Q vs time (side C); Time [Timebin]; Q [ADC ch]", 100, 0, 1000);
+  if (!fHistQMaxVsTimeSideA)
+    fHistQMaxVsTimeSideA  = new TProfile("hQMaxVsTimeSideA", "Q_{MAX} vs time (side A); Time [Timebin]; Q_{MAX} [ADC ch]", 100, 0, 1000);
+  if (!fHistQMaxVsTimeSideC)
+    fHistQMaxVsTimeSideC  = new TProfile("hQMaxVsTimeSideC", "Q_{MAX} vs time (side C); Time [Timebin]; Q_{MAX} [ADC ch]", 100, 0, 1000);
+  
   // Make the arrays for expanding the data
 
   if (!fAllBins)
@@ -745,6 +782,13 @@ void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
       count = fNPads->GetCalROC(iSector)->GetValue(iRow, iPad);
       fNPads->GetCalROC(iSector)->SetValue(iRow, iPad, count + maxP-minP+1);
       
+      if((iSector%36)<18) { // A side
+	fHistQVsTimeSideA->Fill(iTimeBin, qTot);
+	fHistQMaxVsTimeSideA->Fill(iTimeBin, qMax);
+      } else {
+	fHistQVsTimeSideC->Fill(iTimeBin, qTot);
+	fHistQMaxVsTimeSideC->Fill(iTimeBin, qMax);      
+      }
     } // end loop over signals
   } // end loop over rows
   
@@ -867,9 +911,9 @@ void AliTPCdataQA::CleanArrays(){
       Int_t* sigBins   = fAllSigBins[iRow];
       const Int_t nSignals = fAllNSigBins[iRow];
       for(Int_t i = 0; i < nSignals; i++)
-	allBins[sigBins[i]]=0;
-      
+	allBins[sigBins[i]]=0;      
     } else {
+
       Int_t maxBin = (fTimeBinsMax+4)*(fPadsMax+4); 
       memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
     }

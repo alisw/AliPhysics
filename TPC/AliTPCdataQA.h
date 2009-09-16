@@ -6,6 +6,7 @@
 
 
 #include <TH1F.h>
+#include <TProfile.h>
 #include <TObjArray.h>
 #include "AliRecoParam.h"
 
@@ -61,6 +62,10 @@ public:
   AliTPCCalPad *GetNTimeBins() const { return fNTimeBins;}
   AliTPCCalPad *GetNPads() const { return fNPads;}
   AliTPCCalPad *GetTimePosition() const { return fTimePosition;}
+  TProfile* GetHistQVsTimeSideA()    const {return fHistQVsTimeSideA;}
+  TProfile* GetHistQVsTimeSideC()    const {return fHistQVsTimeSideC;}
+  TProfile* GetHistQMaxVsTimeSideA() const {return fHistQMaxVsTimeSideA;}
+  TProfile* GetHistQMaxVsTimeSideC() const {return fHistQMaxVsTimeSideC;}
 
   //
   AliTPCAltroMapping **GetAltroMapping() { return fMapping; };
@@ -113,6 +118,11 @@ private:
   AliTPCCalPad * fOverThreshold20;  //! local maxima with qMax over threshold
   AliTPCCalPad * fOverThreshold30;  //! local maxima with qMax over threshold
 
+  TProfile* fHistQVsTimeSideA;      // Q vs time (side A)
+  TProfile* fHistQVsTimeSideC;	    // Q vs time (side C)
+  TProfile* fHistQMaxVsTimeSideA;   // QMax vs time (side A)
+  TProfile* fHistQMaxVsTimeSideC;   // QMax vs time (side C)
+
   Int_t   fEventCounter;            // event Counter
   Bool_t  fIsAnalysed;              // Set to true after Analyse has been called
   //
@@ -127,7 +137,7 @@ private:
 
 
 public:
-  ClassDef(AliTPCdataQA, 3)  // Implementation of the TPC pedestal and noise calibration
+  ClassDef(AliTPCdataQA, 4)  // Implementation of the TPC pedestal and noise calibration
 };
 
 
