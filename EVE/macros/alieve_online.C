@@ -43,6 +43,7 @@ void alieve_online_init()
   gROOT->LoadMacro("its_raw.C");
   gROOT->LoadMacro("tpc_raw.C");
   gROOT->LoadMacro("tof_raw.C");
+  gROOT->LoadMacro("vzero_raw.C");
 
   TEveUtil::AssertMacro("VizDB_scan.C");
 
@@ -155,6 +156,9 @@ void alieve_online_on_new_event()
 
   if (AliEveEventManager::HasRawReader())
     acorde_raw();
+
+  if (AliEveEventManager::HasRawReader())
+    vzero_raw();
 
   primary_vertex();
   esd_tracks();
