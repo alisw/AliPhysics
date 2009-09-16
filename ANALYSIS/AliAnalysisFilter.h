@@ -26,6 +26,7 @@ class AliAnalysisFilter : public TNamed
     virtual ~AliAnalysisFilter() {;}
     virtual UInt_t IsSelected(TObject* obj);
     virtual UInt_t IsSelected(TList* obj);
+    virtual Bool_t IsSelected(char* name);
     virtual void AddCuts(AliAnalysisCuts* cuts);
     virtual void Init();
     TList*  GetCuts() const {return fCuts;}

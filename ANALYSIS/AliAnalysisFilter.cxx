@@ -81,7 +81,7 @@ UInt_t AliAnalysisFilter::IsSelected(TObject* obj)
 	if ((filterMask = cuts->GetFilterMask()) > 0) {
 	    acc = (acc && (filterMask & result));
 	}
-	
+	cuts->SetSelected(acc);
 	if (acc) {result |= iCutB & 0x00ffffff;}
 	iCutB *= 2;
     }  
@@ -95,12 +95,18 @@ UInt_t AliAnalysisFilter::IsSelected(TList* list)
     // Loop over all set of cuts
     // and store the decision
     UInt_t result = 0;
+    UInt_t filterMask;
+
     TIter next(fCuts);
     AliAnalysisCuts *cuts;
     Int_t iCutB = 1;
 	
     while((cuts = (AliAnalysisCuts*)next())) {
 	Bool_t acc = cuts->IsSelected(list);
+	if ((filterMask = cuts->GetFilterMask()) > 0) {
+	    acc = (acc && (filterMask & result));
+	}
+	cuts->SetSelected(acc);
 	if (acc) {result |= iCutB & 0x00ffffff;}
 	iCutB *= 2;
     }  
@@ -121,4 +127,12 @@ void AliAnalysisFilter::AddCuts(AliAnalysisCuts* cuts)
 {
     // Add a set of cuts
     fCuts->Add(cuts);
+}
+
+Bool_t AliAnalysisFilter::IsSelected(char* name)
+{
+    //
+    // Returns current result for cut with name
+    AliAnalysisCuts* cut = (AliAnalysisCuts*) (fCuts->FindObject(name));
+    return (cut->Selected());
 }
