@@ -35,6 +35,8 @@
 #include "TList.h"
 #include "TRefArray.h"
 #include <TNamed.h>
+#include <TROOT.h>
+#include <TInterpreter.h>
 
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
@@ -1536,6 +1538,37 @@ void AliESDEvent::CopyFromOldESD()
     }
 
   }// if fesdold
+}
+
+Bool_t AliESDEvent::IsEventSelected(const char *trigExpr) const
+{
+  // Check if the event satisfies the trigger
+  // selection expression trigExpr.
+  // trigExpr can be any logical expression
+  // of the trigger classes defined in AliESDRun
+  // In case of wrong syntax return kTRUE.
+
+  TString expr(trigExpr);
+  if (expr.IsNull()) return kTRUE;
+
+  ULong64_t mask = GetTriggerMask();
+  for(Int_t itrig = 0; itrig < AliESDRun::kNTriggerClasses; itrig++) {
+    if (mask & (1ull << itrig)) {
+      expr.ReplaceAll(GetESDRun()->GetTriggerClass(itrig),"1");
+    }
+    else {
+      expr.ReplaceAll(GetESDRun()->GetTriggerClass(itrig),"0");
+    }
+  }
+
+  Int_t error;
+  if ((gROOT->ProcessLineFast(expr.Data(),&error) == 0) &&
+      (error == TInterpreter::kNoError)) {
+    return kFALSE;
+  }
+
+  return kTRUE;
+
 }
 
 TObject*  AliESDEvent::GetHLTTriggerDecision() const
