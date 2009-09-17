@@ -37,7 +37,7 @@ void AliDimIntNotifier::StartTimer()
 {
   fReThreader.Reset();
   fReThreader.TurnOn();
-  pthread_kill(fgMainThreadId, SIGALRM); 
+  pthread_kill((pthread_t)fgMainThreadId, SIGALRM); 
 }
 
 void AliDimIntNotifier::StopTimer()
