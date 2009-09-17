@@ -19,7 +19,7 @@ struct equipmentHeaderStruct;
 
 class AliRawReaderDate: public AliRawReader {
   public :
-    AliRawReaderDate(void* event);
+    AliRawReaderDate(void* event, Bool_t owner = kFALSE);
     AliRawReaderDate(const char* fileName, Int_t eventNumber = -1);
     virtual ~AliRawReaderDate();
 
@@ -62,6 +62,8 @@ class AliRawReaderDate: public AliRawReader {
 
     UChar_t*         fPosition;     // current position in the raw data
     UChar_t*         fEnd;          // end position of the current data block
+
+    Bool_t           fOwner;        // is raw-reader owner of the raw event or not
 
   private:
     AliRawReaderDate(const AliRawReaderDate& rawReader);

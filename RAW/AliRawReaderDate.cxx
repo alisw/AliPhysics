@@ -34,9 +34,9 @@ ClassImp(AliRawReaderDate)
 
 AliRawReaderDate::AliRawReaderDate(
 #ifdef ALI_DATE
-				   void* event
+				   void* event, Bool_t owner
 #else
-				   void* /* event */
+				   void* /* event */, Bool_t owner
 #endif
 				   ) :
   fFile(NULL),
@@ -44,7 +44,8 @@ AliRawReaderDate::AliRawReaderDate(
   fSubEvent(NULL),
   fEquipment(NULL),
   fPosition(NULL),
-  fEnd(NULL)
+  fEnd(NULL),
+  fOwner(owner)
 {
 // create an object to read digits from the given date event
 
@@ -68,7 +69,8 @@ AliRawReaderDate::AliRawReaderDate(
   fSubEvent(NULL),
   fEquipment(NULL),
   fPosition(NULL),
-  fEnd(NULL)
+  fEnd(NULL),
+  fOwner(kTRUE)
 {
 // create an object to read digits from the given date event
 
@@ -107,7 +109,8 @@ AliRawReaderDate::AliRawReaderDate(const AliRawReaderDate& rawReader) :
   fSubEvent(rawReader.fSubEvent),
   fEquipment(rawReader.fEquipment),
   fPosition(rawReader.fPosition),
-  fEnd(rawReader.fEnd)
+  fEnd(rawReader.fEnd),
+  fOwner(rawReader.fOwner)
 
 {
 // copy constructor
@@ -129,7 +132,7 @@ AliRawReaderDate::~AliRawReaderDate()
 // destructor
 
 #ifdef ALI_DATE
-  if (fEvent) delete[] fEvent;
+  if (fEvent && fOwner) delete[] fEvent;
   if (fFile) {
     fclose(fFile);
   }
@@ -651,7 +654,7 @@ AliRawReader* AliRawReaderDate::CloneSingleEvent() const
     if (evSize) {
       UChar_t *newEvent = new UChar_t[evSize];
       memcpy(newEvent,fEvent,evSize);
-      return new AliRawReaderDate((void *)newEvent);
+      return new AliRawReaderDate((void *)newEvent,kTRUE);
     }
   }
 #else
