@@ -495,10 +495,11 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	}
 	if(type == 7  ) GetRawsData(ik+244)->Fill(nhitsPMT);
       }
+      if(type == 7  ) GetRawsData(212)->Fill(numPmtC);
       Int_t numPmtA=0;    
        for (Int_t ik = 12; ik<24; ik++) {
 	//	for (Int_t iHt=0; iHt<1; iHt++) {
-	if(allData[ik+1][0]>0 && type == 7 ) numPmtA++;
+	if(allData[ik+45][0]>0 && type == 7 ) numPmtA++;
 	Int_t nhitsPMT=0;
 	if(allData[ik+1][0]>0) numPmtA++;
 	for (Int_t iHt=0; iHt<5; iHt++) {
@@ -542,7 +543,8 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	if(type == 7  ) GetRawsData(ik+244)->Fill(nhitsPMT);
 
       }
-      
+       if(type == 7  ) GetRawsData(211)->Fill(numPmtA);
+
       Int_t trChannel[6] = {49,50,51,52,55,56};  
        
       if(type == 7)
