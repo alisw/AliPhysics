@@ -27,6 +27,11 @@ set(SRCS
       Cal/AliTRDCalDCS.cxx
       Cal/AliTRDCalDCSFEE.cxx
       Cal/AliTRDCalDCSPTR.cxx
+      Cal/AliTRDCalDCSGTUBoardInfo.cxx
+      Cal/AliTRDCalDCSGTUCtpOpc.cxx
+      Cal/AliTRDCalDCSGTUSegment.cxx
+      Cal/AliTRDCalDCSGTUTgu.cxx
+      Cal/AliTRDCalDCSGTUTmu.cxx
       Cal/AliTRDCalDCSGTU.cxx
       Cal/AliTRDCalPID.cxx
       Cal/AliTRDCalPIDLQ.cxx
