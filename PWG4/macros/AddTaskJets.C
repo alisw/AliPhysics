@@ -46,7 +46,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius)
    // Connect jet finder to task.
    jetana->SetJetFinder(jetFinder);
    jetana->SetConfigFile("");
-   jetana->SetDebugLevel(10);
+   jetana->SetDebugLevel(0);
    mgr->AddTask(jetana);
 
    // Create ONLY the output containers for the data produced by the task.
