@@ -5,8 +5,8 @@ reference run: /alice/data/2009/LHC09b_PHOS/000075883/raw/09000075883017.20.root
 run type: PHYSICS
 DA type: MON 
 number of events needed: 1000
-input files: RCU0.data  RCU1.data  RCU2.data  RCU3.data  zs.txt
-Output files: PHOS_ModuleN_Calib.root, where N is the module number (0-5).
+input files: Mod0RCU0.data Mod0RCU1.data Mod0RCU2.data Mod0RCU3.data Mod1RCU0.data Mod1RCU1.data Mod1RCU2.data Mod1RCU3.data Mod2RCU0.data Mod2RCU1.data Mod2RCU2.data Mod2RCU3.data Mod3RCU0.data Mod3RCU1.data Mod3RCU2.data Mod3RCU3.data Mod4RCU0.data Mod4RCU1.data Mod4RCU2.data Mod4RCU3.data zs.txt
+Output files: PHOS_ModuleN_Calib.root, where N is the module number (0-5), PHOS_Calib.root 
 Trigger types used: PHYSICS
 */
 
@@ -66,9 +66,30 @@ int main(int argc, char **argv) {
   }
   
   /* Retrieve mapping files from DAQ DB */ 
-  const char* mapFiles[4] = {"RCU0.data","RCU1.data","RCU2.data","RCU3.data"};
+  const char* mapFiles[20] = {
+    "Mod0RCU0.data",
+    "Mod0RCU1.data",
+    "Mod0RCU2.data",
+    "Mod0RCU3.data",
+    "Mod1RCU0.data",
+    "Mod1RCU1.data",
+    "Mod1RCU2.data",
+    "Mod1RCU3.data",
+    "Mod2RCU0.data",
+    "Mod2RCU1.data",
+    "Mod2RCU2.data",
+    "Mod2RCU3.data",
+    "Mod3RCU0.data",
+    "Mod3RCU1.data",
+    "Mod3RCU2.data",
+    "Mod3RCU3.data",
+    "Mod4RCU0.data",
+    "Mod4RCU1.data",
+    "Mod4RCU2.data",
+    "Mod4RCU3.data"
+  };
   
-  for(Int_t iFile=0; iFile<4; iFile++) {
+  for(Int_t iFile=0; iFile<20; iFile++) {
     int failed = daqDA_DB_getFile(mapFiles[iFile], mapFiles[iFile]);
     if(failed) { 
       printf("Cannot retrieve file %s from DAQ DB. Exit.\n",mapFiles[iFile]);
@@ -77,15 +98,26 @@ int main(int argc, char **argv) {
   }
   
   /* Open mapping files */
-  AliAltroMapping *mapping[4];
+  AliAltroMapping *mapping[20];
   TString path = "./";
-  path += "RCU";
+  
+  path += "Mod";
   TString path2;
-  for(Int_t i = 0; i < 4; i++) {
+  TString path3;
+  Int_t iMap = 0;
+  
+  for(Int_t iMod = 0; iMod < 5; iMod++) {
     path2 = path;
-    path2 += i;
-    path2 += ".data";
-    mapping[i] = new AliCaloAltroMapping(path2.Data());
+    path2 += iMod;
+    path2 += "RCU";
+    
+    for(Int_t iRCU=0; iRCU<4; iRCU++) {
+      path3 = path2;
+      path3 += iRCU;
+      path3 += ".data";
+      mapping[iMap] = new AliCaloAltroMapping(path3.Data());
+      iMap++;
+    }
   }
   
   /* define data source : this is argument 1 */  
@@ -181,7 +213,21 @@ int main(int argc, char **argv) {
       
       while (stream.NextDDL()) {
 	while (stream.NextChannel()) {
-
+	  
+	  /* Retrieve ZS parameters from data*/
+	  if(failZS) {
+	    short value = stream.GetAltroCFG1();
+	    bool ZeroSuppressionEnabled = (value >> 15) & 0x1;
+	    bool AutomaticBaselineSubtraction = (value >> 14) & 0x1;
+	    if(ZeroSuppressionEnabled) {
+	      offset = (value >> 10) & 0xf;
+	      threshold = value & 0x3ff;
+	      fitter.SubtractPedestals(kFALSE);
+	      fitter.SetAmpOffset(offset);
+	      fitter.SetAmpThreshold(threshold);
+	    }
+	  }
+	  
 	  cellX    = stream.GetCellX();
 	  cellZ    = stream.GetCellZ();
 	  caloFlag = stream.GetCaloFlag();  // 0=LG, 1=HG, 2=TRU
@@ -246,22 +292,47 @@ int main(int argc, char **argv) {
     }
   }
   
-  for(Int_t i = 0; i < 4; i++) delete mapping[i];  
+  for(Int_t i = 0; i < 20; i++) delete mapping[i];  
   
   /* Be sure that all histograms are saved */
-  
-  char localfile[128];
   
   for(Int_t iMod=0; iMod<5; iMod++) {
     if(!dAs[iMod]) continue;
     
-    dAs[iMod]->UpdateHistoFile();
-    dAs[iMod]->SetWriteToFile(kFALSE);    
+    printf("DA1 for module %d detected.\n",iMod);
     
-    /* Store output files to the File Exchange Server */
-    sprintf(localfile,"PHOS_Module%d_Calib.root",iMod);
-    daqDA_FES_storeFile(localfile,"AMPLITUDES");
+    dAs[iMod]->UpdateHistoFile();
+    dAs[iMod]->SetWriteToFile(kFALSE);       
   }
+  
+  const TH2F* h2=0;
+  const TH1F* h1=0;
+  char localfile[128];
+  
+  sprintf(localfile,"PHOS_Calib.root");
+  TFile* f = new TFile(localfile,"recreate");
+  
+  for(Int_t iMod=0; iMod<5; iMod++) {
+    if(!dAs[iMod]) continue;
+    
+    for(Int_t iX=0; iX<64; iX++) {
+      for(Int_t iZ=0; iZ<56; iZ++) {
+	
+	h1 = dAs[iMod]->GetHgLgRatioHistogram(iX,iZ); // High Gain/Low Gain ratio
+	if(h1) h1->Write(); 
+	
+	for(Int_t iGain=0; iGain<2; iGain++) {
+	  h2 = dAs[iMod]->GetTimeEnergyHistogram(iX,iZ,iGain); // Time vs Energy
+	  if(h2) h2->Write();
+	}
+      }
+    }
+  }
+  
+  f->Close();
+  
+  /* Store output files to the File Exchange Server */
+  daqDA_FES_storeFile(localfile,"AMPLITUDES");
   
   return status;
 }
