@@ -33,14 +33,10 @@
 
 // --- ROOT system ---
 #include "TArrayD.h"
+#include "TArrayI.h"
 #include "TList.h"
 #include "TMath.h"
 #include "TMinuit.h"
-#include "TCanvas.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TF1.h"
-#include "TROOT.h"
 
 // --- AliRoot header files ---
 #include "AliLog.h"
@@ -151,8 +147,8 @@ Bool_t AliPHOSRawFitterv1::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       pedMean += signal[i];
       pedRMS  += signal[i]*signal[i] ;
     }
-    fSamples->AddAt(signal[i],i);
-    fTimes  ->AddAt(       i ,i);
+    fSamples->AddAt(signal[i],sigLength-i-1);
+    fTimes  ->AddAt(i ,i);
   }
 
   fEnergy = -111;
@@ -187,6 +183,10 @@ Bool_t AliPHOSRawFitterv1::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   }
 
   if (fEnergy < kBaseLine) fEnergy = 0;
+  //Evaluate time
+  Int_t iStart = 0;
+  while(iStart<sigLength && fSamples->At(iStart)-pedestal <kBaseLine) iStart++ ;
+  fTime = sigStart-sigLength+iStart; 
   
   //calculate time and energy
   Int_t    maxBin=0 ;
@@ -261,7 +261,7 @@ Bool_t AliPHOSRawFitterv1::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       fSampleParamsLow->AddAt(double(maxAmp),5) ;
     else
       fSampleParamsLow->AddAt(double(1023),5) ;
-    fSampleParamsLow->AddAt(double(sigLength),6) ;
+    fSampleParamsLow->AddAt(double(iStart),6) ;
     fToFit->AddFirst((TObject*)fSampleParamsLow) ; 
     b=fSampleParamsLow->At(2) ;
     bmin=0.5 ;
@@ -273,7 +273,7 @@ Bool_t AliPHOSRawFitterv1::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       fSampleParamsHigh->AddAt(double(maxAmp),5) ;
     else
       fSampleParamsHigh->AddAt(double(1023),5);
-    fSampleParamsHigh->AddAt(double(sigLength),6);
+    fSampleParamsHigh->AddAt(double(iStart),6);
     fToFit->AddFirst((TObject*)fSampleParamsHigh) ; 
     b=fSampleParamsHigh->At(2) ;
     bmin=0.05 ;
@@ -361,8 +361,8 @@ Bool_t AliPHOSRawFitterv1::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
     fQuality /= 0.75 + 0.0025*fEnergy ;
   
   fEnergy = efit ;
-  fTime   = t0 - 4.024*bfit ; //-10.402*bfit+4.669*bfit*bfit ; //Correction for 70 samples
-  fTime  += sigStart;
+  fTime  += t0 - 4.024*bfit ; //-10.402*bfit+4.669*bfit*bfit ; //Correction for 70 samples
+//  fTime  += sigStart;
   
   delete fSamples ;
   delete fTimes ;
