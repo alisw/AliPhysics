@@ -563,7 +563,6 @@ Bool_t AliTRDclusterizer::MakeClusters()
     if (!digitsIn->HasData()) continue;
     digitsIn->Expand();
     // Subtract the ADC baseline
-    printf("----> baseline = %d\n",fDigitsManager->GetDigitsParam()->GetADCbaseline());
     digitsIn->SubtractBaseline(fDigitsManager->GetDigitsParam()->GetADCbaseline());
     digitsIn->DeleteNegatives();  // Restore digits array to >=0 values
     AliTRDSignalIndex* indexes = fDigitsManager->GetIndexes(i);
@@ -740,7 +739,6 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   if (!fDigits->HasData()) return kFALSE;
 
   // Subtract the ADC baseline
-  printf("----> baseline = %d\n",fDigitsManager->GetDigitsParam()->GetADCbaseline());
   fDigits->SubtractBaseline(fDigitsManager->GetDigitsParam()->GetADCbaseline());
 
   fIndexes = fDigitsManager->GetIndexes(det);
