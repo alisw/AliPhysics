@@ -1,6 +1,6 @@
 TChain *MakeAODInputChain(const char* collectionfileAOD,
 			  const char* collectionfileAODfriend,Int_t nfiles=-1,
-			  Bool_t stdoutCheck=kTRUE) {
+			  Bool_t stdoutCheck=kFALSE) {
   //
   // Check one-to-one correspondence of the two collections
   // Create AOD chain with friend AODVertexingHF chain
@@ -176,7 +176,7 @@ TChain *MakeAODInputChain(const char* pathname="",
 //----------------------------------------------------------------------------
 TFileCollection* MakeRootArchFileCollection(const char* collectionfileAOD,
 					    Int_t nfiles=-1,
-					    Bool_t stdoutCheck=kTRUE) {
+					    Bool_t stdoutCheck=kFALSE) {
 
   // METHOD USEFUL FOR ANALYSIS ON THE CAF
   // Check the presence of both AliAOD.root and AODVertexingHF.root files
@@ -236,7 +236,7 @@ void StageToCAF(TString xmlcoll="collAODLHC08x.xml",
 
   // find -x collAODLHC08x -z /alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/* AliAOD.root > collAODLHC08x.xml
 
-  TFileCollection *proofColl = MakeRootArchFileCollection(xmlcoll.Data(),nfiles);
+  TFileCollection *proofColl = MakeRootArchFileCollection(xmlcoll.Data(),nfiles,KTRUE);
   proofColl->SetAnchor("AliAOD.root");
 
   gEnv->SetValue("XSec.GSI.DelegProxy","2");
