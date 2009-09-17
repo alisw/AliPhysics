@@ -877,69 +877,6 @@ AliFMDReconstructor::FillESD(AliRawReader*, TTree* clusterTree,
   TTree* dummy = 0;
   FillESD(dummy, clusterTree, esd);
 }
-//_____________________________________________________________________
-Bool_t AliFMDReconstructor::GetFMDAsideBit(AliESDFMD* fmd) {
-
-  AliFMDParameters* pars = AliFMDParameters::Instance();
-  Float_t totalMult = 0;
-  for(UShort_t det=1;det<=2;det++) {
-    Int_t nRings = (det == 1 ? 1 : 2);
-    for (UShort_t ir = 0; ir < nRings; ir++) {
-      Char_t   ring = (ir == 0 ? 'I' : 'O');
-      UShort_t nsec = (ir == 0 ? 20  : 40);
-      UShort_t nstr = (ir == 0 ? 512 : 256);
-      for(UShort_t sec =0; sec < nsec;  sec++)  {
-	for(UShort_t strip = 0; strip < nstr; strip++) {
-	  Float_t mult = fmd->Multiplicity(det,ring,sec,strip);
-	  if(mult == AliESDFMD::kInvalidMult) continue;
-	  
-	  if(mult > pars->GetOfflineTriggerLowCut())
-	    totalMult = totalMult + mult;
-	  else
-	    {
-	      if( totalMult > pars->GetOfflineTriggerHitCut()) {
-		return kTRUE;
-	      }
-	      else totalMult = 0 ;
-	    }
-	}
-      }
-    }
-  }
-  return kFALSE;
-  
-}
-//_____________________________________________________________________
-Bool_t AliFMDReconstructor::GetFMDCsideBit(AliESDFMD* fmd) {
-  
-  AliFMDParameters* pars = AliFMDParameters::Instance();
-  Float_t totalMult = 0;
-  UShort_t det = 3;
-  Int_t nRings = 2;
-  for (UShort_t ir = 0; ir < nRings; ir++) {
-    Char_t   ring = (ir == 0 ? 'I' : 'O');
-    UShort_t nsec = (ir == 0 ? 20  : 40);
-    UShort_t nstr = (ir == 0 ? 512 : 256);
-    for(UShort_t sec =0; sec < nsec;  sec++)  {
-      for(UShort_t strip = 0; strip < nstr; strip++) {
-	Float_t mult = fmd->Multiplicity(det,ring,sec,strip);
-	if(mult == AliESDFMD::kInvalidMult) continue;
-	
-	if(mult > pars->GetOfflineTriggerLowCut())
-	  totalMult = totalMult + mult;
-	else
-	  {
-	    if( totalMult > pars->GetOfflineTriggerHitCut()) {
-	      return kTRUE;
-	    }
-	    else totalMult = 0 ;
-	  }
-      }
-    }
-  }
- 
-  return kFALSE;
-}
 //____________________________________________________________________
 //
 // EOF

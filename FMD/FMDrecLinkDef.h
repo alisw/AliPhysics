@@ -25,6 +25,7 @@
 #pragma link C++ class  AliFMDRawStream+;
 #pragma link C++ class  AliFMDRawReader+;
 #pragma link C++ class  AliFMDQADataMakerRec+;
+#pragma link C++ class  AliFMDOfflineTrigger+;
 
 #else
 # error Not for compilation 
