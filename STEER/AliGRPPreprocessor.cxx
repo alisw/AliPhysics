@@ -698,7 +698,7 @@ Int_t AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, AliGRPObject* grpObj)
 	nDipoleEntries = ProcessDipoleDPs(valueMap, grpObj);
 	nEnvEntries = ProcessEnvDPs(valueMap, grpObj);
 	nHallProbesEntries = ProcessHPDPs(valueMap, grpObj);
-
+	grpObj->SetPolarityConventionLHC();  // after the dipole cables swap we comply with LHC convention
 	entries = nLHCEntries + nL3Entries + nDipoleEntries + nEnvEntries + nHallProbesEntries;
 	return entries;
 
