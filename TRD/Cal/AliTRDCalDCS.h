@@ -33,7 +33,7 @@ class AliTRDCalDCS : public TNamed {
   void    EvaluateGlobalParameters();
   void    SetFEEArr(TObjArray * const fa)      { fFEEArr              = fa;    }
   void    SetPTRArr(TObjArray * const pa)      { fPTRArr              = pa;    }
-  void    SetGTUArr(TObjArray * const ga)      { fGTUArr              = ga;    }
+  void    SetGTUObj(AliTRDCalDCSGTU *go)       { fGTUObj              = go;    }
   
   Int_t   GetGlobalNumberOfTimeBins() const    { return fGNumberOfTimeBins;    }
   Int_t   GetGlobalConfigTag() const           { return fGConfigTag;           }
@@ -52,16 +52,15 @@ class AliTRDCalDCS : public TNamed {
   TString GetGlobalTrackletMode() const        { return fGTrackletMode;        }
   TString GetGlobalTrackletDef() const         { return fGTrackletDef;         }
   TString GetGlobalTriggerSetup() const        { return fGTriggerSetup;        }
-  TString GetGlobalAddOptions() const          { return fGAddOptions;           } 
+  TString GetGlobalAddOptions() const          { return fGAddOptions;          }
   TObjArray*       GetFEEArr() const           { return fFEEArr;               }
   TObjArray*       GetPTRArr() const           { return fPTRArr;               }
-  TObjArray*       GetGTUArr() const           { return fGTUArr;               }
   AliTRDCalDCSFEE* GetCalDCSFEEObj(Int_t det) 
   		  	          { return (AliTRDCalDCSFEE*)fFEEArr->At(det); }
   AliTRDCalDCSPTR* GetCalDCSPTRObj(Int_t det) 
   			          { return (AliTRDCalDCSPTR*)fPTRArr->At(det); }
-  AliTRDCalDCSGTU* GetCalDCSGTUObj(Int_t det) 
-           		          { return (AliTRDCalDCSGTU*)fGTUArr->At(det); }
+  AliTRDCalDCSGTU* GetGTUObj() 
+           		          { return (AliTRDCalDCSGTU*)fGTUObj;          }
 
  protected:
 
@@ -84,11 +83,13 @@ class AliTRDCalDCS : public TNamed {
   TString fGTrackletDef;         // definition for tracklet mode trk (empty if diverse)
   TString fGTriggerSetup;        // trigger setup (ptrg, autotrg, autol0) (empty if diverse)
   TString fGAddOptions;          // additional options (nopm, nion) (empty if diverse)
+
   
   //individual configuration parameters
   TObjArray *fFEEArr; // config param of the individual chambers
   TObjArray *fPTRArr; // config param of the pretrigger
-  TObjArray *fGTUArr; // config param of the GTU
+
+  AliTRDCalDCSGTU *fGTUObj;
 
   ClassDef(AliTRDCalDCS,2)         //  TRD calibration class for TRD DCS parameters
 

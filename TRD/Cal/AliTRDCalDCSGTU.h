@@ -12,6 +12,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TNamed.h"
+#include "TObjArray.h"
+#include "AliTRDCalDCSGTUTgu.h"
 
 class TString;
 
@@ -21,30 +23,35 @@ class AliTRDCalDCSGTU : public TNamed {
 
   AliTRDCalDCSGTU();
   AliTRDCalDCSGTU(const char *name, const char *title);
+  AliTRDCalDCSGTU(const AliTRDCalDCSGTU &);
+  AliTRDCalDCSGTU& operator=(const AliTRDCalDCSGTU& sh);
   virtual ~AliTRDCalDCSGTU() { };
 
-  void    SetDCSid(Int_t dcsid)                    { fDCSID                     = dcsid; }  
-  void    SetSMMaskBit(Int_t smid, Int_t mbit)     { fSMMask[smid]               = mbit; }
-  void    SetStackMaskBit(Int_t smid, Int_t stid, Int_t mbit)
-                                                   { fStackMask[smid][stid]      = mbit; }
-  void    SetLinkMaskBit(Int_t smid, Int_t stid, Int_t lkid, Int_t mbit)
-                                                   { fLinkMask[smid][stid][lkid] = mbit; }
-  Int_t   SetSMMask(const char *smmask);
-  Int_t   SetLinkMask(Int_t smid, Int_t stid, const char *lkmask);
+  Int_t   GetRunNumber()                              { return fRunNumber;                    }
+  Int_t   GetSORFlag()                                { return fSORFlag;                      }
+  Int_t   GetSerial()                                 { return fSerial;                       }
+  Int_t   GetDNR()                                    { return fDNR;                          }
 
-  Int_t   GetDCSid() const                         { return fDCSID;                      }
-  char    GetSMMaskBit(Int_t smid) const           { return fSMMask[smid];               }
-  char    GetStackMaskBit(Int_t smid, Int_t stid) const
-                                                   { return fStackMask[smid][stid];      }
-  char    GetLinkMaskBit(Int_t smid, Int_t stid, Int_t lkid) const
-                                                   { return fLinkMask[smid][stid][lkid]; }
+  void    SetRunNumber(Int_t rn)                      { fRunNumber = rn;                      }
+  void    SetSORFlag(Int_t fg)                        { fSORFlag = fg;                        }
+  void    SetSerial(Int_t se)                         { fSerial = se;                         }
+  void    SetDNR(Int_t dn)                            { fDNR = dn;                            }
+
+  TObjArray* GetSegmentArray() const                  { return fSegmentsArr;                  }
+  void SetSegmentArray(TObjArray *sa)                 { fSegmentsArr = sa;                    }
+
+  AliTRDCalDCSGTUTgu* GetTgu() const                  { return fTgu;                          }
+  void SetTgu(AliTRDCalDCSGTUTgu* tg)                 { fTgu = tg;                            }
 
  protected:
-  
-  Int_t   fDCSID;                  //  ID of the DCS-Board
-  Int_t	  fSMMask[18];		   //  supermodule mask [SM-ID]
-  Int_t	  fStackMask[18][5];	   //  stack mask [SM-ID][Stack-ID]
-  Int_t   fLinkMask[18][5][12];	   //  link mask [SM-ID][Stack-ID][Link-ID]
+  Int_t   fRunNumber;
+  Int_t   fSORFlag;
+  Int_t   fSerial;
+  Int_t   fDNR;
+
+  TObjArray *fSegmentsArr;
+
+  AliTRDCalDCSGTUTgu* fTgu;
 
   ClassDef(AliTRDCalDCSGTU,1)      //  TRD calibration class for TRD GTU parameters
 

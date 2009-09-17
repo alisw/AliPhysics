@@ -21,67 +21,50 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDCalDCSGTU.h"
+#include "AliTRDCalDCSGTUBoardInfo.h"
 
-ClassImp(AliTRDCalDCSGTU)
+ClassImp(AliTRDCalDCSGTUBoardInfo)
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU()
+AliTRDCalDCSGTUBoardInfo::AliTRDCalDCSGTUBoardInfo()
   :TNamed()
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fId("")
+    ,fType(0)
+    ,fPciGa(0)
+    ,fHwDate("")
+    ,fHwRev(0)
+    ,fHwClean(0)
+    ,fSwDate("")
+    ,fSwRev(0)
+    ,fSwClean(0)
 {
   //
-  // AliTRDCalDCSGTU default constructor
+  // AliTRDCalDCSGTUBoardInfo default constructor
   //
-  fSegmentsArr->SetOwner();
+
+
+
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU(const char *name, const char *title)
+AliTRDCalDCSGTUBoardInfo::AliTRDCalDCSGTUBoardInfo(const char *name, const char *title)
   :TNamed(name,title)
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fId("")
+    ,fType(0)
+    ,fPciGa(0)
+    ,fHwDate("")
+    ,fHwRev(0)
+    ,fHwClean(0)
+    ,fSwDate("")
+    ,fSwRev(0)
+    ,fSwClean(0)
 {
   //
-  // AliTRDCalDCSGTU constructor
+  // AliTRDCalDCSGTUBoardInfo constructor
   //
-}
 
-//_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU(const AliTRDCalDCSGTU&)
-  :TNamed("","")
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
-{
-  //
-  // AliTRDCalDCSGTU constructor
-  //
-}
 
-//_____________________________________________________________________________
-AliTRDCalDCSGTU& AliTRDCalDCSGTU::operator=(const AliTRDCalDCSGTU& sh)
-{
-  //
-  // AliTRDCalDCSGTU constructor
-  //
-  if (&sh == this) return *this;
-  
-  new (this) AliTRDCalDCSGTU(sh);
-  return *this;
-}
 
+}
 
 

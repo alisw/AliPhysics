@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTRDCalDCSGTU.cxx 18952 2007-06-08 11:36:12Z cblume $ */
+/* $Id: AliTRDCalDCSGTUSegment.cxx 18952 2007-06-08 11:36:12Z cblume $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -21,35 +21,55 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDCalDCSGTU.h"
+#include "AliTRDCalDCSGTUSegment.h"
 
-ClassImp(AliTRDCalDCSGTU)
+ClassImp(AliTRDCalDCSGTUSegment)
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU()
+AliTRDCalDCSGTUSegment::AliTRDCalDCSGTUSegment()
   :TNamed()
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fId(0)
+    ,fFromRunNumber(0)
+    ,fFromSORFlag(0)
+    ,fChild(0)
+    ,fTmuArr(new TObjArray(5))
+    ,fSmuStackMask(0)
+    ,fSmuTracklets(0)
+    ,fSmuTracks(0)
+    ,fSmuIdelay(0)
+    ,fSmuTriggerWindowL1Low(0)
+    ,fSmuTriggerWindowL1High(0)
+    ,fSmuTriggerWindowL2Low(0)
+    ,fSmuTriggerWindowL2High(0)
+    ,fSmuTtcEmulatorEnable(0)
+    ,fSmuBoardInfo()
 {
   //
   // AliTRDCalDCSGTU default constructor
   //
-  fSegmentsArr->SetOwner();
+  fTmuArr->SetOwner();
+
+
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU(const char *name, const char *title)
+AliTRDCalDCSGTUSegment::AliTRDCalDCSGTUSegment(const char *name, const char *title)
   :TNamed(name,title)
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fId(0)
+    ,fFromRunNumber(0)
+    ,fFromSORFlag(0)
+    ,fChild(0)
+    ,fTmuArr(new TObjArray(5))
+    ,fSmuStackMask(0)
+    ,fSmuTracklets(0)
+    ,fSmuTracks(0)
+    ,fSmuIdelay(0)
+    ,fSmuTriggerWindowL1Low(0)
+    ,fSmuTriggerWindowL1High(0)
+    ,fSmuTriggerWindowL2Low(0)
+    ,fSmuTriggerWindowL2High(0)
+    ,fSmuTtcEmulatorEnable(0)
+    ,fSmuBoardInfo()
 {
   //
   // AliTRDCalDCSGTU constructor
@@ -57,31 +77,39 @@ AliTRDCalDCSGTU::AliTRDCalDCSGTU(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU(const AliTRDCalDCSGTU&)
+AliTRDCalDCSGTUSegment::AliTRDCalDCSGTUSegment(const AliTRDCalDCSGTUSegment&)
   :TNamed("","")
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fId(0)
+    ,fFromRunNumber(0)
+    ,fFromSORFlag(0)
+    ,fChild(0)
+    ,fTmuArr(new TObjArray(5))
+    ,fSmuStackMask(0)
+    ,fSmuTracklets(0)
+    ,fSmuTracks(0)
+    ,fSmuIdelay(0)
+    ,fSmuTriggerWindowL1Low(0)
+    ,fSmuTriggerWindowL1High(0)
+    ,fSmuTriggerWindowL2Low(0)
+    ,fSmuTriggerWindowL2High(0)
+    ,fSmuTtcEmulatorEnable(0)
+    ,fSmuBoardInfo()
 {
   //
-  // AliTRDCalDCSGTU constructor
+  // AliTRDCalDCSGTUSegment constructor
   //
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU& AliTRDCalDCSGTU::operator=(const AliTRDCalDCSGTU& sh)
+AliTRDCalDCSGTUSegment& AliTRDCalDCSGTUSegment::operator=(const AliTRDCalDCSGTUSegment& sh)
 {
   //
-  // AliTRDCalDCSGTU constructor
+  // AliTRDCalDCSGTUSegment constructor
   //
   if (&sh == this) return *this;
   
-  new (this) AliTRDCalDCSGTU(sh);
+  new (this) AliTRDCalDCSGTUSegment(sh);
   return *this;
 }
-
 
 

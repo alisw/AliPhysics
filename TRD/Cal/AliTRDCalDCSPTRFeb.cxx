@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTRDCalDCSGTU.cxx 18952 2007-06-08 11:36:12Z cblume $ */
+/* $Id: AliTRDCalDCSPTRFeb.cxx 18952 2007-06-08 11:36:12Z cblume $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -21,19 +21,18 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDCalDCSGTU.h"
+#include "AliTRDCalDCSPTRFeb.h"
 
-ClassImp(AliTRDCalDCSGTU)
+ClassImp(AliTRDCalDCSPTRFeb)
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU()
+AliTRDCalDCSPTRFeb::AliTRDCalDCSPTRFeb()
   :TNamed()
+    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fSegmentsArr(new TObjArray())
     ,fRunNumber(0)
     ,fSORFlag(0)
     ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
 {
   //
   // AliTRDCalDCSGTU default constructor
@@ -42,14 +41,13 @@ AliTRDCalDCSGTU::AliTRDCalDCSGTU()
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU(const char *name, const char *title)
+AliTRDCalDCSPTRFeb::AliTRDCalDCSPTRFeb(const char *name, const char *title)
   :TNamed(name,title)
+    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fSegmentsArr(new TObjArray())
     ,fRunNumber(0)
     ,fSORFlag(0)
     ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
 {
   //
   // AliTRDCalDCSGTU constructor
@@ -57,30 +55,17 @@ AliTRDCalDCSGTU::AliTRDCalDCSGTU(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU(const AliTRDCalDCSGTU&)
+AliTRDCalDCSPTRFeb::AliTRDCalDCSPTRFeb(const AliTRDCalDCSPTRFeb &cd)
   :TNamed("","")
+    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fSegmentsArr(new TObjArray())
     ,fRunNumber(0)
     ,fSORFlag(0)
     ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
 {
   //
   // AliTRDCalDCSGTU constructor
   //
-}
-
-//_____________________________________________________________________________
-AliTRDCalDCSGTU& AliTRDCalDCSGTU::operator=(const AliTRDCalDCSGTU& sh)
-{
-  //
-  // AliTRDCalDCSGTU constructor
-  //
-  if (&sh == this) return *this;
-  
-  new (this) AliTRDCalDCSGTU(sh);
-  return *this;
 }
 
 

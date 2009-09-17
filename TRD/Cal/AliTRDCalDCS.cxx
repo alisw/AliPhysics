@@ -23,6 +23,7 @@
 
 #include "AliTRDCalDCS.h"
 #include "AliTRDCalDCSFEE.h"
+#include "AliTRDCalDCSGTU.h"
 
 ClassImp(AliTRDCalDCS)
   
@@ -49,7 +50,7 @@ AliTRDCalDCS::AliTRDCalDCS()
   ,fGAddOptions(0)
   ,fFEEArr(new TObjArray(540))
   ,fPTRArr(new TObjArray(6))
-  ,fGTUArr(new TObjArray(19))
+  ,fGTUObj(new AliTRDCalDCSGTU())
 {
   //
   // AliTRDCalDCS default constructor
@@ -79,7 +80,7 @@ AliTRDCalDCS::AliTRDCalDCS(const Text_t *name, const Text_t *title)
   ,fGAddOptions(0)
   ,fFEEArr(new TObjArray(540))
   ,fPTRArr(new TObjArray(6))
-  ,fGTUArr(new TObjArray(19))
+  ,fGTUObj(new AliTRDCalDCSGTU())
 {
   //
   // AliTRDCalDCS constructor
@@ -107,9 +108,9 @@ AliTRDCalDCS::AliTRDCalDCS(const AliTRDCalDCS &cd)
   ,fGTrackletDef(0)
   ,fGTriggerSetup(0)
   ,fGAddOptions(0)
-  ,fFEEArr(0)
-  ,fPTRArr(0)
-  ,fGTUArr(0)
+  ,fFEEArr(new TObjArray(540))
+  ,fPTRArr(new TObjArray(6))
+  ,fGTUObj(new AliTRDCalDCSGTU())
 {
   //
   // AliTRDCalDCS copy constructor

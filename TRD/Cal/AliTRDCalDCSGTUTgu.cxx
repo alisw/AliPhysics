@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTRDCalDCSGTU.cxx 18952 2007-06-08 11:36:12Z cblume $ */
+/* $Id: AliTRDCalDCSGTUTgu.cxx 18952 2007-06-08 11:36:12Z cblume $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -21,35 +21,39 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDCalDCSGTU.h"
+#include "AliTRDCalDCSGTUTgu.h"
 
-ClassImp(AliTRDCalDCSGTU)
+ClassImp(AliTRDCalDCSGTUTgu)
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU()
+AliTRDCalDCSGTUTgu::AliTRDCalDCSGTUTgu()
   :TNamed()
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fFromRunNum(0)
+    ,fFromSORFlag(0)
+    ,fFromChild(0)
+    ,fSegmentMask("")
+    ,fBusyMask("")
+    ,fContribMask("")
+    ,fBoardInfo(new AliTRDCalDCSGTUBoardInfo())
+    ,fCtpOpcArr(new TObjArray())
 {
   //
   // AliTRDCalDCSGTU default constructor
   //
-  fSegmentsArr->SetOwner();
+  fCtpOpcArr->SetOwner();
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU(const char *name, const char *title)
+AliTRDCalDCSGTUTgu::AliTRDCalDCSGTUTgu(const char *name, const char *title)
   :TNamed(name,title)
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fFromRunNum(0)
+    ,fFromSORFlag(0)
+    ,fFromChild(0)
+    ,fSegmentMask("")
+    ,fBusyMask("")
+    ,fContribMask("")
+    ,fBoardInfo(new AliTRDCalDCSGTUBoardInfo())
+    ,fCtpOpcArr(new TObjArray())
 {
   //
   // AliTRDCalDCSGTU constructor
@@ -57,14 +61,16 @@ AliTRDCalDCSGTU::AliTRDCalDCSGTU(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU(const AliTRDCalDCSGTU&)
+AliTRDCalDCSGTUTgu::AliTRDCalDCSGTUTgu(const AliTRDCalDCSGTUTgu&)
   :TNamed("","")
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fFromRunNum(0)
+    ,fFromSORFlag(0)
+    ,fFromChild(0)
+    ,fSegmentMask("")
+    ,fBusyMask("")
+    ,fContribMask("")
+    ,fBoardInfo(0)
+    ,fCtpOpcArr(0)
 {
   //
   // AliTRDCalDCSGTU constructor
@@ -72,14 +78,14 @@ AliTRDCalDCSGTU::AliTRDCalDCSGTU(const AliTRDCalDCSGTU&)
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU& AliTRDCalDCSGTU::operator=(const AliTRDCalDCSGTU& sh)
+AliTRDCalDCSGTUTgu& AliTRDCalDCSGTUTgu::operator=(const AliTRDCalDCSGTUTgu& sh)
 {
   //
   // AliTRDCalDCSGTU constructor
   //
   if (&sh == this) return *this;
-  
-  new (this) AliTRDCalDCSGTU(sh);
+
+  new (this) AliTRDCalDCSGTUTgu(sh);
   return *this;
 }
 

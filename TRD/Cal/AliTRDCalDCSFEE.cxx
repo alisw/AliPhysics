@@ -50,6 +50,8 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE()
   ,fTCFilterShortDecPar(-1)
   ,fTCFilterLongDecPar(-1)
   ,fFastStatNoise(-1)
+  ,fGainTableRocType("")
+  ,fGainTableRocSerial(0)
   ,fFilterType(0)
   ,fReadoutParam(0)
   ,fTestPattern(0)
@@ -59,6 +61,8 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE()
   ,fAddOptions(0) 
   ,fConfigName(0)
   ,fConfigVersion(0)
+  ,fGainTableName("")
+  ,fGainTableDesc("")
 {
   //
   // AliTRDCalDCSFEE default constructor
@@ -69,6 +73,11 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE()
       fRStateNI[i][j]   = -1;
       fRStateEV[i][j]   = -1;
       fRStatePTRG[i][j] = -1;
+      fGainTableAdcdac[i][j] = -1;
+      for(Int_t k=0; k<fgkADC; k++) {
+	fGainTableFgfn[i][j][k] = -1;
+	fGainTableFgan[i][j][k] = -1;
+      }
     }
   }
 }
@@ -76,30 +85,34 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE()
 
 //_____________________________________________________________________________
 AliTRDCalDCSFEE::AliTRDCalDCSFEE(const char *name, const char *title)
-  :TNamed(name,title)
-  ,fStatusBit(0)
-  ,fDCSID(-1)
-  ,fSM(-1)
-  ,fStack(-1)
-  ,fLayer(-1)
-  ,fNumberOfTimeBins(-1)
-  ,fConfigTag(-1)
-  ,fSingleHitThres(-1)
-  ,fThrPdClsThres(-1)
-  ,fSelNoZS(-1)
-  ,fTCFilterWeight(-1)
-  ,fTCFilterShortDecPar(-1)
-  ,fTCFilterLongDecPar(-1)
-  ,fFastStatNoise(-1)
-  ,fFilterType(0)
-  ,fReadoutParam(0)
-  ,fTestPattern(0)
-  ,fTrackletMode(0)
-  ,fTrackletDef(0)
-  ,fTriggerSetup(0)
-  ,fAddOptions(0) 
-  ,fConfigName(0)
-  ,fConfigVersion(0)
+:TNamed(name,title)
+,fStatusBit(0)
+,fDCSID(-1)
+,fSM(-1)
+,fStack(-1)
+,fLayer(-1)
+,fNumberOfTimeBins(-1)
+,fConfigTag(-1)
+,fSingleHitThres(-1)
+,fThrPdClsThres(-1)
+,fSelNoZS(-1)
+,fTCFilterWeight(-1)
+,fTCFilterShortDecPar(-1)
+,fTCFilterLongDecPar(-1)
+,fFastStatNoise(-1)
+,fGainTableRocType("")
+,fGainTableRocSerial(0)
+,fFilterType(0)
+,fReadoutParam(0)
+,fTestPattern(0)
+,fTrackletMode(0)
+,fTrackletDef(0)
+,fTriggerSetup(0)
+,fAddOptions(0) 
+,fConfigName(0)
+,fConfigVersion(0)
+,fGainTableName("")
+,fGainTableDesc("")
 {
   //
   // AliTRDCalDCSFEE constructor
@@ -110,6 +123,11 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE(const char *name, const char *title)
       fRStateNI[i][j]   = -1;
       fRStateEV[i][j]   = -1;
       fRStatePTRG[i][j] = -1;
+      fGainTableAdcdac[i][j] = -1;
+      for(Int_t k=0; k<fgkADC; k++) {
+	fGainTableFgfn[i][j][k] = -1;
+	fGainTableFgan[i][j][k] = -1;
+      }
     }
   }
 }

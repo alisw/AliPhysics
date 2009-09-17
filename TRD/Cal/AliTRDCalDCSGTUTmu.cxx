@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliTRDCalDCSGTU.cxx 18952 2007-06-08 11:36:12Z cblume $ */
+/* $Id: AliTRDCalDCSGTUTmu.cxx 18952 2007-06-08 11:36:12Z cblume $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -21,67 +21,73 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDCalDCSGTU.h"
+#include "AliTRDCalDCSGTUTmu.h"
 
-ClassImp(AliTRDCalDCSGTU)
+ClassImp(AliTRDCalDCSGTUTmu)
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU()
+AliTRDCalDCSGTUTmu::AliTRDCalDCSGTUTmu()
   :TNamed()
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fLinkMask("")
+    ,fId(0)
+    ,fPatternGeneratorEnable(0)
+    ,fPatternGeneratorDataWords(0)
+    ,fPatternGeneratorTrackletWords(0)
+    ,fBoardInfo(new AliTRDCalDCSGTUBoardInfo())
 {
   //
   // AliTRDCalDCSGTU default constructor
   //
-  fSegmentsArr->SetOwner();
+
+
+
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU(const char *name, const char *title)
+AliTRDCalDCSGTUTmu::AliTRDCalDCSGTUTmu(const char *name, const char *title)
   :TNamed(name,title)
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fLinkMask("")
+    ,fId(0)
+    ,fPatternGeneratorEnable(0)
+    ,fPatternGeneratorDataWords(0)
+    ,fPatternGeneratorTrackletWords(0)
+    ,fBoardInfo(new AliTRDCalDCSGTUBoardInfo())
 {
   //
-  // AliTRDCalDCSGTU constructor
+  // AliTRDCalDCSGTUTmu constructor
   //
+
+
+
 }
 
+
+
 //_____________________________________________________________________________
-AliTRDCalDCSGTU::AliTRDCalDCSGTU(const AliTRDCalDCSGTU&)
+AliTRDCalDCSGTUTmu::AliTRDCalDCSGTUTmu(const AliTRDCalDCSGTUTmu &)
   :TNamed("","")
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
-    ,fDNR(-1)
-    ,fSegmentsArr(new TObjArray())
-    ,fTgu(new AliTRDCalDCSGTUTgu())
+    ,fLinkMask("")
+    ,fId(0)
+    ,fPatternGeneratorEnable(0)
+    ,fPatternGeneratorDataWords(0)
+    ,fPatternGeneratorTrackletWords(0)
+    ,fBoardInfo(new AliTRDCalDCSGTUBoardInfo())
 {
   //
-  // AliTRDCalDCSGTU constructor
+  // AliTRDCalDCSGTUTmu constructor
   //
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCSGTU& AliTRDCalDCSGTU::operator=(const AliTRDCalDCSGTU& sh)
+AliTRDCalDCSGTUTmu& AliTRDCalDCSGTUTmu::operator=(const AliTRDCalDCSGTUTmu& sh)
 {
   //
-  // AliTRDCalDCSGTU constructor
+  // AliTRDCalDCSGTUTmu constructor
   //
   if (&sh == this) return *this;
   
-  new (this) AliTRDCalDCSGTU(sh);
+  new (this) AliTRDCalDCSGTUTmu(sh);
   return *this;
 }
-
 
 

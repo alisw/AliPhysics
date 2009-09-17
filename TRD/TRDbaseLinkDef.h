@@ -42,6 +42,11 @@
 #pragma link C++ class  AliTRDCalDCS+;
 #pragma link C++ class  AliTRDCalDCSFEE+;
 #pragma link C++ class  AliTRDCalDCSPTR+;
+#pragma link C++ class  AliTRDCalDCSGTUBoardInfo+;
+#pragma link C++ class  AliTRDCalDCSGTUCtpOpc+;
+#pragma link C++ class  AliTRDCalDCSGTUSegment+;
+#pragma link C++ class  AliTRDCalDCSGTUTgu+;
+#pragma link C++ class  AliTRDCalDCSGTUTmu+;
 #pragma link C++ class  AliTRDCalDCSGTU+;
 #pragma link C++ class  AliTRDCalPID+;
 #pragma link C++ class  AliTRDCalPIDLQ+;

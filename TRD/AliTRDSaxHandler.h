@@ -15,6 +15,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
+#include "Cal/AliTRDCalDCSGTUCtpOpc.h"
+#include "Cal/AliTRDCalDCSGTUBoardInfo.h"
+#include "Cal/AliTRDCalDCSGTUSegment.h"
+#include "Cal/AliTRDCalDCSGTUTmu.h"
 
 class TObjArray;
 
@@ -26,7 +30,21 @@ class AliTRDCalDCSGTU;
 class AliTRDSaxHandler : public TObject {
 
 public:
-  enum { kInsideFEE = 1, kInsidePTR = 2, kInsideGTU = 3 };
+  enum { 
+    kInsideFEE = 1, 
+    kInsidePTR = 2,
+    kInsideGTU = 3 
+  }; // System level
+  enum { 
+    kInsideTgu = -1,
+    kInsideNone = -2,
+    kInsideSegment = -3,
+    kInsideGainTable = -4 
+  }; // The level under system (1)
+  enum { 
+    kInsideTmu = 10,
+    kInsideSmu = 11 
+  }; // The level under that   (2)
 
   AliTRDSaxHandler();
   AliTRDSaxHandler(const AliTRDSaxHandler &sh);
@@ -35,7 +53,6 @@ public:
 
   TObjArray*    GetDCSFEEDataArray() const { return fFEEArr;        }
   TObjArray*    GetDCSPTRDataArray() const { return fPTRArr;        }
-  TObjArray*    GetDCSGTUDataArray() const { return fGTUArr;        }
   AliTRDCalDCS* GetCalDCSObj(); // to be called by the preprocessor
 
   Int_t         GetHandlerStatus() const { return fHandlerStatus; }
@@ -54,23 +71,35 @@ public:
 
  private:
 
+  bool           CompareString(TString str, const char *str2); 
+
   Int_t            fHandlerStatus; // 0: everything OK, >0: error
   Int_t            fNDCSPTR;       // number of current PTR unit (to be abandonned soon)
   Int_t            fNDCSGTU;       // number of current GTU unit (to be abandonned soon)
   TObjArray*       fFEEArr;        // array of AliTRDCalDCSFEE objects
   TObjArray*       fPTRArr;        // array of AliTRDCalDCSPTR objects
-  TObjArray*       fGTUArr;        // array of AliTRDCalDCSGTU objects
+//   TObjArray*       fGTUArr;        // array of AliTRDCalDCSGTU objects
   Int_t            fSystem;        // current system (FEE/PTR/GTU)
   Int_t            fInsideRstate;  // if we are inside rstate
   Int_t            fCurrentSM;     // current supermodule
   Int_t            fCurrentStack;  // current stack
   Int_t            fCurrentROB;    // current ROB during processing
   Int_t            fCurrentMCM;    // current MCM
+  Int_t            fCurrentADC;    // current ADC
   TString          fContent;       // content of the xml element (text) 
   AliTRDCalDCSFEE* fDCSFEEObj;     // the calib object for one FEE DCS board
   AliTRDCalDCSPTR* fDCSPTRObj;     // the calib object for one PTR DCS board
   AliTRDCalDCSGTU* fDCSGTUObj;     // the calib object for one GTU DCS board
   AliTRDCalDCS*    fCalDCSObj;     // the complete calib obj containing all inform.
+  Int_t            fLevel1Tag;        // 
+  Int_t            fLevel2Tag;        // 
+  Bool_t           fInsideBoardInfo;
+
+  AliTRDCalDCSGTUTmu*       fTmu;
+  AliTRDCalDCSGTUCtpOpc*    fCtpOpc;
+  AliTRDCalDCSGTUSegment*   fSegment;
+  AliTRDCalDCSGTUBoardInfo* fBoardInfo;
+  
 
   ClassDef(AliTRDSaxHandler,2);    // The XML file handler for the preprocessor
 };
