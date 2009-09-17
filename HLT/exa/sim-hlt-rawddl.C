@@ -18,14 +18,15 @@
  * The chain to be run is defined by the macro given to the parameter
  * 'config='
  *
- * The macro asumes the data to be already simulated. If it should run
+ * The macro assumes the data to be already simulated. If it should run
  * within the initial simulation, comment the corresponding functions
  * below (SetRunGeneration etc.)
  *
  * @author Matthias.Richter@ift.uib.no
  * @ingroup alihlt_tutorial
  */
-void sim_hlt_rawddl() {
+void sim_hlt_rawddl() {  
+
   AliSimulation sim;
 
   // switch of simulation and data generation
@@ -37,10 +38,19 @@ void sim_hlt_rawddl() {
   sim.SetMakeTrigger("");
 
   // write the raw data for the ITS since we want to publish those
-  // write HLT raw data since we want to replace the original
+  // write HLT raw data since we want to replace the original	
   // detector data from the HLTOUT
   sim.SetWriteRawData("HLT");
-
+  
+  // the normal simulation sets the specific storage for the GRP entry
+  if (gSystem->AccessPathName("GRP/GRP/Data")) {
+    cerr << "*********************************************************" << endl;
+    cerr << "error: no GRP entry found in the currect directory, simulation might be incomplete. Skip setting specific storage for GRP entry" << endl;
+    cerr << "*********************************************************" << endl << endl;
+  } else {
+    sim.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
+  }
+  
   // set the options for the HLT simulation:
   // libAliHLTUtil.so libAliHLTSample.so
   //     loads the specified libraries since the HLT chain will use components
@@ -55,7 +65,7 @@ void sim_hlt_rawddl() {
   //     in this case we want to just forward the DDL data blocks
   //     to the HLTOUT. We need to set the location of the formerly generated
   //     rawfiles with the rawfile
-  sim.SetRunHLT("libAliHLTUtil.so libAliHLTSample.so loglevel=0x7c rawfile=./ "
-		"config=$ALICE_ROOT/HLT/exa/conf-hlt-rawddl.C chains=publisher");
+ 
+  sim.SetRunHLT("libAliHLTUtil.so libAliHLTSample.so loglevel=0x7c rawfile=./ config=$ALICE_ROOT/HLT/exa/conf-hlt-rawddl.C chains=publisher");
   sim.Run();
 }
