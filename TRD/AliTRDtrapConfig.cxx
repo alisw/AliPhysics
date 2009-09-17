@@ -679,16 +679,16 @@ Bool_t AliTRDtrapConfig::LoadConfig()
   SetTrapReg(kTPFE, 20);
   SetTrapReg(kTPVBY, 0);
   SetTrapReg(kTPVT, 10);
-  SetTrapReg(kTPHT, 30);
-  SetTrapReg(kTPFP, 0);
+  SetTrapReg(kTPHT, 60);
+  SetTrapReg(kTPFP, 10);
   SetTrapReg(kTPCL, 1);
   SetTrapReg(kTPCT, 8);
   
   // event buffer
   SetTrapReg(kEBSF, 1);  // 0: store filtered; 1: store unfiltered
   // zs applied to data stored in event buffer (sel. by EBSF)
-  SetTrapReg(kEBIS, 5 << 2); // single indicator threshold (plus two digits)
-  SetTrapReg(kEBIT, 20 << 2); // sum indicator threshold (plus two digits)
+  SetTrapReg(kEBIS, 15 << 2); // single indicator threshold (plus two digits)
+  SetTrapReg(kEBIT, 30 << 2); // sum indicator threshold (plus two digits)
   SetTrapReg(kEBIL, 0xf0);   // lookup table
   SetTrapReg(kEBIN, 0);      // neighbour sensitivity
 
