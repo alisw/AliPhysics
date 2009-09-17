@@ -30,11 +30,15 @@ using namespace std;
 ClassImp(AliEMCALCalibMapAPD)
 
 //____________________________________________________________________________
-AliEMCALCalibMapAPD::AliEMCALCalibMapAPD() : 
-  fNSuperModule(0),
-  fSuperModuleData(0)
+AliEMCALCalibMapAPD::AliEMCALCalibMapAPD(const int nSM) : 
+  fNSuperModule(nSM),
+  fSuperModuleData()
 {
   //Default constructor.
+  for (int i=0; i<fNSuperModule; i++) {
+    fSuperModuleData.Add(new AliEMCALSuperModuleCalibMapAPD(i));
+  }
+  fSuperModuleData.Compress(); // compress the TObjArray
 }
 
 //____________________________________________________________________________
@@ -50,8 +54,6 @@ void AliEMCALCalibMapAPD::ReadTextCalibMapAPDInfo(Int_t nSM, const TString &txtF
   }
 
   fNSuperModule = nSM;
-  if (fSuperModuleData) delete [] fSuperModuleData;
-  fSuperModuleData = new AliEMCALSuperModuleCalibMapAPD[fNSuperModule];
 
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
@@ -69,13 +71,13 @@ void AliEMCALCalibMapAPD::ReadTextCalibMapAPDInfo(Int_t nSM, const TString &txtF
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
   for (Int_t i = 0; i < fNSuperModule; i++) {
-    AliEMCALSuperModuleCalibMapAPD &t = fSuperModuleData[i];
+    AliEMCALSuperModuleCalibMapAPD * t = (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[i];
     if (!inputFile) {
       printf("AliEMCALCalibMapAPD::ReadCalibMapAPDInfo - Error while reading input file; likely EOF..");
       return;
     }
     inputFile >> iSM;
-    t.fSuperModuleNum = iSM;
+    t->SetSuperModuleNum(iSM);
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
       inputFile >> iCol >> iRow >> iHW 
@@ -91,19 +93,19 @@ void AliEMCALCalibMapAPD::ReadTextCalibMapAPDInfo(Int_t nSM, const TString &txtF
 	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
 
-      AliEMCALCalibMapAPDVal &v = t.fAPDVal[iCol][iRow];
+      AliEMCALCalibMapAPDVal * v = t->GetAPDVal(iCol, iRow);
 
-      v.fHardWareId = iHW;
-      v.fAPDNum = APDNum;
-      v.fV30 = V30;
-      v.fPar[0] = Par[0];
-      v.fPar[1] = Par[1];
-      v.fPar[2] = Par[2];
-      v.fParErr[0] = ParErr[0];
-      v.fParErr[1] = ParErr[1];
-      v.fParErr[2] = ParErr[2];
-      v.fBreakDown = BreakDown;
-      v.fDarkCurrent = DarkCurrent;
+      v->SetHardWareId(iHW);
+      v->SetAPDNum(APDNum);
+      v->SetV30(V30);
+      v->SetPar(0, Par[0]);
+      v->SetPar(1, Par[1]);
+      v->SetPar(2, Par[2]);
+      v->SetParErr(0, ParErr[0]);
+      v->SetParErr(1, ParErr[1]);
+      v->SetParErr(2, ParErr[2]);
+      v->SetBreakDown(BreakDown);
+      v->SetDarkCurrent(DarkCurrent);
     }
 
   } // i, SuperModule
@@ -131,14 +133,14 @@ void AliEMCALCalibMapAPD::WriteTextCalibMapAPDInfo(const TString &txtFileName,
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
   for (Int_t i = 0; i < fNSuperModule; i++) {
-    AliEMCALSuperModuleCalibMapAPD &t = fSuperModuleData[i];
-    outputFile << t.fSuperModuleNum << endl;
+    AliEMCALSuperModuleCalibMapAPD * t = (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[i];
+    outputFile << t->GetSuperModuleNum() << endl;
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
 
-      AliEMCALCalibMapAPDVal &v = t.fAPDVal[iCol][iRow];
+      AliEMCALCalibMapAPDVal * v = t->GetAPDVal(iCol, iRow);
 
       if (swapSides) {
 	// C side, oriented differently than A side: swap is requested
@@ -146,11 +148,11 @@ void AliEMCALCalibMapAPD::WriteTextCalibMapAPDInfo(const TString &txtFileName,
 	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
 
-      outputFile << iCol << " " << iRow << " " << v.fHardWareId 
-		 << " " << v.fAPDNum << " " << v.fV30 
-		 << " " << v.fPar[0] << " " << v.fPar[1] << " " << v.fPar[2]
-		 << " " << v.fParErr[0] << " " << v.fParErr[1] << " " << v.fParErr[2]
-		 << " " << v.fBreakDown << " " << v.fDarkCurrent << endl;
+      outputFile << iCol << " " << iRow << " " << v->GetHardWareId() 
+		 << " " << v->GetAPDNum() << " " << v->GetV30() 
+		 << " " << v->GetPar(0) << " " << v->GetPar(1) << " " << v->GetPar(2)
+		 << " " << v->GetParErr(0) << " " << v->GetParErr(1) << " " << v->GetParErr(2)
+		 << " " << v->GetBreakDown() << " " << v->GetDarkCurrent() << endl;
     }
 
   } // i, SuperModule
@@ -184,9 +186,6 @@ void AliEMCALCalibMapAPD::ReadTreeCalibMapAPDInfo(TTree *tree,
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
   fNSuperModule = tree->GetEntries() / nAPDPerSM;
 
-  if (fSuperModuleData) delete [] fSuperModuleData;
-  fSuperModuleData = new AliEMCALSuperModuleCalibMapAPD[fNSuperModule];
-
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
   Int_t iRow = 0;
@@ -216,8 +215,8 @@ void AliEMCALCalibMapAPD::ReadTreeCalibMapAPDInfo(TTree *tree,
     tree->GetEntry(ient);
 
     // assume the index SuperModules come in order: i=iSM
-    AliEMCALSuperModuleCalibMapAPD &t = fSuperModuleData[iSM];
-    t.fSuperModuleNum = iSM;
+    AliEMCALSuperModuleCalibMapAPD * t = (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[iSM];
+    t->SetSuperModuleNum(iSM);
 
     // assume that this info is already swapped and done for this basis?
     if (swapSides) {
@@ -226,20 +225,19 @@ void AliEMCALCalibMapAPD::ReadTreeCalibMapAPDInfo(TTree *tree,
       iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
     }
 
-    AliEMCALCalibMapAPDVal &v = t.fAPDVal[iCol][iRow];
+    AliEMCALCalibMapAPDVal * v = t->GetAPDVal(iCol, iRow);
 
-    v.fHardWareId = iHW;
-    v.fAPDNum = APDNum;
-    v.fV30 = V30;
-    v.fPar[0] = Par[0];
-    v.fPar[1] = Par[1];
-    v.fPar[2] = Par[2];
-    v.fParErr[0] = ParErr[0];
-    v.fParErr[1] = ParErr[1];
-    v.fParErr[2] = ParErr[2];
-    v.fBreakDown = BreakDown;
-    v.fDarkCurrent = DarkCurrent;
-
+    v->SetHardWareId(iHW);
+    v->SetAPDNum(APDNum);
+    v->SetV30(V30);
+    v->SetPar(0, Par[0]);
+    v->SetPar(1, Par[1]);
+    v->SetPar(2, Par[2]);
+    v->SetParErr(0, ParErr[0]);
+    v->SetParErr(1, ParErr[1]);
+    v->SetParErr(2, ParErr[2]);
+    v->SetBreakDown(BreakDown);
+    v->SetDarkCurrent(DarkCurrent);
   } // 
 
   return;
@@ -285,13 +283,13 @@ void AliEMCALCalibMapAPD::WriteRootCalibMapAPDInfo(const TString &rootFileName,
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
   for (iSM = 0; iSM < fNSuperModule; iSM++) {
-    AliEMCALSuperModuleCalibMapAPD &t = fSuperModuleData[iSM];
+    AliEMCALSuperModuleCalibMapAPD * t = (AliEMCALSuperModuleCalibMapAPD *) fSuperModuleData[iSM];
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
 
-      AliEMCALCalibMapAPDVal &v = t.fAPDVal[iCol][iRow];
+      AliEMCALCalibMapAPDVal * v = t->GetAPDVal(iCol, iRow);
 
       if (swapSides) {
 	// C side, oriented differently than A side: swap is requested
@@ -299,15 +297,15 @@ void AliEMCALCalibMapAPD::WriteRootCalibMapAPDInfo(const TString &rootFileName,
 	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
 
-      iHW = v.fHardWareId; 
-      APDNum = v.fAPDNum;
-      V30 = v.fV30;
+      iHW = v->GetHardWareId(); 
+      APDNum = v->GetAPDNum();
+      V30 = v->GetV30();
       for (int k=0; k<3; k++) {
-	Par[k] = v.fPar[k];
-	ParErr[k] = v.fParErr[k];
+	Par[k] = v->GetPar(k);
+	ParErr[k] = v->GetParErr(k);
       } 
-      BreakDown = v.fBreakDown;
-      DarkCurrent = v.fDarkCurrent;
+      BreakDown = v->GetBreakDown();
+      DarkCurrent = v->GetDarkCurrent();
 
       tree->Fill();
     }
@@ -323,32 +321,20 @@ void AliEMCALCalibMapAPD::WriteRootCalibMapAPDInfo(const TString &rootFileName,
 //____________________________________________________________________________
 AliEMCALCalibMapAPD::~AliEMCALCalibMapAPD()
 {
-  delete [] fSuperModuleData;
+  fSuperModuleData.Delete();
 }
 
 //____________________________________________________________________________
-AliEMCALSuperModuleCalibMapAPD AliEMCALCalibMapAPD::GetSuperModuleCalibMapAPDId(Int_t supModIndex)const
+AliEMCALSuperModuleCalibMapAPD * AliEMCALCalibMapAPD::GetSuperModuleCalibMapAPDNum(Int_t supModIndex)const
 {
-  AliEMCALSuperModuleCalibMapAPD t;  // just to maybe prevent a crash, but we are returning something not-initialized so maybe not better really..
-  if (!fSuperModuleData)
-    return t;
-
-  return fSuperModuleData[supModIndex];
-}
-
-//____________________________________________________________________________
-AliEMCALSuperModuleCalibMapAPD AliEMCALCalibMapAPD::GetSuperModuleCalibMapAPDNum(Int_t supModIndex)const
-{
-  AliEMCALSuperModuleCalibMapAPD t;  // just to maybe prevent a crash, but we are returning something not-initialized so maybe not better really..
-  if (!fSuperModuleData)
-    return t;
-
   for (int i=0; i<fNSuperModule; i++) {
-    if (fSuperModuleData[i].fSuperModuleNum == supModIndex) {
-      return fSuperModuleData[i];
+    AliEMCALSuperModuleCalibMapAPD * t = (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[i];
+    if (t->GetSuperModuleNum() == supModIndex) {
+      return t;
     }
   }
 
-  return t;
+  // if we arrived here, then nothing was found.. just return a NULL pointer 
+  return NULL;
 }
 

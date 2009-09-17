@@ -7,6 +7,7 @@
 /* $Id: $ */
 
 #include <TObject.h>
+#include <TObjArray.h>
 #include "AliEMCALGeoParams.h"
 #include <cmath>
 class TString;
@@ -45,6 +46,22 @@ class AliEMCALCalibMapAPDVal : public TObject {
   }
   
  public:
+  void SetHardWareId(Int_t i) { fHardWareId = i; }; //
+  Int_t GetHardWareId() const { return fHardWareId; }; //
+  void SetAPDNum(Int_t i) { fAPDNum = i; }; //
+  Int_t GetAPDNum() const { return fAPDNum; }; //
+  void SetV30(Float_t f) { fV30 = f; }; //
+  Float_t GetV30() const { return fV30; }; // 
+  void SetPar(int ip, Float_t f) { fPar[ip] = f; }; //
+  Float_t GetPar(int ip) const { return fPar[ip]; }; // 
+  void SetParErr(int ip, Float_t f) { fParErr[ip] = f; }; //
+  Float_t GetParErr(int ip) const { return fParErr[ip]; }; // 
+  void SetBreakDown(Int_t i) { fBreakDown = i; }; //
+  Int_t GetBreakDown() const { return fBreakDown; }; //
+  void SetDarkCurrent(Float_t f) { fDarkCurrent = f; }; //
+  Float_t GetDarkCurrent() const { return fDarkCurrent; }; // 
+
+ private:
   Int_t fHardWareId; // HardWareIndex
   // info from APD calibrations
   Int_t fAPDNum;    // assigned APD-PA number; Catania 10000-, Houston: 20000-
@@ -55,15 +72,14 @@ class AliEMCALCalibMapAPDVal : public TObject {
   Int_t fBreakDown; // Hamamatsu Breakdown Voltage (V)	
   Float_t fDarkCurrent; // Hamamatsu Dark Current (A)	
   
-  ClassDef(AliEMCALCalibMapAPDVal, 1) // help class
+  ClassDef(AliEMCALCalibMapAPDVal, 2) // help class
 }; // AliEMCALCalibAPDVal
 
 // 1 SuperModule's worth of info: info on where the different APDs are
 class AliEMCALSuperModuleCalibMapAPD : public TObject {
  public:
-  //    AliEMCALSuperModuleCalibMapAPD(Int_t nSM = 0);
-  AliEMCALSuperModuleCalibMapAPD() : TObject(), // just init values
-    fSuperModuleNum(0)
+  AliEMCALSuperModuleCalibMapAPD(const int smNum=0) : TObject(), // just init values
+    fSuperModuleNum(smNum)
     {
       for (int icol=0; icol<AliEMCALGeoParams::fgkEMCALCols; icol++) {
 	for (int irow=0; irow<AliEMCALGeoParams::fgkEMCALRows; irow++) {
@@ -73,10 +89,16 @@ class AliEMCALSuperModuleCalibMapAPD : public TObject {
     }
   
  public:
+  void SetSuperModuleNum(Int_t i) { fSuperModuleNum = i;}; // 
+  Int_t GetSuperModuleNum() const { return fSuperModuleNum;}; // 
+  AliEMCALCalibMapAPDVal * GetAPDVal(int icol, int irow) 
+    { return &fAPDVal[icol][irow]; };
+
+ private:
   Int_t fSuperModuleNum;
   AliEMCALCalibMapAPDVal fAPDVal[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];
   
-  ClassDef(AliEMCALSuperModuleCalibMapAPD, 1) // help class
+  ClassDef(AliEMCALSuperModuleCalibMapAPD, 2) // help class
 };
 // ******* end of internal class definition *************    
     
@@ -86,7 +108,7 @@ public:
 
   enum kValType {kCalibTemp=25};// 25 deg C used for all APD calibrations
 
-  AliEMCALCalibMapAPD();
+  AliEMCALCalibMapAPD(const int nSM = AliEMCALGeoParams::fgkEMCALModules);
 
   // Read and Write txt I/O methods are normally not used, but are useful for 
   // filling the object before it is saved in OCDB 
@@ -100,12 +122,13 @@ public:
 
   // pointer to stored info.
   Int_t GetNSuperModule() const { return fNSuperModule; }; 
-  AliEMCALSuperModuleCalibMapAPD * GetSuperModuleData() const { return fSuperModuleData; };
 
   // - via the index in the stored array:
-  virtual AliEMCALSuperModuleCalibMapAPD GetSuperModuleCalibMapAPDId(Int_t smIndex) const;
+  virtual AliEMCALSuperModuleCalibMapAPD * GetSuperModuleCalibMapAPDId(Int_t smIndex) const
+   { return (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[smIndex]; };
+
   // - or via the actual SM number
-  virtual AliEMCALSuperModuleCalibMapAPD GetSuperModuleCalibMapAPDNum(Int_t smNum) const;
+  virtual AliEMCALSuperModuleCalibMapAPD * GetSuperModuleCalibMapAPDNum(Int_t smNum) const;
 
   // method to calculate gain M from fit parameters, and HV value
   Float_t GetGain(Float_t fitPar[3], Float_t HV) const 
@@ -116,14 +139,14 @@ public:
 protected:
 
   Int_t 	  fNSuperModule; // Number of supermodules.
-  AliEMCALSuperModuleCalibMapAPD *fSuperModuleData; // SuperModule data
+  TObjArray fSuperModuleData; // SuperModule data
 
 private:
 
   AliEMCALCalibMapAPD(const AliEMCALCalibMapAPD &);
   AliEMCALCalibMapAPD &operator = (const AliEMCALCalibMapAPD &);
 
-  ClassDef(AliEMCALCalibMapAPD, 2) //CalibMapAPD data info
+  ClassDef(AliEMCALCalibMapAPD, 3) //CalibMapAPD data info
 };
 
 #endif

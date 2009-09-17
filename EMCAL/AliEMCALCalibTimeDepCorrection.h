@@ -7,6 +7,7 @@
 /* $Id: $ */
 
 #include <TObject.h>
+#include <TObjArray.h>
 #include <TArrayF.h>
 #include "AliEMCALGeoParams.h"
 class TString;
@@ -20,8 +21,8 @@ class TTree;
 // 1 SuperModule's worth of info
 class AliEMCALSuperModuleCalibTimeDepCorrection : public TObject {
  public:
-  AliEMCALSuperModuleCalibTimeDepCorrection() : TObject(), // just init values
-    fSuperModuleNum(0)
+  AliEMCALSuperModuleCalibTimeDepCorrection(const int smNum=0) : TObject(), // just init values
+    fSuperModuleNum(smNum)
     {
       for (int icol=0; icol<AliEMCALGeoParams::fgkEMCALCols; icol++) {
 	for (int irow=0; irow<AliEMCALGeoParams::fgkEMCALRows; irow++) {
@@ -31,16 +32,22 @@ class AliEMCALSuperModuleCalibTimeDepCorrection : public TObject {
     }
 
  public:
+  void SetSuperModuleNum(Int_t i) { fSuperModuleNum = i;}; // 
+  Int_t GetSuperModuleNum() const { return fSuperModuleNum;}; // 
+  TArrayF * GetCorrection(int icol, int irow) 
+    { return &fCorrection[icol][irow]; };
+
+ private:
   Int_t fSuperModuleNum;
   TArrayF fCorrection[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
 
-  ClassDef(AliEMCALSuperModuleCalibTimeDepCorrection, 1) // help class
+  ClassDef(AliEMCALSuperModuleCalibTimeDepCorrection, 2) // help class
 };
 // ******* end of internal class definition *************
 
 class AliEMCALCalibTimeDepCorrection : public TObject {
  public:
-  AliEMCALCalibTimeDepCorrection();
+  AliEMCALCalibTimeDepCorrection(const int nSM = AliEMCALGeoParams::fgkEMCALModules);
 
   // interface methods; getting the whole struct should be more efficient though
   void InitCorrection(Int_t nSM, Int_t nBins, Float_t val); // assign a certain value to all 
@@ -48,7 +55,6 @@ class AliEMCALCalibTimeDepCorrection : public TObject {
   void SetCorrection(Int_t smIndex, Int_t iCol, Int_t iRow, Int_t iBin, Float_t val=1.0); // assign a certain value to a given bin
   Float_t GetCorrection(Int_t smIndex, Int_t iCol, Int_t iRow, Int_t iBin) const; // assign a certain value to a given bin
  
-
   // Read and Write txt I/O methods are normally not used, but are useful for 
   // filling the object before it is saved in OCDB 
   void ReadTextInfo(Int_t nSM, const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
@@ -61,12 +67,13 @@ class AliEMCALCalibTimeDepCorrection : public TObject {
 
   // pointer to stored info.
   Int_t GetNSuperModule() const { return fNSuperModule; }; 
-  AliEMCALSuperModuleCalibTimeDepCorrection * GetSuperModuleData() const { return fSuperModuleData; };
-
+ 
   // - via the index in the stored array:
-  virtual AliEMCALSuperModuleCalibTimeDepCorrection GetSuperModuleCalibTimeDepCorrectionId(Int_t smIndex) const;
+  virtual AliEMCALSuperModuleCalibTimeDepCorrection * GetSuperModuleCalibTimeDepCorrectionId(Int_t smIndex) const
+    { return (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[smIndex]; };
+
   // - or via the actual SM number
-  virtual AliEMCALSuperModuleCalibTimeDepCorrection GetSuperModuleCalibTimeDepCorrectionNum(Int_t smNum) const;
+  virtual AliEMCALSuperModuleCalibTimeDepCorrection * GetSuperModuleCalibTimeDepCorrectionNum(Int_t smNum) const;
 
   void SetStartTime(UInt_t ui) { fStartTime = ui; } //
   void SetNTimeBins(Int_t i) { fNTimeBins = i; } // 
@@ -81,7 +88,7 @@ class AliEMCALCalibTimeDepCorrection : public TObject {
 protected:
 
   Int_t 	  fNSuperModule; // Number of supermodules.
-  AliEMCALSuperModuleCalibTimeDepCorrection *fSuperModuleData; // SuperModule data
+  TObjArray fSuperModuleData; // SuperModule data
 
 private:
 
@@ -94,7 +101,7 @@ private:
 
   static const Int_t fgkMaxTimeBins = 50; // we are not going to have more correction time bins than this for a single runnumber.. 
 
-  ClassDef(AliEMCALCalibTimeDepCorrection, 2) //
+  ClassDef(AliEMCALCalibTimeDepCorrection, 3) //
 };
 
 #endif

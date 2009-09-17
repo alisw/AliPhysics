@@ -7,6 +7,7 @@
 /* $Id: $ */
 
 #include <TObject.h>
+#include <TObjArray.h>
 #include "AliEMCALGeoParams.h"
 class TString;
 class TTree;
@@ -19,8 +20,8 @@ class TTree;
 // 1 SuperModule's worth of info
 class AliEMCALSuperModuleBiasAPD : public TObject {
  public:
-  AliEMCALSuperModuleBiasAPD() : TObject(), // just init values
-    fSuperModuleNum(0)
+  AliEMCALSuperModuleBiasAPD(const int smNum=0) : TObject(), // just init values
+    fSuperModuleNum(smNum)
     {
       for (int icol=0; icol<AliEMCALGeoParams::fgkEMCALCols; icol++) {
 	for (int irow=0; irow<AliEMCALGeoParams::fgkEMCALRows; irow++) {
@@ -32,18 +33,28 @@ class AliEMCALSuperModuleBiasAPD : public TObject {
     }
 
  public:
+  void SetSuperModuleNum(Int_t i) { fSuperModuleNum = i;}; // 
+  Int_t GetSuperModuleNum() const { return fSuperModuleNum;}; // 
+  void SetElecId(int icol, int irow, Int_t i) { fElecId[icol][irow] = i; }; //
+  Int_t GetElecId(int icol, int irow) const { return fElecId[icol][irow]; }; //
+  void SetDAC(int icol, int irow, Int_t i) { fDAC[icol][irow] = i; }; //
+  Int_t GetDAC(int icol, int irow) const { return fDAC[icol][irow]; }; //
+  void SetVoltage(int icol, int irow, Float_t f) { fVoltage[icol][irow] = f; }; //
+  Float_t GetVoltage(int icol, int irow) const { return fVoltage[icol][irow]; }; //
+
+ private:
   Int_t fSuperModuleNum; // SM index
   Int_t fElecId[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; // ElectronicsIndex/Address - we keep this to help ensure that the column/row info matches with electronics indices
   Int_t fDAC[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; // 0-0x3ff register
   Float_t fVoltage[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; // 210 to ca 417 V. (function of DAC setting)
 
-  ClassDef(AliEMCALSuperModuleBiasAPD, 1) // help class
+  ClassDef(AliEMCALSuperModuleBiasAPD, 2) // help class
 };
 // ******* end of internal class definition *************
 
 class AliEMCALBiasAPD : public TObject {
 public:
-  AliEMCALBiasAPD();
+  AliEMCALBiasAPD(const int nSM = AliEMCALGeoParams::fgkEMCALModules);
 
   // Read and Write txt I/O methods are normally not used, but are useful for 
   // filling the object before it is saved in OCDB 
@@ -57,24 +68,25 @@ public:
 
   // pointer to stored info.
   Int_t GetNSuperModule() const { return fNSuperModule; }; 
-  AliEMCALSuperModuleBiasAPD * GetSuperModuleData() const { return fSuperModuleData; };
 
   // - via the index in the stored array:
-  virtual AliEMCALSuperModuleBiasAPD GetSuperModuleBiasAPDId(Int_t smIndex) const;
+  virtual AliEMCALSuperModuleBiasAPD * GetSuperModuleBiasAPDId(Int_t smIndex) const
+    { return (AliEMCALSuperModuleBiasAPD*) fSuperModuleData[smIndex]; };
+
   // - or via the actual SM number
-  virtual AliEMCALSuperModuleBiasAPD GetSuperModuleBiasAPDNum(Int_t smNum) const;
+  virtual AliEMCALSuperModuleBiasAPD * GetSuperModuleBiasAPDNum(Int_t smNum) const;
 
 protected:
 
   Int_t 	  fNSuperModule; // Number of supermodules.
-  AliEMCALSuperModuleBiasAPD *fSuperModuleData; // SuperModule data
+  TObjArray fSuperModuleData; // SuperModule data
 
 private:
 
   AliEMCALBiasAPD(const AliEMCALBiasAPD &);
   AliEMCALBiasAPD &operator = (const AliEMCALBiasAPD &);
 
-  ClassDef(AliEMCALBiasAPD, 2) //BiasAPD data reader
+  ClassDef(AliEMCALBiasAPD, 3) //BiasAPD data info
 };
 
 #endif

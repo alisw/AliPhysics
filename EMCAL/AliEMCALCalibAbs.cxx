@@ -30,11 +30,15 @@ using namespace std;
 ClassImp(AliEMCALCalibAbs)
 
 //____________________________________________________________________________
-AliEMCALCalibAbs::AliEMCALCalibAbs() : 
-  fNSuperModule(0),
-  fSuperModuleData(0)
+AliEMCALCalibAbs::AliEMCALCalibAbs(const int nSM) : 
+  fNSuperModule(nSM),
+  fSuperModuleData()
 {
   //Default constructor.
+  for (int i=0; i<fNSuperModule; i++) {
+    fSuperModuleData.Add(new AliEMCALSuperModuleCalibAbs(i));
+  }
+  fSuperModuleData.Compress(); // compress the TObjArray
 }
 
 //____________________________________________________________________________
@@ -50,8 +54,6 @@ void AliEMCALCalibAbs::ReadTextCalibAbsInfo(Int_t nSM, const TString &txtFileNam
   }
 
   fNSuperModule = nSM;
-  if (fSuperModuleData) delete [] fSuperModuleData;
-  fSuperModuleData = new AliEMCALSuperModuleCalibAbs[fNSuperModule];
 
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
@@ -82,33 +84,33 @@ void AliEMCALCalibAbs::ReadTextCalibAbsInfo(Int_t nSM, const TString &txtFileNam
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
   for (Int_t i = 0; i < fNSuperModule; i++) {
-    AliEMCALSuperModuleCalibAbs &t = fSuperModuleData[i];
+    AliEMCALSuperModuleCalibAbs * t = (AliEMCALSuperModuleCalibAbs*) fSuperModuleData[i];
     if (!inputFile) {
       printf("AliEMCALCalibAbs::ReadCalibAbsInfo - Error while reading input file; likely EOF..");
       return;
     }
     inputFile >> iSM;
-    t.fSuperModuleNum = iSM;
+    t->SetSuperModuleNum(iSM);
 
     // first: overall values for the whole SuperModule
     inputFile >> CalibMethod >> CalibPass >> CalibTime >> AbsoluteGain;
-    t.fCalibMethod = CalibMethod;
-    t.fCalibPass = CalibPass;
-    t.fCalibTime = CalibTime;
-    t.fAbsoluteGain = AbsoluteGain;
+    t->SetCalibMethod(CalibMethod);
+    t->SetCalibPass(CalibPass);
+    t->SetCalibTime(CalibTime);
+    t->SetAbsoluteGain(AbsoluteGain);
 
     // second: additional info for LED Reference and SM temperature
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) {
       inputFile >> id >> LEDRefAmp >> LEDRefAmpRMS >> LEDRefHighLowRatio >> LEDRefHighLow;
-      t.fLEDRefAmp[id] = LEDRefAmp;
-      t.fLEDRefAmpRMS[id] = LEDRefAmpRMS;
-      t.fLEDRefHighLowRatio[id] = LEDRefHighLowRatio;
-      t.fLEDRefHighLow[id] = LEDRefHighLow;
+      t->SetLEDRefAmp(id, LEDRefAmp);
+      t->SetLEDRefAmpRMS(id, LEDRefAmpRMS);
+      t->SetLEDRefHighLowRatio(id, LEDRefHighLowRatio);
+      t->SetLEDRefHighLow(id, LEDRefHighLow);
     }
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) {
       inputFile >> id >> Temperature >> TemperatureRMS;
-      t.fTemperature[id] = Temperature;
-      t.fTemperatureRMS[id] = TemperatureRMS;
+      t->SetTemperature(id, Temperature);
+      t->SetTemperatureRMS(id, TemperatureRMS);
     }
 
     // third: info for each tower
@@ -123,13 +125,13 @@ void AliEMCALCalibAbs::ReadTextCalibAbsInfo(Int_t nSM, const TString &txtFileNam
 	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
 
-      AliEMCALCalibAbsVal &v = t.fAPDVal[iCol][iRow];
+      AliEMCALCalibAbsVal * v = t->GetAPDVal(iCol, iRow);
 
-      v.fRelativeGain = RelativeGain;
-      v.fHighLowRatio = HighLowRatio;
-      v.fHighLow = HighLow;
-      v.fLEDAmp = LEDAmp;
-      v.fLEDAmpRMS = LEDAmpRMS;
+      v->SetRelativeGain(RelativeGain);
+      v->SetHighLowRatio(HighLowRatio);
+      v->SetHighLow(HighLow);
+      v->SetLEDAmp(LEDAmp);
+      v->SetLEDAmpRMS(LEDAmpRMS);
     }
 
   } // i, SuperModule
@@ -157,22 +159,23 @@ void AliEMCALCalibAbs::WriteTextCalibAbsInfo(const TString &txtFileName,
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
   for (Int_t i = 0; i < fNSuperModule; i++) {
-    AliEMCALSuperModuleCalibAbs &t = fSuperModuleData[i];
+    AliEMCALSuperModuleCalibAbs * t = (AliEMCALSuperModuleCalibAbs*) fSuperModuleData[i];
+
     // first: overall values for the whole SuperModule
-    outputFile << t.fSuperModuleNum << endl;
-    outputFile << t.fCalibMethod << " " 
-	       << t.fCalibPass << " " 
-	       << t.fCalibTime << " " 
-	       << t.fAbsoluteGain << endl;
+    outputFile << t->GetSuperModuleNum() << endl;
+    outputFile << t->GetCalibMethod() << " " 
+	       << t->GetCalibPass() << " " 
+	       << t->GetCalibTime() << " " 
+	       << t->GetAbsoluteGain() << endl;
 
     // second: additional info for LED Reference and SM temperature
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) {
-      outputFile << j << " " << t.fLEDRefAmp[j] << " " << t.fLEDRefAmpRMS[j] 
-		 << " " << t.fLEDRefHighLowRatio[j] << " " << t.fLEDRefHighLow[j] 
+      outputFile << j << " " << t->GetLEDRefAmp(j) << " " << t->GetLEDRefAmpRMS(j) 
+		 << " " << t->GetLEDRefHighLowRatio(j) << " " << t->GetLEDRefHighLow(j) 
 		 << endl;
     }
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) {
-      outputFile << j << " " << t.fTemperature[j] << " " << t.fTemperatureRMS[j] << endl;
+      outputFile << j << " " << t->GetTemperature(j) << " " << t->GetTemperatureRMS(j) << endl;
     }
 
     // third: info for each tower
@@ -180,7 +183,7 @@ void AliEMCALCalibAbs::WriteTextCalibAbsInfo(const TString &txtFileName,
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
 
-      AliEMCALCalibAbsVal &v = t.fAPDVal[iCol][iRow];
+      AliEMCALCalibAbsVal * v = t->GetAPDVal(iCol, iRow);
 
       if (swapSides) {
 	// C side, oriented differently than A side: swap is requested
@@ -189,11 +192,11 @@ void AliEMCALCalibAbs::WriteTextCalibAbsInfo(const TString &txtFileName,
       }
 
       outputFile << iCol << " " << iRow 
-		 << " " << v.fRelativeGain
-		 << " " << v.fHighLowRatio 
-		 << " " << v.fHighLow 
-		 << " " << v.fLEDAmp 
-		 << " " << v.fLEDAmpRMS << endl;
+		 << " " << v->GetRelativeGain()
+		 << " " << v->GetHighLowRatio() 
+		 << " " << v->GetHighLow() 
+		 << " " << v->GetLEDAmp() 
+		 << " " << v->GetLEDAmpRMS() << endl;
     }
 
   } // i, SuperModule
@@ -226,9 +229,6 @@ void AliEMCALCalibAbs::ReadTreeCalibAbsInfo(TTree *tree,
   // how many SuperModule's worth of entries / APDs do we have?
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
   fNSuperModule = tree->GetEntries() / nAPDPerSM;
-
-  if (fSuperModuleData) delete [] fSuperModuleData;
-  fSuperModuleData = new AliEMCALSuperModuleCalibAbs[fNSuperModule];
 
   Int_t iSM = 0; // SuperModule index
   // list of values to be read
@@ -293,24 +293,25 @@ void AliEMCALCalibAbs::ReadTreeCalibAbsInfo(TTree *tree,
     tree->GetEntry(ient);
 
     // assume the index SuperModules come in order: i=iSM
-    AliEMCALSuperModuleCalibAbs &t = fSuperModuleData[iSM];
-    t.fSuperModuleNum = iSM;
+    AliEMCALSuperModuleCalibAbs * t = (AliEMCALSuperModuleCalibAbs*) fSuperModuleData[iSM];
+
+    t->SetSuperModuleNum(iSM);
     // first, overall values
-    t.fCalibMethod = CalibMethod;
-    t.fCalibPass = CalibPass;
-    t.fCalibTime = CalibTime;
-    t.fAbsoluteGain = AbsoluteGain;
+    t->SetCalibMethod(CalibMethod);
+    t->SetCalibPass(CalibPass);
+    t->SetCalibTime(CalibTime);
+    t->SetAbsoluteGain(AbsoluteGain);
 
     // second: additional info for LED references and SM temperatures
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) {
-      t.fLEDRefAmp[j] = LEDRefAmp[j];
-      t.fLEDRefAmpRMS[j] = LEDRefAmpRMS[j];
-      t.fLEDRefHighLowRatio[j] = LEDRefHighLowRatio[j];
-      t.fLEDRefHighLow[j] = LEDRefHighLow[j];
+      t->SetLEDRefAmp(j, LEDRefAmp[j]);
+      t->SetLEDRefAmpRMS(j, LEDRefAmpRMS[j]);
+      t->SetLEDRefHighLowRatio(j, LEDRefHighLowRatio[j]);
+      t->SetLEDRefHighLow(j, LEDRefHighLow[j]);
     }
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) {
-      t.fTemperature[j] = Temperature[j];
-      t.fTemperatureRMS[j] = TemperatureRMS[j];
+      t->SetTemperature(j, Temperature[j]);
+      t->SetTemperatureRMS(j, TemperatureRMS[j]);
     }
 
     // third: info for each tower
@@ -328,13 +329,13 @@ void AliEMCALCalibAbs::ReadTreeCalibAbsInfo(TTree *tree,
 	iRowMod = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
 
-      AliEMCALCalibAbsVal &v = t.fAPDVal[iColMod][iRowMod];
+      AliEMCALCalibAbsVal * v = t->GetAPDVal(iCol, iRow);
 
-      v.fRelativeGain = RelativeGain[iCol][iRow];
-      v.fHighLowRatio = HighLowRatio[iCol][iRow];
-      v.fHighLow = HighLow[iCol][iRow];
-      v.fLEDAmp = LEDAmp[iCol][iRow];
-      v.fLEDAmpRMS = LEDAmpRMS[iCol][iRow];
+      v->SetRelativeGain(RelativeGain[iCol][iRow]);
+      v->SetHighLowRatio(HighLowRatio[iCol][iRow]);
+      v->SetHighLow(HighLow[iCol][iRow]);
+      v->SetLEDAmp(LEDAmp[iCol][iRow]);
+      v->SetLEDAmpRMS(LEDAmpRMS[iCol][iRow]);
     }
 
   } // loop over entries
@@ -418,25 +419,25 @@ void AliEMCALCalibAbs::WriteRootCalibAbsInfo(const TString &rootFileName,
   tree->Branch( "LEDAmpRMS", &LEDAmpRMS, Form("LEDAmpRMS[%d][%d]/F", AliEMCALGeoParams::fgkEMCALCols, AliEMCALGeoParams::fgkEMCALRows) );
 
   for (iSM = 0; iSM < fNSuperModule; iSM++) {
-    AliEMCALSuperModuleCalibAbs &t = fSuperModuleData[iSM];
+    AliEMCALSuperModuleCalibAbs * t = (AliEMCALSuperModuleCalibAbs*) fSuperModuleData[iSM];
 
-    iSM = t.fSuperModuleNum;
+    iSM = t->GetSuperModuleNum();
     // first, overall values
-    CalibMethod = t.fCalibMethod;
-    CalibPass = t.fCalibPass;
-    CalibTime = t.fCalibTime;
-    AbsoluteGain = t.fAbsoluteGain;
+    CalibMethod = t->GetCalibMethod();
+    CalibPass = t->GetCalibPass();
+    CalibTime = t->GetCalibTime();
+    AbsoluteGain = t->GetAbsoluteGain();
 
     // second: additional info for LED references and SM temperatures
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) {
-      LEDRefAmp[j] = t.fLEDRefAmp[j];
-      LEDRefAmpRMS[j] = t.fLEDRefAmpRMS[j];
-      LEDRefHighLowRatio[j] = t.fLEDRefHighLowRatio[j];
-      LEDRefHighLow[j] = t.fLEDRefHighLow[j];
+      LEDRefAmp[j] = t->GetLEDRefAmp(j);
+      LEDRefAmpRMS[j] = t->GetLEDRefAmpRMS(j);
+      LEDRefHighLowRatio[j] = t->GetLEDRefHighLowRatio(j);
+      LEDRefHighLow[j] = t->GetLEDRefHighLow(j);
     }
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) {
-      Temperature[j] = t.fTemperature[j];
-      TemperatureRMS[j] = t.fTemperatureRMS[j];
+      Temperature[j] = t->GetTemperature(j);
+      TemperatureRMS[j] = t->GetTemperatureRMS(j);
     }
 
     // third: info for each tower
@@ -454,13 +455,13 @@ void AliEMCALCalibAbs::WriteRootCalibAbsInfo(const TString &rootFileName,
 	iRowMod = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
 
-      AliEMCALCalibAbsVal &v = t.fAPDVal[iColMod][iRowMod];
+      AliEMCALCalibAbsVal * v = t->GetAPDVal(iCol, iRow);
 
-      RelativeGain[iCol][iRow] = v.fRelativeGain;
-      HighLowRatio[iCol][iRow] = v.fHighLowRatio;
-      HighLow[iCol][iRow] = v.fHighLow;
-      LEDAmp[iCol][iRow] = v.fLEDAmp;
-      LEDAmpRMS[iCol][iRow] = v.fLEDAmpRMS;
+      RelativeGain[iCol][iRow] = v->GetRelativeGain();
+      HighLowRatio[iCol][iRow] = v->GetHighLowRatio();
+      HighLow[iCol][iRow] = v->GetHighLow();
+      LEDAmp[iCol][iRow] = v->GetLEDAmp();
+      LEDAmpRMS[iCol][iRow] = v->GetLEDAmpRMS();
     }
 
     tree->Fill();
@@ -475,32 +476,20 @@ void AliEMCALCalibAbs::WriteRootCalibAbsInfo(const TString &rootFileName,
 //____________________________________________________________________________
 AliEMCALCalibAbs::~AliEMCALCalibAbs()
 {
-  delete [] fSuperModuleData;
+  fSuperModuleData.Delete();
 }
 
 //____________________________________________________________________________
-AliEMCALSuperModuleCalibAbs AliEMCALCalibAbs::GetSuperModuleCalibAbsId(Int_t supModIndex)const
+AliEMCALSuperModuleCalibAbs * AliEMCALCalibAbs::GetSuperModuleCalibAbsNum(Int_t supModIndex)const
 {
-  AliEMCALSuperModuleCalibAbs t;  // just to maybe prevent a crash, but we are returning something not-initialized so maybe not better really..
-  if (!fSuperModuleData)
-    return t;
-
-  return fSuperModuleData[supModIndex];
-}
-
-//____________________________________________________________________________
-AliEMCALSuperModuleCalibAbs AliEMCALCalibAbs::GetSuperModuleCalibAbsNum(Int_t supModIndex)const
-{
-  AliEMCALSuperModuleCalibAbs t;  // just to maybe prevent a crash, but we are returning something not-initialized so maybe not better really..
-  if (!fSuperModuleData)
-    return t;
-
   for (int i=0; i<fNSuperModule; i++) {
-    if (fSuperModuleData[i].fSuperModuleNum == supModIndex) {
-      return fSuperModuleData[i];
+    AliEMCALSuperModuleCalibAbs * t = (AliEMCALSuperModuleCalibAbs*) fSuperModuleData[i];
+    if (t->GetSuperModuleNum() == supModIndex) {
+      return t;
     }
   }
 
-  return t;
+  // if we arrived here, then nothing was found.. just return a NULL pointer 
+  return NULL;
 }
 

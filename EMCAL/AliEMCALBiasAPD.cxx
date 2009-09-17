@@ -30,11 +30,15 @@ using namespace std;
 ClassImp(AliEMCALBiasAPD)
 
 //____________________________________________________________________________
-AliEMCALBiasAPD::AliEMCALBiasAPD() : 
-  fNSuperModule(0),
-  fSuperModuleData(0)
+AliEMCALBiasAPD::AliEMCALBiasAPD(const int nSM) : 
+  fNSuperModule(nSM), // make space for everyone 
+  fSuperModuleData()
 {
   //Default constructor.
+  for (int i=0; i<fNSuperModule; i++) {
+    fSuperModuleData.Add(new AliEMCALSuperModuleBiasAPD(i));
+  }
+  fSuperModuleData.Compress(); // compress the TObjArray
 }
 
 //____________________________________________________________________________
@@ -50,8 +54,6 @@ void AliEMCALBiasAPD::ReadTextBiasAPDInfo(Int_t nSM, const TString &txtFileName,
   }
 
   fNSuperModule = nSM;
-  if (fSuperModuleData) delete [] fSuperModuleData;
-  fSuperModuleData = new AliEMCALSuperModuleBiasAPD[fNSuperModule];
 
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
@@ -63,13 +65,14 @@ void AliEMCALBiasAPD::ReadTextBiasAPDInfo(Int_t nSM, const TString &txtFileName,
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
   for (Int_t i = 0; i < fNSuperModule; i++) {
-    AliEMCALSuperModuleBiasAPD &t = fSuperModuleData[i];
+    AliEMCALSuperModuleBiasAPD * t = (AliEMCALSuperModuleBiasAPD*) fSuperModuleData[i];
+
     if (!inputFile) {
       printf("AliEMCALBiasAPD::ReadBiasAPDInfo - Error while reading input file; likely EOF..");
       return;
     }
     inputFile >> iSM;
-    t.fSuperModuleNum = iSM;
+    t->SetSuperModuleNum(iSM);
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
       inputFile >> iCol >> iRow >> iElecId >> iDAC >> voltage;
@@ -81,9 +84,9 @@ void AliEMCALBiasAPD::ReadTextBiasAPDInfo(Int_t nSM, const TString &txtFileName,
 	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
 
-      t.fElecId[iCol][iRow] = iElecId;
-      t.fDAC[iCol][iRow] = iDAC;
-      t.fVoltage[iCol][iRow] = voltage;
+      t->SetElecId(iCol, iRow, iElecId);
+      t->SetDAC(iCol, iRow, iDAC);
+      t->SetVoltage(iCol, iRow, voltage);
     }
 
   } // i, SuperModule
@@ -114,16 +117,16 @@ void AliEMCALBiasAPD::WriteTextBiasAPDInfo(const TString &txtFileName,
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
   for (Int_t i = 0; i < fNSuperModule; i++) {
-    AliEMCALSuperModuleBiasAPD &t = fSuperModuleData[i];
-    outputFile << t.fSuperModuleNum << endl;
+    AliEMCALSuperModuleBiasAPD * t = (AliEMCALSuperModuleBiasAPD*) fSuperModuleData[i];
+    outputFile << t->GetSuperModuleNum() << endl;
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
 
-      iElecId = t.fElecId[iCol][iRow];
-      iDAC = t.fDAC[iCol][iRow];
-      voltage = t.fVoltage[iCol][iRow];
+      iElecId = t->GetElecId(iCol, iRow);
+      iDAC = t->GetDAC(iCol, iRow);
+      voltage = t->GetVoltage(iCol, iRow);
 
       if (swapSides) {
 	// C side, oriented differently than A side: swap is requested
@@ -167,9 +170,6 @@ void AliEMCALBiasAPD::ReadTreeBiasAPDInfo(TTree *tree,
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
   fNSuperModule = tree->GetEntries() / nAPDPerSM;
 
-  if (fSuperModuleData) delete [] fSuperModuleData;
-  fSuperModuleData = new AliEMCALSuperModuleBiasAPD[fNSuperModule];
-
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
   Int_t iRow = 0;
@@ -191,8 +191,8 @@ void AliEMCALBiasAPD::ReadTreeBiasAPDInfo(TTree *tree,
     tree->GetEntry(ient);
 
     // assume the index SuperModules come in order: i=iSM
-    AliEMCALSuperModuleBiasAPD &t = fSuperModuleData[iSM];
-    t.fSuperModuleNum = iSM;
+    AliEMCALSuperModuleBiasAPD * t = (AliEMCALSuperModuleBiasAPD*) fSuperModuleData[iSM];
+    t->SetSuperModuleNum(iSM);
 
     // assume that this info is already swapped and done for this basis?
     if (swapSides) {
@@ -201,9 +201,9 @@ void AliEMCALBiasAPD::ReadTreeBiasAPDInfo(TTree *tree,
       iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
     }
 
-    t.fElecId[iCol][iRow] = iElecId;
-    t.fDAC[iCol][iRow] = iDAC;
-    t.fVoltage[iCol][iRow] = voltage;
+    t->SetElecId(iCol, iRow, iElecId);
+    t->SetDAC(iCol, iRow, iDAC);
+    t->SetVoltage(iCol, iRow, voltage);
 
   } // 
 
@@ -241,15 +241,15 @@ void AliEMCALBiasAPD::WriteRootBiasAPDInfo(const TString &rootFileName,
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
   for (iSM = 0; iSM < fNSuperModule; iSM++) {
-    AliEMCALSuperModuleBiasAPD &t = fSuperModuleData[iSM];
+    AliEMCALSuperModuleBiasAPD * t = (AliEMCALSuperModuleBiasAPD*) fSuperModuleData[iSM];
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
 
-      iElecId = t.fElecId[iCol][iRow];
-      iDAC = t.fDAC[iCol][iRow];
-      voltage = t.fVoltage[iCol][iRow];
+      iElecId = t->GetElecId(iCol, iRow);
+      iDAC = t->GetDAC(iCol, iRow);
+      voltage = t->GetVoltage(iCol, iRow);
 
       if (swapSides) {
 	// C side, oriented differently than A side: swap is requested
@@ -271,32 +271,20 @@ void AliEMCALBiasAPD::WriteRootBiasAPDInfo(const TString &rootFileName,
 //____________________________________________________________________________
 AliEMCALBiasAPD::~AliEMCALBiasAPD()
 {
-  delete [] fSuperModuleData;
+  fSuperModuleData.Delete();
 }
 
 //____________________________________________________________________________
-AliEMCALSuperModuleBiasAPD AliEMCALBiasAPD::GetSuperModuleBiasAPDId(Int_t supModIndex)const
+AliEMCALSuperModuleBiasAPD * AliEMCALBiasAPD::GetSuperModuleBiasAPDNum(Int_t supModIndex)const
 {
-  AliEMCALSuperModuleBiasAPD t;  // just to maybe prevent a crash, but we are returning something not-initialized so maybe not better really..
-  if (!fSuperModuleData)
-    return t;
-
-  return fSuperModuleData[supModIndex];
-}
-
-//____________________________________________________________________________
-AliEMCALSuperModuleBiasAPD AliEMCALBiasAPD::GetSuperModuleBiasAPDNum(Int_t supModIndex)const
-{
-  AliEMCALSuperModuleBiasAPD t;  // just to maybe prevent a crash, but we are returning something not-initialized so maybe not better really..
-  if (!fSuperModuleData)
-    return t;
-
   for (int i=0; i<fNSuperModule; i++) {
-    if (fSuperModuleData[i].fSuperModuleNum == supModIndex) {
-      return fSuperModuleData[i];
+    AliEMCALSuperModuleBiasAPD * t = (AliEMCALSuperModuleBiasAPD*) fSuperModuleData[i];
+    if (t->GetSuperModuleNum() == supModIndex) {
+      return t;
     }
   }
 
-  return t;
+  // if we arrived here, then nothing was found.. just return a NULL pointer 
+  return NULL;
 }
 

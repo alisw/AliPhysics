@@ -20,7 +20,6 @@
 
 #include <fstream>
 #include <TString.h>
-#include <TArrayF.h>
 #include <TFile.h>
 #include <TTree.h>
 
@@ -31,14 +30,18 @@ using namespace std;
 ClassImp(AliEMCALCalibTimeDepCorrection)
 
 //____________________________________________________________________________
-AliEMCALCalibTimeDepCorrection::AliEMCALCalibTimeDepCorrection() : 
-  fNSuperModule(0),
-  fSuperModuleData(0),
+AliEMCALCalibTimeDepCorrection::AliEMCALCalibTimeDepCorrection(const int nSM) : 
+  fNSuperModule(nSM),
+  fSuperModuleData(),
   fStartTime(0),
   fNTimeBins(0),
   fTimeBinSize(0)
 {
   //Default constructor.
+  for (int i=0; i<fNSuperModule; i++) {
+    fSuperModuleData.Add(new AliEMCALSuperModuleCalibTimeDepCorrection(i));
+  }
+  fSuperModuleData.Compress(); // compress the TObjArray
 }
 
 //____________________________________________________________________________
@@ -46,8 +49,6 @@ void AliEMCALCalibTimeDepCorrection::InitCorrection(Int_t nSM, Int_t nBins, Floa
 {
   // This methods assumes that you are using SuperModules 0..nSM-1
   fNSuperModule = nSM;
-  if (fSuperModuleData) delete [] fSuperModuleData;
-  fSuperModuleData = new AliEMCALSuperModuleCalibTimeDepCorrection[fNSuperModule];
 
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
@@ -58,16 +59,16 @@ void AliEMCALCalibTimeDepCorrection::InitCorrection(Int_t nSM, Int_t nBins, Floa
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
   for (Int_t i = 0; i < fNSuperModule; i++) {
-    AliEMCALSuperModuleCalibTimeDepCorrection &t = fSuperModuleData[i];
-    t.fSuperModuleNum = iSM; // assume SMs are coming in order
+    AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[i];
+    t->SetSuperModuleNum(iSM); // assume SMs are coming in order
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
 
       // set size of TArray
-      t.fCorrection[iCol][iRow].Set(nCorr);
+      t->GetCorrection(iCol,iRow)->Set(nCorr);
       for (Int_t k=0; k<nCorr; k++) {
 	// add to TArray
-	t.fCorrection[iCol][iRow].AddAt(Correction, k); // AddAt = SetAt..
+	t->GetCorrection(iCol,iRow)->AddAt(Correction, k); // AddAt = SetAt..
       }
     }
 
@@ -79,14 +80,14 @@ void AliEMCALCalibTimeDepCorrection::InitCorrection(Int_t nSM, Int_t nBins, Floa
 //____________________________________________________________________________
 void AliEMCALCalibTimeDepCorrection::SetCorrection(Int_t supModIndex, Int_t iCol, Int_t iRow, Int_t iBin, Float_t val)
 { // if you call for non-existing data, there may be a crash..
-  fSuperModuleData[supModIndex].fCorrection[iCol][iRow].AddAt(val, iBin); // AddAt = SetAt..
+  ((AliEMCALSuperModuleCalibTimeDepCorrection*)fSuperModuleData[supModIndex])->GetCorrection(iCol,iRow)->AddAt(val, iBin); // AddAt = SetAt..
  return; 
 }
 
 //____________________________________________________________________________
-Float_t AliEMCALCalibTimeDepCorrection::GetCorrection(Int_t supModIndex, Int_t iCol, Int_t iRow, Int_t iBin)const
+Float_t AliEMCALCalibTimeDepCorrection::GetCorrection(Int_t supModIndex, Int_t iCol, Int_t iRow, Int_t iBin) const
 { // if you call for non-existing data, there may be a crash..
-  return fSuperModuleData[supModIndex].fCorrection[iCol][iRow].At(iBin);
+  ((AliEMCALSuperModuleCalibTimeDepCorrection*)fSuperModuleData[supModIndex])->GetCorrection(iCol,iRow)->At(iBin);
 }
 
 //____________________________________________________________________________
@@ -102,8 +103,6 @@ void AliEMCALCalibTimeDepCorrection::ReadTextInfo(Int_t nSM, const TString &txtF
   }
 
   fNSuperModule = nSM;
-  if (fSuperModuleData) delete [] fSuperModuleData;
-  fSuperModuleData = new AliEMCALSuperModuleCalibTimeDepCorrection[fNSuperModule];
 
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
@@ -117,13 +116,14 @@ void AliEMCALCalibTimeDepCorrection::ReadTextInfo(Int_t nSM, const TString &txtF
   inputFile >> fStartTime >> fNTimeBins >> fTimeBinSize;
 
   for (Int_t i = 0; i < fNSuperModule; i++) {
-    AliEMCALSuperModuleCalibTimeDepCorrection &t = fSuperModuleData[i];
+    AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[i];
+
     if (!inputFile) {
       printf("AliEMCALCalibTimeDepCorrection::ReadTextInfo - Error while reading input file; likely EOF..");
       return;
     }
     inputFile >> iSM;
-    t.fSuperModuleNum = iSM;
+    t->SetSuperModuleNum(iSM);
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
       inputFile >> iCol >> iRow >> nCorr;
@@ -136,11 +136,11 @@ void AliEMCALCalibTimeDepCorrection::ReadTextInfo(Int_t nSM, const TString &txtF
       }
 
       // set size of TArray
-      t.fCorrection[iCol][iRow].Set(nCorr);
+      t->GetCorrection(iCol,iRow)->Set(nCorr);
       for (Int_t k=0; k<nCorr; k++) {
 	inputFile >> Correction;
 	// add to TArray
-	t.fCorrection[iCol][iRow].AddAt(Correction, k);
+	t->GetCorrection(iCol,iRow)->AddAt(Correction, k);
       }
     }
 
@@ -173,14 +173,14 @@ void AliEMCALCalibTimeDepCorrection::WriteTextInfo(const TString &txtFileName,
   outputFile << fStartTime << " " << fNTimeBins << " " << fTimeBinSize << endl;
 
   for (Int_t i = 0; i < fNSuperModule; i++) {
-    AliEMCALSuperModuleCalibTimeDepCorrection &t = fSuperModuleData[i];
-    outputFile << t.fSuperModuleNum << endl;
+    AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[i];
+    outputFile << t->GetSuperModuleNum() << endl;
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
 
-      nCorr = t.fCorrection[iCol][iRow].GetSize();
+      nCorr = t->GetCorrection(iCol,iRow)->GetSize();
 
       if (swapSides) {
 	// C side, oriented differently than A side: swap is requested
@@ -190,7 +190,7 @@ void AliEMCALCalibTimeDepCorrection::WriteTextInfo(const TString &txtFileName,
 
       outputFile << iCol << " " << iRow << " " << nCorr << endl;
       for (Int_t k=0; k<nCorr; k++) {
-	outputFile << t.fCorrection[iCol][iRow].At(k) << " ";
+	outputFile << t->GetCorrection(iCol,iRow)->At(k) << " ";
       }
       outputFile << endl;
 
@@ -234,9 +234,6 @@ void AliEMCALCalibTimeDepCorrection::ReadTreeInfo(TTree *treeGlob, TTree *treeCo
   treeGlob->SetBranchAddress("fTimeBinSize", &fTimeBinSize);
   treeGlob->GetEntry(0); 
 
-  if (fSuperModuleData) delete [] fSuperModuleData;
-  fSuperModuleData = new AliEMCALSuperModuleCalibTimeDepCorrection[fNSuperModule];
-
   Int_t iSM = 0; // SuperModule index
   Int_t iCol = 0;
   Int_t iRow = 0;
@@ -258,8 +255,8 @@ void AliEMCALCalibTimeDepCorrection::ReadTreeInfo(TTree *treeGlob, TTree *treeCo
     treeCorr->GetEntry(ient);
 
     // assume the index SuperModules come in order: i=iSM
-    AliEMCALSuperModuleCalibTimeDepCorrection &t = fSuperModuleData[iSM];
-    t.fSuperModuleNum = iSM;
+    AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[iSM];
+    t->SetSuperModuleNum(iSM);
 
     // assume that this info is already swapped and done for this basis?
     if (swapSides) {
@@ -270,10 +267,10 @@ void AliEMCALCalibTimeDepCorrection::ReadTreeInfo(TTree *treeGlob, TTree *treeCo
 
 
     // set size of TArray
-    t.fCorrection[iCol][iRow].Set(nCorr);
+    t->GetCorrection(iCol,iRow)->Set(nCorr);
     for (Int_t k=0; k<nCorr; k++) {
       // add to TArray
-      t.fCorrection[iCol][iRow].AddAt(correction[k], k);
+      t->GetCorrection(iCol,iRow)->AddAt(correction[k], k);
     }
 
   } // entry
@@ -320,13 +317,13 @@ void AliEMCALCalibTimeDepCorrection::WriteRootInfo(const TString &rootFileName,
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
   for (iSM = 0; iSM < fNSuperModule; iSM++) {
-    AliEMCALSuperModuleCalibTimeDepCorrection &t = fSuperModuleData[iSM];
+    AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[iSM];
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
 
-      nCorr = t.fCorrection[iCol][iRow].GetSize();
+      nCorr = t->GetCorrection(iCol,iRow)->GetSize();
       if (nCorr > fgkMaxTimeBins) {
 	printf("AliEMCALCalibTimeDepCorrection::WriteRootInfo - too many correction/timebins %d kept\n", nCorr);
 	return;
@@ -339,7 +336,7 @@ void AliEMCALCalibTimeDepCorrection::WriteRootInfo(const TString &rootFileName,
       }
 
       for (Int_t k=0; k<nCorr; k++) {
-	correction[k] = t.fCorrection[iCol][iRow].At(k);
+	correction[k] = t->GetCorrection(iCol,iRow)->At(k);
       }
 
       treeCorr->Fill();
@@ -357,32 +354,20 @@ void AliEMCALCalibTimeDepCorrection::WriteRootInfo(const TString &rootFileName,
 //____________________________________________________________________________
 AliEMCALCalibTimeDepCorrection::~AliEMCALCalibTimeDepCorrection()
 {
-  delete [] fSuperModuleData;
+  fSuperModuleData.Delete();
 }
 
 //____________________________________________________________________________
-AliEMCALSuperModuleCalibTimeDepCorrection AliEMCALCalibTimeDepCorrection::GetSuperModuleCalibTimeDepCorrectionId(Int_t supModIndex)const
+AliEMCALSuperModuleCalibTimeDepCorrection * AliEMCALCalibTimeDepCorrection::GetSuperModuleCalibTimeDepCorrectionNum(Int_t supModIndex)const
 {
-  AliEMCALSuperModuleCalibTimeDepCorrection t;  // just to maybe prevent a crash, but we are returning something not-initialized so maybe not better really..
-  if (!fSuperModuleData)
-    return t;
-
-  return fSuperModuleData[supModIndex];
-}
-
-//____________________________________________________________________________
-AliEMCALSuperModuleCalibTimeDepCorrection AliEMCALCalibTimeDepCorrection::GetSuperModuleCalibTimeDepCorrectionNum(Int_t supModIndex)const
-{
-  AliEMCALSuperModuleCalibTimeDepCorrection t;  // just to maybe prevent a crash, but we are returning something not-initialized so maybe not better really..
-  if (!fSuperModuleData)
-    return t;
-
   for (int i=0; i<fNSuperModule; i++) {
-    if (fSuperModuleData[i].fSuperModuleNum == supModIndex) {
-      return fSuperModuleData[i];
+    AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[i];
+    if (t->GetSuperModuleNum() == supModIndex) {
+      return t;
     }
   }
 
-  return t;
+  // if we arrived here, then nothing was found.. just return a NULL pointer 
+  return NULL;
 }
 
