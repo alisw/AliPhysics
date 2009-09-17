@@ -47,6 +47,7 @@ class AliTRDarrayADC: public TObject
   Short_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const;
   void    SetData(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value);
   static  void    CreateLut(); 
+  void    SubtractBaseline(Short_t baseline);
 
  protected:
 

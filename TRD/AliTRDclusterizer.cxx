@@ -35,6 +35,7 @@
 #include "AliTRDarrayDictionary.h"
 #include "AliTRDarrayADC.h"
 #include "AliTRDdigitsManager.h"
+#include "AliTRDdigitsParam.h"
 #include "AliTRDrawData.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDtransform.h"
@@ -561,6 +562,9 @@ Bool_t AliTRDclusterizer::MakeClusters()
     // This is to take care of switched off super modules
     if (!digitsIn->HasData()) continue;
     digitsIn->Expand();
+    // Subtract the ADC baseline
+    printf("----> baseline = %d\n",fDigitsManager->GetDigitsParam()->GetADCbaseline());
+    digitsIn->SubtractBaseline(fDigitsManager->GetDigitsParam()->GetADCbaseline());
     digitsIn->DeleteNegatives();  // Restore digits array to >=0 values
     AliTRDSignalIndex* indexes = fDigitsManager->GetIndexes(i);
     if (indexes->IsAllocated() == kFALSE){
@@ -734,6 +738,10 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   
   // This is to take care of switched off super modules
   if (!fDigits->HasData()) return kFALSE;
+
+  // Subtract the ADC baseline
+  printf("----> baseline = %d\n",fDigitsManager->GetDigitsParam()->GetADCbaseline());
+  fDigits->SubtractBaseline(fDigitsManager->GetDigitsParam()->GetADCbaseline());
 
   fIndexes = fDigitsManager->GetIndexes(det);
   if (fIndexes->IsAllocated() == kFALSE) {

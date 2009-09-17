@@ -622,3 +622,19 @@ void AliTRDarrayADC::CreateLut()
 	}
     }
 }
+//________________________________________________________________________________
+void AliTRDarrayADC::SubtractBaseline(Short_t baseline)
+{
+  //
+  // Subtracts the baseline to all the adc array
+  // if the value is equal or greater than baseline
+  //
+
+  for(Int_t b=0; b<fNAdim; b++)
+    {
+      //if(fADC[b]>=baseline)
+      //{
+	  fADC[b]=fADC[b]-baseline;
+      //}
+    }
+}
