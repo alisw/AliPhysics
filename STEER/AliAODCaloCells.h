@@ -37,6 +37,7 @@ class AliAODCaloCells : public TNamed
   Short_t GetNumberOfCells() const { return fNCells; }
   inline Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude) const;
   inline Double_t GetCellAmplitude(Short_t cellNumber);
+  inline Short_t  GetCellPosition(Short_t cellNumber);
   inline Double_t GetAmplitude(Short_t pos) const;
   inline Short_t  GetCellNumber(Short_t pos) const;
 
@@ -104,6 +105,31 @@ Short_t AliAODCaloCells::GetCellNumber(Short_t pos) const
     Warning("GetCellNumber","Invalid cell array index %d", pos);
     return fNCells;
   }
+}
+
+Short_t AliAODCaloCells::GetCellPosition(Short_t cellNumber)
+{ 
+  if (!fIsSorted) {
+    Sort();
+    fIsSorted=kTRUE;
+  }
+
+   Int_t nabove, nbelow, middle;
+   Short_t pos = -1;
+
+   nabove = fNCells + 1;
+   nbelow = 0;
+   while (nabove - nbelow > 1) {
+      middle = (nabove + nbelow) / 2;
+      if (cellNumber == fCellNumber[middle-1]) {
+	  pos =   middle - 1;
+	  break;
+      }
+      if (cellNumber  < fCellNumber[middle-1]) nabove = middle;
+      else                                     nbelow = middle;
+   }
+
+  return pos;
 }
 
 
