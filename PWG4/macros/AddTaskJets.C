@@ -22,6 +22,13 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius)
       return NULL;
    }
 
+  AliAODHandler *aodh = (AliAODHandler*)mgr->GetOutputEventHandler();
+  if (!aodh) {
+    ::Error("AddTaskJets", "This task needs an output event handler");
+    return NULL;
+  }   
+
+
    // Create the task and configure it.
    //===========================================================================
    AliAnalysisTaskJets *jetana;
