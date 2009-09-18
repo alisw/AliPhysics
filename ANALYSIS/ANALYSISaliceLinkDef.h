@@ -12,6 +12,7 @@
 #pragma link C++ class  AliAnalysisTaskTagCreator+;
 #pragma link C++ class  AliKineTrackCuts+;
 #pragma link C++ class  AliESDtrackCuts+;
+#pragma link C++ class  AliESDpidCuts+;
 #pragma link C++ class  AliESDv0Cuts+;
 
 #pragma link C++ class  AliEventPoolOTF+;
@@ -20,6 +21,7 @@
 #pragma link C++ class AliEventPoolSparse+;
 
 #pragma link C++ class AliMultiEventInputHandler+;
+
 
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;

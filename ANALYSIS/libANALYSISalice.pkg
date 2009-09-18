@@ -2,7 +2,7 @@
 
 SRCS = 	AliAnalysisTaskSE.cxx AliAnalysisTaskME.cxx \
 	AliAnalysisTaskESDfilter.cxx AliAnalysisTaskKineFilter.cxx AliAnalysisTaskMCParticleFilter.cxx \
-	AliKineTrackCuts.cxx AliESDtrackCuts.cxx AliESDv0Cuts.cxx \
+	AliKineTrackCuts.cxx AliESDtrackCuts.cxx  AliESDpidCuts.cxx AliESDv0Cuts.cxx \
 	AliEventPoolOTF.cxx AliEventPoolLoop.cxx AliEventPoolSparse.cxx \
 	AliAnalysisTaskTagCreator.cxx \
         AliMultiEventInputHandler.cxx
