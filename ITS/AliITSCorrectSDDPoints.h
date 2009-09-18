@@ -26,6 +26,9 @@ class AliITSCorrectSDDPoints : public TObject {
     Float_t dx=GetCorrection(modId,zloc,xloc);
     return xloc-dx;
   }
+ private:
+  AliITSCorrectSDDPoints(const AliITSCorrectSDDPoints& csdd);
+  AliITSCorrectSDDPoints& operator=(const AliITSCorrectSDDPoints& csdd);
  protected:
   TObjArray* fArrayOfMaps;                 // 520 AliITSCorrMapSDD objects
   AliITSsegmentationSDD* fSegmentationSDD; // SDD segmentation
