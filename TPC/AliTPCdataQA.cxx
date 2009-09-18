@@ -978,3 +978,39 @@ Float_t AliTPCdataQA::GetQ(const Float_t* adcArray, const Int_t time,
   }
   return charge; 
 }
+
+//______________________________________________________________________________
+void AliTPCdataQA::Streamer(TBuffer &R__b)
+{
+  // Automatic schema evolution was first used from revision 4
+  // Code based on:
+  // http://root.cern.ch/root/roottalk/roottalk02/3207.html
+
+   UInt_t R__s, R__c;
+   if (R__b.IsReading()) {
+      Version_t R__v = R__b.ReadVersion(&R__s, &R__c);
+      //we use the automatic algorithm for class version > 3
+      if (R__v > 3) {
+	AliTPCdataQA::Class()->ReadBuffer(R__b, this, R__v, R__s,
+					  R__c);
+	return;
+      }
+      TH1F::Streamer(R__b);
+      R__b >> fFirstTimeBin;
+      R__b >> fLastTimeBin;
+      R__b >> fAdcMin;
+      R__b >> fAdcMax;
+      R__b >> fNLocalMaxima;
+      R__b >> fMaxCharge;
+      R__b >> fMeanCharge;
+      R__b >> fNoThreshold;
+      R__b >> fNTimeBins;
+      R__b >> fNPads;
+      R__b >> fTimePosition;
+      R__b >> fEventCounter;
+      R__b >> fIsAnalysed;
+      R__b.CheckByteCount(R__s, R__c, AliTPCdataQA::IsA());
+   } else {
+     AliTPCdataQA::Class()->WriteBuffer(R__b,this);
+   }
+}
