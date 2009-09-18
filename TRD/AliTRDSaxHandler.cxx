@@ -35,6 +35,7 @@
 #include "AliTRDgeometry.h"
 
 #include "Cal/AliTRDCalDCS.h"
+#include "Cal/AliTRDCalDCSGTUTgu.h"
 #include "Cal/AliTRDCalDCSFEE.h"
 #include "Cal/AliTRDCalDCSPTR.h"
 #include "Cal/AliTRDCalDCSGTU.h"

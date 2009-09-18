@@ -12,10 +12,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "TObjArray.h"
-#include "AliTRDCalDCSGTUTgu.h"
 
 class TString;
+class TObjArray;
+class AliTRDCalDCSGTUTgu;
 
 class AliTRDCalDCSGTU : public TNamed {
 
@@ -27,10 +27,10 @@ class AliTRDCalDCSGTU : public TNamed {
   AliTRDCalDCSGTU& operator=(const AliTRDCalDCSGTU& sh);
   virtual ~AliTRDCalDCSGTU() { };
 
-  Int_t   GetRunNumber()                              { return fRunNumber;                    }
-  Int_t   GetSORFlag()                                { return fSORFlag;                      }
-  Int_t   GetSerial()                                 { return fSerial;                       }
-  Int_t   GetDNR()                                    { return fDNR;                          }
+  Int_t   GetRunNumber() const                        { return fRunNumber;                    }
+  Int_t   GetSORFlag() const                          { return fSORFlag;                      }
+  Int_t   GetSerial() const                           { return fSerial;                       }
+  Int_t   GetDNR() const                              { return fDNR;                          }
 
   void    SetRunNumber(Int_t rn)                      { fRunNumber = rn;                      }
   void    SetSORFlag(Int_t fg)                        { fSORFlag = fg;                        }
@@ -38,20 +38,20 @@ class AliTRDCalDCSGTU : public TNamed {
   void    SetDNR(Int_t dn)                            { fDNR = dn;                            }
 
   TObjArray* GetSegmentArray() const                  { return fSegmentsArr;                  }
-  void SetSegmentArray(TObjArray *sa)                 { fSegmentsArr = sa;                    }
+  void SetSegmentArray(TObjArray * const sa)          { fSegmentsArr = sa;                    }
 
   AliTRDCalDCSGTUTgu* GetTgu() const                  { return fTgu;                          }
-  void SetTgu(AliTRDCalDCSGTUTgu* tg)                 { fTgu = tg;                            }
+  void SetTgu(AliTRDCalDCSGTUTgu * const tg)          { fTgu = tg;                            }
 
  protected:
-  Int_t   fRunNumber;
-  Int_t   fSORFlag;
-  Int_t   fSerial;
-  Int_t   fDNR;
+  Int_t   fRunNumber; // contains the number of the run from when this data was saved
+  Int_t   fSORFlag; // contains an int indicating whether it was the start(=1) or end(=2) of run
+  Int_t   fSerial; // value of the tag named serial
+  Int_t   fDNR; // (DNR=does not respond) this indicates whether the GTU responded correctly
 
-  TObjArray *fSegmentsArr;
+  TObjArray *fSegmentsArr; // Contains an array of AliTRDCalDCSGTUSegment objects holding gtu configuration data
 
-  AliTRDCalDCSGTUTgu* fTgu;
+  AliTRDCalDCSGTUTgu* fTgu; // this points to an object containing tgu configuration data
 
   ClassDef(AliTRDCalDCSGTU,1)      //  TRD calibration class for TRD GTU parameters
 

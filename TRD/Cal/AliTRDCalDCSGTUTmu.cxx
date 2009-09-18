@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDCalDCSGTUTmu.h"
+#include "AliTRDCalDCSGTUBoardInfo.h"
 
 ClassImp(AliTRDCalDCSGTUTmu)
 

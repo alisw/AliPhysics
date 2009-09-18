@@ -1,5 +1,5 @@
-#ifndef AliTRDCALDCSGTUTmu_H
-#define AliTRDCALDCSGTUTmu_H
+#ifndef ALITRDCALDCSGTUTMU_H
+#define ALITRDCALDCSGTUTMU_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -12,9 +12,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "AliTRDCalDCSGTUBoardInfo.h"
 
 class TString;
+class AliTRDCalDCSGTUBoardInfo;
 
 class AliTRDCalDCSGTUTmu : public TNamed {
 
@@ -26,29 +26,29 @@ class AliTRDCalDCSGTUTmu : public TNamed {
   AliTRDCalDCSGTUTmu &operator=(const AliTRDCalDCSGTUTmu &sh);
   virtual ~AliTRDCalDCSGTUTmu() { };
 
-  TString GetLinkMask()                               { return fLinkMask;                     }
-  Int_t   GetId()                                     { return fId;                           }
-  Int_t   GetPatternGeneratorEnable()                 { return fPatternGeneratorEnable;       }
-  Int_t   GetPatternGeneratorDataWords()              { return fPatternGeneratorDataWords;    }
-  Int_t   GetPatternGeneratorTrackletWordsl()         { return fPatternGeneratorTrackletWords;}
+  TString GetLinkMask() const                         { return fLinkMask;                     }
+  Int_t   GetId() const                               { return fId;                           }
+  Int_t   GetPatternGeneratorEnable() const           { return fPatternGeneratorEnable;       }
+  Int_t   GetPatternGeneratorDataWords() const        { return fPatternGeneratorDataWords;    }
+  Int_t   GetPatternGeneratorTrackletWordsl() const   { return fPatternGeneratorTrackletWords;}
 
   void    SetLinkMask(TString lm)                     { fLinkMask = lm;                       }
   void    SetId(Int_t id)                             { fId = id;                             }
   void    SetPatternGeneratorEnable(Int_t pe)         { fPatternGeneratorEnable = pe;         }
   void    SetPatternGeneratorDataWords(Int_t pw)      { fPatternGeneratorDataWords = pw;      }
-  void    SetPatternGeneratorTrackletWords(Int_t pt) { fPatternGeneratorTrackletWords = pt;  }
+  void    SetPatternGeneratorTrackletWords(Int_t pt)  { fPatternGeneratorTrackletWords = pt;  }
 
-  AliTRDCalDCSGTUBoardInfo* GetBoardInfo()         { return fBoardInfo;                    }
-  void SetBoardInfo(AliTRDCalDCSGTUBoardInfo *bi)  { fBoardInfo = bi;                      }
+  AliTRDCalDCSGTUBoardInfo* GetBoardInfo() const      { return fBoardInfo;                    }
+  void SetBoardInfo(AliTRDCalDCSGTUBoardInfo * const bi) { fBoardInfo = bi;                   }
 
   protected:
-  TString fLinkMask;
-  Int_t   fId;
-  Int_t   fPatternGeneratorEnable;
-  Int_t   fPatternGeneratorDataWords;
-  Int_t   fPatternGeneratorTrackletWords;
+  TString fLinkMask; // value of the attribute named value within the linkmask tag
+  Int_t   fId; // the number of the tmu within the segment
+  Int_t   fPatternGeneratorEnable; // value of the attribute named enable within the pattern_generator tag
+  Int_t   fPatternGeneratorDataWords; // value of the attribute named datawords within the pattern_generator tag
+  Int_t   fPatternGeneratorTrackletWords; // value of the attribute named trackletwords within the pattern_generator tag
 
-  AliTRDCalDCSGTUBoardInfo *fBoardInfo;
+  AliTRDCalDCSGTUBoardInfo *fBoardInfo; // This contains the board information for this tmu
 
   ClassDef(AliTRDCalDCSGTUTmu,1)      //  TRD calibration class for TRD GTU parameters
 

@@ -22,8 +22,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDCalDCSGTUSegment.h"
+#include <TObjArray.h>
 
 ClassImp(AliTRDCalDCSGTUSegment)
+
 
 //_____________________________________________________________________________
 AliTRDCalDCSGTUSegment::AliTRDCalDCSGTUSegment()

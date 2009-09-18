@@ -22,6 +22,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDCalDCSGTU.h"
+#include "AliTRDCalDCSGTUTgu.h"
+#include <TObjArray.h>
 
 ClassImp(AliTRDCalDCSGTU)
 

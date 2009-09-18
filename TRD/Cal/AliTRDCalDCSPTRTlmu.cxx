@@ -28,11 +28,6 @@ ClassImp(AliTRDCalDCSPTRTlmu)
 //_____________________________________________________________________________
 AliTRDCalDCSPTRTlmu::AliTRDCalDCSPTRTlmu()
   :TNamed()
-    ,fTgu(new AliTRDCalDCSGTUTgu())
-    ,fSegmentsArr(new TObjArray())
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
 {
   //
   // AliTRDCalDCSGTU default constructor
@@ -43,11 +38,6 @@ AliTRDCalDCSPTRTlmu::AliTRDCalDCSPTRTlmu()
 //_____________________________________________________________________________
 AliTRDCalDCSPTRTlmu::AliTRDCalDCSPTRTlmu(const char *name, const char *title)
   :TNamed(name,title)
-    ,fTgu(new AliTRDCalDCSGTUTgu())
-    ,fSegmentsArr(new TObjArray())
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
 {
   //
   // AliTRDCalDCSGTU constructor
@@ -55,13 +45,8 @@ AliTRDCalDCSPTRTlmu::AliTRDCalDCSPTRTlmu(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-AliTRDCalDCSPTRTlmu::AliTRDCalDCSPTRTlmu(const AliTRDCalDCSPTRTlmu &cd)
+AliTRDCalDCSPTRTlmu::AliTRDCalDCSPTRTlmu(const AliTRDCalDCSPTRTlmu &)
   :TNamed("","")
-    ,fTgu(new AliTRDCalDCSGTUTgu())
-    ,fSegmentsArr(new TObjArray())
-    ,fRunNumber(0)
-    ,fSORFlag(0)
-    ,fSerial(0)
 {
   //
   // AliTRDCalDCSGTU constructor
