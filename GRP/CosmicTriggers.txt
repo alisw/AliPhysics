@@ -10,6 +10,7 @@ DEMPTY
 CEMPTY
 TRDBYTOF
 TOFTRD
+C0HPT1TS1-ABCE-NOPF-CENT
 
 # Here is trigger classes list following the trigger
 # naming conventions
