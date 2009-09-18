@@ -140,7 +140,10 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
 	  TIter next(extArray);
 	  while ((fAODExtension=(AliAODExtension*)next())){
 	    TObject *obj = fAODExtension->GetAOD()->FindListObject(fNonStdBranch.Data());
-	    fAODExtension->GetAOD()->Dump();
+	    if(fDebug>10){
+	      Printf("%s:%d Dumping..",(char*)__FILE__,__LINE__);
+	      fAODExtension->GetAOD()->Dump();
+	    }
 	    if(obj){
 	      if(fDebug>1)Printf("AODExtension found for %s",fNonStdBranch.Data());
 	      break;
