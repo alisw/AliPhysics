@@ -19,7 +19,6 @@
 class TClonesArray;
 class TTree;
 
-//class AliITSgeom;
 class AliITSsegmentationSPD;
 class AliITSsegmentationSDD;
 class AliITSsegmentationSSD;
@@ -30,6 +29,7 @@ class AliRawReader;
 /******************************************************************************/
 // AliEveITSModuleSelection
 /******************************************************************************/
+
 class AliEveITSModuleSelection
 {
 public:
@@ -63,6 +63,7 @@ protected:
   ClassDef(AliEveITSModuleSelection, 0); // Helper for selecting a range of ITS modules by type, layer, phi and theta.
 };
 
+
 /******************************************************************************/
 // AliEveITSDigitsInfo
 /******************************************************************************/
@@ -75,7 +76,6 @@ public:
   AliITSsegmentationSPD*   fSegSPD;       // Segmentation of SPD.
   AliITSsegmentationSDD*   fSegSDD;       // Segmentation of SDD.
   AliITSsegmentationSSD*   fSegSSD;       // Segmentation of SSD.
-  AliITSDDLModuleMapSDD*   fDDLMapSDD;    // Mapping DDL/module to SDD-module number.
 
   Int_t                    fSPDMinVal;    // Default low  limit for display of SPD digits.
   Int_t                    fSSDMinVal;    // Default low  limit for display of SSD digits.
@@ -94,6 +94,8 @@ public:
   Int_t                    fSDDScaleZ[5]; // SDD cell-sizes along Z for display of scaled-digits.
   Int_t                    fSSDScale [5]; // SSD cell-sizes for display of scaled-digits.
 
+  static AliITSDDLModuleMapSDD* fgDDLMapSDD;  // Mapping DDL/module to SDD-module number.
+
   AliEveITSDigitsInfo();
   virtual ~AliEveITSDigitsInfo();
 
@@ -109,14 +111,14 @@ public:
   virtual void Print(Option_t* opt="") const;
 
 protected:
-  std::map<Int_t,  TClonesArray*> fSPDmap;     // Map from module-id to SPD data.
-  std::map<Int_t,  TClonesArray*> fSDDmap;     // Map from module-id to SDD data.
-  std::map<Int_t,  TClonesArray*> fSSDmap;     // Map from module-id to SSD data.
+  std::map<Int_t,  TClonesArray*> fSPDmap; // Map from module-id to SPD data.
+  std::map<Int_t,  TClonesArray*> fSDDmap; // Map from module-id to SDD data.
+  std::map<Int_t,  TClonesArray*> fSSDmap; // Map from module-id to SSD data.
 
-  void        SetITSSegmentation();
+  void SetITSSegmentation();
 
 private:
-  Float_t fSPDZCoord[192];                // Precalculated z-coordinates for positions of digits.
+  Float_t fSPDZCoord[192]; // Precalculated z-coordinates for positions of digits.
 
   void InitInternals();
 
@@ -124,7 +126,7 @@ private:
   AliEveITSDigitsInfo& operator=(const AliEveITSDigitsInfo&); // Not implemented
 
   ClassDef(AliEveITSDigitsInfo, 0); // Stores ITS geometry information and event-data in format suitable for visualization.
-}; // endclass AliEveITSDigitsInfo
+};
 
 
 inline void AliEveITSDigitsInfo::GetSPDLocalZ(Int_t j, Float_t& z) const

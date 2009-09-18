@@ -68,7 +68,7 @@ AliEveITSModule::~AliEveITSModule()
 {
   // Destructor.
 
-  if(fInfo) fInfo->DecRefCount();
+  if (fInfo) fInfo->DecRefCount();
 }
 
 /******************************************************************************/
@@ -159,17 +159,9 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
 
   fID = gid;
 
-  if (!fgStaticInitDone) {
+  if (!fgStaticInitDone)
+  {
     InitStatics(fInfo);
-
-    fgSPDFrameBox->IncRefCount(this);
-    fgSPDPalette->IncRefCount();
-
-    fgSDDFrameBox->IncRefCount(this);
-    fgSDDPalette->IncRefCount();
-
-    fgSSDFrameBox->IncRefCount(this);
-    fgSSDPalette->IncRefCount();
   }
 
   AliITSgeomTGeo::GetModuleId(fID, fLayer, fLadder, fDet);
@@ -207,7 +199,6 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
     fDx = fInfo->fSegSPD->Dx()*0.00005;
     fDz = 3.50;
     fDy = fInfo->fSegSPD->Dy()*0.00005;
-
   }
   else if (fID <= (AliITSgeomTGeo::GetModuleIndex(5,1,1) - 1))
   {
@@ -235,7 +226,6 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
     fDx = fInfo->fSegSDD->Dx()*0.0001;
     fDz = fInfo->fSegSDD->Dz()*0.00005;
     fDy = fInfo->fSegSDD->Dy()*0.00005;
-
   }
   else
   {
@@ -264,7 +254,6 @@ void AliEveITSModule::SetID(Int_t gid, Bool_t trans)
     fDx = fInfo->fSegSSD->Dx()*0.00005;
     fDz = fInfo->fSegSSD->Dz()*0.00005;
     fDy = fInfo->fSegSSD->Dy()*0.00005;
-
   }
 
   LoadQuads();
@@ -289,8 +278,8 @@ void AliEveITSModule::LoadQuads()
 
   switch(fDetID)
   {
-
-    case 0: { // SPD
+    case 0:
+    {
       AliITSsegmentationSPD* seg =  fInfo->fSegSPD;
 
       Reset(kQT_RectangleXZFixedY, kFALSE, 32);
@@ -313,7 +302,8 @@ void AliEveITSModule::LoadQuads()
       break;
     }
 
-    case 1: { // SDD
+    case 1:
+    {
       AliITSsegmentationSDD *seg =  fInfo->fSegSDD;
 
       Reset(kQT_RectangleXZFixedY, kFALSE, 32);
@@ -322,23 +312,21 @@ void AliEveITSModule::LoadQuads()
       {
 	AliITSdigit* d = (AliITSdigit*) digits->UncheckedAt(k);
 
-	// if (d->GetSignal() > fgSDDThreshold)
-	{
-	  j = d->GetCoord1();
-	  i = d->GetCoord2();
-	  seg->DetToLocal(i, j, x, z);
-	  dpx = seg->Dpx(i)*0.0001;
-	  dpz = seg->Dpz(j)*0.0001;
+	j = d->GetCoord1();
+	i = d->GetCoord2();
+	seg->DetToLocal(i, j, x, z);
+	dpx = seg->Dpx(i)*0.0001;
+	dpz = seg->Dpz(j)*0.0001;
 
-	  AddQuad(x-2*dpx, z - dpz*0.5, 4*dpx, dpz);
-	  QuadValue(d->GetSignal());
-	  QuadId(d);
-	}
+	AddQuad(x-2*dpx, z - dpz*0.5, 4*dpx, dpz);
+	QuadValue(d->GetSignal());
+	QuadId(d);
       }
       break;
     }
 
-    case 2: { // SSD
+    case 2:
+    {
       AliITSsegmentationSSD* seg = fInfo->fSegSSD;
 
       Reset(kQT_LineXZFixedY, kFALSE, 32);
@@ -351,19 +339,19 @@ void AliEveITSModule::LoadQuads()
       for (Int_t k=0; k<ndigits; ++k)
       {
 	AliITSdigit *d = (AliITSdigit*) digits->UncheckedAt(k);
-	// if(d->GetSignal() > fgSSDThreshold)
-	{
-	  j = d->GetCoord1();
-	  i = d->GetCoord2();
-	  seg->DetToLocal(i,j,x,z);
 
-	  Float_t a = ( d->GetCoord1() == 1) ? ap : an;
+	j = d->GetCoord1();
+	i = d->GetCoord2();
+	// !!!! The following function complains about not being verified.
+	// !!!! Experts should check.
+	seg->DetToLocal(i,j,x,z);
 
-	  AddLine(x-a, -fDz, 2*a, 2*fDz);
-	  QuadValue(d->GetSignal());
-	  QuadId(d);
-	  // printf("%3d -> %3d -> %8x\n", d->GetSignal(), ci, fQuads.back().color);
-	}
+	Float_t a = (d->GetCoord1() == 1) ? ap : an;
+
+	AddLine(x-a, -fDz, 2*a, 2*fDz);
+	QuadValue(d->GetSignal());
+	QuadId(d);
+	// printf("%3d -> %3d -> %8x\n", d->GetSignal(), ci, fQuads.back().color);
       }
       break;
     }
