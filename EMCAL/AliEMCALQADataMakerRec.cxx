@@ -378,6 +378,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
   // start loop over input stream  
   while (in.NextDDL()) {
+    int iRCU = in.GetDDLNumber() % 2; // RCU0 or RCU1, within SuperModule
     while (in.NextChannel()) {
 
       // counters
@@ -462,8 +463,11 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	} // low or high gain
 	// TRU
 	else if ( in.IsTRUData() ) {
-	  // for TRU data, the mapping class holds the channel info in the Column..
-	  int TRU2x2Id = iSM*n2x2PerSM + in.GetColumn();
+	  // for TRU data, the mapping class holds the TRU internal 2x2 number (0..95) in the Column var..
+	  int iTRU = iRCU; //TRU0 is from RCU0, TRU1 from RCU1
+	  if (iRCU>0 && in.GetBranch()>0) iTRU=2; // TRU2 is from branch B on RCU1
+	  int TRU2x2Id = iSM*n2x2PerSM + iTRU*AliEMCALGeoParams::fgkEMCAL2x2PerTRU 
+	    + in.GetColumn();
 	  
 	  //fill the low gain histograms, and counters
 	  nTotalSMTRU[iSM]++; // one more channel found
