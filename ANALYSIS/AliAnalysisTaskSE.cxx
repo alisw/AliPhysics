@@ -30,6 +30,7 @@
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
 #include "AliAODTracklets.h"
+#include "AliAODCaloCells.h"
 #include "AliVEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODInputHandler.h"
@@ -52,6 +53,8 @@ TClonesArray*    AliAnalysisTaskSE::fgAODJets          = NULL;
 TClonesArray*    AliAnalysisTaskSE::fgAODFMDClusters   = NULL;
 TClonesArray*    AliAnalysisTaskSE::fgAODCaloClusters  = NULL;
 AliAODTracklets* AliAnalysisTaskSE::fgAODTracklets     = NULL;
+AliAODCaloCells* AliAnalysisTaskSE::fgAODEmcalCells    = NULL;
+AliAODCaloCells* AliAnalysisTaskSE::fgAODPhosCells     = NULL;
 
 
 AliAnalysisTaskSE::AliAnalysisTaskSE():
@@ -156,6 +159,12 @@ void AliAnalysisTaskSE::CreateOutputObjects()
     AliAODHandler* handler = (AliAODHandler*) 
          ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     
+    Bool_t merging = kFALSE;
+    AliAODInputHandler* aodIH = static_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+    if (aodIH) {
+	if (aodIH->GetMergeEvents()) merging = kTRUE;
+    }
+    
     // Check if AOD replication has been required
     
     if (handler) {
@@ -168,7 +177,7 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 		 fgAODHeader = new AliAODHeader;
 		 handler->AddBranch("AliAODHeader", &fgAODHeader);
 		}
-	    if ((handler->NeedsTracksBranchReplication()) && !(fgAODTracks))      
+	    if ((handler->NeedsTracksBranchReplication() || merging) && !(fgAODTracks))      
 	    {   
 		if (fDebug > 1) AliInfo("Replicating track branch\n");
 		fgAODTracks = new TClonesArray("AliAODTrack",500);
@@ -202,7 +211,7 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 		fgAODPMDClusters->SetName("pmdClusters");
 		handler->AddBranch("TClonesArray", &fgAODPMDClusters);
 	    }
-	    if ((handler->NeedsJetsBranchReplication()) && !(fgAODJets))	  
+	    if ((handler->NeedsJetsBranchReplication() || merging) && !(fgAODJets))	  
 	    {   
 		if (fDebug > 1) AliInfo("Replicating Jets branch\n");
 		fgAODJets = new TClonesArray("AliAODJet",500);
@@ -216,13 +225,23 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 		fgAODFMDClusters->SetName("fmdClusters");
 		handler->AddBranch("TClonesArray", &fgAODFMDClusters);
 	    }
-	    if ((handler->NeedsCaloClustersBranchReplication()) && !(fgAODCaloClusters))	  
+	    if ((handler->NeedsCaloClustersBranchReplication() || merging) && !(fgAODCaloClusters))	  
 	    {   
 		if (fDebug > 1) AliInfo("Replicating CaloClusters branch\n");
 		fgAODCaloClusters = new TClonesArray("AliAODCaloCluster",500);
 		fgAODCaloClusters->SetName("caloClusters");
 		handler->AddBranch("TClonesArray", &fgAODCaloClusters);
+
+		fgAODEmcalCells = new AliAODCaloCells();
+		fgAODEmcalCells->SetName("emcalCells");
+		handler->AddBranch("AliAODCaloCells", &fgAODEmcalCells);
+
+		fgAODPhosCells = new AliAODCaloCells();
+		fgAODPhosCells->SetName("phosCells");
+		handler->AddBranch("AliAODCaloCells", &fgAODPhosCells);
 	    }
+	    // cache the pointerd in the AODEvent
+	    fOutputAOD->GetStdContent();
 	}
     } else {
 	AliWarning("No AOD Event Handler connected.") ; 
@@ -252,6 +271,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 
     if (handler && aodH) {
 	fMCEvent = aodH->MCEvent();
+	Bool_t merging = aodH->GetMergeEvents();
 	
 	if (!(handler->IsStandard()) && !(handler->AODIsReplicated())) {
 	    if ((handler->NeedsHeaderReplication()) && (fgAODHeader))
@@ -259,7 +279,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 	      // copy the contents by assigment
 	      *fgAODHeader =  *(dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader()));
 	    }
-	    if ((handler->NeedsTracksBranchReplication()) && (fgAODTracks))
+	    if ((handler->NeedsTracksBranchReplication() || merging) && (fgAODTracks))
 	    {
 		TClonesArray* tracks = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetTracks();
 		new (fgAODTracks) TClonesArray(*tracks);
@@ -283,7 +303,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		TClonesArray* PMDClusters = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetPmdClusters();
 		new (fgAODPMDClusters) TClonesArray(*PMDClusters);
 	    }
-	    if ((handler->NeedsJetsBranchReplication()) && (fgAODJets))
+	    if ((handler->NeedsJetsBranchReplication() || merging) && (fgAODJets))
 	    {
 		TClonesArray* Jets = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetJets();
 		new (fgAODJets) TClonesArray(*Jets);
@@ -293,14 +313,52 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		TClonesArray* FMDClusters = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetFmdClusters();
 		new (fgAODFMDClusters) TClonesArray(*FMDClusters);
 	    }
-	    if ((handler->NeedsCaloClustersBranchReplication()) && (fgAODCaloClusters))
+	    if ((handler->NeedsCaloClustersBranchReplication() || merging) && (fgAODCaloClusters))
 	    {
 		TClonesArray* CaloClusters = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetCaloClusters();
 		new (fgAODCaloClusters) TClonesArray(*CaloClusters);
 	    }
-	    //
-	    handler->SetAODIsReplicated();
+	
+	    // Additional merging if needed
+	    if (merging) {
+		// tracks
+		TClonesArray* tracks = aodH->GetEventToMerge()->GetTracks();
+		Int_t ntr = tracks->GetEntries();
+		Int_t nc  = fgAODTracks->GetEntries();	
+		for (Int_t i = 0; i < ntr; i++) {
+		    AliAODTrack*    track = (AliAODTrack*) tracks->At(i);
+		    AliAODTrack* newtrack = new((*fgAODTracks)[nc++]) AliAODTrack(*track);
+		    newtrack->ResetBit(kIsReferenced);
+		    newtrack->SetUniqueID(0);
+		}
+		// clusters
+		TClonesArray* clusters = aodH->GetEventToMerge()->GetCaloClusters();
+		Int_t ncl  = clusters->GetEntries();
+		nc         =  fgAODCaloClusters->GetEntries();
+		for (Int_t i = 0; i < ncl; i++) {
+		    AliAODCaloCluster*    cluster = (AliAODCaloCluster*) clusters->At(i);
+		    AliAODCaloCluster* newcluster = new((*fgAODCaloClusters)[nc++]) AliAODCaloCluster(*cluster);
+		}
+		// cells
+		AliAODCaloCells* cellsA = aodH->GetEventToMerge()->GetEMCALCells();
+		Int_t ncells  = cellsA->GetNumberOfCells();
+		nc = fgAODEmcalCells->GetNumberOfCells();
+		
+		for (Int_t i  = 0; i < ncells; i++) {
+		    Int_t cn  = cellsA->GetCellNumber(i);
+		    Int_t pos = fgAODEmcalCells->GetCellPosition(cn);
+		    if (pos >= 0) {
+			Double_t amp = cellsA->GetAmplitude(i) + fgAODEmcalCells->GetAmplitude(pos);
+			fgAODEmcalCells->SetCell(pos, cn, amp);
+		    } else {
+			Double_t amp = cellsA->GetAmplitude(i);
+			fgAODEmcalCells->SetCell(nc++, cn, amp);
+			fgAODEmcalCells->Sort();
+		    }
+		}
+	    }
 	    
+	    handler->SetAODIsReplicated();
 	}
     }
 

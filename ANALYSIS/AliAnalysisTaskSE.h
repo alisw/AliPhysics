@@ -11,8 +11,10 @@ class AliVEvent;
 class AliAODEvent;
 class AliAODHeader;
 class AliAODTracklets;
+class AliAODCaloCells;
 class AliMCEvent;
 class AliInputEventHandler;
+
 class TTree;
 
 
@@ -62,6 +64,9 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     static TClonesArray*    fgAODFMDClusters;   //! FMDClusters for replication
     static TClonesArray*    fgAODCaloClusters;  //! CaloClusters for replication
     static AliAODTracklets* fgAODTracklets;     //! Tracklets for replication
+    static AliAODCaloCells* fgAODEmcalCells;    //! Emcal Cell replication
+    static AliAODCaloCells* fgAODPhosCells;     //! Phos  Cell replication
+	
     ClassDef(AliAnalysisTaskSE, 1); // Analysis task for standard jet analysis
 };
  
