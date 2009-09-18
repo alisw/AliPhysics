@@ -30,6 +30,10 @@ class AliAODInputHandler : public AliInputEventHandler {
     virtual void         AddFriend(char* filename);
     virtual Bool_t       BeginEvent(Long64_t entry);
     Option_t            *GetDataType() const;
+    // Provisions for event merging
+    void                 SetMergeEvents(Bool_t flag) {fMergeEvents = flag;}
+    Bool_t               GetMergeEvents() const {return fMergeEvents;}
+    AliAODEvent*         GetEventToMerge() {return fAODEventToMerge;}
  private:
     AliAODInputHandler(const AliAODInputHandler& handler);             
     AliAODInputHandler& operator=(const AliAODInputHandler& handler);  
@@ -37,7 +41,12 @@ class AliAODInputHandler : public AliInputEventHandler {
     AliAODEvent    *fEvent;   //! Pointer to the event
     AliMCEvent     *fMCEvent; //! Pointer to the MCEvent
     TList          *fFriends; //  List of friend trees 
-    ClassDef(AliAODInputHandler, 1);
+// Support for merged events
+    Bool_t          fMergeEvents;     // Flag for event merging
+    TFile          *fFileToMerge;     //! File for merging
+    TTree          *fTreeToMerge;     //! Tree for merging
+    AliAODEvent    *fAODEventToMerge; //! Event for merging
+    ClassDef(AliAODInputHandler, 2);
 };
 
 #endif
