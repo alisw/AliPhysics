@@ -79,8 +79,8 @@ void AliAnalysisHelperJetTasks::PrintStack(AliMCEvent *mcEvent,Int_t iFirst,Int_
 
 
 
-void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &nGenJets,
-					       AliAODJet *recJets,const Int_t &nRecJets,
+void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &kGenJets,
+					       AliAODJet *recJets,const Int_t &kRecJets,
 					       Int_t *iGenIndex,Int_t *iRecIndex,
 					       Int_t iDebug,Float_t maxDist){
 
@@ -94,6 +94,7 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &n
   // find the closest rec to a gen
   // and check if there is no other rec which is closer
   // Caveat: Close low energy/split jets may disturb this correlation
+
 
   // Idea: search in two directions generated e.g (a--e) and rec (1--3)
   // Fill a matrix with Flags (1 for closest rec jet, 2 for closest rec jet
@@ -112,17 +113,26 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &n
   //  d      c
   //        3     e
   // Only entries with "3" match from both sides
+
+  // In case we have more jets than kmaxjets only the 
+  // first kmaxjets are searched
+  // all other are -1
+  // use kMaxJets for a test not to fragemnt the memory...
+
+  for(int i = 0;i < kGenJets;++i)iGenIndex[i] = -1;
+  for(int j = 0;j < kRecJets;++j)iRecIndex[j] = -1;
+
+
   
   const int kMode = 3;
 
-  
+  const Int_t nGenJets = TMath::Min(kMaxJets,kGenJets);
+  const Int_t nRecJets = TMath::Min(kMaxJets,kRecJets);
 
   if(nRecJets==0||nGenJets==0)return;
 
-  for(int i = 0;i < nGenJets;++i)iGenIndex[i] = -1;
-  for(int j = 0;j < nRecJets;++j)iRecIndex[j] = -1;
-
-  UShort_t *iFlag = new UShort_t[nGenJets*nRecJets];
+  // UShort_t *iFlag = new UShort_t[nGenJets*nRecJets];
+  UShort_t iFlag[kMaxJets*kMaxJets];
   for(int i = 0;i < nGenJets;++i){
     for(int j = 0;j < nRecJets;++j){
       iFlag[i*nGenJets+j] = 0;
@@ -191,9 +201,6 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &n
     }
     if(iDebug>1)printf("\n");
   }
-
-  delete [] iFlag;
-
 }
 
 
