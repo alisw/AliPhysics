@@ -7,6 +7,27 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "TString.h"
+#include "TMath.h"
+#include "TGListTree.h"
+#include "TEveVSDStructs.h"
+#include "TEveManager.h"
+#include "TEveTrackPropagator.h"
+
+#include "AliESDEvent.h"
+#include "AliESDtrackCuts.h"
+#include "AliESDtrack.h"
+#include "AliExternalTrackParam.h"
+
+#include "EVE/EveBase/AliEveTrack.h"
+#include "EVE/EveBase/AliEveMagField.h"
+#include "EVE/EveBase/AliEveEventManager.h"
+
+#endif
+
+
 // Use inner-tpc track params when its refit failed.
 Bool_t g_esd_tracks_use_ip_on_failed_its_refit = kFALSE;
 
@@ -82,7 +103,7 @@ TString esd_track_title(AliESDtrack* t)
 
 //==============================================================================
 
-void esd_track_add_param(AliEveTrack* track, AliExternalTrackParam* tp)
+void esd_track_add_param(AliEveTrack* track, const AliExternalTrackParam* tp)
 {
   // Add additional track parameters as a path-mark to track.
 
@@ -101,14 +122,15 @@ void esd_track_add_param(AliEveTrack* track, AliExternalTrackParam* tp)
 
 //==============================================================================
 
-TEveTrack* esd_make_track(AliESDtrack *at, TEveTrackList* cont)
+AliEveTrack* esd_make_track(AliESDtrack *at, TEveTrackList* cont)
 {
   // Make a standard track representation and put it into given container.
 
   // Choose which parameters to use a track's starting point.
   // If gkFixFailedITSExtr is TRUE (FALSE by default) and
   // if ITS refit failed, take track parameters at inner TPC radius.
-  AliExternalTrackParam* tp = at;
+
+  const AliExternalTrackParam* tp = at;
 
   Bool_t innerTaken = kFALSE;
   if ( ! at->IsOn(AliESDtrack::kITSrefit) && g_esd_tracks_use_ip_on_failed_its_refit)
@@ -230,7 +252,7 @@ TEveTrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
     }
 
     ++count;
-    AliESDtrack* at = (AliESDtrack*) obj;
+    AliESDtrack* at = reinterpret_cast<AliESDtrack*>(obj);
 
     AliEveTrack* track = esd_make_track(at, cont);
     cont->AddElement(track);
