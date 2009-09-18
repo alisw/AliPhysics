@@ -34,6 +34,7 @@ class AliAODInputHandler : public AliInputEventHandler {
     void                 SetMergeEvents(Bool_t flag) {fMergeEvents = flag;}
     Bool_t               GetMergeEvents() const {return fMergeEvents;}
     AliAODEvent*         GetEventToMerge() {return fAODEventToMerge;}
+    void                 SetMergeOffset(Int_t ioff) {fMergeOffset = ioff;}
  private:
     AliAODInputHandler(const AliAODInputHandler& handler);             
     AliAODInputHandler& operator=(const AliAODInputHandler& handler);  
@@ -46,6 +47,7 @@ class AliAODInputHandler : public AliInputEventHandler {
     TFile          *fFileToMerge;     //! File for merging
     TTree          *fTreeToMerge;     //! Tree for merging
     AliAODEvent    *fAODEventToMerge; //! Event for merging
+    Int_t           fMergeOffset;     //! Event offset for merging
     ClassDef(AliAODInputHandler, 2);
 };
 

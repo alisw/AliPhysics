@@ -41,7 +41,8 @@ AliAODInputHandler::AliAODInputHandler() :
     fMergeEvents(kFALSE),
     fFileToMerge(0),
     fTreeToMerge(0),
-    fAODEventToMerge(0)
+    fAODEventToMerge(0),
+    fMergeOffset(0)
 {
   // Default constructor
 }
@@ -55,7 +56,8 @@ AliAODInputHandler::AliAODInputHandler(const char* name, const char* title):
   fMergeEvents(kFALSE),
   fFileToMerge(0),
   fTreeToMerge(0),
-  fAODEventToMerge(0)
+  fAODEventToMerge(0),
+  fMergeOffset(0)
 {
     // Constructor
 }
@@ -125,7 +127,7 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
     //
     TClonesArray* mcParticles = (TClonesArray*) (fEvent->FindListObject("mcparticles"));
     if (mcParticles) fMCEvent->SetParticleArray(mcParticles);
-    if (fTreeToMerge) fTreeToMerge->GetEntry(entry);
+    if (fTreeToMerge) fTreeToMerge->GetEntry(entry + fMergeOffset);
     
     return kTRUE;
 }
