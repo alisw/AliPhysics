@@ -15,10 +15,10 @@
 
 #include "AliHLTProcessor.h"
 #include "AliRawReaderMemory.h"
-#include "AliITSClusterFinder.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSgeom.h"
 #include "AliITSInitGeometry.h"
+#include "TClonesArray.h"
 
 /**
  * @class AliHLTITSClusterFinderComponent
@@ -168,9 +168,8 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
   Int_t fId;                   // ddl offset
   Int_t fNddl;                 // number of ddl's
   
-  /** the cluster finder object */
-  AliITSClusterFinder* fClusterFinder;                        //!transient
-
+   TClonesArray** fClusters;                                  //!transient
+  
   /** the reader object for data decoding */
   AliRawReaderMemory* fRawReader;                             //!transient
 

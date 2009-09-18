@@ -36,11 +36,6 @@ using namespace std;
 #include "AliHLTITSClusterDataFormat.h"
 #include <AliHLTDAQ.h>
 #include "AliGeomManager.h"
-#include "TTree.h"
-#include "TBranch.h"
-#include "AliITSClusterFinderV2SPD.h"
-#include "AliITSClusterFinderV2SDD.h"
-#include "AliITSClusterFinderV2SSD.h"
 #include "AliITSRecoParam.h"
 #include "AliITSReconstructor.h"
 
@@ -59,7 +54,7 @@ AliHLTITSClusterFinderComponent::AliHLTITSClusterFinderComponent(int mode)
   fNModules(0),
   fId(0),
   fNddl(0),
-  fClusterFinder(NULL),
+  fClusters(NULL),
   fRawReader(NULL),
   fDettype(NULL),
   fgeom(NULL),
@@ -147,24 +142,21 @@ AliHLTComponent* AliHLTITSClusterFinderComponent::Spawn() {
 Int_t AliHLTITSClusterFinderComponent::DoInit( int /*argc*/, const char** /*argv*/ ) {
   // see header file for class documentation
   
-  if ( fClusterFinder )
-    return -EINPROGRESS;
-  
   if(fModeSwitch==kClusterFinderSPD) {
     HLTDebug("using ClusterFinder for SPD");
-    fNModules=AliITSgeomTGeo::GetNDetectors(1)*AliITSgeomTGeo::GetNLadders(1) + AliITSgeomTGeo::GetNDetectors(2)*AliITSgeomTGeo::GetNLadders(2);
+    //fNModules=AliITSgeomTGeo::GetNDetectors(1)*AliITSgeomTGeo::GetNLadders(1) + AliITSgeomTGeo::GetNDetectors(2)*AliITSgeomTGeo::GetNLadders(2);
     fId=AliHLTDAQ::DdlIDOffset("ITSSPD");
     fNddl=AliHLTDAQ::NumberOfDdls("ITSSPD");
   }
   else if(fModeSwitch==kClusterFinderSDD) {
     HLTDebug("using ClusterFinder for SDD");
-    fNModules=AliITSgeomTGeo::GetNDetectors(3)*AliITSgeomTGeo::GetNLadders(3) + AliITSgeomTGeo::GetNDetectors(4)*AliITSgeomTGeo::GetNLadders(4);
+    //fNModules=AliITSgeomTGeo::GetNDetectors(3)*AliITSgeomTGeo::GetNLadders(3) + AliITSgeomTGeo::GetNDetectors(4)*AliITSgeomTGeo::GetNLadders(4);
     fId=AliHLTDAQ::DdlIDOffset("ITSSDD");
     fNddl=AliHLTDAQ::NumberOfDdls("ITSSDD");
   }
   else if(fModeSwitch==kClusterFinderSSD) {
     HLTDebug("using ClusterFinder for SSD");
-    fNModules=AliITSgeomTGeo::GetNDetectors(5)*AliITSgeomTGeo::GetNLadders(5) + AliITSgeomTGeo::GetNDetectors(6)*AliITSgeomTGeo::GetNLadders(6);
+    //fNModules=AliITSgeomTGeo::GetNDetectors(5)*AliITSgeomTGeo::GetNLadders(5) + AliITSgeomTGeo::GetNDetectors(6)*AliITSgeomTGeo::GetNLadders(6);
     fId=AliHLTDAQ::DdlIDOffset("ITSSSD");
     fNddl=AliHLTDAQ::NumberOfDdls("ITSSSD");
   }
@@ -177,7 +169,6 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int /*argc*/, const char** /*argv
   AliITSReconstructor *rec = new AliITSReconstructor();
   rec->SetRecoParam(par);
   
-
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man->IsDefaultStorageSet()){
     HLTError("Default CDB storage has not been set !");
@@ -192,20 +183,19 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int /*argc*/, const char** /*argv
   //fgeomInit->InitAliITSgeom(fgeom);
   fgeom = fgeomInit->CreateAliITSgeom();
   
+  fNModules = fgeom->GetIndexMax();
+
+  fClusters = new TClonesArray*[fNModules]; 
+  for (Int_t iModule = 0; iModule < fNModules; iModule++) {
+    fClusters[iModule] = NULL;
+  } 
+
   //set dettype
   fDettype = new AliITSDetTypeRec();
   fDettype->SetITSgeom(fgeom);
-  if(fModeSwitch==kClusterFinderSPD) {fDettype->SetReconstructionModel(0,fClusterFinder);}
-  else if(fModeSwitch==kClusterFinderSDD) {fDettype->SetReconstructionModel(1,fClusterFinder);}
-  else if(fModeSwitch==kClusterFinderSSD) {fDettype->SetReconstructionModel(2,fClusterFinder);}
   fDettype->SetDefaultClusterFindersV2(kTRUE);
   fDettype->SetDefaults();
   
-  if(fModeSwitch==kClusterFinderSPD) {fClusterFinder = new AliITSClusterFinderV2SPD(fDettype); }
-  else if(fModeSwitch==kClusterFinderSDD) {fClusterFinder = new AliITSClusterFinderV2SDD(fDettype); }
-  else if(fModeSwitch==kClusterFinderSSD) {fClusterFinder = new AliITSClusterFinderV2SSD(fDettype); }
-  fClusterFinder->InitGeometry();
-
   if ( fRawReader )
     return -EINPROGRESS;
 
@@ -221,10 +211,6 @@ Int_t AliHLTITSClusterFinderComponent::DoDeinit() {
     delete fRawReader;
   fRawReader = NULL;
 
-  if ( fClusterFinder )
-    delete fClusterFinder;
-  fClusterFinder = NULL;
-
   if ( fDettype )
     delete fDettype;
   fDettype = NULL;
@@ -233,6 +219,14 @@ Int_t AliHLTITSClusterFinderComponent::DoDeinit() {
     delete fgeomInit;
   fgeomInit = NULL;
 
+  for (Int_t iModule = 0; iModule < fNModules; iModule++) {
+    if(fClusters[iModule] != NULL){
+      fClusters[iModule]->Delete();
+      delete fClusters[iModule];
+    }
+    fClusters[iModule] = NULL;
+  } 
+  
   return 0;
 }
 
@@ -285,60 +279,61 @@ Int_t AliHLTITSClusterFinderComponent::DoEvent( const AliHLTComponentEventData& 
       HLTWarning("Could not add buffer");
     }
     
-    //fClusterFinder->RawdataToClusters(fRawReader,fClusters);
-    TTree *tree = new TTree();
-    if(fModeSwitch==kClusterFinderSPD) {fDettype->DigitsToRecPoints(fRawReader,tree,"SPD");}
-    else if(fModeSwitch==kClusterFinderSDD) {fDettype->DigitsToRecPoints(fRawReader,tree,"SDD");}
-    else if(fModeSwitch==kClusterFinderSSD) {fDettype->DigitsToRecPoints(fRawReader,tree,"SSD");}
-
+    if(fModeSwitch==kClusterFinderSPD) {fDettype->DigitsToRecPoints(fRawReader,fClusters,"SPD");}
+    else if(fModeSwitch==kClusterFinderSDD) {fDettype->DigitsToRecPoints(fRawReader,fClusters,"SDD");}
+    else if(fModeSwitch==kClusterFinderSSD) {fDettype->DigitsToRecPoints(fRawReader,fClusters,"SSD");}
+    
     UInt_t nClusters=0;
-    TClonesArray *array=new TClonesArray("AliITSRecPoint",1000);
-    TBranch *branch = tree->GetBranch("ITSRecPoints");
-    branch->SetAddress(&array);
-    for(int ev=0;ev<branch->GetEntries();ev++){
-      branch->GetEntry(ev);
-      nClusters += array->GetEntries();
+    for(int i=0;i<fNModules;i++){
+      if(fClusters[i] != NULL){
+        nClusters += fClusters[i]->GetEntries(); 
+      }
     }
     
     UInt_t bufferSize = nClusters * sizeof(AliHLTITSSpacePointData) + sizeof(AliHLTITSClusterData);
     AliHLTUInt8_t *buffer = new AliHLTUInt8_t[bufferSize];
     AliHLTITSClusterData *outputClusters = reinterpret_cast<AliHLTITSClusterData*>(buffer);
     outputClusters->fSpacePointCnt=nClusters;
-
+    
     int clustIdx=0;
-    for(int i=0;i<branch->GetEntries();i++){
-      branch->GetEntry(i);
-      for(int j=0;j<array->GetEntries();j++){
-	AliITSRecPoint *recpoint = (AliITSRecPoint*) array->At(j);
-	outputClusters->fSpacePoints[clustIdx].fY=recpoint->GetY();
-	outputClusters->fSpacePoints[clustIdx].fZ=recpoint->GetZ();
-	outputClusters->fSpacePoints[clustIdx].fSigmaY2=recpoint->GetSigmaY2();
-	outputClusters->fSpacePoints[clustIdx].fSigmaZ2=recpoint->GetSigmaZ2();
-	outputClusters->fSpacePoints[clustIdx].fSigmaYZ=recpoint->GetSigmaYZ();
-	outputClusters->fSpacePoints[clustIdx].fQ=recpoint->GetQ();
-	outputClusters->fSpacePoints[clustIdx].fNy=recpoint->GetNy();
-	outputClusters->fSpacePoints[clustIdx].fNz=recpoint->GetNz();
-	outputClusters->fSpacePoints[clustIdx].fLayer=recpoint->GetLayer();
-	if(fModeSwitch==kClusterFinderSDD){outputClusters->fSpacePoints[clustIdx].fIndex=recpoint->GetDetectorIndex() | recpoint->GetPindex() | recpoint->GetNindex();}
-	else{outputClusters->fSpacePoints[clustIdx].fIndex=recpoint->GetDetectorIndex();}
-	outputClusters->fSpacePoints[clustIdx].fTracks[0]=recpoint->GetLabel(0);
-	outputClusters->fSpacePoints[clustIdx].fTracks[1]=recpoint->GetLabel(1);
-	outputClusters->fSpacePoints[clustIdx].fTracks[2]=recpoint->GetLabel(2);
-	
-	clustIdx++;
+    for(int i=0;i<fNModules;i++){
+      if(fClusters[i] != NULL){
+        for(int j=0;j<fClusters[i]->GetEntries();j++){
+          AliITSRecPoint *recpoint = (AliITSRecPoint*) fClusters[i]->At(j);
+          outputClusters->fSpacePoints[clustIdx].fY=recpoint->GetY();
+          outputClusters->fSpacePoints[clustIdx].fZ=recpoint->GetZ();
+          outputClusters->fSpacePoints[clustIdx].fSigmaY2=recpoint->GetSigmaY2();
+          outputClusters->fSpacePoints[clustIdx].fSigmaZ2=recpoint->GetSigmaZ2();
+          outputClusters->fSpacePoints[clustIdx].fSigmaYZ=recpoint->GetSigmaYZ();
+          outputClusters->fSpacePoints[clustIdx].fQ=recpoint->GetQ();
+          outputClusters->fSpacePoints[clustIdx].fNy=recpoint->GetNy();
+          outputClusters->fSpacePoints[clustIdx].fNz=recpoint->GetNz();
+          outputClusters->fSpacePoints[clustIdx].fLayer=recpoint->GetLayer();
+          outputClusters->fSpacePoints[clustIdx].fIndex=recpoint->GetDetectorIndex() | recpoint->GetPindex() | recpoint->GetNindex();
+          outputClusters->fSpacePoints[clustIdx].fTracks[0]=recpoint->GetLabel(0);
+          outputClusters->fSpacePoints[clustIdx].fTracks[1]=recpoint->GetLabel(1);
+          outputClusters->fSpacePoints[clustIdx].fTracks[2]=recpoint->GetLabel(2);
+	  
+          clustIdx++;
+        }
       }
     }
     
     if(fModeSwitch==kClusterFinderSPD) {PushBack(buffer,bufferSize,kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD,iter->fSpecification);}
     else if(fModeSwitch==kClusterFinderSDD) {PushBack(buffer,bufferSize,kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD,iter->fSpecification);}
     else if(fModeSwitch==kClusterFinderSSD) {PushBack(buffer,bufferSize,kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD,iter->fSpecification);}
-
-    array->Delete();
-    delete array;
-    delete tree;
+    
     delete buffer; 
     fRawReader->ClearBuffers();
     
+    for (Int_t iModule = 0; iModule < fNModules; iModule++) {
+      if(fClusters[iModule] != NULL){
+	fClusters[iModule]->Delete();
+	delete fClusters[iModule];
+      }
+      fClusters[iModule] = NULL;
+    }  
+        
   } //  for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ ) {    
   
   return 0;
