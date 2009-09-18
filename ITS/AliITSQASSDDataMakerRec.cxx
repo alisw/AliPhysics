@@ -78,8 +78,8 @@ fCDBManager(0) {
 	}
   if(fkOnline) {
     fCDBManager = AliCDBManager::Instance();
-    //fCDBManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-    fCDBManager->SetDefaultStorage(gSystem->Getenv("AMORE_CDB_URI"));
+    fCDBManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    //fCDBManager->SetDefaultStorage(gSystem->Getenv("AMORE_CDB_URI"));
     Int_t runNumber = atoi(gSystem->Getenv("DATE_RUN_NUMBER"));
     if(!runNumber) 
       AliWarning("DATE_RUN_NUMBER not defined!!!\n");
@@ -89,7 +89,7 @@ fCDBManager(0) {
     if(!geomGRP) AliWarning("GRP geometry not found!!!\n");
     
     Int_t gLayer = 0,gLadder = 0, gModule = 0;
-    Int_t gHistCounter = 0;
+    Int_t gHistCounterRawSignal = 0, gHistCounterCM = 0;
     TString gTitle; 
 
     for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
@@ -97,18 +97,42 @@ fCDBManager(0) {
       gTitle = "SSD_RawSignal_Layer"; gTitle += gLayer;
       gTitle += "_Ladder"; gTitle += gLadder;
       gTitle += "_Module"; gTitle += gModule;
-      fHistSSDRawSignalModule[gHistCounter] = new TH1D(gTitle.Data(),gTitle.Data(),
-						       2*fgkNumberOfPSideStrips,0,2*fgkNumberOfPSideStrips);
-      gHistCounter += 1;
+      fHistSSDRawSignalModule[gHistCounterRawSignal] = new TH1D(gTitle.Data(),gTitle.Data(),
+								2*fgkNumberOfPSideStrips,0,2*fgkNumberOfPSideStrips);
+      gHistCounterRawSignal += 1;
       
       for(Int_t iStrip = 0; iStrip < 2*fgkNumberOfPSideStrips; iStrip++)
 	fOccupancyMatrix[iModule-500][iStrip] = 0; 
+
+      //CM histograms
+      gTitle = "SSD_CM_PSide_Layer"; gTitle += gLayer;
+      gTitle += "_Ladder"; gTitle += gLadder;
+      gTitle += "_Module"; gTitle += gModule;
+      fHistSSDCMModule[gHistCounterCM] = new TH1D(gTitle.Data(),gTitle.Data(),
+						  100,-50.,50.);
+      fHistSSDCMModule[gHistCounterCM]->GetXaxis()->SetTitle("CM");
+      gHistCounterCM += 1;
     }//module loop
+
+    for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
+      AliITSgeomTGeo::GetModuleId(iModule,gLayer,gLadder,gModule);
+      gTitle = "SSD_CM_NSide_Layer"; gTitle += gLayer;
+      gTitle += "_Ladder"; gTitle += gLadder;
+      gTitle += "_Module"; gTitle += gModule;
+      fHistSSDCMModule[gHistCounterCM] = new TH1D(gTitle.Data(),gTitle.Data(),
+						  100,-50.,50.);
+      fHistSSDCMModule[gHistCounterCM]->GetXaxis()->SetTitle("CM");
+      gHistCounterCM += 1;
+
+    }
   }//online flag
   else {
-    for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) 
-      fHistSSDRawSignalModule[iModule]=NULL;
     fCDBManager = NULL;
+    for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
+      fHistSSDCMModule[iModule] = NULL;
+      fHistSSDCMModule[fgkSSDMODULES+iModule] = NULL;
+      fHistSSDRawSignalModule[iModule] = NULL;
+    }
   }
 }
 
@@ -146,9 +170,15 @@ AliITSQASSDDataMakerRec& AliITSQASSDDataMakerRec::operator = (const AliITSQASSDD
 //__________________________________________________________________
 AliITSQASSDDataMakerRec::~AliITSQASSDDataMakerRec() {
   // destructor
-  for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++)
-    if(fHistSSDRawSignalModule[iModule]) delete fHistSSDRawSignalModule[iModule];
-  if(fCDBManager) delete fCDBManager;
+  if(fkOnline) {
+    for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
+      if(fHistSSDRawSignalModule[iModule]) delete fHistSSDRawSignalModule[iModule];
+      if(fHistSSDCMModule[iModule]) delete fHistSSDCMModule[iModule];
+      if(fHistSSDCMModule[fgkSSDMODULES+iModule]) delete fHistSSDCMModule[fgkSSDMODULES+iModule];
+    }
+    
+    if(fCDBManager) delete fCDBManager;
+  }
 }
 
 //____________________________________________________________________________ 
@@ -176,18 +206,18 @@ void AliITSQASSDDataMakerRec::ResetRawsMonitoredObjects() {
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
     //cout << "ResetRawsMonitoredObjects: Event specie " << specie << " is set" << endl;
-    ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+4)))->Reset();
+    /*((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+4)))->Reset();
     //Data size per LDC
-    ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+22)))->Reset();
+    ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+22)))->Reset();*/
     
     //online part
-    if(fkOnline) {
+    /*if(fkOnline) {
       for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
 	for(Int_t iStrip = 0; iStrip < 2*fgkNumberOfPSideStrips; iStrip++)
 	  fOccupancyMatrix[iModule-500][iStrip] = 0;
-      }//module loop
+	  }//module loop
       
-      Int_t gHistPositionOccupancyPerLadder = 0;
+	  Int_t gHistPositionOccupancyPerLadder = 0;
       Int_t gLayer = 0, gLadder = 0, gModule = 0;
       for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
 	AliITSgeomTGeo::GetModuleId(iModule+500,gLayer,gLadder,gModule);
@@ -201,8 +231,8 @@ void AliITSQASSDDataMakerRec::ResetRawsMonitoredObjects() {
 	
 	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->Reset();
 	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->Reset();
-      }//module loop
-    }//online flag
+	}//module loop
+	}*///online flag
   }//event species loop
 }
 
@@ -256,7 +286,9 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
       if(fkOnline) {
 	//Output of the DA
 	MonitorOCDBObjects();
-	
+	//Monitor common mode values
+	MonitorCMValues();
+
 	Int_t gHistPositionOccupancyPerModule = 0;
 	Int_t gLayer = 0, gLadder = 0, gModule = 0;
 	//occupancy per module
@@ -341,7 +373,7 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
       //cout<<"Data size/ DDL entries: "<<((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[1]+4))->GetEntries()<< " mean: " << ((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[1]+4))->GetMean()<<endl;   
       
       //Reset of the raws
-      //ResetRawsMonitoredObjects();
+//ResetRawsMonitoredObjects();
       
       //AliQAChecker::Instance()->Run( AliQAv1::kITS , task, list);
     }//raw data end of cycle
@@ -414,7 +446,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
       gTitle = Form("SSD Data Size DDL %d", i+511) ;
       fHistSSDDataSizeDDL[i-1] = new TH1D(gName.Data(),
 					  Form("%s;(SSD data size) [KB];Events", gTitle.Data()),
-					  1000,0,50000);
+					  100,0,50);
       rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizeDDL[i-1])), 
 					       fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
       fSSDRawsOffset += 1;
@@ -638,72 +670,141 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
     fSSDRawsOffset += 1;
 
     //Output of the DA
-    TH2D *fHistPSideBadChannelMapLayer5 = new TH2D("fHistPSideBadChannelMapLayer5",
-                                                   "Layer 5;N_{module};N_{ladder}",
-                                                   22,1,23,
-                                                   34,500,534);
-    fHistPSideBadChannelMapLayer5->GetXaxis()->SetTitleColor(1);
-    fHistPSideBadChannelMapLayer5->SetStats(kFALSE);
-    fHistPSideBadChannelMapLayer5->GetYaxis()->SetTitleOffset(1.8);
-    fHistPSideBadChannelMapLayer5->GetXaxis()->SetNdivisions(22);
-    fHistPSideBadChannelMapLayer5->GetYaxis()->SetNdivisions(34);
-    fHistPSideBadChannelMapLayer5->GetXaxis()->SetLabelSize(0.03);
-    fHistPSideBadChannelMapLayer5->GetYaxis()->SetLabelSize(0.03);
-    fHistPSideBadChannelMapLayer5->GetZaxis()->SetTitleOffset(1.6);
-    fHistPSideBadChannelMapLayer5->GetZaxis()->SetTitle("Bad channels (p-side)[%]");
-    rv = fAliITSQADataMakerRec->Add2RawsList(fHistPSideBadChannelMapLayer5, 
+    TH2D *fHistSSDPSideBadChannelMapLayer5 = new TH2D("fHistSSDPSideBadChannelMapLayer5",
+						      "Layer 5;N_{module};N_{ladder}",
+						      22,1,23,
+						      34,500,534);
+    fHistSSDPSideBadChannelMapLayer5->GetXaxis()->SetTitleColor(1);
+    fHistSSDPSideBadChannelMapLayer5->SetStats(kFALSE);
+    fHistSSDPSideBadChannelMapLayer5->GetYaxis()->SetTitleOffset(1.8);
+    fHistSSDPSideBadChannelMapLayer5->GetXaxis()->SetNdivisions(22);
+    fHistSSDPSideBadChannelMapLayer5->GetYaxis()->SetNdivisions(34);
+    fHistSSDPSideBadChannelMapLayer5->GetXaxis()->SetLabelSize(0.03);
+    fHistSSDPSideBadChannelMapLayer5->GetYaxis()->SetLabelSize(0.03);
+    fHistSSDPSideBadChannelMapLayer5->GetZaxis()->SetTitleOffset(1.6);
+    fHistSSDPSideBadChannelMapLayer5->GetZaxis()->SetTitle("Bad channels (p-side)[%]");
+    rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDPSideBadChannelMapLayer5, 
+					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+    fSSDRawsOffset += 1; fSSDRawsDAOffset += 1;
+    
+    TH2D *fHistSSDNSideBadChannelMapLayer5 = new TH2D("fHistSSDNSideBadChannelMapLayer5",
+						      "Layer 5;N_{module};N_{ladder}",
+						      22,1,23,
+						      34,500,534);
+    fHistSSDNSideBadChannelMapLayer5->GetXaxis()->SetTitleColor(1);
+    fHistSSDNSideBadChannelMapLayer5->SetStats(kFALSE);
+    fHistSSDNSideBadChannelMapLayer5->GetYaxis()->SetTitleOffset(1.8);
+    fHistSSDNSideBadChannelMapLayer5->GetXaxis()->SetNdivisions(22);
+    fHistSSDNSideBadChannelMapLayer5->GetYaxis()->SetNdivisions(34);
+    fHistSSDNSideBadChannelMapLayer5->GetXaxis()->SetLabelSize(0.03);
+    fHistSSDNSideBadChannelMapLayer5->GetYaxis()->SetLabelSize(0.03);
+    fHistSSDNSideBadChannelMapLayer5->GetZaxis()->SetTitleOffset(1.6);
+    fHistSSDNSideBadChannelMapLayer5->GetZaxis()->SetTitle("Bad channels (n-side)[%]");
+    rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDNSideBadChannelMapLayer5, 
+					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+    fSSDRawsOffset += 1; fSSDRawsDAOffset += 1;
+    
+    TH2D *fHistSSDPSideBadChannelMapLayer6 = new TH2D("fHistSSDPSideBadChannelMapLayer6",
+						      "Layer 6;N_{module};N_{ladder}",
+						      25,1,26,
+						      38,600,638);
+    fHistSSDPSideBadChannelMapLayer6->GetXaxis()->SetTitleColor(1);
+    fHistSSDPSideBadChannelMapLayer6->SetStats(kFALSE);
+    fHistSSDPSideBadChannelMapLayer6->GetYaxis()->SetTitleOffset(1.8);
+    fHistSSDPSideBadChannelMapLayer6->GetXaxis()->SetNdivisions(25);
+    fHistSSDPSideBadChannelMapLayer6->GetYaxis()->SetNdivisions(38);
+    fHistSSDPSideBadChannelMapLayer6->GetXaxis()->SetLabelSize(0.03);
+    fHistSSDPSideBadChannelMapLayer6->GetYaxis()->SetLabelSize(0.03);
+    fHistSSDPSideBadChannelMapLayer6->GetZaxis()->SetTitleOffset(1.6);
+    fHistSSDPSideBadChannelMapLayer6->GetZaxis()->SetTitle("Bad channels (p-side)[%]");
+    rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDPSideBadChannelMapLayer6, 
+					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+    fSSDRawsOffset += 1; fSSDRawsDAOffset += 1;
+    
+    TH2D *fHistSSDNSideBadChannelMapLayer6 = new TH2D("fHistSSDNSideBadChannelMapLayer6",
+						      "Layer 6;N_{module};N_{ladder}",
+						      25,1,26,
+						      38,600,638);
+    fHistSSDNSideBadChannelMapLayer6->GetXaxis()->SetTitleColor(1);
+    fHistSSDNSideBadChannelMapLayer6->SetStats(kFALSE);
+    fHistSSDNSideBadChannelMapLayer6->GetYaxis()->SetTitleOffset(1.8);
+    fHistSSDNSideBadChannelMapLayer6->GetXaxis()->SetNdivisions(25);
+    fHistSSDNSideBadChannelMapLayer6->GetYaxis()->SetNdivisions(38);
+    fHistSSDNSideBadChannelMapLayer6->GetXaxis()->SetLabelSize(0.03);
+    fHistSSDNSideBadChannelMapLayer6->GetYaxis()->SetLabelSize(0.03);
+    fHistSSDNSideBadChannelMapLayer6->GetZaxis()->SetTitleOffset(1.6);
+    fHistSSDNSideBadChannelMapLayer6->GetZaxis()->SetTitle("Bad channels (n-side)[%]");
+    rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDNSideBadChannelMapLayer6, 
                                         fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
     fSSDRawsOffset += 1; fSSDRawsDAOffset += 1;
 
-    TH2D *fHistNSideBadChannelMapLayer5 = new TH2D("fHistNSideBadChannelMapLayer5",
-                                                   "Layer 5;N_{module};N_{ladder}",
-                                                   22,1,23,
-                                                   34,500,534);
-    fHistNSideBadChannelMapLayer5->GetXaxis()->SetTitleColor(1);
-    fHistNSideBadChannelMapLayer5->SetStats(kFALSE);
-    fHistNSideBadChannelMapLayer5->GetYaxis()->SetTitleOffset(1.8);
-    fHistNSideBadChannelMapLayer5->GetXaxis()->SetNdivisions(22);
-    fHistNSideBadChannelMapLayer5->GetYaxis()->SetNdivisions(34);
-    fHistNSideBadChannelMapLayer5->GetXaxis()->SetLabelSize(0.03);
-    fHistNSideBadChannelMapLayer5->GetYaxis()->SetLabelSize(0.03);
-    fHistNSideBadChannelMapLayer5->GetZaxis()->SetTitleOffset(1.6);
-    fHistNSideBadChannelMapLayer5->GetZaxis()->SetTitle("Bad channels (n-side)[%]");
-    rv = fAliITSQADataMakerRec->Add2RawsList(fHistNSideBadChannelMapLayer5, 
-                                        fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+   //Common mode values
+    TH2D *fHistSSDPSideCommonModeMapLayer5 = new TH2D("fHistSSDPSideCommonModeMapLayer5",
+						      "Layer 5 - CM (P-side);N_{module};N_{ladder}",
+						      22,1,23,
+						      34,500,534);
+    fHistSSDPSideCommonModeMapLayer5->GetXaxis()->SetTitleColor(1);
+    fHistSSDPSideCommonModeMapLayer5->SetStats(kFALSE);
+    fHistSSDPSideCommonModeMapLayer5->GetYaxis()->SetTitleOffset(1.8);
+    fHistSSDPSideCommonModeMapLayer5->GetXaxis()->SetNdivisions(22);
+    fHistSSDPSideCommonModeMapLayer5->GetYaxis()->SetNdivisions(34);
+    fHistSSDPSideCommonModeMapLayer5->GetXaxis()->SetLabelSize(0.03);
+    fHistSSDPSideCommonModeMapLayer5->GetYaxis()->SetLabelSize(0.03);
+    fHistSSDPSideCommonModeMapLayer5->GetZaxis()->SetTitleOffset(1.6);
+    fHistSSDPSideCommonModeMapLayer5->GetZaxis()->SetTitle("RMS(CM) (P-side)");
+    rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDPSideCommonModeMapLayer5, 
+					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
     fSSDRawsOffset += 1; fSSDRawsDAOffset += 1;
     
-    TH2D *fHistPSideBadChannelMapLayer6 = new TH2D("fHistPSideBadChannelMapLayer6",
-                                                   "Layer 6;N_{module};N_{ladder}",
-                                                   25,1,26,
-                                                   38,600,638);
-    fHistPSideBadChannelMapLayer6->GetXaxis()->SetTitleColor(1);
-    fHistPSideBadChannelMapLayer6->SetStats(kFALSE);
-    fHistPSideBadChannelMapLayer6->GetYaxis()->SetTitleOffset(1.8);
-    fHistPSideBadChannelMapLayer6->GetXaxis()->SetNdivisions(25);
-    fHistPSideBadChannelMapLayer6->GetYaxis()->SetNdivisions(38);
-    fHistPSideBadChannelMapLayer6->GetXaxis()->SetLabelSize(0.03);
-    fHistPSideBadChannelMapLayer6->GetYaxis()->SetLabelSize(0.03);
-    fHistPSideBadChannelMapLayer6->GetZaxis()->SetTitleOffset(1.6);
-    fHistPSideBadChannelMapLayer6->GetZaxis()->SetTitle("Bad channels (p-side)[%]");
-    rv = fAliITSQADataMakerRec->Add2RawsList(fHistPSideBadChannelMapLayer6, 
-                                        fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+    TH2D *fHistSSDNSideCommonModeMapLayer5 = new TH2D("fHistSSDNSideCommonModeMapLayer5",
+						      "Layer 5 - CM (N-side);N_{module};N_{ladder}",
+						      22,1,23,
+						      34,500,534);
+    fHistSSDNSideCommonModeMapLayer5->GetXaxis()->SetTitleColor(1);
+    fHistSSDNSideCommonModeMapLayer5->SetStats(kFALSE);
+    fHistSSDNSideCommonModeMapLayer5->GetYaxis()->SetTitleOffset(1.8);
+    fHistSSDNSideCommonModeMapLayer5->GetXaxis()->SetNdivisions(22);
+    fHistSSDNSideCommonModeMapLayer5->GetYaxis()->SetNdivisions(34);
+    fHistSSDNSideCommonModeMapLayer5->GetXaxis()->SetLabelSize(0.03);
+    fHistSSDNSideCommonModeMapLayer5->GetYaxis()->SetLabelSize(0.03);
+    fHistSSDNSideCommonModeMapLayer5->GetZaxis()->SetTitleOffset(1.6);
+    fHistSSDNSideCommonModeMapLayer5->GetZaxis()->SetTitle("RMS(CM) (N-side)");
+    rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDNSideCommonModeMapLayer5, 
+					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
     fSSDRawsOffset += 1; fSSDRawsDAOffset += 1;
     
-    TH2D *fHistNSideBadChannelMapLayer6 = new TH2D("fHistNSideBadChannelMapLayer6",
-                                                   "Layer 6;N_{module};N_{ladder}",
-                                                   25,1,26,
-                                                   38,600,638);
-    fHistNSideBadChannelMapLayer6->GetXaxis()->SetTitleColor(1);
-    fHistNSideBadChannelMapLayer6->SetStats(kFALSE);
-    fHistNSideBadChannelMapLayer6->GetYaxis()->SetTitleOffset(1.8);
-    fHistNSideBadChannelMapLayer6->GetXaxis()->SetNdivisions(25);
-    fHistNSideBadChannelMapLayer6->GetYaxis()->SetNdivisions(38);
-    fHistNSideBadChannelMapLayer6->GetXaxis()->SetLabelSize(0.03);
-    fHistNSideBadChannelMapLayer6->GetYaxis()->SetLabelSize(0.03);
-    fHistNSideBadChannelMapLayer6->GetZaxis()->SetTitleOffset(1.6);
-    fHistNSideBadChannelMapLayer6->GetZaxis()->SetTitle("Bad channels (n-side)[%]");
-    rv = fAliITSQADataMakerRec->Add2RawsList(fHistNSideBadChannelMapLayer6, 
-                                        fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+    TH2D *fHistSSDPSideCommonModeMapLayer6 = new TH2D("fHistSSDPSideCommonModeMapLayer6",
+						      "Layer 6 - CM (P-side);N_{module};N_{ladder}",
+						      25,1,26,
+						      38,600,638);
+    fHistSSDPSideCommonModeMapLayer6->GetXaxis()->SetTitleColor(1);
+    fHistSSDPSideCommonModeMapLayer6->SetStats(kFALSE);
+    fHistSSDPSideCommonModeMapLayer6->GetYaxis()->SetTitleOffset(1.8);
+    fHistSSDPSideCommonModeMapLayer6->GetXaxis()->SetNdivisions(25);
+    fHistSSDPSideCommonModeMapLayer6->GetYaxis()->SetNdivisions(38);
+    fHistSSDPSideCommonModeMapLayer6->GetXaxis()->SetLabelSize(0.03);
+    fHistSSDPSideCommonModeMapLayer6->GetYaxis()->SetLabelSize(0.03);
+    fHistSSDPSideCommonModeMapLayer6->GetZaxis()->SetTitleOffset(1.6);
+    fHistSSDPSideCommonModeMapLayer6->GetZaxis()->SetTitle("RMS(CM) (P-side)");
+    rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDPSideCommonModeMapLayer6, 
+					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+    fSSDRawsOffset += 1; fSSDRawsDAOffset += 1;
+    
+    TH2D *fHistSSDNSideCommonModeMapLayer6 = new TH2D("fHistSSDNSideCommonModeMapLayer6",
+						      "Layer 6 - CM (N-side);N_{module};N_{ladder}",
+						      25,1,26,
+						      38,600,638);
+    fHistSSDNSideCommonModeMapLayer6->GetXaxis()->SetTitleColor(1);
+    fHistSSDNSideCommonModeMapLayer6->SetStats(kFALSE);
+    fHistSSDNSideCommonModeMapLayer6->GetYaxis()->SetTitleOffset(1.8);
+    fHistSSDNSideCommonModeMapLayer6->GetXaxis()->SetNdivisions(25);
+    fHistSSDNSideCommonModeMapLayer6->GetYaxis()->SetNdivisions(38);
+    fHistSSDNSideCommonModeMapLayer6->GetXaxis()->SetLabelSize(0.03);
+    fHistSSDNSideCommonModeMapLayer6->GetYaxis()->SetLabelSize(0.03);
+    fHistSSDNSideCommonModeMapLayer6->GetZaxis()->SetTitleOffset(1.6);
+    fHistSSDNSideCommonModeMapLayer6->GetZaxis()->SetTitle("RMS(CM) (N-side)");
+    rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDNSideCommonModeMapLayer6, 
+					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
     fSSDRawsOffset += 1; fSSDRawsDAOffset += 1;
   }//online flag
   
@@ -778,13 +879,22 @@ Int_t AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) {
       gSizePerDDL[rawReader->GetDDLID()] = rawReader->GetDataSize();
       gSizePerLDC[rawReader->GetLDCId()-8] = rawReader->GetDataSize();
       AliITSgeomTGeo::GetModuleId(gSSDStream.GetModuleID(),gLayer,gLadder,gModule);
-      if(gSSDStream.GetStrip() < 0) continue;
-      gStripNumber = (gSSDStream.GetSideFlag() == 0) ? gSSDStream.GetStrip() : -gSSDStream.GetStrip() + 2*fgkNumberOfPSideStrips;
       gHistPosition = (gLayer == 5) ? ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER5 + gModule - 1) : ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER6 + gModule + fgkSSDMODULESLAYER5 - 1);
-      //AliDebug(AliQAv1::GetQADebugLevel(), Form("ModulePosition: %d - Layer: %d - Ladder: %d - Module: %d\n",gHistPosition,gLayer,gLadder,gModule));
-      if(fkOnline)
-	fHistSSDRawSignalModule[gHistPosition]->Fill(gStripNumber,gSSDStream.GetSignal());
-      //fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+gHistPosition+fSSDRawsCommonLevelOffset)->Fill(gStripNumber,gSSDStream.GetSignal());
+      if(fkOnline) {
+	if(gSSDStream.GetStrip() < 0) {
+	  //Printf("Layer: %d - Ladder: %d - Module: %d - Strip: %d - Signal: %lf",gLayer,gLadder,gModule,gSSDStream.GetStrip(),gSSDStream.GetSignal());
+	  if(TMath::Abs(gSSDStream.GetStrip()) < 7)
+	    fHistSSDCMModule[gHistPosition]->Fill(gSSDStream.GetSignal());
+	  if(TMath::Abs(gSSDStream.GetStrip()) > 6)
+	    fHistSSDCMModule[fgkSSDMODULES+gHistPosition]->Fill(gSSDStream.GetSignal());
+	}//CM values
+	else {
+	  gStripNumber = (gSSDStream.GetSideFlag() == 0) ? gSSDStream.GetStrip() : -gSSDStream.GetStrip() + 2*fgkNumberOfPSideStrips;
+	  //AliDebug(AliQAv1::GetQADebugLevel(), Form("ModulePosition: %d - Layer: %d - Ladder: %d - Module: %d\n",gHistPosition,gLayer,gLadder,gModule));
+	  fHistSSDRawSignalModule[gHistPosition]->Fill(gStripNumber,gSSDStream.GetSignal());
+	  //fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+gHistPosition+fSSDRawsCommonLevelOffset)->Fill(gStripNumber,gSSDStream.GetSignal());
+	}//normal strip signal
+      }//online flag
     }//streamer loop   
     
     //event size calculation and filling info
@@ -945,6 +1055,37 @@ Double_t AliITSQASSDDataMakerRec::GetOccupancyModule(TH1 *lHisto,
 }
 
 //____________________________________________________________________________
+ void AliITSQASSDDataMakerRec::MonitorCMValues() {
+  //Monitor in AMORE the CM values
+   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+     if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
+     //cout << "MonitorCMValues: Event specie " << specie << " is set" << endl;
+     fAliITSQADataMakerRec->SetEventSpecie(AliRecoParam::ConvertIndex(specie));
+  
+     //compute the rms of the CM values
+     Int_t gLayer = 0, gLadder = 0, gModule = 0;
+     Double_t rmsPsideCM = 0.0, rmsNsideCM = 0.0;
+     for(Int_t i = 0; i < fgkSSDMODULES; i++) {
+       rmsPsideCM = 0.0; rmsNsideCM = 0.0;
+       AliITSgeomTGeo::GetModuleId(i+500,gLayer,gLadder,gModule);
+       //Printf("%s - %s",((TH1*)list->At(i))->GetName(),
+       //((TH1*)list->At(1698+i))->GetName());
+       rmsPsideCM = fHistSSDCMModule[i]->GetRMS();
+       rmsNsideCM = fHistSSDCMModule[fgkSSDMODULES+i]->GetRMS();
+       //Printf("rmsPside: %lf - rmsNside: %lf",rmsPsideCM,rmsNsideCM);
+       if(gLayer == 5) {
+	 ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+4))->SetBinContent(gModule,gLadder,rmsPsideCM);
+	 ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+5))->SetBinContent(gModule,gLadder,rmsNsideCM);
+       }
+       if(gLayer == 6) {
+	 ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+6))->SetBinContent(gModule,gLadder,rmsPsideCM);
+	 ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+7))->SetBinContent(gModule,gLadder,rmsNsideCM);
+       }
+     }//module loop
+   }//event species loop
+ }
+
+//____________________________________________________________________________
 void AliITSQASSDDataMakerRec::MonitorOCDBObjects() { 
   //Monitor in AMORE the output of the DA
   //Currently only the bad channel list is monitored
@@ -952,15 +1093,15 @@ void AliITSQASSDDataMakerRec::MonitorOCDBObjects() {
 
 
 for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
-//cout << "MonitorOCDBObjects: Event specie " << specie << " is set" << endl;
-fAliITSQADataMakerRec->SetEventSpecie(AliRecoParam::ConvertIndex(specie));
-
-//((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset))->Reset();
-//((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+1))->Reset();
-//((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+2))->Reset();
-//((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+3))->Reset();
-
+  if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
+  //cout << "MonitorOCDBObjects: Event specie " << specie << " is set" << endl;
+  fAliITSQADataMakerRec->SetEventSpecie(AliRecoParam::ConvertIndex(specie));
+  
+  //((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset))->Reset();
+  //((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+1))->Reset();
+  //((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+2))->Reset();
+  //((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+3))->Reset();
+  
   AliCDBEntry *entryBadChannelsSSD = fCDBManager->Get("ITS/Calib/BadChannelsSSD");
   if(!entryBadChannelsSSD) 
     AliError("OCDB entry for the bad channel list is not valid!"); 
@@ -997,7 +1138,7 @@ fAliITSQADataMakerRec->SetEventSpecie(AliRecoParam::ConvertIndex(specie));
           nNSideChannelsLayer5 += 1;
         if(layer == 6)
           nNSideChannelsLayer6 += 1;
-        nBadNSideChannels += 1;
+nBadNSideChannels += 1;
       }//badchannel flag != 0
     }//loop over strips
 
@@ -1006,29 +1147,27 @@ fAliITSQADataMakerRec->SetEventSpecie(AliRecoParam::ConvertIndex(specie));
     //cout << "Bad channels N side module " << module << ": " << nBadNSideChannels << endl;
     
     if(layer == 5) {
+      /*if((module == 10)&&(ladder == 10)) {
+	cout<<"Npside bad: "<<nPSideChannelsLayer5<<" - Total: "<<fgkNumberOfPSideStrips<<" - Percentage: "<<(100.*nPSideChannelsLayer5/fgkNumberOfPSideStrips)<<endl;
+	}*/
       if(nPSideChannelsLayer5 > 0)
-	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset))->SetBinContent(module,499+ladder,
-									    100.*nPSideChannelsLayer5/fgkNumberOfPSideStrips);
-      else ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset))->SetBinContent(module,499+ladder,0.0001);
+	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset))->SetBinContent(module,ladder,100.*nPSideChannelsLayer5/fgkNumberOfPSideStrips);
+      else ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset))->SetBinContent(module,ladder,0.0001);
       if(nNSideChannelsLayer5 > 0)
-	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+1))->SetBinContent(module,499+ladder,
-									    100.*nNSideChannelsLayer5/fgkNumberOfPSideStrips);
-      else ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+1))->SetBinContent(module,499+ladder,0.0001);
+	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+1))->SetBinContent(module,ladder,100.*nNSideChannelsLayer5/fgkNumberOfPSideStrips);
+      else ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+1))->SetBinContent(module,ladder,0.0001);
     }//layer 5                                                                    
     if(layer == 6) {
       if(nPSideChannelsLayer6 > 0)
-        ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+2))->SetBinContent(module,599+ladder,
-									    100.*nPSideChannelsLayer6/fgkNumberOfPSideStrips);
-      else ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+2))->SetBinContent(module,599+ladder,0.0001);
+        ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+2))->SetBinContent(module,ladder,100.*nPSideChannelsLayer6/fgkNumberOfPSideStrips);
+      else ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+2))->SetBinContent(module,ladder,0.0001);
       if(nNSideChannelsLayer6 > 0)
-        ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+3))->SetBinContent(module,599+ladder,
-									    100.*nNSideChannelsLayer6/fgkNumberOfPSideStrips);
-      else ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+3))->SetBinContent(module,599+ladder,0.0001);
+        ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+3))->SetBinContent(module,ladder,100.*nNSideChannelsLayer6/fgkNumberOfPSideStrips);
+      else ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+3))->SetBinContent(module,ladder,0.0001);
     }//layer 6                                                              
   }//module loop
 
-
-  //cout << "entries bad channel layer 5 n side " << ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+1))->GetEntries() << ", mean: " << ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+1))->GetMean() << endl;
+  //cout << "entries bad channel layer 5 n side " << ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+1))->GetEntries() << " - Bad channels P side layer 5 module 10 ladder 10: " << ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset))->GetBinContent(10,10)<<endl;
 
 
 } //event species loop

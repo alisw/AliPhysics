@@ -54,6 +54,7 @@ public:
 			      Int_t mode,
 			      Double_t threshold); 
   void MonitorOCDBObjects();
+  void MonitorCMValues();
 
   static const Int_t fgkNumOfLDCs = 8;      //number of SSD LDCs
   static const Int_t fgkNumOfDDLs = 16;      //number of SSD DDLs
@@ -81,6 +82,7 @@ public:
   Int_t   *fGenDigitsOffset;                     //qachecking recpoints  offset
   Int_t   *fGenRecPointsOffset;                  //qachecking recpoints  offset
   TH1D   *fHistSSDRawSignalModule[fgkSSDMODULES]; //raw signal vs strip number - SSD                   
+  TH1D   *fHistSSDCMModule[2*fgkSSDMODULES]; //SSD common mode noise
   Int_t   fOccupancyMatrix[fgkSSDMODULES][2*fgkNumberOfPSideStrips]; //occupancy values per strip
 
   AliCDBManager *fCDBManager; //CDB manager
