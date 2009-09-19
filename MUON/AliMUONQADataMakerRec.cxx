@@ -609,9 +609,9 @@ void AliMUONQADataMakerRec::InitRaws()
   
   TH1* hbp = new TH1F("hTrackerBusPatchOccupancy","Occupancy of bus patches",nbins,xmin,xmax);
 
-  TH1* hbpnpads = new TH1F("kTrackerBusPatchNofPads","Number of pads per bus patch",nbins,xmin,xmax);
+  TH1* hbpnpads = new TH1F("hTrackerBusPatchNofPads","Number of pads per bus patch",nbins,xmin,xmax);
 
-  TH1* hbpnmanus = new TH1F("kTrackerBusPatchNofManus","Number of manus per bus patch",nbins,xmin,xmax);
+  TH1* hbpnmanus = new TH1F("hTrackerBusPatchNofManus","Number of manus per bus patch",nbins,xmin,xmax);
 
   Add2RawsList(hbp,kTrackerBusPatchOccupancy, !expert, image, !saveCorr);
   Add2RawsList(hbpnpads,kTrackerBusPatchNofPads, expert, !image, !saveCorr);
