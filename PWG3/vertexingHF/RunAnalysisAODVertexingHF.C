@@ -15,12 +15,15 @@ void RunAnalysisAODVertexingHF()
 
   gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/vertexingHF -g"); 
   //
+  TString trainName = "Test";
   TString analysisMode = "grid"; // "local", "grid", or "proof"
   TString inputMode    = "list"; // "list", "xml", or "dataset"
   Long64_t nentries=1234567890,firstentry=0;
   Bool_t useParFiles=kFALSE;
   Bool_t useAlienPlugin=kTRUE;
   TString pluginmode="test";
+  Bool_t saveProofToAlien=kFALSE;
+  TString proofOutdir = "";
   TString loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/";
   //TString loadMacroPath="./"; // this is normally needed for CAF
   //
@@ -34,6 +37,23 @@ void RunAnalysisAODVertexingHF()
     gEnv->SetValue("XSec.GSI.DelegProxy","2");
     TProof::Open("alicecaf");
     //TProof::Reset("alicecaf");
+    if(saveProofToAlien) {
+      TGrid::Connect("alien://");
+      if(gGrid) {
+	TString homedir = gGrid->GetHomeDirectory();
+	TString workdir = homedir + trainName;
+	if(!gGrid->Cd(workdir)) {
+	  gGrid->Cd(homedir);
+	  if(gGrid->Mkdir(workdir)) {
+	    gGrid->Cd(trainName);
+	    ::Info("VertexingTrain::Connect()", "Directory %s created", gGrid->Pwd());
+	  }
+	}	   
+	gGrid->Mkdir("proof_output");
+	gGrid->Cd("proof_output");
+	proofOutdir = Form("alien://%s", gGrid->Pwd());
+      } 
+    }
   }
 
 
@@ -149,10 +169,12 @@ void RunAnalysisAODVertexingHF()
   // Connect plug-in to the analysis manager
   if(useAlienPlugin) mgr->SetGridHandler(alienHandler);
 
-
   // Input
   AliAODInputHandler *inputHandler = new AliAODInputHandler();
-  if(analysisMode=="proof") inputHandler->AddFriend("AliAOD.VertexingHF.root");
+  if(analysisMode=="proof") {
+    inputHandler->AddFriend("AliAOD.VertexingHF.root");
+    if(saveProofToAlien) mgr->SetSpecialOutputLocation(proofOutdir);
+  }
   mgr->SetInputEventHandler(inputHandler);
   //-------------------------------------------------------------------
 
