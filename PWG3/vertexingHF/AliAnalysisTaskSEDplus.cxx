@@ -132,7 +132,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput->Add(fHistBackground);
   
   OpenFile(2); // 2 is the slot number of the ntuple
-  fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Ptpi:PtK:Ptpi2:PtRec:PtTrue:PointingAngle:DecLeng:VxTrue:VxRec:VyRec,VzRec,InvMass:sigvert:d0Pi:d0K:d0Pi2");
+  fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Ptpi:PtK:Ptpi2:PtRec:PtTrue:PointingAngle:DecLeng:VxTrue:VxRec:VyRec:VzRec:InvMass:sigvert:d0Pi:d0K:d0Pi2");
   OpenFile(3); // 3 is the slot number of the ntuple
   fNtupleDplusbackg = new TNtuple("fNtupleDplusbackg","D + backg","Ptpibkg:Ptkbkg:Ptpi2bkg:PtRecbkg:PointingAnglebkg:DLbkg:VxRecbkg:VyRecbkg:VzRecbkg:InvMassbkg:sigvertbkg:d0Pibkg:d0Kbkg:d0Pi2bkg");
   
