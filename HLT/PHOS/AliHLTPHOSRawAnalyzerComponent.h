@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id$
+// $Id: AliHLTPHOSRawAnalyzerComponent.h 31490 2009-03-15 16:27:11Z odjuvsla $
 
 #ifndef ALIHLTPHOSRAWANALYZERCOMPONENT_H
 #define ALIHLTPHOSRAWANALYZERCOMPONENT_H
@@ -9,15 +9,18 @@
 #include "AliHLTPHOSRcuProcessor.h"
 
 
+class AliAltroDecoder;      // decoder for altro payload
+class AliAltroData;         // container for altro payload
+class AliAltroBunch;        // container for altro bunches
+
 class AliHLTPHOSRawAnalyzer;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSMapper;
 class AliHLTPHOSSanityInspector;
-class AliAltroDecoder;      // decoder for altro payload
-class AliAltroData;         // container for altro payload
-class AliAltroBunch;        // container for altro bunches
 class AliHLTPHOSDigitMaker;
 class AliHLTPHOSDigitContainerDataStruct;
+class AliRawReaderMemory;
+class AliAltroRawStreamV3;
 
 
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
@@ -47,7 +50,9 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
   
   //AliAltroBunch* GetFirstBunch();
   void GetFirstBunch(AliAltroData *altrodata,  AliAltroBunch *altrobunch);
+  void GetFirstBunch();
   void FillDataArray(UInt_t *data, const AliAltroData *altrodataptr, const int channel = -1);
+  void FillRawData(UInt_t *data);
   //  bool CheckBuffer();
 
   void Reset(AliHLTPHOSRcuCellEnergyDataStruct* cellDataPtr);
@@ -99,6 +104,12 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
 
   unsigned long fNCorruptedBlocks;
   unsigned long fNOKBlocks;
+
+  /** Pointer to the raw data reader which reads from memory */
+  AliRawReaderMemory* fRawReaderMemoryPtr;            //!transient
+  
+  /** Pointer to the raw stream */
+  AliAltroRawStreamV3* fAltroRawStreamPtr;              //!transient
 
 };
 #endif
