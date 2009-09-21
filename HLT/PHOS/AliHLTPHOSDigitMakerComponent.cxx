@@ -43,8 +43,6 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 
-const AliHLTComponentDataType AliHLTPHOSDigitMakerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}};
-
 AliHLTPHOSDigitMakerComponent gAliHLTPHOSDigitMakerComponent;
 
 AliHLTPHOSDigitMakerComponent::AliHLTPHOSDigitMakerComponent() :

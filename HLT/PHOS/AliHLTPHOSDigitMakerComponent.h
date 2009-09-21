@@ -140,16 +140,11 @@ protected:
   
 private:
 
-  /** Pointer to the digit maker it self */
+  /** Pointer to the digit maker itself */
   AliHLTPHOSDigitMaker *fDigitMakerPtr;                    //! transient
 
   /** The output of the component, digits in a container */
   AliHLTPHOSDigitContainerDataStruct *fDigitContainerPtr;  //! transient
-
-  /** Event count */
-  //  UInt_t fEvtCnt; 
-  
-  static const AliHLTComponentDataType fgkInputDataTypes[];     //HLT input data type
 
 };
 #endif
