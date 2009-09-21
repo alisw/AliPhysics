@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id$
+// $Id: AliHLTPHOSMapper.h 34264 2009-08-14 18:29:23Z odjuvsla $
 
 #ifndef ALIHLTPHOSMAPPER_H
 #define ALIHLTPHOSMAPPER_H
@@ -46,6 +46,7 @@ class AliHLTPHOSMapper : public AliHLTLogging
   static void GetChannelCoord(UShort_t channelId, UShort_t* channelCoord);
   static void GetLocalCoord(UShort_t channelId, Float_t* localCoord);
   int GetDDLFromSpec(Int_t specification);
+  int GetModuleFromSpec(Int_t specification);
 
   struct fAltromap{ 
     int fZRow; // Coordinate in Z direction (beam direction) relatve too one RCU

@@ -1,4 +1,4 @@
-// $Id$
+// $Id: AliHLTPHOSMapper.cxx 34622 2009-09-04 13:22:01Z odjuvsla $
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -251,4 +251,20 @@ AliHLTPHOSMapper::GetDDLFromSpec(Int_t specification)
   else HLTError("Specification 0x%X not consistent with single DDL in PHOS", specification);
 
   return index;
+}
+
+Int_t 
+AliHLTPHOSMapper::GetModuleFromSpec(Int_t specification)
+{
+  Int_t module = -1;
+      
+  if(specification & 0xf) module = 0;
+  else if((specification >> 4) & 0xf) module = 1;
+  else if((specification >> 8) & 0xf) module = 2;
+  else if((specification >> 12) & 0xf) module = 3;
+  else if((specification >> 16) & 0xf) module = 4;
+ 
+  else HLTError("Specification 0x%X not consistent with single module in PHOS", specification);
+
+  return module;
 }
