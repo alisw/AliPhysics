@@ -40,6 +40,7 @@
 #include "AliFastJetInput.h"
 #include "AliJetBkg.h"
 #include "AliAODJetEventBackground.h"
+#include "AliAODTrack.h"
 
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequenceArea.hh"
@@ -84,13 +85,12 @@ AliFastJetFinder::~AliFastJetFinder()
 //______________________________________________________________________________
 void AliFastJetFinder::FindJets()
 {
-
+  cout<<"----------in AliFastJetFinder::FindJets() ------------------"<<endl;
   //pick up fastjet header
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
   Bool_t debug  = header->GetDebug();     // debug option
   Bool_t bgMode = header->GetBGMode();    // choose to subtract BG or not
 
-  if(debug)cout<<"----------in AliFastJetFinder::FindJets() ------------------"<<endl;
   // check if we are reading AOD jets
   TRefArray *refs = 0;
   Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
@@ -125,7 +125,11 @@ void AliFastJetFinder::FindJets()
   fastjet::AreaType areaType = header->GetAreaType();
   areaDef = fastjet::AreaDefinition(areaType,ghostSpec);
   
-  if(bgMode) // BG subtraction
+
+
+
+
+  if(bgMode) // BG subtraction!!!!!!!!!! Not entering here
     {
       //***************************** JETS FINDING AND EXTRACTION
       // run the jet clustering with the above jet definition
@@ -180,7 +184,7 @@ void AliFastJetFinder::FindJets()
 	double area     = clust_seq.area(jets[j]);
 	double areaError = clust_seq.area_error(jets[j]);
 	
-	if(debug)printf("Jet found %5d %9.5f %8.5f %10.3f %8.3f +- %6.3f\n", (Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp(), area, areaError);
+	if(debug) printf("Jet found %5d %9.5f %8.5f %10.3f %8.3f +- %6.3f\n", (Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp(), area, areaError);
 	
 	// go to write AOD  info
 	AliAODJet aodjet (jets[j].px(), jets[j].py(), jets[j].pz(), jets[j].E());
@@ -192,24 +196,19 @@ void AliFastJetFinder::FindJets()
 	
       }
     }
-  else { // No BG subtraction
+
+
+
+
+
+
+  else { // No BG subtraction!!!!!!!! Default header is bgmode=0.
    
-    TClonesArray* fUnit = fReader->GetUnitArray();
+    TClonesArray* fUnit = fReader->GetUnitArray(); //Big mmentum array
     if(fUnit == 0) { cout << "Could not get the momentum array" << endl; return; }
     Int_t         nIn = fUnit->GetEntries();
-    if(debug)cout<<"===== check Unit Array in AliFastJetFinder ========="<<endl;
-    Int_t ppp=0;
-    for(Int_t ii=0; ii<nIn; ii++) 
-      {
-	AliJetUnitArray *uArray = (AliJetUnitArray*)fUnit->At(ii);
-	if(uArray->GetUnitEnergy()>0.){
-	  Float_t eta   = uArray->GetUnitEta();
-	  Float_t phi   = uArray->GetUnitPhi();
-	  cout<<"ipart = "<<ppp<<" eta="<<eta<<"  phi="<<phi<<endl;
-	  ppp++;
-	}
-      }
 
+ 
     //fastjet::ClusterSequence clust_seq(inputParticles, jetDef); 
     fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef, areaDef);
    
@@ -237,51 +236,51 @@ void AliFastJetFinder::FindJets()
     vector<fastjet::PseudoJet> jets = sorted_by_pt(inclusiveJets); // Added by me
     for (size_t j = 0; j < jets.size(); j++) { // loop for jets     // Added by me
       
-      if(debug)printf("Jet found %5d %9.5f %8.5f %10.3f \n",(Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp());
+      if(debug) printf("Jet found %5d %9.5f %8.5f %10.3f \n",(Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp());
 
       vector<fastjet::PseudoJet> constituents = clust_seq.constituents(jets[j]);
       int nCon= constituents.size();
       TArrayI ind(nCon);
       Double_t area=clust_seq.area(jets[j]);
-      if(debug)cout<<"area = "<<area<<endl;
       // go to write AOD  info
       AliAODJet aodjet (jets[j].px(), jets[j].py(), jets[j].pz(), jets[j].E());
       aodjet.SetEffArea(area,0);
       //cout << "Printing jet " << endl;
       if(debug) aodjet.Print("");
-      // cout << "Adding jet ... " <<j<<endl;
+      Int_t count=0;
       for (int i=0; i < nCon; i++)
 	{
 	fastjet::PseudoJet mPart=constituents[i];
 	ind[i]=mPart.user_index();
-	//cout<<i<<"  index="<<ind[i]<<endl;
+	//	cout<<i<<"  index="<<ind[i]<<endl;
 	
-	//internal oop over all the unit cells
+	//internal loop over all the unit cells
 	Int_t ipart = 0;
+	//	count=0;
 	for(Int_t ii=0; ii<nIn; ii++) 
 	  {
 	    AliJetUnitArray *uArray = (AliJetUnitArray*)fUnit->At(ii);
 	    if(uArray->GetUnitEnergy()>0.){
 	      uArray->SetUnitTrackID(ipart);//used to have the index available in AliJEtBkg
 	      if(ipart==ind[i]){
-		aodjet.AddTrack(uArray);
+		TRefArray* trackArray = (TRefArray*)uArray->GetUnitTrackRef();
+		Int_t tracksInCell = trackArray->GetEntries();
+		for(int j=0;j<tracksInCell;j++){
+		  AliAODTrack * track = (AliAODTrack*)trackArray->At(j);
+		  aodjet.AddTrack(track);
+		}
+
+		count++;
 	      }
 	      ipart++;
 	    }
 	  }
       }
 
+    
+
       AddJet(aodjet);
-      //cout << "added \n" << endl;
-
-
-      ///----> set in the aod the reference to the unit cells
-      //  in FastJetFinder: 1) loop over the unit array. 2) select those unit cells belonging to the jet (via user_index). 3) use AliAODJet->AddTrack(unitRef)
-      //  in AliJetBkg: 1) loop over the unit arrays --> get ind of the unit cell 2) internal loop on jet unit cells; 3) check if i_cell = UID of the trackRefs of the AODJet
-      // should work hopefully
-
-
-      
+           
     } // end loop for jets
   } 
 
