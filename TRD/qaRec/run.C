@@ -114,6 +114,7 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   // initialize OCDB manager
   AliCDBManager *cdbManager = AliCDBManager::Instance();
   cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  cdbManager->SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
   cdbManager->SetRun(0);
   cdbManager->SetCacheFlag(kFALSE);
   // initialize magnetic field from the GRP manager.
