@@ -707,20 +707,20 @@ int main(int argc, char **argv) {
   
   /* store the result file on FES */
   // [1] File with mapping
-  status = daqDA_FES_storeFile(MAPDATA_FILE,MAPDATA_FILE);
+  status = daqDA_FES_storeFile(MAPDATA_FILE, "MAPPING");
   if(status){
     printf("Failed to export file : %d\n",status);
     return -1;
   }
   //
   // [2] File with laser data
-  status = daqDA_FES_storeFile(LASDATA_FILE,LASDATA_FILE);
+  status = daqDA_FES_storeFile(LASDATA_FILE, "LASERDATA");
   if(status){
     printf("Failed to export file : %d\n",status);
     return -1;
   }
   // [3] File with laser histos
-  status = daqDA_FES_storeFile(LASHISTO_FILE,LASHISTO_FILE);
+  status = daqDA_FES_storeFile(LASHISTO_FILE, "LASERHISTOS");
   if(status){
     printf("Failed to export pedestal histos file to DAQ FES\n");
     return -1;

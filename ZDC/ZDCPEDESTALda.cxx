@@ -534,26 +534,26 @@ int main(int argc, char **argv) {
 
   /* store the result files on FES */
   // [1] File with mapping
-  status = daqDA_FES_storeFile(MAPDATA_FILE,MAPDATA_FILE);
+  status = daqDA_FES_storeFile(MAPDATA_FILE, "MAPPING");
   if(status){
     printf("Failed to export mapping data file to DAQ FES\n");
     return -1;
   }
   // [2] File with pedestal data
-  status = daqDA_FES_storeFile(PEDDATA_FILE,PEDDATA_FILE);
+  status = daqDA_FES_storeFile(PEDDATA_FILE, "PEDESTALDATA");
   if(status){
     printf("Failed to export pedestal data file to DAQ FES\n");
     return -1;
   }
   // [3] File with pedestal histos
-  status = daqDA_FES_storeFile(PEDHISTO_FILE,PEDHISTO_FILE);
+  status = daqDA_FES_storeFile(PEDHISTO_FILE, "PEDESTALHISTOS");
   if(status){
     printf("Failed to export pedestal histos file to DAQ FES\n");
     return -1;
   }
   
   /* store the result files on DB */
-  status = daqDA_DB_storeFile(PEDDATA_FILE,PEDDATA_FILE);  
+  status = daqDA_DB_storeFile(PEDDATA_FILE, PEDDATA_FILE);  
   if(status){
     printf("Failed to store pedestal data file to DAQ DB\n");
     return -1;

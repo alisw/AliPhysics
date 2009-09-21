@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
   }
   
   /* store the result files on FES */
-  status = daqDA_FES_storeFile(MAPDATA_FILE, MAPDATA_FILE);
+  status = daqDA_FES_storeFile(MAPDATA_FILE, "MAPPING");
   if(status){
     printf("Failed to export file : %d\n",status);
     return -1;

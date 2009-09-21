@@ -465,19 +465,19 @@ int main(int argc, char **argv) {
   daqDA_progressReport(90);
 
   /* store the result file on FES */
-  status = daqDA_FES_storeFile(MAPDATA_FILE, MAPDATA_FILE);
+  status = daqDA_FES_storeFile(MAPDATA_FILE, "MAPPING");
   if(status){
     printf("Failed to export file : %d\n",status);
     return -1;
   }
   //
-  status = daqDA_FES_storeFile(ENCALIBDATA_FILE, ENCALIBDATA_FILE);
+  status = daqDA_FES_storeFile(ENCALIBDATA_FILE, "EMDENERGYCALIB");
   if(status){
     printf("Failed to export file : %d\n",status);
     return -1;
   }
   //
-  status = daqDA_FES_storeFile(TOWCALIBDATA_FILE, TOWCALIBDATA_FILE);
+  status = daqDA_FES_storeFile(TOWCALIBDATA_FILE, "EMDTOWERCALIB");
   if(status){
     printf("Failed to export file : %d\n",status);
     return -1;
