@@ -14,9 +14,11 @@ PHOS/AliHLTPHOSRawAnalyzer.cxx
 PHOS/AliHLTPHOSRawAnalyzerChiSquareFit.cxx
 PHOS/AliHLTPHOSRawAnalyzerComponent.cxx
 PHOS/AliHLTPHOSRawAnalyzerComponentv2.cxx
+PHOS/AliHLTPHOSRawAnalyzerComponentv3.cxx 
 PHOS/AliHLTPHOSRawAnalyzerCrude.cxx
 PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.cxx
 PHOS/AliHLTPHOSRawAnalyzerCrudeComponentv2.cxx
+PHOS/AliHLTPHOSRawAnalyzerCrudeComponentv3.cxx
 PHOS/AliHLTPHOSRawAnalyzerKLevel.cxx
 PHOS/AliHLTPHOSRawAnalyzerLMS.cxx
 PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx
@@ -50,6 +52,9 @@ PHOS/AliHLTPHOSFourierComponent.cxx
 PHOS/AliHLTPHOSHistogramProducer.cxx
 PHOS/AliHLTPHOSHistogramProducerComponent.cxx
 PHOS/AliHLTPHOSMonitorTriggerComponent.cxx
+PHOS/AliHLTPHOSESDEntriesMakerComponent.cxx
+PHOS/AliHLTPHOSESDCaloClusterWriterComponent.cxx
+PHOS/AliHLTPHOSPhysicsHistogramProducer.cxx
 )
 
 # fill list of header files from list of source files
