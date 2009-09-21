@@ -112,9 +112,6 @@ AliHLTPHOSRcuDAComponent::ScanArgument( Int_t argc, const char** argv)
 
 Int_t AliHLTPHOSRcuDAComponent::InitCalibration()
 {  
-  //CRAP PT just to get something working by 5 May 2008
-  const int tmpModule = 2;
-  fPHOSDAPtr = new AliPHOSRcuDA1(tmpModule ,GetRCUID()); 
   return 0;
 }
 
