@@ -42,15 +42,16 @@ class AliAODHandler : public AliVEventHandler {
     //
     virtual void         SetCreateNonStandardAOD()   {fIsStandard = kFALSE;}
     virtual void         SetFillAOD(Bool_t b)      {fFillAOD = b;}
-    virtual void         SetNeedsHeaderReplication() {fNeedsHeaderReplication = kTRUE;}
-    virtual void         SetNeedsTracksBranchReplication() {fNeedsTracksBranchReplication = kTRUE;}
-    virtual void         SetNeedsVerticesBranchReplication() {fNeedsVerticesBranchReplication = kTRUE;}
-    virtual void         SetNeedsV0sBranchReplication() {fNeedsV0sBranchReplication = kTRUE;}
-    virtual void         SetNeedsTrackletsBranchReplication() {fNeedsTrackletsBranchReplication = kTRUE;}
-    virtual void         SetNeedsPMDClustersBranchReplication() {fNeedsPMDClustersBranchReplication = kTRUE;}
-    virtual void         SetNeedsJetsBranchReplication() {fNeedsJetsBranchReplication = kTRUE;}
-    virtual void         SetNeedsFMDClustersBranchReplication() {fNeedsFMDClustersBranchReplication = kTRUE;}
+    virtual void         SetNeedsHeaderReplication()             {fNeedsHeaderReplication             = kTRUE;}
+    virtual void         SetNeedsTracksBranchReplication()       {fNeedsTracksBranchReplication       = kTRUE;}
+    virtual void         SetNeedsVerticesBranchReplication()     {fNeedsVerticesBranchReplication     = kTRUE;}
+    virtual void         SetNeedsV0sBranchReplication()          {fNeedsV0sBranchReplication          = kTRUE;}
+    virtual void         SetNeedsTrackletsBranchReplication()    {fNeedsTrackletsBranchReplication    = kTRUE;}
+    virtual void         SetNeedsPMDClustersBranchReplication()  {fNeedsPMDClustersBranchReplication  = kTRUE;}
+    virtual void         SetNeedsJetsBranchReplication()         {fNeedsJetsBranchReplication         = kTRUE;}
+    virtual void         SetNeedsFMDClustersBranchReplication()  {fNeedsFMDClustersBranchReplication  = kTRUE;}
     virtual void         SetNeedsCaloClustersBranchReplication() {fNeedsCaloClustersBranchReplication = kTRUE;}
+    virtual void         SetNeedsMCParticlesBranchReplication()  {fNeedsCaloClustersBranchReplication = kTRUE;}
     virtual void         SetAODIsReplicated() {fAODIsReplicated = kTRUE;}
     //
     AliAODEvent*         GetAOD()  {return fAODEvent;}
@@ -61,18 +62,19 @@ class AliAODHandler : public AliVEventHandler {
     void                 AddAODtoTreeUserInfo();
     void                 AddBranch(const char* cname, void* addobj, const char *fname="");
     AliAODExtension*     AddExtension(const char *filename, const char *title="");                 
-    Bool_t               IsStandard() {return fIsStandard;}
-    Bool_t               GetFillAOD(){return fFillAOD;} 
-    Bool_t               NeedsHeaderReplication() {return  fNeedsHeaderReplication;}
-    Bool_t               NeedsTracksBranchReplication() {return  fNeedsTracksBranchReplication;}
-    Bool_t               NeedsVerticesBranchReplication() {return  fNeedsVerticesBranchReplication;}
-    Bool_t               NeedsV0sBranchReplication() {return  fNeedsV0sBranchReplication;}
-    Bool_t               NeedsTrackletsBranchReplication() {return  fNeedsTrackletsBranchReplication;}
-    Bool_t               NeedsPMDClustersBranchReplication() {return  fNeedsPMDClustersBranchReplication;}
-    Bool_t               NeedsJetsBranchReplication() {return  fNeedsJetsBranchReplication;}
-    Bool_t               NeedsFMDClustersBranchReplication() {return  fNeedsFMDClustersBranchReplication;}
-    Bool_t               NeedsCaloClustersBranchReplication() {return  fNeedsCaloClustersBranchReplication;}
-    Bool_t               AODIsReplicated() {return fAODIsReplicated;}
+    Bool_t               IsStandard()                         const {return fIsStandard;}
+    Bool_t               GetFillAOD()                         const {return fFillAOD;} 
+    Bool_t               NeedsHeaderReplication()             const {return  fNeedsHeaderReplication;}
+    Bool_t               NeedsTracksBranchReplication()       const {return  fNeedsTracksBranchReplication;}
+    Bool_t               NeedsVerticesBranchReplication()     const {return  fNeedsVerticesBranchReplication;}
+    Bool_t               NeedsV0sBranchReplication()          const {return  fNeedsV0sBranchReplication;}
+    Bool_t               NeedsTrackletsBranchReplication()    const {return  fNeedsTrackletsBranchReplication;}
+    Bool_t               NeedsPMDClustersBranchReplication()  const {return  fNeedsPMDClustersBranchReplication;}
+    Bool_t               NeedsJetsBranchReplication()         const {return  fNeedsJetsBranchReplication;}
+    Bool_t               NeedsFMDClustersBranchReplication()  const {return  fNeedsFMDClustersBranchReplication;}
+    Bool_t               NeedsCaloClustersBranchReplication() const {return  fNeedsCaloClustersBranchReplication;}
+    Bool_t               NeedsMCParticlesBranchReplication()  const {return  fNeedsMCParticlesBranchReplication;}
+    Bool_t               AODIsReplicated()                    const {return  fAODIsReplicated;}
     //
     void                 SetInputTree(TTree* /*tree*/) {;}
     void                 SetMCEventHandler(AliMCEventHandler* mcH) {fMCEventH = mcH;} // For internal use
@@ -83,7 +85,7 @@ class AliAODHandler : public AliVEventHandler {
     AliAODHandler& operator=(const AliAODHandler&);  // Not implemented
  private:
     Bool_t                   fIsStandard;                         // Flag for standard aod creation
-    Bool_t                   fFillAOD;                          // Flag for filling of the AOD tree at the end (all or nothing)
+    Bool_t                   fFillAOD;                            // Flag for filling of the AOD tree at the end (all or nothing)
     Bool_t                   fNeedsHeaderReplication;             // Flag for header replication
     Bool_t                   fNeedsTracksBranchReplication;       // Flag for tracks replication
     Bool_t                   fNeedsVerticesBranchReplication;     // Flag for vertices replication
@@ -93,6 +95,7 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t                   fNeedsJetsBranchReplication;         // Flag for Jets replication
     Bool_t                   fNeedsFMDClustersBranchReplication;  // Flag for FMDClusters replication
     Bool_t                   fNeedsCaloClustersBranchReplication; // Flag for CaloClusters replication
+    Bool_t                   fNeedsMCParticlesBranchReplication;  // Flag for MCParticles replication
     Bool_t                   fAODIsReplicated;                    // Flag true if replication as been executed
     AliAODEvent             *fAODEvent;               //! Pointer to the AOD event
     AliMCEventHandler       *fMCEventH;               //! Pointer to mc event handler needed not to depend on the manager
