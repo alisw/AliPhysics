@@ -463,11 +463,12 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 		
     //process the gammas
     if (particle->GetPdgCode() == 22){
-			
+      
+
       if(particle->GetMother(0) >-1 && fStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
 	continue; // no photon as mothers!
       }
-			
+      
       if(particle->GetMother(0) >= fStack->GetNprimary()){
 	continue; // the gamma has a mother, and it is not a primary particle
       }
@@ -481,7 +482,13 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       // for CF
       containerInput[0] = particle->Pt();
       containerInput[1] = particle->Eta();
-      containerInput[2] = fStack->Particle(particle->GetMother(0))->GetMass();
+      if(particle->GetMother(0) >=0){
+	containerInput[2] = fStack->Particle(particle->GetMother(0))->GetMass();
+      }
+      else{
+	containerInput[2]=-1;
+      }
+      
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepGenerated);					// generated gamma
 			
       if(particle->GetMother(0) < 0){   // direct gamma
