@@ -189,7 +189,7 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
   while(fAltroRawStreamPtr->NextChannel())
     {          
       //Want to get the "first in time" "bunch"
-      while(fAltroRawStreamPtr->NextBunch()) {}
+      //      while(fAltroRawStreamPtr->NextBunch()) {}
       
       totSize += sizeof(AliHLTPHOSChannelDataStruct);
       if(totSize > size)

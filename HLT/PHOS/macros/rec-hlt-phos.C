@@ -1,9 +1,11 @@
 
+
 #include "AliHLTPHOSConstants.h"
 
 //void rec_hlt_phos(const char* input="./")//, char* opt="decoder ESD")
 void rec_hlt_phos()//, char* opt="decoder ESD")
 {
+  AliCDBManager::Instance()->SetDefaultStorage("raw://");
   if(!gSystem->AccessPathName("galice.root")){
     cerr << "please delete the galice.root or run at different place." << endl;
     return;
