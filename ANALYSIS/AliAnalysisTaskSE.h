@@ -63,6 +63,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     static TClonesArray*    fgAODJets;          //! Jets for replication
     static TClonesArray*    fgAODFMDClusters;   //! FMDClusters for replication
     static TClonesArray*    fgAODCaloClusters;  //! CaloClusters for replication
+    static TClonesArray*    fgAODMCParticles;   //! MC Particles for replicatio
     static AliAODTracklets* fgAODTracklets;     //! Tracklets for replication
     static AliAODCaloCells* fgAODEmcalCells;    //! Emcal Cell replication
     static AliAODCaloCells* fgAODPhosCells;     //! Phos  Cell replication
