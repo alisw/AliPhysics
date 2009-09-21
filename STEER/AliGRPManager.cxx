@@ -107,72 +107,78 @@ Bool_t AliGRPManager::SetMagField()
   // Set the global mag field instance
 
   if ( TGeoGlobalMagField::Instance()->IsLocked() ) {
-    AliInfo("Running with the externally locked B field !");
-  }
-  else {
-    // Construct the field map out of the information retrieved from GRP.
-    Bool_t ok = kTRUE;
-    // L3
-    Float_t l3Current = fGRPData->GetL3Current((AliGRPObject::Stats)0);
-    if (l3Current == AliGRPObject::GetInvalidFloat()) {
-      AliError("GRP/GRP/Data entry:  missing value for the L3 current !");
-      ok = kFALSE;
-    }
-    
-    Char_t l3Polarity = fGRPData->GetL3Polarity();
-    if (l3Polarity == AliGRPObject::GetInvalidChar()) {
-      AliError("GRP/GRP/Data entry:  missing value for the L3 polarity !");
-      ok = kFALSE;
-    }
-
-    // Dipole
-    Float_t diCurrent = fGRPData->GetDipoleCurrent((AliGRPObject::Stats)0);
-    if (diCurrent == AliGRPObject::GetInvalidFloat()) {
-      AliError("GRP/GRP/Data entry:  missing value for the dipole current !");
-      ok = kFALSE;
-    }
-
-    Char_t diPolarity = fGRPData->GetDipolePolarity();
-    if (diPolarity == AliGRPObject::GetInvalidChar()) {
-      AliError("GRP/GRP/Data entry:  missing value for the dipole polarity !");
-      ok = kFALSE;
-    }
-
-    TString beamType = fGRPData->GetBeamType();
-    if (beamType==AliGRPObject::GetInvalidString()) {
-      AliError("GRP/GRP/Data entry:  missing value for the beam type ! Using UNKNOWN");
-      beamType = "UNKNOWN";
-      //ok = kFALSE;  // temprorary suppressed to make read cosmics data
-    }
-
-    Float_t beamEnergy = fGRPData->GetBeamEnergy();
-    if (beamEnergy==AliGRPObject::GetInvalidFloat()) {
-      AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
-      beamEnergy = 0;
-      //ok = kFALSE;  // temprorary suppressed to make read cosmics data
-    }
-    // LHC: "multiply by 120 to get the energy in MeV"
-    beamEnergy *= 0.120;
-  
-    // read special bits for the polarity convention and map type
-    Int_t  polConvention = fGRPData->IsPolarityConventionLHC() ? AliMagF::kConvLHC : AliMagF::kConvDCS2008;
-    Bool_t uniformB = fGRPData->IsUniformBMap();
-
-    if (ok) { 
-      if ( !SetFieldMap(l3Current, diCurrent, l3Polarity ? -1:1, diPolarity ? -1:1, 
-			polConvention,uniformB,beamEnergy, beamType.Data())) {
-	AliError("Failed to create a B field map !");
-	ok = kFALSE;
-      }
-      AliInfo("Running with the B field constructed out of GRP !");
+    if (TGeoGlobalMagField::Instance()->GetField()->TestBit(AliMagF::kOverrideGRP)) {
+      AliInfo("ExpertMode!!! GRP information will be ignored !");
+      AliInfo("ExpertMode!!! Running with the externally locked B field !");
+      return kTRUE;
     }
     else {
-      AliError("B field is neither set nor constructed from GRP ! Exitig...");
+      AliInfo("Destroying existing B field instance!");
+      delete TGeoGlobalMagField::Instance();
     }
-    return ok;
   }
-
-  return kTRUE;
+  //
+  // Construct the field map out of the information retrieved from GRP.
+  Bool_t ok = kTRUE;
+  // L3
+  Float_t l3Current = fGRPData->GetL3Current((AliGRPObject::Stats)0);
+  if (l3Current == AliGRPObject::GetInvalidFloat()) {
+    AliError("GRP/GRP/Data entry:  missing value for the L3 current !");
+    ok = kFALSE;
+  }
+  
+  Char_t l3Polarity = fGRPData->GetL3Polarity();
+  if (l3Polarity == AliGRPObject::GetInvalidChar()) {
+    AliError("GRP/GRP/Data entry:  missing value for the L3 polarity !");
+    ok = kFALSE;
+  }
+  
+  // Dipole
+  Float_t diCurrent = fGRPData->GetDipoleCurrent((AliGRPObject::Stats)0);
+  if (diCurrent == AliGRPObject::GetInvalidFloat()) {
+    AliError("GRP/GRP/Data entry:  missing value for the dipole current !");
+    ok = kFALSE;
+  }
+  
+  Char_t diPolarity = fGRPData->GetDipolePolarity();
+  if (diPolarity == AliGRPObject::GetInvalidChar()) {
+    AliError("GRP/GRP/Data entry:  missing value for the dipole polarity !");
+    ok = kFALSE;
+  }
+  
+  TString beamType = fGRPData->GetBeamType();
+  if (beamType==AliGRPObject::GetInvalidString()) {
+    AliError("GRP/GRP/Data entry:  missing value for the beam type ! Using UNKNOWN");
+    beamType = "UNKNOWN";
+    //ok = kFALSE;  // temprorary suppressed to make read cosmics data
+  }
+  
+  Float_t beamEnergy = fGRPData->GetBeamEnergy();
+  if (beamEnergy==AliGRPObject::GetInvalidFloat()) {
+    AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
+    beamEnergy = 0;
+    //ok = kFALSE;  // temprorary suppressed to make read cosmics data
+  }
+  // LHC: "multiply by 120 to get the energy in MeV"
+  beamEnergy *= 0.120;
+  
+  // read special bits for the polarity convention and map type
+  Int_t  polConvention = fGRPData->IsPolarityConventionLHC() ? AliMagF::kConvLHC : AliMagF::kConvDCS2008;
+  Bool_t uniformB = fGRPData->IsUniformBMap();
+  
+  if (ok) { 
+    if ( !SetFieldMap(l3Current, diCurrent, l3Polarity ? -1:1, diPolarity ? -1:1, 
+		      polConvention,uniformB,beamEnergy, beamType.Data())) {
+      AliError("Failed to create a B field map !");
+      ok = kFALSE;
+    }
+    else AliInfo("Running with the B field constructed out of GRP !");
+  }
+  else {
+    AliError("B field is neither set nor constructed from GRP ! Exitig...");
+  }
+  
+  return ok;
 }
 
 //_____________________________________________________________________________

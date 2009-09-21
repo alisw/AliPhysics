@@ -1097,8 +1097,17 @@ Bool_t AliReconstruction::InitGRP() {
   AliInfo("===================================================================================");
 
   //*** Dealing with the magnetic field map
-  if ( TGeoGlobalMagField::Instance()->IsLocked() ) {AliInfo("Running with the externally locked B field !");}
-  else {
+  if ( TGeoGlobalMagField::Instance()->IsLocked() ) {
+    if (TGeoGlobalMagField::Instance()->GetField()->TestBit(AliMagF::kOverrideGRP)) {
+      AliInfo("ExpertMode!!! GRP information will be ignored !");
+      AliInfo("ExpertMode!!! Running with the externally locked B field !");
+    }
+    else {
+      AliInfo("Destroying existing B field instance!");
+      delete TGeoGlobalMagField::Instance();
+    }    
+  }
+  if ( !TGeoGlobalMagField::Instance()->IsLocked() ) {
     // Construct the field map out of the information retrieved from GRP.
     Bool_t ok = kTRUE;
     // L3
