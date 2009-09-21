@@ -202,10 +202,10 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	      
       //crazyness = fSanityInspectorPtr->CheckInsanity(static_cast<const UInt_t*>(fAltroBunchPtr->GetData()), static_cast<const Int_t>(fAltroBunchPtr->GetBunchSize()));
       
-      for(int i = 0; i < nSamples; i++)
-	{
-	  cout << (fAltroRawStreamPtr->GetSignals())[i] << endl;
-	}
+      // for(int i = 0; i < nSamples; i++)
+      // 	{
+      // 	  cout << (fAltroRawStreamPtr->GetSignals())[i] << endl;
+      // 	}
 
       //Evalute signal amplitude and timing
       fAnalyzerPtr->SetData(fAltroRawStreamPtr->GetSignals(), nSamples);
