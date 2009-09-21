@@ -75,7 +75,8 @@ AliHLTTRDTrackerV1Component::AliHLTTRDTrackerV1Component():
   fPIDmethod(1),
   fgeometryFileName(""),
   fieldStrength(-101),
-  fSlowTracking(kFALSE)
+  fSlowTracking(kFALSE),
+  fOutputV1Tracks(kTRUE)
 {
   // Default constructor
 
@@ -96,14 +97,23 @@ void AliHLTTRDTrackerV1Component::GetInputDataTypes( vector<AliHLTComponent_Data
 {
   // Get the list of input data  
   list.clear(); // We do not have any requirements for our input data type(s).
-  list.push_back( AliHLTTRDDefinitions::fgkClusterDataType );
+  list.push_back(AliHLTTRDDefinitions::fgkClusterDataType);
 }
 
-AliHLTComponent_DataType AliHLTTRDTrackerV1Component::GetOutputDataType()
+AliHLTComponentDataType AliHLTTRDTrackerV1Component::GetOutputDataType()
 {
   // Get the output data type
-  //return AliHLTTRDDefinitions::fgkClusterDataType;
-  return  kAliHLTDataTypeTrack | kAliHLTDataOriginTRD;
+  return kAliHLTMultipleDataType;
+}
+
+int AliHLTTRDTrackerV1Component::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
+{
+  // Get the output data types
+  tgtList.clear();
+  //tgtList.push_back(AliHLTTRDDefinitions::fgkTimeBinPropagationDataType);
+  tgtList.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
+  tgtList.push_back(AliHLTTRDDefinitions::fgkTRDSATracksDataType);
+  return tgtList.size();
 }
 
 void AliHLTTRDTrackerV1Component::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -162,18 +172,19 @@ int AliHLTTRDTrackerV1Component::DoDeinit()
 
   fTracker->SetClustersOwner(kFALSE);
   delete fTracker;
-  fTracker = 0x0;
+  fTracker = NULL;
 
   fClusterArray->Delete();
   delete fClusterArray;
+  fClusterArray = NULL;
   
   // We need to set clusters in Reconstructor to null to prevent from 
-  // double deleting, since we delete TClonesArray by ourself in DoEvent.
+  // double deleting, since we delete TClonesArray by ourself.
   fReconstructor->SetClusters(0x0);
   delete fReconstructor;
-  fReconstructor = 0x0;
+  fReconstructor = NULL;
   delete fESD;
-  fESD=NULL;
+  fESD = NULL;
   
   AliTRDcalibDB::Terminate();
 
@@ -198,7 +209,6 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
   //fESD->SetMagneticField(fSolenoidBz);
 
   AliHLTUInt32_t totalSize = 0, offset = 0;
-  AliHLTUInt32_t dBlockSpecification = 0;
 
   vector<AliHLTComponent_DataType> expectedDataTypes;
   GetInputDataTypes(expectedDataTypes);
@@ -227,7 +237,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 		 DataType2Text(inputDataType).c_str(),
 		 block.fSize);
       }
-      
+
 #ifndef NDEBUG
       unsigned long constBase;
       double inputMultiplier;
@@ -237,7 +247,10 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       }
 #endif      
 
-      AliHLTTRDUtils::ReadClusters(fClusterArray, block.fPtr, block.fSize);
+      AliHLTTRDUtils::ReadClusters(fClusterArray, block.fPtr, block.fSize, &fNtimeBins);
+      HLTDebug("Reading number of time bins from input block. Changing number of timebins to %d", fNtimeBins);
+      AliTRDtrackerV1::SetNTimeBins(fNtimeBins);
+
       HLTDebug("TClonesArray of clusters: nbEntries = %i", fClusterArray->GetEntriesFast());
       fTracker->LoadClusters(fClusterArray);
 
@@ -246,8 +259,8 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       Int_t nTracks = fESD->GetNumberOfTracks();
       HLTInfo("Number of tracks  == %d ==", nTracks);  
 
-      TClonesArray* trdTracks = 0x0;
-      //trdTracks = fTracker->GetListOfTracks();
+      TClonesArray* trdTracks;
+      trdTracks = fTracker->GetListOfTracks();
       
       if(nTracks>0){
 	HLTDebug("We have an output ESDEvent: 0x%x with %i tracks", fESD, nTracks);
@@ -263,15 +276,13 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	bd.fSpecification = block.fSpecification;
 	bd.fDataType = kAliHLTDataTypeTrack | kAliHLTDataOriginTRD;
 	outputBlocks.push_back( bd );
-	HLTDebug("BD fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x", bd.fPtr, bd.fOffset, bd.fSize, bd.fSpecification);
+	HLTDebug("BD ptr 0x%x, offset %i, size %i, datav1Type %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), bd.fSpecification);
 	offset = totalSize;
 
-	if (trdTracks){
-	  //Int_t nbTracks=trdTracks->GetEntriesFast();
-	  //if (nbTracks>0){
+	if (fOutputV1Tracks && trdTracks){
 	  HLTDebug("We have an output array: pointer to trdTracks = 0x%x, nbEntries = %i", trdTracks, trdTracks->GetEntriesFast());
 	  
-	  addedSize = AliHLTTRDUtils::AddTracksToOutput(trdTracks, outputPtr+offset);
+	  addedSize = AliHLTTRDUtils::AddTracksToOutput(trdTracks, outputPtr+offset, fNtimeBins);
 	  totalSize += addedSize;
 	  
 	  // Fill block 
@@ -282,7 +293,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	  bd.fSpecification = block.fSpecification;
 	  bd.fDataType = AliHLTTRDDefinitions::fgkTRDSATracksDataType;
 	  outputBlocks.push_back( bd );
-	  HLTDebug("BD fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x", bd.fPtr, bd.fOffset, bd.fSize, bd.fSpecification);
+	  HLTDebug("BD ptr 0x%x, offset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), bd.fSpecification);
 	  offset = totalSize;
 	}
       }
@@ -346,36 +357,54 @@ int AliHLTTRDTrackerV1Component::Configure(const char* arguments){
 	fgeometryFileName=((TObjString*)pTokens->At(i))->GetString();
 	continue;
       } 
-      if (argument.CompareTo("-lowflux")==0) {
+      else if (argument.CompareTo("-lowflux")==0) {
 	fRecoParamType = 0;
 	HLTInfo("Low flux reconstruction selected");
 	continue;
       }
-      if (argument.CompareTo("-highflux")==0) {
+      else if (argument.CompareTo("-highflux")==0) {
 	fRecoParamType = 1;
 	HLTInfo("High flux reconstruction selected");
 	continue;
       }
-      if (argument.CompareTo("-cosmics")==0) {
+      else if (argument.CompareTo("-cosmics")==0) {
 	fRecoParamType = 2;
 	HLTInfo("Cosmics reconstruction selected");
 	continue;
       }
-      if (argument.CompareTo("-magnetic_field_ON")==0) {
+      else if (argument.CompareTo("-magnetic_field_ON")==0) {
  	fMagneticField = 1;
 	HLTInfo("Reconstructon with magnetic field");
 	continue;
       }
-      if (argument.CompareTo("-magnetic_field_OFF")==0) {
+      else if (argument.CompareTo("-magnetic_field_OFF")==0) {
 	fMagneticField = 0;
 	HLTInfo("Reconstructon without magnetic field");
 	continue;
       }
-      if (argument.CompareTo("-slowTracking")==0) {
+      else if (argument.CompareTo("-slowTracking")==0) {
 	fSlowTracking = kTRUE;
 	HLTInfo("Using slow tracking");
 	continue;
       }
+      else if (argument.CompareTo("-outputV1Tracks")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();
+	if (toCompareTo.CompareTo("yes")==0){
+	  HLTInfo("Setting OutputV1Tracks to: %s", toCompareTo.Data());
+	  fOutputV1Tracks=kTRUE;
+	}
+	else if (toCompareTo.CompareTo("no")==0){
+	  HLTInfo("Setting OutputV1Tracks to: %s", toCompareTo.Data());
+	  fOutputV1Tracks=kFALSE;
+	}
+	else {
+	  HLTError("unknown argument for OutputV1Tracks: %s", toCompareTo.Data());
+	  iResult=-EINVAL;
+	  break;
+	}
+	continue;
+      } 
       else if (argument.CompareTo("-PIDmethod")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	TString toCompareTo=((TObjString*)pTokens->At(i))->GetString();

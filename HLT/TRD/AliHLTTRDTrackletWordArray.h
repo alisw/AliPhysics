@@ -4,7 +4,7 @@
 //* See cxx source for full Copyright notice                               *
 
 #ifndef _ALIHLTTRDTRACKLETWORDARRAY_H_
-#define _ALITHLTTRDTRACKLETWORDARRAY_H_
+#define _ALIHLTTRDTRACKLETWORDARRAY_H_
 
 #include "AliHLTDataTypes.h"
 #include "AliHLTStdIncludes.h"

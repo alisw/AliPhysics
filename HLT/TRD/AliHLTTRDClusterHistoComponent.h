@@ -1,3 +1,6 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTTRDCLUSTERHISTOCOMPONENT_H
 #define ALIHLTTRDCLUSTERHISTOCOMPONENT_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
@@ -7,6 +10,7 @@
 
 #include "AliHLTProcessor.h"
 #include "TH1D.h"
+#include "TH2F.h"
 
 /**
  * @class AliHLTTRDQHistoComponent
@@ -57,9 +61,11 @@ protected:
   /** interface function, see AliHLTComponent for description */
   int DoDeinit();
   /** interface function, see AliHLTComponent for description */
-  int DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& trigData );
+  int DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData );
 
   using AliHLTProcessor::DoEvent;
+
+  int Configure(const char* arguments);
   
 private:
   /** copy constructor prohibited */
@@ -72,7 +78,10 @@ private:
    * properties.
    */ 
 
-  TClonesArray* fClusterArray;
+  AliHLTUInt32_t fOutputSize;   // output size
+  TClonesArray* fClusterArray;  // input array
+  UInt_t fNevent;               // number of processed events
+  UInt_t feveryNevent;          // push back every nth event
 
   TH1D *fNClsDet;
   TH1D *fClsAmp;
@@ -83,6 +92,12 @@ private:
   TH1D *fClsAmpDist; 
 
   TH1D *fSClsDist;
+  TH1D *fNScls;
+
+  // kryptogramm
+  TH2F fSlidingWindow[540];
+  TH2F *fClusterDist;
+  TH1D *fClusterCandCharge;
 
   ClassDef(AliHLTTRDClusterHistoComponent, 0);
 };

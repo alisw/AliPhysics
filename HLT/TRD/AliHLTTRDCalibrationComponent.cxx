@@ -43,15 +43,17 @@ using namespace std;
 #include <cerrno>
 #include <string>
 
-// this is a global object used for automatic component registration, do not use this
-AliHLTTRDCalibrationComponent gAliHLTTRDCalibrationComponent;
-
 ClassImp(AliHLTTRDCalibrationComponent);
 
-AliHLTTRDCalibrationComponent::AliHLTTRDCalibrationComponent():
-  AliHLTCalibrationProcessor(),
+AliHLTTRDCalibrationComponent::AliHLTTRDCalibrationComponent()
+: AliHLTCalibrationProcessor(),
   fTRDCalibraFillHisto(NULL),
-  fOutputPercentage(100) // By default we copy to the output exactly what we got as input
+  fOutputSize(50000),
+  fTracksArray(NULL),
+  fOutArray(NULL),
+  fNevent(0),
+  feveryNevent(20),
+  fRecievedTimeBins(kFALSE)
 {
   // Default constructor
 }
@@ -59,7 +61,6 @@ AliHLTTRDCalibrationComponent::AliHLTTRDCalibrationComponent():
 AliHLTTRDCalibrationComponent::~AliHLTTRDCalibrationComponent()
 {
   // Destructor
-  ;
 }
 
 const char* AliHLTTRDCalibrationComponent::GetComponentID()
@@ -68,14 +69,14 @@ const char* AliHLTTRDCalibrationComponent::GetComponentID()
   return "TRDCalibration"; // The ID of this component
 }
 
-void AliHLTTRDCalibrationComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
+void AliHLTTRDCalibrationComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   // Get the list of input data
   list.clear(); // We do not have any requirements for our input data type(s).
-  list.push_back( AliHLTTRDDefinitions::fgkTRDSATracksDataType );
+  list.push_back(AliHLTTRDDefinitions::fgkTRDSATracksDataType);
 }
 
-AliHLTComponent_DataType AliHLTTRDCalibrationComponent::GetOutputDataType()
+AliHLTComponentDataType AliHLTTRDCalibrationComponent::GetOutputDataType()
 {
   // Get the output data type
   return AliHLTTRDDefinitions::fgkCalibrationDataType;
@@ -84,8 +85,8 @@ AliHLTComponent_DataType AliHLTTRDCalibrationComponent::GetOutputDataType()
 void AliHLTTRDCalibrationComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
   // Get the output data size
-  constBase = 0;
-  inputMultiplier = ((double)fOutputPercentage)/100.0;
+  constBase = fOutputSize;
+  inputMultiplier = 0;
 }
 
 AliHLTComponent* AliHLTTRDCalibrationComponent::Spawn()
@@ -102,24 +103,43 @@ Int_t AliHLTTRDCalibrationComponent::ScanArgument( int argc, const char** argv )
   while ( i < argc )
     {
       HLTDebug("argv[%d] == %s", i, argv[i] );
-      if ( !strcmp( argv[i], "output_percentage" ) )
+      if ( !strcmp( argv[i], "output_size" ) )
         {
           if ( i+1>=argc )
             {
-              HLTError("Missing output_percentage parameter");
+              HLTError("Missing output_size parameter");
               return ENOTSUP;
             }
           HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
-          fOutputPercentage = strtoul( argv[i+1], &cpErr, 0 );
+          fOutputSize = strtoul( argv[i+1], &cpErr, 0 );
           if ( *cpErr )
             {
-              HLTError("Cannot convert output_percentage parameter '%s'", argv[i+1] );
+              HLTError("Cannot convert output_size parameter '%s'", argv[i+1] );
               return EINVAL;
             }
-          HLTInfo("Output percentage set to %lu %%", fOutputPercentage );
+          HLTInfo("Output size set to %lu %%", fOutputSize );
           i += 2;
           continue;
         }
+      if ( !strcmp( argv[i], "-everyNevent" ) )
+        {
+          if ( i+1>=argc )
+            {
+              HLTError("Missing everyNevent parameter");
+              return ENOTSUP;
+            }
+          HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
+          fOutputSize = strtoul( argv[i+1], &cpErr, 0 );
+          if ( *cpErr )
+            {
+              HLTError("Cannot convert everyNevent parameter '%s'", argv[i+1] );
+              return EINVAL;
+            }
+          HLTInfo("Pushing back every %d event", feveryNevent);
+          i += 2;
+          continue;
+        }
+
       else {
         HLTError("Unknown option '%s'", argv[i] );
         return EINVAL;
@@ -131,39 +151,41 @@ Int_t AliHLTTRDCalibrationComponent::ScanArgument( int argc, const char** argv )
 Int_t AliHLTTRDCalibrationComponent::InitCalibration()
 {
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-    HLTError("DefaultStorage is not Set in CDBManager");
-    return -1;
+    HLTError("DefaultStorage is not set in CDBManager");
+    return -EINVAL;
   }
   if(AliCDBManager::Instance()->GetRun()<0){
-    AliCDBManager *cdb = AliCDBManager::Instance();
-    if (cdb)
-      {
-  	cdb->SetRun(0);
-  	HLTWarning("Setting CDB Runnumber to 0. CDB instance 0x%x", cdb);
-      }
-    else
-      {
-  	HLTError("Could not get CDB instance", "cdb 0x%x", cdb);
-  	return -1;
-      }
+    HLTError("Run Number is not set in CDBManager");
+    return -EINVAL;
   }
   HLTInfo("CDB default storage: %s; RunNo: %i", (AliCDBManager::Instance()->GetDefaultStorage()->GetBaseFolder()).Data(), AliCDBManager::Instance()->GetRun());
-  
 
   fTRDCalibraFillHisto = AliTRDCalibraFillHisto::Instance();
   fTRDCalibraFillHisto->SetHisto2d(); // choose to use histograms
   fTRDCalibraFillHisto->SetCH2dOn();  // choose to calibrate the gain
   fTRDCalibraFillHisto->SetPH2dOn();  // choose to calibrate the drift velocity
   fTRDCalibraFillHisto->SetPRF2dOn(); // choose to look at the PRF
-  fTRDCalibraFillHisto->Init2Dhistos(); // initialise the histos
+  fTRDCalibraFillHisto->SetIsHLT(); // per detector
+  //fTRDCalibraFillHisto->SetDebugLevel(1);// debug
+  fTRDCalibraFillHisto->SetFillWithZero(kTRUE);
+
+  fTracksArray = new TClonesArray("AliTRDtrackV1");
+  fOutArray = new TObjArray(3);
+
   return 0;
 }
 
 Int_t AliHLTTRDCalibrationComponent::DeinitCalibration()
 {
-  HLTDebug("DeinitCalibration");
-
+  
   // Deinitialization of the component
+  
+  HLTDebug("DeinitCalibration");
+  fTracksArray->Delete();
+  delete fTracksArray;
+  fTRDCalibraFillHisto->Destroy();
+  //fOutArray->Delete();
+  delete fOutArray;
 
   return 0;
 }
@@ -198,61 +220,64 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
         continue;
       }
       else {
-        HLTDebug("We get the right data type: Block # %i/%i; Event 0x%08LX (%Lu) Received datatype: %s",
+        HLTDebug("We get the right data type: Block # %i/%i; Event 0x%08LX (%Lu) Received datatype: %s; Block Size: %i",
                  iBlock, evtData.fBlockCnt-1,
                  evtData.fEventID, evtData.fEventID,
-                 DataType2Text(inputDataType).c_str());
+                 DataType2Text(inputDataType).c_str(),
+		 block.fSize);
       }
 
-      TClonesArray* tracksArray = NULL;
-      tracksArray = new TClonesArray("AliTRDtrackV1");
-      HLTDebug("BLOCK fPtr 0x%x, fOffset %i, fSize %i, fSpec 0x%x, fDataType %s", block.fPtr, block.fOffset, block.fSize, block.fSpecification, DataType2Text(block.fDataType).c_str());
-      AliHLTTRDUtils::ReadTracks(tracksArray, block.fPtr, block.fSize);
-
-      if (tracksArray) {
-        Int_t nbEntries = tracksArray->GetEntries();
-        HLTDebug(" %i TRDtracks in tracksArray", nbEntries);
-        AliTRDtrackV1* trdTrack = 0x0;
-        for (Int_t i = 0; i < nbEntries; i++){
-          HLTDebug("%i/%i: ", i+1, nbEntries);
-          trdTrack = (AliTRDtrackV1*)tracksArray->At(i);
-          trdTrack->Print();
-          fTRDCalibraFillHisto->UpdateHistogramsV1(trdTrack);
-        }
+      Int_t nTimeBins;
+      AliHLTTRDUtils::ReadTracks(fTracksArray, block.fPtr, block.fSize, &nTimeBins);
+      
+      if(!fRecievedTimeBins){
+	HLTDebug("Reading number of time bins from input block. Value is: %d", nTimeBins);
+	fTRDCalibraFillHisto->Init2Dhistos(); // initialise the histos
+	fTRDCalibraFillHisto->SetNumberClusters(0); // At least 1 clusters
+	fTRDCalibraFillHisto->SetNumberClustersf(nTimeBins); // Not more than %d  clusters
+	fRecievedTimeBins=kTRUE;
       }
 
-
-      TObjArray *outArray = FormOutput();
-      if (outArray) {
-        PushBack(outArray, AliHLTTRDDefinitions::fgkCalibrationDataType);
-        delete outArray;
+      Int_t nbEntries = fTracksArray->GetEntries();
+      HLTDebug(" %i TRDtracks in tracksArray", nbEntries);
+      AliTRDtrackV1* trdTrack = 0x0;
+      for (Int_t i = 0; i < nbEntries; i++){
+	HLTDebug("%i/%i: ", i+1, nbEntries);
+	trdTrack = (AliTRDtrackV1*)fTracksArray->At(i);
+	trdTrack->Print();
+	fTRDCalibraFillHisto->UpdateHistogramsV1(trdTrack);
       }
+      
+      if(!fOutArray->At(0))FormOutput();
+      if (fNevent%feveryNevent==0 && fOutArray) {
+        PushBack(fOutArray, AliHLTTRDDefinitions::fgkCalibrationDataType);
+      }
+
+      fTracksArray->Delete();
+      fNevent++;
 
     }
   return 0;
 
 }
 
-
 /**
  * Form output array of histrograms
  */
 //============================================================================
-TObjArray* AliHLTTRDCalibrationComponent::FormOutput()
+void AliHLTTRDCalibrationComponent::FormOutput()
 {
-  TObjArray *outArray=new TObjArray(3);
-
   // gain histo
   TH2I *hCH2d = fTRDCalibraFillHisto->GetCH2d();
-  outArray->Add(hCH2d);
+  fOutArray->Add(hCH2d);
 
   // drift velocity histo
   TProfile2D *hPH2d = fTRDCalibraFillHisto->GetPH2d();
-  outArray->Add(hPH2d);
+  fOutArray->Add(hPH2d);
 
   // PRF histo
   TProfile2D *hPRF2d = fTRDCalibraFillHisto->GetPRF2d();
-  outArray->Add(hPRF2d);
+  fOutArray->Add(hPRF2d);
 
   HLTDebug("GetCH2d = 0x%x; NEntries = %i; size = %i", hCH2d, hCH2d->GetEntries(), sizeof(hCH2d));
   hCH2d->Print();
@@ -260,11 +285,11 @@ TObjArray* AliHLTTRDCalibrationComponent::FormOutput()
   hPH2d->Print();
   HLTDebug("GetPRF2d = 0x%x; NEntries = %i; size = %i", hPRF2d, hPRF2d->GetEntries(), sizeof(hPRF2d));
   hPRF2d->Print();
-  HLTDebug("output Array: pointer = 0x%x; NEntries = %i; size = %i", outArray, outArray->GetEntries(), sizeof(outArray));
-
-
-
-  return outArray;
-
+  HLTDebug("output Array: pointer = 0x%x; NEntries = %i; size = %i", fOutArray, fOutArray->GetEntries(), sizeof(fOutArray));
 }
 
+Int_t AliHLTTRDCalibrationComponent::ShipDataToFXS(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
+{
+  //fTRDCalibraFillHisto->DestroyDebugStreamer();
+  PushToFXS((TObject*)fOutArray, "TRD", "GAINDRIFTPRF");
+}

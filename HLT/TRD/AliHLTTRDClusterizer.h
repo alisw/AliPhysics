@@ -1,7 +1,11 @@
+//-*- Mode: C++ -*-
+// $Id$
+
 #ifndef ALIHLTTRDCLUSTERIZER_H
 #define ALIHLTTRDCLUSTERIZER_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -15,8 +19,6 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTTRDTrackletWordArray.h"
 
-class AliHLTTRDTrackletWord;
-
 class AliHLTTRDClusterizer : public AliTRDclusterizer
 {
  public:
@@ -29,16 +31,18 @@ class AliHLTTRDClusterizer : public AliTRDclusterizer
   void            SetMemBlock(AliHLTUInt8_t* ptr){
     if(fReconstructor->IsProcessingTracklets()){
       fTrMemBlock=ptr; fTrMemCurrPtr=ptr;
-      fClMemBlock=ptr+GetTrMemBlockSize(); fNoOfClusters=0;  //if IsProcessingTracklets() is enabled we always reserve a data block of size GetTrMemBlockSize() for the tracklets
+      fClMemBlock=ptr+GetTrMemBlockSize();  //if IsProcessingTracklets() is enabled we always reserve a data block of size GetTrMemBlockSize() for the tracklets
     }else{
-      fClMemBlock=ptr; fNoOfClusters=0;
+      fClMemBlock=ptr;
     }
+    fNoOfClusters=0;
   }
   AliHLTUInt8_t*  GetClMemBlock(){return fClMemBlock;}
   AliHLTUInt8_t*  GetTrMemBlock(){return fTrMemBlock;}
   UInt_t          GetAddedClSize(){return fNoOfClusters*sizeof(AliHLTTRDCluster);}
   UInt_t          GetAddedTrSize(){return (AliHLTUInt8_t*)fTrMemCurrPtr-(AliHLTUInt8_t*)fTrMemBlock;}
   UInt_t          GetTrMemBlockSize(){return 30*(sizeof(AliHLTTRDTrackletWordArray)+512*sizeof(UInt_t));}
+  Int_t           GetNTimeBins() const {return fTimeTotal;}
 
  protected:
   void            AddClusterToArray(AliTRDcluster *cluster);

@@ -41,8 +41,9 @@ public:
   // These functions are required for the registration process
 
   const char* GetComponentID();
-  void GetInputDataTypes( vector<AliHLTComponent_DataType>& list);
-  AliHLTComponent_DataType GetOutputDataType();
+  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  AliHLTComponentDataType GetOutputDataType();
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
 	
@@ -92,6 +93,7 @@ private:
   TString fgeometryFileName;
   Double_t fieldStrength;
   Bool_t fSlowTracking;
+  Bool_t fOutputV1Tracks;
 
   ClassDef(AliHLTTRDTrackerV1Component, 3)
 

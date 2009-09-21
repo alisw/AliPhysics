@@ -63,10 +63,13 @@ using namespace std;
 #include <cerrno>
 #include <string>
 
+#include "AliTRDrawStream.h"
+#include "AliTRDrawFastStream.h"
+
 ClassImp(AliHLTTRDClusterizerComponent)
    
-AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent():
-  AliHLTProcessor(),
+AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
+: AliHLTProcessor(),
   fOutputPercentage(500),
   fOutputConst(0),
   fClusterizer(NULL),
@@ -79,7 +82,7 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent():
   fyPosMethod(1),
   fgeometryFileName(""),
   fProcessTracklets(kFALSE),
-  fHLTstreamer(kFALSE)
+  fHLTstreamer(kTRUE)
 {
   // Default constructor
 
@@ -102,10 +105,10 @@ void AliHLTTRDClusterizerComponent::GetInputDataTypes( vector<AliHLTComponent_Da
 {
   // Get the list of input data
   list.clear(); // We do not have any requirements for our input data type(s).
-  list.push_back( (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD) );
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD);
 }
 
-AliHLTComponent_DataType AliHLTTRDClusterizerComponent::GetOutputDataType()
+AliHLTComponentDataType AliHLTTRDClusterizerComponent::GetOutputDataType()
 {
   // Get the output data type
   return kAliHLTMultipleDataType;
@@ -169,7 +172,10 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 
   if(fReconstructor->IsProcessingTracklets())
     fOutputConst = fClusterizer->GetTrMemBlockSize();
-  
+
+  AliTRDrawStream::SetSubtractBaseline(10);
+  AliTRDrawFastStream::SetSubtractBaseline(10);
+
   return iResult;
 }
 
@@ -270,10 +276,10 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
       fMemReader->SetEquipmentID( id ); 
       
       fClusterizer->SetMemBlock(outputPtr+offset);
-      Bool_t iclustered = fClusterizer->Raw2ClustersChamber(fMemReader);
-      if (iclustered == kTRUE)
+      Bool_t bclustered = fClusterizer->Raw2ClustersChamber(fMemReader);
+      if(bclustered)
 	{
-	  HLTDebug( "Clustered successfully");
+	  HLTDebug("Clustered successfully");
 	}
       else
 	{
@@ -281,9 +287,6 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 	  return -1;
 	}
 
-      // put the tree into output
-      //fcTree->Print();
-      
       AliHLTUInt32_t addedSize;
       if(fReconstructor->IsProcessingTracklets()){
 	addedSize = fClusterizer->GetAddedTrSize();
@@ -306,15 +309,18 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 	  bd.fSpecification = block.fSpecification;
 	  bd.fDataType = AliHLTTRDDefinitions::fgkMCMtrackletDataType;
 	  outputBlocks.push_back( bd );
-	  HLTDebug( "BD fPtr 0x%x, fOffset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);
+	  HLTDebug( "BD ptr 0x%x, offset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);
 	}
 	offset = totalSize;
       }
 
       addedSize = fClusterizer->GetAddedClSize();
       if (addedSize > 0){
-	// Using low-level interface 
-	// with interface classes
+	
+	Int_t* nTimeBins = (Int_t*)(outputPtr+offset+fClusterizer->GetAddedClSize());
+	*nTimeBins = fClusterizer->GetNTimeBins();
+	addedSize += sizeof(*nTimeBins);
+
 	totalSize += addedSize;
 	if ( totalSize > size )
 	  {
@@ -322,7 +328,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 		     totalSize, size );
 	    return EMSGSIZE;
 	  }
-		
+
 	// Fill block 
 	AliHLTComponentBlockData bd;
 	FillBlockData( bd );
@@ -331,9 +337,8 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 	bd.fSpecification = block.fSpecification;
 	bd.fDataType = AliHLTTRDDefinitions::fgkClusterDataType;
 	outputBlocks.push_back( bd );
-	HLTDebug( "BD fPtr 0x%x, fOffset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);
+	HLTDebug( "BD ptr 0x%x, offset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);
 	offset = totalSize;
-	      
       }
       else 
 	HLTDebug("Array of clusters is empty!");
@@ -385,44 +390,49 @@ int AliHLTTRDClusterizerComponent::Configure(const char* arguments){
 	fgeometryFileName=((TObjString*)pTokens->At(i))->GetString();
 	continue;
       } 
-      if (argument.CompareTo("-lowflux")==0) {
+      else if (argument.CompareTo("-lowflux")==0) {
 	fRecoParamType = 0;
 	HLTInfo("Low flux reconstruction selected");
 	continue;
       }
-      if (argument.CompareTo("-highflux")==0) {
+      else if (argument.CompareTo("-highflux")==0) {
 	fRecoParamType = 1;
 	HLTInfo("High flux reconstruction selected");
 	continue;
       }
-      if (argument.CompareTo("-cosmics")==0) {
+      else if (argument.CompareTo("-cosmics")==0) {
 	fRecoParamType = 2;
 	HLTInfo("Cosmics reconstruction selected");
 	continue;
       }
-      if (argument.CompareTo("-simulation")==0) {
+      else if (argument.CompareTo("-simulation")==0) {
 	fRecoDataType = 0;
 	HLTInfo("Awaiting simulated data");
 	continue;
       }
-      if (argument.CompareTo("-experiment")==0) {
+      else if (argument.CompareTo("-experiment")==0) {
 	fRecoDataType = 1;
 	HLTInfo("Awaiting real data");
 	continue;
       }
-      if (argument.CompareTo("-processTracklets")==0) {
+      else if (argument.CompareTo("-processTracklets")==0) {
 	fProcessTracklets = kTRUE;
-	HLTInfo("Processing L1 Tracklets");
+	HLTInfo("Writing L1 tracklets to output");
 	continue;
       }
-      if (argument.CompareTo("-noZS")==0) {
+      else if (argument.CompareTo("-noZS")==0) {
 	fOutputPercentage = 100;
 	HLTInfo("Awaiting non zero surpressed data");
 	continue;
       }
-      if (argument.CompareTo("-faststreamer")==0) {
+      else if (argument.CompareTo("-faststreamer")==0) {
 	fHLTstreamer = kTRUE;
 	HLTInfo("Useing fast raw streamer");
+	continue;
+      }
+      else if (argument.CompareTo("-nofaststreamer")==0) {
+	fHLTstreamer = kFALSE;
+	HLTInfo("Don't use fast raw streamer");
 	continue;
       }
       else if (argument.CompareTo("-rawver")==0) {
@@ -452,7 +462,7 @@ int AliHLTTRDClusterizerComponent::Configure(const char* arguments){
 	  break;
 	}
 	continue;
-      } 
+      }
       
       else {
 	HLTError("unknown argument: %s", argument.Data());

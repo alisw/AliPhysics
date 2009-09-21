@@ -40,8 +40,8 @@ public:
   // These functions are required for the registration process
 
   const char* GetComponentID();
-  void GetInputDataTypes( vector<AliHLTComponent_DataType>& list);
-  AliHLTComponent_DataType GetOutputDataType();
+  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  AliHLTComponentDataType GetOutputDataType();
   int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
@@ -87,8 +87,8 @@ private:
   Int_t fRawDataVersion;
   Int_t fyPosMethod;        // 0=COG 1=LUT 2=Gauss 
   TString fgeometryFileName;
-  Bool_t fProcessTracklets;
-  Bool_t fHLTstreamer;
+  Bool_t fProcessTracklets; // write the L! tracklets to output
+  Bool_t fHLTstreamer;      // use FastStreamer
 
   ClassDef(AliHLTTRDClusterizerComponent, 3)
 
