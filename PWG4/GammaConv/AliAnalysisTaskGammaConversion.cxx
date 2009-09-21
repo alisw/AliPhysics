@@ -28,9 +28,12 @@
 #include "AliLog.h"
 #include "AliESDtrackCuts.h"
 #include "TNtuple.h"
-#include "AliCFManager.h"  // for CF
-#include "AliCFContainer.h"   // for CF
+//#include "AliCFManager.h"  // for CF
+//#include "AliCFContainer.h"   // for CF
+#include "AliGammaConversionAODObject.h"
 
+class AliCFContainer;
+class AliCFManager;
 class AliKFVertex;
 class AliAODHandler;
 class AliAODEvent;
@@ -53,7 +56,7 @@ AliAnalysisTaskSE(),
   fV0Reader(NULL),
   fStack(NULL),
   fMCTruth(NULL),    // for CF
-  fMCEvent(NULL),    // for CF
+  fGCMCEvent(NULL),    // for CF
   fESDEvent(NULL),	
   fOutputContainer(NULL),
   fCFManager(0x0),   // for CF
@@ -120,7 +123,7 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fV0Reader(NULL),
   fStack(NULL),
   fMCTruth(NULL),    // for CF
-  fMCEvent(NULL),    // for CF
+  fGCMCEvent(NULL),    // for CF
   fESDEvent(NULL),	
   fOutputContainer(0x0),
   fCFManager(0x0),   // for CF
@@ -213,7 +216,7 @@ AliAnalysisTaskGammaConversion::~AliAnalysisTaskGammaConversion()
 void AliAnalysisTaskGammaConversion::Init()
 {
   // Initialization
-  AliLog::SetGlobalLogLevel(AliLog::kError);
+  // AliLog::SetGlobalLogLevel(AliLog::kError);
 }
 void AliAnalysisTaskGammaConversion::SetESDtrackCuts()
 {
@@ -346,12 +349,12 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	
   fStack = fV0Reader->GetMCStack();
   fMCTruth = fV0Reader->GetMCTruth();  // for CF
-  fMCEvent = fV0Reader->GetMCEvent();  // for CF
+  fGCMCEvent = fV0Reader->GetMCEvent();  // for CF
 	
 	
   // for CF
-  if(!fMCEvent) cout << "NO MC INFO FOUND" << endl;
-  fCFManager->SetEventInfo(fMCEvent);
+  if(!fGCMCEvent) cout << "NO MC INFO FOUND" << endl;
+  fCFManager->SetEventInfo(fGCMCEvent);
   Double_t containerInput[3]; 
   // end for CF
 	
@@ -1025,8 +1028,11 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	Double_t mcpt   = fV0Reader->GetMotherMCParticle()->Pt();
 	Double_t esdpt  = fV0Reader->GetMotherCandidatePt();
 	Double_t resdPt = 0;
-	if(mcpt != 0){
+	if(mcpt > 0){
 	  resdPt = ((esdpt - mcpt)/mcpt)*100;
+	}
+	else if(mcpt < 0){
+	  cout<<"Pt of MC particle is negative, this will cause wrong calculation of resPt"<<endl; 
 	}
 				
 	fHistograms->FillHistogram("Resolution_dPt", mcpt, resdPt);
@@ -2014,7 +2020,7 @@ void  AliAnalysisTaskGammaConversion::GetPID(AliESDtrack *track, Stat_t &pid, St
 	
 	
   for (int i=0; i<5; i++) {
-    if( rcc!=0){
+    if( rcc>0 || rcc<0){//Kenneth: not sure if the rcc<0 should be there, this is from fixing a coding violation where we are not allowed to say: rcc!=0 (RC19)  
       wpartbayes[i] = c[i] * wpart[i] / rcc;
     }
   }

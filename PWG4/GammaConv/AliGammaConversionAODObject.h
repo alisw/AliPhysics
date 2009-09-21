@@ -77,12 +77,12 @@ class AliGammaConversionAODObject : public TObject {
   /*
    * This function sets the MC stack
    */
-  void SetStack(AliStack* stack){fMCStack=stack;}
+  void SetStack(AliStack* const stack){fMCStack=stack;}
 
   /*
    * This function sets the ESD event
    */
-  void SetESDEvent(AliESDEvent* esdEvent){fESDEvent = esdEvent;}
+  void SetESDEvent(AliESDEvent* const esdEvent){fESDEvent = esdEvent;}
 
   /*
    * This function returns the Gamma MC label
@@ -106,13 +106,13 @@ class AliGammaConversionAODObject : public TObject {
 
  private:
 
-  Float_t fPx;
-  Float_t fPy;
-  Float_t fPz;
-  Int_t fLabel1;
-  Int_t fLabel2;
-  AliStack* fMCStack;
-  AliESDEvent * fESDEvent;
+  Float_t fPx; // Px of reconstructed gamma
+  Float_t fPy; // Py of reconstructed gamma
+  Float_t fPz; // Pz of reconstructed gamma
+  Int_t fLabel1; //mc label of the first track
+  Int_t fLabel2; //mc label of the second track
+  AliStack* fMCStack; // pointer to the mc stack
+  AliESDEvent * fESDEvent; // pointer to the esdevent
 
   ClassDef(AliGammaConversionAODObject,0)
 };

@@ -13,8 +13,10 @@
 #include "AliAnalysisTaskSE.h"
 #include <vector>
 #include "AliV0Reader.h"
-#include "AliGammaConversionAODObject.h"
+//#include "AliCFManager.h"  // for CF
+//#include "AliCFContainer.h"   // for CF
 
+class AliGammaConversionAODObject;
 class TNtuple;
 class AliGammaConversionHistograms;
 class AliESDv0;
@@ -31,28 +33,6 @@ class AliCFContainer; // for CF
 
 class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 {
-	
-  // for CF
-  enum{
-    kStepGenerated = 0,
-    kStepReconstructable = 1, 
-    kStepLikeSign = 2,
-    kStepTPCRefit = 3,
-    kStepKinks = 4,
-    kStepGetOnFly = 5,
-    kStepNContributors = 6,
-    kStepTPCPID = 7,
-    kStepR = 8,
-    kStepLine = 9,
-    kStepZ = 10,
-    kStepNDF = 11,
-    kStepChi2 = 12,
-    kStepEta = 13,
-    kStepPt = 14
-  };
-
-	
-	
 	
  public:
   AliAnalysisTaskGammaConversion();
@@ -73,7 +53,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void ProcessGammasForNeutralMesonAnalysis();
 		
   // for CF
-  void SetCFManager(AliCFManager *io) {fCFManager = io;};
+  void SetCFManager(AliCFManager * const io) {fCFManager = io;};
   AliCFManager *GetCFManager() const {return fCFManager;}
 		
 		
@@ -139,11 +119,30 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
   AliAnalysisTaskGammaConversion& operator=(const AliAnalysisTaskGammaConversion&); // Not implemented
 		
+  // for CF
+  enum{
+    kStepGenerated = 0,
+    kStepReconstructable = 1, 
+    kStepLikeSign = 2,
+    kStepTPCRefit = 3,
+    kStepKinks = 4,
+    kStepGetOnFly = 5,
+    kStepNContributors = 6,
+    kStepTPCPID = 7,
+    kStepR = 8,
+    kStepLine = 9,
+    kStepZ = 10,
+    kStepNDF = 11,
+    kStepChi2 = 12,
+    kStepEta = 13,
+    kStepPt = 14
+  };
+
   AliV0Reader* fV0Reader; // The V0 reader object 
 		
   AliStack * fStack; // pointer to the MC particle stack
   AliMCEventHandler *fMCTruth; // for CF   pointer to MCTruth
-  AliMCEvent *fMCEvent;  // for CF    pointer to the MC Event
+  AliMCEvent *fGCMCEvent;  // for CF    pointer to the MC Event
   AliESDEvent* fESDEvent; //pointer to the ESDEvent
   TList * fOutputContainer; // Histogram container
   AliCFManager *fCFManager;  // for CF
