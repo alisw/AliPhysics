@@ -32,6 +32,7 @@
 #include <AliHeader.h>
 #include <AliGeomManager.h>
 #include <AliGRPManager.h>
+#include <AliSysInfo.h>
 
 #include <TFile.h>
 #include <TTree.h>
@@ -713,6 +714,10 @@ void AliEveEventManager::GotoEvent(Int_t event)
                       event, 0, maxEvent));
   }
 
+  TString sysInfoHeader;
+  sysInfoHeader.Form("AliEveEventManager::GotoEvent(%d) - ", event);
+  AliSysInfo::AddStamp(sysInfoHeader + "Start");
+
   TEveManager::TRedrawDisabler rd(gEve);
   gEve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
 
@@ -727,6 +732,8 @@ void AliEveEventManager::GotoEvent(Int_t event)
     (*i)->DestroyElements();
   }
   DestroyElements();
+
+  AliSysInfo::AddStamp(sysInfoHeader + "PostDestroy");
 
   if (fESDTree) {
     if (fESDTree->GetEntry(event) <= 0)
@@ -781,7 +788,11 @@ void AliEveEventManager::GotoEvent(Int_t event)
     ElementChanged();
   }
 
+  AliSysInfo::AddStamp(sysInfoHeader + "PostLoadEvent");
+
   AfterNewEventLoaded();
+
+  AliSysInfo::AddStamp(sysInfoHeader + "PostUserActions");
 }
 
 void AliEveEventManager::NextEvent()

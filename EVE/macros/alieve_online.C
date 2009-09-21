@@ -130,6 +130,7 @@ void alieve_online_init()
   gRhoZView->AddScene(gRhoZGeomScene);
   gRhoZView->AddScene(gRhoZEventScene);
 
+  browser->GetTabRight()->SetTab(1);
 
   browser->StartEmbedding(TRootBrowser::kBottom);
   new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
