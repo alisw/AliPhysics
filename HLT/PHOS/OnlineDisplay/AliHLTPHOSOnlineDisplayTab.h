@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id$
+// $Id: AliHLTPHOSOnlineDisplayTab.h 31683 2009-03-24 21:17:03Z odjuvsla $
 
 
 #ifndef ALIHLTPHOSONLINEDISPLAYTAB_H
@@ -15,7 +15,7 @@
 //#define XRANGELENGTH 80
 
 #define XRANGESTART 128
-#define XRANGELENGTH 64
+#define XRANGELENGTH 64*3
 
 #define XRANGEEND  XRANGESTART + XRANGELENGTH
 

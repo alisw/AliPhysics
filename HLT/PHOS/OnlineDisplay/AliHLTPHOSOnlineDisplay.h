@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id$
+// $Id: AliHLTPHOSOnlineDisplay.h 33100 2009-06-22 09:47:35Z odjuvsla $
 
 #ifndef ALIHLTPHOSONLINEDISPLAY_H
 #define ALIHLTPHOSONLINEDISPLAY_H
@@ -12,8 +12,8 @@
 //#include "AliHLTHOMERReader.h"
 //#include "AliHLTHOMERWriter.h"
 #include "Rtypes.h"
-//#include <TGFrame.h>
-//#include "TH2.h"
+#include <TGFrame.h>
+#include "TH2.h"
 //#include "AliHLTPHOSGetEventButton.h" 
 //#include "TGTab.h"
 //#include <TRootEmbeddedCanvas.h>

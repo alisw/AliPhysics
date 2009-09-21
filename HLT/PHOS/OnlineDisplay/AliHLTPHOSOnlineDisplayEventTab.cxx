@@ -1,4 +1,4 @@
-// $Id$
+// $Id: AliHLTPHOSOnlineDisplayEventTab.cxx 31683 2009-03-24 21:17:03Z odjuvsla $
 
 /**************************************************************************
  * Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
@@ -26,6 +26,7 @@
 #include "AliHLTHOMERReader.h"
 #include "AliHLTHOMERWriter.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
+#include "TRootEmbeddedCanvas.h"
 //#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h" 
 #include "AliHLTPHOSOnlineDisplay.h"
@@ -228,8 +229,14 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 	  tmpZ = currentChannel->fZ;
 	  tmpX = currentChannel->fX;
 	  tmpGain =  currentChannel->fGain;
+
+// 	  cout << "Channel: x: " << moduleID*NXCOLUMNSMOD + tmpX + NXCOLUMNSRCU*cellEnergiesPtr->fRcuX 
+// 	       << " z: " <<     tmpZ + NZROWSRCU*cellEnergiesPtr->fRcuZ
+// 	       << " E: " <<  currentChannel->fEnergy << endl;
+
 	  fgLegoPlotPtr[tmpGain]->Fill(moduleID*NXCOLUMNSMOD + tmpX +  NXCOLUMNSRCU*cellEnergiesPtr->fRcuX,  
 				    tmpZ + NZROWSRCU*cellEnergiesPtr->fRcuZ, currentChannel->fEnergy);
+	  
 	      
 	  // CRAP PTH
 	  if(tmpGain == HIGHGAIN)

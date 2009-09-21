@@ -1,4 +1,4 @@
-// $Id$
+// $Id: AliHLTPHOSOnlineDisplay.cxx 33100 2009-06-22 09:47:35Z odjuvsla $
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -42,6 +42,7 @@
 #include <iostream>
 #include "AliHLTPHOSOnlineDisplayEventTab.h"
 #include "AliHLTPHOSOnlineDisplayCalibTab.h"
+#include "AliHLTPHOSOnlineDisplayFourierTab.h"
 
 //#include "AliHLTPHOSFourier.h"
 
