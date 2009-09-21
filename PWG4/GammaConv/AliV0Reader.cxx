@@ -52,6 +52,7 @@ AliV0Reader::AliV0Reader() :
   fChain(NULL),
   fESDHandler(NULL),
   fESDEvent(NULL),
+  fCFManager(NULL),
   fHistograms(NULL),
   fCurrentV0IndexNumber(0),
   fCurrentV0(NULL),
@@ -107,6 +108,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fChain(original.fChain),
   fESDHandler(original.fESDHandler),
   fESDEvent(original.fESDEvent),
+  fCFManager(original.fCFManager),
   fHistograms(original.fHistograms),
   fCurrentV0IndexNumber(original.fCurrentV0IndexNumber),
   fCurrentV0(original.fCurrentV0),
@@ -265,9 +267,18 @@ Bool_t AliV0Reader::NextV0(){
 		
 		
 		
-		
-    fCurrentV0->GetXYZ(fCurrentXValue,fCurrentYValue,fCurrentZValue);
-		
+    if(fUseOwnXYZCalculation == kFALSE){
+      fCurrentV0->GetXYZ(fCurrentXValue,fCurrentYValue,fCurrentZValue);
+    }
+    else{
+      Double_t convpos[2];
+      convpos[0]=0;
+      convpos[1]=0;
+      GetConvPosXY(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField(),convpos);
+      fCurrentXValue = convpos[0];
+      fCurrentYValue = convpos[1];
+      fCurrentZValue = GetConvPosZ(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField());
+    }
 		
     if(GetXYRadius()>fMaxR){ // cuts on distance from collision point
       if(fHistograms != NULL){
@@ -539,7 +550,8 @@ Bool_t AliV0Reader::CheckPIDProbability(Double_t negProbCut, Double_t posProbCut
   negTrack->GetTPCpid(negProbArray);
   posTrack->GetTPCpid(posProbArray);
 	
-  if(negProbArray!=NULL && posProbArray!=NULL){
+  //  if(negProbArray != NULL && posProbArray != NULL){ // this is not allowed anymore for some reason(RC19)
+  if(negProbArray && posProbArray){
     if(negProbArray[GetSpeciesIndex(-1)]>=negProbCut && posProbArray[GetSpeciesIndex(1)]>=posProbCut){
       iResult=kTRUE;
     }
@@ -550,7 +562,8 @@ Bool_t AliV0Reader::CheckPIDProbability(Double_t negProbCut, Double_t posProbCut
 }
 
 void AliV0Reader::GetPIDProbability(Double_t &negPIDProb,Double_t & posPIDProb){
-	
+  // see header file for documentation
+
   Double_t *posProbArray = new Double_t[10];
   Double_t *negProbArray = new Double_t[10];
   AliESDtrack* negTrack  = fESDEvent->GetTrack(fCurrentV0->GetNindex());
@@ -559,7 +572,8 @@ void AliV0Reader::GetPIDProbability(Double_t &negPIDProb,Double_t & posPIDProb){
   negTrack->GetTPCpid(negProbArray);
   posTrack->GetTPCpid(posProbArray);
 	
-  if(negProbArray!=NULL && posProbArray!=NULL){
+  //  if(negProbArray!=NULL && posProbArray!=NULL){ // this is not allowed anymore for some reason(RC19)
+  if(negProbArray && posProbArray){
     negPIDProb = negProbArray[GetSpeciesIndex(-1)];
     posPIDProb = posProbArray[GetSpeciesIndex(1)];
   }
@@ -719,7 +733,7 @@ Int_t AliV0Reader::GetSpeciesIndex(Int_t chargeOfTrack){
   return iResult;
 }
 
-Bool_t GetHelixCenter(AliESDtrack* track, Double_t b,Int_t charge, Double_t center[2]){
+Bool_t AliV0Reader::GetHelixCenter(AliESDtrack* track, Double_t b,Int_t charge, Double_t center[2]){
   // see header file for documentation
   
   Double_t pi = 3.14159265358979323846;
@@ -755,7 +769,7 @@ Bool_t GetHelixCenter(AliESDtrack* track, Double_t b,Int_t charge, Double_t cent
   return 1;
 }
 
-Bool_t GetConvPosXY(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b, Double_t convpos[2]){
+Bool_t AliV0Reader::GetConvPosXY(AliESDtrack* ptrack, AliESDtrack* ntrack, Double_t b, Double_t convpos[2]){
   //see header file for documentation
 
   Double_t helixcenterpos[2];
@@ -785,7 +799,7 @@ Bool_t GetConvPosXY(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b, Double_
 
 
 
-Double_t GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b){
+Double_t AliV0Reader::GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b){
   //see header file for documentation
 
   Double_t  helixpos[6];
@@ -816,24 +830,24 @@ Double_t GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b){
    Double_t xneg = helixcenterneg[0];
    Double_t yneg = helixcenterneg[1];
 
-   Double_t delta_x_pos = convposx -  xpos;
-   Double_t delta_y_pos = convposy -  ypos;
+   Double_t deltaXPos = convposx -  xpos;
+   Double_t deltaYPos = convposy -  ypos;
 
-   Double_t delta_x_neg = convposx -  xneg;
-   Double_t delta_y_neg = convposy -  yneg;
+   Double_t deltaXNeg = convposx -  xneg;
+   Double_t deltaYNeg = convposy -  yneg;
 
-   Double_t alpha_pos =  pi + TMath::ATan2(-delta_y_pos,-delta_x_pos);
-   Double_t alpha_neg =  pi + TMath::ATan2(-delta_y_neg,-delta_x_neg);
+   Double_t alphaPos =  pi + TMath::ATan2(-deltaYPos,-deltaXPos);
+   Double_t alphaNeg =  pi + TMath::ATan2(-deltaYNeg,-deltaXNeg);
 
-   Double_t vertex_x_neg =  xneg +  TMath::Abs(negtrackradius)*
-   TMath::Cos(alpha_neg);
-   Double_t vertex_y_neg =  yneg +  TMath::Abs(negtrackradius)*
-   TMath::Sin(alpha_neg);
+   Double_t vertexXNeg =  xneg +  TMath::Abs(negtrackradius)*
+   TMath::Cos(alphaNeg);
+   Double_t vertexYNeg =  yneg +  TMath::Abs(negtrackradius)*
+   TMath::Sin(alphaNeg);
 
-   Double_t vertex_x_pos =  xpos +  TMath::Abs(postrackradius)*
-   TMath::Cos(alpha_pos);
-   Double_t vertex_y_pos =  ypos +  TMath::Abs(postrackradius)*
-   TMath::Sin(alpha_pos);
+   Double_t vertexXPos =  xpos +  TMath::Abs(postrackradius)*
+   TMath::Cos(alphaPos);
+   Double_t vertexYPos =  ypos +  TMath::Abs(postrackradius)*
+   TMath::Sin(alphaPos);
 
    Double_t x0neg =   helixneg[5];
    Double_t y0neg =   helixneg[0];
@@ -841,29 +855,29 @@ Double_t GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b){
    Double_t x0pos =   helixpos[5];
    Double_t y0pos =   helixpos[0];
 
-   Double_t d_neg = TMath::Sqrt((vertex_x_neg -  x0neg)*(vertex_x_neg - x0neg)
-                               +(vertex_y_neg -  y0neg)*(vertex_y_neg - y0neg));
+   Double_t dNeg = TMath::Sqrt((vertexXNeg -  x0neg)*(vertexXNeg - x0neg)
+                               +(vertexYNeg -  y0neg)*(vertexYNeg - y0neg));
 
-   Double_t d_pos = TMath::Sqrt((vertex_x_pos -  x0pos)*(vertex_x_pos - x0pos)
-                               +(vertex_y_pos -  y0pos)*(vertex_y_pos - y0pos));
+   Double_t dPos = TMath::Sqrt((vertexXPos -  x0pos)*(vertexXPos - x0pos)
+                               +(vertexYPos -  y0pos)*(vertexYPos - y0pos));
 
-   Double_t r_neg =  TMath::Sqrt(negtrackradius*negtrackradius -
-   d_neg*d_neg/4.);
+   Double_t rNeg =  TMath::Sqrt(negtrackradius*negtrackradius -
+   dNeg*dNeg/4.);
 
-   Double_t r_pos = TMath::Sqrt(postrackradius*postrackradius -
-   d_pos*d_pos/4.);
+   Double_t rPos = TMath::Sqrt(postrackradius*postrackradius -
+   dPos*dPos/4.);
 
-   Double_t deltabeta_neg =  2*(pi +   TMath::ATan2(-d_neg/2.,-r_neg));
-   Double_t deltabeta_pos = 2*(pi + TMath::ATan2(-d_pos/2.,-r_pos));
+   Double_t deltabetaNeg =  2*(pi +   TMath::ATan2(-dNeg/2.,-rNeg));
+   Double_t deltabetaPos = 2*(pi + TMath::ATan2(-dPos/2.,-rPos));
 
-   Double_t delta_U_neg = negtrackradius*deltabeta_neg;
-   Double_t delta_U_pos = postrackradius*deltabeta_pos;
+   Double_t deltaUNeg = negtrackradius*deltabetaNeg;
+   Double_t deltaUPos = postrackradius*deltabetaPos;
 
-   Double_t zphase_neg = ntrack->GetZ() +  delta_U_neg * ntrack->GetTgl();
-   Double_t zphase_pos = ptrack->GetZ() +  delta_U_pos * ptrack->GetTgl();
+   Double_t zphaseNeg = ntrack->GetZ() +  deltaUNeg * ntrack->GetTgl();
+   Double_t zphasePos = ptrack->GetZ() +  deltaUPos * ptrack->GetTgl();
 
    Double_t convposz =
-   (zphase_pos*negtrackradius+zphase_neg*postrackradius)/(negtrackradius+postrackradius);
+   (zphasePos*negtrackradius+zphaseNeg*postrackradius)/(negtrackradius+postrackradius);
 
    return convposz;
 }

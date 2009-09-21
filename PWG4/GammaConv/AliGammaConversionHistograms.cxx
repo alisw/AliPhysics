@@ -113,23 +113,24 @@ void AliGammaConversionHistograms::AddHistogram(TString histogramName, TString h
 }
 
 void AliGammaConversionHistograms::AddTable(TString tableName,TString tableTitle,Int_t nXBins,const char * axesLabel[]){
+  //see header file for documentation
 
+  TH1F *tmp = new TH1F(tableName,tableTitle,nXBins,0,nXBins);
+  for(Int_t xbin=1; xbin<=nXBins; xbin++){
+    tmp->GetXaxis()->SetBinLabel(xbin,axesLabel[xbin-1]);
+  }
+  tmp->SetStats(0);
 
-        TH1F *tmp = new TH1F(tableName,tableTitle,nXBins,0,nXBins);
-        for(Int_t xbin=1; xbin<=nXBins; xbin++){
-         tmp->GetXaxis()->SetBinLabel(xbin,axesLabel[xbin-1]);
-        }
-        tmp->SetStats(0);
-
-        TObjString *tobjstring = new TObjString(tableName.Data());
-        fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+  TObjString *tobjstring = new TObjString(tableName.Data());
+  fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
 }
 
 void AliGammaConversionHistograms::FillTable(TString tableName,Double_t xValue) const {
-        TH1 *tmp = (TH1*)fHistogramMap->GetValue(tableName.Data());
-        if(tmp){
-             tmp->Fill(xValue);
-        }
+  //see header file for documentation
+  TH1 *tmp = (TH1*)fHistogramMap->GetValue(tableName.Data());
+  if(tmp){
+    tmp->Fill(xValue);
+  }
 }
 
 void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t xValue) const{

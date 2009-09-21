@@ -79,7 +79,7 @@ class AliV0Reader : public TObject {
 	
 	
   // for CF
-  void SetCFManager(AliCFManager *io){fCFManager = io;};
+  void SetCFManager(AliCFManager * const io){fCFManager = io;};
   AliCFManager *GetCFManager() const {return fCFManager;}
 	
 	
@@ -481,7 +481,7 @@ class AliV0Reader : public TObject {
   /*
    * Sets the histograms.
    */
-  void SetHistograms(AliGammaConversionHistograms *histograms){fHistograms=histograms;}
+  void SetHistograms(AliGammaConversionHistograms * const histograms){fHistograms=histograms;}
 	
   /*
    * Check for primary vertex.
@@ -517,13 +517,13 @@ class AliV0Reader : public TObject {
 	
 	
   // for CF
-  AliCFManager *fCFManager;		
-  AliCFContainer *container;
+  AliCFManager *fCFManager; // pointer to the cf manager
+  //  AliCFContainer *container;
 	
 	
   AliGammaConversionHistograms *fHistograms; //! pointer to histogram handling class
 	
-  Int_t fCurrentV0IndexNumber;
+  Int_t fCurrentV0IndexNumber;  // the current v0 index number
   AliESDv0 * fCurrentV0;                //! pointer to the current v0
   AliKFParticle * fCurrentNegativeKFParticle;  //! pointer to the negative KF particle
   AliKFParticle * fCurrentPositiveKFParticle;  //! pointer to the positive KF particle
@@ -578,7 +578,7 @@ class AliV0Reader : public TObject {
   vector<AliKFParticle> fCurrentEventGoodV0s; //vector of good v0s
   vector<AliKFParticle> fPreviousEventGoodV0s; // vector of good v0s from prevous events
 	
-  ClassDef(AliV0Reader,3)
+  ClassDef(AliV0Reader,4)
 };
 #endif
 

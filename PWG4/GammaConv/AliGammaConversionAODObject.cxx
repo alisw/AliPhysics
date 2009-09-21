@@ -20,11 +20,14 @@
 ////////////////////////////////////////////////
 
 #include "AliGammaConversionAODObject.h"
-#include "AliAODv0.h"
+//#include "AliAODv0.h"
 #include "AliStack.h"
 #include "AliESDEvent.h"
-#include "AliESDtrack.h"
+//#include "AliESDtrack.h"
 #include "TParticle.h"
+
+class AliAODv0;
+class AliESDtrack;
 
 using namespace std;
 

@@ -770,7 +770,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
 		
     gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C"); // load the CreateChain macro
 		
-    AliLog::SetGlobalLogLevel(AliLog::kError);
+    //    AliLog::SetGlobalLogLevel(AliLog::kError);
 		
 		
     // ------------------------------------------------------------------------
