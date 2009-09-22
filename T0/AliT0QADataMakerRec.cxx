@@ -153,8 +153,10 @@ void AliT0QADataMakerRec::InitRaws()
 
   
   for (Int_t i=0; i<500; i++){
-    low[i]  = GetRecoParam()->GetLow(i);
-    high[i]  = GetRecoParam()->GetHigh(i);
+    //    low[i]  = GetRecoParam()->GetLow(i);
+    ///   high[i]  = GetRecoParam()->GetHigh(i);
+    low[i] = -5000;
+    high[i] = 20000;
 
   }
 
@@ -334,10 +336,10 @@ void AliT0QADataMakerRec::InitRaws()
   Add2RawsList( fhLEDcal,209, !expert, image, !saveCorr);
 
 
-  TH1F* fhNumPMTA= new TH1F("hNumPMTA","number of PMT hitted per event",10, 0 ,10);
+  TH1F* fhNumPMTA= new TH1F("hNumPMTA","number of PMT hitted per event",12, 0 ,12);
   Add2RawsList(fhNumPMTA ,211, expert, !image, !saveCorr);
 
-  TH1F* fhNumPMTC= new TH1F("hNumPMTC","number of PMT hitted per event",10, 0 ,10);
+  TH1F* fhNumPMTC= new TH1F("hNumPMTC","number of PMT hitted per event",12, 0 ,12);
   Add2RawsList(fhNumPMTC ,212, expert, !image, !saveCorr);
 
   TH1F* fhHitsOrA= new TH1F("fhHitsOrA","T0_OR A hit multiplicitie",10, 0 ,10);
@@ -420,8 +422,9 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
   rawReader->Reset() ; 
   //fills QA histos for RAW
   Int_t shift=0;
-  Int_t refPointParam = GetRecoParam()->GetRefPoint();
+  // Int_t refPointParam = GetRecoParam()->GetRefPoint();
   Int_t refpoint = 0;
+  Int_t refPointParam = 0;
 
   AliT0RawReader *start = new AliT0RawReader(rawReader);
   
@@ -459,6 +462,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	  //cfd
 	  if(allData[ik+1][iHt]>0) {
 	    GetRawsData(shift+ik+1) -> Fill(allData[ik+1][iHt]-refpoint);
+	    if(allData[1][0]>0) 
 	    GetRawsData(shift+ik+220) -> Fill(allData[ik+1][iHt]-allData[1][0]);
 	    //	    cout<<"C  cfd "<<ik<<" "<<iHt<<" "<<allData[ik+1][iHt]<<" -RF "<<refpoint<<"  "<<allData[ik+1][iHt]-refpoint<<endl;
 	    if(type == 8  ) {
@@ -501,12 +505,12 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	//	for (Int_t iHt=0; iHt<1; iHt++) {
 	if(allData[ik+45][0]>0 && type == 7 ) numPmtA++;
 	Int_t nhitsPMT=0;
-	if(allData[ik+1][0]>0) numPmtA++;
 	for (Int_t iHt=0; iHt<5; iHt++) {
 	  if(allData[ik+45][iHt]>0) {
 	    //cfd
 	    GetRawsData(shift+ik+1)->
 	      Fill(allData[ik+45][iHt]-refpoint);
+	    if(allData[57][0]>0) 
 	    GetRawsData(shift+ik+220) -> Fill(allData[ik+45][iHt]-allData[57][0]);
 
 	    //	    cout<<"A  cfd "<<ik<<" "<<iHt<<" "<<allData[ik+1][iHt]<<" -RF "<<refpoint<<"  "<<allData[ik+1][iHt]-refpoint<<endl;
@@ -568,7 +572,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	      if(allData[56][iHt]>0) GetRawsData(218)->Fill(allData[53][iHt]-allData[54][iHt]);
 	    }
 	    if(allData[51][iHt]>0 && allData[52][iHt]>0)
-	      GetRawsData(215)->Fill(allData[51][iHt]-allData[52][iHt]);
+	      GetRawsData(215)->Fill(allData[52][iHt]-allData[51][iHt]);
 	  }
 	  GetRawsData(213)->Fill(nhitsOrA);
 	  GetRawsData(214)->Fill(nhitsOrC);
