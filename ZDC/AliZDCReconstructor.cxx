@@ -209,18 +209,12 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
        tZN1Corr[quad+5] = (Float_t) (digit.GetADCValue(1)-ped2SubLg);
        if(tZN1Corr[quad]<0.) tZN1Corr[quad] = 0.;
        if(tZN1Corr[quad+5]<0.) tZN1Corr[quad+5] = 0.;
-       // Ch. debug
-       //printf("\t pedindex %d tZN1Corr[%d] = %1.0f tZN1Corr[%d] = %1.0f", 
-       //	pedindex, quad, tZN1Corr[quad], quad+5, tZN1Corr[quad+5]);
     }
     else if(det == 2){ // *** ZP1
        tZP1Corr[quad] = (Float_t) (digit.GetADCValue(0)-ped2SubHg);
        tZP1Corr[quad+5] = (Float_t) (digit.GetADCValue(1)-ped2SubLg);
        if(tZP1Corr[quad]<0.) tZP1Corr[quad] = 0.;
        if(tZP1Corr[quad+5]<0.) tZP1Corr[quad+5] = 0.;
-       // Ch. debug
-       //printf("\t pedindex %d tZP1Corr[%d] = %1.0f tZP1Corr[%d] = %1.0f", 
-       //	pedindex, quad, tZP1Corr[quad], quad+5, tZP1Corr[quad+5]);
     }
     else if(det == 3){
        if(quad == 1){	    // *** ZEM1  
@@ -228,18 +222,12 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
          dZEM1Corr[1] += (Float_t) (digit.GetADCValue(1)-ped2SubLg); 
          if(dZEM1Corr[0]<0.) dZEM1Corr[0] = 0.;
          if(dZEM1Corr[1]<0.) dZEM1Corr[1] = 0.;
-         // Ch. debug
-         //printf("\t pedindex %d tZEM1Corr[%d] = %1.0f tZEM1Corr[%d] = %1.0f", 
-         //	pedindex, quad, tZEM1Corr[quad], quad+1, tZEM1Corr[quad+1]);
        }
        else if(quad == 2){  // *** ZEM2
          dZEM2Corr[0] += (Float_t) (digit.GetADCValue(0)-ped2SubHg); 
          dZEM2Corr[1] += (Float_t) (digit.GetADCValue(1)-ped2SubLg); 
          if(dZEM2Corr[0]<0.) dZEM2Corr[0] = 0.;
          if(dZEM2Corr[1]<0.) dZEM2Corr[1] = 0.;
-         // Ch. debug
-         //printf("\t pedindex %d tZEM2Corr[%d] = %1.0f tZEM2Corr[%d] = %1.0f", 
-         //	pedindex, quad, tZEM2Corr[quad], quad+1, tZEM2Corr[quad+1]);
        }
     }
     else if(det == 4){  // *** ZN2
@@ -247,18 +235,12 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
        tZN2Corr[quad+5] = (Float_t) (digit.GetADCValue(1)-ped2SubLg);
        if(tZN2Corr[quad]<0.) tZN2Corr[quad] = 0.;
        if(tZN2Corr[quad+5]<0.) tZN2Corr[quad+5] = 0.;
-       // Ch. debug
-       //printf("\t pedindex %d tZN2Corr[%d] = %1.0f tZN2Corr[%d] = %1.0f\n", 
-       //	pedindex, quad, tZN2Corr[quad], quad+5, tZN2Corr[quad+5]);
-    }
+   }
     else if(det == 5){  // *** ZP2 
        tZP2Corr[quad] = (Float_t) (digit.GetADCValue(0)-ped2SubHg);
        tZP2Corr[quad+5] = (Float_t) (digit.GetADCValue(1)-ped2SubLg);
        if(tZP2Corr[quad]<0.) tZP2Corr[quad] = 0.;
        if(tZP2Corr[quad+5]<0.) tZP2Corr[quad+5] = 0.;
-       // Ch. debug
-       //printf("\t pedindex %d tZP2Corr[%d] = %1.0f tZP2Corr[%d] = %1.0f\n", 
-       //	pedindex, quad, tZP2Corr[quad], quad+5, tZP2Corr[quad+5]);
     }
    }
    else{ // Reference PMs
@@ -279,11 +261,14 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
    }
 
    // Ch. debug
-   /*printf(" - AliZDCReconstructor -> digit #%d det %d quad %d pedHG %1.0f pedLG %1.0f\n",
+   /*printf("AliZDCReconstructor: digit #%d det %d quad %d pedHG %1.0f pedLG %1.0f\n",
    	 iDigit, det, quad, ped2SubHg, ped2SubLg);
-   printf("   HGChain -> RawDig %d DigCorr %1.2f\n", digit.GetADCValue(0), digit.GetADCValue(0)-ped2SubHg); 
-   printf("   LGChain -> RawDig %d DigCorr %1.2f\n", digit.GetADCValue(1), digit.GetADCValue(1)-ped2SubLg); 
-   */
+   printf(" -> pedindex %d\n", pedindex);
+   printf("   HGChain -> RawDig %d DigCorr %1.2f", 
+   	digit.GetADCValue(0), digit.GetADCValue(0)-ped2SubHg); 
+   printf("   LGChain -> RawDig %d DigCorr %1.2f\n", 
+   	digit.GetADCValue(1), digit.GetADCValue(1)-ped2SubLg);*/ 
+   
   }//digits loop
  
   
@@ -353,7 +338,8 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
 
   //fNRun = (Int_t) rawReader->GetRunNumber();
   Bool_t chOff=kFALSE, isUndflw=kFALSE, isOvflw=kFALSE, isADCEvGood=kFALSE;
-  Int_t kFirstADCGeo=0, kLastADCGeo=3, kScalerGeo=8, kPUGeo=29, kTrigScales=30, kTrigHistory=31;
+  Int_t kFirstADCGeo=0, kLastADCGeo=3;
+  //Int_t kScalerGeo=8, kPUGeo=29, kTrigScales=30, kTrigHistory=31;
   //
   rawReader->Reset();
   AliZDCRawStream rawData(rawReader);
@@ -426,9 +412,9 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
          }
        }
        // Ch. debug
-       /*printf(" -> AliZDCReconstructor: det %d quad %d res %d -> Pedestal[%d] %1.0f\n", 
+       /*printf(" AliZDCReconstructor: det %d quad %d res %d -> Pedestal[%d] %1.0f\n", 
          det,quad,gain, pedindex, meanPed[pedindex]);
-       printf(" -> AliZDCReconstructor: RawADC %1.0f ADCCorr %1.0f\n", 
+       printf("                      RawADC %d ADCCorr %1.0f\n", 
          rawData.GetADCValue(), rawData.GetADCValue()-meanPed[pedindex]);*/
 	 
       }// mean pedestal subtraction
@@ -494,8 +480,8 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        }
       } // pedestal subtraction from correlation
       // Ch. debug
-      //printf("\t AliZDCReconstructor - det %d quad %d res %d -> Ped[%d] = %1.0f\n", 
-      //  det,quad,gain, pedindex, meanPed[pedindex]);
+      /*printf("\t AliZDCReconstructor: det %d quad %d res %d -> Ped[%d] = %1.0f\n", 
+        det,quad,gain, pedindex, meanPed[pedindex]);*/
     }//IsADCDataWord
    }// Not raw data from calibration run!
    else{
@@ -587,6 +573,20 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrA
 	Bool_t channelsOff, Bool_t chUnderflow, Bool_t chOverflow) const
 {
   // ****************** Reconstruct one event ******************
+  
+  // CH. debug
+  /*printf("\n*************************************************\n");
+  printf(" ReconstructEventpp -> values after pedestal subtraction:\n");
+  printf(" ADCZN1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	corrADCZN1[0],corrADCZN1[1],corrADCZN1[2],corrADCZN1[3],corrADCZN1[4]);
+  printf(" ADCZP1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	corrADCZP1[0],corrADCZP1[1],corrADCZP1[2],corrADCZP1[3],corrADCZP1[4]);
+  printf(" ADCZN2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	corrADCZN2[0],corrADCZN2[1],corrADCZN2[2],corrADCZN2[3],corrADCZN2[4]);
+  printf(" ADCZP2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	corrADCZP2[0],corrADCZP2[1],corrADCZP2[2],corrADCZP2[3],corrADCZP2[4]);
+  printf(" ADCZEM1 [%1.2f] ADCZEM2 [%1.2f] \n",corrADCZEM1[0],corrADCZEM2[0]);
+  printf("*************************************************\n");*/
     
   // ---- Setting reco flags
   UInt_t recoFlag=0;
@@ -638,6 +638,17 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrA
        equalTowZP2[gi] = corrADCZP2[gi]*equalCoeffZP2[gi-5];
      }
   }
+  // Ch. debug
+  /*printf("\n ------------- EQUALIZATION -------------\n");
+  printf(" ADCZN1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	equalTowZN1[0],equalTowZN1[1],equalTowZN1[2],equalTowZN1[3],equalTowZN1[4]);
+  printf(" ADCZP1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	equalTowZP1[0],equalTowZP1[1],equalTowZP1[2],equalTowZP1[3],equalTowZP1[4]);
+  printf(" ADCZN2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	equalTowZN2[0],equalTowZN2[1],equalTowZN2[2],equalTowZN2[3],equalTowZN2[4]);
+  printf(" ADCZP2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	equalTowZP2[0],equalTowZP2[1],equalTowZP2[2],equalTowZP2[3],equalTowZP2[4]);
+  printf(" ----------------------------------------\n");*/
   
   // ******	Summed response for hadronic calorimeter (SUMMED and then CALIBRATED!)
   Float_t calibSumZN1[]={0,0}, calibSumZN2[]={0,0}, calibSumZP1[]={0,0}, calibSumZP2[]={0,0};
@@ -653,10 +664,10 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrA
        calibSumZP2[1] += equalTowZP2[gi+5];
   }
   // High gain chain
-  calibSumZN1[0] = calibSumZN1[0]*calibEne[0]/8.;
-  calibSumZP1[0] = calibSumZP1[0]*calibEne[1]/8.;
-  calibSumZN2[0] = calibSumZN2[0]*calibEne[2]/8.;
-  calibSumZP2[0] = calibSumZP2[0]*calibEne[3]/8.;
+  calibSumZN1[0] = calibSumZN1[0]*calibEne[0];
+  calibSumZP1[0] = calibSumZP1[0]*calibEne[1];
+  calibSumZN2[0] = calibSumZN2[0]*calibEne[2];
+  calibSumZP2[0] = calibSumZP2[0]*calibEne[3];
   // Low gain chain
   calibSumZN1[1] = calibSumZN1[1]*calibEne[0];
   calibSumZP1[1] = calibSumZP1[1]*calibEne[1];
@@ -667,10 +678,10 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrA
   Float_t calibTowZN1[10], calibTowZN2[10], calibTowZP1[10], calibTowZP2[10];
   for(Int_t gi=0; gi<5; gi++){
      // High gain chain
-     calibTowZN1[gi] = equalTowZN1[gi]*calibEne[0]/8.;
-     calibTowZP1[gi] = equalTowZP1[gi]*calibEne[1]/8.;
-     calibTowZN2[gi] = equalTowZN2[gi]*calibEne[2]/8.;
-     calibTowZP2[gi] = equalTowZP2[gi]*calibEne[3]/8.;
+     calibTowZN1[gi] = equalTowZN1[gi]*calibEne[0];
+     calibTowZP1[gi] = equalTowZP1[gi]*calibEne[1];
+     calibTowZN2[gi] = equalTowZN2[gi]*calibEne[2];
+     calibTowZP2[gi] = equalTowZP2[gi]*calibEne[3];
      // Low gain chain
      calibTowZN1[gi+5] = equalTowZN1[gi+5]*calibEne[0];
      calibTowZP1[gi+5] = equalTowZP1[gi+5]*calibEne[1];
@@ -679,11 +690,23 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree, Float_t* corrA
   }
   //
   Float_t sumZEM[]={0,0}, calibZEM1[]={0,0}, calibZEM2[]={0,0};
-  calibZEM1[0] = corrADCZEM1[0]*calibEne[5]/8.;
+  calibZEM1[0] = corrADCZEM1[0]*calibEne[5];
   calibZEM1[1] = corrADCZEM1[1]*calibEne[5];
-  calibZEM2[0] = corrADCZEM2[0]*calibEne[5]/8.;
+  calibZEM2[0] = corrADCZEM2[0]*calibEne[5];
   calibZEM2[1] = corrADCZEM2[1]*calibEne[5];
   for(Int_t k=0; k<2; k++) sumZEM[k] = calibZEM1[k] + calibZEM2[k];
+  // Ch. debug
+  /*printf("\n ------------- CALIBRATION -------------\n");
+  printf(" ADCZN1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	calibTowZN1[0],calibTowZN1[1],calibTowZN1[2],calibTowZN1[3],calibTowZN1[4]);
+  printf(" ADCZP1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	calibTowZP1[0],calibTowZP1[1],calibTowZP1[2],calibTowZP1[3],calibTowZP1[4]);
+  printf(" ADCZN2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	calibTowZN2[0],calibTowZN2[1],calibTowZN2[2],calibTowZN2[3],calibTowZN2[4]);
+  printf(" ADCZP2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	calibTowZP2[0],calibTowZP2[1],calibTowZP2[2],calibTowZP2[3],calibTowZP2[4]);
+  printf(" ADCZEM1 [%1.2f] ADCZEM2 [%1.2f] \n",calibZEM1[0],calibZEM2[0]);
+  printf(" ----------------------------------------\n");*/
   
   //  ******	No. of spectator and participants nucleons
   //  Variables calculated to comply with ESD structure
