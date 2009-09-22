@@ -21,7 +21,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   Int_t iJETANESD      = 0;
   Int_t iJETANMC       = 1;
   Int_t iJETANMC2       = 1;
-  Int_t iFASTJET     = 1;
+  Int_t iFASTJET     = 0;
   Int_t iDIJETAN       = 0;
   Int_t iPWG4SPECTRUM  = 0;
   Int_t iPWG4JFSYSTEMATICS  = 0;
@@ -231,8 +231,8 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     // Jet analysis from the AOD
     if (iJETAN) {
       gROOT->LoadMacro("AddTaskJets.C");
-      AliAnalysisTaskJets *jetanaAOD  = AddTaskJets("AOD","FASTJET",0.4);
-      jetanaAOD->SetNonStdBranch("jetsAODFJ");    
+      AliAnalysisTaskJets *jetanaAOD  = AddTaskJets("AOD","UA1",0.4);
+      jetanaAOD->SetNonStdBranch("jetsAOD");    
     }   
     // JETANALYSIS from the ESD
     if (iJETANESD && !iAODanalysis) {
@@ -244,15 +244,15 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     // Jet analysisMC
     if (iJETANMC ){ 
       gROOT->LoadMacro("AddTaskJets.C");
-      AliAnalysisTaskJets *jetanaMC =  AddTaskJets("AODMC","FASTJET",0.4);
+      AliAnalysisTaskJets *jetanaMC =  AddTaskJets("AODMC","UA1",0.4);
       jetanaMC->SetDebugLevel(0);
-      jetanaMC->SetNonStdBranch("jetsMCFJ");
+      jetanaMC->SetNonStdBranch("jetsMC");
     }   
     if (iJETANMC2 ){ 
       gROOT->LoadMacro("AddTaskJets.C");
       AliAnalysisTaskJets *jetanaMC2 = AddTaskJets("AODMC2","UA1",0.4);
       jetanaMC2->SetDebugLevel(0);
-      jetanaMC2->SetNonStdBranch("jetsMC2FJ");
+      jetanaMC2->SetNonStdBranch("jetsMC2");
     }   
     // Dijet analysis
     if(iDIJETAN){
