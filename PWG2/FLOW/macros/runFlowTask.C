@@ -33,9 +33,11 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 		 //const Char_t* dataDir="/data/alice2/kolk/PP/LHC09a4/81119", Int_t offset = 0)
 		 //const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0)
 		 //const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
-void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 1000000, 
-		 const Char_t* dataDir="/COMMON/COMMON/LHC09a14_0.9TeV_0.5T", Int_t offset = 0)
-                 //const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
+void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 100000, 
+		 //const Char_t* dataDir="/COMMON/COMMON/LHC09a14_0.9TeV_0.5T", Int_t offset = 0)
+		 const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
+                 //const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8158X", Int_t offset = 0)
+
 {
   TStopwatch timer;
   timer.Start();
@@ -158,7 +160,7 @@ void LoadLibraries(const anaModes mode) {
     
     //  set to debug root versus if needed
     //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a_dbg");
-    TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a");
+    //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a");
     
     
     // Connect to proof
@@ -168,33 +170,35 @@ void LoadLibraries(const anaModes mode) {
     //  TProof::Open("abilandz@alicecaf.cern.ch");
     //    TProof::Open("nkolk@alicecaf.cern.ch");
     TProof::Open("snelling@localhost");
+	// list the data available
+	//  gProof->ShowDataSets("/*/*");  
     
     // Enable the STEERBase Package
-    //    gProof->ClearPackage("STEERBase.par");
+    gProof->ClearPackage("STEERBase.par");
     gProof->UploadPackage("STEERBase.par");
     gProof->EnablePackage("STEERBase");
     // Enable the ESD Package
-    //    gProof->ClearPackage("ESD.par");
+    gProof->ClearPackage("ESD.par");
     gProof->UploadPackage("ESD.par");
     gProof->EnablePackage("ESD");
     // Enable the AOD Package
-    //    gProof->ClearPackage("AOD.par");
+    gProof->ClearPackage("AOD.par");
     gProof->UploadPackage("AOD.par");
     gProof->EnablePackage("AOD");
     // Enable the Analysis Package
-    //    gProof->ClearPackage("ANALYSIS.par");
+    gProof->ClearPackage("ANALYSIS.par");
     gProof->UploadPackage("ANALYSIS.par");
     gProof->EnablePackage("ANALYSIS");
     // Enable the Analysis Package alice
-    //    gProof->ClearPackage("ANALYSISalice.par");
+    gProof->ClearPackage("ANALYSISalice.par");
     gProof->UploadPackage("ANALYSISalice.par");
     gProof->EnablePackage("ANALYSISalice");
     // Load the PWG2 AOD
-    //    gProof->ClearPackage("PWG2AOD.par");
+    gProof->ClearPackage("PWG2AOD.par");
     gProof->UploadPackage("PWG2AOD.par");
     gProof->EnablePackage("PWG2AOD");
     // Enable the Correction Framework
-    //    gProof->ClearPackage("CORRFW.par");
+    gProof->ClearPackage("CORRFW.par");
     gProof->UploadPackage("CORRFW.par");
     gProof->EnablePackage("CORRFW");
     // Enable Flow Analysis
