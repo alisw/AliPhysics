@@ -543,37 +543,29 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
   // "xrho" - thickness*density    [g/cm^2] 
   // 
 
-  if (xk == GetX()) {
-    return kTRUE;
-  }
+  if (xk == GetX()) return kTRUE;
 
-  Double_t oldX = GetX();
-  Double_t oldY = GetY();
-  Double_t oldZ = GetZ();
-
-  Double_t bz   = GetBz();
-
-  if (!AliExternalTrackParam::PropagateTo(xk,bz)) {
-    return kFALSE;
-  }
-
-  Double_t x = GetX();
-  Double_t y = GetY();
-  Double_t z = GetZ();
-
-  if (oldX < xk) {
+  Double_t xyz0[3], // track position BEFORE propagation 
+           xyz1[3], // track position AFTER propagation 
+           b[3];    // magnetic field 
+  GetXYZ(xyz0);
+  AliTracker::GetBxByBz(xyz0, b);
+  if(!AliExternalTrackParam::PropagateToBxByBz(xk,b)) return kFALSE;
+ 
+  GetXYZ(xyz1);
+  if(xyz0[0] < xk) {
     xrho = -xrho;
     if (IsStartedTimeIntegral()) {
-      Double_t l2  = TMath::Sqrt((x-oldX)*(x-oldX) 
-                               + (y-oldY)*(y-oldY) 
-                               + (z-oldZ)*(z-oldZ));
-      Double_t crv = AliExternalTrackParam::GetC(bz);
+      Double_t l2  = TMath::Sqrt((xyz1[0]-xyz0[0])*(xyz1[0]-xyz0[0]) 
+                               + (xyz1[1]-xyz0[1])*(xyz1[1]-xyz0[1]) 
+                               + (xyz1[2]-xyz0[2])*(xyz1[2]-xyz0[2]));
+      Double_t crv = AliExternalTrackParam::GetC(b[3]);
       if (TMath::Abs(l2*crv) > 0.0001) {
         // Make correction for curvature if neccesary
-        l2 = 0.5 * TMath::Sqrt((x-oldX)*(x-oldX) 
-                             + (y-oldY)*(y-oldY));
+        l2 = 0.5 * TMath::Sqrt((xyz1[0]-xyz0[0])*(xyz1[0]-xyz0[0]) 
+                             + (xyz1[1]-xyz0[1])*(xyz1[1]-xyz0[1]));
         l2 = 2.0 * TMath::ASin(l2 * crv) / crv;
-        l2 = TMath::Sqrt(l2*l2 + (z-oldZ)*(z-oldZ));
+        l2 = TMath::Sqrt(l2*l2 + (xyz1[2]-xyz0[2])*(xyz1[2]-xyz0[2]));
       }
       AddTimeStep(l2);
     }
