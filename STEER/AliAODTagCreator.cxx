@@ -101,15 +101,14 @@ Bool_t AliAODTagCreator::ReadGridCollection(TGridResult *fresult) {
 }
 
 //______________________________________________________________________________
-Bool_t AliAODTagCreator::ReadLocalCollection(const char *localpath) {
+Bool_t AliAODTagCreator::ReadLocalCollection(const char *localpath, const char* pattern) {
   // Checks the different subdirs of the given local path and in the
-  // case where it finds an AliAODs.root file it creates the tags
+  // case where it finds an AliAOD.root file it creates the tags
   
   void *dira =  gSystem->OpenDirectory(localpath);
   Char_t fPath[256];
-  const char * dirname = 0x0;
+  const char * dirname  = 0x0;
   const char * filename = 0x0;
-  const char * pattern = "AliAODs.root"; 
 
   fChain = new TChain("aodTree");
 

@@ -48,7 +48,7 @@ class AliAODTagCreator : public AliTagCreator {
   void CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList *grpList);
 
   Bool_t ReadGridCollection(TGridResult *result);
-  Bool_t ReadLocalCollection(const char *localpath);
+  Bool_t ReadLocalCollection(const char *localpath, const char* pattern = "AliAOD.root");
   Bool_t ReadCAFCollection(const char *filename);
   void FillEventTag(AliAODEvent* aod, AliEventTag* evtTag);  
  protected:  
