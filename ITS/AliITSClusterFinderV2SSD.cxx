@@ -804,8 +804,8 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       seg->GetPadCxz(yn, yp, xt, zt);
       //cout<<yn<<" "<<yp<<" "<<xt<<" "<<zt<<endl;
       
-      if (TMath::Abs(xt)<hwSSD+0.01)
-      if (TMath::Abs(zt)<hlSSD+0.01*(neg[j].GetNd()+pos[i].GetNd())) {
+      if (TMath::Abs(xt)<hwSSD)
+      if (TMath::Abs(zt)<hlSSD) {
 	Int_t in = i*10+cnegative[i];
 	Int_t ip = j*10+cpositive[j];
 	if ((in < 10*np) && (ip < 10*nn)) {
@@ -821,7 +821,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
     }
   }
 
-  //
+  /* //
   // try to recover points out of but close to the module boundaries 
   //
   for (Int_t i=0; i<np; i++) {
@@ -855,6 +855,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       }
     }
   }
+  */
 
   //
   Float_t lp[6];
@@ -1634,8 +1635,8 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       Float_t xt, zt;
       seg->GetPadCxz(yn, yp, xt, zt);
       
-      if (TMath::Abs(xt)<hwSSD+0.01)
-      if (TMath::Abs(zt)<hlSSD+0.01*(neg[j].GetNd()+pos[i].GetNd())) {
+      if (TMath::Abs(xt)<hwSSD)
+      if (TMath::Abs(zt)<hlSSD) {
 	xbest=xt; zbest=zt; 
 
         qbest=0.5*(pos[i].GetQ()+neg[j].GetQ());
@@ -1731,7 +1732,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	    //----------
 	    // bad Pstrip is crossing the Nside 1Dcluster -> create recpoint
 	    // 
-	    if ( (TMath::Abs(xt)<hwSSD+0.01) && (TMath::Abs(zt)<hlSSD+0.01) ) {
+	    if ( (TMath::Abs(xt)<hwSSD) && (TMath::Abs(zt)<hlSSD) ) {
 	      Double_t loc[3]={xt,0.,zt},trk[3]={0.,0.,0.};
 	      mT2L->MasterToLocal(loc,trk);
 	      lp[0]=trk[1];
@@ -1788,7 +1789,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	    //----------
 	    // bad Nstrip is crossing the Pside 1Dcluster -> create recpoint
 	    // 
-	    if ( (TMath::Abs(xt)<hwSSD+0.01) && (TMath::Abs(zt)<hlSSD+0.01) ) {
+	    if ( (TMath::Abs(xt)<hwSSD) && (TMath::Abs(zt)<hlSSD) ) {
 	      Double_t loc[3]={xt,0.,zt},trk[3]={0.,0.,0.};
 	      mT2L->MasterToLocal(loc,trk);
 	      lp[0]=trk[1];
@@ -1841,7 +1842,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	else yP = yN - (7.6/1.9);
 	seg->GetPadCxz(yP, yN, xt, zt);	
 	
-	if ( (TMath::Abs(xt)<hwSSD+0.01) && (TMath::Abs(zt)<hlSSD+0.01) ) {
+	if ( (TMath::Abs(xt)<hwSSD) && (TMath::Abs(zt)<hlSSD) ) {
 	  Double_t loc[3]={xt,0.,zt},trk[3]={0.,0.,0.};
 	  mT2L->MasterToLocal(loc,trk);
 	  lp[0]=trk[1];
@@ -1890,7 +1891,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	else yN = yP + (7.6/1.9);
 	seg->GetPadCxz(yP, yN, xt, zt);	
 	
-	if ( (TMath::Abs(xt)<hwSSD+0.01) && (TMath::Abs(zt)<hlSSD+0.01) ) {
+	if ( (TMath::Abs(xt)<hwSSD) && (TMath::Abs(zt)<hlSSD) ) {
 	  Double_t loc[3]={xt,0.,zt},trk[3]={0.,0.,0.};
 	  mT2L->MasterToLocal(loc,trk);
 	  lp[0]=trk[1];
