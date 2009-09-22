@@ -46,10 +46,14 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius)
    jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s%s%s",jr,jf,cRadius));
    TString type = mgr->GetInputEventHandler()->GetDataType();
    if (type == "AOD") jetana->SetNonStdBranch(Form("jets%s",jf));
-
    
-   AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist%s%s%s",jr,jf,cRadius), TList::Class(),
-							     AliAnalysisManager::kOutputContainer, Form("jethist%s_%s%s.root",jr,jf,cRadius));
+   TString c_jr(jr);
+   c_jr.ToLower();
+   TString c_jf(jf);
+   c_jf.ToLower();
+
+   AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist%s%s%s",c_jr.Data(),c_jf.Data(),cRadius), TList::Class(),
+							     AliAnalysisManager::kOutputContainer, Form("jethist_%s_%s%s.root",c_jr.Data(),c_jf.Data(),cRadius));
    // Connect jet finder to task.
    jetana->SetJetFinder(jetFinder);
    jetana->SetConfigFile("");
@@ -96,6 +100,13 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetRparam(0.4); // setup parameters                                  
     if(radius>0)jh->SetRparam(radius);
     jh->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
+    // tmp CKB for checking with leticia
+    jh->SetRparam(0.2); // setup parameters 
+    jh->SetPtMin(0.); 
+    jh->SetRapRange(-0.9,0.9); 
+    jh->SetGhostArea(0.01); 
+    jh->SetGhostEtaMax(7.);
+    // BKC
     jetFinder = new AliFastJetFinder();
     if (jh) jetFinder->SetJetHeader(jh);
     break;
