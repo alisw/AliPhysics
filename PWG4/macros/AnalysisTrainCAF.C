@@ -8,24 +8,25 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
 
 
   Bool_t debug         = kTRUE;
-  Bool_t useMC         = kTRUE;
+  Bool_t useMC         = kFALSE;
   Bool_t readTR        = kFALSE;
-  Bool_t bPROOF        = kTRUE;
+  Bool_t bPROOF        = kFALSE;
   Bool_t bLOCALPAR     = kFALSE;  // flag that swtiches on loading of local par files insead of loading libs, needed for grid and local testing
 
     
-  Int_t iAODanalysis   = 0;
+  Int_t iAODanalysis   = 1;
   Int_t iAODhandler    = 1;
   Int_t iESDfilter     = 1;  // Only active if iAODanalysis=0
   Int_t iJETAN         = 1;
-  Int_t iJETANESD      = 1;
+  Int_t iJETANESD      = 0;
   Int_t iJETANMC       = 1;
   Int_t iJETANMC2       = 1;
-  Int_t iDIJETAN       = 1;
-  Int_t iPWG4SPECTRUM  = 1;
-  Int_t iPWG4JFSYSTEMATICS  = 1;
-  Int_t iPWG4JETCORRECTION  = 1;
-  Int_t iPWG4THREEJETS  = 1;
+  Int_t iFASTJET     = 1;
+  Int_t iDIJETAN       = 0;
+  Int_t iPWG4SPECTRUM  = 0;
+  Int_t iPWG4JFSYSTEMATICS  = 0;
+  Int_t iPWG4JETCORRECTION  = 0;
+  Int_t iPWG4THREEJETS  = 0;
   Int_t iPWG4UE        = 0;
   Int_t iPWG4PID        = 0;
 
@@ -33,7 +34,6 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     useMC = kFALSE;
     readTR = kFALSE;
     iESDfilter = 0;
-    iMUONfilter = 0;
   }    
   if (iJETAN) iESDfilter=1;
   if (iESDfilter) iAODhandler=1;
@@ -42,8 +42,10 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   TString dataset(ds);
   TChain *chain = 0;
   // CKB quick hack for local analysis
-  // gROOT->LoadMacro("CreateESDChain.C");
-  // TChain *chain = CreateESDChain("tmp.txt",1000);
+  gROOT->LoadMacro("CreateESDChain.C");
+  TChain *chain = CreateChain("aodTree","AOD_LHC09a1.txt",100);
+  //  chain = new TChain("aodTree");
+  //  chain->Add("/Users/kleinb/bigdisk/1/LHC09a3/001/AliAOD.root");
 
  
   printf("==================================================================\n");
@@ -56,6 +58,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   if (iJETANESD)    printf("=  Jet analysis from ESD                                         =\n");
   if (iJETANMC)     printf("=  Jet analysis from Kinematics                                  =\n");
   if (iJETANMC2)     printf("=  Jet analysis 2 from Kinematics                               =\n");
+  if (iFASTJET)     printf("=  Loading FastJet                               =\n");
   if (iDIJETAN)     printf("=  DiJet analysis                                                 =\n");
   if (iPWG4SPECTRUM)printf("=  PWG4 Jet spectrum analysis                                    =\n");
   if (iPWG4JFSYSTEMATICS)printf("=  PWG4 Jet Finder systematics                                   =\n");
@@ -76,7 +79,12 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
   gSystem->Load("libGeom.so");
   gSystem->Load("libVMC.so");
   gSystem->Load("libPhysics.so");
-  
+  if(iFASTJET){
+    gSystem->Load("libCGAL.so");
+    gSystem->Load("libfastjet.so");
+    gSystem->Load("libSISConePlugin.so");  
+  }
+
 
   // Reset user processes if CAF if not responding anymore
   // TProof::Reset("alicecaf"); 
@@ -119,6 +127,10 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     if (iJETAN||iJETANESD||iJETANMC||iJETANMC2) {
       gProof->UploadPackage("JETAN.par");
       gProof->EnablePackage("JETAN");
+      if(iFASTJET){
+	gProof->UploadPackage("FASTJETAN.par");
+	gProof->EnablePackage("FASTJETAN"); 
+      }
     }   
     // --- Enable particle correlation analysis
     if (iPWG4UE||iPWG4SPECTRUM||iPWG4JFSYSTEMATICS||iPWG4JETCORRECTION||iPWG4THREEJETS) {
@@ -146,7 +158,10 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
       SetupPar("AOD");	   
       SetupPar("ANALYSIS"); 
       SetupPar("ANALYSISalice");
-      if (iJETAN||iJETANESD||iJETANMC||iJETANMC2)SetupPar("JETAN");	   
+      if (iJETAN||iJETANESD||iJETANMC||iJETANMC2){
+	SetupPar("JETAN");	   
+	if(iFASTJET)	SetupPar("FASTJETAN");	   
+      }
       if (iPWG4UE||iPWG4SPECTRUM||iPWG4JFSYSTEMATICS)SetupPar("PWG4JetTasks");
     }
     else{
@@ -157,7 +172,10 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
       gSystem->Load("libANALYSIS");
       gSystem->Load("libANALYSISalice");  
       // --- Enable the JETAN Package
-      if (iJETAN||iJETANESD||iJETANMC||iJETANMC2) gSystem->Load("libJETAN");
+      if (iJETAN||iJETANESD||iJETANMC||iJETANMC2){
+	gSystem->Load("libJETAN");
+	gSystem->Load("libFASTJETAN");
+      }
       // --- Enable particle correlation analysis
       if (iPWG4UE||iPWG4SPECTRUM||iPWG4JFSYSTEMATICS||iPWG4THREEJETS)gSystem->Load("libPWG4JetTasks"); 
     }
@@ -193,7 +211,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     if (iAODhandler) {
        // AOD output handler
        AliAODHandler* aodHandler   = new AliAODHandler();
-       aodHandler->SetFillAOD(kFALSE);
+       //      aodHandler->SetFillAOD(kFALSE);
        mgr->SetOutputEventHandler(aodHandler);       
        aodHandler->SetOutputFileName(Form("AliAODs_pwg4_%07d-%07d.root",nOffset,nOffset+nEvents));
        cout_aod = mgr->GetCommonOutputContainer();
@@ -213,27 +231,28 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     // Jet analysis from the AOD
     if (iJETAN) {
       gROOT->LoadMacro("AddTaskJets.C");
-      AliAnalysisTaskJets *jetanaAOD  = AddTaskJets("AOD","UA1");
+      AliAnalysisTaskJets *jetanaAOD  = AddTaskJets("AOD","FASTJET",0.4);
+      jetanaAOD->SetNonStdBranch("jetsAODFJ");    
     }   
     // JETANALYSIS from the ESD
     if (iJETANESD && !iAODanalysis) {
       gROOT->LoadMacro("AddTaskJets.C");
       AliAnalysisTaskJets *jetanaESD = AddTaskJets("ESD","UA1");
-      jetanaESD->SetDebugLevel(10);
+      jetanaESD->SetDebugLevel(0);
       jetanaESD->SetNonStdBranch("jetsESD");    
     }   
     // Jet analysisMC
-    if (iJETANMC && useMC){ 
+    if (iJETANMC ){ 
       gROOT->LoadMacro("AddTaskJets.C");
-      AliAnalysisTaskJets *jetanaMC =  AddTaskJets("MC","UA1MC");
-      jetanaMC->SetDebugLevel(10);
-      jetanaMC->SetNonStdBranch("jetsMC");
+      AliAnalysisTaskJets *jetanaMC =  AddTaskJets("AODMC","FASTJET",0.4);
+      jetanaMC->SetDebugLevel(0);
+      jetanaMC->SetNonStdBranch("jetsMCFJ");
     }   
-    if (iJETANMC2 && useMC){ 
+    if (iJETANMC2 ){ 
       gROOT->LoadMacro("AddTaskJets.C");
-      AliAnalysisTaskJets *jetanaMC2 = AddTaskJets("MC2","UA1");
-      jetanaMC2->SetDebugLevel(10);
-      jetanaMC2->SetNonStdBranch("jetsMC2");
+      AliAnalysisTaskJets *jetanaMC2 = AddTaskJets("AODMC2","UA1",0.4);
+      jetanaMC2->SetDebugLevel(0);
+      jetanaMC2->SetNonStdBranch("jetsMC2FJ");
     }   
     // Dijet analysis
     if(iDIJETAN){
@@ -243,12 +262,13 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     if (iPWG4SPECTRUM) {
       gROOT->LoadMacro("AddTaskJetSpectrum.C");
       AliAnalysisTaskJetSpectrum* pwg4spec = AddTaskJetSpectrum();
-      pwg4spec->SetDebugLevel(10);
+      pwg4spec->SetAnalysisType(0);
+      pwg4spec->SetDebugLevel(0);
     }   
     if (iPWG4JFSYSTEMATICS) {
       gROOT->LoadMacro("AddTaskJFSystematics.C");
-      AliAnalysisTaskJFSystematics* pwg4jfs = AddTaskJFSystematics();
-      pwg4jfs->SetDebugLevel(11);
+      AliAnalysisTaskJFSystematics* pwg4jfs = AddTaskJFSystematics("jetsAOD","jetsMC");
+      pwg4jfs->SetDebugLevel(0);
     }   
     if (iPWG4JETCORRECTION) {
       gROOT->LoadMacro("AddTaskJetCorrections.C");
@@ -274,7 +294,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
     if (mgr->InitAnalysis()) {
        mgr->PrintStatus();
        if(bPROOF)mgr->StartAnalysis("proof",dataset.Data(), nEvents,nOffset);
-       else mgr->StartAnalysis("local",chain);
+       else mgr->StartAnalysis("local",chain,100);
     }   
 }
 TChain *CreateChainFromCollection(const char* xmlfile, const char *treeName="esdTree",Int_t nFiles = 0)
