@@ -219,6 +219,14 @@ AliRawReader* AliRawReader::Create(const char *uri)
       return NULL;
     }
   }
+  else if (fileURI.BeginsWith("amore://")) {
+    // A special raw-data URL used in case
+    // the raw-data reading is steered from
+    // ouside, i.e. from AMORE
+    fileURI.ReplaceAll("amore://","");
+    AliInfoClass("Creating raw-reader in order to read events sent by AMORE");
+    rawReader = new AliRawReaderDate((void *)NULL);
+  }
   else if (fileURI.BeginsWith("collection://")) {
     fileURI.ReplaceAll("collection://","");
     AliInfoClass(Form("Creating raw-reader in order to read raw-data files collection defined in %s",fileURI.Data()));

@@ -3486,3 +3486,18 @@ void AliReconstruction::Abort(const char *method, EAbort what)
   Info(mess, whyMess.Data());
 }
 
+//______________________________________________________________________________
+Bool_t AliReconstruction::ProcessEvent(void* event)
+{
+  // Method that is used in case the event loop
+  // is steered from outside, for example by AMORE
+  // 'event' is a pointer to the DATE event in the memory
+
+  if (fRawReader) delete fRawReader;
+  fRawReader = new AliRawReaderDate(event);
+  fStatus = ProcessEvent(fRunLoader->GetNumberOfEvents());  
+  delete fRawReader;
+  fRawReader = NULL;
+
+  return fStatus;
+}

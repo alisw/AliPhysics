@@ -160,11 +160,14 @@ public:
   };
   static Int_t   GetDetIndex(const char * detector);
 
+protected:
+  virtual Bool_t ProcessEvent(void* event);
+  void           InitRun(const char* input);
+
 private:
   AliReconstruction(const AliReconstruction& rec);
   AliReconstruction& operator = (const AliReconstruction& rec);
 
-  void           InitRun(const char* input);
   void           InitRawReader(const char* input);
   void           InitCDB();
   Bool_t         InitGRP();
