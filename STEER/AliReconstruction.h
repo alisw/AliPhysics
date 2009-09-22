@@ -181,6 +181,7 @@ private:
   Bool_t         CleanESD(AliESDEvent *esd);
   Bool_t         FillESD(AliESDEvent*& esd, const TString& detectors);
   Bool_t         FillTriggerESD(AliESDEvent*& esd);
+  Bool_t         FillTriggerScalers(AliESDEvent*& esd);
   Bool_t         FillRawEventHeaderESD(AliESDEvent*& esd);
 
   Bool_t         IsSelected(TString detName, TString& detectors) const;

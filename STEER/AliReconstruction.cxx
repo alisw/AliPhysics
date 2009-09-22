@@ -1733,6 +1733,11 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
+    // Always fill scalers
+    if (!FillTriggerScalers(fesd)) {
+       if (fStopOnError) {CleanUp(); return kFALSE;}
+    }
+    
 
     ffile->cd();
 
@@ -2603,6 +2608,11 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
 	  }
     }
   }
+  return kTRUE;
+}
+//_____________________________________________________________________________
+Bool_t AliReconstruction::FillTriggerScalers(AliESDEvent*& esd)
+{
   //Scalers
   //fRunScalers->Print();
   if(fRunScalers && fRunScalers->CheckRunScalers()){
