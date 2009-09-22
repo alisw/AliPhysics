@@ -199,9 +199,6 @@ void AliAnalysisTaskJets::Init()
   // Initialise Jet Analysis
   if(fOpt == 0) fJetFinder->Init();
   else fJetFinder->InitTask(fChain); // V2
-  
-  // Write header information to local file
-  fJetFinder->WriteHeaders();
 }
 
 
