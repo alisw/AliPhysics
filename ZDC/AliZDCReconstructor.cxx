@@ -810,10 +810,10 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
        calibSumZP2[1] += equalTowZP2[gi+5];
   }
   // High gain chain
-  calibSumZN1[0] = calibSumZN1[0]*calibEne[0]/8.;
-  calibSumZP1[0] = calibSumZP1[0]*calibEne[1]/8.;
-  calibSumZN2[0] = calibSumZN2[0]*calibEne[2]/8.;
-  calibSumZP2[0] = calibSumZP2[0]*calibEne[3]/8.;
+  calibSumZN1[0] = calibSumZN1[0]*calibEne[0]*8.;
+  calibSumZP1[0] = calibSumZP1[0]*calibEne[1]*8.;
+  calibSumZN2[0] = calibSumZN2[0]*calibEne[2]*8.;
+  calibSumZP2[0] = calibSumZP2[0]*calibEne[3]*8.;
   // Low gain chain
   calibSumZN1[1] = calibSumZN1[1]*calibEne[0];
   calibSumZP1[1] = calibSumZP1[1]*calibEne[1];
@@ -821,9 +821,9 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   calibSumZP2[1] = calibSumZP2[1]*calibEne[3];
   //
   Float_t sumZEM[]={0,0}, calibZEM1[]={0,0}, calibZEM2[]={0,0};
-  calibZEM1[0] = corrADCZEM1[0]*calibEne[5]/8.;
+  calibZEM1[0] = corrADCZEM1[0]*calibEne[5]*8.;
   calibZEM1[1] = corrADCZEM1[1]*calibEne[5];
-  calibZEM2[0] = corrADCZEM2[0]*calibEne[5]/8.;
+  calibZEM2[0] = corrADCZEM2[0]*calibEne[5]*8.;
   calibZEM2[1] = corrADCZEM2[1]*calibEne[5];
   for(Int_t k=0; k<2; k++) sumZEM[k] = calibZEM1[k] + calibZEM2[k];
     
@@ -831,10 +831,10 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   Float_t calibTowZN1[10], calibTowZN2[10], calibTowZP1[10], calibTowZP2[10];
   for(Int_t gi=0; gi<5; gi++){
      // High gain chain
-     calibTowZN1[gi] = equalTowZN1[gi]*calibEne[0]/8.;
-     calibTowZP1[gi] = equalTowZP1[gi]*calibEne[1]/8.;
-     calibTowZN2[gi] = equalTowZN2[gi]*calibEne[2]/8.;
-     calibTowZP2[gi] = equalTowZP2[gi]*calibEne[3]/8.;
+     calibTowZN1[gi] = equalTowZN1[gi]*calibEne[0]*8.;
+     calibTowZP1[gi] = equalTowZP1[gi]*calibEne[1]*8.;
+     calibTowZN2[gi] = equalTowZN2[gi]*calibEne[2]*8.;
+     calibTowZP2[gi] = equalTowZP2[gi]*calibEne[3]*8.;
      // Low gain chain
      calibTowZN1[gi+5] = equalTowZN1[gi+5]*calibEne[0];
      calibTowZP1[gi+5] = equalTowZP1[gi+5]*calibEne[1];
