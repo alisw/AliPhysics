@@ -630,11 +630,15 @@ void AliTRDarrayADC::SubtractBaseline(Short_t baseline)
   // if the value is equal or greater than baseline
   //
 
+  Short_t value = 0, status = 0;
   for(Int_t b=0; b<fNAdim; b++)
     {
       //if(fADC[b]>=baseline)
       //{
-	  fADC[b]=fADC[b]-baseline;
+    value = fADC[b] & 0x03ff;
+    status = fADC[b] & 0xfc00;
+    value -= baseline;
+	  fADC[b]= value | status;
       //}
     }
 }

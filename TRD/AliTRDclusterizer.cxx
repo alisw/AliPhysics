@@ -562,8 +562,6 @@ Bool_t AliTRDclusterizer::MakeClusters()
     // This is to take care of switched off super modules
     if (!digitsIn->HasData()) continue;
     digitsIn->Expand();
-    // Subtract the ADC baseline
-    digitsIn->SubtractBaseline(fDigitsManager->GetDigitsParam()->GetADCbaseline());
     digitsIn->DeleteNegatives();  // Restore digits array to >=0 values
     AliTRDSignalIndex* indexes = fDigitsManager->GetIndexes(i);
     if (indexes->IsAllocated() == kFALSE){
@@ -637,7 +635,6 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
     fTrackletContainer[1] = new UInt_t[kTrackletChmb]; 
   }
 
-  AliTRDrawStreamBase::SetSubtractBaseline(10);
   AliTRDrawStreamBase *input = AliTRDrawStreamBase::GetRawStream(rawReader);
   if(fReconstructor->IsHLT())
     input->SetSharedPadReadout(kFALSE);
