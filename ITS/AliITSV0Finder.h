@@ -36,10 +36,12 @@ public:
 
   TTreeSRedirector *GetDebugStreamer() {return fDebugStreamer;}
 
+private:
   TTreeSRedirector *fDebugStreamer;      //!debug streamer
  
 
-private:
+  AliITSV0Finder(const AliITSV0Finder& obj);
+  AliITSV0Finder& operator=(const AliITSV0Finder& obj);
  
   ClassDef(AliITSV0Finder,0)   // on-the-fly V0 finder for AliITStrackerMI
 };
