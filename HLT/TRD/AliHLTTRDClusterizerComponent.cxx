@@ -340,8 +340,9 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 	HLTDebug( "BD ptr 0x%x, offset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), spec);
 	offset = totalSize;
       }
-      else 
+      else{
 	HLTDebug("Array of clusters is empty!");
+      }
     }
   fReconstructor->SetClusters(0x0);
 

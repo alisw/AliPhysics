@@ -162,7 +162,7 @@ void AliHLTTRDTrack::InitArrays()
 //============================================================================
 void AliHLTTRDTrack::Print(Bool_t printTracklets) const
 {
-  printf("--hltTrack-- addr 0x%p(%i); fSize %i\n", this, this, fSize);
+  printf("--hltTrack-- addr %p; fSize %i\n", this, fSize);
   printf("   fX = %f; fAlpha = %f\n", fX, fAlpha);
   printf("   ");
   

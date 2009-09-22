@@ -73,6 +73,6 @@ void AliHLTTRDCluster::ExportTRDCluster(AliTRDcluster* const outCluster) const
 //============================================================================
 void AliHLTTRDCluster::Print() const
 {
-  printf("   --hltCluster-- addr %p; sizeof(*this) %i\n", (void*)this, sizeof(*this));
+  printf("   --hltCluster-- addr %p; sizeof(*this) %i\n", (void*)this, (int)sizeof(*this));
   printf("     fX %f; fY %f; fZ %f\n",fX,fY,fZ);
 }

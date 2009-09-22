@@ -292,4 +292,5 @@ Int_t AliHLTTRDCalibrationComponent::ShipDataToFXS(const AliHLTComponentEventDat
 {
   //fTRDCalibraFillHisto->DestroyDebugStreamer();
   PushToFXS((TObject*)fOutArray, "TRD", "GAINDRIFTPRF");
+  return 0;
 }
