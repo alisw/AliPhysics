@@ -186,7 +186,7 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 		fgAODTracks->SetName("tracks");
 		handler->AddBranch("TClonesArray", &fgAODTracks);
 	    }    
-	    if ((handler->NeedsVerticesBranchReplication()) && !(fgAODVertices))
+	    if ((handler->NeedsVerticesBranchReplication() || merging) && !(fgAODVertices))
 	    {
 		if (fDebug > 1) AliInfo("Replicating vertices branch\n");
 		fgAODVertices = new TClonesArray("AliAODVertex",500);
