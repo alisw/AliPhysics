@@ -22,6 +22,8 @@
 //  -------------------------------------------------------------
 //  W. Ferrarese + P. Cerello Feb 2008
 //  INFN Torino
+//  Melinda Siciliano Aug 2008
+
 
 // --- ROOT system ---
 #include <TH2.h>
@@ -53,9 +55,11 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kITS), "ITS Quality Assurance Dat
 fkOnline(kMode),
 fSubDetector(subDet),
 fLDC(ldc),
+fRunNumber(0),
 fSPDDataMaker(NULL),
 fSDDDataMaker(NULL),
 fSSDDataMaker(NULL)
+
 {
   //ctor used to discriminate OnLine-Offline analysis
   if(fSubDetector < 0 || fSubDetector > 3) {
@@ -91,9 +95,11 @@ AliQADataMakerRec(),
 fkOnline(qadm.fkOnline),
 fSubDetector(qadm.fSubDetector),
 fLDC(qadm.fLDC),
+fRunNumber(0),
 fSPDDataMaker(NULL),
 fSDDDataMaker(NULL),
 fSSDDataMaker(NULL)
+
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
@@ -125,14 +131,17 @@ void AliITSQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
   // launch the QA checking
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    SetEventSpecie(specie) ; 
+    //SetEventSpecie(specie) ; 
+    //AliQAv1::Instance()->SetEventSpecie(specie);
+    if(AliQAv1::Instance()->IsEventSpecieSet(specie)){
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list[specie])\n"); 
-    if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list[specie]);
-    if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list[specie]);
-    if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list[specie]);
+    if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list[/*GetEventSpecie()*/specie]);
+    if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list[/*GetEventSpecie()*/specie]);
+    if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list[/*GetEventSpecie()*/specie]);
   
   
     AliQAChecker *qac = AliQAChecker::Instance();
+    qac->SetRunNumber(GetRunNumber());
     AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
     Int_t subdet=GetSubDet();
     qacb->SetSubDet(subdet);
@@ -146,8 +155,10 @@ void AliITSQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	qacb->SetDetTaskOffset(subdet,offset);
       }
 
-    qac->Run( AliQAv1::kITS , task, list); 
-
+    qac->Run( AliQAv1::kITS , task, list);
+ 
+    }
+    
   }
 }
 
@@ -188,6 +199,7 @@ void AliITSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // Fill QA for RAW   
   //return ; 
 
+  SetRunNumber(rawReader->GetRunNumber());
 
   if(fSubDetector == 0 || fSubDetector == 1)  {
     fSPDDataMaker->MakeRaws(rawReader) ; 

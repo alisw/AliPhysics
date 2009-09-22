@@ -33,12 +33,13 @@ public:
   virtual Int_t MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
-
+  virtual void CreateTheMap();
 
   virtual ~AliITSQASDDDataMakerRec(); // dtor
   Int_t GetOffset(AliQAv1::TASKINDEX_t task);
   void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset, Int_t specie = 0);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
+
 
 private:
 
@@ -50,7 +51,7 @@ private:
   static const Int_t fgkmodoffset = 240;   // number of SPD modules
   static const Int_t fgknAnode = 256;      // anode per half-module
   static const Int_t fgknSide =2;          // side per module
-  static const Int_t fgkDDLIDshift = 0;    // necessary option until RawStream Table is complete
+  //static const Int_t fgkDDLIDshift = 0;    // necessary option until RawStream Table is complete
   static const Int_t fgkLADDonLAY3 = 14;   // number of ladder on layer 3
   static const Int_t fgkLADDonLAY4 = 22;   // number of ladder on layer 4
 
@@ -66,12 +67,15 @@ private:
   Int_t   fTimeBinSize;			      // time bin width in number of clocks
   AliITSDDLModuleMapSDD  *fDDLModuleMap;      // SDD Detector configuration for the decoding
 
-  Bool_t fAnodeMap[fgknSDDmodules][fgknSide][fgknAnode];  // Array of anode status 1 = ok, 0 = bad
+  Bool_t  fkAnodeMap[fgknSDDmodules][fgknSide][fgknAnode];  // Array of anode status 1 = ok, 0 = bad
   Int_t   fGoodAnodes;
   Int_t   fBadAnodes;
   Int_t   fGoodAnodesCurrent;
   Int_t   fBadAnodesCurrent;
-  ClassDef(AliITSQASDDDataMakerRec,9)         // description 
+
+
+
+  ClassDef(AliITSQASDDDataMakerRec,10)         // description 
 
 };
 
