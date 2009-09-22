@@ -21,8 +21,16 @@ if EN_HLT_RCU
 RCU_DIR=RCU
 endif
 
+if EN_HLT_CALO
+CALO_DIR=CALO
+endif
+
 if EN_HLT_PHOS
 PHOS_DIR=PHOS
+endif
+
+if EN_HLT_EMCAL
+EMCAL_DIR=EMCAL
 endif
 
 if EN_HLT_TRD
@@ -49,10 +57,6 @@ if EN_HLT_ITS
 ITS_DIR=ITS
 endif
 
-if EN_HLT_EMCAL
-EMCAL_DIR=EMCAL
-endif
-
 if EN_HLT_GLOBAL
 GLOBAL_DIR=global
 endif
@@ -70,14 +74,15 @@ SUBDIRS 		= BASE \
 			  $(RCU_DIR) \
 			  $(SAMPLE_DIR) \
 			  $(TPC_DIR) \
+			  $(CALO_DIR) \
 			  $(PHOS_DIR) \
+                          $(EMCAL_DIR) \
 			  $(TRD_DIR) \
 			  $(FMD_DIR) \
 			  $(MUON_DIR) \
 			  $(COMP_DIR) \
                           $(TRIGGER_DIR) \
                           $(ITS_DIR) \
-                          $(EMCAL_DIR) \
                           $(GLOBAL_DIR) \
 			  $(JET_DIR) \
 			  $(QA_DIR) \

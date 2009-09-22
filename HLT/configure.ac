@@ -727,6 +727,58 @@ AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIRCU_LIBS])
 
 dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_CALO],[hlt calo(rimeter) library])
+  
+ALICALO_LIBS=
+CHECK_HLTMODULE([calo],
+		[], [$ALIROOT_CPPFLAGS],
+		[RAWDatasim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], [$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS],
+		[PHOSUtils PHOSbase PHOSrec PHOSsim PHOSshuttle], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...missing.headers"
+  enable_calo=$enable_module
+elif test "x$enable_module" = "xforce"; then
+  enable_calo="yes"
+else
+  have_alicalorawstream=no
+  if test ! "x$have_aliroot" = "xno" ; then
+    AC_LANG_PUSH(C++)
+    save_CPPFLAGS="$CPPFLAGS"
+    # this can not be used as AliCaloRawStream.h indirectly depends on TString.h
+    #AC_CHECK_HEADERS([AliCaloRawStream.h], [have_alicalorawstream=yes])
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/PHOS"
+    AC_MSG_CHECKING([for AliCaloRawStream.h usability])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <TString.h>
+  				        #include <AliCaloRawStream.h>], 
+                                       [int i])],
+                                       [AC_DEFINE(HAVE_ALICALORAWSTREAM)
+				        have_alicalorawstream=yes], 
+  				       [])
+    AC_MSG_RESULT([$have_alicalorawstream])
+    AC_LANG_POP(C++)
+    CPPFLAGS="$save_CPPFLAGS"
+  fi
+  if test "x$have_alicalorawstream" != "xyes"; then
+    enable_calo="no...requires.AliRoot>v4-05-07"
+  else
+    enable_calo=$enable_module
+  fi
+fi
+
+if test "x$enable_calo" = "xyes" ; then 
+  AC_DEFINE(HLT_CALO)
+  ALICALO_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_calo
+fi
+AM_CONDITIONAL(EN_HLT_CALO, test x$enable_calo = xyes)
+AC_MSG_CHECKING([whether to compile CALO library])
+AC_MSG_RESULT([$enable_module])
+AC_SUBST([ALICALO_LIBS])
+
+dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_PHOS],[hlt phos library])
   
 ALIPHOS_LIBS=
@@ -756,14 +808,14 @@ else
                                        [AC_DEFINE(HAVE_ALICALORAWSTREAM)
 				        have_alicalorawstream=yes], 
   				       [])
-    AC_MSG_RESULT([$have_aliphosrecoparam])
+    AC_MSG_RESULT([$have_alicalorawstream])
     AC_MSG_CHECKING([for required EMC functionality in AliPHOSRecoParam.h ])
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliPHOSRecoParam.h>], 
                                        [AliPHOSRecoParam param;
 				        param.GetEMCClusteringThreshold()])],
                                        [have_aliphosrecoparam=yes], 
   				       [AC_DEFINE(HAVE_NOT_PHOSRECOPARAMEMC)])
-    AC_MSG_RESULT([$have_alicalorawstream])
+    AC_MSG_RESULT([$have_aliphosrecoparam])
     AC_LANG_POP(C++)
     CPPFLAGS="$save_CPPFLAGS"
   fi
@@ -784,6 +836,36 @@ AM_CONDITIONAL(EN_HLT_PHOS, test x$enable_phos = xyes)
 AC_MSG_CHECKING([whether to compile PHOS library])
 AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIPHOS_LIBS])
+
+dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_EMCAL],[hlt emcal library])
+
+ALIEMCAL_LIBS=
+CHECK_HLTMODULE([emcal],
+		[], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/EMCAL],
+		[RAWDatasim], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[EMCALrec EMCALsim EMCALbase], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...header.missing"
+  enable_emcal=$enable_module
+elif test "x$enable_module" = "xforce"; then
+  enable_emcal="yes"
+else
+  enable_emcal=$enable_module
+fi
+
+if test "x$enable_emcal" = "xyes" ; then 
+  AC_DEFINE(HLT_EMCAL)
+  ALIEMCAL_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_emcal
+fi
+AM_CONDITIONAL(EN_HLT_EMCAL, test x$enable_emcal = xyes)
+AC_MSG_CHECKING([whether to compile EMCAL library])
+AC_MSG_RESULT([$enable_module])
+AC_SUBST([ALIEMCAL_LIBS])
 
 dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_TRD],[hlt trd library])
@@ -1114,36 +1196,6 @@ AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIITS_LIBS])
 
 dnl ------------------------------------------------------------------
-AH_TEMPLATE([HLT_EMCAL],[hlt emcal library])
-
-ALIEMCAL_LIBS=
-CHECK_HLTMODULE([emcal],
-		[], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/EMCAL],
-		[RAWDatasim], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[EMCALrec EMCALsim EMCALbase], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
-		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
-
-if test "x$enable_module" = "xmissheader"; then
-  enable_module="no...header.missing"
-  enable_emcal=$enable_module
-elif test "x$enable_module" = "xforce"; then
-  enable_emcal="yes"
-else
-  enable_emcal=$enable_module
-fi
-
-if test "x$enable_emcal" = "xyes" ; then 
-  AC_DEFINE(HLT_EMCAL)
-  ALIEMCAL_LIBS=$ALIHLTMODULE_LIBS
-else
-  enable_module=$enable_emcal
-fi
-AM_CONDITIONAL(EN_HLT_EMCAL, test x$enable_emcal = xyes)
-AC_MSG_CHECKING([whether to compile EMCAL library])
-AC_MSG_RESULT([$enable_module])
-AC_SUBST([ALIEMCAL_LIBS])
-
-dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_COMP],[hlt comp library])
 
 ALICOMP_LIBS=
@@ -1340,9 +1392,20 @@ if test "x$enable_tpc" = "xyes"; then
 		   ])
 fi
 
+AC_MSG_NOTICE([compile CALO library: $enable_calo])
+if test "x$enable_calo" = "xyes"; then 
+  AC_CONFIG_FILES([CALO/Makefile
+                   CALO/test/Makefile])
+fi
+
 AC_MSG_NOTICE([compile PHOS library: $enable_phos])
 if test "x$enable_phos" = "xyes"; then 
   AC_CONFIG_FILES([PHOS/Makefile])
+fi
+
+AC_MSG_NOTICE([compile EMCAL library: $enable_emcal])
+if test "x$enable_emcal" = "xyes"; then 
+  AC_CONFIG_FILES([EMCAL/Makefile])
 fi
 
 AC_MSG_NOTICE([compile TRD library: $enable_trd])
@@ -1363,11 +1426,6 @@ fi
 AC_MSG_NOTICE([compile ITS library: $enable_its])
 if test "x$enable_its" = "xyes"; then 
   AC_CONFIG_FILES([ITS/Makefile])
-fi
-
-AC_MSG_NOTICE([compile EMCAL library: $enable_emcal])
-if test "x$enable_emcal" = "xyes"; then 
-  AC_CONFIG_FILES([EMCAL/Makefile])
 fi
 
 AC_MSG_NOTICE([compile trigger library: $enable_trigger])
