@@ -17,8 +17,8 @@
 // Class for HF corrections as a function of many variables
 // 6 Steps introduced: MC, MC Acc, Reco, Reco Acc, Reco Acc + ITS Cl, 
 // Reco Acc + ITS Cl + PPR cuts
-// 11 variables used: pt, y, cosThetaStar, ptPi, ptK, ct,
-// dca, d0Pi, d0K, d0Pixd0K, cosPointingAngle
+// 12 variables used: pt, y, cosThetaStar, ptPi, ptK, ct,
+// dca, d0Pi, d0K, d0Pixd0K, cosPointingAngle, phi
 //
 //-----------------------------------------------------------------------
 // Author : C. Zampolli, CERN
@@ -173,7 +173,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	fCFManager->SetEventInfo(aodEvent);
 	
 	// MC-event selection
-	Double_t containerInput[11] ;
+	Double_t containerInput[12] ;
         
 	//loop on the MC event
 	
