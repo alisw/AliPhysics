@@ -71,8 +71,8 @@ Bool_t AliHMPIDtrack::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
   if (xk == GetX()) {
     return kTRUE;
   }
-  Double_t bz   = -GetBz();
-  if (!AliExternalTrackParam::PropagateTo(xk,bz)) {
+  Double_t b[3]; GetBxByBz(b);
+  if (!AliExternalTrackParam::PropagateToBxByBz(xk,b)) {
     return kFALSE;
   }
   if (!AliExternalTrackParam::CorrectForMeanMaterial(xx0,xrho,GetMass())) { 
@@ -105,7 +105,7 @@ Int_t AliHMPIDtrack::GetProlongation(Double_t xk, Double_t &y, Double_t &z)
   // Return 0 if it does not exist
   //  
 
-  Double_t bz = -GetBz();
+  Double_t bz = GetBz();
 
   if (!AliExternalTrackParam::GetYAt(xk,bz,y)) {
     return 0;
@@ -191,14 +191,14 @@ Bool_t AliHMPIDtrack::PropagateTo(const AliCluster3D *c) {
   Double_t  covyz[3]={c->GetSigmaY2(), c->GetSigmaYZ(), c->GetSigmaZ2()};
   Double_t covxyz[3]={c->GetSigmaX2(), c->GetSigmaXY(), c->GetSigmaXZ()};
   Double_t bz=-GetBz();
-  
+    
   if(!AliExternalTrackParam::PropagateTo(p, covyz, covxyz, bz)) return kFALSE;
   if(IsStartedTimeIntegral()) 
     {
       Double_t d = TMath::Sqrt((GetX()-oldX)*(GetX()-oldX) + (GetY()-oldY)*(GetY()-oldY) + (GetZ()-oldZ)*(GetZ()-oldZ));
       if (GetX()<oldX) d=-d;
       AddTimeStep(d);
-  }
+    }
   return kTRUE;
 }//PropagateTo()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

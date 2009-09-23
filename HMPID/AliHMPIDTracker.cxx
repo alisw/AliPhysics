@@ -204,7 +204,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 
     Double_t radius = (pParam->Lors2Mars(ipCh,pParam->SizeAllX()/2,pParam->SizeAllY()/2)).Mag(); 
     
-    if(!AliTracker::PropagateTrackTo(hmpTrk,radius,pTrk->GetMass(),1,kFALSE)) continue;
+    if(!AliTracker::PropagateTrackToBxByBz(hmpTrk,radius,pTrk->GetMass(),1,kFALSE)) continue;
               
     if(!hmpTrk->PropagateTo(bestHmpCluster)) continue;
 
