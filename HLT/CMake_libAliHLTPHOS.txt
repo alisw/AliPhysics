@@ -17,8 +17,6 @@ PHOS/AliHLTPHOSRawAnalyzerComponentv2.cxx
 PHOS/AliHLTPHOSRawAnalyzerComponentv3.cxx 
 PHOS/AliHLTPHOSRawAnalyzerCrude.cxx
 PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.cxx
-PHOS/AliHLTPHOSRawAnalyzerCrudeComponentv2.cxx
-PHOS/AliHLTPHOSRawAnalyzerCrudeComponentv3.cxx
 PHOS/AliHLTPHOSRawAnalyzerKLevel.cxx
 PHOS/AliHLTPHOSRawAnalyzerLMS.cxx
 PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx
@@ -40,15 +38,10 @@ PHOS/AliHLTPHOSESDMaker.cxx
 PHOS/AliHLTPHOSESDMakerComponent.cxx
 PHOS/AliHLTPHOSRcuCalibrationProcessorComponent.cxx
 PHOS/AliHLTPHOSRcuCalibrationProcessor.cxx
-PHOS/AliHLTPHOSPattern.cxx
-PHOS/AliHLTPHOSRcuAltroPatternTest.cxx
-PHOS/AliHLTPHOSRcuAltroPatternTestComponent.cxx
 PHOS/AliHLTPHOSModuleCalibrationProcessorComponent.cxx
 PHOS/AliHLTPHOSRcuDAComponent.cxx
 PHOS/AliHLTPHOSRcuProperties.cxx
 PHOS/AliHLTPHOSUtilities.cxx
-PHOS/AliHLTPHOSFourier.cxx
-PHOS/AliHLTPHOSFourierComponent.cxx
 PHOS/AliHLTPHOSHistogramProducer.cxx
 PHOS/AliHLTPHOSHistogramProducerComponent.cxx
 PHOS/AliHLTPHOSMonitorTriggerComponent.cxx

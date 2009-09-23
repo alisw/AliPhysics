@@ -11,12 +11,10 @@ include $(MODDIR)/hlt.conf
 CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSClusterizer.h \
 		  AliHLTPHOSClusterizerComponent.h \
-		  AliHLTPHOSDataCorruptor.h \
 		  AliHLTPHOSDefinitions.h \
 		  AliHLTPHOSEmcCalibData.h \
 		  AliHLTPHOSPhysicsAnalyzer.h \
 		  AliHLTPHOSProcessor.h \
-		  AliHLTPHOSPulseGenerator.h \
 		  AliHLTPHOSRawAnalyzer.h \
 		  AliHLTPHOSRawAnalyzerChiSquareFit.h \
 		  AliHLTPHOSRawAnalyzerComponent.h \
@@ -24,10 +22,6 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSRawAnalyzerComponentv3.h \
 		  AliHLTPHOSRawAnalyzerCrude.h \
 		  AliHLTPHOSRawAnalyzerCrudeComponent.h \
-		  AliHLTPHOSRawAnalyzerCrudeComponentv2.h \
-		  AliHLTPHOSRawAnalyzerCrudeComponentv3.h \
-		  AliHLTPHOSRawAnalyzerKLevel.h \
-		  AliHLTPHOSRawAnalyzerLMS.h \
 		  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
 		  AliHLTPHOSRcuHistogramProducer.h \
 		  AliHLTPHOSRcuHistogramProducerComponent.h \
@@ -47,15 +41,10 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSESDMakerComponent.h \
 		  AliHLTPHOSRcuCalibrationProcessorComponent.h \
 		  AliHLTPHOSRcuCalibrationProcessor.h \
-		  AliHLTPHOSPattern.h \
-		  AliHLTPHOSRcuAltroPatternTest.h \
-		  AliHLTPHOSRcuAltroPatternTestComponent.h \
 		  AliHLTPHOSModuleCalibrationProcessorComponent.h \
 		  AliHLTPHOSRcuDAComponent.h \
                   AliHLTPHOSRcuProperties.h \
 		  AliHLTPHOSUtilities.h \
-		  AliHLTPHOSFourier.h \
-		  AliHLTPHOSFourierComponent.h \
 		  AliHLTPHOSHistogramProducer.h \
 		  AliHLTPHOSHistogramProducerComponent.h \
 		  AliHLTPHOSMonitorTriggerComponent.h \
@@ -79,17 +68,11 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSModuleCellEnergyDataStruct.h\
 		  AliHLTPHOSRcuCellEnergyDataStruct.h \
 		  AliHLTPHOSValidCellDataStruct.h\
-		  AliHLTPHOSDataHeaderStruct.h \
-		  AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h \
-		  AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
 		  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \
-		  AliHLTPHOSRcuCellAverageEnergyDataStruct.h \
 		  AliHLTPHOSRecPointDataStruct.h \
 		  AliHLTPHOSRecPointContainerStruct.h \
 		  AliHLTPHOSDigitContainerDataStruct.h \
-		  AliHLTPHOSRcuDigitContainerDataStruct.h \
 		  AliHLTPHOSDigitDataStruct.h \
-		  AliHLTPHOSRcuFFTDataStruct.h \
 		  AliHLTPHOSChannelDataStruct.h \
 		  AliHLTPHOSChannelDataHeaderStruct.h
 
