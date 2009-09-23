@@ -173,10 +173,9 @@ void Config()
                                                                                 
                                                                                 
 // Field (L3 0.4 T)
-    AliMagF *field = new AliMagF("Maps","Maps", 2, 1., 1., 10., smag);
-    field->SetL3ConstField(0); //Using const. field in the barrel
-    TGeoGlobalMagField::Instance()->SetField(field);
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
     rl->CdGAFile();
+
  
   Int_t   iABSO    = 0; 
   Int_t   iACORDE  = 0; 
@@ -247,7 +246,7 @@ void Config()
     {
         //=================== SHIL parameters ============================
 
-        AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
+        AliSHIL *SHIL = new AliSHILv3("SHIL", "Shielding Version 2");
     }
 
 
