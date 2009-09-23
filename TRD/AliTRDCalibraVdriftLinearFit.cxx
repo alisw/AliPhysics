@@ -221,8 +221,8 @@ TH2F* AliTRDCalibraVdriftLinearFit::GetLinearFitterHisto(Int_t detector, Bool_t 
     name +=  fVersion;
     
     TH2F *lfdv = new TH2F((const Char_t *)name,(const Char_t *) name
-			  ,40,-1.0,1.0,50
-			  ,-2.0,2.0);
+			  ,18,-0.9,0.9,24
+			  ,-1.2,1.2);
     lfdv->SetXTitle("tan(phi_{track})");
     lfdv->SetYTitle("dy/dt");
     lfdv->SetZTitle("Number of clusters");

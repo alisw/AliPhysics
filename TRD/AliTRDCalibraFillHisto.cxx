@@ -289,6 +289,7 @@ AliTRDCalibraFillHisto::~AliTRDCalibraFillHisto()
     TLinearFitter *f = (TLinearFitter*)fLinearFitterArray.At(idet);
     if(f) { delete f;}
   }
+  if(fLinearVdriftFit) delete fLinearVdriftFit;
   if (fGeo) {
     delete fGeo;
   }
@@ -454,11 +455,12 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos(Int_t nboftimebin)
     }
   }
   if (fLinearFitterOn) {
-    //fLinearFitterArray.Expand(540);
-    fLinearFitterArray.SetName("ArrayLinearFitters");
-    fEntriesLinearFitter = new Int_t[540];
-    for(Int_t k = 0; k < 540; k++){
-      fEntriesLinearFitter[k] = 0;
+    if(fLinearFitterDebugOn) {
+      fLinearFitterArray.SetName("ArrayLinearFitters");
+      fEntriesLinearFitter = new Int_t[540];
+      for(Int_t k = 0; k < 540; k++){
+	fEntriesLinearFitter[k] = 0;
+      }
     }
     fLinearVdriftFit = new AliTRDCalibraVdriftLinearFit();
   }
@@ -853,11 +855,11 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtracklet(const AliTRDtrack *t, Int_t
     //Add to the linear fitter of the detector
     if( TMath::Abs(snp) <  1.){
       Double_t x = tnp-dzdx*tnt; 
-      (GetLinearFitter(detector,kTRUE))->AddPoint(&x,dydt);
       if(fLinearFitterDebugOn) {
-	fLinearVdriftFit->Update(detector,x,pars[1]);
+	(GetLinearFitter(detector,kTRUE))->AddPoint(&x,dydt);
+	fEntriesLinearFitter[detector]++;
       }
-      fEntriesLinearFitter[detector]++;
+      fLinearVdriftFit->Update(detector,x,pars[1]);
     }
   }
   
@@ -1007,11 +1009,11 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
     //Add to the linear fitter of the detector
     if( TMath::Abs(snp) <  1.){
       Double_t x = tnp-dzdx*tnt; 
-      (GetLinearFitter(fDetectorPreviousTrack,kTRUE))->AddPoint(&x,dydt);
       if(fLinearFitterDebugOn) {
-	fLinearVdriftFit->Update(fDetectorPreviousTrack,x,pars[1]);
+	(GetLinearFitter(fDetectorPreviousTrack,kTRUE))->AddPoint(&x,dydt);
+	fEntriesLinearFitter[fDetectorPreviousTrack]++;
       }
-      fEntriesLinearFitter[fDetectorPreviousTrack]++;
+      fLinearVdriftFit->Update(fDetectorPreviousTrack,x,pars[1]);
     }
   }
   
@@ -2725,7 +2727,7 @@ void AliTRDCalibraFillHisto::Write2d(const Char_t *filename, Bool_t append)
     }
   }
   if(fLinearFitterOn){
-    AnalyseLinearFitter();
+    if(fLinearFitterDebugOn) AnalyseLinearFitter();
     f.WriteTObject(fLinearVdriftFit);
   }
    
@@ -3187,4 +3189,3 @@ void AliTRDCalibraFillHisto::AnalyseLinearFitter()
     }
   }
 }
-
