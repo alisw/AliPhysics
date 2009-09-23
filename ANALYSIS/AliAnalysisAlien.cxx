@@ -322,17 +322,20 @@ void AliAnalysisAlien::CdWork()
    } 
    TString homedir = gGrid->GetHomeDirectory();
    TString workdir = homedir + fGridWorkingDir;
-   if (!gGrid->Cd(workdir)) {
-      gGrid->Cd(homedir);
-      if (gGrid->Mkdir(workdir)) {
-         gGrid->Cd(fGridWorkingDir);
-         Info("CreateJDL", "\n#####   Created alien working directory %s", fGridWorkingDir.Data());
-      } else {
-         Warning("CreateJDL", "Working directory %s cannot be created.\n Using %s instead.",
-                 workdir.Data(), homedir.Data());
-         fGridWorkingDir = "";
-      }          
-   }      
+   if (DirectoryExists(workdir)) {
+      gGrid->Cd(workdir);
+      return;
+   }   
+   // Work directory not existing - create it
+   gGrid->Cd(homedir);
+   if (gGrid->Mkdir(workdir)) {
+      gGrid->Cd(fGridWorkingDir);
+      Info("CreateJDL", "\n#####   Created alien working directory %s", fGridWorkingDir.Data());
+   } else {
+      Warning("CreateJDL", "Working directory %s cannot be created.\n Using %s instead.",
+              workdir.Data(), homedir.Data());
+      fGridWorkingDir = "";
+   }          
 }
 
 //______________________________________________________________________________
@@ -396,7 +399,7 @@ Bool_t AliAnalysisAlien::CheckInputData()
       Error("CkeckInputData", "AliEn path to base data directory must be set.\n = Use: SetGridDataDir()");
       return kFALSE;
    }
-   if (!gGrid->Cd(fGridDataDir)) {
+   if (!DirectoryExists(fGridDataDir)) {
       Error("CheckInputData", "Data directory %s not existing.", fGridDataDir.Data());
       return kFALSE;
    }
@@ -430,8 +433,8 @@ Bool_t AliAnalysisAlien::CheckInputData()
       TIter next(arr);
       while ((os=(TObjString*)next())) {
          path = Form("%s/%s ", fGridDataDir.Data(), os->GetString().Data());
-         if (!gGrid->Cd(path)) {
-            Warning("CheckInputData", "Run number %s not found in path: %s", os->GetString().Data(), path.Data());
+         if (!DirectoryExists(path)) {
+            Warning("CheckInputData", "Run number %s not found in path: <%s>", os->GetString().Data(), path.Data());
             continue;
          }
          path = Form("%s/%s.xml", workdir.Data(),os->GetString().Data());
@@ -458,8 +461,8 @@ Bool_t AliAnalysisAlien::CheckInputData()
       Info("CheckDataType", "Using run range [%d, %d]", fRunRange[0], fRunRange[1]);
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
          path = Form("%s/%d ", fGridDataDir.Data(), irun);
-         if (!gGrid->Cd(path)) {
-            Warning("CheckInputData", "Run number %d not found in path: %s", irun, path.Data());
+         if (!DirectoryExists(path)) {
+//            Warning("CheckInputData", "Run number %d not found in path: <%s>", irun, path.Data());
             continue;
          }
          path = Form("%s/%d.xml", workdir.Data(),irun);
@@ -515,11 +518,11 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       if (fInputFiles && fInputFiles->GetEntries()) return kTRUE;
       // Make a single data collection from data directory.
       path = fGridDataDir;
-      if (!gGrid->Cd(path)) {
+      if (!DirectoryExists(path)) {
          Error("CreateDataset", "Path to data directory %s not valid",fGridDataDir.Data());
          return kFALSE;
       }   
-      CdWork();
+//      CdWork();
       if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
       else file = Form("%s.xml", gSystem->BaseName(path));
       if (gSystem->AccessPathName(file)) {
@@ -529,7 +532,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
          command += " ";
          command += pattern;
          command += conditions;
-         printf("command: %s\n", command.Data());
+         Printf("command: %s", command.Data());
          TGridResult *res = gGrid->Command(command);
          if (res) delete res;
          // Write standard output to file
@@ -554,8 +557,8 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       TIter next(arr);
       while ((os=(TObjString*)next())) {
          path = Form("%s/%s ", fGridDataDir.Data(), os->GetString().Data());
-         if (!gGrid->Cd(path)) continue;
-         CdWork();
+         if (!DirectoryExists(path)) continue;
+//         CdWork();
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
          else file = Form("%s.xml", os->GetString().Data());
          // If local collection file does not exist, create it via 'find' command.
@@ -591,7 +594,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                cbase = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"%s\", 1000000);",file.Data()));
             } else {
                cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"%s\", 1000000);",file.Data()));
-               printf("   Merging collection <%s> into masterjob input...\n", file.Data());
+               Printf("   Merging collection <%s> into masterjob input...", file.Data());
                cbase->Add(cadd);
                delete cadd;
             }
@@ -603,7 +606,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                Info("CreateDataset", "\n#####   Dataset %s exist. Skipping creation...", schunk.Data());
                continue;
             }        
-            printf("Exporting merged collection <%s> and copying to AliEn.\n", schunk.Data());
+            Printf("Exporting merged collection <%s> and copying to AliEn.", schunk.Data());
             cbase->ExportXML(Form("file://%s", schunk.Data()),kFALSE,kFALSE, schunk, "Merged runs");
             TFile::Cp(Form("file:%s",file.Data()), Form("alien://%s/%s",workdir.Data(), file.Data()));
             if (!FileExists(schunk)) {
@@ -618,8 +621,8 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       // Process a full run range.
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
          path = Form("%s/%d ", fGridDataDir.Data(), irun);
-         if (!gGrid->Cd(path)) continue;
-         CdWork();
+         if (!DirectoryExists(path)) continue;
+//         CdWork();
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
          else file = Form("%d.xml", irun);
          if (FileExists(file) && fNrunsPerMaster<2 && !TestBit(AliAnalysisGrid::kTest)) {
@@ -657,7 +660,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             // Check if the collection for the chunk exist locally.
             Int_t nchunk = (nruns-1)/fNrunsPerMaster;
             if (FileExists(fInputFiles->At(nchunk)->GetName())) continue;
-            printf("   Merging collection <%s> into %d runs chunk...\n",file.Data(),fNrunsPerMaster);
+            Printf("   Merging collection <%s> into %d runs chunk...",file.Data(),fNrunsPerMaster);
             if (((nruns-1)%fNrunsPerMaster) == 0) {
                schunk = Form("%d", irun);
                cbase = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"%s\", 1000000);",file.Data()));
@@ -674,7 +677,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                Info("CreateDataset", "\n#####   Dataset %s exist. Skipping creation...", schunk.Data());
                continue;
             }        
-            printf("Exporting merged collection <%s> and copying to AliEn.\n", schunk.Data());
+            Printf("Exporting merged collection <%s> and copying to AliEn.", schunk.Data());
             cbase->ExportXML(Form("file://%s", schunk.Data()),kFALSE,kFALSE, schunk, "Merged runs");
             if (FileExists(schunk)) {
                Info("CreateDataset", "\n#####   Dataset %s exist. Skipping copy...", schunk.Data());
@@ -728,7 +731,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
          error = kTRUE;
       } else {
          if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s", workdir.Data(), fGridOutputDir.Data());
-         if (!gGrid->Cd(fGridOutputDir)) {
+         if (!DirectoryExists(fGridOutputDir)) {
             if (gGrid->Mkdir(fGridOutputDir)) {
                Info("CreateJDL", "\n#####   Created alien output directory %s", fGridOutputDir.Data());
             } else {
@@ -960,6 +963,35 @@ Bool_t AliAnalysisAlien::FileExists(const char *lfn)
 }
 
 //______________________________________________________________________________
+Bool_t AliAnalysisAlien::DirectoryExists(const char *dirname)
+{
+// Returns true if directory exists. Can be also a path.
+   if (!gGrid) return kFALSE;
+   // Check if dirname is a path
+   TString dirstripped = dirname;
+   dirstripped = dirstripped.Strip();
+   dirstripped = dirstripped.Strip(TString::kTrailing, '/');
+   TString dir = gSystem->BaseName(dirstripped);
+   dir += "/";
+   TString path = gSystem->DirName(dirstripped);
+   TGridResult *res = gGrid->Ls(path, "-F");
+   if (!res) return kFALSE;
+   TIter next(res);
+   TMap *map;
+   TObject *obj;
+   while ((map=dynamic_cast<TMap*>(next()))) {
+      obj = map->GetValue("name");
+      if (!obj) break;
+      if (dir == obj->GetName()) {
+         delete res;
+         return kTRUE;
+      }
+   }
+   delete res;
+   return kFALSE;
+}      
+
+//______________________________________________________________________________
 void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &is_collection, Bool_t &is_xml, Bool_t &use_tags)
 {
 // Check input data type.
@@ -1116,67 +1148,67 @@ Bool_t AliAnalysisAlien::IsCollection(const char *lfn) const
 void AliAnalysisAlien::Print(Option_t *) const
 {
 // Print current plugin settings.
-   printf("### AliEn analysis plugin current settings ###\n");
-   printf("=   Production mode:______________________________ %d\n", fProductionMode);
-   printf("=   Version of API requested: ____________________ %s\n", fAPIVersion.Data());
-   printf("=   Version of ROOT requested: ___________________ %s\n", fROOTVersion.Data());
-   printf("=   Version of AliRoot requested: ________________ %s\n", fAliROOTVersion.Data());
+   Printf("### AliEn analysis plugin current settings ###");
+   Printf("=   Production mode:______________________________ %d", fProductionMode);
+   Printf("=   Version of API requested: ____________________ %s", fAPIVersion.Data());
+   Printf("=   Version of ROOT requested: ___________________ %s", fROOTVersion.Data());
+   Printf("=   Version of AliRoot requested: ________________ %s", fAliROOTVersion.Data());
    if (fUser.Length()) 
-   printf("=   User running the plugin: _____________________ %s\n", fUser.Data());
-   printf("=   Grid workdir relative to user $HOME: _________ %s\n", fGridWorkingDir.Data());
-   printf("=   Grid output directory relative to workdir: ___ %s\n", fGridOutputDir.Data());
-   printf("=   Data base directory path requested: __________ %s\n", fGridDataDir.Data());
-   printf("=   Data search pattern: _________________________ %s\n", fDataPattern.Data());
-   printf("=   Input data format: ___________________________ %s\n", fInputFormat.Data());
+   Printf("=   User running the plugin: _____________________ %s", fUser.Data());
+   Printf("=   Grid workdir relative to user $HOME: _________ %s", fGridWorkingDir.Data());
+   Printf("=   Grid output directory relative to workdir: ___ %s", fGridOutputDir.Data());
+   Printf("=   Data base directory path requested: __________ %s", fGridDataDir.Data());
+   Printf("=   Data search pattern: _________________________ %s", fDataPattern.Data());
+   Printf("=   Input data format: ___________________________ %s", fInputFormat.Data());
    if (fRunNumbers.Length()) 
-   printf("=   Run numbers to be processed: _________________ %s\n", fRunNumbers.Data());
+   Printf("=   Run numbers to be processed: _________________ %s", fRunNumbers.Data());
    if (fRunRange[0])
-   printf("=   Run range to be processed: ___________________ %d-%d\n", fRunRange[0], fRunRange[1]);
+   Printf("=   Run range to be processed: ___________________ %d-%d", fRunRange[0], fRunRange[1]);
    if (!fRunRange[0] && !fRunNumbers.Length()) {
       TIter next(fInputFiles);
       TObject *obj;
       TString list;
       while ((obj=next())) list += obj->GetName();
-      printf("=   Input files to be processed: _________________ %s\n", list.Data());
+      Printf("=   Input files to be processed: _________________ %s", list.Data());
    }
    if (TestBit(AliAnalysisGrid::kTest))
-   printf("=   Number of input files used in test mode: _____ %d\n", fNtestFiles);
-   printf("=   List of output files to be registered: _______ %s\n", fOutputFiles.Data());
-   printf("=   List of outputs going to be archived: ________ %s\n", fOutputArchive.Data());
-   printf("=   List of outputs that should not be merged: ___ %s\n", fMergeExcludes.Data());
-   printf("=====================================================================\n");
-   printf("=   Job price: ___________________________________ %d\n", fPrice);
-   printf("=   Time to live (TTL): __________________________ %d\n", fTTL);
-   printf("=   Max files per subjob: ________________________ %d\n", fSplitMaxInputFileNumber);
+   Printf("=   Number of input files used in test mode: _____ %d", fNtestFiles);
+   Printf("=   List of output files to be registered: _______ %s", fOutputFiles.Data());
+   Printf("=   List of outputs going to be archived: ________ %s", fOutputArchive.Data());
+   Printf("=   List of outputs that should not be merged: ___ %s", fMergeExcludes.Data());
+   Printf("=====================================================================");
+   Printf("=   Job price: ___________________________________ %d", fPrice);
+   Printf("=   Time to live (TTL): __________________________ %d", fTTL);
+   Printf("=   Max files per subjob: ________________________ %d", fSplitMaxInputFileNumber);
    if (fMaxInitFailed>0) 
-   printf("=   Max number of subjob fails to kill: __________ %d\n", fMaxInitFailed);
+   Printf("=   Max number of subjob fails to kill: __________ %d", fMaxInitFailed);
    if (fMasterResubmitThreshold>0) 
-   printf("=   Resubmit master job if failed subjobs >_______ %d\n", fMasterResubmitThreshold);
+   Printf("=   Resubmit master job if failed subjobs >_______ %d", fMasterResubmitThreshold);
    if (fNrunsPerMaster>0)
-   printf("=   Number of runs per master job: _______________ %d\n", fNrunsPerMaster);
-   printf("=   Number of files in one chunk to be merged: ___ %d\n", fMaxMergeFiles);
-   printf("=   Name of the generated execution script: ______ %s\n",fExecutable.Data());
+   Printf("=   Number of runs per master job: _______________ %d", fNrunsPerMaster);
+   Printf("=   Number of files in one chunk to be merged: ___ %d", fMaxMergeFiles);
+   Printf("=   Name of the generated execution script: ______ %s",fExecutable.Data());
    if (fArguments.Length()) 
-   printf("=   Arguments for the execution script: __________ %s\n",fArguments.Data());
-   printf("=   Name of the generated analysis macro: ________ %s\n",fAnalysisMacro.Data());
-   printf("=   User analysis files to be deployed: __________ %s\n",fAnalysisSource.Data());
-   printf("=   Additional libs to be loaded or souces to be compiled runtime: <%s>\n",fAdditionalLibs.Data());
-   printf("=   Master jobs split mode: ______________________ %s\n",fSplitMode.Data());
+   Printf("=   Arguments for the execution script: __________ %s",fArguments.Data());
+   Printf("=   Name of the generated analysis macro: ________ %s",fAnalysisMacro.Data());
+   Printf("=   User analysis files to be deployed: __________ %s",fAnalysisSource.Data());
+   Printf("=   Additional libs to be loaded or souces to be compiled runtime: <%s>",fAdditionalLibs.Data());
+   Printf("=   Master jobs split mode: ______________________ %s",fSplitMode.Data());
    if (fDatasetName)
-   printf("=   Custom name for the dataset to be created: ___ %s\n", fDatasetName.Data());
-   printf("=   Name of the generated JDL: ___________________ %s\n", fJDLName.Data());
+   Printf("=   Custom name for the dataset to be created: ___ %s", fDatasetName.Data());
+   Printf("=   Name of the generated JDL: ___________________ %s", fJDLName.Data());
    if (fIncludePath.Data())
-   printf("=   Include path for runtime task compilation: ___ %s\n", fIncludePath.Data());
+   Printf("=   Include path for runtime task compilation: ___ %s", fIncludePath.Data());
    if (fCloseSE.Length())
-   printf("=   Force job outputs to storage element: ________ %s\n", fCloseSE.Data());
+   Printf("=   Force job outputs to storage element: ________ %s", fCloseSE.Data());
    if (fFriendChainName.Length())
-   printf("=   Open friend chain file on worker: ____________ %s\n", fFriendChainName.Data());
+   Printf("=   Open friend chain file on worker: ____________ %s", fFriendChainName.Data());
    if (fPackages) {
       TIter next(fPackages);
       TObject *obj;
       TString list;
       while ((obj=next())) list += obj->GetName();
-      printf("=   Par files to be used: ________________________ %s\n", list.Data());
+      Printf("=   Par files to be used: ________________________ %s", list.Data());
    }   
 }
 
@@ -1232,7 +1264,7 @@ Bool_t AliAnalysisAlien::MergeOutputs()
    }   
    // Get the output path
    if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("/%s/%s/%s", gGrid->GetHomeDirectory(), fGridWorkingDir.Data(), fGridOutputDir.Data());
-   if (!gGrid->Cd(fGridOutputDir)) {
+   if (!DirectoryExists(fGridOutputDir)) {
       Error("MergeOutputs", "Grid output directory %s not found. Terminate() will NOT be executed", fGridOutputDir.Data());
       return kFALSE;
    }
@@ -1263,7 +1295,7 @@ Bool_t AliAnalysisAlien::MergeOutputs()
           fMergeExcludes.Contains(output_file.Data())) continue;
       // Perform a 'find' command in the output directory, looking for registered outputs    
       command = Form("find %s/ *%s", fGridOutputDir.Data(), output_file.Data());
-      printf("command: %s\n", command.Data());
+      Printf("command: %s", command.Data());
       TGridResult *res = gGrid->Command(command);
       if (!res) continue;
       TFileMerger *fm = 0;
@@ -1284,11 +1316,11 @@ Bool_t AliAnalysisAlien::MergeOutputs()
             }
             output_chunk = output_file;
             output_chunk.ReplaceAll(".root", Form("_%04d.root", count_chunk));
-            printf("%s\n", output_chunk.Data());
+            Printf("%s", output_chunk.Data());
             count_chunk++;
             if (gSystem->AccessPathName(output_chunk)) continue;
             // Merged file with chunks up to <count_chunk> found
-            printf("Resume merging of <%s> from <%s>\n", output_file.Data(), output_chunk.Data());
+            Printf("Resume merging of <%s> from <%s>", output_file.Data(), output_chunk.Data());
             previous_chunk = output_chunk;
             break;
          }
@@ -1466,7 +1498,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
    if (!fRunNumbers.Length() && !fRunRange[0]) {
       // Submit a given xml or a set of runs
       res = gGrid->Command(Form("submit %s", fJDLName.Data()));
-      printf("*************************** %s\n",Form("submit %s", fJDLName.Data()));
+      Printf("*************************** %s",Form("submit %s", fJDLName.Data()));
       if (res) {
          const char *cjobId = res->GetKey(0,"jobId");
          if (!cjobId) {
@@ -1526,14 +1558,14 @@ void AliAnalysisAlien::SubmitNext()
    if (!fNsubmitted) ntosubmit = 1;
    else {
       TString status = GetJobStatus(firstmaster, lastmaster, nrunning, nwaiting, nerror, ndone);
-      printf("=== master %d: %s\n", lastmaster, status.Data());
+      Printf("=== master %d: %s", lastmaster, status.Data());
       // If last master not split, just return
       if (status != "SPLIT") {iscalled = kFALSE; return;}
       // No more than 100 waiting jobs
       if (nwaiting>100) {iscalled = kFALSE; return;}
       npermaster = (nrunning+nwaiting+nerror+ndone)/fNsubmitted;      
       if (npermaster) ntosubmit = (100-nwaiting)/npermaster;
-      printf("=== WAITING(%d) RUNNING(%d) DONE(%d) OTHER(%d) NperMaster=%d => to submit %d jobs\n", 
+      Printf("=== WAITING(%d) RUNNING(%d) DONE(%d) OTHER(%d) NperMaster=%d => to submit %d jobs", 
              nwaiting, nrunning, ndone, nerror, npermaster, ntosubmit);
    }
    Int_t nmasterjobs = fInputFiles->GetEntries();
@@ -1542,7 +1574,7 @@ void AliAnalysisAlien::SubmitNext()
       if (fNsubmitted>=nmasterjobs) {iscalled = kFALSE; return;}
       TString query;
       query = Form("submit %s %s %03d", fJDLName.Data(), fInputFiles->At(fNsubmitted)->GetName(), fNsubmitted);
-      printf("********* %s\n",query.Data());
+      Printf("********* %s",query.Data());
       res = gGrid->Command(query);
       if (res) {
          TString cjobId1 = res->GetKey(0,"jobId");
@@ -1951,6 +1983,8 @@ void AliAnalysisAlien::WriteExecutable()
    if (copy) {
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
+      TString bindir = Form("%s/bin", workdir.Data());
+      if (!DirectoryExists(bindir)) gGrid->Mkdir(bindir);
       workdir += fGridWorkingDir;
       TString executable = Form("%s/bin/%s", gGrid->GetHomeDirectory(), fExecutable.Data());
       if (FileExists(executable)) gGrid->Rm(executable);
@@ -2074,6 +2108,12 @@ void AliAnalysisAlien::WriteValidationScript()
          out << "fi" << endl;
       }   
       delete arr;
+      out << "if ! [ -f outputs_valid ] ; then" << endl;
+      out << "   error=1" << endl;
+      out << "   echo \"Output files were not validated by the analysis manager\" >> stdout" << endl;
+      out << "   echo \"Output files were not validated by the analysis manager\" >> stderr" << endl;
+      out << "fi" << endl;
+      
       out << "if [ $error = 0 ] ; then" << endl;
       out << "   echo \"* ----------------   Job Validated  ------------------*\""  << out_stream << endl;
       out << "fi" << endl;

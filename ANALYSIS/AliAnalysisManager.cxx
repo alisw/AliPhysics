@@ -173,7 +173,7 @@ AliAnalysisManager::~AliAnalysisManager()
 Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
 {
 // Read one entry of the tree or a whole branch.
-   if (fDebug > 0) printf("== AliAnalysisManager::GetEntry(%lld)\n", entry);
+   if (fDebug > 0) Printf("== AliAnalysisManager::GetEntry(%lld)", entry);
    fCurrentEntry = entry;
    return fTree ? fTree->GetTree()->GetEntry(entry, getall) : 0;
 }
@@ -189,7 +189,7 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
    Bool_t init = kFALSE;
    if (!tree) return kFALSE; // Should not happen - protected in selector caller
    if (fDebug > 0) {
-      printf("->AliAnalysisManager::Init(%s)\n", tree->GetName());
+      Printf("->AliAnalysisManager::Init(%s)", tree->GetName());
    }
    // Call InitTree of EventHandler
    if (fOutputEventHandler) {
@@ -249,7 +249,7 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
    }
    top->SetData(tree);
    if (fDebug > 0) {
-      printf("<-AliAnalysisManager::Init(%s)\n", tree->GetName());
+      Printf("<-AliAnalysisManager::Init(%s)", tree->GetName());
    }
    return kTRUE;
 }
@@ -260,7 +260,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
   // The SlaveBegin() function is called after the Begin() function.
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
-   if (fDebug > 0) printf("->AliAnalysisManager::SlaveBegin()\n");
+   if (fDebug > 0) Printf("->AliAnalysisManager::SlaveBegin()");
    static Bool_t isCalled = kFALSE;
    Bool_t init = kFALSE;
    Bool_t initOK = kTRUE;
@@ -272,7 +272,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
    if (fOutputEventHandler) {
       if (fMode == kProofAnalysis) {
          // Merging AOD's in PROOF via TProofOutputFile
-         if (fDebug > 1) printf("   Initializing AOD output file %s...\n", fOutputEventHandler->GetOutputFileName());
+         if (fDebug > 1) Printf("   Initializing AOD output file %s...", fOutputEventHandler->GetOutputFileName());
          init = fOutputEventHandler->Init("proof");
          if (!init) msg = "Failed to initialize output handler on worker";
       } else {
@@ -321,7 +321,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
       task->CreateOutputObjects();
       if (curdir) curdir->cd();
    }
-   if (fDebug > 0) printf("<-AliAnalysisManager::SlaveBegin()\n");
+   if (fDebug > 0) Printf("<-AliAnalysisManager::SlaveBegin()");
 }
 
 //______________________________________________________________________________
@@ -340,7 +340,7 @@ Bool_t AliAnalysisManager::Notify()
       return kFALSE;
    }   
    
-   if (fDebug > 0) printf("->AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
+   if (fDebug > 0) Printf("->AliAnalysisManager::Notify() file: %s", curfile->GetName());
    TIter next(fTasks);
    AliAnalysisTask *task;
    // Call Notify for all tasks
@@ -359,7 +359,7 @@ Bool_t AliAnalysisManager::Notify()
    if (fMCtruthEventHandler) {
        fMCtruthEventHandler->Notify(curfile->GetName());
    }
-   if (fDebug > 0) printf("<-AliAnalysisManager::Notify()\n");
+   if (fDebug > 0) Printf("<-AliAnalysisManager::Notify()");
    return kTRUE;
 }    
 
@@ -383,7 +383,7 @@ Bool_t AliAnalysisManager::Process(Long64_t entry)
   //  The entry is always the local entry number in the current tree.
   //  Assuming that fChain is the pointer to the TChain being processed,
   //  use fChain->GetTree()->GetEntry(entry).
-   if (fDebug > 0) printf("->AliAnalysisManager::Process(%lld)\n", entry);
+   if (fDebug > 0) Printf("->AliAnalysisManager::Process(%lld)", entry);
 
    if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(entry);
    if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(entry);
@@ -391,7 +391,7 @@ Bool_t AliAnalysisManager::Process(Long64_t entry)
    
    GetEntry(entry);
    ExecAnalysis();
-   if (fDebug > 0) printf("<-AliAnalysisManager::Process()\n");
+   if (fDebug > 0) Printf("<-AliAnalysisManager::Process()");
    return kTRUE;
 }
 
@@ -400,7 +400,7 @@ void AliAnalysisManager::PackOutput(TList *target)
 {
   // Pack all output data containers in the output list. Called at SlaveTerminate
   // stage in PROOF case for each slave.
-   if (fDebug > 0) printf("->AliAnalysisManager::PackOutput()\n");
+   if (fDebug > 0) Printf("->AliAnalysisManager::PackOutput()");
    if (!target) {
       Error("PackOutput", "No target. Aborting.");
       return;
@@ -415,9 +415,9 @@ void AliAnalysisManager::PackOutput(TList *target)
    AliAnalysisTask *task;
    while ((task=(AliAnalysisTask*)nexttask())) {
       if (!task->IsPostEventLoop()) {
-         if (fDebug > 0) printf("->FinishTaskOutput: task %s\n", task->GetName());
+         if (fDebug > 0) Printf("->FinishTaskOutput: task %s", task->GetName());
          task->FinishTaskOutput();
-         if (fDebug > 0) printf("<-FinishTaskOutput: task %s\n", task->GetName());
+         if (fDebug > 0) Printf("<-FinishTaskOutput: task %s", task->GetName());
       }
    }      
    
@@ -432,12 +432,12 @@ void AliAnalysisManager::PackOutput(TList *target)
          const char *filename = output->GetFileName();
          if (!(strcmp(filename, "default")) && fOutputEventHandler) {
             isManagedByHandler = kTRUE;
-            printf("#### Handler output. Extra: %s\n", fExtraFiles.Data());
+            Printf("#### Handler output. Extra: %s", fExtraFiles.Data());
             filename = fOutputEventHandler->GetOutputFileName();
          }
          // Check if data was posted to this container. If not, issue an error.
          if (!output->GetData() && !isManagedByHandler) {
-            Error("PackOutput", "No data for output container %s. Forgot to PostData ?\n", output->GetName());
+            Error("PackOutput", "No data for output container %s. Forgot to PostData ?", output->GetName());
             continue;
          }   
          if (!output->IsSpecialOutput()) {
@@ -451,7 +451,7 @@ void AliAnalysisManager::PackOutput(TList *target)
                if (file) file->cd();
                else      file = new TFile(filename, "RECREATE"); 
                if (file->IsZombie()) {
-                  Fatal("PackOutput", "Could not recreate file %s\n", filename);
+                  Fatal("PackOutput", "Could not recreate file %s", filename);
                   return;
                }   
                output->SetFile(file);
@@ -473,9 +473,9 @@ void AliAnalysisManager::PackOutput(TList *target)
                      output->GetData()->Write();
                   }   
                }      
-               if (fDebug > 1) printf("PackOutput %s: memory merge, file resident output\n", output->GetName());
+               if (fDebug > 1) Printf("PackOutput %s: memory merge, file resident output", output->GetName());
                if (fDebug > 2) {
-                  printf("   file %s listing content:\n", filename);
+                  Printf("   file %s listing content:", filename);
                   file->ls();
                }   
                file->Close();
@@ -483,7 +483,7 @@ void AliAnalysisManager::PackOutput(TList *target)
                if (opwd) opwd->cd();
             } else {
                // Memory-resident outputs   
-               if (fDebug > 1) printf("PackOutput %s: memory merge memory resident output\n", filename);
+               if (fDebug > 1) Printf("PackOutput %s: memory merge memory resident output", filename);
             }   
             AliAnalysisDataWrapper *wrap = 0;
             if (isManagedByHandler) {
@@ -506,12 +506,12 @@ void AliAnalysisManager::PackOutput(TList *target)
                continue;
             }   
             TString outFilename = file->GetName();
-            if (fDebug > 1) printf("PackOutput %s: special output\n", output->GetName());
+            if (fDebug > 1) Printf("PackOutput %s: special output", output->GetName());
             if (isManagedByHandler) {
                // Terminate IO for files managed by the output handler
                if (file) file->Write();
                if (file && fDebug > 2) {
-                  printf("   handled file %s listing content:\n", file->GetName());
+                  Printf("   handled file %s listing content:", file->GetName());
                   file->ls();
                }   
                fOutputEventHandler->TerminateIO();
@@ -535,7 +535,7 @@ void AliAnalysisManager::PackOutput(TList *target)
                }      
                file->Clear();
                if (fDebug > 2) {
-                  printf("   file %s listing content:\n", output->GetFileName());
+                  Printf("   file %s listing content:", output->GetFileName());
                   file->ls();
                }
                file->Close();
@@ -585,19 +585,19 @@ void AliAnalysisManager::PackOutput(TList *target)
             } else {
             // No special location specified-> use TProofOutputFile as merging utility
             // The file at this output slot must be opened in CreateOutputObjects
-               if (fDebug > 1) printf("   File for container %s to be merged via file merger...\n", output->GetName());
+               if (fDebug > 1) Printf("   File for container %s to be merged via file merger...", output->GetName());
             }
          }      
       }
    } 
-   if (fDebug > 0) printf("<-AliAnalysisManager::PackOutput: output list contains %d containers\n", target->GetSize());
+   if (fDebug > 0) Printf("<-AliAnalysisManager::PackOutput: output list contains %d containers", target->GetSize());
 }
 
 //______________________________________________________________________________
 void AliAnalysisManager::ImportWrappers(TList *source)
 {
 // Import data in output containers from wrappers coming in source.
-   if (fDebug > 0) printf("->AliAnalysisManager::ImportWrappers()\n");
+   if (fDebug > 0) Printf("->AliAnalysisManager::ImportWrappers()");
    TIter next(fOutputs);
    AliAnalysisDataContainer *cont;
    AliAnalysisDataWrapper   *wrap;
@@ -661,25 +661,25 @@ void AliAnalysisManager::ImportWrappers(TList *source)
       }
       icont++;
       if (fDebug > 1) {
-         printf("   Importing data for container %s", cont->GetName());
-         if (strlen(filename)) printf("    -> file %s\n", filename);
-         else printf("\n");
+         Printf("   Importing data for container %s", cont->GetName());
+         if (strlen(filename)) Printf("    -> file %s", filename);
+         else Printf("");
       }   
       cont->ImportData(wrap);
    }         
-   if (fDebug > 0) printf("<-AliAnalysisManager::ImportWrappers(): %d containers imported\n", icont);
+   if (fDebug > 0) Printf("<-AliAnalysisManager::ImportWrappers(): %d containers imported", icont);
 }
 
 //______________________________________________________________________________
 void AliAnalysisManager::UnpackOutput(TList *source)
 {
   // Called by AliAnalysisSelector::Terminate only on the client.
-   if (fDebug > 0) printf("->AliAnalysisManager::UnpackOutput()\n");
+   if (fDebug > 0) Printf("->AliAnalysisManager::UnpackOutput()");
    if (!source) {
       Error("UnpackOutput", "No target. Aborting.");
       return;
    }
-   if (fDebug > 1) printf("   Source list contains %d containers\n", source->GetSize());
+   if (fDebug > 1) Printf("   Source list contains %d containers", source->GetSize());
 
    if (fMode == kProofAnalysis) ImportWrappers(source);
 
@@ -698,13 +698,13 @@ void AliAnalysisManager::UnpackOutput(TList *source)
             task->CheckNotify(kTRUE);
             // If task is active, execute it
             if (task->IsPostEventLoop() && task->IsActive()) {
-               if (fDebug > 0) printf("== Executing post event loop task %s\n", task->GetName());
+               if (fDebug > 0) Printf("== Executing post event loop task %s", task->GetName());
                task->ExecuteTask();
             }   
          }
       }   
    }
-   if (fDebug > 0) printf("<-AliAnalysisManager::UnpackOutput()\n");
+   if (fDebug > 0) Printf("<-AliAnalysisManager::UnpackOutput()");
 }
 
 //______________________________________________________________________________
@@ -713,7 +713,7 @@ void AliAnalysisManager::Terminate()
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically.
-   if (fDebug > 0) printf("->AliAnalysisManager::Terminate()\n");
+   if (fDebug > 0) Printf("->AliAnalysisManager::Terminate()");
    AliAnalysisTask *task;
    TIter next(fTasks);
    // Call Terminate() for tasks
@@ -730,7 +730,7 @@ void AliAnalysisManager::Terminate()
          if (fOutputEventHandler) filename = fOutputEventHandler->GetOutputFileName();
          TFile *aodfile = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
          if (aodfile) {
-            if (fDebug > 1) printf("Writing output handler file: %s\n", filename);
+            if (fDebug > 1) Printf("Writing output handler file: %s", filename);
             aodfile->Write();
             continue;
          }   
@@ -744,7 +744,7 @@ void AliAnalysisManager::Terminate()
       if (file->IsZombie()) continue;
       output->SetFile(file);
       file->cd();
-      if (fDebug > 1) printf("   writing output data %s to file %s\n", output->GetData()->GetName(), file->GetName());
+      if (fDebug > 1) Printf("   writing output data %s to file %s", output->GetData()->GetName(), file->GetName());
       if (output->GetData()->InheritsFrom(TCollection::Class())) {
       // If data is a collection, we set the name of the collection 
       // as the one of the container and we save as a single key.
@@ -803,8 +803,14 @@ void AliAnalysisManager::Terminate()
          delete tree;
       }
       if (cdir) cdir->cd();
+   }
+   // Validate the output files
+   if (ValidateOutputFiles()) {
+      ofstream out;
+      out.open("outputs_valid", ios::out);
+      out.close();
    }      
-   if (fDebug > 0) printf("<-AliAnalysisManager::Terminate()\n");
+   if (fDebug > 0) Printf("<-AliAnalysisManager::Terminate()");
 }
 
 //______________________________________________________________________________
@@ -836,7 +842,7 @@ AliAnalysisDataContainer *AliAnalysisManager::CreateContainer(const char *name,
 //   kInputContainer   = 1, used to store input data
 //   kOutputContainer  = 2, used for posting results
    if (fContainers->FindObject(name)) {
-      Error("CreateContainer","A container named %s already defined !\n",name);
+      Error("CreateContainer","A container named %s already defined !",name);
       return NULL;
    }   
    AliAnalysisDataContainer *cont = new AliAnalysisDataContainer(name, datatype);
@@ -910,8 +916,10 @@ Bool_t AliAnalysisManager::InitAnalysis()
 {
 // Initialization of analysis chain of tasks. Should be called after all tasks
 // and data containers are properly connected
-   // Check for input/output containers
+   // Reset flag and remove valid_outputs file if exists
    fInitOK = kFALSE;
+   if (!gSystem->AccessPathName("outputs_valid"))
+      gSystem->Unlink("outputs_valid");
    // Check for top tasks (depending only on input data containers)
    if (!fTasks->First()) {
       Error("InitAnalysis", "Analysis has no tasks !");
@@ -1039,7 +1047,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
       Error("StartAnalysis","Analysis manager was not initialized !");
       return;
    }
-   if (fDebug > 0) printf("StartAnalysis %s\n",GetName());
+   if (fDebug > 0) Printf("StartAnalysis %s",GetName());
    TString anaType = type;
    anaType.ToLower();
    fMode = kLocalAnalysis;
@@ -1127,7 +1135,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
          break;
       case kProofAnalysis:
          if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
-            printf("StartAnalysis: no PROOF!!!\n");
+            Error("StartAnalysis", "No PROOF!!! Aborting.");
             return;
          }   
          sprintf(line, "gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
@@ -1137,7 +1145,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t n
             cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON CHAIN " << chain->GetName() << endl;
             chain->Process("AliAnalysisSelector", "", nentries, firstentry);
          } else {
-            printf("StartAnalysis: no chain\n");
+            Error("StartAnalysis", "No chain!!! Aborting.");
             return;
          }      
          break;
@@ -1173,7 +1181,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, const char *dataset, Lo
       Error("StartAnalysis","Analysis manager was not initialized !");
       return;
    }
-   if (fDebug > 0) printf("StartAnalysis %s\n",GetName());
+   if (fDebug > 0) Printf("StartAnalysis %s",GetName());
    TString anaType = type;
    anaType.ToLower();
    if (!anaType.Contains("proof")) {
@@ -1195,7 +1203,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, const char *dataset, Lo
    }
    
    if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
-      printf("StartAnalysis: no PROOF!!!\n");
+      Error("StartAnalysis", "No PROOF!!! Aborting.");
       return;
    }   
    sprintf(line, "gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
@@ -1226,16 +1234,16 @@ TFile *AliAnalysisManager::OpenProofFile(const char *filename, const char *optio
       return f;
    }   
    sprintf(line, "TProofOutputFile *pf = new TProofOutputFile(\"%s\");", filename);
-   if (fDebug > 1) printf("=== %s\n", line);
+   if (fDebug > 1) Printf("=== %s", line);
    gROOT->ProcessLine(line);
    sprintf(line, "pf->OpenFile(\"%s\");", option);
    gROOT->ProcessLine(line);
    if (fDebug > 1) {
       gROOT->ProcessLine("pf->Print()");
-      printf(" == proof file name: %s\n", gFile->GetName());
+      Printf(" == proof file name: %s", gFile->GetName());
    }   
    sprintf(line, "((TList*)0x%lx)->Add(pf);",(ULong_t)fSelector->GetOutputList());
-   if (fDebug > 1) printf("=== %s\n", line);
+   if (fDebug > 1) Printf("=== %s", line);
    gROOT->ProcessLine(line);
    return gFile;
 }   
@@ -1402,3 +1410,34 @@ void AliAnalysisManager::GetAnalysisTypeString(TString &type) const
          type = "mix";
    }
 }
+
+//______________________________________________________________________________
+Bool_t AliAnalysisManager::ValidateOutputFiles() const
+{
+// Validate all output files.
+   TIter next(fOutputs);
+   AliAnalysisDataContainer *output;
+   TDirectory *cdir = gDirectory;
+   while ((output=(AliAnalysisDataContainer*)next())) {
+      TString filename = output->GetFileName();
+      if (filename == "default") {
+         if (!fOutputEventHandler) continue;
+         filename = fOutputEventHandler->GetOutputFileName();
+      }
+      // Check if the file is closed
+      TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
+      if (file) {
+         Warning("ValidateOutputs", "File %s was not closed. Closing.", filename.Data());
+         file->Close();
+      }
+      file = TFile::Open(filename);
+      if (!file || file->IsZombie() || file->TestBit(TFile::kRecovered)) {
+         Error("ValidateOutputs", "Output file <%s> was not created or invalid", filename.Data());
+         cdir->cd();
+         return kFALSE;
+      }
+      file->Close();
+   }
+   cdir->cd();
+   return kTRUE;
+}   

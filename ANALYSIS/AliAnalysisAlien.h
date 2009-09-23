@@ -73,6 +73,7 @@ public:
    virtual Bool_t      CreateDataset(const char *pattern);
    virtual Bool_t      CreateJDL();
    virtual void        EnablePackage(const char *package);
+   static Bool_t       DirectoryExists(const char *lfn);
    static Bool_t       FileExists(const char *lfn);
    static  const char *GetJobStatus(Int_t jobidstart, Int_t lastid, Int_t &nrunning, Int_t &nwaiting, Int_t &nerror, Int_t &ndone);
    virtual Bool_t      MergeOutputs();

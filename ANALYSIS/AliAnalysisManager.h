@@ -137,6 +137,7 @@ enum EAliAnalysisFlags {
    void                 ExecAnalysis(Option_t *option="");
    void                 FinishAnalysis();
    void                 PrintStatus(Option_t *option="all") const;
+   Bool_t               ValidateOutputFiles() const;
 
 protected:
    void                 ImportWrappers(TList *source);
