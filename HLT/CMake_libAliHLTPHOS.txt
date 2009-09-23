@@ -48,6 +48,7 @@ PHOS/AliHLTPHOSMonitorTriggerComponent.cxx
 PHOS/AliHLTPHOSESDEntriesMakerComponent.cxx
 PHOS/AliHLTPHOSESDCaloClusterWriterComponent.cxx
 PHOS/AliHLTPHOSPhysicsHistogramProducer.cxx
+PHOS/AliHLTPHOSFourier.cxx
 )
 
 # fill list of header files from list of source files

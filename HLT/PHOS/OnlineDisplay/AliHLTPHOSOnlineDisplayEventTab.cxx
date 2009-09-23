@@ -1,4 +1,4 @@
-// $Id: AliHLTPHOSOnlineDisplayEventTab.cxx 31683 2009-03-24 21:17:03Z odjuvsla $
+// $Id$
 
 /**************************************************************************
  * Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
@@ -192,7 +192,10 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 
   FindFourierBlocks(homeReaderPtr);
 
-  unsigned long blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF );
+  // unsigned long blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF );
+     unsigned long blk = homeReaderPtr->FindBlockNdx("TLENNAHC","SOHP", 0xFFFFFFFF );
+
+  cout << __FILE__ << ":" << __LINE__ << "blk"  << blk  << endl ;
 
   int cnt = 0;
 
@@ -230,9 +233,9 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 	  tmpX = currentChannel->fX;
 	  tmpGain =  currentChannel->fGain;
 
-// 	  cout << "Channel: x: " << moduleID*NXCOLUMNSMOD + tmpX + NXCOLUMNSRCU*cellEnergiesPtr->fRcuX 
-// 	       << " z: " <<     tmpZ + NZROWSRCU*cellEnergiesPtr->fRcuZ
-// 	       << " E: " <<  currentChannel->fEnergy << endl;
+	  // 	  cout << "Channel: x: " << moduleID*NXCOLUMNSMOD + tmpX + NXCOLUMNSRCU*cellEnergiesPtr->fRcuX 
+	  // 	       << " z: " <<     tmpZ + NZROWSRCU*cellEnergiesPtr->fRcuZ
+	  // 	       << " E: " <<  currentChannel->fEnergy << endl;
 
 	  fgLegoPlotPtr[tmpGain]->Fill(moduleID*NXCOLUMNSMOD + tmpX +  NXCOLUMNSRCU*cellEnergiesPtr->fRcuX,  
 				    tmpZ + NZROWSRCU*cellEnergiesPtr->fRcuZ, currentChannel->fEnergy);

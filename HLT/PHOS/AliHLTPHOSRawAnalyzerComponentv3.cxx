@@ -117,6 +117,7 @@ int
 AliHLTPHOSRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& /*trigData*/, 
 					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
+  cout << __FILE__<<"::"<<__FUNCTION__<<":"<<__LINE__<< "DoEvent" << endl;
   //comment
   Int_t blockSize          = 0;
   UInt_t totSize           = 0;
@@ -129,6 +130,11 @@ AliHLTPHOSRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
       iter = blocks+ndx;
       if ( iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType  )
 	{
+	  cout << __FILE__<<"::"<<__FUNCTION__<<":"<<__LINE__<< "Data block is not of type fgkDDLPackedRawDataType" << endl;
+	  
+	  cout << "Data type is "<< iter->fDataType.fID<<":" <<   iter->fDataType.fOrigin  << endl;
+
+
 	  HLTDebug("Data block is not of type fgkDDLPackedRawDataType");
 	  continue; 
 	}

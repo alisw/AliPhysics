@@ -50,7 +50,8 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSMonitorTriggerComponent.h \
 		  AliHLTPHOSESDEntriesMakerComponent.h \
 		  AliHLTPHOSESDCaloClusterWriterComponent.h \
-		  AliHLTPHOSPhysicsHistogramProducer.h
+		  AliHLTPHOSPhysicsHistogramProducer.h \
+		  AliHLTPHOSFourier.h
 #		  AliHLTPHOSESDCaloClusterMakerComponent.h 
 #		  AliHLTPHOSTreeMaker.h \
 #  		  AliHLTPHOSTreeMakerComponent.h \
