@@ -252,7 +252,7 @@ int main(int argc, char **argv) {
 	    fitter.Eval(stream.GetSignals(),sigStart,sigLength);
 	  } // End of NextBunch()
 	  
-	  if(nBunches>1) continue;
+	  if(nBunches != 1) continue;
 	  
 	  e[cellX][cellZ][caloFlag] = fitter.GetEnergy();
 	  t[cellX][cellZ][caloFlag] = fitter.GetTime();
