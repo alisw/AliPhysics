@@ -86,7 +86,7 @@ Int_t AliDAQ::fgkNumberOfDdls[AliDAQ::kNDetectors] = {
   1,
   1,
   1,
-  24,
+  46,
   1,
   10
 };
@@ -110,7 +110,7 @@ Float_t AliDAQ::fgkNumberOfLdcs[AliDAQ::kNDetectors] = {
   1,
   1,
   1,
-  4,
+  8,
   1,
   5
 };
