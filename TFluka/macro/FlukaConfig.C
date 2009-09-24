@@ -1,209 +1,231 @@
-static Int_t    eventsPerRun = 100;
-enum PprGeo_t
-{
-    kHoles, kNoHoles
-};
-                                                                                
-enum PprRad_t
-{
-    kGluonRadiation, kNoGluonRadiation
-};
-                                                                                
-// This part for configuration
-static PprGeo_t sgeo = kHoles;
-static PprRad_t srad = kGluonRadiation;
-static AliMagF::BMap_t smag = AliMagF::k5kG;
-                                                                                
-// Comment line
-static TString  comment;
-                                                                                
-// Functions
+// One can use the configuration macro in compiled mode by
+// root [0] gSystem->Load("libgeant321");
+// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
+//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
+// root [0] .x grun.C(1,"Config.C++")
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <TPDGCode.h>
+#include <TRandom.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
+#include <TGeant3TGeo.h>
+#include "STEER/AliRunLoader.h"
+#include "STEER/AliRun.h"
+#include "STEER/AliConfig.h"
+#include "PYTHIA6/AliDecayerPythia.h"
+#include "EVGEN/AliGenCocktail.h"
+#include "EVGEN/AliGenHIJINGpara.h"
+#include "STEER/AliMagF.h"
+#include "STRUCT/AliBODY.h"
+#include "STRUCT/AliMAG.h"
+#include "STRUCT/AliABSOv3.h"
+#include "STRUCT/AliDIPOv3.h"
+#include "STRUCT/AliHALLv3.h"
+#include "STRUCT/AliFRAMEv2.h"
+#include "STRUCT/AliSHILv3.h"
+#include "STRUCT/AliPIPEv3.h"
+#include "ITS/AliITSv11Hybrid.h"
+#include "TPC/AliTPCv2.h"
+#include "TOF/AliTOFv6T0.h"
+#include "HMPID/AliHMPIDv3.h"
+#include "ZDC/AliZDCv3.h"
+#include "TRD/AliTRDv1.h"
+#include "FMD/AliFMDv1.h"
+#include "MUON/AliMUONv1.h"
+#include "PHOS/AliPHOSv1.h"
+#include "PMD/AliPMDv1.h"
+#include "T0/AliT0v1.h"
+#include "EMCAL/AliEMCALv2.h"
+#include "ACORDE/AliACORDEv1.h"
+#include "VZERO/AliVZEROv7.h"
+#endif
+
 Float_t EtaToTheta(Float_t arg);
+void    LoadPythia();
+
 
 void Config()
 {
-  cout << "==> Config.C..." << endl;
-  
-  // Set Random Number seed
-  gRandom->SetSeed(12345);
-  cout<<"Seed for random number generation= "<<gRandom->GetSeed()<<endl;
+    // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
+    // Theta range given through pseudorapidity limits 22/6/2001
 
-  gSystem->Load("liblhapdf.so");      // Parton density functions
-  gSystem->Load("libEGPythia6.so");   // TGenerator interface
-  gSystem->Load("libpythia6.so");     // Pythia
-  gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+    // Set Random Number seed
+  //gRandom->SetSeed(123456); // Set 0 to use the current time
   
-  
+  AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
 
+  // Load Pythia libraries
+  LoadPythia();
+  // Libraries required by geant321
   Bool_t isFluka = kTRUE;
-  if (isFluka) {
-    gSystem->Load("libGeom");
-    cout << "\t* Loading TFluka..." << endl;  
-    gSystem->Load("libfluka");    
-    
-    cout << "\t* Instantiating TFluka..." << endl;
-    new  TFluka("C++ Interface to Fluka", 0/*verbositylevel*/);
-  }
-  else {
-    cout << "\t* Loading Geant3..." << endl;  
-    gSystem->Load("libgeant321");
-    
-    cout << "\t* Instantiating Geant3TGeo..." << endl;
-    new     TGeant3TGeo("C++ Interface to Geant3");
-  }
-  
-  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-      AliCDBManager::Instance()->SetRun(0);
-  }
+    if (isFluka) {
+      gSystem->Load("libGeom");
+      cout << "\t* Loading TFluka..." << endl;  
+      gSystem->Load("libfluka");    
+      
+      cout << "\t* Instantiating TFluka..." << endl;
+      new  TFluka("C++ Interface to Fluka", 0/*verbositylevel*/);
+    }
+    else {
+      cout << "\t* Loading Geant3..." << endl;  
+      gSystem->Load("libgeant321");
+      
+      cout << "\t* Instantiating Geant3TGeo..." << endl;
+      new     TGeant3TGeo("C++ Interface to Geant3");
+    }
+    AliRunLoader* rl=0x0;
 
-  
-  AliRunLoader* rl=0x0;
-                                                                                
-  cout<<"Config.C: Creating Run Loader ..."<<endl;
-  rl = AliRunLoader::Open("galice.root",
+    AliLog::Message(AliLog::kInfo, "Creating Run Loader", "Config.C", "Config.C", "Config()"," Config.C", __LINE__);
+
+    rl = AliRunLoader::Open("galice.root",
 			    AliConfig::GetDefaultEventFolderName(),
 			    "recreate");
-  if (rl == 0x0)
+    if (rl == 0x0)
+      {
+	gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+	return;
+      }
+    rl->SetCompressionLevel(2);
+    rl->SetNumberOfEventsPerFile(3);
+    gAlice->SetRunLoader(rl);
+    
+    // gAlice->SetGeometryFromFile("geometry.root");
+
+    // Uncomment if you want to load geometry from OCDB!   >>>>
+/*    
+    if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
+	 cout << "#####################################################" << endl;
+	 cout << "#                                                   #" << endl;
+	 cout << "#     WARNING: CDB DEFAULT STORAGE NOT SET !!!      #" << endl;
+	 cout << "#     SETTING IT TO local://$ALICE_ROOT/OCDB !!!         #" << endl;
+	 cout << "#                                                   #" << endl;
+	 cout << "#####################################################" << endl;
+          
+         AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    }
+    
+    if(AliCDBManager::Instance()->GetRun() < 0){
+	 cout << "#####################################################" << endl;
+	 cout << "#                                                   #" << endl;
+	 cout << "#     WARNING: RUN NUMBER NOT SET !!!               #" << endl;
+	 cout << "#     SETTING IT TO 0 !!!                           #" << endl;
+	 cout << "#                                                   #" << endl;
+	 cout << "#####################################################" << endl;
+          
+         AliCDBManager::Instance()->SetRun(0);
+    }
+    gAlice->SetGeometryFromCDB();
+*/
+    // Uncomment if you want to load geometry from OCDB!   <<<<
+
+    // Set the trigger configuration
+    gAlice->SetTriggerDescriptor("Pb-Pb");
+    cout<<"Trigger configuration is set to  Pb-Pb"<<endl;
+
+    //
+    // Set External decayer
+    TVirtualMCDecayer *decayer = new AliDecayerPythia();
+
+    decayer->SetForceDecay(kAll);
+    decayer->Init();
+    gMC->SetExternalDecayer(decayer);
+    //=======================================================================
+    // ************* STEERING parameters FOR ALICE SIMULATION **************
+    // --- Specify event type to be tracked through the ALICE setup
+    // --- All positions are in cm, angles in degrees, and P and E in GeV
+
+
+    gMC->SetProcess("DCAY",1);
+    gMC->SetProcess("PAIR",1);
+    gMC->SetProcess("COMP",1);
+    gMC->SetProcess("PHOT",1);
+    gMC->SetProcess("PFIS",0);
+    gMC->SetProcess("DRAY",0);
+    gMC->SetProcess("ANNI",1);
+    gMC->SetProcess("BREM",1);
+    gMC->SetProcess("MUNU",1);
+    gMC->SetProcess("CKOV",1);
+    gMC->SetProcess("HADR",1);
+    gMC->SetProcess("LOSS",2);
+    gMC->SetProcess("MULS",1);
+    gMC->SetProcess("RAYL",1);
+
+    Float_t cut = 1.e-3;        // 1MeV cut by default
+    Float_t tofmax = 1.e10;
+
+    gMC->SetCut("CUTGAM", cut);
+    gMC->SetCut("CUTELE", cut);
+    gMC->SetCut("CUTNEU", cut);
+    gMC->SetCut("CUTHAD", cut);
+    gMC->SetCut("CUTMUO", cut);
+    gMC->SetCut("BCUTE",  cut); 
+    gMC->SetCut("BCUTM",  cut); 
+    gMC->SetCut("DCUTE",  cut); 
+    gMC->SetCut("DCUTM",  cut); 
+    gMC->SetCut("PPCUTM", cut);
+    gMC->SetCut("TOFMAX", tofmax); 
+
+
+    int     nParticles = 100;
+    if (gSystem->Getenv("CONFIG_NPARTICLES"))
     {
-      gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
-      return;
+        nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
     }
-  rl->SetCompressionLevel(2);
-  rl->SetNumberOfEventsPerFile(3);
-  gAlice->SetRunLoader(rl);
-                                                                                
-  //
-  // Set External decayer
-  AliDecayer *decayer = new AliDecayerPythia();
-                                                                               
-  decayer->SetForceDecay(kAll);
-  decayer->Init();
-  gMC->SetExternalDecayer(decayer);
 
-  //
-  //
-  //
-  // Physics process control
+    AliGenCocktail *gener = new AliGenCocktail();
+    gener->SetPhiRange(0, 360);
+    // Set pseudorapidity range from -8 to 8.
+    Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
+    Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
+    gener->SetThetaRange(thmin,thmax);
+    gener->SetOrigin(0, 0, 0);  //vertex position
+    gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
 
-  gMC->SetProcess("DCAY",1);
-  gMC->SetProcess("PAIR",1);
-  gMC->SetProcess("COMP",1);
-  gMC->SetProcess("PHOT",1);
-  gMC->SetProcess("PFIS",0);
-  gMC->SetProcess("DRAY",1);
-  gMC->SetProcess("ANNI",1);
-  gMC->SetProcess("BREM",1);
-  gMC->SetProcess("MUNU",1);
-  gMC->SetProcess("CKOV",1); 
-  gMC->SetProcess("HADR",1);
-  gMC->SetProcess("LOSS",2);
-  gMC->SetProcess("MULS",1);
-  gMC->SetProcess("RAYL",1);
-                                                                                
-  Float_t cut = 1.e-3;        // 1MeV cut by default
-  Float_t tofmax = 1.e10;
-                                                                                
-  gMC->SetCut("CUTGAM", cut);
-  gMC->SetCut("CUTELE", cut);
-  gMC->SetCut("CUTNEU", cut);
-  gMC->SetCut("CUTHAD", cut);
-  gMC->SetCut("CUTMUO", cut);
-  gMC->SetCut("BCUTE",  cut);
-  gMC->SetCut("BCUTM",  cut);
-  gMC->SetCut("DCUTE",  cut);
-  gMC->SetCut("DCUTM",  cut);
-  gMC->SetCut("PPCUTM", cut);
-  gMC->SetCut("TOFMAX", tofmax);
+    AliGenHIJINGpara *hijingparam = new AliGenHIJINGpara(nParticles);
+    hijingparam->SetMomentumRange(0.2, 999);
+    gener->AddGenerator(hijingparam,"HIJING PARAM",1);
 
-  //
-  //=======================================================================
-  // ************* STEERING parameters FOR ALICE SIMULATION **************
-  // --- Specify event type to be tracked through the ALICE setup
-  // --- All positions are in cm, angles in degrees, and P and E in GeV
-  if (gSystem->Getenv("CONFIG_NPARTICLES"))
-      int     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
-  else
-      int     nParticles = 1000;
-  
-  cout << "\t* Creating and configuring generator for " << nParticles 
-       << " particles..." << endl;
-  
-  AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
-  
-  gener->SetMomentumRange(0., 999);
-  gener->SetPhiRange(0, 360);
-  // Set pseudorapidity range from -3 to 3.
-  Float_t thmin = EtaToTheta( 3.);   // theta min. <---> eta max
-  Float_t thmax = EtaToTheta(-3.);   // theta max. <---> eta min 
-  gener->SetThetaRange(thmin,thmax);
-  gener->SetOrigin(0, 0, 0);  //vertex position
-  gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
-  gener->Init();
-  // 
-  // Activate this line if you want the vertex smearing to happen
-  // track by track
-  //
+//    AliGenBox *genbox = new AliGenBox(nParticles);
+//    genbox->SetPart(kGamma);
+//    genbox->SetPtRange(0.3, 10.00);
+//    gener->AddGenerator(genbox,"GENBOX GAMMA for PHOS",1);
+    gener->Init();
 
 
-    if (smag == AliMagF::k2kG) {
-        comment = comment.Append(" | L3 field 0.2 T");
-    } else if (smag == AliMagF::k5kG) {
-        comment = comment.Append(" | L3 field 0.5 T");
-    }
-                                                                                
-                                                                                
-    if (srad == kGluonRadiation)
-    {
-        comment = comment.Append(" | Gluon Radiation On");
-                                                                                
-    } else {
-        comment = comment.Append(" | Gluon Radiation Off");
-    }
-                                                                                
-    if (sgeo == kHoles)
-    {
-        comment = comment.Append(" | Holes for PHOS/HMPID");
-                                                                                
-    } else {
-        comment = comment.Append(" | No holes for PHOS/HMPID");
-    }
-                                                                                
-    printf("\n \n Comment: %s \n \n", comment.Data());
-                                                                                
-                                                                                
-// Field (L3 0.4 T)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
+    // 
+    // Activate this line if you want the vertex smearing to happen
+    // track by track
+    //
+    //gener->SetVertexSmear(perTrack); 
+    // Field (L3 0.4 T)
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, -1., -1., 10., AliMagF::k5kG));
+
+    Int_t   iABSO   = 1;
+    Int_t   iDIPO   = 1;
+    Int_t   iFMD    = 1;
+    Int_t   iFRAME  = 1;
+    Int_t   iHALL   = 1;
+    Int_t   iITS    = 1;
+    Int_t   iMAG    = 1;
+    Int_t   iMUON   = 1;
+    Int_t   iPHOS   = 1;
+    Int_t   iPIPE   = 1;
+    Int_t   iPMD    = 1;
+    Int_t   iHMPID  = 1;
+    Int_t   iSHIL   = 1;
+    Int_t   iT0     = 1;
+    Int_t   iTOF    = 1;
+    Int_t   iTPC    = 1;
+    Int_t   iTRD    = 1;
+    Int_t   iZDC    = 1;
+    Int_t   iEMCAL  = 1;
+    Int_t   iACORDE = 1;
+    Int_t   iVZERO  = 1;
     rl->CdGAFile();
-
- 
-  Int_t   iABSO    = 1; 
-  Int_t   iACORDE  = 1; 
-  Int_t   iDIPO    = 1; 
-  Int_t   iFMD     = 1; 
-  Int_t   iFRAME   = 1; 
-  Int_t   iHALL    = 1; 
-  Int_t   iITS     = 1; 
-  Int_t   iMAG     = 1; 
-  Int_t   iMUON    = 1; 
-  Int_t   iPHOS    = 1; 
-  Int_t   iPIPE    = 1; 
-  Int_t   iPMD     = 1; 
-  Int_t   iHMPID   = 1; 
-  Int_t   iSHIL    = 1; 
-  Int_t   iT1      = 1; 
-  Int_t   iTOF     = 1; 
-  Int_t   iTPC     = 1;
-  Int_t   iTRD     = 1; 
-  Int_t   iZDC     = 1; 
-  Int_t   iEMCAL   = 1; 
-  Int_t   iVZERO   = 1;
- 
-  cout << "\t* Creating the detectors ..." << endl;
-  //=================== Alice BODY parameters =============================
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
-                                                                                
 
     if (iMAG)
     {
@@ -224,7 +246,7 @@ void Config()
     {
         //=================== DIPO parameters ============================
 
-        AliDIPO *DIPO = new AliDIPOv3("DIPO", "Dipole version 2");
+        AliDIPO *DIPO = new AliDIPOv3("DIPO", "Dipole version 3");
     }
 
     if (iHALL)
@@ -240,13 +262,14 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
+	FRAME->SetHoles(1);
     }
 
     if (iSHIL)
     {
         //=================== SHIL parameters ============================
 
-        AliSHIL *SHIL = new AliSHILv3("SHIL", "Shielding Version 2");
+        AliSHIL *SHIL = new AliSHILv3("SHIL", "Shielding Version 3");
     }
 
 
@@ -264,10 +287,9 @@ void Config()
 	AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
     }
 
-
     if (iTPC)
     {
-      //============================ TPC parameters =====================
+        //============================ TPC parameters ===================
         AliTPC *TPC = new AliTPCv2("TPC", "Default");
     }
 
@@ -290,7 +312,7 @@ void Config()
     {
         //=================== ZDC parameters ============================
 
-        AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
+        AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
     }
 
     if (iTRD)
@@ -298,19 +320,6 @@ void Config()
         //=================== TRD parameters ============================
 
         AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
-        AliTRDgeometry *geoTRD = TRD->GetGeometry();
-	// Partial geometry: modules at 2,3,4,6,11,12,14,15
-	// starting at 6h in positive direction
-	geoTRD->SetSMstatus(0,0);
-        geoTRD->SetSMstatus(1,0);
-        geoTRD->SetSMstatus(5,0);
-        geoTRD->SetSMstatus(7,0);
-        geoTRD->SetSMstatus(8,0);
-        geoTRD->SetSMstatus(9,0);
-        geoTRD->SetSMstatus(10,0);
-        geoTRD->SetSMstatus(13,0);
-        geoTRD->SetSMstatus(16,0);
-        geoTRD->SetSMstatus(17,0);
     }
 
     if (iFMD)
@@ -330,23 +339,6 @@ void Config()
     if (iPHOS)
     {
         AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
-        //Set simulation parameters different from the default ones.
-        AliPHOSSimParam* simEmc = AliPHOSSimParam::GetInstance() ;
-  
-        // APD noise of warm (+20C) PHOS:
-        // a2 = a1*(Y1/Y2)*(M1/M2), where a1 = 0.012 is APD noise at -25C,
-        // Y1 = 4.3 photo-electrons/MeV, Y2 = 1.7 p.e/MeV - light yields at -25C and +20C,
-        // M1 = 50, M2 = 50 - APD gain factors chosen for t1 = -25C and t2 = +20C,
-        // Y = MeanLightYield*APDEfficiency.
-
-        Float_t apdNoise = 0.012*2.5; 
-        simEmc->SetAPDNoise(apdNoise);
-
-        //Raw Light Yield at +20C
-        simEmc->SetMeanLightYield(18800);
-
-        //ADC channel width at +18C.
-        simEmc->SetADCchannelW(0.0125);
     }
 
 
@@ -364,7 +356,8 @@ void Config()
 
     if (iEMCAL)
     {
-        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH_77_TRD1_2X2_FINAL_110DEG");
+        //=================== EMCAL parameters ============================
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE");
     }
 
      if (iACORDE)
@@ -375,12 +368,24 @@ void Config()
 
      if (iVZERO)
     {
-        //=================== ACORDE parameters ============================
+        //=================== VZERO parameters ============================
         AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
-    }                                                                                
+    }
+
+     AliLog::Message(AliLog::kInfo, "End of Config", "Config.C", "Config.C", "Config()"," Config.C", __LINE__);
+
 }
-                                                                                
+
 Float_t EtaToTheta(Float_t arg){
   return (180./TMath::Pi())*2.*atan(exp(-arg));
 }
 
+
+void LoadPythia()
+{
+    // Load Pythia related libraries
+    gSystem->Load("liblhapdf.so");      // Parton density functions
+    gSystem->Load("libEGPythia6.so");   // TGenerator interface
+    gSystem->Load("libpythia6.so");     // Pythia
+    gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
+}
