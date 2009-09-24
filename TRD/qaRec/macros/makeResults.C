@@ -69,6 +69,8 @@
 Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so"};
 // define setup
 TCanvas *c = 0x0;
+Bool_t mc(kFALSE), friends(kFALSE);
+
 void mergeProd(const Char_t *mark="TRD.Performance.root", const Char_t *files=0);
 void processTRD(TNamed* task);
 void processAliTask(TNamed* task);
@@ -90,8 +92,8 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
     return;
   }
 
-  Bool_t mc = HasReadMCData(opt);
-  Bool_t friends = HasReadFriendData(opt);
+  mc = HasReadMCData(opt);
+  friends = HasReadFriendData(opt);
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
