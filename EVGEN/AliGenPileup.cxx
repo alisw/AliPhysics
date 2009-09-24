@@ -61,7 +61,8 @@ ClassImp(AliGenPileup)
 AliGenPileup::AliGenPileup():
   AliGenCocktail(),
   fBCMask("bcm","3564H"),
-  fGenTrig(kFALSE)
+  fGenTrig(kFALSE),
+  fFlag(kFALSE)
 {
 // Constructor
 // The pileup time window is by default
@@ -77,7 +78,7 @@ AliGenPileup::~AliGenPileup()
 // Destructor
 }
 
-void AliGenPileup::SetGenerator(AliGenerator *generator, Float_t rate)
+void AliGenPileup::SetGenerator(AliGenerator *generator, Float_t rate, Bool_t flag)
 {
   // The method sets the geenrator to be used
   // for pileup simulation.
@@ -91,6 +92,7 @@ void AliGenPileup::SetGenerator(AliGenerator *generator, Float_t rate)
     }
   }
   AddGenerator(generator,"pileup generator",rate);
+  fFlag = flag;
 }
 
 void AliGenPileup::AddGenerator(AliGenerator *Generator,
@@ -155,7 +157,13 @@ void AliGenPileup::Generate()
 
       if (!fBCMask.GetMask(iBC)) continue;
 
-      Int_t nInteractions = gRandom->Poisson(rate);
+      //      Int_t nInteractions = gRandom->Poisson(rate);
+      Int_t nInteractions;
+      if (!fFlag) 
+	nInteractions = gRandom->Poisson(rate);
+      else 
+	nInteractions = TMath::Nint(rate) + 1;
+
       if (nInteractions == 0) continue;
 
       nIntBC[nTotBC] = nInteractions;

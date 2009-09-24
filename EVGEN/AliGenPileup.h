@@ -50,7 +50,8 @@ class AliGenPileup : public AliGenCocktail
     virtual void SetRandomise(Bool_t flag);
     virtual void UsePerEventRates();
 	    
-    void         SetGenerator(AliGenerator *generator, Float_t rate);
+    void         SetGenerator(AliGenerator *generator, Float_t rate, Bool_t flag = kFALSE);
+    //void         SetGenerator(AliGenerator *generator, Float_t rate);
     Bool_t       SetBCMask(const char *mask);
     void         GenerateTrigInteraction(Bool_t flag) {fGenTrig = flag;}
 
@@ -60,6 +61,7 @@ class AliGenPileup : public AliGenCocktail
 
     AliTriggerBCMask fBCMask;    // Mask used to tag the active bunch-crossings within an orbit
     Bool_t           fGenTrig;   // Generate or not the trigger interaction
+    Bool_t           fFlag;      // fixed interaction rate (integer)
 
  private:
     AliGenPileup(const AliGenPileup &gen);
