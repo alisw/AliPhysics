@@ -61,9 +61,6 @@ TPCLib/comp/AliHLTTPCCompModelDeflater.cxx
 TPCLib/comp/AliHLTTPCCompModelDeflaterComponent.cxx
 TPCLib/comp/AliHLTTPCCompModelInflater.cxx
 TPCLib/comp/AliHLTTPCCompModelInflaterComponent.cxx
-TPCLib/AliHLTTPCCalibPedestalComponent.cxx
-TPCLib/AliHLTTPCCalibPulserComponent.cxx
-TPCLib/AliHLTTPCCalibCEComponent.cxx
 TPCLib/AliHLTTPCEventStatistics.cxx
 TPCLib/AliHLTTPCEventStatisticsProducerComponent.cxx
 TPCLib/AliHLTTPCRunStatistics.cxx
@@ -74,7 +71,6 @@ TPCLib/AliHLTTPCClusterHistoComponent.cxx
 TPCLib/AliHLTTPCTrackHistoComponent.cxx
 TPCLib/AliHLTTPCTrackDumpComponent.cxx
 TPCLib/AliHLTTPCClusterDumpComponent.cxx
-TPCLib/AliHLTTPCCalibTracksComponent.cxx
 TPCLib/AliHLTTPCHWCFDataReverterComponent.cxx
 TPCLib/AliHLTTPCLog.cxx
 TPCLib/tracking-ca/AliHLTTPCCATrack.cxx
