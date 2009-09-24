@@ -113,7 +113,7 @@ Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
             fhRawEff[ir] = hdata;
           }
         }
-	if((ir>207 && ir<210)  && specie == 4) {
+	if((ir>207 && ir<210)  && specie == AliRecoParam::kCalib) {
 	  h =  (TH2*) list[specie]->UncheckedAt(ir);
 	  if(h) {
 	    cname = h->GetName();
@@ -146,7 +146,7 @@ Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
 
     //raw data
 
-      if (index == AliQAv1::kRAW && specie == 4){
+      if (index == AliQAv1::kRAW && specie == AliRecoParam::kCalib){
 	test[specie] = CheckRaw(list[specie],dynamic_cast<TObjArray*>(dynamic_cast<TList *>(QARefRec->GetObject())->First()));
       }
       
