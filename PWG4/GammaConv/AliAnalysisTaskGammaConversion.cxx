@@ -578,19 +578,19 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       Int_t phiBin  = fHistograms->GetPhiBin(particle->Phi());
 			
       TString nameMCMappingPhiR="";
-      nameMCMappingPhiR.Form("MC_Conversion_Mapping-Phi%02d-R%02d",phiBin,rBin);
+      nameMCMappingPhiR.Form("MC_Conversion_Mapping_Phi%02d_R%02d",phiBin,rBin);
       fHistograms->FillHistogram(nameMCMappingPhiR, ePos->Vz(), particle->Eta());
 			
       TString nameMCMappingPhi="";
-      nameMCMappingPhi.Form("MC_Conversion_Mapping-Phi%02d",phiBin);
+      nameMCMappingPhi.Form("MC_Conversion_Mapping_Phi%02d",phiBin);
       fHistograms->FillHistogram(nameMCMappingPhi, particle->Eta());
 			
       TString nameMCMappingR="";
-      nameMCMappingR.Form("MC_Conversion_Mapping-R%02d",rBin);
+      nameMCMappingR.Form("MC_Conversion_Mapping_R%02d",rBin);
       fHistograms->FillHistogram(nameMCMappingR, particle->Eta());
 			
       TString nameMCMappingPhiInR="";
-      nameMCMappingPhiInR.Form("MC_Conversion_Mapping_Phi_R-%02d",rBin);
+      nameMCMappingPhiInR.Form("MC_Conversion_Mapping_Phi_in_R_%02d",rBin);
       fHistograms->FillHistogram(nameMCMappingPhiInR, tmpPhi);
       //end mapping
 			
@@ -971,19 +971,19 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     Double_t motherCandidateEta= fV0Reader->GetMotherCandidateEta();
 		
     TString nameESDMappingPhiR="";
-    nameESDMappingPhiR.Form("ESD_Conversion_Mapping-Phi%02d-R%02d",phiBin,rBin);
+    nameESDMappingPhiR.Form("ESD_Conversion_Mapping_Phi%02d_R%02d",phiBin,rBin);
     fHistograms->FillHistogram(nameESDMappingPhiR, fV0Reader->GetZ(), motherCandidateEta);
 		
     TString nameESDMappingPhi="";
-    nameESDMappingPhi.Form("ESD_Conversion_Mapping-Phi%02d",phiBin);
+    nameESDMappingPhi.Form("ESD_Conversion_Mapping_Phi%02d",phiBin);
     fHistograms->FillHistogram(nameESDMappingPhi, fV0Reader->GetZ(), motherCandidateEta);
 		
     TString nameESDMappingR="";
-    nameESDMappingR.Form("ESD_Conversion_Mapping-R%02d",rBin);
+    nameESDMappingR.Form("ESD_Conversion_Mapping_R%02d",rBin);
     fHistograms->FillHistogram(nameESDMappingR, fV0Reader->GetZ(), motherCandidateEta);  
 		
     TString nameESDMappingPhiInR="";
-    nameESDMappingPhiInR.Form("ESD_Conversion_Mapping_Phi_R-%02d",rBin);
+    nameESDMappingPhiInR.Form("ESD_Conversion_Mapping_Phi_in_R_%02d",rBin);
     fHistograms->FillHistogram(nameESDMappingPhiInR, fV0Reader->GetMotherCandidatePhi());
     // end mapping
 		
