@@ -71,9 +71,9 @@ void JetAnalysisManagerCAF()
     esdTrackCutsL->SetMaxChi2PerClusterTPC(3.5);
     esdTrackCutsL->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
     esdTrackCutsL->SetRequireTPCRefit(kTRUE);
-    esdTrackCutsL->SetMinNsigmaToVertex(3);
+    esdTrackCutsL->SetMaxNsigmaToVertex(3);
     esdTrackCutsL->SetRequireSigmaToVertex(kTRUE);
-    esdTrackCutsL->SetAcceptKingDaughters(kFALSE);
+    esdTrackCutsL->SetAcceptKinkDaughters(kFALSE);
     //
     //
     AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");

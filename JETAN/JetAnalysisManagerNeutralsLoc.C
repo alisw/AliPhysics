@@ -52,9 +52,9 @@ void JetAnalysisManagerLoc()
     esdTrackCutsL->SetMaxChi2PerClusterTPC(3.5);
     esdTrackCutsL->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
     esdTrackCutsL->SetRequireTPCRefit(kTRUE);
-    esdTrackCutsL->SetMinNsigmaToVertex(3);
+    esdTrackCutsL->SetMaxNsigmaToVertex(3);
     esdTrackCutsL->SetRequireSigmaToVertex(kTRUE);
-    esdTrackCutsL->SetAcceptKingDaughters(kFALSE);
+    esdTrackCutsL->SetAcceptKinkDaughters(kFALSE);
     //
     // hard
     AliESDtrackCuts* esdTrackCutsH = new AliESDtrackCuts("AliESDtrackCuts", "Hard");
@@ -62,9 +62,9 @@ void JetAnalysisManagerLoc()
     esdTrackCutsH->SetMaxChi2PerClusterTPC(2.0);
     esdTrackCutsH->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
     esdTrackCutsH->SetRequireTPCRefit(kTRUE);
-    esdTrackCutsH->SetMinNsigmaToVertex(2);
+    esdTrackCutsH->SetMaxNsigmaToVertex(2);
     esdTrackCutsH->SetRequireSigmaToVertex(kTRUE);
-    esdTrackCutsH->SetAcceptKingDaughters(kFALSE);
+    esdTrackCutsH->SetAcceptKinkDaughters(kFALSE);
     //
     AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
     trackFilter->AddCuts(esdTrackCutsL);
