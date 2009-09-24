@@ -48,6 +48,7 @@ public:
   Int_t GetBtag(AliAODTrack * tr);
 
   Bool_t IsItPhotonic(const AliAODPWG4Particle* part);
+  Bool_t CheckTrack(const AliAODTrack* track);
 
   void Print(const Option_t * opt)const;
   
@@ -168,19 +169,27 @@ public:
   TH2F * fhPhiZDecay; //! Azimuthal angle of Z-boson  electron vs transverse momentum 
   TH2F * fhEtaZDecay; //! Pseudorapidity of Z-boson electron vs tranvserse momentum 
 
-  TH1F * fhPtPrompt;  //! Number of prompt electron vs transverse momentum 
-  TH2F * fhPhiPrompt; //! Azimuthal angle of prompt  electron vs transverse momentum 
-  TH2F * fhEtaPrompt; //! Pseudorapidity of prompt electron vs tranvserse momentum 
+  TH1F * fhPtAll;  //! Number of all electron vs transverse momentum 
+  TH2F * fhPhiAll; //! Azimuthal angle of all  electron vs transverse momentum 
+  TH2F * fhEtaAll; //! Pseudorapidity of all electron vs tranvserse momentum 
 
-  TH1F * fhPtUnknown;  //! Number of unknown electron vs transverse momentum 
-  TH2F * fhPhiUnknown; //! Azimuthal angle of unknown  electron vs transverse momentum 
-  TH2F * fhEtaUnknown; //! Pseudorapidity of unknown electron vs tranvserse momentum 
+  TH1F * fhPtUnknown;  //! Number of unknown electron vs transverse momentum
+  TH2F * fhPhiUnknown; //! Azimuthal angle of unknown  electron vs transverse momentum
+  TH2F * fhEtaUnknown; //! Pseudorapidity of unknown electron vs tranvserse momentum
+
+  TH1F * fhPtMisidentified;  //! Number of misidentified electron vs transverse momentum
+  TH2F * fhPhiMisidentified; //! Azimuthal angle of misidentified electron vs transverse momentum
+  TH2F * fhEtaMisidentified; //! Pseudorapidity of misidentified electron vs tranvserse momentum 
 
   TH1F* fhPtHadron;     //!Pt distribution of reco charged hadrons
 			//!(pi,k,p) in EMCAL acceptance
   TH1F* fhPtEleTrkDet;  //!Pt distribution of reco electrons using
 			//!pid info from tracking detectors only in
 			//!EMCAL acceptance
+  //event QA
+  TH1F * fhImpactXY;    //! impact parameter of all tracks to primary vertex
+  TH1F * fhRefMult;     //! refmult (sep 14)
+  TH1F * fhRefMult2;    //! refmult2 (sep 14)
 
   //B-tagging
   TH2F * fhBtagCut1; //! B-tagging result for cut1 (minv>1.0)
@@ -188,13 +197,31 @@ public:
   TH2F * fhBtagCut3; //! B-tagging result for cut3 (minv>1.8)
   TH2F * fhBtagQA1;  //! B-tagging : QA of pairDca vs decaylength
   TH2F * fhBtagQA2;  //! B-tagging : QA of signDca vs mass
+  TH1F * fhBtagQA3;  //! B-tagging : QA (sep 14)
+  TH1F * fhBtagQA4;  //! B-tagging : QA (sep 14)
+  TH1F * fhBtagQA5;  //! B-tagging : QA (sep 14)
+
+  //B-Jet histograms
+  TH2F* fhBJetXsiFF;     //! B-tagged jet FF with xsi = log(pt_Jet/pt_Track)
+  TH2F* fhBJetPtFF;      //! B-tagged jet FF with pt_Track
+  TH2F* fhBJetEtaPhi;    //! B-tagged jet eta-phi distribution
+  TH2F* fhNonBJetXsiFF;  //! Non b-tagged jet FF with xsi = log(pt_Jet/pt_Track)
+  TH2F* fhNonBJetPtFF;   //! Non b-tagged jet FF with pt_Track
+  TH2F* fhNonBJetEtaPhi; //! Non b-tagged jet eta-phi distribution
 
   //MC
   TNtuple *fMCEleNtuple; //! Ntuple of MC electrons
-  TH1F* fhPtMCHadron;    //! Pt distribution of MC charged hadrons
-			 //! (pi,k,p) in EMCAL acceptance
+  TH1F* fhPtMCHadron;    //! Pt distribution of MC charged hadrons (pi,k,p) in EMCAL acceptance
+  TH1F* fhPtMCBottom;    //! Pt distribution of MC bottom electrons in EMCAL
+  TH1F* fhPtMCCharm;     //! Pt distribution of MC charm electrons in EMCAL 
+  TH1F* fhPtMCCFromB;    //! Pt distribution of MC charm from bottom ele in EMCAL
+  TH1F* fhPtMCConversion;//! Pt distribution of MC conversion electrons in EMCAL 
+  TH1F* fhPtMCDalitz;    //! Pt distribution of MC Dalitz electrons in EMCAL
+  TH1F* fhPtMCWDecay;    //! Pt distribution of MC W decay electrons in EMCAL
+  TH1F* fhPtMCZDecay;    //! Pt distribution of MC Z decay electrons in EMCAL
+  TH1F* fhPtMCUnknown;   //! Pt distribution of MC unknown electrons in EMCAL
 
-  ClassDef(AliAnaElectron,4)
+  ClassDef(AliAnaElectron,5)
 
 } ;
  

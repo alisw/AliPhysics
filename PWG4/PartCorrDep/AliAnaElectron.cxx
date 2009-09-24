@@ -44,6 +44,8 @@
 #include "AliStack.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDv0.h"
+#include "AliAODJet.h"
+#include "AliAODEvent.h"
 
 ClassImp(AliAnaElectron)
   
@@ -72,13 +74,19 @@ AliAnaElectron::AliAnaElectron()
   fhPtDalitz(0),fhPhiDalitz(0),fhEtaDalitz(0),
   fhPtWDecay(0),fhPhiWDecay(0),fhEtaWDecay(0),
   fhPtZDecay(0),fhPhiZDecay(0),fhEtaZDecay(0),
-  fhPtPrompt(0),fhPhiPrompt(0),fhEtaPrompt(0),
+  fhPtAll(0),fhPhiAll(0),fhEtaAll(0),
   fhPtUnknown(0),fhPhiUnknown(0),fhEtaUnknown(0),
+  fhPtMisidentified(0),fhPhiMisidentified(0),fhEtaMisidentified(0),
   fhPtHadron(0),fhPtEleTrkDet(0),
+  //event QA
+  fhImpactXY(0),fhRefMult(0),fhRefMult2(0),
   //B-tagging
-  fhBtagCut1(0),fhBtagCut2(0),fhBtagCut3(0),fhBtagQA1(0),fhBtagQA2(0),
+  fhBtagCut1(0),fhBtagCut2(0),fhBtagCut3(0),fhBtagQA1(0),fhBtagQA2(0),fhBtagQA3(0),fhBtagQA4(0),fhBtagQA5(0),
+  //B-jets
+  fhBJetXsiFF(0),fhBJetPtFF(0),fhBJetEtaPhi(0),fhNonBJetXsiFF(0),fhNonBJetPtFF(0),fhNonBJetEtaPhi(0),
   //MC
-  fMCEleNtuple(0),fhPtMCHadron(0)
+  fMCEleNtuple(0),fhPtMCHadron(0),fhPtMCBottom(0),fhPtMCCharm(0),fhPtMCCFromB(0),fhPtMCConversion(0),
+  fhPtMCDalitz(0),fhPtMCWDecay(0),fhPtMCZDecay(0),fhPtMCUnknown(0)
 {
   //default ctor
   
@@ -114,14 +122,24 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
    fhPtDalitz(g.fhPtDalitz),fhPhiDalitz(g.fhPhiDalitz),fhEtaDalitz(g.fhEtaDalitz),
    fhPtWDecay(g.fhPtWDecay),fhPhiWDecay(g.fhPhiWDecay),fhEtaWDecay(g.fhEtaWDecay),
    fhPtZDecay(g.fhPtZDecay),fhPhiZDecay(g.fhPhiZDecay),fhEtaZDecay(g.fhEtaZDecay),
-   fhPtPrompt(g.fhPtPrompt),fhPhiPrompt(g.fhPhiPrompt),fhEtaPrompt(g.fhEtaPrompt),
+   fhPtAll(g.fhPtAll),fhPhiAll(g.fhPhiAll),fhEtaAll(g.fhEtaAll),
    fhPtUnknown(g.fhPtUnknown),fhPhiUnknown(g.fhPhiUnknown),fhEtaUnknown(g.fhEtaUnknown),
+   fhPtMisidentified(g.fhPtMisidentified),fhPhiMisidentified(g.fhPhiMisidentified),fhEtaMisidentified(g.fhEtaMisidentified),
    fhPtHadron(g.fhPtHadron),fhPtEleTrkDet(g.fhPtEleTrkDet),
+   //event QA
+   fhImpactXY(g.fhImpactXY),fhRefMult(g.fhRefMult),fhRefMult2(g.fhRefMult2),
    //B-tagging
    fhBtagCut1(g.fhBtagCut1),fhBtagCut2(g.fhBtagCut2),fhBtagCut3(g.fhBtagCut3),
-   fhBtagQA1(g.fhBtagQA1),fhBtagQA2(g.fhBtagQA2),
+   fhBtagQA1(g.fhBtagQA1),fhBtagQA2(g.fhBtagQA2),fhBtagQA3(g.fhBtagQA3),fhBtagQA4(g.fhBtagQA4),
+   fhBtagQA5(g.fhBtagQA5),
+   //B-jets
+    fhBJetXsiFF(g.fhBJetXsiFF),fhBJetPtFF(g.fhBJetPtFF),fhBJetEtaPhi(g.fhBJetEtaPhi),
+    fhNonBJetXsiFF(g.fhNonBJetXsiFF),fhNonBJetPtFF(g.fhNonBJetPtFF),fhNonBJetEtaPhi(g.fhNonBJetEtaPhi),
    //MC
-    fMCEleNtuple(g.fMCEleNtuple),fhPtMCHadron(g.fhPtMCHadron)
+    fMCEleNtuple(g.fMCEleNtuple),fhPtMCHadron(g.fhPtMCHadron),fhPtMCBottom(g.fhPtMCBottom),
+    fhPtMCCharm(g.fhPtMCCharm),fhPtMCCFromB(g.fhPtMCCFromB),fhPtMCConversion(g.fhPtMCConversion),
+    fhPtMCDalitz(g.fhPtMCDalitz),fhPtMCWDecay(g.fhPtMCWDecay),
+    fhPtMCZDecay(g.fhPtMCZDecay),fhPtMCUnknown(g.fhPtMCUnknown)
 {
   // cpy ctor
   
@@ -190,15 +208,23 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fhPtZDecay = g.fhPtZDecay;
   fhPhiZDecay = g.fhPhiZDecay;
   fhEtaZDecay = g.fhEtaZDecay;
-  fhPtPrompt = g.fhPtPrompt;
-  fhPhiPrompt = g.fhPhiPrompt;
-  fhEtaPrompt = g.fhEtaPrompt;
+  fhPtAll = g.fhPtAll;
+  fhPhiAll = g.fhPhiAll;
+  fhEtaAll = g.fhEtaAll;
   fhPtUnknown = g.fhPtUnknown;
   fhPhiUnknown = g.fhPhiUnknown;
   fhEtaUnknown = g.fhEtaUnknown;
+  fhPtMisidentified = g.fhPtMisidentified;
+  fhPhiMisidentified = g.fhPhiMisidentified;
+  fhEtaMisidentified = g.fhEtaMisidentified;
 
   fhPtHadron = g.fhPtHadron;
   fhPtEleTrkDet = g.fhPtEleTrkDet;
+
+  //event QA
+  fhImpactXY = g.fhImpactXY;
+  fhRefMult = g.fhRefMult;
+  fhRefMult2 = g.fhRefMult2;
 
   //B-tagging
   fhBtagCut1 = g.fhBtagCut1;
@@ -206,9 +232,27 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fhBtagCut3 = g.fhBtagCut3;
   fhBtagQA1 = g.fhBtagQA1;
   fhBtagQA2 = g.fhBtagQA2;
+  fhBtagQA3 = g.fhBtagQA3;
+  fhBtagQA4 = g.fhBtagQA4;
+  fhBtagQA5 = g.fhBtagQA5;
+
+  fhBJetXsiFF = g.fhBJetXsiFF;
+  fhBJetPtFF = g.fhBJetPtFF;
+  fhBJetEtaPhi = g.fhBJetEtaPhi;
+  fhNonBJetXsiFF = g.fhNonBJetXsiFF;
+  fhNonBJetPtFF = g.fhNonBJetPtFF;
+  fhNonBJetEtaPhi = g.fhNonBJetEtaPhi;
 
   fMCEleNtuple = g.fMCEleNtuple;
   fhPtMCHadron = g.fhPtMCHadron;
+  fhPtMCBottom = g.fhPtMCBottom;
+  fhPtMCCharm = g.fhPtMCCharm;
+  fhPtMCCFromB = g.fhPtMCCFromB;
+  fhPtMCConversion = g.fhPtMCConversion;
+  fhPtMCDalitz = g.fhPtMCDalitz;
+  fhPtMCWDecay = g.fhPtMCWDecay;
+  fhPtMCZDecay = g.fhPtMCZDecay;
+  fhPtMCUnknown = g.fhPtMCUnknown;
 
   return *this;
   
@@ -304,18 +348,47 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhPtHadron);
   outputContainer->Add(fhPtEleTrkDet);
 
+  //event QA
+  fhImpactXY = new TH1F("hImpactXY","Impact parameter for all tracks",500,0.,100.);
+  fhRefMult = new TH1F("hRefMult" ,"refmult QA: " ,100,0,200);
+  fhRefMult2  = new TH1F("hRefMult2" ,"refmult2 QA: " ,100,0,200);
+
+  outputContainer->Add(fhImpactXY);
+  outputContainer->Add(fhRefMult);
+  outputContainer->Add(fhRefMult2);
+
   //B-tagging
   fhBtagCut1 = new TH2F("hbtag_cut1","B-tag result cut1", 10,0,10 ,nptbins,ptmin,ptmax);
   fhBtagCut2 = new TH2F("hbtag_cut2","B-tag result cut2", 10,0,10 ,nptbins,ptmin,ptmax);
   fhBtagCut3 = new TH2F("hbtag_cut3","B-tag result cut3", 10,0,10 ,nptbins,ptmin,ptmax);
   fhBtagQA1  = new TH2F("hbtag_qa1" ,"B-tag QA: pairDCA vs length", 100,0,0.2 ,100,0,1.0);
   fhBtagQA2  = new TH2F("hbtag_qa2" ,"B-tag QA: signDCA vs mass"  , 200,-0.5,0.5 ,100,0,10);
+  fhBtagQA3  = new TH1F("hbtag_qa3" ,"B-tag QA: ITS-Hits electron" ,7,0,7);
+  fhBtagQA4  = new TH1F("hbtag_qa4" ,"B-tag QA: IP d electron" ,100,0,3);
+  fhBtagQA5  = new TH1F("hbtag_qa5" ,"B-tag QA: IP z electron" ,100,0,3);
 
   outputContainer->Add(fhBtagCut1) ;
   outputContainer->Add(fhBtagCut2) ;
   outputContainer->Add(fhBtagCut3) ;
   outputContainer->Add(fhBtagQA1) ;
   outputContainer->Add(fhBtagQA2) ;
+  outputContainer->Add(fhBtagQA3) ;
+  outputContainer->Add(fhBtagQA4) ;
+  outputContainer->Add(fhBtagQA5) ;
+
+  fhBJetXsiFF = new TH2F("hBJetXsiFF","B-jet #Xsi Frag. Fn.",100,0.,10.,100,0.,100.);
+  fhBJetPtFF = new TH2F("hBJetPtFF","B-jet p_{T} Frag. Fn.",nptbins,ptmin,ptmax,100,0.,100.);
+  fhBJetEtaPhi = new TH2F("hBJetEtaPhi","B-jet eta-phi distribution",netabins,etamin,etamax,nphibins,phimin,phimax);
+  fhNonBJetXsiFF = new TH2F("hNonBJetXsiFF","Non B-jet #Xsi Frag. Fn.",100,0.,10.,100,0.,100.);
+  fhNonBJetPtFF = new TH2F("hNonBJetPtFF","Non B-jet p_{T} Frag. Fn.",nptbins,ptmin,ptmax,100,0.,100.);
+  fhNonBJetEtaPhi = new TH2F("hNonBJetEtaPhi","Non B-jet eta-phi distribution",netabins,etamin,etamax,nphibins,phimin,phimax);
+
+  outputContainer->Add(fhBJetXsiFF);
+  outputContainer->Add(fhBJetPtFF);
+  outputContainer->Add(fhBJetEtaPhi);
+  outputContainer->Add(fhNonBJetXsiFF);
+  outputContainer->Add(fhNonBJetPtFF);
+  outputContainer->Add(fhNonBJetEtaPhi);
 
   if(IsDataMC()){
     
@@ -340,12 +413,15 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     fhPtZDecay = new TH1F("hPtZDecay","Z-boson electron pT",nptbins,ptmin,ptmax);
     fhPhiZDecay = new TH2F("hPhiZDecay","Z-boson Electron phi vs pT",nptbins,ptmin,ptmax,nphibins,phimin,phimax);
     fhEtaZDecay = new TH2F("hEtaZDecay","Z-boson Electron eta vs. eta",nptbins,ptmin,ptmax,netabins,etamin,etamax);
-    fhPtPrompt = new TH1F("hPtPrompt","Prompt electron pT",nptbins,ptmin,ptmax);
-    fhPhiPrompt = new TH2F("hPhiPrompt","Prompt Electron phi vs pT",nptbins,ptmin,ptmax,nphibins,phimin,phimax);
-    fhEtaPrompt = new TH2F("hEtaPrompt","Prompt Electron eta vs. eta",nptbins,ptmin,ptmax,netabins,etamin,etamax);
+    fhPtAll = new TH1F("hPtAll","All electron pT",nptbins,ptmin,ptmax);
+    fhPhiAll = new TH2F("hPhiAll","All Electron phi vs pT",nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+    fhEtaAll = new TH2F("hEtaAll","All Electron eta vs. eta",nptbins,ptmin,ptmax,netabins,etamin,etamax);
     fhPtUnknown = new TH1F("hPtUnknown","Unknown electron pT",nptbins,ptmin,ptmax);
     fhPhiUnknown = new TH2F("hPhiUnknown","Unknown Electron phi vs pT",nptbins,ptmin,ptmax,nphibins,phimin,phimax);
     fhEtaUnknown = new TH2F("hEtaUnknown","Unknown Electron eta vs. eta",nptbins,ptmin,ptmax,netabins,etamin,etamax);
+    fhPtMisidentified = new TH1F("hPtMisidentified","Misidentified electron pT",nptbins,ptmin,ptmax);
+    fhPhiMisidentified = new TH2F("hPhiMisidentified","Misidentified Electron phi vs pT",nptbins,ptmin,ptmax,nphibins,phimin,phimax);
+    fhEtaMisidentified = new TH2F("hEtaMisidentified","Misidentified Electron eta vs. eta",nptbins,ptmin,ptmax,netabins,etamin,etamax);
 
     outputContainer->Add(fhPtConversion);
     outputContainer->Add(fhPhiConversion);
@@ -368,12 +444,15 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     outputContainer->Add(fhPtZDecay);
     outputContainer->Add(fhPhiZDecay);
     outputContainer->Add(fhEtaZDecay);
-    outputContainer->Add(fhPtPrompt);
-    outputContainer->Add(fhPhiPrompt);
-    outputContainer->Add(fhEtaPrompt);
+    outputContainer->Add(fhPtAll);
+    outputContainer->Add(fhPhiAll);
+    outputContainer->Add(fhEtaAll);
     outputContainer->Add(fhPtUnknown);
     outputContainer->Add(fhPhiUnknown);
     outputContainer->Add(fhEtaUnknown);
+    outputContainer->Add(fhPtMisidentified);
+    outputContainer->Add(fhPhiMisidentified);
+    outputContainer->Add(fhEtaMisidentified);
     
     //created ele ntuple for further analysis
     if(fWriteNtuple) {
@@ -382,8 +461,24 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     }
 
     fhPtMCHadron = new TH1F("hPtMCHadron","MC Charged hadrons w/in EMCAL acceptance",nptbins,ptmin,ptmax);
+    fhPtMCBottom = new TH1F("hPtMCBottom","MC Bottom electrons w/in EMCAL acceptance",nptbins,ptmin,ptmax);
+    fhPtMCCharm = new TH1F("hPtMCCharm","MC Charm electrons w/in EMCAL acceptance",nptbins,ptmin,ptmax);
+    fhPtMCCFromB = new TH1F("hPtMCCFromB","MC Charm from Bottom electrons w/in EMCAL acceptance",nptbins,ptmin,ptmax);
+    fhPtMCConversion = new TH1F("hPtMCConversion","MC Conversion electrons w/in EMCAL acceptance",nptbins,ptmin,ptmax);
+    fhPtMCDalitz  = new TH1F("hPtMCDalitz","MC Dalitz electrons w/in EMCAL acceptance",nptbins,ptmin,ptmax);
+    fhPtMCWDecay = new TH1F("hPtMCWDecay","MC W Decay electrons w/in EMCAL acceptance",nptbins,ptmin,ptmax);
+    fhPtMCZDecay = new TH1F("hPtMCZDecay","MC Z Decay electrons w/in EMCAL acceptance",nptbins,ptmin,ptmax);
+    fhPtMCUnknown = new TH1F("hPtMCUnknown","MC Unknown electrons w/in EMCAL acceptance",nptbins,ptmin,ptmax);
 
     outputContainer->Add(fhPtMCHadron);
+    outputContainer->Add(fhPtMCBottom);
+    outputContainer->Add(fhPtMCCharm);
+    outputContainer->Add(fhPtMCCFromB);
+    outputContainer->Add(fhPtMCConversion);
+    outputContainer->Add(fhPtMCDalitz);
+    outputContainer->Add(fhPtMCWDecay);
+    outputContainer->Add(fhPtMCZDecay);
+    outputContainer->Add(fhPtMCUnknown);
 
   }//Histos with MC
   
@@ -499,6 +594,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   ////////////////////////////////////////////////
   if(!GetAODCTS() || GetAODCTS()->GetEntriesFast() == 0) return ;
   Int_t ntracks = GetAODCTS()->GetEntriesFast();
+  Int_t refmult = 0; Int_t refmult2 = 0;
   if(GetDebug() > 0)
     printf("AliAnaElectron::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
 
@@ -510,158 +606,174 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   for (Int_t itrk =  0; itrk <  ntracks; itrk++) {////////////// track loop
     iCluster = -999; //start with no match
     AliAODTrack * track = (AliAODTrack*) (GetAODCTS()->At(itrk)) ;
+    if (TMath::Abs(track->Eta())< 0.5) refmult++;
+    Double_t x[3];
+    Bool_t isNotDCA = track->GetPosition(x);
+    Double_t d1 = TMath::Sqrt(x[0]*x[0] + x[1]*x[1]);
+    if (TMath::Abs(track->Eta())< 0.5 && TMath::Abs(d1)<1.0 && TMath::Abs(x[2])<1.0) refmult2++;
+
     AliAODPid* pid = (AliAODPid*) track->GetDetPid();
-
-    Double_t emcpos[3];
-    pid->GetEMCALPosition(emcpos);
-    Double_t emcmom[3];
-    pid->GetEMCALMomentum(emcmom);
-    
-    TVector3 pos(emcpos[0],emcpos[1],emcpos[2]);
-    TVector3 mom(emcmom[0],emcmom[1],emcmom[2]);
-    Double_t tphi = pos.Phi();
-    Double_t teta = pos.Eta();
-    Double_t tmom = mom.Mag();
-
-    TLorentzVector mom2(mom,0.);
-    Bool_t in =  GetFidutialCut()->IsInFidutialCut(mom2,fCalorimeter) ;
-    if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, eta %2.2f in fidutial cut %d\n",track->Pt(), track->Phi(), track->Eta(), in);
-    if(mom.Pt() > GetMinPt() && in) {
-
-      Double_t dEdx = pid->GetTPCsignal();
-
-      //NOTE:  As of 02-Sep-2009, the XYZAtDCA methods of AOD do not
-      //work, but it is possible to get the position of a track at
-      //closest approach to the vertex from the GetPosition method
-      Double_t xyz[3];
-      //track->XYZAtDCA(xyz);
-      Bool_t isNotDCA = track->GetPosition(xyz);
-      if(isNotDCA) printf("##Problem getting impact parameter!\n");
-      //printf("\tTRACK POSITION AT DCA: %2.2f,%2.2f,%2.2f\n",xyz[0],xyz[1],xyz[2]);
-      Double_t xy = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-      Double_t z = xyz[2];
-            
-      Int_t ntot = cl->GetEntriesFast();
-      Double_t res = 999.;
-      Double_t pOverE = -999.;
-
-      Int_t pidProb = track->GetMostProbablePID();
-      if(pidProb == AliAODTrack::kPion || pidProb == AliAODTrack::kKaon || pidProb == AliAODTrack::kProton) fhPtHadron->Fill(track->Pt());
-      if(pidProb == AliAODTrack::kElectron) fhPtEleTrkDet->Fill(track->Pt());
-
-      Bool_t isElectron = kFALSE;      
-      //For tracks in EMCAL acceptance, pair them with all clusters
-      //and fill the dEta vs dPhi for these pairs:
-      for(Int_t iclus = 0; iclus < ntot; iclus++) {
-	AliAODCaloCluster * clus = (AliAODCaloCluster*) (cl->At(iclus));
-	if(!clus) continue;
+    if(pid == 0) {
+      if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillAOD() - No PID object - skipping track %d",itrk);
+      continue;
+    } else {
+      Double_t emcpos[3];
+      pid->GetEMCALPosition(emcpos);
+      Double_t emcmom[3];
+      pid->GetEMCALMomentum(emcmom);
+      
+      TVector3 pos(emcpos[0],emcpos[1],emcpos[2]);
+      TVector3 mom(emcmom[0],emcmom[1],emcmom[2]);
+      Double_t tphi = pos.Phi();
+      Double_t teta = pos.Eta();
+      Double_t tmom = mom.Mag();
+      
+      TLorentzVector mom2(mom,0.);
+      Bool_t in =  GetFidutialCut()->IsInFidutialCut(mom2,fCalorimeter) ;
+      if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, eta %2.2f in fidutial cut %d\n",track->Pt(), track->Phi(), track->Eta(), in);
+      if(mom.Pt() > GetMinPt() && in) {
 	
-	Double_t x[3];
-	clus->GetPosition(x);
-	TVector3 cluspos(x[0],x[1],x[2]);
-	Double_t deta = teta - cluspos.Eta();
-	Double_t dphi = tphi - cluspos.Phi();
-	if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
-	if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
-	fh2dEtadPhi->Fill(deta,dphi);
-	fh2TrackPVsClusterE->Fill(clus->E(),track->P());
-	fh2TrackPtVsClusterE->Fill(clus->E(),track->Pt());
-	fh2TrackPhiVsClusterPhi->Fill(cluspos.Phi(),mom.Phi());
-	fh2TrackEtaVsClusterEta->Fill(cluspos.Eta(),mom.Eta());
-
-	res = sqrt(dphi*dphi + deta*deta);
-	fh1dR->Fill(res);
-
-	/////////////////////////////////
-	//Perform electron cut analysis//
-	/////////////////////////////////
-	//Good match
-	if(res < fResidualCut) {
-	  fh2dEtadPhiMatched->Fill(deta,dphi);
-	  iCluster = iclus;
-
-	  Int_t tmctag = -1;
-	  Int_t cmctag = -1;
-
-	  if(IsDataMC()) {
-	    //Input from second AOD?
-	    Int_t input = 0;
-	    if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) input = 1;
-	    tmctag = GetMCAnalysisUtils()->CheckOrigin(track->GetLabel(),GetReader(),input);
-
-	    //Do you want the cluster or the track label?
-	    input = 0;
-	    if(GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1;
-	    cmctag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabel(0),GetReader(),input);
+	Double_t dEdx = pid->GetTPCsignal();
+	
+	//NOTE:  As of 02-Sep-2009, the XYZAtDCA methods of AOD do not
+	//work, but it is possible to get the position of a track at
+	//closest approach to the vertex from the GetPosition method
+	Double_t xyz[3];
+	//track->XYZAtDCA(xyz);
+	isNotDCA = track->GetPosition(xyz);
+	if(isNotDCA) printf("##Problem getting impact parameter!\n");
+	//printf("\tTRACK POSITION AT DCA: %2.2f,%2.2f,%2.2f\n",xyz[0],xyz[1],xyz[2]);
+	Double_t xy = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+	Double_t z = xyz[2];
+	
+	Int_t ntot = cl->GetEntriesFast();
+	Double_t res = 999.;
+	Double_t pOverE = -999.;
+	
+	Int_t pidProb = track->GetMostProbablePID();
+	if(pidProb == AliAODTrack::kPion || pidProb == AliAODTrack::kKaon || pidProb == AliAODTrack::kProton) fhPtHadron->Fill(track->Pt());
+	if(pidProb == AliAODTrack::kElectron) fhPtEleTrkDet->Fill(track->Pt());
+	
+	Bool_t isElectron = kFALSE;      
+	//For tracks in EMCAL acceptance, pair them with all clusters
+	//and fill the dEta vs dPhi for these pairs:
+	for(Int_t iclus = 0; iclus < ntot; iclus++) {
+	  AliAODCaloCluster * clus = (AliAODCaloCluster*) (cl->At(iclus));
+	  if(!clus) continue;
+	  
+	  //Double_t x[3];
+	  clus->GetPosition(x);
+	  TVector3 cluspos(x[0],x[1],x[2]);
+	  Double_t deta = teta - cluspos.Eta();
+	  Double_t dphi = tphi - cluspos.Phi();
+	  if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
+	  if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
+	  fh2dEtadPhi->Fill(deta,dphi);
+	  fh2TrackPVsClusterE->Fill(clus->E(),track->P());
+	  fh2TrackPtVsClusterE->Fill(clus->E(),track->Pt());
+	  fh2TrackPhiVsClusterPhi->Fill(cluspos.Phi(),mom.Phi());
+	  fh2TrackEtaVsClusterEta->Fill(cluspos.Eta(),mom.Eta());
+	  
+	  res = sqrt(dphi*dphi + deta*deta);
+	  fh1dR->Fill(res);
+	  
+	  /////////////////////////////////
+	  //Perform electron cut analysis//
+	  /////////////////////////////////
+	  //Good match
+	  if(res < fResidualCut) {
+	    fh2dEtadPhiMatched->Fill(deta,dphi);
+	    iCluster = iclus;
+	    
+	    Int_t tmctag = -1;
+	    Int_t cmctag = -1;
+	    
+	    if(IsDataMC()) {
+	      //Input from second AOD?
+	      Int_t input = 0;
+	      if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) input = 1;
+	      tmctag = GetMCAnalysisUtils()->CheckOrigin(track->GetLabel(),GetReader(),input);
+	      
+	      //Do you want the cluster or the track label?
+	      input = 0;
+	      if(GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1;
+	      cmctag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabel(0),GetReader(),input);
+	    }
+	    
+	    if(fWriteNtuple) {
+	      fEleNtuple->Fill(tmctag,cmctag,track->Pt(),track->Phi(),track->Eta(),track->P(),clus->E(),deta,dphi,clus->GetNCells(),dEdx,pidProb,xy,z);
+	    }
+	    
+	    fh2MatchdEdx->Fill(track->P(),dEdx);
+	    
+	    Double_t energy = clus->E(); 
+	    if(energy > 0) pOverE = tmom/energy;
+	    fh1pOverE->Fill(pOverE);
+	    
+	    Int_t mult = clus->GetNCells();
+	    if(mult < 2 &&  GetDebug() > 0) printf("Single digit cluster.\n");
+	    
+	    //////////////////////////////
+	    //Electron cuts happen here!//
+	    //////////////////////////////
+	    if(pOverE > fpOverEmin && pOverE < fpOverEmax) isElectron = kTRUE;
+	  } else {
+	    fh2dEtadPhiUnmatched->Fill(deta,dphi);
 	  }
-
-	  if(fWriteNtuple) {
-	    fEleNtuple->Fill(tmctag,cmctag,track->Pt(),track->Phi(),track->Eta(),track->P(),clus->E(),deta,dphi,clus->GetNCells(),dEdx,pidProb,xy,z);
-	  }
 	  
-	  fh2MatchdEdx->Fill(track->P(),dEdx);
-	  
-	  Double_t energy = clus->E(); 
-	  if(energy > 0) pOverE = tmom/energy;
-	  fh1pOverE->Fill(pOverE);
-	  
-	  Int_t mult = clus->GetNCells();
-	  if(mult < 2 &&  GetDebug() > 0) printf("Single digit cluster.\n");
-	  
-	  //////////////////////////////
-	  //Electron cuts happen here!//
-	  //////////////////////////////
-	  if(pOverE > fpOverEmin && pOverE < fpOverEmax) isElectron = kTRUE;
-	} else {
-	  fh2dEtadPhiUnmatched->Fill(deta,dphi);
-	}
-	  
-      } //calocluster loop
-
-      ///////////////////////////
-      //Fill AOD with electrons//
-      ///////////////////////////
-      if(isElectron) {
-
-	//B-tagging
-	if(GetDebug() > 1) printf("Found Electron - do b-tagging\n");
-	Int_t btag = GetBtag(track); bt += btag;
+	} //calocluster loop
 	
-	fh2EledEdx->Fill(track->P(),dEdx);
-	
-	Double_t eMass = 0.511/1000; //mass in GeV
-	Double_t eleE = sqrt(track->P()*track->P() + eMass*eMass);
-	AliAODPWG4Particle tr = AliAODPWG4Particle(track->Px(),track->Py(),track->Pz(),eleE);
-	tr.SetLabel(track->GetLabel());
-	tr.SetCaloLabel(iCluster,-1); //sets the indices of the original caloclusters
-	tr.SetTrackLabel(itrk,-1); //sets the indices of the original tracks
-	tr.SetDetector(fCalorimeter);
-	if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
-	//Make this preserve sign of particle
-	if(track->Charge() < 0) tr.SetPdg(11); //electron is 11
-	else  tr.SetPdg(-11); //positron is -11
-	tr.SetBtag(btag);
-
-	//Play with the MC stack if available
-	//Check origin of the candidates
-	if(IsDataMC()){
+	///////////////////////////
+	//Fill AOD with electrons//
+	///////////////////////////
+	if(isElectron) {
 	  
-	  //FIXME:  Need to re-think this for track-oriented analysis
-	  //JLK DO WE WANT TRACK TAG OR CLUSTER TAG?
-	  tr.SetTag(GetMCAnalysisUtils()->CheckOrigin(tr.GetLabel(),GetReader(),tr.GetInputFileIndex()));
+	  //B-tagging
+	  if(GetDebug() > 1) printf("Found Electron - do b-tagging\n");
+	  Int_t dvmbtag = GetBtag(track); bt += dvmbtag;
 	  
-	  if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillAOD() - Origin of candidate %d\n",tr.GetTag());
-	}//Work with stack also   
-	
-	AddAODParticle(tr);
-	
-	if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Electron selection cuts passed: pT %3.2f, pdg %d\n",tr.Pt(),tr.GetPdg());	
-      }//electron
-    }//pt, fiducial selection                                                                                  
+	  fh2EledEdx->Fill(track->P(),dEdx);
+	  
+	  Double_t eMass = 0.511/1000; //mass in GeV
+	  Double_t eleE = sqrt(track->P()*track->P() + eMass*eMass);
+	  AliAODPWG4Particle tr = AliAODPWG4Particle(track->Px(),track->Py(),track->Pz(),eleE);
+	  tr.SetLabel(track->GetLabel());
+	  tr.SetCaloLabel(iCluster,-1); //sets the indices of the original caloclusters
+	  tr.SetTrackLabel(itrk,-1); //sets the indices of the original tracks
+	  tr.SetDetector(fCalorimeter);
+	  if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
+	  //Make this preserve sign of particle
+	  if(track->Charge() < 0) tr.SetPdg(11); //electron is 11
+	  else  tr.SetPdg(-11); //positron is -11
+	  Int_t btag = -1;
+	  if(dvmbtag > 0) tr.SetBTagBit(btag,tr.kDVMTag0);
+	  if(dvmbtag > 1) tr.SetBTagBit(btag,tr.kDVMTag1);
+	  if(dvmbtag > 2) tr.SetBTagBit(btag,tr.kDVMTag2);
+	  tr.SetBtag(btag);
+	  
+	  //Play with the MC stack if available
+	  //Check origin of the candidates
+	  if(IsDataMC()){
+	    
+	    //FIXME:  Need to re-think this for track-oriented analysis
+	    //JLK DO WE WANT TRACK TAG OR CLUSTER TAG?
+	    tr.SetTag(GetMCAnalysisUtils()->CheckOrigin(tr.GetLabel(),GetReader(),tr.GetInputFileIndex()));
+	    
+	    if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillAOD() - Origin of candidate %d\n",tr.GetTag());
+	  }//Work with stack also   
+	  
+	  AddAODParticle(tr);
+	  
+	  if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Electron selection cuts passed: pT %3.2f, pdg %d\n",tr.Pt(),tr.GetPdg());	
+	}//electron
+      }//pt, fiducial selection
+    }//pid check
   }//track loop                         
   
   //FIXME:  Should we also check from the calocluster side, just in
   //case?
+  fhRefMult->Fill(refmult);
+  fhRefMult2->Fill(refmult2);
 
   if(GetDebug() > 1 && bt > 0) printf("AliAnaElectron::MakeAnalysisFillAOD() *** Event Btagged *** \n");
   if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD()  End fill AODs \n");  
@@ -702,8 +814,53 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       
     }
   }// is data and MC
+
+  ////////////////////////////////////
+  //Loop over jets and check for b-tag
+  ////////////////////////////////////
+  Int_t njets = (GetReader()->GetOutputEvent())->GetNJets();
+  if(njets > 0) {
+    if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillHistograms() - Jet AOD branch has %d jets.  Performing b-jet tag analysis",njets);
+    
+    for(Int_t ijet = 0; ijet < njets ; ijet++) {
+      AliAODJet * jet = (AliAODJet*)(GetReader()->GetOutputEvent())->GetJet(ijet) ;
+      if(GetDebug() > 3) {
+	printf("AliAODJet ijet = %d\n",ijet);
+	jet->Print("");
+      }
+      //Assuming that they fixed the problem of track references in
+      //AliAODJet not being filled, we will loop over the tracks and
+      //see which ones were tagged as electrons
+      Bool_t bjet = kFALSE;  //We'll check the jet's tracks to see if this is a bjet candidate
+      TRefArray* rt = jet->GetRefTracks();
+      Int_t ntrk = rt->GetEntries();
+      for(Int_t itrk = 0; itrk < ntrk; itrk++) {
+	AliAODTrack* jetTrack = (AliAODTrack*)jet->GetTrack(itrk);
+	Bool_t isNPE = CheckTrack(jetTrack);
+	if(isNPE) bjet = kTRUE;
+      }
+      for(Int_t itrk = 0; itrk < ntrk; itrk++) {
+	AliAODTrack* jetTrack = (AliAODTrack*)jet->GetTrack(itrk);
+	Double_t xsi = TMath::Log(jet->Pt()/jetTrack->Pt());
+	if(bjet) {
+	  printf("We have a winner!\n");
+	  //Fill bjet histograms here
+	  fhBJetXsiFF->Fill(xsi,jet->Pt());
+	  fhBJetPtFF->Fill(jetTrack->Pt(),jet->Pt());
+	  fhBJetEtaPhi->Fill(jet->Eta(),jet->Phi());
+	} else {
+	  //Fill non-bjet histograms here
+	  fhNonBJetXsiFF->Fill(xsi,jet->Pt());
+	  fhNonBJetPtFF->Fill(jetTrack->Pt(),jet->Pt());
+	  fhNonBJetEtaPhi->Fill(jet->Eta(),jet->Phi());
+	}
+      }
+    } //jet loop
+  } //jets exist
   
+  //////////////////////////////
   //Loop on stored AOD electrons
+  //////////////////////////////
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
   
@@ -719,7 +876,6 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     
     if(GetDebug() > 1) 
       printf("AliAnaElectron::MakeAnalysisFillHistograms() - ID Electron: pt %f, phi %f, eta %f\n", ele->Pt(),ele->Phi(),ele->Eta()) ;
-    
 
     //Filter for photonic electrons based on opening angle and Minv
     //cuts, also fill histograms
@@ -747,57 +903,56 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 
     if(IsDataMC()){
       Int_t tag = ele->GetTag();
-      if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)){
-	fhPtConversion  ->Fill(ptele);
-	fhPhiConversion ->Fill(ptele,phiele);
-	fhEtaConversion ->Fill(ptele,etaele);
-      }
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromB))
-	{
+      if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)) {
+	fhPtAll  ->Fill(ptele);
+	fhPhiAll ->Fill(ptele,phiele);
+	fhEtaAll ->Fill(ptele,etaele);	  
+
+	if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)){
+	  fhPtConversion  ->Fill(ptele);
+	  fhPhiConversion ->Fill(ptele,phiele);
+	  fhEtaConversion ->Fill(ptele,etaele);
+	}
+	else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromB)){
 	  fhPtBottom  ->Fill(ptele);
 	  fhPhiBottom ->Fill(ptele,phiele);
 	  fhEtaBottom ->Fill(ptele,etaele);
 	}
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromC))
-	{
+	else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromC)){
 	  fhPtCharm  ->Fill(ptele);
 	  fhPhiCharm ->Fill(ptele,phiele);
 	  fhEtaCharm ->Fill(ptele,etaele);
 	}
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromCFromB))
-	{
+	else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromCFromB)){
 	  fhPtCFromB  ->Fill(ptele);
 	  fhPhiCFromB ->Fill(ptele,phiele);
 	  fhEtaCFromB ->Fill(ptele,etaele);
 	}
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
-	{
+	else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)) {
 	  fhPtDalitz  ->Fill(ptele);
 	  fhPhiDalitz ->Fill(ptele,phiele);
 	  fhEtaDalitz ->Fill(ptele,etaele);
 	}
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCWDecay))
-	{
+	else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCWDecay)) {
 	  fhPtWDecay  ->Fill(ptele);
 	  fhPhiWDecay ->Fill(ptele,phiele);
 	  fhEtaWDecay ->Fill(ptele,etaele);
 	}
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCZDecay))
-	{
+	else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCZDecay)) {
 	  fhPtZDecay  ->Fill(ptele);
 	  fhPhiZDecay ->Fill(ptele,phiele);
 	  fhEtaZDecay ->Fill(ptele,etaele);
+	} 
+	else {
+	  fhPtUnknown  ->Fill(ptele);
+	  fhPhiUnknown ->Fill(ptele,phiele);
+	  fhEtaUnknown ->Fill(ptele,etaele);
 	}
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))
-	{
-	  fhPtPrompt  ->Fill(ptele);
-	  fhPhiPrompt ->Fill(ptele,phiele);
-	  fhEtaPrompt ->Fill(ptele,etaele);	  
-	}
-      else{
-	fhPtUnknown  ->Fill(ptele);
-	fhPhiUnknown ->Fill(ptele,phiele);
-	fhEtaUnknown ->Fill(ptele,etaele);
+	//not electron:
+      } else {
+	fhPtMisidentified  ->Fill(ptele);
+        fhPhiMisidentified ->Fill(ptele,phiele);
+        fhEtaMisidentified ->Fill(ptele,etaele);
       }
     }//Histograms with MC
     
@@ -836,9 +991,27 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	if(fWriteNtuple) {
 	  fMCEleNtuple->Fill(mctag,primary->Pt(),primary->Phi(),primary->Eta(),primary->Vx(),primary->Vy(),primary->Vz());
 	}
-	
-      }
-      
+	if(!GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion)) {
+	  if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCEFromB))
+	    fhPtMCBottom->Fill(primary->Pt());
+	  else if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCEFromC))
+	    fhPtMCCharm->Fill(primary->Pt());
+	  else if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCEFromCFromB))
+	    fhPtMCCFromB->Fill(primary->Pt());
+	  else if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCWDecay))
+	    fhPtMCWDecay->Fill(primary->Pt());
+	  else if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCZDecay))
+	    fhPtMCZDecay->Fill(primary->Pt());
+	  else if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPi0Decay) 
+		  || GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCEtaDecay)
+		  || GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCOtherDecay))
+	    fhPtMCDalitz->Fill(primary->Pt());
+	  else 
+	    fhPtMCUnknown->Fill(primary->Pt());
+	} else if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion)) {
+	  fhPtMCConversion->Fill(primary->Pt());
+	}
+      }      
     } else if(GetReader()->ReadAODMCParticles()) {
       Int_t npart0 = mcparticles0->GetEntriesFast();
       Int_t npart1 = 0;
@@ -868,29 +1041,6 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	//we only want TRACKABLE electrons (TPC 85-250cm)
 	Double_t radius = TMath::Sqrt(aodprimary->Xv()*aodprimary->Xv() + aodprimary->Yv()*aodprimary->Yv());
 	if(radius > 200.) continue;
-	
-	if(aodprimary->Pt() < 0.2) continue;
-
-	/*
-	if(aodprimary->GetDaughter(0) > 0) {
-	  Int_t dindex = aodprimary->GetDaughter(0);
-	  //printf("####AODMCparticle daughter index %d and flag value %d\n",dindex,aodprimary->GetFlag());
-	  Double_t dxv = 0.;
-	  Double_t dyv = 0.;
-	  if(ipart < npart0) {
-	    dxv =  ((AliAODMCParticle*)mcparticles0->At(dindex))->Xv();
-	    dyv =  ((AliAODMCParticle*)mcparticles0->At(dindex))->Yv();
-	  } else {
-	    dxv =  ((AliAODMCParticle*)mcparticles1->At(dindex))->Xv();
-	    dyv =  ((AliAODMCParticle*)mcparticles1->At(dindex))->Yv();
-	  }
-	  Double_t dradius = TMath::Sqrt(dxv*dxv+dyv*dyv);
-	  //printf("\tDaughter production radius = %2.2f\n",dradius); 
-	  //if you convert/decay within the trackable zone, discard
-	  //from ntuple ?
-	  //	  if(dradius < 200.) continue;
-	}
-	*/
 
 	//find out what the ancestry of this electron is
 	Int_t mctag = -1;
@@ -903,7 +1053,26 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	if(fWriteNtuple) {
 	  fMCEleNtuple->Fill(mctag,aodprimary->Pt(),aodprimary->Phi(),aodprimary->Eta(),aodprimary->Xv(),aodprimary->Yv(),aodprimary->Zv());
 	}
-	
+	if(!GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion)) {
+	  if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCEFromB))
+	    fhPtMCBottom->Fill(aodprimary->Pt());
+	  else if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCEFromC))
+	    fhPtMCCharm->Fill(aodprimary->Pt());
+	  else if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCEFromCFromB))
+	    fhPtMCCFromB->Fill(aodprimary->Pt());
+	  else if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCWDecay))
+	    fhPtMCWDecay->Fill(aodprimary->Pt());
+	  else if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCZDecay))
+	    fhPtMCZDecay->Fill(aodprimary->Pt());
+	  else if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPi0Decay) 
+		  || GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCEtaDecay)
+		  || GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCOtherDecay))
+	    fhPtMCDalitz->Fill(aodprimary->Pt());
+	  else 
+	    fhPtMCUnknown->Fill(aodprimary->Pt());
+	} else if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion)) {
+	  fhPtMCConversion->Fill(aodprimary->Pt());
+	}	
       }
     }
   } //pure MC kine histos
@@ -919,6 +1088,8 @@ Int_t AliAnaElectron::GetBtag(AliAODTrack * tr )
 
   Int_t ncls1 = 0;
   for(Int_t l = 0; l < 6; l++) if(TESTBIT(tr->GetITSClusterMap(),l)) ncls1++;
+
+  fhBtagQA3->Fill(ncls1);
   if (ncls1 < fITSCut) return 0;
 
   Double_t x[3];
@@ -928,8 +1099,10 @@ Int_t AliAnaElectron::GetBtag(AliAODTrack * tr )
   if(isNotDCA) { printf("##Problem getting impact parameter!\n"); return 0; }
 
   Double_t d1 = TMath::Sqrt(x[0]*x[0] + x[1]*x[1]);
+  fhBtagQA4->Fill(TMath::Abs(d1));
   if (TMath::Abs(d1)   > fImpactCut ) return 0;
-  if (TMath::Abs(x[2]) > fImpactCut ) return 0;
+  fhBtagQA5->Fill(TMath::Abs(x[2]));
+  //  if (TMath::Abs(x[2]) > fImpactCut ) return 0;
   //printf("----- impact parameter: x=%f, y=%f, z=%f -------\n",x[0],x[1], x[2]);
 
   Int_t nvtx1 = 0;
@@ -978,6 +1151,7 @@ Int_t AliAnaElectron::GetBtag(AliAODTrack * tr )
   fhBtagCut3->Fill(nvtx3,tr->Pt());
 
   return nvtx2;
+
 }
 
 //__________________________________________________________________
@@ -1137,6 +1311,30 @@ Bool_t AliAnaElectron::IsItPhotonic(const AliAODPWG4Particle* part)
 
   delete param1;
   return itIS;
+
+}
+
+//__________________________________________________________________
+Bool_t AliAnaElectron::CheckTrack(const AliAODTrack* track) 
+{
+  //Check this track to see if it is also tagged as an electron in the
+  //AliAODPWG4Particle list and if it is non-photonic
+
+  Bool_t isNPE = kFALSE;
+
+  Int_t trackId = track->GetID(); //get the index in the reader
+
+  Int_t naod = GetOutputAODBranch()->GetEntriesFast();
+  if(GetDebug() > 3) printf("AliAnaElectron::CheckTrack() - aod branch entries %d\n", naod);
+  for(Int_t iaod = 0; iaod < naod ; iaod++){
+    AliAODPWG4Particle* ele =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
+    Int_t label = ele->GetTrackLabel(0);
+    if(label != trackId) continue;  //skip to the next one if they don't match
+
+    isNPE = kTRUE;
+  }
+
+  return isNPE;
 
 }
 

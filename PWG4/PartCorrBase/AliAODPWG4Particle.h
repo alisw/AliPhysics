@@ -27,7 +27,21 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual ~AliAODPWG4Particle();
   AliAODPWG4Particle(const AliAODPWG4Particle& photon); 
   AliAODPWG4Particle& operator=(const AliAODPWG4Particle& photon);
-  
+
+  //enumerated type for various b-tags of electrons
+  enum btagTypes {kDVMTag0, kDVMTag1, kDVMTag2, kTransverseIPTag, kUnknownTag};
+
+  void SetBTagBit(Int_t &tag, const UInt_t set) const {
+    // Set bit of type set (btagTypes) in tag                                             
+    tag |= (1<<set) ;
+  }
+
+  Bool_t CheckBTagBit(const Int_t tag, const UInt_t test) const {
+    // Check if in fBtag the bit test (btagTypes) is set.                                   
+    if (tag & (1<<test) ) return  kTRUE ;
+    else return kFALSE ;
+  }
+
   // AliVParticle methods
   virtual Double_t Px()         const { return fMomentum->Px();      }
   virtual Double_t Py()         const { return fMomentum->Py();      }
