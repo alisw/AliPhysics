@@ -352,7 +352,8 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
 
       // counters
       int max = AliEMCALGeoParams::fgkSampleMin, min = AliEMCALGeoParams::fgkSampleMax; // min and max sample values
-      
+      int nsamples = 0;
+
       // for the pedestal calculation
       int sampleSum = 0; // sum of samples
       int squaredSampleSum = 0; // sum of samples squared
@@ -363,6 +364,7 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
       while (in->NextBunch()) {
 	const UShort_t *sig = in->GetSignals();
 	startBin = in->GetStartTimeBin();
+	nsamples += in->GetBunchLength();
 	for (i = 0; i < in->GetBunchLength(); i++) {
 	  sample = sig[i];
 	  time = startBin--;
@@ -381,6 +383,8 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
 	  
 	} // loop over samples in bunch
       } // loop over bunches
+
+      if (nsamples > 0) { // this check is needed for when we have zero-supp. on, but not sparse readout
 
       // calculate pedesstal estimate: mean of possibly selected samples
       if (nSum > 0) {
@@ -434,7 +438,7 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
 	}
       }//end if valid gain
 
-    
+      } // nsamples>0 check, some data found for this channel; not only trailer/header
     }// end while over channel   
   }//end while over DDL's, of input stream 
 

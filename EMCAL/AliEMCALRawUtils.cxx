@@ -331,10 +331,6 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   while (in.NextDDL()) {
     while (in.NextChannel()) {
       
-      id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
-      caloFlag = in.GetCaloFlag();
-      lowGain = in.IsLowGain();
-
       // There can be zero-suppression in the raw data, 
       // so set up the TGraph in advance
       for (i=0; i < GetRawFormatTimeBins(); i++) {
@@ -342,7 +338,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
       }
 		
       Int_t maxTime = 0;
-
+      int nsamples = 0;
       while (in.NextBunch()) {
 	const UShort_t *sig = in.GetSignals();
 	startBin = in.GetStartTimeBin();
@@ -355,13 +351,19 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 	  AliWarning(Form("Invalid time bin %d",maxTime));
 	  maxTime = GetRawFormatTimeBins();
 	}
-
+	nsamples += in.GetBunchLength();
 	for (i = 0; i < in.GetBunchLength(); i++) {
 	  time = startBin--;
 	  gSig->SetPoint(time, time, sig[i]) ;
 	}
       } // loop over bunches
     
+      if (nsamples > 0) { // this check is needed for when we have zero-supp. on, but not sparse readout
+
+      id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
+      caloFlag = in.GetCaloFlag();
+      lowGain = in.IsLowGain();
+
       gSig->Set(maxTime+1);
       FitRaw(gSig, signalF, amp, time) ; 
     
@@ -382,6 +384,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
       // Reset starting parameters for fit function
       signalF->SetParameters(10.,0.,fTau,fOrder,5.); //reset all defaults just to be safe
 
+      } // nsamples>0 check, some data found for this channel; not only trailer/header
    } // end while over channel   
   } //end while over DDL's, of input stream 
   

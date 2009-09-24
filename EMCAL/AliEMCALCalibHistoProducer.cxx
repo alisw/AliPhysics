@@ -201,6 +201,19 @@ void AliEMCALCalibHistoProducer::Run()
 
 	if(fSMInstalled[in.GetModule()]==kFALSE) continue;
 
+	// loop over samples
+	int nsamples = 0;
+	Int_t maxSample = 0;
+	while (in.NextBunch()) {
+	  const UShort_t *sig = in.GetSignals();
+	  nsamples += in.GetBunchLength();
+	  for (Int_t i = 0; i < in.GetBunchLength(); i++) {
+	    if (sig[i] > maxSample) maxSample = sig[i];
+	  }
+	} // bunches
+
+	if (nsamples > 0) { // this check is needed for when we have zero-supp. on, but not sparse readout
+
 	// indices
 	Int_t mod = in.GetModule();
 	Int_t col = in.GetColumn();
@@ -217,21 +230,15 @@ void AliEMCALCalibHistoProducer::Run()
 	  sprintf(hname,"mod%d",mod);
 	  fAmpProf[mod] = new TProfile(hname,hname,nEvtBins,0.,nEvtBins);
 	}
-	
-	// loop over samples
-	Int_t maxSample = 0;
-	while (in.NextBunch()) {
-	  const UShort_t *sig = in.GetSignals();
-	  for (Int_t i = 0; i < in.GetBunchLength(); i++) {
-	    if (sig[i] > maxSample) maxSample = sig[i];
-	  }
-	} // bunches
-	
+		
 	//Fill histogram/profile 
 	if(HighGainFlag) {
 	  fAmpHisto[mod][col][row]->Fill(maxSample);
 	  fAmpProf[mod]->Fill(evtbin, maxSample);
 	}
+
+      } // nsamples>0 check, some data found for this channel; not only trailer/header
+
       } // channels
     } // DDL's
 

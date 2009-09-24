@@ -364,9 +364,11 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeade
 
       // counters
       int max = AliEMCALGeoParams::fgkSampleMin, min = AliEMCALGeoParams::fgkSampleMax; // min and max sample values
-      
+      int nsamples = 0;
+
       while (in->NextBunch()) {
 	const UShort_t *sig = in->GetSignals();
+	nsamples += in->GetBunchLength();
 	for (Int_t i = 0; i < in->GetBunchLength(); i++) {
 	  sample = sig[i];
 
@@ -376,6 +378,8 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeade
 
 	} // loop over samples in bunch
       } // loop over bunches
+
+      if (nsamples > 0) { // this check is needed for when we have zero-supp. on, but not sparse readout
 
       gain = -1; // init to not valid value
       //If we're here then we're done with this tower
@@ -417,7 +421,8 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeade
 	RefNum = GetRefNum(arrayPos, in->GetColumn(), gain); 
 	LEDAmpVal[RefNum] = max - min;
       } // end of LED ref
-      
+
+      } // nsamples>0 check, some data found for this channel; not only trailer/header      
     } // end while over channel 
    
   }//end while over DDL's, of input stream
