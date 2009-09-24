@@ -270,7 +270,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
        fOutputContainer->Add(fTableContainer);	
     }		
     if(fOtherContainer != NULL){
-      fOutputContainer->Add(fMCContainer);
+      fOutputContainer->Add(fOtherContainer);
     }
   }
 }
