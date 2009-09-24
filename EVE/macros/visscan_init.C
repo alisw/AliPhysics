@@ -8,33 +8,15 @@
  **************************************************************************/
 
 class AliEveMacroExecutor;
-
+class MultiView;
 class TEveProjectionManager;
 class TEveGeoShape;
 class TEveUtil;
 
-TEveGeoShape *gGeomGentle     = 0;
-TEveGeoShape *gGeomGentleRPhi = 0;
-TEveGeoShape *gGeomGentleRhoZ = 0;
-TEveGeoShape *gGeomGentleTRD  = 0;
-TEveGeoShape *gGeomGentleMUON = 0;
 
-TEveScene *gRPhiGeomScene  = 0;
-TEveScene *gRhoZGeomScene  = 0;
-TEveScene *gRPhiEventScene = 0;
-TEveScene *gRhoZEventScene = 0;
-
-TEveProjectionManager *gRPhiMgr = 0;
-TEveProjectionManager *gRhoZMgr = 0;
-
-TEveViewer *g3DView   = 0;
-TEveViewer *gRPhiView = 0;
-TEveViewer *gRhoZView = 0;
-
-Bool_t gShowTRD      = kFALSE;
-Bool_t gShowMUON     = kTRUE;
-Bool_t gShowMUONRPhi = kFALSE;
-Bool_t gShowMUONRhoZ = kTRUE;
+Bool_t gShowTrd      = kTRUE;
+Bool_t gShowMuonRPhi = kFALSE;
+Bool_t gShowMuonRhoZ = kTRUE;
 
 Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
@@ -48,9 +30,15 @@ void visscan_init(const TString& cdburi = "",
     Fatal("visscan_init.C", "OCDB path MUST be specified as the first argument.");
   }
 
+  if (gROOT->LoadMacro("MultiView.C+") != 0)
+  {
+    gEnv->SetValue("Root.Stacktrace", "no");
+    Fatal("visscan_init.C", "Failed loading MultiView.C in compiled mode.");
+  }
+
   if (!show_extra_geo)
   {
-    gShowTRD = gShowMUON = gShowMUONRPhi = gShowMUONRhoZ = kFALSE;
+    gShowTrd = gShowMuonRPhi = gShowMuonRhoZ = kFALSE;
   }
 
   AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
@@ -64,107 +52,29 @@ void visscan_init(const TString& cdburi = "",
 
   AliEveMacroExecutor *exec    = AliEveEventManager::GetMaster()->GetExecutor();
   TEveBrowser         *browser = gEve->GetBrowser();
+  browser->ShowCloseTab(kFALSE);
+
 
   //==============================================================================
   // Geometry, scenes, projections and viewers
   //==============================================================================
 
-  browser->ShowCloseTab(kFALSE);
-
-  // Geometry
+  gMultiView = new MultiView;
 
   TEveUtil::LoadMacro("geom_gentle.C");
-  gGeomGentle = geom_gentle();
-  gGeomGentleRPhi = geom_gentle_rphi(); gGeomGentleRPhi->IncDenyDestroy();
-  gGeomGentleRhoZ = geom_gentle_rhoz(); gGeomGentleRhoZ->IncDenyDestroy();
-  if (gShowTRD) {
+  gMultiView->InitGeomGentle(geom_gentle(),
+                             geom_gentle_rphi(), 
+                             geom_gentle_rhoz());
+
+  if (gShowTrd) {
     TEveUtil::LoadMacro("geom_gentle_trd.C");
-    gGeomGentleTRD = geom_gentle_trd();
+    gMultiView->InitGeomGentleTrd(geom_gentle_trd());
   }
-  if (gShowMUON) {
+
+  if (gShowMuonRPhi || gShowMuonRhoZ) {
     TEveUtil::LoadMacro("geom_gentle_muon.C");
-    gGeomGentleMUON = geom_gentle_muon(kFALSE);
+    gMultiView->InitGeomGentleMuon(geom_gentle_muon(kFALSE), gShowMuonRPhi, gShowMuonRhoZ);
   }
-
-  // Scenes
-
-  gRPhiGeomScene  = gEve->SpawnNewScene("RPhi Geometry",
-                    "Scene holding projected geometry for the RPhi view.");
-  gRhoZGeomScene  = gEve->SpawnNewScene("RhoZ Geometry",
-		    "Scene holding projected geometry for the RhoZ view.");
-  gRPhiEventScene = gEve->SpawnNewScene("RPhi Event Data",
-		    "Scene holding projected geometry for the RPhi view.");
-  gRhoZEventScene = gEve->SpawnNewScene("RhoZ Event Data",
-		    "Scene holding projected geometry for the RhoZ view.");
-
-  // Projection managers
-
-  gRPhiMgr = new TEveProjectionManager();
-  gRPhiMgr->SetProjection(TEveProjection::kPT_RPhi);
-  gEve->AddToListTree(gRPhiMgr, kFALSE);
-  {
-    TEveProjectionAxes* a = new TEveProjectionAxes(gRPhiMgr);
-    a->SetMainColor(kWhite);
-    a->SetTitle("R-Phi");
-    a->SetTitleSize(0.05);
-    a->SetTitleFont(102);
-    a->SetLabelSize(0.025);
-    a->SetLabelFont(102);
-    gRPhiGeomScene->AddElement(a);
-  }
-  gRPhiMgr->SetCurrentDepth(-10);
-  gRPhiMgr->ImportElements(gGeomGentleRPhi, gRPhiGeomScene);
-  gRPhiMgr->SetCurrentDepth(0);
-  if (gShowTRD)      gRPhiMgr->ImportElements(gGeomGentleTRD, gRPhiGeomScene);
-  if (gShowMUONRPhi) gRPhiMgr->ImportElements(gGeomGentleMUON, gRPhiGeomScene);
-
-  gRhoZMgr = new TEveProjectionManager();
-  gRhoZMgr->SetProjection(TEveProjection::kPT_RhoZ);
-  gEve->AddToListTree(gRhoZMgr, kFALSE);
-  {
-    TEveProjectionAxes* a = new TEveProjectionAxes(gRhoZMgr);
-    a->SetMainColor(kWhite);
-    a->SetTitle("Rho-Z");
-    a->SetTitleSize(0.05);
-    a->SetTitleFont(102);
-    a->SetLabelSize(0.025);
-    a->SetLabelFont(102);
-    gRhoZGeomScene->AddElement(a);
-  }
-  gRhoZMgr->SetCurrentDepth(-10);
-  gRhoZMgr->ImportElements(gGeomGentleRhoZ, gRhoZGeomScene);
-  gRhoZMgr->SetCurrentDepth(0);
-  if (gShowTRD)      gRhoZMgr->ImportElements(gGeomGentleTRD, gRhoZGeomScene);
-  if (gShowMUONRhoZ) gRhoZMgr->ImportElements(gGeomGentleMUON, gRhoZGeomScene);
-
-  // Viewers
-
-  TEveWindowSlot *slot = 0;
-  TEveWindowPack *pack = 0;
-
-  slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
-  pack = slot->MakePack();
-  pack->SetElementName("Multi View");
-  pack->SetHorizontal();
-  pack->SetShowTitleBar(kFALSE);
-  pack->NewSlot()->MakeCurrent();
-  g3DView = gEve->SpawnNewViewer("3D View", "");
-  g3DView->AddScene(gEve->GetGlobalScene());
-  g3DView->AddScene(gEve->GetEventScene());
-
-  pack = pack->NewSlot()->MakePack();
-  pack->SetShowTitleBar(kFALSE);
-  pack->NewSlot()->MakeCurrent();
-  gRPhiView = gEve->SpawnNewViewer("RPhi View", "");
-  gRPhiView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-  gRPhiView->AddScene(gRPhiGeomScene);
-  gRPhiView->AddScene(gRPhiEventScene);
-
-  pack->NewSlot()->MakeCurrent();
-  gRhoZView = gEve->SpawnNewViewer("RhoZ View", "");
-  gRhoZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-  gRhoZView->AddScene(gRhoZGeomScene);
-  gRhoZView->AddScene(gRhoZEventScene);
 
 
   //==============================================================================
@@ -225,6 +135,7 @@ void visscan_init(const TString& cdburi = "",
   exec->AddMacro(new AliEveMacro(AliEveMacro::kAOD, "ANA HF",   "aod_HF.C",   "aod_HF",   "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kAOD, "ANA Jets", "jetplane.C", "jetplane", "", kFALSE));
 
+
   //==============================================================================
   // Additional GUI components
   //==============================================================================
@@ -258,6 +169,7 @@ void visscan_init(const TString& cdburi = "",
     "Undocked windows whose previous container is not known\n"
     "are placed here when the main-frame is closed.");
   gEve->GetWindowManager()->SetDefaultContainer(store_tab);
+
 
   //==============================================================================
   // AliEve objects - global tools
@@ -341,18 +253,13 @@ void on_new_event()
 
   TEveElement* top = gEve->GetCurrentEvent();
 
-  if (gRPhiMgr && top)
-  {
-    gRPhiEventScene->DestroyElements();
-    if (gCenterProjectionsAtPrimaryVertex)
-      gRPhiMgr->SetCenter(x[0], x[1], x[2]);
-    gRPhiMgr->ImportElements(top, gRPhiEventScene);
-  }
-  if (gRhoZMgr && top)
-  {
-    gRhoZEventScene->DestroyElements();
-    if (gCenterProjectionsAtPrimaryVertex)
-      gRhoZMgr->SetCenter(x[0], x[1], x[2]);
-    gRhoZMgr->ImportElements(top, gRhoZEventScene);
-  }
+  gMultiView->DestroyEventRPhi();
+  if (gCenterProjectionsAtPrimaryVertex)
+    gMultiView->SetCenterRPhi(x[0], x[1], x[2]);
+  gMultiView->ImportEventRPhi(top);
+
+  gMultiView->DestroyEventRhoZ();
+  if (gCenterProjectionsAtPrimaryVertex)
+    gMultiView->SetCenterRhoZ(x[0], x[1], x[2]);
+  gMultiView->ImportEventRhoZ(top);
 }
