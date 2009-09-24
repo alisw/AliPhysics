@@ -1280,9 +1280,11 @@ void AliAnalysisTaskGammaConversion::CalculateJetCone(Int_t gammaIndex){
 	
   //  AliKFParticle * currentGamma = &fKFReconstructedGammas[gammaIndex];
   AliKFParticle * currentGamma = (AliKFParticle*)fKFReconstructedGammasTClone->At(gammaIndex);
+
   TVector3 momentumVectorCurrentGamma(currentGamma->GetPx(),currentGamma->GetPy(),currentGamma->GetPz());
 	
   AliESDtrack* leadingCharged = (AliESDtrack*)(fChargedParticles->At(fLeadingChargedIndex));
+
   Double_t momLeadingCharged[3];
   leadingCharged->GetConstrainedPxPyPz(momLeadingCharged);
 	
@@ -1346,6 +1348,8 @@ Double_t AliAnalysisTaskGammaConversion::GetMinimumDistanceToCharge(Int_t indexH
 	
   Double_t fIsoMin=100.;
   Double_t ptLeadingCharged=-1.;
+
+  fLeadingChargedIndex=-1;
 	
   AliKFParticle * gammaHighestPt = (AliKFParticle*)fKFReconstructedGammasTClone->At(indexHighestPtGamma);
   TVector3 momentumVectorgammaHighestPt(gammaHighestPt->GetPx(),gammaHighestPt->GetPy(),gammaHighestPt->GetPz());
