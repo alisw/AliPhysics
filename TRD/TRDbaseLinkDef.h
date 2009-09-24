@@ -51,7 +51,6 @@
 #pragma link C++ class  AliTRDCalPID+;
 #pragma link C++ class  AliTRDCalPIDLQ+;
 #pragma link C++ class  AliTRDCalPIDNN+;
-#pragma link C++ class  AliTRDCalPIDRefMaker+;
 #pragma link C++ class  AliTRDCalMonitoring+;
 
 #pragma link C++ class  AliTRDCalChamberStatus+;

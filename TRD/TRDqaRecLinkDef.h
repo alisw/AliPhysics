@@ -27,5 +27,6 @@
 #pragma link C++ class  AliTRDalignmentTask+;
 #pragma link C++ class  AliTRDcalibration+;
 #pragma link C++ class  AliTRDpidRefMaker+;
+#pragma link C++ class  AliTRDpidRefMakerLQ+;
 
 #endif
