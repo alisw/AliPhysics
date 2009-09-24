@@ -329,14 +329,16 @@ void AliTRDSignalIndex::AddIndexRC(const Int_t row, const Int_t col)
   // This is to be used in the TRD clusterizer!
   //
 
-  if (row * col + 1 >= fMaxLimit) {
-    AliError(Form("Out-of-limits row * col %d. Limit is: %d"
-                 ,row * col
+  Int_t index = row*fNcols + col;
+
+  if ( index >= fMaxLimit || index < 0 ) {
+    AliError(Form("Out-of-limits index %d. Limit is: %d"
+                 ,index
                  ,fMaxLimit));
     return;
   }
  
-  fBoolIndex[row*fNcols+col]=kTRUE;
+  fBoolIndex[index]=kTRUE;
 
   fHasEntry = kTRUE;
 
@@ -425,8 +427,20 @@ void AliTRDSignalIndex::InitSortedIndex()
   for(int row = 0; row < fNrows; row++)
     for(int col = 0; col < fNcols; col++)
       if(IsBoolIndex(row, col)){
+	if (pos>=2*fMaxLimit || pos < 0) {
+	  AliError(Form("Out-of-limits pos %d. Limit is: %d"
+			,pos
+			,2*fMaxLimit));
+	  return;
+	}
 	fSortedIndex[pos] = row;
 	pos++;
+	if (pos>=2*fMaxLimit || pos < 0) {
+	  AliError(Form("Out-of-limits pos %d. Limit is: %d"
+			,pos
+			,2*fMaxLimit));
+	  return;
+	}
 	fSortedIndex[pos] = col;
 	pos++;
       }
