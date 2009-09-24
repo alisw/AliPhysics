@@ -380,8 +380,8 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   const TObjArray* maps = AliPHOSRecoParam::GetMappings();
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
 
-  AliAltroMapping *mapping[4];
-  for(Int_t i = 0; i < 4; i++) {
+  AliAltroMapping *mapping[20];
+  for(Int_t i = 0; i < 20; i++) {
     mapping[i] = (AliAltroMapping*)maps->At(i);
   }
 
