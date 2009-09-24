@@ -95,7 +95,7 @@ void AliCaloTrackESDReader::FillInputCTS() {
 
   //To be replaced by call to AliEMCALGeoUtils when the class becomes available
   Double_t radius = 441.0; //[cm] EMCAL radius +13cm
-
+  if(fDebug > 1) printf("AliCaloTrackESDReader::FillInputCTS() - org entries %d\n", nTracks);
   for (Int_t itrack =  0; itrack <  nTracks; itrack++) {////////////// track loop
     AliESDtrack * track = (AliESDtrack*) ((AliESDEvent*)fInputEvent)->GetTrack(itrack) ; // retrieve track from esd
     
@@ -157,11 +157,11 @@ void AliCaloTrackESDReader::FillInputCTS() {
 		  aodpid->SetEMCALMomentum(emcmom);
 		  
 		  AliExternalTrackParam *outerparam = (AliExternalTrackParam*)track->GetOuterParam();
-		  if(!outerparam) return;
+		  if(!outerparam) continue;
 		  
 		  Bool_t okpos = outerparam->GetXYZAt(radius,bfield,emcpos);
 		  Bool_t okmom = outerparam->GetPxPyPzAt(radius,bfield,emcmom);
-		  if(!(okpos && okmom)) return;
+		  if(!(okpos && okmom)) continue;
 		  
 		  aodpid->SetEMCALPosition(emcpos);
 		  aodpid->SetEMCALMomentum(emcmom);
@@ -171,7 +171,7 @@ void AliCaloTrackESDReader::FillInputCTS() {
 		else continue;   // outside the beam pipe: orphan track	
 	}//Pt and Fidutial cut passed. 
   }// track loop
-  
+
   //Put references to selected tracks in array
   for(Int_t itrack = 0; itrack < (fOutputEvent->GetTracks())->GetEntriesFast(); itrack++){
     AliAODTrack * track =  (AliAODTrack*) (fOutputEvent->GetTracks())->At(itrack);	
