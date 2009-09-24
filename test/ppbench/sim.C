@@ -1,4 +1,4 @@
-void sim(Int_t nev=2) {
+void sim(Int_t nev=20) {
   if (gSystem->Getenv("EVENT"))
    nev = atoi(gSystem->Getenv("EVENT")) ;   
   
