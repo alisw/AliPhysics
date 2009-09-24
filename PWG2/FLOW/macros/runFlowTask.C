@@ -33,10 +33,12 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 		 //const Char_t* dataDir="/data/alice2/kolk/PP/LHC09a4/81119", Int_t offset = 0)
 		 //const Char_t* dataDir="/data/alice2/kolk/Therminator_midcentral", Int_t offset = 0)
 		 //const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
-void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 100000, 
+void runFlowTask(Int_t mode=mPROOF, Int_t nRuns = 1000000, 
 		 //const Char_t* dataDir="/COMMON/COMMON/LHC09a14_0.9TeV_0.5T", Int_t offset = 0)
-		 const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
-                 //const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8158X", Int_t offset = 0)
+		 //const Char_t* dataDir="/COMMON/COMMON/LHC08c11_10TeV_0.5T", Int_t offset = 0)
+		 //const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
+                 const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8101X", Int_t offset = 0)
+
 
 {
   TStopwatch timer;
@@ -162,53 +164,51 @@ void LoadLibraries(const anaModes mode) {
     //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a_dbg");
     //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a");
     
-    
+    //TProof::Reset("proof://snelling@alicecaf.cern.ch");     
     // Connect to proof
-    // Put appropriate username here
-    // TProof::Reset("proof://snelling@alicecaf.cern.ch"); 
     printf("*** Connect to PROOF ***\n");
-    //  TProof::Open("abilandz@alicecaf.cern.ch");
-    //    TProof::Open("nkolk@alicecaf.cern.ch");
+    // Put appropriate username here
+    //TProof::Open("abilandz@alicecaf.cern.ch");
+    //TProof::Open("nkolk@alicecaf.cern.ch");
     TProof::Open("snelling@localhost");
-	// list the data available
-	//  gProof->ShowDataSets("/*/*");  
-    
-    // Enable the STEERBase Package
+    // list the data available
+    //gProof->ShowDataSets("/*/*");  
+ 
+    // Clear the Packages
     gProof->ClearPackage("STEERBase.par");
-    gProof->UploadPackage("STEERBase.par");
-    gProof->EnablePackage("STEERBase");
-    // Enable the ESD Package
     gProof->ClearPackage("ESD.par");
-    gProof->UploadPackage("ESD.par");
-    gProof->EnablePackage("ESD");
-    // Enable the AOD Package
     gProof->ClearPackage("AOD.par");
-    gProof->UploadPackage("AOD.par");
-    gProof->EnablePackage("AOD");
-    // Enable the Analysis Package
     gProof->ClearPackage("ANALYSIS.par");
-    gProof->UploadPackage("ANALYSIS.par");
-    gProof->EnablePackage("ANALYSIS");
-    // Enable the Analysis Package alice
     gProof->ClearPackage("ANALYSISalice.par");
-    gProof->UploadPackage("ANALYSISalice.par");
-    gProof->EnablePackage("ANALYSISalice");
-    // Load the PWG2 AOD
     gProof->ClearPackage("PWG2AOD.par");
-    gProof->UploadPackage("PWG2AOD.par");
-    gProof->EnablePackage("PWG2AOD");
-    // Enable the Correction Framework
     gProof->ClearPackage("CORRFW.par");
-    gProof->UploadPackage("CORRFW.par");
-    gProof->EnablePackage("CORRFW");
-    // Enable Flow Analysis
     gProof->ClearPackage("PWG2flowCommon");
-    gProof->UploadPackage("PWG2flowCommon.par");
-    gProof->EnablePackage("PWG2flowCommon");
     gProof->ClearPackage("PWG2flowTasks");
+
+
+    // Upload the Packages
+    gProof->UploadPackage("STEERBase.par");
+    gProof->UploadPackage("ESD.par");    
+    gProof->UploadPackage("AOD.par");
+    gProof->UploadPackage("ANALYSIS.par"); 
+    gProof->UploadPackage("ANALYSISalice.par");
+    gProof->UploadPackage("PWG2AOD.par");
+    gProof->UploadPackage("CORRFW.par");
+    gProof->UploadPackage("PWG2flowCommon.par");
     gProof->UploadPackage("PWG2flowTasks.par");
+
+    // Enable the Packages
+    gProof->EnablePackage("STEERBase");
+    gProof->EnablePackage("ESD");
+    gProof->EnablePackage("AOD");
+    gProof->EnablePackage("ANALYSIS");
+    gProof->EnablePackage("ANALYSISalice");
+    gProof->EnablePackage("PWG2AOD");
+    gProof->EnablePackage("CORRFW");
+    gProof->EnablePackage("PWG2flowCommon");
     gProof->EnablePackage("PWG2flowTasks");
-    //
+
+    // Show enables Packages
     gProof->ShowEnabledPackages();
   }  
   
