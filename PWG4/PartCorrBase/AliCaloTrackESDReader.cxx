@@ -367,8 +367,9 @@ void AliCaloTrackESDReader::FillInputPHOSCells() {
 void AliCaloTrackESDReader::GetVertex(Double_t  v[3]) const {
   //Return vertex position
   
-  ((AliESDEvent*)fInputEvent)->GetVertex()->GetXYZ(v) ;
-  
+  //((AliESDEvent*)fInputEvent)->GetVertex()->GetXYZ(v) ;//SPD
+  ((AliESDEvent*)fInputEvent)->GetPrimaryVertex()->GetXYZ(v);
+	
 }
 
 

@@ -32,7 +32,7 @@ ClassImp(AliAODPWG4Particle)
 //______________________________________________________________________________
 AliAODPWG4Particle::AliAODPWG4Particle() :
 AliVParticle(),
-fMomentum(0),fPdg(-1), fTag(0), fBtag(0), fLabel(-1), fCaloLabel(), fTrackLabel(),
+fMomentum(0),fPdg(-1), fTag(0), fBtag(-1), fLabel(-1), fCaloLabel(), fTrackLabel(),
 fDetector(""), fDisp(0), fTof(0), fCharged(0), fBadDist(0), fInputFileIndex(0)
 {
   // constructor
@@ -45,7 +45,7 @@ fDetector(""), fDisp(0), fTof(0), fCharged(0), fBadDist(0), fInputFileIndex(0)
 //______________________________________________________________________________
 AliAODPWG4Particle::AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Double_t e):
   AliVParticle(),
-  fMomentum(0),fPdg(-1), fTag(0), fBtag(0), fLabel(-1),fCaloLabel(), fTrackLabel(),
+  fMomentum(0),fPdg(-1), fTag(0), fBtag(-1), fLabel(-1),fCaloLabel(), fTrackLabel(),
   fDetector(""), fDisp(0),fTof(0),fCharged(0), fBadDist(0), fInputFileIndex(0)
 {
   // constructor
@@ -60,7 +60,7 @@ AliAODPWG4Particle::AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Do
 //______________________________________________________________________________
 AliAODPWG4Particle::AliAODPWG4Particle(TLorentzVector & p):
   AliVParticle(),
-  fMomentum(0),fPdg(-1), fTag(0), fBtag(0), fLabel(-1),fCaloLabel(), fTrackLabel(),
+  fMomentum(0),fPdg(-1), fTag(0), fBtag(-1), fLabel(-1),fCaloLabel(), fTrackLabel(),
   fDetector(""), fDisp(0),fTof(0),fCharged(0),fBadDist(0), fInputFileIndex(0)
 {
   // constructor
@@ -105,7 +105,7 @@ AliAODPWG4Particle& AliAODPWG4Particle::operator=(const AliAODPWG4Particle& part
     
     fPdg   = part.fPdg;
     fTag   = part.fTag;
-	fBtag  = part.fBtag;
+    fBtag  = part.fBtag;
     fLabel = part.fLabel;
 	
     fCaloLabel [0] = part.fCaloLabel[0];

@@ -36,6 +36,8 @@
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliFidutialCut.h"
+#include "AliAODInputHandler.h"
+#include "AliAnalysisManager.h"
 
 ClassImp(AliCaloTrackAODReader)
 
@@ -290,18 +292,16 @@ void AliCaloTrackAODReader::FillInputPHOSCells() {
 void AliCaloTrackAODReader::GetVertex(Double_t  v[3]) const {
   //Return vertex position
 
-  v[0] = ((AliAODEvent*)fInputEvent)->GetVertex(0)->GetX() ;//CHECK!!!
-  v[1] = ((AliAODEvent*)fInputEvent)->GetVertex(0)->GetY() ;//CHECK!!!
-  v[2] = ((AliAODEvent*)fInputEvent)->GetVertex(0)->GetZ() ;//CHECK!!!
+ ((AliAODEvent*)fInputEvent)->GetPrimaryVertex()->GetXYZ(v);
+	
 }
 
 //____________________________________________________________________________
 void AliCaloTrackAODReader::GetSecondInputAODVertex(Double_t  v[3]) const {
 	//Return vertex position of second AOD input
 	
-	v[0] = ((AliAODEvent*)fSecondInputAODEvent)->GetVertex(0)->GetX() ;//CHECK!!!
-	v[1] = ((AliAODEvent*)fSecondInputAODEvent)->GetVertex(0)->GetY() ;//CHECK!!!
-	v[2] = ((AliAODEvent*)fSecondInputAODEvent)->GetVertex(0)->GetZ() ;//CHECK!!!
+	fSecondInputAODEvent->GetPrimaryVertex()->GetXYZ(v);
+
 }
 
 //____________________________________________________________________________
@@ -318,13 +318,24 @@ Double_t AliCaloTrackAODReader::GetBField() const {
 void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent* aod, AliMCEvent* mc) {
   // Connect the data pointers
   // If input is AOD, do analysis with input, if not, do analysis with the output aod.
+
   if(!strcmp(input->GetName(),"AliESDEvent"))   {
     SetInputEvent(aod);
     SetOutputEvent(aod);
   }
   else if(!strcmp(input->GetName(),"AliAODEvent")){
-    SetInputEvent(input);
-    SetOutputEvent(aod);
+	  
+	  AliAODInputHandler* aodIH = static_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+	  //printf("AODInputHandler %p, MergeEvents %d \n",aodIH, aodIH->GetMergeEvents());
+	  if (aodIH && aodIH->GetMergeEvents()) {
+		  //Merged events, use output AOD.
+		  SetInputEvent(aod);
+		  SetOutputEvent(aod);
+	  }
+	  else{
+		  SetInputEvent(input);
+		  SetOutputEvent(aod);
+	  }
   }
   else{ 
     printf("AliCaloTrackAODReader::SetInputOutputMCEvent() - STOP : Wrong data format: %s\n",input->GetName());
