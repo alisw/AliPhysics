@@ -309,9 +309,6 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
     CalculateBackground();
   }
 	
-	
-	
-	
   // Process reconstructed gammas
   if(fDoNeutralMeson == kTRUE){
     ProcessGammasForNeutralMesonAnalysis();
@@ -371,14 +368,9 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       continue;
     }
 		
-		
-		
-		
     ///////////////////////Begin Chic Analysis/////////////////////////////
 		
-		
-    if(particle->GetPdgCode() == 443){//Is JPsi
-			
+    if(particle->GetPdgCode() == 443){//Is JPsi	
       if(particle->GetNDaughters()==2){
 	if(TMath::Abs(fStack->Particle(particle->GetFirstDaughter())->GetPdgCode()) == 11 &&
 	   TMath::Abs(fStack->Particle(particle->GetLastDaughter())->GetPdgCode()) == 11){
@@ -665,10 +657,8 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 		  if(tmpDaughter->R()< fV0Reader->GetMaxRCut()){
 		    daughter0Positron = kTRUE;
 		  }
-		}
-								
-	      }
-							
+		}						
+	      }					
 	    }
 	  }
 	}
@@ -890,6 +880,10 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
       if(negativeMC->GetPdgCode()==positiveMC->GetPdgCode()){
 	continue;
       }
+
+      if(negativeMC->GetUniqueID() != 5 || positiveMC->GetUniqueID() !=5){
+	continue;
+      }
 			
       if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 22){
 				
@@ -997,11 +991,26 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     //----------------------------------- checking for "real" conversions (MC match) --------------------------------------
     if(fDoMCTruth){
 			
+      if(fV0Reader->HasSameMCMother() == kFALSE){
+	continue;
+      }
       TParticle * negativeMC = (TParticle*)fV0Reader->GetNegativeMCParticle();
-      //      TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();  // not used any longer
+      TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
+
+      if(TMath::Abs(negativeMC->GetPdgCode())!=11 || TMath::Abs(positiveMC->GetPdgCode())!=11){
+	continue;
+      }
+
+      if(negativeMC->GetPdgCode()==positiveMC->GetPdgCode()){
+	continue;
+      }
+
+      if(negativeMC->GetUniqueID() != 5 || positiveMC->GetUniqueID() !=5){// check if the daughters come from a conversion
+	continue;
+      }
 			
       if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 22){
-				
+
 	fHistograms->FillHistogram("ESD_TrueConvGamma_Pt", fV0Reader->GetMotherCandidatePt());
 	fHistograms->FillHistogram("ESD_TrueConvGamma_Energy", fV0Reader->GetMotherCandidateEnergy());
 	fHistograms->FillHistogram("ESD_TrueConvGamma_Eta", fV0Reader->GetMotherCandidateEta());				
