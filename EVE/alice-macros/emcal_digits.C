@@ -6,34 +6,52 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+#ifndef __CINT__
+
+#include <TEveManager.h>
+#include <TEveQuadSet.h>
+#include <TGeoNode.h>
+#include <TGeoBBox.h>
+#include <TGeoManager.h>
+#include <TStyle.h>
+#include <TEveTrans.h>
+#include <TClonesArray.h>
+
+#include <EveBase/AliEveEventManager.h>
+
+#include <AliRunLoader.h>
+#include <AliCluster.h>
+#include <EMCAL/AliEMCALGeometry.h>
+#include <EMCAL/AliEMCALDigit.h>
+
+#include <iostream>
+#endif
 
 void emcal_digits()
 {
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
 
-  rl->LoadgAlice();
-  AliEMCAL         * emcal = (AliEMCAL*) rl->GetAliRun()->GetDetector("EMCAL");
-  AliEMCALGeometry * geom  = emcal->GetGeometry();
-
   rl->LoadDigits("EMCAL");
   TTree* dt = rl->GetTreeD("EMCAL", kFALSE);
+  if (!dt) return;
 
-  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
+
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
 
   TGeoBBox* bbbox = (TGeoBBox*) node->GetDaughter(0) ->GetVolume()->GetShape();
-  bbbox->Dump();
   TGeoBBox* sbbox = (TGeoBBox*) node->GetDaughter(10)->GetVolume()->GetShape();
-  sbbox->Dump();
 
   TEveElementList* l = new TEveElementList("EMCAL");
   l->SetTitle("Tooltip");
   gEve->AddElement(l);
 
   TEveFrameBox* frame_big = new TEveFrameBox();
+  frame_big->SetFrameColorRGBA(200,200,0,50);
   frame_big->SetAABoxCenterHalfSize(0, 0, 0, bbbox->GetDX(), bbbox->GetDY(), bbbox->GetDZ());
 
   TEveFrameBox* frame_sml = new TEveFrameBox();
+  frame_sml->SetFrameColorRGBA(200,200,0,50);
   frame_sml->SetAABoxCenterHalfSize(0, 0, 0, sbbox->GetDX(), sbbox->GetDY(), sbbox->GetDZ());
 
   gStyle->SetPalette(1, 0);
@@ -41,6 +59,10 @@ void emcal_digits()
   pal->SetLimits(0, 1024);
 
   TEveQuadSet* smodules[12];
+
+
+  AliEMCALGeometry * geom  = AliEMCALGeometry::GetInstance();  
+  if (!geom) geom = AliEMCALGeometry::GetInstance("","");
 
   for (Int_t sm=0; sm<12; ++sm)
   {
@@ -65,7 +87,6 @@ void emcal_digits()
   Int_t nEnt = digits->GetEntriesFast();
   AliEMCALDigit * dig;
 
-  Int_t iEvent  = -1 ;
   Float_t amp   = -1 ;
   Float_t time  = -1 ;
   Int_t id      = -1 ;
@@ -86,7 +107,7 @@ void emcal_digits()
       amp  = dig->GetAmp(); //amplitude in cell (digit)
       time = dig->GetTime();//time of creation of digit after collision
 
-      cout<<"Cell ID "<<id<<" Amp "<<amp<<endl;//" time "<<time<<endl;
+      std::cout<<"Cell ID "<<id<<" Amp "<<amp<<std::endl;//" time "<<time<<endl;
 
       //Geometry methods
       geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
@@ -95,21 +116,24 @@ void emcal_digits()
 					iIphi, iIeta,iphi,ieta);
       //Gives label of cell in eta-phi position per each supermodule
 
-      cout<< "SModule "<<iSupMod<<"; Tower "<<iTower
+      std::cout<< "SModule "<<iSupMod<<"; Tower "<<iTower
 	  <<"; Eta "<<iIeta<<"; Phi "<<iIphi
-	  <<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<endl;
+	  <<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<std::endl;
 
       geom->RelPosCellInSModule(id, x, y, z);
-      cout << x <<" "<< y <<" "<< z <<endl;
+      std::cout << x <<" "<< y <<" "<< z <<std::endl;
 
       TEveQuadSet* q = smodules[iSupMod];
       q->AddQuad(y, z);
-      q->QuadValue(amp);
-      q->QuadId(dig);
+      q->QuadValue(TMath::Nint(amp));
+      q->QuadId(new AliEMCALDigit(*dig));
     } else {
-      cout<<"Digit pointer 0x0"<<endl;
+      std::cout<<"Digit pointer 0x0"<<std::endl;
     }
   }
+
+  rl->UnloadDigits("EMCAL");
+
 
   for (Int_t sm = 0; sm < 12; ++sm)
   {
