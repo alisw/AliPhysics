@@ -325,20 +325,21 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     for(Int_t r =0; r<fNRIndex;r++){
 			
       // setting axis to "" changes below
-      xAxisTitle="";
-      yAxisTitle="";
+      xAxisTitle="z [cm]";
+      yAxisTitle="#eta";
+	  
       //Creating the axis titles
-      if(xAxisTitle.Length() == 0){
-	xAxisTitle.Form("Phi %02d",phi);
-      }
+      //if(xAxisTitle.Length() == 0){
+	//xAxisTitle.Form("Phi %02d",phi);
+	 //      }
 			
-      if(yAxisTitle.Length() == 0){
-	yAxisTitle.Form("R %02d",phi);
-      }
+      //if(yAxisTitle.Length() == 0){
+	//yAxisTitle.Form("R %02d",phi);
+		// }
 			
       //MC
       TString nameMC="";
-      nameMC.Form("MC_Conversion_Mapping-Phi%02d-R%02d",phi,r);
+      nameMC.Form("MC_Conversion_Mapping_Phi%02d_R%02d",phi,r);
       TString titleMC="";
       titleMC.Form("Electron-Positron MC Mapping-Phi%02d-R%02d",phi,r);
 			
@@ -346,7 +347,7 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
 			
       //ESD
       TString nameESD="";
-      nameESD.Form("ESD_Conversion_Mapping-Phi%02d-R%02d",phi,r);
+      nameESD.Form("ESD_Conversion_Mapping_Phi%02d_R%02d",phi,r);
       TString titleESD="";
       titleESD.Form("Electron-Positron ESD Mapping-Phi%02d-R%02d",phi,r);
 			
@@ -358,19 +359,19 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
   for(Int_t phi =0; phi<=nPhiIndex;phi++){ 
 		
     // setting axis to "" changes below
-    xAxisTitle="";
-    yAxisTitle="";
-    //Creating the axis titles
-    if(xAxisTitle.Length() == 0){
-      xAxisTitle.Form("Phi %02d",phi);
-    }
-    if(yAxisTitle.Length() == 0){
-      yAxisTitle = "Counts";
-    }
+     xAxisTitle="z [cm]";
+      yAxisTitle="#eta";
+   //Creating the axis titles
+    //if(xAxisTitle.Length() == 0){
+    //  xAxisTitle.Form("Phi %02d",phi);
+    //}
+    //if(yAxisTitle.Length() == 0){
+    //  yAxisTitle = "Counts";
+    //}
 		
     //MC
     TString nameMC="";
-    nameMC.Form("MC_Conversion_Mapping-Phi%02d",phi);
+    nameMC.Form("MC_Conversion_Mapping_Phi%02d",phi);
     TString titleMC="";
     titleMC.Form("Electron-Positron MC Mapping-Phi%02d",phi);
 		
@@ -378,7 +379,7 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
 		
     //MC
     TString nameESD="";
-    nameESD.Form("ESD_Conversion_Mapping-Phi%02d",phi);
+    nameESD.Form("ESD_Conversion_Mapping_Phi%02d",phi);
     TString titleESD="";
     titleESD.Form("Electron-Positron ESD Mapping-Phi%02d",phi);
 		
@@ -389,19 +390,19 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
   for(Int_t r =0; r<=nRIndex;r++){
 		
     // setting axis to "" changes below
-    xAxisTitle="";
-    yAxisTitle="";
+    xAxisTitle="#phi";
+      yAxisTitle="counts";
     //Creating the axis titles
-    if(xAxisTitle.Length() == 0){
-      xAxisTitle.Form("R %02d",r);
-    }
-    if(yAxisTitle.Length() == 0){
-      yAxisTitle = "Counts";
-    }
+    //if(xAxisTitle.Length() == 0){
+    //  xAxisTitle.Form("R %02d",r);
+    //}
+    //if(yAxisTitle.Length() == 0){
+    //  yAxisTitle = "Counts";
+    //}
 		
     //MC
     TString nameMC="";
-    nameMC.Form("MC_Conversion_Mapping-R%02d",r);
+    nameMC.Form("MC_Conversion_Mapping_R%02d",r);
     TString titleMC="";
     titleMC.Form("Electron-Positron MC Mapping-R%02d",r);
 		
@@ -409,7 +410,7 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
 		
     //ESD
     TString nameESD="";
-    nameESD.Form("ESD_Conversion_Mapping-R%02d",r);
+    nameESD.Form("ESD_Conversion_Mapping_R%02d",r);
     TString titleESD="";
     titleESD.Form("Electron-Positron ESD Mapping-R%02d",r);
 		
@@ -417,14 +418,14 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
 		
     //Mapping Phi in R
     TString nameMCPhiInR="";
-    nameMCPhiInR.Form("MC_Conversion_Mapping_Phi_R-%02d",r);
+    nameMCPhiInR.Form("MC_Conversion_Mapping_Phi_in_R_%02d",r);
     TString titleMCPhiInR="";
     titleMCPhiInR.Form("MC Mapping of Phi in R%02d",r);
     AddHistogram(nameMCPhiInR, titleMCPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
 		
     //Mapping Phi in R
     TString nameESDPhiInR="";
-    nameESDPhiInR.Form("ESD_Conversion_Mapping_Phi_R-%02d",r);
+    nameESDPhiInR.Form("ESD_Conversion_Mapping_Phi_in_R_%02d",r);
     TString titleESDPhiInR="";
     titleESDPhiInR.Form("ESD Mapping of Phi in R%02d",r);
     AddHistogram(nameESDPhiInR, titleESDPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);    
