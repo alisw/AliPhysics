@@ -38,8 +38,16 @@ Bool_t gShowMUONRhoZ = kTRUE;
 
 Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
-void visscan_init(const TString& path=".", Bool_t show_extra_geo=kFALSE)
+
+void visscan_init(const TString& cdburi = "",
+		  const TString& path   = ".", Bool_t show_extra_geo = kFALSE)
 {
+  if (cdburi.IsNull() && ! AliCDBManager::Instance()->IsDefaultStorageSet())
+  {
+    gEnv->SetValue("Root.Stacktrace", "no");
+    Fatal("visscan_init.C", "OCDB path MUST be specified as the first argument.");
+  }
+
   if (!show_extra_geo)
   {
     gShowTRD = gShowMUON = gShowMUONRPhi = gShowMUONRhoZ = kFALSE;
@@ -48,7 +56,7 @@ void visscan_init(const TString& path=".", Bool_t show_extra_geo=kFALSE)
   AliEveEventManager::AddAODfriend("AliAOD.VertexingHF.root");
 
   TEveUtil::LoadMacro("alieve_init.C");
-  alieve_init(path, -1);
+  alieve_init(cdburi, path, -1);
 
   // TEveLine::SetDefaultSmooth(1);
 

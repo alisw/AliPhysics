@@ -7,16 +7,22 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-void alieve_init(const TString& path   = ".", Int_t event=0,
+void alieve_init(const TString& cdburi = "",
+		 const TString& path   = ".", Int_t event=0,
                  const Text_t* esdfile = 0,
                  const Text_t* aodfile = 0,
                  const Text_t* rawfile = 0,
-		 const Text_t* cdburi  = 0,
 		 Bool_t assert_runloader = kFALSE,
                  Bool_t assert_esd       = kFALSE,
                  Bool_t assert_aod       = kFALSE,
                  Bool_t assert_raw       = kFALSE)
 {
+  if (cdburi.IsNull() && ! AliCDBManager::Instance()->IsDefaultStorageSet())
+  {
+    gEnv->SetValue("Root.Stacktrace", "no");
+    Fatal("alieve_init.C", "OCDB path MUST be specified as the first argument.");
+  }
+
   Info("alieve_init", "Adding standard macros.");
   TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
   alieve_init_import_macros();
@@ -35,7 +41,7 @@ void alieve_init(const TString& path   = ".", Int_t event=0,
 					assert_aod, assert_raw);
 
   // Open event
-  if (path.BeginsWith("alien:"))
+  if (path.BeginsWith("alien:") || ! cdburi.BeginsWith("local:"))
   {
     if (gGrid != 0)
     {
