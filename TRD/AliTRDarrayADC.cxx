@@ -27,7 +27,7 @@
 #include "AliTRDarrayADC.h"
 #include "Cal/AliTRDCalPadStatus.h"
 #include "AliTRDfeeParam.h"
-
+#include "AliTRDSignalIndex.h"
 ClassImp(AliTRDarrayADC)
 
 Short_t *AliTRDarrayADC::fgLutPadNumbering = 0x0;
@@ -570,6 +570,25 @@ void AliTRDarrayADC::Reset()
   //
  
   memset(fADC,0,sizeof(Short_t)*fNAdim);
+}
+//________________________________________________________________________________
+void AliTRDarrayADC::ConditionalReset(AliTRDSignalIndex* idx)
+{
+  //
+  // Reset the array, the old contents are deleted
+  // The array keeps the same dimensions as before
+  //
+ 
+  if(idx->GetNoOfIndexes()>25)
+    memset(fADC,0,sizeof(Short_t)*fNAdim);
+  else
+    {
+      Int_t row, col;
+      while(idx->NextRCIndex(row, col)){
+	for(Int_t time=0; time<fNtime; time++)
+	  SetData(row, col, time, 0);
+      }
+    }
 
 }
 //________________________________________________________________________________
@@ -594,11 +613,13 @@ void AliTRDarrayADC::SetData(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value)
   // To write data using the mcm scheme use instead
   // the method SetDataByAdcCol
   //
+  // This function also subtracts the ADC baseline and 
+  // imposes a lower limit of zero to the ADC values!
+  //
 
   Int_t colnumb = fgLutPadNumbering[ncol];
 
-  fADC[(nrow*fNumberOfChannels+colnumb)*fNtime+ntime] = TMath::Max(value-fBaseline
-	                                                          ,0);
+  fADC[(nrow*fNumberOfChannels+colnumb)*fNtime+ntime] = TMath::Max(value-fBaseline,0);
 
 }
 

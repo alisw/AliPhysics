@@ -13,6 +13,7 @@
 
 #include <TObject.h>
 
+class AliTRDSignalIndex;
 class AliTRDarrayADC: public TObject
 {
  public:
@@ -44,6 +45,7 @@ class AliTRDarrayADC: public TObject
   Int_t   GetDim() const {return fNAdim;};
   void    DeleteNegatives();
   void    Reset();
+  void    ConditionalReset(AliTRDSignalIndex* idx);
   Short_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const;
   void    SetData(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value);
   static  void    CreateLut(); 

@@ -20,8 +20,17 @@
 
 class AliTRDSignalIndex : public TObject
 {
+protected:
 
- public:
+  union RowCol{
+    Short_t rc;
+    struct{
+      UChar_t col;
+      Char_t row;
+    }s;
+  };
+
+public:
 
   AliTRDSignalIndex(); 
   AliTRDSignalIndex(Int_t nrow, Int_t ncol,Int_t ntime);
@@ -40,7 +49,15 @@ class AliTRDSignalIndex : public TObject
 
   void     ResetArrays();
 
-  void     AddIndexRC(const Int_t row, const Int_t col);
+  // Store the index row-column as an interesting one
+  void     AddIndexRC(const Int_t row, const Int_t col){
+    Int_t num=row*fNcols+col;
+    if(fBoolIndex[num])return;
+    fBoolIndex[num]=kTRUE;
+    fSortedIndex[fCountRC].s.col=col;
+    fSortedIndex[fCountRC].s.row=row;
+    fCountRC++;
+  };
 
   // Get the next pad (row and column) and return kTRUE on success
   Bool_t   NextRCIndex(Int_t &row, Int_t &col); 
@@ -72,9 +89,10 @@ class AliTRDSignalIndex : public TObject
   Int_t    GetLayer() const       { return fLayer;    } // Layer position of the chamber in TRD
   Int_t    GetStack() const       { return fStack;    } // Stack position of the chamber in TRD
   Int_t    GetSM() const          { return fSM;       } // Super module of the TRD
-  Short_t *GetArray() const       { return fSortedIndex; } // Get the array pointer for god knows what reason
+  Short_t *GetArray() const       { return (Short_t*)fSortedIndex; } // Get the array pointer for god knows what reason
+  Int_t    GetNoOfIndexes() const { return fCountRC-1;  }
 
-  Bool_t   HasEntry() const       { return fHasEntry; } // Return status if has an entry
+  Bool_t   HasEntry() const       { return fCountRC > 1 ? kTRUE : kFALSE; } // Return status if has an entry
 
   Int_t    GetNrow() const        { return fNrows;    } // Get Nrows
   Int_t    GetNcol() const        { return fNcols;    } // Get Ncols
@@ -88,9 +106,10 @@ class AliTRDSignalIndex : public TObject
   Int_t     fSM;                 //  Super module - position in the full TRD
 
   Bool_t   *fBoolIndex;          //  Indices
-  Short_t  *fSortedIndex;        //  Sorted indices
+  RowCol   *fSortedIndex;        //  Sorted indices
   Int_t     fMaxLimit;           //  Max number of things in the array
   Int_t     fPositionRC;         //  Position in the SortedIndex
+  Int_t     fCountRC;            //  the number of added rc combinations
   Bool_t    fSortedWasInit;      //  Was SortedIndex initialized?
 
   Int_t     fCurrRow;            //  Last Row read out of SortedIndex
@@ -99,9 +118,7 @@ class AliTRDSignalIndex : public TObject
   
   Int_t     fNrows;              //  Number of rows in the chamber
   Int_t     fNcols;              //  Number of cols in the chamber
-  Int_t     fNtbins;             //  Number of tbins in the chamber
-
-  Bool_t    fHasEntry;           //  kTRUE flag if we have an entry 
+  Int_t     fNtbins;             //  Number of tbins in the chamber 
 
   ClassDef(AliTRDSignalIndex,2)  //  Data container for one TRD detector segment
 

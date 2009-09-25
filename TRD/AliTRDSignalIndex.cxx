@@ -25,10 +25,9 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <algorithm>
 #include "TObject.h"
-
 #include "AliLog.h"
-
 #include "AliTRDSignalIndex.h"
 
 ClassImp(AliTRDSignalIndex)
@@ -44,6 +43,7 @@ AliTRDSignalIndex::AliTRDSignalIndex()
   ,fSortedIndex(NULL)
   ,fMaxLimit(0)
   ,fPositionRC(0)
+  ,fCountRC(1)
   ,fSortedWasInit(kFALSE)
   ,fCurrRow(0)
   ,fCurrCol(0)
@@ -51,7 +51,6 @@ AliTRDSignalIndex::AliTRDSignalIndex()
   ,fNrows(0)
   ,fNcols(0)
   ,fNtbins(0)
-  ,fHasEntry(kFALSE)
 {
   //
   // Default contructor
@@ -72,6 +71,7 @@ AliTRDSignalIndex::AliTRDSignalIndex(Int_t nrow, Int_t ncol,Int_t ntime)
   ,fSortedIndex(NULL)
   ,fMaxLimit(0)
   ,fPositionRC(0)
+  ,fCountRC(1)
   ,fSortedWasInit(kFALSE)
   ,fCurrRow(0)
   ,fCurrCol(0)
@@ -79,7 +79,6 @@ AliTRDSignalIndex::AliTRDSignalIndex(Int_t nrow, Int_t ncol,Int_t ntime)
   ,fNrows(0)
   ,fNcols(0)
   ,fNtbins(0)
-  ,fHasEntry(kFALSE)
 {
   //
   // Not the default contructor... hmmm...
@@ -100,6 +99,7 @@ AliTRDSignalIndex::AliTRDSignalIndex(const AliTRDSignalIndex &a)
   ,fSortedIndex(NULL)
   ,fMaxLimit(a.fMaxLimit)
   ,fPositionRC(a.fPositionRC)
+  ,fCountRC(a.fCountRC)
   ,fSortedWasInit(a.fSortedWasInit)
   ,fCurrRow(a.fCurrRow)
   ,fCurrCol(a.fCurrCol)
@@ -107,7 +107,6 @@ AliTRDSignalIndex::AliTRDSignalIndex(const AliTRDSignalIndex &a)
   ,fNrows(a.fNrows)
   ,fNcols(a.fNcols)
   ,fNtbins(a.fNtbins)
-  ,fHasEntry(a.fHasEntry)
 {
   //
   // Copy constructor
@@ -116,8 +115,8 @@ AliTRDSignalIndex::AliTRDSignalIndex(const AliTRDSignalIndex &a)
   fBoolIndex = new Bool_t[fMaxLimit];
   memcpy(fBoolIndex, a.fBoolIndex, fMaxLimit*sizeof(Bool_t));
 
-  fSortedIndex = new Short_t[2*fMaxLimit];
-  memcpy(fSortedIndex, a.fSortedIndex, 2*fMaxLimit*sizeof(Short_t));
+  fSortedIndex = new RowCol[fMaxLimit];
+  memcpy(fSortedIndex, a.fSortedIndex, fMaxLimit*sizeof(RowCol));
 }
 
 //_____________________________________________________________________________
@@ -152,6 +151,7 @@ void AliTRDSignalIndex::Copy(TObject &a) const
   ((AliTRDSignalIndex &)a).fSM            = fSM;
   ((AliTRDSignalIndex &)a).fMaxLimit      = fMaxLimit;
   ((AliTRDSignalIndex &)a).fPositionRC    = fPositionRC;
+  ((AliTRDSignalIndex &)a).fCountRC       = fCountRC;
   ((AliTRDSignalIndex &)a).fSortedWasInit = fSortedWasInit;
   ((AliTRDSignalIndex &)a).fCurrRow       = fCurrRow;
   ((AliTRDSignalIndex &)a).fCurrCol       = fCurrCol;
@@ -159,7 +159,6 @@ void AliTRDSignalIndex::Copy(TObject &a) const
   ((AliTRDSignalIndex &)a).fNrows         = fNrows;
   ((AliTRDSignalIndex &)a).fNcols         = fNcols;
   ((AliTRDSignalIndex &)a).fNtbins        = fNtbins;
-  ((AliTRDSignalIndex &)a).fHasEntry      = fHasEntry;
 
   if(((AliTRDSignalIndex &)a).fBoolIndex)
     {
@@ -172,8 +171,8 @@ void AliTRDSignalIndex::Copy(TObject &a) const
     {
       delete [] ((AliTRDSignalIndex &)a).fSortedIndex;
     }
-  ((AliTRDSignalIndex &)a).fSortedIndex = new Short_t[2*fMaxLimit];
-  memcpy(((AliTRDSignalIndex &)a).fSortedIndex, fSortedIndex, 2*fMaxLimit*sizeof(Short_t));
+  ((AliTRDSignalIndex &)a).fSortedIndex = new RowCol[fMaxLimit];
+  memcpy(((AliTRDSignalIndex &)a).fSortedIndex, fSortedIndex, fMaxLimit*sizeof(RowCol));
 
 }
 
@@ -212,13 +211,12 @@ void AliTRDSignalIndex::Allocate(const Int_t nrow, const Int_t ncol, const Int_t
   }
 
   fBoolIndex = new Bool_t[fMaxLimit];
-  fSortedIndex = new Short_t[2*fMaxLimit];
+  fSortedIndex = new RowCol[fMaxLimit];
 
   ResetArrays();
- 
   ResetCounters();
 
-  fHasEntry = kFALSE;
+  fCountRC = 1;
 
 }
 
@@ -226,7 +224,7 @@ void AliTRDSignalIndex::Allocate(const Int_t nrow, const Int_t ncol, const Int_t
 void AliTRDSignalIndex::ResetArrays()
 {
   memset(fBoolIndex,0x00,sizeof(Bool_t)*fMaxLimit);
-  memset(fSortedIndex,0xFF,2*sizeof(Short_t)*fMaxLimit);
+  memset(fSortedIndex,0xFF,sizeof(RowCol)*fMaxLimit); 
   fSortedWasInit = kFALSE;
 }
 
@@ -254,10 +252,15 @@ void AliTRDSignalIndex::ResetContent()
   // Reset the array but keep the size - no realloc
   //
 
+  fDet   = -1;
+  fLayer = -1;
+  fStack = -1;
+  fSM    = -1;
+
   ResetArrays();
   ResetCounters();
 
-  fHasEntry = kFALSE;
+  fCountRC = 1;
 
 }
 
@@ -281,7 +284,7 @@ void AliTRDSignalIndex::ResetContentConditional(const Int_t nrow, const Int_t nc
   else {
     ResetArrays();
     ResetCounters();
-    fHasEntry = kFALSE;
+    fCountRC = 1;
   }
 
 }
@@ -314,33 +317,9 @@ void AliTRDSignalIndex::ClearAll()
   
   ResetCounters();
 
-  fHasEntry = kFALSE;
+  fCountRC = 1;
   fSortedWasInit = kFALSE;
   fMaxLimit = 0;
-
-}
-
-//_____________________________________________________________________________
-void AliTRDSignalIndex::AddIndexRC(const Int_t row, const Int_t col)
-{
-  //
-  // Store the index row-column as an interesting one
-  // The RC index is updated to!!!
-  // This is to be used in the TRD clusterizer!
-  //
-
-  Int_t index = row*fNcols + col;
-
-  if ( index >= fMaxLimit || index < 0 ) {
-    AliError(Form("Out-of-limits index %d. Limit is: %d"
-                 ,index
-                 ,fMaxLimit));
-    return;
-  }
- 
-  fBoolIndex[index]=kTRUE;
-
-  fHasEntry = kTRUE;
 
 }
 
@@ -351,15 +330,14 @@ Bool_t  AliTRDSignalIndex::NextRCIndex(Int_t &row, Int_t &col)
   // Returns next used RC combination
   //
 
-  if(fSortedIndex[fPositionRC]>-1){
-    row = fCurrRow = fSortedIndex[fPositionRC];
-    fPositionRC++;
-    col = fCurrCol = fSortedIndex[fPositionRC];
+  if(fSortedIndex[fPositionRC].s.row>-1){
+    row = fCurrRow = fSortedIndex[fPositionRC].s.row;
+    col = fCurrCol = fSortedIndex[fPositionRC].s.col;
     fPositionRC++;
     return kTRUE;
   }
   else {
-    if(fSortedWasInit || !fHasEntry)
+    if(fSortedWasInit)
       { //we already reached the end of the array
         ResetCounters();
 	row = fCurrRow;
@@ -423,27 +401,8 @@ void AliTRDSignalIndex::InitSortedIndex()
   //
 
   fSortedWasInit = kTRUE;
-  int pos=0;
-  for(int row = 0; row < fNrows; row++)
-    for(int col = 0; col < fNcols; col++)
-      if(IsBoolIndex(row, col)){
-	if (pos>=2*fMaxLimit || pos < 0) {
-	  AliError(Form("Out-of-limits pos %d. Limit is: %d"
-			,pos
-			,2*fMaxLimit));
-	  return;
-	}
-	fSortedIndex[pos] = row;
-	pos++;
-	if (pos>=2*fMaxLimit || pos < 0) {
-	  AliError(Form("Out-of-limits pos %d. Limit is: %d"
-			,pos
-			,2*fMaxLimit));
-	  return;
-	}
-	fSortedIndex[pos] = col;
-	pos++;
-      }
+  std::sort((UShort_t*)fSortedIndex, ((UShort_t*)fSortedIndex) + fCountRC);
+
 }
 
 //_____________________________________________________________________________

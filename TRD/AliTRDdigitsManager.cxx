@@ -342,6 +342,36 @@ void AliTRDdigitsManager::ResetArrays(Int_t det)
 }
 
 //_____________________________________________________________________________
+void AliTRDdigitsManager::ClearArrays(Int_t det)
+{
+  //
+  // Reset the data arrays
+  //
+
+  Int_t recoDet = fRawRec ? 0 : det;
+
+  if (fHasSDigits)
+    {
+      ((AliTRDarraySignal*)fDigits->At(recoDet))->Reset();
+    }
+  else
+    {
+      ((AliTRDarrayADC*)fDigits->At(recoDet))->ConditionalReset((AliTRDSignalIndex*)fSignalIndexes->At(recoDet));
+    }
+
+  if (fUseDictionaries) 
+    {
+      for (Int_t iDict = 0; iDict < kNDict; iDict++)
+	{
+	  ((AliTRDarrayDictionary*)fDict[iDict]->At(recoDet))->Reset();
+	}
+    }
+  
+  ((AliTRDSignalIndex*)fSignalIndexes->At(recoDet))->ResetContent();
+
+}
+
+//_____________________________________________________________________________
 Short_t AliTRDdigitsManager::GetDigitAmp(Int_t row, Int_t col,Int_t time, Int_t det) const
 {
   //

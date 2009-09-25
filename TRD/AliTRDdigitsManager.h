@@ -38,6 +38,7 @@ class AliTRDdigitsManager : public TObject {
   virtual void                CreateArrays();
   virtual void                ResetArrays();
   virtual void                ResetArrays(Int_t det);
+  void                        ClearArrays(Int_t det);
   virtual Bool_t              BuildIndexes(Int_t det);
 
   virtual Bool_t              MakeBranch(TTree * const tree);
