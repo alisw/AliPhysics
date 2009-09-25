@@ -27,7 +27,7 @@ class AliTRDarrayADC: public TObject
   void    SetNdet(Int_t ndet) {fNdet=ndet;};  
   Int_t   GetNdet()  const {return fNdet;};
   void    SetDataByAdcCol(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value)
-                        {fADC[(nrow*fNumberOfChannels+ncol)*fNtime+ntime]=value;};
+                        {fADC[(nrow*fNumberOfChannels+ncol)*fNtime+ntime]=value-fBaseline;};
   Bool_t  HasData() const {return fNtime ? 1 : 0;};
   Short_t GetDataByAdcCol(Int_t nrow, Int_t ncol, Int_t ntime) const
                          {return fADC[(nrow*fNumberOfChannels+ncol)*fNtime+ntime];};
@@ -47,7 +47,7 @@ class AliTRDarrayADC: public TObject
   Short_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const;
   void    SetData(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value);
   static  void    CreateLut(); 
-  void    SubtractBaseline(Short_t baseline);
+  void    SetBaseline(Short_t baseline) {fBaseline=baseline;}
 
  protected:
 
@@ -57,6 +57,7 @@ class AliTRDarrayADC: public TObject
   Int_t fNumberOfChannels;  //  Number of MCM channels per row
   Int_t fNtime;   //Number of time bins
   Int_t fNAdim;   //Dimension of the ADC array
+  Short_t fBaseline;
   Short_t* fADC;  //[fNAdim]   //Pointer to adc values
   static Short_t *fgLutPadNumbering;   //  [fNcol] Look Up Table
 

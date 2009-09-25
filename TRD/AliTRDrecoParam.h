@@ -97,10 +97,10 @@ public:
   void     SetClusterSharing()                                {SETBIT(fFlags, kClusterSharing);}
   void     SetEightSlices()                                   {SETBIT(fFlags, kEightSlices);}
   void     SetImproveTracklets()                              {SETBIT(fFlags, kImproveTracklet);}
-  void     SetLUT()                                           {SETBIT(fFlags, kLUT);}
-  void     SetGAUS()                                          {SETBIT(fFlags, kGAUS);}
-  void     SetPIDNeuralNetwork()                              {SETBIT(fFlags, kSteerPID);}
-  void     SetTailCancelation()                               {SETBIT(fFlags, kTailCancelation);}
+  void     SetLUT(Bool_t b=kTRUE)                             {if(b) SETBIT(fFlags, kLUT); else CLRBIT(fFlags, kLUT);}
+  void     SetGAUS(Bool_t b=kTRUE)                            {if(b) SETBIT(fFlags, kGAUS); else CLRBIT(fFlags, kGAUS);}
+  void     SetPIDNeuralNetwork(Bool_t b=kTRUE)                {if(b) SETBIT(fFlags, kSteerPID); else CLRBIT(fFlags, kSteerPID);}
+  void     SetTailCancelation(Bool_t b=kTRUE)                 {if(b) SETBIT(fFlags, kTailCancelation); else CLRBIT(fFlags, kTailCancelation);}
   void     SetXenon()                                         {CLRBIT(fFlags, kDriftGas);}
   void     SetVertexConstrained()                             {SETBIT(fFlags, kVertexConstraint);}
   void     SetMaxTheta(Double_t maxTheta)                     {fkMaxTheta = maxTheta;}

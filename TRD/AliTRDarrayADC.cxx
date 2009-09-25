@@ -41,6 +41,7 @@ AliTRDarrayADC::AliTRDarrayADC()
 	       ,fNumberOfChannels(0)
                ,fNtime(0) 
                ,fNAdim(0)
+	       ,fBaseline(0)
                ,fADC(0)
 {
   //
@@ -60,6 +61,7 @@ AliTRDarrayADC::AliTRDarrayADC(Int_t nrow, Int_t ncol, Int_t ntime)
 	       ,fNumberOfChannels(0)
                ,fNtime(0) 
                ,fNAdim(0)
+	       ,fBaseline(0)
                ,fADC(0)
 {
   //
@@ -80,6 +82,7 @@ AliTRDarrayADC::AliTRDarrayADC(const AliTRDarrayADC &b)
 	       ,fNumberOfChannels(b.fNumberOfChannels)
                ,fNtime(b.fNtime) 
                ,fNAdim(b.fNAdim)
+	       ,fBaseline(b.fBaseline)
                ,fADC(0)	 
 {
   //
@@ -594,7 +597,8 @@ void AliTRDarrayADC::SetData(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value)
 
   Int_t colnumb = fgLutPadNumbering[ncol];
 
-  fADC[(nrow*fNumberOfChannels+colnumb)*fNtime+ntime]=value;
+  fADC[(nrow*fNumberOfChannels+colnumb)*fNtime+ntime] = TMath::Max(value-fBaseline
+	                                                          ,0);
 
 }
 
@@ -620,25 +624,5 @@ void AliTRDarrayADC::CreateLut()
 	{
 	  fgLutPadNumbering[index]=index+shiftposition;
 	}
-    }
-}
-//________________________________________________________________________________
-void AliTRDarrayADC::SubtractBaseline(Short_t baseline)
-{
-  //
-  // Subtracts the baseline to all the adc array
-  // if the value is equal or greater than baseline
-  //
-
-  Short_t value = 0, status = 0;
-  for(Int_t b=0; b<fNAdim; b++)
-    {
-      //if(fADC[b]>=baseline)
-      //{
-    value = fADC[b] & 0x03ff;
-    status = fADC[b] & 0xfc00;
-    value -= baseline;
-	  fADC[b]= value | status;
-      //}
     }
 }

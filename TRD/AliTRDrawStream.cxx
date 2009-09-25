@@ -777,6 +777,7 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
       // Allocate memory space for the digits buffer
       if (digits->GetNtime() == 0) {
         digits->Allocate(rowMax, colMax, ntbins);
+	digits->SetBaseline(digitsparam->GetADCbaseline());
         if (digitsManager->UsesDictionaries()) {
           track0->Allocate(rowMax, colMax, ntbins);
           track1->Allocate(rowMax, colMax, ntbins);

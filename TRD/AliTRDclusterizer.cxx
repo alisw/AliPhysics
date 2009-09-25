@@ -728,15 +728,10 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   //
 
   // Get the digits
-  //   digits should be expanded beforehand! 
-  //   digitsIn->Expand();
   fDigits = (AliTRDarrayADC *) fDigitsManager->GetDigits(det); //mod     
   
   // This is to take care of switched off super modules
   if (!fDigits->HasData()) return kFALSE;
-
-  // Subtract the ADC baseline
-  fDigits->SubtractBaseline(fDigitsManager->GetDigitsParam()->GetADCbaseline());
 
   fIndexes = fDigitsManager->GetIndexes(det);
   if (fIndexes->IsAllocated() == kFALSE) {
