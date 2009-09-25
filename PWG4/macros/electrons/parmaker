@@ -6,13 +6,13 @@
 # This script makes PAR files without requiring write access to $ALICE_ROOT.
 # Execute this script in your local area with write access.
 # Usage:
-# parmaker ANALYSIS
-# parmaker ANALYSIS remote
-# parmaker PWG4PartCorrDep
-# parmaker PWG4PartCorrDep remote
+# parmaker JETAN
+# parmaker JETAN remote
+# parmaker JETAN remote patch
 #
 # So far only available for these par files:
-# ANALYSIS ANALYSISalice AOD ESD PWG4PartCorrBase PWG4PartCorrDep STEERBase
+# ANALYSIS ANALYSISalice AOD ESD FASTJETAN JETAN
+# PWG4PartCorrBase PWG4PartCorrDep STEERBase
 #
 
 case $2 in
@@ -55,9 +55,19 @@ case $2 in
          parmaker_input_dir_subdir="STEER"
          parmaker_output_dir_subdir="STEERBase"
          ;;
-      *)
-        echo "parmaker: I'm sorry Dave, I'm afraid I can't do that."
-        exit
+     "JETAN")
+         parmaker_input_basedir="JETAN"
+         parmaker_input_dir_subdir="JETAN"
+         parmaker_output_dir_subdir="JETAN"
+         ;;
+     "FASTJETAN")
+         parmaker_input_basedir="JETAN"
+         parmaker_input_dir_subdir="JETAN"
+         parmaker_output_dir_subdir="FASTJETAN"
+         ;;
+     *)
+         echo "parmaker: I'm sorry Dave, I'm afraid I can't do that."
+         exit
     esac
 
  
@@ -86,6 +96,38 @@ case $2 in
       sed -e 's:include \$(ROOTSYS)\/test\/Makefile.arch:include Makefile.arch:' -e "s:PACKAGE = .*:PACKAGE = ${1}:" $1/Makefiletemp > $1/Makefile
 
       /bin/rm $1/Makefiletemp
+
+
+#     Apply temporary patches.
+      if [ -z $3 ]
+      then
+        echo "no non-standard patches applied"
+      else
+        if [ $3 = "patch" ]
+        then
+          if [ -e "patches/$1" ]
+          then
+            echo "applying  temporary $1 patch"
+            cp patches/$1/*  $parmaker_output_dir_subdir
+            echo "completed temporary $1 patch"
+          else
+            echo "no patches found for $1"
+          fi
+        else
+          echo "argument $3 not processed"
+        fi
+      fi
+
+#     Apply further FASTJETAN tweaks.
+      if [ $1 = "FASTJETAN" ]
+      then
+        echo "Making temporary adjustments to FASTJETAN.par."
+        cp -r $ALICE_ROOT/JETAN/fastjet FASTJETAN
+
+        sed -e "s:CXXFLAGS     +:\nALICEINC     += -I../JETAN -I./fastjet -I./fastjet/fastjet\n\n\nCXXFLAGS     +:" FASTJETAN/Makefile > FASTJETAN/Makefile2
+        mv FASTJETAN/Makefile2 FASTJETAN/Makefile
+      fi
+
       tar cfzh $1.par $1
       /bin/rm -rf $1
     fi
