@@ -143,11 +143,11 @@ void AliOnlineReco::ChildProcTerm(Int_t pid, Int_t status)
     fRunList->RemoveEntry(run);
     if (status == 0)
     {
-      fRunList->AddEntrySort(TString::Format("%-20d -- FINISHED", run), run);
+      fRunList->AddEntrySort(TString::Format("%-20d -- PROCESSED", run), run);
     }
     else
     {
-      fRunList->AddEntrySort(TString::Format("%-20d -- CRASHED [%d]", run, status), run);
+      fRunList->AddEntrySort(TString::Format("%-20d -- PROCESSED [%d]", run, status), run);
     }
     fRunList->Layout();
     i->second = 0;

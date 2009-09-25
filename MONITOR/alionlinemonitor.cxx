@@ -52,10 +52,10 @@ int main(int argc, char **argv)
     }
     TString sqlQuery;
     TTimeStamp ts;
-    sqlQuery.Form("SELECT run FROM logbook WHERE DAQ_time_start > %u AND DAQ_time_end IS NULL AND partition = 'PHYSICS'",
-    		  ts.GetSec()-86400);
+    sqlQuery.Form("SELECT run FROM logbook WHERE DAQ_time_start > %u AND DAQ_time_end IS NULL AND partition REGEXP 'PHYSICS.*'",
+		  ts.GetSec()-86400);
     //    sqlQuery.Form("SELECT run FROM logbook WHERE DAQ_time_start > %u AND DAQ_time_end IS NULL",
-    //		  ts.GetSec()-86400);
+    //    	  ts.GetSec()-86400);
     TSQLResult* result = server->Query(sqlQuery);
     if (!result) {
       printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
