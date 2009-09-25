@@ -71,7 +71,7 @@ void runAODFilterMC()
       esdTrackCutsL->SetDCAToVertexXY(3.0);
       esdTrackCutsL->SetDCAToVertex2D(kTRUE);
       esdTrackCutsL->SetRequireSigmaToVertex(kFALSE);
-      esdTrackCutsL->SetAcceptKingDaughters(kFALSE);
+      esdTrackCutsL->SetAcceptKinkDaughters(kFALSE);
 
       AliESDtrackCuts* esdTrackCutsITSsa = new AliESDtrackCuts("AliESDtrackCuts", "ITS stand-alone");
       esdTrackCutsITSsa->SetRequireITSStandAlone(kTRUE);
