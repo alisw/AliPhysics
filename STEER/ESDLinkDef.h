@@ -19,7 +19,9 @@
 #pragma link C++ class  AliESDHeader+;
 #pragma link C++ class  AliESDZDC+;
 #pragma link C++ class  AliESDCaloTrigger+;
-#pragma link C++ class  AliESDfriend+;
+#pragma link C++ class  AliESDfriend+;                                                                                                           
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="UChar_t fTRDpidQuality"  version="[-49]" target="fTRDntracklets" targetType="UChar_t" code="{fTRDntracklets = onfile.fTRDpidQuality;}"
+// see http://root.cern.ch/svn/root/trunk/io/doc/DataModelEvolution.txt
 #pragma link C++ class  AliESDtrack+;
 #pragma link C++ class  AliESDfriendTrack+;
 #pragma link C++ class  AliESDMuonTrack+;
