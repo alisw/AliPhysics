@@ -126,6 +126,7 @@ TH1D *AliCFGridSparse::Project(Int_t ivar) const
 
   TH1D *hist=fData->Projection(ivar);
   hist->SetXTitle(GetVarTitle(ivar));
+  hist->SetName(Form("%s_proj-%s",GetName(),GetVarTitle(ivar)));
   hist->SetTitle(Form("%s: projection on %s",GetTitle(),GetVarTitle(ivar)));
   return hist;
 }
@@ -139,6 +140,7 @@ TH2D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2) const
   TH2D *hist=fData->Projection(ivar2,ivar1); //notice inverted axis (THnSparse uses TH3 2d-projection convention...)
   hist->SetXTitle(GetVarTitle(ivar1));
   hist->SetYTitle(GetVarTitle(ivar2));
+  hist->SetName(Form("%s_proj-%s,%s",GetName(),GetVarTitle(ivar1),GetVarTitle(ivar2)));
   hist->SetTitle(Form("%s: projection on %s-%s",GetTitle(),GetVarTitle(ivar1),GetVarTitle(ivar2)));
   return hist;
 }
@@ -153,6 +155,7 @@ TH3D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   hist->SetXTitle(GetVarTitle(ivar1));
   hist->SetYTitle(GetVarTitle(ivar2));
   hist->SetZTitle(GetVarTitle(ivar3));
+  hist->SetName(Form("%s_proj-%s,%s,%s",GetName(),GetVarTitle(ivar1),GetVarTitle(ivar2),GetVarTitle(ivar3)));
   hist->SetTitle(Form("%s: projection on %s-%s-%s",GetTitle(),GetVarTitle(ivar1),GetVarTitle(ivar2),GetVarTitle(ivar3)));
   return hist;
 }

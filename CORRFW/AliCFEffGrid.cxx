@@ -73,7 +73,11 @@ AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const AliCFC
   //assign the container;
   fContainer=&c;
   for (Int_t iVar=0; iVar<GetNVar(); iVar++) {
-    SetBinLimits(iVar,GetBinLimits(iVar));
+    Int_t nbins = c.GetNBins(iVar);
+    Double_t* array=new Double_t[nbins+1] ;
+    c.GetBinLimits(iVar,array);
+    SetBinLimits(iVar,array);
+    delete array ;
   }
   for (Int_t iVar=0; iVar<GetNVar(); iVar++) SetVarTitle(iVar,c.GetVarTitle(iVar));
 }
@@ -236,6 +240,7 @@ TH1D *AliCFEffGrid::Project(Int_t ivar) const
   delete hNum; delete hDen;
   TH1D* h = ratio->Projection(0);
   h->SetXTitle(GetVarTitle(ivar));
+  h->SetName(Form("%s_proj-%s",GetName(),GetVarTitle(ivar)));
   h->SetTitle(Form("%s projected on %s",GetTitle(),GetVarTitle(ivar)));
   return h ;
 } 
@@ -257,9 +262,10 @@ TH2D *AliCFEffGrid::Project(Int_t ivar1,Int_t ivar2) const
   THnSparse* ratio = (THnSparse*)hNum->Clone();
   ratio->Divide(hNum,hDen,1.,1.,"B");
   delete hNum; delete hDen;
-  TH2D* h = ratio->Projection(0,1);
+  TH2D* h = ratio->Projection(1,0);
   h->SetXTitle(GetVarTitle(ivar1));
   h->SetYTitle(GetVarTitle(ivar2));
+  h->SetName(Form("%s_proj-%s,%s",GetName(),GetVarTitle(ivar1),GetVarTitle(ivar2)));
   h->SetTitle(Form("%s projected on %s-%s",GetTitle(),GetVarTitle(ivar1),GetVarTitle(ivar2)));
   return h;
 } 
@@ -285,6 +291,7 @@ TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   h->SetXTitle(GetVarTitle(ivar1));
   h->SetYTitle(GetVarTitle(ivar2));
   h->SetZTitle(GetVarTitle(ivar3));
+  h->SetName(Form("%s_proj-%s,%s,%s",GetName(),GetVarTitle(ivar1),GetVarTitle(ivar2),GetVarTitle(ivar3)));
   h->SetTitle(Form("%s projected on %s-%s-%s",GetTitle(),GetVarTitle(ivar1),GetVarTitle(ivar2),GetVarTitle(ivar3)));
   return h;
 } 
