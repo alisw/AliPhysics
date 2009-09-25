@@ -4,7 +4,7 @@ Alignment of the V0A and the beam pipe support on the Front Absorber
 
 > Date:
 
-7.07.2009
+21.08.2009
 
 > Subdetector:
 
@@ -20,7 +20,7 @@ https://edms.cern.ch/document/906073
 
 > General Observations:
 
-A photogrammetric measurement has been performed to the V0A detector on July 6. This data is used to provide the new alignment of the detector.
+A photogrammetric measurement has been performed to the V0A detector on August 21. This data is used to provide the new alignment of the detector.
 
 > Coordinate System:
 
@@ -41,25 +41,25 @@ Point Name,XPH,YPH,ZPH,Point Type,Target Used,Precision(mm)
 
 > Data:
 
-V0A_IAB 21.85 -808.39 3311.32 M Y 1
-V0A_IAM 628.45 141.86 3316.89 M Y 1
-V0A_IAT 119.16 637.89 3322.29 M Y 1
-ST_IAB 132.47 -683.26 3304.33 M Y 1
-ST_IAM 533.52 -20.01 3308.81 M Y 1
-ST_IAT 131.76 529.72 3314.10 M Y 1
-V0A_OAB -19.17 -808.80 3311.60 M Y 1
-V0A_OAM -628.59 139.49 3321.70 M Y 1
-V0A_OAT -119.97 637.00 3323.35 M Y 1
-ST_OAB -142.40 -695.35 3304.44 M Y 1
-ST_OAM -529.89 20.79 3312.76 M Y 1
-ST_OAT -139.89 503.11 3314.74 M Y 1
-ST_ICB 20.51 -327.44 3250.64 M Y 1
-ST_ICM 306.53 6.02 3254.64 M Y 1
-ST_ICT 16.38 283.03 3257.77 M Y 1
-ST_OCB -15.99 -325.09 3253.22 M Y 1
-ST_OCM -295.60 18.40 3255.47 M Y 1
-ST_OCT -11.01 279.35 3257.42 M Y 1
-6001 127.43 -218.82 3250.64 M Y 1  
-6002 126.76 221.07 3253.92 M Y 1    
-6003 -126.77 -219.13 3250.43 M Y 1  
-6004 -127.19 220.77 3253.75 M Y 1
+V0A_IAB 20.66 -809.4 3325.76 M Y 1
+V0A_IAM 628.37 140.15 3324.50 M Y 1
+V0A_IAT 119.67 636.81 3327.01 M Y 1
+ST_IAB 132.42 -684.46 3317.85 M Y 1
+ST_IAM 533.25 -21.66 3317.57 M Y 1
+ST_IAT 132.13 528.56 3319.52 M Y 1
+V0A_OAB -20.38 -809.74 3325.97 M Y 1
+V0A_OAM -628.38 139.50 3330.86 M Y 1
+V0A_OAT -119.02 636.25 3328.34 M Y 1
+ST_OAB -143.45 -696.16 3318.27 M Y 1
+ST_OAM -529.87 20.60 3322.53 M Y 1
+ST_OAT -139.16 502.33 3320.66 M Y 1
+ST_ICB 19.83 -328.85 3265.12 M Y 1
+ST_ICM 306.24 4.28 3263.42 M Y 1
+ST_ICT 16.42 281.64 3264.94 M Y 1
+ST_OCB -16.59 -326.43 3264.39 M Y 1
+ST_OCM -295.69 17.48 3264.39 M Y 1
+ST_OCT -10.70 278.01 3264.59 M Y 1
+6001 126.88 -220.37 3261.07 M Y 1  
+6002 126.73 219.52 3261.41 M Y 1    
+6003 -127.21 -220.33 3261.09 M Y 1  
+6004 -126.98 219.58 3261.51 M Y 1
