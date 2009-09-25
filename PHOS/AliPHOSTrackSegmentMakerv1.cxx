@@ -112,6 +112,14 @@
 //
 
 // --- ROOT system ---
+#include "AliMagF.h"
+#include "AliTracker.h"
+#include "AliGeomManager.h"
+#include "AliCluster.h"
+#include "AliKalmanTrack.h"
+#include "AliGlobalQADataMaker.h"
+
+#include "TVector3.h"
 #include "TTree.h"
 #include "TBenchmark.h"
 
@@ -127,6 +135,7 @@
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSCpvRecPoint.h"
 #include "AliLog.h"
+#include "AliMagF.h"
 
 ClassImp( AliPHOSTrackSegmentMakerv1) 
 
@@ -255,6 +264,79 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
     if(!emcClu) {
       return;
     }
+
+    // *** Start the matching
+    Int_t nt=fESD->GetNumberOfTracks();
+    Int_t iPHOSMod = emcClu->GetPHOSMod()  ;
+    //Calculate actual distance to PHOS module
+    TVector3 globaPos ;
+    fGeom->Local2Global(iPHOSMod, 0.,0., globaPos) ;
+    const Double_t rPHOS = globaPos.Pt() ; //Distance to PHOS module
+    const Double_t kYmax = 72.+10. ; //Size of the module (with some reserve) in phi direction
+    const Double_t kZmax = 64.+10. ; //Size of the module (with some reserve) in z direction
+    const Double_t kAlpha= 20./180.*TMath::Pi() ; //TPC sector angular size
+    Double_t minDistance = 1.e6;
+
+    TMatrixF gmat;
+    TVector3 gposRecPoint; // global (in ALICE frame) position of rec. point
+    emcClu->GetGlobalPosition(gposRecPoint,gmat);
+    Double_t gposTrack[3] ; 
+
+    Double_t bz = GetBz() ; //B-Field for approximate matching
+    Double_t b[3]; 
+    for (Int_t i=0; i<nt; i++) {
+      AliESDtrack *esdTrack=fESD->GetTrack(i);
+
+//     // Skip the tracks having "wrong" status (has to be checked/tuned)
+//     ULong_t status = esdTrack->GetStatus();
+//     if ((status & AliESDtrack::kTRDout)   == 0) continue;
+//     if ((status & AliESDtrack::kTRDrefit) == 1) continue;
+
+      AliExternalTrackParam t(*esdTrack);
+      Int_t isec=Int_t(t.GetAlpha()/kAlpha);
+      Int_t imod=-isec-2; // PHOS module
+
+      Double_t y;                       // Some tracks do not reach the PHOS
+      if (!t.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
+
+      Double_t z; t.GetZAt(rPHOS,bz,z);
+      if (TMath::Abs(z) > kZmax) continue; // Some tracks miss the PHOS in Z
+
+      Bool_t ok=kTRUE;
+      while (TMath::Abs(y) > kYmax) {   // Find the matching module
+        Double_t alp=t.GetAlpha();
+        if (y > kYmax) {
+          if (!t.Rotate(alp+kAlpha)) {ok=kFALSE; break;}
+          imod--;
+        } else if (y < -kYmax) {
+          if (!t.Rotate(alp-kAlpha)) {ok=kFALSE; break;}
+          imod++;
+        }
+        if (!t.GetYAt(rPHOS,bz,y)) {ok=kFALSE; break;}
+     }
+     if (!ok) continue; // Track rotation failed
+
+
+     if(imod!= iPHOSMod-1) 
+       continue; //not even approximate coincidence
+
+     //t.CorrectForMaterial(...); // Correct for the TOF material, if needed
+     t.GetBxByBz(b) ;
+     t.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
+     t.GetXYZ(gposTrack) ;
+
+     Double_t ddx = gposTrack[0] - gposRecPoint.X(), ddy = gposTrack[1] - gposRecPoint.Y(), ddz = gposTrack[2] - gposRecPoint.Z();
+     Double_t d2 = ddx*ddx + ddy*ddy + ddz*ddz;
+     if(d2 < minDistance) {
+        dx = TMath::Sign(TMath::Sqrt(ddx*ddx + ddy*ddy),ddx) ;
+        dz = ddz ;
+        trackindex=i;
+        minDistance=d2 ;
+     }
+   }
+   return ;
+ }
+
 
     TVector3 emcGlobal;
     fGeom->GetGlobalPHOS((AliPHOSRecPoint*)emcClu,emcGlobal);
@@ -564,7 +646,7 @@ void AliPHOSTrackSegmentMakerv1::Clusters2TrackSegments(Option_t *option)
   fTrackSegments->Clear();
 
   //   if(!ReadRecPoints(ievent))   continue; //reads RecPoints for event ievent
-    
+
   for(fModule = 1; fModule <= fGeom->GetNModules() ; fModule++ ) {
     FillOneModule() ; 
     MakeLinks() ;
@@ -617,3 +699,36 @@ void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
     }	
   }
 }
+//__________________________________________________________________________
+Double_t AliPHOSTrackSegmentMakerv1::GetBz()const
+{
+  Double_t kAlmost0Field=1.e-13;
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!fld) return 0.5*kAlmost0Field;
+  Double_t bz = fld->SolenoidField();
+  return TMath::Sign(0.5*kAlmost0Field,bz) + bz;
+}
+//__________________________________________________________________________
+void AliPHOSTrackSegmentMakerv1::GetBxByBz(const Double_t r[3], Double_t b[3])const {
+  //------------------------------------------------------------------
+  // Returns Bx, By and Bz (kG) at the point "r" .
+  //------------------------------------------------------------------
+  Double_t kAlmost0Field=1.e-13;
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!fld) {
+     b[0] = b[1] = 0.;
+     b[2] = 0.5*kAlmost0Field;
+     return;
+  }
+
+  if (fld->IsUniform()) {
+     b[0] = b[1] = 0.;
+     b[2] = fld->SolenoidField();
+  }  else {
+     fld->Field(r,b);
+  }
+  b[2] = (TMath::Sign(0.5*kAlmost0Field,b[2]) + b[2]);
+  return;
+}
+
+
