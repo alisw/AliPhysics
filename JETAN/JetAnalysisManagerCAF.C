@@ -69,10 +69,11 @@ void JetAnalysisManagerCAF()
     AliESDtrackCuts* esdTrackCutsL = new AliESDtrackCuts("AliESDtrackCuts", "Loose");
     esdTrackCutsL->SetMinNClustersTPC(50);
     esdTrackCutsL->SetMaxChi2PerClusterTPC(3.5);
-    esdTrackCutsL->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
     esdTrackCutsL->SetRequireTPCRefit(kTRUE);
-    esdTrackCutsL->SetMaxNsigmaToVertex(3);
-    esdTrackCutsL->SetRequireSigmaToVertex(kTRUE);
+    esdTrackCutsL->SetMaxDCAToVertexXY(2.4);
+    esdTrackCutsL->SetMaxDCAToVertexZ(3.2);
+    esdTrackCutsL->SetDCAToVertex2D(kTRUE);
+    esdTrackCutsL->SetRequireSigmaToVertex(kFALSE);
     esdTrackCutsL->SetAcceptKinkDaughters(kFALSE);
     //
     //
