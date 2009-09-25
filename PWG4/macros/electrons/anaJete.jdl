@@ -1,0 +1,41 @@
+Executable="root";
+Jobtag ={"Analysis: Processing collection for anlysis "};
+Packages ={"VO_ALICE@ROOT::v5-24-00","VO_ALICE@APISCONFIG::V2.4","VO_ALICE@fastjet::v2.4.0"};
+
+TTL=30000;
+
+InputFile={"LF:/alice/cern.ch/user/k/kread/work12/anaJete.C",
+           "LF:/alice/cern.ch/user/k/kread/work12/run.C",
+           "LF:/alice/cern.ch/user/k/kread/work12/ConfigJetAnalysisFastJet.C",
+           "LF:/alice/cern.ch/user/k/kread/work12/ConfigAnalysisElectron.C",
+           "LF:/alice/cern.ch/user/k/kread/work12/STEERBase.par",
+           "LF:/alice/cern.ch/user/k/kread/work12/ESD.par",
+           "LF:/alice/cern.ch/user/k/kread/work12/AOD.par",
+           "LF:/alice/cern.ch/user/k/kread/work12/ANALYSIS.par",
+           "LF:/alice/cern.ch/user/k/kread/work12/ANALYSISalice.par",
+           "LF:/alice/cern.ch/user/k/kread/work12/JETAN.par",
+           "LF:/alice/cern.ch/user/k/kread/work12/FASTJETAN.par",
+           "LF:/alice/cern.ch/user/k/kread/work12/PWG4PartCorrBase.par",
+           "LF:/alice/cern.ch/user/k/kread/work12/PWG4PartCorrDep.par"};
+OutputArchive={"log_archive:stdout,stderr,*.log@ALICE::CERN::ALICEDISK",
+               "root_archive:*.root@ALICE::CERN::ALICEDISK"};
+
+OutputDir = "/alice/cern.ch/user/k/kread/work12/output/#alien_counter_03i#";
+
+InputDataCollection = "LF:/alice/cern.ch/user/k/kread/work12/mycollect.xml,nodownload";
+
+InputDataListFormat = "xml-single";
+InputDataList = "collection.xml";
+
+Split = "se";
+SplitMaxInputFileNumber = "15";
+
+splitarguments="run.C --mode 3 --config1 ConfigPWG4AODtoAOD --config2 ConfigJetAnalysisFastJet.C --config3 ConfigAnalysisElectron --sevent 0";
+
+
+# Validation script to be run for each subjob
+Validationcommand = "/alice/cern.ch/user/k/kread/work12/validate.sh";
+
+OutputFile="histos.root";
+MergeOutputDir = "/alice/cern.ch/user/k/kread/work12/output/merged";
+Merge = {"histos.root:/alice/cern.ch/user/k/kread/work12/mergeout.jdl:histos-merged.root"};

@@ -6,13 +6,13 @@
 
 void mylauncher()
 {
-  TString worksubdir = "work4";
+  TString worksubdir = "work12";
   // Name of JDL file to upload.  Leave blank for no upload and no submit.
-  TString jdlfilename = "anaElectron.jdl";
+  TString jdlfilename = "anaJete.jdl";
   // Name of executable to upload.  Leave blank for no upload.
-  TString execfilename = "anaElectron.sh";
+  TString execfilename = "";
   // List any other files to upload in string filenames separated by blanks.
-  TString filelist = "anaElectron.C ConfigAnalysisElectron.C mergeElectron.jdl mycollect.xml ANALYSIS.par ANALYSISalice.par AOD.par ESD.par STEERBase.par PWG4PartCorrBase.par PWG4PartCorrDep.par";
+  TString filelist = "run.C validate.sh anaJete.C ConfigJetAnalysisFastJet.C ConfigAnalysisElectron.C mergeout.jdl mergeoutscaled.jdl mycollect.xml ANALYSIS.par ANALYSISalice.par AOD.par ESD.par STEERBase.par JETAN.par FASTJETAN.par PWG4PartCorrBase.par PWG4PartCorrDep.par";
   TString filename;
 
   gSystem->Load("libNetx.so") ;
