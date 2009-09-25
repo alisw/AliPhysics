@@ -82,6 +82,7 @@ void print_RAW_HLTdecision(const char* rawFileName,
       cout << "   no HLT decision found" << endl;
     }
     pHLTOUT->Reset();
+    event++;
   } while (rawReader->NextEvent() && (maxEvent<0 || event<maxEvent));
 }
 
