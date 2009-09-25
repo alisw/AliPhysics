@@ -89,7 +89,7 @@
 #define HC_NTIMEBINS(w) GET_VALUE_AT(w,0x3f,26)
 #define HC_BUNCH_CROSS_COUNTER(w) GET_VALUE_AT(w,0xffff,10)
 #define HC_PRETRIGGER_COUNTER(w) GET_VALUE_AT(w,0xf,6)
-#define HC_PRETRIGGER_PHASE(w) GET_VALUE_AT(w,0xf,6)
+#define HC_PRETRIGGER_PHASE(w) GET_VALUE_AT(w,0xf,2)
 
 // MCM word and ADC mask
 #define MCM_HEADER_MASK_ERR(w) ( ((w) & (0xf)) == (0xc) ? 0 : 1) // 0 if OK!!!
@@ -669,23 +669,19 @@ Int_t AliTRDrawFastStream::NextChamber(AliTRDdigitsManager *digitsManager, UInt_
 
       if (!digits) return -1;
 
-      Int_t rowMax = GetRowMax();
+      //Int_t rowMax = GetRowMax();
+      Int_t rowMax = fGeometry->RowmaxC1(); // we use maximum row number among all detectors to reuse memory
       Int_t colMax = GetColMax();
       Int_t ntbins = GetGlobalNTimeBins(); 
 
-      // Set number of timebin into digitparam
+      // Set digitparam variables
+      digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
       if (!fIsGlobalDigitsParamSet){
-        digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
         digitsparam->SetCheckOCDB(kFALSE);
         digitsparam->SetNTimeBins(ntbins);
         digitsparam->SetADCbaseline(10);
-        digitsparam->SetPretiggerPhase(det,GetPreTriggerPhase());
         fIsGlobalDigitsParamSet = kTRUE;
       } 
-      if(!digitsparam){
-        digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
-        digitsparam->SetPretiggerPhase(det,GetPreTriggerPhase());
-      } 
 
       // Allocate memory space for the digits buffer
       if (digits->GetNtime() == 0) {
@@ -745,6 +741,9 @@ Int_t AliTRDrawFastStream::NextChamber(AliTRDdigitsManager *digitsManager, UInt_
 */ // [mj temp]
 	  }
     else SeekEndOfData(); // make sure that finish off with the end of data markers
+
+    // set pritrigger phase since it is only avaliable after decoding HC header 
+    digitsparam->SetPretiggerPhase(det,GetPreTriggerPhase());
 
     // copy tracklets in memory into tracklet container
     if (trackletContainer) {

@@ -756,23 +756,20 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
         return -1;
       }
 
-      Int_t rowMax = GetRowMax();
+      //Int_t rowMax = GetRowMax();
+      Int_t rowMax = fGeometry->RowmaxC1(); // we use maximum row number among all detectors to reuse memory
       Int_t colMax = GetColMax();
       Int_t ntbins = GetNumberOfTimeBins();
 
-      // Set number of timebin into digitparam
+      // Set digitparam variables
+      digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
+      digitsparam->SetPretiggerPhase(det,GetPreTriggerPhase());
       if (!fIsGlobalDigitsParamSet){
-        digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
         digitsparam->SetCheckOCDB(kFALSE);
         digitsparam->SetNTimeBins(ntbins);
-        digitsparam->SetADCbaseline(10);
-        digitsparam->SetPretiggerPhase(det,GetPreTriggerPhase());
+        digitsparam->SetADCbaseline(10);
         fIsGlobalDigitsParamSet = kTRUE;
       }
-      if(!digitsparam){ 
-        digitsparam = (AliTRDdigitsParam *) digitsManager->GetDigitsParam();
-        digitsparam->SetPretiggerPhase(det,GetPreTriggerPhase());
-      }
 
       // Allocate memory space for the digits buffer
       if (digits->GetNtime() == 0) {
