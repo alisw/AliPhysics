@@ -75,6 +75,7 @@ AliPHOSTracker::AliPHOSTracker():
   //--------------------------------------------------------------------
   for (Int_t i=0; i<5; i++) 
       fModules[i]=new TClonesArray("AliPHOSEmcRecPoint",777);
+
 }
 
 //____________________________________________________________________________
@@ -94,6 +95,10 @@ Int_t AliPHOSTracker::LoadClusters(TTree *cTree) {
   //--------------------------------------------------------------------
   // This function loads the PHOS clusters
   //--------------------------------------------------------------------
+  return 0 ; //At this stage we can not strore result 
+             // the closest track and distance to it
+             //We perform same task later in AliPHOSTrackSegmentMakerv1
+/*
   TObjArray *arr=NULL;
   TBranch *branch=cTree->GetBranch("PHOSEmcRP");
   if (branch==0) {
@@ -117,7 +122,8 @@ Int_t AliPHOSTracker::LoadClusters(TTree *cTree) {
       }
 
       // Here is how the alignment is treated
-      if (!cl->Misalign()) AliWarning("Can't misalign this cluster !");
+      // Misalignment is already in cluster coordinates
+//      if (!cl->Misalign()) AliWarning("Can't misalign this cluster !");
 
       cl->SetBit(14,kFALSE); // The clusters are not yet attached to any track
 
@@ -133,6 +139,7 @@ Int_t AliPHOSTracker::LoadClusters(TTree *cTree) {
   Info("LoadClusters","Number of loaded clusters: %d",nclusters);
 
   return 0;
+*/
 }
 
 //____________________________________________________________________________
@@ -143,6 +150,10 @@ Int_t AliPHOSTracker::PropagateBack(AliESDEvent *esd) {
   // Makes the PID
   //--------------------------------------------------------------------
 
+  return 0 ; //At this stage we can not strore result 
+             // the closest track and distance to it
+             //We perform same task later in AliPHOSTrackSegmentMakerv1
+/*
   Int_t nt=esd->GetNumberOfTracks();
 
   // *** Select and sort the ESD track in accordance with their quality
@@ -156,15 +167,16 @@ Int_t AliPHOSTracker::PropagateBack(AliESDEvent *esd) {
 
 
   // *** Start the matching
-  Double_t bz=GetBz(); 
+  Double_t bz = GetGz() ; //For approximate matching
+  Double_t b[3]; GetBxByBz(b); //For final matching
   Int_t matched=0;
   for (Int_t i=0; i<nt; i++) {
      AliESDtrack *esdTrack=esd->GetTrack(index[i]);
 
-     // Skip the tracks having "wrong" status (has to be checked/tuned)
-     ULong_t status = esdTrack->GetStatus();
-     if ((status & AliESDtrack::kTRDout)   == 0) continue;
-     if ((status & AliESDtrack::kTRDrefit) == 1) continue;
+//     // Skip the tracks having "wrong" status (has to be checked/tuned)
+//     ULong_t status = esdTrack->GetStatus();
+//     if ((status & AliESDtrack::kTRDout)   == 0) continue;
+//     if ((status & AliESDtrack::kTRDrefit) == 1) continue;
 
      AliExternalTrackParam t(*esdTrack);
 
@@ -195,7 +207,7 @@ Int_t AliPHOSTracker::PropagateBack(AliESDEvent *esd) {
      if ((imod<0)||(imod>4)) continue; // Some tracks miss the PHOS in azimuth
 
      //t.CorrectForMaterial(...); // Correct for the TOF material, if needed
-     t.PropagateTo(kR,bz);        // Propagate to the matching module
+     t.PropagateToBxByBz(kR,b);        // Propagate to the matching module
 
 
     // *** Search for the "best" cluster (can be improved)
@@ -206,7 +218,9 @@ Int_t AliPHOSTracker::PropagateBack(AliESDEvent *esd) {
      for (Int_t j=0; j<ncl; j++) {
        AliPHOSEmcRecPoint *c=(AliPHOSEmcRecPoint *)cArray.UncheckedAt(j);
 
-       if (c->TestBit(14)) continue; // This clusters is "used"
+       //we looking at the closest track to the cluster, 
+       //not closest cluster to the track.
+//       if (c->TestBit(14)) continue; // This clusters is "used"
 
        Double_t dy = t.GetY() - c->GetY(), dz = t.GetZ() - c->GetZ();
        Double_t d2 = dy*dy + dz*dz;
@@ -218,18 +232,18 @@ Int_t AliPHOSTracker::PropagateBack(AliESDEvent *esd) {
 
      if (!bestCluster) continue;   // No reasonable matching found 
 
-     bestCluster->SetBit(14,kTRUE); // This clusters is now attached to a track
+//     bestCluster->SetBit(14,kTRUE); // This clusters is now attached to a track
 
      matched++;
 
      // *** Now, do the PID with the "bestCluster"
      // and add the corresponding info to the ESD track pointed by "esdTrack"  
 
-     /*
-     printf("%e %e %e %e\n",t.GetSign(), t.GetX() - bestCluster->GetX(),
-	                                 t.GetY() - bestCluster->GetY(),
-	                                 t.GetZ() - bestCluster->GetZ());
-     */
+     
+//     printf("%e %e %e %e\n",t.GetSign(), t.GetX() - bestCluster->GetX(),
+//	                                 t.GetY() - bestCluster->GetY(),
+//	                                 t.GetZ() - bestCluster->GetZ());
+     
   }
     
   Info("PropagateBack","Number of matched tracks: %d",matched);
@@ -238,6 +252,7 @@ Int_t AliPHOSTracker::PropagateBack(AliESDEvent *esd) {
   delete[] index;
 
   return 0;
+*/
 }
 
 //____________________________________________________________________________
@@ -256,5 +271,5 @@ void AliPHOSTracker::UnloadClusters() {
   //--------------------------------------------------------------------
   // This function unloads the PHOS clusters
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<5; i++) (fModules[i])->Delete();
+//  for (Int_t i=0; i<5; i++) (fModules[i])->Delete();
 }
