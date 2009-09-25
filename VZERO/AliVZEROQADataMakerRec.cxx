@@ -28,6 +28,7 @@
 #include <TH2D.h> 
 #include <TGraph.h> 
 #include <TParameter.h>
+#include <TTimeStamp.h>
 
 // --- Standard library ---
 
@@ -43,6 +44,7 @@
 #include "AliVZERORawStream.h"
 #include "AliVZEROdigit.h"
 #include "AliVZEROReconstructor.h"
+#include "AliVZEROTrending.h"
 #include "event.h"
 
 
@@ -52,13 +54,16 @@ ClassImp(AliVZEROQADataMakerRec)
   AliVZEROQADataMakerRec::AliVZEROQADataMakerRec() : 
 	AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kVZERO), "VZERO Quality Assurance Data Maker"),
 	fCalibData(0x0),
-    fEvent(0)
+    fEvent(0), fNTotEvents(0), fNSubEvents(0), fTrendingUpdateEvent(0), fTrendingUpdateTime(0), fCycleStartTime(0), fCycleStopTime(0), fMonitorRate(0.)
     
 {
    // Constructor
    
       AliDebug(AliQAv1::GetQADebugLevel(), "Construct VZERO QA Object");
-  
+  for(Int_t i=0;i<8;i++){
+  	fChargePerRing[i] = 0.;
+  	fFlagPerRing[i] = 0.;
+  }
    for(Int_t i=0; i<64; i++){  
        fEven[i] = 0;   
        fOdd[i]  = 0;  }
@@ -71,7 +76,7 @@ ClassImp(AliVZEROQADataMakerRec)
   AliVZEROQADataMakerRec::AliVZEROQADataMakerRec(const AliVZEROQADataMakerRec& qadm) :
   AliQADataMakerRec(),
 	fCalibData(0x0),
-    fEvent(0)
+    fEvent(0), fNTotEvents(0), fNSubEvents(0), fTrendingUpdateEvent(0), fTrendingUpdateTime(0), fCycleStartTime(0), fCycleStopTime(0), fMonitorRate(0.)
   
 {
   // Copy constructor 
@@ -125,6 +130,22 @@ void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
   // Does the QA checking
   
   AliQAChecker::Instance()->Run(AliQAv1::kVZERO, task, list) ;
+  
+  if(task == AliQAv1::kRAWS){
+	TTimeStamp currentTime;
+	fCycleStopTime = currentTime.GetSec();
+	if(fCycleStopTime-fCycleStartTime>0.) fMonitorRate = fNTotEvents/(fCycleStopTime-fCycleStartTime);
+	//printf("%d event have been monitored -> Monitoring Rate = %f Hz\n",fNTotEvents,fMonitorRate); 
+	Bool_t update = kFALSE;
+	if(!fTrendingUpdateEvent) {
+		update = kTRUE;
+	} else if ((TMath::Abs(fTrendingUpdateTime * fMonitorRate - fTrendingUpdateEvent) / fTrendingUpdateEvent) > 0.1){
+		update = kTRUE;
+	}
+	if(update) fTrendingUpdateEvent = fTrendingUpdateTime * fMonitorRate;
+	//printf("Update trending information every %d events\n",fTrendingUpdateEvent); 
+
+  }
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     if (! IsValidEventSpecie(specie, list)) 
@@ -245,6 +266,7 @@ void AliVZEROQADataMakerRec::InitESDs()
   TH2D * h2d;
   TH1I * h1i;
   TH1D * h1d;
+  AliVZEROTrending * trend;
 
   int iHisto =0;
  
@@ -413,6 +435,16 @@ void AliVZEROQADataMakerRec::InitESDs()
  	h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
  	Add2RawsList(h2d,kBGFlagVsClock, expert, !image, !saveCorr); iHisto++;
 	 
+ 	sprintf(name,"TREND_MeanChargePerRing");
+ 	sprintf(title,"Mean Charge per Event and per Ring versus time ");
+ 	trend = new AliVZEROTrending(name, title);
+ 	Add2RawsList(trend,kRawMeanChargePerRing, !expert, !image, !saveCorr); iHisto++;
+	 
+ 	sprintf(name,"TREND_MeanFlagPerRing");
+ 	sprintf(title,"Mean Flag per Event and per Ring versus time ");
+ 	trend = new AliVZEROTrending(name, title);
+ 	Add2RawsList(trend,kRawMeanFlagPerRing, !expert, !image, !saveCorr); iHisto++;
+	 
  	AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
  }
 
@@ -553,8 +585,8 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 
    rawReader->Reset() ; 
   AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
-  rawStream->Next();
-  
+ if(!(rawStream->Next())) return;  
+ 
   eventTypeType eventType = rawReader->GetType();
 
   Int_t    mulV0A = 0 ; 
@@ -569,13 +601,21 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
   
   switch (eventType){
        case PHYSICS_EVENT:
+  
+  		fNTotEvents++;
+
+		if(fNSubEvents++>=fTrendingUpdateEvent && fTrendingUpdateEvent>0) {
+			fNSubEvents=0;
+			AddTrendingEntry();
+		}
        Int_t  iFlag=0;
        Int_t  pedestal;
        Int_t  integrator;
        Bool_t BBFlag;	 
        Bool_t BGFlag;	 
        UInt_t time, width;
-       Int_t  MBCharge, charge;
+       Int_t  MBCharge;
+	   Float_t charge;
        Int_t  offlineCh;
        TH1D * hProj;
 
@@ -604,7 +644,7 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	   // Look for the maximum in the LHC clock train
            charge = 0;
            Int_t iClock  = 0;
-           Int_t iCharge = 0;
+           Float_t iCharge = 0;
            for(Int_t iEvent=0; iEvent<21; iEvent++){
                iCharge = rawStream->GetPedestal(iChannel,iEvent);
                if(iCharge>charge)  {
@@ -631,8 +671,12 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	   // Calculation of the number of MIP
 	   Double_t mipEoI = chargeEoI * fCalibData->GetMIPperADC(offlineCh);
 
-		   
+	   int side = offlineCh/32;
+	   int ring = (offlineCh - 32*side) / 8;
+	   if(BBFlag) fFlagPerRing[side*4 + ring] += 1;
+
 	   if(charge<1023 && chargeEoI > 5.*sigma){ 
+		   fChargePerRing[side*4 + ring] += chargeEoI;	
 		   ((TH2I*)GetRawsData((integrator == 0 ? kChargeEoICycleInt0 : kChargeEoICycleInt1)))->Fill(offlineCh,chargeEoI);
 		   ((TH2D*)GetRawsData(kRawMIPChannel))->Fill(offlineCh,mipEoI);
         	   if(offlineCh<32) {
@@ -799,5 +843,34 @@ void AliVZEROQADataMakerRec::StartOfDetectorCycle()
   if(h) h->Reset();
   h = GetRawsData(kChargeEoICycleInt1);
   if(h) h->Reset();
+	
+  TTimeStamp currentTime;
+  fCycleStartTime = currentTime.GetSec();
+ 
+  fNTotEvents = 0;
+}
 
+//-------------------------------------------------------------------------------------------------
+void AliVZEROQADataMakerRec::AddTrendingEntry(){   
+     printf("AddTrendingEntry\n");
+	
+	// Normalize to the number of events
+	for(int i=0; i<8;i++){
+//		fChargePerRing[i] *= TMath::Power(10.,i)/fTrendingUpdateEvent;
+//		fFlagPerRing[i] *= TMath::Power(10.,i)/fTrendingUpdateEvent;
+		fChargePerRing[i] /= fTrendingUpdateEvent;
+		fFlagPerRing[i] /= fTrendingUpdateEvent;
+	}
+	
+	TTimeStamp currentTime;
+	((AliVZEROTrending*)GetRawsData(kRawMeanChargePerRing))->AddEntry(fChargePerRing,  currentTime.GetSec());
+	((AliVZEROTrending*)GetRawsData(kRawMeanFlagPerRing))->AddEntry(fFlagPerRing,  currentTime.GetSec());
+	//moMeanFlagPerRing->AddEntry(fFlagPerRing,  currentTime.GetSec());
+	
+	// Put back counters to zero
+	for(int i=0; i<8;i++){
+		fChargePerRing[i] = 0.;
+		fFlagPerRing[i] = 0.;
+	}
+	
 }
