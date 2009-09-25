@@ -44,11 +44,17 @@ public:
   void MakeAnalysisFillHistograms() ; 
   
   //B-tagging
-  Double_t ComputeSignDca(AliAODTrack *track, AliAODTrack *track2 , float cut1);
-  Int_t GetBtag(AliAODTrack * tr);
+  Int_t GetDVMBtag(AliAODTrack * tr); //returns # tracks from secvtx
 
-  Bool_t IsItPhotonic(const AliAODPWG4Particle* part);
-  Bool_t CheckTrack(const AliAODTrack* track);
+  //Temporary local method to get DCA because AliAODTrack is stupid
+  Bool_t GetDCA(const AliAODTrack* tr,Double_t imp[2], Double_t cov[3]);
+
+  Bool_t IsItPhotonic(const AliAODPWG4Particle* part); //check with track list
+  Bool_t IsItPhotonic2(const AliAODPWG4Particle* part); //check with V0 list
+
+  //check if track has been flagged as a non-photonic or DVM electron
+  //used with the jet tracks to tag bjets
+  Bool_t CheckTrack(const AliAODTrack* track,const char* type);  
 
   void Print(const Option_t * opt)const;
   
@@ -64,7 +70,9 @@ public:
   Double_t GetAssocPtCut() const { return fAssocPtCut; }
   Double_t GetMassCut() const { return fMassCut; }
   Double_t GetSdcaCut() const { return fSdcaCut; }
-  Int_t   GetITSCut() const { return fITSCut; }
+  Int_t    GetITSCut() const { return fITSCut; }
+  Int_t    GetNTagTrackCut() const { return fNTagTrkCut; }
+  Double_t GetIPSigCut() const { return fIPSigCut; }
 
   void SetCalorimeter(TString det)    {fCalorimeter = det ; }
   void SetpOverEmin(Double_t min)     {fpOverEmin = min ; }
@@ -80,6 +88,8 @@ public:
   void SetMassCut(Double_t mass) { fMassCut = mass; }
   void SetSdcaCut(Double_t sdca) { fSdcaCut = sdca; }
   void SetITSCut(Int_t its) { fITSCut = its; }
+  void SetNTagTrackCut(Int_t ntr) { fNTagTrkCut = ntr; }
+  void SetIPSigCut(Double_t ips) { fIPSigCut = ips; }
 
   void InitParameters();
 
@@ -87,6 +97,13 @@ public:
   void ReadHistograms(TList * outputList); //Fill histograms with
 					   //histograms in ouput list,
 					   //needed in Terminate.            
+  private:
+  //For DVM B-tag method
+  Double_t ComputeSignDca(AliAODTrack *track, AliAODTrack *track2 , float cut1);
+  //the 2 following functions are internal methods of the b-tagging
+  //based on transverse impact parameter
+  Double_t GetIPSignificance(AliAODTrack *tr, Double_t jetPhi);
+  void GetImpactParamVect(Double_t Pxy[2], Double_t t[2], Double_t Vxy[2], Double_t ip[2]);
 
   private:
   TString  fCalorimeter;  //! Which detector? EMCAL or PHOS
@@ -94,7 +111,7 @@ public:
   Double_t fpOverEmax;    //! Maximum p/E value for Electrons
   Double_t fResidualCut;  //! Track-cluster matching distance
 
-  //B-tagging
+  //DVM B-tagging
   Double_t fDrCut;       //max dR
   Double_t fPairDcaCut;  //max pair-DCA
   Double_t fDecayLenCut; //max 3d-decaylength
@@ -103,6 +120,9 @@ public:
   Double_t fMassCut;     //min Minv cut
   Double_t fSdcaCut;     //min signDca
   Int_t   fITSCut;       //min ITS hits (both)
+  //IP Sig B-tagging
+  Int_t    fNTagTrkCut;  //min number of tracks required for IP sig tag
+  Double_t fIPSigCut;    //min IP significance cut
 
   Bool_t  fWriteNtuple; //flag for filling ntuple or not
 
@@ -191,17 +211,21 @@ public:
   TH1F * fhRefMult;     //! refmult (sep 14)
   TH1F * fhRefMult2;    //! refmult2 (sep 14)
 
-  //B-tagging
-  TH2F * fhBtagCut1; //! B-tagging result for cut1 (minv>1.0)
-  TH2F * fhBtagCut2; //! B-tagging result for cut2 (minv>1.5)
-  TH2F * fhBtagCut3; //! B-tagging result for cut3 (minv>1.8)
-  TH2F * fhBtagQA1;  //! B-tagging : QA of pairDca vs decaylength
-  TH2F * fhBtagQA2;  //! B-tagging : QA of signDca vs mass
-  TH1F * fhBtagQA3;  //! B-tagging : QA (sep 14)
-  TH1F * fhBtagQA4;  //! B-tagging : QA (sep 14)
-  TH1F * fhBtagQA5;  //! B-tagging : QA (sep 14)
+  //DVM B-tagging
+  TH2F * fhDVMBtagCut1; //! DVM B-tagging result for cut1 (minv>1.0)
+  TH2F * fhDVMBtagCut2; //! DVM B-tagging result for cut2 (minv>1.5)
+  TH2F * fhDVMBtagCut3; //! DVM B-tagging result for cut3 (minv>1.8)
+  TH2F * fhDVMBtagQA1;  //! DVM B-tagging : QA of pairDca vs decaylength
+  TH2F * fhDVMBtagQA2;  //! DVM B-tagging : QA of signDca vs mass
+  TH1F * fhDVMBtagQA3;  //! DVM B-tagging : QA (sep 14)
+  TH1F * fhDVMBtagQA4;  //! DVM B-tagging : QA (sep 14)
+  TH1F * fhDVMBtagQA5;  //! DVM B-tagging : QA (sep 14)
+  //IPSig B-tagging
+  TH1F * fhIPSigBtagQA1; //! IPSig B-tagging : QA of # tag tracks
+  TH1F * fhIPSigBtagQA2; //! IPSig B-tagging : QA of IP sig
 
   //B-Jet histograms
+  TH2F* fhJetType;       //! How many of each tag were found vs jet pt
   TH2F* fhBJetXsiFF;     //! B-tagged jet FF with xsi = log(pt_Jet/pt_Track)
   TH2F* fhBJetPtFF;      //! B-tagged jet FF with pt_Track
   TH2F* fhBJetEtaPhi;    //! B-tagged jet eta-phi distribution
@@ -221,7 +245,7 @@ public:
   TH1F* fhPtMCZDecay;    //! Pt distribution of MC Z decay electrons in EMCAL
   TH1F* fhPtMCUnknown;   //! Pt distribution of MC unknown electrons in EMCAL
 
-  ClassDef(AliAnaElectron,5)
+  ClassDef(AliAnaElectron,6)
 
 } ;
  
