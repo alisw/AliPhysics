@@ -308,7 +308,7 @@ int main(int argc, char **argv) {
       const AliRawDataHeader* header = reader->GetDataHeader();
       if(header){
          UChar_t message = header->GetAttributes();
-	 if(message & 0x70){ // DEDICATED EMD RUN
+	 if((message & 0x70) == 0x70){ // DEDICATED EMD RUN
 	    //printf("\t STANDALONE_EMD_RUN raw data found\n");
 	    continue;
 	 }

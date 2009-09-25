@@ -310,7 +310,7 @@ int main(int argc, char **argv) {
         const AliRawDataHeader* header = reader->GetDataHeader();
         if(header) {
          UChar_t message = header->GetAttributes();
-	 if(message & 0x30){ // DEDICATED LASER RUN
+	 if((message & 0x30) == 0x30){ // DEDICATED LASER RUN
 	    //printf("\t STANDALONE_LASER_RUN raw data found\n");
 	    continue;
 	 }

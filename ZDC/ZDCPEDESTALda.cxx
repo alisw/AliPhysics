@@ -294,12 +294,12 @@ int main(int argc, char **argv) {
         const AliRawDataHeader* header = reader->GetDataHeader();
         if(header){
          UChar_t message = header->GetAttributes();
-	 //printf("   message from L1 %x\n", message);
-         if(message == 0x20){ // PEDESTAL RUN
+         if((message & 0x20) == 0x20){ // PEDESTAL RUN
             //printf("\t STANDALONE_PEDESTAL RUN raw data found\n");
          }
          else{
             printf("ZDCPEDESTALda.cxx -> NO STANDALONE_PEDESTAL RUN raw data found\n");
+    	    printf("   Attributes: %x\n", message);
             return -1;
          }
         }
@@ -335,6 +335,9 @@ int main(int argc, char **argv) {
   	 Int_t index=-1;
 	 Int_t detector = rawStreamZDC->GetSector(0);
 	 Int_t sector = rawStreamZDC->GetSector(1);
+	 //
+	 //printf(" rawData: det %d sec %d  value %d\n", 
+	 //	detector, sector,rawStreamZDC->GetADCGain(),rawStreamZDC->GetADCValue() );
 	 
   	 if(rawStreamZDC->IsADCDataWord() && (detector!=-1)){
 	  if(sector!=5){ // Physics signals
@@ -445,7 +448,7 @@ int main(int argc, char **argv) {
   TF1 *ADCootfunchg[kNChannels];
   for(Int_t i=0; i<kNChannels; i++){
      if(hPedOutOfTimehg[i]->GetEntries() == 0){
-       printf("\n WARNING! Empty histos -> ending DA WITHOUT writing output\n\n");
+       printf("\n WARNING! Empty histos for out-of-time channels!!!\n\n");
        return -1;
      } 
      hPedOutOfTimehg[i]->Fit("gaus","Q");

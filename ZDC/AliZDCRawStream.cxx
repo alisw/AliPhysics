@@ -251,28 +251,28 @@ void AliZDCRawStream::ReadCDHHeader()
     UChar_t message = header->GetAttributes();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> Attributes %x\n",message);
     
-    if(message == 0x0){ // PHYSICS RUN
+    if((message & 0x0) == 0x0){ // PHYSICS RUN
        //printf("\t PHYSICS RUN raw data found\n");
     }
-    else if(message == 0x10){ // COSMIC RUN
+    else if((message & 0x10) == 0x10){ // COSMIC RUN
        //printf("\t STANDALONE_COSMIC RUN raw data found\n");
     }
-    else if(message == 0x20){ // PEDESTAL RUN
+    else if((message & 0x20) == 0x20){ // PEDESTAL RUN
        //printf("\t STANDALONE_PEDESTAL RUN raw data found\n");
     }
-    else if(message == 0x30){ // LASER RUN
+    else if((message & 0x30) == 0x30){ // LASER RUN
        //printf("\t STANDALONE_LASER RUN raw data found\n");
     }
-    else if(message == 0x40){ // CALIBRATION_CENTRAL RUN
+    else if((message & 0x40) == 0x40){ // CALIBRATION_CENTRAL RUN
        //printf("\t CALIBRATION_CENTRAL RUN raw data found\n");
     }
-    else if(message == 0x50){ // CALIBRATION_SEMICENTRAL
+    else if((message & 0x50) == 0x50){ // CALIBRATION_SEMICENTRAL
        //printf("\t CALIBRATION_SEMICENTRAL RUN raw data found\n");
     }
-    else if(message == 0x60){ // CALIBRATION_MB
+    else if((message & 0x60) == 0x60){ // CALIBRATION_MB
        //printf("\t CALIBRATION_MB RUN raw data found\n");
     }
-    else if(message == 0x70){ // CALIBRATION_EMD
+    else if((message & 0x70) == 0x70){ // CALIBRATION_EMD
        //printf("\t CALIBRATION_EMD RUN raw data found\n");
     }
     // *** Checking the bit indicating the used readout card
@@ -581,36 +581,34 @@ Bool_t AliZDCRawStream::Next()
   // -------------------------------------------
   // --- DARC data
   // -------------------------------------------
-  if(fReadOutCard == 0){
-    if(fPosition<fDeadfaceOffset){
+  if(fPosition<fDeadfaceOffset && fReadOutCard==0){
+    fPosition++;
+    return kTRUE;
+  }
+  else if(fPosition==fDeadfaceOffset && fReadOutCard==0){
+    if(fBuffer != 0xdeadface){
+      AliWarning(" NO deadface after DARC data");
+      fRawReader->AddMajorErrorLog(kDARCError); 
+    }
+    else{
       fPosition++;
       return kTRUE;
     }
-    else if(fPosition==fDeadfaceOffset){
-      if(fBuffer != 0xdeadface){
-        AliWarning(" NO deadface after DARC data");
-        fRawReader->AddMajorErrorLog(kDARCError); 
-      }
-      else{
-        fPosition++;
-        return kTRUE;
-      }
+  }
+  else if(fPosition>fDeadfaceOffset && fPosition<fDeadbeefOffset && fReadOutCard==0){
+    fPosition++;
+    return kTRUE;
+  }
+  else if(fPosition==fDeadbeefOffset && fReadOutCard==0){
+    if(fBuffer != 0xdeadbeef){
+      AliWarning(" NO deadbeef after DARC global data");
+      fRawReader->AddMajorErrorLog(kDARCError);  
+      fPosition++;
+      return kFALSE;
     }
-    else if(fPosition>fDeadfaceOffset && fPosition<fDeadbeefOffset){
+    else{
       fPosition++;
       return kTRUE;
-    }
-    else if(fPosition==fDeadbeefOffset){
-      if(fBuffer != 0xdeadbeef){
-        AliWarning(" NO deadbeef after DARC global data");
-        fRawReader->AddMajorErrorLog(kDARCError);  
-        fPosition++;
-        return kFALSE;
-      }
-      else{
-        fPosition++;
-        return kTRUE;
-      }
     }
   } // ------------------------------- DARC data
   
@@ -627,7 +625,7 @@ Bool_t AliZDCRawStream::Next()
     // Not valid datum before the event 
     // there MUST be a NOT valid datum before the event!!!
     if(fReadOutCard==0){
-      if(fPosition==fDataOffset){ // and con la darc
+      if(fPosition==fDataOffset){ 
         //printf("\t **** ZDC data begin ****\n");
         if((fBuffer & 0x07000000) != 0x06000000){
           fRawReader->AddMajorErrorLog(kZDCDataError);
@@ -639,7 +637,7 @@ Bool_t AliZDCRawStream::Next()
     
       // If the not valid datum isn't followed by the 1st ADC header
       // the event is corrupted (i.e., 2 gates arrived before trigger)
-      else if(fPosition==fDataOffset+1){ // and con la darc
+      else if(fPosition==fDataOffset+1){ 
         if((fBuffer & 0x07000000) != 0x02000000){
           AliWarning("ZDC ADC -> The not valid datum is NOT followed by an ADC header!");
           fRawReader->AddMajorErrorLog(kZDCDataError);
