@@ -9,6 +9,7 @@ SRCS= AliVZEROLoader.cxx \
       AliVZEROQAChecker.cxx \
       AliVZEROMisAligner.cxx \
 	  AliVZEROLogicalSignal.cxx \
+	  AliVZEROTrending.cxx \
 	  AliVZERODataFEE.cxx \
 	  AliVZEROTriggerSimulator.cxx \
 	  AliVZEROTriggerData.cxx 
