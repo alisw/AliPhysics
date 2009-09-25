@@ -160,11 +160,11 @@ void AliTRDqaBasic::CreateOutputObjects()
 
   fTrackCuts->SetMaxCovDiagonalElements(cov1, cov2, cov3, cov4, cov5);
 
-  fTrackCuts->SetMinNsigmaToVertex(nSigma);
+  fTrackCuts->SetMaxNsigmaToVertex(nSigma);
   fTrackCuts->SetRequireSigmaToVertex(kTRUE);
 
   fTrackCuts->SetRequireTPCRefit(kTRUE);
-  fTrackCuts->SetAcceptKingDaughters(kFALSE);
+  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
 
   fTrackCuts->SetMinNClustersTPC(50);
   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
