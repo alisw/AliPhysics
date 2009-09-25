@@ -448,8 +448,9 @@ void AliCFGridSparse::Divide(const AliCFGridSparse* aGrid, Double_t c)
   
   if (!fSumW2  && aGrid->GetSumW2()) SumW2();
 
-  THnSparse *h = aGrid->GetGrid();
-  fData->Divide(h);
+  THnSparse *h1 = aGrid->GetGrid();
+  THnSparse *h2 = (THnSparse*)fData->Clone();
+  fData->Divide(h2,h1);
   fData->Scale(c);
 }
 
