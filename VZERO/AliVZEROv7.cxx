@@ -1696,7 +1696,7 @@ void AliVZEROv7::CreateGeometry()
     // Adding detectors to top volume
     TGeoVolume *vZERO = new TGeoVolumeAssembly("VZERO");
     vZERO->AddNode(v0RI,1,new TGeoTranslation(0, 0, -zdet));
-    vZERO->AddNode(v0LE,1,new TGeoTranslation(0, 0, +327.5));
+    vZERO->AddNode(v0LE,1,new TGeoTranslation(0, 0, +329.0));
     top->AddNode(vZERO,1);
 }
 
