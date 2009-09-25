@@ -159,10 +159,9 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
          new ((*digitsArray)[digitsArray->GetEntriesFast()])
              AliVZEROdigit(iChannel, adc[iChannel], time[iChannel],
 	                   width[iChannel], BBFlag[iChannel], BGFlag[iChannel],integrator[iChannel]);
-     }
+     }          
+     digitsTree->Fill();
   }
-
-  digitsTree->Fill();
 }
 
 //______________________________________________________________________
