@@ -648,8 +648,8 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
       iclusterBranch = MakeClusters(det);
     }
 
-    fDigitsManager->ResetArrays(det);
-    
+    fDigitsManager->ClearArrays(det);
+
     if (!fReconstructor->IsWritingTracklets()) continue;
     if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det);
   }
