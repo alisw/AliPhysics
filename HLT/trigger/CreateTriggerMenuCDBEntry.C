@@ -88,11 +88,12 @@ void CreateTriggerMenuCDBEntry(
 	// the domain definitions for the global HLT output and the HLT DDLs
 	config.AddSymbol("domainHLTOUT", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:HLT \")");
 	config.AddSymbol("domainHLTDDL", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"DAQRDOUT:HLT\\0\")");
+	config.AddSymbol("domainALLDDL", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"DAQRDOUT:***\\0\")");
 
 	///////////////////////////////////////////////////////////////////////////////////////////	
 	// NOTE: always make sure that the global HLT output and the HLT DDLs are included
 	// in the readout, i.e. add domainHLTOUT|domainHLTDDL to the trigger domain
-	config.AddItem("BarrelMultiplicityTrigger", "BarrelMultiplicityTrigger|domainHLTOUT|domainHLTDDL", "charged barrel track multiplicity triggered");
+	config.AddItem("BarrelMultiplicityTrigger", "BarrelMultiplicityTrigger|domainHLTOUT|domainALLDDL", "charged barrel track multiplicity triggered");
 	
 	///////////////////////////////////////////////////////////////////////////////////////////	
 	// default domain in case there is no global trigger
