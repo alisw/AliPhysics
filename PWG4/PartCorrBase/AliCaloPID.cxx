@@ -198,14 +198,14 @@ void AliCaloPID::InitParameters()
 {
   //Initialize the parameters of the PID.
   
-  fEMCALPhotonWeight   = 0.8 ;
+  fEMCALPhotonWeight   = 0.5 ;
   fEMCALPi0Weight      = 0.5 ;
-  fEMCALElectronWeight = 0.8 ;
+  fEMCALElectronWeight = 0.5 ;
   fEMCALChargeWeight   = 0.5 ;
   fEMCALNeutralWeight  = 0.5 ;
   
-  fPHOSPhotonWeight    = 0.75 ;
-  fPHOSPi0Weight       = 0.8 ;
+  fPHOSPhotonWeight    = 0.5 ;
+  fPHOSPi0Weight       = 0.5 ;
   fPHOSElectronWeight  = 0.5 ;
   fPHOSChargeWeight    = 0.5 ;
   fPHOSNeutralWeight   = 0.5 ;
