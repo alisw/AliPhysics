@@ -82,3 +82,16 @@ void AliHLTTRDOfflineClusterizerComponent::SetOfflineParams(){
     HLTError("Run Number was already set!");
   }
 }
+
+int AliHLTTRDOfflineClusterizerComponent::DoDeinit()
+{
+  return AliHLTTRDClusterizerComponent::DoDeinit();
+}
+
+int AliHLTTRDOfflineClusterizerComponent::DoEvent(const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
+						  AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+						  AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
+{
+  return AliHLTTRDClusterizerComponent::DoEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks );
+}
+

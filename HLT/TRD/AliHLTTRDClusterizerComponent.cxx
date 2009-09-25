@@ -173,9 +173,6 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
   if(fReconstructor->IsProcessingTracklets())
     fOutputConst = fClusterizer->GetTrMemBlockSize();
 
-  AliTRDrawStream::SetSubtractBaseline(10);
-  AliTRDrawFastStream::SetSubtractBaseline(10);
-
   return iResult;
 }
 
@@ -513,21 +510,6 @@ int AliHLTTRDClusterizerComponent::SetParams()
     HLTInfo("Geometry Already Loaded!");
   }
 
-  TString recoOptions="hlt,!cw,sl_cl_0";
-
-  switch(fRecoDataType){
-  case 0: recoOptions += ",tc"; break;
-  case 1: recoOptions += ",!tc"; break;
-  }
-  switch(fyPosMethod){
-  case 0: recoOptions += ",!gs,!lut"; break;
-  case 1: recoOptions += ",!gs,lut"; break;
-  case 2: recoOptions += ",gs,!lut"; break;
-  }
-  if(fProcessTracklets) recoOptions += ",tp";
-  else  recoOptions += ",!tp";
-
-
   if (fRecoParamType == 0)
     {
       HLTDebug("Low flux params init.");
@@ -552,8 +534,22 @@ int AliHLTTRDClusterizerComponent::SetParams()
       return -EINVAL;
     }
 
+  switch(fRecoDataType){
+  case 0: fRecoParam->SetTailCancelation(kTRUE); HLTDebug("Enableing Tail Cancelation"); break;
+  case 1: fRecoParam->SetTailCancelation(kFALSE); HLTDebug("Enableing Tail Cancelation"); break;
+  }
+  switch(fyPosMethod){
+  case 0: fRecoParam->SetGAUS(kFALSE); fRecoParam->SetLUT(kFALSE); break;
+  case 1: fRecoParam->SetGAUS(kFALSE); fRecoParam->SetLUT(kTRUE); break;
+  case 2: fRecoParam->SetGAUS(kTRUE); fRecoParam->SetLUT(kFALSE); break;
+  }
+
   fRecoParam->SetStreamLevel(AliTRDrecoParam::kClusterizer, 0);
   fReconstructor->SetRecoParam(fRecoParam);
+
+  TString recoOptions="hlt,!cw";
+  if(fProcessTracklets) recoOptions += ",tp";
+  else  recoOptions += ",!tp";
 
   HLTDebug("Reconstructor options are: %s",recoOptions.Data());
   fReconstructor->SetOption(recoOptions.Data());

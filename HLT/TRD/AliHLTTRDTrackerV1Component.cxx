@@ -492,17 +492,6 @@ int AliHLTTRDTrackerV1Component::SetParams()
   HLTDebug("Setting number of time bins of the tracker to: %i", fNtimeBins);
   AliTRDtrackerV1::SetNTimeBins(fNtimeBins);
   
-  TString recoOptions="sa,sl_tr_0,!cw";
-  
-  if(!fSlowTracking)
-    recoOptions += ",hlt";
-
-  switch(fPIDmethod){
-  case 0: recoOptions += ",!nn"; break;
-  case 1: recoOptions += ",nn"; break;
-  case 2: recoOptions += ",!nn"; break;
-  }
-
   if (fRecoParamType == 0)
     {
       HLTDebug("Low flux params init.");
@@ -527,7 +516,19 @@ int AliHLTTRDTrackerV1Component::SetParams()
       return -EINVAL;
     }
 
+  switch(fPIDmethod){
+  case 0: fRecoParam->SetPIDNeuralNetwork(kFALSE); break;
+  case 1: fRecoParam->SetPIDNeuralNetwork(kTRUE); break;
+  case 2: fRecoParam->SetPIDNeuralNetwork(kFALSE); break;
+  }
+
+  fRecoParam->SetStreamLevel(AliTRDrecoParam::kTracker, 0);
   fReconstructor->SetRecoParam(fRecoParam);
+
+  TString recoOptions="sa,!cw";
+  
+  if(!fSlowTracking)
+    recoOptions += ",hlt";
 
   HLTDebug("Reconstructor options are: %s",recoOptions.Data());
   fReconstructor->SetOption(recoOptions.Data());

@@ -23,9 +23,13 @@ public:
   const char* GetComponentID();
   AliHLTComponent* Spawn();
 
-protected:
   int DoInit( int argc, const char** argv );
+  int DoDeinit();
+  int DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
+	       AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+	       AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
 
+protected:
   void SetOfflineParams();
 
   ClassDef(AliHLTTRDOfflineClusterizerComponent, 1)

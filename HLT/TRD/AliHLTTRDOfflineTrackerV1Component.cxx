@@ -76,3 +76,16 @@ void AliHLTTRDOfflineTrackerV1Component::SetOfflineParams(){
     HLTError("Run Number was already set!");
   }
 }
+
+int AliHLTTRDOfflineTrackerV1Component::DoDeinit()
+{
+  return AliHLTTRDTrackerV1Component::DoDeinit();
+}
+
+int AliHLTTRDOfflineTrackerV1Component::DoEvent(const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
+						  AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+						  AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
+{
+  return AliHLTTRDTrackerV1Component::DoEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks );
+}
+
