@@ -33,6 +33,7 @@ class AliITSOnlineSPDphysAnalyzer {
 
   UInt_t     ProcessDeadPixels();
   UInt_t     ProcessNoisyPixels();
+  UInt_t     ProcessNoisyPixels(UInt_t eq, UInt_t nrEvts);
 
   UInt_t     GetNrEnoughStatChips();
   UInt_t     GetNrDeadChips();

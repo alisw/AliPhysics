@@ -2902,3 +2902,28 @@ Bool_t AliITSOnlineCalibrationSPDhandler::IsSilentChip(UInt_t eq, UInt_t hs, UIn
   }
   return (!IsActiveEq(eq) || IsDeadEq(eq) || !IsActiveHS(eq,hs) || IsDeadHS(eq,hs) || !IsActiveChip(eq,hs,chip) || IsDeadChip(eq,hs,chip));
 }
+//____________________________________________________________________________________________
+Bool_t AliITSOnlineCalibrationSPDhandler::IsNoisyChip(UInt_t eq, UInt_t hs, UInt_t chip) const {
+  // returns true if there is at least a noisy pixel in the chip
+
+  if (eq>=20 || hs>=6 || chip>=10) {
+    Error("AliITSOnlineCalibrationSPDhandler::IsNoisyChip", "eq,hs,chip (%d,%d,%d) out of bounds.",eq,hs,chip);
+    return kFALSE;
+  }
+  Bool_t isNoisy = kFALSE;
+
+  UInt_t nrNoisy = GetNrNoisy();
+  for (UInt_t i=0; i<nrNoisy; i++) {
+    if(eq  == GetNoisyEqIdAt(i)){
+      if(hs  == GetNoisyHSAt(i)){
+        if(chip == GetNoisyChipAt(i)) {
+            UInt_t col  = GetNoisyColAt(i);
+            UInt_t row  = GetNoisyRowAt(i);
+            if (IsPixelNoisy(eq,hs,chip,col,row)) isNoisy = kTRUE;
+        }
+      }
+    }
+  }
+  return isNoisy;
+}
+

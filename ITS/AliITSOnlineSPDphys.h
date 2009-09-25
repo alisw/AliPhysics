@@ -29,6 +29,7 @@ class AliITSOnlineSPDphys {
 
   virtual void       AddPhys(AliITSOnlineSPDphys* phys2);
   virtual void       ClearThis();
+  void               InitializeHitMap() {InitHitmap();} // online monitoring
   // SET METHODS ***********************************
   void     AddRunNr(UInt_t val);
   void     SetEqNr(UInt_t val);

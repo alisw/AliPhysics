@@ -202,6 +202,7 @@ class AliITSOnlineCalibrationSPDhandler {
   Bool_t  IsSilentHS(UInt_t eq, UInt_t hs) const;
   Bool_t  IsSilentChip(UInt_t eq, UInt_t hs, UInt_t chip) const;
 
+  Bool_t  IsNoisyChip(UInt_t eq, UInt_t hs, UInt_t chip) const; 
 
   UInt_t  AddSilentFrom(AliITSOnlineCalibrationSPDhandler* other);
   UInt_t  AddDeadFrom(AliITSOnlineCalibrationSPDhandler* other);

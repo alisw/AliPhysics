@@ -269,6 +269,91 @@ UInt_t AliITSOnlineSPDphysAnalyzer::ProcessNoisyPixels() {
   return nrEnoughStatChips;
 }
 
+UInt_t AliITSOnlineSPDphysAnalyzer::ProcessNoisyPixels(UInt_t eq, UInt_t nrEvts) {
+  // process noisy pixel data , returns number of chips with enough statistics
+  if (fPhysObj==NULL) {
+    Warning("AliITSOnlineSPDphysAnalyzer::ProcessNoisyPixels","No data!");
+    return 0;
+  }
+  // do we have enough events to even try the algorithm?
+  if (nrEvts < fMinEventsForNoisy) {
+    Warning("AliITSOnlineSPDphysAnalyzer::ProcessNoisyPixels","Nr events (%d) < fMinEventsForNoisy (%d)!",nrEvts,fMinEventsForNoisy);
+    return 0;
+  }
+  // handler should be initialized
+  if (fHandler==NULL) {
+    Error("AliITSOnlineSPDphysAnalyzer::ProcessNoisyPixels","Calibration handler is not initialized!");
+    return 0;
+  }
+  
+  UInt_t nrEnoughStatChips = 0;
+
+  for (UInt_t hs=0; hs<6; hs++) {
+    for (UInt_t chip=0; chip<10; chip++) {
+
+      UInt_t nrPixels = 0;
+      UInt_t nrChipHits = 0;
+      UInt_t nrMostHits = 0;
+      for (UInt_t col=0; col<32; col++) {
+	for (UInt_t row=0; row<256; row++) {
+	  UInt_t nrHits = fPhysObj->GetHits(hs,chip,col,row);
+	  nrChipHits += nrHits;
+	  //	  if (nrHits>0) nrPixels++; // don't include pixels that might be dead
+	  nrPixels++;
+	  if (nrHits>fDefinitelyNoisyRatio*nrEvts) {
+	    fHandler->SetNoisyPixel(eq,hs,chip,col,row);
+	    nrPixels--;
+	    nrChipHits-=nrHits;
+	  }
+	  else {
+	    if (nrMostHits<nrHits) nrMostHits=nrHits;
+	  }
+	}
+      }
+
+      if (nrChipHits>0) { // otherwise there are for sure no noisy
+	// Binomial with n events and probability p for pixel hit
+	UInt_t n = nrEvts;
+	if (nrPixels>0 && n>0) {
+
+	  Double_t p = (Double_t)nrChipHits/nrPixels/n;
+
+	  // Bin(n,k=0):
+	  Double_t bin = pow((Double_t)(1-p),(Double_t)n);
+	  // Bin(n,k)
+	  UInt_t k=1;
+	  while ((bin>fThreshNoisy || k<n*p) && k<=n) {
+	    k++;
+	    bin = bin*(n-k+1)/k*p/(1-p);
+	  }
+	  
+	  // can we find noisy pixels...?
+	  if (k<=n) {
+	    //	    printf("eq %d , hs %d , chip %d : Noisy level = %d\n",GetEqNr(),hs,chip,k);
+	    nrEnoughStatChips++;
+	    // add noisy pixels to handler
+	    UInt_t noiseLimit=k;
+	    if (nrMostHits>=noiseLimit) {
+	      for (UInt_t col=0; col<32; col++) {
+		for (UInt_t row=0; row<256; row++) {
+		  UInt_t nrHits = fPhysObj->GetHits(hs,chip,col,row);
+		  if (nrHits >= noiseLimit) {
+		    fHandler->SetNoisyPixel(eq,hs,chip,col,row);
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+
+      }
+
+    } // for chip
+  } // for hs
+
+  return nrEnoughStatChips;
+}
+
 
 UInt_t AliITSOnlineSPDphysAnalyzer::ProcessDeadPixels() {
   // process dead pixel data , returns number of chips with enough statistics
