@@ -390,7 +390,8 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
 	  Int_t iz = input->GetCoord1();
 	  Int_t itb = input->GetCoord2();
 	  Int_t index = (itb+1) * nzBins + (iz+1);
-	  if(index<kMaxBin){
+	  //	  if(index<kMaxBin){
+	  if((itb < nTimeBins) && (iz < nAnodes)) {
 	    ddlbins[iHybrid][index].SetQ(q);
 	    ddlbins[iHybrid][index].SetMask(1);
 	    ddlbins[iHybrid][index].SetIndex(index);
