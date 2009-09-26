@@ -1322,7 +1322,7 @@ Double_t AliAnaElectron::GetIPSignificance(AliAODTrack *tr, Double_t jetPhi)
   Double_t Txy[] = {esdTrack.Xv(), esdTrack.Yv()};
   Double_t Vxy[] = {vv->GetX(),  vv->GetY()};
   GetImpactParamVect(Pxy, Txy, Vxy, ipVec2D);
-  Double_t phiIP = TMath::ATan2(ipVec2D[1], ipVec2D[0]) + (fabs(ipVec2D[1])-ipVec2D[1])/fabs(ipVec2D[1])*TMath::Pi();
+	Double_t phiIP = TMath::ATan2(ipVec2D[1], ipVec2D[0]) + (TMath::Abs(ipVec2D[1])-ipVec2D[1])/TMath::Abs(ipVec2D[1])*TMath::Pi();
   Double_t cosTheta = TMath::Cos(jetPhi - phiIP);
   Double_t sign = cosTheta/TMath::Abs(cosTheta);
   significance = TMath::Abs(impPar[0])/TMath::Sqrt(ipCov[0])*sign;
