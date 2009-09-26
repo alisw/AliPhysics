@@ -46,7 +46,7 @@ class AliCaloCalibSignal : public TObject {
   // Event processing methods:
   Bool_t ProcessEvent(AliRawReader *rawReader);
   Bool_t ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeaderBase *aliHeader); // added header for time info
-  Bool_t CheckFractionAboveAmp(int *AmpVal, int nTotChan); // check fraction of signals to check for LED events
+  Bool_t CheckFractionAboveAmp(int *AmpVal, int resultArray[]); // check fraction of signals to check for LED events
 
   // Mapping handling
   AliCaloAltroMapping **GetAltroMapping() { return fMapping; };

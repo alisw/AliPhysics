@@ -22,7 +22,7 @@
 */
 
 #define RESULT_FILE  "EMCALPED.root"
-#define FILE_ID "EMCALPED"
+#define FILE_ID "pedestals"
 #define AliDebugLevel() -1
 #define FILE_PEDClassName "emcCalibPedestal"
 const int kNRCU = 4;

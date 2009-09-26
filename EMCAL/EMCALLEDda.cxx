@@ -18,7 +18,7 @@
 */
 
 #define RESULT_FILE  "EMCALLED.root"
-#define FILE_ID "EMCALLED"
+#define FILE_ID "signal"
 #define AliDebugLevel() -1
 #define FILE_PEDClassName "emcCalibPedestal"
 #define FILE_SIGClassName "emcCalibSignal"

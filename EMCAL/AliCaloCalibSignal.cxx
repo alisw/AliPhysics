@@ -65,8 +65,8 @@ AliCaloCalibSignal::AliCaloCalibSignal(kDetType detectorType) :
   fMapping(NULL),
   fRunNumber(-1),
   fStartTime(0),
-  fAmpCut(50),
-  fReqFractionAboveAmpCutVal(0.8),
+  fAmpCut(40), // min. 40 ADC counts as default
+  fReqFractionAboveAmpCutVal(0.6), // 60% in a strip, per default
   fReqFractionAboveAmp(kTRUE),
   fHour(0),
   fLatestHour(0),
@@ -221,7 +221,7 @@ void AliCaloCalibSignal::Zero()
   fNEvents = 0;
   fNAcceptedEvents = 0;
 
-  // Set the number of points for each tower: Amp vs. Time 
+  // Set the number of points for each tower: Amp vs. Time
   memset(fNHighGain, 0, sizeof(fNHighGain));
   memset(fNLowGain, 0, sizeof(fNLowGain));
   // and LED reference
@@ -231,28 +231,38 @@ void AliCaloCalibSignal::Zero()
 }
 
 //_____________________________________________________________________
-Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(int *AmpVal, int nTotChan)
+Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(int *AmpVal, 
+						 int resultArray[])
 {
-  int nAbove = 0;
+  Bool_t returnCode = false;
     
   int TowerNum = 0;
+  double fraction = 0;
   for (int i = 0; i<fModules; i++) {
     for (int j = 0; j<fColumns; j++) {
+      int nAbove = 0;
       for (int k = 0; k<fRows; k++) {
 	TowerNum = GetTowerNum(i,j,k);
 	if (AmpVal[TowerNum] > fAmpCut) { 
 	  nAbove++;
 	}
       }
+      resultArray[i*fColumns +j] = 0; // init. to denied
+      if (nAbove > 0) {
+	fraction = (1.0*nAbove) / fRows;
+	/*
+	printf("DS mod %d col %d nAbove %d fraction %3.2f\n",
+	       i, j, nAbove, fraction);
+	*/
+	if (fraction > fReqFractionAboveAmpCutVal) {
+	  resultArray[i*fColumns + j] = nAbove;
+	  returnCode = true;
+	}  
+      }
     }
-  }
+  } // modules loop
   
-  double fraction = (1.0*nAbove) / nTotChan;
-  
-  if (fraction > fReqFractionAboveAmpCutVal) {  
-    return true;
-  }
-  else return false;
+  return returnCode;
 }
 
 //_____________________________________________________________________
@@ -430,10 +440,17 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeade
   in->Reset(); // just in case the next customer forgets to check if the stream was reset..
 
   // now check if it was a led event, only use high gain (that should be sufficient)
+
+  // by default all columns are accepted (init check to > 0)
+  int checkResultArray[AliEMCALGeoParams::fgkEMCALModules * AliEMCALGeoParams::fgkEMCALCols];
+  for (int ia=0; ia<(AliEMCALGeoParams::fgkEMCALModules * AliEMCALGeoParams::fgkEMCALCols); ia++) { 
+    checkResultArray[ia] = 1; 
+  }
+
   if (fReqFractionAboveAmp) {
     bool ok = false;
     if (nHighChan > 0) { 
-      ok = CheckFractionAboveAmp(AmpValHighGain, nHighChan); 
+      ok = CheckFractionAboveAmp(AmpValHighGain, checkResultArray); 
     }
     if (!ok) return false; // skip event
   }
@@ -452,6 +469,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeade
   // it is a led event, now fill TTree
   for(int i=0; i<fModules; i++){
     for(int j=0; j<fColumns; j++){
+      if (checkResultArray[i*fColumns + j] > 0) { // column passed check 
       for(int k=0; k<fRows; k++){
 	
 	TowerNum = GetTowerNum(i, j, k); 
@@ -469,10 +487,20 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeade
 	  fNLowGain[TowerNum]++;
 	}
       } // rows
+      } // column passed check
     } // columns
+
+    // We also do the activity check for LEDRefs/Strips, but need to translate between column
+    // and strip indices for that; based on these relations: 
+    // iStrip = AliEMCALGeoParams::GetStripModule(iSM, iCol);
+    // iStrip = (iSM%2==0) ? iCol/2 : AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - iCol/2;
+    // which leads to
+    // iColFirst = (iSM%2==0) ? iStrip*2 : (AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - iStrip)*2;
 
     // also LED refs
     for(int j=0; j<fLEDRefs; j++){
+      int iColFirst = (i%2==0) ? j*2 : (AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - j)*2; //CHECKME!!!
+      if ( (checkResultArray[i*fColumns + iColFirst]>0) || (checkResultArray[i*fColumns + iColFirst + 1]>0) ) { // at least one column in strip passed check 
       for (gain=0; gain<2; gain++) {
 	fRefNum = GetRefNum(i, j, gain); 
 	if (LEDAmpVal[fRefNum]) {
@@ -480,7 +508,8 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeade
 	  fTreeLEDAmpVsTime->Fill();//fRefNum,fHour,fAmp);
 	  fNRef[fRefNum]++;
 	}
-      }
+      } // gain
+      } // at least one column in strip passed check 
     }
 
   } // modules
