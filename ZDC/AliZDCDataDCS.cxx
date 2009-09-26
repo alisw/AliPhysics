@@ -131,7 +131,11 @@ Bool_t AliZDCDataDCS::ProcessData(TMap& aliasMap)
    TObjArray   *aliasArr;
    AliDCSValue *aValue;
   
-   for(int j=0; j<kNAliases; j++){
+   // *** ATTENTION!!! Change introduced 26/09/09 ***************
+   // In order not to process HV, only data from table position *
+   // (namely 1st four values) are processed ********************
+   //for(int j=0; j<kNAliases; j++){
+   for(int j=0; j<kNAlignDet; j++){
       //printf(" Processing alias %d  aliasName %s \n", j, fAliasNames[j].Data());
       
       aliasArr = (TObjArray*) (aliasMap.GetValue(fAliasNames[j].Data()));

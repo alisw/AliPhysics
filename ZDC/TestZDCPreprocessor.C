@@ -19,7 +19,8 @@ void TestZDCPreprocessor(const char* runType="PHYSICS")
 
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
-  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  //AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/OCDB");
   //AliTestShuttle::SetMainCDB("alien://folder=/alice/data/2009/OCDB/");
   AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
 
@@ -36,12 +37,12 @@ void TestZDCPreprocessor(const char* runType="PHYSICS")
   //     the format of the file is explained in ReadDCSAliasMap()
   //     To use it uncomment the following line:
   //
-  TMap* dcsAliasMap = ReadDCSAliasMap();
+  //TMap* dcsAliasMap = ReadDCSAliasMap();
   //
   // (b) generated in this macro: Use CreateDCSAliasMap() and its documentation
   //     To use it uncomment the following line:
   //
-  //TMap* dcsAliasMap = CreateDCSAliasMap();
+  TMap* dcsAliasMap = CreateDCSAliasMap();
   //dcsAliasMap->Print("");
   //WriteDCSAliasMap();
 
@@ -123,6 +124,7 @@ void TestZDCPreprocessor(const char* runType="PHYSICS")
   
   // Test the preprocessor
   shuttle->Process();
+  //printf(" Back to test macro: final checks! \n");
 
   // TODO(7)
   // In the preprocessor AliShuttleInterface::Store should be called to put the final
@@ -238,7 +240,7 @@ TMap* CreateDCSAliasMap()
      valueSet->SetOwner(1);
    
      TString aliasName = aliasNames[nAlias];
-     printf("\n\n alias: %s\n\n",aliasName.Data());
+     //printf("\n\n alias: %s\n\n",aliasName.Data());
 
      for(int timeStamp=0;timeStamp<=2000;timeStamp+=500){
        Float_t simVal = (Float_t) (random.Gaus()*600.+1800.);

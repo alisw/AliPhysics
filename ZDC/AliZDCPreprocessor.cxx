@@ -136,15 +136,19 @@ UInt_t AliZDCPreprocessor::ProcessDCSData(TMap* dcsAliasMap)
     return 1;
   }  
   
+  // ------------------------------------------------------
+  // Change introduced 26/9/09 in order NOT to process the
+  // HV DP since some of them are never found in amanda DB
+  // ------------------------------------------------------
   // Store DCS data as reference
-  AliCDBMetaData metadata;
+/*  AliCDBMetaData metadata;
   metadata.SetResponsible("Chiara Oppedisano");
   metadata.SetComment("DCS DP TMap for ZDC");
   Bool_t resDCSRef = kTRUE;
   resDCSRef = StoreReferenceData("DCS","Data", dcsAliasMap, &metadata);
   
   if(resDCSRef==kFALSE) return 2;
-
+*/
   // --- Writing ZDC table positions into alignment object
   TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
@@ -174,7 +178,7 @@ UInt_t AliZDCPreprocessor::ProcessDCSData(TMap* dcsAliasMap)
   AliCDBMetaData mdDCS;
   mdDCS.SetResponsible("Chiara Oppedisano");
   mdDCS.SetComment("Alignment object for ZDC");
-  Bool_t resultAl = Store("Align","Data", array, &mdDCS, 0, 0);
+  Bool_t resultAl = Store("Align","Data", array, &mdDCS, 0, kFALSE);
   if(resultAl==kFALSE)  return 3;
   
   return 0;
@@ -266,6 +270,12 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
       mapCalib->SetADCChannel(k,readMap[k][2]);
       mapCalib->SetDetector(k,readMap[k][4]);
       mapCalib->SetSector(k,readMap[k][5]);
+      // TEMPORARY!!!! Until no mapping from scaler is provided!!!!!!!
+      for(Int_t il=0; il<32; il++){
+         mapCalib->SetScChannel(il, 0);
+	 mapCalib->SetScDetector(il, 0);
+	 mapCalib->SetScSector(il, 0);
+      }
     }
     //mapCalib->Print("");
     // 
@@ -274,7 +284,8 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
     metaData.SetResponsible("Chiara Oppedisano");
     metaData.SetComment("Filling AliZDCChMap object");  
     //
-    resChMapStore = Store("Calib","ChMap",mapCalib, &metaData, 0, 1);
+    resChMapStore = Store("Calib","ChMap",mapCalib, &metaData, 0, kTRUE);
+    printf("  Mapping object stored in OCDB\n");
   }
   else{
     Log(" ZDC/Calib/ChMap entry in OCDB is valid and won't be updated");
@@ -306,7 +317,7 @@ UInt_t AliZDCPreprocessor::ProcessppData()
      for(Int_t j=0; j<6; j++) eCalib->SetEnCalib(j,1.);
      metaData.SetComment("AliZDCEnCalib object");  
      //eCalib->Print("");
-     resEnCal = Store("Calib", "EnergyCalib", eCalib, &metaData, 0, 1);
+     resEnCal = Store("Calib", "EnergyCalib", eCalib, &metaData, 0, kTRUE);
    }
    else{ 
      // if entry exists it is still valid (=1 for all runs!)
@@ -335,7 +346,7 @@ UInt_t AliZDCPreprocessor::ProcessppData()
      metaData.SetResponsible("Chiara Oppedisano");
      metaData.SetComment("AliZDCTowerCalib object");  
      //
-     resTowCal = Store("Calib", "TowerCalib", towCalib, &metaData, 0, 1);
+     resTowCal = Store("Calib", "TowerCalib", towCalib, &metaData, 0, kTRUE);
    }
    else{ 
      // if entry exists it is still valid (=1 for all runs!)
@@ -405,7 +416,7 @@ UInt_t AliZDCPreprocessor::ProcessCalibData()
     metaData.SetResponsible("Chiara Oppedisano");
     metaData.SetComment("Filling AliZDCEnCalib object");  
     //
-    resEnCal = Store("Calib","EnergyCalib",eCalib, &metaData, 0, 1);
+    resEnCal = Store("Calib","EnergyCalib",eCalib, &metaData, 0, kTRUE);
     if(resEnCal==kFALSE) return 6;
   }
   delete daqSources; daqSources = 0;
@@ -463,7 +474,7 @@ UInt_t AliZDCPreprocessor::ProcessCalibData()
     metaData.SetResponsible("Chiara Oppedisano");
     metaData.SetComment("Filling AliZDCTowerCalib object");  
     //
-    resTowCal = Store("Calib","TowerCalib",towCalib, &metaData, 0, 1);
+    resTowCal = Store("Calib","TowerCalib",towCalib, &metaData, 0, kTRUE);
     if(resTowCal==kFALSE) return 7;
   }
   delete daqSourcesH; daqSourcesH = 0;
@@ -535,7 +546,7 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
      metaData.SetResponsible("Chiara Oppedisano");
      metaData.SetComment("Filling AliZDCPedestals object");  
      //
-     resPedCal = Store("Calib","Pedestals",pedCalib, &metaData, 0, 1);
+     resPedCal = Store("Calib","Pedestals",pedCalib, &metaData, 0, kTRUE);
      if(resPedCal==kFALSE) return 11;
   }
   delete daqSources; daqSources = 0;
@@ -627,7 +638,7 @@ UInt_t AliZDCPreprocessor::ProcessLaserData()
      metaData.SetResponsible("Chiara Oppedisano");
      metaData.SetComment("Filling AliZDCLaserCalib object");  
      //
-     resLaserCal = Store("Calib","LaserCalib",lCalib, &metaData, 0, 1);
+     resLaserCal = Store("Calib","LaserCalib",lCalib, &metaData, 0, kTRUE);
      if(resLaserCal==kFALSE) return 15;
   }
   delete daqSources; daqSources = 0;
