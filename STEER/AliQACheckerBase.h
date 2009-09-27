@@ -22,6 +22,7 @@ class TH1 ;
 class TObjArray ; 
 class TDirectory ; 
 class TNtupleD ;
+class AliDetectorRecoParam ; 
 
 // --- Standard library ---
 
@@ -39,9 +40,9 @@ public:
   TCanvas *      GetImage(AliRecoParam::EventSpecie_t es) { return fImage[AliRecoParam::AConvert(es)] ; }
   virtual void   Init(const AliQAv1::DETECTORINDEX_t det)   { AliQAv1::Instance(det) ; }
   virtual void   MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ; 
-  void           Run(AliQAv1::ALITASK_t tsk); 
-  void           Run(AliQAv1::ALITASK_t tsk, TObjArray ** list); 
-  void           Run(AliQAv1::ALITASK_t /*tsk*/, TNtupleD ** /*nt*/) {;} 
+  void           Run(AliQAv1::ALITASK_t tsk, AliDetectorRecoParam * recoParam = NULL); 
+  void           Run(AliQAv1::ALITASK_t tsk, TObjArray ** list, AliDetectorRecoParam * recoParam = NULL); 
+  void           Run(AliQAv1::ALITASK_t /*tsk*/, TNtupleD ** /*nt*/, AliDetectorRecoParam * /*recoParam*/) {;} 
   void           SetHiLo(Float_t * hiValue, Float_t * lowValue) ; 
   void           SetPrintImage(Bool_t opt = kTRUE) { fPrintImage = opt ; }
   void           SetRefandData(TDirectory * ref, TObjArray ** refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
