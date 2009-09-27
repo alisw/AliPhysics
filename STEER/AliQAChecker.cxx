@@ -347,6 +347,8 @@ Bool_t AliQAChecker::Run(const char * fileName, Int_t runnumber)
         index = AliQAv1::kSIM ; 
       if ( taskName == AliQAv1::GetTaskName(AliQAv1::kDIGITS) ) 
         index = AliQAv1::kSIM ; 
+      if ( taskName == AliQAv1::GetTaskName(AliQAv1::kRAWS) ) 
+        index = AliQAv1::kRAW ;       
       if ( taskName == AliQAv1::GetTaskName(AliQAv1::kDIGITSR) ) 
         index = AliQAv1::kREC ; 
       if ( taskName == AliQAv1::GetTaskName(AliQAv1::kRECPOINTS) ) 
@@ -459,7 +461,7 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
   qac->Init(det) ; 
   GetRefSubDir(AliQAv1::GetDetName(det), AliQAv1::GetTaskName(task), refDir, refOCDBDir) ;
   qac->SetRefandData(refDir, refOCDBDir) ; 
-  qac->Run(index, list) ; 
+  qac->Run(index, list, NULL) ; 
 
   return kTRUE ; 
 }
