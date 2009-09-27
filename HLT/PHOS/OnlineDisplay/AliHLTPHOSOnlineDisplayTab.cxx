@@ -65,6 +65,7 @@ AliHLTPHOSOnlineDisplayTab::GetEventInfo(AliHLTHOMERReader *homeReaderPtr, int i
 int 
 AliHLTPHOSOnlineDisplayTab::DoGetNextEvent()
 {
+  
   AliHLTHOMERReader* CurrentReaderPtr;
   int ret = 0;
   unsigned long ndx;
@@ -108,4 +109,5 @@ AliHLTPHOSOnlineDisplayTab::DoGetNextEvent()
 	  ReadBlockData(CurrentReaderPtr);
 	}
     }
+  
 }

@@ -30,7 +30,13 @@
 //#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h" 
 #include "AliHLTPHOSOnlineDisplay.h"
-#include "AliHLTPHOSSharedMemoryInterface.h"
+
+#include "AliHLTPHOSChannelDataStruct.h"
+
+#include "AliHLTPHOSChannelDataHeaderStruct.h"
+
+//#include "AliHLTPHOSSharedMemoryInterface.h"
+#include "AliHLTPHOSSharedMemoryInterfacev2.h"
 
 //#include "TStyle.h"
 
@@ -67,7 +73,8 @@ AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlin
   */
 
 
-  fShmPtr = new AliHLTPHOSSharedMemoryInterface();
+  // fShmPtr = new AliHLTPHOSSharedMemoryInterface();
+  fShmPtr = new AliHLTPHOSSharedMemoryInterfacev2();
   fOnlineDisplayPtr =  onlineDisplayPtr;
 
 
@@ -183,17 +190,23 @@ AliHLTPHOSOnlineDisplayEventTab::FindFourierBlocks(AliHLTHOMERReader * const hom
 }
 
 
+
+
 void 
 AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 {  
   //comment
-  AliHLTPHOSValidCellDataStruct *currentChannel =0;
+
+  // AliHLTPHOSValidCellDataStruct *currentChannel =0;
+
+  AliHLTPHOSChannelDataStruct *currentChannel =0;
+
   cout << "AliHLTPHOSOnlineDisplayEventTab::ReadBlockDat, Reading block data, therere are " <<  homeReaderPtr->GetBlockCnt() << " blocks " <<endl;
 
   FindFourierBlocks(homeReaderPtr);
 
   // unsigned long blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF );
-     unsigned long blk = homeReaderPtr->FindBlockNdx("TLENNAHC","SOHP", 0xFFFFFFFF );
+  unsigned long blk = homeReaderPtr->FindBlockNdx("TLENNAHC","SOHP", 0xFFFFFFFF );
 
   cout << __FILE__ << ":" << __LINE__ << "blk"  << blk  << endl ;
 
@@ -204,23 +217,34 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 
   while ( blk != ~(unsigned long)0 ) 
     {
-      Int_t moduleID;
-      Int_t rcuX = 0;
-      Int_t rcuZ = 0;
-      AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk ); 
-      
+
+      //      Int_t moduleID;
+      //      Int_t rcuX = 0;
+      //      Int_t rcuZ = 0;
+
+      //     AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk ); 
+      AliHLTPHOSChannelDataHeaderStruct* cellEnergiesPtr = (AliHLTPHOSChannelDataHeaderStruct*)homeReaderPtr->GetBlockData( blk ); 
+
+ 
       unsigned int *t = (unsigned int*)cellEnergiesPtr;
       
+      /*
       moduleID = cellEnergiesPtr->fModuleID ;
       rcuX = cellEnergiesPtr->fRcuX;
       rcuZ = cellEnergiesPtr->fRcuZ;
+      */
 
-      cout << "AliHLTPHOSOnlineDisplayEventTab::ReadBlockData,  fModuleID =" <<moduleID << endl; 
+      //      moduleID = 1 ;
+      //     rcuX = 1 ;
+      //     rcuZ = 1 ;
 
-      Int_t tmpZ;
-      Int_t tmpX;
-      Int_t tmpGain;
-      int cnt = 0;
+      //    cout << "AliHLTPHOSOnlineDisplayEventTab::ReadBlockData,  fModuleID =" <<moduleID << endl; 
+      
+
+      //      Int_t tmpZ;
+      //    Int_t tmpX;
+      //     Int_t tmpGain;
+      //    int cnt = 0;
       Int_t* tmpPtr = 0;
 
       fShmPtr->SetMemory(cellEnergiesPtr);
@@ -228,21 +252,47 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 
       while(currentChannel != 0)
 	{
+	  cout << __FILE__ << __LINE__<<  "Processing channel " << cnt  <<  "\tThe channel ID is " << currentChannel->fChannelID  << endl;
 	  cnt ++;
+	  
+	  UShort_t chid=  currentChannel->fChannelID;
+
+	  ChannelId2Coordinates( currentChannel->fChannelID );
+
+
+	  /*
 	  tmpZ = currentChannel->fZ;
 	  tmpX = currentChannel->fX;
 	  tmpGain =  currentChannel->fGain;
+	  */
 
 	  // 	  cout << "Channel: x: " << moduleID*NXCOLUMNSMOD + tmpX + NXCOLUMNSRCU*cellEnergiesPtr->fRcuX 
 	  // 	       << " z: " <<     tmpZ + NZROWSRCU*cellEnergiesPtr->fRcuZ
 	  // 	       << " E: " <<  currentChannel->fEnergy << endl;
 
+	  int tmpx =   (chid & 0x3f);
+	  int tmpz =   ((chid >> 6)   & 0x3f);
+	  int tmpgain =  ((chid >> 12) & 0x1);
+	  int tmpmodule=  ((chid >> 13)); 
+
+	  //  cout << "y =\t"    <<  ((chid >> 6)   & 0x3f) << endl;
+	  // cout << "gain=\t"  <<  ((chid >> 12) & 0x1)  << endl;
+	  //  cout << "module\t" <<  ((chid >> 13)) <<  endl;
+	  
+	  
+	  fgLegoPlotPtr[tmpgain]->Fill( tmpmodule*NXCOLUMNSMOD + tmpx, tmpz, currentChannel->fEnergy);
+	  
+	  
+
+	  /*
 	  fgLegoPlotPtr[tmpGain]->Fill(moduleID*NXCOLUMNSMOD + tmpX +  NXCOLUMNSRCU*cellEnergiesPtr->fRcuX,  
 				    tmpZ + NZROWSRCU*cellEnergiesPtr->fRcuZ, currentChannel->fEnergy);
-	  
+	  */
+				    
 	      
 	  // CRAP PTH
-	  if(tmpGain == HIGHGAIN)
+	  //	  if(tmpGain == HIGHGAIN)
+	  if(tmpgain == HIGHGAIN)  
 	    {
 	    //   gAliEveBoxSet->AddBox(2.2*(tmpX + N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX) - 1.1,
 // 				    0,
@@ -258,8 +308,11 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 	    {
 	      Int_t nSamples = 0;
 	      Int_t* rawPtr = 0;
-	      rawPtr = fShmPtr->GetRawData(nSamples);
-	      fNChannelSamples[moduleID][rcuX][rcuZ][tmpX][tmpZ][tmpGain] = nSamples;
+	    
+	      //  rawPtr = fShmPtr->GetRawData(nSamples);
+	      
+	      //fNChannelSamples[moduleID][rcuX][rcuZ][tmpX][tmpZ][tmpGain] = nSamples;
+
 
 	      //	      cout << __FILE__ << ":" <<  __LINE__  <<" gain = " << tmpGain << " z = "<< tmpZ << " x = " << tmpX;
 	      //	      cout << " nsamples = " << nSamples;
@@ -275,21 +328,38 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr)
 		  for(int j= 0; j< nSamples; j++)
 		    {
 		      //		      cout << __FILE__ << ":" << __LINE__ << " nsamples = " << nSamples << "  j =" << j << endl;
-		      fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][tmpGain][j] = rawPtr[j];  
+		      
+		      //fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][tmpGain][j] = rawPtr[j];  
+		      
 		    }
 	      
 		}
 	    }
 	
 	  currentChannel = fShmPtr->NextChannel();
+	  
+	  //	  currentChannel = fShmPtr->NextChannel();
 	}
       
-      blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF, blk+1);
-
+      //      blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF, blk+1);
+      blk = homeReaderPtr->FindBlockNdx("TLENNAHC","SOHP", 0xFFFFFFFF, blk+1 );
+   
     }
 }
 
 
+void 
+AliHLTPHOSOnlineDisplayEventTab::ChannelId2Coordinates( const UShort_t chid ) const
+{
+  cout << __FILE__   <<  __LINE__ << endl;
+  cout << "x =\t"    <<  (chid & 0x3f) << endl;
+
+  
+  cout << "y =\t"    <<  ((chid >> 6)   & 0x3f) << endl;
+  cout << "gain=\t"  <<  ((chid >> 12) & 0x1)  << endl;
+  cout << "module\t" <<  ((chid >> 13)) <<  endl;
+  
+}
 
 
 void

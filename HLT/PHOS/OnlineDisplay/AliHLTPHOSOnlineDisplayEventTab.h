@@ -44,7 +44,8 @@ class AliHLTPHOSGetEventButton;
 class AliHLTHOMERReader;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSOnlineDisplay;
-class AliHLTPHOSSharedMemoryInterface;
+//class AliHLTPHOSSharedMemoryInterface;
+class AliHLTPHOSSharedMemoryInterfacev2;
 
 
 class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
@@ -99,12 +100,15 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
 
  private:
   AliHLTPHOSOnlineDisplayEventTab();
+  
+  void ChannelId2Coordinates(const UShort_t chid) const ;
+
   AliHLTPHOSGetEventButton* fgEventButtPtr; 
   void InitDisplay(TGTab *tabPtr){};
   void InitDisplay(TGTab * tabPtr, int runnumber);
   AliHLTPHOSOnlineDisplay *fOnlineDisplayPtr;
-  AliHLTPHOSSharedMemoryInterface *fShmPtr;   
-
+  // AliHLTPHOSSharedMemoryInterface *fShmPtr;   
+  AliHLTPHOSSharedMemoryInterfacev2 *fShmPtr;   
 //   AliHLTPHOSOnlineDisplayEventTab(const AliHLTPHOSOnlineDisplayEventTab& v);
 //   AliHLTPHOSOnlineDisplayEventTab & operator=(const AliHLTPHOSOnlineDisplayEventTab v){}
 
