@@ -292,21 +292,13 @@ void AliQAChecker::LoadRunInfoFromGRP()
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAChecker::Run(const char * fileName, Int_t runnumber)
+Bool_t AliQAChecker::Run(const char * fileName, AliDetectorRecoParam * recoParam)
 {
   // run the Quality Assurance Checker for all tasks Hits, SDigits, Digits, DigitsR, RecPoints, TrackSegments, RecParticles and ESDs
   // starting from data in file  
   TStopwatch stopwatch;
   stopwatch.Start();
   
-  // set the run number
-  AliCDBManager::Instance()->SetRun(runnumber) ; 
-  // search and set the event species
-  AliQAv1 * qa = AliQAv1::Instance() ; 
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if ( AliQAv1::GetQADataFile(fileName)->FindObjectAny(AliRecoParam::GetEventSpecieName(specie)) ) 
-      qa->SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
-  }
   //search for all detectors QA directories
   TList * detKeyList = AliQAv1::GetQADataFile(fileName)->GetListOfKeys() ; 
   TIter nextd(detKeyList) ; 
@@ -365,7 +357,7 @@ Bool_t AliQAChecker::Run(const char * fileName, Int_t runnumber)
       TObjArray ** refOCDBDir = NULL ;	
       GetRefSubDir(detNameQA.Data(), taskName.Data(), refDir, refOCDBDir) ;
 		  qac->SetRefandData(refDir, refOCDBDir, taskDir) ;
-		  qac->Run(index) ; 
+		  qac->Run(index, recoParam) ; 
     }
   }
   TString detList ; 
@@ -382,7 +374,7 @@ Bool_t AliQAChecker::Run(const char * fileName, Int_t runnumber)
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TObjArray ** list)
+Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TObjArray ** list, AliDetectorRecoParam * recoParam)
 {
 	// run the Quality Assurance Checker for detector det, for task task starting from data in list
 
@@ -417,7 +409,7 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
   qac->Init(det) ; 
   GetRefSubDir(AliQAv1::GetDetName(det), AliQAv1::GetTaskName(task), refDir, refOCDBDir) ;
   qac->SetRefandData(refDir, refOCDBDir) ; 
-  qac->Run(index, list) ; 
+  qac->Run(index, list, recoParam) ; 
   
   // make the image 
   qac->MakeImage(list, task, AliQAv1::Mode(task)) ; 
@@ -426,7 +418,7 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TNtupleD ** list)
+Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TNtupleD ** list, AliDetectorRecoParam * recoParam)
 {
 	// run the Quality Assurance Checker for detector det, for task task starting from data in list
   
@@ -461,7 +453,7 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
   qac->Init(det) ; 
   GetRefSubDir(AliQAv1::GetDetName(det), AliQAv1::GetTaskName(task), refDir, refOCDBDir) ;
   qac->SetRefandData(refDir, refOCDBDir) ; 
-  qac->Run(index, list, NULL) ; 
+  qac->Run(index, list, recoParam) ; 
 
   return kTRUE ; 
 }

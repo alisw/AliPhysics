@@ -23,6 +23,7 @@ class TNtupleD ;
 class AliCDBEntry ; 
 class AliRunInfo ;
 class AliQACheckerBase ; 
+class AliDetectorRecoParam ; 
 
 class AliQAChecker: public TNamed {
 public:
@@ -39,9 +40,9 @@ public:
 //  static const char *    GetQAResultFileName() { return fgQAResultFileName.Data() ; }
 //  void                   SetQAResultDirName(const char * name) ; 
 //  void                   SetRefDirName(const char * name) ; 
-  Bool_t Run(const char * fileName = NULL, Int_t runnumber = 0) ;
-  Bool_t Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TObjArray ** list);
-  Bool_t Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TNtupleD ** list);
+  Bool_t Run(const char * fileName = NULL, AliDetectorRecoParam * recoParam = NULL) ;
+  Bool_t Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TObjArray ** list, AliDetectorRecoParam * recoParam = NULL);
+  Bool_t Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TNtupleD ** list, AliDetectorRecoParam * recoParam = NULL);
   void   SetRunInfo(AliRunInfo * ei) {fRunInfo = ei;}
   Int_t  GetRunNumber() { return fRun ; } 
   void   SetRunNumber(Int_t run) { fRun = run ; } 
