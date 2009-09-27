@@ -188,14 +188,15 @@ void AliITSQASSDDataMakerRec::StartOfDetectorCycle()
  if ( fAliITSQADataMakerRec->GetRawsData(0) == NULL ) // Raws not defined
  	return ;
  
-for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
+ //for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+ //if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
 //cout << "StartOfDetectorCycle: Event specie " << specie << " is set" << endl;
 
  //Detector specific actions at start of cycle
  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of SSD Cycle\n");
- 
-}//event specie loop
+ //Int_t specie = fAliITSQADataMakerRec->GetEventSpecie();
+
+ //}//event specie loop
 
 }
 
@@ -203,182 +204,189 @@ if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
 void AliITSQASSDDataMakerRec::ResetRawsMonitoredObjects() {
   //Resetting the raw data monitored objects
   //Data size per DDL
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
-    //cout << "ResetRawsMonitoredObjects: Event specie " << specie << " is set" << endl;
+  //for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+  //if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
     /*((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+4)))->Reset();
     //Data size per LDC
     ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+22)))->Reset();*/
+  Int_t specie = fAliITSQADataMakerRec->GetEventSpecie();
+  //cout << "(AliITSQASSDDataMakerRec::ResetRawsMonitoredObjects): Event specie " << specie << " is set" << endl;
+  //online part
+  if(fkOnline) {
+    for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
+      for(Int_t iStrip = 0; iStrip < 2*fgkNumberOfPSideStrips; iStrip++)
+	fOccupancyMatrix[iModule-500][iStrip] = 0;
+    }//module loop
     
-    //online part
-    /*if(fkOnline) {
-      for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
-	for(Int_t iStrip = 0; iStrip < 2*fgkNumberOfPSideStrips; iStrip++)
-	  fOccupancyMatrix[iModule-500][iStrip] = 0;
-	  }//module loop
+    //for(Int_t iSSDOffset = 0; iSSDOffset < fSSDRawsCommonLevelOffset; iSSDOffset++)
+    //(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+iSSDOffset))->Reset();
+    //for(Int_t iSSDOffset = fSSDRawsCommonLevelOffset; iSSDOffset < fSSDRawsOffset; iSSDOffset++)
+    //(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+iSSDOffset))->Reset();
+
+    Int_t gHistPositionOccupancyPerLadder = 0;
+    Int_t gLayer = 0, gLadder = 0, gModule = 0;
+    for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
+      AliITSgeomTGeo::GetModuleId(iModule+500,gLayer,gLadder,gModule);
       
-	  Int_t gHistPositionOccupancyPerLadder = 0;
-      Int_t gLayer = 0, gLadder = 0, gModule = 0;
-      for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
-	AliITSgeomTGeo::GetModuleId(iModule+500,gLayer,gLadder,gModule);
-	
-	gHistPositionOccupancyPerLadder = (gLayer == 5) ? 2*(gLadder - 1) : 2*(gLadder - 1 + fgkSSDLADDERSLAYER5);
-	
-	//P-SIDE OCCUPANCY
-	fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder)->Reset();
-	//N-SIDE OCCUPANCY
-	fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder+1)->Reset();
-	
-	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->Reset();
-	((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->Reset();
-	}//module loop
-	}*///online flag
-  }//event species loop
+      gHistPositionOccupancyPerLadder = (gLayer == 5) ? 2*(gLadder - 1) : 2*(gLadder - 1 + fgkSSDLADDERSLAYER5);
+      
+      //P-SIDE OCCUPANCY
+      fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder)->Reset();
+      //N-SIDE OCCUPANCY
+      fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder+1)->Reset();
+      
+      ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->Reset();
+      ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->Reset();
+    }//module loop
+  }//online flag
+  //}//event species loop
 }
 
 //____________________________________________________________________________ 
 void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray* /*list*/)
 {
 
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
+  //for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+  //if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
     //if (!AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie))) continue;
-    fAliITSQADataMakerRec->SetEventSpecie(AliRecoParam::ConvertIndex(specie));
-    //cout << "(AliITSQASSDDataMakerRec::EndOfDetectorCycle): Event specie " << specie << " is set" << endl;
-    
-    // launch the QA checking
-    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
-    AliDebug(AliQAv1::GetQADebugLevel(), Form("Offset: %d\n",fGenRawsOffset[specie]));
-    //Printf("Offset: %d\n",fGenRawsOffset[specie]);
-    
-    if(task == AliQAv1::kRAWS) {
-      
-      //  if (fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]) != NULL ) {
-      //AliInfo(Form("Event type entries: %d - Physics events: %d"),((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->GetEntries(),((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->GetBinContent(((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->FindBin(7)));
-      //cout<<"(EndOfDetectorCycle) Event type entries: "<<((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->GetEntries()<< " type 7: " << ((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->GetBinContent(((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->FindBin(7)) << endl;
-      
-      //AliInfo(Form("SSD Data Size entries: %d"),((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+1))->GetEntries());
-      //cout<<"SSD Data Size entries: "<<((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+1))->GetEntries()<<endl;
-      
-      //Data size per DDL
-      for(Int_t i = 0; i < fgkNumOfDDLs; i++) {
-	Double_t gSizePerDDL = ((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+5+i))->GetMean();
-	//cout<<"DDL: "<<i+512<<" - Size: "<<gSizePerDDL<<" - Mean: "<<
-	//(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+5+i))->GetMean()<<endl;
-	//cout<<"Entries: "<<((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+5+i))->GetEntries()<<endl;
-	((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+4)))->SetBinContent(i+1,gSizePerDDL);
-	//cout<<"After filling DDL: "<<i+512<<" - Size: "<<((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+4)))->GetBinContent(i+1)<<endl;
-      }
-      
-      
-      //Data size per LDC
-      for(Int_t i = 0; i < fgkNumOfLDCs; i++) {
-	Double_t gSizePerLDC = ((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+23+i))->GetMean();
-	((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+22)))->SetBinContent(i+1,gSizePerLDC);
-	//cout<<"LDC: "<<i+170<<" - Size: "<<gSizePerLDC<<" - Mean: "<<
-	//" - Size: "<<((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+23+i))->GetMean()<<endl;
-      }
-      
-      //cout<<"Data size/ DDL entries: "<<((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+4))->GetEntries()<< " mean: " << ((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+4))->GetMean()<<endl;   
-      //    cout<<"Data size/ LDC entries: "<<((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+22))->GetEntries()<< " mean: " << ((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+22))->GetMean()<<endl;
-      
-      //online part
-      if(fkOnline) {
-	//Output of the DA
-	MonitorOCDBObjects();
-	//Monitor common mode values
-	MonitorCMValues();
 
-	Int_t gHistPositionOccupancyPerModule = 0;
-	Int_t gLayer = 0, gLadder = 0, gModule = 0;
-	//occupancy per module
-	for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
-	  AliITSgeomTGeo::GetModuleId(iModule+500,gLayer,gLadder,gModule);
-	  
-	  gHistPositionOccupancyPerModule = (gLayer == 5) ? ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER5 + gModule - 1) : ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER6 + gModule + fgkSSDMODULESLAYER5 - 1);
-	  for(Int_t iBins = 1; iBins < fHistSSDRawSignalModule[iModule]->GetXaxis()->GetNbins(); iBins++)
-	    fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule)->SetBinContent(iBins,fOccupancyMatrix[iModule][iBins-1]);
-	  
-	  if(fSSDEventPerCycle != 0)
-	    ((TH1F *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule)))->Scale(100./fSSDEventPerCycle);
-	}//module loop
-	
-	//AliInfo(Form("Entries occupancy 511/3: %d"),((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+222))->GetEntries());
-	//  cout<<"Entries occupancy 511/3 : "<<((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+222))->GetEntries()<<endl;
-	
-	//occupancy per ladder
-	Int_t gHistPositionOccupancyPerLadder = 0;
-	Int_t lLadderLocationY = 0;
-	Double_t occupancy = 0.0, occupancyThreshold = 0.0, occupancyAverage = 0.0;
-	for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
-	  AliITSgeomTGeo::GetModuleId(iModule+500,gLayer,gLadder,gModule);
-	  
-	  gHistPositionOccupancyPerModule = (gLayer == 5) ? ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER5 + gModule - 1) : ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER6 + gModule + fgkSSDMODULESLAYER5 - 1);
-	  gHistPositionOccupancyPerLadder = (gLayer == 5) ? 2*(gLadder - 1) : 2*(gLadder - 1 + fgkSSDLADDERSLAYER5);
-	  
-	  //P-SIDE OCCUPANCY
-	  occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),0,0,0);
-	  occupancyThreshold = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),0,1,3);
-	  occupancyAverage = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),0,2,0);
-	  
-	  fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder)->SetBinContent(gModule,occupancy);
-	  lLadderLocationY = 3*gLadder; // sideP=1 sideN=0 
-	  if(gLayer == 5) {
-	    //occupancy per module - no threshold
-	    ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->SetBinContent(gModule,lLadderLocationY,occupancy);
-	    //occupancy per module - threshold @ 3%
-	    ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+2))->SetBinContent(gModule,lLadderLocationY,occupancyThreshold);
-	    //average occupancy per module
-	    ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+4))->SetBinContent(gModule,lLadderLocationY,occupancyAverage);
-	  }
-	  else if(gLayer == 6) {
-	    //occupancy per module - no threshold
-	    ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->SetBinContent(gModule,lLadderLocationY,occupancy);
-	    //occupancy per module - threshold @ 3%
-	    ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3))->SetBinContent(gModule,lLadderLocationY,occupancyThreshold);
-	    //average occupancy per module
-	    ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+5))->SetBinContent(gModule,lLadderLocationY,occupancyAverage);
-	  }
-	  
-	  //N-SIDE OCCUPANCY
-	  occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),1,0,0);   
-	  occupancyThreshold = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),1,1,3);   
-	  occupancyAverage = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),1,2,0);   
-	  
-	  fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder+1)->SetBinContent(gModule,occupancy);
-	  if(gLayer == 5) {
-	    //occupancy per module - no threshold
-	    ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->SetBinContent(gModule,lLadderLocationY-1,occupancy);
-	    //occupancy per module - threshold @ 3%
-	    ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+2))->SetBinContent(gModule,lLadderLocationY-1,occupancyThreshold);
-	    //average occupancy per module
-	    ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+4))->SetBinContent(gModule,lLadderLocationY-1,occupancyAverage);
-	  }
-	  else if(gLayer == 6) {
-	    //occupancy per module - no threshold
-	    ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->SetBinContent(gModule,lLadderLocationY-1,occupancy);
-	    //occupancy per module - threshold @ 3%
-	    ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3))->SetBinContent(gModule,lLadderLocationY-1,occupancyThreshold);
-	    //average occupancy per module
-	    ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+5))->SetBinContent(gModule,lLadderLocationY-1,occupancyAverage);
-	  }
-	}//module loop
-      }//online flag for SSD
-      
-      //AliInfo(Form("Entries 2d occupancy no thres- lay 5: %d"),((TH2D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->GetEntries());
-      //cout<<"entries 2d occupancy thres- lay 6: "<<((TH2D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3))->GetEntries()<< " mean: " << ((TH2D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3))->GetMean() << endl; //Somehow the other occupancy maps do give nonzero values for GetMean() here
-      
-      fSSDEventPerCycle = 0;
-      
-      //cout<<"Data size/ DDL entries: "<<((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[1]+4))->GetEntries()<< " mean: " << ((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[1]+4))->GetMean()<<endl;   
-      
-      //Reset of the raws
-//ResetRawsMonitoredObjects();
-      
-      //AliQAChecker::Instance()->Run( AliQAv1::kITS , task, list);
-    }//raw data end of cycle
+  Int_t specie = fAliITSQADataMakerRec->GetEventSpecie();
+  fAliITSQADataMakerRec->SetEventSpecie(AliRecoParam::ConvertIndex(specie));
+  //cout << "(AliITSQASSDDataMakerRec::EndOfDetectorCycle): Event specie " << specie << " is set" << endl;
+  
+  // launch the QA checking
+  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Offset: %d\n",fGenRawsOffset[specie]));
+  //Printf("Offset: %d\n",fGenRawsOffset[specie]);
+  
+  if(task == AliQAv1::kRAWS) {
     
-  } //event specie loop
+    //  if (fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]) != NULL ) {
+    //AliInfo(Form("Event type entries: %d - Physics events: %d"),((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->GetEntries(),((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->GetBinContent(((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->FindBin(7)));
+    //cout<<"(EndOfDetectorCycle) Event type entries: "<<((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->GetEntries()<< " type 7: " << ((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->GetBinContent(((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->FindBin(7)) << endl;
+    
+    //AliInfo(Form("SSD Data Size entries: %d"),((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+1))->GetEntries());
+    //cout<<"SSD Data Size entries: "<<((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+1))->GetEntries()<<endl;
+    
+    //Data size per DDL
+    for(Int_t i = 0; i < fgkNumOfDDLs; i++) {
+      Double_t gSizePerDDL = ((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+5+i))->GetMean();
+      //cout<<"DDL: "<<i+512<<" - Size: "<<gSizePerDDL<<" - Mean: "<<
+      //(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+5+i))->GetMean()<<endl;
+      //cout<<"Entries: "<<((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+5+i))->GetEntries()<<endl;
+      ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+4)))->SetBinContent(i+1,gSizePerDDL);
+      //cout<<"After filling DDL: "<<i+512<<" - Size: "<<((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+4)))->GetBinContent(i+1)<<endl;
+    }
+    
+    
+    //Data size per LDC
+    for(Int_t i = 0; i < fgkNumOfLDCs; i++) {
+      Double_t gSizePerLDC = ((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+23+i))->GetMean();
+      ((TH1D *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+22)))->SetBinContent(i+1,gSizePerLDC);
+      //cout<<"LDC: "<<i+170<<" - Size: "<<gSizePerLDC<<" - Mean: "<<
+      //" - Size: "<<((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+23+i))->GetMean()<<endl;
+    }
+    
+    //cout<<"Data size/ DDL entries: "<<((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+4))->GetEntries()<< " mean: " << ((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+4))->GetMean()<<endl;   
+    //    cout<<"Data size/ LDC entries: "<<((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+22))->GetEntries()<< " mean: " << ((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+22))->GetMean()<<endl;
+    
+    //online part
+    if(fkOnline) {
+      //Output of the DA
+      MonitorOCDBObjects();
+      //Monitor common mode values
+      MonitorCMValues();
+      
+      Int_t gHistPositionOccupancyPerModule = 0;
+      Int_t gLayer = 0, gLadder = 0, gModule = 0;
+      //occupancy per module
+      for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
+	AliITSgeomTGeo::GetModuleId(iModule+500,gLayer,gLadder,gModule);
+	
+	gHistPositionOccupancyPerModule = (gLayer == 5) ? ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER5 + gModule - 1) : ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER6 + gModule + fgkSSDMODULESLAYER5 - 1);
+	for(Int_t iBins = 1; iBins < fHistSSDRawSignalModule[iModule]->GetXaxis()->GetNbins(); iBins++)
+	  fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule)->SetBinContent(iBins,fOccupancyMatrix[iModule][iBins-1]);
+	
+	if(fSSDEventPerCycle != 0)
+	  ((TH1F *)(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule)))->Scale(100./fSSDEventPerCycle);
+      }//module loop
+      
+      //AliInfo(Form("Entries occupancy 511/3: %d"),((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+222))->GetEntries());
+      //  cout<<"Entries occupancy 511/3 : "<<((TH1D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+222))->GetEntries()<<endl;
+      
+      //occupancy per ladder
+      Int_t gHistPositionOccupancyPerLadder = 0;
+      Int_t lLadderLocationY = 0;
+      Double_t occupancy = 0.0, occupancyThreshold = 0.0, occupancyAverage = 0.0;
+      for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
+	AliITSgeomTGeo::GetModuleId(iModule+500,gLayer,gLadder,gModule);
+	
+	gHistPositionOccupancyPerModule = (gLayer == 5) ? ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER5 + gModule - 1) : ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER6 + gModule + fgkSSDMODULESLAYER5 - 1);
+	gHistPositionOccupancyPerLadder = (gLayer == 5) ? 2*(gLadder - 1) : 2*(gLadder - 1 + fgkSSDLADDERSLAYER5);
+	
+	//P-SIDE OCCUPANCY
+	occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),0,0,0);
+	occupancyThreshold = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),0,1,3);
+	occupancyAverage = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),0,2,0);
+	
+	fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder)->SetBinContent(gModule,occupancy);
+	lLadderLocationY = 3*gLadder; // sideP=1 sideN=0 
+	if(gLayer == 5) {
+	  //occupancy per module - no threshold
+	  ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->SetBinContent(gModule,lLadderLocationY,occupancy);
+	  //occupancy per module - threshold @ 3%
+	  ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+2))->SetBinContent(gModule,lLadderLocationY,occupancyThreshold);
+	  //average occupancy per module
+	  ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+4))->SetBinContent(gModule,lLadderLocationY,occupancyAverage);
+	}
+	else if(gLayer == 6) {
+	  //occupancy per module - no threshold
+	  ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->SetBinContent(gModule,lLadderLocationY,occupancy);
+	  //occupancy per module - threshold @ 3%
+	  ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3))->SetBinContent(gModule,lLadderLocationY,occupancyThreshold);
+	  //average occupancy per module
+	  ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+5))->SetBinContent(gModule,lLadderLocationY,occupancyAverage);
+	}
+	
+	//N-SIDE OCCUPANCY
+	occupancy = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),1,0,0);   
+	occupancyThreshold = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),1,1,3);   
+	occupancyAverage = GetOccupancyModule((TH1 *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+gHistPositionOccupancyPerModule),1,2,0);   
+	
+	fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+gHistPositionOccupancyPerLadder+1)->SetBinContent(gModule,occupancy);
+	if(gLayer == 5) {
+	  //occupancy per module - no threshold
+	  ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->SetBinContent(gModule,lLadderLocationY-1,occupancy);
+	  //occupancy per module - threshold @ 3%
+	  ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+2))->SetBinContent(gModule,lLadderLocationY-1,occupancyThreshold);
+	  //average occupancy per module
+	  ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+4))->SetBinContent(gModule,lLadderLocationY-1,occupancyAverage);
+	}
+	else if(gLayer == 6) {
+	  //occupancy per module - no threshold
+	  ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+1))->SetBinContent(gModule,lLadderLocationY-1,occupancy);
+	  //occupancy per module - threshold @ 3%
+	  ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3))->SetBinContent(gModule,lLadderLocationY-1,occupancyThreshold);
+	  //average occupancy per module
+	  ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+5))->SetBinContent(gModule,lLadderLocationY-1,occupancyAverage);
+	}
+      }//module loop
+    }//online flag for SSD
+    
+    //AliInfo(Form("Entries 2d occupancy no thres- lay 5: %d"),((TH2D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6))->GetEntries());
+    //cout<<"entries 2d occupancy thres- lay 6: "<<((TH2D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3))->GetEntries()<< " mean: " << ((TH2D*)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3))->GetMean() << endl; //Somehow the other occupancy maps do give nonzero values for GetMean() here
+    
+    fSSDEventPerCycle = 0;
+    
+    //cout<<"Data size/ DDL entries: "<<((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[1]+4))->GetEntries()<< " mean: " << ((TH1D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[1]+4))->GetMean()<<endl;   
+    
+    //Reset of the raws
+    ResetRawsMonitoredObjects();
+    
+    //AliQAChecker::Instance()->Run( AliQAv1::kITS , task, list);
+  }//raw data end of cycle
+  
+  //} //event specie loop
 }
 
 //____________________________________________________________________________ 
@@ -390,135 +398,138 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
   Int_t rv = 0 ; 
   fSSDRawsOffset = 0;
 
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
-    //cout << "InitRaws: Event specie " << specie << " is set" << endl;
-    
-    if(fkOnline) {
-      AliDebug(AliQAv1::GetQADebugLevel(), "Book Online Histograms for SSD\n");
-    }
-    else {
-      AliDebug(AliQAv1::GetQADebugLevel(), "Book Offline Histograms for SSD\n ");
-    }
-    AliDebug(AliQAv1::GetQADebugLevel(), Form("Number of histograms (SPD+SDD): %d\n",fGenRawsOffset[specie]));
+  //for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+  //if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
+  Int_t specie = fAliITSQADataMakerRec->GetEventSpecie();
+  //cout << "(AliITSQASSDDataMakerRec::InitRaws): Event specie " << specie << " is set" << endl;
+  //cout << "(AliITSQASSDDataMakerRec::InitRaws): Offset " << fGenRawsOffset[specie] << endl;
     
     
-    TString gTitle;
-    TString gName;
-    //book online-offline QA histos
-    TH1D *fHistSSDEventType = new TH1D("fHistSSDEventType",
-				       "SSD Event Type;Event type;Events",
-				       31,-1,30);
-    rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDEventType)), 
+  if(fkOnline) {
+    AliDebug(AliQAv1::GetQADebugLevel(), "Book Online Histograms for SSD\n");
+  }
+  else {
+    AliDebug(AliQAv1::GetQADebugLevel(), "Book Offline Histograms for SSD\n ");
+  }
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Number of histograms (SPD+SDD): %d\n",fGenRawsOffset[specie]));
+  
+  TString gTitle;
+  TString gName;
+  //book online-offline QA histos
+  TH1D *fHistSSDEventType = new TH1D("fHistSSDEventType",
+				     "SSD Event Type;Event type;Events",
+				     31,-1,30);
+  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDEventType)), 
+					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+  fSSDRawsOffset += 1;
+  delete fHistSSDEventType;
+  //cout<<"(AliITSQASSDDataMakerRec::InitRaws): "<<fGenRawsOffset[specie]+fSSDRawsOffset-1<<" - Name: "<<(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->GetName()<<endl;
+  TH1D *fHistSSDDataSize = new TH1D("fHistSSDDataSize",
+				    "SSD Data Size;(SSD data size) [KB];Events",
+				    1000,0,500);
+  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSize)), 
+					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+  delete fHistSSDDataSize;
+  fSSDRawsOffset += 1;
+  TH1D *fHistSSDDataSizePercentage = new TH1D("fHistSSDDataSizePercentage",
+					      "SSD Data Size Percentage;SSD data size [%];Events",
+					      1000,0,100);
+  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizePercentage)), 
+					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+  delete fHistSSDDataSizePercentage;
+  fSSDRawsOffset += 1;
+  TH1D *fHistSSDDDLId = new TH1D("fHistSSDDDLId",
+				 "SSD DDL Id;DDL id;Events",16,511.5,527.5);
+  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDDLId)), 
+					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+  delete fHistSSDDDLId;
+  fSSDRawsOffset += 1;
+  TH1D *fHistSSDDataSizePerDDL = new TH1D("fHistSSDDataSizePerDDL",
+					  "SSD Data Size Per DDL;DDL id;<SSD data size> [KB]",
+					  16,511.5,527.5);
+  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizePerDDL)), 
+					   fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);
+  delete fHistSSDDataSizePerDDL;
+  fSSDRawsOffset += 1;
+  TH1D *fHistSSDDataSizeDDL[fgkNumOfDDLs];
+  for(Int_t i = 1; i < fgkNumOfDDLs+1; i++) {
+    gName = Form("fHistSSDDataSizeDDL%d", i+511) ;
+    gTitle = Form("SSD Data Size DDL %d", i+511) ;
+    fHistSSDDataSizeDDL[i-1] = new TH1D(gName.Data(),
+					Form("%s;(SSD data size) [KB];Events", gTitle.Data()),
+					100,0,50);
+    rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizeDDL[i-1])), 
 					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
     fSSDRawsOffset += 1;
-    delete fHistSSDEventType;
-    TH1D *fHistSSDDataSize = new TH1D("fHistSSDDataSize",
-				      "SSD Data Size;(SSD data size) [KB];Events",
-				      1000,0,500);
-    rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSize)), 
-					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
-    delete fHistSSDDataSize;
-    fSSDRawsOffset += 1;
-    TH1D *fHistSSDDataSizePercentage = new TH1D("fHistSSDDataSizePercentage",
-						"SSD Data Size Percentage;SSD data size [%];Events",
-						1000,0,100);
-    rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizePercentage)), 
-					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
-    delete fHistSSDDataSizePercentage;
-    fSSDRawsOffset += 1;
-    TH1D *fHistSSDDDLId = new TH1D("fHistSSDDDLId",
-				   "SSD DDL Id;DDL id;Events",16,511.5,527.5);
-    rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDDLId)), 
-					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
-    delete fHistSSDDDLId;
-    fSSDRawsOffset += 1;
-    TH1D *fHistSSDDataSizePerDDL = new TH1D("fHistSSDDataSizePerDDL",
-					    "SSD Data Size Per DDL;DDL id;<SSD data size> [KB]",
-					    16,511.5,527.5);
-    rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizePerDDL)), 
-					     fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);
-    delete fHistSSDDataSizePerDDL;
-    fSSDRawsOffset += 1;
-    TH1D *fHistSSDDataSizeDDL[fgkNumOfDDLs];
-    for(Int_t i = 1; i < fgkNumOfDDLs+1; i++) {
-      gName = Form("fHistSSDDataSizeDDL%d", i+511) ;
-      gTitle = Form("SSD Data Size DDL %d", i+511) ;
-      fHistSSDDataSizeDDL[i-1] = new TH1D(gName.Data(),
-					  Form("%s;(SSD data size) [KB];Events", gTitle.Data()),
-					  100,0,50);
-      rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizeDDL[i-1])), 
-					       fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
-      fSSDRawsOffset += 1;
-    }
-    for(Int_t i = 1; i < fgkNumOfDDLs+1; i++) delete fHistSSDDataSizeDDL[i-1];
+  }
+  for(Int_t i = 1; i < fgkNumOfDDLs+1; i++) delete fHistSSDDataSizeDDL[i-1];
+  
+  TH1D *fHistSSDLDCId = new TH1D("fHistSSDLDCId","SSD LDC Id;LDC id;Events",8,169.5,177.5);
+  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDLDCId)), 
+					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+  delete fHistSSDLDCId;
+  fSSDRawsOffset += 1;
+  TH1D *fHistSSDDataSizePerLDC = new TH1D("fHistSSDDataSizePerLDC",
+					  "SSD Data Size Per LDC;LDC id;<SSD data size> [KB]",
+					  8,169.5,177.5);
+  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizePerLDC)), 
+					   fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);
+  delete fHistSSDDataSizePerLDC;
+  fSSDRawsOffset += 1;
+  TH1D *fHistSSDDataSizeLDC[fgkNumOfLDCs];
+  for(Int_t i = 1; i < fgkNumOfLDCs+1; i++) {
+    gName = "fHistSSDDataSizeLDC"; 
+    if(i == 1) gName += "170";
+    if(i == 2) gName += "171";
+    if(i == 3) gName += "172";
+    if(i == 4) gName += "173";
+    if(i == 5) gName += "174";
+    if(i == 6) gName += "175";
+    if(i == 7) gName += "176";
+    if(i == 8) gName += "177";
     
-    TH1D *fHistSSDLDCId = new TH1D("fHistSSDLDCId","SSD LDC Id;LDC id;Events",8,169.5,177.5);
-    rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDLDCId)), 
+    gTitle = "SSD Data Size LDC "; gTitle += gName.Data();
+    fHistSSDDataSizeLDC[i-1] = new TH1D(gName.Data(),
+					Form("%s;SSD data size [KB];Events", gTitle.Data()),
+					1000,0,100);
+    rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizeLDC[i-1])), 
 					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
-    delete fHistSSDLDCId;
     fSSDRawsOffset += 1;
-    TH1D *fHistSSDDataSizePerLDC = new TH1D("fHistSSDDataSizePerLDC",
-					    "SSD Data Size Per LDC;LDC id;<SSD data size> [KB]",
-					    8,169.5,177.5);
-    rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizePerLDC)), 
-					     fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);
-    delete fHistSSDDataSizePerLDC;
-    fSSDRawsOffset += 1;
-    TH1D *fHistSSDDataSizeLDC[fgkNumOfLDCs];
-    for(Int_t i = 1; i < fgkNumOfLDCs+1; i++) {
-      gName = "fHistSSDDataSizeLDC"; 
-      if(i == 1) gName += "170";
-      if(i == 2) gName += "171";
-      if(i == 3) gName += "172";
-      if(i == 4) gName += "173";
-      if(i == 5) gName += "174";
-      if(i == 6) gName += "175";
-      if(i == 7) gName += "176";
-      if(i == 8) gName += "177";
+  }
+  for(Int_t i = 1; i < fgkNumOfLDCs+1; i++) delete fHistSSDDataSizeLDC[i-1];
+  fSSDRawsCommonLevelOffset = fSSDRawsOffset;
+  
+  if(fkOnline) {
+    Int_t gLayer = 0, gLadder = 0, gModule = 0;
+    //occupancy per SSD module
+    TH1D *fHistSSDOccupancyModule[fgkSSDMODULES]; 
+    for(Int_t i = 500; i < fgkSSDMODULES + 500; i++) {
+      AliITSgeomTGeo::GetModuleId(i,gLayer,gLadder,gModule);
+      gName = "fHistSSD_Occupancy_Layer";
+      gTitle = "SSD Occupancy Layer";
+      if(gLayer == 5) {
+	gName += gLayer; gName += "_Ladder"; 
+	gName += 499+gLadder;
+	gTitle += gLayer; gTitle += "_Ladder"; 
+	gTitle += 499+gLadder;
+      }
+      if(gLayer == 6) {
+	gName += gLayer; gName += "_Ladder"; 
+	gName += 599+gLadder;
+	gTitle += gLayer; gTitle += "_Ladder"; 
+	gTitle += 599+gLadder;
+      }
+      gName += "_Module"; gName += gModule; 
+      gTitle += "_Module"; gTitle += gModule; 
       
-      gTitle = "SSD Data Size LDC "; gTitle += gName.Data();
-      fHistSSDDataSizeLDC[i-1] = new TH1D(gName.Data(),
-					  Form("%s;SSD data size [KB];Events", gTitle.Data()),
-					  1000,0,100);
-      rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizeLDC[i-1])), 
-					       fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
-      fSSDRawsOffset += 1;
-    }
-    for(Int_t i = 1; i < fgkNumOfLDCs+1; i++) delete fHistSSDDataSizeLDC[i-1];
-    fSSDRawsCommonLevelOffset = fSSDRawsOffset;
-    
-    if(fkOnline) {
-      Int_t gLayer = 0, gLadder = 0, gModule = 0;
-      //occupancy per SSD module
-      TH1D *fHistSSDOccupancyModule[fgkSSDMODULES]; 
-      for(Int_t i = 500; i < fgkSSDMODULES + 500; i++) {
-	AliITSgeomTGeo::GetModuleId(i,gLayer,gLadder,gModule);
-	gName = "fHistSSD_Occupancy_Layer";
-	gTitle = "SSD Occupancy Layer";
-	if(gLayer == 5) {
-	  gName += gLayer; gName += "_Ladder"; 
-	  gName += 499+gLadder;
-	  gTitle += gLayer; gTitle += "_Ladder"; 
-	  gTitle += 499+gLadder;
-	}
-	if(gLayer == 6) {
-	  gName += gLayer; gName += "_Ladder"; 
-	  gName += 599+gLadder;
-	  gTitle += gLayer; gTitle += "_Ladder"; 
-	  gTitle += 599+gLadder;
-	}
-	gName += "_Module"; gName += gModule; 
-	gTitle += "_Module"; gTitle += gModule; 
-	
-	fHistSSDOccupancyModule[i-500] = new TH1D(gName.Data(),Form("%s;N_{strip};Occupancy [%]", gTitle.Data()),
-						  2*fgkNumberOfPSideStrips,0,2*fgkNumberOfPSideStrips);
+      fHistSSDOccupancyModule[i-500] = new TH1D(gName.Data(),Form("%s;N_{strip};Occupancy [%]", gTitle.Data()),
+						2*fgkNumberOfPSideStrips,0,2*fgkNumberOfPSideStrips);
       fHistSSDOccupancyModule[i-500]->GetXaxis()->SetTitleColor(1);
       rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyModule[i-500], 
-					  fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
+					       fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
       fSSDRawsOffset += 1;
     }
-
+    
     //Occupancy per SSD ladder
     Int_t occupancyCounter = 0;
     TH1D *fHistSSDOccupancyLadder[2*(fgkSSDLADDERSLAYER5 + fgkSSDLADDERSLAYER6)];
@@ -821,7 +832,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
    */
 
 
-} //event species loop
+  //} //event species loop
 
   return rv ; 
 
@@ -1057,32 +1068,33 @@ Double_t AliITSQASSDDataMakerRec::GetOccupancyModule(TH1 *lHisto,
 //____________________________________________________________________________
  void AliITSQASSDDataMakerRec::MonitorCMValues() {
   //Monitor in AMORE the CM values
-   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-     if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
+   //for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+   //if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
      //cout << "MonitorCMValues: Event specie " << specie << " is set" << endl;
-     fAliITSQADataMakerRec->SetEventSpecie(AliRecoParam::ConvertIndex(specie));
-  
-     //compute the rms of the CM values
-     Int_t gLayer = 0, gLadder = 0, gModule = 0;
-     Double_t rmsPsideCM = 0.0, rmsNsideCM = 0.0;
-     for(Int_t i = 0; i < fgkSSDMODULES; i++) {
-       rmsPsideCM = 0.0; rmsNsideCM = 0.0;
-       AliITSgeomTGeo::GetModuleId(i+500,gLayer,gLadder,gModule);
-       //Printf("%s - %s",((TH1*)list->At(i))->GetName(),
-       //((TH1*)list->At(1698+i))->GetName());
-       rmsPsideCM = fHistSSDCMModule[i]->GetRMS();
-       rmsNsideCM = fHistSSDCMModule[fgkSSDMODULES+i]->GetRMS();
-       //Printf("rmsPside: %lf - rmsNside: %lf",rmsPsideCM,rmsNsideCM);
-       if(gLayer == 5) {
-	 ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+4))->SetBinContent(gModule,gLadder,rmsPsideCM);
-	 ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+5))->SetBinContent(gModule,gLadder,rmsNsideCM);
-       }
-       if(gLayer == 6) {
-	 ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+6))->SetBinContent(gModule,gLadder,rmsPsideCM);
-	 ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+7))->SetBinContent(gModule,gLadder,rmsNsideCM);
-       }
-     }//module loop
-   }//event species loop
+   Int_t specie = fAliITSQADataMakerRec->GetEventSpecie();
+   fAliITSQADataMakerRec->SetEventSpecie(AliRecoParam::ConvertIndex(specie));
+   
+   //compute the rms of the CM values
+   Int_t gLayer = 0, gLadder = 0, gModule = 0;
+   Double_t rmsPsideCM = 0.0, rmsNsideCM = 0.0;
+   for(Int_t i = 0; i < fgkSSDMODULES; i++) {
+     rmsPsideCM = 0.0; rmsNsideCM = 0.0;
+     AliITSgeomTGeo::GetModuleId(i+500,gLayer,gLadder,gModule);
+     //Printf("%s - %s",((TH1*)list->At(i))->GetName(),
+     //((TH1*)list->At(1698+i))->GetName());
+     rmsPsideCM = fHistSSDCMModule[i]->GetRMS();
+     rmsNsideCM = fHistSSDCMModule[fgkSSDMODULES+i]->GetRMS();
+     //Printf("rmsPside: %lf - rmsNside: %lf",rmsPsideCM,rmsNsideCM);
+     if(gLayer == 5) {
+       ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+4))->SetBinContent(gModule,gLadder,rmsPsideCM);
+       ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+5))->SetBinContent(gModule,gLadder,rmsNsideCM);
+     }
+     if(gLayer == 6) {
+       ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+6))->SetBinContent(gModule,gLadder,rmsPsideCM);
+       ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+7))->SetBinContent(gModule,gLadder,rmsNsideCM);
+     }
+   }//module loop
+   //}//event species loop
  }
 
 //____________________________________________________________________________
@@ -1092,9 +1104,10 @@ void AliITSQASSDDataMakerRec::MonitorOCDBObjects() {
   //Todo: Noise - Pedestal
 
 
-for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-  if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
+  //for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+  //if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;
   //cout << "MonitorOCDBObjects: Event specie " << specie << " is set" << endl;
+  Int_t specie = fAliITSQADataMakerRec->GetEventSpecie();
   fAliITSQADataMakerRec->SetEventSpecie(AliRecoParam::ConvertIndex(specie));
   
   //((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset))->Reset();
@@ -1170,7 +1183,7 @@ nBadNSideChannels += 1;
   //cout << "entries bad channel layer 5 n side " << ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+1))->GetEntries() << " - Bad channels P side layer 5 module 10 ladder 10: " << ((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset))->GetBinContent(10,10)<<endl;
 
 
-} //event species loop
+  //} //event species loop
 
 
 }
