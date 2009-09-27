@@ -251,8 +251,8 @@ void anaJete()
       
       AliAnaScale * scale = new AliAnaScale("scale") ;
 
-     cout<<"Scale factor "<<xsection/ntrials/kNumberOfEventsPerFile/nfiles<<"  "<<xsection/ntrials/nevents<<endl;
-      scale->Set(xsection/ntrials/nevents) ;
+      cout<<"Scale factor "<<xsection/(ntrials/kNumberOfEventsPerFile)/nevents<<"  "<<xsection/ntrials/nfiles<<endl;
+      scale->Set(xsection/ntrials/nfiles) ;
       scale->MakeSumw2(kTRUE);//If you want histograms with error bars set to kTRUE
       scale->SetDebugLevel(2);
       mgr->AddTask(scale);
