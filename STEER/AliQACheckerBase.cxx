@@ -42,6 +42,7 @@
 #include "AliQAChecker.h"
 #include "AliQACheckerBase.h"
 #include "AliQADataMaker.h"
+#include "AliDetectorRecoParam.h"
 
 ClassImp(AliQACheckerBase)
 
@@ -132,7 +133,7 @@ AliQACheckerBase::~AliQACheckerBase()
 }
 
 //____________________________________________________________________________
-Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t index) 
+Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t index, AliDetectorRecoParam * recoParam) 
 {
   // Performs a basic checking
   // Compares all the histograms stored in the directory
@@ -165,7 +166,7 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t index)
     }
   }
  
-  Double_t * test = AliQACheckerBase::Check(index, list) ;
+  Double_t * test = Check(index, list, recoParam) ;
   
   delete[] list ; 
     
@@ -173,7 +174,7 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t index)
 }  
 
 //____________________________________________________________________________
-Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list) 
+Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list, AliDetectorRecoParam * recoParam) 
 {
   // Performs a basic checking
   // Compares all the histograms in the list
@@ -251,12 +252,12 @@ Double_t AliQACheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
 }
 
 //____________________________________________________________________________
-void AliQACheckerBase::Run(AliQAv1::ALITASK_t index) 
+void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, AliDetectorRecoParam * recoParam) 
 { 
 	AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
   
 	Double_t * rv = NULL ;
-  rv = Check(index) ;
+  rv = Check(index, recoParam) ;
 	SetQA(index, rv) ; 	
 	
   AliDebug(AliQAv1::GetQADebugLevel(), Form("Test result of %s", AliQAv1::GetAliTaskName(index))) ;
@@ -267,12 +268,12 @@ void AliQACheckerBase::Run(AliQAv1::ALITASK_t index)
 }
 
 //____________________________________________________________________________
-void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, TObjArray ** list) 
+void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * recoParam) 
 { 
 	AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
   
 	Double_t * rv = NULL ;
-  rv = Check(index, list) ;
+  rv = Check(index, list, recoParam) ;
 	SetQA(index, rv) ; 	
 	
   AliDebug(AliQAv1::GetQADebugLevel(), Form("Test result of %s", AliQAv1::GetAliTaskName(index))) ;
