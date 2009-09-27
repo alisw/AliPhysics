@@ -3,12 +3,16 @@
 #
 # Author: K. Read
 #
-# This script makes PAR files without requiring write access to $ALICE_ROOT.
-# Execute this script in your local area with write access.
+# This script makes PAR files without requiring write access to
+# $ALICE_ROOT.  It is not necessary to first make AliRoot after doing
+# an svn checkout or update.  Execute this script in your local area
+# with write access.
+#
 # Usage:
 # parmaker JETAN
 # parmaker JETAN remote
 # parmaker JETAN remote patch
+# parmaker all   remote
 #
 # So far only available for these par files:
 # ANALYSIS ANALYSISalice AOD ESD FASTJETAN JETAN
@@ -20,6 +24,20 @@ case $2 in
   "remote")
 
     case $1 in
+      "all")
+         parmaker ANALYSIS remote
+         parmaker ANALYSISalice remote
+         parmaker AOD remote
+         parmaker ESD remote
+         parmaker FASTJETAN remote
+         parmaker JETAN remote
+         parmaker PWG4PartCorrBase remote
+         parmaker PWG4PartCorrDep remote
+         parmaker STEERBase remote
+         echo " "
+         echo "finished making complete set of par files"
+         exit
+	 ;;
       "ANALYSIS")
          parmaker_input_basedir="ANALYSIS"
          parmaker_input_dir_subdir="ANALYSIS"
@@ -71,6 +89,7 @@ case $2 in
     esac
 
  
+    echo " "
     echo "parmaker to use source $ALICE_ROOT/$parmaker_input_dir_subdir"
     if [ -e "$ALICE_ROOT/$parmaker_input_dir_subdir" ]
     then
