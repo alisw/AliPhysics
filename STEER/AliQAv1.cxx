@@ -435,14 +435,15 @@ TFile * AliQAv1::GetQADataFile(const char * fileName)
 {
   // Open if necessary the Data file and return its pointer
 
-  if (!fgQADataFile) 
-	if (!fileName) 
-		fileName = AliQAv1::GetQADataFileName() ; 
-	if  (!gSystem->AccessPathName(fileName)) {
-		fgQADataFile =  TFile::Open(fileName) ;
-	} else {
-		AliFatalClass(Form("File %s not found", fileName)) ;
-	}
+  if (!fgQADataFile) {
+    if (!fileName) 
+      fileName = AliQAv1::GetQADataFileName() ; 
+    if  (!gSystem->AccessPathName(fileName)) {
+      fgQADataFile =  TFile::Open(fileName) ;
+    } else {
+      AliFatalClass(Form("File %s not found", fileName)) ;
+    }
+  }
   return fgQADataFile ; 
 }
 
