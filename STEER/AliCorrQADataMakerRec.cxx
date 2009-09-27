@@ -140,10 +140,8 @@ void AliCorrQADataMakerRec::InitRaws()
   if (fMaxRawVar == 0) { 
     AliWarning("NTUPLE not created") ; 
   } else {
-    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      char * name = Form("%s_%s", AliQAv1::GetQACorrName(), AliRecoParam::GetEventSpecieName(specie)) ; 
-      fCorrNt[specie] = new TNtupleD(name, "Raws data correlation among detectors", varlist.Data()) ;  
-    }
+    char * name = Form("%s_%s", AliQAv1::GetQACorrName(), AliRecoParam::GetEventSpecieName(fEventSpecie)) ; 
+    fCorrNt[AliRecoParam::AConvert(fEventSpecie)] = new TNtupleD(name, "Raws data correlation among detectors", varlist.Data()) ;  
   }  
 }
 
@@ -160,6 +158,10 @@ void AliCorrQADataMakerRec::MakeESDs(AliESDEvent * /*esd*/)
 void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
 {
   //Fill prepared histograms with Raw digit properties
+  
+  if ( ! fCorrNt[AliRecoParam::AConvert(fEventSpecie)])
+      InitRaws() ; 
+  
   if ( fMaxRawVar > 0 ) {
     const Int_t kSize = fMaxRawVar ; 
     Double_t  *varvalue = new Double_t[kSize] ;
@@ -175,7 +177,7 @@ void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
         varvalue[index++] = p->GetVal() ; 
       }
     }
-    (static_cast<TNtupleD*>(fCorrNt[(Int_t)TMath::Log2(fEventSpecie)]))->Fill(varvalue);
+    static_cast<TNtupleD*>(fCorrNt[AliRecoParam::AConvert(fEventSpecie)])->Fill(varvalue);
     delete [] varvalue;
   }
 }
