@@ -115,8 +115,8 @@ AliTRDSignalIndex::AliTRDSignalIndex(const AliTRDSignalIndex &a)
   fBoolIndex = new Bool_t[fMaxLimit];
   memcpy(fBoolIndex, a.fBoolIndex, fMaxLimit*sizeof(Bool_t));
 
-  fSortedIndex = new RowCol[fMaxLimit];
-  memcpy(fSortedIndex, a.fSortedIndex, fMaxLimit*sizeof(RowCol));
+  fSortedIndex = new RowCol[fMaxLimit+1];
+  memcpy(fSortedIndex, a.fSortedIndex, (fMaxLimit+1)*sizeof(RowCol));
 }
 
 //_____________________________________________________________________________
@@ -171,8 +171,8 @@ void AliTRDSignalIndex::Copy(TObject &a) const
     {
       delete [] ((AliTRDSignalIndex &)a).fSortedIndex;
     }
-  ((AliTRDSignalIndex &)a).fSortedIndex = new RowCol[fMaxLimit];
-  memcpy(((AliTRDSignalIndex &)a).fSortedIndex, fSortedIndex, fMaxLimit*sizeof(RowCol));
+  ((AliTRDSignalIndex &)a).fSortedIndex = new RowCol[fMaxLimit+1];
+  memcpy(((AliTRDSignalIndex &)a).fSortedIndex, fSortedIndex, (fMaxLimit+1)*sizeof(RowCol));
 
 }
 
@@ -211,7 +211,7 @@ void AliTRDSignalIndex::Allocate(const Int_t nrow, const Int_t ncol, const Int_t
   }
 
   fBoolIndex = new Bool_t[fMaxLimit];
-  fSortedIndex = new RowCol[fMaxLimit];
+  fSortedIndex = new RowCol[fMaxLimit+1];
 
   ResetArrays();
   ResetCounters();
@@ -224,7 +224,7 @@ void AliTRDSignalIndex::Allocate(const Int_t nrow, const Int_t ncol, const Int_t
 void AliTRDSignalIndex::ResetArrays()
 {
   memset(fBoolIndex,0x00,sizeof(Bool_t)*fMaxLimit);
-  memset(fSortedIndex,0xFF,sizeof(RowCol)*fMaxLimit); 
+  memset(fSortedIndex,0xFF,sizeof(RowCol)*(fMaxLimit+1)); 
   fSortedWasInit = kFALSE;
 }
 
@@ -330,7 +330,7 @@ Bool_t  AliTRDSignalIndex::NextRCIndex(Int_t &row, Int_t &col)
   // Returns next used RC combination
   //
 
-  if(fSortedIndex[fPositionRC].s.row>-1){
+  if(fSortedIndex[fPositionRC].rc>-1){
     row = fCurrRow = fSortedIndex[fPositionRC].s.row;
     col = fCurrCol = fSortedIndex[fPositionRC].s.col;
     fPositionRC++;
