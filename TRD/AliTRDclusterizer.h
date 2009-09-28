@@ -40,11 +40,12 @@ class AliTRDclusterizer : public TNamed
   // steering flags
   enum{
     kTrOwner= BIT(13)  //  toggle online tracklets ownership
-   ,kClOwner= BIT(14)  //  toggle cluster ownership
-   ,kLabels = BIT(15)  //  toggle MC labels for clusters
-   ,kHLT    = BIT(16)  //  HLT mode
-   ,kLUT    = BIT(17)  //  using look up table for cluster's r-phi position
-   ,kGAUS   = BIT(18)  //  using gauss approx. for cluster's r-phi position
+    ,kClOwner= BIT(14)  //  toggle cluster ownership
+    ,kLabels = BIT(15)  //  toggle MC labels for clusters
+    ,kHLT    = BIT(16)  //  HLT mode
+    ,kLUT    = BIT(17)  //  using look up table for cluster's r-phi position
+    ,kGAUS   = BIT(18)  //  using gauss approx. for cluster's r-phi position
+    ,knewDM  = BIT(19)  //  was the digitsmanger created by raw2clusters?
   };
 
   struct MaxStruct

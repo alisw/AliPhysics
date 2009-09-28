@@ -90,6 +90,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
   //
 
   SetBit(kLabels, kTRUE);
+  SetBit(knewDM, kFALSE);
 
   AliTRDcalibDB *trd = 0x0;
   if (!(trd = AliTRDcalibDB::Instance())) {
@@ -147,6 +148,7 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title, co
   //
 
   SetBit(kLabels, kTRUE);
+  SetBit(knewDM, kFALSE);
 
   AliTRDcalibDB *trd = 0x0;
   if (!(trd = AliTRDcalibDB::Instance())) {
@@ -199,6 +201,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
   //
 
   SetBit(kLabels, kTRUE);
+  SetBit(knewDM, kFALSE);
 
   //FillLUT();
 
@@ -227,7 +230,9 @@ AliTRDclusterizer::~AliTRDclusterizer()
   }
 
   if (fTrackletContainer){
-    delete fTrackletContainer;
+    delete [] fTrackletContainer[0];
+    delete [] fTrackletContainer[1];
+    delete [] fTrackletContainer;
     fTrackletContainer = NULL;
   }
 
@@ -620,6 +625,7 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
 
   // Create the digits manager
   if (!fDigitsManager){
+    SetBit(knewDM, kTRUE);
     fDigitsManager = new AliTRDdigitsManager(kTRUE);
     fDigitsManager->CreateArrays();
   }
@@ -663,8 +669,10 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
 
   if(fReconstructor->IsWritingClusters()) WriteClusters(-1);
 
-  delete fDigitsManager;
-  fDigitsManager = NULL;
+  if(!TestBit(knewDM)){
+    delete fDigitsManager;
+    fDigitsManager = NULL;
+  }
 
   delete input;
   input = NULL;
