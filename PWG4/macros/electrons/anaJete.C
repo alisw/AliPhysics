@@ -53,6 +53,10 @@ char sconfig1[1024] = "ConfigPWG4AODtoAOD";        //"ConfigAnalysis";
 char sconfig2[1024] = "ConfigJetAnalysisFastJet.C";//"ConfigAnalysis";
 char sconfig3[1024] = "ConfigAnalysisElectron";    //"ConfigAnalysis";
 
+//Initialize the cross section and ntrials values. Do not modify.
+Double_t xsection = 0;
+Float_t ntrials = 0;
+
 void anaJete()
 {
   // Main
@@ -84,6 +88,7 @@ void anaJete()
 
   if (mode==mLocal || mode==mLocalCAF || mode == mGRID) {
     CreateChain(mode, chain, chainxs);  
+    cout<<"Chain created"<<endl;
   }
 
   if( chain || mode==mPROOF || mode==mPLUGIN ){
@@ -167,20 +172,22 @@ void anaJete()
       AliESDtrackCuts* esdTrackCutsL = new AliESDtrackCuts("AliESDtrackCuts", "Loose");
       //esdTrackCutsL->SetMinNClustersTPC(50);
       //esdTrackCutsL->SetMaxChi2PerClusterTPC(3.5);
-      //esdTrackCutsL->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
       //esdTrackCutsL->SetRequireTPCRefit(kTRUE);
-      //esdTrackCutsL->SetMinNsigmaToVertex(3); //keep commented out
-      //esdTrackCutsL->SetRequireSigmaToVertex(kTRUE); //keep commented out
+      //esdTrackCutsL->SetMaxDCAToVertexXY(2.4);
+      //esdTrackCutsL->SetMaxDCAToVertexZ(3.2);
+      //esdTrackCutsL->SetDCAToVertex2D(kTRUE);
+      //esdTrackCutsL->SetRequireSigmaToVertex(kFALSE);
       //esdTrackCutsL->SetAcceptKinkDaughters(kFALSE);
       //
       // hard
       AliESDtrackCuts* esdTrackCutsH = new AliESDtrackCuts("AliESDtrackCuts", "Hard");
       esdTrackCutsH->SetMinNClustersTPC(100);
       esdTrackCutsH->SetMaxChi2PerClusterTPC(2.0);
-      esdTrackCutsH->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
       esdTrackCutsH->SetRequireTPCRefit(kTRUE);
-      //esdTrackCutsH->SetMinNsigmaToVertex(2);
-      //esdTrackCutsH->SetRequireSigmaToVertex(kTRUE);
+      esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
+      esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
+      esdTrackCutsH->SetDCAToVertex2D(kTRUE);
+      esdTrackCutsH->SetRequireSigmaToVertex(kFALSE);
       esdTrackCutsH->SetAcceptKinkDaughters(kFALSE);
       //
       AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
@@ -239,30 +246,31 @@ void anaJete()
     //------------------------  
     //Scaling task
     //-----------------------
-    Int_t nfiles = chainxs->GetEntries();
+    cout<<">>> Scaling Task"<<endl;
+    Int_t nfiles = chain->GetListOfFiles()->GetEntriesFast();//chainxs->GetEntries();
     Int_t nevents = chain->GetEntries();
     cout<<"Get? "<<kGetXSectionFromFileAndScale<<" nfiles "<<nfiles<<" nevents "<<nevents<<endl;
     if(kGetXSectionFromFileAndScale && nfiles > 0){
-      //cout<<"Init AnaScale"<<endl;
-      //Get the cross section
-      Double_t xsection=0; 
-      Float_t ntrials = 0;
-      GetAverageXsection(chainxs, xsection, ntrials);
-      
+      cout<<"Init AnaScale"<<endl;
       AliAnaScale * scale = new AliAnaScale("scale") ;
-
-      cout<<"Scale factor "<<xsection/(ntrials/kNumberOfEventsPerFile)/nevents<<"  "<<xsection/ntrials/nfiles<<endl;
-      scale->Set(xsection/ntrials/nfiles) ;
+      cout<<"Summed xsection "<<xsection<<" Summed ntrials "<<ntrials<<" total events "<<nevents<<endl;
+      //Calculate the average
+      xsection/=nfiles;
+      ntrials/=nfiles;
+      cout<<"Average xsection "<<xsection<<" Average ntrials "<<ntrials<<" total events "<<nevents<<endl;
+      Double_t scaleFactor = 	xsection/ntrials/nevents ;
+      cout<<"Scale factor "<<scaleFactor<<endl;
+      scale->Set(scaleFactor) ;
       scale->MakeSumw2(kTRUE);//If you want histograms with error bars set to kTRUE
       scale->SetDebugLevel(2);
       mgr->AddTask(scale);
       
-      AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("histosscaled", TList::Class(),
-								AliAnalysisManager::kOutputContainer, "histosscaled.root");
+      AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("histosscaled", 
+		   TList::Class(), AliAnalysisManager::kOutputContainer, "histosscaled.root");
       mgr->ConnectInput  (scale,     0, coutput2);
       mgr->ConnectOutput (scale,     0, coutput3 );
     }
-    
+   
     //-----------------------
     // Run the analysis
     //-----------------------    
@@ -284,7 +292,7 @@ void anaJete()
     else if (mode==mPLUGIN)
       mgr->StartAnalysis(smode.Data());
     else
-      mgr->StartAnalysis(smode.Data(),chain,20);
+      mgr->StartAnalysis(smode.Data(),chain);
 
     cout <<" Analysis ended sucessfully "<< endl ;
 
@@ -451,6 +459,24 @@ void SetupPar(char* pararchivename)
 
 void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
   //Fills chain with data
+
+  TString datafile="";
+  if(kInputData == "ESD") datafile = "AliESDs.root" ;
+  else if(kInputData == "AOD") datafile = "AliAOD.root" ;
+  else if(kInputData == "MC")  datafile = "galice.root" ;
+
+  if(kInputData == "AOD") kXSFileName = "pyxsec_hists.root";
+
+  char * kGener = gSystem->Getenv("GENER");
+  if(kGener) {
+    cout<<"GENER "<<kGener<<endl;
+    if(!strcmp(kGener,"PYTHIA")) kXSFileName = "pyxsec.root";
+    else if(!strcmp(kGener,"HERWIG")) kXSFileName = "hexsec.root";
+    else cout<<" UNKNOWN GENER, use default: "<<kXSFileName<<endl;
+  }
+  else cout<<" GENER not set, use default xs file name: "<<kXSFileName<<endl;
+
+
   TString ocwd = gSystem->WorkingDirectory();
   
   //-----------------------------------------------------------
@@ -500,26 +526,13 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
       //if(gSystem->Getenv("XSFILE"))  
       //kXSFileName = gSystem->Getenv("XSFILE") ; 
       //else cout<<" XS file name not set, use default: "<<kXSFileName<<endl;	
-      char * kGener = gSystem->Getenv("GENER");
-      if(kGener) {
-	cout<<"GENER "<<kGener<<endl;
-	if(!strcmp(kGener,"PYTHIA")) kXSFileName = "pyxsec.root";
-	else if(!strcmp(kGener,"HERWIG")) kXSFileName = "hexsec.root";
-	else cout<<" UNKNOWN GENER, use default: "<<kXSFileName<<endl;
-      }
-
-      else cout<<" GENER not set, use default xs file name: "<<kXSFileName<<endl;
 
       cout<<"INDIR : "<<kInDir<<endl;
       cout<<"NFILES : "<<kFile<<endl;
       cout<<"PATTERN: " <<kPattern<<endl;
       cout<<"XSFILE  : "<<kXSFileName<<endl;
       
-      TString datafile="";
-      if(kInputData == "ESD") datafile = "AliESDs.root" ;
-      else if(kInputData == "AOD") datafile = "AliAOD.root" ;
-      else if(kInputData == "MC")  datafile = "galice.root" ;
-      
+
       //Loop on ESD files, add them to chain
       Int_t event =0;
       Int_t skipped=0 ; 
@@ -529,13 +542,14 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
       for (event = 0 ; event < kFile ; event++) {
 	sprintf(file, "%s/%s%d/%s", kInDir,kPattern,event,datafile.Data()) ; 
 	sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ; 
-	TFile * fESD = 0 ; 
+	TFile * dataFile = 0 ; 
 	//Check if file exists and add it, if not skip it
-	if ( fESD = TFile::Open(file)) {
-	  if ( fESD->Get(kTreeName) ) { 
-	    printf("++++ Adding %s\n", file) ;
+	if ( dataFile = TFile::Open(file)) {
+	  if ( dataFile->Get(kTreeName) ) { 
+	    Int_t nEventsPerFile = ((TTree*) dataFile->Get(kTreeName)) ->GetEntries();
+	    printf("++++ Adding %s, with %d events \n", file, nEventsPerFile) ;
 	    chain->AddFile(file);
-	    if(kGetXSectionFromFileAndScale)chainxs->Add(filexs) ; 
+	    if(kGetXSectionFromFileAndScale) GetXsection(nEventsPerFile, filexs); 	
 	  }
 	}
 	else { 
@@ -587,12 +601,23 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
    
     // Makes the ESD chain 
     printf("*** Getting the Chain       ***\n");
+    Int_t nEventsPerFile = 0;
     for (Int_t index = 0; index < result->GetEntries(); index++) {
       TString alienURL = result->GetKey(index, "turl") ; 
       cout << "================== " << alienURL << endl ; 
       chain->Add(alienURL) ; 
-      alienURL.ReplaceAll("AliESDs.root",kXSFileName);
-      chainxs->Add(alienURL) ; 
+
+      if(kGetXSectionFromFileAndScale){
+	//Get the number of events per file.
+        //Do it only once, no need to open all the files.
+        if(i ==0 ) {
+          TFile * df = TFile::Open(alienURL);
+          nEventsPerFile = ((TTree*) df->Get(kTreeName)) ->GetEntries();
+          dataFile->Close();
+        } 
+        alienURL.ReplaceAll(datafile,kXSFileName);
+        GetXsection(nEventsPerFile, alienURL);//chainxs->Add(alienURL) ; 
+      }
     }
   }// xml analysis
 
@@ -600,64 +625,56 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
 }
 
 //________________________________________________
-void GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr)
+void GetXsection(Int_t nEventsPerFile, TString filexs)
 {
-  // Read the PYTHIA statistics from the file pyxsec.root created by
-  // the function WriteXsection():
-  // integrated cross section (xsection) and
-  // the  number of Pyevent() calls (ntrials)
-  // and calculate the weight per one event xsection/ntrials
-  // The spectrum calculated by a user should be
-  // multiplied by this weight, something like this:
-  // TH1F *userSpectrum ... // book and fill the spectrum
-  // userSpectrum->Scale(weight)
-  //
-  // Yuri Kharlov 19 June 2007
-  // Gustavo Conesa 15 April 2008
-  Double_t xsection = 0;
-  UInt_t    ntrials = 0;
-  xs = 0;
-  ntr = 0;
-  
-  Int_t nfiles =  tree->GetEntries()  ;
-  if (tree && nfiles > 0) {
-    tree->SetBranchAddress("xsection",&xsection);
-    tree->SetBranchAddress("ntrials",&ntrials);
-    for(Int_t i = 0; i < nfiles; i++){
-      tree->GetEntry(i);
-      xs += xsection ;
-      ntr += ntrials ;
-      cout << "xsection " <<xsection<<" ntrials "<<ntrials<<endl; 
-    }
-    
-    xs =   xs /  nfiles;
-    ntr =  ntr / nfiles;
-    cout << "-----------------------------------------------------------------"<<endl;
-    cout << "Average of "<< nfiles<<" files: xsection " <<xs<<" ntrials "<<ntr<<endl; 
-    cout << "-----------------------------------------------------------------"<<endl;
-  } 
-  else cout << " >>>> Empty tree !!!! <<<<< "<<endl;
-  
+  // Get the cros section from the corresponding file in the directory
+  // where the data sits.
+  // The xsection and ntrials global variables are updated per each file.
+  // The average of these cuantities should be calculated after.
+
+  TFile *fxs = new TFile(filexs,"R");
+  if(kInputData =="AOD") { //needs improvement, in case of train with ESDs, reading output AODs for example this is wrong.
+    TList *l = (TList*) fxs->Get("cFilterList");
+    TH1F * hxs = l->FindObject("h1Xsec") ;
+    TH1F * htrial = l->FindObject("h1Trials") ;
+    if(htrial->GetEntries()!=hxs->GetEntries() || htrial->GetEntries()==0){
+      cout<<"Careful!!! Entries in histo for cross section "<<hxs->GetEntries()<< ", for trials "<<htrial->GetEntries()<<endl;
+      continue;
+    }		
+    xsection += hxs->GetBinContent(1);
+    ntrials  += htrial->GetBinContent(1)/htrial->GetEntries()/nEventsPerFile;
+    cout << "Chain: xsection " <<hxs->GetBinContent(1)<<" ntrials "<<htrial->GetBinContent(1)/htrial->GetEntries()<<endl; 
+  }
+  else {
+    Double_t xs = 0;
+    UInt_t ntr = 0;
+    TTree * xstree = (TTree*)fxs->Get("Xsection");
+    xstree->SetBranchAddress("xsection",&xs);
+    xstree->SetBranchAddress("ntrials",&ntr);
+    xstree->GetEntry(0);
+    cout << "Chain: xsection " <<xs<<" ntrials "<<ntr<<endl;
+    xsection += xs ;
+    ntrials += ntr/nEventsPerFile;	
+  }  
 }
 
 void ProcessEnvironment(){
 
-	if (gSystem->Getenv("MODE"))
-		mode = atoi(gSystem->Getenv("MODE"));
+  if (gSystem->Getenv("MODE"))
+     mode = atoi(gSystem->Getenv("MODE"));
 
-	if (gSystem->Getenv("CONFIG1"))
-		sprintf(sconfig1,gSystem->Getenv("CONFIG1"));
+  if (gSystem->Getenv("CONFIG1"))
+     sprintf(sconfig1,gSystem->Getenv("CONFIG1"));
 
-	if (gSystem->Getenv("CONFIG2"))
-		sprintf(sconfig2,gSystem->Getenv("CONFIG2"));
+  if (gSystem->Getenv("CONFIG2"))
+      sprintf(sconfig2,gSystem->Getenv("CONFIG2"));
 
-	if (gSystem->Getenv("CONFIG3"))
-		sprintf(sconfig3,gSystem->Getenv("CONFIG3"));
+  if (gSystem->Getenv("CONFIG3"))
+      sprintf(sconfig3,gSystem->Getenv("CONFIG3"));
 
-	if (gSystem->Getenv("SEVENT"))
-		sevent = atoi (gSystem->Getenv("SEVENT"));
+  if (gSystem->Getenv("SEVENT"))
+      sevent = atoi (gSystem->Getenv("SEVENT"));
 	
-	printf("PROCESS: Variables: mode %d, config1 %s, config2 %s, config3 %s, sevent %d\n", mode,sconfig1,sconfig2,sconfig3,sevent);
+      printf("PROCESS: Variables: mode %d, config1 %s, config2 %s, config3 %s, sevent %d\n", mode,sconfig1,sconfig2,sconfig3,sevent);
 
-	
 }
