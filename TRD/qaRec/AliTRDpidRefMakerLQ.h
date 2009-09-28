@@ -11,8 +11,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALITRDRECOTASK_H
-#include "AliTRDrecoTask.h"
+#ifndef ALITRDPIDREFMAKER_H
+#include "AliTRDpidRefMaker.h"
 #endif
 
 class TH1;
@@ -21,19 +21,19 @@ class TH3;
 class TPrincipal;
 class TLinearFitter;
 
-class AliTRDpidRefMakerLQ : public AliTRDrecoTask {
+class AliTRDpidRefMakerLQ : public AliTRDpidRefMaker {
 
 public:
   AliTRDpidRefMakerLQ();
   ~AliTRDpidRefMakerLQ();
-
-  Bool_t   BuildLQReferences(const Char_t *filename="TRDpidLQ.root", const Char_t *dir =".");
-  Bool_t   BuildNNReferences(const Char_t *filename="TRDpidNN.root", const Char_t *dir =".") const;
  
   static Double_t Estimate2D2(TH2 * const h, Float_t &x, Float_t &y);
   static Double_t Estimate2D1(TH2 * const h, Float_t &x, Float_t &y, const Float_t &dCT
                             , const Float_t &rmin, const Float_t &rmax);
   //     Double_t Estimate3D2(TH3 * const h, Float_t &x, Float_t &y, Float_t &z);
+
+protected:
+  void   MakeRefs(Int_t pbin);
 
 private:
   AliTRDpidRefMakerLQ(const AliTRDpidRefMakerLQ &ref);

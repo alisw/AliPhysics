@@ -282,13 +282,29 @@ void AliTRDtrackInfo::AddTrackRef(const AliTrackReference *tref)
 }
 
 //___________________________________________________
-AliTrackReference * AliTRDtrackInfo::GetTrackRef(Int_t idx) const
+AliTrackReference* AliTRDtrackInfo::GetTrackRef(Int_t idx) const
 {
-  //
-  // Returns a track reference
-  //
+//
+// Returns a track reference
+//
   if(!fMC) return 0x0;
   return (idx>=0 && idx < 12) ? fMC->fTrackRefs[idx] : 0x0;
+}
+
+//___________________________________________________
+AliTrackReference* AliTRDtrackInfo::GetTrackRef(AliTRDseedV1* tracklet) const
+{
+//
+// Returns a track reference
+//
+  if(!fMC) return 0x0;
+  Double_t cw = AliTRDgeometry::CamHght() + AliTRDgeometry::CdrHght();
+  AliTrackReference * const* jtr = &(fMC->fTrackRefs[0]);
+  for(Int_t itr = 0; itr < fMC->fNTrackRefs; itr++, ++jtr){
+    if(!(*jtr)) break;   
+    if(TMath::Abs(tracklet->GetX0() - (*jtr)->LocalX()) < cw) return (*jtr);
+  }
+  return 0x0;
 }
 
 //___________________________________________________
@@ -362,6 +378,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
 //   - BIT(3) : dx > 0 && dx < 3.7 - tangent tracks 
 
   status = 0;
+  Double_t cw = AliTRDgeometry::CamHght() + AliTRDgeometry::CdrHght();
   Int_t nFound = 0;
   AliTrackReference *tr[2] = {0x0, 0x0};
   AliTrackReference * const* jtr = &fTrackRefs[0];
@@ -369,7 +386,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
     if(!(*jtr)) break;
 /*
     if(fDebugLevel>=5) printf("\t\tref[%2d] x[%6.3f]\n", itr, (*jtr)->LocalX());*/
-    if(TMath::Abs(x0 - (*jtr)->LocalX()) > 3.7) continue;
+    if(TMath::Abs(x0 - (*jtr)->LocalX()) > cw) continue;
     tr[nFound++] = (*jtr);
     if(nFound == 2) break;
   } 

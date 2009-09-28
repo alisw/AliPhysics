@@ -63,7 +63,7 @@ TLinearFitter *AliTRDpidRefMakerLQ::fgFitter2D1 = 0x0;
 
 //__________________________________________________________________
 AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ()
-  :AliTRDrecoTask("PidRefMakerLQ", "PID(LQ) Reference Maker")
+  :AliTRDpidRefMaker(UChar_t(AliTRDpidUtil::kLQslices), "PidRefMakerLQ", "PID(LQ) Reference Maker")
 {
   //
   // AliTRDpidRefMakerLQ default constructor
@@ -94,7 +94,7 @@ AliTRDpidRefMakerLQ::~AliTRDpidRefMakerLQ()
 
 
 //__________________________________________________________________
-Bool_t AliTRDpidRefMakerLQ::BuildLQReferences(const Char_t *File, const Char_t *dir)
+void AliTRDpidRefMakerLQ::MakeRefs(Int_t /*pbin*/)
 {
   // Build, Fill and write to file the histograms used for PID.
   // The simulations are looked in the
@@ -113,8 +113,9 @@ Bool_t AliTRDpidRefMakerLQ::BuildLQReferences(const Char_t *File, const Char_t *
     {kElectron, kMuonMinus, kPiPlus, kKPlus, kProton};
     
   // check and retrive number of directories in the production
+  const char *dir=".", *File="LQ.root";
   Int_t nBatches;
-  if(!(nBatches = CheckProdDirTree(dir))) return kFALSE;
+  if(!(nBatches = CheckProdDirTree(dir))) return;
 
       
   // Number of Time bins
@@ -122,7 +123,7 @@ Bool_t AliTRDpidRefMakerLQ::BuildLQReferences(const Char_t *File, const Char_t *
   AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
   if(!calibration){
     AliError("No AliTRDcalibDB available.");
-    return kFALSE;
+    return;
   } else {
     nTimeBins = calibration->GetNumberOfTimeBins();
 // 		if (calibration->GetRun() > -1) nTimeBins = calibration->GetNumberOfTimeBins();
@@ -169,7 +170,7 @@ Bool_t AliTRDpidRefMakerLQ::BuildLQReferences(const Char_t *File, const Char_t *
       fRunLoader = AliRunLoader::Open(Form("%s/%3.1fGeV/%03d/galice.root", dir, trackMomentum[imom], ibatch));
       if (!fRunLoader) {
         AliError(Form("Getting run loader for momentum %3.1f GeV/c batch %03d failed.", trackMomentum[imom], ibatch));
-        return kFALSE;
+        return;
       }
       TString s; s.Form("%s/%3.1fGeV/%03d/", dir, trackMomentum[imom], ibatch);
       fRunLoader->SetDirName(s);
@@ -177,7 +178,7 @@ Bool_t AliTRDpidRefMakerLQ::BuildLQReferences(const Char_t *File, const Char_t *
       gAlice = fRunLoader->GetAliRun();
       if (!gAlice) {
         AliError(Form("galice object not found for momentum %3.1f GeV/c batch %03d.", trackMomentum[imom], ibatch));
-        return kFALSE;
+        return;
       }
       fRunLoader->LoadKinematics();
       fRunLoader->LoadHeader();
@@ -186,12 +187,12 @@ Bool_t AliTRDpidRefMakerLQ::BuildLQReferences(const Char_t *File, const Char_t *
       esdFile = TFile::Open(Form("%s/%3.1fGeV/%03d/AliESDs.root", dir, trackMomentum[imom], ibatch));
       if (!esdFile || esdFile->IsZombie()) {
         AliError(Form("Opening ESD file failed for momentum  %3.1f GeV/c batch %03d.", trackMomentum[imom], ibatch));
-        return kFALSE;
+        return;
       }
       esdTree = (TTree*)esdFile->Get("esdTree");
       if (!esdTree) {
         AliError(Form("ESD tree not found for momentum %3.1f GeV/c batch %03d.", trackMomentum[imom], ibatch));
-        return kFALSE;
+        return;
       }
       esd = new AliESD;
       esdTree->SetBranchAddress("ESD", &esd);
@@ -324,13 +325,7 @@ Bool_t AliTRDpidRefMakerLQ::BuildLQReferences(const Char_t *File, const Char_t *
   fSave->Close();
   delete fSave;
 
-  return kTRUE;
-}
-
-//__________________________________________________________________
-Bool_t AliTRDpidRefMakerLQ::BuildNNReferences(const Char_t* /*File*/, const Char_t* /*dir*/) const
-{
-  return kTRUE;
+  return;
 }
 
 //__________________________________________________________________

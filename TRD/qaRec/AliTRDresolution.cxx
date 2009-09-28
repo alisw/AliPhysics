@@ -1146,9 +1146,9 @@ Bool_t AliTRDresolution::PostProcess()
   Process2D(kMCtrackTRD, 5, &fg);         // snp PULL
   Process2D(kMCtrackTRD, 6, &fg, 1.e3);   // theta
   Process2D(kMCtrackTRD, 7, &fg);         // tgl PULL
-  Process4D(kMCtrackTRD, 8, &fg, 1.e2);   // pt resolution
-  Process4D(kMCtrackTRD, 9, &fg);         // 1/pt pulls
-  Process4D(kMCtrackTRD, 10, &fg, 1.e2);  // p resolution
+//   Process4D(kMCtrackTRD, 8, &fg, 1.e2);   // pt resolution
+//   Process4D(kMCtrackTRD, 9, &fg);         // 1/pt pulls
+//   Process4D(kMCtrackTRD, 10, &fg, 1.e2);  // p resolution
   fNRefFigures = 18;
 
   // TRACK TPC RESOLUTION/PULLS
@@ -1160,10 +1160,10 @@ Bool_t AliTRDresolution::PostProcess()
   Process2D(kMCtrackTPC, 5, &fg);      // snp pulls
   Process2D(kMCtrackTPC, 6, &fg, 1.e3);// theta resolution
   Process2D(kMCtrackTPC, 7, &fg);      // tgl pulls
-  Process3D(kMCtrackTPC, 8, &fg, 1.e2);// pt resolution
-  Process3D(kMCtrackTPC, 9, &fg);      // 1/pt pulls
-  Process3D(kMCtrackTPC, 10, &fg, 1.e2);// p resolution
-  Process3D(kMCtrackTPC, 11, &fg);      // p pulls
+//   Process3D(kMCtrackTPC, 8, &fg, 1.e2);// pt resolution
+//   Process3D(kMCtrackTPC, 9, &fg);      // 1/pt pulls
+//   Process3D(kMCtrackTPC, 10, &fg, 1.e2);// p resolution
+//   Process3D(kMCtrackTPC, 11, &fg);      // p pulls
   fNRefFigures = 24;
 
   // TRACK HMPID RESOLUTION/PULLS

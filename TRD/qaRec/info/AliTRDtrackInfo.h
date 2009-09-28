@@ -1,7 +1,7 @@
 #ifndef ALITRDTRACKINFO_H
 #define ALITRDTRACKINFO_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+* See cxx source for full Copyright notice                               */
 
 /* $Id: AliTRDtrackInfo.h 27496 2008-07-22 08:35:45Z cblume $ */
 
@@ -108,11 +108,12 @@ public:
   ULong_t            GetStatus() const {return fESD.fStatus;}
   AliTRDtrackV1*     GetTrack() const { return fTRDtrack; }
   AliTrackReference* GetTrackRef(Int_t entry) const;
+  AliTrackReference* GetTrackRef(AliTRDseedV1* tracklet) const;
 
   Bool_t             IsCurved() const {return TestBit(kCurv);}
   Bool_t             IsPrimary() const {return TestBit(kPrim);}
-	Bool_t             HasESDtrack() const{return ((fTRDtrack != 0x0) ||(fESD.fOP != 0));}
-	Bool_t             HasMCinfo() const { return (Bool_t)fMC; }
+  Bool_t             HasESDtrack() const{return ((fTRDtrack != 0x0) ||(fESD.fOP != 0));}
+  Bool_t             HasMCinfo() const { return (Bool_t)fMC; }
 
   void               SetCurved(Bool_t curv = kTRUE) {SetBit(kCurv, curv);}
   void               SetLabel(Int_t lab) { SetMC(); fMC->fLabel = lab; }
@@ -140,7 +141,7 @@ private:
   AliTRDtrackV1      *fTRDtrack; 	    // tracklets data array
   AliMCinfo          *fMC;            // MC extract for TRD
   AliESDinfo         fESD;            // ESD extract for TRD
- 
+
   ClassDef(AliTRDtrackInfo, 3)        // TRD track info
 };
 
