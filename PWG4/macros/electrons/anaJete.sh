@@ -10,7 +10,6 @@ export PATTERN=
 #export PATTERN=01
 export NFILES=1
 export MODE=0
-export CONFIG1=ConfigPWG4AODtoAOD
 export CONFIG2=ConfigJetAnalysisFastJet.C
 export CONFIG3=ConfigAnalysisElectron
 export SIMPATH=/work2/data/bjetfilter/AOD/117005/004

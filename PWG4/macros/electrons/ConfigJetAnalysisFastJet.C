@@ -17,9 +17,9 @@ AliJetFinder*  ConfigJetAnalysis()
     printf("========================== \n");
 
     Bool_t kInputIsESD = kTRUE;     //uncomment for input ESD
-    //Bool_t kInputIsESD = kFALSE;    //uncomment for input AODs
+  //Bool_t kInputIsESD = kFALSE;    //uncomment for input AODs
     Bool_t kFollowsFilter = kTRUE;  //uncomment if follows ESD filter task
-    //Bool_t kFollowsFilter = kFALSE; //uncomment if no ESD filter task
+  //Bool_t kFollowsFilter = kFALSE; //uncomment if no ESD filter task
 
 
     // Define the grids
