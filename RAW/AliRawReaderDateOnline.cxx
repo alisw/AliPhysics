@@ -202,6 +202,7 @@ void AliRawReaderDateOnline::SelectEvents(Int_t type,
   }
   table[7] = trSelection.Data();
 
+  monitorLogout();
   monitorDeclareTableExtended(const_cast<char**>(table));
   
 #endif
