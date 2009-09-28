@@ -249,58 +249,66 @@ void AliTRDpidRefMaker::MakeTrainingList()
   // build the training lists for the neural networks
   //
 
-  if (!fData) LoadFile(Form("TRD.Task%s.root", GetName()));
+  if (!fData) LoadFile(Form("TRD.%s.root", GetName()));
   if (!fData) {
     AliError("Tree for training list not available");
     return;
   }
-
-  AliDebug(2, "\n Making training list!");
 
   Int_t nPart[AliTRDCalPID::kNMom][AliTRDgeometry::kNlayer][AliPID::kSPECIES];
   memset(nPart, 0, AliPID::kSPECIES*AliTRDCalPID::kNMom*AliTRDgeometry::kNlayer*sizeof(Int_t));
 
   // set needed branches
   fData -> SetBranchAddress("l", &fLy);
-  fData -> SetBranchAddress("dedx", &fdEdx);
+  fData -> SetBranchAddress("dEdx", &fdEdx);
   fData -> SetBranchAddress("pid", &fPID);
   fData -> SetBranchAddress("p", &fP);
 
   AliTRDpidUtil *util = new AliTRDpidUtil();
 
   // start first loop to check total number of each particle type
+  Int_t n(0);
   for(Int_t iEv=0; iEv < fData -> GetEntries(); iEv++){
     fData -> GetEntry(iEv);
-
-    // use only events with goes through 6 layers TRD
-    //if(!fLy == 0) continue; // ?!
     
     // get particle type
     Int_t pidPos = TMath::LocMax(AliPID::kSPECIES, fPID);
 
     // get momentum bin
-    Int_t iMomBin = util->GetMomentumBin(fP);
-    nPart[iMomBin][fLy][pidPos]++;
+    Int_t ip = util->GetMomentumBin(fP);
+    if(ip<0){
+      AliWarning(Form("Wrong momentum %f.", fP));
+      continue;
+    } 
+    nPart[ip][fLy][pidPos]++;
+    n++;
   }
 
-  AliDebug(2, "Particle multiplicities:");
+  AliDebug(2, Form("Particle multiplicities [%d]:", n));
+  n=0;
   for(Int_t ip = 0; ip <AliTRDCalPID::kNMom; ip++){
     printf("  P[%2d] ", ip);
     for(Int_t is = 0; is <AliPID::kSPECIES; is++){  
-      printf("%s[", AliPID::ParticleName(is));
-      for(Int_t il = 0; il <AliTRDgeometry::kNlayer; il++) printf("%d ", nPart[ip][il][is]);
+      printf("%s[", AliPID::ParticleShortName(is));
+      for(Int_t il = 0; il <AliTRDgeometry::kNlayer; il++){ 
+        printf("%d ", nPart[ip][il][is]);
+        n+=nPart[ip][il][is];
+      }
       printf("] ");
     }
     printf("\n");
   }
+  AliDebug(2, Form("Particle multiplicities check [%d]:", n));
+
 
   // set training/test sample size per momentum interval
   Int_t iTrain[AliTRDCalPID::kNMom], iTest[AliTRDCalPID::kNMom];
   for(Int_t ip = 0; ip < AliTRDCalPID::kNMom; ip++){
-    Float_t min = TMath::MinElement(AliPID::kSPECIES, nPart[ip][5]);
+    Int_t min = 1000000;//TMath::MinElement(AliPID::kSPECIES, nPart[ip][5]);
+    AliDebug(10, Form("Ref Stat in pBin[%d]=%d", ip, min));
     iTrain[ip] = Int_t(min * fTrainFreq);
     iTest[ip] = Int_t(min * fTestFreq);
-    AliDebug(2, Form("P_bin[%d]  Train[%d] Test[%d]", ip, iTrain[ip], iTest[ip]));
+    AliDebug(10, Form("P_bin[%2d]  Train[%d] Test[%d]", ip, iTrain[ip], iTest[ip]));
   }
 
 
@@ -312,31 +320,30 @@ void AliTRDpidRefMaker::MakeTrainingList()
     // get PID position
     Int_t pidPos = TMath::LocMax(AliPID::kSPECIES, fPID);
 
-    for(Int_t ily = 0; ily<AliTRDgeometry::kNlayer; ily++) {
 
-      Int_t iMomBin = util->GetMomentumBin(fP);
-      if(nPart[iMomBin][ily][pidPos] < iTrain[iMomBin]){
-        fTrain[iMomBin][ily]->Enter(iEv);
-        nPart[iMomBin][ily][pidPos]++;
-      } else if(nPart[iMomBin][ily][pidPos] < iTest[iMomBin]+iTrain[iMomBin]){
-        fTest[iMomBin][ily]->Enter(iEv);
-        nPart[iMomBin][ily][pidPos]++;
-      } else continue;
-    }
+    Int_t iMomBin = util->GetMomentumBin(fP);
+    if(nPart[iMomBin][fLy][pidPos] < iTrain[iMomBin]){
+      fTrain[iMomBin][fLy]->Enter(iEv);
+      nPart[iMomBin][fLy][pidPos]++;
+    } else if(nPart[iMomBin][fLy][pidPos] < iTest[iMomBin]+iTrain[iMomBin]){
+      fTest[iMomBin][fLy]->Enter(iEv);
+      nPart[iMomBin][fLy][pidPos]++;
+    } else continue;
   }
   
   AliDebug(2, "Particle multiplicities in both lists:");
   for(Int_t ip = 0; ip <AliTRDCalPID::kNMom; ip++){
     printf("  P[%2d] ", ip);
     for(Int_t is = 0; is <AliPID::kSPECIES; is++){  
-      Int_t mult = 0;
-      for(Int_t il = 0; il <AliTRDgeometry::kNlayer; il++) mult+=nPart[ip][il][is];
-      printf("%s[%d]", AliPID::ParticleName(is), mult);
+      Int_t m(0);
+      for(Int_t il = 0; il <AliTRDgeometry::kNlayer; il++) m+=nPart[ip][il][is];
+      printf("%s[%4d] ", AliPID::ParticleShortName(is), m);
     }
     printf("\n");
   }
 
-  util -> Delete();
+  util->Delete();
+  //delete util;
 }
 
 
@@ -390,7 +397,7 @@ void AliTRDpidRefMaker::SetRefPID(void *source, Float_t *pid)
 
   AliTRDtrackV1 *TRDtrack = static_cast<AliTRDtrackV1*>(source);
   TRDtrack -> SetReconstructor(fReconstructor);
-  fReconstructor -> SetOption("nn");
+  //fReconstructor -> SetOption("nn");
   TRDtrack -> CookPID();
   for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
     pid[iPart] = TRDtrack -> GetPID(iPart);
