@@ -36,7 +36,7 @@ char * kmydataset = "/COMMON/COMMON/LHC09a4_run8101X";
 //Put name of file containing xsection 
 //Put number of events per ESD file
 //This is an specific case for normalization of Pythia files.
-const Bool_t kGetXSectionFromFileAndScale = kTRUE ;
+const Bool_t kGetXSectionFromFileAndScale = kTRUE;
 const char * kXSFileName = "pyxsec.root";
 const Int_t kNumberOfEventsPerFile = 200; 
 //---------------------------------------------------------------------------
@@ -49,13 +49,11 @@ const Bool_t kMergeAODs = kFALSE; //uncomment for no AOD merging
 const Bool_t kUsePAR = kTRUE; //set to kFALSE for libraries
 const Bool_t kDoJetTask = kTRUE; //set to kFALSE to skip JETAN task
 Int_t sevent = 0;
-	
 
 Int_t mode = mLocal;
 char sconfig1[1024] = "ConfigPWG4AODtoAOD";        //"ConfigAnalysis";
 char sconfig2[1024] = "ConfigJetAnalysisFastJet.C";//"ConfigAnalysis";
 char sconfig3[1024] = "ConfigAnalysisElectron";    //"ConfigAnalysis";
-
 
 //Initialize the cross section and ntrials values. Do not modify.
 Double_t xsection = 0;
@@ -126,7 +124,7 @@ void anaJete()
     }
 
     // MC handler
-    if(kMC || kInputData == "MC"){
+    if( (kMC && (kInputData == "ESD")) || kInputData == "MC"){
       AliMCEventHandler* mcHandler = new AliMCEventHandler();
       mcHandler->SetReadTR(kFALSE);//Do not search TrackRef file
       mgr->SetMCtruthEventHandler(mcHandler);
