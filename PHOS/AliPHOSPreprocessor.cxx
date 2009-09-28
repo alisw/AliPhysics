@@ -216,9 +216,9 @@ Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)
   
   if(!h1->GetEntries()) return 16.;
   
-  h1->Rebin(4);
+  if(h1->GetMaximum()<10.) h1->Rebin(4);
   if(h1->GetMaximum()<10.) return 16.;
-
+  
   Double_t max = h1->GetBinCenter(h1->GetMaximumBin()); // peak
   Double_t xmin = max - (h1->GetRMS()/3);
   Double_t xmax = max + (h1->GetRMS()/2);
@@ -236,14 +236,15 @@ Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)
   Double_t mean_max = h1->GetXaxis()->GetXmax();
   gaus1->SetParLimits(1,mean_min,mean_max);
   
-  h1->Fit(gaus1,"LERQ+");
-
+  h1->Fit(gaus1,"RQ+");
+  Double_t hg2lg = gaus1->GetParameter("Mean");
+  if( (hg2lg-mean_min<0.001) || (mean_max-hg2lg<0.001)) hg2lg=max;
+  
   AliInfo(Form("%s: %.1f entries, mean=%.3f, peak=%.3f, rms= %.3f. HG/LG = %.3f\n",
-	   h1->GetTitle(),h1->GetEntries(),h1->GetMean(),max,h1->GetRMS(),
-	   gaus1->GetParameter("Mean"))); 
+	  h1->GetTitle(),h1->GetEntries(),h1->GetMean(),max,h1->GetRMS(),hg2lg)); 
 
-  return gaus1->GetParameter("Mean");
-
+  return hg2lg;
+  
 }
 
 Bool_t AliPHOSPreprocessor::FindBadChannelsEmc()
