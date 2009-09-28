@@ -86,37 +86,42 @@ AliJetBkg& AliJetBkg::operator=(const AliJetBkg& source){
 //___________________________________________________________________
 Float_t AliJetBkg::BkgFastJet(){
   
-  cout<<"===============  AliJetBkg::BkgFastJet()  =========== "<<endl;
+  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+  Bool_t debug  = header->GetDebug();     // debug option
+
+  if(debug)cout<<"===============  AliJetBkg::BkgFastJet()  =========== "<<endl;
   vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
   
-  cout<<"printing inputParticles for BKG "<<inputParticles.size()<<endl;
+  if(debug)cout<<"printing inputParticles for BKG "<<inputParticles.size()<<endl;
   
   for(UInt_t i=0;i<inputParticles.size();i++){
     //  cout<<"                "<<inputParticles[i].px()<<" "<<inputParticles[i].py()<<" "<<inputParticles[i].pz()<<endl;
     
   }
    
-  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
   double rParamBkg = header->GetRparamBkg(); //Radius for background calculation
   Double_t rho=CalcRho(inputParticles,rParamBkg,"All");
-  cout<<"-------- rho (from all part)="<<rho<<endl; 
+  if(debug)cout<<"-------- rho (from all part)="<<rho<<endl; 
   return rho;
  
 }
 //___________________________________________________________________
 Float_t  AliJetBkg::BkgChargedFastJet(){
 
-  cout<<"===============  AliJetBkg::BkgChargedFastJet()  =========== "<<endl;
+  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+  Bool_t debug  = header->GetDebug();     // debug option
+
+  if(debug)cout<<"===============  AliJetBkg::BkgChargedFastJet()  =========== "<<endl;
 
   vector<fastjet::PseudoJet> inputParticlesCharged=fInputFJ->GetInputParticlesCh();
   
-  cout<<"printing CHARGED inputParticles for BKG "<<inputParticlesCharged.size()<<endl;
+  if(debug)cout<<"printing CHARGED inputParticles for BKG "<<inputParticlesCharged.size()<<endl;
 
   for(UInt_t i=0;i<inputParticlesCharged.size();i++){
     // cout<<"                "<<inputParticlesCharged[i].px()<<" "<<inputParticlesCharged[i].py()<<" "<<inputParticlesCharged[i].pz()<<endl;
 
   } 
-  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+
   double rParam = header->GetRparam();
 
   Double_t rho=CalcRho(inputParticlesCharged,rParam,"Charg");
@@ -131,7 +136,10 @@ Float_t AliJetBkg::BkgStat()
 {
   //background subtraction using statistical method
  
-  cout<<"==============AliJetBkg::BkgStat()============="<<endl;
+  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+  Bool_t debug  = header->GetDebug();     // debug option
+
+  if(debug)cout<<"==============AliJetBkg::BkgStat()============="<<endl;
   //TO BE IMPLEMENTED 
   // Int_t nTracks= fReader->GetESD()->GetNumberOfTracks();
   Int_t nTracks= 0;
@@ -147,7 +155,10 @@ Float_t AliJetBkg::BkgRemoveJetLeading(TClonesArray* fAODJets)
   // Remove the particles of the
   // two largest jets using the track references  stored in the AODJet from the estimation of new rho. 
 
-  cout<<"==============AliJetBkg::BkgRemoveJetLeading()============="<<endl;
+  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+  Bool_t debug  = header->GetDebug();     // debug option
+
+  if(debug)cout<<"==============AliJetBkg::BkgRemoveJetLeading()============="<<endl;
 
  
   // check if we are reading AOD jets
@@ -159,7 +170,7 @@ Float_t AliJetBkg::BkgRemoveJetLeading(TClonesArray* fAODJets)
   Double_t accEMCal=2*0.7*110./180*TMath::Pi();//2.68 area of EMCal
 
   Int_t nJ=fAODJets->GetEntries(); //this must be the # of jets... 
-  cout<<"nJets:  "<<nJ<<endl;
+  if(debug)cout<<"nJets:  "<<nJ<<endl;
   
 
   //begin unit array 
@@ -189,7 +200,7 @@ Float_t AliJetBkg::BkgRemoveJetLeading(TClonesArray* fAODJets)
     if(jetPhi>1.396 && jetPhi<3.316 && jetEta>-0.7 && jetEta<0.7)acc=1;
     refarray1=jet1->GetRefTracks();
     nJettracks1=refarray1->GetEntries();
-    cout<<"nJ = 1, acc="<<acc<<"  jetarea1="<<jetarea1<<endl;
+    if(debug)cout<<"nJ = 1, acc="<<acc<<"  jetarea1="<<jetarea1<<endl;
 
   }
 
@@ -201,7 +212,7 @@ Float_t AliJetBkg::BkgRemoveJetLeading(TClonesArray* fAODJets)
     if(jetPhi1>1.396 && jetPhi1<3.316 && jetEta1>-0.7 && jetEta1<0.7)acc=1;
     refarray1=jet1->GetRefTracks();
     nJettracks1=refarray1->GetEntries();
-    cout<<"npart = "<<nJettracks1<<endl;
+    if(debug)cout<<"npart = "<<nJettracks1<<endl;
    
     jet2 = dynamic_cast<AliAODJet*>(fAODJets->At(1));
     jetarea2=jet2->EffectiveAreaCharged();
@@ -210,7 +221,7 @@ Float_t AliJetBkg::BkgRemoveJetLeading(TClonesArray* fAODJets)
     if(jetPhi2>1.396 && jetPhi2<3.316 && jetEta2>-0.7 && jetEta2<0.7)acc1=1;
     refarray2=jet2->GetRefTracks();
     nJettracks2=refarray2->GetEntries();
-    cout<<"nJ = "<<nJ<<", acc="<<acc<<"  acc1="<<acc1<<"  jetarea1="<<jetarea1<<"  jetarea2="<<jetarea2<<endl;
+    if(debug)cout<<"nJ = "<<nJ<<", acc="<<acc<<"  acc1="<<acc1<<"  jetarea1="<<jetarea1<<"  jetarea2="<<jetarea2<<endl;
   }
 
 
@@ -280,11 +291,11 @@ Float_t AliJetBkg::BkgRemoveJetLeading(TClonesArray* fAODJets)
   
 
   Float_t areasum=areasum=accEMCal-acc*jetarea1-acc1*jetarea2;
-  cout<<"pt sum   "<<sumPt<<" area  "<<areasum<<endl;
+  if(debug)cout<<"pt sum   "<<sumPt<<" area  "<<areasum<<endl;
    
   if(nJ>0) rhoback=sumPt/areasum;
   else rhoback=0.;
-  cout<<" rho from leading jet paricle array removed   "<<rhoback<<endl;
+  if(debug)cout<<" rho from leading jet paricle array removed   "<<rhoback<<endl;
  
   return rhoback;
  
@@ -299,16 +310,19 @@ Float_t AliJetBkg::BkgFastJetCone(TClonesArray* fAODJets)
 
   // Cone background subtraction method applied on the fastjet: REmove the particles of the
   // two largest jets with the given R from the estimation of new rho. 
-  cout<<"==============AliJetBkg::SubtractFastJetBackgCone()============="<<endl;
 
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+  Bool_t debug  = header->GetDebug();     // debug option
+
+  if(debug)cout<<"==============AliJetBkg::SubtractFastJetBackgCone()============="<<endl;
+
   Float_t rc= header->GetRparam();
 
   //Hard wired Calorimeter area (get it later from the AliJetReaderHeader.h)
   Double_t accEMCal=2*0.7*110./180*TMath::Pi();//2.68 area of EMCal
 
   Int_t nJ=fAODJets->GetEntries(); //this must be the # of jets... 
-  cout<<"nJets:  "<<nJ<<endl;
+  if(debug)cout<<"nJets:  "<<nJ<<endl;
   
 
   //begin unit array 
@@ -336,7 +350,7 @@ Float_t AliJetBkg::BkgFastJetCone(TClonesArray* fAODJets)
     jetphi=jettmp->Phi();
     acc=EmcalAcceptance(jeteta,jetphi,rCone);
     if(acc==1)restarea= accEMCal-TMath::Pi()*rc*rc;
-    cout<<" acc  "<<acc<<endl;
+    if(debug)cout<<" acc  "<<acc<<endl;
   }
 
   
@@ -353,7 +367,7 @@ Float_t AliJetBkg::BkgFastJetCone(TClonesArray* fAODJets)
     if(acc1==1 && acc==0)restarea= accEMCal-TMath::Pi()*rc*rc;
     if(acc1==0 && acc==1)restarea= accEMCal-TMath::Pi()*rc*rc;
 
-    cout<<" acc1="<<acc<<"  acc2="<<acc1<<"  restarea="<<restarea<<endl;
+    if(debug)cout<<" acc1="<<acc<<"  acc2="<<acc1<<"  restarea="<<restarea<<endl;
 
   }
   
@@ -419,13 +433,13 @@ Float_t AliJetBkg::BkgFastJetCone(TClonesArray* fAODJets)
       }		
     } // End loop on UnitArray 
   
-  cout<<"total area left "<<restarea<<endl;
-  cout<<"sumpt="<<sumpt<<endl;
+  if(debug)cout<<"total area left "<<restarea<<endl;
+  if(debug)cout<<"sumpt="<<sumpt<<endl;
   // if(acc==1 || acc1==1) rhoback= ptallback/restarea;
   //else rhoback=ptallback;
 
   rhoback= ptallback/restarea;
-  cout<<"rhoback    "<<rhoback<<"     "<<nJ<<"   "<<endl;
+  if(debug)cout<<"rhoback    "<<rhoback<<"     "<<nJ<<"   "<<endl;
 
   return rhoback;
    
@@ -457,7 +471,7 @@ Double_t AliJetBkg::CalcRho(vector<fastjet::PseudoJet> inputParticles,Double_t r
   // and from that get an area definition
   fastjet::AreaType areaType = header->GetAreaType();
   areaDef = fastjet::AreaDefinition(areaType,ghost_spec);
-  cout<<"rParamBkg="<<rParamBkg<<"  ghostEtamax="<<ghostEtamax<<"  ghostArea="<<ghostArea<<" areadef="<<TString(areaDef.description())<<endl;
+  if(debug)cout<<"rParamBkg="<<rParamBkg<<"  ghostEtamax="<<ghostEtamax<<"  ghostArea="<<ghostArea<<" areadef="<<TString(areaDef.description())<<endl;
   //fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef);
   fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef,areaDef);
   TString comment = "Running FastJet algorithm for BKG calculation with the following setup. ";
@@ -510,7 +524,7 @@ Double_t AliJetBkg::CalcRho(vector<fastjet::PseudoJet> inputParticles,Double_t r
   // fastjet::ClusterSequenceActiveArea clust_seq_bkg(inputParticles, jetDef,area_spec);
 
 
-  cout<<"bkg in R="<<rParamBkg<<"  : "<<rho<<" range: Rap="<<rapMin<<","<<rapMax<<" --  phi="<<phiMin<<","<<phiMax<<endl;
+  if(debug)cout<<"bkg in R="<<rParamBkg<<"  : "<<rho<<" range: Rap="<<rapMin<<","<<rapMax<<" --  phi="<<phiMin<<","<<phiMax<<endl;
   return rho;
 }
 
