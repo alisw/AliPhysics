@@ -42,16 +42,20 @@ const Int_t kNumberOfEventsPerFile = 200;
 //---------------------------------------------------------------------------
 
 const Bool_t kMC = kTRUE; //With real data kMC = kFALSE
-const TString kInputData = "ESD";//ESD, AOD, MC
+TString kInputData = "ESD";//ESD, AOD, MC
 TString kTreeName = "esdTree";
 //const   Bool_t kMergeAODs = kTRUE; //uncomment for AOD merging
 const Bool_t kMergeAODs = kFALSE; //uncomment for no AOD merging
+const Bool_t kUsePAR = kTRUE; //set to kFALSE for libraries
+const Bool_t kDoJetTask = kTRUE; //set to kFALSE to skip JETAN task
 Int_t sevent = 0;
 	
+
 Int_t mode = mLocal;
 char sconfig1[1024] = "ConfigPWG4AODtoAOD";        //"ConfigAnalysis";
 char sconfig2[1024] = "ConfigJetAnalysisFastJet.C";//"ConfigAnalysis";
 char sconfig3[1024] = "ConfigAnalysisElectron";    //"ConfigAnalysis";
+
 
 //Initialize the cross section and ntrials values. Do not modify.
 Double_t xsection = 0;
@@ -63,7 +67,7 @@ void anaJete()
 
   //Process environmental variables from command line:
   ProcessEnvironment();	
-  printf("Final    Variables: mode %d, config1 %s, config2 %s, config3 %s, sevent %d\n", mode,sconfig1,sconfig2,sconfig3,sevent);
+  printf("Final    Variables: kInputData %s, mode %d, config2 %s, config3 %s, sevent %d\n",kInputData.Data(),mode,sconfig2,sconfig3,sevent);
 
   //--------------------------------------------------------------------
   // Load analysis libraries
@@ -208,12 +212,14 @@ void anaJete()
     //
     // Jet analysis
     //
-    AliAnalysisTaskJets *jetana = new AliAnalysisTaskJets("JetAnalysis",chain);
-    jetana->SetDebugLevel(2);
-    jetana->SetConfigFile(sconfig2);  //Default ConfigJetAnalysisFastJet
-    //Uncommenting the following line produces too many AddAtAndExpand warnings for now.
-    if(kMergeAODs)jetana->ReadAODFromOutput();  //Uncomment when AOD merging
-    mgr->AddTask(jetana);
+    if( kDoJetTask ){
+      AliAnalysisTaskJets *jetana = new AliAnalysisTaskJets("JetAnalysis",chain);
+      jetana->SetDebugLevel(2);
+      jetana->SetConfigFile(sconfig2);  //Default ConfigJetAnalysisFastJet
+      //Uncommenting the following line produces too many AddAtAndExpand warnings for now.
+      if(kMergeAODs)jetana->ReadAODFromOutput();  //Uncomment when AOD merging
+      mgr->AddTask(jetana);
+    }
 
     //
     // electron analysis
@@ -234,10 +240,12 @@ void anaJete()
       mgr->ConnectOutput (esdfilter,  0, coutput1 );
     }
 
-    mgr->ConnectInput  (jetana,    0, cinput1  );
-    mgr->ConnectOutput (jetana,    0, coutput1 );
-    mgr->ConnectOutput (jetana,    1, coutput2 );
-  
+    if( kDoJetTask ){
+      mgr->ConnectInput  (jetana,    0, cinput1  );
+      mgr->ConnectOutput (jetana,    0, coutput1 );
+      mgr->ConnectOutput (jetana,    1, coutput2 );
+    }
+
     mgr->ConnectInput  (taskpwg4, 0, cinput1  );
     mgr->ConnectOutput (taskpwg4, 0, coutput1 );
     mgr->ConnectOutput (taskpwg4, 1, coutput2 );
@@ -308,7 +316,6 @@ void  LoadLibraries(const anaModes mode) {
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
   //----------------------------------------------------------
   if (mode==mLocal || mode == mLocalCAF || mode == mGRID || mode == mPLUGIN) {
-    bool usepar = true;
 
     //--------------------------------------
     // Load the needed libraries most of them already loaded by aliroot
@@ -317,11 +324,13 @@ void  LoadLibraries(const anaModes mode) {
     gSystem->Load("libGeom.so");
     gSystem->Load("libVMC.so");
     gSystem->Load("libXMLIO.so");
-    gSystem->Load("libCGAL");
-    gSystem->Load("libfastjet");
-    gSystem->Load("libSISConePlugin");
+    if( kDoJetTask ){
+      gSystem->Load("libCGAL");
+      gSystem->Load("libfastjet");
+      gSystem->Load("libSISConePlugin");
+    }
 
-    if(usepar){
+    if(kUsePAR){
       //--------------------------------------------------------
       //If you want to use root and par files from aliroot
       //--------------------------------------------------------  
@@ -330,12 +339,14 @@ void  LoadLibraries(const anaModes mode) {
       SetupPar("AOD");
       SetupPar("ANALYSIS");
       SetupPar("ANALYSISalice");
-      cerr<<"Now Loading JETAN"<<endl;
-      SetupPar("JETAN");
-      cerr<<"Done Loading JETAN"<<endl;
-      cerr<<"Now Loading FASTJETAN"<<endl;
-      SetupPar("FASTJETAN");
-      cerr<<"Done Loading FASTJETAN"<<endl;
+      if( kDoJetTask ){
+        cerr<<"Now Loading JETAN"<<endl;
+        SetupPar("JETAN");
+        cerr<<"Done Loading JETAN"<<endl;
+        cerr<<"Now Loading FASTJETAN"<<endl;
+        SetupPar("FASTJETAN");
+        cerr<<"Done Loading FASTJETAN"<<endl;
+      }
       SetupPar("PWG4PartCorrBase");
       SetupPar("PWG4PartCorrDep");
     }
@@ -349,8 +360,10 @@ void  LoadLibraries(const anaModes mode) {
       gSystem->Load("libAOD");
       gSystem->Load("libANALYSIS");
       gSystem->Load("libANALYSISalice");
-      gSystem->Load("libJETAN");
-      gSystem->Load("libFASTJETAN");
+      if( kDoJetTask ){
+        gSystem->Load("libJETAN");
+        gSystem->Load("libFASTJETAN");
+      }
       gSystem->Load("libPWG4PartCorrBase");
       gSystem->Load("libPWG4PartCorrDep");
     }
@@ -383,8 +396,10 @@ void  LoadLibraries(const anaModes mode) {
     // gProof->ClearPackage("AOD");
     // gProof->ClearPackage("ANALYSIS");
     // gProof->ClearPackage("ANALYSISalice");
-    // gProof->ClearPackage("JETAN");
-    // gProof->ClearPackage("FASTJETAN");
+    // if( kDoJetTask ){
+    //   gProof->ClearPackage("JETAN");
+    //   gProof->ClearPackage("FASTJETAN");
+    // }
     // gProof->ShowEnabledPackages();
 
     // Enable the STEERBase Package
@@ -402,12 +417,14 @@ void  LoadLibraries(const anaModes mode) {
     // Enable the Analysis Package
     gProof->UploadPackage("ANALYSISalice.par");
     gProof->EnablePackage("ANALYSISalice");
-    // Enable JETAN analysis
-    gProof->UploadPackage("JETAN.par");
-    gProof->EnablePackage("JETAN");
-    // Enable FASTJETAN analysis
-    gProof->UploadPackage("FASTJETAN.par");
-    gProof->EnablePackage("FASTJETAN");
+    if( kDoJetTask ){
+      // Enable JETAN analysis
+      gProof->UploadPackage("JETAN.par");
+      gProof->EnablePackage("JETAN");
+      // Enable FASTJETAN analysis
+      gProof->UploadPackage("FASTJETAN.par");
+      gProof->EnablePackage("FASTJETAN");
+    }
 
     gProof->ShowEnabledPackages();
   }  
@@ -627,7 +644,7 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
 //________________________________________________
 void GetXsection(Int_t nEventsPerFile, TString filexs)
 {
-  // Get the cros section from the corresponding file in the directory
+  // Get the cross section from the corresponding file in the directory
   // where the data sits.
   // The xsection and ntrials global variables are updated per each file.
   // The average of these cuantities should be calculated after.
@@ -660,6 +677,9 @@ void GetXsection(Int_t nEventsPerFile, TString filexs)
 
 void ProcessEnvironment(){
 
+  if (gSystem->Getenv("anaInputData"))
+     kInputData = gSystem->Getenv("anaInputData");
+
   if (gSystem->Getenv("MODE"))
      mode = atoi(gSystem->Getenv("MODE"));
 
@@ -675,6 +695,6 @@ void ProcessEnvironment(){
   if (gSystem->Getenv("SEVENT"))
       sevent = atoi (gSystem->Getenv("SEVENT"));
 	
-      printf("PROCESS: Variables: mode %d, config1 %s, config2 %s, config3 %s, sevent %d\n", mode,sconfig1,sconfig2,sconfig3,sevent);
+      printf("Process: Variables: kInputData %s, mode %d, config2 %s, config3 %s, sevent %d\n",kInputData.Data(),mode,sconfig2,sconfig3,sevent);
 
 }

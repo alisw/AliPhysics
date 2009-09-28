@@ -1,5 +1,5 @@
 Executable="root";
-Jobtag ={"Analysis: Processing collection for anlysis "};
+Jobtag ={"Analysis: Processing collection for analysis "};
 Packages ={"VO_ALICE@ROOT::v5-24-00","VO_ALICE@APISCONFIG::V2.4","VO_ALICE@fastjet::v2.4.0"};
 
 TTL=30000;
@@ -30,7 +30,7 @@ InputDataList = "collection.xml";
 Split = "se";
 SplitMaxInputFileNumber = "15";
 
-splitarguments="run.C --mode 3 --config1 ConfigPWG4AODtoAOD --config2 ConfigJetAnalysisFastJet.C --config3 ConfigAnalysisElectron --sevent 0";
+splitarguments="run.C --anaInputData ESD --mode 3 --config2 ConfigJetAnalysisFastJet.C --config3 ConfigAnalysisElectron --sevent 0";
 
 
 # Validation script to be run for each subjob

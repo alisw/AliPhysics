@@ -21,6 +21,14 @@ AliJetFinder*  ConfigJetAnalysis()
     Bool_t kFollowsFilter = kTRUE;  //uncomment if follows ESD filter task
   //Bool_t kFollowsFilter = kFALSE; //uncomment if no ESD filter task
 
+    //Alternatively, select input via anaInputData environment variable.
+    if (gSystem->Getenv("anaInputData")){
+      TString kInputData = gSystem->Getenv("anaInputData");
+      if( kInputData == "AOD" ){
+        kInputIsESD = kFALSE;
+        kFollowsFilter = kFALSE;
+      }
+    }
 
     // Define the grids
     AliJetGrid *grid = new AliJetGrid(419,119,0.,2*TMath::Pi(),-0.9,0.9); 
