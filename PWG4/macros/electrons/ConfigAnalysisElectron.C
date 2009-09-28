@@ -20,6 +20,15 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   Bool_t kFollowsFilter = kTRUE;  //uncomment if follows ESD filter task
 //Bool_t kFollowsFilter = kFALSE; //uncomment if no ESD filter task
 
+  //Alternatively, select input via anaInputData environment variable.
+  if (gSystem->Getenv("anaInputData")){
+    TString kInputData = gSystem->Getenv("anaInputData");
+    if( kInputData == "AOD" ){
+      kInputIsESD = kFALSE;
+      kFollowsFilter = kFALSE;
+    }
+  }
+
   //Detector Fidutial Cuts
   AliFidutialCut * fidCut = new AliFidutialCut();
   fidCut->DoCTSFidutialCut(kFALSE) ;
