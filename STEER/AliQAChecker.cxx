@@ -362,11 +362,11 @@ Bool_t AliQAChecker::Run(const char * fileName, AliDetectorRecoParam * recoParam
   }
   TString detList ; 
   for ( Int_t det = 0; det < AliQAv1::kNDET; det++) {
-    if (fFoundDetectors.Contains(qa->GetDetName(det))) {
-      detList += qa->GetDetName(det) ; 
+    if (fFoundDetectors.Contains(AliQAv1::GetDetName(det))) {
+      detList += AliQAv1::GetDetName(det) ; 
       detList += " " ; 
-      fFoundDetectors.ReplaceAll(qa->GetDetName(det), "") ; 
-      qa->Show(qa->GetDetIndex(qa->GetDetName(det))) ; 
+      fFoundDetectors.ReplaceAll(AliQAv1::GetDetName(det), "") ; 
+      AliQAv1::Instance()->Show(AliQAv1::GetDetIndex(AliQAv1::GetDetName(det))) ; 
     }	
   }
   AliInfo(Form("QA performed for following detectors: %s", detList.Data())) ; 
