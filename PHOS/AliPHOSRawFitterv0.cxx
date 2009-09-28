@@ -241,6 +241,7 @@ Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
     if(idn<sigLength){
       if(signal[idn]<pedestal){
         idn=sigLength-1 ; //do not scan further
+	idn++ ;
         continue ;
       }
       x = sigLength-idn-1;
