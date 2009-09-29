@@ -75,7 +75,9 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSDigitContainerDataStruct.h \
 		  AliHLTPHOSDigitDataStruct.h \
 		  AliHLTPHOSChannelDataStruct.h \
-		  AliHLTPHOSChannelDataHeaderStruct.h
+		  AliHLTPHOSChannelDataHeaderStruct.h \
+		  AliHLTPHOSCoordinate.h \
+	          AliHLTPHOSChannelRawDataStruct.h
 
 MODULE_DHDR:=	  AliHLTPHOSLinkDef.h
 
