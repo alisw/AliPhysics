@@ -69,7 +69,10 @@ class AliHFMassFitter : public TNamed {
 
   void     Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const; 
   void     Background(Double_t nOfSigma,Double_t &background,Double_t &errbackground) const; 
+  void     Signal(Double_t min,Double_t max,Double_t &signal,Double_t &errsignal) const; 
+  void     Background(Double_t min,Double_t max,Double_t &background,Double_t &errbackground) const; 
   void     Significance(Double_t nOfSigma,Double_t &significance,Double_t &errsignificance) const;
+  void     Significance(Double_t min,Double_t max,Double_t &significance,Double_t &errsignificance) const;
 
   Double_t FitFunction4MassDistr (Double_t*, Double_t*);
   Double_t FitFunction4Sgn (Double_t*, Double_t*);
@@ -82,6 +85,7 @@ class AliHFMassFitter : public TNamed {
 
   void     ComputeParSize();
   Bool_t   SideBandsBounds();
+  void     AddFunctionsToHisto();
 
   TH1F    *fhistoInvMass;  // histogram to fit
   Double_t fminMass;       // lower mass limit
