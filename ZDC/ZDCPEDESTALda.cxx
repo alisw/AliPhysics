@@ -117,13 +117,13 @@ int main(int argc, char **argv) {
        sprintf(namhist3lg,"PedCorrZPClg_%d",j-5);       
      }
      else if(j==10 || j==11){ // ZEM
-       sprintf(namhist1hg,"PedZEMhg_%d",j-10);
-       sprintf(namhist2hg,"PedZEMhgOutOfTime_%d",j-10);
-       sprintf(namhist3hg,"PedCorrZEMhg_%d",j-10);
+       sprintf(namhist1hg,"PedZEMhg_%d",j-9);
+       sprintf(namhist2hg,"PedZEMhgOutOfTime_%d",j-9);
+       sprintf(namhist3hg,"PedCorrZEMhg_%d",j-9);
        //
-       sprintf(namhist1lg,"PedZEMlg_%d",j-10);
-       sprintf(namhist2lg,"PedZEMlgOutOfTime_%d",j-10);
-       sprintf(namhist3lg,"PedCorrZEMlg_%d",j-10);
+       sprintf(namhist1lg,"PedZEMlg_%d",j-9);
+       sprintf(namhist2lg,"PedZEMlgOutOfTime_%d",j-9);
+       sprintf(namhist3lg,"PedCorrZEMlg_%d",j-9);
      }
      else if(j>=12 && j<=16){ // ZNA
        sprintf(namhist1hg,"PedZNAhg_%d",j-12);
