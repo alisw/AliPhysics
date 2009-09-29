@@ -40,6 +40,7 @@
 #include "AliHLTFilePublisher.h"
 #include "AliHLTBlockFilterComponent.h"
 #include "AliHLTEsdCollectorComponent.h"
+#include "AliHLTReadoutListDumpComponent.h"
 #include "AliHLTOUTPublisherComponent.h"
 #include "AliHLTCompStatCollector.h"
 
@@ -120,6 +121,7 @@ int AliHLTAgentUtil::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTFilePublisher);
   pHandler->AddComponent(new AliHLTBlockFilterComponent);
   pHandler->AddComponent(new AliHLTEsdCollectorComponent);
+  pHandler->AddComponent(new AliHLTReadoutListDumpComponent);
   pHandler->AddComponent(new AliHLTOUTPublisherComponent);
   pHandler->AddComponent(new AliHLTCompStatCollector);
   return 0;
