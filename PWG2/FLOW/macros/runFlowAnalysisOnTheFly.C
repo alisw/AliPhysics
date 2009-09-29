@@ -108,7 +108,7 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR};
 // mLocalPAR: Analyze data on your computer using root + PAR files
 // mLocalSource: Analyze data on your computer using root + source files
                                           
-int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=4400)
+int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
 {
  TStopwatch timer;
  timer.Start();
@@ -220,6 +220,7 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=4400)
    if(usePhiWeights) qc->SetUsePhiWeights(usePhiWeights);
    if(usePtWeights) qc->SetUsePtWeights(usePtWeights);
    if(useEtaWeights) qc->SetUseEtaWeights(useEtaWeights);
+   qc->SetCalculate2DFlow(kTRUE);   
    qc->SetEvaluateNestedLoopsForIntFlow(kFALSE);
    qc->SetEvaluateNestedLoopsForDiffFlow(kFALSE);
    qc->Init();  

@@ -644,7 +644,7 @@ void compareFlowResults(TString type="",Int_t mode=mLocal)
       qcCommonHistRes8 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults8thOrderQC"));
       if(qcCommonHistRes8)  {
 	flowValue[binQC8-1] = (qcCommonHistRes8->GetHistIntFlow())->GetBinContent(1);
-	//flowError[binQC8-1] = (qcCommonHistRes8->GetHistIntFlow())->GetBinError(1);
+	flowError[binQC8-1] = (qcCommonHistRes8->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[binQC8RP-1] = (qcCommonHistRes8->GetHistIntFlowRP())->GetBinContent(1);
 	//flowErrorRP[binQC8RP-1] = (qcCommonHistRes8->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[binQC8POI-1] = (qcCommonHistRes8->GetHistIntFlowPOI())->GetBinContent(1);

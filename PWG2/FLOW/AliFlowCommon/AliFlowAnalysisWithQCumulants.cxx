@@ -114,6 +114,8 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fAvMultiplicity(NULL),
  // 4.) differential flow:
  fDiffFlowList(NULL),
+ fFlagsForDiffFlow(NULL),
+ fCalculate2DFlow(kFALSE),
  fDiffFlowProfiles(NULL),
  fDiffFlowResults(NULL),
  // 5.) distributions:
@@ -304,41 +306,114 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
       (*fSMpk)(p,k)+=pow(wPhi*wPt*wEta,k);
      }
     } 
-
+    
     // differential flow:
-    // (r_{m*m,k}(pt,eta)): 
+    // 1D (pt):
+    // (r_{m*m,k}(pt)): 
     for(Int_t m=0;m<4;m++)
     {
      for(Int_t k=0;k<9;k++)
      {
-      fReEBE[0][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
-      fImEBE[0][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);
+      fReEBE1D[0][0][m][k]->Fill(dPt,pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
+      fImEBE1D[0][0][m][k]->Fill(dPt,pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);
      }
-    } 
-    // s_{k}(pt,eta) for RPs // to be improved (clarified)
-    // Remark: final calculation of s_{p,k}(pt,eta) follows after the loop over data bellow:
+    }
+       
+    // s_{k}(pt) for RPs // to be improved (clarified)
+    // Remark: final calculation of s_{p,k}(pt) follows after the loop over data bellow:
     for(Int_t k=0;k<9;k++)
     {
-     fs[0][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k),1.);
-    } 
-     
-    if(aftsTrack->InPOISelection())
+     fs1D[0][0][k]->Fill(dPt,pow(wPhi*wPt*wEta,k),1.);
+    }
+    // 1D (eta):
+    // (r_{m*m,k}(eta)): 
+    for(Int_t m=0;m<4;m++)
     {
-     // (q_{m*m,k}(pt,eta)): 
+     for(Int_t k=0;k<9;k++)
+     {
+      fReEBE1D[1][0][m][k]->Fill(dEta,pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
+      fImEBE1D[1][0][m][k]->Fill(dEta,pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);
+     }
+    }   
+    // s_{k}(eta) for RPs // to be improved (clarified)
+    // Remark: final calculation of s_{p,k}(eta) follows after the loop over data bellow:
+    for(Int_t k=0;k<9;k++)
+    {
+     fs1D[1][0][k]->Fill(dEta,pow(wPhi*wPt*wEta,k),1.);
+    }
+    // 2D (pt,eta):
+    if(fCalculate2DFlow)
+    {
+     // (r_{m*m,k}(pt,eta)): 
      for(Int_t m=0;m<4;m++)
      {
       for(Int_t k=0;k<9;k++)
       {
-       fReEBE[2][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
-       fImEBE[2][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);
+       fReEBE2D[0][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
+       fImEBE2D[0][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);
       }
-     } 
-     // s_{k}(pt,eta) for RP&&POIs // to be improved (clarified)
+     }    
+     // s_{k}(pt,eta) for RPs // to be improved (clarified)
      // Remark: final calculation of s_{p,k}(pt,eta) follows after the loop over data bellow:
      for(Int_t k=0;k<9;k++)
      {
-      fs[2][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k),1.);
+      fs2D[0][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k),1.);
      }
+    } // end of if(fCalculate2DFlow)  
+     
+    if(aftsTrack->InPOISelection())
+    {
+     // 1D (pt): 
+     // (q_{m*m,k}(pt)): 
+     for(Int_t m=0;m<4;m++)
+     {
+      for(Int_t k=0;k<9;k++)
+      {
+       fReEBE1D[0][2][m][k]->Fill(dPt,pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
+       fImEBE1D[0][2][m][k]->Fill(dPt,pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);
+      }
+     } 
+     // s_{k}(pt) for RP&&POIs // to be improved (clarified)
+     // Remark: final calculation of s_{p,k}(pt,eta) follows after the loop over data bellow:
+     for(Int_t k=0;k<9;k++)
+     {
+      fs1D[0][2][k]->Fill(dPt,pow(wPhi*wPt*wEta,k),1.);
+     }
+     // 1D (eta): 
+     // (q_{m*m,k}(eta)): 
+     for(Int_t m=0;m<4;m++)
+     {
+      for(Int_t k=0;k<9;k++)
+      {
+       fReEBE1D[1][2][m][k]->Fill(dEta,pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
+       fImEBE1D[1][2][m][k]->Fill(dEta,pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);
+      }
+     } 
+     // s_{k}(eta) for RP&&POIs // to be improved (clarified)
+     // Remark: final calculation of s_{p,k}(pt,eta) follows after the loop over data bellow:
+     for(Int_t k=0;k<9;k++)
+     {
+      fs1D[1][2][k]->Fill(dEta,pow(wPhi*wPt*wEta,k),1.);
+     }
+     // 2D (pt,eta) 
+     if(fCalculate2DFlow)
+     {
+      // (q_{m*m,k}(pt,eta)): 
+      for(Int_t m=0;m<4;m++)
+      {
+       for(Int_t k=0;k<9;k++)
+       {
+        fReEBE2D[2][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
+        fImEBE2D[2][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);
+       }
+      } 
+      // s_{k}(pt,eta) for RP&&POIs // to be improved (clarified)
+      // Remark: final calculation of s_{p,k}(pt,eta) follows after the loop over data bellow:
+      for(Int_t k=0;k<9;k++)
+      {
+       fs2D[2][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k),1.);
+      }
+     } // end of if(fCalculate2DFlow) 
       
     } // end of if(aftsTrack->InPOISelection())
    } // end of if(pTrack->InRPSelection())
@@ -348,13 +423,31 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
     dPhi = aftsTrack->Phi();
     dPt  = aftsTrack->Pt();
     dEta = aftsTrack->Eta();
-       
+    
+    // 1D (pt)
     // p_n(m*n,0):   
     for(Int_t m=0;m<4;m++)
     {
-     fReEBE[1][m][0]->Fill(dPt,dEta,TMath::Cos((m+1.)*n*dPhi),1.);
-     fImEBE[1][m][0]->Fill(dPt,dEta,TMath::Sin((m+1.)*n*dPhi),1.);
-    } 
+     fReEBE1D[0][1][m][0]->Fill(dPt,TMath::Cos((m+1.)*n*dPhi),1.);
+     fImEBE1D[0][1][m][0]->Fill(dPt,TMath::Sin((m+1.)*n*dPhi),1.);
+    }
+    // 1D (eta)
+    // p_n(m*n,0):   
+    for(Int_t m=0;m<4;m++)
+    {
+     fReEBE1D[1][1][m][0]->Fill(dEta,TMath::Cos((m+1.)*n*dPhi),1.);
+     fImEBE1D[1][1][m][0]->Fill(dEta,TMath::Sin((m+1.)*n*dPhi),1.);
+    }
+    // 2D (pt,eta):
+    if(fCalculate2DFlow)
+    {      
+     // p_n(m*n,0):   
+     for(Int_t m=0;m<4;m++)
+     {
+      fReEBE2D[1][m][0]->Fill(dPt,dEta,TMath::Cos((m+1.)*n*dPhi),1.);
+      fImEBE2D[1][m][0]->Fill(dPt,dEta,TMath::Sin((m+1.)*n*dPhi),1.);
+     }
+    } // end of if(fCalculate2DFlow)  
     
    } // end of if(pTrack->InPOISelection() )   
  
@@ -378,7 +471,8 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  // *****************************
  // **** CALL THE METHODS *******
  // *****************************
-
+ 
+ // integrated flow:
  if(!fEvaluateNestedLoopsForIntFlow)
  {
   // without weights:
@@ -395,18 +489,34 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   } 
  }
 
+ // differential flow:
  if(!fEvaluateNestedLoopsForDiffFlow)
  {
+  // 1D differential flow (pt)
   // without weights:
-  if(nRP>1) this->CalculateCorrelationsForDifferentialFlow("RP");
-  if(nRP>1) this->CalculateCorrelationsForDifferentialFlow("POI");
-  
+  if(nRP>1) this->CalculateReducedCorrelations1D("RP","Pt");
+  if(nRP>1) this->CalculateReducedCorrelations1D("POI","Pt");
   // with weights:
-  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
+  // ... 
+  // 1D differential flow (eta)  
+  if(nRP>1) this->CalculateReducedCorrelations1D("RP","Eta");
+  if(nRP>1) this->CalculateReducedCorrelations1D("POI","Eta");
+  
+  // 2D differential flow
+  if(fCalculate2DFlow)
   {
-   if(nRP>1) this->CalculateWeightedCorrelationsForDifferentialFlow("RP");
-   if(nRP>1) this->CalculateWeightedCorrelationsForDifferentialFlow("POI");
-  } 
+   // without weights:
+   if(nRP>1) this->CalculateCorrelationsForDifferentialFlow2D("RP");
+   if(nRP>1) this->CalculateCorrelationsForDifferentialFlow2D("POI");
+  
+   // with weights:
+   if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
+   {
+    if(nRP>1) this->CalculateWeightedCorrelationsForDifferentialFlow2D("RP");
+    if(nRP>1) this->CalculateWeightedCorrelationsForDifferentialFlow2D("POI");
+   } 
+  } // end of if(fCalculate2DFlow)
+ 
  }
  
  // **************************************************************
@@ -441,14 +551,14 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
    // without weights:
    if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights))
    {
-    this->CalculateCorrelationsForDifferentialFlow("RP");
-    this->CalculateCorrelationsForDifferentialFlow("POI");
+    this->CalculateCorrelationsForDifferentialFlow2D("RP");
+    this->CalculateCorrelationsForDifferentialFlow2D("POI");
    }
    // with weights:
    if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
    {
-    this->CalculateWeightedCorrelationsForDifferentialFlow("RP");
-    this->CalculateWeightedCorrelationsForDifferentialFlow("POI");
+    this->CalculateWeightedCorrelationsForDifferentialFlow2D("RP");
+    this->CalculateWeightedCorrelationsForDifferentialFlow2D("POI");
    }
     
    this->EvaluateNestedLoopsForDifferentialFlow(anEvent);  
@@ -471,27 +581,58 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
     fQCorrectionsEBE[pW][sc]->Reset();
   } 
  }  
- 
+  
  // differential flow:
- for(Int_t t=0;t<3;t++) // type (RP, POI, POI&&RP)
+ // 1D:
+ for(Int_t pe=0;pe<2;pe++) // 1D in pt or eta
  {
-  for(Int_t m=0;m<4;m++) // multiple of harmonic
+  for(Int_t t=0;t<3;t++) // type (RP, POI, POI&&RP)
   {
-   for(Int_t k=0;k<9;k++) // power of weight
+   for(Int_t m=0;m<4;m++) // multiple of harmonic
    {
-    if(fReEBE[t][m][k]) fReEBE[t][m][k]->Reset();
-    if(fImEBE[t][m][k]) fImEBE[t][m][k]->Reset();
-   }   
+    for(Int_t k=0;k<9;k++) // power of weight
+    {
+     if(fReEBE1D[pe][t][m][k]) fReEBE1D[pe][t][m][k]->Reset();
+     if(fImEBE1D[pe][t][m][k]) fImEBE1D[pe][t][m][k]->Reset();
+    }   
+   }
+  }
+ }
+  
+ for(Int_t pe=0;pe<2;pe++) // 1D in pt or eta
+ {
+  for(Int_t t=0;t<3;t++) // type (0 = RP, 1 = POI, 2 = RP&&POI )
+  { 
+   for(Int_t k=0;k<9;k++)
+   {
+    if(fs1D[pe][t][k]) fs1D[pe][t][k]->Reset();
+   }
   }
  }
  
- for(Int_t t=0;t<3;t++) // type (0 = RP, 1 = POI, 2 = RP&&POI )
- { 
-  for(Int_t k=0;k<9;k++)
+ // 2D (pt,eta)
+ if(fCalculate2DFlow)
+ {
+  for(Int_t t=0;t<3;t++) // type (RP, POI, POI&&RP)
   {
-   if(fs[t][k]) fs[t][k]->Reset();
+   for(Int_t m=0;m<4;m++) // multiple of harmonic
+   {
+    for(Int_t k=0;k<9;k++) // power of weight
+    {
+     if(fReEBE2D[t][m][k]) fReEBE2D[t][m][k]->Reset();
+     if(fImEBE2D[t][m][k]) fImEBE2D[t][m][k]->Reset();
+    }   
+   }
   }
- }
+    
+  for(Int_t t=0;t<3;t++) // type (0 = RP, 1 = POI, 2 = RP&&POI )
+  { 
+   for(Int_t k=0;k<9;k++)
+   {
+    if(fs2D[t][k]) fs2D[t][k]->Reset();
+   }
+  }  
+ } // end of if(fCalculate2DFlow) 
  
 } // end of AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
@@ -574,8 +715,12 @@ void AliFlowAnalysisWithQCumulants::Finish()
  // ***********************************************************    
  
  // without weights:
- this->FinalizeCorrelationsForDiffFlow("RP",kFALSE,"exact");
- this->FinalizeCorrelationsForDiffFlow("POI",kFALSE,"exact");
+ this->FinalizeReducedCorrelations("RP","Pt"); 
+ this->FinalizeReducedCorrelations("RP","Eta"); 
+ this->FinalizeReducedCorrelations("POI","Pt"); 
+ this->FinalizeReducedCorrelations("POI","Eta"); 
+ //this->FinalizeCorrelationsForDiffFlow("RP",kFALSE,"exact");
+ //this->FinalizeCorrelationsForDiffFlow("POI",kFALSE,"exact");
  this->CalculateCumulantsForDiffFlow("RP",kFALSE,"exact");
  this->CalculateCumulantsForDiffFlow("POI",kFALSE,"exact");
  this->CalculateDiffFlow("RP",kFALSE,"exact");
@@ -586,8 +731,8 @@ void AliFlowAnalysisWithQCumulants::Finish()
  // with weights:
  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
  {
-  this->FinalizeCorrelationsForDiffFlow("RP",kTRUE,"exact");
-  this->FinalizeCorrelationsForDiffFlow("POI",kTRUE,"exact");
+  //this->FinalizeCorrelationsForDiffFlow("RP",kTRUE,"exact");
+  //this->FinalizeCorrelationsForDiffFlow("POI",kTRUE,"exact");
   this->CalculateCumulantsForDiffFlow("RP",kTRUE,"exact");
   this->CalculateCumulantsForDiffFlow("POI",kTRUE,"exact");
   this->CalculateDiffFlow("RP",kTRUE,"exact");
@@ -1719,12 +1864,14 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
     }
           
   // differential flow:
-  TString typeFlag[2] = {"RP","POI"}; 
+  TString typeFlag[2] = {"RP","POI"};
+  TString ptEtaFlag[2] = {"p_{T}","#eta"}; // to be improved (do I need this here?)
+  TString correlationIndex[4] = {"<2'>","<4'>","<6'>","<8'>"};
+ 
   TString pWeightsFlag[2] = {"not used","used"};
   TString eWeightsFlag[2] = {"exact","non-exact"}; 
   TString sinCosFlag[2] = {"sin","cos"};
   TString nuaFlag[2] = {"not corrected","corrected"}; // nua = non-uniform acceptance
-  TString ptEtaFlag[2] = {"p_{t}","#eta"};
   // base list fDiffFlowList "Differential Flow":
   TList *diffFlowList = NULL;
   diffFlowList = dynamic_cast<TList*>(outputListHistos->FindObject("Differential Flow"));  
@@ -1734,6 +1881,47 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   TList *diffFlowListResults = NULL;
   if(diffFlowList)
   {  
+   // flags for differetial flow:
+   TString flagsForDiffFlowName = "fFlagsForDiffFlowQC";
+   flagsForDiffFlowName += fAnalysisLabel->Data();
+   TProfile *flagsForDiffFlow = dynamic_cast<TProfile*>(diffFlowList->FindObject(flagsForDiffFlowName.Data()));
+   Bool_t bCalculate2DFlow = kFALSE;
+   if(flagsForDiffFlow)
+   {
+    this->SetFlagsForDiffFlow(flagsForDiffFlow);  
+    bCalculate2DFlow = (Int_t)flagsForDiffFlow->GetBinContent(1);
+   }
+         
+   // to be improved (moved into dedicated list to hold reduced correlations)
+    
+   // reduced correlations:
+   TString reducedCorrelationsName = "fReducedCorrelations";
+   reducedCorrelationsName += fAnalysisLabel->Data();
+   TProfile *reducedCorrelations[2][2][4] = {{{NULL}}};   
+   
+   for(Int_t t=0;t<2;t++) // type: RP or POI
+   { 
+    for(Int_t pe=0;pe<2;pe++) // pt or eta
+    {
+     for(Int_t ci=0;ci<4;ci++) // correlation index
+     {
+      reducedCorrelations[t][pe][ci] = dynamic_cast<TProfile*>(diffFlowList->FindObject(Form("%s, %s, %s, %s",reducedCorrelationsName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),correlationIndex[ci].Data())));
+      if(reducedCorrelations[t][pe][ci])
+      {
+       this->SetReducedCorrelations(reducedCorrelations[t][pe][ci],t,pe,ci);
+      } else
+        {
+         cout<<"WARNING: reducedCorrelations[t][pe][ci] is NULL in AFAWFQD::GOH() !!!!"<<endl;
+         cout<<"t  = "<<t<<endl;
+         cout<<"pe = "<<pe<<endl;   
+         cout<<"ci = "<<ci<<endl;
+        }     
+     
+     } // end of for(Int_t ci=0;ci<4;ci++) // correlation index
+    } // end of for(Int_t pe=0;pe<2;pe++) // pt or eta 
+   } // end of for(Int_t t=0;t<2;t++) // type: RP or POI
+  
+   // profiles and results: 
    diffFlowListProfiles = dynamic_cast<TList*>(diffFlowList->FindObject("Profiles"));
    diffFlowListResults = dynamic_cast<TList*>(diffFlowList->FindObject("Results"));
   } else
@@ -1824,19 +2012,19 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
      // correlations:
      if(diffFlowCorrelations[t][pW][eW])
      {
-      for(Int_t correlationIndex=0;correlationIndex<4;correlationIndex++)
+      for(Int_t correlIndex=0;correlIndex<4;correlIndex++)
       {
-       correlationsPro[t][pW][eW][correlationIndex] = dynamic_cast<TProfile2D*>(diffFlowCorrelations[t][pW][eW]->FindObject(correlationName[correlationIndex].Data()));
-       if(correlationsPro[t][pW][eW][correlationIndex])
+       correlationsPro[t][pW][eW][correlIndex] = dynamic_cast<TProfile2D*>(diffFlowCorrelations[t][pW][eW]->FindObject(correlationName[correlIndex].Data()));
+       if(correlationsPro[t][pW][eW][correlIndex])
        {
-        this->SetCorrelationsPro(correlationsPro[t][pW][eW][correlationIndex],t,pW,eW,correlationIndex);
-       } else // to if(correlationsPro[t][pW][ew][correlationIndex])
+        this->SetCorrelationsPro(correlationsPro[t][pW][eW][correlIndex],t,pW,eW,correlIndex);
+       } else // to if(correlationsPro[t][pW][ew][correlIndex])
          {
-          cout<<"WARNING: correlationsPro[t][pW][eW][correlationIndex] is NULL in AFAWQC::GOH() !!!!"<<endl;
+          cout<<"WARNING: correlationsPro[t][pW][eW][correlIndex] is NULL in AFAWQC::GOH() !!!!"<<endl;
           cout<<"t = "<<t<<endl;
           cout<<"pW = "<<pW<<endl;
           cout<<"eW = "<<eW<<endl;
-          cout<<"ci = "<<correlationIndex<<endl;
+          cout<<"ci = "<<correlIndex<<endl;
          } 
       }
      } else // to if(diffFlowCorrelations[t][pW][eW])
@@ -2010,7 +2198,7 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
  TH1D *finalFlowPt[2][2][2][2][4] = {{{{{NULL}}}}}; 
  TH1D *finalFlowEta[2][2][2][2][4] = {{{{{NULL}}}}}; 
  TH2D *nonEmptyBins2D[2] = {NULL};
- TH1D *nonEmptyBins1D[2][2] = {{NULL}};
+ //TH1D *nonEmptyBins1D[2][2] = {{NULL}};
  
  for(Int_t t=0;t<2;t++)
  {
@@ -2025,6 +2213,8 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
      cout<<"t = "<<t<<endl;
     }
   // 1D:
+  
+  /*
   for(Int_t pe=0;pe<2;pe++)
   {
    nonEmptyBins1D[t][pe] = dynamic_cast<TH1D*>(dfrType[t]->FindObject(Form("%s, %s",typeFlag[t].Data(),ptEtaFlag[pe].Data())));
@@ -2037,7 +2227,8 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
       cout<<"t = "<<t<<endl;
       cout<<"pe = "<<pe<<endl;
      }
-  }  
+  } 
+  */ 
   
   for(Int_t pW=0;pW<(1+(Int_t)(bUsePhiWeights||bUsePtWeights||bUseEtaWeights));pW++)
   {
@@ -2046,46 +2237,46 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
     // correlations:
     if(diffFlowFinalCorrelations[t][pW][eW])
     {
-     for(Int_t correlationIndex=0;correlationIndex<4;correlationIndex++)
+     for(Int_t correlIndex=0;correlIndex<4;correlIndex++)
      {
       // 2D:
-      finalCorrelations2D[t][pW][eW][correlationIndex] = dynamic_cast<TH2D*>(diffFlowFinalCorrelations[t][pW][eW]->FindObject(Form("%s, (p_{t},#eta)",correlationName[correlationIndex].Data())));
-      if(finalCorrelations2D[t][pW][eW][correlationIndex])
+      finalCorrelations2D[t][pW][eW][correlIndex] = dynamic_cast<TH2D*>(diffFlowFinalCorrelations[t][pW][eW]->FindObject(Form("%s, (p_{t},#eta)",correlationName[correlIndex].Data())));
+      if(finalCorrelations2D[t][pW][eW][correlIndex])
       {
-       this->SetFinalCorrelations2D(finalCorrelations2D[t][pW][eW][correlationIndex],t,pW,eW,correlationIndex);
+       this->SetFinalCorrelations2D(finalCorrelations2D[t][pW][eW][correlIndex],t,pW,eW,correlIndex);
       } else
         {
-         cout<<"WARNING: finalCorrelations2D[t][pW][eW][correlationIndex] is NULL in AFAWQC::GOH() !!!!"<<endl;
+         cout<<"WARNING: finalCorrelations2D[t][pW][eW][correlIndex] is NULL in AFAWQC::GOH() !!!!"<<endl;
          cout<<"t = "<<t<<endl;
          cout<<"pW = "<<pW<<endl;
          cout<<"eW = "<<eW<<endl;
-         cout<<"ci = "<<correlationIndex<<endl;
+         cout<<"ci = "<<correlIndex<<endl;
         }
        // 1D
        for(Int_t pe=0;pe<2;pe++)
        {
         if(pe==0)
         {
-         finalCorrelations1D[t][pW][eW][pe][correlationIndex] = dynamic_cast<TH1D*>(diffFlowFinalCorrelations[t][pW][eW]->FindObject(Form("%s, (p_{t})",correlationName[correlationIndex].Data())));
+         finalCorrelations1D[t][pW][eW][pe][correlIndex] = dynamic_cast<TH1D*>(diffFlowFinalCorrelations[t][pW][eW]->FindObject(Form("%s, (p_{t})",correlationName[correlIndex].Data())));
         }
         if(pe==1)
         {
-         finalCorrelations1D[t][pW][eW][pe][correlationIndex] = dynamic_cast<TH1D*>(diffFlowFinalCorrelations[t][pW][eW]->FindObject(Form("%s, (#eta)",correlationName[correlationIndex].Data())));
+         finalCorrelations1D[t][pW][eW][pe][correlIndex] = dynamic_cast<TH1D*>(diffFlowFinalCorrelations[t][pW][eW]->FindObject(Form("%s, (#eta)",correlationName[correlIndex].Data())));
         }          
-        if(finalCorrelations1D[t][pW][eW][pe][correlationIndex])
+        if(finalCorrelations1D[t][pW][eW][pe][correlIndex])
         {
-         this->SetFinalCorrelations1D(finalCorrelations1D[t][pW][eW][pe][correlationIndex],t,pW,eW,pe,correlationIndex);
+         this->SetFinalCorrelations1D(finalCorrelations1D[t][pW][eW][pe][correlIndex],t,pW,eW,pe,correlIndex);
         } else
           {
-           cout<<"WARNING: finalCorrelations1D[t][pW][eW][pe][correlationIndex] is NULL in AFAWQC::GOH() !!!!"<<endl;
+           cout<<"WARNING: finalCorrelations1D[t][pW][eW][pe][correlIndex] is NULL in AFAWQC::GOH() !!!!"<<endl;
            cout<<"t = "<<t<<endl;
            cout<<"pW = "<<pW<<endl;
            cout<<"eW = "<<eW<<endl;
            cout<<"pe = "<<pe<<endl;
-           cout<<"ci = "<<correlationIndex<<endl;
+           cout<<"ci = "<<correlIndex<<endl;
           }   
        } // end of for(Int_t pe=0;pe<2;pe++)  
-     } // end of for(Int_t correlationIndex=0;correlationIndex<4;correlationIndex++)
+     } // end of for(Int_t correlIndex=0;correlIndex<4;correlIndex++)
     } else // to if(diffFlowFinalCorrelations[t][pW][eW])
       { 
        cout<<"WARNING: diffFlowFinalCorrelations[t][pW] is NULL in AFAWQC::GOH() !!!!"<<endl;
@@ -5202,7 +5393,7 @@ void AliFlowAnalysisWithQCumulants::FinalizeCorrelationsForIntFlow(Bool_t usePar
  
  // <<2>>:
  Double_t correlation2p = fQCorrelations[pW][eW]->GetBinContent(1);  
- Double_t spread2p = fQCorrelations[pW][eW]->GetBinError(1); 
+ Double_t spread2p = fQCorrelations[pW][eW]->GetBinError(1);
  Double_t sumOfEventWeightsLinear2p = fSumOfEventWeights[pW][eW][0]->GetBinContent(1);
  Double_t sumOfEventWeightsQuadratic2p = fSumOfEventWeights[pW][eW][1]->GetBinContent(1);
  // stat.error = termA * spread * termB:
@@ -5259,7 +5450,7 @@ void AliFlowAnalysisWithQCumulants::FinalizeCorrelationsForIntFlow(Bool_t usePar
 
  // <<6>>:
  Double_t correlation6p = fQCorrelations[pW][eW]->GetBinContent(24);  
- Double_t spread6p = fQCorrelations[pW][eW]->GetBinError(24); 
+ Double_t spread6p = fQCorrelations[pW][eW]->GetBinError(24);
  Double_t sumOfEventWeightsLinear6p = fSumOfEventWeights[pW][eW][0]->GetBinContent(3);
  Double_t sumOfEventWeightsQuadratic6p = fSumOfEventWeights[pW][eW][1]->GetBinContent(3);
  Double_t termA6p = 0.;  
@@ -5286,9 +5477,30 @@ void AliFlowAnalysisWithQCumulants::FinalizeCorrelationsForIntFlow(Bool_t usePar
               
  // <<8>>             
  Double_t correlation8p = fQCorrelations[pW][eW]->GetBinContent(31);  
- // ...
+ Double_t spread8p = fQCorrelations[pW][eW]->GetBinError(31);
+ Double_t sumOfEventWeightsLinear8p = fSumOfEventWeights[pW][eW][0]->GetBinContent(4);
+ Double_t sumOfEventWeightsQuadratic8p = fSumOfEventWeights[pW][eW][1]->GetBinContent(4);
+ Double_t termA8p = 0.;  
+ Double_t termB8p = 0.;
+ Double_t statError8p = 0.;
+ if(sumOfEventWeightsLinear8p)
+ {
+  termA8p = pow(sumOfEventWeightsQuadratic8p,0.5)/sumOfEventWeightsLinear8p;
+ } else
+   {
+    cout<<"WARNING: sumOfEventWeightsLinear8p == 0 in in AFAWQC::FCFIF() !!!!"<<endl;
+   }
+ if(1-pow(termA8p,2.) > 0)
+ {
+  termB8p = 1./pow(1-pow(termA8p,2.),0.5);
+ } else
+   {
+    cout<<"WARNING: 1-pow(termA8p,2.) <= 0 in in AFAWQC::FCFIF() !!!!"<<endl;   
+   }  
+
+ statError8p = termA8p*spread8p*termB8p;
  fCorrelations[pW][eW]->SetBinContent(31,correlation8p);
- // ... 
+ fCorrelations[pW][eW]->SetBinError(31,statError8p);
                           
 } // end of AliFlowAnalysisWithQCumulants::FinalizeCorrelationsForIntFlow(Bool_t useParticleWeights, TString eventWeights)
 
@@ -5372,13 +5584,13 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForIntFlow(Bool_t useParti
  Double_t twoError = fCorrelations[pW][eW]->GetBinError(1); // stat. error of <<2>>   
  Double_t fourError = fCorrelations[pW][eW]->GetBinError(11); // stat. error of <<4>>  
  Double_t sixError = fCorrelations[pW][eW]->GetBinError(24); // stat. error of <<6>>  
- //Double_t eightError = fQCorrelations[pW]->GetBinError(31); // stat. error of <<8>>
+ Double_t eightError = fCorrelations[pW][eW]->GetBinError(31); // stat. error of <<8>>
  // spread of correlations:
  Double_t twoSpread = 0.; // spread of <<2>>
- Double_t fourSpread = 0.; // spread of <<6>>
- Double_t sixSpread = 0.; // spread of <<8>>
- //Double_t eightSpread = 0.;
- // stat. error = prefactor * spread:
+ Double_t fourSpread = 0.; // spread of <<4>>
+ Double_t sixSpread = 0.; // spread of <<6>>
+ Double_t eightSpread = 0.; // spread of <<8>>
+ // stat. error = prefactor * spread: // prefector is defined as sqrt(sumOfSqaredWeights)/sumOfWeights
  Double_t twoPrefactor = 0; 
  if(fSumOfEventWeights[pW][eW][0]->GetBinContent(1))
  {
@@ -5397,20 +5609,26 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForIntFlow(Bool_t useParti
   sixPrefactor = pow(fSumOfEventWeights[pW][eW][1]->GetBinContent(3),0.5)/fSumOfEventWeights[pW][eW][0]->GetBinContent(3);
   if(sixPrefactor) sixSpread = sixError/sixPrefactor;
  }
- // ... 8th
+ Double_t eightPrefactor = 0; 
+ if(fSumOfEventWeights[pW][eW][0]->GetBinContent(4))
+ {
+  eightPrefactor = pow(fSumOfEventWeights[pW][eW][1]->GetBinContent(4),0.5)/fSumOfEventWeights[pW][eW][0]->GetBinContent(4);
+  if(eightPrefactor) eightSpread = eightError/eightPrefactor;
+ }
+ 
  // covariances:
  Double_t cov24 = fCovariances[pW][eW]->GetBinContent(1); // Cov(<2>,<4>)
  Double_t cov26 = fCovariances[pW][eW]->GetBinContent(2); // Cov(<2>,<6>) 
- //Double_t cov28 = fCovariances[pW]->GetBinContent(3); // Cov(<2>,<8>)
+ Double_t cov28 = fCovariances[pW][eW]->GetBinContent(3); // Cov(<2>,<8>)
  Double_t cov46 = fCovariances[pW][eW]->GetBinContent(4); // Cov(<4>,<6>)
- //Double_t cov48 = fCovariances[pW]->GetBinContent(5); // Cov(<4>,<8>) 
- //Double_t cov68 = fCovariances[pW]->GetBinContent(6); // Cov(<6>,<8>)  
+ Double_t cov48 = fCovariances[pW][eW]->GetBinContent(5); // Cov(<4>,<8>) 
+ Double_t cov68 = fCovariances[pW][eW]->GetBinContent(6); // Cov(<6>,<8>)  
+ 
  // cumulants: 
  Double_t qc2 = 0.; // QC{2}
  Double_t qc4 = 0.; // QC{4}
  Double_t qc6 = 0.; // QC{6}
  Double_t qc8 = 0.; // QC{8}
- 
  if(two) qc2 = two; 
  if(four) qc4 = four-2.*pow(two,2.); 
  if(six) qc6 = six-9.*two*four+12.*pow(two,3.); 
@@ -5420,15 +5638,17 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForIntFlow(Bool_t useParti
  Double_t qc2Error = 0; // stat. error of QC{2}
  Double_t qc4Error = 0; // stat. error of QC{4}
  Double_t qc6Error = 0; // stat. error of QC{6}
- // Double_t qc8Error = 0; // stat. error of QC{8} // to be improved (calculated)
+ Double_t qc8Error = 0; // stat. error of QC{8} 
  // spread of cumulants:
- //Double_t qc2Spread = 0; // spread of QC{2}
+ //Double_t qc2Spread = 0; // spread of QC{2} (not needed bellow)
  Double_t qc4Spread = 0; // spread of QC{4}
  Double_t qc6Spread = 0; // spread of QC{6}
- // Double_t qc8Spread = 0; // spread of QC{8} // to be improved (calculated)
+ Double_t qc8Spread = 0; // spread of QC{8} 
  
+ // QC{2}:
  qc2Error = twoError; // final stat. error of QC{2}
  
+ // QC{4}:
  if(16.*pow(two,2.)*pow(twoSpread,2.)+pow(fourSpread,2.)-8.*two*cov24 >= 0.)
  {
   qc4Spread = pow(16.*pow(two,2.)*pow(twoSpread,2.)+pow(fourSpread,2.)-8.*two*cov24,0.5); 
@@ -5438,7 +5658,8 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForIntFlow(Bool_t useParti
    }
   
  qc4Error = fourPrefactor*qc4Spread; // final stat. error of QC{4}  
-     
+ 
+ // QC{6}:       
  if(81.*pow(4.*pow(two,2.)-four,2.)*pow(twoSpread,2.)   
     + 81.*pow(two,2.)*pow(fourSpread,2.)+pow(sixSpread,2.) 
     - 162.*(4.*pow(two,2.)-four)*two*cov24
@@ -5456,7 +5677,36 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForIntFlow(Bool_t useParti
    }          
    
  qc6Error = sixPrefactor*qc6Spread; // final stat. error of QC{6} 
-   
+ 
+ // QC{8}:     
+ if(256.*pow(36.*pow(two,3.)-18.*two*four+six,2.)*pow(twoSpread,2.)
+    + 1296.*pow(4.*pow(two,2)-four,2.)*pow(fourSpread,2.)
+    + 256.*pow(two,2.)*pow(sixSpread,2.)
+    + pow(eightSpread,2.)     
+    - 1152.*(4.*pow(two,2.)-four)*(36.*pow(two,3.)-18.*two*four+six)*cov24
+    + 512.*two*(36.*pow(two,3.)-18.*two*four+six)*cov26
+    - 32.*(36.*pow(two,3.)-18.*two*four+six)*cov28
+    + 1152.*two*(-4.*pow(two,2.)+four)*cov46
+    + 72.*(4.*pow(two,2.)-four)*cov48
+    - 32.*two*cov68 >= 0.)
+ {
+  qc8Spread = pow(256.*pow(36.*pow(two,3.)-18.*two*four+six,2.)*pow(twoSpread,2.)
+                  + 1296.*pow(4.*pow(two,2)-four,2.)*pow(fourSpread,2.)
+                  + 256.*pow(two,2.)*pow(sixSpread,2.)
+                  + pow(eightSpread,2.)     
+                  - 1152.*(4.*pow(two,2.)-four)*(36.*pow(two,3.)-18.*two*four+six)*cov24
+                  + 512.*two*(36.*pow(two,3.)-18.*two*four+six)*cov26
+                  - 32.*(36.*pow(two,3.)-18.*two*four+six)*cov28
+                  + 1152.*two*(-4.*pow(two,2.)+four)*cov46
+                  + 72.*(4.*pow(two,2.)-four)*cov48
+                  - 32.*two*cov68,0.5);                  
+ } else 
+   {
+    cout<<"WARNING: stat. error of QC{8} is imaginary !!!!"<<endl;
+   } 
+                 
+ qc8Error = eightPrefactor*qc8Spread; // final stat. error of QC{8} 
+        
  // store the results and statistical errors for cumulants:
  fCumulants[pW][eW][0]->SetBinContent(1,qc2);
  fCumulants[pW][eW][0]->SetBinError(1,qc2Error);
@@ -5465,7 +5715,7 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForIntFlow(Bool_t useParti
  fCumulants[pW][eW][0]->SetBinContent(3,qc6);
  fCumulants[pW][eW][0]->SetBinError(3,qc6Error);
  fCumulants[pW][eW][0]->SetBinContent(4,qc8); 
- // fCumulants[pW]->SetBinError(4,qc8Error); // to be improved (calculated)
+ fCumulants[pW][eW][0]->SetBinError(4,qc8Error); 
    
 } // end of AliFlowAnalysisWithQCumulants::CalculateCumulantsForIntFlow(Bool_t useParticleWeights, TString eventWeights)
 
@@ -5512,7 +5762,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlow(Bool_t useParticleWeights, 
  Double_t qc2Error = fCumulants[pW][eW][nua]->GetBinError(1); // error of QC{2}  
  Double_t qc4Error = fCumulants[pW][eW][nua]->GetBinError(2); // error of QC{4}  
  Double_t qc6Error = fCumulants[pW][eW][nua]->GetBinError(3); // error of QC{6}  
- //Double_t qc8Error = fCumulants[pW][nua]->GetBinError(4); // error of QC{8}
+ Double_t qc8Error = fCumulants[pW][eW][nua]->GetBinError(4); // error of QC{8}
    
  // integrated flow estimates:
  Double_t v2 = 0.; // v{2}  
@@ -5536,7 +5786,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlow(Bool_t useParticleWeights, 
  if(qc2>0.) v2Error = (1./(2.*pow(qc2,0.5)))*qc2Error; 
  if(qc4<0.) v4Error = (1./(4.*pow(-1.*qc4,3./4.)))*qc4Error; 
  if(qc6>0.) v6Error = (1./(6.*pow(2.,1./3.)*pow(qc6,5./6.)))*qc6Error;
- if(qc8<0.) v8Error = 0.; // to be improved (calculated)
+ if(qc8<0.) v8Error = (1./(8.*pow(33,1./8.)*pow(-1.*qc8,7./8.)))*qc8Error; 
   
  // store final results and statistical errors for integrated flow:
  fIntFlow[pW][eW][nua]->SetBinContent(1,v2);
@@ -5988,6 +6238,14 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDiffFlow()
  // profiles in nested lists in fDiffFlowProfiles:
  for(Int_t t=0;t<2;t++) // type: RP or POI
  { 
+  for(Int_t pe=0;pe<2;pe++) // pt or eta
+  {
+   for(Int_t ci=0;ci<4;ci++) // correlation index
+   {
+    fReducedCorrelations[t][pe][ci] = NULL;
+   }   
+  } // end of for(Int_t pe=0;pe<2;pe++) // pt or eta
+  
   for(Int_t pW=0;pW<2;pW++) // particle weights not used (0) or used (1)
   {
    for(Int_t eW=0;eW<2;eW++)
@@ -6097,15 +6355,33 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDiffFlow()
   }
  }
  
+ // 1D:
+ for(Int_t pe=0;pe<2;pe++) // pr or eta
+ { 
+  for(Int_t t=0;t<3;t++) // type (RP, POI, POI&&RP)
+  {
+   for(Int_t m=0;m<4;m++) // multiple of harmonic
+   {
+    for(Int_t k=0;k<9;k++) // power of weight
+    {
+     fReEBE1D[pe][t][m][k] = NULL;
+     fImEBE1D[pe][t][m][k] = NULL;
+     fs1D[pe][t][k] = NULL; // to be improved (this doesn't need to be within loop over m)
+    }   
+   }
+  }
+ }
+ 
+ // 2D:  
  for(Int_t t=0;t<3;t++) // type (RP, POI, POI&&RP)
  {
   for(Int_t m=0;m<4;m++) // multiple of harmonic
   {
    for(Int_t k=0;k<9;k++) // power of weight
    {
-    fReEBE[t][m][k] = NULL;
-    fImEBE[t][m][k] = NULL;
-    fs[t][k] = NULL; // to be improved (this doesn't need to be within loop over m)
+    fReEBE2D[t][m][k] = NULL;
+    fImEBE2D[t][m][k] = NULL;
+    fs2D[t][k] = NULL; // to be improved (this doesn't need to be within loop over m)
    }   
   }
  }
@@ -6124,10 +6400,49 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
  TList list; // to be improved (do I need this here?)
  list.SetOwner(kTRUE); // to be improved (do I need this here?)
  TString typeFlag[2] = {"RP","POI"}; // to be improved (do I need this here?)
+ TString ptEtaFlag[2] = {"p_{T}","#eta"}; // to be improved (do I need this here?)
+ TString correlationIndex[4] = {"<2'>","<4'>","<6'>","<8'>"};
+ Int_t nBinsPtEta[2] = {fnBinsPt,fnBinsEta};
+ Double_t minPtEta[2] = {fPtMin,fEtaMin};
+ Double_t maxPtEta[2] = {fPtMax,fEtaMax};
+ 
+ // reduced correlations:
+ TString reducedCorrelationsName = "fReducedCorrelations";
+ reducedCorrelationsName += fAnalysisLabel->Data();
+ // ...
+
+ for(Int_t t=0;t<2;t++) // type: RP or POI
+ { 
+  for(Int_t pe=0;pe<2;pe++) // pt or eta
+  {
+   for(Int_t ci=0;ci<4;ci++) // correlation index
+   {
+    // reduced correlations:
+    fReducedCorrelations[t][pe][ci] = new TProfile(Form("%s, %s, %s, %s",reducedCorrelationsName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),correlationIndex[ci].Data()),Form("%s, %s, %s, %s",reducedCorrelationsName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),correlationIndex[ci].Data()),nBinsPtEta[pe],minPtEta[pe],maxPtEta[pe]);
+    fReducedCorrelations[t][pe][ci]->SetXTitle(ptEtaFlag[pe].Data());
+    fDiffFlowList->Add(fReducedCorrelations[t][pe][ci]); // to be improved (add dedicated list to hold reduced correlations)
+   } // end of for(Int_t ci=0;ci<4;ci++) // correlation index
+  } // end of for(Int_t pe=0;pe<2;pe++) // pt or eta 
+ } // end of for(Int_t t=0;t<2;t++) // type: RP or POI
+ 
+
+
+ 
+  
  TString pWeightsFlag[2] = {"not used","used"};  // to be improved (do I need this here?)
  TString eWeightsFlag[2] = {"exact","non-exact"};  // to be improved (do I need this here?)
  //TString sinCosFlag[2] = {"sin","cos"}; // to be improved (do I need this here?)
  TString nuaFlag[2] = {"not corrected","corrected"}; // nua = non-uniform acceptance // to be improved (do I need this here?)
+ 
+ // book all 1D profiles:
+ // pt:
+ TProfile styleProfilePt("","",fnBinsPt,fPtMin,fPtMax);
+ styleProfilePt.SetXTitle("p_{t}");
+ // eta:
+ TProfile styleProfileEta("","",fnBinsEta,fEtaMin,fEtaMax);
+ styleProfileEta.SetXTitle("#eta");
+
+
  
  // book all 2D profiles and add to appropriate lists:
  TProfile2D styleProfile("","",fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
@@ -6142,6 +6457,15 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
  TString covarianceName[4] = {"Cov(2,2')","Cov(2,4')","Cov(2',4')","Cov(4,2')"}; // to be improved (reorganized)
  TString flowName[4] = {"v'{2}","v'{4}","v'{6}","v'{8}"}; 
  
+ // profile to hold flags for diffrential flow:
+ TString fFlagsForDiffFlowName = "fFlagsForDiffFlowQC";
+ fFlagsForDiffFlowName += fAnalysisLabel->Data();
+ fFlagsForDiffFlow = new TProfile(fFlagsForDiffFlowName.Data(),"Flags for differential flow",10,0,10);
+ fFlagsForDiffFlow->SetLabelSize(0.06);
+ (fFlagsForDiffFlow->GetXaxis())->SetBinLabel(1,"2D Flow");
+ fFlagsForDiffFlow->Fill(0.5,(Int_t)fCalculate2DFlow);
+ fDiffFlowList->Add(fFlagsForDiffFlow); 
+
  for(Int_t t=0;t<2;t++) // type: RP or POI
  { 
   for(Int_t pW=0;pW<1+(Int_t)(fUsePhiWeights||fUsePtWeights||fUseEtaWeights);pW++) // weights: not used or used 
@@ -6149,11 +6473,11 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
    for(Int_t eW=0;eW<2;eW++)
    {
     // correlations:
-    for(Int_t correlationIndex=0;correlationIndex<4;correlationIndex++)
+    for(Int_t correlIndex=0;correlIndex<4;correlIndex++)
     {
-     fCorrelationsPro[t][pW][eW][correlationIndex] = (TProfile2D*)styleProfile.Clone(correlationName[correlationIndex].Data());
-     fCorrelationsPro[t][pW][eW][correlationIndex]->SetTitle(correlationName[correlationIndex].Data()); 
-     fDiffFlowCorrelations[t][pW][eW]->Add(fCorrelationsPro[t][pW][eW][correlationIndex]);
+     fCorrelationsPro[t][pW][eW][correlIndex] = (TProfile2D*)styleProfile.Clone(correlationName[correlIndex].Data());
+     fCorrelationsPro[t][pW][eW][correlIndex]->SetTitle(correlationName[correlIndex].Data()); 
+     fDiffFlowCorrelations[t][pW][eW]->Add(fCorrelationsPro[t][pW][eW][correlIndex]);
     }
     // products of correlations:
     for(Int_t productOfCorrelationsIndex=0;productOfCorrelationsIndex<5;productOfCorrelationsIndex++)
@@ -6212,26 +6536,26 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
    for(Int_t eW=0;eW<2;eW++)
    {
     // correlations:
-    for(Int_t correlationIndex=0;correlationIndex<4;correlationIndex++)
+    for(Int_t correlIndex=0;correlIndex<4;correlIndex++)
     {
      // 2D:
-     fFinalCorrelations2D[t][pW][eW][correlationIndex] = (TH2D*)styleHistPtEta.Clone(Form("%s, (p_{t},#eta)",correlationName[correlationIndex].Data()));
-     fFinalCorrelations2D[t][pW][eW][correlationIndex]->SetTitle(Form("%s (p_{t},#eta): %s, pWeights %s, eWeights %s",correlationName[correlationIndex].Data(),typeFlag[t].Data(),pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data())); 
-     fDiffFlowFinalCorrelations[t][pW][eW]->Add(fFinalCorrelations2D[t][pW][eW][correlationIndex]);   
+     fFinalCorrelations2D[t][pW][eW][correlIndex] = (TH2D*)styleHistPtEta.Clone(Form("%s, (p_{t},#eta)",correlationName[correlIndex].Data()));
+     fFinalCorrelations2D[t][pW][eW][correlIndex]->SetTitle(Form("%s (p_{t},#eta): %s, pWeights %s, eWeights %s",correlationName[correlIndex].Data(),typeFlag[t].Data(),pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data())); 
+     fDiffFlowFinalCorrelations[t][pW][eW]->Add(fFinalCorrelations2D[t][pW][eW][correlIndex]);   
      // 1D:
      for(Int_t pe=0;pe<2;pe++) // pt or eta:
      {
       if(pe==0) 
       { 
-       fFinalCorrelations1D[t][pW][eW][pe][correlationIndex] = (TH1D*)styleHistPt.Clone(Form("%s, (p_{t})",correlationName[correlationIndex].Data()));
-       fFinalCorrelations1D[t][pW][eW][pe][correlationIndex]->SetTitle(Form("%s (p_{t}): %s, pWeights %s, eWeights %s",correlationName[correlationIndex].Data(),typeFlag[t].Data(),pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data())); 
-       fDiffFlowFinalCorrelations[t][pW][eW]->Add(fFinalCorrelations1D[t][pW][eW][pe][correlationIndex]);   
+       fFinalCorrelations1D[t][pW][eW][pe][correlIndex] = (TH1D*)styleHistPt.Clone(Form("%s, (p_{t})",correlationName[correlIndex].Data()));
+       fFinalCorrelations1D[t][pW][eW][pe][correlIndex]->SetTitle(Form("%s (p_{t}): %s, pWeights %s, eWeights %s",correlationName[correlIndex].Data(),typeFlag[t].Data(),pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data())); 
+       fDiffFlowFinalCorrelations[t][pW][eW]->Add(fFinalCorrelations1D[t][pW][eW][pe][correlIndex]);   
       }
       if(pe==1)
       {
-       fFinalCorrelations1D[t][pW][eW][pe][correlationIndex] = (TH1D*)styleHistEta.Clone(Form("%s, (#eta)",correlationName[correlationIndex].Data()));
-       fFinalCorrelations1D[t][pW][eW][pe][correlationIndex]->SetTitle(Form("%s (#eta): %s, pWeights %s, eWeights %s",correlationName[correlationIndex].Data(),typeFlag[t].Data(),pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data())); 
-       fDiffFlowFinalCorrelations[t][pW][eW]->Add(fFinalCorrelations1D[t][pW][eW][pe][correlationIndex]); 
+       fFinalCorrelations1D[t][pW][eW][pe][correlIndex] = (TH1D*)styleHistEta.Clone(Form("%s, (#eta)",correlationName[correlIndex].Data()));
+       fFinalCorrelations1D[t][pW][eW][pe][correlIndex]->SetTitle(Form("%s (#eta): %s, pWeights %s, eWeights %s",correlationName[correlIndex].Data(),typeFlag[t].Data(),pWeightsFlag[pW].Data(),eWeightsFlag[eW].Data())); 
+       fDiffFlowFinalCorrelations[t][pW][eW]->Add(fFinalCorrelations1D[t][pW][eW][pe][correlIndex]); 
       } 
      } 
     }    
@@ -6332,6 +6656,38 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
  //  5.) q_{m*n,k}(pt,eta) = Q-vector evaluated in harmonic m*n for particles which are both RPs and POIs in particular (pt,eta) bin 
  //                          (i-th RP&&POI is weighted with w_i^k)            
   
+ // 1D:
+ //Int_t nBinsPtEta[2] = {fnBinsPt,fnBinsEta}; // to be improved (removed)
+ //Double_t minPtEta[2] = {fPtMin,fEtaMin}; // to be improved (removed)
+ //Double_t maxPtEta[2] = {fPtMax,fEtaMax}; // to be improved (removed)
+
+ for(Int_t pe=0;pe<2;pe++) // pt or eta
+ {
+  for(Int_t t=0;t<3;t++) // typeFlag (0 = RP, 1 = POI, 2 = RP&&POI )
+  { 
+   for(Int_t m=0;m<4;m++)
+   {
+    for(Int_t k=0;k<9;k++)
+    {
+     fReEBE1D[pe][t][m][k] = new TProfile(Form("pteta%dTypeFlag%dmultiple%dpower%dRe",pe,t,m,k),Form("pteta%dTypeFlag%dmultiple%dpower%dRe",pe,t,m,k),nBinsPtEta[pe],minPtEta[pe],maxPtEta[pe]); 
+     fImEBE1D[pe][t][m][k] = new TProfile(Form("pteta%dTypeFlag%dmultiple%dpower%dIm",pe,t,m,k),Form("pteta%dTypeFlag%dmultiple%dpower%dIm",pe,t,m,k),nBinsPtEta[pe],minPtEta[pe],maxPtEta[pe]); 
+    }
+   }
+  }
+ }    
+
+ for(Int_t pe=0;pe<2;pe++) // pt or eta
+ {
+  for(Int_t t=0;t<3;t++) // typeFlag (0 = RP, 1 = POI, 2 = RP&&POI )
+  { 
+   for(Int_t k=0;k<9;k++)
+   {
+    fs1D[pe][t][k] = new TProfile(Form("pteta%dTypeFlag%dmultiple%d",pe,t,k),Form("pteta%dTypeFlag%dmultiple%d",pe,t,k),nBinsPtEta[pe],minPtEta[pe],maxPtEta[pe]); 
+   }
+  }
+ }    
+ 
+ // 2D:
  TProfile2D styleRe("typeMultiplePowerRe","typeMultiplePowerRe",fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
  TProfile2D styleIm("typeMultiplePowerIm","typeMultiplePowerIm",fnBinsPt,fPtMin,fPtMax,fnBinsEta,fEtaMin,fEtaMax);
  
@@ -6341,8 +6697,8 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
   {
    for(Int_t k=0;k<9;k++)
    {
-    fReEBE[t][m][k] = (TProfile2D*)styleRe.Clone(Form("typeFlag%dmultiple%dpower%dRe",t,m,k)); 
-    fImEBE[t][m][k] = (TProfile2D*)styleIm.Clone(Form("typeFlag%dmultiple%dpower%dIm",t,m,k));
+    fReEBE2D[t][m][k] = (TProfile2D*)styleRe.Clone(Form("typeFlag%dmultiple%dpower%dRe",t,m,k)); 
+    fImEBE2D[t][m][k] = (TProfile2D*)styleIm.Clone(Form("typeFlag%dmultiple%dpower%dIm",t,m,k));
    }
   } 
  } 
@@ -6353,7 +6709,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
  { 
   for(Int_t k=0;k<9;k++)
   {
-   fs[t][k] = (TProfile2D*)styleS.Clone(Form("typeFlag%dpower%d",t,k));
+   fs2D[t][k] = (TProfile2D*)styleS.Clone(Form("typeFlag%dpower%d",t,k));
   }
  }
    
@@ -6363,7 +6719,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
 //================================================================================================================================
 
 
-void AliFlowAnalysisWithQCumulants::CalculateCorrelationsForDifferentialFlow(TString type)
+void AliFlowAnalysisWithQCumulants::CalculateCorrelationsForDifferentialFlow2D(TString type)
 {
  // calculate all reduced correlations needed for differential flow for each (pt,eta) bin:
  
@@ -6409,26 +6765,26 @@ void AliFlowAnalysisWithQCumulants::CalculateCorrelationsForDifferentialFlow(TSt
    Double_t mq = 0.;
    
    // q_{m*n,0}:
-   q1n0kRe = fReEBE[2][0][0]->GetBinContent(fReEBE[2][0][0]->GetBin(p,e))
-           * fReEBE[2][0][0]->GetBinEntries(fReEBE[2][0][0]->GetBin(p,e));
-   q1n0kIm = fImEBE[2][0][0]->GetBinContent(fImEBE[2][0][0]->GetBin(p,e))
-           * fImEBE[2][0][0]->GetBinEntries(fImEBE[2][0][0]->GetBin(p,e));
-   q2n0kRe = fReEBE[2][1][0]->GetBinContent(fReEBE[2][1][0]->GetBin(p,e))
-           * fReEBE[2][1][0]->GetBinEntries(fReEBE[2][1][0]->GetBin(p,e));
-   q2n0kIm = fImEBE[2][1][0]->GetBinContent(fImEBE[2][1][0]->GetBin(p,e))
-           * fImEBE[2][1][0]->GetBinEntries(fImEBE[2][1][0]->GetBin(p,e));
+   q1n0kRe = fReEBE2D[2][0][0]->GetBinContent(fReEBE2D[2][0][0]->GetBin(p,e))
+           * fReEBE2D[2][0][0]->GetBinEntries(fReEBE2D[2][0][0]->GetBin(p,e));
+   q1n0kIm = fImEBE2D[2][0][0]->GetBinContent(fImEBE2D[2][0][0]->GetBin(p,e))
+           * fImEBE2D[2][0][0]->GetBinEntries(fImEBE2D[2][0][0]->GetBin(p,e));
+   q2n0kRe = fReEBE2D[2][1][0]->GetBinContent(fReEBE2D[2][1][0]->GetBin(p,e))
+           * fReEBE2D[2][1][0]->GetBinEntries(fReEBE2D[2][1][0]->GetBin(p,e));
+   q2n0kIm = fImEBE2D[2][1][0]->GetBinContent(fImEBE2D[2][1][0]->GetBin(p,e))
+           * fImEBE2D[2][1][0]->GetBinEntries(fImEBE2D[2][1][0]->GetBin(p,e));
            
-   mq = fReEBE[2][0][0]->GetBinEntries(fReEBE[2][0][0]->GetBin(p,e)); // to be improved (cross-checked by accessing other profiles here)
+   mq = fReEBE2D[2][0][0]->GetBinEntries(fReEBE2D[2][0][0]->GetBin(p,e)); // to be improved (cross-checked by accessing other profiles here)
    
    if(type == "POI")
    {
     // p_{m*n,0}:
-    p1n0kRe = fReEBE[1][0][0]->GetBinContent(fReEBE[1][0][0]->GetBin(p,e))
-            * fReEBE[1][0][0]->GetBinEntries(fReEBE[1][0][0]->GetBin(p,e));
-    p1n0kIm = fImEBE[1][0][0]->GetBinContent(fImEBE[1][0][0]->GetBin(p,e))  
-            * fImEBE[1][0][0]->GetBinEntries(fImEBE[1][0][0]->GetBin(p,e));
+    p1n0kRe = fReEBE2D[1][0][0]->GetBinContent(fReEBE2D[1][0][0]->GetBin(p,e))
+            * fReEBE2D[1][0][0]->GetBinEntries(fReEBE2D[1][0][0]->GetBin(p,e));
+    p1n0kIm = fImEBE2D[1][0][0]->GetBinContent(fImEBE2D[1][0][0]->GetBin(p,e))  
+            * fImEBE2D[1][0][0]->GetBinEntries(fImEBE2D[1][0][0]->GetBin(p,e));
             
-    mp = fReEBE[1][0][0]->GetBinEntries(fReEBE[1][0][0]->GetBin(p,e)); // to be improved (cross-checked by accessing other profiles here)
+    mp = fReEBE2D[1][0][0]->GetBinEntries(fReEBE2D[1][0][0]->GetBin(p,e)); // to be improved (cross-checked by accessing other profiles here)
     
     typeFlag = 1;
    }
@@ -6516,13 +6872,13 @@ void AliFlowAnalysisWithQCumulants::CalculateCorrelationsForDifferentialFlow(TSt
   } // end of for(Int_t e=1;e<=fnBinsEta;e++)
  } // end of for(Int_t p=1;p<=fnBinsPt;p++)
  
-} // end of AliFlowAnalysisWithQCumulants::CalculateCorrelationsForDifferentialFlow()
+} // end of AliFlowAnalysisWithQCumulants::CalculateCorrelationsForDifferentialFlow2D()
 
 
 //================================================================================================================================
 
 
-void AliFlowAnalysisWithQCumulants::CalculateWeightedCorrelationsForDifferentialFlow(TString type)
+void AliFlowAnalysisWithQCumulants::CalculateWeightedCorrelationsForDifferentialFlow2D(TString type)
 {
  // calculate all weighted correlations needed for differential flow 
  
@@ -6573,27 +6929,27 @@ void AliFlowAnalysisWithQCumulants::CalculateWeightedCorrelationsForDifferential
    if(type == "POI")
    {
     // p_{m*n,0}:
-    p1n0kRe = fReEBE[1][0][0]->GetBinContent(fReEBE[1][0][0]->GetBin(p,e))
-            * fReEBE[1][0][0]->GetBinEntries(fReEBE[1][0][0]->GetBin(p,e));
-    p1n0kIm = fImEBE[1][0][0]->GetBinContent(fImEBE[1][0][0]->GetBin(p,e))
-            * fImEBE[1][0][0]->GetBinEntries(fImEBE[1][0][0]->GetBin(p,e)); 
+    p1n0kRe = fReEBE2D[1][0][0]->GetBinContent(fReEBE2D[1][0][0]->GetBin(p,e))
+            * fReEBE2D[1][0][0]->GetBinEntries(fReEBE2D[1][0][0]->GetBin(p,e));
+    p1n0kIm = fImEBE2D[1][0][0]->GetBinContent(fImEBE2D[1][0][0]->GetBin(p,e))
+            * fImEBE2D[1][0][0]->GetBinEntries(fImEBE2D[1][0][0]->GetBin(p,e)); 
             
-    mp = fReEBE[1][0][0]->GetBinEntries(fReEBE[1][0][0]->GetBin(p,e));
+    mp = fReEBE2D[1][0][0]->GetBinEntries(fReEBE2D[1][0][0]->GetBin(p,e));
     
     // q_{m*n,k}: 
-    q1n2kRe = fReEBE[2][0][2]->GetBinContent(fReEBE[2][0][2]->GetBin(p,e))
-            * fReEBE[2][0][2]->GetBinEntries(fReEBE[2][0][2]->GetBin(p,e));
-    q1n2kIm = fImEBE[2][0][2]->GetBinContent(fImEBE[2][0][2]->GetBin(p,e))
-            * fImEBE[2][0][2]->GetBinEntries(fImEBE[2][0][2]->GetBin(p,e));
-    q2n1kRe = fReEBE[2][1][1]->GetBinContent(fReEBE[2][1][1]->GetBin(p,e))
-            * fReEBE[2][1][1]->GetBinEntries(fReEBE[2][1][1]->GetBin(p,e)); 
-    q2n1kIm = fImEBE[2][1][1]->GetBinContent(fImEBE[2][1][1]->GetBin(p,e))
-            * fImEBE[2][1][1]->GetBinEntries(fImEBE[2][1][1]->GetBin(p,e));
+    q1n2kRe = fReEBE2D[2][0][2]->GetBinContent(fReEBE2D[2][0][2]->GetBin(p,e))
+            * fReEBE2D[2][0][2]->GetBinEntries(fReEBE2D[2][0][2]->GetBin(p,e));
+    q1n2kIm = fImEBE2D[2][0][2]->GetBinContent(fImEBE2D[2][0][2]->GetBin(p,e))
+            * fImEBE2D[2][0][2]->GetBinEntries(fImEBE2D[2][0][2]->GetBin(p,e));
+    q2n1kRe = fReEBE2D[2][1][1]->GetBinContent(fReEBE2D[2][1][1]->GetBin(p,e))
+            * fReEBE2D[2][1][1]->GetBinEntries(fReEBE2D[2][1][1]->GetBin(p,e)); 
+    q2n1kIm = fImEBE2D[2][1][1]->GetBinContent(fImEBE2D[2][1][1]->GetBin(p,e))
+            * fImEBE2D[2][1][1]->GetBinEntries(fImEBE2D[2][1][1]->GetBin(p,e));
        
     // s_{1,1}, s_{1,2} and s_{1,3} // to be improved (add explanation)  
-    s1p1k = pow(fs[2][1]->GetBinContent(fs[2][1]->GetBin(p,e)),1.); 
-    s1p2k = pow(fs[2][2]->GetBinContent(fs[2][2]->GetBin(p,e)),1.); 
-    s1p3k = pow(fs[2][3]->GetBinContent(fs[2][3]->GetBin(p,e)),1.); 
+    s1p1k = pow(fs2D[2][1]->GetBinContent(fs2D[2][1]->GetBin(p,e)),1.); 
+    s1p2k = pow(fs2D[2][2]->GetBinContent(fs2D[2][2]->GetBin(p,e)),1.); 
+    s1p3k = pow(fs2D[2][3]->GetBinContent(fs2D[2][3]->GetBin(p,e)),1.); 
    
     // M0111 from Eq. (118) in QC2c (to be improved (notation)):
     dM0111 = mp*(dSM3p1k-3.*dSM1p1k*dSM1p2k+2.*dSM1p3k)
@@ -6602,27 +6958,27 @@ void AliFlowAnalysisWithQCumulants::CalculateWeightedCorrelationsForDifferential
    }
    else if(type == "RP")
    {
-    p1n0kRe = fReEBE[0][0][0]->GetBinContent(fReEBE[0][0][0]->GetBin(p,e))
-            * fReEBE[0][0][0]->GetBinEntries(fReEBE[0][0][0]->GetBin(p,e));
-    p1n0kIm = fImEBE[0][0][0]->GetBinContent(fImEBE[0][0][0]->GetBin(p,e))
-            * fImEBE[0][0][0]->GetBinEntries(fImEBE[0][0][0]->GetBin(p,e));
+    p1n0kRe = fReEBE2D[0][0][0]->GetBinContent(fReEBE2D[0][0][0]->GetBin(p,e))
+            * fReEBE2D[0][0][0]->GetBinEntries(fReEBE2D[0][0][0]->GetBin(p,e));
+    p1n0kIm = fImEBE2D[0][0][0]->GetBinContent(fImEBE2D[0][0][0]->GetBin(p,e))
+            * fImEBE2D[0][0][0]->GetBinEntries(fImEBE2D[0][0][0]->GetBin(p,e));
             
-    mp = fReEBE[0][0][0]->GetBinEntries(fReEBE[0][0][0]->GetBin(p,e));
+    mp = fReEBE2D[0][0][0]->GetBinEntries(fReEBE2D[0][0][0]->GetBin(p,e));
     
     // q_{m*n,k}: 
-    q1n2kRe = fReEBE[0][0][2]->GetBinContent(fReEBE[0][0][2]->GetBin(p,e))
-            * fReEBE[0][0][2]->GetBinEntries(fReEBE[0][0][2]->GetBin(p,e));
-    q1n2kIm = fImEBE[0][0][2]->GetBinContent(fImEBE[0][0][2]->GetBin(p,e))
-            * fImEBE[0][0][2]->GetBinEntries(fImEBE[0][0][2]->GetBin(p,e));
-    q2n1kRe = fReEBE[0][1][1]->GetBinContent(fReEBE[0][1][1]->GetBin(p,e))
-            * fReEBE[0][1][1]->GetBinEntries(fReEBE[0][1][1]->GetBin(p,e));
-    q2n1kIm = fImEBE[0][1][1]->GetBinContent(fImEBE[0][1][1]->GetBin(p,e))
-            * fImEBE[0][1][1]->GetBinEntries(fImEBE[0][1][1]->GetBin(p,e));
+    q1n2kRe = fReEBE2D[0][0][2]->GetBinContent(fReEBE2D[0][0][2]->GetBin(p,e))
+            * fReEBE2D[0][0][2]->GetBinEntries(fReEBE2D[0][0][2]->GetBin(p,e));
+    q1n2kIm = fImEBE2D[0][0][2]->GetBinContent(fImEBE2D[0][0][2]->GetBin(p,e))
+            * fImEBE2D[0][0][2]->GetBinEntries(fImEBE2D[0][0][2]->GetBin(p,e));
+    q2n1kRe = fReEBE2D[0][1][1]->GetBinContent(fReEBE2D[0][1][1]->GetBin(p,e))
+            * fReEBE2D[0][1][1]->GetBinEntries(fReEBE2D[0][1][1]->GetBin(p,e));
+    q2n1kIm = fImEBE2D[0][1][1]->GetBinContent(fImEBE2D[0][1][1]->GetBin(p,e))
+            * fImEBE2D[0][1][1]->GetBinEntries(fImEBE2D[0][1][1]->GetBin(p,e));
    
     // s_{1,1}, s_{1,2} and s_{1,3} // to be improved (add explanation)  
-    s1p1k = pow(fs[0][1]->GetBinContent(fs[0][1]->GetBin(p,e)),1.); 
-    s1p2k = pow(fs[0][2]->GetBinContent(fs[0][2]->GetBin(p,e)),1.); 
-    s1p3k = pow(fs[0][3]->GetBinContent(fs[0][3]->GetBin(p,e)),1.); 
+    s1p1k = pow(fs2D[0][1]->GetBinContent(fs2D[0][1]->GetBin(p,e)),1.); 
+    s1p2k = pow(fs2D[0][2]->GetBinContent(fs2D[0][2]->GetBin(p,e)),1.); 
+    s1p3k = pow(fs2D[0][3]->GetBinContent(fs2D[0][3]->GetBin(p,e)),1.); 
    
     // M0111 from Eq. (118) in QC2c (to be improved (notation)):
     dM0111 = mp*(dSM3p1k-3.*dSM1p1k*dSM1p2k+2.*dSM1p3k)
@@ -6687,7 +7043,7 @@ void AliFlowAnalysisWithQCumulants::CalculateWeightedCorrelationsForDifferential
   } // end of for(Int_t e=1;e<=fnBinsEta;e++)
  } // end of for(Int_t p=1;p<=fnBinsPt;p++)
   
-} // end of AliFlowAnalysisWithQCumulants::CalculateWeightedCorrelationsForDifferentialFlow(TString type)
+} // end of AliFlowAnalysisWithQCumulants::CalculateWeightedCorrelationsForDifferentialFlow2D(TString type)
 
 
 //================================================================================================================================
@@ -7672,4 +8028,246 @@ void AliFlowAnalysisWithQCumulants::CalculateSumAndProductOfEventWeights()
 
 
 //================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateReducedCorrelations1D(TString type, TString ptOrEta)
+{
+ // calculate reduced correlations for RPs or POIs in pt or eta bins
+ 
+ // multiplicity:
+ Double_t dMult = (*fSMpk)(0,0);
+ 
+ // real and imaginary parts of non-weighted Q-vectors evaluated in harmonics n, 2n, 3n and 4n: 
+ Double_t dReQ1n = (*fReQ)(0,0);
+ Double_t dReQ2n = (*fReQ)(1,0);
+ //Double_t dReQ3n = (*fReQ)(2,0);
+ //Double_t dReQ4n = (*fReQ)(3,0);
+ Double_t dImQ1n = (*fImQ)(0,0);
+ Double_t dImQ2n = (*fImQ)(1,0);
+ //Double_t dImQ3n = (*fImQ)(2,0);
+ //Double_t dImQ4n = (*fImQ)(3,0);
+
+ // reduced correlations are stored in fReducedCorrelations[0=RP,1=POI][0=pt,1=eta][correlation index]. Correlation index runs as follows:
+ // 
+ // 0: <<2'>>
+ // 1: <<4'>>
+ // 2: <<6'>>
+ // 3: <<8'>>
+ 
+ Int_t t = -1; // type flag 
+ Int_t pe = -1; // ptEta flag
+ 
+ if(type == "RP")
+ {
+  t = 0;
+ } else if(type == "POI")
+   {
+    t = 1;
+   }
+
+ if(ptOrEta == "Pt")
+ {
+  pe = 0;
+ } else if(ptOrEta == "Eta")
+   {
+    pe = 1;
+   }
+    
+ Int_t nBinsPtEta[2] = {fnBinsPt,fnBinsEta};
+ Double_t minPtEta[2] = {fPtMin,fEtaMin};
+ //Double_t maxPtEta[2] = {fPtMax,fEtaMax};
+ Double_t binWidthPtEta[2] = {fPtBinWidth,fEtaBinWidth};
+
+ // looping over all bins and calculating reduced correlations: 
+ for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+ {
+  // real and imaginary parts of p_{m*n,0} (non-weighted Q-vector evaluated for POIs in particular pt or eta bin): 
+  Double_t p1n0kRe = 0.;
+  Double_t p1n0kIm = 0.;
+
+  // number of POIs in particular pt or eta bin:
+  Double_t mp = 0.;
+
+  // real and imaginary parts of q_{m*n,0} (non-weighted Q-vector evaluated for particles which are both RPs and POIs in particular pt or eta bin):
+  Double_t q1n0kRe = 0.;
+  Double_t q1n0kIm = 0.;
+  Double_t q2n0kRe = 0.;
+  Double_t q2n0kIm = 0.;
+
+  // number of particles which are both RPs and POIs in particular pt or eta bin:
+  Double_t mq = 0.;
+   
+  // q_{m*n,0}:
+  q1n0kRe = fReEBE1D[pe][2][0][0]->GetBinContent(fReEBE1D[pe][2][0][0]->GetBin(b))
+          * fReEBE1D[pe][2][0][0]->GetBinEntries(fReEBE1D[pe][2][0][0]->GetBin(b));
+  q1n0kIm = fImEBE1D[pe][2][0][0]->GetBinContent(fImEBE1D[pe][2][0][0]->GetBin(b))
+          * fImEBE1D[pe][2][0][0]->GetBinEntries(fImEBE1D[pe][2][0][0]->GetBin(b));
+  q2n0kRe = fReEBE1D[pe][2][1][0]->GetBinContent(fReEBE1D[pe][2][1][0]->GetBin(b))
+          * fReEBE1D[pe][2][1][0]->GetBinEntries(fReEBE1D[pe][2][1][0]->GetBin(b));
+  q2n0kIm = fImEBE1D[pe][2][1][0]->GetBinContent(fImEBE1D[pe][2][1][0]->GetBin(b))
+          * fImEBE1D[pe][2][1][0]->GetBinEntries(fImEBE1D[pe][2][1][0]->GetBin(b));
+           
+   mq = fReEBE1D[pe][2][0][0]->GetBinEntries(fReEBE1D[pe][2][0][0]->GetBin(b)); // to be improved (cross-checked by accessing other profiles here)
+   
+   if(type == "POI")
+   {
+    // p_{m*n,0}:
+    p1n0kRe = fReEBE1D[pe][1][0][0]->GetBinContent(fReEBE1D[pe][1][0][0]->GetBin(b))
+            * fReEBE1D[pe][1][0][0]->GetBinEntries(fReEBE1D[pe][1][0][0]->GetBin(b));
+    p1n0kIm = fImEBE1D[pe][1][0][0]->GetBinContent(fImEBE1D[pe][1][0][0]->GetBin(b))  
+            * fImEBE1D[pe][1][0][0]->GetBinEntries(fImEBE1D[pe][1][0][0]->GetBin(b));
+            
+    mp = fReEBE1D[pe][1][0][0]->GetBinEntries(fReEBE1D[pe][1][0][0]->GetBin(b)); // to be improved (cross-checked by accessing other profiles here)
+    
+    t = 1; // typeFlag = RP or POI
+   }
+   else if(type == "RP")
+   {
+    // p_{m*n,0} = q_{m*n,0}:
+    p1n0kRe = q1n0kRe; 
+    p1n0kIm = q1n0kIm; 
+    mp = mq; 
+    
+    t = 0; // typeFlag = RP or POI
+   }
+   
+   /*
+   // count events with non-empty (pt,eta) bin:
+   if(mp>0)
+   {
+    fNonEmptyBins2D[typeFlag]->Fill(fPtMin+(p-1)*fPtBinWidth,fEtaMin+(e-1)*fEtaBinWidth,1);
+   }
+   */
+   
+   // 2'-particle correlation for particular (pt,eta) bin:
+   Double_t two1n1nPtEta = 0.;
+   if(mp*dMult-mq)
+   {
+    two1n1nPtEta = (p1n0kRe*dReQ1n+p1n0kIm*dImQ1n-mq)
+                 / (mp*dMult-mq);
+   
+    // fill the 2D profile to get the average correlation for each (pt,eta) bin:
+    if(type == "POI")
+    { 
+     //f2pPtEtaPOI->Fill(fPtMin+(p-1)*fPtBinWidth,fEtaMin+(e-1)*fEtaBinWidth,two1n1nPtEta,mp*dMult-mq);
+     
+     fReducedCorrelations[1][pe][0]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],two1n1nPtEta,mp*dMult-mq);
+    }
+    else if(type == "RP")
+    {
+     //f2pPtEtaRP->Fill(fPtMin+(p-1)*fPtBinWidth,fEtaMin+(e-1)*fEtaBinWidth,two1n1nPtEta,mp*dMult-mq);   
+     fReducedCorrelations[0][pe][0]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],two1n1nPtEta,mp*dMult-mq);
+    }
+   } // end of if(mp*dMult-mq)
+  
+   // 4'-particle correlation:
+   Double_t four1n1n1n1nPtEta = 0.;
+   if((mp-mq)*dMult*(dMult-1.)*(dMult-2.)
+       + mq*(dMult-1.)*(dMult-2.)*(dMult-3.)) // to be improved (introduce a new variable for this expression)
+   {
+    four1n1n1n1nPtEta = ((pow(dReQ1n,2.)+pow(dImQ1n,2.))*(p1n0kRe*dReQ1n+p1n0kIm*dImQ1n)
+                      - q2n0kRe*(pow(dReQ1n,2.)-pow(dImQ1n,2.))
+                      - 2.*q2n0kIm*dReQ1n*dImQ1n
+                      - p1n0kRe*(dReQ1n*dReQ2n+dImQ1n*dImQ2n)
+                      + p1n0kIm*(dImQ1n*dReQ2n-dReQ1n*dImQ2n)
+                      - 2.*dMult*(p1n0kRe*dReQ1n+p1n0kIm*dImQ1n)
+                      - 2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))*mq                      
+                      + 6.*(q1n0kRe*dReQ1n+q1n0kIm*dImQ1n)                                            
+                      + 1.*(q2n0kRe*dReQ2n+q2n0kIm*dImQ2n)                      
+                      + 2.*(p1n0kRe*dReQ1n+p1n0kIm*dImQ1n)                       
+                      + 2.*mq*dMult                      
+                      - 6.*mq)        
+                      / ((mp-mq)*dMult*(dMult-1.)*(dMult-2.)
+                          + mq*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+    
+    // fill the 2D profile to get the average correlation for each (pt, eta) bin:
+    if(type == "POI")
+    {
+     //f4pPtEtaPOI->Fill(fPtMin+(p-1)*fPtBinWidth,fEtaMin+(e-1)*fEtaBinWidth,four1n1n1n1nPtEta,
+     //                  (mp-mq)*dMult*(dMult-1.)*(dMult-2.)
+     //                   + mq*(dMult-1.)*(dMult-2.)*(dMult-3.));
+     
+     fReducedCorrelations[1][pe][1]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],four1n1n1n1nPtEta,
+                                     (mp-mq)*dMult*(dMult-1.)*(dMult-2.)
+                                     + mq*(dMult-1.)*(dMult-2.)*(dMult-3.));
+    }
+    else if(type == "RP")
+    {
+     //f4pPtEtaRP->Fill(fPtMin+(p-1)*fPtBinWidth,fEtaMin+(e-1)*fEtaBinWidth,four1n1n1n1nPtEta,
+     //                 (mp-mq)*dMult*(dMult-1.)*(dMult-2.)
+     //                  + mq*(dMult-1.)*(dMult-2.)*(dMult-3.));   
+                       
+     fReducedCorrelations[0][pe][1]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],four1n1n1n1nPtEta,
+                                       (mp-mq)*dMult*(dMult-1.)*(dMult-2.)
+                                       + mq*(dMult-1.)*(dMult-2.)*(dMult-3.));                   
+    }
+   } // end of if((mp-mq)*dMult*(dMult-1.)*(dMult-2.)
+     //            +mq*(dMult-1.)*(dMult-2.)*(dMult-3.))
+   
+ } // end of for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+   
+} // end of void AliFlowAnalysisWithQCumulants::CalculateReducedCorrelations1D(TString type, TString ptOrEta);
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::FinalizeReducedCorrelations(TString type, TString ptOrEta)
+{
+ // transfer profiles into histos
+
+ Int_t typeFlag = -1;
+ Int_t ptEtaFlag = -1;
+
+ if(type == "RP")
+ {
+  typeFlag = 0;
+ } else if(type == "POI")
+   {
+    typeFlag = 1;
+   } 
+     
+ if(ptOrEta == "Pt")
+ {
+  ptEtaFlag = 0;
+ } else if(ptOrEta == "Eta")
+   {
+    ptEtaFlag = 1;
+   } 
+  
+ // shortcuts:
+ Int_t t = typeFlag;
+ Int_t pe = ptEtaFlag;
+     
+ // common:
+ Int_t nBinsPtEta[2] = {fnBinsPt,fnBinsEta};
+ //Double_t minPtEta[2] = {fPtMin,fEtaMin};
+ //Double_t maxPtEta[2] = {fPtMax,fEtaMax};
+ //Double_t binWidthPtEta[2] = {fPtBinWidth,fEtaBinWidth};
+         
+ // transfer 1D profile into 1D histogram (pt):
+ // to be improved (see in documentation if there is a method to transfer values from 1D profile into 1D histogram)    
+ for(Int_t ci=0;ci<4;ci++)
+ {
+  for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+  {
+   if(fReducedCorrelations[t][pe][ci])
+   {
+    Double_t correlation = fReducedCorrelations[t][pe][ci]->GetBinContent(b); 
+    //Double_t spread = profile[0][ci]->GetBinError(p);
+    //Double_t nEvts = fNonEmptyBins1D[t][0]->GetBinContent(p);
+    //Double_t error = 0.;
+    fFinalCorrelations1D[t][0][0][pe][ci]->SetBinContent(b,correlation); 
+    //if(nEvts>0)
+    //{
+    // error = spread/pow(nEvts,0.5);
+    // fFinalCorrelations1D[t][pW][eW][pe][ci]->SetBinError(p,error);
+    //}  
+   }   
+  } // end of for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+ } // end of for(Int_t ci=0;ci<4;ci++)
+ 
+} // end of void AliFlowAnalysisWithQCumulants::FinalizeReducedCorrelations(TString type, TString ptOrEta)
+
+
 
