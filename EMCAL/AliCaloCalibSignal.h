@@ -28,7 +28,6 @@
 class AliCaloRawStreamV3;
 class AliCaloAltroMapping;
 class AliRawReader;
-class AliRawEventHeaderBase;
 
 class AliCaloCalibSignal : public TObject {
   
@@ -45,12 +44,16 @@ class AliCaloCalibSignal : public TObject {
   
   // Event processing methods:
   Bool_t ProcessEvent(AliRawReader *rawReader);
-  Bool_t ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeaderBase *aliHeader); // added header for time info
+  Bool_t ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp); // added header for time info
   Bool_t CheckFractionAboveAmp(int *AmpVal, int resultArray[]); // check fraction of signals to check for LED events
 
   // Mapping handling
   AliCaloAltroMapping **GetAltroMapping() { return fMapping; };
   void  SetAltroMapping(AliCaloAltroMapping **mapp) { fMapping = mapp; };
+
+  // Parameter/cut handling
+  void SetParametersFromFile(const char *parameterFile);
+  void WriteParametersToFile(const char *parameterFile);
 
   ////////////////////////////
   //Simple getters
@@ -203,7 +206,7 @@ class AliCaloCalibSignal : public TObject {
   int fNLowGain[fgkMaxTowers]; // same, for low gain
   int fNRef[fgkMaxRefs * 2]; // same, for LED refs; *2 for both gains
   
-  ClassDef(AliCaloCalibSignal, 4) // don't forget to change version if you change class member list..
+  ClassDef(AliCaloCalibSignal, 5) // don't forget to change version if you change class member list..
     
 };
     

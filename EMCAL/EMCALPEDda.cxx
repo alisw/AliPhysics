@@ -65,28 +65,28 @@ extern "C" {
 */
 
 int main(int argc, char **argv) {
-
+  
   AliLog::SetClassDebugLevel("AliCaloRawStreamV3",-5);
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
   AliLog::SetModuleDebugLevel("RAW",-5);
-
+  
   if (argc<2) {
     printf("Wrong number of arguments\n");
     return -1;  
   }
-
+  
   /* magic line - for TStreamerInfo */
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
 					"*",
 					"TStreamerInfo",
 					"RIO",
 					"TStreamerInfo()"); 
-
+  
   int i, status;
-
+  
   /* log start of process */
   printf("EMCAL DA started - %s\n",__FILE__);
-
+  
   /* declare monitoring program */
   status=monitorDeclareMp( __FILE__ );
   if (status!=0) {
@@ -96,10 +96,10 @@ int main(int argc, char **argv) {
   /* define wait event timeout - 1s max */
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
-
+  
   /* Retrieve mapping files from DAQ DB */ 
   const char* mapFiles[kNRCU] = {"RCU0A.data","RCU1A.data","RCU0C.data","RCU1C.data"};
-
+  
   for(Int_t iFile=0; iFile<kNRCU; iFile++) {
     int failed = daqDA_DB_getFile(mapFiles[iFile], mapFiles[iFile]);
     if(failed) { 
@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
 	     iFile, mapFiles[iFile]);
 #ifdef LOCAL_DEBUG
 #else
-            return -1;
+      return -1;
 #endif
     }
   }
@@ -117,26 +117,41 @@ int main(int argc, char **argv) {
   TString path = "./";
   path += "RCU";
   TString path2;
- TString side[] = {"A","C"};//+ and - pseudarapidity supermodules
- for(Int_t j = 0; j < 2; j++){
-   for(Int_t i = 0; i < 2; i++) {
-     path2 = path;
-     path2 += i;
-     path2 +=side[j]; 
-     path2 += ".data";
-     mapping[j*2 + i] = new AliCaloAltroMapping(path2.Data());
-   }
- }
+  TString side[] = {"A","C"};//+ and - pseudarapidity supermodules
+  for(Int_t j = 0; j < 2; j++){
+    for(Int_t i = 0; i < 2; i++) {
+      path2 = path;
+      path2 += i;
+      path2 +=side[j]; 
+      path2 += ".data";
+      mapping[j*2 + i] = new AliCaloAltroMapping(path2.Data());
+    }
+  }
+
+  /* Retrieve cut=parameter file from DAQ DB */ 
+  const char* parameterFile = {"EMCALPEDda.dat"};
+  
+  int failed = daqDA_DB_getFile(parameterFile, parameterFile);
+  if (failed) { 
+    printf("Cannot retrieve file : %s from DAQ DB. Exit now..\n",
+	   parameterFile);
+#ifdef LOCAL_DEBUG
+#else
+    return -1;
+#endif
+  }
+
   /* set up our analysis class */  
   AliCaloCalibPedestal * calibPedestal = new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal); // pedestal and noise calibration
   calibPedestal->SetAltroMapping( mapping );
+  calibPedestal->SetParametersFromFile( parameterFile );
 
   AliRawReader *rawReader = NULL;
   int nevents=0;
-
+  
   /* loop over RAW data files */
   for ( i=1; i<argc; i++ ) {
-
+    
     /* define data source : this is argument i */
     printf("Processing file %s\n", argv[i]);
     status=monitorSetDataSource( argv[i] );
@@ -144,16 +159,16 @@ int main(int argc, char **argv) {
       printf("monitorSetDataSource() failed. Error=%s. Exiting ...\n", monitorDecodeError(status));
       return -1;
     }
-
+    
     /* read until EOF */
     struct eventHeaderStruct *event;
     eventTypeType eventT;
 
     for ( ; ; ) { // infinite loop
-
+      
       /* check shutdown condition */
       if (daqDA_checkShutdown()) {break;}
-
+      
       /* get next event (blocking call until timeout) */
       status=monitorGetEventDynamic((void **)&event);
       if (status==MON_ERR_EOF) {
@@ -164,38 +179,39 @@ int main(int argc, char **argv) {
 	printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
 	break;
       }
-
+      
       /* retry if got no event */
       if (event==NULL) {
 	continue;
       }
       eventT = event->eventType; /* just convenient shorthand */
-
+      
       /* skip start/end of run events */
       if ( (eventT != physicsEvent) && (eventT != calibrationEvent) &&
 	   (eventT != systemSoftwareTriggerEvent) && (eventT != detectorSoftwareTriggerEvent) ) {
 	continue;
       }
-
+      
       nevents++; // count how many acceptable events we have
-
+      
       //  Pedestal calibration
       rawReader = new AliRawReaderDate((void*)event);
+      calibPedestal->SetRunNumber(event->eventRunNb);
       calibPedestal->ProcessEvent(rawReader);
       delete rawReader;
-
+      
       /* free resources */
       free(event);    
-
+      
     } //until EOF
   } // loop over files
-
+  
   //
   // write class to rootfile
   //
-
+  
   printf ("%d physics/calibration events processed.\n",nevents);
-
+  
   TFile f(RESULT_FILE, "recreate");
   if (!f.IsZombie()) { 
     f.cd();
@@ -208,7 +224,7 @@ int main(int argc, char **argv) {
     printf("Could not save the object to file \"%s\".\n", 
 	   RESULT_FILE);
   }
-
+  
   //
   // closing down; see if we can delete our analysis helper also
   //
@@ -216,12 +232,12 @@ int main(int argc, char **argv) {
   for(Int_t iFile=0; iFile<kNRCU; iFile++) {
     if (mapping[iFile]) delete mapping[iFile];
   }
-
+  
   /* store the result file on FES */
 #ifdef LOCAL_DEBUG
 #else
   status = daqDA_FES_storeFile(RESULT_FILE, FILE_ID);
 #endif
-
+  
   return status;
 }

@@ -54,6 +54,10 @@ class AliCaloCalibPedestal : public TObject {
   AliCaloAltroMapping **GetAltroMapping() { return fMapping; };
   void  SetAltroMapping(AliCaloAltroMapping **mapp) { fMapping = mapp; };
 
+  // Parameter/cut handling
+  void SetParametersFromFile(const char *parameterFile);
+  void WriteParametersToFile(const char *parameterFile);
+
   ////////////////////////////
   //Simple getters
   // Main profiles:
@@ -184,7 +188,7 @@ class AliCaloCalibPedestal : public TObject {
   static const int fgkPhosCols = 56; // number of columns per module for PHOS
   static const int fgkPhosModules = 5; // number of modules for PHOS
   
-  ClassDef(AliCaloCalibPedestal, 4)
+  ClassDef(AliCaloCalibPedestal, 5)
 
 };
     

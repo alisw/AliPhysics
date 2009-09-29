@@ -37,6 +37,7 @@
 #include "TH1.h"
 #include "TFile.h"
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <cmath>
 
@@ -305,6 +306,98 @@ void AliCaloCalibPedestal::Reset()
   fResurrectedTowers = 0;
  
   //To think about: should fReference be deleted too?... let's not do it this time, at least...
+}
+
+// Parameter/cut handling
+//_____________________________________________________________________
+void AliCaloCalibPedestal::SetParametersFromFile(const char *parameterFile)
+{
+  static const string delimitor("::");
+	
+  // open, check input file
+  ifstream in( parameterFile );
+  if( !in ) {
+    printf("in AliCaloCalibPedestal::SetParametersFromFile - Using default/run_time parameters.\n");
+    return;
+  } 
+
+  // Note: this method is a bit more complicated than it really has to be
+  // - allowing for multiple entries per line, arbitrary order of the
+  // different variables etc. But I wanted to try and do this in as
+  // correct a C++ way as I could (as an exercise).
+
+  // read in
+  char readline[1024];
+  while ((in.rdstate() & ios::failbit) == 0 ) {
+    
+    // Read into the raw char array and then construct a string
+    // to do the searching
+    in.getline(readline, 1024);
+    istringstream s(readline);		
+		
+    while ( ( s.rdstate() & ios::failbit ) == 0 ) {
+			
+      string key_value; 
+      s >> key_value;
+      
+      // check stream status
+      if( s.rdstate() & ios::failbit ) break;
+			
+      // skip rest of line if comments found
+      if( key_value.substr( 0, 2 ) == "//" ) break;
+			
+      // look for "::" in key_value pair
+      size_t position = key_value.find( delimitor );
+      if( position == string::npos ) {
+	printf("wrong format for key::value pair: %s\n", key_value.c_str());
+      }
+				
+      // split key_value pair
+      string key( key_value.substr( 0, position ) );
+      string value( key_value.substr( position+delimitor.size(), 
+				      key_value.size()-delimitor.size() ) );
+			
+      // check value does not contain a new delimitor
+      if( value.find( delimitor ) != string::npos ) {
+	printf("wrong format for key::value pair: %s\n", key_value.c_str());
+      }
+      
+      // debug: check key value pair
+      // printf("AliCaloCalibPedestal::SetParametersFromFile - key %s value %s\n", key.c_str(), value.c_str());
+
+      // if the key matches with something we expect, we assign the new value
+      istringstream iss(value);
+      // the comparison strings defined at the beginning of this method
+      if ( (key == "fFirstPedestalSample") || (key == "fLastPedestalSample") ) {
+	printf("AliCaloCalibPedestal::SetParametersFromFile - key %s value %s\n", key.c_str(), value.c_str());
+
+	if (key == "fFirstPedestalSample") { 
+	  iss >> fFirstPedestalSample; 
+	}
+	else if (key == "fLastPedestalSample") { 
+	  iss >> fLastPedestalSample; 
+	}
+      } // some match
+
+    }		
+  }
+
+  in.close();
+  return;
+	
+}
+
+//_____________________________________________________________________
+void AliCaloCalibPedestal::WriteParametersToFile(const char *parameterFile)
+{
+  static const string delimitor("::");
+  ofstream out( parameterFile );
+  out << "// " << parameterFile << endl;
+  out << "fFirstPedestalSample" << "::" << fFirstPedestalSample << endl;
+  out << "fLastPedestalSample" << "::" << fLastPedestalSample << endl;
+
+  out.close();
+  return;
 }
 
 //_____________________________________________________________________

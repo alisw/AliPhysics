@@ -30,12 +30,14 @@
 //  fSignals->GetXXX..()
 // etc.
 //________________________________________________________________________
+#include <string>
+#include <sstream>
+#include <fstream>
 
 #include "TProfile.h"
 #include "TFile.h"
 
 #include "AliRawReader.h"
-#include "AliRawEventHeaderBase.h"
 #include "AliCaloRawStreamV3.h"
 
 //The include file
@@ -265,6 +267,101 @@ Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(int *AmpVal,
   return returnCode;
 }
 
+// Parameter/cut handling
+//_____________________________________________________________________
+void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
+{
+  static const string delimitor("::");
+	
+  // open, check input file
+  ifstream in( parameterFile );
+  if( !in ) {
+    printf("in AliCaloCalibSignal::SetParametersFromFile - Using default/run_time parameters.\n");
+    return;
+  } 
+
+  // Note: this method is a bit more complicated than it really has to be
+  // - allowing for multiple entries per line, arbitrary order of the
+  // different variables etc. But I wanted to try and do this in as
+  // correct a C++ way as I could (as an exercise).
+
+  // read in
+  char readline[1024];
+  while ((in.rdstate() & ios::failbit) == 0 ) {
+    
+    // Read into the raw char array and then construct a string
+    // to do the searching
+    in.getline(readline, 1024);
+    istringstream s(readline);		
+		
+    while ( ( s.rdstate() & ios::failbit ) == 0 ) {
+			
+      string key_value; 
+      s >> key_value;
+      
+      // check stream status
+      if( s.rdstate() & ios::failbit ) break;
+			
+      // skip rest of line if comments found
+      if( key_value.substr( 0, 2 ) == "//" ) break;
+			
+      // look for "::" in key_value pair
+      size_t position = key_value.find( delimitor );
+      if( position == string::npos ) {
+	printf("wrong format for key::value pair: %s\n", key_value.c_str());
+      }
+				
+      // split key_value pair
+      string key( key_value.substr( 0, position ) );
+      string value( key_value.substr( position+delimitor.size(), 
+				      key_value.size()-delimitor.size() ) );
+			
+      // check value does not contain a new delimitor
+      if( value.find( delimitor ) != string::npos ) {
+	printf("wrong format for key::value pair: %s\n", key_value.c_str());
+      }
+      
+      // debug: check key value pair
+      // printf("AliCaloCalibSignal::SetParametersFromFile - key %s value %s\n", key.c_str(), value.c_str());
+
+      // if the key matches with something we expect, we assign the new value
+      if ( (key == "fAmpCut") || (key == "fReqFractionAboveAmpCutVal") || (key == "fSecInAverage") ) {
+	istringstream iss(value);
+	printf("AliCaloCalibSignal::SetParametersFromFile - key %s value %s\n", key.c_str(), value.c_str());
+
+	if (key == "fAmpCut") { 
+	  iss >> fAmpCut; 
+	}
+	else if (key == "fReqFractionAboveAmpCutVal") { 
+	  iss >> fReqFractionAboveAmpCutVal; 
+	}
+	else if (key == "fSecInAverage") { 
+	  iss >> fSecInAverage; 
+	}
+      } // some match found/expected
+
+    }		
+  }
+
+  in.close();
+  return;
+	
+}
+
+//_____________________________________________________________________
+void AliCaloCalibSignal::WriteParametersToFile(const char *parameterFile)
+{
+  static const string delimitor("::");
+  ofstream out( parameterFile );
+  out << "// " << parameterFile << endl;
+  out << "fAmpCut" << "::" << fAmpCut << endl;
+  out << "fReqFractionAboveAmpCutVal" << "::" << fReqFractionAboveAmpCutVal << endl;
+  out << "fSecInAverage" << "::" << fSecInAverage << endl;
+
+  out.close();
+  return;
+}
+
 //_____________________________________________________________________
 Bool_t AliCaloCalibSignal::AddInfo(const AliCaloCalibSignal *sig)
 {
@@ -336,11 +433,11 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliRawReader *rawReader)
   // if fMapping is NULL the rawstream will crate its own mapping
   AliCaloRawStreamV3 rawStream(rawReader, fCaloString, (AliAltroMapping**)fMapping);
 
-  return ProcessEvent( &rawStream, (AliRawEventHeaderBase*)rawReader->GetEventHeader() );
+  return ProcessEvent( &rawStream, rawReader->GetTimestamp() );
 }
 
 //_____________________________________________________________________
-Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeaderBase *aliHeader)
+Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp)
 { 
   // Method to process=analyze one event in the data stream
   if (!in) return kFALSE; //Return right away if there's a null pointer
@@ -458,10 +555,10 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, AliRawEventHeade
   fNAcceptedEvents++; // one more event accepted
 
   if (fStartTime == 0) { // if start-timestamp wasn't set,we'll pick it up from the first event we encounter
-    fStartTime = aliHeader->Get("Timestamp");
+    fStartTime = Timestamp;
   }
 
-  fHour = (aliHeader->Get("Timestamp")-fStartTime)/(double)fgkNumSecInHr;
+  fHour = (Timestamp - fStartTime)/(double)fgkNumSecInHr;
   if (fLatestHour < fHour) {
     fLatestHour = fHour; 
   }
