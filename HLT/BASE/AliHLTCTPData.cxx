@@ -35,6 +35,7 @@ AliHLTCTPData::AliHLTCTPData()
   : TNamed("AliHLTCTPData", "HLT counters for the CTP")
   , AliHLTLogging()
   , fMask(0)
+  , fTriggers(0)
   , fClassIds(AliHLTReadoutList::Class(), gkNCTPTriggerClasses)
   , fCounters(gkNCTPTriggerClasses)
 {
@@ -49,6 +50,7 @@ AliHLTCTPData::AliHLTCTPData(const char* parameter)
   : TNamed("AliHLTCTPData", "HLT counters for the CTP")
   , AliHLTLogging()
   , fMask(0)
+  , fTriggers(0)
   , fClassIds(AliHLTReadoutList::Class(), gkNCTPTriggerClasses)
   , fCounters(gkNCTPTriggerClasses)
 {
@@ -66,6 +68,7 @@ AliHLTCTPData::AliHLTCTPData(const AliHLTCTPData& src)
   : TNamed(src.GetName(), src.GetTitle())
   , AliHLTLogging()
   , fMask(src.Mask())
+  , fTriggers(src.fTriggers)
   , fClassIds(src.fClassIds)
   , fCounters(src.Counters())
 {
@@ -229,7 +232,7 @@ AliHLTUInt64_t AliHLTCTPData::ActiveTriggers(const AliHLTComponentTriggerData& t
   return triggerMask;
 }
 
-bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, AliHLTComponentTriggerData& trigData) const
+bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, const AliHLTComponentTriggerData& trigData) const
 {
   // see header file for function documentation
   if (trigData.fDataSize != sizeof(AliHLTEventTriggerData)) {
@@ -248,6 +251,13 @@ bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, AliHLTCompon
     for (int i=0; i<8; i++) HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
     return false;
   }
+
+  return EvaluateCTPTriggerClass(expression, triggerMask);
+}
+
+bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, AliHLTUInt64_t triggerMask) const
+{
+  // see header file for function documentation
 
   // use a TFormula to interprete the expression
   // all classname are replaced by '[n]' which means the n'th parameter in the formula
@@ -408,6 +418,7 @@ void AliHLTCTPData::Print(Option_t* /*option*/) const
 {
   // see header file for function documentation
   cout << GetTitle() << endl;
+  cout << "\tactive trigger mask: 0x" << hex << fTriggers << dec << endl;
   int count=0;
   for (int i=0; i<gkNCTPTriggerClasses; i++) {
     if (i>=Counters().GetSize()) break;

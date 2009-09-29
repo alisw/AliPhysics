@@ -75,7 +75,19 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
   /**
    * Evaluate an expression of trigger class ids with respect to the trigger mask.
    */
-  bool EvaluateCTPTriggerClass(const char* expression, AliHLTComponentTriggerData& trigData) const;
+  bool EvaluateCTPTriggerClass(const char* expression, const AliHLTComponentTriggerData& trigData) const;
+
+  /**
+   * Evaluate an expression of trigger class ids with respect to the trigger mask.
+   */
+  bool EvaluateCTPTriggerClass(const char* expression, AliHLTUInt64_t triggerMask) const;
+
+  /**
+   * Evaluate an expression of trigger class ids with respect to the current trigger mask.
+   */
+  bool EvaluateCTPTriggerClass(const char* expression) const {
+    return EvaluateCTPTriggerClass(expression, fTriggers);
+  }
 
   /**
    * Reset all counters
@@ -124,6 +136,9 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
   virtual void Print(Option_t* option = "") const;
 
   AliHLTUInt64_t   Mask() const { return fMask; }
+  AliHLTUInt64_t   Triggers() const { return fTriggers; }
+  void             SetTriggers(AliHLTUInt64_t triggers) { fTriggers=triggers; }
+  void             SetTriggers(AliHLTComponentTriggerData trigData) {SetTriggers(ActiveTriggers(trigData));}
   const TArrayL64& Counters() const { return fCounters; }
   AliHLTUInt64_t   Counter(int index) const;
   AliHLTUInt64_t   Counter(const char* classId) const;
@@ -141,10 +156,11 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
   int Add(const AliHLTCTPData& src, int factor, int &skipped);
 
   AliHLTUInt64_t fMask;      /// mask of initialized trigger classes
+  AliHLTUInt64_t fTriggers;  /// current trigger
   TClonesArray   fClassIds;  /// array of trigger class ids
   TArrayL64      fCounters;  /// trigger class counters
 
-  ClassDef(AliHLTCTPData, 0)
+  ClassDef(AliHLTCTPData, 1)
 };
 
 #endif

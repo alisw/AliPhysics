@@ -1739,8 +1739,12 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   // for the private blocks
   if (fRequireSteeringBlocks) bSkipDataProcessing=0;
 
-  // increment CTP trigger counters if available
-  if (fpCTPData && IsDataEvent()) fpCTPData->Increment(trigData);
+  if (fpCTPData) {
+    // set the active triggers for this event
+    fpCTPData->SetTriggers(trigData);
+    // increment CTP trigger counters if available
+    if (IsDataEvent()) fpCTPData->Increment(trigData);
+  }
 
   AliHLTComponentBlockDataList blockData;
   if (iResult>=0 && !bSkipDataProcessing)
@@ -1823,6 +1827,9 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 
   // reset the internal EventData struct
   FillEventData(fCurrentEventData);
+
+  // reset the active triggers
+  if (fpCTPData) fpCTPData->SetTriggers(0);
   return iResult;
 }
 
