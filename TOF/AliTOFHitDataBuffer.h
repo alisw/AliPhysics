@@ -13,31 +13,36 @@
 
 #include "TObject.h"
 #include "AliTOFHitData.h"
+#include "TClonesArray.h"
 
-//class AliTOFHitData;
-
-//data buffer size
-#define DATA_BUFFER_SIZE 10000
-
-class AliTOFHitDataBuffer : public TObject{
+class AliTOFHitDataBuffer : 
+public TObject
+{
   
  public:
 
-  AliTOFHitDataBuffer(Int_t BufferSize = DATA_BUFFER_SIZE);
-  ~AliTOFHitDataBuffer();  
-  AliTOFHitDataBuffer(const AliTOFHitDataBuffer &source);
-  AliTOFHitDataBuffer& operator=(const AliTOFHitDataBuffer & source); 
-  void           Reset() {fEntries = 0;};
-  Bool_t         Add(AliTOFHitData &HitData);
+  AliTOFHitDataBuffer(); // default constructor 
+  AliTOFHitDataBuffer(Int_t size); // overloaded constructor
+  ~AliTOFHitDataBuffer();   // default destructor
+  AliTOFHitDataBuffer(const AliTOFHitDataBuffer &source) : TObject(source), fBuffer(source.fBuffer) {}; // copy constructor 
+  AliTOFHitDataBuffer& operator=(const AliTOFHitDataBuffer & source) {
+    if (&source != this) {
+      TObject::operator=(source);
+      fBuffer = source.fBuffer;
+    }
+    return *this;
+  }; // operator =
+
+  void Reset() {fBuffer.Clear();}; // reset
+  Bool_t Add(AliTOFHitData &HitData); // add
   
-  AliTOFHitData *GetBuffer() {return fBuffer;};
-  AliTOFHitData *GetHit(Int_t Hit) const {return (Hit < fBufferSize ? &fBuffer[Hit] : 0x0);};
-  Int_t          GetEntries() const {return fEntries;};
+  TClonesArray *GetBuffer() {return &fBuffer;}; // get buffer
+  AliTOFHitData *GetHit(Int_t Hit) const {return (Hit < GetEntries() ? (AliTOFHitData *)fBuffer.At(Hit) : 0x0);}; // get hit
+  Int_t GetEntries() const {return fBuffer.GetEntries();}; // get entries
   
  private:
-  Int_t          fBufferSize; // buffer size
-  AliTOFHitData *fBuffer;     // buffer
-  Int_t          fEntries;    // entries
+
+  TClonesArray fBuffer; // buffer
 
   ClassDef(AliTOFHitDataBuffer, 1);
 };

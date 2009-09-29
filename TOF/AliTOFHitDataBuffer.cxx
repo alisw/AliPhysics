@@ -32,58 +32,37 @@ container for TOF raw data
 ////////////////////////////////////////////////////////////////////////
 
 #include "AliLog.h"
-
-//#include "AliTOFHitData.h"
 #include "AliTOFHitDataBuffer.h"
 
 ClassImp(AliTOFHitDataBuffer)
 
-AliTOFHitDataBuffer::AliTOFHitDataBuffer(Int_t bufferSize) :
+AliTOFHitDataBuffer::AliTOFHitDataBuffer() :
   TObject(),
-  fBufferSize(bufferSize),
-  fBuffer(new AliTOFHitData[bufferSize]),
-  fEntries(0)
+  fBuffer("AliTOFHitData")
 {
+  fBuffer.SetOwner(kTRUE);
 }
 
 //-----------------------------------------------------------------------------
-AliTOFHitDataBuffer::AliTOFHitDataBuffer(const AliTOFHitDataBuffer &source):
-  TObject(source),
-  fBufferSize(source.fBufferSize),
-  fBuffer(new AliTOFHitData[fBufferSize]),
-  fEntries(source.fEntries)
+
+AliTOFHitDataBuffer::AliTOFHitDataBuffer(Int_t size) :
+  TObject(),
+  fBuffer("AliTOFHitData", size)
 {
-  // copy ctr
-  for (Int_t i = 0; i < fEntries; ++i)
-    fBuffer[i] = source.fBuffer[i];
+  fBuffer.SetOwner(kTRUE);
 }
 
 //-----------------------------------------------------------------------------
-AliTOFHitDataBuffer& AliTOFHitDataBuffer::operator=(const AliTOFHitDataBuffer & source) 
-{ 
-  // ass operator
-  if(this!=&source) {
-    TObject::operator=(source);
-    fEntries = source.fEntries < fBufferSize ? source.fEntries : fBufferSize;
-    for (Int_t i = 0; i < fEntries; ++i) fBuffer[i]=source.fBuffer[i];
-  }
-  return *this;
-}
 
-//-----------------------------------------------------------------------------
 AliTOFHitDataBuffer::~AliTOFHitDataBuffer()
 {
-  delete [] fBuffer;
 }
 
 //-----------------------------------------------------------------------------
 Bool_t AliTOFHitDataBuffer::Add(AliTOFHitData &HitData) {
   // adding a new entry 
-  if (fEntries >= fBufferSize){
-    AliError("The buffer is completely full. ");
-    return kTRUE;
-  }
-  fBuffer[fEntries++] = HitData;
+
+  new (fBuffer[GetEntries()]) AliTOFHitData(HitData);
   return kFALSE;
 }
 
