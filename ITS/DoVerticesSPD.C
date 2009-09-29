@@ -51,6 +51,7 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
   if(!gGeoManager){
     AliGeomManager::LoadGeometry("geometry.root");
   }
+  AliGeomManager::ApplyAlignObjsFromCDB("ITS");
 
   AliRunLoader* runLoader = AliRunLoader::Open("galice.root");
   if (!runLoader) {
@@ -69,7 +70,7 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
   AliITSLoader* ITSloader =  (AliITSLoader*) runLoader->GetLoader("ITSLoader");
   ITSloader->LoadRecPoints("read");
 
- Int_t totev=runLoader->GetNumberOfEvents();
+  Int_t totev=runLoader->GetNumberOfEvents();
   if(optdebug)  printf("Number of events= %d\n",totev);
 
   TFile* esdFile = TFile::Open("AliESDs.root");
