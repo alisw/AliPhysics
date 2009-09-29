@@ -293,7 +293,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		TClonesArray* tracks = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetTracks();
 		new (fgAODTracks) TClonesArray(*tracks);
 	    }
-	    if ((handler->NeedsVerticesBranchReplication()) && (fgAODVertices))
+	    if ((handler->NeedsVerticesBranchReplication() || merging) && (fgAODVertices))
 	    {
 		TClonesArray* vertices = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetVertices();
 		new (fgAODVertices) TClonesArray(*vertices);
