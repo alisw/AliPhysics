@@ -95,9 +95,9 @@ AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlin
       
       for(int mod =0; mod <NMODULES; mod ++)
 	{
-	  for(int z = 0; z < NZROWSRCU; z ++)
+	  for(int z = 0; z < NZROWSMOD ; z ++)
 	      {
-		for(int x = 0; x < NXCOLUMNSRCU; x ++)
+		for(int x = 0; x < NXCOLUMNSMOD; x ++)
 		  {
 		    fChannelData[mod][z][x][gain] = new int[ALTROMAXSAMPLES];
 		    fNChannelSamples[mod][z][x][gain] = 0;
@@ -223,9 +223,19 @@ AliHLTPHOSOnlineDisplayEventTab::FillRawData(const AliHLTPHOSChannelRawDataStruc
 {
   fNChannelSamples[ rawStr.fCoordinate.fModuleId ][ rawStr.fCoordinate.fZ ]  [ rawStr.fCoordinate.fX ][ rawStr.fCoordinate.fGain ] = rawStr.nSamplesUsed;
   fChannelEnergy[ rawStr.fCoordinate.fModuleId ][ rawStr.fCoordinate.fZ ]  [ rawStr.fCoordinate.fX ][ rawStr.fCoordinate.fGain ] = rawStr.fEnergy;
-  
+
+
+  /*
+  cout << __FILE__ << __LINE__<< "module ID = " << rawStr.fCoordinate.fModuleId  << endl;
+  cout << __FILE__ << __LINE__<< "fZ = " << rawStr.fCoordinate.fZ   << endl;
+  cout << __FILE__ << __LINE__<< "fX = " << rawStr.fCoordinate.fX   << endl;
+  cout << __FILE__ << __LINE__<< "fGain = " << rawStr.fCoordinate.fGain   << endl; 
+  cout << __FILE__ << __LINE__<< "nSamples = " <<    rawStr.nSamplesUsed   << endl; 
+  */
+
   for(int i=0; i <  rawStr.nSamplesUsed; i++ )
     {
+      //     cout <<  "i = "  << i << endl;
       fChannelData[ rawStr.fCoordinate.fModuleId ][ rawStr.fCoordinate.fZ ]  [ rawStr.fCoordinate.fX ][ rawStr.fCoordinate.fGain ][i] =  rawStr.fDataPtr[i];  
     }
 
