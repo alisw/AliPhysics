@@ -424,7 +424,7 @@ Double_t AliHFMassFitter::FitFunction4MassDistr (Double_t *x, Double_t *par){
     if(ftypeOfFit4Sgn == 1) {
       
       Double_t parbkg[6] = {par[3],par[4],ffactor*par[5],par[0]-2*par[3], par[1], par[2]};
-      bkg = FitFunction4Bkg(x,parbkg);
+     bkg = FitFunction4Bkg(x,parbkg);
     }
     
     sgn = FitFunction4Sgn(x,&par[3]);
@@ -567,13 +567,10 @@ Bool_t AliHFMassFitter::SideBandsBounds(){
     cout<<"Error! Range too little"; 
     return kFALSE;
   }
-  /*
-  Int_t fbin=(Int_t)((fminMass-minHisto)/width)+1, lbin=(Int_t)((fmaxMass-minHisto)/width)+1;
-  cout<<"Range: "<<fminMass<<", "<<fmaxMass<<endl;
-  cout<<"Range in bin = "<<fbin<<" --> "<<lbin<<endl;
-  */
   return kTRUE;
 }
+
+//__________________________________________________________________________
 
 void AliHFMassFitter::GetSideBandsBounds(Int_t &left, Int_t &right) const{
   if (fSideBandl==0 && fSideBandr==0){
@@ -635,16 +632,9 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     return kFALSE;
   }
   
-  /*
-  //side bands usando il range utente
-Double_t sideBandsInt=(Double_t)fhistoInvMass->Integral(fbin,binleft,"width") + (Double_t)fhistoInvMass->Integral(binright,lbin,"width");
-  cout<<"------nbin = "<<fNbin<<"\twidth = "<<width<<"\tbinleft = "<<binleft<<"\tbinright = "<<binright<<endl;
-  cout<<"------sideBandsInt - first approx = "<<sideBandsInt<<endl;
-  
-  */
   /*Fit Bkg*/
 
-  //TF1 *funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,bkgPar,"AliHFMassFitter","FitFunction4Bkg");
+
   TF1 *funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,minHisto,maxHisto,bkgPar,"AliHFMassFitter","FitFunction4Bkg");
   cout<<"Function name = "<<funcbkg->GetName()<<endl<<endl;
 
@@ -853,6 +843,10 @@ Double_t sideBandsInt=(Double_t)fhistoInvMass->Integral(fbin,binleft,"width") + 
   if (ftypeOfFit4Sgn == 1) delete funcbkg1;
   delete funcbkg;
   delete funcmass;
+
+  AddFunctionsToHisto();
+ 
+
   return kTRUE;
 }
 //_________________________________________________________________________
@@ -877,9 +871,93 @@ void  AliHFMassFitter::GetFitPars(Float_t *vector) const {
     vector[i]=fFitPars[i];
   }
 }
+
+
+//_________________________________________________________________________
+void AliHFMassFitter::AddFunctionsToHisto(){
+
+  cout<<"AddFunctionsToHisto called"<<endl;
+  TString bkgname = "funcbkg";
+  Int_t np=-99;
+  switch (ftypeOfFit4Bkg){
+  case 0: //expo
+    np=2;
+    break;
+  case 1: //linear
+    np=2;
+    break;
+  case 2: //pol2
+    np=3;
+    break;
+  case 3: //no bkg
+    np=1;
+    break;
+  }
+  if (ftypeOfFit4Sgn == 1) {
+    bkgname += 1;
+    np+=3;
+  }
+
+  TString bkgnamesave=bkgname;
+  TString testname=bkgname;
+  testname += "FullRange";
+  TF1 *testfunc=(TF1*)fhistoInvMass->FindObject(testname.Data());
+  if(testfunc){
+    cout<<"AddFunctionsToHisto already used: exiting...."<<endl;
+    return;
+  }
+
+  TList *hlist=fhistoInvMass->GetListOfFunctions();
+  hlist->ls();
+
+  TF1 *b=(TF1*)hlist->FindObject(bkgname.Data());
+  bkgname += "FullRange";
+  TF1 *bfullrange=new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,np,"AliHFMassFitter","FitFunction4Bkg");
+  //cout<<bfullrange->GetName()<<endl;
+  for(Int_t i=0;i<np;i++){
+    //cout<<i<<" di "<<np<<endl;
+    bfullrange->SetParName(i,b->GetParName(i));
+    bfullrange->SetParameter(i,b->GetParameter(i));
+    bfullrange->SetParError(i,b->GetParError(i));
+  }
+
+  bkgnamesave += "Recalc";
+
+  TF1 *blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,np,"AliHFMassFitter","FitFunction4Bkg");
+
+  TF1 *mass=fhistoInvMass->GetFunction("funcmass");
+
+  if (!mass){
+    cout<<"funcmass doesn't exist "<<endl;
+    return;
+  }
+
+  blastpar->SetParameter(0,mass->GetParameter(0)-mass->GetParameter(np));
+  blastpar->SetParError(0,mass->GetParError(np));
+  if (np>=2) {
+    blastpar->SetParameter(1,mass->GetParameter(1));
+    blastpar->SetParError(1,mass->GetParError(1));
+  }
+  if (np==3) {
+    blastpar->SetParameter(2,mass->GetParameter(2));
+    blastpar->SetParError(2,mass->GetParError(2));
+  }
+
+  blastpar->SetLineStyle(2);
+  blastpar->SetLineColor(2);
+
+  hlist->Add(bfullrange->Clone());
+  hlist->Add(blastpar->Clone());
+  hlist->ls();
+  
+  delete bfullrange;
+  delete blastpar;
+}
+
 //_________________________________________________________________________
 
 TH1F* AliHFMassFitter::GetHistoClone() const{
+
   TH1F* hout=(TH1F*)fhistoInvMass->Clone(fhistoInvMass->GetName());
   return hout;
 }
@@ -890,44 +968,8 @@ void AliHFMassFitter::WriteHisto(TString path) {
     cout<<"Use MassFitter method before WriteHisto"<<endl;
     return;
   }
-
   TH1F* hget=(TH1F*)fhistoInvMass->Clone();
 
-  TString bkgname = "funcbkg";
-  Int_t np=-99;
-  switch (ftypeOfFit4Bkg){
-  case 0:
-    np=2;
-    break;
-  case 1:
-    np=2;
-    break;
-  case 2:
-    np=3;
-    break;
-  case 3:
-    np=1;
-    break;
-  }
-  if (ftypeOfFit4Sgn == 1) {
-    bkgname += 1;
-    np+=3;
-  }
-  TList *hlist=hget->GetListOfFunctions();
-  hlist->ls();
-  TF1 *b=(TF1*)hlist->FindObject(bkgname.Data());
-  cout<< b->GetParameter(0)<<endl;
-  cout<<"WRITEHISTO np = "<<np<<"\n"<<bkgname<<endl;
-  bkgname += "FullRange";
-  TF1 *bwrite=new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,np,"AliHFMassFitter","FitFunction4Bkg");
-  cout<<bwrite->GetName()<<endl;
-  for(Int_t i=0;i<np;i++){
-    cout<<i<<" di "<<np<<endl;
-    bwrite->SetParName(i,b->GetParName(i));
-    bwrite->SetParameter(i,b->GetParameter(i));
-  }
-  
-  hlist->Add(bwrite);
   path += "HFMassFitterOutput.root";
   TFile *output;
  
@@ -939,7 +981,6 @@ void AliHFMassFitter::WriteHisto(TString path) {
 
   cout<<fcounter<<" "<<hget->GetName()<<" written in "<<path<<endl;
 
-  delete bwrite;
   delete output;
 
 }
@@ -966,125 +1007,164 @@ void AliHFMassFitter::WriteNtuple(TString path) const{
 void AliHFMassFitter::Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const {
   // Return signal integral in mean+- n sigma
 
+  if(fcounter==0) {
+    cout<<"Use MassFitter method before Signal"<<endl;
+    return;
+  }
 
   //functions names
-  TString bkgname="funcbkg";
-  TString bkg1name="funcbkg1";
+  TString bkgname= "funcbkgRecalc";
+  TString bkg1name="funcbkg1Recalc";
   TString massname="funcmass";
 
 
   TF1 *funcbkg=0;
   TF1 *funcmass=fhistoInvMass->GetFunction(massname.Data());
-  if(ftypeOfFit4Sgn == 0) funcbkg=fhistoInvMass->GetFunction(bkgname.Data());
-  else funcbkg=fhistoInvMass->GetFunction(bkg1name.Data());
-  
-  //put final parameter in background function
-  if (ftypeOfFit4Bkg != 3) {//signal + background
-
-    funcbkg->SetParameter(1,funcmass->GetParameter(1)); //slope
-
-    if(ftypeOfFit4Bkg == 2) { //polynomial
-      funcbkg->SetParameter(0,funcmass->GetParameter(0)-funcmass->GetParameter(3));//intbkg
-      funcbkg->SetParameter(2,funcmass->GetParameter(2)); //coef
-    }
-    else {//expo or linear
-      funcbkg->SetParameter(0,funcmass->GetParameter(0)-funcmass->GetParameter(2));//intbkg
-    }
+  if(!funcmass){
+    cout<<"AliHFMassFitter::Signal() ERROR -> Mass distr function not found!"<<endl;
+    return;
   }
 
-  //Double_t mean=0,sigma=1;
+  if(ftypeOfFit4Sgn == 0) funcbkg=fhistoInvMass->GetFunction(bkgname.Data());
+  else funcbkg=fhistoInvMass->GetFunction(bkg1name.Data());
+
+  if(!funcbkg){
+    cout<<"AliHFMassFitter::Signal() ERROR -> Bkg function not found!"<<endl;
+    return;
+  }
+
+  Int_t np=-99;
+  switch (ftypeOfFit4Bkg){
+  case 0: //expo
+    np=2;
+    break;
+  case 1: //linear
+    np=2;
+    break;
+  case 2: //pol2
+    np=3;
+    break;
+  case 3: //no bkg
+    np=1;
+    break;
+  }
+
   Double_t intS,intSerr;
 
  //relative error evaluation
-  if(ftypeOfFit4Bkg == 2) { //polynomial
-    //mean=funcmass->GetParameter(4); //mean
-    //sigma=funcmass->GetParameter(5); //sigma
-    intS=fFitPars[12];
-    intSerr=fFitPars[27];
-  } else if(ftypeOfFit4Bkg == 3){ //no background
-    //mean=funcmass->GetParameter(2); //mean
-    //sigma=funcmass->GetParameter(3); //sigma
-    intS=fFitPars[6];
-    intSerr=fFitPars[15];
-  } else { //expo or linear
-    //mean=funcmass->GetParameter(3); //mean
-    //sigma=funcmass->GetParameter(4); //sigma
-    intS=fFitPars[9];
-    intSerr=fFitPars[21];
-  }
+  intS=funcmass->GetParameter(np);
+  intSerr=funcmass->GetParError(np);
   cout<<"Sgn relative error evaluation from fit: "<<intSerr/intS<<endl;
+  Double_t background,errbackground;
+  Background(nOfSigma,background,errbackground);
+
   //signal +/- error in nsigma
   Double_t min=fMass-nOfSigma*fSigmaSgn;
   Double_t max=fMass+nOfSigma*fSigmaSgn;
-  if(ftypeOfFit4Bkg == 3 && ftypeOfFit4Sgn == 0) signal=funcmass->Integral(min,max)/(Double_t)fhistoInvMass->GetBinWidth(2); 
-  else signal=(funcmass->Integral(min,max)-funcbkg->Integral(min,max))/(Double_t)fhistoInvMass->GetBinWidth(2);
-  errsignal=intSerr/intS*signal; // assume relative error is the same as for total integral
-  
+
+  Double_t mass=funcmass->Integral(min, max)/fhistoInvMass->GetBinWidth(4);
+  signal=mass - background;
+  errsignal=TMath::Sqrt((intSerr/intS*mass)*(intSerr/intS*mass)/*assume relative error is the same as for total integral*/ + errbackground*errbackground);
   return;
 }
+
+//_________________________________________________________________________
+
+void AliHFMassFitter::Signal(Double_t min, Double_t max, Double_t &signal,Double_t &errsignal) const {
+
+  // Return signal integral in a range
+  
+  if(fcounter==0) {
+    cout<<"Use MassFitter method before Signal"<<endl;
+    return;
+  }
+
+  //functions names
+  TString bkgname="funcbkgRecalc";
+  TString bkg1name="funcbkg1Recalc";
+  TString massname="funcmass";
+
+
+  TF1 *funcbkg=0;
+  TF1 *funcmass=fhistoInvMass->GetFunction(massname.Data());
+  if(!funcmass){
+    cout<<"AliHFMassFitter::Signal() ERROR -> Mass distr function not found!"<<endl;
+    return;
+  }
+
+  if(ftypeOfFit4Sgn == 0) funcbkg=fhistoInvMass->GetFunction(bkgname.Data());
+  else funcbkg=fhistoInvMass->GetFunction(bkg1name.Data());
+
+  if(!funcbkg){
+    cout<<"AliHFMassFitter::Signal() ERROR -> Bkg function not found!"<<endl;
+    return;
+  }
+
+  Int_t np=-99;
+  switch (ftypeOfFit4Bkg){
+  case 0: //expo
+    np=2;
+    break;
+  case 1: //linear
+    np=2;
+    break;
+  case 2: //pol2
+    np=3;
+    break;
+  case 3: //no bkg
+    np=1;
+    break;
+  }
+
+  Double_t intS,intSerr;
+
+ //relative error evaluation
+  intS=funcmass->GetParameter(np);
+  intSerr=funcmass->GetParError(np);
+
+  cout<<"Sgn relative error evaluation from fit: "<<intSerr/intS<<endl;
+  Double_t background,errbackground;
+  Background(min,max,background,errbackground);
+
+  //signal +/- error in the range
+
+  Double_t mass=funcmass->Integral(min, max)/fhistoInvMass->GetBinWidth(4);
+  signal=mass - background;
+  errsignal=TMath::Sqrt((intSerr/intS*mass)*(intSerr/intS*mass)/*assume relative error is the same as for total integral*/ + errbackground*errbackground);
+
+}
+
 //_________________________________________________________________________
 
 void AliHFMassFitter::Background(Double_t nOfSigma,Double_t &background,Double_t &errbackground) const {
   // Return background integral in mean+- n sigma
- 
-  //functions names
-  TString bkgname="funcbkg";
-  TString bkg1name="funcbkg1";
-  TString massname="funcmass";
 
+  if(fcounter==0) {
+    cout<<"Use MassFitter method before Background"<<endl;
+    return;
+  }
+
+  //functions names
+  TString bkgname="funcbkgRecalc";
+  TString bkg1name="funcbkg1Recalc";
 
   TF1 *funcbkg=0;
-  TF1 *funcmass=fhistoInvMass->GetFunction(massname.Data());
   if(ftypeOfFit4Sgn == 0) funcbkg=fhistoInvMass->GetFunction(bkgname.Data());
   else funcbkg=fhistoInvMass->GetFunction(bkg1name.Data());
+  if(!funcbkg){
+    cout<<"AliHFMassFitter::Background() ERROR -> Bkg function not found!"<<endl;
+    return;
+  }
 
-  //relative error evaluation: from first fit
   Double_t intB,intBerr;
-  intB=funcbkg->GetParameter(0);
-  intBerr=funcbkg->GetParError(0);
-  cout<<"Bkg relative error evaluation: from first fit: "<<intBerr/intB<<endl;
 
-
-  //put final parameter in background function
-  if (ftypeOfFit4Bkg != 3) {//signal + background
-
-    funcbkg->SetParameter(1,funcmass->GetParameter(1)); //slope
-
-    if(ftypeOfFit4Bkg == 2) { //polynomial
-      funcbkg->SetParameter(0,funcmass->GetParameter(0)-funcmass->GetParameter(3));//intbkg
-      funcbkg->SetParameter(2,funcmass->GetParameter(2)); //coef
-    }
-    else {//expo or linear
-      funcbkg->SetParameter(0,funcmass->GetParameter(0)-funcmass->GetParameter(2));//intbkg
-    }
+  //relative error evaluation: from final parameters of the fit
+  if(ftypeOfFit4Bkg==3 && ftypeOfFit4Sgn == 0) cout<<"No background fit: Bkg relative error evaluation put to zero"<<endl;
+  else{
+    intB=funcbkg->GetParameter(0);
+    intBerr=funcbkg->GetParError(0);
+    cout<<"Bkg relative error evaluation: from final parameters of the fit: "<<intBerr/intB<<endl;
   }
-
-  //Double_t mean=0,sigma=1;
-  
-  /*
-  if(ftypeOfFit4Bkg == 2) { //polynomial
-    //mean=funcmass->GetParameter(4); //mean
-    //sigma=funcmass->GetParameter(5); //sigma
-    intB=fFitPars[9]-fFitPars[12];
-    intBerr=fFitPars[27];
-  } else if(ftypeOfFit4Bkg == 3){ //no background
-    //mean=funcmass->GetParameter(2); //mean
-    //sigma=funcmass->GetParameter(3); //sigma
-    if (ftypeOfFit4Sgn == 1){ //reflection
-      intB=fFitPars[1]; 
-      intBerr=fFitPars[9];
-    } else {
-      intB=-1;intBerr=-1;
-      err=0;
-    }
-  } else { //expo or linear
-    //mean=funcmass->GetParameter(3); //mean
-    //sigma=funcmass->GetParameter(4); //sigma
-    intB=fFitPars[7]-fFitPars[9];
-    intBerr=fFitPars[21];
-  }
-  */
-  
 
   Double_t min=fMass-nOfSigma*fSigmaSgn;
   Double_t max=fMass+nOfSigma*fSigmaSgn;
@@ -1103,6 +1183,7 @@ void AliHFMassFitter::Background(Double_t nOfSigma,Double_t &background,Double_t
   intBerr=TMath::Sqrt(sum2);
   cout<<"Bkg relative error evaluation: from histo: "<<intBerr/intB<<endl;
   
+  cout<<"Last estimation of bkg error is used"<<endl;
 
   //backround +/- error in nsigma
   if (ftypeOfFit4Bkg == 3 && ftypeOfFit4Sgn == 0) {
@@ -1112,10 +1193,74 @@ void AliHFMassFitter::Background(Double_t nOfSigma,Double_t &background,Double_t
   else{
     background=funcbkg->Integral(min,max)/(Double_t)fhistoInvMass->GetBinWidth(2);
     errbackground=intBerr/intB*background; // assume relative error is the same as for total integral
+    //cout<<"integral = "<<funcbkg->Integral(min, max)<<"\tbinW = "<<fhistoInvMass->GetBinWidth(2)<<endl;
   }
   return;
 
 }
+//___________________________________________________________________________
+
+void AliHFMassFitter::Background(Double_t min, Double_t max, Double_t &background,Double_t &errbackground) const {
+  // Return background integral in a range
+
+  if(fcounter==0) {
+    cout<<"Use MassFitter method before Background"<<endl;
+    return;
+  }
+
+  //functions names
+  TString bkgname="funcbkgRecalc";
+  TString bkg1name="funcbkg1Recalc";
+
+  TF1 *funcbkg=0;
+  if(ftypeOfFit4Sgn == 0) funcbkg=fhistoInvMass->GetFunction(bkgname.Data());
+  else funcbkg=fhistoInvMass->GetFunction(bkg1name.Data());
+  if(!funcbkg){
+    cout<<"AliHFMassFitter::Background() ERROR -> Bkg function not found!"<<endl;
+    return;
+  }
+
+
+  Double_t intB,intBerr;
+
+  //relative error evaluation: from final parameters of the fit
+  if(ftypeOfFit4Bkg==3 && ftypeOfFit4Sgn == 0) cout<<"No background fit: Bkg relative error evaluation put to zero"<<endl;
+  else{
+    intB=funcbkg->GetParameter(0);
+    intBerr=funcbkg->GetParError(0);
+    cout<<"Bkg relative error evaluation: from final parameters of the fit: "<<intBerr/intB<<endl;
+  }
+
+  //relative error evaluation: from histo
+   
+  intB=fhistoInvMass->Integral(1,fSideBandl)+fhistoInvMass->Integral(fSideBandr,fNbin);
+  Double_t sum2=0;
+  for(Int_t i=1;i<=fSideBandl;i++){
+    sum2+=fhistoInvMass->GetBinError(i)*fhistoInvMass->GetBinError(i);
+  }
+  for(Int_t i=fSideBandr;i<=fNbin;i++){
+    sum2+=fhistoInvMass->GetBinError(i)*fhistoInvMass->GetBinError(i);
+  }
+
+  intBerr=TMath::Sqrt(sum2);
+  cout<<"Bkg relative error evaluation: from histo: "<<intBerr/intB<<endl;
+  
+  cout<<"Last estimation of bkg error is used"<<endl;
+
+  //backround +/- error in the range
+  if (ftypeOfFit4Bkg == 3 && ftypeOfFit4Sgn == 0) {
+    background = 0;
+    errbackground = 0;
+  }
+  else{
+    background=funcbkg->Integral(min,max)/(Double_t)fhistoInvMass->GetBinWidth(2);
+    errbackground=intBerr/intB*background; // assume relative error is the same as for total integral
+    //cout<<"integral = "<<funcbkg->Integral(min, max)<<"\tbinW = "<<fhistoInvMass->GetBinWidth(2)<<endl;
+  }
+  return;
+
+}
+
 
 //__________________________________________________________________________
 
@@ -1135,3 +1280,16 @@ void AliHFMassFitter::Significance(Double_t nOfSigma,Double_t &significance,Doub
 
 //__________________________________________________________________________
 
+void AliHFMassFitter::Significance(Double_t min, Double_t max, Double_t &significance,Double_t &errsignificance) const {
+  // Return significance integral in a range
+
+  Double_t signal,errsignal,background,errbackground;
+  Signal(min, max,signal,errsignal);
+  Background(min, max,background,errbackground);
+
+  significance =  signal/TMath::Sqrt(signal+background);
+  
+  errsignificance = TMath::Sqrt(significance*significance/(signal+background)/(signal+background)*(1/4.*errsignal*errsignal+errbackground*errbackground)+significance*significance/signal/signal*errsignal*errsignal);
+  
+  return;
+}
