@@ -57,7 +57,7 @@ TClonesArray* AliHMPIDMisAligner::MakeAlObjsArray() {
     TClonesArray *array = new TClonesArray("AliAlignObjMatrix",7);
 
     AliGeomManager::ELayerID idHMPID =  AliGeomManager::kHMPID;
-    Double_t sigmaTrans, sigmaRot;
+    Double_t sigmaTrans, sigmaRotPsi, sigmaRotTheta, sigmaRotPhi;
     Double_t dX=0., dY=0., dZ=0., dPsi=0., dTheta=0., dPhi=0.; //displacements
 
     // TRandom *pRnd   = new TRandom(4357);
@@ -73,16 +73,28 @@ TClonesArray* AliHMPIDMisAligner::MakeAlObjsArray() {
 
     }else if( TString(GetMisalType())=="residual" || TString(GetMisalType())=="full"){
 
-	sigmaTrans=0.1; // 1mm
-	sigmaRot=0.001*180/TMath::Pi(); // 1 mrad
-
+	sigmaTrans=4.;       // 4 cm
+	sigmaRotPsi = 0.2;   // degrees
+        sigmaRotTheta = 1.0; // degrees
+        sigmaRotPhi = 0.5;   // degrees
+        
 	for (Int_t iCh = 0; iCh < 7; iCh++) {
-	    dX     = (gRandom->Uniform()-0.5)*sigmaTrans;
-	    dY     = (gRandom->Uniform()-0.5)*sigmaTrans;
-	    dZ     = (gRandom->Uniform()-0.5)*sigmaTrans;
-	    dPsi   = (gRandom->Uniform()-0.5)*sigmaRot;
-	    dTheta = (gRandom->Uniform()-0.5)*sigmaRot;
-	    dPhi   = (gRandom->Uniform()-0.5)*sigmaRot;
+          
+	    /*dX     = 2 - 2.1*gRandom->Uniform();
+            dY     = 2 - 2.1*gRandom->Uniform();
+     	    dZ     = 2.0 - 4*gRandom->Uniform();
+            dPsi   = 0.1 - 0.2*gRandom->Uniform();
+	    dTheta = 1 - 1.1*gRandom->Uniform();
+	    dPhi   = 0.25 - 0.5*gRandom->Uniform();*/
+         
+            dX     = sigmaTrans/2 - (sigmaTrans/2+0.1)*gRandom->Uniform();   // -0.1  <---> 2    cm
+            dY     = sigmaTrans/2 - (sigmaTrans/2+0.1)*gRandom->Uniform();   // -0.1  <---> 2    cm
+     	    dZ     = (gRandom->Uniform() - 0.5)*sigmaTrans;                  // -2.0  <---> 2    cm
+            dPsi   = (gRandom->Uniform() - 0.5)*sigmaRotPsi;                 // -0.1  <---> 0.1  degree
+	    dTheta = sigmaRotTheta - (sigmaRotTheta+0.1)*gRandom->Uniform(); // -0.1  <---> 1.0  degree
+	    dPhi   = (gRandom->Uniform() - 0.5)*sigmaRotPhi;                 // -0.25 <---> 0.25 degree  
+
+            
 	    //    dX     = (pRnd->Uniform()-0.5)*sigmaTrans;    dY     = (pRnd->Uniform()-0.5)*sigmaTrans;    dZ     = (pRnd->Uniform()-0.5)*sigmaTrans;
 	    //    dPsi   = (pRnd->Uniform()-0.5)*sigmaRot;    dTheta = (pRnd->Uniform()-0.5)*sigmaRot;    dPhi   = (pRnd->Uniform()-0.5)*sigmaRot;
 	    new((*array)[iCh]) AliAlignObjMatrix(AliGeomManager::SymName(idHMPID,iCh),
