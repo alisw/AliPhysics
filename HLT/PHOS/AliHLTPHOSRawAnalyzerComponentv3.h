@@ -45,6 +45,10 @@ class AliHLTPHOSDigitMaker;
 class AliHLTPHOSDigitContainerDataStruct;
 class AliRawReaderMemory;
 class AliAltroRawStreamV3;
+class AliHLTPHOSChannelDataStruct;
+
+//class RawDataWriter;
+
 
 /**
  * @class AliHLTPHOSRawAnalyzerComponentv3
@@ -152,6 +156,8 @@ class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTPHOSRcuProcessor
 
  private:
 
+  int WriteRawData( AliHLTPHOSChannelDataStruct *dtaPtr );
+
   /** Keep the copy constructor private since it should not be used */
   AliHLTPHOSRawAnalyzerComponentv3(const AliHLTPHOSRawAnalyzerComponentv3 & );
 
@@ -184,6 +190,49 @@ class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTPHOSRcuProcessor
   
   /** The maximum position a peak can have to be considered */
   Int_t fMaxPeakPosition;                             //COMMENT
+
+
+  const bool fkDoPushRawData;
+  
+  // const UShort_t* fRawDataBuffer;
+  // RawDataWriter *fRawDataWriter; 
+
+  //  class RawDataWriter : public AliHLTLogging
+ 
+  class RawDataWriter 
+  {
+  public:
+    RawDataWriter();
+    ~RawDataWriter();
+    //   void WriteChannelId(const UShort_t channeldid );
+    void NewChannel( );
+    void WriteBunchData(const UShort_t *bunchdata,  const int length,   const UInt_t starttimebin );
+    void ResetBuffer();
+    void SetChannelId( const UShort_t channeldid );
+
+    //void CopyBufferToSharedMemory(UShort_t *memPtr, const int sizetotal, const int sizeused );
+    int CopyBufferToSharedMemory(UShort_t *memPtr, const int sizetotal, const int sizeused );
+  
+ void NewEvent();
+ 
+ private:
+    RawDataWriter (const RawDataWriter  & );
+    RawDataWriter & operator = (const RawDataWriter &);
+    
+    void Init();
+    
+    //    bool fIsFirstChannel;
+    UShort_t* fRawDataBuffer;
+    int fCurrentChannelSize;
+    int fBufferIndex;
+    int fBufferSize;
+    UShort_t *fCurrentChannelIdPtr;
+    UShort_t *fCurrentChannelSizePtr; 
+    UShort_t *fCurrentChannelDataPtr; 
+    int fTotalSize;
+ };
+
+  RawDataWriter *fRawDataWriter; 
 
 };
 

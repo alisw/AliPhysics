@@ -25,8 +25,13 @@
 #include "Rtypes.h"
 #include "AliHLTPHOSBase.h"
 
+#include "AliHLTPHOSChannelRawDataStruct.h"
+
 class AliHLTPHOSChannelDataHeaderStruct;
 class AliHLTPHOSChannelDataStruct;
+class AliHLTPHOSCoordinate;
+
+//class AliHLTPHOSChannelRawDataStruct;
 
 class  AliHLTPHOSSharedMemoryInterfacev2
 {
@@ -34,12 +39,17 @@ class  AliHLTPHOSSharedMemoryInterfacev2
   AliHLTPHOSSharedMemoryInterfacev2();
   virtual ~AliHLTPHOSSharedMemoryInterfacev2();
   AliHLTPHOSChannelDataStruct*   NextChannel();
+  void  NextRawChannel();
   void SetMemory(AliHLTPHOSChannelDataHeaderStruct* channelDataHeaderPtr);
   void Reset();
-
+  
+  const AliHLTPHOSChannelRawDataStruct & GetRawData() { return  fRawData; };
+  
  private:
   AliHLTPHOSSharedMemoryInterfacev2(const  AliHLTPHOSSharedMemoryInterfacev2 & );
   AliHLTPHOSSharedMemoryInterfacev2 & operator = (const  AliHLTPHOSSharedMemoryInterfacev2 &);
+  
+  void Reset(AliHLTPHOSChannelRawDataStruct &str);
   
   AliHLTPHOSChannelDataStruct* fCurrentChannel;
   AliHLTUInt8_t* fChannelDataPtr;
@@ -47,6 +57,9 @@ class  AliHLTPHOSSharedMemoryInterfacev2
   bool fHasRawData;
   int fMaxCnt;
   int fCurrentCnt; 
+  UShort_t *fRawDataPtr;
+
+  AliHLTPHOSChannelRawDataStruct fRawData;
 
 };
 

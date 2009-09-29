@@ -1,4 +1,4 @@
-// $Id: AliHLTPHOSMapper.cxx 34622 2009-09-04 13:22:01Z odjuvsla $
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -31,6 +31,7 @@
 #include "Rtypes.h"
 #include "unistd.h"
 #include <iostream>
+#include "AliHLTPHOSCoordinate.h"
 
 using namespace PhosHLTConst;
 AliHLTPHOSMapper::AliHLTPHOSMapper():  AliHLTLogging(), 
@@ -201,8 +202,10 @@ AliHLTPHOSMapper::GetChannelID(Int_t specification, Int_t hwAddress)
 	  fSpecificationMapPtr[index].fModId << 13);
 }
 
+
+
 void
-AliHLTPHOSMapper::GetChannelCoord(UShort_t channelId, UShort_t* channelCoord)
+AliHLTPHOSMapper::GetChannelCoord(const UShort_t channelId, UShort_t* channelCoord)
 {
   channelCoord[0] = channelId&0x3f;
   channelCoord[1] = (channelId >> 6)&0x3f;
@@ -211,8 +214,23 @@ AliHLTPHOSMapper::GetChannelCoord(UShort_t channelId, UShort_t* channelCoord)
   //  printf("Channel ID: 0x%X Coordinates: x = %d, z = %d, gain = %d\n", channelId, channelCoord[0], channelCoord[1], channelCoord[2]);
 }
 
+
+
 void
-AliHLTPHOSMapper::GetLocalCoord(UShort_t channelId, Float_t* channelCoord)
+//AliHLTPHOSMapper::GetChannelCoord(const UShort_t channelId,    &AliHLTPHOSCoordinate channelCoord)
+AliHLTPHOSMapper::ChannelId2Coordinate(const UShort_t channelId,    AliHLTPHOSCoordinate &channelCoord)
+{
+  channelCoord.fX = channelId&0x3f;
+  channelCoord.fZ = (channelId >> 6)&0x3f;
+  channelCoord.fGain = (channelId >> 12)&0x1;
+  channelCoord.fModuleId  = (channelId >> 13)&0x1f;
+  //  printf("Channel ID: 0x%X Coordinates: x = %d, z = %d, gain = %d\n", channelId, channelCoord[0], channelCoord[1], channelCoord[2]);
+}
+
+
+
+void
+AliHLTPHOSMapper::GetLocalCoord(const UShort_t channelId, Float_t* channelCoord)
 {
   channelCoord[0] = (static_cast<Float_t>(channelId&0x3f) - NXCOLUMNSMOD/2)* fCellStep;
   channelCoord[1] = (static_cast<Float_t>((channelId >> 6)&0x3f) - NZROWSMOD/2) * fCellStep;

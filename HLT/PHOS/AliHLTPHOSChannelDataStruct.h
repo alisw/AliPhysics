@@ -31,6 +31,7 @@ struct AliHLTPHOSChannelDataStruct
   Float_t fTime;
   UShort_t fChannelID;
   Short_t fCrazyness;
+  //  Short_t fRawDataSize; //the size of the raw data
 };
 
 #endif

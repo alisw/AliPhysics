@@ -29,6 +29,8 @@
 // #include "AliHLTPHOSOnlineDisplayTH2D.h"
 #include "AliHLTPHOSConstants.h"
 
+#include "AliHLTPHOSMapper.h"
+
 #define NZRCUCOORD 2
 #define NXRCUCOORD 2
 
@@ -46,7 +48,7 @@ class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSOnlineDisplay;
 //class AliHLTPHOSSharedMemoryInterface;
 class AliHLTPHOSSharedMemoryInterfacev2;
-
+class AliHLTPHOSChannelRawDataStruct;
 
 class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
 {
@@ -79,6 +81,7 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
   */
 
   Int_t GetRawData(TH1D *histPtr, int x, int z, int gain);
+
   void UpdateDisplay();
   int GetNextEvent();
   virtual void ReadBlockData(AliHLTHOMERReader *homeReaderPtr);
@@ -91,17 +94,26 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
   TGCompositeFrame    *fSubF1, *fSubF2, *fSubF3;
   TCanvas *fgCanvasPtr[NGAINS];
   AliHLTPHOSOnlineDisplayTH2D *fgLegoPlotPtr[NGAINS];
+
+  /*
   int *fChannelData[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
   Int_t fNChannelSamples[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
   Int_t fChannelEnergy[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
+  */  
 
- protected:
+  int *fChannelData[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS];
+  Int_t fNChannelSamples[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS];
+  Int_t fChannelEnergy[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS];
+
+  //protected:
   //  Bool_t fgAccumulate;
 
  private:
   AliHLTPHOSOnlineDisplayEventTab();
+
+  void FillRawData(const AliHLTPHOSChannelRawDataStruct &rawStr);
   
-  void ChannelId2Coordinates(const UShort_t chid) const ;
+  // void ChannelId2Coordinates(const UShort_t chid) const ;
 
   AliHLTPHOSGetEventButton* fgEventButtPtr; 
   void InitDisplay(TGTab *tabPtr){};

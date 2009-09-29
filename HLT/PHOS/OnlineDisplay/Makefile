@@ -7,13 +7,17 @@ ALIHLT_LIBDIR = $(ALICE_ROOT)/HLT/build/lib
 
 
 #ROOTLIBS	= `root-config --libs --glibs` -lGed -lFTGL -lRGL -lEve -lEG -lGeom -lTreePlayer -lProofPlayer -lProof
-ROOTLIBS	= `root-config --libs --glibs` -lGed -lEG -lGeom -lTreePlayer -lProofPlayer -lProof -lXMLParser
-ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)  -lHLTbase -lAliHLTHOMER  -lAliHLTPHOS  -lRAWDatarec -lRAWDatabase -lESD -lSTEER -lSTEERBase -lCDB -lMinuit -lVMC -lPHOSbase -lPHOSshuttle -lPHOSUtils
+#ROOTLIBS	= `root-config --libs --glibs` -lGed -lEG -lGeom -lTreePlayer -lProofPlayer -lProof -lXMLParser
+ROOTLIBS	= `root-config --libs --glibs` -lGed -lEG -lGeom -lTreePlayer -lProofPlayer -lProof -lXMLParser -lEve -lRGL
+
+ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)  -lHLTbase -lAliHLTHOMER  -lAliHLTPHOS  -lRAWDatarec \
+		   -lRAWDatabase -lESD -lSTEER -lSTEERBase -lCDB -lMinuit -lVMC -lPHOSbase -lPHOSshuttle -lPHOSUtils \
+                   -lEveBase	
 
 #ALIHLTLIBS	= -L$(ALIHLT_LIBDIR)  -lAliHLTUtil  -lHLTbase -lAliHLTHOMER -lAliHLTPHOS
 ALIHLTLIBS	= -L$(ALIHLT_LIBDIR)   -lHLTbase -lAliHLTHOMER -lAliHLTPHOS
 
-ALIROOTHLTPHOSINCLUDE	=-I$(ALICE_ROOT)/HLT/PHOS
+ALIROOTHLTPHOSINCLUDE	=-I$(ALICE_ROOT)/HLT/PHOS  -I$(ALICE_ROOT)/PHOS
 ALIROOTHLTINCLUDE	= -I$(ALICE_ROOT)/HLT/BASE/HOMER  -I$(ALICE_ROOT)/HLT/BASE
 
 ALIHLTINCLUDE		=-I$(ALIHLT_TOPDIR)/BASE/HOMER  -I$(ALIHLT_TOPDIR)/BASE
@@ -66,9 +70,10 @@ OBJS	= $(MAINO)  $(ALIHLTPHOSONLINEDISPLAYO)  $(ALIHLTPHOSONLINEDISPLAYTH2DO) $(
 
 pftest:$(OBJS)
 	g++ -ggdb -g $(ROOTLIBS) $(ALIROOTLIBS) $(HLTLIBS)  $(OBJS) -o onlinedisplay
+#HLT:	$(OBJS)	
+#	g++ -ggdb -g $(ROOTLIBS) $(ALIHLTLIBS) $(ALIROOTLIBS) $(HLTLIBS)  $(OBJS) -o onlinedisplay	
 HLT:	$(OBJS)	
 	g++ -ggdb -g $(ROOTLIBS) $(ALIHLTLIBS) $(HLTLIBS)  $(OBJS) -o onlinedisplay	
-
 
 $(MAINO):$(MAINS)
 	g++ -ggdb -g $(INCLUDES)  -c $(MAINS)

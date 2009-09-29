@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTPHOSMapper.h 34264 2009-08-14 18:29:23Z odjuvsla $
+// $Id$
 
 #ifndef ALIHLTPHOSMAPPER_H
 #define ALIHLTPHOSMAPPER_H
@@ -31,6 +31,8 @@
 
 #include "AliPHOSEMCAGeometry.h"
 
+class AliHLTPHOSCoordinate;
+
 class AliHLTPHOSMapper : public AliHLTLogging
 //class AliHLTPHOSMapper 
 {
@@ -43,8 +45,9 @@ class AliHLTPHOSMapper : public AliHLTLogging
   char* GetFilePath();
 
   UShort_t GetChannelID(Int_t specification, Int_t hwAddress);
-  static void GetChannelCoord(UShort_t channelId, UShort_t* channelCoord);
-  static void GetLocalCoord(UShort_t channelId, Float_t* localCoord);
+  static void GetChannelCoord(const UShort_t channelId, UShort_t* channelCoord);
+  static void ChannelId2Coordinate(const UShort_t channelId, AliHLTPHOSCoordinate &channelCoord );
+  static void GetLocalCoord(const UShort_t channelId, Float_t* localCoord);
   int GetDDLFromSpec(Int_t specification);
   int GetModuleFromSpec(Int_t specification);
 
