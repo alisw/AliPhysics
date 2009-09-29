@@ -181,7 +181,7 @@ int main(int argc, char **argv)
     AliRawReaderDate* rawReader(0x0);
     
 // define data source : 
-   status=monitorSetDataSource(argv[1]);
+   status=monitorSetDataSource(argv[i]);
     if (status!=0) 
     {
       printf("MCH Occupancy DA ERROR: monitorSetDataSource() failed: %s\n", monitorDecodeError(status));
