@@ -183,7 +183,7 @@ void GetMajorityDifferences(AliTRDCalDCS* calDCSObj, AliTRDCalDCS* calDCSObj2) {
 }
 
 
-void AliTRDcheckConfigSimple(Int_t runNr=0, char *pathfile="nopathgiven"){
+void AliTRDcheckConfig(Int_t runNr=0, char *pathfile="nopathgiven"){
 
   AliCDBEntry *entry=0;
   TString pathfilets(pathfile);
