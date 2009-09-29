@@ -221,10 +221,16 @@ class AliHLTReadoutList : public TNamed
   AliHLTEventDDL* Buffer() { return &fReadoutList; }
 
   /**
+   * Access method to the binary buffer.
+   * \return const pointer to the binary buffer.
+   */
+  const AliHLTEventDDL* Buffer() const { return &fReadoutList; }
+
+  /**
    * Access to the size of the binary buffer.
    * \return size of the binary buffer
    */
-  unsigned BufferSize() { return sizeof(fReadoutList); }
+  unsigned BufferSize() const { return sizeof(fReadoutList); }
   
   /**
    * Assignment operator performs a deep copy.
