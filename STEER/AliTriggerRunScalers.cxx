@@ -264,7 +264,8 @@ Int_t  AliTriggerRunScalers::FindNearestScalersRecord( const AliTimeStamp *stamp
 
    while (last >= base) {
       position = (base+last) / 2;
-      cout << "pos " <<   position<< " base " <<   base << "last " <<   last << endl;
+      AliDebug(1, Form("position= %d   base= %d    last= %d  ",position,base,last));
+    //  cout << "pos " <<   position<< " base " <<   base << "last " <<   last << endl;
       AliTriggerScalersRecord* rec = (AliTriggerScalersRecord*)fScalersRecord.At(position);
       if( rec && rec->GetTimeStamp()) op2 = 1;
       if( op2 && (result = stamp->Compare(rec->GetTimeStamp())) == 0  )
