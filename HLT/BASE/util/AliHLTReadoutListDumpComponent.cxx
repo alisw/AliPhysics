@@ -170,7 +170,7 @@ int AliHLTReadoutListDumpComponent::FillReadoutListHistogram(TH1I* histo, const 
 {
   // see header file for class documentation
   if (!histo || !list) return -EINVAL;
-  if (list->BufferSize()!=sizeof(AliHLTEventDDL)) return -EBADR;
+  if (list->BufferSize()!=sizeof(AliHLTEventDDL)) return -EBADF;
 
   return FillReadoutListHistogram(histo, list->Buffer());
 }
@@ -195,7 +195,7 @@ int AliHLTReadoutListDumpComponent::FillReadoutListVsCTP(TH2I* histo, const AliH
 {
   // see header file for class documentation
   if (!histo || !list || !trigData) return -EINVAL;
-  if (list->BufferSize()!=sizeof(AliHLTEventDDL)) return -EBADR;
+  if (list->BufferSize()!=sizeof(AliHLTEventDDL)) return -EBADF;
 
   return FillReadoutListVsCTP(histo, list->Buffer(), trigData);
 }
