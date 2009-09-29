@@ -469,8 +469,9 @@ int main(int argc, char **argv) {
   }
   
   // --- Correlations
-
-  Float_t CorrCoeff0[2*kNChannels], CorrCoeff1[2*kNChannels];
+  // NB -> The correlations are NOT fitted since at the moment
+  // (Sptember 2009) they are NOT correlations and the DA would fail!!!
+/*  Float_t CorrCoeff0[2*kNChannels], CorrCoeff1[2*kNChannels];
   TProfile *hPedCorrProfhg[kNChannels], *hPedCorrProflg[kNChannels];
   TF1 *ffunchg[kNChannels], *ffunclg[kNChannels];
   char namhist4[50];
@@ -497,7 +498,7 @@ int main(int argc, char **argv) {
      //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",
      //		i+kNChannels, CorrCoeff0[i+kNChannels], i+kNChannels, CorrCoeff1[i+kNChannels]);
   }    
-
+*/
   //						       
   fclose(fileShuttle);
   //
