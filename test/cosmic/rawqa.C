@@ -22,12 +22,19 @@
 TString ClassName() { return "rawqa" ; } 
 
 //________________________________qa______________________________________
-void rawqa(Int_t run) 
+void rawqa(Char_t * filename, Int_t run) 
 {	
-  const Char_t * filename = "raw.root" ; 
+//  TGrid * grid = TGrid::Connect("alien://") ; 
+//  TString filename ; 
+//  if (grid) {
+//    filename = Form("alien:///alice/data/2009/LHC09c/000085034/raw/09000085034023.40.root") ;  
+//  } else {
+//    filename = "raw.root" ;       
+//  }
+
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
-  //man->SetDefaultStorage("local://cdb2");
+//  man->SetDefaultStorage("local://cdb2");
   man->SetDefaultStorage("raw://");
   
   // set the location of reference data 
@@ -53,7 +60,8 @@ void rawqa(Int_t run)
   AliGeomManager::LoadGeometry();
   printf("INFO: Proccessing file %s\n", filename) ;
   // check which detectors are present 
-  AliRawReader * rawReader = new AliRawReaderRoot(filename);
+  TString alienName = Form("alien://%s", filename) ;
+  AliRawReader * rawReader = new AliRawReaderRoot(alienName.Data());
   //AliTRDrawStreamBase::SetRawStreamVersion("TB");
   while ( rawReader->NextEvent() ) {
     man->SetRun(rawReader->GetRunNumber());

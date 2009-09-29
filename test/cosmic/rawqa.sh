@@ -12,7 +12,7 @@
 
 # SET THE FOLLOWING PARAMETERS IF NEEDED: 
 # ---------------------------------------
-export YEAR=08
+export YEAR=09
 # ---------------------------------------
 
 export RUNNUM=$1
@@ -63,7 +63,6 @@ PROGRAM=aliroot #`cat $tempfile`
 
 # 
 for filename in $CHUNKS; do
-     filename=${filename//\"/} 
      CHUNK=`basename $filename | cut -d "." -f 1,2`
      BEG=`expr index "$CHUNK" .`
      BEG=`expr $BEG - 4`
@@ -74,25 +73,25 @@ for filename in $CHUNKS; do
      rm $RUNNUM"/"*.QA.$RUNNUM.$SUBCHUNK.root 
      rm $RUNNUM"/"QA.$SUBCHUNK.root 
      cd       $RUNNUM"/"$CHUNK
-     $PROGRAM -q $ALICE_ROOT/test/cosmic/rawqa.C\(\"$filename\"\) 2>&1 | tee rawqa.log
-     ls *.QA.$RUNNUM.0.root > $tempfile
-     cd ../
-     QAFILES=`cat $tempfile`
-     for qafile in $QAFILES; do
-        in=$CHUNK/$qafile
-        ou=${qafile/.0./.$SUBCHUNK.}
-        ln -si $in $ou
-     done
-     ln -si $CHUNK/QA.root QA.$SUBCHUNK.root
+$PROGRAM -b <<EOF
+.L $ALICE_ROOT/test/cosmic/rawqa.C+
+rawqa($filename, $RUNNUM)
+EOF
+
+$PROGRAM -b <<EOF
+AliQAManager * qam = AliQAManager::QAManager(AliQAv1::kRECMODE) ; 
+ qam.Merge(atoi(gSystem->Getenv("RUNNUM"))) ;
+EOF
+     rm *QA.$RUNNUM.root
      cd ..
 done
-cd $RUNNUM
+ls */Merged.QA.Data.root > merged.list
+outfile="Merged.QA.Data."$RUNNUM".root"
 $PROGRAM -b <<EOF
- AliQADataMakerSteer qas ; 
- qas.Merge(atoi(gSystem->Getenv("RUNNUM"))) ;
+.L $ALICE_ROOT/test/cosmic/MergeQAMerged.C
+MergeQAMerged("$outfile", "merged.list") ; 
 EOF
-rm -f tempo.txt
-
-$PROGRAM -b -q $ALICE_ROOT/test/cosmic/qasummary.C 
-$PROGRAM -b  $ALICE_ROOT/test/QA/menuQA.C
+rm -f merged.list
+#$PROGRAM -b -q $ALICE_ROOT/test/cosmic/qasummary.C 
+#$PROGRAM -b  $ALICE_ROOT/test/QA/menuQA.C
 cd ..
