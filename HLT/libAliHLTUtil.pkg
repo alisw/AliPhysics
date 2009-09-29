@@ -13,6 +13,7 @@ CLASS_HDRS:=  	AliHLTFilePublisher.h \
 		AliHLTRawReaderPublisherComponent.h \
 		AliHLTOUTPublisherComponent.h \
 		AliHLTEsdCollectorComponent.h \
+		AliHLTReadoutListDumpComponent.h \
 		AliHLTDataGenerator.h \
 		AliHLTBlockFilterComponent.h \
 		AliHLTCompStatCollector.h \
