@@ -17,8 +17,6 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSProcessor.h \
 		  AliHLTPHOSRawAnalyzer.h \
 		  AliHLTPHOSRawAnalyzerChiSquareFit.h \
-		  AliHLTPHOSRawAnalyzerComponent.h \
-		  AliHLTPHOSRawAnalyzerComponentv2.h \
 		  AliHLTPHOSRawAnalyzerComponentv3.h \
 		  AliHLTPHOSRawAnalyzerCrude.h \
 		  AliHLTPHOSRawAnalyzerCrudeComponent.h \
@@ -33,14 +31,11 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSDigitMakerComponent.h \
 		  AliHLTPHOSConfig.h \
 		  AliHLTPHOSAltroConfig.h \
-		  AliHLTPHOSSharedMemoryInterface.h \
 		  AliHLTPHOSSharedMemoryInterfacev2.h \
 		  AliHLTPHOSClusterAnalyser.h \
 		  AliHLTPHOSClusterAnalyserComponent.h \
 		  AliHLTPHOSESDMaker.h \
 		  AliHLTPHOSESDMakerComponent.h \
-		  AliHLTPHOSRcuCalibrationProcessorComponent.h \
-		  AliHLTPHOSRcuCalibrationProcessor.h \
 		  AliHLTPHOSRcuDAComponent.h \
                   AliHLTPHOSRcuProperties.h \
 		  AliHLTPHOSUtilities.h \
@@ -51,12 +46,6 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSESDCaloClusterWriterComponent.h \
 		  AliHLTPHOSPhysicsHistogramProducer.h \
 		  AliHLTPHOSFourier.h
-#		  AliHLTPHOSESDCaloClusterMakerComponent.h 
-#		  AliHLTPHOSTreeMaker.h \
-#  		  AliHLTPHOSTreeMakerComponent.h \
-#		  AliHLTPHOSEmcCalibrationHistogramProducer.h 
-#				  AliHLTPHOSNoiseMapper.h \
-#				  AliHLTPHOSNoiseMapperComponent.h
 
 MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
 
@@ -65,8 +54,6 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSConstants.h \
 	 	  AliHLTPHOSRawAnalyzer.h \
 		  AliHLTPHOSDefinitions.h \
-		  AliHLTPHOSRcuCellEnergyDataStruct.h \
-		  AliHLTPHOSValidCellDataStruct.h\
 		  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \
 		  AliHLTPHOSRecPointDataStruct.h \
 		  AliHLTPHOSRecPointContainerStruct.h \

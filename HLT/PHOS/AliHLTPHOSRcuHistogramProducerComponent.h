@@ -19,7 +19,8 @@
 
 class AliHLTPHOSRcuHistogramProducer;
 class AliHLTPHOSRcuCellAccumulatedEnergyDataStruct;
-class AliHLTPHOSSharedMemoryInterface;
+class AliHLTPHOSSharedMemoryInterfacev2;
+class AliHLTPHOSChannelDataHeaderStruct;
 
 class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSRcuProcessor
 {
@@ -47,7 +48,7 @@ class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSRcuProcessor
   int fHistoWriteFrequency;
   AliHLTPHOSRcuHistogramProducer* fRcuHistoProducerPtr;   /**<Pointer to a phos histoproducer object*/
   AliHLTPHOSRcuCellAccumulatedEnergyDataStruct*  fOutPtr; /**<Pointer to outputbuffer to write results from the component into shared memory*/
-  AliHLTPHOSSharedMemoryInterface *fShmPtr; // Interface to read altro channel data from shared memory
+  AliHLTPHOSSharedMemoryInterfacev2 *fShmPtr; // Interface to read altro channel data from shared memory
 };
 
 #endif

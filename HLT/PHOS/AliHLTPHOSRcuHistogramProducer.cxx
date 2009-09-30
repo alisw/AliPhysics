@@ -18,7 +18,7 @@
 
 #include "AliHLTPHOSRcuHistogramProducer.h"
 #include <iostream>
-#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
+//#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "TFile.h"
 #include "unistd.h"
 #include <time.h>

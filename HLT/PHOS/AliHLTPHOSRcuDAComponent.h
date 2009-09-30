@@ -42,7 +42,7 @@
 using namespace PhosHLTConst;
 
 class AliPHOSRcuDA1;
-class AliHLTPHOSSharedMemoryInterface;
+class AliHLTPHOSSharedMemoryInterfacev2;
 class TObjArray;
 
 //class AliHLTPHOSRcuDAComponent: public AliHLTCalibrationProcessor,  public AliHLTPHOSRcuProcessor
@@ -103,7 +103,7 @@ private:
   AliPHOSRcuDA1* fPHOSDAPtr;   //! transient
 
   /** Interface to read altro channel data from shared memory */
-  AliHLTPHOSSharedMemoryInterface *fShmPtr;   //! transient
+  AliHLTPHOSSharedMemoryInterfacev2 *fShmPtr;   //! transient
 
 };
 

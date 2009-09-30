@@ -8,9 +8,10 @@
  * See cxx source for full Copyright notice  */ 
 
 
-#include "AliHLTPHOSRawAnalyzerComponent.h"
+//#include "AliHLTPHOSRawAnalyzerComponent.h"
+#include "AliHLTPHOSRawAnalyzerComponentv3.h"
 
-class AliHLTPHOSRawAnalyzerPeakFinderComponent: public AliHLTPHOSRawAnalyzerComponent
+class AliHLTPHOSRawAnalyzerPeakFinderComponent: public AliHLTPHOSRawAnalyzerComponentv3
 {
  public:
   AliHLTPHOSRawAnalyzerPeakFinderComponent();

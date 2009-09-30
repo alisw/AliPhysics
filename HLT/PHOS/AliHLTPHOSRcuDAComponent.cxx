@@ -17,11 +17,11 @@
 
 
 #include "AliPHOSRcuDA1.h"
-#include "AliHLTPHOSSharedMemoryInterface.h"
+#include "AliHLTPHOSSharedMemoryInterfacev2.h"
 #include "AliHLTPHOSRcuDAComponent.h"
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSConstants.h"
-#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
+//#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "TObjArray.h"
 
 //#include <iostream>
@@ -49,7 +49,7 @@ AliHLTPHOSRcuDAComponent::AliHLTPHOSRcuDAComponent() : AliHLTPHOSRcuProperties()
 						       fShmPtr(0) 
 						       //    fTest(-2)
 {
-  fShmPtr = new AliHLTPHOSSharedMemoryInterface();
+  fShmPtr = new AliHLTPHOSSharedMemoryInterfacev2();
 }
 
 
@@ -138,8 +138,9 @@ Int_t AliHLTPHOSRcuDAComponent::DeinitCalibration()
 
 
 
-Int_t AliHLTPHOSRcuDAComponent::ProcessCalibration(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData)
+Int_t AliHLTPHOSRcuDAComponent::ProcessCalibration(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
+  /*
   fPhosEventCount ++;
   const  AliHLTComponentEventData eDta  = evtData;
   AliHLTComponentTriggerData  tDta =  trigData;
@@ -193,7 +194,7 @@ Int_t AliHLTPHOSRcuDAComponent::ProcessCalibration(const AliHLTComponentEventDat
   fPHOSDAPtr->FillHistograms(energyArray, timeArray);
 
   ResetArrays(energyArray, timeArray);
-
+  */
   return 0; 
 }
 
