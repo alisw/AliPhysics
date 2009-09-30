@@ -51,7 +51,8 @@ class AliAODRecoDecay : public AliVTrack {
   // check if this candidate is matched to a MC signal
   // If no, return -1
   // If yes, return label (>=0) of the AliAODMCParticle
-  Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray) const;
+  // if ndgCk>0, checks also daughters PDGs
+  Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray,Int_t ndgCk=0,Int_t *pdgDg=0) const;
 
   // PID
   void      SetPID(Int_t nprongs,Double_t *pid);
@@ -170,7 +171,7 @@ class AliAODRecoDecay : public AliVTrack {
   Int_t GetLabel() const {return -1;}
  protected:
 
-  Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray,Int_t dgLabels[10],Int_t ndg) const;
+  Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray,Int_t dgLabels[10],Int_t ndg,Int_t ndgCk=0,Int_t *pdgDg=0) const;
   Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray,Int_t dgLabels[10]) const { return MatchToMC(pdgabs,mcArray,dgLabels,GetNDaughters()); }
 
   TRef     fSecondaryVtx;  // decay vertex

@@ -475,14 +475,16 @@ Double_t AliAODRecoDecay::InvMass2Prongs(Int_t ip1,Int_t ip2,
   return mass;
 }
 //----------------------------------------------------------------------------
-Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray) const
+Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
+				 Int_t ndgCk,Int_t *pdgDg) const
 {
   //
   // Check if this candidate is matched to a MC signal
   // If no, return -1
   // If yes, return label (>=0) of the AliAODMCParticle
   // 
-
+  // if ndgCk>0, checks also daughters PDGs
+  //
   Int_t ndg=GetNDaughters();
   if(!ndg) {
     AliError("No daughters available");
@@ -490,6 +492,10 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray) const
   }
   if(ndg>10) {
     AliError("Only decays with <10 daughters supported");
+    return -1;
+  }
+  if(ndgCk>0 && ndgCk!=ndg) {
+    AliError("Wrong number of daughter PDGs passed");
     return -1;
   }
   
@@ -501,11 +507,12 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray) const
     dgLabels[i] = trk->GetLabel();
   }
 
-  return MatchToMC(pdgabs,mcArray,dgLabels,ndg);
+  return MatchToMC(pdgabs,mcArray,dgLabels,ndg,ndgCk,pdgDg);
 }
 //----------------------------------------------------------------------------
 Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
-				 Int_t dgLabels[10],Int_t ndg) const
+				 Int_t dgLabels[10],Int_t ndg,
+				 Int_t ndgCk,Int_t *pdgDg) const
 {
   //
   // Check if this candidate is matched to a MC signal
@@ -514,10 +521,11 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
   // 
 
   Int_t labMom[10];
-  Int_t i,lab,labMother,pdgMother;
+  Int_t i,j,lab,labMother,pdgMother,pdgPart;
   AliAODMCParticle *part=0;
   AliAODMCParticle *mother=0;
   Double_t pxSumDgs=0.,pySumDgs=0.,pzSumDgs=0.;
+  Bool_t pdgUsed[10]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
 
   // loop on daughter labels
   for(i=0; i<ndg; i++) {
@@ -531,6 +539,17 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
     if(!part) { 
       printf("no MC particle\n");
       return -1;
+    }
+
+    // check the PDG of the daughter, if requested
+    if(ndgCk>0) {
+      pdgPart=TMath::Abs(part->GetPdgCode());
+      for(j=0; j<ndg; j++) {
+	if(!pdgUsed[j] && pdgPart==pdgDg[j]) {
+	  pdgUsed[j]=kTRUE;
+	  break;
+	}
+      }
     }
 
     // for the J/psi, check that the daughters are electrons
@@ -569,6 +588,12 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
     if(labMom[i]!=labMother) return -1;
   }
 
+  // check that all daughter PDGs are matched
+  if(ndgCk>0) {
+    for(i=0; i<ndg; i++) {
+      if(pdgUsed[i]==kFALSE) return -1;
+    }
+  }
   
   /*
   // check that the mother decayed in <GetNDaughters()> prongs
@@ -587,9 +612,9 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
   Double_t pyMother = mother->Py();
   Double_t pzMother = mother->Pz();
   // within 0.1%
-  if((TMath::Abs(pxMother-pxSumDgs)/(TMath::Abs(pxMother)+1.e-13)) > 0.001 &&
-     (TMath::Abs(pyMother-pySumDgs)/(TMath::Abs(pyMother)+1.e-13)) > 0.001 &&
-     (TMath::Abs(pzMother-pzSumDgs)/(TMath::Abs(pzMother)+1.e-13)) > 0.001) 
+  if((TMath::Abs(pxMother-pxSumDgs)/(TMath::Abs(pxMother)+1.e-13)) > 0.00001 &&
+     (TMath::Abs(pyMother-pySumDgs)/(TMath::Abs(pyMother)+1.e-13)) > 0.00001 &&
+     (TMath::Abs(pzMother-pzSumDgs)/(TMath::Abs(pzMother)+1.e-13)) > 0.00001) 
     return -1;
  
   return labMother;
