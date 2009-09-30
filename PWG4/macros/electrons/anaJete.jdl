@@ -2,7 +2,7 @@ Executable="root";
 Jobtag ={"Analysis: Processing collection for analysis "};
 Packages ={"VO_ALICE@ROOT::v5-24-00","VO_ALICE@APISCONFIG::V2.4","VO_ALICE@fastjet::v2.4.0"};
 
-TTL=30000;
+TTL=15000;
 
 InputFile={"LF:/alice/cern.ch/user/k/kread/work12/anaJete.C",
            "LF:/alice/cern.ch/user/k/kread/work12/run.C",

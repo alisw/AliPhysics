@@ -625,10 +625,10 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
       if(kGetXSectionFromFileAndScale){
 	//Get the number of events per file.
         //Do it only once, no need to open all the files.
-        if(i ==0 ) {
+        if(index == 0) {
           TFile * df = TFile::Open(alienURL);
           nEventsPerFile = ((TTree*) df->Get(kTreeName)) ->GetEntries();
-          dataFile->Close();
+          df->Close();
         } 
         alienURL.ReplaceAll(datafile,kXSFileName);
         GetXsection(nEventsPerFile, alienURL);//chainxs->Add(alienURL) ; 
