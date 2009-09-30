@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTPHOSOnlineDisplayTab.h 31683 2009-03-24 21:17:03Z odjuvsla $
+// $Id$
 
 
 #ifndef ALIHLTPHOSONLINEDISPLAYTAB_H
@@ -9,7 +9,11 @@
 #include "AliHLTHOMERReader.h"
 #include "AliHLTPHOSCommonDefs.h"
 #include "AliHLTPHOSConstants.h"
-#include "AliHLTPHOSBase.h"
+
+#include <iostream>
+using namespace std;
+
+//#include "AliHLTPHOSBase.h"
 
 //#define XRANGESTART 120
 //#define XRANGELENGTH 80
@@ -25,7 +29,8 @@ using namespace PhosHLTConst;
 class AliHLTHOMERReader;
 
 
-class AliHLTPHOSOnlineDisplayTab : public TGTab, public AliHLTPHOSBase
+//class AliHLTPHOSOnlineDisplayTab : public TGTab, public AliHLTPHOSBase
+class AliHLTPHOSOnlineDisplayTab : public TGTab
 {
  public:
   virtual ~AliHLTPHOSOnlineDisplayTab();

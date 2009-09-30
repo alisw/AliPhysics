@@ -48,7 +48,7 @@ class AliHLTPHOSGetEventButton;
 class AliHLTHOMERReader;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSOnlineDisplay;
-class AliHLTPHOSSharedMemoryInterface;
+class AliHLTPHOSSharedMemoryInterfacev2;
 class AliHLTPHOSFourier;
 
 class AliHLTPHOSOnlineDisplayFourierTab : public AliHLTPHOSOnlineDisplayTab
@@ -95,7 +95,7 @@ class AliHLTPHOSOnlineDisplayFourierTab : public AliHLTPHOSOnlineDisplayTab
   AliHLTPHOSGetEventButton* fgEventButtPtr;  // fgEventButtPtr
   void InitDisplay(TGTab *tabPtr); //InitDisplay
   AliHLTPHOSOnlineDisplay *fOnlineDisplayPtr; //fOnlineDisplayPtr
-  AliHLTPHOSSharedMemoryInterface *fShmPtr;   //fShmPtr
+  AliHLTPHOSSharedMemoryInterfacev2 *fShmPtr;   //fShmPtr
 
   AliHLTPHOSFourier *fFourierPtr; //fFourierPtr
   char fGainText[256];  //fGainText

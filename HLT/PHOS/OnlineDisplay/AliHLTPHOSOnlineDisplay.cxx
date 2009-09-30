@@ -1,4 +1,4 @@
-// $Id: AliHLTPHOSOnlineDisplay.cxx 33100 2009-06-22 09:47:35Z odjuvsla $
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -29,7 +29,7 @@
 
 #include  "AliHLTPHOSOnlineDisplay.h"
 #include  "AliHLTDataTypes.h"
-#include  "AliHLTPHOSRcuCellEnergyDataStruct.h"
+//#include  "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include  <vector>
 #include  "stdio.h"
 #include <string>
@@ -75,14 +75,17 @@ AliHLTPHOSOnlineDisplay::Instance(int argc, char** argv)
 }
 
 
-AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay() : AliHLTPHOSBase(), fRunNumber(-1)
+//AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay() : AliHLTPHOSBase(), fRunNumber(-1)
+AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay() : fRunNumber(-1)
+
 {
   // See header file for documentation
   cout << "ERROR ! level: FATAL, you cannot invoke the onlinedisplay without arguments" << endl;
 }
 
 
-AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay(int argc, char** argv) : AliHLTPHOSBase()
+//AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay(int argc, char** argv) : AliHLTPHOSBase()
+AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay(int argc, char** argv) 
 {
   // See header file for documentation
   gStyle->SetOptStat(false);

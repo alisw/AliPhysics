@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTPHOSOnlineDisplay.h 33100 2009-06-22 09:47:35Z odjuvsla $
+// $Id$
 
 #ifndef ALIHLTPHOSONLINEDISPLAY_H
 #define ALIHLTPHOSONLINEDISPLAY_H
@@ -26,7 +26,7 @@
 
 //#include "AliHLTPHOSOnlineDisplayEventTab.h"
 //#include "AliHLTPHOSOnlineDisplayFourierTab.h"
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 
 //#include "TSystem.h"
 //#include "TStyle.h"
@@ -60,7 +60,8 @@ using namespace PhosHLTConst;
 
 class TCanvas;
 
-class AliHLTPHOSOnlineDisplay : public  TGMainFrame, public AliHLTPHOSBase
+//class AliHLTPHOSOnlineDisplay : public  TGMainFrame, public AliHLTPHOSBase
+class AliHLTPHOSOnlineDisplay : public  TGMainFrame
 {
  public:
   ~AliHLTPHOSOnlineDisplay();
@@ -68,7 +69,7 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame, public AliHLTPHOSBase
   /** Copy constructor */  
   AliHLTPHOSOnlineDisplay(const AliHLTPHOSOnlineDisplay &) : 
     TGMainFrame(),
-    AliHLTPHOSBase(),
+    //   AliHLTPHOSBase(),
     fRunNumber(0),
     fgRawDataCanvas(0)
   {

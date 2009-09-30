@@ -25,11 +25,11 @@
 #include "AliHLTHOMERData.h"
 #include "AliHLTHOMERReader.h"
 #include "AliHLTHOMERWriter.h"
-#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 //#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
-#include "AliHLTPHOSRcuCellEnergyDataStruct.h" 
+//#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
+//#include "AliHLTPHOSRcuCellEnergyDataStruct.h" 
 #include "AliHLTPHOSOnlineDisplay.h"
-#include "AliHLTPHOSSharedMemoryInterface.h"
+#include "AliHLTPHOSSharedMemoryInterfacev2.h"
 #include "AliHLTPHOSFourier.h"
 #include "AliHLTPHOSOnlineDisplayTH2D.h"
 
@@ -63,7 +63,7 @@ AliHLTPHOSOnlineDisplayFourierTab::AliHLTPHOSOnlineDisplayFourierTab(AliHLTPHOSO
   // gStyle->SetOptStat(false);
   
 
-  fShmPtr = new AliHLTPHOSSharedMemoryInterface();
+  fShmPtr = new AliHLTPHOSSharedMemoryInterfacev2();
   fOnlineDisplayPtr =  onlineDisplayPtr;
   fFourierPtr = new AliHLTPHOSFourier();
 
@@ -120,7 +120,7 @@ void
 AliHLTPHOSOnlineDisplayFourierTab::ReadBlockData(AliHLTHOMERReader * const homeReaderPtr)
 { 
   // See header file for documentation
-  AliHLTPHOSValidCellDataStruct *currentChannel =0;
+  //  AliHLTPHOSValidCellDataStruct *currentChannel =0;
   cout << "AliHLTPHOSOnlineDisplayFourierTab::ReadBlockDat, Reading block data, therere are " <<  homeReaderPtr->GetBlockCnt() << " blocks " <<endl;
   //  unsigned long blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF );
 

@@ -25,23 +25,13 @@
 #include "AliHLTHOMERData.h"
 #include "AliHLTHOMERReader.h"
 #include "AliHLTHOMERWriter.h"
-#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "TRootEmbeddedCanvas.h"
-//#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
-#include "AliHLTPHOSRcuCellEnergyDataStruct.h" 
 #include "AliHLTPHOSOnlineDisplay.h"
-
 #include "AliHLTPHOSChannelDataStruct.h"
-
 #include "AliHLTPHOSChannelDataHeaderStruct.h"
-
-//#include "AliHLTPHOSSharedMemoryInterface.h"
 #include "AliHLTPHOSSharedMemoryInterfacev2.h"
 #include "AliHLTPHOSCoordinate.h"
-//#include "TStyle.h"
- 
 #include "AliHLTPHOSChannelRawDataStruct.h"
-
 
 using namespace std;
 

@@ -2,14 +2,14 @@
 
 #include "AliHLTPHOSOnlineDisplayTab.h"
 #include "AliHLTHOMERReader.h"
-#include <iostream>
+//#include <iostream>
 #include "AliHLTDataTypes.h"
 
 
 using namespace std;
 
 
-AliHLTPHOSOnlineDisplayTab::AliHLTPHOSOnlineDisplayTab():AliHLTPHOSBase(),
+AliHLTPHOSOnlineDisplayTab::AliHLTPHOSOnlineDisplayTab()://AliHLTPHOSBase(),
 							 fgSyncronize(kFALSE), 
 							 fRunNumber(-1)
 {
