@@ -265,12 +265,10 @@ Int_t  AliTriggerRunScalers::FindNearestScalersRecord( const AliTimeStamp *stamp
    while (last >= base) {
       position = (base+last) / 2;
       AliDebug(1, Form("position= %d   base= %d    last= %d  ",position,base,last));
-    //  cout << "pos " <<   position<< " base " <<   base << "last " <<   last << endl;
       AliTriggerScalersRecord* rec = (AliTriggerScalersRecord*)fScalersRecord.At(position);
       if( rec && rec->GetTimeStamp()) op2 = 1;
       if( op2 && (result = stamp->Compare(rec->GetTimeStamp())) == 0  )
-         return position;  // exact match
-      cout << "result " <<   result << " op2 " << op2 << " rec "<< rec << endl;
+         return position;  // exact match 
       if (!op2 || result < 0)
          last = position-1;
       else
@@ -403,7 +401,7 @@ AliTriggerScalersESD* AliTriggerRunScalers::GetScalersForEventClass(const AliTim
  AliTriggerScalersRecordESD* scalrec2 = (AliTriggerScalersRecordESD*)fScalersRecordESD.At(position+1);
  TObjArray* scalers1 = (TObjArray*)scalrec1->GetTriggerScalers();
  TObjArray* scalers2 = (TObjArray*)scalrec2->GetTriggerScalers();
- cout << " Position = " << position << endl;
+
  if(scalers1->GetEntriesFast() != fnClasses){
   AliErrorClass("Internal error: #classes in RecordESD != fnClasses\n");
   return 0; 
