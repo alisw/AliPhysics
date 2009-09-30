@@ -647,7 +647,7 @@ void GetXsection(Int_t nEventsPerFile, TString filexs)
   // The xsection and ntrials global variables are updated per each file.
   // The average of these cuantities should be calculated after.
 
-  TFile *fxs = new TFile(filexs,"R");
+  TFile *fxs = TFile::Open(filexs);
   if(kInputData =="AOD") { //needs improvement, in case of train with ESDs, reading output AODs for example this is wrong.
     TList *l = (TList*) fxs->Get("cFilterList");
     TH1F * hxs = l->FindObject("h1Xsec") ;
