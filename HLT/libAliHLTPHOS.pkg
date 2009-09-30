@@ -41,7 +41,6 @@ CLASS_HDRS:=	  AliHLTPHOSBase.h \
 		  AliHLTPHOSESDMakerComponent.h \
 		  AliHLTPHOSRcuCalibrationProcessorComponent.h \
 		  AliHLTPHOSRcuCalibrationProcessor.h \
-		  AliHLTPHOSModuleCalibrationProcessorComponent.h \
 		  AliHLTPHOSRcuDAComponent.h \
                   AliHLTPHOSRcuProperties.h \
 		  AliHLTPHOSUtilities.h \
@@ -66,7 +65,6 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSConstants.h \
 	 	  AliHLTPHOSRawAnalyzer.h \
 		  AliHLTPHOSDefinitions.h \
-		  AliHLTPHOSModuleCellEnergyDataStruct.h\
 		  AliHLTPHOSRcuCellEnergyDataStruct.h \
 		  AliHLTPHOSValidCellDataStruct.h\
 		  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \

@@ -95,7 +95,8 @@ AliHLTPHOSRawAnalyzerCrude::Evaluate(int start, int length)
       for(int i=start; i<length; i++)
 	{
 	  //   if(fDoubleDataPtr[i] >  tmpAmplitudeMax && i > 5)
-	  if(fIntDataPtr[i] >  tmpAmplitudeMax && i > 5)
+	  //	  if(fIntDataPtr[i] >  tmpAmplitudeMax && i > 5)
+	  if(fIntDataPtr[i] >  tmpAmplitudeMax )    
 	    {
 	      //	  tmpAmplitudeMax = fDoubleDataPtr[i];
 	      tmpAmplitudeMax = fIntDataPtr[i];
@@ -126,7 +127,8 @@ AliHLTPHOSRawAnalyzerCrude::EvaluateShort(int start, int length)
     {
       //     cout << "sample index: " << i << endl;
         //   if(fDoubleDataPtr[i] >  tmpAmplitudeMax && i > 5)
-      if(fShortDataPtr[i] >  tmpAmplitudeMax && i > 5)
+      //      if(fShortDataPtr[i] >  tmpAmplitudeMax && i > 5)
+      if(fShortDataPtr[i] >  tmpAmplitudeMax  )	
 	{
 	  //	  tmpAmplitudeMax = fDoubleDataPtr[i];
 	  tmpAmplitudeMax = fShortDataPtr[i];

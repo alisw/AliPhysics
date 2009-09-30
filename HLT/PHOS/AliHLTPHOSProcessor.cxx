@@ -24,7 +24,7 @@ const AliHLTComponentDataType AliHLTPHOSProcessor::fgkInputDataTypes[]={kAliHLTV
 
 
 AliHLTPHOSProcessor::AliHLTPHOSProcessor():AliHLTProcessor(), 
-					   AliHLTPHOSBase(), 
+					   //		   AliHLTPHOSBase(), 
 					   fPhosEventCount(0), 
 					   fModuleID(2), 
 					   fPrintInfoModule(0), 

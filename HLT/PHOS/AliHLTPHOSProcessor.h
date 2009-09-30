@@ -13,7 +13,8 @@
 
 using namespace PhosHLTConst;
 
-class AliHLTPHOSProcessor:public AliHLTProcessor, public AliHLTPHOSBase
+//class AliHLTPHOSProcessor:public AliHLTProcessor, public AliHLTPHOSBase
+class AliHLTPHOSProcessor:public AliHLTProcessor
 {
 
  public:

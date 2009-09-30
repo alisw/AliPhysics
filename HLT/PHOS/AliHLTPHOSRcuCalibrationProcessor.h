@@ -29,7 +29,8 @@ class AliHLTPHOSRcuCellAccumulatedEnergyDataStruct;
 #define XBINUP   1023
 #define NBINS    1023
 
-class AliHLTPHOSRcuCalibrationProcessor : public AliHLTPHOSBase
+class AliHLTPHOSRcuCalibrationProcessor 
+//class AliHLTPHOSRcuCalibrationProcessor : public AliHLTPHOSBase
 //class AliHLTPHOSRcuCalibrationProcessor : public AliHLTPHOSRcuProcessor
 {
  public:

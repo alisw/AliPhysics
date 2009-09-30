@@ -38,24 +38,9 @@ using  namespace std;
 * Usage example see in PHOS/macros/Shuttle/AliPHOSCalibHistoProducer.C   *
 **************************************************************************/
 
-/*
-AliHLTPHOSRcuCalibrationProcessor:: AliHLTPHOSRcuCalibrationProcessor():  AliHLTPHOSBase(), 
-									  fCellAccEnergy(),
-									  fModuleID(0), 
-									  fRcuX(0), 
-									  fRcuZ(0)
-									  //  fUtilitiesPtr(0)
-									  */
-//{
-  
-  //  fUtilitiesPtr = new  AliHLTPHOSUtilities(); 
-  //Default constructor
-  //  cout << "WARNING: You cannot invoke the AliHLTPHOSRcuCalibrationProcessor without arguments" << endl;
-  //  cout << "Usage AliHLTPHOSRcuCalibrationProcessor(ModuleID, X. Z)" << endl;
-//} 
 
-//AliHLTPHOSRcuCalibrationProcessor::AliHLTPHOSRcuCalibrationProcessor(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ)
-AliHLTPHOSRcuCalibrationProcessor::AliHLTPHOSRcuCalibrationProcessor(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ):AliHLTPHOSBase(),
+AliHLTPHOSRcuCalibrationProcessor::AliHLTPHOSRcuCalibrationProcessor(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ):
+  //AliHLTPHOSBase(),
 																     fCellAccEnergy(),
 																     fModuleID(moduleID), 
 																     fRcuX(rcuX), 

@@ -284,7 +284,7 @@ AliHLTPHOSOnlineDisplayEventTab::InitDisplay(TGTab  * tabPtr, int runnumber)
       fgLegoPlotPtr[gain]->SetRunNumber(runnumber);
       fgLegoPlotPtr[gain]->SetMaximum(1023);
       fgLegoPlotPtr[gain]->Reset();
-      fgLegoPlotPtr[gain]->GetXaxis()->SetRange(XRANGESTART, XRANGEEND);
+      //    fgLegoPlotPtr[gain]->GetXaxis()->SetRange(XRANGESTART, XRANGEEND);
     }
   
 
