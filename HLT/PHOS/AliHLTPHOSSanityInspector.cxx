@@ -35,7 +35,7 @@ ClassImp(AliHLTPHOSSanityInspector);
 
 
 AliHLTPHOSSanityInspector::AliHLTPHOSSanityInspector() : 
-  AliHLTPHOSBase(),
+  //  AliHLTPHOSBase(),
   fMaxDifference(120)
 {
   //See header file for documentation

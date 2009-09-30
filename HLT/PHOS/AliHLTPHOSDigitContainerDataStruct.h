@@ -37,6 +37,10 @@ x * without fee, provided that the above copyright notice appears in all   *
 
 #include "Rtypes.h"
 #include "AliHLTPHOSDigitDataStruct.h"
+#include "AliHLTPHOSConstants.h"
+
+
+using namespace PhosHLTConst;
 
 /**
  * @struct AliHLTPHOSDigitContainerDataStruct

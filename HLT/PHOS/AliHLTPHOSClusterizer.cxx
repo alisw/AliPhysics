@@ -29,7 +29,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTPHOSClusterizer.h"
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 #include "AliHLTLogging.h"
 #include "TMath.h"
 #include "AliHLTPHOSRecPointContainerStruct.h"
@@ -50,7 +50,7 @@ using namespace std;
 ClassImp(AliHLTPHOSClusterizer);
 
 AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():
-  AliHLTPHOSBase(),
+  //  AliHLTPHOSBase(),
   fRecPointDataPtr(0),
   fDigitDataPtr(0),
   fEmcClusteringThreshold(0),

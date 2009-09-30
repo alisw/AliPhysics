@@ -19,7 +19,7 @@
 #include "AliHLTPHOSRawAnalyzer.h"
 #include "AliHLTPHOSUtilities.h" 
 
-AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(),   
+AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): //AliHLTPHOSBase(),   
 						 //	 fDoCorrectBaselineUsingFirstFiveSamples(false),
 						 fDoCorrectBaselineUsingFirstFiveSamples(true),
 						 fDoubleDataPtr(0), 
@@ -56,7 +56,7 @@ AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()
 * param dtaPtr Data array for wich a subarray will be taken to perform the fit
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
-AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double * /*dtaPtr*/, double fs): AliHLTPHOSBase(), 
+AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double * /*dtaPtr*/, double fs): //AliHLTPHOSBase(), 
 									      fDoCorrectBaselineUsingFirstFiveSamples(false),
 									      fDoubleDataPtr(0), 
 									      fIntDataPtr(0), 

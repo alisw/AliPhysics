@@ -23,9 +23,10 @@
  **************************************************************************/
 
 #include "Rtypes.h"
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 
 #include "AliHLTPHOSChannelRawDataStruct.h"
+#include "AliHLTDataTypes.h"
 
 class AliHLTPHOSChannelDataHeaderStruct;
 class AliHLTPHOSChannelDataStruct;

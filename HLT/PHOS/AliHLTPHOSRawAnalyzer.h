@@ -6,12 +6,14 @@
 
 /* $Id$ */
 
+#include "Rtypes.h"
 
 
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 class AliHLTPHOSUtilities;
 
-class AliHLTPHOSRawAnalyzer: public AliHLTPHOSBase
+//class AliHLTPHOSRawAnalyzer: public AliHLTPHOSBase
+class AliHLTPHOSRawAnalyzer
 //class AliHLTPHOSRawAnalyzer
 {
  public:

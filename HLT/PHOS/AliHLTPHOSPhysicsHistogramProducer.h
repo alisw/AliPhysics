@@ -29,7 +29,13 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
+
+#include "Rtypes.h"
+#include "TClonesArray.h"
+#include "AliHLTPHOSConstants.h" 
+
+using namespace  PhosHLTConst;
 
 class TObjArray;
 class TH1F;
@@ -59,7 +65,8 @@ class TH2F;
 
 
 
-class AliHLTPHOSPhysicsHistogramProducer : public AliHLTPHOSBase
+//class AliHLTPHOSPhysicsHistogramProducer : public AliHLTPHOSBase
+class AliHLTPHOSPhysicsHistogramProducer 
 {
  public:
 
@@ -71,7 +78,7 @@ class AliHLTPHOSPhysicsHistogramProducer : public AliHLTPHOSBase
 
   /** Copy constructor */
   AliHLTPHOSPhysicsHistogramProducer(const AliHLTPHOSPhysicsHistogramProducer &) :
-    AliHLTPHOSBase(),
+  //    AliHLTPHOSBase(),
     fHistNcls(0),
     fHistEnergy(0),
     fHistTotEnergy(0),

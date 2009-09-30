@@ -27,7 +27,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTPHOSHistogramProducer.h"
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSCaloClusterContainerStruct.h"
 #include "AliHLTCaloClusterDataStruct.h"
 
@@ -35,7 +35,7 @@
 #include "TNtuple.h"
 
 AliHLTPHOSHistogramProducer::AliHLTPHOSHistogramProducer():
-  AliHLTPHOSBase(),
+  //  AliHLTPHOSBase(),
   fClusterEnergiesHistPtr(0),
   fMultiplicitiesHistPtr(0),
   fClusterNtuplePtr(0),

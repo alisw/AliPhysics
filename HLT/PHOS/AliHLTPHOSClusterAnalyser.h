@@ -1,3 +1,4 @@
+
 //-*- Mode: C++ -*-
 // $Id$
 
@@ -19,6 +20,8 @@
 #ifndef ALIHLTPHOSCLUSTERANALYSER_H
 #define ALIHLTPHOSCLUSTERANALYSER_H
 
+#include "Rtypes.h"
+
 /**
  * Class calculates properties of rec points
  *
@@ -34,7 +37,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 
 class AliHLTPHOSPhysicsAnalyzer;
 class AliHLTPHOSRecPointHeaderStruct;
@@ -51,7 +54,8 @@ class AliPHOSGeoUtils;
  *
  * @ingroup alihlt_phos
  */
-class AliHLTPHOSClusterAnalyser : public AliHLTPHOSBase
+//class AliHLTPHOSClusterAnalyser : public AliHLTPHOSBase
+class AliHLTPHOSClusterAnalyser 
 {
 public:
 
@@ -63,7 +67,7 @@ public:
   
   /** Copy constructor */
   AliHLTPHOSClusterAnalyser(const AliHLTPHOSClusterAnalyser &) : 
-    AliHLTPHOSBase(),
+    //   AliHLTPHOSBase(),
     fLogWeight(0),
     fRecPointDataPtr(0),
     fNRecPoints(0),

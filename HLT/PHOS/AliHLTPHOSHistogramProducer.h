@@ -16,6 +16,8 @@
 #ifndef ALIHLTPHOSHISTOGRAMPRODUCER_H
 #define ALIHLTPHOSHISTOGRAMPRODUCER_H
 
+#include "Rtypes.h"
+
 
 /**
  * Class does 
@@ -32,7 +34,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 
 class TH1D;
 class TNtuple;
@@ -43,7 +45,8 @@ class AliHLTPHOSCaloClusterContainerStruct;
  *
  * @ingroup alihlt_phos
  */
-class AliHLTPHOSHistogramProducer : public AliHLTPHOSBase
+//class AliHLTPHOSHistogramProducer : public AliHLTPHOSBase
+class AliHLTPHOSHistogramProducer 
 {
   
 public:

@@ -31,7 +31,7 @@
 
 #include "AliHLTPHOSESDMaker.h"
 #include "AliHLTPHOSCaloClusterContainerStruct.h"
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliESDEvent.h"
 #include "AliESDCaloCluster.h"
@@ -40,7 +40,7 @@
 ClassImp(AliHLTPHOSESDMaker);
 
 AliHLTPHOSESDMaker::AliHLTPHOSESDMaker() : 
-  AliHLTPHOSBase(),
+  //  AliHLTPHOSBase(),
   fNCaloClusters(0),
   fCaloClustersPtr(0),
   fESDEventPtr(0),

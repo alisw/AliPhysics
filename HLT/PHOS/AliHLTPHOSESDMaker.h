@@ -34,7 +34,9 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
+
+#include  "Rtypes.h"
 
 class AliHLTPHOSCaloClusterContainerStruct;
 class TClonesArray;
@@ -47,7 +49,8 @@ class AliESDEvent;
  *
  * @ingroup alihlt_phos
  */
-class AliHLTPHOSESDMaker : public AliHLTPHOSBase
+//class AliHLTPHOSESDMaker : public AliHLTPHOSBase
+class AliHLTPHOSESDMaker 
 {
 
 public:
@@ -60,7 +63,7 @@ public:
 
   /** Copy constructor */  
   AliHLTPHOSESDMaker(const AliHLTPHOSESDMaker &) : 
-    AliHLTPHOSBase(),
+    //    AliHLTPHOSBase(),
     fNCaloClusters(0),
     fCaloClustersPtr(0),
     fESDEventPtr(0),

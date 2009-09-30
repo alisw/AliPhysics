@@ -36,7 +36,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 #include "AliPHOSLoader.h"
 
 #include "AliHLTPHOSRecPointContainerStruct.h"
@@ -59,7 +59,8 @@ class AliPHOSRecoParam;
  *
  * @ingroup alihlt_phos
  */
-class AliHLTPHOSClusterizer : public AliHLTPHOSBase
+//class AliHLTPHOSClusterizer : public AliHLTPHOSBase
+class AliHLTPHOSClusterizer 
 {
   
 public:
@@ -72,7 +73,7 @@ public:
 
   /** Copy constructor */  
   AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &) : 
-    AliHLTPHOSBase(),
+    //    AliHLTPHOSBase(),
     fRecPointDataPtr(0),
     fDigitDataPtr(0),
     fEmcClusteringThreshold(0),

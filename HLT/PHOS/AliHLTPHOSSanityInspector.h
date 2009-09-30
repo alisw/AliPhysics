@@ -29,7 +29,7 @@
  * @brief  Sanity inspector for PHOS HLT
  */
 
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 #include "Rtypes.h"
 
 
@@ -43,7 +43,8 @@ class AliHLTAltroData;
  * @ingroup alihlt_phos
  */
 
-class AliHLTPHOSSanityInspector : public AliHLTPHOSBase
+//class AliHLTPHOSSanityInspector : public AliHLTPHOSBase
+class AliHLTPHOSSanityInspector
 {
   
 public:
@@ -56,7 +57,7 @@ public:
 
   /** Copy constructor */  
   AliHLTPHOSSanityInspector(const AliHLTPHOSSanityInspector &) : 
-    AliHLTPHOSBase(),
+    //    AliHLTPHOSBase(),
     fMaxDifference(0)
   {
     //Copy constructor not implemented

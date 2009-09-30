@@ -20,6 +20,8 @@
 #ifndef ALIHLTPHOSDIGITDATASTRUCT_H
 #define ALIHLTPHOSDIGITDATASTRUCT_H
 
+#include "Rtypes.h"
+
 /**
  * Digit struct for PHOS HLT
  *

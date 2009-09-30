@@ -47,7 +47,7 @@ ClassImp(AliHLTPHOSDigitMaker);
 using namespace PhosHLTConst;
 
 AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
-  AliHLTPHOSBase(),
+  //  AliHLTPHOSBase(),
   fShmPtr(0),
   fDigitStructPtr(0),
   fDigitCount(0),

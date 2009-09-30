@@ -7,9 +7,10 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliHLTProcessor.h"
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTDataTypes.h"
+#include "AliHLTPHOSConstants.h"
 
 using namespace PhosHLTConst;
 

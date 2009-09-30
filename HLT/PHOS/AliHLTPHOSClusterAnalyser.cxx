@@ -41,7 +41,7 @@
 ClassImp(AliHLTPHOSClusterAnalyser);
 
 AliHLTPHOSClusterAnalyser::AliHLTPHOSClusterAnalyser() :
-  AliHLTPHOSBase(),
+  //  AliHLTPHOSBase(),
   fLogWeight(0),
   fRecPointDataPtr(0),
   fNRecPoints(0),

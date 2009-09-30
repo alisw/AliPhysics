@@ -34,10 +34,11 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSConstants.h"
 #include "AliHLTPHOSDigitDataStruct.h"
 #include "AliHLTPHOSChannelDataStruct.h"
+#include "AliHLTDataTypes.h"
 
 /**
  * @class AliHLTPHOSDigitMaker
@@ -53,7 +54,8 @@ class AliHLTPHOSMapper;
        
 using namespace PhosHLTConst;
 
-class AliHLTPHOSDigitMaker : public AliHLTPHOSBase
+//class AliHLTPHOSDigitMaker : public AliHLTPHOSBase
+class AliHLTPHOSDigitMaker
 {
 public:
 
@@ -65,7 +67,7 @@ public:
 
   /** Copy constructor */  
   AliHLTPHOSDigitMaker(const AliHLTPHOSDigitMaker &) : 
-    AliHLTPHOSBase(),
+    //    AliHLTPHOSBase(),
     fShmPtr(0),
     fDigitStructPtr(0),
     fDigitCount(0),

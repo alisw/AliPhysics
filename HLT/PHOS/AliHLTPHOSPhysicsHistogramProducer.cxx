@@ -36,7 +36,7 @@
 #include "TH2F.h"
 
 AliHLTPHOSPhysicsHistogramProducer::AliHLTPHOSPhysicsHistogramProducer() :
-    AliHLTPHOSBase(),
+  //    AliHLTPHOSBase(),
     fHistNcls(0),
     fHistEnergy(0),
     fHistTotEnergy(0),
