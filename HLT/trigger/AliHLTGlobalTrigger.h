@@ -19,6 +19,7 @@ class AliHLTTriggerDomain;
 class AliHLTTriggerDecision;
 class AliHLTGlobalTriggerDecision;
 class AliHLTTriggerMenu;
+class AliHLTCTPData;
 class TClonesArray;
 class TArrayL64;
 
@@ -55,7 +56,12 @@ class AliHLTGlobalTrigger : public AliHLTLogging
    * internal buffers should be cleared or reset.
    */
   virtual void NewEvent() = 0;
-  
+
+  /**
+   * Add trigger decisions according to the active CTP trigger classes
+   */
+  int AddCTPDecisions(const AliHLTCTPData* pCTPData, const AliHLTComponentTriggerData* trigData=NULL);
+
   /**
    * Abstract method which should fill in the internal attributes from the given
    * object.
@@ -95,6 +101,8 @@ class AliHLTGlobalTrigger : public AliHLTLogging
    * Returns the array of trigger counters.
    */
   const TArrayL64* Counters() const { return fCounters; }
+  
+  TClonesArray* GetCTPDecisions() const {return fCTPDecisions; }
 
  protected:
   
@@ -164,6 +172,7 @@ class AliHLTGlobalTrigger : public AliHLTLogging
   /// Not implemented. Do not allow copying of this object.
   AliHLTGlobalTrigger& operator = (const AliHLTGlobalTrigger& obj);
 
+  TClonesArray* fCTPDecisions; //! AliHLTTriggerDecision objects for the CTP classes
   TArrayL64* fCounters; //! Event trigger counters. One counter for each trigger class.
   
   ClassDef(AliHLTGlobalTrigger, 0) // Global HLT trigger base class which implements logic for a particular trigger menu.

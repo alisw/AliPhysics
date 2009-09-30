@@ -318,6 +318,12 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     obj = GetNextInputObject();
   }
 
+  // add trigger decisions for every CTP class
+  const AliHLTCTPData* pCTPData=CTPData();
+  if (pCTPData) {
+    fTrigger->AddCTPDecisions(pCTPData, GetTriggerData());
+  }
+
   // Calculate the global trigger result and trigger domain, then create and push
   // back the new global trigger decision object.
   TString description;
@@ -334,7 +340,6 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
 
   // mask the readout list according to the CTP trigger
   // if the classes have been initialized (mask non-zero)
-  const AliHLTCTPData* pCTPData=CTPData();
   if (pCTPData && pCTPData->Mask()) {
     AliHLTEventDDL eventDDL=pCTPData->ReadoutList(*GetTriggerData());
     AliHLTReadoutList ctpreadout(eventDDL);
