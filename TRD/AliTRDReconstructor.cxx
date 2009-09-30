@@ -155,7 +155,6 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
   rawReader->Select("TRD");
   rawData.OpenOutput();
   AliTRDrawStreamBase::SetRawStreamVersion(GetRecoParam()->GetRawStreamVersion()->Data());
-  AliTRDrawStreamBase::SetSubtractBaseline(10);
   AliTRDdigitsManager *manager = rawData.Raw2Digits(rawReader);
   manager->MakeBranch(digitsTree);
   manager->WriteDigits();

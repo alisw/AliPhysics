@@ -41,7 +41,6 @@ AliTRDarrayADC::AliTRDarrayADC()
 	       ,fNumberOfChannels(0)
                ,fNtime(0) 
                ,fNAdim(0)
-	       ,fBaseline(0)
                ,fADC(0)
 {
   //
@@ -61,7 +60,6 @@ AliTRDarrayADC::AliTRDarrayADC(Int_t nrow, Int_t ncol, Int_t ntime)
 	       ,fNumberOfChannels(0)
                ,fNtime(0) 
                ,fNAdim(0)
-	       ,fBaseline(0)
                ,fADC(0)
 {
   //
@@ -82,7 +80,6 @@ AliTRDarrayADC::AliTRDarrayADC(const AliTRDarrayADC &b)
 	       ,fNumberOfChannels(b.fNumberOfChannels)
                ,fNtime(b.fNtime) 
                ,fNAdim(b.fNAdim)
-	       ,fBaseline(b.fBaseline)
                ,fADC(0)	 
 {
   //
@@ -589,37 +586,6 @@ void AliTRDarrayADC::ConditionalReset(AliTRDSignalIndex* idx)
 	  SetData(row, col, time, 0);
       }
     }
-
-}
-//________________________________________________________________________________
-Short_t AliTRDarrayADC::GetData(Int_t nrow, Int_t ncol, Int_t ntime) const
-{
-  //
-  // Get the data using the pad numbering.
-  // To access data using the mcm scheme use instead
-  // the method GetDataByAdcCol
-  //
-
-  Int_t corrcolumn = fgLutPadNumbering[ncol];
-
-  return fADC[(nrow*fNumberOfChannels+corrcolumn)*fNtime+ntime];
-
-}
-//________________________________________________________________________________
-void AliTRDarrayADC::SetData(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value)
-{
-  //
-  // Set the data using the pad numbering.
-  // To write data using the mcm scheme use instead
-  // the method SetDataByAdcCol
-  //
-  // This function also subtracts the ADC baseline and 
-  // imposes a lower limit of zero to the ADC values!
-  //
-
-  Int_t colnumb = fgLutPadNumbering[ncol];
-
-  fADC[(nrow*fNumberOfChannels+colnumb)*fNtime+ntime] = TMath::Max(value-fBaseline,0);
 
 }
 

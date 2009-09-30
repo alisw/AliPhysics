@@ -174,6 +174,7 @@ AliTRDrawStream::AliTRDrawStream()
   , fGeometry(0)
   , fRawReader(0)
   , fTRDfeeParam(0)
+  , fCommonAdditive(0)
 {
   //
   // default constructor
@@ -215,6 +216,7 @@ AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader)
   , fGeometry(0)
   , fRawReader(rawReader)
   , fTRDfeeParam(0)
+  , fCommonAdditive(0)
 {
   //
   // default constructor
@@ -262,6 +264,7 @@ AliTRDrawStream::AliTRDrawStream(const AliTRDrawStream& /*st*/)
   , fGeometry(0)
   , fRawReader(0)
   , fTRDfeeParam(0)
+  , fCommonAdditive(0)
 {
   //
   // Copy constructor
@@ -767,14 +770,14 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
       if (!fIsGlobalDigitsParamSet){
         digitsparam->SetCheckOCDB(kFALSE);
         digitsparam->SetNTimeBins(ntbins);
-        digitsparam->SetADCbaseline(10);
+	fCommonAdditive=10;
+        digitsparam->SetADCbaseline(fCommonAdditive);
         fIsGlobalDigitsParamSet = kTRUE;
       }
 
       // Allocate memory space for the digits buffer
       if (digits->GetNtime() == 0) {
         digits->Allocate(rowMax, colMax, ntbins);
-	digits->SetBaseline(digitsparam->GetADCbaseline());
         if (digitsManager->UsesDictionaries()) {
           track0->Allocate(rowMax, colMax, ntbins);
           track1->Allocate(rowMax, colMax, ntbins);
@@ -793,7 +796,7 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
 
     // ntimebins data are ready to read
     for (it = 0; it < GetNumberOfTimeBins(); it++) {
-       if (GetSignals()[it] > 0) {
+       if (GetSignals()[it] > fCommonAdditive) {
 
          if (fSharedPadsOn) 
            digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), it, GetSignals()[it]);
@@ -1648,8 +1651,6 @@ Bool_t AliTRDrawStream::DecodeADC()
   // decode single ADC channel
   //
 
-  UInt_t commonAdditive = AliTRDrawStreamBase::fgCommonAdditive;
-
   fADC->fCorrupted = 0;
   if(fADC->fADCnumber%2==1) fMaskADCword = ADC_WORD_MASK(ADCDATA_VAL1);
   if(fADC->fADCnumber%2==0) fMaskADCword = ADC_WORD_MASK(ADCDATA_VAL2);
@@ -1677,10 +1678,9 @@ Bool_t AliTRDrawStream::DecodeADC()
        continue;
      }
 
-     // here we subtract the baseline ( == common additive)
-     fADC->fSignals[fTbinADC + 0] = ((*fpPos & 0x00000ffc) >>  2) - commonAdditive;
-     fADC->fSignals[fTbinADC + 1] = ((*fpPos & 0x003ff000) >> 12) - commonAdditive;
-     fADC->fSignals[fTbinADC + 2] = ((*fpPos & 0xffc00000) >> 22) - commonAdditive;
+     fADC->fSignals[fTbinADC + 0] = ((*fpPos & 0x00000ffc) >>  2);
+     fADC->fSignals[fTbinADC + 1] = ((*fpPos & 0x003ff000) >> 12);
+     fADC->fSignals[fTbinADC + 2] = ((*fpPos & 0xffc00000) >> 22);
 
      fTbinADC += 3;
      fpPos++;
@@ -1726,8 +1726,6 @@ Bool_t AliTRDrawStream::DecodeADCExtended()
   // decode single ADC channel
   //
 
-  UInt_t commonAdditive = AliTRDrawStreamBase::fgCommonAdditive;
-
   fADC->fCorrupted = 0;
   if(fADC->fADCnumber%2==1) fMaskADCword = ADC_WORD_MASK(ADCDATA_VAL1);
   if(fADC->fADCnumber%2==0) fMaskADCword = ADC_WORD_MASK(ADCDATA_VAL2);
@@ -1736,8 +1734,8 @@ Bool_t AliTRDrawStream::DecodeADCExtended()
 
   fTbinADC = ((*fpPos & 0x000000fc) >>  2);
   fMCM->fSingleADCwords  = ((*fpPos & 0x00000f00) >>  8);
-  fADC->fSignals[fTbinADC] = ((*fpPos & 0x003ff000) >> 12) - commonAdditive;
-  fADC->fSignals[fTbinADC+1] = ((*fpPos & 0xffc00000) >> 22) - commonAdditive;
+  fADC->fSignals[fTbinADC] = ((*fpPos & 0x003ff000) >> 12);
+  fADC->fSignals[fTbinADC+1] = ((*fpPos & 0xffc00000) >> 22);
 
   fpPos++; 
   for (Int_t iw = 0; iw < fMCM->fSingleADCwords-1; iw++) { // it goes up to fMCM->fSingleADCwords-1 since the first word was already decoded above
@@ -1756,10 +1754,9 @@ Bool_t AliTRDrawStream::DecodeADCExtended()
        continue;
      }
 
-     // here we subtract the baseline ( == common additive)
-     fADC->fSignals[fTbinADC + 2] = ((*fpPos & 0x00000ffc) >>  2) - commonAdditive;
-     fADC->fSignals[fTbinADC + 3] = ((*fpPos & 0x003ff000) >> 12) - commonAdditive;
-     fADC->fSignals[fTbinADC + 4] = ((*fpPos & 0xffc00000) >> 22) - commonAdditive;
+     fADC->fSignals[fTbinADC + 2] = ((*fpPos & 0x00000ffc) >>  2);
+     fADC->fSignals[fTbinADC + 3] = ((*fpPos & 0x003ff000) >> 12);
+     fADC->fSignals[fTbinADC + 4] = ((*fpPos & 0xffc00000) >> 22);
 
      fTbinADC += 3;
      fpPos++;

@@ -50,14 +50,14 @@ class AliTRDclusterizer : public TNamed
 
   struct MaxStruct
   {
-    Int_t       Row;
-    Int_t       Col;
-    Int_t       Time;
-    Short_t     Signals[3];
+    Int_t       row;
+    Int_t       col;
+    Int_t       time;
+    Short_t     signals[3];
     UChar_t     padStatus;
-    Bool_t      FivePad;
-  MaxStruct():Row(-1),Col(0),Time(0),padStatus(0),FivePad(kFALSE)
-      {memset(Signals, 0, 3*sizeof(Short_t));}
+    Bool_t      fivePad;
+  MaxStruct():row(-1),col(0),time(0),padStatus(0),fivePad(kFALSE)
+      {memset(signals, 0, 3*sizeof(Short_t));}
     MaxStruct &operator=(const MaxStruct &a)
     {memcpy(this, &a, sizeof(MaxStruct)); return *this;}
   };
@@ -157,6 +157,7 @@ protected:
   Int_t                fClusterROC;           // The index to the first cluster of a given ROC
   Int_t                firstClusterROC;       // The number of cluster in a given ROC
   Int_t                fNoOfClusters;         // Number of Clusters already processed and still owned by the clusterizer
+  Int_t                fBaseline;             // Baseline of the ADC values
 
   ClassDef(AliTRDclusterizer,6)               //  TRD clusterfinder
 
