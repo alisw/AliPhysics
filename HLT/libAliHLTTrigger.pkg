@@ -23,7 +23,8 @@ CLASS_HDRS:= \
                 AliHLTTriggerSelectiveReadoutComponent.h    \
                 AliHLTTriggerMonitoringComponent.h          \
 		AliHLTTriggerPhosClusterEnergy.h            \
-		AliHLTTriggerPhosMip.h            
+		AliHLTTriggerPhosMip.h                      \
+		AliHLTTriggerTrdClusterMultiplicity.h
 
 
 # library sources
@@ -46,9 +47,9 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # enable automatic generation. 
 MODULE_DHDR:= 	AliHLTTriggerLinkDef.h
 
-EINCLUDE := HLT/BASE HLT/BASE/util HLT/trigger HLT/TPCLib
+EINCLUDE := HLT/BASE HLT/BASE/util HLT/trigger HLT/TPCLib HLT/TRD TRD
 
-LIBRARY_DEP := -lHLTbase
+LIBRARY_DEP := -lHLTbase 
 
 ###############################################################################
 #

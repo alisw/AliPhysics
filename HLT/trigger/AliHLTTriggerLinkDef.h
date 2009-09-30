@@ -18,4 +18,5 @@
 #pragma link C++ class AliHLTTriggerMonitoringComponent+;
 #pragma link C++ class AliHLTTriggerPhosClusterEnergy+;
 #pragma link C++ class AliHLTTriggerPhosMip+;
+#pragma link C++ class AliHLTTriggerTrdClusterMultiplicity+;
 #endif
