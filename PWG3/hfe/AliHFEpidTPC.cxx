@@ -153,7 +153,7 @@ Int_t AliHFEpidTPC::IsSelected(AliVParticle *track)
   }
   if(isLineCrossing) return 0;
   // Check whether distance from the electron line is smaller than n-sigma
-  if(fPIDtpcESD->GetNumberOfSigmas(esdTrack, AliPID::kElectron) < fNsigmaTPC ) return 11;
+  if(TMath::Abs(fPIDtpcESD->GetNumberOfSigmas(esdTrack, AliPID::kElectron)) < fNsigmaTPC ) return 11;
   return 0;
 }
 
@@ -184,7 +184,7 @@ Double_t AliHFEpidTPC::Likelihood(const AliESDtrack *track, Int_t species, Float
   Bool_t outlier = kTRUE;
   // Check whether distance from the respective particle line is smaller than r sigma
   for(Int_t hypo = 0; hypo < AliPID::kSPECIES; hypo++){
-    if(fPIDtpcESD->GetNumberOfSigmas(track, (AliPID::EParticleType)hypo) > rsig)
+    if(TMath::Abs(fPIDtpcESD->GetNumberOfSigmas(track, (AliPID::EParticleType)hypo)) > rsig)
       outlier = kTRUE;
     else {
 	    outlier = kFALSE;

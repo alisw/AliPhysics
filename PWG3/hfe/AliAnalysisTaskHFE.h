@@ -58,6 +58,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     Bool_t IsQAOn(Int_t qaLevel) const { return TESTBIT(fQAlevel, qaLevel); };
     Bool_t IsSecVtxOn() const { return TestBit(kIsSecVtxOn); };
     Bool_t IsPriVtxOn() const { return TestBit(kIsPriVtxOn); };
+    Int_t IsSignalElectron(AliESDtrack *) const;
     void SetQAOn(Int_t qaLevel) { SETBIT(fQAlevel, qaLevel); };
     void SetPriVtxOn()        { SetBit(kIsPriVtxOn, kTRUE); };
     void SetSecVtxOn()        { SetBit(kIsSecVtxOn, kTRUE); };
@@ -66,6 +67,25 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     void PrintStatus();
  
   private:
+    class LabelContainer{
+      public:
+        LabelContainer(Int_t capacity);
+        ~LabelContainer() {delete[] fContainer; };
+
+        Bool_t Append(Int_t label);
+        Bool_t Find(Int_t Label);
+        Int_t Next();
+        void ResetIterator(){ fCurrent = fBegin; }
+
+      private:
+        LabelContainer(const LabelContainer &);
+        LabelContainer &operator=(const LabelContainer &);
+        Int_t *fContainer;    // the Container for the labels
+        Int_t *fBegin;        // Pointer to the first entry
+        Int_t *fEnd;          // Pointer to the end of the container
+        Int_t *fLast;         // Pointer to the last entry
+        Int_t *fCurrent;      // Current entry to mimic an iterator
+    };
     void MakeParticleContainer();
     
     ULong_t fQAlevel;                     // QA level
@@ -73,8 +93,8 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     AliESDEvent *fESD;                    //! The ESD Event
     AliMCEvent *fMC;                      //! The MC Event
     AliCFManager *fCFM;                   //! Correction Framework Manager
-    THnSparseF *fCorrelation;             //! response matrix for unfolding  
-    THnSparseF *fFakeElectrons;           //! Contamination from Fake Electrons
+    TList *fCorrelation;                  //! response matrix for unfolding  
+    THnSparseF *fPIDperformance;          //! info on contamination and yield of electron spectra
     AliHFEpid *fPID;                      //! PID
     AliHFEcuts *fCuts;                    //! Cut Collection
     AliHFEsecVtx *fSecVtx;                //! Secondary Vertex Analysis

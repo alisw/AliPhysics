@@ -180,7 +180,7 @@ void AliHFEcuts::CreateStandardCuts(){
   fMinClustersTPC = 50;
   fMinTrackletsTRD = 6;
   SetRequireITSPixel();
-  fCutITSPixel = AliHFEextraCuts::kBoth;
+  fCutITSPixel = AliHFEextraCuts::kAny;
   fMaxChi2clusterTPC = 3.5;
   fMinClusterRatioTPC = 0.6;
   fPtRange[0] = 0.1;

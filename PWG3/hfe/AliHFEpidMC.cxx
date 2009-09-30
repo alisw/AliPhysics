@@ -26,6 +26,7 @@
 #include <TMath.h>
 #include <TParticle.h>
 
+#include "AliESDtrack.h"
 #include "AliMCParticle.h"
 #include "AliVParticle.h"
 
@@ -54,11 +55,9 @@ Bool_t AliHFEpidMC::InitializePID(){
 //___________________________________________________________________
 Int_t AliHFEpidMC::IsSelected(AliVParticle *track){
   //
-  // PID decision for Monte Carlo particles
-  // return true if PDG Code is +/-11 (electron)
-  // otherwise return false
+  // returns MC PDG Code
+  // Functionality implemented in the base class
+  // (necessary for PID QA)
   //
-  AliMCParticle *mctrack = 0x0;
-  if(!(mctrack = dynamic_cast<AliMCParticle *>(track))) return 0;
-  return mctrack->Particle()->GetPdgCode();
+  return GetPdgCode(track);
 }

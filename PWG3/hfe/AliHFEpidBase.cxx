@@ -85,7 +85,7 @@ Int_t AliHFEpidBase::GetPdgCode(AliVParticle *track){
   if(!fMCEvent) return 0;
   AliMCParticle *mctrack = 0x0;
   if(TString(track->IsA()->GetName()).CompareTo("AliESDtrack") == 0)
-    mctrack = (AliMCParticle*) (fMCEvent->GetTrack(TMath::Abs((dynamic_cast<AliESDtrack *>(track))->GetLabel())));
+    mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs((dynamic_cast<AliESDtrack *>(track))->GetLabel())));
   else if(TString(track->IsA()->GetName()).CompareTo("AliMCParticle") == 0)
     mctrack = dynamic_cast<AliMCParticle *>(track);
   if(!mctrack) return 0;
