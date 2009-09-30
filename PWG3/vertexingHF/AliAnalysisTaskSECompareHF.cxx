@@ -194,6 +194,10 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
   AliAODRecoDecayHF3Prong *d3=0;
   AliAODRecoDecayHF4Prong *d4=0;
 
+  Int_t pdgDgD0toKpi[2]={321,211};
+  Int_t pdgDgDplustoKpipi[3]={321,211,211};
+  Int_t pdgDgD0toKpipipi[4]={321,211,211,211};
+
   // loop over vertices
   Int_t nVertices = inputArrayVertices->GetEntriesFast();
   if(fDebug>1) printf("Number of vertices: %d\n",nVertices);
@@ -226,7 +230,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
       d2 = (AliAODRecoDecayHF2Prong*)vtx->GetParent();
       if(d2->IsLikeSign()) continue;
       if(d2->Charge() != 0) continue; // these are D* 
-      lab = d2->MatchToMC(421,mcArray);
+      lab = d2->MatchToMC(421,mcArray,2,pdgDgD0toKpi);
       if(lab>=0) {
 	unsetvtx=kFALSE;
 	if(!d2->GetOwnPrimaryVtx()) {
@@ -240,13 +244,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	  invmass = (pdg==421 ? d2->InvMassD0() : d2->InvMassD0bar());
 	  // get a daughter for true pos of decay vertex
 	  AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
-	  AliAODMCParticle *dg1MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(1));
 	  dg0MC->XvYvZv(posTrue);
-	  // check that the D0 decayed in two prong (this is not necessary, because the check is already done, implicitely, in MatchToMC)
-	  if(TMath::Abs(dMC->GetDaughter(0)-dMC->GetDaughter(1))!=1) continue;
-	  // check that the D0 decayed in K-pi+
-	  if(!(TMath::Abs(dg0MC->GetPdgCode())==321 && TMath::Abs(dg1MC->GetPdgCode())==211) && 
-	     !(TMath::Abs(dg0MC->GetPdgCode())==211 && TMath::Abs(dg1MC->GetPdgCode())==321)) continue;
 	  fHistMass->Fill(invmass);
 	  // Post the data already here
 	  PostData(1,fOutput);
@@ -265,7 +263,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
     case 3: // look for D+
       d3 = (AliAODRecoDecayHF3Prong*)vtx->GetParent();
       if(d3->IsLikeSign()) continue;
-      lab = d3->MatchToMC(411,mcArray);
+      lab = d3->MatchToMC(411,mcArray,3,pdgDgDplustoKpipi);
       if(lab>=0) {
 	unsetvtx=kFALSE;
 	if(!d3->GetOwnPrimaryVtx()) {
@@ -279,17 +277,6 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	// get a daughter for true pos of decay vertex
 	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
 	dg0MC->XvYvZv(posTrue);
-	// check that the D+ decayed in K-pi+pi+
-	AliAODTrack *dg0 = (AliAODTrack*)d3->GetDaughter(0);
-	AliAODTrack *dg1 = (AliAODTrack*)d3->GetDaughter(1);
-	AliAODTrack *dg2 = (AliAODTrack*)d3->GetDaughter(2);
-        dg0MC = (AliAODMCParticle*)mcArray->At(TMath::Abs(dg0->GetLabel()));
-	AliAODMCParticle *dg1MC = (AliAODMCParticle*)mcArray->At(TMath::Abs(dg1->GetLabel()));
-	AliAODMCParticle *dg2MC = (AliAODMCParticle*)mcArray->At(TMath::Abs(dg2->GetLabel()));
-
-	  if(!(TMath::Abs(dg0MC->GetPdgCode())==321 && TMath::Abs(dg1MC->GetPdgCode())==211 && TMath::Abs(dg2MC->GetPdgCode())==211) && 
-	     !(TMath::Abs(dg0MC->GetPdgCode())==211 && TMath::Abs(dg1MC->GetPdgCode())==321 && TMath::Abs(dg2MC->GetPdgCode())==211) &&
-	     !(TMath::Abs(dg0MC->GetPdgCode())==211 && TMath::Abs(dg1MC->GetPdgCode())==211 && TMath::Abs(dg2MC->GetPdgCode())==321)) continue;
 	Float_t tmp[16]={(Float_t)pdg,(Float_t)nprongs,
 			 (Float_t)posRec[0],(Float_t)posTrue[0],(Float_t)errx,
 			 (Float_t)posRec[1],(Float_t)posTrue[1],(Float_t)erry,
@@ -305,7 +292,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
     case 4: // look for D0->Kpipipi
       d4 = (AliAODRecoDecayHF4Prong*)vtx->GetParent();
       if(d4->IsLikeSign()) continue;
-      lab = d4->MatchToMC(421,mcArray);
+      lab = d4->MatchToMC(421,mcArray,4,pdgDgD0toKpipipi);
       if(lab>=0) {
 	unsetvtx=kFALSE;
 	if(!d4->GetOwnPrimaryVtx()) {
