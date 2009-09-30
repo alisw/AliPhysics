@@ -120,14 +120,6 @@ AliQADataMakerRec::~AliQADataMakerRec()
     fRecPointsArray->Clear() ; 
     delete fRecPointsArray ; 
   }
-
-	if ( fCorrNt ) {
-    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      if ( fCorrNt[specie] )
-          delete fCorrNt[specie] ;
-    }
-    delete fCorrNt ;
-  }  
 }
 
 //__________________________________________________________________

@@ -83,6 +83,7 @@ AliCorrQADataMakerRec::~AliCorrQADataMakerRec()
         delete fCorrNt[specie] ; 
     }
 		delete[] fCorrNt ; 
+    fCorrNt = 0x0;
 	}  
 }
   
