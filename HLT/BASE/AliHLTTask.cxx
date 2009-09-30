@@ -463,6 +463,11 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
     // instances of SOR and EOR events to be kept
     int iSOR=-1;
     int iEOR=-1;
+    // TODO 2009-09-30
+    // generalize handling of the special blocks to be forwarded on SOR and EOR
+    // just adding a new specific handling for the ECS parameter block as a quick
+    // solution
+    int iECS=-1;
 
     // subscribe to all source tasks
     fBlockDataArray.clear();
@@ -478,12 +483,13 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 	  HLTDebug("source task %s (%p) does not provide any matching data type for task %s (%p)", pSrcTask->GetName(), pSrcTask, GetName(), this);
 	}
 	if ((iResult=pSrcTask->Subscribe(this, fBlockDataArray))>=0) {
-	  iSOR=iEOR=-1;
+	  iSOR=iEOR=iECS=-1;
 	  AliHLTComponentBlockDataList::iterator block=fBlockDataArray.begin();
 	  for (int i=0; block!=fBlockDataArray.end(); i++) {
 	    bool bRemove=0;
 	    bRemove|=(*block).fDataType==kAliHLTDataTypeSOR && !(iSOR<0 && (iSOR=i)>=0);
 	    bRemove|=(*block).fDataType==kAliHLTDataTypeEOR && !(iEOR<0 && (iEOR=i)>=0);
+	    bRemove|=(*block).fDataType==kAliHLTDataTypeECSParam && !(iECS<0 && (iECS=i)>=0);
 	    //HLTInfo("block %d, iSOR=%d iEOR=%d remove=%d", i, iSOR, iEOR, bRemove);
 	    if (i<iSourceDataBlock) {
 	      assert(!bRemove);
@@ -568,6 +574,11 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
       trigData.fDataSize=sizeof(AliHLTEventTriggerData);
       memset(&evtTrigData, 0, trigData.fDataSize);
       evtTrigData.fCommonHeaderWordCnt=gkAliHLTCommonHeaderCount;
+      // TODO 2009-09-30
+      // Whenever the trigger framework is implemented and provides more than
+      // just a dummy CT_TRIGGER_CLASS, this needs to be changed. Now for
+      // all events the first bit in the trigger mask is set
+      evtTrigData.fCommonHeader[5]=0x1;
       trigData.fData=&evtTrigData;
       iLastOutputDataSize=iOutputDataSize;
       AliHLTUInt32_t size=iOutputDataSize;
@@ -687,6 +698,11 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
 	    HLTDebug("forward EOR event (%s) segment %d (source task %s %p) to data buffer %p", AliHLTComponent::DataType2Text(fBlockDataArray[iEOR].fDataType).c_str(), iEOR, pSrcTask->GetName(), pSrcTask, fpDataBuffer);
 	    fpDataBuffer->Forward(subscribedTaskList[iEOR], &fBlockDataArray[iEOR]);
 	    subscribedTaskList[iEOR]=NULL; // not to be released in the loop further down
+	  }
+	  if (iECS>=0 && subscribedTaskList[iECS]!=NULL) {
+	    HLTDebug("forward EOR event (%s) segment %d (source task %s %p) to data buffer %p", AliHLTComponent::DataType2Text(fBlockDataArray[iECS].fDataType).c_str(), iECS, pSrcTask->GetName(), pSrcTask, fpDataBuffer);
+	    fpDataBuffer->Forward(subscribedTaskList[iECS], &fBlockDataArray[iECS]);
+	    subscribedTaskList[iECS]=NULL; // not to be released in the loop further down
 	  }
 	}
       } else {

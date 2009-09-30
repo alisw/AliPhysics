@@ -684,10 +684,31 @@ int AliHLTSystem::SendControlEvent(AliHLTComponentDataType dt)
   // see header file for class documentation
   int iResult=0;
 
+  AliHLTComponentBlockDataList controlBlocks;
+  AliHLTComponentBlockData bd;
+
+  // run decriptor block of type kAliHLTDataTypeSOR/kAliHLTDataTypeEOR 
+  AliHLTComponent::FillBlockData(bd);
   AliHLTRunDesc runDesc;
   memset(&runDesc, 0, sizeof(AliHLTRunDesc));
   runDesc.fStructSize=sizeof(AliHLTRunDesc);
-  AliHLTControlTask::AliHLTControlEventGuard g(fpControlTask, dt, kAliHLTVoidDataSpec, (AliHLTUInt8_t*)&runDesc, sizeof(AliHLTRunDesc));
+  bd.fPtr=&runDesc;
+  bd.fSize=sizeof(AliHLTRunDesc);
+  bd.fDataType=dt;
+  bd.fSpecification=kAliHLTVoidDataSpec;
+  controlBlocks.push_back(bd);
+
+  // ECS parameter dummy of type kAliHLTDataTypeECSParam
+  // to be filled at some point from the trigger framework
+  AliHLTComponent::FillBlockData(bd);
+  TString ecsParam="CTP_TRIGGER_CLASS=00:DUMMY_TRIGGER_ALL:00-01-02-03-04-05-06-07-08-09-10-11-12-13-14-15-16-17";
+  bd.fPtr=(void*)ecsParam.Data();
+  bd.fSize=ecsParam.Length()+1;
+  bd.fDataType=kAliHLTDataTypeECSParam;
+  bd.fSpecification=kAliHLTVoidDataSpec;
+  controlBlocks.push_back(bd);  
+
+  AliHLTControlTask::AliHLTControlEventGuard g(fpControlTask, controlBlocks);
   HLTDebug("sending event %s, run descriptor %p", AliHLTComponent::DataType2Text(dt).c_str(), &runDesc);
   TObjLink *lnk=fTaskList.FirstLink();
   while (lnk && iResult>=0) {

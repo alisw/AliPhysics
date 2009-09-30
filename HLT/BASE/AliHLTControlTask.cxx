@@ -30,11 +30,10 @@
 ClassImp(AliHLTControlTask)
 
 AliHLTControlTask::AliHLTControlTask()
-  :
-  fEvent(kAliHLTVoidDataType),
-  fSpecification(kAliHLTVoidDataSpec),
-  fpData(NULL),
-  fSize(0)
+  : AliHLTTask()
+  , fBlocks()
+  , fpData(NULL)
+  , fSize(0)
 {
   // see header file for class documentation
   // or
@@ -46,6 +45,7 @@ AliHLTControlTask::AliHLTControlTask()
 AliHLTControlTask::~AliHLTControlTask()
 {
   // see header file for class documentation
+  ResetBlocks();
 }
 
 int AliHLTControlTask::CreateComponent(AliHLTConfiguration* /*pConf*/, AliHLTComponentHandler* pCH, AliHLTComponent*& pComponent) const
@@ -62,6 +62,34 @@ int AliHLTControlTask::CreateComponent(AliHLTConfiguration* /*pConf*/, AliHLTCom
     return iResult;
   }
   return -ENOMEM;
+}
+
+void AliHLTControlTask::SetBlocks(const AliHLTComponentBlockDataList& list)
+{
+  // see header file for class documentation
+  fBlocks.assign(list.begin(), list.end());
+  AliHLTComponentBlockDataList::iterator element=fBlocks.begin();
+  for (;element!=fBlocks.end(); element++) fSize+=element->fSize;
+
+  // allocate buffer for the payload of all blocks
+  fpData=new AliHLTUInt8_t[fSize];
+  AliHLTUInt8_t offset=0;
+
+  // copy and redirect
+  for (element=fBlocks.begin();element!=fBlocks.end(); element++) {
+    memcpy(fpData+offset, element->fPtr, element->fSize);
+    element->fPtr=fpData+offset;
+    offset+=element->fSize;
+  }
+}
+
+void AliHLTControlTask::ResetBlocks()
+{
+  // see header file for class documentation
+  fBlocks.clear();
+  if (fpData) delete [] fpData;
+  fpData=NULL;
+  fSize=0;
 }
 
 AliHLTControlTask::AliHLTControlEventComponent::AliHLTControlEventComponent(const AliHLTControlTask* pParent)
@@ -96,7 +124,7 @@ void AliHLTControlTask::AliHLTControlEventComponent::GetOutputDataSize( unsigned
 {
   // see header file for class documentation
   if (fpParent && fpParent->fSize>0) constBase=fpParent->fSize;
-  else constBase=sizeof(AliHLTRunDesc);
+  else constBase=0;
   inputMultiplier=0;
 }
 
@@ -109,28 +137,31 @@ int AliHLTControlTask::AliHLTControlEventComponent::GetEvent(const AliHLTCompone
   // see header file for class documentation
   if (!fpParent) return -ENODEV;
   const AliHLTControlTask* pParent=fpParent;
-  if (size<pParent->fSize) {
-    return -ENOSPC;
-  }
-
-  if (pParent->fpData && pParent->fSize) {
-    memcpy(outputPtr, pParent->fpData, pParent->fSize);
-  }
-
   // return if no event has been set
-  if (pParent->fEvent==kAliHLTVoidDataType) {
+  if (pParent->fpData==NULL ||
+      pParent->fBlocks.size()==0) {
     //HLTInfo("no control event to send");
     return 0;
   }
 
-  HLTDebug("publishing control event %s", DataType2Text(pParent->fEvent).c_str());
-  AliHLTComponentBlockData bd;
-  FillBlockData(bd);
-  bd.fOffset=0;
-  bd.fSize=pParent->fSize;
-  bd.fDataType=pParent->fEvent;
-  bd.fSpecification=pParent->fSpecification;
-  outputBlocks.push_back( bd );
+  AliHLTUInt32_t capacity=size;
+  size=0;
+  if (capacity<pParent->fSize) {
+    return -ENOSPC;
+  }
 
-  return bd.fSize;
+  for (unsigned int i=0; i<pParent->fBlocks.size(); i++) {
+    HLTDebug("publishing control block %s", DataType2Text(pParent->fBlocks[i].fDataType).c_str());
+    memcpy(outputPtr+size, pParent->fBlocks[i].fPtr, pParent->fBlocks[i].fSize);
+    AliHLTComponentBlockData bd;
+    FillBlockData(bd);
+    bd.fOffset=size;
+    bd.fSize=pParent->fBlocks[i].fSize;
+    bd.fDataType=pParent->fBlocks[i].fDataType;
+    bd.fSpecification=pParent->fBlocks[i].fSpecification;
+    outputBlocks.push_back( bd );
+    size+=bd.fSize;
+  }
+
+  return size;
 }

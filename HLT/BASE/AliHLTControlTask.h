@@ -46,21 +46,15 @@ class AliHLTControlTask : public AliHLTTask {
 
   class AliHLTControlEventGuard {
   public:
-    AliHLTControlEventGuard(AliHLTControlTask* me, AliHLTComponentDataType dt, AliHLTUInt32_t spec, AliHLTUInt8_t* pData, AliHLTUInt32_t size) :
+    AliHLTControlEventGuard(AliHLTControlTask* me, AliHLTComponentBlockDataList& list) :
       fTask(me) {
       if (!fTask) return;
-      fTask->fEvent=dt; 
-      fTask->fSpecification=spec; 
-      fTask->fpData=pData; 
-      fTask->fSize=size;
+      fTask->SetBlocks(list); 
     }
-      ~AliHLTControlEventGuard() {
-	if (!fTask) return;
-	fTask->fEvent=kAliHLTVoidDataType;
-	fTask->fSpecification=kAliHLTVoidDataSpec;
-	fTask->fpData=NULL;
-	fTask->fSize=0;
-      }
+    ~AliHLTControlEventGuard() {
+      if (!fTask) return;
+      fTask->ResetBlocks();
+    }
 
   private:
       /** standard constructor prohibited */
@@ -108,6 +102,10 @@ class AliHLTControlTask : public AliHLTTask {
   };
 
  protected:
+  /// to be used from the guard
+  void SetBlocks(const AliHLTComponentBlockDataList& list);
+  /// to be used from the guard
+  void ResetBlocks();
 
  private:
   /** copy constructor prohibited */
@@ -115,15 +113,13 @@ class AliHLTControlTask : public AliHLTTask {
   /** assignment operator prohibited */
   AliHLTControlTask& operator=(const AliHLTControlTask&);
 
-  /** data type of the control event */
-  AliHLTComponentDataType fEvent; //! transient
-  /** specification of the control evtent */
-  AliHLTUInt32_t fSpecification; //! transient
-  /** payload to be sent with the control event */
+  /** list of control blocks */
+  AliHLTComponentBlockDataList fBlocks; //! transient
+  /** payload buffer for all control blocks */
   AliHLTUInt8_t* fpData; //! transient
   /** payload size */
   AliHLTUInt32_t fSize; //!transient
 
   ClassDef(AliHLTControlTask, 0)
-    };
+};
 #endif
