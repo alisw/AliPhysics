@@ -28,7 +28,7 @@ class AliHLTPHOSRawAnalyzer
 
 
   //  void BaselineCorrection(double *dataPtr, int N);
-  void BaselineCorrection(double *dataPtr, double baselineValue);  
+ void BaselineCorrection(double *dataPtr, double baselineValue);  
 
   int FindStartIndex(double treshold);
   float GetTiming() const;
