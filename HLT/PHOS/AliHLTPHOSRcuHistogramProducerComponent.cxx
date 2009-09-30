@@ -24,6 +24,7 @@
 //#include "AliHLTPHOSValidCellDataStruct.h" 
 #include "AliHLTPHOSChannelDataHeaderStruct.h"
 #include "AliHLTPHOSChannelDataStruct.h"
+//#include "AliHLTPHOSUtilities.h"
 
 
 AliHLTPHOSRcuHistogramProducerComponent gAliHLTPHOSRcuHistogramProducerComponent;
@@ -225,17 +226,25 @@ int
 AliHLTPHOSRcuHistogramProducerComponent::DoInit( int argc, const char** argv )
 {
   //See html documentation of base class
-  fPrintInfo = kFALSE;
+  //  fPrintInfo = kFALSE;
   int iResult=0;
   TString argument="";
-  iResult = ScanArguments(argc, argv);
+ 
+  // iResult = ScanArguments(argc, argv);
+
+  /*
   if(fIsSetEquippmentID == kFALSE)
     {
       Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuHistogramProducerComponent::DoInt( int argc, const char** argv )", "Missing argument",
 	       "The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>");
       iResult = -2; 
     }
-  fRcuHistoProducerPtr = new AliHLTPHOSRcuHistogramProducer( fModuleID, fRcuX, fRcuZ);
+  */
+
+  
+  //fRcuHistoProducerPtr = new AliHLTPHOSRcuHistogramProducer( fModuleID, fRcuX, fRcuZ);
+ 
+
   return iResult; 
   
 }

@@ -8,9 +8,11 @@
 
 
 #include "AliHLTPHOSProcessor.h"
-#include "AliHLTPHOSRcuProperties.h"
+//#include "AliHLTPHOSRcuProperties.h"
 
-class  AliHLTPHOSRcuProcessor : public AliHLTPHOSProcessor, public AliHLTPHOSRcuProperties
+//class  AliHLTPHOSRcuProcessor : public AliHLTPHOSProcessor, public AliHLTPHOSRcuProperties
+class  AliHLTPHOSRcuProcessor : public AliHLTPHOSProcessor
+
 {
  public:
   AliHLTPHOSRcuProcessor();

@@ -35,10 +35,10 @@ class  AliHLTPHOSUtilities
  
   bool CheckFile(const char *fileName, const char *opt) const;
 
-  bool ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value = 0 );
-  bool ScanSingleFloatArgument(int argc, const char** argv, const char *name, float *value = 0 );
-  bool ScanSingleNameArgument(int argc, const char** argv, const char *name, char *outname = 0 );
-  bool ScanSingleArgument(int argc, const char** argv, const char *name);
+  static bool ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value = 0 );
+  static bool ScanSingleFloatArgument(int argc, const char** argv, const char *name, float *value = 0 );
+  static bool ScanSingleNameArgument(int argc, const char** argv, const char *name, char *outname = 0 );
+  static bool ScanSingleArgument(int argc, const char** argv, const char *name);
 
   template<typename T> 
     void  DumpData(T *array, int N, int nPerLine)
@@ -86,7 +86,7 @@ class  AliHLTPHOSUtilities
 
   
  private:
-  int DoExistArgument(const int argc, const char** argv, const char *argument) const;
+  static int DoExistArgument(const int argc, const char** argv, const char *argument) ;
 
 };
 

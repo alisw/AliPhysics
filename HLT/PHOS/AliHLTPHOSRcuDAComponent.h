@@ -37,7 +37,7 @@
 
 #include "AliHLTCalibrationProcessor.h"
 #include "AliHLTPHOSConstants.h"
-#include "AliHLTPHOSRcuProperties.h"
+//#include "AliHLTPHOSRcuProperties.h"
 
 using namespace PhosHLTConst;
 
@@ -46,7 +46,10 @@ class AliHLTPHOSSharedMemoryInterfacev2;
 class TObjArray;
 
 //class AliHLTPHOSRcuDAComponent: public AliHLTCalibrationProcessor,  public AliHLTPHOSRcuProcessor
-class AliHLTPHOSRcuDAComponent:  public AliHLTPHOSRcuProperties, public AliHLTCalibrationProcessor
+//class AliHLTPHOSRcuDAComponent:  public AliHLTPHOSRcuProperties, public AliHLTCalibrationProcessor
+class AliHLTPHOSRcuDAComponent:  public AliHLTCalibrationProcessor
+
+
 {
 public:
   /** constructor */

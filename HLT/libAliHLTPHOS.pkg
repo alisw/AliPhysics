@@ -34,7 +34,6 @@ CLASS_HDRS:=	  AliHLTPHOSClusterizer.h \
 		  AliHLTPHOSESDMaker.h \
 		  AliHLTPHOSESDMakerComponent.h \
 		  AliHLTPHOSRcuDAComponent.h \
-                  AliHLTPHOSRcuProperties.h \
 		  AliHLTPHOSUtilities.h \
 		  AliHLTPHOSHistogramProducer.h \
 		  AliHLTPHOSHistogramProducerComponent.h \

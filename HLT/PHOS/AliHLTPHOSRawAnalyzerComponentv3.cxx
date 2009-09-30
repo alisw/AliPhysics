@@ -23,7 +23,7 @@
 #include "AliAltroRawStreamV3.h"
 #include "AliCaloRawStreamV3.h"
 #include "AliRawReaderMemory.h"
-
+#include "AliHLTPHOSUtilities.h"
 
 AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3():
   AliHLTPHOSRcuProcessor(), 
@@ -306,7 +306,7 @@ AliHLTPHOSRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 { 
 
   //See base class for documentation
-  fPrintInfo = kFALSE;
+  // fPrintInfo = kFALSE;
   int iResult=0;
   fMapperPtr = new AliHLTPHOSMapper();
 

@@ -23,6 +23,7 @@
 #include "AliHLTPHOSConstants.h"
 //#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "TObjArray.h"
+#include "AliHLTPHOSUtilities.h"
 
 //#include <iostream>
 
@@ -42,7 +43,7 @@ using namespace PhosHLTConst;
 
 AliHLTPHOSRcuDAComponent gAliHLTPHOSRcuDAComponent;
 
-AliHLTPHOSRcuDAComponent::AliHLTPHOSRcuDAComponent() : AliHLTPHOSRcuProperties(),
+AliHLTPHOSRcuDAComponent::AliHLTPHOSRcuDAComponent() : //AliHLTPHOSRcuProperties(),
 						       AliHLTCalibrationProcessor(),
 						       fPhosEventCount(0),
 						       fPHOSDAPtr(0),
@@ -105,8 +106,11 @@ AliHLTPHOSRcuDAComponent::GetComponentID()
 Int_t
 AliHLTPHOSRcuDAComponent::ScanArgument( Int_t argc, const char** argv)
 {
-  ScanArguments(argc, argv);
-  return 0;
+  //CRAP PTH
+  //  AliHLTPHOSUtilities::ScanArguments(argc, argv);
+ 
+
+ return 0;
 }
 
 
