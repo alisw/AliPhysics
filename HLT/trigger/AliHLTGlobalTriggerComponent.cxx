@@ -344,7 +344,10 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     decision.ReadoutList(maskedList);
   }
 
-  decision.SetCounters(fTrigger->Counters(), GetEventCount()+1);
+  const TArrayL64* counters=fTrigger->Counters();
+  if (counters) {
+    decision.SetCounters(*counters, GetEventCount()+1);
+  }
   static UInt_t lastTime=0;
   TDatime time;
   if (time.Get()-lastTime>5) {
@@ -843,8 +846,9 @@ int AliHLTGlobalTriggerComponent::PrintStatistics(const AliHLTGlobalTrigger* pTr
 {
   // print some statistics
   ULong64_t count=0;
-  for (int i=0; i<pTrigger->Counters().GetSize(); i++) {
-    count+=pTrigger->Counters()[i];
+  const TArrayL64* counters=pTrigger->Counters();
+  for (int i=0; counters!=NULL && i<counters->GetSize(); i++) {
+    count+=(*counters)[i];
   }
   int totalEvents=GetEventCount()+offset;
   float ratio=0;

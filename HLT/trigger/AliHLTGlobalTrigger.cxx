@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -26,7 +26,10 @@
 
 #include "AliHLTGlobalTrigger.h"
 #include "AliHLTGlobalTriggerDecision.h"
+#include "TArrayL64.h"
+#include "TClonesArray.h"
 #include <cstring>
+#include <cassert>
 
 ClassImp(AliHLTGlobalTrigger)
 
@@ -37,8 +40,8 @@ AliHLTGlobalTrigger::Factory::fFactory[AliHLTGlobalTrigger::Factory::kMaxFactori
 
 
 AliHLTGlobalTrigger::AliHLTGlobalTrigger() :
-  AliHLTLogging(),
-  fCounters()
+  AliHLTLogging()
+  , fCounters(NULL)
 {
   // Default constructor.
 }
@@ -47,6 +50,9 @@ AliHLTGlobalTrigger::AliHLTGlobalTrigger() :
 AliHLTGlobalTrigger::~AliHLTGlobalTrigger()
 {
   // Default destructor.
+  if (fCounters) {
+    delete fCounters;
+  }
 }
 
 
@@ -106,10 +112,24 @@ void AliHLTGlobalTrigger::ResetCounters(UInt_t number)
 {
   // Resets the trigger counters.
   
-  fCounters.Set(number);
+  if (!fCounters) fCounters = new TArrayL64(number);
+  if (!fCounters) return;
+
+  fCounters->Set(number);
   for (UInt_t i = 0; i < number; i++)
   {
-    fCounters[i] = 0;
+    (*fCounters)[i] = 0;
   }
 }
 
+void AliHLTGlobalTrigger::IncrementCounter(UInt_t i) 
+{
+  // increment a specific counter
+  if (fCounters && i<fCounters->GetSize()) ++(*fCounters)[i]; 
+}
+
+Long64_t AliHLTGlobalTrigger::GetCounter(UInt_t i) const
+{
+  if (fCounters && i<fCounters->GetSize()) return (*fCounters)[i];
+  return 0;
+}

@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id:$
+// $Id$
 #ifndef ALIHLTGLOBALTRIGGER_H
 #define ALIHLTGLOBALTRIGGER_H
 /* This file is property of and copyright by the ALICE HLT Project        *
@@ -12,7 +12,6 @@
 /// @brief  Declaration of the AliHLTGlobalTrigger base class.
 
 #include "TObject.h"
-#include "TArrayL64.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
 
@@ -21,6 +20,7 @@ class AliHLTTriggerDecision;
 class AliHLTGlobalTriggerDecision;
 class AliHLTTriggerMenu;
 class TClonesArray;
+class TArrayL64;
 
 /**
  * \class AliHLTGlobalTrigger
@@ -94,8 +94,8 @@ class AliHLTGlobalTrigger : public AliHLTLogging
   /**
    * Returns the array of trigger counters.
    */
-  const TArrayL64& Counters() const { return fCounters; }
-  
+  const TArrayL64* Counters() const { return fCounters; }
+
  protected:
   
   /**
@@ -146,26 +146,25 @@ class AliHLTGlobalTrigger : public AliHLTLogging
     static Factory* fFactory[kMaxFactories];
   };
   
-  /// Not implemented. Do not allow copying of this object.
-  AliHLTGlobalTrigger(const AliHLTGlobalTrigger& obj);
-  /// Not implemented. Do not allow copying of this object.
-  AliHLTGlobalTrigger& operator = (const AliHLTGlobalTrigger& obj);
-  
   /**
    * Increments a trigger counter by one.
    * \param i  The counter to increment.
    */
-  void IncrementCounter(UInt_t i) { ++fCounters[i]; };
+  void IncrementCounter(UInt_t i);
   
   /**
    * Returns a trigger counter's value.
    * \param i  The counter number to return.
    */
-  Long64_t GetCounter(UInt_t i) const { return fCounters[i]; };
+  Long64_t GetCounter(UInt_t i) const;
   
  private:
-  
-  TArrayL64 fCounters; //! Event trigger counters. One counter for each trigger class.
+  /// Not implemented. Do not allow copying of this object.
+  AliHLTGlobalTrigger(const AliHLTGlobalTrigger& obj);
+  /// Not implemented. Do not allow copying of this object.
+  AliHLTGlobalTrigger& operator = (const AliHLTGlobalTrigger& obj);
+
+  TArrayL64* fCounters; //! Event trigger counters. One counter for each trigger class.
   
   ClassDef(AliHLTGlobalTrigger, 0) // Global HLT trigger base class which implements logic for a particular trigger menu.
 };
