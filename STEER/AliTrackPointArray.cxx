@@ -43,6 +43,7 @@ AliTrackPointArray::AliTrackPointArray() :
   fCharge(0),
   fDriftTime(0),
   fChargeRatio(0),
+  fClusterType(0),
   fIsExtra(0),
   fSize(0),
   fCov(0),
@@ -61,6 +62,7 @@ AliTrackPointArray::AliTrackPointArray(Int_t npoints):
   fCharge(new Float_t[npoints]),
   fDriftTime(new Float_t[npoints]),
   fChargeRatio(new Float_t[npoints]),
+  fClusterType(new Int_t[npoints]),
   fIsExtra(new Bool_t[npoints]),
   fSize(6*npoints),
   fCov(new Float_t[fSize]),
@@ -75,6 +77,7 @@ AliTrackPointArray::AliTrackPointArray(Int_t npoints):
     fCharge[ip]=0;
     fDriftTime[ip]=0;
     fChargeRatio[ip]=0;
+    fClusterType[ip]=0;
     fIsExtra[ip]=kFALSE;
     fVolumeID[ip]=0;
     for (Int_t icov=0;icov<6; icov++)
@@ -93,6 +96,7 @@ AliTrackPointArray::AliTrackPointArray(const AliTrackPointArray &array):
   fCharge(new Float_t[fNPoints]),
   fDriftTime(new Float_t[fNPoints]),
   fChargeRatio(new Float_t[fNPoints]),
+  fClusterType(new Int_t[fNPoints]),
   fIsExtra(new Bool_t[fNPoints]),
   fSize(array.fSize),
   fCov(new Float_t[fSize]),
@@ -117,6 +121,11 @@ AliTrackPointArray::AliTrackPointArray(const AliTrackPointArray &array):
     memcpy(fChargeRatio,array.fChargeRatio,fNPoints*sizeof(Float_t));
   } else {
     memset(fChargeRatio, 0, fNPoints*sizeof(Float_t));
+  }
+  if (array.fClusterType) {
+    memcpy(fClusterType,array.fClusterType,fNPoints*sizeof(Int_t));
+  } else {
+    memset(fClusterType, 0, fNPoints*sizeof(Int_t));
   }
   if (array.fIsExtra) {
     memcpy(fIsExtra,array.fIsExtra,fNPoints*sizeof(Bool_t));
@@ -150,6 +159,8 @@ AliTrackPointArray &AliTrackPointArray::operator =(const AliTrackPointArray& arr
   fDriftTime = new Float_t[fNPoints];
   delete [] fChargeRatio;
   fChargeRatio = new Float_t[fNPoints];
+  delete [] fClusterType;
+  fClusterType = new Int_t[fNPoints];
   delete [] fIsExtra;
   fIsExtra = new Bool_t[fNPoints];
   delete [] fVolumeID;
@@ -162,6 +173,7 @@ AliTrackPointArray &AliTrackPointArray::operator =(const AliTrackPointArray& arr
   memcpy(fCharge,array.fCharge,fNPoints*sizeof(Float_t));
   memcpy(fDriftTime,array.fDriftTime,fNPoints*sizeof(Float_t));
   memcpy(fChargeRatio,array.fChargeRatio,fNPoints*sizeof(Float_t));
+  memcpy(fClusterType,array.fClusterType,fNPoints*sizeof(Int_t));
   memcpy(fIsExtra,array.fIsExtra,fNPoints*sizeof(Bool_t));
   memcpy(fVolumeID,array.fVolumeID,fNPoints*sizeof(UShort_t));
   memcpy(fCov,array.fCov,fSize*sizeof(Float_t));
@@ -180,6 +192,7 @@ AliTrackPointArray::~AliTrackPointArray()
   delete [] fCharge;
   delete [] fDriftTime;
   delete [] fChargeRatio;
+  delete [] fClusterType;
   delete [] fIsExtra;
   delete [] fVolumeID;
   delete [] fCov;
@@ -198,6 +211,7 @@ Bool_t AliTrackPointArray::AddPoint(Int_t i, const AliTrackPoint *p)
   fCharge[i] = p->GetCharge();
   fDriftTime[i] = p->GetDriftTime();
   fChargeRatio[i]=p->GetChargeRatio();
+  fClusterType[i]=p->GetClusterType();
   fIsExtra[i] = p->IsExtra();
   fVolumeID[i] = p->GetVolumeID();
   memcpy(&fCov[6*i],p->GetCov(),6*sizeof(Float_t));
@@ -216,6 +230,7 @@ Bool_t AliTrackPointArray::GetPoint(AliTrackPoint &p, Int_t i) const
   p.SetCharge(fCharge ? fCharge[i] : 0);
   p.SetDriftTime(fDriftTime ? fDriftTime[i] : 0);
   p.SetChargeRatio(fChargeRatio ? fChargeRatio[i] : 0);
+  p.SetClusterType(fClusterType ? fClusterType[i] : 0);
   p.SetExtra(fIsExtra ? fIsExtra[i] : kFALSE);
   return kTRUE;
 }
@@ -267,6 +282,7 @@ AliTrackPoint::AliTrackPoint() :
   fCharge(0),
   fDriftTime(0),
   fChargeRatio(0),
+  fClusterType(0),
   fIsExtra(kFALSE),
   fVolumeID(0)
 {
@@ -277,7 +293,7 @@ AliTrackPoint::AliTrackPoint() :
 
 
 //______________________________________________________________________________
-AliTrackPoint::AliTrackPoint(Float_t x, Float_t y, Float_t z, const Float_t *cov, UShort_t volid, Float_t charge, Float_t drifttime,Float_t chargeratio) :
+AliTrackPoint::AliTrackPoint(Float_t x, Float_t y, Float_t z, const Float_t *cov, UShort_t volid, Float_t charge, Float_t drifttime,Float_t chargeratio, Int_t clutyp) :
   TObject(),
   fX(0),
   fY(0),
@@ -285,6 +301,7 @@ AliTrackPoint::AliTrackPoint(Float_t x, Float_t y, Float_t z, const Float_t *cov
   fCharge(0),
   fDriftTime(0),
   fChargeRatio(0),
+  fClusterType(0),
   fIsExtra(kFALSE),
   fVolumeID(0)
 {
@@ -294,11 +311,12 @@ AliTrackPoint::AliTrackPoint(Float_t x, Float_t y, Float_t z, const Float_t *cov
   SetCharge(charge);
   SetDriftTime(drifttime);
   SetChargeRatio(chargeratio);
+  SetClusterType(clutyp);
   SetVolumeID(volid);
 }
 
 //______________________________________________________________________________
-AliTrackPoint::AliTrackPoint(const Float_t *xyz, const Float_t *cov, UShort_t volid, Float_t charge, Float_t drifttime,Float_t chargeratio) :
+AliTrackPoint::AliTrackPoint(const Float_t *xyz, const Float_t *cov, UShort_t volid, Float_t charge, Float_t drifttime,Float_t chargeratio, Int_t clutyp) :
   TObject(),
   fX(0),
   fY(0),
@@ -306,6 +324,7 @@ AliTrackPoint::AliTrackPoint(const Float_t *xyz, const Float_t *cov, UShort_t vo
   fCharge(0),
   fDriftTime(0),
   fChargeRatio(0),
+  fClusterType(0),
   fIsExtra(kFALSE),
   fVolumeID(0)
 {
@@ -316,6 +335,7 @@ AliTrackPoint::AliTrackPoint(const Float_t *xyz, const Float_t *cov, UShort_t vo
   SetDriftTime(drifttime);
   SetChargeRatio(chargeratio);
   SetVolumeID(volid);
+  SetClusterType(clutyp);
 }
 
 //______________________________________________________________________________
@@ -327,6 +347,7 @@ AliTrackPoint::AliTrackPoint(const AliTrackPoint &p):
   fCharge(0),
   fDriftTime(0),
   fChargeRatio(0),
+  fClusterType(0),
   fIsExtra(kFALSE),
   fVolumeID(0)
 {
@@ -336,6 +357,7 @@ AliTrackPoint::AliTrackPoint(const AliTrackPoint &p):
   SetCharge(p.fCharge);
   SetDriftTime(p.fDriftTime);
   SetChargeRatio(p.fChargeRatio);
+  SetClusterType(p.fClusterType);
   SetExtra(p.fIsExtra);
   SetVolumeID(p.fVolumeID);
 }
@@ -352,6 +374,7 @@ AliTrackPoint &AliTrackPoint::operator =(const AliTrackPoint& p)
   SetCharge(p.fCharge);
   SetDriftTime(p.fDriftTime);
   SetChargeRatio(p.fChargeRatio);
+  SetClusterType(p.fClusterType);
   SetExtra(p.fIsExtra);
   SetVolumeID(p.fVolumeID);
 
@@ -604,6 +627,7 @@ void AliTrackPoint::Print(Option_t *) const
   printf("Charge = %f\n", fCharge);
   printf("Drift Time = %f\n", fDriftTime);
   printf("Charge Ratio  = %f\n", fChargeRatio);
+  printf("Cluster Type  = %d\n", fClusterType);
   if(fIsExtra) printf("This is an extra point\n");
 
 }

@@ -75,7 +75,14 @@ class AliITSRecPoint : public AliCluster {
   Float_t GetDriftTime() const{return  fDriftTime;}
   Int_t GetNpixels() const; // for SPD returns fType, i.e. the number of pixels in the cluster (-1 for SDD and SSD)
   Int_t GetSPDclusterType() const; // for SPD returns cluster type according to conventional numbering (-1 for SDD and SSD)
+  Int_t GetSDDclusterType() const; 
+  Int_t GetSSDclusterType() const; 
 
+  Int_t GetClusterType() const {
+    if(fLayer<=1) return GetSPDclusterType();
+    if(fLayer==2 || fLayer==3) return GetSDDclusterType();
+    if(fLayer==4 || fLayer==5) return GetSSDclusterType();
+  }
  protected:
 
   Float_t   fXloc ;        //X of cluster (local coordinates)

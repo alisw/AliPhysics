@@ -192,7 +192,9 @@ Int_t AliITSRecPoint::GetNpixels() const {
 //----------------------------------------------------------------------
 Int_t AliITSRecPoint::GetSPDclusterType() const {
 //
-// returns the type of cluster according to conventional numbering
+// returns an Int_t with encoded information on cluster size
+//    type <= 16: cluster type identifier according to conventional numbering
+//    type >  16: Npixels+1000*Ny+1000000*Nz
 //
 
  Int_t type = -1;
@@ -212,23 +214,44 @@ Int_t AliITSRecPoint::GetSPDclusterType() const {
               else if(fNz == 2 && fNy == 2) type = 8;
               else if(fNy == 2 && fNz == 3) type = 11;
               else if(fNy == 3 && fNz == 2) type = 9;
-              else if(fNz == 4)             type = 15;
-              else                          type = 17;
+              else                          type = 15;
               break;
      case 5 : if(fNy == 3 && fNz == 2)  type = 10;
               if(fNy == 2 && fNz == 3 ) type = 12;
               if(fNy == 5)              type = 16;
-              else                      type = 17;
+              else                      type = fType+1000*fNy+1000000*fNz;
               break; 
      case 6 : if(fNy ==3 && fNz == 2) type = 13;
               if(fNy ==2 && fNz == 3) type = 14;
-              else type = 17;
+              else                    type = fType+1000*fNy+1000000*fNz;
+              break; 
+     default: type = fType+1000*fNy+1000000*fNz;
+              break; 
    }  
 
    return type;
  }
+}
 
-	}
+//----------------------------------------------------------------------
+Int_t AliITSRecPoint::GetSDDclusterType() const {
+// returns an Int_t with encoded information on cluster size
+// Byte1 = fNz Byte0=fNy, other two bytes empty for extra information
+// max. allowed cluster size = 255
+  Int_t typ=(fNz&0xFF)<<8;
+  typ+=fNy&0xFF;
+  return typ;
+}
+
+//----------------------------------------------------------------------
+Int_t AliITSRecPoint::GetSSDclusterType() const {
+// returns an Int_t with encoded information on cluster size
+// Byte1 = fNz Byte0=fNy, other two bytes empty for extra information
+// max. allowed cluster size = 255
+  Int_t typ=(fNz&0xFF)<<8;
+  typ+=fNy&0xFF;
+  return typ;
+}
 
 //----------------------------------------------------------------------
 void AliITSRecPoint::Read(istream *is){

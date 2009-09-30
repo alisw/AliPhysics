@@ -802,6 +802,7 @@ Bool_t AliITStrackerMI::GetTrackPoint(Int_t index, AliTrackPoint& p) const {
   p.SetCharge(cl->GetQ());
   p.SetDriftTime(cl->GetDriftTime());
   p.SetChargeRatio(cl->GetChargeRatio());
+  p.SetClusterType(cl->GetClusterType());
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer; 
   switch (l) {
   case 0:
@@ -874,6 +875,7 @@ Bool_t AliITStrackerMI::GetTrackPointTrackingError(Int_t index,
   p.SetCharge(cl->GetQ());
   p.SetDriftTime(cl->GetDriftTime());
   p.SetChargeRatio(cl->GetChargeRatio());
+  p.SetClusterType(cl->GetClusterType());
 
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer; 
   switch (l) {
