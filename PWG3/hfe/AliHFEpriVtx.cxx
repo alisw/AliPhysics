@@ -141,9 +141,9 @@ void AliHFEpriVtx::CreateHistograms(TString hnopt)
            hname=hnopt+"nPrimVtxContributor_"+fkSourceLabel[isource];
            fPrimVtx[isource].fNprimVtxContributor = new TH1F(hname,hname,100,0,100);
            hname=hnopt+"PtElec_"+fkSourceLabel[isource];
-           fPrimVtx[isource].fPtElec = new TH1F(hname,hname,150,0,30);
+           fPrimVtx[isource].fPtElec = new TH1F(hname,hname,250,0,50);
            hname=hnopt+"PtElecContributor_"+fkSourceLabel[isource];
-           fPrimVtx[isource].fPtElecContributor = new TH1F(hname,hname,150,0,30);
+           fPrimVtx[isource].fPtElecContributor = new TH1F(hname,hname,250,0,50);
 
         }
 
@@ -154,7 +154,7 @@ void AliHFEpriVtx::CreateHistograms(TString hnopt)
         hname=hnopt+"nESDprimVtxIndices";
         fNESDprimVtxIndices= new TH1I(hname,hname,100,0,100);
         hname=hnopt+"diffDCAvsPt";
-        fDiffDCAvsPt = new TH2F(hname,hname,150,0,30,500,0,1);
+        fDiffDCAvsPt = new TH2F(hname,hname,250,0,50,500,0,1);
         hname=hnopt+"diffDCAvsNt";
         fDiffDCAvsNt = new TH2F(hname,hname,100,0,100,500,0,1);
 

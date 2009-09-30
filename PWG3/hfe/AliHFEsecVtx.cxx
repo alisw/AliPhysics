@@ -286,13 +286,13 @@ void AliHFEsecVtx::CreateHistograms(TString hnopt)
         }
 
         hname=hnopt+"pt_beautyelec";
-        fHistTagged.fPtBeautyElec= new TH1F(hname,hname,150,0,30);
+        fHistTagged.fPtBeautyElec= new TH1F(hname,hname,250,0,50);
         hname=hnopt+"pt_taggedelec";
-        fHistTagged.fPtTaggedElec= new TH1F(hname,hname,150,0,30);
+        fHistTagged.fPtTaggedElec= new TH1F(hname,hname,250,0,50);
         hname=hnopt+"pt_righttaggedelec";
-        fHistTagged.fPtRightTaggedElec = new TH1F(hname,hname,150,0,30);
+        fHistTagged.fPtRightTaggedElec = new TH1F(hname,hname,250,0,50);
         hname=hnopt+"pt_wrongtaggedelec";
-        fHistTagged.fPtWrongTaggedElec = new TH1F(hname,hname,150,0,30);
+        fHistTagged.fPtWrongTaggedElec = new TH1F(hname,hname,250,0,50);
 
         hname=hnopt+"InvmassBeautyElecSecVtx";
         fHistTagged.fInvmassBeautyElecSecVtx= new TH1F(hname,hname,120,-2,10);

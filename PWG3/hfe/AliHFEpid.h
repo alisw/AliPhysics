@@ -59,6 +59,7 @@ class AliHFEpid : public TObject{
 
     Bool_t IsQAOn() const { return TestBit(kIsQAOn); };
     Bool_t HasMCData() const { return TestBit(kHasMCData); };
+    void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel; }
     void SetQAOn();
     void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData, hasMCdata); };
     TList *GetQAhistograms() const { return fQAlist; };
@@ -68,9 +69,10 @@ class AliHFEpid : public TObject{
     Bool_t MakePidTpcTrd(AliESDtrack *track);
     void MakePlotsItsTpc(AliESDtrack *track);
   private:
-    AliHFEpidBase *fDetectorPID[kNdetectorPID];    //! Detector PID classes
-    UInt_t fEnabledDetectors;             // Enabled Detectors
-    TList *fQAlist;                       //! QA histograms
+    AliHFEpidBase *fDetectorPID[kNdetectorPID];     //! Detector PID classes
+    UInt_t fEnabledDetectors;                       //  Enabled Detectors
+    TList *fQAlist;                                 //! QA histograms
+    Int_t fDebugLevel;                              //  Debug Level
 
   ClassDef(AliHFEpid, 1)      // Steering class for Electron ID
 };

@@ -274,7 +274,7 @@ void AliHFEcuts::SetRecPrimaryCutList(){
   //
   AliCFTrackIsPrimaryCuts *primaryCut = new AliCFTrackIsPrimaryCuts("fCutsPrimaryCuts", "REC Primary Cuts");
   if(IsRequireDCAToVertex()){
-    primaryCut->SetDCAToVertex2D(kTRUE);
+    //primaryCut->SetDCAToVertex2D(kTRUE);
     primaryCut->SetMaxDCAToVertexXY(fDCAtoVtx[0]);
     primaryCut->SetMaxDCAToVertexZ(fDCAtoVtx[1]);
   }
@@ -300,13 +300,10 @@ void AliHFEcuts::SetHFElectronITSCuts(){
   if(IsRequireITSpixel()){
     hfecuts->SetRequireITSpixel(AliHFEextraCuts::ITSPixel_t(fCutITSPixel));
   }
-  if(IsRequireDCAToVertex()){
-    hfecuts->SetMaxImpactParamR(fDCAtoVtx[0]);
-    hfecuts->SetMaxImpactParamZ(fDCAtoVtx[1]);
-  }
   
   if(IsInDebugMode()) hfecuts->SetQAOn(fHistQA);
-  
+  hfecuts->SetDebugLevel(fDebugLevel);
+
   TObjArray *hfeCuts = new TObjArray;
   hfeCuts->SetName("fPartHFECutsITS");
   hfeCuts->AddLast(hfecuts);
@@ -321,6 +318,7 @@ void AliHFEcuts::SetHFElectronTPCCuts(){
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTPC","Extra cuts from the HFE group");
   if(fMinClusterRatioTPC > 0.) hfecuts->SetClusterRatioTPC(fMinClusterRatioTPC);
   if(IsInDebugMode()) hfecuts->SetQAOn(fHistQA);
+  hfecuts->SetDebugLevel(fDebugLevel);
   
   TObjArray *hfeCuts = new TObjArray;
   hfeCuts->SetName("fPartHFECutsTPC");
@@ -336,6 +334,7 @@ void AliHFEcuts::SetHFElectronTRDCuts(){
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTRD","Extra cuts from the HFE group");
   if(fMinTrackletsTRD > 0.) hfecuts->SetMinTrackletsTRD(fMinTrackletsTRD);
   if(IsInDebugMode()) hfecuts->SetQAOn(fHistQA);
+  hfecuts->SetDebugLevel(fDebugLevel);
   
   TObjArray *hfeCuts = new TObjArray;
   hfeCuts->SetName("fPartHFECutsTRD");

@@ -47,7 +47,8 @@ ClassImp(AliHFEpid)
 //____________________________________________________________
 AliHFEpid::AliHFEpid():
   fEnabledDetectors(0),
-  fQAlist(0x0)
+  fQAlist(0x0),
+  fDebugLevel(0)
 {
   //
   // Default constructor
@@ -59,7 +60,8 @@ AliHFEpid::AliHFEpid():
 AliHFEpid::AliHFEpid(const AliHFEpid &c):
   TObject(c),
   fEnabledDetectors(c.fEnabledDetectors),
-  fQAlist(0x0)
+  fQAlist(0x0),
+  fDebugLevel(c.fDebugLevel)
 {
   //
   // Copy Constructor
@@ -91,6 +93,7 @@ AliHFEpid& AliHFEpid::operator=(const AliHFEpid &c){
   if(this != &c){
     fEnabledDetectors = c.fEnabledDetectors;
     fQAlist = 0x0;
+    fDebugLevel = c.fDebugLevel;
   
     memset(fDetectorPID, 0, sizeof(AliHFEpidBase *) * kNdetectorPID);
     if(c.fDetectorPID[kMCpid])
@@ -131,7 +134,7 @@ Bool_t AliHFEpid::InitializePID(TString detectors){
   // + Initializes Detector PID objects
   // + Handles QA
   //
-  AliInfo(Form("Doing InitializePID for Detectors %s", detectors.Data()));
+  AliInfo(Form("Doing InitializePID for Detectors %s end", detectors.Data()));
   fDetectorPID[kMCpid] = new AliHFEpidMC("Monte Carlo PID"); // Always there
   fDetectorPID[kITSpid] = new AliHFEpidITS("ITS development PID");  // Development version of the ITS pid, for the moment always there
   SETBIT(fEnabledDetectors, kMCpid);
@@ -142,6 +145,7 @@ Bool_t AliHFEpid::InitializePID(TString detectors){
   TObjString *det = 0x0;
   while((det = dynamic_cast<TObjString *>(detIterator->Next()))){
     if(det->String().CompareTo("TPC") == 0){
+      AliInfo("Doing TPC PID");
       fDetectorPID[kTPCpid] = new AliHFEpidTPC("TPC PID");
       SETBIT(fEnabledDetectors, kTPCpid);
     } else if(det->String().CompareTo("TRD") == 0){
@@ -176,8 +180,10 @@ Bool_t AliHFEpid::IsSelected(AliVParticle *track){
   }
   if(TString(track->IsA()->GetName()).CompareTo("AliESDtrack") == 0){
     if(TESTBIT(fEnabledDetectors, kTPCpid)){
-      if(IsQAOn()) 
+      if(IsQAOn() && fDebugLevel > 1){ 
+        AliInfo("Filling QA plots");
         MakePlotsItsTpc(dynamic_cast<AliESDtrack *>(track));  // First fill the QA histograms
+      }
       if(TESTBIT(fEnabledDetectors, kTOFpid)){
         // case TPC-TOF
         return MakePidTpcTof(dynamic_cast<AliESDtrack *>(track));
@@ -220,7 +226,7 @@ Bool_t AliHFEpid::MakePidTpcTrd(AliESDtrack *track){
   content[3] = trdPid->GetTRDSignalV1(track);
   content[4] = trdPid->GetTRDSignalV2(track);
   AliDebug(1, Form("Momentum: %f, TRD Signal: Method 1[%f], Method 2[%f]", content[1], content[3], content[4]));
-  if(IsQAOn()){
+  if(IsQAOn() && fDebugLevel > 0){
     if(HasMCData()){
       // Fill My Histograms for MC PID
       Int_t pdg = TMath::Abs(fDetectorPID[kMCpid]->IsSelected(track));
@@ -265,7 +271,7 @@ void AliHFEpid::MakePlotsItsTpc(AliESDtrack *track){
     };
     content[0] = pid;
   }
-  (dynamic_cast<THnSparse *>(fQAlist->At(kITSSignal)))->Fill(content);
+  (dynamic_cast<THnSparseF *>(fQAlist->At(kITSSignal)))->Fill(content);
 }
 
 //____________________________________________________________
@@ -288,29 +294,33 @@ void AliHFEpid::SetQAOn(){
     momentumBins[ibin] = static_cast<Double_t>(TMath::Power(10,TMath::Log10(kPtMin) + (TMath::Log10(kPtMax)-TMath::Log10(kPtMin))/(kMomentumBins-1)*static_cast<Double_t>(ibin)));
 
   // Add Histogram for combined TPC-TRD PID
-  const Int_t kDimensionsTRDsig = 5;
-  Int_t kNbinsTRDsig[kDimensionsTRDsig] = {AliPID::kSPECIES + 1, kMomentumBins - 1, 200, 3000, 3000};
-  Double_t binMinTRDsig[kDimensionsTRDsig] = {-1., 0.1, 0, 0, 0};
-  Double_t binMaxTRDsig[kDimensionsTRDsig] = {AliPID::kSPECIES, 10., 200., 3000., 3000.};
-  fQAlist->AddAt((histo = new THnSparseF("fCombTPCTRDpid", "Combined TPC-TRD PID", kDimensionsTRDsig, kNbinsTRDsig, binMinTRDsig, binMaxTRDsig)), kTRDSignal);
-  histo->GetAxis(1)->Set(kMomentumBins - 1, momentumBins);
-  histo->GetAxis(0)->SetTitle("Particle Species");
-  histo->GetAxis(1)->SetTitle("p / GeV/c");
-  histo->GetAxis(2)->SetTitle("TPC Signal / a.u.");
-  histo->GetAxis(3)->SetTitle("TRD Signal / a.u.");
-  histo->GetAxis(4)->SetTitle("TRD Signal / a.u.");
+  if(fDebugLevel > 1){
+    const Int_t kDimensionsTRDsig = 5;
+    Int_t kNbinsTRDsig[kDimensionsTRDsig] = {AliPID::kSPECIES + 1, kMomentumBins - 1, 200, 3000, 3000};
+    Double_t binMinTRDsig[kDimensionsTRDsig] = {-1., 0.1, 0, 0, 0};
+    Double_t binMaxTRDsig[kDimensionsTRDsig] = {AliPID::kSPECIES, 10., 200., 3000., 3000.};
+    fQAlist->AddAt((histo = new THnSparseF("fCombTPCTRDpid", "Combined TPC-TRD PID", kDimensionsTRDsig, kNbinsTRDsig, binMinTRDsig, binMaxTRDsig)), kTRDSignal);
+    histo->GetAxis(1)->Set(kMomentumBins - 1, momentumBins);
+    histo->GetAxis(0)->SetTitle("Particle Species");
+    histo->GetAxis(1)->SetTitle("p / GeV/c");
+    histo->GetAxis(2)->SetTitle("TPC Signal / a.u.");
+    histo->GetAxis(3)->SetTitle("TRD Signal / a.u.");
+    histo->GetAxis(4)->SetTitle("TRD Signal / a.u.");
+  }
 
   // Add Histogram for combined TPC-ITS PID
-  const Int_t kDimensionsITSsig = 4;
-  Int_t kNbinsITSsig[kDimensionsITSsig] = {AliPID::kSPECIES + 1, kMomentumBins - 1, 200, 1000};
-  Double_t binMinITSsig[kDimensionsITSsig] = {-1., 0.1, 0., 0.};
-  Double_t binMaxITSsig[kDimensionsITSsig] = {AliPID::kSPECIES, 10., 200., 300.};
-  fQAlist->AddAt((histo = new THnSparseF("fCombTPCITSpid", "Combined TPC-ITS PID", kDimensionsITSsig, kNbinsITSsig, binMinITSsig, binMaxITSsig)), kITSSignal);
-  histo->GetAxis(0)->Set(kMomentumBins - 1, momentumBins);
-  histo->GetAxis(0)->SetTitle("Particle Species");
-  histo->GetAxis(1)->SetTitle("p / GeV/c");
-  histo->GetAxis(2)->SetTitle("TPC Signal / a.u.");
-  histo->GetAxis(3)->SetTitle("ITS Signal / a.u.");
+  if(fDebugLevel > 0){
+    const Int_t kDimensionsITSsig = 4;
+    Int_t kNbinsITSsig[kDimensionsITSsig] = {AliPID::kSPECIES + 1, kMomentumBins - 1, 300, 3000};
+    Double_t binMinITSsig[kDimensionsITSsig] = {-1., 0.1, 0., 0.};
+    Double_t binMaxITSsig[kDimensionsITSsig] = {AliPID::kSPECIES, 10., 300., 300.};
+    fQAlist->AddAt((histo = new THnSparseF("fCombTPCITSpid", "Combined TPC-ITS PID", kDimensionsITSsig, kNbinsITSsig, binMinITSsig, binMaxITSsig)), kITSSignal);
+    histo->GetAxis(1)->Set(kMomentumBins - 1, momentumBins);
+    histo->GetAxis(0)->SetTitle("Particle Species");
+    histo->GetAxis(1)->SetTitle("p / GeV/c");
+    histo->GetAxis(2)->SetTitle("ITS Signal / a.u.");
+    histo->GetAxis(3)->SetTitle("TPC Signal / a.u.");
+  }
 }
 
 //____________________________________________________________

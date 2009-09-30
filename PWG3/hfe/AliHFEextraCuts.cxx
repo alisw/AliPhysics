@@ -173,6 +173,9 @@ Bool_t AliHFEextraCuts::CheckESDCuts(AliESDtrack *track){
   }
   if(TESTBIT(fRequirements, kMinTrackletsTRD)){
     // cut on minimum number of TRD tracklets
+    if(fDebugLevel > 0){
+      printf("Min TRD cut: [%d|%d]\n", fMinTrackletsTRD, trdTracklets);
+    }
     if(trdTracklets >= fMinTrackletsTRD) SETBIT(survivedCut, kMinTrackletsTRD);
   }
   if(TESTBIT(fRequirements, kPixelITS)){
