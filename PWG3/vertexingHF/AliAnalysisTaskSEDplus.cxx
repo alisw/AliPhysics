@@ -180,6 +180,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     if(fDebug>1) printf("Number of D+->Kpipi: %d\n",n3Prong);
 
 
+    Int_t pdgDgDplustoKpipi[3]={321,211,211};
+
     for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
       AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
 
@@ -192,7 +194,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       if(d->SelectDplus(fVHF->GetDplusCuts())) {
 	  
 	  
-	Int_t labDp = d->MatchToMC(411,arrayMC);
+	Int_t labDp = d->MatchToMC(411,arrayMC,3,pdgDgDplustoKpipi);
     
 	if(labDp>=0) {
 	  AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);

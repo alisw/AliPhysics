@@ -315,7 +315,8 @@ void AliAnalysisTaskSED0Mass::FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *pa
   if(part->SelectD0(vhf->GetD0toKpiCuts(),okD0,okD0bar)) {//selected
     Double_t invmassD0 = part->InvMassD0(), invmassD0bar = part->InvMassD0bar();
     //printf("SELECTED\n");
-    Int_t labD0 = part->MatchToMC(421,arrMC); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+    Int_t pdgDgD0toKpi[2]={321,211};
+    Int_t labD0 = part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
     //printf("labD0 %d",labD0);
     
     TString fillthis="";
