@@ -212,8 +212,7 @@ Int_t AliTRDcheckPID::CalcPDG(AliTRDtrackV1* track)
 {
 
   track -> SetReconstructor(fReconstructor);
-
-  fReconstructor -> SetOption("nn");
+  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork();
   track -> CookPID();
 
   if(track -> GetPID(AliPID::kElectron) > track -> GetPID(AliPID::kMuon) + track -> GetPID(AliPID::kPion)  + track -> GetPID(AliPID::kKaon) + track -> GetPID(AliPID::kProton)){
@@ -284,7 +283,7 @@ TH1 *AliTRDcheckPID::PlotLQ(const AliTRDtrackV1 *track)
   }
   if(!IsInRange(momentum)) return 0x0;
 
-  fReconstructor -> SetOption("!nn");
+  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(/*kFALSE*/);
   cTrack.CookPID();
   if(cTrack.GetNumberOfTrackletsPID() < fMinNTracklets) return 0x0;
 
@@ -343,7 +342,7 @@ TH1 *AliTRDcheckPID::PlotNN(const AliTRDtrackV1 *track)
   }
   if(!IsInRange(momentum)) return 0x0;
 
-  fReconstructor -> SetOption("nn");
+  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork();
   cTrack.CookPID();
   if(cTrack.GetNumberOfTrackletsPID() < fMinNTracklets) return 0x0;
 
@@ -447,7 +446,7 @@ TH1 *AliTRDcheckPID::PlotdEdx(const AliTRDtrackV1 *track)
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   if(!IsInRange(momentum)) return 0x0;
 
-  fReconstructor -> SetOption("!nn");
+  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(/*kFALSE*/);
   Float_t SumdEdx = 0;
   Int_t iBin = FindBin(species, momentum);
   AliTRDseedV1 *tracklet = 0x0;
@@ -498,7 +497,7 @@ TH1 *AliTRDcheckPID::PlotdEdxSlice(const AliTRDtrackV1 *track)
   }
   if(!IsInRange(momentum)) return 0x0;
 
-  fReconstructor -> SetOption("!nn");
+  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(/*kFALSE*/);
   Int_t iMomBin = fMomentumAxis->FindBin(momentum);
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   Float_t *fdEdx;
