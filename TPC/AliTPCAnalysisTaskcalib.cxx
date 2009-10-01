@@ -234,13 +234,14 @@ void AliTPCAnalysisTaskcalib::RegisterDebugOutput(){
     job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
     if (job) job->RegisterDebugOutput(fDebugOutputPath.Data());
   }
-  TFile fff("CalibObjects.root","recreate");
+  TString dsName=GetName();
+  dsName+=".root";
+  TFile fff(dsName.Data(),"recreate");
   fCalibJobs->Write("TPCCalib",TObject::kSingleKey);
   fff.Close();
   //
   // store  - copy debug output to the destination position
   // currently ONLY for local copy
-  TString dsName="CalibObjects.root";
   TString dsName2=fDebugOutputPath.Data();
   gSystem->MakeDirectory(dsName2.Data());
   dsName2+=gSystem->HostName();
