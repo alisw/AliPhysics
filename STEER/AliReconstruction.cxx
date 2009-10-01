@@ -127,6 +127,8 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <THashTable.h>
+#include <TGrid.h>
+#include <TMessage.h>
 
 #include "AliAlignObj.h"
 #include "AliCDBEntry.h"
@@ -1229,6 +1231,13 @@ Bool_t AliReconstruction::Run(const char* input)
   if (fRawReader && (chain = fRawReader->GetChain())) {
     // Proof mode
     if (gProof) {
+
+      if (gGrid)
+	gProof->Exec("TGrid::Connect(\"alien://\")",kTRUE);
+
+      TMessage::EnableSchemaEvolutionForAll(kTRUE);
+      gProof->Exec("TMessage::EnableSchemaEvolutionForAll(kTRUE)",kTRUE);
+
       gProof->AddInput(this);
       if (!fESDOutput.IsValid()) {
 	fESDOutput.SetProtocol("root",kTRUE);
