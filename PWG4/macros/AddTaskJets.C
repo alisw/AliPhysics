@@ -118,6 +118,8 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetRadius(0.4);
     if(radius>0)jh->SetRadius(radius);
     jh->SetEtSeed(4.);
+    jh->SetEtSeed(4.);
+    jh->SetNAcceptJets(6);
     jh->SetLegoNbinPhi(432);
     jh->SetLegoNbinEta(274);
     jh->SetLegoEtaMin(-2);
@@ -137,6 +139,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetRadius(1.0);
     if(radius>0)jh->SetRadius(radius);
     jh->SetEtSeed(4.);
+    jh->SetNAcceptJets(6);
     jh->SetLegoNbinPhi(432);
     jh->SetLegoNbinEta(274);
     jh->SetLegoEtaMin(-2);
