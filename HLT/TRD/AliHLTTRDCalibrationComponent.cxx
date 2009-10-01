@@ -232,7 +232,7 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
       
       if(!fRecievedTimeBins){
 	HLTDebug("Reading number of time bins from input block. Value is: %d", nTimeBins);
-	fTRDCalibraFillHisto->Init2Dhistos(); // initialise the histos
+	fTRDCalibraFillHisto->Init2Dhistos(nTimeBins); // initialise the histos
 	fTRDCalibraFillHisto->SetNumberClusters(0); // At least 1 clusters
 	fTRDCalibraFillHisto->SetNumberClustersf(nTimeBins); // Not more than %d  clusters
 	fRecievedTimeBins=kTRUE;
