@@ -878,10 +878,10 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
    ,fCalPadStatusROC->GetStatus(Max.col+1, Max.row)
   };
 
-gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col-1,Max.row);
- Signals[0] = (Short_t)((fDigits->GetData(Max.row, Max.col-1, Max.time) - fBaseline) / gain + 0.5f);
   gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col-1,Max.row);
-  Signals[2] = (Short_t)((fDigits->GetData(Max.row, Max.col+1, Max.time) - fBaseline) / gain  + 0.5f);
+  Signals[0] = (Short_t)((fDigits->GetData(Max.row, Max.col-1, Max.time) - fBaseline) / gain + 0.5f);
+  gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col+1,Max.row);
+  Signals[2] = (Short_t)((fDigits->GetData(Max.row, Max.col+1, Max.time) - fBaseline) / gain + 0.5f);
 
   if(!(status[0] | status[1] | status[2])) {//all pads are good
     if ((Signals[2] <= Signals[1]) && (Signals[0] <  Signals[1])) {
