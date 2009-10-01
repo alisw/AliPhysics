@@ -27,7 +27,8 @@ TRACKING_CA:=	tracking-ca/AliHLTTPCCATrack.h \
 		tracking-ca/AliHLTTPCCASliceData.h \
 		tracking-ca/AliHLTTPCCASliceOutput.h \
 		tracking-ca/AliHLTTPCCAStandaloneFramework.h \
-		tracking-ca/AliTPCtrackerCA.h 
+		tracking-ca/AliTPCtrackerCA.h \
+		tracking-ca/AliHLTTPCCATrackerFramework.h
 #TRACKING_CA:=	
 
 CLASS_HDRS:=  	AliHLTTPCTransform.h \
@@ -102,9 +103,8 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCTrackDumpComponent.h \
 		AliHLTTPCClusterDumpComponent.h \
 		AliHLTTPCHWCFDataReverterComponent.h \
-		AliHLTTPCTrackMCMarkerComponent.h
-		
-		
+		AliHLTTPCTrackMCMarkerComponent.h		
+
 
 
 
@@ -121,7 +121,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 # 		tracking/AliHLTTPCHistogram1D.h \
 # 		tracking/AliHLTTPCHistogramAdaptive.h
 
-MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx) \
+MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx) \
 		AliHLTTPCLog.cxx
 
 MODULE_HDRS:= 	$(CLASS_HDRS) \
@@ -150,6 +150,19 @@ EINCLUDE 	:= HLT/TPCLib \
 		   RAW \
 		   STEER 
 
+#GPU Tracker Interface		   
+CLASS_HDRS	+= tracking-ca/AliHLTTPCCAGPUTracker.h
+
+#GPU Tracker Build
+ifdef NVCC
+ELIBS		:= cudart
+ELIBSDIR	:= $(NVCC:/bin/nvcc=/lib64)
+MODULE_CUHDRS	+= $(TRACKING_CA) tracking-ca/AliHLTTPCCAGPUTracker.h
+MODULE_CUSRCS	+= tracking-ca/AliHLTTPCCAGPUTracker.cu
+else
+MODULE_SRCS	+= tracking-ca/AliHLTTPCCAGPUTracker.cxx
+endif
+
 LIBRARY_DEP := -lHLTbase -lAliHLTRCU -lAliHLTUtil \
                -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase \
                -lRAWDatarec -lRAWDatabase \
@@ -162,8 +175,10 @@ LIBRARY_DEP := -lHLTbase -lAliHLTRCU -lAliHLTUtil \
 include $(MODDIR)/hlt.conf
 
 SRCS:=$(patsubst %,TPCLib/%,$(MODULE_SRCS))
+CUSRCS:=$(patsubst %,TPCLib/%,$(MODULE_CUSRCS))
 CINTHDRS:=$(patsubst %,TPCLib/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,TPCLib/%,$(MODULE_HDRS))
+CUHDRS:=$(patsubst %,TPCLib/%,$(MODULE_CUHDRS))
 DHDR:=$(patsubst %,TPCLib/%,$(MODULE_DHDR))
 CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
