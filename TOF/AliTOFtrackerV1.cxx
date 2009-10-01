@@ -198,7 +198,7 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
 	delete track;
 
 	Double_t time[10]; t->GetIntegratedTimes(time);
-	AliDebug(1,Form(" %6d  %f %f %f %f %6d %3d %f  %f %f %f %f %f",
+	AliDebug(2,Form(" %6d  %f %f %f %f %6d %3d %f  %f %f %f %f %f",
 			i,
 			t->GetTOFsignalRaw(),
 			t->GetTOFsignal(),
@@ -222,9 +222,9 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
   Bool_t timeZeroFromT0  = fRecoParam->GetTimeZerofromT0();
   Bool_t timeZeroFromTOF = fRecoParam->GetTimeZerofromTOF();
 
-  AliDebug(1,Form("Use Time Zero?: %d",usetimeZero));
-  AliDebug(1,Form("Time Zero from T0? : %d",timeZeroFromT0));
-  AliDebug(1,Form("Time Zero From TOF? : %d",timeZeroFromTOF));
+  AliDebug(2,Form("Use Time Zero?: %d",usetimeZero));
+  AliDebug(2,Form("Time Zero from T0? : %d",timeZeroFromT0));
+  AliDebug(2,Form("Time Zero From TOF? : %d",timeZeroFromTOF));
 
   if(usetimeZero){
     if(timeZeroFromT0){
@@ -345,6 +345,12 @@ void AliTOFtrackerV1::MatchTracks( ){
     Double_t x,par[5]; trackTOFin->GetExternalParameters(x,par);
     Double_t cov[15]; trackTOFin->GetExternalCovariance(cov);
 
+    if (cov[0]<0. || cov[2]<0.) {
+      AliWarning(Form("Very strange track (%d)! At least one of its covariance matrix diagonal elements is negative!",iseed));
+      delete trackTOFin;
+      continue;
+    }
+
     Double_t z    = par[1];   
     Double_t dz   =  scaleFact*3.*TMath::Sqrt(cov[2]+dZ*dZ/12.);
     Double_t dphi =  scaleFact*3.*TMath::Sqrt(cov[0]+dY*dY/12.)/sensRadius; 
@@ -357,7 +363,6 @@ void AliTOFtrackerV1::MatchTracks( ){
     if(dz> dzMax) dz=dzMax;
     if(dphi*sensRadius> dyMax) dphi=dyMax/sensRadius;
 
-
     // find the clusters inside the selected window 
     Int_t nc=0;
     AliTOFcluster *clusters[kncmax]; // pointers to the clusters in the window
@@ -365,12 +370,15 @@ void AliTOFtrackerV1::MatchTracks( ){
     for (Int_t k=FindClusterIndex(z-dz); k<fN; k++) {  
       AliTOFcluster *c=fClusters[k];
       //      if(nc>kncmax)break; /* R+ fix (buffer overflow) */
-      if(nc>=kncmax)break; /* R+ fix (buffer overflow protection) */
+      if (nc>=kncmax) {
+ 	AliWarning("No more matchable clusters can be stored! Please, increase the corresponding vectors size.");
+	break; /* R+ fix (buffer overflow protection) */
+      }
       if(c->GetZ() > z+dz) break;
       if(c->IsUsed()) continue;      
       if(!c->GetStatus()) {
-	      AliDebug(1,"Cluster in channel declared bad!");
-	      continue; // skip bad channels as declared in OCDB  
+	AliDebug(1,"Cluster in channel declared bad!");
+	continue; // skip bad channels as declared in OCDB  
       }
       Float_t xyz[3]; c->GetGlobalXYZ(xyz);
       Double_t clPhi=TMath::ATan2(xyz[1],xyz[0]);
@@ -381,6 +389,8 @@ void AliTOFtrackerV1::MatchTracks( ){
       index[nc] = k;      
       nc++;  
     }
+
+    AliDebug(1,Form(" Number of matchable TOF clusters for the track number %d: %d",iseed,nc));
 
     //start propagation: go to the average TOF pad middle plane at ~379.5 cm
 
@@ -501,7 +511,7 @@ void AliTOFtrackerV1::MatchTracks( ){
     AliDebug(2,Form(" Setting TOF raw time: %f  z distance: %f  corrected time: %f",rawTime,dzTW,tofcorr));
 
     Double_t mom=t->GetP();
-    AliDebug(1,Form(" Momentum for track %d -> %f", iseed,mom));
+    AliDebug(2,Form(" Momentum for track %d -> %f", iseed,mom));
     // Fill Reco-QA histos for Reconstruction
     fHRecNClus->Fill(nc);
     fHRecChi2->Fill(bestChi2);

@@ -284,15 +284,15 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   Int_t * clind = new Int_t[fN];
 
   // Some init 
-  
-  Int_t         index[1000];
-  Float_t       quality[1000];
-  Float_t       dist3D[1000][6];
-  Double_t      times[1000][6];
-  Float_t       mintimedist[1000];
-  Float_t       likelihood[1000];
-  Float_t       length[1000];
-  AliTOFcluster *clusters[1000];
+  const Int_t kNclusterMax = 1000; // related to fN value  
+  AliTOFcluster *clusters[kNclusterMax];
+  Int_t         index[kNclusterMax];
+  Float_t       quality[kNclusterMax];
+  Float_t       dist3D[kNclusterMax][6];
+  Double_t      times[kNclusterMax][6];
+  Float_t       mintimedist[kNclusterMax];
+  Float_t       likelihood[kNclusterMax];
+  Float_t       length[kNclusterMax];
   Double_t      tpcpid[5];
   dist3D[0][0]=1;
   
@@ -351,6 +351,13 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     trackTOFin->GetExternalParameters(x,par);
     Double_t cov[15]; 
     trackTOFin->GetExternalCovariance(cov);
+
+    if (cov[0]<0. || cov[2]<0.) {
+      AliWarning(Form("Very strange track (%d)! At least one of its covariance matrix diagonal elements is negative!",i));
+      delete trackTOFin;
+      continue;
+    }
+
     Float_t scalefact=3.;    
     Double_t dphi=
       scalefact*
@@ -369,6 +376,12 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     // find the clusters in the window of the track
 
     for (Int_t k=FindClusterIndex(z-dz); k<fN; k++) {
+
+      if (nc>=kNclusterMax) {
+ 	AliWarning("No more matchable clusters can be stored! Please, increase the corresponding vectors size.");
+ 	break;
+      }
+
       AliTOFcluster *c=fClusters[k];
       if (c->GetZ() > z+dz) break;
       //      if (c->IsUsed()) continue;
@@ -381,6 +394,8 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
       nc++;
     }
 
+    AliDebug(1,Form(" Number of matchable TOF clusters for the track number %d: %d",i,nc));
+
     //
     // select close clusters
     //
@@ -388,7 +403,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     //    Bool_t dump = kTRUE;
     for (Int_t icl=0; icl<nc; icl++){
       Float_t distances[5];
-      if (nfound>=1000) break;
+
       index[nfound]=clind[icl];
       AliTOFcluster *cluster = fClusters[clind[icl]];
       GetLinearDistances(trackTOFin, cluster, distances);
@@ -431,7 +446,10 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
       }
       //
       nfound++;
-    }   
+    }
+
+    AliDebug(1,Form(" Number of track points for the track number %d: %d",i,nfound));
+
     if (nfound == 0 ) {
       fnunmatch++;
       delete trackTOFin;
@@ -440,9 +458,9 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     //
     //choose the best cluster
     //
-    //Float_t quality[1000];
-    //Int_t   index[1000];
-    for (Int_t kk=0; kk<1000; kk++) quality[kk]=0;
+    //Float_t quality[kNclusterMax];
+    //Int_t   index[kNclusterMax];
+    for (Int_t kk=0; kk<kNclusterMax; kk++) quality[kk]=0;
     //
     AliTOFcluster * cgold=0;
     Int_t igold =-1;
