@@ -41,6 +41,7 @@ AliAnalysisTaskESDfilter *AddTaskESDfilter(bool bUseKineFilter = true)
 
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
    trackFilter->AddCuts(CreateCuts(0));
+   trackFilter->AddCuts(CreateCuts(1));
    
    AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter");
    esdfilter->SetTrackFilter(trackFilter);
@@ -73,10 +74,25 @@ AliESDtrackCuts *CreateCuts(Int_t iCut){
     esdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
     esdTrackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
     esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetMaxDCAToVertexXY(2.4);
+    esdTrackCuts->SetMaxDCAToVertexZ(3.2);
+    esdTrackCuts->SetDCAToVertex2D(kTRUE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    // additional high pT cut
+    esdTrackCuts->SetMaxRel1PtUncertainty(0.08);
+  }
+  else if(iCut == 1){
+    esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "Old loose cuts");
+    esdTrackCuts->SetMinNClustersTPC(50);   
+    esdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
+    esdTrackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
     esdTrackCuts->SetMaxNsigmaToVertex(3);
     esdTrackCuts->SetRequireSigmaToVertex(kTRUE);
     esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
   }
+
+
   
   return esdTrackCuts;
 
