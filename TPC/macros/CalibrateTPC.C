@@ -5,7 +5,6 @@
   //
   TMemStat *memstat = new TMemStat("new,gnubuildin");
   AliSysInfo::AddCallBack(TMemStatManager::GetInstance()->fStampCallBack);
-
   AliSysInfo::AddStamp("Start");  
   //1. Load needed libraries
   gSystem->Load("libANALYSIS");
@@ -14,7 +13,7 @@
   // Setup analysis manager
   //
   TString path=gSystem->pwd();
-  gROOT->Macro(Form("%s/ConfigOCDB.C",path->Data()));
+  gROOT->Macro(Form("%s/ConfigOCDB.C\(%d\)",path->Data(),0));
 
   .L CalibrateTPC.C
   AliAnalysisManager * mgr = ( AliAnalysisManager *)SetupCalibTask("/V6/");  
@@ -25,7 +24,7 @@
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool; 
-  TChain * chain = tool.MakeChain("esd.txt","esdTree",0,10);
+  TChain * chain = tool.MakeChain("esd.txt","esdTree",0,200000);
   //chain->Lookup();
   // memory
   mgr->SetNSysInfo(1000); 
@@ -45,8 +44,15 @@
   mem.MakeReport(0,0,"order 0 sortstat 3 sortstamp 0 sortdeep 10 stackdeep 15 maxlength 50")   
 */
 
+void SetupCalibTask(TObject * task1);
 char * prefix = "/V6/";
-void SetupCalibTask(AliTPCAnalysisTaskcalib* task1);
+// Global parameters to set
+TTimeStamp startTime(2009,8,7,0,0,0);
+TTimeStamp stopTime(2009,9,15,0,0,0);
+Int_t debugLevel  = 2;
+Int_t streamLevel = 20;
+
+//
 
 TObject  * SetupCalibTask(char * tprefix ="/V12/") {
   //
@@ -61,7 +67,7 @@ TObject  * SetupCalibTask(char * tprefix ="/V12/") {
   mgr->SetInputEventHandler(esdH);  
   AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("TPC calibration task");
   //
-  SetupCalibTask(task1);
+  SetupCalibTaskTime(task1);
   //
   mgr->AddTask(task1);
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
@@ -80,14 +86,164 @@ TObject  * SetupCalibTask(char * tprefix ="/V12/") {
   return mgr;
 }
 
+void AddCalibCalib(TObject* task){
+  //
+  // Responsible: Marian Ivanov
+  // Description:
+  // calibCalib is a prefilter 
+  // The current OCDB entries transformation are applied on cluster, tracks are refitted
+  //
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
+  AliTPCcalibCalib *calibCalib = new AliTPCcalibCalib("calibTPC","calibTPC");
+  calibCalib->SetDebugLevel(debugLevel);
+  calibCalib->SetStreamLevel(streamLevel);
+  calibCalib->SetTriggerMask(-1,-1,kFALSE);        //accept everything 
+  myTask->AddJob(calibCalib);
+
+}
+void AddCalibTimeGain(TObject* task){
+  //
+  //  Responsible: Alexander Kalweit
+  //  Description:
+  //  Parameters to set
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
+  AliTPCcalibTimeGain *calibTimeGain = new AliTPCcalibTimeGain("calibTimeGain","calibTimeGain", startTime.GetSec(), stopTime.GetSec(), 30*60);
+  //calibTimeGain->SetLowMemoryConsumption(kTRUE);
+  //calibTimeGain->SetMIP(25.);
+  calibTimeGain->SetUseCookAnalytical(kTRUE);
+  calibTimeGain->SetUseMax(kFALSE);
+  calibTimeGain->SetDebugLevel(debugLevel);
+  calibTimeGain->SetStreamLevel(streamLevel);
+  calibTimeGain->SetTriggerMask(-1,-1,kTRUE);        //accept everything 
+  myTask->AddJob(calibTimeGain);
+}
+
+void AddCalibTime(TObject* task){
+  //
+  // Responsible: Dag Larsen
+  // Description:
+  //
+  //
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
+  AliTPCcalibTime *calibTime = new AliTPCcalibTime("calibTime","calibTime",  startTime.GetSec(), stopTime.GetSec(), 20*60);
+  calibTime->SetDebugLevel(debugLevel);
+  calibTime->SetStreamLevel(streamLevel);
+  calibTime->SetTriggerMask(-1,-1,kFALSE);        //accept everything 
+  myTask->AddJob(calibTime);
+}
+
+void AddCalibTrigger(TObject* task){
+  //
+  // Responsible: Marian Ivanov
+  // Description:
+  //             Export trees with summary information for the trigger efficieciency and purity study
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
+  AliTPCcalibTrigger *calibTrigger = new AliTPCcalibTrigger();  
+  calibTrigger->SetStreamLevel(20);  
+  calibTrigger->SetTriggerMask(-1,-1,kFALSE);       //accept everything 
+  myTask->AddJob(calibTrigger);
+}
+
+void AddCalibCosmic(TObject* task){
+  //
+  // Responsible: Marian Ivanov
+  // Description:
+  // Histogram residuals and pulls of the track parameters in bins of track parameters           
+  // 
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
+  AliTPCcalibCosmic *calibCosmic = new AliTPCcalibCosmic("cosmicTPC","cosmicTPC");
+  calibCosmic->SetDebugLevel(debugLevel);
+  calibCosmic->SetStreamLevel(streamLevel);
+  calibCosmic->SetTriggerMask(-1,-1,kTRUE);        //accept everything 
+  myTask->AddJob(calibCosmic);
+}
+
+void AddCalibPID(TObject* task){
+  //
+  // Responsible: Marian Ivanov, Alexander Kalweit
+  // Description:
+  // 
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
+  AliTPCcalibPID *calibPID06 = new AliTPCcalibPID("calibPID06","calibPID06");
+  AliTPCcalibPID *calibPID08 = new AliTPCcalibPID("calibPID08","calibPID08");
+  AliTPCcalibPID *calibPID10 = new AliTPCcalibPID("calibPID10","calibPID10");
+  calibPID06->SetUpperTrunc(0.6);
+  calibPID08->SetUpperTrunc(0.8);
+  calibPID10->SetUpperTrunc(0.99);
+  //
+  calibPID06->SetUsePosNorm(2);
+  calibPID08->SetUsePosNorm(2);
+  calibPID10->SetUsePosNorm(2);
+  //
+  calibPID06->SetUseShapeNorm(kFALSE);
+  calibPID08->SetUseShapeNorm(kFALSE);
+  calibPID10->SetUseShapeNorm(kFALSE);
+  //
+  calibPID06->SetPadNorm(0);
+  calibPID08->SetPadNorm(0);
+  calibPID10->SetPadNorm(0);
+  calibPID06->SetMIPvalue(50*3);
+  calibPID08->SetMIPvalue(50*3);
+  calibPID08->SetMIPvalue(50*3);
+  //
+  //
+  //
+  calibPID06->SetDebugLevel(debugLevel);
+  calibPID06->SetStreamLevel(streamLevel);
+  calibPID06->SetTriggerMask(-1,-1,kTRUE);        //accept everything 
+  calibPID08->SetDebugLevel(debugLevel);
+  calibPID08->SetStreamLevel(streamLevel);
+  calibPID08->SetTriggerMask(-1,-1,kTRUE);        //accept everything 
+  calibPID10->SetDebugLevel(debugLevel);
+  calibPID10->SetStreamLevel(streamLevel);
+  calibPID10->SetTriggerMask(-1,-1,kTRUE);        //accept everything 
+  myTask->AddJob(calibPID06);
+  myTask->AddJob(calibPID08);
+  myTask->AddJob(calibPID10);
+}
 
 
-void SetupCalibTask(AliTPCAnalysisTaskcalib* task1){
+//
+//
+
+void SetupCalibTaskTime(TObject* task){
+  //
+  //
+  //
+  AliTPCClusterParam * clusterParam = AliTPCcalibDB::Instance()->GetClusterParam(); 
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
+  AddCalibCalib(task);
+  AddCalibTimeGain(task);
+  AddCalibTime(task);
+  AddCalibCosmic(task);
+  AddCalibTrigger(task);
+  AddCalibPID(task);
+  //
+  TString path=gSystem->pwd();
+  path+=prefix;
+  gSystem->mkdir(path);
+  myTask->SetDebugOuputhPath(path.Data());
+
+}
+
+
+
+
+
+//
+// backup of old setups - to be removed soon
+//
+
+
+
+
+void SetupCalibTask(TObject* task1){
   //
   // Configure calibration task
   //
+  AliTPCAnalysisTaskcalib* myTask =   (AliTPCAnalysisTaskcalib*)task1;
   AliTPCClusterParam * clusterParam = AliTPCcalibDB::Instance()->GetClusterParam();  
-  AliTPCcalibTracksCuts *cuts = new AliTPCcalibTracksCuts(40, 0.4, 0.5, 0.13, 0.018);  
+  AliTPCcalibTracksCuts *cuts = new AliTPCcalibTracksCuts(30, 0.4, 5, 0.13, 0.018);  
   //
   AliTPCcalibTracks *calibTracks =  new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts); 
 
@@ -97,38 +253,45 @@ void SetupCalibTask(AliTPCAnalysisTaskcalib* task1){
   AliTPCcalibAlign *calibAlignAll = new AliTPCcalibAlign("alignTPCAll","Alignment of the TPC sectors- All");
   AliTPCcalibLaser *calibLaser = new AliTPCcalibLaser("laserTPC","laserTPC");
   AliTPCcalibCosmic *calibCosmic = new AliTPCcalibCosmic("cosmicTPC","cosmicTPC");
+  AliTPCcalibTrigger *calibTrigger = new AliTPCcalibTrigger();
   AliTPCcalibCalib *calibCalib = new AliTPCcalibCalib("calibTPC","calibTPC");
-  TTimeStamp startTime(2008,9,0,0,0,0);
-  TTimeStamp stopTime(2008,11,0,0,0,0);
-  AliTPCcalibTime *calibTime = new AliTPCcalibTime("calibTime","calibTime", startTime.GetSec(), stopTime.GetSec(), 5*60, 5*60);
+  AliTPCcalibTime *calibTime = new AliTPCcalibTime("calibTime","calibTime",  startTime.GetSec(), stopTime.GetSec(), 20*60);
 
   AliTPCcalibUnlinearity *calibUnlinearity = new AliTPCcalibUnlinearity("calibUnlinearity","calibUnlinearity");
   AliTPCcalibUnlinearity *calibUnlinearityAll = new AliTPCcalibUnlinearity("calibUnlinearityAll","calibUnlinearityAll");
   //
   //
+  AliTPCcalibPID *calibPID06 = new AliTPCcalibPID("calibPID06","calibPID06");
+  AliTPCcalibPID *calibPID08 = new AliTPCcalibPID("calibPID08","calibPID08");
+  AliTPCcalibPID *calibPID10 = new AliTPCcalibPID("calibPID10","calibPID10");
+  calibPID06->SetUpperTrunc(0.6);
+  calibPID08->SetUpperTrunc(0.8);
+  calibPID10->SetUpperTrunc(0.99);
   //
-  AliExternalComparison *compCosmic = new AliExternalComparison("compCosmic","compCosmic");
-  compCosmic->SetDefaultRange(1,160,20);
+  calibPID06->SetUsePosNorm(2);
+  calibPID08->SetUsePosNorm(2);
+  calibPID10->SetUsePosNorm(2);
   //
-  compCosmic->SetResolRange(0,-1.5,1.5,100);
-  compCosmic->SetResolRange(1,-1,1,100);
-  compCosmic->SetResolRange(2,-0.02,0.02,100);
-  compCosmic->SetResolRange(3,-0.02,0.02,100);
-  compCosmic->SetResolRange(4,-0.15,0.15,100);
+  calibPID06->SetUseShapeNorm(kFALSE);
+  calibPID08->SetUseShapeNorm(kFALSE);
+  calibPID10->SetUseShapeNorm(kFALSE);
   //
-  compCosmic->SetParameterRange(0,-30,30,10);
-  compCosmic->SetParameterRange(1,-250,250,10);
-  compCosmic->SetParameterRange(2,-1,1,10);
-  compCosmic->SetParameterRange(3,-1.5,1.5,20);
-  compCosmic->SetParameterRange(4,-2,2,20);
-  compCosmic->SetParameterRange(5,0,90,10);
-  compCosmic->SetParameterRange(6,-3.14,3.14,20);
-  //
-  compCosmic->SetDistCut(3,8,0.06,0.06,0.2);
-  compCosmic->SetPullDistCut(10,20,20,20,10);
-  calibCosmic->SetComparison(compCosmic);
+  calibPID06->SetPadNorm(0);
+  calibPID08->SetPadNorm(0);
+  calibPID10->SetPadNorm(0);
+  calibPID06->SetMIPvalue(50*3);
+  calibPID08->SetMIPvalue(50*3);
+  calibPID08->SetMIPvalue(50*3);
   //
   //
+  //
+  calibPID06->SetStreamLevel(2);
+  calibPID06->SetDebugLevel(2);
+  calibPID08->SetStreamLevel(2);
+  calibPID08->SetDebugLevel(2);
+  calibPID10->SetStreamLevel(2);
+  calibPID10->SetDebugLevel(2);
+
   calibTracks->SetDebugLevel(2);
   calibTracks->SetStreamLevel(20);
   calibTracksGain->SetDebugLevel(2);
@@ -143,8 +306,8 @@ void SetupCalibTask(AliTPCAnalysisTaskcalib* task1){
   calibCosmic->SetStreamLevel(20);
   calibCalib->SetDebugLevel(20);
   calibCalib->SetStreamLevel(20);
-  calibTime->SetDebugLevel(20);
-  calibTime->SetStreamLevel(10);
+  //calibTime->SetDebugLevel(20);
+  calibTrigger->SetStreamLevel(20);
   //
   calibUnlinearity->SetDebugLevel(20);
   calibUnlinearity->SetStreamLevel(10);
@@ -152,6 +315,7 @@ void SetupCalibTask(AliTPCAnalysisTaskcalib* task1){
   calibUnlinearityAll->SetStreamLevel(10);
   
   //  calibCalib->SetTriggerMask(-1,-1,kFALSE);       //accept everything 
+  calibTrigger->SetTriggerMask(-1,-1,kFALSE);       //accept everything 
   calibCalib->SetTriggerMask(-1,-1,kTRUE);       //accept everything  - except laser
   calibTracks->SetTriggerMask(-1,16,kTRUE);      //reject laser trigger, accept everything else
   calibTracksGain->SetTriggerMask(-1,16,kTRUE);  //reject laser trigger, accept everything else
@@ -159,7 +323,7 @@ void SetupCalibTask(AliTPCAnalysisTaskcalib* task1){
   calibAlignAll->SetTriggerMask(-1,-1,kFALSE);   //accept everything 
   calibLaser->SetTriggerMask(-1,-1,kFALSE);       //accept only laser trigger
   calibCosmic->SetTriggerMask(-1,-1,kTRUE);      //reject laser trigger, accept everything else
-  calibTime->SetTriggerMask(-1,-1,kFALSE);        //accept everything 
+  //calibTime->SetTriggerMask(-1,-1,kFALSE);        //accept everything 
   calibUnlinearity->SetTriggerMask(-1,-1,kTRUE);   //reject laser 
   calibUnlinearityAll->SetTriggerMask(-1,-1,kFALSE);   //non reject laser 
 
@@ -167,34 +331,47 @@ void SetupCalibTask(AliTPCAnalysisTaskcalib* task1){
   //
  // ---*---*-----*-*-----*----------*---
   // ADD CALIB JOBS HERE!!!!!!!!!!!!!!!!
-  task1->AddJob(calibCalib);
-  task1->AddJob(calibAlign);
-  //task1->AddJob(calibAlignAll);
-  //task1->AddJob(calibLaser);
-  task1->AddJob(calibCosmic);
-  //task1->AddJob(calibTime);
-
-  //task1->AddJob(calibTracksGain);
-  //task1->AddJob(calibTracks);
-  //task1->AddJob(calibUnlinearity);
-  //task1->AddJob(calibUnlinearityAll);
-  // task1->AddJob(new AliTPCcalibV0);
+  //myTask->AddJob(calibCalib);
+  //myTask->AddJob(calibAlign);
+  //myTask->AddJob(calibAlignAll);
+  //myTask->AddJob(calibLaser);
+  //myTask->AddJob(calibCosmic);
+  myTask->AddJob(calibTrigger);
+  //myTask->AddJob(calibTime);
+  //myTask->AddJob(calibPID06);
+  //myTask->AddJob(calibPID08);
+  //myTask->AddJob(calibPID10);
+  //  myTask->AddJob(calibTracksGain);
+  //myTask->AddJob(calibTracks);
+  //myTask->AddJob(calibUnlinearity);
+  //myTask->AddJob(calibUnlinearityAll);
+  // myTask->AddJob(new AliTPCcalibV0);
   // -*----*----*---*-*------*-------**--
   // -------*--*---------*-----*-------*-
   TString path=gSystem->pwd();
   path+=prefix;
   gSystem->mkdir(path);
-  task1->SetDebugOuputhPath(path.Data());
+  myTask->SetDebugOuputhPath(path.Data());
 
+
+  //
+  // backup important parameters
+  //
+  AliTPCClusterParam * paramCl = AliTPCcalibDB::Instance()->GetClusterParam(); 
+  TFile f("ClusterParam.root","recreate");
+  paramCl->Write();
+  f.Close();
 }
 
 
 
 
-void CalibrateTPC(Float_t magf, Int_t first, Int_t last){
+void CalibrateTPC(Int_t first, Int_t last, Int_t run, const char*closeSE="ALICE::GSI::SE"){
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
-  gROOT->Macro(Form("$ALICE_ROOT/TPC/macros/ConfigOCDB.C(%f)",magf));
+  gSystem->Setenv("alien_CLOSE_SE",closeSE);
+  TGrid * alien =     TGrid::Connect("alien://",0,0,"t");
+  gROOT->Macro(Form("ConfigOCDB.C\(%d\)",run));
   //
   // Setup analysis manager
   //
