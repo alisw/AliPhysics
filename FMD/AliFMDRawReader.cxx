@@ -506,7 +506,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
     if ((trailerLast & 0xFFFF0000) != 0xAAAA0000) {
       AliWarning(Form("Last word 0x%08x does not match RCU II trailer",
 		      trailerLast));
-      return kFALSE;
+      //return kFALSE;
     }
     
     // 7 last bits is size of trailer
