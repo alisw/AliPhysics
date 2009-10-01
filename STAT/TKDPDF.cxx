@@ -71,7 +71,6 @@ TKDPDF::TKDPDF(TTree *t, const Char_t *var, const Char_t *cut, UInt_t bsize, Lon
     v = t->GetV1();
     for(int ip=0; ip<fNPoints; ip++) fData[idim][ip] = (Float_t)v[ip];
   }
-  TKDTreeIF::Build();
   Build();
 }
 
@@ -87,6 +86,7 @@ void TKDPDF::Build(Int_t)
 //  - estimation points 
 //  - corresponding PDF values
 
+  TKDTreeIF::Build();
   fNTNodes = fNPoints/fBucketSize + ((fNPoints%fBucketSize)?1:0);/*TKDTreeIF::GetNTNodes();*/
   if(!fBoundaries) MakeBoundaries();
   fLambda = 1 + fNDim + (fNDim*(fNDim+1)>>1);
@@ -122,7 +122,14 @@ void TKDPDF::Build(Int_t)
   node = (TKDNodeInfo*)(*fTNodes)[inode];
   node->Val()[0] =  Float_t(counts)/fNPoints;
   bounds = GetBoundary(tnode);
-  for(int idim=0; idim<fNDim; idim++) node->Val()[0] /= (bounds[2*idim+1] - bounds[2*idim]);
+  for(int idim=0; idim<fNDim; idim++){ 
+    Float_t dx = bounds[2*idim+1]-bounds[2*idim];
+    if(dx < 1.e-30){
+      Warning("TKDPDF::Build()", Form("Terminal bucket index[%d] too narrow on the %d dimension.", inode, idim));
+      continue;
+    }
+    node->Val()[0] /= (bounds[2*idim+1] - bounds[2*idim]);
+  }
   node->Val()[1] =  node->Val()[0]/TMath::Sqrt(float(counts));
 
   // loop points in this terminal node

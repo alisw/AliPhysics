@@ -20,39 +20,39 @@ class TLinearFitter;
 class TKDPDF : public TKDTreeIF, public TKDInterpolatorBase
 {
 public:
-	TKDPDF();
-	TKDPDF(TTree *t, const Char_t *var, const Char_t *cut = 0, UInt_t bsize = 100, Long64_t nentries = 1000000000, Long64_t firstentry = 0);
-	TKDPDF(Int_t npoints, Int_t ndim, UInt_t bsize, Float_t **data);
-	~TKDPDF();
+  TKDPDF();
+  TKDPDF(TTree *t, const Char_t *var, const Char_t *cut = 0, UInt_t bsize = 100, Long64_t nentries = 1000000000, Long64_t firstentry = 0);
+  TKDPDF(Int_t npoints, Int_t ndim, UInt_t bsize, Float_t **data);
+  ~TKDPDF();
 
-	inline Bool_t     GetDataPoint(Int_t n, Float_t *p) const;
-	inline Int_t      GetNodeIndex(const Float_t *p);
-					void       DrawNode(Int_t tnode, UInt_t ax1=0, UInt_t ax2=1);
+  inline Bool_t GetDataPoint(Int_t n, Float_t *p) const;
+  inline Int_t  GetNodeIndex(const Float_t *p);
+  void          DrawNode(Int_t tnode, UInt_t ax1=0, UInt_t ax2=1);
 
 private:
-	TKDPDF(const TKDPDF &);
-	TKDPDF& operator=(const TKDPDF &);
-	        void       Build(Int_t ndim = 0);
+  TKDPDF(const TKDPDF &);
+  TKDPDF& operator=(const TKDPDF &);
+  void     Build(Int_t ndim = 0);
 
-					
-	ClassDef(TKDPDF, 1)   // data interpolator based on KD tree
+          
+  ClassDef(TKDPDF, 1)   // data interpolator based on KD tree
 };
 
 
 //__________________________________________________________________
 Bool_t	TKDPDF::GetDataPoint(Int_t n, Float_t *p) const
 {
-	if(n < 0 || n >= fNPoints) return kFALSE;
-	if(!fData) return kFALSE;
-		
-	for(int i=0; i<fNDim; i++) p[i] = fData[i][n];
-	return kTRUE;
+  if(n < 0 || n >= fNPoints) return kFALSE;
+  if(!fData) return kFALSE;
+    
+  for(int i=0; i<fNDim; i++) p[i] = fData[i][n];
+  return kTRUE;
 }
 
 //__________________________________________________________________
 Int_t	TKDPDF::GetNodeIndex(const Float_t *p)
 {
-	return FindNode(p) - fNNodes;
+  return FindNode(p) - fNNodes;
 }
 
 #endif

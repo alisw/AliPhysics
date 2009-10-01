@@ -26,6 +26,11 @@ class TKDNodeInfo;
 class TKDInterpolatorBase
 {
 public:	
+  enum EKDInterpolatorBase {
+    kdN = 4       // increase in the number of PDF if fit failled
+   ,kNhelper = 30 // bucket size in helper kdTree
+  };
+
   TKDInterpolatorBase(Int_t size = 0);
   virtual ~TKDInterpolatorBase();
 
@@ -41,7 +46,7 @@ public:
   Bool_t     GetWeights() const {return fStatus&4;}
 
   void       DrawBins(UInt_t ax1 = 0, UInt_t ax2 = 1, Float_t ax1min=-1., Float_t ax1max=1., Float_t ax2min=-1., Float_t ax2max=1.);
-  void       SetAlpha(Float_t a){if(a>0.) fAlpha = a;}
+  void       SetAlpha(Float_t a);
   void       SetInterpolationMethod(Bool_t on = kTRUE);
   void       SetStore(Bool_t on = kTRUE);
   void       SetWeights(Bool_t on = kTRUE);
@@ -62,7 +67,7 @@ protected:
   UChar_t       fStatus;      // status of the interpolator
   UChar_t       fLambda;      // number of parameters in polynom
   Short_t		    fDepth;       //! depth of the KD Tree structure used
-  Float_t       fAlpha;       // alpha parameter
+  Float_t       fAlpha;       // parameter controlling the size of the region to interpolate n = (1+alpha)*lambda
   Float_t       **fRefPoints; //! temporary storage of COG data
   Double_t	    *fBuffer;     //! working space [2*fLambda]
   TKDTree<Int_t, Float_t> *fKDhelper;      //! kNN finder

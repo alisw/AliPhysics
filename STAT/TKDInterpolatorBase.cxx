@@ -2,6 +2,7 @@
 #include "TKDNodeInfo.h"
 #include "TKDTree.h"
 
+#include "TRandom.h"
 #include "TClonesArray.h"
 #include "TLinearFitter.h"
 #include "TTree.h"
@@ -54,6 +55,10 @@ void	TKDInterpolatorBase::Build(Int_t n)
 
   if(fTNodes) delete fTNodes;
   fNTNodes = n;
+  // check granularity
+  if(Int_t((1.+fAlpha)*fLambda) > fNTNodes){
+    Warning("TKDInterpolatorBase::Build()", Form("Minimum number of points [%d] needed for interpolation exceeds number of evaluation points [%d]. Please increase granularity.", Int_t((1.+fAlpha)*fLambda), fNTNodes));
+  }
   fTNodes = new TClonesArray("TKDNodeInfo", fNTNodes);
   for(int in=0; in<fNTNodes; in++) new ((*fTNodes)[in]) TKDNodeInfo(fNSize);
 }
@@ -125,6 +130,7 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
   for(int idim=0; idim<fNSize; idim++) pointF[idim] = (Float_t)point[idim];
   Int_t nodeIndex = GetNodeIndex(pointF);
   if(nodeIndex<0){
+    Error("TKDInterpolatorBase::Eval()", "Can not retrive node for data point.");
     result = 0.;
     error = 1.E10;
     return 0.;
@@ -140,8 +146,9 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
       fRefPoints[id] = new Float_t[fNTNodes];
       for(int in=0; in<fNTNodes; in++) fRefPoints[id][in] = ((TKDNodeInfo*)(*fTNodes)[in])->Data()[id];
     }
-    fKDhelper = new TKDTreeIF(fNTNodes, fNSize, 30, fRefPoints);
-    fKDhelper->MakeBoundaries();
+    fKDhelper = new TKDTreeIF(fNTNodes, fNSize, kNhelper, fRefPoints);
+    fKDhelper->Build();
+    fKDhelper->MakeBoundariesExact();
   }
   if(!fFitter) fFitter = new TLinearFitter(fLambda, Form("hyp%d", fLambda-1));
   
@@ -152,17 +159,32 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
   // prepare workers
 
   Int_t ipar,    // local looping variable
-        npoints = Int_t((1.+fAlpha)*fLambda); // number of data points used for interpolation
-  Int_t *index = new Int_t[2*npoints];  // indexes of NN 
-  Float_t *dist = new Float_t[2*npoints], // distances of NN
+        npoints_new = Int_t((1.+fAlpha)*fLambda),
+        npoints(0); // number of data points used for interpolation
+  Int_t *index = new Int_t[2*npoints_new];  // indexes of NN 
+  Float_t *dist = new Float_t[2*npoints_new], // distances of NN
           d,     // NN normalized distance
           w0,    // work
           w;     // tri-cubic weight function
 
+  Bool_t kDOWN = kFALSE;
   do{
+    if(npoints == npoints_new){
+      Error("TKDInterpolatorBase::Eval()", Form("Interpolation failed and number of interpolation points (%d) Can not be increased further.", npoints));
+      result = 0.;
+      error = 1.E10;
+      return 0.;
+    } else npoints = npoints_new;
+    if(npoints > fNTNodes){
+      Warning("TKDInterpolatorBase::Eval()", Form("The number of interpolation points requested (%d) exceeds number of PDF values (%d). Downscale.", npoints, fNTNodes));
+      npoints = fNTNodes;
+      kDOWN = kTRUE;
+    }
+
     // find nearest neighbors
     for(int idim=0; idim<fNSize; idim++) pointF[idim] = (Float_t)point[idim];
     fKDhelper->FindNearestNeighbors(pointF, npoints+1, index, dist);
+
     // add points to fitter
     fFitter->ClearPoints();
     TKDNodeInfo *tnode = 0x0;
@@ -192,12 +214,12 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
         w0 = (1. - d*d*d); w = w0*w0*w0;
       } else w = 1.;
       
-// 			printf("x[");
-// 			for(int idim=0; idim<fLambda-1; idim++) printf("%f ", fBuffer[idim]);
-// 			printf("]  v[%f +- %f] (%f, %f)\n", tnode->Val()[0], tnode->Val()[1]/w, tnode->Val()[1], w);
+//       printf("%2d x[", index[in]);
+//       for(int idim=0; idim<fLambda-1; idim++) printf("%f ", fBuffer[idim]);
+//       printf("]  v[%f +- %f] (%f, %f)\n", tnode->Val()[0], tnode->Val()[1]/w, tnode->Val()[1], w);
       fFitter->AddPoint(fBuffer, tnode->Val()[0], tnode->Val()[1]/w);
     }
-    npoints += 4;
+    npoints_new = npoints+ (kDOWN ? 0 : kdN);
   } while(fFitter->Eval());
   delete [] index;
   delete [] dist;
@@ -256,7 +278,7 @@ void TKDInterpolatorBase::DrawBins(UInt_t ax1, UInt_t ax2, Float_t ax1min, Float
   for(int inode = 0; inode < fNTNodes; inode++){
     box = &boxArray[inode];
     box->SetFillStyle(3002);
-    box->SetFillColor(50+inode/*Int_t(gRandom->Uniform()*50.)*/);
+    box->SetFillColor(50+Int_t(gRandom->Uniform()*50.));
     
     bounds = &(((TKDNodeInfo*)(*fTNodes)[inode])->Data()[fNSize]);
     box->DrawBox(bounds[2*ax1]+kBorder, bounds[2*ax2]+kBorder, bounds[2*ax1+1]-kBorder, bounds[2*ax2+1]-kBorder);
@@ -272,6 +294,25 @@ void TKDInterpolatorBase::DrawBins(UInt_t ax1, UInt_t ax2, Float_t ax1min, Float
     ref->SetPoint(inode, node->Data()[ax1], node->Data()[ax2]);
   }
   ref->Draw("p");
+  return;
+}
+
+//_________________________________________________________________
+void TKDInterpolatorBase::SetAlpha(Float_t a)
+{
+  if(a<0.5){ 
+    Warning("TKDInterpolatorBase::SetAlpha()", "The scale parameter has to be larger than 0.5");
+    fAlpha = 0.5;
+    return;
+  }
+  // check value
+  if(Int_t((a+1.)*fLambda) > fNTNodes){
+    fAlpha = TMath::Max(0.5, Float_t(fNTNodes)/fLambda-1.);
+    Warning("TKDInterpolatorBase::SetAlpha()", Form("Interpolation neighborhood  exceeds number of evaluation points. Downscale alpha to %f", fAlpha));
+    printf("n[%d] nodes[%d]\n", Int_t((fAlpha+1.)*fLambda), fNTNodes);
+    return;
+  }
+  fAlpha = a;
   return;
 }
 
