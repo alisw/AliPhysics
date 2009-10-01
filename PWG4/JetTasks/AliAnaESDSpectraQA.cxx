@@ -64,7 +64,7 @@ AliAnaESDSpectraQA::AliAnaESDSpectraQA(const char *name):
   DefineOutput(0, TList::Class());
   InitHistPointers();
   //fTrackCuts = new AliESDtrackCuts;
-  fTrackCuts->SetAcceptKingDaughters(kFALSE);
+  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
   fTrackCuts->SetRequireTPCRefit(kTRUE);
   fTrackCuts->SetEtaRange(-1,1);
   // Add chisq criterium to reject 'bad' tracks that might not make it as prim
