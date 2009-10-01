@@ -608,13 +608,13 @@ void AliT0DataDCS::Init()
 		else if (i < 2*kScalers+2*kHV+kLV)
                 {
                   fAliasNames[i] = "t00_a_lv_imon_";
-                  sindex.Form("%02d",i-(2*kScalers+2*kHV));
+                  sindex.Form("%01d",i-(2*kScalers+2*kHV));
                   fAliasNames[i] += sindex;
                 }
 		else if (i < 2*kScalers+2*kHV+2*kLV)
                 {
                   fAliasNames[i] = "t00_a_lv_vmon_";
-                  sindex.Form("%02d",i-(2*kScalers+2*kHV+kLV));
+                  sindex.Form("%01d",i-(2*kScalers+2*kHV+kLV));
                   fAliasNames[i] += sindex;
                 }
 		else if (i < 2*kScalers+3*kHV+2*kLV)
@@ -632,13 +632,13 @@ void AliT0DataDCS::Init()
                 else if (i < 2*kScalers+4*kHV+3*kLV)
                 {
                   fAliasNames[i] = "t00_c_lv_imon_";
-                  sindex.Form("%02d",i-(2*kScalers+4*kHV+2*kLV));
+                  sindex.Form("%01d",i-(2*kScalers+4*kHV+2*kLV));
                   fAliasNames[i] += sindex;
                 }
                 else if (i < 2*kScalers+4*kHV+4*kLV)
                 {
                   fAliasNames[i] = "t00_c_lv_vmon_";
-                  sindex.Form("%02d",i-(2*kScalers+4*kHV+3*kLV));
+                  sindex.Form("%01d",i-(2*kScalers+4*kHV+3*kLV));
                   fAliasNames[i] += sindex;
                 }
 		else if (i < 2*kScalers+4*kHV+4*kLV+kCFD)

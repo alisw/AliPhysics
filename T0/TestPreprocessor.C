@@ -50,7 +50,7 @@ TMap* CreateDCSAliasMap()
   aliasMap->SetOwner(1);
 
   TString aliasName;
-  Int_t n_T0aliases=191;
+  Int_t n_T0aliases=201;
   Int_t nValues=10;	
   
   for(int nAlias=0;nAlias<n_T0aliases;nAlias++)
@@ -75,11 +75,11 @@ TMap* CreateDCSAliasMap()
     }
     else if(nAlias < 90)
     {
-      aliasName=Form("t00_a_lv_imon_%02d",nAlias-88);
+      aliasName=Form("t00_a_lv_imon_%01d",nAlias-88);
     }
     else if(nAlias < 92)
     {
-      aliasName=Form("t00_a_lv_vmon_%02d",nAlias-90);
+      aliasName=Form("t00_a_lv_vmon_%01d",nAlias-90);
     }
     else if(nAlias < 104)
     {
@@ -91,11 +91,11 @@ TMap* CreateDCSAliasMap()
     }
     else if(nAlias < 118)
     {
-      aliasName=Form("t00_c_lv_imon_%02d",nAlias-116);
+      aliasName=Form("t00_c_lv_imon_%01d",nAlias-116);
     }
     else if(nAlias < 120)
     {
-      aliasName=Form("t00_c_lv_vmon_%02d",nAlias-118);
+      aliasName=Form("t00_c_lv_vmon_%01d",nAlias-118);
     }
     else if(nAlias < 132)
     {
@@ -113,39 +113,39 @@ TMap* CreateDCSAliasMap()
     {
       aliasName=Form("t00_c_cfd_walk_%02d",nAlias-156);
     }
-    else if(nAlias < 178)
+    else if(nAlias < 188)
     {
       aliasName=Form("t00_ac_trm_%02d",nAlias-168);
     }
-    else if(nAlias < 183)
+    else if(nAlias < 193)
     {
-      aliasName=Form("t00_ac_drm_%02d",nAlias-178);
+      aliasName=Form("t00_ac_drm_%02d",nAlias-188);
     }
-    else if (nAlias < 184)
+    else if (nAlias < 194)
     {
       aliasName=Form("t00_ac_atten");
     }
-    else if(nAlias < 185)
+    else if(nAlias < 195)
     {
       aliasName=Form("t00_a_mpd_cent");
     }
-    else if(nAlias < 186)
+    else if(nAlias < 196)
     {
       aliasName=Form("t00_c_mpd_cent");
     }
-    else if(nAlias < 187)
+    else if(nAlias < 197)
     {
       aliasName=Form("t00_a_mpd_scent");
     }
-    else if(nAlias < 188)
+    else if(nAlias < 198)
     {
       aliasName=Form("t00_c_mpd_scent");
     }
-    else if(nAlias < 189)
+    else if(nAlias < 199)
     {
       aliasName=Form("t00_ac_tvdc_top");
     }
-    else if(nAlias < 190)
+    else if(nAlias < 200)
     {
       aliasName=Form("t00_ac_tvdc_bottom");
     }

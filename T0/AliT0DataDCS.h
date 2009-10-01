@@ -14,7 +14,7 @@
 
 class AliT0DataDCS : public TObject {
 public:
-	enum {kNAliases=191, kHV=12, kLV=2, kCFD=12, kScalers=32, kTRM=10, kDRM=5, kAtten=1}; // 191 T0 aliases
+	enum {kNAliases=201, kHV=12, kLV=2, kCFD=12, kScalers=32, kTRM=20, kDRM=5, kAtten=1}; // 201 T0 aliases
 
 	AliT0DataDCS();
 	AliT0DataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_t startTimeDCSQuery, UInt_t endTimeDCSQuery);
