@@ -22,6 +22,7 @@ class AliRawReaderChain: public AliRawReaderRoot {
     AliRawReaderChain(TFileCollection *collection);
     AliRawReaderChain(TChain *chain);
     AliRawReaderChain(TEntryList *elist);
+    AliRawReaderChain(Int_t runNumber);
     AliRawReaderChain(const AliRawReaderChain& rawReader);
     AliRawReaderChain& operator = (const AliRawReaderChain& rawReader);
     virtual ~AliRawReaderChain();

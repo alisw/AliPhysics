@@ -33,6 +33,8 @@
 #include <TSystem.h>
 #include <TFile.h>
 #include <TKey.h>
+#include <TGrid.h>
+#include <TGridResult.h>
 
 #include "AliRawReaderChain.h"
 #include "AliRawVEvent.h"
@@ -201,6 +203,48 @@ AliRawReaderChain::AliRawReaderChain(TEntryList *elist) :
   fChain->SetBranchStatus("*",1);
   fChain->SetBranchAddress("rawevent",&fEvent,&fBranch);
 }
+
+AliRawReaderChain::AliRawReaderChain(Int_t runNumber) :
+  AliRawReaderRoot(),
+  fChain(NULL)
+{
+// create raw-reader objects which takes as an input a root chain
+// with the raw-data files for a given run
+// It queries alien FC in order to do that and therefore
+// it needs alien API to be enabled
+
+  if (runNumber <= 0) {
+    Error("AliRawReaderChain","Bad run number:%d",runNumber);
+    fIsValid = kFALSE;
+  }
+
+  if (!gGrid) TGrid::Connect("alien://");
+  if (!gGrid) {
+    fIsValid = kFALSE;
+    return;
+  }
+
+  TGridResult *res = gGrid->Query("/alice/data",Form("%09d/raw/*%09d*0.root",runNumber,runNumber));
+  Int_t nFiles = res->GetEntries();
+  if (!nFiles) {
+    Error("AliRawReaderChain","No raw-data files found for run %d",runNumber);
+    fIsValid = kFALSE;
+    delete res;
+    return;
+  }
+
+  fChain = new TChain("RAW");
+  for (Int_t i = 0; i < nFiles; i++) {
+    TString filename = res->GetKey(i, "turl");
+    if(filename == "") continue;
+    fChain->Add(filename.Data());
+  }
+  delete res;
+
+  fChain->SetBranchStatus("*",1);
+  fChain->SetBranchAddress("rawevent",&fEvent,&fBranch);
+}
+
 
 AliRawReaderChain::AliRawReaderChain(const AliRawReaderChain& rawReader) :
   AliRawReaderRoot(rawReader),

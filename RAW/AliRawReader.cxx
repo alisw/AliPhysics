@@ -232,6 +232,17 @@ AliRawReader* AliRawReader::Create(const char *uri)
     AliInfoClass(Form("Creating raw-reader in order to read raw-data files collection defined in %s",fileURI.Data()));
     rawReader = new AliRawReaderChain(fileURI);
   }
+  else if (fileURI.BeginsWith("raw://run")) {
+    fileURI.ReplaceAll("raw://run","");
+    if (fileURI.IsDigit()) {
+      rawReader = new AliRawReaderChain(fileURI.Atoi());
+    }
+    else {
+      AliErrorClass(Form("Invalid syntax: %s",fileURI.Data()));
+      fields->Delete();
+      return NULL;
+    }
+  }
   else {
     AliInfoClass(Form("Creating raw-reader in order to read raw-data file: %s",fileURI.Data()));
     TString filename(gSystem->ExpandPathName(fileURI.Data()));
