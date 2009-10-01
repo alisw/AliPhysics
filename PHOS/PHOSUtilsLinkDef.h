@@ -9,6 +9,5 @@
 #pragma link C++ class AliPHOSCPVGeometry+;
 #pragma link C++ class AliPHOSCPVBaseGeometry+;
 #pragma link C++ class AliPHOSSupportGeometry+;
-#pragma link C++ class AliPHOSFastAltroFit+;
 
 #endif
