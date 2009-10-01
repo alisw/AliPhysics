@@ -143,6 +143,7 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   Bool_t resultRate  = kTRUE;
   Bool_t resultZero  = kTRUE;
   Bool_t infoCalib   = kTRUE;
+  Bool_t resultDead  = kTRUE;
   // Do we need this ?
   // if(!dcsAliasMap) return 1;
   // 
@@ -150,8 +151,18 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   // AliCDBManager* cdb   = AliCDBManager::Instance();
   // cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   // cdb->SetRun(0);
+  
+  // Get the run type 
+  TString runType(GetRunType()); 
+  
   AliFMDParameters* pars = AliFMDParameters::Instance();
-  pars->Init(this, false, AliFMDParameters::kAltroMap);
+  if(runType.Contains("PEDESTAL", TString::kIgnoreCase))
+    pars->Init(this, false, AliFMDParameters::kAltroMap|AliFMDParameters::kPulseGain);
+  else if(runType.Contains("GAIN", TString::kIgnoreCase))
+    pars->Init(this, false, AliFMDParameters::kAltroMap|AliFMDParameters::kPedestal);
+  else
+    pars->Init(this, false, AliFMDParameters::kAltroMap);
+  
   // This is if the SOR contains Fee parameters, and we run a DA to
   // extract these parameters.   The same code could work if we get
   // the information from DCS via the FXS 
@@ -159,7 +170,7 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   AliFMDCalibSampleRate*      calibRate  = 0;
   AliFMDCalibStripRange*      calibRange = 0;
   AliFMDCalibZeroSuppression* calibZero  = 0;
-  
+
   if (GetAndCheckFileSources(files, kDAQ,pars->GetConditionsShuttleID()))
     infoCalib = GetInfoCalibration(files, calibRate, calibRange, calibZero);
  
@@ -168,12 +179,11 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   resultZero  = (!calibZero  ? kFALSE : kTRUE);
   
 
-  // Get the run type 
-  TString runType(GetRunType()); 
-
+  
   //Creating calibration objects
   AliFMDCalibPedestal* calibPed  = 0;
   AliFMDCalibGain*     calibGain = 0;
+  AliFMDCalibDeadMap*  calibDead = 0;
   if (runType.Contains("PEDESTAL", TString::kIgnoreCase)) { 
     if (GetAndCheckFileSources(files, kDAQ, pars->GetPedestalShuttleID())) {
       if(files->GetSize())
@@ -188,6 +198,8 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
     }
     resultGain = (calibGain ? kTRUE : kFALSE);
   }
+  if(runType.Contains("PEDESTAL", TString::kIgnoreCase) || runType.Contains("GAIN", TString::kIgnoreCase))
+    calibDead = GetDeadChannelMap(calibPed,calibGain);
   
   //Storing Calibration objects  
   AliCDBMetaData metaData;
@@ -215,9 +227,13 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
     resultZero = Store("Calib","ZeroSuppression", calibZero,&metaData,0,kTRUE);
     delete calibZero;
   }
+  if(calibDead) { 
+    resultDead = Store("Calib","Dead", calibDead,&metaData,0,kTRUE);
+    delete calibDead;
+  }
 
   Bool_t success = (resultPed && resultGain  && resultRange && 
-		    resultRate  && resultZero && infoCalib);
+		    resultRate  && resultZero && resultDead && infoCalib);
   
   Log(Form("FMD preprocessor was %s", (success ? "successful" : "failed")));
   return (success ? 0 : 1);
@@ -418,7 +434,51 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
   }
   return calibGain;
 }
+//____________________________________________________________________
+AliFMDCalibDeadMap*    
+AliFMDPreprocessor::GetDeadChannelMap(AliFMDCalibPedestal* pedcalib,
+				      AliFMDCalibGain*     gaincalib) {
+  //creating dead channel map. '0' means 51200 entries
+  AliFMDCalibDeadMap* deadmap = new AliFMDCalibDeadMap(0);
+  //deadmap->Reset(kTRUE);
+  Float_t noise = 0;
+  Float_t gain  = 0;
+  
+  AliFMDParameters* pars = AliFMDParameters::Instance();
+  //Looping over the channels.
+  for(UShort_t det=1;det<=3;det++) {
+    Int_t nRings = (det==1 ? 1 : 2);
+    for (UShort_t ir = 0; ir < nRings; ir++) {
+      Char_t   ring = (ir == 0 ? 'I' : 'O');
+      UShort_t nsec = (ir == 0 ? 20  : 40);
+      UShort_t nstr = (ir == 0 ? 512 : 256);
+      
+      for(UShort_t sec =0; sec < nsec;  sec++) {
+	
+	for(UShort_t strip = 0; strip < nstr; strip++) {
+	  
+	  Bool_t isDead = kFALSE;
+	  if(pedcalib)
+	    noise = pedcalib->Width(det, ring, sec, strip);
+	  else 
+	    noise = pars->GetPedestalWidth(det, ring, sec, strip);
+       
+	  if(gaincalib)
+	    gain  = gaincalib->Value(det, ring, sec, strip);
+	  else 
+	    gain  = pars->GetPulseGain(det, ring, sec, strip);
+	  
+	  //marking these channels dead.
+	  if (gain < 0.5 || gain > 5 || noise > 10 || noise == 0) isDead = kTRUE;
+	  
+	  deadmap->operator()(det, ring, sec, strip) = isDead;
+	}
+      }
+    }
+  }
 
+  return deadmap;
+}
 //____________________________________________________________________
 //
 // EOF

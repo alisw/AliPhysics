@@ -15,7 +15,11 @@
 #ifndef ALIFMDUSHORTMAP_H
 # include <AliFMDUShortMap.h>
 #endif
+#ifndef ALIFMDBOOLMAP_H
+# include <AliFMDBoolMap.h>
+#endif
 typedef AliFMDUShortMap AliFMDCalibZeroSuppression;
+typedef AliFMDBoolMap  AliFMDCalibDeadMap;
 class AliFMDCalibPedestal;
 class AliFMDCalibGain;
 class AliFMDCalibSampleRate;
@@ -76,6 +80,12 @@ protected:
   /** Get the gain calibrations 
       @param list List of files */
   AliFMDCalibGain*       GetGainCalibration(TList*);
+  /** Get the dead channels map based on the pedestal
+      an gain calibration objects. */
+    
+  AliFMDCalibDeadMap*    GetDeadChannelMap(AliFMDCalibPedestal* pedcalib,
+					   AliFMDCalibGain*     gaincalib);
+
   /** Get info calibrations. 
       @param files List of files. 
       @param s     On return, newly allocated object 
