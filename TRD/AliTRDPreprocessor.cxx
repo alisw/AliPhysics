@@ -197,19 +197,19 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
     if (nGraph [iAlias] == 0) {
       Log("No TGraph for this dcsDatapointAlias : not stored");
       results [iAlias] = kFALSE;
-      error  = kTRUE;
+      //error  = kTRUE;
       continue;
     }
 		
     oneTRDDCS->SetGraph(map);
-    results[iAlias]=Store("Calib", oneTRDDCS->GetStoreName().Data(), oneTRDDCS, &metaData, 0, kTRUE); 
+    results[iAlias]=Store("Calib", oneTRDDCS->GetStoreName().Data(), oneTRDDCS, &metaData, 0, kFALSE); 
     delete map;		
 
     //results [iAlias] = StoreReferenceData("Calib", oneTRDDCS->GetStoreName ().Data (), oneTRDDCS, &metaData); 
 
     if (!results[iAlias]) {
       AliError("Problem during StoreRef DCS");
-      error=kTRUE;
+      //error=kTRUE;
     }
 
     //BEGIN TEST (should not be removed ...)
@@ -245,6 +245,16 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
     //END TEST
 
   }
+
+  // Check errors
+  Int_t nbCount = 0;
+  for (Int_t iAlias = 0; iAlias < nEntries; iAlias++) {
+    if (results[iAlias]) {
+      nbCount++;
+    }
+  }
+  if(nbCount == 0) error = kTRUE;
+
 		
   Log ("         Summury of DCS :\n");
   Log (Form("%30s %10s %10s", "dcsDatapointAlias", "Stored ?", "# graph"));
