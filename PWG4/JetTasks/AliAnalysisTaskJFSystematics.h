@@ -57,7 +57,7 @@ class AliAnalysisTaskJFSystematics : public AliAnalysisTaskSE
     // ============================================                       
     enum {kSysJetOrder = 1, kSysTypes};
  
-    enum {kMaxJets =  4}; // limit to 4 jets...
+    enum {kMaxJets =  6}; // limit to 6 jets...
 
  private:
 
