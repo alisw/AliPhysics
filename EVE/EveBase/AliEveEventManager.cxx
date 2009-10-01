@@ -424,8 +424,14 @@ void AliEveEventManager::Open()
   TString gaPath(Form("%s/galice.root", fPath.Data()));
   // If i use open directly, we get fatal.
   // Is AccessPathName check ok for xrootd / alien? Yes, not for http.
-  if (gSystem->AccessPathName(gaPath, kReadPermission) == kFALSE)
+  // Seems not to work for alien anymore.
+  TFile *gafile = TFile::Open(gaPath);
+  if (gafile)
   {
+    gafile->Close();
+    delete gafile;
+  // if (gSystem->AccessPathName(gaPath, kReadPermission) == kFALSE)
+  // {
     fRunLoader = AliRunLoader::Open(gaPath, GetName());
     if (fRunLoader)
     {
