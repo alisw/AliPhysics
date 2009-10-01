@@ -37,6 +37,7 @@
 #include "AliHLTPHOSRcuProcessor.h"
 
 
+
 class AliHLTPHOSRawAnalyzer;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSMapper;

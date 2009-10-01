@@ -48,12 +48,10 @@ class  AliHLTCALODecoderWrapper
   inline UInt_t GetStartTimeBin     ( ) const { return  fAltroRawStream->GetEndTimeBin(); };
   inline UInt_t GetEndTimeBin       ( ) const { return  fAltroRawStream->GetStartTimeBin(); };
 
-
  private:
   AliAltroRawStreamV3 *fAltroRawStream;
   //  AliCaloRawStreamV3  *fCaloRawStream;
   AliRawReaderMemory  *fReaderMemory;
-
 };
 
 #endif

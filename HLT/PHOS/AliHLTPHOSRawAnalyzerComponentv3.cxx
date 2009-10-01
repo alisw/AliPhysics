@@ -20,9 +20,12 @@
 #include "AliHLTPHOSChannelDataStruct.h"
 #include "AliHLTPHOSMapper.h"
 #include "AliHLTPHOSSanityInspector.h"
+
 #include "AliAltroRawStreamV3.h"
 #include "AliCaloRawStreamV3.h"
 #include "AliRawReaderMemory.h"
+
+
 #include "AliHLTPHOSUtilities.h"
 
 AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3():
@@ -173,6 +176,7 @@ AliHLTPHOSRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
 }//end DoEvent
 
 
+
 Int_t
 AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize)
 {
@@ -190,8 +194,8 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
   //Adding to the total size of data written
   totSize += sizeof( AliHLTPHOSChannelDataHeaderStruct );
 
-  fRawReaderMemoryPtr->SetMemory(reinterpret_cast<UChar_t*>(iter->fPtr), static_cast<ULong_t>(iter->fSize));
-  fRawReaderMemoryPtr->SetEquipmentID(fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + 1792  );
+  fRawReaderMemoryPtr->SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
+  fRawReaderMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + 1792  );
   fRawReaderMemoryPtr->Reset();
   fRawReaderMemoryPtr->NextEvent();
   
@@ -204,77 +208,77 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
       delete fAltroRawStreamPtr;
       fAltroRawStreamPtr=NULL;
     }
-
   
   fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("PHOS"));
   //  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("EMCAL"));
-
-  while( fAltroRawStreamPtr->NextDDL() )
-    {
-      int cnt = 0;
-      while( fAltroRawStreamPtr->NextChannel()  )
-	{ 
-	  if(fAltroRawStreamPtr->GetHWAddress() < 128 || (fAltroRawStreamPtr->GetHWAddress() ^ 0x800) < 128) 
-	    {
+  //  while( fAltroRawStreamPtr->NextDDL() )
+  fAltroRawStreamPtr->NextDDL();
+  {
+    int cnt = 0;
+    while( fAltroRawStreamPtr->NextChannel()  )
+      { 
+	if(  fAltroRawStreamPtr->GetHWAddress() < 128 || ( fAltroRawStreamPtr->GetHWAddress() ^ 0x800) < 128 ) 
+	  {
 	    continue; 
-	    }
-	  else
-	    {
-	      cnt ++;
-	      UShort_t* firstBunchPtr;
-	      UShort_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
+	  }
+	else
+	  {
+	    cnt ++;
+	    UShort_t* firstBunchPtr;
+	    UShort_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
 	    
-	      if( fkDoPushRawData == true)
-		{
-		  fRawDataWriter->SetChannelId( chId );
-		}
-	      while( fAltroRawStreamPtr->NextBunch() == true )
-		{
-		  nSamples = fAltroRawStreamPtr->GetBunchLength();
-		  
-		  if( fkDoPushRawData == true)
-		    {
-		      //		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetStartTimeBin()  );
-		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
-		    }
-		  firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
-		}
-	      
-	      totSize += sizeof( AliHLTPHOSChannelDataStruct );
-	      if(totSize > size)
-		{
-		  HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
-		  return -1;
-		}
-	      fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
-	      fAnalyzerPtr->Evaluate(0, nSamples);  
-	   
-	      //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
+	    if( fkDoPushRawData == true)
 	      {
-		channelDataPtr->fChannelID =  chId;
-		channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
-		
-		if( channelDataPtr->fEnergy > 70 )
+		fRawDataWriter->SetChannelId( chId );
+	      }
+	    while( fAltroRawStreamPtr->NextBunch() == true )
+	      {
+		nSamples = fAltroRawStreamPtr->GetBunchLength();
+		  
+		if( fkDoPushRawData == true)
 		  {
-		    cout << __FILE__ << __LINE__ << "The energy is of  channel  "<< chId << "  is "  <<  channelDataPtr->fEnergy << endl;
+		    //		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetStartTimeBin()  );
+		    fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
 		  }
+		firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
+	      }
+	      
+	    totSize += sizeof( AliHLTPHOSChannelDataStruct );
+	    if(totSize > size)
+	      {
+		HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
+		return -1;
+	      }
+
+	    fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
+	    fAnalyzerPtr->Evaluate(0, nSamples);  
+	   
+	    //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
+	    {
+	      channelDataPtr->fChannelID =  chId;
+	      channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
 		
-		channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
-		channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
-		channelCount++;
-		channelDataPtr++; // Updating position of the free output.
-	      }   
-	    }
-	  fRawDataWriter->NewChannel();
-	}
-    }
+	      if( channelDataPtr->fEnergy > 70 )
+		{
+		  cout << __FILE__ << __LINE__ << "The energy is of  channel  "<< chId << "  is "  <<  channelDataPtr->fEnergy << endl;
+		}
+		
+	      channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
+	      channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
+	      channelCount++;
+	      channelDataPtr++; // Updating position of the free output.
+	    }   
+	  }
+	fRawDataWriter->NewChannel();
+      }
+  }
 
   //Writing the header
   channelDataHeaderPtr->fNChannels   =  channelCount;
   channelDataHeaderPtr->fAlgorithm   = fAlgorithm;
   channelDataHeaderPtr->fInfo        = 0;
 
-   if( fkDoPushRawData == true)
+  if( fkDoPushRawData == true)
     {
       tmpsize += fRawDataWriter->CopyBufferToSharedMemory( (UShort_t *)channelDataPtr, size, totSize);
     }
@@ -411,7 +415,6 @@ AliHLTPHOSRawAnalyzerComponentv3::RawDataWriter::WriteBunchData(const UShort_t *
   fTotalSize += length;
   fBufferIndex += length;
 }
-
 
 
 void

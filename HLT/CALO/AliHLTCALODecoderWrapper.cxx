@@ -42,37 +42,20 @@ AliHLTCALODecoderWrapper::~AliHLTCALODecoderWrapper()
 
 
 void 
-AliHLTCALODecoderWrapper::SetMemory( AliHLTComponentBlockData *dtaptr )
+AliHLTCALODecoderWrapper::SetMemory( AliHLTComponentBlockData *dtaptr    ) 
 {
-  if ( fAltroRawStream   ==  0 )
+  if ( fAltroRawStream   !=  0 )
     {
       delete  fAltroRawStream;
- 
-
-   }
+    }
   
   fAltroRawStream  = new AliCaloRawStreamV3( fReaderMemory, TString("PHOS"));
   //  fAltroRawStreamPtr = new   AliAltroRawStreamV3( fReaderMemory, TString("PHOS"));
   fReaderMemory->NextEvent();
   fAltroRawStream->NextDDL();
-
 }
 
-/*
-bool 
-AliHLTCALODecoderWrapper::NextChannel()
-{
-  fAltroRawStream->NextChannel();
-}
-*/
 
- /*
-bool 
-AliHLTCALODecoderWrapper::NextBunch()
-{
-  fAltroRawStream->NextBunch();
-}
- */
 
 
 
