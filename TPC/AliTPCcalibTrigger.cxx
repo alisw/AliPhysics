@@ -183,6 +183,7 @@ void AliTPCcalibTrigger::Process(AliESDEvent *event){
     (*cstream) << "Event" <<
       "run="<<fRun<<
       "time="<<fTime<<
+      "tname.="<<&str<<
       "pixel="<<hasPIXEL<<
       "trd="<<hasTRD<<
       "tof="<<hasTOF<<
@@ -213,11 +214,23 @@ void AliTPCcalibTrigger::Process(AliESDEvent *event){
     //
     if (cstream) {
       Double_t mpt = track->GetParameter()[4];
+      Int_t kokot[1000];
+      Int_t nclITS=track->GetITSclusters(kokot);
+      Int_t nclTPC=track->GetTPCNcls();
+      Int_t nclTRD=track->GetTRDclusters(kokot);
+      ULong_t tstatus = track->GetStatus();
       (*cstream) << "Track" <<
 	"run="<<fRun<<
 	"time="<<fTime<<
-	"status="<<status<<
+	"tname.="<<&str<<
+	"status="<<status<<	
+	//
 	"ntracks="<<ntracks<<
+	"tstatus="<<status<<
+	"nclITS="<<nclITS<<
+	"nclTPC="<<nclTPC<<
+	"nclTRD="<<nclTRD<<
+	//
 	"pixel="<<hasPIXEL<<
 	"trd="<<hasTRD<<
 	"tof="<<hasTOF<<
@@ -373,6 +386,9 @@ Bool_t AliTPCcalibTrigger::HasPIXEL(TObjString *tname){
 }
 
 Bool_t AliTPCcalibTrigger::HasTRD(TObjString *tname){
-  return (tname->String().Contains("1H")>0);
+  Bool_t result = kFALSE;
+  result|=(tname->String().Contains("TRD")>0);
+  result|=(tname->String().Contains("1H")>0);
+  return result;
 }
 
