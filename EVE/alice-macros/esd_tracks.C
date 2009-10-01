@@ -71,14 +71,23 @@ TString esd_track_title(AliESDtrack* t)
   Double_t p[3], v[3];
   t->GetXYZ(v);
   t->GetPxPyPz(p);
+  Double_t pt    = t->Pt();
+  Double_t ptsig = TMath::Sqrt(t->GetSigma1Pt2());
+  Double_t ptsq  = pt*pt;
+  Double_t ptm   = pt / (1.0 + pt*ptsig);
+  Double_t ptM   = pt / (1.0 - pt*ptsig);
 
   s = Form("Index=%s, Label=%s\nChg=%d, Pdg=%d\n"
-	   "pT=%.3f, pZ=%.3f\nV=(%.3f, %.3f, %.3f)\n",
+	   "pT = %.3f + %.3f - %.3f [%.3f]\n"
+           "P  = (%.3f, %.3f, %.3f)\n"
+           "V  = (%.3f, %.3f, %.3f)\n",
 	   idx.Data(), lbl.Data(), t->Charge(), 0,
-	   TMath::Sqrt(p[0]*p[0] + p[1]*p[1]), p[2], v[0], v[1], v[2]);
+	   pt, ptM - pt, pt - ptm, ptsig*ptsq,
+           p[0], p[1], p[2],
+           v[0], v[1], v[2]);
 
   Int_t   o;
-  s += "Det(in,out,refit,pid):\n";
+  s += "Det (in,out,refit,pid):\n";
   o  = AliESDtrack::kITSin;
   s += Form("ITS (%d,%d,%d,%d)  ",  t->IsOn(o), t->IsOn(o<<1), t->IsOn(o<<2), t->IsOn(o<<3));
   o  = AliESDtrack::kTPCin;
