@@ -20,7 +20,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 MODULE_DHDR:= 	
 
 ## AliRoot include paths
-EINCLUDE := HLT/BASE RAW PHOS EMCAL
+EINCLUDE := HLT/BASE RAW PHOS EMCAL STEER   
 
 LIBRARY_DEP  := -lHLTbase -lRAWDatarec
 
@@ -29,6 +29,8 @@ LIBRARY_DEP  := -lHLTbase -lRAWDatarec
 # do not change anything below this line
 #
 include $(MODDIR)/hlt.conf
+
+CLASS_HDRS:=AliHLTCALODecoderWrapper.h
 
 SRCS:=$(patsubst %,CALO/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,CALO/%,$(CLASS_HDRS))
