@@ -62,6 +62,7 @@ h2f->Draw("col");
 
 //Root includes
 #include <TH2C.h>
+#include <TH1F.h>
 #include <TMap.h>
 #include <TObjString.h>
 
@@ -79,6 +80,7 @@ AliTPCCalibRaw::AliTPCCalibRaw() :
   fPeakDetMinus(1),
   fPeakDetPlus(2),
   fNFailL1Phase(0),
+  fNFailL1PhaseEvent(0),
   fFirstTimeStamp(0),
   fNSecTime(600), //default 10 minutes
   fNBinsTime(60), //default 60*10 minutes = 10 hours
@@ -94,9 +96,11 @@ AliTPCCalibRaw::AliTPCCalibRaw() :
   fNOkPlus(0),
   fNOkMinus(0),
   fArrCurrentPhaseDist(4),
+  fArrCurrentPhase(kNRCU),
+  fArrFailEventNumber(100),
   fArrALTROL1Phase(1000),
-  fArrALTROL1PhaseEvent(216),
-  fArrALTROL1PhaseFailEvent(216),
+  fArrALTROL1PhaseEvent(kNRCU),
+  fArrALTROL1PhaseFailEvent(kNRCU),
   fHnDrift(0x0)
 {
   //
@@ -104,6 +108,7 @@ AliTPCCalibRaw::AliTPCCalibRaw() :
   //
   SetNameTitle("AliTPCCalibRaw","AliTPCCalibRaw");
   CreateDVhist();
+  for (Int_t ircu=0;ircu<kNRCU;++ircu) fArrCurrentPhase.GetMatrixArray()[ircu]=-1;
   fFirstTimeBin=850;
   fLastTimeBin=1020;
 }
@@ -113,6 +118,7 @@ AliTPCCalibRawBase(),
 fPeakDetMinus(1),
 fPeakDetPlus(2),
 fNFailL1Phase(0),
+fNFailL1PhaseEvent(0),
 fFirstTimeStamp(0),
 fNSecTime(600), //default 10 minutes
 fNBinsTime(60), //default 60*10 minutes = 10 hours
@@ -128,9 +134,11 @@ fLastSignal(0),
 fNOkPlus(0),
 fNOkMinus(0),
 fArrCurrentPhaseDist(4),
+fArrCurrentPhase(kNRCU),
+fArrFailEventNumber(100),
 fArrALTROL1Phase(1000),
-fArrALTROL1PhaseEvent(216),
-fArrALTROL1PhaseFailEvent(216),
+fArrALTROL1PhaseEvent(kNRCU),
+fArrALTROL1PhaseFailEvent(kNRCU),
 fHnDrift(0x0)
 {
   //
@@ -138,6 +146,7 @@ fHnDrift(0x0)
   //
   SetNameTitle("AliTPCCalibRaw","AliTPCCalibRaw");
   CreateDVhist();
+  for (Int_t ircu=0;ircu<kNRCU;++ircu) fArrCurrentPhase.GetMatrixArray()[ircu]=-1;
   fFirstTimeBin=850;
   fLastTimeBin=1020;
   if (config->GetValue("FirstTimeBin")) fFirstTimeBin = ((TObjString*)config->GetValue("FirstTimeBin"))->GetString().Atoi();
@@ -219,18 +228,13 @@ void AliTPCCalibRaw::UpdateDDL(){
   //
   // fill ALTRO L1 information
   //
-//   if (fCurrDDLNum!=fPrevDDLNum){
-    TVectorF *arr=MakeArrL1PhaseRCU(fCurrDDLNum,kTRUE);
-    if (arr->GetNrows()<=fNevents) arr->ResizeTo(arr->GetNrows()+1000);
-    // phase as a position of a quarter time bin
-    Int_t phase=(Int_t)(GetL1PhaseTB()*4.);
-//     printf("DDL: %03d, phase: %d (%f))\n",fCurrDDLNum,phase,GetL1PhaseTB());
-    //Fill pahse information of current rcu and event
-    (arr->GetMatrixArray())[fNevents]=phase;
-    //increase phase counter
-    ++((fArrCurrentPhaseDist.GetMatrixArray())[phase]);
-//     printf("RCUId: %03d (%03d), DDL: %03d, sector: %02d\n",fCurrRCUId, fPrevRCUId, fCurrDDLNum, isector);
-//   }
+  
+  // current phase
+  Int_t phase=(Int_t)(GetL1PhaseTB()*4.);
+  //Fill pahse information of current rcu and event
+  fArrCurrentPhase.GetMatrixArray()[fCurrDDLNum]=phase;
+  //increase phase counter
+  ++((fArrCurrentPhaseDist.GetMatrixArray())[phase]);
   
 }
 //_____________________________________________________________________
@@ -267,16 +271,25 @@ void AliTPCCalibRaw::EndEvent()
   (fArrALTROL1Phase.GetMatrixArray())[GetNevents()]=phaseMaxEntries;
   
   //loop over RCUs and test failures
-  for (Int_t ircu=0;ircu<216;++ircu){
-    const TVectorF *arr=GetALTROL1PhaseEventsRCU(ircu);//MakeArrL1PhaseRCU(ircu);
-    if (!arr) continue;
-    TVectorF *arrF=MakeArrL1PhaseFailRCU(ircu,kTRUE);
-    if (arrF->GetNrows()<=fNevents) arrF->ResizeTo(arrF->GetNrows()+1000);
-    if ((arr->GetMatrixArray())[fNevents]!=phaseMaxEntries){
-      (arrF->GetMatrixArray())[fNevents]=1;
+  UInt_t fail=0;
+  for (Int_t ircu=0;ircu<kNRCU;++ircu){
+    Int_t phase=(Int_t)fArrCurrentPhase[ircu];
+    if (phase<0) continue;
+    if (phase!=phaseMaxEntries){
+      TVectorF *arr=MakeArrL1PhaseRCU(fCurrDDLNum,kTRUE);
+      if (arr->GetNrows()<=(Int_t)fNFailL1PhaseEvent) arr->ResizeTo(arr->GetNrows()+100);
+      (arr->GetMatrixArray())[fNFailL1PhaseEvent]=phase;
       ++fNFailL1Phase;
+      fail=1;
       }
+    //reset current phase information
+    fArrCurrentPhase[ircu]=-1;
   }
+  if (fail){
+    if (fArrFailEventNumber.GetNrows()<=(Int_t)fNFailL1PhaseEvent) fArrFailEventNumber.ResizeTo(fArrFailEventNumber.GetNrows()+100);
+    fArrFailEventNumber.GetMatrixArray()[fNFailL1PhaseEvent]=GetNevents();
+  }
+  fNFailL1PhaseEvent+=fail;
   IncrementNevents();
 }
 //_____________________________________________________________________
@@ -286,27 +299,73 @@ TH2C *AliTPCCalibRaw::MakeHistL1RCUEvents(Int_t type)
   // from the mean L1 phase of the event
   //
   //type: 0=Failures, 1=Phases
-  TH2C *h2 = new TH2C("hL1FailRCUEvents","L1 Failures;RCU;Event",216,0,216,GetNevents(),0,GetNevents());
+
+  //number of relavant events, depending on version
+  Int_t nevents=GetNevents();
+  //check version
+  Bool_t newVersion=kFALSE;
+  for (Int_t ircu=0; ircu<kNRCU; ++ircu){
+    const TVectorF *v=GetALTROL1PhaseEventsRCU(ircu);
+    if (!v) continue;
+    if (v->GetNrows()==fNFailL1PhaseEvent){
+      newVersion=kTRUE;
+      nevents=fNFailL1PhaseEvent;
+    }
+    break;
+  }
+  TH2C *h2 = new TH2C("hL1FailRCUEvents","L1 Failures;RCU;Event",kNRCU,0,kNRCU,nevents,0,nevents);
   Int_t add=0;
-  for (Int_t ircu=0;ircu<216;++ircu) {
-    const TVectorF *v=0;
+  for (Int_t ircu=0;ircu<kNRCU;++ircu) {
+    const TVectorF *v=GetALTROL1PhaseEventsRCU(ircu);
     if (type==0){
-      v=GetALTROL1PhaseFailEventsRCU(ircu);
       add=1;
       h2->SetMinimum(0);
       h2->SetMaximum(2);
     } else if (type==1) {
-      v=GetALTROL1PhaseEventsRCU(ircu);
       add=0;
       h2->SetMinimum(0);
       h2->SetMaximum(4);
     }
     if (!v) continue;
-    for (Int_t iev=0;iev<GetNevents();++iev) {
-      h2->SetBinContent(ircu+1,iev+1,(*v)(iev)+add);
+    for (Int_t iev=0;iev<nevents;++iev) {
+      Float_t val=(*v)(iev);
+      Float_t phase=fArrALTROL1Phase.GetMatrixArray()[iev];
+      if (newVersion) {
+        Int_t event=(Int_t)fArrFailEventNumber.GetMatrixArray()[iev];
+        phase=fArrALTROL1Phase.GetMatrixArray()[event];
+      }
+      if (type==0) val=(val!=phase);
+      h2->SetBinContent(ircu+1,iev+1,val+add);
     }
   }
   return h2;
+}
+//_____________________________________________________________________
+TH1F *AliTPCCalibRaw::MakeHistL1PhaseDist()
+{
+  //
+  // L1 phase distribution. Should be flat in ideal case
+  //
+  TH1F *h=new TH1F("L1phaseDist","Normalized L1 phase distribution;phase;fraction of events",4,0,4);
+  h->Sumw2();
+  for (Int_t iev=0;iev<GetNevents();++iev) h->Fill(fArrALTROL1Phase.GetMatrixArray()[iev]);
+  if (GetNevents()>0) h->Scale(1./GetNevents());
+  h->SetMinimum(0);
+  h->SetMaximum(1);
+  return h;
+}
+//_____________________________________________________________________
+TVectorF *AliTPCCalibRaw::MakeVectL1PhaseDist()
+{
+  //
+  // L1 phase distribution. Should be flat in ideal case
+  //
+  TVectorF *v=new TVectorF(4);
+  for (Int_t iev=0;iev<GetNevents();++iev) {
+    Int_t phase=(Int_t)fArrALTROL1Phase.GetMatrixArray()[iev];
+    ((v->GetMatrixArray())[phase])+=1./GetNevents();
+  }
+  return v;
 }
 //_____________________________________________________________________
 TH2C *AliTPCCalibRaw::MakeHistL1RCUEventsIROC(Int_t type)
@@ -335,7 +394,7 @@ TH2C *AliTPCCalibRaw::MakeHistL1RCUEventsOROC(Int_t type)
   // from the mean L1 phase of the event
   //
   TH2C *h2 = new TH2C("hL1FailRCUEventsOROC","L1 Failures OROCs;RCU;Event",144,0,36,GetNevents(),0,GetNevents());
-  for (Int_t ircu=72;ircu<216;++ircu) {
+  for (Int_t ircu=72;ircu<kNRCU;++ircu) {
     const TVectorF *v=0;
     if (type==0)      v=GetALTROL1PhaseFailEventsRCU(ircu);
     else if (type==1) v=GetALTROL1PhaseEventsRCU(ircu);
@@ -370,12 +429,13 @@ void AliTPCCalibRaw::Analyse()
 
   //resize arrays
   fArrALTROL1Phase.ResizeTo(GetNevents());
-  for (Int_t ircu=0;ircu<216;++ircu){
+  for (Int_t ircu=0;ircu<kNRCU;++ircu){
     TVectorF *arr=MakeArrL1PhaseRCU(ircu);//MakeArrL1PhaseRCU(ircu);
     if (!arr) continue;
-    TVectorF *arrF=MakeArrL1PhaseFailRCU(ircu);
-    arr->ResizeTo(GetNevents());
-    arrF->ResizeTo(GetNevents());
+    arr->ResizeTo(fNFailL1PhaseEvent);
+    fArrFailEventNumber.ResizeTo(fNFailL1PhaseEvent);
+//    TVectorF *arrF=MakeArrL1PhaseFailRCU(ircu);
+//     arrF->ResizeTo(1);
   }
 
   //Analyse drift velocity

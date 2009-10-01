@@ -18,6 +18,7 @@
 #include "AliTPCROC.h"
 
 class TH2C;
+class TH1F;
 class TMap;
 
 class AliTPCCalibRaw : public AliTPCCalibRawBase {
@@ -27,6 +28,7 @@ public:
   
   virtual ~AliTPCCalibRaw();
 
+  enum {kNRCU=216};
   
   virtual Int_t Update(const Int_t isector, const Int_t iRow, const Int_t iPad,
                        const Int_t iTimeBin, const Float_t signal);
@@ -36,6 +38,7 @@ public:
   virtual void Analyse();
 
   UInt_t GetNFailL1Phase()                const  {return fNFailL1Phase;}
+  UInt_t GetNFailL1PhaseEvents()          const  {return fNFailL1PhaseEvent;}
   Int_t   GetPeakDetectionMinus() const {return fPeakDetMinus;}
   Int_t   GetPeakDetectionPlus()  const {return fPeakDetPlus;}
   
@@ -49,6 +52,8 @@ public:
   TH2C *MakeHistL1RCUEvents(Int_t type=0);
   TH2C *MakeHistL1RCUEventsIROC(Int_t type=0);
   TH2C *MakeHistL1RCUEventsOROC(Int_t type=0);
+  TH1F *MakeHistL1PhaseDist();
+  TVectorF *MakeVectL1PhaseDist();
 
   const THnSparseI *GetHnDrift() const {return fHnDrift;}
 //   AliTPCCalPad *CreateCalPadL1Mean();
@@ -58,6 +63,7 @@ private:
   Int_t   fPeakDetMinus;             //  Consecutive timebins on rising edge to be regarded as a signal
   Int_t   fPeakDetPlus;              //  Consecutive timebins on falling edge to be regarded as a signal
   UInt_t  fNFailL1Phase;             //Number of failures in L1 phase
+  UInt_t  fNFailL1PhaseEvent;        //Number of events with L1 phase failures
   UInt_t  fFirstTimeStamp;           //Time Stamp from first event
   //binning dv hist
   UInt_t  fNSecTime;                 //Number of seconds per bin in time
@@ -77,6 +83,8 @@ private:
 //
   //L1 phase stuff
   TVectorF fArrCurrentPhaseDist;       //!Phase distribution of the current event
+  TVectorF fArrCurrentPhase;           //!Current phase of all RCUs
+  TVectorF fArrFailEventNumber;        //event numbers of failed events;
   TVectorF fArrALTROL1Phase;           //Array of L1 phases on an event bases;
   TObjArray fArrALTROL1PhaseEvent;     //L1 phase for each RCU and event
   TObjArray fArrALTROL1PhaseFailEvent; //L1 failure for each RCU and event
@@ -93,7 +101,7 @@ private:
   AliTPCCalibRaw(AliTPCCalibRaw &calib);
   AliTPCCalibRaw& operator = (const  AliTPCCalibRaw &source);
 
-  ClassDef(AliTPCCalibRaw,1) //  Analysis of the Altro header information
+  ClassDef(AliTPCCalibRaw,2) //  Analysis of the Altro header information
 };
 
 //----------------------
@@ -103,7 +111,7 @@ inline TVectorF *AliTPCCalibRaw::MakeArrL1PhaseRCU(Int_t rcu, Bool_t force)
 {
   TVectorF *arr=(TVectorF*)fArrALTROL1PhaseEvent.UncheckedAt(rcu);
   if (!arr && force) {
-    arr=new TVectorF(1000);
+    arr=new TVectorF(100);
     fArrALTROL1PhaseEvent.AddAt(arr,rcu);
   }
   return arr;
