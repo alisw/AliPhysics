@@ -3,7 +3,7 @@
 #include "TTree.h"
 #include "TEventList.h"
 #include "TObjArray.h"
-#include "TH1.h"
+#include "TH2.h"
 
 #include "AliLog.h"
 #include "AliESDtrack.h"
@@ -90,7 +90,16 @@ void AliTRDpidRefMaker::CreateOutputObjects()
   OpenFile(0, "RECREATE");
   fContainer = new TObjArray();
   fContainer->SetName(Form("Moni%s", GetName()));
-  fContainer->AddAt(new TH1F("hPDG","hPDG",AliPID::kSPECIES,-0.5,5.5),0);
+
+  TH2 *h2 = new TH2I("hPDG","Particle abundance", AliPID::kSPECIES, -0.5, 4.5, AliTRDCalPID::kNMom, -0.5, AliTRDCalPID::kNMom-0.5);
+  TAxis *ax = h2->GetXaxis();
+  ax->SetNdivisions(505);
+  ax->SetTitle("Particle species");
+  for(Int_t is=AliPID::kSPECIES; is--;) ax->SetBinLabel(is+1, AliPID::ParticleShortName(is));
+  h2->GetYaxis()->SetTitle("P bins");
+  h2->GetYaxis()->SetNdivisions(511);
+
+  fContainer->AddAt(h2, 0);
 }
 
 //________________________________________________________________________

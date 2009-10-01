@@ -23,16 +23,19 @@
 #include "AliTRDpidUtil.h"
 #endif
 
-class TH2;
+class TObjArray;
 class AliTRDpidRefMakerLQ : public AliTRDpidRefMaker {
 public:
   enum ETRDpidRefMakerLQsteer{
-    kMaxStat = 100000 // maximum statistics/species/momentum 
+    kMinStat = 100    // minimum statistics/bucket 10%
+   ,kMinBuckets = 450 // minimum number of buckets [lambda(6)*alpha(1.5)*regions(50)]
   };
   AliTRDpidRefMakerLQ();
   ~AliTRDpidRefMakerLQ();
  
   void      CreateOutputObjects();
+  Bool_t    GenerateOCDBEntry(Option_t *);
+  Bool_t    GetRefFigure(Int_t ifig);
   Bool_t    PostProcess();
 
 protected:
@@ -43,13 +46,11 @@ protected:
 private:
   AliTRDpidRefMakerLQ(const AliTRDpidRefMakerLQ &ref);
   AliTRDpidRefMakerLQ& operator=(const AliTRDpidRefMakerLQ &ref);
-  void   Reset();
-  void   SaveReferences(const Int_t mom, const char *fn);
  
 private:
   UChar_t   fPbin;        //! momentum bin
   UChar_t   fSbin;        //! species bin
-  TH2       *fH2dEdx[5];  //! dE/dx data holders
+  TObjArray *fResults;    //! array to store PDF representation
 
   ClassDef(AliTRDpidRefMakerLQ, 4)  // Reference builder for Multidim-LQ TRD-PID
 
