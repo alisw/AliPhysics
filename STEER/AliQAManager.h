@@ -54,6 +54,7 @@ public:
 	AliQADataMaker * GetQADataMaker(const Int_t iDet) ; 
 	void             Increment(const AliQAv1::TASKINDEX_t taskIndex = AliQAv1::kNULLTASKINDEX) ;
 	void             InitQADataMaker(UInt_t run, TObjArray * detArray=0x0) ;
+	Bool_t           IsSelected(const Char_t * detName)  ;
 	Bool_t           Merge(Int_t runNumber = -1, const char *fileName = NULL) const ;  
   void             MergeCustom() const ;
   Bool_t           MergeXML(const Char_t * collection, const Char_t * subFile = 0, const Char_t * outFile = 0) ; 
@@ -88,7 +89,6 @@ private:
 	Int_t       GetQACycles(const Int_t iDet) const { return fQACycles[iDet] ; }
 	Bool_t 		  InitQA(const AliQAv1::TASKINDEX_t taskIndex, const  Char_t * fileName = NULL) ;
 	Bool_t      InitRunLoader() ; 
-	Bool_t      IsSelected(const Char_t * detName)  ;
 	Bool_t      Finish(const AliQAv1::TASKINDEX_t taskIndex) ;
 	Bool_t      MergeData(const Int_t runNumber, const char *fileName = NULL) const ;  
 	Bool_t      MergeResults(const Int_t runNumber) const ;  
