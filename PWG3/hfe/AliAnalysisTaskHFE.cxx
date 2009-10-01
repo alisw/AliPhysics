@@ -21,12 +21,15 @@
  * Author:
  *  Raphaelle Bailhache <R.Bailhache@gsi.de>
  *  Markus Fasel <M.Fasel@gsi.de>
+ *  Matus Kalisky <matus.kalisky@cern.ch>
  *  MinJung Kweon <minjung@physi.uni-heidelberg.de>
  */
 #include <TAxis.h>
 #include <TCanvas.h>
 #include <TChain.h>
 #include <TDirectory.h>
+#include <TFile.h>
+#include <TH1D.h>
 #include <TH1F.h>
 #include <TH1I.h>
 #include <TH2F.h>
@@ -607,6 +610,136 @@ void AliAnalysisTaskHFE::Terminate(Option_t *){
   //
   // Terminate not implemented at the moment
   //
+  if(IsRunningPostProcess()){
+    fOutput = dynamic_cast<TList *>(GetOutputData(1));
+    if(!fOutput){
+      AliError("Results not available");
+      return;
+    }
+    PostProcess();
+  }
+}
+
+//____________________________________________________________
+void AliAnalysisTaskHFE::Load(TString filename){
+  //
+  // Load Results into the task
+  //
+  fQA = NULL; fOutput = NULL; fNEvents = NULL;
+  TFile *input = TFile::Open(filename.Data());
+  if(!input || input->IsZombie()){
+    AliError("Cannot read file");
+    return;
+  }
+  TH1 *htmp = dynamic_cast<TH1I *>(input->Get("nEvents"));
+  if(htmp)
+    fNEvents = dynamic_cast<TH1I *>(htmp->Clone());
+  else
+    AliError("Event Counter histogram not found"); 
+  TList *ltmp = dynamic_cast<TList *>(input->Get("Results"));
+  if(ltmp)
+    fOutput = dynamic_cast<TList *>(ltmp->Clone());
+  else
+    AliError("Output Histograms not found");
+  ltmp = dynamic_cast<TList *>(input->Get("QA"));
+  if(ltmp)
+    fQA = dynamic_cast<TList *>(ltmp->Clone());
+  else
+    AliError("QA histograms not found");
+  input->Close();
+  delete input;
+  Int_t nObjects = 0;
+  if(fNEvents) nObjects++;  
+  if(fOutput) nObjects++;
+  if(fQA) nObjects++;
+  AliInfo(Form("Loaded %d Objects into task", nObjects));
+}
+
+//____________________________________________________________
+void AliAnalysisTaskHFE::PostProcess(){
+  //
+  // Plotting Ratio histograms
+  // + All electrons / all candidates (Purity for Electrons)
+  // + All signal electrons / all electrons (Purity for signals)
+  // For this the following pt-histograms have to be projected from the THnSparse
+  // + All Electron candidates
+  // + All Real electrons
+  // + All Signal Electrons
+  // + All misidentified electrons
+  //
+  fPIDperformance = dynamic_cast<THnSparseF *>(fOutput->FindObject("PIDperformance"));
+  if(!fPIDperformance){
+    AliError("PID Performance histogram not found in the output container");
+    return;
+  }
+  
+  // Make projection
+  // always project to pt dimension
+  // get the histograms under our control
+  TH1 *allCandidates = NULL, *allElectrons = NULL, *allSignals = NULL, *allFakes = NULL;
+  allCandidates = fPIDperformance->Projection(0);
+  allCandidates->SetName("hAllCandidates");
+  allCandidates->SetTitle("All Candidates");
+  Int_t firstDim3 = fPIDperformance->GetAxis(3)->GetFirst(), lastDim3 = fPIDperformance->GetAxis(3)->GetLast();
+  fPIDperformance->GetAxis(3)->SetRange(firstDim3 + 1, lastDim3);
+  allElectrons = fPIDperformance->Projection(0);
+  allElectrons->SetName("hAllElectrons");
+  allElectrons->SetTitle("All Electrons");
+  Int_t firstDim4 = fPIDperformance->GetAxis(4)->GetFirst(), lastDim4 = fPIDperformance->GetAxis(4)->GetLast();
+  fPIDperformance->GetAxis(4)->SetRange(firstDim4 + 1, lastDim4);
+  allSignals = fPIDperformance->Projection(0);
+  allSignals->SetName("hAllSignals");
+  allSignals->SetTitle("All Signal Electrons");
+  fPIDperformance->GetAxis(4)->SetRange(firstDim4, lastDim4);       // Reset 4th axis
+  fPIDperformance->GetAxis(3)->SetRange(firstDim3, firstDim3 + 1);  // Select fakes
+  allFakes = fPIDperformance->Projection(0);
+  allFakes->SetName("hAllFakes");
+  allFakes->SetTitle("All Fakes");
+  fPIDperformance->GetAxis(3)->SetRange(firstDim3, lastDim3);       // Reset also 3rd axis
+
+  // Make Ratios
+  TH1D *electronPurity = dynamic_cast<TH1D *>(allElectrons->Clone());
+  electronPurity->Divide(allCandidates);
+  electronPurity->SetName("electronPurity");
+  electronPurity->SetTitle("Electron Purity");
+  electronPurity->GetXaxis()->SetTitle("p_T / GeV/c");
+  electronPurity->GetYaxis()->SetTitle("Purity / %");
+  TH1D *signalPurity = dynamic_cast<TH1D *>(allSignals->Clone());
+  signalPurity->Divide(allElectrons);
+  signalPurity->SetName("signalPurity");
+  signalPurity->SetTitle("Purity of Electrons coming from Heavy flavours");
+  signalPurity->GetXaxis()->SetTitle("p_T / GeV/c");
+  signalPurity->GetYaxis()->SetTitle("Purity / %");
+  TH1D *fakeContamination = dynamic_cast<TH1D *>(allFakes->Clone());
+  fakeContamination->Divide(allCandidates);
+  fakeContamination->SetName("fakeContamination");
+  fakeContamination->SetTitle("Contamination of misidentified hadrons");
+  fakeContamination->GetXaxis()->SetTitle("p_T / GeV/c");
+  fakeContamination->GetYaxis()->SetTitle("Purity / %");
+  
+  // Draw output
+  TCanvas *cSpectra = new TCanvas("cSpectra","pt Spectra", 800, 600);
+  cSpectra->Divide(2,2);
+  TCanvas *cRatios = new TCanvas("cRatios", "Ratio Plots", 800, 600);
+  cRatios->Divide(2,2);
+  cSpectra->cd(1);
+  allCandidates->Draw();
+  cSpectra->cd(2);
+  allElectrons->Draw();
+  cSpectra->cd(3);
+  allSignals->Draw();
+  cSpectra->cd(4);
+  allFakes->Draw();
+  cRatios->cd(1);
+  electronPurity->Draw();
+  cRatios->cd(2);
+  signalPurity->Draw();
+  cRatios->cd(3);
+  fakeContamination->Draw();
+
+  // cleanup
+  //delete allCandidates; delete allElectrons; delete allSignals; delete allFakes;
+  //delete electronPurity; delete signalPurity; delete fakeContamination;
 }
 
 //____________________________________________________________
