@@ -49,8 +49,13 @@ public:
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
   TObjArray* GetAcceptedTracks(AliESDEvent* esd, Bool_t bTPC = kFALSE);
   Int_t CountAcceptedTracks(AliESDEvent* esd);
+  
+  static Int_t GetReferenceMultiplicity(AliESDEvent* esd, Bool_t tpcOnly);
 
   static AliESDtrack* GetTPCOnlyTrack(AliESDEvent* esd, Int_t iTrack);
+  
+  // Standard cut definitions
+  static AliESDtrackCuts* GetStandardTPCOnlyTrackCuts();
 
   virtual Long64_t Merge(TCollection* list);
   virtual void Copy(TObject &c) const;
@@ -80,12 +85,6 @@ public:
   void SetMinDCAToVertexXY(Float_t dist=0.)           {fCutMinDCAToVertexXY = dist;}
   void SetMinDCAToVertexZ(Float_t dist=0.)            {fCutMinDCAToVertexZ = dist;}
   void SetDCAToVertex2D(Bool_t b=kFALSE)              {fCutDCAToVertex2D = b;}
-  
-  // deprecated, will be removed in next release
-  void SetMinNsigmaToVertex(Float_t sigma=1e10);
-  Float_t GetMinNsigmaToVertex() const;
-  void SetAcceptKingDaughters(Bool_t b=kFALSE);
-  Bool_t  GetAcceptKingDaughters() const;
 
   // getters
 
@@ -109,13 +108,13 @@ public:
   Bool_t  GetDCAToVertex2D()         const   { return fCutDCAToVertex2D;}
   Bool_t  GetRequireSigmaToVertex( ) const   { return fCutSigmaToVertexRequired;}
 
-  void GetPRange(Float_t& r1, Float_t& r2)   {r1=fPMin;   r2=fPMax;}
-  void GetPtRange(Float_t& r1, Float_t& r2)  {r1=fPtMin;  r2=fPtMax;}
-  void GetPxRange(Float_t& r1, Float_t& r2)  {r1=fPxMin;  r2=fPxMax;}
-  void GetPyRange(Float_t& r1, Float_t& r2)  {r1=fPyMin;  r2=fPyMax;}
-  void GetPzRange(Float_t& r1, Float_t& r2)  {r1=fPzMin;  r2=fPzMax;}
-  void GetEtaRange(Float_t& r1, Float_t& r2) {r1=fEtaMin; r2=fEtaMax;}
-  void GetRapRange(Float_t& r1, Float_t& r2) {r1=fRapMin; r2=fRapMax;}
+  void GetPRange(Float_t& r1, Float_t& r2)  const {r1=fPMin;   r2=fPMax;}
+  void GetPtRange(Float_t& r1, Float_t& r2) const {r1=fPtMin;  r2=fPtMax;}
+  void GetPxRange(Float_t& r1, Float_t& r2) const {r1=fPxMin;  r2=fPxMax;}
+  void GetPyRange(Float_t& r1, Float_t& r2) const {r1=fPyMin;  r2=fPyMax;}
+  void GetPzRange(Float_t& r1, Float_t& r2) const {r1=fPzMin;  r2=fPzMax;}
+  void GetEtaRange(Float_t& r1, Float_t& r2) const {r1=fEtaMin; r2=fEtaMax;}
+  void GetRapRange(Float_t& r1, Float_t& r2) const {r1=fRapMin; r2=fRapMax;}
 
   // track kinmatic cut setters
   void SetPRange(Float_t r1=0, Float_t r2=1e10)       {fPMin=r1;   fPMax=r2;}

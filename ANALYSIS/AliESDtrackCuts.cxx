@@ -515,6 +515,51 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
   return count+1;
 }
 
+//____________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
+{
+  // creates an AliESDtrackCuts object and fills it with standard values for TPC-only cuts
+  // see ALICE note: ...
+  
+  Printf("AliESDtrackCuts::GetStandardTPCOnlyTrackCuts: Creating track cuts for TPC-only.");
+  
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+  
+  esdTrackCuts->SetMinNClustersTPC(50);
+  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  
+  esdTrackCuts->SetMaxDCAToVertexZ(3.2);
+  esdTrackCuts->SetMaxDCAToVertexXY(2.4);
+  esdTrackCuts->SetDCAToVertex2D(kTRUE);
+  
+  return esdTrackCuts;
+}
+
+//____________________________________________________________________
+Int_t AliESDtrackCuts::GetReferenceMultiplicity(AliESDEvent* esd, Bool_t tpcOnly)
+{
+  // Gets reference multiplicity following the standard cuts and a defined fiducial volume
+  // tpcOnly = kTRUE -> consider TPC-only tracks
+  //         = kFALSE -> consider global tracks
+  
+  if (!tpcOnly)
+  {
+    Printf("AliESDtrackCuts::GetReferenceMultiplicity: Not implemented for global tracks!");
+    return -1;
+  }
+  
+  AliESDtrackCuts* esdTrackCuts = GetStandardTPCOnlyTrackCuts();
+  esdTrackCuts->SetEtaRange(-0.8, 0.8);
+  esdTrackCuts->SetPtRange(0.15);
+  
+  Int_t nTracks = esdTrackCuts->CountAcceptedTracks(esd);
+  
+  delete esdTrackCuts;
+  esdTrackCuts = 0;
+  
+  return nTracks;
+}
 
 //____________________________________________________________________
 Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
@@ -1313,38 +1358,3 @@ void AliESDtrackCuts::DrawHistograms()
   fhChi2PerClusterTPC[1]->DrawCopy("SAME");*/
 }
 
-Float_t AliESDtrackCuts::GetMinNsigmaToVertex() const
-{
-  // deprecated, please use GetMaxNsigmaToVertex
-
-  Printf("WARNING: AliESDtrackCuts::GetMinNsigmaToVertex is DEPRECATED and will be removed in the next release. Please use GetMaxNsigmaToVertex instead. Renaming was done to improve code readability.");
-
-  return GetMaxNsigmaToVertex();
-}
-
-void AliESDtrackCuts::SetMinNsigmaToVertex(Float_t sigma)
-{
-  // deprecated, will be removed in next release
-
-  Printf("WARNING: AliESDtrackCuts::SetMinNsigmaToVertex is DEPRECATED and will be removed in the next release. Please use SetMaxNsigmaToVertex instead. Renaming was done to improve code readability.");
-  
-  SetMaxNsigmaToVertex(sigma);
-}
-
-void AliESDtrackCuts::SetAcceptKingDaughters(Bool_t b)
-{
-  // deprecated, will be removed in next release
-
-  Printf("WARNING: AliESDtrackCuts::SetAcceptKingDaughters is DEPRECATED and will be removed in the next release. Please use SetAcceptKinkDaughters instead. Renaming was done to improve code readability.");
-  
-  SetAcceptKinkDaughters(b);
-}
-
-Bool_t AliESDtrackCuts::GetAcceptKingDaughters() const
-{
-  // deprecated, will be removed in next release
-
-  Printf("WARNING: AliESDtrackCuts::GetAcceptKingDaughters is DEPRECATED and will be removed in the next release. Please use GetAcceptKinkDaughters instead. Renaming was done to improve code readability.");
-  
-  return GetAcceptKinkDaughters();
-}
