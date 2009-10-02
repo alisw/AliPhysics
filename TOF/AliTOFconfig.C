@@ -66,7 +66,7 @@ static PprRun_t srun = test50;
 //static PprRun_t srun = kPythia6;
 static PprGeo_t sgeo = kNoHoles;
 static PprRad_t srad = kGluonRadiation;
-static BMap_t smag = AliMagF::k5kG;
+//static AliMagF::BMap_t smag = AliMagF::k5kG;
 
 // Comment line 
 static TString  comment;
@@ -164,13 +164,14 @@ void Config()
     gener->SetVertexSmear(kPerEvent); 
     gener->SetTrackingFlag(1);
     gener->Init();
-    
+
+    /*    
     if (smag == AliMagF::k2kG) {
 	comment = comment.Append(" | L3 field 0.2 T");
     } else if (smag == AliMagF::k5kG) {
 	comment = comment.Append(" | L3 field 0.5 T");
     }
-    
+    */
     
     if (srad == kGluonRadiation)
     {
@@ -191,11 +192,17 @@ void Config()
     printf("\n \n Comment: %s \n \n", comment.Data());
     
     
-// Field (L3 0.4 T)
-    AliMagF* field = new AliMagF("Maps","Maps", 2, 1., 1., 10., smag));
-    TGeoGlobalMagField::Instance()->SetField(field);
-    field->SetL3ConstField(0); //Using const. field in the barrel
-    rl->CdGAFile();
+// Field (L3 +-0.2/0.5 T)
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2, -1,-1, 10,AliMagF::k5kG)); // +0.5/-0.7
+    /*
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2,  1, 1, 10,AliMagF::k5kG)); // -0.5/-0.7
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2, -1,-1, 10,AliMagF::k2kG)); // +0.2/-0.7
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2,  1, 1, 10,AliMagF::k2kG)); // -0.2/+0.7
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2,  1, 0, 10,AliMagF::k5kG)); // +-0.5/0
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2,  1, 0, 10,AliMagF::k2kG)); // +-0.2/0
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2,  0, 0, 10,AliMagF::k5kGUniform)); // 0/0
+    */
+
 //
     Int_t   iABSO   = 0;
     Int_t   iDIPO   = 0;
