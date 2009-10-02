@@ -351,11 +351,8 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 AliCDBId* AliCDBGrid::GetId(const TObjArray& validFileIds, const AliCDBId& query) {
 // look for the Id that matches query's requests (highest or exact version)
 
-	if(validFileIds.GetEntriesFast() < 1) {
+	if(validFileIds.GetEntriesFast() < 1)
 		return NULL;
-	} else if (validFileIds.GetEntriesFast() == 1) {
-		return dynamic_cast<AliCDBId*> (validFileIds.At(0)->Clone());
-	}
 
 	TIter iter(&validFileIds);
 
@@ -412,13 +409,13 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
 	if(selectedId.GetFirstRun() == fRun &&
 			fPathFilter.Comprises(selectedId.GetAliCDBPath()) && fVersion < 0 && !fMetaDataFilter){
 		// look into list of valid files previously loaded with AliCDBStorage::FillValidFileIds()
-		AliDebug(2, Form("List of files valid for run %d and for path %s was loaded. Looking there!",
+		AliDebug(2, Form("List of files valid for run %d was loaded. Looking there for fileids valid for path %s!",
 					selectedId.GetFirstRun(), selectedId.GetPath().Data()));
 		dataId = GetId(fValidFileIds, selectedId);
 
 	} else {
 		// List of files valid for reqested run was not loaded. Looking directly into CDB
-		AliDebug(2, Form("List of files valid for run %d and for path %s was not loaded. Looking directly into CDB!",
+		AliDebug(2, Form("List of files valid for run %d was not loaded. Looking directly into CDB for fileids valid for path %s!",
 					selectedId.GetFirstRun(), selectedId.GetPath().Data()));
 
 		TString filter;
