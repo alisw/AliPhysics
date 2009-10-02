@@ -62,9 +62,9 @@ void mylauncher()
           Int_t count=0;
           while ((os=(TObjString*)next())) {
 	    TGridResult *res;
-            Info("Find", "making collection for %s", os->GetString().Data());
+            Info("Find", "Making collection for %s", os->GetString().Data());
             res = gGrid->Command(Form("find -x collection %s %s > mycollect%d.xml", os->GetString().Data(),datatype.Data(),count));
-            if(!res) Info("Find", "failed making collection for %s \n",os->GetString().Data());
+            if(!res) Info("Find", "Failed making collection for %s \n",os->GetString().Data());
             delete res;
             count++;
           }
