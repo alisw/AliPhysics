@@ -28,7 +28,7 @@ InputDataListFormat = "xml-single";
 InputDataList = "collection.xml";
 
 Split = "se";
-SplitMaxInputFileNumber = "15";
+SplitMaxInputFileNumber = "1";
 
 splitarguments="run.C --anaInputData AOD --mode 3 --config2 ConfigJetAnalysisFastJet.C --config3 ConfigAnalysisElectron --sevent 0";
 
