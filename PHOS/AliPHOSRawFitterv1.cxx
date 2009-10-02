@@ -32,7 +32,6 @@
 // Modified: Yuri Kharlov (Jul.2009)
 
 // --- ROOT system ---
-#include "TArrayD.h"
 #include "TArrayI.h"
 #include "TList.h"
 #include "TMath.h"

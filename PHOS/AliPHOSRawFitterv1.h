@@ -10,7 +10,7 @@
 // provided by AliRawReader. See cxx source for use case.
 
 #include "AliPHOSRawFitterv0.h"
-class TArrayD;
+#include "TArrayD.h"
 class TList;
 
 class AliPHOSRawFitterv1 : public AliPHOSRawFitterv0 {
