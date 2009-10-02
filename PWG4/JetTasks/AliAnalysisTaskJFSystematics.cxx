@@ -249,38 +249,6 @@ void AliAnalysisTaskJFSystematics::UserCreateOutputObjects()
   // Create the output container
   //
 
-  
-  // Connect the AOD
-
-  if(fUseAODInput){
-    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!fAOD){
-      Printf("%s:%d AODEvent not found in Input Manager %d",(char*)__FILE__,__LINE__,fUseAODInput);
-      return;
-    }
-    // fetch the header
-    fJetHeaderRec = dynamic_cast<AliJetHeader*>(fInputHandler->GetTree()->GetUserInfo()->FindObject(Form("AliJetHeader_%s",fBranchRec.Data())));
-    if(!fJetHeaderRec){
-      Printf("%s:%d Jet Header not found in the Input",(char*)__FILE__,__LINE__);
-    }
-  }
-  else{
-    //  assume that the AOD is in the general output...
-    fAOD  = AODEvent();
-    if(!fAOD){
-      Printf("%s:%d AODEvent not found in the Output",(char*)__FILE__,__LINE__);
-      return;
-    }
-    fJetHeaderRec = dynamic_cast<AliJetHeader*>(OutputTree()->GetUserInfo()->FindObject(Form("AliJetHeader_%s",fBranchRec.Data())));    
-    if(!fJetHeaderRec){
-      Printf("%s:%d Jet Header not found in the Output",(char*)__FILE__,__LINE__);
-    }
-    else{
-      if(fDebug>10)fJetHeaderRec->Dump();
-    }
-  }
- 
-
 
   if (fDebug > 1) printf("AnalysisTaskJFSystematics::UserCreateOutputObjects() \n");
 
@@ -448,6 +416,24 @@ void AliAnalysisTaskJFSystematics::UserExec(Option_t */*option*/)
   //
   // Execute analysis for current event
   //
+ 
+  if(fUseAODInput){    
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!fAOD){
+      Printf("%s:%d AODEvent not found in Input Manager %d",(char*)__FILE__,__LINE__,fUseAODInput);
+      return;
+    }
+    // fethc the header
+  }
+  else{
+    //  assume that the AOD is in the general output...
+    fAOD  = AODEvent();
+    if(!fAOD){
+      Printf("%s:%d AODEvent not found in the Output",(char*)__FILE__,__LINE__);
+      return;
+    }
+  }
+  
 
 
 
