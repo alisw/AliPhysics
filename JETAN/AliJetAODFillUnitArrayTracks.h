@@ -46,7 +46,7 @@ class AliJetAODFillUnitArrayTracks : public AliJetFillUnitArray
   AliJetHadronCorrection   *fHadCorr;            // Pointer to Hadron Correction Object
   Bool_t                    fApplyMIPCorrection; // Apply MIP or not ? Exclusive with fApplyFractionHadronicCorrection
 
-  AliAODEvent              *fAOD;                // ESD
+  AliAODEvent              *fAOD;                // AOD output Event
   AliJetGrid               *fGrid0;              // Grid used for dead zones definition
   AliJetGrid               *fGrid1;              // Grid used for dead zones definition
   AliJetGrid               *fGrid2;              // Grid used for dead zones definition

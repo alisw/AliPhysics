@@ -53,7 +53,9 @@ class AliJetAODFillUnitArrayEMCalDigits : public AliJetFillUnitArray
   Bool_t       fApplyFractionHadronicCorrection;  // Fraction hadronic correction flag
   Bool_t       fFractionHadronicCorrection;       // Fraction hadronic correction 
 
-  
+  //Track-matching (mth)
+  void GetTracksPointingToCell(TArrayS *arr, Double_t eta, Double_t phi, Double_t res);
+
   // geometry info
   AliESDCaloCluster *fClus;           //! 
   Int_t fNDigitEmcal;                 //!

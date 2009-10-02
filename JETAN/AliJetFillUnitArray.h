@@ -15,6 +15,7 @@
 #include <TTask.h>
 
 #include <TArrayD.h>
+#include <TArrayI.h>
 #include <TRefArray.h>
 #include <TClonesArray.h>
 
@@ -46,6 +47,9 @@ class AliJetFillUnitArray : public TTask
   virtual void SetMomentumArray(TClonesArray* const momentumArray)     {fMomentumArray = momentumArray;}
   virtual void SetUnitArray(TClonesArray* const unitArray)             {fUnitArray = unitArray;}
   virtual void SetRefArray(TRefArray* const refArray)                  {fRefArray = refArray;}
+  virtual void SetReferences(TRefArray *refArray)                      {fRef = refArray;}
+  virtual void SetSignalFlag(TArrayI sflag)                            {fSignalFlag = sflag;}
+  virtual void SetCutFlag(TArrayI cflag)                               {fCutFlag = cflag;}
   virtual void SetTPCGrid(AliJetGrid* const grid)                      {fTPCGrid = grid;}
   virtual void SetEMCalGrid(AliJetGrid* const grid)                    {fEMCalGrid = grid;}
   virtual void SetProcId(Bool_t id)                              {fProcId = id;}
@@ -73,6 +77,8 @@ class AliJetFillUnitArray : public TTask
   virtual Int_t         GetMult() const {return 0;} // To be checked
   virtual Int_t         GetMultCut() const {return 0;} // To be checked
   virtual Bool_t        GetProcId() const {return fProcId;}
+  virtual TArrayI       GetSignalFlag() const {return fSignalFlag;}
+  virtual TArrayI       GetCutFlag() const {return fCutFlag;}
 
   // Other
   virtual void          Exec(Option_t* const /*option*/) {;}
@@ -90,6 +96,11 @@ class AliJetFillUnitArray : public TTask
   TClonesArray         *fMomentumArray;   // MomentumArray
   TClonesArray         *fUnitArray;       // UnitArray
   TRefArray            *fRefArray;        // UnitArray
+  TRefArray            *fRef;             // ref Array to aod tracks
+  TArrayI               fSignalFlag;      // to flag if a particle comes from pythia or
+                                          // from the underlying event
+  TArrayI               fCutFlag;         // to flag if a particle passed the pt cut or not
+ 
   Bool_t                fProcId;          // Bool_t for TProcessID synchronization  
   AliJetGrid           *fTPCGrid;         // Define filled grid
   AliJetGrid           *fEMCalGrid;       // Define filled grid

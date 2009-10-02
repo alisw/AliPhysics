@@ -28,6 +28,7 @@
 #include <TProcessID.h>
 
 #include "AliJetUnitArray.h"
+#include "AliJetHadronCorrectionv1.h"
 #include "AliJetAODFillUnitArrayTracks.h"
 
 // --- ROOT system ---
@@ -109,7 +110,7 @@ AliJetAODFillUnitArrayTracks& AliJetAODFillUnitArrayTracks::operator=(const AliJ
 //____________________________________________________________________________
 void AliJetAODFillUnitArrayTracks::InitParameters()
 {
-  fHadCorr        = 0;     // For hadron correction
+  //  fHadCorr        = 0;     // For hadron correction
   fNumUnits = fGeom->GetNCells();      // Number of towers in EMCAL
 
   fTPCGrid->GetAccParam(fNphi,fNeta,fPhiMin, 
@@ -146,6 +147,7 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
   
   // Set parameters
   InitParameters();
+  fRef->Clear();
 
   // get number of tracks in event (for the loop)
   Int_t goodTrack = 0;
@@ -157,8 +159,8 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
   TVector3 p3;
 
   nt = fAOD->GetNumberOfTracks();
-  if(fDebug>1) cout << "Number of Tracks in ESD : " << nt << endl;
- 
+  if(fDebug>1) cout << "Number of Tracks in AOD : " << nt << endl;
+
   // temporary storage of signal and pt cut flag
   Int_t* sflag  = new Int_t[nt];
   Int_t* cflag  = new Int_t[nt];
@@ -180,13 +182,7 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
   Int_t nTracksTpcCut     = 0;
   Int_t nTracksTpcOnlyCut = 0;
 
-//(not used ?)  Int_t nElements  = fTPCGrid->GetNEntries();
-//(not used ?)  Int_t nElements2 = fEMCalGrid->GetNEntries();
   fGrid = fTPCGrid->GetGridType();
-
-//(not used ?)  Int_t nEntries = fUnitArray->GetEntries();
-
-//(not used ?)  Int_t nRefEnt = fRefArray->GetEntries();
 
   //loop over tracks
     nmax = nt;  
@@ -201,8 +197,6 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
       p3.SetXYZ(mom[0],mom[1],mom[2]);
       pt = p3.Pt();
 
-//(not used ?)      Float_t mass = 0.;
-
       eta = p3.Eta();
       phi = ( (p3.Phi()) < 0) ? (p3.Phi()) + 2. * TMath::Pi() : (p3.Phi());
       if (status == 0) continue;
@@ -210,10 +204,13 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 
       if ( (eta > etaMax) || (eta < etaMin)) continue;           // checking eta cut
       
+      if (goodTrack == 0) new(fRef) TRefArray(TProcessID::GetProcessWithUID(track));
+    
       sflag[goodTrack]=0;
       if (TMath::Abs(track->GetLabel()) < 10000) sflag[goodTrack]=1;
       cflag[goodTrack]=0;
       if (pt > ptMin) cflag[goodTrack]=1;                       // pt cut
+      fRef->Add(track);
 
       if(fGrid==0)
 	{
@@ -291,9 +288,7 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 		  Int_t n1 = fGrid1->GetNEntries();
 		  Int_t n2 = fGrid2->GetNEntries();
 		  Int_t n3 = fGrid3->GetNEntries();
-//(not used ?)		  Int_t n4 = fGrid4->GetNEntries();
 		  
-		  //		  cout << "phimin0: " << phimin0 << ", phimax0: " << phimax0 << endl;
 		  if(phi >= phimin0 && phi <= phimax0){
 		    Int_t id0 = fGrid0->GetIndex(phi,eta)-1;
 		    AliJetUnitArray *uArray0 = (AliJetUnitArray*)fUnitArray->At(id0+fNumUnits+nElements);
@@ -518,15 +513,29 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 	      }
 
 	      // Do Hadron Correction
-	      // This is under construction !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	      // Parametrization to be added
-	      if (fApplyMIPCorrection != 0) 
+	      // For the moment I apply MIP correction if p >= 0.5 GeV/c
+	      // and only for tracks inside EMCal acceptance
+	      // End of if(fGrid==1) -> hadron correction for all tracks
+	      if (fApplyMIPCorrection != 0 && p3.Mag() >= 0.5) 
 		{ 
-//		  Float_t   hCEnergy = fHadCorr->GetEnergy(p3.Mag(), (Double_t)eta,0);
-//		  unitEnergy -= hCEnergy*TMath::Sin(2.0*TMath::ATan(TMath::Exp(-eta)));
+		  ((AliJetHadronCorrectionv1*)fHadCorr)->SetGeometry("EMCAL_COMPLETE",1.);
+
+		  Double_t etaOut = 0.;
+		  Double_t phiOut = 0.;
+		  ((AliJetHadronCorrectionv1*)fHadCorr)->TrackPositionEMCal(track,etaOut,phiOut);
+
+		  // One has to make sure that the track hits the calorimeter
+		  // We can then correct on average for these particles
+		  if((etaOut >= fEtaMin && etaOut <= fEtaMax) &&
+		     (phiOut >= fPhiMin && phiOut <= fPhiMax))// &&
+		    {
+		      Double_t   hCEnergy = (Double_t)fHadCorr->GetEnergy(p3.Mag(), (Double_t)eta,0);
+		      unitEnergy -= hCEnergy*TMath::Sin(2.0*TMath::ATan(TMath::Exp(-eta)));
+		    } 
 		} //end Hadron Correction loop
 
-	      uArray->SetUnitEnergy(unitEnergy + pt);
+	      if((unitEnergy + pt) > 0.) uArray->SetUnitEnergy(unitEnergy + pt);
+	      else uArray->SetUnitEnergy(0.);
 
 	      // Put a pt cut flag
 	      if(uArray->GetUnitEnergy()<ptMin){
@@ -596,6 +605,68 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 	      fRefArray->Add(uArray);
 	    }
 	  }
+
+	  /*
+	  // Do hadron correction
+          // In principle, the best thing to do as particles which
+          // eta,phi (at vertex) correspond to EMCal dead zone can deposit energy
+          // in the calorimeter as well as particles with eta,phi (at vertex)
+          // outside the EMCal acceptance
+	  cout << "Hadronic correction for all tracks goes here" << endl;
+	  
+	  // For the moment I apply MIP correction if p >= 0.5 GeV/c
+	  if (fApplyMIPCorrection != 0 && p3.Mag() >= 0.5) 
+	    { 
+	      ((AliJetHadronCorrectionv1*)fHadCorr)->SetGeometry("EMCAL_COMPLETE",1.);
+	      
+	      Double_t etaOut = 0.;
+	      Double_t phiOut = 0.;
+	      Int_t towerID2 = 0;
+	      Float_t unitEnergy = 0.;
+	      ((AliJetHadronCorrectionv1*)fHadCorr)->TrackPositionEMCal(track,etaOut,phiOut);
+	      
+	      // One has to make sure that the track hits the calorimeter
+	      // We can then correct on average for these particles
+	      if((etaOut >= fEtaMin && etaOut <= fEtaMax) &&
+		 (phiOut >= fPhiMin && phiOut <= fPhiMax))// &&
+		{
+		  Int_t towerID = 0;
+		  Int_t towerID2 = 0;
+		  fGeom->GetAbsCellIdFromEtaPhi(etaOut,phiOut,towerID2);
+		  if(towerID2==-1) continue;
+		  
+		  AliJetUnitArray *uArray = (AliJetUnitArray*)fUnitArray->At(towerID2);
+		  unitEnergy = uArray->GetUnitEnergy(); 
+		  Bool_t ok = kFALSE;
+		  Bool_t ref = kFALSE;
+		  if(unitEnergy==0.){
+		    nTracksEmcal++;
+		    ok=kTRUE;
+		    ref=kTRUE;
+		  }
+		  
+		  Double_t   hCEnergy = (Double_t)fHadCorr->GetEnergy(p3.Mag(), (Double_t)eta,0);
+		  unitEnergy -= hCEnergy*TMath::Sin(2.0*TMath::ATan(TMath::Exp(-eta)));
+		  
+		  // The energy in this unitarray can be negative
+		  // If the Digits are then filled, make sure the energy sum
+		  // is positive. If not, put the value to zero in AliJetAODUnitArrayEMCalDigit.
+		  // If they are not filled, put this value to zero
+		  uArray->SetUnitEnergy(unitEnergy);
+		  
+		  if(uArray->GetUnitEnergy()!=0. && ref){
+		    if(!fProcId){
+		      new(fRefArray) TRefArray(TProcessID::GetProcessWithUID(uArray));
+		      fProcId = kTRUE;
+		    }
+		    fRefArray->Add(uArray);
+		  }
+		}
+	      else cout << "Track out of EMCal acceptance" << endl; 
+	      
+	    } //end Hadron Correction loop
+	  */
+	  
 	} // end fGrid==1
 
       goodTrack++;
@@ -608,6 +679,9 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
       cout << "End of Tracks %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
       cout << "goodTracks: " << goodTrack << endl;
     }
+
+  fSignalFlag.Set(goodTrack,sflag);
+  fCutFlag.Set(goodTrack,cflag);
 
   delete[] sflag;
   delete[] cflag;

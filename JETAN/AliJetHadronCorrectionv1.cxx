@@ -15,7 +15,7 @@
 
 //===============================================================
 // To be modified for hadron correction using particle ID and track merging
-// Author : magali.estienne@ires.in2p3.fr
+// Author : magali.estienne@subatech.in2p3.fr
 //===============================================================
 // Author : Mark Horner (LBL/UCT)
 
@@ -24,37 +24,55 @@
 #include "TMath.h"
 
 // --- AliRoot header files ---
-//#include "../EMCAL/AliJetGeometry.h"
+#include "AliAODTrack.h"
 #include "AliJetDummyGeo.h"
 #include "AliJetHadronCorrectionv1.h"
+
+static Double_t etaGrid[HCPARAMETERS]={ 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.67};
 
 ClassImp(AliJetHadronCorrectionv1)
 
 Double_t AliJetHadronCorrectionv1::fgParLookup[HCPARAMETERS][HCPARAMETERSETS] = 
 {  
-    {-2.82271e-4 , -2.39954e-4},   
-    {2.50796e-2  , 2.07172e-2},   
-    {1.02861e-3  , 1.48576e-3},   
-    {2.11539e-2  , -1.38473-2},   
-    {2.27003e-2  , 2.78252e-2},   
-    {1.65078e-6  , 1.51821e-6}
+
+    {7.52624e-2  , 9.80119e-2   , 1.29086e-2},
+    {-2.07449e-2 , 2.22951e-2   , 8.31971e-2},
+    {-3.64861e-4 , -3.65680e-03 , -3.07148e-02},
+    {5.35252e-3  , 5.12234e-03  , 2.25559e-02},
+    {1.27106e-1  , 1.25248e-01  , 1.06352e-01},
+    {-6.72909e-2 , 9.78677e-01  , -1.35909e-01},
+    {-3.80660e-5 , -2.77522e-05 , -2.05218e-05},
+    {1.54855e-7  , 1.00604e-07  , 1.02481e-07}
 };
 
 AliJetHadronCorrectionv1* AliJetHadronCorrectionv1::fgHadrCorr = 0;
 
-void AliJetHadronCorrectionv1::SetGeometry(AliJetDummyGeo *geometry)
+AliJetHadronCorrectionv1::AliJetHadronCorrectionv1(const char *name,const char *title) 
+    :AliJetHadronCorrection(name, title), 
+     fSamplingFraction(0)
+{
+  fgHadrCorr = this;
+}
+
+AliJetHadronCorrectionv1*
+AliJetHadronCorrectionv1::Instance()
+{
+  // return pointer to global instance. Instantiate if needed
+  if (! fgHadrCorr) fgHadrCorr = new AliJetHadronCorrectionv1();
+  return fgHadrCorr;
+}
+
+void AliJetHadronCorrectionv1::SetGeometry2(AliJetDummyGeo *geometry)
 {
   // Initialise EMCAL geometry
     if (!geometry)
     {
 	SetParameters();
 	fSamplingFraction = geometry->GetSampling();
-	cout<<"Setting the sampling fraction to :"<<fSamplingFraction<<endl; 
     }else
     {
         SetParameters(geometry->GetName());
 	fSamplingFraction = geometry->GetSampling();
-	cout<<"Setting the sampling fraction to :"<<fSamplingFraction<<endl; 
     }
     return;	
 }	
@@ -72,80 +90,94 @@ Geometry : SHISH...
 ###########################################################################
 */
 
-
-
-	
 void AliJetHadronCorrectionv1::SetGeometry(TString name,Double_t fs)
 {
   // Initialise EMCAL geometry
-  cout << "Setting sampling fraction to "<<fSamplingFraction<<endl;	
-   fSamplingFraction = fs;	
+  fSamplingFraction = fs;	
+
+  /*
   if ( name == ""              ||
        name == "EMCAL_5655_21" ||
        name == "EMCALArch1a"   ||
        name == "EMCALArch1aN"  ||
        name == "G56_2_55_19"   ||
        name == "G56_2_55_19_104_14" )
-  { // set parameters to this hadron correction
-     cout<<"HC parameters!"<<endl;
-     for (Int_t i=0;i<6;i++)
-     {
-	   fPar[i] = fgParLookup[i][0];  
-	   cout <<fPar[i]<<endl;
-     }
-  }else if( name == "EMCAL_6564_21" ||  
-	    name == "G65_2_64_19" )
-  {	  
+    { // set parameters to this hadron correction
       cout<<"HC parameters!"<<endl;
-     for (Int_t i=0;i<6;i++)
-     {
-	   fPar[i] = fgParLookup[i][1];  
-	   cout <<fPar[i]<<endl;
-     }
-  }else
-  {
-    printf("Geometry not defined in hadron correction\n"); 
-  }	  
-	
+      for (Int_t i=0;i<6;i++)
+	{
+	  fPar[i] = fgParLookup[i][0];  
+	  cout <<fPar[i]<<endl;
+	}
+    }else if( name == "EMCAL_6564_21" ||  
+	      name == "G65_2_64_19" )
+    {	  
+      cout<<"HC parameters!"<<endl;
+      for (Int_t i=0;i<6;i++)
+	{
+	  fPar[i] = fgParLookup[i][1];  
+	  cout <<fPar[i]<<endl;
+	}
+    }else
+    {
+      printf("Geometry not defined in hadron correction\n"); 
+    }	  
+  */
+
 }	
 
-AliJetHadronCorrectionv1::AliJetHadronCorrectionv1() 
-    :AliJetHadronCorrection(), 
-     fSamplingFraction(0)
-{
-}
-	
-AliJetHadronCorrectionv1::AliJetHadronCorrectionv1(const char *name,const char *title) 
-    :AliJetHadronCorrection(name, title), 
-     fSamplingFraction(0)
-{
-  fgHadrCorr = this;
-}
-
-/*
-AliJetHadronCorrectionv1::AliJetHadronCorrectionv1(const char *name,const char *title,AliJetGeometry *geometry)
-{
-
-  fHadrCorr = this;
-  SetGeometry(geometry);  
-	
-}	
-*/
-
-AliJetHadronCorrectionv1*
-AliJetHadronCorrectionv1::Instance()
-{
-  // return pointer to global instance. Instantiate if needed
-  if (! fgHadrCorr) new AliJetHadronCorrectionv1();
-  return fgHadrCorr;
-}
-
-Double_t 
-AliJetHadronCorrectionv1::GetEnergy(Double_t pmom, Double_t eta, Int_t /*gid*/)
+// Double_t AliJetHadronCorrectionv1::GetEnergy(Double_t pmom, Double_t eta, Int_t /*gid*/)
+Double_t AliJetHadronCorrectionv1::GetEnergy(Double_t pmom, Double_t eta, Int_t gid)
 {
   // Return parametrised energy response
   Double_t etai = TMath::Abs(eta); 
-  Double_t value =  fPar[5]*pmom*pmom*pmom+ fPar[0]*pmom*pmom+fPar[1]*pmom +fPar[2]*pmom*etai +fPar[3]*etai + fPar[4];
+
+  if(etai < etaGrid[1]) {
+    for (Int_t i=0;i<8;i++)
+      {
+	fPar[i] = fgParLookup[i][1];  
+	//	cout << "fPar[" << i << "]: " << fPar[i] << endl;
+      }
+  } else if(etai >= etaGrid[1] && etai <= etaGrid[HCPARAMETERS-2]) {
+    for (Int_t i=0;i<8;i++)
+      {
+	fPar[i] = fgParLookup[i][0];  
+	//	cout << "fPar[" << i << "]: " << fPar[i] << endl;
+      }
+  } else {
+    for (Int_t i=0;i<8;i++)
+      {
+	fPar[i] = fgParLookup[i][2];  
+	//	cout << "fPar[" << i << "]: " << fPar[i] << endl;
+      }
+
+  }
+
+  Double_t value = fPar[5]*pow(etai,3) + 
+                   fPar[0]*pow(etai,2) + 
+                   fPar[1]*etai        +
+                   fPar[2]*etai*pmom   +
+                   fPar[3]*pmom        + 
+                   fPar[4]             +
+                   fPar[6]*pow(pmom,2) +
+                   fPar[7]*pow(pmom,3);
+
   return fSamplingFraction*value;
    
+}
+
+void AliJetHadronCorrectionv1::TrackPositionEMCal(AliAODTrack* track,Double_t &eta, Double_t &phi)
+{
+  AliAODPid*    pid   = (AliAODPid*) track->GetDetPid();
+    
+  if(pid) {
+    Double_t emcpos[3];
+    pid->GetEMCALPosition(emcpos);      
+    TVector3 tpos(emcpos[0],emcpos[1],emcpos[2]);
+    
+    eta = tpos.Eta();
+    phi = tpos.Phi();
+
+  }
+
 }

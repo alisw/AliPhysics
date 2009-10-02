@@ -138,18 +138,13 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
   fCluster = fReaderHeader->GetCluster();
 
   // Init parameters
-  InitParameters();
+  //  InitParameters();
 
-//(not used ?)  Int_t   nDigitTot      = 0;
   Int_t   goodDigit      = 0;
-//(not used ?)  Int_t   beg            = 0;
-//(not used ?)  Int_t   end            = 0; 
   Int_t   index          = 0;
-//(not used ?)  Int_t   count          = 0;
-
-//(not used ?)  Int_t nRefEnt = fRefArray->GetEntries();
 
   if(!fCluster) { // Keep all digit information
+
     // Loop over all cell information
     //------------------------------------------------------------------
     AliAODCaloCells &cells= *(fAOD->GetEMCALCells());
@@ -168,7 +163,7 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
 
       phiD = ((phiD < 0) ? phiD + 2.* TMath::Pi() : phiD);
       
-      Float_t digitEt = digitEn*TMath::Abs(TMath::Sin(EtaToTheta(etaD)));
+      //      Float_t digitEt = digitEn*TMath::Abs(TMath::Sin(EtaToTheta(etaD)));
 
       AliJetUnitArray *uArray = (AliJetUnitArray*)fUnitArray->At(digitID);
 
@@ -188,6 +183,46 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
 	fNDigitEmcal++;
 	ok = kTRUE;
       }
+
+      // Hadronic Correction
+      double correction=0;
+      if (fApplyFractionHadronicCorrection) {
+      
+        TArrayS* matched = new TArrayS();
+	GetTracksPointingToCell(matched, etaD, phiD,0.02);
+
+	double ptot = 0;
+	for(int itrack = 0; itrack <  matched->GetSize(); itrack++)
+	  {
+	    const short index = matched->At(itrack);
+	    if (index>-1)
+	      {	
+		AliAODTrack *track = fAOD->GetTrack(index);
+		ptot += track->P();
+		//printf("aod-track p=%f \n",track->P() );	
+	      }
+	  }
+	
+	correction = ptot * fFractionHadronicCorrection;
+
+	if (ptot>0 && fDebug>1 ) {
+	   printf("SUM of track momentum for this cell: p=%f \n", ptot);	
+	   printf("fractional correction=%f \n", fFractionHadronicCorrection);
+	   printf("TOTAL correction=%f \n", correction );
+	}
+	
+	delete matched;
+	
+      }//end hadronic correction
+
+      double enerCorr = digitEn;
+      if (correction >= enerCorr) enerCorr = 0;
+      else enerCorr -= correction;
+      if (correction>0 && fDebug>1) {
+        printf("AliJetAODFillUnitArrayEMCALDigits---Hadronic Correction: uncorrected E=%f, corrected E=%f \n", digitEn, enerCorr);
+      }
+
+      Float_t digitEt = enerCorr*TMath::Abs(TMath::Sin(EtaToTheta(etaD)));
 
       // Detector flag
       if(unitEnergy>0.)
@@ -224,26 +259,22 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
 
     // Get CaloCells
     AliAODCaloCells &cells= *(fAOD->GetEMCALCells());
-//(not used ?)    Int_t ncell = cells.GetNumberOfCells() ;
-//(not used ?)    Int_t type = cells.GetType();
 
     for(Int_t j = beg; j < nclus; j++) { // loop over clusters
       // Retrieve cluster from aod
       AliAODCaloCluster *fClus = (AliAODCaloCluster *) caloClusters->At(j) ;
 
       // Get the cluster info
-//(not used ?)      Float_t energy = fClus->E() ;
 
       fClus->GetPosition(pos) ;
       TVector3 vpos(pos[0],pos[1],pos[2]) ;
 
       Int_t     digMult = fClus->GetNCells() ;
       UShort_t *digID   = fClus->GetCellsAbsId() ;
-//(not used ?)      Double_t *digAmpFrac = fClus->GetCellsAmplitudeFraction() ;
       Int_t     trackIndex = -1;
       if(fClus->GetNTracksMatched()!=0) 
 	trackIndex = ((AliAODTrack*)fClus->GetTrackMatched(0))->GetID();
-//(not used ?)      Int_t     cLabel = fClus->GetLabel(0);
+
       // Do double-counted electron correction 
       if (fApplyElectronCorrection != 0 && trackIndex !=-1 )
 	{
@@ -254,7 +285,6 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
       // Get CaloCells of cluster and fill the unitArray
       for(Int_t i = 0; i < digMult ; i++) {
         Int_t    digitID      = digID[i]; // or clus->GetCellNumber(i) ;
-//(not used ?)        Double_t digitAmpFrac = digAmpFrac[i];
         Float_t  digitAmp     = cells.GetCellAmplitude(digitID) ;
 
         // Calibration for an energy in GeV
@@ -266,7 +296,45 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
 
         phiD = ((phiD < 0) ? phiD + 2.* TMath::Pi() : phiD);
 
-        Float_t digitEt = digitEn*TMath::Abs(TMath::Sin(EtaToTheta(etaD)));
+	// Hadronic Correction
+	double correction=0;
+	if (fApplyFractionHadronicCorrection) {
+      
+	  TArrayS* matched = new TArrayS();
+	  GetTracksPointingToCell(matched, etaD, phiD,0.02);
+	  
+	  double ptot = 0;
+	  for(int itrack = 0; itrack <  matched->GetSize(); itrack++)
+	    {
+	      const short index = matched->At(itrack);
+	      if (index>-1)
+		{	
+		  AliAODTrack *track = fAOD->GetTrack(index);
+		  ptot += track->P();
+		  //printf("aod-track p=%f \n",track->P() );	
+		}
+	    }
+	
+	  correction = ptot * fFractionHadronicCorrection;
+
+	  if (ptot>0 && fDebug>1 ) {
+	    printf("SUM of track momentum for this cell: p=%f \n", ptot);	
+	    printf("fractional correction=%f \n", fFractionHadronicCorrection);
+	    printf("TOTAL correction=%f \n", correction );
+	  }
+	
+	  delete matched;
+	
+	}//end hadronic correction
+	
+	double enerCorr = digitEn;
+	if (correction >= enerCorr) enerCorr = 0;
+	else enerCorr -= correction;
+	if (correction>0 && fDebug>1) {
+	  printf("AliJetAODFillUnitArrayEMCALDigits---Hadronic Correction: uncorrected E=%f, corrected E=%f \n", digitEn, enerCorr);
+	}
+
+	Float_t digitEt = enerCorr*TMath::Abs(TMath::Sin(EtaToTheta(etaD)));
 
 	AliJetUnitArray *uArray = (AliJetUnitArray*)fUnitArray->At(digitID);
 	if(uArray->GetUnitEnergy() == 0.) goodDigit++;
@@ -315,6 +383,43 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
       printf("End of digits %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
       printf("goodDigit : %d\n", goodDigit);
     }
+}
+
+//____________________________________________________________________________
+void AliJetAODFillUnitArrayEMCalDigits::GetTracksPointingToCell(TArrayS* array,Double_t eta, Double_t phi, Double_t cut)
+{
+ 
+  int size=0;
+  
+  for (Int_t itrk =  0; itrk <  fAOD->GetNumberOfTracks() ; itrk++) { //track loop
+  
+    AliAODTrack * track = (AliAODTrack*) fAOD->GetTrack(itrk) ;  
+    AliAODPid*    pid   = (AliAODPid*) track->GetDetPid();
+    
+    if(pid) {
+      Double_t emcpos[3];
+      pid->GetEMCALPosition(emcpos);      
+      TVector3 tpos(emcpos[0],emcpos[1],emcpos[2]);
+
+      Double_t deta = tpos.Eta() - eta;
+      Double_t dphi = tpos.Phi() - phi;
+
+      if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
+      if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
+
+      Double_t res = sqrt(dphi*dphi + deta*deta);
+      
+      if (res< cut) {
+        //add this track-index
+        size++;
+        array->Set( size );
+        array->AddAt( itrk, (size-1) ); 
+	if(fDebug>1) printf("MTH:: track %d matched cell at eta=%f , phi=%f \n", itrk, eta, phi);
+		      
+      }
+    }
+  }
+
 }
 
 /*

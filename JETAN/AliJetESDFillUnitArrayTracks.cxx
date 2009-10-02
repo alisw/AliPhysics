@@ -29,6 +29,7 @@
 
 // --- AliRoot header files ---
 #include "AliJetUnitArray.h"
+#include "AliJetHadronCorrectionv1.h"
 #include "AliJetESDFillUnitArrayTracks.h"
 
 // --- ROOT system ---
@@ -112,7 +113,7 @@ AliJetESDFillUnitArrayTracks& AliJetESDFillUnitArrayTracks::operator=(const AliJ
 //____________________________________________________________________________
 void AliJetESDFillUnitArrayTracks::InitParameters()
 {
-  fHadCorr        = 0;                 // For hadron correction
+  //  fHadCorr        = 0;                 // For hadron correction
   fNumUnits = fGeom->GetNCells();      // Number of towers in EMCAL
   cout << "In AliJetESDFillUnitArrayTracks:InitParameters(), Ncells : " << fNumUnits << endl;
 
@@ -149,6 +150,7 @@ void AliJetESDFillUnitArrayTracks::Exec(Option_t* const /*option*/)
   
   // Set parameters
   InitParameters();
+  //  fRef->Clear();
 
   // get number of tracks in event (for the loop)
   Int_t goodTrack = 0;
@@ -223,6 +225,7 @@ void AliJetESDFillUnitArrayTracks::Exec(Option_t* const /*option*/)
       if (TMath::Abs(track->GetLabel()) < 10000) sflag[goodTrack]=1;
       cflag[goodTrack]=0;
       if (pt > ptMin) cflag[goodTrack]=1;                       // pt cut
+      //      fRef->Add(track);
 
       if(fGrid==0)
 	{
@@ -527,14 +530,30 @@ void AliJetESDFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 
 	      // Do Hadron Correction
 	      // This is under construction !!!!!!!!!!!!!!!!!!!!!!!
-	      // Parametrization to be added
-	      if (fApplyMIPCorrection != 0) 
+	      // For the moment I apply MIP correction if p >= 0.5 GeV/c
+	      if (fApplyMIPCorrection != 0 && p3.Mag() >= 0.5) 
 		{ 
-//		  Float_t   hCEnergy = fHadCorr->GetEnergy(p3.Mag(), (Double_t)eta,0);
-//		  unitEnergy -= hCEnergy*TMath::Sin(2.0*TMath::ATan(TMath::Exp(-eta)));
+		  ((AliJetHadronCorrectionv1*)fHadCorr)->SetGeometry("EMCAL_COMPLETE",1.);
+
+		  // Get track position at the outer part of the reconstruction ~ TRD
+		  Double_t phiOut = track->GetOuterParam()->Phi();
+		  Double_t etaOut = track->GetOuterParam()->Eta();
+
+		  // If the track in the outer part of the TPC/TDR ? is inside 
+		  // the calorimeter, it can deposit part of its energy
+		  // We can then correct on average for these particles
+		  if((etaOut >= fEtaMin && etaOut <= fEtaMax) &&
+		     (phiOut >= fPhiMin && phiOut <= fPhiMax))// &&
+		    {
+		      Double_t   hCEnergy = (Double_t)fHadCorr->GetEnergy(p3.Mag(), (Double_t)eta,0);
+		      unitEnergy -= hCEnergy*TMath::Sin(2.0*TMath::ATan(TMath::Exp(-eta)));
+		    }
 		} //end Hadron Correction loop
 
-	      uArray->SetUnitEnergy(unitEnergy + pt);
+	      cout << "unitEnergy + pt = " << unitEnergy << " + " << pt << " = " << unitEnergy + pt << endl;
+
+	      if((unitEnergy + pt) > 0.) uArray->SetUnitEnergy(unitEnergy + pt);
+	      else uArray->SetUnitEnergy(0.);
 
 	      // Put a pt cut flag
 	      if(uArray->GetUnitEnergy()<ptMin){
@@ -618,6 +637,9 @@ void AliJetESDFillUnitArrayTracks::Exec(Option_t* const /*option*/)
       cout << "End of Tracks %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
       cout << "goodTracks: " << goodTrack << endl;
     }
+
+  //  fSignalFlag.Set(goodTrack,sflag);
+  //  fCutFlag.Set(goodTrack,cflag);
 
   delete[] sflag;
   delete[] cflag;

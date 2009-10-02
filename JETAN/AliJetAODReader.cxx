@@ -40,7 +40,7 @@
 #include "AliJetDummyGeo.h"
 #include "AliJetAODFillUnitArrayTracks.h"
 #include "AliJetAODFillUnitArrayEMCalDigits.h"
-#include "AliJetHadronCorrection.h"
+#include "AliJetHadronCorrectionv1.h"
 #include "AliJetUnitArray.h"
 
 ClassImp(AliJetAODReader)
@@ -424,7 +424,7 @@ void AliJetAODReader::CreateTasks(TChain* tree)
   fFillUAFromEMCalDigits->SetApplyFractionHadronicCorrection(fApplyFractionHadronicCorrection);
   fFillUAFromEMCalDigits->SetFractionHadronicCorrection(fFractionHadronicCorrection);
   fFillUAFromEMCalDigits->SetApplyElectronCorrection(fApplyElectronCorrection);
-
+  // Add the task to global task
   fFillUnitArray->Add(fFillUAFromTracks);
   fFillUnitArray->Add(fFillUAFromEMCalDigits);
   fFillUAFromTracks->SetActive(kFALSE);
@@ -450,6 +450,7 @@ Bool_t AliJetAODReader::ExecTasks(Bool_t procid, TRefArray* refArray)
 
   // clear momentum array
   ClearArray();
+  fRef->Clear();
 
   fDebug = fReaderHeader->GetDebug();
   fOpt = fReaderHeader->GetDetector();
@@ -464,6 +465,9 @@ Bool_t AliJetAODReader::ExecTasks(Bool_t procid, TRefArray* refArray)
     fFillUAFromTracks->SetActive(kTRUE);
     fFillUAFromTracks->SetUnitArray(fUnitArray);
     fFillUAFromTracks->SetRefArray(fRefArray);
+    fFillUAFromTracks->SetReferences(fRef);
+    fFillUAFromTracks->SetSignalFlag(fSignalFlag);
+    fFillUAFromTracks->SetCutFlag(fCutFlag);
     fFillUAFromTracks->SetProcId(fProcId);
     //    fFillUAFromTracks->ExecuteTask("tpc"); // => Temporarily changed
     fFillUAFromTracks->Exec("tpc");
@@ -471,6 +475,8 @@ Bool_t AliJetAODReader::ExecTasks(Bool_t procid, TRefArray* refArray)
       fNumCandidate = fFillUAFromTracks->GetMult();
       fNumCandidateCut = fFillUAFromTracks->GetMultCut();
     }
+    fSignalFlag = fFillUAFromTracks->GetSignalFlag();
+    fCutFlag = fFillUAFromTracks->GetCutFlag();
   }
 
   // Digits only or Digits+TPC
@@ -528,13 +534,6 @@ void AliJetAODReader::InitParameters()
 {
   // Initialise parameters
   fOpt = fReaderHeader->GetDetector();
-  //  fHCorrection    = 0;          // For hadron correction
-  fHadCorr        = 0;          // For hadron correction
-  if(fEFlag==kFALSE){
-    if(fOpt==0 || fOpt==1)
-      fECorrection    = 0;        // For electron correction
-    else fECorrection = 1;        // For electron correction
-  }
   fNumUnits       = fGeom->GetNCells();      // Number of cells in EMCAL
   if(fDebug>1) printf("\n EMCal parameters initiated ! \n");
 }

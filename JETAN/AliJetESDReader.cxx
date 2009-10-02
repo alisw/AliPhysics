@@ -47,6 +47,7 @@
 #include "AliJetDummyGeo.h"
 #include "AliJetESDFillUnitArrayTracks.h"
 #include "AliJetESDFillUnitArrayEMCalDigits.h"
+#include "AliJetHadronCorrectionv1.h"
 #include "AliJetUnitArray.h"
 #include "AliAnalysisTask.h"
 
@@ -329,7 +330,7 @@ void AliJetESDReader::CreateTasks(TChain* tree)
   fFillUAFromEMCalDigits->SetEMCalGrid(fEmcalGrid);
   fFillUAFromEMCalDigits->SetApplyFractionHadronicCorrection(fApplyFractionHadronicCorrection);
   fFillUAFromEMCalDigits->SetFractionHadronicCorrection(fFractionHadronicCorrection);
-  fFillUAFromEMCalDigits->SetApplyElectronCorrection(fApplyElectronCorrection);
+   fFillUAFromEMCalDigits->SetApplyElectronCorrection(fApplyElectronCorrection);
   // Add the task to global task
   fFillUnitArray->Add(fFillUAFromTracks);
   fFillUnitArray->Add(fFillUAFromEMCalDigits);
@@ -430,7 +431,7 @@ void AliJetESDReader::InitParameters()
 {
   // Initialise parameters
   fOpt = fReaderHeader->GetDetector();
-  fHadCorr        = 0;          // For hadron correction
+  //  fHadCorr        = 0;          // For hadron correction
   if(fEFlag==kFALSE){
     if(fOpt==0 || fOpt==1)  
       fECorrection    = 0;        // For electron correction

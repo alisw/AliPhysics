@@ -22,8 +22,7 @@ class AliJetHadronCorrectionv0: public AliJetHadronCorrection {
   public:
   static  AliJetHadronCorrectionv0* Instance();
   virtual Double_t GetEnergy(Double_t pmom, Double_t eta, Int_t gid); 
-  Double_t GetEnergy(Double_t pmom, Double_t eta) 
-  {return GetEnergy(pmom,eta,7);}
+  Double_t GetEnergy(Double_t pmom, Double_t eta){return GetEnergy(pmom,eta,7);}
 
   virtual ~AliJetHadronCorrectionv0() {}
 

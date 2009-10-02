@@ -613,6 +613,14 @@ void AliUA1JetFinderV2::FindJets()
       multJetOk[p]   = multJet[idx[p]];
     }
 
+  TRefArray *refs = 0;
+  Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
+  if (fromAod) refs = fReader->GetReferences();
+  Int_t nTracks = 0;
+  if (fromAod) nTracks = ((TRefArray*)refs)->GetEntries();
+  Int_t* trackinjet     = new Int_t[nTracks];
+  for(Int_t it=0; it<nTracks; it++) trackinjet[it]=-1;
+
   for(Int_t kj=0; kj<nj; kj++)
     {
       if ((etaJetOk[kj] > (header->GetJetEtaMax())) ||
@@ -627,6 +635,22 @@ void AliUA1JetFinderV2::FindJets()
       AliAODJet jet(px, py, pz, en);
       jet.Print("");
       
+      if (fromAod){
+	for(Int_t jpart = 0; jpart < nTracks; jpart++) { // loop for all particles in array
+	  Float_t deta = ((AliAODTrack*)refs->At(jpart))->Eta() - etaJetOk[kj];
+	  Float_t dphi = ((AliAODTrack*)refs->At(jpart))->Phi() - phiJetOk[kj];
+	  if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
+	  if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
+      
+	  Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
+	  if(dr <= header->GetRadius() && fReader->GetCutFlag(jpart) == 1) // particles inside this cone
+	    if(trackinjet[jpart]==-1) trackinjet[jpart] = kj;
+	    else if(fDebug>10) printf("The track already belongs to jet %d \n",trackinjet[jpart]);
+	  if(trackinjet[jpart]==kj)
+	    jet.AddTrack(refs->At(jpart));  // check if the particle belongs to the jet and add the ref
+	}
+      }
+
       AddJet(jet);
       
       idxjets[nselectj] = kj;
@@ -701,6 +725,7 @@ void AliUA1JetFinderV2::FindJets()
   delete ncellsJetOk;
   delete multJetOk;
   //--------------------------
+  delete trackinjet;
   delete idxjets;
   delete percentage;
   delete ncells;
