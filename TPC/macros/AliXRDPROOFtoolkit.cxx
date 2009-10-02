@@ -38,6 +38,7 @@
 
 
 #include <TTree.h>
+#include <TEnv.h>
 #include <TString.h>
 #include <TObjArray.h>
 #include <TObjString.h>
@@ -648,7 +649,8 @@ Bool_t  AliXRDPROOFtoolkit::FilterList(const char*inputList, const char*fileList
   // "%s.Good a,d file with bad entries %s.Bad
   //EXAMPLE:
   // AliXRDPROOFtoolkit::FilterList("ppgrid2.txt","AliESDs.root esdTree AliESDfriends.root * Kinematics.root *",1) 
-
+  gEnv->SetValue("TFile.Recover", 0);
+  //
   fstream finput;
   finput.open(inputList, ios_base::in);
   fstream focGood;
@@ -669,6 +671,10 @@ Bool_t  AliXRDPROOFtoolkit::FilterList(const char*inputList, const char*fileList
   while(finput.good()) {
     finput >> currentFile;
     if (!currentFile.Contains("root")) continue; // protection
+    if (currentFile.Contains("alien://")){
+      focGood<<currentFile<<endl;
+      continue;
+    }
     Bool_t isZip = currentFile.Contains("#");
     const char * dirname = gSystem->DirName(currentFile.Data());
     Int_t status = 0;
@@ -744,6 +750,10 @@ Bool_t  AliXRDPROOFtoolkit::FilterListZip(const char*inputList, const char*fileL
   while(finput.good()) {
     finput >> currentFile;
     if (!currentFile.Contains("root")) continue; // protection
+    if (currentFile.Contains("alien://")){
+      focGood<<currentFile<<endl;
+      continue;
+    }
     Bool_t isZip = currentFile.Contains("#");
     const char * dirname = gSystem->DirName(currentFile.Data());
     const char * fileName   =  gSystem->BaseName(currentFile.Data());
