@@ -26,12 +26,8 @@ void MUON_displaySimu(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
   if (!AliMpSegmentation::Instance()) AliMpCDB::LoadMpSegmentation();
   if (!AliMpDDLStore::Instance())     AliMpCDB::LoadDDLStore();
 
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
-    printf("Loading field map...\n");
-    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
-  }
   // set the magnetic field for track extrapolations
+  AliEveEventManager::AssertMagField();
   AliMUONTrackExtrap::SetField();
 
   TTree* dt = 0;
