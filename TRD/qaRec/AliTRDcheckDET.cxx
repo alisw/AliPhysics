@@ -2,6 +2,7 @@
 #include <TCanvas.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <TH1I.h>
 #include <TF1.h>
 #include <TGaxis.h>
 #include <TGraph.h>
@@ -207,6 +208,12 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
   case kNtracksSector:
     if(!MakeBarPlot((TH1F*)fContainer->FindObject("hNtrksSector"), kGreen)) break;
     return kTRUE;
+  case kTrackStatus:
+    ((TH1I *)fContainer->FindObject("hTrackStatus"))->Draw("c");
+    return kTRUE;
+  case kTrackletStatus:
+    ((TH2S *)fContainer->FindObject("hTrackletStatus"))->Draw("colz");
+    return kTRUE;
   case kChi2:
     MakePlotChi2();
     return kTRUE;
@@ -247,7 +254,8 @@ TObjArray *AliTRDcheckDET::Histos(){
   //fContainer->SetOwner(kTRUE);
 
   // Register Histograms
-  TH1 * h = 0x0;
+  TH1 * h = NULL;
+  TAxis *axis = NULL;
   if(!(h = (TH1F *)gROOT->FindObject("hNcls"))){
     h = new TH1F("hNcls", "N_{clusters} / track", 181, -0.5, 180.5);
     h->GetXaxis()->SetTitle("N_{clusters}");
@@ -312,6 +320,33 @@ TObjArray *AliTRDcheckDET::Histos(){
   } else h->Reset();
   fContainer->AddAt(h, kNtracksSector);
 
+  if(!(h = (TH1I *)gROOT->FindObject("hTrackStatus"))){
+    h = new TH1I("hTrackStatus", "Track Status", 7,0,7);
+    axis = h->GetXaxis();
+    axis->SetBinLabel(axis->GetFirst() + 0, "OK");
+    axis->SetBinLabel(axis->GetFirst() + 1, "PROL");
+    axis->SetBinLabel(axis->GetFirst() + 2, "PROP");
+    axis->SetBinLabel(axis->GetFirst() + 3, "ADJ");
+    axis->SetBinLabel(axis->GetFirst() + 4, "SNP");
+    axis->SetBinLabel(axis->GetFirst() + 5, "TLIN");
+    axis->SetBinLabel(axis->GetFirst() + 6, "UP");
+  }
+  fContainer->AddAt(h, kTrackStatus);
+
+  if(!(h = (TH2S *)gROOT->FindObject("hTrackletStatus"))){
+    h = new TH2S("hTrackletStatus", "Tracklet status", 6,0,6,8,0,8);
+    axis = h->GetYaxis();
+    axis->SetBinLabel(axis->GetFirst() + 0, "OK");
+    axis->SetBinLabel(axis->GetFirst() + 1, "Geom");
+    axis->SetBinLabel(axis->GetFirst() + 2, "Boun");
+    axis->SetBinLabel(axis->GetFirst() + 3, "NoCl");
+    axis->SetBinLabel(axis->GetFirst() + 4, "NoAttach");
+    axis->SetBinLabel(axis->GetFirst() + 5, "NoClTr");
+    axis->SetBinLabel(axis->GetFirst() + 6, "NoFit");
+    axis->SetBinLabel(axis->GetFirst() + 7, "Chi2");
+  }
+  fContainer->AddAt(h, kTrackletStatus);
+
   // <PH> histos
   TObjArray *arr = new TObjArray(2);
   arr->SetOwner(kTRUE);  arr->SetName("<PH>");
@@ -374,6 +409,48 @@ TObjArray *AliTRDcheckDET::Histos(){
 /*
 * Plotting Functions
 */
+
+//_______________________________________________________
+TH1 *AliTRDcheckDET::PlotTrackStatus(const AliTRDtrackV1 *track){
+  //
+  // Plot the track status
+  //
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
+  }
+  TH1 *h = 0x0;
+  if(!(h = dynamic_cast<TH1I *>(fContainer->At(kTrackStatus)))){
+    AliWarning("No Histogram defined.");
+    return 0x0;
+  }
+  h->Fill(fTrack->GetStatusTRD());
+  return h;
+}
+
+//_______________________________________________________
+TH1 *AliTRDcheckDET::PlotTrackletStatus(const AliTRDtrackV1 *track){
+  //
+  // Plot the track status
+  //
+  if(track) fTrack = track;
+  if(!fTrack){
+    AliWarning("No Track defined.");
+    return 0x0;
+  }
+  TH1 *h = 0x0;
+  if(!(h = dynamic_cast<TH2S *>(fContainer->At(kTrackletStatus)))){
+    AliWarning("No Histogram defined.");
+    return 0x0;
+  }
+  UChar_t status = 0;
+  for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
+    status = fTrack->GetStatusTRD(il);
+    h->Fill(il, status);
+  }
+  return h;
+}
 
 //_______________________________________________________
 TH1 *AliTRDcheckDET::PlotNClustersTracklet(const AliTRDtrackV1 *track){

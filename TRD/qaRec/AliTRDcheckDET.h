@@ -28,13 +28,15 @@ public:
     kNtrackletsFindable = 6,
     kNtracksEvent       = 7,
     kNtracksSector      = 8,
-    kPH                 = 9,
-    kChi2               = 10,
-    kChargeCluster      = 11,
-    kChargeTracklet     = 12,
-    kNeventsTrigger     = 13,
-    kNeventsTriggerTracks=14,
-    kTriggerPurity      = 15
+    kTrackStatus        = 9,
+    kTrackletStatus     = 10,
+    kPH                 = 11,
+    kChi2               = 12,
+    kChargeCluster      = 13,
+    kChargeTracklet     = 14,
+    kNeventsTrigger     = 15,
+    kNeventsTriggerTracks=16,
+    kTriggerPurity      = 17
   };
 
   AliTRDcheckDET();
@@ -48,6 +50,8 @@ public:
   virtual TObjArray *Histos();
 
   // Plotting Functions:
+  TH1 *PlotTrackStatus(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotTrackletStatus(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotNClustersTracklet(const AliTRDtrackV1 *t = 0x0);
   TH1 *PlotNClustersTrack(const AliTRDtrackV1 *t = 0x0);
   TH1 *PlotNTrackletsTrack(const AliTRDtrackV1 *t = 0x0);
