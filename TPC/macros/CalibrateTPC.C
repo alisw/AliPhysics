@@ -412,8 +412,10 @@ void SetupCalibTask(TObject* task1){
 void CalibrateTPC(Int_t first, Int_t last, Int_t run, const char*closeSE="ALICE::GSI::SE"){
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
+  gEnv->SetValue("TFile.Recover", 0);  // dont try to recover anything
   gSystem->Setenv("alien_CLOSE_SE",closeSE);
   TGrid * alien =     TGrid::Connect("alien://",0,0,"t"); 
+  gSystem->Exec("touch nonOK");
   gSystem->Exec("rm -f isOK");
   gROOT->Macro(Form("ConfigOCDB.C\(%d\)",run));
   //
@@ -435,5 +437,5 @@ void CalibrateTPC(Int_t first, Int_t last, Int_t run, const char*closeSE="ALICE:
   mgr->SetDebugLevel(1);
   mgr->StartAnalysis("local",chain);
   gSystem->Exec("touch isOK");
-  
+  gSystem->Exec("rm -f nonOK");
 }
