@@ -706,7 +706,7 @@ int AliHLTGlobalTriggerComponent::LoadTriggerClass(
   TString compiler = gSystem->GetBuildCompilerVersion();
   if (compiler.Contains("gcc") or compiler.Contains("icc"))
   {
-    TString includePath = "-I${ALICE_ROOT}/include -I${ALICE_ROOT}/HLT/BASE -I${ALICE_ROOT}/HLT/trigger";
+    TString includePath = "-I${ALIHLT_TOPDIR}/BASE -I${ALIHLT_TOPDIR}/trigger -I${ALICE_ROOT}/include -I${ALICE_ROOT}/HLT/BASE -I${ALICE_ROOT}/HLT/trigger";
     // Add any include paths that were specified on the command line.
     for (Int_t i = 0; i < includePaths.GetEntriesFast(); i++)
     {
