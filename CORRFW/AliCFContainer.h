@@ -82,11 +82,13 @@ class AliCFContainer : public AliCFFrame
   virtual TH1D* Project( Int_t ivar, Int_t istep) const;
   virtual TH2D* Project( Int_t ivar1, Int_t ivar2, Int_t istep) const;
   virtual TH3D* Project( Int_t ivar1, Int_t ivar2,Int_t ivar3, Int_t istep) const;
-  virtual TH1D* ShowSlice( Int_t ivar, Double_t *varMin, Double_t *varMax, Int_t istep) const;
-  virtual TH2D* ShowSlice( Int_t ivar1, Int_t ivar2, Double_t *varMin, Double_t *varMax, Int_t istep) const;
-  virtual TH3D* ShowSlice( Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t *varMin, Double_t *varMax, Int_t istep) const;
-  virtual AliCFContainer*  MakeSlice (Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax) const ;
-  virtual AliCFContainer*  MakeSlice (Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Int_t nStep, const Int_t* steps) const ;
+
+  virtual TH1D* ShowSlice(Int_t ivar, const Double_t *varMin, const Double_t *varMax, Int_t istep, Bool_t useBins=0) const ;
+  virtual TH2D* ShowSlice(Int_t ivar1, Int_t ivar2, const Double_t *varMin, const Double_t *varMax, Int_t istep, Bool_t useBins=0) const ;
+  virtual TH3D* ShowSlice(Int_t ivar1, Int_t ivar2, Int_t ivar3, const Double_t *varMin, const Double_t *varMax, Int_t istep, Bool_t useBins=0) const ;
+  virtual AliCFContainer* MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Bool_t useBins=0) const ;
+  virtual AliCFContainer* MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Int_t nStep, const Int_t* steps, Bool_t useBins=0) const ;
+
   virtual void  SetRangeUser(Int_t ivar, Double_t varMin, Double_t varMax, Int_t istep) ;
   virtual void  SetRangeUser(Double_t* varMin, Double_t* varMax, Int_t istep) ;
   virtual void  SetGrid(Int_t step, AliCFGridSparse* grid) {fGrid[step]=grid;}

@@ -72,10 +72,10 @@ class AliCFGridSparse : public AliCFFrame
   virtual TH1D*            Project( Int_t ivar) const;
   virtual TH2D*            Project( Int_t ivar1, Int_t ivar2) const;
   virtual TH3D*            Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const;
-  virtual AliCFGridSparse* Project(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax) const ;
-  virtual TH1D*            Slice(Int_t ivar, const Double_t* varMin, const Double_t* varMax) const ; 
-  virtual TH2D*            Slice(Int_t ivar1, Int_t ivar2, const Double_t *varMin, const Double_t *varMax) const ;
-  virtual TH3D*            Slice(Int_t ivar1, Int_t ivar2, Int_t ivar3, const Double_t *varMin, const Double_t *varMax) const ;
+  virtual AliCFGridSparse* Project(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Bool_t useBins=0) const ;
+  virtual TH1D*            Slice(Int_t ivar, const Double_t* varMin, const Double_t* varMax, Bool_t useBins=0) const ; 
+  virtual TH2D*            Slice(Int_t ivar1, Int_t ivar2, const Double_t *varMin, const Double_t *varMax, Bool_t useBins=0) const ;
+  virtual TH3D*            Slice(Int_t ivar1, Int_t ivar2, Int_t ivar3, const Double_t *varMin, const Double_t *varMax, Bool_t useBins=0) const ;
   virtual void             SetRangeUser(Int_t iVar, Double_t varMin, Double_t varMax) ;
   virtual void             SetRangeUser(const Double_t* varMin, const Double_t* varMax) ;
   virtual void             UseAxisRange(Bool_t b) const ;

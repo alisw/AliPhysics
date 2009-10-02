@@ -33,8 +33,8 @@ class AliCFEffGrid : public AliCFGridSparse
   virtual TH1D* Project( Int_t ivar) const;
   virtual TH2D* Project( Int_t ivar1, Int_t ivar2) const;
   virtual TH3D* Project( Int_t ivar1, Int_t ivar2,Int_t ivar3) const;
-  virtual AliCFEffGrid* Project(Int_t,const Int_t*, const Double_t*, const Double_t*) const {AliWarning("Function not to be used"); return 0x0;}
-  virtual AliCFEffGrid* MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Int_t numStep, Int_t denStep) const;
+  virtual AliCFEffGrid* Project(Int_t,const Int_t*, const Double_t*, const Double_t*,Bool_t) const {AliWarning("Function not to be used"); return 0x0;}
+  virtual AliCFEffGrid* MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Int_t numStep, Int_t denStep, Bool_t useBins=0) const;
 
   //Efficiency calculation
   virtual void  CalculateEfficiency(Int_t istep1, Int_t istep2, Option_t *option ="B" /*binomial*/);
@@ -42,10 +42,9 @@ class AliCFEffGrid : public AliCFGridSparse
   virtual AliCFGridSparse*  GetDen() const {return fContainer->GetGrid(fSelDen);};
   virtual void  SetContainer(const AliCFContainer &c) {fContainer=&c;};
 
-/*   //basic operations */
-/*   virtual void Copy(TObject& eff) const; */
- 
-  
+  //basic operations
+  /*   virtual void Copy(TObject& eff) const; */
+
  private:
   const AliCFContainer *fContainer; //pointer to the input AliContainer
   Int_t fSelNum;                    //numerator selection step

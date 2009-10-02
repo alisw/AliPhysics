@@ -296,14 +296,15 @@ TH3D *AliCFEffGrid::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   return h;
 } 
 //___________________________________________________________________
-AliCFEffGrid* AliCFEffGrid::MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Int_t numStep, Int_t denStep) const {
+AliCFEffGrid* AliCFEffGrid::MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Int_t numStep, Int_t denStep, Bool_t useBins) const {
   //
   // Makes a slice along the "nVars" variables defined in the array "vars[nVars]" for all the container steps.
   // The ranges of ALL the container variables must be defined in the array varMin[fNVar] and varMax[fNVar].
-  // This function returns the effiency relative to this new 'sliced' container, between steps defined in numStep and denStep
+  // This function returns the efficiency relative to this new 'sliced' container, between steps defined in numStep and denStep
+  // If useBins=true, varMin and varMax are taken as bin numbers
   //
   
-  AliCFContainer* cont = fContainer->MakeSlice(nVars,vars,varMin,varMax);
+  AliCFContainer* cont = fContainer->MakeSlice(nVars,vars,varMin,varMax,useBins);
   AliCFEffGrid  * eff  = new AliCFEffGrid(Form("%s_sliced",GetName()), Form("%s_sliced",GetTitle()), *cont);
   eff->CalculateEfficiency(numStep,denStep);
   return eff;

@@ -161,11 +161,12 @@ TH3D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
 }
 
 //___________________________________________________________________
-AliCFGridSparse* AliCFGridSparse::Project(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax) const
+AliCFGridSparse* AliCFGridSparse::Project(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Bool_t useBins) const
 {
   //
   // projects the grid on the nVars dimensions defined in vars.
   // axis ranges can be defined in arrays varMin, varMax
+  // If useBins=true, varMin and varMax are taken as bin numbers
   //
 
   // binning for new grid
@@ -181,7 +182,8 @@ AliCFGridSparse* AliCFGridSparse::Project(Int_t nVars, const Int_t* vars, const 
   THnSparse* clone = ((THnSparse*)fData->Clone());
   if (varMin && varMax) {
     for (Int_t iAxis=0; iAxis<GetNVar(); iAxis++) {
-      clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+      if (useBins)  clone->GetAxis(iAxis)->SetRange((Int_t)varMin[iAxis],(Int_t)varMax[iAxis]);
+      else          clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
     }
   }
   else AliInfo("Keeping same axis ranges");
@@ -764,49 +766,52 @@ void AliCFGridSparse::Copy(TObject& c) const
 }
 
 //____________________________________________________________________
-TH1D* AliCFGridSparse::Slice(Int_t iVar, const Double_t *varMin, const Double_t *varMax) const
+TH1D* AliCFGridSparse::Slice(Int_t iVar, const Double_t *varMin, const Double_t *varMax, Bool_t useBins) const
 {
   //
   // return a slice (1D-projection) on variable iVar while axis ranges are defined with varMin,varMax
   // arrays varMin and varMax contain the min and max values of each variable.
   // therefore varMin and varMax must have their dimensions equal to GetNVar()
-  //
+  // If useBins=true, varMin and varMax are taken as bin numbers
   
   THnSparse* clone = (THnSparse*)fData->Clone();
   for (Int_t iAxis=0; iAxis<GetNVar(); iAxis++) {
-    clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+    if (useBins)  clone->GetAxis(iAxis)->SetRange((Int_t)varMin[iAxis],(Int_t)varMax[iAxis]);
+    else          clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
   }
   return clone->Projection(iVar);
 }
 
 //____________________________________________________________________
-TH2D* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, const Double_t *varMin, const Double_t *varMax) const
+TH2D* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, const Double_t *varMin, const Double_t *varMax, Bool_t useBins) const
 {
   //
   // return a slice (2D-projection) on variables iVar1 and iVar2 while axis ranges are defined with varMin,varMax
   // arrays varMin and varMax contain the min and max values of each variable.
   // therefore varMin and varMax must have their dimensions equal to GetNVar()
-  //
+  // If useBins=true, varMin and varMax are taken as bin numbers
   
   THnSparse* clone = (THnSparse*)fData->Clone();
   for (Int_t iAxis=0; iAxis<GetNVar(); iAxis++) {
-    clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+    if (useBins)  clone->GetAxis(iAxis)->SetRange((Int_t)varMin[iAxis],(Int_t)varMax[iAxis]);
+    else          clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
   }
   return clone->Projection(iVar1,iVar2);
 }
 
 //____________________________________________________________________
-TH3D* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, Int_t iVar3, const Double_t *varMin, const Double_t *varMax) const
+TH3D* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, Int_t iVar3, const Double_t *varMin, const Double_t *varMax, Bool_t useBins) const
 {
   //
   // return a slice (3D-projection) on variables iVar1, iVar2 and iVar3 while axis ranges are defined with varMin,varMax
   // arrays varMin and varMax contain the min and max values of each variable.
   // therefore varMin and varMax must have their dimensions equal to GetNVar()
-  //
+  // If useBins=true, varMin and varMax are taken as bin numbers
 
   THnSparse* clone = (THnSparse*)fData->Clone();
   for (Int_t iAxis=0; iAxis<GetNVar(); iAxis++) {
-    clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
+    if (useBins)  clone->GetAxis(iAxis)->SetRange((Int_t)varMin[iAxis],(Int_t)varMax[iAxis]);
+    else          clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
   }
   return clone->Projection(iVar1,iVar2,iVar3);
 }

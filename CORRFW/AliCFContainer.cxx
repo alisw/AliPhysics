@@ -182,10 +182,11 @@ TH3D *AliCFContainer::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3, Int_t istep
   return fGrid[istep]->Project(ivar1,ivar2,ivar3);
 }
 //___________________________________________________________________
-TH1D *AliCFContainer::ShowSlice(Int_t ivar, Double_t *varMin, Double_t* varMax, Int_t istep) const
+TH1D *AliCFContainer::ShowSlice(Int_t ivar, const Double_t *varMin, const Double_t* varMax, Int_t istep, Bool_t useBins) const
 {
   //
   // Make a slice along variable ivar at selection level istep in range [varMin,varMax]
+  // If useBins=true, varMin and varMax are taken as bin numbers
   //
   if(istep >= fNStep || istep < 0){
     AliError("Non-existent selection step, return NULL");
@@ -195,13 +196,14 @@ TH1D *AliCFContainer::ShowSlice(Int_t ivar, Double_t *varMin, Double_t* varMax, 
     AliError("Non-existent variable, return NULL");
     return 0x0;
   }
-  return (TH1D*)fGrid[istep]->Slice(ivar,varMin,varMax);
+  return (TH1D*)fGrid[istep]->Slice(ivar,varMin,varMax,useBins);
 }
 //___________________________________________________________________
-TH2D *AliCFContainer::ShowSlice(Int_t ivar1, Int_t ivar2, Double_t *varMin, Double_t* varMax, Int_t istep) const
+TH2D *AliCFContainer::ShowSlice(Int_t ivar1, Int_t ivar2, const Double_t *varMin, const Double_t* varMax, Int_t istep, Bool_t useBins) const
 {
   //
   // Make a slice along variables ivar1 and ivar2 at selection level istep in range [varMin,varMax]
+  // If useBins=true, varMin and varMax are taken as bin numbers
   //
   if(istep >= fNStep || istep < 0){
     AliError("Non-existent selection step, return NULL");
@@ -211,13 +213,14 @@ TH2D *AliCFContainer::ShowSlice(Int_t ivar1, Int_t ivar2, Double_t *varMin, Doub
     AliError("Non-existent variable, return NULL");
     return 0x0;
   }
-  return (TH2D*)fGrid[istep]->Slice(ivar1,ivar2,varMin,varMax);
+  return (TH2D*)fGrid[istep]->Slice(ivar1,ivar2,varMin,varMax,useBins);
 }
 //___________________________________________________________________
-TH3D *AliCFContainer::ShowSlice(Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t *varMin, Double_t* varMax, Int_t istep) const
+TH3D *AliCFContainer::ShowSlice(Int_t ivar1, Int_t ivar2, Int_t ivar3, const Double_t *varMin, const Double_t* varMax, Int_t istep, Bool_t useBins) const
 {
   //
   // Make a slice along variables ivar1, ivar2and ivar3 at selection level istep in range [varMin,varMax]
+  // If useBins=true, varMin and varMax are taken as bin numbers
   //
   if(istep >= fNStep || istep < 0){
     AliError("Non-existent selection step, return NULL");
@@ -227,30 +230,32 @@ TH3D *AliCFContainer::ShowSlice(Int_t ivar1, Int_t ivar2, Int_t ivar3, Double_t 
     AliError("Non-existent variable, return NULL");
     return 0x0;
   }
-  return (TH3D*)fGrid[istep]->Slice(ivar1,ivar2,ivar3,varMin,varMax);
+  return (TH3D*)fGrid[istep]->Slice(ivar1,ivar2,ivar3,varMin,varMax,useBins);
 }
 //____________________________________________________________________
-AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax) const
+AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Bool_t useBins) const
 {
   //
   // Makes a slice along the "nVars" variables defined in the array "vars[nVars]" for all the container steps.
   // The ranges of ALL the container variables must be defined in the array varMin[GetNVar()] and varMax[GetNVar()]
   // The function returns a new container of nVars variables.
+  // If useBins=true, varMin and varMax are taken as bin numbers
   //
   Int_t* steps = new Int_t[fNStep];
   for (Int_t iStep=0;iStep<fNStep;iStep++) steps[iStep]=iStep;
-  AliCFContainer* out = MakeSlice(nVars,vars,varMin,varMax,fNStep,steps);
+  AliCFContainer* out = MakeSlice(nVars,vars,varMin,varMax,fNStep,steps,useBins);
   delete [] steps ;
   return out;
 }
 
 //____________________________________________________________________
-AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Int_t nSteps, const Int_t* steps) const
+AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, const Int_t* vars, const Double_t* varMin, const Double_t* varMax, Int_t nSteps, const Int_t* steps, Bool_t useBins) const
 {
   //
   // Makes a slice along the "nVars" variables defined in the array "vars[nVars]" for the given "nSteps" defined in "steps[nSteps]".
   // The ranges of ALL the container variables must be defined in the array varMin[GetNVar()] and varMax[GetNVar()]
   // The function returns a new container of nVars variables.
+  // If useBins=true, varMin and varMax are taken as bin numbers
   //
 
   if (nVars < 1 || nVars > GetNVar())   AliError("Bad number of dimensions required for the slice");
@@ -260,7 +265,7 @@ AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, const Int_t* vars, const 
 
   // create the output grids
   AliCFGridSparse** grids = new AliCFGridSparse*[nSteps] ;
-  for (Int_t iStep=0; iStep<nSteps; iStep++) grids[iStep] = fGrid[steps[iStep]]->Project(nVars,vars,varMin,varMax);
+  for (Int_t iStep=0; iStep<nSteps; iStep++) grids[iStep] = fGrid[steps[iStep]]->Project(nVars,vars,varMin,varMax,useBins);
   
   TAxis ** axis = new TAxis*[nVars];
   for (Int_t iVar=0; iVar<nVars; iVar++) axis[iVar] = ((AliCFGridSparse*)grids[0])->GetGrid()->GetAxis(iVar); //same axis for every grid
@@ -286,7 +291,7 @@ AliCFContainer* AliCFContainer::MakeSlice(Int_t nVars, const Int_t* vars, const 
   //set grid for the given steps
   for (Int_t iStep=0; iStep<nSteps; iStep++) out->SetGrid(iStep,grids[iStep]);
 
-  delete bins;
+  delete [] bins;
   delete [] axis ;
   return out;
 }
