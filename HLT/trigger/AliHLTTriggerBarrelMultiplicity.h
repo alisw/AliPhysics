@@ -45,12 +45,25 @@ class AliESDtrack;
  *      required minimum pt for a trigger
  * \li -maxpt    <i> pt  </i> <br>
  *      required maximum pt for a trigger
+ * \li -dca-reference    <i> x,y,z  </i> <br>
+ *      reference point for the transverse and longitudinal dca cut
+ * \li -min-ldca    <i> dca  </i> <br>
+ *      minimum longitudinal dca to reference point
+ * \li -max-ldca    <i> dca  </i> <br>
+ *      maximum longitudinal dca to reference point
+ * \li -min-tdca    <i> dca  </i> <br>
+ *      minimum transverse dca to reference point
+ * \li -max-tdca    <i> dca  </i> <br>
+ *      maximum transverse dca to reference point
+ * \li  -solenoidBz    <i> field  </i> <br>
+ *      magnetic field needed if the input is not an ESD object
  *
  * By default, configuration is loaded from OCDB, can be overridden by
  * component arguments.
  *
  * <h2>Default CDB entries:</h2>
  * HLT/ConfigHLT/BarrelMultiplicityTrigger: TObjString storing the arguments
+ * HLT/ConfigHLT/Solenoidbz: TObjString -solenoidBz field
  *
  * <h2>Performance:</h2>
  * 
@@ -84,6 +97,9 @@ class AliHLTTriggerBarrelMultiplicity : public AliHLTTrigger
   /// inherited from AliHLTComponent: handle re-configuration event
   int Reconfigure(const char* cdbEntry, const char* chainId);
 
+  /// inherited from AliHLTComponent: handle dcs update event
+  int ReadPreprocessorValues(const char* modules);
+
   /// inherited from AliHLTComponent, scan one argument and
   /// its parameters
   int ScanConfigurationArgument(int argc, const char** argv);
@@ -94,7 +110,7 @@ class AliHLTTriggerBarrelMultiplicity : public AliHLTTrigger
 
   /// check whether a track meets the criteria
   template<class T>
-  bool CheckCondition(T* track);
+  bool CheckCondition(T* track, float b);
 
   /// pt cut, minimum
   float fPtMin; //! transient
@@ -102,6 +118,21 @@ class AliHLTTriggerBarrelMultiplicity : public AliHLTTrigger
   float fPtMax; //! transient
   /// required number of tracks
   int fMinTracks; //!transient
+
+  /// number of coordinates for the DCA reference point
+  const static short fgkDCAReferenceSize=3;
+  /// reference point for the transverse and longitudinal dca cut
+  float fDCAReference[fgkDCAReferenceSize];
+  /// minimum longitudinal dca to reference point
+  float fMinLDca;
+  /// maximum longitudinal dca to reference point
+  float fMaxLDca;
+  /// minimum transverse dca to reference point
+  float fMinTDca;
+  /// maximum transverse dca to reference point
+  float fMaxTDca;
+  /// magnetic field (dca estimation for)
+  float fSolenoidBz;
 
   /// the default configuration entry for this component
   static const char* fgkOCDBEntry; //!transient
