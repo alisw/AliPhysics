@@ -28,6 +28,12 @@
 #include "AliHLTMessage.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "AliESDFMD.h"
+#include "AliESDVZERO.h"
+#include "AliESDTZERO.h"
+#include "AliESDCaloCells.h"
+#include "AliMultiplicity.h"
+#include "AliESDACORDE.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TClass.h"
@@ -681,8 +687,51 @@ int AliHLTEsdManagerImplementation::Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) 
   while ((pSrcObject=next())) {
     if(!pSrcObject->InheritsFrom("TCollection")){
       // simple objects
+      // for every type of object we have to find out whether it is empty or not
+      // objects are only copied if non-empty, otherwise valid content would be
+      // overridden by empty objects during the merging
+      bool copy=false;
       TString name=pSrcObject->GetName();
       if(pSrcObject->InheritsFrom("AliHLTTriggerDecision")){
+	copy=true;
+      } else if (pSrcObject->IsA()==AliESDRun::Class()) {
+	AliESDRun* pESDRun=dynamic_cast<AliESDRun*>(pSrcObject);
+	// zero might be a valid run no in simulation, so we check also whether the CTP trigger classes are set
+	copy=(pESDRun && (pESDRun->GetRunNumber()>0 || !pESDRun->GetActiveTriggerClasses().IsNull()));
+      } else if (pSrcObject->IsA()==AliESDHeader::Class()) {
+	AliESDHeader* pESDHeader=dynamic_cast<AliESDHeader*>(pSrcObject);
+	copy=(pESDHeader && pESDHeader->GetTriggerMask()!=0);
+      } else if (pSrcObject->IsA()==AliESDVertex::Class()) {
+	AliESDVertex* pESDVertex=dynamic_cast<AliESDVertex*>(pSrcObject);
+	copy=(pESDVertex && pESDVertex->GetNContributors()>0);
+      } else if (pSrcObject->IsA()==AliESDTZERO::Class()) {
+	AliESDTZERO* pESDTZero=dynamic_cast<AliESDTZERO*>(pSrcObject);
+	copy=(pESDTZero && (pESDTZero->GetT0zVertex()!=0.0 || pESDTZero->GetT0()!=0.0));
+      } else if (pSrcObject->IsA()==AliESDVZERO::Class()) {
+	AliESDVZERO* pESDVZero=dynamic_cast<AliESDVZERO*>(pSrcObject);
+	copy=(pESDVZero && false); // could not find an easy valid condition
+      } else if (pSrcObject->IsA()==AliESDFMD::Class()) {
+	AliESDFMD* pESDFMD=dynamic_cast<AliESDFMD*>(pSrcObject);
+	copy=(pESDFMD && false); // have to find an easy valid condition
+      } else if (pSrcObject->IsA()==AliESDZDC::Class()) {
+	AliESDZDC* pESDZDC=dynamic_cast<AliESDZDC*>(pSrcObject);
+	copy=(pESDZDC && false); // have to find an easy valid condition
+      } else if (pSrcObject->IsA()==AliMultiplicity::Class()) {
+	AliMultiplicity* pMultiplicity=dynamic_cast<AliMultiplicity*>(pSrcObject);
+	copy=(pMultiplicity && pMultiplicity->GetNumberOfTracklets()>0);
+      } else if (pSrcObject->IsA()==AliESDCaloTrigger::Class()) {
+	AliESDCaloTrigger* pESDCaloTrigger=dynamic_cast<AliESDCaloTrigger*>(pSrcObject);
+	copy=(pESDCaloTrigger && false); // have to find an easy valid condition
+      } else if (pSrcObject->IsA()==AliESDCaloCells::Class()) {
+	AliESDCaloCells* pESDCaloCells=dynamic_cast<AliESDCaloCells*>(pSrcObject);
+	copy=(pESDCaloCells && false); // have to find an easy valid condition
+      } else if (pSrcObject->IsA()==AliESDACORDE::Class()) {
+	AliESDACORDE* pESDACORDE=dynamic_cast<AliESDACORDE*>(pSrcObject);
+	copy=(pESDACORDE && false); // have to find an easy valid condition
+      } else {
+	  HLTError("no merging implemented for object %s, omitting", name.Data());
+      }
+      if (copy) {
 	//pSrcObject->Print();
 	TObject* pTgtObject=pTgt->FindListObject(name);
 	if (pTgtObject) {
@@ -690,8 +739,6 @@ int AliHLTEsdManagerImplementation::Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) 
 	} else {
 	  pTgt->AddObject(pSrcObject->Clone());
 	}
-      } else {
-	// TODO: implement the handling of other objects, some kind of mapping
       }
     } else if(pSrcObject->InheritsFrom("TClonesArray")){
       TClonesArray* pTClA=dynamic_cast<TClonesArray*>(pSrcObject);
