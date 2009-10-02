@@ -61,7 +61,8 @@ AliHLTESDMCEventPublisherComponent::AliHLTESDMCEventPublisherComponent()
   fpESD(NULL),
   fpHLTESD(NULL),
   fpMC(NULL),
-  fpHLTMC(NULL) {
+  fpHLTMC(NULL),
+  fOutputSize(0) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -99,6 +100,12 @@ const char* AliHLTESDMCEventPublisherComponent::GetComponentID() {
 AliHLTComponent* AliHLTESDMCEventPublisherComponent::Spawn() {
   // see header file for class documentation
   return new AliHLTESDMCEventPublisherComponent;
+}
+
+void AliHLTESDMCEventPublisherComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
+  // see header file for class documentation
+  constBase=fOutputSize;
+  inputMultiplier=0.0;
 }
 
 /*
@@ -375,13 +382,17 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
     // -- Publish ESDs
     if ( fPublishESD  && fpTreeESD ) {
       fpTreeESD->GetEntry(fCurrentEvent);
-      PushBack( fpESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginOffline , fSpecification  ); 
+      if ((iResult=PushBack( fpESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginOffline , fSpecification  ))==-ENOSPC) {
+	fOutputSize+=GetLastObjectSize();
+      }
     }
 
     // -- Publish HLTESDs
     if ( fPublishHLTESD && fpTreeHLTESD ) {
       fpTreeHLTESD->GetEntry(fCurrentEvent);
-      PushBack( fpHLTESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginHLT , fSpecification ); 
+      if ((iResult=PushBack(fpHLTESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginHLT , fSpecification ))==-ENOSPC) {
+	fOutputSize+=GetLastObjectSize();	  
+      }
     }
 
     // -- Publish MC
@@ -469,12 +480,16 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
 
       // -- Fill AliHLTMCEvent 
       if ( iResult>=0 && fpMC ) {
-	PushBack( fpMC, kAliHLTDataTypeMCObject|kAliHLTDataOriginOffline , fSpecification ); 
+	if ((iResult=PushBack( fpMC, kAliHLTDataTypeMCObject|kAliHLTDataOriginOffline , fSpecification ))==-ENOSPC) {
+	  fOutputSize+=GetLastObjectSize();
+	}
 
 	fpHLTMC = new AliHLTMCEvent();
 	
 	if ( !(iResult=fpHLTMC->FillMCEvent(fpMC)) )
-	  PushBack( fpHLTMC, kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT , fSpecification ); 
+	  if ((iResult=PushBack( fpHLTMC, kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT , fSpecification ))==-ENOSPC) {
+	    fOutputSize+=GetLastObjectSize();	    
+	  }
       }
 
     } // if ( fPublishMC ) {
@@ -482,7 +497,7 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
     // -- Next Event in Folder, 
     //    if last event was already reached:
     //    -> Reser and close files
-    if ( ++fCurrentEvent >= fNEventsInFolder )
+    if (iResult>=0 && ++fCurrentEvent >= fNEventsInFolder )
       iResult = CloseCurrentFileList();
     
   } // if ( iResult >= 0 && fCurrentFileList ) {

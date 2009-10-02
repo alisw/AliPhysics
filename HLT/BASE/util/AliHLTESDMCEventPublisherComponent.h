@@ -119,6 +119,7 @@ class AliHLTESDMCEventPublisherComponent : public AliHLTFilePublisher  {
 
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();
+  void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
@@ -287,6 +288,9 @@ class AliHLTESDMCEventPublisherComponent : public AliHLTFilePublisher  {
   
   /* Ptr to current AliHLTMCEvent, to be shipped out*/
   AliHLTMCEvent* fpHLTMC;                    //! transient
+
+  /* Maximum required output size */
+  unsigned fOutputSize;                      //! transient
 
   ClassDef(AliHLTESDMCEventPublisherComponent, 0)
 };
