@@ -37,12 +37,12 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
     mgr->AddTask(taskCl = new AliTRDclusterResolution());
     taskCl->SetExB();
     mgr->ConnectInput(taskCl, 0, co[0]);
-    mgr->ConnectOutput(taskCl, 0, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", taskCl->GetName())));
+    mgr->ConnectOutput(taskCl, 0, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", taskCl->GetName())));
 
     mgr->AddTask(taskCl = new AliTRDclusterResolution("ClErrParamMC", "Cluster error parameterization"));
     taskCl->SetExB();
     mgr->ConnectInput(taskCl, 0, co[2]);
-    mgr->ConnectOutput(taskCl, 0, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", taskCl->GetName())));
+    mgr->ConnectOutput(taskCl, 0, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", taskCl->GetName())));
   }
 
   // TRD alignment
