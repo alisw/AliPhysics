@@ -31,25 +31,46 @@ void print_ESD_HLTdecision(const char* esdFileName="AliESDs.root",
     return -1;
   }
   TTree* pTree=NULL;
-  esdFile->GetObject("HLTesdTree", pTree);
+  esdFile->GetObject("esdTree", pTree);
   if (!pTree) {
-    cout << "no HLT ESD tree found, trying ESD tree" << endl;
-    esdFile->GetObject("esdTree", pTree);
-  }
-  if (!pTree) {
-    cerr << "can not find (HLT) ESD tree" << endl;
+    cerr << "can not find ESD tree" << endl;
     return -1;
   }
-  
+
   AliESDEvent* esd=new AliESDEvent;
   esd->CreateStdContent();
   esd->ReadFromTree(pTree);
+
+  TTree* pHLTTree=NULL;
+  esdFile->GetObject("HLTesdTree", pHLTTree);
+  if (!pHLTTree) {
+    cerr << "can not find HLT ESD tree" << endl;
+    return -1;
+  }
+
+  if (pTree->GetEntries() != pHLTTree->GetEntries()) {
+    cerr << "entries differ: ESD tree " << pTree->GetEntries() << "    HLT ESD tree " << pHLTTree->GetEntries() << endl;
+  }
+  
+  AliESDEvent* HLTesd=new AliESDEvent;
+  HLTesd->CreateStdContent();
+  HLTesd->ReadFromTree(pHLTTree);
+
   for (int event=minEvent; 
        event<pTree->GetEntries() && (maxEvent<minEvent || event<=maxEvent);
        event++) {
     pTree->GetEvent(event);
+    pHLTTree->GetEvent(event);
     cout << "=====================  event " << event << "  ==========================" << endl;
-    TObject* decision=esd->GetHLTTriggerDecision();
+    cout << "\t ESD: # in file: " << esd->GetEventNumberInFile() << "   time stamp (UCT): " << esd->GetTimeStamp() << endl;
+    cout << "\t orbit no (offline/hlt): " <<  esd->GetOrbitNumber() << "/" << HLTesd->GetOrbitNumber() << endl;
+    cout << "\t bunch crossing (offline/hlt): " << esd->GetBunchCrossNumber() << "/" << HLTesd->GetBunchCrossNumber() << endl;
+    cout << "\t tracks (offline/hlt):\t " << esd->GetNumberOfTracks() << "/"<< HLTesd->GetNumberOfTracks() << endl;
+    cout << "\t hltESD content:" << endl;
+    cout << "\t    fired triggers:\t" << HLTesd->GetFiredTriggerClasses() << endl;
+    cout << "\t    trigger mask:\t 0x" << hex << HLTesd->GetTriggerMask() << dec << endl;
+    cout << "\t    time stamp (UCT):\t " << HLTesd->GetTimeStamp() << endl;
+    TObject* decision=HLTesd->GetHLTTriggerDecision();
     if (decision) decision->Print();
     else cout << "   no HLT decision found" << endl;
   }
