@@ -5,6 +5,10 @@
 #include "Rtypes.h"
 #endif
 
+#ifndef ROOT_TKDNodeInfo
+#include "TKDNodeInfo.h"
+#endif
+
 ///////////////////////////////////////////////////////////////
 //
 // Base non parametric interpolation algorithm.
@@ -22,7 +26,6 @@ template <typename Index, typename Value> class TKDTree;
 typedef class TKDTree<Int_t, Float_t> TKDTreeIF;
 class TLinearFitter;
 class TClonesArray;
-class TKDNodeInfo;
 class TKDInterpolatorBase
 {
 public:	
@@ -62,6 +65,7 @@ protected:
   Int_t         fNSize;       // data dimension
   Int_t         fNTNodes;     //Number of evaluation data points
   TClonesArray  *fTNodes;     //interpolation nodes
+  TKDNodeInfo::TKDNodeDraw  *fTNodesDraw; //graphical representation of interpolation nodes
 
 //private:
   UChar_t       fStatus;      // status of the interpolator

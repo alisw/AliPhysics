@@ -2,16 +2,13 @@
 #include "TKDNodeInfo.h"
 #include "TKDTree.h"
 
-#include "TRandom.h"
+#include "TROOT.h"
 #include "TClonesArray.h"
 #include "TLinearFitter.h"
 #include "TTree.h"
 #include "TH2.h"
 #include "TObjArray.h"
 #include "TObjString.h"
-#include "TBox.h"
-#include "TGraph.h"
-#include "TMarker.h"
 #include "TMath.h"
 #include "TVectorD.h"
 #include "TMatrixD.h"
@@ -35,6 +32,7 @@ TKDInterpolatorBase::TKDInterpolatorBase(Int_t dim) :
   fNSize(dim)
   ,fNTNodes(0)
   ,fTNodes(0x0)
+  ,fTNodesDraw(0x0)
   ,fStatus(4)
   ,fLambda(1 + dim + (dim*(dim+1)>>1))
   ,fDepth(-1)
@@ -74,7 +72,14 @@ TKDInterpolatorBase::~TKDInterpolatorBase()
     for(int idim=0; idim<fNSize; idim++) delete [] fRefPoints[idim] ;
     delete [] fRefPoints;
   }
-  if(fTNodes) delete fTNodes;
+  if(fTNodes){ 
+    fTNodes->Delete();
+    delete fTNodes;
+  }
+  delete [] fTNodesDraw;
+
+  TH2 *h2=0x0;
+  if((h2 = (TH2S*)gROOT->FindObject("hKDnodes"))) delete h2; 
 }
 
 
@@ -267,33 +272,24 @@ void TKDInterpolatorBase::DrawBins(UInt_t ax1, UInt_t ax2, Float_t ax1min, Float
 
 
   
-  TH2 *h2 = new TH2S("hNodes", "", 100, ax1min, ax1max, 100, ax2min, ax2max);
-  h2->GetXaxis()->SetTitle(Form("x_{%d}", ax1));
-  h2->GetYaxis()->SetTitle(Form("x_{%d}", ax2));
+  TH2 *h2 = 0x0;
+  if(!(h2 = (TH2S*)gROOT->FindObject("hKDnodes"))){ 
+    h2 = new TH2S("hKDnodes", "", 100, ax1min, ax1max, 100, ax2min, ax2max);
+    h2->GetXaxis()->SetTitle(Form("x_{%d}", ax1));
+    h2->GetYaxis()->SetTitle(Form("x_{%d}", ax2));
+  }
   h2->Draw();
   
-  const Float_t kBorder = 0.;//1.E-4;
-  TBox *boxArray = new TBox[fNTNodes], *box;
-  Float_t *bounds = 0x0;
-  for(int inode = 0; inode < fNTNodes; inode++){
-    box = &boxArray[inode];
-    box->SetFillStyle(3002);
-    box->SetFillColor(50+Int_t(gRandom->Uniform()*50.));
-    
-    bounds = &(((TKDNodeInfo*)(*fTNodes)[inode])->Data()[fNSize]);
-    box->DrawBox(bounds[2*ax1]+kBorder, bounds[2*ax2]+kBorder, bounds[2*ax1+1]-kBorder, bounds[2*ax2+1]-kBorder);
-  }
 
-  // Draw reference points
-  TGraph *ref = new TGraph(fNTNodes);
-  ref->SetMarkerStyle(3);
-  ref->SetMarkerSize(.7);
-  ref->SetMarkerColor(2);
-  for(int inode = 0; inode < fNTNodes; inode++){
-    TKDNodeInfo *node = (TKDNodeInfo*)(*fTNodes)[inode];
-    ref->SetPoint(inode, node->Data()[ax1], node->Data()[ax2]);
+  if(!fTNodesDraw) fTNodesDraw = new TKDNodeInfo::TKDNodeDraw[fNTNodes]; 
+  TKDNodeInfo::TKDNodeDraw *box = 0x0;
+  for(Int_t in=0; in<fNTNodes; in++){ 
+    TKDNodeInfo *node = (TKDNodeInfo*)((*fTNodes)[in]);
+
+    box = &(fTNodesDraw[in]);
+    box->SetNode(node, fNSize, ax1, ax2);
+    box->Draw();
   }
-  ref->Draw("p");
   return;
 }
 
