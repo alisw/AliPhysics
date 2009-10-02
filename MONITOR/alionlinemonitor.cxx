@@ -24,10 +24,10 @@ int main(int argc, char **argv)
   {
     win->SetTestMode();
 
-    win->GetSOR()->infoHandlerTest(2214);
-    win->GetSOR()->infoHandlerTest(2215);
-    win->GetSOR()->infoHandlerTest(2224);
-    win->GetSOR()->infoHandlerTest(2244);
+    win->GetSOR(0)->infoHandlerTest(2214);
+    win->GetSOR(0)->infoHandlerTest(2215);
+    win->GetSOR(0)->infoHandlerTest(2224);
+    win->GetSOR(0)->infoHandlerTest(2244);
 
     printf("win = (AliOnlineReco*) 0x%lx\n", (unsigned long)win);
   }
@@ -54,8 +54,6 @@ int main(int argc, char **argv)
     TTimeStamp ts;
     sqlQuery.Form("SELECT run FROM logbook WHERE DAQ_time_start > %u AND DAQ_time_end IS NULL AND partition REGEXP 'PHYSICS.*'",
 		  ts.GetSec()-86400);
-    //    sqlQuery.Form("SELECT run FROM logbook WHERE DAQ_time_start > %u AND DAQ_time_end IS NULL",
-    //    	  ts.GetSec()-86400);
     TSQLResult* result = server->Query(sqlQuery);
     if (!result) {
       printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());

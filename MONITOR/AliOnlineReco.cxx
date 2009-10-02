@@ -30,9 +30,6 @@ AliOnlineReco::AliOnlineReco() :
 
   fRunList(0), fStartButt(0), fStopButt(0), fXyzzButt(0),
 
-  fSOR(new AliDimIntNotifier("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS")),
-  fEOR(new AliDimIntNotifier("/LOGBOOK/SUBSCRIBE/DAQ_EOR_PHYSICS")),
-
   fTestMode(kFALSE)
 {
   // GUI components.
@@ -59,9 +56,22 @@ AliOnlineReco::AliOnlineReco() :
   Layout();
   SetWindowName("Alice Online Reconstruction");
 
-  // DIM interface.
-  fSOR->Connect("DimMessage(Int_t)", "AliOnlineReco", this, "StartOfRun(Int_t)");
-  fEOR->Connect("DimMessage(Int_t)", "AliOnlineReco", this, "EndOfRun(Int_t)");
+  // DIM interface.  
+  for (Int_t i = 0; i < 5; ++i)
+  {
+    if (i == 0)
+    {
+      fSOR[i] = new AliDimIntNotifier("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS");
+      fEOR[i] = new AliDimIntNotifier("/LOGBOOK/SUBSCRIBE/DAQ_EOR_PHYSICS");
+    }
+    else
+    {
+      fSOR[i] = new AliDimIntNotifier(Form("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS_%d", i));
+      fEOR[i] = new AliDimIntNotifier(Form("/LOGBOOK/SUBSCRIBE/DAQ_EOR_PHYSICS_%d", i));
+    }
+    fSOR[i]->Connect("DimMessage(Int_t)", "AliOnlineReco", this, "StartOfRun(Int_t)");
+    fEOR[i]->Connect("DimMessage(Int_t)", "AliOnlineReco", this, "EndOfRun(Int_t)");
+  }
 
   // Signal handlers
   // ROOT's TSignalHAndler works not SIGCHLD ...

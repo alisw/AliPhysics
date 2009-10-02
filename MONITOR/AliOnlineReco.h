@@ -32,8 +32,8 @@ public:
   AliOnlineReco();
   virtual ~AliOnlineReco() {}
 
-  AliDimIntNotifier* GetSOR() const { return fSOR; }
-  AliDimIntNotifier* GetEOR() const { return fEOR; }
+  AliDimIntNotifier* GetSOR(Int_t i) const { return fSOR[i]; }
+  AliDimIntNotifier* GetEOR(Int_t i) const { return fEOR[i]; }
 
   void SetTestMode() { fTestMode = kTRUE; }
 
@@ -73,8 +73,8 @@ private:
   TGTextButton  *fXyzzButt;
 
   // DIM interface. Could do without ...
-  AliDimIntNotifier *fSOR;
-  AliDimIntNotifier *fEOR;
+  AliDimIntNotifier *fSOR[5];
+  AliDimIntNotifier *fEOR[5];
 
   // Run-state, process mngmnt
   typedef std::map<Int_t, Int_t> mIntInt_t; // value should be struct { pid, state, ... };
