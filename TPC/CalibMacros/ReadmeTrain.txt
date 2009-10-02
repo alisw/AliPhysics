@@ -40,4 +40,5 @@ esdalien.list - the list of files -alien
     
 
 Run the train:
-shells.sh      - this is a recepie
+runTrainGSI.sh  - this is a recepie
+                - $ALICE_ROOT/TPC/CalibMacros/runTrainGSI.sh    
