@@ -9,6 +9,10 @@
 // Particle (for example direct gamma) must be found in a previous analysis 
 //-- Author: Gustavo Conesa (INFN-LNF)
 
+//  Modified by Yaxian Mao:
+// 1. add the UE subtraction for corrlation study
+// 2. change the correlation variable
+
 // --- ROOT system ---
 class TH2F;
 
@@ -67,10 +71,10 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
 
   
   //Histograms
-  TH2F * fhPhiCharged  ; //! Phi distribution of selected charged particles
-  TH2F * fhPhiNeutral   ;  //! Phi distribution of selected neutral particles
-  TH2F * fhEtaCharged  ; //! Eta distribution of selected charged particles
-  TH2F * fhEtaNeutral   ; //! Eta distribution of selected neutral particles
+  TH2F * fhPhiCharged  ; //! Phi distribution of charged particles
+  TH2F * fhPhiNeutral   ;  //! Phi distribution of neutral particles
+  TH2F * fhEtaCharged  ; //! Eta distribution of charged particles
+  TH2F * fhEtaNeutral   ; //! Eta distribution of neutral particles
   TH2F * fhDeltaPhiCharged  ;  //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
   TH2F * fhDeltaPhiNeutral   ;  //! Difference of neutral particle phi and trigger particle  phi as function of  trigger particle pT
   TH2F * fhDeltaEtaCharged  ;  //! Difference of charged particle eta and trigger particle  eta as function of  trigger particle pT
@@ -85,6 +89,13 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F * fhPtImbalanceUeCharged  ; //! Trigger particle -underlying charged hadron momentim imbalance histogram  
   TH2F * fhPtImbalanceUeNeutral  ; //! Trigger particle - neutral hadron momentum imbalance histogram 
 
+  //with different imblance varible defination HBP distribution
+  TH2F * fhPtHbpCharged  ; //! Trigger particle -charged hadron momentim HBP histogram
+  TH2F * fhPtHbpUeCharged  ; //! Trigger particle -underlying charged hadron momentim HBP histogram  
+  TH2F * fhPtHbpNeutral  ; //! Trigger particle -neutral particle momentim HBP histogram
+  TH2F * fhPtHbpUeNeutral  ; //! Trigger particle -underlying neutral hadron momentim HBP histogram  
+
+
 //if several UE calculation is on, most useful for jet-jet events contribution
   TH2F * fhDeltaPhiUeLeftCharged  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
   TH2F * fhDeltaPhiUeRightCharged  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi 
@@ -93,7 +104,13 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F * fhPtImbalanceUeLeftCharged  ; //! Trigger particle -underlying charged hadron momentim imbalance histogram 
   TH2F * fhPtImbalanceUeRightCharged  ; //! Trigger particle -underlying charged hadron momentim imbalance histogram  
   TH2F * fhPtImbalanceUeLeftNeutral  ; //! Trigger particle -underlying neutral hadron momentim imbalance histogram 
-  TH2F * fhPtImbalanceUeRightNeutral  ; //! Trigger particle -underlying neutral hadron momentim imbalance histogram  
+  TH2F * fhPtImbalanceUeRightNeutral  ; //! Trigger particle -underlying neutral hadron momentim imbalance histogram 
+  TH2F * fhPtHbpUeLeftCharged  ; //! Trigger particle -underlying charged hadron momentim HBP histogram 
+  TH2F * fhPtHbpUeRightCharged  ; //! Trigger particle -underlying charged hadron momentim HBP histogram  
+  TH2F * fhPtHbpUeLeftNeutral  ; //! Trigger particle -underlying neutral hadron momentim HBP histogram 
+  TH2F * fhPtHbpUeRightNeutral  ; //! Trigger particle -underlying neutral hadron momentim HBP histogram  
+	
+	
   ClassDef(AliAnaParticleHadronCorrelation,2)
 } ;
  
