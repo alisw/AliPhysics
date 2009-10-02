@@ -27,7 +27,6 @@
 
 class TTree;
 class TObjArray;
-class TEventList;
 class AliTRDReconstructor;
 class AliTRDseedV1;
 class AliTRDpidRefMaker : public AliTRDrecoTask
@@ -61,25 +60,20 @@ public:
   void    CreateOutputObjects();
   void    Exec(Option_t *option);
 
-  void    LoadContainer(const Char_t *InFileCont);
-  void    LoadFile(const Char_t *InFile);
-
   void    SetAbundance(Float_t train, Float_t test);
-  void    SetRefPID(void *source, Float_t *pid);
+  void    SetRefPID(ETRDpidRefMakerSource select, void *source, Float_t *pid);
   void    SetSource(ETRDpidRefMakerSource pid, ETRDpidRefMakerSource momentum) {fRefPID = pid; fRefP = momentum;}
 
   void    Terminate(Option_t *);
 
 protected:
-  virtual Float_t* GetdEdx(AliTRDseedV1*) = 0;
+  virtual Float_t* CookdEdx(AliTRDseedV1*) = 0;
   virtual Int_t    GetNslices() = 0;
   virtual void     Fill();
 
   AliTRDReconstructor *fReconstructor;  //! reconstructor needed for recalculation the PID
   TObjArray     *fV0s;                  //! v0 array
   TTree         *fData;                 //! dEdx-P data
-  TEventList *fTrain[AliTRDCalPID::kNMom][AliTRDgeometry::kNlayer];          // Training list for each momentum 
-  TEventList *fTest[AliTRDCalPID::kNMom][AliTRDgeometry::kNlayer];           // Test list for each momentum 
   ETRDpidRefMakerSource fRefPID;     // reference PID source
   ETRDpidRefMakerSource fRefP;       // reference momentum source
   Float_t       fTrainFreq;             //! training sample relative abundance

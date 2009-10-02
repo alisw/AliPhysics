@@ -107,7 +107,7 @@ void AliTRDpidRefMakerLQ::CreateOutputObjects()
 
 
 //________________________________________________________________________
-Float_t* AliTRDpidRefMakerLQ::GetdEdx(AliTRDseedV1 *trklt)
+Float_t* AliTRDpidRefMakerLQ::CookdEdx(AliTRDseedV1 *trklt)
 {
   trklt->CookdEdx(AliTRDpidUtil::kLQslices);
   const Float_t *dedx = trklt->GetdEdx();
@@ -119,11 +119,17 @@ Float_t* AliTRDpidRefMakerLQ::GetdEdx(AliTRDseedV1 *trklt)
   return fdEdx;
 }
 
+#include "../Cal/AliTRDCalPIDLQ.h"
 
 //__________________________________________________________________
-Bool_t AliTRDpidRefMakerLQ::GenerateOCDBEntry(Option_t *)
+TObject* AliTRDpidRefMakerLQ::GetOCDBEntry(Option_t *opt)
 {
-  return kTRUE;
+  TDirectoryFile *d = 0x0;
+  if(!TFile::Open(Form("TRD.Calib%s.root", GetName()))) return 0x0;
+  if(!(d=(TDirectoryFile*)gFile->Get(Form("PDF_%s", opt)))) return 0x0;
+  AliTRDCalPIDLQ *cal = new AliTRDCalPIDLQ("pidLQ", "LQ TRD PID object");
+  cal->LoadPDF(d);
+  return cal;
 }
 
 //__________________________________________________________________
@@ -147,7 +153,7 @@ Bool_t AliTRDpidRefMakerLQ::GetRefFigure(Int_t ifig)
   TList *l=gPad->GetListOfPrimitives(); 
   for(Int_t is=0; is<AliPID::kSPECIES; is++){
     ((TVirtualPad*)l->At(is))->cd();
-    ((TH2*)arr->At(is))->Draw("colz");
+    ((TH2*)arr->At(is))->Draw("cont4z");
   }
 
   return kTRUE;
@@ -167,28 +173,40 @@ void AliTRDpidRefMakerLQ::Fill()
   ((TH2*)fContainer->At(0))->Fill(fSbin, fPbin);
   TH2* h2 = (TH2*)((TObjArray*)fContainer->At(1+fPbin))->At(fSbin);
   h2->Fill(fdEdx[0], fdEdx[1]);
-  //printf("h[%s] : [%f] [%f]\n", h2->GetName(), fdEdx[0], fdEdx[1]);
 }
 
 //________________________________________________________________________
 Bool_t AliTRDpidRefMakerLQ::PostProcess()
 {
-  TFile::Open(Form("TRD.Calib%s.root", GetName()));
+// Analyse merged dedx = f(p) distributions.
+//   - select momentum - species bins
+//   - rotate to principal components
+//   - locally interpolate with TKDPDF
+//   - save interpolation to monitoring histograms
+//   - write pdf to file for loading to OCDB
+// 
+
+
+  TFile *fCalib = TFile::Open(Form("TRD.Calib%s.root", GetName()), "update");
   fData = dynamic_cast<TTree*>(gFile->Get(GetName()));
   if (!fData) {
     AliError("Tree not available");
     return kFALSE;
   }
+  TDatime d;
+  TDirectoryFile *pdfs = new TDirectoryFile(Form("PDF_%d", d.GetDate()), "PDFs for LQ TRD-PID", "", gFile);
+  pdfs->Write();
   AliDebug(2, Form("Data[%d]", fData->GetEntries()));
 
-  // save PDF representation
+  // save a volatile PDF representation
+  gROOT->cd();
   TH2 *h2 = 0x0;
   fResults = new TObjArray(AliTRDCalPID::kNMom);
   for(Int_t ip=AliTRDCalPID::kNMom; ip--;){ 
     TObjArray *arr = new TObjArray(AliPID::kSPECIES);
     arr->SetName(Form("Pbin%02d", ip));
     for(Int_t is=AliPID::kSPECIES; is--;) {
-      h2 = new TH2I(Form("h%s%d", AliPID::ParticleShortName(is), ip), Form("%s ref. dEdx @ Pbin[%d]", AliPID::ParticleName(is), ip), 50, -6., 6., 50, -6., 6.);
+      h2 = new TH2D(Form("i%s%d", AliPID::ParticleShortName(is), ip), Form("Interpolated %s dEdx @ Pbin[%d]", AliPID::ParticleName(is), ip), 50, -3., 3., 50, -3., 3.);
       h2->GetXaxis()->SetTitle("log(dE/dx^{*}_{am}) [au]");
       h2->GetYaxis()->SetTitle("log(dE/dx^{*}_{dr}) [au]");
       h2->GetZaxis()->SetTitle("#");
@@ -196,19 +214,27 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
     }
     fResults->AddAt(arr, ip);
   }
-
+  pdfs->cd();
 
   TCanvas *cc = new TCanvas("cc", "", 500, 500);
 
   Float_t *data[] = {0x0, 0x0};
   TPrincipal principal(2, "ND");
-  for(Int_t ip=AliTRDCalPID::kNMom; ip--;){ 
+  for(Int_t ip=AliTRDCalPID::kNMom; ip--; ){ 
     for(Int_t is=AliPID::kSPECIES; is--;) {
       principal.Clear();
       Int_t n = fData->Draw("dEdx[0]:dEdx[1]", Form("p==%d&&s==%d", ip, is), "goff");
-      AliDebug(2, Form("pBin[%d] sBin[%d] n[%d]", ip, is, n));
-      if(n<1000/*Int_t(kMinStat)*Int_t(kMinBuckets)*/){
-        AliWarning(Form("Not enough entries [%d] for %s[%d].", n, AliPID::ParticleShortName(is), ip));
+
+      // estimate bucket statistics
+      Int_t nb(kMinBuckets), // number of buckets
+            ns(Int_t(Float_t(n)/nb));    //statistics/bucket
+            
+// if(Float_t(n)/nb < 220.) ns = 200; // 7% stat error
+//       else if(Float_t(n)/nb < 420.) ns = 400; // 5% stat error
+
+      AliDebug(2, Form("pBin[%d] sBin[%d] N[%d] n[%d] nb[%d]", ip, is, n, ns, nb));
+      if(ns<Int_t(kMinStat)){
+        AliWarning(Form("Not enough entries [%d] for %s[%d].", ns, AliPID::ParticleShortName(is), ip));
         continue;
       }
       // allocate storage
@@ -236,12 +262,6 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
         data[0][n]=rxy[0]; data[1][n]=rxy[1];
       }
 
-      // estimate bucket statistics
-      Int_t ns(kMinStat),    //statistics/bucket
-            nb(kMinBuckets); // number of buckets
-      if(Float_t(n)/nb < 220.) ns = 200; // 7% stat error
-      else if(Float_t(n)/nb < 420.) ns = 400; // 5% stat error
-
       // build PDF
       TKDPDF pdf(n, 2, ns, data);
       pdf.SetStore();
@@ -253,10 +273,10 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
         rxy[0] = (Double_t)c[0];rxy[1] = (Double_t)c[1];
         pdf.Eval(rxy, r, e, kTRUE);
       }
-      pdf.DrawBins(0,1,-6,6,-6,6);cc->Modified(); cc->Update();
+      // visual on-line monitoring
+      pdf.DrawBins(0,1,-5.,5.,-8.,8.);cc->Modified(); cc->Update(); cc->SaveAs(Form("pdf_%s%02d.gif", AliPID::ParticleShortName(is), ip));
 
-
-      // save a discretization of the PDF for monitoring
+      // save a discretization of the PDF for result monitoring
       TH2 *h2s = (TH2D*)((TObjArray*)fResults->At(ip))->At(is);
       TAxis *ax = h2s->GetXaxis(), *ay = h2s->GetYaxis();
       for(int ix=1; ix<=ax->GetNbins(); ix++){
@@ -272,13 +292,14 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
         }
       }
 
-
-      //pdf.Write(Form("%s[%d]", AliPID::ParticleShortName(is), ip));
-      
+      // write results to output array
+      pdf.Write(Form("%s[%d]", AliPID::ParticleShortName(is), ip));
 
       delete [] data[0]; delete [] data[1];
     }
   }
+  pdfs->Write();
+  fCalib->Close(); delete fCalib;
 
   return kTRUE; // testing protection
 }

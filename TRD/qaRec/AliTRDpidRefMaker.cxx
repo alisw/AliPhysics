@@ -53,9 +53,6 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title)
   memset(fdEdx, 0, 10*sizeof(Float_t));
   memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
 
-  memset(fTrain, 0, AliTRDCalPID::kNMom*AliTRDgeometry::kNlayer*sizeof(TEventList*));
-  memset(fTest, 0, AliTRDCalPID::kNMom*AliTRDgeometry::kNlayer*sizeof(TEventList*));
-
   DefineInput(1, TObjArray::Class());
   DefineOutput(1, TTree::Class());
 }
@@ -65,12 +62,6 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title)
 AliTRDpidRefMaker::~AliTRDpidRefMaker() 
 {
   if(fReconstructor) delete fReconstructor;
-  for(Int_t ip=AliTRDCalPID::kNMom; ip--;){
-    for(Int_t il=AliTRDgeometry::kNlayer; il--;){
-      if(fTrain[ip][il]) delete fTrain[ip][il];
-      if(fTest[ip][il]) delete fTest[ip][il];
-    }
-  }
 }
 
 
@@ -128,9 +119,6 @@ void AliTRDpidRefMaker::Exec(Option_t *)
   //AliExternalTrackParam *esd = 0x0;
   AliTRDseedV1 *TRDtracklet = 0x0;
   for(Int_t itrk=0, nTRD=0; itrk<fTracks->GetEntriesFast(); itrk++){
-    // reset the pid information
-    memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
-
     track = (AliTRDtrackInfo*)fTracks->UncheckedAt(itrk);
     if(!track->HasESDtrack()) continue;
     ULong_t status = track->GetStatus();
@@ -146,53 +134,20 @@ void AliTRDpidRefMaker::Exec(Option_t *)
      
 
     if(HasMCdata()) labelsacc[nTRD++] = track->GetLabel();
-      
 
-    switch(fRefPID){ 
-    case kV0:
-      SetRefPID(TRDtrack,fPID);
-      break;
-    case kMC:
-      if(!HasMCdata()){
-        AliError("Could not retrive reference PID from MC");
-        return;
-      }
-      switch(track -> GetPDG()){
-      case kElectron:
-      case kPositron:
-        fPID[AliPID::kElectron] = 1.;
-        break;
-      case kMuonPlus:
-      case kMuonMinus:
-        fPID[AliPID::kMuon] = 1.;
-        break;
-      case kPiPlus:
-      case kPiMinus:
-        fPID[AliPID::kPion] = 1.;
-        break;
-      case kKPlus:
-      case kKMinus:
-        fPID[AliPID::kKaon] = 1.;
-        break;
-      case kProton:
-      case kProtonBar:
-        fPID[AliPID::kProton] = 1.;
-        break;
-      }
-      break;
-    default:
-      AliWarning("PID reference source not implemented");
-      return;
+    // fill the pid information
+    memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
+    switch(fRefPID){
+    case kV0: SetRefPID(kV0, 0x0/*v0*/, fPID); break;
+    case kMC: SetRefPID(kMC, track, fPID); break;
+    case kRec: SetRefPID(kRec, TRDtrack, fPID); break;
     }
 
-    // set reconstructor
-    //Float_t *dedx;
-    TRDtrack -> SetReconstructor(fReconstructor);
-
     // fill the momentum and dE/dx information
+    TRDtrack -> SetReconstructor(fReconstructor);
     for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
       if(!(TRDtracklet = TRDtrack -> GetTracklet(ily))) continue;
-      if(!GetdEdx(TRDtracklet)) continue;
+      if(!CookdEdx(TRDtracklet)) continue;
       switch(fRefP){
       case kMC:
         if(!HasMCdata()){
@@ -244,58 +199,68 @@ void AliTRDpidRefMaker::Terminate(Option_t *)
 
 
 //________________________________________________________________________
-void AliTRDpidRefMaker::LoadFile(const Char_t *InFile) 
+void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, void *source, Float_t *pid) 
 {
-  //
-  // Loads the files and sets the event list
-  // for neural network training and 
-  // building of the 2-dim reference histograms.
-  // Usable for training outside of the makeResults.C macro
-  //
+// !!!! PREMILMINARY FUNCTION !!!!
+//
+// this is the place for the V0 procedure
+// as long as there is no one implemented, 
+// just the probabilities
+// of the TRDtrack are used!
 
-  TFile::Open(InFile, "READ");
-  fData = (TTree*)gFile->Get(GetName());
-
-  for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
-    for(Int_t iLy = 0; iLy < AliTRDgeometry::kNlayer; iLy++){
-      fTrain[iMom][iLy] = new TEventList(Form("fTrain_P%d_L%d", iMom, iLy), Form("Training list for momentum bin %d layer %d", iMom, iLy));
-      fTest[iMom][iLy] = new TEventList(Form("fTest_P%d_L%d", iMom, iLy), Form("Test list for momentum bin %d layer %d", iMom, iLy));
+  switch(select){ 
+  case kV0:
+    {
+      AliTRDv0Info *v0 = static_cast<AliTRDv0Info*>(source);
+      v0->Print(); // do something
     }
-  }
-}
-
-
-//________________________________________________________________________
-void AliTRDpidRefMaker::LoadContainer(const Char_t *InFileCont) 
-{
-
-  //
-  // Loads the container if no container is there.
-  // Useable for training outside of the makeResults.C macro
-  //
-
-  TFile::Open(InFileCont, "READ");
-  fContainer = (TObjArray*)gFile->Get(GetName());
-}
-
-
-//________________________________________________________________________
-void AliTRDpidRefMaker::SetRefPID(void *source, Float_t *pid) 
-{
-  // !!!! PREMILMINARY FUNCTION !!!!
-  //
-  // this is the place for the V0 procedure
-  // as long as there is no one implemented, 
-  // just the probabilities
-  // of the TRDtrack are used!
-
-  AliTRDtrackV1 *TRDtrack = static_cast<AliTRDtrackV1*>(source);
-  TRDtrack -> SetReconstructor(fReconstructor);
-  //fReconstructor -> SetOption("nn");
-  TRDtrack -> CookPID();
-  for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-    pid[iPart] = TRDtrack -> GetPID(iPart);
-    AliDebug(4, Form("PDG is (in V0info) %d %f", iPart, pid[iPart]));
+    break;
+  case kMC:
+    if(!HasMCdata()){
+      AliError("Could not retrive reference PID from MC");
+      return;
+    }
+    {
+      AliTRDtrackInfo *track = static_cast<AliTRDtrackInfo*>(source);
+      switch(track->GetPDG()){
+      case kElectron:
+      case kPositron:
+        fPID[AliPID::kElectron] = 1.;
+        break;
+      case kMuonPlus:
+      case kMuonMinus:
+        fPID[AliPID::kMuon] = 1.;
+        break;
+      case kPiPlus:
+      case kPiMinus:
+        fPID[AliPID::kPion] = 1.;
+        break;
+      case kKPlus:
+      case kKMinus:
+        fPID[AliPID::kKaon] = 1.;
+        break;
+      case kProton:
+      case kProtonBar:
+        fPID[AliPID::kProton] = 1.;
+        break;
+      }
+    }
+    break;
+  case kRec:
+    { 
+      AliTRDtrackV1 *TRDtrack = static_cast<AliTRDtrackV1*>(source);
+      TRDtrack -> SetReconstructor(fReconstructor);
+      //fReconstructor -> SetOption("nn");
+      TRDtrack -> CookPID();
+      for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+        pid[iPart] = TRDtrack -> GetPID(iPart);
+        AliDebug(4, Form("PDG is (in V0info) %d %f", iPart, pid[iPart]));
+      }
+    }
+    break;
+  default:
+    AliWarning("PID reference source not implemented");
+    return;
   }
 }
 

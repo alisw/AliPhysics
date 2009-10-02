@@ -17,6 +17,7 @@
 
 #include "AliTRDCalPID.h"
 
+class TDirectoryFile;
 class AliTRDCalPIDLQ : public AliTRDCalPID
 {
 
@@ -30,6 +31,7 @@ class AliTRDCalPIDLQ : public AliTRDCalPID
   AliTRDCalPIDLQ(const Text_t *name, const Text_t *title);
   virtual        ~AliTRDCalPIDLQ();
 
+  Bool_t          LoadPDF(TDirectoryFile *);
   Bool_t          LoadReferences(Char_t* refFile);
   TObject*        GetModel(Int_t ip, Int_t iType, Int_t iPlane) const;
   static Double_t GetLength(Int_t il) { return (il<0 || il>=kNLength) ? -1. : fgTrackSegLength[il]; }

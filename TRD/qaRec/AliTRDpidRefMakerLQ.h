@@ -27,19 +27,19 @@ class TObjArray;
 class AliTRDpidRefMakerLQ : public AliTRDpidRefMaker {
 public:
   enum ETRDpidRefMakerLQsteer{
-    kMinStat = 100    // minimum statistics/bucket 10%
+    kMinStat = 50    // minimum statistics/bucket 14%
    ,kMinBuckets = 450 // minimum number of buckets [lambda(6)*alpha(1.5)*regions(50)]
   };
   AliTRDpidRefMakerLQ();
   ~AliTRDpidRefMakerLQ();
  
   void      CreateOutputObjects();
-  Bool_t    GenerateOCDBEntry(Option_t *);
+  TObject*  GetOCDBEntry(Option_t *);
   Bool_t    GetRefFigure(Int_t ifig);
   Bool_t    PostProcess();
 
 protected:
-  Float_t*  GetdEdx(AliTRDseedV1*);
+  Float_t*  CookdEdx(AliTRDseedV1*);
   Int_t     GetNslices() { return 2;}
   void      Fill();
 
