@@ -736,7 +736,9 @@ void AliTPCcalibDB::RegisterExB(Int_t index, Float_t bz, Bool_t bdelete){
   // index - registration index - used for visualization
   // bz    - bz field in kGaus
 
-  Float_t factor =  bz/(-5.);  // default b filed in Cheb with minus sign
+  //  Float_t factor =  bz/(-5.);  // default b filed in Cheb with minus sign
+  Float_t factor =  bz/(5.);  // default b filed in Cheb with minus sign
+                              // was chenged in the Revision ???? (Ruben can you add here number)
   
   AliMagF*   bmap = new AliMagF("MapsExB","MapsExB", 2,factor,1., 10.,AliMagF::k5kG,"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
   
@@ -771,6 +773,15 @@ void  AliTPCcalibDB::SetExBField(Float_t bz){
   // Set magnetic filed for ExB correction
   //
   fExB = GetExB(bz,kFALSE);
+}
+
+void  AliTPCcalibDB::SetExBField(const AliMagF*   bmap){
+  //
+  // Set magnetic field for ExB correction
+  //
+  AliTPCExBFirst *exb  = new  AliTPCExBFirst(bmap,0.88*2.6400e+04,50,50,50);
+  AliTPCExB::SetInstance(exb);
+  fExB=exb;
 }
 
 

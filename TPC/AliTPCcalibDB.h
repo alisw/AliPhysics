@@ -32,6 +32,7 @@ class AliTPCCalibVdrift;
 class AliGRPObject;
 class AliTPCCalibRaw;
 class TMap;
+class AliMagF;
 //class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
@@ -52,6 +53,7 @@ class AliTPCcalibDB : public TObject
   AliTPCTransform* GetTransform() {return fTransform;}
   AliTPCExB*    GetExB() {return fExB;}
   void          SetExBField(Float_t bz);
+  void          SetExBField( const AliMagF*   bmap);
   static AliTPCExB*    GetExB(Float_t bz,Bool_t bdelete);
   AliTPCCalPad* GetPadGainFactor() {return fPadGainFactor;}
   AliTPCCalPad* GetDedxGainFactor() {return fDedxGainFactor;}

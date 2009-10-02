@@ -52,7 +52,7 @@ fClusterer(NULL)
   //
   AliTPCcalibDB * calib = AliTPCcalibDB::Instance();
   const AliMagF * field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-  calib->SetExBField(field->SolenoidField());
+  calib->SetExBField(field);
   AliTPCParam* param = GetTPCParam();
   if (!param) {
     AliWarning("Loading default TPC parameters !");
