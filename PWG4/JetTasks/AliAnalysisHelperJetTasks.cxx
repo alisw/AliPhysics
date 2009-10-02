@@ -6,6 +6,7 @@
 #include "THnSparse.h"
 #include "TFile.h"
 #include "AliMCEvent.h"
+#include "AliLog.h"
 #include "AliAODJet.h"
 #include "AliStack.h"
 #include "AliGenEventHeader.h"
@@ -30,7 +31,8 @@ AliGenPythiaEventHeader*  AliAnalysisHelperJetTasks::GetPythiaEventHeader(AliMCE
     AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(genHeader);
     
     if (!genCocktailHeader) {
-      Printf("%s %d: Unknown header type (not Pythia or Cocktail)",(char*)__FILE__,__LINE__);
+      AliWarningGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),"Unknown header type (not Pythia or Cocktail)");
+      //      AliWarning(Form("%s %d: Unknown header type (not Pythia or Cocktail)",(char*)__FILE__,__LINE__));
       return 0;
     }
     TList* headerList = genCocktailHeader->GetHeaders();
@@ -40,7 +42,7 @@ AliGenPythiaEventHeader*  AliAnalysisHelperJetTasks::GetPythiaEventHeader(AliMCE
         break;
     }
     if(!pythiaGenHeader){
-      Printf("%s %d: PythiaHeader not found!",(char*)__FILE__,__LINE__);
+      AliWarningGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),"Pythia event header not found");
       return 0;
     }
   }
@@ -233,6 +235,7 @@ void  AliAnalysisHelperJetTasks::MergeOutput(char* cFiles, char* cList){
   while(in1>>cFile){
     fIn[ibTotal] = TFile::Open(cFile);
     lIn[ibTotal] = (TList*)fIn[ibTotal]->Get(cList);
+    Printf("Merging file %s",cFile);
     if(!lIn[ibTotal]){
       Printf("%s:%d No list %s found, exiting...",__FILE__,__LINE__,cList);
       fIn[ibTotal]->ls();
