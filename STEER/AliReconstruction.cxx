@@ -1229,6 +1229,7 @@ Bool_t AliReconstruction::Run(const char* input)
 
   TChain *chain = NULL;
   if (fRawReader && (chain = fRawReader->GetChain())) {
+    Long64_t nEntries = (fLastEvent < 0) ? (TChain::kBigNumber) : (fLastEvent - fFirstEvent + 1);
     // Proof mode
     if (gProof) {
 
@@ -1248,10 +1249,10 @@ Bool_t AliReconstruction::Run(const char* input)
       gProof->AddInput(new TNamed("PROOF_OUTPUTFILE",fESDOutput.GetUrl()));
       gProof->SetParameter("PROOF_MaxSlavesPerNode", 9999);
       chain->SetProof();
-      chain->Process("AliReconstruction");
+      chain->Process("AliReconstruction","",nEntries,fFirstEvent);
     }
     else {
-      chain->Process(this);
+      chain->Process(this,"",nEntries,fFirstEvent);
     }
   }
   else {
