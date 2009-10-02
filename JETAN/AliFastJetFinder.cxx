@@ -85,11 +85,12 @@ AliFastJetFinder::~AliFastJetFinder()
 //______________________________________________________________________________
 void AliFastJetFinder::FindJets()
 {
-  cout<<"----------in AliFastJetFinder::FindJets() ------------------"<<endl;
+
   //pick up fastjet header
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
   Bool_t debug  = header->GetDebug();     // debug option
   Bool_t bgMode = header->GetBGMode();    // choose to subtract BG or not
+  if(debug)cout<<"----------in AliFastJetFinder::FindJets() ------------------"<<endl;
 
   // check if we are reading AOD jets
   TRefArray *refs = 0;
