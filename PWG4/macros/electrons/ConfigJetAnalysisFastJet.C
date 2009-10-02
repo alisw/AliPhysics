@@ -66,6 +66,9 @@ AliJetFinder*  ConfigJetAnalysis()
     er->SetTPCGrid(grid);
     er->SetEMCalGrid(grid2);
     er->SetApplyMIPCorrection(kFALSE);
+    //hadronic correction
+    er->SetApplyFractionHadronicCorrection(kTRUE);
+    er->SetFractionHadronicCorrection(1.0);
 
     // Define jet header
     AliFastJetHeaderV1 *jh=new AliFastJetHeaderV1();
