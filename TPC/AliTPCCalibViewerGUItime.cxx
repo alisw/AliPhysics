@@ -44,6 +44,7 @@
 #include <TAxis.h>
 #include <TTimeStamp.h>
 #include <TMath.h>
+#include <TMap.h>
 //
 #include <TGFileDialog.h>
 #include <TGInputDialog.h>
@@ -63,6 +64,7 @@
 //AliRoot includes
 #include <AliLog.h>
 #include "AliTPCCalibViewerGUI.h"
+#include "AliTPCCalibViewer.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCConfigParser.h"
 
@@ -90,6 +92,7 @@ TGCompositeFrame(p,w,h),
   fValuesY(10),
   fNoGraph(kFALSE),
   fGraphLimitEntries(10000),
+  fMapRefTrees(new TMap),
   //GUI elements
   //main canvas Top part, bottom part
   fContTopBottom(0x0),
@@ -139,6 +142,8 @@ TGCompositeFrame(p,w,h),
   //
   // ctor
   //
+  fMapRefTrees->SetOwnerKeyValue();
+  fTrashBox->SetOwner();
   DrawGUI(p,w,h);
   gStyle->SetMarkerStyle(20);
   gStyle->SetMarkerSize(0.5);
@@ -151,6 +156,7 @@ AliTPCCalibViewerGUItime::~AliTPCCalibViewerGUItime(){
   //
   delete fConfigParser;
   delete fTrashBox;
+  delete fMapRefTrees;
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
@@ -602,6 +608,15 @@ void AliTPCCalibViewerGUItime::Reload(Int_t first)
   }
 }
 //______________________________________________________________________________
+void AliTPCCalibViewerGUItime::AddReferenceTree(const char* treeFileName, const char* refName)
+{
+  //
+  // map of reference trees that should always be attached to the CalibViewerGUI
+  //
+  fMapRefTrees->Add(new TObjString(refName), new TObjString(treeFileName));
+
+}
+//______________________________________________________________________________
 const char* AliTPCCalibViewerGUItime::GetDrawString(){
   //
   // create draw string for ttree by combining the user requestsa
@@ -733,7 +748,40 @@ void AliTPCCalibViewerGUItime::GetHistogramTitle(TString &title)
   delete arr;
 }
 //______________________________________________________________________________
+void AliTPCCalibViewerGUItime::AdjustYRange()
+{
+  //
+  //
+  //
+  TIter nextGraphicObject(fTrashBox);
+  TObject *o=0x0;
+  Float_t min=0,max=0;
+  while ( (o=nextGraphicObject()) ){
+    if (o->IsA()==TGraph::Class()){
+      TGraph *gr=(TGraph*)o;
+      if (min==max) {
+        min=TMath::MinElement(gr->GetN(),gr->GetY());
+        max=TMath::MaxElement(gr->GetN(),gr->GetY());
+      } else {
+        Float_t currmin=TMath::MinElement(gr->GetN(),gr->GetY());
+        Float_t currmax=TMath::MaxElement(gr->GetN(),gr->GetY());
+        if (currmax>max) max=currmax;
+        if (currmin<min) min=currmin;
+      }
+    }
+  }
+  if (min!=max){
+    if (min!=0) min=min-(max-min)/10;
+    if (max!=0) max=max+(max-min)/10;
+    fCurrentHist->SetMinimum(min);
+    fCurrentHist->SetMaximum(max);
+  }
+}
+//______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoDraw() {
+  //
+  // Draw graphics
+  //
   TString drawString=fDrawString;
   TString cutString;
   GetCutString(cutString);
@@ -828,15 +876,20 @@ void AliTPCCalibViewerGUItime::DoDraw() {
   }
   
   //Set time axis if choosen as x-variables
-  if (fRadioXtime->GetState()==kButtonDown&&!fIsCustomDraw){
+  if (fRadioXtime->GetState()==kButtonDown&&!fIsCustomDraw&&!drawSame){
     TAxis *xaxis=fCurrentHist->GetXaxis();
     xaxis->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
     xaxis->SetTimeDisplay(1);
     xaxis->SetLabelOffset(xaxis->GetLabelOffset()*3);
     xaxis->SetLabelSize(xaxis->GetLabelSize()/1.3);
   }
+  if (!drawSame) {
   //Set title offset
-  if (!drawSame) fCurrentHist->GetYaxis()->SetTitleOffset(1.5);
+    fCurrentHist->GetYaxis()->SetTitleOffset(1.5);
+  } else {
+    //adjust y-range
+    AdjustYRange();
+  }
   gPad->Modified();
   gPad->Update();
   padsave->cd();
@@ -953,9 +1006,10 @@ void AliTPCCalibViewerGUItime::UpdateParName()
   //
   
   Int_t par = (Int_t)(fNmbPar->GetNumber());
-  TString parName=par;
+  TString parName="";
   Int_t id=fListVariables->GetSelectedEntry()->EntryId();
   if (fConfigParser && (*fConfigParser)(id)) parName=fConfigParser->GetData((*fConfigParser)(id),par+kParamNames);
+  if (parName=="") parName.Form("%d",par);
   fLblPar->SetText(Form("Parameter: %s",parName.Data()));
   fDrawString=GetDrawString();
   fIsCustomDraw=kFALSE;
@@ -1011,7 +1065,7 @@ void AliTPCCalibViewerGUItime::UpdateParLimits()
   }
 //   branch->ResetAddress();
   fTree->SetBranchAddress(selectedVariable.Data(),0x0);
-  fNmbPar->SetNumber(0);
+  if (fNmbPar->GetNumMax()!=maxPar-1) fNmbPar->SetNumber(0);
   fNmbPar->SetLimitValues(0,maxPar-1);
   fNmbPar->SetState(kTRUE);
   UpdateParName();
@@ -1092,24 +1146,25 @@ void AliTPCCalibViewerGUItime::SetGuiTree(Int_t run)
   TString fileName=fOutputCacheDir;
   if (!fileName.EndsWith("/")) fileName+="/";
   fileName+=Form("guiTreeRun_%d.root",run);
+  Bool_t load=kTRUE;
   TFile f(fileName.Data());
-  if (f.IsOpen()){
-    f.Close();
-    fCalibViewerGUI->Initialize(fileName.Data());
-    fCalibViewerGUI->Reload();
-    if (fCalibViewerGUItab) fCalibViewerGUItab->SetText(new TGString(Form("Detail - %05d",run)));
-    return;
+  if (!f.IsOpen()){
+    load=AliTPCcalibDB::CreateGUITree(run,fileName.Data());
+    if (!load){
+      fCalibViewerGUI->Reset();
+      if (fCalibViewerGUItab) fCalibViewerGUItab->SetText(new TGString(Form("Detail - XXXXX")));
+      return;
+    }
   }
   f.Close();
-  Bool_t sucess=AliTPCcalibDB::CreateGUITree(run,fileName.Data());
-  if (sucess){
-    fCalibViewerGUI->Initialize(fileName.Data());
-    fCalibViewerGUI->Reload();
-    if (fCalibViewerGUItab) fCalibViewerGUItab->SetText(new TGString(Form("Detail - %05d",run)));
-  }else{
-    fCalibViewerGUI->Reset();
-    if (fCalibViewerGUItab) fCalibViewerGUItab->SetText(new TGString(Form("Detail - XXXXX")));
+  fCalibViewerGUI->Initialize(fileName.Data());
+  if (fCalibViewerGUItab) fCalibViewerGUItab->SetText(new TGString(Form("Detail - %05d",run)));
+  TIter nextRefTree(fMapRefTrees);
+  TObject *o=0x0;
+  while ( (o=nextRefTree()) ){
+    fCalibViewerGUI->GetViewer()->AddReferenceTree(fMapRefTrees->GetValue(o)->GetName(),"calPads",o->GetName());
   }
+  fCalibViewerGUI->Reload();
 }
 //______________________________________________________________________________
 const char* AliTPCCalibViewerGUItime::SubstituteUnderscores(const char* in)

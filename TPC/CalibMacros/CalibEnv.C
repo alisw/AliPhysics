@@ -1,6 +1,6 @@
 /*
-.x ~/NimStyle.C
-.x ~/rootlogon.C
+// .x ~/NimStyle.C
+// .x ~/rootlogon.C
 
 gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
 
@@ -57,10 +57,12 @@ if (!gGrid) TGrid::Connect("alien://",0,0,"t");
 #include "TVectorD.h"
 #include "TMatrixD.h"
 #include "AliTPCCalibRaw.h"
+#include "AliSplineFit.h"
 
 
 TTree * dcsTree=0;
-
+TString refFile="/data/Work/data/calib/guiTrees/RefCalPads_83680.root";
+// TString refFile="/lustre/alice/wiechula/calib/guiTrees/RefCalPads_83680.root"
 void GetProductionInfo(Int_t run, Int_t &nalien, Int_t &nRawAlien, Int_t &nlocal, Int_t &nRawLocal);
   
 void Init2008(){
@@ -108,6 +110,13 @@ void CalibEnv(const char * runList){
   Int_t irun=0;
   TTreeSRedirector *pcstream = new TTreeSRedirector("dcsTime.root");
   AliTPCcalibDButil dbutil;
+  dbutil.SetRefFile(refFile.Data());
+  Int_t startTime = 0;
+  Int_t endTime = 0;
+  Int_t startTimeGRP = 0;
+  Int_t stopTimeGRP  = 0;
+
+  AliSplineFit *fitVdrift=0x0;
   //  for (Int_t irun=startRun; irun<stopRun; irun++){
   while(in.good()) {
     in >> irun;
@@ -116,16 +125,29 @@ void CalibEnv(const char * runList){
     printf("Processing run %d ...\n",irun);
     AliTPCcalibDB::Instance()->SetRun(irun);
     dbutil.UpdateFromCalibDB();
-    AliDCSSensor * sensorPressure = AliTPCcalibDB::Instance()->GetPressureSensor(irun);
-    if (!sensorPressure) continue;
+    AliDCSSensorArray *arrHV=calibDB->GetVoltageSensors(irun);
+    if (!arrHV) continue;
+    for  (Int_t isenHV=0; isenHV<arrHV->NumSensors(); ++isenHV){
+      AliDCSSensor *senHV=arrHV->GetSensorNum(isenHV);
+      if (!senHV) continue;
+      startTime=senHV->GetStartTime();
+      endTime  =senHV->GetEndTime();
+      if (startTime>0&&endTime>0) break;
+    }
+    if (calibDB->GetGRP(irun)){
+      startTimeGRP = AliTPCcalibDB::GetGRP(irun)->GetTimeStart();
+      stopTimeGRP  = AliTPCcalibDB::GetGRP(irun)->GetTimeEnd();
+    }
+    //    AliDCSSensor * sensorPressure = AliTPCcalibDB::Instance()->GetPressureSensor(irun);
+//     if (!sensorPressure) continue;
+//     Int_t startTime = sensorPressure->GetStartTime();
+//     Int_t endTime = sensorPressure->GetEndTime();
+//     Int_t startTimeGRP = AliTPCcalibDB::GetGRP(irun)->GetTimeStart();
+//     Int_t stopTimeGRP  = AliTPCcalibDB::GetGRP(irun)->GetTimeEnd();
     AliTPCSensorTempArray * tempArray = AliTPCcalibDB::Instance()->GetTemperatureSensor(irun);
     AliTPCTempMap * tempMap = new AliTPCTempMap(tempArray);
     AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(irun);
     //
-    Int_t startTime = sensorPressure->GetStartTime();
-    Int_t endTime = sensorPressure->GetEndTime();
-    Int_t startTimeGRP = AliTPCcalibDB::GetGRP(irun)->GetTimeStart();
-    Int_t stopTimeGRP  = AliTPCcalibDB::GetGRP(irun)->GetTimeEnd();
     Int_t dtime = TMath::Max((endTime-startTime)/20,10*60);
     //Goofie statistical data
     TVectorD vecEntries, vecMean, vecMedian,vecRMS;
@@ -133,16 +155,29 @@ void CalibEnv(const char * runList){
     //CE data processing - see ProcessCEdata function for description of the results
     TVectorD fitResultsA, fitResultsC;
     Int_t nmaskedCE;
-    dbutil.ProcessCEdata("gx++gy++lx++lx**2",fitResultsA,fitResultsC,nmaskedCE);
+    dbutil.ProcessCEdata("(sector<36)++gx++gy++lx++lx**2",fitResultsA,fitResultsC,nmaskedCE);
     TVectorD vecTEntries, vecTMean, vecTRMS, vecTMedian, vecQEntries, vecQMean, vecQRMS, vecQMedian;
     Float_t driftTimeA, driftTimeC;
     dbutil.ProcessCEgraphs(vecTEntries, vecTMean, vecTRMS, vecTMedian,
                            vecQEntries, vecQMean, vecQRMS, vecQMedian,
                            driftTimeA, driftTimeC );
+    //drift velocity using tracks
+    fitVdrift=calibDB->GetVdriftSplineFit("ALISPLINEFIT_MEAN_VDRIFT_COSMICS_ALL",irun);
     //noise data Processing - see ProcessNoiseData function for description of the results
     TVectorD vNoiseMean, vNoiseMeanSenRegions, vNoiseRMS, vNoiseRMSSenRegions;
     Int_t nonMaskedZero=0;
     dbutil.ProcessNoiseData(vNoiseMean, vNoiseMeanSenRegions, vNoiseRMS, vNoiseRMSSenRegions, nonMaskedZero);
+    // comparisons
+    TVectorF pedestalDeviations;
+    TVectorF noiseDeviations;
+    TVectorF pulserQdeviations;
+    Float_t varQMean;
+    Int_t npadsOutOneTB;
+    Int_t npadsOffAdd;
+    dbutil.ProcessPedestalVariations(pedestalDeviations);
+    dbutil.ProcessNoiseVariations(noiseDeviations);
+    dbutil.ProcessPulserVariations(pulserQdeviations,varQMean,npadsOutOneTB,npadsOffAdd);
+    
     //L3 data 
     Float_t bz=AliTPCcalibDB::GetBz(irun);
     Char_t  l3pol=AliTPCcalibDB::GetL3Polarity(irun);
@@ -225,7 +260,9 @@ void CalibEnv(const char * runList){
       Float_t  skirtC=AliTPCcalibDB::GetSkirtVoltage(irun,18,itime);
       Float_t  ggOffA=AliTPCcalibDB::GetGGoffsetVoltage(irun,0,itime);
       Float_t  ggOffC=AliTPCcalibDB::GetGGoffsetVoltage(irun,18,itime);
-      
+      //drift velocity
+      Float_t dvCorr=-5;
+      if (fitVdrift) dvCorr=fitVdrift->Eval(itime);
       
       
       //tempMap->GetLinearFitter(0,0,itime);
@@ -310,6 +347,15 @@ void CalibEnv(const char * runList){
         "nRawAlien="<<nRawAlien<<
         "nlocal="<<nlocal<<
         "nRawLocal="<<nRawLocal<<
+        //comparisons with ref data
+        "pedestalDeviations.="<<&pedestalDeviations<<
+        "noiseDeviations.="<<&noiseDeviations<<
+        "pulserQdeviations.="<<&pulserQdeviations<<
+//         "pulserVarQMean="<<varQMean<<
+        "pulserNpadsOutOneTB="<<npadsOutOneTB<<
+        "pulserNpadsOffAdd="<<npadsOffAdd<<
+        "driftCorrCosmAll="<<dvCorr<<
+      
         "\n";
     }
   }

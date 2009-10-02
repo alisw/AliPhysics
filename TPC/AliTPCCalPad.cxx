@@ -513,8 +513,10 @@ AliTPCCalPad* AliTPCCalPad::GlobalFit(const char* padName, AliTPCCalPad* PadOutl
 void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* fitFormula, TVectorD &fitParamSideA, TVectorD &fitParamSideC,TMatrixD &covMatrixSideA, TMatrixD &covMatrixSideC, Float_t & chi2SideA, Float_t & chi2SideC, Double_t pointError, Bool_t robust, Double_t robustFraction){
   //
   // Performs a fit on both sides.
-  // Valid information for the fitFormula are the variables gx, gy, lx ,ly, meaning global x, global y, local x, local y value of the padName
-  //  eg. a formula might look 'gy' or 'gx ++ gy' or 'gx ++ gy ++ lx ++ lx^2' and so on
+  // Valid information for the fitFormula are the variables
+  // - gx, gy, lx ,ly: meaning global x, global y, local x, local y value of the padName
+  // - sector:         the sector number.
+  //  eg. a formula might look 'gy' or '(sector<36) ++ gy' or 'gx ++ gy' or 'gx ++ gy ++ lx ++ lx^2' and so on
   //
   // PadOutliers - pads with value !=0 are not used in fitting procedure
   // chi2Threshold: Threshold for chi2 when EvalRobust is called
@@ -547,6 +549,7 @@ void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* f
     s.ReplaceAll("gy","[1]");
     s.ReplaceAll("lx","[2]");
     s.ReplaceAll("ly","[3]");
+    s.ReplaceAll("sector","[4]");
     arrFitFormulas->AddAt(new TFormula(Form("param%02d",idim),s.Data()),idim);
   }
   //loop over data and add points to the fitter
@@ -569,7 +572,7 @@ void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* f
         //calculate parameter values
         for (Int_t idim=0;idim<ndim;++idim){
           TFormula *f=(TFormula*)arrFitFormulas->At(idim);
-          f->SetParameters(globalXYZ[0],globalXYZ[1],localXYZ[0],localXYZ[1]);
+          f->SetParameters(globalXYZ[0],globalXYZ[1],localXYZ[0],localXYZ[1],isec);
           parValues[idim]=f->Eval(0);
         }
         //get value

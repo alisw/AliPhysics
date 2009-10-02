@@ -1807,10 +1807,10 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
    chi2 = fitter->GetChisquare();
    chi2 = chi2;
    
-   TString *preturnFormula = new TString(Form("( %f+",fitParam[0])), &returnFormula = *preturnFormula; 
+   TString *preturnFormula = new TString(Form("( %e+",fitParam[0])), &returnFormula = *preturnFormula;
    
    for (Int_t iparam = 0; iparam < dim; iparam++) {
-     returnFormula.Append(Form("%s*(%f)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam+1]));
+     returnFormula.Append(Form("%s*(%e)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam+1]));
      if (iparam < dim-1) returnFormula.Append("+");
    }
    returnFormula.Append(" )");
@@ -1983,206 +1983,228 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
   // 
   // The tree out of this function is the basis for the AliTPCCalibViewer and the AliTPCCalibViewerGUI.
    
-   AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
+  AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
 
-   TObjArray* mapIROCs = 0;
-   TObjArray* mapOROCs = 0;
-   TVectorF *mapIROCArray = 0;
-   TVectorF *mapOROCArray = 0;
-   Int_t mapEntries = 0;
-   TString* mapNames = 0;
-   
-   if (mapFileName) {
-      TFile mapFile(mapFileName, "read");
-      
-      TList* listOfROCs = mapFile.GetListOfKeys();
-      mapEntries = listOfROCs->GetEntries()/2;
-      mapIROCs = new TObjArray(mapEntries*2);
-      mapOROCs = new TObjArray(mapEntries*2);
-      mapIROCArray = new TVectorF[mapEntries];
-      mapOROCArray = new TVectorF[mapEntries];
-      
-      mapNames = new TString[mapEntries];
-      for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
-         TString rocName(((TKey*)(listOfROCs->At(ivalue*2)))->GetName());
-         rocName.Remove(rocName.Length()-4, 4);
-         mapIROCs->AddAt((AliTPCCalROC*)mapFile.Get((rocName + "IROC").Data()), ivalue);
-         mapOROCs->AddAt((AliTPCCalROC*)mapFile.Get((rocName + "OROC").Data()), ivalue);
-         mapNames[ivalue].Append(rocName);
-      }
-      
-      for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
-         mapIROCArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(0));
-         mapOROCArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(36));
-      
-         for (UInt_t ichannel = 0; ichannel < tpcROCinstance->GetNChannels(0); ichannel++)
-            (mapIROCArray[ivalue])[ichannel] = ((AliTPCCalROC*)(mapIROCs->At(ivalue)))->GetValue(ichannel);
-         for (UInt_t ichannel = 0; ichannel < tpcROCinstance->GetNChannels(36); ichannel++)
-            (mapOROCArray[ivalue])[ichannel] = ((AliTPCCalROC*)(mapOROCs->At(ivalue)))->GetValue(ichannel);
-      }
-
-   } //  if (mapFileName)
+  TObjArray* mapIROCs = 0;
+  TObjArray* mapOROCs = 0;
+  TVectorF *mapIROCArray = 0;
+  TVectorF *mapOROCArray = 0;
+  Int_t mapEntries = 0;
+  TString* mapNames = 0;
   
-   TTreeSRedirector cstream(fileName);
-   Int_t arrayEntries = 0;
-   if (array) arrayEntries = array->GetEntries();
-   
-   TString* names = new TString[arrayEntries];
-   for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++)
-      names[ivalue].Append(((AliTPCCalPad*)array->At(ivalue))->GetName());
-
-   for (UInt_t isector = 0; isector < tpcROCinstance->GetNSectors(); isector++) {
+  if (mapFileName) {
+    TFile mapFile(mapFileName, "read");
+    
+    TList* listOfROCs = mapFile.GetListOfKeys();
+    mapEntries = listOfROCs->GetEntries()/2;
+    mapIROCs = new TObjArray(mapEntries*2);
+    mapOROCs = new TObjArray(mapEntries*2);
+    mapIROCArray = new TVectorF[mapEntries];
+    mapOROCArray = new TVectorF[mapEntries];
+    
+    mapNames = new TString[mapEntries];
+    for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
+      TString rocName(((TKey*)(listOfROCs->At(ivalue*2)))->GetName());
+      rocName.Remove(rocName.Length()-4, 4);
+      mapIROCs->AddAt((AliTPCCalROC*)mapFile.Get((rocName + "IROC").Data()), ivalue);
+      mapOROCs->AddAt((AliTPCCalROC*)mapFile.Get((rocName + "OROC").Data()), ivalue);
+      mapNames[ivalue].Append(rocName);
+    }
+    
+    for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
+      mapIROCArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(0));
+      mapOROCArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(36));
+      
+      for (UInt_t ichannel = 0; ichannel < tpcROCinstance->GetNChannels(0); ichannel++)
+        (mapIROCArray[ivalue])[ichannel] = ((AliTPCCalROC*)(mapIROCs->At(ivalue)))->GetValue(ichannel);
+      for (UInt_t ichannel = 0; ichannel < tpcROCinstance->GetNChannels(36); ichannel++)
+        (mapOROCArray[ivalue])[ichannel] = ((AliTPCCalROC*)(mapOROCs->At(ivalue)))->GetValue(ichannel);
+    }
+    
+  } //  if (mapFileName)
+  
+  TTreeSRedirector cstream(fileName);
+  Int_t arrayEntries = 0;
+  if (array) arrayEntries = array->GetEntries();
+  
+  TString* names = new TString[arrayEntries];
+  for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++)
+    names[ivalue].Append(((AliTPCCalPad*)array->At(ivalue))->GetName());
+  
+  for (UInt_t isector = 0; isector < tpcROCinstance->GetNSectors(); isector++) {
       //
       // get statistic for given sector
       //
-      TVectorF median(arrayEntries);
-      TVectorF mean(arrayEntries);
-      TVectorF rms(arrayEntries);
-      TVectorF ltm(arrayEntries);
-      TVectorF ltmrms(arrayEntries);
-      TVectorF medianWithOut(arrayEntries);
-      TVectorF meanWithOut(arrayEntries);
-      TVectorF rmsWithOut(arrayEntries);
-      TVectorF ltmWithOut(arrayEntries);
-      TVectorF ltmrmsWithOut(arrayEntries);
-      
-      TVectorF *vectorArray = new TVectorF[arrayEntries];
-      for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++)
-         vectorArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(isector));
-      
-      for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
-         AliTPCCalPad* calPad = (AliTPCCalPad*) array->At(ivalue);
-         AliTPCCalROC* calROC = calPad->GetCalROC(isector);
-         AliTPCCalROC* outlierROC = 0;
-         if (outlierPad) outlierROC = outlierPad->GetCalROC(isector);
-         if (calROC) {
-            median[ivalue] = calROC->GetMedian();
-            mean[ivalue] = calROC->GetMean();
-            rms[ivalue] = calROC->GetRMS();
-            Double_t ltmrmsValue = 0;
-            ltm[ivalue] = calROC->GetLTM(&ltmrmsValue, ltmFraction);
-            ltmrms[ivalue] = ltmrmsValue;
-            if (outlierROC) {
-               medianWithOut[ivalue] = calROC->GetMedian(outlierROC);
-               meanWithOut[ivalue] = calROC->GetMean(outlierROC);
-               rmsWithOut[ivalue] = calROC->GetRMS(outlierROC);
-               ltmrmsValue = 0;
-               ltmWithOut[ivalue] = calROC->GetLTM(&ltmrmsValue, ltmFraction, outlierROC);
-               ltmrmsWithOut[ivalue] = ltmrmsValue;
-            }
-         }
-         else {
-            median[ivalue] = 0.;
-            mean[ivalue] = 0.;
-            rms[ivalue] = 0.;
-            ltm[ivalue] = 0.;
-            ltmrms[ivalue] = 0.;
-            medianWithOut[ivalue] = 0.;
-            meanWithOut[ivalue] = 0.;
-            rmsWithOut[ivalue] = 0.;
-            ltmWithOut[ivalue] = 0.;
-            ltmrmsWithOut[ivalue] = 0.;
-         }
+    TVectorF median(arrayEntries);
+    TVectorF mean(arrayEntries);
+    TVectorF rms(arrayEntries);
+    TVectorF ltm(arrayEntries);
+    TVectorF ltmrms(arrayEntries);
+    TVectorF medianWithOut(arrayEntries);
+    TVectorF meanWithOut(arrayEntries);
+    TVectorF rmsWithOut(arrayEntries);
+    TVectorF ltmWithOut(arrayEntries);
+    TVectorF ltmrmsWithOut(arrayEntries);
+    
+    TVectorF *vectorArray = new TVectorF[arrayEntries];
+    for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++){
+      vectorArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(isector));
+      vectorArray[ivalue].SetUniqueID(array->UncheckedAt(ivalue)->GetUniqueID());
+//       printf("UniqueID: %d\n",vectorArray[ivalue].GetUniqueID());
+    }
+    
+    for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
+      AliTPCCalPad* calPad = (AliTPCCalPad*) array->At(ivalue);
+      AliTPCCalROC* calROC = calPad->GetCalROC(isector);
+      AliTPCCalROC* outlierROC = 0;
+      if (outlierPad) outlierROC = outlierPad->GetCalROC(isector);
+      if (calROC) {
+        median[ivalue] = calROC->GetMedian();
+        mean[ivalue] = calROC->GetMean();
+        rms[ivalue] = calROC->GetRMS();
+        Double_t ltmrmsValue = 0;
+        ltm[ivalue] = calROC->GetLTM(&ltmrmsValue, ltmFraction);
+        ltmrms[ivalue] = ltmrmsValue;
+        if (outlierROC) {
+          medianWithOut[ivalue] = calROC->GetMedian(outlierROC);
+          meanWithOut[ivalue] = calROC->GetMean(outlierROC);
+          rmsWithOut[ivalue] = calROC->GetRMS(outlierROC);
+          ltmrmsValue = 0;
+          ltmWithOut[ivalue] = calROC->GetLTM(&ltmrmsValue, ltmFraction, outlierROC);
+          ltmrmsWithOut[ivalue] = ltmrmsValue;
+        }
       }
-      
+      else {
+        median[ivalue] = 0.;
+        mean[ivalue] = 0.;
+        rms[ivalue] = 0.;
+        ltm[ivalue] = 0.;
+        ltmrms[ivalue] = 0.;
+        medianWithOut[ivalue] = 0.;
+        meanWithOut[ivalue] = 0.;
+        rmsWithOut[ivalue] = 0.;
+        ltmWithOut[ivalue] = 0.;
+        ltmrmsWithOut[ivalue] = 0.;
+      }
+    }
+    
       //
       // fill vectors of variable per pad
       //
-      TVectorF *posArray = new TVectorF[8];
-      for (Int_t ivalue = 0; ivalue < 8; ivalue++)
-         posArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(isector));
-
-      Float_t posG[3] = {0};
-      Float_t posL[3] = {0};
-      Int_t ichannel = 0;
-      for (UInt_t irow = 0; irow < tpcROCinstance->GetNRows(isector); irow++) {
-         for (UInt_t ipad = 0; ipad < tpcROCinstance->GetNPads(isector, irow); ipad++) {
-            tpcROCinstance->GetPositionLocal(isector, irow, ipad, posL);
-            tpcROCinstance->GetPositionGlobal(isector, irow, ipad, posG);
-            posArray[0][ichannel] = irow;
-            posArray[1][ichannel] = ipad;
-            posArray[2][ichannel] = posL[0];
-            posArray[3][ichannel] = posL[1];
-            posArray[4][ichannel] = posG[0];
-            posArray[5][ichannel] = posG[1];
-            posArray[6][ichannel] = (Int_t)(ipad - (Double_t)(tpcROCinstance->GetNPads(isector, irow))/2);
-            posArray[7][ichannel] = ichannel;
-            
+    TVectorF *posArray = new TVectorF[8];
+    for (Int_t ivalue = 0; ivalue < 8; ivalue++)
+      posArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(isector));
+    
+    Float_t posG[3] = {0};
+    Float_t posL[3] = {0};
+    Int_t ichannel = 0;
+    for (UInt_t irow = 0; irow < tpcROCinstance->GetNRows(isector); irow++) {
+      for (UInt_t ipad = 0; ipad < tpcROCinstance->GetNPads(isector, irow); ipad++) {
+        tpcROCinstance->GetPositionLocal(isector, irow, ipad, posL);
+        tpcROCinstance->GetPositionGlobal(isector, irow, ipad, posG);
+        posArray[0][ichannel] = irow;
+        posArray[1][ichannel] = ipad;
+        posArray[2][ichannel] = posL[0];
+        posArray[3][ichannel] = posL[1];
+        posArray[4][ichannel] = posG[0];
+        posArray[5][ichannel] = posG[1];
+        posArray[6][ichannel] = (Int_t)(ipad - (Double_t)(tpcROCinstance->GetNPads(isector, irow))/2);
+        posArray[7][ichannel] = ichannel;
+        
             // loop over array containing AliTPCCalPads
-            for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
-               AliTPCCalPad* calPad = (AliTPCCalPad*) array->At(ivalue);
-               AliTPCCalROC* calROC = calPad->GetCalROC(isector);
-               if (calROC)
+        for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
+          AliTPCCalPad* calPad = (AliTPCCalPad*) array->At(ivalue);
+          AliTPCCalROC* calROC = calPad->GetCalROC(isector);
+                if (calROC)
                   (vectorArray[ivalue])[ichannel] = calROC->GetValue(irow, ipad);
-               else
-                  (vectorArray[ivalue])[ichannel] = 0;
-            }
-            ichannel++;
-         }
+          else
+            (vectorArray[ivalue])[ichannel] = 0;
+        }
+        ichannel++;
       }
-      
+    }
+    
+    cstream << "calPads" <<
+      "sector=" << isector;
+    
+    for  (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
       cstream << "calPads" <<
-         "sector=" << isector;
+        (Char_t*)((names[ivalue] + "_Median=").Data()) << median[ivalue] <<
+        (Char_t*)((names[ivalue] + "_Mean=").Data()) << mean[ivalue] <<
+        (Char_t*)((names[ivalue] + "_RMS=").Data()) << rms[ivalue] <<
+        (Char_t*)((names[ivalue] + "_LTM=").Data()) << ltm[ivalue] <<
+        (Char_t*)((names[ivalue] + "_RMS_LTM=").Data()) << ltmrms[ivalue];
+      if (outlierPad) {
+        cstream << "calPads" <<
+          (Char_t*)((names[ivalue] + "_Median_OutlierCutted=").Data()) << medianWithOut[ivalue] <<
+          (Char_t*)((names[ivalue] + "_Mean_OutlierCutted=").Data()) << meanWithOut[ivalue] <<
+          (Char_t*)((names[ivalue] + "_RMS_OutlierCutted=").Data()) << rmsWithOut[ivalue] <<
+          (Char_t*)((names[ivalue] + "_LTM_OutlierCutted=").Data()) << ltmWithOut[ivalue] <<
+          (Char_t*)((names[ivalue] + "_RMS_LTM_OutlierCutted=").Data()) << ltmrmsWithOut[ivalue];
+      }
+        //timestamp and run, if given in title
+/*      TString title(((AliTPCCalPad*) array->At(ivalue))->GetTitle());
+      TObjArray *arrtitle=title.Tokenize(",");
+      Int_t run=-1;
+      UInt_t time=0;
+      TIter next(arrtitle);
+      TObject *o=0;
+      while ( (o=next()) ){
+        TString &entry=((TObjString*)o)->GetString();
+        entry.Remove(TString::kBoth,' ');
+        entry.Remove(TString::kBoth,'\t');
+        if (entry.BeginsWith("Run:")) {
+          run=entry(4,entry.Length()).Atoi();
+        } else if (entry.BeginsWith("Time:")) {
+          time=entry(6,entry.Length()).Atoi();
+        }
+      }
+      delete arrtitle;*/
       
-      for  (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
-         cstream << "calPads" <<
-            (Char_t*)((names[ivalue] + "_Median=").Data()) << median[ivalue] <<
-            (Char_t*)((names[ivalue] + "_Mean=").Data()) << mean[ivalue] <<
-            (Char_t*)((names[ivalue] + "_RMS=").Data()) << rms[ivalue] <<
-            (Char_t*)((names[ivalue] + "_LTM=").Data()) << ltm[ivalue] <<
-            (Char_t*)((names[ivalue] + "_RMS_LTM=").Data()) << ltmrms[ivalue];
-         if (outlierPad) {
-            cstream << "calPads" <<
-               (Char_t*)((names[ivalue] + "_Median_OutlierCutted=").Data()) << medianWithOut[ivalue] <<
-               (Char_t*)((names[ivalue] + "_Mean_OutlierCutted=").Data()) << meanWithOut[ivalue] <<
-               (Char_t*)((names[ivalue] + "_RMS_OutlierCutted=").Data()) << rmsWithOut[ivalue] <<
-               (Char_t*)((names[ivalue] + "_LTM_OutlierCutted=").Data()) << ltmWithOut[ivalue] <<
-               (Char_t*)((names[ivalue] + "_RMS_LTM_OutlierCutted=").Data()) << ltmrmsWithOut[ivalue];
-         }
-      }
-
-      for  (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
-         cstream << "calPads" <<
-            (Char_t*)((names[ivalue] + ".=").Data()) << &vectorArray[ivalue];
-      }
-
-      if (mapFileName) {
-         for  (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
+    }
+    
+    for  (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
+      cstream << "calPads" <<
+        (Char_t*)((names[ivalue] + ".=").Data()) << &vectorArray[ivalue];
+    }
+    
+    if (mapFileName) {
+          for  (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
             if (isector < 36)
-               cstream << "calPads" <<
-                  (Char_t*)((mapNames[ivalue] + ".=").Data()) << &mapIROCArray[ivalue];
+              cstream << "calPads" <<
+              (Char_t*)((mapNames[ivalue] + ".=").Data()) << &mapIROCArray[ivalue];
             else
-               cstream << "calPads" <<
-                  (Char_t*)((mapNames[ivalue] + ".=").Data()) << &mapOROCArray[ivalue];
+                cstream << "calPads" <<
+              (Char_t*)((mapNames[ivalue] + ".=").Data()) << &mapOROCArray[ivalue];
          }
-      }
+    }
 
-      cstream << "calPads" <<
-         "row.=" << &posArray[0] <<
-         "pad.=" << &posArray[1] <<
-         "lx.=" << &posArray[2] <<
-         "ly.=" << &posArray[3] <<
-         "gx.=" << &posArray[4] <<
-         "gy.=" << &posArray[5] <<
-         "rpad.=" << &posArray[6] <<
-         "channel.=" << &posArray[7];
-         
-      cstream << "calPads" <<
-         "\n";
-
-      delete[] posArray;
-      delete[] vectorArray;
-   }
-   
-
-   delete[] names;
-   if (mapFileName) {
-      delete mapIROCs;
-      delete mapOROCs;
-      delete[] mapIROCArray;
-      delete[] mapOROCArray;
-      delete[] mapNames;
-   }
+    cstream << "calPads" <<
+      "row.=" << &posArray[0] <<
+      "pad.=" << &posArray[1] <<
+      "lx.=" << &posArray[2] <<
+      "ly.=" << &posArray[3] <<
+      "gx.=" << &posArray[4] <<
+      "gy.=" << &posArray[5] <<
+      "rpad.=" << &posArray[6] <<
+      "channel.=" << &posArray[7];
+    
+    cstream << "calPads" <<
+      "\n";
+    
+    delete[] posArray;
+    delete[] vectorArray;
+  }
+  
+  
+  delete[] names;
+  if (mapFileName) {
+    delete mapIROCs;
+    delete mapOROCs;
+    delete[] mapIROCArray;
+    delete[] mapOROCArray;
+    delete[] mapNames;
+  }
 }
 
 

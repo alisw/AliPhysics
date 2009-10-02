@@ -50,6 +50,8 @@ class TChain;
 class TGraph;
 class TObjArray;
 
+class TMap;
+
 class AliTPCCalibViewerGUI;
 class AliTPCConfigParser;
 
@@ -69,6 +71,7 @@ public:
   void UseChain(TChain *chain);
   void UseConfigFile(const char* file="");
   void Reload(Int_t first=1);
+  void AddReferenceTree(const char* treeFileName, const char* refName="R");
 
   
   void SetCalibViewerGUI(AliTPCCalibViewerGUI *gui) {fCalibViewerGUI=gui;}
@@ -91,7 +94,7 @@ public:
   void HandleButtonsDrawSel(Int_t id = -1);              
   void MouseMove(Int_t event, Int_t x, Int_t y, TObject */*selected*/);
   
-private:
+ private:
   TFile*  fFile;                          //file that keeps the tree
   TChain*  fTree;                         //internal tree
   AliTPCCalibViewerGUI *fCalibViewerGUI;  //calib viewer gui used to display verbose information for one run
@@ -111,6 +114,8 @@ private:
   //
   Bool_t  fNoGraph;                       //Whether to create a graph
   Long64_t fGraphLimitEntries;            //limit in number of entries in the chain for producing a graph
+  //
+  TMap *fMapRefTrees;                      //map of reference trees for the CalibViewer
   //GUI elements
   //main canvas Top part, bottom part
   TGCompositeFrame    *fContTopBottom;      // container for all GUI elements, vertical divided
@@ -172,6 +177,7 @@ private:
   void UpdateValueArrays(Bool_t withGraph);
   const char* SubstituteUnderscores(const char* in);
   void GetHistogramTitle(TString &title);
+  void AdjustYRange();
 private:
   AliTPCCalibViewerGUItime(const AliTPCCalibViewerGUItime &v);
   AliTPCCalibViewerGUItime &operator = (const AliTPCCalibViewerGUItime &v);         // assignment operator

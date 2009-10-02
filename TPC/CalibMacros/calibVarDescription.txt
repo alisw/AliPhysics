@@ -48,12 +48,32 @@ rmsNoise.		1, RMS_Noise, Noise_Pedestals, All_Pads, IROCs, OROCs_small_pads, ORO
 rmsNoiseSen.		1, RMS_Noise_in_sensitive_regions, Noise_Pedestals, All_Pads, IROCs, OROCs_small_pads, OROCs_large_pads
 zeroNoise		1, Pads_with_zero_noise, Noise_Pedestals
 nMasked		1, Number_of_masked_pads, ALTRO
-nOffPulser		1, Pads_without_pulser_signal
-CEfitA.		1, CE_Fit_A-Side, CE, Offset, dt/dgx_[timebins/cm], dt/dgy_[timebins/cm], dt/dlx_[timebins/cm], dt/dlx^{2}_[timebins/cm^{2}]
-CEfitC.		1, CE_Fit_C-Side, CE, Offset, dt/dgx_[timebins/cm], dt/dgy_[timebins/cm], dt/dlx_[timebins/cm], dt/dlx^{2}_[timebins/cm^{2}]
+nOffPulser		1, Pads_without_pulser_signal, Pulser
+timePulser.   1, Pulser_Position_[timebins], Pulser, IROC_A-Side, IROC_C-Side, OROC_A-Side, OROC_C-Side
+CEfitA.		1, CE_Fit_A-Side, CE, Offset_[timebins], IROC/OROC_Offset_[timebins], dt/dgx_[timebins/cm], dt/dgy_[timebins/cm], dt/dlx_[timebins/cm], dt/dlx^{2}_[timebins/cm^{2}]
+CEfitC.		1, CE_Fit_C-Side, CE, Offset_[timebins], IROC/OROC_Offset_[timebins], dt/dgx_[timebins/cm], dt/dgy_[timebins/cm], dt/dlx_[timebins/cm], dt/dlx^{2}_[timebins/cm^{2}]
+nmaskedCE 1, CE_Number_of_outliers, CE
 Bz		1, Magnetic_Field_[T]
 L3polarity		1, L3_polarity, Environment
 nalien		1, Number_of_ESDs_in_alien, reco
 nRawAlien    1, Number_of_Raw_in_alien, reco
 nlocal		1, Number_of_ESDs_local, reco
 nRawLocal 1, Number_of_Raw_local, reco
+nFailL1 1, RCU_synchonisation_failures, ALTRO
+CEgrTEntries.  1, CE_Drift_Time_Entries_ROC, CE,
+CEgrTMean.  1, CE_Drift_Time_Mean_ROC, CE,
+CEgrTRMS.  1, CE_Drift_Time_RMS_ROC, CE,
+CEgrTMedian.  1, CE_Drift_Time_Median_ROC, CE,
+CEgrQEntries.  1, CE_Q_Entries_-_ROC, CE,
+CEgrQMean.  1, CE_Q_Mena_-_ROC, CE,
+CEgrQRMS.  1, CE_Q_RMS_-_ROC, CE,
+CEgrQMedian.  1, CE_Q_Median_-_ROC, CE,
+CEgrDriftA  1, CE_Drift_Time_Mean_A-Side, CE,
+CEgrDriftC  1, CE_Drift_Time_Mean_C-Side, CE,
+pedestalDeviations. 1, Pedestal_var_to_ref_[fraction], Noise_Pedestals, >#pm_0.5_ADC, >#pm_1_ADC, >#pm_1.5_ADC, >#pm_2.0_ADC
+noiseDeviations. 1, Noise_var_to_ref_[fraction], Noise_Pedestals, >5%, >10%, >15%, >20%
+pulserQdeviations. 1, PulserQ_var_to_ref_[fraction], Pulser, >0.5%, >1%, >5%, >10%
+#pulserVarQMean
+pulserNpadsOutOneTB 1, Number_of_pads_with_PulserT_var_>#pm_1_tb_to_ROC_mean, Pulser
+pulserNpadsOffAdd 1, Number_of_pads_without_signal_but_signal_in_ref
+

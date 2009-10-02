@@ -307,7 +307,7 @@ TH2C *AliTPCCalibRaw::MakeHistL1RCUEvents(Int_t type)
   for (Int_t ircu=0; ircu<kNRCU; ++ircu){
     const TVectorF *v=GetALTROL1PhaseEventsRCU(ircu);
     if (!v) continue;
-    if (v->GetNrows()==fNFailL1PhaseEvent){
+    if ((UInt_t)(v->GetNrows())==fNFailL1PhaseEvent){
       newVersion=kTRUE;
       nevents=fNFailL1PhaseEvent;
     }

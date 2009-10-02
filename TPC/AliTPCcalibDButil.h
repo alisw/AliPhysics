@@ -27,7 +27,8 @@ public:
 
   void UpdateFromCalibDB();
   //data processing functions
-  void ProcessCEdata(const char* fitFormula, TVectorD &fitResultsA, TVectorD &fitResultsC, Int_t &noutliersCE);
+  void ProcessCEdata(const char* fitFormula, TVectorD &fitResultsA, TVectorD &fitResultsC,
+                     Int_t &noutliersCE, AliTPCCalPad *outCE=0);
   void ProcessCEgraphs(TVectorD &vecTEntries, TVectorD &vecTMean, TVectorD &vecTRMS, TVectorD &vecTMedian,
                        TVectorD &vecQEntries, TVectorD &vecQMean, TVectorD &vecQRMS, TVectorD &vecQMedian,
                        Float_t &driftTimeA, Float_t &driftTimeC );
@@ -37,6 +38,10 @@ public:
   void ProcessPulser(TVectorD &vMeanTime);
   void ProcessALTROConfig(Int_t &nMasked);
   void ProcessGoofie(TVectorD & vecEntries, TVectorD & vecMedian, TVectorD &vecMean, TVectorD &vecRMS);
+  //processing functions using reference data
+  void ProcessPedestalVariations(TVectorF &pedestalDeviations);
+  void ProcessNoiseVariations(TVectorF &noiseDeviations);
+  void ProcessPulserVariations(TVectorF &pulserQdeviations, Float_t &varQMean, Int_t &npadsOutOneTB, Int_t &npadsOffAdd);
   //getter preprocess information
   Int_t GetNPulserOutliers() const {return fNpulserOutliers;}
   Float_t GetMeanAltro(const AliTPCCalROC *roc, const Int_t row, const Int_t pad, AliTPCCalROC *rocOut=0x0);
@@ -51,10 +56,23 @@ public:
   void SetALTROData(AliTPCCalPad *masked)
                 {fALTROMasked=masked;}
   void SetGoofieArray(AliDCSSensorArray *arr) {fGoofieArray=arr;}
+  //setters for pad by pad information
+  void SetRefFile(const char* filename);
+  void SetRefPulserData(AliTPCCalPad *tmean, AliTPCCalPad *trms=0x0, AliTPCCalPad *qmean=0x0)
+                {fRefPulserTmean=tmean; fRefPulserTrms=trms; fRefPulserQmean=qmean;}
+  void SetRefCEData(AliTPCCalPad *tmean, AliTPCCalPad *trms=0x0, AliTPCCalPad *qmean=0x0)
+                {fRefCETmean=tmean; fRefCETrms=trms; fRefCEQmean=qmean;}
+  void SetRefNoisePedestal(AliTPCCalPad *noise, AliTPCCalPad *pedestal=0x0)
+                {fRefPadNoise=noise; fRefPedestals=pedestal;}
+  void SetRefALTROData(AliTPCCalPad *masked)
+                {fRefALTROMasked=masked;}
+  
   //creation of derived pad by pad calibration data
   AliTPCCalPad *CreatePadTime0(Int_t model=0);
   //
   void UpdatePulserOutlierMap();
+  void UpdateRefPulserOutlierMap();
+  void PulserOutlierMap(AliTPCCalPad *pulOut, const AliTPCCalPad *pulT, const AliTPCCalPad *pulQ);
 private:
   AliTPCcalibDB *fCalibDB;            //pointer to calibDB object
   AliTPCCalPad  *fPadNoise;           //noise information
@@ -69,6 +87,20 @@ private:
   AliTPCCalPad  *fALTROMasked;        //ALTRO masked channels information
   //
   AliTPCCalibRaw *fCalibRaw;          //raw calibration object
+  //reference data
+  AliTPCCalPad  *fRefPadNoise;           //Reference noise information
+  AliTPCCalPad  *fRefPedestals;          //Reference pedestal information
+  AliTPCCalPad  *fRefPulserTmean;        //Reference pulser mean time information
+  AliTPCCalPad  *fRefPulserTrms;         //Reference pulser rms time information
+  AliTPCCalPad  *fRefPulserQmean;        //Reference pulser mean q information
+  AliTPCCalPad  *fRefPulserOutlier;      //Reference pulser outlier map
+  AliTPCCalPad  *fRefCETmean;            //Reference central electrode mean time information
+  AliTPCCalPad  *fRefCETrms;             //Reference central electrode rms time information
+  AliTPCCalPad  *fRefCEQmean;            //Reference central electrode mean q information
+  AliTPCCalPad  *fRefALTROMasked;        //Reference ALTRO masked channels information
+  //
+  AliTPCCalibRaw *fRefCalibRaw;          //Reference raw calibration object
+  
   //
   AliDCSSensorArray* fGoofieArray;    //Goofie Data
   //

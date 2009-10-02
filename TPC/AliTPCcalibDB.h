@@ -19,6 +19,7 @@ class AliTPCExB;
 #include "TGraph.h"
 #include "AliTPCCalPad.h"
 #include "TString.h"
+#include "AliSplineFit.h"
 
 class AliTPCSensorTempArray;
 class AliDCSSensorArray;
@@ -123,7 +124,10 @@ class AliTPCcalibDB : public TObject
   AliDCSSensorArray *     GetVoltageSensors(Int_t run);
   AliTPCCalibVdrift *     GetVdrift(Int_t run);
 	TObjArray *							GetTimeGainSplinesRun(Int_t run);
+  TObjArray*              GetTimeVdriftSplineRun(Int_t run);
   static Float_t GetGain(Int_t sector, Int_t row, Int_t pad);
+  //
+  AliSplineFit* GetVdriftSplineFit(const char* name, Int_t run);
   //
   static void     CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
   static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad* outlierPad = 0, Float_t ltmFraction = 0.9);
@@ -134,6 +138,7 @@ class AliTPCcalibDB : public TObject
   AliGRPObject * MakeGRPObjectFromMap(TMap *map);
   //Create a tree suited for diplaying with the AliTPCCalibViewerGUI
   static Bool_t CreateGUITree(Int_t run, const char* filename="");
+  static Bool_t CreateRefFile(Int_t run, const char* filename="");
   //
 protected:
   
@@ -173,6 +178,7 @@ protected:
   TObjArray      fTemperatureArray;			//! array of temperature sensors - per run
   TObjArray      fVdriftArray;					//! array of v drift interfaces
   TObjArray      fDriftCorrectionArray;                //! array of drift correction
+  
 
   TArrayI        fRunList;							//! run list - indicates try to get the run param
   //

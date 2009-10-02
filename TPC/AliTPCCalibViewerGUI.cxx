@@ -1538,21 +1538,22 @@ void AliTPCCalibViewerGUI::ReplacePlaceHolders(TString &str)
 
     //current draw variable
     TString desiredData("");
-    if (!fListVariables->GetSelectedEntry()) return;
-    desiredData += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
+    if (fListVariables->GetSelectedEntry()){
+      desiredData += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
+      str.ReplaceAll(drawPlaceHolder,desiredData);
+    }
 //    desiredData += fViewer->GetAbbreviation();
 
     //current normalisation
     TString normalizationData("");
-    if (!fListNormalization->GetSelectedEntry()) return;
-    normalizationData += ((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle();
-    if (! (TString(((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle())).BeginsWith("Fit"))
-	if ( normalizationData.BeginsWith("_") ) normalizationData = desiredData+normalizationData;
-    if ( fListVariables->FindEntry(normalizationData.Data()) )
-	normalizationData+="~";
-
-    str.ReplaceAll(drawPlaceHolder,desiredData);
-    str.ReplaceAll(normPlaceHolder,normalizationData);
+    if (fListNormalization->GetSelectedEntry()){
+      normalizationData += ((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle();
+      if (! (TString(((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle())).BeginsWith("Fit"))
+        if ( normalizationData.BeginsWith("_") ) normalizationData = desiredData+normalizationData;
+      if ( fListVariables->FindEntry(normalizationData.Data()) )
+        normalizationData+="~";
+      str.ReplaceAll(normPlaceHolder,normalizationData);
+    }
 }
 
 void AliTPCCalibViewerGUI::DoNewSelection() {
@@ -1810,7 +1811,9 @@ void AliTPCCalibViewerGUI::DoFit() {
       formulaStr = TString(fViewer->AddAbbreviations((char*)formulaStr.Data()));
 
    // ********** call AliTPCCalibViewer's fit-function
-   returnStr = fViewer->Fit(drawStr.Data(), formulaStr.Data(), cutStr.Data(), chi2, fitParam, covMatrix);
+  ReplacePlaceHolders(drawStr);
+  ReplacePlaceHolders(cutStr);
+  returnStr = fViewer->Fit(drawStr.Data(), formulaStr.Data(), cutStr.Data(), chi2, fitParam, covMatrix);
    
    std::cout << std::endl;
    std::cout << "Your fit formula reads as follows:" << std::endl;

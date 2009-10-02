@@ -107,6 +107,7 @@ class AliTPCCalDet;
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "TString.h"
+#include "TDirectory.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalibPulser.h"
 #include "AliTPCCalibPedestal.h"
@@ -864,6 +865,15 @@ Float_t AliTPCcalibDB::GetGain(Int_t sector, Int_t row, Int_t pad){
   return calPad->GetCalROC(sector)->GetValue(row,pad);
 }
 
+AliSplineFit* AliTPCcalibDB::GetVdriftSplineFit(const char* name, Int_t run){
+  //
+  //
+  //
+  TObjArray *arr=GetTimeVdriftSplineRun(run);
+  if (!arr) return 0;
+  return dynamic_cast<AliSplineFit*>(arr->FindObject(name));
+}
+
 
 AliGRPObject *AliTPCcalibDB::GetGRP(Int_t run){
   //
@@ -948,6 +958,18 @@ TObjArray * AliTPCcalibDB::GetTimeGainSplinesRun(Int_t run){
     gainSplines = (TObjArray *)fTimeGainSplinesArray.At(run);
   }
   return gainSplines;
+}
+
+TObjArray * AliTPCcalibDB::GetTimeVdriftSplineRun(Int_t run){
+  //
+  // Get drift spline array
+  //
+  TObjArray * driftSplines = (TObjArray *)fDriftCorrectionArray.At(run);
+  if (!driftSplines) {
+    UpdateRunInformations(run);
+    driftSplines = (TObjArray *)fDriftCorrectionArray.At(run);
+  }
+  return driftSplines;
 }
 
 AliDCSSensorArray * AliTPCcalibDB::GetVoltageSensors(Int_t run){
@@ -1059,7 +1081,7 @@ Float_t AliTPCcalibDB::GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp
     for (Int_t ipoint=0;ipoint<gr->GetN();++ipoint){
       Double_t x,y;
       gr->GetPoint(ipoint,x,y);
-      Int_t time=sensor->GetStartTime()+x*3600; //time in graph is hours
+      Int_t time=TMath::Nint(sensor->GetStartTime()+x*3600); //time in graph is hours
       if (time<timeStamp) continue;
       val=y;
       break;
@@ -1072,14 +1094,14 @@ Float_t AliTPCcalibDB::GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp
     if (val==0 ){
       Double_t x,y;
       gr->GetPoint(0,x,y);
-      Int_t time=sensor->GetStartTime()+x*3600; //time in graph is hours
+      Int_t time=TMath::Nint(sensor->GetStartTime()+x*3600); //time in graph is hours
       if ((time-timeStamp)<5*60) val=y;
     }
     //last point
     if (val==0 ){
       Double_t x,y;
       gr->GetPoint(gr->GetN()-1,x,y);
-      Int_t time=sensor->GetStartTime()+x*3600; //time in graph is hours
+      Int_t time=TMath::Nint(sensor->GetStartTime()+x*3600); //time in graph is hours
       if ((timeStamp-time)<5*60) val=y;
     }
   } else {
@@ -1323,14 +1345,21 @@ Char_t  AliTPCcalibDB::GetL3Polarity(Int_t run) {
   //
   // get l3 polarity from GRP
   //
-  return AliTPCcalibDB::GetGRP(run)->GetL3Polarity();
+  Char_t pol=-100;
+  AliGRPObject *grp=AliTPCcalibDB::GetGRP(run);
+  if (grp) pol=grp->GetL3Polarity();
+  return pol;
 }
 
 TString AliTPCcalibDB::GetRunType(Int_t run){
   //
   // return run type from grp
   //
-  return AliTPCcalibDB::GetGRP(run)->GetRunType();
+
+//   TString type("UNKNOWN");
+  AliGRPObject *grp=AliTPCcalibDB::GetGRP(run);
+  if (grp) return grp->GetRunType();
+  return "UNKNOWN";
 }
 
 Float_t AliTPCcalibDB::GetValueGoofie(Int_t timeStamp, Int_t run, Int_t type){
@@ -1467,3 +1496,45 @@ Bool_t AliTPCcalibDB::CreateGUITree(Int_t run, const char* filename)
   return kTRUE;
 }
 
+Bool_t AliTPCcalibDB::CreateRefFile(Int_t run, const char* filename)
+{
+  //
+  // Create a gui tree for run number 'run'
+  //
+  
+  if (!AliCDBManager::Instance()->GetDefaultStorage()){
+    AliLog::Message(AliLog::kError, "Default Storage not set. Cannot create Calibration Tree!",
+                    MODULENAME(), "AliTPCcalibDB", FUNCTIONNAME(), __FILE__, __LINE__);
+    return kFALSE;
+  }
+  TString file(filename);
+  if (file.IsNull()) file=Form("RefCalPads_%d.root",run);
+  TDirectory *currDir=gDirectory;
+  //db instance
+  AliTPCcalibDB *db=AliTPCcalibDB::Instance();
+  // retrieve cal pad objects
+  db->SetRun(run);
+  //open file
+  TFile f(file.Data(),"recreate");
+  //noise and pedestals
+  db->GetPedestals()->Write("Pedestals");
+  db->GetPadNoise()->Write("PadNoise");
+  //pulser data
+  db->GetPulserTmean()->Write("PulserTmean");
+  db->GetPulserTrms()->Write("PulserTrms");
+  db->GetPulserQmean()->Write("PulserQmean");
+  //CE data
+  db->GetCETmean()->Write("CETmean");
+  db->GetCETrms()->Write("CETrms");
+  db->GetCEQmean()->Write("CEQmean");
+  //Altro data
+  db->GetALTROAcqStart() ->Write("ALTROAcqStart");
+  db->GetALTROZsThr()    ->Write("ALTROZsThr");
+  db->GetALTROFPED()     ->Write("ALTROFPED");
+  db->GetALTROAcqStop()  ->Write("ALTROAcqStop");
+  db->GetALTROMasked()   ->Write("ALTROMasked");
+  //
+  f.Close();
+  currDir->cd();
+  return kTRUE;
+}

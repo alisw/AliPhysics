@@ -28,6 +28,8 @@
 #include <TVectorT.h>
 #include <TObjArray.h>
 #include <TGraph.h>
+#include <TFile.h>
+#include <TDirectory.h>
 
 #include <AliDCSSensorArray.h>
 #include <AliDCSSensor.h>
@@ -56,10 +58,21 @@ AliTPCcalibDButil::AliTPCcalibDButil() :
   fCEQmean(0x0),
   fALTROMasked(0x0),
   fCalibRaw(0x0),
+  fRefPadNoise(0x0),
+  fRefPedestals(0x0),
+  fRefPulserTmean(0x0),
+  fRefPulserTrms(0x0),
+  fRefPulserQmean(0x0),
+  fRefPulserOutlier(new AliTPCCalPad("RefPulserOutliers","RefPulserOutliers")),
+  fRefCETmean(0x0),
+  fRefCETrms(0x0),
+  fRefCEQmean(0x0),
+  fRefALTROMasked(0x0),
+  fRefCalibRaw(0x0),
   fGoofieArray(0x0),
   fMapper(new AliTPCmapper(0x0)),
   fNpulserOutliers(-1),
-  fIrocTimeOffset(.2),
+  fIrocTimeOffset(0),
   fCETmaxLimitAbs(1.5),
   fPulTmaxLimitAbs(1.5),
   fPulQmaxLimitAbs(5),
@@ -76,7 +89,19 @@ AliTPCcalibDButil::~AliTPCcalibDButil()
   // dtor
   //
   delete fPulserOutlier;
+  delete fRefPulserOutlier;
   delete fMapper;
+  if (fRefPadNoise) delete fRefPadNoise;
+  if (fRefPedestals) delete fRefPedestals;
+  if (fRefPulserTmean) delete fRefPulserTmean;
+  if (fRefPulserTrms) delete fRefPulserTrms;
+  if (fRefPulserQmean) delete fRefPulserQmean;
+  if (fRefCETmean) delete fRefCETmean;
+  if (fRefCETrms) delete fRefCETrms;
+  if (fRefCEQmean) delete fRefCEQmean;
+  if (fRefALTROMasked) delete fRefALTROMasked;
+  if (fRefCalibRaw) delete fRefCalibRaw;
+    
 }
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::UpdateFromCalibDB()
@@ -98,7 +123,8 @@ void AliTPCcalibDButil::UpdateFromCalibDB()
   UpdatePulserOutlierMap();
 }
 //_____________________________________________________________________________________
-void AliTPCcalibDButil::ProcessCEdata(const char* fitFormula, TVectorD &fitResultsA, TVectorD &fitResultsC, Int_t &noutliersCE)
+void AliTPCcalibDButil::ProcessCEdata(const char* fitFormula, TVectorD &fitResultsA, TVectorD &fitResultsC,
+                                      Int_t &noutliersCE, AliTPCCalPad *outCE)
 {
   //
   // Process the CE data for this run
@@ -121,15 +147,18 @@ void AliTPCcalibDButil::ProcessCEdata(const char* fitFormula, TVectorD &fitResul
   }
   noutliersCE=0;
   //create outlier map
-  AliTPCCalPad out("out","out");
+  AliTPCCalPad *out=0;
+  if (outCE) out=outCE;
+  else out=new AliTPCCalPad("outCE","outCE");
   AliTPCCalROC *rocMasked=0x0;
   //loop over all channels
   for (UInt_t iroc=0;iroc<fCETmean->kNsec;++iroc){
     AliTPCCalROC *rocData=fCETmean->GetCalROC(iroc);
     if (fALTROMasked) rocMasked=fALTROMasked->GetCalROC(iroc);
-    AliTPCCalROC *rocOut=out.GetCalROC(iroc);
+    AliTPCCalROC *rocOut=out->GetCalROC(iroc);
     if (!rocData) {
       noutliersCE+=AliTPCROC::Instance()->GetNChannels(iroc);
+      rocOut->Add(1.);
       continue;
     }
     //add time offset to IROCs
@@ -140,22 +169,23 @@ void AliTPCcalibDButil::ProcessCEdata(const char* fitFormula, TVectorD &fitResul
     for (UInt_t irow=0;irow<nrows;++irow){
       UInt_t npads=rocData->GetNPads(irow);
       for (UInt_t ipad=0;ipad<npads;++ipad){
+        rocOut->SetValue(irow,ipad,0);
         //exclude masked pads
         if (rocMasked && rocMasked->GetValue(irow,ipad)) {
-          rocOut->SetValue(iroc,ipad,1);
+          rocOut->SetValue(irow,ipad,1);
           continue;
         }
         //exclude edge pads
-        if (ipad==0||ipad==npads-1) rocOut->SetValue(iroc,ipad,1); 
-        Float_t valTmean=rocData->GetValue(iroc,ipad);
+        if (ipad==0||ipad==npads-1) rocOut->SetValue(irow,ipad,1);
+        Float_t valTmean=rocData->GetValue(irow,ipad);
         //exclude values that are exactly 0
         if (valTmean==0) {
-          rocOut->SetValue(iroc,ipad,1);
+          rocOut->SetValue(irow,ipad,1);
           ++noutliersCE;
         }
         // exclude channels with too large variations
         if (TMath::Abs(valTmean)>fCETmaxLimitAbs) {
-          rocOut->SetValue(iroc,ipad,1);
+          rocOut->SetValue(irow,ipad,1);
           ++noutliersCE;
         }
       }
@@ -164,7 +194,8 @@ void AliTPCcalibDButil::ProcessCEdata(const char* fitFormula, TVectorD &fitResul
   //perform fit
   TMatrixD dummy;
   Float_t chi2A,chi2C;
-  fCETmean->GlobalSidesFit(&out,fitFormula,fitResultsA,fitResultsC,dummy,dummy,chi2A,chi2C);
+  fCETmean->GlobalSidesFit(out,fitFormula,fitResultsA,fitResultsC,dummy,dummy,chi2A,chi2C);
+  if (!outCE) delete out;
 }
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::ProcessCEgraphs(TVectorD &vecTEntries, TVectorD &vecTMean, TVectorD &vecTRMS, TVectorD &vecTMedian,
@@ -519,20 +550,203 @@ void AliTPCcalibDButil::ProcessGoofie(TVectorD & vecEntries, TVectorD & vecMedia
     }
   }
 }
-
+//_____________________________________________________________________________________
+void AliTPCcalibDButil::ProcessPedestalVariations(TVectorF &pedestalDeviations)
+{
+  //
+  // check the variations of the pedestal data to the reference pedestal data
+  // thresholds are 0.5, 1.0, 1.5 and 2 timebins respectively.
+  //
+  const Int_t npar=4;
+  TVectorF vThres(npar); //thresholds
+  Int_t nActive=0;       //number of active channels
+  
+  //reset and set thresholds
+  pedestalDeviations.ResizeTo(npar);
+  for (Int_t i=0;i<npar;++i){
+    pedestalDeviations.GetMatrixArray()[i]=0;
+    vThres.GetMatrixArray()[i]=(i+1)*.5;
+  }
+  //check all needed data is available
+  if (!fRefPedestals || !fPedestals || !fALTROMasked || !fRefALTROMasked) return;
+  //loop over all channels
+  for (UInt_t isec=0;isec<AliTPCCalPad::kNsec;++isec){
+    AliTPCCalROC *pROC=fPedestals->GetCalROC(isec);
+    AliTPCCalROC *pRefROC=fRefPedestals->GetCalROC(isec);
+    AliTPCCalROC *mROC=fALTROMasked->GetCalROC(isec);
+    AliTPCCalROC *mRefROC=fRefALTROMasked->GetCalROC(isec);
+    UInt_t nrows=mROC->GetNrows();
+    for (UInt_t irow=0;irow<nrows;++irow){
+      UInt_t npads=mROC->GetNPads(irow);
+      for (UInt_t ipad=0;ipad<npads;++ipad){
+        //don't use masked channels;
+        if (mROC   ->GetValue(irow,ipad)) continue;
+        if (mRefROC->GetValue(irow,ipad)) continue;
+        Float_t deviation=TMath::Abs(pROC->GetValue(irow,ipad)-pRefROC->GetValue(irow,ipad));
+        for (Int_t i=0;i<npar;++i){
+          if (deviation>vThres[i])
+            ++pedestalDeviations.GetMatrixArray()[i];
+        }
+        ++nActive;
+      }//end ipad
+    }//ind irow
+  }//end isec
+  if (nActive>0){
+    for (Int_t i=0;i<npar;++i){
+      pedestalDeviations.GetMatrixArray()[i]/=nActive;
+    }
+  }
+}
+//_____________________________________________________________________________________
+void AliTPCcalibDButil::ProcessNoiseVariations(TVectorF &noiseDeviations)
+{
+  //
+  // check the variations of the noise data to the reference noise data
+  // thresholds are 5, 10, 15 and 20 percent respectively.
+  //
+  const Int_t npar=4;
+  TVectorF vThres(npar); //thresholds
+  Int_t nActive=0;       //number of active channels
+  
+  //reset and set thresholds
+  noiseDeviations.ResizeTo(npar);
+  for (Int_t i=0;i<npar;++i){
+    noiseDeviations.GetMatrixArray()[i]=0;
+    vThres.GetMatrixArray()[i]=(i+1)*.05;
+  }
+  //check all needed data is available
+  if (!fRefPadNoise || !fPadNoise || !fALTROMasked || !fRefALTROMasked) return;
+  //loop over all channels
+  for (UInt_t isec=0;isec<AliTPCCalPad::kNsec;++isec){
+    AliTPCCalROC *nROC=fPadNoise->GetCalROC(isec);
+    AliTPCCalROC *nRefROC=fRefPadNoise->GetCalROC(isec);
+    AliTPCCalROC *mROC=fALTROMasked->GetCalROC(isec);
+    AliTPCCalROC *mRefROC=fRefALTROMasked->GetCalROC(isec);
+    UInt_t nrows=mROC->GetNrows();
+    for (UInt_t irow=0;irow<nrows;++irow){
+      UInt_t npads=mROC->GetNPads(irow);
+      for (UInt_t ipad=0;ipad<npads;++ipad){
+        //don't use masked channels;
+        if (mROC   ->GetValue(irow,ipad)) continue;
+        if (mRefROC->GetValue(irow,ipad)) continue;
+        Float_t deviation=(nROC->GetValue(irow,ipad)/nRefROC->GetValue(irow,ipad))-1;
+        for (Int_t i=0;i<npar;++i){
+          if (deviation>vThres[i])
+            ++noiseDeviations.GetMatrixArray()[i];
+        }
+        ++nActive;
+      }//end ipad
+    }//ind irow
+  }//end isec
+  if (nActive>0){
+    for (Int_t i=0;i<npar;++i){
+      noiseDeviations.GetMatrixArray()[i]/=nActive;
+    }
+  }
+}
+//_____________________________________________________________________________________
+void AliTPCcalibDButil::ProcessPulserVariations(TVectorF &pulserQdeviations, Float_t &varQMean,
+                                                Int_t &npadsOutOneTB, Int_t &npadsOffAdd)
+{
+  //
+  // check the variations of the pulserQmean data to the reference pulserQmean data: pulserQdeviations
+  // thresholds are .5, 1, 5 and 10 percent respectively.
+  // 
+  //
+  const Int_t npar=4;
+  TVectorF vThres(npar); //thresholds
+  Int_t nActive=0;       //number of active channels
+  
+  //reset and set thresholds
+  pulserQdeviations.ResizeTo(npar);
+  for (Int_t i=0;i<npar;++i){
+    pulserQdeviations.GetMatrixArray()[i]=0;
+  }
+  npadsOutOneTB=0;
+  npadsOffAdd=0;
+  varQMean=0;
+  vThres.GetMatrixArray()[0]=.005;
+  vThres.GetMatrixArray()[1]=.01;
+  vThres.GetMatrixArray()[2]=.05;
+  vThres.GetMatrixArray()[3]=.1;
+  //check all needed data is available
+  if (!fRefPulserTmean || !fPulserTmean || !fPulserQmean || !fRefPulserQmean || !fALTROMasked || !fRefALTROMasked) return;
+  //
+  UpdateRefPulserOutlierMap();
+  //loop over all channels
+  for (UInt_t isec=0;isec<(UInt_t)AliTPCCalPad::kNsec;++isec){
+    AliTPCCalROC *pqROC=fPulserQmean->GetCalROC(isec);
+    AliTPCCalROC *pqRefROC=fRefPulserQmean->GetCalROC(isec);
+    AliTPCCalROC *ptROC=fPulserTmean->GetCalROC(isec);
+    //AliTPCCalROC *ptRefROC=fRefPulserTmean->GetCalROC(isec);
+    AliTPCCalROC *mROC=fALTROMasked->GetCalROC(isec);
+    AliTPCCalROC *mRefROC=fRefALTROMasked->GetCalROC(isec);
+    AliTPCCalROC *oROC=fPulserOutlier->GetCalROC(isec);
+    Float_t pt_mean=ptROC->GetMean(oROC);
+    UInt_t nrows=mROC->GetNrows();
+    for (UInt_t irow=0;irow<nrows;++irow){
+      UInt_t npads=mROC->GetNPads(irow);
+      for (UInt_t ipad=0;ipad<npads;++ipad){
+        //don't use masked channels;
+        if (mROC   ->GetValue(irow,ipad)) continue;
+        if (mRefROC->GetValue(irow,ipad)) continue;
+        //don't user edge pads
+        if (ipad==0||ipad==npads-1) continue;
+        //data
+        Float_t pq=pqROC->GetValue(irow,ipad);
+        Float_t pqRef=pqRefROC->GetValue(irow,ipad);
+        Float_t pt=ptROC->GetValue(irow,ipad);
+//         Float_t ptRef=ptRefROC->GetValue(irow,ipad);
+        //comparisons q
+        Float_t deviation=TMath::Abs(pq/pqRef-1);
+        for (Int_t i=0;i<npar;++i){
+          if (deviation>vThres[i])
+            ++pulserQdeviations.GetMatrixArray()[i];
+        }
+        if (pqRef>11&&pq<11) ++npadsOffAdd;
+        varQMean+=pq-pqRef;
+        //comparisons t
+        if (TMath::Abs(pt-pt_mean)>1) ++npadsOutOneTB;
+        ++nActive;
+      }//end ipad
+    }//ind irow
+  }//end isec
+  if (nActive>0){
+    for (Int_t i=0;i<npar;++i){
+      pulserQdeviations.GetMatrixArray()[i]/=nActive;
+      varQMean/=nActive;
+    }
+  }
+}
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::UpdatePulserOutlierMap()
+{
+  //
+  //
+  //
+  PulserOutlierMap(fPulserOutlier,fPulserTmean, fPulserQmean);
+}
+//_____________________________________________________________________________________
+void AliTPCcalibDButil::UpdateRefPulserOutlierMap()
+{
+  //
+  //
+  //
+  PulserOutlierMap(fRefPulserOutlier,fRefPulserTmean, fRefPulserQmean);
+}
+//_____________________________________________________________________________________
+void AliTPCcalibDButil::PulserOutlierMap(AliTPCCalPad *pulOut, const AliTPCCalPad *pulT, const AliTPCCalPad *pulQ)
 {
   //
   // Create a map that contains outliers from the Pulser calibration data.
   // The outliers include masked channels, edge pads and pads with
   //   too large timing and charge variations.
-  // nonMaskedZero is the number of outliers in the Pulser calibration data.
+  // fNpulserOutliers is the number of outliers in the Pulser calibration data.
   //   those do not contain masked and edge pads
   //
-  if (!fPulserTmean||!fPulserQmean) {
+  if (!pulT||!pulQ) {
     //reset map
-    fPulserOutlier->Multiply(0.);
+    pulOut->Multiply(0.);
     fNpulserOutliers=-1;
     return;
   }
@@ -541,9 +755,9 @@ void AliTPCcalibDButil::UpdatePulserOutlierMap()
   
   //Create Outlier Map
   for (UInt_t isec=0;isec<AliTPCCalPad::kNsec;++isec){
-    AliTPCCalROC *tmeanROC=fPulserTmean->GetCalROC(isec);
-    AliTPCCalROC *qmeanROC=fPulserQmean->GetCalROC(isec);
-    AliTPCCalROC *outROC=fPulserOutlier->GetCalROC(isec);
+    AliTPCCalROC *tmeanROC=pulT->GetCalROC(isec);
+    AliTPCCalROC *qmeanROC=pulQ->GetCalROC(isec);
+    AliTPCCalROC *outROC=pulOut->GetCalROC(isec);
     if (!tmeanROC||!qmeanROC) {
       //reset outliers in this ROC
       outROC->Multiply(0.);
@@ -650,3 +864,31 @@ Float_t AliTPCcalibDButil::GetMeanAltro(const AliTPCCalROC *roc, const Int_t row
   if (n>0) mean/=n;
   return mean;
 }
+//_____________________________________________________________________________________
+void AliTPCcalibDButil::SetRefFile(const char* filename)
+{
+  //
+  // load cal pad objects form the reference file
+  //
+  TDirectory *currDir=gDirectory;
+  TFile f(filename);
+  fRefPedestals=(AliTPCCalPad*)f.Get("Pedestals");
+  fRefPadNoise=(AliTPCCalPad*)f.Get("PadNoise");
+  //pulser data
+  fRefPulserTmean=(AliTPCCalPad*)f.Get("PulserTmean");
+  fRefPulserTrms=(AliTPCCalPad*)f.Get("PulserTrms");
+  fRefPulserQmean=(AliTPCCalPad*)f.Get("PulserQmean");
+  //CE data
+  fRefCETmean=(AliTPCCalPad*)f.Get("CETmean");
+  fRefCETrms=(AliTPCCalPad*)f.Get("CETrms");
+  fRefCEQmean=(AliTPCCalPad*)f.Get("CEQmean");
+  //Altro data
+//   fRefALTROAcqStart=(AliTPCCalPad*)f.Get("ALTROAcqStart");
+//   fRefALTROZsThr=(AliTPCCalPad*)f.Get("ALTROZsThr");
+//   fRefALTROFPED=(AliTPCCalPad*)f.Get("ALTROFPED");
+//   fRefALTROAcqStop=(AliTPCCalPad*)f.Get("ALTROAcqStop");
+  fRefALTROMasked=(AliTPCCalPad*)f.Get("ALTROMasked");
+  f.Close();
+  currDir->cd();
+}
+
