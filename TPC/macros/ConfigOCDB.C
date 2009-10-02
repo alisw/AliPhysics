@@ -54,6 +54,10 @@ void SetupCustom(Int_t run){
   }
   AliMagF::BMap_t smag = AliMagF::k5kG;
   Double_t bzfac = bz/5;
+  if (bzfac==0) {  // force default magnetic field if 0 field used
+    bzfac=1;
+    bz=5;
+  }
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, bzfac, 1., 10., smag));
 
   printf("\n\nSET EXB FIELD\t%f\n\n", -bz);

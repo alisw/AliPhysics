@@ -15,6 +15,29 @@ Calibration and Performace  train at GSI:
    The calibration at GSI is done on the batch farm. The results are merged per run.
 
 
-   
-     
+
+List of files:
+Macros:
+CalibrateTPC.C - standard in $ALICE_ROOT/TPC/macros   
+ConfigOCDB.C   - example (to be mofieid according studies)  in $ALICE_ROOT/TPC/macros 
+filterESD.C    - $ALICE_ROOT/TPC/macros/filterESD.C
+
+Shell scripts:
+balice.sh      - symbolic link to the AliRoot setup script
+               - example (to be modified):
+	         ln -sf ~/.balice64HEAD0108 balice.sh
+alienSetup.sh  - symbolic link to the alien setup script
+               - hint (don't modify unles you know what are you doing): 
+	       - ln -sf $ALICE_ROOT/TPC/CalibMacros/alienSetupGSI.sh alienSetup.sh
+submitcalib.sh - hint: copy of the (don't change it unless ...)
+               - cp $ALICE_ROOT/TPC/CalibMacros/submitcalib.sh .
+
+Run lists:
+(No recepie for the moment how to create it)
+run.list      - main source of the run numbers  (created from the logbook)      
+esdall.list   - the list of files -standard 
+esdalien.list - the list of files -alien
     
+
+Run the train:
+shells.sh      - this is a recepie

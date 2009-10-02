@@ -44,7 +44,10 @@
   mem.MakeReport(0,0,"order 0 sortstat 3 sortstamp 0 sortdeep 10 stackdeep 15 maxlength 50")   
 */
 
-void SetupCalibTask(TObject * task1);
+
+void SetupCalibTaskTrain1(TObject * task1);
+void SetupCalibTaskTrain2(TObject * task2);
+
 char * prefix = "/V6/";
 // Global parameters to set
 TTimeStamp startTime(2009,8,7,0,0,0);
@@ -65,9 +68,13 @@ TObject  * SetupCalibTask(char * tprefix ="/V12/") {
   AliESDInputHandler* esdH=new AliESDInputHandler;
   esdH->SetActiveBranches("ESDfriend");
   mgr->SetInputEventHandler(esdH);  
-  AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("TPC calibration task");
+
   //
-  SetupCalibTaskTime(task1);
+  // Train 1 - to be run always on full statistic (
+  //
+  AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
+  //
+  SetupCalibTaskTrain1(task1);
   //
   mgr->AddTask(task1);
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
@@ -75,9 +82,28 @@ TObject  * SetupCalibTask(char * tprefix ="/V12/") {
   if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
                                       AliAnalysisManager::kInputContainer);
 
-  AliAnalysisDataContainer *coutput1 =mgr->CreateContainer("TPCCalib",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "CalibObjects.root");  
+  AliAnalysisDataContainer *coutput1 =mgr->CreateContainer("TPCCalib",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "CalibObjectsTrain1.root");  
   mgr->ConnectInput(task1,0,cinput1);
   mgr->ConnectOutput(task1,0,coutput1);
+  //
+  //
+  //
+  AliTPCAnalysisTaskcalib *task2=new AliTPCAnalysisTaskcalib("CalibObjectsTrain2");
+  //
+  SetupCalibTaskTrain2(task2);
+  //
+  mgr->AddTask(task2);
+  AliAnalysisDataContainer *cinput2 = mgr->GetCommonInputContainer();
+  
+  if (!cinput2) cinput2 = mgr->CreateContainer("cchain",TChain::Class(), 
+                                      AliAnalysisManager::kInputContainer);
+
+  AliAnalysisDataContainer *coutput2 =mgr->CreateContainer("TPCCalib2",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "CalibObjectsTrain2.root");  
+  mgr->ConnectInput(task2,0,cinput2);
+  mgr->ConnectOutput(task2,0,coutput2);
+
+
+
   //
   if (!mgr->InitAnalysis()) return 0;
   mgr->PrintStatus();   
@@ -206,7 +232,7 @@ void AddCalibPID(TObject* task){
 //
 //
 
-void SetupCalibTaskTime(TObject* task){
+void SetupCalibTaskTrain1(TObject* task){
   //
   //
   //
@@ -224,6 +250,23 @@ void SetupCalibTaskTime(TObject* task){
   gSystem->mkdir(path);
   myTask->SetDebugOuputhPath(path.Data());
 
+}
+
+void SetupCalibTaskTrain2(TObject* task){
+  //
+  //
+  //
+  AliTPCClusterParam * clusterParam = AliTPCcalibDB::Instance()->GetClusterParam(); 
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
+  // AddCalibCalib(task);
+  // AddCalibAlign()
+  // AddCalibTracks()
+  AddCalibPID(task);
+  //
+  TString path=gSystem->pwd();
+  path+=prefix;
+  gSystem->mkdir(path);
+  myTask->SetDebugOuputhPath(path.Data());
 }
 
 
@@ -370,7 +413,8 @@ void CalibrateTPC(Int_t first, Int_t last, Int_t run, const char*closeSE="ALICE:
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
   gSystem->Setenv("alien_CLOSE_SE",closeSE);
-  TGrid * alien =     TGrid::Connect("alien://",0,0,"t");
+  TGrid * alien =     TGrid::Connect("alien://",0,0,"t"); 
+  gSystem->Exec("rm -f isOK");
   gROOT->Macro(Form("ConfigOCDB.C\(%d\)",run));
   //
   // Setup analysis manager
@@ -390,5 +434,6 @@ void CalibrateTPC(Int_t first, Int_t last, Int_t run, const char*closeSE="ALICE:
   //
   mgr->SetDebugLevel(1);
   mgr->StartAnalysis("local",chain);
+  gSystem->Exec("touch isOK");
   
 }
