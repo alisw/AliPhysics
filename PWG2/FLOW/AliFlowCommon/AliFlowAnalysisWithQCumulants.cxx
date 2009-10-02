@@ -494,13 +494,32 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  {
   // 1D differential flow (pt)
   // without weights:
-  if(nRP>1) this->CalculateReducedCorrelations1D("RP","Pt");
-  if(nRP>1) this->CalculateReducedCorrelations1D("POI","Pt");
+  if(nRP>1)
+  {
+   this->CalculateReducedCorrelations1D("RP","Pt");
+   this->CalculateReducedCorrelations1D("POI","Pt");
+   this->CalculateQProductsForDiffFlow("RP","Pt");
+   this->CalculateQProductsForDiffFlow("POI","Pt");
+   this->CalculateSumOfEventWeightsForDiffFlow("RP","Pt");
+   this->CalculateProductOfEventWeightsForDiffFlow("RP","Pt");
+   this->CalculateSumOfEventWeightsForDiffFlow("POI","Pt");
+   this->CalculateProductOfEventWeightsForDiffFlow("POI","Pt");
+  }
+  
   // with weights:
   // ... 
   // 1D differential flow (eta)  
-  if(nRP>1) this->CalculateReducedCorrelations1D("RP","Eta");
-  if(nRP>1) this->CalculateReducedCorrelations1D("POI","Eta");
+  if(nRP>1)
+  {
+   this->CalculateReducedCorrelations1D("RP","Eta");
+   this->CalculateReducedCorrelations1D("POI","Eta");
+   this->CalculateQProductsForDiffFlow("RP","Eta");
+   this->CalculateQProductsForDiffFlow("POI","Eta");
+   this->CalculateSumOfEventWeightsForDiffFlow("RP","Eta");
+   this->CalculateProductOfEventWeightsForDiffFlow("RP","Eta");
+   this->CalculateSumOfEventWeightsForDiffFlow("POI","Eta");
+   this->CalculateProductOfEventWeightsForDiffFlow("POI","Eta");
+  }
   
   // 2D differential flow
   if(fCalculate2DFlow)
@@ -609,7 +628,19 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
    }
   }
  }
- 
+
+ // e-b-e reduced correlations:
+ for(Int_t t=0;t<2;t++) // type (0 = RP, 1 = POI)
+ {  
+  for(Int_t pe=0;pe<2;pe++) // pt or eta
+  {
+   for(Int_t rci=0;rci<4;rci++) // reduced correlation index
+   {
+    if(fReducedCorrelationsEBE[t][pe][rci]) fReducedCorrelationsEBE[t][pe][rci]->Reset();
+   }
+  }
+ }
+    
  // 2D (pt,eta)
  if(fCalculate2DFlow)
  {
@@ -719,6 +750,11 @@ void AliFlowAnalysisWithQCumulants::Finish()
  this->FinalizeReducedCorrelations("RP","Eta"); 
  this->FinalizeReducedCorrelations("POI","Pt"); 
  this->FinalizeReducedCorrelations("POI","Eta"); 
+ this->CalculateCovariancesForDiffFlow("RP","Pt");
+ this->CalculateCovariancesForDiffFlow("RP","Eta");
+ this->CalculateCovariancesForDiffFlow("POI","Pt");
+ this->CalculateCovariancesForDiffFlow("POI","Eta");
+ 
  //this->FinalizeCorrelationsForDiffFlow("RP",kFALSE,"exact");
  //this->FinalizeCorrelationsForDiffFlow("POI",kFALSE,"exact");
  this->CalculateCumulantsForDiffFlow("RP",kFALSE,"exact");
@@ -1866,7 +1902,10 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
   // differential flow:
   TString typeFlag[2] = {"RP","POI"};
   TString ptEtaFlag[2] = {"p_{T}","#eta"}; // to be improved (do I need this here?)
-  TString correlationIndex[4] = {"<2'>","<4'>","<6'>","<8'>"};
+  TString powerFlag[2] = {"1","2"};
+  //TString correlationIndex[4] = {"<2>","<4>","<6>","<8>"};
+  TString reducedCorrelationIndex[4] = {"<2'>","<4'>","<6'>","<8'>"};
+  TString mixedCorrelationIndex[8] = {"<2>","<2'>","<4>","<4'>","<6>","<6'>","<8>","<8'>"};
  
   TString pWeightsFlag[2] = {"not used","used"};
   TString eWeightsFlag[2] = {"exact","non-exact"}; 
@@ -1898,14 +1937,13 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
    TString reducedCorrelationsName = "fReducedCorrelations";
    reducedCorrelationsName += fAnalysisLabel->Data();
    TProfile *reducedCorrelations[2][2][4] = {{{NULL}}};   
-   
    for(Int_t t=0;t<2;t++) // type: RP or POI
    { 
     for(Int_t pe=0;pe<2;pe++) // pt or eta
     {
      for(Int_t ci=0;ci<4;ci++) // correlation index
      {
-      reducedCorrelations[t][pe][ci] = dynamic_cast<TProfile*>(diffFlowList->FindObject(Form("%s, %s, %s, %s",reducedCorrelationsName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),correlationIndex[ci].Data())));
+      reducedCorrelations[t][pe][ci] = dynamic_cast<TProfile*>(diffFlowList->FindObject(Form("%s, %s, %s, %s",reducedCorrelationsName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),reducedCorrelationIndex[ci].Data())));
       if(reducedCorrelations[t][pe][ci])
       {
        this->SetReducedCorrelations(reducedCorrelations[t][pe][ci],t,pe,ci);
@@ -1920,7 +1958,88 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
      } // end of for(Int_t ci=0;ci<4;ci++) // correlation index
     } // end of for(Int_t pe=0;pe<2;pe++) // pt or eta 
    } // end of for(Int_t t=0;t<2;t++) // type: RP or POI
+   
+   // to be improved (moved into dedicated list to hold fSumOfEventWeightsForDiffFlow
+    
+   // sum of event weights for reduced correlations:
+   TString sumOfEventWeightsForDiffFlowName = "fSumOfEventWeightsForDiffFlow";
+   sumOfEventWeightsForDiffFlowName += fAnalysisLabel->Data();
+   TH1D *sumOfEventWeightsForDiffFlow[2][2][2][4] = {{{{NULL}}}};   
+   for(Int_t pe=0;pe<2;pe++) // pt or eta   
+   { 
+    for(Int_t t=0;t<2;t++) // type: RP or POI
+    {     
+     for(Int_t p=0;p<2;p++) // power of weights is 1 or 2
+     {
+      for(Int_t ew=0;ew<4;ew++) // reduced correlation index
+      {
+       sumOfEventWeightsForDiffFlow[pe][t][p][ew] = dynamic_cast<TH1D*>(diffFlowList->FindObject(Form("%s, %s, %s, %s, %s",sumOfEventWeightsForDiffFlowName.Data(),ptEtaFlag[pe].Data(),typeFlag[t].Data(),powerFlag[p].Data(),reducedCorrelationIndex[ew].Data())));
+      if(sumOfEventWeightsForDiffFlow[pe][t][p][ew])
+      {
+       this->SetSumOfEventWeightsForDiffFlow(sumOfEventWeightsForDiffFlow[pe][t][p][ew],pe,t,p,ew);
+      } else
+        {
+         cout<<"WARNING: sumOfEventWeightsForDiffFlow[pe][t][p][ew] is NULL in AFAWFQD::GOH() !!!!"<<endl;
+         cout<<"pe = "<<pe<<endl;   
+         cout<<"t  = "<<t<<endl;
+         cout<<"p  = "<<p<<endl;
+         cout<<"ew = "<<ew<<endl;
+        }     
+      }
+     }
+    }  
+   }
   
+   // products of both types of correlations:
+   TString qProductsForDiffFlowName = "fQProductsForDiffFlow";
+   qProductsForDiffFlowName += fAnalysisLabel->Data();
+   TProfile *qProductsForDiffFlow[2][2][8][8] = {{{{NULL}}}};   
+   // products of event weights for both types of correlations:
+   TString productOfEventWeightsForDiffFlowName = "fProductOfEventWeightsForDiffFlow";
+   productOfEventWeightsForDiffFlowName += fAnalysisLabel->Data();
+   TH1D *productOfEventWeightsForDiffFlow[2][2][8][8] = {{{{NULL}}}};   
+
+   for(Int_t pe=0;pe<2;pe++) // pt or eta   
+   { 
+    for(Int_t t=0;t<2;t++) // type: RP or POI
+    {     
+     for(Int_t mci1=0;mci1<8;mci1++) // mixed correlation index
+     {
+      for(Int_t mci2=mci1+1;mci2<8;mci2++) // mixed correlation index
+      {
+       // products of both types of correlations:
+       qProductsForDiffFlow[pe][t][mci1][mci2] = dynamic_cast<TProfile*>(diffFlowList->FindObject(Form("%s, %s, %s, %s, %s",qProductsForDiffFlowName.Data(),ptEtaFlag[pe].Data(),typeFlag[t].Data(),mixedCorrelationIndex[mci1].Data(),mixedCorrelationIndex[mci2].Data())));
+      if(qProductsForDiffFlow[pe][t][mci1][mci2])
+      {
+       this->SetQProductsForDiffFlow(qProductsForDiffFlow[pe][t][mci1][mci2],pe,t,mci1,mci2);
+      } else
+        {
+         cout<<"WARNING: qProductsForDiffFlow[pe][t][mci1][mci2] is NULL in AFAWFQD::GOH() !!!!"<<endl;
+         cout<<"pe   = "<<pe<<endl;   
+         cout<<"t    = "<<t<<endl;
+         cout<<"mci1 = "<<mci1<<endl;
+         cout<<"mci2 = "<<mci2<<endl;
+        }    
+       // products of event weights for both types of correlations:
+       productOfEventWeightsForDiffFlow[pe][t][mci1][mci2] = dynamic_cast<TH1D*>(diffFlowList->FindObject(Form("%s, %s, %s, %s, %s",productOfEventWeightsForDiffFlowName.Data(),ptEtaFlag[pe].Data(),typeFlag[t].Data(),mixedCorrelationIndex[mci1].Data(),mixedCorrelationIndex[mci2].Data())));
+      if(productOfEventWeightsForDiffFlow[pe][t][mci1][mci2])
+      {
+       this->SetProductOfEventWeightsForDiffFlow(productOfEventWeightsForDiffFlow[pe][t][mci1][mci2],pe,t,mci1,mci2);
+      } else
+        {
+         cout<<"WARNING: productOfEventWeightsForDiffFlow[pe][t][mci1][mci2] is NULL in AFAWFQD::GOH() !!!!"<<endl;
+         cout<<"pe   = "<<pe<<endl;   
+         cout<<"t    = "<<t<<endl;
+         cout<<"mci1 = "<<mci1<<endl;
+         cout<<"mci2 = "<<mci2<<endl;
+        }     
+        
+        if(mci1%2 == 0) mci2++; // products which DO NOT include reduced correlations are not accessed here
+      }
+     }
+    }  
+   }
+   
    // profiles and results: 
    diffFlowListProfiles = dynamic_cast<TList*>(diffFlowList->FindObject("Profiles"));
    diffFlowListResults = dynamic_cast<TList*>(diffFlowList->FindObject("Results"));
@@ -3732,7 +3851,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
     (fSumOfEventWeights[pW][eW][power]->GetXaxis())->SetBinLabel(2,"#sum_{i=1}^{N} w_{<4>}");
     (fSumOfEventWeights[pW][eW][power]->GetXaxis())->SetBinLabel(3,"#sum_{i=1}^{N} w_{<6>}");
     (fSumOfEventWeights[pW][eW][power]->GetXaxis())->SetBinLabel(4,"#sum_{i=1}^{N} w_{<8>}");
-    // add fSumOfEventWeights[pW][eW] to list fIntFlowResults: 
+    // add fSumOfEventWeights[pW][eW][power] to list fIntFlowResults: 
     fIntFlowResults->Add(fSumOfEventWeights[pW][eW][power]);
    } 
    
@@ -5181,16 +5300,22 @@ void AliFlowAnalysisWithQCumulants::CalculateQProductsForIntFlow()
  Double_t sixEBE = 0.; // <6>
  Double_t eightEBE = 0.; // <8>
  
- twoEBE = fQCorrelationsEBE[0]->GetBinContent(1);
- fourEBE = fQCorrelationsEBE[0]->GetBinContent(11);
- if(dMult>5) 
+ if(dMult>1)
  {
-  sixEBE = fQCorrelationsEBE[0]->GetBinContent(24);
-  if(dMult>7) 
+  twoEBE = fQCorrelationsEBE[0]->GetBinContent(1);
+  if(dMult>3)
   { 
-   eightEBE = fQCorrelationsEBE[0]->GetBinContent(31);
+   fourEBE = fQCorrelationsEBE[0]->GetBinContent(11);
+   if(dMult>5) 
+   {
+    sixEBE = fQCorrelationsEBE[0]->GetBinContent(24);
+    if(dMult>7) 
+    { 
+     eightEBE = fQCorrelationsEBE[0]->GetBinContent(31);
+    }
+   }
   }
- }
+ }  
  
  // <2><4>
  if(dMult>3)
@@ -6386,6 +6511,51 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForDiffFlow()
   }
  }
   
+ // sum of event weights for reduced correlations:
+ for(Int_t pe=0;pe<2;pe++) // pt or eta
+ {
+  for(Int_t t=0;t<2;t++) // type = RP or POI
+  {
+   for(Int_t p=0;p<2;p++) // power of weight is 1 or 2
+   {
+    for(Int_t ew=0;ew<4;ew++) // event weight index for reduced correlations
+    {
+     fSumOfEventWeightsForDiffFlow[pe][t][p][ew] = NULL;
+    } 
+   }   
+  }
+ }
+  
+ // product of both types of correlations:
+ for(Int_t pe=0;pe<2;pe++) // pt or eta
+ {
+  for(Int_t t=0;t<2;t++) // type = RP or POI
+  {
+   for(Int_t mci1=0;mci1<8;mci1++) // mixed correlation index
+   {
+    for(Int_t mci2=0;mci2<8;mci2++) // mixed correlation index
+    {
+     fQProductsForDiffFlow[pe][t][mci1][mci2] = NULL;
+    } 
+   }   
+  }
+ }
+ 
+ // product of event weights for both types of correlations:
+ for(Int_t pe=0;pe<2;pe++) // pt or eta
+ {
+  for(Int_t t=0;t<2;t++) // type = RP or POI
+  {
+   for(Int_t mci1=0;mci1<8;mci1++) // mixed correlation index
+   {
+    for(Int_t mci2=0;mci2<8;mci2++) // mixed correlation index
+    {
+     fProductOfEventWeightsForDiffFlow[pe][t][mci1][mci2] = NULL;
+    } 
+   }   
+  }
+ }
+  
 } // end of AliFlowAnalysisWithQCumulants::InitializeArraysForDiffFlow()
 
 
@@ -6401,7 +6571,11 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
  list.SetOwner(kTRUE); // to be improved (do I need this here?)
  TString typeFlag[2] = {"RP","POI"}; // to be improved (do I need this here?)
  TString ptEtaFlag[2] = {"p_{T}","#eta"}; // to be improved (do I need this here?)
- TString correlationIndex[4] = {"<2'>","<4'>","<6'>","<8'>"};
+ TString powerFlag[2] = {"1","2"}; // to be improved (do I need this here?)
+ //TString correlationIndex[4] = {"<2>","<4>","<6>","<8>"};
+ TString reducedCorrelationIndex[4] = {"<2'>","<4'>","<6'>","<8'>"};
+ TString mixedCorrelationIndex[8] = {"<2>","<2'>","<4>","<4'>","<6>","<6'>","<8>","<8'>"};
+
  Int_t nBinsPtEta[2] = {fnBinsPt,fnBinsEta};
  Double_t minPtEta[2] = {fPtMin,fEtaMin};
  Double_t maxPtEta[2] = {fPtMax,fEtaMax};
@@ -6409,25 +6583,95 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForDifferentialFlow()
  // reduced correlations:
  TString reducedCorrelationsName = "fReducedCorrelations";
  reducedCorrelationsName += fAnalysisLabel->Data();
- // ...
-
  for(Int_t t=0;t<2;t++) // type: RP or POI
  { 
   for(Int_t pe=0;pe<2;pe++) // pt or eta
   {
-   for(Int_t ci=0;ci<4;ci++) // correlation index
+   for(Int_t rci=0;rci<4;rci++) // reduced correlation index
    {
     // reduced correlations:
-    fReducedCorrelations[t][pe][ci] = new TProfile(Form("%s, %s, %s, %s",reducedCorrelationsName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),correlationIndex[ci].Data()),Form("%s, %s, %s, %s",reducedCorrelationsName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),correlationIndex[ci].Data()),nBinsPtEta[pe],minPtEta[pe],maxPtEta[pe]);
-    fReducedCorrelations[t][pe][ci]->SetXTitle(ptEtaFlag[pe].Data());
-    fDiffFlowList->Add(fReducedCorrelations[t][pe][ci]); // to be improved (add dedicated list to hold reduced correlations)
+    fReducedCorrelations[t][pe][rci] = new TProfile(Form("%s, %s, %s, %s",reducedCorrelationsName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),reducedCorrelationIndex[rci].Data()),Form("%s, %s, %s, %s",reducedCorrelationsName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),reducedCorrelationIndex[rci].Data()),nBinsPtEta[pe],minPtEta[pe],maxPtEta[pe],"s");
+    fReducedCorrelations[t][pe][rci]->SetXTitle(ptEtaFlag[pe].Data());
+    fDiffFlowList->Add(fReducedCorrelations[t][pe][rci]); // to be improved (add dedicated list to hold reduced correlations)
+   } // end of for(Int_t rci=0;rci<4;rci++) // correlation index
+  } // end of for(Int_t pe=0;pe<2;pe++) // pt or eta 
+ } // end of for(Int_t t=0;t<2;t++) // type: RP or POI
+ 
+ 
+ // reduced correlations e-b-e (to be improved (implement a new method to book separately e-b-e quantities)):
+ TString reducedCorrelationsEBEName = "fReducedCorrelationsEBE";
+ reducedCorrelationsEBEName += fAnalysisLabel->Data();
+ for(Int_t t=0;t<2;t++) // type: RP or POI
+ { 
+  for(Int_t pe=0;pe<2;pe++) // pt or eta
+  {
+   for(Int_t rci=0;rci<4;rci++) // reduced correlation index
+   {
+    // reduced correlations:
+    fReducedCorrelationsEBE[t][pe][rci] = new TH1D(Form("%s, %s, %s, %s",reducedCorrelationsEBEName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),reducedCorrelationIndex[rci].Data()),Form("%s, %s, %s, %s",reducedCorrelationsEBEName.Data(),typeFlag[t].Data(),ptEtaFlag[pe].Data(),reducedCorrelationIndex[rci].Data()),nBinsPtEta[pe],minPtEta[pe],maxPtEta[pe]);
    } // end of for(Int_t ci=0;ci<4;ci++) // correlation index
   } // end of for(Int_t pe=0;pe<2;pe++) // pt or eta 
  } // end of for(Int_t t=0;t<2;t++) // type: RP or POI
  
+ // sums of event weights for reduced correlations: 
+ TString sumOfEventWeightsForDiffFlowName = "fSumOfEventWeightsForDiffFlow";
+ sumOfEventWeightsForDiffFlowName += fAnalysisLabel->Data();  
+ for(Int_t pe=0;pe<2;pe++) // pt or eta
+ { 
+  for(Int_t t=0;t<2;t++) // type is RP or POI
+  {
+   for(Int_t p=0;p<2;p++) // power of weights is either 1 or 2
+   {
+    for(Int_t ew=0;ew<4;ew++) // index of reduced correlation
+    {
+     fSumOfEventWeightsForDiffFlow[pe][t][p][ew] = new TH1D(Form("%s, %s, %s, %s, %s",sumOfEventWeightsForDiffFlowName.Data(),ptEtaFlag[pe].Data(),typeFlag[t].Data(),powerFlag[p].Data(),reducedCorrelationIndex[ew].Data()),Form("%s, %s, %s, power = %s, %s",sumOfEventWeightsForDiffFlowName.Data(),ptEtaFlag[pe].Data(),typeFlag[t].Data(),powerFlag[p].Data(),reducedCorrelationIndex[ew].Data()),nBinsPtEta[pe],minPtEta[pe],maxPtEta[pe]); 
+     fSumOfEventWeightsForDiffFlow[pe][t][p][ew]->SetXTitle(ptEtaFlag[pe].Data());
+     fDiffFlowList->Add(fSumOfEventWeightsForDiffFlow[pe][t][p][ew]); // to be improved (add dedicated list to hold all this)
+    }
+   }
+  }
+ } 
+  
+ // products of both types of correlations: 
+ TString qProductsForDiffFlowName = "fQProductsForDiffFlow";
+ qProductsForDiffFlowName += fAnalysisLabel->Data();  
+ for(Int_t pe=0;pe<2;pe++) // pt or eta
+ { 
+  for(Int_t t=0;t<2;t++) // type is RP or POI
+  {
+   for(Int_t mci1=0;mci1<8;mci1++) // mixed correlation index
+   {
+    for(Int_t mci2=mci1+1;mci2<8;mci2++) // mixed correlation index
+    {
+     fQProductsForDiffFlow[pe][t][mci1][mci2] = new TProfile(Form("%s, %s, %s, %s, %s",qProductsForDiffFlowName.Data(),ptEtaFlag[pe].Data(),typeFlag[t].Data(),mixedCorrelationIndex[mci1].Data(),mixedCorrelationIndex[mci2].Data()),Form("%s, %s, %s, %s #times %s",qProductsForDiffFlowName.Data(),ptEtaFlag[pe].Data(),typeFlag[t].Data(),mixedCorrelationIndex[mci1].Data(),mixedCorrelationIndex[mci2].Data()),nBinsPtEta[pe],minPtEta[pe],maxPtEta[pe]); 
+     fQProductsForDiffFlow[pe][t][mci1][mci2]->SetXTitle(ptEtaFlag[pe].Data());
+     fDiffFlowList->Add(fQProductsForDiffFlow[pe][t][mci1][mci2]); // to be improved (add dedicated list to hold all this)
+     
+     if(mci1%2 == 0) mci2++; // products which DO NOT include reduced correlations are not stored here
+    }
+   }
+  }
+ } 
 
-
- 
+ // products of event weights for both types of correlations: 
+ TString productOfEventWeightsForDiffFlowName = "fProductOfEventWeightsForDiffFlow";
+ productOfEventWeightsForDiffFlowName += fAnalysisLabel->Data();  
+ for(Int_t pe=0;pe<2;pe++) // pt or eta
+ { 
+  for(Int_t t=0;t<2;t++) // type is RP or POI
+  {
+   for(Int_t mci1=0;mci1<8;mci1++) // mixed correlation index
+   {
+    for(Int_t mci2=mci1+1;mci2<8;mci2++) // mixed correlation index
+    {
+     fProductOfEventWeightsForDiffFlow[pe][t][mci1][mci2] = new TH1D(Form("%s, %s, %s, %s, %s",productOfEventWeightsForDiffFlowName.Data(),ptEtaFlag[pe].Data(),typeFlag[t].Data(),mixedCorrelationIndex[mci1].Data(),mixedCorrelationIndex[mci2].Data()),Form("%s, %s, %s, %s #times %s",productOfEventWeightsForDiffFlowName.Data(),ptEtaFlag[pe].Data(),typeFlag[t].Data(),mixedCorrelationIndex[mci1].Data(),mixedCorrelationIndex[mci2].Data()),nBinsPtEta[pe],minPtEta[pe],maxPtEta[pe]); 
+     fProductOfEventWeightsForDiffFlow[pe][t][mci1][mci2]->SetXTitle(ptEtaFlag[pe].Data());
+     fDiffFlowList->Add(fProductOfEventWeightsForDiffFlow[pe][t][mci1][mci2]); // to be improved (add dedicated list to hold reduced correlations)
+     if(mci1%2 == 0) mci2++; // products which DO NOT include reduced correlations are not stored here
+    }
+   }
+  }
+ } 
   
  TString pWeightsFlag[2] = {"not used","used"};  // to be improved (do I need this here?)
  TString eWeightsFlag[2] = {"exact","non-exact"};  // to be improved (do I need this here?)
@@ -7229,6 +7473,7 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForDiffFlow(TString type, 
  // correlation <<2>>: 
  Double_t two = fQCorrelations[pW][eW]->GetBinContent(1);
   
+ /* 
  // 2D (pt,eta):
  // to be improved (see documentation if I can do all this without looping)
  for(Int_t p=1;p<=fnBinsPt;p++)
@@ -7249,6 +7494,7 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForDiffFlow(TString type, 
    } // end of for(Int_t nua=0;nua<2;nua++)   
   } // end of for(Int_t e=1;e<=fnBinsEta;e++)
  } // end of for(Int_t p=1;p<=fnBinsPt;p++)
+ */
  
  // 1D (pt):
  // to be improved (see documentation if I can do all this without looping)
@@ -7259,13 +7505,13 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForDiffFlow(TString type, 
   // reduced correlations:   
   Double_t twoPrime = fFinalCorrelations1D[t][pW][eW][0][0]->GetBinContent(p); // <<2'>>(pt)
   Double_t fourPrime = fFinalCorrelations1D[t][pW][eW][0][1]->GetBinContent(p); // <<4'>>(pt)
-  // spread of reduced correlations:
-  Double_t twoPrimeError = fFinalCorrelations1D[t][pW][eW][0][0]->GetBinError(p); // sigma_2'/sqrt{N_2'}(pt)
+  // final statistical error of reduced correlations:
+  Double_t twoPrimeError = fFinalCorrelations1D[t][pW][eW][0][0]->GetBinError(p); 
   for(Int_t nua=0;nua<2;nua++)
   {
    // QC{2'}:
    Double_t qc2Prime = twoPrime; // QC{2'}
-   Double_t qc2PrimeError = twoPrimeError; // sigma_{d_n{2}}/sqrt{N_2'} // to be improved
+   Double_t qc2PrimeError = twoPrimeError; // final stat. error of QC{2'}
    fFinalCumulantsPt[t][pW][eW][nua][0]->SetBinContent(p,qc2Prime); 
    fFinalCumulantsPt[t][pW][eW][nua][0]->SetBinError(p,qc2PrimeError);   
    // QC{4'}:
@@ -7273,7 +7519,6 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForDiffFlow(TString type, 
    fFinalCumulantsPt[t][pW][eW][nua][1]->SetBinContent(p,qc4Prime); 
   } // end of for(Int_t nua=0;nua<2;nua++) 
  } // end of for(Int_t p=1;p<=fnBinsPt;p++)
- 
  
  // 1D (eta):
  // to be improved (see documentation if I can do all this without looping)
@@ -7284,11 +7529,15 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsForDiffFlow(TString type, 
   // reduced correlations:   
   Double_t twoPrime = fFinalCorrelations1D[t][pW][eW][1][0]->GetBinContent(e); // <<2'>>(eta)
   Double_t fourPrime = fFinalCorrelations1D[t][pW][eW][1][1]->GetBinContent(e); // <<4'>>(eta)
+  // final statistical error of reduced correlations:
+  Double_t twoPrimeError = fFinalCorrelations1D[t][pW][eW][1][0]->GetBinError(e); 
   for(Int_t nua=0;nua<2;nua++)
   {
    // QC{2'}:
    Double_t qc2Prime = twoPrime; // QC{2'}
+   Double_t qc2PrimeError = twoPrimeError; // final stat. error of QC{2'}
    fFinalCumulantsEta[t][pW][eW][nua][0]->SetBinContent(e,qc2Prime);    
+   fFinalCumulantsEta[t][pW][eW][nua][0]->SetBinError(e,qc2PrimeError);   
    // QC{4'}:
    Double_t qc4Prime = fourPrime - 2.*twoPrime*two; // QC{4'} = <<4'>> - 2*<<2'>><<2>>
    fFinalCumulantsEta[t][pW][eW][nua][1]->SetBinContent(e,qc4Prime);
@@ -7344,6 +7593,39 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, Bool_t usePa
  Double_t v2 = 0.;
  Double_t v4 = 0.;  
  
+ // correlations:
+ Double_t two = fCorrelations[0][0]->GetBinContent(1);
+ //Double_t four = fCorrelations[0][0]->GetBinContent(11);
+ 
+ // final statistical errors of correlations:
+ Double_t errorTwo = fCorrelations[0][0]->GetBinError(1);
+ //Double_t errorFour = fCorrelations[0][0]->GetBinError(11); // to be improved (check if bin is correct)  
+  
+ // prefactors for correlations: // to be improved (documentation)
+ Double_t prefactorTwo = 0.;
+ Double_t prefactorFour = 0.;
+ if(fSumOfEventWeights[0][0][0] && fSumOfEventWeights[0][0][0]->GetBinContent(1) != 0.)
+ {
+  prefactorTwo = pow(fSumOfEventWeights[0][0][1]->GetBinContent(1),0.5)/fSumOfEventWeights[0][0][0]->GetBinContent(1);
+ }   
+ if(fSumOfEventWeights[0][0][0] && fSumOfEventWeights[0][0][0]->GetBinContent(2) != 0.)
+ {
+  prefactorFour = pow(fSumOfEventWeights[0][0][1]->GetBinContent(2),0.5)/fSumOfEventWeights[0][0][0]->GetBinContent(2);
+ }
+ // unbiased estimators for the spread of correlations:
+ Double_t unbiasedTwo = 0.;
+ //Double_t unbiasedFour = 0.;
+ 
+ if(prefactorTwo != 0.)
+ {
+  unbiasedTwo = errorTwo/prefactorTwo;
+ }
+ 
+ if(prefactorFour != 0.)
+ {
+  //unbiasedFour = errorFour/prefactorFour;
+ }
+ 
  if(pW == 0)
  {
   v2 = fIntFlow[pW][eW][1]->GetBinContent(1);   
@@ -7356,6 +7638,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, Bool_t usePa
   v4 = fIntFlow[pW][eW][0]->GetBinContent(2);    
  }
  
+ /*
  // 2D:
  for(Int_t nua=0;nua<2;nua++)
  {
@@ -7382,6 +7665,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, Bool_t usePa
    } // end of for(Int_t e=1;e<=fnBinsEta;e++)
   } // end of for(Int_t p=1;p<=fnBinsPt;p++)
  } // end of for(Int_t nua=0;nua<2;nua++)
+ */
+ 
  
  // 1D (pt): // to be improved (combined with eta, combined nua loop with 2D)
  for(Int_t nua=0;nua<2;nua++)
@@ -7393,7 +7678,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, Bool_t usePa
    Double_t qc4Prime = fFinalCumulantsPt[t][pW][eW][nua][1]->GetBinContent(p); // QC{4'}
    // differential flow:
    Double_t v2Prime = 0.;                    
-   Double_t v4Prime = 0.; 
+   Double_t v4Prime = 0.;
+   // differential flow:
    if(v2) 
    {
     v2Prime = qc2Prime/v2;
@@ -7403,7 +7689,49 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, Bool_t usePa
    {
     v4Prime = -qc4Prime/pow(v4,3.); 
     fFinalFlowPt[t][pW][eW][nua][1]->SetBinContent(p,v4Prime);  
-   }                    
+   }
+   // reduced correlations:
+   Double_t twoReduced = 0.;  
+   Double_t fourReduced = 0.;
+   twoReduced = fFinalCorrelations1D[t][0][0][0][0]->GetBinContent(p);
+   fourReduced = fFinalCorrelations1D[t][0][0][0][1]->GetBinContent(p);
+   // covariances:
+   Double_t covTwoTwoReduced = 0.;  
+   covTwoTwoReduced = fFinalCovariances1D[t][0][0][0][0]->GetBinContent(p);
+   // errors:
+   // final stat. errors for reduced correlations:
+   Double_t errorTwoReduced  = fFinalCorrelations1D[t][0][0][0][0]->GetBinError(p);
+   // unbiased estimator for the spread of reduced correlations:
+   Double_t unbiasedTwoReduced = 0.;  
+   // prefactor (to be improved (better documented))
+   Double_t prefactorTwoReduced = 0.;                                        
+   if(fSumOfEventWeightsForDiffFlow[0][t][0][0] && fSumOfEventWeightsForDiffFlow[0][t][1][0] && fSumOfEventWeightsForDiffFlow[0][t][0][0]->GetBinContent(p))
+   {
+    prefactorTwoReduced = pow(fSumOfEventWeightsForDiffFlow[0][t][1][0]->GetBinContent(p),0.5)/fSumOfEventWeightsForDiffFlow[0][t][0][0]->GetBinContent(p);
+   }
+   if(prefactorTwoReduced)
+   {
+    unbiasedTwoReduced = errorTwoReduced/prefactorTwoReduced;
+   }
+   // unbiased estimator for the spread of diff. flow:
+   Double_t unbiasedDiffFlow2nd = 0.;
+   Double_t unbiasedDiffFlow2ndSquared = 0.;
+   if(two)
+   {
+    unbiasedDiffFlow2ndSquared = (1./4.)*(pow(twoReduced,2.)/pow(two,3.))*pow(unbiasedTwo,2.) 
+                               + pow(unbiasedTwoReduced,2.)/two
+                               - (twoReduced/pow(two,2.))*covTwoTwoReduced;
+    
+   }
+   if(unbiasedDiffFlow2ndSquared > 0.)
+   {
+    unbiasedDiffFlow2nd = pow(unbiasedDiffFlow2ndSquared,0.5);
+   }
+   Double_t finalErorrDiffFlow2nd = 0.; // final statistical error on 2nd order diff. flow
+   finalErorrDiffFlow2nd = prefactorTwoReduced*unbiasedDiffFlow2nd;
+   //cout<<p<<" "<<v2Prime<<" +/- "<<finalErorrDiffFlow2nd<<endl;
+   
+   fFinalFlowPt[t][0][0][nua][0]->SetBinError(p,finalErorrDiffFlow2nd);
   } // end of for(Int_t p=1;p<=fnBinsPt;p++)
  } // end of for(Int_t nua=0;nua<2;nua++)
  
@@ -7503,15 +7831,17 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
  TH1D *flow6thPt = NULL;
  TH1D *flow8thPt = NULL;
  
- // to be improve (nua = 0 is hardwired)
+ // to be improved (nua = 0 is hardwired)
  flow2ndPt = (TH1D*)fFinalFlowPt[t][pW][eW][0][0]->Clone();
  flow4thPt = (TH1D*)fFinalFlowPt[t][pW][eW][0][1]->Clone();
  flow6thPt = (TH1D*)fFinalFlowPt[t][pW][eW][0][2]->Clone();
  flow8thPt = (TH1D*)fFinalFlowPt[t][pW][eW][0][3]->Clone(); 
    
  Double_t dvn2nd = 0., dvn4th = 0., dvn6th = 0., dvn8th = 0.; // differential flow
+ Double_t dErrvn2nd = 0., dErrvn4th = 0., dErrvn6th = 0., dErrvn8th = 0.; // error on differential flow
+ 
  Double_t dVn2nd = 0., dVn4th = 0., dVn6th = 0., dVn8th = 0.; // integrated flow 
- //Double_t dSd2nd = 0., dSd4th = 0., dSd6th = 0., dSd8th = 0.; // error on integrated flow (to be improved - calculation needed)
+ Double_t dErrVn2nd = 0., dErrVn4th = 0., dErrVn6th = 0., dErrVn8th = 0.; // error on integrated flow
 
  Double_t dYield2nd = 0., dYield4th = 0., dYield6th = 0., dYield8th = 0.; // pt yield 
  Double_t dSum2nd = 0., dSum4th = 0., dSum6th = 0., dSum8th = 0.; // needed for normalizing integrated flow
@@ -7523,6 +7853,11 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
   dvn4th = flow4thPt->GetBinContent(p);
   dvn6th = flow6thPt->GetBinContent(p);
   dvn8th = flow8thPt->GetBinContent(p);
+  
+  dErrvn2nd = flow2ndPt->GetBinError(p);
+  dErrvn4th = flow4thPt->GetBinError(p);
+  dErrvn6th = flow6thPt->GetBinError(p);
+  dErrvn8th = flow8thPt->GetBinError(p);
 
   dYield2nd = yield2ndPt->GetBinContent(p);  
   dYield4th = yield4thPt->GetBinContent(p);
@@ -7539,18 +7874,26 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
   dSum6th += dYield6th;
   dSum8th += dYield8th;
   
-  // ... to be improved - errors needed to be calculated   
-  
+  dErrVn2nd += dYield2nd*dYield2nd*dErrvn2nd*dErrvn2nd; // ro be improved (check this relation)
+  dErrVn4th += dYield4th*dYield4th*dErrvn4th*dErrvn4th;
+  dErrVn6th += dYield6th*dYield6th*dErrvn6th*dErrvn6th;
+  dErrVn8th += dYield8th*dYield8th*dErrvn8th*dErrvn8th;
+    
  } // end of for(Int_t p=1;p<nBinsPt+1;p++)
 
  // normalizing the results for integrated flow:
- 
- 
- 
- 
- 
- if(dSum2nd) dVn2nd/=dSum2nd;
- if(dSum4th) dVn4th/=dSum4th;
+ if(dSum2nd) 
+ {
+  dVn2nd /= dSum2nd;
+  dErrVn2nd /= (dSum2nd*dSum2nd);
+  dErrVn2nd = TMath::Sqrt(dErrVn2nd);
+ } 
+ if(dSum4th) 
+ {
+  dVn4th /= dSum4th;
+  dErrVn4th /= (dSum4th*dSum4th);
+  dErrVn4th = TMath::Sqrt(dErrVn4th);
+ } 
  //if(dSum6th) dVn6th/=dSum6th;
  //if(dSum8th) dVn8th/=dSum8th;
  
@@ -7628,14 +7971,14 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
  // to be improved - now they are being filled twice ...
  if(type == "POI")
  {
-  fCommonHistsResults2nd->FillIntegratedFlowPOI(dVn2nd,0.); // to be improved (errors)
+  fCommonHistsResults2nd->FillIntegratedFlowPOI(dVn2nd,dErrVn2nd); 
   fCommonHistsResults4th->FillIntegratedFlowPOI(dVn4th,0.); // to be improved (errors)
   fCommonHistsResults6th->FillIntegratedFlowPOI(dVn6th,0.); // to be improved (errors)
   fCommonHistsResults8th->FillIntegratedFlowPOI(dVn8th,0.); // to be improved (errors)
  }
  else if (type == "RP")
  {
-  fCommonHistsResults2nd->FillIntegratedFlowRP(dVn2nd,0.); // to be improved (errors)
+  fCommonHistsResults2nd->FillIntegratedFlowRP(dVn2nd,dErrVn2nd); 
   fCommonHistsResults4th->FillIntegratedFlowRP(dVn4th,0.); // to be improved (errors)
   fCommonHistsResults6th->FillIntegratedFlowRP(dVn6th,0.); // to be improved (errors)
   fCommonHistsResults8th->FillIntegratedFlowRP(dVn8th,0.); // to be improved (errors)
@@ -7918,20 +8261,20 @@ void AliFlowAnalysisWithQCumulants::FillCommonHistResultsDiffFlow(TString type, 
   Double_t v6 = fFinalFlowPt[t][pW][eW][nua][2]->GetBinContent(p);
   Double_t v8 = fFinalFlowPt[t][pW][eW][nua][3]->GetBinContent(p);
   
-  //Double_t v2Error = fFinalFlow1D[t][pW][nua][0][0]->GetBinError(p);
+  Double_t v2Error = fFinalFlowPt[t][pW][eW][nua][0]->GetBinError(p);
   //Double_t v4Error = fFinalFlow1D[t][pW][nua][0][1]->GetBinError(p);
   //Double_t v6Error = fFinalFlow1D[t][pW][nua][0][2]->GetBinError(p);
   //Double_t v8Error = fFinalFlow1D[t][pW][nua][0][3]->GetBinError(p);
  
   if(type == "RP")
   {
-   fCommonHistsResults2nd->FillDifferentialFlowPtRP(p,v2,0.);
+   fCommonHistsResults2nd->FillDifferentialFlowPtRP(p,v2,v2Error);
    fCommonHistsResults4th->FillDifferentialFlowPtRP(p,v4,0.);
    fCommonHistsResults6th->FillDifferentialFlowPtRP(p,v6,0.);
    fCommonHistsResults8th->FillDifferentialFlowPtRP(p,v8,0.);
   } else if(type == "POI")
     {
-     fCommonHistsResults2nd->FillDifferentialFlowPtPOI(p,v2,0.);
+     fCommonHistsResults2nd->FillDifferentialFlowPtPOI(p,v2,v2Error);
      fCommonHistsResults4th->FillDifferentialFlowPtPOI(p,v4,0.);
      fCommonHistsResults6th->FillDifferentialFlowPtPOI(p,v6,0.);
      fCommonHistsResults8th->FillDifferentialFlowPtPOI(p,v8,0.);
@@ -8131,14 +8474,6 @@ void AliFlowAnalysisWithQCumulants::CalculateReducedCorrelations1D(TString type,
     t = 0; // typeFlag = RP or POI
    }
    
-   /*
-   // count events with non-empty (pt,eta) bin:
-   if(mp>0)
-   {
-    fNonEmptyBins2D[typeFlag]->Fill(fPtMin+(p-1)*fPtBinWidth,fEtaMin+(e-1)*fEtaBinWidth,1);
-   }
-   */
-   
    // 2'-particle correlation for particular (pt,eta) bin:
    Double_t two1n1nPtEta = 0.;
    if(mp*dMult-mq)
@@ -8146,17 +8481,19 @@ void AliFlowAnalysisWithQCumulants::CalculateReducedCorrelations1D(TString type,
     two1n1nPtEta = (p1n0kRe*dReQ1n+p1n0kIm*dImQ1n-mq)
                  / (mp*dMult-mq);
    
-    // fill the 2D profile to get the average correlation for each (pt,eta) bin:
     if(type == "POI")
     { 
-     //f2pPtEtaPOI->Fill(fPtMin+(p-1)*fPtBinWidth,fEtaMin+(e-1)*fEtaBinWidth,two1n1nPtEta,mp*dMult-mq);
-     
+     // fill profile to get <<2'>> for POIs
      fReducedCorrelations[1][pe][0]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],two1n1nPtEta,mp*dMult-mq);
+     // histogram to store <2'> for POIs e-b-e (needed in some other methods):
+     fReducedCorrelationsEBE[1][pe][0]->SetBinContent(b,two1n1nPtEta);      
     }
     else if(type == "RP")
     {
-     //f2pPtEtaRP->Fill(fPtMin+(p-1)*fPtBinWidth,fEtaMin+(e-1)*fEtaBinWidth,two1n1nPtEta,mp*dMult-mq);   
+     // profile to get <<2'>> for RPs:
      fReducedCorrelations[0][pe][0]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],two1n1nPtEta,mp*dMult-mq);
+     // histogram to store <2'> for RPs e-b-e (needed in some other methods):
+     fReducedCorrelationsEBE[0][pe][0]->SetBinContent(b,two1n1nPtEta); 
     }
    } // end of if(mp*dMult-mq)
   
@@ -8180,26 +8517,23 @@ void AliFlowAnalysisWithQCumulants::CalculateReducedCorrelations1D(TString type,
                       / ((mp-mq)*dMult*(dMult-1.)*(dMult-2.)
                           + mq*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
     
-    // fill the 2D profile to get the average correlation for each (pt, eta) bin:
     if(type == "POI")
     {
-     //f4pPtEtaPOI->Fill(fPtMin+(p-1)*fPtBinWidth,fEtaMin+(e-1)*fEtaBinWidth,four1n1n1n1nPtEta,
-     //                  (mp-mq)*dMult*(dMult-1.)*(dMult-2.)
-     //                   + mq*(dMult-1.)*(dMult-2.)*(dMult-3.));
-     
+     // profile to get <<4'>> for POIs:
      fReducedCorrelations[1][pe][1]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],four1n1n1n1nPtEta,
                                      (mp-mq)*dMult*(dMult-1.)*(dMult-2.)
-                                     + mq*(dMult-1.)*(dMult-2.)*(dMult-3.));
+                                     + mq*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+     // histogram to store <4'> for POIs e-b-e (needed in some other methods):
+     fReducedCorrelationsEBE[1][pe][1]->SetBinContent(b,four1n1n1n1nPtEta);                               
     }
     else if(type == "RP")
     {
-     //f4pPtEtaRP->Fill(fPtMin+(p-1)*fPtBinWidth,fEtaMin+(e-1)*fEtaBinWidth,four1n1n1n1nPtEta,
-     //                 (mp-mq)*dMult*(dMult-1.)*(dMult-2.)
-     //                  + mq*(dMult-1.)*(dMult-2.)*(dMult-3.));   
-                       
+     // profile to get <<4'>> for RPs:
      fReducedCorrelations[0][pe][1]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],four1n1n1n1nPtEta,
                                        (mp-mq)*dMult*(dMult-1.)*(dMult-2.)
                                        + mq*(dMult-1.)*(dMult-2.)*(dMult-3.));                   
+     // histogram to store <4'> for RPs e-b-e (needed in some other methods):
+     fReducedCorrelationsEBE[0][pe][1]->SetBinContent(b,four1n1n1n1nPtEta);                   
     }
    } // end of if((mp-mq)*dMult*(dMult-1.)*(dMult-2.)
      //            +mq*(dMult-1.)*(dMult-2.)*(dMult-3.))
@@ -8212,9 +8546,256 @@ void AliFlowAnalysisWithQCumulants::CalculateReducedCorrelations1D(TString type,
 //================================================================================================================================
 
 
+void AliFlowAnalysisWithQCumulants::CalculateSumOfEventWeightsForDiffFlow(TString type, TString ptOrEta)
+{
+ // Calculate sums of various event weights for reduced correlations. 
+ // (These quantitites are needed in expressions for unbiased estimators relevant for the statistical errors.)
+
+ Int_t typeFlag = -1;
+ Int_t ptEtaFlag = -1;
+
+ if(type == "RP")
+ {
+  typeFlag = 0;
+ } else if(type == "POI")
+   {
+    typeFlag = 1;
+   } 
+     
+ if(ptOrEta == "Pt")
+ {
+  ptEtaFlag = 0;
+ } else if(ptOrEta == "Eta")
+   {
+    ptEtaFlag = 1;
+   } 
+   
+ // shortcuts:
+ Int_t t = typeFlag;
+ Int_t pe = ptEtaFlag;
+ 
+ // binning:
+ Int_t nBinsPtEta[2] = {fnBinsPt,fnBinsEta};
+ Double_t minPtEta[2] = {fPtMin,fEtaMin};
+ //Double_t maxPtEta[2] = {fPtMax,fEtaMax};
+ Double_t binWidthPtEta[2] = {fPtBinWidth,fEtaBinWidth};
+ 
+ for(Int_t rpq=0;rpq<3;rpq++)
+ {
+  for(Int_t m=0;m<4;m++)
+  {
+   for(Int_t k=0;k<9;k++)
+   {
+    if(!fReEBE1D[pe][rpq][m][k])
+    {
+     cout<<"WARNING: fReEBE1D[pe][rpq][m][k] is NULL in AFAWQC::CSAPOEWFDF() !!!!"<<endl;
+     cout<<"pe  = "<<pe<<endl;
+     cout<<"rpq = "<<rpq<<endl;
+     cout<<"m   = "<<m<<endl;
+     cout<<"k   = "<<k<<endl;
+     exit(0); 
+    }
+   }
+  }
+ }  
+
+ // multiplicities:
+ Double_t dMult = (*fSMpk)(0,0); // total event multiplicity
+ Double_t mr = 0.; // number of RPs in particular pt or eta bin
+ Double_t mp = 0.; // number of POIs in particular pt or eta bin 
+ Double_t mq = 0.; // number of particles which are both RPs and POIs in particular pt or eta bin
+ 
+ // event weights for reduced correlations:
+ Double_t dw2 = 0.; // event weight for <2'>
+ Double_t dw4 = 0.; // event weight for <4'>
+ //Double_t dw6 = 0.; // event weight for <6'>
+ //Double_t dw8 = 0.; // event weight for <8'>
+
+ // looping over bins:
+ for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+ {
+  if(type == "RP")
+  {
+   mr = fReEBE1D[pe][0][0][0]->GetBinEntries(b);
+   mp = mr; // trick to use the very same Eqs. bellow both for RP's and POI's diff. flow
+   mq = mr; // trick to use the very same Eqs. bellow both for RP's and POI's diff. flow
+  } else if(type == "POI")
+    {
+     mp = fReEBE1D[pe][1][0][0]->GetBinEntries(b);
+     mq = fReEBE1D[pe][2][0][0]->GetBinEntries(b);    
+    }
+  
+  // event weight for <2'>:
+  dw2 = mp*dMult-mq;  
+  fSumOfEventWeightsForDiffFlow[pe][t][0][0]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw2);
+  fSumOfEventWeightsForDiffFlow[pe][t][1][0]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],pow(dw2,2.));
+  
+  // event weight for <4'>:
+  dw4 = (mp-mq)*dMult*(dMult-1.)*(dMult-2.)
+     + mq*(dMult-1.)*(dMult-2.)*(dMult-3.);  
+  fSumOfEventWeightsForDiffFlow[pe][t][0][1]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw4);
+  fSumOfEventWeightsForDiffFlow[pe][t][1][1]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],pow(dw4,2.));
+  
+  // event weight for <6'>:
+  //dw6 = ...;  
+  //fSumOfEventWeightsForDiffFlow[pe][t][0][2]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw6);
+  //fSumOfEventWeightsForDiffFlow[pe][t][1][2]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],pow(dw6,2.));
+  
+  // event weight for <8'>:
+  //dw8 = ...;  
+  //fSumOfEventWeightsForDiffFlow[pe][t][0][3]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw8);
+  //fSumOfEventWeightsForDiffFlow[pe][t][1][3]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],pow(dw8,2.));
+   
+ } // end of for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+} // end of void AliFlowAnalysisWithQCumulants::CalculateSumOfEventWeightsForDiffFlow()
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateProductOfEventWeightsForDiffFlow(TString type, TString ptOrEta)
+{
+ // Calculate products of various event weights for both types of correlations (the ones for int. and diff. flow). 
+ // (These quantitites are needed in expressions for unbiased estimators relevant for the statistical errors.)
+ //
+ // Important: To fill fProductOfEventWeightsForDiffFlow[][][][] use bellow table (i,j) with following constraints: 
+ // 1.) i<j  
+ // 2.) do not store terms which DO NOT include reduced correlations;
+ // Table:
+ // [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>] x [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>]
+ 
+ Int_t typeFlag = -1;
+ Int_t ptEtaFlag = -1;
+
+ if(type == "RP")
+ {
+  typeFlag = 0;
+ } else if(type == "POI")
+   {
+    typeFlag = 1;
+   } 
+     
+ if(ptOrEta == "Pt")
+ {
+  ptEtaFlag = 0;
+ } else if(ptOrEta == "Eta")
+   {
+    ptEtaFlag = 1;
+   } 
+     
+ // shortcuts:
+ Int_t t = typeFlag;
+ Int_t pe = ptEtaFlag;
+  
+ // binning:
+ Int_t nBinsPtEta[2] = {fnBinsPt,fnBinsEta};
+ Double_t minPtEta[2] = {fPtMin,fEtaMin};
+ //Double_t maxPtEta[2] = {fPtMax,fEtaMax};
+ Double_t binWidthPtEta[2] = {fPtBinWidth,fEtaBinWidth};
+ 
+ // protection:
+ for(Int_t rpq=0;rpq<3;rpq++)
+ {
+  for(Int_t m=0;m<4;m++)
+  {
+   for(Int_t k=0;k<9;k++)
+   {
+    if(!fReEBE1D[pe][rpq][m][k])
+    {
+     cout<<"WARNING: fReEBE1D[pe][rpq][m][k] is NULL in AFAWQC::CSAPOEWFDF() !!!!"<<endl;
+     cout<<"pe  = "<<pe<<endl;
+     cout<<"rpq = "<<rpq<<endl;
+     cout<<"m   = "<<m<<endl;
+     cout<<"k   = "<<k<<endl;
+     exit(0); 
+    }
+   }
+  }
+ }  
+ 
+ // multiplicities:
+ Double_t dMult = (*fSMpk)(0,0); // total event multiplicity
+ Double_t mr = 0.; // number of RPs in particular pt or eta bin
+ Double_t mp = 0.; // number of POIs in particular pt or eta bin 
+ Double_t mq = 0.; // number of particles which are both RPs and POIs in particular pt or eta bin
+ 
+ // event weights for correlations:
+ Double_t dW2 = dMult*(dMult-1); // event weight for <2> 
+ Double_t dW4 = dMult*(dMult-1)*(dMult-2)*(dMult-3); // event weight for <4> 
+ Double_t dW6 = dMult*(dMult-1)*(dMult-2)*(dMult-3)*(dMult-4)*(dMult-5); // event weight for <6> 
+ Double_t dW8 = dMult*(dMult-1)*(dMult-2)*(dMult-3)*(dMult-4)*(dMult-5)*(dMult-6)*(dMult-7); // event weight for <8> 
+
+ // event weights for reduced correlations:
+ Double_t dw2 = 0.; // event weight for <2'>
+ Double_t dw4 = 0.; // event weight for <4'>
+ //Double_t dw6 = 0.; // event weight for <6'>
+ //Double_t dw8 = 0.; // event weight for <8'>
+ 
+ // looping over bins:
+ for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+ {
+  if(type == "RP")
+  {
+   mr = fReEBE1D[pe][0][0][0]->GetBinEntries(b);
+   mp = mr; // trick to use the very same Eqs. bellow both for RP's and POI's diff. flow
+   mq = mr; // trick to use the very same Eqs. bellow both for RP's and POI's diff. flow
+  } else if(type == "POI")
+    {
+     mp = fReEBE1D[pe][1][0][0]->GetBinEntries(b);
+     mq = fReEBE1D[pe][2][0][0]->GetBinEntries(b);    
+    }
+  
+  // event weight for <2'>:
+  dw2 = mp*dMult-mq;  
+  fProductOfEventWeightsForDiffFlow[pe][t][0][1]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dW2*dw2); // storing product of even weights for <2> and <2'>
+  fProductOfEventWeightsForDiffFlow[pe][t][1][2]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw2*dW4); // storing product of even weights for <4> and <2'>
+  fProductOfEventWeightsForDiffFlow[pe][t][1][4]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw2*dW6); // storing product of even weights for <6> and <2'>
+  fProductOfEventWeightsForDiffFlow[pe][t][1][6]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw2*dW8); // storing product of even weights for <8> and <2'>
+  
+  // event weight for <4'>:
+  dw4 = (mp-mq)*dMult*(dMult-1.)*(dMult-2.)
+     + mq*(dMult-1.)*(dMult-2.)*(dMult-3.);  
+  fProductOfEventWeightsForDiffFlow[pe][t][0][3]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dW2*dw4); // storing product of even weights for <2> and <4'>
+  fProductOfEventWeightsForDiffFlow[pe][t][1][3]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw2*dw4); // storing product of even weights for <2'> and <4'>
+  fProductOfEventWeightsForDiffFlow[pe][t][2][3]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dW4*dw4); // storing product of even weights for <4> and <4'>
+  fProductOfEventWeightsForDiffFlow[pe][t][3][4]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw4*dW6); // storing product of even weights for <6> and <4'> 
+  fProductOfEventWeightsForDiffFlow[pe][t][3][6]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw4*dW8); // storing product of even weights for <8> and <4'>
+
+  // event weight for <6'>:
+  //dw6 = ...;  
+  //fProductOfEventWeightsForDiffFlow[pe][t][0][5]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dW2*dw6); // storing product of even weights for <2> and <6'>
+  //fProductOfEventWeightsForDiffFlow[pe][t][1][5]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw2*dw6); // storing product of even weights for <2'> and <6'>
+  //fProductOfEventWeightsForDiffFlow[pe][t][2][5]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dW4*dw6); // storing product of even weights for <4> and <6'>
+  //fProductOfEventWeightsForDiffFlow[pe][t][3][5]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw4*dw6); // storing product of even weights for <4'> and <6'> 
+  //fProductOfEventWeightsForDiffFlow[pe][t][4][5]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dW6*dw6); // storing product of even weights for <6> and <6'>
+  //fProductOfEventWeightsForDiffFlow[pe][t][5][6]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw6*dW8); // storing product of even weights for <6'> and <8>
+  //fProductOfEventWeightsForDiffFlow[pe][t][5][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw6*dw8); // storing product of even weights for <6'> and <8'>
+
+  // event weight for <8'>:
+  //dw8 = ...;  
+  //fProductOfEventWeightsForDiffFlow[pe][t][0][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dW2*dw8); // storing product of even weights for <2> and <8'>
+  //fProductOfEventWeightsForDiffFlow[pe][t][1][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw2*dw8); // storing product of even weights for <2'> and <8'>
+  //fProductOfEventWeightsForDiffFlow[pe][t][2][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dW4*dw8); // storing product of even weights for <4> and <8'>
+  //fProductOfEventWeightsForDiffFlow[pe][t][3][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw4*dw8); // storing product of even weights for <4'> and <8'> 
+  //fProductOfEventWeightsForDiffFlow[pe][t][4][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dW6*dw8); // storing product of even weights for <6> and <8'>
+  //fProductOfEventWeightsForDiffFlow[pe][t][5][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dw6*dw8); // storing product of even weights for <6'> and <8'>
+  //fProductOfEventWeightsForDiffFlow[pe][t][6][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],dW8*dw8); // storing product of even weights for <8> and <8'>
+  
+  // Table:
+  // [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>] x [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>]
+   
+ } // end of for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+
+
+} // end of void AliFlowAnalysisWithQCumulants::CalculateProductOfEventWeightsForDiffFlow(TString type, TString ptOrEta)
+
+
+//================================================================================================================================
+
+
 void AliFlowAnalysisWithQCumulants::FinalizeReducedCorrelations(TString type, TString ptOrEta)
 {
- // transfer profiles into histos
+ // transfer profiles into histos and propagate errors correctly
 
  Int_t typeFlag = -1;
  Int_t ptEtaFlag = -1;
@@ -8245,29 +8826,281 @@ void AliFlowAnalysisWithQCumulants::FinalizeReducedCorrelations(TString type, TS
  //Double_t maxPtEta[2] = {fPtMax,fEtaMax};
  //Double_t binWidthPtEta[2] = {fPtBinWidth,fEtaBinWidth};
          
- // transfer 1D profile into 1D histogram (pt):
- // to be improved (see in documentation if there is a method to transfer values from 1D profile into 1D histogram)    
- for(Int_t ci=0;ci<4;ci++)
+ // transfer 1D profile into 1D histogram:
+ Double_t correlation = 0.;
+ Double_t spread = 0.;
+ Double_t sumOfWeights = 0.; // sum of weights for particular reduced correlations for particular pt or eta bin
+ Double_t sumOfSquaredWeights = 0.; // sum of squared weights for particular reduced correlations for particular pt or eta bin
+ Double_t error = 0.; // error = termA * spread * termB
+                      // termA = (sqrt(sumOfSquaredWeights)/sumOfWeights) 
+                      // termB = 1/pow(1-termA^2,0.5)
+ Double_t termA = 0.;                      
+ Double_t termB = 0.;                      
+ for(Int_t rci=0;rci<4;rci++) // index of reduced correlation
  {
-  for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+  for(Int_t b=1;b<=nBinsPtEta[pe];b++) // number of pt or eta bins
   {
-   if(fReducedCorrelations[t][pe][ci])
+   if(fReducedCorrelations[t][pe][rci])
    {
-    Double_t correlation = fReducedCorrelations[t][pe][ci]->GetBinContent(b); 
-    //Double_t spread = profile[0][ci]->GetBinError(p);
-    //Double_t nEvts = fNonEmptyBins1D[t][0]->GetBinContent(p);
-    //Double_t error = 0.;
-    fFinalCorrelations1D[t][0][0][pe][ci]->SetBinContent(b,correlation); 
-    //if(nEvts>0)
-    //{
-    // error = spread/pow(nEvts,0.5);
-    // fFinalCorrelations1D[t][pW][eW][pe][ci]->SetBinError(p,error);
-    //}  
-   }   
+    correlation = fReducedCorrelations[t][pe][rci]->GetBinContent(b); 
+    spread = fReducedCorrelations[t][pe][rci]->GetBinError(b);
+    sumOfWeights = fSumOfEventWeightsForDiffFlow[pe][t][0][rci]->GetBinContent(b);
+    sumOfSquaredWeights = fSumOfEventWeightsForDiffFlow[pe][t][1][rci]->GetBinContent(b);
+    if(sumOfWeights) termA = (pow(sumOfSquaredWeights,0.5)/sumOfWeights);
+    if(1.-pow(termA,2.)>0.) termB = 1./pow(1.-pow(termA,2.),0.5); 
+    error = termA*spread*termB; // final error (unbiased estimator for standard deviation)
+    fFinalCorrelations1D[t][0][0][pe][rci]->SetBinContent(b,correlation); 
+    fFinalCorrelations1D[t][0][0][pe][rci]->SetBinError(b,error); 
+   } // end of if(fReducedCorrelations[t][pe][rci])
   } // end of for(Int_t b=1;b<=nBinsPtEta[pe];b++)
- } // end of for(Int_t ci=0;ci<4;ci++)
+ } // end of for(Int_t rci=0;rci<4;rci++)
  
 } // end of void AliFlowAnalysisWithQCumulants::FinalizeReducedCorrelations(TString type, TString ptOrEta)
 
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateQProductsForDiffFlow(TString type, TString ptOrEta)
+{
+ // store products: <2><2'>, <2><4'>, <2><6'>, <2><8'>, <2'><4>, 
+ //                 <2'><4'>, <2'><6>, <2'><6'>, <2'><8>, <2'><8'>,
+ //                 <4><4'>, <4><6'>, <4><8'>, <4'><6>, <4'><6'>, 
+ //                 <4'><8>, <4'><8'>, <6><6'>, <6><8'>, <6'><8>, 
+ //                 <6'><8'>, <8><8'>
+
+ Int_t typeFlag = -1;
+ Int_t ptEtaFlag = -1;
+
+ if(type == "RP")
+ {
+  typeFlag = 0;
+ } else if(type == "POI")
+   {
+    typeFlag = 1;
+   } 
+     
+ if(ptOrEta == "Pt")
+ {
+  ptEtaFlag = 0;
+ } else if(ptOrEta == "Eta")
+   {
+    ptEtaFlag = 1;
+   } 
+  
+ // shortcuts:
+ Int_t t = typeFlag;
+ Int_t pe = ptEtaFlag;
+     
+ // common:
+ Int_t nBinsPtEta[2] = {fnBinsPt,fnBinsEta};
+ Double_t minPtEta[2] = {fPtMin,fEtaMin};
+ //Double_t maxPtEta[2] = {fPtMax,fEtaMax};
+ Double_t binWidthPtEta[2] = {fPtBinWidth,fEtaBinWidth};
+   
+ // protections // to be improved (add protection for all pointers in this method)
+ if(!fQCorrelationsEBE[0])
+ {
+  cout<<"WARNING: fQCorrelationsEBE[0] is NULL in AFAWQC::CQPFDF() !!!!"<<endl;
+  exit(0);
+ } 
+   
+ Double_t dMult = (*fSMpk)(0,0); // multiplicity (number of particles used to determine the reaction plane)
+ Double_t mr = 0.; // number of RPs in particular pt or eta bin
+ Double_t mp = 0.; // number of POIs in particular pt or eta bin 
+ Double_t mq = 0.; // number of particles which are both RPs and POIs in particular pt or eta bin
+
+ // e-b-e correlations:
+ Double_t twoEBE = 0.; // <2>
+ Double_t fourEBE = 0.; // <4>
+ Double_t sixEBE = 0.; // <6>
+ Double_t eightEBE = 0.; // <8>
+ 
+ if(dMult>1)
+ {  
+  twoEBE = fQCorrelationsEBE[0]->GetBinContent(1);
+  if(dMult>3)
+  {
+   fourEBE = fQCorrelationsEBE[0]->GetBinContent(11);
+   if(dMult>5) 
+   {
+    sixEBE = fQCorrelationsEBE[0]->GetBinContent(24);
+    if(dMult>7) 
+    { 
+     eightEBE = fQCorrelationsEBE[0]->GetBinContent(31);
+    }
+   }
+  }
+ }  
+ 
+ // event weights for correlations:
+ Double_t dW2 = dMult*(dMult-1); // event weight for <2> 
+ Double_t dW4 = dMult*(dMult-1)*(dMult-2)*(dMult-3); // event weight for <4> 
+ Double_t dW6 = dMult*(dMult-1)*(dMult-2)*(dMult-3)*(dMult-4)*(dMult-5); // event weight for <6> 
+ Double_t dW8 = dMult*(dMult-1)*(dMult-2)*(dMult-3)*(dMult-4)*(dMult-5)*(dMult-6)*(dMult-7); // event weight for <8> 
+  
+ // e-b-e reduced correlations:
+ Double_t twoReducedEBE = 0.; // <2'>
+ Double_t fourReducedEBE = 0.; // <4'>
+ Double_t sixReducedEBE = 0.; // <6'>
+ Double_t eightReducedEBE = 0.; // <8'> 
+ 
+ // event weights for reduced correlations:
+ Double_t dw2 = 0.; // event weight for <2'>
+ Double_t dw4 = 0.; // event weight for <4'>
+ //Double_t dw6 = 0.; // event weight for <6'>
+ //Double_t dw8 = 0.; // event weight for <8'>
+
+ // looping over bins:
+ for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+ {
+  // e-b-e reduced correlations:
+  twoReducedEBE = fReducedCorrelationsEBE[t][pe][0]->GetBinContent(b);
+  fourReducedEBE = fReducedCorrelationsEBE[t][pe][1]->GetBinContent(b);
+  sixReducedEBE = fReducedCorrelationsEBE[t][pe][2]->GetBinContent(b);
+  eightReducedEBE = fReducedCorrelationsEBE[t][pe][3]->GetBinContent(b);
+
+  // to be improved (I should not do this here again)
+  if(type == "RP")
+  {
+   mr = fReEBE1D[pe][0][0][0]->GetBinEntries(b);
+   mp = mr; // trick to use the very same Eqs. bellow both for RP's and POI's diff. flow
+   mq = mr; // trick to use the very same Eqs. bellow both for RP's and POI's diff. flow
+  } else if(type == "POI")
+    {
+     mp = fReEBE1D[pe][1][0][0]->GetBinEntries(b);
+     mq = fReEBE1D[pe][2][0][0]->GetBinEntries(b);    
+    }
+  
+  // event weights for reduced correlations:
+  dw2 = mp*dMult-mq; // weight for <2'> 
+  dw4 = (mp-mq)*dMult*(dMult-1.)*(dMult-2.)
+     + mq*(dMult-1.)*(dMult-2.)*(dMult-3.); // weight for <4'>
+  //dw6 = ...     
+  //dw8 = ...     
+ 
+  // storing all products:
+  fQProductsForDiffFlow[pe][t][0][1]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],twoEBE*twoReducedEBE,dW2*dw2); // storing <2><2'>
+  fQProductsForDiffFlow[pe][t][1][2]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],fourEBE*twoReducedEBE,dW4*dw2); // storing <4><2'>
+  fQProductsForDiffFlow[pe][t][1][4]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],sixEBE*twoReducedEBE,dW6*dw2); // storing <6><2'>
+  fQProductsForDiffFlow[pe][t][1][6]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],eightEBE*twoReducedEBE,dW8*dw2); // storing <8><2'>
+  
+  // event weight for <4'>:
+  fQProductsForDiffFlow[pe][t][0][3]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],twoEBE*fourReducedEBE,dW2*dw4); // storing <2><4'>
+  fQProductsForDiffFlow[pe][t][1][3]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],twoReducedEBE*fourReducedEBE,dw2*dw4); // storing <2'><4'>
+  fQProductsForDiffFlow[pe][t][2][3]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],fourEBE*fourReducedEBE,dW4*dw4); // storing <4><4'>
+  fQProductsForDiffFlow[pe][t][3][4]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],sixEBE*fourReducedEBE,dW6*dw4); // storing <6><4'> 
+  fQProductsForDiffFlow[pe][t][3][6]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],eightEBE*fourReducedEBE,dW8*dw4); // storing <8><4'>
+
+  // event weight for <6'>:
+  //dw6 = ...;  
+  //fQProductsForDiffFlow[pe][t][0][5]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],twoEBE*sixReducedEBE,dW2*dw6); // storing <2><6'>
+  //fQProductsForDiffFlow[pe][t][1][5]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],twoReducedEBE*sixReducedEBE,dw2*dw6); // storing <2'><6'>
+  //fQProductsForDiffFlow[pe][t][2][5]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],fourEBE*sixReducedEBE,dW4*dw6); // storing <4><6'>
+  //fQProductsForDiffFlow[pe][t][3][5]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],fourReducedEBE*sixReducedEBE,dw4*dw6); // storing <4'><6'> 
+  //fQProductsForDiffFlow[pe][t][4][5]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],sixEBE*sixReducedEBE,dW6*dw6); // storing <6><6'>
+  //fQProductsForDiffFlow[pe][t][5][6]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],sixReducedEBE*eightEBE,dw6*dW8); // storing <6'><8>
+  //fQProductsForDiffFlow[pe][t][5][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],sixReducedEBE*eightReducedEBE,dw6*dw8); // storing <6'><8'>
+
+  // event weight for <8'>:
+  //dw8 = ...;  
+  //fQProductsForDiffFlow[pe][t][0][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],twoEBE*eightReducedEBE,dW2*dw8); // storing <2><8'>
+  //fQProductsForDiffFlow[pe][t][1][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],twoReducedEBE*eightReducedEBE,dw2*dw8); // storing <2'><8'>
+  //fQProductsForDiffFlow[pe][t][2][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],fourEBE*eightReducedEBE,dW4*dw8); // storing <4><8'>
+  //fQProductsForDiffFlow[pe][t][3][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],fourReducedEBE*eightReducedEBE,dw4*dw8); // storing <4'><8'> 
+  //fQProductsForDiffFlow[pe][t][4][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],sixEBE*eightReducedEBE,dW6*dw8); // storing <6><8'>
+  //fQProductsForDiffFlow[pe][t][5][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],sixReducedEBE*eightReducedEBE,dw6*dw8); // storing <6'><8'>
+  //fQProductsForDiffFlow[pe][t][6][7]->Fill(minPtEta[pe]+(b-1)*binWidthPtEta[pe],eightEBE*eightReducedEBE,dW8*dw8); // storing <8><8'>
+  
+ } // end of for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+     
+} // end of void AliFlowAnalysisWithQCumulants::CalculateQProductsForDiffFlow(TString type, TString ptOrEta)
+
+
+//================================================================================================================================
+    
+    
+void AliFlowAnalysisWithQCumulants::CalculateCovariancesForDiffFlow(TString type, TString ptOrEta)
+{
+ // calculate covariances: Cov(<2>,<2'>), Cov(<2>,<4'>), Cov(<2>,<6'>), Cov(<2>,<8'>), Cov(<2'>,<4>), 
+ //                        Cov(<2'>,<4'>), Cov(<2'>,<6>), Cov(<2'>,<6'>), Cov(<2'>,<8>), Cov(<2'>,<8'>),
+ //                        Cov(<4>,<4'>), Cov(<4>,<6'>), Cov(<4>,<8'>), Cov(<4'>,<6>), Cov(<4'>,<6'>), 
+ //                        Cov(<4'>,<8>), Cov(<4'>,<8'>), Cov(<6>,<6'>), Cov(<6>,<8'>), Cov(<6'>,<8>), 
+ //                        Cov(<6'>,<8'>), Cov(<8>,<8'>)
+
+ Int_t typeFlag = -1;
+ Int_t ptEtaFlag = -1;
+
+ if(type == "RP")
+ {
+  typeFlag = 0;
+ } else if(type == "POI")
+   {
+    typeFlag = 1;
+   } 
+     
+ if(ptOrEta == "Pt")
+ {
+  ptEtaFlag = 0;
+ } else if(ptOrEta == "Eta")
+   {
+    ptEtaFlag = 1;
+   } 
+  
+ // shortcuts:
+ Int_t t = typeFlag;
+ Int_t pe = ptEtaFlag;
+     
+ // common:
+ Int_t nBinsPtEta[2] = {fnBinsPt,fnBinsEta};
+ //Double_t minPtEta[2] = {fPtMin,fEtaMin};
+ //Double_t maxPtEta[2] = {fPtMax,fEtaMax};
+ //Double_t binWidthPtEta[2] = {fPtBinWidth,fEtaBinWidth};
+ 
+ // average correlations:
+ Double_t two = fCorrelations[0][0]->GetBinContent(1); // <<2>>
+ //Double_t four = fCorrelations[0][0]->GetBinContent(11); // <<4>>
+ //Double_t six = fCorrelations[0][0]->GetBinContent(24); // <<6>>
+ //Double_t eight = fCorrelations[0][0]->GetBinContent(31); // <<8>>
+ 
+ // reduced correlations:
+ Double_t twoReduced = 0.; // <<2'>> 
+ //Double_t fourReduced = 0.; // <<4'>>
+ //Double_t sixReduced = 0.; // <<6'>>
+ //Double_t eightReduced = 0.; // <<8'>>
+ 
+ // products for differential flow:
+ Double_t twoTwoReduced = 0; // <<2><2'>> 
+
+ // denominator in the expressions for the covariances:
+ // denominator = 1 - term1/(term2*term3)
+ Double_t denomTwoTwoReduced = 0.; // (to be improved) see QC report 
+ Double_t term1 = 0.; // (to be improved) see QC report 
+ Double_t term2 = 0.; // (to be improved) see QC report
+ Double_t term3 = 0.; // (to be improved) see QC report
+ 
+ term2 = fSumOfEventWeights[0][0][0]->GetBinContent(1); // to be improved (place somewhere else)
+
+ // unbiased estimators for covariances for differential flow:
+ Double_t covTwoTwoReduced = 0.; // [<<2><2'>> - <<2>><<2'>>]/denomTwoTwoReduced
+ 
+ for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+ {
+  twoReduced = fFinalCorrelations1D[t][0][0][pe][0]->GetBinContent(b);
+  twoTwoReduced = fQProductsForDiffFlow[pe][t][0][1]->GetBinContent(b);
+  term1 = fProductOfEventWeightsForDiffFlow[pe][t][0][1]->GetBinContent(b);
+  term3 = fSumOfEventWeightsForDiffFlow[pe][t][0][0]->GetBinContent(b);
+  if(term2*term3>0.)
+  {
+   denomTwoTwoReduced = 1-term1/(term2*term3);
+  }
+  if(denomTwoTwoReduced != 0.)
+  {
+   covTwoTwoReduced = (twoTwoReduced - two*twoReduced)/denomTwoTwoReduced;
+  } 
+  fFinalCovariances1D[t][0][0][pe][0]->SetBinContent(b,covTwoTwoReduced);
+ } // end of for(Int_t b=1;b<=nBinsPtEta[pe];b++)
+ 
+} // end of void AliFlowAnalysisWithQCumulants::CalculateCovariancesForDiffFlow(TString type, TString ptOrEta)
 
 
