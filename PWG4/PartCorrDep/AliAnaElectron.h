@@ -34,7 +34,7 @@ public:
   AliAnaElectron(const AliAnaElectron & g) ; // cpy ctor
   AliAnaElectron & operator = (const AliAnaElectron & g) ;//cpy assignment
   virtual ~AliAnaElectron() ; //virtual dtor
-  
+
   TList *  GetCreateOutputObjects();
 
   void Init();
@@ -49,8 +49,8 @@ public:
   //Temporary local method to get DCA because AliAODTrack is stupid
   Bool_t GetDCA(const AliAODTrack* tr,Double_t imp[2], Double_t cov[3]);
 
-  Bool_t IsItPhotonic(const AliAODPWG4Particle* part); //check with track list
-  Bool_t IsItPhotonic2(const AliAODPWG4Particle* part); //check with V0 list
+  Bool_t PhotonicPrim(const AliAODPWG4Particle* part); //check with track list
+  Bool_t PhotonicV0(Int_t trackId); //check with V0 list
 
   //check if track has been flagged as a non-photonic or DVM electron
   //used with the jet tracks to tag bjets
@@ -104,6 +104,8 @@ public:
   //based on transverse impact parameter
   Double_t GetIPSignificance(AliAODTrack *tr, Double_t jetPhi);
   void GetImpactParamVect(Double_t Pxy[2], Double_t t[2], Double_t Vxy[2], Double_t ip[2]);
+  //For determining origin of electron
+  Int_t GetMCSource(Int_t mctag);
 
   private:
   TString  fCalorimeter;  //! Which detector? EMCAL or PHOS
@@ -124,19 +126,32 @@ public:
   Int_t    fNTagTrkCut;  //min number of tracks required for IP sig tag
   Double_t fIPSigCut;    //min IP significance cut
 
+  Double_t fJetEtaCut;   //max eta for jets
+  Double_t fJetPhiMin;   //min phi for jets
+  Double_t fJetPhiMax;   //max phi for jets
+
   Bool_t  fWriteNtuple; //flag for filling ntuple or not
 
-  TNtuple* fEleNtuple; //! testing ntuple
+  ///////////////////////////////////////
+  //Output histograms and Ntuples
+
+  ///////////////////////////////////////
+  //RC = RECO only - these histos will be filled using only reco
+  //information
+
+  //event QA
+  TH1F * fhImpactXY;    //! XY impact parameter of all tracks to primary vertex
+  TH1F * fhRefMult;     //! refmult (tracks with |eta| < 0.5)
+  TH1F * fhRefMult2;    //! refmult2 (tracks with |eta| < 0.5 & impXY,impZ < 1.0)
 
   //matching checks   
   TH1F *fh1pOverE;     //! p/E for track-cluster matches
+  TH1F *fh1EOverp;     //! E/p for track-cluster matches (For PMJ)
   TH1F *fh1dR;         //! distance between projected track and cluster
   TH2F *fh2EledEdx;    //! dE/dx vs. momentum for electron candidates
   TH2F *fh2MatchdEdx;  //! dE/dx vs. momentum for all matches
-  TH2F *fh2dEtadPhi;   //! DeltaEta vs. DeltaPhi of all track/cluster
-		       //! pairs
-  TH2F *fh2dEtadPhiMatched;   //! DeltaEta vs. DeltaPhi of matched
-				//! track/cluster pairs
+  TH2F *fh2dEtadPhi;   //! DeltaEta vs. DeltaPhi of all track/cluster pairs
+  TH2F *fh2dEtadPhiMatched;   //! DeltaEta vs. DeltaPhi of matched track/cluster pairs
   TH2F *fh2dEtadPhiUnmatched;   //! DeltaEta vs. DeltaPhi of unmatched track/cluster pairs
 
   TH2F* fh2TrackPVsClusterE;     //!track momentum vs. cluster energy
@@ -148,7 +163,7 @@ public:
   TH1F* fh1OpeningAngle; //!opening angle between pairs of photon candidates
   TH1F* fh1MinvPhoton;   //!invariant mass distribution of electron pairs
 
-  //Reconstructed
+  //Reconstructed electrons
   TH1F * fhPtElectron;  //! Number of identified electron vs transverse momentum 
   TH2F * fhPhiElectron; //! Azimuthal angle of identified  electron vs transverse momentum 
   TH2F * fhEtaElectron; //! Pseudorapidity of identified  electron vs tranvserse momentum 
@@ -161,68 +176,21 @@ public:
   TH2F * fhPhiPE; //! Azimuthal angle of photonic electron vs transverse momentum 
   TH2F * fhEtaPE; //! Pseudorapidity of photonic electron vs tranvserse momentum 
 
-  TH1F * fhPtConversion;  //! Number of conversion electron vs transverse momentum 
-  TH2F * fhPhiConversion; //! Azimuthal angle of conversion  electron vs transverse momentum 
-  TH2F * fhEtaConversion; //! Pseudorapidity of conversion electron vs tranvserse momentum 
-
-  TH1F * fhPtBottom;  //! Number of bottom electron vs transverse momentum 
-  TH2F * fhPhiBottom; //! Azimuthal angle of bottom  electron vs transverse momentum 
-  TH2F * fhEtaBottom; //! Pseudorapidity of bottom electron vs tranvserse momentum 
-
-  TH1F * fhPtCharm;  //! Number of charm electron vs transverse momentum 
-  TH2F * fhPhiCharm; //! Azimuthal angle of charm  electron vs transverse momentum 
-  TH2F * fhEtaCharm; //! Pseudorapidity of charm electron vs tranvserse momentum 
-
-  TH1F * fhPtCFromB;  //! Number of charm from bottom electron vs transverse momentum 
-  TH2F * fhPhiCFromB; //! Azimuthal angle of charm from bottom electron vs transverse momentum 
-  TH2F * fhEtaCFromB; //! Pseudorapidity of charm from bottom electron vs tranvserse momentum 
-
-  TH1F * fhPtDalitz;  //! Number of dalitz electron vs transverse momentum 
-  TH2F * fhPhiDalitz; //! Azimuthal angle of dalitz  electron vs transverse momentum 
-  TH2F * fhEtaDalitz; //! Pseudorapidity of dalitz electron vs tranvserse momentum 
-
-  TH1F * fhPtWDecay;  //! Number of W-boson electron vs transverse momentum 
-  TH2F * fhPhiWDecay; //! Azimuthal angle of W-boson  electron vs transverse momentum 
-  TH2F * fhEtaWDecay; //! Pseudorapidity of W-boson electron vs tranvserse momentum 
-  		
-  TH1F * fhPtZDecay;  //! Number of Z-boson electron vs transverse momentum 
-  TH2F * fhPhiZDecay; //! Azimuthal angle of Z-boson  electron vs transverse momentum 
-  TH2F * fhEtaZDecay; //! Pseudorapidity of Z-boson electron vs tranvserse momentum 
-
-  TH1F * fhPtAll;  //! Number of all electron vs transverse momentum 
-  TH2F * fhPhiAll; //! Azimuthal angle of all  electron vs transverse momentum 
-  TH2F * fhEtaAll; //! Pseudorapidity of all electron vs tranvserse momentum 
-
-  TH1F * fhPtUnknown;  //! Number of unknown electron vs transverse momentum
-  TH2F * fhPhiUnknown; //! Azimuthal angle of unknown  electron vs transverse momentum
-  TH2F * fhEtaUnknown; //! Pseudorapidity of unknown electron vs tranvserse momentum
-
-  TH1F * fhPtMisidentified;  //! Number of misidentified electron vs transverse momentum
-  TH2F * fhPhiMisidentified; //! Azimuthal angle of misidentified electron vs transverse momentum
-  TH2F * fhEtaMisidentified; //! Pseudorapidity of misidentified electron vs tranvserse momentum 
-
-  TH1F* fhPtHadron;     //!Pt distribution of reco charged hadrons
-			//!(pi,k,p) in EMCAL acceptance
-  TH1F* fhPtEleTrkDet;  //!Pt distribution of reco electrons using
-			//!pid info from tracking detectors only in
-			//!EMCAL acceptance
-  //event QA
-  TH1F * fhImpactXY;    //! impact parameter of all tracks to primary vertex
-  TH1F * fhRefMult;     //! refmult (sep 14)
-  TH1F * fhRefMult2;    //! refmult2 (sep 14)
-
   //DVM B-tagging
   TH2F * fhDVMBtagCut1; //! DVM B-tagging result for cut1 (minv>1.0)
   TH2F * fhDVMBtagCut2; //! DVM B-tagging result for cut2 (minv>1.5)
   TH2F * fhDVMBtagCut3; //! DVM B-tagging result for cut3 (minv>1.8)
   TH2F * fhDVMBtagQA1;  //! DVM B-tagging : QA of pairDca vs decaylength
   TH2F * fhDVMBtagQA2;  //! DVM B-tagging : QA of signDca vs mass
-  TH1F * fhDVMBtagQA3;  //! DVM B-tagging : QA (sep 14)
-  TH1F * fhDVMBtagQA4;  //! DVM B-tagging : QA (sep 14)
-  TH1F * fhDVMBtagQA5;  //! DVM B-tagging : QA (sep 14)
+  TH1F * fhDVMBtagQA3;  //! DVM B-tagging : QA number of ITS clusters
+  TH1F * fhDVMBtagQA4;  //! DVM B-tagging : QA prim vtx impXY
+  TH1F * fhDVMBtagQA5;  //! DVM B-tagging : QA prim vtx impZ
   //IPSig B-tagging
   TH1F * fhIPSigBtagQA1; //! IPSig B-tagging : QA of # tag tracks
   TH1F * fhIPSigBtagQA2; //! IPSig B-tagging : QA of IP sig
+  TH1F * fhTagJetPt1x4;  //! IPSig B-tagging : result for (1 track, ipSignif>4)
+  TH1F * fhTagJetPt2x3;  //! IPSig B-tagging : result for (2 track, ipSignif>3)
+  TH1F * fhTagJetPt3x2;  //! IPSig B-tagging : result for (3 track, ipSignif>2)
 
   //B-Jet histograms
   TH2F* fhJetType;       //! How many of each tag were found vs jet pt
@@ -233,19 +201,41 @@ public:
   TH2F* fhNonBJetPtFF;   //! Non b-tagged jet FF with pt_Track
   TH2F* fhNonBJetEtaPhi; //! Non b-tagged jet eta-phi distribution
 
-  //MC
-  TNtuple *fMCEleNtuple; //! Ntuple of MC electrons
-  TH1F* fhPtMCHadron;    //! Pt distribution of MC charged hadrons (pi,k,p) in EMCAL acceptance
-  TH1F* fhPtMCBottom;    //! Pt distribution of MC bottom electrons in EMCAL
-  TH1F* fhPtMCCharm;     //! Pt distribution of MC charm electrons in EMCAL 
-  TH1F* fhPtMCCFromB;    //! Pt distribution of MC charm from bottom ele in EMCAL
-  TH1F* fhPtMCConversion;//! Pt distribution of MC conversion electrons in EMCAL 
-  TH1F* fhPtMCDalitz;    //! Pt distribution of MC Dalitz electrons in EMCAL
-  TH1F* fhPtMCWDecay;    //! Pt distribution of MC W decay electrons in EMCAL
-  TH1F* fhPtMCZDecay;    //! Pt distribution of MC Z decay electrons in EMCAL
-  TH1F* fhPtMCUnknown;   //! Pt distribution of MC unknown electrons in EMCAL
+  ///////////////////////////////////////////////////////////////////
+  //MC = From here down, the histograms use MC information, so they will
+  //only be filled in simulations
+  TNtuple* fEleNtuple; //! testing ntuple
 
-  ClassDef(AliAnaElectron,6)
+  TH2F * fhPhiConversion; //! Azimuthal angle of conversion  electron vs transverse momentum 
+  TH2F * fhEtaConversion; //! Pseudorapidity of conversion electron vs tranvserse momentum 
+
+  //Histograms for comparison to tracking detectors
+  TH2F* fhPtHadron;        //!Pt distribution of reco charged hadrons
+                           //!(pi,k,p) in EMCAL acceptance
+  TH2F* fhPtNPEleTPC;      //!Pt distribution of non-photonic reco electrons using
+			   //!just TPC dEdx info in EMCAL acceptance
+  TH2F* fhPtNPEleTPCTRD;   //!Pt distribution of non-photonic reco electrons using
+			   //!pid info from tracking detectors only in EMCAL acceptance
+  TH2F* fhPtNPEleTTE;      //!Pt distribution of non-photonic reco
+			   //!electrons using pid info from TPC+TRD+EMCAL
+			   //!in EMCAL acceptance
+
+  //For computing efficiency of IPSIG tag
+  //these require that an MC b-Ancestor is present in the jet
+  TH1F * fhBJetPt1x4;    //! IPSig B-tagging : result for (1 track, ipSignif>4)
+  TH1F * fhBJetPt2x3;    //! IPSig B-tagging : result for (2 track, ipSignif>3)
+  TH1F * fhBJetPt3x2;    //! IPSig B-tagging : result for (3 track, ipSignif>2)
+
+  ////////////////////////////
+  //MC Only Rate histograms
+
+  TNtuple *fMCEleNtuple; //! Ntuple of MC electrons
+
+  TH2F* fhMCBJetElePt;   //! Pt of B-Jet vs pt of electron
+  TH1F* fhPtMCHadron;    //! Pt distribution of MC charged hadrons (pi,k,p) in EMCAL acceptance
+  TH2F* fhPtMCElectron;  //! Pt distribution of MC electrons from various sources in EMCAL
+
+  ClassDef(AliAnaElectron,7)
 
 } ;
  
