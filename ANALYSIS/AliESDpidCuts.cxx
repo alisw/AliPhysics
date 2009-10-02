@@ -25,6 +25,8 @@ AliESDpidCuts::AliESDpidCuts(const Char_t *name, const Char_t *title):
     AliAnalysisCuts(name, title)
   , fTPCpid(NULL)
   , fTOFpid(NULL)
+  , fTPCsigmaCutRequired(0)
+  , fTOFsigmaCutRequired(0)
   , fCutTPCclusterRatio(0.)
   , fMinMomentumTOF(0.5)
   , fHcutStatistics(NULL)
@@ -36,12 +38,8 @@ AliESDpidCuts::AliESDpidCuts(const Char_t *name, const Char_t *title):
   
   fTPCpid = new AliTPCpidESD;
   fTOFpid = new AliTOFpidESD;
-  for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
-    fCutTPCnSigma[ispec] = -1;
-    fCutTOFnSigma[ispec] = -1;
-  }
-  //memset(fCutTPCnSigma, -1, sizeof(Float_t) * AliPID::kSPECIES);
-  //memset(fCutTOFnSigma, -1, sizeof(Float_t) * AliPID::kSPECIES);
+  memset(fCutTPCnSigma, 0, sizeof(Float_t) * 2);
+  memset(fCutTOFnSigma, 0, sizeof(Float_t) * 2);
 
   memset(fHclusterRatio, 0, sizeof(TH1F *) * 2);
   memset(fHnSigmaTPC, 0, sizeof(TH1F *) * AliPID::kSPECIES * 2);
@@ -53,6 +51,8 @@ AliESDpidCuts::AliESDpidCuts(const AliESDpidCuts &ref):
     AliAnalysisCuts(ref)
   , fTPCpid(NULL)
   , fTOFpid(NULL)
+  , fTPCsigmaCutRequired(ref.fTPCsigmaCutRequired)
+  , fTOFsigmaCutRequired(ref.fTOFsigmaCutRequired)
   , fCutTPCclusterRatio(ref.fCutTPCclusterRatio)
   , fMinMomentumTOF(ref.fMinMomentumTOF)
   , fHcutStatistics(NULL)
@@ -63,8 +63,8 @@ AliESDpidCuts::AliESDpidCuts(const AliESDpidCuts &ref):
   //
   fTPCpid = new AliTPCpidESD(*ref.fTPCpid);
   fTOFpid = new AliTOFpidESD(*ref.fTOFpid);
-  memcpy(fCutTPCnSigma, ref.fCutTPCnSigma, sizeof(Float_t) * AliPID::kSPECIES);
-  memcpy(fCutTOFnSigma, ref.fCutTOFnSigma, sizeof(Float_t) * AliPID::kSPECIES);
+  memcpy(fCutTPCnSigma, ref.fCutTPCnSigma, sizeof(Float_t) * AliPID::kSPECIES * 2);
+  memcpy(fCutTOFnSigma, ref.fCutTOFnSigma, sizeof(Float_t) * AliPID::kSPECIES * 2);
   
   if(ref.fHcutStatistics) fHcutStatistics = dynamic_cast<TH1I *>(ref.fHcutStatistics->Clone());
   if(ref.fHcutCorrelation) fHcutCorrelation = dynamic_cast<TH2I *>(ref.fHcutCorrelation->Clone());
@@ -132,6 +132,9 @@ void AliESDpidCuts::Copy(TObject &c) const {
 
   target.fCutTPCclusterRatio = fCutTPCclusterRatio;
   target.fMinMomentumTOF = fMinMomentumTOF;
+
+  target.fTPCsigmaCutRequired = fTPCsigmaCutRequired;
+  target.fTOFsigmaCutRequired = fTOFsigmaCutRequired;
   
   if(fHcutStatistics) target.fHcutStatistics = dynamic_cast<TH1I *>(fHcutStatistics->Clone());
   if(fHcutCorrelation) target.fHcutCorrelation = dynamic_cast<TH2I *>(fHcutCorrelation->Clone());
@@ -143,7 +146,7 @@ void AliESDpidCuts::Copy(TObject &c) const {
     }
   }
  
-  memcpy(target.fCutTPCnSigma, fCutTPCnSigma, sizeof(Float_t) * AliPID::kSPECIES);
+  memcpy(target.fCutTPCnSigma, fCutTPCnSigma, sizeof(Float_t) * AliPID::kSPECIES * 2);
   memcpy(target.fCutTOFnSigma, fCutTOFnSigma, sizeof(Float_t) * AliPID::kSPECIES);
  
   AliESDpidCuts::Copy(c);
@@ -230,22 +233,22 @@ Bool_t AliESDpidCuts::AcceptTrack(const AliESDtrack *track){
       SETBIT(cutFullfiled, kCutClusterRatioTPC);
   }
   // check TPC nSigma cut
-  Float_t nsigmaTPC[AliPID::kSPECIES];   // need all sigmas for QA plotting
+  Float_t nsigmaTPC[AliPID::kSPECIES], nsigma;   // need all sigmas for QA plotting
   for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
-    nsigmaTPC[ispec] = fTPCpid->GetNumberOfSigmas(track, static_cast<AliPID::EParticleType>(ispec));
-    if(fCutTPCnSigma[ispec] < 0) continue;
+    nsigmaTPC[ispec] = nsigma = fTPCpid->GetNumberOfSigmas(track, static_cast<AliPID::EParticleType>(ispec));
+    if(!(fTPCsigmaCutRequired & 1 << ispec)) continue;
     SETBIT(cutRequired, kCutNsigmaTPC); // We found at least one species where the n-Sigma Cut is required
-    if(TMath::Abs(nsigmaTPC[ispec]) <= fCutTPCnSigma[ispec]) SETBIT(cutFullfiled, kCutNsigmaTPC);    // Fullfiled for at least one species
+    if(nsigma >= fCutTPCnSigma[2*ispec] && nsigma <= fCutTPCnSigma[2*ispec+1]) SETBIT(cutFullfiled, kCutNsigmaTPC);    // Fullfiled for at least one species
   }
   // check TOF nSigma cut
   Float_t nsigmaTOF[AliPID::kSPECIES];    // see above
   Bool_t hasTOFpid = track->GetStatus() & AliESDtrack::kTOFpid; // only apply TOF n-sigma cut when PID Status Bit is set
   for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
-    if(hasTOFpid) nsigmaTOF[ispec] = fTOFpid->GetNumberOfSigmas(track, static_cast<AliPID::EParticleType>(ispec));
-    if(fCutTOFnSigma[ispec] < 0) continue;
+    if(hasTOFpid) nsigmaTOF[ispec] = nsigma = fTOFpid->GetNumberOfSigmas(track, static_cast<AliPID::EParticleType>(ispec));
+    if(!(fTOFsigmaCutRequired && 1 << ispec)) continue;
     SETBIT(cutRequired, kCutNsigmaTOF);
     if(track->GetOuterParam()->P() >= fMinMomentumTOF){
-      if(hasTOFpid && (TMath::Abs(nsigmaTOF[ispec]) <= fCutTOFnSigma[ispec])) SETBIT(cutFullfiled, kCutNsigmaTOF);
+      if(hasTOFpid && nsigma <= fCutTOFnSigma[2*ispec] && nsigma >= fCutTOFnSigma[2*ispec+1]) SETBIT(cutFullfiled, kCutNsigmaTOF);
     }
   }
 
