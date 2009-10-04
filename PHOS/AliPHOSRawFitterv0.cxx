@@ -188,7 +188,7 @@ Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       pedestal += truePed - altroSettings ;
     }
     else{
-      AliWarning(Form("Can not read data from OCDB")) ;
+      AliDebug(2,Form("Pedestal and offset are not read from OCDB. Use 0 for their values.")) ;
     }
   }
   fEnergy-=pedestal ;

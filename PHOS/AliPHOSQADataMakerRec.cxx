@@ -408,6 +408,22 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       Int_t cellZ    = fRawStream->GetCellZ();
       Int_t caloFlag = fRawStream->GetCaloFlag(); // 0=LG, 1=HG, 2=TRU
 
+      if(caloFlag!=0 && caloFlag!=1) continue; //TRU data!
+
+      fitter->SetChannelGeo(module+1,cellX+1,cellZ+1,caloFlag);
+
+      if(fitter->GetAmpOffset()==0 && fitter->GetAmpThreshold()==0) {
+	Short_t value = fRawStream->GetAltroCFG1();
+	Bool_t ZeroSuppressionEnabled = (value >> 15) & 0x1;
+	if(ZeroSuppressionEnabled) {
+	  Short_t offset = (value >> 10) & 0xf;
+	  Short_t threshold = value & 0x3ff;
+	  fitter->SubtractPedestals(kFALSE);
+	  fitter->SetAmpOffset(offset);
+	  fitter->SetAmpThreshold(threshold);
+	}
+      }
+
       Int_t nBunches = 0;
       while (fRawStream->NextBunch()) {
 	nBunches++;
@@ -415,7 +431,6 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	const UShort_t *sig = fRawStream->GetSignals();
 	Int_t sigStart      = fRawStream->GetStartTimeBin();
 	Int_t sigLength     = fRawStream->GetBunchLength();
-	fitter->SetChannelGeo(module,cellX,cellZ,caloFlag);
 	fitter->Eval(sig,sigStart,sigLength);
       } // End of NextBunch()
 

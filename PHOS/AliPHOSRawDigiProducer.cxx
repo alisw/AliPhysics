@@ -181,6 +181,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
       
       if(caloFlag!=0 && caloFlag!=1) continue; //TRU data!
       
+      fitter->SetChannelGeo(relId[0],relId[2],relId[3],caloFlag);
       if(fitter->GetAmpOffset()==0 && fitter->GetAmpThreshold()==0) {
 	short value = fRawStream->GetAltroCFG1();
 	bool ZeroSuppressionEnabled = (value >> 15) & 0x1;
@@ -202,7 +203,6 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
 	const UShort_t *sig = fRawStream->GetSignals();
 	Int_t sigStart  = fRawStream->GetStartTimeBin();
 	Int_t sigLength = fRawStream->GetBunchLength();
-	fitter->SetChannelGeo(relId[0],relId[2],relId[3],caloFlag);
 	fitter->Eval(sig,sigStart,sigLength);
       } // End of NextBunch()
 
