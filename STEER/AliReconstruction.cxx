@@ -2701,7 +2701,12 @@ Bool_t AliReconstruction::InitRunLoader()
   if (gAlice) delete gAlice;
   gAlice = NULL;
 
-  if (!gSystem->AccessPathName(fGAliceFileName.Data())) { // galice.root exists
+  TFile *gafile = TFile::Open(fGAliceFileName.Data());
+  //  if (!gSystem->AccessPathName(fGAliceFileName.Data())) { // galice.root exists
+  if (gafile) { // galice.root exists
+    gafile->Close();
+    delete gafile;
+
     // load all base libraries to get the loader classes
     TString libs = gSystem->GetLibraries();
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
