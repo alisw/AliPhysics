@@ -31,6 +31,7 @@ class AliTRDtransform;
 class AliTRDCalROC;
 class AliTRDReconstructor;
 class AliTRDCalSingleChamberStatus;
+class AliTRDrawStreamBase;
 
 class AliTRDclusterizer : public TNamed 
 {
@@ -118,10 +119,14 @@ protected:
   Bool_t           IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Short_t *const Signals);       //for const correctness reasons not const parameters are given separately
   Bool_t           FivePadCluster(MaxStruct &ThisMax, MaxStruct &NeighbourMax);
   void             CreateCluster(const MaxStruct &Max); 
-  inline void      CalcAdditionalInfo(const MaxStruct &Max, Short_t *const signals, Int_t &nPadCount);
+
   virtual void     AddClusterToArray(AliTRDcluster* cluster);
   virtual void     AddTrackletsToArray();
 
+private:
+  inline void      CalcAdditionalInfo(const MaxStruct &Max, Short_t *const signals, Int_t &nPadCount);
+
+protected:
   const AliTRDReconstructor *fReconstructor; //! reconstructor
   AliRunLoader        *fRunLoader;           //! Run Loader
   TTree               *fClusterTree;         //! Tree with the cluster
@@ -158,6 +163,7 @@ protected:
   Int_t                firstClusterROC;       // The number of cluster in a given ROC
   Int_t                fNoOfClusters;         // Number of Clusters already processed and still owned by the clusterizer
   Int_t                fBaseline;             // Baseline of the ADC values
+  AliTRDrawStreamBase *fRawStream;            // Currently used RawStream
 
   ClassDef(AliTRDclusterizer,6)               //  TRD clusterfinder
 

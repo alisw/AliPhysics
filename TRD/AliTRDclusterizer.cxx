@@ -85,6 +85,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
   ,firstClusterROC(0)
   ,fNoOfClusters(0)
   ,fBaseline(0)
+  ,fRawStream(NULL)
 {
   //
   // AliTRDclusterizer default constructor
@@ -144,6 +145,7 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title, co
   ,firstClusterROC(0)
   ,fNoOfClusters(0)
   ,fBaseline(0)
+  ,fRawStream(NULL)
 {
   //
   // AliTRDclusterizer constructor
@@ -198,6 +200,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
   ,firstClusterROC(0)
   ,fNoOfClusters(0)
   ,fBaseline(0)
+  ,fRawStream(NULL)
 {
   //
   // AliTRDclusterizer copy constructor
@@ -241,7 +244,12 @@ AliTRDclusterizer::~AliTRDclusterizer()
 
   if (fTransform){
     delete fTransform;
-    fTransform     = NULL;
+    fTransform = NULL;
+  }
+
+  if (fRawStream){
+    delete fRawStream;
+    fRawStream = NULL;
   }
 
 }
@@ -296,6 +304,7 @@ void AliTRDclusterizer::Copy(TObject &c) const
   ((AliTRDclusterizer &) c).firstClusterROC= 0;
   ((AliTRDclusterizer &) c).fNoOfClusters  = 0;
   ((AliTRDclusterizer &) c).fBaseline      = 0;
+  ((AliTRDclusterizer &) c).fRawStream     = NULL;
   
 }
 
@@ -646,14 +655,18 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
     fTrackletContainer[1] = new UInt_t[kTrackletChmb]; 
   }
 
-  AliTRDrawStreamBase *input = AliTRDrawStreamBase::GetRawStream(rawReader);
-  if(fReconstructor->IsHLT())
-    input->SetSharedPadReadout(kFALSE);
+  if(!fRawStream)
+    fRawStream = AliTRDrawStreamBase::GetRawStream(rawReader);
+  else
+    fRawStream->SetReader(rawReader);
 
-  AliInfo(Form("Stream version: %s", input->IsA()->GetName()));
+  if(fReconstructor->IsHLT())
+    fRawStream->SetSharedPadReadout(kFALSE);
+
+  AliInfo(Form("Stream version: %s", fRawStream->IsA()->GetName()));
   
   Int_t det    = 0;
-  while ((det = input->NextChamber(fDigitsManager,fTrackletContainer)) >= 0){
+  while ((det = fRawStream->NextChamber(fDigitsManager,fTrackletContainer)) >= 0){
     Bool_t iclusterBranch = kFALSE;
     if (fDigitsManager->GetIndexes(det)->HasEntry()){
       iclusterBranch = MakeClusters(det);
@@ -678,9 +691,6 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
     delete fDigitsManager;
     fDigitsManager = NULL;
   }
-
-  delete input;
-  input = NULL;
 
   AliInfo(Form("Number of found clusters : %d", fNoOfClusters)); 
   return kTRUE;
