@@ -193,7 +193,7 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 	  clusdata[3] = fPMDrecpoint->GetClusCells();
 	  clusdata[4] = fPMDrecpoint->GetClusSigmaX();
 	  clusdata[5] = fPMDrecpoint->GetClusSigmaY();
-	  
+
 	  if (clusdata[4] >= 0. && clusdata[5] >= 0.)
 	    { 
 	      // extract the associated cell information
@@ -205,7 +205,7 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 	      itra = new Int_t[nenbr1];
 	      ipid = new Int_t[nenbr1];
 	      cadc = new Float_t[nenbr1];
-
+	      
 	      for (Int_t ient1 = 0; ient1 < nenbr1; ient1++)
 		{
 		  rechit = (AliPMDrechit*)fRechits->UncheckedAt(ient1);
@@ -215,8 +215,16 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 		  ipid[ient1] = rechit->GetCellPid();
 		  cadc[ient1] = rechit->GetCellAdc();
 		}
-	      AssignTrPidToCluster(nenbr1, itra, ipid, cadc,
-				   trackno, trackpid);
+	      if (idet == 0)
+		{
+		  AssignTrPidToCluster(nenbr1, itra, ipid, cadc,
+				       trackno, trackpid);
+		}
+	      else if (idet == 1)
+		{
+		  trackno  = itra[0];
+		  trackpid = ipid[0];
+		}
 
 	      delete [] irow;
 	      delete [] icol;
@@ -337,7 +345,7 @@ void AliPMDtracker::AssignTrPidToCluster(Int_t nentry, Int_t *itra,
 	  ngtrack++;
 	}
     }
-
+  
   if (ngtrack == 0)
     {
       // hadron track
@@ -355,7 +363,7 @@ void AliPMDtracker::AssignTrPidToCluster(Int_t nentry, Int_t *itra,
   else if (ngtrack > 1)
     {
       // more than one photon track
-
+      
       trenergy  = new Int_t [ngtrack];
       sortcoord = new Int_t [ngtrack];
       for (Int_t i = 0; i < ngtrack; i++)
@@ -369,21 +377,19 @@ void AliPMDtracker::AssignTrPidToCluster(Int_t nentry, Int_t *itra,
 		}
 	    }
 	}
-
+      
       Bool_t jsort = true;
       TMath::Sort(ngtrack,trenergy,sortcoord,jsort);
-
+      
       Int_t gtr = sortcoord[0];   
       trackno  = itra[phentry[gtr]];   // highest adc track
       trackpid = 1;
-
+      
       delete [] trenergy;
       delete [] sortcoord;
-
+      
     }   // end of ngtrack > 1
-
-
-
+  
 }
 //--------------------------------------------------------------------//
 void AliPMDtracker::SetVertex(Double_t vtx[3], Double_t evtx[3])
