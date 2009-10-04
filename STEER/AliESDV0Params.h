@@ -213,7 +213,7 @@ class AliESDV0Params : public TObject{
 
 
 
-  ClassDef(AliESDV0Params,2)      // ESD V0 vertex - error and likelihood parameterization constant
+  ClassDef(AliESDV0Params,3)      // ESD V0 vertex - error and likelihood parameterization constant
 };
 
 
