@@ -134,6 +134,6 @@ class AliTRDCalDCSFEE : public TNamed {
   TString fGainTableName;              // the name of the gain table
   TString fGainTableDesc;              // the description of the gain table
 
-  ClassDef(AliTRDCalDCSFEE,3)          // TRD calibration class for TRD FEE parameters
+  ClassDef(AliTRDCalDCSFEE,4)          // TRD calibration class for TRD FEE parameters
 };
 #endif

@@ -91,7 +91,7 @@ class AliTRDCalDCS : public TNamed {
 
   AliTRDCalDCSGTU *fGTUObj;
 
-  ClassDef(AliTRDCalDCS,2)         //  TRD calibration class for TRD DCS parameters
+  ClassDef(AliTRDCalDCS,3)         //  TRD calibration class for TRD DCS parameters
 
 };
 #endif

@@ -710,6 +710,7 @@ void AliTRDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // AliTRDrawStreamTB::DisableSkipData();
 
   //AliTRDrawStreamTB *data = (AliTRDrawStreamTB*)AliTRDrawStreamBase::GetRawStream(rawReader);
+  AliTRDrawStreamBase::SetRawStreamVersion ("REAL") ;
   AliTRDrawStream *data = (AliTRDrawStream *)AliTRDrawStreamBase::GetRawStream(rawReader);  
 
   //if (raw->IsA()->GetName())
