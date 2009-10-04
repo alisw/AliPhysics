@@ -798,12 +798,15 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
     for (it = 0; it < GetNumberOfTimeBins(); it++) {
        if (GetSignals()[it] > fCommonAdditive) {
 
-         if (fSharedPadsOn) 
+         if (fSharedPadsOn) { 
            digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), it, GetSignals()[it]);
-         else 
+           if (!fADC->fIsShared) indexes->AddIndexRC(GetRow(), GetCol());
+         }
+         else {
            digits->SetData(GetRow(), GetCol(), it, GetSignals()[it]);
+           indexes->AddIndexRC(GetRow(), GetCol());
+         }
 
-         indexes->AddIndexRC(GetRow(), GetCol());
          if (digitsManager->UsesDictionaries()) {
            track0->SetData(GetRow(), GetCol(), it, 0);
            track1->SetData(GetRow(), GetCol(), it, 0);
