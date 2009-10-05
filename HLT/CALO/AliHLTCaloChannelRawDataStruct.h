@@ -1,5 +1,5 @@
-#ifndef ALIHLTCALODECODERWRAPPER_H
-#define ALIHLTCALODECODERWRAPPER_H
+#ifndef ALIHLTCALOCHANNELRAWDATASTRUCT_H
+#define ALIHLTCALOCHANNELRAWDATASTRUCT_H
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -19,42 +19,20 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-// TODO: Documentation
-
+#include "AliHLTCaloChannelDataStruct.h"
+#include "AliHLTCaloCoordinate.h"
 #include "Rtypes.h"
+#include "AliHLTCaloConstants.h"
 
-/*
-class AliAltroRawStreamV3;
-class AliCaloRawStreamV3;
-class AliRawReaderMemory;
-*/
- 
-#include "AliAltroRawStreamV3.h"
-#include "AliCaloRawStreamV3.h"
-#include "AliRawReaderMemory.h"
-
-class AliHLTComponentBlockData;
+using namespace CaloHLTConst;
 
 
-class  AliHLTCALODecoderWrapper
+// Contains the raw data signal for a single channel. 
+struct  AliHLTCaloChannelRawDataStruct : public AliHLTCaloChannelDataStruct
 {
- public:
-  AliHLTCALODecoderWrapper();
-  virtual ~AliHLTCALODecoderWrapper();
-  void SetMemory( AliHLTComponentBlockData *dtaptr );
-  inline bool  NextChannel          ( )       { return  fAltroRawStream->NextChannel();  };
-  inline bool NextBunch             ( )       { return  fAltroRawStream->NextBunch();    };
-  inline const UShort_t *GetSignals ( )       { return  fAltroRawStream->GetSignals();   };
-  inline Int_t  GetHWAddress        ( ) const { return  fAltroRawStream->GetHWAddress();}; 
-  inline Int_t  GetBunchLength      ( ) const { return  fAltroRawStream->GetBunchLength();  };
-  inline UInt_t GetStartTimeBin     ( ) const { return  fAltroRawStream->GetEndTimeBin(); };
-  inline UInt_t GetEndTimeBin       ( ) const { return  fAltroRawStream->GetStartTimeBin(); };
-
- private:
-  AliAltroRawStreamV3 *fAltroRawStream;
-  //  AliCaloRawStreamV3  *fCaloRawStream;
-  AliRawReaderMemory  *fReaderMemory;
+  AliHLTCaloCoordinate fCoordinate;
+  int nSamplesUsed;
+  UShort_t fDataPtr[ALTROMAXSAMPLES];
 };
 
 #endif

@@ -1,5 +1,4 @@
-#ifndef ALIHLTCALODECODERWRAPPER_H
-#define ALIHLTCALODECODERWRAPPER_H
+// $Id: AliHLTCaloRcuProcessor.cxx 29824 2008-11-10 13:43:55Z richterm $
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -18,43 +17,19 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include "AliHLTCaloRcuProcessor.h"
 
-
-// TODO: Documentation
-
-#include "Rtypes.h"
-
-/*
-class AliAltroRawStreamV3;
-class AliCaloRawStreamV3;
-class AliRawReaderMemory;
-*/
- 
-#include "AliAltroRawStreamV3.h"
-#include "AliCaloRawStreamV3.h"
-#include "AliRawReaderMemory.h"
-
-class AliHLTComponentBlockData;
-
-
-class  AliHLTCALODecoderWrapper
+AliHLTCaloRcuProcessor::AliHLTCaloRcuProcessor():AliHLTCaloProcessor() 
+						 //						 AliHLTCaloRcuProperties()
 {
- public:
-  AliHLTCALODecoderWrapper();
-  virtual ~AliHLTCALODecoderWrapper();
-  void SetMemory( AliHLTComponentBlockData *dtaptr );
-  inline bool  NextChannel          ( )       { return  fAltroRawStream->NextChannel();  };
-  inline bool NextBunch             ( )       { return  fAltroRawStream->NextBunch();    };
-  inline const UShort_t *GetSignals ( )       { return  fAltroRawStream->GetSignals();   };
-  inline Int_t  GetHWAddress        ( ) const { return  fAltroRawStream->GetHWAddress();}; 
-  inline Int_t  GetBunchLength      ( ) const { return  fAltroRawStream->GetBunchLength();  };
-  inline UInt_t GetStartTimeBin     ( ) const { return  fAltroRawStream->GetEndTimeBin(); };
-  inline UInt_t GetEndTimeBin       ( ) const { return  fAltroRawStream->GetStartTimeBin(); };
 
- private:
-  AliAltroRawStreamV3 *fAltroRawStream;
-  //  AliCaloRawStreamV3  *fCaloRawStream;
-  AliRawReaderMemory  *fReaderMemory;
-};
+}
 
-#endif
+
+AliHLTCaloRcuProcessor::~AliHLTCaloRcuProcessor()
+{
+
+}
+
+
+

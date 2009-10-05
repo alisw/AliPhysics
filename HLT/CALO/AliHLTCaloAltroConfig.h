@@ -1,5 +1,8 @@
-#ifndef ALIHLTCALODECODERWRAPPER_H
-#define ALIHLTCALODECODERWRAPPER_H
+//-*- Mode: C++ -*-
+// $Id: AliHLTCaloAltroConfig.h 29824 2008-11-10 13:43:55Z richterm $
+
+#ifndef ALIHLTCALOALTROCONFIG_H
+#define ALIHLTCALOALTROCONFIG_H
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -19,42 +22,29 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-// TODO: Documentation
-
-#include "Rtypes.h"
-
-/*
-class AliAltroRawStreamV3;
-class AliCaloRawStreamV3;
-class AliRawReaderMemory;
-*/
- 
-#include "AliAltroRawStreamV3.h"
-#include "AliCaloRawStreamV3.h"
-#include "AliRawReaderMemory.h"
-
-class AliHLTComponentBlockData;
-
-
-class  AliHLTCALODecoderWrapper
+class  AliHLTCaloAltroConfig
 {
- public:
-  AliHLTCALODecoderWrapper();
-  virtual ~AliHLTCALODecoderWrapper();
-  void SetMemory( AliHLTComponentBlockData *dtaptr );
-  inline bool  NextChannel          ( )       { return  fAltroRawStream->NextChannel();  };
-  inline bool NextBunch             ( )       { return  fAltroRawStream->NextBunch();    };
-  inline const UShort_t *GetSignals ( )       { return  fAltroRawStream->GetSignals();   };
-  inline Int_t  GetHWAddress        ( ) const { return  fAltroRawStream->GetHWAddress();}; 
-  inline Int_t  GetBunchLength      ( ) const { return  fAltroRawStream->GetBunchLength();  };
-  inline UInt_t GetStartTimeBin     ( ) const { return  fAltroRawStream->GetEndTimeBin(); };
-  inline UInt_t GetEndTimeBin       ( ) const { return  fAltroRawStream->GetStartTimeBin(); };
+public:
+  AliHLTCaloAltroConfig();
+  virtual ~AliHLTCaloAltroConfig();
+  void SetNPresSamples(const int presamples);
+  void SetNSamples(const int samples);
+  void SetAltroZeroSupression(const bool isZerosupressed);
+  void SetAltroBaselineSubtraction(const bool isAltroBaselineSubtraction);
+  //  void SetSoftwareBaselineSubtraction(bool isSoftwareBaselineSubtraction);
+  int  GetNPresSamples() const {return  fNPresamples;}; 
+  int  GetNSamples() const {return  fNSamples;}; 
+  bool GetIsAltroZroSupresses() const {return   fIsAltroZeroSupressed;}; 
+  bool GetIsAltroBaselineSubtraction() const {return fIsAltroBaselineSubtraction;};
+  void PrintAltroDefaultValues() const;
 
- private:
-  AliAltroRawStreamV3 *fAltroRawStream;
-  //  AliCaloRawStreamV3  *fCaloRawStream;
-  AliRawReaderMemory  *fReaderMemory;
+protected:
+  //Altro Config
+  int fNPresamples; //comment
+  int fNSamples; //comment
+  int fNTotalSamples; //comment
+  bool fIsAltroZeroSupressed; //comment
+  bool fIsAltroBaselineSubtraction; //comment
 };
 
 #endif
