@@ -344,7 +344,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		
 		for (Int_t i = 0; i < npart; i++) {
 		    AliAODMCParticle* particle = (AliAODMCParticle*) mcparticles->At(i);
-		    AliAODMCParticle* newpart  = new((*fgAODMCParticles)[nc++]) AliAODMCParticle(*particle);
+		    new((*fgAODMCParticles)[nc++]) AliAODMCParticle(*particle);
 		}
 		
 		// tracks
@@ -354,18 +354,25 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		for (Int_t i = 0; i < ntr; i++) {
 		    AliAODTrack*    track = (AliAODTrack*) tracks->At(i);
 		    AliAODTrack* newtrack = new((*fgAODTracks)[nc++]) AliAODTrack(*track);
-		    newtrack->ResetBit(kIsReferenced);
-		    newtrack->SetUniqueID(0);
+
 		    newtrack->SetLabel(newtrack->GetLabel() + nc0);
-		    
 		}
+
+		for (Int_t i = 0; i < nc; i++) 
+		{
+		    AliAODTrack* track = (AliAODTrack*) fgAODTracks->At(i);
+		    track->ResetBit(kIsReferenced);
+		    track->SetUniqueID(0);
+		}
+		
+		
 		// clusters
 		TClonesArray* clusters = aodH->GetEventToMerge()->GetCaloClusters();
 		Int_t ncl  = clusters->GetEntries();
 		nc         =  fgAODCaloClusters->GetEntries();
 		for (Int_t i = 0; i < ncl; i++) {
 		    AliAODCaloCluster*    cluster = (AliAODCaloCluster*) clusters->At(i);
-		    AliAODCaloCluster* newcluster = new((*fgAODCaloClusters)[nc++]) AliAODCaloCluster(*cluster);
+		    new((*fgAODCaloClusters)[nc++]) AliAODCaloCluster(*cluster);
 		}
 		// cells
 		AliAODCaloCells* cellsA = aodH->GetEventToMerge()->GetEMCALCells();
