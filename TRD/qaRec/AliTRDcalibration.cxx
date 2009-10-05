@@ -41,6 +41,7 @@
 #include "TStyle.h"
 #include "TLegend.h"
 #include "TGraphErrors.h"
+#include "THnSparse.h"
 
 #include "AliTRDrecoTask.h"
 #include "AliAnalysisManager.h"
@@ -615,13 +616,13 @@ case kCH2DVector:{
       break;
     }
     AliTRDCalibraVdriftLinearFit *h = 0x0;
-    TH2F *hdetector = 0x0; 
+    THnSparseS *hdetector = 0x0; 
     if(!(h = (AliTRDCalibraVdriftLinearFit *)fContainer->FindObject("AliTRDCalibraVdriftLinearFit"))) break;
     Double_t entries[540];
     for(Int_t k = 0; k < 540; k++){
       entries[k] = 0.0;
       hdetector = 0x0;
-      if(!(hdetector = h->GetLinearFitterHisto(k,kFALSE))) continue;
+      if(!(hdetector = (THnSparseS *)h->GetLinearFitterHisto(k,kFALSE))) continue;
       entries[k] = hdetector->GetEntries();
     }
     Double_t max = -10.0;
@@ -634,7 +635,7 @@ case kCH2DVector:{
     }
     hdetector = 0x0;
     if((max == 0.0) || (detectormax <0.0) || (detectormax >=540.0)) break;
-    if(!(hdetector = h->GetLinearFitterHisto((Int_t)detectormax,kFALSE))) break;
+    if(!(hdetector = (THnSparseS *)h->GetLinearFitterHisto((Int_t)detectormax,kFALSE))) break;
     AliInfo(Form("The detector with the maximum of entries is %d",detectormax));
     hdetector->Draw();
     return kTRUE;

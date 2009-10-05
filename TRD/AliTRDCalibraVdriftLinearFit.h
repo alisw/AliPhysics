@@ -17,7 +17,7 @@
 
 //class TVectorD;
 class TObjArray;
-class TH2F;
+class THnSparse;
 class TTreeSRedirector;
 
 class AliTRDCalibraVdriftLinearFit : public TObject {
@@ -36,7 +36,7 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
   void            Update(Int_t detector, Float_t tnp, Float_t pars1);
   void            FillPEArray();
   void            Add(AliTRDCalibraVdriftLinearFit *ped);
-  TH2F           *GetLinearFitterHisto(Int_t detector, Bool_t force=kFALSE);
+  THnSparse      *GetLinearFitterHisto(Int_t detector, Bool_t force=kFALSE);
   Bool_t          GetParam(Int_t detector, TVectorD *param);
   Bool_t          GetError(Int_t detector, TVectorD *error);
 
@@ -52,6 +52,7 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
   TObjArray       fLinearFitterPArray;      // Array of result parameters from linear fitters for the detectors
   TObjArray       fLinearFitterEArray;      // Array of result errors from linear fitters for the detectors
 
+  
   ClassDef(AliTRDCalibraVdriftLinearFit,1)  // Online Vdrift calibration
 
 };
@@ -59,3 +60,4 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
 
 
 #endif
+
