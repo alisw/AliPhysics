@@ -4,11 +4,10 @@
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
 CLASS_HDRS:= \
-        AliHLTEMCALClusterizerComponent.h \
         AliHLTEMCALDefinitions.h \
-        AliHLTEMCALTrackerComponent.h \
-	AliHLTEMCALCalibrationComponent.h \
-	AliHLTEMCALUtils.h
+	AliHLTEMCALRawAnalyzerComponent.h \
+	AliHLTEMCALMapper.h \
+	AliHLTEMCALRawAnalyzerCrudeComponent.h
 
 # library sources
 MODULE_SRCS= \
@@ -31,9 +30,9 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # enable automatic generation. 
 MODULE_DHDR:=
 
-EINCLUDE := HLT/BASE HLT/BASE/util HLT/EMCAL HLT/TPC HLT/TRD EMCAL TPC TRD STEER RAW
+EINCLUDE := HLT/BASE HLT/BASE/util HLT/EMCAL HLT/TPC HLT/TRD HLT/CALO EMCAL TPC TRD STEER RAW
 
-LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lESD -lCDB \
+LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lAliHLTCalo -lESD -lCDB  \
 	       -lEMCALrec -lEMCALsim -lEMCALbase -lEMCALUtils \
                -lTPCrec -lTPCbase -lTRDrec -lTRDbase \
                -lSTEER -lSTEERBase -lRAWDatarec
