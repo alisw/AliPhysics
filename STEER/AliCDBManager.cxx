@@ -328,8 +328,6 @@ Bool_t AliCDBManager::Drain(AliCDBEntry *entry) {
 void AliCDBManager::SetDefaultStorage(const char* dbString) {
 // sets default storage from URI string
 	
-	AliInfo(Form("CICIIIIIIIIIIIIIIII!!!!!!!!!!!!!Setting Default storage to: %s",dbString));
-
 	// checking whether we are in the raw case
 	TString dbStringTemp(dbString);
 	if (dbStringTemp == "raw://")
