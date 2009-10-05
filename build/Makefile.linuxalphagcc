@@ -5,10 +5,6 @@
 
 XARGS = xargs -r
 
-# The compilers
-CXX           = $(shell root-config --cxx)  
-F77	      = $(shell root-config --f77) 
-CC	      = $(shell root-config --cc) 
 CCMAJORV      = $(shell $(CC) -dumpversion | cut -d. -f1)
 CCMINORV      = $(shell $(CC) -dumpversion | cut -d. -f2)
 

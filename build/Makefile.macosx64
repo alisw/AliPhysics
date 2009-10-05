@@ -14,11 +14,6 @@ ifeq (,$(FINK_ROOT))
 FINK_ROOT=/usr/local
 endif
 
-# The compilers
-CXX           = $(shell root-config --cxx) 
-CC	      = $(shell root-config --cc)
-F77	      = $(shell root-config --f77)
-
 # Global optimisation
 OPT           = -O -g
 NOOPT         = -O0 -g
@@ -26,7 +21,7 @@ NOOPT         = -O0 -g
 CXXOPT        = $(OPT) 
 CXXNOOPT      = $(NOOPT) 
 COPT	      = $(OPT)
-FOPT	      = $(OPT) -fno-second-underscore -m64
+FOPT	      = $(OPT) -fno-second-underscore
 ifneq (,$(findstring g95,$(F77)))
 FOPT	     += -fbounds-check
 endif
@@ -36,16 +31,16 @@ CLIBDEFS      = -DCERNLIB_LXIA64 -DCERNLIB_BLDLIB -DCERNLIB_CZ -DCERNLIB_PPC
 CLIBCXXOPTS   =
 CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
-CXXSTF        = -m64 -pipe -Wall -W -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I$(FINK_ROOT)/include
+CXXSTF        = -pipe -Wall -W -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wconversion -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I$(FINK_ROOT)/include
 
-CXXSTF        = -m64 -pipe -Wall -W -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I$(FINK_ROOT)/include
+CXXSTF        = -pipe -Wall -W -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -Woverloaded-virtual -Weffc++ -Wshadow -fno-default-inline -fno-inline -I/usr/X11R6/include -I$(FINK_ROOT)/include
 
 # Compiler flags
 CXXFLAGS      = $(CXXOPT) $(CXXSTF)
 
 CXXFLAGSNO    = $(CXXNOOPT) $(CXXSTF) 
 
-CFLAGS	      = $(COPT) -m64 -Wall -W -fno-common -pipe -I$(FINK_ROOT)/include
+CFLAGS	      = $(COPT) -Wall -W -fno-common -pipe -I$(FINK_ROOT)/include
 
 FFLAGS        = $(CLIBFOPT) $(FOPT)
 ifneq (,$(findstring g95,$(F77)))
@@ -64,10 +59,10 @@ CINTFLAGS     =
 LD            = export MACOSX_DEPLOYMENT_TARGET=$(MACOSX_MAJOR).$(MACOSX_MINOR) ; \
 		unset LD_PREBIND ; \
 		$(shell root-config --ld)
-LDFLAGS       = $(OPT) -m64 $(DICTLOAD)
+LDFLAGS       = $(OPT) $(DICTLOAD)
 
 SHLD	     := $(LD)
-SOFLAGS      := -m64 -bundle -undefined dynamic_lookup
+SOFLAGS      := -bundle -undefined dynamic_lookup
 SHLIB        := 
 SOEXT 	     := so
 

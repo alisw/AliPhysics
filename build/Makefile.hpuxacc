@@ -5,11 +5,6 @@
 
 XARGS = xargs
 
-# The compilers
-CXX           = $(shell root-config --cxx) 
-F77	      = $(shell root-config --f77) 
-CC	      = $(shell root-config --cc) 
-
 # Global optimisation
 OPT           = -g -O
 NOOPT         = -g

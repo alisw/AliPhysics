@@ -10,11 +10,6 @@ ifeq (,$(FINK_ROOT))
 FINK_ROOT=/usr/local
 endif
 
-# The compilers
-CXX           = $(shell root-config --cxx) 
-CC	      = $(shell root-config --cc)
-F77	      = $(shell root-config --f77)
-
 # Global optimisation
 OPT           = -O -g
 NOOPT         = -g

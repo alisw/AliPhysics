@@ -5,12 +5,8 @@
 
 XARGS = xargs -r
 
-# The compilers
-CXX           = $(shell root-config --cxx) 
-CC	      = $(shell root-config --cc)
 CCMAJORV      = $(shell $(CC) -dumpversion | cut -d. -f1)
 CCMINORV      = $(shell $(CC) -dumpversion | cut -d. -f2)
-F77	      = $(shell root-config --f77)
 
 # Global optimisation
 OPT           = -O -g
@@ -29,24 +25,24 @@ CLIBFOPT      = $(CLIBDEFS)
 
 # Compiler flags
 ifeq ($(CCMAJORV),2)
-CXXFLAGS       = $(OPT) -W -Wall -fPIC -pipe -m64
-CXXFLAGSNO     = $(NOOPT) -W -Wall -fPIC -pipe -m64
+CXXFLAGS       = $(OPT) -W -Wall -fPIC -pipe
+CXXFLAGSNO     = $(NOOPT) -W -Wall -fPIC -pipe
 else
 ifeq ($(CCMAJORV),3)
-CXXFLAGS       = $(OPT) -W -Wall -Weffc++ -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux -m64
-CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -m64
+CXXFLAGS       = $(OPT) -W -Wall -Weffc++ -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux
+CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
 else
 ifeq ($(CCMAJORV),4)
-CXXFLAGS       = $(OPT) -W -Wall -Weffc++ -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux -m64
-CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -m64
+CXXFLAGS       = $(OPT) -W -Wall -Weffc++ -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux
+CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
 else
-CXXFLAGS       = $(OPT) -W -Wall -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -ansi -Dlinux -m64
-CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -ansi -m64
+CXXFLAGS       = $(OPT) -W -Wall -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -ansi -Dlinux
+CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -ansi
 endif
 endif
 endif
-CFLAGS	       = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi -m64 
-FFLAGS         = $(CLIBFOPT) $(FOPT) -fno-second-underscore -fPIC -fno-f2c -m64
+CFLAGS	       = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
+FFLAGS         = $(CLIBFOPT) $(FOPT) -fno-second-underscore -fPIC -fno-f2c
 
 ifeq (g95,$(F77))
 FFLAGS	      +=-DFORTRAN_G95

@@ -5,11 +5,6 @@
 
 XARGS = xargs -r
 
-# The compilers
-CXX           = $(shell root-config --cxx)
-CC            = $(shell root-config --cc)
-F77	      = $(shell root-config --f77)
-
 # Compiler version:
 ICC_MAJOR    := $(shell $(CXX) -V 2>&1 | awk '{ if (NR==1) print $$8 }' | \
                 cut -d'.' -f1)

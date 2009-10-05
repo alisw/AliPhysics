@@ -1,11 +1,6 @@
 # -*- mode: makefile -*-
 # Makefile for AliRoot for MacOS X using the IBM xlc compiler
 
-# The compilers
-CXX           = $(shell root-config --cxx)
-F77	      = $(shell root-config --f77)
-CC	      = $(shell root-config --cc)
-
 # Global optimisation
 OPT           = -qnoopt #-O3 -g
 NOOPT         = -qnoopt

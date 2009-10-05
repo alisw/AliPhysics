@@ -25,6 +25,11 @@ REV_ENG=$(IRST_INSTALLDIR)/scripts/revEng.sh
 
 SMELL_DETECTOR_DIR=$(IRST_INSTALLDIR)/smell-detector
 
+#-------------------------------------------------------------------------------
+# The compilers
+CXX           = $(shell root-config --cxx)
+F77	      = $(shell root-config --f77)
+CC	      = $(shell root-config --cc)
 
 #-------------------------------------------------------------------------------
 # Include machine dependent macros
@@ -154,9 +159,12 @@ MODDIRS := $(MODULES)
 # The module directory will be added by each module
 
 GENINC     := -I$(ALICE_ROOT)/include -I$(shell root-config --incdir)
-CXXFLAGS   += $(GENINC)
-CXXFLAGSNO += $(GENINC)
-CINTFLAGS  += $(GENINC)
+CXXFLAGS   += $(GENINC) $(shell root-config --cflags)
+CXXFLAGSNO += $(GENINC) $(shell root-config --cflags)
+CINTFLAGS  += $(GENINC) $(shell root-config --cflags)
+FFLAGS	   += $(shell root-config --cflags)
+LDFLAGS    += $(shell root-config --ldflags)
+SOFLAGS    += $(shell root-config --ldflags)
 DEPINC     += $(GENINC)
 
 #-------------------------------------------------------------------------------
