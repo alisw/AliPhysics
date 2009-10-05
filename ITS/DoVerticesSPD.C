@@ -15,6 +15,7 @@
 #include "AliVertexerTracks.h"
 #include "AliCDBManager.h"
 #include "AliGeomManager.h"
+#include "AliGRPManager.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSVertexer3D.h"
 #include "AliITSVertexerZ.h"
@@ -86,18 +87,10 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
     return kFALSE;
   }
   esd->ReadFromTree(tree);
-  tree->GetEvent(0);
-  Int_t fieldkG=(Int_t)(TMath::Abs(esd->GetMagneticField())+0.001);
-  
-  if(fieldkG==5){
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
-  }else if(fieldkG==2){
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k2kG));
-  }else{
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 0., 1., 10., AliMagF::k5kG));
-  }
-  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-  printf("Magnetic field set to %f\n",-fld->SolenoidField());
+  AliGRPManager * grpMan=new AliGRPManager();
+  grpMan->ReadGRPEntry();
+  grpMan->SetMagField();
+  printf("Magnetic field set to %f T\n",AliTracker::GetBz()/10.);
 
   AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec();
   Double_t xnom=0.,ynom=0.;
