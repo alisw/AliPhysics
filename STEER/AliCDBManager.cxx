@@ -25,14 +25,13 @@
 #include "AliCDBLocal.h"
 #include "AliCDBGrid.h"
 #include "AliCDBEntry.h"
-#include "AliCDBMetaData.h"
 #include "AliCDBHandler.h"
 
 #include <TObjString.h>
-#include <TSystem.h>
 #include <TSAXParser.h>
 #include <TFile.h>
 #include <TUUID.h>
+#include <TGrid.h>
 
 ClassImp(AliCDBParam)
 
@@ -333,7 +332,12 @@ void AliCDBManager::SetDefaultStorage(const char* dbString) {
 
 	// checking whether we are in the raw case
 	TString dbStringTemp(dbString);
-	if (dbStringTemp == "raw://") fRaw = kTRUE;
+	if (dbStringTemp == "raw://")
+	{
+		fRaw = kTRUE;
+		AliInfo("Setting the run-number will set the corresponding OCDB for raw data reconstruction.");
+		return;
+	}
 
 	AliCDBStorage* bckStorage = fDefaultStorage;
 	
@@ -447,6 +451,13 @@ void AliCDBManager::SetDefaultStorageFromRun(Int_t run) {
 	}	
 
 	// retrieve XML file from alien
+	if(!gGrid) {
+	    TGrid::Connect("alien://","");
+	    if(!gGrid) {
+		AliError("Connection to alien failed!");
+		return;
+	    }
+	}
 	TUUID uuid;
 	TString rndname = "/tmp/";
 	rndname += "OCDBFolderXML.";
@@ -911,7 +922,7 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBManager::Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData, DataType type){
+Bool_t AliCDBManager::Put(TObject* object, AliCDBId& id, AliCDBMetaData* metaData, const DataType type){
 // store an AliCDBEntry object into the database
 
 	if (object==0x0) {
@@ -1043,7 +1054,7 @@ void AliCDBManager::SetRun(Int_t run)
 // Sets current run number.
 // When the run number changes the caching is cleared.
   	
-	if (fRun == run)
+	if(fRun == run)
 		return;
   
 	if(fLock && fRun >= 0) {
@@ -1051,13 +1062,14 @@ void AliCDBManager::SetRun(Int_t run)
 	}	
 		
 	fRun = run;
-	if (fRaw){
+	if(fRaw){
 		// here the LHCPeriod xml file is parsed; the string containing the correct period is returned; the default storage is set
 		if (fStartRunLHCPeriod <= run && fEndRunLHCPeriod >= run){
 			AliInfo("LHCPeriod alien folder for current run already in memory");
-		}
-		else {
+		}else{
 			SetDefaultStorageFromRun(run);
+			if(fEntryCache.GetEntries()!=0) ClearCache();
+			return;
 		}
 	}
 	ClearCache();

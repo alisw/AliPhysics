@@ -64,9 +64,6 @@ fCleanupInterval(cleanupInterval)
 			AliInfo(Form("gGrid = %x; fGridUrl = %s; gGrid->GridUrl() = %s",gGrid,fGridUrl.Data(), gGrid->GridUrl()));
 			AliInfo(Form("fUser = %s; gGrid->GetUser() = %s",fUser.Data(), gGrid->GetUser()));
 		}
-		AliDebug(2,Form("1. Grid Url = %s",fGridUrl.Data()));
-		if (fGridUrl == "raw://") fGridUrl = "alien://";
-		AliDebug(2,Form("2. Grid Url = %s (should be different from previous in cas eof raw)", fGridUrl.Data()));
 		TGrid::Connect(fGridUrl.Data(),fUser.Data());
 	}
 
@@ -1006,9 +1003,8 @@ Bool_t AliCDBGridFactory::Validate(const char* gridString) {
 // check if the string is valid Grid URI
 
         TRegexp gridPattern("^alien://.+$");
-        TRegexp gridRawPattern("^raw://.+$");
 
-        return (TString(gridString).Contains(gridPattern)||TString(gridString).Contains(gridRawPattern));
+        return TString(gridString).Contains(gridPattern);
 }
 
 //_____________________________________________________________________________
@@ -1020,7 +1016,6 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 	}
 
 	TString buffer(gridString);
-	Bool_t rawFlag = kFALSE; // flag to say whether we are in the "raw://" case
 
  	TString gridUrl 	= "alien://";
 	TString user 		= "";
@@ -1041,10 +1036,6 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 		if(indeq == -1) {
 			if(entry.BeginsWith("alien://")) { // maybe it's a gridUrl!
 				gridUrl = entry;
-				continue;
-			} else if(entry.BeginsWith("raw://")) { // maybe it's a gridRawUrl!
-				gridUrl = entry;
-				rawFlag = kTRUE;
 				continue;
 			} else {
 				AliError(Form("Invalid entry! %s",entry.Data()));
@@ -1116,7 +1107,7 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 	AliDebug(2, Form("local cache size: %d", cacheSize));
 	AliDebug(2, Form("local cache cleanup interval: %d", cleanupInterval));
 
-	if(dbFolder == "" && !rawFlag){
+	if(dbFolder == ""){
 		AliError("Base folder must be specified!");
 		return NULL;
 	}
@@ -1201,7 +1192,6 @@ AliCDBGridParam::AliCDBGridParam(const char* gridUrl, const char* user, const ch
 			fDBFolder.Data(), fSE.Data(), fCacheFolder.Data(),
 			fOperateDisconnected, fCacheSize, fCleanupInterval);
 
-	AliDebug(2,Form("uri = %s", uri.Data()));
 	SetURI(uri.Data());
 }
 
