@@ -9,7 +9,7 @@
 #endif
 
 void CreateAODfromESD(const char *inFileName = "AliESDs.root",
-		      const char *outFileName = "AliAODs.root",
+		      const char *outFileName = "AliAOD.root",
 		      Bool_t bKineFilter = kTRUE) 
 {
   
