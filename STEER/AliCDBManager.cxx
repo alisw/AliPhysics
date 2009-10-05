@@ -328,7 +328,7 @@ Bool_t AliCDBManager::Drain(AliCDBEntry *entry) {
 void AliCDBManager::SetDefaultStorage(const char* dbString) {
 // sets default storage from URI string
 	
-	AliInfo(Form("Setting Default storage to: %s",dbString));
+	AliInfo(Form("CICIIIIIIIIIIIIIIII!!!!!!!!!!!!!Setting Default storage to: %s",dbString));
 
 	// checking whether we are in the raw case
 	TString dbStringTemp(dbString);
@@ -336,6 +336,14 @@ void AliCDBManager::SetDefaultStorage(const char* dbString) {
 	{
 		fRaw = kTRUE;
 		AliInfo("Setting the run-number will set the corresponding OCDB for raw data reconstruction.");
+		AliInfo("Connecting to the grid...");
+		if(!gGrid) {
+			TGrid::Connect("alien://","");
+			if(!gGrid) {
+				AliError("Connection to alien failed!");
+				return;
+			}
+		}
 		return;
 	}
 
