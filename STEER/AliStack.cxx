@@ -207,7 +207,7 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg,
     = new(fParticles[fLoadPoint++]) 
       TParticle(pdg, is, parent, -1, kFirstDaughter, kLastDaughter,
 		px, py, pz, e, vx, vy, vz, tof);
-   
+                
   particle->SetPolarisation(polx, poly, polz);
   particle->SetWeight(weight);
   particle->SetUniqueID(mech);
@@ -225,7 +225,6 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg,
   //  Declare that the daughter information is valid
   particle->SetBit(kDaughtersBit);
   //  Add the particle to the stack
-  
   
   fParticleMap.AddAtAndExpand(particle, fNtrack);//CHECK!!
 
@@ -281,8 +280,10 @@ TParticle*  AliStack::PopPrimaryForTracking(Int_t i)
   
   TParticle* particle = Particle(i);
   
-  if (!particle->TestBit(kDoneBit))
+  if (!particle->TestBit(kDoneBit)) {
+    fCurrentTrack = particle;
     return particle;
+  }
   else
     return 0;
 }      
@@ -807,6 +808,15 @@ void AliStack::DumpLoadedStack() const
 	 "\n=======================================================================\n\n");
 }
 
+//_____________________________________________________________________________
+void  AliStack::SetCurrentTrack(Int_t track)
+{ 
+  fCurrent = track; 
+  if (fCurrent < fNprimary) fCurrentTrack = Particle(track);
+}
+
+
+//_____________________________________________________________________________
 //
 // protected methods
 //
@@ -974,6 +984,7 @@ Bool_t AliStack::IsStable(Int_t pdg) const
   return isStable;
 }
 
+//_____________________________________________________________________________
 Bool_t AliStack::IsPhysicalPrimary(Int_t index)
 {
     //

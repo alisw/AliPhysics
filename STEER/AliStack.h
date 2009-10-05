@@ -117,9 +117,6 @@ class AliStack : public TVirtualMCStack
 inline void  AliStack::SetNtrack(Int_t ntrack)
 { fNtrack = ntrack; }
 
-inline void  AliStack::SetCurrentTrack(Int_t track)
-{ fCurrent = track; }
-
 inline Int_t AliStack::GetNtrack() const
 { return fNtrack; }
 

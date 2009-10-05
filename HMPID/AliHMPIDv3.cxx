@@ -132,8 +132,6 @@ void AliHMPIDv3::CreateMaterials()
     AliMaterial(++matId,"W"   ,aW   ,zW   ,dW   ,radW   ,absW   );  AliMedium(kW   ,"W"   , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMaterial(++matId,"Al"  ,aAl  ,zAl  ,dAl  ,radAl  ,absAl  );  AliMedium(kAl  ,"Al"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMaterial(++matId,"Ar"  ,aAr  ,zAr  ,dAr  ,radAr  ,absAr  );  AliMedium(kAr  ,"Ar"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
-
-    InitProperties();
         
 }//void AliHMPID::CreateMaterials()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -509,11 +507,14 @@ void AliHMPIDv3::Init()
 // Arguments: none
 //   Returns: none      
   AliDebug(1,"Start v2 HMPID.");    
+  InitProperties();
   AliDebug(1,"Stop v2 HMPID.");    
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv3::DefineOpticalProperties() 
 {
+  AliDebug(1,"");    
+
 // Optical properties definition.
   const Int_t kNbins=30;       //number of photon energy points
   Float_t emin=5.5,emax=8.5;         //Photon energy range,[eV]

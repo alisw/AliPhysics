@@ -192,6 +192,8 @@ void  AliMC::ConstructOpGeometry()
   AliModule *detector;
   AliInfo("Optical properties definition");
   while((detector = dynamic_cast<AliModule*>(next()))) {
+    // Initialise detector geometry
+    if(gAlice->IsRootGeometry()) detector->CreateMaterials();
     // Initialise detector optical properties
     detector->DefineOpticalProperties();
   }  
@@ -210,8 +212,6 @@ void  AliMC::InitGeometry()
   AliModule *detector;
   while((detector = dynamic_cast<AliModule*>(next()))) {
     stw.Start();
-    // Initialise detector geometry
-    if(gAlice->IsRootGeometry()) detector->CreateMaterials();
     detector->Init();
     AliInfo(Form("%10s R:%.2fs C:%.2fs",
 		 detector->GetName(),stw.RealTime(),stw.CpuTime()));
@@ -300,13 +300,13 @@ void AliMC::BeginPrimary()
 void AliMC::PreTrack()
 {
   // Actions before the track's transport
+
      TObjArray &dets = *gAlice->Modules();
      AliModule *module;
 
      for(Int_t i=0; i<=gAlice->GetNdets(); i++)
        if((module = dynamic_cast<AliModule*>(dets[i])))
 	 module->PreTrack();
-
 }
 
 //_______________________________________________________________________
@@ -546,6 +546,7 @@ void AliMC::ResetSDigits()
 void AliMC::PostTrack()
 {
   // Posts tracks for each module
+
   TObjArray &dets = *gAlice->Modules();
   AliModule *module;
   
@@ -560,6 +561,7 @@ void AliMC::FinishPrimary()
   //
   // Called  at the end of each primary track
   //
+
   AliRunLoader *runloader=AliRunLoader::Instance();
   //  static Int_t count=0;
   //  const Int_t times=10;
@@ -627,8 +629,6 @@ void AliMC::FinishEvent()
 {
   //
   // Called at the end of the event.
-  //
-  
   //
     
   if(AliSimulation::Instance()->Lego()) AliSimulation::Instance()->Lego()->FinishEvent();
@@ -1091,6 +1091,7 @@ void AliMC::ResetTrackReferences()
     fTmpTrackReferences.Clear();
 }
 
+//_______________________________________________________________________
 void AliMC::RemapTrackReferencesIDs(Int_t *map)
 {
   // 
@@ -1113,6 +1114,7 @@ void AliMC::RemapTrackReferencesIDs(Int_t *map)
   fTmpTrackReferences.Compress();
 }
 
+//_______________________________________________________________________
 void AliMC::FixParticleDecaytime()
 {
     //
@@ -1170,6 +1172,7 @@ void AliMC::MakeTmpTrackRefsTree()
     fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &pRef, 4000);
 }
 
+//_______________________________________________________________________
 void AliMC::ReorderAndExpandTreeTR()
 {
 //

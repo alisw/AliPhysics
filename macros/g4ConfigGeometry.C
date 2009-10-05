@@ -27,8 +27,8 @@ void Config()
   
   // AliRoot setup
   //
-  gROOT->LoadMacro("$ALICE_ROOT/macros/g4ConfigCommon.C");
-  ConfigCommon(kFALSE);
+  gROOT->LoadMacro("$ALICE_ROOT/macros/g4ConfigCommon1.C");
+  ConfigCommon1(kFALSE);
 
   cout << "Running g4ConfigGometry.C finished ... " << endl;
 

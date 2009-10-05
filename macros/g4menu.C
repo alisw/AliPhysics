@@ -30,12 +30,20 @@ void g4menu()
     gROOT->LoadMacro("$ALICE/geant4_vmc/examples/macro/g4libs.C");
   gInterpreter->ProcessLine("g4libs()");
 
+  // Load ALICE Geant4 library
+  //cout << "Loading g4alice library ..." << endl;
+  //gSystem->Load("libg4alice");
+
   // Menu
   TControlBar* menu = new TControlBar("vertical","Alice Geant4 menu");
   
   menu->AddButton("Geometry", "MakeGeometry()",  "Generate Root geometry file");
-  menu->AddButton("Run",      "RunSimulation()",  "Process Alice run");
-  menu->AddButton("Init",     "Init()",  "Initialize Alice for simulation");
+  menu->AddButton("Run G4",   "RunG4Simulation()",  "Process Alice run");
+  menu->AddButton("Run G4 batch",   "RunG4Simulation(); >& g4.out",  "Process Alice run");
+  menu->AddButton("Run G3",   "RunG3Simulation()",  "Process Alice run");
+  menu->AddButton("Run G3 batch",   "RunG3Simulation(); >& g3.out",  "Process Alice run");
+  menu->AddButton("Init",     "Init();",  "Initialize Alice for G4 simulation");
+  menu->AddButton("Init batch","Init(); >& g4init.out",  "Initialize Alice for G4 simulation");
   menu->AddButton("Geant4UI", "StartGeant4UI()","Go to Geant4 Interactive session");
   menu->AddButton("AGDD",     "GenerateAGDD()","Generate XML (AGDD) file with geometry description");
   //menu->AddButton("GDML",     "GenerateGDML()","Generate XML (GDML) file with geometry description");
@@ -98,19 +106,41 @@ void Init()
   gInterpreter->ProcessLine(gAlice->GetConfigFunction());
   gAlice->GetMCApp()->Init();
 
+  ((TGeant4*)gMC)->ProcessGeantCommand("/mcDet/printMedia");
+
   cout << endl
        << "Only MonteCarlo initialization has been performed. " << endl
        << "To run simulation you have to re-run aliroot and choose Run in g4menu." << endl;
 }    
 
 
-void RunSimulation()
+void RunG4Simulation()
 {  
   AliSimulation sim("$ALICE_ROOT/macros/g4Config.C");
-  sim.SetMakeDigits("");
   sim.SetMakeSDigits("");
+  sim.SetMakeDigits("");
+  //sim.SetMakeDigitsFromHits("ITS TPC");
+  //sim.SetMakeDigitsFromHits("ITS");
+  sim.SetMakeDigitsFromHits("");
   sim.SetRunHLT("");
-  sim.SetNumberOfEvents(1);
+  sim.SetNumberOfEvents(1000);
+  TStopwatch timer;
+  timer.Start();
+  sim.Run(1);
+  timer.Stop();
+  timer.Print();
+}    
+
+void RunG3Simulation()
+{  
+  AliSimulation sim("$ALICE_ROOT/macros/g3Config.C");
+  sim.SetMakeSDigits("");
+  sim.SetMakeDigits("");
+  //sim.SetMakeDigitsFromHits("ITS TPC");
+  //sim.SetMakeDigitsFromHits("ITS");
+  sim.SetMakeDigitsFromHits("");
+  sim.SetRunHLT("");
+  sim.SetNumberOfEvents(1000);
   TStopwatch timer;
   timer.Start();
   sim.Run(1);

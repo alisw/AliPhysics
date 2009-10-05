@@ -56,6 +56,7 @@ class AliEMCAL : public AliDetector {
   }
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  CreateMaterials() ;   
+  virtual void  Init() ;   
   virtual void  Digits2Raw();
   
   virtual void  FinishRun() {}                  

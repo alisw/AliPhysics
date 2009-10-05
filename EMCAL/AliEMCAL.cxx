@@ -125,6 +125,7 @@ void AliEMCAL::InitConstants()
   fBirkC2 = 9.6e-6/(1.032 * 1.032);
   }
 
+
 //____________________________________________________________________________
 void AliEMCAL::DefineMediumParameters()
 {
@@ -276,8 +277,21 @@ void AliEMCAL::CreateMaterials()
   fBirkC1 =  0.013/dP;
   fBirkC2 =  9.6e-6/(dP * dP);
 
-  DefineMediumParameters(); // Feb 20, 2007
+  // Call just in case of Geant3; What to do in case of Geant4 ?
+  // if(gMC->InheritsFrom("TGeant3")) DefineMediumParameters(); // Feb 20, 2007
+  // Just do the same but in Init() function
+  // DefineMediumParameters(); 
 }
+
+//____________________________________________________________________________
+void  AliEMCAL::Init()
+{
+  // Call just in case of Geant3; What to do in case of Geant4 ?
+  // if(gMC->InheritsFrom("TGeant3")) DefineMediumParameters(); // Feb 20, 2007
+  // Just do the same
+  DefineMediumParameters(); 
+}     
+
 //____________________________________________________________________________
 void AliEMCAL::Digits2Raw() {
 
