@@ -27,8 +27,12 @@
   includePath        += "-I${ALICE_ROOT}/EVE/EveHLT ";
   includePath        += "-I${ALICE_ROOT}/HLT/BASE ";
   includePath        += "-I${ALICE_ROOT}/HLT/TPCLib ";
+  includePath        += "-I${ALICE_ROOT}/HLT/PHOS ";
   includePath        += "-I${ALICE_ROOT}/HLT/BASE/HOMER ";
+  includePath        += "-I${ALICE_ROOT}/HLT/BASE/util ";
   includePath        += "-I${ALICE_ROOT}/HLT/TRD ";
+  includePath        += "-I${ALICE_ROOT}/ITS ";
+  includePath        += "-I${ALICE_ROOT}/PHOS ";
   includePath        += "-I${ALICE_ROOT}/TPC ";
   includePath        += "-I${ALICE_ROOT}/TRD ";
   includePath        += "-I${ALICE_ROOT}/RAW ";
