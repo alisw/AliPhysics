@@ -25,17 +25,17 @@
 
 ClassImp(AliHLTEMCALDefinitions)
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkDDLRawDataType = { sizeof(AliHLTComponentDataType), {'D','D','L','_','R','A','W',' '},{'E','M','C','L'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkDDLRawDataType = { sizeof(AliHLTComponentDataType), {'D','D','L','_','R','A','W',' '},{'E','M','C','A'}};;
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkDigitDataType = { sizeof(AliHLTComponentDataType), {'D','I','G','I','T',' ',' ',' '},{'E','M','C','L'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkDigitDataType = { sizeof(AliHLTComponentDataType), {'D','I','G','I','T',' ',' ',' '},{'E','M','C','A'}};;
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkClusterDataType = { sizeof(AliHLTComponentDataType), {'C','L','U','S','T','E','R','S'},{'E','M','C','L'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkClusterDataType = { sizeof(AliHLTComponentDataType), {'C','L','U','S','T','E','R','S'},{'E','M','C','A'}};;
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkESDDataType = { sizeof(AliHLTComponentDataType), {'G','L','O','B','L','E','S','D'},{'E','M','C','L'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkESDDataType = { sizeof(AliHLTComponentDataType), {'G','L','O','B','L','E','S','D'},{'E','M','C','A'}};;
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkEMCALESDDataType = { sizeof(AliHLTComponentDataType), {'E','M','C','A','L','E','S','D'},{'E','M','C','L'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkEMCALESDDataType = { sizeof(AliHLTComponentDataType), {'E','M','C','A','L','E','S','D'},{'E','M','C','A'}};;
 
-const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkCalibrationDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','I','B','R','A','H'},{'E','M','C','L'}};;
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkCalibrationDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','I','B','R','A','H'},{'E','M','C','A'}};;
 
 AliHLTEMCALDefinitions::AliHLTEMCALDefinitions()
 {
