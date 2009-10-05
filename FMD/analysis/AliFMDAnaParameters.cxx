@@ -43,9 +43,10 @@ ClassImp(AliFMDAnaParameters)
 
 //const char* AliFMDAnaParameters::fgkBackgroundCorrection  = "FMD/Correction/Background";
 //const char* AliFMDAnaParameters::fgkEnergyDists = "FMD/Correction/EnergyDistribution";
-const char* AliFMDAnaParameters::fgkBackgroundID = "background";
+const char* AliFMDAnaParameters::fgkBackgroundID         = "background";
 const char* AliFMDAnaParameters::fgkEnergyDistributionID = "energydistributions";
 const char* AliFMDAnaParameters::fgkEventSelectionEffID  = "eventselectionefficiency";
+const char* AliFMDAnaParameters::fgkSharingEffID         = "sharingefficiency";
 //____________________________________________________________________
 AliFMDAnaParameters* AliFMDAnaParameters::fgInstance = 0;
 
@@ -70,6 +71,7 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fEnergyPath("$ALICE_ROOT/FMD/Correction/EnergyDistribution"),
   fBackgroundPath("$ALICE_ROOT/FMD/Correction/Background"),
   fEventSelectionEffPath("$ALICE_ROOT/FMD/Correction/EventSelectionEfficiency"),
+  fSharingEffPath("$ALICE_ROOT/FMD/Correction/SharingEfficiency"),
   fProcessPrimary(kFALSE),
   fProcessHits(kFALSE),
   fTrigger(kMB1),
@@ -118,6 +120,16 @@ char* AliFMDAnaParameters::GetPath(const char* species) {
 		fSpecies,
 		0,
 		0);
+  if(species == fgkSharingEffID)
+    path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
+		fSharingEffPath.Data(),
+		fgkSharingEffID,
+		fEnergy,
+		fTrigger,
+		fMagField,
+		fSpecies,
+		0,
+		0);
 
   return path;
 }
@@ -131,7 +143,8 @@ void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
   if (what & kBackgroundCorrection)       InitBackground();
   if (what & kEnergyDistributions)        InitEnergyDists();
   if (what & kEventSelectionEfficiency)   InitEventSelectionEff();
-  
+  if (what & kSharingEfficiency)          InitSharingEff();
+
   fIsInit = kTRUE;
 }
 //____________________________________________________________________
@@ -174,6 +187,19 @@ void AliFMDAnaParameters::InitEventSelectionEff() {
   
   fEventSelectionEfficiency = dynamic_cast<AliFMDAnaCalibEventSelectionEfficiency*>(fin->Get(fgkEventSelectionEffID));
   if (!fEventSelectionEfficiency) AliFatal("Invalid background object from CDB");
+  
+}
+//____________________________________________________________________
+
+void AliFMDAnaParameters::InitSharingEff() {
+  
+  //AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
+  TFile* fin = TFile::Open(GetPath(fgkSharingEffID));
+			    
+  if (!fin) return;
+  
+  fSharingEfficiency = dynamic_cast<AliFMDAnaCalibSharingEfficiency*>(fin->Get(fgkSharingEffID));
+  if (!fSharingEfficiency) AliFatal("Invalid background object from CDB");
   
 }
 //____________________________________________________________________
@@ -337,6 +363,16 @@ Float_t AliFMDAnaParameters::GetEventSelectionEfficiency(Int_t vtxbin) {
     return 0;
   }
   return fEventSelectionEfficiency->GetCorrection(vtxbin);
+
+}
+//_____________________________________________________________________
+TH1F* AliFMDAnaParameters::GetSharingEfficiency(Int_t det, Char_t ring, Int_t vtxbin) {
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
+  
+  return fSharingEfficiency->GetSharingEff(det,ring,vtxbin);
 
 }
 //_____________________________________________________________________

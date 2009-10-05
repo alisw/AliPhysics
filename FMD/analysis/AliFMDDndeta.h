@@ -11,13 +11,14 @@ class AliFMDDndeta : public TObject
  public:
   AliFMDDndeta();
   
-  enum Analysis {kHits, kMult, kMultTrVtx};
+  enum Analysis {kHits, kHitsTrVtx, kMult, kMultTrVtx};
   
   void Init(const Char_t* filename); 
   void GenerateMult(Analysis what);
   void DrawDndeta(Analysis what, Int_t rebin = 1);
   void SetNbinsToCut(Int_t nbins) {fNbinsToCut = nbins;}
- 
+  void SetVtxCut(Int_t vtxcut) {fVtxCut = vtxcut;}
+  void CreateSharingEfficiency(const Char_t* filename, Bool_t store = kFALSE);
  private:
   void GenerateHits();
   void SetNames(Analysis what);

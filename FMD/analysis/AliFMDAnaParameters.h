@@ -38,6 +38,7 @@
 #include "AliFMDAnaCalibBackgroundCorrection.h"
 #include "AliFMDAnaCalibEnergyDistribution.h"
 #include "AliFMDAnaCalibEventSelectionEfficiency.h"
+#include "AliFMDAnaCalibSharingEfficiency.h"
 #include <TVector2.h>
 #include <TString.h>
 //#include "AliPWG0Helper.h"
@@ -54,7 +55,8 @@ public:
     /** Pulser gain */ 
     kBackgroundCorrection         = 0x1, // Background Correction 
     kEnergyDistributions          = 0x2, // Energy Distributions
-    kEventSelectionEfficiency     = 0x4  // Event Selection Efficiency
+    kEventSelectionEfficiency     = 0x4, // Event Selection Efficiency
+    kSharingEfficiency            = 0x8  // Sharing algorithm efficiency
   };
   
   enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR, kTEST_NOCTP };
@@ -69,7 +71,7 @@ public:
       @return  single to */
   static AliFMDAnaParameters* Instance();
   
-  void Init(Bool_t forceReInit=kTRUE, UInt_t what=kBackgroundCorrection|kEnergyDistributions|kEventSelectionEfficiency);
+  void Init(Bool_t forceReInit=kTRUE, UInt_t what=kBackgroundCorrection|kEnergyDistributions|kEventSelectionEfficiency|kSharingEfficiency);
   Float_t GetVtxCutZ();
   Int_t GetNvtxBins();
   Int_t GetNetaBins();
@@ -84,12 +86,15 @@ public:
   static const char* GetBackgroundID() { return fgkBackgroundID;}
   static const char* GetEdistID()      { return fgkEnergyDistributionID;}
   static const char* GetEventSelectionEffID()      { return fgkEventSelectionEffID;}
+  static const char* GetSharingEffID()      { return fgkSharingEffID;}
   TH2F* GetBackgroundCorrection(Int_t det, Char_t ring, Int_t vtxbin);
   TH1F* GetDoubleHitCorrection(Int_t det, Char_t ring);
   
-  Float_t GetEventSelectionEfficiency(Int_t vtxbin);
-  Float_t GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec) const;
-  Float_t GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx) const;
+  TH1F* GetSharingEfficiency(Int_t det, Char_t ring, Int_t vtxbin);
+  
+  Float_t  GetEventSelectionEfficiency(Int_t vtxbin);
+  Float_t  GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec) const;
+  Float_t  GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx) const;
   Float_t  GetStripLength(Char_t ring, UShort_t strip)  ;
   Float_t  GetBaseStripLength(Char_t ring, UShort_t strip)  ;
   Float_t  GetMaxR(Char_t ring) const;
@@ -97,6 +102,7 @@ public:
   void     SetBackgroundPath(const Char_t* bgpath) {fBackgroundPath.Form(bgpath);}
   void     SetEnergyPath(const Char_t* epath) {fEnergyPath.Form(epath);}
   void     SetEventSelectionPath(const Char_t* evpath) {fEventSelectionEffPath.Form(evpath);}
+  void     SetSharingEfficiencyPath(const Char_t* sharpath) {fSharingEffPath.Form(sharpath);}
   void     SetProcessPrimary(Bool_t prim=kTRUE) {fProcessPrimary = prim;}
   void     SetProcessHits(Bool_t hits=kTRUE) {fProcessHits = hits;}
   Bool_t   GetProcessPrimary() {return fProcessPrimary;}
@@ -108,6 +114,8 @@ public:
   void     SetEnergy(Energy energy) {fEnergy = energy;}
   void     SetMagField(MagField magfield) {fMagField = magfield;}
   char*    GetPath(const char* species);
+
+
 protected:
   
   AliFMDAnaParameters();
@@ -118,11 +126,13 @@ protected:
       fBackground(o.fBackground),
       fEnergyDistribution(o.fEnergyDistribution),
       fEventSelectionEfficiency(o.fEventSelectionEfficiency),
+      fSharingEfficiency(o.fSharingEfficiency),
       fCorner1(o.fCorner1),
       fCorner2(o.fCorner2),
       fEnergyPath(o.fEnergyPath),
       fBackgroundPath(o.fBackgroundPath),
       fEventSelectionEffPath(o.fEventSelectionEffPath),
+      fSharingEffPath(o.fSharingEffPath),
       fProcessPrimary(o.fProcessPrimary),
       fProcessHits(o.fProcessHits),
       fTrigger(o.fTrigger),
@@ -139,6 +149,7 @@ protected:
   void InitBackground();
   void InitEnergyDists();
   void InitEventSelectionEff();
+  void InitSharingEff();
   
   TH1F* GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta);
   TObjArray* GetBackgroundArray();
@@ -152,18 +163,20 @@ protected:
   AliFMDAnaCalibBackgroundCorrection*         fBackground;
   AliFMDAnaCalibEnergyDistribution*           fEnergyDistribution;
   AliFMDAnaCalibEventSelectionEfficiency*     fEventSelectionEfficiency;
-  
+  AliFMDAnaCalibSharingEfficiency*            fSharingEfficiency;
   //static const char* fgkBackgroundCorrection;
   //static const char* fgkEnergyDists;
   static const char* fgkBackgroundID;
   static const char* fgkEnergyDistributionID ;
   static const char* fgkEventSelectionEffID ;
+  static const char* fgkSharingEffID ;
   
   TVector2 fCorner1;
   TVector2 fCorner2;
   TString  fEnergyPath;
   TString  fBackgroundPath;
   TString  fEventSelectionEffPath;
+  TString  fSharingEffPath;
   Bool_t   fProcessPrimary;
   Bool_t   fProcessHits; 
   Trigger  fTrigger;

@@ -5,6 +5,7 @@ SRCS		=  analysis/AliFMDAnaParameters.cxx	\
 		   analysis/AliFMDAnaCalibEnergyDistribution.cxx \
 		   analysis/AliFMDAnaCalibBackgroundCorrection.cxx \
                    analysis/AliFMDAnaCalibEventSelectionEfficiency.cxx \
+                   analysis/AliFMDAnaCalibSharingEfficiency.cxx \
                    analysis/AliFMDAnalysisTaskESDReader.cxx	\
 	           analysis/AliFMDAnalysisTaskSharing.cxx       \
 		   analysis/AliFMDAnalysisTaskDensity.cxx       \

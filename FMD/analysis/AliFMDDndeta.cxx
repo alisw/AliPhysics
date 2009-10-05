@@ -4,6 +4,7 @@
 #include "AliLog.h"
 #include "TH1.h"
 #include "AliFMDAnaParameters.h"
+#include "AliFMDAnaCalibSharingEfficiency.h"
 #include "TStyle.h"
 //#include "TObjArray.h"
 #include "TCanvas.h"
@@ -37,6 +38,11 @@ void AliFMDDndeta::SetNames(Analysis what) {
     fEvents.Form("nEvents");
     fPrimdNdeta.Form("hMultvsEtaNoCuts");
     break;
+  case kHitsTrVtx :
+    fPrimEvents.Form("nMCEvents"); 
+    fEvents.Form("nEvents");
+    fPrimdNdeta.Form("hMultvsEtaNoCuts");
+    break;
   case kMult :
     fPrimEvents.Form("nMCEventsNoCuts"); 
     fEvents.Form("nEvents");
@@ -60,6 +66,9 @@ const char* AliFMDDndeta::GetAnalysisName(Analysis what, UShort_t det, Char_t ri
   case kHits :
     name = Form("hits_NoCuts_FMD%d%c_vtxbin%d_proj",det,ring,vtxbin); //NoCuts added
     break;
+  case kHitsTrVtx :
+    name = Form("hits_FMD%d%c_vtxbin%d_proj",det,ring,vtxbin); 
+    break;
   case kMult :
     name = Form("dNdeta_FMD%d%c_vtxbin%d_proj",det,ring,vtxbin);
     break;
@@ -80,6 +89,9 @@ const char* AliFMDDndeta::GetPrimName(Analysis what, UShort_t det, Char_t ring, 
   switch(what) {
   case kHits :
     name = Form("hMCHits_nocuts_FMD%d%c_vtxbin%d",det,ring,vtxbin); //nocuts added
+    break;
+  case kHitsTrVtx :
+    name = Form("hMCHits_FMD%d%c_vtxbin%d",det,ring,vtxbin);
     break;
   case kMult :
     name = Form("primmult_vtxbin%d",vtxbin);
@@ -268,8 +280,10 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
 	  if(multhistproj->GetBinContent(i) !=0)
 	    nNonZero++;
 	}
-	//if(det == 2 && ring =='I')
-	//  fNbinsToCut = 1;
+	Int_t nBinsOld = fNbinsToCut;
+	if(det == 2 && ringChar =='I') {
+	  fNbinsToCut = 0;
+	}
 	TH1F* hRingMult = (TH1F*)fMultList.FindObject(Form("hRingMult_FMD%d%c",det,ringChar));
 	
 	for(Int_t i=1; i<=hRingMult->GetNbinsX(); i++) {
@@ -283,7 +297,7 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
 	    if(hRingMult->GetBinError(i)>0) {
 	      oldweight = 1/TMath::Power(hRingMult->GetBinError(i),2);
 	      oldwav    = oldweight*hRingMult->GetBinContent(i);
-	  }
+	    }
 	    Float_t  weight = 1/TMath::Power(multhistproj->GetBinError(i),2);
 	    Float_t  wav    = oldwav + weight*multhistproj->GetBinContent(i);
 	    Float_t  sumofw = oldweight + weight;
@@ -300,14 +314,13 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
 	
 	TH1F* sumMultHist = (TH1F*)fMultList.FindObject(Form("hMult_vtxbin%d",v));
 	for(Int_t i =1;i<=sumMultHist->GetNbinsX();i++) {
-	  if(multhistproj->GetBinContent(i) == 0 ) continue;
+	  if(multhistproj->GetBinContent(i) != 0 ) {	  
+	    nNonZeroInData++;
 	  
-	  nNonZeroInData++;
-	  
-	  if(nNonZeroInData <=fNbinsToCut || nNonZeroInData > (nNonZero - fNbinsToCut)) {
-	    continue;
-	  }
-	  if(sumMultHist->GetBinContent(i) == 0 && multhistproj->GetBinContent(i) != 0){
+	    if(nNonZeroInData <=fNbinsToCut || nNonZeroInData > (nNonZero - fNbinsToCut)) {
+	      continue;
+	    }
+	    if(sumMultHist->GetBinContent(i) == 0 && multhistproj->GetBinContent(i) != 0){
 	      sumMultHist->SetBinContent(i,multhistproj->GetBinContent(i));
 	      sumMultHist->SetBinError(i,multhistproj->GetBinError(i));
 	    }
@@ -322,8 +335,11 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
 	    }
 	    
 	
+	  }
 	}
+	fNbinsToCut = nBinsOld;
       }
+      
     }
   }
   
@@ -465,6 +481,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin) {
 	  hPrimVtx->SetLabelFont(132,"xyz");
 	  hPrimVtx->SetStats(0000);
 	  hPrimVtx->GetXaxis()->SetTitle("#eta");
+	  hPrimVtx->GetYaxis()->SetRangeUser(0,15);
 	  hPrimVtx->DrawCopy("E3");
 	  l->Draw();
 	  multhistproj->DrawCopy("same");
@@ -515,8 +532,8 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin) {
   if(nPrimevents > 0)
     hPrim->Scale(1/nPrimevents);
   
-  //  TFile testin("/home/canute/data/oldhome/ALICE/FMDanalysis/GRIDtest/fmd_dNdeta_hits.root","READ");
-  /* TFile testin("/home/canute/ALICE/FMDanalysis/productionData/fmd_dNdeta_hits.root","READ");
+    TFile testin("/home/canute/ALICE/FMDanalysis/GridAnalysis/fmd_dNdeta_hits.root","READ");
+    // TFile testin("/home/canute/ALICE/FMDanalysis/productionData/fmd_dNdeta_hits.root","READ");
   TH1F* hcorrect = (TH1F*)testin.Get("hReldif");
   hcorrect->SetName("djarnis");
   std::cout<<hcorrect<<std::endl;
@@ -526,7 +543,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin) {
  
   sumMult->Divide(hcorrect);
   //delete hcorrect;
-  */
+  
   
   sumMult->Rebin(rebin);
   sumMult->Scale(1/rebin);
@@ -571,15 +588,15 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin) {
   
   sumMult->DrawCopy("PE");
   hPrim->DrawCopy("E3same");
-  primMult->DrawCopy("E3same");
+  //primMult->DrawCopy("E3same");
   hPrim->GetXaxis()->SetTitle("#eta");
   
   hPrim->SetMarkerStyle(8);
   
-  hPrim->DrawCopy("Psame");
+  hPrim->DrawCopy("PE3same");
   sumMult->DrawCopy("PEsame");
   std::cout<<"FMD 1 "<<sumMult->Integral(sumMult->FindBin(3),sumMult->FindBin(5),"width")<<std::endl;
-  /* TFile* itsfile = TFile::Open(itsfilename);
+  /*TFile* itsfile = TFile::Open(itsfilename);
   if(itsfile) {
     //itsfile->cd();
     
@@ -601,9 +618,9 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin) {
   */
   
   
-  TLegend* leg = new TLegend(0.35,0.2,0.65,0.45,"");
+  TLegend* leg = new TLegend(0.35,0.2,0.65,0.35,"");
   leg->AddEntry(hPrim,"Primary","pf");
-  leg->AddEntry(primMult,"Analysed prim","f");
+  //leg->AddEntry(primMult,"Analysed prim","f");
   leg->AddEntry(sumMult,"Analysis","p");
   leg->Draw();
   TString species;
@@ -628,6 +645,59 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin) {
   fMultList.Write();
   fout.Close();
     
+}
+//_____________________________________________________________________
+void AliFMDDndeta::CreateSharingEfficiency(const Char_t* filename, Bool_t store) {
+
+  Init(filename);
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  //pars->Init(kTRUE,AliFMDAnaParameters::kBackgroundCorrection);
+  Int_t nVertexBins = pars->GetNvtxBins();
+  
+  SetNames(kHits);
+  TH1I* hEvents          = (TH1I*)fList->FindObject(fEvents.Data());
+  TH1I* hPrimEvents      = (TH1I*)fList->FindObject(fPrimEvents.Data());
+
+  SetNames(kHitsTrVtx);
+  TH1I* hEventsTrVtx     = (TH1I*)fList->FindObject(fEvents.Data());
+  TH1I* hPrimEventsTrVtx = (TH1I*)fList->FindObject(fPrimEvents.Data());
+  
+  AliFMDAnaCalibSharingEfficiency* sharEff = new AliFMDAnaCalibSharingEfficiency();
+  
+  for(Int_t det = 1; det<=3; det++) {
+    Int_t maxRing = (det == 1 ? 0 : 1);
+    for(Int_t ring = 0;ring<=maxRing;ring++) {
+      Char_t ringChar = (ring == 0 ? 'I' : 'O');
+      for(Int_t v=0; v< nVertexBins; v++) {
+	TH1F* hHits = (TH1F*)fList->FindObject(GetAnalysisName(kHits,det, ringChar, v));
+	TH1F* hHitsTrVtx   = (TH1F*)fList->FindObject(GetAnalysisName(kHitsTrVtx,det, ringChar, v));
+	TH1F* hMCHits      = (TH1F*)fList->FindObject(GetPrimName(kHits,det, ringChar, v));
+	TH1F* hMCHitsTrVtx = (TH1F*)fList->FindObject(GetPrimName(kHitsTrVtx,det, ringChar, v));
+	
+	TH1F* hCorrection  = (TH1F*)hHits->Clone(Form("hCorrection_FMD%d%c_vtx%d"));
+	TH1F* hCorrectionTrVtx  = (TH1F*)hHitsTrVtx->Clone(Form("hCorrection_FMD%d%c_vtx%d"));
+	
+	hCorrection->Scale(1./(Float_t)hEvents->GetBinContent(v+1));
+	hMCHits->Scale(1./(Float_t)hPrimEvents->GetBinContent(v+1));
+	hCorrectionTrVtx->Scale(1./(Float_t)hEventsTrVtx->GetBinContent(v+1));
+	hMCHitsTrVtx->Scale(1./(Float_t)hPrimEventsTrVtx->GetBinContent(v+1));
+	hCorrection->Divide(hMCHits);
+	hCorrectionTrVtx->Divide(hMCHitsTrVtx);
+	
+	sharEff->SetSharingEff(det,ringChar,v,hCorrection);
+	sharEff->SetSharingEffTrVtx(det,ringChar,v,hCorrectionTrVtx);
+	//	std::cout<<hHits<<"  "<<hHitsTrVtx<<"   "<<hPrim<<"    "<<hPrimTrVtx<<std::endl;
+
+	}
+      }
+    }
+
+  if(store) {
+    TFile fsharing(pars->GetPath(pars->GetSharingEffID()),"RECREATE");
+    sharEff->Write(AliFMDAnaParameters::GetSharingEffID());
+    fsharing.Close();
+  }
+  
 }
 
 //_____________________________________________________________________
