@@ -858,6 +858,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       if(eJet && ipsigJet && !dvmJet)   fhJetType->Fill(5.,jet->Pt()); //ejet & ipsig
       if(dvmJet && ipsigJet && !eJet)   fhJetType->Fill(6.,jet->Pt()); //dvm & ipsig
       if(dvmJet && ipsigJet && eJet)    fhJetType->Fill(7.,jet->Pt()); //all
+      if(dvmJet || ipsigJet || eJet)    fhJetType->Fill(8.,jet->Pt()); //any of them
 
       if(eJet || ipsigJet || dvmJet) fhBJetEtaPhi->Fill(jet->Eta(),jet->Phi());
       else fhNonBJetEtaPhi->Fill(jet->Eta(),jet->Phi());
