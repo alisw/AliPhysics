@@ -74,8 +74,8 @@ ifneq (,$(findstring g95,$(F77)))
 SHLIB += -L$(shell $(F77) --print-search-dirs | sed -n -e 's/install: //p') -lf95
 else
 ifneq (,$(findstring gfortran,$(F77)))
-SHLIB := $(shell $(F77) -print-file-name=libgfortran.so)
-SHLIB += $(shell $(F77) -print-file-name=libgfortranbegin.a)
+SHLIB := $(shell $(F77) -m32 -print-file-name=libgfortran.so)
+SHLIB += $(shell $(F77) -m32 -print-file-name=libgfortranbegin.a)
 SYSLIBS += $(SHLIB)
 else
 SHLIB         = -lg2c
