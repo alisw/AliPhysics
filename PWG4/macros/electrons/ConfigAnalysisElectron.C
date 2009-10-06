@@ -110,7 +110,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   anaelectron->SwitchOnDataMC();
   anaelectron->SetpOverEmin(0.8);
   anaelectron->SetpOverEmax(1.2);
-  anaelectron->SetResidualCut(0.05);
+  anaelectron->SetResidualCut(0.02);
   anaelectron->SetMinPt(1.);
   anaelectron->SetImpactCut(1.0);  //instead of 0.5
   anaelectron->SetSdcaCut(0.05);  //instead of 0.1
