@@ -269,14 +269,14 @@ void AliACORDEQADataMakerRec::MakeESDs(AliESDEvent * esd)
   //fills QA histos for ESD
 
   AliESDACORDE * fESDACORDE= esd->GetACORDEData();
-        Int_t *fACORDEMultiMuon =fESDACORDE->GetACORDEMultiMuon();
-        Int_t *fACORDESingleMuon=fESDACORDE->GetACORDESingleMuon();
+       
+  for(int i=0;i<60;i++)
+  {
+  	if(fESDACORDE->GetHitChannel(i)) 
+	{
+		GetESDsData(0)->Fill(i);
+		GetESDsData(1)->Fill(i);
+	}
+  }
 
-       for(int i=0;i<60;i++){
-            if(fACORDESingleMuon[i]==1)
-               GetESDsData(0) -> Fill(i);
-            if(fACORDEMultiMuon[i]==1)
-               GetESDsData(1) -> Fill(i);
-        }
 }
-

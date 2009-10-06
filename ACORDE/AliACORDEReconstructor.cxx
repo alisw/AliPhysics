@@ -123,8 +123,8 @@ void AliACORDEReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
 
   digitsTree->GetEvent(0);
 
-  Bool_t AcoADCSingle[60],AcoADCMulti[60];
-  for(Int_t i = 0; i < 60; i++) { AcoADCSingle[i] = AcoADCMulti[i] = kFALSE; }
+  Bool_t AcoHitSingle[60],AcoHitMulti[60];
+  for(Int_t i = 0; i < 60; i++) { AcoHitSingle[i] = AcoHitMulti[i] = kFALSE; }
 
   Int_t nDigits = digitsArray->GetEntriesFast();
     
@@ -132,12 +132,13 @@ void AliACORDEReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     AliACORDEdigit* digit = (AliACORDEdigit*)digitsArray->At(d);
     Int_t module = digit->GetModule();
 
-    AcoADCSingle[module-1] = kTRUE;
-    AcoADCMulti[module-1] = kTRUE;
-  }
-	
-  fESDACORDE->SetACORDESingleMuon(AcoADCSingle);
-  fESDACORDE->SetACORDEMultiMuon(AcoADCMulti);
+    AcoHitSingle[module-1] = kTRUE;
+    AcoHitMulti[module-1] = kTRUE;
+  }  
+  TString ActiveTriggerDetector = esd->GetFiredTriggerClasses();
+  if (ActiveTriggerDetector.Contains("ASL")) fESDACORDE->SetACORDEBitPattern(AcoHitSingle);
+  else if (ActiveTriggerDetector.Contains("AMU")) fESDACORDE->SetACORDEBitPattern(AcoHitMulti);
+	else fESDACORDE->SetACORDEBitPattern(AcoHitSingle);
 
   if (esd)
     {

@@ -1,3 +1,7 @@
+
+
+// Last update: October 2th 2009 
+
 #include "AliESDACORDE.h"
 
 ClassImp(AliESDACORDE)
@@ -7,7 +11,7 @@ AliESDACORDE::AliESDACORDE():TObject()
  //Default constructor
 	for(Int_t i=0;i<60;i++)
 	{
-		fACORDESingleMuon[i] = fACORDEMultiMuon[i] = 0;
+		fACORDEBitPattern[i] = 0;
 	}
 }
 
@@ -19,21 +23,19 @@ AliESDACORDE::AliESDACORDE(const AliESDACORDE &o)
 	//Default constructor
 	for(Int_t i=0;i<60;i++)
 	{
-		fACORDESingleMuon[i] = o.fACORDESingleMuon[i];
-		fACORDEMultiMuon[i] = o.fACORDEMultiMuon[i];
+		fACORDEBitPattern[i] = o.fACORDEBitPattern[i];
 	}
 }
 
 
-AliESDACORDE::AliESDACORDE(Int_t* MACORDESingleMuon, Int_t* MACORDEMultiMuon):TObject()
+AliESDACORDE::AliESDACORDE(Bool_t* MACORDEBitPattern):TObject()
 {
 
 	//Constructor
 
 	for(Int_t i=0;i<60;i++)
 	{
-		fACORDESingleMuon[i] = MACORDESingleMuon[i];
-		fACORDEMultiMuon[i] = MACORDEMultiMuon[i];
+		fACORDEBitPattern[i] = MACORDEBitPattern[i];
 	}
 }
 
@@ -45,11 +47,16 @@ AliESDACORDE& AliESDACORDE::operator=(const AliESDACORDE& o)
 	// Assignment operator
 	for(Int_t i=0; i<60; i++)
 	{
-		fACORDESingleMuon[i] = o.fACORDESingleMuon[i];
-		fACORDEMultiMuon[i] = o.fACORDEMultiMuon[i];
+		fACORDEBitPattern[i] = o.fACORDEBitPattern[i];
 	}
 	
 	return *this;
+}
+
+
+Bool_t AliESDACORDE::GetHitChannel(Int_t i)
+{
+	return fACORDEBitPattern[i];
 }
 
 void AliESDACORDE::Copy(TObject &obj) const {
