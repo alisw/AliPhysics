@@ -55,7 +55,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	const Double_t phimax = 2*TMath::Pi();
 
 	//Setting up the container grid... 
-	UInt_t nstep = 6; //number of selection steps: MC, Acceptance, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included) 
+	UInt_t nstep = 8; //number of selection steps: MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included) 
 	const Int_t nvar   = 12 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
 	const Int_t nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
 	const Int_t nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
@@ -250,10 +250,12 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	man->SetParticleContainer     (container);
 	man->SetParticleCutsList(0 , mcList); // MC
 	man->SetParticleCutsList(1 , accList); // Acceptance 
-	man->SetParticleCutsList(2 , emptyList); // AOD 
-	man->SetParticleCutsList(3 , emptyList); // AOD in Acceptance
-	man->SetParticleCutsList(4 , emptyList); // AOD with required n. of ITS clusters
-	man->SetParticleCutsList(5 , emptyList); // AOD Reco (PPR cuts implemented in Task)
+	man->SetParticleCutsList(2 , emptyList); // Vertex 
+	man->SetParticleCutsList(3 , emptyList); // Refit 
+	man->SetParticleCutsList(4 , emptyList); // AOD
+	man->SetParticleCutsList(5 , emptyList); // AOD in Acceptance
+	man->SetParticleCutsList(6 , emptyList); // AOD with required n. of ITS clusters
+	man->SetParticleCutsList(7 , emptyList); // AOD Reco (PPR cuts implemented in Task)
 	
 	// Get the pointer to the existing analysis manager via the static access method.
 	//==============================================================================

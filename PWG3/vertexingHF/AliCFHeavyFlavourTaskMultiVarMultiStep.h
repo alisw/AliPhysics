@@ -40,10 +40,12 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   enum {
     kStepGenerated       = 0,
     kStepAcceptance      = 1,
-    kStepReconstructed   = 2,
-    kStepRecoAcceptance  = 3,
-    kStepRecoITSClusters = 4,
-    kStepRecoPPR         = 5
+    kStepVertex          = 2,
+    kStepRefit           = 3,
+    kStepReconstructed   = 4,
+    kStepRecoAcceptance  = 5,
+    kStepRecoITSClusters = 6,
+    kStepRecoPPR         = 7
   };
 
   AliCFHeavyFlavourTaskMultiVarMultiStep();
@@ -84,6 +86,8 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   THnSparse* fCorrelation;      //  response matrix for unfolding
   Int_t fCountMC;               //  MC particle found
   Int_t fCountAcc;              //  MC particle found that satisfy acceptance cuts
+  Int_t fCountVertex;       //  Reco particle found that satisfy vertex constrained
+  Int_t fCountRefit;        //  Reco particle found that satisfy kTPCrefit and kITSrefit
   Int_t fCountReco;             //  Reco particle found that satisfy cuts
   Int_t fCountRecoAcc;          //  Reco particle found that satisfy cuts in requested acceptance
   Int_t fCountRecoITSClusters;  //  Reco particle found that satisfy cuts in n. of ITS clusters
