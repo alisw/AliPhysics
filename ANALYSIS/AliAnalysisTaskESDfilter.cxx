@@ -1176,22 +1176,33 @@ void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aod
   // Setter for the raw PID detector signals
   //
 
-  if(esdtrack->Pt()>fHighPthreshold) {
-    detpid = new AliAODPid();
-    SetDetectorRawSignals(detpid,esdtrack,timezero, bfield);
-    aodtrack->SetDetPID(detpid);
-  } else {
-    if(fPtshape){
-      if(esdtrack->Pt()> fPtshape->GetXmin()){
-	Double_t y = fPtshape->Eval(esdtrack->Pt())/fPtshape->Eval(fHighPthreshold);
-	if(gRandom->Rndm(0)<1./y){
-	  detpid = new AliAODPid();
-	  SetDetectorRawSignals(detpid,esdtrack,timezero, bfield);
-	  aodtrack->SetDetPID(detpid);
-	}//end rndm
-      }//end if p < pmin
-    }//end if p function
-  }// end else
+  // Save PID object for candidate electrons
+    Bool_t pidSave = kFALSE;
+    if (fTrackFilter) {
+	Bool_t selectInfo = fTrackFilter->IsSelected("Electrons");
+	if (selectInfo)  pidSave = kTRUE;
+    }
+
+
+    // Tracks passing pt cut 
+    if(esdtrack->Pt()>fHighPthreshold) {
+	pidSave = kTRUE;
+    } else {
+	if(fPtshape){
+	    if(esdtrack->Pt()> fPtshape->GetXmin()){
+		Double_t y = fPtshape->Eval(esdtrack->Pt())/fPtshape->Eval(fHighPthreshold);
+		if(gRandom->Rndm(0)<1./y){
+		    pidSave = kTRUE;
+		}//end rndm
+	    }//end if p < pmin
+	}//end if p function
+    }// end else
+
+    if (pidSave) {
+	detpid = new AliAODPid();
+	SetDetectorRawSignals(detpid,esdtrack,timezero, bfield);
+	aodtrack->SetDetPID(detpid);
+    }
 }
 
 void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track, Double_t timezero, Double_t bfield)
