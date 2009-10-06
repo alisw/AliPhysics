@@ -7,7 +7,8 @@
 //*************************************************************************
 // Class AliAnalysisTaskSED0Mass
 // AliAnalysisTaskSE for D0 candidates invariant mass histogram
-// and comparison to MC truth (kinematics stored in the AOD)
+// and comparison to MC truth (kinematics stored in the AOD) and cut variables
+// distributions
 // Authors: A.Dainese, andrea.dainese@ln.infn.it
 // and C.Bianchin, chiara.bianchin@pd.infn.it
 //*************************************************************************
@@ -44,15 +45,11 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void    FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout);
   TList   *fOutputtight; //! list send on output slot 1
   TList   *fOutputloose; //! list send on output slot 2
-  /*
-  TH1F   **fhistMass;  //! invariant mass histograms - no MC truth
-  TH1F   **fhistSgn;   //! signal invariant mass histograms - MC
-  TH1F   **fhistBkg;   //! background invariant mass histograms - MC
-  */
+  TList   *fDistr;       //! list send on output slot 3
   AliAnalysisVertexingHF *fVHFtight;  // Vertexer heavy flavour (used to pass the cuts)
   AliAnalysisVertexingHF *fVHFloose;  // Vertexer heavy flavour (used to pass the cuts)
   TH1F *fNentries; //! histogram with number of events
-  ClassDef(AliAnalysisTaskSED0Mass,1); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSED0Mass,2); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif

@@ -16,7 +16,7 @@
 /////////////////////////////////////////////////////////////
 //
 // AliAnalysisTaskSE for D0 candidates invariant mass histogram
-// and comparison with the MC truth.
+// and comparison with the MC truth and cut variables distributions.
 //
 // Authors: A.Dainese, andrea.dainese@lnl.infn.it
 // and Chiara Bianchin, chiara.bianchin@pd.infn.it
@@ -27,7 +27,8 @@
 #include <TNtuple.h>
 #include <TList.h>
 #include <TH1F.h>
-
+#include <TH2F.h>
+#include <TDatabasePDG.h>
 
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
@@ -47,7 +48,8 @@ ClassImp(AliAnalysisTaskSED0Mass)
 AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
 AliAnalysisTaskSE(),
 fOutputtight(0),
-fOutputloose(0), 
+fOutputloose(0),
+fDistr(0), 
 fVHFtight(0),
 fVHFloose(0),
 fNentries(0)
@@ -60,6 +62,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name):
 AliAnalysisTaskSE(name),
 fOutputtight(0), 
 fOutputloose(0), 
+fDistr(0),
 fVHFtight(0),
 fVHFloose(0),
 fNentries(0)
@@ -72,6 +75,8 @@ fNentries(0)
   DefineOutput(2,TList::Class());  //My private output
   // Output slot #3 writes into a TH1F container
   DefineOutput(3,TH1F::Class());  //My private output
+  // Output slot #4 writes into a TList container
+  DefineOutput(4,TList::Class());  //My private output
 }
 
 //________________________________________________________________________
@@ -89,6 +94,12 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
     delete fOutputloose;
     fOutputloose = 0;
   }
+
+  if (fDistr) {
+    delete fDistr;
+    fDistr = 0;
+  }
+
   if (fVHFloose) {
     delete fVHFloose;
     fVHFloose = 0;
@@ -97,6 +108,8 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
     delete fNentries;
     fNentries = 0;
   }
+
+
 }  
 
 //________________________________________________________________________
@@ -132,9 +145,13 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fOutputloose->SetOwner();
   fOutputloose->SetName("listloose");
 
+  fDistr = new TList();
+  fDistr->SetOwner();
+  fDistr->SetName("distributionslist");
+
   const Int_t nhist=4;
 
-  TString nameMass=" ", nameSgn=" ", nameBkg=" ", nameRfl=" ";
+  TString nameMass=" ", nameSgn=" ", nameBkg=" ", nameRfl=" ", namedistr=" ";
 
   for(Int_t i=0;i<nhist;i++){
     nameMass="histMass_";
@@ -145,6 +162,8 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     nameBkg+=i+1;
     nameRfl="histRfl_";
     nameRfl+=i+1;
+
+    //histograms of invariant mass distributions
 
     TH1F* tmpMt = new TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",200,1.765,1.965);
     TH1F *tmpMl=(TH1F*)tmpMt->Clone();
@@ -180,11 +199,102 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     
   }
 
+  //histograms of cut variable distributions
+  //  pT
+  namedistr="hptpiS";
+  TH1F *hptpiS = new TH1F(namedistr.Data(), "P_{T} distribution (pions);p_{T} [GeV/c]",200,0.,8.);
+//   namedistr="hptpiR";
+//   TH1F *hptpiR = new TH1F(namedistr.Data(), "P_{T} distribution (pions);p_{T} [GeV/c]",200,0.,8.);
 
-  //fOutputloose->ls();
-  //fOutputtight->ls();
+  namedistr="hptKS";
+  TH1F *hptKS = new TH1F(namedistr.Data(), "P_{T} distribution (kaons);p_{T} [GeV/c]",200,0.,8.);
 
-  fNentries=new TH1F("nentries", "Look at the number of entries! = number of AODs", 2,1.,2.);
+  namedistr="hptB";
+  TH1F *hptB = new TH1F(namedistr.Data(), "P_{T} distribution;p_{T} [GeV/c]",200,0.,8.);
+//   namedistr="hptKR";
+//   TH1F *hptKR = new TH1F(namedistr.Data(), "P_{T} distribution (kaons);p_{T} [GeV/c]",200,0.,8.);
+
+  //  dca
+  namedistr="hdcaS";
+  TH1F *hdcaS = new TH1F(namedistr.Data(), "DCA distribution;dca [cm]",200,0.,0.1);
+  namedistr="hdcaB";
+  TH1F *hdcaB = new TH1F(namedistr.Data(), "DCA distribution;dca [cm]",200,0.,0.1);
+//   namedistr="hdcaR";
+//   TH1F *hdcaR = new TH1F(namedistr.Data(), "DCA distribution;dca [cm]",200,0.,0.1);
+
+  //  costhetastar
+  namedistr="costhetastarS";
+  TH1F *hcosthetastarS = new TH1F(namedistr.Data(), "cos#theta* distribution;cos#theta*",200,-1.,1.);
+  namedistr="costhetastarB";
+  TH1F *hcosthetastarB = new TH1F(namedistr.Data(), "cos#theta* distribution;cos#theta*",200,-1.,1.);
+//   namedistr="costhetastarR";
+//   TH1F *hcosthetastarR = new TH1F(namedistr.Data(), "cos#theta* distribution;cos#theta*",200,-1.,1.);
+
+  // impact parameter
+  namedistr="hd0piS";
+  TH1F *hd0piS = new TH1F(namedistr.Data(), "Impact parameter distribution (pions);d0(#pi) [cm]",200,-0.1,0.1);
+//   namedistr="hd0piR";
+//   TH1F *hd0piR = new TH1F(namedistr.Data(), "Impact parameter distribution (pions);d0(#pi) [cm]",200,0.,1.);
+
+  namedistr="hd0KS";
+  TH1F *hd0KS = new TH1F(namedistr.Data(), "Impact parameter distribution (kaons);d0(K) [cm]",200,-0.1,0.1);
+  namedistr="hd0B";
+  TH1F *hd0B = new TH1F(namedistr.Data(), "Impact parameter distribution;d0 [cm]",200,-0.1,0.1);
+//   namedistr="hd0KR";
+//   TH1F *hd0KR = new TH1F(namedistr.Data(), "Impact parameter distribution (kaons);d0(K) [cm]",200,0.,0.1);
+
+  namedistr="hd0d0S";
+  TH1F *hd0d0S = new TH1F(namedistr.Data(), "d_{0}#timesd_{0} distribution;d_{0}#timesd_{0} [cm^{2}]",200,-0.001,0.001);
+  namedistr="hd0d0B";
+  TH1F *hd0d0B = new TH1F(namedistr.Data(), "d_{0}#timesd_{0} distribution;d_{0}#timesd_{0} [cm^{2}]",200,-0.001,0.001);
+//   namedistr="hd0d0R";
+//   TH1F *hd0d0R = new TH1F(namedistr.Data(), "d_{0}#timesd_{0} distribution (pions);d_{0}#timesd_{0} [cm^{2}]",200,-0.001,0.001);
+
+  //  costhetapoint
+  namedistr="hcosthetapointS";
+  TH1F *hcosthetapointS = new TH1F(namedistr.Data(), "cos#theta_{Point} distribution;cos#theta_{Point}",200,0,1.);
+  namedistr="hcosthetapointB";
+  TH1F *hcosthetapointB = new TH1F(namedistr.Data(), "cos#theta_{Point} distribution;cos#theta_{Point}",200,0,1.);
+//   namedistr="costhetapointR";
+//   TH1F *hcosthetapointR = new TH1F(namedistr.Data(), "cos#theta_{Point} distribution;cos#theta_{Point}",200,-1,1.);
+
+  namedistr="hcosthpointd0d0S";
+  TH2F *hcosthpointd0d0S= new TH2F(namedistr.Data(),"Correlation cos#theta_{Point}-d_{0}#timesd_{0};cos#theta_{Point};d_{0}#timesd_{0} [cm^{2}]",200,0,1.,200,-0.001,0.001);
+  namedistr="hcosthpointd0d0B";
+  TH2F *hcosthpointd0d0B= new TH2F(namedistr.Data(),"Correlation cos#theta_{Point}-d_{0}#timesd_{0};cos#theta_{Point};d_{0}#timesd_{0} [cm^{2}]",200,0,1.,200,-0.001,0.001);
+
+  fDistr->Add(hptpiS);
+  //fDistr->Add(hptpiR);
+  fDistr->Add(hptKS);
+  fDistr->Add(hptB);
+  //fDistr->Add(hptKR);
+
+  fDistr->Add(hdcaS);
+  fDistr->Add(hdcaB);
+  //fDistr->Add(hdcaR);
+
+  fDistr->Add(hd0piS);
+  //fDistr->Add(hd0piR);
+  fDistr->Add(hd0KS);
+  fDistr->Add(hd0B);
+  //fDistr->Add(hd0KR);
+
+  fDistr->Add(hd0d0S);
+  fDistr->Add(hd0d0B);
+  //fDistr->Add(hd0d0R);
+
+  fDistr->Add(hcosthetastarS);
+  fDistr->Add(hcosthetastarB);
+  //fDistr->Add(hcosthetastarR);
+
+  fDistr->Add(hcosthetapointS);
+  fDistr->Add(hcosthetapointB);
+  //fDistr->Add(hcosthetapointR);
+
+  fDistr->Add(hcosthpointd0d0S);
+  fDistr->Add(hcosthpointd0d0B);
+
+  fNentries=new TH1F("nentriesD0", "Look at the number of entries! it is = to the  number of AODs", 2,1.,2.);
 
   return;
 }
@@ -231,10 +341,10 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   PostData(3,fNentries);
   // loop over D0->Kpi candidates
   Int_t nInD0toKpi = inputArrayD0toKpi->GetEntriesFast();
-  if(fDebug>1) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
+  printf("Number of D0->Kpi: %d\n",nInD0toKpi);
   
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
-    
+    //cout<<"inside the loop"<<endl;
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArrayD0toKpi->UncheckedAt(iD0toKpi);
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()) {
@@ -252,9 +362,86 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 //     printf("    |d0pi| [cm]  < %f\n",fD0toKpiCuts[6]);
 //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
 //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
-  
+
+    //add distr here
+    UInt_t pdgs[2];
     
+    Double_t mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+    pdgs[0]=211;
+    pdgs[1]=321;
+    Double_t minvD0 = d->InvMassD0();
+    pdgs[1]=211;
+    pdgs[0]=321;
+    Double_t minvD0bar = d->InvMassD0bar();
+    //apply cut on invariant mass on the pair
+    if(TMath::Abs(minvD0-mPDG)<0.03 || TMath::Abs(minvD0bar-mPDG)<0.03){
+      Int_t pdgDgD0toKpi[2]={321,211};
+      Int_t lab=d->MatchToMC(421,mcArray,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+
+      //      Int_t lab=d->MatchToMC(421,mcArray); //|pdg| requested
+//       AliAODMCParticle *mcmother = (AliAODMCParticle*)mcArray->At(lab);
+//       cout<<"mcmother name = "<<mcmother->GetName()<<" label = "<<mcmother->GetLabel()<<endl;
+      if(lab>=0){ //signal
+	//cout<<"is signal"<<endl;
+	for (Int_t iprong=0; iprong<2; iprong++){
+	  AliAODTrack *prong=(AliAODTrack*)d->GetDaughter(iprong);
+	  Int_t labprong=prong->GetLabel();
+
+	  //cout<<"prong name = "<<prong->GetName()<<" label = "<<prong->GetLabel()<<endl;
+	  AliAODMCParticle *mcprong=0;
+	  if(labprong>=0)  mcprong= (AliAODMCParticle*)mcArray->At(labprong);
+	  Int_t pdgprong=mcprong->GetPdgCode();
+	  if(TMath::Abs(pdgprong)==211) {
+	    //cout<<"pi"<<endl;
+	    ((TH1F*)fDistr->FindObject("hptpiS"))->Fill(d->PtProng(iprong));
+	    ((TH1F*)fDistr->FindObject("hd0piS"))->Fill(d->Getd0Prong(iprong));
+	  }
+
+	  if(TMath::Abs(pdgprong)==321) {
+	    //cout<<"kappa"<<endl;
+	    ((TH1F*)fDistr->FindObject("hptKS"))->Fill(d->PtProng(iprong));
+	    ((TH1F*)fDistr->FindObject("hd0KS"))->Fill(d->Getd0Prong(iprong));
+	  }
+	  ((TH1F*)fDistr->FindObject("hdcaS"))->Fill(d->GetDCA());
+
+	}
+
+	if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
+	((TH1F*)fDistr->FindObject("costhetastarS"))->Fill(d->CosThetaStarD0());
+	else ((TH1F*)fDistr->FindObject("costhetastarS"))->Fill(d->CosThetaStarD0bar());
+
+	((TH1F*)fDistr->FindObject("hd0d0S"))->Fill(d->Prodd0d0());
+
+	((TH1F*)fDistr->FindObject("hcosthetapointS"))->Fill(d->CosPointingAngle());
+	((TH1F*)fDistr->FindObject("hcosthpointd0d0S"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+
+	//cout<<"ok point"<<endl;
+
+      } else{ //Background
+	//cout<<"is background"<<endl;
+	//	AliAODTrack *prong=(AliAODTrack*)d->GetDaughter(0);
+	((TH1F*)fDistr->FindObject("hptB"))->Fill(d->PtProng(0));
+	//cout<<"ptok"<<endl;
+	((TH1F*)fDistr->FindObject("hd0B"))->Fill(d->Getd0Prong(0));
+	//cout<<"d0ok"<<endl;
+	((TH1F*)fDistr->FindObject("hdcaB"))->Fill(d->GetDCA());
+	//cout<<"dcaok"<<endl;
+	((TH1F*)fDistr->FindObject("costhetastarB"))->Fill(d->CosThetaStarD0());
+	((TH1F*)fDistr->FindObject("costhetastarB"))->Fill(d->CosThetaStarD0bar());	
+	((TH1F*)fDistr->FindObject("hd0d0B"))->Fill(d->Prodd0d0());
+	//cout<<"d0d0ok"<<endl;
+	((TH1F*)fDistr->FindObject("hcosthetapointB"))->Fill(d->CosPointingAngle());
+	((TH1F*)fDistr->FindObject("hcosthpointd0d0B"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+
+	//cout<<"pointok"<<endl;
+
+      }
+
+    } //inv mass cut
+  
+
     Double_t pt = d->Pt();
+
     Int_t ptbin=0;
     
     //cout<<"P_t = "<<pt<<endl;
@@ -302,7 +489,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   // Post the data
   PostData(1,fOutputtight);
   PostData(2,fOutputloose);
-
+  PostData(4,fDistr);
   return;
 }
 //____________________________________________________________________________*
@@ -317,6 +504,8 @@ void AliAnalysisTaskSED0Mass::FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *pa
     //printf("SELECTED\n");
     Int_t pdgDgD0toKpi[2]={321,211};
     Int_t labD0 = part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+
+    //Int_t labD0 = part->MatchToMC(421,arrMC); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
     //printf("labD0 %d",labD0);
     
     TString fillthis="";
@@ -389,12 +578,17 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
 
   fOutputtight = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutputtight) {     
-    printf("ERROR: fOutput not available\n");
+    printf("ERROR: fOutputthight not available\n");
     return;
   }
   fOutputloose = dynamic_cast<TList*> (GetOutputData(2));
   if (!fOutputloose) {     
-    printf("ERROR: fOutput not available\n");
+    printf("ERROR: fOutputloose not available\n");
+    return;
+  }
+  fDistr = dynamic_cast<TList*> (GetOutputData(3));
+  if (!fDistr) {
+    printf("ERROR: fDistr not available\n");
     return;
   }
 
