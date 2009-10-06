@@ -193,8 +193,6 @@ virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype) = 0;
   
   // AliHLTCaloMapper *fMapperPtr;
 
-
-  // TODO: Documentation!
   class RawDataWriter 
   {
   public:

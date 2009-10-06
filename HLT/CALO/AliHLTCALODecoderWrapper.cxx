@@ -31,21 +31,19 @@ AliHLTCALODecoderWrapper::AliHLTCALODecoderWrapper() : fAltroRawStream(0),
 						       //      fCaloRawStream(0),
 						       fReaderMemory(0)
 {
-  // See header file for documentation
   fReaderMemory  = new AliRawReaderMemory();
 }
 
 
 AliHLTCALODecoderWrapper::~AliHLTCALODecoderWrapper()
 {
-  // See header file for documentation
+
 }
 
 
 void 
 AliHLTCALODecoderWrapper::SetMemory( AliHLTComponentBlockData *dtaptr    ) 
 {
-  // See header file for documentation
   if ( fAltroRawStream   !=  0 )
     {
       delete  fAltroRawStream;

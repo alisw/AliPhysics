@@ -20,8 +20,6 @@
  **************************************************************************/
 //#include "AliHLTPHOSCommonDefs.h"
 
-// TODO: Needs to be changed to facilitate for EMCal's number of modules
-
 #include "Rtypes.h"
 
 //#include "AliHLTPHOSConstants.h"

@@ -21,13 +21,12 @@
 
 #include "Rtypes.h"
 
-// Describes the coordinates of a single channel
 struct  AliHLTCaloCoordinate
 {
-  UShort_t fX; // Local (in module)
-  UShort_t fZ; // Local (in module) 
-  UShort_t fGain; // Gain
-  UShort_t fModuleId; // Module ID
+  UShort_t fX;
+  UShort_t fZ;
+  UShort_t fGain;
+  UShort_t fModuleId;
 
 };
 

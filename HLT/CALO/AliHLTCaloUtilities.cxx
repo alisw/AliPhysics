@@ -23,20 +23,19 @@
 
 AliHLTCaloUtilities::AliHLTCaloUtilities()
 {
-  // See header file for documentation
+
 }
 
 
 AliHLTCaloUtilities::~AliHLTCaloUtilities()
 {
-  // See header file for documentation
+
 }
 
 
 bool 
 AliHLTCaloUtilities::ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value)
 {
-  // See header file for documentation
   //  cout << "AliHLTCaloUtilities::ScanSingleIntArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl;  
   int tmpIndex =  DoExistArgument(argc, argv, name);
 
@@ -67,7 +66,6 @@ AliHLTCaloUtilities::ScanSingleIntArgument(int argc, const char** argv, const ch
 bool 
 AliHLTCaloUtilities::ScanSingleFloatArgument(int argc, const char** argv, const char *name, float *value)
 {
-  // See header file for documentation
   //  cout << "AliHLTCaloUtilities::ScanSingleFloatArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl; 
 
   int tmpIndex =  DoExistArgument(argc, argv, name);
@@ -100,7 +98,6 @@ AliHLTCaloUtilities::ScanSingleFloatArgument(int argc, const char** argv, const 
 bool 
 AliHLTCaloUtilities::ScanSingleNameArgument(int argc, const char** argv, const char *name, char *outname)
 {
-  // See header file for documentation
   //  cout << "AliHLTCaloUtilities::ScanSingleNameArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl; 
 
   int tmpIndex =  DoExistArgument(argc, argv, name);
@@ -134,7 +131,6 @@ AliHLTCaloUtilities::ScanSingleNameArgument(int argc, const char** argv, const c
 bool 
 AliHLTCaloUtilities::ScanSingleArgument(int argc, const char** argv, const char *name)
 {
-  // See header file for documentation
   //  cout << "AliHLTCaloUtilities::ScanSingleArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl; 
 
   if( DoExistArgument(argc, argv, name) >=0)
@@ -171,12 +167,11 @@ AliHLTCaloUtilities::CheckFile(const char *fileName, const char *opt) const
 }
 
 
-
+// returns the index if the argument if it exists
+// returns a negative value if it doesnt exist
 int 
 AliHLTCaloUtilities::DoExistArgument(const int argc, const char** argv, const char *name) const
 {
-  // returns the index if the argument if it exists
-  // returns a negative value if it doesnt exist
   string s1;
 
   for(int i= 0; i< argc; i++)

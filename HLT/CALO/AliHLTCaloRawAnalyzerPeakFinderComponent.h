@@ -20,13 +20,16 @@ class AliHLTCaloRawAnalyzerPeakFinderComponent: public AliHLTCaloRawAnalyzerComp
   virtual int Deinit();
   virtual const char* GetComponentID() = 0;
   virtual AliHLTComponent* Spawn() = 0;
- private:
+
   //  Bool_t LoadPFVector(); 
   //  Bool_t LoadPFVector(int startindex, int Nsamples, int tau, int fs);
+
   
+ protected: 
   virtual const Bool_t LoadPFVector() = 0; 
   virtual const Bool_t LoadPFVector(const int startindex, const int Nsamples, const int tau, const int fs) = 0;
 
+ private:
   AliHLTCaloRawAnalyzerPeakFinderComponent(const AliHLTCaloRawAnalyzerPeakFinderComponent & ); 
   
   /*

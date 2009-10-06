@@ -221,7 +221,6 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
     int cnt = 0;
     while( fAltroRawStreamPtr->NextChannel()  )
       { 
-	// TODO: remove hardcoded values
 	if(  fAltroRawStreamPtr->GetHWAddress() < 128 || ( fAltroRawStreamPtr->GetHWAddress() ^ 0x800) < 128 ) 
 	  {
 	    continue; 
@@ -357,7 +356,6 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::RawDataWriter() :  //fIsFirstCh
 								    fCurrentChannelDataPtr(0),
 								    fTotalSize(0)
 {
-  // See header file for documentation
   fRawDataBuffer = new UShort_t[fBufferSize];
   Init();
 }
@@ -367,7 +365,6 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::RawDataWriter() :  //fIsFirstCh
 void  
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::Init()
 {
-  // See header file for documentation
   fCurrentChannelIdPtr = fRawDataBuffer;
   fCurrentChannelSizePtr = fRawDataBuffer +1;
   fCurrentChannelDataPtr = fRawDataBuffer +2;
@@ -378,7 +375,6 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::Init()
 void
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::NewEvent()
 {
-  // See header file for documentation
   Init();
   fTotalSize = 0;
 }
@@ -387,7 +383,6 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::NewEvent()
 void
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::NewChannel( )
 {
-  // See header file for documentation
   *fCurrentChannelSizePtr   = fCurrentChannelSize;
   fCurrentChannelIdPtr     += fCurrentChannelSize;
   fCurrentChannelSizePtr    += fCurrentChannelSize;
@@ -401,7 +396,6 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::NewChannel( )
 void 
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::WriteBunchData(const UShort_t *bunchdata,  const int length,   const UInt_t starttimebin )
 {
-  // See header file for documentation
   fCurrentChannelDataPtr[fBufferIndex] = starttimebin;
   fCurrentChannelSize ++;
   fBufferIndex++;
@@ -425,7 +419,6 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::WriteBunchData(const UShort_t *
 void
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::SetChannelId( const UShort_t channeldid  )
 {
-  // See header file for documentation
   *fCurrentChannelIdPtr =  channeldid;
 }
 
@@ -433,7 +426,6 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::SetChannelId( const UShort_t ch
 void
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::ResetBuffer()
 {
-  // See header file for documentation
   for(int i=0; i < fBufferSize ; i++ )
     {
       fRawDataBuffer[i] = 0;
@@ -444,7 +436,6 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::ResetBuffer()
 int
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::CopyBufferToSharedMemory(UShort_t *memPtr, const int sizetotal, const int sizeused )
 {
-  // See header file for documentation
   int sizerequested =  (sizeof(int)*fTotalSize + sizeused);
 
   if(  sizerequested   > sizetotal  )

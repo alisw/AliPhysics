@@ -19,9 +19,6 @@
 #ifndef ALIHLTCALOSANITYINSPECTOR_H
 #define ALIHLTCALOSANITYINSPECTOR_H
 
-
-// TODO: Class needs heavy re-writing. 
-
 /**
  * Class checks data for insanity
  * for use in HLT, but can also be used offline

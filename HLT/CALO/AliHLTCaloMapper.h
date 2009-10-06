@@ -36,9 +36,6 @@ using namespace CaloHLTConst;
 
 class AliHLTCaloCoordinate;
 
-
-// TODO: Documentation!
-
 class AliHLTCaloMapper : public AliHLTLogging
 //class AliHLTCaloMapper 
 {

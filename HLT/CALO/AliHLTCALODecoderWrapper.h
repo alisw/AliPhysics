@@ -19,9 +19,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-// TODO: Documentation
-
 #include "Rtypes.h"
 
 /*

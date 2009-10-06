@@ -26,8 +26,6 @@
 
 using namespace CaloHLTConst;
 
-
-// Contains the raw data signal for a single channel. 
 struct  AliHLTCaloChannelRawDataStruct : public AliHLTCaloChannelDataStruct
 {
   AliHLTCaloCoordinate fCoordinate;

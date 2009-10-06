@@ -47,7 +47,6 @@ AliHLTCaloMapper::AliHLTCaloMapper() :
 
 AliHLTCaloMapper::~AliHLTCaloMapper()
 {
-  // See header file for documentation
   delete []  fHw2geomapPtr;
   fHw2geomapPtr = 0;
 }
@@ -66,7 +65,6 @@ AliHLTCaloMapper::~AliHLTCaloMapper()
 bool 
 AliHLTCaloMapper::GetIsInitializedMapping()
 {
-  // See header file for documentation
   return  fIsInitializedMapping;
 }
 
@@ -74,7 +72,6 @@ AliHLTCaloMapper::GetIsInitializedMapping()
 char* 
 AliHLTCaloMapper::GetFilePath()
 {
-  // See header file for documentation
   return  fFilepath;
 }
 
@@ -83,7 +80,6 @@ void
 //AliHLTPHOSMapper::GetChannelCoord(const UShort_t channelId,    &AliHLTPHOSCoordinate channelCoord)
 AliHLTCaloMapper::ChannelId2Coordinate(const UShort_t channelId,    AliHLTCaloCoordinate &channelCoord)
 {
-  // TODO: change format to facilitate for EMCal (more modules)
   channelCoord.fX = channelId&0x3f;
   channelCoord.fZ = (channelId >> 6)&0x3f;
   channelCoord.fGain = (channelId >> 12)&0x1;

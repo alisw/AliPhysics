@@ -26,8 +26,6 @@
 
 using namespace std;
 
-// TODO: Documentation!
-
 //      AliHLTCaloUtilities
 class  AliHLTCaloUtilities
 {
