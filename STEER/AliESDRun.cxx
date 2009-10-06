@@ -166,7 +166,7 @@ void AliESDRun::Print(const Option_t *) const
   printf("List of active trigger classes: ");
   for(Int_t i = 0; i < kNTriggerClasses; i++) {
     TNamed *str = (TNamed *)((fTriggerClasses).At(i));
-    printf("%s ",str->GetName());
+    if (str) printf("%s ",str->GetName());
   }
   printf("\n");
 }
