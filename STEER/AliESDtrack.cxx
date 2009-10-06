@@ -720,7 +720,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   
   if(source.fHMPIDp){
     // we have the trackparam: assign or copy construct
-    if(fOp) *fHMPIDp = *source.fHMPIDp;
+    if(fHMPIDp) *fHMPIDp = *source.fHMPIDp;
     else fHMPIDp = new AliExternalTrackParam(*source.fHMPIDp);
   }
   else{
