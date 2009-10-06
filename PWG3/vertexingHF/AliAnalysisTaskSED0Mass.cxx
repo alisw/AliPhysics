@@ -341,7 +341,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   PostData(3,fNentries);
   // loop over D0->Kpi candidates
   Int_t nInD0toKpi = inputArrayD0toKpi->GetEntriesFast();
-  printf("Number of D0->Kpi: %d\n",nInD0toKpi);
+  AliDebug(2,Form("Number of D0->Kpi: %d",nInD0toKpi));
   
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
     //cout<<"inside the loop"<<endl;
