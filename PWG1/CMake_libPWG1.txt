@@ -31,6 +31,7 @@ set(SRCS
 	AliPerformanceDCA.cxx
 	AliPerformanceTPC.cxx
 	AliAlignmentDataFilterITS.cxx
+	AliTrackMatchingTPCITSCosmics.cxx
 )
 
 # fill list of header files from list of source files

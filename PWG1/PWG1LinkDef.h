@@ -43,6 +43,7 @@
 #pragma link C++ class AliPerformanceMC+;
 
 #pragma link C++ class AliAlignmentDataFilterITS+;
+#pragma link C++ class AliTrackMatchingTPCITSCosmics+;
 #pragma link C++ class AliAnalysisTaskV0QA+;
 #pragma link C++ class AliMaterialBudget+;
 

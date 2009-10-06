@@ -31,6 +31,7 @@ SRCS:= 	AliTreeDraw.cxx \
 	AliPerformanceTPC.cxx \
 	AliPerformanceMC.cxx \
 	AliAlignmentDataFilterITS.cxx \
+        AliTrackMatchingTPCITSCosmics.cxx \
 	AliAnalysisTaskV0QA.cxx \
 	AliMaterialBudget.cxx
 
