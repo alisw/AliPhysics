@@ -223,14 +223,22 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
     fOverThreshold20  = new AliTPCCalPad(*ped.GetOverThreshold20());
   if(ped.GetOverThreshold30())
     fOverThreshold30  = new AliTPCCalPad(*ped.GetOverThreshold30());
-  if(ped.GetHistQVsTimeSideA())
+  if(ped.GetHistQVsTimeSideA()) {
     fHistQVsTimeSideA = new TProfile(*ped.GetHistQVsTimeSideA());
-  if(ped.GetHistQVsTimeSideC())
+    fHistQVsTimeSideA->SetDirectory(0);
+  }
+  if(ped.GetHistQVsTimeSideC()) {
     fHistQVsTimeSideC = new TProfile(*ped.GetHistQVsTimeSideC());
-  if(ped.GetHistQMaxVsTimeSideA())
+    fHistQVsTimeSideC->SetDirectory(0);
+  }
+  if(ped.GetHistQMaxVsTimeSideA()) {
     fHistQMaxVsTimeSideA = new TProfile(*ped.GetHistQMaxVsTimeSideA());
-  if(ped.GetHistQMaxVsTimeSideC())
+    fHistQMaxVsTimeSideA->SetDirectory(0);
+  }
+  if(ped.GetHistQMaxVsTimeSideC()) {
     fHistQMaxVsTimeSideC = new TProfile(*ped.GetHistQMaxVsTimeSideC());
+    fHistQMaxVsTimeSideC->SetDirectory(0);
+  }
 }
 
 //_____________________________________________________________________
@@ -574,15 +582,23 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
   if (!fOverThreshold10) fOverThreshold10 = new AliTPCCalPad("OverThreshold10","OverThreshold10");
   if (!fOverThreshold20) fOverThreshold20 = new AliTPCCalPad("OverThreshold20","OverThreshold20");
   if (!fOverThreshold30) fOverThreshold30 = new AliTPCCalPad("OverThreshold30","OverThreshold30");
-  if (!fHistQVsTimeSideA)
+  if (!fHistQVsTimeSideA) {
     fHistQVsTimeSideA  = new TProfile("hQVsTimeSideA", "Q vs time (side A); Time [Timebin]; Q [ADC ch]", 100, 0, 1000);
-  if (!fHistQVsTimeSideC)
+    fHistQVsTimeSideA->SetDirectory(0);
+  }
+  if (!fHistQVsTimeSideC) {
     fHistQVsTimeSideC  = new TProfile("hQVsTimeSideC", "Q vs time (side C); Time [Timebin]; Q [ADC ch]", 100, 0, 1000);
-  if (!fHistQMaxVsTimeSideA)
+    fHistQVsTimeSideC->SetDirectory(0);
+  }
+  if (!fHistQMaxVsTimeSideA) {
     fHistQMaxVsTimeSideA  = new TProfile("hQMaxVsTimeSideA", "Q_{MAX} vs time (side A); Time [Timebin]; Q_{MAX} [ADC ch]", 100, 0, 1000);
-  if (!fHistQMaxVsTimeSideC)
+    fHistQMaxVsTimeSideA->SetDirectory(0);
+  }
+  if (!fHistQMaxVsTimeSideC) {
     fHistQMaxVsTimeSideC  = new TProfile("hQMaxVsTimeSideC", "Q_{MAX} vs time (side C); Time [Timebin]; Q_{MAX} [ADC ch]", 100, 0, 1000);
-  
+    fHistQMaxVsTimeSideC->SetDirectory(0);
+  }
+
   // Make the arrays for expanding the data
 
   if (!fAllBins)
