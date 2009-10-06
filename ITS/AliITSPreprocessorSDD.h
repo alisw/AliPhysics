@@ -27,6 +27,7 @@ class AliITSPreprocessorSDD : public AliPreprocessor {
   virtual ~AliITSPreprocessorSDD(){;}
 
   enum {kNumberOfSDD = 260};    // number of SDD modules
+  enum {kNumberOfSDDLay3 = 84};    // number of SDD modules on layer 3
   enum {kNumberOfDDL = 24};     // number of DDLs in SDD
   enum {kModulesPerDDL = 12};   // number of modules in each DDL 
   enum {kNumberOfChannels = 512}; // number of channels per module

@@ -213,6 +213,7 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
 	Int_t index=kSides*(kModPerDDL*iddl+imod)+isid;
 	anal[index]->FitMeanDriftSpeedVsAnode();
 	anal[index]->WriteToASCII(0,timeSt,0);
+	anal[index]->WriteInjectorStatusToASCII();
 	anal[index]->WriteToROOT(outfil1);
       }
     }

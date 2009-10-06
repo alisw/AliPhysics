@@ -31,14 +31,16 @@ ClassImp(AliITSDriftSpeedArraySDD)
 AliITSDriftSpeedArraySDD::AliITSDriftSpeedArraySDD():
 TObject(),
 fNEvents(0),
-fDriftSpeedSDD(10){
+fDriftSpeedSDD(10),
+fInjectorStatus(0x3E000000){
   // default constructor
 }
 //______________________________________________________________________
 AliITSDriftSpeedArraySDD::AliITSDriftSpeedArraySDD(Int_t numEv):
 TObject(),
 fNEvents(0),
-fDriftSpeedSDD(numEv){
+fDriftSpeedSDD(numEv),
+fInjectorStatus(0x3E000000){
   // standard constructor
 }
 //______________________________________________________________________
@@ -52,6 +54,7 @@ void AliITSDriftSpeedArraySDD::PrintAll() const{
   // print drift speed parameters for all elements in the array
   printf("Array Size=%d\n",fDriftSpeedSDD.GetSize());
   printf("Array Elements =%d\n",fNEvents);
+  printf("Injector Status =%d\n",fInjectorStatus);
   for(Int_t i=0;i<fNEvents; i++){
     printf("     ====== Array el. #%d ======\n",i);
     AliITSDriftSpeedSDD *d=(AliITSDriftSpeedSDD*)fDriftSpeedSDD.At(i);

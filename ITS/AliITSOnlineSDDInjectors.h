@@ -93,6 +93,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   void PrintInjectorStatus();
   void PrintCentroids();
   void WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_t optAppend=0);
+  void WriteInjectorStatusToASCII();
   Bool_t WriteToROOT(TFile *fil) const;
 
   void Reset();

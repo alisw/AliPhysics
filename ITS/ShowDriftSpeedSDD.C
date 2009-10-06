@@ -64,7 +64,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
       gvdr0[i]->SetPoint(iAn,(Float_t)iAn,vel0);
       gvdr1[i]->SetPoint(iAn,(Float_t)iAn,vel1);
     }
-    printf(" Mod. %d \t v(an 128l)= %f",iMod,vdriftarr0->GetDriftSpeed(0,128));
+    printf(" Mod. %d \tStatusLR=%X %X \t v(an 128l)= %f",iMod,vdriftarr0->GetInjectorStatus(),vdriftarr1->GetInjectorStatus(),vdriftarr0->GetDriftSpeed(0,128));
     printf("        \t v(an 128r)= %f\n",vdriftarr1->GetDriftSpeed(0,128));
     c0->cd(1);
     gvdr0[i]->Draw("AP");

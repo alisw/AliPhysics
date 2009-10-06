@@ -569,3 +569,28 @@ Bool_t AliITSOnlineSDDInjectors::WriteToROOT(TFile *fil) const {
   hdsp.Write();
   return kTRUE;    
 }
+//______________________________________________________________________
+void AliITSOnlineSDDInjectors::WriteInjectorStatusToASCII(){
+  // dump status of injectors encoded into UInt_t
+  // 5 bits (value 0-31) to store number of pads with given status
+  Char_t outfilnam[100];
+  sprintf(outfilnam,"SDDinj_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);  
+  FILE* outf=fopen(outfilnam,"a");
+  Int_t n[8]={0,0,0,0,0,0,0,0};
+  for(Int_t jpad=fFirstPadForFit; jpad<=fLastPadForFit; jpad++){
+    Int_t statusPad=GetInjPadStatus(jpad);
+    ++n[statusPad];
+  }
+  UInt_t statusInj=0;
+  statusInj+=(n[7]&0x1F)<<25; // bits 25-29: n. of pads with status 7
+  statusInj+=(n[6]&0x1F)<<20; // bits 20-24: n. of pads with status 6
+  statusInj+=(n[5]&0x1F)<<15; // bits 15-19: n. of pads with status 5
+  statusInj+=(n[4]&0x1F)<<10; // bits 10-14: n. of pads with status 4
+  statusInj+=(n[3]&0x1F)<<5;  // bits  5- 9: n. of pads with status 3
+  statusInj+=(n[2]&0x1F);     // bits  0- 4: n. of pads with status 2
+
+  fprintf(outf,"-99 %u\n",statusInj); // -99 used in preprocessor to find line
+                                      // with injector status info
+  fclose(outf);  
+  
+}

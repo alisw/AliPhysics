@@ -220,16 +220,18 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
   TObjArray vdrift(2*kNumberOfSDD);
   vdrift.SetOwner(kFALSE);
   Int_t evNumb,polDeg; 
-  UInt_t timeStamp;
+  UInt_t timeStamp,statusInj;
   Bool_t modSet[2*kNumberOfSDD]; // flag modules with good inj.
   for(Int_t ihyb=0; ihyb<2*kNumberOfSDD; ihyb++) modSet[ihyb]=0;
-  Double_t nPt = 0;
+  Double_t nPtLay3 = 0;
+  Double_t nPtLay4 = 0;
 
   Double_t param[4];    // parameters of poly fit
   Double_t minValP0=4.; // min value for param[0]
   Double_t maxValP0=9.; // max value for param[0]
   Double_t minValP1=0.; // min value for param[1]
-  Double_t aveCoef[4]={0.,0.,0.,0.};  // average param for good mod.
+  Double_t aveCoefLay3[4]={0.,0.,0.,0.};  // average param for good mod.
+  Double_t aveCoefLay4[4]={0.,0.,0.,0.};  // average param for good mod.
   Double_t defCoef[4]={6.53227,0.00128941,-5.14493e-06,0};  // default values for param
   Float_t auxP;
 
@@ -266,26 +268,33 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 	FILE* injFil = fopen(inpFileName,"read");
 	if (injFil == 0) {
 	  Log(Form("File %s not found.",inpFileName.Data()));
-	  AliITSDriftSpeedSDD *dsp=new AliITSDriftSpeedSDD();
-	  arr->AddDriftSpeed(dsp);
-	  vdrift.AddAt(arr,2*modID+isid);
 	  continue;
 	}
 	retfscf=fscanf(injFil,"%d",&polDeg);
 	while (!feof(injFil)){
 	  retfscf=fscanf(injFil,"%d %u ",&evNumb,&timeStamp);
-	  if(feof(injFil)) break;
-	  for(Int_t ic=0;ic<4;ic++){ 
-	    retfscf=fscanf(injFil,"%f ",&auxP);
-	    param[ic]=auxP;
-	  }
+	  if(evNumb==-99){
+	    statusInj=timeStamp;
+	    arr->SetInjectorStatus(statusInj);
+	  }else{
+	    if(feof(injFil)) break;
+	    for(Int_t ic=0;ic<4;ic++){ 
+	      retfscf=fscanf(injFil,"%f ",&auxP);
+	      param[ic]=auxP;
+	    }
 
-	  if(param[0]>minValP0 && param[0]<maxValP0 && param[1]>minValP1){
-	    for(Int_t ic=0;ic<4;ic++) aveCoef[ic]+=param[ic];
-	    nPt++;
-	    AliITSDriftSpeedSDD *dsp=new AliITSDriftSpeedSDD(evNumb,timeStamp,polDeg,param);
-	    arr->AddDriftSpeed(dsp);
-	    modSet[2*modID+isid]=1;
+	    if(param[0]>minValP0 && param[0]<maxValP0 && param[1]>minValP1){
+	      if(modID<kNumberOfSDDLay3){ 
+		for(Int_t ic=0;ic<4;ic++) aveCoefLay3[ic]+=param[ic];
+		nPtLay3++;
+	      }else{ 
+		for(Int_t ic=0;ic<4;ic++) aveCoefLay4[ic]+=param[ic];
+		nPtLay4++;
+	      }
+	      AliITSDriftSpeedSDD *dsp=new AliITSDriftSpeedSDD(evNumb,timeStamp,polDeg,param);
+	      arr->AddDriftSpeed(dsp);
+	      modSet[2*modID+isid]=1;
+	    }
 	  }
 	}
 	fclose(injFil);
@@ -297,20 +306,33 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 
   // set drift speed for modules with bad injectors
   for(Int_t ic=0;ic<4;ic++){ 
-    if(nPt>0) aveCoef[ic]/=nPt; // mean parameters
-    else aveCoef[ic]=defCoef[ic]; // default parameters
+    if(nPtLay3>0) aveCoefLay3[ic]/=nPtLay3; // mean parameters
+    else aveCoefLay3[ic]=defCoef[ic]; // default parameters
+    if(nPtLay4>0) aveCoefLay4[ic]/=nPtLay4; // mean parameters
+    else aveCoefLay4[ic]=defCoef[ic]; // default parameters
   }
-  AliITSDriftSpeedSDD *avdsp=new AliITSDriftSpeedSDD(evNumb,timeStamp,polDeg,aveCoef);
+  AliITSDriftSpeedSDD *avdsp3=new AliITSDriftSpeedSDD(evNumb,timeStamp,polDeg,aveCoefLay3);
+  AliITSDriftSpeedSDD *avdsp4=new AliITSDriftSpeedSDD(evNumb,timeStamp,polDeg,aveCoefLay4);
 
-  for(Int_t ihyb=0; ihyb<2*kNumberOfSDD; ihyb++){
+  for(Int_t ihyb=0; ihyb<2*kNumberOfSDDLay3; ihyb++){
     if(modSet[ihyb]==0){ 
-      AliWarning(Form("No good injector events for mod. %d --> use average values",ihyb/2));
+      AliWarning(Form("No good injector events for mod. %d side %d --> use average values for layer 3",ihyb/2,ihyb%2));
       AliITSDriftSpeedArraySDD *arr=new AliITSDriftSpeedArraySDD();
-      arr->AddDriftSpeed(avdsp);
+      arr->AddDriftSpeed(avdsp3);
+      arr->SetInjectorStatus(0);
       vdrift.AddAt(arr,ihyb);
     }
   }
 
+  for(Int_t ihyb=2*kNumberOfSDDLay3; ihyb<2*kNumberOfSDD; ihyb++){
+    if(modSet[ihyb]==0){ 
+      AliWarning(Form("No good injector events for mod. %d side %d --> use average values for layer 4",ihyb/2,ihyb%2));
+      AliITSDriftSpeedArraySDD *arr=new AliITSDriftSpeedArraySDD();
+      arr->AddDriftSpeed(avdsp4);
+      arr->SetInjectorStatus(0);
+      vdrift.AddAt(arr,ihyb);
+    }
+  }
 
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("Francesco Prino");

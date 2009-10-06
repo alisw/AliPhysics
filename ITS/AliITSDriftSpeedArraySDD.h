@@ -26,15 +26,18 @@ class AliITSDriftSpeedArraySDD : public TObject{
   virtual ~AliITSDriftSpeedArraySDD() {};
 
   void AddDriftSpeed(AliITSDriftSpeedSDD* drSpeed);
-
+  void SetInjectorStatus(UInt_t status=0x3E000000){fInjectorStatus=status;}
   void PrintAll() const;
   UInt_t GetTimestamp(Int_t iElement);
-
+  UInt_t GetInjectorStatus() const {return fInjectorStatus;}
   Double_t GetDriftSpeed(Int_t iEvent, Double_t iAnode);
-
+  
  protected:  
   Int_t fNEvents;               // number of drift speed determination
   TObjArray fDriftSpeedSDD; // array of AliITSDriftSpeedSDD objects
-  ClassDef(AliITSDriftSpeedArraySDD,2);
+  UInt_t fInjectorStatus;   // encoded info on injector status
+                            // see AliITSOnlineSDDInjectors for definition
+
+  ClassDef(AliITSDriftSpeedArraySDD,3);
 };
 #endif
