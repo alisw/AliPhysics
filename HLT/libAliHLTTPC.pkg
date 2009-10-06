@@ -121,6 +121,10 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 # 		tracking/AliHLTTPCHistogram1D.h \
 # 		tracking/AliHLTTPCHistogramAdaptive.h
 
+#GPU Tracker Interface
+CLASS_HDRS	+= tracking-ca/AliHLTTPCCAGPUTracker.h
+include $(MODDIR)/libAliHLTTPC.conf
+
 MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx) \
 		AliHLTTPCLog.cxx
 
@@ -149,19 +153,6 @@ EINCLUDE 	:= HLT/TPCLib \
 		   TPC \
 		   RAW \
 		   STEER 
-
-#GPU Tracker Interface		   
-CLASS_HDRS	+= tracking-ca/AliHLTTPCCAGPUTracker.h
-
-#GPU Tracker Build
-ifdef NVCC
-ELIBS		:= cudart
-ELIBSDIR	:= $(NVCC:/bin/nvcc=/lib64)
-MODULE_CUHDRS	+= $(TRACKING_CA) tracking-ca/AliHLTTPCCAGPUTracker.h
-MODULE_CUSRCS	+= tracking-ca/AliHLTTPCCAGPUTracker.cu
-else
-MODULE_SRCS	+= tracking-ca/AliHLTTPCCAGPUTracker.cxx
-endif
 
 LIBRARY_DEP := -lHLTbase -lAliHLTRCU -lAliHLTUtil \
                -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase \
