@@ -901,6 +901,19 @@ else
                                        [], 
   				       [enable_trd="no...requires.AliRoot>v4-16-Release"])
     AC_MSG_RESULT([$enable_trd])       
+
+    if test "x$enable_trd" = "xyes" ; then
+      have_alitrdrecoparam_r34995=no
+      AC_MSG_CHECKING([checking for AliTRDrecoParam r34995])
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDrecoParam.h>], 
+                                         [AliTRDrecoParam param;
+      				          param.SetPIDNeuralNetwork(kFALSE)]);],
+                                         [have_alitrdrecoparam_r34995=yes],
+      				         [AC_DEFINE(HAVE_NOT_ALITRDRECOPARAM_r34995)])
+      AC_MSG_RESULT([$have_alitrdrecoparam_r34995])       
+      
+    fi
+
     AC_LANG_POP(C++)
     CPPFLAGS="$save_CPPFLAGS"
   fi

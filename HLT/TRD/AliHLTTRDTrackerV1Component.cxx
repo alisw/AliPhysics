@@ -516,10 +516,17 @@ int AliHLTTRDTrackerV1Component::SetParams()
       return -EINVAL;
     }
 
+  // backward compatibility to AliTRDrecoParam < r34995
+# ifndef HAVE_NOT_ALITRDRECOPARAM_r34995
+#   define AliTRDRecoParamSetPIDNeuralNetwork(b) fRecoParam->SetPIDNeuralNetwork(b)
+# else
+#   define AliTRDRecoParamSetPIDNeuralNetwork(b) fRecoParam->SetPIDNeuralNetwork()
+# endif
+
   switch(fPIDmethod){
-  case 0: fRecoParam->SetPIDNeuralNetwork(kFALSE); break;
-  case 1: fRecoParam->SetPIDNeuralNetwork(kTRUE); break;
-  case 2: fRecoParam->SetPIDNeuralNetwork(kFALSE); break;
+  case 0: AliTRDRecoParamSetPIDNeuralNetwork(kFALSE); break;
+  case 1: AliTRDRecoParamSetPIDNeuralNetwork(kTRUE); break;
+  case 2: AliTRDRecoParamSetPIDNeuralNetwork(kFALSE); break;
   }
 
   fRecoParam->SetStreamLevel(AliTRDrecoParam::kTracker, 0);

@@ -534,14 +534,25 @@ int AliHLTTRDClusterizerComponent::SetParams()
       return -EINVAL;
     }
 
+  // backward compatibility to AliTRDrecoParam < r34995
+# ifndef HAVE_NOT_ALITRDRECOPARAM_r34995
+#   define AliTRDRecoParamSetTailCancelation(b) fRecoParam->SetTailCancelation(b)
+#   define AliTRDRecoParamSetGAUS(b) fRecoParam->SetGAUS(b)
+#   define AliTRDRecoParamSetLUT(b) fRecoParam->SetLUT(b)
+# else
+#   define AliTRDRecoParamSetTailCancelation(b) fRecoParam->SetTailCancelation()
+#   define AliTRDRecoParamSetGAUS(b) fRecoParam->SetGAUS()
+#   define AliTRDRecoParamSetLUT(b) fRecoParam->SetLUT()
+# endif
+
   switch(fRecoDataType){
-  case 0: fRecoParam->SetTailCancelation(kTRUE); HLTDebug("Enableing Tail Cancelation"); break;
-  case 1: fRecoParam->SetTailCancelation(kFALSE); HLTDebug("Enableing Tail Cancelation"); break;
+  case 0: AliTRDRecoParamSetTailCancelation(kTRUE); HLTDebug("Enableing Tail Cancelation"); break;
+  case 1: AliTRDRecoParamSetTailCancelation(kFALSE); HLTDebug("Enableing Tail Cancelation"); break;
   }
   switch(fyPosMethod){
-  case 0: fRecoParam->SetGAUS(kFALSE); fRecoParam->SetLUT(kFALSE); break;
-  case 1: fRecoParam->SetGAUS(kFALSE); fRecoParam->SetLUT(kTRUE); break;
-  case 2: fRecoParam->SetGAUS(kTRUE); fRecoParam->SetLUT(kFALSE); break;
+  case 0: AliTRDRecoParamSetGAUS(kFALSE); AliTRDRecoParamSetLUT(kFALSE); break;
+  case 1: AliTRDRecoParamSetGAUS(kFALSE); AliTRDRecoParamSetLUT(kTRUE); break;
+  case 2: AliTRDRecoParamSetGAUS(kTRUE); AliTRDRecoParamSetLUT(kFALSE); break;
   }
 
   fRecoParam->SetStreamLevel(AliTRDrecoParam::kClusterizer, 0);
