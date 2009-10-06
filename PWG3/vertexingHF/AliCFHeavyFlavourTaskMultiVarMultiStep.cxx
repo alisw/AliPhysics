@@ -174,7 +174,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	}
 	
 	fEvents++;
-	if (fEvents%10000 ==0) AliInfo(Form("Event %d",fEvents));
+	if (fEvents%10000 ==0) AliDebug(2,Form("Event %d",fEvents));
 	AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
 	fCFManager->SetEventInfo(aodEvent);
 	
@@ -273,10 +273,10 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				// checking whether the cuts implemented in the CF are equivalent - simply a cross-check
 				AliDebug(2, "Daughter particles in acceptance");
 				if (!fCFManager->CheckParticleCuts(1, mcPartDaughter0)) {
-					AliInfo("Inconsistency with CF cut for daughter 0!");
+					AliDebug(2,"Inconsistency with CF cut for daughter 0!");
 				} 
 				if (!fCFManager->CheckParticleCuts(1, mcPartDaughter1)) {
-					AliInfo("Inconsistency with CF cut for daughter 1!");
+					AliDebug(2,"Inconsistency with CF cut for daughter 1!");
 				} 
 				fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepAcceptance);
 				icountAcc++;
@@ -321,10 +321,10 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 
 	if (cquarks<2) AliDebug(2,Form("Event found with %d c-quarks", cquarks));
 	
-	AliInfo(Form("Found %i MC particles that are D0!!",icountMC));
-	AliInfo(Form("Found %i MC particles that are D0 and satisfy Acc cuts!!",icountAcc));
-	AliInfo(Form("Found %i MC particles that are D0 and satisfy Vertex cuts!!",icountVertex));
-	AliInfo(Form("Found %i MC particles that are D0 and satisfy Refit cuts!!",icountRefit));
+	AliDebug(2,Form("Found %i MC particles that are D0!!",icountMC));
+	AliDebug(2,Form("Found %i MC particles that are D0 and satisfy Acc cuts!!",icountAcc));
+	AliDebug(2,Form("Found %i MC particles that are D0 and satisfy Vertex cuts!!",icountVertex));
+	AliDebug(2,Form("Found %i MC particles that are D0 and satisfy Refit cuts!!",icountRefit));
 
 	// Now go to rec level
 	fCountMC += icountMC;
