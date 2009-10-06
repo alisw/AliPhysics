@@ -43,17 +43,19 @@ class AliEMCALRawUtils : public TObject {
 
   // Signal shape parameters
   Double_t GetRawFormatHighLowGainFactor() const { return fHighLowGainFactor ;}
-  Int_t GetRawFormatOrder()                const { return fOrder ; }   
+  Int_t    GetRawFormatOrder()             const { return fOrder ; }   
   Double_t GetRawFormatTau()               const { return fTau ; }    
-  Int_t GetNoiseThreshold()                const { return fNoiseThreshold; }
-  Int_t GetNPedSamples()                   const { return fNPedSamples; }
+  Int_t    GetNoiseThreshold()             const { return fNoiseThreshold; }
+  Int_t    GetNPedSamples()                const { return fNPedSamples; }
 
   void SetRawFormatHighLowGainFactor(Double_t val) {fHighLowGainFactor=val;}
   void SetRawFormatOrder(Int_t val)                {fOrder=val; }   
   void SetRawFormatTau(Double_t val)               {fTau=val; }    
   void SetNoiseThreshold(Int_t val)                {fNoiseThreshold=val; }
   void SetNPedSamples(Int_t val)                   {fNPedSamples=val; }
-  
+  void SetFEENoise(Double_t val)                   {fgFEENoise = val;}
+  void SetRawFormatTimeBins(Int_t val)             {fgkTimeBins = val;}    
+
   static Int_t GetRawFormatTimeBins() { return fgkTimeBins ; }    
   static Double_t GetRawFormatTimeMax() { return fgkTimeBins*fgTimeBinWidth; }   
   static Double_t GetRawFormatTimeBinWidth() { return fgTimeBinWidth; }   
@@ -62,6 +64,9 @@ class AliEMCALRawUtils : public TObject {
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
   Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
   Int_t GetRawFormatDDLPerSuperModule() const { return fgDDLPerSuperModule ; } 
+
+  Double_t GetPedestalValue() {return fgPedestalValue;}
+  Double_t GetFEENoise()      {return fgFEENoise;}
 
   virtual Option_t* GetOption() const { return fOption.Data(); }
   void SetOption(Option_t* opt) { fOption = opt; }
@@ -80,8 +85,8 @@ class AliEMCALRawUtils : public TObject {
   Int_t fNPedSamples;                   // number of samples to use in pedestal calculation
 
   static const Int_t fgkOverflowCut = 950;  // cut to discriminate overflowed channels
-  static const Int_t fgkTimeBins = 256 ; // number of sampling bins of the raw RO signal  
   static const Int_t fgkRawSignalOverflow = 0x3FF; // maximum signal (10 bits)
+  static Int_t fgkTimeBins;             // number of sampling bins of the raw RO signal  
 
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
   static Double_t fgTimeBinWidth;       // maximum sampled time of the raw RO signal                             

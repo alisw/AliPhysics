@@ -30,6 +30,7 @@
   
 #include "TF1.h"
 #include "TGraph.h"
+#include <TRandom.h>
 class TSystem;
   
 class AliLog;
@@ -52,7 +53,8 @@ ClassImp(AliEMCALRawUtils)
   
 // Signal shape parameters
 Double_t AliEMCALRawUtils::fgTimeBinWidth  = 100E-9 ; // each sample is 100 ns
-Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 musec
+Double_t AliEMCALRawUtils::fgTimeTrigger   = 1.5E-6 ; // 15 time bins ~ 1.5 musec
+Int_t    AliEMCALRawUtils::fgkTimeBins     = 50;      // number of sampling bins of the raw RO signal  
 
 // some digitization constants
 Int_t    AliEMCALRawUtils::fgThreshold = 1;
@@ -198,8 +200,10 @@ void AliEMCALRawUtils::Digits2Raw()
   for (Int_t i=0; i < nDDL; i++)
     buffers[i] = 0;
 
-  Int_t adcValuesLow[fgkTimeBins];
-  Int_t adcValuesHigh[fgkTimeBins];
+  //  Int_t adcValuesLow[fgkTimeBins];
+  //Int_t adcValuesHigh[fgkTimeBins];
+  Int_t* adcValuesLow = new Int_t[fgkTimeBins];
+  Int_t* adcValuesHigh = new Int_t [fgkTimeBins];
 
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
@@ -268,6 +272,8 @@ void AliEMCALRawUtils::Digits2Raw()
 	buffers[iDDL]->WriteChannel(ieta,iphi, 1, GetRawFormatTimeBins(), adcValuesHigh, fgThreshold);
     }
   }
+  delete [] adcValuesLow;
+  delete [] adcValuesHigh;
   
   // write headers and close files
   for (Int_t i=0; i < nDDL; i++) {
@@ -592,7 +598,8 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
 
     //According to Terry Awes, 13-Apr-2008
     //add gaussian noise in quadrature to each sample
-    //Double_t noise = gRandom->Gaus(0.,fgFEENoise);
+    Double_t noise = gRandom->Gaus(0.,fgFEENoise);
+    signal += noise; // March 17,09
     //signal = sqrt(signal*signal + noise*noise);
 
     adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
