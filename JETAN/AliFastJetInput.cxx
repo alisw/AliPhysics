@@ -181,7 +181,7 @@ void AliFastJetInput::FillInput(){
 	  }
 	}
       } // End loop on UnitArray 
-    cout<<"countUnit(En>0) = "<<countUnit<<"  countUnit with Non ZeroSize = "<<countUnitNonZero<<endl;
+    if (debug) cout<<"countUnit(En>0) = "<<countUnit<<"  countUnit with Non ZeroSize = "<<countUnitNonZero<<endl;
   }
 
 }
