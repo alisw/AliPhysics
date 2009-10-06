@@ -334,7 +334,9 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	TClonesArray *arrayD0toKpi = (TClonesArray*)((aodEvent->GetList())->FindObject("D0toKpi")); 	
 	if (!arrayD0toKpi) AliError("Could not find array of HF vertices");
 	AliDebug(2, Form("Found %d vertices",arrayD0toKpi->GetEntriesFast()));
-	
+
+	Int_t pdgDgD0toKpi[2]={321,211};
+
 	for (Int_t iD0toKpi = 0; iD0toKpi<arrayD0toKpi->GetEntriesFast(); iD0toKpi++) {
 		
 		AliAODRecoDecayHF2Prong* d0tokpi = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->At(iD0toKpi);
@@ -345,7 +347,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 		}
 
 		// find associated MC particle
-		Int_t mcLabel = d0tokpi->MatchToMC(421, mcArray) ;
+		Int_t mcLabel = d0tokpi->MatchToMC(421,mcArray,2,pdgDgD0toKpi) ;
 		if (mcLabel == -1) 
 			{
 				AliDebug(2,"No MC particle found");
@@ -356,12 +358,6 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				AliWarning("Could not find associated MC in AOD MC tree");
 				continue;
 			}
-			// check whether the daughters are K- and pi+
-			AliAODMCParticle* dg0MC=(AliAODMCParticle*)mcArray->At(mcVtxHF->GetDaughter(0));
-			AliAODMCParticle* dg1MC=(AliAODMCParticle*)mcArray->At(mcVtxHF->GetDaughter(1));
-			if(!(TMath::Abs(dg0MC->GetPdgCode())==321 && TMath::Abs(dg1MC->GetPdgCode())==211) && 
-			   !(TMath::Abs(dg0MC->GetPdgCode())==211 && TMath::Abs(dg1MC->GetPdgCode())==321)) continue;
-
 			// check whether the daughters have kTPCrefit and kITSrefit set
 			AliAODTrack *track0 = (AliAODTrack*)d0tokpi->GetDaughter(0);
 			AliAODTrack *track1 = (AliAODTrack*)d0tokpi->GetDaughter(1);
