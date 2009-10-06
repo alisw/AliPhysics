@@ -5,15 +5,14 @@ void RunAlignmentDataFilterITS() {
   //
 
   // Input
-  Bool_t singlefile=kTRUE;
-  TString esdpath="/home/dainesea/alignData/RAWdata_CosmicsSum09/RecoSPDpro/chunk.";
-  Int_t ifirst=1, ilast=6;
+  Bool_t singlefile=kFALSE;
+  //TString esdpath="/home/dainesea/alignData/RAWdata_CosmicsSum09/RecoSPD/chunk.";
+  TString esdpath="/home/dainesea/alignData/RAWdata_CosmicsSum09/RecoITS_B_mille_SPD_SDDSSDsurvey_SSDHLayer_th50_130709/chunk.";
+  Int_t ifirst=1, ilast=11;
   //
   Int_t nentries=1234567890;
   Int_t firstentry=0;
 
-  // Load geometry file
-  AliGeomManager::LoadGeometry("geometry.root");
 
   // Load PWG1 library
   gSystem->Load("libANALYSIS.so");
@@ -28,10 +27,15 @@ void RunAlignmentDataFilterITS() {
   AliAlignmentDataFilterITS *taskFilter = new AliAlignmentDataFilterITS("filterITS");
   AliLog::SetClassDebugLevel("AliAlignmentDataFilterITS",10);
   // configuration via AliITSRecoParam (should be taken from OCDB)
-  AliITSReconstructor *itsReconstructor = new AliITSReconstructor();
   AliITSRecoParam *itsRecoParam = AliITSRecoParam::GetCosmicTestParam();
-  itsReconstructor->SetRecoParam(itsRecoParam);
-
+  itsRecoParam->SetAlignFilterUseLayer(0,kTRUE);
+  itsRecoParam->SetAlignFilterUseLayer(1,kTRUE);
+  itsRecoParam->SetAlignFilterUseLayer(2,kFALSE);
+  itsRecoParam->SetAlignFilterUseLayer(3,kFALSE);
+  itsRecoParam->SetAlignFilterUseLayer(4,kFALSE);
+  itsRecoParam->SetAlignFilterUseLayer(5,kFALSE);
+  taskFilter->SetITSRecoParam(itsRecoParam);
+  taskFilter->SetOnlySPDFO();
 
   // Add ESD handler
   AliESDInputHandler *esdH = new AliESDInputHandler();
@@ -67,5 +71,5 @@ void RunAlignmentDataFilterITS() {
   mgr->StartAnalysis("local",chainESD,nentries,firstentry);
 
  return;
-}
 
+}
