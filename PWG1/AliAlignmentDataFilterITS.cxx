@@ -132,7 +132,6 @@ AliAlignmentDataFilterITS::~AliAlignmentDataFilterITS()
     fntCosmicMatching = 0;
   }
 }  
-
 //________________________________________________________________________
 void AliAlignmentDataFilterITS::ConnectInputData(Option_t *) 
 {

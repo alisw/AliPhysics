@@ -26,8 +26,7 @@ class AliAlignmentDataFilterITS : public AliAnalysisTask
 {
  public:
 
-  AliAlignmentDataFilterITS();
-  AliAlignmentDataFilterITS(const char *name);
+  AliAlignmentDataFilterITS(const char *name="filterITS");
   virtual ~AliAlignmentDataFilterITS();
 
 
@@ -47,13 +46,16 @@ class AliAlignmentDataFilterITS : public AliAnalysisTask
   void FilterCosmic(const AliESDEvent *esd);
   void FilterCollision(const AliESDEvent *esd);
   const AliITSRecoParam *GetRecoParam() const {
-    if(AliITSReconstructor::GetRecoParam()) return AliITSReconstructor::GetRecoParam();
-    if(fITSRecoParam) return fITSRecoParam;
+    if(AliITSReconstructor::GetRecoParam()) {
+      return AliITSReconstructor::GetRecoParam();
+    } else if(fITSRecoParam) {
+      return fITSRecoParam;
+    } else return NULL;
   }
 
+  AliAlignmentDataFilterITS(const AliAlignmentDataFilterITS &);
+  AliAlignmentDataFilterITS& operator=(const AliAlignmentDataFilterITS&);
 
-  AliAlignmentDataFilterITS(const AliAlignmentDataFilterITS &source);
-  AliAlignmentDataFilterITS& operator=(const AliAlignmentDataFilterITS& source); 
 
   Bool_t fOnlySPDFO;         // only SPDtriggered events
   TString fGeometryFileName; // where to find the geometry.root
