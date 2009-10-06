@@ -51,6 +51,9 @@ AliTRDCalDCS::AliTRDCalDCS()
   ,fFEEArr(new TObjArray(540))
   ,fPTRArr(new TObjArray(6))
   ,fGTUObj(new AliTRDCalDCSGTU())
+  ,fRunType("")
+  ,fStartTime(0)
+  ,fEndTime(0)
 {
   //
   // AliTRDCalDCS default constructor
@@ -81,6 +84,9 @@ AliTRDCalDCS::AliTRDCalDCS(const Text_t *name, const Text_t *title)
   ,fFEEArr(new TObjArray(540))
   ,fPTRArr(new TObjArray(6))
   ,fGTUObj(new AliTRDCalDCSGTU())
+  ,fRunType("")
+  ,fStartTime(0)
+  ,fEndTime(0)
 {
   //
   // AliTRDCalDCS constructor
@@ -111,6 +117,9 @@ AliTRDCalDCS::AliTRDCalDCS(const AliTRDCalDCS &cd)
   ,fFEEArr(new TObjArray(540))
   ,fPTRArr(new TObjArray(6))
   ,fGTUObj(new AliTRDCalDCSGTU())
+  ,fRunType("")
+  ,fStartTime(0)
+  ,fEndTime(0)
 {
   //
   // AliTRDCalDCS copy constructor
@@ -193,4 +202,5 @@ void AliTRDCalDCS::EvaluateGlobalParameters()
     }
   }
 }
+
 
