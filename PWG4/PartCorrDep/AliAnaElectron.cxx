@@ -86,8 +86,8 @@ AliAnaElectron::AliAnaElectron()
   fhPhiConversion(0),fhEtaConversion(0),
   //for comparisons with tracking detectors
   fhPtHadron(0),fhPtNPEleTPC(0),fhPtNPEleTPCTRD(0),fhPtNPEleTTE(0),
-  //for computing efficiency of IPSig tag
-  fhBJetPt1x4(0),fhBJetPt2x3(0),fhBJetPt3x2(0),
+  //for computing efficiency of B-jet tags
+  fhBJetPt1x4(0),fhBJetPt2x3(0),fhBJetPt3x2(0),fhDVMJet(0),
   //MC rate histograms/ntuple
   fMCEleNtuple(0),fhMCBJetElePt(0),fhPtMCHadron(0),fhPtMCElectron(0)
 {
@@ -140,8 +140,9 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
     //for comparisons with tracking detectors
     fhPtHadron(g.fhPtHadron),fhPtNPEleTPC(g.fhPtNPEleTPC),
     fhPtNPEleTPCTRD(g.fhPtNPEleTPCTRD),fhPtNPEleTTE(g.fhPtNPEleTTE),
-    //for computing efficiency of IPSig tag
-    fhBJetPt1x4(g.fhBJetPt1x4),fhBJetPt2x3(g.fhBJetPt2x3),fhBJetPt3x2(g.fhBJetPt3x2),
+    //for computing efficiency of B-jet tags
+    fhBJetPt1x4(g.fhBJetPt1x4),fhBJetPt2x3(g.fhBJetPt2x3),
+    fhBJetPt3x2(g.fhBJetPt3x2),fhDVMJet(g.fhDVMJet),
     //MC rate histograms/ntuple
     fMCEleNtuple(g.fMCEleNtuple),fhMCBJetElePt(g.fhMCBJetElePt),
     fhPtMCHadron(g.fhPtMCHadron),fhPtMCElectron(g.fhPtMCElectron)
@@ -236,8 +237,9 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   //for comparisons with tracking detectors
   fhPtHadron = g.fhPtHadron; fhPtNPEleTPC = g.fhPtNPEleTPC; 
   fhPtNPEleTPCTRD = g.fhPtNPEleTPCTRD; fhPtNPEleTTE = g.fhPtNPEleTTE; 
-  //for computing efficiency of IPSig tag
-  fhBJetPt1x4 = g.fhBJetPt1x4; fhBJetPt2x3 = g.fhBJetPt2x3; fhBJetPt3x2 = g.fhBJetPt3x2; 
+  //for computing efficiency of B-jet tags
+  fhBJetPt1x4 = g.fhBJetPt1x4; fhBJetPt2x3 = g.fhBJetPt2x3; 
+  fhBJetPt3x2 = g.fhBJetPt3x2; fhDVMJet = g.fhDVMJet;
   //MC rate histograms/ntuple
   fMCEleNtuple = g.fMCEleNtuple; fhMCBJetElePt = g.fhMCBJetElePt; 
   fhPtMCHadron = g.fhPtMCHadron; fhPtMCElectron = g.fhPtMCElectron; 
@@ -420,10 +422,12 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     fhBJetPt1x4 = new TH1F("hBJetPt1x4","tagged B-jet pT (1 track, ipSignif>4);p_{T}",1000,0.,100.);
     fhBJetPt2x3 = new TH1F("hBJetPt2x3","tagged B-jet pT (2 track, ipSignif>3);p_{T}",1000,0.,100.);
     fhBJetPt3x2 = new TH1F("hBJetPt3x2","tagged B-jet pT (3 track, ipSignif>2);p_{T}",1000,0.,100.);
+    fhDVMJet = new TH2F("hDVM_algo","# DVM jets passing vs Mc-Bjet",10,0,10,300,0.,300.);
 
     outputContainer->Add(fhBJetPt1x4);
     outputContainer->Add(fhBJetPt2x3);
     outputContainer->Add(fhBJetPt3x2);
+    outputContainer->Add(fhDVMJet);
 
     //MC Only histograms
     
@@ -588,6 +592,14 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     if(!dcaOkay) printf("AliAnaElectron::Problem computing DCA to primary vertex for track %d.  Skipping it...\n",itrk);
     if(TMath::Abs(track->Eta())< 0.5 && TMath::Abs(imp[0])<1.0 && TMath::Abs(imp[1])<1.0) refmult2++;
     fhImpactXY->Fill(imp[0]);
+
+    //JLK CHECK
+    AliESDtrack esdTrack(track);
+    Double_t tpcpid[AliPID::kSPECIES];
+    esdTrack.GetTPCpid(tpcpid);
+    Double_t eProb = tpcpid[AliPID::kElectron];
+    printf("<%d> ESD eProb = %2.2f\n",itrk,eProb);
+
 
     AliAODPid* pid = (AliAODPid*) track->GetDetPid();
     if(pid == 0) {
@@ -808,7 +820,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
   Int_t njets = (GetReader()->GetOutputEvent())->GetNJets();
   if(njets > 0) {
     if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillHistograms() - Jet AOD branch has %d jets.  Performing b-jet tag analysis\n",njets);
-    
+
     for(Int_t ijet = 0; ijet < njets ; ijet++) {
       AliAODJet * jet = (AliAODJet*)(GetReader()->GetOutputEvent())->GetJet(ijet) ;
       if(GetDebug() > 3) {
@@ -848,6 +860,25 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       if(trackCounter[3]>2) fhTagJetPt3x2->Fill(jet->Pt());
 
       if(trackCounter[0] > fNTagTrkCut) ipsigJet = kTRUE;
+
+      if(IsDataMC()) {
+	//determine tagging efficiency & mis-tagging rate
+	//using b-quarks from stack
+	Bool_t isTrueBjet = IsMcBJet(jet->Eta(), jet->Phi() ,stack);
+	if (isTrueBjet && GetDebug() > 0) printf("== True Bjet==\n");
+	if (dvmJet && GetDebug() > 0)     printf("== found DVM jet==\n");
+
+	if(isTrueBjet && dvmJet) fhDVMJet->Fill(0.,jet->Pt()); // good tagged
+	if(isTrueBjet && !dvmJet) fhDVMJet->Fill(1.,jet->Pt()); // missed tagged
+	if(!isTrueBjet && dvmJet) fhDVMJet->Fill(2.,jet->Pt());  // fake tagged
+	if(!isTrueBjet && !dvmJet) fhDVMJet->Fill(3.,jet->Pt());  // others
+
+	if(isTrueBjet) {
+	  if(trackCounter[1]>0) fhBJetPt1x4->Fill(jet->Pt());
+	  if(trackCounter[2]>1) fhBJetPt2x3->Fill(jet->Pt());
+	  if(trackCounter[3]>2) fhBJetPt3x2->Fill(jet->Pt());
+	}
+      }
 
       //Fill bjet histograms here
       if(!(eJet || ipsigJet || dvmJet)) fhJetType->Fill(0.,jet->Pt()); //none
@@ -956,7 +987,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
   if(IsDataMC()) {
 
     //MC Jets
-    TVector3 jetVect[4];
+    TVector3 bjetVect[4];
     Int_t nPythiaGenJets = 0;
     AliGenPythiaEventHeader*  pythiaGenHeader = (AliGenPythiaEventHeader*)GetReader()->GetGenEventHeader();
     if(pythiaGenHeader){
@@ -969,8 +1000,11 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	pythiaGenHeader->TriggerJet(ip,p);
 	TVector3 tempVect(p[0],p[1],p[2]);
 	if ( TMath::Abs(tempVect.Eta())>fJetEtaCut || tempVect.Phi() < fJetPhiMin || tempVect.Phi() > fJetPhiMax) continue;
-	jetVect[iCount].SetXYZ(p[0], p[1], p[2]);
-	iCount++;
+	//Only store it if it has a b-quark within dR < 0.2 of jet axis ?
+	if(IsMcBJet(tempVect.Eta(),tempVect.Phi(),stack)) {
+	  bjetVect[iCount].SetXYZ(p[0], p[1], p[2]);
+	  iCount++;
+	}
       }
     }
         
@@ -1000,13 +1034,13 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	mctag = GetMCAnalysisUtils()->CheckOrigin(ipart,GetReader(),input);
 
 	if(GetMCSource(mctag)==1) { //bottom electron
-	  //See if it is within dR < 0.4 of a jet
+	  //See if it is within dR < 0.4 of a bjet
 	  for(Int_t ij = 0; ij < nPythiaGenJets; ij++) {
-	    Double_t deta = primary->Eta() - jetVect[ij].Eta();
-	    Double_t dphi = primary->Phi() - jetVect[ij].Phi();
+	    Double_t deta = primary->Eta() - bjetVect[ij].Eta();
+	    Double_t dphi = primary->Phi() - bjetVect[ij].Phi();
 	    Double_t dR = TMath::Sqrt(deta*deta + dphi*dphi);
 	    if(dR < 0.4) {
-	      fhMCBJetElePt->Fill(primary->Pt(),jetVect[ij].Pt());
+	      fhMCBJetElePt->Fill(primary->Pt(),bjetVect[ij].Pt());
 	    }
 	  }
 	}
@@ -1518,6 +1552,37 @@ Int_t AliAnaElectron::GetMCSource(Int_t tag)
     //Misidentified electron
     return 8;
   }
+
+}
+
+//__________________________________________________________________
+Bool_t  AliAnaElectron::IsMcBJet(Double_t eta, Double_t phi, AliStack* stack)
+{
+  //Check the jet eta,phi against that of the b-quark
+  //to decide whether it is an MC B-jet
+  Bool_t bjet=kFALSE;
+
+  //      printf("MTH: McStack ,nparticles=%d \n", stack->GetNtrack() );
+  
+  for(Int_t ipart = 0; ipart < 100; ipart++) {
+
+    TParticle* primary = stack->Particle(ipart);
+    if (!primary) continue;
+    Int_t pdgcode = primary->GetPdgCode();
+    if ( TMath::Abs(pdgcode) != 5) continue;
+    
+    //      printf("MTH: IsMcBJet : %d, pdg=%d : pt=%f \n", ipart, pdgcode, primary->Pt());
+    Double_t dphi = phi - primary->Phi();
+    Double_t deta = eta - primary->Eta();
+    Double_t dr = sqrt(deta*deta + dphi*dphi);
+    
+    if (dr < 0.2) {
+      bjet=kTRUE;
+      //printf("MTH: **** found matching MC-Bjet: PDG=%d, pt=%f,dr=%f \n", pdgcode, primary->Pt(),dr );
+      break;
+    }
+  }
+  return bjet;
 
 }
 
