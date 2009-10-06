@@ -16,7 +16,7 @@
 //**************************************************************************
 
 /** 
- * @file   transformHWCLtoSWCL.C
+ * @file   transformFCFtoSFC.C
  * @author Kalliopi.Kanaki@ift.uib.no
  * @date   
  * @brief  Test macro for the AliHLTTPCHWClusterTransformComponent.cxx
@@ -32,11 +32,19 @@
  * a directory has to be specified as the input argument of the function
  * and an empty raw0 folder has to be created in it.
  *
- * The component runs without arguments.
+ * In addition, since the $ALICE_ROOT/OCDB/GRP/GRP/Data entry has been removed as obsolete,
+ * the user needs to produce 1 simulated event, in order to create a proper GRP entry in the
+ * local folder, which will be used by the line
+ *
+ * rec.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
+ *
+ * The component runs without arguments, except for the case when we want to differentiate
+ * between the FCF and the SFC output. Then the argument -change-dataId will change the 
+ * data Id of the FCF output.
  * 
  */
 
-void transformHWCLtoSWCF(const char* input="./"){
+void transformFCFtoSCF(const char* input="./"){
   
   
   if(!gSystem->AccessPathName("galice.root")){
@@ -72,7 +80,7 @@ void transformHWCLtoSWCF(const char* input="./"){
     // for(int part=iMinPart; slice<=iMaxPart; part++){
   
          TString argument;
-         argument.Form("-datatype 'HWCLUST1' 'TPC '  -datafile ~/FCF/Cluster.fcf -dataspec 0x%02x%02x%02x%02x", iMinSlice, iMaxSlice, iMinPart, iMaxPart);
+         argument.Form("-datatype 'HWCLUST1' 'TPC '  -datafile /scratch/FCF/Cluster.fcf -dataspec 0x%02x%02x%02x%02x", iMinSlice, iMaxSlice, iMinPart, iMaxPart);
          AliHLTConfiguration pubconf("FP", "FilePublisher", NULL, argument.Data());
 	 if(FCFInput.Length()>0) FCFInput+=" ";
          FCFInput+="FP";
@@ -80,6 +88,7 @@ void transformHWCLtoSWCF(const char* input="./"){
  // }
 
   AliHLTConfiguration hwconf("FCF", "TPCHWClusterTransform", FCFInput.Data(), "");  
+  //AliHLTConfiguration hwconf("FCF", "TPCHWClusterTransform", FCFInput.Data(), "-change-dataId");  
   AliHLTConfiguration clusDumpconf("sink1", "TPCClusterDump", "FCF", "-directory ClusterDump");
   
    
@@ -95,8 +104,9 @@ void transformHWCLtoSWCF(const char* input="./"){
   rec.SetRunTracking("");
   rec.SetLoadAlignFromCDB(0);
   rec.SetRunQA(":");
-  rec.SetFillESD("");
-  //rec.SetFillTriggerESD(false);
-  rec.SetOption("HLT", "libAliHLTTPC.so loglevel=0x7c chains=sink1");
+  rec.SetFillESD("");  
+  rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");  
+  rec.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
+  rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTTPC.so loglevel=0x7c chains=sink1");
   rec.Run();
 }

@@ -36,6 +36,7 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkPackedRawDataType = AliHL
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkUnpackedRawDataType = AliHLTComponentDataTypeInitializer("RAWUNPAK", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClustersDataType = AliHLTComponentDataTypeInitializer("CLUSTERS", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkHWClustersDataType = AliHLTComponentDataTypeInitializer("HWCLUST1", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkAlterClustersDataType = AliHLTComponentDataTypeInitializer("HWCL_ALT", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkVertexDataType = AliHLTComponentDataTypeInitializer("VERTEX  ", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTrackSegmentsDataType = AliHLTComponentDataTypeInitializer("TRAKSEGS", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksDataType = AliHLTComponentDataTypeInitializer("TRACKS  ", kAliHLTDataOriginTPC);

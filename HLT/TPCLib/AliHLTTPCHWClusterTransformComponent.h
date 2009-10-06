@@ -130,14 +130,15 @@ protected:
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
   int DoDeinit();
   
-  //int Reconfigure(const char* cdbEntry, const char* chainId);
+  int Reconfigure(const char* cdbEntry, const char* chainId);
 
   using AliHLTProcessor::DoEvent;
   AliTPCTransform *fOfflineTransform;
+  Bool_t fDataId;
 
 private:
    
-  //int Configure(const char* arguments);
+  int Configure(const char* arguments);
           
   /** copy constructor prohibited */
   AliHLTTPCHWClusterTransformComponent(const AliHLTTPCHWClusterTransformComponent&);
@@ -145,7 +146,7 @@ private:
   /** assignment operator prohibited */
   AliHLTTPCHWClusterTransformComponent& operator=(const AliHLTTPCHWClusterTransformComponent&);
              
-  ClassDef(AliHLTTPCHWClusterTransformComponent, 1)
+  ClassDef(AliHLTTPCHWClusterTransformComponent, 2)
 };
 
 #endif

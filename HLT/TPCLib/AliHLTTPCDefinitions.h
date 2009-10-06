@@ -75,6 +75,8 @@ public:
   static const AliHLTComponentDataType fgkClustersDataType;             // see above
   /** HW cluster data */
   static const AliHLTComponentDataType fgkHWClustersDataType;           // see above
+  /** HW alternative output cluster data */
+  static const AliHLTComponentDataType fgkAlterClustersDataType;        // see above
   /** track segments in local coordinates */
   static const AliHLTComponentDataType fgkTrackSegmentsDataType;        // see above
   /** tracks in global koordinates */

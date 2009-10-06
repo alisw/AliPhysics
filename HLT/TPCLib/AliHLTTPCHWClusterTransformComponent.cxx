@@ -35,6 +35,9 @@ using namespace std;
 #include "AliTPCTransform.h"
 #include "AliTPCCalPad.h"
 
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+
 #include "TMath.h"
 #include <cstdlib>
 #include <cerrno>
@@ -44,7 +47,8 @@ ClassImp(AliHLTTPCHWClusterTransformComponent) //ROOT macro for the implementati
 
 AliHLTTPCHWClusterTransformComponent::AliHLTTPCHWClusterTransformComponent()
 :
-fOfflineTransform(NULL)
+fOfflineTransform(NULL),
+fDataId(kFALSE)
 {
   // see header file for class documentation
   // or
@@ -96,35 +100,35 @@ AliHLTComponent* AliHLTTPCHWClusterTransformComponent::Spawn() {
   return new AliHLTTPCHWClusterTransformComponent();
 }
 	
-int AliHLTTPCHWClusterTransformComponent::DoInit( int /*argc*/, const char** /*argv*/ ) { 
+int AliHLTTPCHWClusterTransformComponent::DoInit( int argc, const char** argv ) { 
 // see header file for class documentation
 
   AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
   if(!pCalib ||
      !(fOfflineTransform = AliTPCcalibDB::Instance()->GetTransform())){
-    HLTError("Can not retrieve Offline transform from AliTPCcalibDB (%p)", pCalib);
+    HLTError("Cannot retrieve offline transform from AliTPCcalibDB (%p)", pCalib);
     return -ENOENT;
   }
 
-//   Int_t i = 0;
-//   Char_t* cpErr;
-//   
-//   int iResult=0;
-//   
-//   TString configuration="";
-//   TString argument="";
-//   for (int j=0; j<argc && iResult>=0; j++) {
-//     
-//     argument=argv[j];
-//     if (!configuration.IsNull()) configuration+=" ";
-//     configuration+=argument;    
-//   }
-//    
-//   if (!configuration.IsNull()) {
-//     iResult=Configure(configuration.Data());
-//   } else {
-//     iResult=Reconfigure(NULL, NULL);
-//   }
+  Int_t i = 0;
+  Char_t* cpErr;
+
+  int iResult=0;
+
+  TString configuration="";
+  TString argument="";
+  for(int j=0; j<argc && iResult>=0; j++){
+      argument=argv[j];
+      if (!configuration.IsNull()) configuration+=" ";
+      configuration+=argument;	
+  }
+  
+  if (!configuration.IsNull()) {
+    iResult=Configure(configuration.Data());
+  } 
+  else {
+    //iResult=Reconfigure(NULL, NULL);
+  }
 
   return 0;
 } // end DoInit()
@@ -136,10 +140,10 @@ int AliHLTTPCHWClusterTransformComponent::DoDeinit() {
 }
 
 int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData& evtData, 
-					      const AliHLTComponentBlockData* blocks, 
-					      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
-					      AliHLTUInt32_t& size, 
-					      vector<AliHLTComponentBlockData>& outputBlocks ){
+					          const AliHLTComponentBlockData* blocks, 
+					          AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
+					          AliHLTUInt32_t& size, 
+					          vector<AliHLTComponentBlockData>& outputBlocks ){
   // see header file for class documentation
     
   if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )){
@@ -169,9 +173,9 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      offset = tSize;
  
      HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
-     	      evtData.fEventID, evtData.fEventID, 
-     	      DataType2Text( iter->fDataType).c_str(), 
-	      DataType2Text(AliHLTTPCDefinitions::fgkHWClustersDataType).c_str());                       
+     	       evtData.fEventID, evtData.fEventID, 
+     	       DataType2Text( iter->fDataType).c_str(), 
+	       DataType2Text(AliHLTTPCDefinitions::fgkHWClustersDataType).c_str());                       
  
      if(iter->fDataType != AliHLTTPCDefinitions::fgkHWClustersDataType) continue;                        
   
@@ -179,6 +183,8 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      UInt_t minPartition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
      //UInt_t maxSlice     = AliHLTTPCDefinitions::GetMaxSliceNr(*iter); 
      //UInt_t maxPartition = AliHLTTPCDefinitions::GetMaxPatchNr(*iter);
+     
+     HLTDebug("minSlice: %d, minPartition: %d", minSlice, minPartition);
     
      outPtr = (AliHLTTPCClusterData*)outBPtr;
      maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
@@ -246,19 +252,17 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 
 	   Float_t tmpPad   = *((Float_t*)&buffer[nWords+1]);
 	   Float_t tmpTime  = *((Float_t*)&buffer[nWords+2]);
-	   cluster.fSigmaY2 = *((Float_t*)&buffer[nWords+3]);
-    	   cluster.fSigmaZ2 = *((Float_t*)&buffer[nWords+4]);
+	   //cluster.fSigmaY2 = *((Float_t*)&buffer[nWords+3]);
+    	   //cluster.fSigmaZ2 = *((Float_t*)&buffer[nWords+4]);
 	   
 	   // correct expressions for the error calculation
 
-  	   //cluster.fSigmaY2 = TMath::Sqrt( (Float_t)buffer[nWords+3] - (Float_t)buffer[nWords+1]*(Float_t)buffer[nWords+1] );
-  	   //cluster.fSigmaY2 = TMath::Sqrt( (Float_t)buffer[nWords+3] - (Float_t)buffer[nWords+1]*(Float_t)buffer[nWords+1] );
+  	   cluster.fSigmaY2 = TMath::Sqrt( *((Float_t*)&buffer[nWords+3]) - *((Float_t*)&buffer[nWords+1])* (*((Float_t*)&buffer[nWords+1])) );
+  	   cluster.fSigmaZ2 = TMath::Sqrt( *((Float_t*)&buffer[nWords+3]) - *((Float_t*)&buffer[nWords+1])* (*((Float_t*)&buffer[nWords+1])) );
     	  
     	   Float_t xyz[3]; xyz[0] = xyz[1] = xyz[2] = -99.;
-    	  
-	   
-	   HLTInfo("padrow: %d, charge: %f, pad: %f, time: %f", cluster.fPadRow, (Float_t)cluster.fCharge, tmpPad, tmpTime);
-	          	   
+    	  	   
+	   HLTDebug("padrow: %d, charge: %f, pad: %f, time: %f, errY: %f, errZ: %f \n", cluster.fPadRow, (Float_t)cluster.fCharge, tmpPad, tmpTime, cluster.fSigmaY2, cluster.fSigmaZ2);        	   
 	   
 	   if(fOfflineTransform == NULL){	   	   
 	      cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);             	   
@@ -277,10 +281,10 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	     fOfflineTransform->Transform(x,iSector,0,1);
 	     cluster.fX = x[0];
 	     cluster.fY = x[1];
-	     cluster.fZ = x[2];
- 	      
+	     cluster.fZ = x[2];	      
  	   }
 	   
+	   HLTDebug("cluster X: %f, Y: %f, Z: %f \n", cluster.fX, cluster.fY, cluster.fZ);
 	   spacePoints[nAddedClusters] = cluster;
 	   	   
            nAddedClusters++; 
@@ -301,7 +305,12 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      bd.fOffset = offset;
      bd.fSize = mysize;
      bd.fSpecification = iter->fSpecification;
-     bd.fDataType = AliHLTTPCDefinitions::fgkClustersDataType;
+     
+     if(fDataId==kFALSE) bd.fDataType = AliHLTTPCDefinitions::fgkClustersDataType;
+     else                bd.fDataType = AliHLTTPCDefinitions::fgkAlterClustersDataType;
+     
+     //HLTDebug("datatype: %s", DataType2Text(bd.fDataType).c_str());
+     
      outputBlocks.push_back( bd );
      
      tSize   += mysize;
@@ -313,87 +322,73 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
    return 0;
 } // end DoEvent()
   
-// int AliHLTTPCHWClusterTransformComponent::Configure(const char* arguments) { 
-//   // see header file for class documentation
-//   
-//   int iResult=0;
-//   if (!arguments) return iResult;
-//   HLTInfo("parsing configuration string \'%s\'", arguments);
-// 
-//   TString allArgs=arguments;
-//   TString argument;
-//   int bMissingParam=0;
-// 
-//   TObjArray* pTokens=allArgs.Tokenize(" ");
-//   if (pTokens) {
-//     for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
-//       argument=((TObjString*)pTokens->At(i))->GetString();
-//       if (argument.IsNull()) continue;
-//      
-//       if (argument.CompareTo("-sum-noise-histograms")==0) {
-// 	fNoiseHistograms = kTRUE;
-// 	HLTInfo("got \'-sum-noise-histograms\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-// 	
-//       } else if (argument.CompareTo("-sum-krypton-histograms")==0) {
-// 	fKryptonHistograms = kTRUE;
-// 	HLTInfo("got \'-sum-krypton-histograms\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-// 	
-//       } else if (argument.CompareTo("-use-general")==0) {
-// 	fUseGeneral = kTRUE;
-// 	HLTInfo("got \'-use-general\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-// 	
-//       } else if (argument.CompareTo("-ignore-specification")==0) {
-// 	fIgnoreSpecification = kTRUE;
-// 	HLTInfo("got \'-ignore-specification\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-//       }
-//       else {
-// 	HLTError("unknown argument %s", argument.Data());
-// 	iResult=-EINVAL;
-// 	break;
-//       }
-//     } // end for
-//     
-//   
-//     delete pTokens;
-//   
-//   } // end if pTokens
-//   
-//   if (bMissingParam) {
-//     HLTError("missing parameter for argument %s", argument.Data());
-//     iResult=-EINVAL;
-//   }
-//   return iResult;
-// }
+int AliHLTTPCHWClusterTransformComponent::Configure(const char* arguments) { 
+  // see header file for class documentation
+  
+  int iResult=0;
+  if (!arguments) return iResult;
+  HLTInfo("parsing configuration string \'%s\'", arguments);
 
-// int AliHLTTPCHWClusterTransformComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/) { 
-//   // see header file for class documentation
-// 
-//   int iResult=0;
-//   const char* path="HLT/ConfigTPC/TPCHistogramHandlerComponent";
-//   const char* defaultNotify="";
-//   if (cdbEntry) {
-//     path=cdbEntry;
-//     defaultNotify=" (default)";
-//   }
-//   
-//   if (path) {
-//     HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
-//     AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
-//     if (pEntry) {
-//       TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
-//       if (pString) {
-// 	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
-// 	iResult=Configure(pString->GetString().Data());
-//       } else {
-// 	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
-//       }
-//     } else {
-//       HLTError("cannot fetch object \"%s\" from CDB", path);
-//     }
-//   }
-//   return iResult;
-// }
+  TString allArgs=arguments;
+  TString argument;
+  int bMissingParam=0;
 
+  TObjArray* pTokens=allArgs.Tokenize(" ");
+  if (pTokens) {
+    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
+      argument=((TObjString*)pTokens->At(i))->GetString();
+      if (argument.IsNull()) continue;
+     
+      if (argument.CompareTo("-change-dataId")==0) {
+	fDataId = kTRUE;
+	HLTInfo("got \'-change-dataId\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());	
+      } 
+      else {
+	HLTError("unknown argument %s", argument.Data());
+	iResult=-EINVAL;
+	break;
+      }
+    } // end for
+  
+    delete pTokens;
+  
+  } // end if pTokens
+  
+  if (bMissingParam) {
+    HLTError("missing parameter for argument %s", argument.Data());
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTTPCHWClusterTransformComponent::Reconfigure(const char* cdbEntry, const char* chainId) { 
+  // see header file for class documentation
+
+  int iResult=0;
+  const char* path="HLT/ConfigTPC/TPCHWClusterTransform";
+  const char* defaultNotify="";
+  if (cdbEntry) {
+    path=cdbEntry;
+    defaultNotify=" (default)";
+  }
+  
+  if (path) {
+    HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+    if (pEntry) {
+      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+      if (pString) {
+	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
+	iResult=Configure(pString->GetString().Data());
+      } else {
+	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
+      }
+    } else {
+      HLTError("cannot fetch object \"%s\" from CDB", path);
+    }
+  }
+  return iResult;
+}
 
 void AliHLTTPCHWClusterTransformComponent::PrintDebug(AliHLTUInt32_t *buffer, Int_t size){
 // see header file for class documentation 
