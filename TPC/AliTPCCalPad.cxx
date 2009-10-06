@@ -36,6 +36,7 @@
 #include <TString.h>
 #include <TObjString.h>
 #include <iostream>
+#include <AliLog.h>
 
 ClassImp(AliTPCCalPad)
 
@@ -509,18 +510,11 @@ AliTPCCalPad* AliTPCCalPad::GlobalFit(const char* padName, AliTPCCalPad* PadOutl
    }
    return pad;
 }
-
-void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* fitFormula, TVectorD &fitParamSideA, TVectorD &fitParamSideC,TMatrixD &covMatrixSideA, TMatrixD &covMatrixSideC, Float_t & chi2SideA, Float_t & chi2SideC, Double_t pointError, Bool_t robust, Double_t robustFraction){
+//_____________________________________________________________________________
+TObjArray* AliTPCCalPad::CreateFormulaArray(const char *fitFormula)
+{
   //
-  // Performs a fit on both sides.
-  // Valid information for the fitFormula are the variables
-  // - gx, gy, lx ,ly: meaning global x, global y, local x, local y value of the padName
-  // - sector:         the sector number.
-  //  eg. a formula might look 'gy' or '(sector<36) ++ gy' or 'gx ++ gy' or 'gx ++ gy ++ lx ++ lx^2' and so on
-  //
-  // PadOutliers - pads with value !=0 are not used in fitting procedure
-  // chi2Threshold: Threshold for chi2 when EvalRobust is called
-  // robustFraction: Fraction of data that will be used in EvalRobust
+  // create an array of TFormulas for the each parameter of the fit function
   //
 
   // split fit string in single parameters
@@ -530,16 +524,6 @@ void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* f
   fitString.ReplaceAll(" ","");
   TObjArray *arrFitParams = fitString.Tokenize("#");
   Int_t ndim = arrFitParams->GetEntries();
-  //resize output data arrays
-  fitParamSideA.ResizeTo(ndim+1);
-  fitParamSideC.ResizeTo(ndim+1);
-  covMatrixSideA.ResizeTo(ndim+1,ndim+1);
-  covMatrixSideC.ResizeTo(ndim+1,ndim+1);
-  // create linear fitter for A- and C- Side
-  TLinearFitter* fitterGA = new TLinearFitter(ndim+1,Form("hyp%d",ndim));
-  TLinearFitter* fitterGC = new TLinearFitter(ndim+1,Form("hyp%d",ndim));
-  fitterGA->StoreData(kTRUE);
-  fitterGC->StoreData(kTRUE);
   //create array of TFormulas to evaluate the parameters
   TObjArray *arrFitFormulas = new TObjArray(ndim);
   arrFitFormulas->SetOwner(kTRUE);
@@ -552,36 +536,87 @@ void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* f
     s.ReplaceAll("sector","[4]");
     arrFitFormulas->AddAt(new TFormula(Form("param%02d",idim),s.Data()),idim);
   }
-  //loop over data and add points to the fitter
+  delete arrFitParams;
+  
+  return arrFitFormulas;
+}
+//_____________________________________________________________________________
+void AliTPCCalPad::EvalFormulaArray(const TObjArray &arrFitFormulas, TVectorD &results,
+                                    const Int_t sec, const Int_t row, const Int_t pad)
+{
+  //
+  // evaluate the fit formulas
+  //
+  Int_t ndim=arrFitFormulas.GetEntries();
+  results.ResizeTo(ndim);
+  
   AliTPCROC* tpcROCinstance = AliTPCROC::Instance();  // to calculate the pad's position
   Float_t localXYZ[3];
   Float_t globalXYZ[3];
+  tpcROCinstance->GetPositionLocal(sec, row, pad, localXYZ);
+  tpcROCinstance->GetPositionGlobal(sec, row, pad, globalXYZ);
+  //calculate parameter values
+  for (Int_t idim=0;idim<ndim;++idim){
+    TFormula *f=(TFormula*)arrFitFormulas.At(idim);
+    f->SetParameters(globalXYZ[0],globalXYZ[1],localXYZ[0],localXYZ[1],sec);
+    results[idim]=f->Eval(0);
+  }
+}
+//_____________________________________________________________________________
+void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* fitFormula, TVectorD &fitParamSideA, TVectorD &fitParamSideC,TMatrixD &covMatrixSideA, TMatrixD &covMatrixSideC, Float_t & chi2SideA, Float_t & chi2SideC, AliTPCCalPad *pointError, Bool_t robust, Double_t robustFraction){
+  //
+  // Performs a fit on both sides.
+  // Valid information for the fitFormula are the variables
+  // - gx, gy, lx ,ly: meaning global x, global y, local x, local y value of the padName
+  // - sector:         the sector number.
+  //  eg. a formula might look 'gy' or '(sector<36) ++ gy' or 'gx ++ gy' or 'gx ++ gy ++ lx ++ lx^2' and so on
+  //
+  // PadOutliers - pads with value !=0 are not used in fitting procedure
+  // chi2Threshold: Threshold for chi2 when EvalRobust is called
+  // robustFraction: Fraction of data that will be used in EvalRobust
+  //
+
+  TObjArray* arrFitFormulas=CreateFormulaArray(fitFormula);
+  Int_t ndim = arrFitFormulas->GetEntries();
+  //resize output data arrays
+  fitParamSideA.ResizeTo(ndim+1);
+  fitParamSideC.ResizeTo(ndim+1);
+  covMatrixSideA.ResizeTo(ndim+1,ndim+1);
+  covMatrixSideC.ResizeTo(ndim+1,ndim+1);
+  // create linear fitter for A- and C- Side
+  TLinearFitter* fitterGA = new TLinearFitter(ndim+1,Form("hyp%d",ndim));
+  TLinearFitter* fitterGC = new TLinearFitter(ndim+1,Form("hyp%d",ndim));
+  fitterGA->StoreData(kTRUE);
+  fitterGC->StoreData(kTRUE);
+  //parameter values
   TVectorD parValues(ndim);
+
+  AliTPCCalROC *rocErr=0x0;
   
   for (UInt_t isec = 0; isec<kNsec; ++isec){
     AliTPCCalROC *rocOut=PadOutliers->GetCalROC(isec);
     AliTPCCalROC *rocData=GetCalROC(isec);
+    if (pointError) rocErr=pointError->GetCalROC(isec);
     if (!rocData) continue;
     for (UInt_t irow = 0; irow < GetCalROC(isec)->GetNrows(); irow++) {
       for (UInt_t ipad = 0; ipad < GetCalROC(isec)->GetNPads(irow); ipad++) {
         //check for outliers
         if (rocOut && rocOut->GetValue(irow,ipad)) continue;
-        //calculate local and global pad positions
-        tpcROCinstance->GetPositionLocal(isec, irow, ipad, localXYZ);
-        tpcROCinstance->GetPositionGlobal(isec, irow, ipad, globalXYZ);
         //calculate parameter values
-        for (Int_t idim=0;idim<ndim;++idim){
-          TFormula *f=(TFormula*)arrFitFormulas->At(idim);
-          f->SetParameters(globalXYZ[0],globalXYZ[1],localXYZ[0],localXYZ[1],isec);
-          parValues[idim]=f->Eval(0);
-        }
+        EvalFormulaArray(*arrFitFormulas,parValues,isec,irow,ipad);
         //get value
         Float_t value=rocData->GetValue(irow,ipad);
+        //point error
+        Int_t err=1;
+        if (rocErr) {
+          err=rocErr->GetValue(irow,ipad);
+          if (err==0) err=1;
+        }
         //add points to the fitters
         if (isec/18%2==0){
-          fitterGA->AddPoint(parValues.GetMatrixArray(),value,pointError);
+          fitterGA->AddPoint(parValues.GetMatrixArray(),value,err);
         }else{
-          fitterGC->AddPoint(parValues.GetMatrixArray(),value,pointError);
+          fitterGC->AddPoint(parValues.GetMatrixArray(),value,err);
         }
       }
     }
@@ -600,13 +635,48 @@ void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* f
   fitterGA->GetCovarianceMatrix(covMatrixSideA);
   fitterGC->GetCovarianceMatrix(covMatrixSideC);
   
-  delete arrFitParams;
   delete arrFitFormulas;
   delete fitterGA;
   delete fitterGC;
   
 }
-
+//
+AliTPCCalPad *AliTPCCalPad::CreateCalPadFit(const char* fitFormula, const TVectorD &fitParamSideA, const TVectorD &fitParamSideC)
+{
+  //
+  //
+  //
+  TObjArray *arrFitFormulas=CreateFormulaArray(fitFormula);
+  Int_t ndim = arrFitFormulas->GetEntries();
+  //check if dimension of fit formula and fit parameters agree
+  if (ndim!=fitParamSideA.GetNrows()||ndim!=fitParamSideC.GetNrows()){
+    printf("AliTPCCalPad::CreateCalPadFit: Dimensions of fit formula and fit Parameters does not match!");
+    return 0;
+  }
+  //create cal pad
+  AliTPCCalPad *pad=new AliTPCCalPad("fitResultPad",Form("Fit result: %s",fitFormula));
+  //fill cal pad with fit results if requested
+  for (UInt_t isec = 0; isec<kNsec; ++isec){
+    AliTPCCalROC *roc=pad->GetCalROC(isec);
+    for (UInt_t irow = 0; irow < roc->GetNrows(); irow++) {
+      for (UInt_t ipad = 0; ipad < roc->GetNPads(irow); ipad++) {
+        const TVectorD *fitPar=0;
+        TVectorD fitResArray;
+        if (isec/18%2==0){
+          fitPar=&fitParamSideA;
+        }else{
+          fitPar=&fitParamSideC;
+        }
+        EvalFormulaArray(*arrFitFormulas,fitResArray, isec, irow, ipad);
+        for (Int_t idim=0;idim<ndim;++idim)
+          fitResArray(idim)*=(*fitPar)(idim);
+        roc->SetValue(irow,ipad,fitResArray.Sum());
+      }
+    }
+  }
+  delete arrFitFormulas;
+  return pad;
+}
 /*
 void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, TVectorD &fitParamSideA, TVectorD &fitParamSideC,TMatrixD &covMatrixSideA, TMatrixD &covMatrixSideC, Float_t & chi2SideA, Float_t & chi2SideC, Int_t fitType, Bool_t robust, Double_t chi2Threshold, Double_t robustFraction){
   //

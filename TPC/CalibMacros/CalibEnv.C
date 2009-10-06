@@ -155,7 +155,8 @@ void CalibEnv(const char * runList){
     //CE data processing - see ProcessCEdata function for description of the results
     TVectorD fitResultsA, fitResultsC;
     Int_t nmaskedCE;
-    dbutil.ProcessCEdata("(sector<36)++gx++gy++lx++lx**2",fitResultsA,fitResultsC,nmaskedCE);
+//     dbutil.ProcessCEdata("(sector<36)++gx++gy++lx++lx**2",fitResultsA,fitResultsC,nmaskedCE);
+    dbutil.ProcessCEdata("(sector<36)++gy++gx++(lx-134)++(sector<36)*(lx-134)",fitResultsA,fitResultsC,nmaskedCE);
     TVectorD vecTEntries, vecTMean, vecTRMS, vecTMedian, vecQEntries, vecQMean, vecQRMS, vecQMedian;
     Float_t driftTimeA, driftTimeC;
     dbutil.ProcessCEgraphs(vecTEntries, vecTMean, vecTRMS, vecTMedian,

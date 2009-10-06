@@ -50,8 +50,10 @@ zeroNoise		1, Pads_with_zero_noise, Noise_Pedestals
 nMasked		1, Number_of_masked_pads, ALTRO
 nOffPulser		1, Pads_without_pulser_signal, Pulser
 timePulser.   1, Pulser_Position_[timebins], Pulser, IROC_A-Side, IROC_C-Side, OROC_A-Side, OROC_C-Side
-CEfitA.		1, CE_Fit_A-Side, CE, Offset_[timebins], IROC/OROC_Offset_[timebins], dt/dgx_[timebins/cm], dt/dgy_[timebins/cm], dt/dlx_[timebins/cm], dt/dlx^{2}_[timebins/cm^{2}]
-CEfitC.		1, CE_Fit_C-Side, CE, Offset_[timebins], IROC/OROC_Offset_[timebins], dt/dgx_[timebins/cm], dt/dgy_[timebins/cm], dt/dlx_[timebins/cm], dt/dlx^{2}_[timebins/cm^{2}]
+#CEfitA.		1, CE_Fit_A-Side, CE, Offset_[timebins], IROC/OROC_Offset_[timebins], dt/dgx_[timebins/cm], dt/dgy_[timebins/cm], dt/dlx_[timebins/cm], dt/dlx^{2}_[timebins/cm^{2}]
+#CEfitC.		1, CE_Fit_C-Side, CE, Offset_[timebins], IROC/OROC_Offset_[timebins], dt/dgx_[timebins/cm], dt/dgy_[timebins/cm], dt/dlx_[timebins/cm], dt/dlx^{2}_[timebins/cm^{2}]
+CEfitA.     1, CE_Fit_A-Side, CE, Offset_[timebins], IROC/OROC_Offset_[timebins], dt/dgx_[timebins/cm], dt/dgy_[timebins/cm], dt/dlx_common_[timebins/cm], dt/dlx_IROCs_[timebins/cm]
+CEfitC.     1, CE_Fit_C-Side, CE, Offset_[timebins], IROC/OROC_Offset_[timebins], dt/dgx_[timebins/cm], dt/dgy_[timebins/cm], dt/dlx_common_[timebins/cm], dt/dlx_IROCs_[timebins/cm]
 nmaskedCE 1, CE_Number_of_outliers, CE
 Bz		1, Magnetic_Field_[T]
 L3polarity		1, L3_polarity, Environment
