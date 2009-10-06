@@ -55,6 +55,7 @@ public:
   //check if track has been flagged as a non-photonic or DVM electron
   //used with the jet tracks to tag bjets
   Bool_t CheckTrack(const AliAODTrack* track,const char* type);  
+  Bool_t IsMcBJet(Double_t x, Double_t y, AliStack* st);
 
   void Print(const Option_t * opt)const;
   
@@ -226,6 +227,8 @@ public:
   TH1F * fhBJetPt2x3;    //! IPSig B-tagging : result for (2 track, ipSignif>3)
   TH1F * fhBJetPt3x2;    //! IPSig B-tagging : result for (3 track, ipSignif>2)
 
+  TH2F* fhDVMJet;        //! DVM jet algo check
+
   ////////////////////////////
   //MC Only Rate histograms
 
@@ -235,7 +238,7 @@ public:
   TH1F* fhPtMCHadron;    //! Pt distribution of MC charged hadrons (pi,k,p) in EMCAL acceptance
   TH2F* fhPtMCElectron;  //! Pt distribution of MC electrons from various sources in EMCAL
 
-  ClassDef(AliAnaElectron,7)
+  ClassDef(AliAnaElectron,8)
 
 } ;
  
