@@ -59,6 +59,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep()
         fCorrelation(0x0),
 	fCountMC(0),
 	fCountAcc(0),
+	fCountVertex(0),
+	fCountRefit(0),
 	fCountReco(0),
 	fCountRecoAcc(0),
 	fCountRecoITSClusters(0),
@@ -81,6 +83,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
         fCorrelation(0x0),
 	fCountMC(0),
 	fCountAcc(0),
+	fCountVertex(0),
+	fCountRefit(0),
 	fCountReco(0),
 	fCountRecoAcc(0),
 	fCountRecoITSClusters(0),
@@ -127,6 +131,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
         fCorrelation(c.fCorrelation),
 	fCountMC(c.fCountMC),
 	fCountAcc(c.fCountAcc),
+	fCountVertex(c.fCountVertex),
+	fCountRefit(c.fCountRefit),
 	fCountReco(c.fCountReco),
 	fCountRecoAcc(c.fCountRecoAcc),
 	fCountRecoITSClusters(c.fCountRecoITSClusters),
@@ -174,6 +180,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	
 	// MC-event selection
 	Double_t containerInput[12] ;
+	Double_t containerInputMC[12] ;
         
 	//loop on the MC event
 	
@@ -182,12 +189,20 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	Int_t icountMC = 0;
 	Int_t icountAcc = 0;
 	Int_t icountReco = 0;
+	Int_t icountVertex = 0;
+	Int_t icountRefit = 0;
 	Int_t icountRecoAcc = 0;
 	Int_t icountRecoITSClusters = 0;
 	Int_t icountRecoPPR = 0;
 	
 	Int_t cquarks = 0;
 		
+	// AOD primary vertex
+	AliAODVertex *vtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
+	Bool_t vtxFlag = kTRUE;
+	TString title=vtx1->GetTitle();
+	if(!title.Contains("VertexerTracks")) vtxFlag=kFALSE;
+
 	for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
 		AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
 		if (mcPart->GetPdgCode() == 4) cquarks++; 
@@ -212,19 +227,19 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 		// fill the container for Gen-level selection
 		Double_t vectorMC[7] = {9999.,9999.,9999.,9999.,9999.,9999.,9999.};
 		if (GetGeneratedValuesFromMCParticle(mcPart, mcArray, vectorMC)){
-			containerInput[0] = vectorMC[0];
-			containerInput[1] = vectorMC[1] ;
-			containerInput[2] = vectorMC[2] ;
-			containerInput[3] = vectorMC[3] ;
-			containerInput[4] = vectorMC[4] ;
-			containerInput[5] = vectorMC[5] ;  // in micron
-			containerInput[6] = 0.;    // dummy value, meaningless in MC, in micron
-			containerInput[7] = 0.;   // dummy value, meaningless in MC, in micron
-			containerInput[8] = 0.;   // dummy value, meaningless in MC, in micron
-			containerInput[9] = -100000.; // dummy value, meaningless in MC, in micron^2
-			containerInput[10] = 1.01;    // dummy value, meaningless in MC
-			containerInput[11] = vectorMC[6];    // dummy value, meaningless in MC
-			fCFManager->GetParticleContainer()->Fill(containerInput,kStepGenerated);
+			containerInputMC[0] = vectorMC[0];
+			containerInputMC[1] = vectorMC[1] ;
+			containerInputMC[2] = vectorMC[2] ;
+			containerInputMC[3] = vectorMC[3] ;
+			containerInputMC[4] = vectorMC[4] ;
+			containerInputMC[5] = vectorMC[5] ;  // in micron
+			containerInputMC[6] = 0.;    // dummy value, meaningless in MC, in micron
+			containerInputMC[7] = 0.;   // dummy value, meaningless in MC, in micron
+			containerInputMC[8] = 0.;   // dummy value, meaningless in MC, in micron
+			containerInputMC[9] = -100000.; // dummy value, meaningless in MC, in micron^2
+			containerInputMC[10] = 1.01;    // dummy value, meaningless in MC
+			containerInputMC[11] = vectorMC[6];    // dummy value, meaningless in MC
+			fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGenerated);
 			icountMC++;
 
 			// check the MC-Acceptance level cuts
@@ -263,8 +278,39 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				if (!fCFManager->CheckParticleCuts(1, mcPartDaughter1)) {
 					AliInfo("Inconsistency with CF cut for daughter 1!");
 				} 
-				fCFManager->GetParticleContainer()->Fill(containerInput,kStepAcceptance);
+				fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepAcceptance);
 				icountAcc++;
+
+				// check on the vertex
+				if (vtxFlag){
+					printf("Vertex cut passed\n");
+					// filling the container if the vertex is ok
+					fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepVertex) ;
+					printf("Vertex cut passed 2\n");
+					icountVertex++;
+					// check on the kTPCrefit and kITSrefit conditions of the daughters
+					Bool_t refitFlag = kFALSE;
+					for (Int_t iaod =0; iaod<aodEvent->GetNumberOfTracks(); iaod++){
+						AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iaod);
+						if ((track->GetLabel() == daughter0) || (track->GetLabel() == daughter1) && (((track->GetStatus()&AliESDtrack::kTPCrefit)==AliESDtrack::kTPCrefit) && ((track->GetStatus()&AliESDtrack::kITSrefit)==AliESDtrack::kITSrefit))){
+							refitFlag = kTRUE;
+						}
+					}
+					if (refitFlag){
+						printf("Refit cut passed\n");
+						fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepRefit);
+						icountRefit++;
+					}
+					else{
+						AliDebug(3,"Refit cut not passed\n");
+					}
+				}
+				else{
+					AliDebug(3,"Vertex cut not passed\n");
+				}			
+			}
+			else{
+				AliDebug(3,"Acceptance cut not passed\n");
 			}
 		}
 		else {
@@ -272,17 +318,17 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			continue;
 		}
  	}
+
 	if (cquarks<2) AliDebug(2,Form("Event found with %d c-quarks", cquarks));
 	
-	AliDebug(2, Form("Found %i MC particles that are D0!!",icountMC));
-	AliDebug(2, Form("Found %i MC particles that are D0 and satisfy Acc cuts!!",icountAcc));
+	AliInfo(Form("Found %i MC particles that are D0!!",icountMC));
+	AliInfo(Form("Found %i MC particles that are D0 and satisfy Acc cuts!!",icountAcc));
+	AliInfo(Form("Found %i MC particles that are D0 and satisfy Vertex cuts!!",icountVertex));
+	AliInfo(Form("Found %i MC particles that are D0 and satisfy Refit cuts!!",icountRefit));
 
 	// Now go to rec level
 	fCountMC += icountMC;
 	fCountAcc += icountAcc;
-
-	// AOD primary vertex
-	AliAODVertex *vtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
 
 	// load heavy flavour vertices
 	TClonesArray *arrayD0toKpi = (TClonesArray*)((aodEvent->GetList())->FindObject("D0toKpi")); 	
@@ -316,11 +362,17 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			if(!(TMath::Abs(dg0MC->GetPdgCode())==321 && TMath::Abs(dg1MC->GetPdgCode())==211) && 
 			   !(TMath::Abs(dg0MC->GetPdgCode())==211 && TMath::Abs(dg1MC->GetPdgCode())==321)) continue;
 
-			// check whether the daughters have kTPCrefit set
+			// check whether the daughters have kTPCrefit and kITSrefit set
 			AliAODTrack *track0 = (AliAODTrack*)d0tokpi->GetDaughter(0);
 			AliAODTrack *track1 = (AliAODTrack*)d0tokpi->GetDaughter(1);
-			if((!(track0->GetStatus()&AliESDtrack::kTPCrefit)) || (!(track1->GetStatus()&AliESDtrack::kTPCrefit))) {
-				// skipping if at least one daughter does not have kTPCrefit
+			if((!(track0->GetStatus()&AliESDtrack::kTPCrefit)) || (!(track1->GetStatus()&AliESDtrack::kTPCrefit)) || (!(track0->GetStatus()&AliESDtrack::kITSrefit)) || (!(track1->GetStatus()&AliESDtrack::kITSrefit))) {
+				// skipping if at least one daughter does not have kTPCrefit or kITSrefit
+				continue;
+			}
+
+			// check on the vertex -- could be moved outside the loop on the reconstructed D0... 
+			if(!vtxFlag) {
+				// skipping cause vertex is not ok
 				continue;
 			}
 
@@ -422,25 +474,25 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				AliDebug(2,"D0 reco daughters in acceptance");
 				fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoAcceptance) ;
 				icountRecoAcc++; 
-
-                                if(fAcceptanceUnf){
-
-                                   Double_t fill[4]; //fill response matrix
- 
-                                   // dimensions 0&1 : pt,eta (Rec)
-
-                                   fill[0] = pt ;
-                                   fill[1] = rapidity;
- 
-                                   // dimensions 2&3 : pt,eta (MC)
-
-                                   fill[2] = mcVtxHF->Pt();
-                                   fill[3] = mcVtxHF->Y();
-
-                                   fCorrelation->Fill(fill);
-
-                                }  
-
+				
+				if(fAcceptanceUnf){
+					
+					Double_t fill[4]; //fill response matrix
+					
+					// dimensions 0&1 : pt,eta (Rec)
+					
+					fill[0] = pt ;
+					fill[1] = rapidity;
+					
+					// dimensions 2&3 : pt,eta (MC)
+					
+					fill[2] = mcVtxHF->Pt();
+					fill[3] = mcVtxHF->Y();
+					
+					fCorrelation->Fill(fill);
+					
+				}  
+				
 				// cut on the min n. of clusters in ITS
 				Int_t ncls0=0;
 				for(Int_t l=0;l<6;l++) if(TESTBIT(d0tokpi->GetITSClusterMap(),l)) ncls0++;
@@ -449,7 +501,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters) ;
 					icountRecoITSClusters++;   
 					AliDebug(2,Form("pT = %f, dca = %f, cosThetaStar = %f, pTpi = %f, pTK = %f, d0pi = %f, d0K = %f, d0xd0 = %f, cosPointingAngle = %f", pt, dca, cosThetaStar,pTpi, pTK, d0pi*1E4, d0K*1E4, d0xd0*1E8, cosPointingAngle));
-
+					
 					// PPR cuts 
 					Double_t cuts[6] = {9999999., 1.1, 0., 9999999., 9999999., 0.};
 					if (pt <= 1){
@@ -501,28 +553,28 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					    && d0xd0*1E8 < cuts[4] 
 					    && cosPointingAngle > cuts[5]
 					    ){
-
+						
 						AliDebug(2,"Particle passed PPR cuts");
 						fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPPR) ;   
 						icountRecoPPR++;
-
-                                                if(!fAcceptanceUnf){ // unfolding
-
-                                                  Double_t fill[4]; //fill response matrix
- 
-                                                  // dimensions 0&1 : pt,eta (Rec)
-
-                                                  fill[0] = pt ;
-                                                  fill[1] = rapidity;
- 
-                                                  // dimensions 2&3 : pt,eta (MC)
-
-                                                  fill[2] = mcVtxHF->Pt();
-                                                  fill[3] = mcVtxHF->Y();
-
-                                                  fCorrelation->Fill(fill);
-
-                                               }
+						
+						if(!fAcceptanceUnf){ // unfolding
+							
+							Double_t fill[4]; //fill response matrix
+							
+							// dimensions 0&1 : pt,eta (Rec)
+							
+							fill[0] = pt ;
+							fill[1] = rapidity;
+							
+							// dimensions 2&3 : pt,eta (MC)
+							
+							fill[2] = mcVtxHF->Pt();
+							fill[3] = mcVtxHF->Y();
+							
+							fCorrelation->Fill(fill);
+							
+						}
 					}
 					else{
 						AliDebug(2,"Particle skipped due to PPR cuts");
@@ -560,6 +612,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	AliDebug(2, Form("Found %i Reco particles that are D0!!",icountReco));
 
 	fCountReco+= icountReco;
+	fCountVertex+= icountVertex;
+	fCountRefit+= icountRefit;
 	fCountRecoAcc+= icountRecoAcc;
 	fCountRecoITSClusters+= icountRecoITSClusters;
 	fCountRecoPPR+= icountRecoPPR;
@@ -583,6 +637,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	
 	AliInfo(Form("Found %i MC particles that are D0 in MC, in %d events",fCountMC,fEvents));
 	AliInfo(Form("Found %i MC particles that are D0 in MC and satisfy Acc cuts, in %d events",fCountAcc,fEvents));
+	AliInfo(Form("Found %i MC particles that are D0 in MC and satisfy Acc cuts, and satisfy Vertex requirement in %d events",fCountVertex,fEvents));
+	AliInfo(Form("Found %i MC particles that are D0 in MC and satisfy Acc cuts, and satisfy ITS+TPC refit requirementin %d events",fCountRefit,fEvents));
 	AliInfo(Form("Found %i reco D0 that are decaying in K+pi, in %d events",fCountReco,fEvents));
 	AliInfo(Form("Among the above, found %i reco D0 that are decaying in K+pi and are in the requested acceptance, in %d events",fCountRecoAcc,fEvents));
 	AliInfo(Form("Among the above, found %i reco D0 that are decaying in K+pi and have at least %d clusters in ITS, in %d events",fCountRecoITSClusters,fMinITSClusters,fEvents));
@@ -627,18 +683,18 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	TH1D* h111 =   cont->ShowProjection(11,1) ;   // phi
 
 	// Reco-level
-	TH1D* h02 =   cont->ShowProjection(0,2) ;   // pt
-	TH1D* h12 =   cont->ShowProjection(1,2) ;   // rapidity
-	TH1D* h22 =   cont->ShowProjection(2,2) ;   // cosThetaStar
-	TH1D* h32 =   cont->ShowProjection(3,2) ;   // pTpi
-	TH1D* h42 =   cont->ShowProjection(4,2) ;   // pTK
-	TH1D* h52 =   cont->ShowProjection(5,2) ;   // cT
-	TH1D* h62 =   cont->ShowProjection(6,2) ;   // dca
-	TH1D* h72 =   cont->ShowProjection(7,2) ;   // d0pi
-	TH1D* h82 =   cont->ShowProjection(8,2) ;   // d0K
-	TH1D* h92 =   cont->ShowProjection(9,2) ;   // d0xd0
-	TH1D* h102 =   cont->ShowProjection(10,2) ;   // cosPointingAngle
-	TH1D* h112 =   cont->ShowProjection(11,2) ;   // phi
+	TH1D* h04 =   cont->ShowProjection(0,4) ;   // pt
+	TH1D* h14 =   cont->ShowProjection(1,4) ;   // rapidity
+	TH1D* h24 =   cont->ShowProjection(2,4) ;   // cosThetaStar
+	TH1D* h34 =   cont->ShowProjection(3,4) ;   // pTpi
+	TH1D* h44 =   cont->ShowProjection(4,4) ;   // pTK
+	TH1D* h54 =   cont->ShowProjection(5,4) ;   // cT
+	TH1D* h64 =   cont->ShowProjection(6,4) ;   // dca
+	TH1D* h74 =   cont->ShowProjection(7,4) ;   // d0pi
+	TH1D* h84 =   cont->ShowProjection(8,4) ;   // d0K
+	TH1D* h94 =   cont->ShowProjection(9,4) ;   // d0xd0
+	TH1D* h104 =   cont->ShowProjection(10,4) ;   // cosPointingAngle
+	TH1D* h114 =   cont->ShowProjection(11,4) ;   // phi
 	
 	h00->SetTitle("pT_D0 (GeV/c)");
 	h10->SetTitle("rapidity");
@@ -692,31 +748,31 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h101->GetXaxis()->SetTitle("cosPointingAngle");
 	h111->GetXaxis()->SetTitle("phi (rad)");
 
-	h02->SetTitle("pT_D0 (GeV/c)");
-	h12->SetTitle("rapidity");
-	h22->SetTitle("cosThetaStar");
-	h32->SetTitle("pT_pi (GeV/c)");
-	h42->SetTitle("pT_K (Gev/c)");
-	h52->SetTitle("cT (#mum)");
-	h62->SetTitle("dca (#mum)");
-	h72->SetTitle("d0_pi (#mum)");
-	h82->SetTitle("d0_K (#mum)");
-	h92->SetTitle("d0xd0 (#mum^2)");
-	h102->SetTitle("cosPointingAngle");
-	h112->GetXaxis()->SetTitle("phi (rad)");
+	h04->SetTitle("pT_D0 (GeV/c)");
+	h14->SetTitle("rapidity");
+	h24->SetTitle("cosThetaStar");
+	h34->SetTitle("pT_pi (GeV/c)");
+	h44->SetTitle("pT_K (Gev/c)");
+	h54->SetTitle("cT (#mum)");
+	h64->SetTitle("dca (#mum)");
+	h74->SetTitle("d0_pi (#mum)");
+	h84->SetTitle("d0_K (#mum)");
+	h94->SetTitle("d0xd0 (#mum^2)");
+	h104->SetTitle("cosPointingAngle");
+	h114->GetXaxis()->SetTitle("phi (rad)");
 
-	h02->GetXaxis()->SetTitle("pT_D0 (GeV/c)");
-	h12->GetXaxis()->SetTitle("rapidity");
-	h22->GetXaxis()->SetTitle("cosThetaStar");
-	h32->GetXaxis()->SetTitle("pT_pi (GeV/c)");
-	h42->GetXaxis()->SetTitle("pT_K (Gev/c)");
-	h52->GetXaxis()->SetTitle("cT (#mum)");
-	h62->GetXaxis()->SetTitle("dca (#mum)");
-	h72->GetXaxis()->SetTitle("d0_pi (#mum)");
-	h82->GetXaxis()->SetTitle("d0_K (#mum)");
-	h92->GetXaxis()->SetTitle("d0xd0 (#mum^2)");
-	h102->GetXaxis()->SetTitle("cosPointingAngle");
-	h112->GetXaxis()->SetTitle("phi (rad)");
+	h04->GetXaxis()->SetTitle("pT_D0 (GeV/c)");
+	h14->GetXaxis()->SetTitle("rapidity");
+	h24->GetXaxis()->SetTitle("cosThetaStar");
+	h34->GetXaxis()->SetTitle("pT_pi (GeV/c)");
+	h44->GetXaxis()->SetTitle("pT_K (Gev/c)");
+	h54->GetXaxis()->SetTitle("cT (#mum)");
+	h64->GetXaxis()->SetTitle("dca (#mum)");
+	h74->GetXaxis()->SetTitle("d0_pi (#mum)");
+	h84->GetXaxis()->SetTitle("d0_K (#mum)");
+	h94->GetXaxis()->SetTitle("d0xd0 (#mum^2)");
+	h104->GetXaxis()->SetTitle("cosPointingAngle");
+	h114->GetXaxis()->SetTitle("phi (rad)");
 
 	Double_t max0 = h00->GetMaximum();
 	Double_t max1 = h10->GetMaximum();
@@ -809,31 +865,31 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h101->SetMarkerColor(8);
 	h111->SetMarkerColor(8);
 
-	h02->SetMarkerStyle(20) ;
-	h12->SetMarkerStyle(24) ;
-	h22->SetMarkerStyle(21) ;
-	h32->SetMarkerStyle(25) ;
-	h42->SetMarkerStyle(27) ;
-	h52->SetMarkerStyle(28) ;
-	h62->SetMarkerStyle(20);
-	h72->SetMarkerStyle(24);
-	h82->SetMarkerStyle(21);
-	h92->SetMarkerStyle(25);
-	h102->SetMarkerStyle(27);
-	h112->SetMarkerStyle(28);
+	h04->SetMarkerStyle(20) ;
+	h14->SetMarkerStyle(24) ;
+	h24->SetMarkerStyle(21) ;
+	h34->SetMarkerStyle(25) ;
+	h44->SetMarkerStyle(27) ;
+	h54->SetMarkerStyle(28) ;
+	h64->SetMarkerStyle(20);
+	h74->SetMarkerStyle(24);
+	h84->SetMarkerStyle(21);
+	h94->SetMarkerStyle(25);
+	h104->SetMarkerStyle(27);
+	h114->SetMarkerStyle(28);
 
-	h02->SetMarkerColor(4);
-	h12->SetMarkerColor(4);
-	h22->SetMarkerColor(4);
-	h32->SetMarkerColor(4);
-	h42->SetMarkerColor(4);
-	h52->SetMarkerColor(4);
-	h62->SetMarkerColor(4);
-	h72->SetMarkerColor(4);
-	h82->SetMarkerColor(4);
-	h92->SetMarkerColor(4);
-	h102->SetMarkerColor(4);
-	h112->SetMarkerColor(4);
+	h04->SetMarkerColor(4);
+	h14->SetMarkerColor(4);
+	h24->SetMarkerColor(4);
+	h34->SetMarkerColor(4);
+	h44->SetMarkerColor(4);
+	h54->SetMarkerColor(4);
+	h64->SetMarkerColor(4);
+	h74->SetMarkerColor(4);
+	h84->SetMarkerColor(4);
+	h94->SetMarkerColor(4);
+	h104->SetMarkerColor(4);
+	h114->SetMarkerColor(4);
 	
 	gStyle->SetCanvasColor(0);
 	gStyle->SetFrameFillColor(0);
@@ -851,7 +907,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h01->Draw("p");
 	c1->cd(2);
 	c1->cd(3);
-	h02->Draw("p");
+	h04->Draw("p");
 	c1->cd(3);
 	c1->cd(4);
 	h10->Draw("p");
@@ -860,7 +916,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h11->Draw("p");
 	c1->cd(5);
 	c1->cd(6);
-	h12->Draw("p");
+	h14->Draw("p");
 	c1->cd(6);
 	c1->cd(7);
 	h20->Draw("p");
@@ -869,7 +925,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h21->Draw("p");
 	c1->cd(8);
 	c1->cd(9);
-	h22->Draw("p");
+	h24->Draw("p");
 	c1->cd(9);
 	c1->cd();
 
@@ -882,7 +938,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h31->Draw("p");
 	c2->cd(2);
 	c2->cd(3);
-	h32->Draw("p");
+	h34->Draw("p");
 	c2->cd(3);
 	c2->cd(4);
 	h40->Draw("p");
@@ -891,7 +947,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h41->Draw("p");
 	c2->cd(5);
 	c2->cd(6);
-	h42->Draw("p");
+	h44->Draw("p");
 	c2->cd(6);
 	c2->cd(7);
 	h50->Draw("p");
@@ -900,7 +956,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h51->Draw("p");
 	c2->cd(8);
 	c2->cd(9);
-	h52->Draw("p");
+	h54->Draw("p");
 	c2->cd(9);
 	c2->cd();
 
@@ -913,7 +969,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h61->Draw("p");
 	c3->cd(2);
 	c3->cd(3);
-	h62->Draw("p");
+	h64->Draw("p");
 	c3->cd(3);
 	c3->cd(4);
 	h70->Draw("p");
@@ -922,7 +978,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h71->Draw("p");
 	c3->cd(5);
 	c3->cd(6);
-	h72->Draw("p");
+	h74->Draw("p");
 	c3->cd(6);
 	c3->cd(7);
 	h80->Draw("p");
@@ -931,7 +987,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h81->Draw("p");
 	c3->cd(8);
 	c3->cd(9);
-	h82->Draw("p");
+	h84->Draw("p");
 	c3->cd(9);
 	c3->cd();
 
@@ -944,7 +1000,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h91->Draw("p");
 	c4->cd(2);
 	c4->cd(3);
-	h92->Draw("p");
+	h94->Draw("p");
 	c4->cd(3);
 	c4->cd(4);
 	h100->Draw("p");
@@ -953,7 +1009,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h101->Draw("p");
 	c4->cd(5);
 	c4->cd(6);
-	h102->Draw("p");
+	h104->Draw("p");
 	c4->cd(6);
 	c4->cd(7);
 	h110->Draw("p");
@@ -962,7 +1018,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h111->Draw("p");
 	c4->cd(8);
 	c4->cd(9);
-	h112->Draw("p");
+	h114->Draw("p");
 	c4->cd(9);
 	c4->cd();
 
@@ -1009,18 +1065,18 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h101->Write("cosPointingAngle_step1");
 	h111->Write("phi_step1");
 
-	h02->Write("pT_D0_step2");
-	h12->Write("rapidity_step2");
-	h22->Write("cosThetaStar_step2");
-	h32->Write("pT_pi_step2");
-	h42->Write("pT_K_step2");
-	h52->Write("cT_step2");
-	h62->Write("dca_step2");
-	h72->Write("d0_pi_step2");
+	h04->Write("pT_D0_step2");
+	h14->Write("rapidity_step2");
+	h24->Write("cosThetaStar_step2");
+	h34->Write("pT_pi_step2");
+	h44->Write("pT_K_step2");
+	h54->Write("cT_step2");
+	h64->Write("dca_step2");
+	h74->Write("d0_pi_step2");
 	h80->Write("d0_K_step2");
-	h92->Write("d0xd0_step2");
-	h102->Write("cosPointingAngle_step2");
-	h112->Write("phi_step2");
+	h94->Write("d0xd0_step2");
+	h104->Write("cosPointingAngle_step2");
+	h114->Write("phi_step2");
 
 	file_projection->Close();
 
