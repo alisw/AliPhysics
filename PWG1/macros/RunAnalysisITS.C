@@ -5,6 +5,7 @@ void RunAnalysisITS() {
   // Macro to analyze ESDs from raw data reconstruction
   // A.Dainese, andrea.dainese@pd.infn.it
   //
+  gSystem->Setenv("alien_CLOSE_SE","ALICE::CNAF::SE")
 
   gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -g"); 
 
