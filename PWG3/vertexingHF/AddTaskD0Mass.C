@@ -1,9 +1,9 @@
 AliAnalysisTaskSED0Mass *AddTaskD0Mass()
 {
   //
-  // Test macro for the AliAnalysisTaskSE for D0 candidates
+  // AddTask for the AliAnalysisTaskSE for D0 candidates
   // invariant mass histogram and association with MC truth 
-  // (using MC info in AOD)
+  // (using MC info in AOD) and cut variables distributions
   // C.Bianchin  chiara.bianchin@pd.infn.it
   //
 
@@ -12,14 +12,14 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass()
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskD0Mass", "No analysis manager to connect to.");
+    ::Error("AddTaskD0MassDistr", "No analysis manager to connect to.");
     return NULL;
   }   
 
   
   // Aanalysis task    
-  AliAnalysisTaskSED0Mass *massD0Task = new AliAnalysisTaskSED0Mass("D0MassAnalysis");
-  massD0Task->SetDebugLevel(0);
+  AliAnalysisTaskSED0Mass *massD0Task = new AliAnalysisTaskSED0Mass("D0MassAndDistrAnalysis");
+  massD0Task->SetDebugLevel(2);
   mgr->AddTask(massD0Task);
   
   //
@@ -33,7 +33,10 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass()
   AliAnalysisDataContainer *coutputmassD02 = mgr->CreateContainer("coutputmassD02",TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   "D0InvMass.root");
-  AliAnalysisDataContainer *coutputmassD03 = mgr->CreateContainer("coutputmassD03",TH1F::Class(),
+  AliAnalysisDataContainer *coutputmassD03 = mgr->CreateContainer("nEntriesD0",TH1F::Class(),
+							   AliAnalysisManager::kOutputContainer, 
+							   "D0InvMass.root");
+  AliAnalysisDataContainer *coutputmassD04 = mgr->CreateContainer("coutputmassD0distr",TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   "D0InvMass.root");
 
@@ -42,7 +45,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass()
   mgr->ConnectOutput(massD0Task,1,coutputmassD01);
   mgr->ConnectOutput(massD0Task,2,coutputmassD02);
   mgr->ConnectOutput(massD0Task,3,coutputmassD03);
-
+  mgr->ConnectOutput(massD0Task,4,coutputmassD04);
 
   return massD0Task;
 }
