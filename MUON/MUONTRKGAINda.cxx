@@ -29,7 +29,7 @@
 
 /*
  -------------------------------------------------------------------------
- 2009-05-18 New version: MUONTRKGAINda.cxx,v 1.1
+ 2009-10-06 New version: MUONTRKGAINda.cxx,v 1.3
  -------------------------------------------------------------------------
 
  Version for MUONTRKGAINda MUON tracking
@@ -135,7 +135,6 @@ int main(Int_t argc, Char_t **argv)
  Int_t nEventsRecovered = 0;
  Int_t nEvents = 0;
  UInt_t runNumber   = 0;
- Int_t  nChannel    = 0;
  ofstream filcout;
  Int_t nIndex = -1; 
 
@@ -174,22 +173,6 @@ int main(Int_t argc, Char_t **argv)
 	  i++;
 	  shuttleFile = argv[i];
 	  break;
-// 	case 'd' :
-// 	  i++; 
-// 	  printLevel=atoi(argv[i]);
-// 	  break;
-// 	case 'g' :
-// 	  i++; 
-// 	  plotLevel=atoi(argv[i]);
-// 	  break;
-// 	case 'i' :
-// 	  i++; 
-// 	  nbpf1=atoi(argv[i]);
-// 	  break;
-// 	case 'j' :
-// 	  i++; 
-// 	  nInit=atoi(argv[i]);
-// 	  break;
 	case 's' :
 	  i++; 
 	  skipEvents=atoi(argv[i]);
@@ -216,10 +199,6 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n-a <Flat ASCII file>       (default = %s)",shuttleFile.Data()); 
 	  printf("\n");
 	  printf("\n Options");
-// 	  printf("\n-d <print level>           (default = %d)",printLevel);
-// 	  printf("\n-g <plot level>            (default = %d)",plotLevel);
-// 	  printf("\n-i <nb linear points>      (default = %d)",nbpf1);
-// 	  printf("\n-j start point of fit      (default = %d)",nInit);
 	  printf("\n-m <max date events>       (default = %d)",maxDateEvents);
 	  printf("\n-s <skip events>           (default = %d)",skipEvents);
 	  printf("\n-n <max events>            (default = %d)",maxEvents);
@@ -236,16 +215,15 @@ int main(Int_t argc, Char_t **argv)
  //Gain object
  AliMUONGain* muonGain = new AliMUONGain();
  muonGain->SetprefixDA(prefixDA);
- muonGain->SetAliRootDataFileName(); // MUONTRKGAINda_data.root  
+ muonGain->SetAliRootDataFileName(); // MUONTRKGAINda_data.root
+ // Char_t* RootDataFileName=muonGain->GetRootDataFileName();// MUONTRKGAINda_data.root
+ // cout << " Root data file = " << RootDataFileName << endl;  
 
  // Reading current iteration
  nIndex = daqDA_ECS_getCurrentIteration();
- if(nIndex<0)nIndex=0; // compute gain directly from existing root data file
+ if(nIndex<0)nIndex=0; // compute gain directly from existing root data file (OFFLINE only)
 
-
-
-
- if(nIndex==0) // compute gain from existing root data file: MUONTRKGAINda_data.root
+ if(nIndex==0) // compute gain from existing root data file: MUONTRKGAINda_data.root (OFFLINE only)
    {
      sprintf(flatFile,"%s_data.log",prefixDA);
      logOutputFile=flatFile;
@@ -261,36 +239,36 @@ int main(Int_t argc, Char_t **argv)
      muonGain->SetAliInit(nInit); // fnInit
      muonGain->SetAliNbpf1(nbpf1); // fnbpf1
      muonGain->MakeGainStore(shuttleFile);
-#ifdef ALI_AMORE
-     std::ifstream in(shuttleFile.Data());
-     ostringstream stringout;
-     char line[1024];
-     while ( in.getline(line,1024) )
-       stringout << line << "\n";  
-     in.close();
+     // ALI_AMORE instructions below are commented (not used OFFLINE) JLC 30/09/09
+     // #ifdef ALI_AMORE
+     //      std::ifstream in(shuttleFile.Data());
+     //      ostringstream stringout;
+     //      char line[1024];
+     //      while ( in.getline(line,1024) )
+     //        stringout << line << "\n";  
+     //      in.close();
 
-     amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-     TObjString gaindata(stringout.str().c_str());
-     status = amoreDA.Send("Gains",&gaindata);
-     if ( status )
-       cout << "Warning: Failed to write Pedestals in the AMORE database : " << status << endl;
-     else 
-       cout << "amoreDA.Send(Gains) ok" << endl;  
-#else
-     cout << "Warning: MCH DA not compiled with AMORE support" << endl;
-#endif
+     //      amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+     //      TObjString gaindata(stringout.str().c_str());
+     //      status = amoreDA.Send("Gains",&gaindata);
+     //      if ( status )
+     //        cout << "Warning: Failed to write Pedestals in the AMORE database : " << status << endl;
+     //      else 
+     //        cout << "amoreDA.Send(Gains) ok" << endl;  
+     // #else
+     //      cout << "Warning: MCH DA not compiled with AMORE support" << endl;
+     // #endif
    }
 
-
-
- if(nIndex>0) // normal case: reading calibration runs before computing gains
+ if(nIndex>0) // normal case: reading calibration runs before computing gains (ONLINE or OFFLINE)
    {
      UShort_t manuId;  
      UChar_t channelId;
      UShort_t charge;
 	  
      // DAC values stored in array vDAC (reading dbfile in DETDB)
-     //   Int_t vDAC[11] = {0,200,400,800,1200,1600,2000,2500,3000,3500,4000}; // DAC values
+     //   Int_t vDAC[11] = {0,200,400,800,1200,1600,2000,2500,3000,3500,4000}
+     Int_t nConfig = 1; // flag to read or not configuration ascii file in detDB
      Int_t vDAC[11]; // DAC values
      Char_t *dbfile;
      dbfile="mutrkcalibvalues";
@@ -298,15 +276,31 @@ int main(Int_t argc, Char_t **argv)
      status=daqDA_DB_getFile(dbfile,dbfile);
      ifstream filein(dbfile,ios::in); Int_t k=0, kk;
      while (k<nEntries ) { filein >> kk >> vDAC[k] ; k++; }
+     injCharge=vDAC[nIndex-1];
+
+
      filein >> nInit; // = 0 all DAC values fitted ; = 1 DAC=0 excluded (default=1)
      filein >> nbpf1; // nb of points for linear fit (default=6) 
      filein >> printLevel;  // printout (default=0, =1 =>.ped /run, =2 => .peak & .param)
      filein >> plotLevel;  // plotout (default=1 => tree , =2 tree+Tgraph+fit)
-     cout << "nInit=" << nInit << " Nb linear pts=" << nbpf1 << "    Print level=" << printLevel << "	  Plot Level=" << plotLevel << endl;
+     filein >> nConfig;  //nConfig (default=1 => read config in DetDB, otherwise =0)
+
+     cout << "nInit=" << nInit << " Nb linear pts=" << nbpf1 << "    Print level=" << printLevel << "	  Plot Level=" << plotLevel << "     Config= " << nConfig << endl;
+
      muonGain->SetAliPrintLevel(printLevel);
      muonGain->SetAliPlotLevel(plotLevel);
+     muonGain->SetconfigDA(nConfig);
+
+     if(nConfig)
+       {
+	 // Laod configuration ascii file from DetDB
+	 Char_t dbfil[256]="";
+	 sprintf(dbfil,"config_%s",getenv("DATE_ROLE_NAME"));
+	 cout << "\n *** Copy ascii config file: " << dbfil << " from DetDB to working directory and reading ...*** \n" << endl;
+	 status=daqDA_DB_getFile(dbfil,dbfil);
+	 muonGain->Load_config(dbfil);  
+       } 
 		
-     injCharge=vDAC[nIndex-1];
 
      // Rawdeader, RawStreamHP
      AliRawReader* rawReader = AliRawReader::Create(inputFile);
@@ -383,7 +377,6 @@ int main(Int_t argc, Char_t **argv)
 		{
 		  for(int i = 0; i < busPatch->GetLength(); ++i)
 		    {
-		      if (nEvents == 0) nChannel++;
 		      busPatch->GetData(i, manuId, channelId, charge);
 		      muonGain->MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
 		    }
@@ -423,9 +416,7 @@ int main(Int_t argc, Char_t **argv)
 			  // Good buspatch
 			  for(int i = 0; i < busPatch->GetLength(); ++i)
 			    {
-			      if (nEvents == 0) nChannel++;
 			      busPatch->GetData(i, manuId, channelId, charge);
-			      // if (busPatch->GetBusPatchId()==1719 && manuId == 1 && channelId == 0) cout <<"Recovered charge "<<charge<<endl;
 			      muonGain->MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
 			    }
 			}
@@ -496,7 +487,6 @@ int main(Int_t argc, Char_t **argv)
      muonGain->SetAliInjCharge(injCharge);
      muonGain->SetAliNEvents(nEvents);
      muonGain->SetAliRunNumber(runNumber);
-     muonGain->SetAliNChannel(nChannel);
      muonGain->MakePedStoreForGain(shuttleFile);
      
 
@@ -556,7 +546,7 @@ int main(Int_t argc, Char_t **argv)
 //	 Copying files to local DB folder defined by DAQ_DETDB_LOCAL
        Char_t *dir;
       dir= getenv("DAQ_DETDB_LOCAL");
-      unsigned int nLastVersions = 99;
+      unsigned int nLastVersions = 90;
       cout << "\n ***  Local DataBase: " << dir << " (Max= " << nLastVersions << ") ***" << endl;
       status = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
       printf(" Store file : %s   status = %d\n",logOutputFile.Data(),status);

@@ -29,7 +29,7 @@ Run Type: PEDESTAL
 
 /*
 	-------------------------------------------------------------------------
-        2009-06-18 New version: MUONTRKPEDda.cxx,v 1.2
+        2009-10-06 New version: MUONTRKPEDda.cxx,v 1.3
 	-------------------------------------------------------------------------
 
 	Version for MUONTRKPEDda MUON tracking
@@ -39,6 +39,7 @@ Run Type: PEDESTAL
  Rem:  AliMUON2DMap stores all channels, even those which are not connected
  if pedMean == -1, channel not connected to a pad  
 
+&
 
 */
 extern "C" {
@@ -137,9 +138,7 @@ int main(Int_t argc, Char_t **argv)
   Int_t nEventsRecovered = 0;
   Int_t nEvents = 0;
   UInt_t runNumber   = 0;
-  Int_t  nChannel    = 0;
   ofstream filcout;
-//   Int_t nIndex = -1; 
 
   // decode the input line
   for (Int_t i = 1; i < argc; i++) // argument 0 is the executable name
@@ -178,10 +177,6 @@ int main(Int_t argc, Char_t **argv)
 	  i++; 
 	  sscanf(argv[i],"%d",&maxEvents);
 	  break;
-// 	case 'p' : 
-// 	  i++;
-// 	  sscanf(argv[i],"%d",&recoverParityErrors);
-// 	  break;
 	case 'h' :
 	  i++;
 	  printf("\n******************* %s usage **********************",argv[0]);
@@ -199,7 +194,6 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n-m <max date events>       (default = %d)",maxDateEvents);
 	  printf("\n-s <skip events>           (default = %d)",skipEvents);
 	  printf("\n-n <max events>            (default = %d)",maxEvents);
-// 	  printf("\n-p <Recover parity errors> (default = %d)",recoverParityErrors);
 
 	  printf("\n\n");
 	  exit(-1);
@@ -218,6 +212,28 @@ int main(Int_t argc, Char_t **argv)
   //Pedestal object
   AliMUONPedestal* muonPedestal = new AliMUONPedestal();
   muonPedestal->SetprefixDA(prefixDA);
+
+  // Reading configuration status via "mutrkpedvalues" file located in DetDB
+  // config=1: config ascii file read from DetDB, otherwise: config=0
+  Int_t nConfig = 1; 
+  Char_t *dbfile;
+  dbfile="mutrkpedvalues";
+  cout << "\n *** Copy: " << dbfile << " from DetDB to working directory  *** \n" << endl;
+  status=daqDA_DB_getFile(dbfile,dbfile);
+  ifstream filein(dbfile,ios::in);
+  filein >> nConfig;
+  cout << "       Config= " << nConfig << endl;
+  muonPedestal->SetconfigDA(nConfig);
+
+  if(nConfig)
+    {
+  // MuonTrk Configuration ascii file (initCROCUS.dat -> ascii file = mutrkconfig)
+  Char_t dbfil[256]="";
+  sprintf(dbfil,"config_%s",getenv("DATE_ROLE_NAME"));
+  cout << "\n *** Copy ascii config file: " << dbfil << " from DetDB to working directory and reading ...*** \n" << endl;
+  status=daqDA_DB_getFile(dbfil,dbfil);
+  muonPedestal->Load_config(dbfil);  
+    } 
 
   // Rawdeader, RawStreamHP
   AliRawReader* rawReader = AliRawReader::Create(inputFile);
@@ -294,7 +310,6 @@ int main(Int_t argc, Char_t **argv)
 	    {
 	      for(int i = 0; i < busPatch->GetLength(); ++i)
 		{
-		  if (nEvents == 0) nChannel++;
 		  busPatch->GetData(i, manuId, channelId, charge);
 		  muonPedestal->MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
 		}
@@ -334,9 +349,7 @@ int main(Int_t argc, Char_t **argv)
 		      // Good buspatch
 		      for(int i = 0; i < busPatch->GetLength(); ++i)
 			{
-			  if (nEvents == 0) nChannel++;
 			  busPatch->GetData(i, manuId, channelId, charge);
-			  // if (busPatch->GetBusPatchId()==1719 && manuId == 1 && channelId == 0) cout <<"Recovered charge "<<charge<<endl;
 			  muonPedestal->MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
 			}
 		    }
@@ -400,7 +413,6 @@ int main(Int_t argc, Char_t **argv)
   if(shuttleFile.IsNull())shuttleFile=flatFile;
   muonPedestal->SetAliNEvents(nEvents);
   muonPedestal->SetAliRunNumber(runNumber);
-  muonPedestal->SetAliNChannel(nChannel);
   
   muonPedestal->Finalize();  
   muonPedestal->MakeControlHistos();  
@@ -466,13 +478,10 @@ int main(Int_t argc, Char_t **argv)
   unsigned int nLastVersions=90;
   cout << "\n ***  Local DataBase: " << dir << " (Max= " << nLastVersions << ") ***" << endl;
   status = daqDA_localDB_storeFile(muonPedestal->GetHistoFileName(),nLastVersions);
-  //  if (!status) printf(" Failed to store file : %s   status = %d\n",muonPedestal->GetHistoFileName(),status);
   printf(" Store file : %s   status = %d\n",muonPedestal->GetHistoFileName(),status);
   status = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);
-  //  if (!status) printf(" Failed to store file : %s   status = %d\n",shuttleFile.Data(),status);
   printf(" Store file : %s   status = %d\n",shuttleFile.Data(),status);
   status = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
-  //  if (!status) printf(" Failed to store file : %s   status = %d\n",logOutputFile.Data(),status);
   printf(" Store file : %s   status = %d\n",logOutputFile.Data(),status);
 
   // Transferring to OCDB via the SHUTTLE

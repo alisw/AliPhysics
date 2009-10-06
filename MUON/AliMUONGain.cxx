@@ -211,20 +211,23 @@ void AliMUONGain::MakePedStoreForGain(TString shuttleFile)
 //______________________________________________________________________________
 TString AliMUONGain::WriteGainHeader(Int_t nInit, Int_t nEntries, Int_t nbpf2, Int_t *numrun, Double_t *injCharge) 
 {
-///
+/// Header of the calibration output file
 
   ostringstream stream;
 
 
-  stream<<"//================================================" << endl;
-  stream<<"//  Calibration file calculated by MUONTRKda" << endl;
-  stream<<"//=================================================" << endl;
+  stream<<"//=======================================================" << endl;
+  stream<<"//      Calibration file calculated by " << fprefixDA <<endl;
+  stream<<"//=======================================================" << endl;
   stream<<"//   * Run           : " << fRunNumber << endl; 
   stream<<"//   * Date          : " << fDate->AsString("l") <<endl;
   stream<<"//   * Statictics    : " << fNEvents << endl;
-  stream<<"//   * # of MANUS    : " << fNManu << endl;
+  if(fConfig)
+  stream<<"//   * # of MANUS    : " << fNManu_config << " read in the Det. config. " << endl;
+  stream<<"//   * # of MANUS    : " << fNManu << " read in raw data " << endl;
+  stream<<"//   * # of MANUS    : " << fNChannel/64 << " written in calibration file " << endl;
   stream<<"//   * # of channels : " << fNChannel << endl;
-  stream<<"//-------------------------------------------------" << endl;
+  stream<<"//-------------------------------------------------------" << endl;
 
   if(nInit==0)
     stream<<"//  "<< nEntries <<" DAC values  fit: "<< fnbpf1 << " pts (1st order) " << nbpf2 << " pts (2nd order)" << endl;
@@ -246,7 +249,7 @@ TString AliMUONGain::WriteGainHeader(Int_t nInit, Int_t nEntries, Int_t nbpf2, I
 //______________________________________________________________________________
 TString AliMUONGain::WriteGainData(Int_t BP, Int_t Manu, Int_t ch, Double_t p1, Double_t p2, Int_t threshold, Int_t q) 
 {
-///
+/// Write calibration parameters per channel
 
   ostringstream stream("");
   stream << Form("%4i %5i %2i %7.4f %10.3e %4i %2x\n",BP,Manu,ch,p1,p2,threshold,q);
@@ -281,6 +284,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   // Fit with a polynomial fct
   // store the result in a flat file.
 
+  if(fIndex==0)cout << " Root data file = " << fRootDataFileName << endl;  
   TFile*  histoFile = new TFile(fRootDataFileName);
 
   AliMUON2DMap* map[11];
@@ -495,7 +499,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	    {
 	      Int_t k = j + fnInit;
 	      x[j]    = pedMean[k];
-	      if(x[j]==0. || x[j]== kADCMax)fitproceed=0;
+	      if(x[j]<=0. || x[j]== kADCMax)fitproceed=0;
 	      xErr[j] = pedSigma[k];
 	      y[j]    = injCharge[k];
 	      yErr[j] = injChargeErr[k];

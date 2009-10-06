@@ -44,8 +44,13 @@ class AliMUONPedestal : public TObject
     AliMUONVStore* GetErrorBuspatchTable() {return fErrorBuspatchTable;}
     /// return the name of DAPedestal .root file
     Char_t* GetHistoFileName() {return fHistoFileName;}
+    /// load MuonTrk configuration from ascii dbfile
+    void Load_config(char* dbfile);
+    /// sum pedestal values for mean and sigma determination
     void MakePed(Int_t bp,Int_t manu,Int_t ch,Int_t charge);
 
+    /// set config flag
+    void SetconfigDA(Int_t ind) {fConfig = ind;}
     /// set specific  DA prefixname
     void SetprefixDA(char* folder) {sprintf(fprefixDA,"%s",folder);}
     /// set the index of calibration runs
@@ -63,8 +68,11 @@ class AliMUONPedestal : public TObject
     Int_t fRunNumber; ///< run number
     Int_t fNChannel; ///< Nb of channels (pads)
     Int_t fNManu; ///<  Nb of Manu
+    Int_t fNManu_config; ///<  Nb of Manu in the current detector configuration
+    Int_t fConfig; ///< flag 1(0) for reading(or not) configuration ascii file
     AliMUONVStore* fErrorBuspatchTable; ///< Table for buspatches with parity errors 
     AliMUONVStore* fManuBuspatchTable; ///< Occupancy rate for each (buspatch, manu)
+    AliMUONVStore* fManuBPoutofconfigTable; ///< (buspatch, manu) out of config
  
     TTimeStamp* fDate; ///< date
     ofstream* fFilcout; ///< .log output file
