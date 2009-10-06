@@ -1782,7 +1782,6 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     // Propagate track to the beam pipe  (if not already done by ITS)
     //
     const Int_t ntracks = fesd->GetNumberOfTracks();
-    const Double_t kBz = fesd->GetMagneticField();
     const Double_t kRadius  = 2.8; //something less than the beam pipe radius
 
     TObjArray trkArray;
@@ -1800,7 +1799,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       ok = kFALSE;
       if (tpcTrack)
 	ok = AliTracker::
-	  PropagateTrackTo(tpcTrack,kRadius,track->GetMass(),kMaxStep,kFALSE);
+	  PropagateTrackToBxByBz(tpcTrack,kRadius,track->GetMass(),kMaxStep,kFALSE);
 
       if (ok) {
 	Int_t n=trkArray.GetEntriesFast();
@@ -1812,8 +1811,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (track->IsOn(AliESDtrack::kITSrefit)) continue;
 
       AliTracker::
-         PropagateTrackTo(track,kRadius,track->GetMass(),kMaxStep,kFALSE);
-      track->RelateToVertex(fesd->GetPrimaryVertexSPD(), kBz, kVeryBig);
+         PropagateTrackToBxByBz(track,kRadius,track->GetMass(),kMaxStep,kFALSE);
+      Double_t x[3]; track->GetXYZ(x);
+      Double_t b[3]; AliTracker::GetBxByBz(x,b);
+      track->RelateToVertexBxByBz(fesd->GetPrimaryVertexSPD(), b, kVeryBig);
 
     }
 
@@ -1848,7 +1849,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
              fesd->SetPrimaryVertexTracks(pvtx);
              for (Int_t i=0; i<ntracks; i++) {
 	         AliESDtrack *t = fesd->GetTrack(i);
-                 t->RelateToVertex(pvtx, kBz, kVeryBig);
+                 Double_t x[3]; t->GetXYZ(x);
+                 Double_t b[3]; AliTracker::GetBxByBz(x,b);
+                 t->RelateToVertexBxByBz(pvtx, b, kVeryBig);
              } 
           }
        }
@@ -1872,7 +1875,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
              fesd->SetPrimaryVertexTPC(pvtx);
              for (Int_t i=0; i<ntracks; i++) {
 	         AliESDtrack *t = fesd->GetTrack(i);
-                 t->RelateToVertexTPC(pvtx, kBz, kVeryBig);
+                 Double_t x[3]; t->GetXYZ(x);
+                 Double_t b[3]; AliTracker::GetBxByBz(x,b);
+                 t->RelateToVertexTPCBxByBz(pvtx, b, kVeryBig);
              } 
           }
        }

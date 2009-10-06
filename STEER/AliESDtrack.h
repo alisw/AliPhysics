@@ -327,6 +327,9 @@ public:
   }
   Bool_t RelateToVertexTPC(const AliESDVertex *vtx, Double_t b, Double_t maxd,
                            AliExternalTrackParam *cParam=0);
+  Bool_t 
+  RelateToVertexTPCBxByBz(const AliESDVertex *vtx, Double_t b[3],Double_t maxd,
+                           AliExternalTrackParam *cParam=0);
   void GetImpactParametersTPC(Float_t &xy,Float_t &z) const {xy=fdTPC; z=fzTPC;}
   void GetImpactParametersTPC(Float_t p[2], Float_t cov[3]) const {
     p[0]=fdTPC; p[1]=fzTPC; cov[0]=fCddTPC; cov[1]=fCdzTPC; cov[2]=fCzzTPC;
@@ -334,6 +337,9 @@ public:
   Double_t GetConstrainedChi2TPC() const {return fCchi2TPC;}
 
   Bool_t RelateToVertex(const AliESDVertex *vtx, Double_t b, Double_t maxd,
+                        AliExternalTrackParam *cParam=0);
+  Bool_t 
+  RelateToVertexBxByBz(const AliESDVertex *vtx, Double_t b[3], Double_t maxd,
                         AliExternalTrackParam *cParam=0);
   void GetImpactParameters(Float_t &xy,Float_t &z) const {xy=fD; z=fZ;}
   void GetImpactParameters(Float_t p[2], Float_t cov[3]) const {

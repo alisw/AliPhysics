@@ -739,6 +739,33 @@ AliExternalTrackParam::Propagate(Double_t alpha, Double_t x, Double_t b) {
   return kFALSE;
 }
 
+Bool_t AliExternalTrackParam::PropagateBxByBz
+(Double_t alpha, Double_t x, Double_t b[3]) {
+  //------------------------------------------------------------------
+  // Transform this track to the local coord. system rotated
+  // by angle "alpha" (rad) with respect to the global coord. system, 
+  // and propagate this track to the plane X=xk (cm),
+  // taking into account all three components of the B field, "b[3]" (kG)
+  //------------------------------------------------------------------
+  
+  //Save the parameters
+  Double_t as=fAlpha;
+  Double_t xs=fX;
+  Double_t ps[5], cs[15];
+  for (Int_t i=0; i<5;  i++) ps[i]=fP[i]; 
+  for (Int_t i=0; i<15; i++) cs[i]=fC[i]; 
+
+  if (Rotate(alpha))
+     if (PropagateToBxByBz(x,b)) return kTRUE;
+
+  //Restore the parameters, if the operation failed
+  fAlpha=as;
+  fX=xs;
+  for (Int_t i=0; i<5;  i++) fP[i]=ps[i]; 
+  for (Int_t i=0; i<15; i++) fC[i]=cs[i]; 
+  return kFALSE;
+}
+
 
 void AliExternalTrackParam::Propagate(Double_t len, Double_t x[3],
 Double_t p[3], Double_t bz) const {
@@ -1282,6 +1309,64 @@ Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]) {
   yv=-xv*sn + yv*cs; xv=x;
 
   if (!Propagate(alpha+TMath::ASin(sn),xv,b)) return kFALSE;
+
+  if (dz==0) return kTRUE;
+  dz[0] = GetParameter()[0] - yv;
+  dz[1] = GetParameter()[1] - zv;
+  
+  if (covar==0) return kTRUE;
+  Double_t cov[6]; vtx->GetCovarianceMatrix(cov);
+
+  //***** Improvements by A.Dainese
+  alpha=GetAlpha(); sn=TMath::Sin(alpha); cs=TMath::Cos(alpha);
+  Double_t s2ylocvtx = cov[0]*sn*sn + cov[2]*cs*cs - 2.*cov[1]*cs*sn;
+  covar[0] = GetCovariance()[0] + s2ylocvtx;   // neglecting correlations
+  covar[1] = GetCovariance()[1];               // between (x,y) and z
+  covar[2] = GetCovariance()[2] + cov[5];      // in vertex's covariance matrix
+  //*****
+
+  return kTRUE;
+}
+
+Bool_t AliExternalTrackParam::PropagateToDCABxByBz(const AliVVertex *vtx, 
+Double_t b[3], Double_t maxd, Double_t dz[2], Double_t covar[3]) {
+  //
+  // Propagate this track to the DCA to vertex "vtx", 
+  // if the (rough) transverse impact parameter is not bigger then "maxd". 
+  //
+  // This function takes into account all three components of the magnetic
+  // field given by the b[3] arument (kG)
+  //
+  // a) The track gets extapolated to the DCA to the vertex.
+  // b) The impact parameters and their covariance matrix are calculated.
+  //
+  //    In the case of success, the returned value is kTRUE
+  //    (otherwise, it's kFALSE)
+  //  
+  Double_t alpha=GetAlpha();
+  Double_t sn=TMath::Sin(alpha), cs=TMath::Cos(alpha);
+  Double_t x=GetX(), y=GetParameter()[0], snp=GetParameter()[2];
+  Double_t xv= vtx->GetX()*cs + vtx->GetY()*sn;
+  Double_t yv=-vtx->GetX()*sn + vtx->GetY()*cs, zv=vtx->GetZ();
+  x-=xv; y-=yv;
+
+  //Estimate the impact parameter neglecting the track curvature
+  Double_t d=TMath::Abs(x*snp - y*TMath::Sqrt(1.- snp*snp));
+  if (d > maxd) return kFALSE; 
+
+  //Propagate to the DCA
+  Double_t crv=GetC(b[3]);
+  if (TMath::Abs(b[3]) < kAlmost0Field) crv=0.;
+
+  Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt(1.-snp*snp));
+  sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv); cs=TMath::Sqrt(1.- sn*sn);
+  if (TMath::Abs(tgfv)>0.) cs = sn/tgfv;
+  else cs=1.;
+
+  x = xv*cs + yv*sn;
+  yv=-xv*sn + yv*cs; xv=x;
+
+  if (!PropagateBxByBz(alpha+TMath::ASin(sn),xv,b)) return kFALSE;
 
   if (dz==0) return kTRUE;
   dz[0] = GetParameter()[0] - yv;

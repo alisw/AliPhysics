@@ -162,6 +162,7 @@ class AliExternalTrackParam: public AliVTrack {
   Bool_t Rotate(Double_t alpha);
   Bool_t PropagateTo(Double_t x, Double_t b);
   Bool_t Propagate(Double_t alpha, Double_t x, Double_t b);
+  Bool_t PropagateBxByBz(Double_t alpha, Double_t x, Double_t b[3]);
   void   Propagate(Double_t len,Double_t x[3],Double_t p[3],Double_t bz) const;
   Bool_t Intersect(Double_t pnt[3], Double_t norm[3], Double_t bz) const;
 
@@ -174,6 +175,8 @@ class AliExternalTrackParam: public AliVTrack {
   Double_t PropagateToDCA(AliExternalTrackParam *p, Double_t b);
   Bool_t PropagateToDCA(const AliVVertex *vtx, Double_t b, Double_t maxd,
                         Double_t dz[2]=0, Double_t cov[3]=0);
+  Bool_t PropagateToDCABxByBz(const AliVVertex *vtx, Double_t b[3], 
+         Double_t maxd, Double_t dz[2]=0, Double_t cov[3]=0);
   
   void GetDirection(Double_t d[3]) const;
   Bool_t GetPxPyPz(Double_t *p) const;
