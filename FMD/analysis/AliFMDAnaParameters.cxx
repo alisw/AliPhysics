@@ -376,6 +376,16 @@ TH1F* AliFMDAnaParameters::GetSharingEfficiency(Int_t det, Char_t ring, Int_t vt
 
 }
 //_____________________________________________________________________
+TH1F* AliFMDAnaParameters::GetSharingEfficiencyTrVtx(Int_t det, Char_t ring, Int_t vtxbin) {
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
+  
+  return fSharingEfficiency->GetSharingEffTrVtx(det,ring,vtxbin);
+
+}
+//_____________________________________________________________________
 Float_t AliFMDAnaParameters::GetMaxR(Char_t ring) const{
   Float_t radius = 0;
   if(ring == 'I')

@@ -220,12 +220,6 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	      correction = correction*hDoubleHitCorrection->GetBinContent(hDoubleHitCorrection->FindBin(eta));
 	    
 	  }
-	  TH1F* hSharingEff = pars->GetSharingEfficiency(det,ring,vtxbin);
-	    
-	    if(hSharingEff->GetBinContent(hSharingEff->FindBin(eta)) != 0)
-	      correction = correction*hSharingEff->GetBinContent(hSharingEff->FindBin(eta));
-	  
-	  
 	  
 	  if(correction) nParticles = nParticles / correction;
 	  if(nParticles > 0)

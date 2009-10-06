@@ -91,7 +91,7 @@ public:
   TH1F* GetDoubleHitCorrection(Int_t det, Char_t ring);
   
   TH1F* GetSharingEfficiency(Int_t det, Char_t ring, Int_t vtxbin);
-  
+  TH1F* GetSharingEfficiencyTrVtx(Int_t det, Char_t ring, Int_t vtxbin);
   Float_t  GetEventSelectionEfficiency(Int_t vtxbin);
   Float_t  GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec) const;
   Float_t  GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx) const;

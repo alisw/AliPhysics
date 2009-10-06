@@ -194,11 +194,31 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
       Char_t ringChar = (ir == 0 ? 'I' : 'O');
       for(Int_t i =0; i<nVtxbins; i++) {
 	
+	TH1F* hSharingEff = pars->GetSharingEfficiency(det,ringChar,i);
+	TH1F* hSharingEffTrVtx = pars->GetSharingEfficiencyTrVtx(det,ringChar,i);	
 	TH2F* hMultTotal = (TH2F*)fOutputList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i));
 	TH2F* hMultTrVtx = (TH2F*)hMultTotal->Clone(Form("dNdeta_FMD%d%c_TrVtx_vtxbin%d",det,ringChar,i));
 	
+	for(Int_t nx=1; nx<hMultTotal->GetNbinsX(); nx++) {
+	  Float_t correction = hSharingEff->GetBinContent(nx);
+	  Float_t correctionTrVtx = hSharingEffTrVtx->GetBinContent(nx);
+	  for(Int_t ny=1; ny<hMultTotal->GetNbinsY(); ny++) {
+	    
+	    if(correction != 0)
+	      hMultTotal->SetBinContent(nx,ny,hMultTotal->GetBinContent(nx,ny)/correction);
+	    if(correctionTrVtx != 0)
+	      hMultTrVtx->SetBinContent(nx,ny,hMultTrVtx->GetBinContent(nx,ny)/correctionTrVtx);
+	    
+	  }
+	  
+	}
+	
+	//hMultTotal->Divide(hSharingEff);
+	
 	hMultTotal->Scale(1/pars->GetEventSelectionEfficiency(i));
-		
+	
+	//hMultTrVtx->Divide(hSharingEffTrVtx);
+	
 	TH1D* hMultProj   = hMultTotal->ProjectionX(Form("dNdeta_FMD%d%c_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
 	TH1D* hMultProjTrVtx   = hMultTrVtx->ProjectionX(Form("dNdeta_FMD%d%c_TrVtx_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
 	fOutputList->Add(hMultTrVtx);
