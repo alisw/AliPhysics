@@ -223,6 +223,10 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fGAliceFileName(gAliceFilename),
   fRawInput(""),
   fESDOutput(""),
+  fProofOutputFileName(""),
+  fProofOutputLocation(""),
+  fProofOutputDataset(kFALSE),
+  fProofOutputArchive(""),
   fEquipIdMap(""),
   fFirstEvent(0),
   fLastEvent(-1),
@@ -320,6 +324,10 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fGAliceFileName(rec.fGAliceFileName),
   fRawInput(rec.fRawInput),
   fESDOutput(rec.fESDOutput),
+  fProofOutputFileName(rec.fProofOutputFileName),
+  fProofOutputLocation(rec.fProofOutputLocation),
+  fProofOutputDataset(rec.fProofOutputDataset),
+  fProofOutputArchive(rec.fProofOutputArchive),
   fEquipIdMap(rec.fEquipIdMap),
   fFirstEvent(rec.fFirstEvent),
   fLastEvent(rec.fLastEvent),
@@ -431,6 +439,10 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fGAliceFileName                = rec.fGAliceFileName;
   fRawInput                      = rec.fRawInput;
   fESDOutput                     = rec.fESDOutput;
+  fProofOutputFileName           = rec.fProofOutputFileName;
+  fProofOutputLocation           = rec.fProofOutputLocation;
+  fProofOutputDataset            = rec.fProofOutputDataset;
+  fProofOutputArchive            = rec.fProofOutputArchive;
   fEquipIdMap                    = rec.fEquipIdMap;
   fFirstEvent                    = rec.fFirstEvent;
   fLastEvent                     = rec.fLastEvent;
@@ -871,7 +883,7 @@ void AliReconstruction::SetOutput(const char* output)
   // Set the output ESD filename
   // 'output' is a normalt ROOT url
   // The method is used in case of raw-data reco with PROOF
-  if (output) fESDOutput.SetUrl(output);
+  if (output) fESDOutput = output;
 }
 
 //_____________________________________________________________________________
@@ -1240,13 +1252,9 @@ Bool_t AliReconstruction::Run(const char* input)
       gProof->Exec("TMessage::EnableSchemaEvolutionForAll(kTRUE)",kTRUE);
 
       gProof->AddInput(this);
-      if (!fESDOutput.IsValid()) {
-	fESDOutput.SetProtocol("root",kTRUE);
-	fESDOutput.SetHost(gSystem->HostName());
-	fESDOutput.SetFile(Form("%s/AliESDs.root",gSystem->pwd()));
-      }
-      AliInfo(Form("Output file with ESDs is %s",fESDOutput.GetUrl()));
-      gProof->AddInput(new TNamed("PROOF_OUTPUTFILE",fESDOutput.GetUrl()));
+
+      if (!ParseOutput()) return kFALSE;
+
       gProof->SetParameter("PROOF_MaxSlavesPerNode", 9999);
       chain->SetProof();
       chain->Process("AliReconstruction","",nEntries,fFirstEvent);
@@ -1425,7 +1433,8 @@ void AliReconstruction::SlaveBegin(TTree*)
   AliCodeTimerAuto("");
 
   TProofOutputFile *outProofFile = NULL;
-  if (fInput) { 
+  if (fInput) {
+    if (AliDebugLevel() > 0) fInput->Print();
     if (AliReconstruction *reco = (AliReconstruction*)fInput->FindObject("AliReconstruction")) {
       *this = *reco;
     }
@@ -1445,9 +1454,25 @@ void AliReconstruction::SlaveBegin(TTree*)
     if (AliMagF *map = (AliMagF*)fInput->FindObject("MagneticFieldMap")) {
       TGeoGlobalMagField::Instance()->SetField(map);
     }
-    if (TNamed *outputFileName = (TNamed *) fInput->FindObject("PROOF_OUTPUTFILE")) {
-      outProofFile = new TProofOutputFile(gSystem->BaseName(TUrl(outputFileName->GetTitle()).GetFile()));
-      outProofFile->SetOutputFileName(outputFileName->GetTitle());
+    if (TNamed *outputFileName = (TNamed*)fInput->FindObject("PROOF_OUTPUTFILE"))
+      fProofOutputFileName = outputFileName->GetTitle();
+    if (TNamed *outputLocation = (TNamed*)fInput->FindObject("PROOF_OUTPUTFILE_LOCATION"))
+      fProofOutputLocation = outputLocation->GetTitle();
+    if (fInput->FindObject("PROOF_OUTPUTFILE_DATASET"))
+      fProofOutputDataset = kTRUE;
+    if (TNamed *archiveList = (TNamed*)fInput->FindObject("PROOF_OUTPUTFILE_ARCHIVE"))
+      fProofOutputArchive = archiveList->GetTitle();
+    if (!fProofOutputFileName.IsNull() &&
+	!fProofOutputLocation.IsNull() &&
+	fProofOutputArchive.IsNull()) {
+      if (!fProofOutputDataset) {
+	outProofFile = new TProofOutputFile(fProofOutputFileName.Data(),"M");
+	outProofFile->SetOutputFileName(Form("%s%s",fProofOutputLocation.Data(),fProofOutputFileName.Data()));
+      }
+      else {
+	outProofFile = new TProofOutputFile(fProofOutputFileName.Data(),"DROV",fProofOutputLocation.Data());
+      }
+      if (AliDebugLevel() > 0) outProofFile->Dump();
       fOutput->Add(outProofFile);
     }
     AliSysInfo::AddStamp("ReadInputInSlaveBegin");
@@ -1479,6 +1504,8 @@ void AliReconstruction::SlaveBegin(TTree*)
     }
   }
   else {
+    AliInfo(Form("Opening output PROOF file: %s/%s",
+		 outProofFile->GetDir(), outProofFile->GetFileName()));
     if (!(ffile = outProofFile->OpenFile("RECREATE"))) {
       Abort(Form("Problems opening output PROOF file: %s/%s",
 		 outProofFile->GetDir(), outProofFile->GetFileName()),
@@ -2001,16 +2028,19 @@ void AliReconstruction::SlaveTerminate()
   }
 
   if (fRunQA || fRunGlobalQA) {
-    if (fInput) { 
-      if (TNamed *outputFileName = (TNamed *) fInput->FindObject("PROOF_OUTPUTFILE")) {
-	TString qaOutputFile = outputFileName->GetTitle();
-	qaOutputFile.ReplaceAll(gSystem->BaseName(TUrl(outputFileName->GetTitle()).GetFile()),
-				Form("Merged.%s.Data.root",AliQAv1::GetQADataFileName()));
-	TProofOutputFile *qaProofFile = new TProofOutputFile(Form("Merged.%s.Data.root",AliQAv1::GetQADataFileName()));
-	qaProofFile->SetOutputFileName(qaOutputFile.Data());
-	fOutput->Add(qaProofFile);
-	MergeQA(qaProofFile->GetFileName());
-      }
+    if (fInput &&
+	!fProofOutputLocation.IsNull() &&
+	fProofOutputArchive.IsNull() &&
+	!fProofOutputDataset) {
+      TString qaOutputFile(Form("%sMerged.%s.Data.root",
+				fProofOutputLocation.Data(),
+				AliQAv1::GetQADataFileName()));
+      TProofOutputFile *qaProofFile = new TProofOutputFile(Form("Merged.%s.Data.root",
+								AliQAv1::GetQADataFileName()));
+      qaProofFile->SetOutputFileName(qaOutputFile.Data());
+      if (AliDebugLevel() > 0) qaProofFile->Dump();
+      fOutput->Add(qaProofFile);
+      MergeQA(qaProofFile->GetFileName());
     }
     else {
       MergeQA();
@@ -2019,6 +2049,23 @@ void AliReconstruction::SlaveTerminate()
 
   gROOT->cd();
   CleanUp();
+
+  if (fInput) {
+    if (!fProofOutputFileName.IsNull() &&
+	!fProofOutputLocation.IsNull() &&
+	fProofOutputDataset &&
+	!fProofOutputArchive.IsNull()) {
+      TProofOutputFile *zipProofFile = new TProofOutputFile(fProofOutputFileName.Data(),
+							    "DROV",
+							    fProofOutputLocation.Data());
+      if (AliDebugLevel() > 0) zipProofFile->Dump();
+      fOutput->Add(zipProofFile);
+      TString fileList(fProofOutputArchive.Data());
+      fileList.ReplaceAll(","," ");
+      AliInfo(Form("Executing: zip -n root %s %s",zipProofFile->GetFileName(),fileList.Data()));
+      gSystem->Exec(Form("zip -n root %s %s",zipProofFile->GetFileName(),fileList.Data()));
+    }
+  }
 }
     
 //_____________________________________________________________________________
@@ -3515,4 +3562,68 @@ Bool_t AliReconstruction::ProcessEvent(void* event)
   fRawReader = NULL;
 
   return fStatus;
+}
+
+//______________________________________________________________________________
+Bool_t AliReconstruction::ParseOutput()
+{
+  // The method parses the output file
+  // location string in order to steer
+  // properly the selector
+
+  TPMERegexp re1("(\\w+\\.zip#\\w+\\.root):([,*\\w+\\.root,*]+)@dataset://(\\w++)");
+  TPMERegexp re2("(\\w+\\.root)?@?dataset://(\\w++)");
+
+  if (re1.Match(fESDOutput) == 4) {
+    // root archive with output files stored and regustered
+    // in proof dataset
+    gProof->AddInput(new TNamed("PROOF_OUTPUTFILE",re1[1].Data()));
+    gProof->AddInput(new TNamed("PROOF_OUTPUTFILE_LOCATION",re1[3].Data()));
+    gProof->AddInput(new TNamed("PROOF_OUTPUTFILE_DATASET",""));
+    gProof->AddInput(new TNamed("PROOF_OUTPUTFILE_ARCHIVE",re1[2].Data()));
+    AliInfo(Form("%s files will be stored within %s in dataset %s",
+		 re1[2].Data(),
+		 re1[1].Data(),
+		 re1[3].Data()));
+  }
+  else if (re2.Match(fESDOutput) == 3) {
+    // output file stored and registered
+    // in proof dataset
+    gProof->AddInput(new TNamed("PROOF_OUTPUTFILE",(re2[1].IsNull()) ? "AliESDs.root" : re2[1].Data()));
+    gProof->AddInput(new TNamed("PROOF_OUTPUTFILE_LOCATION",re2[2].Data()));
+    gProof->AddInput(new TNamed("PROOF_OUTPUTFILE_DATASET",""));
+    AliInfo(Form("%s will be stored in dataset %s",
+		 (re2[1].IsNull()) ? "AliESDs.root" : re2[1].Data(),
+		 re2[2].Data()));
+  }
+  else {
+    if (fESDOutput.IsNull()) {
+      // Output location not given.
+      // Assuming xrootd has been already started and
+      // the output file has to be sent back
+      // to the client machine
+      TString esdUrl(Form("root://%s/%s/",
+			  TUrl(gSystem->HostName()).GetHostFQDN(),
+			  gSystem->pwd()));
+      gProof->AddInput(new TNamed("PROOF_OUTPUTFILE","AliESDs.root"));
+      gProof->AddInput(new TNamed("PROOF_OUTPUTFILE_LOCATION",esdUrl.Data()));
+      AliInfo(Form("AliESDs.root will be stored in %s",
+		   esdUrl.Data()));
+    }
+    else {
+      // User specified an output location.
+      // Ones has just to parse it here
+      TUrl outputUrl(fESDOutput.Data());
+      TString outputFile(gSystem->BaseName(outputUrl.GetFile()));
+      gProof->AddInput(new TNamed("PROOF_OUTPUTFILE",outputFile.IsNull() ? "AliESDs.root" : outputFile.Data()));
+      TString outputLocation(outputUrl.GetUrl());
+      outputLocation.ReplaceAll(outputFile.Data(),"");
+      gProof->AddInput(new TNamed("PROOF_OUTPUTFILE_LOCATION",outputLocation.Data()));
+      AliInfo(Form("%s will be stored in %s",
+		   outputFile.IsNull() ? "AliESDs.root" : outputFile.Data(),
+		   outputLocation.Data()));
+    }
+  }
+
+  return kTRUE;
 }
