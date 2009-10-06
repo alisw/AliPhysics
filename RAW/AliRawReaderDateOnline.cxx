@@ -78,7 +78,7 @@ AliRawReaderDateOnline::AliRawReaderDateOnline(
   monitorSetNoWaitNetworkTimeout(1000);
 
   const Char_t* table[]  = {"ALL", "yes", "*", "*",
-                            "EOR", "all","*", "*",
+                            "EOR", "yes","*", "*",
                             NULL, NULL, NULL, NULL};
   monitorDeclareTableExtended(const_cast<char**>(table));
 
@@ -191,7 +191,7 @@ void AliRawReaderDateOnline::SelectEvents(Int_t type,
 #ifdef ALI_DATE
   const Char_t* table[]  = {"ALL", "no", "*", "*",
 			    "PHY", "yes","*", "*",
-                            "EOR", "all","*", "*",
+                            "EOR", "yes","*", "*",
  			    NULL, NULL, NULL, NULL};
   TString trSelection;
   for (Int_t i = 0; i < 50; i++) {
