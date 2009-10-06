@@ -5363,17 +5363,17 @@ void AliFlowAnalysisWithQCumulants::CalculateQProductsForIntFlow()
 
 void AliFlowAnalysisWithQCumulants::CalculateCovariancesForIntFlow(Bool_t useParticleWeights, TString eventWeights)
 {
- // calculate covariances Cov(2,4), Cov(2,6), etc (needed to propagate errors for integrated flow)
+ // calculate unbiased estimators Cov(<2>,<4>), Cov(<2>,<6>) for covariances V_{<2>,<4>}, V_{<2>,<6>}, etc (needed to propagate errors for integrated flow)
  
  // binning of fCovariances[pW] is organized as follows:
  // 
- // 1st bin: <<2><4>>-<<2>><<4>> 
- // 2nd bin: <<2><6>>-<<2>><<6>>
- // 3rd bin: <<2><8>>-<<2>><<8>>
- // 4th bin: <<4><6>>-<<4>><<6>>
- // 5th bin: <<4><8>>-<<4>><<8>>
- // 6th bin: <<6><8>>-<<6>><<8>>
- 
+ // 1st bin: Cov(<2>,<4>) 
+ // 2nd bin: Cov(<2>,<6>)
+ // 3rd bin: Cov(<2>,<8>)
+ // 4th bin: Cov(<4>,<6>)
+ // 5th bin: Cov(<4>,<8>)
+ // 6th bin: Cov(<6>,<8>)
+  
  // shortcuts for flags:
  Int_t pW = (Int_t)(useParticleWeights);
  Int_t eW = -1;
@@ -5447,40 +5447,76 @@ void AliFlowAnalysisWithQCumulants::CalculateCovariancesForIntFlow(Bool_t usePar
  
  // final covariances: 
  Double_t cov24 = 0.;
+ Double_t weightedCov24 = 0.; // to be improved (terminology)
  if(denom24)
  {
   cov24 = (product24-two*four)/denom24; // Cov(<2>,<4>) 
   fCovariances[pW][eW]->SetBinContent(1,cov24);
+  if(fSumOfEventWeights[pW][eW][0]->GetBinContent(1) * fSumOfEventWeights[pW][eW][0]->GetBinContent(2))
+  {
+   weightedCov24 = cov24*fProductOfEventWeights[pW][eW]->GetBinContent(1)/(fSumOfEventWeights[pW][eW][0]->GetBinContent(1) * fSumOfEventWeights[pW][eW][0]->GetBinContent(2));
+   fCovariances[pW][eW]->SetBinError(1,weightedCov24); // to be improved (where to store this?)
+  }
  } 
  Double_t cov26 = 0.;
+ Double_t weightedCov26 = 0.; // to be improved (terminology)
  if(denom26)
  {
   cov26 = (product26-two*six)/denom26; // Cov(<2>,<6>) 
   fCovariances[pW][eW]->SetBinContent(2,cov26);
+  if(fSumOfEventWeights[pW][eW][0]->GetBinContent(1) * fSumOfEventWeights[pW][eW][0]->GetBinContent(3))
+  {
+   weightedCov26 = cov26*fProductOfEventWeights[pW][eW]->GetBinContent(2)/(fSumOfEventWeights[pW][eW][0]->GetBinContent(1) * fSumOfEventWeights[pW][eW][0]->GetBinContent(3));
+   fCovariances[pW][eW]->SetBinError(2,weightedCov26); // to be improved (where to store this?)
+  }
  } 
  Double_t cov28 = 0.;
+ Double_t weightedCov28 = 0.; // to be improved (terminology)
  if(denom28)
  {
   cov28 = (product28-two*eight)/denom28; // Cov(<2>,<8>) 
   fCovariances[pW][eW]->SetBinContent(3,cov28);
+  if(fSumOfEventWeights[pW][eW][0]->GetBinContent(1) * fSumOfEventWeights[pW][eW][0]->GetBinContent(4))
+  {
+   weightedCov28 = cov28*fProductOfEventWeights[pW][eW]->GetBinContent(3)/(fSumOfEventWeights[pW][eW][0]->GetBinContent(1) * fSumOfEventWeights[pW][eW][0]->GetBinContent(4));
+   fCovariances[pW][eW]->SetBinError(3,weightedCov28); // to be improved (where to store this?)
+  }
  } 
  Double_t cov46 = 0.;
+ Double_t weightedCov46 = 0.; // to be improved (terminology)
  if(denom46)
  {
   cov46 = (product46-four*six)/denom46; // Cov(<4>,<6>) 
   fCovariances[pW][eW]->SetBinContent(4,cov46);
+  if(fSumOfEventWeights[pW][eW][0]->GetBinContent(2) * fSumOfEventWeights[pW][eW][0]->GetBinContent(3))
+  {
+   weightedCov46 = cov46*fProductOfEventWeights[pW][eW]->GetBinContent(4)/(fSumOfEventWeights[pW][eW][0]->GetBinContent(2) * fSumOfEventWeights[pW][eW][0]->GetBinContent(3));
+   fCovariances[pW][eW]->SetBinError(4,weightedCov46); // to be improved (where to store this?)
+  }
  } 
  Double_t cov48 = 0.;
+ Double_t weightedCov48 = 0.; // to be improved (terminology)
  if(denom48)
  {
   cov48 = (product48-four*eight)/denom48; // Cov(<4>,<8>) 
   fCovariances[pW][eW]->SetBinContent(5,cov48);
+  if(fSumOfEventWeights[pW][eW][0]->GetBinContent(2) * fSumOfEventWeights[pW][eW][0]->GetBinContent(4))
+  {
+   weightedCov48 = cov48*fProductOfEventWeights[pW][eW]->GetBinContent(5)/(fSumOfEventWeights[pW][eW][0]->GetBinContent(2) * fSumOfEventWeights[pW][eW][0]->GetBinContent(4));
+   fCovariances[pW][eW]->SetBinError(5,weightedCov48); // to be improved (where to store this?)
+  }
  } 
  Double_t cov68 = 0.;
+ Double_t weightedCov68 = 0.; // to be improved (terminology)
  if(denom68)
  {
   cov68 = (product68-six*eight)/denom68; // Cov(<6>,<8>) 
   fCovariances[pW][eW]->SetBinContent(6,cov68);
+  if(fSumOfEventWeights[pW][eW][0]->GetBinContent(3) * fSumOfEventWeights[pW][eW][0]->GetBinContent(4))
+  {
+   weightedCov68 = cov68*fProductOfEventWeights[pW][eW]->GetBinContent(6)/(fSumOfEventWeights[pW][eW][0]->GetBinContent(3) * fSumOfEventWeights[pW][eW][0]->GetBinContent(4));
+   fCovariances[pW][eW]->SetBinError(6,weightedCov68); // to be improved (where to store this?)
+  }  
  } 
 
 } // end of AliFlowAnalysisWithQCumulants::CalculateCovariancesForIntFlow(Bool_t useParticleWeights, TString eventWeights)
@@ -5868,27 +5904,41 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlow(Bool_t useParticleWeights, 
   eW = 0;
  }
    
- if(!(fCumulants[pW][eW][nua] && fIntFlow[pW][eW][nua]))
+ if(!(fCumulants[pW][eW][nua] && fCorrelations[pW][eW] && fCovariances[pW][eW] && fIntFlow[pW][eW][nua]))
  {
-  cout<<"WARNING: fCumulants[pW][eW][nua] && fIntFlow[pW][eW][nua] is NULL in AFAWQC::CIF() !!!!"<<endl;
+  cout<<"WARNING: fCorrelations[pW][eW] && fCovariances[pW][eW] && fIntFlow[pW][eW][nua] is NULL in AFAWQC::CIF() !!!!"<<endl;
   cout<<"pW = "<<pW<<endl;
   cout<<"eW = "<<eW<<endl;
   cout<<"nua = "<<nua<<endl;
   exit(0);
  }
    
- // cumulants:
+ // Q-cumulants:
  Double_t qc2 = fCumulants[pW][eW][nua]->GetBinContent(1); // QC{2}  
  Double_t qc4 = fCumulants[pW][eW][nua]->GetBinContent(2); // QC{4}  
  Double_t qc6 = fCumulants[pW][eW][nua]->GetBinContent(3); // QC{6}  
  Double_t qc8 = fCumulants[pW][eW][nua]->GetBinContent(4); // QC{8}
+  
+ // average 2-, 4-, 6- and 8-particle azimuthal correlations:
+ Double_t two = fCorrelations[pW][eW]->GetBinContent(1); // <<2>>  
+ Double_t four = fCorrelations[pW][eW]->GetBinContent(11); // <<4>>  
+ Double_t six = fCorrelations[pW][eW]->GetBinContent(24); // <<6>>  
+ Double_t eight = fCorrelations[pW][eW]->GetBinContent(31); // <<8>> 
    
- // cumulants' statistical errors:
- Double_t qc2Error = fCumulants[pW][eW][nua]->GetBinError(1); // error of QC{2}  
- Double_t qc4Error = fCumulants[pW][eW][nua]->GetBinError(2); // error of QC{4}  
- Double_t qc6Error = fCumulants[pW][eW][nua]->GetBinError(3); // error of QC{6}  
- Double_t qc8Error = fCumulants[pW][eW][nua]->GetBinError(4); // error of QC{8}
+ // statistical errors of average 2-, 4-, 6- and 8-particle azimuthal correlations:
+ Double_t twoError = fCorrelations[pW][eW]->GetBinError(1); // stat. error of <2>  
+ Double_t fourError = fCorrelations[pW][eW]->GetBinError(11); // stat. error of <4>   
+ Double_t sixError = fCorrelations[pW][eW]->GetBinError(24); // stat. error of <6> 
+ Double_t eightError = fCorrelations[pW][eW]->GetBinError(31); // stat. error of <8> 
    
+ // weighted covariances (to be improved: terminology and the place where they are stored):
+ Double_t wCov24 = fCovariances[pW][eW]->GetBinError(1);
+ Double_t wCov26 = fCovariances[pW][eW]->GetBinError(2);
+ Double_t wCov28 = fCovariances[pW][eW]->GetBinError(3);
+ Double_t wCov46 = fCovariances[pW][eW]->GetBinError(4);
+ Double_t wCov48 = fCovariances[pW][eW]->GetBinError(5);
+ Double_t wCov68 = fCovariances[pW][eW]->GetBinError(6);
+ 
  // integrated flow estimates:
  Double_t v2 = 0.; // v{2}  
  Double_t v4 = 0.; // v{4}  
@@ -5907,12 +5957,77 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlow(Bool_t useParticleWeights, 
  Double_t v6Error = 0.; // error of v{6}  
  Double_t v8Error = 0.; // error of v{8}
    
+ // squares of statistical errors of integrated flow estimates:
+ Double_t v2ErrorSquared = 0.; // error of v{2} squared 
+ Double_t v4ErrorSquared = 0.; // error of v{4} squared  
+ Double_t v6ErrorSquared = 0.; // error of v{6} squared  
+ Double_t v8ErrorSquared = 0.; // error of v{8} squared
+
  // calculate statistical errors for integrated flow estimates:
- if(qc2>0.) v2Error = (1./(2.*pow(qc2,0.5)))*qc2Error; 
- if(qc4<0.) v4Error = (1./(4.*pow(-1.*qc4,3./4.)))*qc4Error; 
- if(qc6>0.) v6Error = (1./(6.*pow(2.,1./3.)*pow(qc6,5./6.)))*qc6Error;
- if(qc8<0.) v8Error = (1./(8.*pow(33,1./8.)*pow(-1.*qc8,7./8.)))*qc8Error; 
-  
+ if(two != 0.) 
+ { 
+  v2ErrorSquared = (1./(4.*two))*pow(twoError,2.);
+ } 
+ if(2.*pow(two,2.)-four > 0.)
+ {
+  v4ErrorSquared = (1./pow(2.*pow(two,2.)-four,3./2.))*
+                   (pow(two,2.)*pow(twoError,2.)+(1./16.)*pow(fourError,2.)-(1./2.)*two*wCov24); 
+ }
+ if(six-9.*four*two+12.*pow(two,3.) > 0.) 
+ {
+  v6ErrorSquared = ((1./2.)*(1./pow(2.,2./3.))*(1./pow(six-9.*four*two+12.*pow(two,3.),5./3.)))*
+                   ((9./2.)*pow(4.*pow(two,2.)-four,2.)*pow(twoError,2.) 
+                    + (9./2.)*pow(two,2.)*pow(fourError,2.)+(1./18.)*pow(sixError,2.)
+                    + 9.*two*(4.*pow(two,2.)-four)*wCov24+(4.*pow(two,2.)-four)*wCov26-two*wCov46); 
+ }
+ if(-1.*eight+16.*six*two+18.*pow(four,2.)-144.*four*pow(two,2.)+144.*pow(two,4.) > 0.) 
+ {
+  v8ErrorSquared = (4./pow(33,1./4.))*(1./pow(-1.*eight+16.*six*two+18.*pow(four,2.)-144.*four*pow(two,2.)+144.*pow(two,4.),7./4.))*
+                   (pow(36.*pow(two,3.)-18.*four*two+six,2.)*pow(twoError,2.)
+                    + (81./16.)*pow(4.*pow(two,2.)-four,2.)*pow(fourError,2.)
+                    + pow(two,2.)*pow(sixError,2.)
+                    + (1./256.)*pow(eightError,2.)
+                    - (9./2.)*(36.*pow(two,3.)-18.*four*two+six)*(4.*pow(two,2.)-four)*wCov24
+                    + 2.*two*(36.*pow(two,3.)-18.*four*two+six)*wCov26
+                    - (1./8.)*(36.*pow(two,3.)-18.*four*two+six)*wCov28                    
+                    - (9./2.)*two*(4.*pow(two,2.)-four)*wCov46                   
+                    + (9./32.)*(4.*pow(two,2.)-four)*wCov48                    
+                    - (1./8.)*two*wCov68);
+ } 
+ 
+ if(v2ErrorSquared >= 0.)
+ {
+  v2Error = pow(v2ErrorSquared,0.5);
+ } else
+   {
+    cout<<"WARNING: Statistical error of v{2,QC} is imaginary !!!!"<<endl;
+    cout<<"v2ErrorSquared = "<<v2ErrorSquared<<endl;
+   }    
+ if(v4ErrorSquared >= 0.)
+ {
+  v4Error = pow(v4ErrorSquared,0.5);
+ } else
+   {
+    cout<<"WARNING: Statistical error of v{4,QC} is imaginary !!!!"<<endl;
+    cout<<"v4ErrorSquared = "<<v4ErrorSquared<<endl;
+   }     
+ if(v6ErrorSquared >= 0.)
+ {
+  v6Error = pow(v6ErrorSquared,0.5);
+ } else
+   {
+    cout<<"WARNING: Statistical error of v{6,QC} is imaginary !!!!"<<endl;
+    cout<<"v6ErrorSquared = "<<v6ErrorSquared<<endl;
+   }     
+ if(v8ErrorSquared >= 0.)
+ {
+  v8Error = pow(v8ErrorSquared,0.5);
+ } else
+   {
+    cout<<"WARNING: Statistical error of v{8,QC} is imaginary !!!!"<<endl;
+    cout<<"v8ErrorSquared = "<<v8ErrorSquared<<endl;
+   }    
+                     
  // store final results and statistical errors for integrated flow:
  fIntFlow[pW][eW][nua]->SetBinContent(1,v2);
  fIntFlow[pW][eW][nua]->SetBinError(1,v2Error);
