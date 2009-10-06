@@ -823,6 +823,10 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 
     for(Int_t ijet = 0; ijet < njets ; ijet++) {
       AliAODJet * jet = (AliAODJet*)(GetReader()->GetOutputEvent())->GetJet(ijet) ;
+      //Only consider jets with pt > 10 GeV (the rest have to be junk)
+      //printf("AODJet<%d> pt = %2.2f\n",ijet,jet->Pt());
+      if(jet->Pt() < 10.) continue;
+
       if(GetDebug() > 3) {
 	printf("AliAODJet ijet = %d\n",ijet);
 	jet->Print("");
