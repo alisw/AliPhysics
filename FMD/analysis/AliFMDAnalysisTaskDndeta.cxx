@@ -204,11 +204,16 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
 	  Float_t correctionTrVtx = hSharingEffTrVtx->GetBinContent(nx);
 	  for(Int_t ny=1; ny<hMultTotal->GetNbinsY(); ny++) {
 	    
-	    if(correction != 0)
+	    if(correction != 0){
 	      hMultTotal->SetBinContent(nx,ny,hMultTotal->GetBinContent(nx,ny)/correction);
-	    if(correctionTrVtx != 0)
+	      Float_t error = TMath::Sqrt(TMath::Power(hMultTotal->GetBinError(nx,ny),2) + TMath::Power(hMultTotal->GetBinContent(nx,ny)*hSharingEff->GetBinError(nx),2)) / correction;
+	      hMultTotal->SetBinError(nx,ny,error);
+	    }
+	    if(correctionTrVtx != 0){
 	      hMultTrVtx->SetBinContent(nx,ny,hMultTrVtx->GetBinContent(nx,ny)/correctionTrVtx);
-	    
+	      Float_t error = TMath::Sqrt(TMath::Power(hMultTrVtx->GetBinError(nx,ny),2) + TMath::Power(hMultTrVtx->GetBinContent(nx,ny)*hSharingEffTrVtx->GetBinError(nx),2)) / correctionTrVtx;
+	      hMultTrVtx->SetBinError(nx,ny,error);
+	    }
 	  }
 	  
 	}
