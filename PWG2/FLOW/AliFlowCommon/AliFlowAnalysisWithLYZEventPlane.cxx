@@ -134,13 +134,13 @@ void AliFlowAnalysisWithLYZEventPlane::Init() {
 
   //input histograms
   if (fSecondRunList) {
-    fSecondReDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ReDtheta_LYZ");
+    fSecondReDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ReDtheta_LYZSUM");
     fHistList->Add(fSecondReDtheta);
 
-    fSecondImDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ImDtheta_LYZ");
+    fSecondImDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ImDtheta_LYZSUM");
     fHistList->Add(fSecondImDtheta);
     
-    fFirstr0theta = (TProfile*)fSecondRunList->FindObject("First_FlowPro_r0theta_LYZ");
+    fFirstr0theta = (TProfile*)fSecondRunList->FindObject("First_FlowPro_r0theta_LYZSUM");
     fHistList->Add(fFirstr0theta);
 
     //warnings
@@ -315,7 +315,7 @@ void AliFlowAnalysisWithLYZEventPlane::GetOutputHistograms(TList *outputListHist
       (outputListHistos->FindObject("AliFlowCommonHistResultsLYZEP"));
 
     TProfile* pHistProR0theta = dynamic_cast<TProfile*> 
-      (outputListHistos->FindObject("First_FlowPro_r0theta_LYZ"));
+      (outputListHistos->FindObject("First_FlowPro_r0theta_LYZSUM"));
 
     TProfile* pHistProVetaRP = dynamic_cast<TProfile*> 
       (outputListHistos->FindObject("FlowPro_VetaRP_LYZEP"));
@@ -358,9 +358,11 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   Int_t iNbinsPt  = AliFlowCommonConstants::GetNbinsPt();
   Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
   //set the event number
+  if (fCommonHists) {
   SetEventNumber((int)fCommonHists->GetHistMultOrig()->GetEntries());
   //cout<<"number of events processed is "<<fEventNumber<<endl;
-  
+  }
+
   //set the sum of Q vectors
   fQsum->Set(fHistQsumforChi->GetBinContent(1),fHistQsumforChi->GetBinContent(2));
   SetQ2sum(fHistQsumforChi->GetBinContent(3));  

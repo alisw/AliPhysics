@@ -67,9 +67,9 @@ void AliFlowLYZEventPlane::Init()
 
   //input histograms
   if (fSecondRunList) {
-    fSecondReDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ReDtheta_LYZ");
-    fSecondImDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ImDtheta_LYZ");
-    fFirstr0theta   = (TProfile*)fSecondRunList->FindObject("First_FlowPro_r0theta_LYZ");
+    fSecondReDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ReDtheta_LYZSUM");
+    fSecondImDtheta = (TProfile*)fSecondRunList->FindObject("Second_FlowPro_ImDtheta_LYZSUM");
+    fFirstr0theta   = (TProfile*)fSecondRunList->FindObject("First_FlowPro_r0theta_LYZSUM");
 
     //warnings
     if (!fSecondReDtheta) {cout<<"fSecondReDtheta is NULL!"<<endl; }
