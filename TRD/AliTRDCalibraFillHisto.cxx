@@ -2304,6 +2304,8 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDrawStreamBase *rawStream, Bo
   // 2 input
   // Same algorithm as TestBeam but different reader
   //
+
+  rawStream->SetSharedPadReadout(kFALSE);
   
   Int_t withInput = 1;
   
@@ -3189,3 +3191,4 @@ void AliTRDCalibraFillHisto::AnalyseLinearFitter()
     }
   }
 }
+

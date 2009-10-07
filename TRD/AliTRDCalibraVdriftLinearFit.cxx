@@ -35,7 +35,6 @@
 #include <TLinearFitter.h>
 #include <TMath.h>
 #include <TTreeStream.h>
-#include <THnSparse.h>
 
 
 //header file
@@ -70,12 +69,12 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const AliTRDCalibraVd
    
     const TVectorD     *vectorE     = (TVectorD*)ped.fLinearFitterEArray.UncheckedAt(idet);
     const TVectorD     *vectorP     = (TVectorD*)ped.fLinearFitterPArray.UncheckedAt(idet);
-    const THnSparseS    *hped        = (THnSparseS*)ped.fLinearFitterHistoArray.UncheckedAt(idet);
+    const TH2S         *hped        = (TH2S*)ped.fLinearFitterHistoArray.UncheckedAt(idet);
     
     if ( vectorE != 0x0 ) fLinearFitterEArray.AddAt(new TVectorD(*vectorE), idet);
     if ( vectorP != 0x0 ) fLinearFitterPArray.AddAt(new TVectorD(*vectorP), idet);
     if ( hped != 0x0 ){
-      THnSparseS *hNew = (THnSparseS *)hped->Clone();
+      TH2S *hNew = (TH2S *)hped->Clone();
       //hNew->SetDirectory(0);
       fLinearFitterHistoArray.AddAt(hNew,idet);
     }
@@ -93,9 +92,9 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const TObjArray &obja
   // constructor from a TObjArray
   //
   for (Int_t idet = 0; idet < 540; idet++){
-    const THnSparseS         *hped        = (THnSparseS*)obja.UncheckedAt(idet);
+    const TH2S         *hped        = (TH2S*)obja.UncheckedAt(idet);
     if ( hped != 0x0 ){
-      THnSparseS *hNew = (THnSparseS *)hped->Clone();
+      TH2S *hNew = (TH2S *)hped->Clone();
       //hNew->SetDirectory(0);
       fLinearFitterHistoArray.AddAt(hNew,idet);
     }
@@ -135,9 +134,9 @@ void AliTRDCalibraVdriftLinearFit::Copy(TObject &c) const
   // Copy only the histos
   for (Int_t idet = 0; idet < 540; idet++){
     if(fLinearFitterHistoArray.UncheckedAt(idet)){
-      THnSparseS *hped1 = (THnSparseS *)target.GetLinearFitterHisto(idet,kTRUE);
+      TH2S *hped1 = (TH2S *)target.GetLinearFitterHisto(idet,kTRUE);
       //hped1->SetDirectory(0);
-      hped1->Add((const THnSparseS *)fLinearFitterHistoArray.UncheckedAt(idet));
+      hped1->Add((const TH2S *)fLinearFitterHistoArray.UncheckedAt(idet));
     }
   }
   
@@ -168,9 +167,9 @@ Long64_t AliTRDCalibraVdriftLinearFit::Merge(const TCollection* list)
       // Copy only the histos
       for (Int_t idet = 0; idet < 540; idet++){
 	if(entry->GetLinearFitterHisto(idet)){
-	  THnSparseS *hped1 = (THnSparseS *)GetLinearFitterHisto(idet,kTRUE);
+	  TH2S *hped1 = (TH2S *)GetLinearFitterHisto(idet,kTRUE);
 	  Double_t entriesa = hped1->GetEntries();
-	  Double_t entriesb = ((THnSparseS *)entry->GetLinearFitterHisto(idet))->GetEntries();
+	  Double_t entriesb = ((TH2S *)entry->GetLinearFitterHisto(idet))->GetEntries();
 	  if((entriesa + entriesb) < 5*32767) hped1->Add(entry->GetLinearFitterHisto(idet));
 	}
       }
@@ -190,11 +189,11 @@ void AliTRDCalibraVdriftLinearFit::Add(AliTRDCalibraVdriftLinearFit *ped)
   fVersion++;
 
   for (Int_t idet = 0; idet < 540; idet++){
-    const THnSparseS         *hped        = (THnSparseS*)ped->GetLinearFitterHisto(idet);
+    const TH2S         *hped        = (TH2S*)ped->GetLinearFitterHisto(idet);
     //printf("idet %d\n",idet);
     if ( hped != 0x0 ){
       //printf("add\n");
-      THnSparseS *hped1 = (THnSparseS *)GetLinearFitterHisto(idet,kTRUE);
+      TH2S *hped1 = (TH2S *)GetLinearFitterHisto(idet,kTRUE);
       Double_t entriesa = hped1->GetEntries();
       Double_t entriesb = hped->GetEntries();
       if((entriesa + entriesb) < 5*32767) hped1->Add(hped);
@@ -202,14 +201,14 @@ void AliTRDCalibraVdriftLinearFit::Add(AliTRDCalibraVdriftLinearFit *ped)
   }
 }
 //______________________________________________________________________________________
-THnSparse* AliTRDCalibraVdriftLinearFit::GetLinearFitterHisto(Int_t detector, Bool_t force)
+TH2S* AliTRDCalibraVdriftLinearFit::GetLinearFitterHisto(Int_t detector, Bool_t force)
 {
     //
     // return pointer to TH2F histo 
     // if force is true create a new histo if it doesn't exist allready
     //
     if ( !force || fLinearFitterHistoArray.UncheckedAt(detector) )
-	return (THnSparse*)fLinearFitterHistoArray.UncheckedAt(detector);
+	return (TH2S*)fLinearFitterHistoArray.UncheckedAt(detector);
 
     // if we are forced and TLinearFitter doesn't yes exist create it
 
@@ -219,35 +218,14 @@ THnSparse* AliTRDCalibraVdriftLinearFit::GetLinearFitterHisto(Int_t detector, Bo
     name += "version";
     name +=  fVersion;
 
-    //create the map
-    Int_t thnDim[2];
-    thnDim[0] = 36;
-    thnDim[1] = 48;
-
-    //arrays for lower bounds :
-    Double_t* binEdges[2];
-    for(Int_t ivar = 0; ivar < 2; ivar++)
-      binEdges[ivar] = new Double_t[thnDim[ivar] + 1];
-    
-    //values for bin lower bounds
-    for(Int_t i=0; i<=thnDim[0]; i++) binEdges[0][i]= -0.9  + (2*0.9)/thnDim[0]*(Double_t)i;
-    for(Int_t i=0; i<=thnDim[1]; i++) binEdges[1][i]= -1.2  + (2*1.2)/thnDim[1]*(Double_t)i;
-    
-    THnSparseS *lfdv = new THnSparseS((const Char_t *)name,(const Char_t *) name,2,thnDim);
-
-    for (int k=0; k<2; k++) {
-      lfdv->SetBinEdges(k,binEdges[k]);
-    }
-    lfdv->Sumw2();
-    
-    //TH2F *lfdv = new TH2F((const Char_t *)name,(const Char_t *) name
-    //		  ,18,-0.9,0.9,24
-    //		  ,-1.2,1.2);
-    //lfdv->SetXTitle("tan(phi_{track})");
-    //lfdv->SetYTitle("dy/dt");
-    //lfdv->SetZTitle("Number of clusters");
-    //lfdv->SetStats(0);
-    //lfdv->SetDirectory(0);
+    TH2S *lfdv = new TH2S((const Char_t *)name,(const Char_t *) name
+    		  ,36,-0.9,0.9,48
+    		  ,-1.2,1.2);
+    lfdv->SetXTitle("tan(phi_{track})");
+    lfdv->SetYTitle("dy/dt");
+    lfdv->SetZTitle("Number of clusters");
+    lfdv->SetStats(0);
+    lfdv->SetDirectory(0);
 
     fLinearFitterHistoArray.AddAt(lfdv,detector);
     return lfdv;
@@ -292,11 +270,10 @@ void AliTRDCalibraVdriftLinearFit::Update(Int_t detector, Float_t tnp, Float_t p
     //
     // Fill the 2D histos for debugging
     //
-  Double_t entries[2] = {tnp,pars1};
   
-  THnSparseS *h = ((THnSparseS *) GetLinearFitterHisto(detector,kTRUE));
+  TH2S *h = ((TH2S *) GetLinearFitterHisto(detector,kTRUE));
   Double_t nbentries = h->GetEntries();
-  if(nbentries < 5*32767) h->Fill(&entries[0]);
+  if(nbentries < 5*32767) h->Fill(tnp,pars1);
 
 }
 //____________Functions fit Online CH2d________________________________________
@@ -314,13 +291,10 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
 
   // Loop over histos 
   for(Int_t cb = 0; cb < 540; cb++){
-    const THnSparseS *linearfitterh = (THnSparseS*)fLinearFitterHistoArray.UncheckedAt(cb);
+    const TH2S *linearfitterhisto = (TH2S*)fLinearFitterHistoArray.UncheckedAt(cb);
     //printf("Processing the detector cb %d we find %d\n",cb, (Bool_t) linearfitterhisto);    
 
-    if ( linearfitterh != 0 ){
-      
-      TH2D *linearfitterhisto = linearfitterh->Projection(1,0);
-
+    if ( linearfitterhisto != 0 ){
       
       // Fill a linearfitter
       TAxis *xaxis = linearfitterhisto->GetXaxis();

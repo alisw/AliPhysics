@@ -94,12 +94,13 @@ int main(int argc, char **argv) {
 
   // setting
   // AliTRDrawStream::SetNoDebug();
+  AliTRDrawStream::DisableSkipData();
   AliTRDrawStream::SetNoErrorWarning();
-  AliTRDrawStream::SetSubtractBaseline(0); 
+  //AliTRDrawStream::SetSubtractBaseline(0); 
   //AliTRDrawStream::SetForceCleanDataOnly();
-  AliTRDrawStream::AllowCorruptedData();
-  AliTRDrawStream::DisableStackNumberChecker();
-  AliTRDrawStream::DisableStackLinkNumberChecker();
+  //AliTRDrawStream::AllowCorruptedData();
+  //AliTRDrawStream::DisableStackNumberChecker();
+  //AliTRDrawStream::DisableStackLinkNumberChecker();
   //AliTRDrawStream::SetSkipCDH();
   //AliTRDrawStream::SetExtraWordsFix();
   //AliTRDrawStream::EnableDebugStream();
@@ -184,3 +185,4 @@ int main(int argc, char **argv) {
   
   return status;
 }
+

@@ -17,7 +17,7 @@
 
 //class TVectorD;
 class TObjArray;
-class THnSparse;
+class TH2S;
 class TTreeSRedirector;
 
 class AliTRDCalibraVdriftLinearFit : public TObject {
@@ -36,7 +36,7 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
   void            Update(Int_t detector, Float_t tnp, Float_t pars1);
   void            FillPEArray();
   void            Add(AliTRDCalibraVdriftLinearFit *ped);
-  THnSparse      *GetLinearFitterHisto(Int_t detector, Bool_t force=kFALSE);
+  TH2S           *GetLinearFitterHisto(Int_t detector, Bool_t force=kFALSE);
   Bool_t          GetParam(Int_t detector, TVectorD *param);
   Bool_t          GetError(Int_t detector, TVectorD *error);
 
