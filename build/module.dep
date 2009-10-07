@@ -3,7 +3,7 @@
 ALIROOT/module.mk:	ALIROOT/binaliroot.pkg 
 ANALYSIS/module.mk:	ANALYSIS/libANALYSIS.pkg ANALYSIS/libANALYSISalice.pkg ANALYSIS/libANALYSISRL.pkg ANALYSIS/libAliengui.pkg ANALYSIS/binaliengui.pkg
 ACORDE/module.mk:	ACORDE/libACORDEbase.pkg ACORDE/libACORDErec.pkg ACORDE/libACORDEsim.pkg
-EMCAL/module.mk:	EMCAL/libEMCALbase.pkg EMCAL/libEMCALsim.pkg EMCAL/libEMCALrec.pkg EMCAL/libEMCALcalib.pkg EMCAL/libEMCALUtils.pkg
+EMCAL/module.mk:	EMCAL/libEMCALbase.pkg EMCAL/libEMCALsim.pkg EMCAL/libEMCALrec.pkg  EMCAL/libEMCALUtils.pkg
 EPOS/module.mk:		EPOS/libEPOS.pkg
 EVGEN/module.mk:	EVGEN/libEVGEN.pkg
 FMD/module.mk:		FMD/libFMDbase.pkg FMD/libFMDsim.pkg FMD/libFMDrec.pkg FMD/libFMDutil.pkg FMD/libFMDflow.pkg FMD/analysis/FMDanalysisLinkDef.h
@@ -132,7 +132,6 @@ $(LIBPATH)/libBCM.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER
 $(LIBPATH)/libEMCALbase.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT)
 $(LIBPATH)/libEMCALsim.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEMCALbase.$(SOEXT) $(LIBPATH)/libRAWDatasim.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT) $(LIBPATH)/libRAWDatabase.$(SOEXT)
 $(LIBPATH)/libEMCALrec.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEMCALsim.$(SOEXT) $(LIBPATH)/libEMCALbase.$(SOEXT)
-$(LIBPATH)/libEMCALcalib.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libCDB.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEMCALsim.$(SOEXT) $(LIBPATH)/libEMCALbase.$(SOEXT) $(LIBPATH)/libRAWDatarec.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
 $(LIBPATH)/libBCM.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT)
 $(LIBPATH)/libTEPEMGEN.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEVGEN.$(SOEXT) $(LIBPATH)/libmicrocern.$(SOEXT)
 $(LIBPATH)/libTPHIC.$(SOEXT): $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libEVGEN.$(SOEXT) $(LIBPATH)/libAliPythia6.$(SOEXT) $(LIBPATH)/libpythia6.$(SOEXT)
