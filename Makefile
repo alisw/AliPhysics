@@ -289,7 +289,7 @@ ALIRECO.par: macros/loadlibsrec.C STEER/PROOF-INF.ALIRECO/SETUP.C
 	(tar cfzh $@ ALIRECO 2> /dev/null && echo "Package archive" $@ "created in" $(PWD)/$@) || (tar cfzh /tmp/$@ ALIRECO 2> /dev/null && echo "Package archive" $@ "created in /tmp/"$@)
 	$(MUTE)rm -rf ALIRECO
 
-ROOTALIBDIR=$(shell root-config --libdir)
+ROOTALIBDIR:=$(shell root-config --libdir)
 
 ALIMDCSPECFILE=$(RAWDIRO)/alimdc.spec
 ALIMDCVERSION=$(subst -,.,$(notdir $(subst /RAW/mdc.h,,$(shell svn info RAW/mdc.h | grep "URL:" | cut -d: -f3 ))))
