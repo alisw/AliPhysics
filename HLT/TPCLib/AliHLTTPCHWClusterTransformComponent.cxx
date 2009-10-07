@@ -39,6 +39,7 @@ using namespace std;
 #include "AliCDBEntry.h"
 
 #include "TMath.h"
+#include "TObjString.h" 
 #include <cstdlib>
 #include <cerrno>
 #include <sys/time.h>
