@@ -1413,6 +1413,7 @@ void AliReconstruction::Begin(TTree *)
   if (fInput && gProof) {
     if (reco) *reco = *this;
 
+    gGeoManager->SetName("Geometry");
     gProof->AddInputData(gGeoManager,kTRUE);
     gGeoManager = NULL;
     gProof->AddInputData(const_cast<TMap*>(AliCDBManager::Instance()->GetEntryCache()),kTRUE);
