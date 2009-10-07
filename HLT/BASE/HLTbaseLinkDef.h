@@ -92,6 +92,9 @@
 #pragma link C++ global kAliHLTDataOriginSample;
 #pragma link C++ global kAliHLTDataOriginEMCAL;
 
+#pragma link C++ global kAliHLTAnyDataType;
+#pragma link C++ global kAliHLTAllDataType;
+#pragma link C++ global kAliHLTVoidDataType;
 #pragma link C++ global kAliHLTMultipleDataType;
 #pragma link C++ global kAliHLTDataTypeFXSCalib;
 #pragma link C++ global kAliHLTDataTypeDDL;
