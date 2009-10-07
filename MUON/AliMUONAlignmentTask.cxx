@@ -29,12 +29,12 @@
 #include <fstream>
 
 #include <TString.h>
-#include <TError.h>
 #include <TGraphErrors.h>
 #include <TTree.h>
 #include <TChain.h>
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
+#include <TGeoManager.h>
 #include <Riostream.h>
 
 #include "AliAnalysisTask.h"
@@ -44,9 +44,11 @@
 #include "AliESDMuonTrack.h"
 #include "AliMagF.h"
 #include "AliCDBManager.h"
+#include "AliGRPManager.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
 #include "AliGeomManager.h"
+#include "AliLog.h"
 
 #include "AliMpCDB.h"
 #include "AliMUONAlignment.h"
@@ -96,11 +98,13 @@ ClassImp(AliMUONAlignmentTask)
 // }
 
 //________________________________________________________________________
-AliMUONAlignmentTask::AliMUONAlignmentTask(const char *name, const char *geofilename) 
+AliMUONAlignmentTask::AliMUONAlignmentTask(const char *name, const char *geofilename, const char *defaultocdb, const char *misalignocdb) 
   : AliAnalysisTask(name, ""),
     fESD(0x0),
     fAlign(0x0),
     fGeoFilename(geofilename),
+    fMisAlignOCDB(misalignocdb),
+    fDefaultOCDB(defaultocdb),
     fTransform(0x0),
     fTrackTot(0),
     fTrackOk(0),
@@ -135,6 +139,8 @@ AliMUONAlignmentTask::AliMUONAlignmentTask(const AliMUONAlignmentTask& obj)
     fESD(0x0),
     fAlign(0x0),
     fGeoFilename(""),
+    fMisAlignOCDB(""),
+    fDefaultOCDB(""),
     fTransform(0x0),
     fTrackTot(0),
     fTrackOk(0),
@@ -166,6 +172,8 @@ AliMUONAlignmentTask& AliMUONAlignmentTask::operator=(const AliMUONAlignmentTask
   fESD = other.fESD;
   fAlign = other.fAlign;
   fGeoFilename = other.fGeoFilename;
+  fMisAlignOCDB = other.fMisAlignOCDB;
+  fDefaultOCDB = other.fDefaultOCDB;
   fTransform = other.fTransform;
   fTrackTot = other.fTrackTot;  
   fTrackOk = other.fTrackOk;  
@@ -191,26 +199,8 @@ void AliMUONAlignmentTask::LocalInit()
 {
   /// Local initialization, called once per task on the client machine 
   /// where the analysis train is assembled
-  AliMpCDB::LoadMpSegmentation();
 
-  // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
-  if ( ! AliGeomManager::GetGeometry() ) {
-    AliGeomManager::LoadGeometry(fGeoFilename.Data());
-    if (! AliGeomManager::GetGeometry() ) {
-      Error("MUONAlignment", "getting geometry from file %s failed", fGeoFilename.Data());
-      return;
-    }
-  }
-  
-  // set  mag field 
-  // waiting for mag field in CDB 
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
-    printf("Loading field map...\n");
-    AliMagF* field = new AliMagF("Maps","Maps",2,0.,0., 10.,AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
-  }
-  // set the magnetic field for track extrapolations
-  AliMUONTrackExtrap::SetField();
+  Prepare(fGeoFilename.Data(),fDefaultOCDB.Data(),fMisAlignOCDB.Data());
 
   // Set initial values here, good guess may help convergence
   // St 1 
@@ -419,7 +409,8 @@ void AliMUONAlignmentTask::Terminate(const Option_t*)
    
   // CDB manager
   AliCDBManager* cdbManager = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage("local://ReAlignCDB");
+  cdbManager->SetDefaultStorage(fDefaultOCDB.Data());
+  cdbManager->SetSpecificStorage("MUON/Align/Data",fMisAlignOCDB.Data());
   
   AliCDBMetaData* cdbData = new AliCDBMetaData();
   cdbData->SetResponsible("Dimuon Offline project");
@@ -429,3 +420,40 @@ void AliMUONAlignmentTask::Terminate(const Option_t*)
 
 }
 
+//-----------------------------------------------------------------------
+void AliMUONAlignmentTask::Prepare(const char* geoFilename, const char* defaultOCDB, const char* misAlignOCDB)
+{
+  /// Set the geometry, the magnetic field, the mapping and the reconstruction parameters
+  
+  // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
+  if (!gGeoManager) {
+    AliGeomManager::LoadGeometry(geoFilename);
+    if (!gGeoManager) {
+      AliError(Form("Getting geometry from file %s failed", "generated/galice.root"));
+      return;
+    }
+  }
+    
+  // Load mapping
+  AliCDBManager* man = AliCDBManager::Instance();
+  man->SetDefaultStorage(defaultOCDB);
+  man->SetSpecificStorage("MUON/Align/Data",misAlignOCDB);
+  man->Print();
+  man->SetRun(0);
+  if ( ! AliMpCDB::LoadDDLStore() ) {
+    AliError("Could not access mapping from OCDB !");
+    exit(-1);
+  }
+
+  // set mag field
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    printf("Loading field map...\n");
+    AliGRPManager *grpMan = new AliGRPManager();
+    grpMan->ReadGRPEntry();
+    grpMan->SetMagField();
+    delete grpMan;
+  }
+  // set the magnetic field for track extrapolations
+  AliMUONTrackExtrap::SetField();
+  
+}

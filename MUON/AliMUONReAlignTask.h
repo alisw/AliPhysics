@@ -55,7 +55,7 @@ class AliMUONReAlignTask : public AliAnalysisTask {
   AliMUONRefitter  *fRefitter;        //!< The refitter class 
   AliMUONRecoParam *fRecoParam;       //!< Parameters for reconstruction
   TString fGeoFilename;               ///< Geometry file name
-  TString fMisAlignOCDB;               ///< OCDB with misalignment file
+  TString fMisAlignOCDB;              ///< OCDB with misalignment file
   TString fDefaultOCDB;               ///< Default OCDB
   AliMUONGeometryTransformer *fGeoTransformer;    //!< Original geometry
   AliMUONGeometryTransformer *fNewGeoTransformer; //!< Aligned geometry

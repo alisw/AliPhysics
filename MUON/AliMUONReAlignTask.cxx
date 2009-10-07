@@ -45,6 +45,7 @@
 #include "AliESDMuonTrack.h"
 #include "AliMagF.h"
 #include "AliCDBManager.h"
+#include "AliGRPManager.h"
 #include "AliGeomManager.h"
 
 #include "AliMpConstants.h"
@@ -430,13 +431,7 @@ void AliMUONReAlignTask::Prepare(const char* geoFilename, const char* defaultOCD
       return;
     }
   }
-  
-  // set mag field
-  printf("Loading field map...\n");
-  AliMagF* field = new AliMagF("Maps","Maps",2,0.,0., 10.,AliMagF::k5kG);
-  TGeoGlobalMagField::Instance()->SetField(field);
-  TGeoGlobalMagField::Instance()->Lock();
-  
+    
   // Load mapping
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(defaultOCDB);
@@ -447,6 +442,17 @@ void AliMUONReAlignTask::Prepare(const char* geoFilename, const char* defaultOCD
     Error("MUONRefit","Could not access mapping from OCDB !");
     exit(-1);
   }
+
+  // set mag field
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    printf("Loading field map...\n");
+    AliGRPManager *grpMan = new AliGRPManager();
+    grpMan->ReadGRPEntry();
+    grpMan->SetMagField();
+    delete grpMan;
+  }
+  // set the magnetic field for track extrapolations
+  AliMUONTrackExtrap::SetField();
   
   // Load initial reconstruction parameters from OCDB
   // reconstruction parameters

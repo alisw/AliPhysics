@@ -63,8 +63,6 @@ aliroot -b >& testReco.out << EOF
 //man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 //man->SetSpecificStorage("MUON/Align/Data","local://$ALICE_ROOT/OCDB/MUON/FullMisAlignCDB");
 gRandom->SetSeed($SEED);
-AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-AliTracker::SetFieldMap(field, kFALSE);
 AliReconstruction MuonRec("galice.root");
 MuonRec.SetInput("$FULLPATH/raw.root");
 MuonRec.SetRunVertexFinder(kFALSE);

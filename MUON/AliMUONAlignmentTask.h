@@ -22,7 +22,7 @@ class AliMUONGeometryTransformer;
 class AliMUONAlignmentTask : public AliAnalysisTask {
  public:
   //  AliMUONAlignmentTask(const char *name = "AliMUONAlignmentTask");
-  AliMUONAlignmentTask(const char *name = "AliMUONAlignmentTask", const char *geofilename = "geometry.root");
+  AliMUONAlignmentTask(const char *name = "AliMUONAlignmentTask", const char *geofilename = "geometry.root", const char *defaultocdb = "local://$ALICE_ROOT/OCDB", const char *misalignocdb = "local://ReAlignOCDB");
   AliMUONAlignmentTask(const AliMUONAlignmentTask& obj);
   AliMUONAlignmentTask& operator=(const AliMUONAlignmentTask& other); 
   virtual ~AliMUONAlignmentTask();
@@ -32,12 +32,22 @@ class AliMUONAlignmentTask : public AliAnalysisTask {
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(const Option_t*);
+
+  /// Set geoemetry file name
+  void SetGeoFilename(const char* geoFilename) {fGeoFilename = geoFilename;}
+  /// Set mis align ocdb
+  void SetMisAlignOCDB(const char* misalignOCDB) {fMisAlignOCDB = misalignOCDB;}
+  /// Set default ocdb
+  void SetDefaultOCDB(const char* defaultOCDB) {fDefaultOCDB = defaultOCDB;}
+  void Prepare(const char* geoFilename, const char* defaultOCDB, const char* misalignOCDB);
   
  private:
   AliESDEvent *fESD;                      //!< ESD object
 
   AliMUONAlignment *fAlign;               ///< The MUON alignment object
   TString fGeoFilename;                   ///< Geometry file name
+  TString fMisAlignOCDB;              ///< OCDB with misalignment file
+  TString fDefaultOCDB;               ///< Default OCDB
   AliMUONGeometryTransformer *fTransform; ///< MUON geometry transformer
     
   Int_t fTrackTot;             ///< Number of track read 
@@ -54,7 +64,7 @@ class AliMUONAlignmentTask : public AliAnalysisTask {
 
   TList   *fList;          ///< list of graphs
    
-  ClassDef(AliMUONAlignmentTask, 1) // example of analysis
+  ClassDef(AliMUONAlignmentTask, 2) // example of analysis
 };
 
 #endif
