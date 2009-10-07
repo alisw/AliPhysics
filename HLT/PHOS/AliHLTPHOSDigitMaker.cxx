@@ -15,7 +15,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  /** 
- * @file   AliHLTPHOSClusterizer.cxx
+ * @file   AliHLTPHOSDigitMaker.cxx
  * @author Oystein Djuvsland
  * @date 
  * @brief  Digit maker for PHOS HLT  
@@ -47,7 +47,7 @@ ClassImp(AliHLTPHOSDigitMaker);
 using namespace PhosHLTConst;
 
 AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
-  //  AliHLTPHOSBase(),
+  AliHLTPHOSBase(),
   fShmPtr(0),
   fDigitStructPtr(0),
   fDigitCount(0),

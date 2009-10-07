@@ -20,8 +20,6 @@
 #ifndef ALIHLTPHOSDIGITDATASTRUCT_H
 #define ALIHLTPHOSDIGITDATASTRUCT_H
 
-#include "Rtypes.h"
-
 /**
  * Digit struct for PHOS HLT
  *
@@ -46,10 +44,16 @@
 struct AliHLTPHOSDigitDataStruct
 {
   /** The x coordinate */
-  Float_t fX;
+  Int_t fX;
 
   /** The x coordinate */
-  Float_t fZ;
+  Int_t fZ;
+
+  /** The x local coordinate */
+  Int_t fLocX;
+
+  /** The x local coordinate */
+  Int_t fLocZ;
 
   /** The module number */
   Int_t fModule;
