@@ -29,14 +29,14 @@ AliHLTCaloRawAnalyzerPeakFinderComponent::AliHLTCaloRawAnalyzerPeakFinderCompone
 {
   fAnalyzerPtr = new AliHLTCaloRawAnalyzerPeakFinder();
 
-  if(LoadPFVector() == kFALSE)
-    {
-      //      cout << "Warning, could not load PF vectors" << endl;
-    }
-  else 
-    {
-      //    cout << "Loaded PF vectors" << endl;
-    }
+  // if(LoadPFVector() == kFALSE)
+  //   {
+  //     //      cout << "Warning, could not load PF vectors" << endl;
+  //   }
+  // else 
+  //   {
+  //     //    cout << "Loaded PF vectors" << endl;
+  //   }
 } 
 
 
