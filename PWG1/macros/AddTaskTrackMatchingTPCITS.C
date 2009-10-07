@@ -21,7 +21,6 @@ AliTrackMatchingTPCITSCosmics *AddTaskTrackMatchingTPCITS()
   //taskMatch->SetOnlySPDFO();
   taskMatch->SetGeometryFileName("alien:///alice/cern.ch/user/d/dainesea/geometry.root");
   // Add to the manager
-  taskMatch->SetReadHLTESD(kTRUE);
   mgr->AddTask(taskMatch);
 
   //

@@ -49,7 +49,7 @@ ClassImp(AliTrackMatchingTPCITSCosmics)
 //________________________________________________________________________
 AliTrackMatchingTPCITSCosmics::AliTrackMatchingTPCITSCosmics(const char *name):
 AliAnalysisTask(name,"task"),
-fOnlySPDFO(kTRUE),
+fOnlySPDFO(kFALSE),
 fReadHLTESD(kFALSE),
 fGeometryFileName("geometry.root"),
 fESD(0),
@@ -109,11 +109,7 @@ void AliTrackMatchingTPCITSCosmics::ConnectInputData(Option_t *)
     if(!esdH) {
       printf("ERROR: Could not get ESDInputHandler\n");
     } else {
-      if(!fReadHLTESD) {
-	fESD = esdH->GetEvent();
-      } else {
-	fESD = esdH->GetHLTEvent();
-      }
+      fESD = esdH->GetEvent();
     }
   }
   
@@ -138,7 +134,7 @@ void AliTrackMatchingTPCITSCosmics::CreateOutputObjects()
   fList = new TList();
   fList->SetOwner();
 
-  fHistEvCount = new TH1F("fHistEvCount","0: all, 1: SPDFO, 2: vtx, 3: TPCtrks, 4: ITStrks, 5: HLT",11,-0.5,10.5);
+  fHistEvCount = new TH1F("fHistEvCount","0: all, 1: SPDFO, 2: vtx, 3: TPCtrks, 4: ITStrks, 5: HLT, 6: HLT&TPCtrks, 7: HLT&ITStrks",11,-0.5,10.5);
   fList->Add(fHistEvCount);
 
   fntTrks = new TNtuple("fntTrks","TPC-ITS matching","ptTPC:nClsTPC:nClsITSSA:nClsITSMI:SSD1:SSD2:phi:z:dx:dy:dz:drphi:dphi:dtgl");
@@ -175,16 +171,28 @@ void AliTrackMatchingTPCITSCosmics::Exec(Option_t */*option*/)
   fHistEvCount->Fill(0);
   PostData(0,fList);
 
-  if(fESD->IsHLTTriggerFired()) fHistEvCount->Fill(5);
+  // check if event is triggered by HLT
+  Bool_t hltTrigg=kFALSE;
+  if(fReadHLTESD) {
+    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    AliESDEvent *hltESD = esdH->GetHLTEvent();
+    if(!hltESD) {
+      printf("AliTrackMatchingTPCITSCosmics::Exec(): no HLT ESD \n");
+      return;
+    } 
+    if(hltESD->IsHLTTriggerFired()) {fHistEvCount->Fill(5);hltTrigg=kTRUE;}
+  }
 
+  
   TString triggeredClass = fESD->GetFiredTriggerClasses(); 
   if(triggeredClass.Contains("C0SCO-ABCE-NOPF-CENT")) {
     fHistEvCount->Fill(1);
   } else {
     if(fOnlySPDFO) {  PostData(0,fList); return; }
   }
-
+  
   Int_t ntracks = fESD->GetNumberOfTracks();
+  printf("CONTR: %d\n",fESD->GetVertex()->GetNContributors());
   if(fESD->GetVertex()->GetNContributors()>=0) {
     fHistEvCount->Fill(2);
   } 
@@ -220,8 +228,12 @@ void AliTrackMatchingTPCITSCosmics::Exec(Option_t */*option*/)
   }
   
   //printf("nTrksTPC %d  nTrksITSSA %d\n",nTrksTPC,nTrksITSSA);
-  if(nTrksITSSA>0) fHistEvCount->Fill(3);
-  if(nTrksTPC>0) fHistEvCount->Fill(4);
+  if(nTrksITSSA>0) fHistEvCount->Fill(4);
+  if(hltTrigg && nTrksITSSA>0) fHistEvCount->Fill(7);
+  if(nTrksTPC>0)   fHistEvCount->Fill(3);
+  if(hltTrigg && nTrksTPC>0)   fHistEvCount->Fill(6);
+  if(nTrksTPCITS>0)   fHistEvCount->Fill(8);
+  if(hltTrigg && nTrksTPCITS>0)   fHistEvCount->Fill(9);
   
   if(nTrksTPC>2 || nTrksTPC==0 || nTrksITSSA>2 || nTrksITSSA==0) { PostData(0,fList); return; }
   
