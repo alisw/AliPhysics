@@ -201,18 +201,24 @@ void AliTRDpidRefMaker::Terminate(Option_t *)
 //________________________________________________________________________
 void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, void *source, Float_t *pid) 
 {
-// !!!! PREMILMINARY FUNCTION !!!!
-//
-// this is the place for the V0 procedure
-// as long as there is no one implemented, 
-// just the probabilities
-// of the TRDtrack are used!
+// Fill the reference PID values "pid" from "source" object
+// according to the option "select". Possible options are
+// - kV0  - v0 based PID
+// - kMC  - MC truth [default]
+// - kRec - outside detectors
 
   switch(select){ 
   case kV0:
     {
-      AliTRDv0Info *v0 = static_cast<AliTRDv0Info*>(source);
-      v0->Print(); // do something
+      AliTRDtrackInfo *track = static_cast<AliTRDtrackInfo*>(source);
+      if(!track){
+        AliError("No trackInfo found");
+        return;
+      }
+
+      //Get V0 PID decisions from the AliTRDv0Info for all particle species (implemented so far : electrons from conversions, pions from K0s and protons from Lambdas) :
+      AliTRDv0Info v0;
+      for(Int_t is=AliPID::kSPECIES; is--;) fPID[is] = v0.GetV0PID(is, track);
     }
     break;
   case kMC:

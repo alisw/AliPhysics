@@ -813,7 +813,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     gPad->SetMargin(0.1, 0.01, 0.1, 0.01);
     for(Int_t is = AliPID::kSPECIES-1; is>=0; is--){
       Int_t bin = FindBin(is, 2.);
-      h1 = h2->ProjectionY("px", bin, bin);
+      h1 = h2->ProjectionY(Form("px%d", is), bin, bin);
       if(!h1->GetEntries()) continue;
       h1->Scale(1./h1->Integral());
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
@@ -851,7 +851,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     FIRST = kTRUE;
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
-      h1 = h2->ProjectionY("pyt", bin, bin);
+      h1 = h2->ProjectionY(Form("pyt%d", is), bin, bin);
       if(!h1->GetEntries()) continue;
       h1->SetMarkerStyle(24);
       h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
@@ -871,7 +871,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     FIRST = kTRUE;
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
-      h1 = h2->ProjectionY("pyx", bin, bin);
+      h1 = h2->ProjectionY(Form("pyx%d", is), bin, bin);
       if(!h1->GetEntries()) continue;
       h1->SetMarkerStyle(24);
       h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
@@ -901,7 +901,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     legNClus->SetHeader("Particle Species");
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
-      h1 = h2->ProjectionY("pyNClus", bin, bin);
+      h1 = h2->ProjectionY(Form("pyNClus%d", is), bin, bin);
       if(!h1->GetEntries()) continue;
       h1->Scale(100./h1->Integral());
       //h1->SetMarkerStyle(24);
@@ -932,7 +932,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     legNClus->SetHeader("Particle Species");
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
-      h1 = h2->ProjectionY("pyNTracklets", bin, bin);
+      h1 = h2->ProjectionY(Form("pyNTracklets%d", is), bin, bin);
       if(!h1->GetEntries()) continue;
       h1->Scale(100./h1->Integral());
       //h1->SetMarkerStyle(24);

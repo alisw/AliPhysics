@@ -28,15 +28,15 @@ public:
     kNtrackletsFindable = 6,
     kNtracksEvent       = 7,
     kNtracksSector      = 8,
-    kTrackStatus        = 9,
-    kTrackletStatus     = 10,
-    kPH                 = 11,
-    kChi2               = 12,
-    kChargeCluster      = 13,
-    kChargeTracklet     = 14,
-    kNeventsTrigger     = 15,
-    kNeventsTriggerTracks=16,
-    kTriggerPurity      = 17
+    kPH                 = 9,
+    kChi2               = 10,
+    kChargeCluster      = 11,
+    kChargeTracklet     = 12,
+    kNeventsTrigger     = 13,
+    kNeventsTriggerTracks=14,
+    kTriggerPurity      = 15,
+    kTrackStatus        = 16,
+    kTrackletStatus     = 17
   };
 
   AliTRDcheckDET();

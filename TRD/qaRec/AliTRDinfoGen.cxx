@@ -313,11 +313,11 @@ void AliTRDinfoGen::Exec(Option_t *){
   }
   if(fDebugLevel>=2) printf("%3d Tracks: TPC[%d] TRD[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTPC, nTRD);
 
-  AliESDv0 *v0 = 0x0;
-  for(Int_t iv0=0; iv0<fESD->GetNumberOfV0s(); iv0++){
-    if(!(v0 = fESD->GetV0(iv0))) continue;
-    fV0container->Add(new AliTRDv0Info(v0));
-  }
+//   AliESDv0 *v0 = 0x0;
+//   for(Int_t iv0=0; iv0<fESD->GetNumberOfV0s(); iv0++){
+//     if(!(v0 = fESD->GetV0(iv0))) continue;
+//     fV0container->Add(new AliTRDv0Info(v0));
+//   }
 
   // Insert also MC tracks which are passing TRD where the track is not reconstructed
   if(HasMCdata()){

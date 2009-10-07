@@ -44,7 +44,7 @@ public:
   
   void          ConnectInputData(Option_t *);
   void          CreateOutputObjects();
-  TGraphErrors* GetGraph(Int_t id, Option_t *opt=0x0);
+  TGraphErrors* GetGraph(Int_t id, Option_t *opt="bc");
   void          Exec(Option_t *);
 
   Bool_t        HasMC() const { return TESTBIT(fStatus, kMC);}

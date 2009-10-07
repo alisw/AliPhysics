@@ -100,10 +100,10 @@ void AliTRDcheckESD::CreateOutputObjects()
 }
 
 //____________________________________________________________________
-TGraphErrors* AliTRDcheckESD::GetGraph(Int_t id, Option_t*)
+TGraphErrors* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
 {
-  Bool_t kBUILD = 1, // build graph if none found
-         kCLEAR = 1; // clear existing graph
+  Bool_t kBUILD = strstr(opt, "b"), // build graph if none found
+         kCLEAR = strstr(opt, "c"); // clear existing graph
 
   const Char_t *name[] = {
     "Geo", "Trk", "Pid", "Ref"
@@ -123,7 +123,7 @@ TGraphErrors* AliTRDcheckESD::GetGraph(Int_t id, Option_t*)
   TObjArray *res = 0x0;
   if(!(res = (TObjArray*)fHistos->At(kResults)) ||
       (id < 0 || id >= ngr)){
-    AliWarning("Graph missing.");
+    AliWarning("Graph array missing.");
     return 0x0;
   }
 
@@ -321,21 +321,25 @@ void AliTRDcheckESD::Terminate(Option_t *)
   h1[0] = h2->ProjectionX("px0", kTPCout, kTPCout);
   h1[1] = h2->ProjectionX("px1", kTRDin, kTRDin);
   Process(h1, GetGraph(0));
+  delete h1[0];delete h1[1];
 
   // tracking efficiency
   h1[0] = h2->ProjectionX("px0", kTRDin, kTRDin);
   h1[1] = h2->ProjectionX("px1", kTRDout, kTRDout);
   Process(h1, GetGraph(1));
+  delete h1[1];
 
   // PID efficiency
   //h1[0] = h2->ProjectionX("px0", kTRDin, kTRDin);
   h1[1] = h2->ProjectionX("px1", kTRDpid, kTRDpid);
   Process(h1, GetGraph(2));
+  delete h1[1];
 
   // Refit efficiency
   //h1[0] = h2->ProjectionX("px0", kTRDin, kTRDin);
   h1[1] = h2->ProjectionX("px1", kTRDref, kTRDref);
   Process(h1, GetGraph(3));
+  delete h1[1];
 }
 
 //____________________________________________________________________
