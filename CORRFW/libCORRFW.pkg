@@ -24,12 +24,10 @@ SRCS = AliCFFrame.cxx \
        AliCFV0TopoCuts.cxx \
        AliCFUnfolding.cxx
 
-CHECKALIEN = $(shell root-config --has-alien)
 ifeq (yes,$(CHECKALIEN))
 PACKCXXFLAGS := $(CXXFLAGS) -DWITHALIEN
 endif
 
-CHECKXML = $(shell root-config --has-xml)
 ifeq (yes,$(CHECKXML))
 PACKCXXFLAGS += $(CXXFLAGS) -DWITHXML
 CINTFLAGS += -DWITHXML
@@ -44,7 +42,7 @@ EXPORT:=$(SRCS:.cxx=.h)
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEERBase -lANALYSIS -lESD -lAOD \
-                         -L$(shell root-config --libdir) -lEG
+                         -L$(ROOTLIBDIR) -lEG
 endif
 
 

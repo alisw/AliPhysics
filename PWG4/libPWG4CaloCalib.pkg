@@ -13,5 +13,5 @@ EINCLUDE= PHOS EMCAL
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
                          -lESD -lAOD -lANALYSIS -lANALYSISalice -lPHOSbase -lEMCALbase \
-                         -L$(shell root-config --libdir) -lEG
+                         -L$(ROOTLIBDIR) -lEG
 endif

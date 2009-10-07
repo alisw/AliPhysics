@@ -17,6 +17,6 @@ DHDR= FASTJETANLinkDef.h
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lJETAN \
-                         -L$(shell root-config --libdir) -lEG -lGeom
+                         -L$(ROOTLIBDIR) -lEG -lGeom
 endif
 

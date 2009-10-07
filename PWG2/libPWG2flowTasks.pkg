@@ -23,5 +23,5 @@ ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
                          -lESD -lAOD -lPWG2AOD -lANALYSIS -lANALYSISalice \
                          -lCORRFW \
-                         -L$(shell root-config --libdir) -lEG
+                         -L$(ROOTLIBDIR) -lEG
 endif
