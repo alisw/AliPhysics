@@ -193,6 +193,11 @@ void AliESDRun::Reset()
   fPeriodNumber = 0;
   fRecoVersion = 0;
   fMagneticField = 0;
+  fCurrentL3 = 0;
+  fCurrentDip = 0;
+  fBeamEnergy = 0;
+  fBeamType = "";
+  ResetBit(kBInfoStored|kUniformBMap);
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
   fDiamondCovXY[1]=0.;
