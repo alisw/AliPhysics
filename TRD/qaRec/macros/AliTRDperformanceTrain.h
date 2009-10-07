@@ -66,9 +66,10 @@ const Char_t *fgkTRDtaskOpt[NTRDTASKS+1] = {
 #include "TObjString.h"
 #include "TObjArray.h"
 #include "TError.h"
+#include <cstring>
+#include <fstream>
 #endif
 
-#include <cstring>
 
 //____________________________________________
 Bool_t HasReadMCData(Char_t *opt){
@@ -113,46 +114,46 @@ Int_t ParseOptions(Char_t *trd)
 }
 
 //______________________________________________________
-void mergeProd(const Char_t *mark, const Char_t *files)
-{
-  const Int_t kBatch = 20;
-
-  TFileMerger *fFM = new TFileMerger(1);
-  fFM->OutputFile(Form("%s/0_%s",  gSystem->ExpandPathName("$PWD"), mark));
-
-  Int_t jbatch = 0, nbatch = 0;
-  string filename;
-  ifstream file(files);
-  while(getline(file, filename)){
-    if(Int_t(filename.find(mark)) < 0) continue;
-    fFM->AddFile(filename.c_str()); nbatch++;
-    if(nbatch==kBatch){
-      //printf("MERGE BATCH %d [%d]\n", jbatch, nbatch);
-      fFM->Merge(); jbatch++;
-      new(fFM) TFileMerger(kTRUE);
-      fFM->OutputFile(Form("%s/%d_%s",  gSystem->ExpandPathName("$PWD"), jbatch, mark));
-      nbatch=0;
-    }
-  }
-  if(nbatch){
-    //printf("MERGE BATCH %d[%d]\n", jbatch, nbatch);
-    fFM->Merge();
-    jbatch++;
-  }
-  if(!jbatch){
-    delete fFM;
-    return;
-  }
-
-  new(fFM) TFileMerger(kTRUE);
-  fFM->OutputFile(Form("%s/%s",  gSystem->ExpandPathName("$PWD"), mark));
-  for(Int_t ib=jbatch; ib--;){
-    fFM->AddFile(Form("%s/%d_%s",  gSystem->ExpandPathName("$PWD"), ib, mark));
-    gSystem->Exec(Form("rm -f %s/%d_%s", gSystem->ExpandPathName("$PWD"), ib, mark));
-  }
-  fFM->Merge();
-  delete fFM;
-}
+// void mergeProd(const Char_t *mark, const Char_t *files)
+// {
+//   const Int_t kBatch = 20;
+// 
+//   TFileMerger *fFM = new TFileMerger(1);
+//   fFM->OutputFile(Form("%s/0_%s",  gSystem->ExpandPathName("$PWD"), mark));
+// 
+//   Int_t jbatch = 0, nbatch = 0;
+//   string filename;
+//   ifstream file(files);
+//   while(getline(file, filename)){
+//     if(Int_t(filename.find(mark)) < 0) continue;
+//     fFM->AddFile(filename.c_str()); nbatch++;
+//     if(nbatch==kBatch){
+//       //printf("MERGE BATCH %d [%d]\n", jbatch, nbatch);
+//       fFM->Merge(); jbatch++;
+//       new(fFM) TFileMerger(kTRUE);
+//       fFM->OutputFile(Form("%s/%d_%s",  gSystem->ExpandPathName("$PWD"), jbatch, mark));
+//       nbatch=0;
+//     }
+//   }
+//   if(nbatch){
+//     //printf("MERGE BATCH %d[%d]\n", jbatch, nbatch);
+//     fFM->Merge();
+//     jbatch++;
+//   }
+//   if(!jbatch){
+//     delete fFM;
+//     return;
+//   }
+// 
+//   new(fFM) TFileMerger(kTRUE);
+//   fFM->OutputFile(Form("%s/%s",  gSystem->ExpandPathName("$PWD"), mark));
+//   for(Int_t ib=jbatch; ib--;){
+//     fFM->AddFile(Form("%s/%d_%s",  gSystem->ExpandPathName("$PWD"), ib, mark));
+//     gSystem->Exec(Form("rm -f %s/%d_%s", gSystem->ExpandPathName("$PWD"), ib, mark));
+//   }
+//   fFM->Merge();
+//   delete fFM;
+// }
 
 #endif
 
