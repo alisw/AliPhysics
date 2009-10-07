@@ -39,7 +39,7 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lPHOSUtils \
                          -lSTEER -lCDB -lESD -lSTEERBase \
                          -lRAWDatasim -lRAWDatarec -lRAWDatabase \
-                         -L$(shell root-config --libdir) -lVMC -lEG -lGeom -lMinuit
+                         -L$(ROOTLIBDIR) -lVMC -lEG -lGeom -lMinuit
 endif
 
 

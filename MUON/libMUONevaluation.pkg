@@ -22,6 +22,6 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lMUONmapping -lMUONtrigger \
                          -lMUONgeometry -lMUONbase -lMUONsim -lMUONrec -lMUONcore -lMUONcalib \
                          -lSTEER -lCDB -lESD -lSTEERBase \
-                         -L$(shell root-config --libdir) -lEG -lGui
+                         -L$(ROOTLIBDIR) -lEG -lGui
 endif
 

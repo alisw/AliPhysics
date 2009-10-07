@@ -16,5 +16,5 @@ EXPORT:=TEpEmGen.h
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEER -lSTEERBase -lEVGEN -lmicrocern \
-                         -L$(shell root-config --libdir) -lEG
+                         -L$(ROOTLIBDIR) -lEG
 endif

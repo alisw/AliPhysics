@@ -20,7 +20,7 @@ ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
                          -lCDB -lESD -lTPCbase -lTPCrec -lSTEER -lANALYSIS  \
                          -lSTAT \
-                         -L$(shell root-config --libdir) -lMinuit -lProof -lEG
+                         -L$(ROOTLIBDIR) -lMinuit -lProof -lEG
 endif
 
 

@@ -6,7 +6,7 @@ HDRS:= $(SRCS:.cxx=.h)
 
 HDRS +=
 
-EHDRS:=$(shell root-config --incdir)/TH1F.h
+EHDRS:=$(ROOTINCDIR)/TH1F.h
 
 EINCLUDE+=
 

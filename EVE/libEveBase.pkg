@@ -14,7 +14,7 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEERBase -lCDB -lESD -lAOD -lSTEER \
                          -lTPCbase -lTPCsim -lTPCrec -lITSbase \
                          -lRAWDatarec -lRAWDatabase \
-                         -L$(shell root-config --libdir) -lEve -lGeom \
+                         -L$(ROOTLIBDIR) -lEve -lGeom \
                          -lGui -lGed -lRGL -lEG -lMinuit
 ELIBSDIR:= /usr/X11R6/lib
 ELIBS:= GL

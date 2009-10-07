@@ -113,5 +113,5 @@ EINCLUDE:= RAW MUON/mapping
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lCDB -lSTEERBase -lMUONcore -lRAWDatabase \
-                         -L$(shell root-config --libdir) -lGui
+                         -L$(ROOTLIBDIR) -lGui
 endif

@@ -18,5 +18,5 @@ EINCLUDE= RAW
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lTRDbase -lSTEER -lSTEERBase \
-                         -L$(shell root-config --libdir) -lGeom -lVMC
+                         -L$(ROOTLIBDIR) -lGeom -lVMC
 endif

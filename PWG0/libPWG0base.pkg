@@ -21,5 +21,5 @@ EINCLUDE=
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
                          -lESD -lANALYSIS \
-                         -L$(shell root-config --libdir) -lEG
+                         -L$(ROOTLIBDIR) -lEG
 endif

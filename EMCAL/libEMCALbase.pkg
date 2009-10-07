@@ -43,5 +43,5 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
 			 -lEMCALUtils \
                          -lSTEERBase -lCDB -lSTEER \
                          -lRAWDatarec -lRAWDatabase \
-                         -L$(shell root-config --libdir) -lVMC -lGeom -lMinuit
+                         -L$(ROOTLIBDIR) -lVMC -lGeom -lMinuit
 endif

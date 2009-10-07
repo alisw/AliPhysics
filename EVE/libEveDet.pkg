@@ -18,7 +18,7 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lFMDbase -lFMDrec -lEMCALbase -lEMCALUtils \
 			 -lVZERObase -lVZEROrec \
                          -lRAWDatarec -lRAWDatabase \
-                         -L$(shell root-config --libdir) -lEve -lRGL -lGed -lGui -lGeom -lEG
+                         -L$(ROOTLIBDIR) -lEve -lRGL -lGed -lGui -lGeom -lEG
 
 ELIBSDIR:= /usr/X11R6/lib
 ELIBS:= GL GLU

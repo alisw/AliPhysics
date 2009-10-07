@@ -64,18 +64,20 @@ endif
 # Check if DATE is installed
 
 ifneq ($(shell date-config 2>&1 | grep -i usage),)
-DATEFLAGS  = -DALI_DATE $(shell date-config --cflags | tr \" \')
+DATEFLAGS := -DALI_DATE $(shell date-config --cflags | tr \" \')
 CXXFLAGS  += $(DATEFLAGS)
 CFLAGS    += $(DATEFLAGS)
 CINTFLAGS += $(DATEFLAGS)
 DEPINC    += $(DATEFLAGS)
+DMONLIBS  := $(shell date-config --monitorlibs)
 else
-DATEFLAGS  = -D`uname` -DDATE_SYS=`uname` -Dlong32='int' \
+DATEFLAGS := -D`uname` -DDATE_SYS=`uname` -Dlong32='int' \
              -Dlong64='long long' -DdatePointer='long'
 CXXFLAGS  += $(DATEFLAGS)
 CFLAGS    += $(DATEFLAGS)
 CINTFLAGS += $(DATEFLAGS)
 DEPINC    += $(DATEFLAGS)
+DMONLIBS  :=
 endif
 
 #-------------------------------------------------------------------------------
@@ -98,6 +100,8 @@ ROOTCLIBS     := $(shell $(ROOTCONFIG) --glibs) \
 			-lMLP 			\
 			-lSpectrum 		\
 			-L$(ROOTPLUGDIR)
+CHECKALIEN    := $(shell root-config --has-alien)
+CHECKXML      := $(shell root-config --has-xml)
 
 #-------------------------------------------------------------------------------
 # Location where to install libraries and binaries and common header files

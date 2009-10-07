@@ -15,5 +15,5 @@ DHDR= TRDqaAnalysisLinkDef.h
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lANALYSIS -lANALYSISalice -lESD \
-#                         -L$(shell root-config --libdir) -lGui
+#                         -L$(ROOTLIBDIR) -lGui
 endif

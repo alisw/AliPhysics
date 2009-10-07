@@ -48,5 +48,5 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lMUONgeometry -lMUONraw -lMUONcore \
                          -lSTEER -lCDB -lSTEERBase \
                          -lRAWDatasim -lRAWDatabase \
-                         -L$(shell root-config --libdir) -lVMC -lEG -lGeom 
+                         -L$(ROOTLIBDIR) -lVMC -lEG -lGeom 
 endif

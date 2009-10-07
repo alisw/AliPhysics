@@ -17,5 +17,5 @@ PACKDCXXFLAGS:=$(filter-out -Weffc++,$(CXXFLAGSNO))
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) \
-                         -L$(shell root-config --libdir) -lEG -lEGPythia6
+                         -L$(ROOTLIBDIR) -lEG -lEGPythia6
 endif

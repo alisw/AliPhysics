@@ -10,7 +10,7 @@ ELIBS:= MONITOR STEERBase ESD AOD CDB STEER RAWDatabase RAWDatarec RAWDatasim TP
 
 ifdef DATE_ROOT
 
-PACKBLIBS += $(shell date-config --monitorlibs)
+PACKBLIBS += $(DMONLIBS)
 ELIBSDIR:=
 
 EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}

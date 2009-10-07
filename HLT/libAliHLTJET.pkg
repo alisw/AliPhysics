@@ -46,7 +46,7 @@ LIBRARY_DEP  		    :=	-lHLTbase -lAliHLTUtil \
 				-lESD -lSTEER -lSTEERBase -lAOD -lESD \
 				-lANALYSIS -lANALYSISalice \
 				-lJETAN -lJETANMC \
-				-L$(shell root-config --libdir) -lEG 
+				-L$(ROOTLIBDIR) -lEG 
 
 ###############################################################################
 include $(MODDIR)/hlt.conf

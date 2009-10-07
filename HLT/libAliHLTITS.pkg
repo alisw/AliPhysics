@@ -27,7 +27,7 @@ MODULE_DHDR:=
 
 EINCLUDE := HLT/BASE HLT/BASE/util HLT/ITS HLT/TPCLib HLT/ITS/tracking ITS STEER RAW
 
-LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lRAWDatarec -lRAWDatabase -lITSrec -lITSbase -lESD -lSTEER -lSTEERBase -L$(shell root-config --libdir) -lEG
+LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lRAWDatarec -lRAWDatabase -lITSrec -lITSbase -lESD -lSTEER -lSTEERBase -L$(ROOTLIBDIR) -lEG
 
 ###############################################################################
 #

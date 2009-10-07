@@ -21,7 +21,6 @@ ELIBS    := Aliengui \
   HLTbase \
   ANALYSIS ANALYSISalice
 
-CHECKXML = $(shell root-config --has-xml)
 ifeq (yes,$(CHECKXML))
 PACKCXXFLAGS += $(CXXFLAGS) -DWITHXML
 endif

@@ -25,7 +25,7 @@ EINCLUDE 	:= HLT/global \
 LIBRARY_DEP := -lHLTbase -lAliHLTUtil \
                -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase \
                -lRAWDatarec -lRAWDatabase -lTRDbase \
-               -L$(shell root-config --libdir) -lEG
+               -L$(ROOTLIBDIR) -lEG
 
 ###############################################################################
 #

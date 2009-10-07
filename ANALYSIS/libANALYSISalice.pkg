@@ -7,12 +7,10 @@ SRCS = 	AliAnalysisTaskSE.cxx AliAnalysisTaskME.cxx \
 	AliAnalysisTaskTagCreator.cxx \
         AliMultiEventInputHandler.cxx
 
-CHECKALIEN = $(shell root-config --has-alien)
 ifeq (yes,$(CHECKALIEN))
 PACKCXXFLAGS := $(CXXFLAGS) -DWITHALIEN
 endif
 
-CHECKXML = $(shell root-config --has-xml)
 ifeq (yes,$(CHECKXML))
 PACKCXXFLAGS += $(CXXFLAGS) -DWITHXML
 CINTFLAGS += -DWITHXML
@@ -29,7 +27,7 @@ EXPORT:=$(SRCS:.cxx=.h)
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lANALYSIS -lSTEERBase -lAOD -lESD \
-                         -L$(shell root-config --libdir) -lTreePlayer -lXMLIO
+                         -L$(ROOTLIBDIR) -lTreePlayer -lXMLIO
 endif
 
 

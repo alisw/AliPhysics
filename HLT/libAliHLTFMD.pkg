@@ -12,7 +12,7 @@ EINCLUDE := HLT/BASE HLT/FMD STEER RAW FMD
 
 LIBRARY_DEP :=  -lHLTbase -lAliHLTUtil -lRAWDatarec -lRAWDatabase \
                 -lESD -lSTEER -lSTEERBase -lFMDbase -lFMDrec \
-                -L$(shell root-config --libdir)
+                -L$(ROOTLIBDIR)
 
 ###############################################################################
 #

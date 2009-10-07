@@ -157,7 +157,7 @@ EINCLUDE 	:= HLT/TPCLib \
 LIBRARY_DEP := -lHLTbase -lAliHLTRCU -lAliHLTUtil \
                -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase \
                -lRAWDatarec -lRAWDatabase \
-               -L$(shell root-config --libdir) -lEG
+               -L$(ROOTLIBDIR) -lEG
 
 ###############################################################################
 #

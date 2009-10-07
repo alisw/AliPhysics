@@ -6,7 +6,6 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR= ANALYSISRLLinkDef.h
 
-CHECKALIEN = $(shell root-config --has-alien)
 ifeq (yes,$(CHECKALIEN))
 PACKCXXFLAGS := $(CXXFLAGS) -DWITHALIEN
 endif
@@ -15,6 +14,6 @@ EXPORT:=$(SRCS:.cxx=.h)
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lANALYSIS -lSTEER \
-#                         -L$(shell root-config --libdir) -lGui
+#                         -L$(ROOTLIBDIR) -lGui
 endif
 

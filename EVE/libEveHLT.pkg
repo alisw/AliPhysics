@@ -14,5 +14,5 @@ ELIBSDIR:= /usr/X11R6/lib
 ELIBS:= GL
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
                          -lTPCbase -lHLTbase \
-                         -L$(shell root-config --libdir) -lEve -lXMLParser -lGed -lGui
+                         -L$(ROOTLIBDIR) -lEve -lXMLParser -lGed -lGui
 endif

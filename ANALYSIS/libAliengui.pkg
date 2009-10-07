@@ -1,6 +1,5 @@
 #-*- Mode: Makefile -*-
 
-CHECKXML = $(shell root-config --has-xml)
 ifeq (yes,$(CHECKXML))
 PACKCXXFLAGS += $(CXXFLAGS) -DWITHXML
 CINTFLAGS += -DWITHXML
@@ -25,5 +24,5 @@ EINCLUDE:= STEER
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lANALYSISalice -lSTEERBase \
-                         -L$(shell root-config --libdir) -lGui
+                         -L$(ROOTLIBDIR) -lGui
 endif

@@ -31,5 +31,5 @@ EXPORT:=
 EINCLUDE:= 
 
 ifeq (win32gcc,$(ALICE_TARGET))
-PACKSOFLAGS:= $(SOFLAGS) -L$(shell root-config --libdir) -lEG
+PACKSOFLAGS:= $(SOFLAGS) -L$(ROOTLIBDIR) -lEG
 endif

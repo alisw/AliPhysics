@@ -52,6 +52,6 @@ ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lMUONbase -lMUONrec -lMUONmapping -lMUONgeometry -lMUONcalib -lMUONraw -lMUONcore \
                          -lCDB -lRAWDatarec -lSTEERBase \
-                         -L$(shell root-config --libdir) -lThread -lGeom -lGui
+                         -L$(ROOTLIBDIR) -lThread -lGeom -lGui
 endif
 

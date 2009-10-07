@@ -20,13 +20,13 @@ EINCLUDE:= RAW STEER
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEERBase -lRAWDatarec \
-                         -L$(shell root-config --libdir) -lGui
+                         -L$(ROOTLIBDIR) -lGui
 endif
 
 
 ifdef DATE_ROOT
 SRCS +=  AliTPCMonitorDateMonitor.cxx  
-PACKBLIBS += $(shell date-config --monitorlibs)
+PACKBLIBS += $(DMONLIBS)
 ELIBSDIR:=
 ELIBS:=
 HDRS +=  AliTPCMonitorDateMonitor.h 

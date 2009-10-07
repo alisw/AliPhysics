@@ -86,5 +86,5 @@ ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEER -lCDB -lSTEERBase \
                          -lRAWDatasim -lRAWDatarec -lRAWDatabase \
-                         -L$(shell root-config --libdir) -lGui -lGeom
+                         -L$(ROOTLIBDIR) -lGui -lGeom
 endif

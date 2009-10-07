@@ -7,7 +7,7 @@ SRCS:=  AliMDC.cxx AliRawDB.cxx \
 
 HDRS:= $(SRCS:.cxx=.h)
 
-EHDRS:=$(shell root-config --incdir)/TH1F.h
+EHDRS:=$(ROOTINCDIR)/TH1F.h
 
 #EDEFINE+= -DUSE_EB
 

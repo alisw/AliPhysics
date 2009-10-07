@@ -12,7 +12,7 @@ HDRS:= $(SRCS:.cxx=.h)
 
 HDRS += AliRawEventHeaderVersions.h
 
-EHDRS:=$(shell root-config --incdir)/TH1F.h
+EHDRS:=$(ROOTINCDIR)/TH1F.h
 
 EINCLUDE+=
 
