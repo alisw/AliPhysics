@@ -167,7 +167,7 @@ protected:
    *
    * @param other Object to copy from. 
    */
-  AliFMDReconstructor(const AliFMDReconstructor& other);
+  AliFMDReconstructor(const AliFMDReconstructor&); //Not implemented
   /** 
    * Assignment operator 
    *
@@ -175,7 +175,7 @@ protected:
    *
    * @return reference to this object 
    */
-  AliFMDReconstructor& operator=(const AliFMDReconstructor& other);
+  AliFMDReconstructor& operator=(const AliFMDReconstructor&); //Not implemented
   /** 
    * Try to get the vertex from either ESD or generator header.  Sets
    * @c fCurrentVertex to the found Z posistion of the vertex (if 

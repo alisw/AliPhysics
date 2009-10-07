@@ -45,8 +45,8 @@ public:
   TObjArray *fClu;                     // tmp list of clusters
 //
   private:
-  AliHMPIDReconstructor(const AliHMPIDReconstructor& r);              //dummy copy constructor
-  AliHMPIDReconstructor &operator=(const AliHMPIDReconstructor& r);   //dummy assignment operator
+  AliHMPIDReconstructor(const AliHMPIDReconstructor&);              //Not implemented
+  AliHMPIDReconstructor &operator=(const AliHMPIDReconstructor&);   //Not implemented
 //  
   ClassDef(AliHMPIDReconstructor, 2)        // class for the HMPID reconstruction
 };

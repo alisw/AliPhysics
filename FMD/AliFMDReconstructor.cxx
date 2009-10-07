@@ -95,53 +95,6 @@ AliFMDReconstructor::AliFMDReconstructor()
     fZSFactor[det-1] = 0;
   }
 }
-  
-
-//____________________________________________________________________
-AliFMDReconstructor::AliFMDReconstructor(const AliFMDReconstructor& other) 
-  : AliReconstructor(), 
-    fMult(other.fMult),
-    fNMult(other.fNMult),
-    fTreeR(other.fTreeR),
-    fCurrentVertex(other.fCurrentVertex),
-    fESDObj(other.fESDObj),
-    fNoiseFactor(other.fNoiseFactor),
-    fAngleCorrect(other.fAngleCorrect),
-    fVertexType(other.fVertexType),
-    fESD(other.fESD),
-    fDiagnostics(other.fDiagnostics),
-    fDiagStep1(other.fDiagStep1), 
-    fDiagStep2(other.fDiagStep2),
-    fDiagStep3(other.fDiagStep3),
-    fDiagStep4(other.fDiagStep4),
-    fDiagAll(other.fDiagAll) 
-{
-  // Copy constructor 
-}
-  
-
-//____________________________________________________________________
-AliFMDReconstructor&
-AliFMDReconstructor::operator=(const AliFMDReconstructor& other) 
-{
-  // Assignment operator
-  fMult          = other.fMult;
-  fNMult         = other.fNMult;
-  fTreeR         = other.fTreeR;
-  fCurrentVertex = other.fCurrentVertex;
-  fESDObj        = other.fESDObj;
-  fNoiseFactor   = other.fNoiseFactor;
-  fAngleCorrect  = other.fAngleCorrect;
-  fVertexType    = other.fVertexType;
-  fESD           = other.fESD;
-  fDiagnostics   = other.fDiagnostics;
-  fDiagStep1     = other.fDiagStep1;
-  fDiagStep2     = other.fDiagStep2;
-  fDiagStep3     = other.fDiagStep3;
-  fDiagStep4     = other.fDiagStep4;
-  fDiagAll       = other.fDiagAll;
-  return *this;
-}
 
 //____________________________________________________________________
 AliFMDReconstructor::~AliFMDReconstructor() 

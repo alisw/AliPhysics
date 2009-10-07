@@ -69,17 +69,6 @@ class AliPHOSReconstructor : public AliReconstructor {
 public:
 
   AliPHOSReconstructor() ; //ctor            
-  AliPHOSReconstructor(const AliPHOSReconstructor & rec) :
-    AliReconstructor(rec),
-    fGeom(rec.fGeom),
-    fClusterizer(rec.fClusterizer),
-    fTSM(rec.fTSM),
-    fPID(rec.fPID)
-    {
-    // cpy ctor: 
-    // requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;
-  }
   virtual ~AliPHOSReconstructor() ; //dtor            
 
   static void                SetDebug()   { fgDebug = kTRUE ; }
@@ -98,17 +87,13 @@ public:
   virtual Float_t            CalibrateT(Float_t time, Int_t absId) const ;
 
   void FillMisalMatrixes(AliESDEvent* esd)const ;
-
-  AliPHOSReconstructor & operator = (const AliPHOSReconstructor & /*rvalue*/)  {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ;
-    return *this ; 
-  }
   
   static const AliPHOSRecoParam* GetRecoParam() {
     return dynamic_cast<const AliPHOSRecoParam*>(AliReconstructor::GetRecoParam(4)); }
 
 private:
+  AliPHOSReconstructor(const AliPHOSReconstructor & rec); // Not implemented
+  AliPHOSReconstructor & operator = (const AliPHOSReconstructor &); // Not implemented
   
   static Bool_t fgDebug ; //! verbosity controller
   AliPHOSGeometry          *fGeom;           // pointer to the PHOS geometry

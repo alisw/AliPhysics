@@ -42,7 +42,6 @@ class AliEMCALReconstructor : public AliReconstructor {
 public:
 
   AliEMCALReconstructor() ; //ctor            
-  AliEMCALReconstructor(const AliEMCALReconstructor & rec);
    
   virtual ~AliEMCALReconstructor() ; //dtor
 
@@ -60,13 +59,6 @@ public:
   virtual Bool_t             HasDigitConversion() const {return kTRUE;};
   virtual void               ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
   
-  
-  AliEMCALReconstructor & operator = (const AliEMCALReconstructor & /*rvalue*/)  {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ;
-    return *this ; 
-  }
-  
   static void   SetRecParam(AliEMCALRecParam * recParam){ fgkRecParam = recParam;}
 
   void   ReadDigitsArrayFromTree(TTree *digitsTree) const;
@@ -82,6 +74,9 @@ public:
 
 private:
   
+  AliEMCALReconstructor(const AliEMCALReconstructor &); //Not implemented
+  AliEMCALReconstructor & operator = (const AliEMCALReconstructor &); //Not implemented
+
   Bool_t fDebug; //! verbosity controller
 
   TList *fList;  //! List of hists (only for trigger now)

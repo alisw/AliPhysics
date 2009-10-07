@@ -67,8 +67,8 @@ public:
   void WritePbPbRecoParamInOCDB() const;
 
 private:
-  AliZDCReconstructor(const AliZDCReconstructor&);
-  AliZDCReconstructor& operator =(const AliZDCReconstructor&);
+  AliZDCReconstructor(const AliZDCReconstructor&); //Not implemented
+  AliZDCReconstructor& operator =(const AliZDCReconstructor&); //Not implemented
 
   void   ReconstructEventpp(TTree *clustersTree, 
   	    Float_t* ZN1ADCCorr, Float_t* ZP1ADCCorr, Float_t* ZN2ADCCorr, Float_t* ZP2ADCCorr,

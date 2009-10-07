@@ -64,6 +64,10 @@ public:
   static const AliDetectorRecoParam* GetRecoParam(Int_t iDet);
 
 private:
+
+  AliReconstructor(const AliReconstructor &); // Not implemented
+  AliReconstructor& operator=(const AliReconstructor &); // Not implemented
+  
   TString                            fOption;                                       //! option for reconstruction
   static const AliDetectorRecoParam* fgRecoParam[AliReconstruction::kNDetectors]; //! event reconstruction parameters for all detectors
   AliRunInfo*                        fRunInfo;                                    //! pointer to the run info object

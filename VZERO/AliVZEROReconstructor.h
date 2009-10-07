@@ -55,8 +55,8 @@ protected:
   AliESDVZEROfriend*  fESDVZEROfriend; // ESD friend object (complete raw data)
   
 private:
-  AliVZEROReconstructor(const AliVZEROReconstructor& reconstructor);
-  AliVZEROReconstructor& operator = (const AliVZEROReconstructor& reconstructor);
+  AliVZEROReconstructor(const AliVZEROReconstructor&); //Not implemented
+  AliVZEROReconstructor& operator = (const AliVZEROReconstructor&); //Not implemented
   
   AliVZEROCalibData* fCalibData;      //! calibration data
 

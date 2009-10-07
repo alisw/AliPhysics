@@ -19,9 +19,6 @@ class AliT0Reconstructor: public AliReconstructor {
  public:
   AliT0Reconstructor();
   virtual ~AliT0Reconstructor() {};
-  AliT0Reconstructor( const AliT0Reconstructor&r );
-  AliT0Reconstructor& operator=(const AliT0Reconstructor&r); 
-
 
   virtual  void   Reconstruct(TTree* fdigits, TTree * frecpoints) const;
   virtual  void   Reconstruct(AliRawReader*rawReader , TTree* recTree) const;
@@ -45,6 +42,10 @@ class AliT0Reconstructor: public AliReconstructor {
   TObjArray           fQTC;        // QTC vs #MIPs
   TObjArray           fAmpLED;        // LED-CFD vs #MIPs
   AliT0Calibrator     *fCalib;           //pointer to T0 Calibrator     
+
+ private:
+  AliT0Reconstructor( const AliT0Reconstructor&r ); //Not implemented
+  AliT0Reconstructor& operator=(const AliT0Reconstructor&r); //Not implemented
 
   ClassDef(AliT0Reconstructor, 5)   // class for the T0 reconstruction
 

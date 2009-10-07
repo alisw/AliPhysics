@@ -69,41 +69,8 @@ ClassImp(AliT0Reconstructor)
   fCalib = new AliT0Calibrator();
 
 }
-//____________________________________________________________________
-
-AliT0Reconstructor::AliT0Reconstructor(const AliT0Reconstructor &r):
-  AliReconstructor(r),
-					     fdZonA(0),
-	                                     fdZonC(0),
-					     fZposition(0),
-					     fParam(NULL),
-                                             fAmpLEDrec(0),
-					     fQTC(0),
-					     fAmpLED(0),
-  					     fCalib()
-
- {
-  //
-  // AliT0Reconstructor copy constructor
-  //
-
-  ((AliT0Reconstructor &) r).Copy(*this);
-
-}
 
 //_____________________________________________________________________________
-AliT0Reconstructor &AliT0Reconstructor::operator=(const AliT0Reconstructor &r)
-{
-  //
-  // Assignment operator
-  //
-  if (this != &r) ((AliT0Reconstructor &) r).Copy(*this);
-  return *this;
-
-}
-
-//_____________________________________________________________________________
-
 void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   
 {

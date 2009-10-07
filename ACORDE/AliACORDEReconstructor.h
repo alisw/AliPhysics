@@ -50,8 +50,8 @@ protected:
   AliACORDERecoParam* fAcordeRecoParam; // Pointer to the ACORDE's RecoParam
 
 private:
-  AliACORDEReconstructor(const AliACORDEReconstructor& reconstructor);
-  AliACORDEReconstructor& operator = (const AliACORDEReconstructor& reconstructor);
+  AliACORDEReconstructor(const AliACORDEReconstructor&); //Not implemented
+  AliACORDEReconstructor& operator = (const AliACORDEReconstructor&); //Not implemented
   
   AliACORDECalibData* fCalibData;      //! calibration data
  

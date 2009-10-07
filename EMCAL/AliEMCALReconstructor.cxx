@@ -102,17 +102,6 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 } 
 
 //____________________________________________________________________________
-AliEMCALReconstructor::AliEMCALReconstructor(const AliEMCALReconstructor & rec)
-  : AliReconstructor(rec),
-    fDebug(rec.fDebug),
-    fList(rec.fList),
-    fGeom(rec.fGeom),
-	fCalibData(rec.fCalibData) 
-{
-  //copy ctor
-}
-
-//____________________________________________________________________________
 AliEMCALReconstructor::~AliEMCALReconstructor()
 {
   // dtor

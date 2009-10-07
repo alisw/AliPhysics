@@ -60,22 +60,6 @@ AliITSReconstructor::~AliITSReconstructor(){
   delete fItsPID;
   if(fDetTypeRec) delete fDetTypeRec;
 } 
-//______________________________________________________________________
-AliITSReconstructor::AliITSReconstructor(const AliITSReconstructor &ob) :AliReconstructor(ob),
-fItsPID(ob.fItsPID),
-fDetTypeRec(ob.fDetTypeRec)
-
-{
-  // Copy constructor
-}
-
-//______________________________________________________________________
-AliITSReconstructor& AliITSReconstructor::operator=(const AliITSReconstructor&  ob ){
-  // Assignment operator
-  this->~AliITSReconstructor();
-  new(this) AliITSReconstructor(ob);
-  return *this;
-}
 
 //______________________________________________________________________
 void AliITSReconstructor::Init() {

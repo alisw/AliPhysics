@@ -23,8 +23,6 @@ class AliITSReconstructor: public AliReconstructor {
 public:
   AliITSReconstructor();
   virtual ~AliITSReconstructor();
-  AliITSReconstructor(const AliITSReconstructor &ob); // copy constructor
-  AliITSReconstructor& operator=(const AliITSReconstructor & ob); // ass. op.
   virtual void         Init();
   
   virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
@@ -43,6 +41,9 @@ public:
   static const AliITSRecoParam* GetRecoParam() { return dynamic_cast<const AliITSRecoParam*>(AliReconstructor::GetRecoParam(0)); }
 
 private:
+  AliITSReconstructor(const AliITSReconstructor &); //Not implemented
+  AliITSReconstructor& operator=(const AliITSReconstructor &); //Not implemented
+
   //data
   AliITSpidESD           *fItsPID;      // Pid for ITS
   AliITSDetTypeRec       *fDetTypeRec;  // reconstructor

@@ -36,8 +36,8 @@ public:
   static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
 
 private:
-  AliTPCReconstructor(const AliTPCReconstructor& /*rec*/);
-  AliTPCReconstructor& operator=(const AliTPCReconstructor&);
+  AliTPCReconstructor(const AliTPCReconstructor&); //Not implemented
+  AliTPCReconstructor& operator=(const AliTPCReconstructor&); //Not implemented
   AliTPCParam*         GetTPCParam() const;
   static Int_t               fgStreamLevel; // flag for streaming      - for TPC reconstruction
   AliTPCclustererMI*         fClusterer;   // TPC clusterer

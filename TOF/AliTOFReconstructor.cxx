@@ -61,28 +61,6 @@ AliTOFReconstructor::AliTOFReconstructor()
   if(!fTOFcalib->ReadParOfflineFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
 }
 
-//------------------------------------------------------------------------
-AliTOFReconstructor::AliTOFReconstructor(const AliTOFReconstructor &source)
-  : AliReconstructor(source),
-    fTOFcalib(source.fTOFcalib)
-{
-//
-// copy ctor
-//
-}
-
-//------------------------------------------------------------------------
-AliTOFReconstructor & AliTOFReconstructor::operator=(const AliTOFReconstructor &source)
-{
-//
-// assignment op.
-//
-  if (this == &source)
-    return *this;
-
-  fTOFcalib=source.fTOFcalib;
-  return *this;
-}
 //_____________________________________________________________________________
 AliTOFReconstructor::~AliTOFReconstructor() 
 {

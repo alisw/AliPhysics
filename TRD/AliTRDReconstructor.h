@@ -35,9 +35,7 @@ public:
     ,kNsteer         = 7       // number of tasks
   };
   AliTRDReconstructor();
-  AliTRDReconstructor(const AliTRDReconstructor &r);
   virtual ~AliTRDReconstructor();
-  AliTRDReconstructor& operator = (const AliTRDReconstructor&)          { return *this;}
 	
 	virtual void        Init();
 
@@ -70,6 +68,9 @@ public:
   void	              SetOption(Option_t *opt);
 
 private:
+  AliTRDReconstructor(const AliTRDReconstructor &r); //Not implemented
+  AliTRDReconstructor& operator = (const AliTRDReconstructor&); //Not implemented
+
   static Char_t    *fgSteerNames[kNsteer];//! steering names
   static Char_t    *fgSteerFlags[kNsteer];//! steering flags
   static Char_t    *fgTaskNames[AliTRDrecoParam::kTRDreconstructionTasks]; //! tasks names

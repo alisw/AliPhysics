@@ -24,8 +24,6 @@ class AliTOFcalib;
 class AliTOFReconstructor: public AliReconstructor {
 public:
   AliTOFReconstructor();
-  AliTOFReconstructor(const AliTOFReconstructor &source); // copy constructor
-  AliTOFReconstructor& operator=(const AliTOFReconstructor &source); // ass. op.
   virtual ~AliTOFReconstructor();
 
   virtual void         Reconstruct(AliRawReader* rawReader,
@@ -43,6 +41,9 @@ public:
   static const AliTOFRecoParam* GetRecoParam() { return dynamic_cast<const AliTOFRecoParam*>(AliReconstructor::GetRecoParam(3)); } // getting RecoParam obj
 
 private:
+  AliTOFReconstructor(const AliTOFReconstructor &); //Not implemented
+  AliTOFReconstructor& operator=(const AliTOFReconstructor &); //Not implemented
+
   AliTOFcalib    *fTOFcalib;    // pointer to TOF calib class
 
   ClassDef(AliTOFReconstructor, 3)   // class for the TOF reconstruction
