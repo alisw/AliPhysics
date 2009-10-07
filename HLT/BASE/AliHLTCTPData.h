@@ -131,6 +131,20 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
   AliHLTEventDDL ReadoutList(const AliHLTComponentTriggerData& trigData) const;
 
   /**
+   * Return a readout list for the active trigger classes.
+   * The list is an 'OR' of the active trugger classes.
+   */
+  AliHLTEventDDL ReadoutList(AliHLTUInt64_t  triggerMask) const;
+
+  /**
+   * Return a readout list for the active trigger classes.
+   * The list is an 'OR' of the active trugger classes.
+   */
+  AliHLTEventDDL ReadoutList() const {
+    return ReadoutList(fTriggers);
+  }
+
+  /**
    * Inherited from TObject, this prints the contents of the trigger decision.
    */
   virtual void Print(Option_t* option = "") const;

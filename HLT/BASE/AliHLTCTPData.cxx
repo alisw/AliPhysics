@@ -402,6 +402,11 @@ AliHLTEventDDL AliHLTCTPData::ReadoutList(const AliHLTComponentTriggerData& trig
     for (int i=0; i<8; i++) HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
   }
 
+  return ReadoutList(triggerMask);
+}
+
+AliHLTEventDDL AliHLTCTPData::ReadoutList(AliHLTUInt64_t  triggerMask) const
+{
   // take an 'OR' of all active trigger classes 
   AliHLTReadoutList list;
   for (int i=0; i<gkNCTPTriggerClasses; i++) {
@@ -413,6 +418,7 @@ AliHLTEventDDL AliHLTCTPData::ReadoutList(const AliHLTComponentTriggerData& trig
 
   return list;
 }
+
 
 void AliHLTCTPData::Print(Option_t* /*option*/) const
 {
