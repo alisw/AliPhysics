@@ -17,6 +17,7 @@
 #include <TClass.h>
 #include <TFile.h>
 #include <TSystem.h>
+#include <TPRegexp.h>
 
 #include "AliMagF.h"
 #include "AliMagWrapCheb.h"
@@ -416,3 +417,100 @@ Double_t AliMagF::GetFactorDip() const
   default          : return  fFactorDip;       //  case kConvMap2005: return  fFactorDip;
   }
 }
+
+//_____________________________________________________________________________
+AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention, Bool_t uniform,
+				 Float_t beamenergy, const Char_t *beamtype, const Char_t *path) 
+{
+  //------------------------------------------------
+  // The magnetic field map, defined externally...
+  // L3 current 30000 A  -> 0.5 T
+  // L3 current 12000 A  -> 0.2 T
+  // dipole current 6000 A
+  // The polarities must match the convention (LHC or DCS2008) 
+  // unless the special uniform map was used for MC
+  //------------------------------------------------
+  const Float_t l3NominalCurrent1=30000.; // (A)
+  const Float_t l3NominalCurrent2=12000.; // (A)
+  const Float_t diNominalCurrent =6000. ; // (A)
+
+  const Float_t tolerance=0.03; // relative current tolerance
+  const Float_t zero=77.;       // "zero" current (A)
+  //
+  BMap_t map;
+  double sclL3,sclDip;
+  //
+  Float_t l3Pol = l3Cur > 0 ? 1:-1;
+  Float_t diPol = diCur > 0 ? 1:-1;
+ 
+  l3Cur = TMath::Abs(l3Cur);
+  diCur = TMath::Abs(diCur);
+  //
+  if (TMath::Abs((sclDip=diCur/diNominalCurrent)-1.) > tolerance && !uniform) {
+    if (diCur <= zero) sclDip = 0.; // some small current.. -> Dipole OFF
+    else {
+      AliErrorGeneral("AliMagF",Form("Wrong dipole current (%f A)!",diCur));
+      return 0;
+    }
+  }
+  //
+  if (uniform) { 
+    // special treatment of special MC with uniform mag field (normalized to 0.5 T)
+    // no check for scaling/polarities are done
+    map   = k5kGUniform;
+    sclL3 = l3Cur/l3NominalCurrent1; 
+  }
+  else {
+    if      (TMath::Abs((sclL3=l3Cur/l3NominalCurrent1)-1.) < tolerance) map  = k5kG;
+    else if (TMath::Abs((sclL3=l3Cur/l3NominalCurrent2)-1.) < tolerance) map  = k2kG;
+    else if (l3Cur <= zero)                                { sclL3 = 0;  map  = k5kGUniform;}
+    else {
+      AliErrorGeneral("AliMagF",Form("Wrong L3 current (%f A)!",l3Cur));
+      return 0;
+    }
+  }
+  //
+  if (sclDip!=0 && (map==k5kG || map==k2kG) &&
+      ((convention==kConvLHC     && l3Pol!=diPol) ||
+       (convention==kConvDCS2008 && l3Pol==diPol)) ) { 
+    AliErrorGeneral("AliMagF",Form("Wrong combination for L3/Dipole polarities (%c/%c) for convention %d",
+				   l3Pol>0?'+':'-',diPol>0?'+':'-',GetPolarityConvention()));
+    return 0;
+  }
+  //
+  if (l3Pol<0) sclL3  = -sclL3;
+  if (diPol<0) sclDip = -sclDip;
+  //
+  BeamType_t btype = kNoBeamField;
+  TString btypestr = beamtype;
+  btypestr.ToLower();
+  TPRegexp protonBeam("(proton|p)\\s*-?\\s*\\1");
+  TPRegexp ionBeam("(lead|pb|ion|a)\\s*-?\\s*\\1");
+  if (btypestr.Contains(ionBeam)) btype = kBeamTypeAA;
+  else if (btypestr.Contains(protonBeam)) btype = kBeamTypepp;
+  else AliInfoGeneral("AliMagF",Form("Assume no LHC magnet field for the beam type %s, ",beamtype));
+  char ttl[80];
+  sprintf(ttl,"L3: %+5d Dip: %+4d kA; %s | Polarities in %s convention",(int)TMath::Sign(l3Cur,float(sclL3)),
+	  (int)TMath::Sign(diCur,float(sclDip)),uniform ? " Constant":"",
+	  convention==kConvLHC ? "LHC":"DCS2008");
+  // LHC and DCS08 conventions have opposite dipole polarities
+  if ( GetPolarityConvention() != convention) sclDip = -sclDip;
+  //
+  return new AliMagF("MagneticFieldMap", ttl, 2, sclL3, sclDip, 10., map, path,btype,beamenergy);
+  //
+}
+
+//_____________________________________________________________________________
+const char*  AliMagF::GetBeamTypeText() const
+{
+  const char *beamNA  = "No Beam";
+  const char *beamPP  = "p-p";
+  const char *beamPbPb= "Pb-Pb";
+  switch ( fBeamType ) {
+  case kBeamTypepp : return beamPP;
+  case kBeamTypeAA : return beamPbPb;
+  case kNoBeamField: 
+  default:           return beamNA;
+  }
+}
+

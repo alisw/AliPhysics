@@ -14,10 +14,12 @@
  **************************************************************************/
 #include <TNamed.h>
 #include <TGeoMatrix.h>
+#include <TGeoGlobalMagField.h>
 
 #include "AliESDRun.h"
 #include "AliESDVertex.h"
 #include "AliLog.h"
+#include "AliMagF.h"
 
 //-------------------------------------------------------------------------
 //                     Implementation Class AliESDRun
@@ -31,10 +33,14 @@ ClassImp(AliESDRun)
 //______________________________________________________________________________
 AliESDRun::AliESDRun() :
   TObject(),
+  fCurrentL3(0),
+  fCurrentDip(0),
+  fBeamEnergy(0),
   fMagneticField(0),
   fPeriodNumber(0),
   fRunNumber(0),
   fRecoVersion(0),
+  fBeamType(""),
   fTriggerClasses(kNTriggerClasses)
 {
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
@@ -48,10 +54,14 @@ AliESDRun::AliESDRun() :
 //______________________________________________________________________________
 AliESDRun::AliESDRun(const AliESDRun &esd) :
   TObject(esd),
+  fCurrentL3(0),
+  fCurrentDip(0),
+  fBeamEnergy(0),
   fMagneticField(esd.fMagneticField),
   fPeriodNumber(esd.fPeriodNumber),
   fRunNumber(esd.fRunNumber),
   fRecoVersion(esd.fRecoVersion),
+  fBeamType(""),
   fTriggerClasses(TObjArray(kNTriggerClasses))
 { 
   // Copy constructor
@@ -88,6 +98,10 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
     fPeriodNumber=esd.fPeriodNumber;
     fRecoVersion=esd.fRecoVersion;
     fMagneticField=esd.fMagneticField;
+    fBeamType = esd.fBeamType;
+    fCurrentL3  = esd.fCurrentL3;
+    fCurrentDip = esd.fCurrentDip;
+    fBeamEnergy = esd.fBeamEnergy;
     for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
     for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
     fTriggerClasses.Clear();
@@ -159,8 +173,9 @@ void AliESDRun::Print(const Option_t *) const
   // Print some data members
   printf("Mean vertex in RUN %d: X=%.4f Y=%.4f cm\n",
 	 GetRunNumber(),GetDiamondX(),GetDiamondY());
-  printf("Magnetic field = %f T\n",
-	 GetMagneticField());
+  printf("Beam Type: %s, Energy: %.1f GeV\n",fBeamType.IsNull() ? "N/A":fBeamType.Data(),fBeamEnergy);
+  printf("Magnetic field in IP= %f T | Currents: L3:%+.1f Dipole:%+.1f %s\n",
+	 GetMagneticField(),fCurrentL3,fCurrentDip,TestBit(kUniformBMap) ? "(Uniform)":"");
   printf("Event from reconstruction version %d \n",fRecoVersion);
   
   printf("List of active trigger classes: ");
@@ -267,4 +282,41 @@ Bool_t AliESDRun::IsTriggerClassFired(ULong64_t mask, const char *name) const
     return kTRUE;
   else
     return kFALSE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliESDRun::InitMagneticField() const
+{
+  // Create mag field from stored information
+  //
+  if (!TestBit(kBInfoStored)) {
+    AliError("No information on currents, cannot create field from run header");
+    return kFALSE;
+  }
+  //
+  if ( TGeoGlobalMagField::Instance()->IsLocked() ) {
+    if (TGeoGlobalMagField::Instance()->GetField()->TestBit(AliMagF::kOverrideGRP)) {
+      AliInfo("ExpertMode!!! Information on magnet currents will be ignored !");
+      AliInfo("ExpertMode!!! Running with the externally locked B field !");
+      return kTRUE;
+    }
+    else {
+      AliInfo("Destroying existing B field instance!");
+      delete TGeoGlobalMagField::Instance();
+    }
+  }
+  //
+  AliMagF* fld = AliMagF::CreateFieldMap(fCurrentL3,fCurrentDip,AliMagF::kConvLHC,
+					 TestBit(kUniformBMap),fBeamEnergy,fBeamType.Data());
+  if (fld) {
+    TGeoGlobalMagField::Instance()->SetField( fld );
+    TGeoGlobalMagField::Instance()->Lock();
+    AliInfo("Running with the B field constructed out of the Run Header !");
+    return kTRUE;
+  }
+  else {
+    AliError("Failed to create a B field map !");
+    return kFALSE;
+  }
+  //
 }

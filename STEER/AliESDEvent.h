@@ -117,7 +117,21 @@ public:
   const TGeoHMatrix* GetPHOSMatrix(Int_t i) const {return fESDRun->GetPHOSMatrix(i);}
   void     SetEMCALMatrix(TGeoHMatrix*matrix, Int_t i) {fESDRun->SetEMCALMatrix(matrix,i);}
   const TGeoHMatrix* GetEMCALMatrix(Int_t i) const {return fESDRun->GetEMCALMatrix(i);}
-
+  //
+  void        SetCurrentL3(Float_t cur)           const  {fESDRun->SetCurrentL3(cur);}
+  void        SetCurrentDip(Float_t cur)          const  {fESDRun->SetCurrentDip(cur);}
+  void        SetBeamEnergy(Float_t be)           const  {fESDRun->SetBeamEnergy(be);}
+  void        SetBeamType(const char* bt)         const  {fESDRun->SetBeamType(bt);}
+  void        SetUniformBMap(Bool_t val=kTRUE)    const  {fESDRun->SetBit(AliESDRun::kUniformBMap,val);}
+  void        SetBInfoStored(Bool_t val=kTRUE)    const  {fESDRun->SetBit(AliESDRun::kBInfoStored,val);}
+  //
+  Float_t     GetCurrentL3()                      const  {return fESDRun->GetCurrentL3();}
+  Float_t     GetCurrentDip()                     const  {return fESDRun->GetCurrentDip();}
+  Float_t     SetBeamEnergy()                     const  {return fESDRun->GetBeamEnergy();}
+  const char* GetBeamType()                       const  {return fESDRun->GetBeamType();}
+  Bool_t      IsUniformBMap()                     const  {return fESDRun->TestBit(AliESDRun::kUniformBMap);}
+  //
+  Bool_t      InitMagneticField()                 const  {return fESDRun->InitMagneticField();} 
   // HEADER
   AliESDHeader* GetHeader() const {return fHeader;}
 
