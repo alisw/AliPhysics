@@ -27,9 +27,9 @@ SMELL_DETECTOR_DIR=$(IRST_INSTALLDIR)/smell-detector
 
 #-------------------------------------------------------------------------------
 # The compilers
-CXX           = $(shell root-config --cxx)
-F77	      = $(shell root-config --f77)
-CC	      = $(shell root-config --cc)
+CXX           := $(shell root-config --cxx)
+F77	      := $(shell root-config --f77)
+CC	      := $(shell root-config --cc)
 
 #-------------------------------------------------------------------------------
 # Include machine dependent macros
@@ -159,13 +159,15 @@ MODDIRS := $(MODULES)
 # The module directory will be added by each module
 
 GENINC     := -I$(ALICE_ROOT)/include -I$(shell root-config --incdir)
-CXXFLAGS   += $(GENINC) $(shell root-config --cflags)
-CXXFLAGSNO += $(GENINC) $(shell root-config --cflags)
-CFLAGS     += $(GENINC) $(shell root-config --cflags)
-CINTFLAGS  += $(GENINC) $(shell root-config --cflags)
-FFLAGS	   += $(shell root-config --cflags)
-LDFLAGS    += $(shell root-config --ldflags)
-SOFLAGS    += $(shell root-config --ldflags)
+RCFLAGS    := $(shell root-config --cflags)
+RLFLAGS    := $(shell root-config --ldflags)
+CXXFLAGS   += $(GENINC) $(RCFLAGS)
+CXXFLAGSNO += $(GENINC) $(RCFLAGS)
+CFLAGS     += $(GENINC) $(RCFLAGS)
+CINTFLAGS  += $(GENINC) $(RCFLAGS)
+FFLAGS	   += $(RCFLAGS)
+LDFLAGS    += $(RLFLAGS)
+SOFLAGS    += $(RLFLAGS)
 DEPINC     += $(GENINC)
 
 #-------------------------------------------------------------------------------
