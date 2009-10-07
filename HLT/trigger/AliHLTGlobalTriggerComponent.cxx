@@ -43,6 +43,7 @@
 #include "TDatime.h"
 #include <fstream>
 #include <cerrno>
+#include <cassert>
 
 ClassImp(AliHLTGlobalTriggerComponent)
 
@@ -53,7 +54,10 @@ AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
 	AliHLTTrigger(),
 	fTrigger(NULL),
 	fDebugMode(false),
-	fCodeFileName()
+	fRuntimeCompile(true),
+	fSkipCTPCounters(false),
+	fCodeFileName(),
+	fCTPDecisions(NULL)
 {
   // Default constructor.
   
@@ -66,6 +70,11 @@ AliHLTGlobalTriggerComponent::~AliHLTGlobalTriggerComponent()
   // Default destructor.
   
   if (fTrigger != NULL) delete fTrigger;
+
+  if (fCTPDecisions) {
+    fCTPDecisions->Delete();
+    delete fCTPDecisions;
+  }
 }
 
 
@@ -83,7 +92,6 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   // Initialises the global trigger component.
   
   fDebugMode = false;
-  bool bSkipCTPCounters=false;
   const char* configFileName = NULL;
   const char* codeFileName = NULL;
   TString classname;
@@ -141,7 +149,12 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
         HLTWarning("The debug flag was already specified. Ignoring this instance.");
       }
       fDebugMode = true;
-      i++;
+      continue;
+    }
+    
+    if (strcmp(argv[i], "-cint") == 0)
+    {
+      fRuntimeCompile = false;
       continue;
     }
     
@@ -172,7 +185,7 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
     if (strcmp(argv[i], "-skipctp") == 0)
     {
       HLTInfo("Skipping CTP counters in trigger decision");
-      bSkipCTPCounters=true;
+      fSkipCTPCounters=true;
       continue;
     }
         
@@ -253,7 +266,7 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   fTrigger->ResetCounters(menu->NumberOfItems());
 
   // setup the CTP accounting in AliHLTComponent
-  if (!bSkipCTPCounters) SetupCTPData();
+  SetupCTPData();
 
   // Set the default values from the trigger menu.
   SetDescription(menu->DefaultDescription());
@@ -280,6 +293,12 @@ Int_t AliHLTGlobalTriggerComponent::DoDeinit()
   }
   fCodeFileName="";
   
+  if (fCTPDecisions) {
+    fCTPDecisions->Delete();
+    delete fCTPDecisions;
+  }
+  fCTPDecisions=NULL;
+
   return 0;
 }
 
@@ -321,7 +340,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   // add trigger decisions for every CTP class
   const AliHLTCTPData* pCTPData=CTPData();
   if (pCTPData) {
-    fTrigger->AddCTPDecisions(pCTPData, GetTriggerData());
+    AddCTPDecisions(fTrigger, pCTPData, GetTriggerData());
   }
 
   // Calculate the global trigger result and trigger domain, then create and push
@@ -349,10 +368,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     decision.ReadoutList(maskedList);
   }
 
-  const TArrayL64* counters=fTrigger->Counters();
-  if (counters) {
-    decision.SetCounters(*counters, GetEventCount()+1);
-  }
+  decision.SetCounters(fTrigger->Counters(), GetEventCount()+1);
   static UInt_t lastTime=0;
   TDatime time;
   if (time.Get()-lastTime>5) {
@@ -375,7 +391,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     obj = GetNextInputObject();
   }
 
-  if (CTPData()) decision.AddInputObject(CTPData());
+  if (!fSkipCTPCounters && CTPData()) decision.AddInputObject(CTPData());
 
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 3);
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 4);
@@ -418,6 +434,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   int result = BuildSymbolList(menu, symbols);
   if (result != 0) return result;
   
+  //code << "#ifndef __CINT__" << endl;
   code << "#include <cstring>" << endl;
   code << "#include \"TString.h\"" << endl;
   code << "#include \"TClonesArray.h\"" << endl;
@@ -429,6 +446,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   code << "#include \"AliHLTTriggerMenu.h\"" << endl;
   code << "#include \"AliHLTTriggerMenuItem.h\"" << endl;
   code << "#include \"AliHLTTriggerMenuSymbol.h\"" << endl;
+  //code << "#endif //__CINT__" << endl;
   
   // Add any include files that were specified on the command line.
   for (Int_t i = 0; i < includeFiles.GetEntriesFast(); i++)
@@ -704,9 +722,19 @@ int AliHLTGlobalTriggerComponent::LoadTriggerClass(
   // Loads the code for a custom global trigger class implementation on the fly.
   
   TString compiler = gSystem->GetBuildCompilerVersion();
-  if (compiler.Contains("gcc") or compiler.Contains("icc"))
+  if (fRuntimeCompile && (compiler.Contains("gcc") or compiler.Contains("icc")))
   {
-    TString includePath = "-I${ALIHLT_TOPDIR}/BASE -I${ALIHLT_TOPDIR}/trigger -I${ALICE_ROOT}/include -I${ALICE_ROOT}/HLT/BASE -I${ALICE_ROOT}/HLT/trigger";
+    TString includePath;
+#if defined(PKGINCLUDEDIR)
+    // this is especially for the HLT build system where the package is installed
+    // in a specific directory including proper treatment of include files
+    includePath.Form("-I%s", PKGINCLUDEDIR);
+#else
+    // the default AliRoot behavior, all include files can be found in the
+    // $ALICE_ROOT subfolders
+    includePath = "-I${ALICE_ROOT}/include -I${ALICE_ROOT}/HLT/BASE -I${ALICE_ROOT}/HLT/trigger";
+#endif
+    HLTDebug("using include settings: %s", includePath.Data());
     // Add any include paths that were specified on the command line.
     for (Int_t i = 0; i < includePaths.GetEntriesFast(); i++)
     {
@@ -736,7 +764,7 @@ int AliHLTGlobalTriggerComponent::LoadTriggerClass(
   else
   {
     // If we do not support the compiler then try interpret the class instead.
-    TString cmd = ".L ";
+    TString cmd = ".x ";
     cmd += filename;
     Int_t errorcode = TInterpreter::kNoError;
     gROOT->ProcessLine(cmd, &errorcode);
@@ -851,13 +879,60 @@ int AliHLTGlobalTriggerComponent::PrintStatistics(const AliHLTGlobalTrigger* pTr
 {
   // print some statistics
   ULong64_t count=0;
-  const TArrayL64* counters=pTrigger->Counters();
-  for (int i=0; counters!=NULL && i<counters->GetSize(); i++) {
-    count+=(*counters)[i];
+  for (int i=0; i<pTrigger->Counters().GetSize(); i++) {
+    count+=pTrigger->Counters()[i];
   }
   int totalEvents=GetEventCount()+offset;
   float ratio=0;
   if (totalEvents>0) ratio=100*(float)count/totalEvents;
   HLTLog(level, "total events: %d - triggered events: %llu (%.1f%%)", totalEvents, count, ratio);
+  return 0;
+}
+
+int AliHLTGlobalTriggerComponent::AddCTPDecisions(AliHLTGlobalTrigger* pTrigger, const AliHLTCTPData* pCTPData, const AliHLTComponentTriggerData* trigData)
+{
+  // add trigger decisions for the valid CTP classes
+  if (!pCTPData || !pTrigger) return 0;
+
+  AliHLTUInt64_t triggerMask=pCTPData->Mask();
+  AliHLTUInt64_t bit0=0x1;
+  if (!fCTPDecisions) {
+    fCTPDecisions=new TClonesArray(AliHLTTriggerDecision::Class(), gkNCTPTriggerClasses);
+    if (!fCTPDecisions) return -ENOMEM;
+
+    fCTPDecisions->ExpandCreate(gkNCTPTriggerClasses);
+    for (int i=0; i<gkNCTPTriggerClasses; i++) {
+      const char* name=pCTPData->Name(i);
+      if (triggerMask&(bit0<<i) && name) {
+	AliHLTTriggerDecision* pDecision=dynamic_cast<AliHLTTriggerDecision*>(fCTPDecisions->At(i));
+	assert(pDecision);
+	if (!pDecision) {
+	  delete fCTPDecisions;
+	  fCTPDecisions=NULL;
+	  return -ENOENT;
+	}
+	pDecision->Name(name);
+      }
+    }
+  }
+
+  for (int i=0; i<gkNCTPTriggerClasses; i++) {
+    const char* name=pCTPData->Name(i);
+    if ((triggerMask&(bit0<<i))==0 || name==NULL) continue;
+    AliHLTTriggerDecision* pDecision=dynamic_cast<AliHLTTriggerDecision*>(fCTPDecisions->At(i));
+    HLTDebug("updating CTP trigger decision %d %s (%p casted %p)", i, name, fCTPDecisions->At(i), pDecision);
+    if (!pDecision) return -ENOENT;
+
+    bool result=false;
+    if (trigData) result=pCTPData->EvaluateCTPTriggerClass(name, *trigData);
+    else result=pCTPData->EvaluateCTPTriggerClass(name);
+    pDecision->Result(result);
+    pDecision->TriggerDomain().Clear();
+    if (trigData) pDecision->TriggerDomain().Add(pCTPData->ReadoutList(*trigData));
+    else pDecision->TriggerDomain().Add(pCTPData->ReadoutList());
+
+    pTrigger->Add(fCTPDecisions->At(i), kAliHLTDataTypeTriggerDecision, kAliHLTVoidDataSpec);
+  }
+
   return 0;
 }

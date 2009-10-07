@@ -48,6 +48,9 @@ class TClonesArray;
  * \li -debug <br>
  *      If specified the automatically generated class will contain extra debugging
  *      code and the ACLiC system will have debugging compilation turned on.
+ * \li -cint <br>
+ *      Use CINT to interprete the generated global trigger instead of compiling it.
+ *      This will also be the case if no compiler is available.
  * \li -usecode <i>filename</i> <i>classname</i> <br>
  *      Used to force the component to use an existing class for the global HLT trigger
  *      class implementation, with the name of <i>classname</i> and found in the file
@@ -186,14 +189,27 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   int BuildSymbolList(const AliHLTTriggerMenu* menu, TClonesArray& list);
 
   /**
+   * Add trigger decisions according to the active CTP trigger classes
+   * An internal TclonesArray holds the trigger decisions to be added. The trigger
+   * decisions are updated according to the active CTP trigger mask.
+   * \param pTrigger  The instance of the global trigger
+   * \param pCTPData  Instance of the CTP data
+   * \param trigData  Current trigger data, if NULL, the active trigger data from the CTP data is used
+   */
+  int AddCTPDecisions(AliHLTGlobalTrigger* pTrigger, const AliHLTCTPData* pCTPData, const AliHLTComponentTriggerData* trigData);
+
+  /**
    * Print some statistics based on the trigger counters
    */
   int PrintStatistics(const AliHLTGlobalTrigger* pTrigger, AliHLTComponentLogSeverity level=kHLTLogInfo, int offset=1) const;
   
   AliHLTGlobalTrigger* fTrigger;  //! Trigger object which implements the global trigger menu.
   bool fDebugMode;  //! Indicates if the generated global trigger class should be in debug mode.
+  bool fRuntimeCompile;  //! Indicates if the generated global trigger class should be compiled
+  bool fSkipCTPCounters; //! Indicates whether to ship CTP info with the trigger decision
   TString fCodeFileName; //! base file name of the generated code for the global trigger
-  
+  TClonesArray* fCTPDecisions; //! AliHLTTriggerDecision objects for the CTP classes
+
   static const char* fgkTriggerMenuCDBPath; //! The path string to read the trigger menu from the CDB.
   
   ClassDef(AliHLTGlobalTriggerComponent, 0) // Global HLT trigger component class which produces the final trigger decision and readout list.

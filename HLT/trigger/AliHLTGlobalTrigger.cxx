@@ -26,11 +26,7 @@
 
 #include "AliHLTGlobalTrigger.h"
 #include "AliHLTGlobalTriggerDecision.h"
-#include "AliHLTCTPData.h"
-#include "TArrayL64.h"
-#include "TClonesArray.h"
 #include <cstring>
-#include <cassert>
 
 ClassImp(AliHLTGlobalTrigger)
 
@@ -41,9 +37,8 @@ AliHLTGlobalTrigger::Factory::fFactory[AliHLTGlobalTrigger::Factory::kMaxFactori
 
 
 AliHLTGlobalTrigger::AliHLTGlobalTrigger() :
-  AliHLTLogging()
-  , fCTPDecisions(NULL)
-  , fCounters(NULL)
+  AliHLTLogging(),
+  fCounters()
 {
   // Default constructor.
 }
@@ -52,13 +47,6 @@ AliHLTGlobalTrigger::AliHLTGlobalTrigger() :
 AliHLTGlobalTrigger::~AliHLTGlobalTrigger()
 {
   // Default destructor.
-  if (fCounters) {
-    delete fCounters;
-  }
-  if (fCTPDecisions) {
-    fCTPDecisions->Delete();
-    delete fCTPDecisions;
-  }
 }
 
 
@@ -118,68 +106,10 @@ void AliHLTGlobalTrigger::ResetCounters(UInt_t number)
 {
   // Resets the trigger counters.
   
-  if (!fCounters) fCounters = new TArrayL64(number);
-  if (!fCounters) return;
-
-  fCounters->Set(number);
+  fCounters.Set(number);
   for (UInt_t i = 0; i < number; i++)
   {
-    (*fCounters)[i] = 0;
+    fCounters[i] = 0;
   }
-}
-
-void AliHLTGlobalTrigger::IncrementCounter(UInt_t i) 
-{
-  // increment a specific counter
-  if (fCounters && i<(unsigned)fCounters->GetSize()) ++(*fCounters)[i]; 
-}
-
-Long64_t AliHLTGlobalTrigger::GetCounter(UInt_t i) const
-{
-  if (fCounters && i<(unsigned)fCounters->GetSize()) return (*fCounters)[i];
-  return 0;
-}
-
-int AliHLTGlobalTrigger::AddCTPDecisions(const AliHLTCTPData* pCTPData, const AliHLTComponentTriggerData* trigData)
-{
-  // add trigger decisions for the valid CTP classes
-  if (!pCTPData) return 0;
-
-  AliHLTUInt64_t triggerMask=pCTPData->Mask();
-  AliHLTUInt64_t bit0=0x1;
-  if (!fCTPDecisions) {
-    fCTPDecisions=new TClonesArray(AliHLTTriggerDecision::Class(), gkNCTPTriggerClasses);
-    if (!fCTPDecisions) return -ENOMEM;
-
-    fCTPDecisions->ExpandCreate(gkNCTPTriggerClasses);
-    for (int i=0; i<gkNCTPTriggerClasses; i++) {
-      const char* name=pCTPData->Name(i);
-      if (triggerMask&(bit0<<i) && name) {
-	AliHLTTriggerDecision* pDecision=dynamic_cast<AliHLTTriggerDecision*>(fCTPDecisions->At(i));
-	assert(pDecision);
-	if (!pDecision) return -ENOENT;
-	pDecision->Name(name);
-      }
-    }
-  }
-
-  for (int i=0; i<gkNCTPTriggerClasses; i++) {
-    const char* name=pCTPData->Name(i);
-    if ((triggerMask&(bit0<<i))==0 || name==NULL) continue;
-    AliHLTTriggerDecision* pDecision=dynamic_cast<AliHLTTriggerDecision*>(fCTPDecisions->At(i));
-    HLTDebug("updating CTP trigger decision %d %s (%p casted %p)", i, name, fCTPDecisions->At(i), pDecision);
-    if (!pDecision) return -ENOENT;
-
-    bool result=false;
-    if (trigData) result=pCTPData->EvaluateCTPTriggerClass(name, *trigData);
-    else result=pCTPData->EvaluateCTPTriggerClass(name);
-    pDecision->Result(result);
-    pDecision->TriggerDomain().Clear();
-    pDecision->TriggerDomain().Add(pCTPData->ReadoutList(*trigData));
-
-    Add(fCTPDecisions->At(i), kAliHLTDataTypeTriggerDecision, kAliHLTVoidDataSpec);
-  }
-
-  return 0;
 }
 
