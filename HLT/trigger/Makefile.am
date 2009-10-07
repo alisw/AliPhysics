@@ -51,7 +51,7 @@ libAliHLTTrigger_la_SOURCES	=  $(MODULE_SRCS)
 
 # library headers
 # The header files are specified in libAliHLTTrigger.pkg
-noinst_HEADERS			=  $(MODULE_HDRS)
+pkginclude_HEADERS			=  $(MODULE_HDRS)
 
 # compilation flags of the library
 # This is the place to add further include directories if you are
@@ -61,6 +61,7 @@ noinst_HEADERS			=  $(MODULE_HDRS)
 # EINCLUDE variable of the pkg definition
 # other AliRoot dependencies might need to added
 AM_CPPFLAGS			= -DMODULE=$(MODULE) \
+				  -DPKGINCLUDEDIR=\"$(pkgincludedir)\" \
 				  @HLTBASE_CPPFLAGS@ \
 				  @ALIROOT_CPPFLAGS@ \
 				  @ROOTCFLAGS@ \
