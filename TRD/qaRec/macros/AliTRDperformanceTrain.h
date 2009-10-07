@@ -7,7 +7,7 @@
 #define CLRBIT(n,i) ((n) &= ~BIT(i))
 
 #define NTRDQATASKS 6
-#define NTRDCALIBTASKS 6
+#define NTRDCALIBTASKS 7
 const Int_t NTRDTASKS = NTRDQATASKS+NTRDCALIBTASKS;
 
 enum AliTRDrecoTasks{
@@ -20,9 +20,10 @@ enum AliTRDrecoTasks{
   ,kCalibration   = 6
   ,kEfficiencyMC  = 7
   ,kAlignment     = 8
-  ,kPIDRefMaker   = 9
-  ,kClErrParam    =10
-  ,kMultiplicity  =11
+  ,kPIDRefMakerLQ = 9
+  ,kPIDRefMakerNN =10
+  ,kClErrParam    =11
+  ,kMultiplicity  =12
 };
 
 const Char_t* fgkTRDtaskClassName[NTRDTASKS] = {
@@ -35,7 +36,8 @@ const Char_t* fgkTRDtaskClassName[NTRDTASKS] = {
   ,"AliTRDcalibration"
   ,"AliTRDefficiencyMC"
   ,"AliTRDalignmentTask"
-  ,"AliTRDpidRefMaker"
+  ,"AliTRDpidRefMakerLQ"
+  ,"AliTRDpidRefMakerNN"
   ,"AliTRDclusterResolution"
   ,"AliTRDmultiplicity"
 };
@@ -50,13 +52,16 @@ const Char_t *fgkTRDtaskOpt[NTRDTASKS+1] = {
   ,"CAL"
   ,"EFFC"
   ,"ALGN"
-  ,"PIDR"
+  ,"LQR"
+  ,"NNR"
   ,"CLRES"
   ,"MULT"
   ,"ALL"
 };
 
 #if ! defined (__CINT__) || defined (__MAKECINT__)
+#include "TFileMerger.h"
+#include "TSystem.h"
 #include "TString.h"
 #include "TObjString.h"
 #include "TObjArray.h"
@@ -64,6 +69,16 @@ const Char_t *fgkTRDtaskOpt[NTRDTASKS+1] = {
 #endif
 
 #include <cstring>
+
+//____________________________________________
+Bool_t HasReadMCData(Char_t *opt){
+  return !(Bool_t)strstr(opt, "NOMC");
+}
+
+//____________________________________________
+Bool_t HasReadFriendData(Char_t *opt){
+  return !(Bool_t)strstr(opt, "NOFR");
+}
 
 //____________________________________________
 Int_t ParseOptions(Char_t *trd)
@@ -87,24 +102,57 @@ Int_t ParseOptions(Char_t *trd)
     }
   }
   // extra rules for calibration tasks
-  if(TSTBIT(fSteerTask, kCalibration)) SETBIT(fSteerTask, kCheckDET);
-  if(TSTBIT(fSteerTask, kMultiplicity)) SETBIT(fSteerTask, kEfficiency);
-  if(TSTBIT(fSteerTask, kEfficiencyMC)) SETBIT(fSteerTask, kEfficiency);
-  if(TSTBIT(fSteerTask, kClErrParam)) SETBIT(fSteerTask, kResolution);
-  if(TSTBIT(fSteerTask, kAlignment)) SETBIT(fSteerTask, kResolution);
-  if(TSTBIT(fSteerTask, kPIDRefMaker)) SETBIT(fSteerTask, kCheckPID);
+//   if(TSTBIT(fSteerTask, kCalibration)) SETBIT(fSteerTask, kCheckDET);
+//   if(TSTBIT(fSteerTask, kMultiplicity)) SETBIT(fSteerTask, kEfficiency);
+//   if(TSTBIT(fSteerTask, kEfficiencyMC)) SETBIT(fSteerTask, kEfficiency);
+//   if(TSTBIT(fSteerTask, kClErrParam)) SETBIT(fSteerTask, kResolution);
+//   if(TSTBIT(fSteerTask, kAlignment)) SETBIT(fSteerTask, kResolution);
+//   if(TSTBIT(fSteerTask, kPIDRefMaker)) SETBIT(fSteerTask, kCheckPID);
 
   return fSteerTask;
 }
 
-//____________________________________________
-Bool_t HasReadMCData(Char_t *opt){
-  return !(Bool_t)strstr(opt, "NOMC");
+//______________________________________________________
+void mergeProd(const Char_t *mark, const Char_t *files)
+{
+  const Int_t kBatch = 20;
+
+  TFileMerger *fFM = new TFileMerger(1);
+  fFM->OutputFile(Form("%s/0_%s",  gSystem->ExpandPathName("$PWD"), mark));
+
+  Int_t jbatch = 0, nbatch = 0;
+  string filename;
+  ifstream file(files);
+  while(getline(file, filename)){
+    if(Int_t(filename.find(mark)) < 0) continue;
+    fFM->AddFile(filename.c_str()); nbatch++;
+    if(nbatch==kBatch){
+      //printf("MERGE BATCH %d [%d]\n", jbatch, nbatch);
+      fFM->Merge(); jbatch++;
+      new(fFM) TFileMerger(kTRUE);
+      fFM->OutputFile(Form("%s/%d_%s",  gSystem->ExpandPathName("$PWD"), jbatch, mark));
+      nbatch=0;
+    }
+  }
+  if(nbatch){
+    //printf("MERGE BATCH %d[%d]\n", jbatch, nbatch);
+    fFM->Merge();
+    jbatch++;
+  }
+  if(!jbatch){
+    delete fFM;
+    return;
+  }
+
+  new(fFM) TFileMerger(kTRUE);
+  fFM->OutputFile(Form("%s/%s",  gSystem->ExpandPathName("$PWD"), mark));
+  for(Int_t ib=jbatch; ib--;){
+    fFM->AddFile(Form("%s/%d_%s",  gSystem->ExpandPathName("$PWD"), ib, mark));
+    gSystem->Exec(Form("rm -f %s/%d_%s", gSystem->ExpandPathName("$PWD"), ib, mark));
+  }
+  fFM->Merge();
+  delete fFM;
 }
 
-//____________________________________________
-Bool_t HasReadFriendData(Char_t *opt){
-  return !(Bool_t)strstr(opt, "NOFR");
-}
 #endif
 

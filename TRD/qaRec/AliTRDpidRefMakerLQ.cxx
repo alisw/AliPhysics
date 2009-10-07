@@ -54,7 +54,7 @@ ClassImp(AliTRDpidRefMakerLQ)
 
 //__________________________________________________________________
 AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ()
-  :AliTRDpidRefMaker("PidRefMakerLQ", "PID(LQ) Reference Maker")
+  :AliTRDpidRefMaker("pidRefMakerLQ", "PID(LQ) Reference Maker")
   ,fPbin(-1)
   ,fSbin(-1)
   ,fResults(0x0)
@@ -275,6 +275,7 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
       }
       // visual on-line monitoring
       pdf.DrawBins(0,1,-5.,5.,-8.,8.);cc->Modified(); cc->Update(); cc->SaveAs(Form("pdf_%s%02d.gif", AliPID::ParticleShortName(is), ip));
+      cc->SaveAs(Form("%s_%s%02d.gif", GetName(), AliPID::ParticleShortName(is), ip));
 
       // save a discretization of the PDF for result monitoring
       TH2 *h2s = (TH2D*)((TObjArray*)fResults->At(ip))->At(is);

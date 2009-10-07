@@ -1,28 +1,27 @@
 // Usage:
-//   makeResults.C("tasks", "file_list", kGRID)
-//   tasks : "ALL" or one/more of the following separated by space:
-//     "EFF"  : TRD Tracking Efficiency 
-//     "EFFC" : TRD Tracking Efficiency Combined (barrel + stand alone) - only in case of simulations
-//     "RES"  : TRD tracking Resolution
-//     "PID"  : TRD PID - pion efficiency 
-//     "DET"  : Basic TRD Detector checks
+//   makeCalibResults.C("task", "file_list", kGRID)
+//   tasks : "one/more of the following separated by space:
+//     "CAL"  : TRD calibration
+//     "ALGN" : TRD alignment
+//     "PIDR" : TRD PID - reference data
+//     "CLRES": Cluster position and error parameterization
 //     "NOFR" : Data set does not have AliESDfriends.root 
 //     "NOMC" : Data set does not have Monte Carlo Informations (real data), so all tasks which rely
 //              on MC information are switched off
 //   file_list : is the list of the files to be processed. 
 //     They should contain the full path. Here is an example:
-// /lustre/alice/local/TRDdata/SIM/P-Flat/TRUNK/RUN0/TRD.Performance.root
-// or for GRID alien:///alice/cern.ch/user/m/mfasel/MinBiasProd/results/ppMinBias80000/1/TRD.Performance.root
+// /lustre/alice/local/TRDdata/SIM/P-Flat/TRUNK/RUN0/TRD.CalibName.root
+// or for GRID alien:///alice/cern.ch/user/m/mfasel/MinBiasProd/results/ppMinBias80000/1/TRD.Calib%.root
 //   kGRID : specify if files are comming from a GRID collection [default kFALSE]
 //
 // HOW TO BUILD THE FILE LIST
 //   1. locally
-// ls -1 BaseDir/RUN*/TRD.Performance.root > files.lst
+// ls -1 BaseDir/RUN*/TRD.Calib*.root > files.lst
 // 
 //   2. on Grid
 // char *BaseDir="/alice/cern.ch/user/m/mfasel/MinBiasProd/results/ppMinBias80000/";
 // TGrid::Connect("alien://");
-// TGridResult *res = gGrid->Query(BaseDir, "%/TRD.Performance.root");
+// TGridResult *res = gGrid->Query(BaseDir, "%/TRD.Calib%.root");
 // TGridCollection *col = gGrid->OpenCollectionQuery(res);
 // col->Reset();
 // TMap *map = 0x0;
@@ -37,46 +36,49 @@
 // The files which will be processed are the intersection between the
 // condition on the tasks and the files in the file list.
 //
+// In compiled mode : 
+// Don't forget to load first the libraries
+// gSystem->Load("libMemStat.so")
+// gSystem->Load("libMemStatGui.so")
+// gSystem->Load("libANALYSIS.so")
+// gSystem->Load("libANALYSISalice.so")
+// gSystem->Load("libTRDqaRec.so")
+// gSystem->Load("libSTAT.so")
+// gSystem->Load("libPWG1.so");
+// gSystem->Load("libNetx.so") ;
+// gSystem->Load("libRAliEn.so");
+//
 // Authors:
 //   Alex Bercuci (A.Bercuci@gsi.de) 
 //   Markus Fasel (m.Fasel@gsi.de) 
 //
 
 #if ! defined (__CINT__) || defined (__MAKECINT__)
+
+#include "qaRec/AliTRDrecoTask.h"
 #include <fstream>
-#include "TError.h"
-#include <TClass.h>
 #include <TCanvas.h>
-#include <TH1.h>
-#include <TGraph.h>
-#include <TObjArray.h>
-#include <TObjString.h>
-#include <TString.h>
-#include <TROOT.h>
 #include <TStyle.h>
 #include <TGrid.h>
 #include <TGridResult.h>
 #include <TGridCollection.h>
-
-#include "qaRec/AliTRDrecoTask.h"
 
 #endif
 
 #include "AliTRDperformanceTrain.h"
 //#include "../../PWG1/macros/AddPerformanceTask.h"
 
-Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so"};
+Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so", "libSTAT.so"};
 // define setup
 TCanvas *c = 0x0;
 Bool_t mc(kFALSE), friends(kFALSE);
 
-void processTRD(TNamed* task);
-void processAliTask(TNamed* task);
-void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFALSE)
+void calibrateTRD(TNamed* task);
+void makeCalibResults(Char_t *opt, const Char_t *files=0x0, Bool_t kGRID=kFALSE)
 {
   if(kGRID){
     if(!gSystem->Getenv("GSHELL_ROOT")){
-      Error("makeResults.C", "AliEn not initialized.");
+      Error("makeCalibResults.C", "AliEn not initialized.");
       return;
     }
     TGrid::Connect("alien://");
@@ -86,7 +88,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
   for(Int_t ilib=0; ilib<nlibs; ilib++){
     if(gSystem->Load(libs[ilib]) >= 0) continue;
-    Error("makeResults.C", Form("Failed to load %s.", libs[ilib]));
+    Error("makeCalibResults.C", Form("Failed to load %s.", libs[ilib]));
     return;
   }
 
@@ -95,20 +97,19 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
-  if(files) mergeProd("TRD.Performance.root", files);
   Int_t fSteerTask = ParseOptions(opt);
 
-  if(!c) c=new TCanvas("c", "Performance", 10, 10, 800, 500);
+  if(!c) c=new TCanvas("c", "Calibration", 10, 10, 800, 500);
 
   TClass *ctask = new TClass;
   AliAnalysisTask *task = 0x0;
-  for(Int_t itask = NTRDQATASKS; itask--;){
+  for(Int_t itask = NTRDQATASKS; itask<NTRDTASKS; itask++){
     if(!TSTBIT(fSteerTask, itask)) continue;
     new(ctask) TClass(fgkTRDtaskClassName[itask]);
     task = (AliAnalysisTask*)ctask->New();
+    if(files) mergeProd(Form("TRD.Calib%s.root", task->GetName()), files);
 
-    if(task->IsA()->InheritsFrom("AliTRDrecoTask")) processTRD(task);
-    else processAliTask(task);
+    if(task->IsA()->InheritsFrom("AliTRDrecoTask")) calibrateTRD(task);
   }
   delete ctask;
   delete c;
@@ -116,21 +117,23 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
 
 
 //______________________________________________________
-void processTRD(TNamed *otask)
+void calibrateTRD(TNamed *otask)
 {
   AliTRDrecoTask *task = dynamic_cast<AliTRDrecoTask*>(otask);
   task->SetDebugLevel(0);
+ 
+  AliLog::SetClassDebugLevel(Form("AliTRD%s", task->GetName()), 3); 
   task->SetMCdata(mc);
   task->SetFriends(friends);
 
-  if(!task->Load(Form("%s/TRD.Performance.root", gSystem->ExpandPathName("$PWD")))){
-    Error("makeResults.C", Form("Load data container for task %s failed.", task->GetName()));
+  if(!task->Load(Form("%s/TRD.Calib%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()))){
+    Error("makeCalibResults.C", Form("Load data container for task %s failed.", task->GetName()));
     delete task;
     return;
   }
 
   if(!task->PostProcess()){
-    Error("makeResults.C", Form("Processing data container for task %s failed.", task->GetName()));
+    Error("makeCalibResults.C", Form("Processing data container for task %s failed.", task->GetName()));
     delete task;
     return;
   }
@@ -142,10 +145,3 @@ void processTRD(TNamed *otask)
   delete task;
 }
 
-//______________________________________________________
-void processAliTask(TNamed *otask)
-{
-  AliAnalysisTask *task = dynamic_cast<AliAnalysisTask*>(otask);
-  Info("makeResults.C", Form("Processing of task %s not implemented yet.", task->GetName()));
-  delete task;
-}
