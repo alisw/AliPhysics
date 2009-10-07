@@ -63,6 +63,7 @@
 #endif
 
 #include "AliTRDperformanceTrain.h"
+#include "helper.C"
 //#include "../../PWG1/macros/AddPerformanceTask.h"
 
 Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so"};
@@ -71,7 +72,7 @@ TCanvas *c = 0x0;
 Bool_t mc(kFALSE), friends(kFALSE);
 
 void processTRD(TNamed* task);
-void processAliTask(TNamed* task);
+void processESD(TNamed* task);
 void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFALSE)
 {
   if(kGRID){
@@ -108,7 +109,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
     task = (AliAnalysisTask*)ctask->New();
 
     if(task->IsA()->InheritsFrom("AliTRDrecoTask")) processTRD(task);
-    else processAliTask(task);
+    else processESD(task);
   }
   delete ctask;
   delete c;
@@ -143,9 +144,28 @@ void processTRD(TNamed *otask)
 }
 
 //______________________________________________________
-void processAliTask(TNamed *otask)
+void processESD(TNamed *otask)
 {
-  AliAnalysisTask *task = dynamic_cast<AliAnalysisTask*>(otask);
-  Info("makeResults.C", Form("Processing of task %s not implemented yet.", task->GetName()));
-  delete task;
+  AliTRDcheckESD *esd = dynamic_cast<AliTRDcheckESD*>(otask);
+  if(!esd){
+    Info("makeResults.C", "Processing of task AliTRDcheckESD failed.");
+    delete otask;
+    return;
+  }
+
+  if(!esd->Load(Form("%s/TRD.Performance.root", gSystem->ExpandPathName("$PWD")))){
+    Error("makeResults.C", Form("Load data container for task %s failed.", esd->GetName()));
+    delete esd;
+    return;
+  }
+
+  esd->Terminate();
+
+  TGraphErrors *g = 0x0; Int_t ipic=0;
+  while((g=esd->GetGraph(ipic, ""))){
+    c->Clear(); g->Draw("apl");
+    c->SaveAs(Form("%s_Fig%02d.gif", esd->GetName(), ipic));
+    ipic++;
+  }
+  delete esd;
 }

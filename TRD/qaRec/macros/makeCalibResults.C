@@ -66,6 +66,7 @@
 #endif
 
 #include "AliTRDperformanceTrain.h"
+#include "helper.C"
 //#include "../../PWG1/macros/AddPerformanceTask.h"
 
 Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so", "libSTAT.so"};
