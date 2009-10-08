@@ -8,7 +8,7 @@
  **************************************************************************/
 
 #include "AliDimIntNotifier.h"
-
+#include <TError.h>
 #include <signal.h>
 
 //______________________________________________________________________________
@@ -27,7 +27,6 @@ void AliDimIntNotifier::SetMainThreadId()
 AliDimIntNotifier::AliDimIntNotifier(const TString& service) :
   DimUpdatedInfo(service, -1),
   fNotifyLck(kTRUE),
-  fNotifyCnd(&fNotifyLck),
   fLastMessage(-1)
 {
   fReThreader.Connect("Timeout()", "AliDimIntNotifier", this, "DimMessage()");
@@ -54,11 +53,10 @@ void AliDimIntNotifier::infoHandler()
   if (TThread::SelfId() != fgMainThreadId)
   {
     StartTimer();
-    fNotifyCnd.Wait();
   }
   else
   {
-    Warning("infoHandler", "DIM message received from CINT thread.");
+    ::Warning("DIMinfoHandler", "DIM message received from CINT thread.");
     DimMessage();
   }
   fNotifyLck.UnLock();
@@ -73,7 +71,6 @@ void AliDimIntNotifier::infoHandlerTest(Int_t fake)
   if (TThread::SelfId() != fgMainThreadId)
   {
     StartTimer();
-    fNotifyCnd.Wait();
   }
   else
   {
@@ -89,13 +86,5 @@ void AliDimIntNotifier::DimMessage(Int_t)
   if (fLastMessage != -1)
   {
     Emit("DimMessage(Int_t)", fLastMessage);
-    printf("Notify %d\n", fLastMessage);
   }
-  else
-  {
-    printf("NOTNotify %d\n", fLastMessage);
-  }
-  fNotifyLck.Lock();
-  fNotifyCnd.Signal();
-  fNotifyLck.UnLock();
 }

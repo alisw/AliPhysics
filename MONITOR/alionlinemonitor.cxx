@@ -20,6 +20,12 @@ int main(int argc, char **argv)
   AliOnlineReco *win = new AliOnlineReco;
   win->MapWindow();
 
+  TString autoRun(gSystem->Getenv("ONLINERECO_AUTORUN"));
+  if (autoRun == "1" || autoRun.CompareTo("true", TString::kIgnoreCase) == 0)
+  {
+    win->SetAutoRunMode(kTRUE);
+  }
+
   if (test)
   {
     win->SetTestMode();
@@ -31,10 +37,11 @@ int main(int argc, char **argv)
 
     printf("win = (AliOnlineReco*) 0x%lx\n", (unsigned long)win);
   }
-  else {
-
+  else
+  {
     TString baseDir = gSystem->Getenv("ONLINERECO_BASE_DIR");
-    if (baseDir.IsNull()) {
+    if (baseDir.IsNull())
+    {
       printf("ERROR: ONLINERECO_BASE_DIR is not set. Exiting...");
       return 0;
     }
@@ -55,15 +62,19 @@ int main(int argc, char **argv)
     sqlQuery.Form("SELECT run FROM logbook WHERE DAQ_time_start > %u AND DAQ_time_end IS NULL AND partition REGEXP 'PHYSICS.*'",
 		  ts.GetSec()-86400);
     TSQLResult* result = server->Query(sqlQuery);
-    if (!result) {
+    if (!result)
+    {
       printf("ERROR: Can't execute query <%s>!", sqlQuery.Data());
       return 0;
     }
-    if (result->GetRowCount() == 0) {
+    if (result->GetRowCount() == 0)
+    {
       printf("No active physics runs found");
     }
-    else {
-      for (Int_t iRow = 0; iRow < result->GetRowCount(); iRow++) {
+    else
+    {
+      for (Int_t iRow = 0; iRow < result->GetRowCount(); iRow++)
+      {
 	TSQLRow* row = result->Next();
 	TString runStr = row->GetField(0);
 	if (runStr.IsDigit())

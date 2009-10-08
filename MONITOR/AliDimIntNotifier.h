@@ -58,11 +58,10 @@ private:
   void StartTimer();
   void StopTimer();
 
-  TTimer       fReThreader;
-  TMutex       fNotifyLck;
-  TCondition   fNotifyCnd;
+  TTimer fReThreader;
+  TMutex fNotifyLck;
 
-  Int_t        fLastMessage;
+  Int_t  fLastMessage;
 
   static Long_t fgMainThreadId;
 

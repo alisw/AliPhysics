@@ -18,7 +18,10 @@
 
 class AliDimIntNotifier;
 
+class TTimer;
+
 class TGTextButton;
+class TGCheckButton;
 class TGListBox;
 
 //______________________________________________________________________________
@@ -30,10 +33,15 @@ class AliOnlineReco : public TGMainFrame
 {
 public:
   AliOnlineReco();
-  virtual ~AliOnlineReco() {}
+  virtual ~AliOnlineReco();
 
   AliDimIntNotifier* GetSOR(Int_t i) const { return fSOR[i]; }
   AliDimIntNotifier* GetEOR(Int_t i) const { return fEOR[i]; }
+
+  Int_t  GetLastRun() const;
+
+  Bool_t GetAutoRunMode() const;
+  void   SetAutoRunMode(Bool_t ar);
 
   void SetTestMode() { fTestMode = kTRUE; }
 
@@ -54,9 +62,10 @@ public:
   // Handlers of button signals.
   //------------------------------------------------------------------------------
 
+  void DoAutoRun();
   void DoStart();
   void DoStop();
-  void DoXyzz();
+  void DoExit();
 
   virtual void CloseWindow();
 
@@ -68,13 +77,19 @@ private:
 
   // GUI components.
   TGListBox     *fRunList;
+  TGCheckButton *fAutoRun;
   TGTextButton  *fStartButt;
   TGTextButton  *fStopButt;
-  TGTextButton  *fXyzzButt;
+  TGTextButton  *fExitButt;
 
-  // DIM interface. Could do without ...
+  // DIM interface. Could do without members and just leak them ...
   AliDimIntNotifier *fSOR[5];
   AliDimIntNotifier *fEOR[5];
+
+  // AutoRun state and timer
+  TTimer        *fAutoRunTimer;
+  Int_t          fAutoRunScheduled;
+  Int_t          fAutoRunRunning;
 
   // Run-state, process mngmnt
   typedef std::map<Int_t, Int_t> mIntInt_t; // value should be struct { pid, state, ... };
@@ -85,6 +100,16 @@ private:
   Bool_t         fTestMode;
 
   mIntInt_i FindMapEntryByPid(Int_t pid);
+
+  void StartAliEve(mIntInt_i& mi);
+  void KillPid(Int_t pid);
+
+  void StartAutoRunTimer(Int_t run);
+  void StopAutoRunTimer();
+
+  // Things that should be private but have to be public for CINT.
+public:
+  void AutoRunTimerTimeout();
 
   ClassDef(AliOnlineReco, 0);
 };
