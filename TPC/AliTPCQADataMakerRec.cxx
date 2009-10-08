@@ -442,24 +442,25 @@ void AliTPCQADataMakerRec::MakeDigits(TTree* digitTree)
 void AliTPCQADataMakerRec::MakeRecPoints(TTree* recTree)
 {
 
-  AliTPCClustersRow *clrow = new AliTPCClustersRow();
-  clrow->SetClass("AliTPCclusterMI");
-  clrow->SetArray(0);
-  clrow->GetArray()->ExpandCreateFast(10000);
-
+  AliTPCClustersRow clrow;
+  clrow.SetClass("AliTPCclusterMI");
+  clrow.SetArray(0);
+  clrow.GetArray()->ExpandCreateFast(10000);
+  AliTPCClustersRow * pclrow = &clrow;
   TBranch* branch = recTree->GetBranch("Segment");
-  branch->SetAddress(&clrow);
+  
+  branch->SetAddress(&pclrow);
 
   const Int_t nEntries = Int_t(recTree->GetEntries());
   for (Int_t i = 0; i < nEntries; i++) {
     
     branch->GetEntry(i);
     
-    const Int_t nClusters = clrow->GetArray()->GetEntriesFast();
+    const Int_t nClusters = clrow.GetArray()->GetEntriesFast();
     for (Int_t icl=0; icl < nClusters; icl++){
       
       AliTPCclusterMI* cluster = 
-	(AliTPCclusterMI*)clrow->GetArray()->At(icl);
+	(AliTPCclusterMI*)clrow.GetArray()->At(icl);
       
       Float_t Qmax = cluster->GetMax();
       Float_t Q    = cluster->GetQ();
@@ -486,7 +487,6 @@ void AliTPCQADataMakerRec::MakeRecPoints(TTree* recTree)
     } // end loop over clusters
   } // end loop over tree
 
-  delete clrow;
 }
 
 //____________________________________________________________________________

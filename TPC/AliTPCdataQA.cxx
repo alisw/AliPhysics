@@ -383,9 +383,8 @@ Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *rawReader)
   //
   //  Event processing loop - AliRawReader
   //
-  AliTPCRawStreamV3 *rawStreamV3 = new AliTPCRawStreamV3(rawReader, (AliAltroMapping**)fMapping);
-  Bool_t res=ProcessEvent(rawStreamV3);
-  delete rawStreamV3;
+  AliTPCRawStreamV3 rawStreamV3(rawReader, (AliAltroMapping**)fMapping);
+  Bool_t res=ProcessEvent(&rawStreamV3);
   if(res)
     fEventCounter++; // only increment event counter if there is TPC data
   return res;
@@ -439,13 +438,12 @@ Bool_t AliTPCdataQA::ProcessEventFast(AliRawReader *rawReader)
   //
   //  Event processing loop - AliRawReader
   //
-  AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader, (AliAltroMapping**)fMapping);
-  Bool_t res=ProcessEventFast(rawStreamFast);
+  AliTPCRawStreamFast rawStreamFast(rawReader, (AliAltroMapping**)fMapping);
+  Bool_t res=ProcessEventFast(&rawStreamFast);
   if(res)
     fEventCounter++; // only increment event counter if there is TPC data
                      // otherwise Analyse (called in QA) fails
 
-  delete rawStreamFast;
   return res;
 }
 
@@ -519,9 +517,8 @@ Bool_t AliTPCdataQA::ProcessEvent(eventHeaderStruct *event)
   //  process date event
   //
 
-  AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-  Bool_t result=ProcessEvent(rawReader);
-  delete rawReader;
+  AliRawReaderDate rawReader((void*)event);
+  Bool_t result=ProcessEvent(&rawReader);
   return result;
 }
 
