@@ -155,7 +155,7 @@ private:
     kESDSumResidualY2PerDE      = 1008, ///< sum of cluster-track residual-Y**2 per DE
     kESDSumLocalChi2XPerDE      = 1009, ///< sum of local chi2-X per DE
     kESDSumLocalChi2YPerDE      = 1010, ///< sum of local chi2-Y per DE
-    kESDSumLocalChi2PerDE       = 1011,  ///< sum of local chi2 per DE
+    kESDSumLocalChi2PerDE       = 1011  ///< sum of local chi2 per DE
   };
   
 private:
