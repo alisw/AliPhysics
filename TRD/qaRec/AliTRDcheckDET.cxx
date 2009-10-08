@@ -186,27 +186,38 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
   //
   gPad->SetLogy(0);
   gPad->SetLogx(0);
+  TH1 *h = 0x0;
   switch(ifig){
   case kNclustersTrack:
-    ((TH1F*)fContainer->FindObject("hNcls"))->Draw("pl");
+    (h=(TH1F*)fContainer->FindObject("hNcls"))->Draw("pl");
+    PutTrendValue("NClustersTrack", h->GetMean(), h->GetRMS());
     return kTRUE;
   case kNclustersTracklet:
-    ((TH1F*)fContainer->FindObject("hNclTls"))->Draw("pc");
+    (h =(TH1F*)fContainer->FindObject("hNclTls"))->Draw("pc");
+    PutTrendValue("NClustersTracklet", h->GetMean(), h->GetRMS());
     return kTRUE;
   case kNtrackletsTrack:
-    MakePlotNTracklets();
+    h=MakePlotNTracklets();
+    PutTrendValue("NTrackletsTracklet", h->GetMean(), h->GetRMS());
     return kTRUE;
   case kNtrackletsCross:
-    if(!MakeBarPlot((TH1F*)fContainer->FindObject("hNtlsCross"), kRed)) break;
+    h = (TH1F*)fContainer->FindObject("hNtlsCross");
+    if(!MakeBarPlot(h, kRed)) break;
+    PutTrendValue("NTrackletsCross", h->GetMean(), h->GetRMS());
     return kTRUE;
   case kNtrackletsFindable:
-    if(!MakeBarPlot((TH1F*)fContainer->FindObject("hNtlsFindable"), kGreen)) break;
+    h = (TH1F*)fContainer->FindObject("hNtlsFindable");
+    if(!MakeBarPlot(h, kGreen)) break;
+    PutTrendValue("NTrackletsFindable", h->GetMean(), h->GetRMS());
     return kTRUE;
   case kNtracksEvent:
-    ((TH1F*)fContainer->FindObject("hNtrks"))->Draw("pl");
+    (h = (TH1F*)fContainer->FindObject("hNtrks"))->Draw("pl");
+    PutTrendValue("NTracksEvent", h->GetMean(), h->GetRMS());
     return kTRUE;
   case kNtracksSector:
-    if(!MakeBarPlot((TH1F*)fContainer->FindObject("hNtrksSector"), kGreen)) break;
+    h = (TH1F*)fContainer->FindObject("hNtrksSector");
+    if(!MakeBarPlot(h, kGreen)) break;
+    PutTrendValue("NTracksSector", h->GetMean(2), h->GetRMS(2));
     return kTRUE;
   case kTrackStatus:
     ((TH1I *)fContainer->FindObject("hTrackStatus"))->Draw("c");
@@ -221,11 +232,13 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
     MakePlotPulseHeight();
     return kTRUE;
   case kChargeCluster:
-    ((TH1F*)fContainer->FindObject("hQcl"))->Draw("c");
+    (h = (TH1F*)fContainer->FindObject("hQcl"))->Draw("c");
     gPad->SetLogy(1);
+    PutTrendValue("ChargeCluster", h->GetMaximumBin(), h->GetRMS());
     return kTRUE;
   case kChargeTracklet:
-    ((TH1F*)fContainer->FindObject("hQtrklt"))->Draw("c");
+    (h=(TH1F*)fContainer->FindObject("hQtrklt"))->Draw("c");
+    PutTrendValue("ChargeTracklet", h->GetMaximumBin(), h->GetRMS());
     return kTRUE;
   case kNeventsTrigger:
     ((TH1F*)fContainer->FindObject("hEventsTrigger"))->Draw("");
@@ -975,7 +988,7 @@ void AliTRDcheckDET::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *trackle
 
 
 //_______________________________________________________
-void AliTRDcheckDET::MakePlotChi2()
+TH1* AliTRDcheckDET::MakePlotChi2()
 {
 // Plot chi2/track normalized to number of degree of freedom 
 // (tracklets) and compare with the theoretical distribution.
@@ -986,9 +999,10 @@ void AliTRDcheckDET::MakePlotChi2()
   TF1 f("fChi2", "[0]*pow(x, [1]-1)*exp(-0.5*x)", 0., 50.);
   TLegend *leg = new TLegend(.7,.7,.95,.95);
   leg->SetBorderSize(1); leg->SetHeader("Tracklets per Track");
+  TH1D *h1 = 0x0;
   Bool_t kFIRST = kTRUE;
   for(Int_t il=1; il<=h2->GetNbinsX(); il++){
-    TH1D *h1 = h2->ProjectionY(Form("pyChi2%d", il), il, il);
+    h1 = h2->ProjectionY(Form("pyChi2%d", il), il, il);
     if(h1->Integral()<50) continue;
     h1->Scale(1./h1->Integral());
     h1->SetMarkerStyle(7);h1->SetMarkerColor(il);
@@ -1003,11 +1017,12 @@ void AliTRDcheckDET::MakePlotChi2()
   }
   leg->Draw();
   gPad->SetLogy();
+  return h1;
 }
 
 
 //________________________________________________________
-void AliTRDcheckDET::MakePlotNTracklets(){
+TH1* AliTRDcheckDET::MakePlotNTracklets(){
   //
   // Make nice bar plot of the number of tracklets in each method
   //
@@ -1047,10 +1062,11 @@ void AliTRDcheckDET::MakePlotNTracklets(){
   hSTA->Draw("bar1same"); leg->AddEntry(hSTA, "Stand Alone", "f");
   leg->Draw();
   gPad->Update();
+  return hCON;
 }
 
 //________________________________________________________
-void AliTRDcheckDET::MakePlotPulseHeight(){
+TH1* AliTRDcheckDET::MakePlotPulseHeight(){
   //
   // Create Plot of the Pluse Height Spectrum
   //
@@ -1082,6 +1098,7 @@ void AliTRDcheckDET::MakePlotPulseHeight(){
   axis->SetTextColor(kBlue);
   axis->SetTitle("x_{0}-x_{c} [cm]");
   axis->Draw();
+  return h1;
 }
 
 //________________________________________________________

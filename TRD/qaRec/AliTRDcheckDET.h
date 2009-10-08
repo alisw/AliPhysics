@@ -73,9 +73,9 @@ private:
   AliTRDcheckDET(const AliTRDcheckDET &);
   AliTRDcheckDET& operator=(const AliTRDcheckDET &);
   void GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tracklet, AliTRDcluster *c);
-  void MakePlotChi2();
-  void MakePlotNTracklets();
-  void MakePlotPulseHeight();
+  TH1* MakePlotChi2();
+  TH1* MakePlotNTracklets();
+  TH1* MakePlotPulseHeight();
   Bool_t MakeBarPlot(TH1 *histo, Int_t Color);
   AliTRDeventInfo *fEventInfo;         //! ESD Header
   TMap *fTriggerNames;                 //! Containing trigger class names

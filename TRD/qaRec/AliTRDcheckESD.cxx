@@ -46,6 +46,7 @@ ClassImp(AliTRDcheckESD)
 const Int_t   AliTRDcheckESD::fgkNgraphs = 4;
 const Float_t AliTRDcheckESD::fgkxTPC = 290.;
 const Float_t AliTRDcheckESD::fgkxTOF = 365.;
+FILE* AliTRDcheckESD::fgFile = 0x0;
 
 //____________________________________________________________________
 AliTRDcheckESD::AliTRDcheckESD():
@@ -129,7 +130,11 @@ TGraphErrors* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
 
   TGraphErrors *g = 0x0;
   if((g = dynamic_cast<TGraphErrors*>(res->At(id)))){
-    if(kCLEAR) for(Int_t ip=g->GetN(); ip--;) g->RemovePoint(ip);
+    if(kCLEAR){ 
+      for(Int_t ip=g->GetN(); ip--;) g->RemovePoint(ip);
+    } else {
+      PutTrendValue(name[id], g->GetMean(2), g->GetRMS(2));
+    }
   } else {
     if(kBUILD){
       g = new TGraphErrors();
@@ -302,6 +307,16 @@ Bool_t AliTRDcheckESD::Load(const Char_t *filename, const Char_t *name)
   }
   fHistos = (TObjArray*)o->Clone(GetName());
   gFile->Close();
+  return kTRUE;
+}
+
+//_______________________________________________________
+Bool_t AliTRDcheckESD::PutTrendValue(const Char_t *name, Double_t val, Double_t err)
+{
+  if(!fgFile){
+    fgFile = fopen("TRD.Performance.txt", "at");
+  }
+  fprintf(fgFile, "%s_%s %f %f\n", GetName(), name, val, err);
   return kTRUE;
 }
 

@@ -51,6 +51,7 @@ public:
   TObjArray*    Histos();
   Bool_t        Load(const Char_t *fn, const Char_t *name=0x0);
   void          SetMC(Bool_t mc = kTRUE) { mc ? SETBIT(fStatus, kMC) : CLRBIT(fStatus, kMC);}
+  Bool_t        PutTrendValue(const Char_t *name, Double_t val, Double_t err);
   void          Terminate(Option_t *);
 
   static const Int_t   fgkNgraphs;
@@ -67,6 +68,7 @@ private:
   AliESDEvent      *fESD;              // ESD event
   AliMCEvent       *fMC;               // MC event
   TObjArray        *fHistos;           // QA histos
-  ClassDef(AliTRDcheckESD, 1)          // user oriented TRD analysis based on ESD-MC data
+  static FILE *fgFile;                 //! trend file streamer
+  ClassDef(AliTRDcheckESD, 2)          // user oriented TRD analysis based on ESD-MC data
 };
 #endif

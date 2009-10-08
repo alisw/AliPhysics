@@ -108,63 +108,62 @@ Char_t* AliTRDresolution::fPerformanceName[kNhistos] = {
     ,"TOF/HMPID2MC"
     ,"TRD2MC"
 };
-//Int_t AliTRDresolution::fNPlots = 0; 
-Char_t *AliTRDresolution::fAxTitle[46][3] = {
+Char_t *AliTRDresolution::fAxTitle[46][4] = {
   // Charge
-  {"x [cm]", "I_{mpv}", "x/x_{0}"}
- ,{"x/x_{0}", "#delta I/I_{mpv}", "x[cm]"}
+  {"Impv", "x [cm]", "I_{mpv}", "x/x_{0}"}
+ ,{"dI/Impv", "x/x_{0}", "#delta I/I_{mpv}", "x[cm]"}
   // Clusters to Kalman
- ,{"tg(#phi)", "#mu_{y}^{cl} [#mum]", "#sigma_{y}^{cl} [#mum]"}
- ,{"tg(#phi)", "PULL: #mu_{y}^{cl}", "PULL: #sigma_{y}^{cl}"}
+ ,{"Pos", "tg(#phi)", "#mu_{y}^{cl} [#mum]", "#sigma_{y}^{cl} [#mum]"}
+ ,{"Pulls", "tg(#phi)", "PULL: #mu_{y}^{cl}", "PULL: #sigma_{y}^{cl}"}
   // TRD tracklet to Kalman fit
- ,{"tg(#phi)", "#mu_{y}^{trklt} [#mum]", "#sigma_{y}^{trklt} [#mum]"}
- ,{"tg(#phi)", "PULL: #mu_{y}^{trklt}", "PULL: #sigma_{y}^{trklt}"}
- ,{"tg(#theta)", "#mu_{z}^{trklt} [#mum]", "#sigma_{z}^{trklt} [#mum]"}
- ,{"tg(#theta)", "PULL: #mu_{z}^{trklt}", "PULL: #sigma_{z}^{trklt}"}
- ,{"tg(#phi)", "#mu_{#phi}^{trklt} [mrad]", "#sigma_{#phi}^{trklt} [mrad]"}
+ ,{"PosY", "tg(#phi)", "#mu_{y}^{trklt} [#mum]", "#sigma_{y}^{trklt} [#mum]"}
+ ,{"PullsY", "tg(#phi)", "PULL: #mu_{y}^{trklt}", "PULL: #sigma_{y}^{trklt}"}
+ ,{"PosZ", "tg(#theta)", "#mu_{z}^{trklt} [#mum]", "#sigma_{z}^{trklt} [#mum]"}
+ ,{"PullsZ", "tg(#theta)", "PULL: #mu_{z}^{trklt}", "PULL: #sigma_{z}^{trklt}"}
+ ,{"Phi", "tg(#phi)", "#mu_{#phi}^{trklt} [mrad]", "#sigma_{#phi}^{trklt} [mrad]"}
   // TPC track 2 first TRD tracklet
- ,{"tg(#phi)", "#mu_{y}^{TPC trklt} [#mum]", "#sigma_{y}^{TPC trklt} [#mum]"}
- ,{"tg(#phi)", "PULL: #mu_{y}^{TPC trklt}", "PULL: #sigma_{y}^{TPC trklt}"}
- ,{"tg(#theta)", "#mu_{z}^{TPC trklt} [#mum]", "#sigma_{z}^{TPC trklt} [#mum]"}
- ,{"tg(#theta)", "PULL: #mu_{z}^{TPC trklt}", "PULL: #sigma_{z}^{TPC trklt}"}
- ,{"tg(#phi)", "#mu_{#phi}^{TPC trklt} [mrad]", "#sigma_{#phi}^{TPC trklt} [mrad]"}
+ ,{"PosY", "tg(#phi)", "#mu_{y}^{TPC trklt} [#mum]", "#sigma_{y}^{TPC trklt} [#mum]"}
+ ,{"PullsY", "tg(#phi)", "PULL: #mu_{y}^{TPC trklt}", "PULL: #sigma_{y}^{TPC trklt}"}
+ ,{"PosZ", "tg(#theta)", "#mu_{z}^{TPC trklt} [#mum]", "#sigma_{z}^{TPC trklt} [#mum]"}
+ ,{"PullsZ", "tg(#theta)", "PULL: #mu_{z}^{TPC trklt}", "PULL: #sigma_{z}^{TPC trklt}"}
+ ,{"Phi", "tg(#phi)", "#mu_{#phi}^{TPC trklt} [mrad]", "#sigma_{#phi}^{TPC trklt} [mrad]"}
   // MC cluster
- ,{"tg(#phi)", "MC: #mu_{y}^{cl} [#mum]", "MC: #sigma_{y}^{cl} [#mum]"}
- ,{"tg(#phi)", "MC PULL: #mu_{y}^{cl}", "MC PULL: #sigma_{y}^{cl}"}
+ ,{"Pos", "tg(#phi)", "MC: #mu_{y}^{cl} [#mum]", "MC: #sigma_{y}^{cl} [#mum]"}
+ ,{"Pulls", "tg(#phi)", "MC PULL: #mu_{y}^{cl}", "MC PULL: #sigma_{y}^{cl}"}
   // MC tracklet
- ,{"tg(#phi)", "MC: #mu_{y}^{trklt} [#mum]", "MC: #sigma_{y}^{trklt} [#mum]"}
- ,{"tg(#phi)", "MC PULL: #mu_{y}^{trklt}", "MC PULL: #sigma_{y}^{trklt}"}
- ,{"tg(#theta)", "MC: #mu_{z}^{trklt} [#mum]", "MC: #sigma_{z}^{trklt} [#mum]"}
- ,{"tg(#theta)", "MC PULL: #mu_{z}^{trklt}", "MC PULL: #sigma_{z}^{trklt}"}
- ,{"tg(#phi)", "MC: #mu_{#phi}^{trklt} [mrad]", "MC: #sigma_{#phi}^{trklt} [mrad]"}
+ ,{"PosY", "tg(#phi)", "MC: #mu_{y}^{trklt} [#mum]", "MC: #sigma_{y}^{trklt} [#mum]"}
+ ,{"PullsY", "tg(#phi)", "MC PULL: #mu_{y}^{trklt}", "MC PULL: #sigma_{y}^{trklt}"}
+ ,{"PosZ", "tg(#theta)", "MC: #mu_{z}^{trklt} [#mum]", "MC: #sigma_{z}^{trklt} [#mum]"}
+ ,{"PullsZ", "tg(#theta)", "MC PULL: #mu_{z}^{trklt}", "MC PULL: #sigma_{z}^{trklt}"}
+ ,{"Phi", "tg(#phi)", "MC: #mu_{#phi}^{trklt} [mrad]", "MC: #sigma_{#phi}^{trklt} [mrad]"}
   // MC track TPC
- ,{"tg(#phi)", "MC: #mu_{y}^{TPC} [#mum]", "MC: #sigma_{y}^{TPC} [#mum]"}
- ,{"tg(#phi)", "MC PULL: #mu_{y}^{TPC}", "MC PULL: #sigma_{y}^{TPC}"}
- ,{"tg(#theta)", "MC: #mu_{z}^{TPC} [#mum]", "MC: #sigma_{z}^{TPC} [#mum]"}
- ,{"tg(#theta)", "MC PULL: #mu_{z}^{TPC}", "MC PULL: #sigma_{z}^{TPC}"}
- ,{"tg(#phi)", "MC: #mu_{#phi}^{TPC} [mrad]", "MC: #sigma_{#phi}^{TPC} [mrad]"}
- ,{"tg(#phi)", "MC PULL: #mu_{snp}^{TPC}", "MC PULL: #sigma_{snp}^{TPC}"}
- ,{"tg(#theta)", "MC: #mu_{#theta}^{TPC} [mrad]", "MC: #sigma_{#theta}^{TPC} [mrad]"}
- ,{"tg(#theta)", "MC PULL: #mu_{tgl}^{TPC}", "MC PULL: #sigma_{tgl}^{TPC}"}
- ,{"p_{t}^{MC} [GeV/c]", "MC: #mu^{TPC}(#Deltap_{t}/p_{t}^{MC}) [%]", "MC: #sigma^{TPC}(#Deltap_{t}/p_{t}^{MC}) [%]"}
- ,{"1/p_{t}^{MC} [c/GeV]", "MC PULL: #mu_{1/p_{t}}^{TPC}", "MC PULL: #sigma_{1/p_{t}}^{TPC}"}
- ,{"p^{MC} [GeV/c]", "MC: #mu^{TPC}(#Deltap/p^{MC}) [%]", "MC: #sigma^{TPC}(#Deltap/p^{MC}) [%]"}
- ,{"p^{MC} [GeV/c]", "MC PULL: #mu^{TPC}(#Deltap/#sigma_{p})", "MC PULL: #sigma^{TPC}(#Deltap/#sigma_{p})"}
+ ,{"PosY", "tg(#phi)", "MC: #mu_{y}^{TPC} [#mum]", "MC: #sigma_{y}^{TPC} [#mum]"}
+ ,{"PullsY", "tg(#phi)", "MC PULL: #mu_{y}^{TPC}", "MC PULL: #sigma_{y}^{TPC}"}
+ ,{"PosZ", "tg(#theta)", "MC: #mu_{z}^{TPC} [#mum]", "MC: #sigma_{z}^{TPC} [#mum]"}
+ ,{"PullsZ", "tg(#theta)", "MC PULL: #mu_{z}^{TPC}", "MC PULL: #sigma_{z}^{TPC}"}
+ ,{"Phi", "tg(#phi)", "MC: #mu_{#phi}^{TPC} [mrad]", "MC: #sigma_{#phi}^{TPC} [mrad]"}
+ ,{"PullsSNP", "tg(#phi)", "MC PULL: #mu_{snp}^{TPC}", "MC PULL: #sigma_{snp}^{TPC}"}
+ ,{"Theta", "tg(#theta)", "MC: #mu_{#theta}^{TPC} [mrad]", "MC: #sigma_{#theta}^{TPC} [mrad]"}
+ ,{"PullsTGL", "tg(#theta)", "MC PULL: #mu_{tgl}^{TPC}", "MC PULL: #sigma_{tgl}^{TPC}"}
+ ,{"Pt", "p_{t}^{MC} [GeV/c]", "MC: #mu^{TPC}(#Deltap_{t}/p_{t}^{MC}) [%]", "MC: #sigma^{TPC}(#Deltap_{t}/p_{t}^{MC}) [%]"}
+ ,{"Pulls1Pt", "1/p_{t}^{MC} [c/GeV]", "MC PULL: #mu_{1/p_{t}}^{TPC}", "MC PULL: #sigma_{1/p_{t}}^{TPC}"}
+ ,{"P", "p^{MC} [GeV/c]", "MC: #mu^{TPC}(#Deltap/p^{MC}) [%]", "MC: #sigma^{TPC}(#Deltap/p^{MC}) [%]"}
+ ,{"PullsP", "p^{MC} [GeV/c]", "MC PULL: #mu^{TPC}(#Deltap/#sigma_{p})", "MC PULL: #sigma^{TPC}(#Deltap/#sigma_{p})"}
   // MC track TOF
- ,{"tg(#theta)", "MC: #mu_{z}^{TOF} [#mum]", "MC: #sigma_{z}^{TOF} [#mum]"}
- ,{"tg(#theta)", "MC PULL: #mu_{z}^{TOF}", "MC PULL: #sigma_{z}^{TOF}"}
+ ,{"PosZ", "tg(#theta)", "MC: #mu_{z}^{TOF} [#mum]", "MC: #sigma_{z}^{TOF} [#mum]"}
+ ,{"PullsZ", "tg(#theta)", "MC PULL: #mu_{z}^{TOF}", "MC PULL: #sigma_{z}^{TOF}"}
   // MC track in TRD
- ,{"tg(#phi)", "MC: #mu_{y}^{Trk} [#mum]", "MC: #sigma_{y}^{Trk} [#mum]"}
- ,{"tg(#phi)", "MC PULL: #mu_{y}^{Trk}", "MC PULL: #sigma_{y}^{Trk}"}
- ,{"tg(#theta)", "MC: #mu_{z}^{Trk} [#mum]", "MC: #sigma_{z}^{Trk} [#mum]"}
- ,{"tg(#theta)", "MC PULL: #mu_{z}^{Trk}", "MC PULL: #sigma_{z}^{Trk}"}
- ,{"tg(#phi)", "MC: #mu_{#phi}^{Trk} [mrad]", "MC: #sigma_{#phi}^{Trk} [mrad]"}
- ,{"tg(#phi)", "MC PULL: #mu_{snp}^{Trk}", "MC PULL: #sigma_{snp}^{Trk}"}
- ,{"tg(#theta)", "MC: #mu_{#theta}^{Trk} [mrad]", "MC: #sigma_{#theta}^{Trk} [mrad]"}
- ,{"tg(#theta)", "MC PULL: #mu_{tgl}^{Trk}", "MC PULL: #sigma_{tgl}^{Trk}"}
- ,{"p_{t}^{MC} [GeV/c]", "MC: #mu^{Trk}(#Deltap_{t}/p_{t}^{MC}) [%]", "MC: #sigma^{Trk}(#Deltap_{t}/p_{t}^{MC}) [%]"}
- ,{"1/p_{t}^{MC} [c/GeV]", "MC PULL: #mu_{1/p_{t}}^{Trk}", "MC PULL: #sigma_{1/p_{t}}^{Trk}"}
- ,{"p^{MC} [GeV/c]", "MC: #mu^{Trk}(#Deltap/p^{MC}) [%]", "MC: #sigma^{Trk}(#Deltap/p^{MC}) [%]"}
+ ,{"PosY", "tg(#phi)", "MC: #mu_{y}^{Trk} [#mum]", "MC: #sigma_{y}^{Trk} [#mum]"}
+ ,{"PullsY", "tg(#phi)", "MC PULL: #mu_{y}^{Trk}", "MC PULL: #sigma_{y}^{Trk}"}
+ ,{"PosZ", "tg(#theta)", "MC: #mu_{z}^{Trk} [#mum]", "MC: #sigma_{z}^{Trk} [#mum]"}
+ ,{"PullsZ", "tg(#theta)", "MC PULL: #mu_{z}^{Trk}", "MC PULL: #sigma_{z}^{Trk}"}
+ ,{"Phi", "tg(#phi)", "MC: #mu_{#phi}^{Trk} [mrad]", "MC: #sigma_{#phi}^{Trk} [mrad]"}
+ ,{"PullsSNP", "tg(#phi)", "MC PULL: #mu_{snp}^{Trk}", "MC PULL: #sigma_{snp}^{Trk}"}
+ ,{"Theta", "tg(#theta)", "MC: #mu_{#theta}^{Trk} [mrad]", "MC: #sigma_{#theta}^{Trk} [mrad]"}
+ ,{"PullsTGL", "tg(#theta)", "MC PULL: #mu_{tgl}^{Trk}", "MC PULL: #sigma_{tgl}^{Trk}"}
+ ,{"Pt", "p_{t}^{MC} [GeV/c]", "MC: #mu^{Trk}(#Deltap_{t}/p_{t}^{MC}) [%]", "MC: #sigma^{Trk}(#Deltap_{t}/p_{t}^{MC}) [%]"}
+ ,{"Pulls1Pt", "1/p_{t}^{MC} [c/GeV]", "MC PULL: #mu_{1/p_{t}}^{Trk}", "MC PULL: #sigma_{1/p_{t}}^{Trk}"}
+ ,{"P", "p^{MC} [GeV/c]", "MC: #mu^{Trk}(#Deltap/p^{MC}) [%]", "MC: #sigma^{Trk}(#Deltap/p^{MC}) [%]"}
 };
 
 //________________________________________________________
@@ -1803,35 +1802,37 @@ Bool_t AliTRDresolution::GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t 
   if(!gs) return kFALSE;
   gs->Draw("apl"); gm->Draw("pl");
 
-  PutTrendValue(Form("%s_[%d]M", fPerformanceName[ip], idx), gm->GetMean(2), gm->GetRMS(2));
-  gs->Sort(&TGraph::CompareY); Int_t n = gs->GetN();
-  PutTrendValue(Form("%s_[%d]Sm", fPerformanceName[ip], idx), gs->GetY()[0], 0.);
-  PutTrendValue(Form("%s_[%d]SM", fPerformanceName[ip], idx), gs->GetY()[n-1], 0.);
-
-  // axis titles look up
+  // titles look up
   Int_t nref = 0;
   for(Int_t jp=0; jp<(Int_t)ip; jp++) nref+=fNElements[jp];
   UChar_t jdx = idx<0?0:idx;
   for(Int_t jc=0; jc<TMath::Min(jdx,fNElements[ip]-1); jc++) nref++;
   Char_t **at = fAxTitle[nref];
 
+  PutTrendValue(Form("%s_%sMean", fPerformanceName[ip], at[0]), gm->GetMean(2), gm->GetRMS(2));
+  gs->Sort(&TGraph::CompareY); Int_t n = gs->GetN();
+  PutTrendValue(Form("%s_%sSigMin", fPerformanceName[ip], at[0]), gs->GetY()[0], 0.);
+  PutTrendValue(Form("%s_%sSigMax", fPerformanceName[ip], at[0]), gs->GetY()[n-1], 0.);
+  gs->Sort(&TGraph::CompareX); 
+  
+
   // axis range
   TAxis *ax = 0x0;
   ax = gs->GetHistogram()->GetXaxis();
   ax->SetRangeUser(bb[0], bb[2]);
-  ax->SetTitle(*at);ax->CenterTitle();
+  ax->SetTitle(at[1]);ax->CenterTitle();
 
   ax = gs->GetHistogram()->GetYaxis();
   ax->SetRangeUser(bb[1], bb[3]);
   ax->SetTitleOffset(1.1);
-  ax->SetTitle(*(++at));ax->CenterTitle();
+  ax->SetTitle(at[2]);ax->CenterTitle();
 
   TGaxis *gax = 0x0;
   gax = new TGaxis(bb[2], bb[1], bb[2], bb[3], bb[1], bb[3], 510, "+U");
   gax->SetLineColor(kRed);gax->SetLineWidth(2);gax->SetTextColor(kRed);
   //gax->SetVertical();
   gax->CenterTitle(); gax->SetTitleOffset(.7);
-  gax->SetTitle(*(++at)); gax->Draw();
+  gax->SetTitle(at[3]); gax->Draw();
 
   // bounding box
   TBox *b = new TBox(-.15, bb[1], .15, bb[3]);

@@ -87,7 +87,7 @@ private:
   UChar_t             fIdxPlot;         //! plot counter (internal)
   static Char_t       *fPerformanceName[kNhistos]; // name of performance plot
   static UChar_t      fNElements[kNhistos]; // number of componets per task
-  static Char_t       *fAxTitle[46][3]; // axis title for all ref histos
+  static Char_t       *fAxTitle[46][4]; // Title for all ref histos
   AliTRDReconstructor *fReconstructor;  //! local reconstructor
   AliTRDgeometry      *fGeo;            //! TRD geometry
   TObjArray           *fGraphS;         //! result holder - sigma values
