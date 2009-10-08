@@ -340,7 +340,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   PostData(3,fNentries);
   // loop over candidates
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
-  printf("Number of D0->Kpi: %d\n",nInD0toKpi);
+  if(fDebug>1) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
   
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
     //Int_t nPosPairs=0, nNegPairs=0;

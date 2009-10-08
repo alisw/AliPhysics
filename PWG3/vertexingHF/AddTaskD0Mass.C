@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0 *AddTaskD0(Int_t flag=0/*0 = D0,1 = LS*/)
+AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -22,7 +22,7 @@ AliAnalysisTaskSED0 *AddTaskD0(Int_t flag=0/*0 = D0,1 = LS*/)
   } else filename="LSD0.root";
 
   // Aanalysis task    
-  AliAnalysisTaskSED0 *massD0Task = new AliAnalysisTaskSED0("D0MassAndDistrAnalysis");
+  AliAnalysisTaskSED0Mass *massD0Task = new AliAnalysisTaskSED0Mass("D0MassAndDistrAnalysis");
   massD0Task->SetDebugLevel(2);
   massD0Task->SetArray(flag);
   mgr->AddTask(massD0Task);
