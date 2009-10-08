@@ -173,7 +173,7 @@ CUHDRS:=$(patsubst %,TPCLib/%,$(MODULE_CUHDRS))
 DHDR:=$(patsubst %,TPCLib/%,$(MODULE_DHDR))
 CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
-EDEFINE      += ${HLTDEFS}
+EDEFINE      = ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS} -Wshadow
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
