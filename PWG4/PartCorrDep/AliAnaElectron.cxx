@@ -25,6 +25,7 @@
   
 // --- ROOT system --- 
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TParticle.h>
 #include <TNtuple.h>
 #include <TClonesArray.h>
@@ -62,7 +63,8 @@ AliAnaElectron::AliAnaElectron()
   //event QA histos
   fhImpactXY(0),fhRefMult(0),fhRefMult2(0),
   //matching checks
-  fh1pOverE(0),fh1EOverp(0),fh1dR(0),fh2EledEdx(0),fh2MatchdEdx(0),fh2dEtadPhi(0),
+  fh3pOverE(0),fh3EOverp(0),fh3pOverE2(0),fh3EOverp2(0),fh3pOverE3(0),fh3EOverp3(0),
+  fh1dR(0),fh2EledEdx(0),fh2MatchdEdx(0),fh2dEtadPhi(0),
   fh2dEtadPhiMatched(0),fh2dEtadPhiUnmatched(0),fh2TrackPVsClusterE(0),
   fh2TrackPtVsClusterE(0),fh2TrackPhiVsClusterPhi(0),fh2TrackEtaVsClusterEta(0),
   //Photonic electron checks
@@ -86,10 +88,11 @@ AliAnaElectron::AliAnaElectron()
   fhPhiConversion(0),fhEtaConversion(0),
   //for comparisons with tracking detectors
   fhPtHadron(0),fhPtNPEleTPC(0),fhPtNPEleTPCTRD(0),fhPtNPEleTTE(0),
+  fhPtNPEBHadron(0),
   //for computing efficiency of B-jet tags
   fhBJetPt1x4(0),fhBJetPt2x3(0),fhBJetPt3x2(0),fhDVMJet(0),
   //MC rate histograms/ntuple
-  fMCEleNtuple(0),fhMCBJetElePt(0),fhPtMCHadron(0),fhPtMCElectron(0)
+  fMCEleNtuple(0),fhMCBJetElePt(0),fhMCBHadronElePt(0),fhPtMCHadron(0),fhPtMCElectron(0)
 {
   //default ctor
   
@@ -110,7 +113,10 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
     //event QA histos
     fhImpactXY(g.fhImpactXY),fhRefMult(g.fhRefMult),fhRefMult2(g.fhRefMult2),
     //matching checks
-    fh1pOverE(g.fh1pOverE),fh1EOverp(g.fh1EOverp),fh1dR(g.fh1dR),fh2EledEdx(g.fh2EledEdx),
+    fh3pOverE(g.fh3pOverE),fh3EOverp(g.fh3EOverp),
+    fh3pOverE2(g.fh3pOverE2),fh3EOverp2(g.fh3EOverp2),
+    fh3pOverE3(g.fh3pOverE3),fh3EOverp3(g.fh3EOverp3),
+    fh1dR(g.fh1dR),fh2EledEdx(g.fh2EledEdx),
     fh2MatchdEdx(g.fh2MatchdEdx),fh2dEtadPhi(g.fh2dEtadPhi),
     fh2dEtadPhiMatched(g.fh2dEtadPhiMatched),fh2dEtadPhiUnmatched(g.fh2dEtadPhiUnmatched),
     fh2TrackPVsClusterE(g.fh2TrackPVsClusterE),fh2TrackPtVsClusterE(g.fh2TrackPtVsClusterE),
@@ -140,11 +146,13 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
     //for comparisons with tracking detectors
     fhPtHadron(g.fhPtHadron),fhPtNPEleTPC(g.fhPtNPEleTPC),
     fhPtNPEleTPCTRD(g.fhPtNPEleTPCTRD),fhPtNPEleTTE(g.fhPtNPEleTTE),
+    fhPtNPEBHadron(g.fhPtNPEBHadron),
     //for computing efficiency of B-jet tags
     fhBJetPt1x4(g.fhBJetPt1x4),fhBJetPt2x3(g.fhBJetPt2x3),
     fhBJetPt3x2(g.fhBJetPt3x2),fhDVMJet(g.fhDVMJet),
     //MC rate histograms/ntuple
     fMCEleNtuple(g.fMCEleNtuple),fhMCBJetElePt(g.fhMCBJetElePt),
+    fhMCBHadronElePt(g.fhMCBHadronElePt),
     fhPtMCHadron(g.fhPtMCHadron),fhPtMCElectron(g.fhPtMCElectron)
 {
   // cpy ctor
@@ -180,8 +188,12 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fhRefMult  = g.fhRefMult;
   fhRefMult2 = g.fhRefMult2;
   //matching checks
-  fh1pOverE = g.fh1pOverE;
-  fh1EOverp = g.fh1EOverp;
+  fh3pOverE  = g.fh3pOverE;
+  fh3EOverp  = g.fh3EOverp;
+  fh3pOverE2 = g.fh3pOverE2;
+  fh3EOverp2 = g.fh3EOverp2;
+  fh3pOverE3 = g.fh3pOverE3;
+  fh3EOverp3 = g.fh3EOverp3;
   fh1dR     = g.fh1dR;
   fh2EledEdx = g.fh2EledEdx;
   fh2MatchdEdx = g.fh2MatchdEdx;
@@ -237,11 +249,13 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   //for comparisons with tracking detectors
   fhPtHadron = g.fhPtHadron; fhPtNPEleTPC = g.fhPtNPEleTPC; 
   fhPtNPEleTPCTRD = g.fhPtNPEleTPCTRD; fhPtNPEleTTE = g.fhPtNPEleTTE; 
+  fhPtNPEBHadron = g.fhPtNPEBHadron;
   //for computing efficiency of B-jet tags
   fhBJetPt1x4 = g.fhBJetPt1x4; fhBJetPt2x3 = g.fhBJetPt2x3; 
   fhBJetPt3x2 = g.fhBJetPt3x2; fhDVMJet = g.fhDVMJet;
   //MC rate histograms/ntuple
   fMCEleNtuple = g.fMCEleNtuple; fhMCBJetElePt = g.fhMCBJetElePt; 
+  fhMCBHadronElePt = g.fhMCBHadronElePt;
   fhPtMCHadron = g.fhPtMCHadron; fhPtMCElectron = g.fhPtMCElectron; 
 
   return *this;
@@ -284,8 +298,13 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhRefMult2);
   
   //matching checks
-  fh1pOverE = new TH1F("h1pOverE","EMCAL-TRACK matches p/E",200,0.,10.);
-  fh1EOverp = new TH1F("h1EOverp","EMCAL-TRACK matches E/p",200,0.,10.);
+  fh3pOverE  = new TH3F("h3pOverE"    ,"EMCAL-TRACK matches p/E",nptbins,ptmin,ptmax,200,0.,10.,30,0,30);
+  fh3EOverp  = new TH3F("h3EOverp"    ,"EMCAL-TRACK matches E/p",nptbins,ptmin,ptmax,200,0.,5. ,30,0,30);
+  fh3pOverE2 = new TH3F("h3pOverE_Trk","EMCAL-TRACK matches p/E",nptbins,ptmin,ptmax,200,0.,10.,30,0,30);
+  fh3EOverp2 = new TH3F("h3EOverp_Trk","EMCAL-TRACK matches E/p",nptbins,ptmin,ptmax,200,0.,5. ,30,0,30);
+  fh3pOverE3 = new TH3F("h3pOverE_Tpc","EMCAL-TRACK matches p/E",nptbins,ptmin,ptmax,200,0.,10.,30,0,30);
+  fh3EOverp3 = new TH3F("h3EOverp_Tpc","EMCAL-TRACK matches E/p",nptbins,ptmin,ptmax,200,0.,5. ,30,0,30);
+
   fh1dR = new TH1F("h1dR","EMCAL-TRACK matches dR",300, 0.,TMath::Pi());
   fh2EledEdx = new TH2F("h2EledEdx","dE/dx vs. p for electrons",200,0.,50.,200,0.,400.);
   fh2MatchdEdx = new TH2F("h2MatchdEdx","dE/dx vs. p for all matches",200,0.,50.,200,0.,400.);
@@ -298,8 +317,12 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   fh2TrackPhiVsClusterPhi = new TH2F("h2TrackPhiVsClusterPhi","h2TrackPhiVsClusterPhi",nphibins,phimin,phimax,nphibins,phimin,phimax);
   fh2TrackEtaVsClusterEta = new TH2F("h2TrackEtaVsClusterEta","h2TrackEtaVsClusterEta",netabins,etamin,etamax,netabins,etamin,etamax);
 
-  outputContainer->Add(fh1pOverE) ; 
-  outputContainer->Add(fh1EOverp) ; 
+  outputContainer->Add(fh3pOverE) ;
+  outputContainer->Add(fh3EOverp) ;
+  outputContainer->Add(fh3pOverE2) ;
+  outputContainer->Add(fh3EOverp2) ;
+  outputContainer->Add(fh3pOverE3) ;
+  outputContainer->Add(fh3EOverp3) ;
   outputContainer->Add(fh1dR) ; 
   outputContainer->Add(fh2EledEdx) ;
   outputContainer->Add(fh2MatchdEdx) ;
@@ -412,11 +435,13 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     fhPtNPEleTPC = new TH2F("hPtNPEleTPC","Non-phot. Electrons identified by TPC w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
     fhPtNPEleTPCTRD = new TH2F("hPtNPEleTPCTRD","Non-phot. Electrons identified by TPC+TRD w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
     fhPtNPEleTTE = new TH2F("hPtNPEleTTE","Non-phot. Electrons identified by TPC+TRD+EMCAL w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
+    fhPtNPEBHadron = new TH2F("hPtNPEBHadron","Non-phot. b-electrons (TPC+TRD+EMCAL) vs B-hadron pt w/in EMCAL acceptance",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
 
     outputContainer->Add(fhPtHadron);
     outputContainer->Add(fhPtNPEleTPC);
     outputContainer->Add(fhPtNPEleTPCTRD);
     outputContainer->Add(fhPtNPEleTTE);
+    outputContainer->Add(fhPtNPEBHadron);
 
     //for computing efficiency of IPSig tag
     fhBJetPt1x4 = new TH1F("hBJetPt1x4","tagged B-jet pT (1 track, ipSignif>4);p_{T}",1000,0.,100.);
@@ -438,6 +463,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     }
 
     fhMCBJetElePt = new TH2F("hMCBJetElePt","MC B-jet pT vs. electron pT",300,0.,300.,300,0.,300.);
+    fhMCBHadronElePt = new TH2F("hMCBHadronElePt","MC B-hadron pT vs. electron pT",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
     fhPtMCHadron = new TH1F("hPtMCHadron","MC Charged hadrons w/in EMCAL acceptance",nptbins,ptmin,ptmax);
 
     //Bins along y-axis are:  0 - unfiltered, 1 - bottom, 2 - charm, 3 - charm from bottom,
@@ -445,6 +471,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     fhPtMCElectron = new TH2F("hPtMCElectron","MC electrons from various sources w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
 
     outputContainer->Add(fhMCBJetElePt);
+    outputContainer->Add(fhMCBHadronElePt);
     outputContainer->Add(fhPtMCHadron);
     outputContainer->Add(fhPtMCElectron);
 
@@ -598,8 +625,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     Double_t tpcpid[AliPID::kSPECIES];
     esdTrack.GetTPCpid(tpcpid);
     Double_t eProb = tpcpid[AliPID::kElectron];
-    printf("<%d> ESD eProb = %2.2f\n",itrk,eProb);
-
+    if(eProb > 0) printf("<%d> ESD eProb = %2.2f\n",itrk,eProb);
 
     AliAODPid* pid = (AliAODPid*) track->GetDetPid();
     if(pid == 0) {
@@ -701,12 +727,20 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	    
 	    Double_t energy = clus->E(); 
 	    if(energy > 0) pOverE = tmom/energy;
-	    fh1pOverE->Fill(pOverE);
-	    fh1EOverp->Fill(energy/tmom);
-	    
 	    Int_t mult = clus->GetNCells();
 	    if(mult < 2 &&  GetDebug() > 0) printf("Single digit cluster.\n");
 	    
+	    fh3pOverE->Fill(track->Pt(),pOverE ,mult);
+            fh3EOverp->Fill(track->Pt(),energy/tmom ,mult);
+            if (trkEle) {
+              fh3pOverE2->Fill(track->Pt(),pOverE,mult);
+              fh3EOverp2->Fill(track->Pt(),energy/tmom,mult);
+            }
+            if (tpcEle) {
+              fh3pOverE3->Fill(track->Pt(),pOverE,mult);
+              fh3EOverp3->Fill(track->Pt(),energy/tmom,mult);
+            }
+
 	    //////////////////////////////
 	    //Electron cuts happen here!//
 	    //////////////////////////////
@@ -869,13 +903,19 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	//determine tagging efficiency & mis-tagging rate
 	//using b-quarks from stack
 	Bool_t isTrueBjet = IsMcBJet(jet->Eta(), jet->Phi() ,stack);
+	Bool_t isTrueDjet = IsMcDJet(jet->Eta(), jet->Phi() ,stack);
 	if (isTrueBjet && GetDebug() > 0) printf("== True Bjet==\n");
+	if (isTrueDjet && GetDebug() > 0) printf("== True Charm-jet==\n");
 	if (dvmJet && GetDebug() > 0)     printf("== found DVM jet==\n");
 
 	if(isTrueBjet && dvmJet) fhDVMJet->Fill(0.,jet->Pt()); // good tagged
 	if(isTrueBjet && !dvmJet) fhDVMJet->Fill(1.,jet->Pt()); // missed tagged
 	if(!isTrueBjet && dvmJet) fhDVMJet->Fill(2.,jet->Pt());  // fake tagged
 	if(!isTrueBjet && !dvmJet) fhDVMJet->Fill(3.,jet->Pt());  // others
+        if(isTrueDjet && !isTrueBjet &&   dvmJet) fhDVMJet->Fill(4.,jet->Pt()); // charm-tagged
+        if(isTrueDjet && !isTrueBjet &&  !dvmJet) fhDVMJet->Fill(5.,jet->Pt()); // charm -not tagged
+        if(!(isTrueDjet||isTrueBjet ) &&  dvmJet) fhDVMJet->Fill(6.,jet->Pt()); // light flavor -tagged
+        if(!(isTrueDjet||isTrueBjet ) && !dvmJet) fhDVMJet->Fill(7.,jet->Pt()); // light flavor -not tagged
 
 	if(isTrueBjet) {
 	  if(trackCounter[1]>0) fhBJetPt1x4->Fill(jet->Pt());
@@ -958,8 +998,24 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     //with Minv near a relevant resonance
     if(!photonic) {
       fhPtNPEleTTE->Fill(ptele,0); //0 = no MC info
-      if(IsDataMC()) fhPtNPEleTTE->Fill(ptele,GetMCSource(mctag));
-    }
+      if(IsDataMC()) {
+	fhPtNPEleTTE->Fill(ptele,GetMCSource(mctag));
+	if(GetMCSource(mctag) == 1) {
+	  if(GetReader()->ReadStack()) { //only done if we have the stack
+	    TParticle* prim = stack->Particle(ele->GetLabel());
+	    if(prim->GetMother(0)>=0) {
+	      Int_t mpdg = 0;
+	      TParticle *parent = stack->Particle(prim->GetMother(0));
+	      if(parent) mpdg = parent->GetPdgCode();
+	      
+	      if ((TMath::Abs(mpdg) >500  && TMath::Abs(mpdg) <600 ) ||
+		  (TMath::Abs(mpdg) >5000 && TMath::Abs(mpdg) <6000 ) )
+		fhPtNPEBHadron->Fill(ptele,parent->Pt());
+	    } //mother
+	  } //stack
+	} //mctag
+      } //isdatamc
+    } //!photonic
 
     //kept for historical reasons?
     fhPtElectron  ->Fill(ptele);
@@ -1047,6 +1103,18 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	      fhMCBJetElePt->Fill(primary->Pt(),bjetVect[ij].Pt());
 	    }
 	  }
+	}
+
+	if(primary->GetMother(0)>=0) {
+	  Int_t mpdg = 0;
+	  TParticle *parent = stack->Particle(primary->GetMother(0));
+	  if (parent) mpdg = parent->GetPdgCode();
+	  
+	  if ((TMath::Abs(mpdg) >500  && TMath::Abs(mpdg) <600 ) ||
+	      (TMath::Abs(mpdg) >5000 && TMath::Abs(mpdg) <6000 ) )
+	    {
+	      fhMCBHadronElePt->Fill(primary->Pt(), parent->Pt()); 
+	    }
 	}
 
 	fhPtMCElectron->Fill(primary->Pt(),0);  //0 = unfiltered
@@ -1358,6 +1426,11 @@ Bool_t AliAnaElectron::PhotonicPrim(const AliAODPWG4Particle* part)
   Bool_t itIS = kFALSE;
 
   Double_t massE = 0.000511;
+  Double_t massEta = 0.547;
+  Double_t massRho0 = 0.770;
+  Double_t massOmega = 0.782;
+  Double_t massPhi = 1.020;
+
   Double_t bfield = 5.; //kG
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
 
@@ -1412,14 +1485,20 @@ Bool_t AliAnaElectron::PhotonicPrim(const AliAODPWG4Particle* part)
     fh1OpeningAngle->Fill(dphi);
     fh1MinvPhoton->Fill(mass);
 
-    if(mass < 0.1) {
-      if(GetDebug() > 0) printf("######PROBABLY A PHOTON\n");
-      itIS = kTRUE;
-    }
-
+    if(mass < 0.1 ||
+       (mass > massEta-0.05 || mass < massEta+0.05) ||
+       (mass > massRho0-0.05 || mass < massRho0+0.05) ||
+       (mass > massOmega-0.05 || mass < massOmega+0.05) ||
+       (mass > massPhi-0.05 || mass < massPhi+0.05)) 
+      {
+      
+	if(GetDebug() > 0) printf("######PROBABLY A PHOTON\n");
+	itIS = kTRUE;
+      }
+    
     //clean up
     delete param2;
-
+    
   }
 
   delete param1;
@@ -1435,6 +1514,12 @@ Bool_t AliAnaElectron::PhotonicV0(Int_t id)
   //invariant mass consistent with photon conversion
 
   Bool_t itIS = kFALSE;
+
+  Double_t massE = 0.000511;
+  Double_t massEta = 0.547;
+  Double_t massRho0 = 0.770;
+  Double_t massOmega = 0.782;
+  Double_t massPhi = 1.020;
   
   //---Get V0s---
   AliAODEvent *aod = (AliAODEvent*) GetReader()->GetInputEvent();
@@ -1449,7 +1534,11 @@ Bool_t AliAnaElectron::PhotonicV0(Int_t id)
       printf("## PhotonicV0() :: neg-id: %d, pos-id: %d, THIS id: %d\n", v0->GetNegID(), v0->GetPosID(), id);
       printf("## PhotonicV0() :: Minv(e,e): %f \n", v0->InvMass2Prongs(0,1,11,11) );
     }
-    if (mass < 0.100) {
+    if (mass < 0.100 ||
+	(mass > massEta-0.05 || mass < massEta+0.05) ||
+	(mass > massRho0-0.05 || mass < massRho0+0.05) ||
+	(mass > massOmega-0.05 || mass < massOmega+0.05) ||
+	(mass > massPhi-0.05 || mass < massPhi+0.05)) {
       if ( id == v0->GetNegID() || id == v0->GetPosID()) {
 	itIS=kTRUE;
 	if(GetDebug() > 0) printf("## PhotonicV0() :: It's a conversion electron!!! \n" );
@@ -1590,6 +1679,36 @@ Bool_t  AliAnaElectron::IsMcBJet(Double_t eta, Double_t phi, AliStack* stack)
 }
 
 //__________________________________________________________________
+Bool_t  AliAnaElectron::IsMcDJet(Double_t eta, Double_t phi, AliStack* stack)
+{
+
+  Bool_t cjet=kFALSE;
+
+  if(IsDataMC()) {
+
+    for(Int_t ipart = 0; ipart < 100; ipart++) {
+
+      TParticle* primary = stack->Particle(ipart);
+      if (!primary) continue;
+      Int_t pdgcode = primary->GetPdgCode();
+      if ( TMath::Abs(pdgcode) != 4) continue;
+
+      Double_t dphi = phi - primary->Phi();
+      Double_t deta = eta - primary->Eta();
+      Double_t dr = sqrt(deta*deta + dphi*dphi);
+
+      if (dr < 0.2) {
+	cjet=kTRUE;
+	break;
+      }
+    }
+  }//mc
+
+  return cjet;
+
+}
+
+//__________________________________________________________________
 void AliAnaElectron::Print(const Option_t * opt) const
 {
   //Print some relevant parameters set for the analysis
@@ -1631,10 +1750,10 @@ void AliAnaElectron::ReadHistograms(TList* outputList)
 
   //Read histograms, must be in the same order as in
   //GetCreateOutputObject.                   
-  fh1pOverE     = (TH1F *) outputList->At(index);
-  fh1dR         = (TH1F *) outputList->At(index++);
-  fh2EledEdx    = (TH2F *) outputList->At(index++);
-  fh2MatchdEdx  = (TH2F *) outputList->At(index++);
+  //fh1pOverE     = (TH1F *) outputList->At(index);
+  //fh1dR         = (TH1F *) outputList->At(index++);
+  //fh2EledEdx    = (TH2F *) outputList->At(index++);
+  //fh2MatchdEdx  = (TH2F *) outputList->At(index++);
   
 }
 

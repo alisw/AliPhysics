@@ -56,6 +56,7 @@ public:
   //used with the jet tracks to tag bjets
   Bool_t CheckTrack(const AliAODTrack* track,const char* type);  
   Bool_t IsMcBJet(Double_t x, Double_t y, AliStack* st);
+  Bool_t IsMcDJet(Double_t x, Double_t y, AliStack* st);
 
   void Print(const Option_t * opt)const;
   
@@ -146,8 +147,13 @@ public:
   TH1F * fhRefMult2;    //! refmult2 (tracks with |eta| < 0.5 & impXY,impZ < 1.0)
 
   //matching checks   
-  TH1F *fh1pOverE;     //! p/E for track-cluster matches
-  TH1F *fh1EOverp;     //! E/p for track-cluster matches (For PMJ)
+  TH3F *fh3pOverE;     //! p/E for track-cluster matches vs pt vs mult
+  TH3F *fh3EOverp;     //! E/p for track-cluster matches vs pt vs mult
+  TH3F *fh3pOverE2;     //! p/E for track-cluster matches vs pt vs mult
+  TH3F *fh3EOverp2;     //! E/p for track-cluster matches vs pt vs mult
+  TH3F *fh3pOverE3;     //! p/E for track-cluster matches vs pt vs mult
+  TH3F *fh3EOverp3;     //! E/p for track-cluster matches vs pt vs mult
+
   TH1F *fh1dR;         //! distance between projected track and cluster
   TH2F *fh2EledEdx;    //! dE/dx vs. momentum for electron candidates
   TH2F *fh2MatchdEdx;  //! dE/dx vs. momentum for all matches
@@ -221,6 +227,9 @@ public:
 			   //!electrons using pid info from TPC+TRD+EMCAL
 			   //!in EMCAL acceptance
 
+  TH2F* fhPtNPEBHadron;    //!correlate our best reconstructed
+			   //b-electrons with the b-hadron momentum
+
   //For computing efficiency of IPSIG tag
   //these require that an MC b-Ancestor is present in the jet
   TH1F * fhBJetPt1x4;    //! IPSig B-tagging : result for (1 track, ipSignif>4)
@@ -235,10 +244,11 @@ public:
   TNtuple *fMCEleNtuple; //! Ntuple of MC electrons
 
   TH2F* fhMCBJetElePt;   //! Pt of B-Jet vs pt of electron
+  TH2F* fhMCBHadronElePt;   //! Pt of B-hadrons vs pt of electron
   TH1F* fhPtMCHadron;    //! Pt distribution of MC charged hadrons (pi,k,p) in EMCAL acceptance
   TH2F* fhPtMCElectron;  //! Pt distribution of MC electrons from various sources in EMCAL
 
-  ClassDef(AliAnaElectron,8)
+  ClassDef(AliAnaElectron,9)
 
 } ;
  
