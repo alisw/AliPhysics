@@ -19,7 +19,10 @@
 
 class AliHLTTPCConfMapper;
 class TNtuple;
+class TH1F;
+class TProfile;
 class AliHLTTPCTrackArray;
+class AliHLTTPCTrack;
 
 /**
  * @class AliHLTTPCTrackHistoComponent
@@ -77,6 +80,8 @@ public:
   /** interface function, see AliHLTComponent for description */
   AliHLTComponentDataType GetOutputDataType();
   /** interface function, see AliHLTComponent for description */
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
+  /** interface function, see AliHLTComponent for description */
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   /** interface function, see AliHLTComponent for description */
   AliHLTComponent* Spawn();
@@ -112,12 +117,27 @@ private:
 
   void PushHisto();
   void FillResidual( UInt_t pos,AliHLTUInt8_t slice,AliHLTUInt8_t patch,Float_t& resy,Float_t& resz);
+
+  Double_t GetTrackLength(AliHLTTPCTrack *hltTrack);
  
   AliHLTUInt8_t fMinSlice;     //! transient
   AliHLTUInt8_t fMaxSlice;     //! transient
   AliHLTUInt8_t fMinPartition; //! transient
   AliHLTUInt8_t fMaxPartition; //! transient
- 
+
+  Int_t fNEvents;    //! transient
+  Int_t fNtotTracks; //! transient
+
+  Int_t fNEvtMod; //! number of events reached to reset the counter
+  //  Bool_t fReset;  //! Reset track counter every certain events
+
+  TH1F *fMeanMultiplicity; //! transient (mean multiplicity for every 20 evts vs. #evt by Z.Y.)
+  TH1F *fMultiplicity;     //! transient (track multiplicity by Z.Y.)
+     
+  // TH2F *fNClusterVsXY;   //! transient (#Clusters vs. x, y positions, by ZY)
+  // TH2F *fChargeVsXY;     //! transient (Charge distr. vs. x, y added by ZY)
+  TProfile *fDeDxVsP;    //! transient (dEdX vs. p)
+
   TNtuple *fClusters;                             //! transient  
   TNtuple *fTracks;                               //! transient
 
@@ -127,7 +147,7 @@ private:
   AliHLTTPCSpacePointData *fClustersArray[36][6]; //! transient
   UInt_t                   fNSpacePoints[36][6];  //! transient
 
-  ClassDef(AliHLTTPCTrackHistoComponent, 1);
+  ClassDef(AliHLTTPCTrackHistoComponent, 2);
 
 };
 #endif
