@@ -55,7 +55,7 @@ class AliAnalysisTaskSEBkgLikeSignD0 : public AliAnalysisTaskSE
   TH1F    *fHistDCAD0;             //! Distance of closest approach
   TH1F    *fHistDCALS;             //! like-sign
   AliAnalysisVertexingHF *fVHF;    // Vertexer heavy flavour (used to pass the cuts)
-
+  TH1F *fNentries;                 //! histogram with number of events
   Int_t fTotPosPairs;              //
   Int_t fTotNegPairs;              // normalization
   Double_t fLsNormalization;       //
