@@ -1,0 +1,14 @@
+#!/bin/bash
+if [ $# -ne 1 ]; then
+  echo one file neede das input!
+  exit 1
+fi
+if [ "x$SCRIPTDIR" == "x" ]; then
+  echo
+  echo please run:
+  echo export SCRIPTDIR=whatever_is_your_path
+  echo
+  exit 1
+fi
+source $SCRIPTDIR/guiEnv.sh
+root.exe $SCRIPTDIR/loadlibsREC.C $SCRIPTDIR/startGUI.C\(\"$1\"\)

@@ -1,0 +1,97 @@
+----------
+Quickstart
+-----------
+Without thinking, you can do the follwoing to create a tree with calibration entries.
+The default settings should work, however you might want to change them for 'better' performance.
+
+Do the following:
+1. Setup environment
+   a. gui dependend variables
+
+export SCRIPTDIR=$ALICE_ROOT/TPC/scripts
+export PATH=$SCRIPTDIR:$PATH
+
+   b. Alien
+
+alien-token-init
+source /tmp/gclient_env_${UID}
+or 
+$ALICE_ROOT/TPC/CalibMacros/alienSetupGSI.sh (GSI specific)
+
+2. Run tree creation
+   a. Run on a list of run numbers with name 'list.txt', one run number per line
+
+makeCalibTree -l list.txt
+
+   b. Run on a range of run numbers:
+
+makeCalibTree -r 75000-80000
+
+
+myrun=70000
+endrun=90000
+bdir=`pwd`
+while [ $myrun -le ${endrun} ]  ; do
+       mydir=$GUI_OUTDIR/tmp/$myrun;
+       mkdirhier $mydir
+       cd $mydir;
+       $BATCHCOMMAND -oo $GUI_OUTDIR/logs/log$myrun.log -eo $GUI_OUTDIR/logs/err$myrun.out  makeCalibTree  -o   -r $myrun-$(($myrun+500));
+       myrun=$(( $myrun +500 )) ;
+       echo $myrun; 
+done;
+cd $bdir
+
+   c. Run automatic tree creation for all runs in the
+      data taking period which was set up (see below)
+      !!!WARNING!!! this will take quite some time
+
+makeCalibTree -a
+
+3. Start the GUI browser
+
+guiTime
+
+
+-------------------
+General information
+-------------------
+The macros and shell scripts used are stored in $ALICE_ROOT/TPC/CalibMacros/guiTime
+If you would like to modify some setting (see below), but do not have write access to this
+directory, you can copy the complete directory somewhere else and setup the environment
+variables accordingly:
+
+export SCRIPTDIR=path_to_my_directory
+export PATH=$SCRIPTDIR:$PATH
+
+- setup scripts
+All user relevant setup is done the shell script 'guiEnv' and the root macro 'ConfigOCDB.C'
+All other files don't need to be modified by the user.
+
+- scripts for the tree creation:
+makeCalibTree:        Steering script to launch the tree creation
+makeCalibTreeList:    script running the actual root process to create the tree
+
+- scripts to start the gui:
+gui 'filename':       Start the CalibViewerGUI using the tree in file 'filename'. Invokes the script
+                      startGUI.C
+guiTime ['filename']: Start the CalibViewerGUItime. Optionally a filename containing the calibration
+                      calibration tree can be specified. Otherwise the trees from the directory setup
+                      in guiEnv will be used (see below). Invokes the script startGUItime.C
+
+-oter scripts:
+loadlibsREC.C:        Root macro to load only libraries needed to start the gui and tree creation.
+
+
+----------------
+Customised setup
+----------------
+
+- Defining the OCDB directories (ConfigOCDB.C):
+Before starting the tree creation or gui the macro 'ConfigOCDB.C' is exectued. This macro should contain
+all the setup needed to point to the proper OCDB directories. If alien is used, alien needs also to be
+setup in the macro. Open the macro for examples.
+
+- General output information (guiEnv):
+In the 'guiEnv' script environment variables defining default output directories etc. See comments in the
+file for explanations.
+
