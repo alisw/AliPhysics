@@ -39,7 +39,7 @@ void alieve_online_init()
 
   TEveUtil::AssertMacro("VizDB_scan.C");
 
-  TEveBrowser         *browser = gEve->GetBrowser();
+  TEveBrowser *browser = gEve->GetBrowser();
   browser->ShowCloseTab(kFALSE);
 
   // Gentle-geom loading changes gGeoManager.
@@ -59,6 +59,17 @@ void alieve_online_init()
   browser->StartEmbedding(TRootBrowser::kBottom);
   new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
   browser->StopEmbedding("EventCtrl");
+
+  browser->MoveResize(0, 0, gClient->GetDisplayWidth(),
+		      gClient->GetDisplayHeight() - 32);
+
+  gEve->GetViewers()->SwitchColorSet();
+
+  TString autoRun(gSystem->Getenv("ONLINERECO_AUTORUN"));
+  if (autoRun == "1" || autoRun.CompareTo("true", TString::kIgnoreCase) == 0)
+  {
+    AliEveEventManager::GetMaster()->SetAutoLoad(kTRUE);
+  }
 
   gEve->Redraw3D(kTRUE);
 }
