@@ -28,42 +28,17 @@ class  AliHLTEMCALRawAnalyzerComponent : public AliHLTCaloRawAnalyzerComponentv3
  public:
   AliHLTEMCALRawAnalyzerComponent();
   virtual ~AliHLTEMCALRawAnalyzerComponent();
-  //  virtual int DoInit(int argc =0, const char** argv  = 0);
-  // virtual int Deinit() {} ;
-  //  virtual const char* GetComponentID() = 0;
   virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
-
   virtual const char* GetComponentID() = 0;
-  /** interface function, see @ref AliHLTComponent for description */
-  
-  //  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
-  //  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
- 
- /** interface function, see @ref AliHLTComponent for description */
-  //  virtual AliHLTComponentDataType GetOutputDataType();
-
-  /** interface function, see @ref AliHLTComponent for description */
- 
-  //  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
-
-  /** interface function, see @ref AliHLTComponent for description */
   virtual AliHLTComponent* Spawn() = 0; 
 
  protected:
-  // virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype) = 0;
   virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype);
-  
-
+ 
  private:
   AliHLTEMCALRawAnalyzerComponent(const AliHLTEMCALRawAnalyzerComponent & );
-
-  /** Keep the assignement operator private since it should not be used */
   AliHLTEMCALRawAnalyzerComponent & operator = (const AliHLTEMCALRawAnalyzerComponent  &);
-
-  virtual void InitMapping();
-
-  //  AliHLTCaloMapper *fMapperPtr;
-
+  virtual void InitMapping( const int specification );
 };
 
 #endif

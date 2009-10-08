@@ -25,6 +25,7 @@ AliHLTEMCALRawAnalyzerCrudeComponent::AliHLTEMCALRawAnalyzerCrudeComponent()
   fAnalyzerPtr = new   AliHLTCaloRawAnalyzerCrude();
 }
 
+
 AliHLTEMCALRawAnalyzerCrudeComponent::~AliHLTEMCALRawAnalyzerCrudeComponent()
 {
 
@@ -36,6 +37,7 @@ AliHLTEMCALRawAnalyzerCrudeComponent::GetComponentID()
 {
   return "CaloRawCrude";
 }
+
 
 AliHLTComponent* 
 AliHLTEMCALRawAnalyzerCrudeComponent::Spawn()

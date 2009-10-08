@@ -44,7 +44,6 @@ AliHLTEMCALRawAnalyzerComponent::GetInputDataTypes( vector <AliHLTComponentDataT
 }
 
 
-
 bool 
 AliHLTEMCALRawAnalyzerComponent::CheckInputDataType(const AliHLTComponentDataType &datatype)
 {
@@ -59,9 +58,18 @@ AliHLTEMCALRawAnalyzerComponent::CheckInputDataType(const AliHLTComponentDataTyp
 }
 
 
- 
 void 
-AliHLTEMCALRawAnalyzerComponent::InitMapping()
+AliHLTEMCALRawAnalyzerComponent::InitMapping( const int specification )
 {
-  fMapperPtr =  new   AliHLTEMCALMapper();
+
+  if ( fMapperPtr == 0 )
+    {
+      fMapperPtr =  new   AliHLTEMCALMapper( specification );
+    }
+
+  if(fMapperPtr->GetIsInitializedMapping() == false )
+    {
+      HLTError("%d:%d, ERROR, mapping not initialized ", __FILE__, __LINE__ );
+      exit(-2);
+    }
 }

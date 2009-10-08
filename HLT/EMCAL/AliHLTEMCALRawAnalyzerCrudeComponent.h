@@ -32,6 +32,11 @@ class  AliHLTEMCALRawAnalyzerCrudeComponent : public AliHLTEMCALRawAnalyzerCompo
  private:
   AliHLTEMCALRawAnalyzerCrudeComponent( const AliHLTEMCALRawAnalyzerCrudeComponent  & );
   AliHLTEMCALRawAnalyzerCrudeComponent & operator = (const AliHLTEMCALRawAnalyzerCrudeComponent  &);
+  
+  // bool TestBoolConst() { return false; };
+  bool TestBool()  {return  false; };
+
+    
 
 };
 

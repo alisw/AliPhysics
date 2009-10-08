@@ -133,7 +133,13 @@ Int_t
 AliHLTEMCALOnlineDisplayEventTab::GetRawData(TH1D *histPtr, int x, int z, int gain)
 {
   
-  int tmpModID = x/64;
+  //  int tmpModID = x/64;
+  
+  int tmpModID = (x*z)/(NZROWSMOD*NXCOLUMNSMOD);
+
+  // const int NZROWSMOD      =  48;            /**<Number of rows per module*/       
+  //  const int NXCOLUMNSMOD   =  24;     
+  //int tmpModID = x/64;
 
   /* 
      int tmpRcuZ = z/32;
@@ -141,6 +147,8 @@ AliHLTEMCALOnlineDisplayEventTab::GetRawData(TH1D *histPtr, int x, int z, int ga
      int tmpZ = z%28;
      int tmpX = x%32;
   */
+
+  cout << __FILE__ << __LINE__ <<": Getting raw data for mod =" << tmpModID << ", z="<< z << ",x=" << x << endl;
 
   for(  int i=0;  i <  fNChannelSamples[tmpModID][z][x][gain] ; i++)
     {
@@ -242,9 +250,9 @@ AliHLTEMCALOnlineDisplayEventTab::FillRawData(const AliHLTCaloChannelRawDataStru
 
   for(int i=0; i <  rawStr.nSamplesUsed; i++ )
     {
-      //     cout <<  "i = "  << i << endl;
-      //  fChannelData[ rawStr.fCoordinate.fModuleId ][ rawStr.fCoordinate.fZ ]  [ rawStr.fCoordinate.fX ][ rawStr.fCoordinate.fGain ][i] =  rawStr.fDataPtr[i];  
-      fChannelData[ rawStr.fCoordinate.fModuleId ][   rawStr.fCoordinate.fX ]  [ rawStr.fCoordinate.fZ ][ rawStr.fCoordinate.fGain ][i] =  rawStr.fDataPtr[i];  
+      //   cout <<  "i = "  << i << endl;
+      fChannelData[ rawStr.fCoordinate.fModuleId ][ rawStr.fCoordinate.fZ ]  [ rawStr.fCoordinate.fX ][ rawStr.fCoordinate.fGain ][i] =  rawStr.fDataPtr[i];  
+      //      fChannelData[ rawStr.fCoordinate.fModuleId ][   rawStr.fCoordinate.fX ]  [ rawStr.fCoordinate.fZ ][ rawStr.fCoordinate.fGain ][i] =  rawStr.fDataPtr[i];  
     }
 
 

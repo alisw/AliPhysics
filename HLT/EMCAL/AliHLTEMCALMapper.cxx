@@ -23,12 +23,14 @@ using namespace EmcalHLTConst;
 
 //AliHLTCaloMapper
 
-AliHLTEMCALMapper::AliHLTEMCALMapper()
+
+AliHLTEMCALMapper::AliHLTEMCALMapper(const unsigned long specification ) : AliHLTCaloMapper(specification) 
 {
-  InitAltroMapping();
+  InitAltroMapping(specification);
   InitDDLSpecificationMapping();
   fIsInitializedMapping = true; //CRAP PTH, must check is the initilization actually went ok
 }
+
 
 AliHLTEMCALMapper::~AliHLTEMCALMapper()
 {
@@ -36,16 +38,13 @@ AliHLTEMCALMapper::~AliHLTEMCALMapper()
 }
 
 
-
 void 
-AliHLTEMCALMapper::InitAltroMapping()
+AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 {
-   // Loads mapping between Altro addresses and geometrical addresses from file
-  //  char filename[256];
   char *base =  getenv("ALICE_ROOT");
-  int nChannels = 0;
-  int maxaddr = 0;
-  int tmpHwaddr = 0;
+  int  nChannels = 0;
+  int  maxaddr = 0;
+  int  tmpHwaddr = 0;
   int tmpZRow = 0;
   int tmpXCol = 0;
   int tmpGain = 0;
@@ -53,12 +52,14 @@ AliHLTEMCALMapper::InitAltroMapping()
   
   if(base !=0)
     {
-      sprintf(fFilepath,"%s/PHOS/mapping/RCU0.data", base);
+      sprintf(fFilepath, "%s/EMCAL/mapping/%s", base,   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
+      cout << __FILE__ <<":"<< __LINE__ <<"mapping filename is " <<  fFilepath << endl;
+	// sprintf(fFilepath,"%s/PHOS/mapping/RCU0.data", base);
       FILE *fp = fopen(fFilepath, "r");
       if(fp != 0)
 	{
-	  res = fscanf(fp, "%d", &nChannels);
-	  res = fscanf(fp, "%d", &maxaddr);
+	  res = fscanf(fp, "%d\n", &nChannels);
+	  res = fscanf(fp, "%d\n", &maxaddr);
 	  fHw2geomapPtr = new fAltromap[maxaddr +1]; 
 
 	  for(int i=0; i< maxaddr + 1 ; i ++)
@@ -70,11 +71,14 @@ AliHLTEMCALMapper::InitAltroMapping()
 	  for(int i=0; i<nChannels; i ++)
 	    {
 	      res = fscanf(fp, "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
+	      
+	      //	      cout << __FILE__ << __LINE__ << "  tmpHwaddr  = " << tmpHwaddr << ", tmpXCol = " << (int)tmpXCol <<  ", tmpZRow = "<< (int)tmpZRow <<  ", tmpGain= "<< (int)tmpGain << endl;
+	      
 	      if(tmpGain < 2)
 		{
-		  fHw2geomapPtr[tmpHwaddr].fXCol   = tmpXCol;
-		  fHw2geomapPtr[tmpHwaddr].fZRow   = tmpZRow;
-		  fHw2geomapPtr[tmpHwaddr].fGain  = tmpGain;
+		  fHw2geomapPtr[tmpHwaddr].fXCol   = (char)tmpXCol;
+		  fHw2geomapPtr[tmpHwaddr].fZRow   = (char)tmpZRow;
+		  fHw2geomapPtr[tmpHwaddr].fGain  =  (char)tmpGain;
 		} 
 	    }
 	  fIsInitializedMapping = true;	  
@@ -82,15 +86,14 @@ AliHLTEMCALMapper::InitAltroMapping()
 	}
       else
 	{
-	  fIsInitializedMapping = false;	  
+	  cout << __FUNCTION__ << ":"<<__FILE__<<":"<< __LINE__ << "ERROR, could not open mapping file %s" <<  fFilepath << endl;
+      	  fIsInitializedMapping = false;	  
 	}
     }
   else
     {
       fIsInitializedMapping = false;
     }
-
-
 }
 
 
@@ -101,89 +104,69 @@ AliHLTEMCALMapper::InitDDLSpecificationMapping()
   
   for(Int_t ddl = 0; ddl < EmcalHLTConst::NMODULES*EmcalHLTConst::NRCUSPERMODULE; ddl++)
     {
-      
       fSpecificationMapPtr[ddl].fModId = ddl/EmcalHLTConst::NRCUSPERMODULE;
-      
-      if(ddl%4 == 0)
-	{
-	  fSpecificationMapPtr[ddl].fRcuX = 0; 
-	  fSpecificationMapPtr[ddl].fRcuZ = 0;
-	}
-      
-      else if(ddl%4 == 1)
-	{
-	  fSpecificationMapPtr[ddl].fRcuX = 1; 
-	  fSpecificationMapPtr[ddl].fRcuZ = 0;
-	}
-      
-      else if( ddl%4 == 2)
-	{
-	  fSpecificationMapPtr[ddl].fRcuX = 2; 
-	  fSpecificationMapPtr[ddl].fRcuZ = 0;
-	}
-      else
-	{
-	  fSpecificationMapPtr[ddl].fRcuX = 3; 
-	  fSpecificationMapPtr[ddl].fRcuZ = 0;
-	}
-      
-      fSpecificationMapPtr[ddl].fRcuZOffset = NZROWSRCU*(fSpecificationMapPtr[ddl].fRcuZ);
-      fSpecificationMapPtr[ddl].fRcuXOffset = NXCOLUMNSRCU*(fSpecificationMapPtr[ddl].fRcuX);
+      fSpecificationMapPtr[ddl].fRcuX = 0; 
+      fSpecificationMapPtr[ddl].fRcuZ = ddl%2; 
+      //      fSpecificationMapPtr[ddl].fRcuZOffset = NZROWSRCU*(fSpecificationMapPtr[ddl].fRcuZ);
+      //      fSpecificationMapPtr[ddl].fRcuXOffset = NXCOLUMNSRCU*(fSpecificationMapPtr[ddl].fRcuX);
     }
 }
 
 
-const  int  
-AliHLTEMCALMapper::GetDDLFromSpec( const AliHLTUInt32_t specification )
+
+//RCU1C.data
+
+
+const char* 
+AliHLTEMCALMapper::DDL2RcuMapFileName(const int ddlIndex) const //0=4608, 1=4607 etc...
 {
-  Int_t index = -1;
-  if(specification == 0x00001) index = 0;
-  else if(specification == 0x00002) index = 1;
-  else if(specification == 0x00004) index = 2;
-  else if(specification == 0x00008) index = 3;
-
-  else if(specification == 0x00010) index = 4;
-  else if(specification == 0x00020) index = 5;
-  else if(specification == 0x00040) index = 6;
-  else if(specification == 0x00080) index = 7;
-
-  else if(specification == 0x00100) index = 8;
-  else if(specification == 0x00200) index = 9;
-  else if(specification == 0x00400) index = 10;
-  else if(specification == 0x00800) index = 11;
-
-  else if(specification == 0x01000) index = 12;
-  else if(specification == 0x02000) index = 13;
-  else if(specification == 0x04000) index = 14;
-  else if(specification == 0x08000) index = 15;
-
-  else if(specification == 0x10000) index = 16;
-  else if(specification == 0x20000) index = 17;
-  else if(specification == 0x40000) index = 18;
-  else if(specification == 0x80000) index = 19;
-
-  else HLTError("Specification 0x%X not consistent with single DDL in PHOS", specification);
-
-  return index;
-}
-
-
-const  int 
-AliHLTEMCALMapper::GetChannelID(const AliHLTUInt32_t specification, const Int_t hwAddress )
-{
-  //Short_t index = 0;
-
-  Short_t index = GetDDLFromSpec( specification);
-
-  if(index < 0)
-    {
-      HLTError("Specification 0x%X not consistent with single DDL in PHOS", specification);
-    }
-
-  //  else HLTError("Specification 0x%X not consistent with single DDL in PHOS", specification);
+  static char rname[256];
+  char tmpSide;
   
-  return ((fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[index].fRcuXOffset) |
-	  ((fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[index].fRcuZOffset) << 6) |
-	  (fHw2geomapPtr[hwAddress].fGain << 12) |
-	  fSpecificationMapPtr[index].fModId << 13);
+  if ( ddlIndex%NRCUSPERSECTOR <2)
+    {
+      tmpSide  = 'A';
+    }
+  else
+    {
+      tmpSide  = 'C';
+    }
+  
+  sprintf(rname,"RCU%d%c.data", ddlIndex/NRCUSPERSECTOR, tmpSide );
+  return rname;
+  // rname.fSector = ddlIndex/NRCUSPERSECTOR;
 }
+ 
+
+/*
+unsigned long 
+AliHLTEMCALMapper::GetSpecFromDDLIndex( const int ddlindex )
+{
+  return ( (unsigned long)1  <<  ddlindex ));
+}
+*/
+
+/*
+AliHLTEMCALMapper::GlobalX2ModuleId( const int globalX )
+{
+  return globalX/NXCOLUMNSMOD;  
+}
+*/
+
+ /*
+static  const int 
+AliHLTEMCALMapper::GlobalZ2ModuleId( const int globalZ )
+{
+  return globalZ/NZROWSMOD;
+  }
+ */
+
+
+  /*
+ const int 
+ AliHLTEMCALMapper::Global2ModuleId( const int globalZ,  const int globalX )
+{
+  int tmpModX = 
+ 
+}
+  */

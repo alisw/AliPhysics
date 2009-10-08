@@ -20,23 +20,32 @@
  **************************************************************************/
 
 
+//#include  "AliHLTCaloMapper.h"
 #include  "AliHLTCaloMapper.h"
 
 
 class  AliHLTEMCALMapper : public AliHLTCaloMapper
 {
  public:
-  AliHLTEMCALMapper();
+  AliHLTEMCALMapper(  const unsigned long  specifiaction );
   virtual ~AliHLTEMCALMapper();
-  virtual void InitAltroMapping(); 
+  virtual void InitAltroMapping( const unsigned long specification ); 
   virtual void InitDDLSpecificationMapping();
-  const virtual int GetDDLFromSpec( const AliHLTUInt32_t spec );
-  const virtual int GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd);
+  
+  //  static  const int GlobalX2ModuleId(const int globalX);
+  //  static  const int GlobalZ2ModuleId(const int globalZ);
+
+  // static  const int Global2ModuleId( const int globalZ,  const int globalX );
+
+  //  const virtual int GetDDLFromSpec( const AliHLTUInt32_t spec );
+  //  const virtual int GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd);
 
  private:
+  AliHLTEMCALMapper();
   AliHLTEMCALMapper(const AliHLTEMCALMapper & );
   AliHLTEMCALMapper & operator = (const AliHLTEMCALMapper &);
-
+  const char* DDL2RcuMapFileName(const int ddlid) const;
+  
 };
 
 #endif
