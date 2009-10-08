@@ -134,5 +134,9 @@ Bool_t AliAnalysisFilter::IsSelected(char* name)
     //
     // Returns current result for cut with name
     AliAnalysisCuts* cut = (AliAnalysisCuts*) (fCuts->FindObject(name));
-    return (cut->Selected());
+    if (cut) {
+      return (cut->Selected());
+    } else  {
+      return 0;
+    }
 }
