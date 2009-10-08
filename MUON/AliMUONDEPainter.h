@@ -51,6 +51,10 @@ public:
   
   virtual Bool_t IsIncluded() const;
   
+  using AliMUONVPainter::SetResponder;
+  
+  virtual void SetResponder(Int_t depth);
+
 private:
   Int_t fDetElemId; ///< our id
 

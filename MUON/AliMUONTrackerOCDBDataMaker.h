@@ -63,11 +63,15 @@ public:
   virtual Long64_t Merge(TCollection* li);
 
   static AliMUONVStore* CreateHVStore(TMap& hvMap);
-  static AliMUONVStore* SplitQuality(const AliMUONVStore& gains);
 
   static AliMUONVTrackerData* CreateDataPedestals(Int_t runNumber);
   static AliMUONVTrackerData* CreateDataGains(Int_t runNumber);
   static AliMUONVTrackerData* CreateDataCapacitances(Int_t runNumber);
+  
+  static AliMUONVStore* CreateStatusMapStore(Int_t runNumber);
+  static AliMUONVStore* CreateStatusStore(Int_t runNumber);
+
+  static AliMUONVStore* PatchGainStore(AliMUONVStore& gains);
   
 private:
   /// Not implemented

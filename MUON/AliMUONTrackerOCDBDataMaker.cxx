@@ -23,7 +23,10 @@
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
+#include "AliMUONCalibParamNI.h"
 #include "AliMUONCalibrationData.h"
+#include "AliMUONDigitCalibrator.h"
+#include "AliMUONPadStatusMapMaker.h"
 #include "AliMUONTrackerData.h"
 #include "AliMUONVStore.h"
 #include "AliMpConstants.h"
@@ -31,6 +34,8 @@
 #include "AliMpDetElement.h"
 #include "AliMpDEManager.h"
 #include "AliMpDCSNamer.h"
+#include "AliMpManuIterator.h"
+#include "Riostream.h"
 #include <TClass.h>
 #include <TMap.h>
 #include <TObjArray.h>
@@ -86,10 +91,10 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
 	}
 	else if ( stype == "GAINS" ) 
 	{
-		AliMUONVStore* gains = AliMUONCalibrationData::CreateGains(runNumber,&startOfValidity);
+    AliMUONVStore* gains = AliMUONCalibrationData::CreateGains(runNumber,&startOfValidity);
+    store = PatchGainStore(*gains);
+    delete gains;
 		fData = CreateDataGains(startOfValidity);
-		store = SplitQuality(*gains);
-		delete gains;
 	}
 	else if ( stype == "CAPACITANCES" )
 	{
@@ -104,7 +109,20 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
 		store = CreateHVStore(*m);
 		delete m;
 	}
-	
+  else if ( stype == "STATUSMAP" )
+  {
+    fData = new AliMUONTrackerData(Form("STATUSMAP%d",runNumber),"Status map",2,kTRUE);
+    fData->SetDimensionName(0,"Bits");
+    fData->SetDimensionName(1,"Dead");
+    store = CreateStatusMapStore(runNumber);
+  }
+  else if ( stype == "STATUS" )
+  {
+    fData = new AliMUONTrackerData(Form("STATUS%d",runNumber),"Status",1,kTRUE);
+    fData->SetDimensionName(0,"Bits");
+    store = CreateStatusStore(runNumber);
+  }
+
 	AliCDBManager::Instance()->SetDefaultStorage(storage);
 	
 	if (!store)
@@ -149,14 +167,59 @@ AliMUONTrackerOCDBDataMaker::CreateDataGains(Int_t runNumber)
 {
   /// Create data to hold gains values
   
-  AliMUONVTrackerData* data = new AliMUONTrackerData(Form("GAIN%d",runNumber),"Gains",6,kTRUE);
-  data->SetDimensionName(0,"a1");
-  data->SetDimensionName(1,"a2");
-  data->SetDimensionName(2,"thres");
-  data->SetDimensionName(3,"qual1");
-  data->SetDimensionName(4,"qual2");
-  data->SetDimensionName(5,"sat");
+  AliMUONVTrackerData* data = new AliMUONTrackerData(Form("GAIN%d",runNumber),"Gains",7,kTRUE);
+  data->SetDimensionName(0,"gain");
+  data->SetDimensionName(1,"a1");
+  data->SetDimensionName(2,"a2");
+  data->SetDimensionName(3,"thres");
+  data->SetDimensionName(4,"qual1");
+  data->SetDimensionName(5,"qual2");
+  data->SetDimensionName(6,"sat");
   return data;
+}
+
+//_____________________________________________________________________________
+AliMUONVStore*
+AliMUONTrackerOCDBDataMaker::PatchGainStore(AliMUONVStore& gains)
+{
+  /// Polish the gain store : 
+  /// a) adding a dimension, computed from a1, and called gain = 1/a1/0.2 
+  ///     where 0.2 is internal capa in pF, and gain is then in mV/fC
+  /// b) splitting the quality in two
+  
+  AliMUONVStore* store = gains.Create();
+  
+  TIter next(gains.CreateIterator());
+  AliMUONVCalibParam* param;
+  
+  while ( ( param = static_cast<AliMUONVCalibParam*>(next()) ) ) 
+  {
+    AliMUONVCalibParam* nd = new AliMUONCalibParamND(param->Dimension()+2,
+                                                     param->Size(),
+                                                     param->ID0(),
+                                                     param->ID1());
+    for ( Int_t i = 0; i < param->Size(); ++i ) 
+    {
+
+      Int_t qual = param->ValueAsInt(i,3);
+			Int_t q1 = (qual & 0xF0) >> 4;  // linear fit quality
+			Int_t q2 = qual & 0xF;		// parabolic fit quality
+			Double_t gain = 0.0;
+      
+      if ( param->ValueAsFloat(i,0) > 1E-9 ) gain = 1.0/param->ValueAsFloat(i,0)/0.2;
+			
+      nd->SetValueAsDouble(i,0,gain); // gain
+      nd->SetValueAsDouble(i,1,param->ValueAsFloat(i,0)); // a1
+      nd->SetValueAsDouble(i,2,param->ValueAsFloat(i,1)); // a2
+      nd->SetValueAsInt(i,3,param->ValueAsInt(i,2)); // thres
+      nd->SetValueAsInt(i,4,q1); // qual1
+      nd->SetValueAsInt(i,5,q2); // qual2
+      nd->SetValueAsInt(i,6,param->ValueAsInt(i,4)); // sat
+    }
+    store->Add(nd);
+  }
+  
+  return store;
 }
 
 //_____________________________________________________________________________
@@ -169,6 +232,62 @@ AliMUONTrackerOCDBDataMaker::CreateDataPedestals(Int_t runNumber)
   data->SetDimensionName(0,"Mean");
   data->SetDimensionName(1,"Sigma");
   return data;
+}
+
+//_____________________________________________________________________________
+AliMUONVStore*
+AliMUONTrackerOCDBDataMaker::CreateStatusStore(Int_t runNumber)
+{
+  /// Get the status store
+  
+  AliMUONDigitCalibrator calibrator(runNumber);
+  
+  AliMUONVStore* sm = new AliMUON2DMap(kTRUE);
+  
+  AliMpManuIterator it;
+  Int_t detElemId, manuId;
+  
+  while (it.Next(detElemId,manuId))
+  {
+    AliMUONVCalibParam* np = new AliMUONCalibParamNI(1,AliMpConstants::ManuNofChannels(),detElemId,manuId);
+    for ( Int_t i = 0; i < np->Size(); ++i ) 
+    {
+      Int_t value = calibrator.PadStatus(detElemId,manuId,i);
+      np->SetValueAsInt(i,0,value); // "raw" value of the status
+    }
+    sm->Add(np);
+  }
+  
+  return sm;
+}
+
+//_____________________________________________________________________________
+AliMUONVStore*
+AliMUONTrackerOCDBDataMaker::CreateStatusMapStore(Int_t runNumber)
+{
+  /// Get the status map, and polish it a bit for representation purposes
+
+  AliMUONDigitCalibrator calibrator(runNumber);
+  
+  AliMUONVStore* sm = new AliMUON2DMap(kTRUE);
+  
+  AliMpManuIterator it;
+  Int_t detElemId, manuId;
+  
+  while (it.Next(detElemId,manuId))
+  {
+    AliMUONVCalibParam* np = new AliMUONCalibParamNI(2,AliMpConstants::ManuNofChannels(),detElemId,manuId);
+    for ( Int_t i = 0; i < np->Size(); ++i ) 
+    {
+      Int_t value = calibrator.StatusMap(detElemId,manuId,i);
+      Int_t channelIsDead = ( value & AliMUONPadStatusMapMaker::SelfDeadMask() );
+      np->SetValueAsInt(i,0,value); // "raw" value of the status map
+      np->SetValueAsInt(i,1,channelIsDead); // simple 0 or 1 for this channel
+    }
+    sm->Add(np);
+  }
+  
+  return sm;
 }
 
 //_____________________________________________________________________________
@@ -261,43 +380,4 @@ AliMUONTrackerOCDBDataMaker::Merge(TCollection*)
   /// Merge
   AliError("Not implemented. Does it have sense ?");
   return 0;
-}
-
-//_____________________________________________________________________________
-AliMUONVStore*
-AliMUONTrackerOCDBDataMaker::SplitQuality(const AliMUONVStore& gains)
-{
-  /// Create a new store, identical to source gain store, except that qual 
-  /// dimension is "decompacted" in two separated values
-  
-  AliMUONVStore* store = gains.Create();
-  
-  TIter next(gains.CreateIterator());
-  AliMUONVCalibParam* param;
-  
-  while ( ( param = static_cast<AliMUONVCalibParam*>(next()) ) ) 
-  {
-    AliMUONVCalibParam* nd = new AliMUONCalibParamND(param->Dimension()+1,
-                                                      param->Size(),
-                                                      param->ID0(),
-                                                      param->ID1());
-    for ( Int_t i = 0; i < param->Size(); ++i ) 
-    {
-      for ( Int_t k = 0; k < param->Dimension(); ++k ) 
-      {
-        if ( k == 3 ) continue;
-        Int_t m = ( k < 3 ? k : k+1 ) ;
-        nd->SetValueAsDouble(i,m,param->ValueAsFloat(i,k));
-      }
-      Int_t qual = param->ValueAsInt(i,3);
-			
-			Int_t q1 = (qual & 0xF0) >> 4;  // linear fit quality
-			Int_t q2 = qual & 0xF;		// parabolic fit quality
-			
-      nd->SetValueAsInt(i,3,q1);
-      nd->SetValueAsInt(i,4,q2);
-    }
-    store->Add(nd);
-  }
-  return store;
 }

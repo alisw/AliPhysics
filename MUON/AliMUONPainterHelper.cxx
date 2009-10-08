@@ -21,6 +21,7 @@
 #include "AliCodeTimer.h"
 #include "AliLog.h"
 #include "AliMUONContour.h"
+#include "AliMUONContourHandler.h"
 #include "AliMUONContourMaker.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryTransformer.h"
@@ -28,6 +29,7 @@
 #include "AliMUONPainterEnv.h"
 #include "AliMUONPainterMatrix.h"
 #include "AliMUONPainterRegistry.h"
+#include "AliMUONPadStatusMaker.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVTrackerData.h"
@@ -84,48 +86,55 @@ AliMUONPainterHelper* AliMUONPainterHelper::fgInstance(0x0);
 //_____________________________________________________________________________
 AliMUONPainterHelper::AliMUONPainterHelper() : 
 TObject(),
-fExplodedGlobalTransformations(0x0),
-fRealGlobalTransformations(0x0),
 fPainterMatrices(0x0),
 fEnv(0x0),
-fAllContours(20000,1)
+fReal(0x0),
+fExploded(0x0)
 {
-    /// ctor
+  /// ctor
   
-  fAllContours.SetOwnerKeyValue(kTRUE,kTRUE);
+  if ( ! AliMpCDB::LoadMpSegmentation() ) 
+  {
+    AliFatal("Could not access mapping from OCDB !");
+  }
   
-    fExplodeFactor[0] = 1.00;
-    fExplodeFactor[1] = 1.50;
-
-    if ( ! AliMpCDB::LoadMpSegmentation() ) 
-    {
-      AliFatal("Could not access mapping from OCDB !");
-    }
-    
-    // Load DDL store
-    if ( ! AliMpCDB::LoadDDLStore() ) 
-    {
-      AliFatal("Could not access DDL Store from OCDB !");
-    }        
+  // Load DDL store
+  if ( ! AliMpCDB::LoadDDLStore() ) 
+  {
+    AliFatal("Could not access DDL Store from OCDB !");
+  }
+  
+  fExploded = new AliMUONContourHandler(kTRUE);
 }
 
 //_____________________________________________________________________________
 AliMUONPainterHelper::~AliMUONPainterHelper()
 {
   /// dtor
-  delete fExplodedGlobalTransformations;
-  delete fRealGlobalTransformations;
   delete fPainterMatrices;
+  delete fReal;
+  delete fExploded;
   fEnv->Save();
   fgInstance = 0;
 }
 
 //_____________________________________________________________________________
 AliMUONContour*
-AliMUONPainterHelper::GetContour(const char* contourName) const
+AliMUONPainterHelper::GetContour(const char* contourName, Bool_t explodedView) const
 {
   /// Get a contour by name  
-  return static_cast<AliMUONContour*>(fAllContours.GetValue(contourName));
+  if (explodedView) 
+  {
+    return fExploded->GetContour(contourName);
+  }
+  else
+  {
+    if ( fReal ) 
+    {
+      return fReal->GetContour(contourName);
+    }
+  }
+  return 0x0;
 }
 
 //_____________________________________________________________________________
@@ -144,22 +153,10 @@ AliMUONPainterHelper::GenerateDefaultMatrices()
   AliMUONAttPainter att;
   
   att.SetViewPoint(kTRUE,kFALSE);
-  att.SetPlane(kFALSE,kFALSE);
-  att.SetCathode(kTRUE,kFALSE);
-
   att.SetCathode(kFALSE,kFALSE);
   att.SetPlane(kTRUE,kFALSE);
   attributes.Add(new AliMUONAttPainter(att));
 
-// commented the lines below, as it's now fast enough to be created on the fly,
-// only when requested by the user
-//
-//  attributes.Add(new AliMUONAttPainter(att));  
-//  att.SetCathode(kFALSE,kTRUE);
-//  attributes.Add(new AliMUONAttPainter(att));
-//  att.SetPlane(kFALSE,kTRUE);
-//  attributes.Add(new AliMUONAttPainter(att));
-  
   TIter next(&attributes);
   AliMUONAttPainter* a;
   
@@ -190,88 +187,6 @@ AliMUONPainterHelper::GenerateDefaultMatrices()
 }
 
 //_____________________________________________________________________________
-void
-AliMUONPainterHelper::GenerateGeometry()
-{  
-  /// Generate the geometry (FIXME: using transform.dat for the moment)
-  /// The geometry is not the "normal" one as we "explode" it to avoid
-  /// having overlapping detection elements as in the reality, which 
-  /// would be inconvenient for a display ;-)
-  
-  AliCodeTimerAuto("");
-  
-  AliMUONGeometryTransformer transformer;
-  transformer.LoadGeometryData("transform.dat");
-  fExplodedGlobalTransformations = new AliMpExMap;
-  fRealGlobalTransformations = new AliMpExMap;
-  AliMpDEIterator deIt;
-  deIt.First();
-  while ( !deIt.IsDone() )
-  {
-    Int_t detElemId = deIt.CurrentDEId();
-    const AliMUONGeometryDetElement* de = transformer.GetDetElement(detElemId);
-    
-    fRealGlobalTransformations->Add(detElemId,de->GetGlobalTransformation()->Clone());
-                                    
-    TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(de->GetGlobalTransformation()->Clone());
-    Double_t* translation = matrix->GetTranslation();
-    
-    AliDebug(1,Form("Initial translation for DE %04d is %7.3f, %7.3f",
-                    detElemId,translation[0],translation[1]));
-    
-    if ( AliMpDEManager::GetStationType(detElemId) == AliMp::kStation345 ) 
-    {
-      translation[0] *= fExplodeFactor[0];
-      translation[1] *= fExplodeFactor[1];
-    }
-    else
-    {
-      Double_t shift = 5; // cm
-      Double_t xshift[] = { shift, -shift, -shift, shift };
-      Double_t yshift[] = { shift, shift, -shift, -shift };
-      Int_t ishift = detElemId % 100;
-      
-      translation[0] += xshift[ishift];
-      translation[1] += yshift[ishift];
-    }
-    matrix->SetTranslation(translation);
-    fExplodedGlobalTransformations->Add(detElemId,matrix);
-    deIt.Next();
-  }
-}
-
-//_____________________________________________________________________________
-AliMUONContour* 
-AliMUONPainterHelper::GenerateManuContour(Int_t detElemId,
-                                          Int_t manuId,
-                                          AliMUONAttPainter viewType,
-                                          const char* contourName)
-{
-  /// Generate the contour of the list of pads
-  
-  static AliMUONManuContourMaker maker(fExplodedGlobalTransformations);
-  
-  if ( viewType.IsBackView() )
-  {
-    AliError("Backview not implemented yet (and will probably never be, after all...)");
-    return 0x0;
-  }
-  
-  AliMUONContour* contour = maker.CreateManuContour(detElemId,manuId,contourName);
-  
-  if ( !contour ) return 0x0;
-  
-  AliMUONContour* pContour = new AliMUONContour(*contour);
-  
-  if (pContour) 
-  {
-    RegisterContour(pContour);
-  }
-  
-  return pContour;
-}
-
-//_____________________________________________________________________________
 AliMp::CathodType
 AliMUONPainterHelper::GetCathodeType(Int_t detElemId, Int_t manuId) const
 {
@@ -291,31 +206,13 @@ AliMpMotifPosition*
 AliMUONPainterHelper::GetMotifPosition(Int_t detElemId, Int_t manuId) const
 {
   /// Get a given motif position
-  AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
-  if ( stationType == AliMp::kStation345 ) 
+  const AliMpVSegmentation* vseg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
+  if (vseg)
   {
-    AliMp::PlaneType planeType(AliMp::kBendingPlane);
-    if ( manuId & AliMpConstants::ManuMask(AliMp::kNonBendingPlane) )
-    {
-      planeType = AliMp::kNonBendingPlane;
-    }
-    const AliMpSlat* slat = GetSlat(detElemId,planeType);
-    return slat->FindMotifPosition(manuId);
+    return vseg->MotifPosition(manuId);
   }
-  else if ( stationType != AliMp::kStationTrigger ) 
-  {
-    AliMp::PlaneType planeType(AliMp::kBendingPlane);
-    if ( manuId & AliMpConstants::ManuMask(AliMp::kNonBendingPlane) )
-    {
-      planeType = AliMp::kNonBendingPlane;
-    }
-    const AliMpSector* sector = GetSector(detElemId,planeType);
-    return sector->GetMotifMap()->FindMotifPosition(manuId);
-  }
-  AliFatalClass("Not supposed to work with trigger");
   return 0x0;
 }
-
 
 //_____________________________________________________________________________
 AliMpPCB*
@@ -410,8 +307,6 @@ AliMUONPainterHelper::Instance()
   AliCodeTimerAutoClass("");
 
   fgInstance = new AliMUONPainterHelper;
-  fgInstance->GenerateGeometry();
-  fgInstance->GenerateDefaultMatrices();
   fgInstance->fEnv = new AliMUONPainterEnv;
   return fgInstance;
 }
@@ -424,24 +319,7 @@ AliMUONPainterHelper::Global2Local(Int_t detElemId,
 {
   /// Local to global transformation of coordinates
   
-  TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(fExplodedGlobalTransformations->GetValue(detElemId));
-  Double_t pg[3] = { xg, yg, zg };
-  Double_t pl[3] = { 0., 0., 0. };
-  matrix->MasterToLocal(pg, pl);
-  xl = pl[0];
-  yl = pl[1];
-  zl = pl[2];
-}
-
-//_____________________________________________________________________________
-void 
-AliMUONPainterHelper::Global2LocalReal(Int_t detElemId, 
-                                       Double_t xg, Double_t yg, Double_t zg,
-                                       Double_t& xl, Double_t& yl, Double_t& zl) const
-{
-  /// Local to global transformation of coordinates
-  
-  TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(fRealGlobalTransformations->GetValue(detElemId));
+  TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(fExploded->GetTransformations()->GetValue(detElemId));
   Double_t pg[3] = { xg, yg, zg };
   Double_t pl[3] = { 0., 0., 0. };
   matrix->MasterToLocal(pg, pl);
@@ -458,24 +336,7 @@ AliMUONPainterHelper::Local2Global(Int_t detElemId,
 {
   /// Local to (exploded) global transformation of coordinates
   
-  TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(fExplodedGlobalTransformations->GetValue(detElemId));
-  Double_t pl[3] = { xl, yl, zl };
-  Double_t pg[3] = { 0., 0., 0. };
-  matrix->LocalToMaster(pl, pg);
-  xg = pg[0];
-  yg = pg[1];
-  zg = pg[2];
-}
-
-//_____________________________________________________________________________
-void 
-AliMUONPainterHelper::Local2GlobalReal(Int_t detElemId, 
-                                       Double_t xl, Double_t yl, Double_t zl,
-                                       Double_t& xg, Double_t& yg, Double_t& zg) const
-{
-  /// Local to (real) global transformation of coordinates
-  
-  TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(fRealGlobalTransformations->GetValue(detElemId));
+  TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(fExploded->GetTransformations()->GetValue(detElemId));
   Double_t pl[3] = { xl, yl, zl };
   Double_t pg[3] = { 0., 0., 0. };
   matrix->LocalToMaster(pl, pg);
@@ -506,8 +367,7 @@ AliMUONPainterHelper::ColorFromValue(Double_t value, Double_t min, Double_t max)
 
 //_____________________________________________________________________________
 AliMUONContour* 
-AliMUONPainterHelper::MergeContours(const TObjArray& contours, 
-                                    const char* contourName)
+AliMUONPainterHelper::MergeContours(const TObjArray& contours, const char* contourName, Bool_t explodedGeometry)
 {
   /// Merge a set of contours (delegating to the contour maker)
   
@@ -517,7 +377,7 @@ AliMUONPainterHelper::MergeContours(const TObjArray& contours,
   
   if (contour) 
   {
-    RegisterContour(contour);
+    RegisterContour(contour,explodedGeometry);
   }
   return contour;
 }
@@ -533,19 +393,11 @@ AliMUONPainterHelper::Print(Option_t* opt) const
   
   if ( sopt.Length() == 0 )
   {
-    cout << Form("ExplodeFactor=%e,%e",fExplodeFactor[0],fExplodeFactor[1]) << endl;
-    cout << endl;
-    cout << Form("GlobalTransformations=%x",fExplodedGlobalTransformations);
-    if ( fExplodedGlobalTransformations ) cout << Form(" with %d transformations",fExplodedGlobalTransformations->GetSize());
-    cout << endl;
-    cout << Form("Contour map : collisions = %5.3f size = %d capacity = %d", 
-                 fAllContours.AverageCollisions(),
-                 fAllContours.GetSize(),
-                 fAllContours.Capacity()) << endl;
-    cout << endl;
+    if ( fExploded ) fExploded->Print();
+    if ( fReal ) fReal->Print();
   }
   
-  if ( sopt.Contains("MATRI") || sopt.Contains("FULL") )
+  if ( fPainterMatrices && ( sopt.Contains("MATRI") || sopt.Contains("FULL") ) )
   {
     fPainterMatrices->Print(opt);
   }
@@ -553,67 +405,29 @@ AliMUONPainterHelper::Print(Option_t* opt) const
 
 //_____________________________________________________________________________
 void
-AliMUONPainterHelper::RegisterContour(AliMUONContour* contour)
+AliMUONPainterHelper::RegisterContour(AliMUONContour* contour, Bool_t explodedView)
 {
   /// contour is adopted by contourMaker
   AliCodeTimerAuto("")
   AliDebug(1,contour->GetName());
-  if ( fAllContours.GetValue(contour->GetName()) ) 
+  AliMUONContourHandler* ch = fReal;
+  if ( explodedView ) 
   {
-    AliError(Form("Contour with name %s is already there",contour->GetName()));
-//    Print("CONTOUR");
-    return;
+    ch = fExploded;
   }
-  fAllContours.Add(new TObjString(contour->GetName()),contour);
-}
-
-//_____________________________________________________________________________
-AliMpPad 
-AliMUONPainterHelper::PadByExplodedPosition(Int_t detElemId, Int_t manuId, 
-                                            Double_t x, Double_t y) const
-{
-  /// Find a pad by exploded position. FIXME: not really used nor tested !
-  
-  Double_t xr, yr, zr;
-  
-//  Local2Global(detElemId,0.0,0.0,0.0,dummy,dummy,z); // to find z 
-
-  AliDebug(1,Form("DE %04d ManuID %04d x %7.3f y %7.3f",detElemId,manuId,x,y));
-  
-  Exploded2Real(detElemId,x,y,0,xr,yr,zr);
-
-  AliDebug(1,Form("xr %7.3f yr %7.3f zr %7.3f",xr,yr,zr));
-
-  Double_t xl,yl,zl;
-
-  Global2LocalReal(detElemId,xr,yr,zr,xl,yl,zl);
-
-  AliDebug(1,Form("xl %7.3f yl %7.3f zl %7.3f",xl,yl,zl));
-
-  const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
-  
-  AliDebug(1,Form("dx,dy=%7.3f,%7.3f",seg->GetDimensionX(),seg->GetDimensionY()));
-  
-  return seg->PadByPosition(xl,yl);
-}
-
-//_____________________________________________________________________________
-void 
-AliMUONPainterHelper::Exploded2Real(Int_t detElemId, 
-                                    Double_t xe, Double_t ye, Double_t ze, 
-                                    Double_t& xr, Double_t& yr, Double_t& zr) const
-{
-  /// Convert exploded coordinates into real ones. FIXME: not really used nor tested !
-  
-  // first go back to local
-  
-  Double_t xl,yl,zl;
-  
-  Global2Local(detElemId,xe,ye,ze,xl,yl,zl);
-  
-  // and then back to global but not exploded
-  
-  Local2GlobalReal(detElemId,xl,yl,zl,xr,yr,zr);
+  if (!ch)
+  {
+    AliError(Form("ContourHandler for %s view is not created yet !",explodedView ? "EXPLODED" : "REAL"));
+  }
+  else
+  {
+    if ( ch->GetContour(contour->GetName()) )
+    {
+      AliError(Form("Contour with name %s is already there",contour->GetName()));
+      return;
+    }
+    ch->Adopt(contour);
+  }
 }
 
 //_____________________________________________________________________________
@@ -727,6 +541,33 @@ AliMUONPainterHelper::FormatValue(const char* name, Double_t value) const
   /// Format a double value to be displayed
   /// FIXME: should insure we have the right number of significant digits here...
   
-  return Form("%s = %e",name,value);
+  TString sname(name);
+  
+  sname.ToUpper();
+  if (sname.Contains("BIT"))
+  {
+    Int_t i = (Int_t)(value);
+    TString rv = Form("%s = 0x%x",name,i);
+    cout << rv << ":" << AliMUONPadStatusMaker::AsString(i) << endl;
+    return rv;
+  }
+  else
+  {
+    return Form("%s = %e",name,value);
+  }
 }
+
+//_____________________________________________________________________________
+TObjArray*
+AliMUONPainterHelper::GetAllContoursAsArray(Bool_t explodedView) const
+{
+  /// Get the contours in a specially arranged array (orderer by hierarchy level)
+  
+  if ( explodedView ) return fExploded->AllContourArray(); // fExploded should always be created
+  
+  if (!fReal) fReal = new AliMUONContourHandler(kFALSE); // fReal might be first asked here.
+  
+  return fReal->AllContourArray();
+}
+
 

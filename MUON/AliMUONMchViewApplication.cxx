@@ -20,6 +20,8 @@
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
 #include "AliLog.h"
+#include "AliMUONChamberPainter.h"
+#include "AliMUONDEPainter.h"
 #include "AliMUONPainterDataRegistry.h"
 #include "AliMUONPainterDataSourceFrame.h"
 #include "AliMUONPainterEnv.h"
@@ -89,7 +91,9 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
   }
 
   fMainFrame = new TGMainFrame(gClient->GetRoot(),w,h);
-  
+
+  AliMUONPainterHelper::Instance()->GenerateDefaultMatrices();
+
   CreateMenuBar(w);
 
   const Int_t kbs = 2;
@@ -133,7 +137,64 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
   cout << "   Welcome to mchview" << endl;
   cout << "   " << FullVersion() << endl;
   cout << "***************************************************" << endl;
+  
+  // Trying to see if we're requested to draw something specific instead
+  // of the global view of all the chambers
+  
+  AliMUONVPainter* painter(0x0);
+  TObjArray args;
+  args.SetOwner(kTRUE);
+  
+  for ( int i = 1; i < argc[0]; ++i ) 
+  {
+    args.Add(new TObjString(argv[i]));
+  }
+  
+  for ( Int_t i = 0; i <= args.GetLast(); ++i ) 
+  {
+    TString a(static_cast<TObjString*>(args.At(i))->String());
 
+    AliMUONAttPainter att;
+    
+    att.SetPlane(kTRUE,kFALSE);
+    att.SetCathode(kFALSE,kFALSE);
+    att.SetViewPoint(kTRUE,kFALSE);
+        
+    if ( a == "--de" )
+    {
+      Int_t detElemId = static_cast<TObjString*>(args.At(i+1))->String().Atoi();
+      
+      painter = new AliMUONDEPainter(att,detElemId);
+      
+      painter->SetOutlined("*",kFALSE);      
+      painter->SetOutlined("BUSPATCH",kTRUE);
+
+      painter->SetLine(1,4,3);      
+      ++i;
+    }
+
+    if ( a == "--chamber" )
+    {
+      Int_t chamberId = static_cast<TObjString*>(args.At(i+1))->String().Atoi();
+      
+      painter = new AliMUONChamberPainter(att,chamberId-1);
+      
+      painter->SetOutlined("*",kFALSE);      
+      painter->SetOutlined("DE",kTRUE);
+      
+      painter->SetLine(1,4,3);      
+      ++i;
+    }
+    
+  }
+  
+  if ( painter ) 
+  {
+    fPainterMasterFrame->ShiftClicked(painter,0x0);
+    
+    fPainterMasterFrame->Update();
+  }
+      
 }
 
 //______________________________________________________________________________
@@ -353,6 +414,19 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.00");
+  rn->AddLine("");
+  rn->AddLine("Added the Status and StatusMap as a possible OCDB data source");
+  rn->AddLine("");
+  rn->AddLine("Added one (computed) dimension to the Gains data source = 1/a1/0.2 (mV/fC)");
+  rn->AddLine("");
+  
+  
+  rn->AddLine("0.99a");
+  rn->AddLine("");
+  rn->AddLine("Added the --de and --chamber options");
+  rn->AddLine("");
+  
   rn->AddLine("0.99");
   rn->AddLine("");
   rn->AddLine("The chamberid in the label (top right of panel) is now starting at 1 as in common usage");  

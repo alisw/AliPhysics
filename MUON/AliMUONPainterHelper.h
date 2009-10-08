@@ -40,12 +40,9 @@
 #  include "AliMpPad.h"
 #endif
 
-#ifndef ROOT_TMap
-#  include "TMap.h"
-#endif
-
 class AliMUONAttPainter;
 class AliMUONContour;
+class AliMUONContourHandler;
 class AliMUONPainterEnv;
 class AliMUONVCalibParam;
 class AliMUONVTrackerData;
@@ -56,7 +53,6 @@ class AliMpSector;
 class AliMpSlat;
 class TArrayI;
 class TList;
-class TMap;
 class TObjArray;
 
 class AliMUONPainterHelper : public TObject
@@ -83,11 +79,7 @@ public:
   
   AliMp::CathodType GetCathodeType(Int_t detElemId, Int_t manuId) const;
 
-  AliMUONContour* GenerateManuContour(Int_t detElemId, Int_t manuId,
-                                             AliMUONAttPainter viewType,
-                                             const char* contourName);
-
-  AliMUONContour* GetContour(const char* contourName) const;
+  AliMUONContour* GetContour(const char* contourName, Bool_t explodedGeometry=kTRUE) const;
 
   /// Return a contour by name
   AliMUONContour* GetContour(const TString& contourName) const { return GetContour(contourName.Data()); }
@@ -112,35 +104,27 @@ public:
 
   static AliMUONPainterHelper* Instance();
 
-  AliMpPad PadByExplodedPosition(Int_t detElemId, Int_t manuId, Double_t x, Double_t y) const;
-  
-  void Exploded2Real(Int_t detElemId, Double_t xe, Double_t ye, Double_t ze,
-                     Double_t& xr, Double_t& yr, Double_t& zr) const;
-  
   void Local2Global(Int_t detElemId, Double_t xl, Double_t yl, Double_t zl,
                     Double_t& xg, Double_t& yg, Double_t& zg) const;
-
-  void Local2GlobalReal(Int_t detElemId, Double_t xl, Double_t yl, Double_t zl,
-                        Double_t& xg, Double_t& yg, Double_t& zg) const;
 
   void Global2Local(Int_t detElemId, Double_t xg, Double_t yg, Double_t zg,
                      Double_t& xl, Double_t& yl, Double_t& zl) const;
 
-  void Global2LocalReal(Int_t detElemId, Double_t xg, Double_t yg, Double_t zg,
-                        Double_t& xl, Double_t& yl, Double_t& zl) const;
-
-  AliMUONContour* MergeContours(const TObjArray& contours, 
-                                       const char* contourName);
+  AliMUONContour* MergeContours(const TObjArray& contours, const char* contourName, Bool_t explodedGeometry=kTRUE);
   
   virtual void Print(Option_t* opt="") const;
   
-  void RegisterContour(AliMUONContour* contour);
+  void RegisterContour(AliMUONContour* contour, Bool_t explodedView=kTRUE);
   
   TString FormatValue(const char* name, Double_t value) const;
   
   /// Return the environment
   AliMUONPainterEnv* Env() { return fEnv; }
   
+  TObjArray* GetAllContoursAsArray(Bool_t explodedView=kTRUE) const;
+
+  void GenerateDefaultMatrices();
+
 private:
     
   /// Not implemented
@@ -148,20 +132,15 @@ private:
   /// Not implemented
   AliMUONPainterHelper& operator=(const AliMUONPainterHelper&);
   
-  void GenerateDefaultMatrices();
-  void GenerateGeometry();
-
 private:
   static AliMUONPainterHelper* fgInstance; ///< global instance
   
-  Double_t fExplodeFactor[2]; ///< explosing factors for representation
-  AliMpExMap* fExplodedGlobalTransformations; ///< global geometric transformations (exploded)
-  AliMpExMap* fRealGlobalTransformations; ///< global geometric transformations (real)
   TObjArray* fPainterMatrices; ///< default matrices
   AliMUONPainterEnv* fEnv; ///< resources
-  TMap fAllContours; ///< all contours
+  mutable AliMUONContourHandler* fReal; ///< contours in real coordinates
+  AliMUONContourHandler* fExploded; ///< contours in exploded coordinates
   
-  ClassDef(AliMUONPainterHelper,2) // Helper class for painters
+  ClassDef(AliMUONPainterHelper,3) // Helper class for painters
 };
 
 #endif

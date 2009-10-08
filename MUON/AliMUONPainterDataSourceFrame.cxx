@@ -179,6 +179,8 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fOCDBTypes->AddEntry("Capacitances",2);
   fOCDBTypes->AddEntry("HV",3);
   fOCDBTypes->AddEntry("Occupancy",4);
+  fOCDBTypes->AddEntry("StatusMap",5);
+  fOCDBTypes->AddEntry("Status",6);
   fOCDBTypes->Select(0);
   fOCDBTypes->Resize(100,20);
     

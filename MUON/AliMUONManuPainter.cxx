@@ -18,8 +18,10 @@
 
 #include "AliMUONManuPainter.h"
 
-#include "AliMUONManuPadPainter.h"
+#include "AliLog.h"
 #include "AliMUONContour.h"
+#include "AliMUONManuContourMaker.h"
+#include "AliMUONManuPadPainter.h"
 #include "AliMUONPainterHelper.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDigit.h"
@@ -32,7 +34,6 @@
 #include "AliMpStationType.h"
 #include "AliMpVMotif.h"
 #include "AliMpVPadIterator.h"
-#include "AliLog.h"
 #include <TArrayI.h>
 #include <float.h>
 
@@ -93,19 +94,13 @@ AliMUONManuPainter::AliMUONManuPainter(const AliMUONAttPainter& att,
     return;    
   }
     
-  AliMUONContour* contour = h->GetContour(ContourName());
+  TString name = AliMUONManuContourMaker::ManuPathName(detElemId, manuId);
+
+  AliMUONContour* contour = h->GetContour(name.Data());
   
   if (!contour)
   {
-    contour = h->GenerateManuContour(fDetElemId,
-                                     fManuId,
-                                     Attributes(),
-                                     ContourName());
-  }
-
-  if (!contour)
-  {
-    AliFatal(Form("Could not get manuId %04d from DE %04d",manuId,detElemId));
+    AliError(Form("Could not get manuId %04d from DE %04d (name=%s)",manuId,detElemId,name.Data()));
   }
   
   SetContour(contour);

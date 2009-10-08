@@ -151,9 +151,9 @@ public:
   
   void SetOutlined(const char* pattern, Bool_t flag);
   
-  void SetResponder(const char* pattern);
+  virtual void SetResponder(const char* pattern);
   
-  void SetResponder(Int_t depth);
+  virtual void SetResponder(Int_t depth);
   
   void SetVisible(const char* pattern, Bool_t flag);
   
@@ -281,7 +281,10 @@ private:
 
   AliMUONPainterGroup* CreateGroup(const char* type, Int_t depth);
   
+protected:
   void CreateGroups();
+
+private:
   
   void GetBoundingBox(Double_t& x1, Double_t& y1, 
                       Double_t& x2, Double_t& y2) const;
@@ -300,9 +303,13 @@ private:
   AliMUONVPainter* fMother;  ///< our mother
   AliMUONPainterGroup* fGroup; ///< our group
   AliMUONContour* fContour;  ///< our contour
+protected:
   TMap* fPainterGroups; ///< map of groups
+private:
   TObjArray* fChildren; ///< our children
+protected:
   AliMUONPainterGroup* fResponderGroup; ///< the responder group
+private:
   AliMUONPainterGroup* fPlotterGroup; ///< the plotter group
   Double_t fBorderFactor; ///< border factor for visu 
   TVirtualPad* fPad; ///< the pad we're drawn in

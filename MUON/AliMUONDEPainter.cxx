@@ -32,7 +32,9 @@
 #include "AliMpSector.h"
 #include "AliMpSlat.h"
 #include "AliLog.h"
+#include <TMap.h>
 #include <TObjString.h>
+#include "AliMUONPainterGroup.h"
 
 /// \class AliMUONDEPainter
 ///
@@ -334,5 +336,41 @@ AliMUONDEPainter::Validate(const AliMUONAttPainter& attributes) const
   }
   
   return norm;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONDEPainter::SetResponder(Int_t depth)
+{
+  /// Select as responder the *first* group that has a given depth
+
+  AliDebug(1,Form("depth=%d",depth));
+  
+  if (!fPainterGroups)
+  {
+    CreateGroups();
+  }
+  
+  TIter next(fPainterGroups);
+  TObjString* str;
+  
+  fResponderGroup = 0x0;
+  
+  while ( ( str = static_cast<TObjString*>(next()) ) )
+  {
+    AliMUONPainterGroup* group = static_cast<AliMUONPainterGroup*>(fPainterGroups->GetValue(str));
+    if ( str->String() == "BUSPATCH" ) 
+    {
+      AliDebug(1,Form("group %s is indeed buspatch, using as responder",
+                      group->Type(),depth));
+      group->SetResponder(kTRUE);
+      fResponderGroup = group;
+      break;
+    }
+    else
+    {
+      group->SetResponder(kFALSE);
+    }
+  }
 }
 

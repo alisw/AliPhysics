@@ -68,7 +68,7 @@ AliMUONTrackerACFDataMaker::AliMUONTrackerACFDataMaker(const char* acfPath,
       AliMUONVStore* gains = new AliMUON2DMap(kTRUE);
       TString comment;
       AliMUONTrackerIO::ReadGains(filename.Data(),*gains,comment);
-      store = AliMUONTrackerOCDBDataMaker::SplitQuality(*gains);
+      store = AliMUONTrackerOCDBDataMaker::PatchGainStore(*gains);
       delete gains;      
     }
     else if ( stype == "CAPACITANCES" )

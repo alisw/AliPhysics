@@ -48,6 +48,7 @@
 #pragma link C++ class AliMUONNode+;
 #pragma link C++ class AliMUONPointWithRef+;
 #pragma link C++ class AliMUONContourMakerTest+;
+#pragma link C++ class AliMUONContourHandler+;
 
 
 #endif

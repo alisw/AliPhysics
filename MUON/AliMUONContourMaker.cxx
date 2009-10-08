@@ -42,6 +42,7 @@
 #include "TArrayD.h"
 #include "TMath.h"
 #include <cassert>
+#include "TArrayI.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONContourMaker)
@@ -167,6 +168,9 @@ AliMUONContourMaker::FinalizeContour(const TObjArray& verticals,
     all.Add(verticals.UncheckedAt(i));
     all.Add(horizontals.UncheckedAt(i));
   }
+
+  TArrayI alreadyAdded(all.GetLast()+1);
+  alreadyAdded.Reset();
   
   Int_t i(0);
   
@@ -186,6 +190,7 @@ AliMUONContourMaker::FinalizeContour(const TObjArray& verticals,
     
     AliMUONSegment* si = static_cast<AliMUONSegment*>(all.UncheckedAt(i));
     inorder.Add(si);
+    alreadyAdded[i] = 1;
     const AliMUONSegment* all0 = static_cast<const AliMUONSegment*>(all.First());
     if ( i != 0 && AliMUONSegment::AreEqual(si->EndX(),all0->StartX()) && AliMUONSegment::AreEqual(si->EndY(),all0->StartY()) )
     {
@@ -211,13 +216,15 @@ AliMUONContourMaker::FinalizeContour(const TObjArray& verticals,
       {
         i = 0;
         inorder.Clear();
+        alreadyAdded.Set(all.GetLast()+1);
+        alreadyAdded.Reset();
       }
       continue;
     }
     
     for ( Int_t j = 0; j <= all.GetLast(); ++j) 
     {
-      if ( j != i ) 
+      if ( j != i && alreadyAdded[j] == 0 ) 
       {        
         const AliMUONSegment* sj = static_cast<const AliMUONSegment*>(all.UncheckedAt(j));
         if ( AliMUONSegment::AreEqual(si->EndX(),sj->StartX()) && AliMUONSegment::AreEqual(si->EndY(),sj->StartY()))

@@ -50,11 +50,7 @@ public:
   
 private:
 
-  TObjArray* CreateContourList(const TObjArray& manuContours);
-
-  TObjArray* GenerateAllContours(const TObjArray& manuContours);
-  
-  void GenerateTransformations(AliMpExMap*& real, AliMpExMap*& exploded);
+  TString NameIt(const AliMpMotifPosition& motifPosition) const;
 
   ClassDef(AliMUONContourMakerTest,1) // Test of AliMUONContourMaker
 };

@@ -29,16 +29,11 @@
 #include "AliCodeTimer.h"
 #include "AliLog.h"
 #include "AliMUONContour.h"
-#include "AliMUONContourMaker.h"
-#include "AliMUONGeometryDetElement.h"
-#include "AliMUONGeometryTransformer.h"
-#include "AliMUONManuContourMaker.h"
 #include "AliMUONPolygon.h"
 #include "AliMUONSegment.h"
-#include "AliMpArea.h"
+#include "AliMUONContourHandler.h"
 #include "AliMpCDB.h"
 #include "AliMpDDLStore.h"
-#include "AliMpDEManager.h"
 #include "AliMpExMap.h"
 #include <float.h>
 #include "Riostream.h"
@@ -47,6 +42,7 @@
 #include "TFile.h"
 #include "TGeoMatrix.h"
 #include "TLine.h"
+#include "TMap.h"
 #include "TObjArray.h"
 #include "TPolyLine.h"
 #include "TSystem.h"
@@ -102,73 +98,6 @@ AliMUONContourMakerTest::~AliMUONContourMakerTest()
 }
 
 
-//______________________________________________________________________________
-TObjArray*
-AliMUONContourMakerTest::CreateContourList(const TObjArray& manuContours)
-{    
-  /// Create an array of maps of contour names
-  ///
-  /// Assyming that key is something like station#/chamber#/de#/buspatch#/manu#
-  /// the idea here is to put one TMap for each level in mapArray :
-  ///
-  /// mapArray[0].key = station0
-  /// mapArray[0].value = map of strings { station0/chamber0, station0/chamber1 }
-  ///
-  /// Then each entry in mapArray will be converted into a contour by
-  /// merging its children (e.g. station0 contour will be made from the merging
-  /// of station0/chamber0 and station0/chamber1 in the example above).
-  ///
-  
-  AliCodeTimerAuto("");
-  
-  TIter next(&manuContours);
-  AliMUONContour* contour;
-  TObjArray* mapArray = new TObjArray;
-
-  while ( ( contour = static_cast<AliMUONContour*>(next()) ) )
-  {
-    // Key is something like station#/chamber#/de#/buspatch#/manu#
-
-    TString key(contour->GetName());
-    TObjArray* s = key.Tokenize("/");
-    for ( Int_t i = 0; i < s->GetLast(); ++i ) 
-    {
-      TMap* m = static_cast<TMap*>(mapArray->At(i));
-      if (!m)
-      {
-        m = new TMap;
-        if ( i > mapArray->GetSize() ) mapArray->Expand(i);
-          mapArray->AddAt(m,i);
-          }
-      TString parent;
-      for ( Int_t k = 0; k <= i; ++k )
-      {
-        TObjString* str = static_cast<TObjString*>(s->At(k));
-        parent += str->String();
-        if ( k < i ) parent += "/";
-          }
-      TString child(parent);
-      child += "/";
-      child += static_cast<TObjString*>(s->At(i+1))->String();
-      
-      TObjArray* ma = static_cast<TObjArray*>(m->GetValue(parent.Data()));
-      if (!ma)
-      {
-        ma = new TObjArray;
-        m->Add(new TObjString(parent.Data()),ma);
-      }
-      TPair* p = static_cast<TPair*>(ma->FindObject(child.Data()));
-      if ( !p ) 
-      {
-        ma->Add(new TObjString(child.Data()));
-      }
-    }
-    delete s;
-  }
- 
-  return mapArray;
-}
-
 //_____________________________________________________________________________
 void 
 AliMUONContourMakerTest::Exec(const Option_t* opt)
@@ -191,208 +120,25 @@ AliMUONContourMakerTest::Exec(const Option_t* opt)
   AliCodeTimer::Instance()->Reset();
   
   AliCodeTimerAuto("");
-  
-  AliMpExMap* real(0x0);
-  AliMpExMap* exploded(0x0);
-  
-  GenerateTransformations(real,exploded);
-  
-  TObjArray* manus(0x0);
-  TObjArray* all(0x0);
-  
+
   TString sopt(opt);
   
-  if ( sopt.Contains("MANU") || sopt.Contains("ALL") ) 
-  {
-    AliMUONManuContourMaker manuMaker(exploded);
-    manus = manuMaker.GenerateManuContours(kTRUE);
-  }
+  Bool_t explodedView(kTRUE);
   
-  if ( sopt.Contains("ALL") && manus )
-  {
-    manus->SetOwner(kFALSE);
-    all = GenerateAllContours(*manus);
-    if ( sopt.Contains("SAVE") && all )
-    {
-      TFile f("AliMUONContourMakerTest.all.root","RECREATE");
-      all->Write("ALL",TObject::kSingleKey);
-      f.Close();
-    }
+  if (sopt.Contains("REAL")) explodedView = kFALSE;
     
+  AliMUONContourHandler ch(explodedView);
+  
+  if ( sopt.Contains("SAVE") )
+  {
+    TFile f2("AliMUONContourMakerTest.manuContours.root","RECREATE");
+    ch.AllContourMap()->Write("ALL",TObject::kSingleKey);
+    f2.Close();
   }
-  
-  AliCodeTimer::Instance()->Print();
-  
-  delete manus;
-  delete all;
+
+  AliCodeTimer::Instance()->Print();  
 }
 
-//______________________________________________________________________________
-TObjArray* 
-AliMUONContourMakerTest::GenerateAllContours(const TObjArray& manuContours)
-{
-  /// From a map of manu contours, generate the compound contours (bp, de, etc...)
-  /// by merging them.
-  /// Note that manuContours should NOT be the owner of its contours,
-  /// as they are adopted by the array returned by this method.
-  
-  AliCodeTimerAuto("");
-  
-  // Get the list of contours to create
-  TObjArray* mapArray = CreateContourList(manuContours);
-    
-  // Now loop over the mapArray to actually create the contours
-  TIter next2(mapArray,kIterBackward);
-
-  TMap allContourMap;
-  allContourMap.SetOwnerKeyValue(kTRUE,kFALSE); // not owner of contours, as the returned array will be the owner
-  TObjArray* allContourArray = new TObjArray;
-  allContourArray->SetOwner(kTRUE);
-  
-  TIter nextContour(&manuContours);  
-  AliMUONContour* contour(0x0);
-  
-  while ( ( contour = static_cast<AliMUONContour*>(nextContour()) ) )
-  {
-    allContourMap.Add(new TObjString(contour->GetName()),contour);
-    allContourArray->Add(contour);
-  }
-  
-  AliMUONContourMaker maker;
-  
-  for ( Int_t i = mapArray->GetLast(); i >= 1; --i ) 
-    // end at 1 to avoid merging different cathodes together, which
-    // would not work...
-  {
-    TMap* a = static_cast<TMap*>(mapArray->At(i));
-    TIter next3(a);
-    TObjString* str;
-    while ( ( str = static_cast<TObjString*>(next3()) ) )
-    {
-      TObjArray* m = static_cast<TObjArray*>(a->GetValue(str->String().Data()));
-      TIter next4(m);
-      TObjString* k;
-      TObjArray subcontours;
-      subcontours.SetOwner(kFALSE);
-      while ( ( k = static_cast<TObjString*>(next4()) ) )
-      {
-        contour = static_cast<AliMUONContour*>(allContourMap.GetValue(k->String().Data()));
-        if ( contour ) 
-        {
-          subcontours.Add(contour);
-        }
-        else
-        {
-          AliError(Form("Did not find contour %s",k->String().Data()))
-          return allContourArray;
-        }
-      }
-
-      contour = maker.MergeContour(subcontours,str->String().Data());
-        
-      bool error(kFALSE);
-      
-      if (!contour)
-      {
-        error=kTRUE;
-        AliError(Form("ERROR : could not merge into %s",str->String().Data()));
-      }
-      else
-      {
-        if ( contour->Area().IsValid() == kFALSE ) 
-        {
-          error=kTRUE;
-          AliError(Form("ERROR : area of contour %s is invalid",str->String().Data()));
-        }
-      }
-      
-      if ( error ) 
-      {
-        // do it again, but get intermediate results to plot them
-        PrintAsPNG(str->String().Data(),subcontours);
-        if (contour ) 
-        {
-          StdoutToAliError(contour->Area().Print("B"););
-        }
-        AliError(Form("%d subcontours",subcontours.GetLast()+1));
-        StdoutToAliError(subcontours.Print(););
-        // check whether one of the subcontour itself is already invalid ?
-        TIter next(&subcontours);
-        AliMUONContour* cont;
-        while ( ( cont = static_cast<AliMUONContour*>(next()) ) )
-        {
-          if (!cont->IsValid())
-          {
-            AliError(Form("subcontour %s is invalid",cont->GetName()));
-          }
-        }
-        TFile f("subcontour.root","recreate");
-        subcontours.Write("fault",TObject::kSingleKey);
-        f.Close();
-                
-        return allContourArray;
-      }
-      
-      allContourArray->Add(contour);
-      allContourMap.Add(new TObjString(str->String().Data()),contour);
-    }
-  }
-  
-  return allContourArray;
-}
-
-//_____________________________________________________________________________
-void 
-AliMUONContourMakerTest::GenerateTransformations(AliMpExMap*& real, AliMpExMap*& exploded)
-{
-  /// Generate geometric transformations to be used to compute the contours
-  /// (real are, as the name implies, real ones, while the other ones are 
-  /// a bit tweaked to look fine on screen).
-  
-  AliCodeTimerAuto("");
-  
-  AliMUONGeometryTransformer transformer;
-  Bool_t ok = transformer.LoadGeometryData("transform.dat");
-  //  transformer.LoadGeometryData("geometry.root"); //FIXME: add a protection if geometry.root file does not exist
-  if (!ok)
-  {
-    cout << "ERROR : cannot get geometry !" << endl;
-    return;
-  }
-  real = new AliMpExMap;
-  exploded = new AliMpExMap;
-  AliMpDEIterator deIt;
-  deIt.First();
-  while ( !deIt.IsDone() )
-  {
-    Int_t detElemId = deIt.CurrentDEId();
-    const AliMUONGeometryDetElement* de = transformer.GetDetElement(detElemId);
-    
-    real->Add(detElemId,de->GetGlobalTransformation()->Clone());
-    
-    TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(de->GetGlobalTransformation()->Clone());
-    Double_t* translation = matrix->GetTranslation();
-        
-    if ( AliMpDEManager::GetStationType(detElemId) == AliMp::kStation345 ) 
-    {
-      translation[0] *= 1.0;
-      translation[1] *= 1.5; 
-    }
-    else
-    {
-      Double_t shift = 5; // cm
-      Double_t xshift[] = { shift, -shift, -shift, shift };
-      Double_t yshift[] = { shift, shift, -shift, -shift };
-      Int_t ishift = detElemId % 100;
-      
-      translation[0] += xshift[ishift];
-      translation[1] += yshift[ishift];
-    }
-    matrix->SetTranslation(translation);
-    exploded->Add(detElemId,matrix);
-    deIt.Next();
-  }
-}
 
 //_____________________________________________________________________________
 void 
