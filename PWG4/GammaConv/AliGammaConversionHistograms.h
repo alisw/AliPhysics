@@ -33,7 +33,8 @@ class AliGammaConversionHistograms{
   
   Int_t GetRBin(Double_t radius) const;
   Int_t GetPhiBin(Double_t phi) const;
-
+  Int_t GetZBin(Double_t radius) const;
+ 
   void InitializeMappingValues(Int_t nPhiHistograms, Int_t nRHistograms, Int_t nBinsR, Double_t minRadius, Double_t maxRadius,Int_t nBinsPhi, Double_t minPhi, Double_t maxPhi);
 
   void AddMappingHistograms(Int_t nPhiHistograms, Int_t nRHistograms,Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle="", TString yAxisTitle="");
@@ -71,9 +72,14 @@ class AliGammaConversionHistograms{
 
  private:
   TMap* fHistogramMap; // histogram map
+  
+
 
   Int_t fNPhiIndex; //phi index
   Int_t fNRIndex; //r index
+  Int_t fNZIndex; //z index
+  Double_t * fRBinLimits; // Limits of the radius bins
+  Double_t * fZBinLimits; // Limits of the Z bins
   Double_t fMinRadius; //min radius cut
   Double_t fMaxRadius; //max radius cut
   Double_t fDeltaR; // delta r
