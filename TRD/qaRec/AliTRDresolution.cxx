@@ -97,6 +97,18 @@ UChar_t AliTRDresolution::fNElements[kNhistos] = {
   2, 2, 5, 5,
   2, 5, 12, 2, 11
 };
+Char_t* AliTRDresolution::fPerformanceName[kNhistos] = {
+     "Charge"
+    ,"Cluster2Track"
+    ,"Tracklet2Track"
+    ,"Tracklet2TPC" 
+    ,"Cluster2MC"
+    ,"Tracklet2MC"
+    ,"TPC2MC"
+    ,"TOF/HMPID2MC"
+    ,"TRD2MC"
+};
+//Int_t AliTRDresolution::fNPlots = 0; 
 Char_t *AliTRDresolution::fAxTitle[46][3] = {
   // Charge
   {"x [cm]", "I_{mpv}", "x/x_{0}"}
@@ -1791,11 +1803,10 @@ Bool_t AliTRDresolution::GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t 
   if(!gs) return kFALSE;
   gs->Draw("apl"); gm->Draw("pl");
 
-  Double_t x,y;
-  gs->GetPoint(10, x, y);
-  PutTrendValue(Form("task%02d_idx%d", ip, idx), y, 0);
-
-  //printf("bb[%f %f %f %f]\n", bb[0], bb[1], bb[2], bb[3]);
+  PutTrendValue(Form("%s_[%d]M", fPerformanceName[ip], idx), gm->GetMean(2), gm->GetRMS(2));
+  gs->Sort(&TGraph::CompareY); Int_t n = gs->GetN();
+  PutTrendValue(Form("%s_[%d]Sm", fPerformanceName[ip], idx), gs->GetY()[0], 0.);
+  PutTrendValue(Form("%s_[%d]SM", fPerformanceName[ip], idx), gs->GetY()[n-1], 0.);
 
   // axis titles look up
   Int_t nref = 0;

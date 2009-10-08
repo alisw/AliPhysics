@@ -85,6 +85,7 @@ private:
 
   UChar_t             fStatus;          // steer parameter of the task
   UChar_t             fIdxPlot;         //! plot counter (internal)
+  static Char_t       *fPerformanceName[kNhistos]; // name of performance plot
   static UChar_t      fNElements[kNhistos]; // number of componets per task
   static Char_t       *fAxTitle[46][3]; // axis title for all ref histos
   AliTRDReconstructor *fReconstructor;  //! local reconstructor
