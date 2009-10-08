@@ -31,7 +31,7 @@ class AliESDACORDE : public TObject
 
   Bool_t	fACORDEBitPattern[60];  // Array with the ACORDE's bitpattern
 
-  ClassDef(AliESDACORDE, 2)
+  ClassDef(AliESDACORDE, 3)
 
 };
 
