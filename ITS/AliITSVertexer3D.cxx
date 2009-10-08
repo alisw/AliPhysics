@@ -282,7 +282,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   TBranch *branch = NULL;
   branch = tR->GetBranch("ITSRecPoints");
   if(!branch){
-    AliError("Null pointer for RecPoints branch");
+    AliWarning("Null pointer for RecPoints branch, vertex not calculated");
     return -1;
   }
 
@@ -331,6 +331,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
     fDetTypeRec->ResetRecPoints();
   }
   if(nrpL1 == 0 || nrpL2 == 0){
+    AliDebug(1,Form("No RecPoints in at least one SPD layer (%d %d)",nrpL1,nrpL2));
     return -1;
   }
   AliDebug(1,Form("RecPoints on Layer 1,2 = %d, %d\n",nrpL1,nrpL2));

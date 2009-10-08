@@ -205,6 +205,12 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   itsRec = fDetTypeRec->RecPoints();
   TBranch *branch;
   branch = tR->GetBranch("ITSRecPoints");
+  if(!branch){
+    AliWarning("Null pointer for RecPoints branch, vertex not calculated");
+    ResetHistograms();
+    fCurrentVertex = new AliESDVertex(0.,5.3,-2);
+    return;
+  }
 
   Int_t nrpL1 = 0;
   Int_t nrpL2 = 0;
@@ -222,6 +228,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
     fDetTypeRec->ResetRecPoints();
   }
   if(nrpL1 == 0 || nrpL2 == 0){
+    AliDebug(1,Form("No RecPoints in at least one SPD layer (%d %d)",nrpL1,nrpL2));
     ResetHistograms();
     fCurrentVertex = new AliESDVertex(0.,5.3,-2);
     return;
