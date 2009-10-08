@@ -87,7 +87,7 @@ AliAnalysisTaskSE(),
   fPi0Width(-1),
   fEtaWidth(-1),
   fMinOpeningAngleGhostCut(0.),
-  fEsdTrackCuts(0),
+  fEsdTrackCuts(NULL),
   fCalculateBackground(kFALSE),
   fWriteNtuple(kFALSE),
   fGammaNtuple(NULL),
@@ -102,6 +102,8 @@ AliAnalysisTaskSE(),
   fMinPtGamChargedCorr(0.5),
   fMinPtJetCone(0.5),
   fLeadingChargedIndex(-1),
+  fLowPtMapping(1.),
+  fHighPtMapping(3.),
   fAODBranch(NULL),
   fAODBranchName("GammaConv")//,
   //  fAODObjects(NULL)
@@ -154,7 +156,7 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fPi0Width(-1),
   fEtaWidth(-1),
   fMinOpeningAngleGhostCut(0.),
-  fEsdTrackCuts(0),
+  fEsdTrackCuts(NULL),
   fCalculateBackground(kFALSE),
   fWriteNtuple(kFALSE),
   fGammaNtuple(NULL),
@@ -169,6 +171,8 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fMinPtGamChargedCorr(0.5),
   fMinPtJetCone(0.5),
   fLeadingChargedIndex(-1),
+  fLowPtMapping(1.),
+  fHighPtMapping(3.),
   fAODBranch(NULL),
   fAODBranchName("GammaConv")//,
   // fAODObjects(NULL)
@@ -205,7 +209,11 @@ AliAnalysisTaskGammaConversion::~AliAnalysisTaskGammaConversion()
   if(fCFManager){
     delete fCFManager;
   }
-	
+
+  if(fEsdTrackCuts){
+    delete fEsdTrackCuts;
+  }
+
   if (fAODBranch) {
     fAODBranch->Clear();
     delete fAODBranch ;
@@ -221,7 +229,9 @@ void AliAnalysisTaskGammaConversion::Init()
 void AliAnalysisTaskGammaConversion::SetESDtrackCuts()
 {
   // SetESDtrackCuts
-	
+  if (fEsdTrackCuts!=NULL){
+    delete fEsdTrackCuts;
+  }
   fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
   //standard cuts from:
   //http://aliceinfo.cern.ch/alicvs/viewvc/PWG0/dNdEta/CreateCuts.C?revision=1.4&view=markup
@@ -567,30 +577,74 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 			
       // begin Mapping 
       Int_t rBin    = fHistograms->GetRBin(ePos->R());
+      Int_t zBin    = fHistograms->GetZBin(ePos->Vz());
       Int_t phiBin  = fHistograms->GetPhiBin(particle->Phi());
-			
+
+      TVector3 vtxPos(ePos->Vx(),ePos->Vy(),ePos->Vz());	
+      
       TString nameMCMappingPhiR="";
       nameMCMappingPhiR.Form("MC_Conversion_Mapping_Phi%02d_R%02d",phiBin,rBin);
       fHistograms->FillHistogram(nameMCMappingPhiR, ePos->Vz(), particle->Eta());
 			
       TString nameMCMappingPhi="";
       nameMCMappingPhi.Form("MC_Conversion_Mapping_Phi%02d",phiBin);
-      fHistograms->FillHistogram(nameMCMappingPhi, particle->Eta());
+      //      fHistograms->FillHistogram(nameMCMappingPhi, particle->Eta());
+      fHistograms->FillHistogram(nameMCMappingPhi, ePos->Vz(), particle->Eta());
 			
       TString nameMCMappingR="";
       nameMCMappingR.Form("MC_Conversion_Mapping_R%02d",rBin);
-      fHistograms->FillHistogram(nameMCMappingR, particle->Eta());
+      //      fHistograms->FillHistogram(nameMCMappingR, particle->Eta());
+      fHistograms->FillHistogram(nameMCMappingR,ePos->Vz(), particle->Eta());
 			
       TString nameMCMappingPhiInR="";
       nameMCMappingPhiInR.Form("MC_Conversion_Mapping_Phi_in_R_%02d",rBin);
-      fHistograms->FillHistogram(nameMCMappingPhiInR, tmpPhi);
+      //      fHistograms->FillHistogram(nameMCMappingPhiInR, tmpPhi);
+      fHistograms->FillHistogram(nameMCMappingPhiInR, vtxPos.Phi());
+
+      TString nameMCMappingZInR="";
+      nameMCMappingZInR.Form("MC_Conversion_Mapping_Z_in_R_%02d",rBin);
+      fHistograms->FillHistogram(nameMCMappingZInR,ePos->Vz() );
+
+
+      TString nameMCMappingPhiInZ="";
+      nameMCMappingPhiInZ.Form("MC_Conversion_Mapping_Phi_in_Z_%02d",zBin);
+      //      fHistograms->FillHistogram(nameMCMappingPhiInR, tmpPhi);
+      fHistograms->FillHistogram(nameMCMappingPhiInZ, vtxPos.Phi());
+
+      TString nameMCMappingRInZ="";
+      nameMCMappingRInZ.Form("MC_Conversion_Mapping_R_in_Z_%02d",zBin);
+      fHistograms->FillHistogram(nameMCMappingRInZ,ePos->R() );
+
+      if(particle->Pt() > fLowPtMapping && particle->Pt()< fHighPtMapping){
+	TString nameMCMappingMidPtPhiInR="";
+	nameMCMappingMidPtPhiInR.Form("MC_Conversion_Mapping_MidPt_Phi_in_R_%02d",rBin);
+	fHistograms->FillHistogram(nameMCMappingMidPtPhiInR, vtxPos.Phi());
+	
+	TString nameMCMappingMidPtZInR="";
+	nameMCMappingMidPtZInR.Form("MC_Conversion_Mapping_MidPt_Z_in_R_%02d",rBin);
+	fHistograms->FillHistogram(nameMCMappingMidPtZInR,ePos->Vz() );
+	
+	
+	TString nameMCMappingMidPtPhiInZ="";
+	nameMCMappingMidPtPhiInZ.Form("MC_Conversion_Mapping_MidPt_Phi_in_Z_%02d",zBin);
+	fHistograms->FillHistogram(nameMCMappingMidPtPhiInZ, vtxPos.Phi());
+	
+	TString nameMCMappingMidPtRInZ="";
+	nameMCMappingMidPtRInZ.Form("MC_Conversion_Mapping_MidPt_R_in_Z_%02d",zBin);
+	fHistograms->FillHistogram(nameMCMappingMidPtRInZ,ePos->R() );
+
+      }
+
       //end mapping
 			
       fHistograms->FillHistogram("MC_Conversion_R",ePos->R());
       fHistograms->FillHistogram("MC_Conversion_ZR",ePos->Vz(),ePos->R());
       fHistograms->FillHistogram("MC_Conversion_XY",ePos->Vx(),ePos->Vy());
       fHistograms->FillHistogram("MC_Conversion_OpeningAngle",GetMCOpeningAngle(ePos, eNeg));
-			
+      fHistograms->FillHistogram("MC_ConvGamma_E_AsymmetryP",particle->P(),eNeg->P()/particle->P());
+      fHistograms->FillHistogram("MC_ConvGamma_P_AsymmetryP",particle->P(),ePos->P()/particle->P());
+
+
       if(particle->GetMother(0) < 0){ // no mother = direct gamma, still inside converted
 	fHistograms->FillHistogram("MC_ConvDirectGamma_Energy",particle->Energy());
 	fHistograms->FillHistogram("MC_ConvDirectGamma_Pt", particle->Pt());
@@ -864,6 +918,15 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
     if(fV0Reader->CheckForPrimaryVertex() == kFALSE){
       return;
     }
+
+    if( !fV0Reader->GetV0(i)->GetOnFlyStatus()){
+      return;
+    }
+
+    if( !(fV0Reader->GetNegativeESDTrack()->GetStatus() & AliESDtrack::kTPCrefit) || 
+        !(fV0Reader->GetPositiveESDTrack()->GetStatus() & AliESDtrack::kTPCrefit) ){
+      return;
+    }
 		
     if(fDoMCTruth){
 			
@@ -905,7 +968,16 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
 	fHistograms->FillHistogram("ESD_NoCutConversion_R", fV0Reader->GetXYRadius());
 	fHistograms->FillHistogram("ESD_NoCutConversion_ZR", fV0Reader->GetZ(),fV0Reader->GetXYRadius());
 	fHistograms->FillHistogram("ESD_NoCutConversion_OpeningAngle", fV0Reader->GetOpeningAngle());
-				
+	fHistograms->FillHistogram("ESD_NoCutConvGamma_CosPointingAngle", fV0Reader->GetCosPointingAngle());
+	fHistograms->FillHistogram("ESD_NoCutConvGamma_DcaDaughters", fV0Reader->GetDcaDaughters());
+	fHistograms->FillHistogram("ESD_NoCutConvGamma_NormDcaDistDaughters", fV0Reader->GetNormDcaDistDaughters());
+	fHistograms->FillHistogram("ESD_NoCutConvGamma_LikelihoodAP", fV0Reader->GetLikelihoodAP());
+
+	fHistograms->FillHistogram("ESD_NoCutConvGamma_E_AsymmetryP",fV0Reader->GetMotherCandidateP(),fV0Reader->GetNegativeTrackP()/fV0Reader->GetMotherCandidateP());
+	fHistograms->FillHistogram("ESD_NoCutConvGamma_P_AsymmetryP",fV0Reader->GetMotherCandidateP(),fV0Reader->GetPositiveTrackP()/fV0Reader->GetMotherCandidateP());
+	fHistograms->FillHistogram("ESD_NoCutConvGamma_E_dEdxP",fV0Reader->GetNegativeTrackP(),fV0Reader->GetNegativeTrackTPCdEdx());
+	fHistograms->FillHistogram("ESD_NoCutConvGamma_P_dEdxP",fV0Reader->GetPositiveTrackP(),fV0Reader->GetPositiveTrackTPCdEdx());
+
 	//store MCTruth properties
 	fHistograms->FillHistogram("ESD_NoCutConvGamma_MC_Pt_Eta", fV0Reader->GetMotherMCParticle()->Pt(),fV0Reader->GetMotherMCParticle()->Eta());
 	fHistograms->FillHistogram("ESD_NoCutConversion_MC_ZR", negativeMC->Vz(),negativeMC->R());
@@ -957,11 +1029,25 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 		
     fHistograms->FillHistogram("ESD_ConvGamma_Pt_Chi2", fV0Reader->GetMotherCandidatePt(), fV0Reader->GetMotherCandidateChi2());
     fHistograms->FillHistogram("ESD_ConvGamma_Eta_Chi2", fV0Reader->GetMotherCandidateEta(), fV0Reader->GetMotherCandidateChi2());
+    
+    fHistograms->FillHistogram("ESD_ConvGamma_CosPointingAngle", fV0Reader->GetCosPointingAngle());
+    fHistograms->FillHistogram("ESD_ConvGamma_DcaDaughters", fV0Reader->GetDcaDaughters());
+    fHistograms->FillHistogram("ESD_ConvGamma_NormDcaDistDaughters", fV0Reader->GetNormDcaDistDaughters());
+    fHistograms->FillHistogram("ESD_ConvGamma_LikelihoodAP", fV0Reader->GetLikelihoodAP());
+    
+    fHistograms->FillHistogram("ESD_ConvGamma_E_AsymmetryP",fV0Reader->GetMotherCandidateP(),fV0Reader->GetNegativeTrackP()/fV0Reader->GetMotherCandidateP());
+    fHistograms->FillHistogram("ESD_ConvGamma_P_AsymmetryP",fV0Reader->GetMotherCandidateP(),fV0Reader->GetPositiveTrackP()/fV0Reader->GetMotherCandidateP());
+    fHistograms->FillHistogram("ESD_ConvGamma_E_dEdxP",fV0Reader->GetNegativeTrackP(),fV0Reader->GetNegativeTrackTPCdEdx());
+    fHistograms->FillHistogram("ESD_ConvGamma_P_dEdxP",fV0Reader->GetPositiveTrackP(),fV0Reader->GetPositiveTrackTPCdEdx());
+    
 		
 		
     // begin mapping
     Int_t rBin    = fHistograms->GetRBin(fV0Reader->GetXYRadius());
+    Int_t zBin    = fHistograms->GetZBin(fV0Reader->GetZ());
     Int_t phiBin  = fHistograms->GetPhiBin(fV0Reader->GetNegativeTrackPhi());
+    TVector3 vtxConv(fV0Reader->GetX(),fV0Reader->GetY(), fV0Reader->GetZ());
+
     Double_t motherCandidateEta= fV0Reader->GetMotherCandidateEta();
 		
     TString nameESDMappingPhiR="";
@@ -978,7 +1064,42 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 		
     TString nameESDMappingPhiInR="";
     nameESDMappingPhiInR.Form("ESD_Conversion_Mapping_Phi_in_R_%02d",rBin);
-    fHistograms->FillHistogram(nameESDMappingPhiInR, fV0Reader->GetMotherCandidatePhi());
+    //    fHistograms->FillHistogram(nameESDMappingPhiInR, fV0Reader->GetMotherCandidatePhi());
+    fHistograms->FillHistogram(nameESDMappingPhiInR, vtxConv.Phi());
+
+    TString nameESDMappingZInR="";
+    nameESDMappingZInR.Form("ESD_Conversion_Mapping_Z_in_R_%02d",rBin);
+    fHistograms->FillHistogram(nameESDMappingZInR, fV0Reader->GetZ());
+
+    TString nameESDMappingPhiInZ="";
+    nameESDMappingPhiInZ.Form("ESD_Conversion_Mapping_Phi_in_Z_%02d",zBin);
+    //    fHistograms->FillHistogram(nameESDMappingPhiInR, fV0Reader->GetMotherCandidatePhi());
+    fHistograms->FillHistogram(nameESDMappingPhiInZ, vtxConv.Phi());
+
+    TString nameESDMappingRInZ="";
+    nameESDMappingRInZ.Form("ESD_Conversion_Mapping_R_in_Z_%02d",zBin);
+    fHistograms->FillHistogram(nameESDMappingRInZ, fV0Reader->GetXYRadius());
+
+    if(fV0Reader->GetMotherCandidatePt() > fLowPtMapping && fV0Reader->GetMotherCandidatePt()< fHighPtMapping){
+      TString nameESDMappingMidPtPhiInR="";
+      nameESDMappingMidPtPhiInR.Form("ESD_Conversion_Mapping_MidPt_Phi_in_R_%02d",rBin);
+      fHistograms->FillHistogram(nameESDMappingMidPtPhiInR, vtxConv.Phi());
+      
+      TString nameESDMappingMidPtZInR="";
+      nameESDMappingMidPtZInR.Form("ESD_Conversion_Mapping_MidPt_Z_in_R_%02d",rBin);
+      fHistograms->FillHistogram(nameESDMappingMidPtZInR, fV0Reader->GetZ());
+      
+      TString nameESDMappingMidPtPhiInZ="";
+      nameESDMappingMidPtPhiInZ.Form("ESD_Conversion_Mapping_MidPt_Phi_in_Z_%02d",zBin);
+      fHistograms->FillHistogram(nameESDMappingMidPtPhiInZ, vtxConv.Phi());
+      
+      TString nameESDMappingMidPtRInZ="";
+      nameESDMappingMidPtRInZ.Form("ESD_Conversion_Mapping_MidPt_R_in_Z_%02d",zBin);
+      fHistograms->FillHistogram(nameESDMappingMidPtRInZ, fV0Reader->GetXYRadius());
+
+    }
+
+
     // end mapping
 		
     new((*fKFReconstructedGammasTClone)[fKFReconstructedGammasTClone->GetEntriesFast()])  AliKFParticle(*fV0Reader->GetMotherCandidateKFCombination());
@@ -1034,6 +1155,18 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	fHistograms->FillHistogram("ESD_TrueConversion_R", fV0Reader->GetXYRadius());
 	fHistograms->FillHistogram("ESD_TrueConversion_ZR", fV0Reader->GetZ(),fV0Reader->GetXYRadius());
 	fHistograms->FillHistogram("ESD_TrueConversion_OpeningAngle", fV0Reader->GetOpeningAngle());
+
+	fHistograms->FillHistogram("ESD_TrueConvGamma_CosPointingAngle", fV0Reader->GetCosPointingAngle());
+	fHistograms->FillHistogram("ESD_TrueConvGamma_DcaDaughters", fV0Reader->GetDcaDaughters());
+	fHistograms->FillHistogram("ESD_TrueConvGamma_NormDcaDistDaughters", fV0Reader->GetNormDcaDistDaughters());
+	fHistograms->FillHistogram("ESD_TrueConvGamma_LikelihoodAP", fV0Reader->GetLikelihoodAP());
+
+	fHistograms->FillHistogram("ESD_TrueConvGamma_E_AsymmetryP",fV0Reader->GetMotherCandidateP(),fV0Reader->GetNegativeTrackP()/fV0Reader->GetMotherCandidateP());
+	fHistograms->FillHistogram("ESD_TrueConvGamma_P_AsymmetryP",fV0Reader->GetMotherCandidateP(),fV0Reader->GetPositiveTrackP()/fV0Reader->GetMotherCandidateP());
+	fHistograms->FillHistogram("ESD_TrueConvGamma_E_dEdxP",fV0Reader->GetNegativeTrackP(),fV0Reader->GetNegativeTrackTPCdEdx());
+	fHistograms->FillHistogram("ESD_TrueConvGamma_P_dEdxP",fV0Reader->GetPositiveTrackP(),fV0Reader->GetPositiveTrackTPCdEdx());
+
+
 				
 	//store MCTruth properties
 	fHistograms->FillHistogram("ESD_TrueConvGamma_MC_Pt_Eta", fV0Reader->GetMotherMCParticle()->Pt(),fV0Reader->GetMotherMCParticle()->Eta());
@@ -1175,6 +1308,11 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	  fHistograms->FillHistogram("ESD_Mother_XY", twoGammaCandidate->GetX(), twoGammaCandidate->GetY());
 	  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 	  fHistograms->FillHistogram("ESD_Mother_InvMass",massTwoGammaCandidate);
+
+	  if ( TMath::Abs(twoGammaDecayCandidateDaughter0->GetEta())<0.9 &&  TMath::Abs(twoGammaDecayCandidateDaughter1->GetEta())<0.9 ){
+	    fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt_Fiducial",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+	    fHistograms->FillHistogram("ESD_Mother_InvMass_Fiducial",massTwoGammaCandidate);
+	  }
 	}
       }
       delete twoGammaCandidate;
@@ -1230,6 +1368,12 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	  fHistograms->FillHistogram("ESD_Background_XY", backgroundCandidate->GetX(), backgroundCandidate->GetY());
 	  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,momentumVectorbackgroundCandidate.Pt());
 	  fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
+
+	  if ( TMath::Abs(currentEventGoodV0->GetEta())<0.9 &&  TMath::Abs(previousGoodV0->GetEta())<0.9 ){
+	    fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
+	    fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
+	  }
+
 	}
       }
       delete backgroundCandidate;   

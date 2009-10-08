@@ -78,6 +78,10 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetMinPtIsoCone(Double_t minPtIsoCone){fMinPtIsoCone=minPtIsoCone;}
   void SetMinPtGamChargedCorr(Double_t minPtGamChargedCorr){fMinPtGamChargedCorr=minPtGamChargedCorr;}
   void SetMinPtJetCone(Double_t minPtJetCone){fMinPtJetCone=minPtJetCone;}
+
+  void SetLowPtMapping(Double_t lowPtMapping){fLowPtMapping=lowPtMapping;}
+  void SetHighPtMapping(Double_t highPtMapping){fHighPtMapping=highPtMapping;}
+
 		
   void SetHistograms(AliGammaConversionHistograms *const histograms){fHistograms=histograms;}
   void SetDoMCTruth(Bool_t flag){fDoMCTruth=flag;}
@@ -208,6 +212,9 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Double_t fMinPtGamChargedCorr; //! transient
   Double_t fMinPtJetCone; //! transient
   Int_t    fLeadingChargedIndex; //! transient
+  Double_t fLowPtMapping;
+  Double_t fHighPtMapping;
+
 		
   TClonesArray* fAODBranch ;        //! selected particles branch
   TString fAODBranchName; // New AOD branch name

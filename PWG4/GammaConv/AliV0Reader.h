@@ -39,7 +39,7 @@ class TChain;
 class TChain;
 class AliCFManager;   // for CF
 class AliCFContainer;  // for CF
-
+class AliTPCpidESD; // for dEdx cut based on nSigma to particle lines 
 
 
 class AliV0Reader : public TObject {
@@ -71,7 +71,8 @@ class AliV0Reader : public TObject {
   AliV0Reader();                                        //constructor
   AliV0Reader(const AliV0Reader & g);                   //copy constructor
   AliV0Reader & operator = (const AliV0Reader & g);     //assignment operator
-  virtual ~AliV0Reader() {;}                            //virtual destructor
+  //  virtual ~AliV0Reader() {;}                            //virtual destructor
+  virtual ~AliV0Reader();                            //virtual destructor
   /*
    *Initialize the reader
    */
@@ -256,7 +257,27 @@ class AliV0Reader : public TObject {
    * Get the opening angle between the two tracks
    */
   Double_t GetOpeningAngle(){return fNegativeTrackLorentzVector->Angle(fPositiveTrackLorentzVector->Vect());}
-	
+
+  /*
+   * Get the Cos Pointing angle between the two tracks
+   */
+  Double_t GetCosPointingAngle(){return fCurrentV0->GetV0CosineOfPointingAngle();}
+
+  /*
+   * Get the DCA between the two tracks
+   */
+  Double_t GetDcaDaughters(){return fCurrentV0->GetDcaV0Daughters();}
+
+  /*
+   * Get the Normalized DCA between the two tracks
+   */
+  Double_t GetNormDcaDistDaughters(){return fCurrentV0->GetDcaV0Daughters()/fCurrentV0->GetDistSigma();}
+
+  /*
+   * Get the Likelihood for a Conversion
+   */
+  Double_t GetLikelihoodAP(){return fCurrentV0->GetLikelihoodAP(0,0);}
+      
   /*
    * Gets the Energy of the negative track.
    */
@@ -282,11 +303,19 @@ class AliV0Reader : public TObject {
    */
   Double_t GetPositiveTrackPt() const{return fPositiveTrackLorentzVector->Pt();}
 	
+
   /*
    * Gets the Pt of the mother candidate.
    */
   Double_t GetMotherCandidatePt() const{return fMotherCandidateLorentzVector->Pt();}
+
+
+  /*
+   * Gets the P of the mother candidate.
+   */
+  Double_t GetMotherCandidateP() const{return fMotherCandidateLorentzVector->P();}
 	
+
   /*
    * Gets the Eta of the negative track.
    */
@@ -340,6 +369,26 @@ class AliV0Reader : public TObject {
    */
   Double_t GetMotherCandidateRapidity() const;
 	
+
+  /*
+   * Gets the P of the negative track.
+   */
+  Double_t GetNegativeTrackP() const{return fNegativeTrackLorentzVector->P();}
+	
+  /*
+   * Gets the P of the positive track.
+   */
+  Double_t GetPositiveTrackP() const{return fPositiveTrackLorentzVector->P();}
+
+  /*
+   * Gets the dE/dx in the TPC of the negative track.
+   */
+  Double_t GetNegativeTrackTPCdEdx() const{return fCurrentNegativeESDTrack->GetTPCsignal();}
+	
+  /*
+   * Gets the dE/dx in the TPC of the positive track.
+   */
+  Double_t GetPositiveTrackTPCdEdx() const{return fCurrentPositiveESDTrack->GetTPCsignal();}
 	
   /*
    * Update data which need to be updated every event.
@@ -457,7 +506,27 @@ class AliV0Reader : public TObject {
    * Sets the PIDProbability cut value for the positive track.
    */
   void SetPIDProbabilityPositiveParticle(Double_t pidProb){fPIDProbabilityCutPositiveParticle=pidProb;}
+
+  /*
+   * Sets the PIDnSigmaAboveElectron cut value for the tracks.
+   */
+  void SetPIDnSigmaAboveElectronLine(Double_t nSigmaAbove){fPIDnSigmaAboveElectronLine=nSigmaAbove;}
 	
+  /*
+   * Sets the PIDnSigmaBelowElectron cut value for the tracks.
+   */
+  void SetPIDnSigmaBelowElectronLine(Double_t nSigmaBelow){fPIDnSigmaBelowElectronLine=nSigmaBelow;}
+	
+  /*
+   * Sets the PIDnSigmaAbovePion cut value for the tracks.
+   */
+  void SetPIDnSigmaAbovePionLine(Double_t nSigmaAbovePion){fPIDnSigmaAbovePionLine=nSigmaAbovePion;}
+
+  /*
+   * Sets the PIDMinPnSigmaAbovePion cut value for the tracks.
+   */
+  void SetPIDMinPnSigmaAbovePionLine(Double_t MinPnSigmaAbovePion){fPIDMinPnSigmaAbovePionLine=MinPnSigmaAbovePion;}
+
   /*
    * Sets the SigmaMassCut value.
    */
@@ -468,6 +537,13 @@ class AliV0Reader : public TObject {
    */
   void SetDoMCTruth(Bool_t doMC){fDoMC = doMC;}
 	
+  /*
+   * Sets the flag to enable/disable the cut dedx N sigma 
+   */
+
+  void SetDodEdxSigmaCut( Bool_t dodEdxSigmaCut){fDodEdxSigmaCut=dodEdxSigmaCut;}
+
+
   /*
    * Updates the V0 information of the current V0.
    */
@@ -520,6 +596,8 @@ class AliV0Reader : public TObject {
   AliCFManager *fCFManager; // pointer to the cf manager
   //  AliCFContainer *container;
 	
+  // for dEdx cut based on nSigma to a particle line
+  AliTPCpidESD * fTPCpid; 
 	
   AliGammaConversionHistograms *fHistograms; //! pointer to histogram handling class
 	
@@ -565,6 +643,11 @@ class AliV0Reader : public TObject {
   Double_t fChi2CutMeson;  //chi2cut
   Double_t fPIDProbabilityCutNegativeParticle; //pid cut
   Double_t fPIDProbabilityCutPositiveParticle; //pid cut
+  Bool_t   fDodEdxSigmaCut; // flag to use the dEdxCut based on sigmas
+  Double_t fPIDnSigmaAboveElectronLine;
+  Double_t fPIDnSigmaBelowElectronLine;
+  Double_t fPIDnSigmaAbovePionLine;
+  Double_t fPIDMinPnSigmaAbovePionLine;
   Double_t fXVertexCut; //vertex cut
   Double_t fYVertexCut; //vertex cut
   Double_t fZVertexCut; // vertexcut

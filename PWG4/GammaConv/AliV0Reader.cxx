@@ -32,7 +32,7 @@
 
 #include "AliStack.h"
 #include "AliMCEventHandler.h"
-
+#include "AliTPCpidESD.h"
 
 class iostream;
 class AliESDv0;
@@ -53,6 +53,7 @@ AliV0Reader::AliV0Reader() :
   fESDHandler(NULL),
   fESDEvent(NULL),
   fCFManager(NULL),
+  fTPCpid(NULL),
   fHistograms(NULL),
   fCurrentV0IndexNumber(0),
   fCurrentV0(NULL),
@@ -87,6 +88,11 @@ AliV0Reader::AliV0Reader() :
   fChi2CutMeson(0.),
   fPIDProbabilityCutNegativeParticle(0),
   fPIDProbabilityCutPositiveParticle(0),
+  fDodEdxSigmaCut(kFALSE),
+  fPIDnSigmaAboveElectronLine(100),
+  fPIDnSigmaBelowElectronLine(-100),
+  fPIDnSigmaAbovePionLine(-100), 
+  fPIDMinPnSigmaAbovePionLine(100), 
   fXVertexCut(0.),
   fYVertexCut(0.),
   fZVertexCut(0.),
@@ -96,7 +102,7 @@ AliV0Reader::AliV0Reader() :
   fCurrentEventGoodV0s(),
   fPreviousEventGoodV0s()
 {
-	
+  fTPCpid = new AliTPCpidESD;	
 }
 
 
@@ -109,6 +115,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fESDHandler(original.fESDHandler),
   fESDEvent(original.fESDEvent),
   fCFManager(original.fCFManager),
+  fTPCpid(original.fTPCpid),
   fHistograms(original.fHistograms),
   fCurrentV0IndexNumber(original.fCurrentV0IndexNumber),
   fCurrentV0(original.fCurrentV0),
@@ -143,6 +150,11 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fChi2CutMeson(original.fChi2CutMeson),
   fPIDProbabilityCutNegativeParticle(original.fPIDProbabilityCutNegativeParticle),
   fPIDProbabilityCutPositiveParticle(original.fPIDProbabilityCutPositiveParticle),
+  fDodEdxSigmaCut(original.fDodEdxSigmaCut),
+  fPIDnSigmaAboveElectronLine(original.fPIDnSigmaAboveElectronLine),
+  fPIDnSigmaBelowElectronLine(original.fPIDnSigmaBelowElectronLine),
+  fPIDnSigmaAbovePionLine(original.fPIDnSigmaAbovePionLine), 
+  fPIDMinPnSigmaAbovePionLine(original.fPIDMinPnSigmaAbovePionLine), 
   fXVertexCut(original.fXVertexCut),
   fYVertexCut(original.fYVertexCut),
   fZVertexCut(original.fZVertexCut),
@@ -160,6 +172,12 @@ AliV0Reader & AliV0Reader::operator = (const AliV0Reader & /*source*/)
 {
   // assignment operator
   return *this;
+}
+AliV0Reader::~AliV0Reader()
+{
+  if(fTPCpid){
+    delete fTPCpid;
+  }
 }
 
 void AliV0Reader::Initialize(){
@@ -317,6 +335,7 @@ Bool_t AliV0Reader::NextV0(){
        continue;
        }
     */
+
 		
     if(fUseKFParticle){
       if(fCurrentMotherKFCandidate->GetNDF()<=0){
@@ -364,7 +383,11 @@ Bool_t AliV0Reader::NextV0(){
     else if(fUseESDTrack){
       //TODO
     }
-		
+
+    if(fHistograms != NULL){
+      fHistograms->FillHistogram("ESD_GoodV0s_InvMass",GetMotherCandidateMass());
+    }
+
     fCurrentEventGoodV0s.push_back(*fCurrentMotherKFCandidate);
 		
     iResult=kTRUE;//means we have a v0 who survived all the cuts applied
@@ -418,6 +441,43 @@ Bool_t AliV0Reader::UpdateV0Information(){
       fHistograms->FillHistogram("ESD_CutKink_InvMass",GetMotherCandidateMass());
     }
   }
+
+  if(fDodEdxSigmaCut == kTRUE){
+
+    if( fTPCpid->GetNumberOfSigmas(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
+	fTPCpid->GetNumberOfSigmas(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ||
+	fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
+	fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ){
+      iResult=kFALSE;
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("ESD_CutdEdxSigmaElectronLine_InvMass",GetMotherCandidateMass());
+      }
+    }
+    if( fCurrentPositiveESDTrack->P()>fPIDMinPnSigmaAbovePionLine){
+      if(fTPCpid->GetNumberOfSigmas(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+	 fTPCpid->GetNumberOfSigmas(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+	 fTPCpid->GetNumberOfSigmas(fCurrentPositiveESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
+	iResult=kFALSE;
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
+	}
+      }
+    }
+
+    if( fCurrentNegativeESDTrack->P()>fPIDMinPnSigmaAbovePionLine){
+      if(fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+	 fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+	 fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
+	iResult=kFALSE;
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
+	}
+      }
+    }
+  }
+
+
+
 	
   if(fCurrentNegativeKFParticle != NULL){
     delete fCurrentNegativeKFParticle;
