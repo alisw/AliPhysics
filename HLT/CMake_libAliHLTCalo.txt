@@ -1,7 +1,20 @@
 # -*- mode: cmake -*-
-# $Id$
+# $Id: CMake_libAliHLTCALO.txt 34927 2009-09-22 12:48:47Z richterm $
 
 set(SRCS
+CALO/AliHLTCaloAltroConfig.cxx
+CALO/AliHLTCaloBase.cxx
+CALO/AliHLTCaloConfig.cxx
+CALO/AliHLTCaloMapper.cxx
+CALO/AliHLTCaloRawAnalyzerChiSquareFit.cxx
+CALO/AliHLTCaloRawAnalyzerComponentv2.cxx
+CALO/AliHLTCaloRawAnalyzerComponentv3.cxx
+CALO/AliHLTCaloRawAnalyzerCrudeComponent.cxx
+CALO/AliHLTCaloRawAnalyzerCrude.cxx
+CALO/AliHLTCaloRawAnalyzer.cxx
+CALO/AliHLTCaloRawAnalyzerPeakFinderComponent.cxx
+CALO/AliHLTCaloRawAnalyzerPeakFinder.cxx
+CALO/AliHLTCaloUtilities.cxx
 )
 
 # fill list of header files from list of source files

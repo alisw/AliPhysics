@@ -1,24 +1,31 @@
 #-*- Mode: Makefile -*-
-# $Id$
+# $Id: libAliHLTCalo.pkg 35236 2009-10-05 18:22:22Z phille $
+
 
 include $(MODDIR)/hlt.conf
+
 
 ## header files of all classes
 ## optionally, the link def file of the library is generated
 ## automatically from those header files
-CLASS_HDRS:= AliHLTCaloProcessor.h \
-AliHLTCaloRawAnalyzerChiSquareFit.h \
+CLASS_HDRS:= AliHLTCaloRawAnalyzerChiSquareFit.h \
 AliHLTCaloRawAnalyzerComponentv3.h \
 AliHLTCaloRawAnalyzerCrudeComponent.h \
 AliHLTCaloRawAnalyzerCrude.h \
 AliHLTCaloRawAnalyzer.h \
 AliHLTCaloRawAnalyzerPeakFinderComponent.h \
 AliHLTCaloRawAnalyzerPeakFinder.h \
-AliHLTCaloRcuProcessor.h \
 AliHLTCaloUtilities.h \
 AliHLTCaloMapper.h \
 AliHLTCaloDefinitions.h \
-AliHLTCaloSanityInspector.h
+AliHLTCaloSanityInspector.h \
+AliHLTCaloSharedMemoryInterfacev2.h \
+AliHLTCaloFourier.h \
+AliHLTCaloProcessor.h \
+AliHLTCaloRcuProcessor.h
+
+
+
 
 ## all source files of this module
 ## all source files corresponding to the class headers
@@ -33,12 +40,12 @@ MODULE_HDRS:= 	$(CLASS_HDRS)				\
 
 ## the link def file for this module
 ## generated automatically if empty
-MODULE_DHDR:= 	AliHLTCaloLinkDef.h
+#MODULE_DHDR:= 	AliHLTCaloLinkDef.h
 
 ## AliRoot include paths
 EINCLUDE := HLT/BASE HLT/BASE/util STEER RAW HLT/PHOS EMCAL CALO
 
-LIBRARY_DEP  := -lHLTbase -lCALObase -CALOshuttle -lESD -lSTEER -lRAWDatarec
+LIBRARY_DEP  := -lHLTbase -lCalo -CALOshuttle -lESD -lSTEER -lRAWDatarec
 
 ###############################################################################
 #

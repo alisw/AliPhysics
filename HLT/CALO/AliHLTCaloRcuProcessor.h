@@ -7,22 +7,20 @@
  * See cxx source for full Copyright notice                               */
 
 
-//#include "AliHLTCALOProcessor.h"
+#include "AliHLTCaloProcessor.h"
 //#include "AliHLTCALORcuProperties.h"
 
-//class  AliHLTCALORcuProcessor : public AliHLTCALOProcessor, public AliHLTCALORcuProperties
-class  AliHLTCALORcuProcessor : public AliHLTCALOProcessor
+
+class AliHLTCaloRcuProcessor:public AliHLTCaloProcessor
 {
- public:
-  AliHLTCALORcuProcessor();
-  virtual ~AliHLTCALORcuProcessor();
-
- private:
-  AliHLTCALORcuProcessor (const AliHLTCALORcuProcessor & );
-  AliHLTCALORcuProcessor   & operator = (const  AliHLTCALORcuProcessor  &);
-
-
-
+public:
+  AliHLTCaloRcuProcessor();
+  virtual ~AliHLTCaloRcuProcessor();
+  
+private:
+  AliHLTCaloRcuProcessor (const AliHLTCaloRcuProcessor & );
+  AliHLTCaloRcuProcessor   & operator = (const  AliHLTCaloRcuProcessor  &);
+    
 };
 
 #endif
