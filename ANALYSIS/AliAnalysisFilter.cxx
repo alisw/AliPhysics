@@ -79,7 +79,7 @@ UInt_t AliAnalysisFilter::IsSelected(TObject* obj)
     while((cuts = (AliAnalysisCuts*)next())) {
 	Bool_t acc = cuts->IsSelected(obj);
 	if ((filterMask = cuts->GetFilterMask()) > 0) {
-	    acc = (acc && (filterMask & result));
+	    acc = (acc && (filterMask == result));
 	}
 	cuts->SetSelected(acc);
 	if (acc) {result |= iCutB & 0x00ffffff;}
