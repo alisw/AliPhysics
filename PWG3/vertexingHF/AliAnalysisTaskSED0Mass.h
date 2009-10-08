@@ -37,18 +37,28 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
+  void SetArray(Int_t type=AliAnalysisTaskSED0Mass::kD0){fArray=type;}
+
+  enum{kD0,kLS};
   
  private:
 
   AliAnalysisTaskSED0Mass(const AliAnalysisTaskSED0Mass &source);
   AliAnalysisTaskSED0Mass& operator=(const AliAnalysisTaskSED0Mass& source); 
-  void    FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout);
-  TList   *fOutputtight; //! list send on output slot 1
-  TList   *fOutputloose; //! list send on output slot 2
-  TList   *fDistr;       //! list send on output slot 3
+  void     FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout);
+  TList    *fOutputtight; //! list send on output slot 1
+  TList    *fOutputloose; //! list send on output slot 2
+  TList    *fDistr;       //! list send on output slot 4
+  TH1F     *fNentries;    //! histogram with number of events on output slot 3
   AliAnalysisVertexingHF *fVHFtight;  // Vertexer heavy flavour (used to pass the cuts)
   AliAnalysisVertexingHF *fVHFloose;  // Vertexer heavy flavour (used to pass the cuts)
-  TH1F *fNentries; //! histogram with number of events
+  Int_t    fArray;        //can be D0 or Like Sign candidates
+
+  Int_t    fTotPosPairs[5];     //
+  Int_t    fTotNegPairs[5];     // 
+  Double_t fLsNormalization;  // normalization
+
+
   ClassDef(AliAnalysisTaskSED0Mass,2); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 

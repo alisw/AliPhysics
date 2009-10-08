@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Mass *AddTaskD0Mass()
+AliAnalysisTaskSED0 *AddTaskD0(Int_t flag=0/*0 = D0,1 = LS*/)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -12,14 +12,19 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass()
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskD0MassDistr", "No analysis manager to connect to.");
+    ::Error("AddTaskD0Distr", "No analysis manager to connect to.");
     return NULL;
   }   
 
-  
+  TString filename="";
+  if(flag==0){
+    filename="D0InvMass.root"; 
+  } else filename="LSD0.root";
+
   // Aanalysis task    
-  AliAnalysisTaskSED0Mass *massD0Task = new AliAnalysisTaskSED0Mass("D0MassAndDistrAnalysis");
+  AliAnalysisTaskSED0 *massD0Task = new AliAnalysisTaskSED0("D0MassAndDistrAnalysis");
   massD0Task->SetDebugLevel(2);
+  massD0Task->SetArray(flag);
   mgr->AddTask(massD0Task);
   
   //
@@ -29,16 +34,16 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass()
 
   AliAnalysisDataContainer *coutputmassD01 = mgr->CreateContainer("coutputmassD01",TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   "D0InvMass.root");
+							   filename.Data());
   AliAnalysisDataContainer *coutputmassD02 = mgr->CreateContainer("coutputmassD02",TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   "D0InvMass.root");
+							   filename.Data());
   AliAnalysisDataContainer *coutputmassD03 = mgr->CreateContainer("nEntriesD0",TH1F::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   "D0InvMass.root");
+							   filename.Data());
   AliAnalysisDataContainer *coutputmassD04 = mgr->CreateContainer("coutputmassD0distr",TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   "D0InvMass.root");
+							   filename.Data());
 
   mgr->ConnectInput(massD0Task,0,mgr->GetCommonInputContainer());
 
