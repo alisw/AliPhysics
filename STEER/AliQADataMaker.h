@@ -66,7 +66,6 @@ public:
   TObjArray*          Init(AliQAv1::TASKINDEX_t, AliRecoParam::EventSpecie_t es, Int_t cycles = -1) ;
 	virtual void        Init(AliQAv1::TASKINDEX_t, TObjArray ** list, Int_t run, Int_t cycles = -1)   = 0 ;
 	virtual void        InitRaws()          = 0 ; 
-	virtual void        InitESDs()          = 0 ; 
   virtual void        InitRecPoints()     = 0 ; 
   Bool_t              IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
   Bool_t              IsValidEventSpecie(Int_t eventSpecieIndex, TObjArray ** list) ; 
@@ -91,6 +90,7 @@ protected:
 	virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list ) = 0 ; 
 	TObject *      GetData(TObjArray ** list, const Int_t index) ;
 	virtual void   InitDigits()        = 0 ; 
+	virtual void   InitESDs()          = 0 ; 
 	virtual void   InitHits()          = 0 ; 
   //virtual void   InitRecParticles()  = 0 ; 
 	virtual void   InitSDigits()       = 0 ; 
