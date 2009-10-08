@@ -1,4 +1,4 @@
-// $Id: AliHLTCaloRawAnalyzerChiSquareFit.cxx 30036 2008-11-24 16:43:44Z odjuvsla $
+// $Id: AliHLTPHOSRawAnalyzerChiSquareFit.cxx 30036 2008-11-24 16:43:44Z odjuvsla $
 
 
 /**************************************************************************
@@ -23,7 +23,7 @@
 using std::cout;
 using std::endl;
 
-//ClassImp(AliHLTCaloRawAnalyzerChiSquareFit) 
+ClassImp(AliHLTCaloRawAnalyzerChiSquareFit) 
 
 AliHLTCaloRawAnalyzerChiSquareFit::AliHLTCaloRawAnalyzerChiSquareFit(const AliHLTCaloRawAnalyzerChiSquareFit&):AliHLTCaloRawAnalyzer()
 {

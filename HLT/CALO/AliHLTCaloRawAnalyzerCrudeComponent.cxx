@@ -53,7 +53,7 @@ AliHLTCaloRawAnalyzerCrudeComponent::Deinit()
       delete fAnalyzerPtr;
       fAnalyzerPtr = 0;
     }
-  Logging(kHLTLogInfo, "HLT", "CALO", ",AliHLTCaloRawAnalyzerCrudeComponent Deinit");
+  Logging(kHLTLogInfo, "HLT", "Calo", ",AliHLTCaloRawAnalyzerCrudeComponent Deinit");
   return 0;
 }
 

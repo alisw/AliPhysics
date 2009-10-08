@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTCaloRcuProcessor.h 29824 2008-11-10 13:43:55Z richterm $
+// $Id: AliHLTCALORcuProcessor.h 29824 2008-11-10 13:43:55Z richterm $
 
 #ifndef ALIHLTCALORCUPROCESSOR_H
 #define ALIHLTCALORCUPROCESSOR_H
@@ -7,19 +7,19 @@
  * See cxx source for full Copyright notice                               */
 
 
-#include "AliHLTCaloProcessor.h"
-//#include "AliHLTCaloRcuProperties.h"
+//#include "AliHLTCALOProcessor.h"
+//#include "AliHLTCALORcuProperties.h"
 
-//class  AliHLTCaloRcuProcessor : public AliHLTCaloProcessor, public AliHLTCaloRcuProperties
-class  AliHLTCaloRcuProcessor : public AliHLTCaloProcessor
+//class  AliHLTCALORcuProcessor : public AliHLTCALOProcessor, public AliHLTCALORcuProperties
+class  AliHLTCALORcuProcessor : public AliHLTCALOProcessor
 {
  public:
-  AliHLTCaloRcuProcessor();
-  virtual ~AliHLTCaloRcuProcessor();
+  AliHLTCALORcuProcessor();
+  virtual ~AliHLTCALORcuProcessor();
 
  private:
-  AliHLTCaloRcuProcessor (const AliHLTCaloRcuProcessor & );
-  AliHLTCaloRcuProcessor   & operator = (const  AliHLTCaloRcuProcessor  &);
+  AliHLTCALORcuProcessor (const AliHLTCALORcuProcessor & );
+  AliHLTCALORcuProcessor   & operator = (const  AliHLTCALORcuProcessor  &);
 
 
 

@@ -26,19 +26,20 @@
 #include "AliCaloRawStreamV3.h"
 
 AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3():
-  AliHLTCaloRcuProcessor(), 
-  fAnalyzerPtr(0), 
-  fMapperPtr(0), 
+  AliHLTProcessor(),
+  fAnalyzerPtr(0),
+  fMapperPtr(0),     
+  fkDoPushRawData(true),
+  fPhosEventCount(0),
   fSanityInspectorPtr(0),
   fRawReaderMemoryPtr(0),
   fAltroRawStreamPtr(0),
-  fAlgorithm(0),
+  fAlgorithm(0),  
   fOffset(0),
   fBunchSizeCut(0),
   fMinPeakPosition(0),
   fMaxPeakPosition(100),
-  fkDoPushRawData(true)
-  // fMapperPtr(0)
+  fRawDataWriter(0) 
 {
   //comment
 
@@ -135,9 +136,10 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
   UInt_t totSize           = 0;
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
-
+  //  cout << __FILE__  << ":" << __LINE__ << "TP0"  << endl;
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
+      //     cout << __FILE__  << ":" << __LINE__ << "TP1"  << endl;
       iter = blocks+ndx;
       if( CheckInputDataType(  iter->fDataType ) == false )
 	{
@@ -150,6 +152,9 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
 	{
 	  //	  cout << __FILE__  << ":" << __LINE__ <<  ":" << "data is of type fgkDDLPackedRawDataType, continue processing " << endl;
 	  //	  cout << "the datatype is " <<   iter->fDataType.fID << ":" << iter->fDataType.fOrigin  << endl;
+	  //	  cout << __FILE__  << ":" << __LINE__ << "T10"  << endl;
+	  InitMapping( iter->fSpecification); 
+	  //	 cout << __FILE__  << ":" << __LINE__ << "TP2"  << endl; 
 	  blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
 	  if(blockSize == -1) // If the processing returns -1 we are out of buffer and return an error msg.
 	    {
@@ -184,7 +189,9 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
 Int_t
 AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize)
 {
-  //comment
+  //  cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T0"  << endl; 
+
+ //comment
   int tmpsize=  0;
   Int_t crazyness          = 0;
   Int_t nSamples           = 0;
@@ -196,10 +203,10 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
   //Adding to the total size of data written
   totSize += sizeof( AliHLTCaloChannelDataHeaderStruct );
   fRawReaderMemoryPtr->SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
-  fRawReaderMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + 1792  );
+  fRawReaderMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + 4608  );
   fRawReaderMemoryPtr->Reset();
   fRawReaderMemoryPtr->NextEvent();
-
+  //  cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T1"  << endl; 
   if( fkDoPushRawData == true)
     {
      fRawDataWriter->NewEvent( );
@@ -211,16 +218,17 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
     }
 
 
-  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("PHOS"));
+  // fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("PHOS"));
 
-  //  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("EMCAL"));
+  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("EMCAL"));
   //  while( fAltroRawStreamPtr->NextDDL() )
-
+  // cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T2"  << endl; 
   fAltroRawStreamPtr->NextDDL();
   {
     int cnt = 0;
     while( fAltroRawStreamPtr->NextChannel()  )
       { 
+	//	 cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T3"  << endl; 
 	if(  fAltroRawStreamPtr->GetHWAddress() < 128 || ( fAltroRawStreamPtr->GetHWAddress() ^ 0x800) < 128 ) 
 	  {
 	    continue; 
@@ -229,7 +237,11 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	  {
 	    cnt ++;
 	    UShort_t* firstBunchPtr;
-	    UShort_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
+
+	    //   UShort_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
+	    UInt_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
+
+	    //	     cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T4"  << endl; 
 	    
 	    if( fkDoPushRawData == true)
 	      {
@@ -246,22 +258,29 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 		  }
 		firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
 	      }
-	      
+	    //	    cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T5"  << endl;  
 	    totSize += sizeof( AliHLTCaloChannelDataStruct );
 	    if(totSize > size)
 	      {
 		HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
+	
 		return -1;
 	      }
 
+	    
+	    //	    cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T6"  << endl; 
 	    fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
+	    //	    cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T6.1"  << endl; 
 	    fAnalyzerPtr->Evaluate(0, nSamples);  
+	    //	    cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T6.2"  << endl; 
 	   
 	    //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
 	    {
+	      //	      cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T7"  << endl; 
 	      channelDataPtr->fChannelID =  chId;
 	      channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
-		
+	      //	      cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T8"  << endl;
+	      
 	      if( channelDataPtr->fEnergy > 70 )
 		{
 		  //		  cout << __FILE__ << __LINE__ << "The energy is of  channel  "<< chId << "  is "  <<  channelDataPtr->fEnergy << endl;
@@ -310,7 +329,8 @@ AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
   int iResult=0;
   
   //  fMapperPtr = new AliHLTCaloMapper();
-  InitMapping(); 
+  
+  //InitMapping(); 
 
   for(int i = 0; i < argc; i++)
     {
@@ -332,11 +352,13 @@ AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 	}  
     }
  
+  /*
   if( fMapperPtr->GetIsInitializedMapping() == false)
     {
       Logging(kHLTLogFatal, __FILE__ , IntToChar(  __LINE__ ) , "AliHLTCaloMapper::Could not initialise mapping from file %s, aborting", fMapperPtr->GetFilePath());
       return -4;
     }
+  */
 
   return iResult;
 }

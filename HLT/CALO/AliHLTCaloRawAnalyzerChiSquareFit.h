@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTCaloRawAnalyzerChiSquareFit.h 30036 2008-11-24 16:43:44Z odjuvsla $
+// $Id: AliHLTCALORawAnalyzerChiSquareFit.h 30036 2008-11-24 16:43:44Z odjuvsla $
 
 #ifndef ALIHLTCALORAWANALYZERCHISQUAREFIT_H
 #define ALIHLTCALORAWANALYZERCHISQUAREFIT_H
@@ -10,11 +10,9 @@
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                          */
 
-
-
 /**
- * The AliHLTCaloRawAnalyzerChiSquareFit class is the class for extracting the basic signal parameters
- * "timing" and "energy" from the PHOS raw data. Physical data will for a given readout channel be
+ * The AliHLTCaloPeakfinder class is the class for extracting the basic signal parameters
+ * "timing" and "energy" from the CALO raw data. Physical data will for a given readout channel be
  * a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in
  * calculation is of type double.
  **/
@@ -49,7 +47,7 @@ class AliHLTCaloRawAnalyzerChiSquareFit : public AliHLTCaloRawAnalyzer
 
  private:
 
-  // ClassDef(AliHLTCaloRawAnalyzerChiSquareFit, 2) 
+  //  ClassDef(AliHLTCaloRawAnalyzerChiSquareFit, 2) 
   
 };
 

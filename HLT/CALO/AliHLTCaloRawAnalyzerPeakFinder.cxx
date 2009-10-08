@@ -1,4 +1,4 @@
-// $Id: AliHLTCaloRawAnalyzerPeakFinder.cxx 29824 2008-11-10 13:43:55Z richterm $
+// $Id: AliHLTCALORawAnalyzerPeakFinder.cxx 29824 2008-11-10 13:43:55Z richterm $
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *

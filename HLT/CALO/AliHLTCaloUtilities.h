@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTCaloUtilities.h 34264 2009-08-14 18:29:23Z odjuvsla $
+// $Id: AliHLTCALOUtilities.h 34264 2009-08-14 18:29:23Z odjuvsla $
 
 #ifndef ALIHLTCALOUTILITIES_H
 #define ALIHLTCALOUTILITIES_H

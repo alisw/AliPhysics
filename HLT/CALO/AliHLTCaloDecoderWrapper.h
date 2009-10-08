@@ -1,3 +1,6 @@
+#ifndef ALIHLTCALODECODERWRAPPER_H
+#define ALIHLTCALODECODERWRAPPER_H
+
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -15,50 +18,40 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include "AliHLTCALODecoderWrapper.h"
 
+#include "Rtypes.h"
 
 /*
+class AliAltroRawStreamV3;
+class AliCaloRawStreamV3;
+class AliRawReaderMemory;
+*/
+ 
 #include "AliAltroRawStreamV3.h"
 #include "AliCaloRawStreamV3.h"
 #include "AliRawReaderMemory.h"
-*/
 
-#include "AliHLTDataTypes.h"
+class AliHLTComponentBlockData;
 
 
-AliHLTCALODecoderWrapper::AliHLTCALODecoderWrapper() : fAltroRawStream(0),
-						       //      fCaloRawStream(0),
-						       fReaderMemory(0)
+class  AliHLTCaloDecoderWrapper
 {
-  fReaderMemory  = new AliRawReaderMemory();
-}
+ public:
+  AliHLTCaloDecoderWrapper();
+  virtual ~AliHLTCaloDecoderWrapper();
+  void SetMemory( AliHLTComponentBlockData *dtaptr );
+  inline bool  NextChannel          ( )       { return  fAltroRawStream->NextChannel();  };
+  inline bool NextBunch             ( )       { return  fAltroRawStream->NextBunch();    };
+  inline const UShort_t *GetSignals ( )       { return  fAltroRawStream->GetSignals();   };
+  inline Int_t  GetHWAddress        ( ) const { return  fAltroRawStream->GetHWAddress();}; 
+  inline Int_t  GetBunchLength      ( ) const { return  fAltroRawStream->GetBunchLength();  };
+  inline UInt_t GetStartTimeBin     ( ) const { return  fAltroRawStream->GetEndTimeBin(); };
+  inline UInt_t GetEndTimeBin       ( ) const { return  fAltroRawStream->GetStartTimeBin(); };
 
+ private:
+  AliAltroRawStreamV3 *fAltroRawStream;
+  //  AliCaloRawStreamV3  *fCaloRawStream;
+  AliRawReaderMemory  *fReaderMemory;
+};
 
-AliHLTCALODecoderWrapper::~AliHLTCALODecoderWrapper()
-{
-
-}
-
-
-void 
-AliHLTCALODecoderWrapper::SetMemory( AliHLTComponentBlockData *dtaptr    ) 
-{
-  if ( fAltroRawStream   !=  0 )
-    {
-      delete  fAltroRawStream;
-    }
-  
-  fAltroRawStream  = new AliCaloRawStreamV3( fReaderMemory, TString("PHOS"));
-  //  fAltroRawStreamPtr = new   AliAltroRawStreamV3( fReaderMemory, TString("PHOS"));
-  fReaderMemory->NextEvent();
-  fAltroRawStream->NextDDL();
-}
-
-
-
-
-
-
-
-
+#endif

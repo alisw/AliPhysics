@@ -31,7 +31,9 @@ namespace CaloHLTConst
   //  const int NXCOLUMNSRCU  =   16; 
   //  const int NZROWSMOD      =  56;                    /**<Number of rows per module*/       
   //  const int NXCOLUMNSMOD   =  64;                 /**<Number of columns per module*/ 
-  //  const int NGAINS         =   2;                             /**<Number of gains per ALTRO channel*/
+ 
+
+  // const int NGAINS         =   2;                             /**<Number of gains per ALTRO channel*/
 
   const int NALTROS        =   4;                             /**<Number of ALTROs per frontend card*/
   const int NALTROCHANNELS =  16;

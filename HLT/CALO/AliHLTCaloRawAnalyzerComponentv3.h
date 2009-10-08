@@ -34,7 +34,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTCaloRcuProcessor.h"
+//#include "AliHLTCaloRcuProcessor.h"
 
 
 class AliHLTCaloRawAnalyzer;
@@ -94,10 +94,15 @@ class AliAltroRawStreamV3;
  * @ingroup alihlt_phos
  */ 
 
+
+#include "AliHLTProcessor.h"
+#include "AliHLTCaloDefinitions.h"
+
 class AliHLTCaloMapper;
 
 
-class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloRcuProcessor
+//class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloRcuProcessor
+class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTProcessor
 {
  public:
 
@@ -133,7 +138,8 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloRcuProcessor
  protected:
 virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype) = 0;
   /** interface function, see @ref AliHLTComponent for description */
-  using AliHLTCaloRcuProcessor::DoEvent;
+
+//  using AliHLTCaloRcuProcessor::DoEvent;
 
   /** interface function, see @ref AliHLTComponent for description */
   virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
@@ -162,10 +168,12 @@ virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype) = 0;
   /** Keep the assignement operator private since it should not be used */
   AliHLTCaloRawAnalyzerComponentv3 & operator = (const AliHLTCaloRawAnalyzerComponentv3 &);
 
-  virtual void InitMapping() = 0;
+  virtual void InitMapping(const int specification ) = 0;
   const bool fkDoPushRawData;
   /** Mapping from harware address to geometrical address */
   //  AliHLTCaloMapper *fMapperPtr;                       //!transient 
+
+  unsigned long fPhosEventCount;
 
   /** Pointer to object which may check the integrity of the data */
   AliHLTCaloSanityInspector *fSanityInspectorPtr;     //!transient

@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTCaloRawAnalyzerPeakFinder.h 29824 2008-11-10 13:43:55Z richterm $
+// $Id: AliHLTCALORawAnalyzerPeakFinder.h 29824 2008-11-10 13:43:55Z richterm $
 
 #ifndef ALIHLTCALORAWANALYZERPEAKFINDER_H
 #define ALIHLTCALORAWANALYZERPEAKFINDER_H

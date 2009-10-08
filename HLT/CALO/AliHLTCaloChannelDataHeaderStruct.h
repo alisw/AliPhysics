@@ -22,6 +22,7 @@
 
 #include "Rtypes.h"
 
+//struct AliHLTCaloChannelDataHeaderStruct
 struct AliHLTCaloChannelDataHeaderStruct
 {
   //  Int_t fShmAddress;

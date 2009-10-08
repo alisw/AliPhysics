@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-2004, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliHLTCaloRawAnalyzer.h 34264 2009-08-14 18:29:23Z odjuvsla $ */
+/* $Id: AliHLTCALORawAnalyzer.h 34264 2009-08-14 18:29:23Z odjuvsla $ */
 
 #include "Rtypes.h"
 

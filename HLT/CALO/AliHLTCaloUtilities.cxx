@@ -1,4 +1,4 @@
-// $Id: AliHLTCaloUtilities.cxx 34264 2009-08-14 18:29:23Z odjuvsla $
+// $Id: AliHLTCALOUtilities.cxx 34264 2009-08-14 18:29:23Z odjuvsla $
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *

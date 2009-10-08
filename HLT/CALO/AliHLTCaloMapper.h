@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTCaloMapper.h 34264 2009-08-14 18:29:23Z odjuvsla $
+// $Id: AliHLTCALOMapper.h 34264 2009-08-14 18:29:23Z odjuvsla $
 
 #ifndef ALIHLTCALOMAPPER_H
 #define ALIHLTCALOMAPPER_H
@@ -23,38 +23,51 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//#include "AliHLTCaloBase.h"
 
 #include "AliHLTCaloConstants.h"
-
-using namespace CaloHLTConst;
-
 #include "Rtypes.h"
 #include "AliHLTLogging.h"
 
-//#include "AliPHOSEMCAGeometry.h"
+using namespace CaloHLTConst;
+
 
 class AliHLTCaloCoordinate;
 
 class AliHLTCaloMapper : public AliHLTLogging
-//class AliHLTCaloMapper 
 {
- public:
-  AliHLTCaloMapper();
+public:
+
+  //  AliHLTCaloMapper(const int speficication);
+
+  AliHLTCaloMapper(const unsigned long speficication);
+ 
   virtual ~AliHLTCaloMapper();
-  
-  virtual void InitAltroMapping() = 0; 
+
+  // virtual void InitAltroMapping( const int specification ) = 0; 
+  virtual void InitAltroMapping( const unsigned long specification ) = 0; 
+
   virtual void InitDDLSpecificationMapping() = 0;
-  
   bool GetIsInitializedMapping();
   char* GetFilePath();
-  const virtual int GetDDLFromSpec( const AliHLTUInt32_t spec )=0;
-  const virtual int GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd) = 0;
-  void ChannelId2Coordinate(const UShort_t channelId,    AliHLTCaloCoordinate &channelCoord);
-  //  UShort_t GetChannelID(Int_t specification, Int_t hwAddress);
-  //  static void GetChannelCoord(UShort_t channelId, UShort_t* channelCoord);
-  //  static void GetLocalCoord(UShort_t channelId, Float_t* localCoord);
-  //  int GetDDLFromSpec(Int_t specification);
+  //const virtual int GetDDLFromSpec( const AliHLTUInt32_t spec );
+  // const virtual int GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd);
+
+  //  static int GetDDLFromSpec( const AliHLTUInt32_t spec );
+  int GetDDLFromSpec( const AliHLTUInt32_t spec );
+
+  
+  static unsigned long GetSpecFromDDLIndex( const int ddlindex );
+
+ 
+
+
+  UInt_t  GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd);
+  static void ChannelId2Coordinate(const UShort_t channelId,    AliHLTCaloCoordinate &channelCoord);
+  
+  // static unsigned long GetSpecFromDDLIndex( const int ddlindex );
+  // static int GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd);
+  // static void ChannelId2Coordinate(const UShort_t channelId,    AliHLTCaloCoordinate &channelCoord);
+  
 
   struct fAltromap{ 
     int fZRow; // Coordinate in Z direction (beam direction) relatve too one RCU
@@ -72,19 +85,18 @@ class AliHLTCaloMapper : public AliHLTLogging
 
   fAltromap *fHw2geomapPtr; //pointer to structure holding information about geometrical address 
 
-
   char fFilepath[1024];
 
 protected:
+  int fSpecification;
   bool fIsInitializedMapping;
   fDDLSpecificationMap* fSpecificationMapPtr;
-
-
+  
  private:
+  AliHLTCaloMapper();
   AliHLTCaloMapper(const AliHLTCaloMapper & );
   AliHLTCaloMapper & operator = (const AliHLTCaloMapper &);
-  //AliPHOSEMCAGeometry fPHOSGeometry;
-  //static const Float_t fCellStep = 2.2;//2.*fPHOSGeometry.GetAirCellHalfSize()[0];
+  
 };
 
 #endif

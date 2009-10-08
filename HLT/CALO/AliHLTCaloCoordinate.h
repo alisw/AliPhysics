@@ -21,13 +21,13 @@
 
 #include "Rtypes.h"
 
+//struct  AliHLTCaloCoordinate
 struct  AliHLTCaloCoordinate
 {
   UShort_t fX;
   UShort_t fZ;
   UShort_t fGain;
   UShort_t fModuleId;
-
 };
 
 #endif
