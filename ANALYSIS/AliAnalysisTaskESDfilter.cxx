@@ -157,13 +157,13 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	header->SetOrbitNumber(esd->GetOrbitNumber());
 	header->SetPeriodNumber(esd->GetPeriodNumber());
 	header->SetEventType(esd->GetEventType());
-	header->SetMuonMagFieldScale(-999.); // FIXME
 	header->SetCentrality(-999.);        // FIXME
     }
     
     header->SetTriggerMask(esd->GetTriggerMask()); 
     header->SetTriggerCluster(esd->GetTriggerCluster());
     header->SetMagneticField(esd->GetMagneticField());
+    header->SetMuonMagFieldScale(esd->GetCurrentDip()/6000.);
     header->SetZDCN1Energy(esd->GetZDCN1Energy());
     header->SetZDCP1Energy(esd->GetZDCP1Energy());
     header->SetZDCN2Energy(esd->GetZDCN2Energy());
