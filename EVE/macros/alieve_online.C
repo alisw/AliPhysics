@@ -71,6 +71,16 @@ void alieve_online_init()
     AliEveEventManager::GetMaster()->SetAutoLoad(kTRUE);
   }
 
+  {
+    TGTab *tab = gEve->GetBrowser()->GetTab(2);
+
+    TGHorizontalFrame *hf = (TGHorizontalFrame*) tab->GetParent();
+    TGVerticalFrame   *vf = (TGVerticalFrame*)   hf ->GetParent();
+
+    hf->Resize(hf->GetWidth(), hf->GetHeight() + 80);
+    vf->Layout();
+  }
+
   gEve->Redraw3D(kTRUE);
 }
 
