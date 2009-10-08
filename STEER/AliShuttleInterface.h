@@ -23,7 +23,7 @@ class AliShuttleInterface : public TObject
 {
   public:
     enum System { kDAQ = 0, kDCS, kHLT };
-    enum { kNDetectors = 20 }; // number of subdetectors in ALICE
+    enum { kNDetectors = 21 }; // number of subdetectors in ALICE
 
     virtual Bool_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
     				Int_t validityStart = 0, Bool_t validityInfinite = kFALSE) = 0;
@@ -42,6 +42,7 @@ class AliShuttleInterface : public TObject
     virtual const char* GetRunType() = 0;
     virtual Bool_t GetHLTStatus() = 0;
     virtual const char* GetTriggerConfiguration() = 0;
+    virtual const char* GetTriggerDetectorMask() = 0;
 
     virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path) = 0;
     

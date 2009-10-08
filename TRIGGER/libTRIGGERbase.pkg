@@ -1,0 +1,16 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+SRCS:=  AliTRIPreprocessor.cxx  
+CINTHDRS:= $(SRCS:.cxx=.h)
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= TRIGGERLinkDef.h
+
+EINCLUDE:= ITS STEER
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
+                         -lCDB -lITSsim 
+endif

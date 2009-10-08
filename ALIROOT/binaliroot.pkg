@@ -20,7 +20,7 @@ ELIBS:= MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONc
         THijing hijing \
         FASTSIM microcern \
 	RAWDatabase RAWDatarec RAWDatasim \
-	HLTbase MUONevaluation \
+	HLTbase MUONevaluation TRIGGERbase \
 #       THbtp TEPEMGEN \
 #	THerwig herwig TPHIC
 
@@ -102,7 +102,8 @@ ARLIBS:= \
    RAW/tgt_$(ALICE_TARGET)/G__RAWDatabase.o $(LIBPATH)/libRAWDatabase.a \
    RAW/tgt_$(ALICE_TARGET)/G__RAWDatasim.o $(LIBPATH)/libRAWDatasim.a \
    RAW/tgt_$(ALICE_TARGET)/G__RAWDatarec.o $(LIBPATH)/libRAWDatarec.a \
-   RAW/tgt_$(ALICE_TARGET)/G__MDC.o $(LIBPATH)/libMDC.a
+   RAW/tgt_$(ALICE_TARGET)/G__MDC.o $(LIBPATH)/libMDC.a \
+   TRIGGER/tgt_$(ALICE_TARGET)/G__TRIGGERbase.o $(LIBPATH)/libTRIGGERbase.a
 
 #SHLIBS:= $(BINLIBDIRS) -lEVGEN -lEGPythia6 -lPythia6 -lpythia6 -lAliPythia6 -llhapdf -lTHijing -lhijing -lTHbtp -lTHerwig -lherwig -lTEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
 SHLIBS:= $(BINLIBDIRS) -lEVGEN -lEGPythia6 -lPythia6 -lpythia6 -lAliPythia6 -llhapdf -lTHijing -lhijing -lTHerwig -lherwig -lTPHIC -lFASTSIM -lmicrocern

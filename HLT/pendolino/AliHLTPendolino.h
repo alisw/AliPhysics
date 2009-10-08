@@ -447,6 +447,7 @@ class AliHLTPendolino : public AliShuttleInterface {
          * @return NULL pointer, since it should not be used.
          */
 		virtual const char* GetTriggerConfiguration();
+                virtual const char* GetTriggerDetectorMask();
 
 		/**
 		 * Disable the default constructor.

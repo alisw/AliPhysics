@@ -54,6 +54,7 @@ DPMJET/module.mk:	DPMJET/libdpmjet.pkg
 TDPMjet/module.mk:	TDPMjet/libTDPMjet.pkg
 TTherminator/module.mk:	TTherminator/libTTherminator.pkg
 CORRFW/module.mk:       CORRFW/libCORRFW.pkg
+TRIGGER/module.mk:      TRIGGER/libTRIGGERbase.pkg
 
 ifeq (win32gcc,$(ALICE_TARGET))
 $(LIBPATH)/libAOD.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT)
@@ -185,5 +186,6 @@ $(LIBPATH)/libPWG4PartCorrBase.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBP
 $(LIBPATH)/libPWG4PartCorrDep.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT) $(LIBPATH)/libPWG4PartCorrBase.$(SOEXT)
 $(LIBPATH)/libPWG4JetTasks.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
 $(LIBPATH)/libPWG4GammaConv.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH)/libESD.$(SOEXT) $(LIBPATH)/libAOD.$(SOEXT) $(LIBPATH)/libANALYSIS.$(SOEXT) $(LIBPATH)/libANALYSISalice.$(SOEXT)
+$(LIBPATH)/libTRIGGER.$(SOEXT): $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libITSsim.$(SOEXT) 
 
 endif

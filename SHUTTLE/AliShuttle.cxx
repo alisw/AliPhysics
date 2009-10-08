@@ -1937,7 +1937,7 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 	}
 
 	// TODO Check field count!
-	const UInt_t nCols = 26;
+	const UInt_t nCols = 25;
 	if (aResult->GetFieldCount() != (Int_t) nCols) {
 		Log("SHUTTLE", "Invalid SQL result field number!");
 		delete aResult;
@@ -3474,6 +3474,53 @@ const char* AliShuttle::GetTriggerConfiguration()
 	Log("SHUTTLE", Form("Found trigger configuration: %s", triggerConfig.Data()));
 	
 	return triggerConfig;
+}
+
+//______________________________________________________________________________________________
+const char* AliShuttle::GetTriggerDetectorMask()
+{
+	// Receives the trigger detector mask from DAQ logbook
+	
+	// check connection, if needed reconnect
+	if (!Connect(3)) 
+		return 0;
+
+	TString sqlQuery;
+	sqlQuery.Form("SELECT BIN(BIT_OR(inputDetectorMask)) from logbook_trigger_clusters WHERE run = %d;", GetCurrentRun());
+	TSQLResult* result = fServer[3]->Query(sqlQuery);
+	if (!result)
+	{
+		Log("SHUTTLE", Form("ERROR: Can't execute query <%s>!", sqlQuery.Data()));
+		return 0;
+	}
+	
+	if (result->GetRowCount() == 0)
+	{
+		Log("SHUTTLE", "ERROR: Trigger Detector Mask not found in logbook_trigger_clusters");
+		delete result;
+		return 0;
+	}
+	
+	TSQLRow* row = result->Next();
+	if (!row)
+	{
+		Log("SHUTTLE", "ERROR: Could not receive logbook_trigger_clusters data");
+		delete result;
+		return 0;
+	}
+
+	// static, so that pointer remains valid when it is returned to the calling class	
+	static TString triggerDetectorMask(row->GetField(0));
+	
+	delete row;
+	row = 0;
+	
+	delete result;
+	result = 0;
+	
+	Log("SHUTTLE", Form("Found Trigger Detector Mask: %s", triggerConfig.Data()));
+	
+	return triggerDetectorMask;
 }
 
 //______________________________________________________________________________________________

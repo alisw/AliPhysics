@@ -12,7 +12,7 @@ Set(LIBS MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw
          ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase
          VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec BCM STRUCT T0base T0sim
          T0rec EVGEN STEERBase ESD AOD CDB STEER THijing hijing FASTSIM microcern
-         RAWDatabase RAWDatarec RAWDatasim MUONevaluation HLTbase )
+         RAWDatabase RAWDatarec RAWDatasim MUONevaluation HLTbase TRIGGERbase)
 
 AddExecutable(aliroot "${SRCS}" "${LIBS}")
 

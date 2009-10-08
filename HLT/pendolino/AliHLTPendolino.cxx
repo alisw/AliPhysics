@@ -265,6 +265,15 @@ const char* AliHLTPendolino::GetTriggerConfiguration() {
 	return NULL;
 }
 
+const char* AliHLTPendolino::GetTriggerDetectorMask() {
+    // Disabled Function inherited from interface
+    TString msg;
+    msg = " ~~~ PredictProc tries to request Trigger configuration, this is disabled. Discarding call in Pendolino.";
+	Log(kHLTInterfaceModule, msg.Data());
+
+	return NULL;
+}
+
 
 TList* AliHLTPendolino::GetFileSources(Int_t system, const char* detector,
 			const char* id) {

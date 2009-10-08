@@ -373,6 +373,22 @@ const char* AliPreprocessor::GetTriggerConfiguration()
 	
 	return fShuttle->GetTriggerConfiguration();
 }
+//______________________________________________________________________________________________
+const char* AliPreprocessor::GetTriggerDetectorMask()
+{
+	// Returns the trigger detector mask which is read from a table in the DAQ logbook
+	// The call is delegated to AliShuttleInterface
+	// Only TRI can call this function.
+	
+	TString detName(GetName());
+	if (detName != "TRI") 
+	{
+		Log("GetTriggerDetectorMask - Only TRI can call this function.");
+		return 0;
+	}
+	
+	return fShuttle->GetTriggerDetectorMask();
+}
 
 //______________________________________________________________________________________________
 void AliPreprocessor::AddRunType(const char* runType)

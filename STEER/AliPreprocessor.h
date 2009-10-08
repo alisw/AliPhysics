@@ -53,6 +53,7 @@ class AliPreprocessor : public TNamed
     const char* GetRunType();
     Bool_t GetHLTStatus();
     const char* GetTriggerConfiguration();
+    const char* GetTriggerDetectorMask();
     void Log(const char* message);
     UInt_t GetStartTimeDCSQuery();
     UInt_t GetEndTimeDCSQuery();
