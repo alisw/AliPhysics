@@ -649,15 +649,21 @@ void AliReconstruction::InitCDB()
     	AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     	AliDebug(2, Form("Default CDB storage is set to: %s", fCDBUri.Data()));
     	AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    } else {
-    	fCDBUri="local://$ALICE_ROOT/OCDB";
+	man->SetDefaultStorage(fCDBUri);
+    } 
+    else if (!man->GetRaw()){
+	fCDBUri="local://$ALICE_ROOT/OCDB";
     	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     	AliWarning("Default CDB storage not yet set !!!!");
     	AliWarning(Form("Setting it now to: %s", fCDBUri.Data()));
     	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    		
+	man->SetDefaultStorage(fCDBUri);
     }
-    man->SetDefaultStorage(fCDBUri);
+    else {    
+    	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	AliWarning("Default storage will be set after setting the Run Number!!!");
+    	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");    		
+    }
   }
 
   // Now activate the detector specific CDB storage locations
