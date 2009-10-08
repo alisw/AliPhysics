@@ -42,13 +42,13 @@ TNamed()
   SetTitle(namst.Data());
   Reset();
   for(Int_t i=0; i<48; i++){
-    fADCModule[i] = 0;
-    fADCChannel[i] = 0;
-    fDetector[i] = 0;
-    fSector[i] = 0;
-    fScalerChannel[i] = 0;
-    fScDetector[i] = 0;
-    fScSector[i] = 0;
+    fADCModule[i] = -1;
+    fADCChannel[i] = -1;
+    fDetector[i] = -1;
+    fSector[i] = -1;
+    fScalerChannel[i] = -1;
+    fScDetector[i] = -1;
+    fScSector[i] = -1;
   }
   
   
@@ -125,8 +125,9 @@ void  AliZDCChMap::Print(Option_t *) const
      printf(" ADC - mod. %d ch. %d -> detector %d sector %d\n",
       fADCModule[i], fADCChannel[i],fDetector[i], fSector[i]);
    for(Int_t i=0; i<32; i++) 
-     printf(" SCALER - ch. %d -> detector %d sector %d\n",
-      fScalerChannel[i],fScDetector[i], fScSector[i]);
+     if(fScalerChannel[i]!=-1)
+       printf(" SCALER - ch. %d -> detector %d sector %d\n",
+        fScalerChannel[i],fScDetector[i], fScSector[i]);
    printf("\n\n\t **********************************************************\n\n");
  
 } 
