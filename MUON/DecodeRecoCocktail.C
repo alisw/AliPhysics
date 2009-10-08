@@ -46,6 +46,7 @@
 #include <TParticle.h>
 #include <TSystem.h>
 #include <TGeoManager.h>
+#include <TGeoGlobalMagField.h>
 #include "AliMUONRecoCheck.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
@@ -58,6 +59,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMagF.h"
+#include "AliGRPManager.h"
 /*TODO: need to update this with changes made to ITS
 #include "AliITSVertexerPPZ.h"
 #include "AliITSLoader.h"
@@ -103,10 +105,12 @@ void DecodeRecoCocktail(
   
   // set  mag field 
   // waiting for mag field in CDB 
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
+   if (!TGeoGlobalMagField::Instance()->GetField()) {
     printf("Loading field map...\n");
-    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
+    AliGRPManager *grpMan = new AliGRPManager();
+    grpMan->ReadGRPEntry();
+    grpMan->SetMagField();
+    delete grpMan;
   }
   // set the magnetic field for track extrapolations
   AliMUONTrackExtrap::SetField();
