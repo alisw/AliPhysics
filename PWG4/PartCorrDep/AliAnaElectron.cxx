@@ -742,7 +742,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	  //Make this preserve sign of particle
 	  if(track->Charge() < 0) tr.SetPdg(11); //electron is 11
 	  else  tr.SetPdg(-11); //positron is -11
-	  Int_t btag = -1;
+	  Int_t btag = 0;
 	  if(dvmbtag > 0) tr.SetBTagBit(btag,tr.kDVMTag0);
 	  if(dvmbtag > 1) tr.SetBTagBit(btag,tr.kDVMTag1);
 	  if(dvmbtag > 2) tr.SetBTagBit(btag,tr.kDVMTag2);
@@ -1500,8 +1500,7 @@ Bool_t AliAnaElectron::CheckTrack(const AliAODTrack* track, const char* type)
     if(label != trackId) continue;  //skip to the next one if they don't match
 
     if(type=="DVM") { 
-      if(ele->CheckBTagBit(ele->GetBtag(),AliAODPWG4Particle::kDVMTag0) ||
-	 ele->CheckBTagBit(ele->GetBtag(),AliAODPWG4Particle::kDVMTag1) ||
+      if(ele->CheckBTagBit(ele->GetBtag(),AliAODPWG4Particle::kDVMTag1) ||
 	 ele->CheckBTagBit(ele->GetBtag(),AliAODPWG4Particle::kDVMTag2))
 	pass = kTRUE;
 
