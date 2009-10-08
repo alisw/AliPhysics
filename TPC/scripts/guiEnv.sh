@@ -1,19 +1,26 @@
 #
 # setup aliroot environment
 # to be modified by users
-# 
+# This is example setup which is used at GSI
+# In order to use it on your laptop 
+# AliRoot, Destination directories and the AUTOFILES has to be modified
+# (Jens Wiechula, Marian Ivanov)
 #
 
 #
 # set your aliroot
 #
-source /u/miranov/.balice64HEAD0108
+source $HOME/.balice
+echo YOU HAVE TO MODIFY ALIROOT SETUP
+echo IT  IS ENVIRNMENT SPECIFIC 
 #
 #output directory
 #
 export GUI_OUTDIR=/lustre/alice/TPCgui
+echo YOU HAVE TO MODIFY DESTINATION DIRECTORY
+echo IT  IS ENVIRONMENT SPECIFIC 
 
-#usually the next two can stay as they are. If your not happy with where the output is written
+#usually the next two can stay as they are. If you are not happy with where the output is written
 #feel free to change them
 export GUI_OUTDIR_TIME=$GUI_OUTDIR/time
 export GUI_OUTDIR_RUNS=$GUI_OUTDIR/runs
@@ -40,6 +47,8 @@ export WITHALIEN=0
 #run numbers of the file names:
 #Run([0-9]{5})_.*
 export AUTOFILES=/lustre/alice/alien/alice/data/2009/OCDB/TPC/Calib/HighVoltage
+echo YOU HAVE TO MODIFY AUTOFILES DIRECTORY
+echo IT  IS ENVIRONMENT SPECIFIC 
 
 #number of files per chunk in automatic tree creation
 export NFILES=25

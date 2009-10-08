@@ -18,15 +18,14 @@ for adir in `cat run.list`; do
     cd $adir
     bsub -q $qname  aliroot -b -q  $ALICE_ROOT/TPC/macros/filterRAW.C
     cd $mydir
-    done;     
-done;
-#
+done     
+
 mydir=`pwd`
 for adir in `cat run.list`; do
-cd $adir
-echo bsub -q $qname  aliroot -b -q  $ALICE_ROOT/TPC/macros/filterESD.C
-bsub -q $qname  aliroot -b -q  $ALICE_ROOT/TPC/macros/filterESD.C
-cd $mydir
-done;
-
+    cd $adir
+    echo bsub -q $qname  aliroot -b -q  $ALICE_ROOT/TPC/macros/filterESD.C
+    bsub -q $qname  aliroot -b -q  $ALICE_ROOT/TPC/macros/filterESD.C
+    cd $mydir
+done
+ 
 
