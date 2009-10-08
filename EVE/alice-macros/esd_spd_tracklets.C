@@ -7,42 +7,68 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-// To use when per-line id is supported
+// Lines commented with //x should be reactivated when we
+// move to a newer ROOT (after 5.25.2).
+// Corresponding lines that are now replacing them should be removed.
+//
+// The problem was the TEveTrackProjected did not support projection
+// of tracks with locked points -- and we do that for tracklets.
+//
+// Maybe it would be even better to have AliEveTracklet : public TEveLine
+// and support both in AliEveTrackCounter.
+// Or have trackelt counter -- as not all histograms collected for tracks
+// are relevant for tracklets.
 
-class TrackletId : public TObject
+TEveElementList* esd_spd_tracklets(Float_t radius=8, Width_t line_width)
+//x TEveTrackList* esd_spd_tracklets(Float_t rad=8)
 {
-public:
-  // label, phi, theta
-  // virtual void Print(const Option_t* opt="") {}
-};
+  // radius - cylindrical radius to which the tracklets should be extrapolated
 
-TEveStraightLineSet* esd_spd_tracklets(Float_t rad=8)
-{
-  AliESDEvent         * esd = AliEveEventManager::AssertESD();
-  AliESDVertex   * pv  = esd->GetPrimaryVertexSPD();
-  AliMultiplicity* mul = esd->GetMultiplicity();
+  AliESDEvent     *esd = AliEveEventManager::AssertESD();
+  AliESDVertex    *pv  = esd->GetPrimaryVertexSPD();
+  AliMultiplicity *mul = esd->GetMultiplicity();
 
   Double_t pvx[3], pve[3];
   pv->GetXYZ(pvx);
   pv->GetSigmaXYZ(pve);
 
-  TEveStraightLineSet* ls = new TEveStraightLineSet("SPD tracklets");
+  TEveCompound *cont = new TEveCompound("SPD Tracklets");
+  cont->OpenCompound();
+  //x TEveTrackList *cont = new TEveTrackList("SPD Tracklets");
+  cont->SetTitle(Form("N=%d", mul->GetNumberOfTracklets()));
+  cont->SetMainColor(7);
+  //x cont->SetLineWidth(line_width);
+
+  gEve->AddElement(cont);
 
   for (Int_t i=0; i<mul->GetNumberOfTracklets(); ++i)
   {
     using namespace TMath;
+    Float_t theta = mul->GetTheta(i);
+    Float_t phi   = mul->GetPhi(i);
     Float_t dr[3];
-    Float_t phi = mul->GetPhi(i);
-    dr[0] = rad*Cos(phi);
-    dr[1] = rad*Sin(phi);
-    dr[2] = rad/Tan(mul->GetTheta(i));
-    ls->AddLine(pvx[0], pvx[1], pvx[2],
-		pvx[0]+dr[0], pvx[1]+dr[1], pvx[2]+dr[2]);
+    dr[0] = radius*Cos(phi);
+    dr[1] = radius*Sin(phi);
+    dr[2] = radius/Tan(theta);
+
+    TEveLine* track = new TEveLine;
+    track->SetMainColor(7);
+    track->SetLineWidth(line_width);
+    //x AliEveTrack* track = new AliEveTrack;
+    //x track->SetPropagator(cont->GetPropagator());
+    //x track->SetAttLineAttMarker(cont);
+    track->SetElementName(Form("Tracklet %d", i));
+    track->SetElementTitle(Form("id=%d: theta=%.3f, phi=%.3f", i, theta, phi));
+
+    track->SetPoint(0, pvx[0], pvx[1], pvx[2]);
+    track->SetPoint(1,pvx[0]+dr[0], pvx[1]+dr[1], pvx[2]+dr[2]);
+
+    //x track->SetLockPoints(kTRUE);
+
+    cont->AddElement(track);
   }
 
-  ls->SetElementTitle(Form("N=%d", mul->GetNumberOfTracklets()));
-  gEve->AddElement(ls);
   gEve->Redraw3D();
 
-  return ls;
+  return cont;
 }
