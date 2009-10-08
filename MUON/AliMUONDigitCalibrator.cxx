@@ -17,6 +17,8 @@
 
 #include "AliMUONDigitCalibrator.h"
 
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
 #include "AliLog.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONLogger.h"
@@ -65,6 +67,57 @@ const Int_t AliMUONDigitCalibrator::fgkGain(2);
 const Int_t AliMUONDigitCalibrator::fgkInjectionGain(3);
 
 //_____________________________________________________________________________
+AliMUONDigitCalibrator::AliMUONDigitCalibrator(Int_t runNumber, const char* calibMode)
+: TObject(),
+fLogger(new AliMUONLogger(20000)),
+fStatusMaker(0x0),
+fStatusMapMaker(0x0),
+fPedestals(0x0),
+fGains(0x0),
+fApplyGains(0),
+fCapacitances(0x0),
+fNumberOfBadPads(0),
+fNumberOfPads(0),
+fChargeSigmaCut(0),
+fMask(0)
+{
+  /// ctor
+  
+  AliMUONRecoParam* recoParam(0x0);
+  
+  AliCDBEntry* e = AliCDBManager::Instance()->Get("MUON/Calib/RecoParam",runNumber);
+  if (e)
+  {
+    TObject* o = e->GetObject();
+    if ( o->IsA() == TObjArray::Class() )
+    {
+      TObjArray* a = static_cast<TObjArray*>(o);
+      TIter next(a);
+      AliMUONRecoParam* p;
+      while ( ( p = static_cast<AliMUONRecoParam*>(next()) ))
+      {
+        if ( p->IsDefault()) recoParam = p;
+      }
+    }
+    else
+    {
+      recoParam = static_cast<AliMUONRecoParam*>(o);
+    }
+  }
+  if (!recoParam)
+  {
+    AliError("Cannot get the recoParam. Failing");
+    return;
+  }
+  
+  // OK. Now get all we need and work...
+  
+  AliMUONCalibrationData calib(runNumber);
+  
+  Ctor(calibMode,calib,recoParam,kFALSE);
+}
+
+//_____________________________________________________________________________
 AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
                                                const AliMUONRecoParam* recoParams,
                                                const char* calibMode)
@@ -111,7 +164,8 @@ fMask(0)
 void
 AliMUONDigitCalibrator::Ctor(const char* calibMode,
                              const AliMUONCalibrationData& calib,
-                             const AliMUONRecoParam* recoParams)
+                             const AliMUONRecoParam* recoParams,
+                             Bool_t deferredInitialization)
 {
   /// designated ctor
   
@@ -174,8 +228,6 @@ AliMUONDigitCalibrator::Ctor(const char* calibMode,
     fLogger->Log("No RecoParam available");
     fLogger->Log(Form("SigmaCut=%e",fChargeSigmaCut));
   }
-  
-  Bool_t deferredInitialization = kTRUE;
   
   fStatusMapMaker = new AliMUONPadStatusMapMaker(*fStatusMaker,fMask,deferredInitialization);
   

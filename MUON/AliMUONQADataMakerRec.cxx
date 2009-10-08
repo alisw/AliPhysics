@@ -24,6 +24,7 @@
 #include "AliMUONDDLTrigger.h"
 #include "AliMUONDarcHeader.h"
 #include "AliMUONDigitMaker.h"
+#include "AliMUONQAMappingCheck.h"
 #include "AliMUONLocalStruct.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONRawStreamTracker.h"
@@ -187,7 +188,8 @@ fDigitStore(0x0),
 fTriggerStore(0x0),
 fDigitMaker(0x0),
 fClusterStore(0x0),
-fTrackerDataMaker(0x0)
+fTrackerDataMaker(0x0),
+fMappingCheckRecPoints(0x0)
 {
     /// ctor
 	
@@ -201,6 +203,7 @@ void
 AliMUONQADataMakerRec::Ctor()
 {
 	/// Init some members
+  AliCodeTimerAuto("");
 	fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV1");
 	fDigitMaker = new AliMUONDigitMaker(kTRUE);
 }
@@ -212,7 +215,8 @@ fDigitStore(0x0),
 fTriggerStore(0x0),
 fDigitMaker(0x0),
 fClusterStore(0x0),
-fTrackerDataMaker(0x0)
+fTrackerDataMaker(0x0),
+fMappingCheckRecPoints(0x0)
 {
     ///copy ctor 
 
@@ -257,292 +261,338 @@ AliMUONQADataMakerRec::~AliMUONQADataMakerRec()
   delete fDigitMaker;
   delete fClusterStore;
   delete fTrackerDataMaker;
+  delete fMappingCheckRecPoints;
 }
 
 //____________________________________________________________________________ 
 void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list)
 {
-  ///Detector specific actions at end of cycle
+  /// Detector specific actions at end of cycle
   
   AliCodeTimerAuto("");
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
   {
-    if (! IsValidEventSpecie(specie, list)  ) 
-      continue ;      
-    SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
-    if ( task == AliQAv1::kRAWS && fTrackerDataMaker ) 
-      {
-        if ( !GetRawsData(kTrackerBusPatchOccupancy) ) continue;
-        
-        TIter next(list[specie]);
-        TObject* o;
-        Bool_t alreadyThere(kFALSE);
-        while ( ( o = next() ) && !alreadyThere )
-          {
-            TString classname(o->ClassName());
-            if ( classname.Contains("TrackerData") ) alreadyThere = kTRUE;
-          }
-        if (!alreadyThere && fTrackerDataMaker) 
-          {
-          AliDebug(AliQAv1::GetQADebugLevel(), "Adding fTrackerData to the list of qa objects");
-            list[specie]->AddAt(fTrackerDataMaker->Data(),(Int_t)kTrackerData);
-          }
-          if ( fTrackerDataMaker ) 
-            {
-              TH1* hbp = GetRawsData(kTrackerBusPatchOccupancy);
-              hbp->Reset();
-              TIter nextBP(AliMpDDLStore::Instance()->CreateBusPatchIterator());
-              AliMpBusPatch* bp(0x0);
-              AliMUONVTrackerData* data = fTrackerDataMaker->Data();
-              Int_t occDim = 2;
-      
-              while ( ( bp = static_cast<AliMpBusPatch*>(nextBP())) )
-                {
-                  Int_t busPatchId = bp->GetId();
-                  Int_t bin = hbp->FindBin(busPatchId);
-                  hbp->SetBinContent(bin,data->BusPatch(busPatchId,occDim)*100.0); // occupancy, in percent
-                }
-              
-              BeautifyTrackerBusPatchOccupancy(*hbp);
-            }
-      }
+    if (! IsValidEventSpecie(specie, list)  ) continue;
     
-    // Normalize RecPoints histos
-    if ( task == AliQAv1::kRECPOINTS ) {
-      
-      if (!GetRecPointsData(kTrackerClusterChargePerChMean)) continue;
-
-      TH1* hTrackerClusterChargePerChMean = GetRecPointsData(kTrackerClusterChargePerChMean);
-      TH1* hTrackerClusterChargePerChSigma = GetRecPointsData(kTrackerClusterChargePerChSigma);
-      TH1* hTrackerClusterMultiplicityPerChMean = GetRecPointsData(kTrackerClusterMultiplicityPerChMean);
-      TH1* hTrackerClusterMultiplicityPerChSigma = GetRecPointsData(kTrackerClusterMultiplicityPerChSigma);
-      TH1* hTrackerClusterChargePerDEMean = GetRecPointsData(kTrackerClusterChargePerDEMean);
-      TH1* hTrackerClusterMultiplicityPerDEMean = GetRecPointsData(kTrackerClusterMultiplicityPerDEMean);
-      
-      // loop over chambers
-      for (Int_t iCh = 0; iCh < AliMUONConstants::NTrackingCh(); iCh++) {
-	
-        TH1* hTrackerClusterChargePerChamber = GetRecPointsData(kTrackerClusterChargePerChamber+iCh);
-        Double_t sigmaCharge = hTrackerClusterChargePerChamber->GetRMS();
-        hTrackerClusterChargePerChMean->SetBinContent(iCh+1, hTrackerClusterChargePerChamber->GetMean());
-        hTrackerClusterChargePerChMean->SetBinError(iCh+1, hTrackerClusterChargePerChamber->GetMeanError());
-        hTrackerClusterChargePerChSigma->SetBinContent(iCh+1, sigmaCharge);
-        hTrackerClusterChargePerChSigma->SetBinError(iCh+1, hTrackerClusterChargePerChamber->GetRMSError());
+    SetEventSpecie(AliRecoParam::ConvertIndex(specie));
         
-        TH1* hTrackerClusterMultiplicityPerChamber = GetRecPointsData(kTrackerClusterMultiplicityPerChamber+iCh);
-        Double_t sigmaSize = hTrackerClusterMultiplicityPerChamber->GetRMS();
-        hTrackerClusterMultiplicityPerChMean->SetBinContent(iCh+1, hTrackerClusterMultiplicityPerChamber->GetMean());
-        hTrackerClusterMultiplicityPerChMean->SetBinError(iCh+1, hTrackerClusterMultiplicityPerChamber->GetMeanError());
-        hTrackerClusterMultiplicityPerChSigma->SetBinContent(iCh+1, sigmaSize);
-        hTrackerClusterMultiplicityPerChSigma->SetBinError(iCh+1, hTrackerClusterMultiplicityPerChamber->GetRMSError());
-        
-        // loop over DE into chamber iCh
-        AliMpDEIterator it;
-        it.First(iCh);
-        while ( !it.IsDone()) {
-          
-          Int_t iDE = it.CurrentDEId();
-          
-          TH1* hTrackerClusterChargePerDE = GetRecPointsData(kTrackerClusterChargePerDE+iDE);
-          hTrackerClusterChargePerDEMean->SetBinContent(iDE+1, hTrackerClusterChargePerDE->GetMean());
-          Double_t nClusters = hTrackerClusterChargePerDE->GetEntries();
-          if (nClusters > 1) hTrackerClusterChargePerDEMean->SetBinError(iDE+1, sigmaCharge/TMath::Sqrt(nClusters));
-          else hTrackerClusterChargePerDEMean->SetBinError(iDE+1, hTrackerClusterChargePerChamber->GetXaxis()->GetXmax());
-          
-          TH1* hTrackerClusterMultiplicityPerDE = GetRecPointsData(kTrackerClusterMultiplicityPerDE+iDE);
-          hTrackerClusterMultiplicityPerDEMean->SetBinContent(iDE+1, hTrackerClusterMultiplicityPerDE->GetMean());
-          nClusters = hTrackerClusterMultiplicityPerDE->GetEntries();
-          if (nClusters > 1) hTrackerClusterMultiplicityPerDEMean->SetBinError(iDE+1, sigmaSize/TMath::Sqrt(nClusters));
-          else hTrackerClusterMultiplicityPerDEMean->SetBinError(iDE+1, hTrackerClusterMultiplicityPerChamber->GetXaxis()->GetXmax());
-          
-          it.Next();
-        }
-        
-      }
-      
+    if ( task == AliQAv1::kRAWS && fTrackerDataMaker ) 
+    {
+      // export trackerdata as is, and also make a summarized version (buspatchoccupancy)
+      EndOfDetectorCycleRaws(specie,list);
     }
     
-    // Normalize ESD histos
-    if ( task == AliQAv1::kESDS ) {
-      
-      if (!GetESDsData(kESDnClustersPerTrack)) continue;
-      
-      Double_t nTracks = GetESDsData(kESDnClustersPerTrack)->GetEntries();
-      if (nTracks <= 0) continue;
-      
-      TH1* hESDnClustersPerCh = GetESDsData(kESDnClustersPerCh);
-      TH1* hESDnClustersPerDE = GetESDsData(kESDnClustersPerDE);
-      TH1* hESDClusterChargePerChMean = GetESDsData(kESDClusterChargePerChMean);
-      TH1* hESDClusterChargePerChSigma = GetESDsData(kESDClusterChargePerChSigma);
-      TH1* hESDClusterSizePerChMean = GetESDsData(kESDClusterSizePerChMean);
-      TH1* hESDClusterSizePerChSigma = GetESDsData(kESDClusterSizePerChSigma);
-      TH1* hESDResidualXPerChMean = GetESDsData(kESDResidualXPerChMean);
-      TH1* hESDResidualXPerChSigma = GetESDsData(kESDResidualXPerChSigma);
-      TH1* hESDResidualYPerChMean = GetESDsData(kESDResidualYPerChMean);
-      TH1* hESDResidualYPerChSigma = GetESDsData(kESDResidualYPerChSigma);
-      TH1* hESDLocalChi2XPerChMean = GetESDsData(kESDLocalChi2XPerChMean);
-      TH1* hESDLocalChi2YPerChMean = GetESDsData(kESDLocalChi2YPerChMean);
-      TH1* hESDLocalChi2PerChMean = GetESDsData(kESDLocalChi2PerChMean);
-      TH1* hESDClusterChargePerDE = GetESDsData(kESDClusterChargePerDE);
-      TH1* hESDClusterSizePerDE = GetESDsData(kESDClusterSizePerDE);
-      TH1* hESDResidualXPerDEMean = GetESDsData(kESDResidualXPerDEMean);
-      TH1* hESDResidualXPerDESigma = GetESDsData(kESDResidualXPerDESigma);
-      TH1* hESDResidualYPerDEMean = GetESDsData(kESDResidualYPerDEMean);
-      TH1* hESDResidualYPerDESigma = GetESDsData(kESDResidualYPerDESigma);
-      TH1* hESDLocalChi2XPerDEMean = GetESDsData(kESDLocalChi2XPerDEMean);
-      TH1* hESDLocalChi2YPerDEMean = GetESDsData(kESDLocalChi2YPerDEMean);
-      TH1* hESDLocalChi2PerDEMean = GetESDsData(kESDLocalChi2PerDEMean);
-      TH1* hESDnTotClustersPerCh = GetESDsData(kESDnTotClustersPerCh);
-      TH1* hESDnTotClustersPerDE = GetESDsData(kESDnTotClustersPerDE);
-      TH1* hESDnTotFullClustersPerDE = GetESDsData(kESDnTotFullClustersPerDE);
-      TH1* hESDSumClusterChargePerDE = GetESDsData(kESDSumClusterChargePerDE);
-      TH1* hESDSumClusterSizePerDE = GetESDsData(kESDSumClusterSizePerDE);
-      TH1* hESDSumResidualXPerDE = GetESDsData(kESDSumResidualXPerDE);
-      TH1* hESDSumResidualYPerDE = GetESDsData(kESDSumResidualYPerDE);
-      TH1* hESDSumResidualX2PerDE = GetESDsData(kESDSumResidualX2PerDE);
-      TH1* hESDSumResidualY2PerDE = GetESDsData(kESDSumResidualY2PerDE);
-      TH1* hESDSumLocalChi2XPerDE = GetESDsData(kESDSumLocalChi2XPerDE);
-      TH1* hESDSumLocalChi2YPerDE = GetESDsData(kESDSumLocalChi2YPerDE);
-      TH1* hESDSumLocalChi2PerDE = GetESDsData(kESDSumLocalChi2PerDE);
-      
-      hESDnClustersPerCh->Reset();
-      hESDnClustersPerDE->Reset();
-      hESDnClustersPerCh->Add(hESDnTotClustersPerCh, 1./nTracks);
-      hESDnClustersPerDE->Add(hESDnTotClustersPerDE, 1./nTracks);
-      
-      // loop over chambers
-      for (Int_t iCh = 0; iCh < AliMUONConstants::NTrackingCh(); iCh++) {
-	
-	TH1* hESDClusterChargeInCh = GetESDsData(kESDClusterChargeInCh+iCh);
-	Double_t sigmaCharge = hESDClusterChargeInCh->GetRMS();
-	hESDClusterChargePerChMean->SetBinContent(iCh+1, hESDClusterChargeInCh->GetMean());
-	hESDClusterChargePerChMean->SetBinError(iCh+1, hESDClusterChargeInCh->GetMeanError());
-	hESDClusterChargePerChSigma->SetBinContent(iCh+1, sigmaCharge);
-	hESDClusterChargePerChSigma->SetBinError(iCh+1, hESDClusterChargeInCh->GetRMSError());
-	
-	TH1* hESDClusterSizeInCh = GetESDsData(kESDClusterSizeInCh+iCh);
-	Double_t sigmaSize = hESDClusterSizeInCh->GetRMS();
-	hESDClusterSizePerChMean->SetBinContent(iCh+1, hESDClusterSizeInCh->GetMean());
-	hESDClusterSizePerChMean->SetBinError(iCh+1, hESDClusterSizeInCh->GetMeanError());
-	hESDClusterSizePerChSigma->SetBinContent(iCh+1, sigmaSize);
-	hESDClusterSizePerChSigma->SetBinError(iCh+1, hESDClusterSizeInCh->GetRMSError());
-	
-	TH1* hESDResidualXInCh = GetESDsData(kESDResidualXInCh+iCh);
-	Double_t sigmaResidualX = hESDResidualXInCh->GetRMS();
-	hESDResidualXPerChMean->SetBinContent(iCh+1, hESDResidualXInCh->GetMean());
-	hESDResidualXPerChMean->SetBinError(iCh+1, hESDResidualXInCh->GetMeanError());
-	hESDResidualXPerChSigma->SetBinContent(iCh+1, sigmaResidualX);
-	hESDResidualXPerChSigma->SetBinError(iCh+1, hESDResidualXInCh->GetRMSError());
-	
-	TH1* hESDResidualYInCh = GetESDsData(kESDResidualYInCh+iCh);
-	Double_t sigmaResidualY = hESDResidualYInCh->GetRMS();
-	hESDResidualYPerChMean->SetBinContent(iCh+1, hESDResidualYInCh->GetMean());
-	hESDResidualYPerChMean->SetBinError(iCh+1, hESDResidualYInCh->GetMeanError());
-	hESDResidualYPerChSigma->SetBinContent(iCh+1, sigmaResidualY);
-	hESDResidualYPerChSigma->SetBinError(iCh+1, hESDResidualYInCh->GetRMSError());
-	
-	TH1* hESDLocalChi2XInCh = GetESDsData(kESDLocalChi2XInCh+iCh);
-	Double_t sigmaLocalChi2X = hESDLocalChi2XInCh->GetRMS();
-	hESDLocalChi2XPerChMean->SetBinContent(iCh+1, hESDLocalChi2XInCh->GetMean());
-	hESDLocalChi2XPerChMean->SetBinError(iCh+1, hESDLocalChi2XInCh->GetMeanError());
-	
-	TH1* hESDLocalChi2YInCh = GetESDsData(kESDLocalChi2YInCh+iCh);
-	Double_t sigmaLocalChi2Y = hESDLocalChi2YInCh->GetRMS();
-	hESDLocalChi2YPerChMean->SetBinContent(iCh+1, hESDLocalChi2YInCh->GetMean());
-	hESDLocalChi2YPerChMean->SetBinError(iCh+1, hESDLocalChi2YInCh->GetMeanError());
-	
-	TH1* hESDLocalChi2InCh = GetESDsData(kESDLocalChi2InCh+iCh);
-	Double_t sigmaLocalChi2 = hESDLocalChi2InCh->GetRMS();
-	hESDLocalChi2PerChMean->SetBinContent(iCh+1, hESDLocalChi2InCh->GetMean());
-	hESDLocalChi2PerChMean->SetBinError(iCh+1, hESDLocalChi2InCh->GetMeanError());
-	
-	// loop over DE into chamber iCh
-	AliMpDEIterator it;
-	it.First(iCh);
-	while ( !it.IsDone()) {
-	  
-	  Int_t iDE = it.CurrentDEId();
-	  
-	  Double_t nClusters = hESDnTotClustersPerDE->GetBinContent(iDE+1);
-	  if (nClusters > 1) {
-	    
-	    hESDClusterChargePerDE->SetBinContent(iDE+1, hESDSumClusterChargePerDE->GetBinContent(iDE+1)/nClusters);
-	    hESDClusterChargePerDE->SetBinError(iDE+1, sigmaCharge/TMath::Sqrt(nClusters));
-	    
-	    Double_t meanResX = hESDSumResidualXPerDE->GetBinContent(iDE+1)/nClusters;
-	    hESDResidualXPerDEMean->SetBinContent(iDE+1, meanResX);
-	    hESDResidualXPerDEMean->SetBinError(iDE+1, sigmaResidualX/TMath::Sqrt(nClusters));
-	    hESDResidualXPerDESigma->SetBinContent(iDE+1, TMath::Sqrt(hESDSumResidualX2PerDE->GetBinContent(iDE+1)/nClusters - meanResX*meanResX));
-	    hESDResidualXPerDESigma->SetBinError(iDE+1, sigmaResidualX/TMath::Sqrt(2.*nClusters));
-	    
-	    Double_t meanResY = hESDSumResidualYPerDE->GetBinContent(iDE+1)/nClusters;
-	    hESDResidualYPerDEMean->SetBinContent(iDE+1, meanResY);
-	    hESDResidualYPerDEMean->SetBinError(iDE+1, sigmaResidualY/TMath::Sqrt(nClusters));
-	    hESDResidualYPerDESigma->SetBinContent(iDE+1, TMath::Sqrt(hESDSumResidualY2PerDE->GetBinContent(iDE+1)/nClusters - meanResY*meanResY));
-	    hESDResidualYPerDESigma->SetBinError(iDE+1, sigmaResidualY/TMath::Sqrt(2.*nClusters));
-	    
-	    hESDLocalChi2XPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2XPerDE->GetBinContent(iDE+1)/nClusters);
-	    hESDLocalChi2XPerDEMean->SetBinError(iDE+1, sigmaLocalChi2X/TMath::Sqrt(nClusters));
-	    
-	    hESDLocalChi2YPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2YPerDE->GetBinContent(iDE+1)/nClusters);
-	    hESDLocalChi2YPerDEMean->SetBinError(iDE+1, sigmaLocalChi2Y/TMath::Sqrt(nClusters));
-	    
-	    hESDLocalChi2PerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2PerDE->GetBinContent(iDE+1)/nClusters);
-	    hESDLocalChi2PerDEMean->SetBinError(iDE+1, sigmaLocalChi2/TMath::Sqrt(nClusters));
-	    
-	  } else {
-	    
-	    hESDClusterChargePerDE->SetBinContent(iDE+1, hESDSumClusterChargePerDE->GetBinContent(iDE+1));
-	    hESDClusterChargePerDE->SetBinError(iDE+1, hESDClusterChargeInCh->GetXaxis()->GetXmax());
-	    
-	    hESDResidualXPerDEMean->SetBinContent(iDE+1, hESDSumResidualXPerDE->GetBinContent(iDE+1));
-	    hESDResidualXPerDEMean->SetBinError(iDE+1, hESDResidualXInCh->GetXaxis()->GetXmax());
-	    hESDResidualXPerDESigma->SetBinContent(iDE+1, 0.);
-	    hESDResidualXPerDESigma->SetBinError(iDE+1, hESDResidualXInCh->GetXaxis()->GetXmax());
-	    
-	    hESDResidualYPerDEMean->SetBinContent(iDE+1, hESDSumResidualYPerDE->GetBinContent(iDE+1));
-	    hESDResidualYPerDEMean->SetBinError(iDE+1, hESDResidualYInCh->GetXaxis()->GetXmax());
-	    hESDResidualYPerDESigma->SetBinContent(iDE+1, 0.);
-	    hESDResidualYPerDESigma->SetBinError(iDE+1, hESDResidualYInCh->GetXaxis()->GetXmax());
-	    
-	    hESDLocalChi2XPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2XPerDE->GetBinContent(iDE+1));
-	    hESDLocalChi2XPerDEMean->SetBinError(iDE+1, hESDLocalChi2XInCh->GetXaxis()->GetXmax());
-	    
-	    hESDLocalChi2YPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2YPerDE->GetBinContent(iDE+1));
-	    hESDLocalChi2YPerDEMean->SetBinError(iDE+1, hESDLocalChi2YInCh->GetXaxis()->GetXmax());
-	    
-	    hESDLocalChi2PerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2PerDE->GetBinContent(iDE+1));
-	    hESDLocalChi2PerDEMean->SetBinError(iDE+1, hESDLocalChi2InCh->GetXaxis()->GetXmax());
-	    
-	  }
-	  
-	  Double_t nFullClusters = hESDnTotFullClustersPerDE->GetBinContent(iDE+1);
-	  if (nFullClusters > 1) {
-	    
-	    hESDClusterSizePerDE->SetBinContent(iDE+1, hESDSumClusterSizePerDE->GetBinContent(iDE+1)/nFullClusters);
-	    hESDClusterSizePerDE->SetBinError(iDE+1, sigmaSize/TMath::Sqrt(nFullClusters));
-	    
-	  } else {
-	    
-	    hESDClusterSizePerDE->SetBinContent(iDE+1, hESDSumClusterSizePerDE->GetBinContent(iDE+1));
-	    hESDClusterSizePerDE->SetBinError(iDE+1, hESDClusterSizeInCh->GetXaxis()->GetXmax());
-	    
-	  }
-	  
-	  it.Next();
-	}
-	
-      }
-      
+    if ( task == AliQAv1::kRECPOINTS )
+    {
+      // normalize recpoints histograms
+      EndOfDetectorCycleRecPoints(specie,list);
+    }
+    
+    if ( task == AliQAv1::kESDS ) 
+    {
+      // normalize esds histograms
+      EndOfDetectorCycleESDs();
     }
     
     // Display trigger histos in a more user friendly way
     DisplayTriggerInfo(task);
+    
   } // loop on specie
     
   // do the QA checking
-  AliQAChecker::Instance()->Run(AliQAv1::kMUON, task, list) ;
+  AliQAChecker::Instance()->Run(AliQAv1::kMUON,task,list);
+}
+
+//____________________________________________________________________________ 
+void AliMUONQADataMakerRec::InsertTrackerData(Int_t specie, TObjArray** list,
+                                              TObject* object, Int_t indexNumber,
+                                              Bool_t replace)
+{
+  /// Insert an object to a given list
+  
+  TIter next(list[specie]);
+  TObject* o;
+  TObject* old(0x0);
+  Bool_t alreadyThere(kFALSE);
+  while ( ( o = next() ) && !alreadyThere )
+  {
+    TString classname(o->ClassName());
+    if ( classname.Contains("TrackerData") ) 
+    {
+      alreadyThere = kTRUE;
+      old = o;
+    }
+  }
+  if ( (!alreadyThere && object) || (alreadyThere && replace) )
+  {
+    delete old;
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("Adding %s to the list of qa objects",object->GetName()));
+    list[specie]->AddAt(object,indexNumber);
+  }
+}
+
+//____________________________________________________________________________ 
+void AliMUONQADataMakerRec::EndOfDetectorCycleESDs()
+{
+  /// Normalize ESD histograms
+  
+  if (!GetESDsData(kESDnClustersPerTrack)) return;
+  
+  Double_t nTracks = GetESDsData(kESDnClustersPerTrack)->GetEntries();
+  if (nTracks <= 0) return;
+  
+  TH1* hESDnClustersPerCh = GetESDsData(kESDnClustersPerCh);
+  TH1* hESDnClustersPerDE = GetESDsData(kESDnClustersPerDE);
+  TH1* hESDClusterChargePerChMean = GetESDsData(kESDClusterChargePerChMean);
+  TH1* hESDClusterChargePerChSigma = GetESDsData(kESDClusterChargePerChSigma);
+  TH1* hESDClusterSizePerChMean = GetESDsData(kESDClusterSizePerChMean);
+  TH1* hESDClusterSizePerChSigma = GetESDsData(kESDClusterSizePerChSigma);
+  TH1* hESDResidualXPerChMean = GetESDsData(kESDResidualXPerChMean);
+  TH1* hESDResidualXPerChSigma = GetESDsData(kESDResidualXPerChSigma);
+  TH1* hESDResidualYPerChMean = GetESDsData(kESDResidualYPerChMean);
+  TH1* hESDResidualYPerChSigma = GetESDsData(kESDResidualYPerChSigma);
+  TH1* hESDLocalChi2XPerChMean = GetESDsData(kESDLocalChi2XPerChMean);
+  TH1* hESDLocalChi2YPerChMean = GetESDsData(kESDLocalChi2YPerChMean);
+  TH1* hESDLocalChi2PerChMean = GetESDsData(kESDLocalChi2PerChMean);
+  TH1* hESDClusterChargePerDE = GetESDsData(kESDClusterChargePerDE);
+  TH1* hESDClusterSizePerDE = GetESDsData(kESDClusterSizePerDE);
+  TH1* hESDResidualXPerDEMean = GetESDsData(kESDResidualXPerDEMean);
+  TH1* hESDResidualXPerDESigma = GetESDsData(kESDResidualXPerDESigma);
+  TH1* hESDResidualYPerDEMean = GetESDsData(kESDResidualYPerDEMean);
+  TH1* hESDResidualYPerDESigma = GetESDsData(kESDResidualYPerDESigma);
+  TH1* hESDLocalChi2XPerDEMean = GetESDsData(kESDLocalChi2XPerDEMean);
+  TH1* hESDLocalChi2YPerDEMean = GetESDsData(kESDLocalChi2YPerDEMean);
+  TH1* hESDLocalChi2PerDEMean = GetESDsData(kESDLocalChi2PerDEMean);
+  TH1* hESDnTotClustersPerCh = GetESDsData(kESDnTotClustersPerCh);
+  TH1* hESDnTotClustersPerDE = GetESDsData(kESDnTotClustersPerDE);
+  TH1* hESDnTotFullClustersPerDE = GetESDsData(kESDnTotFullClustersPerDE);
+  TH1* hESDSumClusterChargePerDE = GetESDsData(kESDSumClusterChargePerDE);
+  TH1* hESDSumClusterSizePerDE = GetESDsData(kESDSumClusterSizePerDE);
+  TH1* hESDSumResidualXPerDE = GetESDsData(kESDSumResidualXPerDE);
+  TH1* hESDSumResidualYPerDE = GetESDsData(kESDSumResidualYPerDE);
+  TH1* hESDSumResidualX2PerDE = GetESDsData(kESDSumResidualX2PerDE);
+  TH1* hESDSumResidualY2PerDE = GetESDsData(kESDSumResidualY2PerDE);
+  TH1* hESDSumLocalChi2XPerDE = GetESDsData(kESDSumLocalChi2XPerDE);
+  TH1* hESDSumLocalChi2YPerDE = GetESDsData(kESDSumLocalChi2YPerDE);
+  TH1* hESDSumLocalChi2PerDE = GetESDsData(kESDSumLocalChi2PerDE);
+  
+  hESDnClustersPerCh->Reset();
+  hESDnClustersPerDE->Reset();
+  hESDnClustersPerCh->Add(hESDnTotClustersPerCh, 1./nTracks);
+  hESDnClustersPerDE->Add(hESDnTotClustersPerDE, 1./nTracks);
+  
+  // loop over chambers
+  for (Int_t iCh = 0; iCh < AliMUONConstants::NTrackingCh(); iCh++) {
+    
+    TH1* hESDClusterChargeInCh = GetESDsData(kESDClusterChargeInCh+iCh);
+    Double_t sigmaCharge = hESDClusterChargeInCh->GetRMS();
+    hESDClusterChargePerChMean->SetBinContent(iCh+1, hESDClusterChargeInCh->GetMean());
+    hESDClusterChargePerChMean->SetBinError(iCh+1, hESDClusterChargeInCh->GetMeanError());
+    hESDClusterChargePerChSigma->SetBinContent(iCh+1, sigmaCharge);
+    hESDClusterChargePerChSigma->SetBinError(iCh+1, hESDClusterChargeInCh->GetRMSError());
+    
+    TH1* hESDClusterSizeInCh = GetESDsData(kESDClusterSizeInCh+iCh);
+    Double_t sigmaSize = hESDClusterSizeInCh->GetRMS();
+    hESDClusterSizePerChMean->SetBinContent(iCh+1, hESDClusterSizeInCh->GetMean());
+    hESDClusterSizePerChMean->SetBinError(iCh+1, hESDClusterSizeInCh->GetMeanError());
+    hESDClusterSizePerChSigma->SetBinContent(iCh+1, sigmaSize);
+    hESDClusterSizePerChSigma->SetBinError(iCh+1, hESDClusterSizeInCh->GetRMSError());
+    
+    TH1* hESDResidualXInCh = GetESDsData(kESDResidualXInCh+iCh);
+    Double_t sigmaResidualX = hESDResidualXInCh->GetRMS();
+    hESDResidualXPerChMean->SetBinContent(iCh+1, hESDResidualXInCh->GetMean());
+    hESDResidualXPerChMean->SetBinError(iCh+1, hESDResidualXInCh->GetMeanError());
+    hESDResidualXPerChSigma->SetBinContent(iCh+1, sigmaResidualX);
+    hESDResidualXPerChSigma->SetBinError(iCh+1, hESDResidualXInCh->GetRMSError());
+    
+    TH1* hESDResidualYInCh = GetESDsData(kESDResidualYInCh+iCh);
+    Double_t sigmaResidualY = hESDResidualYInCh->GetRMS();
+    hESDResidualYPerChMean->SetBinContent(iCh+1, hESDResidualYInCh->GetMean());
+    hESDResidualYPerChMean->SetBinError(iCh+1, hESDResidualYInCh->GetMeanError());
+    hESDResidualYPerChSigma->SetBinContent(iCh+1, sigmaResidualY);
+    hESDResidualYPerChSigma->SetBinError(iCh+1, hESDResidualYInCh->GetRMSError());
+    
+    TH1* hESDLocalChi2XInCh = GetESDsData(kESDLocalChi2XInCh+iCh);
+    Double_t sigmaLocalChi2X = hESDLocalChi2XInCh->GetRMS();
+    hESDLocalChi2XPerChMean->SetBinContent(iCh+1, hESDLocalChi2XInCh->GetMean());
+    hESDLocalChi2XPerChMean->SetBinError(iCh+1, hESDLocalChi2XInCh->GetMeanError());
+    
+    TH1* hESDLocalChi2YInCh = GetESDsData(kESDLocalChi2YInCh+iCh);
+    Double_t sigmaLocalChi2Y = hESDLocalChi2YInCh->GetRMS();
+    hESDLocalChi2YPerChMean->SetBinContent(iCh+1, hESDLocalChi2YInCh->GetMean());
+    hESDLocalChi2YPerChMean->SetBinError(iCh+1, hESDLocalChi2YInCh->GetMeanError());
+    
+    TH1* hESDLocalChi2InCh = GetESDsData(kESDLocalChi2InCh+iCh);
+    Double_t sigmaLocalChi2 = hESDLocalChi2InCh->GetRMS();
+    hESDLocalChi2PerChMean->SetBinContent(iCh+1, hESDLocalChi2InCh->GetMean());
+    hESDLocalChi2PerChMean->SetBinError(iCh+1, hESDLocalChi2InCh->GetMeanError());
+    
+    // loop over DE into chamber iCh
+    AliMpDEIterator it;
+    it.First(iCh);
+    while ( !it.IsDone()) {
+      
+      Int_t iDE = it.CurrentDEId();
+      
+      Double_t nClusters = hESDnTotClustersPerDE->GetBinContent(iDE+1);
+      if (nClusters > 1) {
+        
+        hESDClusterChargePerDE->SetBinContent(iDE+1, hESDSumClusterChargePerDE->GetBinContent(iDE+1)/nClusters);
+        hESDClusterChargePerDE->SetBinError(iDE+1, sigmaCharge/TMath::Sqrt(nClusters));
+        
+        Double_t meanResX = hESDSumResidualXPerDE->GetBinContent(iDE+1)/nClusters;
+        hESDResidualXPerDEMean->SetBinContent(iDE+1, meanResX);
+        hESDResidualXPerDEMean->SetBinError(iDE+1, sigmaResidualX/TMath::Sqrt(nClusters));
+        hESDResidualXPerDESigma->SetBinContent(iDE+1, TMath::Sqrt(hESDSumResidualX2PerDE->GetBinContent(iDE+1)/nClusters - meanResX*meanResX));
+        hESDResidualXPerDESigma->SetBinError(iDE+1, sigmaResidualX/TMath::Sqrt(2.*nClusters));
+        
+        Double_t meanResY = hESDSumResidualYPerDE->GetBinContent(iDE+1)/nClusters;
+        hESDResidualYPerDEMean->SetBinContent(iDE+1, meanResY);
+        hESDResidualYPerDEMean->SetBinError(iDE+1, sigmaResidualY/TMath::Sqrt(nClusters));
+        hESDResidualYPerDESigma->SetBinContent(iDE+1, TMath::Sqrt(hESDSumResidualY2PerDE->GetBinContent(iDE+1)/nClusters - meanResY*meanResY));
+        hESDResidualYPerDESigma->SetBinError(iDE+1, sigmaResidualY/TMath::Sqrt(2.*nClusters));
+        
+        hESDLocalChi2XPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2XPerDE->GetBinContent(iDE+1)/nClusters);
+        hESDLocalChi2XPerDEMean->SetBinError(iDE+1, sigmaLocalChi2X/TMath::Sqrt(nClusters));
+        
+        hESDLocalChi2YPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2YPerDE->GetBinContent(iDE+1)/nClusters);
+        hESDLocalChi2YPerDEMean->SetBinError(iDE+1, sigmaLocalChi2Y/TMath::Sqrt(nClusters));
+        
+        hESDLocalChi2PerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2PerDE->GetBinContent(iDE+1)/nClusters);
+        hESDLocalChi2PerDEMean->SetBinError(iDE+1, sigmaLocalChi2/TMath::Sqrt(nClusters));
+        
+      } else {
+        
+        hESDClusterChargePerDE->SetBinContent(iDE+1, hESDSumClusterChargePerDE->GetBinContent(iDE+1));
+        hESDClusterChargePerDE->SetBinError(iDE+1, hESDClusterChargeInCh->GetXaxis()->GetXmax());
+        
+        hESDResidualXPerDEMean->SetBinContent(iDE+1, hESDSumResidualXPerDE->GetBinContent(iDE+1));
+        hESDResidualXPerDEMean->SetBinError(iDE+1, hESDResidualXInCh->GetXaxis()->GetXmax());
+        hESDResidualXPerDESigma->SetBinContent(iDE+1, 0.);
+        hESDResidualXPerDESigma->SetBinError(iDE+1, hESDResidualXInCh->GetXaxis()->GetXmax());
+        
+        hESDResidualYPerDEMean->SetBinContent(iDE+1, hESDSumResidualYPerDE->GetBinContent(iDE+1));
+        hESDResidualYPerDEMean->SetBinError(iDE+1, hESDResidualYInCh->GetXaxis()->GetXmax());
+        hESDResidualYPerDESigma->SetBinContent(iDE+1, 0.);
+        hESDResidualYPerDESigma->SetBinError(iDE+1, hESDResidualYInCh->GetXaxis()->GetXmax());
+        
+        hESDLocalChi2XPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2XPerDE->GetBinContent(iDE+1));
+        hESDLocalChi2XPerDEMean->SetBinError(iDE+1, hESDLocalChi2XInCh->GetXaxis()->GetXmax());
+        
+        hESDLocalChi2YPerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2YPerDE->GetBinContent(iDE+1));
+        hESDLocalChi2YPerDEMean->SetBinError(iDE+1, hESDLocalChi2YInCh->GetXaxis()->GetXmax());
+        
+        hESDLocalChi2PerDEMean->SetBinContent(iDE+1, hESDSumLocalChi2PerDE->GetBinContent(iDE+1));
+        hESDLocalChi2PerDEMean->SetBinError(iDE+1, hESDLocalChi2InCh->GetXaxis()->GetXmax());
+        
+      }
+      
+      Double_t nFullClusters = hESDnTotFullClustersPerDE->GetBinContent(iDE+1);
+      if (nFullClusters > 1) {
+        
+        hESDClusterSizePerDE->SetBinContent(iDE+1, hESDSumClusterSizePerDE->GetBinContent(iDE+1)/nFullClusters);
+        hESDClusterSizePerDE->SetBinError(iDE+1, sigmaSize/TMath::Sqrt(nFullClusters));
+        
+      } else {
+        
+        hESDClusterSizePerDE->SetBinContent(iDE+1, hESDSumClusterSizePerDE->GetBinContent(iDE+1));
+        hESDClusterSizePerDE->SetBinError(iDE+1, hESDClusterSizeInCh->GetXaxis()->GetXmax());
+        
+      }
+      
+      it.Next();
+    }
+
+  }
+
+}
+  
+//____________________________________________________________________________ 
+void AliMUONQADataMakerRec::EndOfDetectorCycleRecPoints(Int_t specie, TObjArray** list)
+{
+  /// Normalize RecPoints histograms
+  
+  if (!GetRecPointsData(kTrackerClusterChargePerChMean)) return;
+  
+  TH1* hTrackerClusterChargePerChMean = GetRecPointsData(kTrackerClusterChargePerChMean);
+  TH1* hTrackerClusterChargePerChSigma = GetRecPointsData(kTrackerClusterChargePerChSigma);
+  TH1* hTrackerClusterMultiplicityPerChMean = GetRecPointsData(kTrackerClusterMultiplicityPerChMean);
+  TH1* hTrackerClusterMultiplicityPerChSigma = GetRecPointsData(kTrackerClusterMultiplicityPerChSigma);
+  TH1* hTrackerClusterChargePerDEMean = GetRecPointsData(kTrackerClusterChargePerDEMean);
+  TH1* hTrackerClusterMultiplicityPerDEMean = GetRecPointsData(kTrackerClusterMultiplicityPerDEMean);
+  
+  // loop over chambers
+  for (Int_t iCh = 0; iCh < AliMUONConstants::NTrackingCh(); iCh++) {
+    
+    TH1* hTrackerClusterChargePerChamber = GetRecPointsData(kTrackerClusterChargePerChamber+iCh);
+    Double_t sigmaCharge = hTrackerClusterChargePerChamber->GetRMS();
+    hTrackerClusterChargePerChMean->SetBinContent(iCh+1, hTrackerClusterChargePerChamber->GetMean());
+    hTrackerClusterChargePerChMean->SetBinError(iCh+1, hTrackerClusterChargePerChamber->GetMeanError());
+    hTrackerClusterChargePerChSigma->SetBinContent(iCh+1, sigmaCharge);
+    hTrackerClusterChargePerChSigma->SetBinError(iCh+1, hTrackerClusterChargePerChamber->GetRMSError());
+    
+    TH1* hTrackerClusterMultiplicityPerChamber = GetRecPointsData(kTrackerClusterMultiplicityPerChamber+iCh);
+    Double_t sigmaSize = hTrackerClusterMultiplicityPerChamber->GetRMS();
+    hTrackerClusterMultiplicityPerChMean->SetBinContent(iCh+1, hTrackerClusterMultiplicityPerChamber->GetMean());
+    hTrackerClusterMultiplicityPerChMean->SetBinError(iCh+1, hTrackerClusterMultiplicityPerChamber->GetMeanError());
+    hTrackerClusterMultiplicityPerChSigma->SetBinContent(iCh+1, sigmaSize);
+    hTrackerClusterMultiplicityPerChSigma->SetBinError(iCh+1, hTrackerClusterMultiplicityPerChamber->GetRMSError());
+    
+    // loop over DE into chamber iCh
+    AliMpDEIterator it;
+    it.First(iCh);
+    while ( !it.IsDone()) {
+      
+      Int_t iDE = it.CurrentDEId();
+      
+      TH1* hTrackerClusterChargePerDE = GetRecPointsData(kTrackerClusterChargePerDE+iDE);
+      hTrackerClusterChargePerDEMean->SetBinContent(iDE+1, hTrackerClusterChargePerDE->GetMean());
+      Double_t nClusters = hTrackerClusterChargePerDE->GetEntries();
+      if (nClusters > 1) hTrackerClusterChargePerDEMean->SetBinError(iDE+1, sigmaCharge/TMath::Sqrt(nClusters));
+      else hTrackerClusterChargePerDEMean->SetBinError(iDE+1, hTrackerClusterChargePerChamber->GetXaxis()->GetXmax());
+      
+      TH1* hTrackerClusterMultiplicityPerDE = GetRecPointsData(kTrackerClusterMultiplicityPerDE+iDE);
+      hTrackerClusterMultiplicityPerDEMean->SetBinContent(iDE+1, hTrackerClusterMultiplicityPerDE->GetMean());
+      nClusters = hTrackerClusterMultiplicityPerDE->GetEntries();
+      if (nClusters > 1) hTrackerClusterMultiplicityPerDEMean->SetBinError(iDE+1, sigmaSize/TMath::Sqrt(nClusters));
+      else hTrackerClusterMultiplicityPerDEMean->SetBinError(iDE+1, hTrackerClusterMultiplicityPerChamber->GetXaxis()->GetXmax());
+      
+      it.Next();
+    }
+  }
+  
+  if ( fMappingCheckRecPoints ) InsertTrackerData(specie,list,fMappingCheckRecPoints->CreateData("RecPoints"),kTrackerRecPoints,kTRUE);
+}
+
+
+//____________________________________________________________________________ 
+void AliMUONQADataMakerRec::EndOfDetectorCycleRaws(Int_t specie, TObjArray** list)
+{
+  /// create Raws histograms in Raws subdir
+  
+  if ( !GetRawsData(kTrackerBusPatchOccupancy) ) return;
+
+  if ( fTrackerDataMaker ) 
+  {
+    InsertTrackerData(specie,list,fTrackerDataMaker->Data(),kTrackerData);
+
+    TH1* hbp = GetRawsData(kTrackerBusPatchOccupancy);
+    hbp->Reset();
+    TIter nextBP(AliMpDDLStore::Instance()->CreateBusPatchIterator());
+    AliMpBusPatch* bp(0x0);
+    AliMUONVTrackerData* data = fTrackerDataMaker->Data();
+    Int_t occDim = 2;
+    
+    while ( ( bp = static_cast<AliMpBusPatch*>(nextBP())) )
+    {
+      Int_t busPatchId = bp->GetId();
+      Int_t bin = hbp->FindBin(busPatchId);
+      hbp->SetBinContent(bin,data->BusPatch(busPatchId,occDim)*100.0); // occupancy, in percent
+    }
+    
+    BeautifyTrackerBusPatchOccupancy(*hbp);
+  }
 }
 
 //____________________________________________________________________________ 
@@ -619,16 +669,19 @@ void AliMUONQADataMakerRec::InitRaws()
 
   const Bool_t histogram(kFALSE);
 
-  if(!fTrackerDataMaker) fTrackerDataMaker = new AliMUONTrackerDataMaker(GetMUONRecoParam(),
-                                                  AliCDBManager::Instance()->GetRun(),
-                                                  0x0,
-                                                  "",
-                                                  "NOGAIN",
-                                                  histogram,
-                                                  0.0,0.0);
-		
+  if(!fTrackerDataMaker) 
+  {
+    fTrackerDataMaker = new AliMUONTrackerDataMaker(GetMUONRecoParam(),
+                                                    AliCDBManager::Instance()->GetRun(),
+                                                    0x0,
+                                                    "",
+                                                    "NOGAIN",
+                                                    histogram,
+                                                    0.0,0.0);
+  }
+  
   fTrackerDataMaker->Data()->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level
-	
+
   fTrackerDataMaker->SetRunning(kTRUE);
 }
 
@@ -751,6 +804,8 @@ void AliMUONQADataMakerRec::InitRecPointsTracker()
   h1F->SetMarkerStyle(kFullDotMedium);
   h1F->SetMarkerColor(kRed);
   Add2RecPointsList(h1F, kTrackerClusterChargePerDEMean, !expert, image);
+  
+  if (!fMappingCheckRecPoints) fMappingCheckRecPoints = new AliMUONQAMappingCheck(fRun);  
 }
 
 //____________________________________________________________________________ 
@@ -1194,6 +1249,8 @@ void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 	MakeRecPointsTrigger(clustersTree);
 }
 
+
+
 //____________________________________________________________________________
 void AliMUONQADataMakerRec::MakeRecPointsTracker(TTree* clustersTree)
 {
@@ -1206,6 +1263,11 @@ void AliMUONQADataMakerRec::MakeRecPointsTracker(TTree* clustersTree)
 	// then we have clusters in TreeR, so let's take that opportunity
 	// to QA them...
 	
+  AliCodeTimerAuto("");
+
+  // Do nothing in case of calibration event
+  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
+
 	if (!fClusterStore)
 	{
 		AliCodeTimerAuto("ClusterStore creation");
@@ -1216,14 +1278,14 @@ void AliMUONQADataMakerRec::MakeRecPointsTracker(TTree* clustersTree)
 		}
 	}
 	
-	AliCodeTimerAuto("");
-	
 	fClusterStore->Connect(*clustersTree,kFALSE);
 	clustersTree->GetEvent(0);
 
 	TIter next(fClusterStore->CreateIterator());
 	AliMUONVCluster* cluster;
 	
+  if ( fMappingCheckRecPoints ) fMappingCheckRecPoints->NewEvent();
+  
 	while ( ( cluster = static_cast<AliMUONVCluster*>(next()) ) )
 	{
 		Int_t detElemId = cluster->GetDetElemId();
@@ -1238,6 +1300,8 @@ void AliMUONQADataMakerRec::MakeRecPointsTracker(TTree* clustersTree)
 		GetRecPointsData(kTrackerClusterMultiplicityPerChamber+chamberId)->Fill(cluster->GetNDigits());
 	        GetRecPointsData(kTrackerClusterHitMapPerChamber+chamberId)->Fill(cluster->GetX(),cluster->GetY());
 		
+    if ( fMappingCheckRecPoints ) fMappingCheckRecPoints->Store(*cluster);
+    
 	}
 	
 	fClusterStore->Clear();
@@ -1247,7 +1311,9 @@ void AliMUONQADataMakerRec::MakeRecPointsTracker(TTree* clustersTree)
 void AliMUONQADataMakerRec::MakeRecPointsTrigger(TTree* clustersTree)
 {
 	/// makes data from trigger response
-      
+
+  AliCodeTimerAuto("");
+
     // Fired pads info
     fDigitStore->Clear();
 
@@ -1299,6 +1365,8 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
 {
   /// make QA data from ESDs
 
+  AliCodeTimerAuto("");
+  
   // Do nothing in case of calibration event
   if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
   
@@ -1378,10 +1446,11 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
       GetESDsData(kESDSumLocalChi2PerDE)->Fill(deID, localChi2);
       
       trackParam = static_cast<AliMUONTrackParam*>(track->GetTrackParamAtCluster()->After(trackParam));
+      
     }
     
   }
-  
+
   GetESDsData(kESDMatchTrig)->Fill(nTrackMatchTrig);
   
 }
@@ -1667,32 +1736,39 @@ AliMUONQADataMakerRec::BeautifyTrackerBusPatchOccupancy(TH1& hbp)
 
   next.Reset();
   
-  Double_t* x = new Double_t[nBusPatches];
+  Int_t ok(-1);
   Int_t n(0);
   Int_t nBusPatchesAboveLimit(0);
-  
-  while ( ( bp = static_cast<AliMpBusPatch*>(next())) )
-  {
-    Int_t bin = hbp.FindBin(bp->GetId());
-    if ( hbp.GetBinContent(bin) > 0 )
-    {
-      x[n] = hbp.GetBinContent(bin);
-      ++n;
-    }
-    if ( hbp.GetBinContent(bin) > occError )
-    {
-      ++nBusPatchesAboveLimit;
-    }
-  }
-  
   Double_t alpha(0.1); // trim 10% of data
-  Double_t tmean,tvar;
-  Double_t ymin,ymax;
+  Double_t tmean(0.0),tvar(0.0);
+  Double_t ymin(0.0),ymax(0.0);
   
-  // computed the truncated mean of the occupancy values, in order to get a 
-  // reasonable y-range for the histogram (without giant peaks to the roof 
-  // for misbehaving buspatches).
-  Int_t ok = trim(nBusPatches,x,alpha,tmean,tvar,ymin,ymax);
+  
+  if ( nBusPatches ) 
+  {
+    Double_t* x = new Double_t[nBusPatches];
+  
+    while ( ( bp = static_cast<AliMpBusPatch*>(next())) )
+    {
+      Int_t bin = hbp.FindBin(bp->GetId());
+      if ( hbp.GetBinContent(bin) > 0 )
+      {
+        x[n] = hbp.GetBinContent(bin);
+        ++n;
+      }
+      if ( hbp.GetBinContent(bin) > occError )
+      {
+        ++nBusPatchesAboveLimit;
+      }
+    }
+  
+    // computed the truncated mean of the occupancy values, in order to get a 
+    // reasonable y-range for the histogram (without giant peaks to the roof 
+    // for misbehaving buspatches).
+    ok = trim(nBusPatches,x,alpha,tmean,tvar,ymin,ymax);
+    
+    delete[] x;
+  }
   
   if ( ok < 0 ) 
   {
@@ -1740,4 +1816,6 @@ AliMUONQADataMakerRec::BeautifyTrackerBusPatchOccupancy(TH1& hbp)
   
   hbp.GetListOfFunctions()->Add(text);
 }
+
+
 

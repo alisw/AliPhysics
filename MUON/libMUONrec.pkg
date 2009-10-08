@@ -45,7 +45,8 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONLegacyClusterServer.cxx \
        AliMUONTriggerTrackToTrackerClusters.cxx \
        AliMUONVTrackerDataMaker.cxx \
-       AliMUONTrackerDataMaker.cxx 
+       AliMUONTrackerDataMaker.cxx \
+       AliMUONQAMappingCheck.cxx
        
 HDRS:= $(SRCS:.cxx=.h)
 

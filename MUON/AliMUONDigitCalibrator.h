@@ -30,6 +30,8 @@ class AliMUONDigitCalibrator : public TObject
 {
 public:
 
+  AliMUONDigitCalibrator(Int_t runNumber, const char* calibMode="NOGAIN");
+  
   AliMUONDigitCalibrator(const AliMUONCalibrationData& calib, 
                          const AliMUONRecoParam* recoParams,
                          const char* calibMode="NOGAIN");
@@ -61,7 +63,8 @@ private:
   
   void Ctor(const char* calibMode,
             const AliMUONCalibrationData& calib,
-            const AliMUONRecoParam* recoParams);
+            const AliMUONRecoParam* recoParams,
+            Bool_t deferredInitialization=kTRUE);
   
 private:
 	AliMUONLogger* fLogger; //!< to log repeated messages

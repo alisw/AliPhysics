@@ -74,6 +74,7 @@ private:
   mutable AliMUONVStore* fStatusMap; //!< status map
   AliMUONVStore* fRejectProbabilities; //!< reject probabilities (channel based, computed once per run)
   AliMUONVStore* fRejectList; //!< reject list (which channels should be rejected, might change event-by-event for simulations)
+  Bool_t fComputeOnDemand; //!< whether we authorize to compute things on demand or not
   
   ClassDef(AliMUONPadStatusMapMaker,0) // Pad status map maker
 };

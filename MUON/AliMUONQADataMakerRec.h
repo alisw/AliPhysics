@@ -15,11 +15,14 @@
 #include "AliMUONRecoParam.h"
 
 class AliMUONDigitMaker;
-class AliMUONVDigitStore;
-class AliMUONVTriggerStore;
 class AliMUONVClusterStore;
+class AliMUONVDigitStore;
+class AliMUONVStore;
 class AliMUONVTrackerData;
 class AliMUONVTrackerDataMaker;
+class AliMUONVTriggerStore;
+
+class AliMUONQAMappingCheck;
 
 class AliMUONQADataMakerRec: public AliQADataMakerRec {
 
@@ -79,7 +82,9 @@ private:
     kTrackerClusterMultiplicityPerChSigma = 102, ///< cluster size per Ch: dispersion
     kTrackerClusterChargePerChMean        = 103, ///< cluster charge per Ch: mean
     kTrackerClusterChargePerChSigma       = 104, ///< cluster charge per Ch: dispersion
-    
+
+    kTrackerRecPoints = 105, ///< Tracker : tracker data of clusters (all and mono-cathode ones)
+
     kTrackerClusterMultiplicityPerChamber = 200, ///< Tracker: cluster multiplicity per chamber
     kTrackerClusterChargePerChamber       = 300, ///< Tracker: cluster charge per chamber
     kTrackerClusterHitMapPerChamber       = 400, ///< Tracker: cluster position distribution per chamber
@@ -90,6 +95,7 @@ private:
     
     kTrackerClusterMultiplicityPerDE = 3000, ///< Tracker : cluster multiplicity per DE		
     kTrackerClusterChargePerDE       = 5000  ///< Tracker : cluster charge per DE
+    
   };
   
   /// ESD histograms indices
@@ -149,12 +155,19 @@ private:
     kESDSumResidualY2PerDE      = 1008, ///< sum of cluster-track residual-Y**2 per DE
     kESDSumLocalChi2XPerDE      = 1009, ///< sum of local chi2-X per DE
     kESDSumLocalChi2YPerDE      = 1010, ///< sum of local chi2-Y per DE
-    kESDSumLocalChi2PerDE       = 1011  ///< sum of local chi2 per DE
+    kESDSumLocalChi2PerDE       = 1011,  ///< sum of local chi2 per DE
   };
   
 private:
   void BeautifyTrackerBusPatchOccupancy(TH1& hbp);
   
+  void EndOfDetectorCycleRaws(Int_t specie, TObjArray** list);
+  void EndOfDetectorCycleRecPoints(Int_t specie, TObjArray** list);
+  void EndOfDetectorCycleESDs();
+ 
+  void InsertTrackerData(Int_t specie, TObjArray** list, TObject* object, 
+                         Int_t indexNumber, Bool_t replace=kFALSE);
+
 private:
 	
   void Ctor();
@@ -175,9 +188,11 @@ private:
   AliMUONDigitMaker*    fDigitMaker;  //!< pointer to digit maker
   AliMUONVClusterStore* fClusterStore; //!< pointer to cluster store
 	
-  AliMUONVTrackerDataMaker* fTrackerDataMaker; //!< tracker data accumulation
+  AliMUONVTrackerDataMaker* fTrackerDataMaker; //!< tracker data accumulation (Raw)
   
-  ClassDef(AliMUONQADataMakerRec,7)  // MUON Quality assurance data maker
+  AliMUONQAMappingCheck* fMappingCheckRecPoints; //!< mapping cross-checker (RecPoints)
+  
+  ClassDef(AliMUONQADataMakerRec,8)  // MUON Quality assurance data maker
 
 };
 #endif

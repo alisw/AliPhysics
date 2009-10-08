@@ -89,7 +89,8 @@ fkStatusMaker(padStatusMaker),
 fMask(mask),
 fStatusMap(new AliMUON2DMap(true)),
 fRejectProbabilities(new AliMUON2DMap(true)),
-fRejectList(0x0)
+fRejectList(0x0),
+fComputeOnDemand(deferredInitialization)
 {
   /// ctor
   if (!deferredInitialization)
@@ -309,8 +310,16 @@ AliMUONPadStatusMapMaker::StatusMap(Int_t detElemId, Int_t manuId,
   AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fStatusMap->FindObject(detElemId,manuId));
   if (!param)
   {
-    // not yet computed, so do it now
-    param = ComputeStatusMap(detElemId,manuId);
+    if ( fComputeOnDemand ) 
+    {
+      // not yet computed, so do it now
+      param = ComputeStatusMap(detElemId,manuId);
+    }
+    else
+    {
+      // we're locked. probably a bad manuId ?
+      return fgkSelfDead;
+    }
   }
   
   Int_t statusMap = param->ValueAsInt(manuChannel);
