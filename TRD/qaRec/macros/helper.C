@@ -5,6 +5,7 @@
 #include "TObjString.h"
 #include "TObjArray.h"
 #include "TError.h"
+#include <fstream>
 #endif
 
 //____________________________________________
@@ -39,7 +40,7 @@ Int_t ParseOptions(Char_t *trd)
   return fSteerTask;
 }
 
-// //______________________________________________________
+//______________________________________________________
 void mergeProd(const Char_t *mark, const Char_t *files, const Int_t kBatch = 20)
 {
   TFileMerger *fFM = 0x0;

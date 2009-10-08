@@ -7,7 +7,7 @@
 #include "TRD/qaRec/AliTRDmultiplicity.h"
 #endif
 
-
+#include "TRD/qaRec/macros/helper.C"
 void AddTRDefficiency(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
   Int_t map = ParseOptions(trd);

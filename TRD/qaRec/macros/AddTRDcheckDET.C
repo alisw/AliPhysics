@@ -6,6 +6,7 @@
 #include "TRD/qaRec/AliTRDcalibration.h"
 #endif
 
+#include "TRD/qaRec/macros/helper.C"
 void AddTRDcheckDET(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
   Int_t map = ParseOptions(trd);

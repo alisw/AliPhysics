@@ -9,7 +9,7 @@
 #include "TRD/qaRec/AliTRDpidRefMakerLQ.h"
 #endif
 
-
+#include "TRD/qaRec/macros/helper.C"
 void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
   Int_t map = ParseOptions(trd);
