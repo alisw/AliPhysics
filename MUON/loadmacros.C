@@ -77,6 +77,7 @@ void loadmacros ()
   loadmacro("DecodeRecoCocktail");         // Hermine, Alessandro     
   loadmacro("fastMUONGen");                // Hermine, Alessandro
   loadmacro("fastMUONSim");                // Hermine, Alessandro
+  loadmacro("loadFromOCDB");               // Philippe P.
   loadmacro("MakeMUONFullMisAlignment");   // Javier, Ivana
   loadmacro("MakeMUONResMisAlignment");    // Javier, Ivana
   loadmacro("MakeMUONZeroMisAlignment");   // Javier, Ivana
@@ -113,5 +114,6 @@ void loadmacros ()
   loadmacro("runReconstruction");          // Laurent
   loadmacro("runSimulation");              // Laurent
   loadmacro("TestMUONPreprocessor");       // Laurent
+  loadmacro("TestRecPoints");              // Diego
   loadmacro("TestRecPoints");              // Diego
 }
