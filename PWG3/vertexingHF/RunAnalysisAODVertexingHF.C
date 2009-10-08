@@ -1,4 +1,5 @@
 class AliAnalysisGrid;
+TString mySE="ALICE::CNAF::SE";
 
 void RunAnalysisAODVertexingHF()
 {
@@ -12,6 +13,8 @@ void RunAnalysisAODVertexingHF()
   // A.Dainese, andrea.dainese@lnl.infn.it
   // "grid" mode added by R.Bala, bala@to.infn.it
   //
+
+  gSystem->Setenv("alien_CLOSE_SE",mySE.Data());
 
   gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/vertexingHF -g"); 
   //
@@ -165,7 +168,7 @@ void RunAnalysisAODVertexingHF()
 
   // Create the analysis manager
   AliAnalysisManager *mgr  = new AliAnalysisManager("My Manager","My Manager");
-  mgr->SetDebugLevel(10);
+  mgr->SetDebugLevel(0);
   // Connect plug-in to the analysis manager
   if(useAlienPlugin) mgr->SetGridHandler(alienHandler);
 
@@ -274,13 +277,13 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    // Set versions of used packages
    plugin->SetAPIVersion("V2.4");
    plugin->SetROOTVersion("v5-24-00");
-   plugin->SetAliROOTVersion("v4-18-01-AN");
+   plugin->SetAliROOTVersion("v4-18-06-AN");
    // Declare input data to be processed.
    // Method 1: Create automatically XML collections using alien 'find' command.
    // Define production directory LFN
    //plugin->SetGridDataDir("/alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/");
    //plugin->SetGridDataDir("/alice/cern.ch/user/m/mgheata/analysisESD/output_train_default_28May2009_09h33/");
-   plugin->SetGridDataDir("/alice/sim/PDC_09/LHC09a6/AOD/");
+   plugin->SetGridDataDir("/alice/sim/PDC_09/LHC09a5/AOD1/");
    // Set data search pattern
    plugin->SetDataPattern("AliAOD.root");
    plugin->SetFriendChainName("AliAOD.VertexingHF.root");
@@ -295,7 +298,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //plugin->AddDataFile("/alice/cern.ch/user/r/rbala/newtrain/collection/collection_aod_lhc08w.xml");
    //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
    // Define alien work directory where all files will be copied. Relative to alien $HOME.
-   plugin->SetGridWorkingDir("work");
+   plugin->SetGridWorkingDir("lhc09a5_061009");
    // Declare alien output directory. Relative to working directory.
    plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
    // Declare the analysis source files names separated by blancs. To be compiled runtime
@@ -345,7 +348,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    // Optionally modify split mode (default 'se')    
    plugin->SetSplitMode("se");
    // Optionally set the preferred SE    
-   plugin->SetPreferedSE("ALICE::Torino::DPM");
+   plugin->SetPreferedSE(mySE.Data());
    
    return plugin;
 }
