@@ -103,11 +103,6 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
 
   Bool_t fHasMCdata = HasReadMCData(trd);
   Bool_t fHasFriends = HasReadFriendData(trd);
-/*    } else if(s.CompareTo("NOFR") == 0){ 
-      fHasFriends = kFALSE;
-    } else if(s.CompareTo("NOMC") == 0){ 
-      fHasMCdata = kFALSE;
-*/
   
   // INITIALIZATION OF RUNNING ENVIRONMENT
   //TODO We should use the GRP if available similar to AliReconstruction::InitGRP()!

@@ -30,12 +30,13 @@ Int_t ParseOptions(Char_t *trd)
     }
   }
   // extra rules for calibration tasks
-//   if(TSTBIT(fSteerTask, kCalibration)) SETBIT(fSteerTask, kCheckDET);
-//   if(TSTBIT(fSteerTask, kMultiplicity)) SETBIT(fSteerTask, kEfficiency);
-//   if(TSTBIT(fSteerTask, kEfficiencyMC)) SETBIT(fSteerTask, kEfficiency);
-//   if(TSTBIT(fSteerTask, kClErrParam)) SETBIT(fSteerTask, kResolution);
-//   if(TSTBIT(fSteerTask, kAlignment)) SETBIT(fSteerTask, kResolution);
-//   if(TSTBIT(fSteerTask, kPIDRefMaker)) SETBIT(fSteerTask, kCheckPID);
+  if(TSTBIT(fSteerTask, kCalibration)) SETBIT(fSteerTask, kCheckDET);
+  if(TSTBIT(fSteerTask, kMultiplicity)) SETBIT(fSteerTask, kEfficiency);
+  if(TSTBIT(fSteerTask, kEfficiencyMC)) SETBIT(fSteerTask, kEfficiency);
+  if(TSTBIT(fSteerTask, kClErrParam)) SETBIT(fSteerTask, kResolution);
+  if(TSTBIT(fSteerTask, kAlignment)) SETBIT(fSteerTask, kResolution);
+  if(TSTBIT(fSteerTask, kPIDRefMakerNN)) SETBIT(fSteerTask, kCheckPID);
+  if(TSTBIT(fSteerTask, kPIDRefMakerLQ)) SETBIT(fSteerTask, kCheckPID);
 
   return fSteerTask;
 }
