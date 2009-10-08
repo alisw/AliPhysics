@@ -8,6 +8,8 @@
 
 class AliPMDReconstructor: public AliReconstructor {
 public:
+ AliPMDReconstructor() : AliReconstructor() {}
+
   virtual void   Reconstruct(AliRawReader* rawReader,
 			     TTree* clustersTree) const;
   virtual void   Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
