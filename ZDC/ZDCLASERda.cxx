@@ -2,9 +2,6 @@
 
 This program reads the DAQ data files passed as argument using the monitoring library.
 
-It computes the average event size and populates local "./result.txt" file with the 
-result.
-
 The program reports about its processing progress.
 
 Messages on stdout are exported to DAQ log system.
@@ -16,7 +13,7 @@ Link:
 Run Type: STANDALONE_LASER_RUN
 DA Type: LDC
 Number of events needed: no constraint (tipically ~10^3)
-Input Files: 
+Input Files: ZDCPedestal.dat
 Output Files: ZDCLaser.dat
 Trigger Types Used: Standalone Trigger
 
@@ -69,6 +66,13 @@ int main(int argc, char **argv) {
   int status = 0;
   int const kNChannels = 24;
   int const kNScChannels = 32;
+  
+  Int_t ich=0;
+  Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
+  Int_t det[2*kNChannels], sec[2*kNChannels];
+  for(Int_t y=0; y<2*kNChannels; y++){
+    adcMod[y]=adcCh[y]=sigCode[y]=det[y]=sec[y]=0;
+  }
 
   /* log start of process */
   printf("\n ZDC LASER program started\n");  
@@ -84,8 +88,8 @@ int main(int argc, char **argv) {
   //
   TH1F::AddDirectory(0);
   // --- Histos for reference PMTs (high gain chains)
-  TH1F *hPMRefChg = new TH1F("hPMRefChg","hPMRefChg", 100,0.,1400.);
-  TH1F *hPMRefAhg = new TH1F("hPMRefAhg","hPMRefAhg", 100,0.,1400.);
+  TH1F *hPMRefChg = new TH1F("hPMRefChg","hPMRefChg", 100,0.,1000.);
+  TH1F *hPMRefAhg = new TH1F("hPMRefAhg","hPMRefAhg", 100,0.,1000.);
   TH1F *hPMRefClg = new TH1F("hPMRefClg","hPMRefClg", 100,0.,4000.);
   TH1F *hPMRefAlg = new TH1F("hPMRefAlg","hPMRefAlg", 100,0.,4000.);
   //
@@ -101,10 +105,10 @@ int main(int argc, char **argv) {
     sprintf(hnamZNAhg,"ZNAhg-tow%d",j);
     sprintf(hnamZPAhg,"ZPAhg-tow%d",j);
     //
-    hZNChg[j] = new TH1F(hnamZNChg, hnamZNChg, 100, 0., 1400.);
-    hZPChg[j] = new TH1F(hnamZPChg, hnamZPChg, 100, 0., 1400.);
-    hZNAhg[j] = new TH1F(hnamZNAhg, hnamZNAhg, 100, 0., 1400.);
-    hZPAhg[j] = new TH1F(hnamZPAhg, hnamZPAhg, 100, 0., 1400.);
+    hZNChg[j] = new TH1F(hnamZNChg, hnamZNChg, 100, 0., 1000.);
+    hZPChg[j] = new TH1F(hnamZPChg, hnamZPChg, 100, 0., 1000.);
+    hZNAhg[j] = new TH1F(hnamZNAhg, hnamZNAhg, 100, 0., 1000.);
+    hZPAhg[j] = new TH1F(hnamZPAhg, hnamZPAhg, 100, 0., 1000.);
     //
     sprintf(hnamZNClg,"ZNClg-tow%d",j);
     sprintf(hnamZPClg,"ZPClg-tow%d",j);
@@ -120,7 +124,7 @@ int main(int argc, char **argv) {
       sprintf(hnamZEMhg,"ZEM%dhg",j);
       sprintf(hnamZEMlg,"ZEM%dlg",j);
       //
-      hZEMhg[j] = new TH1F(hnamZEMhg, hnamZEMhg, 100, 0., 1400.);      
+      hZEMhg[j] = new TH1F(hnamZEMhg, hnamZEMhg, 100, 0., 1000.);      
       hZEMlg[j] = new TH1F(hnamZEMlg, hnamZEMlg, 100, 0., 4000.);      
     }
   }
@@ -235,15 +239,7 @@ int main(int argc, char **argv) {
 
       /* use event - here, just write event id to result file */
       eventT=event->eventType;
-      
-  
-      Int_t ich=0;
-      Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
-      Int_t det[2*kNChannels], sec[2*kNChannels];
-      for(Int_t y=0; y<2*kNChannels; y++){
-        adcMod[y]=adcCh[y]=sigCode[y]=det[y]=sec[y]=0;
-      }
-      
+            
       Int_t iScCh=0;
       Int_t scMod[kNScChannels], scCh[kNScChannels], scSigCode[kNScChannels];
       Int_t scDet[kNScChannels], scSec[kNScChannels];
@@ -312,7 +308,6 @@ int main(int argc, char **argv) {
          UChar_t message = header->GetAttributes();
 	 if((message & 0x30) == 0x30){ // DEDICATED LASER RUN
 	    //printf("\t STANDALONE_LASER_RUN raw data found\n");
-	    continue;
 	 }
 	 else{
 	    printf("ZDCLASERda.cxx -> NO STANDALONE_LASER_RUN raw data found\n");
@@ -345,11 +340,8 @@ int main(int argc, char **argv) {
   	  if(rawStreamZDC->IsADCDataWord() && !(rawStreamZDC->IsUnderflow())
 	     && !(rawStreamZDC->IsOverflow()) && detector!=-1){
 	    
-	    //printf("  IsADCWord %d, IsUnderflow %d, IsOverflow %d\n",
-	    //  rawStreamZDC->IsADCDataWord(),rawStreamZDC->IsUnderflow(),rawStreamZDC->IsOverflow());
- 
  	    if(sector!=5){ // Physics signals
-    	      if(detector==1) index = sector;        // *** ZNC
+    	      if(detector==1)      index = sector;   // *** ZNC
 	      else if(detector==2) index = sector+5; // *** ZPC
 	      else if(detector==3) index = sector+9; // *** ZEM
 	      else if(detector==4) index = sector+12;// *** ZNA
@@ -363,7 +355,7 @@ int main(int argc, char **argv) {
 	      detector, sector, rawStreamZDC->GetADCGain(), index, rawStreamZDC->GetADCValue());
 	    
 	    Float_t Pedestal=0.;
-	    if(rawStreamZDC->GetADCGain()==0) Pedestal = MeanPedhg[index];
+	    if(rawStreamZDC->GetADCGain()==0)      Pedestal = MeanPedhg[index];
 	    else if(rawStreamZDC->GetADCGain()==1) Pedestal = MeanPedlg[index];
 	    //
 	    Float_t CorrADC = rawStreamZDC->GetADCValue() - Pedestal;
@@ -375,7 +367,7 @@ int main(int argc, char **argv) {
 	    if(sector!=5){
 	      if(rawStreamZDC->GetADCGain()==0){ // --- High gain chain ---
 	        // ---- side C
-	        if(detector==1) hZNChg[sector]->Fill(CorrADC);
+	        if(detector==1)      hZNChg[sector]->Fill(CorrADC);
 	        else if(detector==2) hZPChg[sector]->Fill(CorrADC);
 	        // ---- side A
 	        else if(detector==4) hZNAhg[sector]->Fill(CorrADC);
@@ -385,7 +377,7 @@ int main(int argc, char **argv) {
 	      }
 	      else if(rawStreamZDC->GetADCGain()==1){ // --- Low gain chain ---
 	        // ---- side C
-	        if(detector==1) hZNClg[sector]->Fill(CorrADC);
+	        if(detector==1)      hZNClg[sector]->Fill(CorrADC);
 	        else if(detector==2) hZPClg[sector]->Fill(CorrADC);
 	        // ---- side A
 	        else if(detector==4) hZNAlg[sector]->Fill(CorrADC);
@@ -437,16 +429,23 @@ int main(int argc, char **argv) {
   
   /* Analysis of the histograms */
   //
-  Int_t det[2*kNChannels], quad[2*kNChannels];
+  Int_t detector[2*kNChannels], quad[2*kNChannels];
   Int_t maxBin[2*kNChannels], nBin[2*kNChannels];
   Float_t xMax[2*kNChannels], maxXval[2*kNChannels], xlow[2*kNChannels]; 
   Float_t mean[2*kNChannels], sigma[2*kNChannels];
+  for(Int_t t=0; t<2*kNChannels; t++){
+    detector[t] = quad[t] = 0;
+    maxBin[t] = nBin[t] = 0;
+    xMax[t] = maxXval[t] = xlow[t] = 0.;
+    mean[t] = sigma[t] = 0.;
+  }
   TF1 *fun[2*kNChannels];
+  Int_t atLeastOneHisto=0;
   
   // ******** High gain chain ********
   for(Int_t k=0; k<5; k++){
     // --- ZNC
-    det[k] = 1;
+    detector[k] = 1;
     quad[k] = k;
     maxBin[k] = hZNChg[k]->GetMaximumBin();
     nBin[k] = (hZNChg[k]->GetXaxis())->GetNbins();
@@ -454,18 +453,17 @@ int main(int argc, char **argv) {
     if(nBin[k]!=0) maxXval[k] = maxBin[k]*xMax[k]/nBin[k];
     if(maxXval[k]-150.<0.) xlow[k]=0.;
     else xlow[k] = maxXval[k]-150.;
-    // checking if histos are empty
-    if(hZNChg[k]->GetEntries() == 0){
-      printf("\n WARNING! Empty LASER histos -> ending DA WITHOUT writing output\n\n");
-      return -1;
-    } 
-    //
-    hZNChg[k]->Fit("gaus","Q","",xlow[k],maxXval[k]+150.);
-    fun[k] = hZNChg[k]->GetFunction("gaus");
-    mean[k]  = (Float_t) (fun[k]->GetParameter(1));
-    sigma[k] = (Float_t) (fun[k]->GetParameter(2));
+    // checking if at least one histo is fitted
+    if(hZNChg[k]->GetEntries() != 0){
+      atLeastOneHisto=1;
+      //
+      hZNChg[k]->Fit("gaus","Q","",xlow[k],maxXval[k]+150.);
+      fun[k] = hZNChg[k]->GetFunction("gaus");
+      mean[k]  = (Float_t) (fun[k]->GetParameter(1));
+      sigma[k] = (Float_t) (fun[k]->GetParameter(2));
+    }
     // --- ZPC
-    det[k+5] = 2;
+    detector[k+5] = 2;
     quad[k+5] = k;
     maxBin[k+5] = hZPChg[k]->GetMaximumBin();
     nBin[k+5] = (hZPChg[k]->GetXaxis())->GetNbins();
@@ -473,13 +471,17 @@ int main(int argc, char **argv) {
     if(nBin[k+5]!=0) maxXval[k+5] = maxBin[k+5]*xMax[k+5]/nBin[k+5];
     if(maxXval[k+5]-150.<0.) xlow[k+5]=0.;
     else xlow[k+5] = maxXval[k+5]-150.;
-    hZPChg[k]->Fit("gaus","Q","",xlow[k+5],maxXval[k+5]+150.);
-    fun[k+5] = hZPChg[k]->GetFunction("gaus");
-    mean[k+5]  = (Float_t) (fun[k+5]->GetParameter(1));
-    sigma[k+5] = (Float_t) (fun[k+5]->GetParameter(2));
+    if(hZPChg[k]->GetEntries() != 0){
+      atLeastOneHisto=1; 
+      //
+      hZPChg[k]->Fit("gaus","Q","",xlow[k+5],maxXval[k+5]+150.);
+      fun[k+5] = hZPChg[k]->GetFunction("gaus");
+      mean[k+5]  = (Float_t) (fun[k+5]->GetParameter(1));
+      sigma[k+5] = (Float_t) (fun[k+5]->GetParameter(2));
+    }
     // --- ZEM1
     if(k<2){
-      det[k+10] = 3;
+      detector[k+10] = 3;
       quad[k+10] = k+1;
       maxBin[k+10] = hZEMhg[k]->GetMaximumBin();
       nBin[k+10] = (hZEMhg[k]->GetXaxis())->GetNbins();
@@ -487,13 +489,17 @@ int main(int argc, char **argv) {
       if(nBin[k+10]!=0) maxXval[k+10] = maxBin[k+10]*xMax[k+10]/nBin[k+10];
       if(maxXval[k+10]-150.<0.) xlow[k+10]=0.;
       else xlow[k+10] = maxXval[k+10]-150.;
-      hZEMhg[k]->Fit("gaus","Q","",xlow[k+10],maxXval[k+10]+150.);
-      fun[k+10] = hZEMhg[k]->GetFunction("gaus");
-      mean[k+10]  = (Float_t) (fun[k+10]->GetParameter(1));
-      sigma[k+10] = (Float_t) (fun[k+10]->GetParameter(2));
+      if(hZEMhg[k]->GetEntries() != 0){
+        atLeastOneHisto=1; 
+       //
+        hZEMhg[k]->Fit("gaus","Q","",xlow[k+10],maxXval[k+10]+150.);
+        fun[k+10] = hZEMhg[k]->GetFunction("gaus");
+        mean[k+10]  = (Float_t) (fun[k+10]->GetParameter(1));
+        sigma[k+10] = (Float_t) (fun[k+10]->GetParameter(2));
+      }
     }
     // --- ZNA
-    det[k+12] = 4;
+    detector[k+12] = 4;
     quad[k+12] = k;
     maxBin[k+12] = hZNAhg[k]->GetMaximumBin();
     nBin[k+12] = (hZNAhg[k]->GetXaxis())->GetNbins();
@@ -501,12 +507,16 @@ int main(int argc, char **argv) {
     if(nBin[k+12]!=0) maxXval[k+12] = maxBin[k+12]*xMax[k+12]/nBin[k+12];
     if(maxXval[k+12]-150.<0.) xlow[k+12]=0.;
     else xlow[k+12] = maxXval[k+12]-150.;
-    hZNAhg[k]->Fit("gaus","Q","",xlow[k+12],maxXval[k+12]+150.);
-    fun[k+12] = hZNAhg[k]->GetFunction("gaus");
-    mean[k+12]  = (Float_t) (fun[k+12]->GetParameter(1));
-    sigma[k+12] = (Float_t) (fun[k+12]->GetParameter(2));
+    if(hZNAhg[k]->GetEntries() != 0){
+      atLeastOneHisto=1; 
+      //
+      hZNAhg[k]->Fit("gaus","Q","",xlow[k+12],maxXval[k+12]+150.);
+      fun[k+12] = hZNAhg[k]->GetFunction("gaus");
+      mean[k+12]  = (Float_t) (fun[k+12]->GetParameter(1));
+      sigma[k+12] = (Float_t) (fun[k+12]->GetParameter(2));
+    }
     // --- ZPA
-    det[k+17] = 4;
+    detector[k+17] = 4;
     quad[k+17] = 5;
     maxBin[k+17] = hZPAhg[k]->GetMaximumBin();
     nBin[k+17] = (hZPAhg[k]->GetXaxis())->GetNbins();
@@ -514,43 +524,55 @@ int main(int argc, char **argv) {
     if(nBin[k+17]!=0) maxXval[k+17] = maxBin[k+17]*xMax[k+17]/nBin[k+17];
     if(maxXval[k+17]-150.<0.) xlow[k+17]=0.;
     else xlow[k+17] = maxXval[k+17]-150.;
-    hZPAhg[k]->Fit("gaus","Q","",xlow[k+17],maxXval[k+17]+150.);
-    fun[k+17] = hZPAhg[k]->GetFunction("gaus");
-    mean[k+17]  = (Float_t) (fun[k+17]->GetParameter(1));
-    sigma[k+17] = (Float_t) (fun[k+17]->GetParameter(2));    
+    if(hZPAhg[k]->GetEntries() != 0){
+      atLeastOneHisto=1; 
+      //
+      hZPAhg[k]->Fit("gaus","Q","",xlow[k+17],maxXval[k+17]+150.);
+      fun[k+17] = hZPAhg[k]->GetFunction("gaus");
+      mean[k+17]  = (Float_t) (fun[k+17]->GetParameter(1));
+      sigma[k+17] = (Float_t) (fun[k+17]->GetParameter(2));    
+    }
   }
   // ~~~~~~~~ PM Ref side C ~~~~~~~~
-  det[22] = 1;
+  detector[22] = 1;
   quad[22] = 5;
   maxBin[22] = hPMRefChg->GetMaximumBin();
   nBin[22] = (hPMRefChg->GetXaxis())->GetNbins();
   xMax[22] = (hPMRefChg->GetXaxis())->GetXmax();
   if(nBin[22]!=0) maxXval[22] = maxBin[22]*xMax[22]/nBin[22];
   if(maxXval[22]-150.<0.) xlow[22]=0.;
-  else xlow[22] = maxXval[22];
-  hPMRefChg->Fit("gaus","Q","",xlow[22],maxXval[22]+150.);
-  fun[22] = hPMRefChg->GetFunction("gaus");
-  mean[22]  = (Float_t) (fun[22]->GetParameter(1));
-  sigma[22] = (Float_t) (fun[22]->GetParameter(2));
+  else xlow[22] = maxXval[22]-150.;
+  if(hPMRefChg->GetEntries() != 0){
+    atLeastOneHisto=1; 
+    //
+    hPMRefChg->Fit("gaus","Q","",xlow[22],maxXval[22]+150.);
+    fun[22] = hPMRefChg->GetFunction("gaus");
+    mean[22]  = (Float_t) (fun[22]->GetParameter(1));
+    sigma[22] = (Float_t) (fun[22]->GetParameter(2));
+  }
   // ~~~~~~~~ PM Ref side A ~~~~~~~~
-  det[23] = 4;
+  detector[23] = 4;
   quad[23] = 5;
   maxBin[23] = hPMRefAhg->GetMaximumBin();
   nBin[23] = (hPMRefAhg->GetXaxis())->GetNbins();
   xMax[23] = (hPMRefAhg->GetXaxis())->GetXmax();
   if(nBin[23]!=0) maxXval[23] = maxBin[23]*xMax[23]/nBin[23];
   if(maxXval[23]-100.<0.) xlow[23]=0.;
-  else xlow[23] = maxXval[23];
-  hPMRefAhg->Fit("gaus","Q","",xlow[23],maxXval[23]+100.);
-  fun[23] = hPMRefAhg->GetFunction("gaus");
-  mean[23]  = (Float_t) (fun[23]->GetParameter(1));
-  sigma[23] = (Float_t) (fun[23]->GetParameter(2));
+  else xlow[23] = maxXval[23]-150.;
+  if(hPMRefAhg->GetEntries() != 0){
+    atLeastOneHisto=1; 
+    //
+    hPMRefAhg->Fit("gaus","Q","",xlow[23],maxXval[23]+100.);
+    fun[23] = hPMRefAhg->GetFunction("gaus");
+    mean[23]  = (Float_t) (fun[23]->GetParameter(1));
+    sigma[23] = (Float_t) (fun[23]->GetParameter(2));
+  }
   
   // ******** Low gain chain ********
   Int_t kOffset = 24;
   for(Int_t k=0; k<5; k++){
     // --- ZNC
-    det[k+kOffset] = 1;
+    detector[k+kOffset] = 1;
     quad[k+kOffset] = k;
     maxBin[k+kOffset] = hZNClg[k]->GetMaximumBin();
     nBin[k+kOffset] = (hZNClg[k]->GetXaxis())->GetNbins();
@@ -558,12 +580,16 @@ int main(int argc, char **argv) {
     if(nBin[k+kOffset]!=0) maxXval[k+kOffset] = maxBin[k+kOffset]*xMax[k+kOffset]/nBin[k+kOffset];
     if(maxXval[k+kOffset]-150.<0.) xlow[k+kOffset]=0.;
     else xlow[k+kOffset] = maxXval[k+kOffset]-150.;
-    hZNClg[k]->Fit("gaus","Q","",xlow[k+kOffset],maxXval[k+kOffset]+150.);
-    fun[k+kOffset] = hZNClg[k]->GetFunction("gaus");
-    mean[k+kOffset]  = (Float_t) (fun[k+kOffset]->GetParameter(1));
-    sigma[k+kOffset] = (Float_t) (fun[k+kOffset]->GetParameter(2));
+    if(hZNClg[k]->GetEntries() != 0){
+      atLeastOneHisto=1; 
+      //
+      hZNClg[k]->Fit("gaus","Q","",xlow[k+kOffset],maxXval[k+kOffset]+150.);
+      fun[k+kOffset] = hZNClg[k]->GetFunction("gaus");
+      mean[k+kOffset]  = (Float_t) (fun[k+kOffset]->GetParameter(1));
+      sigma[k+kOffset] = (Float_t) (fun[k+kOffset]->GetParameter(2));
+    }
     // --- ZPC
-    det[k+kOffset+5] = 2;
+    detector[k+kOffset+5] = 2;
     quad[k+kOffset+5] = k;
     maxBin[k+kOffset+5] = hZPClg[k]->GetMaximumBin();
     nBin[k+kOffset+5] = (hZPClg[k]->GetXaxis())->GetNbins();
@@ -571,13 +597,17 @@ int main(int argc, char **argv) {
     if(nBin[k+kOffset+5]!=0) maxXval[k+kOffset+5] = maxBin[k+kOffset+5]*xMax[k+kOffset+5]/nBin[k+kOffset+5];
     if(maxXval[k+kOffset+5]-150.<0.) xlow[k+kOffset+5]=0.;
     else xlow[k+kOffset+5] = maxXval[k+kOffset+5]-150.;
-    hZPClg[k]->Fit("gaus","Q","",xlow[k+kOffset+5],maxXval[k+kOffset+5]+150.);
-    fun[k+kOffset+5] = hZPClg[k]->GetFunction("gaus");
-    mean[k+kOffset+5]  = (Float_t) (fun[k+kOffset+5]->GetParameter(1));
-    sigma[k+kOffset+5] = (Float_t) (fun[k+kOffset+5]->GetParameter(2));
+    if(hZPClg[k]->GetEntries() != 0){
+      atLeastOneHisto=1;  
+      //
+      hZPClg[k]->Fit("gaus","Q","",xlow[k+kOffset+5],maxXval[k+kOffset+5]+150.);
+      fun[k+kOffset+5] = hZPClg[k]->GetFunction("gaus");
+      mean[k+kOffset+5]  = (Float_t) (fun[k+kOffset+5]->GetParameter(1));
+      sigma[k+kOffset+5] = (Float_t) (fun[k+kOffset+5]->GetParameter(2));
+    }
     // --- ZEM1
     if(k+kOffset<2){
-      det[k+kOffset+10] = 3;
+      detector[k+kOffset+10] = 3;
       quad[k+kOffset+10] = k+1;
       maxBin[k+kOffset+10] = hZEMlg[k]->GetMaximumBin();
       nBin[k+kOffset+10] = (hZEMlg[k]->GetXaxis())->GetNbins();
@@ -585,13 +615,17 @@ int main(int argc, char **argv) {
       if(nBin[k+kOffset+10]!=0) maxXval[k+kOffset+10] = maxBin[k+kOffset+10]*xMax[k+kOffset+10]/nBin[k+kOffset+10];
       if(maxXval[k+kOffset+10]-150.<0.) xlow[k+kOffset+10]=0.;
       else xlow[k+kOffset+10] = maxXval[k+kOffset+10]-150.;
-      hZEMlg[k]->Fit("gaus","Q","",xlow[k+kOffset+10],maxXval[k+kOffset+10]+150.);
-      fun[k+kOffset+10] = hZEMlg[k]->GetFunction("gaus");
-      mean[k+kOffset+10]  = (Float_t) (fun[k+kOffset+10]->GetParameter(1));
-      sigma[k+kOffset+10] = (Float_t) (fun[k+kOffset+10]->GetParameter(2));
+      if(hZEMlg[k]->GetEntries() != 0){
+        atLeastOneHisto=1;  
+        //
+        hZEMlg[k]->Fit("gaus","Q","",xlow[k+kOffset+10],maxXval[k+kOffset+10]+150.);
+        fun[k+kOffset+10] = hZEMlg[k]->GetFunction("gaus");
+        mean[k+kOffset+10]  = (Float_t) (fun[k+kOffset+10]->GetParameter(1));
+        sigma[k+kOffset+10] = (Float_t) (fun[k+kOffset+10]->GetParameter(2));
+      }
     }
     // --- ZNA
-    det[k+kOffset+12] = 4;
+    detector[k+kOffset+12] = 4;
     quad[k+kOffset+12] = k;
     maxBin[k+kOffset+12] = hZNAlg[k]->GetMaximumBin();
     nBin[k+kOffset+12] = (hZNAlg[k]->GetXaxis())->GetNbins();
@@ -599,12 +633,16 @@ int main(int argc, char **argv) {
     if(nBin[k+kOffset+12]!=0) maxXval[k+kOffset+12] = maxBin[k+kOffset+12]*xMax[k+kOffset+12]/nBin[k+kOffset+12];
     if(maxXval[k+kOffset+12]-150.<0.) xlow[k+kOffset+12]=0.;
     else xlow[k+kOffset+12] = maxXval[k+kOffset+12]-150.;
-    hZNAlg[k]->Fit("gaus","Q","",xlow[k+kOffset+12],maxXval[k+kOffset+12]+150.);
-    fun[k+kOffset+12] = hZNAlg[k]->GetFunction("gaus");
-    mean[k+kOffset+12]  = (Float_t) (fun[k+kOffset+12]->GetParameter(1));
-    sigma[k+kOffset+12] = (Float_t) (fun[k+kOffset+12]->GetParameter(2));
+    if(hZNAlg[k]->GetEntries() != 0){
+      atLeastOneHisto=1;
+      //
+      hZNAlg[k]->Fit("gaus","Q","",xlow[k+kOffset+12],maxXval[k+kOffset+12]+150.);
+      fun[k+kOffset+12] = hZNAlg[k]->GetFunction("gaus");
+      mean[k+kOffset+12]  = (Float_t) (fun[k+kOffset+12]->GetParameter(1));
+      sigma[k+kOffset+12] = (Float_t) (fun[k+kOffset+12]->GetParameter(2));
+    }
     // --- ZPA
-    det[k+kOffset+17] = 5;
+    detector[k+kOffset+17] = 5;
     quad[k+kOffset+17] = k;
     maxBin[k+kOffset+17] = hZPAlg[k]->GetMaximumBin();
     nBin[k+kOffset+17] = (hZPAlg[k]->GetXaxis())->GetNbins();
@@ -612,42 +650,59 @@ int main(int argc, char **argv) {
     if(nBin[k+kOffset+17]!=0) maxXval[k+kOffset+17] = maxBin[k+kOffset+17]*xMax[k+kOffset+17]/nBin[k+kOffset+17];
     if(maxXval[k+kOffset+17]-150.<0.) xlow[k+kOffset+17]=0.;
     else xlow[k+kOffset+17] = maxXval[k+kOffset+17]-150.;
-    hZPAlg[k]->Fit("gaus","Q","",xlow[k+kOffset+17],maxXval[k+kOffset+17]+150.);
-    fun[k+kOffset+17] = hZPAlg[k]->GetFunction("gaus");
-    mean[k+kOffset+17]  = (Float_t) (fun[k+kOffset+17]->GetParameter(1));
-    sigma[k+kOffset+17] = (Float_t) (fun[k+kOffset+17]->GetParameter(2));    
+    if(hZPAlg[k]->GetEntries() != 0){
+      atLeastOneHisto=1;  
+      //
+      hZPAlg[k]->Fit("gaus","Q","",xlow[k+kOffset+17],maxXval[k+kOffset+17]+150.);
+      fun[k+kOffset+17] = hZPAlg[k]->GetFunction("gaus");
+      mean[k+kOffset+17]  = (Float_t) (fun[k+kOffset+17]->GetParameter(1));
+      sigma[k+kOffset+17] = (Float_t) (fun[k+kOffset+17]->GetParameter(2)); 
+    }   
   }
   // ~~~~~~~~ PM Ref side C ~~~~~~~~
-  det[46] = 1;
+  detector[46] = 1;
   quad[46] = 5;
   maxBin[46] = hPMRefClg->GetMaximumBin();
   nBin[46] = (hPMRefClg->GetXaxis())->GetNbins();
   xMax[46] = (hPMRefClg->GetXaxis())->GetXmax();
   if(nBin[46]!=0) maxXval[46] = maxBin[46]*xMax[46]/nBin[46];
   if(maxXval[46]-150.<0.) xlow[46]=0.;
-  else xlow[46] = maxXval[46];
-  hPMRefClg->Fit("gaus","Q","",xlow[46],maxXval[46]+150.);
-  fun[46] = hPMRefClg->GetFunction("gaus");
-  mean[46]  = (Float_t) (fun[46]->GetParameter(1));
-  sigma[46] = (Float_t) (fun[46]->GetParameter(2));
+  else xlow[46] = maxXval[46]-150.;
+  if(hPMRefClg->GetEntries() != 0){
+    atLeastOneHisto=1; 
+    //
+    hPMRefClg->Fit("gaus","Q","",xlow[46],maxXval[46]+150.);
+    fun[46] = hPMRefClg->GetFunction("gaus");
+    mean[46]  = (Float_t) (fun[46]->GetParameter(1));
+    sigma[46] = (Float_t) (fun[46]->GetParameter(2));
+  }
   // ~~~~~~~~ PM Ref side A ~~~~~~~~
-  det[47] = 4;
+  detector[47] = 4;
   quad[47] = 5;
   maxBin[47] = hPMRefAlg->GetMaximumBin();
   nBin[47] = (hPMRefAlg->GetXaxis())->GetNbins();
   xMax[47] = (hPMRefAlg->GetXaxis())->GetXmax();
   if(nBin[47]!=0) maxXval[47] = maxBin[47]*xMax[47]/nBin[47];
   if(maxXval[47]-100.<0.) xlow[47]=0.;
-  else xlow[47] = maxXval[47];
-  hPMRefAlg->Fit("gaus","Q","",xlow[47],maxXval[47]+100.);
-  fun[47] = hPMRefAlg->GetFunction("gaus");
-  mean[47]  = (Float_t) (fun[47]->GetParameter(1));
-  sigma[47] = (Float_t) (fun[47]->GetParameter(2));
+  else xlow[47] = maxXval[47]-150.;
+  if(hPMRefAlg->GetEntries() != 0){
+    atLeastOneHisto=1;  
+    //
+    hPMRefAlg->Fit("gaus","Q","",xlow[47],maxXval[47]+100.);
+    fun[47] = hPMRefAlg->GetFunction("gaus");
+    mean[47]  = (Float_t) (fun[47]->GetParameter(1));
+    sigma[47] = (Float_t) (fun[47]->GetParameter(2));
+  }
+  
+  if(atLeastOneHisto==0){
+    printf("\n WARNING! Empty LASER histos -> ending DA WITHOUT writing output\n\n");
+    return -1;
+  }
     
   FILE *fileShuttle;
   fileShuttle = fopen(LASDATA_FILE,"w");
   for(Int_t i=0; i<2*kNChannels; i++){
-    fprintf(fileShuttle,"\t%d\t%d\t%f\t%f\n",det[i],quad[i],mean[i], sigma[i]); 
+    fprintf(fileShuttle,"\t%d\t%d\t%f\t%f\n",detector[i],quad[i],mean[i], sigma[i]); 
   }
   //						       
   fclose(fileShuttle);
