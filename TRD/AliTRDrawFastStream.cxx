@@ -1635,22 +1635,15 @@ Bool_t AliTRDrawFastStream::DecodeADC(AliTRDdigitsManager *digitsManager, AliTRD
      adcSignals[2] = ((*fpPos & 0xffc00000) >> 22);
 
      if(GetCol() < 0 || (!fSharedPadsOn & fIsShared)) {fpPos++; continue;};	
+
      for (Int_t i = 0; i < 3; i++) {
-       if (adcSignals[i] > fCommonAdditive) { 
-	 if (fSharedPadsOn) {
-	   digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), fTbinADC + i, adcSignals[i]);
-	   if (!fIsShared) indexes->AddIndexRC(GetRow(), GetCol());
-         }
-	 else {
-	   digits->SetData(GetRow(), GetCol(), fTbinADC + i, adcSignals[i]);
-	   indexes->AddIndexRC(GetRow(), GetCol());
-         }
-       }
-       if (digitsManager->UsesDictionaries()) {
-	 track0->SetData(GetRow(), GetCol(), fTbinADC + i, 0);
-	 track1->SetData(GetRow(), GetCol(), fTbinADC + i, 0);
-	 track2->SetData(GetRow(), GetCol(), fTbinADC + i, 0);
-       }
+        digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), fTbinADC + i, adcSignals[i]);
+        indexes->AddIndexRC(GetRow(), GetCol());
+        if (digitsManager->UsesDictionaries()) {
+	  track0->SetData(GetRow(), GetCol(), fTbinADC + i, 0);
+	  track1->SetData(GetRow(), GetCol(), fTbinADC + i, 0);
+	  track2->SetData(GetRow(), GetCol(), fTbinADC + i, 0);
+        }
      } // i
      fTbinADC += 3;
      fpPos++;
@@ -1680,16 +1673,8 @@ Bool_t AliTRDrawFastStream::DecodeADCExtended(AliTRDdigitsManager *digitsManager
   adcFirst2Signals[1] = ((*fpPos & 0xffc00000) >> 22);
 
   for (Int_t i = 0; i < 2; i++) {
-     if (adcFirst2Signals[i] > fCommonAdditive) {
-       if (fSharedPadsOn) {
-         digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), fTbinADC + i, adcFirst2Signals[i]);
-         if (!fIsShared) indexes->AddIndexRC(GetRow(), GetCol());
-       }
-       else {
-         digits->SetData(GetRow(), GetCol(), fTbinADC + i, adcFirst2Signals[i]);
-         indexes->AddIndexRC(GetRow(), GetCol());
-       }
-     }
+     digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), fTbinADC + i, adcFirst2Signals[i]);
+     indexes->AddIndexRC(GetRow(), GetCol());
      if (digitsManager->UsesDictionaries()) {
        track0->SetData(GetRow(), GetCol(), fTbinADC + i, 0);
        track1->SetData(GetRow(), GetCol(), fTbinADC + i, 0);
@@ -1730,21 +1715,13 @@ Bool_t AliTRDrawFastStream::DecodeADCExtended(AliTRDdigitsManager *digitsManager
 
      if(GetCol() < 0 || (!fSharedPadsOn & fIsShared)) {fpPos++; continue;};	
      for (Int_t i = 0; i < 3; i++) {
-       if (adcSignals[i] > fCommonAdditive) { 
-	 if (fSharedPadsOn) {
-	   digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), fTbinADC + 2 + i, adcSignals[i]);
-           if (!fIsShared) indexes->AddIndexRC(GetRow(), GetCol());
-         }
-	 else {
-	   digits->SetData(GetRow(), GetCol(), fTbinADC + 2 + i, adcSignals[i]);
-	   indexes->AddIndexRC(GetRow(), GetCol());
-         }
-       }	
-       if (digitsManager->UsesDictionaries()) {
-	 track0->SetData(GetRow(), GetCol(), fTbinADC + 2 + i, 0);
-	 track1->SetData(GetRow(), GetCol(), fTbinADC + 2 + i, 0);
-	 track2->SetData(GetRow(), GetCol(), fTbinADC + 2 + i, 0);
-       }
+        digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), fTbinADC + 2 + i, adcSignals[i]);
+        indexes->AddIndexRC(GetRow(), GetCol());
+        if (digitsManager->UsesDictionaries()) {
+ 	  track0->SetData(GetRow(), GetCol(), fTbinADC + 2 + i, 0);
+	  track1->SetData(GetRow(), GetCol(), fTbinADC + 2 + i, 0);
+	  track2->SetData(GetRow(), GetCol(), fTbinADC + 2 + i, 0);
+        }
      } // i
      fTbinADC += 3;
      fpPos++;

@@ -241,7 +241,7 @@ Int_t AliTRDfeeParam::GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const
   if (iadc < 0 || iadc > fgkNadcMcm ) return -100;
   Int_t mcmcol = imcm%fgkNmcmRobInCol + GetRobSide(irob)*fgkNmcmRobInCol;  // MCM column number on ROC [0..7]
   Int_t padcol = mcmcol*fgkNcolMcm + fgkNcolMcm + 1 - iadc;
-  // if( padcol < 0 || padcol >= fgkNcol ) return -1;   // this is commented because of reason above OK
+  if( padcol < 0 || padcol >= fgkNcol ) return -1;   // this is commented because of reason above OK
 
   return padcol;
 

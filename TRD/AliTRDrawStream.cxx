@@ -796,22 +796,12 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UIn
 
     // ntimebins data are ready to read
     for (it = 0; it < GetNumberOfTimeBins(); it++) {
-       if (GetSignals()[it] > fCommonAdditive) {
-
-         if (fSharedPadsOn) { 
-           digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), it, GetSignals()[it]);
-           if (!fADC->fIsShared) indexes->AddIndexRC(GetRow(), GetCol());
-         }
-         else {
-           digits->SetData(GetRow(), GetCol(), it, GetSignals()[it]);
-           indexes->AddIndexRC(GetRow(), GetCol());
-         }
-
-         if (digitsManager->UsesDictionaries()) {
-           track0->SetData(GetRow(), GetCol(), it, 0);
-           track1->SetData(GetRow(), GetCol(), it, 0);
-           track2->SetData(GetRow(), GetCol(), it, 0);
-         }
+       digits->SetDataByAdcCol(GetRow(), GetExtendedCol(), it, GetSignals()[it]);
+       if (!(GetCol()<0)) indexes->AddIndexRC(GetRow(), GetCol());
+       if (digitsManager->UsesDictionaries()) {
+         track0->SetData(GetRow(), GetCol(), it, 0);
+         track1->SetData(GetRow(), GetCol(), it, 0);
+         track2->SetData(GetRow(), GetCol(), it, 0);
        }
     } // it
   } // while Next()
