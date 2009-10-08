@@ -1010,9 +1010,11 @@ Bool_t AliReconstruction::InitGRP() {
 		  fFillESD.Data(),
 		  fQADetectors.Data());
     fLoadCDB = MatchDetectorList(fLoadCDB,detMask);
-    if (!((detMask >> AliDAQ::DetectorID("ITSSPD")) & 0x1)) {
+    if (!((detMask >> AliDAQ::DetectorID("ITSSPD")) & 0x1) &&
+	!((detMask >> AliDAQ::DetectorID("ITSSDD")) & 0x1) &&
+	!((detMask >> AliDAQ::DetectorID("ITSSSD")) & 0x1) ) {
       // switch off the vertexer
-      AliInfo("SPD is not in the list of active detectors. Vertexer switched off.");
+      AliInfo("SPD,SDD,SSD is not in the list of active detectors. Vertexer switched off.");
       fRunVertexFinder = kFALSE;
     }
     if (!((detMask >> AliDAQ::DetectorID("TRG")) & 0x1)) {
