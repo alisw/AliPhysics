@@ -180,8 +180,10 @@ Bool_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
 
   Double_t oldX=GetX(), oldY=GetY(), oldZ=GetZ();
   
-  Double_t bz=GetBz();
-  if (!AliExternalTrackParam::PropagateTo(xk,bz)) return kFALSE;
+  //Double_t bz=GetBz();
+  //if (!AliExternalTrackParam::PropagateTo(xk,bz)) return kFALSE;
+  Double_t b[3]; GetBxByBz(b);
+  if (!AliExternalTrackParam::PropagateToBxByBz(xk,b)) return kFALSE;
   Double_t xOverX0,xTimesRho; 
   xOverX0 = d; xTimesRho = d*x0;
   if (!CorrectForMeanMaterial(xOverX0,xTimesRho,kTRUE)) return kFALSE;
@@ -207,7 +209,11 @@ Bool_t AliITStrackV2::PropagateToTGeo(Double_t xToGo, Int_t nstep, Double_t &xOv
   Double_t sign = (startx<xToGo) ? -1.:1.;
   Double_t step = (xToGo-startx)/TMath::Abs(nstep);
 
-  Double_t start[3], end[3], mparam[7], bz = GetBz();
+  Double_t start[3], end[3], mparam[7];
+  //Double_t bz = GetBz();
+  Double_t b[3]; GetBxByBz(b);
+  Double_t bz = b[2];
+
   Double_t x = startx;
   
   for (Int_t i=0; i<nstep; i++) {
@@ -215,7 +221,8 @@ Bool_t AliITStrackV2::PropagateToTGeo(Double_t xToGo, Int_t nstep, Double_t &xOv
     GetXYZ(start);   //starting global position
     x += step;
     if (!GetXYZAt(x, bz, end)) return kFALSE;
-    if (!AliExternalTrackParam::PropagateTo(x, bz)) return kFALSE;
+    //if (!AliExternalTrackParam::PropagateTo(x, bz)) return kFALSE;
+    if (!AliExternalTrackParam::PropagateToBxByBz(x, b)) return kFALSE;
     AliTracker::MeanMaterialBudget(start, end, mparam);
     xTimesRho = sign*mparam[4]*mparam[0];
     xOverX0   = mparam[1];
@@ -328,8 +335,10 @@ Bool_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
   //------------------------------------------------------------------
   //This function propagates a track
   //------------------------------------------------------------------
-  Double_t bz=GetBz();
-  if (!AliExternalTrackParam::Propagate(alp,xk,bz)) return kFALSE;
+  //Double_t bz=GetBz();
+  //if (!AliExternalTrackParam::Propagate(alp,xk,bz)) return kFALSE;
+  Double_t b[3]; GetBxByBz(b);
+  if (!AliExternalTrackParam::PropagateBxByBz(alp,xk,b)) return kFALSE;
 
   if (!Invariant()) {
     Int_t n=GetNumberOfClusters();
