@@ -3518,7 +3518,7 @@ const char* AliShuttle::GetTriggerDetectorMask()
 	delete result;
 	result = 0;
 	
-	Log("SHUTTLE", Form("Found Trigger Detector Mask: %s", triggerConfig.Data()));
+	Log("SHUTTLE", Form("Found Trigger Detector Mask: %s", triggerDetectorMask.Data()));
 	
 	return triggerDetectorMask;
 }
