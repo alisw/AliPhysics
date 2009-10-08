@@ -1,0 +1,26 @@
+#-*- Mode: Makefile -*-
+#
+
+SRCS		=  FORWARD/analysis/AliFMDAnaParameters.cxx	\
+		   FORWARD/analysis/AliFMDAnaCalibEnergyDistribution.cxx \
+		   FORWARD/analysis/AliFMDAnaCalibBackgroundCorrection.cxx \
+                   FORWARD/analysis/AliFMDAnaCalibEventSelectionEfficiency.cxx \
+                   FORWARD/analysis/AliFMDAnaCalibSharingEfficiency.cxx \
+                   FORWARD/analysis/AliFMDAnalysisTaskESDReader.cxx	\
+	           FORWARD/analysis/AliFMDAnalysisTaskSharing.cxx       \
+		   FORWARD/analysis/AliFMDAnalysisTaskDensity.cxx       \
+		   FORWARD/analysis/AliFMDAnalysisTaskBackgroundCorrection.cxx \
+		   FORWARD/analysis/AliFMDAnalysisTaskCollector.cxx   \
+		   FORWARD/analysis/AliFMDAnalysisTaskDndeta.cxx         \
+		   FORWARD/analysis/AliFMDAnalysisTaskSE.cxx       \
+		   FORWARD/analysis/AliFMDAnalysisTaskGenerateCorrection.cxx \
+		   FORWARD/analysis/AliFMDDndeta.cxx
+
+
+HDRS		=  $(SRCS:.cxx=.h) 
+EINCLUDE 	:= ANALYSIS FMD
+DHDR		:= PWG2forwardLinkDef.h
+
+#
+# EOF
+#
