@@ -89,6 +89,9 @@ fLsNormalization(1.)
   //
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
+  // Output slot #2 writes into a TH1F container
+  DefineOutput(2,TH1F::Class());  //My private output
+
 }
 
 //________________________________________________________________________
@@ -105,6 +108,11 @@ AliAnalysisTaskSEBkgLikeSignD0::~AliAnalysisTaskSEBkgLikeSignD0()
     fVHF = 0;
   }
 
+  if (fNentries){
+    delete fNentries;
+    fNentries = 0;
+  }
+
 }
 //________________________________________________________________________
 void AliAnalysisTaskSEBkgLikeSignD0::Init()
@@ -116,6 +124,7 @@ void AliAnalysisTaskSEBkgLikeSignD0::Init()
   gROOT->LoadMacro("ConfigVertexingHF.C");
 
   fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");
+  fVHF->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
   fVHF->PrintStatus();
 
   return;
@@ -132,12 +141,12 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();
 
-  fHistMassD0 = new TH1F("fHistMassD0", "D0 invariant mass; M [GeV]; Entries",200,1.56,2.16);
+  fHistMassD0 = new TH1F("fHistMassD0", "D0 invariant mass; M [GeV]; Entries",200,1.765,1.965);
   fHistMassD0->Sumw2();
   fHistMassD0->SetMinimum(0);
   fOutput->Add(fHistMassD0);
 
-  fHistMassLS = new TH1F("fHistMassLS", "Like sign pairs invariant mass; M [GeV]; Entries",200,1.56,2.16);
+  fHistMassLS = new TH1F("fHistMassLS", "Like sign pairs invariant mass; M [GeV]; Entries",200,1.765,1.965);
   fHistMassLS->Sumw2();
   fHistMassLS->SetMinimum(0);
   fOutput->Add(fHistMassLS);
@@ -162,12 +171,12 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserCreateOutputObjects()
   fHistCtsLSneg->SetMinimum(0);
   fOutput->Add(fHistCtsLSneg);
 
-  fHistCPtaD0 = new TH1F("fHistCPtaD0", "D0 cosine of pointing angle; Cos#Theta_{point}; Entries",200,-1.,1.);
+  fHistCPtaD0 = new TH1F("fHistCPtaD0", "D0 cosine of pointing angle; Cos#Theta_{point}; Entries",200,0,1.);
   fHistCPtaD0->Sumw2();
   fHistCPtaD0->SetMinimum(0);
   fOutput->Add(fHistCPtaD0);
 
-  fHistCPtaLS = new TH1F("fHistCPtaLS", "Like sign pairs cosine of pointing angle; Cos#Theta_{point}; Entries",200,-1.,1.);
+  fHistCPtaLS = new TH1F("fHistCPtaLS", "Like sign pairs cosine of pointing angle; Cos#Theta_{point}; Entries",200,0,1.);
   fHistCPtaLS->Sumw2();
   fHistCPtaLS->SetMinimum(0);
   fOutput->Add(fHistCPtaLS);
@@ -191,6 +200,8 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserCreateOutputObjects()
   fHistDCALS->Sumw2(); 
   fHistDCALS->SetMinimum(0);
   fOutput->Add(fHistDCALS);
+
+  fNentries=new TH1F("nentriesLS", "Look at the number of entries! it is = to the  number of AODs", 2,1.,2.);
 
   return;
 }
@@ -237,6 +248,10 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
     trkIDtoEntry[track->GetID()]=it;
   }
 
+  //histogram filled with 1 for every AOD
+  fNentries->Fill(1);
+  PostData(2,fNentries);
+
   // loop over Like sign candidates
   Int_t nPosPairs=0,nNegPairs=0;
   Int_t nLikeSign = arrayLikeSign->GetEntriesFast();
@@ -258,11 +273,12 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
           trk1=aod->GetTrack(trkIDtoEntry[d->GetProngID(1)]);
           printf("references to standard AOD not available \n");
        }
-       if((trk0->Charge())==1){fHistMassLS->Fill(d->InvMassD0(),0.5);} else{fHistMassLS->Fill(d->InvMassD0bar(),0.5);}
+       if(okD0ls) fHistMassLS->Fill(d->InvMassD0());
+       if(okD0barls) fHistMassLS->Fill(d->InvMassD0bar());
        fHistCPtaLS->Fill(d->CosPointingAngle());
        fHistd0d0LS->Fill(1e8*d->Prodd0d0());
-       if((trk0->Charge()==1)){fHistCtsLS->Fill(d->CosThetaStar(0,421,321,211),0.5);}
-           else{fHistCtsLS->Fill(d->CosThetaStar(1,421,211,321),0.5);}
+       if(okD0ls) fHistCtsLS->Fill(d->CosThetaStarD0());
+       if(okD0barls) fHistCtsLS->Fill(d->CosThetaStarD0bar());
        fHistDCALS->Fill(100*d->GetDCA());
        //PostData(1,fOutput);
        if((trk0->Charge())==1) {
@@ -298,10 +314,10 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
     }
     Int_t okD0=0; Int_t okD0bar=0;
     if(d->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
-      fHistMassD0->Fill(d->InvMassD0(),0.5);
-      fHistMassD0->Fill(d->InvMassD0bar(),0.5);
-      fHistCtsD0->Fill(d->CosThetaStarD0(),0.5);
-      fHistCtsD0->Fill(d->CosThetaStarD0bar(),0.5);
+      fHistMassD0->Fill(d->InvMassD0());
+      fHistMassD0->Fill(d->InvMassD0bar());
+      fHistCtsD0->Fill(d->CosThetaStarD0());
+      fHistCtsD0->Fill(d->CosThetaStarD0bar());
       fHistd0d0D0->Fill(1e8*d->Prodd0d0());
       fHistCPtaD0->Fill(d->CosPointingAngle());
       fHistDCAD0->Fill(100*d->GetDCA());
