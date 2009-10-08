@@ -109,7 +109,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   anaelectron->SetCalorimeter("EMCAL");
   anaelectron->SwitchOnDataMC();
   anaelectron->SetpOverEmin(0.8);
-  anaelectron->SetpOverEmax(1.2);
+  anaelectron->SetpOverEmax(1.1);
   anaelectron->SetResidualCut(0.02);
   anaelectron->SetMinPt(1.);
   anaelectron->SetImpactCut(1.0);  //instead of 0.5
