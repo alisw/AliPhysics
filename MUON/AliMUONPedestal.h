@@ -87,7 +87,7 @@ class AliMUONPedestal : public TObject
     /// Not implemented
     AliMUONPedestal& operator = (const AliMUONPedestal& rhs);
 
-  ClassDef(AliMUONPedestal,2) // 
+  ClassDef(AliMUONPedestal,3) // 
 };
 
 #endif

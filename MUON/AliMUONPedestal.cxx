@@ -55,14 +55,14 @@ fRunNumber(0),
 fNChannel(0),
 fNManu(0),
 fNManu_config(0),
+fConfig(1),
 fErrorBuspatchTable(new AliMUON2DMap(kFALSE)),
 fManuBuspatchTable(new AliMUON2DMap(kFALSE)),
 fManuBPoutofconfigTable(new AliMUON2DMap(kFALSE)),
 fDate(new TTimeStamp()),
 fFilcout(0),
 fPedestalStore(new AliMUON2DMap(kTRUE)),
-fIndex(-1),
-fConfig(1)
+fIndex(-1)
 {
 /// Default constructor
   sprintf(fHistoFileName," ");
