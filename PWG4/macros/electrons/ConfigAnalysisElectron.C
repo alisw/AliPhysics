@@ -112,13 +112,11 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   anaelectron->SetpOverEmax(1.1);
   anaelectron->SetResidualCut(0.02);
   anaelectron->SetMinPt(1.);
-  anaelectron->SetImpactCut(1.0);  //instead of 0.5
-  anaelectron->SetSdcaCut(0.05);  //instead of 0.1
   anaelectron->SetOutputAODName("Electrons");
   anaelectron->SetOutputAODClassName("AliAODPWG4Particle");
   anaelectron->SetWriteNtuple(kFALSE);
   //Set Histrograms bins and ranges
-  anaelectron->SetHistoPtRangeAndNBins(0, 50, 100) ;
+  anaelectron->SetHistoPtRangeAndNBins(0, 100, 100) ;
   anaelectron->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
   anaelectron->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   anaelectron->Print("");
