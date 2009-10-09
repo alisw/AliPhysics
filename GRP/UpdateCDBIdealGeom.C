@@ -5,10 +5,12 @@
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
 #include "AliGeomManager.h"
+#include "AliMC.h"
 #include <TROOT.h>
 #include "AliRun.h"
 #include <TGeoManager.h>
 #include <TString.h>
+#include <TInterpreter.h>
 #endif
 
 void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
