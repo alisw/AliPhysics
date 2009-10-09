@@ -204,15 +204,17 @@ void AliMUONGlobalTriggerBoard::BuildGlobalInput()
   TBits rs(8), rsi(8);
   for (Int_t iReg = 0; iReg < 16; iReg++) {
 
-    // invert bits in regional response ?
+    // invert "pair" bits in regional response
+    // [+, -, US, LS] becomes [+, -, LS, US]
     rs.Set(8,&fRegionalResponse[iReg]);
     for (Int_t i = 0; i < 4; i++) {
-      // ... YES
-      //rsi[2*i]   = rs[2*i+1];
-      //rsi[2*i+1] = rs[2*i];
-      // ... NO
-      rsi[2*i]   = rs[2*i];
-      rsi[2*i+1] = rs[2*i+1];
+      if (i%2 == 0) {
+	rsi[2*i]   = rs[2*i+1];
+	rsi[2*i+1] = rs[2*i];
+      } else {
+	rsi[2*i]   = rs[2*i];
+	rsi[2*i+1] = rs[2*i+1];
+      }
     }
     regRespInv = 0;
     rsi.Get(&regRespInv);
@@ -242,12 +244,10 @@ void AliMUONGlobalTriggerBoard::MaskGlobalInput()
   UShort_t regRespInv;
   TBits rs(8), rsi(8);
 
-  // global input with masks applied
   UInt_t gitmp[4];
-
   for (Int_t i = 0; i < 4; i++) {
+    fGlobalInput[i] &= fMask[i];
     gitmp[i] = fGlobalInput[i];
-    gitmp[i] &= fMask[i];
   }
 
   for (Int_t iReg = 0; iReg < 16; iReg++) {
@@ -263,16 +263,21 @@ void AliMUONGlobalTriggerBoard::MaskGlobalInput()
       // Hpt
       fRegionalResponse[iReg] |= ((gitmp[3] >> (4*(iReg-8))) & 0xF) << 4;
     }
-    // invert bits in regional response ?
+    // invert "pair" bits in regional response
+    // [+, -, US, LS] becomes [+, -, LS, US]
     rs.Set(8,&fRegionalResponse[iReg]);
     for (Int_t i = 0; i < 4; i++) {
-      rsi[2*i]   = rs[2*i+1];
-      rsi[2*i+1] = rs[2*i];
+      if (i%2 == 0) {
+	rsi[2*i]   = rs[2*i+1];
+	rsi[2*i+1] = rs[2*i];
+      } else {
+	rsi[2*i]   = rs[2*i];
+	rsi[2*i+1] = rs[2*i+1];
+      }
     }
     regRespInv = 0;
     rsi.Get(&regRespInv);
-    // uncomment if ... YES
-    //fRegionalResponse[iReg] = regRespInv;
+    fRegionalResponse[iReg] = regRespInv;
   }
 
 }
