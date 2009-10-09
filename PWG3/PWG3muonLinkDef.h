@@ -18,6 +18,7 @@
 #pragma link C++ class AliCFMuonResTask1+;
 #pragma link C++ class AliEventPoolMuon+;
 #pragma link C++ class AliAnalysisTaskCreateMixedDimuons+;
+#pragma link C++ class AliAnalysisTaskMuonAODCreation+;
 #endif
 
 
