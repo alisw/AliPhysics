@@ -575,10 +575,11 @@ void AliTestShuttle::Process()
     if (preprocessor)
     {
       if (preprocessor->ProcessRunType())
-      {
-        preprocessor->Initialize(fRun, fStartTime, fEndTime);
-        preprocessor->Process(fDcsAliasMap);
-      }
+	      {
+		      preprocessor->Initialize(fRun, fStartTime, fEndTime);
+		      preprocessor->Process(fDcsAliasMap);
+	      }
+      
     }
   }
 }
@@ -656,6 +657,15 @@ const char* AliTestShuttle::GetTriggerConfiguration()
 	//returns trigger configuration
 	if (fTriggerConfiguration.Length()>0){
 		return fTriggerConfiguration;
+	}
+	return NULL;
+}
+//______________________________________________________________________________________________
+const char* AliTestShuttle::GetTriggerDetectorMask()
+{
+	//returns trigger detector mask
+	if (fTriggerDetectorMask.Length()>0){
+		return fTriggerDetectorMask;
 	}
 	return NULL;
 }
