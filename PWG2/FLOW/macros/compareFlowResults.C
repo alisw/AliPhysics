@@ -12,7 +12,7 @@ void compareFlowResults(TString type="",Int_t mode=mLocal)
   // load needed libraries:                       
   LoadPlotLibraries(mode);
 
-  Bool_t plotLegendIntFlow = kTRUE; // plot legend with average multiplicity and number of events for each method in all plots for integrated flow
+  Bool_t plotLegendIntFlow = kFALSE; // plot legend with average multiplicity and number of events for each method in all plots for integrated flow
 
   //==================================================================================
   //             set here which plots will be shown by default
@@ -626,9 +626,9 @@ void compareFlowResults(TString type="",Int_t mode=mLocal)
 	flowValue[binQC4-1] = (qcCommonHistRes4->GetHistIntFlow())->GetBinContent(1);
 	flowError[binQC4-1] = (qcCommonHistRes4->GetHistIntFlow())->GetBinError(1);
 	flowValueRP[binQC4RP-1] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinContent(1);
-	//flowErrorRP[binQC4RP-1] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
+	flowErrorRP[binQC4RP-1] = (qcCommonHistRes4->GetHistIntFlowRP())->GetBinError(1);
 	flowValuePOI[binQC4POI-1] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinContent(1);
-	//flowErrorPOI[binQC4POI-1] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinError(1);
+	flowErrorPOI[binQC4POI-1] = (qcCommonHistRes4->GetHistIntFlowPOI())->GetBinError(1);
       }
       qcCommonHist6 = dynamic_cast<AliFlowCommonHist*> (pListQC->FindObject("AliFlowCommonHist6thOrderQC"));
       qcCommonHistRes6 = dynamic_cast<AliFlowCommonHistResults*> (pListQC->FindObject("AliFlowCommonHistResults6thOrderQC"));
