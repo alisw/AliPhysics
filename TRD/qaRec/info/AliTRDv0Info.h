@@ -66,17 +66,17 @@ public:
   Bool_t GetV0PID(Int_t ipart, AliTRDtrackInfo *track);//decides if a track is accepted for one of the reference samples!!
 
   //Set values of measured/calculated variables:
-  void SetQuality(Int_t Quality){fQuality = Quality;}
-  void SetPplus(Int_t iLayer, Float_t Pplus){fPplus[iLayer] = Pplus;}
-  void SetPminus(Int_t iLayer, Float_t Pminus){fPminus[iLayer] = Pminus;}
-  void SetDCA(Float_t DCA){fDCA = DCA;}
-  void SetMomentum(Float_t Momentum){fMomentum = Momentum;}
-  void SetPointingAngle(Float_t PointingAngle){fPointingAngle = PointingAngle;}
-  void SetOpenAngle(Float_t OpenAngle){fOpenAngle = OpenAngle;}
-  void SetPsiPair(Float_t PsiPair){fPsiPair = PsiPair;}
-  void SetRadius(Float_t Radius){fRadius = Radius;}
-  void SetInvMass(Int_t iDecay, Float_t InvMass){fInvMass[iDecay] = InvMass;}
-  void SetDetPID(Int_t iDaughter, Int_t iDetector, Int_t iSpecies, Float_t DetPID){fDetPID[iDaughter][iDetector][iSpecies] = DetPID;}
+  void SetQuality(Int_t SQuality){fQuality = SQuality;}
+  void SetPplus(Int_t iLayer, Float_t SPplus){fPplus[iLayer] = SPplus;}
+  void SetPminus(Int_t iLayer, Float_t SPminus){fPminus[iLayer] = SPminus;}
+  void SetDCA(Float_t SDCA){fDCA = SDCA;}
+  void SetMomentum(Float_t SMomentum){fMomentum = SMomentum;}
+  void SetPointingAngle(Float_t SPointingAngle){fPointingAngle = SPointingAngle;}
+  void SetOpenAngle(Float_t SOpenAngle){fOpenAngle = SOpenAngle;}
+  void SetPsiPair(Float_t SPsiPair){fPsiPair = SPsiPair;}
+  void SetRadius(Float_t SRadius){fRadius = SRadius;}
+  void SetInvMass(Int_t iDecay, Float_t SInvMass){fInvMass[iDecay] = SInvMass;}
+  void SetDetPID(Int_t iDaughter, Int_t iDetector, Int_t iSpecies, Float_t SDetPID){fDetPID[iDaughter][iDetector][iSpecies] = SDetPID;}
 
 //____________________________________________________________
  //Set cut values:
