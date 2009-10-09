@@ -42,6 +42,9 @@
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
 #include "AliCollisionGeometry.h"
+#include "AliGenDPMjetEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 
 #include "AliLog.h"
@@ -63,7 +66,7 @@ Bool_t AliAnalysisTaskMCParticleFilter::Notify()
 {
   //
   // Implemented Notify() to read the cross sections
-  // and number of trials from pyxsec.root
+  // from pyxsec.root
   // 
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   Double_t xsection = 0;
@@ -103,8 +106,6 @@ Bool_t AliAnalysisTaskMCParticleFilter::Notify()
     xtree->SetBranchAddress("ntrials",&ntrials);
     xtree->GetEntry(0);
     ((TProfile*)(fHistList->FindObject("h1Xsec")))->Fill("<#sigma>",xsection);
-    ((TH1F*)(fHistList->FindObject("h1Trials")))->Fill("#sum{ntrials}",ntrials); 
-
   }
   return kTRUE;
 }
@@ -196,7 +197,7 @@ void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
     TProfile *h1Xsec = new TProfile("h1Xsec","xsec from pyxsec.root",1,0,1);
     h1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
     fHistList->Add(h1Xsec);
-    TH1F* h1Trials = new TH1F("h1Trials","trials from pyxsec.root",1,0,1);
+    TH1F* h1Trials = new TH1F("h1Trials","trials from MC header",1,0,1);
     h1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
     fHistList->Add(h1Trials);
 
@@ -246,18 +247,48 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
   AliAODMCHeader *aodMCHo = (AliAODMCHeader *) aod->FindListObject("mcHeader");
   // Get the proper MC Collision Geometry
   AliGenEventHeader* mcEH = mcE->GenEventHeader();
-  AliCollisionGeometry *colG = dynamic_cast<AliCollisionGeometry *>(mcEH);
 
+  AliGenPythiaEventHeader *pyH = dynamic_cast<AliGenPythiaEventHeader*>(mcEH);
+  AliGenHijingEventHeader *hiH = 0;
+  AliCollisionGeometry *colG = 0;
+  AliGenDPMjetEventHeader *dpmH = 0;
+  // it can be only one save some casts
+  // assuming PYTHIA and HIJING are the most likely ones...
+  if(!pyH){
+    hiH = dynamic_cast<AliGenHijingEventHeader*>(mcEH);
+    if(!hiH){
+      colG = dynamic_cast<AliCollisionGeometry *>(mcEH);
+      if(!colG)dpmH = dynamic_cast<AliGenDPMjetEventHeader*>(mcEH);
+    }
+  }
+
+
+  // fetch the trials on a event by event basis, not from pyxsec.root otherwise 
+  // we will get a problem when running on proof since Notify may be called 
+  // more than once per file
+  // consider storing this information in the AOD output via AliAODHandler
+  Float_t ntrials = 0;
   if (!colG) {
     AliGenCocktailEventHeader *ccEH = dynamic_cast<AliGenCocktailEventHeader *>(mcEH);
     if (ccEH) {
       TList *genHeaders = ccEH->GetHeaders();
       for (int imch=0; imch<genHeaders->GetEntries(); imch++) {
-	colG = dynamic_cast<AliCollisionGeometry *>(genHeaders->At(imch));
-	if (colG) break;
+	if(!pyH)dynamic_cast<AliGenPythiaEventHeader*>(genHeaders->At(imch));
+	if(!hiH)dynamic_cast<AliGenHijingEventHeader*>(genHeaders->At(imch));
+	if(!colG)colG = dynamic_cast<AliCollisionGeometry *>(genHeaders->At(imch));
+	if(!dpmH)dynamic_cast<AliGenDPMjetEventHeader*>(genHeaders->At(imch));
       }
     }
   }
+
+  // take the trials from the p+p event
+  if(hiH)ntrials = hiH->Trials();
+  if(dpmH)ntrials = pyH->Trials();
+  if(pyH)ntrials = pyH->Trials();
+  if(ntrials)((TH1F*)(fHistList->FindObject("h1Trials")))->Fill("#sum{ntrials}",ntrials); 
+  
+
+
 
   if (colG) {
     aodMCHo->SetReactionPlaneAngle(colG->ReactionPlaneAngle());
