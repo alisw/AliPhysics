@@ -32,7 +32,7 @@
 #include "AliCaloCalibSignal.h"
 #include "AliEMCALBiasAPD.h"
 #include "AliEMCALCalibMapAPD.h"
-#include "AliEMCALCalibAbs.h"
+#include "AliEMCALCalibReference.h"
 #include "AliEMCALCalibTimeDepCorrection.h" 
 #include "AliEMCALCalibTimeDep.h"
 
@@ -63,11 +63,12 @@ AliEMCALCalibTimeDep::AliEMCALCalibTimeDep() :
   fMaxTime(0),
   fTemperatureResolution(0.1), // 0.1 deg C is default
   fTimeBinsPerHour(2), // 2 30-min bins per hour is default
+  fHighLowGainFactor(16), // factor ~16 between High gain and low gain
   fTempArray(NULL),
   fCalibSignal(NULL),
   fBiasAPD(NULL),
   fCalibMapAPD(NULL),
-  fCalibAbs(NULL),
+  fCalibReference(NULL),
   fCalibTimeDepCorrection(NULL)
 {
   // Constructor
@@ -85,11 +86,12 @@ AliEMCALCalibTimeDep::AliEMCALCalibTimeDep(const AliEMCALCalibTimeDep& calibt) :
   fMaxTime(calibt.GetMaxTime()),
   fTemperatureResolution(calibt.GetTemperatureResolution()),
   fTimeBinsPerHour(calibt.GetTimeBinsPerHour()),
+  fHighLowGainFactor(calibt.GetHighLowGainFactor()),
   fTempArray(calibt.GetTempArray()),
   fCalibSignal(calibt.GetCalibSignal()),
   fBiasAPD(calibt.GetBiasAPD()),
   fCalibMapAPD(calibt.GetCalibMapAPD()),
-  fCalibAbs(calibt.GetCalibAbs()),
+  fCalibReference(calibt.GetCalibReference()),
   fCalibTimeDepCorrection(calibt.GetCalibTimeDepCorrection())
 {
   // copy constructor
@@ -129,7 +131,7 @@ void  AliEMCALCalibTimeDep::Reset()
   fCalibSignal = NULL;
   fBiasAPD = NULL;
   fCalibMapAPD = NULL;
-  fCalibAbs = NULL;
+  fCalibReference = NULL;
   fCalibTimeDepCorrection = NULL;
   return;
 }
@@ -316,7 +318,7 @@ Int_t AliEMCALCalibTimeDep::CalcCorrection()
 
   // 0: Init
   // how many SuperModules do we have?
-  Int_t nSM = fCalibAbs->GetNSuperModule();
+  Int_t nSM = fCalibReference->GetNSuperModule();
   // how many time-bins should we have for this run?
   Int_t nBins = (Int_t) GetLengthOfRunInBins(); // round-down (from double to int)
   Int_t binSize = (Int_t) (3600/fTimeBinsPerHour); // in seconds
@@ -475,19 +477,19 @@ void AliEMCALCalibTimeDep::GetCalibMapAPDInfo()
 }
 
 //________________________________________________________________
-void AliEMCALCalibTimeDep::GetCalibAbsInfo() 
+void AliEMCALCalibTimeDep::GetCalibReferenceInfo() 
 {
   // pick up Preprocessor output, based on fRun (most recent version)
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("EMCAL/Calib/MapAPD", fRun);
   if (entry) {
-    fCalibAbs = (AliEMCALCalibAbs *) entry->GetObject();
+    fCalibReference = (AliEMCALCalibReference *) entry->GetObject();
   }
 
-  if (fCalibAbs) { 
-    AliInfo( Form("CalibAbs: NSuperModule %d ", fCalibAbs->GetNSuperModule() ) );
+  if (fCalibReference) { 
+    AliInfo( Form("CalibReference: NSuperModule %d ", fCalibReference->GetNSuperModule() ) );
   }
   else {
-    AliWarning( Form("AliEMCALCalibAbs not found!") );
+    AliWarning( Form("AliEMCALCalibReference not found!") );
   }
   
   return;
@@ -497,21 +499,21 @@ void AliEMCALCalibTimeDep::GetCalibAbsInfo()
 Int_t AliEMCALCalibTimeDep::CalcLEDCorrection(Int_t nSM, Int_t nBins) 
 {// Construct normalized ratios R(t)=LED(t)/LEDRef(t), for current time T and calibration time t0 
   // The correction factor we keep is c(T) = R(t0)/R(T)
-  // T info from fCalibSignal, t0 info from fCalibAbs
+  // T info from fCalibSignal, t0 info from fCalibReference
 
-  // NOTE: for now we don't use the RMS info either from fCalibSignal or fCalibAbs
+  // NOTE: for now we don't use the RMS info either from fCalibSignal or fCalibReference
   // but one could upgrade this in the future
   Int_t nRemaining = 0; // we count the towers for which we could not get valid data
 
   // sanity check; same SuperModule indices for corrections as for regular calibrations
   for (int i = 0; i < nSM; i++) {
-    AliEMCALSuperModuleCalibAbs * CalibAbsData = fCalibAbs->GetSuperModuleCalibAbsNum(i);
+    AliEMCALSuperModuleCalibReference * CalibReferenceData = fCalibReference->GetSuperModuleCalibReferenceNum(i);
     AliEMCALSuperModuleCalibTimeDepCorrection * CalibTimeDepCorrectionData = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(i);
 
-    int iSMAbs = CalibAbsData->GetSuperModuleNum();
+    int iSMRef = CalibReferenceData->GetSuperModuleNum();
     int iSMCorr = CalibTimeDepCorrectionData->GetSuperModuleNum();
-    if (iSMAbs != iSMCorr) {
-      AliWarning( Form("AliEMCALCalibTimeDep - SuperModule index mismatch: %d != %d", iSMAbs, iSMCorr) );
+    if (iSMRef != iSMCorr) {
+      AliWarning( Form("AliEMCALCalibTimeDep - SuperModule index mismatch: %d != %d", iSMRef, iSMCorr) );
       nRemaining = nSM * AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows * nBins;
       return nRemaining;
     }
@@ -654,42 +656,59 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrection(Int_t nSM, Int_t nBins)
   Int_t refGain = 0; // typically use low gain for LED reference amplitude (high gain typically well beyond saturation)
 
   for (int i = 0; i < nSM; i++) {
-    AliEMCALSuperModuleCalibAbs * CalibAbsData = fCalibAbs->GetSuperModuleCalibAbsNum(i);
+    AliEMCALSuperModuleCalibReference * CalibReferenceData = fCalibReference->GetSuperModuleCalibReferenceNum(i);
     AliEMCALSuperModuleCalibTimeDepCorrection * CalibTimeDepCorrectionData = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(i);
-    iSM = CalibAbsData->GetSuperModuleNum();
+    iSM = CalibReferenceData->GetSuperModuleNum();
 
     for (iCol = 0; iCol < AliEMCALGeoParams::fgkEMCALCols; iCol++) {
       //      iStrip = AliEMCALGeoParams::GetStripModule(iSM, iCol);
       iStrip = (iSM%2==0) ? iCol/2 : AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - iCol/2; //TMP, FIXME
+	refGain = CalibReferenceData->GetLEDRefHighLow(iStrip); // LED reference gain value used for reference calibration	
+
       for (iRow = 0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
 
 	// Calc. R(t0):
-	AliEMCALCalibAbsVal * absVal = CalibAbsData->GetAPDVal(iCol, iRow);
-	iGain = absVal->GetHighLow(); // gain value used for abs. calibration	
-	refGain = CalibAbsData->GetLEDRefHighLow(iStrip); // LED reference gain value used for abs. calibration	
-
+	AliEMCALCalibReferenceVal * refVal = CalibReferenceData->GetAPDVal(iCol, iRow);
+	iGain = refVal->GetHighLow(); // gain value used for reference calibration	
 	// valid amplitude values should be larger than 0
-	if (absVal->GetLEDAmp()>0 && CalibAbsData->GetLEDRefAmp(iStrip)>0) {
-	  Rt0 =  absVal->GetLEDAmp() / CalibAbsData->GetLEDRefAmp(iStrip);
+	if (refVal->GetLEDAmp()>0 && CalibReferenceData->GetLEDRefAmp(iStrip)>0) {
+	  Rt0 =  refVal->GetLEDAmp() / CalibReferenceData->GetLEDRefAmp(iStrip);
 	}
 	else {
 	  Rt0 = fkErrorCode;
 	}
 
-	// Cal R(T)
+	// Calc. R(T)
 	for (int j = 0; j < nBins; j++) {
 
 	  // calculate R(T) also; first try with individual tower:
-	  // same gain as for abs. calibration is the default
+	  // same gain as for reference calibration is the default
 	  if (ampT[iSM][iCol][iRow][iGain].At(j)>0 && ampLEDRefT[iSM][iStrip][refGain].At(j)>0) {
 	    // looks like valid data with the right gain combination
 	    RT = ampT[iSM][iCol][iRow][iGain].At(j) / ampLEDRefT[iSM][iStrip][refGain].At(j); 
 
 	    // if data appears to be saturated, and we are in high gain, then try with low gain instead
-	    if ( (ampT[iSM][iCol][iRow][iGain].At(j)>AliEMCALGeoParams::fgkOverflowCut && iGain==1) ||
-		 (ampLEDRefT[iSM][iStrip][refGain].At(j)>AliEMCALGeoParams::fgkOverflowCut && refGain==1) ) { // presumably the gains should then both be changed.. can look into possibly only changing one in the future
-	      RT = ampT[iSM][iCol][iRow][0].At(j) / ampLEDRefT[iSM][iStrip][0].At(j); 
-	      RT *= absVal->GetHighLowRatio()/CalibAbsData->GetLEDRefHighLowRatio(iStrip); // compensate for using different gain than in the absolute calibration
+	    int newGain = iGain;
+	    int newRefGain = refGain;
+	    if ( ampT[iSM][iCol][iRow][iGain].At(j)>AliEMCALGeoParams::fgkOverflowCut && iGain==1 ) {
+	      newGain = 0;
+	    }
+	    if ( ampLEDRefT[iSM][iStrip][refGain].At(j)>AliEMCALGeoParams::fgkOverflowCut && refGain==1 ) { 
+	      newRefGain = 0;
+	    }
+
+	    if (newGain!=iGain || newRefGain!=refGain) {
+	      // compensate for using different gain than in the reference calibration
+	      // we may need to have a custom H/L ratio value for each tower
+	      // later, but for now just use a common value, as the rest of the code does.. 
+	      RT = ampT[iSM][iCol][iRow][newGain].At(j) / ampLEDRefT[iSM][iStrip][newRefGain].At(j); 
+
+	      if (newGain<iGain) {
+		RT *= fHighLowGainFactor;
+	      }
+	      else if (newRefGain<refGain) {
+		RT /= fHighLowGainFactor;
+	      }
 	    }
 	  }
 	  else {
@@ -810,7 +829,7 @@ Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins)
     AliEMCALSuperModuleCalibTimeDepCorrection * CalibTimeDepCorrectionData = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(iSM);
     iSM = CalibTimeDepCorrectionData->GetSuperModuleNum();
 
-    AliEMCALSuperModuleCalibAbs * CalibAbsData = fCalibAbs->GetSuperModuleCalibAbsNum(iSM);
+    AliEMCALSuperModuleCalibReference * CalibReferenceData = fCalibReference->GetSuperModuleCalibReferenceNum(iSM);
     AliEMCALSuperModuleCalibMapAPD * CalibMapAPDData = fCalibMapAPD->GetSuperModuleCalibMapAPDNum(iSM);
     AliEMCALSuperModuleBiasAPD * BiasAPDData = fBiasAPD->GetSuperModuleBiasAPDNum(iSM);
     
@@ -824,12 +843,12 @@ Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins)
       }
     }
     
-    // figure out what the reference temperature is, from fCalibAbs
+    // figure out what the reference temperature is, from fCalibReference
     Double_t ReferenceTemperature = 0;
     int nVal = 0;
     for (int iSensor = 0; iSensor<AliEMCALGeoParams::fgkEMCALTempSensors ; iSensor++) {
-      if (CalibAbsData->GetTemperature(iSensor)>0) { // hopefully OK value
-	ReferenceTemperature += CalibAbsData->GetTemperature(iSensor);
+      if (CalibReferenceData->GetTemperature(iSensor)>0) { // hopefully OK value
+	ReferenceTemperature += CalibReferenceData->GetTemperature(iSensor);
 	nVal++;
       }
     }

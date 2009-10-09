@@ -32,10 +32,12 @@
 #pragma link C++ class AliEMCALSuperModuleCalibTimeDepCorrection+;
 #pragma link C++ class AliEMCALBiasAPD+;
 #pragma link C++ class AliEMCALCalibAbs+;
+#pragma link C++ class AliEMCALCalibReference+;
 #pragma link C++ class AliEMCALCalibMapAPD+;
 #pragma link C++ class AliEMCALSuperModuleBiasAPD+;
-#pragma link C++ class AliEMCALCalibAbsVal+;
 #pragma link C++ class AliEMCALSuperModuleCalibAbs+;
+#pragma link C++ class AliEMCALCalibReferenceVal+;
+#pragma link C++ class AliEMCALSuperModuleCalibReference+;
 #pragma link C++ class AliEMCALCalibMapAPDVal+;
 #pragma link C++ class AliEMCALSuperModuleCalibMapAPD+;
 // #pragma link C++ class AliEMCALShishKebabTrd1Module+;

@@ -27,6 +27,7 @@ AliEMCALSpaceFrame.cxx \
 AliEMCALSTURawStream.cxx \
 AliEMCALBiasAPD.cxx \
 AliEMCALCalibAbs.cxx \
+AliEMCALCalibReference.cxx \
 AliEMCALCalibMapAPD.cxx \
 SMcalib/AliEMCALCCUSBRawStream.cxx 
 # AliEMCALShishKebabTrd1Module.cxx \

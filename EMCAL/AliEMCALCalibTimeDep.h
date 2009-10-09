@@ -16,7 +16,7 @@ class AliEMCALSensorTempArray;
 class AliCaloCalibSignal;
 class AliEMCALBiasAPD;
 class AliEMCALCalibMapAPD;
-class AliEMCALCalibAbs; // absolute = time-independent
+class AliEMCALCalibReference; 
 class AliEMCALCalibTimeDepCorrection; 
 
 class AliEMCALCalibTimeDep : public TObject {
@@ -62,11 +62,14 @@ class AliEMCALCalibTimeDep : public TObject {
   Double_t GetTemperatureResolution() const { return fTemperatureResolution; } // value for checking at which level we care about temperature differences
   Int_t GetTimeBinsPerHour() const { return fTimeBinsPerHour; } // size of the time-bins we use foc corrections
 
+  void SetHighLowGainFactor(Double_t value) {fHighLowGainFactor = value;}
+  Double_t GetHighLowGainFactor() const {return fHighLowGainFactor;}
+
   // access to other pointers
   AliCaloCalibSignal  * GetCalibSignal() const { return fCalibSignal; } //
   AliEMCALBiasAPD  * GetBiasAPD() const { return fBiasAPD; } //
   AliEMCALCalibMapAPD  * GetCalibMapAPD() const { return fCalibMapAPD; } //
-  AliEMCALCalibAbs  * GetCalibAbs() const { return fCalibAbs; } //
+  AliEMCALCalibReference  * GetCalibReference() const { return fCalibReference; } //
   AliEMCALCalibTimeDepCorrection  * GetCalibTimeDepCorrection() const { return fCalibTimeDepCorrection; } //
 
   // storage and access of the correction info
@@ -84,7 +87,7 @@ class AliEMCALCalibTimeDep : public TObject {
   void GetCalibSignalInfo(); // pick up Preprocessor output
   void GetBiasAPDInfo(); // pick up OCDB info
   void GetCalibMapAPDInfo(); // pick up OCDB info
-  void GetCalibAbsInfo(); // pick up OCDB info
+  void GetCalibReferenceInfo(); // pick up OCDB info
 
   Int_t CalcLEDCorrection(Int_t nSM, Int_t nBins); // based on LED signals, and reference photodiodes
   Int_t CalcLEDCorrectionStripBasis(Int_t nSM, Int_t nBins); // based on LED signals, and reference photodiodes
@@ -103,16 +106,18 @@ class AliEMCALCalibTimeDep : public TObject {
   Double_t fTemperatureResolution; // value for checking at which level we care about temperature differences
   Int_t fTimeBinsPerHour; // size of the time-bins we use for corrections
 
+  Double_t fHighLowGainFactor;     //gain factor to convert between high and low gain
+  
   // pointers to the different used classes
   AliEMCALSensorTempArray  *fTempArray;     // CDB class for temperature sensors
   AliCaloCalibSignal *fCalibSignal; //
   AliEMCALBiasAPD *fBiasAPD; //
   AliEMCALCalibMapAPD *fCalibMapAPD; //
-  AliEMCALCalibAbs *fCalibAbs; // absolute = time-independent
+  AliEMCALCalibReference *fCalibReference; 
   AliEMCALCalibTimeDepCorrection *fCalibTimeDepCorrection; // 
 
   //
-  ClassDef(AliEMCALCalibTimeDep,2)    // EMCAL Calibration data
+  ClassDef(AliEMCALCalibTimeDep,3)    // EMCAL time-dep Calibration data
 };
 
 #endif

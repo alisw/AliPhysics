@@ -17,55 +17,12 @@ class TTree;
 */
 
 // total calibration factor is a product of
-// a) overall calibration factor [fAbsoluteGain]
-// b) individual gain factor per tower [fRelativeGain]
+// a) overall calibration factor [fAbsoluteCalib]
+// b) individual gain factor per tower [fRelativeCalib]
 // c) time-dependent correction
-// In this class we store a), b) and the needed static ingredients for c)
+// In this class we store a), b) 
 
 // ******* internal class definition *************
-// values per single tower
-class AliEMCALCalibAbsVal : public TObject {
-
- public:
-  AliEMCALCalibAbsVal() : TObject(), // just init values
-    fRelativeGain(0),
-    fHighLowRatio(0),
-    fHighLow(0),
-    fLEDAmp(0),
-    fLEDAmpRMS(0)
-    {
-    }
-  
-  void Init() {
-    fRelativeGain = 0;
-    fHighLowRatio = 0;
-    fHighLow = 0;
-    fLEDAmp = 0;
-    fLEDAmpRMS = 0;
-    return;
-  }
-
- public:
-  void SetRelativeGain(Float_t f) { fRelativeGain = f; }; //
-  Float_t GetRelativeGain() const { return fRelativeGain; }; //
-  void SetHighLowRatio(Float_t f) { fHighLowRatio = f; }; //
-  Float_t GetHighLowRatio() const { return fHighLowRatio; }; //
-  void SetHighLow(Int_t i) { fHighLow = i; }; //
-  Int_t GetHighLow() const { return fHighLow; }; //
-  void SetLEDAmp(Float_t f) { fLEDAmp = f; }; //
-  Float_t GetLEDAmp() const { return fLEDAmp; }; //
-  void SetLEDAmpRMS(Float_t f) { fLEDAmpRMS = f; }; //
-  Float_t GetLEDAmpRMS() const { return fLEDAmpRMS; }; //
-
- private:
-  Float_t fRelativeGain; // (ADC>GeV relative gain/conversion), value around 1
-  Float_t fHighLowRatio; // value around 16 or so
-  Int_t fHighLow; // 0 (low) or 1 (high) gain, used for LEDAmp info
-  Float_t fLEDAmp; // LED amplitude
-  Float_t fLEDAmpRMS; // RMS
-
-  ClassDef(AliEMCALCalibAbsVal, 2) // help class
-};
 
 // 1 SuperModule's worth of info: info on where the different APDs are
 class AliEMCALSuperModuleCalibAbs : public TObject {
@@ -75,24 +32,11 @@ class AliEMCALSuperModuleCalibAbs : public TObject {
     fSuperModuleNum(smNum),
     fCalibMethod(0),
     fCalibPass(0),
-    fCalibTime(0),
-    fAbsoluteGain(0)
+    fAbsoluteCalib(0)
     {
-      for (int iref=0; iref<AliEMCALGeoParams::fgkEMCALLEDRefs; iref++) {
-	fLEDRefAmp[iref] = 0;
-	fLEDRefAmpRMS[iref] = 0;
-	fLEDRefHighLowRatio[iref] = 0;
-	fLEDRefHighLow[iref] = 0;
-      }
-
-      for (int itemp=0; itemp<AliEMCALGeoParams::fgkEMCALTempSensors; itemp++) {
-	fTemperature[itemp] = 0;
-	fTemperatureRMS[itemp] = 0;
-      }
-
       for (int icol=0; icol<AliEMCALGeoParams::fgkEMCALCols; icol++) {
 	for (int irow=0; irow<AliEMCALGeoParams::fgkEMCALRows; irow++) {
-	  fAPDVal[icol][irow].Init();
+	  fRelativeCalib[icol][irow] = 1.0;
 	}
       }
     }
@@ -105,51 +49,24 @@ class AliEMCALSuperModuleCalibAbs : public TObject {
   Int_t GetCalibMethod() const { return fCalibMethod;}; // 
   void SetCalibPass(Int_t i) { fCalibPass = i;}; // 
   Int_t GetCalibPass() const { return fCalibPass;}; // 
-  void SetCalibTime(Int_t i) { fCalibTime = i;}; // 
-  Int_t GetCalibTime() const { return fCalibTime;}; // 
-  void SetAbsoluteGain(Float_t f) { fAbsoluteGain = f;}; // 
-  Float_t GetAbsoluteGain() const { return fAbsoluteGain;}; // 
-
-  // second
-  void SetLEDRefAmp(int iLEDRef, Float_t f) { fLEDRefAmp[iLEDRef] = f;}; // 
-  Float_t GetLEDRefAmp(int iLEDRef) const { return fLEDRefAmp[iLEDRef];}; // 
-  void SetLEDRefAmpRMS(int iLEDRef, Float_t f) { fLEDRefAmpRMS[iLEDRef] = f;}; // 
-  Float_t GetLEDRefAmpRMS(int iLEDRef) const { return fLEDRefAmpRMS[iLEDRef];}; // 
-  void SetLEDRefHighLowRatio(int iLEDRef, Float_t f) { fLEDRefHighLowRatio[iLEDRef] = f;}; // 
-  Float_t GetLEDRefHighLowRatio(int iLEDRef) const { return fLEDRefHighLowRatio[iLEDRef];}; // 
-  void SetLEDRefHighLow(int iLEDRef, Int_t i) { fLEDRefHighLow[iLEDRef] = i;}; // 
-  Int_t GetLEDRefHighLow(int iLEDRef) const { return fLEDRefHighLow[iLEDRef];}; // 
-
-  void SetTemperature(int itemp, Float_t f) { fTemperature[itemp] = f;}; // 
-  Float_t GetTemperature(int itemp) const { return fTemperature[itemp];}; // 
-  void SetTemperatureRMS(int itemp, Float_t f) { fTemperatureRMS[itemp] = f;}; // 
-  Float_t GetTemperatureRMS(int itemp) const { return fTemperatureRMS[itemp];}; // 
+  void SetAbsoluteCalib(Float_t f) { fAbsoluteCalib = f;}; // 
+  Float_t GetAbsoluteCalib() const { return fAbsoluteCalib;}; // 
 
   // third
-  AliEMCALCalibAbsVal * GetAPDVal(int icol, int irow) 
-    { return &fAPDVal[icol][irow]; };
+  void SetRelativeCalib(int icol, int irow, Float_t f) { fRelativeCalib[icol][irow] = f; }; //
+  Float_t GetRelativeCalib(int icol, int irow) const { return fRelativeCalib[icol][irow]; }; //
 
  private:
   // first: overall values for the whole SuperModule
   Int_t fSuperModuleNum; // which SuperModule is this?
   Int_t fCalibMethod; // a la 0=cosmics, 1=pi0, 2=electrons,3=using ecore,
   Int_t fCalibPass; // which analysis iteration is this.. 1,2,..N
-  Int_t fCalibTime; // t0, unix timestamp
-  Float_t fAbsoluteGain; // (ADC>GeV absolute gain/conversion)
-  
-  // second: additional info for LED Reference and SM temperature
-  Float_t fLEDRefAmp[AliEMCALGeoParams::fgkEMCALLEDRefs]; // LED amplitude at  t0, low gain equivalent
-  Float_t fLEDRefAmpRMS[AliEMCALGeoParams::fgkEMCALLEDRefs]; // RMS
-  Float_t fLEDRefHighLowRatio[AliEMCALGeoParams::fgkEMCALLEDRefs]; // value around 16 or so
-  Int_t fLEDRefHighLow[AliEMCALGeoParams::fgkEMCALLEDRefs]; // 0 (low) or 1 (high) gain
-  
-  Float_t fTemperature[AliEMCALGeoParams::fgkEMCALTempSensors]; // temperature at t0
-  Float_t fTemperatureRMS[AliEMCALGeoParams::fgkEMCALTempSensors]; // RMS
+  Float_t fAbsoluteCalib; // (ADC>GeV absolute gain/conversion)
   
   // third: individual info for each tower
-  AliEMCALCalibAbsVal fAPDVal[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; // at t0
+  Float_t fRelativeCalib[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; // values around 1, if gains are well balanced
 
-  ClassDef(AliEMCALSuperModuleCalibAbs, 2) // help class
+  ClassDef(AliEMCALSuperModuleCalibAbs, 3) // help class
 };
 // ******* end of internal class definition *************
 
@@ -191,7 +108,7 @@ private:
   AliEMCALCalibAbs(const AliEMCALCalibAbs &);
   AliEMCALCalibAbs &operator = (const AliEMCALCalibAbs &);
 
-  ClassDef(AliEMCALCalibAbs, 3) //CalibAbs data info
+  ClassDef(AliEMCALCalibAbs, 4) //CalibAbs data info
 };
 
 #endif
