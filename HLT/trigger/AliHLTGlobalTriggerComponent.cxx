@@ -882,14 +882,13 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
 int AliHLTGlobalTriggerComponent::PrintStatistics(const AliHLTGlobalTrigger* pTrigger, AliHLTComponentLogSeverity level, int offset) const
 {
   // print some statistics
-  ULong64_t count=0;
-  for (int i=0; i<pTrigger->Counters().GetSize(); i++) {
-    count+=pTrigger->Counters()[i];
-  }
   int totalEvents=GetEventCount()+offset;
-  float ratio=0;
-  if (totalEvents>0) ratio=100*(float)count/totalEvents;
-  HLTLog(level, "total events: %d - triggered events: %llu (%.1f%%)", totalEvents, count, ratio);
+  for (int i=0; i<pTrigger->Counters().GetSize(); i++) {
+    ULong64_t count=pTrigger->Counters()[i];
+    float ratio=0;
+    if (totalEvents>0) ratio=100*(float)count/totalEvents;
+    HLTLog(level, "Item %d: total events: %d - triggered events: %llu (%.1f%%)", i, totalEvents, count, ratio);
+  }
   return 0;
 }
 
