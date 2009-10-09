@@ -6,13 +6,13 @@ enum libModes {mLocal,mLocalSource};
 //mLocalSource: Analyze data on your computer using root + source files
 
 //void compareFlowResults(TString type="",Int_t mode=mLocalSource)
-void compareFlowResults(TString type="",Int_t mode=mLocal)
+void compareFlowResults(TString type="ESD",Int_t mode=mLocal)
 { 
 
   // load needed libraries:                       
   LoadPlotLibraries(mode);
 
-  Bool_t plotLegendIntFlow = kFALSE; // plot legend with average multiplicity and number of events for each method in all plots for integrated flow
+  Bool_t plotLegendIntFlow = kTRUE; // plot legend with average multiplicity and number of events for each method in all plots for integrated flow
 
   //==================================================================================
   //             set here which plots will be shown by default
