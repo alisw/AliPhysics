@@ -20,6 +20,33 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   Bool_t kFollowsFilter = kTRUE;  //uncomment if follows ESD filter task
 //Bool_t kFollowsFilter = kFALSE; //uncomment if no ESD filter task
 
+  //enum for the different electron cut sets
+  //defined for dR and p/E
+  //kTight2 is the default standard cuts
+  enum kCutTypes {kTight2, kLooseTight, kTightLoose, kLoose2};
+  Int_t kCutSet = kTight2;
+  Double_t pOverEmin = 0.8;  //tight
+  Double_t pOverEmax = 1.1;  //tight
+  Double_t dRmax     = 0.02; //tight
+  if (gSystem->Getenv("ELECUTSET")){
+    kCutSet = atoi(gSystem->Getenv("ELECUTSET"));
+  }
+  if(kCutSet == kLooseTight) {
+    pOverEmin = 0.6;  //loose
+    pOverEmax = 1.3;  //loose
+    dRmax     = 0.02; //tight
+  }
+  if(kCutSet == kTightLoose) {
+    pOverEmin = 0.8;  //tight
+    pOverEmax = 1.1;  //tight
+    dRmax     = 0.05; //loose
+  }
+  if(kCutSet == kLoose2) {
+    pOverEmin = 0.6;  //loose
+    pOverEmax = 1.3;  //loose
+    dRmax     = 0.05; //loose
+  }    
+
   //Alternatively, select input via anaInputData environment variable.
   if (gSystem->Getenv("anaInputData")){
     TString kInputData = gSystem->Getenv("anaInputData");
@@ -108,13 +135,14 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   anaelectron->SetDebug(-1); //10 for lots of messages
   anaelectron->SetCalorimeter("EMCAL");
   anaelectron->SwitchOnDataMC();
-  anaelectron->SetpOverEmin(0.8);
-  anaelectron->SetpOverEmax(1.1);
-  anaelectron->SetResidualCut(0.02);
   anaelectron->SetMinPt(1.);
   anaelectron->SetOutputAODName("Electrons");
   anaelectron->SetOutputAODClassName("AliAODPWG4Particle");
   anaelectron->SetWriteNtuple(kFALSE);
+  //Determine which cuts to use based on enum
+  anaelectron->SetpOverEmin(pOverEmin);
+  anaelectron->SetpOverEmax(pOverEmax);
+  anaelectron->SetResidualCut(dRmax);
   //Set Histrograms bins and ranges
   anaelectron->SetHistoPtRangeAndNBins(0, 100, 100) ;
   anaelectron->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
