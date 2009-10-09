@@ -16,6 +16,7 @@ set(SRCS
                  muon/AliEventPoolMuon.cxx
                  muon/AliAnalysisTaskCreateMixedDimuons.cxx
 		 muon/AliAnalysisTaskMuonAODCreation.cxx
+		 muon/AliAnalysisTaskMuonDistributions.cxx
 )
 
 # fill list of header files from list of source files

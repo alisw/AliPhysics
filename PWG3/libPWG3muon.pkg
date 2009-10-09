@@ -14,7 +14,8 @@ SRCS:=	 muon/AliAnalysisTaskESDMuonFilter.cxx \
                  muon/AliCFMuonResTask1.cxx \
                  muon/AliEventPoolMuon.cxx \
                  muon/AliAnalysisTaskCreateMixedDimuons.cxx \
-		 muon/AliAnalysisTaskMuonAODCreation.cxx
+		 muon/AliAnalysisTaskMuonAODCreation.cxx \
+		 muon/AliAnalysisTaskMuonDistributions.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
