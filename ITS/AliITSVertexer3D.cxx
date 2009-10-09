@@ -385,7 +385,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	    if(phi2<0)phi2=2*TMath::Pi()+phi2;
 	    Double_t diff = TMath::Abs(phi2-phi1); 
 	    if(diff>TMath::Pi())diff=2.*TMath::Pi()-diff; 
-	    if(optCuts==0 && diff<fDiffPhiMax){
+	    if(optCuts==0 && diff<fDiffPhiforPileup){
 	      Double_t r1=TMath::Sqrt(gc1[0]*gc1[0]+gc1[1]*gc1[1]);
 	      Double_t zc1=gc1[2];
 	      Double_t r2=TMath::Sqrt(gc2[0]*gc2[0]+gc2[1]*gc2[1]);
