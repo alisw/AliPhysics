@@ -30,6 +30,7 @@
   
 #include "TF1.h"
 #include "TGraph.h"
+#include <TRandom.h>
 class TSystem;
   
 class AliLog;
@@ -51,6 +52,7 @@ class AliEMCALDigitizer;
 ClassImp(AliEMCALRawUtils)
   
 // Signal shape parameters
+Int_t    AliEMCALRawUtils::fgTimeBins = 256;           // number of time bins for EMCAL
 Double_t AliEMCALRawUtils::fgTimeBinWidth  = 100E-9 ; // each sample is 100 ns
 Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 musec
 
@@ -198,8 +200,8 @@ void AliEMCALRawUtils::Digits2Raw()
   for (Int_t i=0; i < nDDL; i++)
     buffers[i] = 0;
 
-  Int_t adcValuesLow[fgkTimeBins];
-  Int_t adcValuesHigh[fgkTimeBins];
+  TArrayI adcValuesLow(fgTimeBins);
+  TArrayI adcValuesHigh(fgTimeBins);
 
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
@@ -261,11 +263,11 @@ void AliEMCALRawUtils::Digits2Raw()
       buffers[iDDL]->WriteTrailer(3, ieta, iphi, nSM);  // trailer
       // calculate the time response function
     } else {
-      Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), digit->GetAmp(), adcValuesHigh, adcValuesLow) ; 
+      Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), digit->GetAmp(), adcValuesHigh.GetArray(), adcValuesLow.GetArray()) ; 
       if (lowgain) 
-	buffers[iDDL]->WriteChannel(ieta, iphi, 0, GetRawFormatTimeBins(), adcValuesLow, fgThreshold);
+	buffers[iDDL]->WriteChannel(ieta, iphi, 0, GetRawFormatTimeBins(), adcValuesLow.GetArray(), fgThreshold);
       else 
-	buffers[iDDL]->WriteChannel(ieta,iphi, 1, GetRawFormatTimeBins(), adcValuesHigh, fgThreshold);
+	buffers[iDDL]->WriteChannel(ieta,iphi, 1, GetRawFormatTimeBins(), adcValuesHigh.GetArray(), fgThreshold);
     }
   }
   
@@ -595,6 +597,11 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
     //Double_t noise = gRandom->Gaus(0.,fgFEENoise);
     //signal = sqrt(signal*signal + noise*noise);
 
+    // March 17,09 for fast fit simulations by Alexei Pavlinov.
+    // Get from PHOS analysis. In some sense it is open questions.
+    Double_t noise = gRandom->Gaus(0.,fgFEENoise);
+    signal += noise; 
+ 
     adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
     if ( adcH[iTime] > fgkRawSignalOverflow ){  // larger than 10 bits 
       adcH[iTime] = fgkRawSignalOverflow ;

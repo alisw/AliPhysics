@@ -47,15 +47,21 @@ class AliEMCALRawUtils : public TObject {
   Double_t GetRawFormatTau()               const { return fTau ; }    
   Int_t GetNoiseThreshold()                const { return fNoiseThreshold; }
   Int_t GetNPedSamples()                   const { return fNPedSamples; }
+  // get methods for fast fit simulation
+  Double_t GetPedestalValue()  const {return fgPedestalValue;}
+  Double_t GetFEENoise()       const {return fgFEENoise;}
 
   void SetRawFormatHighLowGainFactor(Double_t val) {fHighLowGainFactor=val;}
   void SetRawFormatOrder(Int_t val)                {fOrder=val; }   
   void SetRawFormatTau(Double_t val)               {fTau=val; }    
   void SetNoiseThreshold(Int_t val)                {fNoiseThreshold=val; }
   void SetNPedSamples(Int_t val)                   {fNPedSamples=val; }
-  
-  static Int_t GetRawFormatTimeBins() { return fgkTimeBins ; }    
-  static Double_t GetRawFormatTimeMax() { return fgkTimeBins*fgTimeBinWidth; }   
+  // set methods for fast fit simulation
+  void SetFEENoise(Double_t val)                   {fgFEENoise = val;}
+  void SetRawFormatTimeBins(Int_t val)             {fgTimeBins = val;}
+
+  static Int_t GetRawFormatTimeBins() { return fgTimeBins ; }    
+  static Double_t GetRawFormatTimeMax() { return fgTimeBins*fgTimeBinWidth; }   
   static Double_t GetRawFormatTimeBinWidth() { return fgTimeBinWidth; }   
   static Double_t GetRawFormatTimeBin() 
   { return GetRawFormatTimeMax() / GetRawFormatTimeBins(); }   
@@ -80,8 +86,8 @@ class AliEMCALRawUtils : public TObject {
   Int_t fNPedSamples;                   // number of samples to use in pedestal calculation
 
   static const Int_t fgkOverflowCut = 950;  // cut to discriminate overflowed channels
-  static const Int_t fgkTimeBins = 256 ; // number of sampling bins of the raw RO signal  
   static const Int_t fgkRawSignalOverflow = 0x3FF; // maximum signal (10 bits)
+  static Int_t fgTimeBins; // number of sampling bins of the raw RO signal  
 
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
   static Double_t fgTimeBinWidth;       // maximum sampled time of the raw RO signal                             
