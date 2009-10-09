@@ -13,9 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// Add the muon tracks to the generic AOD track branch during the 
-// filtering of the ESD - R. Arnaldi 5/5/08
-
 #include <TChain.h>
 #include <TFile.h>
 #include <TParticle.h>
@@ -76,7 +73,7 @@ void AliAnalysisTaskESDMCLabelAddition::UserCreateOutputObjects()
 //----------------------------------------------------------------------
 void AliAnalysisTaskESDMCLabelAddition::Init()
 {
-  if (fDebug > 1) AliInfo("Init() \n");
+  AliDebug(2, "Init()");
 }
 
 
@@ -85,8 +82,7 @@ void AliAnalysisTaskESDMCLabelAddition::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event					    
   Long64_t ientry = Entry();
-  printf("MCLabel Addition: Analysing event # %5d\n", (Int_t) ientry);
-  
+  AliDebug(1, Form("MCLabel Addition: Analysing event # %5d\n",(Int_t) ientry)); 
   AddMCLabel();
 }
 
@@ -111,6 +107,7 @@ void AliAnalysisTaskESDMCLabelAddition::AddMCLabel()
   for (Int_t nMuTrack = 0; nMuTrack < nMuTracks; ++nMuTrack) {
     
     esdTrack = esd->GetMuonTrack(nMuTrack);
+    esdTrack->SetLabel(-1);
     
     // skip ghosts
     if (!esdTrack->ContainTrackerData()) continue;
@@ -138,7 +135,7 @@ void AliAnalysisTaskESDMCLabelAddition::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
   //
-  if (fDebug > 1) printf("AnalysisESDfilter: Terminate() \n");
+  AliDebug(2, "Terminate()");
 }
 
 
