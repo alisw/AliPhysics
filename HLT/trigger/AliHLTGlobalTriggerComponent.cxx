@@ -514,7 +514,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   for (Int_t i = 0; i < symbols.GetEntriesFast(); i++)
   {
     AliHLTTriggerMenuSymbol* symbol = static_cast<AliHLTTriggerMenuSymbol*>( symbols.UncheckedAt(i) );
-    code << "      if (strcmp(symbol->Name(), \"" << symbol->Name() << "\") == 0) {" << endl;
+    code << "      if (strcmp(symbol->Name(), \"" << symbol->RealName() << "\") == 0) {" << endl;
     if (fDebugMode)
     {
       code << "        HLTDebug(\"Assinging domain entry value to match for symbol '%s' to '%s'.\","
@@ -577,7 +577,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
       if (isTrigDecision)
       {
         code << "    HLTDebug(\"Trying to match input object to class '"
-             << symbol->ObjectClass() << "', trigger name '" << symbol->Name()
+             << symbol->ObjectClass() << "', trigger name '" << symbol->RealName()
              << "' and block type '%s'\", " << symbol->Name()
              << "DomainEntry.AsString().Data());" << endl;
       }
@@ -595,7 +595,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
     if (isTrigDecision)
     {
       code << "strcmp(" << symbol->Name() << "_object_->Name(), \""
-           << symbol->Name() << "\") == 0 and ";
+           << symbol->RealName() << "\") == 0 and ";
     }
     code << symbol->Name() << "DomainEntry == _type_spec_) {" << endl;
     TString fullname = symbol->Name();
@@ -632,6 +632,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   for (UInt_t i = 0; i < menu->NumberOfItems(); i++)
   {
     const AliHLTTriggerMenuItem* item = menu->Item(i);
+    TString triggerCondision = item->TriggerCondision();
     TString mergeExpr = item->MergeExpression();
     for (Int_t j = 0; j < symbols.GetEntriesFast(); j++)
     {
@@ -639,7 +640,8 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
       if (strcmp(symbol->ObjectClass(), "AliHLTTriggerDecision") != 0) continue;
       TString newname = symbol->Name();
       newname += "TriggerDomain";
-      mergeExpr.ReplaceAll(symbol->Name(), newname);
+      mergeExpr.ReplaceAll(symbol->RealName(), newname);
+      triggerCondision.ReplaceAll(symbol->RealName(), symbol->Name());
     }
     if (fDebugMode)
     {
@@ -647,7 +649,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
            << " (Description = '%s').\", fMenuItemDescription" << i << ".Data());"
            << endl;
     }
-    code << "    if (" << item->TriggerCondision() << ") {" << endl;
+    code << "    if (" << triggerCondision << ") {" << endl;
     code << "      IncrementCounter(" << i << ");" << endl;
     const char* indentation = "";
     if (item->PreScalar() != 0)
@@ -814,7 +816,7 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
     new (list[list.GetEntriesFast()]) AliHLTTriggerMenuSymbol(*symbol);
   }
   
-  TRegexp exp("[_a-zA-Z][_a-zA-Z0-9]*");
+  TRegexp exp("[_a-zA-Z][-_a-zA-Z0-9]*");
   TRegexp hexexp("x[a-fA-F0-9]+");
   for (UInt_t i = 0; i < menu->NumberOfItems(); i++)
   {

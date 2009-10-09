@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -36,7 +36,8 @@ AliHLTTriggerMenuSymbol::AliHLTTriggerMenuSymbol() :
   fBlockType(kAliHLTAnyDataType),
   fClass(),
   fAssignExpr(),
-  fDefaultValue()
+  fDefaultValue(),
+  fRealName()
 {
   // Default constructor.
 }
@@ -58,19 +59,39 @@ void AliHLTTriggerMenuSymbol::Print(Option_t* option) const
     cout << setw(15) << fName << " | "
          << setw(20) << fType << " | ";
     fBlockType.Print("noendl");
-    cout << " | " << setw(20) << fClass.Data()
-         << " | " << setw(25) << fAssignExpr.Data()
-         << " | " << setw(25) << fDefaultValue.Data()
+    cout << " | " << setw(20) << ObjectClass()
+         << " | " << setw(25) << AssignExpression()
+         << " | " << setw(25) << DefaultValue()
          << setw(0) << endl;
   }
   else
   {
-    cout << "                    Name = " << fName.Data() << endl;
-    cout << "               Data type = " << fType.Data() << endl;
+    cout << "                    Name = " << Name() << endl;
+    cout << "                RealName = " << RealName() << endl;
+    cout << "               Data type = " << Type() << endl;
     cout << "              Block type = "; fBlockType.Print();
-    cout << "              Class type = " << fClass.Data() << endl;
-    cout << "   Assignment expression = " << fAssignExpr.Data() << endl;
-    cout << "Default value expression = " << fDefaultValue.Data() << endl;
+    cout << "              Class type = " << ObjectClass() << endl;
+    cout << "   Assignment expression = " << AssignExpression() << endl;
+    cout << "Default value expression = " << DefaultValue() << endl;
   }
 }
 
+
+const char* AliHLTTriggerMenuSymbol::RealName() const
+{
+  // return the real name of the symbol which can contain '-'
+
+  // backward compatibility with old versions of the class
+  if (fRealName.IsNull()) return fName;
+  return fRealName;
+}
+
+void AliHLTTriggerMenuSymbol::Name(const char* value)
+{
+  // sets the name and real name of the symbol
+  // replaces '-' of the real name with '_' in order to comply with
+  // C++ conventions
+  fRealName = value;
+  fName = value;
+  fName.ReplaceAll("-", "_");
+}

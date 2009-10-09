@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id:$
+// $Id$
 #ifndef ALIHLTTRIGGERMENUSYMBOL_H
 #define ALIHLTTRIGGERMENUSYMBOL_H
 /* This file is property of and copyright by the ALICE HLT Project        *
@@ -41,14 +41,22 @@ class AliHLTTriggerMenuSymbol : public TObject
   virtual void Print(Option_t* option = "") const;
   
   /**
+   * Returns the real name which can differ from the symbol name
+   * by '-' characters instead of '_'. This approach has been introduced
+   * to allow trigger and item names containing '-' characters and thus
+   * violating the C++ naming conventions.
+   */
+  const char* RealName() const;
+  
+  /**
    * Returns the symbol name.
    */
   const char* Name() const { return fName.Data(); }
-  
+
   /**
    * Set the symbol name.
    */
-  void Name(const char* value) { fName = value; }
+  void Name(const char* value);
   
   /**
    * Returns the symbol data type.
@@ -151,8 +159,9 @@ class AliHLTTriggerMenuSymbol : public TObject
   TString fClass;  /// The class name of the object to read from (Must be a valid C++ class name).
   TString fAssignExpr;  /// The expression to assign to the symbol (Must be a valid C++ expression).
   TString fDefaultValue;  /// The default value this symbol is set to (this must be a valid C++ expression).
+  TString fRealName; /// The name of the symbol, differs from fName by replaced '-' chars.
   
-  ClassDef(AliHLTTriggerMenuSymbol, 2) // Trigger menu item for global HLT trigger.
+  ClassDef(AliHLTTriggerMenuSymbol, 3) // Trigger menu item for global HLT trigger.
 };
 
 #endif // ALIHLTTRIGGERMENUSYMBOL_H
