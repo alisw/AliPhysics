@@ -19,7 +19,7 @@
 // Or have trackelt counter -- as not all histograms collected for tracks
 // are relevant for tracklets.
 
-TEveElementList* esd_spd_tracklets(Float_t radius=8, Width_t line_width)
+TEveElementList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=3)
 //x TEveTrackList* esd_spd_tracklets(Float_t rad=8)
 {
   // radius - cylindrical radius to which the tracklets should be extrapolated
