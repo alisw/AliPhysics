@@ -12,10 +12,10 @@
 
 // event selection
 const Int_t multminESD = 10;  //used for CORRFW cuts 
-const Int_t multmaxESD = 10000; //used for CORRFW cuts 
+const Int_t multmaxESD = 1000000; //used for CORRFW cuts 
 
-const Int_t multmin = 8;     //used for AliFlowEventSimple (to set the centrality)
-const Int_t multmax = 10000;     //used for AliFlowEventSimple (to set the centrality)
+const Int_t multmin = 10;     //used for AliFlowEventSimple (to set the centrality)
+const Int_t multmax = 1000000;     //used for AliFlowEventSimple (to set the centrality)
 
 // For RP selection
 const Double_t ptmin1 = 0.0;
@@ -379,6 +379,9 @@ if (LYZ2PROD){
   cfmgr1->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutList1);
   
   AliCFManager* cfmgr2 = new AliCFManager();
+  cfmgr1->SetNStepEvent(3);
+  cfmgr1->SetEventCutsList(AliCFManager::kEvtGenCuts,mcEventList); 
+  cfmgr1->SetEventCutsList(AliCFManager::kEvtRecCuts,recEventList); 
   cfmgr2->SetNStepParticle(4); 
   cfmgr2->SetParticleCutsList(AliCFManager::kPartGenCuts,mcList2);
   cfmgr2->SetParticleCutsList(AliCFManager::kPartAccCuts,accList2);
