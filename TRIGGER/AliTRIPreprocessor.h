@@ -21,6 +21,7 @@ class AliTRIPreprocessor : public AliPreprocessor
     
     Short_t ProcessSPDTriggerData();
     Short_t ProcessTOFTriggerData();
+    Short_t ProcessEmptyTriggerData();
 
   protected:
     virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);

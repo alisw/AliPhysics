@@ -107,11 +107,36 @@ UInt_t AliTRIPreprocessor::Process(TMap* /*dcsAliasMap*/)
 	typedef Short_t (AliTRIPreprocessor::*AliProcessTriggerData)();
 	const AliProcessTriggerData processTriggerDataArray[AliTRIPreprocessor::kNDetectorsMap]= { 
 		&AliTRIPreprocessor::ProcessSPDTriggerData,
-		0,
-		0,
-		0,
-		0,
-		&AliTRIPreprocessor::ProcessTOFTriggerData,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessTOFTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData}; 
 
 
 	// getting the list of triggering detectors from DAQ logbook
@@ -124,7 +149,10 @@ UInt_t AliTRIPreprocessor::Process(TMap* /*dcsAliasMap*/)
 		  for (Int_t i = 0; i<length; i++){
 			AliDebug(2,Form("%d-th bit = %c in index %d",i,triggerDetectorMask[length-1-i],length-1-i));
 			if (triggerDetectorMask[length-1-i] == '1'){
-				AliInfo(Form("Processing Trigger data for %s",fgkDetectorsMapName[i]));
+				Log("****************************************");
+				Log(Form("Processing Trigger data for %s",fgkDetectorsMapName[i]));
+				Log("****************************************");
+			       
 				result+=(this->*processTriggerDataArray[i])();
 			}
 		}
@@ -219,6 +247,16 @@ Short_t AliTRIPreprocessor::ProcessTOFTriggerData()
 
 	Log("************** Processing TOF Trigger data... **************");
 	Log("************************* ...done.*************************");
+	return 0;
+}
+//______________________________________________________________________________________________
+Short_t AliTRIPreprocessor::ProcessEmptyTriggerData() 
+{
+	//
+	// Processing TOF Trigger Data
+	//
+
+	Log("************** Trigger data Processing not yet implemented **************");
 	return 0;
 }
 
