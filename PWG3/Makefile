@@ -26,7 +26,7 @@ ifneq ($(ESD_INCLUDE),)
 	endif
 else
   ifneq ($(ALICE_ROOT),)
-    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/MUON
+    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/MUON -I$(ALICE_ROOT)/MUON/mapping
 else
   endif
 endif
