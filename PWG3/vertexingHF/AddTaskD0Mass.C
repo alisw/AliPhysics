@@ -16,14 +16,25 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/)
     return NULL;
   }   
 
-  TString filename="";
+  TString filename="",out1name="",out2name="",out3name="",out4name="";
   if(flag==0){
     filename="D0InvMass.root"; 
-  } else filename="LSD0.root";
+    out1name="coutputmassD01";
+    out2name="coutputmassD02";
+    out3name="nEntriesD0";
+    out4name="coutputmassD0distr";
+  } else {
+    filename="LSD0.root";
+    out1name="coutputmassLS1";
+    out2name="coutputmassLS2";
+    out3name="nEntriesLS";
+    out4name="coutputmassLSdistr";
+
+  }
 
   // Aanalysis task    
   AliAnalysisTaskSED0Mass *massD0Task = new AliAnalysisTaskSED0Mass("D0MassAndDistrAnalysis");
-  massD0Task->SetDebugLevel(2);
+  massD0Task->SetDebugLevel(0);
   massD0Task->SetArray(flag);
   mgr->AddTask(massD0Task);
   
@@ -32,16 +43,16 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/)
   AliAnalysisDataContainer *cinputmassD0 = mgr->CreateContainer("cinputmassD0",TChain::Class(), 
 							  AliAnalysisManager::kInputContainer);
 
-  AliAnalysisDataContainer *coutputmassD01 = mgr->CreateContainer("coutputmassD01",TList::Class(),
+  AliAnalysisDataContainer *coutputmassD01 = mgr->CreateContainer(out1name,TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   filename.Data());
-  AliAnalysisDataContainer *coutputmassD02 = mgr->CreateContainer("coutputmassD02",TList::Class(),
+  AliAnalysisDataContainer *coutputmassD02 = mgr->CreateContainer(out2name,TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   filename.Data());
-  AliAnalysisDataContainer *coutputmassD03 = mgr->CreateContainer("nEntriesD0",TH1F::Class(),
+  AliAnalysisDataContainer *coutputmassD03 = mgr->CreateContainer(out3name,TH1F::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   filename.Data());
-  AliAnalysisDataContainer *coutputmassD04 = mgr->CreateContainer("coutputmassD0distr",TList::Class(),
+  AliAnalysisDataContainer *coutputmassD04 = mgr->CreateContainer(out4name,TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   filename.Data());
 
@@ -51,6 +62,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/)
   mgr->ConnectOutput(massD0Task,2,coutputmassD02);
   mgr->ConnectOutput(massD0Task,3,coutputmassD03);
   mgr->ConnectOutput(massD0Task,4,coutputmassD04);
+
 
   return massD0Task;
 }
