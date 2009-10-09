@@ -629,6 +629,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   {
     code << "    HLTDebug(\"Calculating global HLT trigger result with trigger object at %p.\", this);" << endl;
   }
+  code << "    bool result=false;" << endl;
   for (UInt_t i = 0; i < menu->NumberOfItems(); i++)
   {
     const AliHLTTriggerMenuItem* item = menu->Item(i);
@@ -657,21 +658,22 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
       indentation = "  ";
       code << "      if ((GetCounter(" << i << ") % " << item->PreScalar() << ") == 1) {" << endl;
     }
-    code << indentation << "      _domain_ = " << mergeExpr.Data() << ";" << endl;
-    code << indentation << "      _description_ = fMenuItemDescription" << i << ";" << endl;
+    code << indentation << "      _domain_ |= " << mergeExpr.Data() << ";" << endl;
+    code << indentation << "      if (!_description_.IsNull()) _description_+= \",\";" << endl;
+    code << indentation << "      _description_ += fMenuItemDescription" << i << ";" << endl;
     if (fDebugMode)
     {
       code << indentation << "      HLTDebug(\"Matched trigger condition " << i
            << " (Description = '%s').\", fMenuItemDescription" << i << ".Data());" << endl;
     }
-    code << indentation << "      return true;" << endl;
+    code << indentation << "      result=true;" << endl;
     if (item->PreScalar() != 0)
     {
       code << "      }" << endl;
     }
     code << "    }" << endl;
   }
-  code << "    return false;" << endl;
+  code << "    return result;" << endl;
   code << "  }" << endl;
   
   // Generate the custom Factory class.
