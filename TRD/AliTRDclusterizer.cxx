@@ -896,6 +896,8 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
   if(!(status[0] | status[1] | status[2])) {//all pads are good
     if ((Signals[2] <= Signals[1]) && (Signals[0] <  Signals[1])) {
       if ((Signals[2] >= fSigThresh) || (Signals[0] >= fSigThresh)) {
+	if(Signals[0]<0)Signals[0]=0;
+	if(Signals[2]<0)Signals[2]=0;
         Float_t  noiseSumThresh = fMinLeftRightCutSigma
           * fCalNoiseDetValue
           * fCalNoiseROC->GetValue(Max.col, Max.row);
@@ -905,6 +907,8 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
       }
     }
   } else { // at least one of the pads is bad, and reject candidates with more than 1 problematic pad
+    if(Signals[0]<0)Signals[0]=0;
+    if(Signals[2]<0)Signals[2]=0;
     if (status[2] && (!(status[0] || status[1])) && Signals[1] > Signals[0] && Signals[0] >= fSigThresh) { 
       Signals[2]=0;
       SetPadStatus(status[2], padStatus);
@@ -1225,39 +1229,34 @@ void AliTRDclusterizer::TailCancelation()
   while(fIndexes->NextRCIndex(iRow, iCol))
     {
       Bool_t corrupted = kFALSE;
+      if (fCalPadStatusROC->GetStatus(iCol, iRow)) corrupted = kTRUE;
+
       for (iTime = 0; iTime < fTimeTotal; iTime++) 
-        {	  
-          // Apply gain gain factor
-          inADC[iTime]   = fDigits->GetData(iRow,iCol,iTime);
-          if (fCalPadStatusROC->GetStatus(iCol, iRow)) corrupted = kTRUE;
-          outADC[iTime]  = inADC[iTime];
-      	  if(fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 7 && fReconstructor->IsDebugStreaming()){
-      	    (*fDebugStream) << "TailCancellation"
-  			      << "col="  << iCol
-  			      << "row="  << iRow
-  			      << "time=" << iTime
-  			      << "inADC=" << inADC[iTime]
-  			      << "outADC=" << outADC[iTime]
-  			      << "corrupted=" << corrupted
-  			      << "\n";
-      	  }
-        }
+	inADC[iTime]   = fDigits->GetData(iRow,iCol,iTime);
+          
+      for (iTime = 0; iTime < fTimeTotal; iTime++) 
+	if(fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 7 && fReconstructor->IsDebugStreaming()){
+	  (*fDebugStream) << "TailCancellation"
+			  << "col="  << iCol
+			  << "row="  << iRow
+			  << "time=" << iTime
+			  << "inADC=" << inADC[iTime]
+			  << "outADC=" << outADC[iTime]
+			  << "corrupted=" << corrupted
+			  << "\n";
+	}
+      
       if (!corrupted)
         {
           // Apply the tail cancelation via the digital filter
           // (only for non-coorupted pads)
 	  DeConvExp(&inADC[0],&outADC[0],fTimeTotal,fReconstructor->GetRecoParam() ->GetTCnexp());
         }
+      else memcpy(&outADC[0],&inADC[0],fTimeTotal*sizeof(inADC[0]));
 
-      for(iTime = 0; iTime < fTimeTotal; iTime++)//while (fIndexes->NextTbinIndex(iTime))
-        {
-          // Store the amplitude of the digit if above threshold
-          if (outADC[iTime] > 0)
-	    fDigits->SetData(iRow,iCol,iTime,TMath::Nint(outADC[iTime]));
-	  else
-	    fDigits->SetData(iRow,iCol,iTime,0);
-        } // while itime
-
+      for(iTime = 0; iTime < fTimeTotal; iTime++)
+	fDigits->SetData(iRow,iCol,iTime,TMath::Nint(outADC[iTime]));
+      
     } // while irow icol
 
   delete [] inADC;
