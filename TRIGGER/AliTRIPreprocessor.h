@@ -30,6 +30,8 @@ class AliTRIPreprocessor : public AliPreprocessor
 
   private:
 
+    AliTRIPreprocessor(const AliTRIPreprocessor & proc); // copy constructor
+    AliTRIPreprocessor& operator=(const AliTRIPreprocessor & proc);
     static const char* fgkDetectorsMapName[kNDetectorsMap];  // names of detectors/systems in the DETECTORS_MAP in /date/db/detCodes.h
 
     AliShuttleInterface *fShuttle;

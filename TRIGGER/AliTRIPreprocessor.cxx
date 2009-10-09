@@ -246,6 +246,7 @@ Short_t AliTRIPreprocessor::ProcessTOFTriggerData()
 	//
 
 	Log("************** Processing TOF Trigger data... **************");
+	Log("************** Fake function **************");
 	Log("************************* ...done.*************************");
 	return 0;
 }
