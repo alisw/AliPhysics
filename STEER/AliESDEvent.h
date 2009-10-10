@@ -239,6 +239,7 @@ public:
     return (const AliESDVertex *)fSPDPileupVertices->UncheckedAt(i);
   }
   Char_t  AddPileupVertexSPD(const AliESDVertex *vtx);
+  Bool_t  IsPileupFromSPD(Int_t ncont=2, Double_t nSigmaDeltaZ=3., Double_t nSigmaXY=2., Int_t option=0) const;
 
   const AliESDVertex *GetPileupVertexTracks(Int_t i) const {
     return (const AliESDVertex *)fTrkPileupVertices->UncheckedAt(i);
