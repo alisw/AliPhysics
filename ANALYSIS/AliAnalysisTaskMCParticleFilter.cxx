@@ -283,7 +283,7 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 
   // take the trials from the p+p event
   if(hiH)ntrials = hiH->Trials();
-  if(dpmH)ntrials = pyH->Trials();
+  if(dpmH)ntrials = dpmH->Trials();
   if(pyH)ntrials = pyH->Trials();
   if(ntrials)((TH1F*)(fHistList->FindObject("h1Trials")))->Fill("#sum{ntrials}",ntrials); 
   
