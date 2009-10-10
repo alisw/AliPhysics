@@ -72,7 +72,8 @@ AliMillePedeRecord.cxx AliMillePede2.cxx AliMatrixSq.cxx \
 AliVectorSparse.cxx AliMatrixSparse.cxx \
 AliSymMatrix.cxx AliRectMatrix.cxx AliMinResSolve.cxx \
 AliGRPManager.cxx \
-AliDCSArray.cxx AliLHCReader.cxx
+AliDCSArray.cxx AliLHCReader.cxx \
+AliCTPTimeParams.cxx AliCTPInputTimeParams.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
