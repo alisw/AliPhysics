@@ -1173,6 +1173,8 @@ Bool_t AliReconstruction::Run(const char* input)
     Long64_t nEntries = (fLastEvent < 0) ? (TChain::kBigNumber) : (fLastEvent - fFirstEvent + 1);
     // Proof mode
     if (gProof) {
+      // Temporary fix for long raw-data runs (until socket timeout handling in PROOF is revised)
+      gProof->Exec("gEnv->SetValue(\"Proof.SocketActivityTimeout\",-1)", kTRUE);
 
       if (gGrid)
 	gProof->Exec("TGrid::Connect(\"alien://\")",kTRUE);
