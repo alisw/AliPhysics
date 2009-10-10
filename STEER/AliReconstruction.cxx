@@ -2014,8 +2014,14 @@ void AliReconstruction::SlaveTerminate()
       fOutput->Add(zipProofFile);
       TString fileList(fProofOutputArchive.Data());
       fileList.ReplaceAll(","," ");
-      AliInfo(Form("Executing: zip -n root %s %s",zipProofFile->GetFileName(),fileList.Data()));
-      gSystem->Exec(Form("zip -n root %s %s",zipProofFile->GetFileName(),fileList.Data()));
+      TString command;
+#if ROOT_SVN_REVISION >= 30174
+      command.Form("zip -n root %s/%s %s",zipProofFile->GetDir(kTRUE),zipProofFile->GetFileName(),fileList.Data());
+#else
+      command.Form("zip -n root %s/%s %s",zipProofFile->GetDir(),zipProofFile->GetFileName(),fileList.Data());
+#endif
+      AliInfo(Form("Executing: %s",command.Data()));
+      gSystem->Exec(command.Data());
     }
   }
 }
