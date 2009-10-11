@@ -50,10 +50,10 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 
   // simulating input from DAQ FXS
   if (errorLevel != 2){
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021390_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root", "GDC0", "$ALICE_ROOT/GRP/ShuttleInput/run000021390_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021390_GRP_gdc1_Period_TDSMtest.Seq_0.tag.root", "GDC1", "$ALICE_ROOT/GRP/ShuttleInput/run000021390_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021391_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root", "GDC0", "$ALICE_ROOT/GRP/ShuttleInput/run000021391_GRP_gdc0_Period_TDSMtest.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "run000021391_GRP_gdc1_Period_TDSMtest.Seq_0.tag.root", "GDC1", "$ALICE_ROOT/GRP/ShuttleInput/run000021391_GRP_gdc1_Period_TDSMtest.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC35", "/home/zampolli/GRP190809/run000080740_GRP_gdc-aldaqpc035_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC36", "/home/zampolli/GRP190809/run000080740_GRP_gdc-aldaqpc036_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC44", "/home/zampolli/GRP190809/run000080740_GRP_gdc-aldaqpc044_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC45", "/home/zampolli/GRP190809/run000080740_GRP_gdc-aldaqpc045_Period_LHC09c.Seq_0.tag.root");
 	  
   }
 
@@ -75,7 +75,7 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 
   // simulating input from DAQ logbook_trigger_config
   if {
-	  (errorLevel != 3 errorLevel != 7 && !partition.IsNull() && detector.IsNull()) shuttle->SetInputTriggerConfiguration(buffer);
+	  (errorLevel != 3 && errorLevel != 7 && !partition.IsNull() && detector.IsNull()) shuttle->SetInputTriggerConfiguration(buffer);
   }
   else if (errorLevel == 7) {
 	  shuttle->SetInputTriggerConfiguration(emptybuffer);
@@ -205,6 +205,9 @@ TMap* CreateDCSAliasMap(Int_t errorLevel)
   valueSet->SetOwner(1);
   dcsVal = new AliDCSValue( kTRUE, 2 );
   valueSet->Add(dcsVal);
+  // add the following two lines to test errors for changing polarity
+  //  dcsVal = new AliDCSValue( kFALSE, 2 );
+  //  valueSet->Add(dcsVal);
   aliasMap->Add( new TObjString(fgkDCSDataPoints[1]), valueSet );
   
   // DipolePolarity
