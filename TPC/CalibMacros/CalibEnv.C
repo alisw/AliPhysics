@@ -1,29 +1,15 @@
 /*
-// .x ~/NimStyle.C
-// .x ~/rootlogon.C
+//Make a tree dump of TPC calibration:
+
 
 gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
-
-
-
 .L $ALICE_ROOT/TPC/CalibMacros/CalibEnv.C+
-Init();
+
+
 CalibEnv("run.list");
-GetTree();
-
 TFile f("dcsTime.root")
-
-//
-// if you want to use alien OCDB
-// 
-gSystem->Load("libXrdClient.so");
-gSystem->Load("libNetx.so");
-if (!gGrid) TGrid::Connect("alien://",0,0,"t");
-
-
-
 */
-
+ 
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -61,53 +47,38 @@ if (!gGrid) TGrid::Connect("alien://",0,0,"t");
 
 
 TTree * dcsTree=0;
-TString refFile="/data/Work/data/calib/guiTrees/RefCalPads_83680.root";
-// TString refFile="/lustre/alice/wiechula/calib/guiTrees/RefCalPads_83680.root"
+TString refFile="dummy.root";
 void GetProductionInfo(Int_t run, Int_t &nalien, Int_t &nRawAlien, Int_t &nlocal, Int_t &nRawLocal);
   
-void Init2008(){
-  //
-  //
-  //
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT/OCDB");
-  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/HighVoltage","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie","local:///lustre/alice/alien/alice/data/2008/LHC08d/OCDB/");
-  AliCDBManager::Instance()->SetRun(1);
-}
 
-void Init(){  
-  AliCDBManager::Instance()->SetDefaultStorage("local:///lustre/alice/alien/alice/data/2009/OCDB/");
-  AliCDBManager::Instance()->SetRun(1);
-}
+void CalibEnv(const char * runList, Int_t first=1, Int_t last=-1){
+  //
+  // runList - listOfRuns to process
+  // first   - first run to process
+  // last    - last  to process
+  // 
 
-void InitAlien(const char *path="LHC08b"){
-  //
-  //
-  //
-  TString alpath="alien://folder=/alice/data/2008/";
-  alpath+=path;
-  alpath+="/OCDB";
-  
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Parameters","local://$ALICE_ROOT/OCDB");
-  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data",alpath.Data());
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Temperature",alpath.Data());
-  AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Goofie",alpath.Data());
-  AliCDBManager::Instance()->SetRun(1);
-}
-
-
-void CalibEnv(const char * runList){
-  //
-  //
-  //
+  refFile=gSystem->Getenv("REF_DATA_FILE");
   AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
+  //
+  // make list of runs
+  //
   ifstream in;
   in.open(runList);
   Int_t irun=0;
+  TArrayI runArray(100000);
+  Int_t indexes[100000];
+  Int_t nruns=0;
+  while(in.good()) {
+    in >> irun;
+    if (in.eof()) break;
+    if (irun<first) continue;  // process only subset of list
+    if (last>0 && irun>=last) continue;  // process only subset of list
+    runArray[nruns]=irun;
+    nruns++;
+  }
+  TMath::Sort(nruns, runArray.fArray, indexes,kFALSE);
+
   TTreeSRedirector *pcstream = new TTreeSRedirector("dcsTime.root");
   AliTPCcalibDButil dbutil;
   dbutil.SetRefFile(refFile.Data());
@@ -117,14 +88,12 @@ void CalibEnv(const char * runList){
   Int_t stopTimeGRP  = 0;
 
   AliSplineFit *fitVdrift=0x0;
-  //  for (Int_t irun=startRun; irun<stopRun; irun++){
-  while(in.good()) {
-    in >> irun;
-    if (in.eof()) break;
-    if (irun==0) continue;
+  for (Int_t run=0; run<nruns; run++){
+    Int_t irun=runArray[indexes[run]];
     printf("Processing run %d ...\n",irun);
     AliTPCcalibDB::Instance()->SetRun(irun);
     dbutil.UpdateFromCalibDB();
+    //
     AliDCSSensorArray *arrHV=calibDB->GetVoltageSensors(irun);
     if (!arrHV) continue;
     for  (Int_t isenHV=0; isenHV<arrHV->NumSensors(); ++isenHV){
@@ -155,15 +124,17 @@ void CalibEnv(const char * runList){
     //CE data processing - see ProcessCEdata function for description of the results
     TVectorD fitResultsA, fitResultsC;
     Int_t nmaskedCE;
+    Double_t chi2ACE=0,chi2CCE=0;
 //     dbutil.ProcessCEdata("(sector<36)++gx++gy++lx++lx**2",fitResultsA,fitResultsC,nmaskedCE);
-    dbutil.ProcessCEdata("(sector<36)++gy++gx++(lx-134)++(sector<36)*(lx-134)",fitResultsA,fitResultsC,nmaskedCE);
+    dbutil.ProcessCEdata("(sector<36)++gy++gx++(lx-134)++(sector<36)*(lx-134)++(ly/lx)^2",fitResultsA,fitResultsC,nmaskedCE,chi2ACE,chi2CCE);
     TVectorD vecTEntries, vecTMean, vecTRMS, vecTMedian, vecQEntries, vecQMean, vecQRMS, vecQMedian;
     Float_t driftTimeA, driftTimeC;
     dbutil.ProcessCEgraphs(vecTEntries, vecTMean, vecTRMS, vecTMedian,
                            vecQEntries, vecQMean, vecQRMS, vecQMedian,
                            driftTimeA, driftTimeC );
     //drift velocity using tracks
-    fitVdrift=calibDB->GetVdriftSplineFit("ALISPLINEFIT_MEAN_VDRIFT_COSMICS_ALL",irun);
+//     fitVdrift=calibDB->GetVdriftSplineFit("ALISPLINEFIT_MEAN_VDRIFT_COSMICS_ALL",irun);
+    fitVdrift=calibDB->CreateVdriftSplineFit("TGRAPHERRORS_MEAN_VDRIFT_COSMICS_ALL",irun);
     //noise data Processing - see ProcessNoiseData function for description of the results
     TVectorD vNoiseMean, vNoiseMeanSenRegions, vNoiseRMS, vNoiseRMSSenRegions;
     Int_t nonMaskedZero=0;
@@ -327,6 +298,8 @@ void CalibEnv(const char * runList){
         "CEfitA.="<<&fitResultsA<<
         "CEfitC.="<<&fitResultsC<<
         "nmaskedCE="<<nmaskedCE<<
+	"chi2ACE="<<chi2ACE<<
+	"chi2CCE="<<chi2CCE<<
         //ce graph data
         "CEgrTEntries.="<<&vecTEntries<<
         "CEgrTMean.="<<&vecTMean<<
@@ -358,7 +331,9 @@ void CalibEnv(const char * runList){
         "driftCorrCosmAll="<<dvCorr<<
       
         "\n";
-    }
+    }//end run loop
+//     delete fitVdrift;
+//     fitVdrift=0;
   }
   delete pcstream;
 }
@@ -429,58 +404,3 @@ void FilterMag(const char * runList){
   
 }
 
-
-void GetTree(){
-  TFile *fdcs = new TFile("dcsTime.root");
-  dcsTree  = (TTree*)fdcs->Get("dcs");
-  //
-  // mean temp A
-  
-  dcsTree->Draw("temp30.fElements[0]");
-  
-}
-
-void GetNominalValues(){
-  //
-  if (!dcsTree) return;
-}
-
-
-
-
-/*
-
-AliDCSSensor * sensorPressure = AliTPCcalibDB::Instance()->GetPressureSensor(62084);
-entry = AliCDBManager::Instance()->Get("TPC/Calib/Temperature",run);
-AliTPCSensorTempArray * tempArray = (AliTPCSensorTempArray *)entry->GetObject();
-AliTPCSensorTempArray * tempArray = (AliTPCSensorTempArray *)AliTPCcalibDB::Instance()->GetTemperatureSensor(62084)
-AliTPCTempMap * tempMap = new AliTPCTempMap(tempArray);
-TLinearFitter * fitter = tempMap->GetLinearFitter(0,0,tempArray->GetStartTime());
-
-AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(62084);
-
-*/
-
-/*
-
-void PlotPressureResol(){
-  //
-  // Example
-  //
-  dcs->Draw("100000*(press-press2-4.782)/press/sqrt(2.)>>his(100,-50,50)","run>61400","")
-  his->SetXTitle("#sigma_{P/P_{0}}(10^{-5})");
-  gPad->SaveAs("picDCS/deltaPoverP.eps");
-  gPad->SaveAs("picDCS/deltaPoverP.gif");
-
-}
-void PlotTresol(){
-  //
-  // T resolution example
-  // plot difference of the temperature from A and C side
-  // Supposing the error is independent - (division by sqrt(2))
-  dcs->Draw("100000*(temp30.fElements[0]-temp31.fElements[0]+0.00509)/(temp31.fElements[0]+273.15)/sqrt(2.)>>his(100,-5,5)","run>61400","");
-  his->SetXTitle("#sigma_{T/T_{0}}(10^{-5})");
-  gPad->SaveAs("picDCS/deltaToverT.eps");
-  gPad->SaveAs("picDCS/deltaToverT.gif");
-}
-*/
