@@ -78,6 +78,7 @@ AliAnaElectron::AliAnaElectron()
   fhDVMBtagQA3(0),fhDVMBtagQA4(0),fhDVMBtagQA5(0),
   //IPSig B-tagging
   fhIPSigBtagQA1(0),fhIPSigBtagQA2(0),fhTagJetPt1x4(0),fhTagJetPt2x3(0),fhTagJetPt3x2(0),
+  fhePlusTagJetPt1x4(0),fhePlusTagJetPt2x3(0),fhePlusTagJetPt3x2(0),
   //B-Jet histograms
   fhJetType(0),fhBJetXsiFF(0),fhBJetPtFF(0),fhBJetEtaPhi(0),
   fhNonBJetXsiFF(0),fhNonBJetPtFF(0),fhNonBJetEtaPhi(0),
@@ -88,9 +89,10 @@ AliAnaElectron::AliAnaElectron()
   fhPhiConversion(0),fhEtaConversion(0),
   //for comparisons with tracking detectors
   fhPtHadron(0),fhPtNPEleTPC(0),fhPtNPEleTPCTRD(0),fhPtNPEleTTE(0),
-  fhPtNPEBHadron(0),
+  fhPtNPEleEMCAL(0),fhPtNPEBHadron(0),
   //for computing efficiency of B-jet tags
-  fhBJetPt1x4(0),fhBJetPt2x3(0),fhBJetPt3x2(0),fhDVMJet(0),
+  fhBJetPt1x4(0),fhBJetPt2x3(0),fhBJetPt3x2(0),
+  fhFakeJetPt1x4(0),fhFakeJetPt2x3(0),fhFakeJetPt3x2(0),fhDVMJet(0),
   //MC rate histograms/ntuple
   fMCEleNtuple(0),fhMCBJetElePt(0),fhMCBHadronElePt(0),fhPtMCHadron(0),fhPtMCElectron(0)
 {
@@ -134,6 +136,8 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
     //IPSig B-tagging
     fhIPSigBtagQA1(g.fhIPSigBtagQA1),fhIPSigBtagQA2(g.fhIPSigBtagQA2),
     fhTagJetPt1x4(g.fhTagJetPt1x4),fhTagJetPt2x3(g.fhTagJetPt2x3),fhTagJetPt3x2(g.fhTagJetPt3x2),
+    fhePlusTagJetPt1x4(g.fhePlusTagJetPt1x4),fhePlusTagJetPt2x3(g.fhePlusTagJetPt2x3),
+    fhePlusTagJetPt3x2(g.fhePlusTagJetPt3x2),
     //B-Jet histograms
     fhJetType(g.fhJetType),fhBJetXsiFF(g.fhBJetXsiFF),fhBJetPtFF(g.fhBJetPtFF),
     fhBJetEtaPhi(g.fhBJetEtaPhi),fhNonBJetXsiFF(g.fhNonBJetXsiFF),fhNonBJetPtFF(g.fhNonBJetPtFF),
@@ -146,10 +150,12 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
     //for comparisons with tracking detectors
     fhPtHadron(g.fhPtHadron),fhPtNPEleTPC(g.fhPtNPEleTPC),
     fhPtNPEleTPCTRD(g.fhPtNPEleTPCTRD),fhPtNPEleTTE(g.fhPtNPEleTTE),
-    fhPtNPEBHadron(g.fhPtNPEBHadron),
+    fhPtNPEleEMCAL(g.fhPtNPEleEMCAL),fhPtNPEBHadron(g.fhPtNPEBHadron),
     //for computing efficiency of B-jet tags
     fhBJetPt1x4(g.fhBJetPt1x4),fhBJetPt2x3(g.fhBJetPt2x3),
-    fhBJetPt3x2(g.fhBJetPt3x2),fhDVMJet(g.fhDVMJet),
+    fhBJetPt3x2(g.fhBJetPt3x2),
+    fhFakeJetPt1x4(g.fhFakeJetPt1x4),fhFakeJetPt2x3(g.fhBJetPt2x3),
+    fhFakeJetPt3x2(g.fhFakeJetPt3x2),fhDVMJet(g.fhDVMJet),
     //MC rate histograms/ntuple
     fMCEleNtuple(g.fMCEleNtuple),fhMCBJetElePt(g.fhMCBJetElePt),
     fhMCBHadronElePt(g.fhMCBHadronElePt),
@@ -232,6 +238,9 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fhTagJetPt1x4 = g.fhTagJetPt1x4; 
   fhTagJetPt2x3 = g.fhTagJetPt2x3; 
   fhTagJetPt3x2 = g.fhTagJetPt3x2; 
+  fhePlusTagJetPt1x4 = g.fhePlusTagJetPt1x4; 
+  fhePlusTagJetPt2x3 = g.fhePlusTagJetPt2x3; 
+  fhePlusTagJetPt3x2 = g.fhePlusTagJetPt3x2; 
   //B-Jet histograms
   fhJetType = g.fhJetType; 
   fhBJetXsiFF = g.fhBJetXsiFF; 
@@ -249,10 +258,12 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   //for comparisons with tracking detectors
   fhPtHadron = g.fhPtHadron; fhPtNPEleTPC = g.fhPtNPEleTPC; 
   fhPtNPEleTPCTRD = g.fhPtNPEleTPCTRD; fhPtNPEleTTE = g.fhPtNPEleTTE; 
-  fhPtNPEBHadron = g.fhPtNPEBHadron;
+  fhPtNPEleEMCAL = g.fhPtNPEleEMCAL; fhPtNPEBHadron = g.fhPtNPEBHadron;
   //for computing efficiency of B-jet tags
   fhBJetPt1x4 = g.fhBJetPt1x4; fhBJetPt2x3 = g.fhBJetPt2x3; 
-  fhBJetPt3x2 = g.fhBJetPt3x2; fhDVMJet = g.fhDVMJet;
+  fhBJetPt3x2 = g.fhBJetPt3x2;
+  fhFakeJetPt1x4 = g.fhFakeJetPt1x4; fhFakeJetPt2x3 = g.fhFakeJetPt2x3; 
+  fhFakeJetPt3x2 = g.fhFakeJetPt3x2; fhDVMJet = g.fhDVMJet;
   //MC rate histograms/ntuple
   fMCEleNtuple = g.fMCEleNtuple; fhMCBJetElePt = g.fhMCBJetElePt; 
   fhMCBHadronElePt = g.fhMCBHadronElePt;
@@ -384,15 +395,21 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   //IPSig B-tagging
   fhIPSigBtagQA1  = new TH1F("hipsigbtag_qa1" ,"IPSig B-tag QA: # tag tracks", 20,0,20);
   fhIPSigBtagQA2  = new TH1F("hipsigbtag_qa2" ,"IPSig B-tag QA: IP significance", 200,-10.,10.);
-  fhTagJetPt1x4 = new TH1F("hTagJetPt1x4","tagged jet pT (1 track, ipSignif>4);p_{T}",1000,0.,100.);
-  fhTagJetPt2x3 = new TH1F("hTagJetPt2x3","tagged jet pT (2 track, ipSignif>3);p_{T}",1000,0.,100.);
-  fhTagJetPt3x2 = new TH1F("hTagJetPt3x2","tagged jet pT (3 track, ipSignif>2);p_{T}",1000,0.,100.);
+  fhTagJetPt1x4 = new TH1F("hTagJetPt1x4","tagged jet pT (1 track, ipSignif>4);p_{T}",300,0.,300.);
+  fhTagJetPt2x3 = new TH1F("hTagJetPt2x3","tagged jet pT (2 track, ipSignif>3);p_{T}",300,0.,300.);
+  fhTagJetPt3x2 = new TH1F("hTagJetPt3x2","tagged jet pT (3 track, ipSignif>2);p_{T}",300,0.,300.);
+  fhePlusTagJetPt1x4 = new TH1F("hePlusTagJetPt1x4","tagged eJet pT (1 track, ipSignif>4);p_{T}",300,0.,300.);
+  fhePlusTagJetPt2x3 = new TH1F("hePlusTagJetPt2x3","tagged eJet pT (2 track, ipSignif>3);p_{T}",300,0.,300.);
+  fhePlusTagJetPt3x2 = new TH1F("hePlusTagJetPt3x2","tagged eJet pT (3 track, ipSignif>2);p_{T}",300,0.,300.);
 
   outputContainer->Add(fhIPSigBtagQA1) ;
   outputContainer->Add(fhIPSigBtagQA2) ;
   outputContainer->Add(fhTagJetPt1x4);
   outputContainer->Add(fhTagJetPt2x3);
   outputContainer->Add(fhTagJetPt3x2);
+  outputContainer->Add(fhePlusTagJetPt1x4);
+  outputContainer->Add(fhePlusTagJetPt2x3);
+  outputContainer->Add(fhePlusTagJetPt3x2);
 
   //B-Jet histograms
   fhJetType = new TH2F("hJetType","# jets passing each tag method vs jet pt",10,0,10,300,0.,300.);
@@ -434,24 +451,32 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     fhPtHadron = new TH2F("hPtHadron","Charged hadrons w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
     fhPtNPEleTPC = new TH2F("hPtNPEleTPC","Non-phot. Electrons identified by TPC w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
     fhPtNPEleTPCTRD = new TH2F("hPtNPEleTPCTRD","Non-phot. Electrons identified by TPC+TRD w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
-    fhPtNPEleTTE = new TH2F("hPtNPEleTTE","Non-phot. Electrons identified by TPC+TRD+EMCAL w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
+    fhPtNPEleTTE = new TH2F("hPtNPEleTTE","Non-phot. Electrons identified by TPC+TRD+EMCAL w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);    
+    fhPtNPEleEMCAL = new TH2F("hPtNPEleEMCAL","Non-phot. Electrons identified by EMCAL w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
     fhPtNPEBHadron = new TH2F("hPtNPEBHadron","Non-phot. b-electrons (TPC+TRD+EMCAL) vs B-hadron pt w/in EMCAL acceptance",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
 
     outputContainer->Add(fhPtHadron);
     outputContainer->Add(fhPtNPEleTPC);
     outputContainer->Add(fhPtNPEleTPCTRD);
     outputContainer->Add(fhPtNPEleTTE);
+    outputContainer->Add(fhPtNPEleEMCAL);
     outputContainer->Add(fhPtNPEBHadron);
 
     //for computing efficiency of IPSig tag
-    fhBJetPt1x4 = new TH1F("hBJetPt1x4","tagged B-jet pT (1 track, ipSignif>4);p_{T}",1000,0.,100.);
-    fhBJetPt2x3 = new TH1F("hBJetPt2x3","tagged B-jet pT (2 track, ipSignif>3);p_{T}",1000,0.,100.);
-    fhBJetPt3x2 = new TH1F("hBJetPt3x2","tagged B-jet pT (3 track, ipSignif>2);p_{T}",1000,0.,100.);
+    fhBJetPt1x4 = new TH1F("hBJetPt1x4","tagged B-jet pT (1 track, ipSignif>4);p_{T}",300,0.,300.);
+    fhBJetPt2x3 = new TH1F("hBJetPt2x3","tagged B-jet pT (2 track, ipSignif>3);p_{T}",300,0.,300.);
+    fhBJetPt3x2 = new TH1F("hBJetPt3x2","tagged B-jet pT (3 track, ipSignif>2);p_{T}",300,0.,300.);
+    fhFakeJetPt1x4 = new TH1F("hFakeJetPt1x4","fake tagged B-jet pT (1 track, ipSignif>4);p_{T}",300,0.,300.);
+    fhFakeJetPt2x3 = new TH1F("hFakeJetPt2x3","fake tagged B-jet pT (2 track, ipSignif>3);p_{T}",300,0.,300.);
+    fhFakeJetPt3x2 = new TH1F("hFakeJetPt3x2","fake tagged B-jet pT (3 track, ipSignif>2);p_{T}",300,0.,300.);
     fhDVMJet = new TH2F("hDVM_algo","# DVM jets passing vs Mc-Bjet",10,0,10,300,0.,300.);
 
     outputContainer->Add(fhBJetPt1x4);
     outputContainer->Add(fhBJetPt2x3);
     outputContainer->Add(fhBJetPt3x2);
+    outputContainer->Add(fhFakeJetPt1x4);
+    outputContainer->Add(fhFakeJetPt2x3);
+    outputContainer->Add(fhFakeJetPt3x2);
     outputContainer->Add(fhDVMJet);
 
     //MC Only histograms
@@ -897,6 +922,10 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       if(trackCounter[2]>1) fhTagJetPt2x3->Fill(jet->Pt());
       if(trackCounter[3]>2) fhTagJetPt3x2->Fill(jet->Pt());
 
+      if(trackCounter[1]>0 && eJet) fhePlusTagJetPt1x4->Fill(jet->Pt());
+      if(trackCounter[2]>1 && eJet) fhePlusTagJetPt2x3->Fill(jet->Pt());
+      if(trackCounter[3]>2 && eJet) fhePlusTagJetPt3x2->Fill(jet->Pt());
+
       if(trackCounter[0] > fNTagTrkCut) ipsigJet = kTRUE;
 
       if(IsDataMC()) {
@@ -921,6 +950,10 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	  if(trackCounter[1]>0) fhBJetPt1x4->Fill(jet->Pt());
 	  if(trackCounter[2]>1) fhBJetPt2x3->Fill(jet->Pt());
 	  if(trackCounter[3]>2) fhBJetPt3x2->Fill(jet->Pt());
+	} else {
+	  if(trackCounter[1]>0) fhFakeJetPt1x4->Fill(jet->Pt());
+	  if(trackCounter[2]>1) fhFakeJetPt2x3->Fill(jet->Pt());
+	  if(trackCounter[3]>2) fhFakeJetPt3x2->Fill(jet->Pt());
 	}
       }
 
@@ -998,8 +1031,10 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     //with Minv near a relevant resonance
     if(!photonic) {
       fhPtNPEleTTE->Fill(ptele,0); //0 = no MC info
+      if(ele->GetDetector() == "EMCAL") fhPtNPEleEMCAL->Fill(ptele,0);
       if(IsDataMC()) {
 	fhPtNPEleTTE->Fill(ptele,GetMCSource(mctag));
+	if(ele->GetDetector() == "EMCAL") fhPtNPEleEMCAL->Fill(ptele,GetMCSource(mctag));
 	if(GetMCSource(mctag) == 1) {
 	  if(GetReader()->ReadStack()) { //only done if we have the stack
 	    TParticle* prim = stack->Particle(ele->GetLabel());
@@ -1117,6 +1152,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 	    }
 	}
 
+	//CHECK THAT THIS IS CORRECTLY FILLED - SHOULD WE USE MCSOURCE HERE?
 	fhPtMCElectron->Fill(primary->Pt(),0);  //0 = unfiltered
 	fhPtMCElectron->Fill(primary->Pt(),GetMCSource(mctag));
 
@@ -1644,6 +1680,45 @@ Int_t AliAnaElectron::GetMCSource(Int_t tag)
     //Misidentified electron
     return 8;
   }
+
+}
+
+//__________________________________________________________________
+AliAODMCParticle* AliAnaElectron::GetMCParticle(Int_t part) 
+{
+  //Use the appropriate MC source to get the MC particle at position
+  //part
+
+  AliAODMCParticle* mcp = 0x0;
+  TParticle * primary = 0x0;
+
+  AliStack * stack = 0x0;
+  TClonesArray * mcparticles0 = 0x0;
+  TClonesArray * mcparticles1 = 0x0;
+
+  if(GetReader()->ReadStack()){
+    stack =  GetMCStack() ;
+    
+    if(!stack)
+      printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no stack ***: \n");
+    
+  }
+  else if(GetReader()->ReadAODMCParticles()){
+    //Get the list of MC particles                                                                                                                           
+    mcparticles0 = GetReader()->GetAODMCParticles(0);
+    if(!mcparticles0 && GetDebug() > 0) {
+      printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
+    }
+    if(GetReader()->GetSecondInputAODTree()){
+      mcparticles1 = GetReader()->GetAODMCParticles(1);
+      if(!mcparticles1 && GetDebug() > 0) {
+	printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
+      }
+    }
+
+  }
+
+  return mcp;
 
 }
 
