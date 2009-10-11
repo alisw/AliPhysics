@@ -22,6 +22,7 @@ class TH3F;
 // --- ANALYSIS system ---
 #include "AliAnaPartCorrBaseClass.h"
 
+class AliAODMCParticle;
 class AliCaloTrackReader;
 class AliAODTrack;
 class TList ;
@@ -108,6 +109,10 @@ public:
   void GetImpactParamVect(Double_t Pxy[2], Double_t t[2], Double_t Vxy[2], Double_t ip[2]);
   //For determining origin of electron
   Int_t GetMCSource(Int_t mctag);
+
+  //Need a clean way to get the MC info.  An AliAODMCParticle object
+  //is returned from whichever source we are operating on
+  AliAODMCParticle* GetMCParticle(Int_t part);
 
   private:
   TString  fCalorimeter;  //! Which detector? EMCAL or PHOS
@@ -198,6 +203,9 @@ public:
   TH1F * fhTagJetPt1x4;  //! IPSig B-tagging : result for (1 track, ipSignif>4)
   TH1F * fhTagJetPt2x3;  //! IPSig B-tagging : result for (2 track, ipSignif>3)
   TH1F * fhTagJetPt3x2;  //! IPSig B-tagging : result for (3 track, ipSignif>2)
+  TH1F * fhePlusTagJetPt1x4;  //! IPSig B-tagging : eJet + result for (1 track, ipSignif>4)
+  TH1F * fhePlusTagJetPt2x3;  //! IPSig B-tagging : eJet + result for (2 track, ipSignif>3)
+  TH1F * fhePlusTagJetPt3x2;  //! IPSig B-tagging : eJet + result for (3 track, ipSignif>2)
 
   //B-Jet histograms
   TH2F* fhJetType;       //! How many of each tag were found vs jet pt
@@ -226,6 +234,9 @@ public:
   TH2F* fhPtNPEleTTE;      //!Pt distribution of non-photonic reco
 			   //!electrons using pid info from TPC+TRD+EMCAL
 			   //!in EMCAL acceptance
+  TH2F* fhPtNPEleEMCAL;    //!Pt distribution of non-photonic reco
+			   //!electrons using EMCAL only
+			   //!in EMCAL acceptance
 
   TH2F* fhPtNPEBHadron;    //!correlate our best reconstructed
 			   //b-electrons with the b-hadron momentum
@@ -236,19 +247,23 @@ public:
   TH1F * fhBJetPt2x3;    //! IPSig B-tagging : result for (2 track, ipSignif>3)
   TH1F * fhBJetPt3x2;    //! IPSig B-tagging : result for (3 track, ipSignif>2)
 
+  TH1F * fhFakeJetPt1x4;    //! IPSig B-tagging : fake result for (1 track, ipSignif>4)
+  TH1F * fhFakeJetPt2x3;    //! IPSig B-tagging : fake result for (2 track, ipSignif>3)
+  TH1F * fhFakeJetPt3x2;    //! IPSig B-tagging : fake result for (3 track, ipSignif>2)
+
   TH2F* fhDVMJet;        //! DVM jet algo check
 
   ////////////////////////////
   //MC Only Rate histograms
 
-  TNtuple *fMCEleNtuple; //! Ntuple of MC electrons
+  TNtuple *fMCEleNtuple;  //! Ntuple of MC electrons
 
-  TH2F* fhMCBJetElePt;   //! Pt of B-Jet vs pt of electron
-  TH2F* fhMCBHadronElePt;   //! Pt of B-hadrons vs pt of electron
-  TH1F* fhPtMCHadron;    //! Pt distribution of MC charged hadrons (pi,k,p) in EMCAL acceptance
-  TH2F* fhPtMCElectron;  //! Pt distribution of MC electrons from various sources in EMCAL
+  TH2F* fhMCBJetElePt;    //! Pt of B-Jet vs pt of electron
+  TH2F* fhMCBHadronElePt; //! Pt of B-hadrons vs pt of electron
+  TH1F* fhPtMCHadron;     //! Pt distribution of MC charged hadrons (pi,k,p) in EMCAL acceptance
+  TH2F* fhPtMCElectron;   //! Pt distribution of MC electrons from various sources in EMCAL
 
-  ClassDef(AliAnaElectron,9)
+  ClassDef(AliAnaElectron,10)
 
 } ;
  
