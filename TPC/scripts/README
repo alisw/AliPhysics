@@ -113,6 +113,10 @@ Troubleshouting:
    1.a) If not execuitng check your $PATH
    1.b) Check the output of script. All checks should be indicated OK.
 2. Modify environment if neccessary
+3. Missing ConfigOCDB.C macro. This macro is not provided by default.
+   It is setup specific. You should contact experts to get it.   
+4. Wrong ConfigOCDB.C macro, tests:
+   4.a) ls $SCRIPTDIR/ConfigOCDB.C  - file should exist
+   4.b) run ConfigOCDB.C macro in aliroot session. Check the output.
 
-
-In case of further problems, please inform authors. 
+In case of further problems, please inform authors.
