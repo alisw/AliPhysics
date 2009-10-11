@@ -56,8 +56,8 @@ public:
   //check if track has been flagged as a non-photonic or DVM electron
   //used with the jet tracks to tag bjets
   Bool_t CheckTrack(const AliAODTrack* track,const char* type);  
-  Bool_t IsMcBJet(Double_t x, Double_t y, AliStack* st);
-  Bool_t IsMcDJet(Double_t x, Double_t y, AliStack* st);
+  Bool_t IsMcBJet(Double_t x, Double_t y);
+  Bool_t IsMcDJet(Double_t x, Double_t y);
 
   void Print(const Option_t * opt)const;
   
@@ -113,6 +113,10 @@ public:
   //Need a clean way to get the MC info.  An AliAODMCParticle object
   //is returned from whichever source we are operating on
   AliAODMCParticle* GetMCParticle(Int_t part);
+  //Get MC B Parent pt
+  Double_t GetBParentPt(Int_t label);
+  //Get Number of particles in AliAODMCParticle array, if it exists
+  Int_t GetNumAODMCParticles();
 
   private:
   TString  fCalorimeter;  //! Which detector? EMCAL or PHOS
