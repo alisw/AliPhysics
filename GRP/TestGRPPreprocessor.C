@@ -32,6 +32,7 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 {
   gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
 
+  AliLog::SetClassDebugLevel("AliGRPPreprocessor",3);
   Int_t kRun = 7;
   AliTestShuttle* shuttle = new AliTestShuttle(kRun, 1, 10);
 
@@ -50,10 +51,11 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 
   // simulating input from DAQ FXS
   if (errorLevel != 2){
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC35", "/home/zampolli/GRP190809/run000080740_GRP_gdc-aldaqpc035_Period_LHC09c.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC36", "/home/zampolli/GRP190809/run000080740_GRP_gdc-aldaqpc036_Period_LHC09c.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC44", "/home/zampolli/GRP190809/run000080740_GRP_gdc-aldaqpc044_Period_LHC09c.Seq_0.tag.root");
-	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC45", "/home/zampolli/GRP190809/run000080740_GRP_gdc-aldaqpc045_Period_LHC09c.Seq_0.tag.root");
+	  // $ALICE_ROT to be expanded manually by the user for this test macro 
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC35", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc035_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC36", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc036_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC44", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc044_Period_LHC09c.Seq_0.tag.root");
+	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC45", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc045_Period_LHC09c.Seq_0.tag.root");
 	  
   }
 
@@ -74,8 +76,9 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
   const char *emptybuffer = NULL;
 
   // simulating input from DAQ logbook_trigger_config
-  if {
-	  (errorLevel != 3 && errorLevel != 7 && !partition.IsNull() && detector.IsNull()) shuttle->SetInputTriggerConfiguration(buffer);
+  if (errorLevel != 3 && errorLevel != 7 && !partition.IsNull() && detector.IsNull()) {
+		  cout << " adding trigger config " << endl;
+		  shuttle->SetInputTriggerConfiguration(buffer);
   }
   else if (errorLevel == 7) {
 	  shuttle->SetInputTriggerConfiguration(emptybuffer);
