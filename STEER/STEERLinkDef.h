@@ -161,5 +161,7 @@
 #pragma link C++ class AliGRPManager+;
 #pragma link C++ class AliDCSArray+;
 #pragma link C++ class AliLHCReader+;
+#pragma link C++ class AliCTPTimeParams+;
+#pragma link C++ class AliCTPInputTimeParams+;
 
 #endif
