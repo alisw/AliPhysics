@@ -42,6 +42,7 @@
 #include "AliTPCCalibRaw.h"
 
 #include "AliTPCcalibDButil.h"
+#include "AliTPCPreprocessorOnline.h"
 
 ClassImp(AliTPCcalibDButil)
 AliTPCcalibDButil::AliTPCcalibDButil() :
@@ -124,7 +125,7 @@ void AliTPCcalibDButil::UpdateFromCalibDB()
 }
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::ProcessCEdata(const char* fitFormula, TVectorD &fitResultsA, TVectorD &fitResultsC,
-                                      Int_t &noutliersCE, AliTPCCalPad *outCE)
+                                      Int_t &noutliersCE, Double_t & chi2A, Double_t &chi2C, AliTPCCalPad *outCE)
 {
   //
   // Process the CE data for this run
@@ -199,8 +200,10 @@ void AliTPCcalibDButil::ProcessCEdata(const char* fitFormula, TVectorD &fitResul
   }
   //perform fit
   TMatrixD dummy;
-  Float_t chi2A,chi2C;
-  fCETmean->GlobalSidesFit(out,fitFormula,fitResultsA,fitResultsC,dummy,dummy,chi2A,chi2C);
+  Float_t chi2Af,chi2Cf;
+  fCETmean->GlobalSidesFit(out,fitFormula,fitResultsA,fitResultsC,dummy,dummy,chi2Af,chi2Cf);
+  chi2A=chi2Af;
+  chi2C=chi2Cf;
   if (!outCE) delete out;
 }
 //_____________________________________________________________________________________
@@ -796,7 +799,7 @@ void AliTPCcalibDButil::PulserOutlierMap(AliTPCCalPad *pulOut, const AliTPCCalPa
   }
 }
 //_____________________________________________________________________________________
-AliTPCCalPad* AliTPCcalibDButil::CreatePadTime0(Int_t model)
+AliTPCCalPad* AliTPCcalibDButil::CreatePadTime0(Int_t model, Double_t &gyA, Double_t &gyC, Double_t &chi2A, Double_t &chi2C )
 {
   //
   // Create pad time0 object from pulser and/or CE data, depending on the selected model
@@ -804,7 +807,10 @@ AliTPCCalPad* AliTPCcalibDButil::CreatePadTime0(Int_t model)
   // Model 1: normalise IROCs/OROCs of each readout side to its mean, only Pulser
   // Model 2: use CE data and a combination CE fit + pulser in the outlier regions.
   //
-  
+  // In case model 2 is invoked - gy arival time gradient is also returned
+  //
+  gyA=0;
+  gyC=0;
   AliTPCCalPad *padTime0=new AliTPCCalPad("PadTime0",Form("PadTime0-Model_%d",model));
   // decide between different models
   if (model==0||model==1){
@@ -838,16 +844,23 @@ AliTPCCalPad* AliTPCcalibDButil::CreatePadTime0(Int_t model)
         }
       }
     }
-  } else if (model==2){
+  } else if (model==2){  
+    Double_t pgya,pgyc,pchi2a,pchi2c;
+    AliTPCCalPad * padPulser = CreatePadTime0(1,pgya,pgyc,pchi2a,pchi2c);
+    fCETmean->Add(padPulser,-1.);
     TVectorD vA,vC;
     AliTPCCalPad outCE("outCE","outCE");
     Int_t nOut;
-    ProcessCEdata("(sector<36)++gy++gx++(lx-134)++(sector<36)*(lx-134)",vA,vC,nOut,&outCE);
-    AliTPCCalPad *padFit=AliTPCCalPad::CreateCalPadFit("1++0++gy++0++(lx-134)++0",vA,vC);
+    ProcessCEdata("(sector<36)++gy++gx++(lx-134)++(sector<36)*(lx-134)++(ly/lx)^2",vA,vC,nOut,chi2A, chi2C,&outCE);
+    AliTPCCalPad *padFit=AliTPCCalPad::CreateCalPadFit("1++0++gy++0++(lx-134)++0++0",vA,vC);
 //     AliTPCCalPad *padFit=AliTPCCalPad::CreateCalPadFit("1++(sector<36)++gy++gx++(lx-134)++(sector<36)*(lx-134)",vA,vC);
-    if (!padFit) return 0;
+    if (!padFit) { delete padPulser; return 0;}
+    gyA=vA[2];
+    gyC=vC[2];
+    fCETmean->Add(padPulser,1.);
     padTime0->Add(fCETmean);
-    padTime0->Add(padFit,-1);
+    padTime0->Add(padFit,-1);  
+    delete padPulser;
     TVectorD vFitROC;
     TMatrixD mFitROC;
     Float_t chi2;
@@ -876,7 +889,8 @@ AliTPCCalPad* AliTPCcalibDButil::CreatePadTime0(Int_t model)
     }
     delete padFit;
   }
-
+  Double_t median = padTime0->GetMedian();
+  padTime0->Add(-median);  // normalize to median
   return padTime0;
 }
 //_____________________________________________________________________________________
@@ -931,5 +945,325 @@ void AliTPCcalibDButil::SetRefFile(const char* filename)
   fRefALTROMasked=(AliTPCCalPad*)f.Get("ALTROMasked");
   f.Close();
   currDir->cd();
+}
+
+
+
+
+AliTPCCalPad *AliTPCcalibDButil::CreateCEOutlyerMap( Int_t & noutliersCE, AliTPCCalPad *ceOut, Float_t minSignal, Float_t cutTrmsMin,  Float_t cutTrmsMax, Float_t cutMaxDistT){
+  //
+  // Author:  marian.ivanov@cern.ch
+  //
+  // Create outlier map for CE study
+  // Parameters:
+  //  Return value - outlyer map
+  //  noutlyersCE  - number of outlyers
+  //  minSignal    - minimal total Q signal
+  //  cutRMSMin    - minimal width of the signal in respect to the median 
+  //  cutRMSMax    - maximal width of the signal in respect to the median 
+  //  cutMaxDistT  - maximal deviation from time median per chamber
+  //
+  // Outlyers criteria:
+  // 0. Exclude masked pads
+  // 1. Exclude first two rows in IROC and last two rows in OROC
+  // 2. Exclude edge pads
+  // 3. Exclude channels with too large variations
+  // 4. Exclude pads with too small signal
+  // 5. Exclude signal with outlyers RMS
+  // 6. Exclude channels to far from the chamber median	
+  noutliersCE=0;
+  //create outlier map
+  AliTPCCalPad *out=ceOut;
+  if (!out)     out= new AliTPCCalPad("outCE","outCE");
+  AliTPCCalROC *rocMasked=0x0; 
+  if (!fCETmean) return 0;
+  if (!fCETrms) return 0;
+  if (!fCEQmean) return 0;
+  //
+  //loop over all channels
+  //
+  Double_t rmsMedian         = fCETrms->GetMedian();
+  for (UInt_t iroc=0;iroc<fCETmean->kNsec;++iroc){
+    AliTPCCalROC *rocData=fCETmean->GetCalROC(iroc);
+    if (fALTROMasked) rocMasked= fALTROMasked->GetCalROC(iroc);
+    AliTPCCalROC *rocOut       = out->GetCalROC(iroc);
+    AliTPCCalROC *rocCEQ       = fCEQmean->GetCalROC(iroc);
+    AliTPCCalROC *rocCETrms    = fCETrms->GetCalROC(iroc);
+    Double_t trocMedian        = rocData->GetMedian();
+    //
+    if (!rocData) {
+      noutliersCE+=AliTPCROC::Instance()->GetNChannels(iroc);
+      rocOut->Add(1.);
+      continue;
+    }
+    //
+    //select outliers
+    UInt_t nrows=rocData->GetNrows();
+    for (UInt_t irow=0;irow<nrows;++irow){
+      UInt_t npads=rocData->GetNPads(irow);
+      for (UInt_t ipad=0;ipad<npads;++ipad){
+        rocOut->SetValue(irow,ipad,0);
+        Float_t valTmean=rocData->GetValue(irow,ipad);
+        Float_t valQmean=rocCEQ->GetValue(irow,ipad);
+        Float_t valTrms =rocCETrms->GetValue(irow,ipad);
+        //0. exclude masked pads
+        if (rocMasked && rocMasked->GetValue(irow,ipad)) {
+          rocOut->SetValue(irow,ipad,1);
+          continue;
+        }
+        //1. exclude first two rows in IROC and last two rows in OROC
+        if (iroc<36){
+          if (irow<2) rocOut->SetValue(irow,ipad,1);
+        } else {
+          if (irow>nrows-3) rocOut->SetValue(irow,ipad,1);
+        }
+        //2. exclude edge pads
+        if (ipad==0||ipad==npads-1) rocOut->SetValue(irow,ipad,1);
+        //exclude values that are exactly 0
+        if (valTmean==0) {
+          rocOut->SetValue(irow,ipad,1);
+          ++noutliersCE;
+        }
+        //3.  exclude channels with too large variations
+        if (TMath::Abs(valTmean)>fCETmaxLimitAbs) {
+          rocOut->SetValue(irow,ipad,1);
+          ++noutliersCE;
+        }
+	//
+        //4.  exclude channels with too small signal
+        if (valQmean<minSignal) {
+          rocOut->SetValue(irow,ipad,1);
+          ++noutliersCE;
+        }
+        //
+	//5. exclude channels with too small rms
+	if (valTrms<cutTrmsMin*rmsMedian || valTrms>cutTrmsMax*rmsMedian){
+	  rocOut->SetValue(irow,ipad,1);
+          ++noutliersCE;
+	}
+        //
+	//6. exclude channels to far from the chamber median	
+	if (TMath::Abs(valTmean-trocMedian)>cutMaxDistT){
+	  rocOut->SetValue(irow,ipad,1);
+          ++noutliersCE;
+	}
+      }
+    }
+  }
+  //
+  return out;
+}
+
+
+AliTPCCalPad *AliTPCcalibDButil::CreatePulserOutlyerMap(Int_t &noutliersPulser, AliTPCCalPad *pulserOut,Float_t cutTime, Float_t cutnRMSQ, Float_t cutnRMSrms){
+  //
+  // Author: marian.ivanov@cern.ch
+  //
+  // Create outlier map for Pulser
+  // Parameters:
+  //  Return value     - outlyer map
+  //  noutlyersPulser  - number of outlyers
+  //  cutTime          - absolute cut - distance to the median of chamber
+  //  cutnRMSQ         - nsigma cut from median  q distribution per chamber
+  //  cutnRMSrms       - nsigma cut from median  rms distribution 
+  // Outlyers criteria:
+  // 0. Exclude masked pads
+  // 1. Exclude time outlyers (default 3 time bins)
+  // 2. Exclude q outlyers    (default 5 sigma)
+  // 3. Exclude rms outlyers  (default 5 sigma)
+  noutliersPulser=0;
+  AliTPCCalPad *out=pulserOut;
+  if (!out)     out= new AliTPCCalPad("outPulser","outPulser");
+  AliTPCCalROC *rocMasked=0x0; 
+  if (!fPulserTmean) return 0;
+  if (!fPulserTrms) return 0;
+  if (!fPulserQmean) return 0;
+  //
+  //loop over all channels
+  //
+  for (UInt_t iroc=0;iroc<fCETmean->kNsec;++iroc){
+    if (fALTROMasked)   rocMasked= fALTROMasked->GetCalROC(iroc);
+    AliTPCCalROC *rocData       = fPulserTmean->GetCalROC(iroc);
+    AliTPCCalROC *rocOut        = out->GetCalROC(iroc);
+    AliTPCCalROC *rocPulserQ    = fPulserQmean->GetCalROC(iroc);
+    AliTPCCalROC *rocPulserTrms = fPulserTrms->GetCalROC(iroc);
+    //
+    Double_t rocMedianT         = rocData->GetMedian();
+    Double_t rocMedianQ         = rocPulserQ->GetMedian();
+    Double_t rocRMSQ            = rocPulserQ->GetRMS();
+    Double_t rocMedianTrms      = rocPulserTrms->GetMedian();
+    Double_t rocRMSTrms         = rocPulserTrms->GetRMS();
+    for (UInt_t ichannel=0;ichannel<rocData->GetNchannels();++ichannel){
+      rocOut->SetValue(ichannel,0);
+      Float_t valTmean=rocData->GetValue(ichannel);
+      Float_t valQmean=rocPulserQ->GetValue(ichannel);
+      Float_t valTrms =rocPulserTrms->GetValue(ichannel);
+      Int_t isOut=0;
+      if (TMath::Abs(valTmean-rocMedianT)>cutTime) isOut=1;
+      if (TMath::Abs(valQmean-rocMedianQ)>cutnRMSQ*rocRMSQ) isOut=1;
+      if (TMath::Abs(valTrms-rocMedianTrms)>cutnRMSrms*rocRMSTrms) isOut=1;
+      rocOut->SetValue(ichannel,isOut);
+      if (isOut) noutliersPulser++;
+    }
+  }
+  return out;
+}
+
+
+AliTPCCalPad *AliTPCcalibDButil::CreatePadTime0CE(TVectorD &fitResultsA, TVectorD&fitResultsC, Int_t &nOut, Double_t &chi2A, Double_t &chi2C, const char *dumpfile){
+  //
+  // Author : Marian Ivanov
+  // Create pad time0 correction map using information from the CE and from pulser
+  //
+  //
+  // Return PadTime0 to be used for time0 relative alignment
+  // if dump file specified intermediat results are dumped to the fiel and can be visualized 
+  // using $ALICE_ROOT/TPC/script/gui application
+  //
+  // fitResultsA - fitParameters A side
+  // fitResultsC - fitParameters C side
+  // chi2A       - chi2/ndf for A side (assuming error 1 time bin)
+  // chi2C       - chi2/ndf for C side (assuming error 1 time bin)
+  //
+  //
+  // Algorithm:
+  // 1. Find outlier map for CE
+  // 2. Find outlier map for Pulser
+  // 3. Replace outlier by median at given sector  (median without outliers)
+  // 4. Substract from the CE data pulser
+  // 5. Fit the CE with formula
+  //    5.1) (IROC-OROC) offset
+  //    5.2) gx
+  //    5.3) gy
+  //    5.4) (lx-xmid)
+  //    5.5) (IROC-OROC)*(lx-xmid)
+  //    5.6) (ly/lx)^2
+  // 6. Substract gy fit dependence from the CE data
+  // 7. Add pulser back to CE data  
+  // 8. Replace outliers by fit value - median of diff per given chamber -GY fit
+  // 9. return CE data
+  //
+  // Time0 <= padCE = padCEin  -padCEfitGy  - if not outlier
+  // Time0 <= padCE = padFitAll-padCEfitGy  - if outlier 
+
+  // fit formula
+  const char *formulaIn="(-1.+2.*(sector<36))*0.5++gx++gy++(lx-134.)++(-1.+2.*(sector<36))*0.5*(lx-134)++((ly/lx)^2/(0.1763)^2)";
+  // output for fit formula
+  const char *formulaAll="1++(-1.+2.*(sector<36))*0.5++gx++gy++(lx-134.)++(-1.+2.*(sector<36))*0.5*(lx-134)++((ly/lx)^2/(0.1763)^2)";
+  // gy part of formula
+  const char *formulaOut="0++0*(-1.+2.*(sector<36))*0.5++0*gx++gy++0*(lx-134.)++0*(-1.+2.*(sector<36))*0.5*(lx-134)++0*((ly/lx)^2/(0.1763)^2)";
+  //
+  //
+  if (!fCETmean) return 0;
+  Double_t pgya,pgyc,pchi2a,pchi2c;
+  AliTPCCalPad * padPulserOut = CreatePulserOutlyerMap(nOut);
+  AliTPCCalPad * padCEOut     = CreateCEOutlyerMap(nOut);
+
+  AliTPCCalPad * padPulser    = CreatePadTime0(1,pgya,pgyc,pchi2a,pchi2c);
+  AliTPCCalPad * padCE        = new AliTPCCalPad(*fCETmean);
+  AliTPCCalPad * padCEIn      = new AliTPCCalPad(*fCETmean);
+  AliTPCCalPad * padOut       = new AliTPCCalPad("padOut","padOut");   
+  padPulser->SetName("padPulser");
+  padPulserOut->SetName("padPulserOut");
+  padCE->SetName("padCE");
+  padCEIn->SetName("padCEIn");
+  padCEOut->SetName("padCEOut");
+  padOut->SetName("padOut");
+
+  //
+  // make combined outlyers map
+  // and replace outlyers in maps with median for chamber
+  //
+  for (UInt_t iroc=0;iroc<fCETmean->kNsec;++iroc){  
+    AliTPCCalROC * rocOut       = padOut->GetCalROC(iroc);
+    AliTPCCalROC * rocPulser    = padPulser->GetCalROC(iroc);
+    AliTPCCalROC * rocPulserOut = padPulserOut->GetCalROC(iroc);
+    AliTPCCalROC * rocCEOut     = padCEOut->GetCalROC(iroc);
+    AliTPCCalROC * rocCE        = padCE->GetCalROC(iroc);
+    Double_t ceMedian           = rocCE->GetMedian(rocCEOut);
+    Double_t pulserMedian       = rocPulser->GetMedian(rocCEOut);
+    for (UInt_t ichannel=0;ichannel<rocOut->GetNchannels();++ichannel){
+      if (rocPulserOut->GetValue(ichannel)>0) {
+	rocPulser->SetValue(ichannel,pulserMedian);  
+	rocOut->SetValue(ichannel,1);
+      }
+      if (rocCEOut->GetValue(ichannel)>0) {
+	rocCE->SetValue(ichannel,ceMedian);
+	rocOut->SetValue(ichannel,1);
+      }
+    }
+  }
+  //
+  // remove pulser time 0
+  //
+  padCE->Add(padPulser,-1);
+  //
+  // Make fits
+  //
+  TMatrixD dummy;
+  Float_t chi2Af,chi2Cf;  
+  padCE->GlobalSidesFit(padOut,formulaIn,fitResultsA,fitResultsC,dummy,dummy,chi2Af,chi2Cf);
+  chi2A=chi2Af;
+  chi2C=chi2Cf;
+  //
+  AliTPCCalPad *padCEFitGY=AliTPCCalPad::CreateCalPadFit(formulaOut,fitResultsA,fitResultsC);
+  padCEFitGY->SetName("padCEFitGy");
+  //
+  AliTPCCalPad *padCEFit  =AliTPCCalPad::CreateCalPadFit(formulaAll,fitResultsA,fitResultsC);
+  padCEFit->SetName("padCEFit");
+  //
+  AliTPCCalPad* padCEDiff  = new AliTPCCalPad(*padCE);
+  padCEDiff->SetName("padCEDiff");
+  padCEDiff->Add(padCEFit,-1.);
+  //
+  // 
+  padCE->Add(padCEFitGY,-1.);
+
+  padCE->Add(padPulser,1.);  
+  Double_t padmedian = padCE->GetMedian();
+  padCE->Add(-padmedian);  // normalize to median
+  //
+  // Replace outliers by fit value - median of diff per given chamber -GY fit
+  //
+  for (UInt_t iroc=0;iroc<fCETmean->kNsec;++iroc){  
+    AliTPCCalROC * rocOut       = padOut->GetCalROC(iroc);
+    AliTPCCalROC * rocCE        = padCE->GetCalROC(iroc);
+    AliTPCCalROC * rocCEFit     = padCEFit->GetCalROC(iroc);
+    AliTPCCalROC * rocCEFitGY   = padCEFitGY->GetCalROC(iroc);
+    AliTPCCalROC * rocCEDiff    = padCEDiff->GetCalROC(iroc);
+    //
+    Double_t diffMedian         = rocCEDiff->GetMedian(rocOut);
+    for (UInt_t ichannel=0;ichannel<rocOut->GetNchannels();++ichannel){
+      if (rocOut->GetValue(ichannel)==0) continue;
+      Float_t value=rocCEFit->GetValue(ichannel)-rocCEFitGY->GetValue(ichannel)-diffMedian-padmedian;
+      rocCE->SetValue(ichannel,value);
+    }    
+  }
+  //
+  //
+  if (dumpfile){
+    //dump to the file - result can be visualized
+    AliTPCPreprocessorOnline preprocesor;
+    preprocesor.AddComponent(new AliTPCCalPad(*padCE));
+    preprocesor.AddComponent(new AliTPCCalPad(*padCEIn));
+    preprocesor.AddComponent(new AliTPCCalPad(*padCEFit));
+    preprocesor.AddComponent(new AliTPCCalPad(*padOut));
+    //
+    preprocesor.AddComponent(new AliTPCCalPad(*padCEFitGY));
+    preprocesor.AddComponent(new AliTPCCalPad(*padCEDiff));
+    //
+    preprocesor.AddComponent(new AliTPCCalPad(*padCEOut));
+    preprocesor.AddComponent(new AliTPCCalPad(*padPulser));
+    preprocesor.AddComponent(new AliTPCCalPad(*padPulserOut));
+    preprocesor.DumpToFile(dumpfile);
+  } 
+  delete padPulser;
+  delete padPulserOut;
+  delete padCEIn;
+  delete padCEOut;
+  delete padOut;
+  delete padCEDiff;
+  delete padCEFitGY;
+  return padCE;
 }
 

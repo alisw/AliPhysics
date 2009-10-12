@@ -128,6 +128,7 @@ class AliTPCcalibDB : public TObject
   static Float_t GetGain(Int_t sector, Int_t row, Int_t pad);
   //
   AliSplineFit* GetVdriftSplineFit(const char* name, Int_t run);
+  AliSplineFit* CreateVdriftSplineFit(const char* graphName, Int_t run);
   //
   static void     CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
   static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad* outlierPad = 0, Float_t ltmFraction = 0.9);

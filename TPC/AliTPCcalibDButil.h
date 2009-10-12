@@ -28,7 +28,7 @@ public:
   void UpdateFromCalibDB();
   //data processing functions
   void ProcessCEdata(const char* fitFormula, TVectorD &fitResultsA, TVectorD &fitResultsC,
-                     Int_t &noutliersCE, AliTPCCalPad *outCE=0);
+                     Int_t &noutliersCE, Double_t & chi2A, Double_t &chi2C, AliTPCCalPad *outCE=0);
   void ProcessCEgraphs(TVectorD &vecTEntries, TVectorD &vecTMean, TVectorD &vecTRMS, TVectorD &vecTMedian,
                        TVectorD &vecQEntries, TVectorD &vecQMean, TVectorD &vecQRMS, TVectorD &vecQMedian,
                        Float_t &driftTimeA, Float_t &driftTimeC );
@@ -68,8 +68,16 @@ public:
                 {fRefALTROMasked=masked;}
   
   //creation of derived pad by pad calibration data
-  AliTPCCalPad *CreatePadTime0(Int_t model=0);
+  AliTPCCalPad *CreatePadTime0(Int_t model, Double_t &gyA, Double_t &gyC, Double_t &chi2A, Double_t &chi2C);
   //
+  // create outlyer maps
+  //
+  AliTPCCalPad *CreateCEOutlyerMap(Int_t &noutliersCE, AliTPCCalPad *ceOut=0, Float_t minSignal=10, Float_t cutTrmsMin=0.9, Float_t cutTrmsMax=1.2, Float_t cutMaxDistT=0.7);
+  AliTPCCalPad *CreatePulserOutlyerMap(Int_t &noutliersPulser, AliTPCCalPad *pulserOut=0, Float_t cutTime=3, Float_t cutnRMSQ=5, Float_t cutnRMSrms=5);
+  //
+  AliTPCCalPad *CreatePadTime0CE(TVectorD &fitResultsA, TVectorD&fitResultsC, Int_t &nOut, Double_t &chi2A, Double_t &chi2C, const char *dumpfile=0);
+  //
+
   void UpdatePulserOutlierMap();
   void UpdateRefPulserOutlierMap();
   void PulserOutlierMap(AliTPCCalPad *pulOut, const AliTPCCalPad *pulT, const AliTPCCalPad *pulQ);

@@ -874,6 +874,21 @@ AliSplineFit* AliTPCcalibDB::GetVdriftSplineFit(const char* name, Int_t run){
   return dynamic_cast<AliSplineFit*>(arr->FindObject(name));
 }
 
+AliSplineFit* AliTPCcalibDB::CreateVdriftSplineFit(const char* graphName, Int_t run){
+  //
+  // create spline fit from the drift time graph in TimeDrift
+  //
+  TObjArray *arr=GetTimeVdriftSplineRun(run);
+  if (!arr) return 0;
+  TGraph *graph=dynamic_cast<TGraph*>(arr->FindObject(graphName));
+  if (!graph) return 0;
+  AliSplineFit *fit = new AliSplineFit();
+  fit->SetGraph(graph);
+  fit->SetMinPoints(graph->GetN()+1);
+  fit->InitKnots(graph,2,0,0.001);
+  fit->SplineFit(0);
+  return fit;
+}
 
 AliGRPObject *AliTPCcalibDB::GetGRP(Int_t run){
   //
