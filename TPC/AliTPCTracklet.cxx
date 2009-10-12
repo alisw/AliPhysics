@@ -719,19 +719,25 @@ Bool_t AliTPCTracklet::PropagateToMeanX(const AliTPCTracklet &t1,
       t2m=new AliExternalTrackParam(*t2.GetOuter());
     }
     Double_t mx=.5*(t1m->GetX()+t2m->GetX());
-    Double_t b1,b2;
+    //Double_t b1,b2;
     Double_t xyz[3];
     t1m->GetXYZ(xyz);
-    b1=GetBz(xyz);
+    //b1=GetBz(xyz);
+    Double_t b1[3]; AliTracker::GetBxByBz(xyz,b1);
     t2m->GetXYZ(xyz);
-    b2=GetBz(xyz);
+    //b2=GetBz(xyz);
+    Double_t b2[3]; AliTracker::GetBxByBz(xyz,b2);
     if (t1m->Rotate(t2m->GetAlpha()) 
-	&& t1m->PropagateTo(mx,b1) 
-	&& t2m->PropagateTo(mx,b2));
+	//&& t1m->PropagateTo(mx,b1) 
+	//&& t2m->PropagateTo(mx,b2));
+	&& t1m->PropagateToBxByBz(mx,b1) 
+	&& t2m->PropagateToBxByBz(mx,b2));
     else
       if (t2m->Rotate(t1m->GetAlpha())
-	  && t1m->PropagateTo(mx,b1) 
-	  && t2m->PropagateTo(mx,b2));
+	  //&& t1m->PropagateTo(mx,b1) 
+	  //&& t2m->PropagateTo(mx,b2));
+	  && t1m->PropagateToBxByBz(mx,b1) 
+	  && t2m->PropagateToBxByBz(mx,b2));
       else {
 	delete t1m;
 	delete t2m;

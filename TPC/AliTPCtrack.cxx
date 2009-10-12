@@ -251,8 +251,9 @@ Bool_t AliTPCtrack::PropagateTo(Double_t xk,Double_t rho,Double_t x0) {
   }
 
   Double_t oldX=GetX(), oldY=GetY(), oldZ=GetZ();
-
-  if (!AliExternalTrackParam::PropagateTo(xk,bz)) return kFALSE;
+  //if (!AliExternalTrackParam::PropagateTo(xk,bz)) return kFALSE;
+  Double_t b[3]; GetBxByBz(b);
+  if (!AliExternalTrackParam::PropagateToBxByBz(xk,b)) return kFALSE;
 
   Double_t d = TMath::Sqrt((GetX()-oldX)*(GetX()-oldX) + 
                            (GetY()-oldY)*(GetY()-oldY) + 
@@ -277,8 +278,10 @@ AliTPCtrack::PropagateToVertex(const AliESDVertex *v,Double_t rho,Double_t x0)
   //-----------------------------------------------------------------
   Double_t oldX=GetX(), oldY=GetY(), oldZ=GetZ();
 
-  Double_t bz=GetBz();
-  if (!PropagateToDCA(v,bz,kVeryBig)) return kFALSE;
+  //Double_t bz=GetBz();
+  //if (!PropagateToDCA(v,bz,kVeryBig)) return kFALSE;
+  Double_t b[3]; GetBxByBz(b);
+  if (!PropagateToDCABxByBz(v,b,kVeryBig)) return kFALSE;
 
   Double_t d = TMath::Sqrt((GetX()-oldX)*(GetX()-oldX) + 
                            (GetY()-oldY)*(GetY()-oldY) + 
