@@ -1018,7 +1018,7 @@ Bool_t AliTRDresolution::PostProcess()
 {
   //fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
   if (!fContainer) {
-    Printf("ERROR: list not available");
+    AliError("ERROR: list not available");
     return kFALSE;
   }
   TGraph *gm= 0x0, *gs= 0x0;
@@ -1157,9 +1157,9 @@ Bool_t AliTRDresolution::PostProcess()
   Process2D(kMCtrackTRD, 5, &fg);         // snp PULL
   Process2D(kMCtrackTRD, 6, &fg, 1.e3);   // theta
   Process2D(kMCtrackTRD, 7, &fg);         // tgl PULL
-//   Process4D(kMCtrackTRD, 8, &fg, 1.e2);   // pt resolution
-//   Process4D(kMCtrackTRD, 9, &fg);         // 1/pt pulls
-//   Process4D(kMCtrackTRD, 10, &fg, 1.e2);  // p resolution
+  Process4D(kMCtrackTRD, 8, &fg, 1.e2);   // pt resolution
+  Process4D(kMCtrackTRD, 9, &fg);         // 1/pt pulls
+  Process4D(kMCtrackTRD, 10, &fg, 1.e2);  // p resolution
   fNRefFigures = 18;
 
   // TRACK TPC RESOLUTION/PULLS
@@ -1171,10 +1171,10 @@ Bool_t AliTRDresolution::PostProcess()
   Process2D(kMCtrackTPC, 5, &fg);      // snp pulls
   Process2D(kMCtrackTPC, 6, &fg, 1.e3);// theta resolution
   Process2D(kMCtrackTPC, 7, &fg);      // tgl pulls
-//   Process3D(kMCtrackTPC, 8, &fg, 1.e2);// pt resolution
-//   Process3D(kMCtrackTPC, 9, &fg);      // 1/pt pulls
-//   Process3D(kMCtrackTPC, 10, &fg, 1.e2);// p resolution
-//   Process3D(kMCtrackTPC, 11, &fg);      // p pulls
+  Process3D(kMCtrackTPC, 8, &fg, 1.e2);// pt resolution
+  Process3D(kMCtrackTPC, 9, &fg);      // 1/pt pulls
+  Process3D(kMCtrackTPC, 10, &fg, 1.e2);// p resolution
+  Process3D(kMCtrackTPC, 11, &fg);      // p pulls
   fNRefFigures = 24;
 
   // TRACK HMPID RESOLUTION/PULLS
@@ -1848,6 +1848,12 @@ Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t il)
 {
   if(!fGraphS || !fGraphM) return kFALSE;
 
+  // axis titles look up
+  Int_t nref = 0;
+  for(Int_t jp=0; jp<Int_t(kMCtrackTRD); jp++) nref+=fNElements[jp];
+  for(Int_t jc=0; jc<idx; jc++) nref++;
+  Char_t **at = fAxTitle[nref];
+
   TGraphErrors *gm = 0x0, *gs = 0x0;
   TObjArray *a0 = fGraphS, *a1 = 0x0;
   a1 = (TObjArray*)a0->At(kMCtrackTRD); a0 = a1;
@@ -1857,29 +1863,29 @@ Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t il)
     if(!(gs =  (TGraphErrors*)a0->At(is))) return kFALSE;
     if(!gs->GetN()) continue;
     gs->Draw(is ? "pl" : "apl");
+    gs->Sort(&TGraph::CompareY); Int_t n = gs->GetN();
+    PutTrendValue(Form("%s_%sSigMin%s", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gs->GetY()[0], 0.);
+    PutTrendValue(Form("%s_%sSigMax%s", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gs->GetY()[n-1], 0.);
+    gs->Sort(&TGraph::CompareX); 
   }
   gs =  (TGraphErrors*)a0->At(0);
-  // axis titles look up
-  Int_t nref = 0;
-  for(Int_t jp=0; jp<Int_t(kMCtrackTRD); jp++) nref+=fNElements[jp];
-  for(Int_t jc=0; jc<idx; jc++) nref++;
-  Char_t **at = fAxTitle[nref];
+
   // axis range
   TAxis *ax = gs->GetHistogram()->GetXaxis();
   ax->SetRangeUser(bb[0], bb[2]);
-  ax->SetTitle(*at);ax->CenterTitle();
+  ax->SetTitle(at[1]);ax->CenterTitle();
 
   ax = gs->GetHistogram()->GetYaxis();
   ax->SetRangeUser(bb[1], bb[3]);
   ax->SetTitleOffset(.5);ax->SetTitleSize(.06);
-  ax->SetTitle(*(++at));ax->CenterTitle();
+  ax->SetTitle(at[2]);ax->CenterTitle();
 
   TGaxis *gax = 0x0;
   gax = new TGaxis(bb[2], bb[1], bb[2], bb[3], bb[1], bb[3], 510, "+U");
   gax->SetLineColor(kRed);gax->SetLineWidth(2);gax->SetTextColor(kRed);
   //gax->SetVertical();
   gax->CenterTitle(); gax->SetTitleOffset(.5);gax->SetTitleSize(.06);
-  gax->SetTitle(*(++at)); gax->Draw();
+  gax->SetTitle(at[3]); gax->Draw();
 
 
   a0 = fGraphM;
@@ -1890,6 +1896,7 @@ Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t il)
     if(!(gm =  (TGraphErrors*)a0->At(is))) return kFALSE;
     if(!gm->GetN()) continue;
     gm->Draw("pl");
+    PutTrendValue(Form("%s_%sMean%s", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gm->GetMean(2), gm->GetRMS(2));  
   }
 
   return kTRUE;
@@ -1901,6 +1908,12 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t sel)
 {
   if(!fGraphS || !fGraphM) return kFALSE;
 
+  // axis titles look up
+  Int_t nref = 0;
+  for(Int_t jp=0; jp<Int_t(kMCtrackTPC); jp++) nref+=fNElements[jp];
+  for(Int_t jc=0; jc<sel; jc++) nref++;
+  Char_t **at = fAxTitle[nref];
+
   TGraphErrors *gm = 0x0, *gs = 0x0;
   TObjArray *a0 = fGraphS, *a1 = 0x0;
   a1 = (TObjArray*)a0->At(kMCtrackTPC); a0 = a1;
@@ -1909,29 +1922,28 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t sel)
     if(!(gs =  (TGraphErrors*)a0->At(is))) return kFALSE;
     if(!gs->GetN()) continue;
     gs->Draw(is ? "pl" : "apl");
+    gs->Sort(&TGraph::CompareY); Int_t n = gs->GetN();
+    PutTrendValue(Form("%s_%sSigMin%s", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gs->GetY()[0], 0.);
+    PutTrendValue(Form("%s_%sSigMax%s", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gs->GetY()[n-1], 0.);
+    gs->Sort(&TGraph::CompareX); 
   }
   gs =  (TGraphErrors*)a0->At(0);
-  // axis titles look up
-  Int_t nref = 0;
-  for(Int_t jp=0; jp<Int_t(kMCtrackTPC); jp++) nref+=fNElements[jp];
-  for(Int_t jc=0; jc<sel; jc++) nref++;
-  Char_t **at = fAxTitle[nref];
   // axis range
   TAxis *ax = gs->GetHistogram()->GetXaxis();
   ax->SetRangeUser(bb[0], bb[2]);
-  ax->SetTitle(*at);ax->CenterTitle();
+  ax->SetTitle(at[1]);ax->CenterTitle();
 
   ax = gs->GetHistogram()->GetYaxis();
   ax->SetRangeUser(bb[1], bb[3]);
   ax->SetTitleOffset(1.);ax->SetTitleSize(0.05);
-  ax->SetTitle(*(++at));ax->CenterTitle();
+  ax->SetTitle(at[2]);ax->CenterTitle();
 
   TGaxis *gax = 0x0;
   gax = new TGaxis(bb[2], bb[1], bb[2], bb[3], bb[1], bb[3], 510, "+U");
   gax->SetLineColor(kRed);gax->SetLineWidth(2);gax->SetTextColor(kRed);
   //gax->SetVertical();
   gax->CenterTitle(); gax->SetTitleOffset(.7);gax->SetTitleSize(0.05);
-  gax->SetTitle(*(++at)); gax->Draw();
+  gax->SetTitle(at[3]); gax->Draw();
 
 
   a0 = fGraphM;
@@ -1941,6 +1953,7 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t sel)
     if(!(gm =  (TGraphErrors*)a0->At(is))) return kFALSE;
     if(!gm->GetN()) continue;
     gm->Draw("pl");
+    PutTrendValue(Form("%s_%sMean%s", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gm->GetMean(2), gm->GetRMS(2));
   }
 
   return kTRUE;

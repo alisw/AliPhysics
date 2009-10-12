@@ -13,26 +13,25 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
 {
   Int_t map = ParseOptions(trd);
   AliTRDresolution *task = 0x0;
-  if(TSTBIT(map, kResolution)){
-    mgr->AddTask(task = new AliTRDresolution());
-    task->SetMCdata(mgr->GetMCtruthEventHandler());
-    task->SetPostProcess(kFALSE);
-    task->SetDebugLevel(1);
-    mgr->ConnectInput( task, 0, ci[0]);
-    mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
+  if(!TSTBIT(map, kResolution)) return;
+  mgr->AddTask(task = new AliTRDresolution());
+  task->SetMCdata(mgr->GetMCtruthEventHandler());
+  task->SetPostProcess(kFALSE);
+  task->SetDebugLevel(1);
+  mgr->ConnectInput( task, 0, ci[0]);
+  mgr->ConnectOutput(task, 0, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
+
+  // Create output containers for calibration tasks
+  const Int_t nc = 4;
+  const Char_t *cn[nc] = {"Cl", "Trklt", "MC_Cl", "MC_Trklt"}; 
+  AliAnalysisDataContainer *co[] = {0x0, 0x0, 0x0, 0x0};
+  for(Int_t ic = 0; ic<nc; ic++){
+    co[ic] = mgr->CreateContainer(Form("%s%s", task->GetName(), cn[ic]), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+    mgr->ConnectOutput(task, 1+ic, co[ic]);
   }
-    
+
   // Cluster Error Parameterization
   if(TSTBIT(map, kClErrParam)){
-    // Create output containers for calibration tasks
-    const Int_t nc = 4;
-    const Char_t *cn[nc] = {"Cl", "Trklt", "MC_Cl", "MC_Trklt"}; 
-    AliAnalysisDataContainer *co[] = {0x0, 0x0, 0x0, 0x0};
-    for(Int_t ic = 0; ic<nc; ic++){
-      co[ic] = mgr->CreateContainer(Form("%s%s", task->GetName(), cn[ic]), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-      mgr->ConnectOutput(task, 1+ic, co[ic]);
-    }
-
     AliTRDclusterResolution *taskCl = 0x0;
     mgr->AddTask(taskCl = new AliTRDclusterResolution("ESD", "ESD Cluster error parameterization"));
     taskCl->SetExB();
