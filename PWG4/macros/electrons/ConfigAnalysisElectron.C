@@ -26,24 +26,24 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
   enum kCutTypes {kTight2, kLooseTight, kTightLoose, kLoose2};
   Int_t kCutSet = kTight2;
   Double_t pOverEmin = 0.8;  //tight
-  Double_t pOverEmax = 1.1;  //tight
+  Double_t pOverEmax = 1.2;  //tight
   Double_t dRmax     = 0.02; //tight
   if (gSystem->Getenv("ELECUTSET")){
     kCutSet = atoi(gSystem->Getenv("ELECUTSET"));
   }
   if(kCutSet == kLooseTight) {
     pOverEmin = 0.6;  //loose
-    pOverEmax = 1.3;  //loose
+    pOverEmax = 1.4;  //loose
     dRmax     = 0.02; //tight
   }
   if(kCutSet == kTightLoose) {
     pOverEmin = 0.8;  //tight
-    pOverEmax = 1.1;  //tight
+    pOverEmax = 1.2;  //tight
     dRmax     = 0.05; //loose
   }
   if(kCutSet == kLoose2) {
     pOverEmin = 0.6;  //loose
-    pOverEmax = 1.3;  //loose
+    pOverEmax = 1.4;  //loose
     dRmax     = 0.05; //loose
   }    
 
