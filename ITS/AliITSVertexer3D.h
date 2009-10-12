@@ -24,6 +24,7 @@ class AliITSVertexer3D : public AliITSVertexer {
   virtual ~AliITSVertexer3D();
   virtual AliESDVertex* FindVertexForCurrentEvent(TTree *itsClusterTree);
   void FindVertex3DIterative();
+  void FindVertex3DIterativeMM();
   void FindVertex3D(TTree *itsClusterTree);
   AliESDVertex GetVertex3D() const {return fVert3D;}
   virtual void PrintStatus() const;
@@ -42,9 +43,10 @@ class AliITSVertexer3D : public AliITSVertexer {
   }
   void SetCoarseDiffPhiCut(Double_t dphi = 0.5){fCoarseDiffPhiCut=dphi;}
   void SetFineDiffPhiCut(Double_t dphi = 0.05){fFineDiffPhiCut=dphi;}
-  void SetCutOnPairs(Double_t cp = 0.1){fCutOnPairs = cp;}
+  void SetCutOnPairs(Double_t cp = 0.15){fCutOnPairs = cp;}
   void SetCoarseMaxRCut(Double_t rad = 2.5){fCoarseMaxRCut=rad;}
   void SetMaxRCut(Double_t rad = 0.5){fMaxRCut=rad;}
+  void SetMaxRCutAlgo2(Double_t rad = 0.2){fMaxRCut2=rad;}
   void SetZCutDiamond(Double_t zcut = 20.0){fZCutDiamond=zcut;}
   void SetMaxZCut(Double_t dz = 0.5){fMaxZCut=dz;}
   void SetDCACut(Double_t dca=0.1){fDCAcut=dca;} 
@@ -54,7 +56,7 @@ class AliITSVertexer3D : public AliITSVertexer {
   void SetMeanPPtSelTracks(Double_t fieldTesla);
   void SetMinDCAforPileup(Double_t mindist=0.1) {fDCAforPileup=mindist;}
   void SetDeltaPhiforPileup(Double_t dphi=0.01) {fDiffPhiforPileup=dphi;}
-  void SetPileupAlgo(UShort_t optalgo=0){fPileupAlgo=optalgo;}
+  void SetPileupAlgo(UShort_t optalgo=1){fPileupAlgo=optalgo;}
   void SetBinSizeR(Double_t siz=0.1){fBinSizeR=siz;}
   void SetBinSizeZ(Double_t siz=0.8){fBinSizeZ=siz;}
 
@@ -78,7 +80,8 @@ protected:
   Double_t fFineDiffPhiCut; // tight value of DeltaPhi for RP matching (2nd method) 
   Double_t fCutOnPairs; //cut on distance between pairs of tracklets 
   Double_t fCoarseMaxRCut; // cut on tracklet DCA to Z axis
-  Double_t fMaxRCut; // cut on tracklet DCA to beam axis
+  Double_t fMaxRCut;     // cut on tracklet DCA to beam axis
+  Double_t fMaxRCut2;    // cut on tracklet DCA to beam axis - algo2
   Double_t fZCutDiamond;   // cut on +-Z of the diamond
   Double_t fMaxZCut;   // cut on Z distance from estimated vertex
   Double_t fDCAcut; // cut on tracklet to tracklet and tracklet to vertex DCA
@@ -95,7 +98,7 @@ protected:
                            // 0->VertexerZ pileup algo
                            // 1->Unused RecPoints algo
 
-  ClassDef(AliITSVertexer3D,11);
+  ClassDef(AliITSVertexer3D,12);
 
 };
 

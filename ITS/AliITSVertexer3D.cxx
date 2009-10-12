@@ -45,6 +45,7 @@ AliITSVertexer3D::AliITSVertexer3D():
   fCutOnPairs(0.),
   fCoarseMaxRCut(0.),
   fMaxRCut(0.),
+  fMaxRCut2(0.),
   fZCutDiamond(0.),
   fMaxZCut(0.),
   fDCAcut(0.),
@@ -65,6 +66,7 @@ AliITSVertexer3D::AliITSVertexer3D():
   SetCutOnPairs();
   SetCoarseMaxRCut();
   SetMaxRCut();
+  SetMaxRCutAlgo2();
   SetZCutDiamond();
   SetMaxZCut();
   SetDCACut();
@@ -108,10 +110,19 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
   fCurrentVertex = NULL;
 
   Int_t nolines = FindTracklets(itsClusterTree,0);
+  Int_t rc;
   if(nolines>=2){
-    Int_t rc=Prepare3DVertex(0);
-    if(fPileupAlgo == 2 && rc == 0) FindVertex3DIterative();
-    else if(fPileupAlgo<2 && rc == 0) FindVertex3D(itsClusterTree);
+    rc=Prepare3DVertex(0);
+    if(fVert3D.GetNContributors()>0){
+      fLines.Clear("C");
+      Int_t nolines = FindTracklets(itsClusterTree,1);
+      if(nolines>=2){
+	rc=Prepare3DVertex(1);
+	if(fPileupAlgo == 2 && rc == 0) FindVertex3DIterative();
+	else if(fPileupAlgo<2 && rc == 0) FindVertex3D(itsClusterTree);
+	if(rc!=0) fVert3D.SetNContributors(0); // exclude this vertex      
+      }
+    }
   }
 
   if(!fCurrentVertex){
@@ -140,25 +151,7 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
 
 //______________________________________________________________________
 void AliITSVertexer3D::FindVertex3D(TTree *itsClusterTree){
-  // 3D algorithm
-  /*  uncomment to debug
-      printf("Vertex found in first iteration:\n");
-      fVert3D.Print();
-      printf("Start second iteration\n");
-      end of debug lines  */
-  if(fVert3D.GetNContributors()>0){
-    fLines.Clear("C");
-    Int_t nolines = FindTracklets(itsClusterTree,1);
-    if(nolines>=2){
-      Int_t rc=Prepare3DVertex(1);
-      if(rc!=0) fVert3D.SetNContributors(0); // exclude this vertex
-    }
-  }
-  /*  uncomment to debug 
-      printf("Vertex found in second iteration:\n");
-      fVert3D.Print();
-      end of debug lines  */ 
-  
+ 
   Double_t vRadius=TMath::Sqrt(fVert3D.GetXv()*fVert3D.GetXv()+fVert3D.GetYv()*fVert3D.GetYv());
   if(vRadius<GetPipeRadius() && fVert3D.GetNContributors()>0){
     Double_t position[3]={fVert3D.GetXv(),fVert3D.GetYv(),fVert3D.GetZv()};
@@ -186,6 +179,216 @@ void AliITSVertexer3D::FindVertex3D(TTree *itsClusterTree){
 
 //______________________________________________________________________
 void AliITSVertexer3D::FindVertex3DIterative(){
+  //
+
+  Int_t nLines=fLines.GetEntriesFast();
+  Int_t maxPoints=nLines*(nLines-1)/2;
+  Double_t* xP=new Double_t[maxPoints];
+  Double_t* yP=new Double_t[maxPoints];
+  Double_t* zP=new Double_t[maxPoints];
+  Int_t* index1=new Int_t[maxPoints];
+  Int_t* index2=new Int_t[maxPoints];
+  Double_t xbeam=fVert3D.GetXv();
+  Double_t ybeam=fVert3D.GetYv();
+
+  Int_t iPoint=0;
+  for(Int_t ilin1=0; ilin1<nLines; ilin1++){
+    AliStrLine *l1 = (AliStrLine*)fLines.At(ilin1);
+    for(Int_t ilin2=ilin1+1; ilin2<nLines; ilin2++){
+      AliStrLine *l2 = (AliStrLine*)fLines.At(ilin2);
+      Double_t dca=l1->GetDCA(l2);
+      if(dca > fDCAcut || dca<0.00001) continue;
+      Double_t point[3];
+      Int_t retc = l1->Cross(l2,point);
+      if(retc<0)continue;
+      Double_t rad=TMath::Sqrt(point[0]*point[0]+point[1]*point[1]);
+      if(rad>fCoarseMaxRCut)continue;
+      Double_t distFromBeam=TMath::Sqrt((point[0]-xbeam)*(point[0]-xbeam)+(point[1]-ybeam)*(point[1]-ybeam));
+      if(distFromBeam>fMaxRCut2) continue;
+      xP[iPoint]=point[0];
+      yP[iPoint]=point[1];
+      zP[iPoint]=point[2];
+      index1[iPoint]=ilin1;
+      index2[iPoint]=ilin2;
+      iPoint++;
+    }
+  }
+  Int_t npoints=iPoint++;
+  Int_t index=0;
+  Short_t* mask=new Short_t[npoints];
+  for(Int_t ip=0;ip<npoints;ip++) mask[ip]=-1;
+ 
+  for(Int_t ip1=0;ip1<npoints;ip1++){
+    if(mask[ip1]==-1) mask[ip1]=index++;
+    for(Int_t ip2=ip1+1; ip2<npoints; ip2++){
+      if(mask[ip2]==mask[ip1] && mask[ip2]!=-1) continue;
+      Double_t dist2=(xP[ip1]-xP[ip2])*(xP[ip1]-xP[ip2]);
+      dist2+=(yP[ip1]-yP[ip2])*(yP[ip1]-yP[ip2]);
+      dist2+=(zP[ip1]-zP[ip2])*(zP[ip1]-zP[ip2]);
+      if(dist2<fCutOnPairs*fCutOnPairs){ 
+	if(mask[ip2]==-1) mask[ip2]=mask[ip1];
+	else{
+	  for(Int_t ip=0; ip<npoints;ip++){
+	    if(mask[ip]==mask[ip2]) mask[ip]=mask[ip1];
+	  }
+	}
+      }
+    }
+  }
+
+
+  // Count multiplicity of trackelts in clusters
+  UInt_t* isIndUsed=new UInt_t[index+1];
+  for(Int_t ind=0;ind<index+1;ind++) isIndUsed[ind]=0;
+  for(Int_t ip=0; ip<npoints;ip++){
+    Int_t ind=mask[ip];
+    isIndUsed[ind]++;
+  }
+
+  // Count clusters/vertices and sort according to multiplicity
+  Int_t nClusters=0;
+  Int_t* sortedIndex=new Int_t[index+1];
+  for(Int_t ind1=0;ind1<index+1;ind1++){
+    if(isIndUsed[ind1]<=1) isIndUsed[ind1]=0;
+    else nClusters++;
+    UInt_t cap=9999999;
+    if(ind1>0) cap=isIndUsed[sortedIndex[ind1-1]];
+    UInt_t bigger=0;
+    Int_t biggerindex=-1;
+    for(Int_t ind2=0;ind2<index+1;ind2++){
+      Bool_t use=kTRUE;
+      for(Int_t ind3=0; ind3<ind1; ind3++)
+	if(ind2==sortedIndex[ind3]) use=kFALSE;
+      if(use && isIndUsed[ind2]>bigger && isIndUsed[ind2]<=cap){
+	bigger=isIndUsed[ind2];
+	biggerindex=ind2;
+      }
+    }
+    sortedIndex[ind1]=biggerindex;    
+  }
+  AliDebug(3,Form("Number of clusters before merging = %d\n",nClusters));
+
+  // Assign lines to clusters/vertices and merge clusters which share 1 line
+  Int_t nClustersAfterMerge=nClusters;
+  Int_t* belongsTo=new Int_t[nLines];
+  for(Int_t ilin=0; ilin<nLines; ilin++) belongsTo[ilin]=-1;
+  for(Int_t iclu=0;iclu<nClusters;iclu++){
+    Int_t actualCluIndex=iclu;
+    for(Int_t ip=0; ip<npoints;ip++){
+      if(mask[ip]==sortedIndex[iclu]){
+	Int_t ind1=index1[ip];
+	if(belongsTo[ind1]==-1) belongsTo[ind1]=actualCluIndex;
+	else if(belongsTo[ind1]<actualCluIndex){
+	  Int_t newCluIndex=belongsTo[ind1];
+	  for(Int_t ilin=0; ilin<nLines; ilin++){
+	    if(belongsTo[ilin]==actualCluIndex) belongsTo[ilin]=newCluIndex;
+	  }
+	  AliDebug(10,Form("Merged cluster %d with %d\n",actualCluIndex,newCluIndex));
+	  actualCluIndex=newCluIndex;
+	  nClustersAfterMerge--;
+	}
+	Int_t ind2=index2[ip];      
+	if(belongsTo[ind2]==-1) belongsTo[ind2]=actualCluIndex;
+	else if(belongsTo[ind2]<actualCluIndex){
+	  Int_t newCluIndex=belongsTo[ind2];
+	  for(Int_t ilin=0; ilin<nLines; ilin++){
+	    if(belongsTo[ilin]==actualCluIndex) belongsTo[ilin]=newCluIndex;
+	  }
+	  AliDebug(10,Form("Merged cluster %d with %d\n",actualCluIndex,newCluIndex));
+	  actualCluIndex=newCluIndex;
+	  nClustersAfterMerge--;
+	}
+      }
+    }
+  }
+  AliDebug(3,Form("Number of clusters after merging = %d\n",nClustersAfterMerge));
+  
+  // Count lines associated to each cluster/vertex
+  UInt_t *cluSize=new UInt_t[nClusters];
+  for(Int_t iclu=0;iclu<nClusters;iclu++){ 
+    cluSize[iclu]=0;
+    for(Int_t ilin=0; ilin<nLines; ilin++){
+      if(belongsTo[ilin]==iclu) cluSize[iclu]++;
+    }
+  }
+
+  // Count good vertices (>1 associated tracklet)
+  UInt_t nGoodVert=0;
+  for(Int_t iclu=0;iclu<nClusters;iclu++){ 
+    AliDebug(3,Form("Vertex %d Size=%d\n",iclu,cluSize[iclu]));
+    if(cluSize[iclu]>1) nGoodVert++;
+  }
+    
+  AliDebug(1,Form("Number of good vertices = %d\n",nGoodVert));
+  // Calculate vertex coordinates for each cluster
+  if(nGoodVert>0){
+    fVertArray = new AliESDVertex[nGoodVert];
+    Int_t iVert=0;
+    for(Int_t iclu=0;iclu<nClusters;iclu++){
+      Int_t size=cluSize[iclu];
+      if(size>1){
+	AliStrLine **arrlin = new AliStrLine*[size];
+	Int_t nFilled=0;
+	for(Int_t ilin=0; ilin<nLines; ilin++){
+	  if(belongsTo[ilin]==iclu){
+	    arrlin[nFilled++] = dynamic_cast<AliStrLine*>(fLines[ilin]);
+	  }
+	}      
+	AliDebug(3,Form("Vertex %d  N associated tracklets = %d out of %d\n",iVert,size,nFilled));
+
+	fVertArray[iVert]=AliVertexerTracks::TrackletVertexFinder(arrlin,nFilled);
+	Double_t peak[3];
+	fVertArray[iVert].GetXYZ(peak);
+	AliStrLine **arrlin2 = new AliStrLine*[size];
+	Int_t nFilled2=0;	
+	for(Int_t i=0; i<nFilled;i++){
+	  AliStrLine *l1 = arrlin[i];	  
+	  if(l1->GetDistFromPoint(peak)< fDCAcut)
+	    arrlin2[nFilled2++] = dynamic_cast<AliStrLine*>(l1);
+	}
+	if(nFilled2>1){
+	  AliDebug(3,Form("Vertex %d  recalculated with %d tracklets\n",iVert,nFilled2));
+	  fVertArray[iVert]=AliVertexerTracks::TrackletVertexFinder(arrlin2,nFilled2);
+	}
+ 	delete [] arrlin;
+ 	delete [] arrlin2;
+	++iVert;
+      }
+    }
+    
+    if(nGoodVert > 1){
+      fIsPileup = kTRUE;
+      fNTrpuv = fVertArray[1].GetNContributors();
+      fZpuv = fVertArray[1].GetZv();
+    }
+    
+    Double_t vRadius=TMath::Sqrt(fVertArray[0].GetXv()*fVertArray[0].GetXv()+fVertArray[0].GetYv()*fVertArray[0].GetYv());
+    if(vRadius<GetPipeRadius() && fVertArray[0].GetNContributors()>0){
+      Double_t position[3]={fVertArray[0].GetXv(),fVertArray[0].GetYv(),fVertArray[0].GetZv()};
+      Double_t covmatrix[6];
+      fVertArray[0].GetCovMatrix(covmatrix);
+      Double_t chi2=99999.;
+      Int_t    nContr=fVertArray[0].GetNContributors();
+      fCurrentVertex = new AliESDVertex(position,covmatrix,chi2,nContr);    
+      fCurrentVertex->SetTitle("vertexer: 3D");
+      fCurrentVertex->SetName("SPDVertex3D");
+      fCurrentVertex->SetDispersion(fVertArray[0].GetDispersion());  
+    }
+  }
+
+  delete [] index1;
+  delete [] index2;
+  delete [] mask;
+  delete [] isIndUsed;
+  delete [] sortedIndex;
+  delete [] belongsTo;
+  delete [] cluSize;
+  delete [] xP;
+  delete [] yP;
+  delete [] zP;
+}
+//______________________________________________________________________
+void AliITSVertexer3D::FindVertex3DIterativeMM(){
   // Defines the AliESDVertex for the current event
   Int_t numsor=fLines.GetEntriesFast()*(fLines.GetEntriesFast()-1)/2;
   //cout<<"AliITSVertexer3D::FindVertexForCurentEvent: Number of tracklets selected for vertexing "<<fLines.GetEntriesFast()<<"; Number of pairs: "<<numsor<<endl;
@@ -293,17 +496,17 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   Double_t deltaPhi=fCoarseDiffPhiCut;
   Double_t deltaR=fCoarseMaxRCut;
   Double_t dZmax=fZCutDiamond;
-  if(fPileupAlgo == 2){
-    deltaPhi=fFineDiffPhiCut;
-    deltaR=fMaxRCut;
-    if(optCuts != 0)AliWarning(Form("fPileupAlgo=2 AND optCuts=%d has been selected. It should be 0",optCuts));
-  } else if(optCuts==1){
+  if(optCuts==1){
     xbeam=fVert3D.GetXv();
     ybeam=fVert3D.GetYv();
     zvert=fVert3D.GetZv();
     deltaPhi = fDiffPhiMax; 
     deltaR=fMaxRCut;
     dZmax=fMaxZCut;
+    if(fPileupAlgo == 2){
+      dZmax=fZCutDiamond;
+      deltaR=fMaxRCut2;
+    }
   } else if(optCuts==2){
     xbeam=fVert3D.GetXv();
     ybeam=fVert3D.GetYv();
@@ -341,7 +544,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   AliStrLine zeta(a,b,kTRUE);
   static Double_t bField=TMath::Abs(AliTracker::GetBz()/10.); //T
   SetMeanPPtSelTracks(bField);
-  
+
   Int_t nolines = 0;
   // Loop on modules of layer 1
   for(Int_t modul1= firstL1; modul1<=lastL1;modul1++){   // Loop on modules of layer 1
@@ -468,10 +671,6 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   Double_t ybeam=GetNominalPos()[1];
   Double_t zvert=0.;
   Double_t deltaR=fCoarseMaxRCut;
-  if(fPileupAlgo == 2) {
-    deltaR=fMaxRCut;
-    if(optCuts!=0)AliWarning(Form("fPileupAlgo=2 AND optCuts=%d. It should be 0",optCuts));
-  }
   Double_t dZmax=fZCutDiamond;
   if(optCuts==1){
     xbeam=fVert3D.GetXv();
@@ -479,6 +678,10 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     zvert=fVert3D.GetZv();
     deltaR=fMaxRCut;
     dZmax=fMaxZCut;
+    if(fPileupAlgo == 2){ 
+      dZmax=fZCutDiamond;
+      deltaR=fMaxRCut2;
+    }
   }else if(optCuts==2){
     xbeam=fVert3D.GetXv();
     ybeam=fVert3D.GetYv();
@@ -494,12 +697,9 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   Int_t nbrcs=(Int_t)((rh-rl)/(fBinSizeR*2.)+0.0001);
   Int_t nbzcs=(Int_t)((zh-zl)/(fBinSizeZ*2.)+0.0001);
 
-  TH3F *h3d = NULL;
-  TH3F *h3dcs = NULL;
-  if(fPileupAlgo !=2){
-    h3d = new TH3F("h3d","xyz distribution",nbr,rl,rh,nbr,rl,rh,nbz,zl,zh);
-    h3dcs = new TH3F("h3dcs","xyz distribution",nbrcs,rl,rh,nbrcs,rl,rh,nbzcs,zl,zh);
-  }
+  TH3F *h3d = new TH3F("h3d","xyz distribution",nbr,rl,rh,nbr,rl,rh,nbz,zl,zh);
+  TH3F *h3dcs = new TH3F("h3dcs","xyz distribution",nbrcs,rl,rh,nbrcs,rl,rh,nbzcs,zl,zh);
+
   // cleanup of the TCLonesArray of tracklets (i.e. fakes are removed)
   Int_t *validate = new Int_t [fLines.GetEntriesFast()];
   for(Int_t i=0; i<fLines.GetEntriesFast();i++)validate[i]=0;
@@ -522,10 +722,8 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
       if(raddist>deltaR)continue;
       validate[i]=1;
       validate[j]=1;
-      if(fPileupAlgo != 2){
-	h3d->Fill(point[0],point[1],point[2]);
-	h3dcs->Fill(point[0],point[1],point[2]);
-      }
+      h3d->Fill(point[0],point[1],point[2]);
+      h3dcs->Fill(point[0],point[1],point[2]);
     }
   }
 
@@ -535,10 +733,8 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   for(Int_t i=0; i<fLines.GetEntriesFast();i++)if(validate[i]>=1)numbtracklets++;
   if(numbtracklets<2){
     delete [] validate; 
-    if(fPileupAlgo != 2){
-      delete h3d; 
-      delete h3dcs; 
-    }
+    delete h3d; 
+    delete h3dcs; 
     return retcode; 
   }
 
@@ -549,10 +745,12 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   AliDebug(1,Form("Number of tracklets (after compress)%d ",fLines.GetEntriesFast()));
   delete [] validate;
 
-  // Exit here if Pileup Algorithm 2 has been chosen
-  if(fPileupAlgo == 2)return 0;
-  //         
-
+  // Exit here if Pileup Algorithm 2 has been chosen during second loop
+  if(fPileupAlgo == 2 && optCuts==1){
+    delete h3d; 
+    delete h3dcs;     
+    return 0;
+  }
 
   //        Find peaks in histos
 
@@ -771,14 +969,19 @@ void AliITSVertexer3D::PileupFromZ(){
 //________________________________________________________
 void AliITSVertexer3D::PrintStatus() const {
   // Print current status
-  printf("=======================================================\n");
-  printf("Loose cut on Delta Phi %f\n",fCoarseDiffPhiCut);
-  printf("Cut on tracklet DCA to Z axis %f\n",fCoarseMaxRCut);
-  printf("Cut on tracklet DCA to beam axis %f\n",fMaxRCut);
+  printf("========= First step selections =====================\n");
   printf("Cut on diamond (Z) %f\n",fZCutDiamond);
+  printf("Loose cut on Delta Phi %f\n",fCoarseDiffPhiCut);
+  printf("Loose cut on tracklet DCA to Z axis %f\n",fCoarseMaxRCut);
   printf("Cut on DCA - tracklet to tracklet and to vertex %f\n",fDCAcut);
+  printf("========= Second step selections ====================\n");
+  printf("Cut on tracklet-to-first-vertex Z distance %f\n",fMaxZCut);
   printf("Max Phi difference: %f\n",fDiffPhiMax);
+  printf("Cut on tracklet DCA to beam axis %f\n",fMaxRCut);
+  printf("Cut on tracklet DCA to beam axis (algo2) %f\n",fMaxRCut2);
+  printf("========= Pileup selections =========================\n");
   printf("Pileup algo: %d\n",fPileupAlgo);
-  printf("Min DCA to 1st vetrtex for pileup: %f\n",fDCAforPileup);
+  printf("Min DCA to 1st vertex for pileup (algo 0 and 1): %f\n",fDCAforPileup);
+  printf("Cut on distance between pair-vertices  (algo 2): %f\n",fCutOnPairs);
   printf("=======================================================\n");
 }
