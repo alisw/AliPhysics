@@ -55,7 +55,7 @@ ClassImp(AliAnaElectron)
 //____________________________________________________________________________
 AliAnaElectron::AliAnaElectron() 
 : AliAnaPartCorrBaseClass(),fCalorimeter(""),
-  fpOverEmin(0.),fpOverEmax(0.),fResidualCut(0.),
+  fpOverEmin(0.),fpOverEmax(0.),fResidualCut(0.),fMinClusEne(0.),
   fDrCut(0.),fPairDcaCut(0.),fDecayLenCut(0.),fImpactCut(0.),
   fAssocPtCut(0.),fMassCut(0.),fSdcaCut(0.),fITSCut(0),
   fNTagTrkCut(0),fIPSigCut(0.),fJetEtaCut(0.3),fJetPhiMin(1.8),fJetPhiMax(2.9),
@@ -94,7 +94,8 @@ AliAnaElectron::AliAnaElectron()
   fhBJetPt1x4(0),fhBJetPt2x3(0),fhBJetPt3x2(0),
   fhFakeJetPt1x4(0),fhFakeJetPt2x3(0),fhFakeJetPt3x2(0),fhDVMJet(0),
   //MC rate histograms/ntuple
-  fMCEleNtuple(0),fhMCBJetElePt(0),fhMCBHadronElePt(0),fhPtMCHadron(0),fhPtMCElectron(0)
+  fMCEleNtuple(0),fhMCBJetElePt(0),fhMCBHadronElePt(0),fhPtMCHadron(0),fhPtMCElectron(0),
+  fhMCXYConversion(0),fhMCRadPtConversion(0)
 {
   //default ctor
   
@@ -106,7 +107,8 @@ AliAnaElectron::AliAnaElectron()
 //____________________________________________________________________________
 AliAnaElectron::AliAnaElectron(const AliAnaElectron & g) 
   : AliAnaPartCorrBaseClass(g),fCalorimeter(g.fCalorimeter),
-    fpOverEmin(g.fpOverEmin),fpOverEmax(g.fpOverEmax),fResidualCut(g.fResidualCut),
+    fpOverEmin(g.fpOverEmin),fpOverEmax(g.fpOverEmax),
+    fResidualCut(g.fResidualCut),fMinClusEne(g.fMinClusEne),
     fDrCut(g.fDrCut),fPairDcaCut(g.fPairDcaCut),fDecayLenCut(g.fDecayLenCut),fImpactCut(g.fImpactCut),
     fAssocPtCut(g.fAssocPtCut),fMassCut(g.fMassCut),fSdcaCut(g.fSdcaCut),fITSCut(g.fITSCut),
     fNTagTrkCut(g.fNTagTrkCut),fIPSigCut(g.fIPSigCut),
@@ -159,7 +161,8 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
     //MC rate histograms/ntuple
     fMCEleNtuple(g.fMCEleNtuple),fhMCBJetElePt(g.fhMCBJetElePt),
     fhMCBHadronElePt(g.fhMCBHadronElePt),
-    fhPtMCHadron(g.fhPtMCHadron),fhPtMCElectron(g.fhPtMCElectron)
+    fhPtMCHadron(g.fhPtMCHadron),fhPtMCElectron(g.fhPtMCElectron),
+    fhMCXYConversion(g.fhMCXYConversion),fhMCRadPtConversion(g.fhMCRadPtConversion)
 {
   // cpy ctor
   
@@ -175,6 +178,7 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fpOverEmin = g.fpOverEmin;
   fpOverEmax = g.fpOverEmax;
   fResidualCut = g.fResidualCut;
+  fMinClusEne = g.fMinClusEne;
   fDrCut = g.fDrCut;
   fPairDcaCut = g.fPairDcaCut;
   fDecayLenCut = g.fDecayLenCut;
@@ -268,6 +272,8 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fMCEleNtuple = g.fMCEleNtuple; fhMCBJetElePt = g.fhMCBJetElePt; 
   fhMCBHadronElePt = g.fhMCBHadronElePt;
   fhPtMCHadron = g.fhPtMCHadron; fhPtMCElectron = g.fhPtMCElectron; 
+  fhMCXYConversion = g.fhMCXYConversion;
+  fhMCRadPtConversion = g.fhMCRadPtConversion;
 
   return *this;
   
@@ -439,7 +445,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
 
     //electrons from various MC sources
     fhPhiConversion = new TH2F("hPhiConversion","Conversion Electron phi vs pT",nptbins,ptmin,ptmax,nphibins,phimin,phimax);
-    fhEtaConversion = new TH2F("hEtaConversion","Conversion Electron eta vs. eta",nptbins,ptmin,ptmax,netabins,etamin,etamax);
+    fhEtaConversion = new TH2F("hEtaConversion","Conversion Electron eta vs. pT",nptbins,ptmin,ptmax,netabins,etamin,etamax);
 
     outputContainer->Add(fhPhiConversion);
     outputContainer->Add(fhEtaConversion);
@@ -495,10 +501,15 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     //4 - conversion, 5 - Dalitz, 6 - W and Z, 7 - junk/unknown
     fhPtMCElectron = new TH2F("hPtMCElectron","MC electrons from various sources w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
 
+    fhMCXYConversion = new TH2F("hMCXYConversion","XvsY of conversion electrons",400,-400.,400.,400,-400.,400.);
+    fhMCRadPtConversion = new TH2F("hMCRadPtConversion","Radius vs pT of conversion electrons",200,0.,400.,nptbins,ptmin,ptmax);
+
     outputContainer->Add(fhMCBJetElePt);
     outputContainer->Add(fhMCBHadronElePt);
     outputContainer->Add(fhPtMCHadron);
     outputContainer->Add(fhPtMCElectron);
+    outputContainer->Add(fhMCXYConversion);
+    outputContainer->Add(fhMCRadPtConversion);
 
   }//Histos with MC
   
@@ -516,6 +527,8 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   parList+=onePar ;  
   sprintf(onePar,"fResidualCut: %f\n",fResidualCut) ;
   parList+=onePar ;  
+  sprintf(onePar,"fMinClusEne: %f\n",fMinClusEne) ;
+  parList+=onePar ;
   sprintf(onePar,"---DVM Btagging\n");
   parList+=onePar ;
   sprintf(onePar,"max IP-cut (e,h): %f\n",fImpactCut);
@@ -579,8 +592,9 @@ void AliAnaElectron::InitParameters()
 
   fCalorimeter = "EMCAL" ;
   fpOverEmin = 0.5;
-  fpOverEmax = 1.5;
+  fpOverEmax = 1.2;
   fResidualCut = 0.02;
+  fMinClusEne = 4.0;
   //DVM B-tagging
   fDrCut       = 1.0; 
   fPairDcaCut  = 0.02;
@@ -646,11 +660,11 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     fhImpactXY->Fill(imp[0]);
 
     //JLK CHECK
-    AliESDtrack esdTrack(track);
-    Double_t tpcpid[AliPID::kSPECIES];
-    esdTrack.GetTPCpid(tpcpid);
-    Double_t eProb = tpcpid[AliPID::kElectron];
-    if(eProb > 0) printf("<%d> ESD eProb = %2.2f\n",itrk,eProb);
+    //AliESDtrack esdTrack(track);
+    //Double_t tpcpid[AliPID::kSPECIES];
+    //esdTrack.GetTPCpid(tpcpid);
+    //Double_t eProb = tpcpid[AliPID::kElectron];
+    //if(eProb > 0) printf("<%d> ESD eProb = %2.2f\n",itrk,eProb);
 
     AliAODPid* pid = (AliAODPid*) track->GetDetPid();
     if(pid == 0) {
@@ -707,9 +721,27 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	Bool_t emcEle = kFALSE;      
 	//For tracks in EMCAL acceptance, pair them with all clusters
 	//and fill the dEta vs dPhi for these pairs:
+
+	Double_t minR  = 99;
+        Double_t minPe =-1;
+        Double_t minEp =-1;
+        Double_t minMult = -1;
+        Double_t minPt   = -1;
+
 	for(Int_t iclus = 0; iclus < ntot; iclus++) {
 	  AliAODCaloCluster * clus = (AliAODCaloCluster*) (cl->At(iclus));
 	  if(!clus) continue;
+
+	  //As of 11-Oct-2009
+	  //only select "good" clusters	  
+	  if (clus->GetNCells()       < 2    ) continue;
+          if (clus->GetNCells()       > 30   ) continue;
+          if (clus->E()               < fMinClusEne ) continue;
+          if (clus->GetDispersion()   > 1    ) continue;
+          if (clus->GetM20()          > 0.4  ) continue;
+          if (clus->GetM02()          > 0.4  ) continue;
+          if (clus->GetM20()          < 0.03 ) continue;
+          if (clus->GetM02()          < 0.03 ) continue;
 	  
 	  Double_t x[3];
 	  clus->GetPosition(x);
@@ -733,10 +765,21 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	  //Good match
 	  if(res < fResidualCut) {
 	    fh2dEtadPhiMatched->Fill(deta,dphi);
+	    fh2MatchdEdx->Fill(track->P(),dEdx);
 	    iCluster = iclus;
-	    
-	    Int_t cmctag = -1;
-	    
+
+	    Double_t energy = clus->E(); 
+	    if(energy > 0) pOverE = tmom/energy;
+
+	    if (res< minR) {
+              minR  = res;
+              minPe = pOverE;
+              minEp = energy/tmom;
+              minMult = clus->GetNCells() ;
+              minPt = track->Pt();
+            }
+
+	    Int_t cmctag = -1;	    
 	    if(IsDataMC()) {  
 	      //Do you want the cluster or the track label?
 	      Int_t input = 0;
@@ -747,39 +790,33 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	    if(fWriteNtuple) {
 	      fEleNtuple->Fill(tmctag,cmctag,track->Pt(),track->Phi(),track->Eta(),track->P(),clus->E(),deta,dphi,clus->GetNCells(),dEdx,pidProb,imp[0],imp[1]);
 	    }
-	    
-	    fh2MatchdEdx->Fill(track->P(),dEdx);
-	    
-	    Double_t energy = clus->E(); 
-	    if(energy > 0) pOverE = tmom/energy;
-	    Int_t mult = clus->GetNCells();
-	    if(mult < 2 &&  GetDebug() > 0) printf("Single digit cluster.\n");
-	    
-	    fh3pOverE->Fill(track->Pt(),pOverE ,mult);
-            fh3EOverp->Fill(track->Pt(),energy/tmom ,mult);
-            if (trkEle) {
-              fh3pOverE2->Fill(track->Pt(),pOverE,mult);
-              fh3EOverp2->Fill(track->Pt(),energy/tmom,mult);
-            }
-            if (tpcEle) {
-              fh3pOverE3->Fill(track->Pt(),pOverE,mult);
-              fh3EOverp3->Fill(track->Pt(),energy/tmom,mult);
-            }
 
-	    //////////////////////////////
-	    //Electron cuts happen here!//
-	    //////////////////////////////
-	    if(pOverE > fpOverEmin && pOverE < fpOverEmax) emcEle = kTRUE;
 	  } else {
 	    fh2dEtadPhiUnmatched->Fill(deta,dphi);
-	  }
-	  
-	} //calocluster loop
+	  }//res cut
+	}//calo cluster loop
+
+	fh3pOverE->Fill(minPt,minPe ,minMult);
+	fh3EOverp->Fill(minPt,minEp ,minMult);
+	if (trkEle) {
+	  fh3pOverE2->Fill(minPt,minPe ,minMult);
+	  fh3EOverp2->Fill(minPt,minEp ,minMult);
+	}
+	if (tpcEle) {
+	  fh3pOverE3->Fill(minPt,minPe ,minMult);
+	  fh3EOverp3->Fill(minPt,minEp ,minMult);
+	}
 	
+	//////////////////////////////
+	//Electron cuts happen here!//
+	//////////////////////////////
+	if(minPe > fpOverEmin && minPe < fpOverEmax) emcEle = kTRUE;
+
 	///////////////////////////
 	//Fill AOD with electrons//
 	///////////////////////////
-	if(emcEle || trkEle) {
+	//Take all emcal electrons, but the others only if pT < 10 GeV
+	if(emcEle || ( (tpcEle || trkEle) && track->Pt() < 10.) ) {
 
 	  //B-tagging
 	  if(GetDebug() > 1) printf("Found Electron - do b-tagging\n");
@@ -793,10 +830,12 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	  tr.SetLabel(track->GetLabel());
 	  tr.SetCaloLabel(iCluster,-1); //sets the indices of the original caloclusters
 	  tr.SetTrackLabel(itrk,-1); //sets the indices of the original tracks
-	  if(emcEle) //PID determined by EMCAL
+	  if(emcEle) {//PID determined by EMCAL
 	    tr.SetDetector(fCalorimeter);
-	  else
+	  } else {
 	    tr.SetDetector("CTS"); //PID determined by CTS
+	  }
+
 	  if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
 	  //Make this preserve sign of particle
 	  if(track->Charge() < 0) tr.SetPdg(11); //electron is 11
@@ -1014,7 +1053,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     //with Minv near a relevant resonance
     if(!photonic) {
       fhPtNPEleTTE->Fill(ptele,0); //0 = no MC info
-      if(ele->GetDetector() == "EMCAL") fhPtNPEleEMCAL->Fill(ptele,0);
+      if(ele->GetDetector() == fCalorimeter) fhPtNPEleEMCAL->Fill(ptele,0);
       if(IsDataMC()) {
 	fhPtNPEleTTE->Fill(ptele,GetMCSource(mctag));
 	if(ele->GetDetector() == "EMCAL") fhPtNPEleEMCAL->Fill(ptele,GetMCSource(mctag));
@@ -1155,7 +1194,12 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       //CHECK THAT THIS IS CORRECTLY FILLED - SHOULD WE USE MCSOURCE HERE?
       fhPtMCElectron->Fill(mom.Pt(),0);  //0 = unfiltered
       fhPtMCElectron->Fill(mom.Pt(),GetMCSource(mctag));
-      
+
+      if(GetMCSource(mctag) == 4) {//conversion
+	fhMCXYConversion->Fill(vx,vy);
+	fhMCRadPtConversion->Fill(TMath::Sqrt(vx*vx+vy*vy),mom.Pt());
+      }
+	
       //fill ntuple
       if(fWriteNtuple) {
 	fMCEleNtuple->Fill(mctag,mom.Pt(),mom.Phi(),mom.Eta(),vx,vy,vz);
@@ -1639,6 +1683,9 @@ Int_t AliAnaElectron::GetMCSource(Int_t tag)
   //the number returned is the bin along one axis of 2-d histograms in
   //which to fill this electron
 
+  //Do this first
+  if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) return 4;
+
   if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)) {
     //Bottom
     if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromB)) return 1;
@@ -1647,8 +1694,8 @@ Int_t AliAnaElectron::GetMCSource(Int_t tag)
 	    && !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromB)) return 2;
     //Charm from bottom
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEFromCFromB)) return 3;
-    //Conversion
-    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) return 4;
+    //    //Conversion
+    //else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) return 4;
     //Dalitz
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) 
        || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) 
