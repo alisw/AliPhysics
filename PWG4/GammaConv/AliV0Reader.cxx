@@ -99,6 +99,7 @@ AliV0Reader::AliV0Reader() :
   fNSigmaMass(0.),
   fUseImprovedVertex(kFALSE),
   fUseOwnXYZCalculation(kFALSE),
+  fDoCF(kFALSE),
   fCurrentEventGoodV0s(),
   fPreviousEventGoodV0s()
 {
@@ -161,6 +162,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fNSigmaMass(original.fNSigmaMass),
   fUseImprovedVertex(original.fUseImprovedVertex),
   fUseOwnXYZCalculation(original.fUseOwnXYZCalculation),
+  fDoCF(original.fDoCF),
   fCurrentEventGoodV0s(original.fCurrentEventGoodV0s),
   fPreviousEventGoodV0s(original.fPreviousEventGoodV0s)
 {
@@ -210,11 +212,13 @@ void AliV0Reader::Initialize(){
 	
   // for CF
   //Get pointer to the mc event
-  fMCEvent = fMCTruth->MCEvent();
-  if(fMCEvent == NULL){
-    //print warning here
-  }	
-	
+  if(fDoCF){
+    fMCEvent = fMCTruth->MCEvent();
+    if(fMCEvent == NULL){
+      //print warning here
+      fDoCF = kFALSE;
+    }	
+  }
 	
   AliKFParticle::SetField(fESDEvent->GetMagneticField());
 	
@@ -247,10 +251,11 @@ Bool_t AliV0Reader::NextV0(){
     }
 
     Double_t containerInput[3];
-    containerInput[0] = GetMotherCandidatePt();
-    containerInput[1] = GetMotherCandidateEta();
-    containerInput[2] = GetMotherCandidateMass();
-		
+    if(fDoCF){
+      containerInput[0] = GetMotherCandidatePt();
+      containerInput[1] = GetMotherCandidateEta();
+      containerInput[2] = GetMotherCandidateMass();
+    }
 
     //checks if on the fly mode is set
     if ( !fCurrentV0->GetOnFlyStatus() ){
@@ -260,8 +265,10 @@ Bool_t AliV0Reader::NextV0(){
       fCurrentV0IndexNumber++;
       continue;
     }
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepGetOnFly);		// for CF	
-		
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepGetOnFly);		// for CF	
+    }
+
     //checks if we have a prim vertex
     if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) { 
       if(fHistograms != NULL){
@@ -270,8 +277,9 @@ Bool_t AliV0Reader::NextV0(){
       fCurrentV0IndexNumber++;
       continue;
     }
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepNContributors);		// for CF	
-		
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepNContributors);		// for CF	
+    }
 		
     //Check the pid probability
     if(CheckPIDProbability(fPIDProbabilityCutNegativeParticle,fPIDProbabilityCutPositiveParticle)==kFALSE){
@@ -281,8 +289,9 @@ Bool_t AliV0Reader::NextV0(){
       fCurrentV0IndexNumber++;
       continue;
     }
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepTPCPID);			// for CF
-		
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepTPCPID);			// for CF
+    }
 		
 		
     if(fUseOwnXYZCalculation == kFALSE){
@@ -304,9 +313,10 @@ Bool_t AliV0Reader::NextV0(){
       }
       fCurrentV0IndexNumber++;
       continue;
-    }		
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepR);			// for CF
-		
+    }	
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepR);			// for CF
+    }
 		
 		
     if((TMath::Abs(fCurrentZValue)*fLineCutZRSlope)-fLineCutZValue > GetXYRadius() ){ // cuts out regions where we do not reconstruct
@@ -315,9 +325,10 @@ Bool_t AliV0Reader::NextV0(){
       }
       fCurrentV0IndexNumber++;
       continue;
-    }		
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepLine);			// for CF
-		
+    }
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepLine);			// for CF
+    }
 		
     if(TMath::Abs(fCurrentZValue) > fMaxZ ){ // cuts out regions where we do not reconstruct
       if(fHistograms != NULL){
@@ -325,9 +336,10 @@ Bool_t AliV0Reader::NextV0(){
       }
       fCurrentV0IndexNumber++;
       continue;
-    }		
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepZ);		// for CF	
-		
+    }
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepZ);		// for CF	
+    }
 		
     /* Moved further up so corr framework can work
        if(UpdateV0Information() == kFALSE){
@@ -345,8 +357,9 @@ Bool_t AliV0Reader::NextV0(){
 	fCurrentV0IndexNumber++;
 	continue;
       }
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepNDF);		// for CF	
-			
+      if(fDoCF){
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepNDF);		// for CF	
+      }
 			
       Double_t chi2V0 = fCurrentMotherKFCandidate->GetChi2()/fCurrentMotherKFCandidate->GetNDF();
       if(chi2V0 > fChi2CutConversion || chi2V0 <=0){
@@ -356,8 +369,9 @@ Bool_t AliV0Reader::NextV0(){
 	fCurrentV0IndexNumber++;
 	continue;
       }
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepChi2);			// for CF
-			
+      if(fDoCF){
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepChi2);			// for CF
+      }
 			
       if(TMath::Abs(fMotherCandidateLorentzVector->Eta())> fEtaCut){
 	if(fHistograms != NULL){
@@ -366,8 +380,9 @@ Bool_t AliV0Reader::NextV0(){
 	fCurrentV0IndexNumber++;
 	continue;
       }
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepEta);			// for CF
-			
+      if(fDoCF){
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepEta);			// for CF
+      }
 			
       if(fMotherCandidateLorentzVector->Pt()<fPtCut){
 	if(fHistograms != NULL){
@@ -376,8 +391,9 @@ Bool_t AliV0Reader::NextV0(){
 	fCurrentV0IndexNumber++;
 	continue;
       }
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepPt);			// for CF
-			
+      if(fDoCF){
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepPt);			// for CF
+      }
 			
     }
     else if(fUseESDTrack){
@@ -569,14 +585,15 @@ Bool_t AliV0Reader::UpdateV0Information(){
 
   // for CF
   Double_t containerInput[3];
-  containerInput[0] = GetMotherCandidatePt();
-  containerInput[1] = GetMotherCandidateEta();
-  containerInput[2] = GetMotherCandidateMass();
-
-  fCFManager->GetParticleContainer()->Fill(containerInput,kStepLikeSign);		// for CF	
-  fCFManager->GetParticleContainer()->Fill(containerInput,kStepTPCRefit);		// for CF	
-  fCFManager->GetParticleContainer()->Fill(containerInput,kStepKinks);		// for CF	
-
+  if(fDoCF){
+    containerInput[0] = GetMotherCandidatePt();
+    containerInput[1] = GetMotherCandidateEta();
+    containerInput[2] = GetMotherCandidateMass();
+    
+    fCFManager->GetParticleContainer()->Fill(containerInput,kStepLikeSign);		// for CF	
+    fCFManager->GetParticleContainer()->Fill(containerInput,kStepTPCRefit);		// for CF	
+    fCFManager->GetParticleContainer()->Fill(containerInput,kStepKinks);		// for CF	
+  }
   return iResult;
 }
 

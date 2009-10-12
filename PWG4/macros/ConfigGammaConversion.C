@@ -11,6 +11,7 @@ Int_t kGCnumberOfFilesToAnalyze=0;
 Bool_t kGCrunNeutralMeson = kTRUE;
 Bool_t kGCrunJet          = kFALSE;
 Bool_t kGCrunChic         = kFALSE;
+Bool_t kGCrunCF           = kFALSE;
 
 /** ---------------------------------- define cuts here ------------------------------------*/
 
@@ -743,6 +744,11 @@ Bool_t scanArguments(TString arguments){
 	cout<<"Running Chi_c analysis"<<endl;
 	kGCrunChic = kTRUE;
       }
+      else if (argument.CompareTo("-run-cf") == 0){
+	cout<<"Running CF"<<endl;
+	kGCrunCF = kTRUE;
+      }
+
       else if (argument.CompareTo("-jet-off") == 0){
 	cout<<"Skipping jet analysis"<<endl;
 	kGCrunJet = kFALSE;
@@ -1099,9 +1105,11 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
   gammaconversion->SetDoNeutralMeson(kGCrunNeutralMeson);
   gammaconversion->SetDoJet(kGCrunJet);
   gammaconversion->SetDoChic(kGCrunChic);
+
   // for CF
   gammaconversion->SetCFManager(man);
-	
+  gammaconversion->SetDoCF(kGCrunCF);
+  v0Reader->SetDoCF(kGCrunCF);
 	
   // Add task to the manager 
   mgr->AddTask(gammaconversion);
