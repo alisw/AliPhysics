@@ -76,6 +76,7 @@ public:
   Int_t    GetITSCut() const { return fITSCut; }
   Int_t    GetNTagTrackCut() const { return fNTagTrkCut; }
   Double_t GetIPSigCut() const { return fIPSigCut; }
+  Double_t GetMinClusEne() const { return fMinClusEne; }
 
   void SetCalorimeter(TString det)    {fCalorimeter = det ; }
   void SetpOverEmin(Double_t min)     {fpOverEmin = min ; }
@@ -93,6 +94,7 @@ public:
   void SetITSCut(Int_t its) { fITSCut = its; }
   void SetNTagTrackCut(Int_t ntr) { fNTagTrkCut = ntr; }
   void SetIPSigCut(Double_t ips) { fIPSigCut = ips; }
+  void SetMinClusEne(Double_t ene) { fMinClusEne = ene; }
 
   void InitParameters();
 
@@ -123,6 +125,7 @@ public:
   Double_t fpOverEmin;    //! Minimum p/E value for Electrons
   Double_t fpOverEmax;    //! Maximum p/E value for Electrons
   Double_t fResidualCut;  //! Track-cluster matching distance
+  Double_t fMinClusEne;   //! Min clus energy for matching
 
   //DVM B-tagging
   Double_t fDrCut;       //max dR
@@ -266,8 +269,10 @@ public:
   TH2F* fhMCBHadronElePt; //! Pt of B-hadrons vs pt of electron
   TH1F* fhPtMCHadron;     //! Pt distribution of MC charged hadrons (pi,k,p) in EMCAL acceptance
   TH2F* fhPtMCElectron;   //! Pt distribution of MC electrons from various sources in EMCAL
+  TH2F* fhMCXYConversion; //! XY distribution of conversion electrons
+  TH2F* fhMCRadPtConversion; //! Radius vs. pT distribution of conversion electrons
 
-  ClassDef(AliAnaElectron,10)
+  ClassDef(AliAnaElectron,11)
 
 } ;
  
