@@ -1179,19 +1179,33 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 	// parameters[4] = standard deviation wrt median
 	//
 
+	TString timeStartString = (TString)GetRunParameter("DAQ_time_start");
+	TString timeEndString = (TString)GetRunParameter("DAQ_time_end");
+	if (timeStartString.IsNull() || timeStartString.IsNull()){
+		if (timeStartString.IsNull()){ 
+			AliError("DAQ_time_start not set in logbook! Setting statistical values for current DP to invalid");
+		}
+		else if (timeStartString.IsNull()){
+			AliError("DAQ_time_end not set in logbook! Setting statistical values for current DP to invalid");
+		}
+		return 0;
+	}  
+
+	Int_t timeStart = (Int_t)(timeStartString.Atoi());
+	Int_t timeEnd = (Int_t)(timeEndString.Atoi());
 	Float_t* parameters = new Float_t[5];
-	Double_t aDCSArrayMean = 0;     // Mean
-	Double_t aDCSArrayTruncMean = 0;// Truncated Mean
-	Double_t aDCSArrayMedian = 0;   // Median
-	Double_t aDCSArraySDMean = 0;   // Standard Deviation wrt Mean
-	Double_t aDCSArraySDMedian = 0; // Standard Deviation wrt Median
-	Float_t aDCSArraySum = 0.0;
 	Int_t iCounts = 0;
-	Int_t iCounts1 = 0;
-	Float_t temp = 0;
-	Float_t temp1 = 0;
+	Int_t iCountsRun = 0;
 	Int_t nCounts = array->GetEntries();
-	Float_t *tempArray = new Float_t[nCounts];
+	Float_t valueBeforeSOR = 0;
+	Float_t valueAfterEOR = 0;
+	Int_t timestampBeforeSOR = -1;
+	Int_t timestampAfterEOR = -1;
+	Int_t ientrySOR = -1;
+	Int_t ientryEOR = -1;
+	Float_t* arrayValues = 0x0; 
+	Double_t* arrayWeights = 0x0; 
+	Bool_t truncMeanFlag = kTRUE;  // flag to indicate whether Truncated Mean should be calculated or not
 	for(Int_t i = 0; i < nCounts; i++) {
 		AliDCSValue *v = (AliDCSValue *)array->At(i);
 		if ((v->GetFloat() <= fminFloat) || (v->GetFloat() >= fmaxFloat)) {
@@ -1201,84 +1215,193 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 			return NULL;
 		}
 		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
-			aDCSArraySum += v->GetFloat();
-			tempArray[i] = v->GetFloat();
-			AliDebug(2,Form("%d-th entry = %f",i,tempArray[i]));
+			AliDebug(2,Form("%d-th entry = %f at timestamp %i",i,v->GetFloat(),v->GetTimeStamp()));
 			iCounts += 1;
+			// look for the last value before SOR and the first value before EOR
+			if (((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) && (Int_t)(v->GetTimeStamp()) < timeStart) {
+				timestampBeforeSOR = (Int_t)(v->GetTimeStamp());
+				AliDebug(2,Form("timestamp of last value before SOR = %d, with DAQ_time_start = %d",timestampBeforeSOR,timeStart));
+				valueBeforeSOR = v->GetFloat();
+			}
+			else if ((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery() && (Int_t)(v->GetTimeStamp()) > timeEnd && timestampAfterEOR == -1){
+				timestampAfterEOR = (Int_t)(v->GetTimeStamp());
+				valueAfterEOR = v->GetFloat();
+				AliDebug(2,Form("timestamp of first value after EOR = %d, with DAQ_time_end = %d",timestampAfterEOR,timeEnd));
+			}
+			// check if there are DPs between DAQ_time_start and DAQ_time_end
+			if(((Int_t)(v->GetTimeStamp()) >= timeStart) &&((Int_t)(v->GetTimeStamp()) <= timeEnd)) {
+				if (ientrySOR == -1) ientrySOR = i;  // first entry after SOR
+				if (ientryEOR < i) ientryEOR = i;  // last entry before EOR
+				AliDebug(2,Form("entry between SOR and EOR"));
+				iCountsRun += 1;
+			}
 		}
 		else {
-			AliError(Form("DCS values for the parameter outside the queried interval"));
+			AliError(Form("DCS values for the parameter outside the queried interval: timestamp = %d",v->GetTimeStamp()));
 		}
 	}
 
-	AliDebug(2,Form("Using %i entries, starting from %i entries",iCounts,nCounts));
-    	if(iCounts != 0) {
-		aDCSArrayMean = TMath::Mean(iCounts,tempArray);
-		aDCSArrayMedian = TMath::Median(iCounts,tempArray);
-		aDCSArraySDMean = TMath::RMS(iCounts,tempArray);
-		AliDebug(2,Form("SD = %f",aDCSArraySDMean));
-		// computing standard deviation wrt median
-		AliDebug(2,Form("maximum = %f, minimum = %f", aDCSArrayMean+3*aDCSArraySDMean, aDCSArrayMean-3*aDCSArraySDMean));
-		for (Int_t i = 0; i < iCounts; i++){
+	if (timestampBeforeSOR == -1){
+		AliWarning("No value found before SOR!");
+	}
+	if (timestampAfterEOR == -1){
+		AliWarning("No value found after EOR!");
+	}
+
+	AliDebug(2,Form("Number of valid entries (within DCS query interval) = %i, from a total amount of %i entries",iCounts,nCounts));
+	AliDebug(2,Form("Last value before DAQ_time_start (SOR) = %f at timestamp = %d",valueBeforeSOR,timestampBeforeSOR));
+	AliDebug(2,Form("First value after DAQ_time_end (EOR)   = %f at timestamp = %d",valueAfterEOR,timestampAfterEOR));
+	AliInfo(Form("Found %d entries between DAQ_time_start (SOR) and DAQ_time_end (EOR)",iCountsRun));
+	AliDebug(2,Form("Index of first entry after DAQ_time_start (SOR) = %d ",ientrySOR));
+	AliDebug(2,Form("Index of first entry before DAQ_time_end (EOR) = %d ",ientryEOR));
+
+	Int_t nentriesUsed = 0;
+	if (iCountsRun > 1){
+		AliInfo("Using entries between DAQ_time_start (SOR) and DAQ_time_end (EOR)");
+		AliDebug(2,"Calculating (weighted) Mean and Median");
+		arrayValues = new Float_t[iCountsRun]; 
+		arrayWeights = new Double_t[iCountsRun]; 
+		nentriesUsed = iCountsRun;
+		for (Int_t i = ientrySOR; i <= ientryEOR; i++){
 			AliDCSValue *v = (AliDCSValue *)array->At(i);
-			AliDebug(3,Form("maximum = %f, minimum = %f", aDCSArrayMean+3*aDCSArraySDMean, aDCSArrayMean-3*aDCSArraySDMean));
-			AliDebug(3,Form("%i-th entry = %f",i, v->GetFloat())); 
-			if ((v->GetFloat()<=aDCSArrayMean+3*aDCSArraySDMean) && (v->GetFloat()>=aDCSArrayMean-3*aDCSArraySDMean)){
-				temp1+=v->GetFloat();
-				iCounts1++;
-				AliDebug(3,Form("temp1 = %f, iCounts1 = %i",temp1,iCounts1));
+			Int_t timestamp2 = 0;
+			if (i < ientryEOR){
+				AliDCSValue *v1 = (AliDCSValue *)array->At(i+1);
+				timestamp2 = (Int_t)v1->GetTimeStamp();
 			}
-    			temp += (v->GetFloat()-aDCSArrayMedian)*(v->GetFloat()-aDCSArrayMedian);
+			else {
+				timestamp2 = timeEnd+1;
+			}
+			arrayWeights[i-ientrySOR] = (Double_t)(timestamp2 - (Int_t)v->GetTimeStamp());
+			arrayValues[i-ientrySOR] = v->GetFloat();
 		}
-		AliDebug(3,Form("temp before the ratio = %f, with %d counts", temp, iCounts));
-		temp/=iCounts;
-		AliDebug(3,Form("temp after the ratio = %f", temp));
-    		if (temp>0) {
-			aDCSArraySDMedian = TMath::Sqrt(temp);
-		}
-		else if (temp==0) {
-			AliInfo(Form("Radical = 0 in computing standard deviation wrt median! Setting it to zero...."));
-			aDCSArraySDMedian = 0;
+		parameters[0] = TMath::Mean(iCountsRun,arrayValues,arrayWeights);
+		parameters[2] = TMath::Median(iCountsRun,arrayValues,arrayWeights);
+	}
+	else if (iCountsRun == 1){
+		AliDCSValue* v = (AliDCSValue *)array->At(ientrySOR);
+		nentriesUsed = 2;
+		if (timestampBeforeSOR != -1 && timestampBeforeSOR != (Int_t)v->GetTimeStamp()){
+			AliWarning("Using single entry between DAQ_time_start (SOR) and DAQ_time_end (EOR) and last entry before SOR. Truncated mean won't be calculated.");
+			arrayValues = new Float_t[2];
+			arrayWeights = new Double_t[2];
+			arrayValues[0] = valueBeforeSOR;
+			arrayWeights[0] = (Double_t)((Int_t)v->GetTimeStamp()-timestampBeforeSOR);
+			arrayValues[1] = v->GetFloat();
+			arrayWeights[1] = (Double_t)(timeEnd+1-(Int_t)v->GetTimeStamp());
+			AliDebug(2, Form("value0 = %f, with weight = %f",arrayValues[0],arrayWeights[0])); 
+			AliDebug(2, Form("value1 = %f, with weight = %f",arrayValues[1],arrayWeights[1])); 
+			parameters[0] = TMath::Mean(2,arrayValues,arrayWeights);
+			parameters[2] = TMath::Median(2,arrayValues,arrayWeights);
+			truncMeanFlag = kFALSE;
 		}
 		else{
-			AliError(Form("Radical < 0 in computing standard deviation! Setting it to invalid...."));
-			aDCSArraySDMedian = AliGRPObject::GetInvalidFloat();
+			AliError("Cannot calculate mean, truncated mean, median, SD wrt mean, SD wrt median for current DP - only one value collected during the run, but no value before with which to calculate the statistical quantities");
+			parameters[0] = AliGRPObject::GetInvalidFloat();
+			parameters[1] = AliGRPObject::GetInvalidFloat();
+			parameters[2] = AliGRPObject::GetInvalidFloat();
+			parameters[3] = AliGRPObject::GetInvalidFloat();
+			parameters[4] = AliGRPObject::GetInvalidFloat();
+			return parameters;
 		}
 	}
-	else {
-		aDCSArrayMean = AliGRPObject::GetInvalidFloat();
-		aDCSArrayMedian = AliGRPObject::GetInvalidFloat();
-		aDCSArraySDMean = AliGRPObject::GetInvalidFloat();
+	else { // iCountsRun == 0, using the point immediately before SOR and the one immediately after EOR
+		if (timestampBeforeSOR == -1 || timestampAfterEOR == -1){
+			if (timestampBeforeSOR == -1){
+				AliError("Cannot calculate mean, truncated mean, median, SD wrt mean, SD wrt median for current DP - no points during the run collected, and point before SOR missing");
+			}
+			if (timestampAfterEOR == -1){
+				AliError("Cannot calculate mean, truncated mean, median, SD wrt mean, SD wrt median for current DP - no points during the run collected, and point after EOR missing");
+			}
+			parameters[0] = AliGRPObject::GetInvalidFloat();
+			parameters[1] = AliGRPObject::GetInvalidFloat();
+			parameters[2] = AliGRPObject::GetInvalidFloat();
+			parameters[3] = AliGRPObject::GetInvalidFloat();
+			parameters[4] = AliGRPObject::GetInvalidFloat();
+			return parameters;
+		}
+		else {
+			AliWarning("Using last entry before SOR and first entry after EOR. Truncated mean won't be calculated.");
+			nentriesUsed = 2;
+			arrayValues = new Float_t[2];
+			arrayWeights = new Double_t[2];
+			arrayValues[0] = valueBeforeSOR;
+			arrayWeights[0] = (Double_t)(timestampAfterEOR - timestampBeforeSOR);
+			arrayValues[1] = valueAfterEOR;
+			arrayWeights[1] = 1.;
+			AliDebug(2,Form("value0 = %f, with weight = %f",arrayValues[0],arrayWeights[0])); 
+			AliDebug(2,Form("value1 = %f, with weight = %f",arrayValues[1],arrayWeights[1])); 
+			parameters[0] = TMath::Mean(1,arrayValues,arrayWeights);
+			parameters[2] = TMath::Median(1,arrayValues,arrayWeights);
+			truncMeanFlag = kFALSE;
+		}
 	}
-	AliDebug(3,Form("iCounts1 = %d and temp1 = %f",iCounts1, temp1));
-	if (iCounts1 > 0) {
-		aDCSArrayTruncMean = temp1/iCounts1;
+
+	Float_t temp = 0;
+	Float_t temp1 = 0;
+	Float_t sumweights = 0; 
+	Int_t entriesTruncMean = 0;
+	Float_t* arrayValuesTruncMean = new Float_t[nentriesUsed]; 
+	Double_t* arrayWeightsTruncMean = new Double_t[nentriesUsed]; 
+
+	// calculating SD wrt Mean and Median
+	AliDebug(2,"Calculating SD wrt Mean and SD wrt Median");
+	for (Int_t i =0; i< nentriesUsed; i++){
+		AliInfo(Form("Entry %d: value = %f, weight = %f",i,arrayValues[i],arrayWeights[i]));
+		temp += (arrayValues[i]-parameters[2])*(arrayValues[i]-parameters[2]);
+		temp1 += arrayWeights[i]*(arrayValues[i]-parameters[0])*(arrayValues[i]-parameters[0]);
+		sumweights += arrayWeights[i];
+	}
+	// setting SD wrt Mean 
+	if (sumweights != 0 ){
+		parameters[3] = TMath::Sqrt(temp1/sumweights);
+	}
+	else {
+		AliError("Sum of weights to calculate Standard Deviation (wrt mean) <= 0, setting the SD to invalid");
+		parameters[3] = AliGRPObject::GetInvalidFloat();
+	}
+	// setting SD wrt Median
+	if (nentriesUsed != 0){
+		parameters[4] = TMath::Sqrt(temp/nentriesUsed);
 	}
 	else{
-		aDCSArrayTruncMean = AliGRPObject::GetInvalidFloat();
+		AliError("Number of entries used to calculate Standard Deviation (wrt median) <= 0, setting the SD to invalid");
+		parameters[4] = AliGRPObject::GetInvalidFloat();
 	}
-	
-	
-	
-	AliDebug(2,Form("mean within %d counts = %f ",iCounts,aDCSArrayMean));
-	AliDebug(2,Form("truncated mean within %d counts = %f (%i values used)",iCounts,aDCSArrayTruncMean,iCounts1));
-	AliDebug(2,Form("median within %d counts = %f ",iCounts,aDCSArrayMedian));
-	AliDebug(2,Form("standard deviation with mean within %d counts = %f ",iCounts,aDCSArraySDMean));
-	AliDebug(2,Form("standard deviation with median within %d counts = %f ",iCounts,aDCSArraySDMedian));
-	
-    	parameters[0] = aDCSArrayMean;
-	parameters[1] = aDCSArrayTruncMean;
-	parameters[2] = aDCSArrayMedian;
-	parameters[3] = aDCSArraySDMean;
-	parameters[4] = aDCSArraySDMedian;
 
-	AliDebug(2,Form("mean = %f, truncated mean = %f, median = %f, SD wrt mean = %f, SD wrt median = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
-    	//AliInfo(Form("mean = %f, truncated mean = %f, median = %f, SD wrt mean = %f, SD wrt median = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
+	// calculating truncated mean (this comes afterwards since you need the SD wrt Mean)
+	if (truncMeanFlag){
+		AliDebug(2,"Calculating Truncated Mean");
+		for (Int_t i =0; i< nentriesUsed; i++){
+			if ((arrayValues[i]<=parameters[0]+3*parameters[3]) && (arrayValues[i]>=parameters[0]-3*parameters[3])){
+				AliDebug(2,Form("Entry %d: value = %f, weight = %f",i,arrayValues[i],arrayWeights[i]));
+				entriesTruncMean++;			
+				arrayValuesTruncMean[i]=arrayValues[i];
+				arrayWeightsTruncMean[i]=arrayWeights[i];
+			}
+		}
+		// setting truncated mean 
+		if (entriesTruncMean >1){
+			AliDebug(2,Form("%d entries used for truncated mean",entriesTruncMean));
+			parameters[1] = TMath::Mean(entriesTruncMean,arrayValuesTruncMean,arrayWeightsTruncMean);
+		}
+		else{	
+			AliDebug(2,Form("Too few entries (%d) to calculate truncated mean",entriesTruncMean));
+			parameters[1] = AliGRPObject::GetInvalidFloat();
+		}
+	}
+	else{
+			parameters[1] = AliGRPObject::GetInvalidFloat();
+	}
 
+	AliInfo(Form("(weighted) mean = %f ",parameters[0]));
+	AliInfo(Form("(weighted) truncated mean = %f ",parameters[1]));
+	AliInfo(Form("median within = %f ",parameters[2]));
+	AliInfo(Form("(weighted) standard deviation with (weighted) mean = %f ",parameters[3]));
+	AliInfo(Form("standard deviation with median = %f ",parameters[4]));
+	
 	return parameters;
 }
-
-
 
 //__________________________________________________________________________________________________________________
 
@@ -1299,19 +1422,8 @@ Float_t* AliGRPPreprocessor::ProcessFloatAllMagnet(const TObjArray* array, Int_t
 	//
 
 	AliInfo(Form("indexDP = %d",indexDP)); 
-	Float_t* parameters = new Float_t[5];
-	Double_t aDCSArrayMean = 0;     // Mean
-	Double_t aDCSArrayTruncMean = 0;// Truncated Mean
-	Double_t aDCSArrayMedian = 0;   // Median
-	Double_t aDCSArraySDMean = 0;   // Standard Deviation wrt Mean
-	Double_t aDCSArraySDMedian = 0; // Standard Deviation wrt Median
-	Float_t aDCSArraySum = 0.0;
-	Int_t iCounts = 0;
-	Int_t iCounts1 = 0;
-	Float_t temp = 0;
-	Float_t temp1 = 0;
+
 	Int_t nCounts = array->GetEntries();
-	Float_t *tempArray = new Float_t[nCounts];
 	for(Int_t i = 0; i < nCounts; i++) {
 		AliDCSValue *v = (AliDCSValue *)array->At(i);
 		if ((v->GetFloat() <= fminFloat) || (v->GetFloat() >= fmaxFloat)) {
@@ -1321,10 +1433,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAllMagnet(const TObjArray* array, Int_t
 			return NULL;
 		}
 		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
-			aDCSArraySum += v->GetFloat();
-			tempArray[i] = v->GetFloat();
-			AliDebug(2,Form("%d-th entry = %f",i,tempArray[i]));
-			iCounts += 1;
+			AliDebug(2,Form("%d-th entry = %f",i,v->GetFloat()));
 			if (indexDP == kL3Current && v->GetFloat() > 350 && isZero == kTRUE) isZero=kFALSE; 
 			if (indexDP == kDipoleCurrent && v->GetFloat() > 450 && isZero == kTRUE) isZero=kFALSE; 
 		}
@@ -1333,71 +1442,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAllMagnet(const TObjArray* array, Int_t
 		}
 	}
 
-	AliDebug(2,Form("Using %i entries, starting from %i entries",iCounts,nCounts));
-    	if(iCounts != 0) {
-		aDCSArrayMean = TMath::Mean(iCounts,tempArray);
-		aDCSArrayMedian = TMath::Median(iCounts,tempArray);
-		aDCSArraySDMean = TMath::RMS(iCounts,tempArray);
-		AliDebug(2,Form("SD = %f",aDCSArraySDMean));
-		// computing standard deviation wrt median
-		AliDebug(2,Form("maximum = %f, minimum = %f", aDCSArrayMean+3*aDCSArraySDMean, aDCSArrayMean-3*aDCSArraySDMean));
-		for (Int_t i = 0; i < iCounts; i++){
-			AliDCSValue *v = (AliDCSValue *)array->At(i);
-			AliDebug(3,Form("maximum = %f, minimum = %f", aDCSArrayMean+3*aDCSArraySDMean, aDCSArrayMean-3*aDCSArraySDMean));
-			AliDebug(3,Form("%i-th entry = %f",i, v->GetFloat())); 
-			if ((v->GetFloat()<=aDCSArrayMean+3*aDCSArraySDMean) && (v->GetFloat()>=aDCSArrayMean-3*aDCSArraySDMean)){
-				temp1+=v->GetFloat();
-				iCounts1++;
-				AliDebug(3,Form("temp1 = %f, iCounts1 = %i",temp1,iCounts1));
-			}
-    			temp += (v->GetFloat()-aDCSArrayMedian)*(v->GetFloat()-aDCSArrayMedian);
-		}
-		AliDebug(3,Form("temp before the ratio = %f, with %d counts", temp, iCounts));
-		temp/=iCounts;
-		AliDebug(3,Form("temp after the ratio = %f", temp));
-    		if (temp>0) {
-			aDCSArraySDMedian = TMath::Sqrt(temp);
-		}
-		else if (temp==0) {
-			AliInfo(Form("Radical = 0 in computing standard deviation wrt median! Setting it to zero...."));
-			aDCSArraySDMedian = 0;
-		}
-		else{
-			AliError(Form("Radical < 0 in computing standard deviation! Setting it to invalid...."));
-			aDCSArraySDMedian = AliGRPObject::GetInvalidFloat();
-		}
-	}
-	else {
-		aDCSArrayMean = AliGRPObject::GetInvalidFloat();
-		aDCSArrayMedian = AliGRPObject::GetInvalidFloat();
-		aDCSArraySDMean = AliGRPObject::GetInvalidFloat();
-	}
-	AliDebug(3,Form("iCounts1 = %d and temp1 = %f",iCounts1, temp1));
-	if (iCounts1 > 0) {
-		aDCSArrayTruncMean = temp1/iCounts1;
-	}
-	else{
-		aDCSArrayTruncMean = AliGRPObject::GetInvalidFloat();
-	}
-	
-	
-	
-	AliDebug(2,Form("mean within %d counts = %f ",iCounts,aDCSArrayMean));
-	AliDebug(2,Form("truncated mean within %d counts = %f (%i values used)",iCounts,aDCSArrayTruncMean,iCounts1));
-	AliDebug(2,Form("median within %d counts = %f ",iCounts,aDCSArrayMedian));
-	AliDebug(2,Form("standard deviation with mean within %d counts = %f ",iCounts,aDCSArraySDMean));
-	AliDebug(2,Form("standard deviation with median within %d counts = %f ",iCounts,aDCSArraySDMedian));
-	
-    	parameters[0] = aDCSArrayMean;
-	parameters[1] = aDCSArrayTruncMean;
-	parameters[2] = aDCSArrayMedian;
-	parameters[3] = aDCSArraySDMean;
-	parameters[4] = aDCSArraySDMedian;
-
-	AliDebug(2,Form("mean = %f, truncated mean = %f, median = %f, SD wrt mean = %f, SD wrt median = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
-    	//AliInfo(Form("mean = %f, truncated mean = %f, median = %f, SD wrt mean = %f, SD wrt median = %f ",parameters[0],parameters[1],parameters[2],parameters[3],parameters[4]));
-
-	return parameters;
+	return ProcessFloatAll(array);
 }
 
 
@@ -1444,26 +1489,149 @@ Float_t AliGRPPreprocessor::ProcessInt(const TObjArray* array)
 	// are outside the queried time interval or their value is out of range
 	//
 
-	Float_t aDCSArraySum = 0.0;
+	TString timeStartString = (TString)GetRunParameter("DAQ_time_start");
+	TString timeEndString = (TString)GetRunParameter("DAQ_time_end");
+	if (timeStartString.IsNull() || timeStartString.IsNull()){
+		if (timeStartString.IsNull()){ 
+			AliError("DAQ_time_start not set in logbook! Setting statistical values for current DP to invalid");
+		}
+		else if (timeStartString.IsNull()){
+			AliError("DAQ_time_end not set in logbook! Setting statistical values for current DP to invalid");
+		}
+		return 0;
+	}  
+
+	Int_t timeStart = (Int_t)(timeStartString.Atoi());
+	Int_t timeEnd = (Int_t)(timeEndString.Atoi());
 	Float_t aDCSArrayMean = 0.0;
 	Int_t iCounts = 0;
 	AliDCSValue* v = 0x0;
+	Float_t valueBeforeSOR = 0;
+	Float_t valueAfterEOR = 0;
+	Int_t timestampBeforeSOR = -1;
+	Int_t timestampAfterEOR = -1;
+	Int_t ientrySOR = -1;
+	Int_t ientryEOR = -1;
+	Float_t* arrayValues = 0x0; 
+	Double_t* arrayWeights = 0x0; 
+	Int_t iCountsRun = 0;
+	Int_t nCounts = array->GetEntries();
 
-	for(Int_t iCount = 0; iCount < array->GetEntries(); iCount++) {
-		v = (AliDCSValue *)array->At(iCount);
+	for(Int_t i = 0; i < nCounts; i++) {
+		v = (AliDCSValue *)array->At(i);
 		if ((v->GetInt() < fminInt) || (v->GetInt() > fmaxInt)) {
-			AliError(Form("Error! Int value found in DCS map at %d-th entry is OUT OF RANGE: value = %d",iCount, v->GetInt()));
+			AliError(Form("Error! Int value found in DCS map at %d-th entry is OUT OF RANGE: value = %d",i, v->GetInt()));
 			return AliGRPObject::GetInvalidFloat();
 		}
 		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
-			aDCSArraySum += v->GetInt();
+			AliDebug(2,Form("%d-th entry = %d at timestamp %i",i,v->GetInt(),v->GetTimeStamp()));
 			iCounts += 1;
+			// look for the last value before SOR and the first value before EOR
+			if (((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) && (Int_t)(v->GetTimeStamp()) < timeStart) {
+				timestampBeforeSOR = (Int_t)(v->GetTimeStamp());
+				AliDebug(2,Form("timestamp of last entry before SOR = %d, with DAQ_time_start = %d",timestampBeforeSOR,timeStart));
+				valueBeforeSOR = (Float_t) v->GetInt();
+			}
+			else if ((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery() && (Int_t)(v->GetTimeStamp()) > timeEnd && timestampAfterEOR == -1){
+				timestampAfterEOR = (Int_t)(v->GetTimeStamp());
+				valueAfterEOR = (Float_t) v->GetInt();
+				AliDebug(2,Form("timestamp of first entry after EOR = %d, with DAQ_time_end = %d",timestampAfterEOR,timeEnd));
+			}
+			// check if there are DPs between DAQ_time_start and DAQ_time_end
+			if(((Int_t)(v->GetTimeStamp()) >= timeStart) &&((Int_t)(v->GetTimeStamp()) <= timeEnd)) {
+				if (ientrySOR == -1) ientrySOR = i;  // first entry after SOR
+				if (ientryEOR < i) ientryEOR = i;  // last entry before EOR
+				AliDebug(2,Form("entry between SOR and EOR"));
+				iCountsRun += 1;
+			}
+		}
+		else {
+			AliError(Form("DCS values for the parameter outside the queried interval: timestamp = %d",v->GetTimeStamp()));
 		}
 	}
 
-	if(iCounts != 0) aDCSArrayMean = aDCSArraySum/iCounts;
-	else aDCSArrayMean = AliGRPObject::GetInvalidFloat();
-	
+	if (timestampBeforeSOR == -1){
+		AliWarning("No value found before SOR!");
+	}
+	if (timestampAfterEOR == -1){
+		AliWarning("No value found after EOR!");
+	}
+
+	AliDebug(2,Form("Number of valid entries (within query interval) = %i, starting from %i entries",iCounts,nCounts));
+	AliDebug(2,Form("Last value before DAQ_time_start (SOR) = %f at timestamp = %d",valueBeforeSOR,timestampBeforeSOR));
+	AliDebug(2,Form("First value after DAQ_time_end (EOR)   = %f at timestamp = %d",valueAfterEOR,timestampAfterEOR));
+	AliInfo(Form("Found %d entries between DAQ_time_start (SOR) and DAQ_time_end (EOR)",iCountsRun));
+	AliDebug(2,Form("Index of first entry after DAQ_time_start (SOR) = %d ",ientrySOR));
+	AliDebug(2,Form("Index of first entry before DAQ_time_end (EOR) = %d ",ientryEOR));
+
+	Int_t nentriesUsed = 0;
+	if (iCountsRun > 1){
+		AliInfo("Using entries between DAQ_time_start (SOR) and DAQ_time_end (EOR)");
+		AliDebug(2,"Calculating (weighted) Mean");
+		arrayValues = new Float_t[iCountsRun]; 
+		arrayWeights = new Double_t[iCountsRun]; 
+		nentriesUsed = iCountsRun;
+		for (Int_t i = ientrySOR; i <= ientryEOR; i++){
+			AliDCSValue *v = (AliDCSValue *)array->At(i);
+			Int_t timestamp2 = 0;
+			if (i < ientryEOR){
+				AliDCSValue *v1 = (AliDCSValue *)array->At(i+1);
+				timestamp2 = (Int_t)v1->GetTimeStamp();
+			}
+			else {
+				timestamp2 = timeEnd+1;
+			}
+			arrayWeights[i-ientrySOR] = (Double_t)(timestamp2 - (Int_t)v->GetTimeStamp());
+			arrayValues[i-ientrySOR] = (Float_t)v->GetInt();
+		}
+		aDCSArrayMean = TMath::Mean(iCountsRun,arrayValues,arrayWeights);
+	}
+	else if (iCountsRun == 1){
+		AliDCSValue* v = (AliDCSValue *)array->At(ientrySOR);
+		nentriesUsed = 2;
+		if (timestampBeforeSOR != -1 && timestampBeforeSOR != (Int_t)v->GetTimeStamp()){
+			AliWarning("Using single entry between DAQ_time_start (SOR) and DAQ_time_end (EOR) and last entry before SOR.");
+			arrayValues = new Float_t[2];
+			arrayWeights = new Double_t[2];
+			arrayValues[0] = valueBeforeSOR;
+			arrayWeights[0] = (Double_t)((Int_t)v->GetTimeStamp()-timestampBeforeSOR);
+			arrayValues[1] = (Float_t)v->GetInt();
+			arrayWeights[1] = (Double_t)(timeEnd+1-(Int_t)v->GetTimeStamp());
+			AliDebug(2,Form("value0 = %f, with weight = %f",arrayValues[0],arrayWeights[0])); 
+			AliDebug(2,Form("value1 = %f, with weight = %f",arrayValues[1],arrayWeights[1])); 
+			aDCSArrayMean = TMath::Mean(2,arrayValues,arrayWeights);
+		}
+		else{
+			AliError("Cannot calculate mean - only one value collected during the run, but no value before with which to calculate the statistical quantities");
+			return AliGRPObject::GetInvalidFloat();
+		}
+	}
+	else { // iCountsRun == 0, using the point immediately before SOR and the one immediately after EOR
+		if (timestampBeforeSOR == -1 || timestampAfterEOR == -1){
+			if (timestampBeforeSOR == -1){
+				AliError("Cannot calculate mean - no points during the run collected, and point before SOR missing");
+			}
+			if (timestampAfterEOR == -1){
+				AliError("Cannot calculate maen - no points during the run collected, and point after EOR missing");
+			}
+			return AliGRPObject::GetInvalidFloat();
+		}
+		else {
+			AliWarning("Using last entry before SOR and first entry after EOR.");
+			nentriesUsed = 2;
+			arrayValues = new Float_t[2];
+			arrayWeights = new Double_t[2];
+			arrayValues[0] = valueBeforeSOR;
+			arrayWeights[0] = (Double_t)(timestampAfterEOR - timestampBeforeSOR);
+			arrayValues[1] = valueAfterEOR;
+			arrayWeights[1] = 1.;
+			AliDebug(2,Form("value0 = %f, with weight = %f",arrayValues[0],arrayWeights[0])); 
+			AliDebug(2,Form("value1 = %f, with weight = %f",arrayValues[1],arrayWeights[1])); 
+			aDCSArrayMean = TMath::Mean(1,arrayValues,arrayWeights);
+		}
+	}
+
+	AliInfo(Form("mean = %f ", aDCSArrayMean));
 	return aDCSArrayMean;
 
 }
@@ -1477,26 +1645,149 @@ Float_t AliGRPPreprocessor::ProcessUInt(const TObjArray* array)
 	// are outside the queried time interval or their value is out of range
 	//
 
-	Float_t aDCSArraySum = 0.0;
+	TString timeStartString = (TString)GetRunParameter("DAQ_time_start");
+	TString timeEndString = (TString)GetRunParameter("DAQ_time_end");
+	if (timeStartString.IsNull() || timeStartString.IsNull()){
+		if (timeStartString.IsNull()){ 
+			AliError("DAQ_time_start not set in logbook! Setting statistical values for current DP to invalid");
+		}
+		else if (timeStartString.IsNull()){
+			AliError("DAQ_time_end not set in logbook! Setting statistical values for current DP to invalid");
+		}
+		return 0;
+	}  
+
+	Int_t timeStart = (Int_t)(timeStartString.Atoi());
+	Int_t timeEnd = (Int_t)(timeEndString.Atoi());
 	Float_t aDCSArrayMean = 0.0;
 	Int_t iCounts = 0;
 	AliDCSValue* v = 0x0;
+	Float_t valueBeforeSOR = 0;
+	Float_t valueAfterEOR = 0;
+	Int_t timestampBeforeSOR = -1;
+	Int_t timestampAfterEOR = -1;
+	Int_t ientrySOR = -1;
+	Int_t ientryEOR = -1;
+	Float_t* arrayValues = 0x0; 
+	Double_t* arrayWeights = 0x0; 
+	Int_t iCountsRun = 0;
+	Int_t nCounts = array->GetEntries();
 
-	for(Int_t iCount = 0; iCount < array->GetEntries(); iCount++) {
-		v = (AliDCSValue *)array->At(iCount);
+	for(Int_t i = 0; i < nCounts; i++) {
+		v = (AliDCSValue *)array->At(i);
 		if ((v->GetUInt() < fminUInt) || (v->GetUInt() > fmaxUInt)) {
-			AliError(Form("Error! UInt value found in DCS map at %d-th entry is OUT OF RANGE: value = %u",iCount,v->GetUInt()));
+			AliError(Form("Error! UInt value found in DCS map at %d-th entry is OUT OF RANGE: value = %u",i,v->GetUInt()));
 			return AliGRPObject::GetInvalidFloat();
 		}
 		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
-			aDCSArraySum += v->GetUInt();
+			AliDebug(2,Form("%d-th entry = %d at timestamp %i",i,v->GetUInt(),v->GetTimeStamp()));
 			iCounts += 1;
+			// look for the last value before SOR and the first value before EOR
+			if (((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) && (Int_t)(v->GetTimeStamp()) < timeStart) {
+				timestampBeforeSOR = (Int_t)(v->GetTimeStamp());
+				AliDebug(2,Form("timestamp of last entry before SOR = %d, with DAQ_time_start = %d",timestampBeforeSOR,timeStart));
+				valueBeforeSOR = (Float_t)v->GetUInt();
+			}
+			else if ((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery() && (Int_t)(v->GetTimeStamp()) > timeEnd && timestampAfterEOR == -1){
+				timestampAfterEOR = (Int_t)(v->GetTimeStamp());
+				valueAfterEOR = (Float_t)v->GetUInt();
+				AliDebug(2,Form("timestamp of first entry after EOR = %d, with DAQ_time_end = %d",timestampAfterEOR,timeEnd));
+			}
+			// check if there are DPs between DAQ_time_start and DAQ_time_end
+			if(((Int_t)(v->GetTimeStamp()) >= timeStart) &&((Int_t)(v->GetTimeStamp()) <= timeEnd)) {
+				if (ientrySOR == -1) ientrySOR = i;  // first entry after SOR
+				if (ientryEOR < i) ientryEOR = i;  // last entry before EOR
+				AliDebug(2,Form("entry between SOR and EOR"));
+				iCountsRun += 1;
+			}
+		}
+		else {
+			AliError(Form("DCS values for the parameter outside the queried interval: timestamp = %d",v->GetTimeStamp()));
 		}
 	}
 
-	if(iCounts != 0) aDCSArrayMean = aDCSArraySum/iCounts;
-	else aDCSArrayMean = AliGRPObject::GetInvalidFloat();
-	
+	if (timestampBeforeSOR == -1){
+		AliWarning("No value found before SOR!");
+	}
+	if (timestampAfterEOR == -1){
+		AliWarning("No value found after EOR!");
+	}
+
+	AliDebug(2,Form("Number of valid entries (within query interval) = %i, starting from %i entries",iCounts,nCounts));
+	AliDebug(2,Form("Last value before DAQ_time_start (SOR) = %f at timestamp = %d",valueBeforeSOR,timestampBeforeSOR));
+	AliDebug(2,Form("First value after DAQ_time_end (EOR)   = %f at timestamp = %d",valueAfterEOR,timestampAfterEOR));
+	AliInfo(Form("Found %d entries between DAQ_time_start (SOR) and DAQ_time_end (EOR)",iCountsRun));
+	AliDebug(2,Form("Index of first entry after DAQ_time_start (SOR) = %d ",ientrySOR));
+	AliDebug(2,Form("Index of first entry before DAQ_time_end (EOR) = %d ",ientryEOR));
+
+	Int_t nentriesUsed = 0;
+	if (iCountsRun > 1){
+		AliInfo("Using entries between DAQ_time_start (SOR) and DAQ_time_end (EOR)");
+		AliDebug(2,"Calculating (weighted) Mean");
+		arrayValues = new Float_t[iCountsRun]; 
+		arrayWeights = new Double_t[iCountsRun]; 
+		nentriesUsed = iCountsRun;
+		for (Int_t i = ientrySOR; i <= ientryEOR; i++){
+			AliDCSValue *v = (AliDCSValue *)array->At(i);
+			Int_t timestamp2 = 0;
+			if (i < ientryEOR){
+				AliDCSValue *v1 = (AliDCSValue *)array->At(i+1);
+				timestamp2 = (Int_t)v1->GetTimeStamp();
+			}
+			else {
+				timestamp2 = timeEnd+1;
+			}
+			arrayWeights[i-ientrySOR] = (Double_t)(timestamp2 - (Int_t)v->GetTimeStamp());
+			arrayValues[i-ientrySOR] = (Float_t)v->GetUInt();
+		}
+		aDCSArrayMean = TMath::Mean(iCountsRun,arrayValues,arrayWeights);
+	}
+	else if (iCountsRun == 1){
+		AliDCSValue* v = (AliDCSValue *)array->At(ientrySOR);
+		nentriesUsed = 2;
+		if (timestampBeforeSOR != -1 && timestampBeforeSOR != (Int_t)v->GetTimeStamp()){
+			AliWarning("Using single entry between DAQ_time_start (SOR) and DAQ_time_end (EOR) and last entry before SOR.");
+			arrayValues = new Float_t[2];
+			arrayWeights = new Double_t[2];
+			arrayValues[0] = valueBeforeSOR;
+			arrayWeights[0] = (Double_t)((Int_t)v->GetTimeStamp()-timestampBeforeSOR);
+			arrayValues[1] = (Float_t)v->GetUInt();
+			arrayWeights[1] = (Double_t)(timeEnd+1-(Int_t)v->GetTimeStamp());
+			AliDebug(2,Form("value0 = %f, with weight = %f",arrayValues[0],arrayWeights[0])); 
+			AliDebug(2,Form("value1 = %f, with weight = %f",arrayValues[1],arrayWeights[1])); 
+			aDCSArrayMean = TMath::Mean(2,arrayValues,arrayWeights);
+		}
+		else{
+			AliError("Cannot calculate mean - only one value collected during the run, but no value before with which to calculate the statistical quantities");
+			return AliGRPObject::GetInvalidFloat();
+		}
+	}
+	else { // iCountsRun == 0, using the point immediately before SOR and the one immediately after EOR
+		if (timestampBeforeSOR == -1 || timestampAfterEOR == -1){
+			if (timestampBeforeSOR == -1){
+				AliError("Cannot calculate mean - no points during the run collected, and point before SOR missing");
+			}
+			if (timestampAfterEOR == -1){
+				AliError("Cannot calculate maen - no points during the run collected, and point after EOR missing");
+			}
+			return AliGRPObject::GetInvalidFloat();
+		}
+		else {
+			AliWarning("Using last entry before SOR and first entry after EOR.");
+			nentriesUsed = 2;
+			arrayValues = new Float_t[2];
+			arrayWeights = new Double_t[2];
+			arrayValues[0] = valueBeforeSOR;
+			arrayWeights[0] = (Double_t)(timestampAfterEOR - timestampBeforeSOR);
+			arrayValues[1] = valueAfterEOR;
+			arrayWeights[1] = 1.;
+			AliDebug(2,Form("value0 = %f, with weight = %f",arrayValues[0],arrayWeights[0])); 
+			AliDebug(2,Form("value1 = %f, with weight = %f",arrayValues[1],arrayWeights[1])); 
+			aDCSArrayMean = TMath::Mean(1,arrayValues,arrayWeights);
+		}
+	}
+
+	AliInfo(Form("mean = %f ",aDCSArrayMean));
 	return aDCSArrayMean;
 
 }
