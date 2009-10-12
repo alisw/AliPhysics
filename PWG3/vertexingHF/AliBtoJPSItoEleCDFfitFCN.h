@@ -17,6 +17,7 @@
 #include <TDatabasePDG.h>
 #include "TH1F.h"
 #include "TMath.h"
+#include "TRandom3.h"
 
 enum IntegralType {kBkg, 
                    kBkgNorm, 
@@ -39,24 +40,34 @@ class AliBtoJPSItoEleCDFfitFCN : public TNamed {
   Double_t EvaluateLikelihood(const Double_t* pseudoproperdecaytime,
                               const Double_t* invariantmass, const Int_t ncand);
  
-  Double_t GetFPlus() const {return fFPlus;}
-  Double_t GetFMinus() const {return fFMinus;}
-  Double_t GetFSym() const {return fFSym;}
-  Double_t GetRadius() const {return fParameters[0];}
-  Double_t GetTheta() const {return fParameters[1];}
-  Double_t GetPhi() const {return fParameters[2];}
-  Double_t GetLamPlus() const {return fParameters[3];}
-  Double_t GetLamMinus() const {return fParameters[4];}
-  Double_t GetLamSym() const {return fParameters[5];}
-  Double_t GetMassSlope() const {return fParameters[6];}
-  Double_t GetFractionJpsiFromBeauty() const {return fParameters[7];}
-  Double_t GetFsig() const {return fParameters[8];}
-  Double_t GetCrystalBallMmean() const {return fParameters[9];}
-  Double_t GetCrystalBallNexp() const {return fParameters[10];}
-  Double_t GetCrystalBallSigma() const {return fParameters[11];}
-  Double_t GetCrystalBallAlpha() const {return fParameters[12];}
-  Double_t GetIntegral() const {return fIntegral;}
-  Bool_t GetCrystalBallParam() const {return fCrystalBallParam;}
+  Double_t GetFPlus()                  const { return fFPlus; }
+  Double_t GetFMinus()                 const { return fFMinus; }
+  Double_t GetFSym()                   const { return fFSym; }
+  Double_t GetRadius()                 const { return fParameters[0]; }
+  Double_t GetTheta()                  const { return fParameters[1]; }
+  Double_t GetPhi()                    const { return fParameters[2]; }
+  Double_t GetLamPlus()                const { return fParameters[3]; }
+  Double_t GetLamMinus()               const { return fParameters[4]; }
+  Double_t GetLamSym()                 const { return fParameters[5]; }
+  Double_t GetMassSlope()              const { return fParameters[6]; }
+  Double_t GetFractionJpsiFromBeauty() const { return fParameters[7]; }
+  Double_t GetFsig()                   const { return fParameters[8]; }
+  Double_t GetCrystalBallMmean()       const { return fParameters[9]; }
+  Double_t GetCrystalBallNexp()        const { return fParameters[10]; }
+  Double_t GetCrystalBallSigma()       const { return fParameters[11]; }
+  Double_t GetCrystalBallAlpha()       const { return fParameters[12]; }
+  Double_t GetCrystalBallNorm()        const { return fParameters[13]; }
+  Double_t GetSigmaResol()             const { return fParameters[14]; }
+  Double_t GetNResol()                 const { return fParameters[15]; }
+  Double_t GetIntegral()               const { return fIntegral; }
+  Double_t GetIntegralFunB()           const { return fintxFunB; }
+  Double_t GetIntegralBkgPos()         const { return fintxDecayTimeBkgPos; }
+  Double_t GetIntegralBkgNeg()         const { return fintxDecayTimeBkgNeg; }
+  Double_t GetIntegralBkgSym()         const { return fintxDecayTimeBkgSym; }
+  Double_t GetIntegralMassSig()        const { return fintmMassSig; }
+  Double_t GetIntegralRes()            const { return fintxRes; }
+  Double_t GetIntegralMassBkg()        const { return fintmMassBkg; }
+  Bool_t GetCrystalBallParam()         const { return fCrystalBallParam; }
 
   void SetFPlus(Double_t plus) {fFPlus = plus;}
   void SetFMinus(Double_t minus) {fFMinus = minus;}
@@ -74,14 +85,26 @@ class AliBtoJPSItoEleCDFfitFCN : public TNamed {
   void SetCrystalBallNexp(Double_t CrystalBallNexp) {fParameters[10] = CrystalBallNexp;}
   void SetCrystalBallSigma(Double_t CrystalBallSigma) {fParameters[11] = CrystalBallSigma;}
   void SetCrystalBallAlpha(Double_t CrystalBallAlpha) {fParameters[12] = CrystalBallAlpha;}
+  void SetCrystalBallNorm(Double_t CrystalBallNorm) {fParameters[13] = CrystalBallNorm;}
+  void SetSigmaResol(Double_t SigmaResol) {fParameters[14] = SigmaResol;}
+  void SetNResol(Double_t NResol) {fParameters[15] = NResol;}
 
   void SetAllParameters(const Double_t* parameters);
-  void SetIntegral(Double_t integral) {fIntegral = integral;}
+  void SetIntegral(Double_t integral)        { fIntegral = integral; }
+  void SetIntegralFunB(Double_t integral)    { fintxFunB = integral; }
+  void SetIntegralBkgPos(Double_t integral)  { fintxDecayTimeBkgPos = integral; }
+  void SetIntegralBkgNeg(Double_t integral)  { fintxDecayTimeBkgNeg = integral; }
+  void SetIntegralBkgSym(Double_t integral)  { fintxDecayTimeBkgSym = integral; }
+  void SetIntegralMassSig(Double_t integral) { fintmMassSig = integral; }
+  void SetIntegralRes(Double_t integral)     { fintxRes = integral; }
+  void SetIntegralMassBkg(Double_t integral) { fintmMassBkg = integral; }
+
   void SetCsiMC(const TH1F* MCtemplate) {fhCsiMC = (TH1F*)MCtemplate->Clone("fhCsiMC");}
-  void SetResolutionConstants(Int_t BinNum);
-  void SetMassWndHigh(Double_t limit) { fMassWndHigh = TDatabasePDG::Instance()->GetParticle(443)->Mass() + limit ;}//here use pdg code instead
-  void SetMassWndLow(Double_t limit) { fMassWndLow = TDatabasePDG::Instance()->GetParticle(443)->Mass() - limit ;}//here use pdg code instead
-  void SetCrystalBallParam(Bool_t okCB) {fCrystalBallParam = okCB;}
+
+  void SetResolutionConstants();
+  void SetMassWndHigh(Double_t limit) { fMassWndHigh = TDatabasePDG::Instance()->GetParticle(443)->Mass() + limit ;}
+  void SetMassWndLow(Double_t limit) { fMassWndLow = TDatabasePDG::Instance()->GetParticle(443)->Mass() - limit ;}
+  void SetCrystalBallFunction(Bool_t okCB) {fCrystalBallParam = okCB;}
 
   void ConvertFromSpherical() { fFPlus  = TMath::Power((fParameters[0]*TMath::Cos(fParameters[1])),2.);
                                 fFMinus = TMath::Power((fParameters[0]*TMath::Sin(fParameters[1])*TMath::Sin(fParameters[2])),2.);
@@ -95,7 +118,7 @@ class AliBtoJPSItoEleCDFfitFCN : public TNamed {
 
  private:  
   //
-  Double_t fParameters[13];        /*  par[0]  = fRadius;                
+  Double_t fParameters[16];        /*  par[0]  = fRadius;                
                                        par[1]  = fTheta;
                                        par[2]  = fPhi;
                                        par[3]  = fOneOvLamPlus;
@@ -107,18 +130,29 @@ class AliBtoJPSItoEleCDFfitFCN : public TNamed {
                                        par[9]  = fCrystalBallMmean;
                                        par[10] = fCrystalBallNexp;
                                        par[11] = fCrystalBallSigma;
-                                       par[12] = fCrystalBallAlpha;*/
+                                       par[12] = fCrystalBallAlpha;
+                                       par[13] = fCrystalBallNorm;
+                                       par[14] = fSigmaResol;
+                                       par[15] = fNResol; */
 
-  Double_t fFPlus;                  // parameters of the log-likelihood function
-  Double_t fFMinus;                 // Slopes of the x distributions of the background 
-  Double_t fFSym;                   // functions 
 
-  Double_t fIntegral;               // integral values of log-likelihood function terms
-  TH1F *fhCsiMC;                    // X distribution used as MC template for JPSI from B
-  Double_t fResolutionConstants[7]; // constants for the parametrized resolution function R(X)
-  Double_t fMassWndHigh;            // JPSI Mass window higher limit
-  Double_t fMassWndLow;             // JPSI Mass window lower limit
-  Bool_t fCrystalBallParam;         // Boolean to switch to Crystall Ball parameterisation
+  Double_t fFPlus;                     // parameters of the log-likelihood function
+  Double_t fFMinus;                    // Slopes of the x distributions of the background 
+  Double_t fFSym;                      // functions 
+
+  Double_t fIntegral;                  // integral values of log-likelihood function terms
+  Double_t fintxFunB;
+  Double_t fintxDecayTimeBkgPos;
+  Double_t fintxDecayTimeBkgNeg;
+  Double_t fintxDecayTimeBkgSym;
+  Double_t fintmMassSig;
+  Double_t fintxRes;
+  Double_t fintmMassBkg;
+  TH1F *fhCsiMC;                       // X distribution used as MC template for JPSI from B
+  Double_t fResolutionConstants[5];    // constants for the parametrized resolution function R(X)
+  Double_t fMassWndHigh;               // JPSI Mass window higher limit
+  Double_t fMassWndLow;                // JPSI Mass window lower limit
+  Bool_t fCrystalBallParam;            // Boolean to switch to Crystall Ball parameterisation
 
   ////
 
@@ -156,7 +190,7 @@ class AliBtoJPSItoEleCDFfitFCN : public TNamed {
 
   Double_t ResolutionFunc(Double_t x) const ;
   //
-  ClassDef (AliBtoJPSItoEleCDFfitFCN,0);         // Unbinned log-likelihood fit 
+  ClassDef (AliBtoJPSItoEleCDFfitFCN,1);         // Unbinned log-likelihood fit 
 
 };
 

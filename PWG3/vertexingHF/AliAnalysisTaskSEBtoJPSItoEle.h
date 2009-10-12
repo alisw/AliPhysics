@@ -37,7 +37,7 @@ class AliAnalysisTaskSEBtoJPSItoEle : public AliAnalysisTaskSE
   void SetPtCuts(const Double_t ptcuts[2]);
   void SetAODMCInfo(Bool_t OkMCInfo) { fOkAODMC = OkMCInfo;}
   void SetMinimize(Bool_t OkMinimize) { fOkMinimize = OkMinimize;}
-  void ReadAODMCInfo(const AliAODEvent* aodEv, const TClonesArray* inArray);
+  void ReadAODMCInfo(AliAODEvent* aodEv, const TClonesArray* inArray);
   void SetPathMCfile (TString mcfilename="CsiMCfromKine_10PtBins.root") {fNameMCfile = mcfilename;}
   TH1F* OpenLocalMCFile(TString dataDir, Int_t nbin);  
 
@@ -64,6 +64,6 @@ class AliAnalysisTaskSEBtoJPSItoEle : public AliAnalysisTaskSE
   Double_t fCuts[9];                         // cuts for N-tuple values selection
   Double_t fPtCuts[2];                       // Max and min pt of the candidates
 
-  ClassDef(AliAnalysisTaskSEBtoJPSItoEle,0); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEBtoJPSItoEle,1); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
 };
 #endif
