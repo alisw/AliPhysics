@@ -105,7 +105,7 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fPMeasurementCov(new TMatrixDSym( fgkNMeasurementParams )),
     fPMeasurementPrediction(new TVectorD( fgkNMeasurementParams )),
     fOutRejSigmas(1.),
-    fDelta(new Double_t[fgkNSystemParams]),
+    //fDelta(new Double_t[fgkNSystemParams]),
     fNumericalParanoia(kTRUE),
     fRejectOutliers(kTRUE),
     fRequireMatchInTPC(kFALSE),
@@ -125,6 +125,7 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fNProcessedEvents(0),
     fTrackInBuffer(0),
     fTimeStamp(0),
+    fRunNumber(0),
     fTPCvd(2.64),
     fTPCZLengthA(2.4972500e02),
     fTPCZLengthC(2.4969799e02)
@@ -151,7 +152,7 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
     fPMeasurementCov(new TMatrixDSym( *a.fPMeasurementCov )),
     fPMeasurementPrediction(new TVectorD( *a.fPMeasurement )),
     fOutRejSigmas(a.fOutRejSigmas),
-    fDelta(new Double_t[fgkNSystemParams]),
+    //fDelta(new Double_t[fgkNSystemParams]),
     fNumericalParanoia(a.fNumericalParanoia),
     fRejectOutliers(a.fRejectOutliers),
     fRequireMatchInTPC(a.fRequireMatchInTPC),
@@ -171,6 +172,7 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
     fNProcessedEvents(a.fNProcessedEvents),
     fTrackInBuffer(a.fTrackInBuffer),
     fTimeStamp(a.fTimeStamp),
+    fRunNumber(a.fRunNumber),
     fTPCvd(a.fTPCvd),
     fTPCZLengthA(a.fTPCZLengthA),
     fTPCZLengthC(a.fTPCZLengthC)
@@ -228,6 +230,7 @@ AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a
   fNProcessedEvents=a.fNProcessedEvents;
   fTrackInBuffer=a.fTrackInBuffer;
   fTimeStamp=a.fTimeStamp;
+  fRunNumber=a.fRunNumber;
   //fApplyCovarianceCorrection=a.fApplyCovarianceCorrection;
   //fCalibrationMode=a.fCalibrationMode;
   //fFillHistograms=a.fFillHistograms;
@@ -258,7 +261,7 @@ AliRelAlignerKalman::~AliRelAlignerKalman()
   if (fPH) delete fPH;
   if (fPMeasurement) delete fPMeasurement;
   if (fPMeasurementCov) delete fPMeasurementCov;
-  if (fDelta) delete [] fDelta;
+  //if (fDelta) delete [] fDelta;
   //if (fPMes0Hist) delete fPMes0Hist;
   //if (fPMes1Hist) delete fPMes1Hist;
   //if (fPMes2Hist) delete fPMes2Hist;
@@ -293,7 +296,11 @@ Bool_t AliRelAlignerKalman::AddESDevent( const AliESDEvent* pEvent )
       success = ( AddESDtrack( track ) || success );
     }
   }
-  if (success) fTimeStamp = pEvent->GetTimeStamp();
+  if (success)
+  {
+    fTimeStamp = pEvent->GetTimeStamp();
+    fRunNumber = pEvent->GetRunNumber();
+  }
   return success;
 }
 
@@ -369,7 +376,8 @@ Bool_t AliRelAlignerKalman::AddCosmicEvent( const AliESDEvent* pEvent )
     else
       continue;
   }
-  if (success) fTimeStamp=pEvent->GetTimeStamp();
+  fTimeStamp=pEvent->GetTimeStamp(); //always update timestamp even when no update performed
+  fRunNumber=pEvent->GetRunNumber();
   return success;
 }
 
@@ -391,6 +399,7 @@ void AliRelAlignerKalman::Print(Option_t*) const
   if (fgkNSystemParams>6) printf("  vd corr           % .5g ± (%.2g)    [ vd should be %.4g (was %.4g in reco) ]\n", (*fPX)(6), TMath::Sqrt((*fPXcov)(6,6)), (*fPX)(6)*fTPCvd, fTPCvd);
   if (fgkNSystemParams>7) printf("  t0                % .5g ± (%.2g) us  |  %.4g ± (%.2g) cm     [ t0_real = t0_rec+t0 ]\n",(*fPX)(7), TMath::Sqrt((*fPXcov)(7,7)), fTPCvd*(*fPX)(7), fTPCvd*TMath::Sqrt((*fPXcov)(7,7)));
   if (fgkNSystemParams>8) printf("  vd/dy             % .5f ± (%.2f) (cm/us)/m\n", (*fPX)(8), TMath::Sqrt((*fPXcov)(8,8)));
+  printf("  run: %i, timestamp: %i\n", fRunNumber, fTimeStamp);
   printf("\n");
   return;
 }
@@ -1242,6 +1251,8 @@ void AliRelAlignerKalman::Reset()
   fNOutliers=0;
   fNTracks=0;
   fNProcessedEvents=0;
+  fRunNumber=0;
+  fTimeStamp=0;
 }
 
 //______________________________________________________________________________
@@ -1308,12 +1319,16 @@ void AliRelAlignerKalman::ResetTPCparamsCovariance( const Double_t number )
   }
 }
 
+//______________________________________________________________________________
 Bool_t AliRelAlignerKalman::Merge( const AliRelAlignerKalman* al )
 {
   //Merge two aligners
   
   if (!al) return kFALSE;
+  if (al==this) return kTRUE;
   if (al->fgkNSystemParams != fgkNSystemParams) return kFALSE;
+  if (fRunNumber != al->fRunNumber) return kFALSE;
+  if (al->fNUpdates == 0) return kTRUE; //no point in merging with an empty one
   
   //store the pointers to current stuff
   TVectorD* pmes = fPMeasurement;
@@ -1349,10 +1364,30 @@ Bool_t AliRelAlignerKalman::Merge( const AliRelAlignerKalman* al )
   fNTracks += al->fNTracks;
   fNMatchedTPCtracklets += al->fNMatchedTPCtracklets;
   fNMatchedCosmics += al->fNMatchedCosmics;
-  if (fTimeStamp < al->fTimeStamp) fTimeStamp = al->fTimeStamp; //a bit arbitrary: take the older one
+  if (fTimeStamp < al->fTimeStamp) fTimeStamp = al->fTimeStamp; //take the older one
 
   return success;
 }
+
+//______________________________________________________________________________
+Int_t AliRelAlignerKalman::Compare(const TObject *obj) const
+{
+  if (this == obj) return 0;
+  const AliRelAlignerKalman* aobj = dynamic_cast<const AliRelAlignerKalman*>(obj);
+  if (!aobj) return 0;
+  if (fTimeStamp < aobj->fTimeStamp) return -1;
+  else if (fTimeStamp > aobj->fTimeStamp) return 1;
+  else return 0;
+}
+
+//______________________________________________________________________________
+//Int_t AliRelAlignerKalman::Compare(const AliRelAlignerKalman *al) const
+//{
+//  if (this == al) return 0;
+//  if (fTimeStamp > al->fTimeStamp) return -1;
+//  else if (fTimeStamp < al->fTimeStamp) return 1;
+//  else return 0;
+//}
 
 //______________________________________________________________________________
 //void AliRelAlignerKalman::PrintCovarianceCorrection()

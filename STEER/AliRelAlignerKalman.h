@@ -114,6 +114,10 @@ public:
     Bool_t IsPositiveDefinite( const TMatrixD& mat ) const;
     void SetTimeStamp( const UInt_t ts ) { fTimeStamp = ts; }
     UInt_t GetTimeStamp() const {return fTimeStamp;}
+    void SetRunNumber( const UInt_t rn ) { fRunNumber = rn; }
+    UInt_t GetRunNumber() const {return fRunNumber;}
+    Int_t Compare(const TObject *obj) const;
+    Bool_t IsSortable() const { return kTRUE; }
     
 protected:
     Bool_t UpdateEstimateKalman();
@@ -144,7 +148,7 @@ private:
     TMatrixDSym* fPMeasurementCov; //!measurement vec cvariance
     TVectorD* fPMeasurementPrediction; //!prediction of the measurement
     Double_t fOutRejSigmas; //number of sigmas for outlier rejection
-    Double_t* fDelta; //array with differentials for calculating derivatives for every parameter(see PrepareSystemMatrix())
+    Double_t fDelta[fgkNSystemParams]; //array with differentials for calculating derivatives for every parameter(see PrepareSystemMatrix())
 
     //Control
     Bool_t fNumericalParanoia; //!whether to perform additional checks for numerical stability
@@ -167,14 +171,15 @@ private:
     Int_t fNMatchedTPCtracklets;//number of cosmic events with 2 matching TPC tracklets
     Int_t fNProcessedEvents; //number of processed events
     Int_t fTrackInBuffer; //!number of tracks in buffer
-    UInt_t fTimeStamp;
+    UInt_t fTimeStamp;    //time stamp
+    UInt_t fRunNumber;    //run number
 
     //TPC stuff
     Double_t fTPCvd; //TPC drift velocity
     Double_t fTPCZLengthA; //TPC length side A
     Double_t fTPCZLengthC; //TPC length side C
     
-    ClassDef(AliRelAlignerKalman,1)     //AliRelAlignerKalman class
+    ClassDef(AliRelAlignerKalman,2)     //AliRelAlignerKalman class
 };
 
 #endif
