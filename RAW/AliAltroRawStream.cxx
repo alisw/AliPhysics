@@ -50,6 +50,7 @@ AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
   fData(NULL),
   fPosition(0),
   fCount(0),
+  fChannelPayloadSize(-1),
   fBunchLength(0),
   fRCUTrailerData(NULL),
   fRCUTrailerSize(0),
@@ -84,6 +85,7 @@ AliAltroRawStream::AliAltroRawStream(const AliAltroRawStream& stream) :
   fData(stream.fData),
   fPosition(stream.fPosition),
   fCount(stream.fCount),
+  fChannelPayloadSize(stream.fChannelPayloadSize),
   fBunchLength(stream.fBunchLength),
   fRCUTrailerData(stream.fRCUTrailerData),
   fRCUTrailerSize(stream.fRCUTrailerSize),
@@ -119,6 +121,7 @@ AliAltroRawStream& AliAltroRawStream::operator = (const AliAltroRawStream& strea
   fData              = stream.fData;
   fPosition          = stream.fPosition;
   fCount             = stream.fCount;
+  fChannelPayloadSize= stream.fChannelPayloadSize;
   fBunchLength       = stream.fBunchLength;
   fRCUTrailerData    = stream.fRCUTrailerData;
   fRCUTrailerSize    = stream.fRCUTrailerSize;
@@ -148,6 +151,7 @@ void AliAltroRawStream::Reset()
 // reset altro raw stream params
 
   fPosition = fCount = fBunchLength = 0;
+  fChannelPayloadSize = -1;
 
   fRCUTrailerData = NULL;
   fRCUTrailerSize = 0;
@@ -207,6 +211,7 @@ Bool_t AliAltroRawStream::NextDDL(UChar_t *data)
   }
 
   fDDLNumber = fRawReader->GetDDLID();
+  fChannelPayloadSize = -1;
   fPosition = GetPosition();
 
   return kTRUE;
@@ -330,6 +335,7 @@ Bool_t AliAltroRawStream::ReadTrailer()
     return kFALSE;
   }
   fCount |= ((temp & 0x3FF) >> 6);
+  fChannelPayloadSize = fCount;
 
   if (fCount >= fPosition) {
     fRawReader->AddMajorErrorLog(kAltroTrailerErr,"invalid size");

@@ -48,6 +48,7 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(AliRawReader* rawReader) :
   fBunchLength(-1),
   fBadChannel(kFALSE),
   fPayloadSize(-1),
+  fChannelPayloadSize(-1),
   fBunchDataPointer(NULL),
   fBunchDataIndex(-1),
   fRCUTrailerData(NULL),
@@ -92,6 +93,7 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(const AliAltroRawStreamV3& stream) :
   fBunchLength(stream.fBunchLength),
   fBadChannel(stream.fBadChannel),
   fPayloadSize(stream.fPayloadSize),
+  fChannelPayloadSize(stream.fChannelPayloadSize),
   fBunchDataPointer(stream.fBunchDataPointer),
   fBunchDataIndex(stream.fBunchDataIndex),
   fRCUTrailerData(stream.fRCUTrailerData),
@@ -134,6 +136,7 @@ AliAltroRawStreamV3& AliAltroRawStreamV3::operator = (const AliAltroRawStreamV3&
   fBunchLength       = stream.fBunchLength;
   fBadChannel        = stream.fBadChannel;
   fPayloadSize       = stream.fPayloadSize;
+  fChannelPayloadSize= stream.fChannelPayloadSize;
   fBunchDataPointer  = stream.fBunchDataPointer;
   fBunchDataIndex    = stream.fBunchDataIndex;
   fRCUTrailerData    = stream.fRCUTrailerData;
@@ -171,6 +174,7 @@ void AliAltroRawStreamV3::Reset()
   fBunchLength = fStartTimeBin = -1;
   fBadChannel = kFALSE;
   fPayloadSize = -1;
+  fChannelPayloadSize = -1;
   fBunchDataPointer = NULL;
   fBunchDataIndex = -1;
 
@@ -200,6 +204,7 @@ Bool_t AliAltroRawStreamV3::NextDDL()
   } while (fRawReader->GetDataSize() == 0);
 
   fDDLNumber = fRawReader->GetDDLID();
+  fChannelPayloadSize = -1;
 
   UChar_t rcuVer = fRawReader->GetBlockAttributes();
 
@@ -241,7 +246,10 @@ Bool_t AliAltroRawStreamV3::NextChannel()
   // RCU signals readout error in this channel
   if (fOldStream) {
     Bool_t status = fOldStream->NextChannel();
-    if (status) fHWAddress = fOldStream->GetHWAddress();
+    if (status) {
+      fHWAddress = fOldStream->GetHWAddress();
+      fChannelPayloadSize = fOldStream->GetChannelPayloadSize();
+    }
     return status;
   }
 
@@ -262,6 +270,7 @@ Bool_t AliAltroRawStreamV3::NextChannel()
 
   // extract channel payload and hw address
   fCount = (word >> 16) & 0x3FF; 
+  fChannelPayloadSize = fCount;
   fHWAddress = word & 0xFFF;
 
   // Now unpack the altro data

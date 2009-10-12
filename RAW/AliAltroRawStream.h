@@ -48,6 +48,8 @@ class AliAltroRawStream: public TObject {
     Int_t GetSignal()     const { return fSignal; }     // Provide signal in ADC counts
     Int_t GetTimeLength() const { return fTimeBunch; }  // Provide total length of current time bunch
 
+    Int_t GetChannelPayloadSize() const { return fChannelPayloadSize; }
+
     Int_t GetBranch()     const; // Provide the branch index for the current hardware address
     Int_t GetFEC()        const; // Provide the front-end card index for the current hardware address
     Int_t GetAltro()      const; // Provide the altro chip index for the current hardware address
@@ -140,6 +142,7 @@ class AliAltroRawStream: public TObject {
 
     Int_t            fPosition;     // current (10 bit) position in fData
     Int_t            fCount;        // counter of words to be read for current trailer
+    Int_t            fChannelPayloadSize;        //
     Int_t            fBunchLength;  // remaining number of signal bins in the current bunch
 
     UChar_t*         fRCUTrailerData; // pointer to RCU trailer data

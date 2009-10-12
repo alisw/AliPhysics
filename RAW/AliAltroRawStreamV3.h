@@ -48,6 +48,7 @@ class AliAltroRawStreamV3: public TObject {
     const UShort_t* GetSignals() const { return fBunchDataPointer; }  // Provide access to altro data itself
     Bool_t IsChannelBad()      const { return fBadChannel; }   // Is the channel data bad or not
 
+    Int_t GetChannelPayloadSize() const { return fChannelPayloadSize; }
 
     Int_t GetBranch()     const; // Provide the branch index for the current hardware address
     Int_t GetFEC()        const; // Provide the front-end card index for the current hardware address
@@ -129,6 +130,8 @@ class AliAltroRawStreamV3: public TObject {
 
     Bool_t           fBadChannel;   //
     Int_t            fPayloadSize;  //
+
+    Int_t            fChannelPayloadSize; //
 
     UShort_t         fBunchData[kMaxNTimeBins];    // cache for the decoded altro payload
     UShort_t*        fBunchDataPointer;            // pointer to the current bunch samples
