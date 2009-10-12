@@ -95,11 +95,6 @@ AliAnalysisTaskSEBtoJPSItoEle::~AliAnalysisTaskSEBtoJPSItoEle()
 void AliAnalysisTaskSEBtoJPSItoEle::Init()
 {
   // Initialization
-  //Double_t ptCuts[2] = {1.,1.5}; // 1 GeV < pt < 1.5 GeV
-  Double_t ptCuts[2] = {1.,100}; // 
-  SetPtCuts(ptCuts);
-  SetMinimize(kTRUE);
-  SetAODMCInfo(kTRUE);
 
   if(fDebug > 1) printf("AliAnalysisTaskSEBtoJPSItoEle::Init() \n");
 
@@ -124,7 +119,7 @@ void AliAnalysisTaskSEBtoJPSItoEle::UserCreateOutputObjects()
   fOutput->Add(fhDecayTimeMCjpsifromB);
   }
 
-  fhDecayTime = new TH1F("fhDecayTime", "J/#Psi pseudo proper decay time; X [#mu m]; Entries",100,-4000.,4000.);
+  fhDecayTime = new TH1F("fhDecayTime", "J/#Psi pseudo proper decay time; X [#mu m]; Entries",200,-2000.,2000.);
   fhDecayTime->Sumw2();
   fhDecayTime->SetMinimum(0);
   fOutput->Add(fhDecayTime);
@@ -182,15 +177,24 @@ void AliAnalysisTaskSEBtoJPSItoEle::UserExec(Option_t */*option*/)
     return;
   } 
 
+  // load MC particles
+  TClonesArray* mcArray = 
+     dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
+     AliInfo(Form("MC particles found in mcArray ---> %d ",mcArray->GetEntriesFast()));
+
   // Read AOD Monte Carlo information
   if(fOkAODMC) ReadAODMCInfo(aod,inputArrayJPSItoEle);
 
   // loop over J/Psi->ee candidates
   Int_t nInJPSItoEle = inputArrayJPSItoEle->GetEntriesFast();
-  if(fDebug>1) printf("Number of B->JPSI->e+e-: %d\n",nInJPSItoEle);
+  printf("Number of JPSI->e+e- candidates: %d\n",nInJPSItoEle);
 
   for (Int_t iJPSItoEle = 0; iJPSItoEle < nInJPSItoEle; iJPSItoEle++) {
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArrayJPSItoEle->UncheckedAt(iJPSItoEle);
+
+    Int_t mcLabel = d->MatchToMC(443,mcArray) ; // select only reco JPSI that are true JPSI
+
     //Secondary vertex
     Double_t vtxSec[3] = {0.,0.,0.};
     Double_t vtxPrim[3] = {0.,0.,0.};
@@ -202,8 +206,14 @@ void AliAnalysisTaskSEBtoJPSItoEle::UserExec(Option_t */*option*/)
     }
     //Int_t okJPSI=0;
     // here analyze only if cuts are passed
-    //if(d->SelectBtoJPSI(fCuts,okJPSI)) {
+
     if(d->Pt() < fPtCuts[1] && d->Pt() > fPtCuts[0]){ // apply pt cut only
+      if (mcLabel == -1)
+         {
+          AliDebug(2,"No MC particle found");
+         }
+      else {
+
       fhInvMass->Fill(d->InvMassJPSIee()); 
       fhD0->Fill(10000*d->ImpParXY());
       fhD0D0->Fill(1e8*d->Prodd0d0());
@@ -225,6 +235,8 @@ void AliAnalysisTaskSEBtoJPSItoEle::UserExec(Option_t */*option*/)
     
       fNtupleJPSI->Fill(pseudoProperDecayTime,d->InvMassJPSIee()); // fill N-tuple with X,M values
 
+      }//
+  
      } // end of JPSItoEle candidates selection according to cuts
 
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
@@ -278,7 +290,8 @@ void AliAnalysisTaskSEBtoJPSItoEle::Terminate(Option_t */*option*/)
         }
 
      printf("+++\n+++  MC template histo copied ---> OK\n+++\n");
-     fCdfFit->DoMinimization(pseudoProperValues,invMassValues,ncand);
+     //fCdfFit->DoMinimization(pseudoProperValues,invMassValues,ncand);
+     fCdfFit->DoMinimization();
    } 
 
   return;
@@ -300,19 +313,17 @@ void AliAnalysisTaskSEBtoJPSItoEle::SetCutsD0(const Double_t cuts[9])
   for(Int_t i = 0; i < 9; i++) fCuts[i] = cuts[i];
 }
 //_________________________________________________________________________________________________
-void AliAnalysisTaskSEBtoJPSItoEle::ReadAODMCInfo(const AliAODEvent* aodEvent, const TClonesArray* inputArray) 
+void AliAnalysisTaskSEBtoJPSItoEle::ReadAODMCInfo(AliAODEvent* aodEvent, const TClonesArray* inputArray) 
 {
   //
   // Reads MC information if needed (for example in case of parametrized PID)
   //
 
   // load MC particles
-  TClonesArray *mcArray =
-    (TClonesArray*)aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-  if(!mcArray) {
-    printf("AliAnalysisTaskSEBtoJPSItoEle::UserExec: MC particles branch not found!\n");
-    return;
-  }
+  TClonesArray* mcArray =
+     dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
+     AliInfo(Form("MC particles found in mcArray ---> %d ",mcArray->GetEntriesFast()));
 
   // load MC header 
   AliAODMCHeader* mcHeader =
@@ -321,7 +332,9 @@ void AliAnalysisTaskSEBtoJPSItoEle::ReadAODMCInfo(const AliAODEvent* aodEvent, c
     printf("AliAnalysisTaskSEBtoJPSItoEle::UserExec: MC AOD header branch not found!\n");
   }
 
-  Double_t rmax = 0.000005;
+  AliAODVertex *vtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
+
+  //Double_t rmax = 0.000005;
   Double_t mcPrimVtx[3];
 
   // get MC primary Vtx
@@ -335,7 +348,19 @@ void AliAnalysisTaskSEBtoJPSItoEle::ReadAODMCInfo(const AliAODEvent* aodEvent, c
   Int_t labJPSIdaugh1=0;
 
   for (Int_t iCandidate = 0; iCandidate < nInCandidates; iCandidate++) {
+
     AliAODRecoDecayHF2Prong *dd = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iCandidate);
+    Int_t mcLabelSec = dd->MatchToMC(443,mcArray) ; // select only reco JPSI that are true JPSI
+
+    Double_t vtxPrim[3] = {0.,0.,0.};
+    Double_t vtxSec[3] = {0.,0.,0.};
+    dd->GetSecondaryVtx(vtxSec);
+    Bool_t unsetvtx=kFALSE;
+    if(!dd->GetOwnPrimaryVtx()) {
+      dd->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+      unsetvtx=kTRUE;
+    }
+
     if(dd->Pt() < fPtCuts[1] && dd->Pt() > fPtCuts[0]){ // apply pt cut only
 
       AliAODTrack *trk0 = (AliAODTrack*)dd->GetDaughter(0);
@@ -383,36 +408,61 @@ void AliAnalysisTaskSEBtoJPSItoEle::ReadAODMCInfo(const AliAODEvent* aodEvent, c
        }
       }
 
+      if (mcLabelSec == -1)
+         {
+          AliDebug(2,"No MC particle found");
+         }
+      else {
+
       if(labJPSIdaugh0>=0 && labJPSIdaugh1>=0 && labJPSIdaugh0==labJPSIdaugh1) { // check if JPSI is signal
-        AliAODMCParticle* partJPSI = (AliAODMCParticle*)mcArray->At(labJPSIdaugh0);
-        pdgJPSI = partJPSI->GetPdgCode();
-        if(pdgJPSI == 443){//this is for MC JPSI
-           if(TMath::Sqrt((partJPSI->Xv()-mcPrimVtx[0])*(partJPSI->Xv()-mcPrimVtx[0])+
-                          (partJPSI->Yv()-mcPrimVtx[1])*(partJPSI->Yv()-mcPrimVtx[1])+
-                          (partJPSI->Zv()-mcPrimVtx[2])*(partJPSI->Zv()-mcPrimVtx[2])>rmax)){ //this is for MC displaced JPSI
-              Int_t pdaugh0 = partJPSI->GetDaughter(0);
-              Int_t pdaugh1 = partJPSI->GetDaughter(1);
-              AliAODMCParticle* partDaugh0 = (AliAODMCParticle*)mcArray->At(pdaugh0);
-              AliAODMCParticle* partDaugh1 = (AliAODMCParticle*)mcArray->At(pdaugh1);
-              pdg0 = partDaugh0->GetPdgCode();
-              pdg1 = partDaugh1->GetPdgCode();
-              if(TMath::Abs(pdg0) == 11 && TMath::Abs(pdg1) == 11){ // this is for MC JPSI -> ee
-                labJPSIMother = partJPSI->GetMother();
-                AliAODMCParticle* partJPSIMother = (AliAODMCParticle*)mcArray->At(labJPSIMother);
-                pdgJPSIMother = partJPSIMother->GetPdgCode();
-               if(pdgJPSIMother==511   || pdgJPSIMother==521   ||
-                  pdgJPSIMother==10511 || pdgJPSIMother==10521 ||
-                  pdgJPSIMother==513   || pdgJPSIMother==523   ||
-                  pdgJPSIMother==10513 || pdgJPSIMother==10523 ||
-                  pdgJPSIMother==20513 || pdgJPSIMother==20523 ||
-                  pdgJPSIMother==515   || pdgJPSIMother==525   ||
-                  pdgJPSIMother==531   || pdgJPSIMother==10531 ||
-                  pdgJPSIMother==533   || pdgJPSIMother==10533 ||
-                  pdgJPSIMother==20533 || pdgJPSIMother==535   ||
-                  pdgJPSIMother==541   || pdgJPSIMother==10541 ||
-                  pdgJPSIMother==543   || pdgJPSIMother==10543 ||
-                  pdgJPSIMother==20543 || pdgJPSIMother==545)
-                  { //this is for MC JPSI -> ee from B-hadrons
+          AliAODMCParticle* partJPSI = (AliAODMCParticle*)mcArray->At(labJPSIdaugh0);
+          pdgJPSI = partJPSI->GetPdgCode();
+          Int_t pdaugh0 = partJPSI->GetDaughter(0);
+          Int_t pdaugh1 = partJPSI->GetDaughter(1);
+          AliAODMCParticle* partDaugh0 = (AliAODMCParticle*)mcArray->At(pdaugh0);
+          AliAODMCParticle* partDaugh1 = (AliAODMCParticle*)mcArray->At(pdaugh1);
+          pdg0 = partDaugh0->GetPdgCode();
+          pdg1 = partDaugh1->GetPdgCode();
+        if(TMath::Abs(pdg0) == 11 && TMath::Abs(pdg1) == 11){ // this is for MC JPSI -> ee
+           labJPSIMother = partJPSI->GetMother();
+           AliAODMCParticle* partJPSIMother = (AliAODMCParticle*)mcArray->At(labJPSIMother);
+           pdgJPSIMother = partJPSIMother->GetPdgCode();
+
+        // chech if JPSI comes from B 
+           if( pdgJPSIMother==511   || pdgJPSIMother==521   ||
+               pdgJPSIMother==10511 || pdgJPSIMother==10521 ||
+               pdgJPSIMother==513   || pdgJPSIMother==523   ||
+               pdgJPSIMother==10513 || pdgJPSIMother==10523 ||
+               pdgJPSIMother==20513 || pdgJPSIMother==20523 ||
+               pdgJPSIMother==515   || pdgJPSIMother==525   ||
+               pdgJPSIMother==531   || pdgJPSIMother==10531 ||
+               pdgJPSIMother==533   || pdgJPSIMother==10533 ||
+               pdgJPSIMother==20533 || pdgJPSIMother==535   ||
+               pdgJPSIMother==541   || pdgJPSIMother==10541 ||
+               pdgJPSIMother==543   || pdgJPSIMother==10543 ||
+               pdgJPSIMother==20543 || pdgJPSIMother==545)
+               { //this is for MC JPSI -> ee from B-hadrons
+
+                  fhInvMass->Fill(dd->InvMassJPSIee()); 
+                  fhD0->Fill(10000*dd->ImpParXY());
+                  fhD0D0->Fill(1e8*dd->Prodd0d0());
+                  fhCosThetaStar->Fill(dd->CosThetaStarJPSI());      
+                  fhCtsVsD0D0->Fill(dd->CosThetaStarJPSI(),1e8*dd->Prodd0d0());
+                  fhCosThetaPointing->Fill(dd->CosPointingAngle());
+  
+                  // compute X variable
+                  AliAODVertex* primVertex = dd->GetOwnPrimaryVtx();
+                  vtxPrim[0] = primVertex->GetX();
+                  vtxPrim[1] = primVertex->GetY();
+                  vtxPrim[2] = primVertex->GetZ();
+                  Double_t lxy = ((vtxSec[0]-vtxPrim[0])*(dd->Px()) + (vtxSec[1]-vtxPrim[1])*(dd->Py()))/dd->Pt();
+                  Double_t pseudoProperDecayTime = lxy*(TDatabasePDG::Instance()->GetParticle(443)->Mass())/dd->Pt();
+  
+                  fhDecayTime->Fill(10000*pseudoProperDecayTime);
+                  // Post the data already here
+                  PostData(1,fOutput);
+    
+                  fNtupleJPSI->Fill(pseudoProperDecayTime,dd->InvMassJPSIee()); // fill N-tuple with X,M values
 
                   Double_t mcLxy = ((partJPSI->Xv()-mcPrimVtx[0])*(partJPSI->Px()) + (partJPSI->Yv()-mcPrimVtx[1])*(partJPSI->Py()))/partJPSI->Pt();
                   Double_t mcPseudoProperDecayTime = mcLxy*(TDatabasePDG::Instance()->GetParticle(443)->Mass())/partJPSI->Pt();
@@ -421,11 +471,10 @@ void AliAnalysisTaskSEBtoJPSItoEle::ReadAODMCInfo(const AliAODEvent* aodEvent, c
                   // Post the data already here
                   PostData(1,fOutput);
 
-                } //this is for MC JPSI -> ee from B-hadrons
-              } //this is for MC JPSI -> ee
-            } //this is for MC displaced JPSI
-          } //this is for MC JPSI 
-        } // end of check if JPSI is signal
+               } //this is for MC JPSI -> ee from B-hadrons
+            } //this is for MC JPSI -> ee
+        }
+       } // end of check if JPSI is signal
       }
     }
 

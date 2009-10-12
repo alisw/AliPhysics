@@ -64,39 +64,14 @@ AliAnalysisBtoJPSItoEle::~AliAnalysisBtoJPSItoEle()
   delete fMCtemplate;
 }
 //_________________________________________________________________________________________________
-Int_t AliAnalysisBtoJPSItoEle::DoMinimization(Double_t* x,
-                                              Double_t* m, Int_t ncand)
+Int_t AliAnalysisBtoJPSItoEle::DoMinimization()
 {
   //
   // performs the minimization
   //
-  AliInfo(Form("Number of candidates used for the minimisation is %d",ncand));
-  fFCNfunction = new AliBtoJPSItoEleCDFfitHandler(x,m,ncand);
-  SetResolutionConstants(fPtBin);
-  SetCsiMC(fMCtemplate);
-  fFCNfunction->SetErrorDef(0.5); // tells Minuit that the error interval is the one in which
-                                  // the function differs from the minimum for less than setted value
   Int_t iret=fFCNfunction->DoMinimization();
 
   return iret;
-}
-//_________________________________________________________________________________________________
-void AliAnalysisBtoJPSItoEle::SetResolutionConstants(Int_t BinNum)
-{
-  //
-  // sets constants for parametrized resolution function
-  //
-  if(!fFCNfunction) {
-    AliInfo("fFCNfunction not istanziated  ---> nothing done");
-    return;
-  }
-  AliInfo("Call likelihood SetResolutionConstants method ---> OK");
-  AliBtoJPSItoEleCDFfitFCN* loglikePnt = fFCNfunction->LikelihoodPointer();
-  if(!loglikePnt) {
-     AliWarning("Pointer to AliBtoJPSItoEleCDFfitFCN class not found!");
-     return;
-    }
-  loglikePnt->SetResolutionConstants(BinNum);
 }
 //_________________________________________________________________________________________________
 void AliAnalysisBtoJPSItoEle::ReadCandidates(TNtuple* nt, Double_t* &pseudoproper,Double_t* &invmass, Int_t& ncand)
@@ -122,13 +97,27 @@ void AliAnalysisBtoJPSItoEle::ReadCandidates(TNtuple* nt, Double_t* &pseudoprope
  return; 
 }
 //_________________________________________________________________________________________________
-void AliAnalysisBtoJPSItoEle::SetCsiMC(TH1F* MCtemplates)
+void AliAnalysisBtoJPSItoEle::SetCsiMC()
 {
   //
   // Sets X distribution used as MC template for JPSI from B
   //
-  fFCNfunction->LikelihoodPointer()->SetCsiMC(MCtemplates);
+  fFCNfunction->LikelihoodPointer()->SetCsiMC(fMCtemplate);
 
   return;
 }
 //_________________________________________________________________________________________________
+void AliAnalysisBtoJPSItoEle::SetFitHandler(Double_t* x /*pseudoproper*/, Double_t* m /*inv mass*/, Int_t ncand /*candidates*/) 
+{
+  //
+  // Create the fit handler object to play with different params of the fitting function
+  //
+
+  fFCNfunction = new AliBtoJPSItoEleCDFfitHandler(x,m,ncand);
+  if(!fFCNfunction) {
+
+     AliInfo("fFCNfunction not istanziated  ---> nothing done");
+     return;
+
+     } 
+}
