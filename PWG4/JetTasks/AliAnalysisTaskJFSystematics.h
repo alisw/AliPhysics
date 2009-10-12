@@ -78,10 +78,10 @@ class AliAnalysisTaskJFSystematics : public AliAnalysisTaskSE
     Bool_t        fUseAODInput;           // use AOD input
     Bool_t        fUseExternalWeightOnly; // use only external weight
     Bool_t        fLimitGenJetEta;        // Limit the eta of the generated jets
-    UInt_t         fAnalysisType;          // Analysis type 
+    UInt_t        fAnalysisType;          // Analysis type 
     Float_t       fExternalWeight;        // external weight
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
-
+    Float_t       fAvgTrials;             // average number of trials from pyxsec.root or pysec_hists.root in case trials are not avaiable from the MC Header
     // Event histograms
     TProfile*     fh1Xsec;    // pythia cross section and trials
     TH1F*         fh1Trials;  // trials are added
@@ -114,7 +114,7 @@ class AliAnalysisTaskJFSystematics : public AliAnalysisTaskSE
     TList *fHistList; // Output list
     
 
-    ClassDef(AliAnalysisTaskJFSystematics, 1) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJFSystematics, 2) // Analysis task for standard jet analysis
 };
  
 #endif
