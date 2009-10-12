@@ -108,6 +108,7 @@ fJet2RatioPtCut(0.8),
 fJet3PtCut(15.),
 fTrackPtCut(0.),
 fTrackEtaCut(0.9),
+  fAvgTrials(1),
 fhNJets(0x0),
 fhEleadingPt(0x0),
 fhMinRegPtDist(0x0),
@@ -147,10 +148,12 @@ Bool_t AliAnalysisTaskUE::Notify()
   //
   // Implemented Notify() to read the cross sections
   // and number of trials from pyxsec.root
-  // Copy from AliAnalysisTaskJetSpectrum
+  // Copy from AliAnalysisTaskJFSystematics
+  // 
+
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
-  Double_t xsection = 0;
-  UInt_t   ntrials  = 0;
+  Float_t xsection = 0;
+  Float_t ftrials  = 1;
   if(tree){
     TFile *curfile = tree->GetCurrentFile();
     if (!curfile) {
@@ -161,35 +164,12 @@ Bool_t AliAnalysisTaskUE::Notify()
       Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
       return kFALSE;
     }
-    
-    TString fileName(curfile->GetName());
-    if(fileName.Contains("AliESDs.root")){
-      fileName.ReplaceAll("AliESDs.root", "pyxsec.root");
-    }
-    else if(fileName.Contains("AliAOD.root")){
-      fileName.ReplaceAll("AliAOD.root", "pyxsec.root");
-    }
-    else if(fileName.Contains("galice.root")){
-      // for running with galice and kinematics alone...                      
-      fileName.ReplaceAll("galice.root", "pyxsec.root");
-    }
-    TFile *fxsec = TFile::Open(fileName.Data());
-    if(!fxsec){
-      Printf("%s:%d %s not found in the Input",(char*)__FILE__,__LINE__,fileName.Data());
-      // no a severe condition
-      return kTRUE;
-    }
-    TTree *xtree = (TTree*)fxsec->Get("Xsection");
-    if(!xtree){
-      Printf("%s:%d tree not found in the pyxsec.root",(char*)__FILE__,__LINE__);
-    }
-    xtree->SetBranchAddress("xsection",&xsection);
-    xtree->SetBranchAddress("ntrials",&ntrials);
-    xtree->GetEntry(0);
+    AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,ftrials);
     fh1Xsec->Fill("<#sigma>",xsection);
-    fh1Trials->Fill("#sum{ntrials}",ntrials);
-  }
-  
+    // construct average trials 
+    Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
+    if(ftrials>=nEntries)fAvgTrials = ftrials/nEntries; 
+  }  
   return kTRUE;
 }
 
@@ -260,6 +240,24 @@ void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
   // Execute analysis for current event
   //
   if ( fDebug > 3 ) AliInfo( " Processing event..." );
+
+  // fetch the pythia header info and get the trials
+  AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  Float_t nTrials = 1;
+  if (mcHandler) {  
+    AliMCEvent* mcEvent = mcHandler->MCEvent();
+    if (mcEvent) {
+      AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
+      if(pythiaGenHeader){
+	nTrials = pythiaGenHeader->Trials();
+      }
+    }
+  }
+
+  if(nTrials==1&&fAvgTrials>1) fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
+  else fh1Trials->Fill("#sum{ntrials}",nTrials); 
+  
+
   AnalyseUE();
   
   // Post the data

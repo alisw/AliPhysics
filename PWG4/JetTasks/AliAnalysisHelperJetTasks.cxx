@@ -1,10 +1,13 @@
 
 #include "TROOT.h"
+#include "TKey.h"
 #include "TList.h"
+#include "TSystem.h"
 #include "TH1F.h"
 #include "TProfile.h"
 #include "THnSparse.h"
 #include "TFile.h"
+#include "TString.h"
 #include "AliMCEvent.h"
 #include "AliLog.h"
 #include "AliAODJet.h"
@@ -301,4 +304,70 @@ void  AliAnalysisHelperJetTasks::MergeOutput(char* cFiles, char* cList){
   fOut->cd();
   lOut->Write(lOut->GetName(),TObject::kSingleKey);
   fOut->Close();
+}
+
+Bool_t AliAnalysisHelperJetTasks::PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials){
+  //
+  // get the cross section and the trails either from pyxsec.root or from pysec_hists.root
+  // This is to called in Notify and should provide the path to the AOD/ESD file
+
+  TString file(currFile);  
+  fXsec = 0;
+  fTrials = 1;
+
+  if(file.Contains("root_archive.zip#")){
+    Ssiz_t pos1 = file.Index("root_archive",12,TString::kExact);
+    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+    file.Replace(pos+1,20,"");
+  }
+  else {
+    // not an archive take the basename....
+    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+  }
+  Printf("%s",file.Data());
+  
+ 
+   
+
+  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); // problem that we cannot really test the existance of a file in a archive so we have to lvie with open error message from root
+  if(!fxsec){
+    // next trial fetch the histgram file
+    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
+    if(!fxsec){
+	// not a severe condition but inciate that we have no information
+      return kFALSE;
+    }
+    else{
+      // find the tlist we want to be independtent of the name so use the Tkey
+      TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
+      if(!key){
+	fxsec->Close();
+	return kFALSE;
+      }
+      TList *list = dynamic_cast<TList*>(key->ReadObj());
+      if(!list){
+	fxsec->Close();
+	return kFALSE;
+      }
+      fXsec = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
+      fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
+      fxsec->Close();
+    }
+  } // no tree pyxsec.root
+  else {
+    TTree *xtree = (TTree*)fxsec->Get("Xsection");
+    if(!xtree){
+      fxsec->Close();
+      return kFALSE;
+    }
+    UInt_t   ntrials  = 0;
+    Double_t  xsection  = 0;
+    xtree->SetBranchAddress("xsection",&xsection);
+    xtree->SetBranchAddress("ntrials",&ntrials);
+    xtree->GetEntry(0);
+    fTrials = ntrials;
+    fXsec = xsection;
+    fxsec->Close();
+  }
+  return kTRUE;
 }

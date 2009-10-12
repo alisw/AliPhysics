@@ -153,6 +153,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     // track cuts
     Double_t   fTrackPtCut;       // Pt cut of tracks in the regions
     Double_t   fTrackEtaCut;      // Eta cut on tracks in the regions (fRegionType=1)
+    Double_t   fAvgTrials;        // average trials used to fill the fh1Triasl histogram in case we do not have trials on a event by event basis
     
     // Histograms    ( are owned by fListOfHistos TList )
     TH1F*  fhNJets;                  //!
@@ -190,7 +191,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     
     
     
-    ClassDef( AliAnalysisTaskUE, 1); // Analysis task for Underlying Event analysis
+    ClassDef( AliAnalysisTaskUE, 2); // Analysis task for Underlying Event analysis
   };
 
 #endif
