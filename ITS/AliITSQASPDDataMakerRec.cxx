@@ -205,8 +205,8 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   Int_t rv = 0 ; 
   
   rawReader->Reset();
-  AliITSRawStreamSPD *rawStreamSPD = new AliITSRawStreamSPD(rawReader);
-  rawStreamSPD->ActivateAdvancedErrorLog(kTRUE,fAdvLogger);
+  AliITSRawStreamSPD rawStreamSPD(rawReader);
+  rawStreamSPD.ActivateAdvancedErrorLog(kTRUE,fAdvLogger);
 
   Int_t nDigitsL1 = 0;
   Int_t nDigitsL2 = 0;
@@ -216,16 +216,16 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   Int_t chipKey;
   Int_t col, row; 
   UInt_t module, colM, rowM;
-  while(rawStreamSPD->Next()) {
+  while(rawStreamSPD.Next()) {
 
     iEq = rawReader->GetDDLID();
     if (iEq>=0 && iEq<20) {
-      iHalfStave = rawStreamSPD->GetHalfStaveNr();
-      iChip = rawStreamSPD->GetChipAddr();
-      col  = rawStreamSPD->GetChipCol();
-      row  = rawStreamSPD->GetChipRow();
+      iHalfStave = rawStreamSPD.GetHalfStaveNr();
+      iChip = rawStreamSPD.GetChipAddr();
+      col  = rawStreamSPD.GetChipCol();
+      row  = rawStreamSPD.GetChipRow();
 
-      rawStreamSPD->OnlineToOffline(iEq, iHalfStave, iChip, col, row, module, colM, rowM);
+      rawStreamSPD.OnlineToOffline(iEq, iHalfStave, iChip, col, row, module, colM, rowM);
 
       if (iHalfStave>=0 && iHalfStave<2) iLayer=0;
       else iLayer=1;
@@ -251,8 +251,8 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 
     for (Int_t ihs=0; ihs<6; ihs++) {
       for (Int_t ichip=0; ichip<10; ichip++) {
-        if(rawStreamSPD->GetFastOrSignal(ieq,ihs,ichip)) {
-          chipKey = rawStreamSPD->GetOfflineChipKeyFromOnline(ieq,ihs,ichip);
+        if(rawStreamSPD.GetFastOrSignal(ieq,ihs,ichip)) {
+          chipKey = rawStreamSPD.GetOfflineChipKeyFromOnline(ieq,ihs,ichip);
           fAliITSQADataMakerRec->GetRawsData(46+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(chipKey);
         }
       }
@@ -266,7 +266,6 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   fAliITSQADataMakerRec->GetRawsData(44+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(nDigitsL2);
   fAliITSQADataMakerRec->GetRawsData(45+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(nDigitsL1,nDigitsL2);
   
-  delete rawStreamSPD;  
   AliDebug(AliQAv1::GetQADebugLevel(),Form("Event completed, %d raw digits read",nDigitsL1+nDigitsL2));
   return rv ; 
 }

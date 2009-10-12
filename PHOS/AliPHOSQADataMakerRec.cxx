@@ -385,7 +385,7 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     mapping[i] = (AliAltroMapping*)maps->At(i);
   }
 
-  AliCaloRawStreamV3 *fRawStream = new AliCaloRawStreamV3(rawReader,"PHOS",mapping);
+  AliCaloRawStreamV3 fRawStream(rawReader,"PHOS",mapping);
 
   AliPHOSRawFitterv0 * fitter ;
   if     (strcmp(GetRecoParam()->EMCFitterVersion(),"v1")==0)
@@ -401,19 +401,19 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   Int_t    lgNtot=0 ;
   Int_t    hgNtot=0 ;
 
-  while (fRawStream->NextDDL()) {   // !!!!!!!!!!! YK
-    while (fRawStream->NextChannel()) {
-      Int_t module   = fRawStream->GetModule();
-      Int_t cellX    = fRawStream->GetCellX();
-      Int_t cellZ    = fRawStream->GetCellZ();
-      Int_t caloFlag = fRawStream->GetCaloFlag(); // 0=LG, 1=HG, 2=TRU
+  while (fRawStream.NextDDL()) {   // !!!!!!!!!!! YK
+    while (fRawStream.NextChannel()) {
+      Int_t module   = fRawStream.GetModule();
+      Int_t cellX    = fRawStream.GetCellX();
+      Int_t cellZ    = fRawStream.GetCellZ();
+      Int_t caloFlag = fRawStream.GetCaloFlag(); // 0=LG, 1=HG, 2=TRU
 
       if(caloFlag!=0 && caloFlag!=1) continue; //TRU data!
 
       fitter->SetChannelGeo(module+1,cellX+1,cellZ+1,caloFlag);
 
       if(fitter->GetAmpOffset()==0 && fitter->GetAmpThreshold()==0) {
-	Short_t value = fRawStream->GetAltroCFG1();
+	Short_t value = fRawStream.GetAltroCFG1();
 	Bool_t ZeroSuppressionEnabled = (value >> 15) & 0x1;
 	if(ZeroSuppressionEnabled) {
 	  Short_t offset = (value >> 10) & 0xf;
@@ -425,12 +425,12 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       }
 
       Int_t nBunches = 0;
-      while (fRawStream->NextBunch()) {
+      while (fRawStream.NextBunch()) {
 	nBunches++;
 	if (nBunches > 1) continue;
-	const UShort_t *sig = fRawStream->GetSignals();
-	Int_t sigStart      = fRawStream->GetStartTimeBin();
-	Int_t sigLength     = fRawStream->GetBunchLength();
+	const UShort_t *sig = fRawStream.GetSignals();
+	Int_t sigStart      = fRawStream.GetStartTimeBin();
+	Int_t sigLength     = fRawStream.GetBunchLength();
 	fitter->Eval(sig,sigStart,sigLength);
       } // End of NextBunch()
 

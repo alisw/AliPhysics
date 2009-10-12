@@ -446,8 +446,8 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
   fPackedDigits = 0;
 
   // create raw data map
-  AliTOFRawMap *rawMap = new AliTOFRawMap(fTOFrawData);
-  rawMap->Clear();
+  AliTOFRawMap rawMap(fTOFrawData);
+  rawMap.Clear();
 
   Int_t slot[4] = {-1, -1, -1, -1};
 
@@ -479,9 +479,9 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
       slot[2] = fTDC;
       slot[3] = fTDCchannel;
 
-      if (rawMap->TestHit(slot) != kEmpty) {
+      if (rawMap.TestHit(slot) != kEmpty) {
 
-	rawDigit = static_cast<AliTOFrawData*>(rawMap->GetHit(slot));
+	rawDigit = static_cast<AliTOFrawData*>(rawMap.GetHit(slot));
 
 	if (rawDigit->GetLeading()!=-1 && rawDigit->GetTrailing()==-1 &&
 	    fLeadingEdge==-1 && fTrailingEdge!=-1) {
@@ -496,7 +496,7 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
 
 	    new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(fTRM, fTRMchain, fTDC, fTDCchannel, fTime, fToT, fLeadingEdge, fTrailingEdge, fPSbit, fACQ, fErrorFlag);
 
-	    rawMap->SetHit(slot);
+	    rawMap.SetHit(slot);
 
 	  }
 
@@ -506,15 +506,13 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
 
 	new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(fTRM, fTRMchain, fTDC, fTDCchannel, fTime, fToT, fLeadingEdge, fTrailingEdge, fPSbit, fACQ, fErrorFlag);
 
-	rawMap->SetHit(slot);
+	rawMap.SetHit(slot);
 
-      } // else if (rawMap->TestHit(slot) == kEmpty)
+      } // else if (rawMap.TestHit(slot) == kEmpty)
 
     } // if (signal)
 
   } // closed -> while (Next())
-
-  rawMap->Delete();
 
 }
 

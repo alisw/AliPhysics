@@ -681,35 +681,33 @@ void AliTRDQADataMaker::MakeRaws(AliRawReader* rawReader)
   const Int_t kMCM = 16;
   //  const Int_t kADC = 22;
 
-  AliTRDrawStream *raw = new AliTRDrawStream(rawReader);
-  raw->SetRawVersion(3);
-  raw->Init();
+  AliTRDrawStream raw(rawReader);
+  raw.SetRawVersion(3);
+  raw.Init();
 
-  while (raw->Next()) {
+  while (raw.Next()) {
 
-    GetRawsData(0)->Fill(raw->GetDet());
+    GetRawsData(0)->Fill(raw.GetDet());
 
     // possibly needs changes with the new reader !!
-    Int_t *sig = raw->GetSignals();
+    Int_t *sig = raw.GetSignals();
     for(Int_t i=0; i<3; i++) GetRawsData(1)->Fill(sig[i]);
     // ---
 
-    GetRawsData(2)->Fill(raw->GetTimeBin());
+    GetRawsData(2)->Fill(raw.GetTimeBin());
 
     // calculate the index;
-    Int_t sm = raw->GetSM();
-    Int_t roc = raw->GetROC();
-    Int_t rob = raw->GetROB();
-    Int_t mcm = raw->GetMCM();
-    //Int_t adc = raw->GetADC();
+    Int_t sm = raw.GetSM();
+    Int_t roc = raw.GetROC();
+    Int_t rob = raw.GetROB();
+    Int_t mcm = raw.GetMCM();
+    //Int_t adc = raw.GetADC();
 
     //Int_t index = roc * (kROB*kMCM*kADC) + rob * (kMCM*kADC) + mcm * kADC + adc;
     Int_t  index = roc * (kROB*kMCM) + rob * kMCM + mcm;
     GetRawsData(3)->Fill(sm);
     GetRawsData(4+sm)->Fill(index);
   }
-
-  delete raw;
 
 }
 
