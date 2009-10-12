@@ -581,6 +581,9 @@ class AliV0Reader : public TObject {
   Bool_t GetConvPosXY(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b, Double_t convpos[2]);
 	
   Double_t GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b);
+
+  void SetDoCF(Bool_t flag){fDoCF = flag;}
+
 	
  private:
   AliStack * fMCStack;           // pointer to MonteCarlo particle stack 
@@ -657,11 +660,13 @@ class AliV0Reader : public TObject {
   Bool_t fUseImprovedVertex; //flag
 
   Bool_t fUseOwnXYZCalculation; //flag that determines if we use our own calculation of xyz (markus)
+
+  Bool_t fDoCF;
 	
   vector<AliKFParticle> fCurrentEventGoodV0s; //vector of good v0s
   vector<AliKFParticle> fPreviousEventGoodV0s; // vector of good v0s from prevous events
 	
-  ClassDef(AliV0Reader,4)
+  ClassDef(AliV0Reader,5)
 };
 #endif
 

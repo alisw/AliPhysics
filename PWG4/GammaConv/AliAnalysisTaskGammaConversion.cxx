@@ -104,6 +104,7 @@ AliAnalysisTaskSE(),
   fLeadingChargedIndex(-1),
   fLowPtMapping(1.),
   fHighPtMapping(3.),
+  fDoCF(kFALSE),
   fAODBranch(NULL),
   fAODBranchName("GammaConv")//,
   //  fAODObjects(NULL)
@@ -173,6 +174,7 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fLeadingChargedIndex(-1),
   fLowPtMapping(1.),
   fHighPtMapping(3.),
+  fDoCF(kFALSE),
   fAODBranch(NULL),
   fAODBranchName("GammaConv")//,
   // fAODObjects(NULL)
@@ -253,7 +255,8 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
   ConnectInputData("");
 	
   //Each event needs an empty branch
-  fAODBranch->Clear();
+  //  fAODBranch->Clear();
+  fAODBranch->Delete();
 	
   if(fKFReconstructedGammasTClone == NULL){
     fKFReconstructedGammasTClone = new TClonesArray("AliKFParticle",0);
@@ -278,12 +281,18 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
   }
 	
   //clear TClones
-  fKFReconstructedGammasTClone->Clear();
-  fCurrentEventPosElectronTClone->Clear();
-  fCurrentEventNegElectronTClone->Clear();
-  fKFReconstructedGammasCutTClone->Clear();
-  fPreviousEventTLVNegElectronTClone->Clear();
-  fPreviousEventTLVPosElectronTClone->Clear();
+  fKFReconstructedGammasTClone->Delete();
+  fCurrentEventPosElectronTClone->Delete();
+  fCurrentEventNegElectronTClone->Delete();
+  fKFReconstructedGammasCutTClone->Delete();
+  fPreviousEventTLVNegElectronTClone->Delete();
+  fPreviousEventTLVPosElectronTClone->Delete();
+  //fKFReconstructedGammasTClone->Clear();
+  //fCurrentEventPosElectronTClone->Clear();
+  //fCurrentEventNegElectronTClone->Clear();
+  //fKFReconstructedGammasCutTClone->Clear();
+  //fPreviousEventTLVNegElectronTClone->Clear();
+  //fPreviousEventTLVPosElectronTClone->Clear();
 	
   //clear vectors
   //  fKFReconstructedGammas.clear();
@@ -293,7 +302,8 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
   //  fCurrentEventNegElectron.clear();	
   //  fKFReconstructedGammasCut.clear(); 
 	
-  fChargedParticles->Clear();	
+  fChargedParticles->Delete();	
+  //fChargedParticles->Clear();	
   fChargedParticlesId.clear();	
 	
   //Clear the data in the v0Reader
@@ -360,9 +370,11 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	
 	
   // for CF
-  if(!fGCMCEvent) cout << "NO MC INFO FOUND" << endl;
-  fCFManager->SetEventInfo(fGCMCEvent);
-  Double_t containerInput[3]; 
+  Double_t containerInput[3];
+  if(fDoCF){
+    if(!fGCMCEvent) cout << "NO MC INFO FOUND" << endl;
+    fCFManager->SetEventInfo(fGCMCEvent);
+  } 
   // end for CF
 	
 	
@@ -482,17 +494,18 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       fHistograms->FillHistogram("MC_allGamma_Rapid", rapidity);
 			
       // for CF
-      containerInput[0] = particle->Pt();
-      containerInput[1] = particle->Eta();
-      if(particle->GetMother(0) >=0){
-	containerInput[2] = fStack->Particle(particle->GetMother(0))->GetMass();
-      }
-      else{
-	containerInput[2]=-1;
-      }
+      if(fDoCF){
+	containerInput[0] = particle->Pt();
+	containerInput[1] = particle->Eta();
+	if(particle->GetMother(0) >=0){
+	  containerInput[2] = fStack->Particle(particle->GetMother(0))->GetMass();
+	}
+	else{
+	  containerInput[2]=-1;
+	}
       
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepGenerated);					// generated gamma
-			
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepGenerated);					// generated gamma
+      }		
       if(particle->GetMother(0) < 0){   // direct gamma
 	fHistograms->FillHistogram("MC_allDirectGamma_Energy",particle->Energy());
 	fHistograms->FillHistogram("MC_allDirectGamma_Pt", particle->Pt());
@@ -555,8 +568,9 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       		
 			
       // for CF
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructable);	// reconstructable gamma	
-			
+      if(fDoCF){
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructable);	// reconstructable gamma	
+      }
       fHistograms->FillHistogram("MC_ConvGamma_Energy", particle->Energy());
       fHistograms->FillHistogram("MC_ConvGamma_Pt", particle->Pt());
       fHistograms->FillHistogram("MC_ConvGamma_Eta", particle->Eta());
@@ -1294,8 +1308,11 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	    rapidity = 0.5*(TMath::Log((twoGammaCandidate->GetE() +twoGammaCandidate->GetPz()) / (twoGammaCandidate->GetE()-twoGammaCandidate->GetPz())));
 	  }
 					
-	  if(openingAngleTwoGammaCandidate < fMinOpeningAngleGhostCut) continue;   // minimum opening angle to avoid using ghosttracks
-					
+	  if(openingAngleTwoGammaCandidate < fMinOpeningAngleGhostCut){
+	    delete twoGammaCandidate;
+	    continue;   // minimum opening angle to avoid using ghosttracks
+	  }
+			
 	  fHistograms->FillHistogram("ESD_Mother_GammaDaughter_OpeningAngle", openingAngleTwoGammaCandidate);
 	  fHistograms->FillHistogram("ESD_Mother_Energy", twoGammaCandidate->GetE());
 	  fHistograms->FillHistogram("ESD_Mother_Pt", momentumVectorTwoGammaCandidate.Pt());
@@ -1353,8 +1370,10 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 					
 					
 					
-	  if(openingAngleBG < fMinOpeningAngleGhostCut ) continue;   // minimum opening angle to avoid using ghosttracks
-					
+	  if(openingAngleBG < fMinOpeningAngleGhostCut ){
+	    delete backgroundCandidate;   
+	    continue;   // minimum opening angle to avoid using ghosttracks
+	  }			
 					
 	  fHistograms->FillHistogram("ESD_Background_GammaDaughter_OpeningAngle", openingAngleBG);
 	  fHistograms->FillHistogram("ESD_Background_Energy", backgroundCandidate->GetE());
@@ -1584,7 +1603,10 @@ void AliAnalysisTaskGammaConversion::Terminate(Option_t */*option*/)
 void AliAnalysisTaskGammaConversion::UserCreateOutputObjects()
 {
   //AOD
-  fAODBranch = new TClonesArray("AliGammaConversionAODObject", 0);
+  if(fAODBranch==NULL){
+    fAODBranch = new TClonesArray("AliGammaConversionAODObject", 0);
+  }
+  fAODBranch->Delete();
   fAODBranch->SetName(fAODBranchName); 
   AddAODBranch("TClonesArray", &fAODBranch);
 	
@@ -2012,8 +2034,21 @@ void AliAnalysisTaskGammaConversion::ProcessGammaElectronsForChicAnalysis(){
 	 
 	 
   */
-	
-	
+
+
+  vESDeNegTemp->Delete();
+  vESDePosTemp->Delete();
+  vESDxNegTemp->Delete();
+  vESDxPosTemp->Delete();
+  vESDeNegNoJPsi->Delete();
+  vESDePosNoJPsi->Delete();
+
+  delete vESDeNegTemp;
+  delete vESDePosTemp;
+  delete vESDxNegTemp;
+  delete vESDxPosTemp;
+  delete vESDeNegNoJPsi;
+  delete vESDePosNoJPsi;	
 }
 
 /*

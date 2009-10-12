@@ -117,7 +117,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   TClonesArray GetTLorentzVector(TClonesArray* esdTrack);	
   void ProcessGammaElectronsForChicAnalysis();
   ///////////////////////////////////////////////////////////////
-		
+
+  void SetDoCF(Bool_t flag){fDoCF = flag;}
 		
  private:
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
@@ -212,16 +213,16 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Double_t fMinPtGamChargedCorr; //! transient
   Double_t fMinPtJetCone; //! transient
   Int_t    fLeadingChargedIndex; //! transient
-  Double_t fLowPtMapping;
-  Double_t fHighPtMapping;
-
+  Double_t fLowPtMapping; //! transient
+  Double_t fHighPtMapping; //! transient
+  Bool_t fDoCF; //! transient
 		
   TClonesArray* fAODBranch ;        //! selected particles branch
   TString fAODBranchName; // New AOD branch name
 		
   //  TClonesArray *fAODObjects;
 		
-  ClassDef(AliAnalysisTaskGammaConversion, 4); // Analysis task for gamma conversions
+  ClassDef(AliAnalysisTaskGammaConversion, 5); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H
