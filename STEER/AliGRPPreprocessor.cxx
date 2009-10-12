@@ -1396,7 +1396,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 
 	AliInfo(Form("(weighted) mean = %f ",parameters[0]));
 	AliInfo(Form("(weighted) truncated mean = %f ",parameters[1]));
-	AliInfo(Form("median within = %f ",parameters[2]));
+	AliInfo(Form("median = %f ",parameters[2]));
 	AliInfo(Form("(weighted) standard deviation with (weighted) mean = %f ",parameters[3]));
 	AliInfo(Form("standard deviation with median = %f ",parameters[4]));
 	
