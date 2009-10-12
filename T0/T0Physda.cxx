@@ -46,7 +46,7 @@ SOULD BE CHANGED BACK BEFORE BEAM
 #include "TF1.h"
 #include "TSpectrum.h"
 #include "TVirtualFitter.h"
-int cbx, ccbx;
+int cbx, ccbx, npmtA, npmtC;
 float clx,cmx,cclx,ccmx;
 
 /* Main routine
@@ -82,10 +82,9 @@ int main(int argc, char **argv) {
     switch(c) {
     case 'a': {fscanf(inp, "%d", &ccbx ); break;} //N of X bins hCFD1_CFD
     case 'b': {fscanf(inp, "%f", &cclx ); break;} //Low x hCFD1_CFD
-    case 'c': {fscanf(inp, "%f", &ccmx ); break;} //High x hCFD1_CFD
-      //      case 'd': {fscanf(inp, "%d", &cbx ); break;} //N of X bins hCFD
-      //      case 'e': {fscanf(inp, "%f", &clx ); break;} //Low x hCFD
-//      case 'f': {fscanf(inp, "%f", &cmx ); break;} //High x hCFD
+    case 'c': {fscanf(inp, "%f", &ccmx ); break;} //High x hCFD1_CF
+    case 'd': {fscanf(inp, "%d", &npmtC ); break;} //number of reference PMTC
+    case 'e': {fscanf(inp, "%d", &npmtA ); break;} //number of reference PMTA
     }
   }
   fclose(inp);
@@ -208,11 +207,11 @@ int main(int argc, char **argv) {
       for (Int_t ik = 0; ik<24; ik++)
 	if(allData[ik+1][0]!=0 ){
 	  if(ik<12){
-	     hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[1][0]);
+	     hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[npmtC][0]);
 	     if(iev == 20000) 	meanShift[ik] =  hCFD1minCFD[ik]->GetMean();  
 	  }
 	  if(ik>11){
-	    hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[57][0]);
+	    hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+npmtA][0]);
 	    if(iev == 20000) 	
 	      meanShift[ik] =  hCFD1minCFD[ik]->GetMean();  
 	  }
