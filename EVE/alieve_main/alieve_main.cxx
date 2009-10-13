@@ -68,7 +68,9 @@ int main(int argc, char **argv)
 
   gEve->RegisterGeometryAlias("Default", Form("%s/alice-data/default_geo.root", evedir.Data()));
 
-  app.Run(); // Never returns.
+  app.Run(kTRUE);
+
+  TEveManager::Terminate();
 
   delete log;
 
