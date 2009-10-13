@@ -35,8 +35,11 @@
 #include <TString.h>
 #include <TROOT.h>
 
+#include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
+#include "AliMCParticle.h"
 #include "AliPID.h"
 
 #include "AliHFEpidTRD.h"
@@ -116,16 +119,35 @@ Bool_t AliHFEpidTRD::InitializePID(){
 }
 
 //______________________________________________________
-Int_t AliHFEpidTRD::IsSelected(AliVParticle *track){
+Int_t AliHFEpidTRD::IsSelected(AliHFEpidObject *track){
   //
   // Does PID for TRD alone:
   // PID thresholds based on 90% Electron Efficiency level approximated by a linear 
   // step function
   //
-  AliESDtrack *esdTrack = 0x0;
-  if(!(esdTrack = dynamic_cast<AliESDtrack *>(track))) return kFALSE;
+  if(track->fAnalysisType == AliHFEpidObject::kESDanalysis){
+      AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(track->fRecTrack);
+      if(!esdTrack) return 0;
+      AliMCParticle *esdmc = dynamic_cast<AliMCParticle *>(track->fMCtrack);
+      return MakePIDesd(esdTrack, esdmc);
+   } else {
+     AliAODTrack *aodTrack = dynamic_cast<AliAODTrack *>(track->fRecTrack);
+     if(!aodTrack) return 0;
+     AliAODMCParticle *aodmc = dynamic_cast<AliAODMCParticle *>(track->fMCtrack);
+     return MakePIDaod(aodTrack, aodmc);
+   }
+}
+
+//______________________________________________________
+Int_t AliHFEpidTRD::MakePIDaod(AliAODTrack * /*aodTrack*/, AliAODMCParticle * /*aodmc*/){
+  AliError("AOD PID not yet implemented");
+  return 0;
+}
+
+//______________________________________________________
+Int_t AliHFEpidTRD::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle * /*mcTrack*/){
   Double_t p = esdTrack->GetOuterParam() ? esdTrack->GetOuterParam()->P() : esdTrack->P();
-  if(p < 0.6) return 0;
+  if(p < 2.0) return 0;
 
   Double_t pidProbs[AliPID::kSPECIES];
   esdTrack->GetTRDpid(pidProbs);
@@ -186,7 +208,7 @@ void AliHFEpidTRD::GetParameters(Double_t electronEff, Double_t *parameters){
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidTRD::GetTRDSignalV1(AliESDtrack *track){
+Double_t AliHFEpidTRD::GetTRDSignalV1(AliESDtrack *track, Int_t mcPID){
   //
   // Calculation of the TRD Signal via truncated mean
   // Method 1: Take all Slices available
@@ -215,12 +237,12 @@ Double_t AliHFEpidTRD::GetTRDSignalV1(AliESDtrack *track){
   Double_t trdSignal = TMath::Mean(static_cast<Int_t>(static_cast<Double_t>(icnt) * 2./3.), trdSlices);
   Double_t mom = track->GetOuterParam() ? track->GetOuterParam()->P() : -1;
   AliDebug(1, Form("PID Meth. 1: p[%f], TRDSignal[%f]", mom, trdSignal));
-  if(IsQAon() && mom > 0.) FillHistogramsTRDSignalV1(trdSignal, mom, GetMCpid(track));
+  if(IsQAon() && mom > 0.) FillHistogramsTRDSignalV1(trdSignal, mom, mcPID);
   return trdSignal;
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidTRD::GetTRDSignalV2(AliESDtrack *track){
+Double_t AliHFEpidTRD::GetTRDSignalV2(AliESDtrack *track, Int_t mcPID){
   //
   // Calculation of the TRD Signal via truncated mean
   // Method 2: Take only first 5 slices per chamber
@@ -250,7 +272,7 @@ Double_t AliHFEpidTRD::GetTRDSignalV2(AliESDtrack *track){
   Double_t trdSignal = TMath::Mean(cntRemaining, trdSlicesRemaining);
   Double_t mom = track->GetOuterParam() ? track->GetOuterParam()->P() : -1;
   AliDebug(1, Form("PID Meth. 2: p[%f], TRDSignal[%f]", mom, trdSignal));
-  if(IsQAon() && mom > 0.) FillHistogramsTRDSignalV2(trdSignal, mom, GetMCpid(track));
+  if(IsQAon() && mom > 0.) FillHistogramsTRDSignalV2(trdSignal, mom, mcPID);
   return trdSignal;
 }
 
@@ -272,24 +294,6 @@ void AliHFEpidTRD::FillHistogramsTRDSignalV2(Double_t signal, Double_t mom, Int_
   (dynamic_cast<TH2F *>(fContainer->At(kHistTRDSigV2)))->Fill(mom, signal);  
   if(species < 0 || species >= AliPID::kSPECIES) return;
   (dynamic_cast<TH2F *>(fContainer->At(kHistOverallSpecies + AliPID::kSPECIES + species)))->Fill(mom, signal);
-}
-
-//___________________________________________________________________
-Int_t AliHFEpidTRD::GetMCpid(AliESDtrack *track){
-  //
-  // Return species of the track according to MC information
-  //
-  Int_t pdg = TMath::Abs(AliHFEpidBase::GetPdgCode(track));
-  Int_t pid = -1;
-  switch(pdg){
-    case 11:    pid = AliPID::kElectron; break;
-    case 13:    pid = AliPID::kMuon; break;
-    case 211:   pid = AliPID::kPion; break;
-    case 321:   pid = AliPID::kKaon; break;
-    case 2212:  pid = AliPID::kProton; break;
-    default:    pid = -1; break;
-  };
-  return pid;
 }
 
 //___________________________________________________________________

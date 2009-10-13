@@ -17,8 +17,11 @@
 #include <TList.h>
 #include <TMath.h>
 
+#include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 #include "AliESDtrack.h"
-#include "AliVParticle.h"
+#include "AliLog.h"
+#include "AliMCParticle.h"
 #include "AliPID.h"
 
 #include "AliHFEpidTOF.h"
@@ -93,7 +96,7 @@ Bool_t AliHFEpidTOF::InitializePID(){
 }
 
 //___________________________________________________________________
-Int_t AliHFEpidTOF::IsSelected(AliVParticle *vtrack)
+Int_t AliHFEpidTOF::IsSelected(AliHFEpidObject *vtrack)
 {
 
   //
@@ -104,8 +107,21 @@ Int_t AliHFEpidTOF::IsSelected(AliVParticle *vtrack)
   //
   // returns 10 (== kUnknown)if PID can not be assigned
   //
+  if(vtrack->fAnalysisType == AliHFEpidObject::kESDanalysis){
+    AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(vtrack->fRecTrack);
+    if(!esdTrack) return 0;
+    AliMCParticle *mcTrack = dynamic_cast<AliMCParticle *>(vtrack->fMCtrack);
+    return MakePIDesd(esdTrack, mcTrack);
+  } else {
+    AliAODTrack *aodTrack = dynamic_cast<AliAODTrack *>(vtrack->fRecTrack);
+    if(!aodTrack) return 0;
+    AliAODMCParticle *aodmc = dynamic_cast<AliAODMCParticle *>(vtrack->fMCtrack);
+    return MakePIDaod(aodTrack, aodmc);
+  }
+}
 
-  AliESDtrack *track = dynamic_cast<AliESDtrack*>(vtrack);
+//___________________________________________________________________
+Int_t AliHFEpidTOF::MakePIDesd(AliESDtrack *track, AliMCParticle * /*mcTrack*/){
   Long_t status = 0;
   status = track->GetStatus(); 
 
@@ -154,6 +170,12 @@ Int_t AliHFEpidTOF::IsSelected(AliVParticle *vtrack)
     (dynamic_cast<TH2F *>(fQAList->At(kHistTOFpidBetavP)))->Fill(beta, p);
     return tMAXindex;
   }
+}
+
+//___________________________________________________________________
+Int_t AliHFEpidTOF::MakePIDaod(AliAODTrack * /*aodTrack*/, AliAODMCParticle * /*mcTrack*/){
+  AliError("AOD PID not yet implemented");
+  return 0;
 }
 
 //___________________________________________________________________

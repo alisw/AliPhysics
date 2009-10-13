@@ -20,10 +20,14 @@
  *          Markus Fasel <M.Fasel@gsi.de>
  *
  */
+#include <TClass.h>
 #include <TH2F.h>
 #include <TList.h>
 #include <TMath.h>
+#include <TString.h>
 
+#include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliPID.h"
@@ -94,7 +98,7 @@ Bool_t AliHFEpidITS::InitializePID(){
 
 
 //___________________________________________________________________
-Int_t AliHFEpidITS::IsSelected(AliVParticle * /*track*/){
+Int_t AliHFEpidITS::IsSelected(AliHFEpidObject* /*track*/){
   //
   // Does PID decision for ITS
   // 
@@ -133,10 +137,15 @@ void AliHFEpidITS::AddQAhistograms(TList *l){
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidITS::GetITSSignalV1(AliESDtrack *track){
+Double_t AliHFEpidITS::GetITSSignalV1(AliVParticle *vtrack, Int_t mcPID){
   //
   // Calculate the ITS signal according to the mean charge of the clusters
   //
+  if(!TString(vtrack->IsA()->GetName()).CompareTo("AliAODtrack")){
+    AliError("PID for AODs not implemented yet");
+    return 0.;
+  }
+  AliESDtrack *track = dynamic_cast<AliESDtrack *>(vtrack);
   Double_t signal = 0.;
 #ifdef TRUNK
   Double_t dedx[4];
@@ -147,15 +156,20 @@ Double_t AliHFEpidITS::GetITSSignalV1(AliESDtrack *track){
 #endif
   Double_t p = track->GetTPCInnerParam() ? track->GetTPCInnerParam()->P() : track->P();
   AliDebug(1, Form("Momentum: %f, ITS Signal: %f", p, signal));
-  if(IsQAon()) FillHistogramsSignalV1(p, signal, GetMCpid(track));
+  if(IsQAon()) FillHistogramsSignalV1(p, signal, mcPID);
   return signal;
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidITS::GetITSSignalV2(AliESDtrack *track){
+Double_t AliHFEpidITS::GetITSSignalV2(AliVParticle *vtrack, Int_t mcPID){
   //
   // Calculates the ITS signal. Truncated mean is used.
   //
+  if(!TString(vtrack->IsA()->GetName()).CompareTo("AliAODtrack")){
+    AliError("PID for AODs not implemented yet");
+    return 0.;
+  }
+  AliESDtrack *track = dynamic_cast<AliESDtrack *>(vtrack);
   Double_t dedx[4], tmp[4];
   Int_t indices[4];
   track->GetITSdEdxSamples(tmp);
@@ -164,7 +178,7 @@ Double_t AliHFEpidITS::GetITSSignalV2(AliESDtrack *track){
   Double_t signal = TMath::Mean(3, dedx); 
   Double_t p = track->GetTPCInnerParam() ? track->GetTPCInnerParam()->P() : track->P();
   AliDebug(1, Form("Momentum: %f, ITS Signal: %f", p, signal));
-  if(IsQAon()) FillHistogramsSignalV2(p, signal, GetMCpid(track));
+  if(IsQAon()) FillHistogramsSignalV2(p, signal, mcPID);
   return signal;
 }
 
@@ -180,23 +194,5 @@ void AliHFEpidITS::FillHistogramsSignalV2(Double_t p, Double_t signal, Int_t spe
   (dynamic_cast<TH2 *>(fQAlist->At(kITSsigV2)))->Fill(p, signal);
   if(species >= 0 && species < AliPID::kSPECIES)
     (dynamic_cast<TH2 *>(fQAlist->At(kHistosSigAll + 2 * species + 1)))->Fill(p, signal);
-}
-
-//___________________________________________________________________
-Int_t AliHFEpidITS::GetMCpid(AliESDtrack *track){
-  //
-  // Return species of the track according to MC information
-  //
-  Int_t pdg = TMath::Abs(AliHFEpidBase::GetPdgCode(track));
-  Int_t pid = -1;
-  switch(pdg){
-    case 11:    pid = AliPID::kElectron; break;
-    case 13:    pid = AliPID::kMuon; break;
-    case 211:   pid = AliPID::kPion; break;
-    case 321:   pid = AliPID::kKaon; break;
-    case 2212:  pid = AliPID::kProton; break;
-    default:    pid = -1; break;
-  };
-  return pid;
 }
 

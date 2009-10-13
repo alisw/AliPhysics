@@ -21,8 +21,8 @@ void runElectronTask(const char *treelist = 0x0){
     SetupPar("Util");
   }
   SetupPar("HFE");
-  gROOT->LoadMacro("AliAnalysisElectronTask.cxx++");
-  AliLog::SetGlobalLogLevel(AliLog::kError);
+//  gROOT->LoadMacro("AliAnalysisTaskHFE.cxx++");
+ // AliLog::SetGlobalLogLevel(AliLog::kError);
   
   // Make the ESD chain
   TString treename = treelist;
@@ -42,7 +42,14 @@ void runElectronTask(const char *treelist = 0x0){
   AliAnalysisManager *pidEffManager = new AliAnalysisManager("Single Electron Analysis");
   pidEffManager->SetInputEventHandler(new AliESDInputHandler);
   pidEffManager->SetMCtruthEventHandler(new AliMCEventHandler);
-  AliAnalysisElectronTask *task = new AliAnalysisElectronTask;
+  AliHFEcuts *hfecuts = new AliHFEcuts;
+  hfecuts->CreateStandardCuts();
+  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE;
+  task->SetHFECuts(hfecuts);
+  task->AddPIDdetector("TPC");
+  task->SetQAOn(AliAnalysisTaskHFE::kPIDqa);
+  task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
+  task->SetSecVtxOn();
   pidEffManager->AddTask(task);
   task->ConnectInput(0, pidEffManager->CreateContainer("esdTree", TChain::Class(), AliAnalysisManager::kInputContainer));
   task->ConnectOutput(0, pidEffManager->CreateContainer("nEvents", TH1I::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));

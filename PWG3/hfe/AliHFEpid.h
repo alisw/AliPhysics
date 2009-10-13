@@ -19,10 +19,13 @@
 #include <TObject.h>
 #endif
 
-class AliHFEpidBase;
+#ifndef ALIHFEPIDBASE_H
+#include "AliHFEpidBase.h"
+#endif
+
 class AliESDtrack;
 class AliVParticle;
-class AliMCEvent;
+class AliMCParticle;
 
 class TList;
 
@@ -54,8 +57,7 @@ class AliHFEpid : public TObject{
     ~AliHFEpid();
     
     Bool_t InitializePID(TString detectors);
-    Bool_t IsSelected(AliVParticle *track);
-    void SetMCEvent(AliMCEvent *mc);
+    Bool_t IsSelected(AliHFEpidObject *track);
 
     Bool_t IsQAOn() const { return TestBit(kIsQAOn); };
     Bool_t HasMCData() const { return TestBit(kHasMCData); };
@@ -65,9 +67,9 @@ class AliHFEpid : public TObject{
     TList *GetQAhistograms() const { return fQAlist; };
 
   protected:
-    Bool_t MakePidTpcTof(AliESDtrack *track);
-    Bool_t MakePidTpcTrd(AliESDtrack *track);
-    void MakePlotsItsTpc(AliESDtrack *track);
+    Bool_t MakePidTpcTof(AliHFEpidObject *track);
+    Bool_t MakePidTpcTrd(AliHFEpidObject *track);
+    void MakePlotsItsTpc(AliHFEpidObject *track);
   private:
     AliHFEpidBase *fDetectorPID[kNdetectorPID];     //! Detector PID classes
     UInt_t fEnabledDetectors;                       //  Enabled Detectors

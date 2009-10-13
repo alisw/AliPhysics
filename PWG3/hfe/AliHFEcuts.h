@@ -46,17 +46,16 @@ class AliHFEcuts : public TObject{
   public:
     typedef enum{
       kStepMCGenerated = 0,
-      kStepMCInAcceptance = 1,
-      kStepRecKineTPC = 2,
-      kStepRecKineITS = 3,
+      kStepMCsignal = 1,
+      kStepMCInAcceptance = 2,
+      kStepRecKineITSTPC = 3,
       kStepRecPrim = 4,
       kStepHFEcutsITS = 5,
-      kStepHFEcutsTPC = 6,
-      kStepHFEcutsTRD = 7
+      kStepHFEcutsTRD = 6
     } CutStep_t;
     enum{
-      kNcutSteps = 8,
-      kNcutESDSteps = 6
+      kNcutSteps = 7,
+      kNcutESDSteps = 4
     };    // Additional constants
 
     AliHFEcuts();
@@ -109,11 +108,9 @@ class AliHFEcuts : public TObject{
   private:
     void SetParticleGenCutList();
     void SetAcceptanceCutList();
-    void SetRecKineTPCCutList();
-    void SetRecKineITSCutList();
+    void SetRecKineITSTPCCutList();
     void SetRecPrimaryCutList();
     void SetHFElectronITSCuts();
-    void SetHFElectronTPCCuts();
     void SetHFElectronTRDCuts();
   
     ULong64_t fRequirements;  	  // Bitmap for requirements
@@ -170,17 +167,17 @@ void AliHFEcuts::CreateStandardCuts(){
   // Standard Cuts defined by the HFE Group
   //
   SetRequireProdVertex();
-  fProdVtx[0] = -1;
-  fProdVtx[1] = 1;
-  fProdVtx[2] = -1;
-  fProdVtx[3] = 1;
+  fProdVtx[0] = -3;
+  fProdVtx[1] = 3;
+  fProdVtx[2] = -3;
+  fProdVtx[3] = 3;
   SetRequireDCAToVertex();
   fDCAtoVtx[0] = 4.;
   fDCAtoVtx[1] = 10.;
   fMinClustersTPC = 50;
-  fMinTrackletsTRD = 6;
+  fMinTrackletsTRD = 0;
   SetRequireITSPixel();
-  fCutITSPixel = AliHFEextraCuts::kAny;
+  fCutITSPixel = AliHFEextraCuts::kFirst;
   fMaxChi2clusterTPC = 3.5;
   fMinClusterRatioTPC = 0.6;
   fPtRange[0] = 0.1;

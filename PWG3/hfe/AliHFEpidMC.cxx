@@ -26,7 +26,7 @@
 #include <TMath.h>
 #include <TParticle.h>
 
-#include "AliESDtrack.h"
+#include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
 #include "AliVParticle.h"
 
@@ -53,11 +53,20 @@ Bool_t AliHFEpidMC::InitializePID(){
 }
 
 //___________________________________________________________________
-Int_t AliHFEpidMC::IsSelected(AliVParticle *track){
+Int_t AliHFEpidMC::IsSelected(AliHFEpidObject *track){
   //
   // returns MC PDG Code
   // Functionality implemented in the base class
   // (necessary for PID QA)
   //
-  return GetPdgCode(track);
+  if(track->fAnalysisType == AliHFEpidObject::kESDanalysis){
+    AliMCParticle *mc = dynamic_cast<AliMCParticle *>(track->fMCtrack);
+    if(!mc) return 0;
+    return mc->Particle()->GetPdgCode();
+  }
+  else{
+    AliAODMCParticle *aodmc = dynamic_cast<AliAODMCParticle *>(track->fMCtrack);
+    if(!aodmc) return 0;
+    return aodmc->GetPdgCode();
+  } 
 }

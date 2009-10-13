@@ -22,7 +22,10 @@
 class TList;
 class TH2F;
 
-class AliVParticle;
+class AliAODTrack;
+class AliAODMCParticle;
+class AliESDtrack;
+class AliMCParticle;
 
 class AliHFEpidTOF : public AliHFEpidBase{
   typedef enum{
@@ -44,13 +47,15 @@ class AliHFEpidTOF : public AliHFEpidBase{
   AliHFEpidTOF &operator=(const AliHFEpidTOF &c);
   
   virtual Bool_t    InitializePID();
-  virtual Int_t     IsSelected(AliVParticle *track);
+  virtual Int_t     IsSelected(AliHFEpidObject *track);
   virtual Bool_t    HasQAhistos() const { return kTRUE; };
   
   
  protected:
   void Copy(TObject &ref) const;
   void AddQAhistograms(TList *qaHist);
+  Int_t MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
+  Int_t MakePIDaod(AliAODTrack *aodTrack, AliAODMCParticle *mcTrack);
   
  private:
   

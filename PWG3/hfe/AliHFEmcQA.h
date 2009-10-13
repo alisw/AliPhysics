@@ -55,9 +55,9 @@ class AliHFEmcQA: public TObject {
                 void SetStack(AliStack* const stack){fStack=stack;} // set stack pointer
                 void Init();
 
-                void GetQuarkKine(Int_t iTrack, const Int_t kquark); // get heavy quark kinematics distribution
-                void GetHadronKine(Int_t iTrack, const Int_t kquark); // get heavy hadron kinematics distribution
-                void GetDecayedKine(Int_t iTrack, const Int_t kquark, const Int_t kdecayed, Int_t icut, Bool_t isbarrel=kFALSE); // get decay electron kinematics distribution
+                void GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark); // get heavy quark kinematics distribution
+                void GetHadronKine(TParticle *part, const Int_t kquark); // get heavy hadron kinematics distribution
+                void GetDecayedKine(TParticle *part, const Int_t kquark, const Int_t kdecayed, Int_t icut); // get decay electron kinematics distribution
                 void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
 
         protected:
@@ -153,7 +153,7 @@ class AliHFEmcQA: public TObject {
                 Int_t fParentSelect[2][7]; // heavy hadron species
 
 
-        ClassDef(AliHFEmcQA,0);
+        ClassDef(AliHFEmcQA,1);
 };
 
 #endif

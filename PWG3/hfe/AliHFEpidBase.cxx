@@ -26,7 +26,6 @@
 
 #include "AliESDtrack.h"
 #include "AliMCParticle.h"
-#include "AliMCEvent.h"
 
 #include "AliHFEpidBase.h"
 
@@ -35,7 +34,6 @@ ClassImp(AliHFEpidBase)
 //___________________________________________________________________
 AliHFEpidBase::AliHFEpidBase(const Char_t *name):
   TNamed(name, ""),
-  fMCEvent(0x0),
   fDebugLevel(0)
 {
   //
@@ -46,7 +44,6 @@ AliHFEpidBase::AliHFEpidBase(const Char_t *name):
 //___________________________________________________________________
 AliHFEpidBase::AliHFEpidBase(const AliHFEpidBase &c):
   TNamed(),
-  fMCEvent(0x0),
   fDebugLevel(0)
 {
   //
@@ -71,23 +68,8 @@ AliHFEpidBase &AliHFEpidBase::operator=(const AliHFEpidBase &ref){
 void AliHFEpidBase::Copy(TObject &ref) const {
   AliHFEpidBase &target = dynamic_cast<AliHFEpidBase &>(ref);
 
-  target.fMCEvent = fMCEvent;
   target.fDebugLevel = fDebugLevel;
 
   TNamed::Copy(ref);
 }
 
-//___________________________________________________________________
-Int_t AliHFEpidBase::GetPdgCode(AliVParticle *track){
-  //
-  // returns the MC PDG code of the particle species
-  //
-  if(!fMCEvent) return 0;
-  AliMCParticle *mctrack = 0x0;
-  if(TString(track->IsA()->GetName()).CompareTo("AliESDtrack") == 0)
-    mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs((dynamic_cast<AliESDtrack *>(track))->GetLabel())));
-  else if(TString(track->IsA()->GetName()).CompareTo("AliMCParticle") == 0)
-    mctrack = dynamic_cast<AliMCParticle *>(track);
-  if(!mctrack) return 0;
-  return mctrack->Particle()->GetPdgCode();
-}
