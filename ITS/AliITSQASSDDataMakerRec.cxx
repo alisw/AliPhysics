@@ -888,7 +888,7 @@ Int_t AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) {
 	" - Size: "<<rawReader->GetDataSize()<<
 	" - Equipment size: "<<rawReader->GetEquipmentSize()<<endl;*/
       gSizePerDDL[rawReader->GetDDLID()] = rawReader->GetDataSize();
-      gSizePerLDC[rawReader->GetLDCId()-8] = rawReader->GetDataSize();
+      //gSizePerLDC[rawReader->GetLDCId()-8] = rawReader->GetDataSize();
       AliITSgeomTGeo::GetModuleId(gSSDStream.GetModuleID(),gLayer,gLadder,gModule);
       gHistPosition = (gLayer == 5) ? ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER5 + gModule - 1) : ((gLadder - 1)*fgkSSDMODULESPERLADDERLAYER6 + gModule + fgkSSDMODULESLAYER5 - 1);
       if(fkOnline) {
@@ -924,37 +924,36 @@ Int_t AliITSQASSDDataMakerRec::MakeRaws(AliRawReader* rawReader) {
       //(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+4))->Fill(i+512,gSizePerDDL[i]/1e+06);
     }
     for(Int_t i = 0; i < fgkNumOfLDCs; i++) {
-      if(gSizePerLDC[i] > 0) {
+      //LDC 170
+      if(i == 0)
+	gSizePerLDC[i] = gSizePerDDL[8] + gSizePerDDL[9];
+      //LDC 171
+      if(i == 1)
+	gSizePerLDC[i] = gSizePerDDL[10] + gSizePerDDL[11];
+      //LDC 172
+      if(i == 2)
+	gSizePerLDC[i] = gSizePerDDL[12] + gSizePerDDL[13];
+      //LDC 173
+      if(i == 3)
+	gSizePerLDC[i] = gSizePerDDL[14] + gSizePerDDL[15];
+      //LDC 174
+      if(i == 4)
+	gSizePerLDC[i] = gSizePerDDL[0] + gSizePerDDL[1];
+      //LDC 175
+      if(i == 5)
+	gSizePerLDC[i] = gSizePerDDL[2] + gSizePerDDL[3];
+      //LDC 176
+      if(i == 6)
+	gSizePerLDC[i] = gSizePerDDL[4] + gSizePerDDL[5];
+      //LDC 177
+      if(i == 7)
+	gSizePerLDC[i] = gSizePerDDL[6] + gSizePerDDL[7];
+      
+      if(gSizePerLDC[i] > 0)
 	(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+21))->Fill(i+170);
-	//LDC 170
-	if(i == 0)
-	  gSizePerLDC[i] = gSizePerDDL[8] + gSizePerDDL[9];
-	//LDC 171
-	if(i == 1)
-	  gSizePerLDC[i] = gSizePerDDL[10] + gSizePerDDL[11];
-	//LDC 172
-	if(i == 2)
-	  gSizePerLDC[i] = gSizePerDDL[12] + gSizePerDDL[13];
-	//LDC 173
-	if(i == 3)
-	  gSizePerLDC[i] = gSizePerDDL[14] + gSizePerDDL[15];
-	//LDC 174
-	if(i == 4)
-	  gSizePerLDC[i] = gSizePerDDL[0] + gSizePerDDL[1];
-	//LDC 175
-	if(i == 5)
-	  gSizePerLDC[i] = gSizePerDDL[2] + gSizePerDDL[3];
-	//LDC 176
-	if(i == 6)
-	  gSizePerLDC[i] = gSizePerDDL[4] + gSizePerDDL[5];
-	//LDC 177
-	if(i == 7)
-	  gSizePerLDC[i] = gSizePerDDL[6] + gSizePerDDL[7];
-	
-	(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+23+i))->Fill(gSizePerLDC[i]/1e+03);
-	//cout<<"Event: "<<fSSDEventPerCycle<<" - LDC: "<<i+170<<
-	//" - Data size: "<<gSizePerLDC[i]<<endl;
-      }
+      (fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+23+i))->Fill(gSizePerLDC[i]/1e+03);
+      //cout<<"Event: "<<fSSDEventPerCycle<<" - LDC: "<<i+170<<
+      //" - Data size: "<<gSizePerLDC[i]<<endl;
       
       //(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+22))->Fill(i+6,gSizePerLDC[i]/1e+06);
     }
