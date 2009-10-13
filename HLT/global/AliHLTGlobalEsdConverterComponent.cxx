@@ -54,7 +54,7 @@ AliHLTGlobalEsdConverterComponent::AliHLTGlobalEsdConverterComponent()
   , fWriteTree(0)
   , fVerbosity(0)
   , fESD(NULL)
-  , fSolenoidBz(5)
+  , fSolenoidBz(-5.00668)
 {
   // see header file for class documentation
   // or

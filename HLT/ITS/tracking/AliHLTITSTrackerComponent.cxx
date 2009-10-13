@@ -141,7 +141,7 @@ void AliHLTITSTrackerComponent::SetDefaultConfiguration()
   // Set default configuration for the CA tracker component
   // Some parameters can be later overwritten from the OCDB
 
-  fSolenoidBz = 5.;
+  fSolenoidBz = -5.00668;
   fFullTime = 0;
   fRecoTime = 0;
   fNEvents = 0;
