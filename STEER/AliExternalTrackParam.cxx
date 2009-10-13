@@ -1355,8 +1355,8 @@ Double_t b[3], Double_t maxd, Double_t dz[2], Double_t covar[3]) {
   if (d > maxd) return kFALSE; 
 
   //Propagate to the DCA
-  Double_t crv=GetC(b[3]);
-  if (TMath::Abs(b[3]) < kAlmost0Field) crv=0.;
+  Double_t crv=GetC(b[2]);
+  if (TMath::Abs(b[2]) < kAlmost0Field) crv=0.;
 
   Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt(1.-snp*snp));
   sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv); cs=TMath::Sqrt(1.- sn*sn);
