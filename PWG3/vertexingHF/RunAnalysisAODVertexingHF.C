@@ -222,12 +222,8 @@ void RunAnalysisAODVertexingHF()
 
   taskName="AddTaskCharmFraction.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
-  // The task is added several times with different settings:
-  AliAnalysisTaskCharmFraction *cFractTaskSignal   = AddTaskCharmFraction("d0D0_Signal.root");
-  AliAnalysisTaskCharmFraction *cFractTaskNoMCSel  = AddTaskCharmFraction("d0D0NoMCSel.root",kFALSE,kTRUE,kFALSE);
-  AliAnalysisTaskCharmFraction *cFractTaskNoMCSel  = AddTaskCharmFraction("d0D0NoMCSel_SideBand.root",kTRUE,kTRUE,kFALSE);
-  AliAnalysisTaskCharmFraction *cFractTaskPureBack = AddTaskCharmFraction("d0D0_PureBack.root",kFALSE,kTRUE,kTRUE,kTRUE,kFALSE,kTRUE,kTRUE,kFALSE,kTRUE);
-  AliAnalysisTaskCharmFraction *cFractTaskFromB    = AddTaskCharmFraction("d0D0_FromB.root",kFALSE,kTRUE,kTRUE,kFALSE,kTRUE);
+  Int_t switchMC[5]={1,1,1,1,1};
+  AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0.root",switchMC);
 
   // attach a private task (not committed)
   // (the files MyTask.h MyTask.cxx AddMyTask.C have to be declared in plugin
@@ -241,7 +237,15 @@ void RunAnalysisAODVertexingHF()
   gROOT->LoadMacro("AddMyTask.C");
   MyTask *myTask = AddMyTask();
   */
-
+  /*
+  if(analysisMode.Data()=="proof") {
+    gProof->LoadMacro("AliDStarJets.cxx++g");
+  } else {
+    gROOT->LoadMacro("AliDStarJets.cxx++g");
+  }
+  gROOT->LoadMacro("AddTaskDStarJets.C");
+  AliDStarJets *myTask = AddTaskDStarJets();
+  */
   //-------------------------------------------------------------------
 
   //
@@ -303,10 +307,10 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
    // Declare the analysis source files names separated by blancs. To be compiled runtime
    // using ACLiC on the worker nodes.
-   //plugin->SetAnalysisSource("MyTask.cxx");
+   //plugin->SetAnalysisSource("AliDStarJets.cxx");
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->SetAdditionalLibs("libPWG3vertexingHF.so libPWG3base.so libPWG3muon.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so MakeAODInputChain.C"/* MyTask.cxx MyTask.h" */);
+   plugin->SetAdditionalLibs("libPWG3vertexingHF.so libPWG3base.so libPWG3muon.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so MakeAODInputChain.C"/* AliDStarJets.cxx AliDStarJets.h"*/);
    // use par files
    if(useParFiles) {
      plugin->EnablePackage("STEERBase.par");
