@@ -140,7 +140,10 @@ AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
   fRunParameters(0),
   fRunType(),
   fPreprocessors(0),
-  fDcsAliasMap(0)
+  fDcsAliasMap(0),
+  fTriggerConfiguration(""),
+  fTriggerDetectorMask(""),
+  fCTPtiming("")
 {
   // constructor
 
@@ -657,6 +660,15 @@ const char* AliTestShuttle::GetTriggerConfiguration()
 	//returns trigger configuration
 	if (fTriggerConfiguration.Length()>0){
 		return fTriggerConfiguration;
+	}
+	return NULL;
+}
+//______________________________________________________________________________________________
+const char* AliTestShuttle::GetCTPTimeParams()
+{
+	//returns trigger configuration
+	if (fCTPtiming.Length()>0){
+		return fCTPtiming;
 	}
 	return NULL;
 }

@@ -42,6 +42,7 @@ class AliShuttleInterface : public TObject
     virtual const char* GetRunType() = 0;
     virtual Bool_t GetHLTStatus() = 0;
     virtual const char* GetTriggerConfiguration() = 0;
+    virtual const char* GetCTPTimeParams() = 0;
     virtual const char* GetTriggerDetectorMask() = 0;
 
     virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path) = 0;

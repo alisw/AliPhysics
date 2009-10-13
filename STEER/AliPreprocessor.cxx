@@ -374,6 +374,22 @@ const char* AliPreprocessor::GetTriggerConfiguration()
 	return fShuttle->GetTriggerConfiguration();
 }
 //______________________________________________________________________________________________
+const char* AliPreprocessor::GetCTPTimeParams()
+{
+	// Returns the CTP timing parameters read from a table in the DAQ logbook
+	// The call is delegated to AliShuttleInterface
+	// Only GRP can call this function.
+	
+	TString detName(GetName());
+	if (detName != "GRP") 
+	{
+		Log("GetCTPTimeParams - Only GRP can call this function.");
+		return 0;
+	}
+	
+	return fShuttle->GetCTPTimeParams();
+}
+//______________________________________________________________________________________________
 const char* AliPreprocessor::GetTriggerDetectorMask()
 {
 	// Returns the trigger detector mask which is read from a table in the DAQ logbook

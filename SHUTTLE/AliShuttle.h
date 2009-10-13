@@ -71,6 +71,7 @@ public:
 	virtual const char* GetRunType();
     	virtual Bool_t GetHLTStatus();
 	virtual const char* GetTriggerConfiguration(); 
+	virtual const char* GetCTPTimeParams(); 
 	virtual const char* GetTriggerDetectorMask(); 
 	virtual void Log(const char* detector, const char* message);
 

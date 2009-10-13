@@ -31,6 +31,7 @@ class AliTestShuttle : public AliShuttleInterface
     void SetInputRunType(const char* runType) { fRunType = runType; }
     void SetInputHLTStatus(Bool_t status) { fHLTStatus = status; }
     void SetInputTriggerConfiguration(const char* configuration) { fTriggerConfiguration = configuration; }
+    void SetInputCTPTimeParams(const char* ctptiming) { fCTPtiming = ctptiming; }
     void SetInputTriggerDetectorMask(const char* triggerDetectorMask) { fTriggerDetectorMask = triggerDetectorMask; }
     Bool_t AddInputCDBEntry(AliCDBEntry* entry);
     void SetTimeCreated(UInt_t timeCreated) { fTimeCreated = timeCreated;}
@@ -53,6 +54,7 @@ class AliTestShuttle : public AliShuttleInterface
     virtual const char* GetRunType();
     virtual Bool_t GetHLTStatus() {return fHLTStatus;}
     virtual const char* GetTriggerConfiguration();
+    virtual const char* GetCTPTimeParams();
     virtual const char* GetTriggerDetectorMask(); 
     virtual void Log(const char* detector, const char* message);
 
@@ -83,6 +85,7 @@ class AliTestShuttle : public AliShuttleInterface
     TMap* fDcsAliasMap; // DCS data for testing
     TString fTriggerConfiguration;  // trigger configuration for testing
     TString fTriggerDetectorMask;   // trigger detector mask for testing
+    TString fCTPtiming;         // CTP time paramters for testing 
 
   private:
     Bool_t CopyFileLocally(TString& targetDir, const char* localFile, const char* gridFileName);
