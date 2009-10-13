@@ -36,6 +36,7 @@ Preliminary test version (T.Malkiewicz)
 #include <TDatime.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+#include <iostream>
 
 // AliT0DataDCS class
 // declaring DCS aliases for T0
@@ -284,7 +285,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
 		   t0_c_hv_imon[k]=0.;
                    t0_c_hv_vmon[k]=0.;
                 }
-		for(Int_t k=0; k<kHV; k++)
+		for(Int_t k=0; k<kLV; k++)
                 {
                    t0_a_lv_imon[k]=0.;
                    t0_a_lv_vmon[k]=0.;
@@ -317,6 +318,8 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
 		    t0_scaler_sec[k]=0;	
 		    
       		  }
+		  std::cout << fAliasNames << "   " << j << std::endl;
+		  std::cout << fAliasNames[j] << std::endl;
 		  aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
                   if(!aliasArr)
                   {
