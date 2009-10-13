@@ -34,7 +34,7 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 
   AliLog::SetClassDebugLevel("AliGRPPreprocessor",3);
   Int_t kRun = 7;
-  AliTestShuttle* shuttle = new AliTestShuttle(kRun, 1, 10);
+  AliTestShuttle* shuttle = new AliTestShuttle(kRun, 1000, 2000);
 
   AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
   AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
@@ -51,11 +51,16 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 
   // simulating input from DAQ FXS
   if (errorLevel != 2){
-	  // $ALICE_ROT to be expanded manually by the user for this test macro 
+	  //$ALICE_ROOT to be expanded manually by the user for this test macro 
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC35", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc035_Period_LHC09c.Seq_0.tag.root");
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC36", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc036_Period_LHC09c.Seq_0.tag.root");
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC44", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc044_Period_LHC09c.Seq_0.tag.root");
 	  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC45", "$ALICE_ROOT/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc045_Period_LHC09c.Seq_0.tag.root");
+	  // for example:
+	  //shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC35", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc035_Period_LHC09c.Seq_0.tag.root");
+	  //shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC36", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc036_Period_LHC09c.Seq_0.tag.root");
+	  //shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC44", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc044_Period_LHC09c.Seq_0.tag.root");
+	  //shuttle->AddInputFile(AliShuttleInterface::kDAQ, "GRP", "Period_LHC09c_TPC.Seq_0.tag.root", "GDC45", "/home/zampolli/SOFT/AliRoot/AliRoot_Trunk/GRP/ShuttleInput/run000080740_GRP_gdc-aldaqpc045_Period_LHC09c.Seq_0.tag.root");
 	  
   }
 
@@ -84,15 +89,36 @@ void TestGRPPreprocessor(const char* runtype="PHYSICS", TString partition="ALICE
 	  shuttle->SetInputTriggerConfiguration(emptybuffer);
   }
   
+  // open text file with CTP timing params
+  Char_t * fileNameTiming = gSystem->ExpandPathName("$ALICE_ROOT/GRP/ShuttleInput/ctptime.tim");
+  ifstream ifstrTiming;
+  ifstrTiming.open(fileNameTiming);
+  ifstrTiming.seekg(0,ios::end);
+  int lengthTiming = ifstrTiming.tellg();
+  const char *bufferTiming = new char[lengthTiming];
+  ifstrTiming.seekg(0,ios::beg);
+  ifstrTiming.read(bufferTiming,lengthTiming);
+  ifstrTiming.close();
+  //  const char *emptybuffer = NULL;
+
+  // simulating input from DAQ logbook_ctp_timing_params
+  if (errorLevel != 3 && errorLevel != 7 && !partition.IsNull() && detector.IsNull()) {
+		  cout << " adding ctp timing params " <<endl;
+		  shuttle->SetInputCTPTimeParams(bufferTiming);
+  }
+  else if (errorLevel == 7) {
+	  shuttle->SetInputCTPTimeParams(emptybuffer);
+  }
+
   // simulating input from DAQ logbook
   if (errorLevel != 1){
-	shuttle->AddInputRunParameter("DAQ_time_start", "1233213.22");
+	shuttle->AddInputRunParameter("DAQ_time_start", "1020");
   }
   if (errorLevel != 6){
 	shuttle->AddInputRunParameter("beamEnergy", "1400.");
   }
 
-  shuttle->AddInputRunParameter("DAQ_time_end",   "1345645.22");
+  shuttle->AddInputRunParameter("DAQ_time_end",   "1980");
   shuttle->AddInputRunParameter("beamType",    beamType);
   shuttle->AddInputRunParameter("numberOfDetectors", "5");
   shuttle->AddInputRunParameter("detectorMask", "34555");
@@ -196,17 +222,25 @@ TMap* CreateDCSAliasMap(Int_t errorLevel)
   aliasMap = new TMap;
   aliasMap->SetOwner(1);
   
+  /*
   // LHCState
   valueSet = new TObjArray;
   valueSet->SetOwner(1);
   dcsVal = new AliDCSValue( 'F', 2 );
   valueSet->Add(dcsVal);
   aliasMap->Add( new TObjString(fgkDCSDataPoints[0]), valueSet );
+  */
 
   // L3Polarity
   valueSet = new TObjArray;
   valueSet->SetOwner(1);
-  dcsVal = new AliDCSValue( kTRUE, 2 );
+  dcsVal = new AliDCSValue( kTRUE, 1010 );
+  valueSet->Add(dcsVal);
+  dcsVal = new AliDCSValue( kTRUE, 1100 );
+  valueSet->Add(dcsVal);
+  dcsVal = new AliDCSValue( kTRUE, 1500 );
+  valueSet->Add(dcsVal);
+  dcsVal = new AliDCSValue( kTRUE, 1990 );
   valueSet->Add(dcsVal);
   // add the following two lines to test errors for changing polarity
   //  dcsVal = new AliDCSValue( kFALSE, 2 );
@@ -216,10 +250,28 @@ TMap* CreateDCSAliasMap(Int_t errorLevel)
   // DipolePolarity
   valueSet = new TObjArray;
   valueSet->SetOwner(1);
-  dcsVal = new AliDCSValue( kTRUE, 2 );
+  dcsVal = new AliDCSValue( kTRUE, 1010 );
   valueSet->Add(dcsVal);
+  dcsVal = new AliDCSValue( kTRUE, 1100 );
+  valueSet->Add(dcsVal);
+  dcsVal = new AliDCSValue( kTRUE, 1500 );
+  valueSet->Add(dcsVal);
+  dcsVal = new AliDCSValue( kTRUE, 1990 );
   aliasMap->Add( new TObjString(fgkDCSDataPoints[2]), valueSet );
-  
+
+  // LHCLuminosity - keeping outside look to check procedure to calculate statistics values
+  valueSet = new TObjArray;
+  valueSet->SetOwner(1);
+  dcsVal = new AliDCSValue( (Float_t)2, 1010 );
+  valueSet->Add(dcsVal);
+  dcsVal = new AliDCSValue( (Float_t)4, 1100 );
+  valueSet->Add(dcsVal);
+  dcsVal = new AliDCSValue( (Float_t)6, 1200 );
+  valueSet->Add(dcsVal);
+  dcsVal = new AliDCSValue( (Float_t)8, 1985 );
+  valueSet->Add(dcsVal);
+  aliasMap->Add( new TObjString(fgkDCSDataPoints[3]), valueSet );
+
   TRandom random;
 
   Int_t maxDPindex = 0;
@@ -230,13 +282,16 @@ TMap* CreateDCSAliasMap(Int_t errorLevel)
 	  maxDPindex = 3;  // simulating only a few DP in case errorLevel=5
   }
 
-  for( int nAlias=3; nAlias<maxDPindex; nAlias++)  {
+  for( int nAlias=4; nAlias<maxDPindex; nAlias++)  {
 	  if (nAlias>=7 && nAlias < 47) continue; 
     valueSet = new TObjArray;
     valueSet->SetOwner(1);
 
+    Int_t timeStampValue[10] = { 1010, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1990};
+
+
     for (int timeStamp=0; timeStamp<10; timeStamp++) {
-      dcsVal = new AliDCSValue((Float_t) (timeStamp+1+10*nAlias), timeStamp+1);
+      dcsVal = new AliDCSValue((Float_t) (timeStamp+1+10*nAlias), timeStampValue[timeStamp]);
       valueSet->Add(dcsVal);
     }
     aliasMap->Add( new TObjString( fgkDCSDataPoints[nAlias]), valueSet );
@@ -255,7 +310,7 @@ TMap* CreateDCSAliasMap(Int_t errorLevel)
 			  valueSet = new TObjArray;
 			  valueSet->SetOwner(1);
 			  for (int timeStamp=0; timeStamp<10; timeStamp++) {
-				  dcsVal = new AliDCSValue((Float_t) (timeStamp+1+10*hp), timeStamp+1);
+				  dcsVal = new AliDCSValue((Float_t) (timeStamp+1+10*hp), timeStampValue[timeStamp]);
 				  valueSet->Add(dcsVal);
 				  //cout << " hall probe = " << dpAlias << " with value = " << dcsVal->GetFloat() << endl;
 			  }

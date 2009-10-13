@@ -56,6 +56,7 @@ class AliShuttleInterface;
 #include <AliCDBMetaData.h>
 #include <AliCDBId.h>
 #include <AliTriggerConfiguration.h>
+#include <AliCTPTimeParams.h>
 
 const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required
 
@@ -186,7 +187,8 @@ ClassImp(AliGRPPreprocessor)
                    "(Trigger Scalers not found in DCS FXS - ERROR)",
                    "(DCS data points ERROR)",
                    "(Trigger Configuration ERROR)",
-                   "(DAQ logbook ERROR determining partition of the run)"
+                   "(DAQ logbook ERROR determining partition of the run)",
+                   "(CTP timing ERROR)"
   };
 
 //_______________________________________________________________
@@ -396,6 +398,74 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		error |= 32;
 	}
 
+        //===========================//
+	// Trigger Timing Parameters //
+        //===========================//
+
+	
+	const char * triggerCTPtiming = GetCTPTimeParams();
+
+	if (partition.IsNull() && !detector.IsNull()){ // standalone partition
+		Log("STANDALONE partition for current run, using CTP timing params dummy value");
+		AliCDBEntry *cdbEntry = GetFromOCDB("CTP","DummyCTPtime");
+		if (!cdbEntry) {
+			Log(Form("No dummy CTP timing parameters entry found, going into error..."));
+			error |= 64;
+		}
+		else{
+			AliCTPTimeParams *runCTPtiming = (AliCTPTimeParams*)cdbEntry->GetObject();
+			if (!runCTPtiming){
+				Log(Form("dummy CTP timing parameters not found in OCDB entry, going into error..."));
+				error |= 64;
+			}
+			else {
+				TString titleCTPtiming = Form("CTP timing params for run %i from Dummy entry in OCDB",fRun);
+				runCTPtiming->SetTitle(titleCTPtiming);
+				AliCDBMetaData metadata;
+				metadata.SetResponsible("Roman Lietava");
+				metadata.SetComment("CTP run timing parameters from dummy entry in OCDB");
+				if (!Store("CTP","CTPtiming", runCTPtiming, &metadata, 0, 0)) {
+					Log("Unable to store the dummy CTP timing params object to OCDB!");
+					error |= 64;
+				}
+			}
+		}
+	}
+
+	else if (!partition.IsNull() && detector.IsNull()){ // global partition
+		Log("GLOBAL partition for current run, using Trigger Timing Parameters from DAQ Logbook");
+		if (triggerCTPtiming!= NULL) {
+			Log("Found trigger timing params in DAQ logbook");
+			AliDebug(2,Form("%s",triggerCTPtiming));
+			AliCTPTimeParams *runCTPtiming = runCTPtiming = AliCTPTimeParams::LoadCTPTimeParamsFromString(triggerCTPtiming);	  
+			if (!runCTPtiming) {
+				Log("Bad CTP trigger timing params file from DAQ logbook! The corresponding CDB entry will not be filled!");
+				error |= 64;
+			}
+			else {
+				TString titleCTPtiming = Form("CTP timing params for run %i from DAQ",fRun);
+				runCTPtiming->SetTitle(titleCTPtiming);
+				AliCDBMetaData metadata;
+				metadata.SetBeamPeriod(0);
+				metadata.SetResponsible("Roman Lietava");
+				metadata.SetComment("CTP timing params from DAQ logbook");
+				if (!Store("CTP","CTPtiming", runCTPtiming, &metadata, 0, 0)) {
+					Log("Unable to store the CTP timing params object to OCDB!");
+					error |= 64;
+				}
+			}
+		}
+
+		else {
+			Log("Trigger timing params NULL in DAQ logbook");
+			error |= 64;
+		}
+	}
+
+	else {
+		Log(Form("Incorrect field in DAQ logbook for partition = %s and detector = %s, going into error without trigger timing parameters...",partition.Data(),detector.Data()));
+		error |= 32;
+	}
 	// storing AliGRPObject in OCDB
 
 	AliCDBMetaData md;
@@ -410,13 +480,14 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		Log("GRP Preprocessor Success");
 		return 0;
 	} else {
-		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s",
+		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s",
 			  kppError[(error&1)?1:0],
 			  kppError[(error&2)?2:0],
 			  kppError[(error&4)?3:0],
 			  kppError[(error&8)?4:0],
 			  kppError[(error&16)?5:0],
-			  kppError[(error&32)?6:0]
+			  kppError[(error&32)?6:0],
+			  kppError[(error&64)?7:0]
 			  ));
 		return error;
 	}
