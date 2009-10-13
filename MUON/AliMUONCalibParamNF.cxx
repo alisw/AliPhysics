@@ -23,6 +23,8 @@
 #include "TMath.h"
 #include "TString.h"
 
+#include <limits.h>
+
 //-----------------------------------------------------------------------------
 /// \class AliMUONCalibParamNF
 ///
@@ -280,6 +282,13 @@ AliMUONCalibParamNF::ValueAsInt(Int_t i, Int_t j) const
 /// Return the value as an int, by rounding the internal float value.
 
   Float_t v = ValueAsFloat(i,j);
+  
+  if ( v >= Float_t(INT_MAX) ) {
+    AliErrorStream() 
+      << "Cannot convert value " << v << " to Int_t." << endl;
+    return 0;
+  }  
+  
   return TMath::Nint(v);
 }
 
