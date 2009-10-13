@@ -293,7 +293,7 @@ Bool_t AliV0Reader::NextV0(){
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepTPCPID);			// for CF
     }
 		
-		
+    /*		
     if(fUseOwnXYZCalculation == kFALSE){
       fCurrentV0->GetXYZ(fCurrentXValue,fCurrentYValue,fCurrentZValue);
     }
@@ -306,7 +306,7 @@ Bool_t AliV0Reader::NextV0(){
       fCurrentYValue = convpos[1];
       fCurrentZValue = GetConvPosZ(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField());
     }
-		
+    */	
     if(GetXYRadius()>fMaxR){ // cuts on distance from collision point
       if(fHistograms != NULL){
 	fHistograms->FillHistogram("ESD_CutR_InvMass",GetMotherCandidateMass());
@@ -611,6 +611,20 @@ Bool_t AliV0Reader::HasSameMCMother(){
 	}
     }
   }
+
+  if(fUseOwnXYZCalculation == kFALSE){
+    fCurrentV0->GetXYZ(fCurrentXValue,fCurrentYValue,fCurrentZValue);
+  }
+  else{
+    Double_t convpos[2];
+    convpos[0]=0;
+    convpos[1]=0;
+    GetConvPosXY(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField(),convpos);
+    fCurrentXValue = convpos[0];
+    fCurrentYValue = convpos[1];
+    fCurrentZValue = GetConvPosZ(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField());
+  }
+  
   return iResult;
 }
 
