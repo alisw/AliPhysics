@@ -88,7 +88,7 @@ fNofDDLs(0),
 fNofEventsPerDDL(0x0)
 {  
   /// ctor
-  memset(fHistogramming,0,sizeof(Int_t)); // histogramming is off by default. Use MakeHistogramForDimension to turn it on.
+  memset(fHistogramming,0,fExternalDimension*sizeof(Int_t)); // histogramming is off by default. Use MakeHistogramForDimension to turn it on.
   fExternalDimensionNames->SetOwner(kTRUE);
   fDimensionNames->SetOwner(kTRUE);  
   fDimensionNames->AddAt(new TObjString("occ"),IndexOfOccupancyDimension());
@@ -148,7 +148,7 @@ fNofEventsPerDDL(0x0)
   fExternalDimensionNames = new TObjArray(dimension);
   fExternalDimension = dimension;
   fHistogramming = new Int_t[fExternalDimension];
-  memset(fHistogramming,0,sizeof(Int_t)); // histogramming is off by default. Use MakeHistogramForDimension to turn it on.
+  memset(fHistogramming,0,fExternalDimension*sizeof(Int_t)); // histogramming is off by default. Use MakeHistogramForDimension to turn it on.
 
   fExternalDimensionNames->SetOwner(kTRUE);
   fDimensionNames->SetOwner(kTRUE);  
