@@ -354,17 +354,17 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
 
     if (cov[0]<0. || cov[2]<0.) {
       AliWarning(Form("Very strange track (%d)! At least one of its covariance matrix diagonal elements is negative!",i));
-      delete trackTOFin;
-      continue;
+      //delete trackTOFin;
+      //continue;
     }
 
     Float_t scalefact=3.;    
     Double_t dphi=
       scalefact*
-      ((5*TMath::Sqrt(cov[0]) + 3.*fDy + 10.*TMath::Abs(par[2]))/fR); 
+      ((5*TMath::Sqrt(TMath::Abs(cov[0])) + 3.*fDy + 10.*TMath::Abs(par[2]))/fR); 
     Double_t dz=
       scalefact*
-      (5*TMath::Sqrt(cov[2]) + 3.*fDz + 10.*TMath::Abs(par[3]));
+      (5*TMath::Sqrt(TMath::Abs(cov[2])) + 3.*fDz + 10.*TMath::Abs(par[3]));
     
     Double_t phi=TMath::ATan2(par[0],x) + trackTOFin->GetAlpha();
     if (phi<-TMath::Pi())phi+=2*TMath::Pi();
