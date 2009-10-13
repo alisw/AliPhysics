@@ -318,8 +318,6 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
 		    t0_scaler_sec[k]=0;	
 		    
       		  }
-		  std::cout << fAliasNames << "   " << j << std::endl;
-		  std::cout << fAliasNames[j] << std::endl;
 		  aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
                   if(!aliasArr)
                   {
