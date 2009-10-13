@@ -1,5 +1,5 @@
 #-*- Mode: Makefile -*-
-# $Id: libAliHLTCalo.pkg 35236 2009-10-05 18:22:22Z phille $
+# $Id$
 
 
 include $(MODDIR)/hlt.conf
@@ -40,7 +40,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS)				\
 
 ## the link def file for this module
 ## generated automatically if empty
-#MODULE_DHDR:= 	AliHLTCaloLinkDef.h
+MODULE_DHDR:=
 
 ## AliRoot include paths
 EINCLUDE := HLT/BASE HLT/BASE/util STEER RAW HLT/PHOS EMCAL CALO
