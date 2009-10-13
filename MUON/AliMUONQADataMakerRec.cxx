@@ -1765,7 +1765,7 @@ AliMUONQADataMakerRec::BeautifyTrackerBusPatchOccupancy(TH1& hbp)
     // computed the truncated mean of the occupancy values, in order to get a 
     // reasonable y-range for the histogram (without giant peaks to the roof 
     // for misbehaving buspatches).
-    ok = trim(nBusPatches,x,alpha,tmean,tvar,ymin,ymax);
+    ok = trim(n,x,alpha,tmean,tvar,ymin,ymax);
     
     delete[] x;
   }
