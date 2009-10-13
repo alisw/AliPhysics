@@ -2630,22 +2630,22 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     //NO CUTS Case: force okD0 and okD0bar = kTRUE
     if(signallevel==1)FillHistos(d,flist_NoCuts_Signal,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==2)FillHistos(d,flist_NoCuts_FromDstar,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==3)FillHistos(d,flist_NoCuts_FromB,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==4||signallevel==7||signallevel==8)FillHistos(d,flist_NoCuts_Back,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
+    else if(signallevel==3||signallevel==4)FillHistos(d,flist_NoCuts_FromB,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
+    else if(signallevel==-1||signallevel==7||signallevel==8)FillHistos(d,flist_NoCuts_Back,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==5||signallevel==6)FillHistos(d,flist_NoCuts_Other,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
 
     //LOOSE CUTS Case
     if(signallevel==1)FillHistos(d,flist_LsCuts_Signal,ptbin,okD0_loose,okD0bar_loose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==2)FillHistos(d,flist_LsCuts_FromDstar,ptbin,okD0_loose,okD0bar_loose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==3)FillHistos(d,flist_LsCuts_FromB,ptbin,okD0_loose,okD0bar_loose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==4||signallevel==7||signallevel==8)FillHistos(d,flist_LsCuts_Back,ptbin,okD0_loose,okD0bar_loose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
+    else if(signallevel==3||signallevel==4)FillHistos(d,flist_LsCuts_FromB,ptbin,okD0_loose,okD0bar_loose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
+    else if(signallevel==-1||signallevel==7||signallevel==8)FillHistos(d,flist_LsCuts_Back,ptbin,okD0_loose,okD0bar_loose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==5||signallevel==6)FillHistos(d,flist_LsCuts_Other,ptbin,okD0_loose,okD0bar_loose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
 
     //TIGHT CUTS Case
     if(signallevel==1)FillHistos(d,flist_TghCuts_Signal,ptbin,okD0_tight,okD0bar_tight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==2)FillHistos(d,flist_TghCuts_FromDstar,ptbin,okD0_tight,okD0bar_tight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==3)FillHistos(d,flist_TghCuts_FromB,ptbin,okD0_tight,okD0bar_tight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==4||signallevel==7||signallevel==8)FillHistos(d,flist_TghCuts_Back,ptbin,okD0_tight,okD0bar_tight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
+    else if(signallevel==3||signallevel==4)FillHistos(d,flist_TghCuts_FromB,ptbin,okD0_tight,okD0bar_tight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
+    else if(signallevel==-1||signallevel==7||signallevel==8)FillHistos(d,flist_TghCuts_Back,ptbin,okD0_tight,okD0bar_tight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==5||signallevel==6)FillHistos(d,flist_TghCuts_Other,ptbin,okD0_tight,okD0bar_tight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
    
     
@@ -2751,8 +2751,8 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(AliAODRe
   //  IF (!AND ONLY IF) THE TWO DAUGHTERS COME FROM A COMMONE MOTHER A FAKE TRUE SECONDARY VERTEX IS CONSTRUCTED (aodDMC)  
   //
   // THE FOLLOWING SCHEME IS ADOPTED: signaltype is set to
-                        //  1:signal (D0 prompt); 2: signal D0 from Dstar; 3: D0 fromB 
-                        // then background categories: -1 and 4: one or both daughters is a fake track
+                        //  1:signal (D0 prompt); 2: signal D0 from Dstar; 3: D0 fromB 4: D0 from Dstar fromB
+                        // then background categories: -1: one or both daughters is a fake track
                         //                             5: one or both daughters come from a D meson != D0
                         //                             6: both daughters come from a D0->4prongs  
                         //                             7: both daughetrs are primaries
@@ -2787,7 +2787,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(AliAODRe
 
     //fake tracks
     
-    signaltype=4;
+    signaltype=-1;
     return aodDMC;
 
   }
@@ -2861,22 +2861,11 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(AliAODRe
     return aodDMC;
  
   }
-
-  matchtoMC=d->MatchToMC(421,arrayMC,2,pdgdaughters);
+  Bool_t isfromDstar=kFALSE;
+  //  matchtoMC=d->MatchToMC(421,arrayMC,2,pdgdaughters);
   grandmoth1=(AliAODMCParticle*)arrayMC->At(mum1->GetMother());
-  if(TMath::Abs(grandmoth1->GetPdgCode())==413||TMath::Abs(grandmoth1->GetPdgCode())==423){
-    // D0 COMING FROM A D0*
-    if(matchtoMC!=-1){
-      signaltype=2;
-      return aodDMC;
-     
-    }
-    else {
-      signaltype=12;
-      return aodDMC;
-      
-    }
-  }
+  if(TMath::Abs(grandmoth1->GetPdgCode())==413||TMath::Abs(grandmoth1->GetPdgCode())==423)isfromDstar=kTRUE;// D0 COMING FROM A D0*
+  
   //	  if(fcheckMCD0){//THIS CHECK IS NEEDED TO AVOID POSSIBLE FAILURE IN THE SECOND WHILE, FOR DEBUGGING
   while(TMath::Abs(grandmoth1->GetPdgCode())!=4&&TMath::Abs(grandmoth1->GetPdgCode())!=5){
     if(grandmoth1->GetMother()==-1){
@@ -2898,19 +2887,21 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(AliAODRe
   
   if(TMath::Abs(grandmoth1->GetPdgCode())==4){
     if(matchtoMC!=-1){
-    
-      signaltype=1;
+      
+      if(isfromDstar)signaltype=2;
+      else signaltype=1;
       return aodDMC;
     }
     else {
       signaltype=12;
       return aodDMC;
-    
+      
     }
   }
   else if(TMath::Abs(grandmoth1->GetPdgCode())==5){
     if(matchtoMC!=-1){
-      signaltype=3;
+      if(isfromDstar)signaltype=4;
+      else signaltype=3;
       return aodDMC;
       
     }

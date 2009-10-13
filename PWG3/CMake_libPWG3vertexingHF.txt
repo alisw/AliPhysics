@@ -11,7 +11,6 @@ set(SRCS
        vertexingHF/AliAnalysisTaskSECompareHF.cxx
        vertexingHF/AliAnalysisTaskSEDplus.cxx
        vertexingHF/AliAnalysisTaskSED0Mass.cxx
-       vertexingHF/AliAnalysisTaskSEDStarJets.cxx
        vertexingHF/AliAnalysisTaskSECharmFraction.cxx
        vertexingHF/AliAnalysisTaskCharmFraction.cxx
        vertexingHF/AliAnalysisTaskSEBkgLikeSignJPSI.cxx
