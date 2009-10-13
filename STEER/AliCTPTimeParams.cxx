@@ -1,3 +1,19 @@
+/*************************************************************************
+* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  * 
+**************************************************************************/
+
+
 #include <Riostream.h>
 
 #include <TObjArray.h>
@@ -6,16 +22,12 @@
 #include <TString.h>
 #include <TSystem.h>
 #include <TFile.h>
-#include <TCint.h>
-#include <TROOT.h>
 
 #include "AliLog.h"
 #include "AliCTPTimeParams.h"
 #include "AliCTPInputTimeParams.h"
 
 ClassImp(AliCTPTimeParams)
-
-const TString AliCTPTimeParams::fgkCTPTimeParamsFileName("/data/CTPTimeParams.root");
 
 //______________________________________________________________________________
 AliCTPTimeParams::AliCTPTimeParams():
@@ -31,7 +43,8 @@ fCTPInputTimeParams()
 AliCTPTimeParams::AliCTPTimeParams(const AliCTPTimeParams &timeparams):
  TNamed(),
  fDelayL1L0(timeparams.fDelayL1L0),
- fDelayL2L0(timeparams.fDelayL2L0)
+ fDelayL2L0(timeparams.fDelayL2L0),
+ fCTPInputTimeParams()
 {
  for (Int_t i = 0; i < timeparams.fCTPInputTimeParams.GetSize(); i++) {
  if ( timeparams.fCTPInputTimeParams[i] ) fCTPInputTimeParams.Add(timeparams.fCTPInputTimeParams[i]->Clone());
@@ -84,7 +97,7 @@ AliCTPTimeParams* AliCTPTimeParams::LoadCTPTimeParams(TString filename)
  // By default files are stored in GRP/CTP folder
  // The filename is constructed as GRP/CTP/<file>.cfg
   if( gSystem->AccessPathName( filename.Data() )) {
-  //AliErrorClass( Form( "File (%s) not found!", filename.Data()));
+ // AliError( Form( "File (%s) not found!", filename.Data()));
   return NULL;
  }
 
@@ -133,13 +146,14 @@ AliCTPTimeParams* AliCTPTimeParams::LoadCTPTimeParamsFromString(const char* time
 
      if (ctptime->ProcessCTPTimeParamsLine(string->String()) == kFALSE)
      {
-        delete ctptime;
+        ctptime  = 0x0;
         break;
      }
    }
 
    delete tokens;
-   return ctptime;
+   if (ctptime) return ctptime;
+   else return NULL;
 }
 
 //______________________________________________________________________________
@@ -159,7 +173,9 @@ Bool_t AliCTPTimeParams::ProcessCTPTimeParamsLine(const char* line)
    if (strline.BeginsWith("0")) { level = 0; }   // determine the input level (0, 1 or 2)
    else if (strline.BeginsWith("1")) { level = 1; }
    else if (strline.BeginsWith("2")) { level = 2; } 
-   else return 0; // file not in the right format!
+   else {
+	   return 0; // file not in the right format!
+   }
    
    TObjArray *tokens = strline.Tokenize(" \t");
    AddInput(((TObjString*)tokens->At(0))->String(), level, ((TObjString*)tokens->At(2))->String().Atoi(), ((TObjString*)tokens->At(1))->String() );
@@ -168,17 +184,6 @@ Bool_t AliCTPTimeParams::ProcessCTPTimeParamsLine(const char* line)
 return kTRUE;
 }
 
-//______________________________________________________________________________
-Bool_t AliCTPTimeParams::GetCTPTimeParamsDAQLog()
-{
-
-}
-
-//______________________________________________________________________________
-Bool_t AliCTPTimeParams::WriteCTPTimeParamsOCDB()
-{
-
-}
 //______________________________________________________________________________
 void AliCTPTimeParams::Print(const Option_t*) const
 {

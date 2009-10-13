@@ -13,10 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliCTPInputTimeParams.cxx 22322 2007-11-22 11:43:14Z cvetan $ */
 
 #include <Riostream.h>
-
 
 #include "TObject.h"
 #include "AliLog.h"   

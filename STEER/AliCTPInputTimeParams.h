@@ -1,14 +1,9 @@
-#ifndef ALITIMESTAMP_H
-#define ALITIMESTAMP_H
+#ifndef ALICTPINPUTTIMEPARAMS_H
+#define ALICTPINPUTTIMEPARAMS_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/* $Id: AliCTPInputTimeParams.h 22322 2007-11-22 11:43:14Z cvetan $ */
-
-///////////////////////////////////////////////////////////////////////////////
-//
-
+* See cxx source for full Copyright notice */
+/* $Id$ */
 
 class TObject;
 
