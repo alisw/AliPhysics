@@ -10,7 +10,7 @@ FMD/module.mk:		FMD/libFMDbase.pkg FMD/libFMDsim.pkg FMD/libFMDrec.pkg FMD/libFM
 FASTSIM/module.mk:	FASTSIM/libFASTSIM.pkg
 HERWIG/module.mk:	HERWIG/libherwig.pkg
 HIJING/module.mk:	HIJING/libhijing.pkg
-HLT/module.mk:		HLT/bindHLTdumpraw.pkg  HLT/libAliHLTRCU.pkg HLT/libHLTbase.pkg HLT/libAliHLTComp.pkg HLT/libAliHLTSample.pkg HLT/libHLTinterface.pkg HLT/libAliHLTHOMER.pkg HLT/libAliHLTTPC.pkg HLT/libHLTrec.pkg HLT/libAliHLTITS.pkg HLT/libAliHLTTRD.pkg HLT/libHLTshuttle.pkg HLT/libAliHLTMUON.pkg HLT/libAliHLTTrigger.pkg HLT/libHLTsim.pkg HLT/libAliHLTPHOS.pkg HLT/libAliHLTEMCAL.pkg HLT/libAliHLTUtil.pkg HLT/libHLTpendolino.pkg
+HLT/module.mk:		HLT/bindHLTdumpraw.pkg HLT/bindHLTrootify.pkg HLT/libAliHLTCalo.pkg HLT/libAliHLTComp.pkg HLT/libAliHLTEMCAL.pkg HLT/libAliHLTFMD.pkg HLT/libAliHLTGlobal.pkg HLT/libAliHLTHOMER.pkg HLT/libAliHLTITS.pkg HLT/libAliHLTJET.pkg HLT/libAliHLTMUON.pkg HLT/libAliHLTPHOS.pkg HLT/libAliHLTRCU.pkg HLT/libAliHLTSample.pkg HLT/libAliHLTTPC.pkg HLT/libAliHLTTPCCalibration.pkg HLT/libAliHLTTPCEVE.pkg HLT/libAliHLTTRD.pkg HLT/libAliHLTTrigger.pkg HLT/libAliHLTUtil.pkg HLT/libHLTbase.pkg HLT/libHLTinterface.pkg HLT/libHLTpendolino.pkg HLT/libHLTqadm.pkg HLT/libHLTrec.pkg HLT/libHLTshuttle.pkg HLT/libHLTsim.pkg
 ITS/module.mk:		ITS/libITSbase.pkg ITS/libITSsim.pkg ITS/libITSrec.pkg
 JETAN/module.mk:	JETAN/libJETAN.pkg JETAN/libFASTJETAN.pkg
 MICROCERN/module.mk:	MICROCERN/libmicrocern.pkg
@@ -189,3 +189,4 @@ $(LIBPATH)/libPWG4GammaConv.$(SOEXT): $(LIBPATH)/libSTEERBase.$(SOEXT) $(LIBPATH
 $(LIBPATH)/libTRIGGER.$(SOEXT): $(LIBPATH)/libSTEER.$(SOEXT) $(LIBPATH)/libITSsim.$(SOEXT) 
 
 endif
+
