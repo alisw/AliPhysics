@@ -10,6 +10,7 @@ SRCS:=   vertexingHF/AliAODRecoDecayHF.cxx \
        vertexingHF/AliAnalysisTaskSECompareHF.cxx \
        vertexingHF/AliAnalysisTaskSEDplus.cxx \
        vertexingHF/AliAnalysisTaskSED0Mass.cxx \
+       vertexingHF/AliAnalysisTaskSECharmFraction.cxx \
        vertexingHF/AliAnalysisTaskCharmFraction.cxx \
        vertexingHF/AliCFHeavyFlavourTaskMultiVarMultiStep.cxx \
        vertexingHF/AliMultiDimVector.cxx vertexingHF/AliSignificanceCalculator.cxx \

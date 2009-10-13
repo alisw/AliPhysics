@@ -1,0 +1,129 @@
+#ifndef ALIANALYSISTASKSECHARMFRACTION_H
+#define ALIANALYSISTASKSECHARMFRACTION_H
+
+/* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+//*************************************************************************
+// Class AliAnalysisTaskSECharmFraction
+// AliAnalysisTask for the extraction of the fraction of prompt charm
+// using the charm hadron impact parameter to the primary vertex
+// Author: Andrea Rossi andrea.rossi@ts.infn.it
+//*************************************************************************
+
+class TH1F;
+class TH2F;
+class AliAODDEvent;
+class AliAODMCHeader;
+class AliAODRecoDecayHF2Prong;
+class AliAODRecoDecayHF;
+class AliAODMCParticle;
+#include "AliAnalysisTaskSE.h"
+
+class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
+ public:
+  AliAnalysisTaskSECharmFraction();
+  AliAnalysisTaskSECharmFraction(const char *name);
+  AliAnalysisTaskSECharmFraction(const char *name,Int_t nptbins,Double_t *ptbins);
+  
+  virtual ~AliAnalysisTaskSECharmFraction(); 
+  // Implementation of interface methods
+  virtual void UserCreateOutputObjects();
+  virtual void Init();
+  virtual void LocalInit() {Init();}
+  virtual void UserExec(Option_t *option);
+  virtual void Terminate(Option_t *option);  
+
+  void SetNPtBins(Int_t nbins,Double_t *ptbins){if(fptbins!=0x0)delete fptbins;fnbins=nbins;fptbins=ptbins;}
+  void SetSignalInvMassCut(Double_t signalInvMassCut=0.027){fsignalInvMassCut=signalInvMassCut;}
+  void SetLargeInvMassCut(Double_t largeInvMassCut=2.){flargeInvMassCut=largeInvMassCut;}
+  void SetSideBandInvMassCut(Double_t sidebandInvMassCut=0.054){
+    // default value ~ 3x2 times inv mass resol. 
+    //a factor 2 is applied w.r.t. 3sigma, 
+    //should be safe enough to exclude most of the reflections 
+    fsidebandInvMassCut=sidebandInvMassCut;  
+  }
+  void SetSideBandInvMassWindow(Double_t sidebandInvMassWindow=0.066){//~ 6 times inv. mass resol.
+    fsidebandInvMassWindow=sidebandInvMassWindow;
+  }
+  
+  void SetStandardMassSelection(){
+    SetSignalInvMassCut();
+    SetLargeInvMassCut();
+    SetSideBandInvMassCut();
+    SetSideBandInvMassWindow();
+    return;
+  }
+  Int_t SetStandardCuts(Double_t pt,Double_t invMassCut);
+  void CheckInvMassD0(AliAODRecoDecayHF2Prong *d,Double_t &invMassD0,Double_t &invMassD0bar,Bool_t &isPeakD0,Bool_t &isPeakD0bar,Bool_t &isSideBandD0,Bool_t &isSideBandD0bar);
+  AliAODRecoDecayHF *GetD0toKPiSignalType(AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx);
+  AliAODRecoDecayHF* ConstructFakeTrueSecVtx(AliAODMCParticle *b1, AliAODMCParticle *b2, AliAODMCParticle *mum,Double_t *primaryVtxTrue);
+  void SetUseMC(Bool_t useMC){ fUseMC=useMC;}
+  //#################
+   /* ######### THE FOLLOWING IS FOR FURTHER IMPLEMENATION ############
+    Int_t GetPtBin(Double_t pt)const;
+    void SetD0Cuts(Int_t ptbin,Double_t &*d0cutsLoose,Double_t &*d0cutsTight);
+
+  //  void InvMassSelection();
+  
+  void SetCheckMC(Bool_t checkMC){fcheckMC=checkMC;}
+  void SetCheckMC_D0(Bool_t check_D0){fcheckMCD0=check_D0;}
+  void SetCheckMC_2prongs(Bool_t check2prongs){fcheckMC2prongs=check2prongs;}
+  void SetCheckMC_prompt(Bool_t checkprompt){fcheckMCprompt=checkprompt;}
+  void SetCheckMC_fromB(Bool_t checkfromB){fcheckMCfromB=checkfromB;}
+  void SetCheckMC_fromDstar(Bool_t skipD0star){fSkipD0star=skipD0star;}
+  void SetUseCuts(Bool_t usecuts){fD0usecuts=usecuts;}
+  void SetSideBands(Double_t sideband){fSideBands=sideband;}
+  void SetStudyPureBackground(Bool_t back){fStudyPureBackground=back;}
+  */
+
+ private:
+  Bool_t FillHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Int_t okD0,Int_t okD0bar,Double_t invMassD0,Double_t invMassD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBand,Double_t massmumtrue,AliAODRecoDecayHF *aodDMC,Double_t *vtxTrue);
+ 
+  AliAnalysisVertexingHF *fVHFloose;        // Vertexer heavy flavour
+  AliAnalysisVertexingHF *fVHFtight;        // Vertexer heavy flavour
+  Double_t    fmD0PDG;                      //  MC D0 mass
+  Int_t        fnbins;                      // Number of pt bins
+  Double_t *fptbins;                        //[fnbins] ptbins 
+  Double_t fsignalInvMassCut;               // invariant mass cut to define signal region
+  Double_t flargeInvMassCut;                // invariant mass cut to accept all inv mass window
+  Double_t fsidebandInvMassCut;             // invariant mass cut to define side band region lower limit
+  Double_t fsidebandInvMassWindow;          // invariant mass cut to define side band region width
+  Bool_t fUseMC;                            // flag to use or not MC info
+  TH1F *fNentries;                          //! histo for #AOD analysed, container 1
+  TH1F *fSignalType;                        //! histo for the type of MC signal , container 2
+  TH1F *fSignalTypeLsCuts;                 //! histo for the type of MC signal with loose cuts , container 3
+  TH1F *fSignalTypeTghCuts;                //! histo for the type of MC signal with tight cuts, container 4
+  TList *flist_NoCuts_Signal;               //! TList for signal (D prompt) with nocuts, container 5
+  TList *flist_NoCuts_Back;               //! TList for backgrnd with nocuts, container 6
+  TList *flist_NoCuts_FromB;               //! TList for D from B with nocuts, container 7
+  TList *flist_NoCuts_FromDstar;               //! TList for Dstar with nocuts, container 8
+  TList *flist_NoCuts_Other;               //! TList for others with nocuts, container 9
+  TList *flist_LsCuts_Signal;               //! TList for signal (D prompt) with loose cuts, container 10
+  TList *flist_LsCuts_Back;               //! TList for backgrnd with loose cuts, container 11
+  TList *flist_LsCuts_FromB;               //! TList for D from B with loose cuts, container 12
+  TList *flist_LsCuts_FromDstar;               //! TList for Dstar with loose cuts, container 13
+  TList *flist_LsCuts_Other;               //! TList for others with loose cuts, container 14
+  TList *flist_TghCuts_Signal;               //! TList for signal (D prompt) with tight cuts, container 15
+  TList *flist_TghCuts_Back;               //! TList for backgrnd with tight cuts, container 16
+  TList *flist_TghCuts_FromB;               //! TList for D from B with tight cuts, container 17
+  TList *flist_TghCuts_FromDstar;               //! TList for Dstar with tight cuts, container 18
+  TList *flist_TghCuts_Other;               //! TList for others with tight cuts, container 19
+  /*  Bool_t       fD0usecuts;            // Switch on the use of the cuts             TO BE IMPLEMENTED 
+      Bool_t       fcheckMC;              //  Switch on MC check: minimum check is same mother  TO BE IMPLEMENTED
+      Bool_t       fcheckMCD0;           //  check the mother is a D0                  TO BE IMPLEMENTED
+      Bool_t       fcheckMC2prongs;         //  check the decay is in two prongs       TO BE IMPLEMENTED  
+      Bool_t       fcheckMCprompt;       //  check the D0 comes from a c quark         TO BE IMPLEMENTED
+      Bool_t       fcheckMCfromB;        //  check the D0 comes from a b quark         TO BE IMPLEMENTED
+      Bool_t       fSkipD0star;           // skip if D0 comes from a D*                TO BE IMPLEMENTED
+      Bool_t  fStudyd0fromBTrue;         // Flag for analyze true impact par of D0 from B       TO BE IMPLEMENTED 
+      Bool_t  fStudyPureBackground;      // Flag to study the background (reverse the selection on the signal)     TO BE IMPLEMENTED 
+      Double_t  fSideBands;                //Side bands selection (see cxx)            TO BE IMPLEMENTED
+  */
+  AliAnalysisTaskSECharmFraction(const AliAnalysisTaskSECharmFraction&); // not implemented
+  AliAnalysisTaskSECharmFraction& operator=(const AliAnalysisTaskSECharmFraction&); // not implemented
+  
+  ClassDef(AliAnalysisTaskSECharmFraction,1); // analysis task for prompt charm fraction
+};
+
+#endif
