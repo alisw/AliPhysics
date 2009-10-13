@@ -42,6 +42,7 @@ enum EPluginRunMode {
 // Setters   
    virtual void        AddIncludePath(const char *path)                  = 0;
    virtual void        AddRunNumber(Int_t run)                           = 0;
+   virtual void        AddRunNumber(const char *run)                     = 0;
    virtual void        AddDataFile(const char *lfn)                      = 0;
    virtual void        SetExecutable(const char *name="analysis.sh")     = 0;
    virtual void        SetArguments(const char *name="")                 = 0;

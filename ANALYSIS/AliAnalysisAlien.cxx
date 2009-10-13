@@ -281,6 +281,14 @@ void AliAnalysisAlien::AddRunNumber(Int_t run)
 }   
 
 //______________________________________________________________________________
+void AliAnalysisAlien::AddRunNumber(const char* run)
+{
+// Add a run number to the list of runs to be processed.
+   if (fRunNumbers.Length()) fRunNumbers += " ";
+   fRunNumbers += run;
+}   
+
+//______________________________________________________________________________
 void AliAnalysisAlien::AddDataFile(const char *lfn)
 {
 // Adds a data file to the input to be analysed. The file should be a valid LFN

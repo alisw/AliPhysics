@@ -35,8 +35,9 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
    // this task is also needed to set the MCEventHandler
    // to the AODHandler, this will not be needed when
    // AODHandler goes to ANALYSISalice
+   AliAnalysisTaskMCParticleFilter *kinefilter = 0;
    if (useKineFilter) {
-      AliAnalysisTaskMCParticleFilter *kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Kine Filter");
+      kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Kine Filter");
       mgr->AddTask(kinefilter);
    }   
 

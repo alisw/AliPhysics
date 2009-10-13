@@ -32,6 +32,7 @@ public:
 // Setters   
    virtual void        AddIncludePath(const char *path);
    virtual void        AddRunNumber(Int_t run);
+   virtual void        AddRunNumber(const char *run);
    virtual void        AddDataFile(const char *lfn);
    virtual void        SetExecutable(const char *name="analysis.sh")     {fExecutable = name;}
    virtual void        SetArguments(const char *name="")                 {fArguments = name;}
