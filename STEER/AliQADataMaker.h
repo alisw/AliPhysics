@@ -51,6 +51,7 @@ public:
 	virtual void        Exec(AliQAv1::TASKINDEX_t, TObject * data)             = 0 ;
 	virtual void        EndOfCycle()                                           = 0 ;
 	virtual void        EndOfCycle(AliQAv1::TASKINDEX_t )                      = 0 ;
+	virtual void        EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list ) = 0 ; 
 	void                Finish() const ; 
 	virtual TH1 *       GetDigitsData(const Int_t index)                       = 0 ; 
 	virtual TH1 *       GetESDsData(const Int_t index)                         = 0 ; 
@@ -87,7 +88,6 @@ protected:
 	Int_t          Add2List(TH1 * hist, const Int_t index, TObjArray ** list, const Bool_t expert = kFALSE, const Bool_t image = kFALSE, const Bool_t saveForCorr = kFALSE) ;
   TH1 *          CloneMe(TH1 * hist, Int_t specie) const ; 
 	virtual void   DefaultEndOfDetectorCycle(AliQAv1::TASKINDEX_t task ) ; 
-	virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list ) = 0 ; 
 	TObject *      GetData(TObjArray ** list, const Int_t index) ;
 	virtual void   InitDigits()        = 0 ; 
 	virtual void   InitESDs()          = 0 ; 
