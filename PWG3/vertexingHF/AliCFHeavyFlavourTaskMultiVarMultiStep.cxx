@@ -394,7 +394,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			// fill the container...
 			Double_t pt = d0tokpi->Pt();
 			Double_t rapidity = d0tokpi->YD0();
-			
+			Double_t invMass=0.;
 			Double_t cosThetaStar = 9999.;
 			Double_t pTpi = 0.;
 			Double_t pTK = 0.;
@@ -411,6 +411,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				pTK = d0tokpi->PtProng(1);
 				d0pi = d0tokpi->Getd0Prong(0);
 				d0K = d0tokpi->Getd0Prong(1);
+				invMass=d0tokpi->InvMassD0();
 			}
 			else {
 				cosThetaStar = d0tokpi->CosThetaStarD0bar();
@@ -418,6 +419,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				pTK = d0tokpi->PtProng(0);
 				d0pi = d0tokpi->Getd0Prong(1);
 				d0K = d0tokpi->Getd0Prong(0);
+				invMass=d0tokpi->InvMassD0bar();
 			}
 
 			Double_t cT = d0tokpi->CtD0();
@@ -499,29 +501,23 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					AliDebug(2,Form("pT = %f, dca = %f, cosThetaStar = %f, pTpi = %f, pTK = %f, d0pi = %f, d0K = %f, d0xd0 = %f, cosPointingAngle = %f", pt, dca, cosThetaStar,pTpi, pTK, d0pi*1E4, d0K*1E4, d0xd0*1E8, cosPointingAngle));
 					
 					// PPR cuts 
-					Double_t cuts[6] = {9999999., 1.1, 0., 9999999., 9999999., 0.};
+					//added mass cut for D0 analysis
+					Double_t cuts[7] = {9999999., 1.1, 0., 9999999., 9999999., 0.,0.027}; 
+					//cuts of the D0 analysis (looser) see AliAnalysisTaskSED0Mass.cxx
 					if (pt <= 1){
-						cuts[0] = 400;
-						cuts[1] = 0.8;
-						cuts[2] = 0.5;
-						cuts[3] = 500;
-						cuts[4] = -20000;
-						cuts[5] = 0.5;
+					  cuts[0] = 400; //dca (um)
+					  cuts[1] = 0.8; //cosTstar
+					  cuts[2] = 0.5; //pt  (GeV/c)
+					  cuts[3] = 500; //d0  (um)
+					  cuts[4] = -25000; //d0xd0 (um^2)
+					  cuts[5] = 0.7; //cosTpointing
 					}
-					else if (pt > 1 && pt <= 2){
-						cuts[0] = 300;
-						cuts[1] = 0.8;
-						cuts[2] = 0.6;
-						cuts[3] = 500;
-						cuts[4] = -20000;
-						cuts[5] = 0.6;
-					}
-					else if (pt > 2 && pt <= 3){
+					else if (pt > 1 && pt <= 3){
 						cuts[0] = 200;
 						cuts[1] = 0.8;
 						cuts[2] = 0.7;
-						cuts[3] = 500;
-						cuts[4] = -20000;
+						cuts[3] = 1000;
+						cuts[4] = -25000;
 						cuts[5] = 0.8;
 					}
 					else if (pt > 3 && pt <= 5){
@@ -529,18 +525,29 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 						cuts[1] = 0.8;
 						cuts[2] = 0.7;
 						cuts[3] = 500;
-						cuts[4] = -10000;
+						cuts[4] = -15000;
 						cuts[5] = 0.8;
 					}
+// 					else if (pt > 3 && pt <= 5){
+// 						cuts[0] = 200;
+// 						cuts[1] = 0.8;
+// 						cuts[2] = 0.7;
+// 						cuts[3] = 500;
+// 						cuts[4] = -10000;
+// 						cuts[5] = 0.8;
+// 					}
 					else if (pt > 5){
 						cuts[0] = 200;
 						cuts[1] = 0.8;
 						cuts[2] = 0.7;
 						cuts[3] = 500;
-						cuts[4] = -5000;
-						cuts[5] = 0.8;
+						cuts[4] = -15000;
+						cuts[5] = 0.9;
 					}
-					if (dca*1E4 < cuts[0] 
+				
+					Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+					if (TMath::Abs(invMass-mD0PDG) < cuts[6]
+					    && dca*1E4 < cuts[0] 
 					    && TMath::Abs(cosThetaStar) < cuts[1]  
 					    && pTpi > cuts[2] 
 					    && pTK > cuts[2]  
@@ -550,7 +557,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					    && cosPointingAngle > cuts[5]
 					    ){
 						
-						AliDebug(2,"Particle passed PPR cuts");
+						AliDebug(2,"Particle passed PPR cuts (actually cuts for D0 analysis!)");
 						fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPPR) ;   
 						icountRecoPPR++;
 						
