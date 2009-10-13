@@ -48,7 +48,8 @@ protected:
 
    // Declare widgets
    TGComboBox       *fClickAction;
-   TGLabel          *fInfoLabel;
+   TGLabel          *fInfoLabelTracks;
+   TGLabel          *fInfoLabelTracklets;
    TGNumberEntry    *fEventId;
 
 private:

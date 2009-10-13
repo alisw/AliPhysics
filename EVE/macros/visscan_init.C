@@ -120,7 +120,7 @@ void visscan_init(const TString& cdburi = "",
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_tracks.C", "esd_tracks_MI",          "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_tracks.C", "esd_tracks_by_category", "", kTRUE));
 
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracklet", "esd_spd_tracklets.C", "esd_spd_tracklets", "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracklet", "esd_spd_tracklets.C", "esd_spd_tracklets", "", kTRUE));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC ZDC",      "esd_zdc.C", "esd_zdc", "", kFALSE));
 
@@ -234,6 +234,16 @@ void on_new_event()
   else
   {
     Warning("on_new_event", "g_esd_tracks_by_category_container not initialized.");
+  }
+
+  TEveTrackList *tracklets = dynamic_cast<TEveTrackList*>(gEve->GetCurrentEvent()->FindChild("SPD Tracklets"));
+  if (tracklets)
+  {
+    g_trkcnt->RegisterTracklets(tracklets, kTRUE);
+  }
+  else
+  {
+    Warning("on_new_event", "'SPD Tracklets' not found.");
   }
 
   Double_t x[3] = { 0, 0, 0 };

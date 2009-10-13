@@ -40,9 +40,10 @@ AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t widt
                                                UInt_t options, Pixel_t back) :
    TGedFrame(p, width, height, options | kVerticalFrame, back),
    fM(0),
-   fClickAction (0),
-   fInfoLabel   (0),
-   fEventId     (0)
+   fClickAction(0),
+   fInfoLabelTracks   (0),
+   fInfoLabelTracklets(0),
+   fEventId(0)
 {
    // Constructor.
 
@@ -67,13 +68,23 @@ AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t widt
       AddFrame(f);
    }
 
-   { // Status
+   { // fInfoLabelTracks
       TGHorizontalFrame* f = new TGHorizontalFrame(this);
-      TGLabel* lab = new TGLabel(f, "Status:");
+      TGLabel* lab = new TGLabel(f, "Tracks:");
       f->AddFrame(lab, new TGLayoutHints(kLHintsLeft, 1, 5, 1, 2));
 
-      fInfoLabel = new TGLabel(f);
-      f->AddFrame(fInfoLabel, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 9, 1, 2));
+      fInfoLabelTracks = new TGLabel(f);
+      f->AddFrame(fInfoLabelTracks, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 9, 1, 2));
+
+      AddFrame(f);
+   }
+   { // fInfoLabelTracklets
+      TGHorizontalFrame* f = new TGHorizontalFrame(this);
+      TGLabel* lab = new TGLabel(f, "Tracklets:");
+      f->AddFrame(lab, new TGLayoutHints(kLHintsLeft, 1, 5, 1, 2));
+
+      fInfoLabelTracklets = new TGLabel(f);
+      f->AddFrame(fInfoLabelTracklets, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 9, 1, 2));
 
       AddFrame(f);
    }
@@ -170,7 +181,8 @@ void AliEveTrackCounterEditor::SetModel(TObject* obj)
    fM = dynamic_cast<AliEveTrackCounter*>(obj);
 
    fClickAction->Select(fM->fClickAction, kFALSE);
-   fInfoLabel->SetText(Form("All: %3d; Primaries: %3d", fM->fAllTracks, fM->fGoodTracks));
+   fInfoLabelTracks   ->SetText(Form("All: %3d; Primaries: %3d", fM->fAllTracks,    fM->fGoodTracks));
+   fInfoLabelTracklets->SetText(Form("All: %3d; Primaries: %3d", fM->fAllTracklets, fM->fGoodTracklets));
    fEventId->SetNumber(fM->GetEventId());
 }
 
@@ -244,6 +256,7 @@ void AliEveTrackCounterEditor::DoShowHistos()
   TH1F* hchg = new TH1F("chg", "Primary charge",       3, -1.5,  1.5);
   TH1F* hpt  = new TH1F("pt",  "pT distribution",     40,  0.0,  8.0);
   TH1F* heta = new TH1F("eta", "eta distribution",    40, -1.0,  1.0);
+  TH1F* hphi = new TH1F("phi", "phi distribution",    40, -3.1416, 3.1416);
 
   Int_t nn; // fscanf return value
 
@@ -252,20 +265,26 @@ void AliEveTrackCounterEditor::DoShowHistos()
     TString file(Form("ev-report-%03d.txt", i));
     if (gSystem->AccessPathName(file) == kFALSE)
     {
-      Int_t   ev, ntr;
+      Int_t   ev, ngoodtr, nalltr;
       FILE* f = fopen(file, "read");
-      nn = fscanf(f, "Event = %d  Ntracks = %d", &ev, &ntr);
+
+      nn = fscanf(f, "Event=%d\n", &ev);
+      if (nn != 1) { printf("SAFR0 %d\n", nn); fclose(f); return;  }
+
+      nn = fscanf(f, "GoodTracks=%d  AllTracks=%d\n", &ngoodtr, &nalltr);
       if (nn != 2) { printf("SAFR1 %d\n", nn); fclose(f); return;  }
-      hcnt->Fill(ntr);
-      for (Int_t t=0; t<ntr; ++t)
+
+      hcnt->Fill(ngoodtr);
+      for (Int_t t = 0; t < ngoodtr; ++t)
       {
         Int_t   id, chg;
-        Float_t pt, eta;
-        nn = fscanf(f, "%d: chg=%d pt=%f eta=%f", &id, &chg, &pt, &eta);
-        if (nn != 4) { printf("SAFR2 %d\n", nn); fclose(f); return;  }
+        Float_t pt, eta, phi;
+        nn = fscanf(f, "%d: chg=%d pt=%f eta=%f phi=%f\n", &id, &chg, &pt, &eta, &phi);
+        if (nn != 5) { printf("SAFR2 %d\n", nn); fclose(f); return;  }
         hchg->Fill(chg);
         hpt ->Fill(pt);
         heta->Fill(eta);
+        hphi->Fill(phi);
       }
       fclose(f);
     }
@@ -278,12 +297,13 @@ void AliEveTrackCounterEditor::DoShowHistos()
     c = gPad->GetCanvas();
     c->Clear();
   }
-  c->Divide(2, 2);
+  c->Divide(2, 3);
 
   c->cd(1); hcnt->Draw();
   c->cd(2); hchg->Draw();
   c->cd(3); hpt ->Draw();
   c->cd(4); heta->Draw();
+  c->cd(5); hphi->Draw();
 
   c->Modified();
   c->Update();

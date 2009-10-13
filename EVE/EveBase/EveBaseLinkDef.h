@@ -32,6 +32,7 @@
 
 // AliEveTrack
 #pragma link C++ class AliEveTrack+;
+#pragma link C++ class AliEveTracklet+;
 
 // AliEveTrackcounter
 #pragma link C++ class AliEveTrackCounter+;

@@ -14,6 +14,7 @@
 #include "TList.h"
 
 class AliEveTrack;
+class AliEveTracklet;
 class TEveTrackList;
 
 //______________________________________________________________________________
@@ -36,8 +37,10 @@ public:
   void Reset();
 
   void RegisterTracks(TEveTrackList* tlist, Bool_t goodTracks);
+  void RegisterTracklets(TEveTrackList* tlist, Bool_t goodTracks);
 
   void DoTrackAction(AliEveTrack* track);
+  void DoTrackletAction(AliEveTracklet* track);
 
   Int_t GetClickAction() const  { return fClickAction; }
   void  SetClickAction(Int_t a) { fClickAction = a; }
@@ -54,8 +57,11 @@ protected:
 
   Int_t fAllTracks;     // Counter of all tracks.
   Int_t fGoodTracks;    // Counter of good tracks.
+  Int_t fAllTracklets;  // Counter of all tracklets.
+  Int_t fGoodTracklets; // Counter of good tracklets.
 
-  TList fTrackLists;    // List of TrackLists registered for management.
+  TList fTrackLists;    // List of track-lists registered for management.
+  TList fTrackletLists; // List of tracklet-lists registered for management.
 
 private:
   AliEveTrackCounter(const AliEveTrackCounter&);            // Not implemented

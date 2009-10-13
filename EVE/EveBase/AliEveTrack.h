@@ -40,6 +40,9 @@ public:
 			  Bool_t colorPdg    =kTRUE, Bool_t recurse    =kTRUE); // *MENU*
   void PrintKineStack();          // *MENU*
 
+  virtual void SecSelected(TEveTrack*);        // *SIGNAL*
+  virtual void SecSelectedTrack(AliEveTrack*); // *SIGNAL*
+
 protected:
 
 private:

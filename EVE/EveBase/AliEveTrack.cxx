@@ -224,3 +224,21 @@ void AliEveTrack::PrintKineStack()
   TEveUtil::LoadMacro("print_kine_from_label.C");
   gROOT->ProcessLine(Form("print_kine_from_label(%d);", label));
 }
+
+//______________________________________________________________________________
+void AliEveTrack::SecSelected(TEveTrack* track)
+{
+  // Emits "SecSelected(TEveTrack*)" signal.
+  // Called from TEveTrackGL on secondary-selection.
+
+  Emit("SecSelected(TEveTrack*)", (Long_t)track);
+  SecSelectedTrack((AliEveTrack*) track);
+}
+
+//______________________________________________________________________________
+void AliEveTrack::SecSelectedTrack(AliEveTrack* track)
+{
+  // Emits "SecSelectedTrack(AliEveTrack*)" signal.
+
+  Emit("SecSelectedTrack(AliEveTrack*)", (Long_t)track);
+}
