@@ -19,7 +19,6 @@
 #include "AliHFEpidBase.h"
 #endif
 
-class AliESDtrack;
 class AliVParticle;
 class TList;
 
@@ -36,17 +35,16 @@ class AliHFEpidITS : public AliHFEpidBase{
     virtual ~AliHFEpidITS();
 
     virtual Bool_t InitializePID();
-    virtual Int_t IsSelected(AliVParticle *track);
+    virtual Int_t IsSelected(AliHFEpidObject *track);
     virtual Bool_t HasQAhistos() const { return kTRUE; };
 
-    Double_t GetITSSignalV1(AliESDtrack *track);
-    Double_t GetITSSignalV2(AliESDtrack *track);
+    Double_t GetITSSignalV1(AliVParticle *track, Int_t mcPID);
+    Double_t GetITSSignalV2(AliVParticle *track, Int_t mcPID);
   protected:
     virtual void AddQAhistograms(TList *l);
     void Copy(TObject &o) const;
     void FillHistogramsSignalV1(Double_t p, Double_t signal, Int_t species);
     void FillHistogramsSignalV2(Double_t p, Double_t signal, Int_t species);
-    Int_t GetMCpid(AliESDtrack *track);
   private:
     TList *fQAlist;      // QA histograms for ITS pid
 

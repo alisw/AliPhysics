@@ -30,6 +30,7 @@
 #include <TObjString.h>
 #include <TString.h>
 
+#include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliPID.h"
@@ -147,6 +148,7 @@ Bool_t AliHFEpid::InitializePID(TString detectors){
     if(det->String().CompareTo("TPC") == 0){
       AliInfo("Doing TPC PID");
       fDetectorPID[kTPCpid] = new AliHFEpidTPC("TPC PID");
+      (dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid]))->SetAsymmetricTPCsigmaCut(2., 10., 0., 4.);
       SETBIT(fEnabledDetectors, kTPCpid);
     } else if(det->String().CompareTo("TRD") == 0){
       fDetectorPID[kTRDpid] = new AliHFEpidTRD("TRD PID");
@@ -170,40 +172,39 @@ Bool_t AliHFEpid::InitializePID(TString detectors){
 }
 
 //____________________________________________________________
-Bool_t AliHFEpid::IsSelected(AliVParticle *track){
+Bool_t AliHFEpid::IsSelected(AliHFEpidObject *track){
   //
   // Steers PID decision for single detectors respectively combined
   // PID decision
   //
-  if(TString(track->IsA()->GetName()).CompareTo("AliMCparticle") == 0){
+  if(!track->fRecTrack){
+    // MC Event
     return (TMath::Abs(fDetectorPID[kMCpid]->IsSelected(track)) == 11);
   }
-  if(TString(track->IsA()->GetName()).CompareTo("AliESDtrack") == 0){
-    if(TESTBIT(fEnabledDetectors, kTPCpid)){
-      if(IsQAOn() && fDebugLevel > 1){ 
-        AliInfo("Filling QA plots");
-        MakePlotsItsTpc(dynamic_cast<AliESDtrack *>(track));  // First fill the QA histograms
-      }
-      if(TESTBIT(fEnabledDetectors, kTOFpid)){
-        // case TPC-TOF
-        return MakePidTpcTof(dynamic_cast<AliESDtrack *>(track));
-      } else if(TESTBIT(fEnabledDetectors, kTRDpid)){
-        // case TPC-TRD with low level detector Signals
-        return MakePidTpcTrd(dynamic_cast<AliESDtrack *>(track));
-      } else
-        return (TMath::Abs(fDetectorPID[kTPCpid]->IsSelected(track)) ==11);
-    } else if(TESTBIT(fEnabledDetectors, kTRDpid)){
-      return (TMath::Abs(fDetectorPID[kTRDpid]->IsSelected(track)) ==11);
-    } else if(TESTBIT(fEnabledDetectors, kTOFpid)){
-      return (TMath::Abs(fDetectorPID[kTOFpid]->IsSelected(track)) ==11);
+  if(TESTBIT(fEnabledDetectors, kTPCpid)){
+    if(IsQAOn() && fDebugLevel > 1){ 
+      AliInfo("Filling QA plots");
+      MakePlotsItsTpc(track);  // First fill the QA histograms
     }
-    
+    if(TESTBIT(fEnabledDetectors, kTOFpid)){
+      // case TPC-TOF
+      return MakePidTpcTof(track);
+    } else if(TESTBIT(fEnabledDetectors, kTRDpid)){
+      // case TPC-TRD with low level detector Signals
+      return MakePidTpcTrd(track);
+    } else
+      return (TMath::Abs(fDetectorPID[kTPCpid]->IsSelected(track)) ==11);
+  } else if(TESTBIT(fEnabledDetectors, kTRDpid)){
+    return (TMath::Abs(fDetectorPID[kTRDpid]->IsSelected(track)) ==11);
+  } else if(TESTBIT(fEnabledDetectors, kTOFpid)){
+    return (TMath::Abs(fDetectorPID[kTOFpid]->IsSelected(track)) ==11);
   }
+  
   return kFALSE;
 }
 
 //____________________________________________________________
-Bool_t AliHFEpid::MakePidTpcTof(AliESDtrack *track){
+Bool_t AliHFEpid::MakePidTpcTof(AliHFEpidObject *track){
   //
   // Combines TPC and TOF PID decision
   //
@@ -212,66 +213,66 @@ Bool_t AliHFEpid::MakePidTpcTof(AliESDtrack *track){
 }
 
 //____________________________________________________________
-Bool_t AliHFEpid::MakePidTpcTrd(AliESDtrack *track){
+Bool_t AliHFEpid::MakePidTpcTrd(AliHFEpidObject *track){
   //
   // Combination of TPC and TRD PID
   // Fills Histograms TPC Signal vs. TRD signal for different
   // momentum slices
   //
-  Double_t content[10];
-  content[0] = -1;
-  content[1] = track->P();
-  content[2] = track->GetTPCsignal();
+  if(track->fAnalysisType != AliHFEpidObject::kESDanalysis) return kFALSE; //AOD based detector PID combination not yet implemented
+  AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(track->fRecTrack);
   AliHFEpidTRD *trdPid = dynamic_cast<AliHFEpidTRD *>(fDetectorPID[kTRDpid]);
-  content[3] = trdPid->GetTRDSignalV1(track);
-  content[4] = trdPid->GetTRDSignalV2(track);
-  AliDebug(1, Form("Momentum: %f, TRD Signal: Method 1[%f], Method 2[%f]", content[1], content[3], content[4]));
-  if(IsQAOn() && fDebugLevel > 0){
-    if(HasMCData()){
-      // Fill My Histograms for MC PID
-      Int_t pdg = TMath::Abs(fDetectorPID[kMCpid]->IsSelected(track));
-      Int_t pid = -1;
-      switch(pdg){
-        case 11:    pid = AliPID::kElectron; break;
-        case 13:    pid = AliPID::kMuon; break;
-        case 211:   pid = AliPID::kPion; break;
-        case 321:   pid = AliPID::kKaon; break;
-        case 2212:  pid = AliPID::kProton; break;
-        default:    pid = -1;
-      };
-      content[0] = pid;
-    }
-    (dynamic_cast<THnSparse *>(fQAlist->At(kTRDSignal)))->Fill(content);
+  Int_t pdg = TMath::Abs(fDetectorPID[kMCpid]->IsSelected(track));
+  Int_t pid = -1;
+  switch(pdg){
+    case 11:    pid = AliPID::kElectron; break;
+    case 13:    pid = AliPID::kMuon; break;
+    case 211:   pid = AliPID::kPion; break;
+    case 321:   pid = AliPID::kKaon; break;
+    case 2212:  pid = AliPID::kProton; break;
+    default:    pid = -1;
+  };
+  if(IsQAOn() && fDebugLevel > 1){
+    Double_t content[10];
+    content[0] = pid;
+    content[1] = esdTrack->P();
+    content[2] = esdTrack->GetTPCsignal();
+    content[3] = trdPid->GetTRDSignalV1(esdTrack, pid);
+    content[4] = trdPid->GetTRDSignalV2(esdTrack, pid);
+    AliDebug(1, Form("Momentum: %f, TRD Signal: Method 1[%f], Method 2[%f]", content[1], content[3], content[4]));
+    (dynamic_cast<THnSparseF *>(fQAlist->At(kTRDSignal)))->Fill(content);
   }
-  return trdPid->IsSelected(track);
+  Int_t trdDecision = 0;  // TRD decision 0 means outside the allowed momentum region
+  return ((trdDecision = trdPid->IsSelected(track)) == 11 || trdDecision == 0) && fDetectorPID[kTPCpid]->IsSelected(track) == 11;
 }
 
 //____________________________________________________________
-void AliHFEpid::MakePlotsItsTpc(AliESDtrack *track){
+void AliHFEpid::MakePlotsItsTpc(AliHFEpidObject *track){
   //
   // Make a plot ITS signal - TPC signal for several momentum bins
   //
-  Double_t content[10];
-  content[0] = -1;
-  content[1] = track->GetTPCInnerParam() ? track->GetTPCInnerParam()->P() : track->P();
-  content[2] = (dynamic_cast<AliHFEpidITS *>(fDetectorPID[kITSpid]))->GetITSSignalV1(track);
-  content[3] = track->GetTPCsignal();
-  AliDebug(1, Form("Momentum %f, TPC Signal %f, ITS Signal %f", content[1], content[2], content[3]));
-  if(HasMCData()){
-    // Fill My Histograms for MC PID
-    Int_t pdg = TMath::Abs(fDetectorPID[kMCpid]->IsSelected(track));
-    Int_t pid = -1;
-    switch(pdg){
-      case 11:    pid = AliPID::kElectron; break;
-      case 13:    pid = AliPID::kMuon; break;
-      case 211:   pid = AliPID::kPion; break;
-      case 321:   pid = AliPID::kKaon; break;
-      case 2212:  pid = AliPID::kProton; break;
-      default:    pid = -1;
-    };
+  if(track->fAnalysisType != AliHFEpidObject::kESDanalysis) return; //AOD based detector PID combination not yet implemented
+  AliESDtrack * esdTrack = dynamic_cast<AliESDtrack *>(track->fRecTrack);
+   // Fill My Histograms for MC PID
+  Int_t pdg = TMath::Abs(fDetectorPID[kMCpid]->IsSelected(track));
+  Int_t pid = -1;
+  switch(pdg){
+    case 11:    pid = AliPID::kElectron; break;
+    case 13:    pid = AliPID::kMuon; break;
+    case 211:   pid = AliPID::kPion; break;
+    case 321:   pid = AliPID::kKaon; break;
+    case 2212:  pid = AliPID::kProton; break;
+    default:    pid = -1;
+  };
+  if(IsQAOn() && fDebugLevel > 0){
+    Double_t content[10];
     content[0] = pid;
+    content[1] = esdTrack->GetTPCInnerParam() ? esdTrack->GetTPCInnerParam()->P() : esdTrack->P();
+    content[2] = (dynamic_cast<AliHFEpidITS *>(fDetectorPID[kITSpid]))->GetITSSignalV1(track->fRecTrack, pid);
+    content[3] = esdTrack->GetTPCsignal();
+    AliDebug(1, Form("Momentum %f, TPC Signal %f, ITS Signal %f", content[1], content[2], content[3]));
+    (dynamic_cast<THnSparseF *>(fQAlist->At(kITSSignal)))->Fill(content);
   }
-  (dynamic_cast<THnSparseF *>(fQAlist->At(kITSSignal)))->Fill(content);
 }
 
 //____________________________________________________________
@@ -280,6 +281,7 @@ void AliHFEpid::SetQAOn(){
   // Switch on QA
   //
   SetBit(kIsQAOn, kTRUE);
+  AliInfo("QA switched on");
   if(fQAlist) return;
   fQAlist = new TList;
   fQAlist->SetName("PIDqa");
@@ -295,6 +297,7 @@ void AliHFEpid::SetQAOn(){
 
   // Add Histogram for combined TPC-TRD PID
   if(fDebugLevel > 1){
+    AliDebug(1, "Adding histogram for ITS-TPC investigation");
     const Int_t kDimensionsTRDsig = 5;
     Int_t kNbinsTRDsig[kDimensionsTRDsig] = {AliPID::kSPECIES + 1, kMomentumBins - 1, 200, 3000, 3000};
     Double_t binMinTRDsig[kDimensionsTRDsig] = {-1., 0.1, 0, 0, 0};
@@ -310,6 +313,7 @@ void AliHFEpid::SetQAOn(){
 
   // Add Histogram for combined TPC-ITS PID
   if(fDebugLevel > 0){
+    AliDebug(1, "Adding histogram for TPC-TRD investigation");
     const Int_t kDimensionsITSsig = 4;
     Int_t kNbinsITSsig[kDimensionsITSsig] = {AliPID::kSPECIES + 1, kMomentumBins - 1, 300, 3000};
     Double_t binMinITSsig[kDimensionsITSsig] = {-1., 0.1, 0., 0.};
@@ -321,14 +325,5 @@ void AliHFEpid::SetQAOn(){
     histo->GetAxis(2)->SetTitle("ITS Signal / a.u.");
     histo->GetAxis(3)->SetTitle("TPC Signal / a.u.");
   }
-}
-
-//____________________________________________________________
-void AliHFEpid::SetMCEvent(AliMCEvent *event){
-  //
-  // Set MC Event for the detector PID classes
-  //
-  for(Int_t idet = 0; idet < kNdetectorPID; idet++)
-    if(fDetectorPID[idet]) fDetectorPID[idet]->SetMCEvent(event);
 }
 

@@ -106,26 +106,27 @@ AliHFEcuts::~AliHFEcuts(){
 
 //__________________________________________________________________
 void AliHFEcuts::Initialize(AliCFManager *cfm){
-
+  if(IsInDebugMode()){
+     fHistQA = new TList;
+    fHistQA->SetName("CutQAhistograms");
+    fHistQA->SetOwner(kFALSE);
+  }
+ 
   // Call all the setters for the cuts
   SetParticleGenCutList();
   SetAcceptanceCutList();
-  SetRecKineTPCCutList();
-  SetRecKineITSCutList();
+  SetRecKineITSTPCCutList();
   SetRecPrimaryCutList();
   SetHFElectronITSCuts();
-  SetHFElectronTPCCuts();
   SetHFElectronTRDCuts();
 
   
   // Connect the cuts
   cfm->SetParticleCutsList(kStepMCGenerated, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartGenCuts")));
   cfm->SetParticleCutsList(kStepMCInAcceptance, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartAccCuts")));
-  cfm->SetParticleCutsList(kStepRecKineTPC, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartRecKineTPCCuts")));
-  cfm->SetParticleCutsList(kStepRecKineITS, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartRecKineITSCuts")));
+  cfm->SetParticleCutsList(kStepRecKineITSTPC, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartRecKineITSTPCCuts")));
   cfm->SetParticleCutsList(kStepRecPrim, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartPrimCuts")));
   cfm->SetParticleCutsList(kStepHFEcutsITS, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartHFECutsITS")));
-  cfm->SetParticleCutsList(kStepHFEcutsTPC, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartHFECutsTPC")));
   cfm->SetParticleCutsList(kStepHFEcutsTRD, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartHFECutsTRD")));
 
 }
@@ -135,11 +136,9 @@ void AliHFEcuts::Initialize(){
   // Call all the setters for the cuts
   SetParticleGenCutList();
   SetAcceptanceCutList();
-  SetRecKineTPCCutList();
-  SetRecKineITSCutList();
+  SetRecKineITSTPCCutList();
   SetRecPrimaryCutList();
   SetHFElectronITSCuts();
-  SetHFElectronTPCCuts();
   SetHFElectronTRDCuts();
 
 }
@@ -159,7 +158,7 @@ void AliHFEcuts::SetParticleGenCutList(){
     genCuts->SetProdVtxRangeX(fProdVtx[0], fProdVtx[1]);
     genCuts->SetProdVtxRangeY(fProdVtx[2], fProdVtx[3]);
   }
-  genCuts->SetRequirePdgCode(11/*, kTRUE*/);
+  genCuts->SetRequirePdgCode(11, kTRUE);
   
   AliCFTrackKineCuts *kineMCcuts = new AliCFTrackKineCuts("fCutsKineMC","MC Kine Cuts");
   kineMCcuts->SetPtRange(fPtRange[0], fPtRange[1]);
@@ -184,13 +183,13 @@ void AliHFEcuts::SetAcceptanceCutList(){
   // Min. Required Hist for Detectors:
   //          ITS [3]
   //          TPC [2]
-  //          TRD [12]
+  //          TRD [2*nTracklets]
   //          TOF [0]
   //
   AliCFAcceptanceCuts *accCuts = new AliCFAcceptanceCuts("fCutsAccMC", "MC Acceptance Cuts");
   accCuts->SetMinNHitITS(3);
   accCuts->SetMinNHitTPC(2);
-  accCuts->SetMinNHitTRD(12);
+  accCuts->SetMinNHitTRD(2*fMinTrackletsTRD);
   if(IsInDebugMode()) accCuts->SetQAOn(fHistQA);
   
   TObjArray *partAccCuts = new TObjArray();
@@ -200,10 +199,11 @@ void AliHFEcuts::SetAcceptanceCutList(){
 }
 
 //__________________________________________________________________
-void AliHFEcuts::SetRecKineTPCCutList(){
+void AliHFEcuts::SetRecKineITSTPCCutList(){
   //
   // Track Kinematics and Quality cuts (Based on the Standard cuts from PWG0)
   //
+  // ITS refit
   // Variances:
   //  y: 2
   //  z: 2
@@ -223,43 +223,28 @@ void AliHFEcuts::SetRecKineTPCCutList(){
   AliCFTrackQualityCuts *trackQuality = new AliCFTrackQualityCuts("fCutsQualityRec","REC Track Quality Cuts");
   trackQuality->SetMinNClusterTPC(fMinClustersTPC);
   trackQuality->SetMaxChi2PerClusterTPC(fMaxChi2clusterTPC);
-  trackQuality->SetStatus(AliESDtrack::kTPCrefit);
+  trackQuality->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
   trackQuality->SetMaxCovDiagonalElements(2., 2., 0.5, 0.5, 2); 
 
+  AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTPC","Extra cuts from the HFE group");
+  if(fMinClusterRatioTPC > 0.) hfecuts->SetClusterRatioTPC(fMinClusterRatioTPC);
+  hfecuts->SetDebugLevel(fDebugLevel);
+  
   AliCFTrackKineCuts *kineCuts = new AliCFTrackKineCuts("fCutsKineRec", "REC Kine Cuts");
   kineCuts->SetPtRange(fPtRange[0], fPtRange[1]);
   kineCuts->SetEtaRange(-0.9, 0.9);
   
   if(IsInDebugMode()){
     trackQuality->SetQAOn(fHistQA);
+    hfecuts->SetQAOn(fHistQA);
     kineCuts->SetQAOn(fHistQA);
   }
   
   TObjArray *recCuts = new TObjArray;
-  recCuts->SetName("fPartRecKineTPCCuts");
+  recCuts->SetName("fPartRecKineITSTPCCuts");
   recCuts->AddLast(trackQuality);
+  recCuts->AddLast(hfecuts);
   recCuts->AddLast(kineCuts);
-  fCutList->AddLast(recCuts);
-}
-
-//__________________________________________________________________
-void AliHFEcuts::SetRecKineITSCutList(){
-  //
-  // Track Kinematics and Quality cuts (Based on the Standard cuts from PWG0)
-  //
-  // RefitRequired:
-  //  ITS
-  //
-  AliCFTrackQualityCuts *trackQuality = new AliCFTrackQualityCuts("fCutsQualityRec","REC Track Quality Cuts");
-  trackQuality->SetStatus(AliESDtrack::kITSrefit);
-  
-  if(IsInDebugMode()){
-    trackQuality->SetQAOn(fHistQA);
-  }
-  
-  TObjArray *recCuts = new TObjArray;
-  recCuts->SetName("fPartRecKineITSCuts");
-  recCuts->AddLast(trackQuality);
   fCutList->AddLast(recCuts);
 }
 
@@ -311,22 +296,6 @@ void AliHFEcuts::SetHFElectronITSCuts(){
 }
 
 //__________________________________________________________________
-void AliHFEcuts::SetHFElectronTPCCuts(){
-  //
-  // Special Cuts introduced by the HFElectron Group: TPC
-  //
-  AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTPC","Extra cuts from the HFE group");
-  if(fMinClusterRatioTPC > 0.) hfecuts->SetClusterRatioTPC(fMinClusterRatioTPC);
-  if(IsInDebugMode()) hfecuts->SetQAOn(fHistQA);
-  hfecuts->SetDebugLevel(fDebugLevel);
-  
-  TObjArray *hfeCuts = new TObjArray;
-  hfeCuts->SetName("fPartHFECutsTPC");
-  hfeCuts->AddLast(hfecuts);
-  fCutList->AddLast(hfeCuts);
-}
-
-//__________________________________________________________________
 void AliHFEcuts::SetHFElectronTRDCuts(){
   //
   // Special Cuts introduced by the HFElectron Group: TRD
@@ -348,9 +317,6 @@ void AliHFEcuts::SetDebugMode(){
   // Switch on QA
   //
   SetBit(kDebugMode, kTRUE); 
-  fHistQA = new TList;
-  fHistQA->SetName("CutQAhistograms");
-  fHistQA->SetOwner(kFALSE);
 }
 
 //__________________________________________________________________

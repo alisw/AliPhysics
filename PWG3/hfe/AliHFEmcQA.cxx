@@ -190,7 +190,7 @@ void AliHFEmcQA::Init()
 }
 
 //__________________________________________
-void AliHFEmcQA::GetQuarkKine(Int_t iTrack, const Int_t kquark) 
+void AliHFEmcQA::GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark) 
 {
   // get heavy quark kinematics
 
@@ -200,13 +200,12 @@ void AliHFEmcQA::GetQuarkKine(Int_t iTrack, const Int_t kquark)
     }
     Int_t iq = kquark - kCharm; 
 
-
     if (iTrack < 0) { 
       AliDebug(1, "Stack label is negative, return\n");
       return; 
     }
 
-    TParticle *part = fStack->Particle(iTrack); 
+    //TParticle *part = fStack->Particle(iTrack); 
     Int_t partPdgcode = TMath::Abs(part->GetPdgCode());
 
     // select heavy hadron or not fragmented heavy quark 
@@ -384,7 +383,7 @@ void AliHFEmcQA::EndOfEventAna(const Int_t kquark)
 }
 
 //__________________________________________
-void AliHFEmcQA::GetHadronKine(Int_t iTrack, const Int_t kquark)
+void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
 {
     // decay electron kinematics
 
@@ -394,12 +393,7 @@ void AliHFEmcQA::GetHadronKine(Int_t iTrack, const Int_t kquark)
     }
     Int_t iq = kquark - kCharm;
 
-    if (iTrack < 0) {
-      AliDebug(1, "Stack label is negative, return\n");
-      return;
-    }
-
-    TParticle* mcpart = fStack->Particle(iTrack);
+    //TParticle* mcpart = fStack->Particle(iTrack);
 
     Int_t iLabel = mcpart->GetFirstMother();
     if (iLabel<0){
@@ -454,7 +448,7 @@ void AliHFEmcQA::GetHadronKine(Int_t iTrack, const Int_t kquark)
 }
 
 //__________________________________________
-void AliHFEmcQA::GetDecayedKine(Int_t iTrack, const Int_t kquark, Int_t kdecayed, Int_t icut, Bool_t isbarrel) 
+void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kdecayed, Int_t icut) 
 {
     // decay electron kinematics
     
@@ -464,15 +458,16 @@ void AliHFEmcQA::GetDecayedKine(Int_t iTrack, const Int_t kquark, Int_t kdecayed
     }
     Int_t iq = kquark - kCharm; 
 
+/*
     if (iTrack < 0) { 
       AliDebug(1, "Stack label is negative, return\n");
       return; 
     }
+    */
 
-    TParticle* mcpart = fStack->Particle(iTrack);
+    //TParticle* mcpart = fStack->Particle(iTrack);
 
     if ( abs(mcpart->GetPdgCode()) != kdecayed ) return;
-    if ( isbarrel && TMath::Abs(mcpart->Eta()) > 0.9 ) return;
 
     Int_t iLabel = mcpart->GetFirstMother(); 
     if (iLabel<0){

@@ -31,6 +31,7 @@ class AliCFManager;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliMCEvent;
+class AliVParticle;
 class TH1I; 
 class TList;
 
@@ -38,13 +39,13 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
   enum{
     kIsSecVtxOn = BIT(19),
     kIsPriVtxOn = BIT(20),
-    kIsRunningPostProcess = BIT(21)
+    kIsRunningPostProcess = BIT(21),
+    kHasMCdata = BIT(22)
   };
   public:
   enum{
     kPIDqa = 0,
-    kCUTqa = 1,
-    kMCqa = 2
+    kMCqa =1 
   };
     AliAnalysisTaskHFE();
     AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref);
@@ -60,16 +61,20 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     Bool_t IsSecVtxOn() const { return TestBit(kIsSecVtxOn); };
     Bool_t IsPriVtxOn() const { return TestBit(kIsPriVtxOn); };
     Bool_t IsRunningPostProcess() const { return TestBit(kIsRunningPostProcess); };
-    Int_t IsSignalElectron(AliESDtrack *) const;
+    Bool_t HasMCData() const { return TestBit(kHasMCdata); }
+    Int_t IsSignalElectron(AliVParticle *fTrack) const;
     void Load(TString filename = "HFEtask.root");
     void PostProcess();
+    void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
     void SetQAOn(Int_t qaLevel) { SETBIT(fQAlevel, qaLevel); };
+    void SetHasMCData(Bool_t hasMC = kTRUE) { SetBit(kHasMCdata, hasMC); };
     void SetPriVtxOn(Bool_t option = kTRUE)        { SetBit(kIsPriVtxOn, option); };
     void SetSecVtxOn(Bool_t option = kTRUE)        { SetBit(kIsSecVtxOn, option); };
     void SetRunPostProcess(Bool_t option = kTRUE)  { SetBit(kIsRunningPostProcess, option); };
     void SetPIDdetectors(Char_t *detectors){ fPIDdetectors = detectors; }
     void AddPIDdetector(Char_t *detector);
     void PrintStatus();
+    Float_t GetRapidity(TParticle *part);
  
   private:
     class LabelContainer{
@@ -101,7 +106,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     TList *fCorrelation;                  //! response matrix for unfolding  
     THnSparseF *fPIDperformance;          //! info on contamination and yield of electron spectra
     AliHFEpid *fPID;                      //! PID
-    AliHFEcuts *fCuts;                    //! Cut Collection
+    AliHFEcuts *fCuts;                    // Cut Collection
     AliHFEsecVtx *fSecVtx;                //! Secondary Vertex Analysis
     AliHFEmcQA *fMCQA;                    //! MC QA
     TH1I *fNEvents;                       //! counter for the number of Events

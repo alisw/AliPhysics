@@ -21,7 +21,18 @@
 
 class TList;
 class AliVParticle;
-class AliMCEvent;
+class AliMCParticle;
+
+struct AliHFEpidObject{
+    typedef enum{ 
+      kESDanalysis,
+      kAODanalysis
+    }AnalysisType_t;
+    AliVParticle *fRecTrack;
+    AliVParticle *fMCtrack;
+    UChar_t fAnalysisType;
+    AliHFEpidObject():fRecTrack(NULL), fMCtrack(NULL), fAnalysisType(kESDanalysis){}
+};
 
 class AliHFEpidBase : public TNamed{
   enum{
@@ -35,7 +46,7 @@ class AliHFEpidBase : public TNamed{
     virtual ~AliHFEpidBase() {};
     // Framework functions that have to be implemented by the detector PID classes
     virtual Bool_t InitializePID() = 0;
-    virtual Int_t IsSelected(AliVParticle *track) = 0;
+    virtual Int_t IsSelected(AliHFEpidObject *track) = 0;
     virtual Bool_t HasQAhistos() const = 0;
 
     Int_t GetDebugLevel() const { return fDebugLevel; };
@@ -45,17 +56,14 @@ class AliHFEpidBase : public TNamed{
     void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel; }; 
     inline void SetQAOn(TList *fQAlist);
     void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData,hasMCdata); };
-    void SetMCEvent(AliMCEvent *mcEvent) { fMCEvent = mcEvent; };
 
   protected:
     void Copy(TObject &ref) const;
     virtual void AddQAhistograms(TList *){};
-    Int_t GetPdgCode(AliVParticle *track);
   private:
-    AliMCEvent *fMCEvent;       //! Monte Carlo Event
-    Int_t fDebugLevel;          // Debug Level
+    Int_t fDebugLevel;              // Debug Level
 
-    ClassDef(AliHFEpidBase, 1)    // Base class for detector Electron ID
+    ClassDef(AliHFEpidBase, 1)      // Base class for detector Electron ID
 };
 
 //___________________________________________________________________

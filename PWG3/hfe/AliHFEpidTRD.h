@@ -19,7 +19,10 @@
  #include "AliHFEpidBase.h"
  #endif
 
+class AliAODTrack;
+class AliAODMCParticle;
 class AliESDtrack;
+class AliMCParticle;
 class AliVParticle;
 class TList;
 class TH2F;
@@ -44,15 +47,17 @@ class AliHFEpidTRD : public AliHFEpidBase{
     virtual ~AliHFEpidTRD();
     
     virtual Bool_t InitializePID();
-    virtual Int_t IsSelected(AliVParticle *track);
+    virtual Int_t IsSelected(AliHFEpidObject *track);
     virtual Bool_t HasQAhistos() const { return kTRUE; };
 
-    Double_t GetTRDSignalV1(AliESDtrack *track);
-    Double_t GetTRDSignalV2(AliESDtrack *track);
+    Double_t GetTRDSignalV1(AliESDtrack *track, Int_t mcPID);
+    Double_t GetTRDSignalV2(AliESDtrack *track, Int_t mcPID);
 
     void SetPIDMethod(PIDMethodTRD_t method) { fPIDMethod = method; };
   protected:
     void Copy(TObject &ref) const;
+    Int_t MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
+    Int_t MakePIDaod(AliAODTrack *aofTrack, AliAODMCParticle *aodMC);
     Double_t GetTRDthresholds(Double_t electronEff, Double_t p);
     Int_t GetMCpid(AliESDtrack *track);
     void InitParameters();
