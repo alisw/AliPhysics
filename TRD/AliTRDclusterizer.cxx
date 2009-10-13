@@ -1224,18 +1224,20 @@ void AliTRDclusterizer::TailCancelation()
   Double_t *inADC = new Double_t[fTimeTotal];  // ADC data before tail cancellation
   Double_t *outADC = new Double_t[fTimeTotal];  // ADC data after tail cancellation
 
-  fIndexes->ResetCounters();
   TTreeSRedirector *fDebugStream = fReconstructor->GetDebugStream(AliTRDrecoParam::kClusterizer);
+  Bool_t debugStreaming = fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 7 && fReconstructor->IsDebugStreaming();
   while(fIndexes->NextRCIndex(iRow, iCol))
     {
       Bool_t corrupted = kFALSE;
       if (fCalPadStatusROC->GetStatus(iCol, iRow)) corrupted = kTRUE;
 
+      // Save data into the temporary processing array and substract the baseline,
+      // since DeConvExp does not expect a baseline
       for (iTime = 0; iTime < fTimeTotal; iTime++) 
-	inADC[iTime]   = fDigits->GetData(iRow,iCol,iTime);
+	inADC[iTime]   = fDigits->GetData(iRow,iCol,iTime)-fBaseline;
           
-      for (iTime = 0; iTime < fTimeTotal; iTime++) 
-	if(fReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 7 && fReconstructor->IsDebugStreaming()){
+      if(debugStreaming){
+	for (iTime = 0; iTime < fTimeTotal; iTime++) 
 	  (*fDebugStream) << "TailCancellation"
 			  << "col="  << iCol
 			  << "row="  << iRow
@@ -1244,7 +1246,7 @@ void AliTRDclusterizer::TailCancelation()
 			  << "outADC=" << outADC[iTime]
 			  << "corrupted=" << corrupted
 			  << "\n";
-	}
+      }
       
       if (!corrupted)
         {
@@ -1254,8 +1256,9 @@ void AliTRDclusterizer::TailCancelation()
         }
       else memcpy(&outADC[0],&inADC[0],fTimeTotal*sizeof(inADC[0]));
 
+      // Save tailcancalled data and add the baseline
       for(iTime = 0; iTime < fTimeTotal; iTime++)
-	fDigits->SetData(iRow,iCol,iTime,TMath::Nint(outADC[iTime]));
+	fDigits->SetData(iRow,iCol,iTime,(Short_t)(outADC[iTime] + fBaseline + 0.5));
       
     } // while irow icol
 
