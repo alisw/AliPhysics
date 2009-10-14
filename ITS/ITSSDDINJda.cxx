@@ -244,6 +244,7 @@ int main(int argc, char **argv) {
 	if(nWrittenEv[index]>0){
 	  injan[index]->FitMeanDriftSpeedVsAnode();
 	  injan[index]->WriteToASCII(0,timeSt,0);
+	  injan[index]->WriteInjectorStatusToASCII();
 	  dspHistos->AddLast(injan[index]->GetMeanDriftSpeedVsPadHisto());
 	  sprintf(filnam,"SDDinj_ddl%02dc%02d_sid%d.data",iddl,imod,isid);
 	  sprintf(command,"tar -rf SDDinj_LDC.tar %s",filnam);
