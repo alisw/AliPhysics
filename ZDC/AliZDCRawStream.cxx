@@ -282,7 +282,7 @@ void AliZDCRawStream::ReadCDHHeader()
        fIsDARCHeader = kTRUE;
        AliInfo("\t ZDC readout card used: DARC");
     }
-    else if((message & 0x08) == 1){  // ** ZRC card
+    else if((message & 0x08) == 0x08){  // ** ZRC card
        fReadOutCard = 1;
        AliInfo("\t ZDC readout card used: ZRC");
     }
@@ -395,7 +395,6 @@ Bool_t AliZDCRawStream::Next()
     fDataOffset = 1+fDeadbeefOffset;
     fIsDARCHeader = kFALSE;
   }
-
     
   // ---------------------------------------------
   // --- Start of data event (SOD)             ---
@@ -405,14 +404,15 @@ Bool_t AliZDCRawStream::Next()
   if(fEvType==10 && fSODReading){
     //printf("\n-> AliZDCRawStream::Next() - fBuffer[%d] = %x\n",fPosition, fBuffer);
     
-    if(fPosition>fDataOffset){
+    if(fPosition>=fDataOffset){
       if((fBuffer&0xff000001) == 0xff000001){ // ************** Mapping
-        if(fPosition==(fDataOffset+1)){ 
-	   printf("\n\n ------ AliZDCRawStream -> Reading mapping from StartOfData event ------\n");
+        // DARC 1st datum @ fDataOffset+1 \ ZRC 1st valid datum fDataOffset=0
+        if((fPosition==fDataOffset+1) || (fPosition==fDataOffset)){ 
+	   //printf("\n\n ------ AliZDCRawStream -> Reading mapping from StartOfData event ------\n");
 	   fCurrentCh=0; fCurrScCh=0;	
         }
 	else{
-	  printf(" ------ AliZDCRawStream -> End of ZDC StartOfData event ------\n\n");
+	  //printf(" ------ AliZDCRawStream -> End of ZDC StartOfData event ------\n\n");
           //printf("AliZDCRawStream: fSODReading after SOD reading set to %d\n", fSODReading);
 	  return kFALSE;
 	}
@@ -838,7 +838,7 @@ Bool_t AliZDCRawStream::Next()
           else{
             fIsPileUpEvent = kTRUE;
 	    printf("  AliZDCRawStream -> PILE UP EVENT: bitPileUp0 %d bitPileUp1 %d\n",
-	  	fPileUpBit1stWord, fPileUpBit2ndWord);
+	    	fPileUpBit1stWord, fPileUpBit2ndWord);
           }
 	  // (2) both history word L0 bits must be = 1
           if(fL0Bit1stWord==1 && fL0Bit2ndWord==1) fIsL0BitSet = kTRUE;
