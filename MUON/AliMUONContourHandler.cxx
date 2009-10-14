@@ -326,7 +326,7 @@ AliMUONContourHandler::GetContour(const char* contourname) const
 
 //_____________________________________________________________________________
 void
-AliMUONContourHandler::Print(Option_t* opt) const
+AliMUONContourHandler::Print(Option_t* /*opt*/) const
 {
   /// printout
   
