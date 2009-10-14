@@ -32,6 +32,15 @@ struct AliHLTCaloChannelDataStruct
   UShort_t fChannelID;
   Short_t fCrazyness;
   //  Short_t fRawDataSize; //the size of the raw data
+  //private:
+  virtual ~AliHLTCaloChannelDataStruct(){};
+  AliHLTCaloChannelDataStruct(): fEnergy(0),
+				 fTime(0),
+				 fChannelID(0),
+				 fCrazyness()
+				 
+  {
+  }
 };
 
 #endif
