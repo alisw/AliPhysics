@@ -152,9 +152,6 @@ void AliVZERODataFEE::ProcessData(TMap& aliasMap){
 		
 	}
 	
-  	// calculate mean and rms of the first two histos
-	// and convert index to aliroot channel
-    
 	fIsProcessed=kTRUE;
 	
 }
@@ -181,14 +178,16 @@ TString AliVZERODataFEE::GetFEEParamName(Int_t iParam){
 		case 10: result = "ResetWin1"; break;
 		case 11: result = "ResetWin2"; break;
 		case 12: result = "PedestalSubtraction"; break;
-		case 13: result = "EnableCharge"; break;
-		case 14: result = "EnableTiming"; break;
-		case 15: result = "PedEven"; break;
-		case 16: result = "PedOdd"; break;
-		case 17: result = "PedCutEven"; break;
-		case 18: result = "PedCutOdd"; break;
-		case 19: result = "DelayHit"; break;
-		case 20: result = "DiscriThr"; break;
+		case 13: result = "TimeResolution"; break;
+		case 14: result = "WidthResolution"; break;
+		case 15: result = "EnableCharge"; break;
+		case 16: result = "EnableTiming"; break;
+		case 17: result = "PedEven"; break;
+		case 18: result = "PedOdd"; break;
+		case 19: result = "PedCutEven"; break;
+		case 20: result = "PedCutOdd"; break;
+		case 21: result = "DelayHit"; break;
+		case 22: result = "DiscriThr"; break;
 	}
 	return result;
 }

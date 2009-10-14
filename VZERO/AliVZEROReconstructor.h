@@ -15,10 +15,11 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 
-#include "AliVZEROCalibData.h"
 #include "AliLog.h"
 #include "AliESDVZERO.h"
 
+class AliVZEROCalibData;
+class AliVZEROTriggerData;
 class AliESDEvent;
 class AliESDVZEROfriend;
 
@@ -48,6 +49,7 @@ public:
   void GetCollisionMode();
   
   AliVZEROCalibData *GetCalibData() const; 
+  AliVZEROTriggerData *GetTriggerData() const; 
 
 protected:
   AliESDVZERO*        fESDVZERO;       // ESD output object  
@@ -55,10 +57,11 @@ protected:
   AliESDVZEROfriend*  fESDVZEROfriend; // ESD friend object (complete raw data)
   
 private:
-  AliVZEROReconstructor(const AliVZEROReconstructor&); //Not implemented
-  AliVZEROReconstructor& operator = (const AliVZEROReconstructor&); //Not implemented
+  AliVZEROReconstructor(const AliVZEROReconstructor& reconstructor);
+  AliVZEROReconstructor& operator = (const AliVZEROReconstructor& reconstructor);
   
   AliVZEROCalibData* fCalibData;      //! calibration data
+  AliVZEROTriggerData* fTriggerData;      //! FEE parameters
 
   Int_t              fCollisionMode;  // =0->p-p, =1->A-A
   Float_t            fBeamEnergy;     // beam energy

@@ -43,6 +43,12 @@ void DBStorageFEE(){
 	
 	UShort_t ResetWin2[N] = {16,16,16,16,16,16,16,16};
 	triggerData->SetResetWin2(ResetWin2);
+	
+	UShort_t TimeResolution[N] = {0,0,0,0,0,0,0,0};
+	triggerData->SetTimeResolution(TimeResolution);
+	
+	UShort_t WidthResolution[N] = {2,2,2,2,2,2,2,2};
+	triggerData->SetWidthResolution(WidthResolution);
 
 	Bool_t PedestalSubtraction[N] = {1,1,1,1,1,1,1,1};
 	triggerData->SetPedestalSubtraction(PedestalSubtraction);

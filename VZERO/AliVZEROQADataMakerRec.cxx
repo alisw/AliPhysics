@@ -45,6 +45,7 @@
 #include "AliVZEROdigit.h"
 #include "AliVZEROReconstructor.h"
 #include "AliVZEROTrending.h"
+#include "AliVZEROCalibData.h"
 #include "event.h"
 
 
@@ -142,7 +143,7 @@ void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
 	} else if ((TMath::Abs(fTrendingUpdateTime * fMonitorRate - fTrendingUpdateEvent) / fTrendingUpdateEvent) > 0.1){
 		update = kTRUE;
 	}
-	if(update) fTrendingUpdateEvent = fTrendingUpdateTime * fMonitorRate;
+	if(update) fTrendingUpdateEvent = (size_t)(fTrendingUpdateTime * fMonitorRate);
 	//printf("Update trending information every %d events\n",fTrendingUpdateEvent); 
 
   }
@@ -584,8 +585,8 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
      InitRaws() ;
 
    rawReader->Reset() ; 
-   AliVZERORawStream rawStream(rawReader); 
-   if(!(rawStream.Next())) return;  
+  AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
+ if(!(rawStream->Next())) return;  
  
   eventTypeType eventType = rawReader->GetType();
 
@@ -613,7 +614,7 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
        Int_t  integrator;
        Bool_t BBFlag;	 
        Bool_t BGFlag;	 
-       UInt_t time, width;
+       Float_t time, width;
        Int_t  MBCharge;
 	   Float_t charge;
        Int_t  offlineCh;
@@ -621,18 +622,18 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 
        for(Int_t iChannel=0; iChannel<64; iChannel++) { // BEGIN : Loop over channels
 		   
-	   offlineCh = rawStream.GetOfflineChannel(iChannel);
+	   offlineCh = rawStream->GetOfflineChannel(iChannel);
 		   
 	   // Fill Pedestal histograms
 	   
            for(Int_t j=15; j<21; j++) {
-		       if((rawStream.GetBGFlag(iChannel,j) || rawStream.GetBBFlag(iChannel,j))) iFlag++;
+		       if((rawStream->GetBGFlag(iChannel,j) || rawStream->GetBBFlag(iChannel,j))) iFlag++;
            }
 
            if(iFlag == 0){ //No Flag found
 		       for(Int_t j=15; j<21; j++){
-	   		       pedestal=rawStream.GetPedestal(iChannel, j);
-	   		       integrator = rawStream.GetIntegratorFlag(iChannel, j);
+	   		       pedestal= (Int_t) rawStream->GetPedestal(iChannel, j);
+	   		       integrator = rawStream->GetIntegratorFlag(iChannel, j);
 
 	   		       GetRawsData((integrator == 0 ? kPedestalInt0 : kPedestalInt1))->Fill(offlineCh,pedestal);
 	   		       GetRawsData((integrator == 0 ? kPedestalCycleInt0 : kPedestalCycleInt1))->Fill(offlineCh,pedestal);
@@ -646,16 +647,16 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
            Int_t iClock  = 0;
            Float_t iCharge = 0;
            for(Int_t iEvent=0; iEvent<21; iEvent++){
-               iCharge = rawStream.GetPedestal(iChannel,iEvent);
+               iCharge = rawStream->GetPedestal(iChannel,iEvent);
                if(iCharge>charge)  {
 	 	       charge = iCharge;
 	    	       iClock = iEvent;
 	           }
            }   // End of maximum searching procedure
 
-           integrator    = rawStream.GetIntegratorFlag(iChannel,iClock);
-           BBFlag	 = rawStream.GetBBFlag(iChannel, iClock);
-           BGFlag	 = rawStream.GetBGFlag(iChannel,iClock );
+           integrator    = rawStream->GetIntegratorFlag(iChannel,iClock);
+           BBFlag	 = rawStream->GetBBFlag(iChannel, iClock);
+           BGFlag	 = rawStream->GetBGFlag(iChannel,iClock );
 
            GetRawsData((integrator == 0 ? kChargeEoIInt0 : kChargeEoIInt1))->Fill(offlineCh,charge);
 	   if(BBFlag) GetRawsData((integrator == 0 ? kChargeEoIBBInt0 : kChargeEoIBBInt1))->Fill(offlineCh,charge);
@@ -694,10 +695,10 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 		   
 	   int idx;
 	   for(Int_t iBunch=0; iBunch<10; iBunch++){
-			   integrator = rawStream.GetIntMBFlag(iChannel, iBunch);
-			   BBFlag     = rawStream.GetBBMBFlag(iChannel, iBunch);
-			   BGFlag     = rawStream.GetBGMBFlag(iChannel, iBunch);
-			   MBCharge   = rawStream.GetChargeMB(iChannel, iBunch);
+			   integrator = rawStream->GetIntMBFlag(iChannel, iBunch);
+			   BBFlag     = rawStream->GetBBMBFlag(iChannel, iBunch);
+			   BGFlag     = rawStream->GetBGMBFlag(iChannel, iBunch);
+			   MBCharge   = rawStream->GetChargeMB(iChannel, iBunch);
 
 			   if(integrator==0){
 				   if(BBFlag==0){
@@ -721,10 +722,10 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 
 	  // Fill HPTDC Time Histograms
 
-	   BBFlag   = rawStream.GetBBFlag(iChannel, 10);
-           BGFlag   = rawStream.GetBGFlag(iChannel, 10);
-           time     = rawStream.GetTime(iChannel);
-           width    = rawStream.GetWidth(iChannel);
+	   BBFlag   = rawStream->GetBBFlag(iChannel, 10);
+           BGFlag   = rawStream->GetBGFlag(iChannel, 10);
+           time     = rawStream->GetTime(iChannel);
+           width    = rawStream->GetWidth(iChannel);
 
 	   if(time>0.){
 		      if (offlineCh<32) {
@@ -749,10 +750,10 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	   // Fill Flag and Charge Versus LHC-Clock histograms
 	   
 	   for(Int_t iEvent=0; iEvent<21; iEvent++){
-               charge = rawStream.GetPedestal(iChannel,iEvent);
-               integrator = rawStream.GetIntegratorFlag(iChannel,iEvent);
-               BBFlag	  = rawStream.GetBBFlag(iChannel, iEvent);
-               BGFlag	  = rawStream.GetBGFlag(iChannel,iEvent );
+               charge = rawStream->GetPedestal(iChannel,iEvent);
+               integrator = rawStream->GetIntegratorFlag(iChannel,iEvent);
+               BBFlag	  = rawStream->GetBBFlag(iChannel, iEvent);
+               BGFlag	  = rawStream->GetBGFlag(iChannel,iEvent );
 
                ((TH2*) GetRawsData((integrator == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 )))->Fill(offlineCh,(float)iEvent-10,(float)charge);
                ((TH2*) GetRawsData(kBBFlagVsClock))->Fill(offlineCh,(float)iEvent-10,(float)BBFlag);
@@ -820,6 +821,8 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	p = dynamic_cast<TParameter<double>*>(GetParameterList()->FindObject(Form("%s_%s_%s", GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), GetRawsData(kDiffTime)->GetName()))) ; 
 	if (p) p->SetVal((double)diffTime) ;                     
 	
+  	delete rawStream; rawStream = 0x0;      
+
 
  }
 

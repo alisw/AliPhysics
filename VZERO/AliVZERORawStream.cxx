@@ -189,7 +189,7 @@ Bool_t AliVZERORawStream::Next()
 	Float_t fine     = 25. / 256. * (time & 0x1f);
 	// fTime[iChannel] = time & 0xfff;
 	fTime[iChannel]  = coarse1 + coarse2 + fine;
-	fWidth[iChannel] = 3.2 * ( (time >> 12) & 0x7f);   // HPTDC used in pairing mode
+	fWidth[iChannel] = 0.4 * ( (time >> 12) & 0x7f);   // HPTDC used in pairing mode
     }
     
     // End of decoding of one CIU card

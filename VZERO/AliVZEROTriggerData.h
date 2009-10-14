@@ -61,6 +61,12 @@ public:
 	void SetPedestalSubtraction(Bool_t *peds);
 	void SetPedestalSubtraction(Bool_t ped, Int_t board);
 	
+	void SetTimeResolution(UShort_t *resols);
+	void SetTimeResolution(UShort_t resol, Int_t board);
+	
+	void SetWidthResolution(UShort_t *resols);
+	void SetWidthResolution(UShort_t resol, Int_t board);
+		
 	void SetBBAThreshold(UShort_t th) {fBBAThreshold = th;};
 	void SetBBCThreshold(UShort_t th) {fBBCThreshold = th;};
 
@@ -127,6 +133,12 @@ public:
 	Bool_t * GetPedestalSubtraction() const {return (Bool_t*) fPedestalSubtraction;};
 	Bool_t GetPedestalSubtraction(Int_t board ) const  {return (board<kNCIUBoards?fPedestalSubtraction[board]:0);};
 
+	Float_t * GetTimeResolution() const {return (Float_t*) fTimeResolution;};
+	Float_t GetTimeResolution(Int_t board ) const  {return (board<kNCIUBoards?fTimeResolution[board]:0);};
+
+	Float_t * GetWidthResolution() const {return (Float_t*) fWidthResolution;};
+	Float_t GetWidthResolution(Int_t board ) const  {return (board<kNCIUBoards?fWidthResolution[board]:0);};
+
 	UShort_t GetBBAThreshold() const {return fBBAThreshold;};
 	UShort_t GetBBCThreshold() const {return fBBCThreshold;};
 
@@ -181,6 +193,8 @@ private:
 	UShort_t fResetWin1[kNCIUBoards]; //Profil of the Clock of the Reset signal of Window 1 (BB window)
 	UShort_t fResetWin2[kNCIUBoards]; //Profil of the Clock of the Reset signal of Window 2 (BG window)
 	Bool_t	 fPedestalSubtraction[kNCIUBoards]; // Flag to en(dis)able pedestal subtraction before centrality trigger calculation
+	Float_t	 fTimeResolution[kNCIUBoards]; // Time Resolution of the TDC (ns / channel)
+	Float_t	 fWidthResolution[kNCIUBoards]; // Time Width Resolution of the TDC (ns / channel)
 	UShort_t fBBAThreshold;  // Minimum bias Threshold in number of channel hit for V0A
 	UShort_t fBBCThreshold;  // Minimum bias Threshold in number of channel hit for V0C
 	UShort_t fBGAThreshold;  // Beam Gas Threshold in number of channel hit for V0A
