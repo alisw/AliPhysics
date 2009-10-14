@@ -25,7 +25,7 @@ void plotMCRates(char* hijfname = "data/histos-merged-LHC0bd6.root",
 
   //For HIJING need to divide by the number of events, which we
   //can get from the file and do when we perform scaling
-  double hijscale = 0.05*(1.E6)*0.5*208*208; //0-5% * seconds*lumi*Pb*Pb 
+  double hijscale = 0.05*(1.E6)*0.5*7700; //0-5% * seconds*lumi*PbPb x-section
   //For bjet and jet-jet events
   double pyscale = (1.E6)*0.5*208*208; //seconds*lumi*Pb*Pb
   double wscale = pyscale*6.29e-05; //JLK: This is temporary X-sec
