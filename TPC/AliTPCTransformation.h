@@ -62,6 +62,12 @@ public:
   static  Double_t       TPCscalingRIFC(Double_t *xyz, Double_t * param); // inner field cage r distorion
   static  Double_t       TPCscalingROFC(Double_t *xyz, Double_t * param); // outer field cage r distorion
   //
+  // TPC field cage + ROC misalignemnt induced distortion
+  //
+  static  Double_t       TPCdeltaFCROC(Double_t *xyz, Double_t * param); 
+  static  Double_t       TPCdeltaFCCE(Double_t *xyz, Double_t * param); 
+
+  //
   // TPC local misalignment
   //
   static  Double_t       TPClocaldLxdGX(Double_t *xyz, Double_t * param);

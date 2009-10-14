@@ -70,6 +70,9 @@ Int_t  AliTPCTransformation::BuildBasicFormulas(){
   RegisterFormula("TPCscalingRIFC",(GenFuncG)(AliTPCTransformation::TPCscalingRIFC));
   RegisterFormula("TPCscalingROFC",(GenFuncG)(AliTPCTransformation::TPCscalingROFC));
   //
+  RegisterFormula("TPCdeltaFCROC",(GenFuncG)(AliTPCTransformation::TPCdeltaFCROC));
+  RegisterFormula("TPCdeltaFCCE",(GenFuncG)(AliTPCTransformation::TPCdeltaFCCE));
+  //
   RegisterFormula("TPCscalingZDr",(GenFuncG)(AliTPCTransformation::TPCscalingZDrift));
   RegisterFormula("TPCscalingZDrGy",(GenFuncG)(AliTPCTransformation::TPCscalingZDriftGy));
   RegisterFormula("TPCscalingZDriftT0",(GenFuncG)(AliTPCTransformation::TPCscalingZDriftT0));
@@ -483,6 +486,64 @@ Double_t       AliTPCTransformation::TPCscalingROFC(Double_t *xyz, Double_t * pa
   Double_t value   = TMath::Power(driftM,param[0])/ndistR;
   return xyz[3]*value;
 }
+
+
+Double_t       AliTPCTransformation::TPCdeltaFCROC(Double_t *xyz, Double_t * param){
+  // 
+  // delta R(Z) ROC induced
+  // param[0] - switch  0 - use distance to IFC - 1 - distance to IFC
+  // param[1] - kFC scaling factor  (multiplication factor  of (OFC-IFC))
+  // param[2] - kROC scaling factor 
+  // parameters [1] and [2] should be obtained from the electric field
+  //            simulation
+  //
+  Double_t rInner=78.8;
+  Double_t rFirst=85.2; 
+  Double_t rLast=245.8;
+  Double_t rOuter=258.0;  
+
+  Double_t radius  = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+  //calculate distance to the FC - inner or outer 
+  Double_t deltaFC = (param[0]<0.5)? TMath::Abs(radius-rFirst) : TMath::Abs(radius-rLast);
+  deltaFC/=(rOuter-rInner);
+  Double_t scalingFC = 1./(1.+deltaFC/(param[1]));
+  //
+  Double_t drift = 1.-TMath::Abs(xyz[2]/250.);  // normalized drift length
+  Double_t scalingROC = (1.-1./(1.+drift/param[2]));
+  //
+  return xyz[3]*scalingFC*scalingROC;
+}
+
+
+Double_t       AliTPCTransformation::TPCdeltaFCCE(Double_t *xyz, Double_t * param){
+  // 
+  // delta R(Z) CE (central electrode) induced
+  // param[0] - switch  0 - use distance to IFC - 1 - distance to IFC
+  // param[1] - kFC scaling factor  (multiplication factor  of (OFC-IFC))
+  // param[2] - kCE scaling factor 
+  // parameters [1] and [2] should be obtained from the electric field
+  //            simulation
+  Double_t rInner=78.8;
+  Double_t rFirst=85.2; 
+  Double_t rLast =245.8;
+  Double_t rOuter=258.0;  
+
+  Double_t radius  = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+  //calculate distance to the FC - inner or outer 
+  Double_t deltaFC = (param[0]<0.5)? TMath::Abs(radius-rFirst) : TMath::Abs(radius-rLast);
+  deltaFC/=(rOuter-rInner);
+  Double_t scalingFC = 1./(1.+deltaFC/(param[1]));
+  //
+  Double_t drift     = 1.-TMath::Abs(xyz[2]/250.);  // normalized drift length
+  Double_t scalingCE = 1/(1.+(1.-drift)/param[2]);  // 
+  //
+  return xyz[3]*scalingFC*scalingCE;
+}
+
+
+
+
+
 
 
 //
