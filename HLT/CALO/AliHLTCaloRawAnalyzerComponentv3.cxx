@@ -235,8 +235,8 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	  }
 	else
 	  {
-	    cnt ++;
-	    UShort_t* firstBunchPtr;
+	    ++ cnt;
+	    UShort_t* firstBunchPtr = 0;
 
 	    //   UShort_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
 	    UInt_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 

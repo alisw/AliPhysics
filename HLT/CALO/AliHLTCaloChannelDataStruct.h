@@ -4,6 +4,8 @@
 #ifndef ALIHLTCALOCHANNELDATASTRUCT_H
 #define ALIHLTCALOCHANNELDATASTRUCT_H
 
+
+
 /**************************************************************************
  * Copyright(c) 2007, ALICE Experiment at CERN, All rights reserved.      *
  *                                                                        *
