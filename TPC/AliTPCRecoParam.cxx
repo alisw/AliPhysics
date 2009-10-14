@@ -86,8 +86,8 @@ AliTPCRecoParam::AliTPCRecoParam():
   fUseRadialCorrection(0),    // use radial correction
   fUseQuadrantAlignment(0),   // use quadrant alignment
   fUseSectorAlignment(0),     // use sector alignment
-  fUseDriftCorrectionTime(0), // use drift correction time
-  fUseDriftCorrectionGY(0),   // use drif correction global y
+  fUseDriftCorrectionTime(1), // use drift correction time
+  fUseDriftCorrectionGY(1),   // use drif correction global y
   fUseGainCorrectionTime(0),  // use gain correction time
   fUseExBCorrection(1),  // use ExB correction
   //
