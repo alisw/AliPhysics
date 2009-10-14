@@ -27,8 +27,8 @@ class AliHLTCaloRawAnalyzerPeakFinderComponent: public AliHLTCaloRawAnalyzerComp
   // virtual const Bool_t LoadPFVector() = 0; 
   // virtual const Bool_t LoadPFVector(const int startindex, const int Nsamples, const int tau, const int fs) = 0;
   
-  virtual const Bool_t LoadPFVector() {}; 
-  virtual const Bool_t LoadPFVector(const int startindex, const int Nsamples, const int tau, const int fs) {} ;
+  virtual Bool_t LoadPFVector() { return true; }; 
+  virtual Bool_t LoadPFVector(const int /*startindex*/, const int /*Nsamples*/, const int /*tau*/, const int /*fs*/) {  return true; };
 
   AliHLTCaloRawAnalyzerPeakFinderComponent(const AliHLTCaloRawAnalyzerPeakFinderComponent & ); 
   
