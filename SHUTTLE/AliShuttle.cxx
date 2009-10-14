@@ -3518,7 +3518,7 @@ const char* AliShuttle::GetCTPTimeParams()
 	delete result;
 	result = 0;
 	
-	Log("SHUTTLE", Form("Found trigger configuration: %s", triggerTimeParams.Data()));
+	Log("SHUTTLE", Form("Found trigger time parameters: %s", triggerTimeParams.Data()));
 	
 	return triggerTimeParams;
 }
