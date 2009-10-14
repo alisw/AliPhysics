@@ -2,14 +2,6 @@
 void ProofEnableAliRoot(const char* location = "/usr/local/grid/AliRoot/v4-05-Release")
 {
   // enables a locally deployed AliRoot in a PROOF cluster
-
-  /* executes the following commands on each node:
-     gSystem->Setenv("ALICE_ROOT", "/home/alicecaf/ALICE/aliroot-head")
-     gSystem->AddIncludePath("/home/alicecaf/ALICE/aliroot-head/include");
-     gSystem->SetDynamicPath(Form("%s:%s", gSystem->GetDynamicPath(), "/home/alicecaf/ALICE/aliroot-head/lib/tgt_linux"))
-     gROOT->Macro("$ALICE_ROOT/macros/loadlibs.C");
-  */
-
   gProof->Exec(Form("TString str(gSystem->ExpandPathName(\"%s\")); gSystem->Setenv(\"ALICE_ROOT\", str);", location), kTRUE);
 
   gProof->AddIncludePath(Form("%s/include", location));

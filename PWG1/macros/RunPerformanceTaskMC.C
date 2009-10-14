@@ -6,15 +6,15 @@
 // Track references are propagate in B-field and
 // material by using:
 //   
-// AliTracker::PropagateTrackTo()
-// AliExternalTrackParam::PropagateTo()
+// AliTracker::PropagateTrackToBxByBz()
+// AliExternalTrackParam::PropagateToBxByBz()
 //
 // 
 // Available test components:
 //
-// AliPerformanceRes (propagation TPCin(ref) -> DCA(particle) by using AliTracker::PropagateTrackTo() and comparison at DCA)
+// AliPerformanceRes (propagation TPCin(ref) -> DCA(particle) by using AliTracker::PropagateTrackToBxByBz() and comparison at DCA)
 // AliPerformanceResTCPInner (propagation TPCout(ref) -> TPCin(ref) and comparison at TPCin)
-// AliPerformanceResTPCOuter (propagation TPCin(ref) -> TPCout(ref) by using AliExternalTrackParam::PropagateTo() and comparison at TPCout) 
+// AliPerformanceResTPCOuter (propagation TPCin(ref) -> TPCout(ref) by using AliExternalTrackParam::PropagateToBxByBz() and comparison at TPCout) 
 //
 
 /*
@@ -23,15 +23,14 @@
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/LoadMyLibs.C");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-  TChain* chain = CreateESDChain("flatPt_uniB.txt", 100, 0);
+  TChain* chain = CreateESDChain("list_flatP_JB.txt", 500, 0);
   chain->Lookup();
 
   // Geometry (need for the track propagation through material)
-  AliGeomManager::LoadGeometry("/lustre/alice/jacek/sim/HEADJB/flatPt_uniB/0/geometry.root");
+  //AliGeomManager::LoadGeometry("/lustre/alice/jacek/sim/HEADJB/flatPt_uniB/0/geometry.root");
 
   // set magnetic field
-  //TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
-  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kGUniform));
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/RunPerformanceTaskMC.C");
   RunPerformanceTaskMC(chain, kTRUE, kFALSE, kFALSE, 0);
@@ -41,28 +40,25 @@
   TProof::Open(""); 
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/ProofEnableAliRoot.C");
-  ProofEnableAliRoot("/u/jacek/alice/AliRoot/HEADJB/");
+  ProofEnableAliRoot("/d/alice11/jacek/alice/x86_64/AliRoot/trunkJB");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-  TChain* chain = CreateESDChain("flatPt_uniB.txt", 100, 0);
+  TChain* chain = CreateESDChain("list_flatP_JB.txt", 400, 0);
   chain->Lookup();
 
-  // Geometry (need for the track propagation through material)
-  AliGeomManager::LoadGeometry("/lustre/alice/jacek/sim/HEADJB/flatPt_uniB/0/geometry.root");
-
   // set magnetic field
-  //TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
-  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kGUniform));
+  // the best is to create macro MagField.C with the line: 
+  // TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
+  gProof->Exec("gROOT->Macro(\"MagField.C\")");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/RunPerformanceTaskMC.C");
-  RunPerformanceTaskMC(chain, kTRUE, kFALSE, kTRUE,0);
-
+  RunPerformanceTaskMC(chain, kTRUE, kTRUE, kTRUE,0);
 
   //3. Run only on static PROOF at GSI e.g.
 
   TProof::Reset("jacek@lxgrid5.gsi.de");
   TProofMgr * proofmgr = TProof::Mgr("jacek@lxgrid5.gsi.de");
-  proofmgr->SetROOTVersion("523-04");
+  //proofmgr->SetROOTVersion("523-04");
   TProof * proof = proofmgr->CreateSession();
   proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)10000);
 
@@ -70,15 +66,14 @@
   ProofEnableAliRoot("/u/jacek/alice/AliRoot/HEADJB/");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-  TChain* chain = CreateESDChain("flat_JB_AB.txt", 50, 0);
+  TChain* chain = CreateESDChain("flat_JB.txt", 50, 0);
   chain->Lookup();
 
   // Geometry (need for the track propagation through material)
-  AliGeomManager::LoadGeometry("/lustre/alice/local/TRDdata/SIM/P-Flat/TRUNK/test/RUN0/geometry.root");
+  //AliGeomManager::LoadGeometry("/lustre/alice/local/TRDdata/SIM/P-Flat/TRUNK/test/RUN0/geometry.root");
 
   // set magnetic field
-  //TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
-  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kGUniform));
+  gProof->Exec("gROOT->ProcessLine(\"TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\", 2, 1., 1., 10., AliMagF::k5kG))\")");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/RunPerformanceTaskMC.C");
   RunPerformanceTaskMC(chain, kTRUE, kTRUE, kTRUE);
@@ -100,7 +95,7 @@
 */
 
 //_____________________________________________________________________________
-void RunPerformanceTaskMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseFriend=kTRUE,  Bool_t bProof=kTRUE, Int_t debugStreamLevel=0)
+void RunPerformanceTaskMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseESDfriend=kTRUE,  Bool_t bProof=kTRUE, Int_t debugStreamLevel=0)
 {
   if(!chain) 
   {
@@ -119,7 +114,7 @@ void RunPerformanceTaskMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseFri
     pRecInfoCuts->SetMaxDCAToVertexZ(3.0);
     pRecInfoCuts->SetMinNClustersTPC(50);
     pRecInfoCuts->SetMinNClustersITS(2);
-    pRecInfoCuts->SetPtRange(0.1,1.e10);
+    pRecInfoCuts->SetPtRange(0.15,1.e10);
     pRecInfoCuts->SetHistogramsOn(kFALSE); 
   } else {
     AliDebug(AliLog::kError, "ERROR: Cannot create AliRecInfoCuts object");
@@ -155,7 +150,7 @@ void RunPerformanceTaskMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseFri
   }
   pCompMC3->SetAliRecInfoCuts(pRecInfoCuts);
   pCompMC3->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompMC3->SetStreamLevel(debugStreamLevel);
+  //pCompMC3->SetStreamLevel(debugStreamLevel);
 
   AliPerformanceMC *pCompMC4 = new AliPerformanceMC("AliPerformanceMCTPCOuter","AliPerformanceMCTPCOuter",kTPCOuter,kFALSE); 
   if(!pCompMC4) {
@@ -163,7 +158,7 @@ void RunPerformanceTaskMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseFri
   }
   pCompMC4->SetAliRecInfoCuts(pRecInfoCuts);
   pCompMC4->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompMC4->SetStreamLevel(debugStreamLevel);
+  //pCompMC4->SetStreamLevel(debugStreamLevel);
 
 
   // Swtich off all AliInfo (too much output!!!)
@@ -173,10 +168,10 @@ void RunPerformanceTaskMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseFri
   AliAnalysisManager *mgr = new AliAnalysisManager;
 
   // Create task
-  AliPerformanceTask *task = new AliPerformanceTask("Performance","TPC Performance");
-  if (bUseMCInfo) task->SetUseMCInfo(kTRUE);
-  if (bUseFriend) task->SetUseESDfriend(kTRUE);
-  //task->AddPerformanceObject( pCompMC0 );
+  AliPerformanceTask *task = new AliPerformanceTask("PerformanceMC","TPC Performance");
+  task->SetUseMCInfo(bUseMCInfo);
+  task->SetUseESDfriend(bUseESDfriend);
+  task->AddPerformanceObject( pCompMC0 );
   task->AddPerformanceObject( pCompMC3 );
   task->AddPerformanceObject( pCompMC4 );
 
@@ -185,13 +180,12 @@ void RunPerformanceTaskMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseFri
 
   // Add ESD handler
   AliESDInputHandler* esdH = new AliESDInputHandler;
-  if(bUseFriend) esdH->SetActiveBranches("ESDfriend*");
+  if(bUseESDfriend) esdH->SetActiveBranches("ESDfriend");
   mgr->SetInputEventHandler(esdH);
 
   if(bUseMCInfo) {
   // Enable MC event handler
     AliMCEventHandler* handler = new AliMCEventHandler;
-    //handler->SetReadTR(kFALSE);
     handler->SetReadTR(kTRUE);
     mgr->SetMCtruthEventHandler(handler);
   }
