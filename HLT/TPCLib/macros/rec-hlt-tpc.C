@@ -39,7 +39,7 @@
  * @ingroup alihlt_tpc
  * @author Matthias.Richter@ift.uib.no
  */
-void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
+void rec_hlt_tpc(const char* input="./", char* opt="ESD")
 {
   
   if(!gSystem->AccessPathName("galice.root")){
@@ -291,6 +291,8 @@ void rec_hlt_tpc(const char* input="./", char* opt="decoder ESD")
   rec.SetRunReconstruction("HLT");
   rec.SetLoadAlignFromCDB(0);
   rec.SetRunQA(":");
+  rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");   
+  rec.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
   rec.SetOption("HLT", option);
   rec.Run();
 }
