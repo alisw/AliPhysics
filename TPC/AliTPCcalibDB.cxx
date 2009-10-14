@@ -411,9 +411,9 @@ void AliTPCcalibDB::Update(){
   //  fExB=dynamic_cast<AliTPCExB*>(entry->GetObject()->Clone());
   //}
   //
-  // ExB  - calculate during initialization 
-  //      - 
-  fExB =  GetExB(-5,kTRUE);
+  // ExB  - calculate during initialization - in simulation /reconstruction
+  //      - not invoked here anymore
+  //fExB =  GetExB(-5,kTRUE);
      //
   if (!fTransform) {
     fTransform=new AliTPCTransform(); 
