@@ -48,8 +48,6 @@ MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
 MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSCommonDefs.h \
 		  AliHLTPHOSConstants.h \
-	 	  AliHLTPHOSRawAnalyzer.h \
-		  AliHLTPHOSDefinitions.h \
 		  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \
 		  AliHLTPHOSRecPointDataStruct.h \
 		  AliHLTPHOSRecPointContainerStruct.h \
