@@ -24,6 +24,7 @@ class DimUpdatedInfo
 {
 public:
   DimUpdatedInfo(const Char_t*, Int_t) {}
+  virtual ~DimUpdatedInfo() {}
 
   Bool_t getData() { return kFALSE; }
   Int_t  getInt()  { return -1; }

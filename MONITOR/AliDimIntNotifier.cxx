@@ -26,6 +26,7 @@ void AliDimIntNotifier::SetMainThreadId()
 
 AliDimIntNotifier::AliDimIntNotifier(const TString& service) :
   DimUpdatedInfo(service, -1),
+  fReThreader(),
   fNotifyLck(kTRUE),
   fLastMessage(-1)
 {

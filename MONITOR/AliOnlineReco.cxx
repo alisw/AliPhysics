@@ -32,6 +32,7 @@ AliOnlineReco::AliOnlineReco() :
 
   fRunList(0), fAutoRun(0), fStartButt(0), fStopButt(0), fExitButt(0),
   fAutoRunTimer(0), fAutoRunScheduled(0), fAutoRunRunning(0),
+  fRun2PidMap(),
   fTestMode(kFALSE)
 {
   // GUI components.
