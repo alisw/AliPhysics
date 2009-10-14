@@ -162,7 +162,7 @@ inline Double_t AliAODMCParticle::Y()         const
     Double_t e  = E();
     Double_t pz = Pz();
     
-    if (e != TMath::Abs(pz)) { 
+    if (TMath::Abs(pz) >= e) { 
 	return 0.5*TMath::Log((e+pz)/(e-pz));
     } else { 
 	return -999.;
