@@ -112,13 +112,6 @@
 //
 
 // --- ROOT system ---
-#include "AliMagF.h"
-#include "AliTracker.h"
-#include "AliGeomManager.h"
-#include "AliCluster.h"
-#include "AliKalmanTrack.h"
-#include "AliGlobalQADataMaker.h"
-
 #include "TVector3.h"
 #include "TTree.h"
 #include "TBenchmark.h"
@@ -136,6 +129,14 @@
 #include "AliPHOSCpvRecPoint.h"
 #include "AliLog.h"
 #include "AliMagF.h"
+#include "AliMagF.h"
+#include "AliTracker.h"
+#include "AliGeomManager.h"
+#include "AliCluster.h"
+#include "AliKalmanTrack.h"
+#include "AliGlobalQADataMaker.h"
+#include "AliVParticle.h"
+
 
 ClassImp( AliPHOSTrackSegmentMakerv1) 
 
@@ -437,14 +438,9 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
     Double_t rCPV = cpvGlobal.Pt() ;// Radius from IP to current point 
 
     // Extrapolate the global track direction if any to CPV and find the closest track
-    Int_t nTracks = fESD->GetNumberOfTracks();
     Int_t iClosestTrack = -1;
-    Double_t minDistance = 1.e6;
     TVector3 inPHOS ; 
 
-    AliESDtrack *track;
-    Double_t xyz[3] ;
-    Double_t pxyz[3]; 
     for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
       track = fESD->GetTrack(iTrack);
       if (!track->GetXYZAt(rCPV, fESD->GetMagneticField(), xyz))
@@ -700,7 +696,6 @@ void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
 //__________________________________________________________________________
 Double_t AliPHOSTrackSegmentMakerv1::GetBz()const
 {
-  Double_t kAlmost0Field=1.e-13;
   AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!fld) return 0.5*kAlmost0Field;
   Double_t bz = fld->SolenoidField();
@@ -711,7 +706,6 @@ void AliPHOSTrackSegmentMakerv1::GetBxByBz(const Double_t r[3], Double_t b[3])co
   //------------------------------------------------------------------
   // Returns Bx, By and Bz (kG) at the point "r" .
   //------------------------------------------------------------------
-  Double_t kAlmost0Field=1.e-13;
   AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!fld) {
      b[0] = b[1] = 0.;

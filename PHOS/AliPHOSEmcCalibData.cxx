@@ -24,14 +24,18 @@
 ClassImp(AliPHOSEmcCalibData)
 
 //________________________________________________________________
-  AliPHOSEmcCalibData::AliPHOSEmcCalibData(): TNamed()
+AliPHOSEmcCalibData::AliPHOSEmcCalibData():
+  TNamed(),
+  fSampleTimeStep(0)
 {
   // Default constructor
   Reset();
 }
 
 //________________________________________________________________
-AliPHOSEmcCalibData::AliPHOSEmcCalibData(const char* name)
+AliPHOSEmcCalibData::AliPHOSEmcCalibData(const char* name):
+  TNamed(),
+  fSampleTimeStep(0)
 {
   // Constructor
   TString namst = "Calib_";
@@ -43,7 +47,8 @@ AliPHOSEmcCalibData::AliPHOSEmcCalibData(const char* name)
 
 //________________________________________________________________
 AliPHOSEmcCalibData::AliPHOSEmcCalibData(const AliPHOSEmcCalibData& calibda) :
-  TNamed(calibda)
+  TNamed(calibda),
+  fSampleTimeStep(calibda.fSampleTimeStep)
 {
   // copy constructor
   SetName(calibda.GetName());

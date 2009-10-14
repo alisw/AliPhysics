@@ -91,7 +91,7 @@ AliPHOSTracker::~AliPHOSTracker()
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSTracker::LoadClusters(TTree *cTree) {
+Int_t AliPHOSTracker::LoadClusters(TTree *) {
   //--------------------------------------------------------------------
   // This function loads the PHOS clusters
   //--------------------------------------------------------------------
@@ -143,7 +143,7 @@ Int_t AliPHOSTracker::LoadClusters(TTree *cTree) {
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSTracker::PropagateBack(AliESDEvent *esd) {
+Int_t AliPHOSTracker::PropagateBack(AliESDEvent *) {
   //--------------------------------------------------------------------
   // Called by AliReconstruction 
   // Performs the track matching with the PHOS modules

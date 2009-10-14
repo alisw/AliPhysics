@@ -38,8 +38,8 @@ public:
   AliPHOSTracker();
   virtual ~AliPHOSTracker();
   
-  Int_t LoadClusters(TTree *ct);
-  Int_t PropagateBack(AliESDEvent *ev);
+  Int_t LoadClusters(TTree *);
+  Int_t PropagateBack(AliESDEvent *);
   AliCluster *GetCluster(Int_t idx) const;
   void UnloadClusters();
 
