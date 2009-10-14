@@ -60,15 +60,35 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
    esdTrackCutsL->SetDCAToVertex2D(kTRUE);
    esdTrackCutsL->SetRequireSigmaToVertex(kFALSE);
    esdTrackCutsL->SetAcceptKinkDaughters(kFALSE);
+
    // ITS stand-alone tracks
    AliESDtrackCuts* esdTrackCutsITSsa = new AliESDtrackCuts("ITS stand-alone Track Cuts", "ESD Track Cuts");
    esdTrackCutsITSsa->SetRequireITSStandAlone(kTRUE);
 
-   AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
-   trackFilter->AddCuts(esdTrackCutsL);
-   trackFilter->AddCuts(esdTrackCutsITSsa);
+   // Pixel OR necessary for the electrons
+   AliESDtrackCuts *itsStrong = new AliESDtrackCuts("ITSorSPD", "pixel requirement for ITS");
+   itsStrong->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 
-   // Cuts on V0s
+
+   // PID for the electrons
+   AliESDpidCuts *electronID = new AliESDpidCuts("Electrons", "Electron PID cuts");
+   electronID->SetTPCnSigmaCut(AliPID::kElectron, 3.);
+
+
+   // Compose the filter
+   AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
+   // 1
+   trackFilter->AddCuts(esdTrackCutsL);
+   // 2
+   trackFilter->AddCuts(esdTrackCutsITSsa);
+   // 4
+   trackFilter->AddCuts(itsStrong);
+   itsStrong->SetFilterMask(1);        // AND with Standard track cuts 
+   // 8
+   trackFilter->AddCuts(electronID);
+   electronID->SetFilterMask(4);       // AND with Pixel Cuts
+
+   // Filter with cuts on V0s
    AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("Standard V0 Cuts pp", "ESD V0 Cuts");
    esdV0Cuts->SetMinRadius(0.2);
    esdV0Cuts->SetMaxRadius(100);
