@@ -37,16 +37,14 @@
   .x ~/NimStyle.C
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
-  TFile fcalib("CalibObjects.root");
-  TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
-  AliTPCcalibLaser * laser = ( AliTPCcalibLaser *)array->FindObject("laserTPC");
+  TFile fcalib("CalibObjectsTrain2.root");
+  AliTPCcalibLaser * laser = ( AliTPCcalibLaser *)fcalib->Get("laserTPC");
   laser->DumpMeanInfo(-0,0)
   TFile fmean("laserMean.root")
   //
   //  laser track clasification;
   //
   TCut cutT("cutT","abs(Tr.fP[3])<0.06");
-  TCut cutPt("cutPt","abs(Tr.fP[4])<0.1");
   TCut cutN("cutN","fTPCncls>70");
   TCut cutP("cutP","abs(atan2(x1,x0)-atan2(lx1,lx0))<0.03")
   TCut cutA = cutT+cutPt+cutP;
@@ -71,9 +69,9 @@
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool;
-  TChain * chainDrift = tool.MakeChain("laser.txt","driftv",0,10200);
+  TChain * chainDrift = tool.MakeChainRandom("laser.txt","driftv",0,50);
   chainDrift->Lookup();
-  TChain * chainDriftN = tool.MakeChain("laser.txt","driftvN",0,10200);
+  TChain * chainDriftN = tool.MakeChainRandom("laser.txt","driftvN",0,50);
   chainDriftN->Lookup();
 
 
@@ -82,6 +80,8 @@
   chain->Lookup();
   TChain * chainFit = tool.MakeChain("laser.txt","FitModels",0,10200);
   chainFit->Lookup();
+  TChain * chainTrack = tool.MakeChainRandom("laser.txt","Track",0,30);
+  chainTrack->Lookup();
 
 */
 
@@ -527,7 +527,6 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   // Loop over tracks and call  Process function
   //
   Int_t kMinTracks=20;
-  Float_t posCE=-10000;
 
   fESD = event;
   if (!fESD) {
@@ -543,17 +542,13 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   // find CE background if present
   //
   if (AliTPCLaserTrack::GetTracks()==0) AliTPCLaserTrack::LoadTracks();
-  if (fESD->GetNumberOfTracks()>1.0*AliTPCLaserTrack::GetTracks()->GetEntries()){
-    TH1D hisCE("hhisCE","hhisCE",100,-50,50);
-    for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
-      AliESDtrack *track=fESD->GetTrack(i);
-      if (!track) continue;
-      hisCE.Fill(track->GetZ());
-    }
-    Int_t nmax = TMath::Nint(hisCE.GetBinContent(hisCE.GetMaximumBin()));
-    if (nmax>AliTPCLaserTrack::GetTracks()->GetEntries()*0.5){
-      posCE=hisCE.GetBinCenter(hisCE.GetMaximumBin());
-    }
+  TH1D hisCE("hhisCE","hhisCE",100,-100,100);  
+  for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
+    AliESDtrack *track=fESD->GetTrack(i);
+    if (!track) continue;
+    hisCE.Fill(track->GetZ());
+    hisCE.Fill(track->GetZ()+2);
+    hisCE.Fill(track->GetZ()-2);
   }
   //
   //
@@ -574,16 +569,17 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
     AliESDfriendTrack *friendTrack=fESDfriend->GetTrack(i);
     if (!friendTrack) continue;
     AliESDtrack *track=fESD->GetTrack(i);
-    if (TMath::Abs(track->GetZ()-posCE)<3) continue;  // remove fake CE track
+    Double_t binC = hisCE.GetBinContent(hisCE.FindBin(track->GetZ()));
+    if (binC>336) continue; //remove CE background
     TObject *calibObject=0;
     AliTPCseed *seed=0;
     for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j)
       if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
 	break;
-    if (track&&seed &&TMath::Abs(track->Pt()) >1 ) {
+    if (track&&seed) {
       //filter CE tracks
       Int_t id = FindMirror(track,seed);
-      if (id>0) counter++;
+      if (id>=0) counter++;
     }
     //
   } 
@@ -591,7 +587,7 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   if (counter<kMinTracks) return;
 
   FitDriftV();
-  FitDriftV(0.4);
+  FitDriftV(0.3);
   if (!fFullCalib) return;
   static Bool_t init=kFALSE;
   if (!init){
@@ -972,19 +968,45 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
   Int_t npointsAC=0;
   Int_t nbA[4]={0,0,0,0};
   Int_t nbC[4]={0,0,0,0};
+  TVectorD vecZM(336);      // measured z potion of laser
+  TVectorD vecA(336);       // accepted laser
+  TVectorD vecZF(336);      // fitted position  
+  TVectorD vecDz(336);      // deltaZ
+  TVectorD vecZS(336);      // surveyed position of laser
+  // additional variable to cut
+  TVectorD vecdEdx(336);    // dEdx
+  TVectorD vecSy(336);      // shape y
+  TVectorD vecSz(336);      // shape z
+  //
   //
   for (Int_t id=0; id<336; id++){
-    if (!fTracksEsdParam.At(id)) continue;
-    if (!AcceptLaser(id)) continue;
-    if ( fClusterSatur[id]>kSaturCut)  continue;
-    if ( fClusterCounter[id]<kMinClusters)  continue;
-    AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
+    Int_t reject=0;
+    AliTPCLaserTrack *ltrp =
+      (AliTPCLaserTrack*)AliTPCLaserTrack::GetTracks()->UncheckedAt(id);
+    AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
+    AliTPCseed * seed = (AliTPCseed*)fTracksTPC.At(id);
+    vecZM(id)= (param==0) ? 0:param->GetZ();
+    vecZS(id)= ltrp->GetZ();
+    vecDz(id)= 0;
+    vecA(id)=1;
+    vecdEdx(id)=(seed)?seed->GetdEdx():0;
+    vecSy(id) =(seed)?seed->CookShape(1):0;
+    vecSz(id) =(seed)?seed->CookShape(2):0;
+    //
+    fFitZ[id]=0;
+    if (!fTracksEsdParam.At(id)) reject|=1;
+    if (!param) continue; 
+    if (!AcceptLaser(id))        reject|=2;
+    if ( fClusterSatur[id]>kSaturCut)  reject|=4;
+    if ( fClusterCounter[id]<kMinClusters)  reject|=8;
+    vecA(id)=reject;
+    if (reject>0) continue;
     if (ltrp->GetSide()==0){
       npointsA++;
       nbA[ltrp->GetBundle()]++;
     }
     if (ltrp->GetSide()==1){
-      npointsA++;
+      npointsC++;
       nbC[ltrp->GetBundle()]++;
     }
   }
@@ -1010,7 +1032,8 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
   for (Int_t iter=0; iter<2; iter++){
     fdriftA.ClearPoints();
     fdriftC.ClearPoints();
-    fdriftAC.ClearPoints();
+    fdriftAC.ClearPoints(); 
+    npointsA=0;  npointsC=0;  npointsAC=0;
     //
     for (Int_t id=0; id<336; id++){
       if (!fTracksEsdParam.At(id)) continue;
@@ -1021,7 +1044,6 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
       if (track->GetTPCsignal()<kMinSignal) continue;
       AliExternalTrackParam *param=(AliExternalTrackParam*)fTracksEsdParam.At(id);
       AliTPCLaserTrack *ltrp = ( AliTPCLaserTrack*)fTracksMirror.At(id);
-
       Double_t xyz[3];
       Double_t pxyz[3];
       Double_t lxyz[3];
@@ -1032,14 +1054,22 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
       ltrp->GetPxPyPz(lpxyz);
       Float_t sz = (ltrp->GetSide()==0) ? TMath::Sqrt(chi2A): TMath::Sqrt(chi2C);
       if (npointsAC>0) sz =TMath::Sqrt(chi2AC); 
-      if (TMath::Abs(fFitZ[id])>sz*kDistCut) continue;
+      if (iter>0 && TMath::Abs(fFitZ[id])>sz*kDistCut) continue;
       if (iter>0 && TMath::Abs(fFitZ[id])>kDistCutAbs) continue;
 
-      // drift distance
-      Double_t zlength =  tpcparam->GetZLength(0);
-      Double_t ldrift = zlength-TMath::Abs(lxyz[2]);
-      Double_t mdrift = zlength-TMath::Abs(xyz[2]);
+//       // drift distance
+//       Double_t zlength =  tpcparam->GetZLength(0);
+//       Double_t ldrift  = zlength-TMath::Abs(lxyz[2]);
+//       Double_t mdrift  = zlength-TMath::Abs(xyz[2]);
+      //
+      Double_t zlength = (ltrp->GetSide()==0)? tpcparam->GetZLength(36): tpcparam->GetZLength(71);
+      Double_t ldrift  = (ltrp->GetSide()==0)?zlength-lxyz[2]:lxyz[2]+zlength;
+      Double_t mdrift  = (ltrp->GetSide()==0)?zlength-xyz[2]:xyz[2]+zlength;
+
+
       Double_t xxx[2] = {ldrift,lxyz[1]*ldrift/(zlength*250.)};
+      if (iter==0 &&ltrp->GetBundle()==0) continue;  
+      // skip bundle 0 - can be wrong in the 0 iteration
       if (ltrp->GetSide()==0){
 	fdriftA.AddPoint(xxx,mdrift,1);
       }else{
@@ -1108,9 +1138,13 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
       param->GetPxPyPz(pxyz);
       ltrp->GetXYZ(lxyz);
       ltrp->GetPxPyPz(lpxyz); 
-      Double_t zlength =  tpcparam->GetZLength(0);
-      Double_t ldrift = zlength-TMath::Abs(lxyz[2]);
-      Double_t mdrift = zlength-TMath::Abs(xyz[2]);
+      //Double_t zlength =  tpcparam->GetZLength(0);
+      //Double_t ldrift = zlength-TMath::Abs(lxyz[2]);
+      //Double_t mdrift = zlength-TMath::Abs(xyz[2]);
+      Double_t zlength = (ltrp->GetSide()==0)? tpcparam->GetZLength(36): tpcparam->GetZLength(71);
+      Double_t ldrift  = (ltrp->GetSide()==0)?zlength-lxyz[2]:lxyz[2]+zlength;
+      Double_t mdrift  = (ltrp->GetSide()==0)?zlength-xyz[2]:xyz[2]+zlength;
+
 
       Float_t fz =0;
       if (ltrp->GetSide()==0){
@@ -1119,9 +1153,11 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
 	fz = (fitC)[0]+(fitC)[1]*ldrift+(fitC)[2]*lxyz[1]*ldrift/(zlength*250.);	
       }
       if (npointsAC>10){
-	fz = (fitAC)[0]+(fitAC)[1]*ltrp->GetSide()+(fitAC)[2]*ldrift+(fitAC)[3]*lxyz[1]*ldrift/(zlength*250.);
+	//fz = (fitAC)[0]+(fitAC)[1]*ltrp->GetSide()+(fitAC)[2]*ldrift+(fitAC)[3]*lxyz[1]*ldrift/(zlength*250.);
       }
       fFitZ[id]=mdrift-fz;
+      vecZF[id]=fz;
+      vecDz[id]=mdrift-fz;
     }
     if (fStreamLevel>0){
       TTreeSRedirector *cstream = GetDebugStreamer();
@@ -1157,6 +1193,15 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
 	  "vecGoofie.="<<&vecGoofie<<
 	  //
 	  //
+	  "vecZM.="<<&vecZM<<   // measured z position
+	  "vecZS.="<<&vecZS<<   // surveyed z position
+	  "vecZF.="<<&vecZF<<   // fitted   z position
+	  "vecDz.="<<&vecDz<<   // fitted   z position
+	  "vecA.="<<&vecA<<     // accept laser flag
+	  "vecdEdx.="<<&vecdEdx<<   // dEdx  - to cut on
+	  "vecSy.="<<&vecSy<<       // shape y - to cut on
+	  "vecSz.="<<&vecSz<<       // shape z - to cut on
+	  //
 	  "iter="<<iter<<
 	  "driftA.="<<fFitAside<<
 	  "driftC.="<<fFitCside<<
@@ -1168,6 +1213,18 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
 	  "nC="<<npointsC<<
 	  "nAC="<<npointsAC<<
 	  "\n";
+	/*
+	  //
+	  variables to check in debug mode:
+	  //
+	  chainDriftN->SetAlias("driftS","250-abs(vecZS.fElements)");
+	  chainDriftN->SetAlias("driftM","250-abs(vecZM.fElements)");
+	  chainDriftN->SetAlias("driftF","vecZF.fElements");	  
+	  chainDriftN->SetAlias("deltaZ","driftF-driftM");  //deltaZ
+	  TCut cutA="iter==1&&sqrt(chi2A)<0.1&&vecZS.fElements>0&&vecA.fElements==0";
+	  TCut cutC="iter==1&&sqrt(chi2C)<0.1&&vecZS.fElements<0&&vecA.fElements==0";
+	  
+	 */
       }
     }
   }
@@ -1217,7 +1274,6 @@ Bool_t  AliTPCcalibLaser::AcceptLaser(Int_t id){
   TCut cutP1("cutP1","abs(LTr.fP[1]-Tr.fP[1])<30");
   TCut cutP2("cutP2","abs(LTr.fP[2]-Tr.fP[2])<0.03");
   TCut cutP3("cutP3","abs(Tr.fP[3])<0.05");
-  TCut cutP4("cutPt","abs(Tr.fP[4])<0.1");
 
   TCut cutA = cutP0+cutP1+cutP2+cutP3+cutP4;
   */
@@ -1232,7 +1288,6 @@ Bool_t  AliTPCcalibLaser::AcceptLaser(Int_t id){
   if (TMath::Abs(param->GetParameter()[1]-ltrp->GetParameter()[1])>30) return kFALSE;    // cutZ -P1
   if (TMath::Abs(param->GetParameter()[2]-ltrp->GetParameter()[2])>0.03) return kFALSE;  // cut -P2
   if (TMath::Abs(param->GetParameter()[3])>0.05) return kFALSE;   // cut Tl -P3
-  //  if (TMath::Abs(param->GetParameter()[4])>0.1) return kFALSE;   // cut Pt  -P4
   //
   //
 
