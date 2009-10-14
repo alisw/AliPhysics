@@ -88,7 +88,7 @@ TString acorde_module_path(Int_t module)
     return "";
   }
 
-  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(Form("ACORDE/Array%d", module + 1));
+  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(Form("ACORDE/Array%d", module));
   if (!pne) return "";
 
   return Form("%s/ACORDE2_5", pne->GetTitle());
