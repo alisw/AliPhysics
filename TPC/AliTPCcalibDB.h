@@ -127,6 +127,10 @@ class AliTPCcalibDB : public TObject
   TObjArray*              GetTimeVdriftSplineRun(Int_t run);
   static Float_t GetGain(Int_t sector, Int_t row, Int_t pad);
   //
+  Double_t      GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t mode);
+  Double_t      GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t mode);
+  Double_t      GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t side, Int_t mode);
+  //
   AliSplineFit* GetVdriftSplineFit(const char* name, Int_t run);
   AliSplineFit* CreateVdriftSplineFit(const char* graphName, Int_t run);
   //

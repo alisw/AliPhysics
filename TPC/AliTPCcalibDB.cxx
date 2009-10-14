@@ -1553,3 +1553,55 @@ Bool_t AliTPCcalibDB::CreateRefFile(Int_t run, const char* filename)
   currDir->cd();
   return kTRUE;
 }
+
+
+
+Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t mode){
+  //
+  // Get time dependent drift velocity correction
+  // multiplication factor        vd = vdnom *(1+vdriftcorr)
+  // Arguments:
+  // mode determines the algorith how to combine the Laser Track, LaserCE and physics tracks
+  // timestamp - timestamp
+  // run       - run number
+  // side      - the drift velocity per side (possible for laser and CE)
+  //
+  // Notice - Extrapolation outside of calibration range  - using constant function
+  //
+  return 0;
+}
+
+Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t mode){
+  //
+  // Get time dependent time 0 (trigger delay) correction
+  // additive correction        time0 = time0+ GetTime0CorrectionTime
+  // Value etracted combining the vdrift correction using laser tracks and CE and the physics track matchin
+  // Arguments:
+  // mode determines the algorith how to combine the Laser Track and physics tracks
+  // timestamp - timestamp
+  // run       - run number
+  // side      - the drift velocity per side (possible for laser and CE)
+  //
+  // Notice - Extrapolation outside of calibration range  - using constant function
+  //
+  return 0;
+}
+
+
+
+
+Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t side, Int_t mode){
+  //
+  // Get global y correction drift velocity correction factor
+  // additive factor        vd = vdnom*(1+GetVDriftCorrectionGy *gy)
+  // Value etracted combining the vdrift correction using laser tracks and CE
+  // Arguments:
+  // mode determines the algorith how to combine the Laser Track, LaserCE
+  // timestamp - timestamp
+  // run       - run number
+  // side      - the drift velocity gy correction per side (CE and Laser tracks)
+  //
+  // Notice - Extrapolation outside of calibration range  - using constant function
+  //
+  return 0;
+}
