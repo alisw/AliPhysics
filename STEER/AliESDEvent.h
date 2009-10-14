@@ -127,7 +127,7 @@ public:
   //
   Float_t     GetCurrentL3()                      const  {return fESDRun->GetCurrentL3();}
   Float_t     GetCurrentDip()                     const  {return fESDRun->GetCurrentDip();}
-  Float_t     SetBeamEnergy()                     const  {return fESDRun->GetBeamEnergy();}
+  Float_t     GetBeamEnergy()                     const  {return fESDRun->GetBeamEnergy();}
   const char* GetBeamType()                       const  {return fESDRun->GetBeamType();}
   Bool_t      IsUniformBMap()                     const  {return fESDRun->TestBit(AliESDRun::kUniformBMap);}
   //
