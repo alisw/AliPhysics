@@ -209,11 +209,11 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
   Int_t fCharge;
   TLorentzVector fEPvector;
 
-  Float_t fZVertexCut = 10.0; 
-  Float_t fRhoVertexCut = 2.0; 
+  Float_t fZVertexCut    = 10.0; 
+  Float_t fRhoVertexCut  =  2.0; 
 
-  Float_t fLowPtCut = 1.0;
-  Float_t fHighPtCut = 3.0;
+  Float_t fLowPtCut      =  1.0;
+  Float_t fHighPtCut     =  3.0;
   Float_t fVeryHighPtCut = 10.0;
   ////////////
 
@@ -283,7 +283,11 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
   TTree * ttag = new TTree("T","A Tree with event tags");
   TBranch * btag = ttag->Branch("AliTAG", &tag);
   btag->SetCompressionLevel(9);
-
+  // Run related information
+  tag->SetMagneticField(esd->GetMagneticField());
+  tag->SetBeamEnergy(esd->GetBeamEnergy());
+  tag->SetBeamType(TString(esd->GetBeamType()));
+  
   for(Int_t iEventNumber = 0; iEventNumber < chain->GetEntries(); iEventNumber++) {
     ntrack = 0; nPos = 0; nNeg = 0; nNeutr =0;
     nK0s = 0; nNeutrons = 0; nPi0s = 0;
