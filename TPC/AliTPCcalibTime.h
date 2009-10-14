@@ -19,6 +19,7 @@ class AliESDEvent;
 class AliESDtrack;
 class AliTPCcalibLaser;
 class TGraphErrors;
+class AliSplineFit;
 
 #include "TTreeStream.h"
 #include "TMap.h"
@@ -32,25 +33,25 @@ public:
   virtual void           Process(AliESDEvent *event);
   virtual Long64_t       Merge(TCollection *li);
   virtual void           Analyze();
-  //
-  static Bool_t          IsLaser(AliESDEvent *event);
+  static Bool_t          IsLaser      (AliESDEvent *event);
+  static Bool_t          IsCosmics    (AliESDEvent *event);
+  static Bool_t          IsBeam       (AliESDEvent *event);
   void                   ProcessLaser (AliESDEvent *event);
   void                   ProcessCosmic(AliESDEvent *event);
+  void                   ProcessBeam  (AliESDEvent *event);
   Bool_t                 IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
   Bool_t                 IsCross(AliESDtrack *tr0, AliESDtrack *tr1);
+  Bool_t                 IsSame (AliESDtrack *tr0, AliESDtrack *tr1);
 
-  THnSparse* GetHistVdriftLaserA(Int_t index=1){return fHistVdriftLaserA[index];};
-  THnSparse* GetHistVdriftLaserC(Int_t index=1){return fHistVdriftLaserC[index];};
-  THnSparse* GetHistoDrift(TObjString* name);
-  THnSparse* GetHistoDrift(const char* name);
-  TMap*      GetHistoDrift();
-  TGraphErrors*    GetGraphDrift(TObjString* name);
-  TGraphErrors*    GetGraphDrift(const char* name);
-  TMap*      GetGraphDrift();
-  TGraph*    GetFitDrift(TObjString* name);
-  TGraph*    GetFitDrift(const char* name);
-  TMap*      GetFitDrift();
-  TH1F*      GetCosmiMatchingHisto(Int_t index=0){return fCosmiMatchingHisto[index];};
+  THnSparse*    GetHistVdriftLaserA(Int_t index=1){return fHistVdriftLaserA[index];};
+  THnSparse*    GetHistVdriftLaserC(Int_t index=1){return fHistVdriftLaserC[index];};
+  THnSparse*    GetHistoDrift(const char* name);
+  TObjArray*    GetHistoDrift();
+  TGraphErrors* GetGraphDrift(const char* name);
+  TObjArray*    GetGraphDrift();
+  AliSplineFit* GetFitDrift(const char* name);
+//  TObjArray*    GetFitDrift();
+  TH1F*         GetCosmiMatchingHisto(Int_t index=0){return fCosmiMatchingHisto[index];};
   
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
@@ -80,7 +81,8 @@ private:
   THnSparse * fHistVdriftLaserA[3];	//Histograms for V drift from laser
   THnSparse * fHistVdriftLaserC[3];	//Histograms for V drift from laser
   // DELTA Z histo
-  TMap      * fMapDz;			//Tmap of V drifts for different triggers
+//  TMap*      fMapDz;			//Tmap of V drifts for different triggers
+  TObjArray* fArrayDz;                  // array of DZ histograms for different triggers
 
   Int_t    fTimeBins;			//Bins time
   Double_t fTimeStart;			//Start time
