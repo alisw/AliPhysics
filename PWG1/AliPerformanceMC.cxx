@@ -186,8 +186,7 @@ void AliPerformanceMC::Init(){
 //_____________________________________________________________________________
 void AliPerformanceMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const /*esdEvent*/, AliESDfriend *const /*esdFriend*/, const Bool_t bUseMC, const Bool_t /*bUseESDfriend*/)
 {
-  //
-  // Process pure MC information
+  // Process pure MC information 
   //
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
@@ -197,32 +196,33 @@ void AliPerformanceMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const /*esdE
   if(bUseMC)
   {
     if(!mcEvent) {
-      AliDebug(AliLog::kError, "mcEvent not available");
+      Error("Exec","mcEvent not available");
       return;
     }
-
     // get MC event header
     header = mcEvent->Header();
     if (!header) {
-      AliDebug(AliLog::kError, "Header not available");
+      Error("Exec","Header not available");
       return;
     }
     // MC particle stack
     stack = mcEvent->Stack();
     if (!stack) {
-      AliDebug(AliLog::kError, "Stack not available");
+      Error("Exec","Stack not available");
       return;
     }
-
     // get MC vertex
     genHeader = header->GenEventHeader();
     if (!genHeader) {
-      AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");
+      Error("Exec","Could not retrieve genHeader from Header");
       return;
     }
     genHeader->PrimaryVertex(vtxMC);
-
-  } // end bUseMC
+  } 
+  else {
+    Error("Exec","MC information required!");
+    return;
+  }
   
   Int_t nPart = mcEvent->GetNumberOfTracks();
   if (nPart==0) return;
@@ -322,14 +322,14 @@ void AliPerformanceMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const /*esdE
     }
 
     if(GetAnalysisMode() == 3) {
-      // Propagate refTPCOut to refTPCIn using AliTrack::PropagateTrackTo()
+      // Propagate refTPCOut to refTPCIn using AliTrack::PropagateTrackToBxByBz()
       //
       if(refTPCIn && refTPCOut) 
         ProcessInnerTPC(refTPCIn,refTPCOut,particle); 
     }
 
     if(GetAnalysisMode() == 4) { 
-      // propagate refTPCIn to refTPCOut using AliExternalTrackParam::PropagateTo()
+      // propagate refTPCIn to refTPCOut using AliExternalTrackParam::PropagateToBxByBz()
       ProcessOuterTPCExt(part,trefs); 
     }
   }
@@ -354,13 +354,17 @@ void AliPerformanceMC::ProcessTPC(AliTrackReference* const refIn, TParticle *con
   track=MakeTrack(refIn,particle);
   if (!track) return;
   //
-  AliTracker::PropagateTrackTo(track, radius+step, mass, step, kTRUE,0.99);
-  AliTracker::PropagateTrackTo(track, radius+0.5, mass, step*0.1, kTRUE,0.99);
+  //AliTracker::PropagateTrackTo(track, radius+step, mass, step, kTRUE,0.99);
+  //AliTracker::PropagateTrackTo(track, radius+0.5, mass, step*0.1, kTRUE,0.99);
+  AliTracker::PropagateTrackToBxByBz(track, radius+step, mass, step, kTRUE,0.99);
+  AliTracker::PropagateTrackToBxByBz(track, radius+0.5, mass, step*0.1, kTRUE,0.99);
   Double_t xyz[3] = {particle->Vx(),particle->Vy(),particle->Vz()};
   Double_t sxyz[3]={0.0,0.0,0.0};
   AliESDVertex vertex(xyz,sxyz);
   Double_t dca[2], cov[3];
-  Bool_t isOK = track->PropagateToDCA(&vertex,AliTracker::GetBz(),10,dca,cov);
+  //Bool_t isOK = track->PropagateToDCA(&vertex,AliTracker::GetBz(),10,dca,cov);
+  Double_t field[3];  track->GetBxByBz(field); 
+  Bool_t isOK = track->PropagateToDCABxByBz(&vertex,field,10,dca,cov);
   if(!isOK) return;
 
   // Fill histogram
@@ -433,7 +437,8 @@ void AliPerformanceMC::ProcessInnerTPC(AliTrackReference* const refIn,  AliTrack
 
   //
   //Bool_t isOK = AliTracker::PropagateTrackTo(track, refIn->R(), mass, step, kTRUE,0.99);
-  Bool_t isOK = AliTracker::PropagateTrackTo(track, refIn->R(), mass, step, kFALSE,0.99);
+  //Bool_t isOK = AliTracker::PropagateTrackTo(track, refIn->R(), mass, step, kFALSE,0.99);
+  Bool_t isOK = AliTracker::PropagateTrackToBxByBz(track, refIn->R(), mass, step, kFALSE,0.99);
   if(!isOK) return;
 
   // calculate alpha angle
@@ -536,11 +541,15 @@ void AliPerformanceMC::ProcessOuterTPCExt(TParticle *const part, TClonesArray * 
     isOKP&=paramPropagate->Rotate(alphaC);
     isOKU&=paramUpdate->Rotate(alphaC);
     for (Float_t xref= paramPropagate->GetX(); xref<ref->R(); xref++){
-      isOKP&=paramPropagate->PropagateTo(xref, mag[2]);
-      isOKU&=paramUpdate->PropagateTo(xref, mag[2]);
+      //isOKP&=paramPropagate->PropagateTo(xref, mag[2]);
+      //isOKU&=paramUpdate->PropagateTo(xref, mag[2]);
+      isOKP&=paramPropagate->PropagateToBxByBz(xref, mag);
+      isOKU&=paramUpdate->PropagateToBxByBz(xref, mag);
     }
-    isOKP&=paramPropagate->PropagateTo(ref->R(), mag[2]);
-    isOKU&=paramUpdate->PropagateTo(ref->R(), mag[2]);
+    //isOKP&=paramPropagate->PropagateTo(ref->R(), mag[2]);
+    //isOKU&=paramUpdate->PropagateTo(ref->R(), mag[2]);
+    isOKP&=paramPropagate->PropagateToBxByBz(ref->R(), mag);
+    isOKU&=paramUpdate->PropagateToBxByBz(ref->R(), mag);
     Double_t clpos[2] = {0, ref->Z()};
     Double_t clcov[3] = { 0.005,0,0.005};
     isOKU&= paramUpdate->Update(clpos, clcov);  

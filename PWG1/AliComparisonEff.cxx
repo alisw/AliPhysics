@@ -153,7 +153,7 @@ void AliComparisonEff::ProcessTPC(AliMCInfo* const infoMC, AliESDRecInfo* const 
   // Fill efficiency comparison information
 
   AliExternalTrackParam *track = 0;
-  Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
+  //Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
   Double_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
   AliESDVertex vertexMC;  // MC primary vertex
@@ -192,7 +192,9 @@ void AliComparisonEff::ProcessTPC(AliMCInfo* const infoMC, AliESDRecInfo* const 
   {
     if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0)
     {
-      Bool_t bDCAStatus = track->PropagateToDCA(&vertexMC,field,kMaxD,dca,cov);
+      //Bool_t bDCAStatus = track->PropagateToDCA(&vertexMC,field,kMaxD,dca,cov);
+      Double_t field[3];  track->GetBxByBz(field); 
+      Bool_t bDCAStatus = track->PropagateToDCABxByBz(&vertexMC,field,kMaxD,dca,cov);
       if(bDCAStatus) {
         if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ())
         {
@@ -261,7 +263,7 @@ void AliComparisonEff::ProcessConstrained(AliMCInfo* const infoMC, AliESDRecInfo
 {
   // Fill efficiency comparison information
   AliExternalTrackParam *track = 0;
-  Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
+  //Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
   Double_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
   AliESDVertex vertexMC;  // MC primary vertex
@@ -303,7 +305,9 @@ void AliComparisonEff::ProcessConstrained(AliMCInfo* const infoMC, AliESDRecInfo
 
   if ((track = new AliExternalTrackParam(*cparam)) != 0)
   {
-    Bool_t bDCAStatus = track->PropagateToDCA(&vertexMC,field,kMaxD,dca,cov);
+    //Bool_t bDCAStatus = track->PropagateToDCA(&vertexMC,field,kMaxD,dca,cov);
+    Double_t field[3];  track->GetBxByBz(field); 
+    Bool_t bDCAStatus = track->PropagateToDCABxByBz(&vertexMC,field,kMaxD,dca,cov);
     if(bDCAStatus) {
       if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ())
       {
