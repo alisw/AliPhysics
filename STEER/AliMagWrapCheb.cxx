@@ -281,17 +281,30 @@ Int_t AliMagWrapCheb::FindDipSegment(const Double_t *xyz) const
   // find the segment containing point xyz. If it is outside find the closest segment 
   if (!fNParamsDip) return -1;
   int xid,yid,zid = TMath::BinarySearch(fNZSegDip,fSegZDip,(Float_t)xyz[2]); // find zsegment
-  int ysegBeg = fBegSegYDip[zid];
   //
-  for (yid=0;yid<fNSegYDip[zid];yid++) if (xyz[1]<fSegYDip[ysegBeg+yid]) break;
-  if ( --yid < 0 ) yid = 0;
-  yid +=  ysegBeg;
-  //
-  int xsegBeg = fBegSegXDip[yid];
-  for (xid=0;xid<fNSegXDip[yid];xid++) if (xyz[0]<fSegXDip[xsegBeg+xid]) break;
-  if ( --xid < 0) xid = 0;
-  xid +=  xsegBeg;
-  //
+  Bool_t reCheck = kFALSE;
+  while(1) {
+    int ysegBeg = fBegSegYDip[zid];
+    //
+    for (yid=0;yid<fNSegYDip[zid];yid++) if (xyz[1]<fSegYDip[ysegBeg+yid]) break;
+    if ( --yid < 0 ) yid = 0;
+    yid +=  ysegBeg;
+    //
+    int xsegBeg = fBegSegXDip[yid];
+    for (xid=0;xid<fNSegXDip[yid];xid++) if (xyz[0]<fSegXDip[xsegBeg+xid]) break;
+    //
+    if ( --xid < 0) xid = 0;
+    xid +=  xsegBeg;
+    //
+    // to make sure that due to the precision problems we did not pick the next Zbin    
+    if (!reCheck && (xyz[2] - fSegZDip[zid] < 3.e-5) && zid &&
+	!GetParamDip(fSegIDDip[xid])->IsInside(xyz)) {  // check the previous Z bin
+      zid--;
+      reCheck = kTRUE;
+      continue;
+    } 
+    break;
+  }
   return fSegIDDip[xid];
 }
 
@@ -301,17 +314,28 @@ Int_t AliMagWrapCheb::FindSolSegment(const Double_t *rpz) const
   // find the segment containing point xyz. If it is outside find the closest segment 
   if (!fNParamsSol) return -1;
   int rid,pid,zid = TMath::BinarySearch(fNZSegSol,fSegZSol,(Float_t)rpz[2]); // find zsegment
-  int psegBeg = fBegSegPSol[zid];
   //
-  for (pid=0;pid<fNSegPSol[zid];pid++) if (rpz[1]<fSegPSol[psegBeg+pid]) break;
-  if ( --pid < 0 ) pid = 0;
-  pid +=  psegBeg;
-  //
-  int rsegBeg = fBegSegRSol[pid];
-  for (rid=0;rid<fNSegRSol[pid];rid++) if (rpz[0]<fSegRSol[rsegBeg+rid]) break;
-  if ( --rid < 0) rid = 0;
-  rid +=  rsegBeg;
-  //
+  Bool_t reCheck = kFALSE;
+  while(1) {
+    int psegBeg = fBegSegPSol[zid];
+    for (pid=0;pid<fNSegPSol[zid];pid++) if (rpz[1]<fSegPSol[psegBeg+pid]) break;
+    if ( --pid < 0 ) pid = 0;
+    pid +=  psegBeg;
+    //
+    int rsegBeg = fBegSegRSol[pid];
+    for (rid=0;rid<fNSegRSol[pid];rid++) if (rpz[0]<fSegRSol[rsegBeg+rid]) break;
+    if ( --rid < 0) rid = 0;
+    rid +=  rsegBeg;
+    //
+    // to make sure that due to the precision problems we did not pick the next Zbin    
+    if (!reCheck && (rpz[2] - fSegZSol[zid] < 3.e-5) && zid &&
+	!GetParamSol(fSegIDSol[rid])->IsInside(rpz)) {  // check the previous Z bin
+      zid--;
+      reCheck = kTRUE;
+      continue;
+    } 
+    break;
+  }
   return fSegIDSol[rid];
 }
 
@@ -321,17 +345,29 @@ Int_t AliMagWrapCheb::FindTPCSegment(const Double_t *rpz) const
   // find the segment containing point xyz. If it is outside find the closest segment 
   if (!fNParamsTPC) return -1;
   int rid,pid,zid = TMath::BinarySearch(fNZSegTPC,fSegZTPC,(Float_t)rpz[2]); // find zsegment
-  int psegBeg = fBegSegPTPC[zid];
   //
-  for (pid=0;pid<fNSegPTPC[zid];pid++) if (rpz[1]<fSegPTPC[psegBeg+pid]) break;
-  if ( --pid < 0 ) pid = 0;
-  pid +=  psegBeg;
-  //
-  int rsegBeg = fBegSegRTPC[pid];
-  for (rid=0;rid<fNSegRTPC[pid];rid++) if (rpz[0]<fSegRTPC[rsegBeg+rid]) break;
-  if ( --rid < 0) rid = 0;
-  rid +=  rsegBeg;
-  //
+  Bool_t reCheck = kFALSE;
+  while(1) {
+    int psegBeg = fBegSegPTPC[zid];
+    //
+    for (pid=0;pid<fNSegPTPC[zid];pid++) if (rpz[1]<fSegPTPC[psegBeg+pid]) break;
+    if ( --pid < 0 ) pid = 0;
+    pid +=  psegBeg;
+    //
+    int rsegBeg = fBegSegRTPC[pid];
+    for (rid=0;rid<fNSegRTPC[pid];rid++) if (rpz[0]<fSegRTPC[rsegBeg+rid]) break;
+    if ( --rid < 0) rid = 0;
+    rid +=  rsegBeg;
+    //
+    // to make sure that due to the precision problems we did not pick the next Zbin    
+    if (!reCheck && (rpz[2] - fSegZSol[zid] < 3.e-5) && zid &&
+	!GetParamSol(fSegIDSol[rid])->IsInside(rpz)) {  // check the previous Z bin
+      zid--;
+      reCheck = kTRUE;
+      continue;
+    } 
+    break;
+  }
   return fSegIDTPC[rid];
 }
 
