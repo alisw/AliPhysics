@@ -1000,14 +1000,10 @@ void AliAnalysisTaskChargedHadronSpectra::Postprocess(const TList * ListOfHistog
   TH3F* histPtMCKaonEff = ( TH3F *)ListOfHistogramsMC->FindObject("HistPtMCKaon");
   TH3F* histPtMCProtonEff = ( TH3F *)ListOfHistogramsMC->FindObject("HistPtMCProton");
   TH3F* histPtMCPionEff = ( TH3F *)ListOfHistogramsMC->FindObject("HistPtMCPion");
-  TH3F* histPtMCElectronEff = ( TH3F *)ListOfHistogramsMC->FindObject("HistPtMCElectron");
-  TH3F* histPtMCMuonEff = ( TH3F *)ListOfHistogramsMC->FindObject("HistPtMCMuon");
   
   TH3F* histPtEtaKaonEff = ( TH3F *)ListOfHistogramsMC->FindObject("HistPtEtaKaon");
-  TH3F* histPtEtaKaonNoKinkEff = ( TH3F *)ListOfHistogramsMC->FindObject("HistPtEtaKaonNoKink");
   TH3F* histPtEtaProtonEff = ( TH3F *)ListOfHistogramsMC->FindObject("HistPtEtaProton");
   TH3F* histPtEtaPionEff = ( TH3F *)ListOfHistogramsMC->FindObject("HistPtEtaPion");
-  TH3F* histPtEtaElectronEff = ( TH3F *)ListOfHistogramsMC->FindObject("HistPtEtaElectron");
   
   TH3F* histEffProton = ( TH3F *)ListOfHistogramsMC->FindObject("HistEffProton");
   TH3F* histEffKaon = ( TH3F *)ListOfHistogramsMC->FindObject("HistEffKaon");
@@ -1015,18 +1011,13 @@ void AliAnalysisTaskChargedHadronSpectra::Postprocess(const TList * ListOfHistog
 
   // Extract data for the final spectra  
   TH3F* histPtEtaKaon = ( TH3F *)ListOfHistogramsData->FindObject("HistPtEtaKaon");
-  TH3F* histPtEtaKaonNoKink = ( TH3F *)ListOfHistogramsData->FindObject("HistPtEtaKaonNoKink");
   TH3F* histPtEtaProton = ( TH3F *)ListOfHistogramsData->FindObject("HistPtEtaProton");
   TH3F* histPtEtaPion = ( TH3F *)ListOfHistogramsData->FindObject("HistPtEtaPion");
-  TH3F* histPtEtaElectron = ( TH3F *)ListOfHistogramsData->FindObject("HistPtEtaElectron");
 
   // "MC" of the real data for consistency checks
   TH3F* histPtMCKaonData = ( TH3F *)ListOfHistogramsData->FindObject("HistPtMCKaon");
   TH3F* histPtMCProtonData = ( TH3F *)ListOfHistogramsData->FindObject("HistPtMCProton");
   TH3F* histPtMCPionData = ( TH3F *)ListOfHistogramsData->FindObject("HistPtMCPion");
-  TH3F* histPtMCElectronData = ( TH3F *)ListOfHistogramsData->FindObject("HistPtMCElectron");
-  TH3F* histPtMCMuonData = ( TH3F *)ListOfHistogramsData->FindObject("HistPtMCMuon");
-
 
   TFile spectraFile(filename,"RECREATE");
 
