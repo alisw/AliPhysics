@@ -214,8 +214,8 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   //
   if(!esdEvent) 
   {
-      AliDebug(AliLog::kError, "esdEvent not available");
-      return;
+    Error("Exec","esdEvent not available");
+    return;
   }
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
@@ -225,43 +225,37 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   if(bUseMC)
   {
     if(!mcEvent) {
-      AliDebug(AliLog::kError, "mcEvent not available");
+      Error("Exec","mcEvent not available");
       return;
     }
-
     // get MC event header
     header = mcEvent->Header();
     if (!header) {
-      AliDebug(AliLog::kError, "Header not available");
+      Error("Exec","Header not available");
       return;
     }
     // MC particle stack
     stack = mcEvent->Stack();
     if (!stack) {
-      AliDebug(AliLog::kError, "Stack not available");
+      Error("Exec","Stack not available");
       return;
     }
-
     // get MC vertex
     genHeader = header->GenEventHeader();
     if (!genHeader) {
-      AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");
+      Error("Exec","Could not retrieve genHeader from Header");
       return;
     }
     genHeader->PrimaryVertex(vtxMC);
-
-  } // end bUseMC
-
+  } 
+  
   // use ESD friends
   if(bUseESDfriend) {
     if(!esdFriend) {
-      AliDebug(AliLog::kError, "esdFriend not available");
+      Error("Exec","esdFriend not available");
       return;
     }
   }
-
-
-
 
   //  Process events
   for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 

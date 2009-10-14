@@ -19,7 +19,7 @@
 // the control QA histograms are filled.
 //
 // The comparison output objects deriving from AliPerformanceObject 
-// (e.g. AliPerformanceRes, AliPerformanceEff, AliPerformanceDEdxA, AliPerformanceDCA ...) 
+// (e.g. AliPerformanceRes, AliPerformanceEff, AliPerformanceDEdx, AliPerformanceDCA ...) 
 // are stored in the output file (details in description of these classes).
 // 
 // Author: J.Otwinowski 01/04/2009 
@@ -50,10 +50,6 @@
 #include "AliESDRecInfo.h"
 #include "AliMCInfoCuts.h"
 #include "AliRecInfoCuts.h"
-#include "AliComparisonRes.h"
-#include "AliComparisonEff.h"
-#include "AliComparisonDEdx.h"
-#include "AliComparisonDCA.h"
 #include "AliComparisonObject.h"
 #include "AliPerformanceObject.h"
 #include "AliPerformanceTask.h"
@@ -124,6 +120,14 @@ void AliPerformanceTask::ConnectInputData(Option_t *)
     Printf("ERROR: Could not get ESDInputHandler");
   } else {
     fESD = esdH->GetEvent();
+
+    if(fUseESDfriend)
+    {
+      fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+      if(!fESDfriend) {
+        Printf("ERROR: ESD friends not available");
+      }
+    }
   }
 
   // use MC information
@@ -195,10 +199,8 @@ void AliPerformanceTask::Exec(Option_t *)
 
   if(fUseESDfriend)
   {
-    fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
     if(!fESDfriend) {
-      Printf("ERROR: ESD friends not available");
-      return;
+    Printf("ERROR: ESD friends not available");
     }
   }
 

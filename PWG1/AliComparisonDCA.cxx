@@ -201,7 +201,7 @@ void AliComparisonDCA::ProcessTPC(AliMCInfo* const infoMC, AliESDRecInfo * const
 {
   // Fill DCA comparison information
   AliExternalTrackParam *track = 0;
-  Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
+  //Double_t field      = AliTracker::GetBz(); // nominal Bz field [kG]
   Double_t kMaxD      = 123456.0; // max distance
 
   Double_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
@@ -234,7 +234,10 @@ void AliComparisonDCA::ProcessTPC(AliMCInfo* const infoMC, AliESDRecInfo * const
   {
     if ((track = new AliExternalTrackParam(*infoRC->GetESDtrack()->GetTPCInnerParam())) != 0 )
     {
-      Bool_t bDCAStatus = track->PropagateToDCA(&vertexMC,field,kMaxD,dca,cov);
+      
+      //Bool_t bDCAStatus = track->PropagateToDCA(&vertexMC,field,kMaxD,dca,cov);
+      Double_t field[3];  track->GetBxByBz(field); 
+      Bool_t bDCAStatus = track->PropagateToDCABxByBz(&vertexMC,field,kMaxD,dca,cov);
 
       if(bDCAStatus) {
 	 Double_t vDCAHisto[4]={dca[0],dca[1],mceta,mcpt};

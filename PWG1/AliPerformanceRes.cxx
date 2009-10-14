@@ -536,7 +536,9 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   // rotate inner track to local coordinate system
   // and propagate to the radius of the first track referenco of TPC
   Double_t trRadius = TMath::Sqrt(xyz[1] * xyz[1] + xyz[0] * xyz[0]);
-  Bool_t isOK = track->Propagate(alpha,trRadius,AliTracker::GetBz());
+  //Bool_t isOK = track->Propagate(alpha,trRadius,AliTracker::GetBz());
+  Double_t field[3]; track->GetBxByBz(field);
+  Bool_t isOK = track->PropagateBxByBz(alpha,trRadius,field);
   if(!isOK) return;
 
   Float_t mceta =  -TMath::Log(TMath::Tan(0.5 * ref0->Theta()));
@@ -635,7 +637,9 @@ void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *
   // rotate outer track to local coordinate system
   // and propagate to the radius of the last track reference of TPC
   Double_t trRadius = TMath::Sqrt(xyz[1] * xyz[1] + xyz[0] * xyz[0]);
-  Bool_t isOK = track->Propagate(alpha,trRadius,AliTracker::GetBz());
+  //Bool_t isOK = track->Propagate(alpha,trRadius,AliTracker::GetBz());
+  Double_t field[3]; track->GetBxByBz(field);
+  Bool_t isOK = track->PropagateBxByBz(alpha,trRadius,field);
   if(!isOK) return;
 
   Float_t mceta =  -TMath::Log(TMath::Tan(0.5 * ref0->Theta()));
@@ -742,8 +746,8 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   //
   if(!esdEvent) 
   {
-      AliDebug(AliLog::kError, "esdEvent not available");
-      return;
+    Error("Exec","esdEvent not available");
+    return;
   }
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
@@ -753,37 +757,38 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   if(bUseMC)
   {
     if(!mcEvent) {
-      AliDebug(AliLog::kError, "mcEvent not available");
+      Error("Exec","mcEvent not available");
       return;
     }
-
     // get MC event header
     header = mcEvent->Header();
     if (!header) {
-      AliDebug(AliLog::kError, "Header not available");
+      Error("Exec","Header not available");
       return;
     }
     // MC particle stack
     stack = mcEvent->Stack();
     if (!stack) {
-      AliDebug(AliLog::kError, "Stack not available");
+      Error("Exec","Stack not available");
       return;
     }
-
     // get MC vertex
     genHeader = header->GenEventHeader();
     if (!genHeader) {
-      AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");
+      Error("Exec","Could not retrieve genHeader from Header");
       return;
     }
     genHeader->PrimaryVertex(vtxMC);
-
-  } // end bUseMC
+  } 
+  else {
+    Error("Exec","MC information required!");
+    return;
+  }
   
   // use ESD friends
   if(bUseESDfriend) {
     if(!esdFriend) {
-      AliDebug(AliLog::kError, "esdFriend not available");
+      Error("Exec","esdFriend not available");
       return;
     }
   }
@@ -845,9 +850,9 @@ void AliPerformanceRes::Analyse() {
   {
     for(Int_t j=5; j<10; j++) 
     {
-      if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
+      //if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
       fResolHisto->GetAxis(9)->SetRangeUser(0.16,10.); // pt threshold
-      //if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(0.,0.9); // eta window
+      if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(0.,0.9); // eta window
       //fResolHisto->GetAxis(9)->SetRangeUser(0.16,3.); // pt window
       if(GetAnalysisMode() == 3) fResolHisto->GetAxis(5)->SetRangeUser(-80.,80.); // y range
 

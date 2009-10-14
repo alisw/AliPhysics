@@ -211,6 +211,7 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
   // 
   // MC histograms for efficiency studies
   //
+  if(!mcEvent) return;
  
   AliStack *stack = mcEvent->Stack();
   if (!stack) {
@@ -307,6 +308,7 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
   // 
   // MC histograms for efficiency studies
   //
+  if(!mcEvent) return;
  
   AliStack *stack = mcEvent->Stack();
   if (!stack) {
@@ -420,6 +422,7 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
   // 
   // MC histograms for efficiency studies
   //
+  if(!mcEvent) return;
  
   AliStack *stack = mcEvent->Stack();
   if (!stack) {
@@ -512,6 +515,7 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
   // 
   // MC histograms for efficiency studies
   //
+  if(!mcEvent) return;
  
   AliStack *stack = mcEvent->Stack();
   if (!stack) {
@@ -580,8 +584,8 @@ void AliPerformanceEff::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   //
   if(!esdEvent) 
   {
-      AliDebug(AliLog::kError, "esdEvent not available");
-      return;
+    Error("Exec","esdEvent not available");
+    return;
   }
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
@@ -591,35 +595,38 @@ void AliPerformanceEff::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   if(bUseMC)
   {
     if(!mcEvent) {
-      AliDebug(AliLog::kError, "mcEvent not available");
+      Error("Exec","mcEvent not available");
       return;
     }
     // get MC event header
     header = mcEvent->Header();
     if (!header) {
-      AliDebug(AliLog::kError, "Header not available");
+      Error("Exec","Header not available");
       return;
     }
     // MC particle stack
     stack = mcEvent->Stack();
     if (!stack) {
-      AliDebug(AliLog::kError, "Stack not available");
+      Error("Exec","Stack not available");
       return;
     }
     // get MC vertex
     genHeader = header->GenEventHeader();
     if (!genHeader) {
-      AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");
+      Error("Exec","Could not retrieve genHeader from Header");
       return;
     }
     genHeader->PrimaryVertex(vtxMC);
-
-  } // end bUseMC
+  } 
+  else {
+    Error("Exec","MC information required!");
+    return;
+  } 
 
   // use ESD friends
   if(bUseESDfriend) {
     if(!esdFriend) {
-      AliDebug(AliLog::kError, "esdFriend not available");
+      Error("Exec","esdFriend not available");
       return;
     }
   }
