@@ -20,11 +20,7 @@ AliHLTCaloMapper.h \
 AliHLTCaloDefinitions.h \
 AliHLTCaloSanityInspector.h \
 AliHLTCaloSharedMemoryInterfacev2.h \
-AliHLTCaloFourier.h \
-AliHLTCaloProcessor.h \
-AliHLTCaloRcuProcessor.h
-
-
+AliHLTCaloFourier.h
 
 
 ## all source files of this module
