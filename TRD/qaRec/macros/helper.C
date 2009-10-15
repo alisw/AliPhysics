@@ -8,6 +8,9 @@
 #include <fstream>
 #endif
 
+#ifndef HELPER_C
+#define HELPER_C
+
 //____________________________________________
 Int_t ParseOptions(Char_t *trd)
 {
@@ -52,8 +55,10 @@ void mergeProd(const Char_t *mark, const Char_t *files, const Int_t kBatch = 20)
   while(getline(file, filename)){
     if(Int_t(filename.find(mark)) < 0) continue;
     if(!nbatch){
-      if(fFM) fFM = new(fFM) TFileMerger(kTRUE);
-      else fFM = new TFileMerger(kTRUE);
+      if(fFM){ 
+        delete fFM;
+        fFM = new TFileMerger(kTRUE);
+      } else fFM = new TFileMerger(kTRUE);
       fFM->OutputFile(Form("%s/%d_%s",  gSystem->ExpandPathName("$PWD"), jbatch, mark));
     }
     fFM->AddFile(filename.c_str()); nbatch++;
@@ -81,3 +86,5 @@ void mergeProd(const Char_t *mark, const Char_t *files, const Int_t kBatch = 20)
   fFM->Merge();
   delete fFM;
 }
+
+#endif
