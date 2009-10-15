@@ -85,8 +85,6 @@ private:
   void    Init() ;
   void    InitParameters() ;
   void    PrintTrackSegments(Option_t *option) ;
-  Double_t GetBz()const ; //Return approximate field, Teken from AliTracker
-  void GetBxByBz(const Double_t r[3], Double_t b[3])const ; //Return precize field, taken from AliTracker
  
 
 private:  

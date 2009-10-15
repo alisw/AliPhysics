@@ -283,7 +283,7 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
     emcClu->GetGlobalPosition(gposRecPoint,gmat);
     Double_t gposTrack[3] ; 
 
-    Double_t bz = GetBz() ; //B-Field for approximate matching
+    Double_t bz = AliTracker::GetBz() ; //B-Field for approximate matching
     Double_t b[3]; 
     for (Int_t i=0; i<nt; i++) {
       AliESDtrack *esdTrack=fESD->GetTrack(i);
@@ -693,34 +693,4 @@ void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
     }	
   }
 }
-//__________________________________________________________________________
-Double_t AliPHOSTrackSegmentMakerv1::GetBz()const
-{
-  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-  if (!fld) return 0.5*kAlmost0Field;
-  Double_t bz = fld->SolenoidField();
-  return TMath::Sign(0.5*kAlmost0Field,bz) + bz;
-}
-//__________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::GetBxByBz(const Double_t r[3], Double_t b[3])const {
-  //------------------------------------------------------------------
-  // Returns Bx, By and Bz (kG) at the point "r" .
-  //------------------------------------------------------------------
-  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-  if (!fld) {
-     b[0] = b[1] = 0.;
-     b[2] = 0.5*kAlmost0Field;
-     return;
-  }
-
-  if (fld->IsUniform()) {
-     b[0] = b[1] = 0.;
-     b[2] = fld->SolenoidField();
-  }  else {
-     fld->Field(r,b);
-  }
-  b[2] = (TMath::Sign(0.5*kAlmost0Field,b[2]) + b[2]);
-  return;
-}
-
 
