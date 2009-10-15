@@ -102,12 +102,13 @@ private:
 };
 
 #define EVENT_HEADER_VERSION(AA,BB) AliRawEventHeaderV##AA##_##BB
+#define INIT_HEADER_VARS
 
 #define START_EVENT_HEADER(AA,BB) \
 class AliRawEventHeaderV##AA##_##BB:public AliRawEventHeaderBase { \
 public: \
  AliRawEventHeaderV##AA##_##BB():AliRawEventHeaderBase(),		\
-   INIT_VARS_##AA##_##BB {};	\
+   INIT_HEADER_VARS {};	\
    virtual ~AliRawEventHeaderV##AA##_##BB() {}; \
 private:
 
