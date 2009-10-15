@@ -87,6 +87,7 @@ AliEventPoolOTF::AliEventPoolOTF(const AliEventPoolOTF& obj):
     fLHCCuts(0),
     fDetectorCuts(0),
     fEventCuts(0),
+    fGridTags(0),
     fTagDirectory(0),
     fValueMin(),
     fValueMax(),

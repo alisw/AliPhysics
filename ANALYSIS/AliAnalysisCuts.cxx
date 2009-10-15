@@ -41,6 +41,6 @@ AliAnalysisCuts::AliAnalysisCuts(const char* name, const char* title):
 }
 
 AliAnalysisCuts::AliAnalysisCuts(const AliAnalysisCuts& obj):
-    TNamed(obj)
+    TNamed(obj), fFilterMask(0), fSelected(kFALSE)
 {
 }
