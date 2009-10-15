@@ -166,6 +166,13 @@ public:
   TH3F *fh3pOverE3;     //! p/E for track-cluster matches vs pt vs mult
   TH3F *fh3EOverp3;     //! E/p for track-cluster matches vs pt vs mult
 
+  //JLK
+  TH2F *fh2pOverE;      //! p/E for track-cluster matches vs pt vs mult         
+  TH2F *fh2EOverp;      //! E/p for track-cluster matches vs pt vs mult         
+  TH2F *fh2pOverE2;     //! p/E for track-cluster matches vs pt vs mult         
+  TH2F *fh2EOverp2;     //! E/p for track-cluster matches vs pt vs mult         
+  //JLK
+
   TH1F *fh1dR;         //! distance between projected track and cluster
   TH2F *fh2EledEdx;    //! dE/dx vs. momentum for electron candidates
   TH2F *fh2MatchdEdx;  //! dE/dx vs. momentum for all matches
@@ -216,6 +223,7 @@ public:
 
   //B-Jet histograms
   TH2F* fhJetType;       //! How many of each tag were found vs jet pt
+  TH2F* fhLeadJetType;   //! How many leading of each tag were found vs jet pt
   TH2F* fhBJetXsiFF;     //! B-tagged jet FF with xsi = log(pt_Jet/pt_Track)
   TH2F* fhBJetPtFF;      //! B-tagged jet FF with pt_Track
   TH2F* fhBJetEtaPhi;    //! B-tagged jet eta-phi distribution
@@ -232,6 +240,7 @@ public:
   TH2F * fhEtaConversion; //! Pseudorapidity of conversion electron vs tranvserse momentum 
 
   //Histograms for comparison to tracking detectors
+  TH2F* fhPtTrack;         //!Pt distribution of reco tracks with MC-ID
   TH2F* fhPtHadron;        //!Pt distribution of reco charged hadrons
                            //!(pi,k,p) in EMCAL acceptance
   TH2F* fhPtNPEleTPC;      //!Pt distribution of non-photonic reco electrons using
@@ -272,7 +281,7 @@ public:
   TH2F* fhMCXYConversion; //! XY distribution of conversion electrons
   TH2F* fhMCRadPtConversion; //! Radius vs. pT distribution of conversion electrons
 
-  ClassDef(AliAnaElectron,11)
+  ClassDef(AliAnaElectron,12)
 
 } ;
  
