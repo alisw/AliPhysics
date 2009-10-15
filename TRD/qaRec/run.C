@@ -71,11 +71,11 @@
 #include "TRD/qaRec/macros/AddTRDresolution.C"
 #include "TRD/qaRec/macros/AddTRDcheckPID.C"
 
-#include "../../PWG1/macros/AddPerformanceTask.C"
+#include "PWG1/macros/AddPerformanceTask.C"
 #endif
 
-#include "macros/AliTRDperformanceTrain.h"
-#include "../../PWG1/macros/AddPerformanceTask.h"
+#include "TRD/qaRec/macros/AliTRDperformanceTrain.h"
+#include "PWG1/macros/AddPerformanceTask.h"
 
 
 Bool_t MEM = kFALSE;
@@ -102,7 +102,7 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   if(gSystem->Load("libANALYSISalice.so")<0) return;
 
   Bool_t fHasMCdata = HasReadMCData(trd);
-  Bool_t fHasFriends = HasReadFriendData(trd);
+  //Bool_t fHasFriends = HasReadFriendData(trd);
   
   // INITIALIZATION OF RUNNING ENVIRONMENT
   //TODO We should use the GRP if available similar to AliReconstruction::InitGRP()!
