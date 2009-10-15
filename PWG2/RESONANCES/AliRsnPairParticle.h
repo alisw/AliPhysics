@@ -32,6 +32,7 @@ class AliRsnPairParticle : public TObject
     Double_t          GetInvMassMC(Double_t m1, Double_t m2);
 
     Double_t          GetEtot(Double_t m1, Double_t m2) const;
+    Double_t          GetEtot(Double_t mass) const {return TMath::Sqrt(mass*mass + GetP2());}
     Double_t          GetP2() const {return (fPTot[0]*fPTot[0] + fPTot[1]*fPTot[1] + fPTot[2]*fPTot[2]);}
     Double_t          GetPt2() const {return (fPTot[0]*fPTot[0] + fPTot[1]*fPTot[1]);}
     Double_t          GetP() const {return TMath::Sqrt(GetP2());}
@@ -46,8 +47,10 @@ class AliRsnPairParticle : public TObject
     }
     Double_t          GetEta() const {Double_t a = TMath::Tan(0.5*GetTheta()); if (a > 0.) return -TMath::Log(a); return 999999.0;}
     Double_t          GetY(Double_t m1, Double_t m2) const {return 0.5*TMath::Log((GetEtot(m1,m2)+fPTot[2])/(GetEtot(m1,m2)-fPTot[2]));}
+    Double_t          GetY(Double_t mass) const {return 0.5*TMath::Log((GetEtot(mass)+fPTot[2])/(GetEtot(mass)-fPTot[2]));}
 
     Double_t          GetEtotMC(Double_t m1, Double_t m2) const;
+    Double_t          GetEtotMC(Double_t mass) const {return TMath::Sqrt(mass*mass + GetP2MC());}
     Double_t          GetP2MC() const {return (fPTotMC[0]*fPTotMC[0] + fPTotMC[1]*fPTotMC[1] + fPTotMC[2]*fPTotMC[2]);}
     Double_t          GetPt2MC() const {return (fPTotMC[0]*fPTotMC[0] + fPTotMC[1]*fPTotMC[1]);}
     Double_t          GetPMC() const {return TMath::Sqrt(GetP2MC());}
@@ -62,6 +65,7 @@ class AliRsnPairParticle : public TObject
     }
     Double_t          GetEtaMC() const {return -TMath::Log(TMath::Tan(0.5*GetThetaMC()));}
     Double_t          GetYMC(Double_t m1, Double_t m2) const {return 0.5*TMath::Log((GetEtotMC(m1,m2)+fPTotMC[2])/(GetEtotMC(m1,m2)-fPTotMC[2]));}
+    Double_t          GetYMC(Double_t mass) const {return 0.5*TMath::Log((GetEtotMC(mass)+fPTot[2])/(GetEtotMC(mass)-fPTot[2]));}
 
     Double_t          GetAngle() const;
 

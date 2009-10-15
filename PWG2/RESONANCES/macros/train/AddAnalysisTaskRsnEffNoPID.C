@@ -1,6 +1,6 @@
 Bool_t AddAnalysisTaskRsnEffNoPID
 (
-  const char      *outFile = "eff_nopid.root",    // output file name
+  const char *outFile = "eff_nopid.root",    // output file name
 )
 {
   // retrieve analysis manager
@@ -26,11 +26,9 @@ Bool_t AddAnalysisTaskRsnEffNoPID
   task->AddPairDef(pairDef3);
 
   // axis definition
-  //AliRsnFunctionAxis *axisIM   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairInvMass,    1000,  0.0,   2.0);
-  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,          100,  0.0,  10.0);
-  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          10, -1.0,   1.0);
-  AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,         8,  0.0, 200.0);
-  //task->AddAxis(axisIM);
+  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,      100,  0.0,  10.0);
+  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,      10, -1.0,   1.0);
+  AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,   500,  0.0, 500.0);
   task->AddAxis(axisMult);
   task->AddAxis(axisPt);
   task->AddAxis(axisEta);
