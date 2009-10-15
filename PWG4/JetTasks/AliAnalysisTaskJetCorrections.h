@@ -2,8 +2,10 @@
 #define ALIANALYSISTASKJETCORRECTIONS_H
 
 #include "AliAnalysisTaskSE.h"
-#include <iostream>
-#include <fstream>
+
+//
+// corrections to jet energy by sona 
+// 
 
 class AliJetFinder;
 class AliESDEvent;
@@ -44,12 +46,12 @@ class AliAnalysisTaskJetCorrections : public AliAnalysisTaskSE
 
   virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
 
-  virtual void SetBranchGen(char* c){fBranchGen = c;}
-  virtual void SetBranchRec(char* c){fBranchRec = c;}
+  virtual void SetBranchGen(const char* c){fBranchGen = c;}
+  virtual void SetBranchRec(const char* c){fBranchRec = c;}
 
   virtual Double_t SetR(Double_t b){fR = b; return fR;} 
 
-  virtual void GetThrustAxis(TVector3 &n01, TVector3 * pTrack, Int_t &nTracks);
+  virtual void GetThrustAxis(TVector3 &n01, TVector3 * pTrack,const Int_t &nTracks);
  private:
   AliAnalysisTaskJetCorrections(const AliAnalysisTaskJetCorrections&);
   AliAnalysisTaskJetCorrections& operator = (const AliAnalysisTaskJetCorrections&);
@@ -64,56 +66,55 @@ class AliAnalysisTaskJetCorrections : public AliAnalysisTaskSE
   TString       fBranchRec;  // AOD branch name for reconstructed
   TString       fBranchGen;  // AOD brnach for genereated
   
-  Bool_t        fUseAODInput;
+  Bool_t        fUseAODInput; // use aod input not output
+  Double_t fR; // radius
+  TList * fList; // output list
+ 
+  Int_t fGlobVar; //
+  Double_t fXsection; //
 
-  Double_t fR;
-  TList * fList;
 
-  Int_t fGlobVar;
-  Double_t fXsection;
+  TH1F * fhEGen; //
+  TH1F * fhERec; //
+  TH1F * fhEGenRest; //
+  TH1F * fhERecRest; //
+  TH1F * fhEsumGenRest; //
+  TH1F * fhEsumRecRest; //
 
+  TH2F * fhE2vsE1Gen; //
+  TH2F * fhE2vsE1Rec; //
+  TH2F * fhE2E1vsEsumGen; //
+  TH2F * fhE2E1vsEsumRec; //
+  TH2F * fhE2E1vsE1Gen; //
+  TH2F * fhE2E1vsE1Rec; //
+  TH2F * fhE2E1vsdPhiGen; //
+  TH2F * fhE2E1vsdPhiRec; //
 
-  TH1F * fhEGen;
-  TH1F * fhERec;
-  TH1F * fhEGenRest;
-  TH1F * fhERecRest;
-  TH1F * fhEsumGenRest;
-  TH1F * fhEsumRecRest;
+  TH2F * fhTrackBalance2; //
+  TH2F * fhTrackBalance3; //
 
-  TH2F * fhE2vsE1Gen;
-  TH2F * fhE2vsE1Rec;
-  TH2F * fhE2E1vsEsumGen;
-  TH2F * fhE2E1vsEsumRec;
-  TH2F * fhE2E1vsE1Gen;
-  TH2F * fhE2E1vsE1Rec;
-  TH2F * fhE2E1vsdPhiGen;
-  TH2F * fhE2E1vsdPhiRec;
+  TH2F * fhEt1Et22; //
+  TH2F * fhEt1Et23; //
 
-  TH2F * fhTrackBalance2;
-  TH2F * fhTrackBalance3;
-
-  TH2F * fhEt1Et22;
-  TH2F * fhEt1Et23;
-
-  TProfile * fhECorrJet10[3];
-  TProfile * fhECorrJet05[3];
-  TProfile * fhECorrJet01[3];
-  TProfile * fhECorrJet001[3];
+  TProfile * fhECorrJet10[3]; //
+  TProfile * fhECorrJet05[3]; //
+  TProfile * fhECorrJet01[3]; //
+  TProfile * fhECorrJet001[3]; //
   
-  TProfile * fhdEvsErec10[3];
-  TProfile * fhdEvsErec05[3];
-  TProfile * fhdEvsErec01[3];
-  TProfile * fhdEvsErec001[3];
+  TProfile * fhdEvsErec10[3]; //
+  TProfile * fhdEvsErec05[3]; //
+  TProfile * fhdEvsErec01[3]; //
+  TProfile * fhdEvsErec001[3]; //
 
-  TH2F * fhdPhidEta10[3];
-  TH2F * fhdPhidEta05[3];
-  TH2F * fhdPhidEta01[3];
-  TH2F * fhdPhidEta001[3];
+  TH2F * fhdPhidEta10[3]; //
+  TH2F * fhdPhidEta05[3]; //
+  TH2F * fhdPhidEta01[3]; //
+  TH2F * fhdPhidEta001[3]; //
 
-  TH2F * fhdPhidEtaPt10[3];
-  TH2F * fhdPhidEtaPt05[3];
-  TH2F * fhdPhidEtaPt01[3];
-  TH2F * fhdPhidEtaPt001[3];
+  TH2F * fhdPhidEtaPt10[3]; //
+  TH2F * fhdPhidEtaPt05[3]; //
+  TH2F * fhdPhidEtaPt01[3]; //
+  TH2F * fhdPhidEtaPt001[3]; //
 
   ClassDef(AliAnalysisTaskJetCorrections, 1)
 };
