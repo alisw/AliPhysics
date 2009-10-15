@@ -548,7 +548,7 @@ void AliEveEventManager::Open()
       } else
 	cdb->SetDefaultStorage(fgCdbUri);
       if (cdb->IsDefaultStorageSet() == kFALSE)
-	throw kEH + "CDB initialization failed.";
+	throw kEH + "CDB initialization failed for '" + fgCdbUri + "'.";
     }
     
     if (fgCdbUri.BeginsWith("local://"))
