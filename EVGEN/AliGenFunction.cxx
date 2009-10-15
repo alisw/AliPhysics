@@ -83,6 +83,42 @@ AliGenFunction::AliGenFunction():
   //
   SetNumberParticles(1);
 }
+
+AliGenFunction::AliGenFunction(const AliGenFunction& func):
+  AliGenerator(),
+  fBkG(func.fBkG),  
+  fFMomentum(func.fFMomentum),           // momentum distribution function 
+  fFPhi(func.fFPhi),                     // phi distribution function
+  fFTheta(func.fFTheta),                 // theta distribution function
+  fFPosition(func.fFPosition),           // position distribution function 
+  fFPdg(func.fFPdg),                     // pdg distribution function  
+  fRefRadius(func.fRefRadius),           // reference radius to be crossed
+  fZmin(func.fZmin),                     // minimal z at reference radius
+  fZmax(func.fZmax),                     // z at reference radius
+  fMaxTrial(10000)                       // maximal number of attempts
+{
+    // Copy constructor
+    SetNumberParticles(1);
+}
+
+AliGenFunction & AliGenFunction::operator=(const AliGenFunction& func)
+{
+    // Assigment operator
+      if(&func == this) return *this;
+      fBkG       = func.fBkG;
+      fFMomentum = func.fFMomentum; 
+      fFPhi      = func.fFPhi;      
+      fFTheta    = func.fFTheta;    
+      fFPosition = func.fFPosition; 
+      fFPdg      = func.fFPdg;      
+      fRefRadius = func.fRefRadius;      
+      fZmin      = func.fZmin;                
+      fZmax      = func.fZmax;                
+      fMaxTrial  = func.fMaxTrial;
+      return *this;
+}
+
+
 //-----------------------------------------------------------------------------
 void AliGenFunction::Generate()
 {
@@ -99,7 +135,7 @@ void AliGenFunction::Generate()
     Float_t posf[3];
     Double_t pos[3];
     Int_t pdg;
-    Double_t ptot,pt,  phi, theta; 
+    Double_t ptot, pt,  phi, theta; 
     //
     ptot     = fFMomentum->GetRandom();
     phi      = fFPhi->GetRandom();

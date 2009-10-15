@@ -24,6 +24,8 @@ class AliGenFunction : public AliGenerator
 public:
 
   AliGenFunction();
+  AliGenFunction(const AliGenFunction& func);
+  AliGenFunction &operator=(const AliGenFunction& func);
   virtual ~AliGenFunction() {}
   virtual void Generate();
   virtual void Init();
@@ -37,7 +39,7 @@ private:
   Float_t fBkG;                 // field in kGauss
   TF1 *   fFMomentum;           // momentum distribution function
   TF1 *   fFPhi;                // phi distribution function
-  TF1 *   fFTheta;                // phi distribution function
+  TF1 *   fFTheta;              // theta distribution function
   TF3 *   fFPosition;           // position distribution function 
   TF1 *   fFPdg;                // pdg distribution function  
   //
