@@ -1,3 +1,21 @@
+//////////////////////////////////////////////////////
+//
+// PID performance checker of the TRD
+//
+// Performs checks of ESD information for TRD-PID and recalculate PID based on OCDB information
+// Also provides performance plots on detector based on the PID information - for the moment only 
+// MC source is used but V0 is also possible. Here is a list of detector performance checks
+//   - Integrated dE/dx per chamber
+//   - <PH> as function of time bin and local radial position
+//   - number of clusters/tracklet 
+//   - number of tracklets/track 
+//
+// Author : Alex Wilk <wilka@uni-muenster.de>
+//          Alex Bercuci <A.Bercuci@gsi.de>
+//          Markus Fasel <M.Fasel@gsi.de>
+//
+///////////////////////////////////////////////////////
+
 #include "TAxis.h"
 #include "TROOT.h"
 #include "TPDGCode.h"
@@ -31,9 +49,6 @@
 
 #include "AliTRDcheckPID.h"
 #include "info/AliTRDtrackInfo.h"
-
-// calculate pion efficiency at 90% electron efficiency for 11 momentum bins
-// this task should be used with simulated data only
 
 ClassImp(AliTRDcheckPID)
 
@@ -164,7 +179,7 @@ TObjArray * AliTRDcheckPID::Histos(){
   if(!(h = (TH2F*)gROOT->FindObject("NClus"))){
     h = new TH2F("NClus", "", 
       xBins, -0.5, xBins - 0.5,
-      AliTRDtrackerV1::GetNTimeBins(), -0.5, AliTRDtrackerV1::GetNTimeBins() - 0.5);
+      50, -0.5, 49.5);
   } else h->Reset();
   fContainer->AddAt(h, kNClus);
 
@@ -193,7 +208,7 @@ TObjArray * AliTRDcheckPID::Histos(){
 
 
 //________________________________________________________________________
-Bool_t AliTRDcheckPID::CheckTrackQuality(const AliTRDtrackV1* track) 
+Bool_t AliTRDcheckPID::CheckTrackQuality(const AliTRDtrackV1* track) const
 {
   //
   // Check if the track is ok for PID
@@ -210,6 +225,7 @@ Bool_t AliTRDcheckPID::CheckTrackQuality(const AliTRDtrackV1* track)
 //________________________________________________________________________
 Int_t AliTRDcheckPID::CalcPDG(AliTRDtrackV1* track) 
 {
+// Documentation to come
 
   track -> SetReconstructor(fReconstructor);
   (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork();
@@ -283,7 +299,7 @@ TH1 *AliTRDcheckPID::PlotLQ(const AliTRDtrackV1 *track)
   }
   if(!IsInRange(momentum)) return 0x0;
 
-  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(/*kFALSE*/);
+  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(kFALSE);
   cTrack.CookPID();
   if(cTrack.GetNumberOfTrackletsPID() < fMinNTracklets) return 0x0;
 
@@ -446,17 +462,17 @@ TH1 *AliTRDcheckPID::PlotdEdx(const AliTRDtrackV1 *track)
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   if(!IsInRange(momentum)) return 0x0;
 
-  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(/*kFALSE*/);
-  Float_t SumdEdx = 0;
+  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(kFALSE);
+  Float_t sumdEdx = 0;
   Int_t iBin = FindBin(species, momentum);
   AliTRDseedV1 *tracklet = 0x0;
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
-    SumdEdx = 0;
+    sumdEdx = 0;
     tracklet = cTrack.GetTracklet(iChamb);
     if(!tracklet) continue;
     tracklet -> CookdEdx(AliTRDpidUtil::kLQslices);
-    for(Int_t i = 3; i--;) SumdEdx += tracklet->GetdEdx()[i];
-    hdEdx -> Fill(iBin, SumdEdx);
+    for(Int_t i = 3; i--;) sumdEdx += tracklet->GetdEdx()[i];
+    hdEdx -> Fill(iBin, sumdEdx);
   }
   return hdEdx;
 }
@@ -497,7 +513,7 @@ TH1 *AliTRDcheckPID::PlotdEdxSlice(const AliTRDtrackV1 *track)
   }
   if(!IsInRange(momentum)) return 0x0;
 
-  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(/*kFALSE*/);
+  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(kFALSE);
   Int_t iMomBin = fMomentumAxis->FindBin(momentum);
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   Float_t *fdEdx;
@@ -740,7 +756,9 @@ TH1 *AliTRDcheckPID::PlotMomBin(const AliTRDtrackV1 *track)
 //________________________________________________________
 Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
 {
-  Bool_t FIRST = kTRUE;
+// Steering function to retrieve performance plots
+
+  Bool_t kFIRST = kTRUE;
   TGraphErrors *g = 0x0;
   TAxis *ax = 0x0;
   TObjArray *arr = 0x0;
@@ -754,27 +772,29 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     TVirtualPad *pad = ((TVirtualPad*)l->At(0));pad->cd();
     pad->SetMargin(0.1, 0.01, 0.1, 0.01);
 
-    TLegend *legEff = new TLegend(.7, .7, .98, .98);
+    TLegend *legEff = new TLegend(.65, .75, .98, .98);
     legEff->SetBorderSize(1);
+    legEff->SetFillColor(0);
+    h=new TH1S("hEff", "", 1, .5, 11.);
+    h->SetLineColor(1);h->SetLineWidth(1);
+    ax = h->GetXaxis();
+    ax->SetTitle("p [GeV/c]");
+    ax->SetRangeUser(.5, 11.);
+    ax->SetMoreLogLabels();
+    ax = h->GetYaxis();
+    ax->SetTitle("#epsilon_{#pi} [%]");
+    ax->CenterTitle();
+    ax->SetRangeUser(1.e-2, 10.);
+    h->Draw();
     content = (TList *)fGraph->FindObject("Efficiencies");
     if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kLQ))) break;
     if(!g->GetN()) break;
-    legEff->SetHeader("PID Method");
-    g->Draw("apl");
-    ax = g->GetHistogram()->GetXaxis();
-    ax->SetTitle("p (GeV/c)");
-    ax->SetRangeUser(.5, 11.);
-    ax->SetMoreLogLabels();
-    ax = g->GetHistogram()->GetYaxis();
-    ax->SetTitle("#epsilon_{#pi}");
-    ax->SetRangeUser(1.e-3, 1.e-1);
-    legEff->AddEntry(g, "2D LQ", "pl");
+    legEff->SetHeader("PID Source");
+    g->Draw("pc"); legEff->AddEntry(g, "LQ 2D", "pl");
     if(! (g = (TGraphErrors*)content->At(AliTRDpidUtil::kNN))) break;
-    g->Draw("pl");
-    legEff->AddEntry(g, "NN", "pl");
+    g->Draw("pc"); legEff->AddEntry(g, "NN", "pl");
     if(! (g = (TGraphErrors*)content->At(AliTRDpidUtil::kESD))) break;
-    g->Draw("p");
-    legEff->AddEntry(g, "ESD", "pl");
+    g->Draw("p"); legEff->AddEntry(g, "ESD", "pl");
     legEff->Draw();
     gPad->SetLogy();
     gPad->SetLogx();
@@ -783,19 +803,21 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
 
     pad = ((TVirtualPad*)l->At(1));pad->cd();
     pad->SetMargin(0.1, 0.01, 0.1, 0.01);
+    h=new TH1S("hThr", "", 1, .5, 11.);
+    h->SetLineColor(1);h->SetLineWidth(1);
+    ax = h->GetXaxis();
+    ax->SetTitle("p [GeV/c]");
+    ax->SetMoreLogLabels();
+    ax = h->GetYaxis();
+    ax->SetTitle("Threshold [%]");
+    ax->SetRangeUser(5.e-2, 1.);
+    h->Draw();
     content = (TList *)fGraph->FindObject("Thresholds");
     if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kLQ))) break;
     if(!g->GetN()) break;
-    g->Draw("apl");
-    ax = g->GetHistogram()->GetXaxis();
-    ax->SetTitle("p (GeV/c)");
-    ax->SetRangeUser(.5, 11.5);
-    ax->SetMoreLogLabels();
-    ax = g->GetHistogram()->GetYaxis();
-    ax->SetTitle("threshold (%)");
-    ax->SetRangeUser(5.e-2, 1.);
+    g->Draw("pc");
     if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kNN))) break;
-    g->Draw("pl");
+    g->Draw("pc");
     if(!(g = (TGraphErrors*)content->At(AliTRDpidUtil::kESD))) break;
     g->Draw("p");
     gPad->SetLogx();
@@ -807,7 +829,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
     // save 2.0 GeV projection as reference
     TLegend *legdEdx = new TLegend(.7, .7, .98, .98);
     legdEdx->SetBorderSize(1);
-    FIRST = kTRUE;
+    kFIRST = kTRUE;
     if(!(h2 = (TH2F*)(fContainer->At(kdEdx)))) break;
     legdEdx->SetHeader("Particle Species");
     gPad->SetMargin(0.1, 0.01, 0.1, 0.01);
@@ -817,15 +839,15 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
       if(!h1->GetEntries()) continue;
       h1->Scale(1./h1->Integral());
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
-      if(FIRST){
+      if(kFIRST){
         h1->GetXaxis()->SetTitle("dE/dx (a.u.)");
         h1->GetYaxis()->SetTitle("<Entries>");
       }
-      h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
+      h = (TH1F*)h1->DrawClone(kFIRST ? "c" : "samec");
       legdEdx->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
-      FIRST = kFALSE;
+      kFIRST = kFALSE;
     }
-    if(FIRST) break;
+    if(kFIRST) break;
     legdEdx->Draw();
     gPad->SetLogy();
     gPad->SetLogx(0);
@@ -848,7 +870,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
 
     TVirtualPad *pad = ((TVirtualPad*)l->At(0));pad->cd();
     pad->SetMargin(0.1, 0.01, 0.1, 0.01);
-    FIRST = kTRUE;
+    kFIRST = kTRUE;
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
       h1 = h2->ProjectionY(Form("pyt%d", is), bin, bin);
@@ -856,19 +878,19 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
       h1->SetMarkerStyle(24);
       h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
-      if(FIRST){
+      if(kFIRST){
         h1->GetXaxis()->SetTitle("t_{drift} [100*ns]");
         h1->GetYaxis()->SetTitle("<dQ/dt> [a.u.]");
       }
-      h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
+      h = (TH1F*)h1->DrawClone(kFIRST ? "c" : "samec");
       legPH->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "pl");
-      FIRST = kFALSE;
+      kFIRST = kFALSE;
     }
 
     pad = ((TVirtualPad*)l->At(1));pad->cd();
     pad->SetMargin(0.1, 0.01, 0.1, 0.01);
     if(!(h2 = (TProfile2D*)(arr->At(1)))) break;
-    FIRST = kTRUE;
+    kFIRST = kTRUE;
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       Int_t bin = FindBin(is, 2.);
       h1 = h2->ProjectionY(Form("pyx%d", is), bin, bin);
@@ -876,15 +898,15 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
       h1->SetMarkerStyle(24);
       h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
-      if(FIRST){
+      if(kFIRST){
         h1->GetXaxis()->SetTitle("x_{drift} [cm]");
         h1->GetYaxis()->SetTitle("<dQ/dl> [a.u./cm]");
       }
-      h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
-      FIRST = kFALSE;
+      h = (TH1F*)h1->DrawClone(kFIRST ? "c" : "samec");
+      kFIRST = kFALSE;
     }
 
-    if(FIRST) break;
+    if(kFIRST) break;
     legPH->Draw();
     gPad->SetLogy(0);
     gPad->SetLogx(0);
@@ -894,9 +916,11 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
   }
   case kNClus:{
     // save 2.0 GeV projection as reference
-    TLegend *legNClus = new TLegend(.4, .7, .68, .98);
+    TLegend *legNClus = new TLegend(.13, .7, .4, .98);
     legNClus->SetBorderSize(1);
-    FIRST = kTRUE;
+    legNClus->SetFillColor(0);
+
+    kFIRST = kTRUE;
     if(!(h2 = (TH2F*)(fContainer->At(kNClus)))) break;
     legNClus->SetHeader("Particle Species");
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
@@ -907,13 +931,18 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
       //h1->SetMarkerStyle(24);
       //h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
-      if(FIRST) h1->GetXaxis()->SetTitle("N^{cl}/tracklet");
-      if(FIRST) h1->GetYaxis()->SetTitle("Prob. [%]");
-      h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
+      if(kFIRST){ 
+        h1->GetXaxis()->SetTitle("N^{cl}/tracklet");
+        h1->GetYaxis()->SetTitle("Prob. [%]");
+        h = (TH1F*)h1->DrawClone("c");
+        h->SetMaximum(55.);
+        h->GetXaxis()->SetRangeUser(0., 35.);
+        kFIRST = kFALSE;
+      } else h = (TH1F*)h1->DrawClone("samec");
+
       legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
-      FIRST = kFALSE;
     }
-    if(FIRST) break;
+    if(kFIRST) break;
     legNClus->Draw();
     gPad->SetLogy(0);
     gPad->SetLogx(0);
@@ -927,7 +956,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
   case kNTracklets:{
     TLegend *legNClus = new TLegend(.4, .7, .68, .98);
     legNClus->SetBorderSize(1);
-    FIRST = kTRUE;
+    kFIRST = kTRUE;
     if(!(h2 = (TH2F*)(fContainer->At(kNTracklets)))) break;
     legNClus->SetHeader("Particle Species");
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
@@ -938,16 +967,16 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
       //h1->SetMarkerStyle(24);
       //h1->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
       h1->SetLineColor(AliTRDCalPID::GetPartColor(is));
-      if(FIRST){ 
+      if(kFIRST){ 
         h1->GetXaxis()->SetTitle("N^{trklt}/track");
         h1->GetXaxis()->SetRangeUser(1.,6.);
         h1->GetYaxis()->SetTitle("Prob. [%]");
       }
-      h = (TH1F*)h1->DrawClone(FIRST ? "c" : "samec");
+      h = (TH1F*)h1->DrawClone(kFIRST ? "c" : "samec");
       legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
-      FIRST = kFALSE;
+      kFIRST = kFALSE;
     }
-    if(FIRST) break;
+    if(kFIRST) break;
     legNClus->Draw();
     gPad->SetLogy(0);
     gPad->SetLogx(0);
@@ -984,19 +1013,21 @@ Bool_t AliTRDcheckPID::PostProcess()
 }
 
 //________________________________________________________________________
-void AliTRDcheckPID::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray *results, Float_t electron_efficiency){
-  fUtil->SetElectronEfficiency(electron_efficiency);
+void AliTRDcheckPID::EvaluatePionEfficiency(TObjArray * const histoContainer, TObjArray *results, Float_t electronEfficiency){
+// Process PID information for pion efficiency
+
+  fUtil->SetElectronEfficiency(electronEfficiency);
 
   Color_t colors[3] = {kBlue, kGreen+2, kRed};
   Int_t markerStyle[3] = {7, 7, 24};
-  TString MethodName[3] = {"LQ", "NN", "ESD"};
+  TString methodName[3] = {"LQ", "NN", "ESD"};
   // efficiency graphs
   TGraphErrors *g, *gPtrEff[3], *gPtrThres[3];
   TObjArray *eff = new TObjArray(3); eff->SetOwner(); eff->SetName("Efficiencies");
   results->AddAt(eff, 0);
   for(Int_t iMethod = 0; iMethod < 3; iMethod++){
     eff->AddAt(g = gPtrEff[iMethod] = new TGraphErrors(), iMethod);
-    g->SetName(Form("efficiency_%s", MethodName[iMethod].Data()));
+    g->SetName(Form("efficiency_%s", methodName[iMethod].Data()));
     g->SetLineColor(colors[iMethod]);
     g->SetMarkerColor(colors[iMethod]);
     g->SetMarkerStyle(markerStyle[iMethod]);
@@ -1007,14 +1038,14 @@ void AliTRDcheckPID::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray
   results->AddAt(thres, 1);
   for(Int_t iMethod = 0; iMethod < 3; iMethod++){
     thres->AddAt(g = gPtrThres[iMethod] = new TGraphErrors(), iMethod);
-    g->SetName(Form("threshold_%s", MethodName[iMethod].Data()));
+    g->SetName(Form("threshold_%s", methodName[iMethod].Data()));
     g->SetLineColor(colors[iMethod]);
     g->SetMarkerColor(colors[iMethod]);
     g->SetMarkerStyle(markerStyle[iMethod]);
   }
   
   Float_t mom = 0.;
-  TH1D *Histo1=0x0, *Histo2=0x0;
+  TH1D *histo1=0x0, *histo2=0x0;
 
   TH2F *hPtr[3];
   hPtr[0] = (TH2F*)histoContainer->At(AliTRDpidUtil::kLQ);
@@ -1028,17 +1059,17 @@ void AliTRDcheckPID::EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray
 	  binPi = fMomentumAxis->GetNbins() * AliPID::kPion + iMom + 1;
     for(Int_t iMethod = 0; iMethod < 3; iMethod++){
       // Calculate the Pion Efficiency at 90% electron efficiency for each Method
-      Histo1 = hPtr[iMethod] -> ProjectionY(Form("%s_ele", MethodName[iMethod].Data()), binEl, binEl);
-      Histo2 = hPtr[iMethod] -> ProjectionY(Form("%s_pio", MethodName[iMethod].Data()), binPi, binPi);
+      histo1 = hPtr[iMethod] -> ProjectionY(Form("%s_ele", methodName[iMethod].Data()), binEl, binEl);
+      histo2 = hPtr[iMethod] -> ProjectionY(Form("%s_pio", methodName[iMethod].Data()), binPi, binPi);
 
-      if(!fUtil->CalculatePionEffi(Histo1, Histo2)) continue;
+      if(!fUtil->CalculatePionEffi(histo1, histo2)) continue;
      
-      gPtrEff[iMethod]->SetPoint(iMom, mom, fUtil->GetPionEfficiency());
-      gPtrEff[iMethod]->SetPointError(iMom, 0., fUtil->GetError());
+      gPtrEff[iMethod]->SetPoint(iMom, mom, 1.e2*fUtil->GetPionEfficiency());
+      gPtrEff[iMethod]->SetPointError(iMom, 0., 1.e2*fUtil->GetError());
       gPtrThres[iMethod]->SetPoint(iMom, mom, fUtil->GetThreshold());
       gPtrThres[iMethod]->SetPointError(iMom, 0., 0.);
 
-      if(fDebugLevel>=2) Printf(Form("Pion Efficiency for 2-dim LQ is : %f +/- %f\n\n", MethodName[iMethod].Data()), fUtil->GetPionEfficiency(), fUtil->GetError());
+      if(fDebugLevel>=2) Printf(Form("Pion Efficiency for 2-dim LQ is : %f +/- %f\n\n", methodName[iMethod].Data()), fUtil->GetPionEfficiency(), fUtil->GetError());
     }
   }
 }

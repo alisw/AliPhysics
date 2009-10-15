@@ -210,12 +210,13 @@ AliTRDclusterResolution::AliTRDclusterResolution(const char *name, const char *t
   ,fDet(-1)
   ,fExB(0.)
   ,fVdrift(0.)
-  ////////////
   ,fLy(0)
   ,fX(0.)
   ,fY(0.)
   ,fZ(0.)
 {
+// Constructor
+
   memset(fR, 0, 4*sizeof(Float_t));
   memset(fP, 0, 4*sizeof(Float_t));
   // time drift axis
@@ -232,6 +233,8 @@ AliTRDclusterResolution::AliTRDclusterResolution(const char *name, const char *t
 //_______________________________________________________
 AliTRDclusterResolution::~AliTRDclusterResolution()
 {
+// Destructor
+
   if(fCanvas) delete fCanvas;
   if(fAt) delete fAt;
   if(fResults){
@@ -256,6 +259,8 @@ void AliTRDclusterResolution::CreateOutputObjects()
 //_______________________________________________________
 Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
 {
+// Steering function to retrieve performance plots
+
   if(!fResults) return kFALSE;
   TLegend *leg = 0x0;
   TList *l = 0x0;
@@ -381,6 +386,8 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
 //_______________________________________________________
 TObjArray* AliTRDclusterResolution::Histos()
 {
+// Retrieve histograms array if already build or build it
+
   if(fContainer) return fContainer;
   fContainer = new TObjArray(kNtasks);
   //fContainer->SetOwner(kTRUE);
@@ -467,6 +474,8 @@ TObjArray* AliTRDclusterResolution::Histos()
 //_______________________________________________________
 void AliTRDclusterResolution::Exec(Option_t *)
 {
+// Fill container histograms
+
   if(!HasExB()) AliWarning("ExB was not set. Call SetExB() before running the task.");
 
   Int_t det, t;
@@ -494,6 +503,8 @@ void AliTRDclusterResolution::Exec(Option_t *)
     if(TMath::Abs(dydx-fExB) < kDtgPhi){
       h3 = (TH3S*)fContainer->At(kQRes);
       h3->Fill(TMath::Log(q), dy, dy/TMath::Sqrt(covcl[0]));
+
+      printf("q=%f Log(q)=%f dy=%f pull=%f\n",q, TMath::Log(q), dy, dy/TMath::Sqrt(covcl[0]));
     }
 
     // do not use problematic clusters in resolution analysis

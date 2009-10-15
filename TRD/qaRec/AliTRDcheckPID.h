@@ -3,7 +3,7 @@
 
 //////////////////////////////////////////////////////
 //
-// Task to check PID performance of the TRD
+// PID performance checker of the TRD
 //
 // Author : Alex Wilk <wilka@uni-muenster.de>
 //          Alex Bercuci <A.Bercuci@gsi.de>
@@ -23,6 +23,7 @@ class AliTRDReconstructor;
 class AliTRDpidUtil;
 class AliTRDcheckPID : public AliTRDrecoTask 
 {
+public:
   // Plots registered for this task
   enum{
      kEfficiency     =  0     // pi Efficiency plot
@@ -35,7 +36,6 @@ class AliTRDcheckPID : public AliTRDrecoTask
     ,kNTracklets     =  7     // Number of tracklets per track
     ,kNPlots         =  8     // Number of plots for this tasks 
   };
-public:
   AliTRDcheckPID();
   virtual ~AliTRDcheckPID();
   
@@ -58,10 +58,10 @@ public:
   void SetRequireMinNTracklets(Int_t mintracklets) { fMinNTracklets = mintracklets; }
   void SetRequireMaxNTracklets(Int_t maxtracklets) { fMaxNTracklets = maxtracklets; }
 
-  TObjArray *GetGraphs() { return fGraph; };
+  TObjArray *GetGraphs() const { return fGraph; };
   //TObjArray *GetHistos() { return fContainer; };
   virtual TObjArray *Histos();
-  void EvaluatePionEfficiency(TObjArray *histoContainer, TObjArray *results, Float_t electron_efficiency);
+  void EvaluatePionEfficiency(TObjArray * const histoContainer, TObjArray *results, Float_t electronEfficiency);
   inline void SetMomentumBinning(Int_t nBins, Double_t *bins);
   inline Int_t FindBin(Int_t species, Double_t momentum);
   inline Bool_t IsInRange(Double_t momentum);
@@ -71,7 +71,7 @@ private:
   AliTRDcheckPID& operator=(const AliTRDcheckPID&);    // not implemented
 
   Int_t  CalcPDG(AliTRDtrackV1* track = 0x0);
-  Bool_t CheckTrackQuality(const AliTRDtrackV1* track = 0x0);
+  Bool_t CheckTrackQuality(const AliTRDtrackV1* track = 0x0) const;
   
   AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
   AliTRDpidUtil       *fUtil;              //! utility class for PID calculations

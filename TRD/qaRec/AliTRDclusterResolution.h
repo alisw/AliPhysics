@@ -1,6 +1,12 @@
 #ifndef ALITRDCLUSTERRESOLUTION_H
 #define ALITRDCLUSTERRESOLUTION_H
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  TRD cluster error parameterization                  
+//  Authors:                                                              //
+//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
+////////////////////////////////////////////////////////////////////////////
 
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"

@@ -1,5 +1,5 @@
-#ifndef AliTRDALIGNMENTTASK_H
-#define AliTRDALIGNMENTTASK_H
+#ifndef ALITRDALIGNMENTTASK_H
+#define ALITRDALIGNMENTTASK_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -28,13 +28,12 @@ public:
   
   void    CreateOutputObjects();
   void    Exec(Option_t *opt);
-  TObjArray*  Histos(); 
   TH1*    PlotTrackPoints(const AliTRDtrackV1 *track=0x0);
   Bool_t  PostProcess(){return kTRUE;}
   void    Terminate(Option_t *);
   
 private:
-  Bool_t IsIdenticalWithOneOf(AliTrackPoint *p, AliTrackPointArray *parray, int nmax);
+  Bool_t IsIdenticalWithOneOf(AliTrackPoint * const p, AliTrackPointArray *parray, int nmax);
   AliTRDalignmentTask(const AliTRDalignmentTask&);
   AliTRDalignmentTask& operator=(const AliTRDalignmentTask&);
 

@@ -7,9 +7,12 @@
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-//  Resolution QA                                                     //
+//  TRD Resolution performance                                            //
 //                                                                        //
-////////////////////////////////////////////////////////////////////////////
+//  Authors:                                                              //
+//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
+//    Markus Fasel <M.Fasel@gsi.de>                                       //
+//                                                                        //                ////////////////////////////////////////////////////////////////////////////
 
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"

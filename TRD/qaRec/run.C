@@ -32,7 +32,8 @@
 //   Alex Bercuci (A.Bercuci@gsi.de) 
 //   Markus Fasel (m.Fasel@gsi.de) 
 
-#ifndef __CINT__
+#if ! defined (__CINT__) || defined (__MAKECINT__)
+//#ifndef __CINT__
 #include <Riostream.h>
 
 #include "TStopwatch.h"
@@ -64,6 +65,7 @@
 #include "TRD/AliTRDtrackerV1.h"
 #include "TRD/AliTRDcalibDB.h"
 
+#include "TRD/qaRec/macros/AliTRDperformanceTrain.h"
 #include "TRD/qaRec/macros/AddTRDcheckESD.C"
 #include "TRD/qaRec/macros/AddTRDinfoGen.C"
 #include "TRD/qaRec/macros/AddTRDcheckDET.C"
@@ -74,8 +76,7 @@
 #include "PWG1/macros/AddPerformanceTask.C"
 #endif
 
-#include "TRD/qaRec/macros/AliTRDperformanceTrain.h"
-#include "PWG1/macros/AddPerformanceTask.h"
+//#include "PWG1/macros/AddPerformanceTask.h"
 
 
 Bool_t MEM = kFALSE;

@@ -1,3 +1,28 @@
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//                                                                        //
+//  Basic checks for tracking and detector performance                    //
+//  
+//     For the moment (15.10.2009) the following checks are implemented    //
+//       - Number of clusters/track
+//       - Number of clusters/tracklet
+//       - Number of tracklets/track from different sources (Barrel, StandAlone)
+//       - Number of findable tracklets
+//       - Number of tracks per event and TRD sector
+//       - <PH>
+//       - Chi2 distribution for tracks
+//       - Charge distribution per cluster and tracklet
+//       - Number of events and tracks per trigger source 
+//       - Trigger purity
+//       - Track and Tracklet propagation status
+//
+//  Authors:                                                              //
+//    Anton Andronic <A.Andronic@gsi.de>                                  //
+//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
+//    Markus Fasel <M.Fasel@gsi.de>                                       //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include <TAxis.h>
 #include <TCanvas.h>
 #include <TFile.h>
@@ -42,18 +67,7 @@
 #include <cstdio>
 #include <iostream>
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-//  Reconstruction QA                                                     //
-//                                                                        //
-//  Task doing basic checks for tracking and detector performance         //
-//                                                                        //
-//  Authors:                                                              //
-//    Anton Andronic <A.Andronic@gsi.de>                                  //
-//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
-//    Markus Fasel <M.Fasel@gsi.de>                                       //
-//                                                                        //
-////////////////////////////////////////////////////////////////////////////
+ClassImp(AliTRDcheckDET)
 
 //_______________________________________________________
 AliTRDcheckDET::AliTRDcheckDET():
@@ -521,7 +535,7 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
       Float_t momentum = 0.;
       Int_t pdg = 0;
       Int_t kinkIndex = fESD ? fESD->GetKinkIndex() : 0;
-      UShort_t TPCncls = fESD ? fESD->GetTPCncls() : 0;
+      UShort_t nclsTPC = fESD ? fESD->GetTPCncls() : 0;
       if(fMC){
         if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
         pdg = fMC->GetPDG();
@@ -534,7 +548,7 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
         << "theta="			<< theta
         << "phi="				<< phi
         << "kinkIndex="	<< kinkIndex
-        << "TPCncls="		<< TPCncls
+        << "TPCncls="		<< nclsTPC
         << "nclusters=" << nclusters
         << "\n";
     }
@@ -642,10 +656,10 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
   // a distance epsilon in the direction that we want to fit
   //
   const Float_t epsilon = 0.01;   // dead area tolerance
-  const Float_t epsilon_R = 1;    // shift in radial direction of the anode wire position (Kalman filter only)
-  const Float_t delta_y = 0.7;    // Tolerance in the track position in y-direction
-  const Float_t delta_z = 7.0;    // Tolerance in the track position in z-direction (Padlength)
-  Double_t x_anode[AliTRDgeometry::kNlayer] = {300.2, 312.8, 325.4, 338.0, 350.6, 363.2}; // Take the default X0
+  const Float_t epsilonR = 1;    // shift in radial direction of the anode wire position (Kalman filter only)
+  const Float_t deltaY = 0.7;    // Tolerance in the track position in y-direction
+  const Float_t deltaZ = 7.0;    // Tolerance in the track position in z-direction (Padlength)
+  Double_t xAnode[AliTRDgeometry::kNlayer] = {300.2, 312.8, 325.4, 338.0, 350.6, 363.2}; // Take the default X0
  
   if(track) fTrack = track;
   if(!fTrack){
@@ -678,7 +692,7 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
   if(((fESD->GetStatus() & AliESDtrack::kTRDout) > 0) && !((fESD->GetStatus() & AliESDtrack::kTRDin) > 0)){
     // stand alone track
     for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
-      xyz[0] = x_anode[il];
+      xyz[0] = xAnode[il];
       points[il].SetXYZ(xyz);
     }
     AliTRDtrackerV1::FitRiemanTilt(const_cast<AliTRDtrackV1 *>(fTrack), 0x0, kTRUE, 6, points);
@@ -688,26 +702,26 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
     // 2 Steps:
     // -> Kalman inwards
     // -> Kalman outwards
-    AliTRDtrackV1 copy_track(*fTrack);  // Do Kalman on a (non-constant) copy of the track
-    AliTrackPoint points_inward[6], points_outward[6];
+    AliTRDtrackV1 copyTrack(*fTrack);  // Do Kalman on a (non-constant) copy of the track
+    AliTrackPoint pointsInward[6], pointsOutward[6];
     for(Int_t il = AliTRDgeometry::kNlayer; il--;){
       // In order to avoid complications in the Kalman filter if the track points have the same radial
       // position like the tracklets, we have to shift the radial postion of the anode wire by epsilon
       // in the direction we want to go
       // The track points have to be in reverse order for the Kalman Filter inwards
-      xyz[0] = x_anode[AliTRDgeometry::kNlayer - il - 1] - epsilon_R;
-      points_inward[il].SetXYZ(xyz);
-      xyz[0] = x_anode[il] + epsilon_R;
-      points_outward[il].SetXYZ(xyz);
+      xyz[0] = xAnode[AliTRDgeometry::kNlayer - il - 1] - epsilonR;
+      pointsInward[il].SetXYZ(xyz);
+      xyz[0] = xAnode[il] + epsilonR;
+      pointsOutward[il].SetXYZ(xyz);
     }
     /*for(Int_t ipt = 0; ipt < AliTRDgeometry::kNlayer; ipt++)
       printf("%d. X = %f\n", ipt, points[ipt].GetX());*/
     // Kalman inwards
-    AliTRDtrackerV1::FitKalman(&copy_track, 0x0, kFALSE, 6, points_inward);
-    memcpy(points, points_inward, sizeof(AliTrackPoint) * 6); // Preliminary store the inward results in the Array points
+    AliTRDtrackerV1::FitKalman(&copyTrack, 0x0, kFALSE, 6, pointsInward);
+    memcpy(points, pointsInward, sizeof(AliTrackPoint) * 6); // Preliminary store the inward results in the Array points
     // Kalman outwards
-    AliTRDtrackerV1::FitKalman(&copy_track, 0x0, kTRUE, 6, points_inward);
-    memcpy(points, points_outward, sizeof(AliTrackPoint) * AliTRDgeometry::kNlayer);
+    AliTRDtrackerV1::FitKalman(&copyTrack, 0x0, kTRUE, 6, pointsInward);
+    memcpy(points, pointsOutward, sizeof(AliTrackPoint) * AliTRDgeometry::kNlayer);
   }
   for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
     y = points[il].GetY();
@@ -719,15 +733,15 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
     zmin = pp->GetRowEnd() + epsilon; 
     zmax = pp->GetRow0() - epsilon;
     // ignore y-crossing (material)
-    if((z + delta_z > zmin && z - delta_z < zmax) && (y + delta_y > ymin && y - delta_y < ymax)) nFindable++;
+    if((z + deltaZ > zmin && z - deltaZ < zmax) && (y + deltaY > ymin && y - deltaY < ymax)) nFindable++;
       if(fDebugLevel > 3){
-        Double_t pos_tracklet[2] = {tracklet ? tracklet->GetYfit(0) : 0, tracklet ? tracklet->GetZfit(0) : 0};
+        Double_t posTracklet[2] = {tracklet ? tracklet->GetYfit(0) : 0, tracklet ? tracklet->GetZfit(0) : 0};
         Int_t hasTracklet = tracklet ? 1 : 0;
         (*fDebugStream)   << "FindableTracklets"
           << "layer="     << il
-          << "ytracklet=" << pos_tracklet[0]
+          << "ytracklet=" << posTracklet[0]
           << "ytrack="    << y
-          << "ztracklet=" << pos_tracklet[1]
+          << "ztracklet=" << posTracklet[1]
           << "ztrack="    << z
           << "tracklet="  << hasTracklet
           << "\n";
@@ -788,8 +802,8 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
     while((c = tracklet->NextCluster())){
       if(!c->IsInChamber()) continue;
       Int_t localtime        = c->GetLocalTimeBin();
-      Double_t absolute_charge = TMath::Abs(c->GetQ());
-      h->Fill(localtime, absolute_charge);
+      Double_t absoluteCharge = TMath::Abs(c->GetQ());
+      h->Fill(localtime, absoluteCharge);
       if(fDebugLevel > 3){
         Double_t distance[2];
         GetDistanceToTracklet(distance, tracklet, c);
@@ -807,7 +821,7 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
           << "Detector="	<< detector
           << "crossing="	<< crossing
           << "Timebin="		<< localtime
-          << "Charge="		<< absolute_charge
+          << "Charge="		<< absoluteCharge
           << "momentum="	<< momentum
           << "pdg="				<< pdg
           << "theta="			<< theta
@@ -904,16 +918,16 @@ TH1 *AliTRDcheckDET::PlotChargeTracklet(const AliTRDtrackV1 *track){
   }
   AliTRDseedV1 *tracklet = 0x0;
   AliTRDcluster *c = 0x0;
-  Double_t Qtot = 0;
+  Double_t qTot = 0;
   Int_t nTracklets =fTrack->GetNumberOfTracklets();
   for(Int_t itl = 0x0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
-    Qtot = 0.;
+    qTot = 0.;
     for(Int_t ic = AliTRDseedV1::kNclusters; ic--;){
       if(!(c = tracklet->GetClusters(ic))) continue;
-      Qtot += TMath::Abs(c->GetQ());
+      qTot += TMath::Abs(c->GetQ());
     }
-    h->Fill(Qtot);
+    h->Fill(qTot);
     if(fDebugLevel > 3){
       Int_t crossing = (Int_t)tracklet->IsRowCross();
       Int_t detector = tracklet->GetDetector();
@@ -922,7 +936,7 @@ TH1 *AliTRDcheckDET::PlotChargeTracklet(const AliTRDtrackV1 *track){
       Float_t momentum = 0.;
       Int_t pdg = 0;
       Int_t kinkIndex = fESD ? fESD->GetKinkIndex() : 0;
-      UShort_t TPCncls = fESD ? fESD->GetTPCncls() : 0;
+      UShort_t nclsTPC = fESD ? fESD->GetTPCncls() : 0;
       if(fMC){
 	      if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
         pdg = fMC->GetPDG();
@@ -936,8 +950,8 @@ TH1 *AliTRDcheckDET::PlotChargeTracklet(const AliTRDtrackV1 *track){
         << "theta="			<< theta
         << "phi="				<< phi
         << "kinkIndex="	<< kinkIndex
-        << "TPCncls="		<< TPCncls
-        << "QT="        << Qtot
+        << "TPCncls="		<< nclsTPC
+        << "QT="        << qTot
         << "\n";
     }
   }
@@ -983,7 +997,7 @@ void AliTRDcheckDET::SetRecoParam(AliTRDrecoParam *r)
 }
 
 //________________________________________________________
-void AliTRDcheckDET::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tracklet, AliTRDcluster *c)
+void AliTRDcheckDET::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 * const tracklet, AliTRDcluster * const c)
 {
   Float_t x = c->GetX();
   dist[0] = c->GetY() - tracklet->GetYat(x);

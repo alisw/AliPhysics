@@ -13,6 +13,18 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+/////////////////////////////////////////////////////
+//
+// Check basic detector results at ESD level
+//   - Geometrical efficiency  
+//   - Tracking efficiency  
+//   - PID efficiency  
+//   - Refit efficiency  
+//
+// Author
+//   Alex Bercuci <A.Bercuci@gsi.de>
+//
+//////////////////////////////////////////////////////
 
 #include <TClonesArray.h>
 #include <TObjArray.h>
@@ -43,7 +55,6 @@
 
 ClassImp(AliTRDcheckESD)
 
-const Int_t   AliTRDcheckESD::fgkNgraphs = 4;
 const Float_t AliTRDcheckESD::fgkxTPC = 290.;
 const Float_t AliTRDcheckESD::fgkxTOF = 365.;
 FILE* AliTRDcheckESD::fgFile = 0x0;
@@ -67,6 +78,7 @@ AliTRDcheckESD::AliTRDcheckESD():
 //____________________________________________________________________
 AliTRDcheckESD::~AliTRDcheckESD()
 {
+// Destructor
   if(fHistos){
     //fHistos->Delete();
     delete fHistos;
@@ -103,6 +115,11 @@ void AliTRDcheckESD::CreateOutputObjects()
 //____________________________________________________________________
 TGraphErrors* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
 {
+// Retrieve graph with "id"
+// Possible options are :
+//   "b" - build graph if none found
+//   "c" - clear existing graph
+
   Bool_t kBUILD = strstr(opt, "b"), // build graph if none found
          kCLEAR = strstr(opt, "c"); // clear existing graph
 
@@ -116,7 +133,7 @@ TGraphErrors* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
     ,"TRD refit efficiency (TRDrefit/TRDin)"
   };
   const Int_t ngr = sizeof(name)/sizeof(Char_t*);
-  if(ngr != fgkNgraphs){
+  if(ngr != kNgraphs){
     AliWarning("No of graphs defined different from definition");
     return 0x0;
   }
@@ -168,11 +185,11 @@ void AliTRDcheckESD::Exec(Option_t *){
       }
     }
   }
-  Bool_t TRDin(0), TRDout(0), TRDpid(0);
+  Bool_t bTRDin(0), bTRDout(0), bTRDpid(0);
 
   AliESDtrack *esdTrack = 0x0;
   for(Int_t itrk = 0; itrk < fESD->GetNumberOfTracks(); itrk++){
-    TRDin=0;TRDout=0;TRDpid=0;
+    bTRDin=0;bTRDout=0;bTRDpid=0;
     esdTrack = fESD->GetTrack(itrk);
 
 //     if(esdTrack->GetNcls(1)) nTPC++;
@@ -236,9 +253,9 @@ void AliTRDcheckESD::Exec(Option_t *){
       if(ref->LocalX() > fgkxTOF){ // track skipping TRD fiducial volume
         ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
       } else {
-        TRDin=1;
-        if(esdTrack->GetNcls(2)) TRDout=1;
-        if(esdTrack->GetTRDntrackletsPID()>=4) TRDpid=1;
+        bTRDin=1;
+        if(esdTrack->GetNcls(2)) bTRDout=1;
+        if(esdTrack->GetTRDntrackletsPID()>=4) bTRDpid=1;
       }
     } else { // track stopped in TPC 
       ref = mcParticle->GetTrackReference(TMath::Max(iref-1, 0));
@@ -248,12 +265,12 @@ void AliTRDcheckESD::Exec(Option_t *){
 
     TH2 *h = (TH2I*)fHistos->At(kTRDstat);
     if(status & AliESDtrack::kTPCout) h->Fill(pt, kTPCout);
-    if(/*status & AliESDtrack::k*/TRDin) h->Fill(pt, kTRDin);
-    if(/*status & AliESDtrack::k*/TRDout){ 
+    if(/*status & AliESDtrack::k*/bTRDin) h->Fill(pt, kTRDin);
+    if(/*status & AliESDtrack::k*/bTRDout){ 
       ((TH1*)fHistos->At(kNCl))->Fill(esdTrack->GetNcls(2));
       h->Fill(pt, kTRDout);
     }
-    if(/*status & AliESDtrack::k*/TRDpid) h->Fill(pt, kTRDpid);
+    if(/*status & AliESDtrack::k*/bTRDpid) h->Fill(pt, kTRDpid);
     if(status & AliESDtrack::kTRDrefit) h->Fill(pt, kTRDref);
   }  
   PostData(0, fHistos);
@@ -262,6 +279,8 @@ void AliTRDcheckESD::Exec(Option_t *){
 //____________________________________________________________________
 TObjArray* AliTRDcheckESD::Histos()
 {
+// Retrieve histograms array if already build or build it
+
   if(fHistos) return fHistos;
 
   fHistos = new TObjArray(kNhistos);
@@ -296,6 +315,8 @@ TObjArray* AliTRDcheckESD::Histos()
 //____________________________________________________________________
 Bool_t AliTRDcheckESD::Load(const Char_t *filename, const Char_t *name)
 {
+// Load data from performance file
+
   if(!TFile::Open(filename)){
     AliWarning(Form("Couldn't open file %s.", filename));
     return kFALSE;
@@ -313,6 +334,8 @@ Bool_t AliTRDcheckESD::Load(const Char_t *filename, const Char_t *name)
 //_______________________________________________________
 Bool_t AliTRDcheckESD::PutTrendValue(const Char_t *name, Double_t val, Double_t err)
 {
+// Dump trending value to default file
+
   if(!fgFile){
     fgFile = fopen("TRD.Performance.txt", "at");
   }
@@ -323,12 +346,14 @@ Bool_t AliTRDcheckESD::PutTrendValue(const Char_t *name, Double_t val, Double_t 
 //____________________________________________________________________
 void AliTRDcheckESD::Terminate(Option_t *)
 {
+// Steer post-processing 
+
   TObjArray *res = 0x0;
   if(!(res = (TObjArray*)fHistos->At(kResults))){
     AliWarning("Graph container missing.");
     return;
   }
-  if(!res->GetEntriesFast()) res->Expand(fgkNgraphs);
+  if(!res->GetEntriesFast()) res->Expand(kNgraphs);
   
   // geometrical efficiency
   TH2I *h2 = (TH2I*)fHistos->At(kTRDstat);
@@ -360,6 +385,8 @@ void AliTRDcheckESD::Terminate(Option_t *)
 //____________________________________________________________________
 void AliTRDcheckESD::Process(TH1 **h1, TGraphErrors *g)
 {
+// Generic function to process one reference plot
+
   Int_t n1 = 0, n2 = 0, ip=0;
   Double_t eff = 0.;
 
@@ -378,6 +405,8 @@ void AliTRDcheckESD::Process(TH1 **h1, TGraphErrors *g)
 //____________________________________________________________________
 void AliTRDcheckESD::PrintStatus(ULong_t status)
 {
+// Dump track status to stdout
+
   printf("ITS[i(%d) o(%d) r(%d)] TPC[i(%d) o(%d) r(%d) p(%d)] TRD[i(%d) o(%d) r(%d) p(%d) s(%d)] HMPID[o(%d) p(%d)]\n"
     ,Bool_t(status & AliESDtrack::kITSin)
     ,Bool_t(status & AliESDtrack::kITSout)

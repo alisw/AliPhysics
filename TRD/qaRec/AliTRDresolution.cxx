@@ -37,7 +37,7 @@
 //   //res->SetMCdata();
 //   //res->SetVerbose();
 //   //res->SetVisual();
-//   res->Load("TRD.TaskResolution.root");
+//   res->Load();
 //   if(!res->PostProcess()) return;
 //   res->GetRefFigure(0);
 // }  

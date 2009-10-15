@@ -1,15 +1,18 @@
-#ifndef AliTRDcheckESD_H
-#define AliTRDcheckESD_H
+#ifndef ALITRDCHECKESD_H
+#define ALITRDCHECKESD_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id: AliTRDcheckESD.h 27496 2008-07-22 08:35:45Z cblume $ */
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-//  Reconstruction QA                                                     //
-//                                                                        //
-////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+//
+// Check basic detector results at ESD level
+//
+// Author
+//   Alex Bercuci <A.Bercuci@gsi.de>
+//
+//////////////////////////////////////////////////////
 
 #ifndef ALIANALYSISTASK_H
 #include "AliAnalysisTask.h"
@@ -30,6 +33,7 @@ public:
    ,kTRDstat  // TRD tracks status
    ,kResults  // graphs as results
    ,kNhistos = 3 // number of histograms
+   ,kNgraphs = 4 // number of graphs
   };
   enum ETRDcheckESDbits {
     kTPCout = 1 // track left TPC
@@ -54,11 +58,10 @@ public:
   Bool_t        PutTrendValue(const Char_t *name, Double_t val, Double_t err);
   void          Terminate(Option_t *);
 
-  static const Int_t   fgkNgraphs;
-  static const Float_t fgkxTPC;
-  static const Float_t fgkxTOF;
-
 private:
+  static const Float_t fgkxTPC; // end radial position of TPC
+  static const Float_t fgkxTOF; // start radial position of TOF
+
   AliTRDcheckESD(const AliTRDcheckESD&);
   AliTRDcheckESD& operator=(const AliTRDcheckESD&);
   void          Process(TH1 **h, TGraphErrors *g);

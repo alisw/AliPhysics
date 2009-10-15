@@ -4,6 +4,15 @@
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
 #endif
+////////////////////////////////////////////////////////////////////////////
+//  Basic checks for tracking and detector performance                    //
+//                                                                        //
+//  Authors:                                                              //
+//    Anton Andronic <A.Andronic@gsi.de>                                  //
+//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
+//    Markus Fasel <M.Fasel@gsi.de>                                       //
+////////////////////////////////////////////////////////////////////////////
+
 
 class TObjArray;
 class TH1;
@@ -44,8 +53,8 @@ public:
 
   virtual void ConnectInputData(const Option_t *);
   virtual void CreateOutputObjects();
-  virtual void Exec(Option_t *);
-  virtual void Terminate(Option_t *);
+  virtual void Exec(Option_t *opt);
+  virtual void Terminate(Option_t *opt);
 
   virtual TObjArray *Histos();
 
@@ -72,7 +81,7 @@ public:
 private:
   AliTRDcheckDET(const AliTRDcheckDET &);
   AliTRDcheckDET& operator=(const AliTRDcheckDET &);
-  void GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 *tracklet, AliTRDcluster *c);
+  void GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 * const tracklet, AliTRDcluster * const c);
   TH1* MakePlotChi2();
   TH1* MakePlotNTracklets();
   TH1* MakePlotPulseHeight();

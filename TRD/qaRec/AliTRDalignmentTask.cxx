@@ -13,6 +13,15 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+///////////////////////////////////////////////
+// TRD alignment task
+//
+// Some documentation
+//
+// Authors :
+//
+////////////////////////////////////////////////
+
 #include "TTreeStream.h"
 #include "TROOT.h"
 #include "TH1.h"
@@ -62,6 +71,8 @@ void AliTRDalignmentTask::CreateOutputObjects()
 //________________________________________________________
 void AliTRDalignmentTask::Exec(Option_t *opt)
 {
+// Documentation to come
+
   AliTRDrecoTask::Exec(opt);
   PostData(1, fTree);
 }
@@ -70,6 +81,8 @@ void AliTRDalignmentTask::Exec(Option_t *opt)
 //________________________________________________________
 TH1* AliTRDalignmentTask::PlotTrackPoints(const AliTRDtrackV1 *track)
 {
+// Documentation to come 
+
   if(track) fTrack = track;
   if(!fTrack){
     AliWarning("No Track defined.");
@@ -114,6 +127,8 @@ TH1* AliTRDalignmentTask::PlotTrackPoints(const AliTRDtrackV1 *track)
 //________________________________________________________
 void AliTRDalignmentTask::Terminate(Option_t *)
 {
+// Documentation to come
+
   if(fDebugStream){ 
     delete fDebugStream;
     fDebugStream = 0x0;
@@ -123,34 +138,9 @@ void AliTRDalignmentTask::Terminate(Option_t *)
 }
 
 
-//________________________________________________________
-TObjArray* AliTRDalignmentTask::Histos()
-{
-  return 0x0;
-/*  if(fContainer) return fContainer;
-
-  fContainer  = new TObjArray(3);
-
-  TH1 *h = 0x0;
-  
-  if(!(h = (TH1D*)gROOT->FindObject("cuttra"))){
-    h = new TH1D("cuttra","cuttra",20,0.5,20.5); 
-  } else h->Reset();
-
-  if(!(h = (TH1D*)gROOT->FindObject("cutpoi"))){
-    h = new TH1D("cutpoi","cutpoi",20,0.5,20.5);
-  } else h->Reset();
-
-  if(!(h = (TH2D*)gROOT->FindObject("modpop"))){
-    h = new TH2D("modpop","modpop",90,-0.5,89.5,30,-0.5,29.5);
-    h->SetXTitle("module nr");
-    h->SetYTitle("layer nr");
-  } else h->Reset();*/
-}
-
 
 //________________________________________________________
-Bool_t AliTRDalignmentTask::IsIdenticalWithOneOf(AliTrackPoint *p, AliTrackPointArray *parray, int nmax) {
+Bool_t AliTRDalignmentTask::IsIdenticalWithOneOf(AliTrackPoint * const p, AliTrackPointArray *parray, int nmax) {
 
   // Is the point p identical with one of the points on the list parray?
   // This is a fix for aliroot 4-16-Rev-01 (and before) writing some 
