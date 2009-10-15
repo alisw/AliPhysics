@@ -173,6 +173,9 @@ Bool_t AliAnalysisTaskJFSystematics::Notify()
   // Implemented Notify() to read the cross sections
   // and number of trials from pyxsec.root
   // 
+
+  fAvgTrials = 1; // reset for each file
+
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   Float_t xsection = 0;
   Float_t ftrials  = 1;
@@ -458,9 +461,9 @@ void AliAnalysisTaskJFSystematics::UserExec(Option_t */*option*/)
     }
   }// if we had the MCEvent
 
-  if(nTrials==1&&fAvgTrials>1) fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
-  else fh1Trials->Fill("#sum{ntrials}",nTrials); 
-
+  
+  fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
+  
   fh1PtHard->Fill(ptHard,eventW);
   fh1PtHardNoW->Fill(ptHard,1);
   fh1PtHardTrials->Fill(ptHard,nTrials);

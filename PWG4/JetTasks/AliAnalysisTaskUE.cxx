@@ -151,6 +151,7 @@ Bool_t AliAnalysisTaskUE::Notify()
   // Copy from AliAnalysisTaskJFSystematics
   // 
 
+  fAvgTrials = 1;
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   Float_t xsection = 0;
   Float_t ftrials  = 1;
@@ -254,9 +255,8 @@ void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
     }
   }
 
-  if(nTrials==1&&fAvgTrials>1) fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
-  else fh1Trials->Fill("#sum{ntrials}",nTrials); 
-  
+  fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
+    
 
   AnalyseUE();
   
