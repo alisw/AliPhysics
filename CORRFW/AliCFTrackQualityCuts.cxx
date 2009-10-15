@@ -448,7 +448,6 @@ void AliCFTrackQualityCuts::SelectionBitMap(TObject* obj)
   fTrackCuts->SetMaxChi2PerClusterTPC(fMaxChi2PerClusterTPC);
   fTrackCuts->SetMaxChi2PerClusterITS(fMaxChi2PerClusterITS);
   fTrackCuts->SetMaxCovDiagonalElements(fCovariance11Max,fCovariance22Max,fCovariance33Max,fCovariance44Max,fCovariance55Max);
-  if (isESDTrack) Bool_t ok = fTrackCuts->AcceptTrack(esdTrack);
 
 // // // remove following 5 lines when AliESDtrackCuts is updated
    Int_t    nClustersTPC = 0;
