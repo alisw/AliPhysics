@@ -134,7 +134,7 @@ void Config()
     gener->Init();
 
     // Field (L3 0.4 T)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
 
     // detectors - only the TPC is relevant
 

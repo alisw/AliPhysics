@@ -168,7 +168,7 @@ void Config()
                                                                                 
 // Field (L3 0.4 T)
     //Zero magnetic field
-    AliMagF* field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k5kGUniform);
+    AliMagF* field = new AliMagF("Maps","Maps", 0., 0., AliMagF::k5kGUniform);
     //    AliMagF* field = new AliMagF("Maps","Maps", 2, -1., -1., 10., smag);
     TGeoGlobalMagField::Instance()->SetField(field);
 

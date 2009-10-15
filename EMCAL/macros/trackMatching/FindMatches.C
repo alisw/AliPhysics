@@ -26,8 +26,8 @@ void FindMatches(const char *fileOut = "matchESD.root")
 	rl->LoadgAlice();
 	gAlice = rl->GetAliRun();
 	
-  	//AliMagF *magf = new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG);
-  	AliMagF *magf = new AliMagF("Maps","Maps", 2, 1., 1.);
+  	//AliMagF *magf = new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG);
+  	AliMagF *magf = new AliMagF("Maps","Maps", 1., 1.);
  	
 	//
 	// Open ESD file and recoveries TTree of ESD objects.

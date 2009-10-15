@@ -778,13 +778,13 @@ void HmpConfig::WriteConfig()
   WritePhys(pF); //physics processes
   
 //Field
-       if(fMagBG->GetButton(kFld0)->GetState())     fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",2, 0,1,10,AliMagF::k2kG));// NO field\n");
-  else if(fMagBG->GetButton(kFld2)->GetState())     fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",2, 1,1,10,AliMagF::k2kG));//0.2 Tesla field\n");
-  else if(fMagBG->GetButton(kFld4)->GetState())     fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",2, 1,1,10,AliMagF::k4kG));//0.4 Tesla field\n");
-  else if(fMagBG->GetButton(kFld5)->GetState())     fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",2, 1,1,10,AliMagF::k5kG));//0.5 Tesla field\n");
-  else if(fMagBG->GetButton(kFld_2)->GetState())    fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",2,-1,1,10,AliMagF::k2kG));//-0.2 Tesla field\n");
-  else if(fMagBG->GetButton(kFld_4)->GetState())    fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",2,-1,1,10,AliMagF::k4kG));//-0.4 Tesla field\n");
-  else if(fMagBG->GetButton(kFld_5)->GetState())    fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",2,-1,1,10,AliMagF::k5kG));//-0.5 Tesla field\n");
+       if(fMagBG->GetButton(kFld0)->GetState())     fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",0,0,AliMagF::k5kGUniform));// NO field\n");
+  else if(fMagBG->GetButton(kFld2)->GetState())     fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",1,1,AliMagF::k2kG));//0.2 Tesla field\n");
+       //  else if(fMagBG->GetButton(kFld4)->GetState())     fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",1,1,AliMagF::k4kG));//0.4 Tesla field\n");
+  else if(fMagBG->GetButton(kFld5)->GetState())     fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",1,1,AliMagF::k5kG));//0.5 Tesla field\n");
+  else if(fMagBG->GetButton(kFld_2)->GetState())    fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",-1,1,AliMagF::k2kG));//-0.2 Tesla field\n");
+       //  else if(fMagBG->GetButton(kFld_4)->GetState())    fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",-1,1,AliMagF::k4kG));//-0.4 Tesla field\n");
+  else if(fMagBG->GetButton(kFld_5)->GetState())    fprintf(pF,"  TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\",-1,1,AliMagF::k5kG));//-0.5 Tesla field\n");
   
   fprintf(pF,"  pAL->CdGAFile();\n\n");                                 //????       
 //Generator 

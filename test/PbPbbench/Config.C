@@ -119,6 +119,8 @@ const char * pprTrigConfName[] = {
 static PprRun_t srun = kHijing_per2;
 static PprRad_t srad = kGluonRadiation;
 static AliMagF::BMap_t smag = AliMagF::k5kG;
+static AliMagF::BeamType_t beamType = AliMagF::kBeamTypeAA;
+static Double_t            beamEnergy = 7000.*82./208;
 static Int_t    sseed = 12345; //Set 0 to use the current time
 static PprTrigConf_t strig = kDefaultPbPbTrig; // default pp trigger configuration
 
@@ -267,7 +269,8 @@ void Config()
     
     
 // Field
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, -1., -1., 10., smag));
+    TGeoGlobalMagField::Instance()->SetField
+      (new AliMagF("Maps","Maps", -1., -1., smag,beamType,beamEnergy));
     rl->CdGAFile();
 //
     Int_t   iABSO   = 1;

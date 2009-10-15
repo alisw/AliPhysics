@@ -58,7 +58,7 @@ void SetupCustom(Int_t run){
     bzfac=1;
     bz=5;
   }
-  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, bzfac, 1., 10., smag));
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", bzfac, 1., smag));
 
   printf("\n\nSET EXB FIELD\t%f\n\n", -bz);
   AliTPCcalibDB::Instance()->SetExBField(-bz);

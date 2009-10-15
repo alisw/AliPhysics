@@ -73,16 +73,15 @@ AliMagF::AliMagF():
 }
 
 //_______________________________________________________________________
-AliMagF::AliMagF(const char *name, const char* title, Int_t integ, 
-		 Double_t factorSol, Double_t factorDip, 
-		 Double_t fmax, BMap_t maptype, const char* path,
-		 BeamType_t bt, Double_t be):
+AliMagF::AliMagF(const char *name, const char* title, Double_t factorSol, Double_t factorDip, 
+		 BMap_t maptype, BeamType_t btype, Double_t benergy, Int_t integ, Double_t fmax, 
+		 const char* path):
   TVirtualMagField(name),
   fMeasuredMap(0),
   fMapType(maptype),
   fSolenoid(0),
-  fBeamType(bt),
-  fBeamEnergy(be),
+  fBeamType(btype),
+  fBeamEnergy(benergy),
   //
   fInteg(integ),
   fPrecInteg(1),
@@ -109,6 +108,11 @@ AliMagF::AliMagF(const char *name, const char* title, Int_t integ,
   }
   if (fInteg == 0) fPrecInteg = 0;
   //
+  if (fBeamEnergy<=0 && fBeamType!=kNoBeamField) {
+    if      (fBeamType == kBeamTypepp) fBeamEnergy = 7000.; // max proton energy
+    else if (fBeamType == kBeamTypeAA) fBeamEnergy = 5500;  // max PbPb energy
+    AliInfo("Maximim possible beam energy for requested beam is assumed");
+  } 
   const char* parname = 0;
   //  
   if      (fMapType == k2kG) parname = fDipoleOFF ? "Sol12_Dip0_Hole":"Sol12_Dip6_Hole";
@@ -129,7 +133,8 @@ AliMagF::AliMagF(const char *name, const char* title, Int_t integ,
 	       factorSol,(fMapType==k5kG||fMapType==k5kGUniform)?5.:2.,
 	       fDipoleOFF ? "OFF":"ON",factorDip,fMapType==k5kGUniform?" |Constant Field!":""));
   AliInfo(Form("Machine B fields for %s beam (%.0f GeV): QGrad: %.4f Dipole: %.4f",
-	       bt==kBeamTypeAA ? "A-A":(bt==kBeamTypepp ? "p-p":"OFF"),be,fQuadGradient,fDipoleField));
+	       fBeamType==kBeamTypeAA ? "A-A":(fBeamType==kBeamTypepp ? "p-p":"OFF"),
+	       fBeamEnergy,fQuadGradient,fDipoleField));
 }
 
 //_______________________________________________________________________
@@ -239,7 +244,7 @@ AliMagF& AliMagF::operator=(const AliMagF& src)
 //_______________________________________________________________________
 void AliMagF::InitMachineField(BeamType_t btype, Double_t benergy)
 {
-  if (btype==kNoBeamField || benergy<1.) {
+  if (btype==kNoBeamField) {
     fQuadGradient = fDipoleField = fCCorrField = fACorr1Field = fACorr2Field = 0.;
     return;
   }
@@ -496,7 +501,7 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
   // LHC and DCS08 conventions have opposite dipole polarities
   if ( GetPolarityConvention() != convention) sclDip = -sclDip;
   //
-  return new AliMagF("MagneticFieldMap", ttl, 2, sclL3, sclDip, 10., map, path,btype,beamenergy);
+  return new AliMagF("MagneticFieldMap", ttl,sclL3,sclDip,map,btype,beamenergy,2,10.,path);
   //
 }
 

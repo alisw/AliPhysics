@@ -80,7 +80,7 @@ void ConfigCommon(Bool_t setRootGeometry = kTRUE)
   // ============================= 
 
     // Field (L3 0.4 T)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
 
     Int_t   iABSO  =  1;
     Int_t   iDIPO  =  1;

@@ -321,7 +321,7 @@ int AliHLTTPCOfflineTrackerComponent::Configure(const char* arguments)
 	// TODO: does the factor need adjustment?
 	const AliMagF* currentMap = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
 	if (!currentMap) {
-	  AliMagF* field = new AliMagF("MagneticFieldMap", "BMap", 2, 1., 1., 10., map);
+	  AliMagF* field = new AliMagF("MagneticFieldMap", "BMap", 1., 1., map);
 	  TGeoGlobalMagField::Instance()->SetField(field);
 	  HLTInfo("Solenoid Field set to: %f map %d", SolenoidBz, map);
 	} else if (currentMap->GetMapType()!=map) {

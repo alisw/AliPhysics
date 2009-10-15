@@ -246,7 +246,7 @@ void efficiencyThetaPhi( Int_t event2Check=0, char * filename="galice.root" )
 //Set mag field; waiting for mag field in CDB 
   if (!TGeoGlobalMagField::Instance()->GetField()) {
     printf("Loading field map...\n");
-    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+    AliMagF* field = new AliMagF("Maps","Maps",1.,1., AliMagF::k5kG);
     TGeoGlobalMagField::Instance()->SetField(field);
   }
 
@@ -511,7 +511,7 @@ void efficiencyThetaI( Int_t event2Check=0, char * filename="galice.root" )
 //Set mag field; waiting for mag field in CDB 
   if (!TGeoGlobalMagField::Instance()->GetField()) {
     printf("Loading field map...\n");
-    AliMagF* field = new AliMagF("Maps","Maps",2,1.,1., 10.,AliMagF::k5kG);
+    AliMagF* field = new AliMagF("Maps","Maps",1.,1., AliMagF::k5kG);
     TGeoGlobalMagField::Instance()->SetField(field);
   }  printf("Loading field map...\n");
  

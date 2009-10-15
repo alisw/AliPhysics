@@ -96,7 +96,7 @@ void Init(){
   TGeoManager::Import("/u/miranov/proof/geometry.root");
   AliGeomManager::LoadGeometry("/u/miranov/proof/geometry.root");
   
-  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
 
 
 }

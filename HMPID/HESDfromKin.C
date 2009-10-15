@@ -326,8 +326,7 @@ Bool_t InitGRP() {
   Printf("------------------------------");
   Printf(" Summary for B: %s",s.Data());
   Printf("------------------------------");
-  AliMagF* fld = new AliMagF("MagneticFieldMap", s.Data(), 2, fcL3, fcDip, 10., map, path, 
-			     btype,beamenergy);
+  AliMagF* fld = new AliMagF("MagneticFieldMap", s.Data(), fcL3, fcDip, map, btype,beamenergy,path);
   TGeoGlobalMagField::Instance()->SetField( fld );
   TGeoGlobalMagField::Instance()->Lock();
   //

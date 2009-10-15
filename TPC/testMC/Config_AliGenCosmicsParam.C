@@ -181,7 +181,7 @@ void Config()
 
 
     // MAGNETIC FIELD IN THE BARREL
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., mag));
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., mag));
     //    TGeoGlobalMagField::Instance()->GetField()->SetL3ConstField(0); //Using const. field in the barrel
     rl->CdGAFile();
 

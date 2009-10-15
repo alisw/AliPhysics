@@ -24,11 +24,10 @@ class AliMagF : public TVirtualMagField
   enum             {kOverrideGRP=BIT(14)}; // don't recreate from GRP if set
   //
   AliMagF();
-  AliMagF(const char *name, const char* title, Int_t integ, 
-	  Double_t factorSol=1., Double_t factorDip=1., 
-	  Double_t fmax=15, BMap_t maptype = k5kG,
-	  const char* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root",
-	  BeamType_t btype=kBeamTypepp, Double_t benergy=7000.);
+  AliMagF(const char *name, const char* title, Double_t factorSol=1., Double_t factorDip=1., 
+	  BMap_t maptype = k5kG, BeamType_t btype=kBeamTypepp,
+	  Double_t benergy=-1., Int_t integ=2, Double_t fmax=10, 
+	  const char* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
   AliMagF(const AliMagF& src);             
   AliMagF& operator=(const AliMagF& src);
   virtual ~AliMagF();

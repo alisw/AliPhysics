@@ -221,14 +221,10 @@ void Config()
   AliMagF* field = 0x0;
   if (mag == kNoField) {
     comment = comment.Append(" | L3 field 0.0 T");
-    field = new AliMagF("Maps","Maps", 2, 0., 0., 10., AliMagF::k5kGUniform,
-			"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root",
-			AliMagF::kBeamTypepp, energy/2.0);
+    field = new AliMagF("Maps","Maps", 0., 0., AliMagF::k5kGUniform,AliMagF::kBeamTypepp, energy/2.0);
   } else if (mag == k5kG) {
     comment = comment.Append(" | L3 field 0.5 T");
-    field = new AliMagF("Maps","Maps", 2, -1., -1., 10., AliMagF::k5kG,
-			"$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root",
-			AliMagF::kBeamTypepp, energy/2.0);
+    field = new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG,	AliMagF::kBeamTypepp, energy/2.0);
   }
   printf("\n \n Comment: %s \n \n", comment.Data());
 

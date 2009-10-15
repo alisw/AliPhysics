@@ -170,7 +170,7 @@ void Config(char directory[100]="", char option[6]="trgAll")
     }
   //============================================================= 
   // Field (L3 0.5 T) outside dimuon spectrometer
-    AliMagF* field = new AliMagF("Maps","Maps", 2, 1., 10., AliMagF::k5kG);
+    AliMagF* field = new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG);
     field->SetL3ConstField(0); // Using const. field in the barrel 
     TGeoGlobalMagField::Instance()->SetField(field);
 

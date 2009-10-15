@@ -361,7 +361,7 @@ Config()
     
   //__________________________________________________________________
   // Field (L3 0.4 T)
-  AliMagF* field = new AliMagF("Maps","Maps",2, -1., -1., 10.,mag);
+  AliMagF* field = new AliMagF("Maps","Maps",-1., -1., mag);
   TGeoGlobalMagField::Instance()->SetField(field);
 
   rl->CdGAFile();

@@ -193,14 +193,14 @@ void Config()
     
     
 // Field (L3 +-0.2/0.5 T)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2, -1,-1, 10,AliMagF::k5kG)); // +0.5/-0.7
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",-1,-1, AliMagF::k5kG)); // +0.5/-0.7
     /*
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2,  1, 1, 10,AliMagF::k5kG)); // -0.5/-0.7
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2, -1,-1, 10,AliMagF::k2kG)); // +0.2/-0.7
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2,  1, 1, 10,AliMagF::k2kG)); // -0.2/+0.7
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2,  1, 0, 10,AliMagF::k5kG)); // +-0.5/0
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2,  1, 0, 10,AliMagF::k2kG)); // +-0.2/0
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",2,  0, 0, 10,AliMagF::k5kGUniform)); // 0/0
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1, 1, AliMagF::k5kG)); // -0.5/-0.7
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",-1,-1, AliMagF::k2kG)); // +0.2/-0.7
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1, 1, AliMagF::k2kG)); // -0.2/+0.7
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1, 0, AliMagF::k5kG)); // +-0.5/0
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1, 0, AliMagF::k2kG)); // +-0.2/0
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 0, 0, AliMagF::k5kGUniform)); // 0/0
     */
 
 //

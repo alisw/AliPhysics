@@ -65,7 +65,7 @@ void ConfigCommon1(Bool_t setRootGeometry = kTRUE)
       comment = comment.Append(" | L3 field 0.5 T");
   }
   // OK
-  AliMagF* field = new AliMagF("Maps","Maps", 2, -1., -1., 10., smag);
+  AliMagF* field = new AliMagF("Maps","Maps", -1., -1., smag);
   TGeoGlobalMagField::Instance()->SetField(field);
 
   printf("\n \n Comment: %s \n \n", comment.Data());

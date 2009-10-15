@@ -402,8 +402,8 @@ void Config()
   }
   printf("\n \n Comment: %s \n \n", comment.Data());
   // to use constant field in the barrel use:
-  //  AliMagF* field = new AliMagF("Maps","Maps", 2, -1., -1., 10., AliMagF::k5kGUniform);
-  AliMagF* field = new AliMagF("Maps","Maps", 2, -1., -1., 10., mag);
+  //  AliMagF* field = new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kGUniform);
+  AliMagF* field = new AliMagF("Maps","Maps", -1., -1., mag);
   TGeoGlobalMagField::Instance()->SetField(field);
   rl->CdGAFile();
 

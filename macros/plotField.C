@@ -12,7 +12,7 @@ void plotField(Int_t iField = 0)
 //
 //  create field map
 
-     AliMagF* field = new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG);
+     AliMagF* field = new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG);
 
 //     field-SetL3ConstField(1);
      
