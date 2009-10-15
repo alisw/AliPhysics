@@ -91,6 +91,11 @@ public:
 
   int Configure(const char* arguments);
 
+  /// Not implemented.
+  AliHLTTriggerTrdClusterMultiplicity(const AliHLTTriggerTrdClusterMultiplicity&);
+  /// Not implemented.
+  AliHLTTriggerTrdClusterMultiplicity& operator = (const AliHLTTriggerTrdClusterMultiplicity&);
+
   /// Variables for triggger configuration
   Int_t fClusterMult;
   TClonesArray* fClusterArray;
