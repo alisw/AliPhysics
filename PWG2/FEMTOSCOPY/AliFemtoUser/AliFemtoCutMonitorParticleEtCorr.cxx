@@ -137,21 +137,24 @@ TList *AliFemtoCutMonitorParticleEtCorr::GetOutputList()
 
 void AliFemtoCutMonitorParticleEtCorr::EventBegin(const AliFemtoEvent* aEvent)
 {
-  for (int iter=0; iter<fPhiBins; iter++) {
-    fPtSumEvent[iter] = 0;
-    fMultSumEvent[iter] = 0;
-  }
+  if (aEvent)
+    for (int iter=0; iter<fPhiBins; iter++) {
+      fPtSumEvent[iter] = 0;
+      fMultSumEvent[iter] = 0;
+    }
 }
 
 void AliFemtoCutMonitorParticleEtCorr::EventEnd(const AliFemtoEvent* aEvent)
 {
-  for (int ispt=0; ispt<fPhiBins; ispt++) {
-    fPtPerPhi->Fill(ispt, fPtSumEvent[ispt]);
-    for (int ispt2=0; ispt2<fPhiBins; ispt2++) {
-      fPtCovPerPhi->Fill(ispt, ispt2, fPtSumEvent[ispt]*fPtSumEvent[ispt2]);
-      fPtMultPerPhi->Fill(ispt, ispt2, fMultSumEvent[ispt]*fMultSumEvent[ispt2]);
+  if (aEvent) {
+    for (int ispt=0; ispt<fPhiBins; ispt++) {
+      fPtPerPhi->Fill(ispt, fPtSumEvent[ispt]);
+      for (int ispt2=0; ispt2<fPhiBins; ispt2++) {
+	fPtCovPerPhi->Fill(ispt, ispt2, fPtSumEvent[ispt]*fPtSumEvent[ispt2]);
+	fPtMultPerPhi->Fill(ispt, ispt2, fMultSumEvent[ispt]*fMultSumEvent[ispt2]);
+      }
     }
+    fNEventsProcessed++;
   }
-  fNEventsProcessed++;
 }
 
