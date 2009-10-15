@@ -70,17 +70,6 @@ class AliTagAnalysis : public TObject {
 			     const char *fDetectorCut, 
 			     const char *fEventCut);
 
-  Bool_t CreateAsciiCollection(const char* name, 
-			       AliRunTagCuts *runTagCuts, 
-			       AliLHCTagCuts *lhcTagCuts, 
-			       AliDetectorTagCuts *detTagCuts, 
-			       AliEventTagCuts *evTagCuts);
-  Bool_t CreateAsciiCollection(const char* name, 
-			       const char *fRunCut, 
-			       const char *fLHCCut, 
-			       const char *fDetectorCut, 
-			       const char *fEventCut);
-
   TChain *GetInputChain(const char* system, const char *wn);
   TChain *GetChainFromCollection(const char* collectionname, 
 				 const char* treename);
@@ -88,14 +77,11 @@ class AliTagAnalysis : public TObject {
   TEntryList *GetGlobalList() {return fGlobalList;}
   //____________________________________________________//
  protected:
-  TGridResult *ftagresult; //the results from the tag grid query     
-  TString fTagDirName; //the location of the locally stored tags
-  
-  TChain *fChain; //tag chain 
-  
-  TString fAnalysisType; //define the type of analysis (esd or aod)
-
-  TEntryList *fGlobalList; //global TEntryList
+  TGridResult *ftagresult;    //the results from the tag grid query     
+  TString      fTagDirName;   //the location of the locally stored tags
+  TChain      *fChain;        //tag chain 
+  TString      fAnalysisType; //define the type of analysis (esd or aod)
+  TEntryList  *fGlobalList;   //global TEntryList
   
   //____________________________________________________//
  private:
