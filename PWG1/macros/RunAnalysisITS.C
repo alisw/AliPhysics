@@ -5,7 +5,7 @@ void RunAnalysisITS() {
   // Macro to analyze ESDs from raw data reconstruction
   // A.Dainese, andrea.dainese@pd.infn.it
   //
-  gSystem->Setenv("alien_CLOSE_SE","ALICE::CNAF::SE")
+  //gSystem->Setenv("alien_CLOSE_SE","ALICE::CNAF::SE");
 
   gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -g"); 
 
@@ -14,6 +14,7 @@ void RunAnalysisITS() {
 
   Long64_t nentries=1000000000000000,firstentry=0;
   Bool_t useAlienPlugin=kTRUE;
+  Bool_t uselibPWG1=kTRUE;
   TString pluginmode="full";
   TString loadMacroPath="./";
   Bool_t readHLT=kFALSE;
@@ -33,17 +34,21 @@ void RunAnalysisITS() {
   // Load analysis libraries
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  
+  if(uselibPWG1) gSystem->Load("libPWG1.so");
+
   // Create Alien plugin, if requested
   if(useAlienPlugin) {  
-    AliAnalysisGrid *alienHandler = CreateAlienHandler(pluginmode);
+    AliAnalysisGrid *alienHandler = CreateAlienHandler(pluginmode,uselibPWG1);
     if(!alienHandler) return;
   }
 
   TChain *chainESD = 0;
   if(!useAlienPlugin) {
     // Prepare input chain
-    chainESD = CreateESDChain("/home/dainesea/alignData/RAWdata_CosmicsSum09/RecoSPD/chunk.",13,13);
+    //    chainESD = CreateESDChain("/home/dainesea/alignData/RAWdata_CosmicsSum09/RecoSPD/chunk.",13,13);
+    chainESD=new TChain("esdTree");
+    //chainESD->Add("alien:///alice/cern.ch/user/s/sitta/output/000088361/ESDs/pass1/09000088361017.10/AliESDs.root");
+    chainESD->Add("AliESDs.root");
   }
 
   // Create the analysis manager
@@ -65,19 +70,19 @@ void RunAnalysisITS() {
   //
   TString taskName;
     
-  gROOT->LoadMacro("AliAlignmentDataFilterITS.cxx++g");
+  if(!uselibPWG1) gROOT->LoadMacro("AliAlignmentDataFilterITS.cxx++g");
   taskName="AddTaskAlignmentDataFilterITS.C"; 
   taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   AliAlignmentDataFilterITS *itsTask = AddTaskAlignmentDataFilterITS();
-  /*  
-  gROOT->LoadMacro("AliTrackMatchingTPCITSCosmics.cxx++g");
+    
+  if(!uselibPWG1) gROOT->LoadMacro("AliTrackMatchingTPCITSCosmics.cxx++g");
   taskName="AddTaskTrackMatchingTPCITS.C"; 
   taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   AliTrackMatchingTPCITSCosmics *tpcitsTask = AddTaskTrackMatchingTPCITS();
   if(readHLT) tpcitsTask->SetReadHLTESD(kTRUE);  
-  */
+  
   //
   // Run the analysis
   //    
@@ -92,7 +97,8 @@ void RunAnalysisITS() {
 }
 //_____________________________________________________________________________
 //
-AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test")
+AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",
+				    Bool_t uselibPWG1=kFALSE)
 {
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
@@ -106,37 +112,47 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test")
    // Set versions of used packages
    plugin->SetAPIVersion("V2.4");
    plugin->SetROOTVersion("v5-24-00");
-   plugin->SetAliROOTVersion("v4-18-06-AN");
+   plugin->SetAliROOTVersion("v4-18-07-AN");
    // Declare input data to be processed.
    // Method 1: Create automatically XML collections using alien 'find' command.
    // Define production directory LFN
-   //plugin->SetGridDataDir("/alice/data/2009/LHC09c/000080015/ESDs/");
+   plugin->SetGridDataDir("/alice/data/2009/LHC09c");
    //plugin->SetGridDataDir("/alice/cern.ch/user/s/sitta/output/000088361/");
    // Set data search pattern
    //plugin->SetDataPattern("AliESDs.root");
-   //plugin->SetDataPattern("ESD.tag.root");
+   plugin->SetDataPattern("ESD.tag.root");
+   Int_t n=0;
+   n++; plugin->AddRunNumber("000080015");
+   n++; plugin->AddRunNumber("000080261");
+   plugin->SetNrunsPerMaster(n);
    // Method 2: Declare existing data files (raw collections, xml collections, root file)
    // If no path mentioned data is supposed to be in the work directory (see SetGridWorkingDir())
    // XML collections added via this method can be combined with the first method if
    // the content is compatible (using or not tags)
    // e.g.: find -z -x 80015 /alice/data/2009/LHC09c/000080015/ESDs/ ESD.tag.root > 80015.xml
    //plugin->AddDataFile("79876.xml");
-   plugin->AddDataFile("80015.xml");
+   //plugin->AddDataFile("80015.xml");
    //plugin->AddDataFile("80261.xml");
    //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
    // Define alien work directory where all files will be copied. Relative to alien $HOME.
    plugin->SetGridWorkingDir("analysisITS");
    // Declare alien output directory. Relative to working directory.
-   plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
+   plugin->SetGridOutputDir("output151009"); // In this case will be $HOME/work/output
    // Declare the analysis source files names separated by blancs. To be compiled runtime
    // using ACLiC on the worker nodes.
-   plugin->SetAnalysisSource("AliAlignmentDataFilterITS.cxx");
-   //plugin->SetAnalysisSource("AliTrackMatchingTPCITSCosmics.cxx");
+   if(!uselibPWG1) {
+     plugin->SetAnalysisSource("AliAlignmentDataFilterITS.cxx");
+     plugin->SetAnalysisSource("AliTrackMatchingTPCITSCosmics.cxx");
+   }
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
    //plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
-   plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx AliTrackMatchingTPCITSCosmics.h AliTrackMatchingTPCITSCosmics.cxx libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
    plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -g");
+   if(!uselibPWG1) {
+     plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx AliTrackMatchingTPCITSCosmics.h AliTrackMatchingTPCITSCosmics.cxx libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
+   } else {
+     plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so libTPCbase.so libTPCrec.so libTRDbase.so libTRDrec.so libPWG1.so");
+   }
    // Declare the output file names separated by blancs.
    // (can be like: file.root or file.root@ALICE::Niham::File)
    plugin->SetDefaultOutputs(kTRUE);
@@ -146,7 +162,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test")
    // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro("AnalysisITS.C");
    // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-   plugin->SetSplitMaxInputFileNumber(10);
+   plugin->SetSplitMaxInputFileNumber(1);
    // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
    //plugin->SetMaxInitFailed(5);
    // Optionally resubmit threshold.
