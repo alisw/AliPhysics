@@ -19,12 +19,12 @@
 //
 // In compiled mode : 
 // Don't forget to load first the libraries
-gSystem->Load("libMemStat.so")
-gSystem->Load("libMemStatGui.so")
-gSystem->Load("libANALYSIS.so")
-gSystem->Load("libANALYSISalice.so")
-gSystem->Load("libTRDqaRec.so")
-gSystem->Load("libPWG1.so");
+// gSystem->Load("libMemStat.so")
+// gSystem->Load("libMemStatGui.so")
+// gSystem->Load("libANALYSIS.so")
+// gSystem->Load("libANALYSISalice.so")
+// gSystem->Load("libTRDqaRec.so")
+// gSystem->Load("libPWG1.so");
 // gSystem->Load("libNetx.so") ;
 // gSystem->Load("libRAliEn.so");
 //
