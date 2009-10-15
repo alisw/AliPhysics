@@ -74,14 +74,13 @@ AliMagF::AliMagF():
 
 //_______________________________________________________________________
 AliMagF::AliMagF(const char *name, const char* title, Double_t factorSol, Double_t factorDip, 
-		 BMap_t maptype, BeamType_t btype, Double_t benergy, Int_t integ, Double_t fmax, 
-		 const char* path):
+		 BMap_t maptype, BeamType_t bt, Double_t be,Int_t integ, Double_t fmax, const char* path):
   TVirtualMagField(name),
   fMeasuredMap(0),
   fMapType(maptype),
   fSolenoid(0),
-  fBeamType(btype),
-  fBeamEnergy(benergy),
+  fBeamType(bt),
+  fBeamEnergy(be),
   //
   fInteg(integ),
   fPrecInteg(1),
@@ -110,7 +109,7 @@ AliMagF::AliMagF(const char *name, const char* title, Double_t factorSol, Double
   //
   if (fBeamEnergy<=0 && fBeamType!=kNoBeamField) {
     if      (fBeamType == kBeamTypepp) fBeamEnergy = 7000.; // max proton energy
-    else if (fBeamType == kBeamTypeAA) fBeamEnergy = 5500;  // max PbPb energy
+    else if (fBeamType == kBeamTypeAA) fBeamEnergy = 2750;  // max PbPb energy
     AliInfo("Maximim possible beam energy for requested beam is assumed");
   } 
   const char* parname = 0;
@@ -133,8 +132,7 @@ AliMagF::AliMagF(const char *name, const char* title, Double_t factorSol, Double
 	       factorSol,(fMapType==k5kG||fMapType==k5kGUniform)?5.:2.,
 	       fDipoleOFF ? "OFF":"ON",factorDip,fMapType==k5kGUniform?" |Constant Field!":""));
   AliInfo(Form("Machine B fields for %s beam (%.0f GeV): QGrad: %.4f Dipole: %.4f",
-	       fBeamType==kBeamTypeAA ? "A-A":(fBeamType==kBeamTypepp ? "p-p":"OFF"),
-	       fBeamEnergy,fQuadGradient,fDipoleField));
+	       bt==kBeamTypeAA ? "A-A":(bt==kBeamTypepp ? "p-p":"OFF"),be,fQuadGradient,fDipoleField));
 }
 
 //_______________________________________________________________________
@@ -425,7 +423,7 @@ Double_t AliMagF::GetFactorDip() const
 
 //_____________________________________________________________________________
 AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention, Bool_t uniform,
-				 Float_t beamenergy, const Char_t *beamtype, const Char_t *path) 
+				 Float_t sqrts, const Char_t *beamtype, const Char_t *path) 
 {
   //------------------------------------------------
   // The magnetic field map, defined externally...
@@ -501,7 +499,7 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
   // LHC and DCS08 conventions have opposite dipole polarities
   if ( GetPolarityConvention() != convention) sclDip = -sclDip;
   //
-  return new AliMagF("MagneticFieldMap", ttl,sclL3,sclDip,map,btype,beamenergy,2,10.,path);
+  return new AliMagF("MagneticFieldMap", ttl,sclL3,sclDip,map,btype,sqrts/2,2,10.,path);
   //
 }
 

@@ -24,10 +24,9 @@ class AliMagF : public TVirtualMagField
   enum             {kOverrideGRP=BIT(14)}; // don't recreate from GRP if set
   //
   AliMagF();
-  AliMagF(const char *name, const char* title, Double_t factorSol=1., Double_t factorDip=1., 
-	  BMap_t maptype = k5kG, BeamType_t btype=kBeamTypepp,
-	  Double_t benergy=-1., Int_t integ=2, Double_t fmax=10, 
-	  const char* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
+  AliMagF(const char *name, const char* title,Double_t factorSol=1., Double_t factorDip=1., 
+	  BMap_t maptype = k5kG, BeamType_t btype=kBeamTypepp, Double_t benergy=-1,	
+	  Int_t integ=2, Double_t fmax=10,const char* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
   AliMagF(const AliMagF& src);             
   AliMagF& operator=(const AliMagF& src);
   virtual ~AliMagF();
@@ -68,7 +67,7 @@ class AliMagF : public TVirtualMagField
   static Int_t GetPolarityConvention()                                {return Int_t(fgkPolarityConvention);}
   static AliMagF* CreateFieldMap(Float_t l3Current=-30000., Float_t diCurrent=-6000., 
 				 Int_t convention=0, Bool_t uniform = kFALSE, 
-				 Float_t benergy=7000., const Char_t* btype="pp",
+				 Float_t sqrts=14000, const Char_t* btype="pp",
 				 const Char_t* path="$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root");
   //
  protected:
