@@ -111,8 +111,8 @@ int AliHLTTPCHWClusterTransformComponent::DoInit( int argc, const char** argv ) 
     return -ENOENT;
   }
 
-  Int_t i = 0;
-  Char_t* cpErr;
+  //Int_t i = 0;
+  //Char_t* cpErr;
 
   int iResult=0;
 

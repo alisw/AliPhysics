@@ -153,7 +153,7 @@ AliHLTOUTHandler* AliHLTTPCCalibrationAgent::GetOutputHandler(AliHLTComponentDat
 }
 
 // #################################################################################
-Int_t AliHLTTPCCalibrationAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance){
+Int_t AliHLTTPCCalibrationAgent::DeleteOutputHandler(AliHLTOUTHandler* /*pInstance*/){
   // see header file for class documentation
   return 0;
 }
