@@ -7,7 +7,9 @@
 
 //_________________________________________________________________________
 // Implementation version v0 of EMCAL Manager class 
-//*--                  
+// An object of this class does not produce hits nor digits
+// It is the one to use if you do not want to produce outputs in TREEH or TREED
+// This class places a Geometry of the EMCAL in the ALICE Detector as defined in AliEMCALGeometry.cxx                      
 //*-- Author: Yves Schutz (SUBATECH)
 //*-- and   : Sahal Yacoob (LBL / UCT) 
 //          : Aleksei Pavlinov (WSU)     SHASHLYK
@@ -55,11 +57,11 @@ class AliEMCALv0 : public AliEMCAL {
   void CreateEmod(const char* mother="SMOD", const char* child="EMOD");
   // TRD1
   void Trd1Tower3X3(const double *parSCM0);
-  void Trd1Tower4X4();
+  void Trd1Tower4X4() const;
   void PbInTrap(const double parTRAP[11], TString n);
   // 1X1 case - Nov 22, 2006
   void Trd1Tower1X1(double *parSCM0);
-  void PbInTrd1(double *parTrd1, TString n);
+  void PbInTrd1(const double *parTrd1, TString n);
   // TRD2 - 1th design
   void Scm0InTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5], Double_t parSCM0[5]);
   void Division2X2InScm0(const AliEMCALGeometry * g, const Double_t parSCM0[5]);
@@ -68,7 +70,7 @@ class AliEMCALv0 : public AliEMCAL {
   void PbmoInTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5], Double_t parPBMO[5]);
   void Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t parPBMO[5]);
 
-  TList  *GetShishKebabModules() {return fShishKebabModules;}
+  TList  *GetShishKebabModules() const {return fShishKebabModules;}
   AliEMCALShishKebabTrd1Module *GetShishKebabModule(Int_t neta=0);
 
  protected:

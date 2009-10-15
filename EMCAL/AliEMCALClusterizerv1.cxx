@@ -245,8 +245,8 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
 }
 
 //____________________________________________________________________________
-Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALRecPoint * RecPoint, AliEMCALDigit ** maxAt, 
-				      Float_t* maxAtEnergy,
+Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALRecPoint * recPoint, AliEMCALDigit ** maxAt, 
+				      const Float_t* maxAtEnergy,
 				      Int_t nPar, Float_t * fitparameters) const
 {
   // Calls TMinuit to fit the energy distribution of a cluster with several maxima
@@ -262,7 +262,7 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALRecPoint * RecPoint, AliEMCALDigit
   gMinuit->SetFCN(AliEMCALClusterizerv1::UnfoldingChiSquare) ;
   // To set the address of the minimization function
   TList * toMinuit = new TList();
-  toMinuit->AddAt(RecPoint,0) ;
+  toMinuit->AddAt(recPoint,0) ;
   toMinuit->AddAt(fDigitsArr,1) ;
   toMinuit->AddAt(fGeom,2) ;
 
@@ -534,30 +534,30 @@ void AliEMCALClusterizerv1::MakeUnfolding()
     Int_t index ;
     for(index = 0 ; index < numberofNotUnfolded ; index++){
 
-      AliEMCALRecPoint * RecPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(index) ) ;
+      AliEMCALRecPoint * recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(index) ) ;
 
       TVector3 gpos;
       Int_t absId;
-      RecPoint->GetGlobalPosition(gpos);
+      recPoint->GetGlobalPosition(gpos);
       fGeom->GetAbsCellIdFromEtaPhi(gpos.Eta(),gpos.Phi(),absId);
       if(absId > nModulesToUnfold)
         break ;
 
-      Int_t nMultipl = RecPoint->GetMultiplicity() ;
+      Int_t nMultipl = recPoint->GetMultiplicity() ;
       AliEMCALDigit ** maxAt = new AliEMCALDigit*[nMultipl] ;
       Float_t * maxAtEnergy = new Float_t[nMultipl] ;
-      Int_t nMax = RecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fECALocMaxCut,fDigitsArr) ;
+      Int_t nMax = recPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fECALocMaxCut,fDigitsArr) ;
 
       if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0
-        UnfoldCluster(RecPoint, nMax, maxAt, maxAtEnergy) ;
-        fRecPoints->Remove(RecPoint);
+        UnfoldCluster(recPoint, nMax, maxAt, maxAtEnergy) ;
+        fRecPoints->Remove(recPoint);
         fRecPoints->Compress() ;
         index-- ;
         fNumberOfECAClusters-- ;
         numberofNotUnfolded-- ;
       }
       else{
-        RecPoint->SetNExMax(1) ; //Only one local maximum
+        recPoint->SetNExMax(1) ; //Only one local maximum
       }
 
       delete[] maxAt ;
@@ -613,12 +613,12 @@ void  AliEMCALClusterizerv1::UnfoldCluster(AliEMCALRecPoint * iniTower,
   Float_t xpar=0.,zpar=0.,epar=0.  ;
 
   AliEMCALDigit * digit = 0 ;
-  Int_t * Digits = iniTower->GetDigitsList() ;
+  Int_t * digitsList = iniTower->GetDigitsList() ;
 
   Int_t iparam ;
   Int_t iDigit ;
   for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
-    digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At(Digits[iDigit] ) ) ;
+    digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At(digitsList[iDigit] ) ) ;
     fGeom->RelPosCellInSModule(digit->GetId(), yDigit, xDigit, zDigit);
     efit[iDigit] = 0;
 
@@ -637,7 +637,7 @@ void  AliEMCALClusterizerv1::UnfoldCluster(AliEMCALRecPoint * iniTower,
   // so that energy deposited in each cell is distributed between new clusters proportionally
   // to its contribution to efit
 
-  Float_t * Energies = iniTower->GetEnergiesList() ;
+  Float_t * energiesList = iniTower->GetEnergiesList() ;
   Float_t ratio ;
 
   iparam = 0 ;
@@ -647,24 +647,24 @@ void  AliEMCALClusterizerv1::UnfoldCluster(AliEMCALRecPoint * iniTower,
     epar = fitparameters[iparam+2] ;
     iparam += 3 ;
 
-    AliEMCALRecPoint * RecPoint = 0 ;
+    AliEMCALRecPoint * recPoint = 0 ;
 
     if(fNumberOfECAClusters >= fRecPoints->GetSize())
       fRecPoints->Expand(2*fNumberOfECAClusters) ;
 
     (*fRecPoints)[fNumberOfECAClusters] = new AliEMCALRecPoint("") ;
-    RecPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(fNumberOfECAClusters) ) ;
+    recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(fNumberOfECAClusters) ) ;
     fNumberOfECAClusters++ ;
-    RecPoint->SetNExMax((Int_t)nPar/3) ;
+    recPoint->SetNExMax((Int_t)nPar/3) ;
 
     Float_t eDigit ;
     for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
-      digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At( Digits[iDigit] ) ) ;
+      digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At( digitsList[iDigit] ) ) ;
       fGeom->RelPosCellInSModule(digit->GetId(), yDigit, xDigit, zDigit);
 
       ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar) / efit[iDigit] ;
-      eDigit = Energies[iDigit] * ratio ;
-      RecPoint->AddDigit( *digit, eDigit ) ;
+      eDigit = energiesList[iDigit] * ratio ;
+      recPoint->AddDigit( *digit, eDigit ) ;
     }
   }
 
@@ -683,17 +683,17 @@ void AliEMCALClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad,
 
   TList * toMinuit = dynamic_cast<TList*>( gMinuit->GetObjectFit() ) ;
 
-  AliEMCALRecPoint * RecPoint = dynamic_cast<AliEMCALRecPoint*>( toMinuit->At(0) )  ;
+  AliEMCALRecPoint * recPoint = dynamic_cast<AliEMCALRecPoint*>( toMinuit->At(0) )  ;
   TClonesArray * digits = dynamic_cast<TClonesArray*>( toMinuit->At(1) )  ;
   // A bit buggy way to get an access to the geometry
   // To be revised!
   AliEMCALGeometry *geom = dynamic_cast<AliEMCALGeometry *>(toMinuit->At(2));
 
-  Int_t * Digits     = RecPoint->GetDigitsList() ;
+  Int_t * digitsList     = recPoint->GetDigitsList() ;
 
-  Int_t nOdigits = RecPoint->GetDigitsMultiplicity() ;
+  Int_t nOdigits = recPoint->GetDigitsMultiplicity() ;
 
-  Float_t * Energies = RecPoint->GetEnergiesList() ;
+  Float_t * energiesList = recPoint->GetEnergiesList() ;
 
   fret = 0. ;
   Int_t iparam ;
@@ -709,7 +709,7 @@ void AliEMCALClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad,
 
   for( iDigit = 0 ; iDigit < nOdigits ; iDigit++) {
 
-    digit = dynamic_cast<AliEMCALDigit*>( digits->At( Digits[iDigit] ) );
+    digit = dynamic_cast<AliEMCALDigit*>( digits->At( digitsList[iDigit] ) );
 
     Double_t xDigit=0 ;
     Double_t zDigit=0 ;
@@ -728,7 +728,7 @@ void AliEMCALClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad,
         efit += x[iParam] * ShowerShape(dx,dz) ;
         iParam++ ;
       }
-      Double_t sum = 2. * (efit - Energies[iDigit]) / Energies[iDigit] ; // Here we assume, that sigma = sqrt(E)
+      Double_t sum = 2. * (efit - energiesList[iDigit]) / energiesList[iDigit] ; // Here we assume, that sigma = sqrt(E)
       iParam = 0 ;
       while(iParam < nPar ){
         Double_t xpar = x[iParam] ;
@@ -761,7 +761,7 @@ void AliEMCALClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad,
       efit += epar * ShowerShape(xDigit - xpar,zDigit - zpar) ;
     }
 
-    fret += (efit-Energies[iDigit])*(efit-Energies[iDigit])/Energies[iDigit] ;
+    fret += (efit-energiesList[iDigit])*(efit-energiesList[iDigit])/energiesList[iDigit] ;
     // Here we assume, that sigma = sqrt(E) 
   }
 }
@@ -779,7 +779,7 @@ void AliEMCALClusterizerv1::Print(Option_t * /*option*/)const
     TString taskName(Version()) ;
     
     printf("--------------- "); 
-    printf(taskName.Data()) ; 
+    printf("%s",taskName.Data()) ; 
     printf(" "); 
     printf("Clusterizing digits: "); 
     printf("\n                       ECA Local Maximum cut    = %f", fECALocMaxCut); 

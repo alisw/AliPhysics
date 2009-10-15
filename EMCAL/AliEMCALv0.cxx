@@ -183,7 +183,7 @@ void AliEMCALv0::Init(void)
       message += "EMCAL geometry initialization failed !" ; 
     }
     message += "\n*****************************************" ;
-    printf(message.Data() ) ; 
+    printf("%s",message.Data() ) ; 
   }
 }
 
@@ -569,7 +569,7 @@ void AliEMCALv0::PbInTrap(const double parTRAP[11], TString n)
 
 // 8-dec-04 by PAI
 //______________________________________________________________________
-void AliEMCALv0::Trd1Tower4X4()
+void AliEMCALv0::Trd1Tower4X4() const
 {
  // Not ready yet
 }
@@ -601,7 +601,7 @@ void AliEMCALv0::Trd1Tower1X1(double *parSCM0)
 }
 
 //______________________________________________________________________
-void AliEMCALv0::PbInTrd1(double *parTrd1, TString n)
+void AliEMCALv0::PbInTrd1(const double *parTrd1, TString n)
 {
  // see PbInTrap(const double parTrd1[11], TString n)
   static int nr=0, ndeb=2;
@@ -892,6 +892,7 @@ AliEMCALShishKebabTrd1Module* AliEMCALv0::GetShishKebabModule(Int_t neta)
 //_____________________________________________________________________________
 void AliEMCALv0::AddAlignableVolumes() const
 {
+  //Add volumes which are alignable (?)
   TString ntmp(GetTitle()); // name of EMCAL geometry
 
   if(ntmp.Contains("WSUC")) {

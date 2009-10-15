@@ -50,15 +50,12 @@
 //
 //*-- Author : Sahal Yacoob (LBL)
 // based on  : AliPHOSSDigitzer 
-// Modif: 
-//  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
-//                           of new  IO (à la PHOS)
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
 #include <TBenchmark.h>
 #include <TBrowser.h>
-#include <Riostream.h>
+//#include <Riostream.h>
 #include <TMath.h>
 #include <TROOT.h>
 
@@ -444,13 +441,13 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
       digit = dynamic_cast<AliEMCALDigit *>( sdigits->At(index) ) ;
       sprintf(tempo, "\n%6d  %8d    %6.5e %4d      %2d :",
 	      digit->GetId(), digit->GetAmp(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
-      printf(tempo);
+      printf("%s",tempo);
       isum += digit->GetAmp();
       
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
-	sprintf(tempo, "%d ",digit->GetPrimary(iprimary+1) ) ; 
-	printf(tempo); 
+		  sprintf(tempo, "%d ",digit->GetPrimary(iprimary+1) ) ; 
+	printf("%s",tempo); 
       }  	 
     }
     delete tempo ;

@@ -1,18 +1,23 @@
-#ifndef ALIEMCALSDigitizer_H
-#define ALIEMCALSDigitizer_H
+#ifndef ALIEMCALSDIGITIZER_H
+#define ALIEMCALSDIGITIZER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 /* $Id$ */
 //_________________________________________________________________________
-//  Task Class for making SDigits in EMCAL      
-//                  
+// This is a TTask that makes SDigits out of Hits
+// A Summable Digits is the sum of all hits originating 
+// from one in one tower of the EMCAL 
+// A threshold for assignment of the primary to SDigit is applied 
+//
+// SDigits need to hold the energy sum of the hits, but AliEMCALDigit
+// can (should) only store amplitude.  Therefore, the SDigit energy is
+// "digitized" before being stored and must be "calibrated" back to an
+// energy before SDigits are summed to form true Digits
+//
+//
 //*-- Author: Sahal Yacoob (LBL)
 // based on : AliPHOSSDigitizer
 //_________________________________________________________________________
-//
-// Modif: 
-//  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
-//  July   2003 Yves Schutz: new  IO (à la PHOS)
  
 // --- ROOT system ---
 #include "TTask.h"
@@ -67,5 +72,5 @@ private:
   ClassDef(AliEMCALSDigitizer,6)  // description 
 };
 
-#endif // AliEMCALSDigitizer_H
+#endif // AliEMCALSDIGITIZER_H
 
