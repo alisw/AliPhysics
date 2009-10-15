@@ -15,7 +15,11 @@
 //**************************************************************************
 
 #include "AliHLTTriggerDecisionParameters.h"
-AliHLTTriggerDecisionParameters::AliHLTTriggerDecisionParameters()
+AliHLTTriggerDecisionParameters::AliHLTTriggerDecisionParameters() :
+  TObject()
+  ,fTriggerName()
+  , fReadoutListParameter(0)
+  , fDescription()
 {
   // See header file for class documentation
 }

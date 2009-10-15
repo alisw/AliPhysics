@@ -136,7 +136,7 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
 
   UInt_t specification = 0;
 
-  AliHLTCaloClusterHeaderStruct* caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(outBPtr);
+  //  AliHLTCaloClusterHeaderStruct* caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(outBPtr);
 
   fClusterAnalyserPtr->SetCaloClusterDataPtr(reinterpret_cast<AliHLTCaloClusterDataStruct*>(outBPtr + sizeof(AliHLTCaloClusterHeaderStruct)));
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )

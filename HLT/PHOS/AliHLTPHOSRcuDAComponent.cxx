@@ -104,7 +104,7 @@ AliHLTPHOSRcuDAComponent::GetComponentID()
 
 
 Int_t
-AliHLTPHOSRcuDAComponent::ScanArgument( Int_t argc, const char** argv)
+AliHLTPHOSRcuDAComponent::ScanArgument( Int_t /*argc*/, const char** /*argv*/)
 {
   //CRAP PTH
   //  AliHLTPHOSUtilities::ScanArguments(argc, argv);

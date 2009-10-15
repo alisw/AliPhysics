@@ -115,7 +115,7 @@ AliHLTPHOSESDEntriesMakerComponent::DoEvent( const AliHLTComponentEventData& /*e
   AliHLTCaloClusterHeaderStruct* caloClusterHeaderPtr = 0;
 
   const AliHLTComponentBlockData* iter = 0;
-  UInt_t nClusters = 0;
+  //  UInt_t nClusters = 0;
 
   UInt_t clusterSpecification = 0;
   //  UInt_t digitSpecification  = 0;

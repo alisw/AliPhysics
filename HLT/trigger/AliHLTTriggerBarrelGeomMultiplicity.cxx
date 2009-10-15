@@ -106,7 +106,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoTrigger()
 
   // try the ESD as input
   const TObject* obj = GetFirstInputObject(kAliHLTAllDataTypes, "AliESDEvent");
-n  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
+  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
   TString description;
   if (esd != NULL) 
     {
@@ -356,4 +356,5 @@ int AliHLTTriggerBarrelGeomMultiplicity::ScanConfigurationArgument(int argc, con
 
       return 2;
   }    
+  return 0;
 }

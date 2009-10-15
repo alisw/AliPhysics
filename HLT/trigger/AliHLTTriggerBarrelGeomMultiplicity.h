@@ -132,6 +132,11 @@ class AliHLTTriggerBarrelGeomMultiplicity : public AliHLTTrigger
   // the default configuration entry for this component
   char* fOCDBEntry; //!transient
 
+  /** Keep the copy constructor private since it should not be used */
+  AliHLTTriggerBarrelGeomMultiplicity(const AliHLTTriggerBarrelGeomMultiplicity & );
+
+  /** Keep the assignement operator private since it should not be used */
+  AliHLTTriggerBarrelGeomMultiplicity & operator = (const AliHLTTriggerBarrelGeomMultiplicity &);
 
   ClassDef(AliHLTTriggerBarrelGeomMultiplicity, 0);
 

@@ -34,7 +34,8 @@ AliHLTPHOSSharedMemoryInterfacev2::AliHLTPHOSSharedMemoryInterfacev2():
   fHasRawData(false),
   fMaxCnt(0),
   fCurrentCnt(0),
-  fRawDataPtr(0)
+  fRawDataPtr(0),
+  fRawData()
 {
   
 }

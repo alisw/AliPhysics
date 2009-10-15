@@ -104,7 +104,7 @@ AliHLTPHOSRcuHistogramProducerComponent::GetOutputDataSize(unsigned long& constB
 
 
 int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, const AliHLTComponentBlockData* /*blocks*/, 
-						       AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* /*outputPtr*/, 
+						       AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, 
 						       AliHLTUInt32_t& /*size*/, vector<AliHLTComponentBlockData>& /*outputBlocks*/ )
 {
   /*
@@ -219,11 +219,12 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
   return 0;
 
   */
+  return 0;
 }//end DoEvent
 
 
 int
-AliHLTPHOSRcuHistogramProducerComponent::DoInit( int argc, const char** argv )
+AliHLTPHOSRcuHistogramProducerComponent::DoInit( int /*argc*/, const char** /*argv*/ )
 {
   //See html documentation of base class
   //  fPrintInfo = kFALSE;
