@@ -48,8 +48,8 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
 {
   // Basic constructor
   // set some stuff...
-  fQinvNormLo = 0.15;
-  fQinvNormHi = 0.18;
+  fQinvNormLo = (QHi-QLo)*0.8;
+  fQinvNormHi = (QHi-QLo)*0.8;
   fNumRealsNorm = 0;
   fNumMixedNorm = 0;
   //  fCorrection = 0;  // pointer to Coulomb Correction object
