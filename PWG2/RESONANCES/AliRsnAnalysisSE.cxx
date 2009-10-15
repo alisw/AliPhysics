@@ -18,8 +18,8 @@
 ClassImp(AliRsnAnalysisSE)
 
 //_____________________________________________________________________________
-AliRsnAnalysisSE::AliRsnAnalysisSE(const char *name,Int_t numOfOutputs) :
-    AliRsnVAnalysisTaskSE(name,numOfOutputs),
+AliRsnAnalysisSE::AliRsnAnalysisSE(const char *name,Int_t numOfOutputs,Bool_t useKine) :
+    AliRsnVAnalysisTaskSE(name,numOfOutputs,useKine),
     fRsnAnalysisManager(),
     fEventCuts(0x0),
     fZeroEventPercentWarning(50),

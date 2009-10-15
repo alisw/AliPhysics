@@ -31,6 +31,8 @@ class AliRsnFunctionAxis : public TObject
       kPairInvMassRes,
       kPairPt,
       kPairEta,
+      kPairMt,
+      kPairY,
       kEventMult,
       kAxisTypes
     };
@@ -58,6 +60,7 @@ class AliRsnFunctionAxis : public TObject
     void     SetType(EAxisType type) {fType = type;}
     void     SetBins(Int_t n, Double_t min, Double_t max);
     void     SetBins(Double_t min, Double_t max, Double_t step);
+    void     SetMass(Double_t mass) {fMass = mass;}
 
     Double_t Eval(AliRsnDaughter *daughter) const;
     Double_t Eval(AliRsnPairParticle*const pair, AliRsnPairDef*const pairDef) const;
@@ -70,6 +73,7 @@ class AliRsnFunctionAxis : public TObject
     Int_t     fNBins;   // number of bins
     Double_t  fMin;     // lower edge
     Double_t  fMax;     // upper edge
+    Double_t  fMass;    // reference mass for Y and Mt bins
 
     // ROOT dictionary
     ClassDef(AliRsnFunctionAxis, 1)

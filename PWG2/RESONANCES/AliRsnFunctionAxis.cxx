@@ -23,7 +23,8 @@ AliRsnFunctionAxis::AliRsnFunctionAxis() :
     fType(kAxisTypes),
     fNBins(0),
     fMin(0.0),
-    fMax(0.0)
+    fMax(0.0),
+    fMass(0.0)
 {
 //
 // Default constructor
@@ -36,7 +37,8 @@ AliRsnFunctionAxis::AliRsnFunctionAxis
     fType(type),
     fNBins(0),
     fMin(0.0),
-    fMax(0.0)
+    fMax(0.0),
+    fMass(0.0)
 {
 //
 // Main constructor (version 1)
@@ -51,7 +53,8 @@ AliRsnFunctionAxis::AliRsnFunctionAxis
     fType(type),
     fNBins(0),
     fMin(0.0),
-    fMax(0.0)
+    fMax(0.0),
+    fMass(0.0)
 {
 //
 // Main constructor (version 2)
@@ -80,6 +83,8 @@ const char* AliRsnFunctionAxis::GetName() const
     case kPairInvMassRes: return "IMRES";
     case kPairPt:         return "PT";
     case kPairEta:        return "ETA";
+    case kPairMt:         return "MT";
+    case kPairY:          return "Y";
     case kEventMult:      return "MULT";
     default:              return "UNDEF";
   }
@@ -123,6 +128,8 @@ AliRsnFunctionAxis::EAxisObject AliRsnFunctionAxis::GetAxisObject() const
     case kPairInvMassRes:
     case kPairPt:
     case kPairEta:
+    case kPairMt:
+    case kPairY:
       return kPair;
     case kEventMult:
       return kEvent;
@@ -222,6 +229,12 @@ Double_t AliRsnFunctionAxis::Eval(AliRsnPairParticle * const pair, AliRsnPairDef
       return pair->GetPt();
     case kPairEta:
       return pair->GetEta();
+    case kPairMt:
+      if (TMath::Abs(fMass) < 1E-5) AliWarning(Form("Suspicious mass value specified: %f", fMass));
+      return TMath::Sqrt(pair->GetPt()*pair->GetPt() + fMass*fMass);
+    case kPairY:
+      if (TMath::Abs(fMass) < 1E-5) AliWarning(Form("Suspicious mass value specified: %f", fMass));
+      return pair->GetY(fMass);
     default:
       AliWarning("This axis type cannot be applied to pairs");
       return -999.0;

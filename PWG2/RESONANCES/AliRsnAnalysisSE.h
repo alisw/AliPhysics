@@ -23,7 +23,7 @@ class AliRsnAnalysisSE : public AliRsnVAnalysisTaskSE
 {
 
   public:
-    AliRsnAnalysisSE(const char *name = "AliRsnAnalysisSE",Int_t numOfOutputs=1);
+    AliRsnAnalysisSE(const char *name = "AliRsnAnalysisSE",Int_t numOfOutputs=1,Bool_t useKine=kFALSE);
     AliRsnAnalysisSE(const AliRsnAnalysisSE& copy);
     virtual ~AliRsnAnalysisSE() {;};
 

@@ -102,6 +102,10 @@ void AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t i)
     out.SetParticle(refMC);
     out.FindMotherPDG(fRefMC->Stack());
   }
+  
+  // if fRef is MC event return
+  AliMCEvent *mc = dynamic_cast<AliMCEvent *> (fRef);
+  if (mc) return;
 
   // retrieve vertex and set impact parameters
   Double_t dx = out.Xv(), dy = out.Yv(), dz = out.Zv();
