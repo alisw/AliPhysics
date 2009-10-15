@@ -12,6 +12,9 @@
 
 #include "AliHLTTrigger.h"
 #include "TList.h"
+
+class AliHLTTriggerDecisionParameters;
+
 /**
  * @class  AliHLTTriggerBarrelGeomMultiplicity
  * HLT trigger component for charged particle multiplicity in the
@@ -116,8 +119,8 @@ class AliHLTTriggerBarrelGeomMultiplicity : public AliHLTTrigger
   // array of (sub-)detectors to trigger on
   TObjArray *fDetectorArray; // !transient
 
-  // Trigger decision
-  AliHLTTriggerDecision *fTriggerDecision; //!transient
+  // Trigger decision parameters
+  AliHLTTriggerDecisionParameters *fTriggerDecisionPars; //!transient
 
   // The trigger name
   char *fTriggerName; //!transient

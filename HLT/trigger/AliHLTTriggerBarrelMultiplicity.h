@@ -105,6 +105,7 @@ class AliHLTTriggerBarrelMultiplicity : public AliHLTTrigger
   int ScanConfigurationArgument(int argc, const char** argv);
 
  private:
+
   /// inherited from AliHLTTrigger: calculate the trigger
   virtual int DoTrigger();
 

@@ -9,6 +9,7 @@
 #pragma link C++ class AliHLTGlobalTriggerConfig+;
 #pragma link C++ class AliHLTGlobalTriggerComponent+;
 #pragma link C++ class AliHLTTriggerBarrelMultiplicity+;
+#pragma link C++ class AliHLTTriggerBarrelGeomMultiplicity+;
 #pragma link C++ class AliHLTTriggerBarrelCosmic+;
 #pragma link C++ class AliHLTTriggerAgent+;
 #pragma link C++ class AliHLTEventSummary+;
@@ -20,4 +21,7 @@
 #pragma link C++ class AliHLTTriggerPhosClusterEnergy+;
 #pragma link C++ class AliHLTTriggerPhosMip+;
 #pragma link C++ class AliHLTTriggerTrdClusterMultiplicity+;
+#pragma link C++ class AliHLTTriggerDetectorGeom+;
+#pragma link C++ class AliHLTTriggerDetectorGeomRectangle+;
+#pragma link C++ class AliHLTTriggerDecisionParameters+;
 #endif

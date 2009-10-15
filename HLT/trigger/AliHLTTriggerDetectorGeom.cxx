@@ -2,7 +2,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//* Primary Authors: Oystein Djuvsland                                     *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -85,6 +85,7 @@ void AliHLTTriggerDetectorGeom::PrintDetectorGeom(std::ostream &out)
   out << "Eta Max: " << fEtaMax << std::endl;
   out << "Phi Min: " << fPhiMin << std::endl;
   out << "Phi Max: " << fPhiMax << std::endl;
-  out << "Initial Point: {" << fInitalPoint[0] << ", " << fInitalPoint[1] << ", " << fInitalPoint[2] << std::endl; 
-  out << "Normal Vector: {" << fNormVector[0] << ", " << fNormVector[1] << ", " << fNormVector[2] << std::endl; 
+  out << "Initial Point: {" << fInitalPoint[0] << ", " << fInitalPoint[1] << ", " << fInitalPoint[2] << "}" << std::endl; 
+  out << "Normal Vector: {" << fNormVector[0] << ", " << fNormVector[1] << ", " << fNormVector[2] << "}" << std::endl; 
 }
+

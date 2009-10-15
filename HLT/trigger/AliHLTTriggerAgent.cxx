@@ -36,6 +36,7 @@
 #include "AliHLTEventSummaryProducerComponent.h"
 #include "AliHLTRunSummaryProducerComponent.h"
 #include "AliHLTTriggerBarrelMultiplicity.h"
+#include "AliHLTTriggerBarrelGeomMultiplicity.h"
 #include "AliHLTTriggerBarrelCosmic.h"
 #include "AliHLTGlobalTriggerComponent.h"
 #include "AliHLTTriggerPhosClusterEnergy.h"
@@ -71,6 +72,7 @@ int AliHLTTriggerAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
   if (!pHandler) return -EINVAL;
   pHandler->AddComponent(new AliHLTGlobalTriggerComponent);
   pHandler->AddComponent(new AliHLTTriggerBarrelMultiplicity);
+  pHandler->AddComponent(new AliHLTTriggerBarrelGeomMultiplicity);
   pHandler->AddComponent(new AliHLTTriggerBarrelCosmic);
   pHandler->AddComponent(new AliHLTTriggerPhosClusterEnergy); 
   pHandler->AddComponent(new AliHLTTriggerPhosMip); 

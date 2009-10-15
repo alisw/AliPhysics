@@ -28,6 +28,7 @@
 
 #include "AliHLTTriggerBarrelGeomMultiplicity.h"
 #include "AliHLTTriggerDetectorGeom.h"
+#include "AliHLTTriggerDecisionParameters.h"
 #include "AliESDEvent.h"
 #include "AliHLTTriggerDecision.h"
 #include "AliHLTDomainEntry.h"
@@ -47,7 +48,7 @@ ClassImp(AliHLTTriggerBarrelGeomMultiplicity)
 AliHLTTriggerBarrelGeomMultiplicity::AliHLTTriggerBarrelGeomMultiplicity()
   : AliHLTTrigger()
   , fSolenoidBz(0)
-  , fMinTracks(0)
+  , fMinTracks(1)
   , fDetectorArray(0)
 {
   // see header file for class documentation
@@ -55,6 +56,7 @@ AliHLTTriggerBarrelGeomMultiplicity::AliHLTTriggerBarrelGeomMultiplicity()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  fDetectorArray = new TObjArray(1);
 
 }
 
@@ -66,8 +68,8 @@ AliHLTTriggerBarrelGeomMultiplicity::~AliHLTTriggerBarrelGeomMultiplicity()
 const char* AliHLTTriggerBarrelGeomMultiplicity::GetTriggerName() const 
 {
   // see header file for class documentation
-  const char* name = fTriggerName;
-  if(name) return name;
+  //  const char* name = fTriggerName;
+  //  if(name) return name;
   return "BarrelGeomMultiplicityTrigger";
 }
 
@@ -139,10 +141,16 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoTrigger()
     }
   if (numberOfTracks>=fMinTracks) 
     {
-      description.Form("Event contains %d track(s) satisfying geometrical cut", numberOfTracks);
-      SetDescription(description);
 
-      TriggerEvent(fTriggerDecision);
+      SetDescription(fTriggerDecisionPars->GetDescription());
+      AliHLTReadoutList readout(fTriggerDecisionPars->GetReadoutListParameter());
+      AliHLTTriggerDecision decision(
+				     true,
+				     fTriggerDecisionPars->GetTriggerName().Data(),
+				     AliHLTTriggerDomain(readout),
+				     fTriggerDecisionPars->GetDescription()
+				     );
+      TriggerEvent(&decision);
     }
   
   return iResult;
@@ -176,15 +184,6 @@ bool AliHLTTriggerBarrelGeomMultiplicity::IsInDetectors(T* track, float b)
       
       bool ret = track->Intersect(trackPoint, det->NormVector(), b);
 
-      TVector3 trackPos(trackPoint);
-      
-      if(trackPos.Eta() >= det->EtaMin() && 
-	 trackPos.Eta() <= det->EtaMax() &&
-	 trackPos.Phi() >= det->PhiMin() &&
-	 trackPos.Phi() <= det->PhiMax())
-	{
-	  return true;
-	}
     }
   return false;
 }
@@ -199,7 +198,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoInit(int argc, const char** argv)
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
 
-
+  HLTWarning("TEST");
   return iResult;
 }
 
@@ -240,13 +239,13 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromCDBObject(const cha
 		{
 		  if(!strcmp(pArr->At(i)->ClassName(), "AliHLTTriggerDecision"))
 		    {
-		      fTriggerDecision = dynamic_cast<AliHLTTriggerDecision*>(pArr->At(i));
+		      fTriggerDecisionPars = dynamic_cast<AliHLTTriggerDecisionParameters*>(pArr->At(i));
 		    }
 		  else if(!strcmp(pArr->At(i)->ClassName(), "AliHLTTriggerDetectorGeom"))
 		    {
 		      fDetectorArray->AddLast(dynamic_cast<AliHLTTriggerDetectorGeom*>(pArr->At(i)));
 		      nDetectorGeoms++;
-		      HLTInfo("received TObjArray of %d detector geometries", nDetectorGeoms);
+		      HLTWarning("received TObjArray of %d detector geometries", nDetectorGeoms);
 		    }
 		  else
 		    {
@@ -282,25 +281,25 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromFile(const char *fi
 	{
 	  
 	  HLTInfo("configure from file \"%s\"", filename);
-	  TObjArray* pArr=dynamic_cast<TObjArray*>(geomfile->Get("GeomConfig"));
+	  TObjArray* pArr=dynamic_cast<TObjArray*>(geomfile->Get("GeomConf"));
 	  if (pArr) 
 	    {
 
 	      for(int i = 0; i < pArr->GetEntries(); i++)
 		{
-		  if(!strcmp(pArr->At(i)->ClassName(), "AliHLTTriggerDecision"))
+		  if(!strcmp(pArr->At(i)->ClassName(), "AliHLTTriggerDecisionParameters"))
 		    {
-		      fTriggerDecision = dynamic_cast<AliHLTTriggerDecision*>(pArr->At(i));
+		      fTriggerDecisionPars = dynamic_cast<AliHLTTriggerDecisionParameters*>(pArr->At(i));
 		    }
-		  else if(!strcmp(pArr->At(i)->ClassName(), "AliHLTTriggerDetectorGeom"))
+		  else if(pArr->At(i)->InheritsFrom("AliHLTTriggerDetectorGeom"))
 		    {
 		      fDetectorArray->AddLast(dynamic_cast<AliHLTTriggerDetectorGeom*>(pArr->At(i)));
 		      nDetectorGeoms++;
-		      HLTInfo("received TObjArray of %d detector geometries", nDetectorGeoms);
+		      HLTWarning("received detector geometry of type %s", pArr->At(i)->ClassName());
 		    }
 		  else
 		    {
-		      HLTWarning("Unknown object in configuration object");
+		      HLTWarning("Unknown object of type %s in configuration object", pArr->At(i)->ClassName());
 		    }
 		}
 	    } 
@@ -312,10 +311,12 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromFile(const char *fi
 	  } 
       else 
 	{
-	  HLTError("can not open file \"%s\"", filename);
+	  HLTError("could not open file \"%s\"", filename);
 	  nDetectorGeoms=-ENOENT;
 	}
     }
+  HLTWarning("received TObjArray with %d detector geometries", nDetectorGeoms);
+
   return nDetectorGeoms;
 }
 
@@ -336,7 +337,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::ScanConfigurationArgument(int argc, con
       return 2;
     }    
 
-  if (argument.CompareTo("-triggername")==0) 
+  if (argument.CompareTo("-trgname")==0) 
     {
       if (++i>=argc) return -EPROTO;
       

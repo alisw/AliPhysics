@@ -87,7 +87,9 @@ public:
 
   void PrintDetectorGeom(std::ostream &out);
 
-private:
+  virtual Bool_t IsInDetector(Double_t point[3]) = 0;
+
+protected:
 
   /** The minimum in eta */
   Double_t fEtaMin;   // The minimum in eta 
@@ -100,7 +102,11 @@ private:
 
   /** The maximum in phi */
   Double_t fPhiMax;   // The maximum in phi 
+
+  /** Name of the (sub-)detector */
+  TString fName;      // Name of the (sub-)detector 
   
+private: 
   /** 
    * The point which together with a normal vector 
    * defines the plane of the (sub-)detector
@@ -113,8 +119,6 @@ private:
    */
   Double_t fNormVector[3]; // Normal vector representing the plane
 
-  /** Name of the (sub-)detector */
-  TString fName;      // Name of the (sub-)detector 
   
   ClassDef(AliHLTTriggerDetectorGeom, 1);
 

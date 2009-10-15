@@ -26,7 +26,9 @@ CLASS_HDRS:= \
 		AliHLTTriggerPhosMip.h                      \
 		AliHLTTriggerTrdClusterMultiplicity.h       \
 		AliHLTTriggerBarrelGeomMultiplicity.h	    \
-		AliHLTTriggerDetectorGeom.h
+		AliHLTTriggerDetectorGeom.h		    \
+		AliHLTTriggerDetectorGeomRectangle.h	    \
+		AliHLTTriggerDecisionParameters.h
 
 
 # library sources
