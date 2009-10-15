@@ -2,7 +2,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//* Primary Authors: Oystein Djuvsland                                     *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -50,6 +50,9 @@ AliHLTTriggerBarrelGeomMultiplicity::AliHLTTriggerBarrelGeomMultiplicity()
   , fSolenoidBz(0)
   , fMinTracks(1)
   , fDetectorArray(0)
+  , fTriggerDecisionPars(0)
+  , fTriggerName(0)
+  , fOCDBEntry(0)
 {
   // see header file for class documentation
   // or
@@ -103,13 +106,13 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoTrigger()
 
   // try the ESD as input
   const TObject* obj = GetFirstInputObject(kAliHLTAllDataTypes, "AliESDEvent");
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
+n  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
   TString description;
   if (esd != NULL) 
     {
       numberOfTracks=0;
       esd->GetStdContent();
-    
+
       for (Int_t i = 0; i < esd->GetNumberOfTracks(); i++) 
 	{
 	  if (CheckCondition(esd->GetTrack(i), esd->GetMagneticField())) numberOfTracks++;
@@ -139,9 +142,9 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoTrigger()
 	    }
 	}
     }
+
   if (numberOfTracks>=fMinTracks) 
     {
-
       SetDescription(fTriggerDecisionPars->GetDescription());
       AliHLTReadoutList readout(fTriggerDecisionPars->GetReadoutListParameter());
       AliHLTTriggerDecision decision(
@@ -178,12 +181,19 @@ bool AliHLTTriggerBarrelGeomMultiplicity::IsInDetectors(T* track, float b)
   for(Int_t i = 0; i < fDetectorArray->GetEntries(); i++)
     {
       AliHLTTriggerDetectorGeom *det = static_cast<AliHLTTriggerDetectorGeom*>(fDetectorArray->At(i));
-      Double_t trackPoint[3];
-      
-      det->GetInitialPoint(trackPoint);
-      
-      bool ret = track->Intersect(trackPoint, det->NormVector(), b);
 
+      Double_t trackPoint[3];
+      Double_t normVector[3];
+
+      det->GetInitialPoint(trackPoint);
+      det->GetNormVector(normVector);
+
+      bool ret = track->Intersect(trackPoint, normVector, b);
+
+      if(ret)
+	{
+	  if(det->IsInDetector(trackPoint)) return true;
+	}
     }
   return false;
 }
@@ -198,7 +208,6 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoInit(int argc, const char** argv)
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
 
-  HLTWarning("TEST");
   return iResult;
 }
 
@@ -237,19 +246,19 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromCDBObject(const cha
 
 	      for(int i = 0; i < pArr->GetEntries(); i++)
 		{
-		  if(!strcmp(pArr->At(i)->ClassName(), "AliHLTTriggerDecision"))
+		  if(!strcmp(pArr->At(i)->ClassName(), "AliHLTTriggerDecisionParameters"))
 		    {
 		      fTriggerDecisionPars = dynamic_cast<AliHLTTriggerDecisionParameters*>(pArr->At(i));
 		    }
-		  else if(!strcmp(pArr->At(i)->ClassName(), "AliHLTTriggerDetectorGeom"))
+		  else if(pArr->At(i)->InheritsFrom("AliHLTTriggerDetectorGeom"))
 		    {
 		      fDetectorArray->AddLast(dynamic_cast<AliHLTTriggerDetectorGeom*>(pArr->At(i)));
 		      nDetectorGeoms++;
-		      HLTWarning("received TObjArray of %d detector geometries", nDetectorGeoms);
+		      HLTWarning("received detector geometry of type %s", pArr->At(i)->ClassName());
 		    }
 		  else
 		    {
-		      HLTWarning("Unknown object in configuration object");
+		      HLTWarning("Unknown object of type %s in configuration object", pArr->At(i)->ClassName());
 		    }
 		}
 	    } 
@@ -279,7 +288,6 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromFile(const char *fi
       
       if(geomfile)
 	{
-	  
 	  HLTInfo("configure from file \"%s\"", filename);
 	  TObjArray* pArr=dynamic_cast<TObjArray*>(geomfile->Get("GeomConf"));
 	  if (pArr) 
@@ -337,7 +345,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::ScanConfigurationArgument(int argc, con
       return 2;
     }    
 
-  if (argument.CompareTo("-trgname")==0) 
+  if (argument.CompareTo("-triggername")==0) 
     {
       if (++i>=argc) return -EPROTO;
       

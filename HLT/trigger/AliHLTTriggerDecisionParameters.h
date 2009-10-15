@@ -46,8 +46,6 @@ public:
   /** Get the description */
   TString GetDescription() { return fDescription; }
 
-  
-
 private:
   
   /** The trigger name */

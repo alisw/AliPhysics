@@ -11,14 +11,14 @@
 /// @brief  HLT class describing simple geometry of (sub-)detectors.
 ///         Used for the AliHLTTriggerBarrelGeomMultiplicity classes
 
-#include "TObject.h"
 #include "TString.h"
 #include <ostream>
+#include "TObject.h"
 
 /**
  * @class  AliHLTTriggerDetectorGeom
  * HLT class describing simple geometry cuts of (sub-)detectors.
- * Used for the AliHLTTriggerBarrelGeomMultiplicity classes
+ * Used for the AliHLTTriggerBarrelGeomMultiplicity class
  *
  * \ingroup alihlt_trigger
  */
@@ -75,18 +75,50 @@ public:
    */
   void SetDetName(TString &name) { fName = name; } // Set name
 
+  /** 
+   * Get the minimum in eta (should be moved...)
+   */
   Double_t EtaMin() { return fEtaMin; }
+
+  /** 
+   * Get the maximum in eta (should be moved...)
+   */
   Double_t EtaMax() { return fEtaMax; }
+
+  /** 
+   * Get the minimum in phi (should be moved...)
+   */
   Double_t PhiMin() { return fPhiMin; }
+
+  /** 
+   * Get the maximum in phi (should be moved...)
+   */
   Double_t PhiMax() { return fPhiMax; }
 
+  /** 
+   * Get the initial point
+   */
   void GetInitialPoint(Double_t *point);
-  Double_t* NormVector() { return fNormVector; }
+
+  /**
+   * Get the normal vector
+   */
+  void GetNormVector(Double_t *vec);
   
+  /** 
+   * Get the detector name
+   */
   TString DetName() { return fName; }
 
+  /** 
+   * Print the geometry
+   */
   void PrintDetectorGeom(std::ostream &out);
 
+  /** 
+   * Abstract method to check if a point is in the 
+   * acceptance of the geometry 
+   */
   virtual Bool_t IsInDetector(Double_t point[3]) = 0;
 
 protected:

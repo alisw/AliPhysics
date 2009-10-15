@@ -11,7 +11,6 @@
 ///         a geometrical selection of the central barrel.
 
 #include "AliHLTTrigger.h"
-#include "TList.h"
 
 class AliHLTTriggerDecisionParameters;
 
@@ -20,7 +19,7 @@ class AliHLTTriggerDecisionParameters;
  * HLT trigger component for charged particle multiplicity in the
  * central barrel.
  * 
- * Triggers on charged particle number in a certain pt range.
+ * Triggers on charged particle number in a certain geometrical acceptance
  *
  * <h2>General properties:</h2>
  *
@@ -32,9 +31,13 @@ class AliHLTTriggerDecisionParameters;
  *
  * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -triggername     <i> n   </i> <br>
+ *      specifies which configuration object to use for the trigger
  *
  * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -geomfile     <i> n   </i> <br>
+ *      specifies root file containing configuration objects
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -47,7 +50,8 @@ class AliHLTTriggerDecisionParameters;
  * component arguments.
  *
  * <h2>Default CDB entries:</h2>
- * HLT/ConfigHLT/BarrelGeomMultiplicityTrigger: TList storing the detector geometries
+ * HLT/ConfigHLT/BarrelGeomMultiplicityTrigger/<triggername>: TObjArray storing the
+ * geometries and readout parameters. 
  * HLT/ConfigHLT/Solenoidbz: TObjString -solenoidBz field
  *
  * <h2>Performance:</h2>
@@ -125,7 +129,7 @@ class AliHLTTriggerBarrelGeomMultiplicity : public AliHLTTrigger
   // The trigger name
   char *fTriggerName; //!transient
   
-  /// the default configuration entry for this component
+  // the default configuration entry for this component
   char* fOCDBEntry; //!transient
 
 

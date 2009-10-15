@@ -18,7 +18,7 @@
 /// @author Oystein Djuvsland
 /// @date   2009-10-08
 /// @brief  HLT class describing simple geometry of (sub-)detectors.
-///         Used for the AliHLTTriggerBarrelGeomMultiplicity classes
+///         Used for the AliHLTTriggerBarrelGeomMultiplicity class
 
 // see header file for class documentation
 // or
@@ -28,10 +28,11 @@
 
 #include "AliHLTTriggerDetectorGeom.h"
 #include <ostream>
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTriggerDetectorGeom)
 
-AliHLTTriggerDetectorGeom::AliHLTTriggerDetectorGeom() 
+AliHLTTriggerDetectorGeom::AliHLTTriggerDetectorGeom()
 : TObject(),
   fEtaMin(0),
   fEtaMax(0),
@@ -72,14 +73,26 @@ void AliHLTTriggerDetectorGeom::SetNormVector(Double_t *nVector)
 
 void AliHLTTriggerDetectorGeom::GetInitialPoint(Double_t *point)
 {
+  // See header file for class documentation
   for(int i = 0; i < 3; i++)
     {
       point[i] = fInitalPoint[i];
     }
 }
 
+void AliHLTTriggerDetectorGeom::GetNormVector(Double_t *vec)
+{
+  // See header file for class documentation
+  for(int i = 0; i < 3; i++)
+    {
+      vec[i] = fNormVector[i];
+    }
+}
+
 void AliHLTTriggerDetectorGeom::PrintDetectorGeom(std::ostream &out)
 {
+  // See header file for class documentation
+
   out << "Name: " << fName << std::endl;
   out << "Eta Min: " << fEtaMin << std::endl;
   out << "Eta Max: " << fEtaMax << std::endl;
