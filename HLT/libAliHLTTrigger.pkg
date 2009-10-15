@@ -24,7 +24,9 @@ CLASS_HDRS:= \
                 AliHLTTriggerMonitoringComponent.h          \
 		AliHLTTriggerPhosClusterEnergy.h            \
 		AliHLTTriggerPhosMip.h                      \
-		AliHLTTriggerTrdClusterMultiplicity.h
+		AliHLTTriggerTrdClusterMultiplicity.h       \
+		AliHLTTriggerBarrelGeomMultiplicity.h	    \
+		AliHLTTriggerDetectorGeom.h
 
 
 # library sources

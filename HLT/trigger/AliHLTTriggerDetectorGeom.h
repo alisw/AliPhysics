@@ -71,7 +71,7 @@ public:
    * Set the name of the (sub-)detector
    * @param name is the name
    */
-  void SetName(TString &name); // Set name
+  void SetName(TString &name) { fName = name; } // Set name
 
 private:
 
