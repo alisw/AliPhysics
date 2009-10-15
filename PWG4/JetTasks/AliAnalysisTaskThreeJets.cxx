@@ -1,56 +1,39 @@
-#include <TROOT.h>
 #include <TSystem.h>
-#include <TInterpreter.h>
-#include <TChain.h>
 #include <TFile.h>
 #include <TH1F.h>
-#include <TH1.h>
-#include <TH2.h>
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TList.h>
 #include <TTree.h>
-#include <TBranch.h>
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
-#include <TObjArray.h>
 #include <TRefArray.h>
-#include <TArrayD.h>
-#include <fstream>
 #include <TVector3.h>
 #include <TVectorD.h>
 #include <TMatrixDSym.h>
 #include <TMatrixDSymEigen.h>
-#include <TStyle.h>
 #include <TProfile.h>
-#include  "TDatabasePDG.h"
 
 #include "AliAnalysisTaskThreeJets.h"
 #include "AliAnalysisManager.h"
-#include "AliJetFinder.h"
-#include "AliJetReader.h"
-#include "AliJetHeader.h"
-#include "AliJetReaderHeader.h"
-#include "AliUA1JetHeaderV1.h"
-#include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "AliAODHandler.h"
 #include "AliAODTrack.h"
 #include "AliAODJet.h"
+#include "AliGenPythiaEventHeader.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliJetKineReaderHeader.h"
-#include "AliGenCocktailEventHeader.h"
-#include "AliAODPid.h"
-#include "AliExternalTrackParam.h"
 
-#include "AliAnalysisTaskJetSpectrum.h"
 
 #include "AliAnalysisHelperJetTasks.h"
 
+//
+//
+// Trhreee jet task by sona
+//
+//
 
 ClassImp(AliAnalysisTaskThreeJets)
 
@@ -1105,6 +1088,9 @@ void AliAnalysisTaskThreeJets::Terminate(Option_t *)
 //_______________________________________User defined functions_____________________________________________________________________________________
 void AliAnalysisTaskThreeJets::FillTopology(TH2F * Dalitz, TH1F * fhMu34, TH1F * fhMu45, TH1F * fhMu35, Double_t * x, TVector3 * pRest, Double_t xsection)
 {
+  //
+  // fill the topology histos
+  //
   Dalitz->Fill(x[0], x[1], xsection);
   fhMu35->Fill(TMath::Sqrt(x[0]*x[2]*(1-(pRest[0].Unit()).Dot(pRest[2].Unit()))/2), xsection);
   fhMu34->Fill(TMath::Sqrt(x[0]*x[1]*(1-(pRest[0].Unit()).Dot(pRest[1].Unit()))/2), xsection);
@@ -1177,8 +1163,11 @@ Bool_t AliAnalysisTaskThreeJets::IsPrimChar(TParticle* aParticle, Int_t aTotalPr
 
 //______________________________________________________________________________________________________
 
-void AliAnalysisTaskThreeJets::GetThrustAxis(TVector3 &n01, TVector3 * pTrack, Int_t &nTracks)
+void AliAnalysisTaskThreeJets::GetThrustAxis(TVector3 &n01, TVector3 * pTrack, const Int_t &nTracks)
 {
+  //
+  // fetch the thrust axis
+  //
   TVector3 psum;
   Double_t psum1 = 0;
   Double_t psum2 = 0;
@@ -1214,6 +1203,9 @@ void AliAnalysisTaskThreeJets::GetThrustAxis(TVector3 &n01, TVector3 * pTrack, I
 
 void AliAnalysisTaskThreeJets::GetEventShapes(TVector3 &n01, TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes)
 {       
+  //
+  // get the event shape
+  //
   TVector3 psum;
   Double_t psum1 = 0;
   Double_t psum2 = 0;
@@ -1310,22 +1302,22 @@ void AliAnalysisTaskThreeJets::GetEventShapes(TVector3 &n01, TVector3 * pTrack, 
   
 //__________________________________________________________________________________________________________________________
 
-Double_t AliAnalysisTaskThreeJets::Exponent(Double_t x, Double_t * par)
+Double_t AliAnalysisTaskThreeJets::Exponent(Double_t x,const Double_t * const par) const
 {
   return par[0]*TMath::Power(1/TMath::E(), TMath::Power(par[1]/x, par[2])+0.5*TMath::Power((x-par[3])/par[0], 2))+par[4]*x;
 }
 
-Double_t AliAnalysisTaskThreeJets::Exponent2(Double_t x, Double_t * par)
+Double_t AliAnalysisTaskThreeJets::Exponent2(Double_t x,const Double_t * const par) const
 {
   return par[0]*TMath::Power(1/TMath::E(), TMath::Power(par[1]/x, par[2]))+par[3]*x;
 }
 
-Double_t AliAnalysisTaskThreeJets::Gauss(Double_t x, Double_t * par)
+Double_t AliAnalysisTaskThreeJets::Gauss(Double_t x,const Double_t * const par) const
 {
   return 1/(par[1])*TMath::Power(1/TMath::E(), 0.5*(x-par[0])*(x-par[0])/(par[1]*par[1]));
 }
 
-Double_t AliAnalysisTaskThreeJets::Total(Double_t x, Double_t * par)
+Double_t AliAnalysisTaskThreeJets::Total(Double_t x,const Double_t * const par) const
 {
   return Exponent(x, par)+Gauss(x, &par[4]);
 }

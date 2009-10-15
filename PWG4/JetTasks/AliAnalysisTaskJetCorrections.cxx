@@ -4,8 +4,6 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TH1F.h>
-#include <TH1.h>
-#include <TH2.h>
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TList.h>
@@ -23,15 +21,9 @@
 #include <TMatrixDSymEigen.h>
 #include <TStyle.h>
 #include <TProfile.h>
-#include  "TDatabasePDG.h"
 
 #include "AliAnalysisTaskJetCorrections.h"
 #include "AliAnalysisManager.h"
-#include "AliJetFinder.h"
-#include "AliJetReader.h"
-#include "AliJetHeader.h"
-#include "AliJetReaderHeader.h"
-#include "AliUA1JetHeaderV1.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
@@ -42,23 +34,22 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliJetKineReaderHeader.h"
 #include "AliGenCocktailEventHeader.h"
-#include "AliAODPid.h"
-#include "AliExternalTrackParam.h"
 
-#include "AliAnalysisTaskJetSpectrum.h"
-#include "AliAnalysisTaskThreeJets.h"
 
 #include "AliAnalysisHelperJetTasks.h"
 
+//
+//
+// corrections to jet energy by sona 
+// 
+//
 
 ClassImp(AliAnalysisTaskJetCorrections)
 
-  AliAnalysisTaskJetCorrections::AliAnalysisTaskJetCorrections() : AliAnalysisTaskSE(),
-								   
+  AliAnalysisTaskJetCorrections::AliAnalysisTaskJetCorrections() : AliAnalysisTaskSE(),								   
 								   fAOD(0x0),
-								   
+								  
 								   fBranchRec(""),
 								   fBranchGen(""),
 								   
@@ -95,7 +86,9 @@ ClassImp(AliAnalysisTaskJetCorrections)
 								   fhEt1Et23(0x0)
 
 {
-  
+  //
+  // ctor
+  //
   for (Int_t i = 0; i < 3; i++)
     {
       fhECorrJet10[i] = 0;    
@@ -157,6 +150,9 @@ AliAnalysisTaskJetCorrections::AliAnalysisTaskJetCorrections(const char * name):
   fhEt1Et22(0x0),
   fhEt1Et23(0x0)
 {
+  //
+  // ctor
+  //
   for (Int_t i = 0; i < 3; i++)
     {
       fhECorrJet10[i] = 0;    
@@ -965,8 +961,11 @@ void AliAnalysisTaskJetCorrections::Terminate(Option_t *)
 } 
 
 //_______________________________________User defined functions_____________________________________________________________________________________
-void AliAnalysisTaskJetCorrections::GetThrustAxis(TVector3 &n01, TVector3 * pTrack, Int_t &nTracks)
+void AliAnalysisTaskJetCorrections::GetThrustAxis(TVector3 &n01, TVector3 * pTrack,const Int_t &nTracks)
 {
+  //
+  // Getthrust axis
+  // 
   TVector3 psum;
   Double_t psum1 = 0;
   Double_t psum2 = 0;
