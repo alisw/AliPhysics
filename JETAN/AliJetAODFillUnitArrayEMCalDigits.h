@@ -57,7 +57,7 @@ class AliJetAODFillUnitArrayEMCalDigits : public AliJetFillUnitArray
   void GetTracksPointingToCell(TArrayS *arr, Double_t eta, Double_t phi, Double_t res);
 
   // geometry info
-  AliESDCaloCluster *fClus;           //! 
+  AliAODCaloCluster *fClus;           //! 
   Int_t fNDigitEmcal;                 //!
   Int_t fNDigitEmcalCut;              //!
   //Calibration parameters... to be replaced by database
