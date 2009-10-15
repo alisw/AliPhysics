@@ -44,7 +44,8 @@ class AliGRPPreprocessor: public AliPreprocessor {
 		 kL3bkf8H1, kL3bkf8H2, kL3bkf8H3, kL3bkf8Temperature,
 		 kDipoleInsideH1, kDipoleInsideH2, kDipoleInsideH3, kDipoleInsideTemperature,
 		 kDipoleOutsideH1, kDipoleOutsideH2, kDipoleOutsideH3, kDipoleOutsideTemperature,
-                 kCavernTemperature, kCavernAtmosPressure, kSurfaceAtmosPressure};
+                 kCavernTemperature, kCavernAtmosPressure, kSurfaceAtmosPressure, 
+		 kCavernAtmosPressure2};
 
 	enum DPHallProbes { 
 		 khpL3bsf17H1= 0 , khpL3bsf17H2, khpL3bsf17H3, khpL3bsf17Temperature, 

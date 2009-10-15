@@ -66,7 +66,7 @@ ClassImp(AliGRPPreprocessor)
 
   const Int_t AliGRPPreprocessor::fgknDAQLbPar = 8; // num parameters in the logbook for PHYSICS runs, when beamType from DAQ logbook == NULL
   const Int_t AliGRPPreprocessor::fgknDAQLbParReduced = 7; // num parameters in the logbook for the other cases
-  const Int_t AliGRPPreprocessor::fgknDCSDP = 50;   // number of dcs dps
+  const Int_t AliGRPPreprocessor::fgknDCSDP = 51;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknDCSDPHallProbes = 40;   // number of dcs dps
   const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
                    "LHCState",              // missing in DCS
@@ -118,7 +118,8 @@ ClassImp(AliGRPPreprocessor)
 		   "Dipole_Outside_Temperature",
                    "CavernTemperature",
                    "CavernAtmosPressure",
-                   "SurfaceAtmosPressure"
+                   "SurfaceAtmosPressure",
+                   "CavernAtmosPressure2",
                  };
 
   const char* AliGRPPreprocessor::fgkDCSDataPointsHallProbes[AliGRPPreprocessor::fgknDCSDPHallProbes] = {
@@ -165,7 +166,8 @@ ClassImp(AliGRPPreprocessor)
                  };
                  
   const Short_t kSensors = 48; // start index position of sensor in DCS DPs
-  const Short_t kNumSensors = 2; // Number of sensors in DCS DPs
+  const Short_t kNumSensors = 3; // Number of sensors in DCS DPs (CavernAtmosPressure, SurfaceAtmosPressure, CavernAtmosPressure2)
+
 
   const char* AliGRPPreprocessor::fgkLHCState[20] = {
                    "P", "PREPARE",
@@ -247,21 +249,21 @@ AliGRPPreprocessor::~AliGRPPreprocessor()
 
 void AliGRPPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
-  // Initialize preprocessor
+	// Initialize preprocessor
 
-  AliPreprocessor::Initialize(run, startTime, endTime);
-
-  AliInfo("Initialization of the GRP preprocessor.");
-  AliInfo(Form("Start Time DCS = %d",GetStartTimeDCSQuery()));
-  AliInfo(Form("End Time DCS = %d",GetEndTimeDCSQuery()));
-  TClonesArray * array = new TClonesArray("AliDCSSensor",kNumSensors); 
-  for(Int_t j = 0; j < kNumSensors; j++) {
-    AliDCSSensor * sens = new ((*array)[j])AliDCSSensor;
-    sens->SetStringID(fgkDCSDataPoints[j+kSensors]);
-  }
-  AliInfo(Form("Pressure Entries: %d",array->GetEntries()));
-
-  fPressure = new AliDCSSensorArray(GetStartTimeDCSQuery(), GetEndTimeDCSQuery(), array);
+	AliPreprocessor::Initialize(run, startTime, endTime);
+	
+	AliInfo("Initialization of the GRP preprocessor.");
+	AliInfo(Form("Start Time DCS = %d",GetStartTimeDCSQuery()));
+	AliInfo(Form("End Time DCS = %d",GetEndTimeDCSQuery()));
+	TClonesArray * array = new TClonesArray("AliDCSSensor",kNumSensors); 
+	for(Int_t j = 0; j < kNumSensors; j++) {
+		AliDCSSensor * sens = new ((*array)[j])AliDCSSensor;
+		sens->SetStringID(fgkDCSDataPoints[j+kSensors]);
+	}
+	AliInfo(Form("Pressure Entries: %d",array->GetEntries()));
+	
+	fPressure = new AliDCSSensorArray(GetStartTimeDCSQuery(), GetEndTimeDCSQuery(), array);
 }
 
 //_______________________________________________________________
@@ -963,19 +965,20 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 
 	if (array) array = 0x0;
 
-	AliInfo(Form("==========AtmosPressures (Cavern + Surface)==========="));
+	AliInfo(Form("========== AtmosPressures (Cavern + Surface + Cavern2) ==========="));
 	AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap);
-	dcsSensorArray->Print();
-	if( fPressure->NumFits()==0 ) {
-		Log("Problem with the pressure sensor values!!!");
+	//dcsSensorArray->Print();
+	if( fPressure->NumFits()<kNumSensors ) {
+		Log(Form("Problem with the pressure sensor values! Not all the %d pressure sensors have been fit",kNumSensors));
 	} 
 	else {
+		Log(Form("Number of fits performed = %d",fPressure->NumFits()));
 		AliInfo(Form("==========CavernAtmosPressure==========="));
 		indexDP = kCavernAtmosPressure;
 		AliDCSSensor* sensorCavernP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
 		AliDebug(2,Form("sensorCavernP2 = %p", sensorCavernP2));
 		if( sensorCavernP2->GetFit() ) {
-			Log(Form("<%s> for run %d: Sensor Fit found",fgkDCSDataPoints[indexDP], fRun));
+			Log(Form("Fit for Sensor %s found",fgkDCSDataPoints[indexDP]));
 			grpObj->SetCavernAtmosPressure(sensorCavernP2);
 			nEnvEntries++;
 		} 
@@ -988,8 +991,21 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 		AliDCSSensor* sensorP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
 		AliDebug(2,Form("sensorP2 = %p", sensorP2));
 		if( sensorP2->GetFit() ) {
-			Log(Form("<%s> for run %d: Sensor Fit found",fgkDCSDataPoints[indexDP], fRun));
+			Log(Form("Fit for Sendor %s found",fgkDCSDataPoints[indexDP]));
 			grpObj->SetSurfaceAtmosPressure(sensorP2);
+			nEnvEntries++;
+		} 
+		//if (sensorP2) delete sensorP2;
+		else {
+			Log(Form("ERROR Sensor Fit for %s not found ", fgkDCSDataPoints[indexDP] ));
+		}
+		AliInfo(Form("==========CavernAtmosPressure2==========="));
+		indexDP = kCavernAtmosPressure2;
+		AliDCSSensor* sensorCavernP22 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
+		AliDebug(2,Form("sensorCavernP2_2 = %p", sensorCavernP22));
+		if( sensorCavernP22->GetFit() ) {
+			Log(Form("Fit for Sensor %s found",fgkDCSDataPoints[indexDP]));
+			grpObj->SetCavernAtmosPressure2(sensorCavernP22);
 			nEnvEntries++;
 		} 
 		//if (sensorP2) delete sensorP2;
@@ -1875,7 +1891,7 @@ AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap)
 		fPressure->MakeSplineFit(map);
 		Double_t fitFraction = fPressure->NumFits()/fPressure->NumSensors(); 
 		if (fitFraction > kFitFraction ) {
-			AliInfo(Form("Pressure values extracted, %d fits performed.", fPressure->NumFits()));
+			AliInfo(Form("Pressure values extracted, %d fits performed for %d sensors.", fPressure->NumFits(),fPressure->NumSensors()));
 		} else { 
 			AliInfo("Too few pressure maps fitted!!!");
 		}

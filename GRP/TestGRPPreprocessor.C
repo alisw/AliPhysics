@@ -161,7 +161,7 @@ TMap* CreateDCSAliasMap(Int_t errorLevel)
   // <valueList> is a TObjArray of AliDCSValue
   // An AliDCSValue consists of timestamp and a value in form of a AliSimpleValue
   
-  const Int_t fgknDCSDP = 50;
+  const Int_t fgknDCSDP = 51;
   const char* fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
                    "LHCState",              // missing in DCS
                    "L3Polarity",
@@ -212,7 +212,8 @@ TMap* CreateDCSAliasMap(Int_t errorLevel)
 		   "Dipole_Outside_Temperature",
                    "CavernTemperature",
                    "CavernAtmosPressure",
-                   "SurfaceAtmosPressure"
+                   "SurfaceAtmosPressure",
+                   "CavernAtmosPressure2",
                  };
 
   TMap* aliasMap;
@@ -294,6 +295,7 @@ TMap* CreateDCSAliasMap(Int_t errorLevel)
       dcsVal = new AliDCSValue((Float_t) (timeStamp+1+10*nAlias), timeStampValue[timeStamp]);
       valueSet->Add(dcsVal);
     }
+    cout << " simulating " << fgkDCSDataPoints[nAlias] << endl;
     aliasMap->Add( new TObjString( fgkDCSDataPoints[nAlias]), valueSet );
   }
 

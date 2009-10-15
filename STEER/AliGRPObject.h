@@ -73,6 +73,7 @@ class AliGRPObject : public TObject {
 	Float_t*  GetCavernTemperature() const {return fCavernTemperature;}
 	Float_t   GetCavernTemperature(Stats stat) const {return fCavernTemperature[stat];}
 	AliDCSSensor*   GetCavernAtmosPressure() const {return fCavernAtmosPressure;}
+	AliDCSSensor*   GetCavernAtmosPressure2() const {return fCavernAtmosPressure2;}
 	AliDCSSensor*   GetSurfaceAtmosPressure() const {return fSurfaceAtmosPressure;}
 
 	Float_t*  GetHallProbesArray(DP_HallProbes hp) const;
@@ -120,6 +121,7 @@ class AliGRPObject : public TObject {
 	}
 	void SetCavernTemperature(Float_t cavernTemperature, Stats stat)  {fCavernTemperature[stat] = cavernTemperature;}
 	void SetCavernAtmosPressure(AliDCSSensor* const cavernAtmosPressure)  {fCavernAtmosPressure = cavernAtmosPressure;}
+	void SetCavernAtmosPressure2(AliDCSSensor* const cavernAtmosPressure)  {fCavernAtmosPressure2 = cavernAtmosPressure;}
 	void SetSurfaceAtmosPressure(AliDCSSensor* const surfacePressure)  {fSurfaceAtmosPressure = surfacePressure;}
 
 	void SetHallProbes(DP_HallProbes hp, Float_t hall_probe, Stats stat)  {fHallProbes[hp*fPoints+stat] = hall_probe;}
@@ -181,6 +183,7 @@ class AliGRPObject : public TObject {
 	Float_t*  fCavernTemperature;     // [fPoints]
                                           // CavernTemperature entry from DCS DB
 	AliDCSSensor*  fCavernAtmosPressure;    // CavernAtmosPressure entry from DCS DB
+	AliDCSSensor*  fCavernAtmosPressure2;    // CavernAtmosPressure2 entry from DCS DB
 	AliDCSSensor*  fSurfaceAtmosPressure;   // SurfaceAtmosPressure entry from DCS DB
 
 	// Hall Probes
@@ -188,7 +191,7 @@ class AliGRPObject : public TObject {
 	Float_t* fHallProbes;       //[fDimension] 
 	                            // array containg the values for the Hall Probes
 
-	ClassDef(AliGRPObject,2)
+	ClassDef(AliGRPObject,3)
 
 };
 

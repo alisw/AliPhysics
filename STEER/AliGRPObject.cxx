@@ -103,8 +103,8 @@ AliGRPObject::AliGRPObject():
 	fL3Current(new Float_t[fPoints]),
 	fDipoleCurrent(new Float_t[fPoints]),
 	fCavernTemperature(new Float_t[fPoints]),
-	//fCavernAtmosPressure(new Float_t[fPoints]),
 	fCavernAtmosPressure(0x0),
+	fCavernAtmosPressure2(0x0),
 	fSurfaceAtmosPressure(0x0),
 	fHallProbes(0x0)
 {
@@ -127,7 +127,6 @@ AliGRPObject::AliGRPObject():
 		fL3Current[i] = fgkInvalidFloat;
 		fDipoleCurrent[i] = fgkInvalidFloat;
 		fCavernTemperature[i] = fgkInvalidFloat;
-		//		fCavernAtmosPressure[i] = fgkInvalidFloat;
 	}
 }
 
@@ -156,6 +155,7 @@ AliGRPObject::AliGRPObject(const AliGRPObject &obj):
 	fDipoleCurrent(new Float_t[fPoints]),
 	fCavernTemperature(new Float_t[fPoints]),
 	fCavernAtmosPressure(obj.fCavernAtmosPressure),
+	fCavernAtmosPressure2(obj.fCavernAtmosPressure2),
 	fSurfaceAtmosPressure(obj.fSurfaceAtmosPressure),
 	fHallProbes(0x0)
 
@@ -202,6 +202,7 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 	this->fL3Polarity = obj.GetL3Polarity();
 	this->fDipolePolarity = obj.GetDipolePolarity();
 	this->fCavernAtmosPressure = obj.GetCavernAtmosPressure();
+	this->fCavernAtmosPressure2 = obj.GetCavernAtmosPressure2();
 	this->fSurfaceAtmosPressure = obj.GetSurfaceAtmosPressure();
 	this->fPoints = obj.GetPoints();
 	this->fDimension = obj.GetDimension();
@@ -255,6 +256,10 @@ AliGRPObject::~AliGRPObject() {
 	if (fCavernAtmosPressure){
 		delete fCavernAtmosPressure;
 		fCavernAtmosPressure = 0x0;
+	}
+	if (fCavernAtmosPressure2){
+		delete fCavernAtmosPressure2;
+		fCavernAtmosPressure2 = 0x0;
 	}
 	if (fSurfaceAtmosPressure){
 		delete fSurfaceAtmosPressure;
