@@ -174,7 +174,7 @@ Bool_t AliTRDcheckDET::PostProcess(){
   ax->SetRangeUser(-0.5, nTriggerClasses+.5);
   h->GetYaxis()->SetRangeUser(0,1);
 
-  fNRefFigures = 14;
+  fNRefFigures = 18;
 
   return kTRUE;
 }
@@ -198,7 +198,7 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
     return kTRUE;
   case kNtrackletsTrack:
     h=MakePlotNTracklets();
-    PutTrendValue("NTrackletsTracklet", h->GetMean(), h->GetRMS());
+    PutTrendValue("NTrackletsTrack", h->GetMean(), h->GetRMS());
     return kTRUE;
   case kNtrackletsCross:
     h = (TH1F*)fContainer->FindObject("hNtlsCross");
@@ -221,15 +221,18 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
     return kTRUE;
   case kTrackStatus:
     ((TH1I *)fContainer->FindObject("hTrackStatus"))->Draw("c");
+    gPad->SetLogy(1);
     return kTRUE;
   case kTrackletStatus:
     ((TH2S *)fContainer->FindObject("hTrackletStatus"))->Draw("colz");
+    gPad->SetLogy(0);
     return kTRUE;
   case kChi2:
     MakePlotChi2();
     return kTRUE;
   case kPH:
     MakePlotPulseHeight();
+    gPad->SetLogy(0);
     return kTRUE;
   case kChargeCluster:
     (h = (TH1F*)fContainer->FindObject("hQcl"))->Draw("c");
@@ -349,14 +352,15 @@ TObjArray *AliTRDcheckDET::Histos(){
   if(!(h = (TH2S *)gROOT->FindObject("hTrackletStatus"))){
     h = new TH2S("hTrackletStatus", "Tracklet status", 6,0,6,8,0,8);
     axis = h->GetYaxis();
-    axis->SetBinLabel(axis->GetFirst() + 0, "OK");
-    axis->SetBinLabel(axis->GetFirst() + 1, "Geom");
-    axis->SetBinLabel(axis->GetFirst() + 2, "Boun");
-    axis->SetBinLabel(axis->GetFirst() + 3, "NoCl");
-    axis->SetBinLabel(axis->GetFirst() + 4, "NoAttach");
-    axis->SetBinLabel(axis->GetFirst() + 5, "NoClTr");
-    axis->SetBinLabel(axis->GetFirst() + 6, "NoFit");
-    axis->SetBinLabel(axis->GetFirst() + 7, "Chi2");
+    axis->SetBinLabel(1, "OK");
+    axis->SetBinLabel(2, "Geom");
+    axis->SetBinLabel(3, "Boun");
+    axis->SetBinLabel(4, "NoCl");
+    axis->SetBinLabel(5, "NoAttach");
+    axis->SetBinLabel(6, "NoClTr");
+    axis->SetBinLabel(7, "NoFit");
+    axis->SetBinLabel(8, "Chi2");
+    h->GetXaxis()->SetTitle("layer");
   }
   fContainer->AddAt(h, kTrackletStatus);
 
@@ -1029,7 +1033,9 @@ TH1* AliTRDcheckDET::MakePlotNTracklets(){
   TH1F *hBAR = (TH1F *)fContainer->FindObject("hNtlsBAR");
   TH1F *hSTA = (TH1F *)fContainer->FindObject("hNtlsSTA");
   TH1F *hCON = (TH1F *)fContainer->FindObject("hNtls");
-  TLegend *leg = new TLegend(0.6, 0.75, 0.89, 0.89);
+  TLegend *leg = new TLegend(0.13, 0.75, 0.39, 0.89);
+  leg->SetBorderSize(1);
+  leg->SetFillColor(0);
 
   Float_t scale = hCON->Integral();
   hCON->Scale(100./scale);
@@ -1040,6 +1046,7 @@ TH1* AliTRDcheckDET::MakePlotNTracklets(){
   hCON->GetYaxis()->SetRangeUser(0.,40.);
   hCON->GetYaxis()->SetTitleOffset(1.2);
   hCON->Draw("bar1"); leg->AddEntry(hCON, "Total", "f");
+  hCON->SetMaximum(55.);
 
   hBAR->Scale(100./scale);
   hBAR->SetFillColor(kGreen);hBAR->SetLineColor(kGreen);
