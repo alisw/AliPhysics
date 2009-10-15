@@ -64,6 +64,7 @@ AliAnaElectron::AliAnaElectron()
   fhImpactXY(0),fhRefMult(0),fhRefMult2(0),
   //matching checks
   fh3pOverE(0),fh3EOverp(0),fh3pOverE2(0),fh3EOverp2(0),fh3pOverE3(0),fh3EOverp3(0),
+  fh2pOverE(0),fh2EOverp(0),fh2pOverE2(0),fh2EOverp2(0),
   fh1dR(0),fh2EledEdx(0),fh2MatchdEdx(0),fh2dEtadPhi(0),
   fh2dEtadPhiMatched(0),fh2dEtadPhiUnmatched(0),fh2TrackPVsClusterE(0),
   fh2TrackPtVsClusterE(0),fh2TrackPhiVsClusterPhi(0),fh2TrackEtaVsClusterEta(0),
@@ -80,7 +81,7 @@ AliAnaElectron::AliAnaElectron()
   fhIPSigBtagQA1(0),fhIPSigBtagQA2(0),fhTagJetPt1x4(0),fhTagJetPt2x3(0),fhTagJetPt3x2(0),
   fhePlusTagJetPt1x4(0),fhePlusTagJetPt2x3(0),fhePlusTagJetPt3x2(0),
   //B-Jet histograms
-  fhJetType(0),fhBJetXsiFF(0),fhBJetPtFF(0),fhBJetEtaPhi(0),
+  fhJetType(0),fhLeadJetType(0),fhBJetXsiFF(0),fhBJetPtFF(0),fhBJetEtaPhi(0),
   fhNonBJetXsiFF(0),fhNonBJetPtFF(0),fhNonBJetEtaPhi(0),
   /////////////////////////////////////////////////////////////
   //Histograms that rely on MC info (not filled for real data)
@@ -88,7 +89,7 @@ AliAnaElectron::AliAnaElectron()
   //reco electrons from various sources
   fhPhiConversion(0),fhEtaConversion(0),
   //for comparisons with tracking detectors
-  fhPtHadron(0),fhPtNPEleTPC(0),fhPtNPEleTPCTRD(0),fhPtNPEleTTE(0),
+  fhPtTrack(0),fhPtHadron(0),fhPtNPEleTPC(0),fhPtNPEleTPCTRD(0),fhPtNPEleTTE(0),
   fhPtNPEleEMCAL(0),fhPtNPEBHadron(0),
   //for computing efficiency of B-jet tags
   fhBJetPt1x4(0),fhBJetPt2x3(0),fhBJetPt3x2(0),
@@ -120,6 +121,8 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
     fh3pOverE(g.fh3pOverE),fh3EOverp(g.fh3EOverp),
     fh3pOverE2(g.fh3pOverE2),fh3EOverp2(g.fh3EOverp2),
     fh3pOverE3(g.fh3pOverE3),fh3EOverp3(g.fh3EOverp3),
+    fh2pOverE(g.fh2pOverE),fh2EOverp(g.fh2EOverp),
+    fh2pOverE2(g.fh2pOverE2),fh2EOverp2(g.fh2EOverp2),
     fh1dR(g.fh1dR),fh2EledEdx(g.fh2EledEdx),
     fh2MatchdEdx(g.fh2MatchdEdx),fh2dEtadPhi(g.fh2dEtadPhi),
     fh2dEtadPhiMatched(g.fh2dEtadPhiMatched),fh2dEtadPhiUnmatched(g.fh2dEtadPhiUnmatched),
@@ -141,16 +144,16 @@ AliAnaElectron::AliAnaElectron(const AliAnaElectron & g)
     fhePlusTagJetPt1x4(g.fhePlusTagJetPt1x4),fhePlusTagJetPt2x3(g.fhePlusTagJetPt2x3),
     fhePlusTagJetPt3x2(g.fhePlusTagJetPt3x2),
     //B-Jet histograms
-    fhJetType(g.fhJetType),fhBJetXsiFF(g.fhBJetXsiFF),fhBJetPtFF(g.fhBJetPtFF),
-    fhBJetEtaPhi(g.fhBJetEtaPhi),fhNonBJetXsiFF(g.fhNonBJetXsiFF),fhNonBJetPtFF(g.fhNonBJetPtFF),
-    fhNonBJetEtaPhi(g.fhNonBJetEtaPhi),
+    fhJetType(g.fhJetType),fhLeadJetType(g.fhLeadJetType),fhBJetXsiFF(g.fhBJetXsiFF),
+    fhBJetPtFF(g.fhBJetPtFF),fhBJetEtaPhi(g.fhBJetEtaPhi),fhNonBJetXsiFF(g.fhNonBJetXsiFF),
+    fhNonBJetPtFF(g.fhNonBJetPtFF),fhNonBJetEtaPhi(g.fhNonBJetEtaPhi),
     /////////////////////////////////////////////////////////////
     //Histograms that rely on MC info (not filled for real data)
     fEleNtuple(g.fEleNtuple),
     //reco electrons from various sources
     fhPhiConversion(g.fhPhiConversion),fhEtaConversion(g.fhEtaConversion),
     //for comparisons with tracking detectors
-    fhPtHadron(g.fhPtHadron),fhPtNPEleTPC(g.fhPtNPEleTPC),
+    fhPtTrack(g.fhPtTrack),fhPtHadron(g.fhPtHadron),fhPtNPEleTPC(g.fhPtNPEleTPC),
     fhPtNPEleTPCTRD(g.fhPtNPEleTPCTRD),fhPtNPEleTTE(g.fhPtNPEleTTE),
     fhPtNPEleEMCAL(g.fhPtNPEleEMCAL),fhPtNPEBHadron(g.fhPtNPEBHadron),
     //for computing efficiency of B-jet tags
@@ -204,6 +207,10 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fh3EOverp2 = g.fh3EOverp2;
   fh3pOverE3 = g.fh3pOverE3;
   fh3EOverp3 = g.fh3EOverp3;
+  fh2pOverE  = g.fh2pOverE;
+  fh2EOverp  = g.fh2EOverp;
+  fh2pOverE2 = g.fh2pOverE2;
+  fh2EOverp2 = g.fh2EOverp2;
   fh1dR     = g.fh1dR;
   fh2EledEdx = g.fh2EledEdx;
   fh2MatchdEdx = g.fh2MatchdEdx;
@@ -247,6 +254,7 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fhePlusTagJetPt3x2 = g.fhePlusTagJetPt3x2; 
   //B-Jet histograms
   fhJetType = g.fhJetType; 
+  fhLeadJetType = g.fhLeadJetType; 
   fhBJetXsiFF = g.fhBJetXsiFF; 
   fhBJetPtFF = g.fhBJetPtFF; 
   fhBJetEtaPhi = g.fhBJetEtaPhi; 
@@ -260,6 +268,7 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   fhPhiConversion = g.fhPhiConversion; 
   fhEtaConversion = g.fhEtaConversion;
   //for comparisons with tracking detectors
+  fhPtTrack = g.fhPtTrack;
   fhPtHadron = g.fhPtHadron; fhPtNPEleTPC = g.fhPtNPEleTPC; 
   fhPtNPEleTPCTRD = g.fhPtNPEleTPCTRD; fhPtNPEleTTE = g.fhPtNPEleTTE; 
   fhPtNPEleEMCAL = g.fhPtNPEleEMCAL; fhPtNPEBHadron = g.fhPtNPEBHadron;
@@ -307,8 +316,8 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
 
   //event QA
   fhImpactXY = new TH1F("hImpactXY","Impact parameter for all tracks",200,-10,10.);
-  fhRefMult = new TH1F("hRefMult" ,"refmult QA: " ,100,0,200);
-  fhRefMult2  = new TH1F("hRefMult2" ,"refmult2 QA: " ,100,0,200);
+  fhRefMult = new TH1F("hRefMult" ,"refmult QA: " ,5000,0,5000);
+  fhRefMult2  = new TH1F("hRefMult2" ,"refmult2 QA: " ,5000,0,5000);
 
   outputContainer->Add(fhImpactXY);
   outputContainer->Add(fhRefMult);
@@ -321,6 +330,10 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   fh3EOverp2 = new TH3F("h3EOverp_Trk","EMCAL-TRACK matches E/p",nptbins,ptmin,ptmax,200,0.,5. ,30,0,30);
   fh3pOverE3 = new TH3F("h3pOverE_Tpc","EMCAL-TRACK matches p/E",nptbins,ptmin,ptmax,200,0.,10.,30,0,30);
   fh3EOverp3 = new TH3F("h3EOverp_Tpc","EMCAL-TRACK matches E/p",nptbins,ptmin,ptmax,200,0.,5. ,30,0,30);
+  fh2pOverE  = new TH2F("h2pOverE"    ,"EMCAL-TRACK matches p/E",nptbins,ptmin,ptmax,200,0.,10.);
+  fh2EOverp  = new TH2F("h2EOverp"    ,"EMCAL-TRACK matches E/p",nptbins,ptmin,ptmax,200,0.,5. );
+  fh2pOverE2 = new TH2F("h2pOverE_Trk","EMCAL-TRACK matches p/E",nptbins,ptmin,ptmax,200,0.,10.);
+  fh2EOverp2 = new TH2F("h2EOverp_Trk","EMCAL-TRACK matches E/p",nptbins,ptmin,ptmax,200,0.,5. );
 
   fh1dR = new TH1F("h1dR","EMCAL-TRACK matches dR",300, 0.,TMath::Pi());
   fh2EledEdx = new TH2F("h2EledEdx","dE/dx vs. p for electrons",200,0.,50.,200,0.,400.);
@@ -340,6 +353,10 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fh3EOverp2) ;
   outputContainer->Add(fh3pOverE3) ;
   outputContainer->Add(fh3EOverp3) ;
+  outputContainer->Add(fh2pOverE) ;
+  outputContainer->Add(fh2EOverp) ;
+  outputContainer->Add(fh2pOverE2) ;
+  outputContainer->Add(fh2EOverp2) ;
   outputContainer->Add(fh1dR) ; 
   outputContainer->Add(fh2EledEdx) ;
   outputContainer->Add(fh2MatchdEdx) ;
@@ -418,7 +435,8 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhePlusTagJetPt3x2);
 
   //B-Jet histograms
-  fhJetType = new TH2F("hJetType","# jets passing each tag method vs jet pt",10,0,10,300,0.,300.);
+  fhJetType = new TH2F("hJetType","# jets passing each tag method vs jet pt",15,0,15,300,0.,300.);
+  fhLeadJetType = new TH2F("hLeadJetType","# leading jets passing each tag method vs jet pt",15,0,15,300,0.,300.);
   fhBJetXsiFF = new TH2F("hBJetXsiFF","B-jet #Xsi Frag. Fn.",100,0.,10.,300,0.,300.);
   fhBJetPtFF = new TH2F("hBJetPtFF","B-jet p_{T} Frag. Fn.",nptbins,ptmin,ptmax,300,0.,300.);
   fhBJetEtaPhi = new TH2F("hBJetEtaPhi","B-jet eta-phi distribution",netabins,etamin,etamax,nphibins,phimin,phimax);
@@ -427,6 +445,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   fhNonBJetEtaPhi = new TH2F("hNonBJetEtaPhi","Non B-jet eta-phi distribution",netabins,etamin,etamax,nphibins,phimin,phimax);
 
   outputContainer->Add(fhJetType);
+  outputContainer->Add(fhLeadJetType);
   outputContainer->Add(fhBJetXsiFF);
   outputContainer->Add(fhBJetPtFF);
   outputContainer->Add(fhBJetEtaPhi);
@@ -454,6 +473,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     //4 - conversion, 5 - Dalitz, 6 - W and Z, 7 - junk/unknown, 8 - misidentified
 
     //histograms for comparison to tracking detectors
+    fhPtTrack  = new TH2F("hPtTrack","Track w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
     fhPtHadron = new TH2F("hPtHadron","Charged hadrons w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
     fhPtNPEleTPC = new TH2F("hPtNPEleTPC","Non-phot. Electrons identified by TPC w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
     fhPtNPEleTPCTRD = new TH2F("hPtNPEleTPCTRD","Non-phot. Electrons identified by TPC+TRD w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
@@ -461,6 +481,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     fhPtNPEleEMCAL = new TH2F("hPtNPEleEMCAL","Non-phot. Electrons identified by EMCAL w/in EMCAL acceptance",nptbins,ptmin,ptmax,10,0,10);
     fhPtNPEBHadron = new TH2F("hPtNPEBHadron","Non-phot. b-electrons (TPC+TRD+EMCAL) vs B-hadron pt w/in EMCAL acceptance",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
 
+    outputContainer->Add(fhPtTrack);
     outputContainer->Add(fhPtHadron);
     outputContainer->Add(fhPtNPEleTPC);
     outputContainer->Add(fhPtNPEleTPCTRD);
@@ -716,6 +737,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	  if(trkChgHad) fhPtHadron->Fill(track->Pt(),GetMCSource(tmctag));
 	  if(tpcEle && !photonic) fhPtNPEleTPC->Fill(track->Pt(),GetMCSource(tmctag));
 	  if(trkEle && !photonic) fhPtNPEleTPCTRD->Fill(track->Pt(),GetMCSource(tmctag));
+	  fhPtTrack->Fill(track->Pt(),GetMCSource(tmctag));
 	}
 
 	Bool_t emcEle = kFALSE;      
@@ -806,7 +828,16 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	  fh3pOverE3->Fill(minPt,minPe ,minMult);
 	  fh3EOverp3->Fill(minPt,minEp ,minMult);
 	}
-	
+	//new
+	if (tmctag>-1 && GetMCSource(tmctag)<8 ) {
+          fh2pOverE->Fill(minPt,minPe );
+          fh2EOverp->Fill(minPt,minEp );
+          if (trkEle) {
+            fh2pOverE2->Fill(minPt,minPe );
+            fh2EOverp2->Fill(minPt,minEp );
+          }
+        }
+
 	//////////////////////////////
 	//Electron cuts happen here!//
 	//////////////////////////////
@@ -922,7 +953,11 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       //For DVM jet tag, we will look for DVM electrons
       //For IPSig, we compute the IPSig for all tracks and if the
       //number passing is above the cut, it passes
+      Bool_t leadJet  = kFALSE;
+      if (ijet==0) leadJet= kTRUE;
       Bool_t eJet = kFALSE;  
+      Bool_t eJet2    = kFALSE; //electron triggered
+      Bool_t hadJet   = kFALSE; //hadron triggered 
       Bool_t dvmJet = kFALSE;  
       Bool_t ipsigJet = kFALSE;
       TRefArray* rt = jet->GetRefTracks();
@@ -936,6 +971,8 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
         if( GetIPSignificance(jetTrack, jet->Phi()) > 2.) trackCounter[3]++;
 	Bool_t isNPE = CheckTrack(jetTrack,"NPE");
 	if(isNPE) eJet = kTRUE;
+	if ( isNPE && jetTrack->Pt()>10.0 ) eJet2  =kTRUE;
+        if (!isNPE && jetTrack->Pt()>10.0) hadJet =kTRUE;
 	Bool_t isDVM = CheckTrack(jetTrack,"DVM");
 	if(isDVM) dvmJet = kTRUE;
       }
@@ -967,6 +1004,8 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
         if(isTrueDjet && !isTrueBjet &&  !dvmJet) fhDVMJet->Fill(5.,jet->Pt()); // charm -not tagged
         if(!(isTrueDjet||isTrueBjet ) &&  dvmJet) fhDVMJet->Fill(6.,jet->Pt()); // light flavor -tagged
         if(!(isTrueDjet||isTrueBjet ) && !dvmJet) fhDVMJet->Fill(7.,jet->Pt()); // light flavor -not tagged
+	if(isTrueBjet &&  eJet && dvmJet) fhDVMJet->Fill(8.,jet->Pt()); // bjet with electron
+        if(isTrueBjet && !eJet && dvmJet) fhDVMJet->Fill(9.,jet->Pt()); // needs more thought
 
 	if(isTrueBjet) {
 	  if(trackCounter[1]>0) fhBJetPt1x4->Fill(jet->Pt());
@@ -989,9 +1028,24 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       if(dvmJet && ipsigJet && !eJet)   fhJetType->Fill(6.,jet->Pt()); //dvm & ipsig
       if(dvmJet && ipsigJet && eJet)    fhJetType->Fill(7.,jet->Pt()); //all
       if(dvmJet || ipsigJet || eJet)    fhJetType->Fill(8.,jet->Pt()); //any of them
+      if(eJet  )    fhJetType->Fill(9.,jet->Pt()); //any of them
+      if(dvmJet)    fhJetType->Fill(10.,jet->Pt()); //any of them
+      if(eJet2 )    fhJetType->Fill(11.,jet->Pt()); //any of them
+      if(hadJet)    fhJetType->Fill(12.,jet->Pt()); //any of them
 
       if(eJet || ipsigJet || dvmJet) fhBJetEtaPhi->Fill(jet->Eta(),jet->Phi());
       else fhNonBJetEtaPhi->Fill(jet->Eta(),jet->Phi());
+
+      //leading jets
+      if (leadJet) {
+	fhLeadJetType->Fill(0.,jet->Pt()); //all
+        if(eJet   )    fhLeadJetType->Fill(1.,jet->Pt());
+        if(eJet2  )    fhLeadJetType->Fill(2.,jet->Pt());
+        if(hadJet )    fhLeadJetType->Fill(3.,jet->Pt());
+        if(eJet   && (dvmJet || ipsigJet) )    fhLeadJetType->Fill(4.,jet->Pt());
+        if(eJet2  && (dvmJet || ipsigJet) )    fhLeadJetType->Fill(5.,jet->Pt());
+        if(hadJet && (dvmJet || ipsigJet) )    fhLeadJetType->Fill(6.,jet->Pt());
+      }
 
       for(Int_t itrk = 0; itrk < ntrk; itrk++) {
 	AliAODTrack* jetTrack = (AliAODTrack*)jet->GetTrack(itrk);
