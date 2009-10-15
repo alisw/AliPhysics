@@ -33,7 +33,8 @@ AliPMDhit::AliPMDhit():
 //_____________________________________________________________________________
 AliPMDhit::AliPMDhit(Int_t shunt,Int_t track, Int_t *vol, Float_t *hits):
   AliHit(shunt, track),
-  fEnergy(hits[3])
+  fEnergy(hits[3]),
+  fTime(hits[4])
 {
   //
   // Add a PMD hit
@@ -43,11 +44,11 @@ AliPMDhit::AliPMDhit(Int_t shunt,Int_t track, Int_t *vol, Float_t *hits):
   fX=hits[0];
   fY=hits[1];
   fZ=hits[2];
-  fTime = hits[3];
 }
 //_____________________________________________________________________________
 AliPMDhit::AliPMDhit(AliPMDhit* oldhit):
-  fEnergy(0.)
+  fEnergy(0.),
+  fTime(0.)
 {
   *this=*oldhit;
 }
