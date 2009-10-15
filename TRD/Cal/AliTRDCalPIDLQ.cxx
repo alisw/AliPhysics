@@ -88,6 +88,7 @@ Bool_t AliTRDCalPIDLQ::LoadPDF(TDirectoryFile *d)
       fModel->AddAt(pdf->Clone(), GetModelID(ip, is, 0));
     }
   }
+  return kTRUE;
 }
   //
 //_________________________________________________________________________

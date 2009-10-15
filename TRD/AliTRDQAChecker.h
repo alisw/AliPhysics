@@ -25,6 +25,8 @@ class TObjArray;
 // --- AliRoot header files ---
 #include "AliQAv1.h"
 #include "AliQACheckerBase.h"
+
+class AliDetectorRecoParam;
 class AliTRDLoader ; 
 
 class AliTRDQAChecker: public AliQACheckerBase {
@@ -37,6 +39,8 @@ public:
   virtual Double_t * Check(TList * /*list*/) {return NULL;}
   virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** /*list*/);
   virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/, TNtupleD** /*nt*/)     {return NULL;}
+  virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/, AliDetectorRecoParam* /*param*/) {return NULL;}
+  virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/, TObjArray** /*list*/, AliDetectorRecoParam* /*param*/)  {return NULL;}
 
 private:
   

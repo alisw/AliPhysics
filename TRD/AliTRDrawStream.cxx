@@ -673,7 +673,7 @@ Bool_t AliTRDrawStream::Next()
 }
 
 //------------------------------------------------------------
-Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UInt_t **trackletContainer, UShort_t **errorCodeContainer) 
+Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *const digitsManager, UInt_t **trackletContainer, UShort_t **/*errorCodeContainer*/) 
 {
   //
   // Fills single chamber digit array 

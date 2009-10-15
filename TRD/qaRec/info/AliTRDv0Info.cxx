@@ -222,9 +222,9 @@ Double_t AliTRDv0Info::InvMass(Int_t part1, Int_t part2, AliESDv0 *esdv0)
     (mn[2]+mp[2])*(mn[2]+mp[2]);
 
   //invariant mass :	  	     
-  Double_t InvMass = TMath::Sqrt((e1+e2)*(e1+e2)-momsum);
+  Double_t mInv = TMath::Sqrt((e1+e2)*(e1+e2)-momsum);
 
-  return InvMass;
+  return mInv;
   
 }
 //_________________________________________________

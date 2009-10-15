@@ -78,7 +78,7 @@ protected:
   ETRDpidRefMakerSource fRefP;       // reference momentum source
   Float_t       fTrainFreq;             //! training sample relative abundance
   Float_t       fTestFreq;              //! testing sample relative abundance
-  UChar_t       fLy;                    //! TRD layer
+  Char_t        fLy;                    //! TRD layer
   Float_t       fP;                     //! momentum
   Float_t       fdEdx[10];              //! dEdx array
   Float_t       fPID[AliPID::kSPECIES]; //! pid from v0s
@@ -87,7 +87,7 @@ private:
   AliTRDpidRefMaker(const AliTRDpidRefMaker&);              // not implemented
   AliTRDpidRefMaker& operator=(const AliTRDpidRefMaker&);   // not implemented
 
-  ClassDef(AliTRDpidRefMaker, 1); // TRD PID reference  maker base class
+  ClassDef(AliTRDpidRefMaker, 2); // TRD PID reference  maker base class
 };
 
 #endif

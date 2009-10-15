@@ -285,11 +285,11 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
         for(int iy=1; iy<=ay->GetNbins(); iy++){
           rxy[1] = ay->GetBinCenter(iy);
       
-          Double_t r,e;
-          pdf.Eval(rxy, r, e);
-          if(r<0. || e/r>.15) continue; // 15% relative error
-          //printf("x[%2d] x[%2d] r[%f] e[%f]\n", ix, iy, r, e);
-          h2s->SetBinContent(ix, iy, r);
+          Double_t rr,ee;
+          pdf.Eval(rxy, rr, ee);
+          if(rr<0. || ee/rr>.15) continue; // 15% relative error
+          //printf("x[%2d] x[%2d] r[%f] e[%f]\n", ix, iy, rr, ee);
+          h2s->SetBinContent(ix, iy, rr);
         }
       }
 
