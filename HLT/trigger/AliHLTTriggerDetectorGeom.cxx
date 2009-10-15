@@ -27,7 +27,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTTriggerDetectorGeom.h"
-
+#include <ostream>
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTriggerDetectorGeom)
 
@@ -37,8 +37,6 @@ AliHLTTriggerDetectorGeom::AliHLTTriggerDetectorGeom()
   fEtaMax(0),
   fPhiMin(0),
   fPhiMax(0),
-  fInitalPoint(0),
-  fNormVector(0),
   fName('\0')
 {
   // See header file for class documentation
@@ -54,7 +52,7 @@ AliHLTTriggerDetectorGeom::~AliHLTTriggerDetectorGeom()
   // See header file for class documentation
 }
 
-void AliHLTTriggerDetectorGeom::SetInitialPoint(Double_t &point[3])
+void AliHLTTriggerDetectorGeom::SetInitialPoint(Double_t *point)
 {
   // See header file for class documentation
   for(int i = 0; i < 3; i++)
@@ -63,11 +61,30 @@ void AliHLTTriggerDetectorGeom::SetInitialPoint(Double_t &point[3])
     }
 }
 
-void AliHLTTriggerDetectorGeom::SetNormVector(Double_t &nVector[3])
+void AliHLTTriggerDetectorGeom::SetNormVector(Double_t *nVector)
 {
   // See header file for class documentation
   for(int i = 0; i < 3; i++)
     {
       fNormVector[i] = nVector[i];
     }
+}
+
+void AliHLTTriggerDetectorGeom::GetInitialPoint(Double_t *point)
+{
+  for(int i = 0; i < 3; i++)
+    {
+      point[i] = fInitalPoint[i];
+    }
+}
+
+void AliHLTTriggerDetectorGeom::PrintDetectorGeom(std::ostream &out)
+{
+  out << "Name: " << fName << std::endl;
+  out << "Eta Min: " << fEtaMin << std::endl;
+  out << "Eta Max: " << fEtaMax << std::endl;
+  out << "Phi Min: " << fPhiMin << std::endl;
+  out << "Phi Max: " << fPhiMax << std::endl;
+  out << "Initial Point: {" << fInitalPoint[0] << ", " << fInitalPoint[1] << ", " << fInitalPoint[2] << std::endl; 
+  out << "Normal Vector: {" << fNormVector[0] << ", " << fNormVector[1] << ", " << fNormVector[2] << std::endl; 
 }

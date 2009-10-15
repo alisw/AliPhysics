@@ -12,6 +12,8 @@
 ///         Used for the AliHLTTriggerBarrelGeomMultiplicity classes
 
 #include "TObject.h"
+#include "TString.h"
+#include <ostream>
 
 /**
  * @class  AliHLTTriggerDetectorGeom
@@ -59,19 +61,31 @@ public:
    * Set the initial point describing the plane
    * @param point is the point
    */
-  void SetInitialPoint(Double_t &point[3]); // Set initial point
+  void SetInitialPoint(Double_t *point); // Set initial point
 
   /** 
    * Set the vector describing the plane
    * @param nVector is a the vector
    */
-  void SetNormVector(Double_t &nVector[3]); // Set normal vector
+  void SetNormVector(Double_t *nVector); // Set normal vector
 
   /**
    * Set the name of the (sub-)detector
    * @param name is the name
    */
-  void SetName(TString &name) { fName = name; } // Set name
+  void SetDetName(TString &name) { fName = name; } // Set name
+
+  Double_t EtaMin() { return fEtaMin; }
+  Double_t EtaMax() { return fEtaMax; }
+  Double_t PhiMin() { return fPhiMin; }
+  Double_t PhiMax() { return fPhiMax; }
+
+  void GetInitialPoint(Double_t *point);
+  Double_t* NormVector() { return fNormVector; }
+  
+  TString DetName() { return fName; }
+
+  void PrintDetectorGeom(std::ostream &out);
 
 private:
 

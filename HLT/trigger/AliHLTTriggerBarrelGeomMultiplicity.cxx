@@ -17,8 +17,8 @@
 /// @file   AliHLTTriggerBarrelGeomMultiplicity.cxx
 /// @author Oystein Djuvsland
 /// @date   2009-10-08
-/// @brief  HLT trigger component for charged particle multiplicity in
-///         the central barrel.
+/// @brief  HLT trigger component for charged particle multiplicity 
+///         within a geometrical acceptance in the central barrel.
 
 // see header file for class documentation
 // or
@@ -27,20 +27,28 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTTriggerBarrelGeomMultiplicity.h"
+#include "AliHLTTriggerDetectorGeom.h"
 #include "AliESDEvent.h"
 #include "AliHLTTriggerDecision.h"
 #include "AliHLTDomainEntry.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "TObjArray.h"
 #include "TObjString.h"
+#include "TObjArray.h"
+#include "TVector3.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "TFile.h"
+#include "AliHLTTrigger.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTriggerBarrelGeomMultiplicity)
 
 AliHLTTriggerBarrelGeomMultiplicity::AliHLTTriggerBarrelGeomMultiplicity()
   : AliHLTTrigger()
-  , fMinTracks(1)
-  , fSolenoidBz(0.0)
+  , fSolenoidBz(0)
+  , fMinTracks(0)
+  , fDetectorArray(0)
 {
   // see header file for class documentation
   // or
@@ -50,16 +58,16 @@ AliHLTTriggerBarrelGeomMultiplicity::AliHLTTriggerBarrelGeomMultiplicity()
 
 }
 
-const char* AliHLTTriggerBarrelGeomMultiplicity::fgkOCDBEntry="HLT/ConfigHLT/BarrelGeomMultiplicityTrigger";
-
 AliHLTTriggerBarrelGeomMultiplicity::~AliHLTTriggerBarrelGeomMultiplicity()
 {
   // see header file for class documentation
 }
 
-const char* AliHLTTriggerBarrelGeomMultiplicity::GetTriggerName() const
+const char* AliHLTTriggerBarrelGeomMultiplicity::GetTriggerName() const 
 {
   // see header file for class documentation
+  const char* name = fTriggerName;
+  if(name) return name;
   return "BarrelGeomMultiplicityTrigger";
 }
 
@@ -68,6 +76,22 @@ AliHLTComponent* AliHLTTriggerBarrelGeomMultiplicity::Spawn()
   // see header file for class documentation
   return new AliHLTTriggerBarrelGeomMultiplicity;
 }
+
+int AliHLTTriggerBarrelGeomMultiplicity::Reconfigure(const char *cdbEntry, const char *chainId)
+{
+  // see header file for class documentation
+
+  // configure from the specified entry or the default
+  const char* entry=cdbEntry;
+
+  if (!entry)
+    {
+      HLTDebug("No CDB path specified");
+      entry = fOCDBEntry; 
+    }
+
+  return GetDetectorGeomsFromCDBObject(entry, chainId);
+} 
 
 int AliHLTTriggerBarrelGeomMultiplicity::DoTrigger()
 {
@@ -79,74 +103,57 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoTrigger()
   const TObject* obj = GetFirstInputObject(kAliHLTAllDataTypes, "AliESDEvent");
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
   TString description;
-  TString ptcut,tdca,ldca,dcaref,op1st,op2nd;
-  if (esd != NULL) {
-    numberOfTracks=0;
-    esd->GetStdContent();
+  if (esd != NULL) 
+    {
+      numberOfTracks=0;
+      esd->GetStdContent();
     
-    for (Int_t i = 0; i < esd->GetNumberOfTracks(); i++) {
-      if (CheckCondition(esd->GetTrack(i), esd->GetMagneticField())) numberOfTracks++;
+      for (Int_t i = 0; i < esd->GetNumberOfTracks(); i++) 
+	{
+	  if (CheckCondition(esd->GetTrack(i), esd->GetMagneticField())) numberOfTracks++;
+	}
     }
-  }
 
   // try the AliHLTExternal track data as input
-  if (iResult>=0 && numberOfTracks<0) {
-    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack);
-	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
-      if (numberOfTracks<0) numberOfTracks=0;
-      vector<AliHLTGlobalBarrelTrack> tracks;
-      if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
-	for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
-	     element!=tracks.end(); element++) {
-	  if (CheckCondition(&(*element), fSolenoidBz)) numberOfTracks++;
+  if (iResult>=0 && numberOfTracks<0) 
+    {
+      for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack);
+	   pBlock!=NULL; pBlock=GetNextInputBlock()) 
+	{
+	  if (numberOfTracks<0) numberOfTracks=0;
+	  vector<AliHLTGlobalBarrelTrack> tracks;
+	  if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) 
+	    {
+	      for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
+		   element!=tracks.end(); element++) 
+		{
+		  if (CheckCondition(&(*element), fSolenoidBz)) numberOfTracks++;
+		}
+	    } 
+	  else if (iResult<0) 
+	    {
+	      HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d", 
+		       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);
+	    }
 	}
-      } else if (iResult<0) {
-	HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d", 
-		 DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);
-      }
     }
-  }
-  if (numberOfTracks>=fMinTracks) {
+  if (numberOfTracks>=fMinTracks) 
+    {
+      description.Form("Event contains %d track(s) satisfying geometrical cut", numberOfTracks);
+      SetDescription(description);
 
-    ApplyTrigger();
-
-    description.Form("Event contains %d track(s) with ", numberOfTracks);
-    SetDescription(description.Data());
-    // Enable the central detectors for readout.
-    GetReadoutList().Enable(
-			    AliHLTReadoutList::kITSSPD |
-			    AliHLTReadoutList::kITSSDD |
-			    AliHLTReadoutList::kITSSSD |
-			    AliHLTReadoutList::kTPC |
-			    AliHLTReadoutList::kTRD |
-			    AliHLTReadoutList::kTOF |
-			    AliHLTReadoutList::kHMPID |
-			    AliHLTReadoutList::kPHOS
-			    );
-      // Add the available HLT information for readout too.
-      GetTriggerDomain().Add("CLUSTERS", "TPC ");
-      TriggerEvent(true);
-      return 0;
+      TriggerEvent(fTriggerDecision);
     }
-    description.Form("No tracks matching the tresholds found in the central barrel (min tracks %d, ", fMinTracks);
-    description+=ptcut;
-    description+=op1st;
-    description+=ldca;
-    description+=op2nd;
-    description+=tdca;
-    description+=dcaref;
-    description+=")";
-  } else {
-    description.Form("No input blocks found");
-  }
-  SetDescription(description.Data());
-  TriggerEvent(false);
+  
   return iResult;
+
 }
 
 template<class T>
 bool AliHLTTriggerBarrelGeomMultiplicity::CheckCondition(T* track, float b)
 {
+  bool ret = false;
+
   // see header file for class documentation
   if (!track) return false;
 
@@ -157,22 +164,24 @@ bool AliHLTTriggerBarrelGeomMultiplicity::CheckCondition(T* track, float b)
 }
 
 template<class T>
-bool AliHLTTriggerBarrelGeomMultiplicity::IsInDetector(T* track, b)
+bool AliHLTTriggerBarrelGeomMultiplicity::IsInDetectors(T* track, float b)
 {
-
-  for(Int_t i = 0; i < fDetectorList->GetEntries(); i++)
+  // See header file for class documentation  
+  for(Int_t i = 0; i < fDetectorArray->GetEntries(); i++)
     {
-      AliHLTTriggerDetectorGeom *det = static_cast<AliHLTTriggerDetectorGeom*>(fDetectorList.At(i))
+      AliHLTTriggerDetectorGeom *det = static_cast<AliHLTTriggerDetectorGeom*>(fDetectorArray->At(i));
       Double_t trackPoint[3];
-
+      
       det->GetInitialPoint(trackPoint);
-
+      
       bool ret = track->Intersect(trackPoint, det->NormVector(), b);
 
-      if(track->Eta() >= det->EtaMin() && 
-	 track->Eta() <= det->EtaMax() &&
-	 track->Phi() >= det->PhiMin() &&
-	 track->Phi() <= det->PhiMax())
+      TVector3 trackPos(trackPoint);
+      
+      if(trackPos.Eta() >= det->EtaMin() && 
+	 trackPos.Eta() <= det->EtaMax() &&
+	 trackPos.Phi() >= det->PhiMin() &&
+	 trackPos.Phi() <= det->PhiMax())
 	{
 	  return true;
 	}
@@ -186,136 +195,156 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoInit(int argc, const char** argv)
 
   // first configure the default
   int iResult=0;
-  iResult=ConfigureFromCDBTObjString(kAliHLTCDBSolenoidBz);
-  if (iResult>=0) iResult=ConfigureFromCDBTObjString(fgkOCDBEntry);
 
-  // configure from the command line parameters if specified
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
+
+
   return iResult;
 }
 
 int AliHLTTriggerBarrelGeomMultiplicity::DoDeinit()
-{
+ {
   // see header file for class documentation
   return 0;
-}
-
-int AliHLTTriggerBarrelGeomMultiplicity::Reconfigure(const char* cdbEntry, const char* /*chainId*/)
-{
-  // see header file for class documentation
-
-  // configure from the specified antry or the default one
-  const char* entry=cdbEntry;
-  if (!entry || entry[0]==0) {
-    ConfigureFromCDBTObjString(kAliHLTCDBSolenoidBz);
-    entry=fgkOCDBEntry;
-  }
-
-  return ConfigureFromCDBTObjString(entry);
 }
 
 int AliHLTTriggerBarrelGeomMultiplicity::ReadPreprocessorValues(const char* /*modules*/)
 {
   // see header file for class documentation
 
-  // TODO 2009-09-10: implementation
+  // TODO 2009-10-10: implementation
   // for the moment very quick, just reload the magnetic field
   return ConfigureFromCDBTObjString(kAliHLTCDBSolenoidBz);
 }
 
+int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromCDBObject(const char *cdbEntry, const char* chainId)
+{
+    // see header file for function documentation
+  int nDetectorGeoms=0;
+  const char *path = cdbEntry;
+  if(!path) path = fOCDBEntry;
+
+  if(path)
+    {
+      //     const char* chainId=GetChainId();
+      HLTInfo("configure from entry %s, chain id %s", path, (chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+      if (pEntry) 
+	{
+	  TObjArray* pArr=dynamic_cast<TObjArray*>(pEntry->GetObject());
+	  if (pArr) 
+	    {
+
+	      for(int i = 0; i < pArr->GetEntries(); i++)
+		{
+		  if(!strcmp(pArr->At(i)->ClassName(), "AliHLTTriggerDecision"))
+		    {
+		      fTriggerDecision = dynamic_cast<AliHLTTriggerDecision*>(pArr->At(i));
+		    }
+		  else if(!strcmp(pArr->At(i)->ClassName(), "AliHLTTriggerDetectorGeom"))
+		    {
+		      fDetectorArray->AddLast(dynamic_cast<AliHLTTriggerDetectorGeom*>(pArr->At(i)));
+		      nDetectorGeoms++;
+		      HLTInfo("received TObjArray of %d detector geometries", nDetectorGeoms);
+		    }
+		  else
+		    {
+		      HLTWarning("Unknown object in configuration object");
+		    }
+		}
+	    } 
+	  else 
+	    {
+	      HLTError("configuration object \"%s\" has wrong type, required TObjArray", path);
+	      nDetectorGeoms=-EINVAL;
+	    }
+	}
+      else 
+	{
+	  HLTError("can not fetch object \"%s\" from OCDB", path);
+	  nDetectorGeoms=-ENOENT;
+	}
+    }
+  return nDetectorGeoms;
+}
+
+int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromFile(const char *filename)
+{
+    // see header file for function documentation
+  int nDetectorGeoms=0;
+
+  if (filename) 
+    {
+      TFile *geomfile = TFile::Open(filename, "READ");
+      
+      if(geomfile)
+	{
+	  
+	  HLTInfo("configure from file \"%s\"", filename);
+	  TObjArray* pArr=dynamic_cast<TObjArray*>(geomfile->Get("GeomConfig"));
+	  if (pArr) 
+	    {
+
+	      for(int i = 0; i < pArr->GetEntries(); i++)
+		{
+		  if(!strcmp(pArr->At(i)->ClassName(), "AliHLTTriggerDecision"))
+		    {
+		      fTriggerDecision = dynamic_cast<AliHLTTriggerDecision*>(pArr->At(i));
+		    }
+		  else if(!strcmp(pArr->At(i)->ClassName(), "AliHLTTriggerDetectorGeom"))
+		    {
+		      fDetectorArray->AddLast(dynamic_cast<AliHLTTriggerDetectorGeom*>(pArr->At(i)));
+		      nDetectorGeoms++;
+		      HLTInfo("received TObjArray of %d detector geometries", nDetectorGeoms);
+		    }
+		  else
+		    {
+		      HLTWarning("Unknown object in configuration object");
+		    }
+		}
+	    } 
+	  else 
+	    {
+	      HLTError("configuration object has wrong type, required TObjArray");
+	      nDetectorGeoms=-EINVAL;
+	    }
+	  } 
+      else 
+	{
+	  HLTError("can not open file \"%s\"", filename);
+	  nDetectorGeoms=-ENOENT;
+	}
+    }
+  return nDetectorGeoms;
+}
+
 int AliHLTTriggerBarrelGeomMultiplicity::ScanConfigurationArgument(int argc, const char** argv)
 {
-  // see header file for class documentation
+  // See header file for class documentation
   if (argc<=0) return 0;
   int i=0;
   TString argument=argv[i];
 
   // -maxpt
-  if (argument.CompareTo("-maxpt")==0) {
-    if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    fPtMax=argument.Atof();
-    return 2;
+  if (argument.CompareTo("-geomfile")==0) 
+    {
+      if (++i>=argc) return -EPROTO;
+    
+      GetDetectorGeomsFromFile(argv[i]);
+    
+      return 2;
+    }    
+
+  if (argument.CompareTo("-triggername")==0) 
+    {
+      if (++i>=argc) return -EPROTO;
+      
+      fTriggerName = new char[128];
+      sprintf(fTriggerName, argv[i]);
+      
+      fOCDBEntry = fTriggerName;
+
+      return 2;
   }    
-
-  // -minpt
-  if (argument.CompareTo("-minpt")==0) {
-    if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    fPtMin=argument.Atof();
-    return 2;
-  }    
-
-  // -mintracks
-  if (argument.CompareTo("-mintracks")==0) {
-    if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    fMinTracks=argument.Atoi();
-    return 2;
-  }    
-
-  // -dca-reference
-  // reference point for the transverse and longitudinal dca cut
-  if (argument.CompareTo("-dca-reference")==0) {
-    if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    // scan x,y,z
-    TObjArray* pTokens=argument.Tokenize("'");
-    if (pTokens) {
-      for (int c=0; c<pTokens->GetEntriesFast() && c<fgkDCAReferenceSize; c++) {
-	argument=((TObjString*)pTokens->At(c))->GetString();
-	fDCAReference[i]=argument.Atof();
-      }
-      delete pTokens;
-    }
-    return 2;
-  }
-
-  // -min-ldca
-  // minimum longitudinal dca to reference point
-  if (argument.CompareTo("-min-ldca")==0) {
-    if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    fMinLDca=argument.Atof();
-    return 2;
-  }
-  
-  // -max-ldca
-  // maximum longitudinal dca to reference point
-  if (argument.CompareTo("-max-ldca")==0) {
-    if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    fMaxLDca=argument.Atof();
-    return 2;
-  }
-
-  // -min-tdca
-  // minimum transverse dca to reference point
-  if (argument.CompareTo("-min-tdca")==0) {
-    if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    fMinTDca=argument.Atof();
-    return 2;
-  }
-  
-  // -max-tdca
-  // maximum transverse dca to reference point
-  if (argument.CompareTo("-max-tdca")==0) {
-    if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    fMaxTDca=argument.Atof();
-    return 2;
-  }
-
-  // -solenoidBz
-  if (argument.CompareTo("-solenoidBz")==0) {
-    if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    fSolenoidBz=argument.Atof();
-    return 2;
-  }
-
-  // unknown argument
-  return -EINVAL;
 }
