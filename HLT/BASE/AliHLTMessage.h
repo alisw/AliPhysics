@@ -159,6 +159,12 @@ public:
     */
    static TObject* Extract(const void* pBuffer, unsigned bufferSize, unsigned verbosity=0);
 
+   /**
+    * Helper function to extract an object from  a file containing the streamed object.
+    * The returned object must be cleaned by the caller
+    */
+   static TObject* Extract(const char* filename, unsigned verbosity=0);
+
 private:
    UInt_t   fWhat;        //!Message type
    TClass  *fClass;       //!If message is kMESS_OBJECT pointer to object's class

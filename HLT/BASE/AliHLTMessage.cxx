@@ -516,3 +516,30 @@ TObject* AliHLTMessage::Extract(const void* pBuffer, unsigned bufferSize, unsign
   }
   return NULL;
 }
+
+TObject* AliHLTMessage::Extract(const char* filename, unsigned verbosity)
+{
+   /// Helper function to extract an object from a file containing the streamed object.
+   /// The returned object must be cleaned by the caller
+  if (!filename) return NULL;
+  
+  AliHLTLogging log;
+  TString input=filename;
+  input+="?filetype=raw";
+  TFile* pFile=new TFile(input);
+  if (!pFile) return NULL;
+  TObject* pObject=NULL;
+  if (!pFile->IsZombie()) {
+    pFile->Seek(0);
+    TArrayC buffer;
+    buffer.Set(pFile->GetSize());
+    if (pFile->ReadBuffer(buffer.GetArray(), buffer.GetSize())==0) {
+      pObject=Extract(buffer.GetArray(), buffer.GetSize(), verbosity);
+    } else {
+      log.LoggingVarargs(kHLTLogError, "AliHLTMessage", "Extract" , __FILE__ , __LINE__ , "failed reading %d byte(s) from file %s", pFile->GetSize(), filename);
+    }
+  }
+
+  delete pFile;
+  return pObject;
+}
