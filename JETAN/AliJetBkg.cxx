@@ -290,7 +290,7 @@ Float_t AliJetBkg::BkgRemoveJetLeading(TClonesArray* fAODJets)
     }// end unit array loop	      
   
 
-  Float_t areasum=areasum=accEMCal-acc*jetarea1-acc1*jetarea2;
+  Float_t areasum = accEMCal-acc*jetarea1-acc1*jetarea2;
   if(debug)cout<<"pt sum   "<<sumPt<<" area  "<<areasum<<endl;
    
   if(nJ>0) rhoback=sumPt/areasum;

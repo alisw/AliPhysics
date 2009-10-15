@@ -59,7 +59,7 @@ AliJetHadronCorrectionv0::Instance()
 }
 
 Double_t 
-AliJetHadronCorrectionv0::GetEnergy(Double_t pmom, Double_t eta, Int_t gid)
+AliJetHadronCorrectionv0::GetEnergy(Double_t pmom, Double_t eta, Int_t /*gid*/)
 {
   Int_t iEta=0; // index 
   Double_t etaw = TMath::Abs(eta);

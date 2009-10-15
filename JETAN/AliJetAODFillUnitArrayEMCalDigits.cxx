@@ -194,12 +194,11 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
 	double ptot = 0;
 	for(int itrack = 0; itrack <  matched->GetSize(); itrack++)
 	  {
-	    const short index = matched->At(itrack);
-	    if (index>-1)
+	    const short indexS = matched->At(itrack);
+	    if (indexS>-1)
 	      {	
-		AliAODTrack *track = fAOD->GetTrack(index);
+		AliAODTrack *track = fAOD->GetTrack(indexS);
 		ptot += track->P();
-		//printf("aod-track p=%f \n",track->P() );	
 	      }
 	  }
 	
@@ -262,7 +261,7 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
 
     for(Int_t j = beg; j < nclus; j++) { // loop over clusters
       // Retrieve cluster from aod
-      AliAODCaloCluster *fClus = (AliAODCaloCluster *) caloClusters->At(j) ;
+      fClus = (AliAODCaloCluster *) caloClusters->At(j) ;
 
       // Get the cluster info
 
@@ -306,12 +305,11 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
 	  double ptot = 0;
 	  for(int itrack = 0; itrack <  matched->GetSize(); itrack++)
 	    {
-	      const short index = matched->At(itrack);
-	      if (index>-1)
+	      const short indexS = matched->At(itrack);
+	      if (indexS>-1)
 		{	
-		  AliAODTrack *track = fAOD->GetTrack(index);
+		  AliAODTrack *track = fAOD->GetTrack(indexS);
 		  ptot += track->P();
-		  //printf("aod-track p=%f \n",track->P() );	
 		}
 	    }
 	

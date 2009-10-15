@@ -54,7 +54,8 @@ AliAnalysisTaskJets::AliAnalysisTaskJets():
   fAODExtension(0x0),
   fListOfHistos(0x0),
   fChain(0x0),
-  fOpt(0)
+  fOpt(0),
+  fReadAODFromOutput(0)
 {
   // Default constructor
 }

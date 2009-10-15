@@ -60,7 +60,7 @@ AliJetUnitArray::AliJetUnitArray():
   // Default constructor
 }  
 
-AliJetUnitArray::AliJetUnitArray(Int_t absId, Int_t esdId, Float_t eta, Float_t phi, Float_t en, Float_t Deta, Float_t Dphi, AliJetFinderUnitDetectorFlagType_t det, AliJetFinderUnitFlagType_t inout, AliJetFinderUnitCutFlagType_t cut, AliJetFinderUnitCutFlagType_t cut2, AliJetFinderUnitSignalFlagType_t signal,Float_t mass, Int_t clusId):
+AliJetUnitArray::AliJetUnitArray(Int_t absId, Int_t esdId, Float_t eta, Float_t phi, Float_t en, Float_t Deta, Float_t Dphi, AliJetFinderUnitDetectorFlagType_t det, AliJetFinderUnitFlagType_t inout, AliJetFinderUnitCutFlagType_t cut, AliJetFinderUnitCutFlagType_t cut2, AliJetFinderUnitSignalFlagType_t /*signal*/,Float_t mass, Int_t clusId):
   fUnitEnergy(en),
   fUnitEta(eta),
   fUnitPhi(phi),

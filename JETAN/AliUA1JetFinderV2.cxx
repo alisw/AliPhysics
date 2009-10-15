@@ -1149,7 +1149,7 @@ void AliUA1JetFinderV2::SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&
   
   //calculate energy inside and outside cones
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
-  Int_t              fOpt = fReader->GetReaderHeader()->GetDetector();
+  fOpt = fReader->GetReaderHeader()->GetDetector();
   fDebug = fReader->GetReaderHeader()->GetDebug();
   Float_t rc= header->GetRadius();
   Float_t etIn[30];

@@ -266,8 +266,8 @@ void AliFastJetFinder::FindJets()
 	      if(ipart==ind[i]){
 		TRefArray* trackArray = (TRefArray*)uArray->GetUnitTrackRef();
 		Int_t tracksInCell = trackArray->GetEntries();
-		for(int j=0;j<tracksInCell;j++){
-		  AliAODTrack * track = (AliAODTrack*)trackArray->At(j);
+		for(int ji = 0; ji < tracksInCell; ji++){
+		  AliAODTrack * track = (AliAODTrack*)trackArray->At(ji);
 		  aodjet.AddTrack(track);
 		}
 
