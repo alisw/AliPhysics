@@ -56,7 +56,7 @@ AliHLTTriggerBarrelGeomMultiplicity::AliHLTTriggerBarrelGeomMultiplicity()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-  fDetectorArray = new TObjArray(1);
+  fDetectorArray = new TObjArray;
 
 }
 
