@@ -64,6 +64,7 @@ class AliAlignmentDataFilterITS : public AliAnalysisTask
   AliESDfriend *fESDfriend;  // ESD friend object
   TList   *fListOfHistos;    //! list of histos: output slot 1
   TTree   *fspTree;          //! output tree with space points: output slot 0
+  TH1F    *fHistNevents;     //! output histogram
   TH1F    *fHistNpoints;     //! output histogram
   TH1F    *fHistPt;          //! output histogram
   TH2F    *fHistLayer0;      //! output histogram
@@ -75,7 +76,7 @@ class AliAlignmentDataFilterITS : public AliAnalysisTask
   TNtuple *fntExtra;         //! output QA ntuple  
   TNtuple *fntCosmicMatching;//! output QA ntuple  
 
-  ClassDef(AliAlignmentDataFilterITS,1); // AliAnalysisTask to extract ITS points for alignment
+  ClassDef(AliAlignmentDataFilterITS,2); // AliAnalysisTask to extract ITS points for alignment
 };
 
 #endif
