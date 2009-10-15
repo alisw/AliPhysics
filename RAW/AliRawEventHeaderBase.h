@@ -103,23 +103,13 @@ private:
 
 #define EVENT_HEADER_VERSION(AA,BB) AliRawEventHeaderV##AA##_##BB
 
-#if AA <= 2
 #define START_EVENT_HEADER(AA,BB) \
 class AliRawEventHeaderV##AA##_##BB:public AliRawEventHeaderBase { \
 public: \
  AliRawEventHeaderV##AA##_##BB():AliRawEventHeaderBase(),		\
-   fType(0), fRunNb(0), fDetectorPattern(0), fLdcId(0), fGdcId(0) {};	\
+   INIT_VARS_##AA##_##BB {};	\
    virtual ~AliRawEventHeaderV##AA##_##BB() {}; \
 private:
-#else
-#define START_EVENT_HEADER(AA,BB) \
-class AliRawEventHeaderV##AA##_##BB:public AliRawEventHeaderBase { \
-public: \
- AliRawEventHeaderV##AA##_##BB():AliRawEventHeaderBase(),		\
-   fType(0), fRunNb(0), fDetectorPattern(0), fLdcId(0), fGdcId(0), fTimeStamp(0) {};	\
-   virtual ~AliRawEventHeaderV##AA##_##BB() {}; \
-private:
-#endif
 
 #define END_EVENT_HEADER(AA,BB) \
 ClassDef(AliRawEventHeaderV##AA##_##BB,1) \
