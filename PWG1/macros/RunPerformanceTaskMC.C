@@ -30,7 +30,7 @@
   //AliGeomManager::LoadGeometry("/lustre/alice/jacek/sim/HEADJB/flatPt_uniB/0/geometry.root");
 
   // set magnetic field
-  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
+  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/RunPerformanceTaskMC.C");
   RunPerformanceTaskMC(chain, kTRUE, kFALSE, kFALSE, 0);
@@ -48,7 +48,7 @@
 
   // set magnetic field
   // the best is to create macro MagField.C with the line: 
-  // TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 2, 1., 1., 10., AliMagF::k5kG));
+  // TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
   gProof->Exec("gROOT->Macro(\"MagField.C\")");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/RunPerformanceTaskMC.C");
@@ -73,7 +73,7 @@
   //AliGeomManager::LoadGeometry("/lustre/alice/local/TRDdata/SIM/P-Flat/TRUNK/test/RUN0/geometry.root");
 
   // set magnetic field
-  gProof->Exec("gROOT->ProcessLine(\"TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\", 2, 1., 1., 10., AliMagF::k5kG))\")");
+  gProof->Exec("gROOT->ProcessLine(\"TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\", 1., 1., AliMagF::k5kG))\")");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/RunPerformanceTaskMC.C");
   RunPerformanceTaskMC(chain, kTRUE, kTRUE, kTRUE);
