@@ -224,9 +224,9 @@ void AliEMCALCalibReference::ReadTreeCalibReferenceInfo(TTree *tree,
   Float_t Temperature[AliEMCALGeoParams::fgkEMCALTempSensors]= {0};
   Float_t TemperatureRMS[AliEMCALGeoParams::fgkEMCALTempSensors]= {0};
   // third: info for each tower
-  Int_t HighLow[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]= {0}; 
-  Float_t LEDAmp[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]= {0}; 
-  Float_t LEDAmpRMS[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]= {0}; 
+  Int_t HighLow[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Float_t LEDAmp[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Float_t LEDAmpRMS[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
   // end - all values
 
   // just to make the initializations of the arrays are done correctly, let's use memset
@@ -330,9 +330,9 @@ void AliEMCALCalibReference::WriteRootCalibReferenceInfo(const TString &rootFile
   Float_t Temperature[AliEMCALGeoParams::fgkEMCALTempSensors]= {0};
   Float_t TemperatureRMS[AliEMCALGeoParams::fgkEMCALTempSensors]= {0};
   // third: info for each tower
-  Int_t HighLow[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]= {0}; 
-  Float_t LEDAmp[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]= {0}; 
-  Float_t LEDAmpRMS[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]= {0}; 
+  Int_t HighLow[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Float_t LEDAmp[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Float_t LEDAmpRMS[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
   // end - all values
 
   // just to make the initializations of the arrays are done correctly, let's use memset

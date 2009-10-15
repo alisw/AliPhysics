@@ -87,7 +87,7 @@ void AliEMCALCalibTimeDepCorrection::SetCorrection(Int_t supModIndex, Int_t iCol
 //____________________________________________________________________________
 Float_t AliEMCALCalibTimeDepCorrection::GetCorrection(Int_t supModIndex, Int_t iCol, Int_t iRow, Int_t iBin) const
 { // if you call for non-existing data, there may be a crash..
-  ((AliEMCALSuperModuleCalibTimeDepCorrection*)fSuperModuleData[supModIndex])->GetCorrection(iCol,iRow)->At(iBin);
+  return ((AliEMCALSuperModuleCalibTimeDepCorrection*)fSuperModuleData[supModIndex])->GetCorrection(iCol,iRow)->At(iBin);
 }
 
 //____________________________________________________________________________

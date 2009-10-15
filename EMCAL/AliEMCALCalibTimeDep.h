@@ -31,24 +31,24 @@ class AliEMCALCalibTimeDep : public TObject {
   void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);//!
 
   // simple getters
-  Int_t GetRunNumber() const { return fRun; } //
-  Int_t GetStartTime() const { return fStartTime; } // 
-  Int_t GetEndTime() const { return fEndTime; } // 
-  Double_t GetLengthOfRunInHours() const; // 
-  Double_t GetLengthOfRunInBins() const; // 
+  Int_t GetRunNumber() const { return fRun; } // run number
+  Int_t GetStartTime() const { return fStartTime; } // start time
+  Int_t GetEndTime() const { return fEndTime; } //  end time
+  Double_t GetLengthOfRunInHours() const; // length of run
+  Double_t GetLengthOfRunInBins() const; // length of run
 
   // Temperature Section
   // access pointer to the basic temperature object: AliEMCALSensorTempArray 
-  AliEMCALSensorTempArray  * GetTempArray() const { return fTempArray; } //
+  AliEMCALSensorTempArray  * GetTempArray() const { return fTempArray; } // temperature array
 
   // range of temperature readings/values during the run 
   Int_t ScanTemperatureInfo(); // go through the temperature info
-  Double_t GetMinTemp() const { return fMinTemp; } // 
-  Double_t GetMaxTemp() const { return fMaxTemp; } // 
-  UInt_t GetMinTime() const { return fMinTime; } // 
-  UInt_t GetMaxTime() const { return fMaxTime; } // 
-  Double_t GetRangeOfTempMeasureInHours() const; // 
-  Double_t GetRangeOfTempMeasureInDegrees() const; // 
+  Double_t GetMinTemp() const { return fMinTemp; } //  min temp
+  Double_t GetMaxTemp() const { return fMaxTemp; } // max temp
+  UInt_t GetMinTime() const { return fMinTime; } // min time
+  UInt_t GetMaxTime() const { return fMaxTime; } // max time
+  Double_t GetRangeOfTempMeasureInHours() const; //! 
+  Double_t GetRangeOfTempMeasureInDegrees() const; //! 
 
   // basic calibration info
   Double_t GetTemperature(UInt_t timeStamp) const; // for all sensors, all SuperModules
@@ -94,14 +94,14 @@ class AliEMCALCalibTimeDep : public TObject {
   Int_t CalcTemperatureCorrection(Int_t nSM, Int_t nBins); // based on temperetare info
 
   //
-  Int_t fRun;
-  UInt_t fStartTime;
-  UInt_t fEndTime;
+  Int_t fRun; // run number
+  UInt_t fStartTime; // start timestamp
+  UInt_t fEndTime; // end timestamp
   // temperature stuff
-  Double_t fMinTemp;
-  Double_t fMaxTemp;
-  UInt_t fMinTime;
-  UInt_t fMaxTime;
+  Double_t fMinTemp; // min temp
+  Double_t fMaxTemp; // max temp
+  UInt_t fMinTime; // min time
+  UInt_t fMaxTime; // max time
   //
   Double_t fTemperatureResolution; // value for checking at which level we care about temperature differences
   Int_t fTimeBinsPerHour; // size of the time-bins we use for corrections
@@ -110,11 +110,11 @@ class AliEMCALCalibTimeDep : public TObject {
   
   // pointers to the different used classes
   AliEMCALSensorTempArray  *fTempArray;     // CDB class for temperature sensors
-  AliCaloCalibSignal *fCalibSignal; //
-  AliEMCALBiasAPD *fBiasAPD; //
-  AliEMCALCalibMapAPD *fCalibMapAPD; //
-  AliEMCALCalibReference *fCalibReference; 
-  AliEMCALCalibTimeDepCorrection *fCalibTimeDepCorrection; // 
+  AliCaloCalibSignal *fCalibSignal; // LED signal info
+  AliEMCALBiasAPD *fBiasAPD; // bias APD info
+  AliEMCALCalibMapAPD *fCalibMapAPD; // calib & map APD info
+  AliEMCALCalibReference *fCalibReference; // reference info
+  AliEMCALCalibTimeDepCorrection *fCalibTimeDepCorrection; // correction values
 
   //
   ClassDef(AliEMCALCalibTimeDep,3)    // EMCAL time-dep Calibration data

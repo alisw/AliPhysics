@@ -185,10 +185,10 @@ void AliEMCALCalibAbs::ReadTreeCalibAbsInfo(TTree *tree,
   // list of values to be read
   // first: overall values for the whole SuperModule
   Int_t CalibMethod; 
-  Int_t CalibPass= {0}; 
-  Float_t AbsoluteCalib= {0}; 
+  Int_t CalibPass = 0; 
+  Float_t AbsoluteCalib = 0; 
   // third: info for each tower
-  Float_t RelativeCalib[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]= {0}; 
+  Float_t RelativeCalib[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
   // end - all values
 
   // just to make the initializations of the arrays are done correctly, let's use memset
@@ -262,7 +262,7 @@ void AliEMCALCalibAbs::WriteRootCalibAbsInfo(const TString &rootFileName,
   Int_t CalibPass = 0; 
   Float_t AbsoluteCalib = 0; 
   // third: info for each tower
-  Float_t RelativeCalib[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]= {0}; 
+  Float_t RelativeCalib[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
   // end - all values
 
   // just to make the initializations of the arrays are done correctly, let's use memset

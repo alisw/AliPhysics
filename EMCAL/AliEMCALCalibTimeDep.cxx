@@ -19,7 +19,14 @@
 ///*-- Author: 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// class for EMCAL time-dep calibration                                      //
+// class for EMCAL time-dep calibration   
+// - supposed to run in preprocessor
+// we use input from the following sources:
+// AliEMCALBiasAPD (bias values),  AliEMCALCalibMapAPD (APD calibration and location info),
+// AliCaloCalibSignal (LED DA), AliEMCALSensorTempArray (ELMB DCS)
+// AliEMCALCalibReference: LED amplitude and temperature info at reference time
+//
+// output/result is in AliEMCALCalibTimeDepCorrection 
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -37,16 +44,16 @@
 #include "AliEMCALCalibTimeDep.h"
 
 /* first a bunch of constants.. */
-const double fkSecToHour = 1.0/3600.0; // conversion factor from seconds to hours
+const double kSecToHour = 1.0/3600.0; // conversion factor from seconds to hours
 
 // some global variables for APD handling; values from Catania studies, best fit
 // TempCoeff = p0+p1*M (M=gain), where p0 and and p1 are functions of the dark current
-const double fkTempCoeffP0Const = -0.903; // 
-const double fkTempCoeffP0Factor = -1.381e7; // 
-const double fkTempCoeffP1Const = -0.023; // 
-const double fkTempCoeffP1Factor = -4.966e5; //
+const double kTempCoeffP0Const = -0.903; // 
+const double kTempCoeffP0Factor = -1.381e7; // 
+const double kTempCoeffP1Const = -0.023; // 
+const double kTempCoeffP1Factor = -4.966e5; //
  
-const double fkErrorCode = -999; // to indicate that something went wrong
+const double kErrorCode = -999; // to indicate that something went wrong
 
 using namespace std;
 
@@ -160,19 +167,19 @@ void  AliEMCALCalibTimeDep::PrintInfo() const
 //________________________________________________________________ 
 Double_t AliEMCALCalibTimeDep::GetLengthOfRunInHours() const
 {
-  return (fEndTime - fStartTime)*fkSecToHour;
+  return (fEndTime - fStartTime)*kSecToHour;
 }
 
 //________________________________________________________________ 
 Double_t AliEMCALCalibTimeDep::GetLengthOfRunInBins() const
 {
-  return (fEndTime - fStartTime)*fkSecToHour*fTimeBinsPerHour;
+  return (fEndTime - fStartTime)*kSecToHour*fTimeBinsPerHour;
 }
 
 //________________________________________________________________ 
 Double_t AliEMCALCalibTimeDep::GetRangeOfTempMeasureInHours() const
 {
-  return (fMaxTime - fMinTime)*fkSecToHour;
+  return (fMaxTime - fMinTime)*kSecToHour;
 }
 
 //________________________________________________________________ 
@@ -184,7 +191,7 @@ Double_t AliEMCALCalibTimeDep::GetRangeOfTempMeasureInDegrees() const
 //________________________________________________________________
 void AliEMCALCalibTimeDep::Initialize(Int_t run, 
 				      UInt_t startTime, UInt_t endTime)
-{
+{ // setup, and get temperature info
   Reset(); // start fresh
 
   fRun = run;
@@ -203,7 +210,7 @@ Double_t AliEMCALCalibTimeDep::GetTemperature(UInt_t timeStamp) const
 {// return estimate for all SuperModules and sensors, that had data 
 
   // first convert from seconds to hours..
-  Double_t timeHour = (timeStamp - fStartTime) * fkSecToHour;
+  Double_t timeHour = (timeStamp - fStartTime) * kSecToHour;
 
   Double_t average = 0;
   int n = 0;
@@ -229,7 +236,7 @@ Double_t AliEMCALCalibTimeDep::GetTemperature(UInt_t timeStamp) const
     return average;
   }
   else { // no good data
-    return fkErrorCode;
+    return kErrorCode;
   }
 
 }
@@ -239,7 +246,7 @@ Double_t AliEMCALCalibTimeDep::GetTemperatureSM(int imod, UInt_t timeStamp) cons
 {// return estimate for this one SuperModule, if it had data 
 
   // first convert from seconds to hours..
-  Double_t timeHour = (timeStamp - fStartTime) * fkSecToHour;
+  Double_t timeHour = (timeStamp - fStartTime) * kSecToHour;
 
   Double_t average = 0;
   int n = 0;
@@ -269,7 +276,7 @@ Double_t AliEMCALCalibTimeDep::GetTemperatureSM(int imod, UInt_t timeStamp) cons
     return average;
   }
   else { // no good data
-    return fkErrorCode;
+    return kErrorCode;
   }
 
 }
@@ -279,7 +286,7 @@ Double_t AliEMCALCalibTimeDep::GetTemperatureSMSensor(int imod, int isens, UInt_
 {// return estimate for this one SuperModule and sensor, if it had data 
 
   // first convert from seconds to hours..
-  Double_t timeHour = (timeStamp - fStartTime) * fkSecToHour;
+  Double_t timeHour = (timeStamp - fStartTime) * kSecToHour;
 
   for (int i=0; i<fTempArray->NumSensors(); i++) {
     
@@ -302,7 +309,7 @@ Double_t AliEMCALCalibTimeDep::GetTemperatureSMSensor(int imod, int isens, UInt_
   
   // if we made it all here, it means that we didn't find the sensor we were looking for
   // i.e. no good data
-  return fkErrorCode;
+  return kErrorCode;
 
 }
 
@@ -345,12 +352,12 @@ Double_t AliEMCALCalibTimeDep::GetTempCoeff(Double_t IDark, Double_t M) const
 { // estimate the Temperature Coefficient, based on the dark current (IDark)
   // and the gain (M), based on Catania parameterizations
 
-  Double_t P0 = fkTempCoeffP0Const + fkTempCoeffP0Factor * IDark;
-  Double_t P1 = fkTempCoeffP1Const + fkTempCoeffP1Factor * IDark;
+  Double_t dP0 = kTempCoeffP0Const + kTempCoeffP0Factor * IDark;
+  Double_t dP1 = kTempCoeffP1Const + kTempCoeffP1Factor * IDark;
  
-  Double_t TC = P0 + P1*M;
+  Double_t dTC = dP0 + dP1*M;
 
-  return TC;
+  return dTC;
 }
 
 /* Next come the methods that do the work in picking up all the needed info..*/
@@ -408,7 +415,7 @@ Int_t AliEMCALCalibTimeDep::ScanTemperatureInfo()
     return n;
   }
   else { // no good data
-    return (Int_t) fkErrorCode;
+    return (Int_t) kErrorCode;
   }
 
 }
@@ -507,11 +514,11 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrection(Int_t nSM, Int_t nBins)
 
   // sanity check; same SuperModule indices for corrections as for regular calibrations
   for (int i = 0; i < nSM; i++) {
-    AliEMCALSuperModuleCalibReference * CalibReferenceData = fCalibReference->GetSuperModuleCalibReferenceNum(i);
-    AliEMCALSuperModuleCalibTimeDepCorrection * CalibTimeDepCorrectionData = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(i);
+    AliEMCALSuperModuleCalibReference * dataCalibReference = fCalibReference->GetSuperModuleCalibReferenceNum(i);
+    AliEMCALSuperModuleCalibTimeDepCorrection * dataCalibTimeDepCorrection = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(i);
 
-    int iSMRef = CalibReferenceData->GetSuperModuleNum();
-    int iSMCorr = CalibTimeDepCorrectionData->GetSuperModuleNum();
+    int iSMRef = dataCalibReference->GetSuperModuleNum();
+    int iSMCorr = dataCalibTimeDepCorrection->GetSuperModuleNum();
     if (iSMRef != iSMCorr) {
       AliWarning( Form("AliEMCALCalibTimeDep - SuperModule index mismatch: %d != %d", iSMRef, iSMCorr) );
       nRemaining = nSM * AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows * nBins;
@@ -528,9 +535,9 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrection(Int_t nSM, Int_t nBins)
   // The fCalibSignal info is stored in TTrees
   // Note that the time-bins for the TTree's may not exactly match with our correction time bins 
   int timeDiff = fCalibSignal->GetStartTime() - fStartTime; // in seconds
-  // fCalibSignal time info in seconds: Hour/fkSecToHour
-  // corrected for startTime difference: Hour/fkSecToHour + timeDiff
-  // converted into a time-bin we use: (Hour + timeDiff*fkSecToHour) * fTimeBinsPerHour
+  // fCalibSignal time info in seconds: Hour/kSecToHour
+  // corrected for startTime difference: Hour/kSecToHour + timeDiff
+  // converted into a time-bin we use: (Hour + timeDiff*kSecToHour) * fTimeBinsPerHour
 
   // values for R(T), size of TArray = nBins
   // the [2] dimension below is for the low or high gain 
@@ -570,45 +577,45 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrection(Int_t nSM, Int_t nBins)
   }
 
   // OK, now loop over the TTrees and fill the arrays needed for R(T)
-  TTree *TAvg = fCalibSignal->GetTreeAvgAmpVsTime();
-  TTree *TLEDRefAvg = fCalibSignal->GetTreeAvgAmpVsTime();
+  TTree *treeAvg = fCalibSignal->GetTreeAvgAmpVsTime();
+  TTree *treeLEDRefAvg = fCalibSignal->GetTreeAvgAmpVsTime();
 
-  int ChannelNum; // for regular towers
-  int RefNum; // for LED
-  double Hour;
-  double AvgAmp;
+  int iChannelNum; // for regular towers
+  int iRefNum; // for LED
+  double dHour;
+  double dAvgAmp;
 
-  TAvg->SetBranchAddress("fChannelNum", &ChannelNum);
-  TAvg->SetBranchAddress("fHour", &Hour);
-  TAvg->SetBranchAddress("fAvgAmp",&AvgAmp);
+  treeAvg->SetBranchAddress("fChannelNum", &iChannelNum);
+  treeAvg->SetBranchAddress("fHour", &dHour);
+  treeAvg->SetBranchAddress("fAvgAmp",&dAvgAmp);
 
   int iBin = 0;
   // counters for how many values were seen per SuperModule
   int nCount[AliEMCALGeoParams::fgkEMCALModules] = {0};
   int nCountLEDRef[AliEMCALGeoParams::fgkEMCALModules] = {0};
 
-  for (int ient=0; ient<TAvg->GetEntries(); ient++) {
-    TAvg->GetEntry(ient);
+  for (int ient=0; ient<treeAvg->GetEntries(); ient++) {
+    treeAvg->GetEntry(ient);
     // figure out where this info comes from
-    fCalibSignal->DecodeChannelNum(ChannelNum, &iSM, &iCol, &iRow, &iGain);
-    iBin = (int) ( (Hour + timeDiff*fkSecToHour) * fTimeBinsPerHour  ); // CHECK!!!
+    fCalibSignal->DecodeChannelNum(iChannelNum, &iSM, &iCol, &iRow, &iGain);
+    iBin = (int) ( (dHour + timeDiff*kSecToHour) * fTimeBinsPerHour  ); // CHECK!!!
     // add value in the arrays
-    ampT[iSM][iCol][iRow][iGain].AddAt( ampT[iSM][iCol][iRow][iGain].At(iBin)+AvgAmp, iBin );
+    ampT[iSM][iCol][iRow][iGain].AddAt( ampT[iSM][iCol][iRow][iGain].At(iBin)+dAvgAmp, iBin );
     nT[iSM][iCol][iRow][iGain].AddAt( nT[iSM][iCol][iRow][iGain].At(iBin)+1, iBin );
     nCount[iSM]++;
   }
 
-  TLEDRefAvg->SetBranchAddress("fRefNum", &RefNum);
-  TLEDRefAvg->SetBranchAddress("fHour", &Hour);
-  TLEDRefAvg->SetBranchAddress("fAvgAmp",&AvgAmp);
+  treeLEDRefAvg->SetBranchAddress("fRefNum", &iRefNum);
+  treeLEDRefAvg->SetBranchAddress("fHour", &dHour);
+  treeLEDRefAvg->SetBranchAddress("fAvgAmp",&dAvgAmp);
 
-  for (int ient=0; ient<TLEDRefAvg->GetEntries(); ient++) {
-    TLEDRefAvg->GetEntry(ient);
+  for (int ient=0; ient<treeLEDRefAvg->GetEntries(); ient++) {
+    treeLEDRefAvg->GetEntry(ient);
     // figure out where this info comes from
-    fCalibSignal->DecodeRefNum(RefNum, &iSM, &iStrip, &iGain);
-    iBin = (int) ( (Hour + timeDiff*fkSecToHour) * fTimeBinsPerHour  ); // CHECK!!!
+    fCalibSignal->DecodeRefNum(iRefNum, &iSM, &iStrip, &iGain);
+    iBin = (int) ( (dHour + timeDiff*kSecToHour) * fTimeBinsPerHour  ); // CHECK!!!
     // add value in the arrays
-    ampLEDRefT[iSM][iStrip][iGain].AddAt( ampLEDRefT[iSM][iStrip][iGain].At(iBin)+AvgAmp, iBin );
+    ampLEDRefT[iSM][iStrip][iGain].AddAt( ampLEDRefT[iSM][iStrip][iGain].At(iBin)+dAvgAmp, iBin );
     nLEDRefT[iSM][iStrip][iGain].AddAt( nLEDRefT[iSM][iStrip][iGain].At(iBin)+1, iBin );
     nCountLEDRef[iSM]++;
   }
@@ -648,34 +655,34 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrection(Int_t nSM, Int_t nBins)
 
 
   // Calculate correction values, and store them
-  // set fkErrorCode values for those that could not be set
+  // set kErrorCode values for those that could not be set
 
-  Float_t Rt0 = 0;
-  Float_t RT = 0;
+  Float_t ratiot0 = 0;
+  Float_t ratioT = 0;
   Float_t correction = 0; // c(T) = R(t0)/R(T)
   Int_t refGain = 0; // typically use low gain for LED reference amplitude (high gain typically well beyond saturation)
 
   for (int i = 0; i < nSM; i++) {
-    AliEMCALSuperModuleCalibReference * CalibReferenceData = fCalibReference->GetSuperModuleCalibReferenceNum(i);
-    AliEMCALSuperModuleCalibTimeDepCorrection * CalibTimeDepCorrectionData = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(i);
-    iSM = CalibReferenceData->GetSuperModuleNum();
+    AliEMCALSuperModuleCalibReference * dataCalibReference = fCalibReference->GetSuperModuleCalibReferenceNum(i);
+    AliEMCALSuperModuleCalibTimeDepCorrection * dataCalibTimeDepCorrection = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(i);
+    iSM = dataCalibReference->GetSuperModuleNum();
 
     for (iCol = 0; iCol < AliEMCALGeoParams::fgkEMCALCols; iCol++) {
       //      iStrip = AliEMCALGeoParams::GetStripModule(iSM, iCol);
       iStrip = (iSM%2==0) ? iCol/2 : AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - iCol/2; //TMP, FIXME
-	refGain = CalibReferenceData->GetLEDRefHighLow(iStrip); // LED reference gain value used for reference calibration	
+	refGain = dataCalibReference->GetLEDRefHighLow(iStrip); // LED reference gain value used for reference calibration	
 
       for (iRow = 0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
 
 	// Calc. R(t0):
-	AliEMCALCalibReferenceVal * refVal = CalibReferenceData->GetAPDVal(iCol, iRow);
+	AliEMCALCalibReferenceVal * refVal = dataCalibReference->GetAPDVal(iCol, iRow);
 	iGain = refVal->GetHighLow(); // gain value used for reference calibration	
 	// valid amplitude values should be larger than 0
-	if (refVal->GetLEDAmp()>0 && CalibReferenceData->GetLEDRefAmp(iStrip)>0) {
-	  Rt0 =  refVal->GetLEDAmp() / CalibReferenceData->GetLEDRefAmp(iStrip);
+	if (refVal->GetLEDAmp()>0 && dataCalibReference->GetLEDRefAmp(iStrip)>0) {
+	  ratiot0 =  refVal->GetLEDAmp() / dataCalibReference->GetLEDRefAmp(iStrip);
 	}
 	else {
-	  Rt0 = fkErrorCode;
+	  ratiot0 = kErrorCode;
 	}
 
 	// Calc. R(T)
@@ -685,7 +692,7 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrection(Int_t nSM, Int_t nBins)
 	  // same gain as for reference calibration is the default
 	  if (ampT[iSM][iCol][iRow][iGain].At(j)>0 && ampLEDRefT[iSM][iStrip][refGain].At(j)>0) {
 	    // looks like valid data with the right gain combination
-	    RT = ampT[iSM][iCol][iRow][iGain].At(j) / ampLEDRefT[iSM][iStrip][refGain].At(j); 
+	    ratioT = ampT[iSM][iCol][iRow][iGain].At(j) / ampLEDRefT[iSM][iStrip][refGain].At(j); 
 
 	    // if data appears to be saturated, and we are in high gain, then try with low gain instead
 	    int newGain = iGain;
@@ -701,31 +708,31 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrection(Int_t nSM, Int_t nBins)
 	      // compensate for using different gain than in the reference calibration
 	      // we may need to have a custom H/L ratio value for each tower
 	      // later, but for now just use a common value, as the rest of the code does.. 
-	      RT = ampT[iSM][iCol][iRow][newGain].At(j) / ampLEDRefT[iSM][iStrip][newRefGain].At(j); 
+	      ratioT = ampT[iSM][iCol][iRow][newGain].At(j) / ampLEDRefT[iSM][iStrip][newRefGain].At(j); 
 
 	      if (newGain<iGain) {
-		RT *= fHighLowGainFactor;
+		ratioT *= fHighLowGainFactor;
 	      }
 	      else if (newRefGain<refGain) {
-		RT /= fHighLowGainFactor;
+		ratioT /= fHighLowGainFactor;
 	      }
 	    }
 	  }
 	  else {
-	    RT = fkErrorCode;
+	    ratioT = kErrorCode;
 	  }
 
 	  // Calc. correction factor
-	  if (Rt0>0 && RT>0) { 
-	    correction = Rt0/RT;
+	  if (ratiot0>0 && ratioT>0) { 
+	    correction = ratiot0/ratioT;
 	  }
 	  else {
-	    correction = fkErrorCode;
+	    correction = kErrorCode;
 	    nRemaining++;
 	  }
 
 	  // Store the value
-	  CalibTimeDepCorrectionData->GetCorrection(iCol,iRow)->AddAt(correction, j);
+	  dataCalibTimeDepCorrection->GetCorrection(iCol,iRow)->AddAt(correction, j);
 	  /* Check that
 	  fTimeDepCorrection->SetCorrection(i, iCol, iRow, j, correction);
 	  also works OK */
@@ -747,7 +754,7 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrectionStripBasis(Int_t nSM, Int_t nBins)
 
   // for calculating StripAverage info
   int nValidTower = 0;
-  Float_t StripAverage = 0;
+  Float_t stripAverage = 0;
   Float_t val = 0;
 
   int iSM = 0;
@@ -758,13 +765,13 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrectionStripBasis(Int_t nSM, Int_t nBins)
   int lastCol = 0;
 
   for (int i = 0; i < nSM; i++) {
-    AliEMCALSuperModuleCalibTimeDepCorrection * CalibTimeDepCorrectionData = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(i);
-    iSM = CalibTimeDepCorrectionData->GetSuperModuleNum();
+    AliEMCALSuperModuleCalibTimeDepCorrection * dataCalibTimeDepCorrection = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(i);
+    iSM = dataCalibTimeDepCorrection->GetSuperModuleNum();
 
     for (int j = 0; j < nBins; j++) {
 
       nValidTower = 0;
-      StripAverage = 0;
+      stripAverage = 0;
 
       for (iStrip = 0; iStrip < AliEMCALGeoParams::fgkEMCALLEDRefs; iStrip++) {
 	firstCol = iStrip*2;
@@ -775,9 +782,9 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrectionStripBasis(Int_t nSM, Int_t nBins)
 
 	for (iCol = firstCol; iCol <= lastCol; iCol++) {
 	  for (iRow = 0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
-	    val = CalibTimeDepCorrectionData->GetCorrection(iCol,iRow)->At(j);
+	    val = dataCalibTimeDepCorrection->GetCorrection(iCol,iRow)->At(j);
 	    if (val>0) { // valid value; error code is negative
-	      StripAverage += val;
+	      stripAverage += val;
 	      nValidTower++;
 	    } 
 	  }
@@ -785,12 +792,12 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrectionStripBasis(Int_t nSM, Int_t nBins)
 
 	// calc average over strip
 	if (nValidTower>0) {
-	  StripAverage /= nValidTower;
+	  stripAverage /= nValidTower;
 	  for (iCol = firstCol; iCol <= lastCol; iCol++) {
 	    for (iRow = 0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
-	      val = CalibTimeDepCorrectionData->GetCorrection(iCol,iRow)->At(j);
+	      val = dataCalibTimeDepCorrection->GetCorrection(iCol,iRow)->At(j);
 	      if (val<0) { // invalid value; error code is negative
-		CalibTimeDepCorrectionData->GetCorrection(iCol,iRow)->AddAt(val, j);
+		dataCalibTimeDepCorrection->GetCorrection(iCol,iRow)->AddAt(val, j);
 	      }
 	    }
 	  }
@@ -819,61 +826,61 @@ Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins)
   int iCol = 0;
   int iRow = 0;
 
-  Double_t TempCoeff[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];
-  memset(TempCoeff, 0, sizeof(TempCoeff));
-  Float_t MGain = 0; 
+  Double_t dTempCoeff[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];
+  memset(dTempCoeff, 0, sizeof(dTempCoeff));
+  Float_t gainM = 0; 
   Double_t correction = 0;
   Double_t secondsPerBin = (3600/fTimeBinsPerHour);
 
   for (int i = 0; i < nSM; i++) {
-    AliEMCALSuperModuleCalibTimeDepCorrection * CalibTimeDepCorrectionData = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(iSM);
-    iSM = CalibTimeDepCorrectionData->GetSuperModuleNum();
+    AliEMCALSuperModuleCalibTimeDepCorrection * dataCalibTimeDepCorrection = fCalibTimeDepCorrection->GetSuperModuleCalibTimeDepCorrectionNum(iSM);
+    iSM = dataCalibTimeDepCorrection->GetSuperModuleNum();
 
-    AliEMCALSuperModuleCalibReference * CalibReferenceData = fCalibReference->GetSuperModuleCalibReferenceNum(iSM);
-    AliEMCALSuperModuleCalibMapAPD * CalibMapAPDData = fCalibMapAPD->GetSuperModuleCalibMapAPDNum(iSM);
-    AliEMCALSuperModuleBiasAPD * BiasAPDData = fBiasAPD->GetSuperModuleBiasAPDNum(iSM);
+    AliEMCALSuperModuleCalibReference * dataCalibReference = fCalibReference->GetSuperModuleCalibReferenceNum(iSM);
+    AliEMCALSuperModuleCalibMapAPD * dataCalibMapAPD = fCalibMapAPD->GetSuperModuleCalibMapAPDNum(iSM);
+    AliEMCALSuperModuleBiasAPD * dataBiasAPD = fBiasAPD->GetSuperModuleBiasAPDNum(iSM);
     
     // first calculate the M=Gain values, and TemperatureCoeff, for all towers in this SuperModule, from BiasAPD and CalibMapAPD info
     for (iCol = 0; iCol < AliEMCALGeoParams::fgkEMCALCols; iCol++) {
       for (iRow = 0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
-	AliEMCALCalibMapAPDVal * mapAPD = CalibMapAPDData->GetAPDVal(iCol, iRow);
-	MGain =  fCalibMapAPD->GetGain(mapAPD->GetPar(0), mapAPD->GetPar(1), mapAPD->GetPar(2), 
-				       BiasAPDData->GetVoltage(iCol, iRow));
-	TempCoeff[iCol][iRow] = GetTempCoeff(mapAPD->GetDarkCurrent(), MGain);
+	AliEMCALCalibMapAPDVal * mapAPD = dataCalibMapAPD->GetAPDVal(iCol, iRow);
+	gainM =  fCalibMapAPD->GetGain(mapAPD->GetPar(0), mapAPD->GetPar(1), mapAPD->GetPar(2), 
+				       dataBiasAPD->GetVoltage(iCol, iRow));
+	dTempCoeff[iCol][iRow] = GetTempCoeff(mapAPD->GetDarkCurrent(), gainM);
       }
     }
     
     // figure out what the reference temperature is, from fCalibReference
-    Double_t ReferenceTemperature = 0;
+    Double_t referenceTemperature = 0;
     int nVal = 0;
     for (int iSensor = 0; iSensor<AliEMCALGeoParams::fgkEMCALTempSensors ; iSensor++) {
-      if (CalibReferenceData->GetTemperature(iSensor)>0) { // hopefully OK value
-	ReferenceTemperature += CalibReferenceData->GetTemperature(iSensor);
+      if (dataCalibReference->GetTemperature(iSensor)>0) { // hopefully OK value
+	referenceTemperature += dataCalibReference->GetTemperature(iSensor);
 	nVal++;
       }
     }
     
     if (nVal>0) {
-      ReferenceTemperature /= nVal; // valid values exist, we can look into corrections
+      referenceTemperature /= nVal; // valid values exist, we can look into corrections
       
       for (int j = 0; j < nBins; j++) {
 
 	// what is the timestamp in the middle of this bin? (0.5 is for middle of bin)
 	UInt_t timeStamp = fStartTime + (UInt_t)((j+0.5)*secondsPerBin);
       // get the temperature at this time; use average over whole SM for now (TO BE CHECKED LATER - if we can do better with finer grained info)
-	Double_t SMTemperature = GetTemperatureSM(iSM, timeStamp); 
+	Double_t dSMTemperature = GetTemperatureSM(iSM, timeStamp); 
 
-	Double_t TemperatureDiff = ReferenceTemperature - SMTemperature; // old vs new
+	Double_t temperatureDiff = referenceTemperature - dSMTemperature; // old vs new
 	// if the new temperature is higher than the old/reference one, then the gain has gone down 
-	if (fabs(TemperatureDiff)>fTemperatureResolution) { 
+	if (fabs(temperatureDiff)>fTemperatureResolution) { 
 	  // significant enough difference that we need to consider it
 
 	  // loop over all towers; effect of temperature change will depend on gain for this tower
 	  for (iCol = 0; iCol < AliEMCALGeoParams::fgkEMCALCols; iCol++) {
 	    for (iRow = 0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
 
-	      correction = TemperatureDiff * TempCoeff[iCol][iRow];
-	      CalibTimeDepCorrectionData->GetCorrection(iCol,iRow)->AddAt(correction, j);
+	      correction = temperatureDiff * dTempCoeff[iCol][iRow];
+	      dataCalibTimeDepCorrection->GetCorrection(iCol,iRow)->AddAt(correction, j);
 	    }
 	  }
 
@@ -882,7 +889,7 @@ Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins)
 	  correction = 1;
 	  for (iCol = 0; iCol < AliEMCALGeoParams::fgkEMCALCols; iCol++) {
 	    for (iRow = 0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
-	      CalibTimeDepCorrectionData->GetCorrection(iCol,iRow)->AddAt(correction, j);
+	      dataCalibTimeDepCorrection->GetCorrection(iCol,iRow)->AddAt(correction, j);
 	    }
 	  }
 	} // else
