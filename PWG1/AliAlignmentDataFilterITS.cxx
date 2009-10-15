@@ -57,6 +57,7 @@ fESD(0),
 fESDfriend(0),
 fListOfHistos(0),
 fspTree(0),
+fHistNevents(0),
 fHistNpoints(0),
 fHistPt(0),
 fHistLayer0(0),
@@ -94,6 +95,10 @@ AliAlignmentDataFilterITS::~AliAlignmentDataFilterITS()
   if (fHistNpoints) {
     delete fHistNpoints;
     fHistNpoints = 0;
+  }
+  if (fHistNevents) {
+    delete fHistNevents;
+    fHistNevents = 0;
   }
   if (fHistPt) {
     delete fHistPt;
@@ -181,6 +186,11 @@ void AliAlignmentDataFilterITS::CreateOutputObjects()
   // Several histograms are more conveniently managed in a TList
   fListOfHistos = new TList();
   fListOfHistos->SetOwner();
+ 
+  fHistNevents = new TH1F("fHistNevents", "Number of processed events; N events; bin",5,-0.5,4.5);
+  fHistNevents->Sumw2();
+  fHistNevents->SetMinimum(0);
+  fListOfHistos->Add(fHistNevents);
 
   fHistNpoints = new TH1F("fHistNpoints", "Number of AliTrackPoints per track; N points; tracks",25,-0.5,24.5);
   fHistNpoints->Sumw2();
@@ -270,6 +280,9 @@ void AliAlignmentDataFilterITS::Exec(Option_t */*option*/)
   fESD->SetESDfriend(fESDfriend);
 
 
+  // Post the data for slot 0
+  fHistNevents->Fill(0);
+
   // Process event as Cosmic or Collision
   //if(esd->GetEventType()== ???? ) {
   printf("AliAlignmentDataFilterITS::Exec(): MOVE ASAP TO esd->GetEventType() !\n");
@@ -278,6 +291,8 @@ void AliAlignmentDataFilterITS::Exec(Option_t */*option*/)
   } else {
     FilterCollision(fESD);
   }
+
+  PostData(1,fListOfHistos);
 
   return;
 }
