@@ -336,7 +336,7 @@ void  AliMaterialBudget::ProcessMCInfo(){
   AliTrackReference *refMinR;
   //
   for (Int_t ipart=0;ipart<npart;ipart++){
-    Int_t status = fMCinfo->GetParticleAndTR(ipart, particle, trefs);
+    //Int_t status = fMCinfo->GetParticleAndTR(ipart, particle, trefs);
     AliMCParticle * pp = (AliMCParticle*) fMCinfo->GetTrack(ipart);
     if (!pp) continue;
     if (particle->P()<kPcut) continue;
