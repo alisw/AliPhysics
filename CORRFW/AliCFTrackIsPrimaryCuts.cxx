@@ -500,7 +500,7 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
   iCutBit++;
 
   if (isESDTrack) {
-    if (!fDCAToVertex2D || (fDCAToVertex2D && b2Dmin > 1  && b2Dmax < 1)) {
+    if (!fDCAToVertex2D || (fDCAToVertex2D && TMath::Sqrt(b2Dmin) > 1  && TMath::Sqrt(b2Dmax) < 1)) {
       fBitmap->SetBitNumber(iCutBit,kTRUE);
     }
   }

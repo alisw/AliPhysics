@@ -502,7 +502,7 @@ void AliCFTrackQualityCuts::SelectionBitMap(TObject* obj)
   if (nTrackletsTRD >= fMinNTrackletTRD)
     fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (esdTrack->GetTRDntrackletsPID() >= fMinNTrackletTRDpid)
+  if (!isESDTrack || esdTrack->GetTRDntrackletsPID() >= fMinNTrackletTRDpid)
     fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
 
@@ -520,7 +520,7 @@ void AliCFTrackQualityCuts::SelectionBitMap(TObject* obj)
   if (chi2PerTrackletTRD <= fMaxChi2PerTrackletTRD)
     fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
-  if (esdTrack->GetTPCsignalN() >= fMinNdEdxClusterTPC)
+  if (!isESDTrack || esdTrack->GetTPCsignalN() >= fMinNdEdxClusterTPC)
     fBitmap->SetBitNumber(iCutBit,kTRUE);
   iCutBit++;
 
@@ -960,9 +960,10 @@ void AliCFTrackQualityCuts::FillHistograms(TObject* obj, Bool_t b)
 //   if (b==0 || (b==1 && fTrackCuts->GetCutVariable(2)>0)) fhQA[kCutMinFoundClusterTPC][b]->Fill((float)fractionFoundClustersTPC);
   if (b==0 || (b==1 && nClustersTPC>0)) fhQA[kCutMinFoundClusterTPC][b]->Fill((float)fractionFoundClustersTPC);
   fhQA[kCutTrackletTRD][b]->Fill((float)nTrackletsTRD);
-  fhQA[kCutTrackletTRDpid][b]->Fill((float)esdTrack->GetTRDntrackletsPID());
-  fhQA[kCutdEdxClusterTPC][b]->Fill((float)esdTrack->GetTPCsignalN());
-
+  if (isESDTrack) {
+   fhQA[kCutTrackletTRDpid][b]->Fill((float)esdTrack->GetTRDntrackletsPID());
+   fhQA[kCutdEdxClusterTPC][b]->Fill((float)esdTrack->GetTPCsignalN());
+  }
 // // // include following lines when AliESDtrackCuts is updated
 //   fhQA[kCutCovElement11][b]->Fill(fTrackCuts->GetCutVariable(6));
 //   fhQA[kCutCovElement22][b]->Fill(fTrackCuts->GetCutVariable(7));
