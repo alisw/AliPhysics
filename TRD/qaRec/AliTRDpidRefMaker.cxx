@@ -138,7 +138,7 @@ void AliTRDpidRefMaker::Exec(Option_t *)
     // fill the pid information
     memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
     switch(fRefPID){
-    case kV0: SetRefPID(kV0, 0x0/*v0*/, fPID); break;
+    case kV0: SetRefPID(kV0, track, fPID); break;
     case kMC: SetRefPID(kMC, track, fPID); break;
     case kRec: SetRefPID(kRec, TRDtrack, fPID); break;
     }
