@@ -109,7 +109,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fIntFlowProfiles(NULL),
  fIntFlowResults(NULL),
  fIntFlowFlags(NULL),
- fApplyCorrectionForNUA(kFALSE), 
+ fApplyCorrectionForNUA(kTRUE), 
  fReQ(NULL),
  fImQ(NULL),
  fSMpk(NULL),
@@ -8455,9 +8455,9 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
   exit(0);
  } 
 
- fIntFlowFlags->SetBinContent(1,(Int_t)fUsePhiWeights||fUsePtWeights||fUseEtaWeights); // particle weights used or not
- //fIntFlowFlags->SetBinContent(2,""); // which event weight was used? // to be improved
- fIntFlowFlags->SetBinContent(3,(Int_t)fApplyCorrectionForNUA); // corrected for non-uniform acceptance or not
+ fIntFlowFlags->Fill(0.5,(Int_t)fUsePhiWeights||fUsePtWeights||fUseEtaWeights); // particle weights used or not
+ //fIntFlowFlags->Fill(1.5,""); // which event weight was used? // to be improved
+ fIntFlowFlags->Fill(2.5,(Int_t)fApplyCorrectionForNUA); // corrected for non-uniform acceptance or not
   
 } // end of void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
 
@@ -8475,10 +8475,10 @@ void AliFlowAnalysisWithQCumulants::StoreDiffFlowFlags()
   exit(0);
  } 
  
- fDiffFlowFlags->SetBinContent(1,fUsePhiWeights||fUsePtWeights||fUseEtaWeights); // particle weights used or not
- //fDiffFlowFlags->SetBinContent(2,""); // which event weight was used? // to be improved
- fDiffFlowFlags->SetBinContent(3,fApplyCorrectionForNUA); // corrected for non-uniform acceptance or not
- fDiffFlowFlags->SetBinContent(4,fCalculate2DFlow); // calculate also 2D differential flow in (pt,eta) or not
+ fDiffFlowFlags->Fill(0.5,fUsePhiWeights||fUsePtWeights||fUseEtaWeights); // particle weights used or not
+ //fDiffFlowFlags->Fill(1.5,""); // which event weight was used? // to be improved
+ fDiffFlowFlags->Fill(2.5,fApplyCorrectionForNUA); // corrected for non-uniform acceptance or not
+ fDiffFlowFlags->Fill(3.5,fCalculate2DFlow); // calculate also 2D differential flow in (pt,eta) or not
     
 } // end of void AliFlowAnalysisWithQCumulants::StoreDiffFlowFlags()
 
