@@ -537,7 +537,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
 //      CdWork();
       if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
       else file = Form("%s.xml", gSystem->BaseName(path));
-      if (gSystem->AccessPathName(file)) {
+      if (gSystem->AccessPathName(file) || TestBit(AliAnalysisGrid::kTest)) {
          command = "find ";
          command += options;
          command += path;
