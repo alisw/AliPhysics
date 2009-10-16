@@ -289,11 +289,13 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					printf("Vertex cut passed 2\n");
 					icountVertex++;
 					// check on the kTPCrefit and kITSrefit conditions of the daughters
-					Bool_t refitFlag = kFALSE;
+					Bool_t refitFlag = kTRUE;
 					for (Int_t iaod =0; iaod<aodEvent->GetNumberOfTracks(); iaod++){
 						AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iaod);
-						if ((track->GetLabel() == daughter0) || (track->GetLabel() == daughter1) && (((track->GetStatus()&AliESDtrack::kTPCrefit)==AliESDtrack::kTPCrefit) && ((track->GetStatus()&AliESDtrack::kITSrefit)==AliESDtrack::kITSrefit))){
-							refitFlag = kTRUE;
+						if ((track->GetLabel() == daughter0) || (track->GetLabel() == daughter1)) {
+						  if(!(track->GetStatus()&AliESDtrack::kTPCrefit) || !(track->GetStatus()&AliESDtrack::kITSrefit)) {
+						    refitFlag = kFALSE;
+						  }
 						}
 					}
 					if (refitFlag){
@@ -492,10 +494,13 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				}  
 				
 				// cut on the min n. of clusters in ITS
-				Int_t ncls0=0;
-				for(Int_t l=0;l<6;l++) if(TESTBIT(d0tokpi->GetITSClusterMap(),l)) ncls0++;
+				Int_t ncls0=0,ncls1=0;
+				for(Int_t l=0;l<6;l++) {
+				  if(TESTBIT(track0->GetITSClusterMap(),l)) ncls0++;
+				  if(TESTBIT(track1->GetITSClusterMap(),l)) ncls1++;
+				}
 				AliDebug(2, Form("n clusters = %d", ncls0));
-				if (ncls0 >= fMinITSClusters){
+				if (ncls0 >= fMinITSClusters && ncls1 >= fMinITSClusters) {
 					fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters) ;
 					icountRecoITSClusters++;   
 					AliDebug(2,Form("pT = %f, dca = %f, cosThetaStar = %f, pTpi = %f, pTK = %f, d0pi = %f, d0K = %f, d0xd0 = %f, cosPointingAngle = %f", pt, dca, cosThetaStar,pTpi, pTK, d0pi*1E4, d0K*1E4, d0xd0*1E8, cosPointingAngle));
