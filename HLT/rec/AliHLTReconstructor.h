@@ -206,6 +206,12 @@ public:
   void Init(const char* options);
 
   /**
+   * Init streamer infos for the relevent classes to be extracted from HLT raw
+   * data payload. Reads the info from HLT/Calib/StreamerInfo
+   */
+  int InitStreamerInfos();
+
+  /**
    * This Reconstructor function is not applicable for the AliHLTReconstructor
    * as it gets a detector specific digits tree. But HLT processes all detectors.
    * Furthermore it's purely simulated data. <br>
@@ -298,6 +304,8 @@ private:
   AliHLTPluginBase* fpPluginBase;                                     //!transient
 
   UInt_t fFlags; //! transient
+
+  static const char* fgkCalibStreamerInfoEntry; //! OCDB path
 
   ClassDef(AliHLTReconstructor, 7)   // class for the HLT reconstruction
 
