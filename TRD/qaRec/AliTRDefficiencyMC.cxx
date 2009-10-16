@@ -28,12 +28,10 @@
 #include <TClonesArray.h>
 #include <TProfile.h>
 #include <TMath.h>
-#include <TCanvas.h>
 #include "TTreeStream.h"
 
 #include "AliMagF.h"
 #include "AliPID.h"
-#include "AliTracker.h"
 #include "AliMathBase.h"
 #include "AliTrackReference.h"
 #include "AliAnalysisManager.h"
@@ -41,7 +39,6 @@
 #include "AliTRDcluster.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
-#include "AliTRDtrackerV1.h"
 #include "Cal/AliTRDCalPID.h"
 #include "info/AliTRDtrackInfo.h"
 #include "AliTRDinfoGen.h"
@@ -76,7 +73,7 @@ void AliTRDefficiencyMC::Exec(Option_t *){
   // Execute the task:
   //
   // Loop over TrackInfos
-  // 1st: check if there is a TRDtrack
+  // 1st: check if there is a trackTRD
   // 2nd: put conditions on the track:
   //      - check if we did not register it before
   //      - check if we have Track References for the track 
@@ -89,45 +86,45 @@ void AliTRDefficiencyMC::Exec(Option_t *){
   // Fill the histograms
   //
   const Int_t kArraySize = 10000;     // Store indices of track references in an array
-  Int_t index_accepted[kArraySize], index_rejected[kArraySize], index_contamination[kArraySize];
-  memset(index_accepted, 0, sizeof(Int_t) * kArraySize);
-  memset(index_rejected, 0, sizeof(Int_t) * kArraySize);
-  memset(index_contamination, 0, sizeof(Int_t) * kArraySize);
+  Int_t indexAccepted[kArraySize], indexRejected[kArraySize], indexContamination[kArraySize];
+  memset(indexAccepted, 0, sizeof(Int_t) * kArraySize);
+  memset(indexRejected, 0, sizeof(Int_t) * kArraySize);
+  memset(indexContamination, 0, sizeof(Int_t) * kArraySize);
   Int_t naccepted = 0, nrejected = 0, ncontamination = 0;
   Bool_t isContamination = kFALSE;
   
   Int_t nTrackInfos = fTracks->GetEntriesFast();
-  AliTRDtrackV1 *TRDtrack = 0x0;
+  AliTRDtrackV1 *trackTRD = 0x0;
   AliTRDtrackInfo *trkInf = 0x0;
   for(Int_t itinf = 0; itinf < nTrackInfos; itinf++){
     trkInf = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(itinf));
     if(!trkInf) continue;
     if(trkInf->GetTrack() || trkInf->GetNumberOfClustersRefit()){
-      isContamination = IsRegistered(trkInf,index_accepted,naccepted);
+      isContamination = IsRegistered(trkInf,indexAccepted,naccepted);
       if(!trkInf->GetNTrackRefs()){
         // We reject the track since the Monte Carlo Information is missing
         printf("Error: Track Reference missing for Track %d\n", trkInf->GetLabel());
         isContamination = kTRUE;
         // Debugging
-        if(TRDtrack && fDebugLevel > 5) FillStreamTrackWOMC(trkInf);
+        if(trackTRD && fDebugLevel > 5) FillStreamTrackWOMC(trkInf);
       }	
       if(isContamination){
         // reject kink (we count these only once)
         if(trkInf->GetKinkIndex()) continue;
         // Register track as contamination
-        index_contamination[ncontamination++]=itinf;
+        indexContamination[ncontamination++]=itinf;
         continue;
       }
       // Accept track
       if(fDebugLevel > 3)printf("Accept track\n");
       // Register track as accepted
-      index_accepted[naccepted++] = itinf;
+      indexAccepted[naccepted++] = itinf;
     }else{
       if(IsFindable(trkInf)){
         // register track as rejected if not already registered there
         // Attention:
         // These track infos are not!!! registered as contamination
-        if(!IsRegistered(trkInf, index_rejected, nrejected)) index_rejected[nrejected++] = itinf;
+        if(!IsRegistered(trkInf, indexRejected, nrejected)) indexRejected[nrejected++] = itinf;
       }
     }
   }
@@ -139,16 +136,16 @@ void AliTRDefficiencyMC::Exec(Option_t *){
   // Attention:
   // these tracks are not! registered as contamination
   Int_t tmprejected[kArraySize]; Int_t nrej = nrejected;
-  memcpy(tmprejected, index_rejected, sizeof(Int_t) * nrejected);
+  memcpy(tmprejected, indexRejected, sizeof(Int_t) * nrejected);
   nrejected = 0;
   for(Int_t irej = 0; irej < nrej; irej++){
     trkInf = dynamic_cast<AliTRDtrackInfo *>(fTracks->At(tmprejected[irej]));
-    if(!IsRegistered(trkInf,index_accepted,naccepted)) index_rejected[nrejected++] = tmprejected[irej];
+    if(!IsRegistered(trkInf,indexAccepted,naccepted)) indexRejected[nrejected++] = tmprejected[irej];
   }
   // Fill Histograms
-  FillHistograms(naccepted, &index_accepted[0], kAccepted);
-  FillHistograms(nrejected, &index_rejected[0], kRejected);
-  FillHistograms(ncontamination, &index_contamination[0], kContamination);
+  FillHistograms(naccepted, &indexAccepted[0], kAccepted);
+  FillHistograms(nrejected, &indexRejected[0], kRejected);
+  FillHistograms(ncontamination, &indexContamination[0], kContamination);
   Int_t nall = naccepted + nrejected;
   //if(fDebugLevel>=1)
   printf("%3d Tracks: MC[%3d] TRD[%3d | %5.2f%%] \n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nall, naccepted, nall ? 1.E2*Float_t(naccepted)/Float_t(nall) : 0.);
@@ -157,25 +154,6 @@ void AliTRDefficiencyMC::Exec(Option_t *){
   PostData(0, fContainer);
 }
 
-//_____________________________________________________________________________
-void AliTRDefficiencyMC::Terminate(Option_t *)
-{
-  //
-  // Termination
-  //
-
-  if(fDebugStream){ 
-    delete fDebugStream;
-    fDebugStream = 0x0;
-    fDebugLevel = 0;
-  }
-
-  fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
-  if (!fContainer) {
-    Printf("ERROR: list not available");
-    return;
-  }
-}
 
 //_____________________________________________________________________________
 Bool_t AliTRDefficiencyMC::PostProcess()
@@ -285,7 +263,7 @@ TObjArray *AliTRDefficiencyMC::Histos(){
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDefficiencyMC::IsFindable(AliTRDtrackInfo *trkInf){
+Bool_t AliTRDefficiencyMC::IsFindable(AliTRDtrackInfo * const trkInf){
   //
   // Apply Cuts on the Monte Carlo track references
   // return whether track is findable or not
@@ -308,7 +286,7 @@ Bool_t AliTRDefficiencyMC::IsFindable(AliTRDtrackInfo *trkInf){
     x = trackRef->LocalX(); 
         
     // Be Sure that we are inside TRD
-    if(x < AliTRDinfoGen::xTPC || x > AliTRDinfoGen::xTOF) continue;	
+    if(x < AliTRDinfoGen::GetTPCx() || x > AliTRDinfoGen::GetTOFx()) continue;	
     sector[itr] = Int_t(trackRef->Alpha()/kAlpha);
     if(x < xmin){
       xmin = trackRef->LocalX();
@@ -399,21 +377,21 @@ void AliTRDefficiencyMC::FillHistograms(Int_t nTracks, Int_t *indices, FillingMo
         break;
     }
     // Fill species histogram
-    Int_t part_spec = -1;
+    Int_t partSpec = -1;
     for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
-      if(trkpid == pid[ispec]) part_spec = ispec;
+      if(trkpid == pid[ispec]) partSpec = ispec;
     }
-    if(part_spec >= 0){
+    if(partSpec >= 0){
       switch(mode){
         case kAccepted:
-          (dynamic_cast<TProfile *>(fContainer->At(kEfficiencySpeciesHistogram + part_spec)))->Fill(trkmom, 1);
-          (dynamic_cast<TProfile *>(fContainer->At(kContaminationSpeciesHistogram + part_spec)))->Fill(trkmom, 0);
+          (dynamic_cast<TProfile *>(fContainer->At(kEfficiencySpeciesHistogram + partSpec)))->Fill(trkmom, 1);
+          (dynamic_cast<TProfile *>(fContainer->At(kContaminationSpeciesHistogram + partSpec)))->Fill(trkmom, 0);
           break;
         case kRejected:
-          (dynamic_cast<TProfile *>(fContainer->At(kEfficiencySpeciesHistogram + part_spec)))->Fill(trkmom, 0);          (dynamic_cast<TProfile *>(fContainer->At(kContaminationSpeciesHistogram + part_spec)))->Fill(trkmom, 0);
+          (dynamic_cast<TProfile *>(fContainer->At(kEfficiencySpeciesHistogram + partSpec)))->Fill(trkmom, 0);          (dynamic_cast<TProfile *>(fContainer->At(kContaminationSpeciesHistogram + partSpec)))->Fill(trkmom, 0);
           break;
         case kContamination:
-          (dynamic_cast<TProfile *>(fContainer->At(kContaminationSpeciesHistogram + part_spec)))->Fill(trkmom, 1);
+          (dynamic_cast<TProfile *>(fContainer->At(kContaminationSpeciesHistogram + partSpec)))->Fill(trkmom, 1);
           break;
       }
     } else {
@@ -425,7 +403,7 @@ void AliTRDefficiencyMC::FillHistograms(Int_t nTracks, Int_t *indices, FillingMo
 }
 
 //_____________________________________________________________________________
-void AliTRDefficiencyMC::FillStreamTrackWOMC(AliTRDtrackInfo *trkInf){
+void AliTRDefficiencyMC::FillStreamTrackWOMC(AliTRDtrackInfo * const trkInf){
   // fill debug stream
   // we want to know:
   //  1. The event number
@@ -444,29 +422,29 @@ void AliTRDefficiencyMC::FillStreamTrackWOMC(AliTRDtrackInfo *trkInf){
   Int_t label = trkInf->GetLabel();
   Int_t kinkIndex = trkInf->GetKinkIndex();
   Int_t pdg = trkInf->GetPDG();
-  Double_t TPCphi = trkInf->GetESDinfo()->GetOuterParam()->Phi();
-  Int_t TRDlabels[180];	// Container for the cluster labels
+  Double_t phiTPC = trkInf->GetESDinfo()->GetOuterParam()->Phi();
+  Int_t labelsTRD[180];	// Container for the cluster labels
   Int_t sortlabels[360];	// Cluster Labels sorted according their occurancy
   AliTRDseedV1 *tracklet = 0x0;
   AliTRDcluster *c = 0x0;
   Int_t nclusters = 0x0;
-  AliTRDtrackV1 *TRDtrack = trkInf->GetTrack();
+  AliTRDtrackV1 *trackTRD = trkInf->GetTrack();
   for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
-    tracklet = TRDtrack->GetTracklet(il);
+    tracklet = trackTRD->GetTracklet(il);
     if(!tracklet) continue;
     tracklet->ResetClusterIter();
     c = 0x0;
-    while((c = tracklet->NextCluster())) TRDlabels[nclusters++] = c->GetLabel(0);
+    while((c = tracklet->NextCluster())) labelsTRD[nclusters++] = c->GetLabel(0);
   }
   // Determine Label and Frequency
-  AliMathBase::Freq(nclusters, const_cast<const Int_t *>(&TRDlabels[0]), &sortlabels[0], kTRUE);
-  Int_t TRDLabel = sortlabels[0];
+  AliMathBase::Freq(nclusters, const_cast<const Int_t *>(&labelsTRD[0]), &sortlabels[0], kTRUE);
+  Int_t labelTRD = sortlabels[0];
   Int_t freqTRD = sortlabels[1];
   // find the track info object matching to the TRD track
   AliTRDtrackInfo *realtrack = 0;
   TObjArrayIter rtiter(fTracks);
   while((realtrack = (AliTRDtrackInfo *)rtiter())){
-    if(realtrack->GetLabel() != TRDLabel) continue;
+    if(realtrack->GetLabel() != labelTRD) continue;
     break;
   }
   TClonesArray trackRefs("AliTrackReference");
@@ -487,11 +465,11 @@ void AliTRDefficiencyMC::FillStreamTrackWOMC(AliTRDtrackInfo *trkInf){
   (*fDebugStream) << "TrackingEffMCfake"
     << "Event="	<< event
     << "Label=" << label
-    << "TRDLabel=" << TRDLabel
+    << "labelTRD=" << labelTRD
     << "FreqTRDlabel=" << freqTRD
     << "TPCp="	<< mom
-    << "TPCphi=" << TPCphi
-    << "TRDtrack=" << TRDtrack
+    << "phiTPC=" << phiTPC
+    << "trackTRD=" << trackTRD
     << "PDG="	<< pdg
     << "TrackRefs=" << &trackRefs
     << "RealPDG=" << realPdg
@@ -502,7 +480,7 @@ void AliTRDefficiencyMC::FillStreamTrackWOMC(AliTRDtrackInfo *trkInf){
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDefficiencyMC::IsRegistered(AliTRDtrackInfo *trkInf, Int_t *indices, Int_t nTracks){
+Bool_t AliTRDefficiencyMC::IsRegistered(AliTRDtrackInfo * const trkInf, Int_t *indices, Int_t nTracks){
   //
   // Checks if track is registered in a given mode
   //

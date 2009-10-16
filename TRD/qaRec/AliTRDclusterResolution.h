@@ -60,8 +60,6 @@ public:
   void          SetSaveAs(Bool_t v = kTRUE) {SetBit(kSaveAs, v);}
   inline void   ResetProcess();
 
-  void    Terminate(Option_t *){};
-
 protected:
   void    ProcessCharge();
   void    ProcessCenterPad();

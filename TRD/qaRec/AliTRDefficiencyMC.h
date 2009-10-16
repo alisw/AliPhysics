@@ -22,7 +22,6 @@ public:
   
   void        CreateOutputObjects();
   void        Exec(Option_t *);
-  void        Terminate(Option_t *);
   
   Bool_t      PostProcess();
   TObjArray*  Histos();
@@ -46,10 +45,10 @@ private:
   AliTRDefficiencyMC& operator=(const AliTRDefficiencyMC &);
   
   void    FillHistograms(Int_t ntracks, Int_t *indices, FillingMode_t mode);
-  void    FillStreamTrackWOMC(AliTRDtrackInfo *trkInf);
+  void    FillStreamTrackWOMC(AliTRDtrackInfo * const trkInf);
 
-  Bool_t  IsFindable(AliTRDtrackInfo *trkInf);
-  Bool_t  IsRegistered(AliTRDtrackInfo *trkInf, Int_t *indices, Int_t nTracks);
+  Bool_t  IsFindable(AliTRDtrackInfo * const trkInf);
+  Bool_t  IsRegistered(AliTRDtrackInfo * const trkInf, Int_t *indices, Int_t nTracks);
     
   ClassDef(AliTRDefficiencyMC, 1); // Combined tracking efficiency
 };

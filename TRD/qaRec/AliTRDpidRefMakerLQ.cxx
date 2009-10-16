@@ -36,11 +36,11 @@
 #include <TH2D.h>
 #include <TH2I.h>
 #include <TPrincipal.h>
-#include <TVector3.h>
-#include <TLinearFitter.h>
+//#include <TVector3.h>
+//#include <TLinearFitter.h>
 #include <TCanvas.h>
-#include <TEllipse.h>
-#include <TMarker.h>
+//#include <TEllipse.h>
+//#include <TMarker.h>
 
 #include "AliLog.h"
 #include "../../STAT/TKDPDF.h"
@@ -109,6 +109,8 @@ void AliTRDpidRefMakerLQ::CreateOutputObjects()
 //________________________________________________________________________
 Float_t* AliTRDpidRefMakerLQ::CookdEdx(AliTRDseedV1 *trklt)
 {
+// Fill dEdx array for multidim LQ PID
+
   trklt->CookdEdx(AliTRDpidUtil::kLQslices);
   const Float_t *dedx = trklt->GetdEdx();
   if(dedx[0]+dedx[1] <= 0.) return 0x0;
@@ -124,6 +126,8 @@ Float_t* AliTRDpidRefMakerLQ::CookdEdx(AliTRDseedV1 *trklt)
 //__________________________________________________________________
 TObject* AliTRDpidRefMakerLQ::GetOCDBEntry(Option_t *opt)
 {
+// Steer loading of OCDB LQ PID
+
   TDirectoryFile *d = 0x0;
   if(!TFile::Open(Form("TRD.Calib%s.root", GetName()))) return 0x0;
   if(!(d=(TDirectoryFile*)gFile->Get(Form("PDF_%s", opt)))) return 0x0;
@@ -135,6 +139,8 @@ TObject* AliTRDpidRefMakerLQ::GetOCDBEntry(Option_t *opt)
 //__________________________________________________________________
 Bool_t AliTRDpidRefMakerLQ::GetRefFigure(Int_t ifig)
 {
+// Steering reference picture
+
   if(ifig<0 || ifig>AliTRDCalPID::kNMom-1){ 
     AliError("Ref fig requested outside definition.");
     return kFALSE;

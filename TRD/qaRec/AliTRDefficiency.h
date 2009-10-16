@@ -28,7 +28,6 @@ public:
   void    Exec(Option_t *);
   Bool_t  GetRefFigure(Int_t ifig);
   Bool_t  PostProcess();
-  void    Terminate(Option_t *);
 
 private:
   AliTRDefficiency(const AliTRDefficiency&);

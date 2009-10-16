@@ -256,22 +256,22 @@ TH1 *AliTRDcheckPID::PlotLQ(const AliTRDtrackV1 *track)
   // Plot the probabilities for electrons using 2-dim LQ
   //
 
-  if(!fESD){
+  if(!fkESD){
     AliWarning("No ESD info available.");
     return 0x0;
   }
 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
 
   ULong_t status;
-  status = fESD -> GetStatus();
+  status = fkESD -> GetStatus();
   if(!(status&AliESDtrack::kTRDin)) return 0x0;
 
-  if(!CheckTrackQuality(fTrack)) return 0x0;
+  if(!CheckTrackQuality(fkTrack)) return 0x0;
   
   if(!(fEfficiency = dynamic_cast<TObjArray *>(fContainer->At(kEfficiency)))){
     AliWarning("No Histogram defined.");
@@ -283,15 +283,15 @@ TH1 *AliTRDcheckPID::PlotLQ(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
-  AliTRDtrackV1 cTrack(*fTrack);
+  AliTRDtrackV1 cTrack(*fkTrack);
   cTrack.SetReconstructor(fReconstructor);
 
   Int_t pdg = 0;
   Float_t momentum = 0.;
 
-  if(fMC){
-    if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-    pdg = fMC->GetPDG();
+  if(fkMC){
+    if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+    pdg = fkMC->GetPDG();
   } else{
     //AliWarning("No MC info available!");
     momentum = cTrack.GetMomentum(0);
@@ -316,22 +316,22 @@ TH1 *AliTRDcheckPID::PlotNN(const AliTRDtrackV1 *track)
   // Plot the probabilities for electrons using 2-dim LQ
   //
 
-  if(!fESD){
+  if(!fkESD){
     AliWarning("No ESD info available.");
     return 0x0;
   }
 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   
   ULong_t status;
-  status = fESD -> GetStatus();
+  status = fkESD -> GetStatus();
   if(!(status&AliESDtrack::kTRDin)) return 0x0;
 
-  if(!CheckTrackQuality(fTrack)) return 0x0;
+  if(!CheckTrackQuality(fkTrack)) return 0x0;
   
   if(!(fEfficiency = dynamic_cast<TObjArray *>(fContainer->At(kEfficiency)))){
     AliWarning("No Histogram defined.");
@@ -343,14 +343,14 @@ TH1 *AliTRDcheckPID::PlotNN(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
-  AliTRDtrackV1 cTrack(*fTrack);
+  AliTRDtrackV1 cTrack(*fkTrack);
   cTrack.SetReconstructor(fReconstructor);
 
   Int_t pdg = 0;
   Float_t momentum = 0.;
-  if(fMC){
-    if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-    pdg = fMC->GetPDG();
+  if(fkMC){
+    if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+    pdg = fkMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
     momentum = cTrack.GetMomentum(0);
@@ -375,23 +375,23 @@ TH1 *AliTRDcheckPID::PlotESD(const AliTRDtrackV1 *track)
   // Plot the probabilities for electrons using 2-dim LQ
   //
 
-  if(!fESD){
+  if(!fkESD){
     AliWarning("No ESD info available.");
     return 0x0;
   }
 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   
   ULong_t status;
-  status = fESD -> GetStatus();
+  status = fkESD -> GetStatus();
   if(!(status&AliESDtrack::kTRDin)) return 0x0;
 
-  if(!CheckTrackQuality(fTrack)) return 0x0;
-  if(fTrack->GetNumberOfTrackletsPID() < fMinNTracklets) return 0x0;
+  if(!CheckTrackQuality(fkTrack)) return 0x0;
+  if(fkTrack->GetNumberOfTrackletsPID() < fMinNTracklets) return 0x0;
   
   if(!(fEfficiency = dynamic_cast<TObjArray *>(fContainer->At(kEfficiency)))){
     AliWarning("No Histogram defined.");
@@ -406,12 +406,12 @@ TH1 *AliTRDcheckPID::PlotESD(const AliTRDtrackV1 *track)
 
   Int_t pdg = 0;
   Float_t momentum = 0.;
-  if(fMC){
-    if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-    pdg = fMC->GetPDG();
+  if(fkMC){
+    if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+    pdg = fkMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
-    AliTRDtrackV1 cTrack(*fTrack);
+    AliTRDtrackV1 cTrack(*fkTrack);
     cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
@@ -419,7 +419,7 @@ TH1 *AliTRDcheckPID::PlotESD(const AliTRDtrackV1 *track)
   if(!IsInRange(momentum)) return 0x0;
 
 //   Double32_t pidESD[AliPID::kSPECIES];
-  const Double32_t *pidESD = fESD->GetResponseIter();
+  const Double32_t *pidESD = fkESD->GetResponseIter();
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   hPIDESD -> Fill(FindBin(species, momentum), pidESD[0]);
   return hPIDESD;
@@ -433,13 +433,13 @@ TH1 *AliTRDcheckPID::PlotdEdx(const AliTRDtrackV1 *track)
   // Plot the probabilities for electrons using 2-dim LQ
   //
 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   
-  if(!CheckTrackQuality(fTrack)) return 0x0;
+  if(!CheckTrackQuality(fkTrack)) return 0x0;
   
   TH2F *hdEdx;
   if(!(hdEdx = dynamic_cast<TH2F *>(fContainer->At(kdEdx)))){
@@ -447,13 +447,13 @@ TH1 *AliTRDcheckPID::PlotdEdx(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
-  AliTRDtrackV1 cTrack(*fTrack);
+  AliTRDtrackV1 cTrack(*fkTrack);
   cTrack.SetReconstructor(fReconstructor);
   Int_t pdg = 0;
   Float_t momentum = 0.;
-  if(fMC){
-    if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-    pdg = fMC->GetPDG();
+  if(fkMC){
+    if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+    pdg = fkMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
     momentum = cTrack.GetMomentum(0);
@@ -485,13 +485,13 @@ TH1 *AliTRDcheckPID::PlotdEdxSlice(const AliTRDtrackV1 *track)
   // Plot the probabilities for electrons using 2-dim LQ
   //
 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   
-  if(!CheckTrackQuality(fTrack)) return 0x0;
+  if(!CheckTrackQuality(fkTrack)) return 0x0;
   
   TH2F *hdEdxSlice;
   if(!(hdEdxSlice = dynamic_cast<TH2F *>(fContainer->At(kdEdxSlice)))){
@@ -499,13 +499,13 @@ TH1 *AliTRDcheckPID::PlotdEdxSlice(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
-  AliTRDtrackV1 cTrack(*fTrack);
+  AliTRDtrackV1 cTrack(*fkTrack);
   cTrack.SetReconstructor(fReconstructor);
   Int_t pdg = 0;
   Float_t momentum = 0.;
-  if(fMC){
-    if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-    pdg = fMC->GetPDG();
+  if(fkMC){
+    if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+    pdg = fkMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
     momentum = cTrack.GetMomentum(0);
@@ -539,13 +539,13 @@ TH1 *AliTRDcheckPID::PlotPH(const AliTRDtrackV1 *track)
   // Plot the probabilities for electrons using 2-dim LQ
   //
 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   
-  if(!CheckTrackQuality(fTrack)) return 0x0;
+  if(!CheckTrackQuality(fkTrack)) return 0x0;
   
   TObjArray *arr = 0x0;
   TProfile2D *hPHX, *hPHT;
@@ -558,12 +558,12 @@ TH1 *AliTRDcheckPID::PlotPH(const AliTRDtrackV1 *track)
 
   Int_t pdg = 0;
   Float_t momentum = 0.;
-  if(fMC){
-    if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-    pdg = fMC->GetPDG();
+  if(fkMC){
+    if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+    pdg = fkMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
-    AliTRDtrackV1 cTrack(*fTrack);
+    AliTRDtrackV1 cTrack(*fkTrack);
     cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
@@ -575,7 +575,7 @@ TH1 *AliTRDcheckPID::PlotPH(const AliTRDtrackV1 *track)
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   Int_t iBin = FindBin(species, momentum);
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
-    tracklet = fTrack->GetTracklet(iChamb);
+    tracklet = fkTrack->GetTracklet(iChamb);
     if(!tracklet) continue;
     Float_t x0 = tracklet->GetX0(); 
     for(Int_t ic = 0; ic < AliTRDtrackerV1::GetNTimeBins(); ic++){
@@ -595,13 +595,13 @@ TH1 *AliTRDcheckPID::PlotNClus(const AliTRDtrackV1 *track)
   // Plot the probabilities for electrons using 2-dim LQ
   //
 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   
-  if(!CheckTrackQuality(fTrack)) return 0x0;
+  if(!CheckTrackQuality(fkTrack)) return 0x0;
   
   TH2F *hNClus;
   if(!(hNClus = dynamic_cast<TH2F *>(fContainer->At(kNClus)))){
@@ -612,12 +612,12 @@ TH1 *AliTRDcheckPID::PlotNClus(const AliTRDtrackV1 *track)
 
   Int_t pdg = 0;
   Float_t momentum = 0.;
-  if(fMC){
-    if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-    pdg = fMC->GetPDG();
+  if(fkMC){
+    if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+    pdg = fkMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
-    AliTRDtrackV1 cTrack(*fTrack);
+    AliTRDtrackV1 cTrack(*fkTrack);
     cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
@@ -628,7 +628,7 @@ TH1 *AliTRDcheckPID::PlotNClus(const AliTRDtrackV1 *track)
   Int_t iBin = FindBin(species, momentum); 
   AliTRDseedV1 *tracklet = 0x0;
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
-    tracklet = fTrack->GetTracklet(iChamb);
+    tracklet = fkTrack->GetTracklet(iChamb);
     if(!tracklet) continue;
     hNClus -> Fill(iBin, tracklet->GetN());
   }
@@ -643,8 +643,8 @@ TH1 *AliTRDcheckPID::PlotNTracklets(const AliTRDtrackV1 *track)
   // Plot the probabilities for electrons using 2-dim LQ
   //
 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -655,13 +655,13 @@ TH1 *AliTRDcheckPID::PlotNTracklets(const AliTRDtrackV1 *track)
     return 0x0;
   }
 
-  AliTRDtrackV1 cTrack(*fTrack);
+  AliTRDtrackV1 cTrack(*fkTrack);
   cTrack.SetReconstructor(fReconstructor);
   Int_t pdg = 0;
   Float_t momentum = 0.;
-  if(fMC){
-    if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-    pdg = fMC->GetPDG();
+  if(fkMC){
+    if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+    pdg = fkMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
     momentum = cTrack.GetMomentum(0);
@@ -682,13 +682,13 @@ TH1 *AliTRDcheckPID::PlotMom(const AliTRDtrackV1 *track)
   // Plot the probabilities for electrons using 2-dim LQ
   //
 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   
-  if(!CheckTrackQuality(fTrack)) return 0x0;
+  if(!CheckTrackQuality(fkTrack)) return 0x0;
   
   TH1F *hMom;
   if(!(hMom = dynamic_cast<TH1F *>(fContainer->At(kMomentum)))){
@@ -699,12 +699,12 @@ TH1 *AliTRDcheckPID::PlotMom(const AliTRDtrackV1 *track)
 
   Int_t pdg = 0;
   Float_t momentum = 0.;
-  if(fMC){
-    if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-    pdg = fMC->GetPDG();
+  if(fkMC){
+    if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+    pdg = fkMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
-    AliTRDtrackV1 cTrack(*fTrack);
+    AliTRDtrackV1 cTrack(*fkTrack);
     cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
@@ -721,13 +721,13 @@ TH1 *AliTRDcheckPID::PlotMomBin(const AliTRDtrackV1 *track)
   // Plot the probabilities for electrons using 2-dim LQ
   //
 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   
-  if(!CheckTrackQuality(fTrack)) return 0x0;
+  if(!CheckTrackQuality(fkTrack)) return 0x0;
   
   TH1F *hMomBin;
   if(!(hMomBin = dynamic_cast<TH1F *>(fContainer->At(kMomentumBin)))){
@@ -739,12 +739,12 @@ TH1 *AliTRDcheckPID::PlotMomBin(const AliTRDtrackV1 *track)
   Int_t pdg = 0;
   Float_t momentum = 0.;
 
-  if(fMC){
-    if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-    pdg = fMC->GetPDG();
+  if(fkMC){
+    if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+    pdg = fkMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
-    AliTRDtrackV1 cTrack(*fTrack);
+    AliTRDtrackV1 cTrack(*fkTrack);
     cTrack.SetReconstructor(fReconstructor);
     momentum = cTrack.GetMomentum(0);
   }
@@ -1073,18 +1073,3 @@ void AliTRDcheckPID::EvaluatePionEfficiency(TObjArray * const histoContainer, TO
     }
   }
 }
-
-//________________________________________________________________________
-void AliTRDcheckPID::Terminate(Option_t *) 
-{
-  // Draw result to the screen
-  // Called once at the end of the query
-
-  fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
-  if (!fContainer) {
-    Printf("ERROR: list not available");
-    return;
-  }
-}
-
-

@@ -32,17 +32,18 @@ public:
   void  ConnectInputData(Option_t *);
   void  CreateOutputObjects();
   void  Exec(Option_t *);
-  void  Terminate(Option_t *);
-
-  static const Float_t xTPC;
-  static const Float_t xTOF;
+  static Float_t GetTPCx() { return fgkTPC;}
+  static Float_t GetTOFx() { return fgkTOF;}
 
 private:
+  static const Float_t fgkTPC; // end TPC radial position
+  static const Float_t fgkTOF; // begin TOF radial position
+
   AliTRDinfoGen(const AliTRDinfoGen&);
   AliTRDinfoGen& operator=(const AliTRDinfoGen&);
 
-  AliESDEvent      *fESD;            //! ESD event
-  AliMCEvent       *fMC;             //! MC event
+  AliESDEvent      *fESDev;          //! ESD event
+  AliMCEvent       *fMCev;           //! MC event
   AliESDfriend     *fESDfriend;      //! ESD friends
   AliTRDtrackInfo  *fTrackInfo;      //! Track info
   AliTRDeventInfo  *fEventInfo;		   //! Event info

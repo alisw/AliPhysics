@@ -34,13 +34,13 @@ public:
   ~AliTRDpidRefMakerLQ();
  
   void      CreateOutputObjects();
-  TObject*  GetOCDBEntry(Option_t *);
+  TObject*  GetOCDBEntry(Option_t *opt);
   Bool_t    GetRefFigure(Int_t ifig);
   Bool_t    PostProcess();
 
 protected:
-  Float_t*  CookdEdx(AliTRDseedV1*);
-  Int_t     GetNslices() { return 2;}
+  Float_t*  CookdEdx(AliTRDseedV1 *trklt);
+  Int_t     GetNslices() const { return 2;}
   void      Fill();
 
 private:

@@ -67,14 +67,14 @@
 
 ClassImp(AliTRDinfoGen)
 
-const Float_t AliTRDinfoGen::xTPC = 290.;
-const Float_t AliTRDinfoGen::xTOF = 365.;
+const Float_t AliTRDinfoGen::fgkTPC = 290.;
+const Float_t AliTRDinfoGen::fgkTOF = 365.;
 
 //____________________________________________________________________
 AliTRDinfoGen::AliTRDinfoGen():
   AliTRDrecoTask("infoGen", "MC-REC TRD-track list generator")
-  ,fESD(0x0)
-  ,fMC(0x0)
+  ,fESDev(0x0)
+  ,fMCev(0x0)
   ,fESDfriend(0x0)
   ,fTrackInfo(0x0)
   ,fEventInfo(0x0)
@@ -94,6 +94,7 @@ AliTRDinfoGen::AliTRDinfoGen():
 //____________________________________________________________________
 AliTRDinfoGen::~AliTRDinfoGen()
 {
+// Destructor
   if(fTrackInfo) delete fTrackInfo; fTrackInfo = 0x0;
   if(fEventInfo) delete fEventInfo; fEventInfo = 0x0;
   if(fV0Info) delete fV0Info; fV0Info = 0x0;
@@ -125,12 +126,12 @@ void AliTRDinfoGen::ConnectInputData(Option_t *)
   if(!esdH){
     printf("ERROR - ESD input handler not found");
   } else {
-    fESD = esdH->GetEvent();
-    if(!fESD){
+    fESDev = esdH->GetEvent();
+    if(!fESDev){
       printf("ERROR - ESD event not found");
     } else {
       esdH->SetActiveBranches("ESDfriend*");
-      fESDfriend = (AliESDfriend *)fESD->FindListObject("AliESDfriend");
+      fESDfriend = (AliESDfriend *)fESDev->FindListObject("AliESDfriend");
     }
   }
   if(HasMCdata()){
@@ -138,7 +139,7 @@ void AliTRDinfoGen::ConnectInputData(Option_t *)
     if(!mcH){ 
       AliError("MC input handler not found");
     } else {
-      fMC = mcH->MCEvent();
+      fMCev = mcH->MCEvent();
     }
   }
 }
@@ -164,7 +165,7 @@ void AliTRDinfoGen::Exec(Option_t *){
   //
   // Run the Analysis
   //
-  if(!fESD){
+  if(!fESDev){
     AliError("Failed retrieving ESD event");
     return;
   }
@@ -172,21 +173,21 @@ void AliTRDinfoGen::Exec(Option_t *){
     AliError("Failed retrieving ESD friend event");
     return;
   }
-  if(HasMCdata() && !fMC){
+  if(HasMCdata() && !fMCev){
     AliError("Failed retrieving MC event");
     return;
   }
   fContainer->Delete();
   fV0container->Delete();
   fEventInfo->Delete("");
-  fESD->SetESDfriend(fESDfriend);
-  new(fEventInfo)AliTRDeventInfo(fESD->GetHeader(), const_cast<AliESDRun *>(fESD->GetESDRun()));
+  fESDev->SetESDfriend(fESDfriend);
+  new(fEventInfo)AliTRDeventInfo(fESDev->GetHeader(), const_cast<AliESDRun *>(fESDev->GetESDRun()));
   
   Bool_t *trackMap = 0x0;
   AliStack * mStack = 0x0;
-  Int_t nTracksMC = HasMCdata() ? fMC->GetNumberOfTracks() : 0, nTracksESD = fESD->GetNumberOfTracks();
+  Int_t nTracksMC = HasMCdata() ? fMCev->GetNumberOfTracks() : 0, nTracksESD = fESDev->GetNumberOfTracks();
   if(HasMCdata()){
-    mStack = fMC->Stack();
+    mStack = fMCev->Stack();
     if(!mStack){
       AliError("Failed retrieving MC Stack");
       return;
@@ -206,7 +207,7 @@ void AliTRDinfoGen::Exec(Option_t *){
   AliTRDseedV1 *tracklet = 0x0;
   AliTRDcluster *cl = 0x0;
   for(Int_t itrk = 0; itrk < nTracksESD; itrk++){
-    esdTrack = fESD->GetTrack(itrk);
+    esdTrack = fESDev->GetTrack(itrk);
     if(fDebugLevel>=2) printf("\n%3d ITS[%d] TPC[%d] TRD[%d]\n", itrk, esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2));
     if(esdTrack->GetNcls(1)) nTPC++;
     if(esdTrack->GetNcls(2)) nTRD++;
@@ -234,7 +235,7 @@ void AliTRDinfoGen::Exec(Option_t *){
         continue; 
       }
       AliMCParticle *mcParticle = 0x0; 
-      if(!(mcParticle = (AliMCParticle*) fMC->GetTrack(alab))){
+      if(!(mcParticle = (AliMCParticle*) fMCev->GetTrack(alab))){
         AliError(Form("MC particle label[%d] missing for Ev[%d] Trk[%d].", label, (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), itrk));
         continue;
       }
@@ -243,7 +244,7 @@ void AliTRDinfoGen::Exec(Option_t *){
       Int_t iref = 0; AliTrackReference *ref = 0x0; 
       while(iref<nRefs){
         ref = mcParticle->GetTrackReference(iref);
-        if(ref->LocalX() > xTPC) break;
+        if(ref->LocalX() > fgkTPC) break;
         iref++;
       }
 
@@ -253,7 +254,7 @@ void AliTRDinfoGen::Exec(Option_t *){
       Int_t jref = iref;//, kref = 0;
       while(jref<nRefs){
         ref = mcParticle->GetTrackReference(jref);
-        if(ref->LocalX() > xTOF) break;
+        if(ref->LocalX() > fgkTOF) break;
         if(fDebugLevel>=3) printf("\ttrackRef[%2d (%2d)] @ %7.3f OK\n", jref-iref, jref, ref->LocalX());
         fTrackInfo->AddTrackRef(ref);
         jref++;
@@ -329,7 +330,7 @@ void AliTRDinfoGen::Exec(Option_t *){
   
     for(Int_t itk = 0; itk < nTracksMC; itk++){
       if(trackMap[itk]) continue;
-      AliMCParticle *mcParticle =  (AliMCParticle*) fMC->GetTrack(TMath::Abs(itk));
+      AliMCParticle *mcParticle =  (AliMCParticle*) fMCev->GetTrack(TMath::Abs(itk));
       Int_t fPdg = mcParticle->Particle()->GetPdgCode();
       Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
       Int_t iref = 0; AliTrackReference *ref = 0x0; 
@@ -374,15 +375,3 @@ void AliTRDinfoGen::Exec(Option_t *){
   PostData(2, fV0container);
 }
 
-
-//____________________________________________________________________
-void AliTRDinfoGen::Terminate(Option_t *)
-{
-  //
-  // Stays empty because we are only interested in the tree
-  //
-  if(fDebugStream){ 
-    delete fDebugStream;
-    fDebugStream = 0x0;
-  }
-}

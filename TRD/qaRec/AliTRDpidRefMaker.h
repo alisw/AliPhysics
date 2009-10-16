@@ -67,7 +67,7 @@ public:
   void    Terminate(Option_t *);
 
 protected:
-  virtual Float_t* CookdEdx(AliTRDseedV1*) = 0;
+  virtual Float_t* CookdEdx(AliTRDseedV1*) const = 0;
   virtual Int_t    GetNslices() = 0;
   virtual void     Fill();
 

@@ -1,3 +1,18 @@
+///////////////////////////////////////////////////////
+//
+// Basic class for Performance/Calibration TRD tasks
+// 
+// It performs generic tasks like :
+//   - data file manegment
+//   - reference container management
+//   - debug container management
+//   - interaction with AliAnalysisManager
+//   - Plot functor loop
+//
+// Author: Alexandru Bercuci <A.Bercuci@gsi.de>, 10/09/2008
+//
+/////////////////////////////////////////////////////////
+
 #include "TClass.h"
 #include "TMethod.h"
 #include "TMethodCall.h"
@@ -25,9 +40,9 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   ,fPlotFuncList(0x0)
   ,fContainer(0x0)
   ,fTracks(0x0)
-  ,fTrack(0x0)
-  ,fMC(0x0)
-  ,fESD(0x0)
+  ,fkTrack(0x0)
+  ,fkMC(0x0)
+  ,fkESD(0x0)
   ,fDebugStream(0x0)
 {
   DefineInput(0, TObjArray::Class());
@@ -37,6 +52,9 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
 //_______________________________________________________
 AliTRDrecoTask::~AliTRDrecoTask() 
 {
+
+  // Generic task destructor
+
   printf(" %s (%s)\n", GetName(), GetTitle());
   if(fDebugStream){ 
     delete fDebugStream;
@@ -75,6 +93,8 @@ void AliTRDrecoTask::ConnectInputData(Option_t *)
 //_______________________________________________________
 void AliTRDrecoTask::Exec(Option_t *)
 {
+// Loop over Plot functors published by particular tasks
+
   if(!fPlotFuncList){
     AliWarning("No functor list defined for the reference plots");
     return;
@@ -86,9 +106,9 @@ void AliTRDrecoTask::Exec(Option_t *)
   TIter plotIter(fPlotFuncList);
   TObjArrayIter trackIter(fTracks);
   while((trackInfo = dynamic_cast<AliTRDtrackInfo*>(trackIter()))){
-    fTrack = trackInfo->GetTrack();
-    fMC    = trackInfo->GetMCinfo();
-    fESD   = trackInfo->GetESDinfo();
+    fkTrack = trackInfo->GetTrack();
+    fkMC    = trackInfo->GetMCinfo();
+    fkESD   = trackInfo->GetESDinfo();
 
     TMethodCall *plot = 0x0;
     plotIter.Reset();
@@ -107,18 +127,22 @@ Bool_t AliTRDrecoTask::GetRefFigure(Int_t /*ifig*/)
 }
 
 //_______________________________________________________
-Bool_t AliTRDrecoTask::PutTrendValue(Char_t *name, Double_t val, Double_t err)
+Bool_t AliTRDrecoTask::PutTrendValue(Char_t *name, Double_t val)
 {
+// Generic publisher for trend values
+
   if(!fgFile){
     fgFile = fopen("TRD.Performance.txt", "at");
   }
-  fprintf(fgFile, "%s_%s %f %f\n", GetName(), name, val, err);
+  fprintf(fgFile, "%s_%s %f %f\n", GetName(), name, val);
   return kTRUE;
 }
 
 //_______________________________________________________
 void AliTRDrecoTask::InitFunctorList()
 {
+// Initialize list of functors
+
   TClass *c = this->IsA();
 
   TMethod *m = 0x0;
@@ -134,6 +158,8 @@ void AliTRDrecoTask::InitFunctorList()
 //_______________________________________________________
 Bool_t AliTRDrecoTask::Load(const Char_t *filename)
 {
+// Generic container loader
+
   if(!TFile::Open(filename)){
     AliWarning(Form("Couldn't open file %s.", filename));
     return kFALSE;
@@ -149,7 +175,7 @@ Bool_t AliTRDrecoTask::Load(const Char_t *filename)
 }
 
 //________________________________________________________
-Bool_t AliTRDrecoTask::Save(TObjArray *results){
+Bool_t AliTRDrecoTask::Save(TObjArray * const results){
   //
   // Store the output graphs in a ROOT file
   // Input TObject array will not be written as Key to the file,
@@ -174,6 +200,8 @@ Bool_t AliTRDrecoTask::Save(TObjArray *results){
 //_______________________________________________________
 Bool_t AliTRDrecoTask::PostProcess()
 {
+// To be implemented by particular tasks
+
   AliWarning("Post processing of reference histograms not implemented.");
   return kFALSE;
 }
@@ -181,6 +209,8 @@ Bool_t AliTRDrecoTask::PostProcess()
 //_______________________________________________________
 void AliTRDrecoTask::SetDebugLevel(Int_t level)
 {
+// Generic debug handler
+
   fDebugLevel = level;
   if(fDebugLevel>=1){
     TDirectory *savedir = gDirectory;
@@ -189,8 +219,22 @@ void AliTRDrecoTask::SetDebugLevel(Int_t level)
   }
 }
 
+//____________________________________________________________________
+void AliTRDrecoTask::Terminate(Option_t *)
+{
+  //
+  // Terminate
+  //
+
+  if(fDebugStream){ 
+    delete fDebugStream;
+    fDebugStream = 0x0;
+    fDebugLevel = 0;
+  }
+}
+
 //________________________________________________________
-void AliTRDrecoTask::Adjust(TF1 *f, TH1 *h)
+void AliTRDrecoTask::Adjust(TF1 *f, TH1 * const h)
 {
 // Helper function to avoid duplication of code
 // Make first guesses on the fit parameters

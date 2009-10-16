@@ -114,17 +114,17 @@ void AliTRDpidRefMaker::Exec(Option_t *)
 
   AliTRDtrackInfo     *track = 0x0;
   //AliTRDv0Info           *v0 = 0x0;
-  AliTRDtrackV1    *TRDtrack = 0x0;
+  AliTRDtrackV1    *trackTRD = 0x0;
   AliTrackReference     *ref = 0x0;
   //AliExternalTrackParam *esd = 0x0;
-  AliTRDseedV1 *TRDtracklet = 0x0;
+  AliTRDseedV1 *trackletTRD = 0x0;
   for(Int_t itrk=0, nTRD=0; itrk<fTracks->GetEntriesFast(); itrk++){
     track = (AliTRDtrackInfo*)fTracks->UncheckedAt(itrk);
     if(!track->HasESDtrack()) continue;
     ULong_t status = track->GetStatus();
     if(!(status&AliESDtrack::kTPCout)) continue;
 
-    if(!(TRDtrack = track->GetTrack())) continue; 
+    if(!(trackTRD = track->GetTrack())) continue; 
     //&&(track->GetNumberOfClustersRefit()
 
     // TOO STRONG and might introduce a bias if short 
@@ -140,25 +140,25 @@ void AliTRDpidRefMaker::Exec(Option_t *)
     switch(fRefPID){
     case kV0: SetRefPID(kV0, track, fPID); break;
     case kMC: SetRefPID(kMC, track, fPID); break;
-    case kRec: SetRefPID(kRec, TRDtrack, fPID); break;
+    case kRec: SetRefPID(kRec, trackTRD, fPID); break;
     }
 
     // fill the momentum and dE/dx information
-    TRDtrack -> SetReconstructor(fReconstructor);
+    trackTRD -> SetReconstructor(fReconstructor);
     for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
-      if(!(TRDtracklet = TRDtrack -> GetTracklet(ily))) continue;
-      if(!CookdEdx(TRDtracklet)) continue;
+      if(!(trackletTRD = trackTRD -> GetTracklet(ily))) continue;
+      if(!CookdEdx(trackletTRD)) continue;
       switch(fRefP){
       case kMC:
         if(!HasMCdata()){
           AliError("Could not retrive reference momentum from MC");
           return;
         }
-        if(!(ref = track->GetTrackRef(TRDtracklet))) continue;
+        if(!(ref = track->GetTrackRef(trackletTRD))) continue;
         fP = ref->P();
         break;
       case kRec:
-        fP = TRDtracklet->GetMomentum();
+        fP = trackletTRD->GetMomentum();
         break;
       default:
         AliWarning("Momentum reference source not implemented");
@@ -181,20 +181,8 @@ void AliTRDpidRefMaker::Exec(Option_t *)
 //________________________________________________________________________
 void AliTRDpidRefMaker::Fill() 
 {
+// Fill data tree
   fData->Fill();
-}
-
-//________________________________________________________________________
-void AliTRDpidRefMaker::Terminate(Option_t *) 
-{
-  // Draw result to the screen
-  // Called once at the end of the query
-
-  fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
-  if (!fContainer) {
-    AliError("List not available");
-    return;
-  }
 }
 
 
@@ -254,12 +242,12 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, void *source, Fl
     break;
   case kRec:
     { 
-      AliTRDtrackV1 *TRDtrack = static_cast<AliTRDtrackV1*>(source);
-      TRDtrack -> SetReconstructor(fReconstructor);
+      AliTRDtrackV1 *trackTRD = static_cast<AliTRDtrackV1*>(source);
+      trackTRD -> SetReconstructor(fReconstructor);
       //fReconstructor -> SetOption("nn");
-      TRDtrack -> CookPID();
+      trackTRD -> CookPID();
       for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-        pid[iPart] = TRDtrack -> GetPID(iPart);
+        pid[iPart] = trackTRD -> GetPID(iPart);
         AliDebug(4, Form("PDG is (in V0info) %d %f", iPart, pid[iPart]));
       }
     }
@@ -273,6 +261,8 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, void *source, Fl
 //________________________________________________________________________
 void AliTRDpidRefMaker::SetAbundance(Float_t train, Float_t test) 
 {
+// Split data sample between trainning and testing
+
   if(fTrainFreq<0. || fTrainFreq >1. ||
      fTestFreq<0.  || fTestFreq >1.){
     AliWarning("The input data should be in the interval [0, 1]");

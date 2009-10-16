@@ -54,7 +54,6 @@ public:
   virtual void ConnectInputData(const Option_t *);
   virtual void CreateOutputObjects();
   virtual void Exec(Option_t *opt);
-  virtual void Terminate(Option_t *opt);
 
   virtual TObjArray *Histos();
 

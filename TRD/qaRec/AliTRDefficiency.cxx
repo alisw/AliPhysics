@@ -34,7 +34,6 @@
 #include "AliTrackReference.h"
 #include "AliExternalTrackParam.h"
 #include "AliTracker.h"
-#include "AliMagF.h"
 #include "AliAnalysisManager.h"
 
 #include "Cal/AliTRDCalPID.h"
@@ -56,6 +55,7 @@ AliTRDefficiency::AliTRDefficiency()
 //____________________________________________________________________
 AliTRDefficiency::~AliTRDefficiency()
 {
+  // Destructor
   if(fMissed){
     fMissed->Delete();
     delete fMissed;
@@ -178,7 +178,7 @@ void AliTRDefficiency::Exec(Option_t *)
 
     Double_t xyz[3], x0, y0, z0, x, y, z, dx, dy, dz, d;
 
-    Bool_t FOUND = kFALSE;
+    Bool_t bFOUND = kFALSE;
     for(Int_t iselect=0; iselect<nselect; iselect++){
       track = (AliTRDtrackInfo*)fTracks->UncheckedAt(selection[iselect]);
 
@@ -204,7 +204,7 @@ void AliTRDefficiency::Exec(Option_t *)
         d /= track->GetNTrackRefs();
         if(d < threshold){
           //printf("\t\tFound %2d in ref[%3d] : d[%f]\n", imiss, selection[iselect], d/track->GetNTrackRefs());
-          FOUND = kTRUE; break;
+          bFOUND = kTRUE; break;
         }
       }
 
@@ -225,17 +225,17 @@ void AliTRDefficiency::Exec(Option_t *)
       //printf("\td[%d] = %f op\n", selection[iselect], d);
       if(d < threshold){
         //printf("\t\tFound %2d in op[%3d]  : d[%f] dx[%5.2f] dy[%5.2f] dz[%5.2f]\n", imiss, selection[iselect], d, dx, dy, dz);
-        FOUND = kTRUE; break;
+        bFOUND = kTRUE; break;
       }
     }
-    if(FOUND) nTPC--;
+    if(bFOUND) nTPC--;
     else{ 
       ref = tt->GetTrackRef(0);
       mom = ref ? ref->P(): op->P();
       pidx = AliTRDCalPID::GetPartIndex(tt->GetPDG());
       pidx = TMath::Max(pidx, 0);
       ((TProfile*)fContainer->At(pidx))->Fill(mom, 0.);
-      if(fDebugLevel>=2) printf("\tNOT FOUND Id[%d] Mom[%f]\n", tt->GetTrackId(), mom);
+      if(fDebugLevel>=2) printf("\tNOT bFOUND Id[%d] Mom[%f]\n", tt->GetTrackId(), mom);
     }
   }
 
@@ -252,33 +252,13 @@ void AliTRDefficiency::Exec(Option_t *)
   PostData(0, fContainer);
 }
 
-//____________________________________________________________________
-void AliTRDefficiency::Terminate(Option_t *)
-{
-  //
-  // Terminate
-  //
-
-  if(fDebugStream){ 
-    delete fDebugStream;
-    fDebugStream = 0x0;
-    fDebugLevel = 0;
-  }
-
-  fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
-  if (!fContainer) {
-    Printf("ERROR: list not available");
-    return;
-  }
-
-}
-
-
 
 //____________________________________________________________________
 Bool_t AliTRDefficiency::GetRefFigure(Int_t ifig)
 {
-  Bool_t FIRST = kTRUE;
+// Steer reference figures
+
+  Bool_t bFIRST = kTRUE;
   TProfile *h = 0x0;
   switch(ifig){
   case 0:
@@ -292,14 +272,14 @@ Bool_t AliTRDefficiency::GetRefFigure(Int_t ifig)
     h->Draw("e1");
     break;
   case 1:
-    FIRST = kTRUE;
+    bFIRST = kTRUE;
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       if(!(h = (TProfile*)fContainer->At(is))) continue;
-      if(FIRST){
+      if(bFIRST){
         h->Draw("e1");
         h->GetXaxis()->SetTitle("p [GeV/c]");
       } else h->Draw("same e1");
-      FIRST = kFALSE;
+      bFIRST = kFALSE;
     }
     break;
   }

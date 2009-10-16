@@ -42,7 +42,6 @@ public:
   virtual void    CreateOutputObjects();
   virtual Bool_t  GetRefFigure(Int_t ifig);
   virtual Bool_t  PostProcess();
-  virtual void    Terminate(Option_t *);
 
   TH1 *PlotLQ(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotNN(const AliTRDtrackV1 *track = 0x0);

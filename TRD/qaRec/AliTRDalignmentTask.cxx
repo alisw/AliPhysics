@@ -83,21 +83,21 @@ TH1* AliTRDalignmentTask::PlotTrackPoints(const AliTRDtrackV1 *track)
 {
 // Documentation to come 
 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
 
   if (fArray) delete fArray;
-  fArray = new AliTrackPointArray(fTrack->GetNumberOfTracklets());
+  fArray = new AliTrackPointArray(fkTrack->GetNumberOfTracklets());
 
   // Filling the track points array
   Float_t x, y, z;
   AliTrackPoint p; Int_t ip = 0;
   AliTRDseedV1 *tracklet = 0x0;
   for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-    if(!(tracklet = fTrack->GetTracklet(il))) continue;
+    if(!(tracklet = fkTrack->GetTracklet(il))) continue;
     if(!tracklet->IsOK()) continue;
     tracklet->Fit(kTRUE);
 

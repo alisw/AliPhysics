@@ -150,12 +150,6 @@ void AliTRDcheckDET::Exec(Option_t *opt){
   PostData(0, fContainer);
 }
 
-//_______________________________________________________
-void AliTRDcheckDET::Terminate(Option_t *){
-  //
-  // Terminate function
-  //
-}
 
 //_______________________________________________________
 Bool_t AliTRDcheckDET::PostProcess(){
@@ -204,34 +198,41 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
   switch(ifig){
   case kNclustersTrack:
     (h=(TH1F*)fContainer->FindObject("hNcls"))->Draw("pl");
-    PutTrendValue("NClustersTrack", h->GetMean(), h->GetRMS());
+    PutTrendValue("NClustersTrack", h->GetMean());
+    PutTrendValue("NClustersTrackRMS", h->GetRMS());
     return kTRUE;
   case kNclustersTracklet:
     (h =(TH1F*)fContainer->FindObject("hNclTls"))->Draw("pc");
-    PutTrendValue("NClustersTracklet", h->GetMean(), h->GetRMS());
+    PutTrendValue("NClustersTracklet", h->GetMean());
+    PutTrendValue("NClustersTrackletRMS", h->GetRMS());
     return kTRUE;
   case kNtrackletsTrack:
     h=MakePlotNTracklets();
-    PutTrendValue("NTrackletsTrack", h->GetMean(), h->GetRMS());
+    PutTrendValue("NTrackletsTrack", h->GetMean());
+    PutTrendValue("NTrackletsTrackRMS", h->GetRMS());
     return kTRUE;
   case kNtrackletsCross:
     h = (TH1F*)fContainer->FindObject("hNtlsCross");
     if(!MakeBarPlot(h, kRed)) break;
-    PutTrendValue("NTrackletsCross", h->GetMean(), h->GetRMS());
+    PutTrendValue("NTrackletsCross", h->GetMean());
+    PutTrendValue("NTrackletsCrossRMS", h->GetRMS());
     return kTRUE;
   case kNtrackletsFindable:
     h = (TH1F*)fContainer->FindObject("hNtlsFindable");
     if(!MakeBarPlot(h, kGreen)) break;
-    PutTrendValue("NTrackletsFindable", h->GetMean(), h->GetRMS());
+    PutTrendValue("NTrackletsFindable", h->GetMean());
+    PutTrendValue("NTrackletsFindableRMS", h->GetRMS());
     return kTRUE;
   case kNtracksEvent:
     (h = (TH1F*)fContainer->FindObject("hNtrks"))->Draw("pl");
-    PutTrendValue("NTracksEvent", h->GetMean(), h->GetRMS());
+    PutTrendValue("NTracksEvent", h->GetMean());
+    PutTrendValue("NTracksEventRMS", h->GetRMS());
     return kTRUE;
   case kNtracksSector:
     h = (TH1F*)fContainer->FindObject("hNtrksSector");
     if(!MakeBarPlot(h, kGreen)) break;
-    PutTrendValue("NTracksSector", h->GetMean(2), h->GetRMS(2));
+    PutTrendValue("NTracksSector", h->GetMean(2));
+    PutTrendValue("NTracksSectorRMS", h->GetRMS(2));
     return kTRUE;
   case kTrackStatus:
     ((TH1I *)fContainer->FindObject("hTrackStatus"))->Draw("c");
@@ -251,11 +252,13 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
   case kChargeCluster:
     (h = (TH1F*)fContainer->FindObject("hQcl"))->Draw("c");
     gPad->SetLogy(1);
-    PutTrendValue("ChargeCluster", h->GetMaximumBin(), h->GetRMS());
+    PutTrendValue("ChargeCluster", h->GetMaximumBin());
+    PutTrendValue("ChargeClusterRMS", h->GetRMS());
     return kTRUE;
   case kChargeTracklet:
     (h=(TH1F*)fContainer->FindObject("hQtrklt"))->Draw("c");
-    PutTrendValue("ChargeTracklet", h->GetMaximumBin(), h->GetRMS());
+    PutTrendValue("ChargeTracklet", h->GetMaximumBin());
+    PutTrendValue("ChargeTrackletRMS", h->GetRMS());
     return kTRUE;
   case kNeventsTrigger:
     ((TH1F*)fContainer->FindObject("hEventsTrigger"))->Draw("");
@@ -446,8 +449,8 @@ TH1 *AliTRDcheckDET::PlotTrackStatus(const AliTRDtrackV1 *track){
   //
   // Plot the track status
   //
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -456,7 +459,7 @@ TH1 *AliTRDcheckDET::PlotTrackStatus(const AliTRDtrackV1 *track){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
-  h->Fill(fTrack->GetStatusTRD());
+  h->Fill(fkTrack->GetStatusTRD());
   return h;
 }
 
@@ -465,8 +468,8 @@ TH1 *AliTRDcheckDET::PlotTrackletStatus(const AliTRDtrackV1 *track){
   //
   // Plot the track status
   //
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -477,7 +480,7 @@ TH1 *AliTRDcheckDET::PlotTrackletStatus(const AliTRDtrackV1 *track){
   }
   UChar_t status = 0;
   for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
-    status = fTrack->GetStatusTRD(il);
+    status = fkTrack->GetStatusTRD(il);
     h->Fill(il, status);
   }
   return h;
@@ -488,8 +491,8 @@ TH1 *AliTRDcheckDET::PlotNClustersTracklet(const AliTRDtrackV1 *track){
   //
   // Plot the mean number of clusters per tracklet
   //
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -500,7 +503,7 @@ TH1 *AliTRDcheckDET::PlotNClustersTracklet(const AliTRDtrackV1 *track){
   }
   AliTRDseedV1 *tracklet = 0x0;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
-    if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
+    if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     h->Fill(tracklet->GetN2());
   }
   return h;
@@ -511,8 +514,8 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
   //
   // Plot the number of clusters in one track
   //
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -525,7 +528,7 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
   Int_t nclusters = 0;
   AliTRDseedV1 *tracklet = 0x0;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
-    if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
+    if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     nclusters += tracklet->GetN();
     if(fDebugLevel > 2){
       Int_t crossing = Int_t(tracklet->IsRowCross());
@@ -534,11 +537,11 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
       Float_t phi = TMath::ATan(tracklet->GetYref(1));
       Float_t momentum = 0.;
       Int_t pdg = 0;
-      Int_t kinkIndex = fESD ? fESD->GetKinkIndex() : 0;
-      UShort_t nclsTPC = fESD ? fESD->GetTPCncls() : 0;
-      if(fMC){
-        if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-        pdg = fMC->GetPDG();
+      Int_t kinkIndex = fkESD ? fkESD->GetKinkIndex() : 0;
+      UShort_t nclsTPC = fkESD ? fkESD->GetTPCncls() : 0;
+      if(fkMC){
+        if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+        pdg = fkMC->GetPDG();
       }
       (*fDebugStream) << "NClustersTrack"
         << "Detector="  << detector
@@ -563,8 +566,8 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
   //
   // Plot the number of tracklets
   //
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -573,7 +576,7 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
-  Int_t status = fESD->GetStatus();
+  Int_t status = fkESD->GetStatus();
 /*  printf("in/out/refit/pid: TRD[%d|%d|%d|%d]\n", status &AliESDtrack::kTRDin ? 1 : 0, status &AliESDtrack::kTRDout ? 1 : 0, status &AliESDtrack::kTRDrefit ? 1 : 0, status &AliESDtrack::kTRDpid ? 1 : 0);*/
   if((status & AliESDtrack::kTRDin) != 0){
     // Full BarrelTrack
@@ -584,7 +587,7 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
     if(!(hMethod = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsSTA))))
       AliWarning("Method: StandAlone.  Histogram not processed!");
   }
-  Int_t nTracklets = fTrack->GetNumberOfTracklets();
+  Int_t nTracklets = fkTrack->GetNumberOfTracklets();
   h->Fill(nTracklets);
   hMethod->Fill(nTracklets);
   if(fDebugLevel > 3){
@@ -593,7 +596,7 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
       Int_t layer = -1;
       AliTRDseedV1 *tracklet = 0x0;
       for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
-        if((tracklet = fTrack->GetTracklet(il)) && tracklet->IsOK()){layer =  il; break;}
+        if((tracklet = fkTrack->GetTracklet(il)) && tracklet->IsOK()){layer =  il; break;}
       }
       (*fDebugStream) << "NTrackletsTrack"
         << "Layer=" << layer
@@ -609,8 +612,8 @@ TH1 *AliTRDcheckDET::PlotNTrackletsRowCross(const AliTRDtrackV1 *track){
   //
   // Plot the number of tracklets
   //
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -623,7 +626,7 @@ TH1 *AliTRDcheckDET::PlotNTrackletsRowCross(const AliTRDtrackV1 *track){
   Int_t ncross = 0;
   AliTRDseedV1 *tracklet = 0x0;
   for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
-    if(!(tracklet = fTrack->GetTracklet(il)) || !tracklet->IsOK()) continue;
+    if(!(tracklet = fkTrack->GetTracklet(il)) || !tracklet->IsOK()) continue;
 
     if(tracklet->IsRowCross()) ncross++;
   }
@@ -661,8 +664,8 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
   const Float_t deltaZ = 7.0;    // Tolerance in the track position in z-direction (Padlength)
   Double_t xAnode[AliTRDgeometry::kNlayer] = {300.2, 312.8, 325.4, 338.0, 350.6, 363.2}; // Take the default X0
  
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -678,7 +681,7 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
   AliTRDseedV1 *tracklet = 0x0;
   AliTRDpadPlane *pp;  
   for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
-    if((tracklet = fTrack->GetTracklet(il)) && tracklet->IsOK()){
+    if((tracklet = fkTrack->GetTracklet(il)) && tracklet->IsOK()){
       tracklet->SetReconstructor(fReconstructor);
       nFound++;
     }
@@ -689,20 +692,20 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
   AliTrackPoint points[6];
   Float_t xyz[3];
   memset(xyz, 0, sizeof(Float_t) * 3);
-  if(((fESD->GetStatus() & AliESDtrack::kTRDout) > 0) && !((fESD->GetStatus() & AliESDtrack::kTRDin) > 0)){
+  if(((fkESD->GetStatus() & AliESDtrack::kTRDout) > 0) && !((fkESD->GetStatus() & AliESDtrack::kTRDin) > 0)){
     // stand alone track
     for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
       xyz[0] = xAnode[il];
       points[il].SetXYZ(xyz);
     }
-    AliTRDtrackerV1::FitRiemanTilt(const_cast<AliTRDtrackV1 *>(fTrack), 0x0, kTRUE, 6, points);
+    AliTRDtrackerV1::FitRiemanTilt(const_cast<AliTRDtrackV1 *>(fkTrack), 0x0, kTRUE, 6, points);
   } else {
     // barrel track
     //
     // 2 Steps:
     // -> Kalman inwards
     // -> Kalman outwards
-    AliTRDtrackV1 copyTrack(*fTrack);  // Do Kalman on a (non-constant) copy of the track
+    AliTRDtrackV1 copyTrack(*fkTrack);  // Do Kalman on a (non-constant) copy of the track
     AliTrackPoint pointsInward[6], pointsOutward[6];
     for(Int_t il = AliTRDgeometry::kNlayer; il--;){
       // In order to avoid complications in the Kalman filter if the track points have the same radial
@@ -759,8 +762,8 @@ TH1 *AliTRDcheckDET::PlotChi2(const AliTRDtrackV1 *track){
   //
   // Plot the chi2 of the track
   //
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -769,10 +772,10 @@ TH1 *AliTRDcheckDET::PlotChi2(const AliTRDtrackV1 *track){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
-  Int_t n = fTrack->GetNumberOfTracklets();
+  Int_t n = fkTrack->GetNumberOfTracklets();
   if(!n) return 0x0;
 
-  h->Fill(n, fTrack->GetChi2()/n);
+  h->Fill(n, fkTrack->GetChi2()/n);
   return h;
 }
 
@@ -782,8 +785,8 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
   //
   // Plot the average pulse height
   //
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -795,7 +798,7 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
   AliTRDseedV1 *tracklet = 0x0;
   AliTRDcluster *c = 0x0;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
-    if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK())continue;
+    if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK())continue;
     Int_t crossing = Int_t(tracklet->IsRowCross());
     Int_t detector = tracklet->GetDetector();
     tracklet->ResetClusterIter();
@@ -811,11 +814,11 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
         Float_t phi = TMath::ATan(tracklet->GetYref(1));
         Float_t momentum = 0.;
         Int_t pdg = 0;
-        Int_t kinkIndex = fESD ? fESD->GetKinkIndex() : 0;
-        UShort_t TPCncls = fESD ? fESD->GetTPCncls() : 0;
-        if(fMC){
-          if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-          pdg = fMC->GetPDG();
+        Int_t kinkIndex = fkESD ? fkESD->GetKinkIndex() : 0;
+        UShort_t TPCncls = fkESD ? fkESD->GetTPCncls() : 0;
+        if(fkMC){
+          if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+          pdg = fkMC->GetPDG();
         }
         (*fDebugStream) << "PHt"
           << "Detector="	<< detector
@@ -844,8 +847,8 @@ TH1 *AliTRDcheckDET::PlotPHx(const AliTRDtrackV1 *track){
   // Plots the average pulse height vs the distance from the anode wire
   // (plus const anode wire offset)
   //
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -860,7 +863,7 @@ TH1 *AliTRDcheckDET::PlotPHx(const AliTRDtrackV1 *track){
   Double_t distance = 0;
   Double_t x, y;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
-    if(!(tracklet = fTrack->GetTracklet(itl)) || !(tracklet->IsOK())) continue;
+    if(!(tracklet = fkTrack->GetTracklet(itl)) || !(tracklet->IsOK())) continue;
     tracklet->ResetClusterIter();
     while((c = tracklet->NextCluster())){
       if(!c->IsInChamber()) continue;
@@ -879,8 +882,8 @@ TH1 *AliTRDcheckDET::PlotChargeCluster(const AliTRDtrackV1 *track){
   //
   // Plot the cluster charge
   //
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -892,7 +895,7 @@ TH1 *AliTRDcheckDET::PlotChargeCluster(const AliTRDtrackV1 *track){
   AliTRDseedV1 *tracklet = 0x0;
   AliTRDcluster *c = 0x0;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
-    if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK())continue;
+    if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK())continue;
     for(Int_t itime = 0; itime < AliTRDtrackerV1::GetNTimeBins(); itime++){
       if(!(c = tracklet->GetClusters(itime))) continue;
       h->Fill(c->GetQ());
@@ -906,8 +909,8 @@ TH1 *AliTRDcheckDET::PlotChargeTracklet(const AliTRDtrackV1 *track){
   //
   // Plot the charge deposit per chamber
   //
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -919,9 +922,9 @@ TH1 *AliTRDcheckDET::PlotChargeTracklet(const AliTRDtrackV1 *track){
   AliTRDseedV1 *tracklet = 0x0;
   AliTRDcluster *c = 0x0;
   Double_t qTot = 0;
-  Int_t nTracklets =fTrack->GetNumberOfTracklets();
+  Int_t nTracklets =fkTrack->GetNumberOfTracklets();
   for(Int_t itl = 0x0; itl < AliTRDgeometry::kNlayer; itl++){
-    if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
+    if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     qTot = 0.;
     for(Int_t ic = AliTRDseedV1::kNclusters; ic--;){
       if(!(c = tracklet->GetClusters(ic))) continue;
@@ -935,11 +938,11 @@ TH1 *AliTRDcheckDET::PlotChargeTracklet(const AliTRDtrackV1 *track){
       Float_t phi = TMath::ATan(tracklet->GetYfit(1));
       Float_t momentum = 0.;
       Int_t pdg = 0;
-      Int_t kinkIndex = fESD ? fESD->GetKinkIndex() : 0;
-      UShort_t nclsTPC = fESD ? fESD->GetTPCncls() : 0;
-      if(fMC){
-	      if(fMC->GetTrackRef()) momentum = fMC->GetTrackRef()->P();
-        pdg = fMC->GetPDG();
+      Int_t kinkIndex = fkESD ? fkESD->GetKinkIndex() : 0;
+      UShort_t nclsTPC = fkESD ? fkESD->GetTPCncls() : 0;
+      if(fkMC){
+	      if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+        pdg = fkMC->GetPDG();
       }
       (*fDebugStream) << "ChargeTracklet"
         << "Detector="  << detector
@@ -963,8 +966,8 @@ TH1 *AliTRDcheckDET::PlotNTracksSector(const AliTRDtrackV1 *track){
   //
   // Plot the number of tracks per Sector
   //
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -980,7 +983,7 @@ TH1 *AliTRDcheckDET::PlotNTracksSector(const AliTRDtrackV1 *track){
   AliTRDseedV1 *tracklet = 0x0;
   Int_t sector = -1;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
-    if(!(tracklet = fTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
+    if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     sector = static_cast<Int_t>(tracklet->GetDetector()/AliTRDgeometry::kNdets);
     break;
   }

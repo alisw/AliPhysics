@@ -1,8 +1,13 @@
 #ifndef ALITRDRECOTASK_H
 #define ALITRDRECOTASK_H
 
-
+///////////////////////////////////////////////////////
+//
+// Basic class for Performance/Calibration TRD tasks
+//
 // Author: Alexandru Bercuci, 10/09/2008
+//
+//////////////////////////////////////////////////
 
 #ifndef ALIANALYSISTASK_H
 #include "AliAnalysisTask.h"
@@ -46,35 +51,33 @@ public:
   virtual TObjArray* Histos() {return fContainer;}
 
   virtual Bool_t Load(const Char_t *filename = "TRD.Performance.root");
-  virtual Bool_t Save(TObjArray *res);
+  virtual Bool_t Save(TObjArray * const res);
   virtual Bool_t PostProcess();
-  virtual Bool_t PutTrendValue(Char_t *name, Double_t val, Double_t err);
+  virtual Bool_t PutTrendValue(Char_t *name, Double_t val);
   virtual void   SetDebugLevel(Int_t level);
   virtual void   SetFriends(Bool_t fr = kTRUE) {SetBit(kFriends, fr);}
   virtual void   SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
   virtual void   SetPostProcess(Bool_t pp = kTRUE) {SetBit(kPostProcess, pp);}
-  virtual void   Terminate(Option_t *) = 0;
+  virtual void   Terminate(Option_t *);
 
 protected:
   void   InitFunctorList();
-  void   Adjust(TF1 *f, TH1 *h);
+  void   Adjust(TF1 *f, TH1 * const h);
 
-
-private:
-  AliTRDrecoTask(const AliTRDrecoTask&);
-  AliTRDrecoTask& operator=(const AliTRDrecoTask&);
-
-protected:
   UChar_t   fNRefFigures;  //! no of reference figures reported by task
   UChar_t   fDebugLevel;   //! Debug level 
   TList     *fPlotFuncList;//! plot functors list
   TObjArray *fContainer;   //! container to store results
   TObjArray *fTracks;      //! Array of tracks
-  const AliTRDtrackV1    *fTrack;         //! current track
-  const AliTRDtrackInfo::AliMCinfo  *fMC; //! MC info
-  const AliTRDtrackInfo::AliESDinfo *fESD;//! ESD info
+  const AliTRDtrackV1    *fkTrack;         //! current track
+  const AliTRDtrackInfo::AliMCinfo  *fkMC; //! MC info
+  const AliTRDtrackInfo::AliESDinfo *fkESD;//! ESD info
   TTreeSRedirector *fDebugStream;   //! Debug stream 
   static FILE *fgFile;         //! trend file streamer
+
+private:
+  AliTRDrecoTask(const AliTRDrecoTask&);
+  AliTRDrecoTask& operator=(const AliTRDrecoTask&);
 
   ClassDef(AliTRDrecoTask, 1) // base TRD reconstruction task
 };

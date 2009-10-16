@@ -244,8 +244,8 @@ void AliTRDresolution::Exec(Option_t *opt)
 //________________________________________________________
 TH1* AliTRDresolution::PlotCharge(const AliTRDtrackV1 *track)
 {
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -259,7 +259,7 @@ TH1* AliTRDresolution::PlotCharge(const AliTRDtrackV1 *track)
   AliTRDseedV1 *fTracklet = 0x0;  
   AliTRDcluster *c = 0x0;
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
-    if(!(fTracklet = fTrack->GetTracklet(ily))) continue;
+    if(!(fTracklet = fkTrack->GetTracklet(ily))) continue;
     if(!fTracklet->IsOK()) continue;
     Float_t x0 = fTracklet->GetX0();
     Float_t dq, dl;
@@ -285,8 +285,8 @@ TH1* AliTRDresolution::PlotCharge(const AliTRDtrackV1 *track)
 //________________________________________________________
 TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
 {
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -300,7 +300,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
   Float_t x0, y0, z0, dy, dydx, dzdx;
   AliTRDseedV1 *fTracklet = 0x0;  
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
-    if(!(fTracklet = fTrack->GetTracklet(ily))) continue;
+    if(!(fTracklet = fkTrack->GetTracklet(ily))) continue;
     if(!fTracklet->IsOK()) continue;
     x0 = fTracklet->GetX0();
 
@@ -367,8 +367,8 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
 // END_LATEX
 // in our case X=(y_trklt - y_trk z_trklt - z_trk) and |Cov| = |Cov_trklt| + |Cov_trk| at the radial 
 // reference position. 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
@@ -382,7 +382,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
   Float_t x, dx, dy, dz;
   AliTRDseedV1 *fTracklet = 0x0;  
   for(Int_t il=AliTRDgeometry::kNlayer; il--;){
-    if(!(fTracklet = fTrack->GetTracklet(il))) continue;
+    if(!(fTracklet = fkTrack->GetTracklet(il))) continue;
     if(!fTracklet->IsOK()) continue;
     x    = fTracklet->GetX();
     dx   = fTracklet->GetX0() - x;
@@ -427,13 +427,13 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
 // Additionally the momentum resolution/pulls are calculated for usage in the 
 // PID calculation. 
 
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   AliExternalTrackParam *tin = 0x0;
-  if(!(tin = fTrack->GetTrackLow())){
+  if(!(tin = fkTrack->GetTrackLow())){
     AliWarning("Track did not entered TRD fiducial volume.");
     return 0x0;
   }
@@ -442,7 +442,7 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
   Double_t x = tin->GetX();
   AliTRDseedV1 *tracklet = 0x0;  
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
-    if(!(tracklet = fTrack->GetTracklet(ily))) continue;
+    if(!(tracklet = fkTrack->GetTracklet(ily))) continue;
     break;
   }
   if(!tracklet || TMath::Abs(x-tracklet->GetX())>1.e-3){
@@ -504,7 +504,7 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
   if(!HasMCdata()) return h;
   UChar_t s;
   Float_t dx, pt0, x0=tracklet->GetX0(), y0, z0, dydx0, dzdx0;
-  if(!fMC->GetDirections(x0, y0, z0, dydx0, dzdx0, pt0, s)) return h;
+  if(!fkMC->GetDirections(x0, y0, z0, dydx0, dzdx0, pt0, s)) return h;
   // translate to reference radial position
   dx = x0 - x; y0 -= dx*dydx0; z0 -= dx*dzdx0;
   Float_t norm = 1./TMath::Sqrt(1.+dydx0*dydx0); // 1/sqrt(1+tg^2(phi))
@@ -537,7 +537,7 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
   ((TH2I*)arr->At(7))->Fill(dzdx0, (PARMC[3]-PAR[3])/TMath::Sqrt(COV(3,3)));
   // pt resolution\\1/pt pulls\\p resolution/pull
   for(Int_t is=AliPID::kSPECIES; is--;){
-    if(TMath::Abs(fMC->GetPDG())!=AliPID::ParticleCode(is)) continue;
+    if(TMath::Abs(fkMC->GetPDG())!=AliPID::ParticleCode(is)) continue;
     ((TH3S*)arr->At(8))->Fill(pt0, PARMC[4]/PAR[4]-1., is);
     ((TH3S*)arr->At(9))->Fill(PARMC[4], (PARMC[4]-PAR[4])/TMath::Sqrt(COV(4,4)), is);
 
@@ -565,23 +565,23 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     AliWarning("No MC defined. Results will not be available.");
     return 0x0;
   }
-  if(track) fTrack = track;
-  if(!fTrack){
+  if(track) fkTrack = track;
+  if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   TObjArray *arr = 0x0;
   TH1 *h = 0x0;
   UChar_t s;
-  Int_t pdg = fMC->GetPDG(), det=-1;
-  Int_t label = fMC->GetLabel();
+  Int_t pdg = fkMC->GetPDG(), det=-1;
+  Int_t label = fkMC->GetLabel();
   Double_t xAnode, x, y, z, pt, dydx, dzdx, dzdl;
   Float_t pt0, x0, y0, z0, dx, dy, dz, dydx0, dzdx0;
   Double_t covR[7]/*, cov[3]*/;
 
   if(fDebugLevel>=1){
     Double_t DX[12], DY[12], DZ[12], DPt[12], COV[12][15];
-    fMC->PropagateKalman(DX, DY, DZ, DPt, COV);
+    fkMC->PropagateKalman(DX, DY, DZ, DPt, COV);
     (*fDebugStream) << "MCkalman"
       << "pdg="  << pdg
       << "dx0="  << DX[0]
@@ -602,14 +602,14 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   AliTRDReconstructor rec;
   AliTRDseedV1 *fTracklet = 0x0;  
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
-    if(!(fTracklet = fTrack->GetTracklet(ily)))/* ||
+    if(!(fTracklet = fkTrack->GetTracklet(ily)))/* ||
        !fTracklet->IsOK())*/ continue;
 
     det = fTracklet->GetDetector();
     x0  = fTracklet->GetX0();
     //radial shift with respect to the MC reference (radial position of the pad plane)
     x= fTracklet->GetX();
-    if(!fMC->GetDirections(x0, y0, z0, dydx0, dzdx0, pt0, s)) continue;
+    if(!fkMC->GetDirections(x0, y0, z0, dydx0, dzdx0, pt0, s)) continue;
     xAnode  = fTracklet->GetX0();
 
     // MC track position at reference radial position
@@ -1187,13 +1187,9 @@ Bool_t AliTRDresolution::PostProcess()
 
 
 //________________________________________________________
-void AliTRDresolution::Terminate(Option_t *)
+void AliTRDresolution::Terminate(Option_t *opt)
 {
-  if(fDebugStream){ 
-    delete fDebugStream;
-    fDebugStream = 0x0;
-    fDebugLevel = 0;
-  }
+  AliTRDrecoTask::Terminate(opt);
   if(HasPostProcess()) PostProcess();
 }
 
@@ -1809,10 +1805,11 @@ Bool_t AliTRDresolution::GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t 
   for(Int_t jc=0; jc<TMath::Min(jdx,fNElements[ip]-1); jc++) nref++;
   Char_t **at = fAxTitle[nref];
 
-  PutTrendValue(Form("%s_%sMean", fPerformanceName[ip], at[0]), gm->GetMean(2), gm->GetRMS(2));
+  PutTrendValue(Form("%s_%s", fPerformanceName[ip], at[0]), gm->GetMean(2));
+  PutTrendValue(Form("%s_%sRMS", fPerformanceName[ip], at[0]), gm->GetRMS(2));
   gs->Sort(&TGraph::CompareY); Int_t n = gs->GetN();
-  PutTrendValue(Form("%s_%sSigMin", fPerformanceName[ip], at[0]), gs->GetY()[0], 0.);
-  PutTrendValue(Form("%s_%sSigMax", fPerformanceName[ip], at[0]), gs->GetY()[n-1], 0.);
+  PutTrendValue(Form("%s_%sSigMin", fPerformanceName[ip], at[0]), gs->GetY()[0]);
+  PutTrendValue(Form("%s_%sSigMax", fPerformanceName[ip], at[0]), gs->GetY()[n-1]);
   gs->Sort(&TGraph::CompareX); 
   
 
@@ -1864,8 +1861,8 @@ Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t il)
     if(!gs->GetN()) continue;
     gs->Draw(is ? "pl" : "apl");
     gs->Sort(&TGraph::CompareY); Int_t n = gs->GetN();
-    PutTrendValue(Form("%s_%sSigMin%s", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gs->GetY()[0], 0.);
-    PutTrendValue(Form("%s_%sSigMax%s", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gs->GetY()[n-1], 0.);
+    PutTrendValue(Form("%s_%sSigMin%s", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gs->GetY()[0]);
+    PutTrendValue(Form("%s_%sSigMax%s", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gs->GetY()[n-1]);
     gs->Sort(&TGraph::CompareX); 
   }
   gs =  (TGraphErrors*)a0->At(0);
@@ -1896,7 +1893,8 @@ Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t il)
     if(!(gm =  (TGraphErrors*)a0->At(is))) return kFALSE;
     if(!gm->GetN()) continue;
     gm->Draw("pl");
-    PutTrendValue(Form("%s_%sMean%s", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gm->GetMean(2), gm->GetRMS(2));  
+    PutTrendValue(Form("%s_%s_%s", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gm->GetMean(2));
+    PutTrendValue(Form("%s_%s_%sRMS", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gm->GetRMS(2));
   }
 
   return kTRUE;
@@ -1923,8 +1921,8 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t sel)
     if(!gs->GetN()) continue;
     gs->Draw(is ? "pl" : "apl");
     gs->Sort(&TGraph::CompareY); Int_t n = gs->GetN();
-    PutTrendValue(Form("%s_%sSigMin%s", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gs->GetY()[0], 0.);
-    PutTrendValue(Form("%s_%sSigMax%s", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gs->GetY()[n-1], 0.);
+    PutTrendValue(Form("%s_%sSigMin%s", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gs->GetY()[0]);
+    PutTrendValue(Form("%s_%sSigMax%s", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gs->GetY()[n-1]);
     gs->Sort(&TGraph::CompareX); 
   }
   gs =  (TGraphErrors*)a0->At(0);
@@ -1953,7 +1951,8 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t sel)
     if(!(gm =  (TGraphErrors*)a0->At(is))) return kFALSE;
     if(!gm->GetN()) continue;
     gm->Draw("pl");
-    PutTrendValue(Form("%s_%sMean%s", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gm->GetMean(2), gm->GetRMS(2));
+    PutTrendValue(Form("%s_%s_%s", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gm->GetMean(2));
+    PutTrendValue(Form("%s_%s_%sRMS", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gm->GetRMS(2));
   }
 
   return kTRUE;
