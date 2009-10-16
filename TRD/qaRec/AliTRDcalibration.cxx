@@ -633,7 +633,7 @@ case kCH2DVector:{
       }
     }
     hdetector = 0x0;
-    if((max == 0.0) || (detectormax <0.0) || (detectormax >=540.0)) break;
+    if((TMath::Abs(max) <= 0.001) || (detectormax <0.0) || (detectormax >=540.0)) break;
     if(!(hdetector = (TH2S *)h->GetLinearFitterHisto((Int_t)detectormax,kFALSE))) break;
     AliInfo(Form("The detector with the maximum of entries is %d",detectormax));
     hdetector->Draw();
@@ -1371,4 +1371,3 @@ Int_t AliTRDcalibration::GetNumberOfGroupsPRF(const char* nametitle) const
  
 
 }
-
