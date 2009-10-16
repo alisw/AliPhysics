@@ -89,8 +89,8 @@ class AliHLTTPCCATracker
   {
     StructGPUParametersConst() : fGPUFixedBlockCount( 0 ), fGPUiSlice( 0 ), fGPUnSlices( 0 ) {}
     int fGPUFixedBlockCount;				//Count of blocks that is used for this tracker in fixed schedule situations
-    int fGPUiSlice; // slice number
-    int fGPUnSlices; // n of slices
+    int fGPUiSlice;							// slice number processed by running GPU MP
+    int fGPUnSlices;						// n of slices to be processed in parallel
   };
   
   struct commonMemoryStruct
@@ -167,7 +167,6 @@ class AliHLTTPCCATracker
 
   GPUhd() AliHLTTPCCAClusterData *ClusterData() const { return fClusterData; }
   GPUhd() const AliHLTTPCCASliceData &Data() const { return fData; }
-  GPUhd() AliHLTTPCCASliceData *PData() {return &fData; }
   
   GPUh() void ClearSliceDataHitWeights() {fData.ClearHitWeights();}
   
@@ -257,6 +256,8 @@ class AliHLTTPCCATracker
   GPUhd() uint2* BlockStartingTracklet() const {return(fBlockStartingTracklet);}
   GPUhd() StructGPUParameters* GPUParameters() const {return(&fCommonMem->fGPUParameters);}
   GPUhd() StructGPUParametersConst* GPUParametersConst() {return(&fGPUParametersConst);}
+  GPUhd() void SetGPUTextureBase(char* val) { fData.SetGPUTextureBase(val); }
+  GPUh() void SetGPUSliceDataMemory(void* const pSliceMemory, void* const pRowMemory) { fData.SetGPUSliceDataMemory(pSliceMemory, pRowMemory); }
 
   GPUh() unsigned long long int* PerfTimer(unsigned int i) {return &fPerfTimers[i]; }
   
@@ -264,7 +265,6 @@ private:
   
 #ifdef HLTCA_GPU_TRACKLET_CONSTRUCTOR_DO_PROFILE
   char* fStageAtSync;				//Pointer to array storing current stage for every thread at every sync point
-  int* fThreadTimes; // n of times
 #endif
   
   AliHLTTPCCAParam fParam; // parameters
