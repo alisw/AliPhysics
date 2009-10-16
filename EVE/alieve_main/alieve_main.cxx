@@ -58,9 +58,8 @@ int main(int argc, char **argv)
   gROOT->SetMacroPath(macPath);
 
   // How to hadle AliLog properly?
-  AliLog* log = new AliLog;
-
-  TRint app("App", &argc, argv);
+  AliLog *log = new AliLog;
+  TRint  *app = new TRint("App", &argc, argv);
 
   TEveManager::Create();
   gEve->GetSelection()->SetPickToSelect(TEveSelection::kPS_Projectable);
@@ -68,9 +67,11 @@ int main(int argc, char **argv)
 
   gEve->RegisterGeometryAlias("Default", Form("%s/alice-data/default_geo.root", evedir.Data()));
 
-  app.Run(kTRUE);
+  app->Run(kTRUE);
 
   TEveManager::Terminate();
+
+  app->Terminate(0);
 
   delete log;
 

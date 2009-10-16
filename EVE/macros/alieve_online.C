@@ -13,7 +13,7 @@ Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
 void alieve_online_init()
 {
-  if (gROOT->LoadMacro("MultiView.C+") != 0)
+  if (gROOT->LoadMacro("MultiView.C++") != 0)
   {
     gEnv->SetValue("Root.Stacktrace", "no");
     Fatal("alieve_online.C", "Failed loading MultiView.C in compiled mode.");
@@ -81,7 +81,11 @@ void alieve_online_init()
     vf->Layout();
   }
 
-  gEve->Redraw3D(kTRUE);
+  gEve->FullRedraw3D(kTRUE);
+
+  TGLViewer *glv = gMultiView->f3DView->GetGLViewer();
+  glv->CurrentCamera().RotateRad(-0.4, 1);
+  glv->DoDraw();
 }
 
 void alieve_online_on_new_event()
