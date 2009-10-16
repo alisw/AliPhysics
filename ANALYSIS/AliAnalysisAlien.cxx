@@ -1966,7 +1966,6 @@ void AliAnalysisAlien::WriteExecutable()
          return;
       }
       out << "#!/bin/bash" << endl;
-      out << "export GCLIENT_SERVER_LIST=\"pcapiserv04.cern.ch:10000|pcapiserv05.cern.ch:10000|pcapiserv06.cern.ch:10000|pcapiserv07.cern.ch:10000\"" << endl;
       out << "echo \"=========================================\"" << endl; 
       out << "echo \"############## PATH : ##############\"" << endl;
       out << "echo $PATH" << endl;
