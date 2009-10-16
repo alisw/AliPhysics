@@ -128,7 +128,7 @@ void AliTOFArray::SetAt(Int_t pos, Int_t ielement, Float_t content) {
 				//printf("Adding %f content in position %d to array %d \n",content, ielement, pos);
 				fArray[pos]->AddAt(content,ielement);
 			}
-			else if (ielement = size){
+			else if (ielement == size) {
 				printf ("Increasing the size by 1 and adding a new element to the array\n");
 				fArray[pos]->Set(size+1);
 				fArray[pos]->AddAt(content,ielement);
