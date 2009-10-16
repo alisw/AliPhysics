@@ -1619,7 +1619,7 @@ Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t
   TGraphErrors *cosmic =(TGraphErrors*)array->FindObject("TGRAPHERRORS_MEAN_VDRIFT_COSMICS_ALL");
   if (cosmic){
     Double_t cresult =cosmic->Eval(timeStamp);
-    Double_t result  =(cresult-result)*fParam->GetZLength();
+    Double_t result  =(cresult-lresult)*fParam->GetZLength();
     return result;
   }
   return 0;
