@@ -59,7 +59,7 @@ public:
     kSharingEfficiency            = 0x8  // Sharing algorithm efficiency
   };
   
-  enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR, kTEST_NOCTP };
+  enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR, kNOCTP };
   
   enum Energy { k900 , k10000, k14000 };
   
@@ -105,12 +105,12 @@ public:
   void     SetSharingEfficiencyPath(const Char_t* sharpath) {fSharingEffPath.Form(sharpath);}
   void     SetProcessPrimary(Bool_t prim=kTRUE) {fProcessPrimary = prim;}
   void     SetProcessHits(Bool_t hits=kTRUE) {fProcessHits = hits;}
-  Bool_t   GetProcessPrimary() {return fProcessPrimary;}
-  Bool_t   GetProcessHits() {return fProcessHits;}
+  Bool_t   GetProcessPrimary() const {return fProcessPrimary;} 
+  Bool_t   GetProcessHits() const {return fProcessHits;}
   void     GetVertex(AliESDEvent* esd, Double_t* vertexXYZ);
   void     SetTriggerDefinition(Trigger trigger) {fTrigger = trigger;}
-  Trigger  GetTriggerDefinition() {return fTrigger;}
-  Bool_t   IsEventTriggered(AliESDEvent* esd);
+  Trigger  GetTriggerDefinition() const {return fTrigger;}
+  Bool_t   IsEventTriggered(AliESDEvent* esd) const;
   void     SetEnergy(Energy energy) {fEnergy = energy;}
   void     SetMagField(MagField magfield) {fMagField = magfield;}
   char*    GetPath(const char* species);
@@ -157,10 +157,10 @@ protected:
   TAxis* GetRefAxis();
   void SetCorners(Char_t ring) ;
   
-  Bool_t fIsInit;
+  Bool_t fIsInit;                      //Have we been init ?
   //TObjArray*  fBackgroundArray;
   // TObjArray*  fEdistArray;
-  AliFMDAnaCalibBackgroundCorrection*         fBackground;
+  AliFMDAnaCalibBackgroundCorrection*         fBackground;   
   AliFMDAnaCalibEnergyDistribution*           fEnergyDistribution;
   AliFMDAnaCalibEventSelectionEfficiency*     fEventSelectionEfficiency;
   AliFMDAnaCalibSharingEfficiency*            fSharingEfficiency;
@@ -171,18 +171,18 @@ protected:
   static const char* fgkEventSelectionEffID ;
   static const char* fgkSharingEffID ;
   
-  TVector2 fCorner1;
-  TVector2 fCorner2;
-  TString  fEnergyPath;
-  TString  fBackgroundPath;
-  TString  fEventSelectionEffPath;
-  TString  fSharingEffPath;
-  Bool_t   fProcessPrimary;
-  Bool_t   fProcessHits; 
-  Trigger  fTrigger;
-  Energy   fEnergy;
-  MagField fMagField;
-  Species  fSpecies;
+  TVector2 fCorner1;                  //First corner of hybrid
+  TVector2 fCorner2;                  //Second corner of hybrid
+  TString  fEnergyPath;               //Path of energy calib
+  TString  fBackgroundPath;           //Path of BG correction
+  TString  fEventSelectionEffPath;    //Path of event selection eff
+  TString  fSharingEffPath;           //Path of sharing eff
+  Bool_t   fProcessPrimary;           //Do we process primary ?
+  Bool_t   fProcessHits;              //Do we process hits ?
+  Trigger  fTrigger;                  //Which trigger are we using ?
+  Energy   fEnergy;                   // CM energy
+  MagField fMagField;                 //Magnetic field
+  Species  fSpecies;                  //PbPb or pp ?
   
   ClassDef(AliFMDAnaParameters,0) // Manager of parameters
 };

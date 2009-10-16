@@ -183,8 +183,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
    else
     fStatus = kTRUE;
   
-  if(vertex[0] == 0 && vertex[1] == 0 && vertex[2] == 0) {
-    
+  if(vertex[0] < 0.0001 && vertex[1] < 0.0001 && vertex[2] < 0.0001) {
     fStatus = kFALSE;
     return;
   }
