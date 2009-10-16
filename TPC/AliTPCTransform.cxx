@@ -136,7 +136,6 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   //                line approximation  
   //
   
-
   Int_t row=TMath::Nint(x[0]);
   Int_t pad=TMath::Nint(x[1]);
   Int_t sector=i[0];
@@ -246,6 +245,35 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
       
     }
   }
+  //
+  //
+  Double_t vdcorrectionTime=1;
+  Double_t time0corrTime=0;
+  //
+  if(fCurrentRecoParam&&fCurrentRecoParam->GetUseDriftCorrectionTime()>0) {
+    vdcorrectionTime = (1+AliTPCcalibDB::Instance()->
+      GetVDriftCorrectionTime(fCurrentTimeStamp, 
+			      AliTPCcalibDB::Instance()->GetRun(),
+			      sector%36>=18,
+			      fCurrentRecoParam->GetUseDriftCorrectionTime()));			  
+    time0corrTime= AliTPCcalibDB::Instance()->
+      GetTime0CorrectionTime(fCurrentTimeStamp, 
+			     AliTPCcalibDB::Instance()->GetRun(),
+			     sector%36>=18,
+			     fCurrentRecoParam->GetUseDriftCorrectionTime());	
+  }
+  //
+  if(fCurrentRecoParam&&fCurrentRecoParam->GetUseDriftCorrectionGY()>0) {
+    Float_t xyzPad[3];
+    AliTPCROC::Instance()->GetPositionGlobal(sector, TMath::Nint(x[0]) ,TMath::Nint(x[1]), xyzPad);
+    
+    Double_t corrGy= (1+(xyzPad[1])*AliTPCcalibDB::Instance()->
+		      GetVDriftCorrectionGy(fCurrentTimeStamp, 
+					    AliTPCcalibDB::Instance()->GetRun(),
+					    sector%36>=18,
+					    fCurrentRecoParam->GetUseDriftCorrectionGY()));
+    vdcorrectionTime *=corrGy;
+  }
   
 
 
@@ -257,7 +285,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   //
   const Int_t kNIS=param->GetNInnerSector(), kNOS=param->GetNOuterSector();
   Double_t sign = 1.;
-  Double_t zwidth    = param->GetZWidth()*driftCorr;
+  Double_t zwidth    = param->GetZWidth()*driftCorr*vdcorrectionTime;
   Double_t padWidth  = 0;
   Double_t padLength = 0;
   Double_t    maxPad    = 0;
@@ -291,7 +319,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   // Z coordinate
   //
   x[2]*= zwidth;  // tranform time bin to the distance to the ROC
-  x[2]-= 3.*param->GetZSigma() + param->GetNTBinsL1()*zwidth;
+  x[2]-= 3.*param->GetZSigma() + param->GetNTBinsL1()*zwidth+ time0corrTime;
   // subtract the time offsets
   x[2] = sign*( param->GetZLength(sector) - x[2]);
 }
@@ -325,3 +353,12 @@ void AliTPCTransform::GetCosAndSin(Int_t sector,Double_t &cos,
 }
 
 
+void AliTPCTransform::ApplyTransformations(Double_t */*xyz*/, Int_t /*volID*/){
+  //
+  // Modify global position
+  // xyz    - global xyz position
+  // volID  - volID of detector (sector number)
+  //
+  //
+  
+}

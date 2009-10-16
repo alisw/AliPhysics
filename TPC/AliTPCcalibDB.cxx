@@ -103,6 +103,7 @@ class AliTPCCalDet;
 
 #include "TFile.h"
 #include "TKey.h"
+#include "TGraphErrors.h"
 
 #include "TObjArray.h"
 #include "TObjString.h"
@@ -116,6 +117,7 @@ class AliTPCCalDet;
 #include "AliTPCTempMap.h"
 #include "AliTPCCalibVdrift.h"
 #include "AliTPCCalibRaw.h"
+#include "AliTPCParam.h"
 
 #include "AliTPCPreprocessorOnline.h"
 
@@ -1556,7 +1558,7 @@ Bool_t AliTPCcalibDB::CreateRefFile(Int_t run, const char* filename)
 
 
 
-Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t mode){
+Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t /*mode*/){
   //
   // Get time dependent drift velocity correction
   // multiplication factor        vd = vdnom *(1+vdriftcorr)
@@ -1568,12 +1570,26 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_
   //
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
-  return 0;
+  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  TGraphErrors *laserA= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
+  TGraphErrors *laserC= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_C");
+  
+  Double_t result=0;
+  if (laserA && laserC){
+   result= (laserA->Eval(timeStamp)+laserC->Eval(timeStamp))*0.5;
+  }
+  if (laserA && side==0){
+    result = (laserA->Eval(timeStamp));
+  }
+  if (laserC &&side==1){
+    result = (laserC->Eval(timeStamp));
+  }
+  return result;
 }
 
-Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t mode){
+Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t /*mode*/){
   //
-  // Get time dependent time 0 (trigger delay) correction
+  // Get time dependent time 0 (trigger delay in cm) correction
   // additive correction        time0 = time0+ GetTime0CorrectionTime
   // Value etracted combining the vdrift correction using laser tracks and CE and the physics track matchin
   // Arguments:
@@ -1584,13 +1600,34 @@ Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t
   //
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
+  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  TGraphErrors *laserA= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
+  TGraphErrors *laserC= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_C");
+  
+  Double_t lresult=0;
+  if (laserA && laserC){
+   lresult= (laserA->Eval(timeStamp)+laserC->Eval(timeStamp))*0.5;
+  }
+  if (laserA && side==0){
+    lresult = (laserA->Eval(timeStamp));
+  }
+  if (laserC &&side==1){
+    lresult = (laserC->Eval(timeStamp));
+  }
+  TGraphErrors *cosmic =(TGraphErrors*)array->FindObject("TGRAPHERRORS_MEAN_VDRIFT_COSMICS_ALL");
+  if (cosmic){
+    Double_t cresult =cosmic->Eval(timeStamp);
+    Double_t result  =(cresult-result)*fParam->GetZLength();
+    return result;
+  }
   return 0;
+
 }
 
 
 
 
-Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t side, Int_t mode){
+Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t side, Int_t /*mode*/){
   //
   // Get global y correction drift velocity correction factor
   // additive factor        vd = vdnom*(1+GetVDriftCorrectionGy *gy)
@@ -1603,5 +1640,19 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   //
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
-  return 0;
+  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  TGraphErrors *laserA= (TGraphErrors*)array->FindObject("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_A");
+  TGraphErrors *laserC= (TGraphErrors*)array->FindObject("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_C");
+  
+  Double_t result=0;
+  if (laserA && laserC){
+   result= (laserA->Eval(timeStamp)+laserC->Eval(timeStamp))*0.5;
+  }
+  if (laserA && side==0){
+    result = (laserA->Eval(timeStamp));
+  }
+  if (laserC &&side==1){
+    result = (laserC->Eval(timeStamp));
+  }
+  return -result/250.; //normalized before
 }

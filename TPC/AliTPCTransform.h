@@ -39,6 +39,7 @@ public:
   void SetCurrentRecoParam(AliTPCRecoParam* param){fCurrentRecoParam=param;}
   void SetCurrentRun(Int_t run){fCurrentRun=run;}
   void SetCurrentTimeStamp(Int_t timeStamp){fCurrentTimeStamp=timeStamp;}
+  void ApplyTransformations(Double_t *xyz, Int_t volID);
 private:
   AliTPCTransform& operator=(const AliTPCTransform&); // not implemented
   Double_t fCoss[18];  // cache the transformation
