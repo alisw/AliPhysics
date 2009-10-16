@@ -808,10 +808,10 @@ void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track )
      Bool_t deadzoneSPD=kFALSE;
 
      // check if the road contains a dead zone 
-     Bool_t noClusters = !layer.GetNextCluster(clidx,kTRUE);
+     //Bool_t noClusters = !layer.GetNextCluster(clidx,kTRUE);
      
-     Double_t dz=0.5*(zmax-zmin);
-     Double_t dy=0.5*(ymax-ymin);
+     //Double_t dz=0.5*(zmax-zmin);
+     //Double_t dy=0.5*(ymax-ymin);
      
      Int_t dead = 0;//CheckDeadZone(track,ilayer,idet,dz,dy,noClusters); 
 

@@ -162,7 +162,7 @@ GPUd() void AliHLTTPCCATrackletConstructor::ReadData
 
 GPUd() void AliHLTTPCCATrackletConstructor::StoreTracklet
 ( int /*nBlocks*/, int /*nThreads*/, int /*iBlock*/, int /*iThread*/,
-  AliHLTTPCCASharedMemory &s, AliHLTTPCCAThreadMemory &r, AliHLTTPCCATracker &tracker, AliHLTTPCCATrackParam &tParam )
+  AliHLTTPCCASharedMemory &/*s*/, AliHLTTPCCAThreadMemory &r, AliHLTTPCCATracker &tracker, AliHLTTPCCATrackParam &tParam )
 {
   // reconstruction of tracklets, tracklet store step
 
@@ -242,7 +242,7 @@ GPUd() void AliHLTTPCCATrackletConstructor::StoreTracklet
 
 GPUd() void AliHLTTPCCATrackletConstructor::UpdateTracklet
 ( int /*nBlocks*/, int /*nThreads*/, int /*iBlock*/, int /*iThread*/,
-  AliHLTTPCCASharedMemory &s, AliHLTTPCCAThreadMemory &r, AliHLTTPCCATracker &tracker, AliHLTTPCCATrackParam &tParam, int iRow )
+  AliHLTTPCCASharedMemory &/*s*/, AliHLTTPCCAThreadMemory &r, AliHLTTPCCATracker &tracker, AliHLTTPCCATrackParam &tParam, int iRow )
 {
   // reconstruction of tracklets, tracklets update step
 
