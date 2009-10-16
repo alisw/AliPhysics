@@ -46,7 +46,7 @@ class AliACORDECalibData: public TNamed {
   TH1D *fMultiHits;
   TH1D *fTMultiHits;
 
-  ClassDef(AliACORDECalibData,2)    // ACORDE Calibration data
+  ClassDef(AliACORDECalibData,3)    // ACORDE Calibration data
 };
 
 #endif
