@@ -1571,6 +1571,7 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  if (!array) return 0;
   TGraphErrors *laserA= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
   TGraphErrors *laserC= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_C");
   
@@ -1601,6 +1602,7 @@ Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  if (!array) return 0;
   TGraphErrors *laserA= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
   TGraphErrors *laserC= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_C");
   
@@ -1641,6 +1643,7 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  if (!array) return 0;
   TGraphErrors *laserA= (TGraphErrors*)array->FindObject("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_A");
   TGraphErrors *laserC= (TGraphErrors*)array->FindObject("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_C");
   
