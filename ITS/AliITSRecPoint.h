@@ -81,7 +81,7 @@ class AliITSRecPoint : public AliCluster {
   Int_t GetClusterType() const {
     if(fLayer<=1) return GetSPDclusterType();
     if(fLayer==2 || fLayer==3) return GetSDDclusterType();
-    if(fLayer==4 || fLayer==5) return GetSSDclusterType();
+    return GetSSDclusterType();
   }
  protected:
 

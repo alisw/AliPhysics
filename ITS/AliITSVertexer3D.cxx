@@ -115,7 +115,7 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
     rc=Prepare3DVertex(0);
     if(fVert3D.GetNContributors()>0){
       fLines.Clear("C");
-      Int_t nolines = FindTracklets(itsClusterTree,1);
+      nolines = FindTracklets(itsClusterTree,1);
       if(nolines>=2){
 	rc=Prepare3DVertex(1);
 	if(fPileupAlgo == 2 && rc == 0) FindVertex3DIterative();
