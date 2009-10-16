@@ -54,7 +54,7 @@ Comments to be written here:
   AliXRDPROOFtoolkit tool;
   TChain * chainTime = tool.MakeChain("time.txt","timeInfo",0,10200);
   chainTime->Lookup();
-  TChain * chainLaser = tool.MakeChain("time.txt","timeLaser",0,10200);
+  TChain * chainLaser = tool.MakeChain("time.txt.Good","laserInfo",0,10200);
   chainLaser->Lookup();
 */
 
@@ -222,12 +222,12 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   fXmaxVdrift[3] = fRunEnd;
 
   fArrayDz=new TObjArray();
-  fArrayDz->AddLast(fHistVdriftLaserA[0]);
-  fArrayDz->AddLast(fHistVdriftLaserA[1]);
-  fArrayDz->AddLast(fHistVdriftLaserA[2]);
-  fArrayDz->AddLast(fHistVdriftLaserC[0]);
-  fArrayDz->AddLast(fHistVdriftLaserC[1]);
-  fArrayDz->AddLast(fHistVdriftLaserC[2]);
+  // fArrayDz->AddLast(fHistVdriftLaserA[0]);
+//   fArrayDz->AddLast(fHistVdriftLaserA[1]);
+//   fArrayDz->AddLast(fHistVdriftLaserA[2]);
+//   fArrayDz->AddLast(fHistVdriftLaserC[0]);
+//   fArrayDz->AddLast(fHistVdriftLaserC[1]);
+//   fArrayDz->AddLast(fHistVdriftLaserC[2]);
 
   fCosmiMatchingHisto[0]=new TH1F("Cosmics matching","p0-all"   ,100,-10*0.5356  ,10*0.5356  );
   fCosmiMatchingHisto[1]=new TH1F("Cosmics matching","p1-all"   ,100,-10*4.541   ,10*4.541   );
@@ -426,8 +426,8 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
       vecDriftLaserA[2]=vdriftA[2]/250.;
       vecDriftLaserC[2]=vdriftC[2]/250.;
     }
-    if (npointsA>kMinTracks) fHistVdriftLaserA[icalib]->Fill(vecDriftLaserA);
-    if (npointsC>kMinTracks) fHistVdriftLaserC[icalib]->Fill(vecDriftLaserC);
+    if (isReject[0]==0) fHistVdriftLaserA[icalib]->Fill(vecDriftLaserA);
+    if (isReject[1]==0) fHistVdriftLaserC[icalib]->Fill(vecDriftLaserC);
   }
 
 //   THnSparse* curHist=new THnSparseF("","HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
