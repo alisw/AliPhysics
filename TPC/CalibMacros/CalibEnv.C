@@ -54,7 +54,7 @@ TTreeSRedirector *pcstream =0;
 //
 void ProcessRun(Int_t irun, Int_t startTime, Int_t endTime);
 void GetProductionInfo(Int_t run, Int_t &nalien, Int_t &nRawAlien, Int_t &nlocal, Int_t &nRawLocal);
-  
+void ProcessDrift(Int_t run, Int_t timeStamp);
 
 void CalibEnv(const char * runList, Int_t first=1, Int_t last=-1){
   //
@@ -335,7 +335,7 @@ void ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       "temp41.="<<&vecTemp[9]<<
       "tempSkirtA.="<<&vecSkirtTempA<<
       "tempSkirtC.="<<&vecSkirtTempC;
-    
+    ProcessDrift(irun, itime);
     (*pcstream)<<"dcs"<<	
       //noise data
       "meanNoise.="<<&vNoiseMean<<
@@ -437,3 +437,42 @@ void GetProductionInfo(Int_t run, Int_t &nalien, Int_t &nRawAlien, Int_t &nlocal
   nRawLocal=sNlines.Atoi();
 }
 
+
+
+void ProcessDrift(Int_t run, Int_t timeStamp){
+  //
+  // dump drift calibration data to the tree
+  //
+  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  TGraphErrors *laserA[3]={0,0,0};
+  TGraphErrors *laserC[3]={0,0,0};
+  TGraphErrors *cosmicAll=0;
+  static Double_t     vlaserA[3]={0,0,0};
+  static Double_t     vlaserC[3]={0,0,0};
+  static Double_t     vcosmicAll=0;
+
+  if (array){
+    laserA[0]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_DELAY_LASER_ALL_A");
+    laserA[1]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
+    laserA[2]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_A");
+    laserC[0]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_DELAY_LASER_ALL_C");
+    laserC[1]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_C");
+    laserC[2]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_C");
+    cosmicAll =(TGraphErrors*)array->FindObject("TGRAPHERRORS_MEAN_VDRIFT_COSMICS_ALL");
+  }
+  if (laserA[0]) vlaserA[0]= laserA[0]->Eval(timeStamp);
+  if (laserA[1]) vlaserA[1]= laserA[1]->Eval(timeStamp);
+  if (laserA[2]) vlaserA[2]= laserA[2]->Eval(timeStamp);
+  if (laserC[0]) vlaserC[0]= laserC[0]->Eval(timeStamp);
+  if (laserC[1]) vlaserC[1]= laserC[1]->Eval(timeStamp);
+  if (laserC[2]) vlaserC[2]= laserC[2]->Eval(timeStamp);
+  if (cosmicAll) vcosmicAll= cosmicAll->Eval(timeStamp); 
+  (*pcstream)<<"dcs"<<
+    "vlaserA0="<<vlaserA[0]<<
+    "vlaserA1="<<vlaserA[1]<<
+    "vlaserA2="<<vlaserA[2]<<
+    "vlaserC0="<<vlaserC[0]<<
+    "vlaserC1="<<vlaserC[1]<<
+    "vlaserC2="<<vlaserC[2]<<
+    "vcosmicAll="<<vcosmicAll;
+}
