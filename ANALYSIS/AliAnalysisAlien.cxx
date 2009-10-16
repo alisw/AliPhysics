@@ -56,6 +56,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fProductionMode(0),
                   fRunNumbers(),
                   fExecutable(),
+                  fExecutableCommand(),
                   fArguments(),
                   fAnalysisMacro(),
                   fAnalysisSource(),
@@ -102,6 +103,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fProductionMode(0),
                   fRunNumbers(),
                   fExecutable(),
+                  fExecutableCommand(),
                   fArguments(),
                   fAnalysisMacro(),
                   fAnalysisSource(),
@@ -148,6 +150,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fProductionMode(other.fProductionMode),
                   fRunNumbers(other.fRunNumbers),
                   fExecutable(other.fExecutable),
+                  fExecutableCommand(other.fExecutableCommand),
                   fArguments(other.fArguments),
                   fAnalysisMacro(other.fAnalysisMacro),
                   fAnalysisSource(other.fAnalysisSource),
@@ -222,6 +225,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fProductionMode          = other.fProductionMode;
       fRunNumbers              = other.fRunNumbers;
       fExecutable              = other.fExecutable;
+      fExecutableCommand       = other.fExecutableCommand;
       fArguments               = other.fArguments;
       fAnalysisMacro           = other.fAnalysisMacro;
       fAnalysisSource          = other.fAnalysisSource;
@@ -1238,6 +1242,7 @@ void AliAnalysisAlien::SetDefaults()
    fMaxMergeFiles              = 100;
    fRunNumbers                 = "";
    fExecutable                 = "analysis.sh";
+   fExecutableCommand          = "root -b -q";
    fArguments                  = "";
    fAnalysisMacro              = "myAnalysis.C";
    fAnalysisSource             = "";
@@ -1981,7 +1986,7 @@ void AliAnalysisAlien::WriteExecutable()
       out << "which aliroot" << endl;
       out << "echo \"=========================================\"" << endl << endl;
 //      if (TestBit(AliAnalysisGrid::kTest)) out << "root ";
-      out << "root -b -q "; 
+      out << fExecutableCommand << " "; 
       out << fAnalysisMacro.Data() << endl << endl;
       out << "echo \"======== " << fAnalysisMacro.Data() << " finished ========\"" << endl;
    }   

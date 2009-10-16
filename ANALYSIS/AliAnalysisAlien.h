@@ -35,6 +35,7 @@ public:
    virtual void        AddRunNumber(const char *run);
    virtual void        AddDataFile(const char *lfn);
    virtual void        SetExecutable(const char *name="analysis.sh")     {fExecutable = name;}
+   virtual void        SetExecutableCommand(const char *command="root -b -q") {fExecutableCommand = command;}
    virtual void        SetArguments(const char *name="")                 {fArguments = name;}
    virtual void        SetAnalysisMacro(const char *name="myAnalysis.C") {fAnalysisMacro = name;}
    virtual void        SetAnalysisSource(const char *name="myAnalysisClass.cxx") {fAnalysisSource = name;}
@@ -114,6 +115,7 @@ private:
    Int_t            fProductionMode;  // Production mode (0-off, 1-on)
    TString          fRunNumbers;      // List of runs to be processed
    TString          fExecutable;      // Executable script for AliEn job
+   TString          fExecutableCommand;  // Command(s) to be executed in the executable script
    TString          fArguments;       // Arguments for the executable script
    TString          fAnalysisMacro;   // Root macro steering the analysis
    TString          fAnalysisSource;  // User analysis implementation (.cxx) file(s)
@@ -140,6 +142,6 @@ private:
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 6)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 7)   // Class providing some AliEn utilities
 };
 #endif
