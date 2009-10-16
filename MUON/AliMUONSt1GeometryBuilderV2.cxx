@@ -421,8 +421,7 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
   
   Int_t nb = AliMpConstants::ManuMask(AliMp::kNonBendingPlane);
   TExMapIter it(&specialMap);
-#if ROOT_VERSION_CODE >= 334081
-//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+#if ROOT_SVN_REVISION >= 30658
   Long64_t key;
   Long64_t value;
 #else

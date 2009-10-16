@@ -87,8 +87,7 @@ AliMpExMapIterator::~AliMpExMapIterator()
 }
 
 //_____________________________________________________________________________
-#if ROOT_VERSION_CODE >= 334081
-//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+#if ROOT_SVN_REVISION >= 30658
 Bool_t 
 AliMpExMapIterator::Next(Long64_t& index, TObject*& object)
 #else
@@ -98,8 +97,7 @@ AliMpExMapIterator::Next(Long_t& index, TObject*& object)
 {
 /// Move to next object in iteration
 
-#if ROOT_VERSION_CODE >= 334081
-//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+#if ROOT_SVN_REVISION >= 30658
   Long64_t value(0);
 #else
   Long_t value(0);
@@ -124,8 +122,7 @@ AliMpExMapIterator::Next()
 /// Return the next object in iteration.
 /// The returned object must not be deleted by the user.  
 
-#if ROOT_VERSION_CODE >= 334081
-//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+#if ROOT_SVN_REVISION >= 30658
   Long64_t dummy;
 #else
   Long_t dummy;
@@ -143,8 +140,7 @@ AliMpExMapIterator::Next(Int_t& key)
 /// The returned object must not be deleted by the user.  
 
   TObject* o;
-#if ROOT_VERSION_CODE >= 334081
-//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+#if ROOT_SVN_REVISION >= 30658
   Long64_t index;
 #else
   Long_t index;
@@ -161,8 +157,7 @@ AliMpExMapIterator::Next(Int_t& keyFirst, Int_t& keySecond)
 /// Return the next object in iteration and fill the key.
 /// The returned object must not be deleted by the user.  
 
-#if ROOT_VERSION_CODE >= 334081
-//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+#if ROOT_SVN_REVISION >= 30658
   Long64_t index;
 #else
   Long_t index;
@@ -181,8 +176,7 @@ AliMpExMapIterator::Next(TString& key)
 /// Return the next object in iteration and fill the key.
 /// The returned object must not be deleted by the user.  
 
-#if ROOT_VERSION_CODE >= 334081
-//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+#if ROOT_SVN_REVISION >= 30658
   Long64_t index;
 #else
   Long_t index;

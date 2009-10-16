@@ -245,8 +245,7 @@ void  AliMpManuStore::ReplaceManu(Int_t detElemId, Int_t manuId, Int_t serialNb)
   // Loop over map
   TExMapIter it(&fManuToSerialNbs);
 
-#if ROOT_VERSION_CODE >= 334081
-//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+#if ROOT_SVN_REVISION >= 30658
   Long64_t key;
   Long64_t value;
 #else
@@ -341,8 +340,7 @@ Bool_t  AliMpManuStore::WriteData(const TString& outDir)
     
     // Loop over map
     TExMapIter it2(&fManuToSerialNbs);
-#if ROOT_VERSION_CODE >= 334081
-//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+#if ROOT_SVN_REVISION >= 30658
     Long64_t key;
     Long64_t value;
 #else

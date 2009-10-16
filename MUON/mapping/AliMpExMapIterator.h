@@ -48,8 +48,7 @@ public:
   virtual const TCollection* GetCollection() const;
 
 private:
-#if ROOT_VERSION_CODE >= 334081
-//#if ROOT_VERSION_CODE >= 333824  // needed with Root v5.24.00-patches 
+#if ROOT_SVN_REVISION >= 30658
     Bool_t Next(Long64_t& index, TObject*& object);
 #else    
     Bool_t Next(Long_t& index, TObject*& object);
