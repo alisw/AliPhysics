@@ -98,7 +98,7 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   Int_t fMinITSClusters;        //  min n. of ITS clusters for RecoDecay
   Bool_t fAcceptanceUnf;        //  flag for unfolding before or after cuts.
   
-  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,2); // class for HF corrections as a function of many variables
+  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,3); // class for HF corrections as a function of many variables
 };
 
 #endif
