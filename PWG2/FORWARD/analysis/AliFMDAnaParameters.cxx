@@ -496,21 +496,20 @@ void AliFMDAnaParameters::GetVertex(AliESDEvent* esd, Double_t* vertexXYZ)
 {
   const AliESDVertex* vertex = 0;
   vertex = esd->GetPrimaryVertex();
-  if(!vertex || (vertexXYZ[0] == 0 && vertexXYZ[1] == 0 && vertexXYZ[2] == 0))        
+  if(!vertex || (vertex->GetXv() < 0.0001 && vertex->GetYv() < 0.0001 && vertex->GetZv() < 0.0001))        
     vertex = esd->GetPrimaryVertexSPD();
-  if(!vertex || (vertexXYZ[0] == 0 && vertexXYZ[1] == 0 && vertexXYZ[2] == 0))        
+  if(!vertex || (vertex->GetXv() < 0.0001 && vertex->GetYv() < 0.0001 && vertex->GetZv() < 0.0001))        
     vertex = esd->GetPrimaryVertexTPC();
-  if(!vertex || (vertexXYZ[0] == 0 && vertexXYZ[1] == 0 && vertexXYZ[2] == 0))    
+  if(!vertex || (vertex->GetXv() < 0.0001 && vertex->GetYv() < 0.0001 && vertex->GetZv() < 0.0001))    
     vertex = esd->GetVertex();
-  if (vertex && (vertexXYZ[0] != 0 || vertexXYZ[1] != 0 || vertexXYZ[2] != 0)) {
+  if (vertex && (vertex->GetXv() > 0.0001 || vertex->GetYv() > 0.0001 || vertex->GetZv() > 0.0010)) {
     vertex->GetXYZ(vertexXYZ);
-    //std::cout<<vertex->GetName()<<"   "<< vertex->GetTitle() <<"   "<< vertex->GetZv()<<std::endl;
     return;
   }
-  else if (esd->GetESDTZERO()) { 
+  else { //no valid vertex
     vertexXYZ[0] = 0;
     vertexXYZ[1] = 0;
-    vertexXYZ[2] = esd->GetT0zVertex();
+    vertexXYZ[2] = 0;
     
     return;
   }
@@ -520,7 +519,7 @@ void AliFMDAnaParameters::GetVertex(AliESDEvent* esd, Double_t* vertexXYZ)
 }
 
 //____________________________________________________________________
-Bool_t AliFMDAnaParameters::IsEventTriggered(AliESDEvent *esd) {
+Bool_t AliFMDAnaParameters::IsEventTriggered(AliESDEvent *esd) const {
   // check if the event was triggered
   ULong64_t triggerMask = esd->GetTriggerMask();
   
@@ -545,7 +544,7 @@ Bool_t AliFMDAnaParameters::IsEventTriggered(AliESDEvent *esd) {
       return kTRUE;
     break;
   }
-  case kTEST_NOCTP: {
+  case kNOCTP: {
     return kTRUE;
     break;
   }
