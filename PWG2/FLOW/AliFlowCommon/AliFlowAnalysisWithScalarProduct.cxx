@@ -158,11 +158,17 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
     fCommonHists->FillControlHistograms(anEvent);
     
     //get the Q vector from the FlowEvent
-    AliFlowVector vQ = anEvent->GetQ();
-    fHistProM -> Fill(1,vQ.GetMult()-1);
+    //AliFlowVector vQ = anEvent->GetQ();   //NOT EQUAL TO Qa+Qb
+    //fHistProM -> Fill(1,vQ.GetMult()-1);  //NOT EQUAL TO Ma+Mb
     //get Q vectors for the subevents
-    AliFlowVector vQa = anEvent->GetQsub(-0.9,-0.1);  
-    AliFlowVector vQb = anEvent->GetQsub(0.1,0.9);
+    AliFlowVector vQa = anEvent->GetQsub(-1.,-0.01);  
+    AliFlowVector vQb = anEvent->GetQsub(0.01,1.);
+    Double_t sumX = vQa.X() + vQb.X();
+    Double_t sumY = vQa.Y() + vQb.Y();
+    TVector2 temp(sumX,sumY);
+    AliFlowVector vQ(temp,0.,0.,0.,0.,0.,0.,0.,0.);
+
+    fHistProM -> Fill(1,vQa.GetMult()+vQb.GetMult()-1);
     fHistProM -> Fill(2,vQa.GetMult()*vQb.GetMult());
     Double_t dQaQb = vQa*vQb; 
     fHistProQaQb -> Fill(0.,dQaQb);    
@@ -260,8 +266,8 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
 
   Double_t dMmin1    = fHistProM->GetBinContent(1);  //average over M-1
   Double_t dMmin1Err = fHistProM->GetBinError(1);    //error on average over M-1
-  Double_t dMaMb    = fHistProM->GetBinContent(2);   //average over Ma*Mb
-  Double_t dMaMbErr = fHistProM->GetBinError(2);     //error on average over Ma*Mb
+  Double_t dMaMb     = fHistProM->GetBinContent(2);  //average over Ma*Mb
+  Double_t dMaMbErr  = fHistProM->GetBinError(2);    //error on average over Ma*Mb
 
   Double_t dMcorrection = 0.;     //correction factor for Ma != Mb
   Double_t dMcorrectionErr = 0.;  
@@ -275,7 +281,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     dMcorrectionErrRel2 = dMcorrectionErrRel*dMcorrectionErrRel;
   }
 
-  Double_t dQaQbAv  = fHistProQaQb->GetBinContent(1); //average over events
+  Double_t dQaQbAv  = TMath::Abs(fHistProQaQb->GetBinContent(1)); //average over events //TEST TAKE ABS
   Double_t dQaQbErr = fHistProQaQb->GetBinError(1);
   Double_t dQaQbErrRel = 0.;
   if (dQaQbAv != 0.) {
@@ -290,7 +296,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     fCommonHistsRes->FillIntegratedFlowPOI(-0.,0.);
     cout<<"dV(POI) = -0. +- 0."<<endl;
   } else {
-    Double_t dQaQbSqrt = TMath::Sqrt(dQaQbAv);
+  Double_t dQaQbSqrt = TMath::Sqrt(dQaQbAv);  //DOES NOT WORK IF dQaQbAv IS NEGATIVE
     if (dMaMb>0.) { dQaQbSqrt *= dMcorrection; }
     else { dQaQbSqrt = 0.; }
     Double_t dQaQbSqrtErrRel2 = dMcorrectionErrRel2 + (1/4)*dQaQbErrRel2;
@@ -410,7 +416,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     fCommonHistsRes->FillIntegratedFlowPOI(dVPOI,dErrV);
 
     cout<<"dV(POI) = "<<dVPOI<<" +- "<<dErrV<<endl;
-  }
+    }
   cout<<endl;
   cout<<"*************************************"<<endl;
   cout<<"*************************************"<<endl;   	  
