@@ -12,6 +12,7 @@ class TFile;
 class TParticle;
 class TString;
 class TNamed;
+class THnSparse;
 class AliMCInfo;
 class AliESDRecInfo;
 class AliESDEvent; 
@@ -25,7 +26,6 @@ class AliRecInfoCuts;
 class AliMCInfoCuts;
 class AliESDVertex;
 
-#include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceEff : public AliPerformanceObject {
@@ -65,7 +65,7 @@ public :
   Bool_t IsRecTPCITS(AliESDtrack *track);
   Bool_t IsRecConstrained(AliESDtrack *track);
 
-  Bool_t IsFindable(AliMCEvent *mcEvent, Int_t label);
+  Bool_t IsFindable(const AliMCEvent *mcEvent, Int_t label);
   Int_t TransformToPID(TParticle *particle);
 
   // Selection cuts

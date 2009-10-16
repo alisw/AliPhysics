@@ -34,6 +34,7 @@
 
 #include <TAxis.h>
 #include <TH1D.h>
+#include "THnSparse.h"
 
 // 
 #include "AliESDtrack.h"
@@ -662,8 +663,11 @@ return pid;
 }
 
 //_____________________________________________________________________________
-Bool_t AliPerformanceEff::IsFindable(AliMCEvent *mcEvent, Int_t label) 
+Bool_t AliPerformanceEff::IsFindable(const AliMCEvent *mcEvent, Int_t label) 
 {
+//
+// Findfindable tracks
+//
 if(!mcEvent) return kFALSE;
 
   AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(label);
@@ -679,6 +683,9 @@ return (tpcTrackLength>fCutsMC->GetMinTrackLength());
 //_____________________________________________________________________________
 Bool_t AliPerformanceEff::IsRecTPC(AliESDtrack *esdTrack) 
 {
+//
+// Check whether track is reconstructed in TPC
+//
 if(!esdTrack) return kFALSE;
 
   const AliExternalTrackParam *track = esdTrack->GetTPCInnerParam();
@@ -704,6 +711,9 @@ return recStatus;
 //_____________________________________________________________________________
 Bool_t AliPerformanceEff::IsRecTPCITS(AliESDtrack *esdTrack) 
 {
+//
+// Check whether track is reconstructed in TPCITS
+//
 if(!esdTrack) return kFALSE;
 
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
@@ -732,6 +742,9 @@ return recStatus;
 //_____________________________________________________________________________
 Bool_t AliPerformanceEff::IsRecConstrained(AliESDtrack *esdTrack) 
 {
+//
+// Check whether track is reconstructed in IsRecConstrained
+//
   if(!esdTrack) return kFALSE;
 
   const AliExternalTrackParam * track = esdTrack->GetConstrainedParam();
@@ -815,17 +828,17 @@ void AliPerformanceEff::Analyse()
 
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.);  // reconstructed 
   TH1D *ptRec = fEffHisto->Projection(2);
-  TH1D *ptRec_c = (TH1D*)ptRec->Clone();
-  ptRec_c->Divide(ptRec,ptAll,1,1,"B");
-  ptRec_c->SetName("ptRecEff");
+  TH1D *ptRecc = (TH1D*)ptRec->Clone();
+  ptRecc->Divide(ptRec,ptAll,1,1,"B");
+  ptRecc->SetName("ptRecEff");
 
-  ptRec_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
-  ptRec_c->GetYaxis()->SetTitle("efficiency");
+  ptRecc->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
+  ptRecc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency",fEffHisto->GetAxis(2)->GetTitle());
-  ptRec_c->SetTitle(title);
+  ptRecc->SetTitle(title);
 
-  ptRec_c->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRec_c);
+  ptRecc->SetBit(TH1::kLogX);
+  aFolderObj->Add(ptRecc);
 
   // rec efficiency vs pid vs pt
 
@@ -836,17 +849,17 @@ void AliPerformanceEff::Analyse()
 
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *ptRecPi = fEffHisto->Projection(2);
-  TH1D *ptRecPi_c = (TH1D*)ptRecPi->Clone();
-  ptRecPi_c->Divide(ptRecPi,ptAllPi,1,1,"B");
-  ptRecPi_c->SetName("ptRecEffPi");
+  TH1D *ptRecPic = (TH1D*)ptRecPi->Clone();
+  ptRecPic->Divide(ptRecPi,ptAllPi,1,1,"B");
+  ptRecPic->SetName("ptRecEffPi");
 
-  ptRecPi_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
-  ptRecPi_c->GetYaxis()->SetTitle("efficiency");
+  ptRecPic->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
+  ptRecPic->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (pions)",fEffHisto->GetAxis(2)->GetTitle());
-  ptRecPi_c->SetTitle(title);
+  ptRecPic->SetTitle(title);
 
-  ptRecPi_c->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecPi_c);
+  ptRecPic->SetBit(TH1::kLogX);
+  aFolderObj->Add(ptRecPic);
 
   fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffHisto->GetAxis(3)->SetRangeUser(3.,3.); // kaons
@@ -855,18 +868,18 @@ void AliPerformanceEff::Analyse()
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *ptRecK = fEffHisto->Projection(2);
 
-  TH1D *ptRecK_c = (TH1D*)ptRecK->Clone();
-  ptRecK_c->Divide(ptRecK,ptAllK,1,1,"B");
-  ptRecK_c->SetName("ptRecEffK");
+  TH1D *ptRecKc = (TH1D*)ptRecK->Clone();
+  ptRecKc->Divide(ptRecK,ptAllK,1,1,"B");
+  ptRecKc->SetName("ptRecEffK");
 
-  ptRecK_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
-  ptRecK_c->GetYaxis()->SetTitle("efficiency");
+  ptRecKc->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
+  ptRecKc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (kaons)",fEffHisto->GetAxis(2)->GetTitle());
-  ptRecK_c->SetTitle(title);
+  ptRecKc->SetTitle(title);
 
 
-  ptRecK_c->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecK_c);
+  ptRecKc->SetBit(TH1::kLogX);
+  aFolderObj->Add(ptRecKc);
 
   fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffHisto->GetAxis(3)->SetRangeUser(4.,4.); // protons
@@ -874,17 +887,17 @@ void AliPerformanceEff::Analyse()
 
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *ptRecP = fEffHisto->Projection(2);
-  TH1D *ptRecP_c = (TH1D*)ptRecP->Clone();
-  ptRecP_c->Divide(ptRecP,ptAllP,1,1,"B");
-  ptRecP_c->SetName("ptRecEffP");
+  TH1D *ptRecPc = (TH1D*)ptRecP->Clone();
+  ptRecPc->Divide(ptRecP,ptAllP,1,1,"B");
+  ptRecPc->SetName("ptRecEffP");
 
-  ptRecP_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
-  ptRecP_c->GetYaxis()->SetTitle("efficiency");
+  ptRecPc->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
+  ptRecPc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (protons)",fEffHisto->GetAxis(2)->GetTitle());
-  ptRecP_c->SetTitle(title);
+  ptRecPc->SetTitle(title);
 
-  ptRecP_c->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecP_c);
+  ptRecPc->SetBit(TH1::kLogX);
+  aFolderObj->Add(ptRecPc);
 
   // findable efficiency vs pt
 
@@ -897,17 +910,17 @@ void AliPerformanceEff::Analyse()
   fEffHisto->GetAxis(5)->SetRangeUser(1.,1.);
 
   TH1D *ptRecF = fEffHisto->Projection(2); // rec findable
-  TH1D *ptRecF_c = (TH1D*)ptRecF->Clone();
-  ptRecF_c->Divide(ptRecF,ptAllF,1,1,"B");
-  ptRecF_c->SetName("ptRecEffF");
+  TH1D *ptRecFc = (TH1D*)ptRecF->Clone();
+  ptRecFc->Divide(ptRecF,ptAllF,1,1,"B");
+  ptRecFc->SetName("ptRecEffF");
 
-  ptRecF_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
-  ptRecF_c->GetYaxis()->SetTitle("efficiency");
+  ptRecFc->GetXaxis()->SetTitle(fEffHisto->GetAxis(2)->GetTitle());
+  ptRecFc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (findable)",fEffHisto->GetAxis(2)->GetTitle());
-  ptRecF_c->SetTitle(title);
+  ptRecFc->SetTitle(title);
 
-  ptRecF_c->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecF_c);
+  ptRecFc->SetBit(TH1::kLogX);
+  aFolderObj->Add(ptRecFc);
 
   //
   // efficiency vs eta
@@ -922,16 +935,16 @@ void AliPerformanceEff::Analyse()
 
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.);  // reconstructed 
   TH1D *etaRec = fEffHisto->Projection(0);
-  TH1D *etaRec_c = (TH1D*)etaRec->Clone();
-  etaRec_c->Divide(etaRec,etaAll,1,1,"B");
-  etaRec_c->SetName("etaRecEff");
+  TH1D *etaRecc = (TH1D*)etaRec->Clone();
+  etaRecc->Divide(etaRec,etaAll,1,1,"B");
+  etaRecc->SetName("etaRecEff");
 
-  etaRec_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
-  etaRec_c->GetYaxis()->SetTitle("efficiency");
+  etaRecc->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
+  etaRecc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency",fEffHisto->GetAxis(0)->GetTitle());
-  etaRec_c->SetTitle(title);
+  etaRecc->SetTitle(title);
 
-  aFolderObj->Add(etaRec_c);
+  aFolderObj->Add(etaRecc);
 
   // rec efficiency vs pid vs eta
   fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
@@ -941,16 +954,16 @@ void AliPerformanceEff::Analyse()
 
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *etaRecPi = fEffHisto->Projection(0);
-  TH1D *etaRecPi_c = (TH1D*)etaRecPi->Clone();
-  etaRecPi_c->Divide(etaRecPi,etaAllPi,1,1,"B");
-  etaRecPi_c->SetName("etaRecEffPi");
+  TH1D *etaRecPic = (TH1D*)etaRecPi->Clone();
+  etaRecPic->Divide(etaRecPi,etaAllPi,1,1,"B");
+  etaRecPic->SetName("etaRecEffPi");
 
-  etaRecPi_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
-  etaRecPi_c->GetYaxis()->SetTitle("efficiency");
+  etaRecPic->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
+  etaRecPic->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (pions)",fEffHisto->GetAxis(0)->GetTitle());
-  etaRecPi_c->SetTitle(title);
+  etaRecPic->SetTitle(title);
 
-  aFolderObj->Add(etaRecPi_c);
+  aFolderObj->Add(etaRecPic);
 
   fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffHisto->GetAxis(3)->SetRangeUser(3.,3.); // kaons
@@ -959,17 +972,17 @@ void AliPerformanceEff::Analyse()
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *etaRecK = fEffHisto->Projection(0);
 
-  TH1D *etaRecK_c = (TH1D*)etaRecK->Clone();
-  etaRecK_c->Divide(etaRecK,etaAllK,1,1,"B");
-  etaRecK_c->SetName("etaRecEffK");
+  TH1D *etaRecKc = (TH1D*)etaRecK->Clone();
+  etaRecKc->Divide(etaRecK,etaAllK,1,1,"B");
+  etaRecKc->SetName("etaRecEffK");
 
-  etaRecK_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
-  etaRecK_c->GetYaxis()->SetTitle("efficiency");
+  etaRecKc->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
+  etaRecKc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (kaons)",fEffHisto->GetAxis(0)->GetTitle());
-  etaRecK_c->SetTitle(title);
+  etaRecKc->SetTitle(title);
 
 
-  aFolderObj->Add(etaRecK_c);
+  aFolderObj->Add(etaRecKc);
 
   fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffHisto->GetAxis(3)->SetRangeUser(4.,4.); // protons
@@ -977,16 +990,16 @@ void AliPerformanceEff::Analyse()
 
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *etaRecP = fEffHisto->Projection(0);
-  TH1D *etaRecP_c = (TH1D*)etaRecP->Clone();
-  etaRecP_c->Divide(etaRecP,etaAllP,1,1,"B");
-  etaRecP_c->SetName("etaRecEffP");
+  TH1D *etaRecPc = (TH1D*)etaRecP->Clone();
+  etaRecPc->Divide(etaRecP,etaAllP,1,1,"B");
+  etaRecPc->SetName("etaRecEffP");
 
-  etaRecP_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
-  etaRecP_c->GetYaxis()->SetTitle("efficiency");
+  etaRecPc->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
+  etaRecPc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (protons)",fEffHisto->GetAxis(0)->GetTitle());
-  etaRecP_c->SetTitle(title);
+  etaRecPc->SetTitle(title);
 
-  aFolderObj->Add(etaRecP_c);
+  aFolderObj->Add(etaRecPc);
 
   // findable efficiency vs eta
 
@@ -999,16 +1012,16 @@ void AliPerformanceEff::Analyse()
   fEffHisto->GetAxis(5)->SetRangeUser(1.,1.);
 
   TH1D *etaRecF = fEffHisto->Projection(0); // rec findable
-  TH1D *etaRecF_c = (TH1D*)etaRecF->Clone();
-  etaRecF_c->Divide(etaRecF,etaAllF,1,1,"B");
-  etaRecF_c->SetName("etaRecEffF");
+  TH1D *etaRecFc = (TH1D*)etaRecF->Clone();
+  etaRecFc->Divide(etaRecF,etaAllF,1,1,"B");
+  etaRecFc->SetName("etaRecEffF");
 
-  etaRecF_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
-  etaRecF_c->GetYaxis()->SetTitle("efficiency");
+  etaRecFc->GetXaxis()->SetTitle(fEffHisto->GetAxis(0)->GetTitle());
+  etaRecFc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (findable)",fEffHisto->GetAxis(0)->GetTitle());
-  etaRecF_c->SetTitle(title);
+  etaRecFc->SetTitle(title);
 
-  aFolderObj->Add(etaRecF_c);
+  aFolderObj->Add(etaRecFc);
 
   //
   // efficiency vs phi
@@ -1023,16 +1036,16 @@ void AliPerformanceEff::Analyse()
 
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.);  // reconstructed 
   TH1D *phiRec = fEffHisto->Projection(1);
-  TH1D *phiRec_c = (TH1D*)phiRec->Clone();
-  phiRec_c->Divide(phiRec,phiAll,1,1,"B");
-  phiRec_c->SetName("phiRecEff");
+  TH1D *phiRecc = (TH1D*)phiRec->Clone();
+  phiRecc->Divide(phiRec,phiAll,1,1,"B");
+  phiRecc->SetName("phiRecEff");
 
-  phiRec_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
-  phiRec_c->GetYaxis()->SetTitle("efficiency");
+  phiRecc->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
+  phiRecc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency",fEffHisto->GetAxis(1)->GetTitle());
-  phiRec_c->SetTitle(title);
+  phiRecc->SetTitle(title);
 
-  aFolderObj->Add(phiRec_c);
+  aFolderObj->Add(phiRecc);
 
   // rec efficiency vs pid vs phi
   fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
@@ -1042,16 +1055,16 @@ void AliPerformanceEff::Analyse()
 
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *phiRecPi = fEffHisto->Projection(1);
-  TH1D *phiRecPi_c = (TH1D*)phiRecPi->Clone();
-  phiRecPi_c->Divide(phiRecPi,phiAllPi,1,1,"B");
-  phiRecPi_c->SetName("phiRecEffPi");
+  TH1D *phiRecPic = (TH1D*)phiRecPi->Clone();
+  phiRecPic->Divide(phiRecPi,phiAllPi,1,1,"B");
+  phiRecPic->SetName("phiRecEffPi");
 
-  phiRecPi_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
-  phiRecPi_c->GetYaxis()->SetTitle("efficiency");
+  phiRecPic->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
+  phiRecPic->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (pions)",fEffHisto->GetAxis(1)->GetTitle());
-  phiRecPi_c->SetTitle(title);
+  phiRecPic->SetTitle(title);
 
-  aFolderObj->Add(phiRecPi_c);
+  aFolderObj->Add(phiRecPic);
 
   fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffHisto->GetAxis(3)->SetRangeUser(3.,3.); // kaons
@@ -1060,17 +1073,17 @@ void AliPerformanceEff::Analyse()
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *phiRecK = fEffHisto->Projection(1);
 
-  TH1D *phiRecK_c = (TH1D*)phiRecK->Clone();
-  phiRecK_c->Divide(phiRecK,phiAllK,1,1,"B");
-  phiRecK_c->SetName("phiRecEffK");
+  TH1D *phiRecKc = (TH1D*)phiRecK->Clone();
+  phiRecKc->Divide(phiRecK,phiAllK,1,1,"B");
+  phiRecKc->SetName("phiRecEffK");
 
-  phiRecK_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
-  phiRecK_c->GetYaxis()->SetTitle("efficiency");
+  phiRecKc->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
+  phiRecKc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (kaons)",fEffHisto->GetAxis(1)->GetTitle());
-  phiRecK_c->SetTitle(title);
+  phiRecKc->SetTitle(title);
 
 
-  aFolderObj->Add(phiRecK_c);
+  aFolderObj->Add(phiRecKc);
 
   fEffHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffHisto->GetAxis(3)->SetRangeUser(4.,4.); // protons
@@ -1078,16 +1091,16 @@ void AliPerformanceEff::Analyse()
 
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *phiRecP = fEffHisto->Projection(1);
-  TH1D *phiRecP_c = (TH1D*)phiRecP->Clone();
-  phiRecP_c->Divide(phiRecP,phiAllP,1,1,"B");
-  phiRecP_c->SetName("phiRecEffP");
+  TH1D *phiRecPc = (TH1D*)phiRecP->Clone();
+  phiRecPc->Divide(phiRecP,phiAllP,1,1,"B");
+  phiRecPc->SetName("phiRecEffP");
 
-  phiRecP_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
-  phiRecP_c->GetYaxis()->SetTitle("efficiency");
+  phiRecPc->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
+  phiRecPc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (protons)",fEffHisto->GetAxis(1)->GetTitle());
-  phiRecP_c->SetTitle(title);
+  phiRecPc->SetTitle(title);
 
-  aFolderObj->Add(phiRecP_c);
+  aFolderObj->Add(phiRecPc);
 
   // findable efficiency vs phi
 
@@ -1100,16 +1113,16 @@ void AliPerformanceEff::Analyse()
   fEffHisto->GetAxis(5)->SetRangeUser(1.,1.);
 
   TH1D *phiRecF = fEffHisto->Projection(1); // rec findable
-  TH1D *phiRecF_c = (TH1D*)phiRecF->Clone();
-  phiRecF_c->Divide(phiRecF,phiAllF,1,1,"B");
-  phiRecF_c->SetName("phiRecEffF");
+  TH1D *phiRecFc = (TH1D*)phiRecF->Clone();
+  phiRecFc->Divide(phiRecF,phiAllF,1,1,"B");
+  phiRecFc->SetName("phiRecEffF");
 
-  phiRecF_c->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
-  phiRecF_c->GetYaxis()->SetTitle("efficiency");
+  phiRecFc->GetXaxis()->SetTitle(fEffHisto->GetAxis(1)->GetTitle());
+  phiRecFc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (findable)",fEffHisto->GetAxis(1)->GetTitle());
-  phiRecF_c->SetTitle(title);
+  phiRecFc->SetTitle(title);
 
-  aFolderObj->Add(phiRecF_c);
+  aFolderObj->Add(phiRecFc);
   }
   else {
   // 
@@ -1132,17 +1145,17 @@ void AliPerformanceEff::Analyse()
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.);  // reconstructed 
   TH1D *ptRec = fEffSecHisto->Projection(2);
-  TH1D *ptRec_c = (TH1D*)ptRec->Clone();
-  ptRec_c->Divide(ptRec,ptAll,1,1,"B");
-  ptRec_c->SetName("ptRecEff");
+  TH1D *ptRecc = (TH1D*)ptRec->Clone();
+  ptRecc->Divide(ptRec,ptAll,1,1,"B");
+  ptRecc->SetName("ptRecEff");
 
-  ptRec_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
-  ptRec_c->GetYaxis()->SetTitle("efficiency");
+  ptRecc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
+  ptRecc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency",fEffSecHisto->GetAxis(2)->GetTitle());
-  ptRec_c->SetTitle(title);
+  ptRecc->SetTitle(title);
 
-  ptRec_c->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRec_c);
+  ptRecc->SetBit(TH1::kLogX);
+  aFolderObj->Add(ptRecc);
 
   // rec efficiency vs pid vs pt
   
@@ -1153,17 +1166,17 @@ void AliPerformanceEff::Analyse()
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *ptRecEle = fEffSecHisto->Projection(2);
-  TH1D *ptRecEle_c = (TH1D*)ptRecEle->Clone();
-  ptRecEle_c->Divide(ptRecEle,ptAllEle,1,1,"B");
-  ptRecEle_c->SetName("ptRecEffEle");
+  TH1D *ptRecElec = (TH1D*)ptRecEle->Clone();
+  ptRecElec->Divide(ptRecEle,ptAllEle,1,1,"B");
+  ptRecElec->SetName("ptRecEffEle");
 
-  ptRecEle_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
-  ptRecEle_c->GetYaxis()->SetTitle("efficiency");
+  ptRecElec->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
+  ptRecElec->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (electrons)",fEffSecHisto->GetAxis(2)->GetTitle());
-  ptRecEle_c->SetTitle(title);
+  ptRecElec->SetTitle(title);
 
-  ptRecEle_c->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecEle_c);
+  ptRecElec->SetBit(TH1::kLogX);
+  aFolderObj->Add(ptRecElec);
 
   //
 
@@ -1174,17 +1187,17 @@ void AliPerformanceEff::Analyse()
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *ptRecPi = fEffSecHisto->Projection(2);
-  TH1D *ptRecPi_c = (TH1D*)ptRecPi->Clone();
-  ptRecPi_c->Divide(ptRecPi,ptAllPi,1,1,"B");
-  ptRecPi_c->SetName("ptRecEffPi");
+  TH1D *ptRecPic = (TH1D*)ptRecPi->Clone();
+  ptRecPic->Divide(ptRecPi,ptAllPi,1,1,"B");
+  ptRecPic->SetName("ptRecEffPi");
 
-  ptRecPi_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
-  ptRecPi_c->GetYaxis()->SetTitle("efficiency");
+  ptRecPic->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
+  ptRecPic->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (pions)",fEffSecHisto->GetAxis(2)->GetTitle());
-  ptRecPi_c->SetTitle(title);
+  ptRecPic->SetTitle(title);
 
-  ptRecPi_c->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecPi_c);
+  ptRecPic->SetBit(TH1::kLogX);
+  aFolderObj->Add(ptRecPic);
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffSecHisto->GetAxis(3)->SetRangeUser(3.,3.); // kaons
@@ -1193,18 +1206,18 @@ void AliPerformanceEff::Analyse()
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *ptRecK = fEffSecHisto->Projection(2);
 
-  TH1D *ptRecK_c = (TH1D*)ptRecK->Clone();
-  ptRecK_c->Divide(ptRecK,ptAllK,1,1,"B");
-  ptRecK_c->SetName("ptRecEffK");
+  TH1D *ptRecKc = (TH1D*)ptRecK->Clone();
+  ptRecKc->Divide(ptRecK,ptAllK,1,1,"B");
+  ptRecKc->SetName("ptRecEffK");
 
-  ptRecK_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
-  ptRecK_c->GetYaxis()->SetTitle("efficiency");
+  ptRecKc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
+  ptRecKc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (kaons)",fEffSecHisto->GetAxis(2)->GetTitle());
-  ptRecK_c->SetTitle(title);
+  ptRecKc->SetTitle(title);
 
 
-  ptRecK_c->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecK_c);
+  ptRecKc->SetBit(TH1::kLogX);
+  aFolderObj->Add(ptRecKc);
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffSecHisto->GetAxis(3)->SetRangeUser(4.,4.); // protons
@@ -1212,17 +1225,17 @@ void AliPerformanceEff::Analyse()
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *ptRecP = fEffSecHisto->Projection(2);
-  TH1D *ptRecP_c = (TH1D*)ptRecP->Clone();
-  ptRecP_c->Divide(ptRecP,ptAllP,1,1,"B");
-  ptRecP_c->SetName("ptRecEffP");
+  TH1D *ptRecPc = (TH1D*)ptRecP->Clone();
+  ptRecPc->Divide(ptRecP,ptAllP,1,1,"B");
+  ptRecPc->SetName("ptRecEffP");
 
-  ptRecP_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
-  ptRecP_c->GetYaxis()->SetTitle("efficiency");
+  ptRecPc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
+  ptRecPc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (protons)",fEffSecHisto->GetAxis(2)->GetTitle());
-  ptRecP_c->SetTitle(title);
+  ptRecPc->SetTitle(title);
 
-  ptRecP_c->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecP_c);
+  ptRecPc->SetBit(TH1::kLogX);
+  aFolderObj->Add(ptRecPc);
 
   // findable efficiency vs pt
 
@@ -1235,17 +1248,17 @@ void AliPerformanceEff::Analyse()
   fEffSecHisto->GetAxis(5)->SetRangeUser(1.,1.);
 
   TH1D *ptRecF = fEffSecHisto->Projection(2); // rec findable
-  TH1D *ptRecF_c = (TH1D*)ptRecF->Clone();
-  ptRecF_c->Divide(ptRecF,ptAllF,1,1,"B");
-  ptRecF_c->SetName("ptRecEffF");
+  TH1D *ptRecFc = (TH1D*)ptRecF->Clone();
+  ptRecFc->Divide(ptRecF,ptAllF,1,1,"B");
+  ptRecFc->SetName("ptRecEffF");
 
-  ptRecF_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
-  ptRecF_c->GetYaxis()->SetTitle("efficiency");
+  ptRecFc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
+  ptRecFc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (findable)",fEffSecHisto->GetAxis(2)->GetTitle());
-  ptRecF_c->SetTitle(title);
+  ptRecFc->SetTitle(title);
 
-  ptRecF_c->SetBit(TH1::kLogX);
-  aFolderObj->Add(ptRecF_c);
+  ptRecFc->SetBit(TH1::kLogX);
+  aFolderObj->Add(ptRecFc);
 
   //
   // efficiency vs eta
@@ -1258,16 +1271,16 @@ void AliPerformanceEff::Analyse()
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.);  // reconstructed 
   TH1D *etaRec = fEffSecHisto->Projection(0);
-  TH1D *etaRec_c = (TH1D*)etaRec->Clone();
-  etaRec_c->Divide(etaRec,etaAll,1,1,"B");
-  etaRec_c->SetName("etaRecEff");
+  TH1D *etaRecc = (TH1D*)etaRec->Clone();
+  etaRecc->Divide(etaRec,etaAll,1,1,"B");
+  etaRecc->SetName("etaRecEff");
 
-  etaRec_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
-  etaRec_c->GetYaxis()->SetTitle("efficiency");
+  etaRecc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
+  etaRecc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency",fEffSecHisto->GetAxis(0)->GetTitle());
-  etaRec_c->SetTitle(title);
+  etaRecc->SetTitle(title);
 
-  aFolderObj->Add(etaRec_c);
+  aFolderObj->Add(etaRecc);
 
   // rec efficiency vs pid vs eta
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.); 
@@ -1277,16 +1290,16 @@ void AliPerformanceEff::Analyse()
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *etaRecEle = fEffSecHisto->Projection(0);
-  TH1D *etaRecEle_c = (TH1D*)etaRecEle->Clone();
-  etaRecEle_c->Divide(etaRecEle,etaAllEle,1,1,"B");
-  etaRecEle_c->SetName("etaRecEffEle");
+  TH1D *etaRecElec = (TH1D*)etaRecEle->Clone();
+  etaRecElec->Divide(etaRecEle,etaAllEle,1,1,"B");
+  etaRecElec->SetName("etaRecEffEle");
 
-  etaRecEle_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
-  etaRecEle_c->GetYaxis()->SetTitle("efficiency");
+  etaRecElec->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
+  etaRecElec->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (electrons)",fEffSecHisto->GetAxis(0)->GetTitle());
-  etaRecEle_c->SetTitle(title);
+  etaRecElec->SetTitle(title);
 
-  aFolderObj->Add(etaRecEle_c);
+  aFolderObj->Add(etaRecElec);
 
   //
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.); 
@@ -1296,16 +1309,16 @@ void AliPerformanceEff::Analyse()
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *etaRecPi = fEffSecHisto->Projection(0);
-  TH1D *etaRecPi_c = (TH1D*)etaRecPi->Clone();
-  etaRecPi_c->Divide(etaRecPi,etaAllPi,1,1,"B");
-  etaRecPi_c->SetName("etaRecEffPi");
+  TH1D *etaRecPic = (TH1D*)etaRecPi->Clone();
+  etaRecPic->Divide(etaRecPi,etaAllPi,1,1,"B");
+  etaRecPic->SetName("etaRecEffPi");
 
-  etaRecPi_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
-  etaRecPi_c->GetYaxis()->SetTitle("efficiency");
+  etaRecPic->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
+  etaRecPic->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (pions)",fEffSecHisto->GetAxis(0)->GetTitle());
-  etaRecPi_c->SetTitle(title);
+  etaRecPic->SetTitle(title);
 
-  aFolderObj->Add(etaRecPi_c);
+  aFolderObj->Add(etaRecPic);
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffSecHisto->GetAxis(3)->SetRangeUser(3.,3.); // kaons
@@ -1314,17 +1327,17 @@ void AliPerformanceEff::Analyse()
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *etaRecK = fEffSecHisto->Projection(0);
 
-  TH1D *etaRecK_c = (TH1D*)etaRecK->Clone();
-  etaRecK_c->Divide(etaRecK,etaAllK,1,1,"B");
-  etaRecK_c->SetName("etaRecEffK");
+  TH1D *etaRecKc = (TH1D*)etaRecK->Clone();
+  etaRecKc->Divide(etaRecK,etaAllK,1,1,"B");
+  etaRecKc->SetName("etaRecEffK");
 
-  etaRecK_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
-  etaRecK_c->GetYaxis()->SetTitle("efficiency");
+  etaRecKc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
+  etaRecKc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (kaons)",fEffSecHisto->GetAxis(0)->GetTitle());
-  etaRecK_c->SetTitle(title);
+  etaRecKc->SetTitle(title);
 
 
-  aFolderObj->Add(etaRecK_c);
+  aFolderObj->Add(etaRecKc);
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffSecHisto->GetAxis(3)->SetRangeUser(4.,4.); // protons
@@ -1332,16 +1345,16 @@ void AliPerformanceEff::Analyse()
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *etaRecP = fEffSecHisto->Projection(0);
-  TH1D *etaRecP_c = (TH1D*)etaRecP->Clone();
-  etaRecP_c->Divide(etaRecP,etaAllP,1,1,"B");
-  etaRecP_c->SetName("etaRecEffP");
+  TH1D *etaRecPc = (TH1D*)etaRecP->Clone();
+  etaRecPc->Divide(etaRecP,etaAllP,1,1,"B");
+  etaRecPc->SetName("etaRecEffP");
 
-  etaRecP_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
-  etaRecP_c->GetYaxis()->SetTitle("efficiency");
+  etaRecPc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
+  etaRecPc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (protons)",fEffSecHisto->GetAxis(0)->GetTitle());
-  etaRecP_c->SetTitle(title);
+  etaRecPc->SetTitle(title);
 
-  aFolderObj->Add(etaRecP_c);
+  aFolderObj->Add(etaRecPc);
 
   // findable efficiency vs eta
 
@@ -1354,16 +1367,16 @@ void AliPerformanceEff::Analyse()
   fEffSecHisto->GetAxis(5)->SetRangeUser(1.,1.);
 
   TH1D *etaRecF = fEffSecHisto->Projection(0); // rec findable
-  TH1D *etaRecF_c = (TH1D*)etaRecF->Clone();
-  etaRecF_c->Divide(etaRecF,etaAllF,1,1,"B");
-  etaRecF_c->SetName("etaRecEffF");
+  TH1D *etaRecFc = (TH1D*)etaRecF->Clone();
+  etaRecFc->Divide(etaRecF,etaAllF,1,1,"B");
+  etaRecFc->SetName("etaRecEffF");
 
-  etaRecF_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
-  etaRecF_c->GetYaxis()->SetTitle("efficiency");
+  etaRecFc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
+  etaRecFc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (findable)",fEffSecHisto->GetAxis(0)->GetTitle());
-  etaRecF_c->SetTitle(title);
+  etaRecFc->SetTitle(title);
 
-  aFolderObj->Add(etaRecF_c);
+  aFolderObj->Add(etaRecFc);
 
   //
   // efficiency vs phi
@@ -1379,16 +1392,16 @@ void AliPerformanceEff::Analyse()
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.);  // reconstructed 
   TH1D *phiRec = fEffSecHisto->Projection(1);
-  TH1D *phiRec_c = (TH1D*)phiRec->Clone();
-  phiRec_c->Divide(phiRec,phiAll,1,1,"B");
-  phiRec_c->SetName("phiRecEff");
+  TH1D *phiRecc = (TH1D*)phiRec->Clone();
+  phiRecc->Divide(phiRec,phiAll,1,1,"B");
+  phiRecc->SetName("phiRecEff");
 
-  phiRec_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
-  phiRec_c->GetYaxis()->SetTitle("efficiency");
+  phiRecc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
+  phiRecc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency",fEffSecHisto->GetAxis(1)->GetTitle());
-  phiRec_c->SetTitle(title);
+  phiRecc->SetTitle(title);
 
-  aFolderObj->Add(phiRec_c);
+  aFolderObj->Add(phiRecc);
 
   // rec efficiency vs pid vs phi
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.); 
@@ -1398,16 +1411,16 @@ void AliPerformanceEff::Analyse()
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *phiRecEle = fEffSecHisto->Projection(1);
-  TH1D *phiRecEle_c = (TH1D*)phiRecEle->Clone();
-  phiRecEle_c->Divide(phiRecEle,phiAllEle,1,1,"B");
-  phiRecEle_c->SetName("phiRecEffEle");
+  TH1D *phiRecElec = (TH1D*)phiRecEle->Clone();
+  phiRecElec->Divide(phiRecEle,phiAllEle,1,1,"B");
+  phiRecElec->SetName("phiRecEffEle");
 
-  phiRecEle_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
-  phiRecEle_c->GetYaxis()->SetTitle("efficiency");
+  phiRecElec->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
+  phiRecElec->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (electrons)",fEffSecHisto->GetAxis(1)->GetTitle());
-  phiRecEle_c->SetTitle(title);
+  phiRecElec->SetTitle(title);
 
-  aFolderObj->Add(phiRecEle_c);
+  aFolderObj->Add(phiRecElec);
 
   //
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.); 
@@ -1417,16 +1430,16 @@ void AliPerformanceEff::Analyse()
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *phiRecPi = fEffSecHisto->Projection(1);
-  TH1D *phiRecPi_c = (TH1D*)phiRecPi->Clone();
-  phiRecPi_c->Divide(phiRecPi,phiAllPi,1,1,"B");
-  phiRecPi_c->SetName("phiRecEffPi");
+  TH1D *phiRecPic = (TH1D*)phiRecPi->Clone();
+  phiRecPic->Divide(phiRecPi,phiAllPi,1,1,"B");
+  phiRecPic->SetName("phiRecEffPi");
 
-  phiRecPi_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
-  phiRecPi_c->GetYaxis()->SetTitle("efficiency");
+  phiRecPic->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
+  phiRecPic->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (pions)",fEffSecHisto->GetAxis(1)->GetTitle());
-  phiRecPi_c->SetTitle(title);
+  phiRecPic->SetTitle(title);
 
-  aFolderObj->Add(phiRecPi_c);
+  aFolderObj->Add(phiRecPic);
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffSecHisto->GetAxis(3)->SetRangeUser(3.,3.); // kaons
@@ -1435,17 +1448,17 @@ void AliPerformanceEff::Analyse()
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *phiRecK = fEffSecHisto->Projection(1);
 
-  TH1D *phiRecK_c = (TH1D*)phiRecK->Clone();
-  phiRecK_c->Divide(phiRecK,phiAllK,1,1,"B");
-  phiRecK_c->SetName("phiRecEffK");
+  TH1D *phiRecKc = (TH1D*)phiRecK->Clone();
+  phiRecKc->Divide(phiRecK,phiAllK,1,1,"B");
+  phiRecKc->SetName("phiRecEffK");
 
-  phiRecK_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
-  phiRecK_c->GetYaxis()->SetTitle("efficiency");
+  phiRecKc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
+  phiRecKc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (kaons)",fEffSecHisto->GetAxis(1)->GetTitle());
-  phiRecK_c->SetTitle(title);
+  phiRecKc->SetTitle(title);
 
 
-  aFolderObj->Add(phiRecK_c);
+  aFolderObj->Add(phiRecKc);
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(0.,1.); 
   fEffSecHisto->GetAxis(3)->SetRangeUser(4.,4.); // protons
@@ -1453,16 +1466,16 @@ void AliPerformanceEff::Analyse()
 
   fEffSecHisto->GetAxis(4)->SetRangeUser(1.,1.); // reconstructed
   TH1D *phiRecP = fEffSecHisto->Projection(1);
-  TH1D *phiRecP_c = (TH1D*)phiRecP->Clone();
-  phiRecP_c->Divide(phiRecP,phiAllP,1,1,"B");
-  phiRecP_c->SetName("phiRecEffP");
+  TH1D *phiRecPc = (TH1D*)phiRecP->Clone();
+  phiRecPc->Divide(phiRecP,phiAllP,1,1,"B");
+  phiRecPc->SetName("phiRecEffP");
 
-  phiRecP_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
-  phiRecP_c->GetYaxis()->SetTitle("efficiency");
+  phiRecPc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
+  phiRecPc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (protons)",fEffSecHisto->GetAxis(1)->GetTitle());
-  phiRecP_c->SetTitle(title);
+  phiRecPc->SetTitle(title);
 
-  aFolderObj->Add(phiRecP_c);
+  aFolderObj->Add(phiRecPc);
 
   // findable efficiency vs phi
 
@@ -1475,16 +1488,16 @@ void AliPerformanceEff::Analyse()
   fEffSecHisto->GetAxis(5)->SetRangeUser(1.,1.);
 
   TH1D *phiRecF = fEffSecHisto->Projection(1); // rec findable
-  TH1D *phiRecF_c = (TH1D*)phiRecF->Clone();
-  phiRecF_c->Divide(phiRecF,phiAllF,1,1,"B");
-  phiRecF_c->SetName("phiRecEffF");
+  TH1D *phiRecFc = (TH1D*)phiRecF->Clone();
+  phiRecFc->Divide(phiRecF,phiAllF,1,1,"B");
+  phiRecFc->SetName("phiRecEffF");
 
-  phiRecF_c->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
-  phiRecF_c->GetYaxis()->SetTitle("efficiency");
+  phiRecFc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
+  phiRecFc->GetYaxis()->SetTitle("efficiency");
   sprintf(title,"%s vs %s","rec. efficiency (findable)",fEffSecHisto->GetAxis(1)->GetTitle());
-  phiRecF_c->SetTitle(title);
+  phiRecFc->SetTitle(title);
 
-  aFolderObj->Add(phiRecF_c);
+  aFolderObj->Add(phiRecFc);
   }
 
   // export objects to analysis folder
