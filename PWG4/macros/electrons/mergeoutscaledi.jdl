@@ -1,0 +1,8 @@
+Packages ={"VO_ALICE@ROOT::v5-24-00","VO_ALICE@APISCONFIG::V2.4"};
+
+Arguments = "27498605 histosscaled.root histosscaled-merged$2.root kread /alice/cern.ch/user/k/kread/$1/output/$2";
+Executable = "/alice/bin/mergerootfile";
+Email = "";
+OutputFile = "histosscaled-merged$2.root@ALICE::CERN::ALICEDISK";
+InputFile  = "LF:/alice/macros/mergerootfile.C";
+OutputDir  = "/alice/cern.ch/user/k/kread/$1/output/merged";
