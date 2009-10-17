@@ -212,67 +212,67 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
   fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("PHOS"));
   //  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("EMCAL"));
   //  while( fAltroRawStreamPtr->NextDDL() )
-  fAltroRawStreamPtr->NextDDL();
-  {
-    int cnt = 0;
-    while( fAltroRawStreamPtr->NextChannel()  )
-      { 
-	if(  fAltroRawStreamPtr->GetHWAddress() < 128 || ( fAltroRawStreamPtr->GetHWAddress() ^ 0x800) < 128 ) 
-	  {
-	    continue; 
-	  }
-	else
-	  {
-	    cnt ++;
-	    UShort_t* firstBunchPtr = 0;
-	    UShort_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
-	    
-	    if( fkDoPushRawData == true)
-	      {
-		fRawDataWriter->SetChannelId( chId );
-	      }
-	    while( fAltroRawStreamPtr->NextBunch() == true )
-	      {
-		nSamples = fAltroRawStreamPtr->GetBunchLength();
-		  
-		if( fkDoPushRawData == true)
-		  {
-		    //		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetStartTimeBin()  );
-		    fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
-		  }
-		firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
-	      }
-	      
-	    totSize += sizeof( AliHLTPHOSChannelDataStruct );
-	    if(totSize > size)
-	      {
-		HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
-		return -1;
-	      }
-
-	    fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
-	    fAnalyzerPtr->Evaluate(0, nSamples);  
-	   
-	    //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
+  if(fAltroRawStreamPtr->NextDDL())
+    {
+      int cnt = 0;
+      while( fAltroRawStreamPtr->NextChannel()  )
+	{ 
+	  if(  fAltroRawStreamPtr->GetHWAddress() < 128 || ( fAltroRawStreamPtr->GetHWAddress() ^ 0x800) < 128 ) 
 	    {
-	      channelDataPtr->fChannelID =  chId;
-	      channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
-		
-	      if( channelDataPtr->fEnergy > 70 )
+	      continue; 
+	    }
+	  else
+	    {
+	      cnt ++;
+	      UShort_t* firstBunchPtr = 0;
+	      UShort_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
+	    
+	      if( fkDoPushRawData == true)
 		{
-		  cout << __FILE__ << __LINE__ << "The energy is of  channel  "<< chId << "  is "  <<  channelDataPtr->fEnergy << endl;
+		  fRawDataWriter->SetChannelId( chId );
 		}
-		
-	      channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
-	      channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
-	      channelCount++;
-	      channelDataPtr++; // Updating position of the free output.
-	    }   
-	  }
-	fRawDataWriter->NewChannel();
-      }
-  }
+	      while( fAltroRawStreamPtr->NextBunch() == true )
+		{
+		  nSamples = fAltroRawStreamPtr->GetBunchLength();
+		  
+		  if( fkDoPushRawData == true)
+		    {
+		      //		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetStartTimeBin()  );
+		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
+		    }
+		  firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
+		}
+	      
+	      totSize += sizeof( AliHLTPHOSChannelDataStruct );
+	      if(totSize > size)
+		{
+		  HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
+		  return -1;
+		}
 
+	      fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
+	      fAnalyzerPtr->Evaluate(0, nSamples);  
+	   
+	      //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
+	      {
+		channelDataPtr->fChannelID =  chId;
+		channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
+		
+		if( channelDataPtr->fEnergy > 70 )
+		  {
+		    cout << __FILE__ << __LINE__ << "The energy is of  channel  "<< chId << "  is "  <<  channelDataPtr->fEnergy << endl;
+		  }
+		
+		channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
+		channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
+		channelCount++;
+		channelDataPtr++; // Updating position of the free output.
+	      }   
+	    }
+	  fRawDataWriter->NewChannel();
+	}
+    }
+  
   //Writing the header
   channelDataHeaderPtr->fNChannels   =  channelCount;
   channelDataHeaderPtr->fAlgorithm   = fAlgorithm;
