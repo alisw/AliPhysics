@@ -19,5 +19,6 @@
 #pragma link C++ class AliAnaCalorimeterQA+;
 #pragma link C++ class AliAnaNeutralMeson+;
 #pragma link C++ class AliAnaElectron+;
+#pragma link C++ class AliAnalysisTaskTaggedPhotons+;
 
 #endif
