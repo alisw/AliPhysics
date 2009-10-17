@@ -4,6 +4,7 @@
   MOOD - Monitor Of On-line Data and Detector Debugger for ALICE Experiment
 ******************************************************************************/
 
+#include <RConfig.h>
 #include <TError.h>
 #include <TSystem.h>
 #include <TSysEvtHandler.h>
@@ -34,10 +35,10 @@ int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFi
  t->SetBranchAddress("rawevent", &rootEvent);
 
  FILE *dateFile;
-#ifdef __APPLE__
- if(!(dateFile=fopen(dateFileName, "wb"))) {
-#else
+#if defined(R__SEEK64)
  if(!(dateFile=fopen64(dateFileName, "wb"))) {
+#else
+ if(!(dateFile=fopen(dateFileName, "wb"))) {
 #endif
   cerr << "Error opening DATE file" << endl;
   return(1);
