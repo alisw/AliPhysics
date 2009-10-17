@@ -9,6 +9,8 @@
 //                      Implementation of   Class AliESDZDC
 //   This is a class that summarizes the ZDC data for the ESD   
 //   Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch 
+//   *** 15/10/2009 Scaler added to AliESDZDC class ***
+//   *** Scaler format:  32 floats from VME scaler  ***
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
@@ -82,6 +84,12 @@ public:
   void  SetZNCCentroid(Float_t centrCoord[2])
   	   {for(Int_t i=0; i<2; i++) fZNCCentrCoord[i] = centrCoord[i];}
 
+  UInt_t GetZDCScaler(Int_t i)  const {return fVMEScaler[i];}
+  const UInt_t* GetZDCScaler()  const {return fVMEScaler;}
+  
+  void SetZDCScaler(UInt_t count[32]) 
+       {for(Int_t k=0; k<32; k++) fVMEScaler[k] = count[k];}
+
   void    Reset();
   void    Print(const Option_t *opt=0) const;
 
@@ -111,7 +119,9 @@ private:
   Double32_t   fZNCCentrCoord[2]; // Coordinates of the centroid over ZNA
   UInt_t       fESDQuality;	  // flags from reconstruction
   //
-  ClassDef(AliESDZDC,10)
+  UInt_t fVMEScaler[32]; // counts from VME scaler
+
+  ClassDef(AliESDZDC,11)
 };
 
 #endif

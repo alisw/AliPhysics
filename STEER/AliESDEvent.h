@@ -174,6 +174,7 @@ public:
 		 Int_t nPartC, Double_t b, Double_t bA, Double_t bC, UInt_t recoflag)
   {fESDZDC->SetZDC(n1Energy, p1Energy, em1Energy, em2Energy, n2Energy, p2Energy, 
    participants, nPartA, nPartC, b, bA, bC,  recoflag);}
+  void    SetZDCScaler(UInt_t *counts) {fESDZDC->SetZDCScaler(counts);}
 
 
   // FMD
