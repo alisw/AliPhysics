@@ -15,13 +15,16 @@
 
 rm -rf *.root *.dat *.log fort* hlt hough raw* recraw/*.root recraw/*.log
 aliroot -b -q $1sim.C      2>&1 | tee sim.log
+mv syswatch.log simwatch.log
 aliroot -b -q $1rec.C      2>&1 | tee rec.log
+mv syswatch.log recwatch.log
 aliroot -b -q ${ALICE_ROOT}/STEER/CheckESD.C 2>&1 | tee check.log
 aliroot -b -q ${ALICE_ROOT}/STEER/CreateAODfromESD.C 2>&1 | tee aod.log
 
 cd recraw
 ln -s ../raw.root
 aliroot -b -q rec.C      2>&1 | tee rec.log
+mv syswatch.log ../rawwatch.log
 aliroot -b -q ${ALICE_ROOT}/STEER/CreateAODfromESD.C\(\"AliESDs.root\",\"AliAODs.root\",kFALSE\) 2>&1 | tee aod.log
 
 
