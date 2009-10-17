@@ -373,7 +373,7 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
 
         fgLayers[i].InsertCluster(new AliITSRecPoint(*c));
       }
-      clusters->Delete();
+      clusters->Clear();
       // add dead zone "virtual" cluster in SPD, if there is a cluster within 
       // zwindow cm from the dead zone      
       if (i<2 && AliITSReconstructor::GetRecoParam()->GetAddVirtualClustersInDeadZone()) {
@@ -414,8 +414,6 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
     fgLayers[i].ResetRoad(); //road defined by the cluster density
     fgLayers[i].SortClusters();
   }
-
-  dummy.Clear();
 
   // check whether we have to skip some layers
   SetForceSkippingOfLayer();
