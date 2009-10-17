@@ -10,7 +10,7 @@ SRCS = PartCorrDep/AliAnaCaloTrigger.cxx \
        PartCorrDep/AliAnaPhoton.cxx PartCorrDep/AliAnaPi0.cxx  \
        PartCorrDep/AliAnaPi0EbE.cxx PartCorrDep/AliAnaChargedParticles.cxx \
        PartCorrDep/AliAnaCalorimeterQA.cxx PartCorrDep/AliAnaNeutralMeson.cxx \
-       PartCorrDep/AliAnaElectron.cxx
+       PartCorrDep/AliAnaElectron.cxx  PartCorrDep/AliAnalysisTaskTaggedPhotons.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

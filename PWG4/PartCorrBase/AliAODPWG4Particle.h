@@ -80,6 +80,9 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual Bool_t  GetChargedBit(void)    const {return fCharged ; }
   virtual Int_t   DistToBad()            const {return fBadDist ; } 
   virtual Int_t   GetInputFileIndex()    const {return fInputFileIndex ; }
+  virtual Int_t   GetFiducialArea()      const {return fFidArea;}
+
+  virtual Bool_t   IsTagged()    const {return fTagged ; }
  
   virtual void SetLabel(Int_t l)         { fLabel = l ; }
   virtual void SetCaloLabel (Int_t a, Int_t b) { fCaloLabel [0] = a; fCaloLabel [1] = b  ; }
@@ -87,6 +90,7 @@ class AliAODPWG4Particle : public AliVParticle {
   
   virtual void SetPdg(Int_t pdg)         { fPdg = pdg ; }
   virtual void SetTag(Int_t tag)         { fTag = tag ; }
+  virtual void SetTagged(Bool_t tag)     { fTagged = tag ; }
   virtual void SetBtag(Int_t tag)        { fBtag = tag ; }
   virtual void SetDetector(TString d)    { fDetector = d ; }
   virtual void SetDispBit(Bool_t disp)   { fDisp = disp ; } 
@@ -94,11 +98,13 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual void SetChargedBit(Bool_t ch)  { fCharged = ch ; }
   virtual void SetDistToBad(Int_t dist)  { fBadDist=dist ;} 
   virtual void SetInputFileIndex(Int_t i){ fInputFileIndex = i;}
+  virtual void SetFiducialArea(Int_t a)  {fFidArea=a;}
 	
   TLorentzVector * Momentum() const                { return fMomentum ; }
   virtual void     SetMomentum(TLorentzVector *lv) { fMomentum = lv ; }
   
   Bool_t IsPIDOK(const Int_t ipid, const Int_t pdgwanted) const;
+  Double_t GetPairMass(AliAODPWG4Particle * p)const{ return (*(p->fMomentum)+*fMomentum).M(); }
   
  private:
   TLorentzVector* fMomentum;  // Photon 4-momentum vector
@@ -112,18 +118,20 @@ class AliAODPWG4Particle : public AliVParticle {
   Bool_t     fDisp ;         // Dispersion bit
   Bool_t     fTof ;          // TOF bit
   Bool_t     fCharged ;      // Charged bit
+  Bool_t     fTagged ;       // If photon tagged (pi0 decay)
   Int_t      fBadDist ;      // Distance to bad module in module units
+  Int_t      fFidArea ;      // Type of fiducial area hit by this photon
   Int_t      fInputFileIndex;// 0, standard input, 1 first input added. 
 	                         // Only possible one for now, more in future?
 	
-  ClassDef(AliAODPWG4Particle,2);
+  ClassDef(AliAODPWG4Particle,3);
 };
 
 inline Double_t AliAODPWG4Particle::Phi() const
 {
   // Return phi
   Double_t phi = fMomentum->Phi();
-  if (phi < 0.) phi += 2. * TMath::Pi();
+  if (phi < 0.) phi += TMath::TwoPi();
   return phi;
 }
 
