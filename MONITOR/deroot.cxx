@@ -34,7 +34,11 @@ int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFi
  t->SetBranchAddress("rawevent", &rootEvent);
 
  FILE *dateFile;
+#ifdef __APPLE__
+ if(!(dateFile=fopen(dateFileName, "wb"))) {
+#else
  if(!(dateFile=fopen64(dateFileName, "wb"))) {
+#endif
   cerr << "Error opening DATE file" << endl;
   return(1);
  }
