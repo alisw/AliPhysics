@@ -6,7 +6,7 @@
 // Usage: 
 // After previously using mymerger.C to merge each PYHIA hard bin,
 // do the following to download one file per pt bin:
-// aliensh; cp histoss* file:       
+// aliensh; cd <production name>/output/merged; cp histoss* file:       
 // Then, adjust binlist below to reflect which histograms are non-empty.
 // Then, locally:
 // root -b -x MergeFileInBins.C
