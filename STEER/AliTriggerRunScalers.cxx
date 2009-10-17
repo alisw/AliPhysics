@@ -90,6 +90,7 @@ AliTriggerRunScalers::AliTriggerRunScalers(const AliTriggerRunScalers &run) :
  fScalersRecordESD()
 {
 // copy constructor
+  fClassIndex.Set(run.fClassIndex.GetSize());
 for (Int_t i = 0; i < run.fClassIndex.GetSize(); i++) {
     if (run.fClassIndex[i]) fClassIndex.AddAt(run.fClassIndex[i], i);
   }
