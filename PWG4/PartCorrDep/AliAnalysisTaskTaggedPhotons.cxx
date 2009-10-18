@@ -19,42 +19,43 @@
 // Analysis for Tagged Photons
 // Prepares all necessary histograms for calculation of 
 // the yield of pi0 decay photon in calorimeter:
+// Marks photons which makes pi0 with some other and
+// fill invariant mass distributions for estimate background below pi0
+// peak so that estimate proportion of fake pairs. 
+// Fills as well controll MC histograms with clasification of the photon origin 
+// and check of the ptoportion of truly tagged photons.
 // 
 //
 //*-- Dmitry Blau 
 //////////////////////////////////////////////////////////////////////////////
 
-#include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
-#include <TROOT.h>
-#include <TLegend.h> 
-#include <TNtuple.h>
-#include <TVector3.h> 
 #include <TFile.h>
+#include <TROOT.h>
 
 #include "AliAnalysisTaskTaggedPhotons.h" 
 #include "AliAnalysisManager.h"
+#include "AliESDVertex.h"
 #include "AliESDEvent.h" 
 #include "AliESDCaloCluster.h" 
 #include "AliAODPWG4Particle.h"
+#include "AliAnalysisManager.h"
 #include "AliLog.h"
-#include "AliESDVertex.h"
 #include "AliPHOSGeoUtils.h"
 #include "TGeoManager.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliMCEventHandler.h"
-#include "AliAnalysisManager.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
 
 //______________________________________________________________________________
 AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() : AliAnalysisTaskSE(),
-  fgeom(0x0),fStack(0x0),fDebug(0),fPHOS(1),
+  fgeom(0x0),fStack(0x0),fPHOS(1),
   fPhotonId(1.0),fMinEnergyCut(0.4),
-  fPi0Mean_p0(0.1377),fPi0Mean_p1(-0.002566),fPi0Mean_p2(0.001216),fPi0Mean_p3(-0.0001256),
-  fPi0Sigma_p0(0.004508),fPi0Sigma_p1(0.005497),fPi0Sigma_p2(0.00000006),
+  fPi0MeanP0(0.1377),fPi0MeanP1(-0.002566),fPi0MeanP2(0.001216),fPi0MeanP3(-0.0001256),
+  fPi0SigmaP0(0.004508),fPi0SigmaP1(0.005497),fPi0SigmaP2(0.00000006),
   fZmax(0.),fZmin(0.),fPhimax(0.),fPhimin(0.),
   fOutputList(0x0),fEventList(0x0),
   fhRecAll(0x0),fhRecAllArea1(0x0),fhRecAllArea2(0x0),fhRecAllArea3(0x0),
@@ -75,10 +76,10 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() : AliAnalysisTaskSE
 //______________________________________________________________________________
 AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) : 
   AliAnalysisTaskSE(name),
-  fgeom(0x0),fStack(0x0),fDebug(0),fPHOS(1),
+  fgeom(0x0),fStack(0x0),fPHOS(1),
   fPhotonId(1.0),fMinEnergyCut(0.4),
-  fPi0Mean_p0(0.1377),fPi0Mean_p1(-0.002566),fPi0Mean_p2(0.001216),fPi0Mean_p3(-0.0001256),
-  fPi0Sigma_p0(0.004508),fPi0Sigma_p1(0.005497),fPi0Sigma_p2(0.00000006),
+  fPi0MeanP0(0.1377),fPi0MeanP1(-0.002566),fPi0MeanP2(0.001216),fPi0MeanP3(-0.0001256),
+  fPi0SigmaP0(0.004508),fPi0SigmaP1(0.005497),fPi0SigmaP2(0.00000006),
   fZmax(0.),fZmin(0.),fPhimax(0.),fPhimin(0.),
   fOutputList(0x0),fEventList(0x0),
   fhRecAll(0x0),fhRecAllArea1(0x0),fhRecAllArea2(0x0),fhRecAllArea3(0x0),
@@ -103,10 +104,10 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
 //____________________________________________________________________________
 AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTaskTaggedPhotons& ap) :
   AliAnalysisTaskSE(ap.GetName()),  
-  fgeom(0x0),fStack(0x0),fDebug(ap.fDebug),fPHOS(ap.fPHOS),
+  fgeom(0x0),fStack(0x0),fPHOS(ap.fPHOS),
   fPhotonId(ap.fPhotonId),fMinEnergyCut(ap.fMinEnergyCut),
-  fPi0Mean_p0(ap.fPi0Mean_p0),fPi0Mean_p1(ap.fPi0Mean_p1),fPi0Mean_p2(ap.fPi0Mean_p2),fPi0Mean_p3(ap.fPi0Mean_p3),
-  fPi0Sigma_p0(ap.fPi0Sigma_p0),fPi0Sigma_p1(ap.fPi0Sigma_p1),fPi0Sigma_p2(ap.fPi0Sigma_p2),
+  fPi0MeanP0(ap.fPi0MeanP0),fPi0MeanP1(ap.fPi0MeanP1),fPi0MeanP2(ap.fPi0MeanP2),fPi0MeanP3(ap.fPi0MeanP3),
+  fPi0SigmaP0(ap.fPi0SigmaP0),fPi0SigmaP1(ap.fPi0SigmaP1),fPi0SigmaP2(ap.fPi0SigmaP2),
   fZmax(ap.fZmax),fZmin(ap.fZmin),fPhimax(ap.fPhimax),fPhimin(ap.fPhimin),
   fOutputList(0x0),fEventList(0x0),
   fhRecAll(0x0),fhRecAllArea1(0x0),fhRecAllArea2(0x0),fhRecAllArea3(0x0),
@@ -878,16 +879,16 @@ outfile->Close();
 
 }
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskTaggedPhotons::IsInPi0Band(Double_t m, Double_t pt)
+Bool_t AliAnalysisTaskTaggedPhotons::IsInPi0Band(Double_t m, Double_t pt)const
 {
   //Parameterization of the pi0 peak region
-  Double_t mpi0_mean = fPi0Mean_p0 + fPi0Mean_p1 * pt + fPi0Mean_p2 * pt*pt + fPi0Mean_p3 * pt*pt*pt;
-  Double_t mpi0_sigma = TMath::Sqrt(fPi0Sigma_p0 * fPi0Sigma_p0 / pt + fPi0Sigma_p1 * fPi0Sigma_p1 + fPi0Sigma_p2 * fPi0Sigma_p2 / pt / pt);
+  Double_t mpi0mean = fPi0MeanP0 + fPi0MeanP1 * pt + fPi0MeanP2 * pt*pt + fPi0MeanP3 * pt*pt*pt;
+  Double_t mpi0sigma = TMath::Sqrt(fPi0SigmaP0 * fPi0SigmaP0 / pt + fPi0SigmaP1 * fPi0SigmaP1 + fPi0SigmaP2 * fPi0SigmaP2 / pt / pt);
  
-  return (m>mpi0_mean-2*mpi0_sigma && m>mpi0_mean+2*mpi0_sigma) ;
+  return (m>mpi0mean-2*mpi0sigma && m<mpi0mean+2*mpi0sigma) ;
 }
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskTaggedPhotons::IsSamePi0(AliAODPWG4Particle *p1, AliAODPWG4Particle *p2){
+Bool_t AliAnalysisTaskTaggedPhotons::IsSamePi0(const AliAODPWG4Particle *p1, const AliAODPWG4Particle *p2)const{
   //Looks through parents and finds if there was commont pi0 among ancestors
 
   if(!fStack)
@@ -910,7 +911,7 @@ Bool_t AliAnalysisTaskTaggedPhotons::IsSamePi0(AliAODPWG4Particle *p1, AliAODPWG
   return kFALSE ;
 }
 //______________________________________________________________________________
-Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(Float_t * pos){
+Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(Float_t * pos)const{
   //calculates in which kind of fiducial area photon hit
   if(fPHOS){
     Double_t phi=TMath::ATan2(pos[1],pos[0]) ;
