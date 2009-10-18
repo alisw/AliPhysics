@@ -26,6 +26,7 @@
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
 
+#include "AliLog.h"
 #include "AliMagF.h"
 #include "AliTracker.h"
 #include "AliGeomManager.h"
@@ -224,7 +225,7 @@ Double_t AliTracker::MeanMaterialBudget(const Double_t *start, const Double_t *e
   for (Int_t i=0;i<6;i++) bparam[i]=0;
 
   if (!gGeoManager) {
-    printf("ERROR: no TGeo\n");
+    AliErrorClass("No TGeo\n");
     return 0.;
   }
   //
@@ -243,7 +244,6 @@ Double_t AliTracker::MeanMaterialBudget(const Double_t *start, const Double_t *e
   // Initialize start point and direction
   TGeoNode *currentnode = 0;
   TGeoNode *startnode = gGeoManager->InitTrack(start, dir);
-  //printf("%s length=%f\n",gGeoManager->GetPath(),length);
   if (!startnode) {
     AliErrorClass(Form("start point out of geometry: x %f, y %f, z %f",
 		  start[0],start[1],start[2]));
@@ -290,7 +290,7 @@ Double_t AliTracker::MeanMaterialBudget(const Double_t *start, const Double_t *e
     if (nzero>3) {
       // This means navigation has problems on one boundary
       // Try to cross by making a small step
-      printf("ERROR: cannot cross boundary\n");
+      AliErrorClass("Cannot cross boundary\n");
       mparam[0] = bparam[0]/step;
       mparam[1] = bparam[1];
       mparam[2] = bparam[2]/step;
@@ -312,13 +312,11 @@ Double_t AliTracker::MeanMaterialBudget(const Double_t *start, const Double_t *e
     if (snext>=length) break;
     if (!currentnode) break;
     length -= snext;
-    //printf("%s snext=%f length=%f\n", currentnode->GetName(),snext,length);
     material = currentnode->GetVolume()->GetMedium()->GetMaterial();
     lparam[0] = material->GetDensity();
     lparam[1]  = material->GetRadLen();
     lparam[2]  = material->GetA();
     lparam[3]  = material->GetZ();
-    //printf("       %f %f %f %f\n",lparam[0],lparam[1],lparam[2],lparam[3]); 
     lparam[5]   = lparam[3]/lparam[2];
     if (material->IsMixture()) {
       TGeoMixture * mixture = (TGeoMixture*)material;
@@ -332,7 +330,6 @@ Double_t AliTracker::MeanMaterialBudget(const Double_t *start, const Double_t *e
     }
     gGeoManager->FindNextBoundaryAndStep(length, kFALSE);
     snext = gGeoManager->GetStep();
-    //printf("snext %f\n",snext);
   }
   mparam[0] = bparam[0]/step;
   mparam[1] = bparam[1];
