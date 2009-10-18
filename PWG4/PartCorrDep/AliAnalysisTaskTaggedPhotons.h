@@ -4,26 +4,26 @@
  * See cxx source for full Copyright notice     */
 //______________________________________________________________________________
 // Analysis for PHOS Tagged Photons 
+// marks photons making pi0 with any other photon
+// and calculates necessary corrections for fake pairs and
+// decay partners escaped acceptance. If MC info is present 
+// fills set of controll histograms.
 //
 //*-- Dmitry Blau 
 //////////////////////////////////////////////////////////////////////////////
 
-#include <TTree.h> 
 #include "AliAnalysisTaskSE.h"  
 
 class AliStack ; 
 class AliESDEvent ; 
 //class AliAODEvent ; 
-class TNtuple ;
 class TH1D ; 
 class TH1I ; 
 class TH2D ;
 class TH2F ;
 class TH3D ;
 class AliPHOSGeoUtils;
-class TFile;
 class AliAODPWG4Particle;
-class AliCaloTrackReader;
 
 class AliAnalysisTaskTaggedPhotons : public AliAnalysisTaskSE {
 
@@ -48,40 +48,39 @@ public:
 
   //Parameterization of pi0 peak position
   void SetPi0MeanParameters(Float_t p0, Float_t p1, Float_t p2, Float_t p3)
-      { fPi0Mean_p0 = p0; fPi0Mean_p1 = p1; fPi0Mean_p2 = p2; fPi0Mean_p3 = p3;}
+      { fPi0MeanP0 = p0; fPi0MeanP1 = p1; fPi0MeanP2 = p2; fPi0MeanP3 = p3;}
   //Parameterization of pi0 peak width    
-  void SetPi0SigmaParameters(Float_t p0, Float_t p1, Float_t p2){ fPi0Sigma_p0 = p0; fPi0Sigma_p1 = p1;fPi0Sigma_p2 = p2; }
+  void SetPi0SigmaParameters(Float_t p0, Float_t p1, Float_t p2){ fPi0SigmaP0 = p0; fPi0SigmaP1 = p1;fPi0SigmaP2 = p2; }
 
 protected:
   Float_t GetPhotonId() const { return fPhotonId ; }
-  Int_t   GetFiducialArea(Float_t * pos) ; //what kind of fiducial area hit the photon
-  Bool_t  IsSamePi0(AliAODPWG4Particle *p1, AliAODPWG4Particle *p2); //Check MC genealogy
-  Bool_t  IsInPi0Band(Double_t m, Double_t pt); //Check if invariant mass is within pi0 peak
+  Int_t   GetFiducialArea(Float_t * pos)const ; //what kind of fiducial area hit the photon
+  Bool_t  IsSamePi0(const AliAODPWG4Particle *p1, const AliAODPWG4Particle *p2) const; //Check MC genealogy
+  Bool_t  IsInPi0Band(Double_t m, Double_t pt)const; //Check if invariant mass is within pi0 peak
 
 private:
 
   AliPHOSGeoUtils *fgeom;        //!PHOS/EMCAL geometry
   AliStack        *fStack ;      //!Pointer to MC stack
-  Int_t            fDebug ;      //Debug flag 1-few prints,2-more, 3-all prints
   Bool_t           fPHOS ;       //Choose Calorimeter: PHOS/EMCAL
 
   // task parameters
   Float_t   fPhotonId ;          // threshold for photon identification (Bayesian)
   Float_t   fMinEnergyCut;       // min energy of partner photon
-  Float_t   fPi0Mean_p0;         // Parameterization of pi0 mass:
-  Float_t   fPi0Mean_p1;         // m_mean_pi0 = p[0] + p[1]*pt + p[2]*pt^2 + p[3]*pt^3
-  Float_t   fPi0Mean_p2;         //
-  Float_t   fPi0Mean_p3;         //
+  Float_t   fPi0MeanP0;          // Parameterization of pi0 mass:
+  Float_t   fPi0MeanP1;          // m_mean_pi0 = p[0] + p[1]*pt + p[2]*pt^2 + p[3]*pt^3
+  Float_t   fPi0MeanP2;          // m_mean_pi0 = p[0] + p[1]*pt + p[2]*pt^2 + p[3]*pt^3
+  Float_t   fPi0MeanP3;          // m_mean_pi0 = p[0] + p[1]*pt + p[2]*pt^2 + p[3]*pt^3
 
-  Float_t   fPi0Sigma_p0;        // sigma_m_pi0 = sqrt ( p0*p0/x + p1*p1 + p2*p2/x/x)
-  Float_t   fPi0Sigma_p1;
-  Float_t   fPi0Sigma_p2;
+  Float_t   fPi0SigmaP0;        // sigma_m_pi0 = sqrt ( p0*p0/x + p1*p1 + p2*p2/x/x)
+  Float_t   fPi0SigmaP1;      // sigma_m_pi0 = sqrt ( p0*p0/x + p1*p1 + p2*p2/x/x)
+  Float_t   fPi0SigmaP2;      // sigma_m_pi0 = sqrt ( p0*p0/x + p1*p1 + p2*p2/x/x)
 
   //Fiducial area parameters
-  Float_t fZmax ;
-  Float_t fZmin ;
-  Float_t fPhimax ;
-  Float_t fPhimin ;
+  Float_t fZmax ;               //Rectangular
+  Float_t fZmin ;               //area
+  Float_t fPhimax ;             //covered by
+  Float_t fPhimin ;             //full calorimeter
 
   TList   * fOutputList ;        //! output data list
   TList   * fEventList ;         //!  event list for mixed InvMass
