@@ -12,6 +12,7 @@
 #include <TStopwatch.h>
 #include <TFile.h>
 #include <TMath.h>
+#include <TVectorD.h>
 #include "AliMatrixSq.h"
 #include "AliSymMatrix.h"
 #include "AliRectMatrix.h"
@@ -449,6 +450,8 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   }
   double vl;
   //
+  Int_t maxLocUsed = 0;
+  //
   for (int ip=nPoints;ip--;) {  // Transfer the measurement records to matrices
     double  resid  = fRecord->GetValue( refLoc[ip]-1 );
     double  weight = fRecord->GetValue( refGlo[ip]-1 );    
@@ -467,10 +470,13 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     // Symmetric matrix, don't bother j>i coeffs
     for (int i=nrefLoc[ip];i--;) {         // Fill local matrix and vector
       fVecBLoc[ indLoc[i] ] += weight*resid*derLoc[i];
+      if (indLoc[i]>maxLocUsed) maxLocUsed = indLoc[i];  
       for (int j=i+1;j--;) matCLoc(indLoc[i] ,indLoc[j]) += weight*derLoc[i]*derLoc[j];
-    }   
+    }
     //
   } // end of the transfer of the measurement record to matrices
+  //
+  matCLoc.SetSizeUsed(++maxLocUsed);   // data with B=0 may use less than declared nLocals 
   //
   // first try to solve by faster Cholesky decomposition, then by Gaussian elimination
   if (!matCLoc.SolveChol(fVecBLoc,kTRUE)) {
@@ -484,7 +490,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   //
   // If requested, store the track params and errors
   //  printf("locfit: "); for (int i=0;i<fNLocPar;i++) printf("%+e |",fVecBLoc[i]); printf("\n");
-  if (localParams) for (int i=fNLocPar; i--;) {
+  if (localParams) for (int i=maxLocUsed; i--;) {
       localParams[2*i]   = fVecBLoc[i];
       localParams[2*i+1] = TMath::Sqrt(TMath::Abs(matCLoc.QueryDiag(i)));
     }
@@ -522,7 +528,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     nEq++;                        // number of equations			
   } // end of Calculate residuals
   //
-  int nDoF = nEq-fNLocPar;
+  int nDoF = nEq-maxLocUsed;
   lChi2 = (nDoF>0) ? lChi2/nDoF : 0;  // Chi^2/dof  
   //
   if (fNStdDev != 0 && nDoF>0 && lChi2 > Chi2DoFLim(fNStdDev,nDoF)*fChi2CutFactor) { // check final chi2
@@ -581,7 +587,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
       int iCIDg = fGlo2CGlo[iIDg];  // compressed Index of index          
       if (iCIDg == -1) {
 	Double_t *rowGL = matCGloLoc(nGloInFit);
-	for (int k=fNLocPar;k--;) rowGL[k] = 0.0;  // reset the row
+	for (int k=maxLocUsed;k--;) rowGL[k] = 0.0;  // reset the row
 	iCIDg = fGlo2CGlo[iIDg] = nGloInFit;
 	fCGlo2Glo[nGloInFit++] = iIDg;
       }
@@ -603,7 +609,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     //
     vl = 0;
     Double_t *rowGLIDg =  matCGloLoc(iCIDg);
-    for (int kl=0;kl<fNLocPar;kl++) if (rowGLIDg[kl]) vl += rowGLIDg[kl]*fVecBLoc[kl];
+    for (int kl=0;kl<maxLocUsed;kl++) if (rowGLIDg[kl]) vl += rowGLIDg[kl]*fVecBLoc[kl];
     if  (vl!=0) fVecBGlo[iIDg] -= fLocFitAdd ? vl : -vl;
     //
     int nfill = 0;
@@ -612,7 +618,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
       //
       vl = 0;
       Double_t *rowGLJDg =  matCGloLoc(jCIDg);
-      for (int kl=0;kl<fNLocPar;kl++) {
+      for (int kl=0;kl<maxLocUsed;kl++) {
 	// diag terms
 	if ( (vll=rowGLIDg[kl]*rowGLJDg[kl])!=0 ) vl += matCLoc.QueryDiag(kl)*vll;
 	//
@@ -736,7 +742,7 @@ Int_t AliMillePede2::GlobalFitIteration()
   for (Long_t i=0;i<ndr;i++) {
     ReadRecordData(i);
     LocalFit();
-    if ( (i%int(0.1*ndr)) == 0) printf("%.1f%% of local fits done\n", double(100.*i)/ndr);
+    if ( (i%int(0.2*ndr)) == 0) printf("%.1f%% of local fits done\n", double(100.*i)/ndr);
   }
   swt.Stop();
   printf("%ld local fits done: ", ndr);
@@ -792,6 +798,7 @@ Int_t AliMillePede2::GlobalFitIteration()
   // add large number to diagonal of fixed params  
   //
   for (int i=fNGloPar;i--;) { // // Reset row and column of fixed params and add 1/sig^2 to free ones
+    //    printf("#%3d : Nproc : %5d   grp: %d\n",i,fProcPnt[i],fParamGrID[i]);
     if (fProcPnt[i]<1) {
       fNGloFix++; 
       fVecBGlo[i] = 0.;

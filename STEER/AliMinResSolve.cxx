@@ -1,6 +1,19 @@
+/**********************************************************************************************/
+/* General class for solving large system of linear equations                                 */
+/* Includes MINRES, FGMRES methods as well as a few precondiotiong methods                    */
+/*                                                                                            */ 
+/* Author: ruben.shahoyan@cern.ch                                                             */
+/*                                                                                            */ 
+/**********************************************************************************************/
+
 #include "AliMinResSolve.h"
 #include "AliLog.h"
+#include "AliMatrixSq.h"
+#include "AliMatrixSparse.h"
+#include "AliSymBDMatrix.h"
 #include <TStopwatch.h>
+#include <float.h>
+#include <TMath.h>
 
 using namespace std;
 
@@ -11,8 +24,10 @@ AliMinResSolve::AliMinResSolve() :
 fSize(0),fPrecon(0),fMatrix(0),fRHS(0),
   fPVecY(0),fPVecR1(0),fPVecR2(0),fPVecV(0),fPVecW(0),fPVecW1(0),fPVecW2(0),
   fPvv(0),fPvz(0),fPhh(0),
-  fPrecDiag(0),fPrecAux(0),fMatL(0),fMatU(0)
-{}
+  fDiagLU(0),fMatL(0),fMatU(0),fMatBD(0)
+{
+  // default constructor
+}
 
 //______________________________________________________
 AliMinResSolve::AliMinResSolve(const AliMinResSolve& src) : 
@@ -20,34 +35,42 @@ AliMinResSolve::AliMinResSolve(const AliMinResSolve& src) :
   fSize(src.fSize),fPrecon(src.fPrecon),fMatrix(src.fMatrix),fRHS(src.fRHS),
   fPVecY(0),fPVecR1(0),fPVecR2(0),fPVecV(0),fPVecW(0),fPVecW1(0),fPVecW2(0),
   fPvv(0),fPvz(0),fPhh(0),
-  fPrecDiag(0),fPrecAux(0),fMatL(0),fMatU(0)
-{}
+  fDiagLU(0),fMatL(0),fMatU(0),fMatBD(0)
+{
+  // copy constructor
+}
 
 //______________________________________________________
 AliMinResSolve::AliMinResSolve(const AliMatrixSq *mat, const TVectorD* rhs) :
-  fSize(mat->GetSize()),fPrecon(0),fMatrix(mat),fRHS(rhs->GetMatrixArray()),
+  fSize(mat->GetSize()),fPrecon(0),fMatrix((AliMatrixSq*)mat),fRHS((double*)rhs->GetMatrixArray()),
   fPVecY(0),fPVecR1(0),fPVecR2(0),fPVecV(0),fPVecW(0),fPVecW1(0),fPVecW2(0),
   fPvv(0),fPvz(0),fPhh(0),
-  fPrecDiag(0),fPrecAux(0),fMatL(0),fMatU(0)
-{}
+  fDiagLU(0),fMatL(0),fMatU(0),fMatBD(0)
+{
+  // copy accepting equation
+}
 
 //______________________________________________________
 AliMinResSolve::AliMinResSolve(const AliMatrixSq *mat, const double* rhs) :
-  fSize(mat->GetSize()),fPrecon(0),fMatrix(mat),fRHS(rhs),
+  fSize(mat->GetSize()),fPrecon(0),fMatrix((AliMatrixSq*)mat),fRHS((double*)rhs),
   fPVecY(0),fPVecR1(0),fPVecR2(0),fPVecV(0),fPVecW(0),fPVecW1(0),fPVecW2(0),
   fPvv(0),fPvz(0),fPhh(0),
-  fPrecDiag(0),fPrecAux(0),fMatL(0),fMatU(0)
-{}
+  fDiagLU(0),fMatL(0),fMatU(0),fMatBD(0)
+{
+  // copy accepting equation
+}
 
 //______________________________________________________
 AliMinResSolve::~AliMinResSolve()
 {
+  // destructor
   ClearAux();
 }
 
 //______________________________________________________
 AliMinResSolve& AliMinResSolve::operator=(const AliMinResSolve& src)
 {
+  // assignment op.
   if (this != &src) {
     fSize    = src.fSize;
     fPrecon  = src.fPrecon;
@@ -60,27 +83,13 @@ AliMinResSolve& AliMinResSolve::operator=(const AliMinResSolve& src)
 //_______________________________________________________________
 Int_t AliMinResSolve::BuildPrecon(Int_t prec)
 {
-  const Double_t kTiny = 1E-12;
+  // preconditioner building
+  //  const Double_t kTiny = 1E-12;
   fPrecon = prec;
   //
-  if (fPrecon == kPreconDiag) return 0;     // nothing to do
-  //
-  else if (fPrecon == kPreconDILU) {
-    fPrecDiag = new Double_t[ fSize ];
-    fPrecAux  = new Double_t[ fSize ];
-    //
-    // copy inverse diagonal
-    for (int i=0;i<fSize;i++) fPrecDiag[i] = fMatrix->QueryDiag(i);
-    //
-    for (int i=0;i<fSize;i++) {
-      fPrecDiag[i] = TMath::Abs(fPrecDiag[i])>kTiny  ? 1./fPrecDiag[i] : 1./TMath::Sign(kTiny,fPrecDiag[i]);
-      for (int j=i+1;j<fSize;j++) {
-	double vl = fMatrix->Query(j,i);
-	if (vl!=0) fPrecDiag[j] -= fPrecDiag[i]*vl*vl; 
-      }
-    }
-    return 0;
-  } // precon DILU
+  if (fPrecon>=kPreconBD && fPrecon<kPreconILU0) { // band diagonal decomposition
+    return BuildPreconBD(fPrecon - kPreconBD);     // with halfbandwidth + diagonal = fPrecon
+  }
   //
   if (fPrecon>=kPreconILU0 && fPrecon<=kPreconILU10) {
     if (fMatrix->InheritsFrom("AliMatrixSparse")) return BuildPreconILUK(fPrecon-kPreconILU0);
@@ -90,10 +99,10 @@ Int_t AliMinResSolve::BuildPrecon(Int_t prec)
   return -1;
 }
 
-
 //________________________________ FGMRES METHODS ________________________________
 Bool_t AliMinResSolve::SolveFGMRES(TVectorD& VecSol,Int_t precon,int itnlim,double rtol,int nkrylov)
 {
+  // solve by fgmres
   return SolveFGMRES(VecSol.GetMatrixArray(),precon,itnlim,rtol,nkrylov);
 }
 
@@ -156,7 +165,7 @@ Bool_t AliMinResSolve::SolveFGMRES(double* VecSol,Int_t precon,int itnlim,double
     for (l=fSize;l--;) beta += fPvv[0][l]*fPvv[0][l];
     beta = TMath::Sqrt(beta);
     //
-    if (beta == 0.0) break;                                      // success? 
+    if (beta < epsmac) break;                                      // success? 
     t = 1.0 / beta;
     //--------------------   normalize:  fPvv[0] = fPvv[0] / beta 
     for (l=fSize;l--;) fPvv[0][l] *= t;
@@ -190,7 +199,7 @@ Bool_t AliMinResSolve::SolveFGMRES(double* VecSol,Int_t precon,int itnlim,double
       // -------------------- h_{j+1,j} = ||w||_{2}
       for (t=0,l=fSize;l--;) t += fPvv[i1][l]*fPvv[i1][l]; t = TMath::Sqrt(t); 
       fPhh[i][i1] = t;
-      if (t != 0.0) for (t=1./t, l=0; l<fSize; l++) fPvv[i1][l] *= t;  //  v_{j+1} = w / h_{j+1,j}
+      if (t > 0) for (t=1./t, l=0; l<fSize; l++) fPvv[i1][l] *= t;  //  v_{j+1} = w / h_{j+1,j}
       //
       // done with modified gram schimdt and arnoldi step
       // now  update factorization of fPhh
@@ -207,7 +216,7 @@ Bool_t AliMinResSolve::SolveFGMRES(double* VecSol,Int_t precon,int itnlim,double
       //
       // if gamma is zero then any small value will do...
       // will affect only residual estimate
-      if (gam == 0.0) gam = epsmac;
+      if (gam < epsmac) gam = epsmac;
       //  get  next plane rotation
       fPVecR1[i] = fPhh[i][i]/gam;
       fPVecR2[i]  = fPhh[i][i1]/gam;
@@ -255,6 +264,7 @@ Bool_t AliMinResSolve::SolveFGMRES(double* VecSol,Int_t precon,int itnlim,double
 //________________________________ MINRES METHODS ________________________________
 Bool_t AliMinResSolve::SolveMinRes(TVectorD& VecSol,Int_t precon,int itnlim,double rtol)
 {
+  // solve by minres
   return SolveMinRes(VecSol.GetMatrixArray(), precon, itnlim, rtol);
 }
 
@@ -297,8 +307,8 @@ Bool_t AliMinResSolve::SolveMinRes(double *VecSol,Int_t precon,int itnlim,double
   // ------------------------ initialization  ---------------------->>>>
   memset(VecSol,0,fSize*sizeof(double));
   int status=0, itn=0;
-  double Anorm = 0;
-  double Acond = 0;
+  double normA = 0;
+  double condA = 0;
   double ynorm = 0;
   double rnorm = 0;
   double gam,gmax=1,gmin=1,gbar,oldeps,epsa,epsx,epsr,diag, delta,phi,denom,z;
@@ -323,7 +333,7 @@ Bool_t AliMinResSolve::SolveMinRes(double *VecSol,Int_t precon,int itnlim,double
     return kFALSE;
   }
   //
-  if (beta1 == 0) {
+  if (beta1 < eps) {
     AliInfo(Form("RHS is zero or is the nullspace of the Preconditioner: Solution is {0}"));
     ClearAux();
     return kTRUE;
@@ -446,11 +456,11 @@ Bool_t AliMinResSolve::SolveMinRes(double *VecSol,Int_t precon,int itnlim,double
     rhs2   =       -  epsln * z;
     //
     //   Estimate various norms and test for convergence.
-    Anorm  = TMath::Sqrt( tnorm2 );
+    normA  = TMath::Sqrt( tnorm2 );
     ynorm  = TMath::Sqrt( ynorm2 );
-    epsa   = Anorm * eps;
-    epsx   = Anorm * ynorm * eps;
-    epsr   = Anorm * ynorm * rtol;
+    epsa   = normA * eps;
+    epsx   = normA * ynorm * eps;
+    epsr   = normA * ynorm * rtol;
     diag   = gbar;
     if (diag == 0) diag = epsa;
     //
@@ -463,14 +473,17 @@ Bool_t AliMinResSolve::SolveMinRes(double *VecSol,Int_t precon,int itnlim,double
       where H is the tridiagonal matrix from Lanczos with one
       extra row, beta(k+1) e_k^T.
     */
-    Acond  = gmax / gmin;
+    condA  = gmax / gmin;
     //
     // See if any of the stopping criteria are satisfied.
     // In rare cases, istop is already -1 from above (Abar = const*I).
     //
+    AliInfo(Form("#%5d |qnrm: %+.2e Anrm:%+.2e Cnd:%+.2e Rnrm:%+.2e Ynrm:%+.2e EpsR:%+.2e EpsX:%+.2e Beta1:%+.2e",
+		 itn,qrnorm, normA,condA,rnorm,ynorm,epsr,epsx,beta1));
+
     if (status == 0) {
       if (itn    >= itnlim    ) {status = 5; AliInfo(Form("%d iterations limit exceeded",itnlim));}
-      if (Acond  >= 0.1/eps   ) {status = 4; AliInfo(Form("Matrix condition nymber %e exceeds limit %e",Acond,0.1/eps));}
+      if (condA  >= 0.1/eps   ) {status = 4; AliInfo(Form("Matrix condition nymber %e exceeds limit %e",condA,0.1/eps));}
       if (epsx   >= beta1     ) {status = 3; AliInfo(Form("Approximate convergence"));}
       if (qrnorm <= epsx      ) {status = 2; AliInfo(Form("Converged within machine precision"));}
       if (qrnorm <= epsr      ) {status = 1; AliInfo(Form("Converged"));}
@@ -488,7 +501,7 @@ Bool_t AliMinResSolve::SolveMinRes(double *VecSol,Int_t precon,int itnlim,double
 	       "Condition :  %+e\n"
 	       "Res.Norm  :  %+e\n"
 	       "Sol.Norm  :  %+e",
-	       timer.CpuTime(),status,itn,Anorm,Acond,rnorm,ynorm));
+	       timer.CpuTime(),status,itn,normA,condA,rnorm,ynorm));
   //
   return status>=0 && status<=3;
   //
@@ -497,6 +510,7 @@ Bool_t AliMinResSolve::SolveMinRes(double *VecSol,Int_t precon,int itnlim,double
 //______________________________________________________________
 void AliMinResSolve::ApplyPrecon(const TVectorD& vecRHS, TVectorD& vecOut) const
 {
+  // apply precond.
   ApplyPrecon(vecRHS.GetMatrixArray(), vecOut.GetMatrixArray());
 }
 
@@ -505,26 +519,9 @@ void AliMinResSolve::ApplyPrecon(const double* vecRHS, double* vecOut) const
 {
   // Application of the preconditioner matrix:
   // implicitly defines the matrix solving the M*VecOut = VecRHS 
-  const Double_t kTiny = 1E-12;
-  if (fPrecon==kPreconDiag) {
-    for (int i=fSize;i--;) {
-      double d = fMatrix->QueryDiag(i);
-      vecOut[i] =  vecRHS[i]/(TMath::Abs(d)>kTiny ? d : kTiny);
-    }
-    //    return;
-  }
-  //
-  else if (fPrecon==kPreconDILU) {
-    for (int i=0;i<fSize;i++) {
-      double el = 0;
-      for (int j=i;j--;) {double vl = fMatrix->Query(i,j);if (vl!=0) el += fPrecAux[j]*vl;}
-      fPrecAux[i] = fPrecDiag[i]*(vecRHS[i]-el); 
-    }
-    for (int i=fSize;i--;) {
-      double el = 0;
-      for (int j=i+1;j<fSize;j++) {double vl = fMatrix->Query(i,j);if (vl!=0) el += vl*vecOut[j];}
-      vecOut[i] = fPrecAux[i] - fPrecDiag[i]*el;
-    }
+  //  const Double_t kTiny = 1E-12;
+  if (fPrecon>=kPreconBD && fPrecon<kPreconILU0) { // band diagonal decomposition
+    fMatBD->Solve(vecRHS,vecOut);
     //    return;
   }
   //
@@ -542,7 +539,7 @@ void AliMinResSolve::ApplyPrecon(const double* vecRHS, double* vecOut) const
       AliVectorSparse &rowUi = *fMatU->GetRow(i);
       int n = rowUi.GetNElems();
       for(int j=0;j<n;j++ ) vecOut[i] -= vecOut[ rowUi.GetIndex(j) ] * rowUi.GetElem(j);
-      vecOut[i] *= fPrecDiag[i];
+      vecOut[i] *= fDiagLU[i];
     }
     //
   }
@@ -553,6 +550,7 @@ void AliMinResSolve::ApplyPrecon(const double* vecRHS, double* vecOut) const
 //___________________________________________________________
 Bool_t AliMinResSolve::InitAuxMinRes()
 {
+  // init auxiliary space for minres
   try {
     fPVecY   = new double[fSize];   
     fPVecR1  = new double[fSize];   
@@ -577,6 +575,7 @@ Bool_t AliMinResSolve::InitAuxMinRes()
 //___________________________________________________________
 Bool_t AliMinResSolve::InitAuxFGMRES(int nkrylov)
 {
+  // init auxiliary space for fgmres
   try {
     fPvv     = new double*[nkrylov+1];
     fPvz     = new double*[nkrylov];
@@ -604,6 +603,7 @@ Bool_t AliMinResSolve::InitAuxFGMRES(int nkrylov)
 //___________________________________________________________
 void AliMinResSolve::ClearAux()
 {
+  // clear aux. space
   if (fPVecY)      delete[] fPVecY;  fPVecY   = 0;
   if (fPVecR1)     delete[] fPVecR1; fPVecR1  = 0; 
   if (fPVecR2)     delete[] fPVecR2; fPVecR2  = 0; 
@@ -611,10 +611,41 @@ void AliMinResSolve::ClearAux()
   if (fPVecW)      delete[] fPVecW;  fPVecW   = 0;
   if (fPVecW1)     delete[] fPVecW1; fPVecW1  = 0;
   if (fPVecW2)     delete[] fPVecW2; fPVecW2  = 0;
-  if (fPrecDiag)   delete[] fPrecDiag; fPrecDiag = 0;
-  if (fPrecAux)    delete[] fPrecAux; fPrecAux = 0;
+  if (fDiagLU)   delete[] fDiagLU; fDiagLU = 0;
   if (fMatL)       delete fMatL; fMatL = 0;
   if (fMatU)       delete fMatU; fMatU = 0;
+  if (fMatBD)      delete fMatBD; fMatBD = 0;
+}
+
+//___________________________________________________________
+Int_t  AliMinResSolve::BuildPreconBD(Int_t hwidth)
+{
+  // build preconditioner
+  AliInfo(Form("Building Band-Diagonal preconditioner of half-width = %d",hwidth));
+  fMatBD = new AliSymBDMatrix( fMatrix->GetSize(), hwidth );
+  //
+  // fill the band-diagonal part of the matrix
+  if (fMatrix->InheritsFrom("AliMatrixSparse")) {
+    for (int ir=fMatrix->GetSize();ir--;) {
+      int jmin = TMath::Max(0,ir-hwidth);
+      AliVectorSparse& irow = *((AliMatrixSparse*)fMatrix)->GetRow(ir);
+      for(int j=irow.GetNElems();j--;) {
+	int jind = irow.GetIndex(j);
+	if (jind<jmin) break;
+	(*fMatBD)(ir,jind) = irow.GetElem(j);
+      }
+    }
+  }
+  else {
+    for (int ir=fMatrix->GetSize();ir--;) {
+      int jmin = TMath::Max(0,ir-hwidth);
+      for(int jr=jmin;jr<=ir;jr++) (*fMatBD)(ir,jr) = fMatrix->Query(ir,jr);
+    }
+  }
+  //
+  fMatBD->DecomposeLDLT();
+  //
+  return 0;
 }
 
 //___________________________________________________________
@@ -627,14 +658,14 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
    *----------------------------------------------------------------------------*/
   //
   AliInfo(Form("Building ILU%d preconditioner",lofM));
-  AliMatrixSparse* Matrix = (AliMatrixSparse*)fMatrix;
   //
   TStopwatch sw; sw.Start();
   fMatL = new AliMatrixSparse(fSize);
   fMatU = new AliMatrixSparse(fSize);
   fMatL->SetSymmetric(kFALSE);
   fMatU->SetSymmetric(kFALSE);
-  fPrecDiag = new Double_t[fSize];
+  fDiagLU = new Double_t[fSize];
+  AliMatrixSparse* matrix = (AliMatrixSparse*)fMatrix;
   //
   // symbolic factorization to calculate level of fill index arrays
   if ( PreconILUKsymb(lofM)<0 ) {
@@ -647,7 +678,7 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
   //
   for(int i=0; i<fSize; i++ ) {            // beginning of main loop
     if ( (i%int(0.1*fSize)) == 0) {
-      printf("BuildPrecon: row %d of %d\n",i,fSize);
+      AliInfo(Form("BuildPrecon: row %d of %d",i,fSize));
       sw.Stop();
       sw.Print();
       sw.Start(kFALSE);
@@ -655,7 +686,7 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
     /* setup array jw[], and initial i-th row */
     AliVectorSparse& rowLi = *fMatL->GetRow(i);
     AliVectorSparse& rowUi = *fMatU->GetRow(i);
-    AliVectorSparse& rowM  = *Matrix->GetRow(i);
+    AliVectorSparse& rowM  = *matrix->GetRow(i);
     //
     for(int j=rowLi.GetNElems(); j--;) {  // initialize L part
       int col = rowLi.GetIndex(j);
@@ -663,7 +694,7 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
       rowLi.GetElem(j) = 0.;   // do we need this ?
     }
     jw[i] = i;
-    fPrecDiag[i] = 0;      // initialize diagonal
+    fDiagLU[i] = 0;      // initialize diagonal
     //
     for(int j=rowUi.GetNElems();j--;)   {  // initialize U part
       int col = rowUi.GetIndex(j);
@@ -672,15 +703,15 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
     }
     // copy row from csmat into L,U D
     for(int j=rowM.GetNElems(); j--;) {  // L and D part 
-      if (rowM.GetElem(j)==0) continue;
+      if (TMath::Abs(rowM.GetElem(j))<DBL_MIN) continue;
       int col = rowM.GetIndex(j);         // (the original matrix stores only lower triangle)
       if( col < i )   rowLi.GetElem(jw[col]) = rowM.GetElem(j); 
-      else if(col==i) fPrecDiag[i] = rowM.GetElem(j);
+      else if(col==i) fDiagLU[i] = rowM.GetElem(j);
       else rowUi.GetElem(jw[col]) = rowM.GetElem(j);
     }
-    if (fMatrix->IsSymmetric()) for (int col=i+1;col<fSize;col++) {      // part of the row I on the right of diagonal is stored as 
-	double vl = fMatrix->Query(col,i);    // the lower part of the column I
-	if (vl==0) continue;                   
+    if (matrix->IsSymmetric()) for (int col=i+1;col<fSize;col++) {      // part of the row I on the right of diagonal is stored as 
+	double vl = matrix->Query(col,i);    // the lower part of the column I
+	if (TMath::Abs(vl)<DBL_MIN) continue;                   
 	rowUi.GetElem(jw[col]) = vl;
       }
     //
@@ -688,7 +719,7 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
     for(int j=0; j<rowLi.GetNElems(); j++) {
       int jrow = rowLi.GetIndex(j);
       // get the multiplier for row to be eliminated (jrow)
-      rowLi.GetElem(j) *= fPrecDiag[jrow];
+      rowLi.GetElem(j) *= fDiagLU[jrow];
       //
       // combine current row and row jrow
       AliVectorSparse& rowUj = *fMatU->GetRow(jrow);
@@ -697,7 +728,7 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
 	int jpos = jw[col];
 	if( jpos == -1 ) continue;
 	if( col < i )   rowLi.GetElem(jpos) -= rowLi.GetElem(j) * rowUj.GetElem(k);
-	else if(col==i) fPrecDiag[i] -= rowLi.GetElem(j) * rowUj.GetElem(k);
+	else if(col==i) fDiagLU[i] -= rowLi.GetElem(j) * rowUj.GetElem(k);
 	else            rowUi.GetElem(jpos) -= rowLi.GetElem(j) * rowUj.GetElem(k);
       }
     }
@@ -706,19 +737,19 @@ Int_t  AliMinResSolve::BuildPreconILUK(Int_t lofM)
     jw[i] = -1;
     for(int j=rowUi.GetNElems(); j--;) jw[ rowUi.GetIndex(j) ] = -1;
     //
-    if( fPrecDiag[i] == 0 ) {
+    if( TMath::Abs(fDiagLU[i])<DBL_MIN ) {
       AliInfo(Form("Fatal error in ILIk: Zero diagonal found..."));
       delete[] jw;
       return -1;
     }
-    fPrecDiag[i] = 1.0 / fPrecDiag[i];
+    fDiagLU[i] = 1.0 / fDiagLU[i];
   }
   //
   delete[] jw;
   //
   sw.Stop();
   AliInfo(Form("ILU%d preconditioner OK, CPU time: %.1f sec",lofM,sw.CpuTime()));
-  AliInfo(Form("Densities: M %f L %f U %f",fMatrix->GetDensity(),fMatL->GetDensity(),fMatU->GetDensity()));
+  AliInfo(Form("Densities: M %f L %f U %f",matrix->GetDensity(),fMatL->GetDensity(),fMatU->GetDensity()));
   //
   return 0;
 }
@@ -739,7 +770,7 @@ Int_t  AliMinResSolve::BuildPreconILUKDense(Int_t lofM)
   fMatU = new AliMatrixSparse(fSize);
   fMatL->SetSymmetric(kFALSE);
   fMatU->SetSymmetric(kFALSE);
-  fPrecDiag = new Double_t[fSize];
+  fDiagLU = new Double_t[fSize];
   //
   // symbolic factorization to calculate level of fill index arrays
   if ( PreconILUKsymbDense(lofM)<0 ) {
@@ -761,7 +792,7 @@ Int_t  AliMinResSolve::BuildPreconILUKDense(Int_t lofM)
       rowLi.GetElem(j) = 0.;   // do we need this ?
     }
     jw[i] = i;
-    fPrecDiag[i] = 0;      // initialize diagonal
+    fDiagLU[i] = 0;      // initialize diagonal
     //
     for(int j=rowUi.GetNElems();j--;)   {  // initialize U part
       int col = rowUi.GetIndex(j);
@@ -771,16 +802,16 @@ Int_t  AliMinResSolve::BuildPreconILUKDense(Int_t lofM)
     // copy row from csmat into L,U D
     for(int j=fSize; j--;) {  // L and D part 
       double vl = fMatrix->Query(i,j);
-      if (vl==0) continue;
+      if (TMath::Abs(vl)<DBL_MIN) continue;
       if( j < i )   rowLi.GetElem(jw[j]) = vl;
-      else if(j==i) fPrecDiag[i] = vl;
+      else if(j==i) fDiagLU[i] = vl;
       else rowUi.GetElem(jw[j]) = vl;
     }
     // eliminate previous rows
     for(int j=0; j<rowLi.GetNElems(); j++) {
       int jrow = rowLi.GetIndex(j);
       // get the multiplier for row to be eliminated (jrow)
-      rowLi.GetElem(j) *= fPrecDiag[jrow];
+      rowLi.GetElem(j) *= fDiagLU[jrow];
       //
       // combine current row and row jrow
       AliVectorSparse& rowUj = *fMatU->GetRow(jrow);
@@ -789,7 +820,7 @@ Int_t  AliMinResSolve::BuildPreconILUKDense(Int_t lofM)
 	int jpos = jw[col];
 	if( jpos == -1 ) continue;
 	if( col < i )   rowLi.GetElem(jpos) -= rowLi.GetElem(j) * rowUj.GetElem(k);
-	else if(col==i) fPrecDiag[i] -= rowLi.GetElem(j) * rowUj.GetElem(k);
+	else if(col==i) fDiagLU[i] -= rowLi.GetElem(j) * rowUj.GetElem(k);
 	else            rowUi.GetElem(jpos) -= rowLi.GetElem(j) * rowUj.GetElem(k);
       }
     }
@@ -798,12 +829,12 @@ Int_t  AliMinResSolve::BuildPreconILUKDense(Int_t lofM)
     jw[i] = -1;
     for(int j=rowUi.GetNElems(); j--;) jw[ rowUi.GetIndex(j) ] = -1;
     //
-    if( fPrecDiag[i] == 0 ) {
+    if( TMath::Abs(fDiagLU[i])<DBL_MIN ) {
       AliInfo(Form("Fatal error in ILIk: Zero diagonal found..."));
       delete[] jw;
       return -1;
     }
-    fPrecDiag[i] = 1.0 / fPrecDiag[i];
+    fDiagLU[i] = 1.0 / fDiagLU[i];
   }
   //
   delete[] jw;
@@ -825,9 +856,9 @@ Int_t  AliMinResSolve::PreconILUKsymb(Int_t lofM)
    *----------------------------------------------------------------------------*/
   //
   TStopwatch sw;
-  printf("PreconILUKsymb>>\n");
+  AliInfo("PreconILUKsymb>>");
+  AliMatrixSparse* matrix = (AliMatrixSparse*)fMatrix; 
   sw.Start();
-  AliMatrixSparse* Matrix = (AliMatrixSparse*)fMatrix;
   //
   UChar_t **ulvl=0,*levls=0;
   UShort_t *jbuf=0;
@@ -853,12 +884,12 @@ Int_t  AliMinResSolve::PreconILUKsymb(Int_t lofM)
   for(int i=0; i<fSize; i++) {
     int incl = 0;
     int incu = i; 
-    AliVectorSparse& row = *Matrix->GetRow(i);
+    AliVectorSparse& row = *matrix->GetRow(i);
     //
     // assign lof = 0 for matrix elements
     for(int j=0;j<row.GetNElems(); j++) {
       int col = row.GetIndex(j);
-      if (row.GetElem(j)==0) continue;  // !!!! matrix is sparse but sometimes 0 appears 
+      if (TMath::Abs(row.GetElem(j))<DBL_MIN) continue;  // !!!! matrix is sparse but sometimes 0 appears 
       if (col<i) {                      // L-part
 	jbuf[incl] = col;
 	levls[incl] = 0;
@@ -870,8 +901,8 @@ Int_t  AliMinResSolve::PreconILUKsymb(Int_t lofM)
 	iw[col] = incu++;
       }
     }
-    if (Matrix->IsSymmetric()) for (int col=i+1;col<fSize;col++) { // U-part of symmetric matrix
-	if (fMatrix->Query(col,i)==0) continue;    // Due to the symmetry  == matrix(i,col)
+    if (matrix->IsSymmetric()) for (int col=i+1;col<fSize;col++) { // U-part of symmetric matrix
+	if (TMath::Abs(matrix->Query(col,i))<DBL_MIN) continue;    // Due to the symmetry  == matrix(i,col)
 	jbuf[incu] = col;
 	levls[incu] = 0;
 	iw[col] = incu++;
@@ -949,7 +980,7 @@ Int_t  AliMinResSolve::PreconILUKsymb(Int_t lofM)
   fMatU->SortIndices();
   sw.Stop();
   sw.Print();
-  printf("PreconILUKsymb<<\n");
+  AliInfo("PreconILUKsymb<<");
   return 0;
 }
 
@@ -990,7 +1021,7 @@ Int_t  AliMinResSolve::PreconILUKsymbDense(Int_t lofM)
     //
     // assign lof = 0 for matrix elements
     for(int j=0;j<fSize; j++) {
-      if (fMatrix->Query(i,j)==0) continue;
+      if (TMath::Abs(fMatrix->Query(i,j))<DBL_MIN) continue;
       if (j<i) {                      // L-part
 	jbuf[incl] = j;
 	levls[incl] = 0;

@@ -1,10 +1,15 @@
+/**********************************************************************************************/
+/* Abstract class for matrix used for millepede2 operation.                                   */
+/* Author: ruben.shahoyan@cern.ch                                                             */
+/*                                                                                            */ 
+/**********************************************************************************************/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
 //
 #include "TClass.h"
 #include "TMath.h"
-#include "TVectorD.h"
 #include "AliMatrixSq.h"
 //
 

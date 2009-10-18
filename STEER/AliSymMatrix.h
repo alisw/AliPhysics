@@ -1,5 +1,17 @@
 #ifndef ALISYMMATRIX_H
 #define ALISYMMATRIX_H
+/**********************************************************************************************/
+/* Fast symmetric matrix with dynamically expandable size.                                    */
+/* Only part can be used for matrix operations. It is defined as:                             */ 
+/* fNCols: rows built by constructor (GetSizeBooked)                                          */ 
+/* fNRows: number of rows added dynamically (automatically added on assignment to row)        */ 
+/*         GetNRowAdded                                                                       */ 
+/* fNRowIndex: total size (fNCols+fNRows), GetSize                                            */ 
+/* fRowLwb   : actual size to used for given operation, by default = total size, GetSizeUsed  */ 
+/*                                                                                            */ 
+/* Author: ruben.shahoyan@cern.ch                                                             */
+/*                                                                                            */ 
+/**********************************************************************************************/
 
 #include <string.h>
 #include <TObject.h>
@@ -20,8 +32,12 @@ class AliSymMatrix : public AliMatrixSq {
   void          Reset();
   //
   Int_t         GetSize()                                        const {return fNrowIndex;}
+  Int_t         GetSizeUsed()                                    const {return fRowLwb;}
+  Int_t         GetSizeBooked()                                  const {return fNcols;}
+  Int_t         GetSizeAdded()                                   const {return fNrows;}
   Float_t       GetDensity()                                     const;
   AliSymMatrix& operator=(const AliSymMatrix& src);
+  AliSymMatrix& operator+=(const AliSymMatrix& src);
   Double_t      operator()(Int_t rown, Int_t coln)               const;
   Double_t&     operator()(Int_t rown, Int_t coln);
   //
@@ -32,6 +48,7 @@ class AliSymMatrix : public AliMatrixSq {
   //
   void          Print(Option_t* option="")                       const;
   void          AddRows(int nrows=1);
+  void          SetSizeUsed(Int_t sz)                                  {fRowLwb = sz;}
   //
   void          Scale(Double_t coeff);
   void          MultiplyByVec(Double_t* vecIn, Double_t* vecOut) const;

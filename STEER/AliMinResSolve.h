@@ -1,18 +1,25 @@
 #ifndef ALIMINRESSOLVE_H
 #define ALIMINRESSOLVE_H
 
+/**********************************************************************************************/
+/* General class for solving large system of linear equations                                 */
+/* Includes MINRES, FGMRES methods as well as a few precondiotiong methods                    */
+/*                                                                                            */ 
+/* Author: ruben.shahoyan@cern.ch                                                             */
+/*                                                                                            */ 
+/**********************************************************************************************/
+
 #include <TObject.h>
 #include <TVectorD.h>
-#include <TMath.h>
-#include "AliMatrixSq.h"
-#include "AliMatrixSparse.h"
-class AliLog;
-class TStopwatch;
+class AliMatrixSq;
+class AliMatrixSparse;
+class AliSymBDMatrix;
+
 
 class AliMinResSolve : public TObject {
   //
  public:
-  enum {kPreconDiag=1,kPreconDILU=2,kPreconILU0=100,kPreconILU10=kPreconILU0+10,kPreconsTot};
+  enum {kPreconBD=1,kPreconILU0=100,kPreconILU10=kPreconILU0+10,kPreconsTot};
   enum {kSolMinRes,kSolFGMRes,kNSolvers};
  public:
   AliMinResSolve();
@@ -39,6 +46,7 @@ class AliMinResSolve : public TObject {
   Int_t  GetPrecon()                                               const    {return fPrecon;} 
   void   ClearAux();
   //
+  Int_t  BuildPreconBD(Int_t hwidth);
   Int_t  BuildPreconILUK(Int_t lofM);
   Int_t  BuildPreconILUKDense(Int_t lofM);
   Int_t  PreconILUKsymb(Int_t lofM);
@@ -48,13 +56,23 @@ class AliMinResSolve : public TObject {
   //
   Int_t               fSize;                             // dimension of the input matrix
   Int_t               fPrecon;                           // preconditioner type
-  const AliMatrixSq*  fMatrix;                           // matrix defining the equations
-  const Double_t*     fRHS;                              // right hand side
+  AliMatrixSq*        fMatrix;                           // matrix defining the equations
+  Double_t*           fRHS;                              // right hand side
   //
-  Double_t            *fPVecY,*fPVecR1,*fPVecR2,*fPVecV,*fPVecW,*fPVecW1,*fPVecW2;// aux MinRes
-  Double_t            **fPvv,**fPvz,**fPhh;
-  Double_t            *fPrecDiag,*fPrecAux; // aux space
-  AliMatrixSparse     *fMatL,*fMatU;
+  Double_t            *fPVecY;                           // aux. space
+  Double_t            *fPVecR1;                          // aux. space
+  Double_t            *fPVecR2;                          // aux. space
+  Double_t            *fPVecV;                           // aux. space
+  Double_t            *fPVecW;                           // aux. space
+  Double_t            *fPVecW1;                          // aux. space
+  Double_t            *fPVecW2;                          // aux. space
+  Double_t            **fPvv;                            // aux. space
+  Double_t            **fPvz;                            // aux. space
+  Double_t            **fPhh;                            // aux. space
+  Double_t            *fDiagLU;                          // aux space
+  AliMatrixSparse     *fMatL;                            // aux. space
+  AliMatrixSparse     *fMatU;                            // aux. space
+  AliSymBDMatrix      *fMatBD;                           // aux. space
   //
   ClassDef(AliMinResSolve,0)
 };

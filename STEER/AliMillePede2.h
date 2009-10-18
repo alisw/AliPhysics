@@ -11,6 +11,7 @@
 /**********************************************************************************************/
 
 #include <TObject.h>
+#include <TString.h>
 #include <TTree.h>
 #include "AliMinResSolve.h"
 #include "AliMillePedeRecord.h"
