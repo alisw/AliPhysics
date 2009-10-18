@@ -8,12 +8,13 @@
 //                          ESD V0 Vertex Class - parameterization 
 //          This class is part of the Event Summary Data set of classes
 //    Origin: Marian Ivanov marian.ivanov@cern.ch
+//    Modified in 18/10/09 by A. Marin, a.marin@gsi.de
 //-------------------------------------------------------------------------
 
 #include "TObject.h"
 
 class AliESDV0Params : public TObject{
-  friend class AliESDv0;
+  friend class AliESDv0;              // ESD V0
  public:
   AliESDV0Params();
  
@@ -124,7 +125,7 @@ class AliESDV0Params : public TObject{
   Float_t GetChi2KF() const{return fkChi2KF;}
   Float_t GetRobustChi2KF() const{return fkRobustChi2KF;}
 
-  Int_t StreamLevel()               { return fgStreamLevel;}
+  Int_t StreamLevel() const{return fgStreamLevel;}
   void  SetStreamLevel(Int_t level=0) { fgStreamLevel = level;}
   
 
@@ -156,59 +157,59 @@ class AliESDV0Params : public TObject{
   //Cuts for AliITSV0Finder
 
 
-  Float_t fkMaxDist0;
-  Float_t fkMaxDist1;
-  Float_t fkMaxDist;
-  Float_t fkMinPointAngle;
-  Float_t fkMinPointAngle2;
-  Float_t fkMinR;
-  Float_t fkMaxR;
-  Float_t fkMinPABestConst;
-  Float_t fkMaxRBestConst;
-  Float_t fkCausality0Cut;
-  Float_t fkLikelihood01Cut;
-  Float_t fkLikelihood1Cut;
-  Float_t fkCombinedCut;
-  Float_t fkMinClFullTrk;
-  Float_t fkMinTgl0;
+  Float_t fkMaxDist0;               // Maximum distance 0 coef (pol1)
+  Float_t fkMaxDist1;               // Maximum distance 1 coef (pol1)
+  Float_t fkMaxDist;                // Maximum distance  
+  Float_t fkMinPointAngle;          // Minimum pointing Angle Soft
+  Float_t fkMinPointAngle2;         // Minimum pointing Angle Hard
+  Float_t fkMinR;                   // Minimum R
+  Float_t fkMaxR;                   // Maximum R
+  Float_t fkMinPABestConst;         // Minimum  PA Best 
+  Float_t fkMaxRBestConst;          // Maximum R Best  
+  Float_t fkCausality0Cut;          // Causality cut
+  Float_t fkLikelihood01Cut;        // Likelihood cut 
+  Float_t fkLikelihood1Cut;         // Likelihood cut
+  Float_t fkCombinedCut;            // Combined cut
+  Float_t fkMinClFullTrk;           // Minimum Cluster full track 
+  Float_t fkMinTgl0;                // Minimu Tgl    
 
-  Float_t fkMinClForb0;
-  Float_t fkMinRTgl0; 
-  Float_t fkMinNormDistForbTgl0;
-  Float_t fkMinNormDistForb1;
-  Float_t fkMinNormDistForb2;
-  Float_t fkMinNormDistForb3;
-  Float_t fkMinNormDistForb4;
-  Float_t fkMinNormDistForb5;
+  Float_t fkMinClForb0;             // Minimum cluster to forbid track
+  Float_t fkMinRTgl0;               // Minimum R Tgl   
+  Float_t fkMinNormDistForbTgl0;    // Minimum  normalized distance 
+  Float_t fkMinNormDistForb1;       // Minimum  normalized distance Forbid cond 1 
+  Float_t fkMinNormDistForb2;       // Minimum  normalize distance Forbid cond 2
+  Float_t fkMinNormDistForb3;       // Minimum  normalize distance Forbid cond 3  
+  Float_t fkMinNormDistForb4;       // Minimum  normalize distance Forbid cond 4 
+  Float_t fkMinNormDistForb5;       // Minimum  normalize distance Forbid cond 5
 
-  Float_t fkMinRTPCdensity;
-  Float_t fkMaxRTPCdensity0;
-  Float_t fkMaxRTPCdensity10;
-  Float_t fkMaxRTPCdensity20;
-  Float_t fkMaxRTPCdensity30;
+  Float_t fkMinRTPCdensity;         // Minimum R TPC density cond  
+  Float_t fkMaxRTPCdensity0;        // Maximum R TPC density cond  
+  Float_t fkMaxRTPCdensity10;       // Maximum R TPC density cond  
+  Float_t fkMaxRTPCdensity20;       // Maximum R TPC density cond  
+  Float_t fkMaxRTPCdensity30;       // Maximum R TPC density cond  
 
-  Float_t fkMinTPCdensity;
-  Float_t fkMinTgl1;
-  Float_t fkMinTgl2;
-  Float_t fkMinchi2before0;
-  Float_t fkMinchi2before1;
-  Float_t fkMinchi2after0;
-  Float_t fkMinchi2after1;
-  Float_t fkAddchi2SharedCl;
-  Float_t fkAddchi2NegCl0;
-  Float_t fkAddchi2NegCl1;
+  Float_t fkMinTPCdensity;          // Minimum TPC density   
+  Float_t fkMinTgl1;                // Minimum Tgl 
+  Float_t fkMinTgl2;                // Minimum Tgl 
+  Float_t fkMinchi2before0;         // Minimum chi2 before V0 cond 0
+  Float_t fkMinchi2before1;         // Minimum chi2 before V0 cond 1
+  Float_t fkMinchi2after0;          // Minimum chi2 after V0 cond 0
+  Float_t fkMinchi2after1;          // Minimum chi2 after V0 cond 1
+  Float_t fkAddchi2SharedCl;        // Add chi2 shared clusters  
+  Float_t fkAddchi2NegCl0;          // Add chi2 negative clusters   
+  Float_t fkAddchi2NegCl1;          // Add chi2 negative clusters  
 
-  Float_t fkSigp0Par0;
-  Float_t fkSigp0Par1;
-  Float_t fkSigp0Par2;
-  Float_t fkSigpPar0;
-  Float_t fkSigpPar1;
-  Float_t fkSigpPar2;
-  Float_t fkMaxDcaLh0;
+  Float_t fkSigp0Par0;              // par0 sigma_0
+  Float_t fkSigp0Par1;              // par1 sigma_0
+  Float_t fkSigp0Par2;              // par2 sigma_0 
+  Float_t fkSigpPar0;               // par0 sigma_1
+  Float_t fkSigpPar1;               // par1 sigma_1
+  Float_t fkSigpPar2;               // par2 sigma_1
+  Float_t fkMaxDcaLh0;              // Maximum DCA Lh
 
-  Float_t fkChi2KF;
-  Float_t fkRobustChi2KF;
-  Int_t   fgStreamLevel; // flag for streaming - for ITS V0
+  Float_t fkChi2KF;                 // chi2 AliKF
+  Float_t fkRobustChi2KF;           // robust chi2 KF 
+  Int_t   fgStreamLevel;            // flag for streaming - for ITS V0
 
 
 
