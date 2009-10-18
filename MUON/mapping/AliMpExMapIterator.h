@@ -48,7 +48,7 @@ public:
   virtual const TCollection* GetCollection() const;
 
 private:
-#if ROOT_SVN_REVISION >= 30658
+#if ROOT_SVN_REVISION >= 29598
     Bool_t Next(Long64_t& index, TObject*& object);
 #else    
     Bool_t Next(Long_t& index, TObject*& object);
