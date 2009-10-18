@@ -49,6 +49,7 @@ class AliAltroRawStream: public TObject {
     Int_t GetTimeLength() const { return fTimeBunch; }  // Provide total length of current time bunch
 
     Int_t GetChannelPayloadSize() const { return fChannelPayloadSize; }
+    Int_t GetRCUPayloadSizeInSOD() const;
 
     Int_t GetBranch()     const; // Provide the branch index for the current hardware address
     Int_t GetFEC()        const; // Provide the front-end card index for the current hardware address

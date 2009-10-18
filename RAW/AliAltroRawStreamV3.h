@@ -49,6 +49,8 @@ class AliAltroRawStreamV3: public TObject {
     Bool_t IsChannelBad()      const { return fBadChannel; }   // Is the channel data bad or not
 
     Int_t GetChannelPayloadSize() const { return fChannelPayloadSize; }
+    UChar_t *GetRCUPayloadInSOD() const;
+    Int_t GetRCUPayloadSizeInSOD() const;
 
     Int_t GetBranch()     const; // Provide the branch index for the current hardware address
     Int_t GetFEC()        const; // Provide the front-end card index for the current hardware address

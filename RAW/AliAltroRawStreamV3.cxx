@@ -30,6 +30,7 @@
 #include "AliRawReader.h"
 #include "AliLog.h"
 #include "AliAltroRawStream.h"
+#include "AliRawEventHeaderBase.h"
 
 ClassImp(AliAltroRawStreamV3)
 
@@ -229,6 +230,8 @@ Bool_t AliAltroRawStreamV3::NextDDL()
       fActiveFECsB = fOldStream->GetActiveFECsB();
       fAltroCFG1 = fOldStream->GetAltroCFG1();
       fAltroCFG2 = fOldStream->GetAltroCFG2();
+      if (fRawReader->GetType() == AliRawEventHeaderBase::kStartOfData)
+	fPayloadSize = fOldStream->GetRCUPayloadSizeInSOD();
     }
     return status;
   }
@@ -685,4 +688,30 @@ void AliAltroRawStreamV3::AddMappingErrorLog(const char *message)
   // classes in order to log an error related to bad altro mapping
 
   if (fRawReader) fRawReader->AddMinorErrorLog(kBadAltroMapping,message);
+}
+
+//_____________________________________________________________________________
+UChar_t *AliAltroRawStreamV3::GetRCUPayloadInSOD() const
+{
+  // Get a pointer to the data in case
+  // of SOD events
+  if (fRawReader) {
+    if (fRawReader->GetType() == AliRawEventHeaderBase::kStartOfData) {
+      return fData;
+    }
+  }
+  return NULL;
+}
+
+//_____________________________________________________________________________
+Int_t AliAltroRawStreamV3::GetRCUPayloadSizeInSOD() const
+{
+  // Get the size of the RCU data in case
+  // of SOD events
+  if (fRawReader) {
+    if (fRawReader->GetType() == AliRawEventHeaderBase::kStartOfData) {
+      return fPayloadSize;
+    }
+  }
+  return -1;
 }
