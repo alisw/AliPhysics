@@ -156,6 +156,7 @@
 #pragma link C++ class AliVectorSparse+;
 #pragma link C++ class AliMatrixSq+;
 #pragma link C++ class AliSymMatrix+;
+#pragma link C++ class AliSymBDMatrix+;
 #pragma link C++ class AliRectMatrix+;
 
 #pragma link C++ class AliGRPManager+;

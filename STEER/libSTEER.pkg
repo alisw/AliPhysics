@@ -70,7 +70,7 @@ AliRunInfo.cxx AliEventInfo.cxx \
 AliRecoParam.cxx AliDetectorRecoParam.cxx \
 AliMillePedeRecord.cxx AliMillePede2.cxx AliMatrixSq.cxx \
 AliVectorSparse.cxx AliMatrixSparse.cxx \
-AliSymMatrix.cxx AliRectMatrix.cxx AliMinResSolve.cxx \
+AliSymMatrix.cxx AliSymBDMatrix.cxx AliRectMatrix.cxx AliMinResSolve.cxx \
 AliGRPManager.cxx \
 AliDCSArray.cxx AliLHCReader.cxx \
 AliCTPTimeParams.cxx AliCTPInputTimeParams.cxx
