@@ -174,7 +174,7 @@ Short_t AliTRIPreprocessor::ProcessSPDTriggerData()
 
 	// Read new conditions from dcs fxs
 	AliITSTriggerConditions* newCond = new AliITSTriggerConditions();
-	TString fxsID = "PITConditions";
+	TString fxsID = "pit_conditions";
 	TList* list = GetFileSources(kDCS, fxsID.Data());
 	if (!list) {
 		AliError("FXS file not found.");
