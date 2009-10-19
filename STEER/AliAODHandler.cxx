@@ -315,17 +315,21 @@ void AliAODHandler::StoreMCParticles(){
     for(int it = 0; it < fAODEvent->GetNTracks();++it){
       AliAODTrack *track = fAODEvent->GetTrack(it);
       
-      Int_t label = TMath::Abs(track->GetLabel());
+      Int_t sign = 1;
+      Int_t label = track->GetLabel();
+      if(label<0){ // preserve the sign for later usage
+	label *= -1;
+	sign  = -1;
+      }
+
       if (label >= AliMCEvent::BgLabelOffset()) label =  mcEvent->BgLabelToIndex(label);
-      
-      
       if(label > np || track->GetLabel() == 0){
 	AliWarning(Form("Wrong ESD track label %5d (%5d)",track->GetLabel(), label));
       }
       if(fMCEventH->GetNewLabel(label) == 0){
 	AliWarning(Form("New label not found for %5d (%5d)",track->GetLabel(), label));
       }
-      track->SetLabel(fMCEventH->GetNewLabel(label));
+      track->SetLabel(sign*fMCEventH->GetNewLabel(label));
     }
   }
   
