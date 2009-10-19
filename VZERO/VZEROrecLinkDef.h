@@ -11,5 +11,6 @@
 #pragma link C++ class  AliVZEROQADataMakerRec+;
 #pragma link C++ class  AliVZEROTrigger+;
 #pragma link C++ class  AliVZEROTriggerMask+;
+#pragma link C++ class  AliVZERORecoParam+;
 
 #endif

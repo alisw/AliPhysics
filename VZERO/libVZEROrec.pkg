@@ -5,7 +5,8 @@ SRCS= AliVZEROReconstructor.cxx \
       AliVZERORawStream.cxx \
       AliVZEROQADataMakerRec.cxx \
       AliVZEROTrigger.cxx \
-      AliVZEROTriggerMask.cxx
+      AliVZEROTriggerMask.cxx \
+      AliVZERORecoParam.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
