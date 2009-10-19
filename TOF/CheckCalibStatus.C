@@ -1,8 +1,31 @@
+CheckCalibStatus(Int_t run)
+{
+
+  TGrid::Connect("alien");
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage("raw://");
+  cdb->SetRun(run);
+  AliCDBEntry *cdbe = cdb->Get("TOF/Calib/Status");
+  CheckCalibStatus(cdbe);
+
+}
+
 CheckCalibStatus(const Char_t *fileName)
 {
 
   TFile *file = TFile::Open(fileName);
   AliCDBEntry *cdbe = (AliCDBEntry *)file->Get("AliCDBEntry");
+  CheckCalibStatus(cdbe);
+}
+
+CheckCalibStatus(AliCDBEntry *cdbe)
+{
+
+  if (!cdbe) {
+    printf("invalid CDB entry\n");
+    return;
+  }
+
   AliTOFChannelOnlineStatusArray *array = (AliTOFChannelOnlineStatusArray *)cdbe->GetObject();
 
   TH1F *hStatus = new TH1F("hStatus", "Channel status;index;status", array->GetSize(), 0., array->GetSize(););
