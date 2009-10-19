@@ -2,9 +2,9 @@
 #define ALITRDPERFORMANCETRAIN_H
 
 #define BITBIT(n)      (1 << (n))
-#define SETBIT(n,i) ((n) |= BITBIT(i))
+#define SETBITT(n,i) ((n) |= BITBIT(i))
 #define TSTBIT(n,i) ((Bool_t)(((n) & BITBIT(i)) != 0))
-#define CLRBIT(n,i) ((n) &= ~BITBIT(i))
+#define CLRBITT(n,i) ((n) &= ~BITBIT(i))
 
 #define NTRDQATASKS 6
 #define NTRDCALIBTASKS 7

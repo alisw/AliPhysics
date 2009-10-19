@@ -19,13 +19,13 @@ Int_t ParseOptions(Char_t *trd)
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
     if(s.CompareTo("ALL") == 0){
-      for(Int_t itask = 0; itask < NTRDQATASKS; itask++) SETBIT(fSteerTask, itask);
+      for(Int_t itask = 0; itask < NTRDQATASKS; itask++) SETBITT(fSteerTask, itask);
       continue;
     } else { 
       Bool_t foundOpt = kFALSE;  
       for(Int_t itask = 2; itask < NTRDTASKS; itask++){
         if(s.CompareTo(fgkTRDtaskOpt[itask]) != 0) continue;
-        SETBIT(fSteerTask, itask); SETBIT(fSteerTask, kInfoGen);
+        SETBITT(fSteerTask, itask); SETBITT(fSteerTask, kInfoGen);
         foundOpt = kTRUE;
         break;
       }
@@ -33,13 +33,13 @@ Int_t ParseOptions(Char_t *trd)
     }
   }
   // extra rules for calibration tasks
-  if(TSTBIT(fSteerTask, kCalibration)) SETBIT(fSteerTask, kCheckDET);
-  if(TSTBIT(fSteerTask, kMultiplicity)) SETBIT(fSteerTask, kEfficiency);
-  if(TSTBIT(fSteerTask, kEfficiencyMC)) SETBIT(fSteerTask, kEfficiency);
-  if(TSTBIT(fSteerTask, kClErrParam)) SETBIT(fSteerTask, kResolution);
-  if(TSTBIT(fSteerTask, kAlignment)) SETBIT(fSteerTask, kResolution);
-  if(TSTBIT(fSteerTask, kPIDRefMakerNN)) SETBIT(fSteerTask, kCheckPID);
-  if(TSTBIT(fSteerTask, kPIDRefMakerLQ)) SETBIT(fSteerTask, kCheckPID);
+  if(TSTBIT(fSteerTask, kCalibration)) SETBITT(fSteerTask, kCheckDET);
+  if(TSTBIT(fSteerTask, kMultiplicity)) SETBITT(fSteerTask, kEfficiency);
+  if(TSTBIT(fSteerTask, kEfficiencyMC)) SETBITT(fSteerTask, kEfficiency);
+  if(TSTBIT(fSteerTask, kClErrParam)) SETBITT(fSteerTask, kResolution);
+  if(TSTBIT(fSteerTask, kAlignment)) SETBITT(fSteerTask, kResolution);
+  if(TSTBIT(fSteerTask, kPIDRefMakerNN)) SETBITT(fSteerTask, kCheckPID);
+  if(TSTBIT(fSteerTask, kPIDRefMakerLQ)) SETBITT(fSteerTask, kCheckPID);
 
   return fSteerTask;
 }
