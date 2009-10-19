@@ -90,7 +90,7 @@ Geometry : SHISH...
 ###########################################################################
 */
 
-void AliJetHadronCorrectionv1::SetGeometry(TString name,Double_t fs)
+void AliJetHadronCorrectionv1::SetGeometry(TString /*name*/,Double_t fs)
 {
   // Initialise EMCAL geometry
   fSamplingFraction = fs;	
@@ -127,7 +127,7 @@ void AliJetHadronCorrectionv1::SetGeometry(TString name,Double_t fs)
 }	
 
 // Double_t AliJetHadronCorrectionv1::GetEnergy(Double_t pmom, Double_t eta, Int_t /*gid*/)
-Double_t AliJetHadronCorrectionv1::GetEnergy(Double_t pmom, Double_t eta, Int_t gid)
+Double_t AliJetHadronCorrectionv1::GetEnergy(Double_t pmom, Double_t eta, Int_t /*gid*/)
 {
   // Return parametrised energy response
   Double_t etai = TMath::Abs(eta); 

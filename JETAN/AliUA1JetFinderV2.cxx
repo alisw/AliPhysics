@@ -641,13 +641,18 @@ void AliUA1JetFinderV2::FindJets()
 	  Float_t dphi = ((AliAODTrack*)refs->At(jpart))->Phi() - phiJetOk[kj];
 	  if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
 	  if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
-      
+	  
 	  Float_t dr = TMath::Sqrt(deta * deta + dphi * dphi);
-	  if(dr <= header->GetRadius() && fReader->GetCutFlag(jpart) == 1) // particles inside this cone
-	    if(trackinjet[jpart]==-1) trackinjet[jpart] = kj;
-	    else if(fDebug>10) printf("The track already belongs to jet %d \n",trackinjet[jpart]);
+	  if(dr <= header->GetRadius() && fReader->GetCutFlag(jpart) == 1) {
+	      // particles inside this cone
+	      if(trackinjet[jpart]==-1) {
+		  trackinjet[jpart] = kj;
+	      } else if(fDebug>10) {
+		  printf("The track already belongs to jet %d \n",trackinjet[jpart]);
+	      }
+	  }
 	  if(trackinjet[jpart]==kj)
-	    jet.AddTrack(refs->At(jpart));  // check if the particle belongs to the jet and add the ref
+	      jet.AddTrack(refs->At(jpart));  // check if the particle belongs to the jet and add the ref
 	}
       }
 
