@@ -20,7 +20,7 @@
 #include "AliHLTPHOSUtilities.h"
 
 AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3():
-  AliHLTCaloRawAnalyzerComponentv3(),
+  AliHLTCaloRawAnalyzerComponentv3()
 {
   //comment
 }

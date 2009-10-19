@@ -30,7 +30,6 @@ CLASS_HDRS:= \
 		AliHLTTriggerDetectorGeomRectangle.h	    \
 		AliHLTTriggerDecisionParameters.h
 
-
 # library sources
 MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
 
