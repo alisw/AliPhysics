@@ -66,8 +66,7 @@ struct AliHLTCaloChannelDataStruct
   //  Short_t fRawDataSize; //the size of the raw data
 };
 */
-
-AliHLTCaloChannelDataStruct*   
+AliHLTCaloChannelDataStruct*
 AliHLTCaloSharedMemoryInterfacev2::NextChannel()
 {
   // Comment
@@ -77,53 +76,54 @@ AliHLTCaloSharedMemoryInterfacev2::NextChannel()
       tmpChannelPtr = reinterpret_cast<AliHLTCaloChannelDataStruct*>(fChannelDataPtr);
       fCurrentCnt++;
       fChannelDataPtr += sizeof(AliHLTCaloChannelDataStruct);
+      
       if(fHasRawData == true)
+      //     if( false )	
 	{
 	  fRawData.fEnergy = tmpChannelPtr->fEnergy;
 	  fRawData.fTime = tmpChannelPtr->fTime;
-	  fRawData.fChannelID = tmpChannelPtr->fChannelID; 
-	  fRawData.fCrazyness  = tmpChannelPtr->fCrazyness; 
+	  fRawData.fChannelID = tmpChannelPtr->fChannelID;
+	  fRawData.fCrazyness = tmpChannelPtr->fCrazyness;
 	  Reset(fRawData);
-	  //AliHLTCaloMapper::ChannelId2Coordinate(const UShort_t channelId,    AliHLTCaloCoordinate &channelCoord) 
-
-	  
+	  //AliHLTCaloMapper::ChannelId2Coordinate(const UShort_t channelId, AliHLTCaloCoordinate &channelCoord)
+ 
+ 
 	  AliHLTCaloMapper::ChannelId2Coordinate( fRawData.fChannelID, fRawData.fCoordinate);
 	  
-	  
-	  
-
-	  
-	  if( fRawData.fChannelID ==  fRawDataPtr[0]  )
+	  if( fRawData.fChannelID == fRawDataPtr[0] )
 	    {
 	      Reset(fRawData);
-	      //      cout << __FILE__ << __LINE__ << "fRawData.fChannelID ==  fRawDataPtr[0] =  " << fRawDataPtr[0]  << endl;
-	      //    cout << "  copying raw dat not yet implemnted " << endl;
-	      UShort_t tmpTotSize =  fRawDataPtr[1];
-	      UShort_t tmpStartBin   =  fRawDataPtr[2];
-	      UShort_t tmpBunchtSize =  fRawDataPtr[3];
-	      //    fRawDataPtr
-	      UShort_t tmpSamplesLeft = tmpTotSize -4; 
+	      // cout << __FILE__ << __LINE__ << "fRawData.fChannelID == fRawDataPtr[0] = " << fRawDataPtr[0] << endl;
+	      // cout << " copying raw dat not yet implemnted " << endl;
+	      UShort_t tmpTotSize = fRawDataPtr[1];
+	      UShort_t tmpStartBin = fRawDataPtr[2];
+	      UShort_t tmpBunchtSize = fRawDataPtr[3];
+	      // fRawDataPtr
+	      //     UShort_t tmpSamplesLeft = tmpTotSize -4;
+	      int tmpSamplesLeft = tmpTotSize -4;
 
-	      fRawData.nSamplesUsed =  tmpTotSize +  tmpStartBin;
+	      fRawData.nSamplesUsed = tmpTotSize + tmpStartBin;
 
-	      while(tmpSamplesLeft > 0)
+	      if(tmpSamplesLeft > 0 )
 		{
-		  for(int i=0; i < tmpBunchtSize; i++ )
+		  while(tmpSamplesLeft > 0)
 		    {
-		      fRawData.fDataPtr[i + tmpStartBin] = fRawDataPtr[ i+ 4];
-		      tmpSamplesLeft --;
+		      for(int i=0; i < tmpBunchtSize; i++ )
+			{
+			  fRawData.fDataPtr[i + tmpStartBin] = fRawDataPtr[ i+ 4];
+			  tmpSamplesLeft --;
+			}
 		    }
+		  fRawDataPtr+= tmpTotSize;
 		}
-	      fRawDataPtr+= tmpTotSize;
-	      
 	    }
 	  else
 	    {
-	      //	      cout << __FILE__ << __LINE__ << "ERROR! fRawData.fChannelID = "<<  fRawData.fChannelID  << "  but  fRawDataPtr[0] =  " << fRawDataPtr[0]  << endl;
+	      // cout << __FILE__ << __LINE__ << "ERROR! fRawData.fChannelID = "<< fRawData.fChannelID << " but fRawDataPtr[0] = " << fRawDataPtr[0] << endl;
 	    }
-	  
-
-	  //	  HLTDebug("Raw data interface not yet implemented, ignoring raw data");
+ 
+ 
+	  // HLTDebug("Raw data interface not yet implemented, ignoring raw data");
 	}
       return tmpChannelPtr;
     }
@@ -134,6 +134,79 @@ AliHLTCaloSharedMemoryInterfacev2::NextChannel()
     }
   return 0;
 }
+
+/*
+  AliHLTCaloChannelDataStruct*   
+  AliHLTCaloSharedMemoryInterfacev2::NextChannel()
+  {
+  cout << __FILE__ << __LINE__ << " TP0" << endl;
+
+  AliHLTCaloChannelDataStruct* tmpChannelPtr = 0;
+  if(fCurrentCnt < fMaxCnt)
+  {
+  cout << __FILE__ << __LINE__ << " TP1" << endl;  
+  tmpChannelPtr = reinterpret_cast<AliHLTCaloChannelDataStruct*>(fChannelDataPtr);
+  fCurrentCnt++;
+  fChannelDataPtr += sizeof(AliHLTCaloChannelDataStruct);
+   
+  //    if(fHasRawData == true)
+  if(false)	
+  {
+  cout << __FILE__ << __LINE__ << " TP2" << endl; 
+  fRawData.fEnergy = tmpChannelPtr->fEnergy;
+  fRawData.fTime = tmpChannelPtr->fTime;
+  fRawData.fChannelID = tmpChannelPtr->fChannelID; 
+  fRawData.fCrazyness  = tmpChannelPtr->fCrazyness; 
+  Reset(fRawData);
+  AliHLTCaloMapper::ChannelId2Coordinate( fRawData.fChannelID, fRawData.fCoordinate);
+  cout << __FILE__ << __LINE__ << " TP3" << endl; 
+  if( fRawData.fChannelID ==  fRawDataPtr[0]  )
+  {
+  cout << __FILE__ << __LINE__ << " TP4" << endl; 
+  Reset(fRawData);
+  cout << __FILE__ << __LINE__ << " TP5" << endl; 
+  UShort_t tmpTotSize =  fRawDataPtr[1];
+  UShort_t tmpStartBin   =  fRawDataPtr[2];
+  UShort_t tmpBunchtSize =  fRawDataPtr[3];
+  UShort_t tmpSamplesLeft = tmpTotSize -4; 
+  fRawData.nSamplesUsed =  tmpTotSize +  tmpStartBin;
+  cout << __FILE__ << __LINE__ << " TP6" << endl; 
+
+  while(tmpSamplesLeft > 0)
+  {
+  if ( (tmpBunchtSize <  ( ALTROMAXSAMPLES +4)) && tmpBunchtSize > 0   )
+  {
+  cout << __FILE__ << __LINE__ << " TP7" << endl; 
+  for(int i=0; i < tmpBunchtSize; i++ )
+  {
+  cout << __FILE__ << __LINE__ << "  TMP tot size =" <<  tmpBunchtSize <<  tmpTotSize  << endl;
+  cout << __FILE__ << __LINE__ << "  TMP bunch size =" <<  tmpTotSize  << endl;
+  cout << __FILE__ << __LINE__ << " TP8, i=" << i <<", tmpStartBin = "<< tmpStartBin  << " fCurrentCnt = "<< fCurrentCnt << endl; 
+  cout << __FILE__ << __LINE__ << " acessing fRawData.fDataPtr["<<  i + tmpStartBin  << "]" << endl; 
+  fRawData.fDataPtr[ i + tmpStartBin ] = fRawDataPtr[ i+ 4];
+  //			    cout << __FILE__ << __LINE__ << " acessing fRawData.fDataPtr["<<  i + tmpStartBin  << "]" << endl; 
+  tmpSamplesLeft --;
+  }
+  fRawDataPtr+= tmpTotSize;
+  }
+  else
+  {
+  tmpSamplesLeft = -1;
+  }
+  }
+  }
+  }
+  return tmpChannelPtr;
+  } 
+  else
+  {
+  Reset();
+  return 0;
+  }
+  return 0;
+  //   }
+  }
+*/
 
 
 void  

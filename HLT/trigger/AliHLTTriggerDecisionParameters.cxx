@@ -15,6 +15,7 @@
 //**************************************************************************
 
 #include "AliHLTTriggerDecisionParameters.h"
+
 AliHLTTriggerDecisionParameters::AliHLTTriggerDecisionParameters() :
   TObject()
   ,fTriggerName()

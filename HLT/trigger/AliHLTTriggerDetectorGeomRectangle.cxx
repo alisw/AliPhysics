@@ -48,11 +48,21 @@ Bool_t AliHLTTriggerDetectorGeomRectangle::IsInDetector(Double_t point[3])
   // See header file for class documentation
   TVector3 trackPos(point);
   
-
   Double_t phi = 0;
 
   if(trackPos.Phi() < 0) phi = trackPos.Phi() + 2*TMath::Pi();
   else phi = trackPos.Phi();
+
+  if(trackPos.Eta() >= fEtaMin && 
+     trackPos.Eta() <= fEtaMax &&
+     phi >= fPhiMin &&
+     phi <= fPhiMax)
+    {
+      //      printf("Checking point: Eta: %f Phi: %f against cuts EtaMin: %f EtaMax: %f PhiMin: %f PhiMax: %f - true\n", trackPos.Eta(), phi, fEtaMin, fEtaMax, fPhiMin, fPhiMax);
+      return true;
+    }
+
+  //  printf("Checking point: Eta: %f Phi: %f against cuts EtaMin: %f EtaMax: %f PhiMin: %f PhiMax: %f - false\n", trackPos.Eta(), phi, fEtaMin, fEtaMax, fPhiMin, fPhiMax);
 
   if(trackPos.Eta() >= fEtaMin && 
      trackPos.Eta() <= fEtaMax &&

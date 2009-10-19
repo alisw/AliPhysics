@@ -74,13 +74,11 @@ void AliHLTTriggerDetectorGeom::SetNormVector(Double_t *nVector)
 void AliHLTTriggerDetectorGeom::GetInitialPoint(Double_t *point)
 {
   // See header file for class documentation
-
   for(int i = 0; i < 3; i++)
     {
       point[i] = fInitalPoint[i];
     }
 }
-
 
 void AliHLTTriggerDetectorGeom::GetNormVector(Double_t *vec)
 {
@@ -100,7 +98,6 @@ void AliHLTTriggerDetectorGeom::PrintDetectorGeom(std::ostream &out)
   out << "Eta Max: " << fEtaMax << std::endl;
   out << "Phi Min: " << fPhiMin << std::endl;
   out << "Phi Max: " << fPhiMax << std::endl;
-
   out << "Initial Point: {" << fInitalPoint[0] << ", " << fInitalPoint[1] << ", " << fInitalPoint[2] << "}" << std::endl; 
   out << "Normal Vector: {" << fNormVector[0] << ", " << fNormVector[1] << ", " << fNormVector[2] << "}" << std::endl; 
 }

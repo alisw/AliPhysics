@@ -25,7 +25,7 @@
  * @file   AliHLTPHOSRawAnalyzerComponentv3.h
  * @author Oystein Djuvsland
  * @date   
- * @brief  A raw analyzer component for PHOS HLT
+ * @brief  A clusterizer component for PHOS HLT
 */
 
 // see below for class documentation
@@ -53,6 +53,49 @@ class AliHLTPHOSChannelDataStruct;
 
 /**
  * @class AliHLTPHOSRawAnalyzerComponentv3
+ * This the new and fast version of the component taking care of the decoding and energy and timing 
+ * extraction of the raw data from PHOS.
+ *
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b PhosRawAnalyzerv3 <br>
+ * Library: \b libAliHLTPHOS.so     <br>
+ * Input Data Types: @ref <br>
+ * Output Data Types: @ref AliHLTPHOSDefinitions::fgkChannelDataType<br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li No mandatory arguments for component                           <br>
+ *
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -offset      <i> value </i> <br>
+ *      gives the offset added to the data during zero suppression (default value: 0)
+ * \li -bunchsizecut <i> value </i> <br>
+ *      minimum number of samples a bunch must contain to be considered  (default value: 0)
+ * \li -minpeakposition <i> value </i> <br>
+ *      cut on minimum postion of the peak in the bunch (defaul value: 0)
+ * \li -maxpeakposition <i> value </i> <br>
+ *      cut on maximum postion of the peak in the bunch (defaul value: 100)
+ *
+ * <h2>Configuration:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li No configuration arguments 
+ *
+ * <h2>Default CDB entries:</h2>
+ * \li No CDB entry yet, will come.
+ *
+ * <h2>Performance:</h2>
+ * Pretty good (~ 3 kHz), depends on amount of data...
+ *
+ * <h2>Memory consumption:</h2>
+ * Depends on the amount of data, but pretty godd
+ *
+ * <h2>Output size:</h2>
+ * Depends on the amount of data...
+ *
+ * More detailed description. (Soon)
+ *
  * @ingroup alihlt_phos
  */ 
 
@@ -90,27 +133,107 @@ class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTPHOSRcuProcessor
 
  protected:
 
+  /** interface function, see @ref AliHLTComponent for description */
+  using AliHLTPHOSRcuProcessor::DoEvent;
+
+  /** interface function, see @ref AliHLTComponent for description */
+  virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );  
+
   /** 
-   * Check for correct input data type (raw data from PHOS) 
-   * @datatype is the data type specifier
-   * @return true if the data type is correct
+   * Do the real processing in the component 
+   * @param iter is the pointer to the data blocks
+   * @param outputPtr is the pointer to the output buffer
+   * @param size is the available size for output
+   * @param totSize is the total size used for output
+   * @return the size output size used
    */
-  virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype);
+  virtual Int_t DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize); 
+
+
+  /** Pointer to an analyzer object used for raw data anlysis */ 
+  AliHLTPHOSRawAnalyzer *fAnalyzerPtr;   //COMMENT
 
  private:
+
+  int WriteRawData( AliHLTPHOSChannelDataStruct *dtaPtr );
 
   /** Keep the copy constructor private since it should not be used */
   AliHLTPHOSRawAnalyzerComponentv3(const AliHLTPHOSRawAnalyzerComponentv3 & );
 
   /** Keep the assignement operator private since it should not be used */
   AliHLTPHOSRawAnalyzerComponentv3 & operator = (const AliHLTPHOSRawAnalyzerComponentv3 &);
-  
-  /** 
-   * Initialise the mapping according to the specification
-   * @specification is the specification provided by the HLT framework
-   */
-  virtual void InitMapping(const int specification);
 
+  /** Mapping from harware address to geometrical address */
+  AliHLTPHOSMapper *fMapperPtr;                       //!transient 
+
+  /** Pointer to object which may check the integrity of the data */
+  AliHLTPHOSSanityInspector *fSanityInspectorPtr;     //!transient
+
+  /** Pointer to the raw data reader which reads from memory */
+  AliRawReaderMemory* fRawReaderMemoryPtr;            //!transient
+  
+  /** Pointer to the raw stream */
+  AliAltroRawStreamV3* fAltroRawStreamPtr;              //!transient
+
+  /** Describing which algorithm we are using */
+  Short_t fAlgorithm;                                 //COMMENT
+
+  /** The offset applied before ZS */
+  Int_t fOffset;                                      //COMMENT
+
+  /** The minimum length a bunch can have to be considered */
+  Int_t fBunchSizeCut;                                //COMMENT
+
+  /** The lowest position a peak can have to be considered */
+  Int_t fMinPeakPosition;                             //COMMENT
+  
+  /** The maximum position a peak can have to be considered */
+  Int_t fMaxPeakPosition;                             //COMMENT
+
+
+  const bool fkDoPushRawData;
+  
+  // const UShort_t* fRawDataBuffer;
+  // RawDataWriter *fRawDataWriter; 
+
+  //  class RawDataWriter : public AliHLTLogging
+ 
+  class RawDataWriter 
+  {
+  public:
+    RawDataWriter();
+    ~RawDataWriter();
+    //   void WriteChannelId(const UShort_t channeldid );
+    void NewChannel( );
+    void WriteBunchData(const UShort_t *bunchdata,  const int length,   const UInt_t starttimebin );
+    void ResetBuffer();
+    void SetChannelId( const UShort_t channeldid );
+
+    //void CopyBufferToSharedMemory(UShort_t *memPtr, const int sizetotal, const int sizeused );
+    int CopyBufferToSharedMemory(UShort_t *memPtr, const int sizetotal, const int sizeused );
+  
+ void NewEvent();
+ 
+ private:
+    RawDataWriter (const RawDataWriter  & );
+    RawDataWriter & operator = (const RawDataWriter &);
+    
+    void Init();
+    
+    //    bool fIsFirstChannel;
+    UShort_t* fRawDataBuffer;
+    int fCurrentChannelSize;
+    int fBufferIndex;
+    int fBufferSize;
+    UShort_t *fCurrentChannelIdPtr;
+    UShort_t *fCurrentChannelSizePtr; 
+    UShort_t *fCurrentChannelDataPtr; 
+    int fTotalSize;
+ };
+
+  RawDataWriter *fRawDataWriter; 
 
 };
 

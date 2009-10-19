@@ -201,33 +201,55 @@ AliHLTEMCALOnlineDisplayEventTab::ReadBlockData(AliHLTHOMERReader *homeReaderPtr
   //  AliHLTEMCALCoordinate tmpCoord;
   AliHLTCaloCoordinate tmpCoord;
   
+  long wcnt = 0;
 
+  //  cout << __FILE__ << ":" << __LINE__ << "TP0"   << endl ;
+  
   while ( blk != ~(unsigned long)0 ) 
     {
-      
+      //     cout << __FILE__ << ":" << __LINE__ << "TP1"    << endl ;
+      //    cout << wcnt << "\t"; 
+
+      wcnt ++;
+ 
       //   AliHLTEMCALChannelDataHeaderStruct* cellEnergiesPtr = (AliHLTEMCALChannelDataHeaderStruct*)homeReaderPtr->GetBlockData( blk ); 
       AliHLTCaloChannelDataHeaderStruct* cellEnergiesPtr = (AliHLTCaloChannelDataHeaderStruct*)homeReaderPtr->GetBlockData( blk );    
 
       Int_t* tmpPtr = 0;
       fShmPtr->SetMemory(cellEnergiesPtr);
       currentChannel = fShmPtr->NextChannel();
-
+  
+      //    cout << __FILE__ << ":" << __LINE__ << "TP1.2"    << endl ;
+    
       while(currentChannel != 0)
 	{
+	  //	  cout << cnt << "\t"; 
+
 	  cnt ++;
+	  //	   cout << __FILE__ << ":" << __LINE__ << "TP1.3"    << endl ;
 	  AliHLTEMCALMapper::ChannelId2Coordinate( currentChannel->fChannelID, tmpCoord );
+	  //	  cout << __FILE__ << ":" << __LINE__ << "TP1.4"    << endl ; 
 	  fgLegoPlotPtr[ tmpCoord.fGain ]->Fill(  tmpCoord.fModuleId*NXCOLUMNSMOD +   tmpCoord.fX,   tmpCoord.fZ, currentChannel->fEnergy );
+	  //	  cout << __FILE__ << ":" << __LINE__ << "TP1.5"    << endl ;
 	  fChannelEnergy[tmpCoord.fModuleId][tmpCoord.fZ][ tmpCoord.fX][tmpCoord.fGain] =  currentChannel->fEnergy;
+	  cout << __FILE__ << ":" << __LINE__ << "TP1.6"    << endl ;
 	  
+	  /*
 	  if(cellEnergiesPtr->fHasRawData == true)
 	    {
 	      FillRawData(fShmPtr->GetRawData());
 	    }
+	  */
+	  
 	  currentChannel = fShmPtr->NextChannel();
+
+	  cout << __FILE__ << ":" << __LINE__ << "TP1.7"    << endl ;
 	}
       //      blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF, blk+1);
+      //   cout << __FILE__ << ":" << __LINE__ << "TP2"    << endl ;
       blk = homeReaderPtr->FindBlockNdx("TLENNAHC","SOHP", 0xFFFFFFFF, blk+1 );
-    }
+      //   cout << __FILE__ << ":" << __LINE__ << "TP3"    << endl ;
+   }
 }
 
 

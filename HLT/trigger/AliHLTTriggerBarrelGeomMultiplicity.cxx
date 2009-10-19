@@ -36,7 +36,6 @@
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "TObjArray.h"
-#include "TVector3.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "TFile.h"
@@ -59,6 +58,7 @@ AliHLTTriggerBarrelGeomMultiplicity::AliHLTTriggerBarrelGeomMultiplicity()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  fDetectorArray = new TObjArray(1);
 
   fDetectorArray = new TObjArray;
 
@@ -142,20 +142,27 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoTrigger()
 	}
     }
 
-
   if (numberOfTracks>=fMinTracks) 
     {
-      SetDescription(fTriggerDecisionPars->GetDescription());
-      AliHLTReadoutList readout(fTriggerDecisionPars->GetReadoutListParameter());
-      AliHLTTriggerDecision decision(
-				     true,
-				     fTriggerDecisionPars->GetTriggerName().Data(),
-				     AliHLTTriggerDomain(readout),
-				     fTriggerDecisionPars->GetDescription()
-				     );
-      TriggerEvent(&decision);
+      if(fTriggerDecisionPars)
+	{
+
+	  SetDescription(fTriggerDecisionPars->GetDescription());
+	  AliHLTReadoutList readout(fTriggerDecisionPars->GetReadoutListParameter());
+	  AliHLTTriggerDecision decision(
+					 true,
+					 fTriggerDecisionPars->GetTriggerName().Data(),
+					 AliHLTTriggerDomain(readout),
+					 fTriggerDecisionPars->GetDescription()
+					 );
+	  TriggerEvent(&decision);
+	  HLTDebug("Geometrical acceptance trigger %s triggered", fTriggerDecisionPars->GetTriggerName().Data());
+	}
+      else
+	{
+	  HLTError("Trigger decision parameters not set, event not triggered");
+	}
     }
-  
   return iResult;
 
 }
@@ -230,9 +237,20 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromCDBObject(const cha
 {
     // see header file for function documentation
   int nDetectorGeoms=0;
-  const char *path = cdbEntry;
-  if(!path) path = fOCDBEntry;
 
+  if(fDetectorArray)
+    {
+      fDetectorArray->Clear();
+    }
+  else
+    {
+      fDetectorArray = new TObjArray();
+    }
+  
+  const char *path = cdbEntry;
+
+  if(!path) path = fOCDBEntry;
+  
   if(path)
     {
       //     const char* chainId=GetChainId();
@@ -254,7 +272,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromCDBObject(const cha
 		    {
 		      fDetectorArray->AddLast(dynamic_cast<AliHLTTriggerDetectorGeom*>(pArr->At(i)));
 		      nDetectorGeoms++;
-		      HLTWarning("received detector geometry of type %s", pArr->At(i)->ClassName());
+		      HLTDebug("received detector geometry of type %s", pArr->At(i)->ClassName());
 		    }
 		  else
 		    {
@@ -274,6 +292,9 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromCDBObject(const cha
 	  nDetectorGeoms=-ENOENT;
 	}
     }
+
+  HLTInfo("received %d detector geometries", nDetectorGeoms);
+
   return nDetectorGeoms;
 }
 
@@ -281,6 +302,16 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromFile(const char *fi
 {
     // see header file for function documentation
   int nDetectorGeoms=0;
+
+  if(fDetectorArray)
+    {
+      fDetectorArray->Clear();
+    }
+  else
+    {
+      fDetectorArray = new TObjArray();
+    }
+  
 
   if (filename) 
     {
@@ -303,7 +334,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromFile(const char *fi
 		    {
 		      fDetectorArray->AddLast(dynamic_cast<AliHLTTriggerDetectorGeom*>(pArr->At(i)));
 		      nDetectorGeoms++;
-		      HLTWarning("received detector geometry of type %s", pArr->At(i)->ClassName());
+		      HLTDebug("received detector geometry of type %s", pArr->At(i)->ClassName());
 		    }
 		  else
 		    {
@@ -323,7 +354,12 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromFile(const char *fi
 	  nDetectorGeoms=-ENOENT;
 	}
     }
-  HLTWarning("received TObjArray with %d detector geometries", nDetectorGeoms);
+  else
+    {
+      HLTError("ROOT file name not specified");
+    }
+  HLTInfo("received %d detector geometries", nDetectorGeoms);
+
 
   return nDetectorGeoms;
 }
@@ -357,3 +393,4 @@ int AliHLTTriggerBarrelGeomMultiplicity::ScanConfigurationArgument(int argc, con
   }    
   return 0;
 }
+

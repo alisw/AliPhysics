@@ -136,25 +136,17 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
   UInt_t totSize           = 0;
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
-  //  cout << __FILE__  << ":" << __LINE__ << "TP0"  << endl;
+
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
-      //     cout << __FILE__  << ":" << __LINE__ << "TP1"  << endl;
       iter = blocks+ndx;
       if( CheckInputDataType(  iter->fDataType ) == false )
 	{
-	  //	  cout << __FILE__  << ":" << __LINE__ <<  ": wrong !! datatype" << endl; 
-	  //	  cout << "The datatype recieved was"  << endl;
-	  //	  cout << "the datatype is " <<   iter->fDataType.fID << ":" << iter->fDataType.fOrigin  << endl;
 	  continue;
 	}
       else
 	{
-	  //	  cout << __FILE__  << ":" << __LINE__ <<  ":" << "data is of type fgkDDLPackedRawDataType, continue processing " << endl;
-	  //	  cout << "the datatype is " <<   iter->fDataType.fID << ":" << iter->fDataType.fOrigin  << endl;
-	  //	  cout << __FILE__  << ":" << __LINE__ << "T10"  << endl;
 	  InitMapping( iter->fSpecification); 
-	  //	 cout << __FILE__  << ":" << __LINE__ << "TP2"  << endl; 
 	  blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
 	  if(blockSize == -1) // If the processing returns -1 we are out of buffer and return an error msg.
 	    {
@@ -162,8 +154,6 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
 	    }
 	  
 	  totSize += blockSize; //Keeping track of the used size
-	  // HLTDebug("Output data size: %d - Input data size: %d", totSize, iter->fSize);
-	  //Filling the block data
 	  AliHLTComponentBlockData bdChannelData;
 	  FillBlockData( bdChannelData );
 	  bdChannelData.fOffset = 0; //FIXME
@@ -189,15 +179,18 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
 Int_t
 AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize)
 {
-  //  cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T0"  << endl; 
-
- //comment
+  //comment
   int tmpsize=  0;
   Int_t crazyness          = 0;
   Int_t nSamples           = 0;
   Short_t channelCount     = 0;
 
-   // Firs we want to write a header to the output
+
+  //  Firs we want to write a header to the output
+  //  cout << __FILE__ << __LINE__ << "The size of AliHLTCaloChannelDataHeaderStruct is " << sizeof(AliHLTCaloChannelDataHeaderStruct ) << endl;
+  //  cout << __FILE__ << __LINE__ << "The size of AliHLTCaloChannelDataStruct is " << sizeof(AliHLTCaloChannelDataStruct ) << endl;
+
+
   AliHLTCaloChannelDataHeaderStruct *channelDataHeaderPtr = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(outputPtr); 
   AliHLTCaloChannelDataStruct *channelDataPtr = reinterpret_cast<AliHLTCaloChannelDataStruct*>(outputPtr+sizeof(AliHLTCaloChannelDataHeaderStruct)); 
   //Adding to the total size of data written
@@ -239,10 +232,10 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	    UShort_t* firstBunchPtr = 0;
 
 	    //   UShort_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
-	    UInt_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
-
-	    //	     cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T4"  << endl; 
+	    //   UInt_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
 	    
+	    int chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
+
 	    if( fkDoPushRawData == true)
 	      {
 		fRawDataWriter->SetChannelId( chId );
@@ -267,13 +260,9 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 		return -1;
 	      }
 
-	    
-	    //	    cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T6"  << endl; 
 	    fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
-	    //	    cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T6.1"  << endl; 
 	    fAnalyzerPtr->Evaluate(0, nSamples);  
-	    //	    cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T6.2"  << endl; 
-	   
+	    
 	    //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
 	    {
 	      //	      cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T7"  << endl; 

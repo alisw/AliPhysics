@@ -37,6 +37,7 @@ using namespace CaloHLTConst;
 
 AliHLTCaloMapper::AliHLTCaloMapper( const unsigned long  specification ) :  AliHLTLogging(), 
 									    fHw2geomapPtr(0),
+									    fCellSize(0),
 									    fSpecification(specification),
 									    fIsInitializedMapping(false),
 									    fSpecificationMapPtr(0)
@@ -77,9 +78,7 @@ AliHLTCaloMapper::GetFilePath()
 
 
 void
-//AliHLTPHOSMapper::GetChannelCoord(const UShort_t channelId,    &AliHLTPHOSCoordinate channelCoord)
-//AliHLTCaloMapper::ChannelId2Coordinate(const UShort_t channelId,    AliHLTCaloCoordinate &channelCoord)
-AliHLTCaloMapper::ChannelId2Coordinate(const UShort_t channelId,    AliHLTCaloCoordinate &channelCoord)
+AliHLTCaloMapper::ChannelId2Coordinate(const int channelId,    AliHLTCaloCoordinate &channelCoord)
 {
   channelCoord.fX = channelId&0x3f;
   channelCoord.fZ = (channelId >> 6)&0x3f;
@@ -87,7 +86,6 @@ AliHLTCaloMapper::ChannelId2Coordinate(const UShort_t channelId,    AliHLTCaloCo
   channelCoord.fModuleId  = (channelId >> 13)&0x1f;
   //  printf("Channel ID: 0x%X Coordinates: x = %d, z = %d, gain = %d\n", channelId, channelCoord[0], channelCoord[1], channelCoord[2]);
 }
-
 
 
 int  
@@ -109,8 +107,11 @@ AliHLTCaloMapper::GetDDLFromSpec( const AliHLTUInt32_t spec )
   return tmpIndex;
 }
 
+
   
-UInt_t 
+// UInt_t 
+// AliHLTCaloMapper::GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd)
+int 
 AliHLTCaloMapper::GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd)
 {
   Short_t index = GetDDLFromSpec(spec);

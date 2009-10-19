@@ -18,7 +18,7 @@
 #include "AliHLTEMCALMapper.h"
 
 #include "AliHLTEMCALConstants.h"
-
+#include "assert.h"
 
 
 using namespace EmcalHLTConst;
@@ -26,8 +26,10 @@ using namespace EmcalHLTConst;
 //AliHLTCaloMapper
 
 
-AliHLTEMCALMapper::AliHLTEMCALMapper(const unsigned long specification ) : AliHLTCaloMapper(specification) 
+
+AliHLTEMCALMapper::AliHLTEMCALMapper(const unsigned long specification ) : AliHLTCaloMapper(specification)
 {
+  fCellSize = 6;
   InitAltroMapping(specification);
   InitDDLSpecificationMapping();
   fIsInitializedMapping = true; //CRAP PTH, must check is the initilization actually went ok
@@ -37,6 +39,18 @@ AliHLTEMCALMapper::AliHLTEMCALMapper(const unsigned long specification ) : AliHL
 AliHLTEMCALMapper::~AliHLTEMCALMapper()
 {
 
+}
+  
+
+
+// channelCoord[0] = (static_cast<Float_t>(channelId&0x3f) - NXCOLUMNSMOD/2)* fCellStep;
+// channelCoord[1] = (static_cast<Float_t>((channelId >> 6)&0x3f) - NZROWSMOD/2) * fCellStep;
+
+void 
+AliHLTEMCALMapper::GetLocalCoord(const int channelId, Float_t* localCoord) const
+{
+  localCoord[0] = ( ( Float_t )(channelId&0x3f) - NXCOLUMNSMOD/2)  * fCellSize;
+  localCoord[1] = ( (Float_t)((channelId >> 6)&0x3f) - NZROWSMOD/2) * fCellSize;
 }
 
 
@@ -54,7 +68,14 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
   
   if(base !=0)
     {
+      //      int tmpddlindex =  GetDDLFromSpec( specification )%2; 
+
       sprintf(fFilepath, "%s/EMCAL/mapping/%s", base,   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
+      sprintf(fFilepath, "%s/EMCAL/mapping/%s", base,   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
+
+      //   assert("DDL spec is  %d", GetDDLFromSpec( specification ) );
+     
+      cout << __FILE__ <<":"<< __LINE__ <<"DDL spec is " <<   GetDDLFromSpec( specification )  << endl;
       cout << __FILE__ <<":"<< __LINE__ <<"mapping filename is " <<  fFilepath << endl;
 	// sprintf(fFilepath,"%s/PHOS/mapping/RCU0.data", base);
       FILE *fp = fopen(fFilepath, "r");
@@ -106,18 +127,9 @@ AliHLTEMCALMapper::InitDDLSpecificationMapping()
   
   for(Int_t ddl = 0; ddl < EmcalHLTConst::NMODULES*EmcalHLTConst::NRCUSPERMODULE; ddl++)
     {
-      fSpecificationMapPtr[ddl].fModId = ddl/EmcalHLTConst::NRCUSPERMODULE;
-      fSpecificationMapPtr[ddl].fRcuX = 0; 
-      fSpecificationMapPtr[ddl].fRcuZ = ddl%2; 
-      //      fSpecificationMapPtr[ddl].fRcuZOffset = NZROWSRCU*(fSpecificationMapPtr[ddl].fRcuZ);
-      //      fSpecificationMapPtr[ddl].fRcuXOffset = NXCOLUMNSRCU*(fSpecificationMapPtr[ddl].fRcuX);
+      fSpecificationMapPtr[ddl].fModId = ddl/(EmcalHLTConst::NRCUSPERMODULE);
     }
 }
-
-
-
-//RCU1C.data
-
 
 const char* 
 AliHLTEMCALMapper::DDL2RcuMapFileName(const int ddlIndex) const //0=4608, 1=4607 etc...
@@ -133,42 +145,9 @@ AliHLTEMCALMapper::DDL2RcuMapFileName(const int ddlIndex) const //0=4608, 1=4607
     {
       tmpSide  = 'C';
     }
-  
-  sprintf(rname,"RCU%d%c.data", ddlIndex/NRCUSPERSECTOR, tmpSide );
+  int tmprcuindex = ddlIndex%2;
+  sprintf(rname,"RCU%d%c.data",  tmprcuindex,  tmpSide );
+  //sprintf(rname,"RCU%d%c.data", ddlIndex/NRCUSPERSECTOR, tmpSide );
   return rname;
-  // rname.fSector = ddlIndex/NRCUSPERSECTOR;
 }
  
-
-/*
-unsigned long 
-AliHLTEMCALMapper::GetSpecFromDDLIndex( const int ddlindex )
-{
-  return ( (unsigned long)1  <<  ddlindex ));
-}
-*/
-
-/*
-AliHLTEMCALMapper::GlobalX2ModuleId( const int globalX )
-{
-  return globalX/NXCOLUMNSMOD;  
-}
-*/
-
- /*
-static  const int 
-AliHLTEMCALMapper::GlobalZ2ModuleId( const int globalZ )
-{
-  return globalZ/NZROWSMOD;
-  }
- */
-
-
-  /*
- const int 
- AliHLTEMCALMapper::Global2ModuleId( const int globalZ,  const int globalX )
-{
-  int tmpModX = 
- 
-}
-  */

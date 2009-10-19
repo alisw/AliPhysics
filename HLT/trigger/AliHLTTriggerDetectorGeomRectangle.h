@@ -13,7 +13,6 @@
 
 #include "AliHLTTriggerDetectorGeom.h"
 
-
 /**
  * @class  AliHLTTriggerDetectorGeomRectangle
  * HLT class describing simple rectangular geometry cuts of (sub-)detectors.
@@ -21,6 +20,8 @@
  *
  * \ingroup alihlt_trigger
  */
+
+#include "AliHLTTriggerDetectorGeom.h"
 
 class AliHLTTriggerDetectorGeomRectangle : public AliHLTTriggerDetectorGeom
 {
