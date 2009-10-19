@@ -51,7 +51,7 @@ AliFMDOfflineTrigger::AliFMDOfflineTrigger(const AliFMDOfflineTrigger& o)
 
 //____________________________________________________________________
 AliFMDOfflineTrigger&
-AliFMDOfflineTrigger::operator=(const AliFMDOfflineTrigger& o)
+AliFMDOfflineTrigger::operator=(const AliFMDOfflineTrigger& /*o*/)
 {
   // Assignment operator 
   return (*this);

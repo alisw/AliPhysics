@@ -54,7 +54,7 @@ AliFMDQADataMakerSim::AliFMDQADataMakerSim()
 }
 
 //_____________________________________________________________________
-AliFMDQADataMakerSim::AliFMDQADataMakerSim(const AliFMDQADataMakerSim& qadm) 
+AliFMDQADataMakerSim::AliFMDQADataMakerSim(const AliFMDQADataMakerSim& /*qadm*/) 
   : AliQADataMakerSim()
 {
   //copy ctor 
