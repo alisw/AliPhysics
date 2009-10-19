@@ -729,7 +729,8 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    }               
    // PWG4 particle correlations
    if (iPWG4partcorr) {   
-      if (!LoadLibrary("PWG4PartCorrBase", mode, kTRUE) ||
+      if (!LoadLibrary("EMCALUtils", mode, kTRUE) ||
+          !LoadLibrary("PWG4PartCorrBase", mode, kTRUE) ||
           !LoadLibrary("PWG4PartCorrDep", mode, kTRUE)) return kFALSE;
    }
    // PWG4 gamma conversion
