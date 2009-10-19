@@ -281,7 +281,7 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
     // 
     AliCDBMetaData metaData;
     metaData.SetBeamPeriod(0);
-    metaData.SetResponsible("Chiara Oppedisano");
+    //metaData.SetResponsible("Chiara Oppedisano");
     metaData.SetComment("Filling AliZDCChMap object");  
     //
     resChMapStore = Store("Calib","ChMap",mapCalib, &metaData, 0, kTRUE);

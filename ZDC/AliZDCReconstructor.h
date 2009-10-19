@@ -49,7 +49,7 @@ public:
   Float_t GetBeamEnergy() {return fBeamEnergy;}
   
   static const AliZDCRecoParam* GetRecoParam() {return dynamic_cast<const AliZDCRecoParam*>(AliReconstructor::GetRecoParam(9));}
-
+    
   void  SetPedSubMode(Int_t pedsubMode) {fPedSubMode=pedsubMode;}
   Int_t GetPedSubMode() {return fPedSubMode;}
   
@@ -64,8 +64,6 @@ public:
   AliZDCRecoParampp   *GetppRecoParamFromOCDB() const;  
   AliZDCRecoParamPbPb *GetPbPbRecoParamFromOCDB() const;  
   
-  void WritePbPbRecoParamInOCDB() const;
-
 private:
   AliZDCReconstructor(const AliZDCReconstructor&); //Not implemented
   AliZDCReconstructor& operator =(const AliZDCReconstructor&); //Not implemented
@@ -73,15 +71,16 @@ private:
   void   ReconstructEventpp(TTree *clustersTree, 
   	    Float_t* ZN1ADCCorr, Float_t* ZP1ADCCorr, Float_t* ZN2ADCCorr, Float_t* ZP2ADCCorr,
 	    Float_t* ZEM1ADCCorr, Float_t* ZEM2ADCCorr, Float_t* PMRef1, Float_t* PMRef2,
-	    Bool_t channelsOff, Bool_t chUnderflow, Bool_t chOverflow) const;
+	    Bool_t isScalerOn, UInt_t* scaler, 
+	    Int_t* evQualityBlock, Int_t* triggerBlock, Int_t* chBlock, UInt_t puBits) const;
   void   ReconstructEventPbPb(TTree *clustersTree, 
   	    Float_t* ZN1ADCCorr, Float_t* ZP1ADCCorr, Float_t* ZN2ADCCorr, Float_t* ZP2ADCCorr,
 	    Float_t* ZEM1ADCCorr, Float_t* ZEM2ADCCorr, Float_t* PMRef1, Float_t* PMRef2,
-	    Bool_t channelsOff, Bool_t chUnderflow, Bool_t chOverflow) const;
+	    Bool_t isScalerOn, UInt_t* scaler, 
+	    Int_t* evQualityBlock, Int_t* triggerBlock, Int_t* chBlock, UInt_t puBits) const;
   void   BuildRecoParam(Float_t ZDCC, Float_t ZDCA, Float_t ZEM) const;
   
   void   FillZDCintoESD(TTree *clustersTree, AliESDEvent*esd) const;
-
 
   static AliZDCRecoParam *fRecoParam; // reconstruction parameters
 

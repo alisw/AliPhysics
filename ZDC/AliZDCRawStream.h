@@ -121,9 +121,11 @@ class AliZDCRawStream: public TObject {
     UInt_t GetTriggerNumber()   const {return fScTriggerNumber;}
     UInt_t GetTriggerCount()    const {return fScEvCounter;}
     Bool_t IsScHeaderRead()     const {return fIsScHeaderRead;}
+    Bool_t IsScEventGood()      const {return fIsScEventGood;}
     
     UInt_t GetDetectorPattern() const {return fDetPattern;}
     
+    Bool_t IstriggerHistoryWord() const {return fIsTriggerHistory;}
     Int_t  GetTriggerInput2CTP() const {return *fCPTInput;}
     Bool_t IsCPTInputMBTrigger() 
     	{if(fCPTInput[0]==1) return kTRUE; else return kFALSE;}
@@ -202,7 +204,7 @@ class AliZDCRawStream: public TObject {
     // Trigger card
     // (1) trigger counts
     Int_t  fTrigCountNWords;  // no. of words to read from trigger card scalers
-    Bool_t fIsTriggerScaler;// Trigger card scalers - 1st word read
+    Bool_t fIsTriggerScaler;  // Trigger card scalers - 1st word read
     Int_t  fTrigCountStart;   // Trigger card scalers - counter
     Int_t  fMBTrigInput;      // MB          trigger input to trigger card
     Int_t  fCentralTrigInput; // CENTRAL     trigger input to trigger card
