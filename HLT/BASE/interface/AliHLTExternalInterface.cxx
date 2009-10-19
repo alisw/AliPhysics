@@ -27,6 +27,7 @@
 #include "AliHLTComponent.h"
 #include "AliHLTSystem.h"
 #include <cerrno>
+#include <cstring>
 /////////////////////////////////////////////////////////////////////////////////////
 //
 // AliHLT external interface functions
@@ -122,13 +123,22 @@ int AliHLTAnalysisCreateComponent( const char* componentType, void* environParam
   if (!handle) return EINVAL;
 
   AliHLTComponent* comp=NULL;
-  const char* cdbPath = getenv("ALIHLT_HCDBDIR");
-  if (!cdbPath) cdbPath = getenv("ALICE_ROOT");
+  string cdbPath;
+  const char* envvar = getenv("ALIHLT_HCDBDIR");
+  if (envvar) {
+    cdbPath=envvar;
+  } else {
+    envvar = getenv("ALICE_ROOT");
+    if (envvar) {
+      cdbPath=envvar;
+      cdbPath+="/OCDB";
+    }
+  }
   int ret = gComponentHandler->CreateComponent( componentType, comp);
   if (ret>=0 && comp) {
     const AliHLTAnalysisEnvironment* comenv=gComponentHandler->GetEnvironment();
     comp->SetComponentEnvironment(comenv, environParam);
-    comp->InitCDB(cdbPath, gComponentHandler);
+    comp->InitCDB(cdbPath.c_str(), gComponentHandler);
     if (comenv) {
       if (description) {
 	comp->SetComponentDescription(description);
