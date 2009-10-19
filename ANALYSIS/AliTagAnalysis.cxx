@@ -235,6 +235,7 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts,
     ientry++;
   }//tag file loop
   AliInfo(Form("Accepted events: %d",iAccepted));
+  esdChain->ls();
   esdChain->SetEntryList(fGlobalList,"ne");
    
   return esdChain;
@@ -404,6 +405,7 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
 	  }//event loop
 	  if ((ientry == cEntries-1) || !aod) {
 	      collection->WriteBody(iTagFiles+1,guid,lfn,turl,localList);
+	      iAccepted += localList->GetN();
 	  }
 	}//detector tag cuts
       }//lhc tag cuts 
@@ -491,6 +493,7 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
 	  }//event loop
 	  if ((ientry == cEntries-1) || !aod) {
 	      collection->WriteBody(iTagFiles+1,guid,lfn,turl,localList);
+	      iAccepted += localList->GetN();
 	  }
 	}//detector tag cuts
       }//lhc tag cuts 
