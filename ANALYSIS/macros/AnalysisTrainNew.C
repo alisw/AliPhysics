@@ -335,7 +335,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    if (iPWG2unicor) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG2/UNICOR/AddTaskUnicor.C");
       AliAnalysisTaskUnicor *taskunicor = AddTaskUnicor();
-      if (!taskspddndeta) ::Warning("AnalysisTrainNew", "AliAnalysisTaskUnicor cannot run for this train conditions - EXCLUDED");
+      if (!taskunicor) ::Warning("AnalysisTrainNew", "AliAnalysisTaskUnicor cannot run for this train conditions - EXCLUDED");
    }   
 
    // Flow analysis
