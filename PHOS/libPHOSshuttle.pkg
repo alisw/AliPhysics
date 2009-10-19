@@ -5,7 +5,12 @@ SRCS          =  AliPHOSPreprocessor.cxx \
 		 AliPHOSDA1.cxx \
 		 AliPHOSDA2.cxx \
 		 AliPHOSCpvDA1.cxx \
-		 AliPHOSCpvPreprocessor.cxx
+		 AliPHOSCpvPreprocessor.cxx \
+	         AliPHOSDApi0mip.cxx \
+                 AliPHOSDATreeDigit.cxx \
+                 AliPHOSPreprocessorPHYS.cxx \
+                 AliPHOSDATreeCluster.cxx \
+                 AliPHOSDATreeEvent.cxx 
 
 HDRS:= $(SRCS:.cxx=.h) 
 
