@@ -611,7 +611,7 @@ void AliEveEventManager::SetEvent(AliRunLoader *runLoader, AliRawReader *rawRead
   if (fAutoLoad) StartAutoLoadTimer();
 }
 
-Int_t AliEveEventManager::GetMaxEventId(Bool_t /*refreshESD*/) const
+Int_t AliEveEventManager::GetMaxEventId(Bool_t refreshESD) const
 {
   // Returns maximum available event id.
   // If under external control or event is not opened -1 is returned.
@@ -630,11 +630,11 @@ Int_t AliEveEventManager::GetMaxEventId(Bool_t /*refreshESD*/) const
 
   if (fESDTree)
   {
-    // Refresh crashes with root-5.21.1-alice.
-    // Fixed by Philippe 5.8.2008 r25053, can be reactivated
-    // when we move to a newer root.
-    // if (refreshESD)
-    //   fESDTree->Refresh();
+    if (refreshESD)
+    {
+       fESDTree->Refresh();
+       fPEventSelector->Update();
+    }
     return fESDTree->GetEntries() - 1;
   }
   else if (fAODTree)
@@ -839,13 +839,17 @@ void AliEveEventManager::NextEvent()
 
     gSystem->ExitLoop();
   }
-  else
+  else if (fESDTree)
   {
     Int_t nextevent=0;
     if (fPEventSelector->FindNext(nextevent))
     {
       GotoEvent(nextevent);
     }
+  }
+  else if (fEventId < GetMaxEventId(kTRUE))
+  {
+    GotoEvent(fEventId + 1);
   }
 }
 
@@ -863,10 +867,18 @@ void AliEveEventManager::PrevEvent()
   {
     throw (kEH + "Event-loop is under external control.");
   }
-  Int_t nextevent=0;
-  if (fPEventSelector->FindPrev(nextevent))
+
+  if (fESDTree)
   {
-    GotoEvent(nextevent);
+    Int_t nextevent=0;
+    if (fPEventSelector->FindPrev(nextevent))
+    {
+      GotoEvent(nextevent);
+    }
+  }
+  else if (fEventId > 0)
+  {
+    GotoEvent(fEventId - 1);
   }
 }
 
