@@ -2673,7 +2673,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
           Int_t jLayer = planes[iLayer];
 	  Int_t nNotInChamber = 0;
           if(!cseed[jLayer].AttachClusters(stack[jLayer], kTRUE)) continue;
-	  if(fkReconstructor->IsHLT()){ 
+	  if(/*fkReconstructor->IsHLT()*/kFALSE){ 
 	    cseed[jLayer].UpdateUsed();
 	    if(!cseed[jLayer].IsOK()) continue;
 	  }else{
@@ -2702,7 +2702,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
             Int_t jLayer = planesExt[iLayer];
             if(!(chamber = stack[jLayer])) continue;
             cseed[jLayer].AttachClusters(chamber, kTRUE);
-            //cseed[jLayer].Fit();
+            cseed[jLayer].Fit();
           }
           fTrackQuality[ntracks] = 1.; // dummy value
           ntracks++;
@@ -2878,18 +2878,19 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 * const seeds, Double_t *
   AliTRDseedV1 *ptrTracklet = NULL;
 
   // skip Kalman filter for HLT
-  if(fkReconstructor->IsHLT()){ 
+  if(/*fkReconstructor->IsHLT()*/kFALSE){ 
     for (Int_t jLayer = 0; jLayer < AliTRDgeometry::kNlayer; jLayer++) {
       track.UnsetTracklet(jLayer);
       ptrTracklet = &seeds[jLayer];
       if(!ptrTracklet->IsOK()) continue;
-      //if(TMath::Abs(ptrTracklet->GetYref(1) - ptrTracklet->GetYfit(1)) >= .2) continue; // check this condition with Marian
+      if(TMath::Abs(ptrTracklet->GetYref(1) - ptrTracklet->GetYfit(1)) >= .2) continue; // check this condition with Marian
       ptrTracklet = SetTracklet(ptrTracklet);
       ptrTracklet->UseClusters();
       track.SetTracklet(ptrTracklet, fTracklets->GetEntriesFast()-1);
     }
     AliTRDtrackV1 *ptrTrack = SetTrack(&track);
     ptrTrack->CookPID();
+    ptrTrack->CookLabel(.9);
     ptrTrack->SetReconstructor(fkReconstructor);
     return ptrTrack;
   }
@@ -3609,6 +3610,7 @@ void AliTRDtrackerV1::AliTRDLeastSquare::AddPoint(const Double_t *const x, Doubl
   //
   // Adding Point to the fitter
   //
+  
   Double_t weight = 1/(sigmaY > 1e-9 ? sigmaY : 1e-9);
   weight *= weight;
   const Double_t &xpt = *x;
@@ -3626,7 +3628,7 @@ void AliTRDtrackerV1::AliTRDLeastSquare::RemovePoint(const Double_t *const x, Do
   //
   // Remove Point from the sample
   //
-  
+
   Double_t weight = 1/(sigmaY > 1e-9 ? sigmaY : 1e-9);
   weight *= weight;
   const Double_t &xpt = *x; 

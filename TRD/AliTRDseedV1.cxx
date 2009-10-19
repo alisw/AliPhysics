@@ -1239,9 +1239,8 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
   Double_t dzdx = fZref[1];
   Double_t yt, zt;
 
-  //AliTRDtrackerV1::AliTRDLeastSquare fitterZ;
-  TLinearFitter& fitterY=*GetFitterY();
-  TLinearFitter& fitterZ=*GetFitterZ();
+  AliTRDtrackerV1::AliTRDLeastSquare fitterY;
+  AliTRDtrackerV1::AliTRDLeastSquare fitterZ;
 
   // book cluster information
   Double_t qc[kNclusters], xc[kNclusters], yc[kNclusters], zc[kNclusters], sy[kNclusters];
@@ -1293,13 +1292,14 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
 
   // fit XY
   fitterY.Eval();
-  fYfit[0] = fitterY.GetParameter(0);
-  fYfit[1] = -fitterY.GetParameter(1);
+  fYfit[0] = fitterY.GetFunctionParameter(0);
+  fYfit[1] = -fitterY.GetFunctionParameter(1);
   // store covariance
-  Double_t *p = fitterY.GetCovarianceMatrix();
+  Double_t p[3];
+  fitterY.GetCovarianceMatrix(p);
   fCov[0] = p[0]; // variance of y0
-  fCov[1] = p[1]; // covariance of y0, dydx
-  fCov[2] = p[3]; // variance of dydx
+  fCov[1] = p[2]; // covariance of y0, dydx
+  fCov[2] = p[1]; // variance of dydx
   // the ref radial position is set at the minimum of 
   // the y variance of the tracklet
   fX   = -fCov[1]/fCov[2];
@@ -1335,8 +1335,8 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     }
     // fit XZ
     fitterZ.Eval();
-    if(fitterZ.GetParameter(1)!=0.){ 
-      fX = -fitterZ.GetParameter(0)/fitterZ.GetParameter(1);
+    if(fitterZ.GetFunctionParameter(1)!=0.){ 
+      fX = -fitterZ.GetFunctionParameter(0)/fitterZ.GetFunctionParameter(1);
       fX=(fX<0.)?0.:fX;
       Float_t dl = .5*AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght();
       fX=(fX> dl)?dl:fX;
