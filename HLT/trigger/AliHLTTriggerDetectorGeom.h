@@ -11,6 +11,7 @@
 /// @brief  HLT class describing simple geometry of (sub-)detectors.
 ///         Used for the AliHLTTriggerBarrelGeomMultiplicity classes
 
+
 #include "TString.h"
 #include <ostream>
 #include "TObject.h"
@@ -139,6 +140,7 @@ protected:
   TString fName;      // Name of the (sub-)detector 
   
 private: 
+
   /** 
    * The point which together with a normal vector 
    * defines the plane of the (sub-)detector
@@ -151,7 +153,6 @@ private:
    */
   Double_t fNormVector[3]; // Normal vector representing the plane
 
-  
   ClassDef(AliHLTTriggerDetectorGeom, 1);
 
 };

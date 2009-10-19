@@ -17,6 +17,7 @@
 /// @file   AliHLTTriggerBarrelGeomMultiplicity.cxx
 /// @author Oystein Djuvsland
 /// @date   2009-10-08
+
 /// @brief  HLT trigger component for charged particle multiplicity 
 ///         within a geometrical acceptance in the central barrel.
 
@@ -27,6 +28,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTTriggerBarrelGeomMultiplicity.h"
+
 #include "AliHLTTriggerDetectorGeom.h"
 #include "AliHLTTriggerDecisionParameters.h"
 #include "AliESDEvent.h"
@@ -59,20 +61,24 @@ AliHLTTriggerBarrelGeomMultiplicity::AliHLTTriggerBarrelGeomMultiplicity()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
   fDetectorArray = new TObjArray;
 
 }
 
+
+const char* AliHLTTriggerBarrelGeomMultiplicity::fgkOCDBEntry="HLT/ConfigHLT/BarrelGeomMultiplicityTrigger";
+
+>>>>>>> - Adding the new track multiplicity trigger cutting on geometrical acceptance
 AliHLTTriggerBarrelGeomMultiplicity::~AliHLTTriggerBarrelGeomMultiplicity()
 {
   // see header file for class documentation
 }
 
-const char* AliHLTTriggerBarrelGeomMultiplicity::GetTriggerName() const 
+
+const char* AliHLTTriggerBarrelGeomMultiplicity::GetTriggerName() const
 {
   // see header file for class documentation
-  //  const char* name = fTriggerName;
-  //  if(name) return name;
   return "BarrelGeomMultiplicityTrigger";
 }
 
@@ -81,6 +87,7 @@ AliHLTComponent* AliHLTTriggerBarrelGeomMultiplicity::Spawn()
   // see header file for class documentation
   return new AliHLTTriggerBarrelGeomMultiplicity;
 }
+
 
 int AliHLTTriggerBarrelGeomMultiplicity::Reconfigure(const char *cdbEntry, const char *chainId)
 {
@@ -98,6 +105,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::Reconfigure(const char *cdbEntry, const
   return GetDetectorGeomsFromCDBObject(entry, chainId);
 } 
 
+
 int AliHLTTriggerBarrelGeomMultiplicity::DoTrigger()
 {
   // see header file for class documentation
@@ -108,6 +116,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoTrigger()
   const TObject* obj = GetFirstInputObject(kAliHLTAllDataTypes, "AliESDEvent");
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
   TString description;
+
   if (esd != NULL) 
     {
       numberOfTracks=0;
@@ -157,12 +166,12 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoTrigger()
     }
   
   return iResult;
-
 }
 
 template<class T>
 bool AliHLTTriggerBarrelGeomMultiplicity::CheckCondition(T* track, float b)
 {
+
   bool ret = false;
 
   // see header file for class documentation
@@ -212,10 +221,11 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoInit(int argc, const char** argv)
 }
 
 int AliHLTTriggerBarrelGeomMultiplicity::DoDeinit()
- {
+{
   // see header file for class documentation
   return 0;
 }
+
 
 int AliHLTTriggerBarrelGeomMultiplicity::ReadPreprocessorValues(const char* /*modules*/)
 {
@@ -330,12 +340,12 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromFile(const char *fi
 
 int AliHLTTriggerBarrelGeomMultiplicity::ScanConfigurationArgument(int argc, const char** argv)
 {
-  // See header file for class documentation
+  // see header file for class documentation
   if (argc<=0) return 0;
   int i=0;
   TString argument=argv[i];
 
-  // -maxpt
+
   if (argument.CompareTo("-geomfile")==0) 
     {
       if (++i>=argc) return -EPROTO;
