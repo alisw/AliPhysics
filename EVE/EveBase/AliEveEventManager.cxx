@@ -547,6 +547,9 @@ void AliEveEventManager::Open()
 	cdb->SetDefaultStorage(fgCdbUri);
       } else
 	cdb->SetDefaultStorage(fgCdbUri);
+
+      cdb->SetRun(runNo);
+
       if (cdb->IsDefaultStorageSet() == kFALSE)
 	throw kEH + "CDB initialization failed for '" + fgCdbUri + "'.";
     }
@@ -570,7 +573,6 @@ void AliEveEventManager::Open()
 	}
       }
     }
-    cdb->SetRun(runNo);
   }
 
   fIsOpen = kTRUE;
