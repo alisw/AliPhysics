@@ -152,7 +152,7 @@ AliMUONPedestalEventGenerator::ConvertRawFilesToDate()
   
   const Int_t kIDet = AliDAQ::DetectorID("MUONTRK");
   
-  const Int_t kNLDCs = TMath::CeilNint(AliDAQ::NumberOfLdcs(kIDet));
+  const Int_t kNLDCs = 5;//TMath::CeilNint(AliDAQ::NumberOfLdcs(kIDet));
   
   char* path = gSystem->Which(gSystem->Getenv("PATH"), "dateStream");
   if (!path) 
@@ -174,7 +174,7 @@ AliMUONPedestalEventGenerator::ConvertRawFilesToDate()
     char command[256];
     // Note the option -s. It is used in order to avoid
     // the generation of SOR/EOR events.
-    sprintf(command, "dateStream -s -D -o %s.LDC%d -# %d -C", 
+    sprintf(command, "dateStream -c -D -o %s.LDC%d -# %d -C", 
             fDateFileName.Data(), iFile, runLoader->GetNumberOfEvents());
     pipe[iFile] = gSystem->OpenPipe(command, "w");
   }

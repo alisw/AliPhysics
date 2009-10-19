@@ -84,7 +84,7 @@ AliMUONTriggerSubprocessor::GetFileName(const char* fid) const
 }
 
 //_____________________________________________________________________________
-void 
+Bool_t 
 AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
   /// When starting a new run, reads in the trigger online files.
@@ -114,7 +114,7 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   {
     Master()->Log("FATAL ERROR : DA does not seem to have been run !!!");
     Master()->Invalidate();
-    return;
+    return kFALSE;
   }
   
   // OK. We have an exportedFiles.dat file at hand.
@@ -130,7 +130,7 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   
   if ((globalFile+regionalFile+localFile+lutFile) == 0) {
     Master()->Log("No file(s) to be processed for this run. Exiting.");
-    return;
+    return kTRUE;
   }
   
   delete fRegionalConfig; fRegionalConfig = 0x0;
@@ -151,7 +151,7 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   {
     Master()->Log("Could not read some input file(s). Aborting");
     Master()->Invalidate();
-    return;
+    return kFALSE;
   }
   
   if ( regionalFile ) fRegionalConfig = new AliMUONRegionalTriggerConfig();
@@ -192,6 +192,7 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
       fLUT = 0x0;
     }
   }
+  return kTRUE;
 }
 
 //_____________________________________________________________________________

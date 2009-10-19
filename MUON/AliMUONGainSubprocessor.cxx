@@ -75,7 +75,7 @@ AliMUONGainSubprocessor::~AliMUONGainSubprocessor()
 }
 
 //_____________________________________________________________________________
-void 
+Bool_t 
 AliMUONGainSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
   /// When starting a new run, reads in the Gains ASCII files.
@@ -113,6 +113,8 @@ AliMUONGainSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
     }
   }
   
+  delete sources;
+
   if ( fSkip ) 
   {
     delete fGains;
@@ -124,9 +126,10 @@ AliMUONGainSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
     Master()->Log("Failed to read any Gains");
     delete fGains;
     fGains = 0x0;
+    return kFALSE;
   }
   
-  delete sources;
+  return kTRUE;
 }
 
 //_____________________________________________________________________________

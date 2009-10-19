@@ -29,12 +29,13 @@ public:
   AliMUON2DStoreValidator();
   virtual ~AliMUON2DStoreValidator();
   
-  TObjArray* Validate(const AliMUONVStore& store, Float_t invalidFloatValue);
+  TObjArray* Validate(const AliMUONVStore& store, Float_t invalidFloatValue, AliMUONVStore* config=0x0);
 
-  TObjArray* Validate(const AliMUONVStore& store);
+  TObjArray* Validate(const AliMUONVStore& store, AliMUONVStore* config=0x0);
   
   TObjArray* Validate(const AliMUONVStore& store, 
-                      Bool_t (*check)(const AliMUONVCalibParam&,Int_t));
+                      Bool_t (*check)(const AliMUONVCalibParam&,Int_t),
+                      AliMUONVStore* config=0x0);
 
   /// Return statuses
   AliMUONVStore* GetStatus() const { return fStatus; }

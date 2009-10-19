@@ -30,12 +30,14 @@
 ClassImp(AliMUONTrackerIO)
 /// \endcond
 
+#include "AliDCSValue.h"
 #include "AliLog.h"
 #include "AliMUONCalibParamND.h"
 #include "AliMUONCalibParamNF.h"
 #include "AliMUONVStore.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
+#include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
 #include <Riostream.h>
 #include <TClass.h>
@@ -205,6 +207,14 @@ AliMUONTrackerIO::DecodePedestals(TString data, AliMUONVStore& pedStore)
     std::istringstream sin(line);
     sin >> busPatchID >> manuID >> manuChannel >> pedMean >> pedSigma;
     Int_t detElemID = AliMpDDLStore::Instance()->GetDEfromBus(busPatchID);
+    
+    if ( !AliMpDEManager::IsValidDetElemId(detElemID) )
+    {
+      AliErrorClass(Form("Got an invalid DE = %d from busPatchId=%d manuId=%d",
+                         detElemID,busPatchID,manuID));
+      continue;
+    }
+    
     AliDebugClass(3,Form("BUSPATCH %3d DETELEMID %4d MANU %3d CH %3d MEAN %7.2f SIGMA %7.2f",
                     busPatchID,detElemID,manuID,manuChannel,pedMean,pedSigma));
 		    
@@ -343,6 +353,14 @@ AliMUONTrackerIO::DecodeGains(TString data, AliMUONVStore& gainStore,
            &a0,&a1,&thres,&qual); 
     AliDebugClass(3,Form("line=%s",line));
     Int_t detElemID = AliMpDDLStore::Instance()->GetDEfromBus(busPatchID);
+    
+    if ( !AliMpDEManager::IsValidDetElemId(detElemID) )
+    {
+      AliErrorClass(Form("Got an invalid DE = %d from busPatchId=%d manuId=%d",
+                         detElemID,busPatchID,manuID));
+      continue;
+    }
+    
     AliDebugClass(3,Form("BUSPATCH %3d DETELEMID %4d MANU %3d CH %3d A0 %7.2f "
                     "A1 %e THRES %5d QUAL %x",
                     busPatchID,detElemID,manuID,manuChannel,a0,a1,thres,qual));
@@ -433,3 +451,118 @@ AliMUONTrackerIO::ReadCapacitances(const char* file, AliMUONVStore& capaStore)
   
   return ngenerated;
 }
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONTrackerIO::ReadConfig(const char* filename, AliMUONVStore& confStore, Bool_t& changed)
+{
+  /// Read config file (produced by the MUONTRKda.exe program for instance)
+  /// and append the read values into the given VStore
+  /// To be used when the input is a file (for instance when reading data 
+  /// from the OCDB).
+  /// changed must be set to kFALSE before calling this method for the first time
+  /// (then the subsequent calls must not set it !)
+  ///
+  
+  TString sFilename(gSystem->ExpandPathName(filename));
+  
+  std::ifstream in(sFilename.Data());
+  if (!in.good()) 
+  {
+    return kCannotOpenFile;
+  }
+  
+  TString datastring;
+  ostringstream stream;
+  char line[1024];
+  while ( in.getline(line,1024) )
+  	stream << line << "\n";
+  datastring = TString(stream.str().c_str());
+  
+  in.close();
+  
+  return DecodeConfig(datastring,confStore,changed);
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONTrackerIO::DecodeConfig(TString data, AliMUONVStore& confStore, Bool_t& changed)
+{
+  /// Read config data (produced by the MUONTRKda.exe program for instance)
+  /// and append the read values into the given VStore
+  /// To be used when the input is a TString (for instance when getting data 
+  /// from AMORE DB).
+  /// changed must be set to kFALSE before calling this method for the first time
+  /// (then the subsequent calls must not set it !)
+
+  char line[1024];
+  Int_t busPatchID, manuID;
+  Int_t n(0);
+  istringstream in(data.Data());
+  
+  while ( in.getline(line,1024) )
+  {
+    AliDebugClass(3,Form("line=%s",line));
+    if ( line[0] == '#' ) 
+    {
+      TString sline(line);
+      sline.ToUpper();
+      if (sline.Contains("CHANGED") && !sline.Contains("UNCHANGED")) changed = kTRUE;
+      continue;
+    }
+    std::istringstream sin(line);
+    sin >> busPatchID >> manuID;
+
+    Int_t detElemID = AliMpDDLStore::Instance()->GetDEfromBus(busPatchID);
+
+    if ( !AliMpDEManager::IsValidDetElemId(detElemID) )
+    {
+      AliErrorClass(Form("Got an invalid DE = %d from busPatchId=%d manuId=%d",
+                         detElemID,busPatchID,manuID));
+      continue;
+    }
+    
+    AliMUONVCalibParam* conf = 
+    static_cast<AliMUONVCalibParam*>(confStore.FindObject(detElemID,manuID));
+    if (!conf) 
+    {
+      conf = new AliMUONCalibParamNF(1,1,detElemID,manuID,1);
+      confStore.Add(conf);
+    }
+    ++n;
+  }
+  
+  return n;
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONTrackerIO::WriteConfig(ofstream& out, AliMUONVStore& confStore)
+{
+  /// Write the conf store as an ASCII file
+  /// Note that we are converting (back) the detElemId into a busPatchId
+  /// Return the number of lines written
+  
+  if ( !AliMpDDLStore::Instance() ) 
+  {
+    cout << "ERROR: mapping not loaded. Cannot work" << endl;
+    return 0;
+  }
+  
+  TIter next(confStore.CreateIterator());
+  AliMUONVCalibParam* param;
+  Int_t n(0);
+  
+  while ( (param=static_cast<AliMUONVCalibParam*>(next())) )
+  {
+    Int_t detElemId = param->ID0();
+    Int_t manuId = param->ID1();
+    
+    Int_t busPatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
+    ++n;
+    
+    out << busPatchId << " " << manuId << endl;
+  }
+  return n;
+}
+

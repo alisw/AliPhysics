@@ -120,13 +120,17 @@ AliMUONPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
     }
   }
   
+  Int_t nok(0);
+
   if (IsValid())
   {
     // loop over subtasks and initialize them
     for ( Int_t i = 0; i <= fSubprocessors->GetLast(); ++i )
     {
-      Subprocessor(i)->Initialize(run,startTime,endTime);
+      Bool_t ok = Subprocessor(i)->Initialize(run,startTime,endTime);
+      if (ok) ++nok;
     }
+    if (nok !=  fSubprocessors->GetLast()+1) fIsValid = kFALSE;
   }
   Log(Form("Initialize was %s",( IsValid() ? "fine" : "NOT OK")));
 }

@@ -296,19 +296,22 @@ AliMUON2DStoreValidator::Report(TList& lines, const TObjArray& chambers)
 
 //_____________________________________________________________________________
 TObjArray* 
-AliMUON2DStoreValidator::Validate(const AliMUONVStore& store)
+AliMUON2DStoreValidator::Validate(const AliMUONVStore& store,
+                                  AliMUONVStore* config)
 {                                  
   /// Validate the store. Check only the presence of all manus (i.e.
-  /// check nothing about the values themselves)
+  /// check nothing about the values themselves). 
+  /// Absence of manus which are not in the config is considered as normal.
   
   Bool_t (*kCheck)(const AliMUONVCalibParam&,Int_t) = 0x0;
-  return Validate(store,kCheck);
+  return Validate(store,kCheck,config);
 }
 
 //_____________________________________________________________________________
 TObjArray* 
 AliMUON2DStoreValidator::Validate(const AliMUONVStore& store,
-                                  Bool_t (*check)(const AliMUONVCalibParam&,Int_t))
+                                  Bool_t (*check)(const AliMUONVCalibParam&,Int_t),
+                                  AliMUONVStore* config)
 {
   /// Validate the store. 
   /// The check method is used to decide if a store content value
@@ -331,7 +334,11 @@ AliMUON2DStoreValidator::Validate(const AliMUONVStore& store,
     if (!test)
     {
       // completely missing manu
-      AddMissingManu(detElemId,manuId);
+      if ( !config || ( config && config->FindObject(detElemId,manuId ) ) )
+      {
+        // manu is in the config but not in the store : that's an error
+        AddMissingManu(detElemId,manuId);
+      }
     }
     else
     {
@@ -358,7 +365,8 @@ AliMUON2DStoreValidator::Validate(const AliMUONVStore& store,
 //_____________________________________________________________________________
 TObjArray* 
 AliMUON2DStoreValidator::Validate(const AliMUONVStore& store,
-                                  Float_t invalidFloatValue)
+                                  Float_t invalidFloatValue,
+                                  AliMUONVStore* config)
 {
   /// Validate the store. 
   /// The invalidFloatValue is used to decide if a store content value
@@ -379,8 +387,11 @@ AliMUON2DStoreValidator::Validate(const AliMUONVStore& store,
       static_cast<AliMUONVCalibParam*>(store.FindObject(detElemId,manuId));
     if (!test)
     {
-      // completely missing manu
-      AddMissingManu(detElemId,manuId);
+      if ( !config || ( config && config->FindObject(detElemId,manuId ) ) )
+      {
+        // completely missing manu
+        AddMissingManu(detElemId,manuId);
+      }
     }
     else
     {

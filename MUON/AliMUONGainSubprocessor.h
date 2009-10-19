@@ -29,7 +29,7 @@ public:
   AliMUONGainSubprocessor(AliMUONPreprocessor* master);
   virtual ~AliMUONGainSubprocessor();
   
-  void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
+  Bool_t Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
   UInt_t Process(TMap* dcsAliasMap);
   
 private:

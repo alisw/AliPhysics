@@ -65,6 +65,9 @@ public:
   /// Whether we should do something or not
   Bool_t IsApplicable() { return fIsApplicable; }
   
+  TString GetLogBookParam(const char* parname)
+  { return TString(AliPreprocessor::GetRunParameter(parname)); }
+  
 protected:
   AliMUONPreprocessor(const char* detName, AliShuttleInterface* shuttle);
   virtual ~AliMUONPreprocessor();

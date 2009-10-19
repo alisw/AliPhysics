@@ -414,14 +414,18 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.01");
+  rn->AddLine("");
+  rn->AddLine("Added the configuration as a possible OCDB data source");
+  rn->AddLine("");
+  
   rn->AddLine("1.00");
   rn->AddLine("");
   rn->AddLine("Added the Status and StatusMap as a possible OCDB data source");
   rn->AddLine("");
   rn->AddLine("Added one (computed) dimension to the Gains data source = 1/a1/0.2 (mV/fC)");
   rn->AddLine("");
-  
-  
+    
   rn->AddLine("0.99a");
   rn->AddLine("");
   rn->AddLine("Added the --de and --chamber options");

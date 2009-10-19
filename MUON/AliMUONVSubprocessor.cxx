@@ -52,14 +52,15 @@ AliMUONVSubprocessor::~AliMUONVSubprocessor()
 }
 
 //_____________________________________________________________________________
-void
+Bool_t
 AliMUONVSubprocessor::Initialize(Int_t /*run*/, 
                                  UInt_t startTime, 
                                  UInt_t endTime)
 {
   /// optional
-  fStartTime = startTime;
-  fEndTime = endTime;
+  fStartTime = startTime; // time_created
+  fEndTime = endTime; // time_completed
+  return kTRUE;
 }
 
 //_____________________________________________________________________________

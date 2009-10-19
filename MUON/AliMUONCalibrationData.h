@@ -70,6 +70,9 @@ public:
   /// Create a pedestal store (which must be deleted) from OCDB for the given run
   static AliMUONVStore* CreatePedestals(Int_t runNumber, Int_t* startOfValidity=0);
 
+  /// Create a configuration store (which must be deleted) from OCDB for the given run
+  static AliMUONVStore* CreateConfig(Int_t runNumber, Int_t* startOfValidity=0);
+
   /// Create a regional trigger mask store (which must be deleted) for a given run
   static AliMUONRegionalTriggerConfig* CreateRegionalTriggerConfig(Int_t runNumber, Int_t* startOfValidity=0);
 
@@ -105,6 +108,9 @@ public:
   /// Get the pedestal store
   AliMUONVStore* Pedestals() const;
 
+  /// Get the config store
+  AliMUONVStore* Config() const;
+  
   /// Get the occupancy map store
   AliMUONVStore* OccupancyMap() const;
 
@@ -166,8 +172,10 @@ private:
 
   static AliMUONVStore* fBypassPedestals;
   static AliMUONVStore* fBypassGains;
-    
-  ClassDef(AliMUONCalibrationData,12) // Storage for all MUON calibration data.
+  
+  mutable AliMUONVStore* fConfig; //!< configuration of the tracker
+  
+  ClassDef(AliMUONCalibrationData,13) // Storage for all MUON calibration data.
 };
 
 #endif

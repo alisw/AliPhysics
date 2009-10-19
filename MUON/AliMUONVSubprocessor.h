@@ -27,7 +27,7 @@ public:
                        const char* name="", const char* title="");
   virtual ~AliMUONVSubprocessor();
   
-  virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
+  virtual Bool_t Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
   
   /// Process this sub-task
   virtual UInt_t Process(TMap* dcsAliasMap) = 0;

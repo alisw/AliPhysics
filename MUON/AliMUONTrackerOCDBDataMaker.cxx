@@ -78,6 +78,13 @@ AliMUONTrackerOCDBDataMaker::AliMUONTrackerOCDBDataMaker(const char* ocdbPath,
 		store = AliMUONCalibrationData::CreatePedestals(runNumber,&startOfValidity);
 		fData = CreateDataPedestals(startOfValidity);
 	}
+  else if ( stype == "CONFIG" ) 
+  {
+    store = AliMUONCalibrationData::CreateConfig(runNumber,&startOfValidity);
+    fData = new AliMUONTrackerData(Form("CONFIG%d",startOfValidity),"Configuration",1);
+    fData->SetDimensionName(0,"there");
+    fData->DisableChannelLevel();
+  }
 	else if ( stype == "OCCUPANCY" )
 	{
 		store = AliMUONCalibrationData::CreateOccupancyMap(runNumber,&startOfValidity);

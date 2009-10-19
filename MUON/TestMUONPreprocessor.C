@@ -29,8 +29,10 @@
 /// the rootlogon.C there) before compiling this macro :
 /// <pre>
 /// gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
-/// gSystem->Load("$ALICE_ROOT/MUON/libMUONshuttle");
+/// gSystem->Load("libMUONshuttle");
 /// </pre>
+/// Last line above assume you have $ALICE_ROOT/MUON/lib/tgt_[arch] (where
+/// libMUONshuttle is located) in your LD_LIBRARY_PATH
 ///
 /// Having $ALICE_ROOT/SHUTTLE/TestShuttle directory in your LD_LIBRARY_PATH
 /// (or DYLD_LIBRARY_PATH on Mac OS X) won't hurt either...
@@ -75,6 +77,13 @@
 ///    LDC1.ped
 ///    LDC2.ped
 ///    LDC3.ped
+///    LDC4.conf
+/// CONFIG/
+///    LDC0.conf
+///    LDC1.conf
+///    LDC2.conf
+///    LDC3.conf
+///    LDC4.conf
 /// TRIGGER/
 ///    ExportedFiles.dat (mandatory)
 ///    MtgGlobalCrate-1.dat
@@ -105,8 +114,10 @@
 
 #include "AliLog.h"
 
+#include "AliMpBusPatch.h"
 #include "AliMpExMap.h"
 #include "AliMpHelper.h"
+#include "AliMpDDLStore.h"
 #include "AliMpDCSNamer.h"
 #include "AliMpCDB.h"
 
@@ -126,6 +137,7 @@
 #include "TRandom.h"
 #endif
 
+//______________________________________________________________________________
 void TestMUONPreprocessor(Int_t runNumber=80, 
                           const char* runType="CALIBRATION",
                           const char* sourceDirectory="/afs/cern.ch/user/l/laphecet/public")
@@ -139,6 +151,9 @@ void TestMUONPreprocessor(Int_t runNumber=80,
 
   // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
+  
+  gSystem->Load("libTestShuttle.so");
+
   AliTestShuttle* shuttle = new AliTestShuttle(runNumber, 0, 1);
   
   const char* inputCDB = "local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB";
@@ -153,6 +168,8 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   if ( rt.Contains("PHYSICS") )
   {
     // Create DCS aliases
+    UInt_t startTime, endTime;
+    
     TMap* dcsAliasMap = CreateDCSAliasMap(inputCDB, runNumber);
 
     if ( dcsAliasMap ) 
@@ -181,7 +198,14 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC1",Form("%s/PEDESTALS/LDC1.ped",sourceDirectory));
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC2",Form("%s/PEDESTALS/LDC2.ped",sourceDirectory));
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC3",Form("%s/PEDESTALS/LDC3.ped",sourceDirectory));
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC4",Form("%s/PEDESTALS/LDC4.ped",sourceDirectory));
 
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC0",Form("%s/CONFIG/LDC0.conf",sourceDirectory));
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC1",Form("%s/CONFIG/LDC1.conf",sourceDirectory));
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC2",Form("%s/CONFIG/LDC2.conf",sourceDirectory));
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC3",Form("%s/CONFIG/LDC3.conf",sourceDirectory));
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC4",Form("%s/CONFIG/LDC4.conf",sourceDirectory));
+  
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0",Form("%s/GAINS/LDC0.gain",sourceDirectory));
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC1",Form("%s/GAINS/LDC1.gain",sourceDirectory));
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC2",Form("%s/GAINS/LDC2.gain",sourceDirectory));
@@ -215,6 +239,70 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   shuttle->Process();
 }
 
+//______________________________________________________________________________
+void GenerateConfig()
+{
+  /// Generate "fake" configuration files for the tracker. One per LDC.
+  
+  Bool_t undefStorage(kFALSE);
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet())
+  {
+    undefStorage = kTRUE;
+    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    man->SetRun(0);
+  }
+  
+  // Load mapping
+  Bool_t ok = AliMpCDB::LoadDDLStore();
+  
+  if (undefStorage)
+  {
+    man->UnsetDefaultStorage();
+  }
+  
+  if (!ok)
+  {
+    AliErrorGeneral("GenerateConfig","Could not load DDLStore from OCDB");
+    return;
+  }
+  
+  ofstream* files[5];
+  for ( Int_t i = 0; i < 5; ++i ) 
+  {
+    files[i]=0;
+  }
+  
+  TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
+  AliMpBusPatch* bp;
+  
+  while ( ( bp = static_cast<AliMpBusPatch*>(next()) ) )
+  {
+    Int_t ddl = bp->GetDdlId();
+    
+    Int_t ldc = ddl/4;
+    
+    if (!files[ldc])
+    {
+      files[ldc] = new ofstream(Form("LDC%d.conf",ldc));
+      *(files[ldc]) << "# changed" << endl;
+    }
+
+    for ( Int_t imanu = 0; imanu < bp->GetNofManus(); ++imanu ) 
+    {
+      *(files[ldc]) << bp->GetId() << " " << bp->GetManuId(imanu) << endl;
+    }        
+  }
+  
+  for ( Int_t i = 0; i < 5; ++i ) 
+  {
+    if ( files[i] ) files[i]->close();
+    delete files[i];
+  }
+}
+
+//______________________________________________________________________________
 TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
 {
   /// Creates a DCS structure for MUON Tracker HV and Trigger DCS and Currents
@@ -272,54 +360,52 @@ TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
       TString& aliasName = alias->String();
       if ( aliasName.Contains("sw") && sDetName.Contains("TRACKER")) 
       {
-	// HV Switch (St345 only)
-	TObjArray* valueSet = new TObjArray;
-	valueSet->SetOwner(kTRUE);
-	Bool_t bvalue = kTRUE;
-//      Float_t r = random.Uniform();
-//      if ( r < 0.007 ) value = kFALSE;      
-//      if ( aliasName.Contains("DE513sw2") ) value = kFALSE;
-      
-	for ( UInt_t timeStamp = 0; timeStamp < 60*3; timeStamp += 60 )
-	{
-	  AliDCSValue* dcsValue = new AliDCSValue(bvalue,timeStamp);
-	  valueSet->Add(dcsValue);
-	}
-	aliasMap->Add(new TObjString(*alias),valueSet);
+        // HV Switch (St345 only)
+        TObjArray* valueSet = new TObjArray;
+        valueSet->SetOwner(kTRUE);
+        Bool_t bvalue = kTRUE;
+        //      Float_t r = random.Uniform();
+        //      if ( r < 0.007 ) value = kFALSE;      
+        //      if ( aliasName.Contains("DE513sw2") ) value = kFALSE;
+        
+        for ( UInt_t timeStamp = 0; timeStamp < 60*3; timeStamp += 60 )
+        {
+          AliDCSValue* dcsValue = new AliDCSValue(bvalue,timeStamp);
+          valueSet->Add(dcsValue);
+        }
+        aliasMap->Add(new TObjString(*alias),valueSet);
       }
       else
       {
-	TObjArray* valueSet = new TObjArray;
-	valueSet->SetOwner(kTRUE);
-	for ( UInt_t timeStamp = 0; timeStamp < 60*15; timeStamp += 120 )
-	{
-	  Float_t value = 0;
-	  if(sDetName.Contains("TRACKER")){
-	    value = random.Gaus(1750,62.5);
-	    if ( aliasName == "MchHvLvLeft/Chamber00Left/Quad2Sect1.actual.vMon") value = 500;
-	  }
-	  else if(aliasName.Contains("iMon")){
-	    value = random.Gaus(2.,0.4);
-	  }
-	  else {
-	    value = random.Gaus(8000.,16.);
-	  }
-	
-	  AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
-	  valueSet->Add(dcsValue);
-	}
-	if ( aliasName == "MchHvLvLeft/Chamber04Left/Slat06.actual.vMon" ) continue;
-	if ( aliasName == "MTR_INSIDE_MT22_RPC3_HV.vEff" ) continue;
-	if ( aliasName == "MTR_OUTSIDE_MT21_RPC4_HV.actual.iMon" ) continue;
-	aliasMap->Add(new TObjString(*alias),valueSet);
+        TObjArray* valueSet = new TObjArray;
+        valueSet->SetOwner(kTRUE);
+        for ( UInt_t timeStamp = 0; timeStamp < 60*15; timeStamp += 120 )
+        {
+          Float_t value = 0;
+          if(sDetName.Contains("TRACKER")){
+            value = random.Gaus(1750,62.5);
+            if ( aliasName == "MchHvLvLeft/Chamber00Left/Quad2Sect1.actual.vMon") value = 500;
+          }
+          else if(aliasName.Contains("iMon")){
+            value = random.Gaus(2.,0.4);
+          }
+          else {
+            value = random.Gaus(8000.,16.);
+          }
+          
+          AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
+          valueSet->Add(dcsValue);
+        }
+        if ( aliasName == "MchHvLvLeft/Chamber04Left/Slat06.actual.vMon" ) continue;
+        if ( aliasName == "MTR_INSIDE_MT22_RPC3_HV.vEff" ) continue;
+        if ( aliasName == "MTR_OUTSIDE_MT21_RPC4_HV.actual.iMon" ) continue;
+        aliasMap->Add(new TObjString(*alias),valueSet);
       }
     } // loop on aliases
-
+    
     delete aliases;
   } // loop on detectors (tracker and trigger)
   
-
-    
   AliMpCDB::UnloadAll();
   
   return aliasMap;

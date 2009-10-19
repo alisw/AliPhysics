@@ -55,7 +55,9 @@ AliMUONPedestalSubprocessor::AliMUONPedestalSubprocessor(AliMUONPreprocessor* ma
 : AliMUONVSubprocessor(master,
                        "Pedestals",
                        "Upload MUON Tracker pedestals to OCDB"),
-fPedestals(0x0)
+fPedestals(0x0),
+fConfig(0x0),
+fConfigChanged(kFALSE)
 {
   /// default ctor
 }
@@ -65,10 +67,11 @@ AliMUONPedestalSubprocessor::~AliMUONPedestalSubprocessor()
 {
   /// dtor
   delete fPedestals;
+  delete fConfig;
 }
 
 //_____________________________________________________________________________
-void 
+Bool_t 
 AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
   /// When starting a new run, reads in the pedestals ASCII files.
@@ -79,6 +82,9 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
   delete fPedestals;
   fPedestals = new AliMUON2DMap(kTRUE);
   
+  delete fConfig;
+  fConfig = new AliMUON2DMap(kTRUE);
+  
   Master()->Log(Form("Reading pedestal files for Run %d startTime %ld endTime %ld",
                      run,startTime,endTime));
   
@@ -86,24 +92,64 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
   TIter next(sources);
   TObjString* o(0x0);
   Int_t n(0);
+  Int_t npedFiles(0);
   
   while ( ( o = static_cast<TObjString*>(next()) ) )
   {
     TString fileName(Master()->GetFile(kSystem,kId,o->GetName()));
-    Int_t ok = ReadFile(fileName.Data());
+    Int_t ok = ReadPedestalFile(fileName.Data());
     if (ok>0)
     {
       n += ok;
+      ++npedFiles;
     }
   }
+
+  delete sources;
   
   if (!n)
   {
     Master()->Log("Failed to read any pedestals");
     delete fPedestals;
     fPedestals = 0;
+    delete fConfig;
+    fConfig = 0;
+    return kFALSE;
   }
+  
+  const char* kIdConf = "CONFIG";
+
+  sources = Master()->GetFileSources(kSystem,kIdConf);
+  TIter nextConf(sources);
+  Int_t nconf(0);
+  Int_t nconfFiles(0);
+  
+  fConfigChanged = kFALSE;
+  
+  while ( ( o = static_cast<TObjString*>(nextConf()) ) )
+  {
+    TString fileName(Master()->GetFile(kSystem,kIdConf,o->GetName()));
+    Int_t ok = ReadConfigFile(fileName.Data());
+    if (ok>0)
+    {
+      nconf += ok;
+      ++nconfFiles;
+    }
+  }
+  
   delete sources;
+  
+  if ( npedFiles != nconfFiles )
+  {
+    Master()->Log(Form("ERROR : Number of config files (%d) different from number of pedestal files (%d)",nconfFiles,npedFiles));
+    delete fPedestals;
+    fPedestals = 0;
+    delete fConfig;
+    fConfig = 0;
+    return kFALSE;
+  }
+  
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -112,9 +158,9 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
 {
   /// Store the pedestals into the CDB
   
-  if (!fPedestals) 
+  if (!fPedestals || !fConfig) 
   {
-    // this is the only reason to fail for the moment : getting no pedestal
+    // this is the only reason to fail for the moment : getting no pedestal or no config
     // at all.
     return 1;
   }
@@ -123,7 +169,7 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
 
   Master()->Log("Validating");
 
-  TObjArray* chambers = validator.Validate(*fPedestals);
+  TObjArray* chambers = validator.Validate(*fPedestals,fConfig);
   
   if (chambers)
   {
@@ -143,7 +189,11 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
     }
   }
   
-  Master()->Log("Storing pedestals");
+  Master()->Log("Storing pedestals...");
+  if ( fConfigChanged ) 
+  {
+    Master()->Log("...and configuration, as it has changed");
+  }
   
   AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
@@ -154,13 +204,16 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
   
   Bool_t validToInfinity = kTRUE;
 	Bool_t result = Master()->Store("Calib", "Pedestals", fPedestals, &metaData, 0, validToInfinity);
-  
+  if ( fConfigChanged ) 
+  {
+    result = result && Master()->Store("Calib", "Config", fConfig, &metaData, 0, validToInfinity);
+  }
   return ( result != kTRUE ); // return 0 if everything is ok.  
 }
 
 //_____________________________________________________________________________
 Int_t
-AliMUONPedestalSubprocessor::ReadFile(const char* filename)
+AliMUONPedestalSubprocessor::ReadPedestalFile(const char* filename)
 {
   /// Read the pedestals from an ASCII file.                                  \n
   /// Format of that file is one line per channel :                           \n
@@ -187,6 +240,34 @@ AliMUONPedestalSubprocessor::ReadFile(const char* filename)
   return n;
 }
 
+//_____________________________________________________________________________
+Int_t
+AliMUONPedestalSubprocessor::ReadConfigFile(const char* filename)
+{
+  /// Read the configuration from an ASCII file.                              
+  /// Format of that file is one line per manu :                              
+  /// BUS_PATCH MANU_ADDR
+  /// And the first line contains "unchanged" if the configuration is the same
+  /// as before.
+  /// Return kFALSE if reading was not successfull.                           
+  ///
+  
+  TString sFilename(gSystem->ExpandPathName(filename));
+  
+  Master()->Log(Form("Reading %s",sFilename.Data()));
+  
+  Int_t n = AliMUONTrackerIO::ReadConfig(sFilename.Data(),*fConfig,fConfigChanged);
+  
+  switch (n)
+  {
+    case -1:
+      Master()->Log(Form("Could not open %s",sFilename.Data()));
+      break;
+  }
+  
+  return n;
+}
+
 
 //_____________________________________________________________________________
 void
@@ -194,4 +275,6 @@ AliMUONPedestalSubprocessor::Print(Option_t* opt) const
 {
   /// ouput to screen
   if (fPedestals) fPedestals->Print("",opt);
+  if (fConfig) fConfig->Print("",opt);
 }
+

@@ -75,7 +75,8 @@ fTriggerEfficiency(0x0),
 fCapacitances(0x0),
 fNeighbours(0x0),
 fOccupancyMap(0x0),
-fRejectList(0x0)
+fRejectList(0x0),
+fConfig(0x0)
 {
 /// Default ctor.
 
@@ -100,6 +101,7 @@ fRejectList(0x0)
     TriggerEfficiency();
     Capacitances();
     Neighbours();
+    Config();
   }
 }
 
@@ -243,6 +245,14 @@ AliMUONCalibrationData::CreatePedestals(Int_t runNumber, Int_t* startOfValidity)
 {
   /// Create a new pedestal store from the OCDB for a given run
   return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Pedestals",startOfValidity));
+}
+
+//_____________________________________________________________________________
+AliMUONVStore*
+AliMUONCalibrationData::CreateConfig(Int_t runNumber, Int_t* startOfValidity)
+{
+  /// Create a new config store from the OCDB for a given run
+  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Config",startOfValidity));
 }
 
 
@@ -430,6 +440,19 @@ AliMUONCalibrationData::Pedestals() const
 }
 
 //_____________________________________________________________________________
+AliMUONVStore*
+AliMUONCalibrationData::Config() const
+{
+  /// Return config
+  
+  if (!fConfig)
+  {
+    fConfig = CreateConfig(fRunNumber);
+  }
+  return fConfig;
+}
+
+//_____________________________________________________________________________
 AliMUONVCalibParam*
 AliMUONCalibrationData::Pedestals(Int_t detElemId, Int_t manuId) const
 {
@@ -455,6 +478,7 @@ AliMUONCalibrationData::Print(Option_t*) const
   cout << "RunNumber " << RunNumber()
   << " fGains=" << fGains
   << " fPedestals=" << fPedestals
+  << " fConfig=" << fConfig
   << " fHV=" << fHV
   << " fTriggerDCS=" << fTriggerDCS
   << " fLocalTriggerBoardMasks=" << fLocalTriggerBoardMasks
@@ -512,6 +536,8 @@ AliMUONCalibrationData::Reset()
 {
 /// Reset all data
 
+  delete fConfig;
+  fConfig = 0x0;
   delete fPedestals;
   fPedestals = 0x0;
   delete fGains;
@@ -614,6 +640,15 @@ AliMUONCalibrationData::Check(Int_t runNumber)
   else
   {
     AliInfoClass("Pedestals read OK");
+  }
+
+  if ( ! CreateConfig(runNumber) )
+  {
+    AliErrorClass("Could not read config");
+  }
+  else
+  {
+    AliInfoClass("Config read OK");
   }
   
   if ( ! CreateRegionalTriggerConfig(runNumber) )

@@ -69,7 +69,7 @@ AliMUONGMSSubprocessor::~AliMUONGMSSubprocessor()
 
 
 //______________________________________________________________________________
-void  AliMUONGMSSubprocessor::Initialize(Int_t /*run*/, 
+Bool_t  AliMUONGMSSubprocessor::Initialize(Int_t /*run*/, 
                                          UInt_t /*startTime*/, UInt_t /*endTime*/)
 {
 /// Instantiate geometry transformer
@@ -78,6 +78,7 @@ void  AliMUONGMSSubprocessor::Initialize(Int_t /*run*/,
     fTransformer = new AliMUONGeometryTransformer();
     fTransformer->CreateModules();
   }  
+  return kTRUE;
 }                                           
 
 //______________________________________________________________________________

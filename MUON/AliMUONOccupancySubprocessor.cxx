@@ -58,7 +58,7 @@ AliMUONOccupancySubprocessor::~AliMUONOccupancySubprocessor()
 }
 
 //_____________________________________________________________________________
-void 
+Bool_t 
 AliMUONOccupancySubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
   /// When starting a new run, reads in the occupancy ASCII files.
@@ -87,13 +87,16 @@ AliMUONOccupancySubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t end
     }
   }
   
+  delete sources;
+
   if (!n)
   {
     Master()->Log("Failed to read any occupancy");
     delete fOccupancyMap;
     fOccupancyMap = 0;
+    return kFALSE;
   }
-  delete sources;
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
