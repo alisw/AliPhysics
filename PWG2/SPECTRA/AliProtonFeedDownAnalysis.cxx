@@ -266,6 +266,10 @@ void AliProtonFeedDownAnalysis::Analyze(AliESDEvent *esd, const AliESDVertex *ve
 //_________________________________________________________________________//
 void AliProtonFeedDownAnalysis::Analyze(AliAODEvent *fAOD)
 {
+  // Analysis from AOD: to be implemented...
+  // in the near future.
+  fAOD->Print();
+
 }
 //_________________________________________________________________________//
 void AliProtonFeedDownAnalysis::Analyze(AliStack *stack)
