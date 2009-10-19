@@ -16,9 +16,8 @@
 //    root[1] AnalysisTrainNew(ana_mode, plugin_mode, "train_default_<date>/ConfigTrain.C")
 
 //==================   TRAIN NAME   ============================================
-//TString     train_name         = "GAMMAtest"; // *CHANGE ME* (no blancs or special characters)
-TString     train_name         = "LHC09b4AOD"; // *CHANGE ME* (no blancs or special characters)
-TString     job_tag            = "LHC09b4: standard AODs with MC info, AOD tags and pyxsec_hist"; // *CHANGE ME*
+TString     train_name         = "LHC09a4AOD2"; // *CHANGE ME* (no blancs or special characters)
+TString     job_tag            = "LHC09a4: standard AODs with MC info, AOD tags and vertexing HF delta AODs with v4-18-07-AN"; // *CHANGE ME*
 //==============================================================================
 
 // ### Settings that make sense in PROOF only
@@ -41,24 +40,24 @@ Bool_t      useProductionMode  = kTRUE;   // use the plugin in production mode
 Bool_t      usePAR             = kFALSE;  // use par files for extra libs
 Bool_t      useCPAR            = kFALSE;  // use par files for common libs
 TString     root_version       = "v5-24-00";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     aliroot_version    = "v4-18-03-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     aliroot_version    = "v4-18-07-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // Change production base directory here
-TString     alien_datadir      = "/alice/sim/LHC09b4/";
+TString     alien_datadir      = "/alice/sim/PDC_09/LHC09a4/";
 // AliEn output directory. If blank will become output_<train_name>
-TString     alien_outdir       = "/alice/sim/LHC09b4/AOD";
+TString     alien_outdir       = "/alice/sim/PDC_09/LHC09a4/AOD2";
 // TString     alien_outdir       = "";
 // Number of files merged in a chunk
 Int_t       maxMergeFiles      = 50;
 // Files that should not be merged
 TString     mergeExclude       = "AliAOD.root AliAOD.VertexingHF.root";
 // Files that should be archived
-TString     outputArchive      = "aod_archive.zip:AliAOD.root,AOD.tag.root,pyxsec_hists.root@ALICE::NIHAM::File";
+TString     outputArchive      = "aod_archive.zip:AliAOD.root,AliAOD.VertexingHF.root,AOD.tag.root,pyxsec_hists.root@ALICE::NIHAM::File,ALICE::CNAF::SE,ALICE::FZK::SE,ALICE::GSI::SE,ALICE::Legnaro::SE";
 // Number of runs per master job
-Int_t       nRunsPerMaster     = 1;
+Int_t       nRunsPerMaster     = 10;
 // Maximum number of files per job (gives size of AOD)
-Int_t       nFilesPerJob       = 100;
+Int_t       nFilesPerJob       = 200;
 // Set the run range
-Int_t       run_range[2]       =  {117003, 117019};  // LHC09a4   *CHANGE ME*
+Int_t       run_range[2]       =  {81000, 81656};  // LHC09a4   *CHANGE ME*
 //Int_t       run_range[2]       =  {90000, 90040}; // LHC09a5
 // ### Settings that make sense only for local analysis
 //==============================================================================
@@ -68,11 +67,11 @@ TString     local_xmldataset   = "";
 // ### Other flags to steer the analysis
 //==============================================================================
 Bool_t      useDATE            = kFALSE; // use date in train name
-Bool_t      useDBG             = kTRUE; // activate debugging
+Bool_t      useDBG             = kFALSE; // activate debugging
 Bool_t      useMC              = kTRUE;  // use MC info
 Bool_t      useTAGS            = kFALSE; // use ESD tags for selection
 Bool_t      useKFILTER         = kTRUE;  // use Kinematics filter
-Bool_t      useTR              = kTRUE;  // use track references
+Bool_t      useTR              = kFALSE; // use track references
 Bool_t      useCORRFW          = kFALSE; // do not change
 Bool_t      useAODTAGS         = kTRUE;  // use AOD tags
 Bool_t      saveTrain          = kTRUE;  // save train configuration as: 
@@ -88,7 +87,8 @@ Int_t       iJETAN             = 0;      // Jet analysis (PWG4) - needs ESD filt
 Int_t       iPWG4partcorr      = 0;      // Gamma-hadron correlations task (PWG4)
 Int_t       iPWG4gammaconv     = 0;      // Gamma conversion analysis (PWG4)  # NOT YET WORKING - WAITING FOR FEEDBACK #
 Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4)
-Int_t       iPWG3vertexing     = 0;      // Vertexing HF task (PWG2)
+Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG2)
+Int_t       iPWG3hfe           = 0;      // Electrons analysis (PWG3)
 Int_t       iPWG2femto         = 0;      // Femtoscopy task (PWG2)
 Int_t       iPWG2spectra       = 0;      // Spectra tasks (PWG2
 Int_t        iPWG2protons      = 0;         // Proton-antiproton analysis
@@ -154,6 +154,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    if (iPWG2evchar)    printf("=  PWG2 event characteristics                                =\n");
    if (iPWG2unicor)    printf("=  PWG2 Unicor analysis                                      =\n");
    if (iPWG3vertexing) printf("=  PWG3 vertexing                                            =\n");
+   if (iPWG3hfe)       printf("=  PWG3 electrons                                            =\n");
    if (iPWG4partcorr)  printf("=  PWG4 gamma-hadron, pi0 and gamma-jet correlations         =\n");
    if (iPWG4gammaconv) printf("=  PWG4 gamma conversion                                     =\n");
    if (iPWG4omega3pi)  printf("=  PWG4 omega to 3 pions                                     =\n");
@@ -384,6 +385,13 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       if (!taskvertexingHF) ::Warning("AnalysisTrainNew", "AliAnalysisTaskSEVertexingHF cannot run for this train conditions - EXCLUDED");
    }   
       
+   // PWG3 electrons
+   if (iPWG3hfe) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG3/hfe/AddTaskHFE.C");
+      AliAnalysisTaskHFE *taskHFE = AddTaskHFE();
+      if (!taskHFE) ::Warning("AnalysisTrainNew", "AliAnalysisTaskHFE cannot run for this train conditions - EXCLUDED");
+   }   
+      
    // PWG4 hadron correlations
    if (iPWG4partcorr) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
@@ -429,7 +437,8 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
                 alien_workdir.Data());
          if (AliAnalysisAlien::FileExists(Form("%s/%sConfig.C", alien_workdir.Data(), train_name.Data())))
             gGrid->Rm(Form("%s/%sConfig.C", alien_workdir.Data(), train_name.Data()));
-         TFile::Cp(Form("file:%sConfig.C",train_name.Data()), Form("alien://%s/%sConfig.C", alien_workdir.Data(), train_name.Data()));
+         if (strcmp(plugin_mode, "test"))
+            TFile::Cp(Form("file:%sConfig.C",train_name.Data()), Form("alien://%s/%sConfig.C", alien_workdir.Data(), train_name.Data()));
       }
    }
 }
@@ -534,6 +543,9 @@ void CheckModuleFlags(const char *mode) {
       if (iPWG2evchar)
          ::Info("AnalysisTrainNew.C::CheckModuleFlags", "PWG4evchar disabled on AOD's");
          iPWG2evchar = 0;
+      if (iPWG3hfe)
+         ::Info("AnalysisTrainNew.C::CheckModuleFlags", "PWG3hfe disabled on AOD's");
+         iPWG3hfe = 0;
       if (iPWG4omega3pi)
          ::Info("AnalysisTrainNew.C::CheckModuleFlags", "PWG4omega3pi disabled on AOD's");
          iPWG4omega3pi = 0;
@@ -556,7 +568,7 @@ void CheckModuleFlags(const char *mode) {
    }   
    if (iJETAN && !iAODanalysis) iESDfilter=1;
    if (iESDfilter) {iAODhandler=1; useCORRFW = kTRUE;}
-   if (iPWG2spectra || iPWG2flow || iPWG3vertexing) useCORRFW = kTRUE;
+   if (iPWG2spectra || iPWG2flow || iPWG3vertexing || iPWG3hfe) useCORRFW = kTRUE;
    if (useKFILTER && !useMC) useKFILTER = kFALSE;
    if (useAODTAGS && !iAODhandler) useAODTAGS = kFALSE;
 }
@@ -761,11 +773,16 @@ Bool_t LoadAnalysisLibraries(const char *mode)
       TFile::Cp(gSystem->ExpandPathName("$(ALICE_ROOT)/PWG2/FEMTOSCOPY/macros/ConfigFemtoAnalysis.C"), Form("%s/ConfigFemtoAnalysis.C", train_name.Data()));
       anaLibs += "ConfigFemtoAnalysis.C ";
    }   
-   // Vertexing HF
+   // PWG3 Vertexing HF
    if (iPWG3vertexing) {
       if (!LoadLibrary("PWG3base", mode, kTRUE) ||
           !LoadLibrary("PWG3vertexingHF", mode, kTRUE)) return kFALSE;
    }   
+   // PWG3 hfe
+   if (iPWG3hfe) {
+      if (!LoadLibrary("PWG3hfe", mode, kTRUE)) return kFALSE;
+   }   
+   
    ::Info("AnalysisTrainNew.C::LoadAnalysisLibraries", "Load other libraries:   SUCCESS");
    return kTRUE;
 }
@@ -1028,7 +1045,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetNrunsPerMaster(nRunsPerMaster);
 // Optionally define the files to be archived.
 //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:AliAOD.root,AOD.tag.root@ALICE::NIHAM::File");
-   plugin->SetOutputArchive(Form("log_archive.zip:stdout,stderr %s",outputArchive.Data()));
+   plugin->SetOutputArchive(Form("log_archive.zip:stdout,stderr@ALICE::CERN::SE %s",outputArchive.Data()));
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro(Form("%s.C", train_name.Data()));
 // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
@@ -1123,6 +1140,8 @@ void WriteConfig()
    out << "   iPWG4partcorr   = " << iPWG4partcorr << ";" << endl;
    out << "   iPWG4gammaconv  = " << iPWG4gammaconv << ";" << endl;
    out << "   iPWG4omega3pi   = " << iPWG4omega3pi << ";" << endl;
+   out << "   iPWG3vertexing  = " << iPWG3vertexing << ";" << endl;   
+   out << "   iPWG3hfe        = " << iPWG3hfe << ";" << endl;   
    out << "   iPWG2femto      = " << iPWG2femto << ";" << endl;
    out << "   iPWG2spectra    = " << iPWG2spectra << ";" << endl;
    out << "     iPWG2protons      = " << iPWG2protons << ";" << endl;
