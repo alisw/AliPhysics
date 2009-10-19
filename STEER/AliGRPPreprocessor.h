@@ -98,6 +98,8 @@ class AliGRPPreprocessor: public AliPreprocessor {
    Float_t ProcessUInt(const TObjArray *array);
    Float_t* ProcessFloatAll(const TObjArray* array);
    Float_t* ProcessFloatAllMagnet(const TObjArray* array, Int_t indexDP, Bool_t &isZero);
+   Bool_t GetDAQStartEndTimeOk() const {return fdaqStartEndTimeOk;}
+   void SetDAQStartEndTimeOk(Bool_t daqStartEndTimeOk) {fdaqStartEndTimeOk = daqStartEndTimeOk;}
 
  private:
  
@@ -122,7 +124,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
   Int_t fminInt; // minimum int accepted
   UInt_t fmaxUInt; // maximum uint accepted
   UInt_t fminUInt; // minimum uint accepted
-
+  Bool_t fdaqStartEndTimeOk; // flag to set whether the DAQ_time_start/end fields are set
 
   ClassDef(AliGRPPreprocessor, 0);
 };

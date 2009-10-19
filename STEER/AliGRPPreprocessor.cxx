@@ -196,7 +196,7 @@ ClassImp(AliGRPPreprocessor)
 //_______________________________________________________________
 
 AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
-	AliPreprocessor("GRP",shuttle),  fPressure(0), fmaxFloat(0), fminFloat(0),fmaxDouble(0), fminDouble(0), fmaxInt(0), fminInt(0), fmaxUInt(0), fminUInt(0)
+	AliPreprocessor("GRP",shuttle),  fPressure(0), fmaxFloat(0), fminFloat(0),fmaxDouble(0), fminDouble(0), fmaxInt(0), fminInt(0), fmaxUInt(0), fminUInt(0),fdaqStartEndTimeOk(kTRUE)
 {
 	// constructor - shuttle must be instantiated!
 
@@ -328,10 +328,14 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	Log(Form("Starting DCS Query at %d and finishing at %d",GetStartTimeDCSQuery(),GetEndTimeDCSQuery()));
 	Int_t entries = ProcessDcsDPs( valueMap, grpobj );
 	Log(Form("entries found = %d (should be %d)",entries, fgknDCSDP-4));
-	if( entries < fgknDCSDP-4 ) { // FIXME (!= ) LHState, LHCLuminosity, BeamIntensity, LH3_BSF4_H3 are not working yet...  
-		Log(Form("Problem with the DCS data points!!! Only %d/%d entries found",entries,fgknDCSDP-4));
-		error |= 8;
-	} else  Log(Form("DCS data points, successful!"));
+	if (fdaqStartEndTimeOk){
+		if( entries < fgknDCSDP-4 ) { // FIXME (!= ) LHState, LHCLuminosity, BeamIntensity, LH3_BSF4_H3 are not working yet...  
+			Log(Form("Problem with the DCS data points!!! Only %d/%d entries found",entries,fgknDCSDP-4));
+			error |= 8;
+		}
+		else  Log(Form("DCS data points, successful!"));
+	}
+	else Log(Form("Statistical values for DCS DPs could not be computed due to missing DAQ_time_start and DAQ_time_end fields in DAQ logbook")); 
 	
 	//=======================//
 	// Trigger Configuration //
@@ -1275,6 +1279,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 		else if (timeStartString.IsNull()){
 			AliError("DAQ_time_end not set in logbook! Setting statistical values for current DP to invalid");
 		}
+		fdaqStartEndTimeOk = kFALSE;
 		return 0;
 	}  
 
@@ -1293,6 +1298,8 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 	Float_t* arrayValues = 0x0; 
 	Double_t* arrayWeights = 0x0; 
 	Bool_t truncMeanFlag = kTRUE;  // flag to indicate whether Truncated Mean should be calculated or not
+	Bool_t sdFlag = kTRUE;  // flag to indicate whether SD (wrt Mean/Median) should be calculated or not
+
 	for(Int_t i = 0; i < nCounts; i++) {
 		AliDCSValue *v = (AliDCSValue *)array->At(i);
 		if ((v->GetFloat() <= fminFloat) || (v->GetFloat() >= fmaxFloat)) {
@@ -1392,14 +1399,9 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 			return parameters;
 		}
 	}
-	else { // iCountsRun == 0, using the point immediately before SOR and the one immediately after EOR
-		if (timestampBeforeSOR == -1 || timestampAfterEOR == -1){
-			if (timestampBeforeSOR == -1){
-				AliError("Cannot calculate mean, truncated mean, median, SD wrt mean, SD wrt median for current DP - no points during the run collected, and point before SOR missing");
-			}
-			if (timestampAfterEOR == -1){
-				AliError("Cannot calculate mean, truncated mean, median, SD wrt mean, SD wrt median for current DP - no points during the run collected, and point after EOR missing");
-			}
+	else { // iCountsRun == 0, using only the point immediately before SOR
+		if (timestampBeforeSOR == -1){
+			AliError("Cannot set mean, truncated mean, median, SD wrt mean, SD wrt median for current DP - no points during the run collected, and point before SOR missing");
 			parameters[0] = AliGRPObject::GetInvalidFloat();
 			parameters[1] = AliGRPObject::GetInvalidFloat();
 			parameters[2] = AliGRPObject::GetInvalidFloat();
@@ -1408,19 +1410,12 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 			return parameters;
 		}
 		else {
-			AliWarning("Using last entry before SOR and first entry after EOR. Truncated mean won't be calculated.");
-			nentriesUsed = 2;
-			arrayValues = new Float_t[2];
-			arrayWeights = new Double_t[2];
-			arrayValues[0] = valueBeforeSOR;
-			arrayWeights[0] = (Double_t)(timestampAfterEOR - timestampBeforeSOR);
-			arrayValues[1] = valueAfterEOR;
-			arrayWeights[1] = 1.;
-			AliDebug(2,Form("value0 = %f, with weight = %f",arrayValues[0],arrayWeights[0])); 
-			AliDebug(2,Form("value1 = %f, with weight = %f",arrayValues[1],arrayWeights[1])); 
-			parameters[0] = TMath::Mean(1,arrayValues,arrayWeights);
-			parameters[2] = TMath::Median(1,arrayValues,arrayWeights);
+			AliWarning("Using only last entry before SOR. Truncated mean and Standard deviations (wrt mean/median) won't be calculated.");
+			AliDebug(2,Form("value = %f",valueBeforeSOR)); 
+			parameters[0] = valueBeforeSOR;
+			parameters[2] = valueBeforeSOR;
 			truncMeanFlag = kFALSE;
+			sdFlag = kFALSE;
 		}
 	}
 
@@ -1433,28 +1428,34 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 
 	// calculating SD wrt Mean and Median
 	AliDebug(2,"Calculating SD wrt Mean and SD wrt Median");
-	for (Int_t i =0; i< nentriesUsed; i++){
-		AliInfo(Form("Entry %d: value = %f, weight = %f",i,arrayValues[i],arrayWeights[i]));
-		temp += (arrayValues[i]-parameters[2])*(arrayValues[i]-parameters[2]);
-		temp1 += arrayWeights[i]*(arrayValues[i]-parameters[0])*(arrayValues[i]-parameters[0]);
-		sumweights += arrayWeights[i];
-	}
-	// setting SD wrt Mean 
-	if (sumweights != 0 ){
-		parameters[3] = TMath::Sqrt(temp1/sumweights);
+	if (sdFlag){
+		for (Int_t i =0; i< nentriesUsed; i++){
+			AliInfo(Form("Entry %d: value = %f, weight = %f",i,arrayValues[i],arrayWeights[i]));
+			temp += (arrayValues[i]-parameters[2])*(arrayValues[i]-parameters[2]);
+			temp1 += arrayWeights[i]*(arrayValues[i]-parameters[0])*(arrayValues[i]-parameters[0]);
+			sumweights += arrayWeights[i];
+		}
+		// setting SD wrt Mean 
+		if (sumweights != 0 ){
+			parameters[3] = TMath::Sqrt(temp1/sumweights);
+		}
+		else {
+			AliError("Sum of weights to calculate Standard Deviation (wrt mean) <= 0, setting the SD to invalid");
+			parameters[3] = AliGRPObject::GetInvalidFloat();
+		}
+		// setting SD wrt Median
+		if (nentriesUsed != 0){
+			parameters[4] = TMath::Sqrt(temp/nentriesUsed);
+		}
+		else{
+			AliError("Number of entries used to calculate Standard Deviation (wrt median) <= 0, setting the SD to invalid");
+			parameters[4] = AliGRPObject::GetInvalidFloat();
+		}
 	}
 	else {
-		AliError("Sum of weights to calculate Standard Deviation (wrt mean) <= 0, setting the SD to invalid");
 		parameters[3] = AliGRPObject::GetInvalidFloat();
-	}
-	// setting SD wrt Median
-	if (nentriesUsed != 0){
-		parameters[4] = TMath::Sqrt(temp/nentriesUsed);
-	}
-	else{
-		AliError("Number of entries used to calculate Standard Deviation (wrt median) <= 0, setting the SD to invalid");
 		parameters[4] = AliGRPObject::GetInvalidFloat();
-	}
+	}		
 
 	// calculating truncated mean (this comes afterwards since you need the SD wrt Mean)
 	if (truncMeanFlag){
