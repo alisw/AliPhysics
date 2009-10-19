@@ -18,7 +18,7 @@
 #include "TObject.h"
 #include "TString.h"
 
-class TH1F;
+class TH1D;
 class TFile;
 class AliESDtrack;
 
@@ -38,6 +38,9 @@ public TObject
     kFEAchDelayCorr,
     kFEAdelayCorr,
     kTRMdelayCorr,
+    kICdelayCorr,
+    kStripDelayCorr,
+    kIndexDelayCorr,
     kTimeSlewingCorr,
     kNcorrections
   };
@@ -83,7 +86,10 @@ public TObject
     kLeftFEAchDelayPar,
     kRightFEAchDelayPar,
     kFEAdelayPar,
+    kICdelayPar,
     kTRMdelayPar,
+    kStripDelayPar,
+    kIndexDelayPar,
     kTimeSlewingPar,
     kNcalibPars
   };
@@ -99,30 +105,30 @@ public TObject
   static const TString fgkCalibMapName[kNcalibMaps]; // calib map name array */
   static const TString fgkCalibParName[kNcalibPars]; // calib par name array */
 
-  static const Float_t fgkLHCperiod; /* LHC clock period */
-  static const Float_t fgkAmphenolCableDelay; /* Amphenol cable delay */
-  static const Float_t fgkFlatCableDelay; /* flat cable delay */
-  static const Float_t fgkInterfaceCardDelay; /* interface card delay */
+  static const Double_t fgkLHCperiod; /* LHC clock period */
+  static const Double_t fgkAmphenolCableDelay; /* Amphenol cable delay */
+  static const Double_t fgkFlatCableDelay; /* flat cable delay */
+  static const Double_t fgkInterfaceCardDelay; /* interface card delay */
 
   static const Int_t fgkNchannels; /* number of readout channels (DO) */
   static const Int_t fgkNchannelsEO; /* number of readout channels (EO) */
   static const Int_t fgkDDLBCshift[72]; /* DDL BC shifts due to TTC fibers */
-  static const Float_t fgkFlatCableLength[91]; /* strip flat-cable length */
-  static const Float_t fgkInterfaceCardLength[48]; /* interface card length */
+  static const Double_t fgkFlatCableLength[91]; /* strip flat-cable length */
+  static const Double_t fgkInterfaceCardLength[48]; /* interface card length */
 
   static Bool_t fgCableCorrectionFlag[kNcorrections]; // cable correction flag
   static Bool_t fgFullCorrectionFlag[kNcorrections]; // full correction flag
 
-  TH1F *fCalibConst[kNcalibConsts]; // calib const array
-  TH1F *fCalibMap[kNcalibMaps]; // calib map array
-  TH1F *fCalibPar[kNcalibPars]; // calib par array
+  TH1D *fCalibConst[kNcalibConsts]; // calib const array
+  TH1D *fCalibMap[kNcalibMaps]; // calib map array
+  TH1D *fCalibPar[kNcalibPars]; // calib par array
 
   /* methods */
-  void LoadHisto(TFile *file, TH1F **histo, const Char_t *name); /* create histo */
-  void CreateHisto(TH1F **histo, const Char_t *name, Int_t size); /* create histo */
-  void WriteHisto(TFile *file, TH1F *histo); /* write histo */
-  void SetHisto(TH1F *histo, Int_t index, Float_t value); /* set histo */
-  Float_t GetHisto(TH1F *histo, Int_t index); /* get histo */
+  void LoadHisto(TFile *file, TH1D **histo, const Char_t *name); /* create histo */
+  void CreateHisto(TH1D **histo, const Char_t *name, Int_t size); /* create histo */
+  void WriteHisto(TFile *file, TH1D *histo); /* write histo */
+  void SetHisto(TH1D *histo, Int_t index, Double_t value); /* set histo */
+  Double_t GetHisto(TH1D *histo, Int_t index); /* get histo */
   
   AliTOFcalibHisto(const AliTOFcalibHisto &source) : TObject(source) {}; /* copy constructor */
   AliTOFcalibHisto &operator=(const AliTOFcalibHisto &) {return *this;}; /* operator= */
@@ -147,15 +153,15 @@ public TObject
   void LoadCalibHisto(); /* load calib histo */
   void LoadCalibPar(); /* load calib par */
   void WriteCalibHisto(); /* write calib histo */
-  Float_t GetCalibConst(Int_t histo) {return GetHisto(fCalibConst[histo], 0);}; /* get calib const */
-  Float_t GetCalibMap(Int_t histo, Int_t index) {return GetHisto(fCalibMap[histo], index);}; /* get calib map */
-  Float_t GetCalibPar(Int_t histo, Int_t index) {return GetHisto(fCalibPar[histo], index);}; /* get calib par */
-  Float_t GetCorrection(Int_t corr, Int_t index, Float_t tot = 0.); /* get correction */
-  Float_t GetNominalCorrection(Int_t index); /* get nominal correction */
+  Double_t GetCalibConst(Int_t histo) {return GetHisto(fCalibConst[histo], 0);}; /* get calib const */
+  Double_t GetCalibMap(Int_t histo, Int_t index) {return GetHisto(fCalibMap[histo], index);}; /* get calib map */
+  Double_t GetCalibPar(Int_t histo, Int_t index) {return GetHisto(fCalibPar[histo], index);}; /* get calib par */
+  Double_t GetCorrection(Int_t corr, Int_t index, Double_t tot = 0.); /* get correction */
+  Double_t GetNominalCorrection(Int_t index); /* get nominal correction */
   void ApplyNominalCorrection(AliESDtrack *track); /* apply nominal corrections */
 
-  Float_t GetCableCorrection(Int_t index); /* get cable correction */
-  Float_t GetFullCorrection(Int_t index); /* get full correction */
+  Double_t GetCableCorrection(Int_t index); /* get cable correction */
+  Double_t GetFullCorrection(Int_t index, Double_t tot = 0.); /* get full correction */
   
   ClassDef(AliTOFcalibHisto, 1);
   

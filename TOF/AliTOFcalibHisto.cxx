@@ -26,11 +26,14 @@
 
 #include "AliTOFcalibHisto.h"
 #include "AliLog.h"
-#include "TH1F.h"
+#include "TH1D.h"
 #include "TFile.h"
 #include "AliTOFRawStream.h"
 #include "AliTOFCableLengthMap.h"
 #include "AliESDtrack.h"
+
+#define SLEW_TOTMIN 10.
+#define SLEW_TOTMAX 16.
 
 ClassImp(AliTOFcalibHisto)
 
@@ -88,31 +91,35 @@ const TString AliTOFcalibHisto::fgkCalibParName[kNcalibPars] = {
   "hLeftFEAchDelay",
   "hRightFEAchDelay",
   "hFEADelay",
+  "hICDelay",
   "hTRMDelay",
-  "hSlew"
+  "hStripDelay",
+  "hIndexDelay",
+  "hSlewing"
 };
 
 //__________________________________________________________________________
 
 /* LHC clock period [ns] */
-const Float_t AliTOFcalibHisto::fgkLHCperiod = (24.4e-3 * 1024); /* ns */
+const Double_t AliTOFcalibHisto::fgkLHCperiod = (24.4e-3 * 1024); /* ns */
 
 //__________________________________________________________________________
 
 /* Amphenol cable delay [ns/cm] */
-const Float_t AliTOFcalibHisto::fgkAmphenolCableDelay = 5.13e-2; /* from measurement */
+const Double_t AliTOFcalibHisto::fgkAmphenolCableDelay = 5.13e-2; /* from measurement */
 
 //__________________________________________________________________________
 
 /* flat cable delay [ns/cm] */
-//const Float_t AliTOFcalibHisto::fgkFlatCableDelay = 5.3e-2; /* from Amphenol 132-2829 series data-sheet */
-const Float_t AliTOFcalibHisto::fgkFlatCableDelay = 5.124e-2; /* from LHC08d calibration */
+//const Double_t AliTOFcalibHisto::fgkFlatCableDelay = 5.3e-2; /* from Amphenol 132-2829 series data-sheet */
+const Double_t AliTOFcalibHisto::fgkFlatCableDelay = 5.124e-2; /* from LHC08d calibration */
 
 //__________________________________________________________________________
 
 /* interface card delay [ns/cm] */
-//const Float_t AliTOFcalibHisto::fgkInterfaceCardDelay = 6.9e-2; /* from HyperLinx simulation */
-const Float_t AliTOFcalibHisto::fgkInterfaceCardDelay = 5.7898e-2; /* from LHC08d calibration */
+//const Double_t AliTOFcalibHisto::fgkInterfaceCardDelay = 6.9e-2; /* from HyperLinx simulation */
+//const Double_t AliTOFcalibHisto::fgkInterfaceCardDelay = 5.7898e-2; /* from LHC08d calibration */
+const Double_t AliTOFcalibHisto::fgkInterfaceCardDelay = 6.31360207815420404e-02; /* from LHC09c calibration */
 
 //__________________________________________________________________________
 
@@ -147,7 +154,7 @@ const Int_t AliTOFcalibHisto::fgkDDLBCshift[72] = {
 //__________________________________________________________________________
 
 /* strip flat-cable length (preliminary) [cm] */
-const Float_t AliTOFcalibHisto::fgkFlatCableLength[91] = {
+const Double_t AliTOFcalibHisto::fgkFlatCableLength[91] = {
   18., 18., 18., 18., 18., 18., 18., 18., 18., 18., 18., 18., 18., 18., 18., 18., 18., 18., 17.,
   21., 21., 21., 21., 21., 17., 17., 21., 21., 17., 21., 21., 21., 17., 21., 21., 17., 21., 23.,
   17., 19., 17., 19., 17., 19., 17., 19., 17., 19., 17., 19., 17., 19., 17.,
@@ -158,7 +165,7 @@ const Float_t AliTOFcalibHisto::fgkFlatCableLength[91] = {
 //__________________________________________________________________________
 
 /* interface card lenght (preliminary) [cm] */
-const Float_t AliTOFcalibHisto::fgkInterfaceCardLength[48] = {
+const Double_t AliTOFcalibHisto::fgkInterfaceCardLength[48] = {
   13.97, 12.57, 14.52, 13.10, 15.44, 13.60, 10.58, 9.14, 
   11.21, 9.76, 12.11, 10.76, 8.67, 7.58, 9.32, 8.09,
   10.24, 8.4, 5.51, 4.31, 6.54, 5.23, 7.48, 6.28,
@@ -179,6 +186,9 @@ Bool_t AliTOFcalibHisto::fgCableCorrectionFlag[kNcorrections] = {
   kFALSE, // kFEAchDelayCorr
   kFALSE, // kFEAdelayCorr
   kFALSE, // kTRMdelayCorr
+  kFALSE, // kICdelayCorr
+  kFALSE, // kStripDelayCorr
+  kFALSE, // kIndexDelayCorr
   kFALSE, // kTimeSlewingCorr
 };
 
@@ -194,7 +204,10 @@ Bool_t AliTOFcalibHisto::fgFullCorrectionFlag[kNcorrections] = {
   kTRUE, // kFEAchDelayCorr
   kTRUE, // kFEAdelayCorr
   kTRUE, // kTRMdelayCorr
-  kFALSE, // kTimeSlewingCorr
+  kFALSE, // kICdelayCorr
+  kTRUE, // kStripDelayCorr
+  kTRUE, // kIndexDelayCorr
+  kTRUE, // kTimeSlewingCorr
 };
 
 //__________________________________________________________________________
@@ -218,10 +231,10 @@ AliTOFcalibHisto::~AliTOFcalibHisto()
 //__________________________________________________________________________
 
 void 
-AliTOFcalibHisto::LoadHisto(TFile* file, TH1F **histo, const Char_t *name) 
+AliTOFcalibHisto::LoadHisto(TFile* file, TH1D **histo, const Char_t *name) 
 {
   /* load histo */
-  *histo = (TH1F *)file->Get(name);
+  *histo = (TH1D *)file->Get(name);
   if (!*histo)
     AliWarning(Form("error while getting %s histo", name));
 }
@@ -229,10 +242,10 @@ AliTOFcalibHisto::LoadHisto(TFile* file, TH1F **histo, const Char_t *name)
 //__________________________________________________________________________
 
 void 
-AliTOFcalibHisto::CreateHisto(TH1F **histo, const Char_t *name, Int_t size) 
+AliTOFcalibHisto::CreateHisto(TH1D **histo, const Char_t *name, Int_t size) 
 {
   /* create histo */
-  *histo = new TH1F(name, Form(";index;%s", name), size, 0, size);
+  *histo = new TH1D(name, Form(";index;%s", name), size, 0, size);
   if (!*histo)
     AliWarning(Form("error while creating %s histo", name));
 }
@@ -240,7 +253,7 @@ AliTOFcalibHisto::CreateHisto(TH1F **histo, const Char_t *name, Int_t size)
 //__________________________________________________________________________
 
 void 
-AliTOFcalibHisto::WriteHisto(TFile *file, TH1F *histo) 
+AliTOFcalibHisto::WriteHisto(TFile *file, TH1D *histo) 
 {
   /* write histo */
   if (!file || !file->IsOpen() || !histo)
@@ -252,7 +265,7 @@ AliTOFcalibHisto::WriteHisto(TFile *file, TH1F *histo)
 //__________________________________________________________________________
 
 void
-AliTOFcalibHisto::SetHisto(TH1F *histo, Int_t index, Float_t value)
+AliTOFcalibHisto::SetHisto(TH1D *histo, Int_t index, Double_t value)
 {
   /* set histo */
   if (!histo)
@@ -262,8 +275,8 @@ AliTOFcalibHisto::SetHisto(TH1F *histo, Int_t index, Float_t value)
 
 //__________________________________________________________________________
 
-Float_t
-AliTOFcalibHisto::GetHisto(TH1F *histo, Int_t index)
+Double_t
+AliTOFcalibHisto::GetHisto(TH1D *histo, Int_t index)
 {
   /* get histo */
   if (!histo) {
@@ -446,13 +459,13 @@ AliTOFcalibHisto::WriteCalibHisto()
 
 //__________________________________________________________________________
 
-Float_t
-AliTOFcalibHisto::GetCorrection(Int_t corr, Int_t index, Float_t tot)
+Double_t
+AliTOFcalibHisto::GetCorrection(Int_t corr, Int_t index, Double_t tot)
 {
   /* apply correction */
 
-  Int_t ddl, chain, tdc, channel, hptdc, pbCh, feaIndex, sector, plate, strip, padx, trm;
-  Float_t slewing;
+  Int_t ddl, chain, tdc, channel, hptdc, pbCh, feaIndex, sector, plate, strip, padx, trm, icIndex, sectorStrip;
+  Double_t slewing;
   
   switch (corr) {
   case kDDLBCcorr:
@@ -483,14 +496,26 @@ AliTOFcalibHisto::GetCorrection(Int_t corr, Int_t index, Float_t tot)
   case kFEAdelayCorr:
     sector = (Int_t)GetCalibMap(kSector, index);
     plate = (Int_t)GetCalibMap(kPlate, index);
-    strip = (Int_t)GetCalibMap(kStrip, index);
+    sectorStrip = (Int_t)GetCalibMap(kSectorStrip, index);
     padx = (Int_t)GetCalibMap(kPadX, index);
-    feaIndex = padx / 12 + 4 * strip + 4 * 19 * plate + 4 * 19 * 5 * sector;      
+    feaIndex = padx / 12 + 4 * sectorStrip + 364 * sector;      
     return GetCalibPar(kFEAdelayPar, feaIndex);
   case kTRMdelayCorr:
+    ddl = (Int_t)GetCalibMap(kDDL, index);
     trm = (Int_t)GetCalibMap(kTRM, index);
-    return GetCalibPar(kTRMdelayPar, trm);
+    return GetCalibPar(kTRMdelayPar, trm + 10 * ddl);
+  case kICdelayCorr:
+    icIndex = (Int_t)GetCalibMap(kInterfaceCardIndex, index);
+    return GetCalibPar(kICdelayPar, icIndex);
+  case kStripDelayCorr:
+    sector = (Int_t)GetCalibMap(kSector, index);
+    sectorStrip = (Int_t)GetCalibMap(kSectorStrip, index);
+    return GetCalibPar(kStripDelayPar, sectorStrip + 91 * sector);
+  case kIndexDelayCorr:
+    return GetCalibPar(kIndexDelayPar, index);
   case kTimeSlewingCorr:
+    tot = tot < SLEW_TOTMIN ? SLEW_TOTMIN : tot;
+    tot = tot > SLEW_TOTMAX ? SLEW_TOTMAX : tot;
     slewing = 0.;
     for (Int_t i = 0; i < fCalibPar[kTimeSlewingPar]->GetNbinsX(); i++)
       slewing += GetCalibPar(kTimeSlewingPar, i) * TMath::Power(tot, i);
@@ -503,11 +528,11 @@ AliTOFcalibHisto::GetCorrection(Int_t corr, Int_t index, Float_t tot)
 
 //__________________________________________________________________________
 
-Float_t
+Double_t
 AliTOFcalibHisto::GetNominalCorrection(Int_t index)
 {
   /* get nominal correction */
-  Float_t corr = 0;
+  Double_t corr = 0;
   for (Int_t iCorr = 0; iCorr < kNcorrections; iCorr++)
     corr += GetCorrection(iCorr, index);
   return corr;
@@ -528,11 +553,11 @@ AliTOFcalibHisto::ApplyNominalCorrection(AliESDtrack *track)
 
 //__________________________________________________________________________
 
-Float_t
+Double_t
 AliTOFcalibHisto::GetCableCorrection(Int_t index)
 {
   /* get cable correction */
-  Float_t corr = 0;
+  Double_t corr = 0;
   for (Int_t iCorr = 0; iCorr < kNcorrections; iCorr++)
     if (fgCableCorrectionFlag[iCorr])
       corr += GetCorrection(iCorr, index);
@@ -541,14 +566,15 @@ AliTOFcalibHisto::GetCableCorrection(Int_t index)
 
 //__________________________________________________________________________
 
-Float_t
-AliTOFcalibHisto::GetFullCorrection(Int_t index)
+Double_t
+AliTOFcalibHisto::GetFullCorrection(Int_t index, Double_t tot)
 {
   /* get full correction */
-  Float_t corr = 0;
+  Double_t corr = 0;
   for (Int_t iCorr = 0; iCorr < kNcorrections; iCorr++)
-    if (fgFullCorrectionFlag[iCorr])
-      corr += GetCorrection(iCorr, index);
+    if (fgFullCorrectionFlag[iCorr]) {
+      corr += GetCorrection(iCorr, index, tot);
+    }
   return corr;
 }
 

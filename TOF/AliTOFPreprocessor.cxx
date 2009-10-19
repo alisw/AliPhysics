@@ -1166,7 +1166,8 @@ AliTOFPreprocessor::FillWithCosmicCalibration(AliTOFChannelOnlineArray *cal)
   Log(" Using cosmic-ray calibration.");
   
   AliTOFcalibHisto calibHisto;
-    Log(Form(" loading calibration histograms from %s", calibHisto.GetCalibHistoFileName()));
+  calibHisto.SetFullCorrectionFlag(AliTOFcalibHisto::kTimeSlewingCorr, kFALSE);
+  Log(Form(" loading calibration histograms from %s", calibHisto.GetCalibHistoFileName()));
   Log(Form(" loading calibration parameters from %s", calibHisto.GetCalibParFileName()));
   calibHisto.LoadCalibPar();
   
