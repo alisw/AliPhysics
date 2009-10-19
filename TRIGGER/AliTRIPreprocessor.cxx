@@ -111,7 +111,7 @@ UInt_t AliTRIPreprocessor::Process(TMap* /*dcsAliasMap*/)
 		&AliTRIPreprocessor::ProcessEmptyTriggerData,
 		&AliTRIPreprocessor::ProcessEmptyTriggerData,
 		&AliTRIPreprocessor::ProcessEmptyTriggerData,
-		&AliTRIPreprocessor::ProcessTOFTriggerData,
+		&AliTRIPreprocessor::ProcessEmptyTriggerData,
 		&AliTRIPreprocessor::ProcessEmptyTriggerData,
 		&AliTRIPreprocessor::ProcessEmptyTriggerData,
 		&AliTRIPreprocessor::ProcessEmptyTriggerData,
