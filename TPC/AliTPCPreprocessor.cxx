@@ -524,7 +524,7 @@ UInt_t AliTPCPreprocessor::MapPressure(TMap* dcsAliasMap)
     fPressure->MakeSplineFit(map);
     Double_t fitFraction = 1.0*fPressure->NumFits()/fPressure->NumSensors(); 
     if (fitFraction > kFitFraction ) {
-      AliInfo(Form("Temperature values extracted, fits performed.\n"));
+      AliInfo(Form("Pressure values extracted, fits performed.\n"));
     } else { 
       Log ("Too few pressure maps fitted. \n");
       result = 9;
