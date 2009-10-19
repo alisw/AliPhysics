@@ -15,6 +15,8 @@
 #include "TString.h"
 #include <ostream>
 #include "TObject.h"
+#include "TString.h"
+#include <ostream>
 
 /**
  * @class  AliHLTTriggerDetectorGeom

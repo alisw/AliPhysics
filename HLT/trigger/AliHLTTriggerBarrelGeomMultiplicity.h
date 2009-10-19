@@ -90,7 +90,6 @@ class AliHLTTriggerBarrelGeomMultiplicity : public AliHLTTrigger
 
   /// inherited from AliHLTComponent, scan one argument and
   /// its parameters
-
   virtual int ScanConfigurationArgument(int argc, const char** argv);
   
   // Get the detector geometries from CDB entry
@@ -105,7 +104,6 @@ class AliHLTTriggerBarrelGeomMultiplicity : public AliHLTTrigger
  private:
 
   /// inherited from AliHLTTrigger: calculate the trigger
-
   virtual int DoTrigger();
 
   /// check whether a track meets the criteria  
