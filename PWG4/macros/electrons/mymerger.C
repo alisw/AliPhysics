@@ -35,8 +35,8 @@ void mymerger()
         for (Int_t index = 0; index <= maxbin; index++) {
 	  TGridResult *res;
           TString jobID = "";
-          res = gGrid->Command(Form("submit %s %s %d", jdlfilename.Data(),worksubdir.Data(),index));
-          Info("Launcher:",     "Submitting %s %s %d", jdlfilename.Data(),worksubdir.Data(),index);
+          res = gGrid->Command(Form("submit %s %s %02d", jdlfilename.Data(),worksubdir.Data(),index));
+          Info("Launcher:",     "Submitting %s %s %02d", jdlfilename.Data(),worksubdir.Data(),index);
           if (res) {
             const char *cjobId = res->GetKey(0,"jobId");
             if (!cjobId) {
