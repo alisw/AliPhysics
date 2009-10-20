@@ -169,7 +169,9 @@ void AliHLTMessage::ForceWriteInfo(TVirtualStreamerInfo *info, Bool_t /* force *
 
    if (fgEvolution || fEvolution) {
       if (!fInfos) fInfos = new TList();
-      fInfos->Add(info);
+      if (fInfos->FindObject(info->GetName())==NULL) {
+	fInfos->Add(info);
+      }
    }
 }
 
@@ -197,9 +199,15 @@ void AliHLTMessage::IncrementLevel(TVirtualStreamerInfo *info)
 
    TBufferFile::IncrementLevel(info);
 
+   if (!info) return;
    if (fgEvolution || fEvolution) {
       if (!fInfos) fInfos = new TList();
-      fInfos->Add(info);
+
+      // add the streamer info, but only once
+      // this assumes that there is only one version
+      if (fInfos->FindObject(info->GetName())==NULL) {
+	fInfos->Add(info);
+      }
    }
 }
 

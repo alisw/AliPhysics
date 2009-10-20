@@ -147,6 +147,8 @@ public:
    static void   EnableSchemaEvolutionForAll(Bool_t enable = kTRUE);
    static Bool_t UsesSchemaEvolutionForAll();
 
+   const TList* GetStreamerInfos() const {return fInfos;}
+
    /**
     * Helper function to stream an object into an AliHLTMessage
     * The returned instance must be cleaned by the caller
