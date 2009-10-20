@@ -933,55 +933,70 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   const char *xmlFileE = GetFile(kDCS,"CONFIGSUMMARYEOR","");
   // Request EOR and SOR files from the fxs, if both are not found exit
 
-  if (xmlFileS == NULL && xmlFileE == NULL) {
-    Log(Form("ERROR: SOR and EOR Files %s and %s not found!",xmlFileS,xmlFileE));
-    return 5;
-  } 
-
-  Bool_t fileExistE = true, fileExistS = true;
+  Bool_t fileExistE = kTRUE, fileExistS = kTRUE;
+  Log(Form("Statusbits 1: SOR: %d, EOR: %d.", fileExistS, fileExistE));
 
   // check if the files are there
   if (xmlFileS == NULL) {
-    Log(Form("Warning: SOR File %s not found!",xmlFileS));
-    fileExistS = false;
-  } else if (xmlFileE == NULL) {
-    Log(Form("Warning: EOR File %s not found!",xmlFileE));
-    fileExistE = false;
-  } else {
-    Log(Form("Both Files (%s and %s) found.",xmlFileS,xmlFileE));
+    Log(Form("Warning: SOR file %s not found!", xmlFileS));
+    fileExistS = kFALSE;
+  } else Log(Form("SOR file found: %s", xmlFileS));
+
+  if (xmlFileE == NULL) {
+    Log(Form("Warning: EOR file %s not found!", xmlFileE));
+    fileExistE = kFALSE;
+  } else Log(Form("EOR file found: %s", xmlFileE));
+
+  if (fileExistS==0 && fileExistE==0) {
+    Log(Form("ERROR: SOR and EOR files not found: %s and %s", xmlFileS, xmlFileE));
+    return 5;
   }
+
+  Log(Form("Statusbits 2: SOR: %d, EOR: %d.", fileExistS, fileExistE));
 
   // test the files
   if (fileExistS) {
+    Log("Checking if SOR file is valid.");
     std::ifstream fileTestS;
     fileTestS.open(xmlFileS, std::ios_base::binary | std::ios_base::in);
     if (!fileTestS.good() || fileTestS.eof() || !fileTestS.is_open()) {
       Log(Form("Warning: File %s not valid!",xmlFileS));
-      fileExistS = false;
+      fileExistS = kFALSE;
     }
+    Log("Checking if SOR file is not empty.");
     fileTestS.seekg(0, std::ios_base::end);
     if (static_cast<int>(fileTestS.tellg()) < 2) {
       Log(Form("Warning: File %s is empty!",xmlFileS));
-      fileExistS = false;
+      fileExistS = kFALSE;
     }
   }
+
+  Log(Form("Statusbits 3: SOR: %d, EOR: %d.", fileExistS, fileExistE));
+
   if (fileExistE) {
+    Log("Checking if EOR file is valid.");
     std::ifstream fileTestE;
     fileTestE.open(xmlFileE, std::ios_base::binary | std::ios_base::in);
     if (!fileTestE.good() || fileTestE.eof() || !fileTestE.is_open()) {
       Log(Form("Warning: File %s not valid!",xmlFileE));
-      fileExistE = false;
+      fileExistE = kFALSE;
     }
+    Log("Checking if EOR file is not empty.");
     fileTestE.seekg(0, std::ios_base::end);
     if (static_cast<int>(fileTestE.tellg()) < 2) {
       Log(Form("Warning: File %s is empty!",xmlFileE));
-      fileExistE = false;
+      fileExistE = kFALSE;
     }
   }
-  if (!fileExistS && !fileExistE) {
+
+  Log(Form("Statusbits 4: SOR: %d, EOR: %d.", fileExistS, fileExistE));
+
+  if (fileExistS==0 && fileExistE==0) {
     Log("ERROR: Both files (SOR/EOR) are not valid!");
+    Log(Form("Statusbits 5: SOR: %d, EOR: %d.", fileExistS, fileExistE));
     return 8;
   }
+
   Log("One or both of the tested files are valid.");
 
   // make a robust XML validation
