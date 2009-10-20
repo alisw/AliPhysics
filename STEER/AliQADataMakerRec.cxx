@@ -351,7 +351,6 @@ void AliQADataMakerRec::InitRecoParams()
         AliError(Form("No valid RecoParam object found in the OCDB for detector %s",GetName()));
       }
     }
-    AliCDBManager::Instance()->UnloadFromCache(path.GetPath());
   }
 }
 
