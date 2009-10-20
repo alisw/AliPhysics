@@ -306,7 +306,7 @@ Double_t TimeUsingNewDecoderOldInterface(AliBufferInfo* list, AliLocalStructInfo
 
 void Loop(const char* filename, Bool_t newDecoder)
 {
-  AliCodeTimerAutoGeneral(Form("Loop %s",(newDecoder ? "NEW":"OLD")));
+  AliCodeTimerAutoGeneral(Form("Loop %s",(newDecoder ? "NEW":"OLD")),);
   
   AliRawReader* reader = AliRawReader::Create(filename);
   

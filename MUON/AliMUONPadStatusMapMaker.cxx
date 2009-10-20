@@ -95,7 +95,7 @@ fComputeOnDemand(deferredInitialization)
   /// ctor
   if (!deferredInitialization)
   {
-    AliCodeTimerAuto("Computing complete status map at once");
+    AliCodeTimerAuto("Computing complete status map at once",);
     AliMUONVStore* neighboursStore = padStatusMaker.NeighboursStore();
     AliMUONVCalibParam* param;
     TIter next(neighboursStore->CreateIterator());
@@ -195,7 +195,7 @@ AliMUONPadStatusMapMaker::ComputeStatusMap(Int_t detElemId, Int_t manuId) const
   /// Compute the status map for a given manu, and add it to our internal
   /// fStatusMap internal storage
   
-  AliCodeTimerAuto("(Int_t,Int_t)")
+  AliCodeTimerAuto("(Int_t,Int_t)",)
     
   AliMUONVCalibParam* param = new AliMUONCalibParamNI(1,AliMpConstants::ManuNofChannels(),
                                                       detElemId,manuId,-1);    
@@ -264,7 +264,7 @@ AliMUONPadStatusMapMaker::RefreshRejectProbabilities()
   
   if ( !fRejectProbabilities ) return;
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   fRejectList->Clear();
   

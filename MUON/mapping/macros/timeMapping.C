@@ -111,7 +111,7 @@ void ByPosition(const AliMpVSegmentation* seg, Int_t detElemId, const TObjArray&
   
   Int_t stationId = StationId(detElemId);
 
-  AliCodeTimerAutoGeneral(Form("PadByPosition-St%d",stationId));
+  AliCodeTimerAutoGeneral(Form("PadByPosition-St%d",stationId),);
 
   TIter next(&pads);
   AliMpPad* pad;
@@ -129,7 +129,7 @@ void ByIndices(const AliMpVSegmentation* seg, Int_t detElemId)
   
   Int_t stationId = StationId(detElemId);
   {
-    AliCodeTimerAutoGeneral(Form("PadByIndices-St%d",stationId));
+    AliCodeTimerAutoGeneral(Form("PadByIndices-St%d",stationId),);
     
     for ( Int_t ix = 0; ix < seg->MaxPadIndexX(); ++ix )
     {
@@ -141,7 +141,7 @@ void ByIndices(const AliMpVSegmentation* seg, Int_t detElemId)
   }
   
   {
-    AliCodeTimerAutoGeneral(Form("HasPadByIndices-St%d",stationId));
+    AliCodeTimerAutoGeneral(Form("HasPadByIndices-St%d",stationId),);
     
     for ( Int_t ix = 0; ix < seg->MaxPadIndexX(); ++ix )
     {
@@ -160,7 +160,7 @@ void ByLocation(const AliMpVSegmentation* seg, Int_t detElemId, Int_t manuId)
   
   Int_t stationId = StationId(detElemId);
   {
-    AliCodeTimerAutoGeneral(Form("PadByLocation-St%d",stationId));
+    AliCodeTimerAutoGeneral(Form("PadByLocation-St%d",stationId),);
   
     for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); ++manuChannel )
     {
@@ -169,7 +169,7 @@ void ByLocation(const AliMpVSegmentation* seg, Int_t detElemId, Int_t manuId)
   }
 
   {
-    AliCodeTimerAutoGeneral(Form("HasPadByLocation-St%d",stationId));
+    AliCodeTimerAutoGeneral(Form("HasPadByLocation-St%d",stationId),);
     
     for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); ++manuChannel )
     {
@@ -186,7 +186,7 @@ void timeMapping(Int_t nloop=1)
 
   {
     AliSysInfo::AddStamp("0");
-    AliCodeTimerAutoGeneral("Load mapping");
+    AliCodeTimerAutoGeneral("Load mapping",);
     AliMpCDB::LoadDDLStore2();
     AliSysInfo::AddStamp("1");
     AliCodeTimer::Instance()->Print();

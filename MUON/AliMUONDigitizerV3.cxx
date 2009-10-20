@@ -383,7 +383,7 @@ AliMUONDigitizerV3::Exec(Option_t*)
   /// Then we generate noise-only digits (for tracker only)
   /// And we finally generate the trigger outputs.
     
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   
   AliDebug(1, "Running digitizer.");
   
@@ -504,7 +504,7 @@ AliMUONDigitizerV3::GenerateNoisyDigits(AliMUONVDigitStore& digitStore)
   /// have a signal above the noise cut (ped+n*sigma_ped), i.e. digits
   /// that are "only noise".
   
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   
   for ( Int_t i = 0; i < AliMUONConstants::NTrackingCh(); ++i )
   {

@@ -146,7 +146,7 @@ AliMUONPedestalEventGenerator::ConvertRawFilesToDate()
   /// convert raw data DDL files to DATE files with the program "dateStream".
   /// we make one file per LDC
   
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   
   AliInfo("Converting raw to date");
   
@@ -246,7 +246,7 @@ AliMUONPedestalEventGenerator::Exec(Option_t*)
 {  
   /// Main steering method
   
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   
   if (!fPedestals)
   {
@@ -290,7 +290,7 @@ AliMUONPedestalEventGenerator::Exec(Option_t*)
     
     if ( fMakeDDL )
     {
-      AliCodeTimerAuto("Digits2Raw");
+      AliCodeTimerAuto("Digits2Raw",0);
       Digits2Raw(i);
     }
   }
@@ -302,7 +302,7 @@ AliMUONPedestalEventGenerator::Exec(Option_t*)
   // Finally, if instructed to do so, convert DDL files to DATE file(s)
   if ( fMakeDDL && fDateFileName.Length() > 0 ) 
   {
-    AliCodeTimerAuto("ConvertRawFilesToDate")
+    AliCodeTimerAuto("ConvertRawFilesToDate",1)
     Bool_t dateOutput = ConvertRawFilesToDate();
     if (!dateOutput) 
     {
@@ -318,7 +318,7 @@ AliMUONPedestalEventGenerator::Digits2Raw(Int_t event)
 {
   /// Converts digits (from MUON.Digits.root file) to Raw DDL ascii files.
   
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   
   if (!fRawWriter) 
   {
@@ -353,7 +353,7 @@ AliMUONPedestalEventGenerator::GenerateDigits(AliMUONVDigitStore& digitStore)
   /// Generate digits (where ADC is set to pedestal value) for all MUON TRK
   /// and for 1 event.
   
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
 
   digitStore.Clear();
   

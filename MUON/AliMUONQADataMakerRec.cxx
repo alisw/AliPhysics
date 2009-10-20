@@ -203,7 +203,7 @@ void
 AliMUONQADataMakerRec::Ctor()
 {
 	/// Init some members
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
 	fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV1");
 	fDigitMaker = new AliMUONDigitMaker(kTRUE);
 }
@@ -254,7 +254,7 @@ AliMUONQADataMakerRec::~AliMUONQADataMakerRec()
   
   AliDebug(AliQAv1::GetQADebugLevel(),"");
 
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   delete fDigitStore;
   delete fTriggerStore;
@@ -269,7 +269,7 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
 {
   /// Detector specific actions at end of cycle
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
   {
@@ -600,7 +600,7 @@ void AliMUONQADataMakerRec::InitRaws()
 {
     /// create Raws histograms in Raws subdir
 	
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
@@ -704,7 +704,7 @@ void AliMUONQADataMakerRec::InitRecPoints()
 {
 	/// create Reconstructed Points histograms in RecPoints subdir
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
 	InitRecPointsTrigger();
 	InitRecPointsTracker();
@@ -718,7 +718,7 @@ void AliMUONQADataMakerRec::InitRecPointsTracker()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   TH1I *h1I;
   TH1F *h1F;
@@ -1263,14 +1263,14 @@ void AliMUONQADataMakerRec::MakeRecPointsTracker(TTree* clustersTree)
 	// then we have clusters in TreeR, so let's take that opportunity
 	// to QA them...
 	
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
 
   // Do nothing in case of calibration event
   if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
 
 	if (!fClusterStore)
 	{
-		AliCodeTimerAuto("ClusterStore creation");
+	  AliCodeTimerAuto("ClusterStore creation",0);
 		fClusterStore = AliMUONVClusterStore::Create(*clustersTree);
 		if (!fClusterStore) 
 		{
@@ -1312,7 +1312,7 @@ void AliMUONQADataMakerRec::MakeRecPointsTrigger(TTree* clustersTree)
 {
 	/// makes data from trigger response
 
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
 
     // Fired pads info
     fDigitStore->Clear();
@@ -1365,7 +1365,7 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
 {
   /// make QA data from ESDs
 
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   // Do nothing in case of calibration event
   if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
@@ -1541,7 +1541,7 @@ AliMUONQADataMakerRec::FillTriggerDCSHistos()
 {
   /// Get HV and currents values for one trigger chamber
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
 
   AliMUONCalibrationData calibrationData(AliCDBManager::Instance()->GetRun());
 

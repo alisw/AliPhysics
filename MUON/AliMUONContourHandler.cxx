@@ -120,7 +120,7 @@ AliMUONContourHandler::CreateContourList(const TObjArray& manuContours)
   /// of station0/chamber0 and station0/chamber1 in the example above).
   ///
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   TIter next(&manuContours);
   AliMUONContour* contour;
@@ -179,7 +179,7 @@ AliMUONContourHandler::GenerateAllContours(const TObjArray& manuContours)
   /// Note that manuContours should NOT be the owner of its contours,
   /// as they are adopted by the array returned by this method.
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   // Get the list of contours to create
   TObjArray* mapArray = CreateContourList(manuContours);
@@ -267,7 +267,7 @@ AliMUONContourHandler::GenerateTransformations(Bool_t exploded)
   /// If exploded=kFALSE then we generate real transformations, otherwise
   /// we generate tweaked ones that look fine on screen.
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   AliMUONGeometryTransformer transformer;
   Bool_t ok = transformer.LoadGeometryData("transform.dat");

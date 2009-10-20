@@ -601,7 +601,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 // run the generation, simulation and digitization
 
  
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   AliSysInfo::AddStamp("Start_Run");
   
   // Load run number and seed from environmental vars
@@ -794,7 +794,7 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
 
 // run the generation and simulation
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
 
   // initialize CDB storage and run number from external environment
   // (either CDB manager or AliSimulation setters)
@@ -892,7 +892,7 @@ Bool_t AliSimulation::RunTrigger(const char* config, const char* detectors)
 {
   // run the trigger
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
 
   // initialize CDB storage from external environment
   // (either CDB manager or AliSimulation setters),
@@ -955,7 +955,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 {
 // run the generation and simulation
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
 
   // initialize CDB storage and run number from external environment
   // (either CDB manager or AliSimulation setters)
@@ -1148,7 +1148,7 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
 {
 // run the digitization and produce summable digits
   static Int_t eventNr=0;
-  AliCodeTimerAuto("") ;
+  AliCodeTimerAuto("",) ;
 
   // initialize CDB storage, run number, set CDB lock
   InitCDB();
@@ -1190,7 +1190,7 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
 {
 // run the digitization and produce digits from sdigits
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
 
   // initialize CDB storage, run number, set CDB lock
   InitCDB();
@@ -1256,7 +1256,7 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
 {
 // run the digitization and produce digits from hits
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
 
   // initialize CDB storage, run number, set CDB lock
   InitCDB();
@@ -1303,7 +1303,7 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
 // 'selrawdata' flag can be used to enable writing of detectors raw data
 // accoring to the trigger cluster.
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   AliSysInfo::AddStamp("WriteRawData_Start");
   
   TString detStr = detectors;
@@ -1379,7 +1379,7 @@ Bool_t AliSimulation::WriteRawFiles(const char* detectors)
 {
 // convert the digits to raw data DDL files
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   
   AliRunLoader* runLoader = LoadRun("READ");
   if (!runLoader) return kFALSE;
@@ -1440,7 +1440,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
 // The second argument is not empty when the user decides to write
 // the detectors raw data according to the trigger cluster.
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   
   char* path = gSystem->Which(gSystem->Getenv("PATH"), "dateStream");
   if (!path) {

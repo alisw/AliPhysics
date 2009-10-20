@@ -440,7 +440,7 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
   /// otherwise mean and sigma are from a gaussian (with parameters
   /// defined below by the kPedestal* constants)
 
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   Int_t nchannels(0);
   Int_t nmanus(0);
@@ -539,7 +539,7 @@ AliMUONCDB::MakeRejectListStore(Bool_t defaultValues)
 {
   /// Create a reject list
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
 
   AliMUONRejectList* rl = new AliMUONRejectList;
   
@@ -559,7 +559,7 @@ AliMUONCDB::MakeOccupancyMapStore(AliMUONVStore& occupancyMapStore, Bool_t defau
 {
   /// Create an occupancy map.
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   Int_t nmanus(0);
   
@@ -619,7 +619,7 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues)
   /// otherwise they are from a gaussian with parameters defined in the
   /// kCapa* constants below.
 
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   Int_t nchannels(0);
   Int_t nmanus(0);
@@ -705,7 +705,7 @@ AliMUONCDB::MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues)
   /// otherwise parameters are taken from gaussians with parameters 
   /// defined in the k* constants below.
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   Int_t nchannels(0);
   Int_t nmanus(0);
@@ -780,7 +780,7 @@ AliMUONCDB::MakeLocalTriggerMaskStore(AliMUONVStore& localBoardMasks) const
 {
   /// Generate local trigger masks store. All masks are set to FFFF
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   Int_t ngenerated(0);
   // Generate fake mask values for all localboards and put that into
@@ -808,7 +808,7 @@ AliMUONCDB::MakeRegionalTriggerConfigStore(AliMUONRegionalTriggerConfig& rtm) co
 {
   /// Make a regional trigger config store. Mask is set to FFFF for each local board (Ch.F.)
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   if ( ! rtm.ReadData(AliMpFiles::LocalTriggerBoardMapping()) ) {
     AliErrorStream() << "Error when reading from mapping file" << endl;
@@ -825,7 +825,7 @@ AliMUONCDB::MakeGlobalTriggerConfigStore(AliMUONGlobalCrateConfig& gtm) const
 {
   /// Make a global trigger config store. All masks (disable) set to 0x00 for each Darc board (Ch.F.)
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   return gtm.ReadData(AliMpFiles::GlobalTriggerBoardMapping());
 }
@@ -837,7 +837,7 @@ AliMUONCDB::MakeTriggerLUT(const char* file) const
 {
   /// Make a triggerlut object, from a file.
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   AliMUONTriggerLut* lut = new AliMUONTriggerLut;
   lut->ReadFromFile(file);
@@ -850,7 +850,7 @@ AliMUONCDB::MakeTriggerEfficiency(const char* file) const
 {
   /// Make a trigger efficiency object from a file.
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   return new AliMUONTriggerEfficiencyCells(file);
 }
@@ -906,7 +906,7 @@ AliMUONCDB::MakeNeighbourStore(AliMUONVStore& neighbourStore)
   /// Fill the neighbours store with, for each channel, a TObjArray of its
   /// neighbouring pads (including itself)
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   AliInfo("Generating NeighbourStore. This will take a while. Please be patient.");
   

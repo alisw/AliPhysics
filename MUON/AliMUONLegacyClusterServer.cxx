@@ -75,7 +75,7 @@ AliMUONLegacyClusterServer::Clusterize(Int_t chamberId,
   ///
   /// Return the number of clusters added to clusterStore
   
-  AliCodeTimerAuto(Form("Chamber %d",chamberId));
+  AliCodeTimerAuto(Form("Chamber %d",chamberId),);
 
   if ( fBypassSt4 && ( chamberId == 6 || chamberId == 7 ) ) 
   {

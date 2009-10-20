@@ -194,7 +194,7 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path, Int_t* s
   /// Access the CDB for a given path (e.g. MUON/Calib/Pedestals),
   /// and return the corresponding TObject.
   
-  AliCodeTimerAutoClass(Form("%d : %s",runNumber,path));
+  AliCodeTimerAutoClass(Form("%d : %s",runNumber,path),);
   
   AliCDBManager* man = AliCDBManager::Instance();
   
@@ -216,7 +216,7 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path, Int_t* s
 	
   {
     
-  AliCodeTimerAutoClass(Form("Failed to get %s for run %d",path,runNumber));
+    AliCodeTimerAutoClass(Form("Failed to get %s for run %d",path,runNumber),0);
 
   }
   

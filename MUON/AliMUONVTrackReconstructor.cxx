@@ -141,7 +141,7 @@ void AliMUONVTrackReconstructor::EventReconstruct(AliMUONVClusterStore& clusterS
 {
   /// To reconstruct one event
   AliDebug(1,"");
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   // Reset array of tracks
   ResetTracks();
@@ -260,7 +260,7 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsBetweenChambers(const AliM
   /// Return a new TClonesArray of segments.
   /// It is the responsibility of the user to delete it afterward.
   AliDebug(1,Form("Enter MakeSegmentsBetweenChambers (1..) %d-%d", ch1+1, ch2+1));
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   AliMUONVCluster *cluster1, *cluster2;
   AliMUONObjectPair *segment;
@@ -1209,7 +1209,7 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(AliMUONVTrackStore& t
                                                            const AliMUONTrackHitPattern& trackHitPattern)
 {
   /// Try to match track from tracking system with trigger track
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
 
   trackHitPattern.ExecuteValidation(trackStore, triggerTrackStore, triggerStore);
 }
@@ -1221,7 +1221,7 @@ void AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCir
 {
   /// To make the trigger tracks from Local Trigger
   AliDebug(1, "");
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   AliMUONGlobalTrigger* globalTrigger = triggerStore.Global();
   

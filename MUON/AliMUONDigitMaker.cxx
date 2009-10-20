@@ -219,7 +219,7 @@ AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 
   AliDebug(1,"");
   
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
 
   // elex info
   Int_t    buspatchId;
@@ -408,7 +408,7 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
 {
   /// make digits for trigger from pattern, and add them to digitStore
 
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",);
   
   Int_t detElemId;
 

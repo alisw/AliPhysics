@@ -660,7 +660,7 @@ AliMpDCSNamer::ManuId2PCBIndex(Int_t detElemId, Int_t manuId) const
   /// Returns the index of PCB (within a St345 slat) for a given manu number.
   /// Returns -1 if (detElemId,manuId) is incorrect
   
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   
   const AliMpSlat* slat 
     = AliMpSegmentation::Instance()->GetSlatByElectronics(detElemId, manuId);
@@ -675,7 +675,7 @@ AliMpDCSNamer::ManuId2Sector(Int_t detElemId, Int_t manuId) const
 {
   /// Return the DCS-sector number (within a St12 quadrant) for a given manu number.
   
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   
   const AliMpSector* sector 
     = AliMpSegmentation::Instance()->GetSectorByElectronics(detElemId, manuId);

@@ -130,29 +130,29 @@ private:
 
 #define AliCodeTimerStartClass(message) AliCodeTimer::Instance()->Start(Class()->GetName(),FUNCTIONNAME(),message);
 #define AliCodeTimerStopClass(message) AliCodeTimer::Instance()->Stop(Class()->GetName(),FUNCTIONNAME(),message);
-#define AliCodeTimerAutoClass(message) AliCodeTimer::AliAutoPtr aliCodeTimerAliAutoPtrVariable(Class()->GetName(),FUNCTIONNAME(),message);
+#define AliCodeTimerAutoClass(message,counter) AliCodeTimer::AliAutoPtr aliCodeTimerAliAutoPtrVariable##counter(Class()->GetName(),FUNCTIONNAME(),message);
 
 #define AliCodeTimerStart(message) AliCodeTimer::Instance()->Start(ClassName(),FUNCTIONNAME(),message);
 #define AliCodeTimerStop(message) AliCodeTimer::Instance()->Stop(ClassName(),FUNCTIONNAME(),message);
-#define AliCodeTimerAuto(message) AliCodeTimer::AliAutoPtr aliCodeTimerAliAutoPtrVariable(ClassName(),FUNCTIONNAME(),message);
+#define AliCodeTimerAuto(message,counter) AliCodeTimer::AliAutoPtr aliCodeTimerAliAutoPtrVariable##counter(ClassName(),FUNCTIONNAME(),message);
 
 #define AliCodeTimerStartGeneral(message) AliCodeTimer::Instance()->Start("General",FUNCTIONNAME(),message);
 #define AliCodeTimerStopGeneral(message) AliCodeTimer::Instance()->Stop("General",FUNCTIONNAME(),message);
-#define AliCodeTimerAutoGeneral(message) AliCodeTimer::AliAutoPtr aliCodeTimerAliAutoPtrVariable("General",FUNCTIONNAME(),message);
+#define AliCodeTimerAutoGeneral(message,counter) AliCodeTimer::AliAutoPtr aliCodeTimerAliAutoPtrVariable##counter("General",FUNCTIONNAME(),message);
 
 #else
 
 #define AliCodeTimerStartClass(message)
 #define AliCodeTimerStopClass(message) 
-#define AliCodeTimerAutoClass(message) 
+#define AliCodeTimerAutoClass(message,counter) 
 
 #define AliCodeTimerStart(message) 
 #define AliCodeTimerStop(message) 
-#define AliCodeTimerAuto(message) 
+#define AliCodeTimerAuto(message,counter) 
 
 #define AliCodeTimerStartGeneral(message) 
 #define AliCodeTimerStopGeneral(message) 
-#define AliCodeTimerAutoGeneral(message) 
+#define AliCodeTimerAutoGeneral(message,counter) 
 
 #endif
 

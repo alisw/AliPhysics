@@ -116,7 +116,7 @@ AliMUONGainEventGenerator::Exec(Option_t*)
     AliInfo(Form("Creating directory %s",dir.Data()));
     gSystem->MakeDirectory(dir.Data());
     gSystem->ChangeDirectory(dir.Data());
-    AliCodeTimerAuto(Form("generation of pedestal for run %d",runNumber));
+    AliCodeTimerAuto(Form("generation of pedestal for run %d",runNumber),);
     TString pedfile;
     if ( fDateBaseFileName.Length() > 0 ) pedfile = Form("%s.%d",fDateBaseFileName.Data(),runNumber);
     AliMUONPedestalEventGenerator pgen(runNumber,fNofEventsPerFile,pedfile.Data());
@@ -135,7 +135,7 @@ AliMUONGainEventGenerator::GeneratePedestals(Int_t runNumber, Float_t injection)
   /// Generate "pedestal" values for a given run, by "decalibrating"
   /// charge injection
   
-  AliCodeTimerAuto(Form("Run %d injection %7.2f",runNumber,injection));
+  AliCodeTimerAuto(Form("Run %d injection %7.2f",runNumber,injection),);
   TIter next(fSourceGains->CreateIterator());
   
   AliMUONVStore* generatedPedestals = fSourcePedestals->Create();

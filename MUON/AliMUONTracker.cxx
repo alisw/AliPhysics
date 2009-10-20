@@ -191,7 +191,7 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
 {
   /// Performs the tracking and store the resulting tracks in the ESD
   AliDebug(1,"");
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   
   if (!fTrackReco) 
   {
@@ -223,7 +223,7 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
   {
     // cut to reject shower events
     
-    AliCodeTimerAuto("MUON Shower events");
+    AliCodeTimerAuto("MUON Shower events",0);
 
     AliWarning(Form("Probably got a shower event (%d trigger tracks). Will not reconstruct tracks.",
                     TriggerTrackStore()->GetSize()));
@@ -255,7 +255,7 @@ void AliMUONTracker::FillESD(const AliMUONVTrackStore& trackStore, AliESDEvent* 
 {
   /// Fill the ESD from the trackStore
   AliDebug(1,"");
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",)
   
   // get ITS vertex
   Double_t vertex[3] = {0., 0., 0.};

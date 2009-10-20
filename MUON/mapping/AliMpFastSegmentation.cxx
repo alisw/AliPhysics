@@ -86,7 +86,7 @@ fPositionY(0.)
 {
   /// Ctor. We adopt vseg.
   
-  AliCodeTimerAuto(vseg->ClassName());
+  AliCodeTimerAuto(vseg->ClassName(),);
   
   if (!vseg) 
   {
