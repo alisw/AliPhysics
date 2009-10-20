@@ -254,7 +254,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
     tempConf.ToUpper();
     if (tempConf != "OFF" ) {
       UInt_t tempResult = MapTemperature(dcsAliasMap);
-      result=tempResult;
+      if ( tempConf != "TRY") result+=tempResult;
       status = new TParameter<int>("tempResult",tempResult);
       resultArray->Add(status);
     }
@@ -266,7 +266,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
     hvConf.ToUpper();
     if (hvConf != "OFF" ) { 
      UInt_t hvResult = MapHighVoltage(dcsAliasMap);
-     result+=hvResult;
+     if (hvConf != "TRY") result+=hvResult;
      status = new TParameter<int>("hvResult",hvResult);
      resultArray->Add(status);
     }
@@ -278,7 +278,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
     goofieConf.ToUpper();
     if (goofieConf != "OFF" ) { 
      UInt_t goofieResult = MapGoofie(dcsAliasMap);
-     result+=goofieResult;
+     if (goofieConf != "TRY") result+=goofieResult;
      status = new TParameter<int>("goofieResult",goofieResult);
      resultArray->Add(status);
     }
@@ -348,12 +348,13 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
  	 pulserSource[1] = AliShuttleInterface::kDAQ;
      }
      if (source == "DAQHLT" ) numSources=2;
+     if (source == "TRY" ) numSources=2;
      UInt_t pulserResult=0;
      for (Int_t i=0; i<numSources; i++ ) {	
        pulserResult = ExtractPulser(pulserSource[i]);
        if ( pulserResult == 0 ) break;
      }
-     result += pulserResult;
+     if (source != "TRY") result += pulserResult;
      status = new TParameter<int>("pulserResult",pulserResult);
      resultArray->Add(status);
     }
@@ -376,12 +377,13 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
  	 rawSource[1] = AliShuttleInterface::kDAQ;
      }
      if (source == "DAQHLT" ) numSources=2;
+     if (source == "TRY" ) numSources=2;
      UInt_t rawResult=0;
      for (Int_t i=0; i<numSources; i++ ) {	
        rawResult = ExtractRaw(rawSource[i]);
        if ( rawResult == 0 ) break;
      }
-     result += rawResult;
+     if (source != "TRY" )result += rawResult;
      status = new TParameter<int>("rawResult",rawResult);
      resultArray->Add(status);
     }
@@ -395,7 +397,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   altroConf.ToUpper();
   if (altroConf != "OFF" ) { 
    UInt_t altroResult = ExtractAltro(AliShuttleInterface::kDCS);
-   result+=altroResult;
+   if (altroConf != "TRY" ) result+=altroResult;
    status = new TParameter<int>("altroResult",altroResult);
    resultArray->Add(status);
  }
@@ -419,6 +421,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 	ceSource[1] = AliShuttleInterface::kDAQ;
      }
      if (source == "DAQHLT" ) numSources=2;
+     if (source == "TRY" ) numSources=2;
      UInt_t ceResult=0;
      for (Int_t i=0; i<numSources; i++ ) {	
        ceResult = ExtractCE(ceSource[i]);
@@ -428,7 +431,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
    // only flag error if CE result is missing from LASER runs
    //    -- for PHYSICS run do CE processing if data available
    
-     if ( runType == kLaserRunType ) result += ceResult;
+     if ( runType == kLaserRunType && source != "TRY" ) result += ceResult;
      status = new TParameter<int>("ceResult",ceResult);
      resultArray->Add(status);
 
@@ -445,6 +448,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 	qaSource[1] = AliShuttleInterface::kDAQ;
      }
      if (source == "DAQHLT" ) numSources=2;
+     if (source == "TRY" ) numSources=2;
      UInt_t qaResult=0;
      for (Int_t i=0; i<numSources; i++ ) {	
        qaResult = ExtractQA(qaSource[i]);
@@ -458,20 +462,20 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
    }
   }
   
-  if (errorHandling == "OFF" ) {
-    AliCDBMetaData metaData;
-    metaData.SetBeamPeriod(0);
-    metaData.SetResponsible("Haavard Helstrup");
-    metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
-    metaData.SetComment("Preprocessor AliTPC status.");
-    Store("Calib", "PreprocStatus", resultArray, &metaData, 0, kFALSE);
-    resultArray->Delete();
-    delete resultArray;
-    return 0;
-  } else { 
-    delete resultArray;
-    return result;
-  }
+// Store component status to OCDB
+
+  AliCDBMetaData metaData;
+  metaData.SetBeamPeriod(0);
+  metaData.SetResponsible("Haavard Helstrup");
+  metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
+  metaData.SetComment("Preprocessor AliTPC status.");
+  Store("Calib", "PreprocStatus", resultArray, &metaData, 0, kFALSE);
+  resultArray->Delete();
+  delete resultArray;
+
+  if (errorHandling == "OFF" ) return 0;
+  return result;
+  
 }
 //______________________________________________________________________________________________
 UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
