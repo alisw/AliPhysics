@@ -59,6 +59,7 @@
  *                 kAliHLTDataTypeDAQRDOUT (DAQRDOUT)
  *                 kAliHLTDataTypeTriggerDecision (TRIG_DEC)
  *                 kAliHLTDataTypeGlobalTrigger (GLOBTRIG)
+ *                 kAliHLTDataTypeStreamerInfo (ROOTSTRI)
  */
 #define ALIHLT_DATA_TYPES_VERSION 12
 
@@ -368,6 +369,13 @@ const int kAliHLTComponentDataTypefIDsize=8;
  * @ingroup alihlt_component_datatypes
  */
 #define kAliHLTTObjectDataTypeID              {'R','O','O','T','T','O','B','J'}
+
+/** ROOT streamer info
+ * - used for the transmission of streamer info for objects in the HLTOUT
+ * - origin kAliHLTDataOriginOut ( HLT )
+ * @ingroup alihlt_component_datatypes
+ */
+#define kAliHLTStreamerInfoDataTypeID         {'R','O','O','T','S','T','R','I'}
 
 /** ROOT TObjArray
  * - a TObjArray exported from the HLT analysis
@@ -962,6 +970,11 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeTObject;            // {ROOTTOBJ,"***"}
+
+  /** ROOT streamer info
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeStreamerInfo;       // {ROOTSTRI,HLT }
 									  		
   /** ROOT TObjArray 
    * @ingroup alihlt_component_datatypes

@@ -150,6 +150,10 @@ const AliHLTComponentDataType kAliHLTDataTypeComponentTable = AliHLTComponentDat
 const char kAliHLTTObjectDataTypeIDstring[8] = kAliHLTTObjectDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeTObject = AliHLTComponentDataTypeInitializer(kAliHLTTObjectDataTypeIDstring, kAliHLTDataOriginAny);
 
+/** ROOT streamer info */
+const char kAliHLTStreamerInfoDataTypeIDstring[8] = kAliHLTStreamerInfoDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeStreamerInfo = AliHLTComponentDataTypeInitializer(kAliHLTStreamerInfoDataTypeIDstring, kAliHLTDataOriginHLT);
+
 /** ROOT TObjArray */
 const char kAliHLTTObjArrayDataTypeIDstring[8] = kAliHLTTObjArrayDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeTObjArray = AliHLTComponentDataTypeInitializer(kAliHLTTObjArrayDataTypeIDstring, kAliHLTDataOriginAny);
