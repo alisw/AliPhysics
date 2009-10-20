@@ -614,6 +614,7 @@ int AliHLTTRDTrackerV1Component::ReconfigureField()
     field->SetFactorSol(1);
     Double_t initialFieldStrengh=field->SolenoidField();
     field->SetFactorSol(fieldStrength/initialFieldStrengh);
+    field->SetFactorDip((fieldStrength/initialFieldStrengh>=0) ? 1 : -1);
     HLTDebug("Magnetic field was changed to %f KGauss.", field->SolenoidField());
   }
   return iResult;
