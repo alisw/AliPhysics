@@ -16,55 +16,71 @@ TH1F* dalitz;
 TH1F* wz;
 TH1F* other;
 TH1F* mchad;
+TH1F* sige;
+TH1F* bkge;
+TH1F* walle;
+TH1F* hije;
+
 TLegend* leg;
 
-void plotMCRates(char* hijfname = "data/histos-merged-LHC0bd6.root",
-		 char* jjfname = "data/histosscaledLHC09b2ESDb.root",
-		 char* bfname = "data/histosscaledLHC09b4v2.root",
-		 char* wfname = "data/histos_wboson_pt29b.root") {
+void plotMCRates(char* hijfname = "scale/histosLHC08d6.root",
+		 char* jjfname = "scale/histosscaledLHC09b2ESD.root",
+		 char* bfname = "scale/histosscaledLHC09b4.root",
+		 char* wfname = "scale/histosWBoson.root") {
 
   //For HIJING need to divide by the number of events, which we
   //can get from the file and do when we perform scaling
   double hijscale = 0.05*(1.E6)*0.5*7700; //0-5% * seconds*lumi*PbPb x-section
   //For bjet and jet-jet events
-  double pyscale = (1.E6)*0.5*208*208; //seconds*lumi*Pb*Pb
+  double pyscale = (1.E6)*0.5*208*208*100/360; //seconds*lumi*Pb*Pb*acceptance
+  double bscale = pyscale*0.10; //Branching ratio for forced
+				//semi-leptonic decays
   double wscale = pyscale*6.29e-05; //JLK: This is temporary X-sec
-				     //info from 2-29 GeV bin until we get pyxsec files
-
+				     //info from 2-29 GeV bin until we
+				     //get pyxsec files; also need to
+				     //divide by nTrials.  For now,
+				     //use nEvt
+  
   TFile* hijfile = new TFile(hijfname);
   if(!hijfile) { printf("NO HIJING FILE\n"); return; }
   TList* hijlist = (TList*)hijfile->Get("histos");
-  TH2F* hijmcele = (TH2F*)hijlist->FindObject("AnaElectron_hPtMCElectron");
-  TH1F* hijmchad = (TH1F*)hijlist->FindObject("AnaElectron_hPtMCHadron");
-  TH1F* refmult = (TH1F*)hijlist->FindObject("AnaElectron_hRefMult");
-  Int_t nEvt = refmult->GetEntries();
+  TH2F* hijmcele = (TH2F*)histos->FindObject("AnaElectron_hPtMCElectron");
+  TH1F* hijmchad = (TH1F*)histos->FindObject("AnaElectron_hPtMCHadron");
+  TH1F* hijmult = (TH1F*)histos->FindObject("AnaElectron_hRefMult");
+  Int_t nEvt = hijmult->GetEntries();
   if(nEvt == 0) { printf("NO HIJING EVENTS\n"); return; }
   hijmcele->Scale(hijscale/nEvt);
   hijmchad->Scale(hijscale/nEvt);
 
   TFile* jjfile = new TFile(jjfname);
   if(!jjfile) { printf("NO JET-JET FILE\n"); return; }
-  TList* jjlist = (TList*)jjfile->Get("histos");
-  TH2F* jjmcele = (TH2F*)histosscaled->FindObject("AnaElectron_hPtMCElectronScaled");
-  TH1F* jjmchad = (TH1F*)histosscaled->FindObject("AnaElectron_hPtMCHadronScaled");
+  TH2F* jjmcele = (TH2F*)jjfile->Get("AnaElectron_hPtMCElectronScaled");
+  TH1F* jjmchad = (TH1F*)jjfile->Get("AnaElectron_hPtMCHadronScaled");
+  TH1F* jjmult = (TH1F*)jjfile->Get("AnaElectron_hRefMultScaled");
+  Int_t nEvtJJ = jjmult->GetEntries();
   jjmcele->Scale(pyscale);
   jjmchad->Scale(pyscale);
 
   TFile* bfile = new TFile(bfname);
   if(!bfile) { printf("NO B-JET FILE\n"); return; }
-  TList* blist = (TList*)bfile->Get("histos");
-  TH2F* bmcele = (TH2F*)histosscaled->FindObject("AnaElectron_hPtMCElectronScaled");
-  TH1F* bmchad = (TH1F*)histosscaled->FindObject("AnaElectron_hPtMCHadronScaled");
-  bmcele->Scale(pyscale);
-  bmchad->Scale(pyscale);
+  TH2F* bmcele = (TH2F*)bfile->Get("AnaElectron_hPtMCElectronScaled");
+  TH1F* bmchad = (TH1F*)bfile->Get("AnaElectron_hPtMCHadronScaled");
+  TH1F* bmult = (TH1F*)bfile->Get("AnaElectron_hRefMultScaled");
+  Int_t nEvtB = bmult->GetEntries();
+  bmcele->Scale(bscale);
+  bmchad->Scale(bscale);
 
   TFile* wfile = new TFile(wfname);
   if(!wfile) { printf("NO W-BOSON FILE\n"); return; }
   TList* wlist = (TList*)wfile->Get("histos");
   TH2F* wmcele = (TH2F*)histos->FindObject("AnaElectron_hPtMCElectron");
   TH1F* wmchad = (TH1F*)histos->FindObject("AnaElectron_hPtMCHadron");
-  wmcele->Scale(wscale);
-  wmchad->Scale(wscale);
+  TH1F* wmult = (TH1F*)histos->FindObject("AnaElectron_hRefMult");
+  Int_t nEvtW = wmult->GetEntries();
+  wmcele->Scale(wscale/nEvtW);
+  wmchad->Scale(wscale/nEvtW);
+
+  printf("Event statistics: %d (HIJING)  %d (JET-JET)  %d (B-JET)  %d (W-Boson)\n",nEvt,nEvtJJ,nEvtB,nEvtW);
 
   TH2F* combined = (TH2F*)hijmcele->Clone();
   combined->Add(jjmcele);
@@ -90,22 +106,35 @@ void plotMCRates(char* hijfname = "data/histos-merged-LHC0bd6.root",
   other = (TH1F*)combined->ProjectionX("other",8,8);
 
   wz = (TH1F*)wmcele->ProjectionX("wz",7,7);
+  
+  all->Add(wz); //because it had to be done separately
+
+  //For comparing contributions
+  walle = (TH1F*)wmcele->ProjectionX("walle",7,7);
+  sige = (TH1F*)bmcele->ProjectionX("sige",1,1);
+  bkge = (TH1F*)jjmcele->ProjectionX("bkge",1,1);
+  hije = (TH1F*)hijmcele->ProjectionX("hije",1,1);
 
   double myscale = 1.; //we already scaled them
   ScaleAndConfigure(all,myscale,kBlack,kFALSE);
   ScaleAndConfigure(bele,myscale,kRed,kFALSE);
+  ScaleAndConfigure(sige,myscale,kRed,kFALSE);
   ScaleAndConfigure(cele,myscale,kBlue,kFALSE);
   ScaleAndConfigure(candb,myscale,kViolet,kFALSE);
   ScaleAndConfigure(conv,myscale,kOrange-3,kFALSE);
+  ScaleAndConfigure(bkge,myscale,kOrange-3,kFALSE);
   ScaleAndConfigure(dalitz,myscale,kGreen-3,kFALSE);
   ScaleAndConfigure(wz,myscale,kOrange-7,kFALSE);
+  ScaleAndConfigure(walle,myscale,kOrange-7,kFALSE);
   ScaleAndConfigure(mchad,myscale,kGreen+2,kFALSE);
+  ScaleAndConfigure(hije,myscale,kGreen+2,kFALSE);
 
   gStyle->SetOptStat(0);
   //drawXSRates();
   drawAnnualYields();
   drawPtCutRates();
   drawHadEleRatios();
+  drawSigBkg();
 
 }
 
@@ -124,7 +153,7 @@ void ScaleAndConfigure(TH1F* hist,Double_t scale, Int_t color,Bool_t keepErr)
 
 void drawAnnualYields() {
 
-  TCanvas* crates = new TCanvas("crates","crates",20,20,600,400);
+  TCanvas* crates = new TCanvas();
   crates->cd();
   gPad->SetLogy();
   all->SetXTitle("p_{T} (GeV/c)");
@@ -152,6 +181,32 @@ void drawAnnualYields() {
 
 }
 
+void drawSigBkg() {
+
+  TCanvas* csigbkg = new TCanvas();
+  csigbkg->cd();
+  gPad->SetLogy();
+  all->SetXTitle("p_{T} (GeV/c)");
+  all->SetYTitle("Annual yield");
+  all->GetYaxis()->SetRangeUser(1.E1,3.E9);
+  all->GetXaxis()->SetRangeUser(0.,50.);
+  all->Draw();
+  sige->Draw("same");  
+  bkge->Draw("same");  
+  hije->Draw("same");  
+  walle->Draw("same");
+
+  TLegend* leg1 = new TLegend(0.6,0.6,0.9,0.9);
+  leg1->SetTextSize(leg->GetTextSize()*1.2);
+  leg1->AddEntry(all,"All MC electrons","l");
+  leg1->AddEntry(sige,"B-Jet Events","l");
+  leg1->AddEntry(hije,"Pb+Pb Underlying Event","l");
+  leg1->AddEntry(bkge,"Jet-Jet Events","l");
+  leg1->AddEntry(walle,"W-decay Events","l");
+  leg1->Draw();
+
+}
+
 void drawPtCutRates() {
 
   TCanvas* cptcut = new TCanvas();
@@ -163,6 +218,7 @@ void drawPtCutRates() {
   TH1F* cbeleptcut = GetPtCutHisto(candb);
   TH1F* dalitzptcut = GetPtCutHisto(dalitz);
   TH1F* convptcut = GetPtCutHisto(conv);
+  TH1F* wzptcut = GetPtCutHisto(wz);
   alleptcut->GetXaxis()->SetRangeUser(0,50);
   alleptcut->GetYaxis()->SetRangeUser(100,alleptcut->GetMaximum()*2);
   alleptcut->SetXTitle("p_{T}^{cut} (GeV/c)");
@@ -174,6 +230,7 @@ void drawPtCutRates() {
   cbeleptcut->Draw("same");
   dalitzptcut->Draw("same");
   convptcut->Draw("same");
+  wzptcut->Draw("same");
   leg->Draw();
 
 }
@@ -210,9 +267,9 @@ void drawHadEleRatios() {
   behratio->GetXaxis()->SetRangeUser(0,50);
   allratio->SetMarkerStyle(20);
   behratio->SetMarkerStyle(24);
+  allratio->Fit("pol0");
   allratio->Draw();
   behratio->Draw("psame");
-
 
   TLegend *heleg = new TLegend(0.4,0.75,0.75,0.9);
   heleg->SetTextSize(heleg->GetTextSize()*1.5);
