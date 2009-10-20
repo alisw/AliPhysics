@@ -63,7 +63,7 @@ void mylauncher()
           while ((os=(TObjString*)next())) {
 	    TGridResult *res;
             Info("Find", "Making collection for %s", os->GetString().Data());
-            res = gGrid->Command(Form("find -x collection %s %s > mycollect%d.xml", os->GetString().Data(),datatype.Data(),count));
+            res = gGrid->Command(Form("find -x collection %s %s > mycollect%02d.xml", os->GetString().Data(),datatype.Data(),count));
             if(!res) Info("Find", "Failed making collection for %s \n",os->GetString().Data());
             delete res;
             count++;
@@ -99,8 +99,8 @@ void mylauncher()
 	  TGridResult *res;
           TString jobID = "";
           if(kMultiMode){
-            res = gGrid->Command(Form("submit %s %s %d", jdlfilename.Data(),worksubdir.Data(),index));
-            Info("Launcher:",     "Submitting %s %s %d", jdlfilename.Data(),worksubdir.Data(),index);
+            res = gGrid->Command(Form("submit %s %s %02d", jdlfilename.Data(),worksubdir.Data(),index));
+            Info("Launcher:",     "Submitting %s %s %02d", jdlfilename.Data(),worksubdir.Data(),index);
           }
           else{
             res = gGrid->Command(Form("submit %s", jdlfilename.Data()));

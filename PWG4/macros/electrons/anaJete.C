@@ -657,8 +657,10 @@ void GetXsection(Int_t nEventsPerFile, TString filexs)
       continue;
     }		
     xsection += hxs->GetBinContent(1);
-    ntrials  += htrial->GetBinContent(1)/htrial->GetEntries()/nEventsPerFile;
-    cout << "Chain: xsection " <<hxs->GetBinContent(1)<<" ntrials "<<htrial->GetBinContent(1)/htrial->GetEntries()<<endl; 
+    ntrials  += htrial->GetBinContent(1)/nEventsPerFile;
+    cout << "Chain: xsection " <<hxs->GetBinContent(1)<<" ntrials "<<htrial->GetBinContent(1)<<endl; 
+    cout << "nEventsPerFile = " << nEventsPerFile <<endl;	
+    cout << "Accumulating ntrials/event = " << ntrials << endl;
   }
   else {
     Double_t xs = 0;
@@ -669,7 +671,9 @@ void GetXsection(Int_t nEventsPerFile, TString filexs)
     xstree->GetEntry(0);
     cout << "Chain: xsection " <<xs<<" ntrials "<<ntr<<endl;
     xsection += xs ;
-    ntrials += ntr/nEventsPerFile;	
+    ntrials += (float) ntr/nEventsPerFile;
+    cout << "Latest values read are ntr = " << ntr << " and nEventsPerFile = " << nEventsPerFile <<endl;	
+    cout << "Accumulating ntrials/event = " << ntrials <<endl;
   }  
 }
 
