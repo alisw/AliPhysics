@@ -37,6 +37,8 @@ ClassImp(TUHKMgen)
 TUHKMgen::TUHKMgen() : 
   TGenerator("UHKM","UHKM"),
   fInitialState(0x0),
+  fAllocator(),
+  fSecondariesList(),
   fNPprim(0),
   fNPsec(0),
   fHydjetParams(),
@@ -44,8 +46,8 @@ TUHKMgen::TUHKMgen() :
 {
   // default constructor setting reasonable defaults for initial parameters (central Pb+Pb at 5.5 TeV)
 
-  ParticleAllocator fAllocator;
-  List_t fSecondariesList;
+  //  ParticleAllocator fAllocator;
+  //  List_t fSecondariesList;
 
   // Set reasonable default values for LHC
   
@@ -259,7 +261,7 @@ Int_t TUHKMgen::ImportParticles(TClonesArray *particles, const Option_t* option)
   // Function overloading the TGenerator::ImportParticles() member function.
   // The particles from the local particle list (fSecondariesList) are
   // forwarded to the TGenerator::fParticles
-
+  option = option;   // just to avoid the warning
   
 
   if(particles==0) return 0;
@@ -395,4 +397,3 @@ void TUHKMgen::SetAllParameters() {
   //    fInitialState->SetPDGParticleStable(fStableFlagPDG[i], fStableFlagStatus[i]);
   //  cout << "TUHKMgen::SetAllParameters() OUT" << endl;
 }
-

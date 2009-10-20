@@ -347,15 +347,11 @@ void AliGenUHKM::Generate()
 
   //_________ Loop for particle selection
   for(Int_t i=0; i<np; i++) {
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // the particle indexes are 0 based but fParticles is a 1 based array
-    // -1 is the trivial code (when it does not exist)
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TParticle *iparticle = (TParticle*)fParticles.At(i);
     Int_t kf = iparticle->GetPdgCode();
     Bool_t hasMother = (iparticle->GetFirstMother() >= 0);
     Bool_t hasDaughter = (iparticle->GetNDaughters() > 0);
-
+    
     if(hasDaughter) {
       // This particle has decayed
       // It will not be tracked
@@ -376,13 +372,14 @@ void AliGenUHKM::Generate()
         imo = iparticle->GetFirstMother(); //index of mother particle in fParticles
       } // if has mother
       Bool_t trackFlag = kFALSE;   // tFlag is kFALSE --> do not track the particle
-
-      PushTrack(trackFlag, (imo>=0 ? idsOnStack[imo+1] : imo), kf,
+      
+      PushTrack(trackFlag, (imo>=0 ? idsOnStack[imo] : imo), kf,
                 p[0], p[1], p[2], energy,
                 v[0], v[1], v[2], time,
                 polar[0], polar[1], polar[2],
                 (hasMother ? kPDecay : kPNoProcess), nt);
       idsOnStack[i] = nt;
+      
       fNprimaries++;
       KeepTrack(nt);
     }
@@ -394,6 +391,7 @@ void AliGenUHKM::Generate()
       //   this one will not be tracked
       // Second time with event-wide c0ordinates and vertex smearing
       //   this one will be tracked
+      
       Float_t p[3] = {p[0] = iparticle->Px(),
                       p[1] = iparticle->Py(),
                       p[2] = iparticle->Pz()};
@@ -406,19 +404,21 @@ void AliGenUHKM::Generate()
       Int_t type    = iparticle->GetStatusCode(); // 1-from jet / 0-from hydro 
       Int_t coeffT=1;
       if(type==1) coeffT=-1; //to separate particles from jets
+      
 
       Int_t imo = -1;
       
       if(hasMother) {
         imo = iparticle->GetFirstMother();
       } // if has mother
+      
       Bool_t trackFlag = kFALSE;  // tFlag = kFALSE --> do not track this one, its for femtoscopy
       PushTrack(trackFlag, (imo>=0 ? idsOnStack[imo] : imo), kf,
                 p[0], p[1], p[2], energy,
                 v[0], v[1], v[2], (iparticle->T())*coeffT,
                 polar[0], polar[1], polar[2],
                 hasMother ? kPDecay:kPNoProcess, nt);
-
+      
       idsOnStack[i] = nt;
       fNprimaries++;
       KeepTrack(nt);
@@ -435,6 +435,7 @@ void AliGenUHKM::Generate()
                 origin[0], origin[1], origin[2], iparticle->T(),
                 polar[0], polar[1], polar[2],
                 hasMother ? kPDecay:kPNoProcess, nt);
+      
       fNprimaries++;
       KeepTrack(nt);
     }
@@ -521,17 +522,17 @@ void AliGenUHKM::SetAllParameters() {
   //  fUHKMgen->SetMinimumMass(fMinMass);
   //  fUHKMgen->SetMaximumMass(fMaxMass);
 
-  cout << "AliGenUHKM::Init() no. stable flagged particles = " << fStableFlagged << endl;
+  //  cout << "AliGenUHKM::Init() no. stable flagged particles = " << fStableFlagged << endl;
   for(Int_t i=0; i<fStableFlagged; i++) {
-    cout << "AliGenUHKM::Init() flag no. " << i
-         << " PDG = " << fStableFlagPDG[i]
-         << " flag = " << fStableFlagStatus[i] << endl;
+    //    cout << "AliGenUHKM::Init() flag no. " << i
+    //         << " PDG = " << fStableFlagPDG[i]
+    //         << " flag = " << fStableFlagStatus[i] << endl;
     fUHKMgen->SetPDGParticleStable(fStableFlagPDG[i], fStableFlagStatus[i]);
   }
 
- cout<<" Print all parameters "<<endl;
- cout<<" SqrtS = "<<fHydjetParams.fSqrtS<<endl;
- cout<<" Bmin  = "<< fHydjetParams.fBmin<<endl;
+   cout<<" Print all parameters "<<endl;
+   cout<<" SqrtS = "<<fHydjetParams.fSqrtS<<endl;
+   cout<<" Bmin  = "<< fHydjetParams.fBmin<<endl;
  cout<<" Bmax= "<<fHydjetParams.fBmax<<endl;
  cout<<" Aw= "<<fHydjetParams.fAw<<endl;
  cout<<" Seed= "<<fHydjetParams.fSeed<<endl;
@@ -607,7 +608,7 @@ void AliGenUHKM::CheckPDGTable() {
 					    (Int_t(uhkmTestParticle->GetBaryonNumber())==0 ? "meson" : "baryon"),
 					    uhkmTestParticle->GetPDG());    
       if(uhkmTestParticle->GetWidth()<1e-10) 
-	cout << uhkmTestParticle->GetPDG() << "its mass "
+	cout << uhkmTestParticle->GetPDG() << " with mass "
 	     << TDatabasePDG::Instance()->GetParticle(uhkmTestParticle->GetPDG())->Mass()
 	     << TDatabasePDG::Instance()->GetParticle(uhkmTestParticle->GetPDG())->Width() << endl;  
     }
