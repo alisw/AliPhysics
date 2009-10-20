@@ -276,15 +276,26 @@ int AliHLTITSTrackerComponent::DoInit( int argc, const char** argv )
     AliGeomManager::LoadGeometry();
   }
 
-  fTracker = new AliITStrackerHLT(0);
-
   TString arguments = "";
   for ( int i = 0; i < argc; i++ ) {
     if ( !arguments.IsNull() ) arguments += " ";
     arguments += argv[i];
   }
 
-  return Configure( NULL, NULL, arguments.Data() );
+  int ret = Configure( NULL, NULL, arguments.Data() );
+
+  // set field
+  if (!TGeoGlobalMagField::Instance()->IsLocked()) {
+    AliMagF* field = new AliMagF("Maps","Maps",1.,1.,AliMagF::k5kG);
+    field->SetFactorSol(1);
+    Double_t initialFieldStrengh=field->SolenoidField();
+    field->SetFactorSol(fSolenoidBz/initialFieldStrengh); 
+    TGeoGlobalMagField::Instance()->SetField(field);  
+  }
+
+  fTracker = new AliITStrackerHLT(0);
+
+  return ret;
 }
 
 
