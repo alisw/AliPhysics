@@ -701,7 +701,7 @@ int AliHLTSystem::SendControlEvent(AliHLTComponentDataType dt)
   // ECS parameter dummy of type kAliHLTDataTypeECSParam
   // to be filled at some point from the trigger framework
   AliHLTComponent::FillBlockData(bd);
-  TString ecsParam="CTP_TRIGGER_CLASS=00:DUMMY_TRIGGER_ALL:00-01-02-03-04-05-06-07-08-09-10-11-12-13-14-15-16-17";
+  TString ecsParam="CTP_TRIGGER_CLASS=00:DUMMY-TRIGGER-ALL:00-01-02-03-04-05-06-07-08-09-10-11-12-13-14-15-16-17";
   bd.fPtr=(void*)ecsParam.Data();
   bd.fSize=ecsParam.Length()+1;
   bd.fDataType=kAliHLTDataTypeECSParam;
