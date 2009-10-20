@@ -80,36 +80,24 @@ AliEMCALLoader::AliEMCALLoader()
 AliEMCALLoader::AliEMCALLoader(const Char_t *detname,const Char_t *eventfoldername)
   : AliLoader(detname,eventfoldername),
     fDebug(0),
-    fHits(0),
-    fDigits(0),
-    fSDigits(0),
-    fRecPoints(0)
+    fHits(new TClonesArray("AliEMCALHit")),
+    fDigits(new TClonesArray("AliEMCALDigit")),
+    fSDigits(new TClonesArray("AliEMCALDigit")),
+    fRecPoints(new TObjArray())
 {
   //Specific constructor for EMCAL Loader class
-
-  fDebug=0;
-  fHits = new TClonesArray("AliEMCALHit");
-  fDigits = new TClonesArray("AliEMCALDigit");
-  fSDigits = new TClonesArray("AliEMCALDigit");
-  fRecPoints = new TObjArray();
 }
 
 //____________________________________________________________________________
 AliEMCALLoader::AliEMCALLoader(const Char_t *name, TFolder *topfolder)
   : AliLoader(name,topfolder),
     fDebug(0),
-    fHits(0),
-    fDigits(0),
-    fSDigits(0),
-    fRecPoints(0)
+    fHits(new TClonesArray("AliEMCALHit")),
+    fDigits(new TClonesArray("AliEMCALDigit")),
+    fSDigits(new TClonesArray("AliEMCALDigit")),
+    fRecPoints(new TObjArray())
 {
   //Specific constructor for EMCAL Loader class
-
-  fDebug=0;
-  fHits = new TClonesArray("AliEMCALHit");
-  fDigits = new TClonesArray("AliEMCALDigit");
-  fSDigits = new TClonesArray("AliEMCALDigit");
-  fRecPoints = new TObjArray();
 }
 
 //____________________________________________________________________________ 
