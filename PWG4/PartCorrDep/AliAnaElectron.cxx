@@ -1671,12 +1671,12 @@ Bool_t AliAnaElectron::CheckTrack(const AliAODTrack* track, const char* type)
     Int_t label = ele->GetTrackLabel(0);
     if(label != trackId) continue;  //skip to the next one if they don't match
 
-    if(type=="DVM") { 
+    if(strcmp(type,"DVM")==0) { 
       if(ele->CheckBTagBit(ele->GetBtag(),AliAODPWG4Particle::kDVMTag1) ||
 	 ele->CheckBTagBit(ele->GetBtag(),AliAODPWG4Particle::kDVMTag2))
 	pass = kTRUE;
 
-    } else if (type=="NPE") {
+    } else if (strcmp(type,"NPE")==0) {
 
       Bool_t photonic = kFALSE;
       Bool_t photonic1 = kFALSE;
@@ -1967,7 +1967,7 @@ void AliAnaElectron::Print(const Option_t * opt) const
 } 
 
 //________________________________________________________________________
-void AliAnaElectron::ReadHistograms(TList* outputList)
+void AliAnaElectron::ReadHistograms(TList* /* outputList */)
 {
   // Needed when Terminate is executed in distributed environment                             
   // Refill analysis histograms of this class with corresponding
