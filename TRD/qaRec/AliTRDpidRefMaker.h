@@ -64,11 +64,9 @@ public:
   void    SetRefPID(ETRDpidRefMakerSource select, void *source, Float_t *pid);
   void    SetSource(ETRDpidRefMakerSource pid, ETRDpidRefMakerSource momentum) {fRefPID = pid; fRefP = momentum;}
 
-  void    Terminate(Option_t *);
-
 protected:
-  virtual Float_t* CookdEdx(AliTRDseedV1*) const = 0;
-  virtual Int_t    GetNslices() = 0;
+  virtual Float_t* CookdEdx(AliTRDseedV1*) = 0;
+  virtual Int_t    GetNslices() const = 0;
   virtual void     Fill();
 
   AliTRDReconstructor *fReconstructor;  //! reconstructor needed for recalculation the PID
