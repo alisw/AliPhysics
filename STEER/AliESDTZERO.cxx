@@ -29,6 +29,7 @@ ClassImp(AliESDTZERO)
 //______________________________________________________________________________
 AliESDTZERO::AliESDTZERO() :
   TObject(),
+  fT0clock(0),
   fT0zVertex(0),
   fT0timeStart(0)   
 {
@@ -37,6 +38,7 @@ AliESDTZERO::AliESDTZERO() :
 
 AliESDTZERO::AliESDTZERO(const AliESDTZERO &tzero ) :
   TObject(tzero),
+  fT0clock(tzero.fT0clock),
   fT0zVertex(tzero.fT0zVertex),
   fT0timeStart(tzero.fT0timeStart)   
 {

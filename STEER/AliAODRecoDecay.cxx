@@ -520,7 +520,7 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
   // If yes, return label (>=0) of the AliAODMCParticle
   // 
 
-  Int_t labMom[10];
+  Int_t labMom[10]={0,0,0,0,0,0,0,0,0,0};
   Int_t i,j,lab,labMother,pdgMother,pdgPart;
   AliAODMCParticle *part=0;
   AliAODMCParticle *mother=0;

@@ -51,6 +51,7 @@ AliESD::AliESD():
   fPrimaryVertex(),
   fSPDMult(),
   fT0timeStart(0),
+  fT0clock(0),
   fTracks("AliESDtrack",15000),
   fHLTConfMapTracks("AliESDHLTtrack",25000),
   fHLTHoughTracks("AliESDHLTtrack",15000),
@@ -111,6 +112,7 @@ AliESD::AliESD(const AliESD& esd):
   fPrimaryVertex(esd.fPrimaryVertex),
   fSPDMult(esd.fSPDMult),
   fT0timeStart(esd.fT0timeStart),
+  fT0clock(esd.fT0clock),
   fTracks(*((TClonesArray*)esd.fTracks.Clone())),
   fHLTConfMapTracks(*((TClonesArray*)esd.fHLTConfMapTracks.Clone())),
   fHLTHoughTracks(*((TClonesArray*)esd.fHLTHoughTracks.Clone())),
@@ -207,6 +209,7 @@ void AliESD::Reset()
     fT0amplitude[i] = 0;
   }
   fT0timeStart = 0;
+  fT0clock = 0;
 //
   fSPDMult.~AliMultiplicity();
   new (&fSPDMult) AliMultiplicity();

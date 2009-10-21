@@ -174,7 +174,7 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t index, AliDetectorRecoPara
 }  
 
 //____________________________________________________________________________
-Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list, AliDetectorRecoParam * recoParam) 
+Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/) 
 {
   // Performs a basic checking
   // Compares all the histograms in the list

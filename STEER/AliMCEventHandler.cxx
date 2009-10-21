@@ -363,7 +363,7 @@ void  AliMCEventHandler::VerifySelectedParticles(){
       while((imo >= nprim)&&!IsParticleSelected(imo)){
 	  // Mother not yet selected
 	  SelectParticle(imo);
-	  AliMCParticle* mcpart = (AliMCParticle*) fMCEvent->GetTrack(imo);
+	  mcpart = (AliMCParticle*) fMCEvent->GetTrack(imo);
 	  imo = mcpart->GetMother();
       }
     // after last step we may have an unselected primary

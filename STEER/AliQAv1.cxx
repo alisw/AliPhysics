@@ -428,6 +428,7 @@ AliQAv1::MODE_t AliQAv1::Mode(TASKINDEX_t task) {
     default:
       break;
   }
+  return AliQAv1::kNULLMODE;
 }
 
 //_____________________________________________________________________________
