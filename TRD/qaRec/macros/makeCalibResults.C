@@ -74,7 +74,7 @@ Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so", "libS
 TCanvas *c = 0x0;
 Bool_t mc(kFALSE), friends(kFALSE);
 
-void calibrateTRD(TNamed* task);
+void calibrateTRD(TNamed* task, Int_t itask);
 void makeCalibResults(Char_t *opt, const Char_t *files=0x0, Bool_t kGRID=kFALSE)
 {
   if(kGRID){
@@ -110,7 +110,7 @@ void makeCalibResults(Char_t *opt, const Char_t *files=0x0, Bool_t kGRID=kFALSE)
     task = (AliAnalysisTask*)ctask->New();
     if(files) mergeProd(Form("TRD.Calib%s.root", task->GetName()), files);
 
-    if(task->IsA()->InheritsFrom("AliTRDrecoTask")) calibrateTRD(task);
+    if(task->IsA()->InheritsFrom("AliTRDrecoTask")) calibrateTRD(task, itask);
   }
   delete ctask;
   delete c;
@@ -118,20 +118,14 @@ void makeCalibResults(Char_t *opt, const Char_t *files=0x0, Bool_t kGRID=kFALSE)
 
 
 //______________________________________________________
-void calibrateTRD(TNamed *otask)
+void calibrateTRD(TNamed *otask, Int_t itask)
 {
   AliTRDrecoTask *task = dynamic_cast<AliTRDrecoTask*>(otask);
   task->SetDebugLevel(0);
  
-  AliLog::SetClassDebugLevel(Form("AliTRD%s", task->GetName()), 3); 
+  AliLog::SetClassDebugLevel(fgkTRDtaskClassName[itask], 3); 
   task->SetMCdata(mc);
   task->SetFriends(friends);
-
-  if(!task->Load(Form("%s/TRD.Calib%s.root", gSystem->ExpandPathName("$PWD"), task->GetName()))){
-    Error("makeCalibResults.C", Form("Load data container for task %s failed.", task->GetName()));
-    delete task;
-    return;
-  }
 
   if(!task->PostProcess()){
     Error("makeCalibResults.C", Form("Processing data container for task %s failed.", task->GetName()));

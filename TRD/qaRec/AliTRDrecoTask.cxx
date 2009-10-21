@@ -134,7 +134,7 @@ Bool_t AliTRDrecoTask::PutTrendValue(Char_t *name, Double_t val)
   if(!fgFile){
     fgFile = fopen("TRD.Performance.txt", "at");
   }
-  fprintf(fgFile, "%s_%s %f %f\n", GetName(), name, val);
+  fprintf(fgFile, "%s_%s %f\n", GetName(), name, val);
   return kTRUE;
 }
 
