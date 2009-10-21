@@ -104,7 +104,7 @@ class AliMUONTrackExtrap : public TObject
                              Double_t errXVtx, Double_t errYVtx,
                              Bool_t correctForMCS, Bool_t correctForEnergyLoss);
   
-  static void AddMCSEffectInAbsorber(AliMUONTrackParam* trackParam, Double_t pathLength, Double_t f0, Double_t f1, Double_t f2);
+  static void AddMCSEffectInAbsorber(AliMUONTrackParam* trackParam, Double_t signedPathLength, Double_t f0, Double_t f1, Double_t f2);
   static void CorrectMCSEffectInAbsorber(AliMUONTrackParam* param,
                                          Double_t xVtx, Double_t yVtx, Double_t zVtx,
                                          Double_t errXVtx, Double_t errYVtx,

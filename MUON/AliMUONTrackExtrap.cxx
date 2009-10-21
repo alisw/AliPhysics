@@ -412,10 +412,10 @@ Bool_t AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t 
 }
 
 //__________________________________________________________________________
-void AliMUONTrackExtrap::AddMCSEffectInAbsorber(AliMUONTrackParam* param, Double_t pathLength, Double_t f0, Double_t f1, Double_t f2)
+void AliMUONTrackExtrap::AddMCSEffectInAbsorber(AliMUONTrackParam* param, Double_t signedPathLength, Double_t f0, Double_t f1, Double_t f2)
 {
   /// Add to the track parameter covariances the effects of multiple Coulomb scattering
-  /// The absorber correction parameters are supposed to be calculated at the current track z-position
+  /// signedPathLength must have the sign of (zOut - zIn) where all other parameters are assumed to be given at zOut.
   
   // absorber related covariance parameters
   Double_t bendingSlope = param->GetBendingSlope();
@@ -423,8 +423,9 @@ void AliMUONTrackExtrap::AddMCSEffectInAbsorber(AliMUONTrackParam* param, Double
   Double_t inverseBendingMomentum = param->GetInverseBendingMomentum();
   Double_t alpha2 = 0.0136 * 0.0136 * inverseBendingMomentum * inverseBendingMomentum * (1.0 + bendingSlope * bendingSlope) /
                     (1.0 + bendingSlope *bendingSlope + nonBendingSlope * nonBendingSlope); // velocity = 1
+  Double_t pathLength = TMath::Abs(signedPathLength);
   Double_t varCoor = alpha2 * (pathLength * pathLength * f0 - 2. * pathLength * f1 + f2);
-  Double_t covCorrSlope = alpha2 * (pathLength * f0 - f1);
+  Double_t covCorrSlope = TMath::Sign(1.,signedPathLength) * alpha2 * (pathLength * f0 - f1);
   Double_t varSlop = alpha2 * f0;
   
   // Set MCS covariance matrix
@@ -468,8 +469,8 @@ void AliMUONTrackExtrap::CorrectMCSEffectInAbsorber(AliMUONTrackParam* param,
   // Position of the Branson plane (spectro. (z<0))
   Double_t zB = (f1>0.) ? absZBeg - f2/f1 : 0.;
   
-  // Add MCS effects to current parameter covariances
-  AddMCSEffectInAbsorber(param, pathLength, f0, f1, f2);
+  // Add MCS effects to current parameter covariances (spectro. (z<0))
+  AddMCSEffectInAbsorber(param, -pathLength, f0, f1, f2);
   
   // Get track parameters and covariances in the Branson plane corrected for magnetic field effect
   ExtrapToZCov(param,zVtx);
@@ -701,8 +702,10 @@ Double_t AliMUONTrackExtrap::GetMCSAngle2(const AliMUONTrackParam& param, Double
 void AliMUONTrackExtrap::AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Double_t x0)
 {
   /// Add to the track parameter covariances the effects of multiple Coulomb scattering
-  /// through a material of thickness "dZ" and of radiation length "x0"
+  /// through a material of thickness "Abs(dZ)" and of radiation length "x0"
   /// assuming linear propagation and using the small angle approximation.
+  /// dZ = zOut - zIn (sign is important) and "param" is assumed to be given zOut.
+  /// If x0 <= 0., assume dZ = pathLength/x0 and consider the material thickness as negligible.
   
   Double_t bendingSlope = param->GetBendingSlope();
   Double_t nonBendingSlope = param->GetNonBendingSlope();
@@ -711,17 +714,17 @@ void AliMUONTrackExtrap::AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Dou
                                    (1.0 + bendingSlope * bendingSlope) /
                                    (1.0 + bendingSlope *bendingSlope + nonBendingSlope * nonBendingSlope); 
   // Path length in the material
-  Double_t pathLength = TMath::Abs(dZ) * TMath::Sqrt(1.0 + bendingSlope*bendingSlope + nonBendingSlope*nonBendingSlope);
-  Double_t pathLength2 = pathLength * pathLength;
+  Double_t signedPathLength = dZ * TMath::Sqrt(1.0 + bendingSlope*bendingSlope + nonBendingSlope*nonBendingSlope);
+  Double_t pathLengthOverX0 = (x0 > 0.) ? TMath::Abs(signedPathLength) / x0 : TMath::Abs(signedPathLength);
   // relativistic velocity
   Double_t velo = 1.;
   // Angular dispersion square of the track (variance) in a plane perpendicular to the trajectory
-  Double_t theta02 = 0.0136 / velo * (1 + 0.038 * TMath::Log(pathLength/x0));
-  theta02 *= theta02 * inverseTotalMomentum2 * pathLength / x0;
+  Double_t theta02 = 0.0136 / velo * (1 + 0.038 * TMath::Log(pathLengthOverX0));
+  theta02 *= theta02 * inverseTotalMomentum2 * pathLengthOverX0;
   
-  Double_t varCoor 	= pathLength2 * theta02 / 3.;
+  Double_t varCoor 	= (x0 > 0.) ? signedPathLength * signedPathLength * theta02 / 3. : 0.;
   Double_t varSlop 	= theta02;
-  Double_t covCorrSlope = pathLength * theta02 / 2.;
+  Double_t covCorrSlope = (x0 > 0.) ? signedPathLength * theta02 / 2. : 0.;
   
   // Set MCS covariance matrix
   TMatrixD newParamCov(param->GetCovariances());
@@ -849,7 +852,7 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam,
       
       // Correct for energy loss add multiple scattering dispersion in covariance matrix
       CorrectELossEffectInAbsorber(trackParam, 0.5*totalELoss, 0.5*sigmaELoss2);
-      AddMCSEffectInAbsorber(trackParam, pathLength, f0, f1, f2);
+      AddMCSEffectInAbsorber(trackParam, -pathLength, f0, f1, f2); // (spectro. (z<0))
       ExtrapToZCov(trackParam, trackXYZIn[2]);
       CorrectELossEffectInAbsorber(trackParam, 0.5*totalELoss, 0.5*sigmaELoss2);
       ExtrapToZCov(trackParam, zVtx);
@@ -857,7 +860,7 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam,
     } else {
       
       // add multiple scattering dispersion in covariance matrix
-      AddMCSEffectInAbsorber(trackParam, pathLength, f0, f1, f2);
+      AddMCSEffectInAbsorber(trackParam, -pathLength, f0, f1, f2); // (spectro. (z<0))
       ExtrapToZCov(trackParam, zVtx);
       
     }

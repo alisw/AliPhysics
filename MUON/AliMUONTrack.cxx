@@ -444,7 +444,7 @@ Bool_t AliMUONTrack::UpdateCovTrackParamAtCluster()
     trackParamAtCluster->SetCovariances(startingTrackParam->GetCovariances());
     
     // add MCS effect
-    AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(),1.);
+    AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(),-1.);
     
     // add MCS in missing chambers if any
     currentChamber = trackParamAtCluster->GetClusterPtr()->GetChamberId();
@@ -452,7 +452,7 @@ Bool_t AliMUONTrack::UpdateCovTrackParamAtCluster()
       // extrapolation to the missing chamber
       if (!AliMUONTrackExtrap::ExtrapToZCov(trackParamAtCluster, AliMUONConstants::DefaultChamberZ(expectedChamber))) extrapStatus = kFALSE;
       // add MCS effect
-      AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(),1.);
+      AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(),-1.);
       expectedChamber++;
     }
     

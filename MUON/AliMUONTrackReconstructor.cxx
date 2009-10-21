@@ -488,7 +488,7 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInChamber(AliMUONTrack &trackCandid
   }
   
   // Add MCS effect
-  AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),1.);
+  AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),-1.);
   
   // Add MCS in the missing chamber(s) if any
   Int_t currentChamber = extrapTrackParamAtCh.GetClusterPtr()->GetChamberId();
@@ -497,7 +497,7 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInChamber(AliMUONTrack &trackCandid
     currentChamber--;
     if (!AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(currentChamber))) return kFALSE;
     // add MCS effect
-    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),1.);
+    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),-1.);
   }
   
   //Extrapolate trackCandidate to chamber
@@ -645,7 +645,7 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack &trackCandid
   }
   
   // Add MCS effect
-  AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),1.);
+  AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),-1.);
   
   // Add MCS in the missing chamber(s) if any
   Int_t currentChamber = extrapTrackParamAtCh.GetClusterPtr()->GetChamberId();
@@ -654,7 +654,7 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack &trackCandid
     currentChamber--;
     if (!AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(currentChamber))) return kFALSE;
     // add MCS effect
-    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),1.);
+    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),-1.);
   }
   
   //Extrapolate trackCandidate to chamber "ch2"
@@ -709,7 +709,7 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack &trackCandid
       }
       
       // add MCS effect for next step
-      AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCluster2,AliMUONConstants::ChamberThicknessInX0(),1.);
+      AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCluster2,AliMUONConstants::ChamberThicknessInX0(),-1.);
       
       // copy new track parameters for next step
       extrapTrackParam = extrapTrackParamAtCluster2;
@@ -802,7 +802,7 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack &trackCandid
   if (GetRecoParam()->TrackAllTracks() || !foundTwoClusters) {
     
     // add MCS effect for next step
-    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),1.);
+    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),-1.);
     
     //Extrapolate trackCandidate to chamber "ch1"
     Bool_t normalExtrap = AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(ch1));
@@ -950,7 +950,7 @@ Double_t AliMUONTrackReconstructor::TryTwoClusters(const AliMUONTrackParam &trac
     AliMUONTrackParam trackParam(trackParamAtCluster1);
     
     // add MCS effect to the covariance matrix at first cluster
-    AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
+    AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),-1.);
     
     // Get the pointer to the parameter covariance matrix at first cluster
     const TMatrixD& kParamCov = trackParam.GetCovariances();

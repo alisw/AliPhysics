@@ -746,7 +746,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInChamber(AliMUONTrack &trac
   }
   
   // Add MCS effect
-  AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
+  AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),-1.);
   
   // Printout for debuging
   if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
@@ -893,7 +893,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
   }
   
   // Add MCS effect
-  AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
+  AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),-1.);
   
   // Printout for debuging
   if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
@@ -928,7 +928,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
       }
       
       // add MCS effect
-      AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCluster2,AliMUONConstants::ChamberThicknessInX0(),1.);
+      AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCluster2,AliMUONConstants::ChamberThicknessInX0(),-1.);
       
       // reset cluster iterator of chamber 1
       nextInCh1.Reset();
@@ -1031,7 +1031,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
     AliMUONTrackExtrap::LinearExtrapToZCov(&trackParam, AliMUONConstants::DefaultChamberZ(ch2));
     
     // add MCS effect for next step
-    AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
+    AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),-1.);
     
     // reset cluster iterator of chamber 1
     nextInCh1.Reset();

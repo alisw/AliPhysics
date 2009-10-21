@@ -151,7 +151,7 @@ AliMUONTriggerTrackToTrackerClusters::GenerateClusters(Int_t iChamber,
   trackParam.SetBendingSlope(bendingSlope);
   trackParam.SetInverseBendingMomentum(inverseBendingMomentum);
   
-  Double_t dZ = TMath::Abs(AliMUONConstants::DefaultChamberZ(12) - AliMUONConstants::DefaultChamberZ(10));
+  Double_t dZ = AliMUONConstants::DefaultChamberZ(10) - AliMUONConstants::DefaultChamberZ(12);
   
   Double_t sigmaX = AliMUONConstants::TriggerNonBendingReso();
   
@@ -163,17 +163,15 @@ AliMUONTriggerTrackToTrackerClusters::GenerateClusters(Int_t iChamber,
   
   // Non bending plane
   paramCov(0,0) = sigmaX*sigmaX;
-  paramCov(0,1) = -sigmaX/dZ;
+  paramCov(0,1) = paramCov(0,0)/dZ;
   paramCov(1,0) = paramCov(0,1);
-  
-  paramCov(1,1) = 2.0*sigmaX/dZ/dZ;
+  paramCov(1,1) = 2.0*paramCov(0,0)/dZ/dZ;
   
   // Bending plane
   paramCov(2,2) = sigmaY*sigmaY;
-  paramCov(2,3) = -sigmaY/dZ;
+  paramCov(2,3) = paramCov(2,2)/dZ;
   paramCov(3,2) = paramCov(2,3);
-  
-  paramCov(3,3) = 2.0*sigmaY/dZ/dZ;
+  paramCov(3,3) = 2.0*paramCov(2,2)/dZ/dZ;
   
   // Inverse bending momentum (50% error)
   paramCov(4,4) = 0.5*inverseBendingMomentum * 0.5*inverseBendingMomentum;
@@ -181,10 +179,12 @@ AliMUONTriggerTrackToTrackerClusters::GenerateClusters(Int_t iChamber,
   // Set covariances
   trackParam.SetCovariances(paramCov);
   
+  // add MCS effect in the iron wall
+  const Float_t kFilterThickness = AliMUONConstants::MuonFilterZEnd()-AliMUONConstants::MuonFilterZBeg(); // cm
+  AliMUONTrackExtrap::ExtrapToZCov(&trackParam, AliMUONConstants::MuonFilterZEnd()); // Extrap to iChamber
+  AliMUONTrackExtrap::AddMCSEffect(&trackParam, kFilterThickness, AliMUONConstants::MuonFilterX0()); // Add MCS effects
+  
   // Now we extrapolate this trackParam to chambers 6 -> 9
-  
-  const Float_t kFilterThickness = TMath::Abs(AliMUONConstants::MuonFilterZEnd()-AliMUONConstants::MuonFilterZBeg()); // cm
-  
   Int_t nclusters = clusterStore.GetSize();
   
   AliMUONTrackParam tp(trackParam);
@@ -192,7 +192,6 @@ AliMUONTriggerTrackToTrackerClusters::GenerateClusters(Int_t iChamber,
   Double_t zg = AliMUONConstants::DefaultChamberZ(iChamber);
   AliMUONTrackExtrap::ExtrapToZCov(&tp, zg); // Extrap to iChamber
   
-  AliMUONTrackExtrap::AddMCSEffect(&tp, kFilterThickness, AliMUONConstants::MuonFilterX0()); // Add MCS effects
   
   AliDebug(1,Form("iChamber=%d",iChamber));
   

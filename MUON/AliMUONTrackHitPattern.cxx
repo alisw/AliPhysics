@@ -110,20 +110,18 @@ void AliMUONTrackHitPattern::InitMembers()
   //
   /// Initialize data members
   //
-  fDeltaZ = TMath::Abs(AliMUONConstants::DefaultChamberZ(12) - AliMUONConstants::DefaultChamberZ(10));
+  fDeltaZ = AliMUONConstants::DefaultChamberZ(10) - AliMUONConstants::DefaultChamberZ(12);
 
   const Double_t kTrigNonBendReso = AliMUONConstants::TriggerNonBendingReso();
   const Double_t kTrigBendReso = AliMUONConstants::TriggerBendingReso();
-  const Double_t kTrigSlopeBendReso = 1.414 * AliMUONConstants::TriggerBendingReso()/fDeltaZ;
-  const Double_t kTrigCovSlopeBend = - kTrigBendReso * kTrigBendReso / fDeltaZ;
 
   // Covariance matrix 3x3 (X,Y,slopeY) for trigger tracks
   fTrigCovariance = new TMatrixD(3,3);
   fTrigCovariance->Zero();
   (*fTrigCovariance)(0,0) = kTrigNonBendReso * kTrigNonBendReso;
   (*fTrigCovariance)(1,1) = kTrigBendReso * kTrigBendReso;
-  (*fTrigCovariance)(2,2) = kTrigSlopeBendReso * kTrigSlopeBendReso;
-  (*fTrigCovariance)(1,2) = (*fTrigCovariance)(2,1) = kTrigCovSlopeBend;
+  (*fTrigCovariance)(2,2) = 2. * (*fTrigCovariance)(1,1) / fDeltaZ / fDeltaZ;
+  (*fTrigCovariance)(1,2) = (*fTrigCovariance)(2,1) = (*fTrigCovariance)(1,1) / fDeltaZ;
 }
 
 
@@ -382,7 +380,7 @@ AliMUONTrackHitPattern::ApplyMCSCorrections(AliMUONTrackParam& trackParam) const
   //
 
   const Float_t kZFilterOut = AliMUONConstants::MuonFilterZEnd();
-  const Float_t kFilterThickness = TMath::Abs(kZFilterOut-AliMUONConstants::MuonFilterZBeg()); // cm
+  const Float_t kFilterThickness = kZFilterOut-AliMUONConstants::MuonFilterZBeg(); // cm
 
   AliMUONTrackExtrap::ExtrapToZCov(&trackParam, kZFilterOut); // Extrap to muon filter end
   AliMUONTrackExtrap::AddMCSEffect(&trackParam, kFilterThickness, AliMUONConstants::MuonFilterX0()); // Add MCS effects
