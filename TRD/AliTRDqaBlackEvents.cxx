@@ -27,7 +27,7 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH2S.h"
-#include "TH3F.h"
+//#include "TH3F.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TCanvas.h"
@@ -36,14 +36,10 @@
 #include "TStyle.h"
 #include "TGraph.h"
 
-#include "AliLog.h"
-
-#include "AliTRDgeometry.h"
-#include "AliTRDrawStream.h"
-#include "AliTRDqaBlackEvents.h"
-
 #include "AliRawReader.h"
 
+#include "AliTRDrawStream.h"
+#include "AliTRDqaBlackEvents.h"
 
 ClassImp(AliTRDqaBlackEvents)
 
@@ -294,7 +290,10 @@ void AliTRDqaBlackEvents::SetRefFile(const char *filename) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AliTRDqaBlackEvents::ReadRefHists(Int_t det) {
-  
+  //  
+  // Read the reference histograms
+  //
+
   fRefHistPed = 0;
   fRefHistNoise = 0;
   
@@ -345,7 +344,7 @@ void AliTRDqaBlackEvents::StartEvent()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AliTRDqaBlackEvents::AddBuffer(AliTRDrawStream *data, AliRawReader *reader) 
+void AliTRDqaBlackEvents::AddBuffer(AliTRDrawStream *data, AliRawReader * const reader) 
 {
   
   //printf ("try to read data\n");
@@ -608,6 +607,9 @@ void AliTRDqaBlackEvents::AddBuffer(AliTRDrawStream *data, AliRawReader *reader)
 
 void AliTRDqaBlackEvents::FinishEvent()
 {
+  //
+  // Processing at the end of the current event
+  //
 
   for(Int_t i=0; i<3; i++) {
     fGraphPP[i]->SetPoint(fnEvents, fnEvents, fnPP[i]);
@@ -931,8 +933,11 @@ void AliTRDqaBlackEvents::Process(const char *filename)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliTRDqaBlackEvents::CheckMCM(Int_t index) {
-  
+Int_t AliTRDqaBlackEvents::CheckMCM(Int_t index) const {
+  //
+  // Checks a single MCM
+  //  
+
   return 1;
   
   static Int_t data[21][3] = {
@@ -1079,6 +1084,9 @@ void AliTRDqaBlackEvents::DrawSm(const char *filename, Int_t sm, Int_t w, Int_t 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 Int_t AliTRDqaBlackEvents::FillBits(TH1D *hist, Int_t code, Int_t offset) {
+  //
+  // Fill bits
+  //
 
   Int_t nb = 0;
   UInt_t test = 1;

@@ -39,16 +39,16 @@ class AliTRDqaBlackEvents : public TObject {
   //Int_t AddEvent(AliTRDrawStream *data, AliRawReader *reader);
 
   void StartEvent();
-  void AddBuffer(AliTRDrawStream *data, AliRawReader *reader);
+  void AddBuffer(AliTRDrawStream *data, AliRawReader * const reader);
   void FinishEvent();
 
   void Process(const char* filename);
   
   //TH2D *GetChamberPedestal(Int_t sm, Int_t layer, Int_t stack) {return 0;}
-  TH2D *GetChamberPedestal(Int_t det) {return fChPed[det];}
+  TH2D *GetChamberPedestal(Int_t det) const {return fChPed[det];}
   
   //TH2D *GetChamberNoise(Int_t sm, Int_t layer, Int_t stack) {return 0;}
-  TH2D *GetChamberNoise(Int_t det) {return fChNoise[det];}
+  TH2D *GetChamberNoise(Int_t det) const {return fChNoise[det];}
   
   void SetNoiseLevel(Double_t min, Double_t max) {fMinNoise = min; fMaxNoise = max;}
   void SetFitMethod(Int_t fit) {fFitType = fit;} 
@@ -110,8 +110,8 @@ class AliTRDqaBlackEvents : public TObject {
   TH1D *fnEntriesRMDist[kDET]; // distribtion of number of entries per ROB-MCM
 
   // direct access to data
-  Float_t  fDataDirect[kDET][kROW][kPAD][kCH];
-  Double_t fSignalDirect[kDET][kCH]; 
+  Float_t  fDataDirect[kDET][kROW][kPAD][kCH];  // data array
+  Double_t fSignalDirect[kDET][kCH]; // signal array
 
   // after reference subtraction
   TH2D *fChPedRes[kDET];    // histograms after reference subtraction
@@ -139,26 +139,26 @@ class AliTRDqaBlackEvents : public TObject {
   TH2D *fErrorLocADC[kDET];      // errors in ADC
 
   // error fraction
-  TGraph *fErrorGraphHC;
-  TGraph *fErrorGraphMCM;
-  TGraph *fErrorGraphADC;
+  TGraph *fErrorGraphHC;     // HC errors
+  TGraph *fErrorGraphMCM;    // MCM errors
+  TGraph *fErrorGraphADC;    // ADC errors
 
   TGraph *fGraphMCM;         // number of strange MCMs detected 
-  TGraph *fGraphPP[3];
+  TGraph *fGraphPP[3];       // number of strange points
   
 
-  // mcm trackles
-  TObjArray *fMcmTracks;
+  // mcm tracklets
+  TObjArray *fMcmTracks;     // MCM tracklets
 
   // problematic MCMs
-  TH2D *fMapMCM;
-  TH1D *fFracMCM;
+  TH2D *fMapMCM;             // map of problematic MCMs
+  TH1D *fFracMCM;            // fraction of problematicc MCMs
   
   // full detector view
-  TH2D *fSMHCped;
-  TH2D *fSMHCerr;
-  TH2D *fSMLink[3];
-  TGraph *fGrLink[3];
+  TH2D *fSMHCped;            // full detector view of pedestals
+  TH2D *fSMHCerr;            // full detector view of errors
+  TH2D *fSMLink[3];          // full detector view
+  TGraph *fGrLink[3];        // full detector view
   
   //TH1D *fZSsize;
   
@@ -168,27 +168,27 @@ class AliTRDqaBlackEvents : public TObject {
   
   //Int_t fChkDe
   
-  TH1D *fNoiseTotal;
-  TH1D *fPP;
+  TH1D *fNoiseTotal;         // total noise
+  TH1D *fPP;                 // points
   
-  TH1D *fSmNoiseRms[kSM];
-  TH1D *fSmNoiseFit[kSM];
-  TH1D *fSmPP[kSM];    
+  TH1D *fSmNoiseRms[kSM];    // noise RMS
+  TH1D *fSmNoiseFit[kSM];    // noise fit
+  TH1D *fSmPP[kSM];          // points
 
 
-  TH1D *fEvNoDist[1000];
+  TH1D *fEvNoDist[1000];     // event numbers
 
   //
   Double_t fMinNoise;   // Minimum noise
   Double_t fMaxNoise;   // Maximum noise
-  Int_t fFitType;
+  Int_t fFitType;       // fit type
   
   // variables keeping info in one event
   Int_t fnErrorHC[2];  // 0 good, 1 error
-  Int_t fnErrorMCM[2]; //
-  Int_t fnErrorADC[2]; // 
-    
-  Int_t fppThresh[3];      // thersholds for storing pp
+  Int_t fnErrorMCM[2]; // 0 good, 1 error
+  Int_t fnErrorADC[2]; // 0 good, 1 error
+   
+  Int_t fppThresh[3];      // thresholds for storing pp
   Int_t fnPP[3];           // number of entries above the thershold
   Int_t fnLink[3];         // links present, beaf-beaf, good
   Int_t fnADCinSM[kSM+1];  // number of ADC channels in a SuperModule
@@ -198,7 +198,7 @@ class AliTRDqaBlackEvents : public TObject {
 
   // private function
   void  ReadRefHists(Int_t det);
-  Int_t CheckMCM(Int_t index);
+  Int_t CheckMCM(Int_t index) const;
   
   Int_t FillBits(TH1D *hist, Int_t code, Int_t offset);
 
