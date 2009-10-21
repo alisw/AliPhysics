@@ -37,8 +37,6 @@
 
 #include "TLorentzVector.h"
 
-//const AliTRDqaJPsi::knSteps = 5;
-
 //______________________________________________________________________________
 
 AliTRDqaJPsi::AliTRDqaJPsi() 
@@ -53,9 +51,9 @@ AliTRDqaJPsi::AliTRDqaJPsi()
   //
  
 }
-//______________________________________________________________________________
 
-AliTRDqaJPsi:: AliTRDqaJPsi(AliTRDqaJPsi& /*trd*/)
+//______________________________________________________________________________
+AliTRDqaJPsi:: AliTRDqaJPsi(const AliTRDqaJPsi & /*trd*/)
   : AliAnalysisTask("",""),  
     fChain(0),
     fESD(0),
@@ -63,12 +61,10 @@ AliTRDqaJPsi:: AliTRDqaJPsi(AliTRDqaJPsi& /*trd*/)
     fnKFtracks(0)
 {
   //
-  // Dummy copy constructor
+  // Copy constructor
   //
 
-  //return *this;
 }
-
 
 //______________________________________________________________________________
 AliTRDqaJPsi::AliTRDqaJPsi(const char *name) 
@@ -101,6 +97,9 @@ void AliTRDqaJPsi::ConnectInputData(const Option_t *)
 //________________________________________________________________________
 void AliTRDqaJPsi::CreateOutputObjects()
 {
+  //
+  // Create the objects that contain the analysis output
+  //
   
   Int_t c = 0;
   fOutputContainer = new TObjArray(100);
@@ -109,7 +108,7 @@ void AliTRDqaJPsi::CreateOutputObjects()
   
   // build histograms
   
-  for(Int_t i=0; i<knSteps; i++) {
+  for(Int_t i=0; i<fgknSteps; i++) {
 
     fStatus[i] = new TH1D(Form("status_%d", i), "status", 32, -0.5, 31.5);
     fOutputContainer->AddAt(fStatus[i], c++);
@@ -132,14 +131,14 @@ void AliTRDqaJPsi::CreateOutputObjects()
     
 
     for(Int_t j=0; j<2; j++) {
-      fnTracks[j*knSteps+i] = 
+      fnTracks[j*fgknSteps+i] = 
 	new TH1D(Form("nTracks%s_%d", charge[j],i), Form("%s;number of tracks",charge[j]), 100, -0.5, 99.5);
-      fPt[j*knSteps+i] = new TH1D(Form("pt%s_%d", charge[j], i), Form("%s;p_{T} (GeV/c)", charge[j]), 100, 0, 5);
-      fPID[j*knSteps+i] = new TH1D(Form("pid%s_%d", charge[j], i), ";electron LQ", 100, 0, 1);
+      fPt[j*fgknSteps+i] = new TH1D(Form("pt%s_%d", charge[j], i), Form("%s;p_{T} (GeV/c)", charge[j]), 100, 0, 5);
+      fPID[j*fgknSteps+i] = new TH1D(Form("pid%s_%d", charge[j], i), ";electron LQ", 100, 0, 1);
 
-      fOutputContainer->AddAt(fnTracks[j*knSteps+i], c++);
-      fOutputContainer->AddAt(fPt[j*knSteps+i], c++); 
-      fOutputContainer->AddAt(fPID[j*knSteps+i], c++); 
+      fOutputContainer->AddAt(fnTracks[j*fgknSteps+i], c++);
+      fOutputContainer->AddAt(fPt[j*fgknSteps+i], c++); 
+      fOutputContainer->AddAt(fPID[j*fgknSteps+i], c++); 
     }
   }
 
@@ -173,7 +172,7 @@ void AliTRDqaJPsi::Exec(Option_t *)
   
   
   Int_t nTracks = fESD->GetNumberOfTracks();
-  Int_t cTracks[2*knSteps] = {0,0,0,0,0,0,0,0,0,0};
+  Int_t cTracks[2*fgknSteps] = {0,0,0,0,0,0,0,0,0,0};
   fnKFtracks = 0;
 
   // track loop
@@ -205,7 +204,7 @@ void AliTRDqaJPsi::Exec(Option_t *)
 
     // create a kalman particle
     Int_t pdg = (charge == 0)? -11 : 11;
-    for(Int_t k=0; k<knSteps; k++) fInSample[fnKFtracks][k] = 0;  
+    for(Int_t k=0; k<fgknSteps; k++) fInSample[fnKFtracks][k] = 0;  
  
     fVec[fnKFtracks] = CreateVector(track);
     fTracks[fnKFtracks] = new AliKFParticle(*track, pdg);
@@ -216,37 +215,37 @@ void AliTRDqaJPsi::Exec(Option_t *)
 
     // apply the cuts
 
-    cTracks[knSteps *charge + step]++;
+    cTracks[fgknSteps *charge + step]++;
     FillHist(track, step++);
 
     if (!(status & AliESDtrack::kTRDrefit)) continue;
 
-    cTracks[knSteps *charge + step]++;    
+    cTracks[fgknSteps *charge + step]++;    
     FillHist(track, step++);    
 
     if (!(status & AliESDtrack::kTRDpid)) continue;
     if (track->GetTRDntracklets() < 6) continue;
 
-    cTracks[knSteps *charge + step]++;
+    cTracks[fgknSteps *charge + step]++;
     FillHist(track, step++);  
 
     if (pt < 0.8) continue;
 
-    cTracks[knSteps *charge + step]++;
+    cTracks[fgknSteps *charge + step]++;
     FillHist(track, step++);      
 
     if (pid < 0.3) continue; // 
     //if (esdPid[AliPID::kElectron] < 0.5) continue;
     
-    cTracks[knSteps *charge + step]++;
+    cTracks[fgknSteps *charge + step]++;
     FillHist(track, step);  
 
-    for(Int_t k=0; k<2*knSteps; k++) fnTracks[k]->Fill(cTracks[k]);
+    for(Int_t k=0; k<2*fgknSteps; k++) fnTracks[k]->Fill(cTracks[k]);
   }
 
   // calculate invariant mass
 
-  for(Int_t k=0; k<knSteps; k++) {
+  for(Int_t k=0; k<fgknSteps; k++) {
     for(Int_t i=0; i<fnKFtracks; i++) {
       if (!fInSample[i][k]) continue;
       for(Int_t j=i+1; j<fnKFtracks; j++) {
@@ -292,6 +291,9 @@ void AliTRDqaJPsi::Terminate(Option_t *)
 //______________________________________________________________________________
 
 void AliTRDqaJPsi::FillHist(AliESDtrack *track, Int_t step) {
+  //
+  // Fill the histograms
+  //
 
   Int_t charge  = (track->Charge() > 0) ? 1 : 0;
   UInt_t status = track->GetStatus();
@@ -301,7 +303,7 @@ void AliTRDqaJPsi::FillHist(AliESDtrack *track, Int_t step) {
   Double_t esdPid[5];
   track->GetESDpid(esdPid);
 
-  Int_t id = charge * knSteps + step;
+  Int_t id = charge * fgknSteps + step;
   AliTRDqaAT::FillStatus(fStatus[step], status);
   fPt[id]->Fill(pt);
   fPID[id]->Fill(pid);

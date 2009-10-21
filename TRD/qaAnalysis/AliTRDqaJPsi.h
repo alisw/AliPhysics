@@ -14,13 +14,14 @@
 #include "AliAnalysisTask.h"  
 
 class TTree; 
-class AliESDEvent; 
-class AliESDtrack;
 class TH1D; 
 class TH2D;
+class TLorentzVector;
+
 class AliExternalTrackParam;
 class AliKFParticle;
-class TLorentzVector;
+class AliESDEvent; 
+class AliESDtrack;
 
 class AliTRDqaJPsi : public AliAnalysisTask {
 
@@ -28,8 +29,8 @@ class AliTRDqaJPsi : public AliAnalysisTask {
 
   AliTRDqaJPsi();
   AliTRDqaJPsi(const char *name);
-  AliTRDqaJPsi(AliTRDqaJPsi& trd);
-  AliTRDqaJPsi& operator = (const AliTRDqaJPsi& /*g*/) { return *this; };
+  AliTRDqaJPsi(const AliTRDqaJPsi &trd);
+  AliTRDqaJPsi &operator=(const AliTRDqaJPsi & /*g*/) { return *this; };
   virtual ~AliTRDqaJPsi() {}
    
   virtual void Exec(Option_t * opt = "");
@@ -46,27 +47,27 @@ class AliTRDqaJPsi : public AliAnalysisTask {
   
   // histograms
 
-  static const Int_t knSteps = 5;   // number of analysis steps (arbitrary)
+  static const Int_t fgknSteps = 5;   // number of analysis steps (arbitrary)
 
-  TH1D *fStatus[knSteps];      // track status
-  TH1D *fnTracks[2*knSteps];   // number of tracks
-  TH1D *fPt[2*knSteps];        // transverse momentum
-  TH1D *fPID[2*knSteps];       // PID LQ
-  TH1D *fAngleSM[knSteps];     // difference in SM ID
+  TH1D *fStatus[fgknSteps];      // track status
+  TH1D *fnTracks[2*fgknSteps];   // number of tracks
+  TH1D *fPt[2*fgknSteps];        // transverse momentum
+  TH1D *fPID[2*fgknSteps];       // PID LQ
+  TH1D *fAngleSM[fgknSteps];     // difference in SM ID
   
   //TH2D *fnGoodTracks;          // correlation of the final number of Pos and Neg tracks
-  TH1D *fInvMass[knSteps];       // invariant mass using different cuts
-  TH1D *fInvMassVec[knSteps];    //
-  TH1D *fInvMassDiff[knSteps];   //
+  TH1D *fInvMass[fgknSteps];     // invariant mass using different cuts
+  TH1D *fInvMassVec[fgknSteps];  // invariant mass
+  TH1D *fInvMassDiff[fgknSteps]; // invariant mass difference
 
-  TH2D *fPtAngle[knSteps];
+  TH2D *fPtAngle[fgknSteps];     // pt angle 
 
   // tracks
-  AliKFParticle *fTracks[1000];
-  TLorentzVector *fVec[1000];
-  Int_t fInSample[1000][knSteps];
-  Int_t fSM[1000];
-  Int_t fnKFtracks; //[2];
+  AliKFParticle *fTracks[1000];  // tracks
+  TLorentzVector *fVec[1000];    // Lorentz vector for the tracks
+  Int_t fInSample[1000][fgknSteps]; // in sample?
+  Int_t fSM[1000];                  // TRD sector
+  Int_t fnKFtracks;                 //[2];          
   
   // helper functions
   void FillHist(AliESDtrack *track, Int_t step);
