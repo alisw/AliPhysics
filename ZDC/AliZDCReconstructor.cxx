@@ -1056,7 +1056,6 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     //printf("  xSecPercA %1.4f  \n", xSecPercA);
     
     //  ******    Number of participants (from E_ZDC vs. E_ZEM correlation)
-    Int_t nPart=0, nPartC=0, nPartA=0;
     Double_t nPartFrac=0., nPartFracC=0., nPartFracA=0.;
     for(Int_t npbin=1; npbin<hNpartDist->GetNbinsX(); npbin++){
       nPartFrac += (hNpartDist->GetBinContent(npbin))/(hNpartDist->GetEntries());
@@ -1095,7 +1094,6 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     if(nPartA<0) nPartA=0;
     
     //  ******    Impact parameter (from E_ZDC vs. E_ZEM correlation)
-    Float_t b=0, bC=0, bA=0;
     Double_t bFrac=0., bFracC=0., bFracA=0.;
     for(Int_t ibbin=1; ibbin<hbDist->GetNbinsX(); ibbin++){
       bFrac += (hbDist->GetBinContent(ibbin))/(hbDist->GetEntries());
@@ -1122,8 +1120,6 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     }
 
     //  ******	Number of spectator nucleons 
-    Int_t nGenSpec=0, nGenSpecC=0, nGenSpecA=0;
-    //
     nGenSpec = 416 - nPart;
     nGenSpecC = 416 - nPartC;
     nGenSpecA = 416 - nPartA;
