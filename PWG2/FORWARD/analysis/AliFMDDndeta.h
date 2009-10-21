@@ -10,6 +10,24 @@ class AliFMDDndeta : public TObject
 
  public:
   AliFMDDndeta();
+ AliFMDDndeta(const AliFMDDndeta& o) : 
+  fList(0),
+    fMultList(),
+    fNbinsToCut(o.fNbinsToCut),
+    fVtxCut(o.fVtxCut),
+    fIsInit(o.fIsInit),
+    fIsGenerated(),
+    fPrimEvents(o.fPrimEvents),
+    fEvents(o.fEvents),
+    fPrimdNdeta(fPrimdNdeta)
+    {}
+  
+  AliFMDDndeta& operator=(const AliFMDDndeta& /*o*/) 
+    {
+      // Assignment operator 
+      
+      return (*this);
+    }
   
   enum Analysis {kHits, kHitsTrVtx, kMult, kMultTrVtx};
   

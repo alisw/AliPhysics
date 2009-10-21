@@ -39,7 +39,8 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
       fDiagList(),
       fStandalone(o.fStandalone),
       fEsdVertex(o.fEsdVertex),
-      fStatus(o.fStatus)   {}
+      fStatus(o.fStatus),
+      fLastTrackByStrip(o.fLastTrackByStrip) {}
     AliFMDAnalysisTaskSharing& operator=(const AliFMDAnalysisTaskSharing&) { return *this; }
     
     // Implementation of interface methods
