@@ -24,9 +24,10 @@ void trd_tracks(TEveElement *cont = 0)
 
   AliEveEventManager::AssertGeometry();
 
+  AliTRDrecoParam *trdRecoParam = AliTRDrecoParam::GetLowFluxParam();
+  trdRecoParam->SetPIDNeuralNetwork();
   AliTRDReconstructor *reco = new AliTRDReconstructor();
-  reco->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
-  reco->SetOption("!nn");
+  reco->SetRecoParam(trdRecoParam);
 
   AliEveTRDTrackList *tracks = new AliEveTRDTrackList("TRD Tracks");
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++){
