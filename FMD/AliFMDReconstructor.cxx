@@ -381,8 +381,7 @@ AliFMDReconstructor::ProcessDigit(AliFMDDigit* digit) const
   UShort_t sec = digit->Sector();
   UShort_t str = digit->Strip();
   Short_t  adc = digit->Counts();
-  if (adc < 0) 
-    digit->Print();
+ 
   ProcessSignal(det, rng, sec, str, adc);
 }
 

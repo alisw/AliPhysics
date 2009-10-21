@@ -496,40 +496,6 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
   streamer.Reset();
   streamer.SelectRawData("FMD");
   //fReader->GetDDLID();
-  //Int_t detID = fReader->GetDetectorID();
-  
-  //  while(fReader->ReadNextData(fData)) {
-  /*  
-    Int_t ddl   = fReader->GetDDLID();
-    Int_t detID = fReader->GetDetectorID();
-    if (detectors) detectors[map->DDL2Detector(ddl)-1] = kTRUE;
-    AliFMDDebug(0, (" From reader: DDL number is %d , det ID is %d",ddl,detID));
-    
-    fNbytes = fReader->GetDataSize();
-    
-    ULong_t nWords      = GetNwords();
-    UInt_t  trailerLast = Get32bitWord(nWords);
-    AliFMDDebug(20, (" # Bytes: %d, # Words: %d, Last word: 0x%08x", 
-		     fNbytes, nWords, trailerLast));
-    if ((trailerLast & 0xFFFF0000) != 0xAAAA0000) {
-      AliWarning(Form("Last word 0x%08x does not match RCU II trailer",
-		      trailerLast));
-      //return kFALSE;
-    }
-    
-    // 7 last bits is size of trailer
-    ULong_t nTrailerWords = trailerLast & 0x7f; 
-    ULong_t nPayloadWords = Get32bitWord(nWords - nTrailerWords+1);
-
-    AliFMDDebug(20, (" # trailer words: %d, # payload words: %d", 
-		     nTrailerWords, nPayloadWords));
-    
-    ULong_t nPayloadWords = streamer.GetSOD...();
-    UInt_t   payloadWords* = streamer.GetSOD...();
-  */
-
-  
-  
   while (streamer.NextDDL()) {
     Int_t ddl   = streamer.GetDDLNumber();
     Int_t detID = fReader->GetDetectorID();
@@ -541,11 +507,11 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
     UInt_t*  payloadWords  = reinterpret_cast<UInt_t*>(payloadData);
     //UInt_t*   payloadWords  = streamer.GetRCUPayloadInSOD();
 
-    std::cout<<nPayloadWords<<"    "<<ddl<<std::endl;
+    //std::cout<<nPayloadWords<<"    "<<ddl<<std::endl;
     for (ULong_t i = 1; i <= nPayloadWords ; i++, payloadWords++) {
       UInt_t payloadWord = *payloadWords; // Get32bitWord(i);
     
-      std::cout<<i<<Form("  word: 0x%x",payloadWord)<<std::endl;
+      //std::cout<<i<<Form("  word: 0x%x",payloadWord)<<std::endl;
       // address is only 24 bit
       UInt_t address       = (0xffffff & payloadWord);
       UInt_t type          = ((address >> 21) & 0xf);
