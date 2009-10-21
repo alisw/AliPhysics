@@ -110,6 +110,8 @@ AliAnalysisTaskSE(),
   //  fAODObjects(NULL)
 {
   // Default constructor
+
+  /*   Kenneth: the default constructor should not have any define input/output or the call to SetESDtrackCuts
   // Common I/O in slot 0
   DefineInput (0, TChain::Class());
   DefineOutput(0, TTree::Class());
@@ -119,6 +121,7 @@ AliAnalysisTaskSE(),
 	
   // Define standard ESD track cuts for Gamma-hadron correlation 
   SetESDtrackCuts();
+  */
 }
 
 AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name):
