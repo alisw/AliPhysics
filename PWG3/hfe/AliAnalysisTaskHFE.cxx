@@ -907,7 +907,15 @@ void AliAnalysisTaskHFE::PrintStatus(){
   printf("\n");
   printf("\tQA: \n");
   printf("\t\tPID: %s\n", IsQAOn(kPIDqa) ? "YES" :  "NO");
-  printf("\t\tCUTS: %s\n", fCuts != NULL & fCuts->IsInDebugMode() ? "YES" : "NO");
+  if(fCuts) {
+    if(fCuts->IsInDebugMode()) {
+      printf("\t\tCUTS: YES\n");
+    } else {
+      printf("\t\tCUTS: NO\n");
+    }
+  } else {
+    printf("\t\tCUTS: NO\n");
+  }
   printf("\t\tMC: %s\n", IsQAOn(kMCqa) ? "YES" : "NO");
   printf("\n");
 }
