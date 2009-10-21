@@ -28,8 +28,8 @@ class AliTRDqaEnergyDeposit : public AliAnalysisTask {
 public:
   AliTRDqaEnergyDeposit();
   AliTRDqaEnergyDeposit(const char *name);
-  AliTRDqaEnergyDeposit(AliTRDqaEnergyDeposit& trd);
-  AliTRDqaEnergyDeposit& operator = (const AliTRDqaEnergyDeposit& /*g*/) { return *this; };
+  AliTRDqaEnergyDeposit(const AliTRDqaEnergyDeposit & trd);
+  AliTRDqaEnergyDeposit &operator=(const AliTRDqaEnergyDeposit & /*g*/) { return *this; };
   virtual ~AliTRDqaEnergyDeposit() {}
    
   virtual void Exec(Option_t * opt = "");
@@ -54,10 +54,10 @@ protected:
 
   TH2D *fSignalPtPure[2*5];   // dedx for a clean sample 
 
-  void FillElectrons();
-  void FillPions() {}
-  void FillKaons() {}
-  void FillProtons() {}
+  void FillElectrons() const;
+  void FillPions() const {}
+  void FillKaons() const {}
+  void FillProtons() const {}
 
   ClassDef(AliTRDqaEnergyDeposit, 0); // a TRD analysis task 
 };

@@ -26,11 +26,9 @@
 #include "AliTRDqaBasic.h"
 #include "AliTRDqaAT.h"
 
-#include "TMath.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TFile.h"
-#include "TTree.h"
 #include "TChain.h"
 
 #include "AliESDEvent.h"
@@ -54,13 +52,13 @@ AliTRDqaBasic::AliTRDqaBasic()
     fPtPt(0)
 {
   //
-  // default dummy constructor
+  // default constructor
   //
  
 }
 //______________________________________________________________________________
 
-AliTRDqaBasic:: AliTRDqaBasic(AliTRDqaBasic& /*trd*/)
+AliTRDqaBasic:: AliTRDqaBasic(const AliTRDqaBasic & /*trd*/)
   : AliAnalysisTask("",""),  
     fChain(0),
     fESD(0),
@@ -75,12 +73,10 @@ AliTRDqaBasic:: AliTRDqaBasic(AliTRDqaBasic& /*trd*/)
     fPtPt(0)
 {
   //
-  // Dummy copy constructor
+  // Copy constructor
   //
 
-  //return *this;
 }
-
 
 //______________________________________________________________________________
 AliTRDqaBasic::AliTRDqaBasic(const char *name) 

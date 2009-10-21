@@ -32,8 +32,8 @@ class AliTRDqaElectronSpectra : public AliAnalysisTask {
 
   AliTRDqaElectronSpectra();
   AliTRDqaElectronSpectra(const char *name);
-  AliTRDqaElectronSpectra(AliTRDqaElectronSpectra& trd);
-  AliTRDqaElectronSpectra& operator = (const AliTRDqaElectronSpectra& /*g*/) { return *this; };
+  AliTRDqaElectronSpectra(const AliTRDqaElectronSpectra & trd);
+  AliTRDqaElectronSpectra &operator=(const AliTRDqaElectronSpectra & /*g*/) { return *this; };
   virtual ~AliTRDqaElectronSpectra() {}
    
   virtual void Exec(Option_t * opt = "");

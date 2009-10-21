@@ -1,5 +1,6 @@
-#ifndef ALITRDQBASIC_H
-#define ALITRDQBASIC_H
+#ifndef ALITRDQABASIC_H
+#define ALITRDQABASIC_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
@@ -30,8 +31,8 @@ class AliTRDqaBasic : public AliAnalysisTask {
 
   AliTRDqaBasic();
   AliTRDqaBasic(const char *name);
-  AliTRDqaBasic(AliTRDqaBasic& trd);
-  AliTRDqaBasic& operator = (const AliTRDqaBasic& /*g*/) { return *this; };
+  AliTRDqaBasic(const AliTRDqaBasic & trd);
+  AliTRDqaBasic &operator=(const AliTRDqaBasic & /*g*/) { return *this; };
   virtual ~AliTRDqaBasic() {}
    
   virtual void Exec(Option_t * opt = "");

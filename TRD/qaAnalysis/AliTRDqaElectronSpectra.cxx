@@ -31,11 +31,9 @@
 #include "AliTRDqaElectronSpectra.h"
 #include "AliTRDqaAT.h"
 
-#include "TMath.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TFile.h"
-#include "TTree.h"
 #include "TChain.h"
 
 #include "AliESDEvent.h"
@@ -70,7 +68,7 @@ AliTRDqaElectronSpectra::AliTRDqaElectronSpectra()
 }
 //______________________________________________________________________________
 
-AliTRDqaElectronSpectra:: AliTRDqaElectronSpectra(AliTRDqaElectronSpectra& /*trd*/)
+AliTRDqaElectronSpectra:: AliTRDqaElectronSpectra(const AliTRDqaElectronSpectra & /*trd*/)
   : AliAnalysisTask("",""),  
     fChain(0),
     fESD(0),

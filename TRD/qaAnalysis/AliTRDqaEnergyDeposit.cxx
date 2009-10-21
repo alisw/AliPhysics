@@ -32,12 +32,10 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TFile.h"
-#include "TTree.h"
 #include "TChain.h"
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
-#include "AliKalmanTrack.h"
 
 //______________________________________________________________________________
 
@@ -47,19 +45,24 @@ AliTRDqaEnergyDeposit::AliTRDqaEnergyDeposit()
     fESD(0),
     fOutputContainer(0)
 {
-  // Dummy default constructor
+  //
+  // Default constructor
+  //
+
 }
+
 //______________________________________________________________________________
 
-AliTRDqaEnergyDeposit:: AliTRDqaEnergyDeposit(AliTRDqaEnergyDeposit& /*trd*/)
+AliTRDqaEnergyDeposit:: AliTRDqaEnergyDeposit(const AliTRDqaEnergyDeposit & /*trd*/)
   : AliAnalysisTask("",""),  
     fChain(0),
     fESD(0),
     fOutputContainer(0)
 {
-  // Dummy copy constructor
-  
-  //return *this;
+  //
+  // Copy constructor
+  //
+
 }
 
 //______________________________________________________________________________
@@ -69,11 +72,15 @@ AliTRDqaEnergyDeposit::AliTRDqaEnergyDeposit(const char *name)
     fESD(0),
     fOutputContainer(0)
 {
+  //
   // Constructor.
+  //
+
   // Input slot #0 works with an Ntuple
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0,  TObjArray::Class()) ; 
+
 }
 
 //______________________________________________________________________________
@@ -139,11 +146,14 @@ void AliTRDqaEnergyDeposit::CreateOutputObjects()
 
   printf("n hist = %d\n", c);
 }
+
 //______________________________________________________________________________
 void AliTRDqaEnergyDeposit::Exec(Option_t *) 
 {
+  //
   // Process one event
-  
+  //
+
   //  Long64_t entry = fChain->GetReadEntry() ;
   
   // Processing of one event 
@@ -203,16 +213,21 @@ void AliTRDqaEnergyDeposit::Exec(Option_t *)
 }
 
 //______________________________________________________________________________
-void AliTRDqaEnergyDeposit::FillElectrons() {
-
-  
+void AliTRDqaEnergyDeposit::FillElectrons() const 
+{
+  //
+  // Fill the electrons
+  //  
 
 }
 
 //______________________________________________________________________________
 void AliTRDqaEnergyDeposit::Terminate(Option_t *)
 {
-  // retrieve histograms
+  //
+  // Retrieve histograms
+  //
+
   fOutputContainer = (TObjArray*)GetOutputData(0);
   
   // post processing
