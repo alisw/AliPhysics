@@ -77,6 +77,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
   
   
   TH2F* hMult = 0;
+  TH2F* hMultTrVtx = 0;
   TH2F* hHits = 0;
   // TH2F* hHitsNoCuts = 0;
   Int_t nVtxbins = pars->GetNvtxBins();
@@ -98,6 +99,14 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
 			      nSec, 0, 2*TMath::Pi());
 	    hMult->Sumw2();
 	    fOutputList->Add(hMult);
+	    hMultTrVtx  = new TH2F(Form("multTrVtx_FMD%d%c_vtxbin%d",det,ringChar,i),Form("mult_FMD%d%c_vtxbin%d",det,ringChar,i),
+				   hBg->GetNbinsX(),
+				   hBg->GetXaxis()->GetXmin(),
+				   hBg->GetXaxis()->GetXmax(),
+				   nSec, 0, 2*TMath::Pi());
+	    hMultTrVtx->Sumw2();
+
+	    fOutputList->Add(hMultTrVtx);
 	    hHits  = new TH2F(Form("hits_FMD%d%c_vtxbin%d",det,ringChar,i),Form("hits_FMD%d%c_vtxbin%d",det,ringChar,i),
 			      hBg->GetNbinsX(),
 			      hBg->GetXaxis()->GetXmin(),
@@ -112,13 +121,9 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
 	    
 	    */
 	    hHits->Sumw2();
-	    //hHitsNoCuts->Sumw2();
-	    
 	    fHitList->Add(hHits);
 	    fOutputList->Add(hHits);
-	    // fHitList->Add(hHitsNoCuts);
-	    //  fOutputList->Add(hHitsNoCuts);
-	    
+	    	    
 	  }
 	} 
     }
@@ -152,6 +157,8 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       Char_t ringChar = (ir == 0 ? 'I' : 'O');
       TH2F* hMult = (TH2F*)fOutputList->FindObject(Form("mult_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
       hMult->Reset();
+      TH2F* hMultTrVtx = (TH2F*)fOutputList->FindObject(Form("multTrVtx_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
+      hMultTrVtx->Reset();
     }
     
   }
@@ -159,26 +166,52 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
   
   
   for(UShort_t det=1;det<=3;det++) {
-   
+    
     Int_t nRings = (det==1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
       Char_t ringChar = (ir == 0 ? 'I' : 'O');
-   
-      TH2F* hMultTotal = (TH2F*)fOutputList->FindObject(Form("mult_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
-    
+      
+      TH2F* hMult      = (TH2F*)fOutputList->FindObject(Form("mult_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
+      TH2F* hMultTrVtx = (TH2F*)fOutputList->FindObject(Form("multTrVtx_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
       TH2F* hMultInput = (TH2F*)fInputList->FindObject(Form("FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
       TH2F* hHits      = (TH2F*)fOutputList->FindObject(Form("hits_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
       
       if(pars->GetProcessHits())
-	 hHits->Add(hMultInput);
+	hHits->Add(hMultInput);
       
       TH2F* hBg        = pars->GetBackgroundCorrection(det, ringChar, vtxbin);
       
-      hMultTotal->Add(hMultInput);
-      
-      hMultTotal->Divide(hBg);//,"B");
-      
+      hMult->Add(hMultInput);
+      hMultTrVtx->Add(hMultInput);
+      hMult->Divide(hBg);//,"B");
+      hMultTrVtx->Divide(hBg);//,"B");
+
       //sharing efficiency correction ?
+      
+      TH1F* hSharingEff = pars->GetSharingEfficiency(det,ringChar,vtxbin);
+      TH1F* hSharingEffTrVtx = pars->GetSharingEfficiencyTrVtx(det,ringChar,vtxbin);	
+      
+      for(Int_t nx=1; nx<hMult->GetNbinsX(); nx++) {
+	Float_t correction = hSharingEff->GetBinContent(nx);
+	Float_t correctionTrVtx = hSharingEffTrVtx->GetBinContent(nx);
+	for(Int_t ny=1; ny<hMult->GetNbinsY(); ny++) {
+	  
+	  if(correction != 0){
+	    hMult->SetBinContent(nx,ny,hMult->GetBinContent(nx,ny)/correction);
+	    Float_t error = TMath::Sqrt(TMath::Power(hMult->GetBinError(nx,ny),2) + TMath::Power(hMult->GetBinContent(nx,ny)*hSharingEff->GetBinError(nx),2)) / correction;
+	    hMult->SetBinError(nx,ny,error);
+	  }
+	  if(correctionTrVtx != 0){
+	    hMultTrVtx->SetBinContent(nx,ny,hMultTrVtx->GetBinContent(nx,ny)/correctionTrVtx);
+	    Float_t error = TMath::Sqrt(TMath::Power(hMultTrVtx->GetBinError(nx,ny),2) + TMath::Power(hMultTrVtx->GetBinContent(nx,ny)*hSharingEffTrVtx->GetBinError(nx),2)) / correctionTrVtx;
+	    hMultTrVtx->SetBinError(nx,ny,error);
+	  }
+	}
+	
+      }
+      
+      hMult->Scale(1/pars->GetEventSelectionEfficiency(vtxbin));
+      
       
     }
   }

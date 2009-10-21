@@ -75,6 +75,7 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
   
   TH2F* hMult = 0;
   TH1F* hHits = 0;
+  TH2F* hMultTrVtx = 0;
   TH1F* hPrimVertexBin = 0;
   
   
@@ -105,7 +106,11 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
 			      hBg->GetXaxis()->GetXmin(),
 			      hBg->GetXaxis()->GetXmax(),
 			      nSec, 0, 2*TMath::Pi());
-	    
+	    hMultTrVtx  = new TH2F(Form("dNdetaTrVtx_FMD%d%c_vtxbin%d",det,ringChar,i),Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i),
+				   hBg->GetNbinsX(),
+				   hBg->GetXaxis()->GetXmin(),
+				   hBg->GetXaxis()->GetXmax(),
+				   nSec, 0, 2*TMath::Pi());
 	    hHits  = new TH1F(Form("hMCHits_FMD%d%c_vtxbin%d",det,ringChar,i),Form("hMCHits_FMD%d%c_vtxbin%d",det,ringChar,i),
 			      hBg->GetNbinsX(),
 			      hBg->GetXaxis()->GetXmin(),
@@ -115,6 +120,9 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
 	    
 	    hMult->Sumw2();
 	    fOutputList->Add(hMult);
+
+	    hMultTrVtx->Sumw2();
+	    fOutputList->Add(hMultTrVtx);
 	    
 	  }
       } 
@@ -163,11 +171,13 @@ void AliFMDAnalysisTaskDndeta::Exec(Option_t */*option*/)
       Char_t ringChar = (ir == 0 ? 'I' : 'O');
             
       TH2F* hMultTotal = (TH2F*)fOutputList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
-     
+      TH2F* hMultTotalTrVtx = (TH2F*)fOutputList->FindObject(Form("dNdetaTrVtx_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
       
       TH2F* hMultInput = (TH2F*)fInputList->FindObject(Form("mult_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
+      TH2F* hMultInputTrVtx = (TH2F*)fInputList->FindObject(Form("multTrVtx_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
       
       hMultTotal->Add(hMultInput);
+      hMultTotalTrVtx->Add(hMultInputTrVtx);
             
     }
   }
@@ -194,10 +204,13 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
       Char_t ringChar = (ir == 0 ? 'I' : 'O');
       for(Int_t i =0; i<nVtxbins; i++) {
 	
+	TH2F* hMultTotal = (TH2F*)fOutputList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i));
+	//TH2F* hMultTrVtx = (TH2F*)hMultTotal->Clone(Form("dNdeta_FMD%d%c_TrVtx_vtxbin%d",det,ringChar,i));
+	TH2F* hMultTrVtx = (TH2F*)fOutputList->FindObject(Form("dNdetaTrVtx_FMD%d%c_vtxbin%d",det,ringChar,i));
+	/*
 	TH1F* hSharingEff = pars->GetSharingEfficiency(det,ringChar,i);
 	TH1F* hSharingEffTrVtx = pars->GetSharingEfficiencyTrVtx(det,ringChar,i);	
-	TH2F* hMultTotal = (TH2F*)fOutputList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i));
-	TH2F* hMultTrVtx = (TH2F*)hMultTotal->Clone(Form("dNdeta_FMD%d%c_TrVtx_vtxbin%d",det,ringChar,i));
+	
 	
 	for(Int_t nx=1; nx<hMultTotal->GetNbinsX(); nx++) {
 	  Float_t correction = hSharingEff->GetBinContent(nx);
@@ -221,7 +234,7 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
 	//hMultTotal->Divide(hSharingEff);
 	
 	hMultTotal->Scale(1/pars->GetEventSelectionEfficiency(i));
-	
+	*/
 	//hMultTrVtx->Divide(hSharingEffTrVtx);
 	
 	TH1D* hMultProj   = hMultTotal->ProjectionX(Form("dNdeta_FMD%d%c_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
