@@ -1,3 +1,4 @@
+// $Id$
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -103,6 +104,10 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoTrigger()
   int iResult=0;
   int numberOfTracks=-1;
 
+  if (!fTriggerDecisionPars) {
+    iResult=-ENODEV;
+  }
+
   // try the ESD as input
   const TObject* obj = GetFirstInputObject(kAliHLTAllDataTypes, "AliESDEvent");
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
@@ -142,27 +147,26 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoTrigger()
 	}
     }
 
+  bool condition=false;
+  description="Geometrical conditions not matched";
+  AliHLTReadoutList readout;
+
   if (numberOfTracks>=fMinTracks) 
     {
-      if(fTriggerDecisionPars)
-	{
-
-	  SetDescription(fTriggerDecisionPars->GetDescription());
-	  AliHLTReadoutList readout(fTriggerDecisionPars->GetReadoutListParameter());
-	  AliHLTTriggerDecision decision(
-					 true,
-					 fTriggerDecisionPars->GetTriggerName().Data(),
-					 AliHLTTriggerDomain(readout),
-					 fTriggerDecisionPars->GetDescription()
-					 );
-	  TriggerEvent(&decision);
-	  HLTDebug("Geometrical acceptance trigger %s triggered", fTriggerDecisionPars->GetTriggerName().Data());
-	}
-      else
-	{
-	  HLTError("Trigger decision parameters not set, event not triggered");
-	}
+      condition=true;
+      description=fTriggerDecisionPars->GetDescription();
+      readout=fTriggerDecisionPars->GetReadoutListParameter();
+      HLTDebug("Geometrical acceptance trigger %s triggered", fTriggerDecisionPars->GetTriggerName().Data());
     }
+
+  AliHLTTriggerDecision decision(
+				 condition,
+				 fTriggerDecisionPars->GetTriggerName().Data(),
+				 AliHLTTriggerDomain(readout),
+				 description.Data()
+				 );
+  TriggerEvent(&decision, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
+
   return iResult;
 
 }
@@ -214,6 +218,11 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoInit(int argc, const char** argv)
 
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
+
+  if (!fTriggerDecisionPars) {
+    HLTError("decision parameter not initialized");
+    iResult=-ENODEV;
+  }
 
   return iResult;
 }
