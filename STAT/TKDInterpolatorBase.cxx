@@ -33,7 +33,7 @@ TKDInterpolatorBase::TKDInterpolatorBase(Int_t dim) :
   ,fNTNodes(0)
   ,fTNodes(0x0)
   ,fTNodesDraw(0x0)
-  ,fStatus(4)
+  ,fStatus(0)
   ,fLambda(1 + dim + (dim*(dim+1)>>1))
   ,fDepth(-1)
   ,fAlpha(.5)
@@ -44,6 +44,7 @@ TKDInterpolatorBase::TKDInterpolatorBase(Int_t dim) :
 {
 // Default constructor. To be used with care since in this case building
 // of data structure is completly left to the user responsability.
+  UseWeights();
 }
 
 //_________________________________________________________________
@@ -102,18 +103,39 @@ TKDNodeInfo* TKDInterpolatorBase::GetNodeInfo(Int_t inode) const
   return (TKDNodeInfo*)(*fTNodes)[inode];
 }
 
+//_________________________________________________________________
+Bool_t TKDInterpolatorBase::GetRange(Int_t ax, Float_t &min, Float_t &max) const
+{
+  if(!fTNodes) return kFALSE;
+  Int_t ndim = ((TKDNodeInfo*)(*fTNodes)[0])->GetDimension();
+  if(ax<0 || ax>=ndim){
+    min=0.; max=0.;
+    return kFALSE;
+  }
+  min=1.e10; max=-1.e10;
+  Float_t axmin, axmax;
+  for(Int_t in=fNTNodes; in--; ){ 
+    TKDNodeInfo *node = (TKDNodeInfo*)((*fTNodes)[in]);
+    node->GetBoundary(ax, axmin, axmax);
+    if(axmin<min) min = axmin;
+    if(axmax>max) max = axmax;
+  }
+  
+  return kTRUE;
+}
 
 //__________________________________________________________________
-void TKDInterpolatorBase::GetStatus()
+void TKDInterpolatorBase::GetStatus(Option_t *opt)
 {
 // Prints the status of the interpolator
 
-  printf("Interpolator Status :\n");
+  printf("Interpolator Status[%d] :\n", fStatus);
   printf("  Dim    : %d [%d]\n", fNSize, fLambda);
-  printf("  Method : %s\n", fStatus&1 ? "INT" : "COG");
-  printf("  Store  : %s\n", fStatus&2 ? "YES" : "NO");
-  printf("  Weights: %s\n", fStatus&4 ? "YES" : "NO");
+  printf("  Method : %s\n", UseCOG() ? "COG" : "INT");
+  printf("  Store  : %s\n", HasStore() ? "YES" : "NO");
+  printf("  Weights: %s\n", UseWeights() ? "YES" : "NO");
   
+  if(strcmp(opt, "all") != 0 ) return;
   printf("fNTNodes %d\n", fNTNodes);        //Number of evaluation data points
   for(int i=0; i<fNTNodes; i++){
     TKDNodeInfo *node = (TKDNodeInfo*)(*fTNodes)[i]; 
@@ -141,7 +163,7 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
     return 0.;
   }
   TKDNodeInfo *node = (TKDNodeInfo*)(*fTNodes)[nodeIndex];
-  if((fStatus&1) && node->Cov() && !force) return node->CookPDF(point, result, error);
+  if(node->Cov() && !force) return node->CookPDF(point, result, error);
 
   // Allocate memory
   if(!fBuffer) fBuffer = new Double_t[2*fLambda];
@@ -151,6 +173,7 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
       fRefPoints[id] = new Float_t[fNTNodes];
       for(int in=0; in<fNTNodes; in++) fRefPoints[id][in] = ((TKDNodeInfo*)(*fTNodes)[in])->Data()[id];
     }
+    Info("TKDInterpolatorBase::Eval()", Form("Build TKDTree(%d, %d, %d)", fNTNodes, fNSize, kNhelper));
     fKDhelper = new TKDTreeIF(fNTNodes, fNSize, kNhelper, fRefPoints);
     fKDhelper->Build();
     fKDhelper->MakeBoundariesExact();
@@ -174,6 +197,9 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
 
   Bool_t kDOWN = kFALSE;
   do{
+    if(npoints){
+      Info("TKDInterpolatorBase::Eval()", Form("Interpolation failed. Trying to increase the number of interpolation points from %d to %d.", npoints, npoints_new));
+    }
     if(npoints == npoints_new){
       Error("TKDInterpolatorBase::Eval()", Form("Interpolation failed and number of interpolation points (%d) Can not be increased further.", npoints));
       result = 0.;
@@ -196,7 +222,14 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
     for(int in=0; in<npoints; in++){
       tnode = (TKDNodeInfo*)(*fTNodes)[index[in]];
       //tnode->Print();
-      if(fStatus&1){ // INT
+      if(UseCOG()){ // COG
+        Float_t *p = &(tnode->Data()[0]);
+        ipar = 0;
+        for(int idim=0; idim<fNSize; idim++){
+          fBuffer[ipar++] = p[idim];
+          for(int jdim=idim; jdim<fNSize; jdim++) fBuffer[ipar++] = p[idim]*p[jdim];
+        }
+      } else { // INT
         Float_t *bounds = &(tnode->Data()[fNSize]);
         ipar = 0;
         for(int idim=0; idim<fNSize; idim++){
@@ -204,24 +237,18 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
           fBuffer[ipar++] = (bounds[2*idim]*bounds[2*idim] + bounds[2*idim] * bounds[2*idim+1] + bounds[2*idim+1] * bounds[2*idim+1])/3.;
           for(int jdim=idim+1; jdim<fNSize; jdim++) fBuffer[ipar++] = (bounds[2*idim] + bounds[2*idim+1]) * (bounds[2*jdim] + bounds[2*jdim+1]) * .25;
         }
-      } else { // COG
-        Float_t *p = &(tnode->Data()[0]);
-        ipar = 0;
-        for(int idim=0; idim<fNSize; idim++){
-          fBuffer[ipar++] = p[idim];
-          for(int jdim=idim; jdim<fNSize; jdim++) fBuffer[ipar++] = p[idim]*p[jdim];
-        }
       }
 
       // calculate tri-cubic weighting function
-      if(fStatus&4){
-        d = dist[in]/ dist[npoints];
+      if(UseWeights()){
+        d = dist[in]/dist[npoints];
         w0 = (1. - d*d*d); w = w0*w0*w0;
+        if(w<1.e-30) continue;
       } else w = 1.;
       
-//       printf("%2d x[", index[in]);
+//       printf("%2d d[%f] w[%f] x[", index[in], d, w);
 //       for(int idim=0; idim<fLambda-1; idim++) printf("%f ", fBuffer[idim]);
-//       printf("]  v[%f +- %f] (%f, %f)\n", tnode->Val()[0], tnode->Val()[1]/w, tnode->Val()[1], w);
+//       printf("]\n");  printf("v[%f +- %f] (%f, %f)\n", tnode->Val()[0], tnode->Val()[1]/w, tnode->Val()[1], w);
       fFitter->AddPoint(fBuffer, tnode->Val()[0], tnode->Val()[1]/w);
     }
     npoints_new = npoints+ (kDOWN ? 0 : kdN);
@@ -237,7 +264,7 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
   Double_t chi2 = fFitter->GetChisquare()/(npoints - 4 - fLambda);
 
   // store results
-  if(fStatus&2 && fStatus&1) node->Store(par, cov);
+  if(HasStore()) node->Store(par, cov);
     
   // Build df/dpi|x values
   Double_t *fdfdp = &fBuffer[fLambda];
@@ -260,36 +287,35 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
 }
 
 //_________________________________________________________________
-void TKDInterpolatorBase::DrawBins(UInt_t ax1, UInt_t ax2, Float_t ax1min, Float_t ax1max, Float_t ax2min, Float_t ax2max)
+void TKDInterpolatorBase::DrawProjection(UInt_t ax1, UInt_t ax2)
 {
 // Draw nodes structure projected on plane "ax1:ax2". The parameter
 // "depth" specifies the bucket size per node. If depth == -1 draw only
 // terminal nodes and evaluation points (default -1 i.e. bucket size per node equal bucket size specified by the user)
 //
-// Observation:
-// This function creates the nodes (TBox) array for the specified depth
-// but don't delete it. Abusing this function may cause memory leaks !
-
-
   
+  Float_t ax1min, ax1max, ax2min, ax2max;
+  GetRange(ax1, ax1min, ax1max);
+  GetRange(ax2, ax2min, ax2max);
   TH2 *h2 = 0x0;
-  if(!(h2 = (TH2S*)gROOT->FindObject("hKDnodes"))){ 
+  if(!(h2 = (TH2S*)gROOT->FindObject("hKDnodes"))){
     h2 = new TH2S("hKDnodes", "", 100, ax1min, ax1max, 100, ax2min, ax2max);
-    h2->GetXaxis()->SetTitle(Form("x_{%d}", ax1));
-    h2->GetYaxis()->SetTitle(Form("x_{%d}", ax2));
   }
+  h2->GetXaxis()->SetRangeUser(ax1min, ax1max);
+  h2->GetXaxis()->SetTitle(Form("x_{%d}", ax1));
+  h2->GetYaxis()->SetRangeUser(ax2min, ax2max);
+  h2->GetYaxis()->SetTitle(Form("x_{%d}", ax2));
   h2->Draw();
-  
+
 
   if(!fTNodesDraw) fTNodesDraw = new TKDNodeInfo::TKDNodeDraw[fNTNodes]; 
   TKDNodeInfo::TKDNodeDraw *box = 0x0;
-  for(Int_t in=0; in<fNTNodes; in++){ 
-    TKDNodeInfo *node = (TKDNodeInfo*)((*fTNodes)[in]);
-
+  for(Int_t in=fNTNodes; in--; ){ 
     box = &(fTNodesDraw[in]);
-    box->SetNode(node, fNSize, ax1, ax2);
+    box->SetNode((TKDNodeInfo*)((*fTNodes)[in]), fNSize, ax1, ax2);
     box->Draw();
   }
+
   return;
 }
 
@@ -312,30 +338,3 @@ void TKDInterpolatorBase::SetAlpha(Float_t a)
   return;
 }
 
-//__________________________________________________________________
-void TKDInterpolatorBase::SetInterpolationMethod(Bool_t on)
-{
-// Set interpolation bit to "on".
-  
-  if(on) fStatus += fStatus&1 ? 0 : 1;
-  else fStatus += fStatus&1 ? -1 : 0;
-}
-
-
-//_________________________________________________________________
-void TKDInterpolatorBase::SetStore(Bool_t on)
-{
-// Set store bit to "on"
-  
-  if(on) fStatus += fStatus&2 ? 0 : 2;
-  else fStatus += fStatus&2 ? -2 : 0;
-}
-
-//_________________________________________________________________
-void TKDInterpolatorBase::SetWeights(Bool_t on)
-{
-// Set weights bit to "on"
-  
-  if(on) fStatus += fStatus&4 ? 0 : 4;
-  else fStatus += fStatus&4 ? -4 : 0;
-}

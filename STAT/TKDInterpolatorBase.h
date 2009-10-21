@@ -33,7 +33,11 @@ public:
     kdN = 4       // increase in the number of PDF if fit failled
    ,kNhelper = 30 // bucket size in helper kdTree
   };
-
+  enum EKDInterpolatorBaseBits {
+    kCOG   = 0  // COG interpolation method
+   ,kSTORE = 1  // Store interpolation results
+   ,kWEIGHTS = 2 // use weights
+  };
   TKDInterpolatorBase(Int_t size = 0);
   virtual ~TKDInterpolatorBase();
 
@@ -41,18 +45,20 @@ public:
   virtual Int_t GetNodeIndex(const Float_t *p) = 0;
   Float_t    GetAlpha() const {return fAlpha;}
   Bool_t     GetCOGPoint(Int_t node, Float_t *&coord, Float_t &val, Float_t &error) const;
-  Bool_t     GetInterpolationMethod() const {return fStatus&1;}
   TKDNodeInfo* GetNodeInfo(Int_t inode) const;
   Int_t      GetNTNodes() const {return fNTNodes;}
-  void       GetStatus();
-  Bool_t     GetStore() const {return fStatus&2;}
-  Bool_t     GetWeights() const {return fStatus&4;}
+  Bool_t     GetRange(Int_t ax, Float_t &min, Float_t &max) const;
+  void       GetStatus(Option_t *opt="");
 
-  void       DrawBins(UInt_t ax1 = 0, UInt_t ax2 = 1, Float_t ax1min=-1., Float_t ax1max=1., Float_t ax2min=-1., Float_t ax2max=1.);
+  Bool_t     HasStore() const {return TESTBIT(fStatus, kSTORE);}
+  Bool_t     UseCOG() const {return TESTBIT(fStatus, kCOG);}
+  Bool_t     UseWeights() const {return TESTBIT(fStatus, kWEIGHTS);}
+
+  void       DrawProjection(UInt_t ax1 = 0, UInt_t ax2 = 1);
   void       SetAlpha(Float_t a);
-  void       SetInterpolationMethod(Bool_t on = kTRUE);
-  void       SetStore(Bool_t on = kTRUE);
-  void       SetWeights(Bool_t on = kTRUE);
+  void       SetCOG(Bool_t on = kTRUE) {on ? SETBIT(fStatus, kCOG) : CLRBIT(fStatus, kCOG);}
+  void       SetStore(Bool_t on = kTRUE) {on ? SETBIT(fStatus, kSTORE) : CLRBIT(fStatus, kSTORE);}
+  void       SetWeights(Bool_t on = kTRUE) {on ? SETBIT(fStatus, kWEIGHTS) : CLRBIT(fStatus, kWEIGHTS);}
 
 protected:
   virtual void      Build(Int_t nnodes);

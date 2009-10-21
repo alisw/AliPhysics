@@ -1,3 +1,22 @@
+////////////////////////////////////////////////////////
+//
+// Bucket representation for TKDInterpolator(Base)
+//
+// The class store data and provides the interface to draw and print.
+// The bucket - generalized histogram bin in N dimensions is represented by unprocessed data like
+//   - experimental PDF value and statistical error 
+//   - COG position (n-tuplu)
+//   - boundaries
+// and interpolated data like
+//   - parameters of the local parabolic fit
+//   - their covariance matrix
+//  
+// For drawing 2D projections the helper class TKDNodeInfo::TKDNodeDraw is used.
+//
+// Author Alexandru Bercuci <A.Bercuci@gsi.de>
+//
+////////////////////////////////////////////////////////
+
 #include "TKDNodeInfo.h"
 
 #include "TRandom.h"
@@ -79,7 +98,7 @@ void TKDNodeInfo::Build(Int_t dim)
 //	Info("Build()", "...");
 
   if(!dim) return;
-  
+  fNDim = 3*dim;  
   Int_t lambda = Int_t(1 + dim + .5*dim*(dim+1));
   if(fData) delete [] fData;
   fData = new Float_t[fNDim];
@@ -91,6 +110,15 @@ void TKDNodeInfo::Build(Int_t dim)
 }
 
 //_________________________________________________________________
+void TKDNodeInfo::SetNode(Int_t ndim, Float_t *data, Float_t *pdf)
+{
+  Build(ndim);
+  memcpy(fData, data, fNDim*sizeof(Float_t));
+  fVal[0]=pdf[0]; fVal[1]=pdf[1];
+}
+
+
+//_________________________________________________________________
 void TKDNodeInfo::Print(const Option_t *) const
 {
   // Print the content of the node
@@ -99,9 +127,9 @@ void TKDNodeInfo::Print(const Option_t *) const
   for(int idim=0; idim<dim; idim++) printf("%f ", fData[idim]);
   printf("] f = [%f +- %f]\n", fVal[0], fVal[1]);
 
-  //	Float_t *bounds = &fData[dim];
+  Float_t *bounds = &fData[dim];
   printf("range[");
-  for(int idim=0; idim<dim; idim++) printf("(%f %f) ", fData[2*idim], fData[2*idim+1]);
+  for(int idim=0; idim<dim; idim++) printf("(%f %f) ", bounds[2*idim], bounds[2*idim+1]);
   printf("]\n");
   
   printf("Fit parameters : ");
@@ -160,7 +188,10 @@ Double_t TKDNodeInfo::CookPDF(const Double_t *point, Double_t &result, Double_t 
 
 
 //_________________________________________________________________
-TKDNodeInfo::TKDNodeDraw::TKDNodeDraw() : TBox(), fCOG()
+TKDNodeInfo::TKDNodeDraw::TKDNodeDraw() 
+  :TBox()
+  ,fCOG()
+  ,fNode(0x0)
 {
   SetFillStyle(3002);
   SetFillColor(50+Int_t(gRandom->Uniform()*50.));
@@ -181,17 +212,22 @@ void TKDNodeInfo::TKDNodeDraw::Draw(Option_t* option)
 //_________________________________________________________________
 void TKDNodeInfo::TKDNodeDraw::SetNode(TKDNodeInfo *node, UChar_t size, UChar_t ax1, UChar_t ax2)
 {
+  fNode=node;
   const Float_t kBorder = 0.;//1.E-4;
   Float_t *bounds = &(node->Data()[size]);
-  //printf("x1[%f] x2[%f] y1[%f] y2[%f]\n", bounds[2*ax1], bounds[2*ax1+1], bounds[2*ax2], bounds[2*ax2+1]);
   fX1=bounds[2*ax1]+kBorder;
   fX2=bounds[2*ax1+1]-kBorder;
   fY1=bounds[2*ax2]+kBorder;
   fY2=bounds[2*ax2+1]-kBorder;
   
   Float_t x(node->Data()[ax1]), y(node->Data()[ax2]);
-  //printf("x[%f] y[%f]\n", x, y);
   fCOG.SetX(x); fCOG.SetY(y);
 }
 
 
+//_________________________________________________________________
+void TKDNodeInfo::TKDNodeDraw::Print(const Option_t* option) const
+{
+  if(!fNode) return;
+  fNode->Print(option);
+}
