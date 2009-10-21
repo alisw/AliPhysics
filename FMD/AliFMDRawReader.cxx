@@ -251,9 +251,9 @@ AliFMDRawReader::NewSample(AliAltroRawStreamV3& input,
   map->Timebin2Strip(sec, t, fPreSamp, fSampleRate[ddl], stroff, samp);
   str             = strbase + stroff;
       
-  AliFMDDebug(20, ("0x%04x/0x%03x/%04d maps to strip %3d sample %d " 
+  AliFMDDebug(20, ("0x%04x/0x%03x/%04d=%4d maps to strip %3d sample %d " 
 		   "(pre: %d, min: %d, max: %d, rate: %d)",
-		  ddl, hwa, t, str, samp, fPreSamp, 
+		  ddl, hwa, t, adc, str, samp, fPreSamp, 
 		  fMinStrip, fMaxStrip, fSampleRate[ddl]));
   if (str < 0) { 
     AliFMDDebug(10, ("Got presamples at timebin %d", i));
@@ -266,9 +266,9 @@ AliFMDRawReader::NewSample(AliAltroRawStreamV3& input,
   AliFMDDebug(15, ("Checking if strip %d (%d) in range [%d,%d]", 
 		   lstrip, str, fMinStrip, fMaxStrip));
   if (lstrip < fMinStrip || lstrip > fMaxStrip) {
-    AliFMDDebug(20, ("Strip %03d-%d (%d,%d) from t=%d out of range (%3d->%3d)", 
+    AliFMDDebug(10, ("Strip %03d-%d (%d,%d) from t=%d out of range (%3d->%3d)", 
 		    str, samp, lstrip, stroff, t, fMinStrip, fMaxStrip));
-    return -1;
+    adc = -1;
   }
   // Possibly do pedestal subtraction of signal 
   if (adc > 1023) 
@@ -450,16 +450,18 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 			   det, ring, sec, str, samp, counts));
 	  // Check the cache of indicies
 	  Int_t idx = fSeen(det, ring, sec, str);
+	  AliFMDDigit* digit = 0;
 	  if (idx == kUShortMax) { 
 	    // We haven't seen this strip yet. 
 	    fSeen(det, ring, sec, str) = idx = array->GetEntriesFast();
 	    AliFMDDebug(7,("making digit for FMD%d%c[%2d,%3d]-%d "
 			   "from timebin %4d", 
 			   det, ring, sec, str, samp, t));
-	    new ((*array)[idx]) AliFMDDigit(det, ring, sec, str);
+	    digit = new ((*array)[idx]) AliFMDDigit(det, ring, sec, str);
+	    digit->SetDefaultCounts(fSampleRate[ddl]);
 	  }
-	  AliFMDBaseDigit* digit = 
-	    static_cast<AliFMDBaseDigit*>(array->At(idx));
+	  else 
+	    digit = static_cast<AliFMDDigit*>(array->At(idx));
 	  AliFMDDebug(10, ("Setting FMD%d%c[%2d,%3d]-%d "
 			   "from timebin %4d=%4d (%4d)", 
 			   det, ring, sec, str, samp, t, counts, data[i]));
@@ -490,8 +492,14 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
   AliFMDParameters*   param = AliFMDParameters::Instance();
   AliFMDAltroMapping* map   = param->GetAltroMap();
   
-  while(fReader->ReadNextData(fData)) {
-    
+  AliAltroRawStreamV3  streamer(fReader);
+  streamer.Reset();
+  streamer.SelectRawData("FMD");
+  //fReader->GetDDLID();
+  //Int_t detID = fReader->GetDetectorID();
+  
+  //  while(fReader->ReadNextData(fData)) {
+  /*  
     Int_t ddl   = fReader->GetDDLID();
     Int_t detID = fReader->GetDetectorID();
     if (detectors) detectors[map->DDL2Detector(ddl)-1] = kTRUE;
@@ -516,10 +524,28 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
     AliFMDDebug(20, (" # trailer words: %d, # payload words: %d", 
 		     nTrailerWords, nPayloadWords));
     
+    ULong_t nPayloadWords = streamer.GetSOD...();
+    UInt_t   payloadWords* = streamer.GetSOD...();
+  */
+
+  
+  
+  while (streamer.NextDDL()) {
+    Int_t ddl   = streamer.GetDDLNumber();
+    Int_t detID = fReader->GetDetectorID();
+    if (detectors) detectors[map->DDL2Detector(ddl)-1] = kTRUE;
+    AliFMDDebug(0, (" From reader: DDL number is %d , det ID is %d",ddl,detID));
+
+    ULong_t  nPayloadWords = streamer.GetRCUPayloadSizeInSOD();
+    UChar_t* payloadData   = streamer.GetRCUPayloadInSOD();
+    UInt_t*  payloadWords  = reinterpret_cast<UInt_t*>(payloadData);
+    //UInt_t*   payloadWords  = streamer.GetRCUPayloadInSOD();
+
+    std::cout<<nPayloadWords<<"    "<<ddl<<std::endl;
+    for (ULong_t i = 1; i <= nPayloadWords ; i++, payloadWords++) {
+      UInt_t payloadWord = *payloadWords; // Get32bitWord(i);
     
-    for (ULong_t i = 1; i <= nPayloadWords ; i++) {
-      UInt_t payloadWord = Get32bitWord(i);
-      
+      std::cout<<i<<Form("  word: 0x%x",payloadWord)<<std::endl;
       // address is only 24 bit
       UInt_t address       = (0xffffff & payloadWord);
       UInt_t type          = ((address >> 21) & 0xf);
@@ -544,14 +570,15 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
 	readDataWord = kTRUE;  
       case 0x1: // Fec cmd
       case 0x2: // Fec write
-	i++;  
+       	i++;  
+	payloadWords++;
 	break;
       case 0x4: // Loop
       case 0x5: // Wait
 	break;
       case 0x6: // End sequence
       case 0x7: // End Mem
-	i = nPayloadWords + 1;
+       	i = nPayloadWords + 1;
 	break;
       default:    
 	break;
@@ -560,7 +587,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
       //Don't read unless we have a FEC_RD
       if(!readDataWord)  continue;
 
-      UInt_t dataWord      = Get32bitWord(i);
+      UInt_t dataWord      = *payloadWords;//Get32bitWord(i);
       UInt_t data          = (0xFFFFF & dataWord) ;
       //UInt_t data          = (0xFFFF & dataWord) ;
 	
@@ -674,7 +701,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
       }
       AliFMDDebug(50, ("instruction 0x%x, dataword 0x%x",
 		       instruction,dataWord));
-    }
+    } // End of loop over Result memory event
     
     UShort_t det,sector;
     Short_t strip;
@@ -747,9 +774,9 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
 		       strip_low[boards[i]], strip_high[boards[i]],
 		       shift_clk[boards[i]], sample_clk[boards[i]],
 		       pulse_size[boards[i]],pulse_length[boards[i]]));
-    }
+      }
     
-  }
+    }
   
   AliFMDParameters::Instance()->SetSampleRate(sampleRate);
   AliFMDParameters::Instance()->SetStripRange(stripRange);

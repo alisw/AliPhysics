@@ -105,6 +105,22 @@ public:
    * @param c Counts 
    */
   void SetCount(UShort_t s, Short_t c);
+  /**
+   * Initialize all counts to appropriate values for this oversampling
+   * rate.  That is 
+   *
+   * @verbatim
+   *     Rate | Sample 1 | Sample 2 | Sample 3 | Sample 4 
+   *     -----+----------+----------+----------+----------
+   *     1    | 0        | -1       | -1       | -1
+   *     2    | 0        | 0        | -1       | -1
+   *     3    | 0        | 0        | 0        | -1
+   *     4    | 0        | 0        | 0        | 0
+   * @endverbatim
+   *
+   * @param rate Oversampling rate 
+   */
+  void SetDefaultCounts(UShort_t rate);
 protected:
   UShort_t fCount1;     // Digital signal 
   Short_t  fCount2;     // Digital signal (-1 if not used)
@@ -113,6 +129,20 @@ protected:
   ClassDef(AliFMDDigit,2)     // Normal FMD digit
 };
 
+inline void
+AliFMDDigit::SetDefaultCounts(UShort_t rate)
+{
+  switch (rate) { 
+  case 4: fCount4 = 0; // Fall through 
+  case 3: fCount3 = 0; // Fall through 
+  case 2: fCount2 = 0; // Fall through 
+  case 1: fCount1 = 0;
+    break;
+  default: 
+    fCount4 = fCount3 = fCount2 = fCount1 = 0;
+    break;
+  }
+}
 inline UShort_t 
 AliFMDDigit::Counts() const 
 {

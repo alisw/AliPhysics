@@ -1,18 +1,25 @@
 #include <AliFMDESDRevertexer.h>
 #include <AliFMDGeometry.h>
 #include <AliESDFMD.h>
+#include <TMath.h>
+#include <AliLog.h>
+
+ClassImp(AliFMDESDRevertexer)
+#if 0 // for emacs 
+;
+#endif
 
 //____________________________________________________________________
 AliFMDESDRevertexer::AliFMDESDRevertexer()
 {
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   geom->Init();
-  geom->InitTransforms();
+  geom->InitTransformations();
 }
 
 //____________________________________________________________________
 Bool_t
-AliFMDESDRevertexer::Revertex(AliESDFMD* fmdEsd, Double_t vz)
+AliFMDESDRevertexer::Revertex(AliESDFMD* fmdEsd, Double_t vz) const
 {
   if (!fmdEsd) return kFALSE;
   
@@ -24,30 +31,33 @@ AliFMDESDRevertexer::Revertex(AliESDFMD* fmdEsd, Double_t vz)
       UShort_t nsec = (ir == 0 ?  20 :  40);
       UShort_t nstr = (ir == 0 ? 512 : 256);
       for (UShort_t str = 0; str < nstr; str++) { 
-	Double_t phi, r, theta, oldTheta;
+	Double_t phi, r, theta;
 	Double_t eta      = AliESDFMD::kInvalidEta;
-	Double_t oldEta   = fmdEsd->Eta(det, rng, sec, str);
+	Double_t oldEta   = fmdEsd->Eta(det, rng, 0, str);
+	if (oldEta == AliESDFMD::kInvalidEta) continue;
+
 	Double_t oldTheta = Eta2Theta(oldEta);
 	Bool_t   ret1     = PhysicalCoordinates(det, rng, 0, str, vz, 
-						eta, phi, r, theta));
-	fmdEsd->SetEta(det, rng, sec, str, eta);
+						eta, phi, r, theta);
+	fmdEsd->SetEta(det, rng, 0, str, eta);
 
 	if (!ret1) {
 	  // If the was an error, then there's no reason to go on with
 	  // this strip-ring.  Note, that the eta is correctly set to
 	  // AliESDFMD::kInvalidMult. 
 	  AliWarning(Form("Failed to calculate eta, phi for "
-			  "FMD%d%c[%02d,%03d] with v_z=%9.4f" 
+			  "FMD%d%c[%02d,%03d] with v_z=%9.4f",
 			  det, rng, 0, str, vz));
 	  ret = kFALSE;
 	  continue;
 	}
-	
+
 	Double_t corr = TMath::Abs(TMath::Cos(theta));
 	if (fmdEsd->IsAngleCorrected()) 
 	  corr /= TMath::Abs(TMath::Cos(oldTheta));
 	for (UShort_t sec = 0; sec < nsec; sec++) { 
 	  Double_t mult = fmdEsd->Multiplicity(det, rng, sec, str);
+	  if (mult == AliESDFMD::kInvalidMult) continue;
 	  fmdEsd->SetMultiplicity(det, rng, sec, str, corr * mult);
 	}
       }

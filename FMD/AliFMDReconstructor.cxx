@@ -53,10 +53,7 @@
 #include <TH2.h>
 #include <TFile.h>
 #include <climits>
-// Import revertexer into a private namespace (to prevent conflicts) 
-namespace { 
-# include "AliFMDESDRevertexer.h"
-}
+#include "AliFMDESDRevertexer.h"
 
 
 class AliRawReader;
@@ -321,13 +318,14 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   // 
   AliFMDDebug(1, ("Reconstructing from digits in a tree"));
   GetVertex(fESD);
-  
+
+  static TClonesArray* digits = new TClonesArray("AliFMDDigit");
   TBranch *digitBranch = digitsTree->GetBranch("FMD");
   if (!digitBranch) {
     Error("Exec", "No digit branch for the FMD found");
     return;
   }
-  TClonesArray* digits = new TClonesArray("AliFMDDigit");
+  // TClonesArray* digits = new TClonesArray("AliFMDDigit");
   digitBranch->SetAddress(&digits);
 
   if (fMult)   fMult->Clear();
@@ -348,7 +346,7 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   Int_t written = clusterTree->Fill();
   AliFMDDebug(10, ("Filled %d bytes into cluster tree", written));
   digits->Delete();
-  delete digits;
+  // delete digits;
 }
  
 
@@ -383,7 +381,8 @@ AliFMDReconstructor::ProcessDigit(AliFMDDigit* digit) const
   UShort_t sec = digit->Sector();
   UShort_t str = digit->Strip();
   Short_t  adc = digit->Counts();
-  
+  if (adc < 0) 
+    digit->Print();
   ProcessSignal(det, rng, sec, str, adc);
 }
 
@@ -407,7 +406,7 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   AliFMDParameters* param  = AliFMDParameters::Instance();
   // Check that the strip is not marked as dead 
   if (param->IsDead(det, rng, sec, str)) {
-    AliFMDDebug(3, ("FMD%d%c[%2d,%3d] is dead", det, rng, sec, str));
+    AliFMDDebug(1, ("FMD%d%c[%2d,%3d] is dead", det, rng, sec, str));
     return;
   }
   
@@ -428,6 +427,11 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   // Make rough multiplicity 
   Double_t mult     = Energy2Multiplicity(det, rng, sec, str, edep);
   // Get rid of nonsense mult
+  if (mult > 20) { 
+    AliWarning(Form("The mutliplicity in FMD%d%c[%2d,%3d]=%f > 20 "
+		    "(ADC: %d, Energy: %f)", det, rng, sec, str, mult, 
+		    counts, edep));
+  }
   if (mult < 0)  return; 
   AliFMDDebug(10, ("FMD%d%c[%2d,%3d]: "
 		    "ADC: %d, Counts: %d, Energy: %f, Mult: %f",
@@ -540,7 +544,8 @@ AliFMDReconstructor::SubtractPedestal(UShort_t det,
   if (counts < noise * nf) counts = 0;
   if (counts > 0) AliDebugClass(15, "Got a hit strip");
 
-  return counts;
+  UShort_t ret = counts < 0 ? 0 : counts;
+  return ret;
 }
 
 

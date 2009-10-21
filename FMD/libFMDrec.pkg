@@ -8,7 +8,8 @@ SRCS		=  AliFMDReconstructor.cxx 	\
 		   AliFMDRawReader.cxx  	\
 		   AliFMDRecPoint.cxx		\
 		   AliFMDQADataMakerRec.cxx	\
-		   AliFMDOfflineTrigger.cxx
+		   AliFMDOfflineTrigger.cxx	\
+		   AliFMDESDRevertexer.cxx	
 
 HDRS		=  $(SRCS:.cxx=.h)
 DHDR		:= FMDrecLinkDef.h
