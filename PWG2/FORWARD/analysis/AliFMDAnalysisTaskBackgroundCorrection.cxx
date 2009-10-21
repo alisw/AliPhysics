@@ -78,7 +78,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
   
   TH2F* hMult = 0;
   TH2F* hHits = 0;
-  TH2F* hHitsNoCuts = 0;
+  // TH2F* hHitsNoCuts = 0;
   Int_t nVtxbins = pars->GetNvtxBins();
   
   for(Int_t det =1; det<=3;det++)
@@ -177,21 +177,9 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       hMultTotal->Add(hMultInput);
       
       hMultTotal->Divide(hBg);//,"B");
-      /*for(Int_t i = 1; i<=hTmp->GetNbinsX();i++) {
-	for(Int_t j = 1; j<=hTmp->GetNbinsY();j++) {
-	  Float_t mult = hTmp->GetBinContent(i,j);
-	  if(mult == 0) continue;
-	  Float_t correction = hBg->GetBinContent(i,j);
-	  
-	  Float_t multcor = mult;
-	  if(correction != 0)
-	    multcor = multcor/correction;
-	  else
-	    std::cout<<"Warning! No correction for bin "<<i<<" , "<<j<<std::endl;
-	  
-	  hTmp->SetBinContent(i,j,multcor);
-	}
-	}*/
+      
+      //sharing efficiency correction ?
+      
     }
   }
   if(fStandalone) {

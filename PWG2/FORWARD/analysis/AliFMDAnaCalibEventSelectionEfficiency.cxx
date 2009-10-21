@@ -27,7 +27,7 @@ AliFMDAnaCalibEventSelectionEfficiency::AliFMDAnaCalibEventSelectionEfficiency(c
 }
 //____________________________________________________________________
 AliFMDAnaCalibEventSelectionEfficiency&
-AliFMDAnaCalibEventSelectionEfficiency::operator=(const AliFMDAnaCalibEventSelectionEfficiency& o) 
+AliFMDAnaCalibEventSelectionEfficiency::operator=(const AliFMDAnaCalibEventSelectionEfficiency& /*o*/) 
 {
   // Assignment operator 
   
@@ -67,7 +67,7 @@ Float_t AliFMDAnaCalibEventSelectionEfficiency::GetCorrection(Int_t vtxbin) {
 }
 
 //____________________________________________________________________
-void AliFMDAnaCalibEventSelectionEfficiency::Browse(TBrowser* b)
+void AliFMDAnaCalibEventSelectionEfficiency::Browse(TBrowser* /*b*/)
 {
   
 }

@@ -25,7 +25,9 @@ AliFMDDndeta::AliFMDDndeta()
   fVtxCut(10),
   fIsInit(kFALSE),
   fIsGenerated(),
-  fPrimEvents()
+  fPrimEvents(),
+  fEvents(),
+  fPrimdNdeta()
 {
  
 }
@@ -60,7 +62,7 @@ void AliFMDDndeta::SetNames(Analysis what) {
 //_____________________________________________________________________
 const char* AliFMDDndeta::GetAnalysisName(Analysis what, UShort_t det, Char_t ring, Int_t vtxbin) {
   
-  const char* name;
+  const char* name = "";
   
   switch(what) {
   case kHits :
@@ -84,7 +86,7 @@ const char* AliFMDDndeta::GetAnalysisName(Analysis what, UShort_t det, Char_t ri
 //_____________________________________________________________________
 const char* AliFMDDndeta::GetPrimName(Analysis what, UShort_t det, Char_t ring, Int_t vtxbin) {
   
-  const char* name;
+  const char* name = "";
   
   switch(what) {
   case kHits :
@@ -281,8 +283,8 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
 	    nNonZero++;
 	}
 	Int_t nBinsOld = fNbinsToCut;
-	if(det == 2 && ringChar =='I') {
-	  fNbinsToCut = 0;
+      	if(det == 2 && ringChar =='I') {
+	  fNbinsToCut = 1;
 	}
 	TH1F* hRingMult = (TH1F*)fMultList.FindObject(Form("hRingMult_FMD%d%c",det,ringChar));
 	
@@ -313,6 +315,7 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
 	nNonZeroInData = 0;
 	
 	TH1F* sumMultHist = (TH1F*)fMultList.FindObject(Form("hMult_vtxbin%d",v));
+	
 	for(Int_t i =1;i<=sumMultHist->GetNbinsX();i++) {
 	  if(multhistproj->GetBinContent(i) != 0 ) {	  
 	    nNonZeroInData++;
@@ -532,7 +535,8 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin) {
   if(nPrimevents > 0)
     hPrim->Scale(1/nPrimevents);
   
-    TFile testin("/home/canute/ALICE/FMDanalysis/GridAnalysis/fmd_dNdeta_hits.root","READ");
+  /*
+  TFile testin("/home/canute/ALICE/FMDanalysis/GridAnalysis/fmd_dNdeta_hits.root","READ");
     // TFile testin("/home/canute/ALICE/FMDanalysis/productionData/fmd_dNdeta_hits.root","READ");
   TH1F* hcorrect = (TH1F*)testin.Get("hReldif");
   hcorrect->SetName("djarnis");
@@ -543,7 +547,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin) {
  
   sumMult->Divide(hcorrect);
   //delete hcorrect;
-  
+  */
   
   sumMult->Rebin(rebin);
   sumMult->Scale(1/rebin);
@@ -585,15 +589,18 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin) {
   //hPrim->GetYaxis()->SetRangeUser(0,20);
   hPrim->SetStats(0000);
   hPrim->GetXaxis()->SetTitle("#eta");
-  
+  sumMult->SetTitle("");
+  sumMult->SetStats(kFALSE);
   sumMult->DrawCopy("PE");
-  hPrim->DrawCopy("E3same");
-  //primMult->DrawCopy("E3same");
+  if(what != kHits)
+    hPrim->DrawCopy("E3same");
+  if(what == kHits)
+    primMult->DrawCopy("E3same");
   hPrim->GetXaxis()->SetTitle("#eta");
   
   hPrim->SetMarkerStyle(8);
-  
-  hPrim->DrawCopy("PE3same");
+  if(what != kHits)
+    hPrim->DrawCopy("PE3same");
   sumMult->DrawCopy("PEsame");
   std::cout<<"FMD 1 "<<sumMult->Integral(sumMult->FindBin(3),sumMult->FindBin(5),"width")<<std::endl;
   /*TFile* itsfile = TFile::Open(itsfilename);
@@ -619,7 +626,10 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin) {
   
   
   TLegend* leg = new TLegend(0.35,0.2,0.65,0.35,"");
-  leg->AddEntry(hPrim,"Primary","pf");
+  if(what != kHits)
+    leg->AddEntry(hPrim,"Primary","pf");
+  else
+    leg->AddEntry(primMult,"Hits","pf");
   //leg->AddEntry(primMult,"Analysed prim","f");
   leg->AddEntry(sumMult,"Analysis","p");
   leg->Draw();

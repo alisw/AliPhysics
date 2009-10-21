@@ -66,6 +66,7 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fBackground(0),
   fEnergyDistribution(0),
   fEventSelectionEfficiency(0),
+  fSharingEfficiency(0),
   fCorner1(4.2231, 26.6638),
   fCorner2(1.8357, 27.9500),
   fEnergyPath("$ALICE_ROOT/PWG2/FORWARD/corrections/EnergyDistribution"),
@@ -88,7 +89,7 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
 //____________________________________________________________________
 char* AliFMDAnaParameters::GetPath(const char* species) {
   
-  char* path ;
+  char* path = "";
   
   if(species == fgkBackgroundID)
     path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
