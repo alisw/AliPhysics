@@ -223,7 +223,7 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
   {
     // cut to reject shower events
     
-    AliCodeTimerAuto("MUON Shower events",0);
+    AliCodeTimerAuto("MUON Shower events",1);
 
     AliWarning(Form("Probably got a shower event (%d trigger tracks). Will not reconstruct tracks.",
                     TriggerTrackStore()->GetSize()));

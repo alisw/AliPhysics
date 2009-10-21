@@ -290,7 +290,7 @@ AliMUONPedestalEventGenerator::Exec(Option_t*)
     
     if ( fMakeDDL )
     {
-      AliCodeTimerAuto("Digits2Raw",0);
+      AliCodeTimerAuto("Digits2Raw",1);
       Digits2Raw(i);
     }
   }

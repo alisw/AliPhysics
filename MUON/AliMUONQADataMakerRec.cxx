@@ -1270,7 +1270,7 @@ void AliMUONQADataMakerRec::MakeRecPointsTracker(TTree* clustersTree)
 
 	if (!fClusterStore)
 	{
-	  AliCodeTimerAuto("ClusterStore creation",0);
+	  AliCodeTimerAuto("ClusterStore creation",1);
 		fClusterStore = AliMUONVClusterStore::Create(*clustersTree);
 		if (!fClusterStore) 
 		{

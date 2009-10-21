@@ -186,7 +186,7 @@ AliMUONManuContourMaker::CreateMotifContour(const AliMpMotifPosition& motifPosit
   }
   
   {
-    AliCodeTimerAuto("localmanucontour.add",0);
+    AliCodeTimerAuto("localmanucontour.add",1);
     fLocalManuContours.Add(new TObjString(mpName),contour);
   }
   

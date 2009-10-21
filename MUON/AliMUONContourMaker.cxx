@@ -105,7 +105,7 @@ AliMUONContourMaker::CreateContour(const TObjArray& polygons, const char* name) 
   
   if ( polygons.GetLast() == 0 ) 
   {
-    AliCodeTimerAuto("Trivial case",0);
+    AliCodeTimerAuto("Trivial case",1);
     contour = new AliMUONContour(name);
     pol = static_cast<AliMUONPolygon*>(polygons.First());
     contour->Add(*pol);

@@ -162,7 +162,7 @@ Int_t AliMUONRawWriter::Digits2Raw(AliMUONVDigitStore* digitStore,
   
   if ( digitStore ) 
   {
-    AliCodeTimerAuto("for Tracker",0)
+    AliCodeTimerAuto("for Tracker",1)
 
     AliMpExMap busPatchMap;
 

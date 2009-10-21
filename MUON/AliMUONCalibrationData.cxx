@@ -216,7 +216,7 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path, Int_t* s
 	
   {
     
-    AliCodeTimerAutoClass(Form("Failed to get %s for run %d",path,runNumber),0);
+    AliCodeTimerAutoClass(Form("Failed to get %s for run %d",path,runNumber),1);
 
   }
   

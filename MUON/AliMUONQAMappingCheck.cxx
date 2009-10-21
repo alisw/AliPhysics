@@ -253,7 +253,7 @@ Bool_t AliMUONQAMappingCheck::IsChannelDead(Int_t detElemId, Int_t manuId, Int_t
 {
   /// Using the statusmaker, tells if a given channel is dead
   
-  return ( fDigitCalibrator->StatusMap(detElemId,manuId,manuChannel) & AliMUONPadStatusMapMaker::SelfDeadMask() != 0 );
+  return ( fDigitCalibrator->StatusMap(detElemId,manuId,manuChannel) & (AliMUONPadStatusMapMaker::SelfDeadMask() != 0) );
 }
 
 //____________________________________________________________________________ 
