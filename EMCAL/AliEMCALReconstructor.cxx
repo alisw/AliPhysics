@@ -125,7 +125,7 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   // the global tracking.
   // Works on the current event.
 
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   ReadDigitsArrayFromTree(digitsTree);
   fgClusterizer->InitParameters();

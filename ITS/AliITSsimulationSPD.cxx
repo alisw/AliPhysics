@@ -355,7 +355,7 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod,Int_t,
    //    none.
 
    if (fStrobe) if(event != GetEventNumber()) GenerateStrobePhase();
-   AliDebug(1,Form("(mod=%p,,)",mod));
+   AliDebug(1,Form("(mod=%p,,0)",mod));
    // HitToSDigit(mod);
    InitSimulationModule( mod->GetIndex(), event );
    HitToSDigitFast(mod);
