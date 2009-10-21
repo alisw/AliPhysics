@@ -48,9 +48,7 @@ private:
   AliTRDpidRefMakerLQ& operator=(const AliTRDpidRefMakerLQ &ref);
  
 private:
-  Char_t     fPbin;       //! momentum bin
-  Char_t     fSbin;       //! species bin
-  TObjArray *fResults;    //! array to store PDF representation
+  UChar_t     fPIDbin;       //! momentum&species bin
 
   ClassDef(AliTRDpidRefMakerLQ, 5)  // Reference builder for Multidim-LQ TRD-PID
 
