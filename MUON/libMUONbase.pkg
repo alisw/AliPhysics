@@ -22,7 +22,8 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONVDigit.cxx \
         AliMUONTriggerCircuit.cxx \
         AliMUONVTriggerStore.cxx \
-        AliMUONTriggerStoreV1.cxx
+        AliMUONTriggerStoreV1.cxx \
+        AliMUONTriggerElectronics.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

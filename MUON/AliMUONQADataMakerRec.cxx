@@ -18,17 +18,19 @@
 // --- MUON header files ---
 #include "AliMUONQADataMakerRec.h"
 
-#include "AliMUON2DMap.h"
-#include "AliMUONCluster.h"  
 #include "AliMUONConstants.h"  
 #include "AliMUONDDLTrigger.h"
 #include "AliMUONDarcHeader.h"
 #include "AliMUONDigitMaker.h"
+#include "AliMUONDigitStoreV2R.h"
 #include "AliMUONQAMappingCheck.h"
+#include "AliMUONGlobalTriggerBoard.h"
+#include "AliMUONGlobalCrateConfig.h"
 #include "AliMUONLocalStruct.h"
 #include "AliMUONLocalTrigger.h"
+#include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONRawStreamTracker.h"
-#include "AliMUONRawStreamTrigger.h"
+#include "AliMUONRawStreamTriggerHP.h"
 #include "AliMUONRegHeader.h"
 #include "AliMUONTrackerDataMaker.h"
 #include "AliMUONTriggerDisplay.h"
@@ -40,6 +42,8 @@
 #include "AliMUONVTriggerStore.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
+#include "AliMUONTriggerElectronics.h"
+#include "AliMUONTriggerStoreV1.h"
 #include "AliMUONESDInterface.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMpBusPatch.h"
@@ -185,11 +189,12 @@ namespace {
 AliMUONQADataMakerRec::AliMUONQADataMakerRec() : 
 AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kMUON), "MUON Quality Assurance Data Maker"),
 fDigitStore(0x0),
-fTriggerStore(0x0),
 fDigitMaker(0x0),
 fClusterStore(0x0),
 fTrackerDataMaker(0x0),
-fMappingCheckRecPoints(0x0)
+fMappingCheckRecPoints(0x0),
+fCalibrationData(0x0),
+fTriggerProcessor(0x0)
 {
     /// ctor
 	
@@ -206,17 +211,20 @@ AliMUONQADataMakerRec::Ctor()
   AliCodeTimerAuto("",0);
 	fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV1");
 	fDigitMaker = new AliMUONDigitMaker(kTRUE);
+	fCalibrationData = new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun());
+	fTriggerProcessor = new AliMUONTriggerElectronics(fCalibrationData);
 }
 
 //____________________________________________________________________________ 
 AliMUONQADataMakerRec::AliMUONQADataMakerRec(const AliMUONQADataMakerRec& qadm) :
 AliQADataMakerRec(qadm),
 fDigitStore(0x0),
-fTriggerStore(0x0),
 fDigitMaker(0x0),
 fClusterStore(0x0),
 fTrackerDataMaker(0x0),
-fMappingCheckRecPoints(0x0)
+fMappingCheckRecPoints(0x0),
+fCalibrationData(0x0),
+fTriggerProcessor(0x0)
 {
     ///copy ctor 
 
@@ -257,10 +265,11 @@ AliMUONQADataMakerRec::~AliMUONQADataMakerRec()
   AliCodeTimerAuto("",0);
   
   delete fDigitStore;
-  delete fTriggerStore;
   delete fDigitMaker;
   delete fClusterStore;
   delete fTrackerDataMaker;
+  delete fCalibrationData;
+  delete fTriggerProcessor;
   delete fMappingCheckRecPoints;
 }
 
@@ -593,6 +602,13 @@ void AliMUONQADataMakerRec::EndOfDetectorCycleRaws(Int_t specie, TObjArray** lis
     
     BeautifyTrackerBusPatchOccupancy(*hbp);
   }
+
+  // Normalize RawData histos
+      Float_t nbevent = GetRawsData(kRawNAnalyzedEvents)->GetBinContent(1);
+      TH1* htemp = GetRawsData(kTriggerError);
+      Float_t temp=htemp->GetBinContent(4);
+      htemp->SetBinContent(4, temp/192.);
+      if (nbevent>0) htemp->Scale(100./nbevent);
 }
 
 //____________________________________________________________________________ 
@@ -607,6 +623,8 @@ void AliMUONQADataMakerRec::InitRaws()
   const Bool_t image    = kTRUE ; 
  
   TString boardName = "Local board Id";
+
+  Int_t nbLocalBoard = AliMUONConstants::NTriggerCircuit();
   
   TString histoName, histoTitle;
   for(Int_t iCath=0; iCath<AliMpConstants::NofCathodes(); iCath++){
@@ -619,6 +637,7 @@ void AliMUONQADataMakerRec::InitRaws()
 			  16, -0.5, 15.5);
       h3->GetXaxis()->SetTitle(boardName.Data());
       h3->GetYaxis()->SetTitle("Strip");	
+      h3->SetOption("COLZ");	
       Add2RawsList(h3, kTriggerScalers + AliMpConstants::NofTriggerChambers()*iCath + iChamber, expert, !image, !saveCorr);
     }
   }
@@ -631,6 +650,7 @@ void AliMUONQADataMakerRec::InitRaws()
 			histoTitle = Form("Chamber %i - %s: Hit rate from scalers (Hz/cm^{2})", 11+iChamber, cathName.Data());
 			TH2F* h5 = (TH2F*)triggerDisplay.GetEmptyDisplayHisto(histoName, AliMUONTriggerDisplay::kDisplayStrips, 
 									      iCath, iChamber, histoTitle);
+			h5->SetOption("COLZ");
 			Add2RawsList(h5, kTriggerScalersDisplay + AliMpConstants::NofTriggerChambers()*iCath + iChamber, !expert, image, !saveCorr);
 		}
 	}
@@ -642,6 +662,101 @@ void AliMUONQADataMakerRec::InitRaws()
 	h10->GetYaxis()->SetTitle("Cumulated scaler time (s)");
 	Add2RawsList(h10, kTriggerScalersTime, !expert, !image, !saveCorr);
 	
+	Char_t *globalXaxisName[6] = {"US HPt", "US LPt", "LS HPt", "LS LPt", "SGL HPt", "SGL LPt"};
+	Char_t *allLevelXaxisName[10] = {"Local algo X", "Local algo Y", "Local LUT","Local Y Copy" , "Local2Regional", "Regional", "Regional2Global", "GlobalFromInGlobal", "GlobalFromInLocal", "GlobalFromOutLocal"};
+
+	TString errorAxisTitle = "Number of errors";
+
+	TH1F* h11 = new TH1F("ErrorLocalXPos", "ErrorLocalXPos",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h11->GetXaxis()->SetTitle(boardName.Data());
+	h11->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h11, kTriggerErrorLocalXPos, expert, !image, !saveCorr);
+
+	TH1F* h12 = new TH1F("ErrorLocalYPos", "ErrorLocalYPos",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h12->GetXaxis()->SetTitle(boardName.Data());
+	h12->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h12, kTriggerErrorLocalYPos, expert, !image, !saveCorr);
+
+	TH1F* h13 = new TH1F("ErrorLocalDev", "ErrorLocalDev",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h13->GetXaxis()->SetTitle(boardName.Data());
+	h13->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h13, kTriggerErrorLocalDev, expert, !image, !saveCorr);
+
+	TH1F* h14 = new TH1F("ErrorLocalTriggerDec", "ErrorLocalTriggerDec",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h14->GetXaxis()->SetTitle(boardName.Data());
+	h14->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h14, kTriggerErrorLocalTriggerDec, expert, !image, !saveCorr);
+
+	TH1F* h15 = new TH1F("ErrorLocalLPtLSB", "ErrorLocalLPtLSB",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h15->GetXaxis()->SetTitle(boardName.Data());
+	h15->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h15, kTriggerErrorLocalLPtLSB, expert, !image, !saveCorr);
+
+	TH1F* h16 = new TH1F("ErrorLocalLPtMSB", "ErrorLocalLPtMSB",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h16->GetXaxis()->SetTitle(boardName.Data());
+	h16->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h16, kTriggerErrorLocalLPtMSB, expert, !image, !saveCorr);
+
+	TH1F* h17 = new TH1F("ErrorLocalHPtLSB", "ErrorLocalHPtLSB",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h17->GetXaxis()->SetTitle(boardName.Data());
+	h17->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h17, kTriggerErrorLocalHPtLSB, expert, !image, !saveCorr);
+
+	TH1F* h18 = new TH1F("ErrorLocalHPtMSB", "ErrorLocalHPtMSB",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h18->GetXaxis()->SetTitle(boardName.Data());
+	h18->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h18, kTriggerErrorLocalHPtMSB, expert, !image, !saveCorr);
+
+	TH1F* h19 = new TH1F("ErrorLocal2RegionalLPtLSB", "ErrorLocal2RegionalLPtLSB",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h19->GetXaxis()->SetTitle(boardName.Data());
+	h19->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h19, kTriggerErrorLocal2RegionalLPtLSB, expert, !image, !saveCorr);
+
+	TH1F* h20 = new TH1F("ErrorLocal2RegionalLPtMSB", "ErrorLocal2RegionalLPtMSB",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h20->GetXaxis()->SetTitle(boardName.Data());
+	h20->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h20, kTriggerErrorLocal2RegionalLPtMSB, expert, !image, !saveCorr);
+
+	TH1F* h21 = new TH1F("ErrorLocal2RegionalHPtLSB", "ErrorLocal2RegionalHPtLSB",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h21->GetXaxis()->SetTitle(boardName.Data());
+	h21->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h21, kTriggerErrorLocal2RegionalHPtLSB, expert, !image, !saveCorr);
+
+	TH1F* h22 = new TH1F("ErrorLocal2RegionalHPtMSB", "ErrorLocal2RegionalHPtMSB",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h22->GetXaxis()->SetTitle(boardName.Data());
+	h22->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h22, kTriggerErrorLocal2RegionalHPtMSB, expert, !image, !saveCorr);
+
+	TH1F* h23 = new TH1F("ErrorOutGlobalFromInGlobal", "ErrorOutGlobalFromInGlobal",6,0,6);
+	h23->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	for (int i=0;i<6;i++){
+	    h23->GetXaxis()->SetBinLabel(i+1,globalXaxisName[i]);
+	}
+	Add2RawsList(h23, kTriggerErrorOutGlobalFromInGlobal, expert, !image, !saveCorr);
+
+	TH1F* h24 = new TH1F("ErrorTrigger", "ErrorTrigger",11,0,11);
+	h24->GetYaxis()->SetTitle("Percentage of error");
+	for (int i=0;i<10;i++){
+	    h24->GetXaxis()->SetBinLabel(i+1,allLevelXaxisName[i]);
+	}
+	Add2RawsList(h24, kTriggerError, !expert, !image, !saveCorr);
+
+	TH1F* h25 = new TH1F("ErrorLocalTrigY", "ErrorLocalTrigY",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h25->GetXaxis()->SetTitle(boardName.Data());
+	h25->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h25, kTriggerErrorLocalTrigY, expert, !image, !saveCorr);
+
+	TH1F* h26 = new TH1F("ErrorLocalYCopy", "ErrorLocalYCopy",nbLocalBoard+1,-0.5,(Float_t)nbLocalBoard+0.5);
+	h26->GetXaxis()->SetTitle(boardName.Data());
+	h26->GetYaxis()->SetTitle(errorAxisTitle.Data());
+	Add2RawsList(h26, kTriggerErrorLocalYCopy, expert, !image, !saveCorr);
+	
+	TH1F* h27 = new TH1F("hRawNAnalyzedEvents", "Number of analyzed events per specie", 1, 0.5, 1.5);
+	Int_t esindex = AliRecoParam::AConvert(fEventSpecie);
+	h27->GetXaxis()->SetBinLabel(1, AliRecoParam::GetEventSpecieName(esindex));
+	h27->GetYaxis()->SetTitle("Number of analyzed events");
+	Add2RawsList(h27, kRawNAnalyzedEvents, expert, !image, !saveCorr);
+
   Int_t bpmin(999999);
   Int_t bpmax(0);
   
@@ -830,6 +945,7 @@ void AliMUONQADataMakerRec::InitRecPointsTrigger()
 			  16, -0.5, 15.5);
       h0->GetXaxis()->SetTitle(boardName.Data());
       h0->GetYaxis()->SetTitle("Strip");
+      h0->SetOption("COLZ");
       Add2RecPointsList(h0, kTriggerDigits + AliMpConstants::NofTriggerChambers()*iCath + iChamber, expert, !image);
     }
   }
@@ -845,12 +961,14 @@ void AliMUONQADataMakerRec::InitRecPointsTrigger()
 	histoTitle = Form("Chamber %i - %s: Occupancy per strip (counts/event)", 11+iChamber, cathName.Data());
 	TH2F* h3 = (TH2F*)triggerDisplay.GetEmptyDisplayHisto(histoName, AliMUONTriggerDisplay::kDisplayStrips, 
 							      iCath, iChamber, histoTitle);
+	h3->SetOption("COLZ");
 	Add2RecPointsList(h3, kTriggerDigitsDisplay + AliMpConstants::NofTriggerChambers()*iCath + iChamber, !expert, image);
       }
     }
 
     TH2F* h4 = (TH2F*)triggerDisplay.GetEmptyDisplayHisto("hFiredBoardsDisplay", AliMUONTriggerDisplay::kDisplayBoards,
 							  0, 0, "Local board triggers / event");
+    h4->SetOption("COLZ");
     Add2RecPointsList(h4, kTriggerBoardsDisplay, !expert, image);
 
     TH1F* h5 = new TH1F("hNAnalyzedEvents", "Number of analyzed events per specie", 1, 0.5, 1.5);
@@ -1136,46 +1254,144 @@ void AliMUONQADataMakerRec::MakeRawsTrigger(AliRawReader* rawReader)
 {
 	/// make QA for rawdata trigger
 	
-    // Get trigger scalers
+
+    GetRawsData(kRawNAnalyzedEvents)->Fill(1.);
+
+    // Init Local/Regional/Global decision with fake values
+ 
+    Int_t globaltemp[4];
+    for (Int_t bit=0; bit<4; bit++){
+	globaltemp[bit]=0;
+	fgitmp[bit]=0;
+    }
+
+    for (Int_t loc=0;loc<235;loc++){
+	fTriggerErrorLocalYCopy[loc]=kFALSE;
+
+	fTriggerOutputLocalRecTriggerDec[loc]=0;
+	fTriggerOutputLocalRecLPtDec[0][loc]=0;
+	fTriggerOutputLocalRecLPtDec[1][loc]=0;
+	fTriggerOutputLocalRecHPtDec[0][loc]=0;
+	fTriggerOutputLocalRecHPtDec[1][loc]=0;
+	fTriggerOutputLocalRecXPos[loc]=0;
+	fTriggerOutputLocalRecYPos[loc]=15;
+	fTriggerOutputLocalRecDev[loc]=0;
+	fTriggerOutputLocalRecTrigY[loc]=1;
+
+	fTriggerOutputLocalDataTriggerDec[loc]=0;
+	fTriggerOutputLocalDataLPtDec[0][loc]=0;
+	fTriggerOutputLocalDataLPtDec[1][loc]=0;
+	fTriggerOutputLocalDataHPtDec[0][loc]=0;
+	fTriggerOutputLocalDataHPtDec[1][loc]=0;
+	fTriggerOutputLocalDataXPos[loc]=0;
+	fTriggerOutputLocalDataYPos[loc]=15;
+	fTriggerOutputLocalDataDev[loc]=0;
+	fTriggerOutputLocalDataTrigY[loc]=1;
+	fTriggerInputRegionalDataLPt[0][loc]=0;
+	fTriggerInputRegionalDataLPt[1][loc]=0;
+	fTriggerInputRegionalDataHPt[0][loc]=0;
+	fTriggerInputRegionalDataHPt[1][loc]=0;	
+    }
+
+    for (Int_t reg=0;reg<16;reg++){
+	fTriggerOutputRegionalData[reg]=0;
+	for (Int_t bit=0;bit<4;bit++){
+	    fTriggerInputGlobalDataLPt[reg][bit]=0;
+	    fTriggerInputGlobalDataHPt[reg][bit]=0;
+	}
+    }
+
+    for (Int_t bit=0;bit<6;bit++){
+	fgotmp[bit]=0;
+	fTriggerOutputGlobalData[bit]=0;
+	fTriggerOutputGlobalRecFromGlobalInput[bit]=0;
+    }
+
+    for (Int_t loc=0;loc<243;loc++){
+	for (Int_t bit=0;bit<16;bit++){
+	    fTriggerPatternX1[loc][bit]=0;
+	    fTriggerPatternX2[loc][bit]=0;
+	    fTriggerPatternX3[loc][bit]=0;
+	    fTriggerPatternX4[loc][bit]=0;
+
+	    fTriggerPatternY1[loc][bit]=0;
+	    fTriggerPatternY2[loc][bit]=0;
+	    fTriggerPatternY3[loc][bit]=0;
+	    fTriggerPatternY4[loc][bit]=0;
+	}
+    }
+
+    AliMUONDigitStoreV2R digitStore;
+    digitStore.Create();
+    digitStore.Clear();
+
+    
+    AliMUONTriggerStoreV1 triggerStore;
+    triggerStore.Create();
+    triggerStore.Clear();
+    
+    // Get trigger Local, Regional, Global in/outputs and scalers
 
     Int_t loCircuit=0;
     AliMpCDB::LoadDDLStore();
 
-    AliMUONRawStreamTrigger rawStreamTrig(rawReader);
+    const AliMUONRawStreamTriggerHP::AliHeader*          darcHeader  = 0x0;
+    const AliMUONRawStreamTriggerHP::AliRegionalHeader*  regHeader   = 0x0;
+    const AliMUONRawStreamTriggerHP::AliLocalStruct*     localStruct = 0x0;
+
+    AliMUONRawStreamTriggerHP rawStreamTrig(rawReader);
+    
     while (rawStreamTrig.NextDDL()) 
     {
-      // If not a scaler event, do nothing
       Bool_t scalerEvent =  rawReader->GetDataHeader()->GetL1TriggerMessage() & 0x1;
-      if ( !scalerEvent ) continue;
 
-      AliDebug(AliQAv1::GetQADebugLevel(),"Filling trigger scalers");
-
-      AliMUONDDLTrigger* ddlTrigger = rawStreamTrig.GetDDLTrigger();
-      AliMUONDarcHeader* darcHeader = ddlTrigger->GetDarcHeader();
+      darcHeader = rawStreamTrig.GetHeaders();
 
       if (darcHeader->GetGlobalFlag()){
         UInt_t nOfClocks = darcHeader->GetGlobalClock();
         Double_t nOfSeconds = ((Double_t) nOfClocks) / 40e6; // 1 clock each 25 ns
         ((TH1F*)GetRawsData(kTriggerScalersTime))->Fill(1., nOfSeconds);
-      }
 
-      Int_t nReg = darcHeader->GetRegHeaderEntries();
+	//Get Global datas
+	for (Int_t bit=1; bit<7; bit++){
+	  fTriggerOutputGlobalData[bit-1]=Int_t(((darcHeader->GetGlobalOutput())>>bit)&1);
+	}
+	for (Int_t Bit=0; Bit<32; Bit++){
+	  fTriggerInputGlobalDataLPt[Bit/4][Bit%4]=((darcHeader->GetGlobalInput(0)>>Bit)&1);
+	  fTriggerInputGlobalDataLPt[Bit/4+8][Bit%4]=((darcHeader->GetGlobalInput(1)>>Bit)&1);
+	  fTriggerInputGlobalDataHPt[Bit/4][Bit%4]=((darcHeader->GetGlobalInput(2)>>Bit)&1);
+	  fTriggerInputGlobalDataHPt[Bit/4+8][Bit%4]=((darcHeader->GetGlobalInput(3)>>Bit)&1);
+	}
+
+	globaltemp[0]=darcHeader->GetGlobalInput(0);
+	globaltemp[1]=darcHeader->GetGlobalInput(1);
+	globaltemp[2]=darcHeader->GetGlobalInput(2);
+	globaltemp[3]=darcHeader->GetGlobalInput(3);
+      }
     
+      Int_t nReg = rawStreamTrig.GetRegionalHeaderCount();
+
       for(Int_t iReg = 0; iReg < nReg ;iReg++)
       {   //reg loop
 
-	// crate info  
-	AliMpTriggerCrate* crate = AliMpDDLStore::Instance()->
-	  GetTriggerCrate(rawStreamTrig.GetDDL(), iReg);
+	  Int_t regId=rawStreamTrig.GetDDL()*8+iReg;
 
-	AliMUONRegHeader* regHeader =  darcHeader->GetRegHeaderEntry(iReg);
+	// crate info  
+	  AliMpTriggerCrate* crate = AliMpDDLStore::Instance()->GetTriggerCrate(rawStreamTrig.GetDDL(), iReg);
+
+	  regHeader =  rawStreamTrig.GetRegionalHeader(iReg);
+
+	//Get regional outputs -> not checked, hardware read-out doesn't work
+	fTriggerOutputRegionalData[regId]=Int_t(regHeader->GetOutput());
 
 	// loop over local structures
-	Int_t nLocal = regHeader->GetLocalEntries();
+	Int_t nLocal = regHeader->GetLocalStructCount();
+
 	for(Int_t iLocal = 0; iLocal < nLocal; iLocal++) 
 	{
-	  AliMUONLocalStruct* localStruct = regHeader->GetLocalEntry(iLocal);
-        
+	    
+	    localStruct = regHeader->GetLocalStruct(iLocal);
+
 	  // if card exist
 	  if (!localStruct) continue;
           
@@ -1189,26 +1405,170 @@ void AliMUONQADataMakerRec::MakeRawsTrigger(AliRawReader* rawReader)
 	  if( !localBoard->IsNotified()) 
 	    continue;
 
+	  TArrayS xyPattern[2];
+	  
+	  localStruct->GetXPattern(xyPattern[0]);
+	  localStruct->GetYPattern(xyPattern[1]);
+
+	  fDigitMaker->TriggerDigits(loCircuit, xyPattern, digitStore);
+
 	  Int_t cathode = localStruct->GetComptXY()%2;
+
+	  //Get electronic Decisions from data
+
+	  //Get regional inputs -> not checked, hardware read-out doesn't work
+	  fTriggerInputRegionalDataLPt[0][loCircuit]=Int_t(((regHeader->GetInput(0))>>(2*iLocal))&1);
+	  fTriggerInputRegionalDataLPt[1][loCircuit]=Int_t(((regHeader->GetInput(1))>>((2*iLocal)+1))&1);
+	  
+	  //Get local in/outputs
+	  if (Int_t(localStruct->GetDec())!=0){
+	      fTriggerOutputLocalDataTriggerDec[loCircuit]++;
+	  }
+	  
+	  fTriggerOutputLocalDataLPtDec[0][loCircuit]=((localStruct->GetLpt())&1);
+	  fTriggerOutputLocalDataLPtDec[1][loCircuit]=((localStruct->GetLpt()>>1)&1);
+	  fTriggerOutputLocalDataHPtDec[0][loCircuit]=((localStruct->GetHpt())&1);
+	  fTriggerOutputLocalDataHPtDec[1][loCircuit]=((localStruct->GetHpt()>>1)&1);
+	  fTriggerOutputLocalDataXPos[loCircuit]=Int_t(localStruct->GetXPos());
+	  fTriggerOutputLocalDataYPos[loCircuit]=Int_t(localStruct->GetYPos());
+	  fTriggerOutputLocalDataDev[loCircuit]=Int_t((localStruct->GetXDev())*(pow(-1.0,(localStruct->GetSXDev()))));
+	  fTriggerOutputLocalDataTrigY[loCircuit]=Int_t(localStruct->GetTrigY());
+	  
+	  UShort_t x1  = (Int_t)localStruct->GetX1();
+	  UShort_t x2  = (Int_t)localStruct->GetX2();
+	  UShort_t x3  = (Int_t)localStruct->GetX3();
+	  UShort_t x4  = (Int_t)localStruct->GetX4();
+
+	  UShort_t y1  = (Int_t)localStruct->GetY1();
+	  UShort_t y2  = (Int_t)localStruct->GetY2();
+	  UShort_t y3  = (Int_t)localStruct->GetY3();
+	  UShort_t y4  = (Int_t)localStruct->GetY4();
 
 	  // loop over strips
 	  for (Int_t ibitxy = 0; ibitxy < 16; ++ibitxy) {
-	    if(localStruct->GetXY1(ibitxy) > 0)
-	      ((TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + 0))
-		->Fill(loCircuit, ibitxy, 2*localStruct->GetXY1(ibitxy));
-	    if(localStruct->GetXY2(ibitxy) > 0)
-	      ((TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + 1))
-		->Fill(loCircuit, ibitxy, 2*localStruct->GetXY2(ibitxy));
-	    if(localStruct->GetXY3(ibitxy) > 0)
-	      ((TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + 2))
-		->Fill(loCircuit, ibitxy, 2*localStruct->GetXY3(ibitxy));
-	    if(localStruct->GetXY4(ibitxy) > 0)
-	      ((TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + 3))
-		->Fill(loCircuit, ibitxy, 2*localStruct->GetXY4(ibitxy));
+
+	      fTriggerPatternX1[loCircuit][ibitxy]=Int_t((x1>>ibitxy)&1);
+	      fTriggerPatternX2[loCircuit][ibitxy]=Int_t((x2>>ibitxy)&1);
+	      fTriggerPatternX3[loCircuit][ibitxy]=Int_t((x3>>ibitxy)&1);
+	      fTriggerPatternX4[loCircuit][ibitxy]=Int_t((x4>>ibitxy)&1);
+	      
+	      fTriggerPatternY1[loCircuit][ibitxy]=Int_t((y1>>ibitxy)&1);
+	      fTriggerPatternY2[loCircuit][ibitxy]=Int_t((y2>>ibitxy)&1);
+	      fTriggerPatternY3[loCircuit][ibitxy]=Int_t((y3>>ibitxy)&1);
+	      fTriggerPatternY4[loCircuit][ibitxy]=Int_t((y4>>ibitxy)&1);
+	      
+	      if (scalerEvent){
+		  if (ibitxy==0){
+		      AliDebug(AliQAv1::GetQADebugLevel(),"Filling trigger scalers");
+		  }
+		  
+		  if(localStruct->GetXY1(ibitxy) > 0)
+		      ((TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + 0))
+			  ->Fill(loCircuit, ibitxy, 2*localStruct->GetXY1(ibitxy));
+		  if(localStruct->GetXY2(ibitxy) > 0)
+		      ((TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + 1))
+			  ->Fill(loCircuit, ibitxy, 2*localStruct->GetXY2(ibitxy));
+		  if(localStruct->GetXY3(ibitxy) > 0)
+		      ((TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + 2))
+			  ->Fill(loCircuit, ibitxy, 2*localStruct->GetXY3(ibitxy));
+		  if(localStruct->GetXY4(ibitxy) > 0)
+		      ((TH2F*)GetRawsData(kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + 3))
+			  ->Fill(loCircuit, ibitxy, 2*localStruct->GetXY4(ibitxy));
+	      }
 	  } // loop on strips
 	} // iLocal
       } // iReg
     } // NextDDL
+
+  fTriggerProcessor->Digits2Trigger(digitStore,triggerStore);
+
+  TIter next(triggerStore.CreateLocalIterator());
+  AliMUONLocalTrigger *localTrigger;
+
+  while ( ( localTrigger = static_cast<AliMUONLocalTrigger*>(next()) ) )
+  {
+    
+      //... extract information
+      loCircuit = localTrigger->LoCircuit();
+
+      AliMpLocalBoard* localBoardMp = AliMpDDLStore::Instance()->GetLocalBoard(loCircuit);  // get local board objectfor switch value
+      if (localTrigger->GetLoDecision() != 0){
+	  fTriggerOutputLocalRecTriggerDec[loCircuit]++;
+      }
+      
+      fTriggerOutputLocalRecLPtDec[0][loCircuit]=Int_t(localTrigger->LoLpt() & 1);
+      fTriggerOutputLocalRecLPtDec[1][loCircuit]=Int_t((localTrigger->LoLpt()>>1) & 1);
+      fTriggerOutputLocalRecHPtDec[0][loCircuit]=Int_t(localTrigger->LoHpt() & 1);
+      fTriggerOutputLocalRecHPtDec[1][loCircuit]=Int_t((localTrigger->LoHpt()>>1) & 1);
+      fTriggerOutputLocalRecXPos[loCircuit]=localTrigger->LoStripX();
+      fTriggerOutputLocalRecYPos[loCircuit]=localTrigger->LoStripY();
+      fTriggerOutputLocalRecTrigY[loCircuit]=localTrigger->LoTrigY();
+      fTriggerOutputLocalRecDev[loCircuit]=Int_t(localTrigger->LoDev()*(pow(-1.,localTrigger->LoSdev())));
+
+      Bool_t firstFillYCopy=kTRUE;
+
+      for (int bit=0; bit<16; bit++){
+	  if (fTriggerPatternY1[loCircuit][bit]!=((localTrigger->GetY1Pattern()>>bit) & 1))
+	  {
+	      fTriggerErrorLocalYCopy[loCircuit]=kTRUE;
+	      if (firstFillYCopy){
+		  ((TH1F*)GetRawsData(kTriggerErrorLocalYCopy))->Fill(loCircuit);
+		  ((TH1F*)GetRawsData(kTriggerError))->Fill(3);
+		  firstFillYCopy=kFALSE;
+	      }
+	  }
+	  if (fTriggerPatternY2[loCircuit][bit]!=((localTrigger->GetY2Pattern()>>bit) & 1))
+	  {
+	      fTriggerErrorLocalYCopy[loCircuit]=kTRUE;
+	      if (firstFillYCopy){
+		  ((TH1F*)GetRawsData(kTriggerErrorLocalYCopy))->Fill(loCircuit);
+		  ((TH1F*)GetRawsData(kTriggerError))->Fill(3);
+		  firstFillYCopy=kFALSE;
+	      }
+	  }
+	  if (fTriggerPatternY3[loCircuit][bit]!=((localTrigger->GetY3Pattern()>>bit) & 1))
+	  {
+	      fTriggerErrorLocalYCopy[loCircuit]=kTRUE;
+	      if (localBoardMp->GetSwitch(4)) fTriggerErrorLocalYCopy[loCircuit-1]=kTRUE;
+	      if (localBoardMp->GetSwitch(3)) fTriggerErrorLocalYCopy[loCircuit+1]=kTRUE;
+	      if (firstFillYCopy){
+		  ((TH1F*)GetRawsData(kTriggerErrorLocalYCopy))->Fill(loCircuit);
+		  ((TH1F*)GetRawsData(kTriggerError))->Fill(3);
+		  firstFillYCopy=kFALSE;
+	      }
+	  }
+	  if (fTriggerPatternY4[loCircuit][bit]!=((localTrigger->GetY4Pattern()>>bit) & 1))
+	  {
+	      fTriggerErrorLocalYCopy[loCircuit]=kTRUE;
+	      if (localBoardMp->GetSwitch(4)) fTriggerErrorLocalYCopy[loCircuit-1]=kTRUE;
+	      if (localBoardMp->GetSwitch(3)) fTriggerErrorLocalYCopy[loCircuit+1]=kTRUE;
+	      if (firstFillYCopy){
+		  ((TH1F*)GetRawsData(kTriggerErrorLocalYCopy))->Fill(loCircuit);
+		  ((TH1F*)GetRawsData(kTriggerError))->Fill(3);
+		  firstFillYCopy=kFALSE;
+	      }
+	  }
+      }
+  }
+
+    //Reconstruct Global decision from Global inputs
+    for (Int_t bit=0; bit<4; bit++){
+	for (Int_t i=0; i<32; i=i+4){
+	    fgitmp[bit]+=UInt_t(((globaltemp[bit]>>i)&1)*pow(2.0,i+1));
+	    fgitmp[bit]+=UInt_t(((globaltemp[bit]>>(i+1))&1)*pow(2.0,i));
+	    fgitmp[bit]+=UInt_t(((globaltemp[bit]>>(i+2))&1)*pow(2.0,i+2));
+	    fgitmp[bit]+=UInt_t(((globaltemp[bit]>>(i+3))&1)*pow(2.0,i+3));
+	    }
+    }
+    RawTriggerInGlobal2OutGlobal();
+    for (Int_t bit=0; bit<6; bit++){
+	fTriggerOutputGlobalRecFromGlobalInput[bit]=fgotmp[bit];
+    }
+
+    // Compare data and reconstructed decisions and fill histos
+    RawTriggerMatchOutLocal();
+    RawTriggerMatchOutLocalInRegional(); // Not tested, hardware read-out doesn't work
+    RawTriggerMatchOutGlobalFromInGlobal();
 }
 
 //__________________________________________________________________
@@ -1270,7 +1630,7 @@ void AliMUONQADataMakerRec::MakeRecPointsTracker(TTree* clustersTree)
 
 	if (!fClusterStore)
 	{
-	  AliCodeTimerAuto("ClusterStore creation",1);
+	  AliCodeTimerAuto("ClusterStore creation",0);
 		fClusterStore = AliMUONVClusterStore::Create(*clustersTree);
 		if (!fClusterStore) 
 		{
@@ -1317,13 +1677,13 @@ void AliMUONQADataMakerRec::MakeRecPointsTrigger(TTree* clustersTree)
     // Fired pads info
     fDigitStore->Clear();
 
-    if (!fTriggerStore) fTriggerStore = AliMUONVTriggerStore::Create(*clustersTree);
-    fTriggerStore->Clear();
-    fTriggerStore->Connect(*clustersTree, false);
+    AliMUONVTriggerStore *triggerStore = AliMUONVTriggerStore::Create(*clustersTree);
+    triggerStore->Clear();
+    triggerStore->Connect(*clustersTree, false);
     clustersTree->GetEvent(0);
 
     AliMUONLocalTrigger* locTrg;
-    TIter nextLoc(fTriggerStore->CreateLocalIterator());
+    TIter nextLoc(triggerStore->CreateLocalIterator());
 
     while ( ( locTrg = static_cast<AliMUONLocalTrigger*>(nextLoc()) ) ) 
     {
@@ -1358,6 +1718,8 @@ void AliMUONQADataMakerRec::MakeRecPointsTrigger(TTree* clustersTree)
       ((TH2F*)GetRecPointsData(kTriggerDigits + AliMpConstants::NofTriggerChambers()*cathode + iChamber))
 	->Fill(localBoard, channel);
     }
+
+    delete triggerStore;
 }
 
 //____________________________________________________________________________
@@ -1543,9 +1905,7 @@ AliMUONQADataMakerRec::FillTriggerDCSHistos()
   
   AliCodeTimerAuto("",0);
 
-  AliMUONCalibrationData calibrationData(AliCDBManager::Instance()->GetRun());
-
-  TMap* triggerDcsMap = calibrationData.TriggerDCS();
+  TMap* triggerDcsMap = fCalibrationData->TriggerDCS();
 
   if ( !triggerDcsMap ) 
   {
@@ -1639,6 +1999,7 @@ AliMUONQADataMakerRec::FillTriggerDCSHistos()
 	      currHisto->GetXaxis()->SetTimeDisplay(1);
 	      //currHisto->GetXaxis()->SetTimeFormat("%d%b%y %H:%M:%S");
 	      currHisto->GetYaxis()->SetTitle("RPC");
+	      currHisto->SetOption("COLZ");
 	      Add2RawsList(currHisto, histoIndex, !expert, image, !saveCorr);
 	    }
 
@@ -1816,6 +2177,170 @@ AliMUONQADataMakerRec::BeautifyTrackerBusPatchOccupancy(TH1& hbp)
   
   hbp.GetListOfFunctions()->Add(text);
 }
+
+//____________________________________________________________________________ 
+void AliMUONQADataMakerRec::RawTriggerInGlobal2OutGlobal()
+{
+  //
+  /// Reconstruct Global Trigger decision using Global Inputs
+  //
+
+    AliMUONGlobalCrateConfig* globalConfig = fCalibrationData->GlobalTriggerCrateConfig();
+
+    AliMUONGlobalTriggerBoard globalTriggerBoard;
+    globalTriggerBoard.Reset();
+    for (Int_t i = 0; i < 4; i++) {
+	globalTriggerBoard.Mask(i,globalConfig->GetGlobalMask(i));
+    }
+
+
+    UShort_t regional[16];
+
+    for (Int_t iReg = 0; iReg < 16; iReg++) {
+      regional[iReg] = 0;
+      if (iReg < 8) {    // right
+	// Lpt
+	regional[iReg] |=  (fgitmp[0] >> (4*iReg))     & 0xF;
+	// Hpt
+	regional[iReg] |= ((fgitmp[2] >> (4*iReg))     & 0xF) << 4;
+      } else {           // left
+	// Lpt
+	regional[iReg] |=  (fgitmp[1] >> (4*(iReg-8))) & 0xF;
+	// Hpt
+	regional[iReg] |= ((fgitmp[3] >> (4*(iReg-8))) & 0xF) << 4;
+      }
+    }
+    globalTriggerBoard.SetRegionalResponse(regional);
+    globalTriggerBoard.Response();
+
+    for (Int_t bit=1; bit<7; bit++){
+	fgotmp[bit-1]=Int_t((globalTriggerBoard.GetResponse())>>bit&1);
+    }
+}
+
+//____________________________________________________________________________ 
+void AliMUONQADataMakerRec::RawTriggerMatchOutLocal()
+{
+  //
+  /// Match data and reconstructed Local Trigger decision
+  //
+
+    Bool_t firstFillXPosDev=kTRUE;
+    Bool_t firstFillYPosTrigY=kTRUE;
+    Bool_t firstFillLUT=kTRUE;
+
+    for (int localId=1;localId<235;localId++){
+	if(fTriggerOutputLocalDataTriggerDec[localId]!=fTriggerOutputLocalRecTriggerDec[localId]){
+	    ((TH1F*)GetRawsData(kTriggerErrorLocalTriggerDec))->Fill(localId);
+	}
+	if(fTriggerOutputLocalDataTrigY[localId]!=fTriggerOutputLocalRecTrigY[localId]){
+	    if(fTriggerErrorLocalYCopy[localId]) continue;
+	    ((TH1F*)GetRawsData(kTriggerErrorLocalTrigY))->Fill(localId);
+	     if (firstFillYPosTrigY){
+		 ((TH1F*)GetRawsData(kTriggerError))->Fill(1);
+		 firstFillYPosTrigY=kFALSE;
+	     }
+	}
+
+	if(fTriggerOutputLocalDataYPos[localId]!=fTriggerOutputLocalRecYPos[localId]){
+	    if(fTriggerErrorLocalYCopy[localId]) continue;
+	    ((TH1F*)GetRawsData(kTriggerErrorLocalYPos))->Fill(localId);
+	    if (firstFillYPosTrigY){
+		 ((TH1F*)GetRawsData(kTriggerError))->Fill(1);
+		 firstFillYPosTrigY=kFALSE;
+	     }
+	}
+	if(fTriggerOutputLocalDataXPos[localId]!=fTriggerOutputLocalRecXPos[localId]){
+	    ((TH1F*)GetRawsData(kTriggerErrorLocalXPos))->Fill(localId);
+	     if (firstFillXPosDev){
+		 ((TH1F*)GetRawsData(kTriggerError))->Fill(0);
+		 firstFillXPosDev=kFALSE;
+	     }
+	}
+	if(fTriggerOutputLocalDataDev[localId]!=fTriggerOutputLocalRecDev[localId]){
+	    ((TH1F*)GetRawsData(kTriggerErrorLocalDev))->Fill(localId);
+	     if (firstFillXPosDev){
+		 ((TH1F*)GetRawsData(kTriggerError))->Fill(0);
+		 firstFillXPosDev=kFALSE;
+	     }
+	}
+	if(fTriggerOutputLocalDataLPtDec[0][localId]!=fTriggerOutputLocalRecLPtDec[0][localId]){
+	    ((TH1F*)GetRawsData(kTriggerErrorLocalLPtLSB))->Fill(localId);
+	     if (firstFillLUT){
+		 ((TH1F*)GetRawsData(kTriggerError))->Fill(2);
+		 firstFillLUT=kFALSE;
+	     }
+	}
+	if(fTriggerOutputLocalDataLPtDec[1][localId]!=fTriggerOutputLocalRecLPtDec[1][localId]){
+	    ((TH1F*)GetRawsData(kTriggerErrorLocalLPtMSB))->Fill(localId);
+	     if (firstFillLUT){
+		 ((TH1F*)GetRawsData(kTriggerError))->Fill(2);
+		 firstFillLUT=kFALSE;
+	     }
+	}
+	if(fTriggerOutputLocalDataHPtDec[0][localId]!=fTriggerOutputLocalRecHPtDec[0][localId]){
+	    ((TH1F*)GetRawsData(kTriggerErrorLocalHPtLSB))->Fill(localId);
+	     if (firstFillLUT){
+		 ((TH1F*)GetRawsData(kTriggerError))->Fill(2);
+		 firstFillLUT=kFALSE;
+	     }
+	}
+	if(fTriggerOutputLocalDataHPtDec[1][localId]!=fTriggerOutputLocalRecHPtDec[1][localId]){
+	    ((TH1F*)GetRawsData(kTriggerErrorLocalHPtMSB))->Fill(localId);
+	     if (firstFillLUT){
+		 ((TH1F*)GetRawsData(kTriggerError))->Fill(2);
+		 firstFillLUT=kFALSE;
+	     }
+	}
+    } // loop over Local Boards
+}
+
+//____________________________________________________________________________ 
+void AliMUONQADataMakerRec::RawTriggerMatchOutLocalInRegional()
+{
+  //
+  /// Match Local outputs and Regional inputs
+  /// Not tested, hardware read-out doesn't work
+  //
+
+    for (int localId=1;localId<235;localId++){
+	if(fTriggerOutputLocalDataLPtDec[0][localId]!=fTriggerInputRegionalDataLPt[0][localId]){
+	    ((TH1F*)GetRawsData(kTriggerErrorLocal2RegionalLPtLSB))->Fill(localId);
+	}
+	if(fTriggerOutputLocalDataLPtDec[1][localId]!=fTriggerInputRegionalDataLPt[1][localId]){
+	    ((TH1F*)GetRawsData(kTriggerErrorLocal2RegionalLPtMSB))->Fill(localId);
+	}
+	if(fTriggerOutputLocalDataHPtDec[0][localId]!=fTriggerInputRegionalDataHPt[0][localId]){
+	    ((TH1F*)GetRawsData(kTriggerErrorLocal2RegionalHPtLSB))->Fill(localId);
+	}
+	if(fTriggerOutputLocalDataHPtDec[1][localId]!=fTriggerInputRegionalDataHPt[1][localId]){
+	    ((TH1F*)GetRawsData(kTriggerErrorLocal2RegionalHPtMSB))->Fill(localId);
+	}
+    }
+
+}
+
+//____________________________________________________________________________ 
+void AliMUONQADataMakerRec::RawTriggerMatchOutGlobalFromInGlobal()
+{
+  //
+  /// Match data and reconstructed Global Trigger decision for a reconstruction from Global inputs
+  //
+
+    Bool_t firstFill=kTRUE;
+
+    for (int bit=0;bit<6;bit++){
+	 if(fTriggerOutputGlobalData[bit]!=fTriggerOutputGlobalRecFromGlobalInput[bit]){
+	     ((TH1F*)GetRawsData(kTriggerErrorOutGlobalFromInGlobal))->Fill(5-bit);
+	     if (firstFill){
+		 ((TH1F*)GetRawsData(kTriggerError))->Fill(7);
+		 firstFill=kFALSE;
+	     }
+	 }
+    } 
+}
+
+
 
 
 

@@ -22,7 +22,6 @@ SRCS:= AliMUON.cxx \
        AliMUONTrigger.cxx \
        AliMUONSDigitizerV2.cxx \
        AliMUONDigitizerV3.cxx \
-       AliMUONTriggerElectronics.cxx \
        AliMUONVHitStore.cxx \
        AliMUONHitStoreV1.cxx \
        AliMUONMCDataInterface.cxx \

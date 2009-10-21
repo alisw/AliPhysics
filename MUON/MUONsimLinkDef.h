@@ -43,7 +43,6 @@
 // trigger
 #pragma link C++ class AliMUONTrigger+;
 #pragma link C++ class AliMUONChamberTrigger+; 
-#pragma link C++ class AliMUONTriggerElectronics+;
 
 // misc
 #pragma link C++ class AliMUONMCDataInterface+;

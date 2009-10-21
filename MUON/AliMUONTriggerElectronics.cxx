@@ -28,7 +28,6 @@
 
 #include "AliLoader.h"
 #include "AliLog.h"
-#include "AliMUON.h" 
 #include "AliMUONCalibrationData.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVDigitStore.h"
