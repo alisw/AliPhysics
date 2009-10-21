@@ -443,7 +443,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		if (triggerCTPtiming!= NULL) {
 			Log("Found trigger timing params in DAQ logbook");
 			AliDebug(2,Form("%s",triggerCTPtiming));
-			AliCTPTimeParams *runCTPtiming = runCTPtiming = AliCTPTimeParams::LoadCTPTimeParamsFromString(triggerCTPtiming);	  
+			AliCTPTimeParams *runCTPtiming = AliCTPTimeParams::LoadCTPTimeParamsFromString(triggerCTPtiming);	  
 			if (!runCTPtiming) {
 				Log("Bad CTP trigger timing params file from DAQ logbook! The corresponding CDB entry will not be filled!");
 				error |= 64;
@@ -1593,7 +1593,6 @@ Float_t AliGRPPreprocessor::ProcessInt(const TObjArray* array)
 	Int_t timeEnd = (Int_t)(timeEndString.Atoi());
 	Float_t aDCSArrayMean = 0.0;
 	Int_t iCounts = 0;
-	AliDCSValue* v = 0x0;
 	Float_t valueBeforeSOR = 0;
 	Float_t valueAfterEOR = 0;
 	Int_t timestampBeforeSOR = -1;
@@ -1606,7 +1605,7 @@ Float_t AliGRPPreprocessor::ProcessInt(const TObjArray* array)
 	Int_t nCounts = array->GetEntries();
 
 	for(Int_t i = 0; i < nCounts; i++) {
-		v = (AliDCSValue *)array->At(i);
+		AliDCSValue* v = (AliDCSValue *)array->At(i);
 		if ((v->GetInt() < fminInt) || (v->GetInt() > fmaxInt)) {
 			AliError(Form("Error! Int value found in DCS map at %d-th entry is OUT OF RANGE: value = %d",i, v->GetInt()));
 			return AliGRPObject::GetInvalidFloat();
@@ -1749,7 +1748,6 @@ Float_t AliGRPPreprocessor::ProcessUInt(const TObjArray* array)
 	Int_t timeEnd = (Int_t)(timeEndString.Atoi());
 	Float_t aDCSArrayMean = 0.0;
 	Int_t iCounts = 0;
-	AliDCSValue* v = 0x0;
 	Float_t valueBeforeSOR = 0;
 	Float_t valueAfterEOR = 0;
 	Int_t timestampBeforeSOR = -1;
@@ -1762,7 +1760,7 @@ Float_t AliGRPPreprocessor::ProcessUInt(const TObjArray* array)
 	Int_t nCounts = array->GetEntries();
 
 	for(Int_t i = 0; i < nCounts; i++) {
-		v = (AliDCSValue *)array->At(i);
+		AliDCSValue* v = (AliDCSValue *)array->At(i);
 		if ((v->GetUInt() < fminUInt) || (v->GetUInt() > fmaxUInt)) {
 			AliError(Form("Error! UInt value found in DCS map at %d-th entry is OUT OF RANGE: value = %u",i,v->GetUInt()));
 			return AliGRPObject::GetInvalidFloat();
