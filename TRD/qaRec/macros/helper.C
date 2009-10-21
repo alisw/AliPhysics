@@ -48,6 +48,7 @@ Int_t ParseOptions(Char_t *trd)
 void mergeProd(const Char_t *mark, const Char_t *files, const Int_t kBatch = 20)
 {
   TFileMerger *fFM = 0x0;
+  Bool_t kSVN = kFALSE;
 
   Int_t jbatch = 0, nbatch = 0;
   string filename;
@@ -60,6 +61,10 @@ void mergeProd(const Char_t *mark, const Char_t *files, const Int_t kBatch = 20)
         fFM = new TFileMerger(kTRUE);
       } else fFM = new TFileMerger(kTRUE);
       fFM->OutputFile(Form("%s/%d_%s",  gSystem->ExpandPathName("$PWD"), jbatch, mark));
+    }
+    if(!kSVN){ // download SVN info for trending
+      string base=filename.substr(0, filename.find_last_of('/'));
+      if(gSystem->Exec(Form("cp -v %s/svnInfo.log .", base.c_str())) == 0) kSVN=kTRUE;
     }
     fFM->AddFile(filename.c_str()); nbatch++;
     if(nbatch==kBatch){
