@@ -55,7 +55,7 @@ public:
   TObjArray*    Histos();
   Bool_t        Load(const Char_t *fn, const Char_t *name=0x0);
   void          SetMC(Bool_t mc = kTRUE) { mc ? SETBIT(fStatus, kMC) : CLRBIT(fStatus, kMC);}
-  Bool_t        PutTrendValue(const Char_t *name, Double_t val, Double_t err);
+  Bool_t        PutTrendValue(const Char_t *name, Double_t val);
   void          Terminate(Option_t *);
 
 private:

@@ -150,7 +150,8 @@ TGraphErrors* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
     if(kCLEAR){ 
       for(Int_t ip=g->GetN(); ip--;) g->RemovePoint(ip);
     } else {
-      PutTrendValue(name[id], g->GetMean(2), g->GetRMS(2));
+      PutTrendValue(name[id], g->GetMean(2));
+      PutTrendValue(Form("%sRMS", name[id]), g->GetRMS(2));
     }
   } else {
     if(kBUILD){
@@ -332,14 +333,14 @@ Bool_t AliTRDcheckESD::Load(const Char_t *filename, const Char_t *name)
 }
 
 //_______________________________________________________
-Bool_t AliTRDcheckESD::PutTrendValue(const Char_t *name, Double_t val, Double_t err)
+Bool_t AliTRDcheckESD::PutTrendValue(const Char_t *name, Double_t val)
 {
 // Dump trending value to default file
 
   if(!fgFile){
     fgFile = fopen("TRD.Performance.txt", "at");
   }
-  fprintf(fgFile, "%s_%s %f %f\n", GetName(), name, val, err);
+  fprintf(fgFile, "%s_%s %f\n", GetName(), name, val);
   return kTRUE;
 }
 
