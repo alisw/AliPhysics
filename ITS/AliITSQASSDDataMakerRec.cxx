@@ -78,12 +78,14 @@ fCDBManager(0) {
 	}
   if(fkOnline) {
     fCDBManager = AliCDBManager::Instance();
-    fCDBManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-    //fCDBManager->SetDefaultStorage(gSystem->Getenv("AMORE_CDB_URI"));
-    Int_t runNumber = atoi(gSystem->Getenv("DATE_RUN_NUMBER"));
-    if(!runNumber) 
-      AliWarning("DATE_RUN_NUMBER not defined!!!\n");
-    
+    //fCDBManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    fCDBManager->SetDefaultStorage(gSystem->Getenv("AMORE_CDB_URI"));
+
+    Int_t runNumber = 1;
+    if(!gSystem->Getenv("DATE_RUN_NUMBER")) {
+      AliWarning("DATE_RUN_NUMBER not defined!!!\n"); }
+    else {
+      runNumber = atoi(gSystem->Getenv("DATE_RUN_NUMBER"));}
     fCDBManager->SetRun(runNumber);
     AliCDBEntry *geomGRP = fCDBManager->Get("GRP/Geometry/Data");
     if(!geomGRP) AliWarning("GRP geometry not found!!!\n");
