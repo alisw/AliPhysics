@@ -46,6 +46,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 //#include "AliHLTTPCCalibCEComponent.h"
 //#include "AliHLTTPCCalibPulserComponent.h"
 //#include "AliHLTTPCCalibPedestalComponent.h"
+#include "AliHLTTPCCAInputDataCompressorComponent.h"
 #include "AliHLTTPCCATrackerComponent.h"
 #include "AliHLTTPCTrackMCMarkerComponent.h"
 #include "AliHLTTPCCAGlobalMergerComponent.h"
@@ -266,6 +267,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCCompModelDeconverterComponent);
   pHandler->AddComponent(new AliHLTTPCCompModelConverterComponent);
   pHandler->AddComponent(new AliHLTTPCCompDumpComponent);
+  pHandler->AddComponent(new AliHLTTPCCAInputDataCompressorComponent);
   pHandler->AddComponent(new AliHLTTPCCATrackerComponent);
   pHandler->AddComponent(new AliHLTTPCCAGlobalMergerComponent);
   pHandler->AddComponent(new AliHLTTPCTrackMCMarkerComponent);

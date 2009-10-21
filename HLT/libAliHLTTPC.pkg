@@ -28,7 +28,8 @@ TRACKING_CA:=	tracking-ca/AliHLTTPCCATrack.h \
 		tracking-ca/AliHLTTPCCASliceOutput.h \
 		tracking-ca/AliHLTTPCCAStandaloneFramework.h \
 		tracking-ca/AliTPCtrackerCA.h \
-		tracking-ca/AliHLTTPCCATrackerFramework.h
+		tracking-ca/AliHLTTPCCATrackerFramework.h \
+                tracking-ca/AliHLTTPCCAInputDataCompressorComponent.h
 #TRACKING_CA:=	
 
 CLASS_HDRS:=  	AliHLTTPCTransform.h \
