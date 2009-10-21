@@ -54,6 +54,8 @@ void FinishEvent(); // Close opened event
 
 
 private:
+  AliLRCProcess(const AliLRCProcess&); // Not implemented
+  AliLRCProcess& operator=(const AliLRCProcess&);// Not implemented
 
  void SetShortDef();  // Sets fShortDef according to window paramiters
 
