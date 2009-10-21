@@ -464,7 +464,7 @@ AliTOFcalibHisto::GetCorrection(Int_t corr, Int_t index, Double_t tot)
 {
   /* apply correction */
 
-  Int_t ddl, chain, tdc, channel, hptdc, pbCh, feaIndex, sector, plate, strip, padx, trm, icIndex, sectorStrip;
+  Int_t ddl, chain, tdc, channel, hptdc, pbCh, feaIndex, sector, plate, padx, trm, icIndex, sectorStrip;
   Double_t slewing;
   
   switch (corr) {
