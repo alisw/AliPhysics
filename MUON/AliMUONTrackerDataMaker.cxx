@@ -294,7 +294,7 @@ AliMUONTrackerDataMaker::NextEvent()
     return kFALSE;
   }
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   static Int_t nphysics(0);
   static Int_t ngood(0);
@@ -341,7 +341,7 @@ Bool_t AliMUONTrackerDataMaker::ProcessEvent()
   /// duplicate this critical piece of calibration code !
   ///
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   AliMUONRawStreamTrackerHP stream(fRawReader);
   

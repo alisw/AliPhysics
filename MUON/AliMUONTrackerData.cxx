@@ -565,7 +565,7 @@ AliMUONTrackerData::InternalAdd(const AliMUONVStore& store, TArrayI* nevents, Bo
 {
   /// Add the given external store to our internal store
   
-  AliCodeTimerAuto(GetName(),);
+  AliCodeTimerAuto(GetName(),0);
     
   if ( !replace)
   {
@@ -741,7 +741,7 @@ AliMUONTrackerData::CreateBusPatchParam(Int_t busPatchId) const
 {
   /// Create storage for one bus patch
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(busPatchId);
   
@@ -811,7 +811,7 @@ AliMUONTrackerData::CreateChamberParam(Int_t chamberId) const
 {
   /// Create storage for one chamber
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   AliMUONVCalibParam* chamber = new AliMUONCalibParamND(Dimension(),1,chamberId,0,0.0);
   
@@ -913,7 +913,7 @@ AliMUONTrackerData::CreateDouble(const AliMUONVCalibParam& param,
 {
   /// Create a double version of VCalibParam, for internal use
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   AliMUONVCalibParam* c = new AliMUONCalibParamND(Dimension(),
                                                   param.Size(),
@@ -970,7 +970,7 @@ AliMUONTrackerData::CreateDetectionElementParam(Int_t detElemId) const
 {
   /// Create storage for one detection element
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   AliMUONVCalibParam*  de = new AliMUONCalibParamND(Dimension(),1,detElemId,0,0.0);
   
@@ -1411,7 +1411,7 @@ AliMUONTrackerData::CreateManuParam(Int_t detElemId, Int_t manuId) const
 {
   /// Create storage for one manu
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   AliMUONVCalibParam* manu = new AliMUONCalibParamND(Dimension(),1,detElemId,manuId,0.0);
   
@@ -1524,7 +1524,7 @@ AliMUONTrackerData::CreatePCBParam(Int_t detElemId, Int_t pcbIndex) const
 {
   /// Create storage for one PCB (station345 only)
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   AliMpDCSNamer namer("TRACKER");
   

@@ -100,7 +100,7 @@ AliMUONTriggerTrackToTrackerClusters::GenerateClusters(Int_t iChamber,
   /// Generate clusters in given chamber
   /// Return the number of clusters added to the clusterStore
   
-  AliCodeTimerAuto(Form("Chamber %d",iChamber),);
+  AliCodeTimerAuto(Form("Chamber %d",iChamber),0);
   
   TIter next(fTriggerTrackStore->CreateIterator());
   

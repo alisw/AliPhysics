@@ -210,7 +210,7 @@ AliMUONPadStatusMaker::HVSt12Status(Int_t detElemId, Int_t sector,
   /// and the switch).
   /// Returns false if hv switch changed during the run.
   
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
   
   Bool_t error = kFALSE;
   hvChannelTooLow = kFALSE;
@@ -277,7 +277,7 @@ AliMUONPadStatusMaker::HVSt345Status(Int_t detElemId, Int_t pcbIndex,
   /// Returns false if something goes wrong (in particular if 
   /// hv switch changed during the run).
   
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
   
   Bool_t error = kFALSE;
   hvChannelTooLow = kFALSE;
@@ -387,7 +387,7 @@ AliMUONPadStatusMaker::HVStatus(Int_t detElemId, Int_t manuId) const
 {
   /// Get HV status of one manu
   
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
   
   if ( !fkCalibrationData.HV() ) return kMissing;
 
@@ -591,7 +591,7 @@ AliMUONPadStatusMaker::PadStatus(Int_t detElemId, Int_t manuId) const
   if (!param)
   {
     // not already there, so compute it now
-    AliCodeTimerAuto("ComputeStatus",);
+    AliCodeTimerAuto("ComputeStatus",0);
     param = ComputeStatus(detElemId,manuId);
   }
   return param;
@@ -619,7 +619,7 @@ AliMUONPadStatusMaker::SetHVStatus(Int_t detElemId, Int_t index, Int_t status) c
   /// Assign status to all manus in a given HV "zone" (defined by index, meaning
   /// is different thing from St12 and St345)
   
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
   
   AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
   
@@ -661,7 +661,7 @@ AliMUONPadStatusMaker::Report(UInt_t mask)
   /// and the various reasons why they are bad (with occurence rates)
   
   AliInfo("");
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   AliMUONLogger log(1064008);
   

@@ -106,7 +106,7 @@ AliMUONSimpleClusterServer::Clusterize(Int_t chamberId,
   /// We first find out the list of DE that have a non-zero overlap with area,
   /// and then use the clusterfinder to find clusters in those areas (and DE).
   
-  AliCodeTimerAuto(Form("Chamber %d",chamberId),);
+  AliCodeTimerAuto(Form("Chamber %d",chamberId),0);
   
   if ( fTriggerTrackStore && chamberId >= 6 ) 
   {

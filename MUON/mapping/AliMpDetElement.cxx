@@ -274,7 +274,7 @@ AliMpDetElement::AddManu(Int_t manuId)
   
   if ( stationType == AliMp::kStationTrigger ) return;
     
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
   
   AliDebug(1,Form("DE %4d Manu %4d",fId,manuId));
 

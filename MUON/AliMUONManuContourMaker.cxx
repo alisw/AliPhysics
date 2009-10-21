@@ -79,7 +79,7 @@ AliMUONManuContourMaker::CreateManuContour(Int_t detElemId, Int_t manuId, const 
 {
   /// Create the contour of a given manu (global coordinates)
  
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   TString sname(name);
   
@@ -122,7 +122,7 @@ AliMUONManuContourMaker::CreateMotifContour(const AliMpMotifPosition& motifPosit
 {
   /// Create the contour of a given MOTIF (i.e. local coordinates only).
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   TString mpName(NameIt(motifPosition));
   
@@ -201,7 +201,7 @@ AliMUONManuContourMaker::GenerateManuContours(Bool_t stopAtError)
   /// (to go from local to global). That transformation need not be the real one (i.e.
   /// it can be an "exploded" one to ease visualization).
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   TObjArray* manuContours = new TObjArray;
   

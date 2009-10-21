@@ -192,7 +192,7 @@ AliMUONCluster*
 AliMUONPreClusterFinder::NextCluster()
 {
   /// Builds the next cluster, and returns it.
-//  AliCodeTimerAuto("pre-clustering",)
+//  AliCodeTimerAuto("pre-clustering",0)
   
   // Start a new cluster
   Int_t id = fClusters.GetLast()+1;

@@ -110,7 +110,7 @@ AliMUONClusterFinderMLEM::Prepare(Int_t detElemId,
                                   const AliMpVSegmentation* seg[2])
 {
   /// Prepare for clustering
-//  AliCodeTimerAuto("",)
+//  AliCodeTimerAuto("",0)
   
   for ( Int_t i = 0; i < 2; ++i )
   {
@@ -147,7 +147,7 @@ AliMUONCluster*
 AliMUONClusterFinderMLEM::NextCluster()
 {
   /// Return next cluster
-//  AliCodeTimerAuto("",)
+//  AliCodeTimerAuto("",0)
   
   // if the list of clusters is not void, pick one from there
   TObject* o = fClusterList.At(++fClusterNumber);
@@ -196,7 +196,7 @@ AliMUONClusterFinderMLEM::WorkOnPreCluster()
   /// Starting from a precluster, builds a pixel array, and then
   /// extract clusters from this array
   
-  //  AliCodeTimerAuto("",)	
+  //  AliCodeTimerAuto("",0)	
 
   if (fDebug) {
     cout << " *** Event # " << fEventNumber 
@@ -293,7 +293,7 @@ AliMUONClusterFinderMLEM::CheckPrecluster(const AliMUONCluster& origCluster)
   /// Check precluster in order to attempt to simplify it (mostly for
   /// two-cathode preclusters)
     
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   // Disregard small clusters (leftovers from splitting or noise)
   if ((origCluster.Multiplicity()==1 || origCluster.Multiplicity()==2) &&
@@ -807,7 +807,7 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
 {
   /// Repeat MLEM algorithm until pixel size becomes sufficiently small
   
-  //  AliCodeTimerAuto("",)
+  //  AliCodeTimerAuto("",0)
   
   Int_t nPix = fPixArray->GetLast()+1;
 

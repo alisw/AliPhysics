@@ -215,7 +215,7 @@ AliMpMotifPosition* AliMpMotifMap::GetMotifPosition(UInt_t index) const
 {
 /// Return the motif position which is in the map on the index-th position
 
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   if ( index >= GetNofMotifPositions() ) {
     AliErrorStream() << "Index " << index << " outside limits." << endl;
@@ -476,7 +476,7 @@ AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID) const
 {
 /// Find the motif with the specified ID.
   
-  //AliCodeTimerAuto("",);
+  //AliCodeTimerAuto("",0);
 
   return (AliMpVMotif*)fMotifs.GetValue(motifID);
 }
@@ -492,7 +492,7 @@ AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID,
 /// with the given motifTypeID and motifDimensions.
 /// Disagreement causes fatal error.
  
-  //AliCodeTimerAuto("",);
+  //AliCodeTimerAuto("",0);
 
   AliMpVMotif* motif = FindMotif(motifID);
 
@@ -530,7 +530,7 @@ AliMpMotifType* AliMpMotifMap::FindMotifType(const TString& motifTypeID) const
 {
 /// Find the motif type with the specified motif type ID.
   
-  //AliCodeTimerAuto("",);
+  //AliCodeTimerAuto("",0);
 
   return (AliMpMotifType*)fMotifTypes.GetValue(motifTypeID);
 }
@@ -541,7 +541,7 @@ AliMpMotifMap::FindMotifPosition(Int_t motifPositionID) const
 {
 /// Find the motif position with the specified motif position ID.
   
-  //AliCodeTimerAuto("",);
+  //AliCodeTimerAuto("",0);
 
   return (AliMpMotifPosition*)fMotifPositions.GetValue(motifPositionID << 16);
 }

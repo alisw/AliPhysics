@@ -554,7 +554,7 @@ AliReconstruction::~AliReconstruction()
 void AliReconstruction::InitQA()
 {
   //Initialize the QA and start of cycle 
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   if (fInitQACalled) return;
   fInitQACalled = kTRUE;
@@ -618,7 +618,7 @@ void AliReconstruction::InitQA()
 void AliReconstruction::MergeQA(const char *fileName)
 {
   //Initialize the QA and start of cycle 
-  AliCodeTimerAuto("",) ;
+  AliCodeTimerAuto("",0) ;
   AliQAManager::QAManager()->Merge(AliCDBManager::Instance()->GetRun(),fileName) ; 
   AliSysInfo::AddStamp("MergeQA") ; 
 }
@@ -629,7 +629,7 @@ void AliReconstruction::InitCDB()
 // activate a default CDB storage
 // First check if we have any CDB storage set, because it is used 
 // to retrieve the calibration and alignment constants
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   if (fInitCDBCalled) return;
   fInitCDBCalled = kTRUE;
@@ -1131,7 +1131,7 @@ Bool_t AliReconstruction::InitGRP() {
 //_____________________________________________________________________________
 Bool_t AliReconstruction::LoadCDB()
 {
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   AliCDBManager::Instance()->Get("GRP/CTP/Config");
 
@@ -1145,7 +1145,7 @@ Bool_t AliReconstruction::LoadCDB()
 //_____________________________________________________________________________
 Bool_t AliReconstruction::LoadTriggerScalersCDB()
 {
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/Scalers");
 
@@ -1163,7 +1163,7 @@ Bool_t AliReconstruction::LoadTriggerScalersCDB()
 Bool_t AliReconstruction::Run(const char* input)
 {
   // Run Run Run
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   InitRun(input);
   if (GetAbort() != TSelector::kContinue) return kFALSE;
@@ -1222,7 +1222,7 @@ Bool_t AliReconstruction::Run(const char* input)
 //_____________________________________________________________________________
 void AliReconstruction::InitRawReader(const char* input)
 {
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   // Init raw-reader and
   // set the input in case of raw data
@@ -1253,7 +1253,7 @@ void AliReconstruction::InitRun(const char* input)
 {
   // Initialization of raw-reader,
   // run number, CDB etc.
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   AliSysInfo::AddStamp("Start");
 
   // Initialize raw-reader if any
@@ -1281,7 +1281,7 @@ void AliReconstruction::Begin(TTree *)
   // going into the event loop
   // Should follow the TSelector convention
   // i.e. initialize only the object on the client side
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   AliReconstruction *reco = NULL;
   if (fInput) {
@@ -1362,7 +1362,7 @@ void AliReconstruction::SlaveBegin(TTree*)
   // Initialization related to run-loader,
   // vertexer, trackers, recontructors
   // In proof mode it is executed on the slave
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   TProofOutputFile *outProofFile = NULL;
   if (fInput) {
@@ -1525,7 +1525,7 @@ Bool_t AliReconstruction::Process(Long64_t entry)
 {
   // run the reconstruction over a single entry
   // from the chain with raw data
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   TTree *currTree = fChain->GetTree();
   AliRawVEvent *event = NULL;
@@ -1556,7 +1556,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   // run the reconstruction over a single event
   // The event loop is steered in Run method
 
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   if (iEvent >= fRunLoader->GetNumberOfEvents()) {
     fRunLoader->SetEventNumber(iEvent);
@@ -1915,7 +1915,7 @@ void AliReconstruction::SlaveTerminate()
   // Finalize the run on the slave side
   // Called after the exit
   // from the event loop
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   if (fIsNewRunLoader) { // galice.root didn't exist
     fRunLoader->WriteHeader("OVERWRITE");
@@ -2033,7 +2033,7 @@ void AliReconstruction::Terminate()
 {
   // Create tags for the events in the ESD tree (the ESD tree is always present)
   // In case of empty events the tags will contain dummy values
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   // Do not call the ESD tag creator in case of PROOF-based reconstruction
   if (!fInput) {
@@ -2051,7 +2051,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
 // run the local reconstruction
 
   static Int_t eventNr=0;
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   TString detStr = detectors;
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
@@ -2079,7 +2079,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
       AliInfo(Form("converting raw data digits into root objects for %s", 
 		   fgkDetectorName[iDet]));
 //      AliCodeTimerAuto(Form("converting raw data digits into root objects for %s", 
-//                            fgkDetectorName[iDet]),);
+//                            fgkDetectorName[iDet]),0);
       loader->LoadDigits("update");
       loader->CleanDigits();
       loader->MakeDigitsContainer();
@@ -2090,7 +2090,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     }
     // local reconstruction
     AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
-    //AliCodeTimerAuto(Form("running reconstruction for %s", fgkDetectorName[iDet]),);
+    //AliCodeTimerAuto(Form("running reconstruction for %s", fgkDetectorName[iDet]),0);
     loader->LoadRecPoints("update");
     loader->CleanRecPoints();
     loader->MakeRecPointsContainer();
@@ -2133,7 +2133,7 @@ Bool_t AliReconstruction::RunSPDTrackleting(AliESDEvent*& esd)
 {
 // run the SPD trackleting (for SPD efficiency purpouses)
 
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   Double_t vtxPos[3] = {0, 0, 0};
   Double_t vtxErr[3] = {0.0, 0.0, 0.0};
@@ -2183,7 +2183,7 @@ Bool_t AliReconstruction::RunVertexFinder(AliESDEvent*& esd)
 {
 // run the barrel tracking
 
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   AliVertexer *vertexer = CreateVertexer();
   if (!vertexer) return kFALSE;
@@ -2245,7 +2245,7 @@ Bool_t AliReconstruction::RunHLTTracking(AliESDEvent*& esd)
 {
 // run the HLT barrel tracking
 
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   if (!fRunLoader) {
     AliError("Missing runLoader!");
@@ -2301,7 +2301,7 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
 {
 // run the muon spectrometer tracking
 
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   if (!fRunLoader) {
     AliError("Missing runLoader!");
@@ -2352,7 +2352,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 {
 // run the barrel tracking
   static Int_t eventNr=0;
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   AliInfo("running tracking");
 
@@ -2537,7 +2537,7 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
 {
 // fill the event summary data
 
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
     static Int_t eventNr=0; 
   TString detStr = detectors;
   
@@ -2594,7 +2594,7 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
   // stored in Trigger.root file and fills
   // the corresponding esd entries
 
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
   
   AliInfo("Filling trigger information into the ESD");
 
@@ -3336,7 +3336,7 @@ Bool_t AliReconstruction::GetEventInfo()
 {
   // Fill the event info object
   // ...
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   AliCentralTrigger *aCTP = NULL;
   if (fRawReader) {

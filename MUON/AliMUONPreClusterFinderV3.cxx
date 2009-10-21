@@ -252,7 +252,7 @@ AliMUONPreClusterFinderV3::MakeClusters()
 {
   /// Associate (proto)preclusters to form (pre)clusters
   
-//  AliCodeTimerAuto("",)
+//  AliCodeTimerAuto("",0)
   
   for ( Int_t cathode = 0; cathode < 2; ++cathode ) 
   {
@@ -277,7 +277,7 @@ AliMUONPreClusterFinderV3::MakeCathodePreClusters(Int_t cathode)
 {
   /// Build (proto)preclusters from digits on a given cathode
   
-//  AliCodeTimerAuto(Form("Cathode %d",cathode),)
+//  AliCodeTimerAuto(Form("Cathode %d",cathode),0)
   
   while ( fPads[cathode]->GetLast() > 0  )
   {  

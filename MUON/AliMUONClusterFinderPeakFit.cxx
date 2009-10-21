@@ -174,7 +174,7 @@ AliMUONClusterFinderPeakFit::Prepare(Int_t detElemId, TClonesArray* pads[2],
 				     const AliMpArea& area, const AliMpVSegmentation* seg[2])
 {
   /// Prepare for clustering
-//  AliCodeTimerAuto("",)
+//  AliCodeTimerAuto("",0)
   
   for ( Int_t i = 0; i < 2; ++i )
   {
@@ -227,7 +227,7 @@ AliMUONCluster*
 AliMUONClusterFinderPeakFit::NextCluster()
 {
   /// Return next cluster
-//  AliCodeTimerAuto("",)
+//  AliCodeTimerAuto("",0)
   
   // if the list of clusters is not void, pick one from there
   TObject* o = fClusterList.At(++fClusterNumber);
@@ -276,7 +276,7 @@ AliMUONClusterFinderPeakFit::WorkOnPreCluster()
   /// Starting from a precluster, builds a pixel array, and then
   /// extract clusters from this array
   
-  //  AliCodeTimerAuto("",)	
+  //  AliCodeTimerAuto("",0)	
 
   if (fDebug) {
     cout << " *** Event # " << fEventNumber
@@ -346,7 +346,7 @@ AliMUONClusterFinderPeakFit::CheckPrecluster(const AliMUONCluster& origCluster)
   /// Check precluster in order to attempt to simplify it (mostly for
   /// two-cathode preclusters)
     
-  //  AliCodeTimerAuto("",)
+  //  AliCodeTimerAuto("",0)
 
   // Disregard small clusters (leftovers from splitting or noise)
   if ((origCluster.Multiplicity()==1 || origCluster.Multiplicity()==2) &&

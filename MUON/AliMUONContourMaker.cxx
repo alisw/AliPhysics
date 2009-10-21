@@ -84,7 +84,7 @@ AliMUONContourMaker::CreateContour(const TObjArray& polygons, const char* name) 
   /// and get back the intermediate verticals and horizontal segments
   /// both arrays are arrays of AliMUONSegment objects.
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   if ( polygons.IsEmpty() ) return 0x0; // protection against user error...
   
@@ -155,7 +155,7 @@ AliMUONContourMaker::FinalizeContour(const TObjArray& verticals,
   /// For a list of vertical and horizontal edges, we build the final
   /// contour object.
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   TObjArray all; // array of AliMUONSegment
   TObjArray inorder; // array of AliMUONSegment
@@ -248,7 +248,7 @@ AliMUONContourMaker::GetVerticalEdges(const TObjArray& polygons, TObjArray& poly
   /// From an array of polygons, extract the list of vertical edges.
   /// Output array polygonVerticalEdges should be empty before calling.
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   for ( Int_t i = 0; i <= polygons.GetLast(); ++i ) 
   {
@@ -272,7 +272,7 @@ AliMUONContourMaker::GetYPositions(const TObjArray& polygonVerticalEdges,
   /// Fill the array yPositions with the different y positions found in 
   /// polygonVerticalEdges
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   Double_t* y = new Double_t[polygonVerticalEdges.GetSize()*2];
   Int_t n(0);
@@ -316,7 +316,7 @@ AliMUONContourMaker::MergeContour(const TObjArray& contours, const char* name) c
 {
   /// Merge all the polygons of all contours into a single contour
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   TObjArray polygons;
   polygons.SetOwner(kTRUE);
@@ -350,7 +350,7 @@ AliMUONContourMaker::SortPoints(const TObjArray& polygonVerticalEdges,
   /// then on abcissa, and put them in output vector sortedPoints.
   /// Output array sortedPoints should be empty before calling this method.
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   for ( Int_t i = 0; i <= polygonVerticalEdges.GetLast(); ++i )
   {
@@ -371,7 +371,7 @@ AliMUONContourMaker::Sweep(const TObjArray& polygonVerticalEdges,
 {
   /// This is the meat of the algorithm of the contour merging...
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   TArrayD yPositions;
   GetYPositions(polygonVerticalEdges,yPositions);
@@ -441,7 +441,7 @@ AliMUONContourMaker::VerticalToHorizontal(const TObjArray& polygonVerticalEdges,
   /// Deduce the set of horizontal edges from the vertical edges
   /// Output array horizontalEdges should be empty before calling this method
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   TObjArray points; // array of AliMUONPointWithRef
   points.SetOwner(kTRUE);

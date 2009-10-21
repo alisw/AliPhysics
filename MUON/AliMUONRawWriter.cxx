@@ -153,7 +153,7 @@ Int_t AliMUONRawWriter::Digits2Raw(AliMUONVDigitStore* digitStore,
 {
   /// convert digits of the current event to raw data
 
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
   
   Int_t idDDL;
   Char_t name[255];
@@ -223,7 +223,7 @@ AliMUONRawWriter::Digits2BusPatchMap(const AliMUONVDigitStore& digitStore,
 {
   /// Create bus patch structures corresponding to digits in the store
   
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
   
   static const Int_t kMAXADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
     
@@ -316,7 +316,7 @@ AliMUONRawWriter::WriteTrackerDDL(AliMpExMap& busPatchMap, Int_t iDDL)
   // (((43 manus max per bus patch *64 channels + 4 bus patch words) * 5 bus patch 
   //   + 10 dsp words)*5 dsps + 8 block words)*2 blocks 
  
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   if (fHeader == 0x0) {
     AliError("Raw data header must be set");
@@ -450,7 +450,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
 {
   /// Write trigger DDL
   
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   if (fHeader == 0x0) {
     AliError("Raw data header must be set");

@@ -186,7 +186,7 @@ AliMUONReconstructor::Calibrate(AliMUONVDigitStore& digitStore) const
   {
     CreateCalibrator();
   }
-  AliCodeTimerAuto(Form("%s::Calibrate(AliMUONVDigitStore*)",fDigitCalibrator->ClassName()),)
+  AliCodeTimerAuto(Form("%s::Calibrate(AliMUONVDigitStore*)",fDigitCalibrator->ClassName()),0)
   fDigitCalibrator->Calibrate(digitStore);  
 }
 
@@ -220,7 +220,7 @@ void
 AliMUONReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
 {
    /// convert raw data into a digit tree
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   Bool_t alone = ( TriggerStore() == 0 );
   
@@ -251,7 +251,7 @@ AliMUONReconstructor::CreateDigitMaker() const
   /// Create (and create if necessary) the digit maker
   if (fDigitMaker) return;
 
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   TString option = GetOption();
   
@@ -277,7 +277,7 @@ AliMUONReconstructor::CreateTriggerCircuit() const
   /// Return (and create if necessary) the trigger circuit object
   if (fTriggerCircuit) return;
 
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   fTriggerCircuit = new AliMUONTriggerCircuit(fTransformer);
 
@@ -324,7 +324,7 @@ AliMUONReconstructor::CreateClusterFinder(const char* clusterFinderType)
 {
   /// Create a given cluster finder instance
   
-  AliCodeTimerAutoGeneral("",)
+  AliCodeTimerAutoGeneral("",0)
 
   AliMUONVClusterFinder* clusterFinder(0x0);
   
@@ -396,7 +396,7 @@ AliMUONReconstructor::CreateClusterServer() const
   
   if ( fClusterServer ) return;
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
     
   AliMUONVClusterFinder* clusterFinder = CreateClusterFinder(GetRecoParam()->GetClusteringMode());
   
@@ -413,7 +413,7 @@ AliMUONReconstructor::CreateCalibrator() const
 {
   /// Create the calibrator
   
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
   
   Int_t runNumber = AliCDBManager::Instance()->GetRun();
 
@@ -488,7 +488,7 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
 {
   /// Write the trigger and cluster information into TreeR
   
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
 
   AliDebug(1,"");
   
@@ -597,7 +597,7 @@ AliMUONReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
   /// This method is called by AliReconstruction if HasLocalReconstruction()==kTRUE
   /// AND HasDigitConversion()==kTRUE
   
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
   
   AliDebug(1,"");
   

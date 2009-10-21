@@ -1223,7 +1223,7 @@ void AliQAManager::RunOneEvent(AliRawReader * rawReader)
 	//Runs all the QA data Maker for Raws only and on one event only (event loop done by calling method)
   if ( ! rawReader ) 
     return ; 
-  AliCodeTimerAuto("",) ;
+  AliCodeTimerAuto("",0) ;
   if (fTasks.Contains(Form("%d", AliQAv1::kRAWS))){
     for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
       if (!IsSelected(AliQAv1::GetDetName(iDet))) 
@@ -1250,7 +1250,7 @@ void AliQAManager::RunOneEvent(AliESDEvent *& esd)
 {
 	//Runs all the QA data Maker for ESDs only and on one event only (event loop done by calling method)
 	
-  AliCodeTimerAuto("",) ;
+  AliCodeTimerAuto("",0) ;
   if (fTasks.Contains(Form("%d", AliQAv1::kESDS))) {
     for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
       if (!IsSelected(AliQAv1::GetDetName(iDet))) 
@@ -1278,7 +1278,7 @@ void AliQAManager::RunOneEventInOneDetector(Int_t det, TTree * tree)
 	// Runs all the QA data Maker for ESDs only and on one event only (event loop done by calling method)
   
   TString test(tree->GetName()) ; 
-  AliCodeTimerAuto("",) ;
+  AliCodeTimerAuto("",0) ;
   if (fTasks.Contains(Form("%d", AliQAv1::kRECPOINTS))) {
     if (IsSelected(AliQAv1::GetDetName(det))) {
       AliQADataMaker *qadm = GetQADataMaker(det);  

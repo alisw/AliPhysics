@@ -143,7 +143,7 @@ AliMUONPainterHelper::GenerateDefaultMatrices()
 {
   /// Kind of bootstrap method to trigger the generation of all contours
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
   
   fPainterMatrices = new TObjArray;
   fPainterMatrices->SetOwner(kFALSE);
@@ -304,7 +304,7 @@ AliMUONPainterHelper::Instance()
   
   if (fgInstance) return fgInstance;
 
-  AliCodeTimerAutoClass("",);
+  AliCodeTimerAutoClass("",0);
 
   fgInstance = new AliMUONPainterHelper;
   fgInstance->fEnv = new AliMUONPainterEnv;
@@ -408,7 +408,7 @@ void
 AliMUONPainterHelper::RegisterContour(AliMUONContour* contour, Bool_t explodedView)
 {
   /// contour is adopted by contourMaker
-  AliCodeTimerAuto("",)
+  AliCodeTimerAuto("",0)
   AliDebug(1,contour->GetName());
   AliMUONContourHandler* ch = fReal;
   if ( explodedView ) 

@@ -119,7 +119,7 @@ AliMUONContourMakerTest::Exec(const Option_t* opt)
   
   AliCodeTimer::Instance()->Reset();
   
-  AliCodeTimerAuto("",);
+  AliCodeTimerAuto("",0);
 
   TString sopt(opt);
   
