@@ -32,6 +32,7 @@
 
 #include "AliLog.h"
 #include "AliGeomManager.h"
+#include "AliITSReconstructor.h"
 #include "AliITSgeomTGeo.h"
 #include "AliTrackPointArray.h"
 #include "AliESDInputHandler.h"
@@ -92,13 +93,13 @@ AliAlignmentDataFilterITS::~AliAlignmentDataFilterITS()
     delete fspTree;
     fspTree = 0;
   }
-  if (fHistNpoints) {
-    delete fHistNpoints;
-    fHistNpoints = 0;
-  }
   if (fHistNevents) {
     delete fHistNevents;
     fHistNevents = 0;
+  }
+  if (fHistNpoints) {
+    delete fHistNpoints;
+    fHistNpoints = 0;
   }
   if (fHistPt) {
     delete fHistPt;
@@ -137,6 +138,7 @@ AliAlignmentDataFilterITS::~AliAlignmentDataFilterITS()
     fntCosmicMatching = 0;
   }
 }  
+
 //________________________________________________________________________
 void AliAlignmentDataFilterITS::ConnectInputData(Option_t *) 
 {
@@ -186,7 +188,7 @@ void AliAlignmentDataFilterITS::CreateOutputObjects()
   // Several histograms are more conveniently managed in a TList
   fListOfHistos = new TList();
   fListOfHistos->SetOwner();
- 
+
   fHistNevents = new TH1F("fHistNevents", "Number of processed events; N events; bin",5,-0.5,4.5);
   fHistNevents->Sumw2();
   fHistNevents->SetMinimum(0);
@@ -250,9 +252,10 @@ void AliAlignmentDataFilterITS::Exec(Option_t */*option*/)
 {
   // Execute analysis for current event:
   // write ITS AliTrackPoints for selected tracks to fspTree
-
+  
   // load the geometry  
   if(!gGeoManager) {    
+    printf("AliAlignmentDataFilterITS::Exec(): loading geometry from %s\n",fGeometryFileName.Data());
     AliGeomManager::LoadGeometry(fGeometryFileName.Data());
     if(!gGeoManager) { 
       printf("AliAlignmentDataFilterITS::Exec(): no geometry loaded \n");
@@ -261,12 +264,13 @@ void AliAlignmentDataFilterITS::Exec(Option_t */*option*/)
   }
 
   // check if we have AliITSRecoParam
-  if(!AliITSReconstructor::GetRecoParam()) {
+  if(!GetRecoParam()) {
     if(!fITSRecoParam) {
       printf("AliAlignmentDataFilterITS::Exec(): no AliITSRecoParam\n");
       return;
     }
   }
+
 
   if(!fESD) {
     printf("AliAlignmentDataFilterITS::Exec(): no ESD \n");
@@ -278,7 +282,6 @@ void AliAlignmentDataFilterITS::Exec(Option_t */*option*/)
   } 
   // attach ESDfriend
   fESD->SetESDfriend(fESDfriend);
-
 
   // Post the data for slot 0
   fHistNevents->Fill(0);
@@ -335,8 +338,8 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
 
     if(track->GetNcls(0)<GetRecoParam()->GetAlignFilterMinITSPoints()) continue;
 
-    if(GetRecoParam()->GetAlignFilterOnlyITSSATracks() && track->GetNcls(1)>0) continue;
-    if(GetRecoParam()->GetAlignFilterOnlyITSTPCTracks() && track->GetNcls(1)==0) continue;
+    if((GetRecoParam()->GetAlignFilterOnlyITSSATracks()) && track->GetNcls(1)>0) continue;
+    if((GetRecoParam()->GetAlignFilterOnlyITSTPCTracks()) && track->GetNcls(1)==0) continue;
 
     Float_t phi = track->GetAlpha()+TMath::ASin(track->GetSnp());
     Float_t theta = 0.5*TMath::Pi()-TMath::ATan(track->GetTgl());
@@ -431,7 +434,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
       layerId = AliGeomManager::VolUIDToLayer(volId,modId);
       AliDebug(2,Form("%d %d\n",ipt,layerId-1));
       if(point.IsExtra() && 
-	 GetRecoParam()->GetAlignFilterSkipExtra()) continue;
+	 (GetRecoParam()->GetAlignFilterSkipExtra())) continue;
       if(layerId>6) continue;
       if(!GetRecoParam()->GetAlignFilterUseLayer(layerId-1)) continue;
       // check minAngleWrtITSModulePlanes
@@ -491,7 +494,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
     curvArray[itrack] = track->GetC(esd->GetMagneticField());
     curverrArray[itrack] = TMath::Sqrt(track->GetSigma1Pt2())*track->GetC(esd->GetMagneticField())/track->OneOverPt();
 
-    if(!GetRecoParam()->GetAlignFilterCosmicMergeTracks()) {
+    if(!(GetRecoParam()->GetAlignFilterCosmicMergeTracks())) {
       jpt=0;
       arrayForTree = new AliTrackPointArray(nclsTrk[itrack]);
     }
@@ -526,7 +529,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
       // Post the data for slot 0
       if(jpt==1) PostData(1,fListOfHistos); // only if this is the first points
       if(!point.IsExtra() || 
-	 !GetRecoParam()->GetAlignFilterFillQANtuples()) continue;
+	 !(GetRecoParam()->GetAlignFilterFillQANtuples())) continue;
       nclsTrk[itrack]--;
       for(Int_t ll=1;ll<layerId;ll++) modId+=AliITSgeomTGeo::GetNLadders(ll)*AliITSgeomTGeo::GetNDetectors(ll);
       AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
@@ -556,7 +559,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
       }
     }
 
-    if(!GetRecoParam()->GetAlignFilterCosmicMergeTracks()) {
+    if(!(GetRecoParam()->GetAlignFilterCosmicMergeTracks())) {
       curv = curvArray[itrack];
       curverr = curverrArray[itrack];
       fspTree->Fill();
@@ -566,16 +569,11 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
   if(GetRecoParam()->GetAlignFilterCosmicMergeTracks()) {
     curv = 0.5*(curvArray[0]+curvArray[1]);
     curverr = 0.5*TMath::Sqrt(curverrArray[0]*curverrArray[0]+curverrArray[1]*curverrArray[1]);
-    /*AliTrackPoint pppt;
-    for(Int_t iii=0;iii<arrayForTree->GetNPoints();iii++) {
-      arrayForTree->GetPoint(pppt,iii);
-      pppt.Dump();
-      }*/
     fspTree->Fill();
   }
   PostData(0,fspTree);
 
-  if(!GetRecoParam()->GetAlignFilterFillQANtuples()) return; 
+  if(!(GetRecoParam()->GetAlignFilterFillQANtuples())) return; 
   // fill ntuple with track-to-track matching
   Float_t phimu,thetamu,phiout,thetaout,dphi,dtheta,rotymu,rotyout,droty;    
   Float_t d0[2],z0[2];
@@ -657,8 +655,8 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
 
     if(track->GetNcls(0)<GetRecoParam()->GetAlignFilterMinITSPoints()) continue;
 
-    if(GetRecoParam()->GetAlignFilterOnlyITSSATracks() && track->GetNcls(1)>0) continue;
-    if(GetRecoParam()->GetAlignFilterOnlyITSTPCTracks() && track->GetNcls(1)==0) continue;
+    if((GetRecoParam()->GetAlignFilterOnlyITSSATracks()) && track->GetNcls(1)>0) continue;
+    if((GetRecoParam()->GetAlignFilterOnlyITSTPCTracks()) && track->GetNcls(1)==0) continue;
 
     if(track->Pt()<GetRecoParam()->GetAlignFilterMinPt() || 
        track->Pt()>GetRecoParam()->GetAlignFilterMaxPt()) continue;
@@ -693,7 +691,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
       layerId = AliGeomManager::VolUIDToLayer(volId,modId);
       if(layerId<1 || layerId>6) continue;
       if(point.IsExtra() && 
-	 GetRecoParam()->GetAlignFilterSkipExtra()) continue;
+	 (GetRecoParam()->GetAlignFilterSkipExtra())) continue;
       layerOK[layerId-1]=kTRUE;
       jpt++;
     }
@@ -716,7 +714,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
       layerId = AliGeomManager::VolUIDToLayer(volId,modId);
       if(layerId<1 || layerId>6 || !layerOK[layerId-1]) continue;
       if(!point.IsExtra() || 
-	 !GetRecoParam()->GetAlignFilterFillQANtuples()) continue;
+	 !(GetRecoParam()->GetAlignFilterFillQANtuples())) continue;
       ncls--;
       for(Int_t ll=1;ll<layerId;ll++) modId+=AliITSgeomTGeo::GetNLadders(ll)*AliITSgeomTGeo::GetNDetectors(ll);
       AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
@@ -798,6 +796,7 @@ void AliAlignmentDataFilterITS::Terminate(Option_t */*option*/)
     return;
   }
 
+  fHistNevents = dynamic_cast<TH1F*>(fListOfHistos->FindObject("fHistNevents"));
   fHistNpoints = dynamic_cast<TH1F*>(fListOfHistos->FindObject("fHistNpoints"));
   fHistPt = dynamic_cast<TH1F*>(fListOfHistos->FindObject("fHistPt"));
   fHistLayer0 = dynamic_cast<TH2F*>(fListOfHistos->FindObject("fHistLayer0"));
