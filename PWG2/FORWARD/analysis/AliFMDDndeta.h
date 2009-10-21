@@ -11,7 +11,8 @@ class AliFMDDndeta : public TObject
  public:
   AliFMDDndeta();
  AliFMDDndeta(const AliFMDDndeta& o) : 
-  fList(0),
+  TObject(),
+    fList(0),
     fMultList(),
     fNbinsToCut(o.fNbinsToCut),
     fVtxCut(o.fVtxCut),
