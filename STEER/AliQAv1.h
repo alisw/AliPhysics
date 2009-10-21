@@ -12,6 +12,7 @@
 #include <TNamed.h> 
 #include <TMath.h> 
 class TFile ; 
+class TH1 ; 
 
 #include "AliLog.h"
 #include "AliRecoParam.h"
@@ -47,6 +48,7 @@ public:
   Bool_t                 CheckFatal() const ;
   static void            Close() ; 
   static const char *    GetAliTaskName(ALITASK_t tsk) ;
+  static  TH1 *          GetData(TObjArray** list, Int_t index, AliRecoParam::EventSpecie_t) ; 
   Bool_t *               GetEventSpecies() { return fEventSpecies ; }
   static const TString   GetExpert() { return fgkExpert ; }
   static       UInt_t    GetExpertBit() { return fgkExpertBit ; }
