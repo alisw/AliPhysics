@@ -37,12 +37,12 @@
 
 // STEER includes
 #include "AliCDBManager.h"
+#include "AliGRPManager.h"
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
 #include "AliESDMuonTrack.h"
 #include "AliLog.h"
-#include "AliMagF.h"
 #include "AliRecoParam.h"
 #include "AliTracker.h"
 
@@ -174,9 +174,10 @@ void AliMUONChamberCalibrationTask::LocalInit()
 
   if ( !TGeoGlobalMagField::Instance()->GetField() ) {
     AliInfo( "Loading field map..." );
-    AliMagF* field = new AliMagF( "Maps","Maps", 1., 1., AliMagF::k5kG );
-    TGeoGlobalMagField::Instance()->SetField( field );
-    TGeoGlobalMagField::Instance()->Lock();
+    AliGRPManager *grpMan = new AliGRPManager();
+    grpMan->ReadGRPEntry();
+    grpMan->SetMagField();
+    delete grpMan;
   }
   
   // Load mapping
