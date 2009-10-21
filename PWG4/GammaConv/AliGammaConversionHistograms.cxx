@@ -38,8 +38,8 @@ AliGammaConversionHistograms::AliGammaConversionHistograms() :
   fNPhiIndex(0),
   fNRIndex(0),
   fNZIndex(0),
-  fRBinLimits(0),
-  fZBinLimits(0),
+//  fRBinLimits(0),
+//  fZBinLimits(0),
   fMinRadius(0.),
   fMaxRadius(0.),
   fDeltaR(0.),
@@ -57,6 +57,12 @@ AliGammaConversionHistograms::AliGammaConversionHistograms() :
   fOtherContainer(NULL)
 {
   // see header file for documenation
+  for(Int_t i=0;i<7;i++){
+    fRBinLimits[i]=0.;
+  }
+  for(Int_t i=0;i<6;i++){
+    fZBinLimits[i]=0.;
+  }
 }
 
 
@@ -65,8 +71,8 @@ AliGammaConversionHistograms::AliGammaConversionHistograms(const AliGammaConvers
   fNPhiIndex(original.fNPhiIndex),
   fNRIndex(original.fNRIndex),
   fNZIndex(original.fNZIndex),
-  fRBinLimits(original.fRBinLimits),
-  fZBinLimits(original.fZBinLimits),
+  //  fRBinLimits(original.fRBinLimits),
+  //  fZBinLimits(original.fZBinLimits),
   fMinRadius(original.fMinRadius),
   fMaxRadius(original.fMaxRadius),
   fDeltaR(original.fDeltaR),
@@ -84,6 +90,12 @@ AliGammaConversionHistograms::AliGammaConversionHistograms(const AliGammaConvers
   fOtherContainer(original.fOtherContainer)
 {    
   //see header file for documentation
+  for(Int_t i=0;i<7;i++){
+    fRBinLimits[i]= original.fRBinLimits[i];
+  }
+  for(Int_t i=0;i<6;i++){
+    fZBinLimits[i]=original.fZBinLimits[i];
+  }
 }
 
 
@@ -332,7 +344,7 @@ void AliGammaConversionHistograms::InitializeMappingValues(Int_t nPhiIndex, Int_
   fNRIndex   = nRIndex;
   fNZIndex = 6;
 
-  fRBinLimits= new Double_t[8];
+  //  fRBinLimits= new Double_t[8];   Kenneth: moved from pointer to fixed array
   fRBinLimits[0]=0.;
   fRBinLimits[1]=12.;
   fRBinLimits[2]=22.;
@@ -342,7 +354,7 @@ void AliGammaConversionHistograms::InitializeMappingValues(Int_t nPhiIndex, Int_
   fRBinLimits[6]=90.;
   fRBinLimits[7]=500.;
 
-  fZBinLimits= new Double_t[7];
+  //  fZBinLimits= new Double_t[7]; Kenneth: moved from pointer to fixed array
   fZBinLimits[0]=0.;
   fZBinLimits[1]=15.;
   fZBinLimits[2]=30.;
