@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
        sprintf(namhist2lg,"PedZPAlgOutOfTime_%d",j-17);
        sprintf(namhist3lg,"PedCorrZPAlg_%d",j-17);
      }
-     else if(j==22 || j==24){ //Reference PMs
+     else if(j==22 || j==23){ //Reference PMs
        sprintf(namhist1hg,"PedRefhg_%d",j-22);
        sprintf(namhist2hg,"PedRefhgOutOfTime_%d",j-22);
        sprintf(namhist3hg,"PedCorrRefhg_%d",j-22);
