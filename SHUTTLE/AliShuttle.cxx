@@ -3449,7 +3449,7 @@ const char* AliShuttle::GetTriggerConfiguration()
 	
 	if (result->GetRowCount() == 0)
 	{
-		Log("SHUTTLE", "ERROR: Trigger configuration not found in logbook_trigger_config");
+		Log("SHUTTLE", "WARNING: Trigger configuration not found in logbook_trigger_config");
 		delete result;
 		return 0;
 	}
@@ -3496,7 +3496,7 @@ const char* AliShuttle::GetCTPTimeParams()
 	
 	if (result->GetRowCount() == 0)
 	{
-		Log("SHUTTLE", "ERROR: CTP time params not found in logbook_trigger_config");
+		Log("SHUTTLE", "WARNING: CTP time params not found in logbook_trigger_config");
 		delete result;
 		return 0;
 	}
