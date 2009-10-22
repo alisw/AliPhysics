@@ -28,7 +28,7 @@ private:
   AliTRDmultiplicity& operator=(const AliTRDmultiplicity&);
 
 private:
-  Int_t fEventCounter;
+  Int_t fEventCounter;            // Event counter
 
 
   ClassDef(AliTRDmultiplicity, 1) // TRD tracking multiplicity

@@ -1,3 +1,26 @@
+/*************************************************************************
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercialf purposes is hereby granted  *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
+
+/* $Id: AliTRDpidRefMakerNN.cxx 27496 2008-07-22 08:35:45Z cblume $ */
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Builds the reference tree for the training of neural networks         //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include "TSystem.h"
 #include "TDatime.h"
 #include "TPDGCode.h"
@@ -5,30 +28,22 @@
 #include "TFile.h"
 #include "TGraphErrors.h"
 #include "TTree.h"
-#include "TTreeStream.h"
 #include "TEventList.h"
 #include "TMultiLayerPerceptron.h"
 
 #include "AliPID.h"
-#include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
+#include "AliESDtrack.h"
 #include "AliTrackReference.h"
-
-#include "AliAnalysisTask.h"
 
 #include "AliTRDtrackV1.h"
 #include "AliTRDReconstructor.h"
+#include "AliTRDpidUtil.h"
+#include "AliTRDpidRefMakerNN.h"
+
 #include "../Cal/AliTRDCalPID.h"
 #include "../Cal/AliTRDCalPIDNN.h"
-
-#include "AliTRDpidUtil.h"
-
-#include "AliTRDpidRefMakerNN.h"
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDv0Info.h"
-
-// builds the reference tree for the training of neural networks
-
 
 ClassImp(AliTRDpidRefMakerNN)
 
@@ -138,10 +153,10 @@ void AliTRDpidRefMakerNN::Exec(Option_t *)
 
   AliTRDtrackInfo     *track = 0x0;
   AliTRDv0Info           *v0 = 0x0;
-  AliTRDtrackV1    *TRDtrack = 0x0;
+  AliTRDtrackV1    *trackTRD = 0x0;
   AliTrackReference     *ref = 0x0;
   AliExternalTrackParam *esd = 0x0;
-  AliTRDseedV1 *TRDtracklet = 0x0;
+  AliTRDseedV1  *trackletTRD = 0x0;
 
   for(Int_t iv0=0; iv0<fV0s->GetEntriesFast(); iv0++){
     v0 = dynamic_cast<AliTRDv0Info*>(fV0s->At(iv0));
@@ -159,11 +174,11 @@ void AliTRDpidRefMakerNN::Exec(Option_t *)
     status = track->GetStatus();
     if(!(status&AliESDtrack::kTPCout)) continue;
 
-    if(!(TRDtrack = track->GetTrack())) continue; 
+    if(!(trackTRD = track->GetTrack())) continue; 
     //&&(track->GetNumberOfClustersRefit()
 
     // use only tracks that hit 6 chambers
-    if(!(TRDtrack->GetNumberOfTracklets() == AliTRDgeometry::kNlayer)) continue;
+    if(!(trackTRD->GetNumberOfTracklets() == AliTRDgeometry::kNlayer)) continue;
      
     ref = track->GetTrackRef(0);
     esd = track->GetESDinfo()->GetOuterParam();
@@ -176,7 +191,7 @@ void AliTRDpidRefMakerNN::Exec(Option_t *)
       
     // if no monte carlo data available -> use V0 information
     if(!HasMCdata()){
-      GetV0info(TRDtrack,fv0pid);
+      GetV0info(trackTRD,fv0pid);
     }
     // else use the MC info
     else{
@@ -206,14 +221,14 @@ void AliTRDpidRefMakerNN::Exec(Option_t *)
 
     // set reconstructor
     Float_t *dedx;
-    TRDtrack -> SetReconstructor(fReconstructor);
+    trackTRD->SetReconstructor(fReconstructor);
 
     // fill the dE/dx information for NN
     fReconstructor -> SetOption("nn");
     for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
-      if(!(TRDtracklet = TRDtrack -> GetTracklet(ily))) continue;
-      TRDtracklet->CookdEdx(AliTRDpidUtil::kNNslices);
-      dedx = const_cast<Float_t *>(TRDtracklet->GetdEdx());
+      if(!(trackletTRD = trackTRD->GetTracklet(ily))) continue;
+      trackletTRD->CookdEdx(AliTRDpidUtil::kNNslices);
+      dedx = const_cast<Float_t *>(trackletTRD->GetdEdx());
       for(Int_t iSlice = 0; iSlice < AliTRDpidUtil::kNNslices; iSlice++)
 	dedx[iSlice] = dedx[iSlice]/AliTRDCalPIDNN::kMLPscale;
       memcpy(fdEdx, dedx, AliTRDpidUtil::kNNslices*sizeof(Float_t));
@@ -288,7 +303,7 @@ void AliTRDpidRefMakerNN::Terminate(Option_t *)
 
 
 //________________________________________________________________________
-void AliTRDpidRefMakerNN::GetV0info(AliTRDtrackV1 *TRDtrack, Float_t *v0pid) 
+void AliTRDpidRefMakerNN::GetV0info(AliTRDtrackV1 *trackTRD, Float_t *v0pid) 
 {
   // !!!! PREMILMINARY FUNCTION !!!!
   //
@@ -297,11 +312,11 @@ void AliTRDpidRefMakerNN::GetV0info(AliTRDtrackV1 *TRDtrack, Float_t *v0pid)
   // just the probabilities
   // of the TRDtrack are used!
 
-  TRDtrack -> SetReconstructor(fReconstructor);
+  trackTRD->SetReconstructor(fReconstructor);
   fReconstructor -> SetOption("nn");
-  TRDtrack -> CookPID();
+  trackTRD->CookPID();
   for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-    v0pid[iPart] = TRDtrack -> GetPID(iPart);
+    v0pid[iPart] = trackTRD->GetPID(iPart);
     if(fDebugLevel>=4) Printf("PDG is (in V0info) %d %f", iPart, v0pid[iPart]);
   }
 }
@@ -594,16 +609,16 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
   }
 
   // implement variables for likelihoods
-  Float_t Like[AliPID::kSPECIES][AliTRDgeometry::kNlayer];
-  memset(Like, 0, AliPID::kSPECIES*AliTRDgeometry::kNlayer*sizeof(Float_t));
-  Float_t LikeAll[AliPID::kSPECIES], TotProb;
+  Float_t like[AliPID::kSPECIES][AliTRDgeometry::kNlayer];
+  memset(like, 0, AliPID::kSPECIES*AliTRDgeometry::kNlayer*sizeof(Float_t));
+  Float_t likeAll[AliPID::kSPECIES], totProb;
 
-  Double_t PionEffiTrain[kMoniTrain], PionEffiErrTrain[kMoniTrain];
-  Double_t PionEffiTest[kMoniTrain], PionEffiErrTest[kMoniTrain];
-  memset(PionEffiTrain, 0, kMoniTrain*sizeof(Double_t));
-  memset(PionEffiErrTrain, 0, kMoniTrain*sizeof(Double_t));
-  memset(PionEffiTest, 0, kMoniTrain*sizeof(Double_t));
-  memset(PionEffiErrTest, 0, kMoniTrain*sizeof(Double_t));
+  Double_t pionEffiTrain[kMoniTrain], pionEffiErrTrain[kMoniTrain];
+  Double_t pionEffiTest[kMoniTrain], pionEffiErrTest[kMoniTrain];
+  memset(pionEffiTrain, 0, kMoniTrain*sizeof(Double_t));
+  memset(pionEffiErrTrain, 0, kMoniTrain*sizeof(Double_t));
+  memset(pionEffiTest, 0, kMoniTrain*sizeof(Double_t));
+  memset(pionEffiErrTest, 0, kMoniTrain*sizeof(Double_t));
 
   // init histos
   const Float_t epsilon = 1/(2*(AliTRDpidUtil::kBins-1));     // get nice histos with bin center at 0 and 1
@@ -630,9 +645,9 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
 
       // reset particle probabilities
       for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-	LikeAll[iPart] = 1./AliPID::kSPECIES;
+	likeAll[iPart] = 1./AliPID::kSPECIES;
       }
-      TotProb = 0.;
+      totProb = 0.;
 
       fNN -> GetEntry(fTrain[mombin][0] -> GetEntry(iEvent));
       // use event only if it is electron or pion
@@ -641,37 +656,37 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
       // get the probabilities for each particle type in each chamber
       for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
 	for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-	  Like[iPart][iChamb] = fNet[iChamb] -> Result(fTrain[mombin][iChamb] -> GetEntry(iEvent), iPart);
-	  LikeAll[iPart] *=  Like[iPart][iChamb];
+	  like[iPart][iChamb] = fNet[iChamb] -> Result(fTrain[mombin][iChamb] -> GetEntry(iEvent), iPart);
+	  likeAll[iPart] *=  like[iPart][iChamb];
 	}
       }
 
       // get total probability and normalize it
       for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-	TotProb += LikeAll[iPart];
+	totProb += likeAll[iPart];
       }
       for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-	LikeAll[iPart] /= TotProb;
+	likeAll[iPart] /= totProb;
       }
 
       // fill likelihood distributions
       if(fv0pid[AliPID::kElectron] == 1)      
-	hElecs -> Fill(LikeAll[AliPID::kElectron]);
+	hElecs -> Fill(likeAll[AliPID::kElectron]);
       if(fv0pid[AliPID::kPion] == 1)      
-	hPions -> Fill(LikeAll[AliPID::kElectron]);
+	hPions -> Fill(likeAll[AliPID::kElectron]);
     } // end event loop
 
 
     // calculate the pion efficiency and fill the graph
     util -> CalculatePionEffi(hElecs, hPions);
-    PionEffiTrain[iLoop] = util -> GetPionEfficiency();
-    PionEffiErrTrain[iLoop] = util -> GetError();
+    pionEffiTrain[iLoop] = util -> GetPionEfficiency();
+    pionEffiErrTrain[iLoop] = util -> GetError();
 
-    gEffisTrain -> SetPoint(iLoop, iLoop+1, PionEffiTrain[iLoop]);
-    gEffisTrain -> SetPointError(iLoop, 0, PionEffiErrTrain[iLoop]);
+    gEffisTrain -> SetPoint(iLoop, iLoop+1, pionEffiTrain[iLoop]);
+    gEffisTrain -> SetPointError(iLoop, 0, pionEffiErrTrain[iLoop]);
     hElecs -> Reset();
     hPions -> Reset();
-    if(fDebugLevel>=2) Printf("TrainingLoop[%d] PionEfficiency[%f +/- %f]", iLoop, PionEffiTrain[iLoop], PionEffiErrTrain[iLoop]);
+    if(fDebugLevel>=2) Printf("TrainingLoop[%d] PionEfficiency[%f +/- %f]", iLoop, pionEffiTrain[iLoop], pionEffiErrTrain[iLoop]);
     // end training loop
     
 
@@ -681,9 +696,9 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
 
       // reset particle probabilities
       for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-	LikeAll[iPart] = 1./AliTRDgeometry::kNlayer;
+	likeAll[iPart] = 1./AliTRDgeometry::kNlayer;
       }
-      TotProb = 0.;
+      totProb = 0.;
 
       fNN -> GetEntry(fTest[mombin][0] -> GetEntry(iEvent));
       // use event only if it is electron or pion
@@ -692,36 +707,36 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
       // get the probabilities for each particle type in each chamber
       for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
 	for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-	  Like[iPart][iChamb] = fNet[iChamb] -> Result(fTest[mombin][iChamb] -> GetEntry(iEvent), iPart);
-	  LikeAll[iPart] *=  Like[iPart][iChamb];
+	  like[iPart][iChamb] = fNet[iChamb] -> Result(fTest[mombin][iChamb] -> GetEntry(iEvent), iPart);
+	  likeAll[iPart] *=  like[iPart][iChamb];
 	}
       }
 
       // get total probability and normalize it
       for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-	TotProb += LikeAll[iPart];
+	totProb += likeAll[iPart];
       }
       for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-	LikeAll[iPart] /= TotProb;
+	likeAll[iPart] /= totProb;
       }
 
       // fill likelihood distributions
       if(fv0pid[AliPID::kElectron] == 1)      
-	hElecs -> Fill(LikeAll[AliPID::kElectron]);
+	hElecs -> Fill(likeAll[AliPID::kElectron]);
       if(fv0pid[AliPID::kPion] == 1)      
-	hPions -> Fill(LikeAll[AliPID::kElectron]);
+	hPions -> Fill(likeAll[AliPID::kElectron]);
     } // end event loop
 
     // calculate the pion efficiency and fill the graph
     util -> CalculatePionEffi(hElecs, hPions);
-    PionEffiTest[iLoop] = util -> GetPionEfficiency();
-    PionEffiErrTest[iLoop] = util -> GetError();
+    pionEffiTest[iLoop] = util -> GetPionEfficiency();
+    pionEffiErrTest[iLoop] = util -> GetError();
 
-    gEffisTest -> SetPoint(iLoop, iLoop+1, PionEffiTest[iLoop]);
-    gEffisTest -> SetPointError(iLoop, 0, PionEffiErrTest[iLoop]);
+    gEffisTest -> SetPoint(iLoop, iLoop+1, pionEffiTest[iLoop]);
+    gEffisTest -> SetPointError(iLoop, 0, pionEffiErrTest[iLoop]);
     hElecs -> Reset();
     hPions -> Reset();
-    if(fDebugLevel>=2) Printf("TestLoop[%d] PionEfficiency[%f +/- %f] \n", iLoop, PionEffiTest[iLoop], PionEffiErrTest[iLoop]);
+    if(fDebugLevel>=2) Printf("TestLoop[%d] PionEfficiency[%f +/- %f] \n", iLoop, pionEffiTest[iLoop], pionEffiErrTest[iLoop]);
     
   } //   end training loop
  

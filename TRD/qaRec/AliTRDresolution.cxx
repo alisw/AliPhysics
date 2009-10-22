@@ -48,11 +48,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <cstring>
-
 #include <TROOT.h>
-#include <TSystem.h>
-#include <TPDGCode.h>
 #include <TObjArray.h>
 #include <TH3.h>
 #include <TH2.h>
@@ -61,43 +57,34 @@
 #include <TCanvas.h>
 #include <TGaxis.h>
 #include <TBox.h>
-#include <TProfile.h>
 #include <TGraphErrors.h>
 #include <TGraphAsymmErrors.h>
 #include <TMath.h>
 #include <TMatrixT.h>
 #include <TVectorT.h>
-#include "TTreeStream.h"
-#include "TGeoManager.h"
+#include <TTreeStream.h>
+#include <TGeoManager.h>
 
-#include "AliAnalysisManager.h"
-#include "AliTrackReference.h"
-#include "AliTrackPointArray.h"
-#include "AliCDBManager.h"
 #include "AliPID.h"
 
-#include "AliTRDcalibDB.h"
-#include "AliTRDCommonParam.h"
-#include "AliTRDSimParam.h"
+#include "AliTRDresolution.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDcluster.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
-#include "AliTRDtrackerV1.h"
 #include "AliTRDReconstructor.h"
 #include "AliTRDrecoParam.h"
 
 #include "info/AliTRDclusterInfo.h"
-#include "info/AliTRDtrackInfo.h"
-#include "AliTRDresolution.h"
 
 ClassImp(AliTRDresolution)
-UChar_t AliTRDresolution::fNElements[kNhistos] = {
+
+UChar_t AliTRDresolution::fgNElements[kNhistos] = {
   2, 2, 5, 5,
   2, 5, 12, 2, 11
 };
-Char_t* AliTRDresolution::fPerformanceName[kNhistos] = {
+Char_t* AliTRDresolution::fgPerformanceName[kNhistos] = {
      "Charge"
     ,"Cluster2Track"
     ,"Tracklet2Track"
@@ -108,7 +95,7 @@ Char_t* AliTRDresolution::fPerformanceName[kNhistos] = {
     ,"TOF/HMPID2MC"
     ,"TRD2MC"
 };
-Char_t *AliTRDresolution::fAxTitle[46][4] = {
+Char_t *AliTRDresolution::fgAxTitle[46][4] = {
   // Charge
   {"Impv", "x [cm]", "I_{mpv}", "x/x_{0}"}
  ,{"dI/Impv", "x/x_{0}", "#delta I/I_{mpv}", "x[cm]"}
@@ -180,6 +167,10 @@ AliTRDresolution::AliTRDresolution()
   ,fMCcl(0x0)
   ,fMCtrklt(0x0)
 {
+  //
+  // Default constructor
+  //
+
   fReconstructor = new AliTRDReconstructor();
   fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
   fGeo = new AliTRDgeometry();
@@ -195,6 +186,10 @@ AliTRDresolution::AliTRDresolution()
 //________________________________________________________
 AliTRDresolution::~AliTRDresolution()
 {
+  //
+  // Destructor
+  //
+
   if(fGraphS){fGraphS->Delete(); delete fGraphS;}
   if(fGraphM){fGraphM->Delete(); delete fGraphM;}
   delete fGeo;
@@ -228,6 +223,10 @@ void AliTRDresolution::CreateOutputObjects()
 //________________________________________________________
 void AliTRDresolution::Exec(Option_t *opt)
 {
+  //
+  // Execution part
+  //
+
   fCl->Delete();
   fTrklt->Delete();
   fMCcl->Delete();
@@ -244,6 +243,10 @@ void AliTRDresolution::Exec(Option_t *opt)
 //________________________________________________________
 TH1* AliTRDresolution::PlotCharge(const AliTRDtrackV1 *track)
 {
+  //
+  // Plots the charge distribution
+  //
+
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
@@ -285,6 +288,10 @@ TH1* AliTRDresolution::PlotCharge(const AliTRDtrackV1 *track)
 //________________________________________________________
 TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
 {
+  //
+  // Plot the cluster distributions
+  //
+
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
@@ -561,6 +568,10 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
 //________________________________________________________
 TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
 {
+  //
+  // Plot MC distributions
+  //
+
   if(!HasMCdata()){ 
     AliWarning("No MC defined. Results will not be available.");
     return 0x0;
@@ -580,22 +591,22 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   Double_t covR[7]/*, cov[3]*/;
 
   if(fDebugLevel>=1){
-    Double_t DX[12], DY[12], DZ[12], DPt[12], COV[12][15];
-    fkMC->PropagateKalman(DX, DY, DZ, DPt, COV);
+    Double_t dX[12], dY[12], dZ[12], dPt[12], cCOV[12][15];
+    fkMC->PropagateKalman(dX, dY, dZ, dPt, cCOV);
     (*fDebugStream) << "MCkalman"
       << "pdg="  << pdg
-      << "dx0="  << DX[0]
-      << "dx1="  << DX[1]
-      << "dx2="  << DX[2]
-      << "dy0="  << DY[0]
-      << "dy1="  << DY[1]
-      << "dy2="  << DY[2]
-      << "dz0="  << DZ[0]
-      << "dz1="  << DZ[1]
-      << "dz2="  << DZ[2]
-      << "dpt0=" << DPt[0]
-      << "dpt1=" << DPt[1]
-      << "dpt2=" << DPt[2]
+      << "dx0="  << dX[0]
+      << "dx1="  << dX[1]
+      << "dx2="  << dX[2]
+      << "dy0="  << dY[0]
+      << "dy1="  << dY[1]
+      << "dy2="  << dY[2]
+      << "dz0="  << dZ[0]
+      << "dz1="  << dZ[1]
+      << "dz2="  << dZ[2]
+      << "dpt0=" << dPt[0]
+      << "dpt1=" << dPt[1]
+      << "dpt2=" << dPt[2]
       << "\n";
   }
 
@@ -784,6 +795,10 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
 //________________________________________________________
 Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
 {
+  //
+  // Get the reference figures
+  //
+
   Float_t xy[4] = {0., 0., 0., 0.};
   if(!gPad){
     AliWarning("Please provide a canvas to draw results.");
@@ -1028,10 +1043,10 @@ Bool_t AliTRDresolution::PostProcess()
     fGraphS = new TObjArray(n); fGraphS->SetOwner();
     fGraphM = new TObjArray(n); fGraphM->SetOwner();
     for(Int_t ig=0; ig<n; ig++){
-      fGraphM->AddAt(aM = new TObjArray(fNElements[ig]), ig);
-      fGraphS->AddAt(aS = new TObjArray(fNElements[ig]), ig);
+      fGraphM->AddAt(aM = new TObjArray(fgNElements[ig]), ig);
+      fGraphS->AddAt(aS = new TObjArray(fgNElements[ig]), ig);
 
-      for(Int_t ic=0; ic<fNElements[ig]; ic++){
+      for(Int_t ic=0; ic<fgNElements[ig]; ic++){
         if(ig==kMCtrackTPC&&(ic>=8&&ic<=12)){ // TPC momentum plot
           aS->AddAt(a = new TObjArray(AliPID::kSPECIES), ic); 
           for(Int_t is=AliPID::kSPECIES; is--;){
@@ -1226,6 +1241,10 @@ void AliTRDresolution::AdjustF1(TH1 *h, TF1 *f)
 //________________________________________________________
 TObjArray* AliTRDresolution::Histos()
 {
+  //
+  // Define histograms
+  //
+
   if(fContainer) return fContainer;
 
   fContainer  = new TObjArray(kNhistos);
@@ -1234,7 +1253,7 @@ TObjArray* AliTRDresolution::Histos()
   TObjArray *arr = 0x0;
 
   // cluster to track residuals/pulls
-  fContainer->AddAt(arr = new TObjArray(fNElements[kCharge]), kCharge);
+  fContainer->AddAt(arr = new TObjArray(fgNElements[kCharge]), kCharge);
   arr->SetName("Charge");
   if(!(h = (TH3S*)gROOT->FindObject("hCharge"))){
     h = new TH3S("hCharge", "Charge Resolution", 20, 1., 2., 24, 0., 3.6, 100, 0., 500.);
@@ -1245,7 +1264,7 @@ TObjArray* AliTRDresolution::Histos()
   arr->AddAt(h, 0);
 
   // cluster to track residuals/pulls
-  fContainer->AddAt(arr = new TObjArray(fNElements[kCluster]), kCluster);
+  fContainer->AddAt(arr = new TObjArray(fgNElements[kCluster]), kCluster);
   arr->SetName("Cl");
   if(!(h = (TH2I*)gROOT->FindObject("hCl"))){
     h = new TH2I("hCl", "Cluster Residuals", 21, -.33, .33, 100, -.5, .5);
@@ -1263,7 +1282,7 @@ TObjArray* AliTRDresolution::Histos()
   arr->AddAt(h, 1);
 
   // tracklet to track residuals/pulls in y direction
-  fContainer->AddAt(arr = new TObjArray(fNElements[kTrackTRD ]), kTrackTRD );
+  fContainer->AddAt(arr = new TObjArray(fgNElements[kTrackTRD ]), kTrackTRD );
   arr->SetName("Trklt");
   if(!(h = (TH2I*)gROOT->FindObject("hTrkltY"))){
     h = new TH2I("hTrkltY", "Tracklet Y Residuals", 21, -.33, .33, 100, -.5, .5);
@@ -1305,7 +1324,7 @@ TObjArray* AliTRDresolution::Histos()
 
 
   // tracklet to TPC track residuals/pulls in y direction
-  fContainer->AddAt(arr = new TObjArray(fNElements[kTrackTPC]), kTrackTPC);
+  fContainer->AddAt(arr = new TObjArray(fgNElements[kTrackTPC]), kTrackTPC);
   arr->SetName("TrkTPC");
   if(!(h = (TH2I*)gROOT->FindObject("hTrkTPCY"))){
     h = new TH2I("hTrkTPCY", "Track[TPC] Y Residuals", 21, -.33, .33, 100, -.5, .5);
@@ -1350,7 +1369,7 @@ TObjArray* AliTRDresolution::Histos()
   if(!HasMCdata()) return fContainer;
 
   // cluster y resolution [0]
-  fContainer->AddAt(arr = new TObjArray(fNElements[kMCcluster]), kMCcluster);
+  fContainer->AddAt(arr = new TObjArray(fgNElements[kMCcluster]), kMCcluster);
   arr->SetName("McCl");
   if(!(h = (TH2I*)gROOT->FindObject("hMcCl"))){
     h = new TH2I("hMcCl", "Cluster Resolution", 48, -.48, .48, 100, -.3, .3);
@@ -1369,7 +1388,7 @@ TObjArray* AliTRDresolution::Histos()
 
 
   // TRACKLET RESOLUTION
-  fContainer->AddAt(arr = new TObjArray(fNElements[kMCtracklet]), kMCtracklet);
+  fContainer->AddAt(arr = new TObjArray(fgNElements[kMCtracklet]), kMCtracklet);
   arr->SetName("McTrklt");
   // tracklet y resolution
   if(!(h = (TH2I*)gROOT->FindObject("hMcTrkltY"))){
@@ -1414,7 +1433,7 @@ TObjArray* AliTRDresolution::Histos()
 
 
   // KALMAN TRACK RESOLUTION
-  fContainer->AddAt(arr = new TObjArray(fNElements[kMCtrackTRD]), kMCtrackTRD);
+  fContainer->AddAt(arr = new TObjArray(fgNElements[kMCtrackTRD]), kMCtrackTRD);
   arr->SetName("McTrkTRD");
   // Kalman track y resolution
   if(!(h = (TH2I*)gROOT->FindObject("hMcTrkY"))){
@@ -1520,7 +1539,7 @@ TObjArray* AliTRDresolution::Histos()
   }
 
   // TPC TRACK RESOLUTION
-  fContainer->AddAt(arr = new TObjArray(fNElements[kMCtrackTPC]), kMCtrackTPC);
+  fContainer->AddAt(arr = new TObjArray(fgNElements[kMCtrackTPC]), kMCtrackTPC);
   arr->SetName("McTrkTPC");
   // Kalman track Y
   if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTPCY"))){
@@ -1622,7 +1641,7 @@ TObjArray* AliTRDresolution::Histos()
 
 
   // Kalman track Z resolution [TOF]
-  fContainer->AddAt(arr = new TObjArray(fNElements[kMCtrackTOF]), kMCtrackTOF);
+  fContainer->AddAt(arr = new TObjArray(fgNElements[kMCtrackTOF]), kMCtrackTOF);
   arr->SetName("McTrkTOF");
   if(!(h = (TH2I*)gROOT->FindObject("hMcTrkTOFZ"))){
     h = new TH2I("hMcTrkTOFZ", "Track[TOF] Z Resolution", 100, -1., 1., 100, -1., 1.);
@@ -1644,8 +1663,12 @@ TObjArray* AliTRDresolution::Histos()
 }
 
 //________________________________________________________
-Bool_t AliTRDresolution::Process(TH2* h2, TF1 *f, Float_t k, TGraphErrors **g)
+Bool_t AliTRDresolution::Process(TH2 * const h2, TF1 *f, Float_t k, TGraphErrors **g)
 {
+  //
+  // Do the processing
+  //
+
   Char_t pn[10]; sprintf(pn, "p%02d", fIdxPlot);
   Int_t n = 0;
   if((n=g[0]->GetN())) for(;n--;) g[0]->RemovePoint(n);
@@ -1678,6 +1701,10 @@ Bool_t AliTRDresolution::Process(TH2* h2, TF1 *f, Float_t k, TGraphErrors **g)
 //________________________________________________________
 Bool_t AliTRDresolution::Process2D(ETRDresolutionPlot plot, Int_t idx, TF1 *f, Float_t k)
 {
+  //
+  // Do the processing
+  //
+
   if(!fContainer || !fGraphS || !fGraphM) return kFALSE;
 
   // retrive containers
@@ -1694,6 +1721,10 @@ Bool_t AliTRDresolution::Process2D(ETRDresolutionPlot plot, Int_t idx, TF1 *f, F
 //________________________________________________________
 Bool_t AliTRDresolution::Process3D(ETRDresolutionPlot plot, Int_t idx, TF1 *f, Float_t k)
 {
+  //
+  // Do the processing
+  //
+
   if(!fContainer || !fGraphS || !fGraphM) return kFALSE;
 
   // retrive containers
@@ -1719,6 +1750,10 @@ Bool_t AliTRDresolution::Process3D(ETRDresolutionPlot plot, Int_t idx, TF1 *f, F
 //________________________________________________________
 Bool_t AliTRDresolution::Process3DL(ETRDresolutionPlot plot, Int_t idx, TF1 *f, Float_t k)
 {
+  //
+  // Do the processing
+  //
+
   if(!fContainer || !fGraphS || !fGraphM) return kFALSE;
 
   // retrive containers
@@ -1758,6 +1793,10 @@ Bool_t AliTRDresolution::Process3DL(ETRDresolutionPlot plot, Int_t idx, TF1 *f, 
 //________________________________________________________
 Bool_t AliTRDresolution::Process4D(ETRDresolutionPlot plot, Int_t idx, TF1 *f, Float_t k)
 {
+  //
+  // Do the processing
+  //
+
   if(!fContainer || !fGraphS || !fGraphM) return kFALSE;
 
   // retrive containers
@@ -1791,6 +1830,10 @@ Bool_t AliTRDresolution::Process4D(ETRDresolutionPlot plot, Int_t idx, TF1 *f, F
 //________________________________________________________
 Bool_t AliTRDresolution::GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t idx)
 {
+  //
+  // Get the graphs
+  //
+
   if(!fGraphS || !fGraphM) return kFALSE;
   TGraphErrors *gm = idx<0 ? (TGraphErrors*)fGraphM->At(ip) : (TGraphErrors*)((TObjArray*)(fGraphM->At(ip)))->At(idx);
   if(!gm) return kFALSE;
@@ -1800,16 +1843,16 @@ Bool_t AliTRDresolution::GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t 
 
   // titles look up
   Int_t nref = 0;
-  for(Int_t jp=0; jp<(Int_t)ip; jp++) nref+=fNElements[jp];
+  for(Int_t jp=0; jp<(Int_t)ip; jp++) nref+=fgNElements[jp];
   UChar_t jdx = idx<0?0:idx;
-  for(Int_t jc=0; jc<TMath::Min(jdx,fNElements[ip]-1); jc++) nref++;
-  Char_t **at = fAxTitle[nref];
+  for(Int_t jc=0; jc<TMath::Min(jdx,fgNElements[ip]-1); jc++) nref++;
+  Char_t **at = fgAxTitle[nref];
 
-  PutTrendValue(Form("%s_%s", fPerformanceName[ip], at[0]), gm->GetMean(2));
-  PutTrendValue(Form("%s_%sRMS", fPerformanceName[ip], at[0]), gm->GetRMS(2));
+  PutTrendValue(Form("%s_%s", fgPerformanceName[ip], at[0]), gm->GetMean(2));
+  PutTrendValue(Form("%s_%sRMS", fgPerformanceName[ip], at[0]), gm->GetRMS(2));
   gs->Sort(&TGraph::CompareY); Int_t n = gs->GetN();
-  PutTrendValue(Form("%s_%sSigMin", fPerformanceName[ip], at[0]), gs->GetY()[0]);
-  PutTrendValue(Form("%s_%sSigMax", fPerformanceName[ip], at[0]), gs->GetY()[n-1]);
+  PutTrendValue(Form("%s_%sSigMin", fgPerformanceName[ip], at[0]), gs->GetY()[0]);
+  PutTrendValue(Form("%s_%sSigMax", fgPerformanceName[ip], at[0]), gs->GetY()[n-1]);
   gs->Sort(&TGraph::CompareX); 
   
 
@@ -1843,13 +1886,17 @@ Bool_t AliTRDresolution::GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t 
 //________________________________________________________
 Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t il)
 {
+  //
+  // Get the graphs
+  //
+
   if(!fGraphS || !fGraphM) return kFALSE;
 
   // axis titles look up
   Int_t nref = 0;
-  for(Int_t jp=0; jp<Int_t(kMCtrackTRD); jp++) nref+=fNElements[jp];
+  for(Int_t jp=0; jp<Int_t(kMCtrackTRD); jp++) nref+=fgNElements[jp];
   for(Int_t jc=0; jc<idx; jc++) nref++;
-  Char_t **at = fAxTitle[nref];
+  Char_t **at = fgAxTitle[nref];
 
   TGraphErrors *gm = 0x0, *gs = 0x0;
   TObjArray *a0 = fGraphS, *a1 = 0x0;
@@ -1861,8 +1908,8 @@ Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t il)
     if(!gs->GetN()) continue;
     gs->Draw(is ? "pl" : "apl");
     gs->Sort(&TGraph::CompareY); Int_t n = gs->GetN();
-    PutTrendValue(Form("%s_%sSigMin%s", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gs->GetY()[0]);
-    PutTrendValue(Form("%s_%sSigMax%s", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gs->GetY()[n-1]);
+    PutTrendValue(Form("%s_%sSigMin%s", fgPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gs->GetY()[0]);
+    PutTrendValue(Form("%s_%sSigMax%s", fgPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gs->GetY()[n-1]);
     gs->Sort(&TGraph::CompareX); 
   }
   gs =  (TGraphErrors*)a0->At(0);
@@ -1893,8 +1940,8 @@ Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t il)
     if(!(gm =  (TGraphErrors*)a0->At(is))) return kFALSE;
     if(!gm->GetN()) continue;
     gm->Draw("pl");
-    PutTrendValue(Form("%s_%s_%s", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gm->GetMean(2));
-    PutTrendValue(Form("%s_%s_%sRMS", fPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gm->GetRMS(2));
+    PutTrendValue(Form("%s_%s_%s", fgPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gm->GetMean(2));
+    PutTrendValue(Form("%s_%s_%sRMS", fgPerformanceName[kMCtrackTRD], at[0], AliPID::ParticleShortName(is)), gm->GetRMS(2));
   }
 
   return kTRUE;
@@ -1904,13 +1951,17 @@ Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t il)
 //________________________________________________________
 Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t sel)
 {
+  //
+  // Get the graphs
+  //
+
   if(!fGraphS || !fGraphM) return kFALSE;
 
   // axis titles look up
   Int_t nref = 0;
-  for(Int_t jp=0; jp<Int_t(kMCtrackTPC); jp++) nref+=fNElements[jp];
+  for(Int_t jp=0; jp<Int_t(kMCtrackTPC); jp++) nref+=fgNElements[jp];
   for(Int_t jc=0; jc<sel; jc++) nref++;
-  Char_t **at = fAxTitle[nref];
+  Char_t **at = fgAxTitle[nref];
 
   TGraphErrors *gm = 0x0, *gs = 0x0;
   TObjArray *a0 = fGraphS, *a1 = 0x0;
@@ -1921,8 +1972,8 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t sel)
     if(!gs->GetN()) continue;
     gs->Draw(is ? "pl" : "apl");
     gs->Sort(&TGraph::CompareY); Int_t n = gs->GetN();
-    PutTrendValue(Form("%s_%sSigMin%s", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gs->GetY()[0]);
-    PutTrendValue(Form("%s_%sSigMax%s", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gs->GetY()[n-1]);
+    PutTrendValue(Form("%s_%sSigMin%s", fgPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gs->GetY()[0]);
+    PutTrendValue(Form("%s_%sSigMax%s", fgPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gs->GetY()[n-1]);
     gs->Sort(&TGraph::CompareX); 
   }
   gs =  (TGraphErrors*)a0->At(0);
@@ -1951,16 +2002,21 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t sel)
     if(!(gm =  (TGraphErrors*)a0->At(is))) return kFALSE;
     if(!gm->GetN()) continue;
     gm->Draw("pl");
-    PutTrendValue(Form("%s_%s_%s", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gm->GetMean(2));
-    PutTrendValue(Form("%s_%s_%sRMS", fPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gm->GetRMS(2));
+    PutTrendValue(Form("%s_%s_%s", fgPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gm->GetMean(2));
+    PutTrendValue(Form("%s_%s_%sRMS", fgPerformanceName[kMCtrackTPC], at[0], AliPID::ParticleShortName(is)), gm->GetRMS(2));
   }
 
   return kTRUE;
 }
 
 //________________________________________________________
-void AliTRDresolution::GetLandauMpvFwhm(TF1 *f, Float_t &mpv, Float_t &xm, Float_t &xM)
+void AliTRDresolution::GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm, Float_t &xM)
 {
+  //
+  // Get the most probable value and the full width half mean 
+  // of a Landau distribution
+  //
+
   const Float_t dx = 1.;
   mpv = f->GetParameter(1);
   Float_t fx, max = f->Eval(mpv);

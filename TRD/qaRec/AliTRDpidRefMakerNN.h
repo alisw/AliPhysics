@@ -1,5 +1,9 @@
 #ifndef ALITRDPIDREFMAKERNN_H
 #define ALITRDPIDREFMAKERNN_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id: AliTRDpidRefMakerNN.h 27496 2008-07-22 08:35:45Z cblume $ */
 
 //////////////////////////////////////////////////////
 //
@@ -34,6 +38,7 @@ class TMultiLayerPerceptron;
 class AliPID;
 class AliTRDtrackV1;
 class AliTRDReconstructor;
+
 class AliTRDpidRefMakerNN : public AliTRDrecoTask
 {
 
@@ -70,9 +75,9 @@ public:
   void    ConnectInputData(Option_t *opt);
   void    CreateOutputObjects();
   void    Exec(Option_t *option);
-  Int_t   GetEpochs() {return fEpochs;};
-  Int_t   GetMinTrain() {return fMinTrain;};
-  Int_t   GetTrainMomBin() {return fTrainMomBin;};
+  Int_t   GetEpochs() const {return fEpochs;};
+  Int_t   GetMinTrain() const {return fMinTrain;};
+  Int_t   GetTrainMomBin() const {return fTrainMomBin;};
 
   Bool_t  PostProcess();
 

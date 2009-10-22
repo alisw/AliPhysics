@@ -36,31 +36,19 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <TClonesArray.h>
 #include <TObjArray.h>
-#include <TProfile.h>
-#include <TH1.h>
 #include <TH1F.h>
-#include <TFile.h>
-#include "AliTRDtracker.h"
-#include "TTreeStream.h"
+#include <TTreeStream.h>
 
-#include "AliPID.h"
 #include "AliESDtrack.h"
-#include "AliTrackReference.h"
 #include "AliExternalTrackParam.h"
-#include "AliTracker.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
 #include "AliTRDtrackerV1.h"
 #include "AliTrackPointArray.h"
-//#include "AliMagFMaps.h"
-#include "AliTRDcluster.h"
-#include "AliAnalysisManager.h"
 
-#include "Cal/AliTRDCalPID.h"
-#include "AliTRDgeometry.h"
 #include "AliTRDmultiplicity.h"
+#include "AliTRDgeometry.h"
 #include "info/AliTRDtrackInfo.h"
 
 ClassImp(AliTRDmultiplicity)
@@ -108,9 +96,9 @@ void AliTRDmultiplicity::Exec(Option_t *)
   ULong_t status;
   AliTRDtrackInfo     *track = 0x0;
   AliExternalTrackParam *esd = 0x0;
-  AliTRDtrackV1 *TRDtrack = 0x0;
+  AliTRDtrackV1 *trackTRD = 0x0;
   Double_t x_anode[AliTRDgeometry::kNlayer] = {300.2, 312.8, 325.4, 338.0, 350.6, 363.2}; // Take the default X0
-  Int_t stand_alone=1;
+  Int_t standAlone=1;
   fEventCounter++;
 
 
@@ -122,70 +110,70 @@ void AliTRDmultiplicity::Exec(Option_t *)
     AliTrackPoint points[6];
     Float_t xyz[3];
     memset(xyz, 0, sizeof(Float_t) * 3);
-    Float_t tracklet_x[6];
-    Float_t tracklet_y[6];
-    Float_t tracklet_z[6];
+    Float_t trackletX[6];
+    Float_t trackletY[6];
+    Float_t trackletZ[6];
     for(Int_t a=0;a<6;a++)
     {
         xyz[0] = x_anode[a];
         points[a].SetXYZ(xyz);
-        tracklet_x[a]=-1000;
-        tracklet_y[a]=-1000;
-        tracklet_z[a]=-1000;
+        trackletX[a]=-1000;
+        trackletY[a]=-1000;
+        trackletZ[a]=-1000;
     }
-    Int_t det_tracklet=600;
+    Int_t detTracklet=600;
 
 
 
     // TRD standalone
     if(((status&AliESDtrack::kTRDout)>0) && !((status&AliESDtrack::kTRDin)>0))
     {
-        TRDtrack = track->GetTrack();
+        trackTRD = track->GetTrack();
 
-        if(TRDtrack)
+        if(trackTRD)
         {
             AliTRDseedV1 *tracklet = 0x0;
-            Int_t counter_tracklet=0;
+            Int_t counterTracklet=0;
             for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++)
             {
-                tracklet = TRDtrack->GetTracklet(itl);
+                tracklet = trackTRD->GetTracklet(itl);
                 if(tracklet)
                 {
                     if(tracklet->IsOK())
                     {
-                        counter_tracklet++;
-                        det_tracklet=tracklet->GetDetector();
+                        counterTracklet++;
+                        detTracklet=tracklet->GetDetector();
                         //printf("%i %f %f \n",itl,tracklet->GetYfit(0),tracklet->GetZfit(0));
-                        tracklet_x[itl]=tracklet->GetX0();
-                        tracklet_y[itl]=tracklet->GetYfit(0);
-                        tracklet_z[itl]=tracklet->GetZfit(0);
+                        trackletX[itl]=tracklet->GetX0();
+                        trackletY[itl]=tracklet->GetYfit(0);
+                        trackletZ[itl]=tracklet->GetZfit(0);
                     }
                 }
             }
             // this cut is needed otherwise the order of tracklets in the fit function is not correct
-            if(counter_tracklet==AliTRDgeometry::kNlayer) AliTRDtrackerV1::FitRiemanTilt(const_cast<AliTRDtrackV1 *>(TRDtrack), 0x0, kTRUE, counter_tracklet, points);
+            if(counterTracklet==AliTRDgeometry::kNlayer) AliTRDtrackerV1::FitRiemanTilt(const_cast<AliTRDtrackV1 *>(trackTRD), 0x0, kTRUE, counterTracklet, points);
             else continue;
 
             if(fDebugLevel>=1){
               for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
-                //printf("---------------------------------------- %i %i %f %f %f \n",counter_tracklet,il,points[il].GetX(),points[il].GetY(),points[il].GetZ());
-                Double_t point_x=points[il].GetX();
-                Double_t point_y=points[il].GetY();
-                Double_t point_z=points[il].GetZ();
+                //printf("---------------------------------------- %i %i %f %f %f \n",counterTracklet,il,points[il].GetX(),points[il].GetY(),points[il].GetZ());
+                Double_t pointX=points[il].GetX();
+                Double_t pointY=points[il].GetY();
+                Double_t pointZ=points[il].GetZ();
 
 
                 (*fDebugStream)   << "TrackletsinTRD"
-                    << "standalone=" << stand_alone
+                    << "standalone=" << standAlone
                     << "eventcounter=" << fEventCounter
                     << "layer="     << il
-                    << "dettracklet=" << det_tracklet
-                    << "xtracklet=" << tracklet_x[il]
-                    << "xtrack="    << point_x
-                    << "ytracklet=" << tracklet_y[il]
-                    << "ytrack="    << point_y
-                    << "ztracklet=" << tracklet_z[il]
-                    << "ztrack="    << point_z
-                    << "num_tracklets=" << counter_tracklet
+                    << "dettracklet=" << detTracklet
+                    << "xtracklet=" << trackletX[il]
+                    << "xtrack="    << pointX
+                    << "ytracklet=" << trackletY[il]
+                    << "ytrack="    << pointY
+                    << "ztracklet=" << trackletZ[il]
+                    << "ztrack="    << pointZ
+                    << "num_tracklets=" << counterTracklet
                     << "\n";
 
               }
@@ -199,7 +187,7 @@ void AliTRDmultiplicity::Exec(Option_t *)
     if((track->GetTPCncls())<40) continue;
     // missing TPC propagation
     if(!(status&AliESDtrack::kTPCout)) continue;
-    stand_alone=0;
+    standAlone=0;
 
     esd = track->GetESDinfo()->GetOuterParam();
     // calculate sector - does not matter if track ends in TPC or TRD - sector number independent
@@ -223,20 +211,20 @@ void AliTRDmultiplicity::Exec(Option_t *)
     // only these sectors have a TRD detector at the moment
    if(fSector==0||fSector==8||fSector==9||fSector==17)
     {
-        TRDtrack = track->GetTrack();
-        if(!TRDtrack) continue;
+        trackTRD = track->GetTrack();
+        if(!trackTRD) continue;
         AliTRDseedV1 *tracklet = 0x0;
-        Int_t counter_tracklet=0;
+        Int_t counterTracklet=0;
 
 
         for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
-            tracklet = TRDtrack->GetTracklet(itl);
+            tracklet = trackTRD->GetTracklet(itl);
             if(!tracklet || !tracklet->IsOK()) continue;
-            counter_tracklet++;
-            det_tracklet=tracklet->GetDetector();
-            tracklet_x[itl]=tracklet->GetX0();
-            tracklet_y[itl]=tracklet->GetYfit(0);
-            tracklet_z[itl]=tracklet->GetZfit(0);
+            counterTracklet++;
+            detTracklet=tracklet->GetDetector();
+            trackletX[itl]=tracklet->GetX0();
+            trackletY[itl]=tracklet->GetYfit(0);
+            trackletZ[itl]=tracklet->GetZfit(0);
 
             /*
             AliTRDcluster *c = 0x0;
@@ -259,9 +247,9 @@ void AliTRDmultiplicity::Exec(Option_t *)
 
         } // loop over tracklets ends
 
-        if(counter_tracklet==AliTRDgeometry::kNlayer)
+        if(counterTracklet==AliTRDgeometry::kNlayer)
         {
-            AliTRDtrackerV1::FitRiemanTilt(const_cast<AliTRDtrackV1 *>(TRDtrack), 0x0, kTRUE, counter_tracklet, points);
+            AliTRDtrackerV1::FitRiemanTilt(const_cast<AliTRDtrackV1 *>(trackTRD), 0x0, kTRUE, counterTracklet, points);
         }
         else continue;
 
@@ -269,23 +257,23 @@ void AliTRDmultiplicity::Exec(Option_t *)
 
         if(fDebugLevel>=1){
           for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
-            //printf("---------------------------------------- %i %i %f %f %f \n",counter_tracklet,il,points[il].GetX(),points[il].GetY(),points[il].GetZ());
-            Double_t point_x=points[il].GetX();
-            Double_t point_y=points[il].GetY();
-            Double_t point_z=points[il].GetZ();
+            //printf("---------------------------------------- %i %i %f %f %f \n",counterTracklet,il,points[il].GetX(),points[il].GetY(),points[il].GetZ());
+            Double_t pointX=points[il].GetX();
+            Double_t pointY=points[il].GetY();
+            Double_t pointZ=points[il].GetZ();
             
             (*fDebugStream)   << "TrackletsinTRD"
-                << "standalone=" << stand_alone
+                << "standalone=" << standAlone
                 << "eventcounter=" << fEventCounter
                 << "layer="     << il
-                << "dettracklet=" << det_tracklet
-                << "xtracklet=" << tracklet_x[il]
-                << "xtrack="    << point_x
-                << "ytracklet=" << tracklet_y[il]
-                << "ytrack="    << point_y
-                << "ztracklet=" << tracklet_z[il]
-                << "ztrack="    << point_z
-                << "num_tracklets=" << counter_tracklet
+                << "dettracklet=" << detTracklet
+                << "xtracklet=" << trackletX[il]
+                << "xtrack="    << pointX
+                << "ytracklet=" << trackletY[il]
+                << "ytrack="    << pointY
+                << "ztracklet=" << trackletZ[il]
+                << "ztrack="    << pointZ
+                << "num_tracklets=" << counterTracklet
                 << "\n";
           }
         }
