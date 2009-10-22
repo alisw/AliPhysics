@@ -135,8 +135,13 @@ private:
    */
   void AddDigit(AliHLTPHOSChannelDataStruct* channelData, UShort_t* channelCoordinates, Float_t* localCoordinates)
   {
-    fDigitStructPtr->fX = localCoordinates[0];
-    fDigitStructPtr->fZ = localCoordinates[1];
+
+    fDigitStructPtr->fX = channelCoordinates[0];
+    fDigitStructPtr->fZ = channelCoordinates[1];
+
+    fDigitStructPtr->fLocX = localCoordinates[0];
+    fDigitStructPtr->fLocZ = localCoordinates[1];
+
     if(channelCoordinates[2] == HIGHGAIN)
       {
 	fDigitStructPtr->fEnergy = channelData->fEnergy*fHighGainFactors[channelCoordinates[0]][channelCoordinates[1]];

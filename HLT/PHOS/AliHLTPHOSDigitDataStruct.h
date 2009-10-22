@@ -48,8 +48,14 @@ struct AliHLTPHOSDigitDataStruct
   /** The x coordinate */
   Float_t fX;
 
-  /** The x coordinate */
+  /** The z coordinate */
   Float_t fZ;
+
+  /** The local x coordinate */
+  Float_t fLocX;
+
+  /** The local z coordinate */
+  Float_t fLocZ;
 
   /** The module number */
   Int_t fModule;
