@@ -18,6 +18,7 @@ class AliTPCcalibDB;
 class AliTPCCalPad;
 class AliTPCmapper;
 class AliTPCCalibRaw;
+class TGraph;
 
 class AliTPCcalibDButil : public TObject
 {
@@ -81,6 +82,13 @@ public:
   void UpdatePulserOutlierMap();
   void UpdateRefPulserOutlierMap();
   void PulserOutlierMap(AliTPCCalPad *pulOut, const AliTPCCalPad *pulT, const AliTPCCalPad *pulQ);
+
+  //
+  // graph tools
+  //
+  static Double_t  GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Double_t deltaT=86400, Double_t deltaTLaser=3600, Int_t valType=0);
+  static Double_t  GetVDriftTPC(Int_t run, Int_t timeStamp, Double_t deltaT=86400, Double_t deltaTLaser=3600, Int_t valType=0);
+  static Int_t     GetNearest(TGraph *graph, Double_t xref, Double_t &dx, Double_t &y);
 private:
   AliTPCcalibDB *fCalibDB;            //pointer to calibDB object
   AliTPCCalPad  *fPadNoise;           //noise information

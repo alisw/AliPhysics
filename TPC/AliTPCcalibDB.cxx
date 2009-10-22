@@ -87,6 +87,7 @@
 #include <AliSplineFit.h>
 
 #include "AliTPCcalibDB.h"
+#include "AliTPCcalibDButil.h"
 #include "AliTPCAltroMapping.h"
 #include "AliTPCExB.h"
 
@@ -1556,7 +1557,7 @@ Bool_t AliTPCcalibDB::CreateRefFile(Int_t run, const char* filename)
 
 
 
-Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t /*mode*/){
+Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_t /*side*/, Int_t mode){
   //
   // Get time dependent drift velocity correction
   // multiplication factor        vd = vdnom *(1+vdriftcorr)
@@ -1568,27 +1569,17 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_
   //
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
-  if (run<=0 && fTransform) run = fTransform->GetCurrentRunNumber();
-  UpdateRunInformations(run,kFALSE);
-  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
-  if (!array) return 0;
-  TGraphErrors *laserA= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
-  TGraphErrors *laserC= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_C");
-  
-  Double_t result=0;
-  if (laserA && laserC){
-   result= (laserA->Eval(timeStamp)+laserC->Eval(timeStamp))*0.5;
+  Double_t result;
+  // mode TPC crossing and laser 
+  if (mode==1) {
+    result=AliTPCcalibDButil::GetVDriftTPC(run,timeStamp);
+    
   }
-  if (laserA && side==0){
-    result = (laserA->Eval(timeStamp));
-  }
-  if (laserC &&side==1){
-    result = (laserC->Eval(timeStamp));
-  }
+
   return result;
 }
 
-Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t /*mode*/){
+Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t /*side*/, Int_t mode){
   //
   // Get time dependent time 0 (trigger delay in cm) correction
   // additive correction        time0 = time0+ GetTime0CorrectionTime
@@ -1601,30 +1592,11 @@ Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t
   //
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
-  if (run<=0 && fTransform) run = fTransform->GetCurrentRunNumber();
-  UpdateRunInformations(run,kFALSE);
-  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
-  if (!array) return 0;
-  TGraphErrors *laserA= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
-  TGraphErrors *laserC= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_C");
-  
-  Double_t lresult=0;
-  if (laserA && laserC){
-   lresult= (laserA->Eval(timeStamp)+laserC->Eval(timeStamp))*0.5;
-  }
-  if (laserA && side==0){
-    lresult = (laserA->Eval(timeStamp));
-  }
-  if (laserC &&side==1){
-    lresult = (laserC->Eval(timeStamp));
-  }
-  TGraphErrors *cosmic =(TGraphErrors*)array->FindObject("TGRAPHERRORS_MEAN_VDRIFT_COSMICS_ALL");
-  if (cosmic){
-    Double_t cresult =cosmic->Eval(timeStamp);
-    Double_t result  =(cresult-lresult)*fParam->GetZLength();
-    return result;
-  }
-  return 0;
+  Double_t result=0;
+  if (mode==1) result=AliTPCcalibDButil::GetTriggerOffsetTPC(run,timeStamp);    
+  result  *=fParam->GetZLength();
+
+  return result;
 
 }
 

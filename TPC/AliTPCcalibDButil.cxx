@@ -40,6 +40,7 @@
 #include "AliTPCmapper.h"
 #include "AliTPCParam.h"
 #include "AliTPCCalibRaw.h"
+#include "TGraphErrors.h"
 
 #include "AliTPCcalibDButil.h"
 #include "AliTPCPreprocessorOnline.h"
@@ -275,7 +276,7 @@ void AliTPCcalibDButil::ProcessCEgraphs(TVectorD &vecTEntries, TVectorD &vecTMea
       values.ResizeTo(npoints);
       Int_t nused =0;
       for (Int_t ipoint=0; ipoint<npoints; ipoint++){
-        if (gr->GetY()[ipoint]>500 && gr->GetY()[ipoint]<1000 ){
+        if (gr->GetY()[ipoint]>10 && gr->GetY()[ipoint]<500 ){
           values[nused]=gr->GetY()[ipoint];
           nused++;
         }
@@ -1265,5 +1266,144 @@ AliTPCCalPad *AliTPCcalibDButil::CreatePadTime0CE(TVectorD &fitResultsA, TVector
   delete padCEDiff;
   delete padCEFitGY;
   return padCE;
+}
+
+
+
+
+
+Int_t AliTPCcalibDButil::GetNearest(TGraph *graph, Double_t xref, Double_t &dx, Double_t &y){
+  //
+  // find the closest point to xref  in x  direction
+  // return dx and value 
+  Int_t index=0;
+  index = TMath::BinarySearch(graph->GetN(), graph->GetX(),xref);
+  if (index<0) index=0;
+  if (index>=graph->GetN()-1) index=graph->GetN()-2;
+  if (xref-graph->GetX()[index]>graph->GetX()[index]-xref) index++;
+  dx = xref-graph->GetX()[index];
+  y  = graph->GetY()[index];
+  return index;
+}
+
+
+Double_t  AliTPCcalibDButil::GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Double_t deltaT, Double_t deltaTLaser, Int_t valType){
+  //
+  // Get the correction of the trigger offset
+  // combining information from the laser track calibration 
+  // and from cosmic calibration
+  //
+  // run       - run number
+  // timeStamp - tim stamp in seconds
+  // deltaT    - integration period to calculate offset 
+  // deltaTLaser -max validity of laser data
+  // valType   - 0 - median, 1- mean
+  // 
+  // Integration vaues are just recomendation - if not possible to get points
+  // automatically increase the validity by factor 2  
+  // (recursive algorithm until one month of data taking)
+  //
+  //
+  const Float_t kLaserCut=0.0005;
+  const Int_t   kMaxPeriod=3600*24*30*3; // 3 month max
+  const Int_t   kMinPoints=20;
+  //
+  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  if (!array) {
+    AliTPCcalibDB::Instance()->UpdateRunInformations(run,kFALSE); 
+  }
+  array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  if (!array) return 0;
+  //
+  TGraphErrors *laserA[3]={0,0,0};
+  TGraphErrors *laserC[3]={0,0,0};
+  TGraphErrors *cosmicAll=0;
+  laserA[1]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
+  laserC[1]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_C");
+  cosmicAll =(TGraphErrors*)array->FindObject("TGRAPHERRORS_MEAN_VDRIFT_COSMICS_ALL");
+  //
+  //
+  if (!cosmicAll) return 0;
+  Int_t nmeasC=cosmicAll->GetN();
+  Float_t *tdelta = new Float_t[nmeasC];
+  Int_t nused=0;
+  for (Int_t i=0;i<nmeasC;i++){
+    if (TMath::Abs(cosmicAll->GetX()[i]-timeStamp)>deltaT) continue;
+    Float_t ccosmic=cosmicAll->GetY()[i];
+    Double_t yA=0,yC=0,dA=0,dC=0;
+    if (laserA[1]) GetNearest(laserA[1], cosmicAll->GetX()[i],dA,yA);
+    if (laserC[1]) GetNearest(laserC[1], cosmicAll->GetX()[i],dC,yC);
+    //yA=laserA[1]->Eval(cosmicAll->GetX()[i]);
+    //yC=laserC[1]->Eval(cosmicAll->GetX()[i]);
+    //
+    if (TMath::Sqrt(dA*dA+dC*dC)>deltaTLaser) continue;
+    Float_t claser=0;
+    if (TMath::Abs(yA-yC)<kLaserCut) {
+      claser=(yA-yC)*0.5;
+    }else{
+      if (i%2==0)  claser=yA;
+      if (i%2==1)  claser=yC;
+    }
+    tdelta[nused]=ccosmic-claser;
+    nused++;
+  }
+  if (nused<kMinPoints &&deltaT<kMaxPeriod) return  AliTPCcalibDButil::GetTriggerOffsetTPC(run, timeStamp, deltaT*2,deltaTLaser);
+  Double_t median = TMath::Median(nused,tdelta);
+  Double_t mean  = TMath::Mean(nused,tdelta);
+  delete tdelta;
+  return (valType==0) ? median:mean;
+}
+
+Double_t  AliTPCcalibDButil::GetVDriftTPC(Int_t run, Int_t timeStamp, Double_t deltaT, Double_t deltaTLaser, Int_t valType){
+  //
+  // Get the correction of the drift velocity
+  // combining information from the laser track calibration 
+  // and from cosmic calibration
+  //
+  // run       - run number
+  // timeStamp - tim stamp in seconds
+  // deltaT    - integration period to calculate time0 offset 
+  // deltaTLaser -max validity of laser data
+  // valType   - 0 - median, 1- mean
+  // 
+  // Integration vaues are just recomendation - if not possible to get points
+  // automatically increase the validity by factor 2  
+  // (recursive algorithm until one month of data taking)
+  //
+  //
+  //
+  TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  if (!array) {
+    AliTPCcalibDB::Instance()->UpdateRunInformations(run,kFALSE); 
+  }
+  array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+  if (!array) return 0;
+  TGraphErrors *cosmicAll=0;
+  cosmicAll =(TGraphErrors*)array->FindObject("TGRAPHERRORS_MEAN_VDRIFT_COSMICS_ALL");
+  if (!cosmicAll) return 0;
+  Double_t t0= AliTPCcalibDButil::GetTriggerOffsetTPC(run,timeStamp, deltaT, deltaTLaser,valType);
+  Double_t vcosmic=  cosmicAll->Eval(timeStamp);
+  if (timeStamp>cosmicAll->GetX()[cosmicAll->GetN()-1])  vcosmic=timeStamp>cosmicAll->GetY()[cosmicAll->GetN()-1];
+  if (timeStamp<cosmicAll->GetX()[0])  vcosmic=cosmicAll->GetY()[0];
+  return  vcosmic+t0;
+
+  /*
+    Example usage:
+    
+    Int_t run=89000
+    TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
+    cosmicAll =(TGraphErrors*)array->FindObject("TGRAPHERRORS_MEAN_VDRIFT_COSMICS_ALL"); 
+    laserA=(TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
+    //
+    Double_t *yvd= new Double_t[cosmicAll->GetN()];
+    Double_t *yt0= new Double_t[cosmicAll->GetN()];
+    for (Int_t i=0; i<cosmicAll->GetN();i++) yvd[i]=AliTPCcalibDButil::GetVDriftTPC(run,cosmicAll->GetX()[i]);
+    for (Int_t i=0; i<cosmicAll->GetN();i++) yt0[i]=AliTPCcalibDButil::GetTriggerOffsetTPC(run,cosmicAll->GetX()[i]);
+
+    TGraph *pcosmicVd=new TGraph(cosmicAll->GetN(), cosmicAll->GetX(), yvd);
+    TGraph *pcosmicT0=new TGraph(cosmicAll->GetN(), cosmicAll->GetX(), yt0);
+
+  */
+  
 }
 

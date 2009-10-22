@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -52,9 +51,15 @@ Comments to be written here:
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool;
-  TChain * chainTime = tool.MakeChain("time.txt","timeInfo",0,10200);
+  AliXRDPROOFtoolkit::FilterList("timeitstpc.txt","* itstpc",1) 
+  AliXRDPROOFtoolkit::FilterList("time.txt","* trackInfo",1) 
+  AliXRDPROOFtoolkit::FilterList("timelaser.txt","* laserInfo",1) 
+
+  TChain * chainTPCITS = tool.MakeChainRandom("timeitstpc.txt.Good","itstpc",0,10000); 
+  TChain * chainTPCTOF = tool.MakeChainRandom("time.txt","pointMatch",0,10000); 
+  TChain * chainTime = tool.MakeChainRandom("time.txt.Good","trackInfo",0,10000);
+  TChain * chainLaser = tool.MakeChainRandom("timelaser.txt.Good","laserInfo",0,10000);
   chainTime->Lookup();
-  TChain * chainLaser = tool.MakeChain("time.txt.Good","laserInfo",0,10200);
   chainLaser->Lookup();
 */
 
@@ -74,7 +79,6 @@ Comments to be written here:
 #include "TProfile.h"
 #include "TGraphErrors.h"
 #include "TCanvas.h"
-
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
 #include "AliESDVertex.h"
@@ -90,6 +94,7 @@ Comments to be written here:
 #include "AliLog.h"
 
 #include "AliTPCcalibTime.h"
+#include "AliRelAlignerKalman.h"
 
 #include "TTreeStream.h"
 #include "AliTPCTracklet.h"
@@ -98,6 +103,9 @@ Comments to be written here:
 #include "AliTPCcalibLaser.h"
 #include "AliDCSSensorArray.h"
 #include "AliDCSSensor.h"
+
+#include "TDatabasePDG.h"
+#include "AliTrackPointArray.h"
 
 ClassImp(AliTPCcalibTime)
 
@@ -112,6 +120,9 @@ AliTPCcalibTime::AliTPCcalibTime()
    fCutMinDir(-0.99),  // direction vector products
    fCutTracks(10),
    fArrayDz(0),          //NEW! Tmap of V drifts for different triggers
+   fAlignITSTPC(0),      //alignemnt array ITS TPC match
+   fAlignTRDTPC(0),      //alignemnt array TRD TPC match 
+   fAlignTOFTPC(0),      //alignemnt array TOF TPC match
    fTimeBins(0),
    fTimeStart(0),
    fTimeEnd(0),
@@ -148,6 +159,9 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
    fCutMinDir(-0.99),    // direction vector products
    fCutTracks(10),
    fArrayDz(0),            //Tmap of V drifts for different triggers
+   fAlignITSTPC(0),      //alignemnt array ITS TPC match
+   fAlignTRDTPC(0),      //alignemnt array TRD TPC match 
+   fAlignTOFTPC(0),      //alignemnt array TOF TPC match
    fTimeBins(0),
    fTimeStart(0),
    fTimeEnd(0),
@@ -222,6 +236,10 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   fXmaxVdrift[3] = fRunEnd;
 
   fArrayDz=new TObjArray();
+  fAlignITSTPC = new TObjArray;      //alignemnt array ITS TPC match
+  fAlignTRDTPC = new TObjArray;      //alignemnt array ITS TPC match
+  fAlignTOFTPC = new TObjArray;      //alignemnt array ITS TPC match
+
   // fArrayDz->AddLast(fHistVdriftLaserA[0]);
 //   fArrayDz->AddLast(fHistVdriftLaserA[1]);
 //   fArrayDz->AddLast(fHistVdriftLaserA[2]);
@@ -273,6 +291,9 @@ AliTPCcalibTime::~AliTPCcalibTime(){
       fCosmiMatchingHisto[i]=NULL;
     }
   }
+  fAlignITSTPC->Delete();
+  fAlignTRDTPC->Delete();
+  fAlignTOFTPC->Delete();
 }
 
 Bool_t AliTPCcalibTime::IsLaser(AliESDEvent */*event*/){
@@ -377,7 +398,7 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
 	"pt1="<<ptrelative1<<
 	"temp0="<<temp0<<
 	"temp1="<<temp1<<
-	"vecGoofie.=<<"<<&vecGoofie<<
+	"vecGoofie.="<<&vecGoofie<<
 	//laser
 	"rejectA="<<isReject[0]<<
 	"rejectC="<<isReject[1]<<
@@ -497,6 +518,8 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
     if (!trackOut) continue;
     
     AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
+    if (friendTrack) ProcessAlignITS(track,friendTrack);
+    if (friendTrack) ProcessAlignTOF(track,friendTrack);
     TObject *calibObject;
     AliTPCseed *seed = 0;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
@@ -888,3 +911,204 @@ chainDrift->Draw("p1.fP[4]+p0.fP[4]>>his(100,-0.2,0.2)","isPair")
   RMS  ~ 0.036  ~ 0.03773  --> 0.2
 */
 
+
+void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *friendTrack){
+  //
+  // Process track
+  // Update TPC-ITS alignment
+  //
+  const Int_t    kMinTPC  = 80;
+  const Int_t    kMinITS  = 3;
+  const Double_t kMinZ    = 10;
+  const Double_t kMaxDy   = 2;
+  const Double_t kMaxAngle= 0.02;
+  //
+  Int_t dummycl[1000];
+  if (track->GetITSclusters(dummycl)<kMinITS) return;  // minimal amount of clusters
+  if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
+  //
+  if (!friendTrack->GetITSOut()) return;
+  if (!track->GetInnerParam())   return;
+  if (!track->GetOuterParam())   return;
+  // exclude crossing track
+  if (track->GetOuterParam()->GetZ()*track->GetInnerParam()->GetZ()<0)   return;
+  if (TMath::Abs(track->GetInnerParam()->GetZ())<kMinZ)   return;
+  //
+  AliExternalTrackParam &pTPC=(AliExternalTrackParam &)(*(track->GetInnerParam()));
+  AliExternalTrackParam pITS(*(friendTrack->GetITSOut()));
+  //
+  //
+  //
+  Int_t htime = fTime/3600; //time in hours
+  if (fAlignITSTPC->GetEntries()<htime){
+    fAlignITSTPC->Expand(htime*2+20);
+  }
+  AliRelAlignerKalman* align =  (AliRelAlignerKalman*)fAlignITSTPC->At(htime);
+  if (!align){
+    align=new AliRelAlignerKalman(); 
+    align->SetOutRejSigma(2.);
+    //align->SetRejectOutliers(kFALSE);
+    align->SetMagField(fMagF); 
+    fAlignITSTPC->AddAt(align,htime);
+  }
+  pITS.Rotate(pTPC.GetAlpha());
+  pITS.PropagateTo(pTPC.GetX(),fMagF);
+  if (TMath::Abs(pITS.GetY()-pTPC.GetY())>kMaxDy) return;
+  if (TMath::Abs(pITS.GetSnp()-pTPC.GetSnp())>kMaxAngle) return;
+  if (TMath::Abs(pITS.GetTgl()-pTPC.GetTgl())>kMaxAngle) return;
+  align->AddTrackParams(&pITS,&pTPC);
+  align->SetTimeStamp(fTime);
+  Int_t nupdates=align->GetNUpdates();
+  //  align->SetRunNumber(fRun );
+  static Int_t entry=-1;
+  entry++;
+  align->SetOutRejSigma(1.+1./Double_t(nupdates));
+  TTreeSRedirector *cstream = GetDebugStreamer();  
+  if (cstream && align->GetState() && align->GetState()->GetNrows()>2 ){
+    TTimeStamp tstamp(fTime);
+    Float_t valuePressure0 = AliTPCcalibDB::GetPressure(tstamp,fRun,0);
+    Float_t valuePressure1 = AliTPCcalibDB::GetPressure(tstamp,fRun,1);
+    Double_t ptrelative0   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
+    Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
+    Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
+    Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
+    TVectorD vecGoofie(20);
+    AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
+    if (goofieArray){
+      for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
+	AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
+	if (gsensor) vecGoofie[isensor]=gsensor->GetValue(tstamp);
+      }
+    }
+    TVectorD gpTPC(3), gdTPC(3);
+    TVectorD gpITS(3), gdITS(3);
+    pTPC.GetXYZ(gpTPC.GetMatrixArray());
+    pTPC.GetDirection(gdTPC.GetMatrixArray());
+    pITS.GetXYZ(gpITS.GetMatrixArray());
+    pITS.GetDirection(gdITS.GetMatrixArray());
+    (*cstream)<<"itstpc"<<
+      "run="<<fRun<<              //  run number
+      "event="<<fEvent<<          //  event number
+      "time="<<fTime<<            //  time stamp of event
+      "trigger="<<fTrigger<<      //  trigger
+      "mag="<<fMagF<<             //  magnetic field
+      // Environment values
+      "press0="<<valuePressure0<<
+      "press1="<<valuePressure1<<
+      "pt0="<<ptrelative0<<
+      "pt1="<<ptrelative1<<
+      "temp0="<<temp0<<
+      "temp1="<<temp1<<
+      "vecGoofie.="<<&vecGoofie<<
+      "entry="<<entry<<  // current entry
+      //
+      "a.="<<align<<     // current alignment
+      "pITS.="<<&pITS<<  // track param ITS
+      "pTPC.="<<&pTPC<<  // track param TPC
+      "gpTPC.="<<&gpTPC<<
+      "gdTPC.="<<&gdTPC<<
+      "gpITS.="<<&gpITS<<
+      "gdITS.="<<&gdITS<<
+      "\n";
+  }
+  
+}
+
+
+void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *friendTrack){
+  //
+  //process TOF-TPC  alignment
+  //
+  Int_t kminNcl=80;
+  Float_t kMaxDy=6;
+  Float_t kMaxDz=10;
+  if (track->GetTPCNcls()<kminNcl) return;
+  if (track->GetOuterParam()==0) return;
+  if (track->GetInnerParam()==0) return;
+  if (track->GetTOFsignal()<=0)  return;
+  //
+  AliExternalTrackParam *paramOut = new AliExternalTrackParam(*(track->GetOuterParam()));
+  AliExternalTrackParam *param=0;
+  const AliTrackPointArray *points=friendTrack->GetTrackPointArray();
+  if (!points) return;
+  Int_t npoints = points->GetNPoints();
+  AliTrackPoint point;
+  //Double_t alpha=
+  Double_t mass = TDatabasePDG::Instance()->GetParticle("mu+")->Mass();
+  TTreeSRedirector * cstream =  GetDebugStreamer();
+  //
+  //
+  //
+  for (Int_t ipoint=0;ipoint<npoints;ipoint++){
+    //
+    points->GetPoint(point,ipoint);
+    Float_t xyz[3];
+    point.GetXYZ(xyz);
+    Double_t r=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+    if (r<300)  continue;
+    if (r>400)  continue;
+    param=paramOut;
+    if (!param) continue;
+    AliTracker::PropagateTrackToBxByBz(param,r,mass,2.,kTRUE);
+    AliTracker::PropagateTrackToBxByBz(param,r,mass,0.1,kTRUE);    
+    AliTrackPoint lpoint = point.Rotate(param->GetAlpha());
+    param->PropagateTo(lpoint.GetX(),fMagF);
+    //
+    //
+    // this is ugly - we need AliCluster constructor
+    //
+    AliExternalTrackParam &pTPC=*param;
+    AliExternalTrackParam pTOF(*param);
+    ((Double_t*)pTOF.GetParameter())[0] =lpoint.GetY();
+    ((Double_t*)pTOF.GetParameter())[1] =lpoint.GetZ();
+    pTOF.ResetCovariance(20);
+    ((Double_t*)pTOF.GetCovariance())[0]+=3.*3.;
+    ((Double_t*)pTOF.GetCovariance())[2]+=3.*3.;
+    if (TMath::Abs(pTOF.GetY()-pTPC.GetY())>kMaxDy) continue;
+    if (TMath::Abs(pTOF.GetZ()-pTPC.GetZ())>kMaxDz) continue;
+    //
+    Int_t htime = fTime/3600; //time in hours
+      
+    if (fAlignTOFTPC->GetEntries()<htime){
+      fAlignTOFTPC->Expand(htime*2+20);
+    }
+    AliRelAlignerKalman* align =  (AliRelAlignerKalman*)fAlignTOFTPC->At(htime);
+    if (!align){
+      align=new AliRelAlignerKalman(); 
+      align->SetOutRejSigma(2.);
+      //align->SetRejectOutliers(kFALSE);
+      align->SetMagField(fMagF); 
+      fAlignTOFTPC->AddAt(align,htime);
+    }
+    pTOF.Rotate(pTPC.GetAlpha());
+    pTOF.PropagateTo(pTPC.GetX(),fMagF);
+    align->AddTrackParams(&pTOF,&pTPC);
+    align->SetTimeStamp(fTime);
+    Int_t nupdates=align->GetNUpdates();
+    static Int_t entry=-1;
+    entry++;
+    align->SetOutRejSigma(1.+1./Double_t(nupdates));
+    
+    //
+    //
+    if (cstream) {
+      (*cstream) << "pointMatch" <<
+	"run="<<fRun<<              //  run number
+	"event="<<fEvent<<          //  event number
+	"time="<<fTime<<            //  time stamp of event
+	"trigger="<<fTrigger<<      //  trigger
+	"mag="<<fMagF<<             //  magnetic field
+	//
+	"a.="<<align<<     // current alignment	
+	"p.="<<&point<<
+	"lp.="<<&lpoint<<
+	"pTPC.="<<&pTPC<<
+	"pTOF.="<<&pTOF<<
+	"\n";
+    }
+
+
+
+  }
+  delete paramOut;
+}

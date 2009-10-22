@@ -42,6 +42,8 @@ public:
   Bool_t                 IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
   Bool_t                 IsCross(AliESDtrack *tr0, AliESDtrack *tr1);
   Bool_t                 IsSame (AliESDtrack *tr0, AliESDtrack *tr1);
+  void                   ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *friendTrack);
+  void                   ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *friendTrack);
 
   THnSparse*    GetHistVdriftLaserA(Int_t index=1){return fHistVdriftLaserA[index];};
   THnSparse*    GetHistVdriftLaserC(Int_t index=1){return fHistVdriftLaserC[index];};
@@ -83,7 +85,9 @@ private:
   // DELTA Z histo
 //  TMap*      fMapDz;			//Tmap of V drifts for different triggers
   TObjArray* fArrayDz;                  // array of DZ histograms for different triggers
-
+  TObjArray* fAlignITSTPC;              // alignemnt array ITS TPC match
+  TObjArray* fAlignTRDTPC;              // alignemnt array TRD TPC match
+  TObjArray* fAlignTOFTPC;              // alignemnt array TOF TPC match
   Int_t    fTimeBins;			//Bins time
   Double_t fTimeStart;			//Start time
   Double_t fTimeEnd;			//End time

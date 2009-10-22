@@ -251,7 +251,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   static Double_t time0corrTime=0;
   static Int_t    lastStampT=-1;
   //
-  if (lastStampT!=fCurrentTimeStamp){
+  if (lastStampT!=(Int_t)fCurrentTimeStamp){
     lastStampT=fCurrentTimeStamp;
     if(fCurrentRecoParam&&fCurrentRecoParam->GetUseDriftCorrectionTime()>0) {
       vdcorrectionTime = (1+AliTPCcalibDB::Instance()->
