@@ -133,10 +133,20 @@ Bool_t AliRawReaderMemory::ReadNextData(UChar_t*& data)
   while (fCount == 0) {
     if (!ReadHeader()) return kFALSE;
   }
+
+  if(fCount < 0){
+    Error("ReadNextData","Cannot read data, payload is negative");
+    return kFALSE;
+  }
+
   UInt_t currentPosition = fPosition;
   fPosition += fCount;
   fCount = 0;
 
+  if(fBuffers[fCurrent].GetBufferSize()-currentPosition<0){
+    Error("ReadNextData","Current position exceeds buffersize.");
+    return kFALSE;
+  }
   data = fBuffers[fCurrent].GetBuffer()+currentPosition;
   return kTRUE;
 }
