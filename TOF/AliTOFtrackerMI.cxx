@@ -173,9 +173,7 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
 	seed->GetTOFLabel(tlab);    
 	t->SetTOFLabel(tlab);
 	AliTOFtrack *track = new AliTOFtrack(*seed);
-	Float_t info[10];
 	Double_t times[10];
-	seed->GetTOFInfo(info);
 	seed->GetIntegratedTimes(times);
 	t->UpdateTrackParams(track,AliESDtrack::kTOFout);
 	t->SetIntegratedLength(seed->GetIntegratedLength());
@@ -183,6 +181,8 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
 	t->SetTOFsignalToT(seed->GetTOFsignalToT());
 	t->SetTOFCalChannel(seed->GetTOFCalChannel());
 	//
+	Float_t info[10];
+	seed->GetTOFInfo(info);
 	t->SetTOFInfo(info);
 	delete track;
       }
@@ -517,8 +517,16 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     //    Double_t tof2=25.*cgold->GetTDC()-350; // in ps
     Double_t tof2=AliTOFGeometry::TdcBinWidth()*cgold->GetTDC()+kTofOffset; // in ps
     Float_t tgamma = TMath::Sqrt(cgold->GetR()*cgold->GetR()+cgold->GetZ()*cgold->GetZ())/0.03;
-    Float_t info[11]={dist3D[igold][0],dist3D[igold][1],dist3D[igold][2],dist3D[igold][3],dist3D[igold][4],mintimedist[igold],
-		      -1,tgamma, qualityGold,cgold->GetQuality(),0};
+    Float_t info[10]={dist3D[igold][0],
+		      dist3D[igold][1],
+		      dist3D[igold][2],
+		      dist3D[igold][3],
+		      dist3D[igold][4],
+		      mintimedist[igold],
+		      -1,
+		      tgamma,
+		      qualityGold,
+		      cgold->GetQuality()};
     //    GetLinearDistances(trackTOFin,cgold,&info[6]);
     if (inonfake>=0){
       info[6] = inonfake;
@@ -654,15 +662,15 @@ Int_t AliTOFtrackerMI::FindClusterIndex(Double_t z) const {
   return m;
 }
 
-
-
+//_________________________________________________________________________
 Float_t AliTOFtrackerMI::GetLinearDistances(AliTOFtrack * track, AliTOFcluster *cluster, Float_t distances[5])
 {
   //
   // calclates distance between cluster and track
   // use linear aproximation
   //
-  const Float_t kRaddeg = 180/3.14159265358979312;
+  //const Float_t kRaddeg = 180/3.14159265358979312;
+  const Float_t kRaddeg = TMath::RadToDeg();
   //
   //  Float_t tiltangle  = fGeom->GetAngles(cluster->fdetIndex[1],cluster->fdetIndex[2])/kRaddeg;  //tiltangle  
   Int_t cind[5];
@@ -684,7 +692,7 @@ Float_t AliTOFtrackerMI::GetLinearDistances(AliTOFtrack * track, AliTOFcluster *
   Float_t phi = TMath::ATan2(cpos[1],cpos[0]);	
   if(phi<0) phi=2.*TMath::Pi()+phi;
   //  Get the local angle in the sector philoc
-  Float_t phiangle   = (Int_t (phi*kRaddeg/20.) + 0.5)*20./kRaddeg;
+  Float_t phiangle = (Int_t (phi*kRaddeg/20.) + 0.5)*20./kRaddeg;
   //
   Double_t v0[3];
   Double_t dir[3];
@@ -705,27 +713,27 @@ Float_t AliTOFtrackerMI::GetLinearDistances(AliTOFtrack * track, AliTOFcluster *
   temp    =  cpos[0]*cosphi+cpos[1]*sinphi;
   cpos[1] = -cpos[0]*sinphi+cpos[1]*cosphi;
   cpos[0] = temp;
-  temp    =  v0[0]*cosphi+v0[1]*sinphi;
+  temp  =  v0[0]*cosphi+v0[1]*sinphi;
   v0[1] = -v0[0]*sinphi+v0[1]*cosphi;
   v0[0] = temp;
   //  
   temp    =  cpos[0]*costh+cpos[2]*sinth;
   cpos[2] = -cpos[0]*sinth+cpos[2]*costh;
   cpos[0] = temp;
-  temp    =  v0[0]*costh+v0[2]*sinth;
-  v0[2]   = -v0[0]*sinth+v0[2]*costh;
-  v0[0]   = temp;
+  temp   =  v0[0]*costh+v0[2]*sinth;
+  v0[2]  = -v0[0]*sinth+v0[2]*costh;
+  v0[0]  = temp;
   //
   //
   //rotate direction vector
   //
-  temp    =  dir[0]*cosphi+dir[1]*sinphi;
+  temp   =  dir[0]*cosphi+dir[1]*sinphi;
   dir[1] = -dir[0]*sinphi+dir[1]*cosphi;
   dir[0] = temp;
   //
-  temp    =  dir[0]*costh+dir[2]*sinth;
-  dir[2]  = -dir[0]*sinth+dir[2]*costh;
-  dir[0]  = temp;
+  temp   =  dir[0]*costh+dir[2]*sinth;
+  dir[2] = -dir[0]*sinth+dir[2]*costh;
+  dir[0] = temp;
   //
   Float_t v3[3];
   Float_t k = (cpos[0]-v0[0])/dir[0];
@@ -742,7 +750,9 @@ Float_t AliTOFtrackerMI::GetLinearDistances(AliTOFtrack * track, AliTOFcluster *
   //
   // Debuging part of the matching
   //
-  if (track->GetLabel()==cluster->GetLabel(0) ||track->GetLabel()==cluster->GetLabel(1) ){
+  if (track->GetLabel()==cluster->GetLabel(0) ||
+      track->GetLabel()==cluster->GetLabel(1) ||
+      track->GetLabel()==cluster->GetLabel(2) ){
     TTreeSRedirector& cstream = *fDebugStreamer;
     Float_t tdc = cluster->GetTDC();
     cstream<<"Tracks"<<
@@ -760,8 +770,7 @@ Float_t AliTOFtrackerMI::GetLinearDistances(AliTOFtrack * track, AliTOFcluster *
   return distances[3];
 }
 
-
-
+//_________________________________________________________________________
 void    AliTOFtrackerMI::GetLikelihood(Float_t dy, Float_t dz, const Double_t *cov, AliTOFtrack * /*track*/, Float_t & py, Float_t &pz)
 {
   //

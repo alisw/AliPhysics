@@ -193,6 +193,12 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
 	t->SetTOFCalChannel(seed->GetTOFCalChannel());
 	Int_t tlab[3]; seed->GetTOFLabel(tlab);
 	t->SetTOFLabel(tlab);
+
+	Float_t info[10]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+	seed->GetTOFInfo(info);
+	t->SetTOFInfo(info);
+	AliDebug(2,Form(" distance=%f; residual in the pad reference frame: dX=%f, dZ=%f", info[0],info[1],info[2]));
+
 	AliTOFtrack *track = new AliTOFtrack(*seed);
 	t->UpdateTrackParams(track,AliESDtrack::kTOFout); // to be checked - AdC
 	delete track;
@@ -482,6 +488,18 @@ void AliTOFtrackerV1::MatchTracks( ){
     Float_t rawTime=AliTOFGeometry::TdcBinWidth()*bestCluster->GetTDCRAW()+kTimeOffset; // RAW time,in ps
     t->SetTOFsignalRaw(rawTime);
     t->SetTOFsignalDz(dzTW);
+
+
+    Float_t deltaY = trackTOFin->GetY()-bestCluster->GetY();
+
+    Float_t distR = (trackTOFin->GetX()-bestCluster->GetX())*
+      (trackTOFin->GetX()-bestCluster->GetX());
+    distR+=deltaY*deltaY;
+    distR+=dzTW*dzTW;
+    distR = TMath::Sqrt(distR);
+    Float_t info[10] = {distR, deltaY, dzTW,
+			0.,0.,0.,0.,0.,0.,0.};
+    t->SetTOFInfo(info);
 
     Int_t ind[5];
     ind[0]=bestCluster->GetDetInd(0);

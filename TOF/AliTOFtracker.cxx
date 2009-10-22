@@ -210,6 +210,11 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
 	Int_t tlab[3]; seed->GetTOFLabel(tlab);    
 	t->SetTOFLabel(tlab);
 
+	Float_t info[10]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+	seed->GetTOFInfo(info);
+	t->SetTOFInfo(info);
+	AliDebug(2,Form(" distance=%f; residual in the pad reference frame: dX=%f, dZ=%f", info[0],info[1],info[2]));
+
 	AliTOFtrack *track = new AliTOFtrack(*seed);
 	t->UpdateTrackParams(track,AliESDtrack::kTOFout); // to be checked - AdC
 	delete track;
@@ -226,6 +231,13 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
 			time[0], time[1], time[2], time[3], time[4]
 			)
 		 );
+
+	//Double_t info[10]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+	//seed->GetTOFInfo(info);
+	//t->SetTOFInfo(info);
+	t->GetTOFInfo(info);
+	AliDebug(2,Form(" (B)distance=%f; residual in the pad reference frame: dX=%f, dZ=%f", info[0],info[1],info[2]));
+
       }
     }
   }
@@ -370,6 +382,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   Int_t         index[kNfoundMax];
   Float_t        dist[kNfoundMax];
   Float_t       distZ[kNfoundMax];
+  Float_t       distY[kNfoundMax]; // delta(rhoXphi) // AdC
   Float_t       cxpos[kNfoundMax];
   Float_t       crecL[kNfoundMax];
   const Int_t kNclusterMax = 1000; // related to fN value
@@ -382,6 +395,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       index[ii] = -1;
       dist[ii] = 9999.;
       distZ[ii] = 9999.;
+      distY[ii] = 9999.;
       cxpos[ii] = 9999.;
       crecL[ii] = 0.;
     }
@@ -548,9 +562,18 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 	  distZ[nfound] = dist3d[2]; // Z distance in the RF of the
 				     // hit pad closest to the
 				     // reconstructed track
+	  distY[nfound] = dist3d[0]; // X distance in the RF of the
+				     // hit pad closest to the
+				     // reconstructed track
+				     // It corresponds to Y coordinate
+	                             // in tracking RF
 
+
+	  AliDebug(2,Form("   dist3dLoc[0] = %f --- distY[%d] = %f",
+			  dist3d[0],nfound,distY[nfound]));
 	  AliDebug(2,Form("   dist3dLoc[2] = %f --- distZ[%d] = %f",
 			  dist3d[2],nfound,distZ[nfound]));
+
 
 	  crecL[nfound] = trackPos[3][istep];
 	  index[nfound] = clind[i]; // store cluster id 	    
@@ -581,10 +604,14 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Float_t  xpos=0.;
     Float_t  mindist=1000.;
     Float_t  mindistZ=0.;
+    Float_t  mindistY=0.;
     for (Int_t iclus= 0; iclus<nfound;iclus++){
       if (dist[iclus]< mindist){
       	mindist = dist[iclus];
       	mindistZ = distZ[iclus]; // Z distance in the RF of the hit
+				 // pad closest to the reconstructed
+				 // track
+      	mindistY = distY[iclus]; // Y distance in the RF of the hit
 				 // pad closest to the reconstructed
 				 // track
       	xpos = cxpos[iclus];
@@ -650,6 +677,12 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Float_t rawTime=AliTOFGeometry::TdcBinWidth()*c->GetTDCRAW()+kTimeOffset; // RAW time,in ps
     t->SetTOFsignalRaw(rawTime);
     t->SetTOFsignalDz(mindistZ);
+
+    Float_t info[10] = {mindist,mindistY,mindistZ,
+			0.,0.,0.,0.,0.,0.,0.};
+    t->SetTOFInfo(info);
+    AliDebug(2,Form(" distance=%f; residual in the pad reference frame: dX=%f, dZ=%f", info[0],info[1],info[2]));
+
 
     Int_t ind[5];
     ind[0]=c->GetDetInd(0);
