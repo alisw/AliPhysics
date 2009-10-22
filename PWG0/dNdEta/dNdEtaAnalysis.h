@@ -33,7 +33,7 @@ public:
   enum { kVertexBinning = 1+2 }; // the first is for the whole vertex range, the others divide the vertex range
 
   dNdEtaAnalysis();
-  dNdEtaAnalysis(const Char_t* name, const Char_t* title, AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD);
+  dNdEtaAnalysis(const Char_t* name, const Char_t* title, AliPWG0Helper::AnalysisMode analysisMode = (AliPWG0Helper::AnalysisMode) (AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn));
   virtual ~dNdEtaAnalysis();
 
   dNdEtaAnalysis(const dNdEtaAnalysis &c);

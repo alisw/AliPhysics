@@ -122,6 +122,11 @@ Bool_t AliPWG0Helper::IsEventTriggered(ULong64_t triggerMask, Trigger trigger)
 
   switch (trigger)
   {
+    case kAcceptAll:
+    {
+      return kTRUE;
+      break;
+    }
     case kMB1:
     {
       if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
@@ -160,11 +165,11 @@ Bool_t AliPWG0Helper::TestVertex(const AliESDVertex* vertex, AnalysisMode analys
     // Checks if a vertex meets the needed quality criteria
 
   Float_t requiredZResolution = -1;
-  if (analysisMode == kSPD || analysisMode == kTPCITS)
+  if (analysisMode & kSPD || analysisMode & kTPCITS)
   {
     requiredZResolution = 0.1;
   }
-  else if (analysisMode == kTPC)
+  else if (analysisMode & kTPC)
     requiredZResolution = 10.;
 
   // check resolution
@@ -188,13 +193,13 @@ const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode ana
   // also the quality criteria that are applied)
 
   const AliESDVertex* vertex = 0;
-  if (analysisMode == kSPD || analysisMode == kTPCITS)
+  if (analysisMode & kSPD || analysisMode & kTPCITS)
   {
     vertex = aEsd->GetPrimaryVertexSPD();
     if (debug)
       Printf("AliPWG0Helper::GetVertex: Returning SPD vertex");
   }
-  else if (analysisMode == kTPC)
+  else if (analysisMode & kTPC)
   {
     if(bRedoTPC){
       if (debug)
@@ -631,20 +636,29 @@ void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, Trigger trigger)
   // Prints the given configuration
   //
 
-  TString str(">>>> Running with ");
+  TString str(">>>> Running with >");
 
-  switch (analysisMode)
+  if (analysisMode & kSPD)
+    str += "SPD-only";
+    
+  if (analysisMode & kTPC)
+     str += "TPC-only";
+    
+  if (analysisMode & kTPCITS)
+     str += "Global tracking";
+
+  if (analysisMode & kFieldOn)
   {
-    case kInvalid: str += "invalid setting"; break;
-    case kSPD : str += "SPD-only"; break;
-    case kTPC : str += "TPC-only"; break;
-    case kTPCITS : str += "Global tracking"; break;
+     str += " (with field)";
   }
-
-  str += " and trigger ";
+  else
+     str += " (WITHOUT field)";
+  
+  str += "< and trigger >";
 
   switch (trigger)
   {
+    case kAcceptAll : str += "ACCEPT ALL (bypass!)"; break;
     case kMB1 : str += "MB1"; break;
     case kMB2 : str += "MB2"; break;
     case kMB3 : str += "MB3"; break;
@@ -655,7 +669,7 @@ void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, Trigger trigger)
     case kOfflineFASTOR : str += "Offline SPD FASTOR"; break;
   }
 
-  str += " <<<<";
+  str += "< <<<<";
 
   Printf("%s", str.Data());
 }

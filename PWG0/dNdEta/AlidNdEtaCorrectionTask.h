@@ -15,6 +15,7 @@ class TH1F;
 class AliESDEvent;
 class TParticlePDG;
 class TH2F;
+class TH3F;
 class TProfile;
 
 class AlidNdEtaCorrectionTask : public AliAnalysisTask {
@@ -65,10 +66,10 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     TH1F* fPIDTracks;                            //! pid of reconstructed tracks
 
     TH2F* fVertexCorrelation;                    //! ESD z-vtx vs MC z-vtx
-    TH2F* fVertexCorrelationShift;               //! (MC z-vtx - ESD z-vtx) vs MC z-vtx
+    TH3F* fVertexCorrelationShift;               //! (MC z-vtx - ESD z-vtx) vs MC z-vtx vs n# rec tracks
     TProfile* fVertexProfile;                    //! Profile of MC z-vtx - ESD z-vtx vs. MC z-vtx
     TH1F* fVertexShift;                          //! (MC z-vtx - ESD z-vtx) in +- 10 cm
-    TH1F* fVertexShiftNorm;                      //! (MC z-vtx - ESD z-vtx) / (sigma_ESD-z-vtx) histogrammed
+    TH2F* fVertexShiftNorm;                      //! (MC z-vtx - ESD z-vtx) / (sigma_ESD-z-vtx) vs. no. rec tracks
 
     TH2F* fEtaCorrelation;                       //! ESD eta vs MC eta
     TH2F* fEtaCorrelationShift;                  //! (MC eta - ESD eta) vs MC eta

@@ -2,7 +2,7 @@
 
 // this macro creates the track and event cuts used in this analysis
 
-AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
+AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_t hists = kTRUE)
 {
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
 
@@ -23,10 +23,10 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
   TString tag("Global tracking");
 
   // TPC-only cuts
-  if (analysisMode == AliPWG0Helper::kTPC)
+  if (analysisMode & AliPWG0Helper::kTPC)
   {
-    cov1 = 9;
-    cov2 = 9;
+    cov1 = 1e10;
+    cov2 = 1e10;
     cov3 = 1e10;
     cov4 = 1e10;
     cov5 = 1e10;
@@ -36,9 +36,9 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
     
     tag = "TPC-only tracking";
   }
-
+  
   // cuts for data without field
-  if (!fieldOn)
+  if (!(analysisMode & AliPWG0Helper::kFieldOn))
   {
     cov5 = 1e10;
     tag += " without field";
@@ -51,8 +51,8 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
   if (sigmaToVertex) {
     esdTrackCuts->SetMaxNsigmaToVertex(nSigma);
   }
-  else{
-    
+  else
+  {
     esdTrackCuts->SetMaxDCAToVertexZ(3.2);
     esdTrackCuts->SetMaxDCAToVertexXY(2.4);
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
@@ -62,9 +62,10 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
 
   esdTrackCuts->SetMinNClustersTPC(50);
-  esdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
+  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
 
   Printf("Created track cuts for: %s", tag.Data());
 
   return esdTrackCuts;
 }
+

@@ -37,7 +37,7 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask() :
   fESD(0),
   fOutput(0),
   fOption(),
-  fAnalysisMode(AliPWG0Helper::kTPC),
+  fAnalysisMode((AliPWG0Helper::AnalysisMode) (AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn)),
   fTrigger(AliPWG0Helper::kMB1),
   fFillPhi(kFALSE),
   fDeltaPhiCut(-1),
@@ -86,7 +86,7 @@ AlidNdEtaCorrectionTask::AlidNdEtaCorrectionTask(const char* opt) :
   fESD(0),
   fOutput(0),
   fOption(opt),
-  fAnalysisMode(AliPWG0Helper::kTPC),
+  fAnalysisMode((AliPWG0Helper::AnalysisMode) (AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn)),
   fTrigger(AliPWG0Helper::kMB1),
   fFillPhi(kFALSE),
   fDeltaPhiCut(0),
@@ -167,10 +167,10 @@ void AlidNdEtaCorrectionTask::ConnectInputData(Option_t *)
     // Enable only the needed branches
     esdH->SetActiveBranches("AliESDHeader Vertex");
 
-    if (fAnalysisMode == AliPWG0Helper::kSPD)
+    if (fAnalysisMode & AliPWG0Helper::kSPD)
       esdH->SetActiveBranches("AliESDHeader Vertex AliMultiplicity");
 
-    if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
+    if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS) {
       esdH->SetActiveBranches("AliESDHeader Vertex Tracks");
     }
   }
@@ -261,13 +261,13 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
 
   fVertexCorrelation = new TH2F("fVertexCorrelation", "fVertexCorrelation;MC z-vtx;ESD z-vtx", 120, -30, 30, 120, -30, 30);
   fOutput->Add(fVertexCorrelation);
-  fVertexCorrelationShift = new TH2F("fVertexCorrelationShift", "fVertexCorrelationShift;MC z-vtx;MC z-vtx - ESD z-vtx", 120, -30, 30, 100, -1, 1);
+  fVertexCorrelationShift = new TH3F("fVertexCorrelationShift", "fVertexCorrelationShift;MC z-vtx;MC z-vtx - ESD z-vtx;rec. tracks", 120, -30, 30, 100, -1, 1, 100, -0.5, 99.5);
   fOutput->Add(fVertexCorrelationShift);
   fVertexProfile = new TProfile("fVertexProfile", "fVertexProfile;MC z-vtx;MC z-vtx - ESD z-vtx", 40, -20, 20);
   fOutput->Add(fVertexProfile);
   fVertexShift = new TH1F("fVertexShift", "fVertexShift;(MC z-vtx - ESD z-vtx);Entries", 201, -2, 2);
   fOutput->Add(fVertexShift);
-  fVertexShiftNorm = new TH1F("fVertexShiftNorm", "fVertexShiftNorm;(MC z-vtx - ESD z-vtx) / #sigma_{ESD z-vtx};Entries", 200, -100, 100);
+  fVertexShiftNorm = new TH2F("fVertexShiftNorm", "fVertexShiftNorm;(MC z-vtx - ESD z-vtx) / #sigma_{ESD z-vtx};rec. tracks;Entries", 200, -100, 100, 100, -0.5, 99.5);
   fOutput->Add(fVertexShiftNorm);
 
   fEtaCorrelation = new TH2F("fEtaCorrelation", "fEtaCorrelation;MC #eta;ESD #eta", 120, -3, 3, 120, -3, 3);
@@ -334,9 +334,10 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     
   if (fStatError > 0)
     Printf("WARNING: Statistical error evaluation active!");
-
+    
   // trigger definition
   Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD, fTrigger);
+  //Printf("Trigger mask: %lld", fESD->GetTriggerMask());
 
   if (!eventTriggered)
     Printf("No trigger");
@@ -384,35 +385,17 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   genHeader->PrimaryVertex(vtxMC);
 
   // get the ESD vertex
-  const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
   Bool_t eventVertex = kFALSE;
-  if (vtxESD)
+  Double_t vtx[3];
+  const AliESDVertex* vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
+  if (vtxESD && AliPWG0Helper::TestVertex(vtxESD, fAnalysisMode))
   {
-    Double_t vtx[3];
+    eventVertex = kTRUE;
     vtxESD->GetXYZ(vtx);
-
-    Double_t diff = vtxMC[2] - vtx[2];
-    fVertexShift->Fill(diff);
-    if (vtxESD->GetZRes() > 0)
-        fVertexShiftNorm->Fill(diff / vtxESD->GetZRes());
-
-    if (!AliPWG0Helper::TestVertex(vtxESD, fAnalysisMode))
-    {
-        vtxESD = 0;
-    }
-    else
-    {
-      eventVertex = kTRUE;
-
-      if (eventTriggered)
-      {
-        fVertexCorrelation->Fill(vtxMC[2], vtx[2]);
-        fVertexCorrelationShift->Fill(vtxMC[2], vtxMC[2] - vtx[2]);
-        fVertexProfile->Fill(vtxMC[2], vtxMC[2] - vtx[2]);
-      }
-    }
   }
-
+  else
+    vtxESD = 0;
+    
   // fill process type
   Int_t biny = (Int_t) eventTriggered + 2 * (Int_t) eventVertex;
   // INEL
@@ -435,7 +418,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   Float_t* etaArr = 0;
   Float_t* thirdDimArr = 0;
   Float_t* deltaPhiArr = 0;
-  if (fAnalysisMode == AliPWG0Helper::kSPD)
+  if (fAnalysisMode & AliPWG0Helper::kSPD)
   {
     // get tracklets
     const AliMultiplicity* mult = fESD->GetMultiplicity();
@@ -479,18 +462,18 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       ++inputCount;
     }
   }
-  else if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
+  else if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
   {
     if (!fEsdTrackCuts)
     {
       AliDebug(AliLog::kError, "fESDTrackCuts not available");
       return;
     }
-
+    
     if (vtxESD)
     {
       // get multiplicity from ESD tracks
-      TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, (fAnalysisMode == AliPWG0Helper::kTPC));
+      TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, (fAnalysisMode & AliPWG0Helper::kTPC));
       Int_t nGoodTracks = list->GetEntries();
   
       Printf("Accepted %d tracks", nGoodTracks);
@@ -511,7 +494,17 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
           continue;
         }
         
-        // TODO fOnlyPrimaries not implemented for TPC
+        //Printf("status is: %u", esdTrack->GetStatus());
+        
+        if (fOnlyPrimaries)
+        {
+          Int_t label = TMath::Abs(esdTrack->GetLabel());
+          if (label == 0)
+            continue;
+          
+          if (stack->IsPhysicalPrimary(label) == kFALSE)
+            continue;
+        }        
   
         etaArr[inputCount] = esdTrack->Eta();
         labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
@@ -530,9 +523,9 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
         {
           AliESDtrack* track = 0;
   
-          if (fAnalysisMode == AliPWG0Helper::kTPC)
+          if (fAnalysisMode & AliPWG0Helper::kTPC)
             track = AliESDtrackCuts::GetTPCOnlyTrack(fESD, iTrack);
-          else if (fAnalysisMode == AliPWG0Helper::kTPCITS)
+          else if (fAnalysisMode & AliPWG0Helper::kTPCITS)
             track = fESD->GetTrack(iTrack);
   
           if (!track)
@@ -550,24 +543,24 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
           if (stack->Particle(label)->GetPDG()->Charge() == 0)
             continue;
   
-          if (TMath::Abs(track->Eta()) < 1)
+          if (TMath::Abs(track->Eta()) < 0.8 && track->Pt() > 0.15)
           {
             if (stack->IsPhysicalPrimary(label))
             {
               // primary
               if (fEsdTrackCutsPrim->AcceptTrack(track)) 
               {
-                if (AliESDtrackCuts::GetSigmaToVertex(track) > 900)
-                {
-                  Printf("Track %d has nsigma of %f. Printing track and vertex...", iTrack, AliESDtrackCuts::GetSigmaToVertex(track));
-                  Float_t b[2];
-                  Float_t r[3];
-                  track->GetImpactParameters(b, r);
-                  Printf("Impact parameter %f %f and resolution: %f %f %f", b[0], b[1], r[0], r[1], r[2]);
-                  track->Print("");
-                  if (vtxESD)
-                    vtxESD->Print();
-                }
+//                 if (AliESDtrackCuts::GetSigmaToVertex(track) > 900)
+//                 {
+//                   Printf("Track %d has nsigma of %f. Printing track and vertex...", iTrack, AliESDtrackCuts::GetSigmaToVertex(track));
+//                   Float_t b[2];
+//                   Float_t r[3];
+//                   track->GetImpactParameters(b, r);
+//                   Printf("Impact parameter %f %f and resolution: %f %f %f", b[0], b[1], r[0], r[1], r[2]);
+//                   track->Print("");
+//                   if (vtxESD)
+//                     vtxESD->Print();
+//                 }
               }
             }
             else
@@ -578,7 +571,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
           }
   
           // TODO mem leak in the continue statements above
-          if (fAnalysisMode == AliPWG0Helper::kTPC)
+          if (fAnalysisMode & AliPWG0Helper::kTPC)
             delete track;
         }
       }
@@ -615,7 +608,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     Float_t eta = particle->Eta();
     
     Float_t thirdDim = -1;
-    if (fAnalysisMode == AliPWG0Helper::kSPD)
+    if (fAnalysisMode & AliPWG0Helper::kSPD)
     {
       if (fFillPhi)
       {
@@ -743,7 +736,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       // resolutions
       fEtaResolution->Fill(particle->Eta() - etaArr[i]);
 
-      if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
+      if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
         if (TMath::Abs(particle->Eta() < 0.9) && particle->Pt() > 0)
           fpTResolution->Fill(particle->Pt(), (particle->Pt() - thirdDimArr[i]) / particle->Pt());
 
@@ -751,12 +744,12 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       Float_t thirdDim = -1;
 
       Bool_t firstIsPrim = stack->IsPhysicalPrimary(label);
-      // in case of primary the MC values are filled, otherwise (background) the reconstructed values
-      if (label == label2 && firstIsPrim)
+      // in case of same label the MC values are filled, otherwise (background) the reconstructed values
+      if (label == label2)
       {
         eta = particle->Eta();
         
-        if (fAnalysisMode == AliPWG0Helper::kSPD)
+        if (fAnalysisMode & AliPWG0Helper::kSPD)
         {
           if (fFillPhi)
           {
@@ -770,7 +763,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
       }
       else
       {
-        if (fAnalysisMode == AliPWG0Helper::kSPD && !fFillPhi)
+        if (fAnalysisMode & AliPWG0Helper::kSPD && !fFillPhi)
         {
           thirdDim = inputCount;
         }
@@ -915,6 +908,18 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
 
   if (eventTriggered && eventVertex)
   {
+    Double_t diff = vtxMC[2] - vtx[2];
+    fVertexShift->Fill(diff);
+    if (vtxESD->GetZRes() > 0)
+        fVertexShiftNorm->Fill(diff / vtxESD->GetZRes(), inputCount);
+
+    fVertexCorrelation->Fill(vtxMC[2], vtx[2]);
+    fVertexCorrelationShift->Fill(vtxMC[2], vtxMC[2] - vtx[2], inputCount);
+    fVertexProfile->Fill(vtxMC[2], vtxMC[2] - vtx[2]);
+  }
+
+  if (eventTriggered && eventVertex)
+  {
     fdNdEtaAnalysisMC->FillEvent(vtxMC[2], inputCount);
     fdNdEtaAnalysisESD->FillEvent(vtxMC[2], inputCount);
   }
@@ -925,7 +930,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
   if (fOption.Contains("process-types"))
   {
     // non diffractive
-    if (processType == AliPWG0Helper::kND )
+    if (processType == AliPWG0Helper::kND)
       fdNdEtaCorrectionSpecial[0]->FillEvent(vtxMC[2], inputCount, eventTriggered, eventVertex, processType);
 
     // single diffractive
@@ -1023,25 +1028,34 @@ void AlidNdEtaCorrectionTask::Terminate(Option_t *)
   fVertexCorrelation = dynamic_cast<TH2F*> (fOutput->FindObject("fVertexCorrelation"));
   if (fVertexCorrelation)
     fVertexCorrelation->Write();
-  fVertexCorrelationShift = dynamic_cast<TH2F*> (fOutput->FindObject("fVertexCorrelationShift"));
+  fVertexCorrelationShift = dynamic_cast<TH3F*> (fOutput->FindObject("fVertexCorrelationShift"));
   if (fVertexCorrelationShift)
+  {
+    ((TH2*) fVertexCorrelationShift->Project3D("yx"))->FitSlicesY();
     fVertexCorrelationShift->Write();
+  }
   fVertexProfile = dynamic_cast<TProfile*> (fOutput->FindObject("fVertexProfile"));
   if (fVertexProfile)
     fVertexProfile->Write();
   fVertexShift = dynamic_cast<TH1F*> (fOutput->FindObject("fVertexShift"));
   if (fVertexShift)
     fVertexShift->Write();
-  fVertexShiftNorm = dynamic_cast<TH1F*> (fOutput->FindObject("fVertexShiftNorm"));
+  fVertexShiftNorm = dynamic_cast<TH2F*> (fOutput->FindObject("fVertexShiftNorm"));
   if (fVertexShiftNorm)
+  {
+    fVertexShiftNorm->ProjectionX();
     fVertexShiftNorm->Write();
+  }  
 
   fEtaCorrelation = dynamic_cast<TH2F*> (fOutput->FindObject("fEtaCorrelation"));
   if (fEtaCorrelation)
     fEtaCorrelation->Write();
   fEtaCorrelationShift = dynamic_cast<TH2F*> (fOutput->FindObject("fEtaCorrelationShift"));
   if (fEtaCorrelationShift)
+  {
+    fEtaCorrelationShift->FitSlicesY();
     fEtaCorrelationShift->Write();
+  }
   fEtaProfile = dynamic_cast<TProfile*> (fOutput->FindObject("fEtaProfile"));
   if (fEtaProfile)
     fEtaProfile->Write();

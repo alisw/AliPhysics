@@ -41,13 +41,13 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
   Int_t nBinsPt = 0;
 
   // different binnings, better solution could be anticipated...
-  if (analysisMode == AliPWG0Helper::kTPC || analysisMode == AliPWG0Helper::kTPCITS)
+  if ((analysisMode & AliPWG0Helper::kTPC || analysisMode & AliPWG0Helper::kTPCITS) && (analysisMode & AliPWG0Helper::kFieldOn))
   {
     static Float_t binLimitsPtTmp[] = {0.0, 0.05, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25, 0.275, 0.3, 0.325, 0.35, 0.375, 0.4, 0.425, 0.45, 0.475, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 5.0, 10.0, 100.0};
     binLimitsPt = (Float_t*) binLimitsPtTmp;
     nBinsPt = 28;
   }
-  else if (analysisMode == AliPWG0Helper::kSPD)
+  else if (analysisMode & AliPWG0Helper::kSPD || !(analysisMode & AliPWG0Helper::kFieldOn))
   {
     static Float_t binLimitsPtTmp[] = {-0.5, 100.0};
     binLimitsPt = (Float_t*) binLimitsPtTmp;
@@ -93,7 +93,7 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
 
   fEventCorr = new AliCorrectionMatrix2D("EventCorrection", Form("%s EventCorrection", fTitle.Data()), 18, binLimitsVtx, nBinsN, binLimitsN);
 
-  if (analysisMode == AliPWG0Helper::kSPD)
+  if (analysisMode & AliPWG0Helper::kSPD)
   {
     TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",18, binLimitsVtx, 60, binLimitsEta, nBinsN2, binLimitsN2);
     fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", fTitle.Data()), dummyBinning);
@@ -329,26 +329,38 @@ void AliCorrection::DrawOverview(const char* canvasName)
   if (canvasName)
     canvasNameTmp = canvasName;
 
-  TCanvas* canvas = new TCanvas(canvasNameTmp, canvasNameTmp, 1200, 800);
-  canvas->Divide(3, 2);
+  TCanvas* canvas = new TCanvas(canvasNameTmp, canvasNameTmp, 1200, 1200);
+  canvas->Divide(3, 3);
 
   if (fTrackCorr) {
     canvas->cd(1);
+    fTrackCorr->Get2DCorrectionHistogram("xy", 0, 0)->DrawCopy("COLZ")->GetZaxis()->SetRangeUser(0, 10);
+    
+    canvas->cd(2);
+    fTrackCorr->Get2DCorrectionHistogram("yz", 0, 0)->DrawCopy("COLZ")->GetZaxis()->SetRangeUser(0, 10);
+    
+    canvas->cd(3);
+    fTrackCorr->Get2DCorrectionHistogram("zx", 0, 0)->DrawCopy("COLZ")->GetZaxis()->SetRangeUser(0, 10);
+    
+    canvas->cd(4);
     fTrackCorr->Get1DCorrectionHistogram("x", 0.3, 5, -1, 1)->DrawCopy()->GetYaxis()->SetRangeUser(0, 10);
 
-    canvas->cd(2);
+    canvas->cd(5);
     fTrackCorr->Get1DCorrectionHistogram("y", 0.3, 5, 0, 0)->DrawCopy()->GetYaxis()->SetRangeUser(0, 10);
 
-    canvas->cd(3);
+    canvas->cd(6);
     fTrackCorr->Get1DCorrectionHistogram("z", 0, -1, -1, 1)->DrawCopy()->GetYaxis()->SetRangeUser(0, 10);
   }
 
   if (fEventCorr)
   {
-    canvas->cd(4);
+    canvas->cd(7);
+    fEventCorr->GetCorrectionHistogram()->DrawCopy("COLZ")->GetYaxis()->SetRangeUser(0, 30);
+    
+    canvas->cd(8);
     fEventCorr->Get1DCorrectionHistogram("x")->DrawCopy();
 
-    canvas->cd(5);
+    canvas->cd(9);
     fEventCorr->Get1DCorrectionHistogram("y")->DrawCopy()->GetXaxis()->SetRangeUser(0, 30);
   }
 }
@@ -449,6 +461,6 @@ void AliCorrection::PrintInfo(Float_t ptCut)
 
   Printf("Example centered bin: tracks measured: %.1f tracks generated: %.1f, events measured: %.1f, events generated %.1f", measured->GetBinContent(measured->GetNbinsX() / 2, measured->GetNbinsY() / 2, measured->GetNbinsZ() / 2), generated->GetBinContent(measured->GetNbinsX() / 2, measured->GetNbinsY() / 2, measured->GetNbinsZ() / 2), measuredEvents->GetBinContent(measuredEvents->GetNbinsX() / 2, measuredEvents->GetNbinsY() / 2), generatedEvents->GetBinContent(measuredEvents->GetNbinsX() / 2, measuredEvents->GetNbinsY() / 2));
 
-  PrintStats(10, 1.0, ptCut);
+  PrintStats(10, 0.8, ptCut);
   PrintStats(10, 1.5, ptCut);
 }

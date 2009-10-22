@@ -44,7 +44,7 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fESD(0),
   fOutput(0),
   fOption(opt),
-  fAnalysisMode(AliPWG0Helper::kTPC),
+  fAnalysisMode((AliPWG0Helper::AnalysisMode) (AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn)),
   fTrigger(AliPWG0Helper::kMB1),
   fFillPhi(kFALSE),
   fDeltaPhiCut(-1),
@@ -70,6 +70,7 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fRawPt(0),
   fEtaPhi(0),
   fDeltaPhi(0),
+  fDeltaTheta(0),
   fFiredChips(0),
   fTriggerVsTime(0),
   fStats(0)
@@ -125,16 +126,17 @@ void AlidNdEtaTask::ConnectInputData(Option_t *)
     Printf("ERROR: Could not get ESDInputHandler");
   } else {
     fESD = esdH->GetEvent();
+    
+    TString branches("AliESDHeader Vertex ");
 
+    if (fAnalysisMode & AliPWG0Helper::kSPD || fTrigger == AliPWG0Helper::kOfflineMB1 || fTrigger == AliPWG0Helper::kOfflineMB2 || fTrigger == AliPWG0Helper::kOfflineMB3 || fTrigger == AliPWG0Helper::kOfflineFASTOR)
+      branches += "AliMultiplicity ";
+      
+    if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
+      branches += "Tracks ";
+  
     // Enable only the needed branches
-    esdH->SetActiveBranches("AliESDHeader Vertex");
-
-    if (fAnalysisMode == AliPWG0Helper::kSPD)
-      esdH->SetActiveBranches("AliESDHeader Vertex AliMultiplicity");
-
-    if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS) {
-      esdH->SetActiveBranches("AliESDHeader Vertex Tracks");
-    }
+    esdH->SetActiveBranches(branches);
   }
 
   // disable info messages of AliMCEvent (per event)
@@ -178,7 +180,7 @@ void AlidNdEtaTask::CreateOutputObjects()
   fEvents = new TH1F("dndeta_check_vertex", "dndeta_check_vertex", 800, -40, 40);
   fOutput->Add(fEvents);
 
-  Float_t resMax = (fAnalysisMode == AliPWG0Helper::kSPD) ? 0.2 : 2;
+  Float_t resMax = (fAnalysisMode & AliPWG0Helper::kSPD) ? 0.2 : 2;
   fVertexResolution = new TH1F("dndeta_vertex_resolution_z", "dndeta_vertex_resolution_z", 1000, 0, resMax);
   fOutput->Add(fVertexResolution);
 
@@ -194,15 +196,18 @@ void AlidNdEtaTask::CreateOutputObjects()
   fTriggerVsTime->GetYaxis()->SetTitle("count");
   fOutput->Add(fTriggerVsTime);
 
-  fStats = new TH1F("fStats", "fStats", 2, 0.5, 2.5);
+  fStats = new TH1F("fStats", "fStats", 3, 0.5, 3.5);
   fStats->GetXaxis()->SetBinLabel(1, "vertexer 3d");
   fStats->GetXaxis()->SetBinLabel(2, "vertexer z");
+  fStats->GetXaxis()->SetBinLabel(3, "trigger");
   fOutput->Add(fStats);
 
-  if (fAnalysisMode == AliPWG0Helper::kSPD)
+  if (fAnalysisMode & AliPWG0Helper::kSPD)
   {
     fDeltaPhi = new TH1F("fDeltaPhi", "fDeltaPhi;#Delta #phi;Entries", 500, -0.2, 0.2);
     fOutput->Add(fDeltaPhi);
+    fDeltaTheta = new TH1F("fDeltaTheta", "fDeltaTheta;#Delta #theta;Entries", 500, -0.2, 0.2);
+    fOutput->Add(fDeltaTheta);
     fFiredChips = new TH2F("fFiredChips", "fFiredChips;Chips L1 + L2;tracklets", 1201, -0.5, 1201, 50, -0.5, 49.5);
     fOutput->Add(fFiredChips);
     for (Int_t i=0; i<2; i++)
@@ -212,7 +217,7 @@ void AlidNdEtaTask::CreateOutputObjects()
     }
   }
 
-  if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
+  if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
   {
     fRawPt =  new TH1F("fRawPt", "raw pt;p_{T};Count", 2000, 0, 100);
     fOutput->Add(fRawPt);
@@ -286,6 +291,8 @@ void AlidNdEtaTask::Exec(Option_t*)
 
     // trigger definition
     eventTriggered = AliPWG0Helper::IsEventTriggered(fESD, fTrigger);
+    if (eventTriggered)
+      fStats->Fill(3);
 
     // get the ESD vertex
     vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
@@ -368,7 +375,7 @@ void AlidNdEtaTask::Exec(Option_t*)
     Int_t* labelArr = 0;
     Float_t* etaArr = 0;
     Float_t* thirdDimArr = 0;
-    if (fAnalysisMode == AliPWG0Helper::kSPD)
+    if (fAnalysisMode & AliPWG0Helper::kSPD)
     {
       // get tracklets
       const AliMultiplicity* mult = fESD->GetMultiplicity();
@@ -422,6 +429,7 @@ void AlidNdEtaTask::Exec(Option_t*)
         }
 
         fDeltaPhi->Fill(deltaPhi);
+        fDeltaTheta->Fill(mult->GetDeltaTheta(i));
 
         if (fDeltaPhiCut > 0 && TMath::Abs(deltaPhi) > fDeltaPhiCut)
           continue;
@@ -455,7 +463,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       fFiredChips->Fill(firedChips, inputCount);
       Printf("Accepted %d tracklets (%d fired chips)", inputCount, firedChips);
     }
-    else if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
+    else if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
     {
       if (!fEsdTrackCuts)
       {
@@ -466,9 +474,9 @@ void AlidNdEtaTask::Exec(Option_t*)
       if (vtxESD)
       {
         // get multiplicity from ESD tracks
-        TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, (fAnalysisMode == AliPWG0Helper::kTPC));
+        TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD, fAnalysisMode & AliPWG0Helper::kTPC);
         Int_t nGoodTracks = list->GetEntries();
-        Printf("Accepted %d tracks", nGoodTracks);
+        Printf("Accepted %d tracks out of %d total ESD tracks", nGoodTracks, fESD->GetNumberOfTracks());
   
         labelArr = new Int_t[nGoodTracks];
         etaArr = new Float_t[nGoodTracks];
@@ -491,14 +499,24 @@ void AlidNdEtaTask::Exec(Option_t*)
           Float_t eta = esdTrack->Eta();
           Int_t label = TMath::Abs(esdTrack->GetLabel());
           Float_t pT  = esdTrack->Pt();
+          
+          // force pT to fixed value without B field
+          if (!(fAnalysisMode & AliPWG0Helper::kFieldOn))
+            pT = 1;
   
           fPhi->Fill(phi);
           fEtaPhi->Fill(eta, phi);
           if (eventTriggered && vtxESD)
             fRawPt->Fill(pT);
   
-          if (fOnlyPrimaries && label == 0)
-            continue;
+          if (fOnlyPrimaries)
+          {
+            if (label == 0)
+              continue;
+            
+            if (stack->IsPhysicalPrimary(label) == kFALSE)
+              continue;
+          }
   
           if (fUseMCKine)
           {
@@ -584,7 +602,7 @@ void AlidNdEtaTask::Exec(Option_t*)
             }
 
             Float_t thirdDim = -1;
-            if (fAnalysisMode == AliPWG0Helper::kSPD)
+            if (fAnalysisMode & AliPWG0Helper::kSPD)
             {
               if (fFillPhi)
               {
@@ -704,7 +722,7 @@ void AlidNdEtaTask::Exec(Option_t*)
       Float_t eta = particle->Eta();
       Float_t thirdDim = -1;
 
-      if (fAnalysisMode == AliPWG0Helper::kSPD)
+      if (fAnalysisMode & AliPWG0Helper::kSPD)
       {
         if (fFillPhi)
         {
@@ -731,7 +749,7 @@ void AlidNdEtaTask::Exec(Option_t*)
           fdNdEtaAnalysisTrVtx->FillTrack(vtxMC[2], eta, thirdDim);
       }
 
-      if (TMath::Abs(eta) < 1.0)
+      if (TMath::Abs(eta) < 1.0 && particle->Pt() > 0)
         fPartPt->Fill(particle->Pt());
     }
 
@@ -776,6 +794,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
     for (Int_t i=0; i<2; ++i)
       fZPhi[i] = dynamic_cast<TH2F*> (fOutput->FindObject(Form("fZPhi_%d", i)));
     fDeltaPhi = dynamic_cast<TH1F*> (fOutput->FindObject("fDeltaPhi"));
+    fDeltaTheta = dynamic_cast<TH1F*> (fOutput->FindObject("fDeltaTheta"));
     fFiredChips = dynamic_cast<TH2F*> (fOutput->FindObject("fFiredChips"));
     fTriggerVsTime = dynamic_cast<TGraph*> (fOutput->FindObject("fTriggerVsTime"));
     fStats = dynamic_cast<TH1F*> (fOutput->FindObject("fStats"));
@@ -840,7 +859,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
       fdNdEtaAnalysisESD->SaveHistograms();
 
     if (fEsdTrackCuts)
-      fEsdTrackCuts->SaveHistograms("esd_tracks_cuts");
+      fEsdTrackCuts->SaveHistograms("esd_track_cuts");
 
     if (fMult)
       fMult->Write();
@@ -861,6 +880,9 @@ void AlidNdEtaTask::Terminate(Option_t *)
     if (fDeltaPhi)
       fDeltaPhi->Write();
 
+    if (fDeltaTheta)
+      fDeltaTheta->Write();
+    
     if (fPhi)
       fPhi->Write();
 
