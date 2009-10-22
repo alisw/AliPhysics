@@ -192,6 +192,65 @@ void AliFMDAnaParameters::InitEventSelectionEff() {
 }
 //____________________________________________________________________
 
+void AliFMDAnaParameters::PrintStatus() {
+  
+  TString energystring;
+  switch(fEnergy) {
+  case k900:
+    energystring.Form("900 GeV");   break;
+  case k7000:
+    energystring.Form("7000 GeV");  break;
+  case k10000:
+    energystring.Form("10000 GeV"); break;
+  case k14000:
+    energystring.Form("14000 GeV"); break;
+  default:
+    energystring.Form("invalid energy"); break;
+  }
+  TString triggerstring;
+  switch(fTrigger) {
+  case kMB1:
+    triggerstring.Form("Minimum bias 1");   break;
+  case kMB2:
+    triggerstring.Form("Minimum bias 2");   break;
+  case kSPDFASTOR:
+    triggerstring.Form("SPD FAST OR");   break;
+  case kNOCTP:
+    triggerstring.Form("NO TRIGGER TEST");   break;
+  default:
+    energystring.Form("invalid trigger"); break;
+  }
+  TString magstring;
+  switch(fMagField) {
+  case k5G:
+    magstring.Form("5 kGaus");   break;
+  case k0G:
+    magstring.Form("0 kGaus");   break;
+  default:
+    magstring.Form("invalid mag field"); break;
+  }
+  TString collsystemstring;
+  switch(fSpecies) {
+  case kPP:
+    collsystemstring.Form("p+p");   break;
+  case kPbPb:
+    collsystemstring.Form("Pb+Pb");   break;
+  default:
+    collsystemstring.Form("invalid collision system");   break;
+  }
+  
+
+  std::cout<<"Energy      = "<<energystring.Data()<<std::endl;
+  std::cout<<"Trigger     = "<<triggerstring.Data()<<std::endl;
+  std::cout<<"Mag Field   = "<<magstring.Data()<<std::endl;
+  std::cout<<"Coll System = "<<collsystemstring.Data()<<std::endl;
+  
+  
+  
+}
+
+//____________________________________________________________________
+
 void AliFMDAnaParameters::InitSharingEff() {
   
   //AliCDBEntry*   background = GetEntry(fgkBackgroundCorrection);
