@@ -147,15 +147,7 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
   TH1F *phiWeights = NULL;
   TH1D *ptWeights  = NULL;
   TH1D *etaWeights = NULL;
-
-  Double_t dSumOfWeightsToPower2 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 2)
-  Double_t dSumOfWeightsToPower3 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 3)
-  Double_t dSumOfWeightsToPower4 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 4)
-  Double_t dSumOfWeightsToPower5 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 5)
-  Double_t dSumOfWeightsToPower6 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 6)
-  Double_t dSumOfWeightsToPower7 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 7)
-  Double_t dSumOfWeightsToPower8 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 8) 
-
+  
   if(weightsList)
   {
    if(usePhiWeights)
@@ -217,16 +209,7 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
     
      // weighted multiplicity:
      iUsedTracks+=wPhi*wPt*wEta;
-    
-     // weights raised to various powers are summed up:
-     dSumOfWeightsToPower2+=pow(wPhi*wPt*wEta, 2); 
-     dSumOfWeightsToPower3+=pow(wPhi*wPt*wEta, 3); 
-     dSumOfWeightsToPower4+=pow(wPhi*wPt*wEta, 4); 
-     dSumOfWeightsToPower5+=pow(wPhi*wPt*wEta, 5); 
-     dSumOfWeightsToPower6+=pow(wPhi*wPt*wEta, 6); 
-     dSumOfWeightsToPower7+=pow(wPhi*wPt*wEta, 7); 
-     dSumOfWeightsToPower8+=pow(wPhi*wPt*wEta, 8); 
-     
+         
     } // end of if (pTrack->InRPSelection())
    } // end of if (pTrack)
    else {cerr << "no particle!!!"<<endl;}
@@ -234,14 +217,7 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
     
   vQ.Set(dQX,dQY);
   vQ.SetMult(iUsedTracks);
-  vQ.SetSumOfWeightsToPower2(dSumOfWeightsToPower2);
-  vQ.SetSumOfWeightsToPower3(dSumOfWeightsToPower3);
-  vQ.SetSumOfWeightsToPower4(dSumOfWeightsToPower4);
-  vQ.SetSumOfWeightsToPower5(dSumOfWeightsToPower5);
-  vQ.SetSumOfWeightsToPower6(dSumOfWeightsToPower6);
-  vQ.SetSumOfWeightsToPower7(dSumOfWeightsToPower7);
-  vQ.SetSumOfWeightsToPower8(dSumOfWeightsToPower8);
-
+  
   return vQ;
   
 }
@@ -278,15 +254,7 @@ AliFlowVector AliFlowEventSimple::GetQsub(Double_t etaMin, Double_t etaMax, Int_
   TH1F *phiWeights = NULL;
   TH1D *ptWeights  = NULL;
   TH1D *etaWeights = NULL;
-
-  Double_t dSumOfWeightsToPower2 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 2)
-  Double_t dSumOfWeightsToPower3 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 3)
-  Double_t dSumOfWeightsToPower4 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 4)
-  Double_t dSumOfWeightsToPower5 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 5)
-  Double_t dSumOfWeightsToPower6 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 6)
-  Double_t dSumOfWeightsToPower7 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 7)
-  Double_t dSumOfWeightsToPower8 = 0.; // sum_{i=1}^{n} pow((wPhi*wPt*wEta)_i, 8) 
-
+  
   if(weightsList)
     {
       if(usePhiWeights)
@@ -348,15 +316,7 @@ AliFlowVector AliFlowEventSimple::GetQsub(Double_t etaMin, Double_t etaMax, Int_
     
        // weighted multiplicity:
        iUsedTracks+=wPhi*wPt*wEta;
-    
-       // weights raised to various powers are summed up:
-       dSumOfWeightsToPower2+=pow(wPhi*wPt*wEta, 2); 
-       dSumOfWeightsToPower3+=pow(wPhi*wPt*wEta, 3); 
-       dSumOfWeightsToPower4+=pow(wPhi*wPt*wEta, 4); 
-       dSumOfWeightsToPower5+=pow(wPhi*wPt*wEta, 5); 
-       dSumOfWeightsToPower6+=pow(wPhi*wPt*wEta, 6); 
-       dSumOfWeightsToPower7+=pow(wPhi*wPt*wEta, 7); 
-       dSumOfWeightsToPower8+=pow(wPhi*wPt*wEta, 8); 
+           
      } // end of if dEta in eta range
     } // end of if (pTrack->InRPSelection())
    } // end of if (pTrack)
@@ -365,14 +325,7 @@ AliFlowVector AliFlowEventSimple::GetQsub(Double_t etaMin, Double_t etaMax, Int_
     
   vQ.Set(dQX,dQY);
   vQ.SetMult(iUsedTracks);
-  vQ.SetSumOfWeightsToPower2(dSumOfWeightsToPower2);
-  vQ.SetSumOfWeightsToPower3(dSumOfWeightsToPower3);
-  vQ.SetSumOfWeightsToPower4(dSumOfWeightsToPower4);
-  vQ.SetSumOfWeightsToPower5(dSumOfWeightsToPower5);
-  vQ.SetSumOfWeightsToPower6(dSumOfWeightsToPower6);
-  vQ.SetSumOfWeightsToPower7(dSumOfWeightsToPower7);
-  vQ.SetSumOfWeightsToPower8(dSumOfWeightsToPower8);
-
+  
   return vQ;
   
 }
