@@ -42,7 +42,7 @@
 ClassImp(AliACORDEQAChecker)
 
 //__________________________________________________________________
-Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list)
+Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/)
 {
 
 	Double_t * test = new Double_t[AliRecoParam::kNSpecies] ; 
