@@ -230,7 +230,7 @@ void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEP()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
@@ -303,7 +303,7 @@ void AliPerformanceRes::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
   if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEP()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   Float_t mceta =  particle->Eta();
   Float_t mcphi =  particle->Phi();
@@ -409,7 +409,7 @@ void AliPerformanceRes::ProcessConstrained(AliStack* const stack, AliESDtrack *c
   if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEP()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   Float_t mceta =  particle->Eta();
   Float_t mcphi =  particle->Phi();
@@ -526,7 +526,7 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEP()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   // calculate alpha angle
   Double_t xyz[3] = {ref0->X(),ref0->Y(),ref0->Z()};
@@ -627,7 +627,7 @@ void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *
   if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEP()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   // calculate alpha angle
   Double_t xyz[3] = {ref0->X(),ref0->Y(),ref0->Z()};
@@ -851,9 +851,9 @@ void AliPerformanceRes::Analyse() {
     for(Int_t j=5; j<10; j++) 
     {
       //if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
-      fResolHisto->GetAxis(9)->SetRangeUser(0.16,10.); // pt threshold
-      if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(0.,0.9); // eta window
-      //fResolHisto->GetAxis(9)->SetRangeUser(0.16,3.); // pt window
+      if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(0.0,0.89); // eta window
+      else fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);
+      fResolHisto->GetAxis(9)->SetRangeUser(0.16,100.); // pt threshold
       if(GetAnalysisMode() == 3) fResolHisto->GetAxis(5)->SetRangeUser(-80.,80.); // y range
 
       h2D = (TH2F*)fResolHisto->Projection(i,j);
@@ -890,9 +890,10 @@ void AliPerformanceRes::Analyse() {
       fResolHisto->GetAxis(9)->SetRangeUser(0.0,10.);
 
       //
-      if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-1.0,0.99); // theta window
-      else  fPullHisto->GetAxis(8)->SetRangeUser(-1.5,1.5); // theta window
-      fPullHisto->GetAxis(9)->SetRangeUser(0.0,10.);  // pt threshold
+      //if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
+      if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(0.0,0.89);    // eta window
+      else  fPullHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);      // eta window
+      fPullHisto->GetAxis(9)->SetRangeUser(0.16,100.);            // pt threshold
       if(GetAnalysisMode() == 3) fPullHisto->GetAxis(5)->SetRangeUser(-80.,80.); // y range
 
       h2D = (TH2F*)fPullHisto->Projection(i,j);
