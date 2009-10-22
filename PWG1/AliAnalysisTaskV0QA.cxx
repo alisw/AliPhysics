@@ -7,8 +7,6 @@
 //-------------------------------------------------
 #define AliAnalysisTaskV0QA_cxx
 
-#include "Riostream.h"
-
 #include "TChain.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -45,6 +43,7 @@ fSparseK0(0),
 fSparseL(0),
 fSparseAL(0),
 fnEv(0),
+fgDim(50),
 fnConvGamGeant(-1),
 fgConvGamGeantIndex(0),
 feNegConvGamGeantIndex(0),
@@ -57,7 +56,6 @@ feNegConvGamV0RecIndex(0),
 fePosConvGamV0RecIndex(0),
 fConvGamV0RecIndexPos(0),
 fConvGamV0RecIndexNeg(0),
-fgDim(50),
 fnDecayLGeant(-1),
 flDecayLGeantIndex(0),
 fpiNegDecayLGeantIndex(0),
@@ -101,6 +99,7 @@ ftpcRefit(0),
 fitsRefit(0),
 ftrdRefit(0),
 ftrdOut(0),
+fDim(37),
 fValueL(0),
 fValueAL(0),
 fValueK0(0),
@@ -108,7 +107,6 @@ fValueV0(0),
 fxminV0(0),
 fxmaxV0(0),
 fbinsV0(0),
-fDim(37),
 fRefTPC(0),
 fclRefsN(0),
 fclRefsP(0)
@@ -116,22 +114,23 @@ fclRefsP(0)
  {
   // Constructor.
   // Input slot #0 works with an Ntuple
-  DefineInput(0, TChain::Class());
+   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
-  //  DefineOutput(0,TObjArray::Class());
-  DefineOutput(0,TList::Class());
+   // DefineOutput(0,TObjArray::Class());
+   DefineOutput(0,TList::Class());
 
   // Reconstructed arrays
 
-  fnEv=0;
-  fDim=37; 
-  fValueK0 = new Double_t[fDim];
-  fValueL = new Double_t[fDim];
-  fValueAL = new Double_t[fDim];
-  fValueV0 = new Double_t[fDim];
-  fxminV0 = new Double_t[fDim];
-  fxmaxV0 = new Double_t[fDim];
-  fbinsV0 = new Int_t[fDim];
+   fnEv=0;
+   fDim=37; 
+
+   fValueK0 = new Double_t[fDim];
+   fValueL = new Double_t[fDim];
+   fValueAL = new Double_t[fDim];
+   fValueV0 = new Double_t[fDim];
+   fxminV0 = new Double_t[fDim];
+   fxmaxV0 = new Double_t[fDim];
+   fbinsV0 = new Int_t[fDim];
 
 
   fgDim=50; 
@@ -665,7 +664,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
   // Execution of the Task
 
   if (!fESD) {
-    cout<< "not a tree"<< endl;
+    //cout<< "not a tree"<< endl;
     return;
   }
 
@@ -843,7 +842,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
 
        int nPointsP =  fclRefsP->GetEntries();
 
-       if (fRefTPC) delete fRefTPC;
+       if (fRefTPC) delete fRefTPC;fRefTPC=NULL;
        fRefTPC = new TObjArray();
 
        for(int iPoint=0; iPoint<nPointsP; iPoint++) {
@@ -877,7 +876,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
        Float_t tpcTrackLengtheNeg = mcParticleNeg->GetTPCTrackLength(fESD->GetMagneticField(),0.05,counterN,3.0); 
        int nPointsN =  fclRefsN->GetEntries();
 
-       if (fRefTPC) delete fRefTPC;
+       if (fRefTPC) delete fRefTPC; fRefTPC=NULL;
        fRefTPC = new TObjArray();
 
        for(int iPoint=0; iPoint<nPointsN; iPoint++) {
@@ -965,7 +964,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
  
 
        int nPointsP =  fclRefsP->GetEntries();
-       if (fRefTPC) delete fRefTPC;
+       if (fRefTPC) delete fRefTPC; fRefTPC=NULL;
        fRefTPC = new TObjArray();
 
        for(int iPoint=0; iPoint<nPointsP; iPoint++) {
@@ -999,7 +998,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
        Float_t tpcTrackLengtheNeg = mcParticleNeg->GetTPCTrackLength(fESD->GetMagneticField(),0.05,counterN,3.0); 
 
        int nPointsN =  fclRefsN->GetEntries();
-       if (fRefTPC) delete fRefTPC;
+       if (fRefTPC) delete fRefTPC; fRefTPC=NULL;
        fRefTPC = new TObjArray();
 
        for(int iPoint=0; iPoint<nPointsN; iPoint++) {
@@ -1087,7 +1086,7 @@ void AliAnalysisTaskV0QA::Exec(Option_t *) {
  
 
        int nPointsP =  fclRefsP->GetEntries();
-       if (fRefTPC) delete fRefTPC;
+       if (fRefTPC) delete fRefTPC; fRefTPC=NULL;
        fRefTPC = new TObjArray();
 
        for(int iPoint=0; iPoint<nPointsP; iPoint++) {
