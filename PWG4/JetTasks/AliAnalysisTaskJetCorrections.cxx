@@ -1,6 +1,6 @@
 // **************************************
 // Task used for estimating a charged to neutral correction
-// 
+// sona.pochybova@cern.ch
 // *******************************************
 
 

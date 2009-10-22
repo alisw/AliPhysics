@@ -740,7 +740,7 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
     { 
 //       if(fGlobVar == 1)
 // 	{
-      GetEventShapes(n01MC, pTrackMC, nAccTr, eventShapes);
+      AliAnalysisHelperJetTasks::GetEventShapes(n01MC, pTrackMC, nAccTr, eventShapes);
 // 	}
       
       Double_t s = eventShapes[1];
@@ -972,7 +972,7 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
     {
 //       if(fGlobVar == 1)
 // 	{
-      GetEventShapes(n01, pTrack, nTracks, eventShapesRec);
+      AliAnalysisHelperJetTasks::GetEventShapes(n01, pTrack, nTracks, eventShapesRec);
 // 	}
 //       fGlobVar = 0;      
 //       Double_t Max3 = TMath::Max(eventShapesRec0[0],eventShapesRec1[0]);
@@ -1178,159 +1178,6 @@ Bool_t AliAnalysisTaskThreeJets::IsPrimChar(TParticle* aParticle, Int_t aTotalPr
 }
 
 //______________________________________________________________________________________________________
-
-
-void AliAnalysisTaskThreeJets::GetThrustAxis(TVector3 &n01, TVector3 * pTrack, const Int_t &nTracks)
-{
-  //
-  // fetch the thrust axis
-  //
-  TVector3 psum;
-  Double_t psum1 = 0;
-  Double_t psum2 = 0;
-  Double_t thrust[kTracks];
-  Double_t th = -3;
-  Double_t tpom = -1;
-  Int_t j = 0;
-
-  
-  //  for(Int_t j = 0; j < nTracks; j++)
-  while(TMath::Abs(th-tpom) > 10e-7 && j < nTracks)
-    {
-      th = tpom;
-      psum.SetXYZ(0., 0., 0.);
-      psum1 = 0;
-      psum2 = 0;
-      for(Int_t i = 0; i < nTracks; i++)
-	{
-	  psum1 += (TMath::Abs(n01.Dot(pTrack[i])));
-	  psum2 += pTrack[i].Mag();
-	  
-	  if (n01.Dot(pTrack[i]) > 0) psum += pTrack[i];
-	  if (n01.Dot(pTrack[i]) < 0) psum -= pTrack[i];
-	}
-      
-      thrust[j] = psum1/psum2;
-      
-      //      if(th == thrust[j]) 
-      //	break;
-      
-      tpom = thrust[j];
-      
-      n01 = psum.Unit();
-      j++;
-    }
-}
-
-//___________________________________________________________________________________________________________
-
-void AliAnalysisTaskThreeJets::GetEventShapes(TVector3 &n01, TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes)
-{       
-  TVector3 psum;
-  TVector3 pTrackPerp[kTracks];
-  Double_t psum1 = 0;
-  Double_t psum2 = 0;
-  Double_t thrust[kTracks];
-  Double_t th = -3;
-  Double_t tpom = -1;
-
-  //Sphericity calculation
-  TMatrixDSym m(3);
-  Double_t s00 = 0;
-  Double_t s01 = 0;
-  Double_t s02 = 0;
-  
-  Double_t s10 = 0;
-  Double_t s11 = 0;
-  Double_t s12 = 0;
-  
-  Double_t s20 = 0;
-  Double_t s21 = 0;
-  Double_t s22 = 0;
-  
-  Double_t ptot = 0;
-  
-  Double_t c = -10;
-
-//
-//loop for thrust calculation  
-//
-  Int_t k = 0;
-  while(TMath::Abs(th-tpom) > 10e-7 && k < nTracks)
-    {  
-      th = tpom;
-      psum.SetXYZ(0., 0., 0.);
-      psum1 = 0;
-      psum2 = 0;
-      for(Int_t i = 0; i < nTracks; i++)
-	{
-	  pTrackPerp[i].SetXYZ(pTrack[i].X(), pTrack[i].Y(), 0);
-
-	  psum1 += (TMath::Abs(n01.Dot(pTrackPerp[i])));
-	  psum2 += pTrackPerp[i].Mag();
-
-	  if (n01.Dot(pTrackPerp[i]) > 0) psum += pTrackPerp[i];
-	  if (n01.Dot(pTrackPerp[i]) < 0) psum -= pTrackPerp[i];
-	}
-      
-      thrust[k] = psum1/psum2;
-      
-      tpom = thrust[k];
-      n01 = psum.Unit();
-      k++;
-//      Printf("========== %d +++ th :: %f, tpom :: %f=============\n", k, th, tpom);
-    }
-
-  eventShapes[0] = th;
-
-//
-//other event shapes variables
-//
-  for(Int_t j = 0; j < nTracks; j++)
-    {  
-      s00 = s00 + (pTrack[j].Px()*pTrack[j].Px())/pTrack[j].Mag();
-      s01 = s01 + (pTrack[j].Px()*pTrack[j].Py())/pTrack[j].Mag();
-      s02 = s02 + (pTrack[j].Px()*pTrack[j].Pz())/pTrack[j].Mag();
-      
-      s10 = s10 + (pTrack[j].Py()*pTrack[j].Px())/pTrack[j].Mag();
-      s11 = s11 + (pTrack[j].Py()*pTrack[j].Py())/pTrack[j].Mag();
-      s12 = s12 + (pTrack[j].Py()*pTrack[j].Pz())/pTrack[j].Mag();
-      
-      s20 = s20 + (pTrack[j].Pz()*pTrack[j].Px())/pTrack[j].Mag();
-      s21 = s21 + (pTrack[j].Pz()*pTrack[j].Py())/pTrack[j].Mag();
-      s22 = s22 + (pTrack[j].Pz()*pTrack[j].Pz())/pTrack[j].Mag();
-      
-      ptot += pTrack[j].Mag();
-    }
-
-  if(ptot < 10e-10 && ptot > 0.)
-    {
-      m(0,0) = s00/ptot;
-      m(0,1) = s01/ptot;
-      m(0,2) = s02/ptot;
-
-      m(1,0) = s10/ptot;
-      m(1,1) = s11/ptot;
-      m(1,2) = s12/ptot;
-
-      m(2,0) = s20/ptot;
-      m(2,1) = s21/ptot;
-      m(2,2) = s22/ptot;
-
-      TMatrixDSymEigen eigen(m);
-      TVectorD eigenVal = eigen.GetEigenValues();
-
-      Double_t sphericity = (3/2)*(eigenVal(2)+eigenVal(1));
-      eventShapes[1] = sphericity;
-
-      Double_t aplanarity = (3/2)*(eigenVal(2));
-      eventShapes[2] = aplanarity;
-
-      c = 3*(eigenVal(0)*eigenVal(1)+eigenVal(0)*eigenVal(2)+eigenVal(1)*eigenVal(2));
-      eventShapes[3] = c;
-    }
-}
-  
 
 
 //__________________________________________________________________________________________________________________________
