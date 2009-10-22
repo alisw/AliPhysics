@@ -242,11 +242,19 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack)
     
     //Electron check.  Where did that electron come from?
     else if(mPdg == 11){ //electron
+      if(pPdg == 11){
+        Int_t iGrandma = parent->GetFirstMother();
+        if(iGrandma >= 0) {
+          TParticle* gma = (TParticle*)stack->Particle(iGrandma); //get mother
+          Int_t gPdg = TMath::Abs(gma->GetPdgCode());
+
+          if (gPdg == 23) { SetTagBit(tag,kMCZDecay); } //parent is Z-boson
+          else if (gPdg == 24) { SetTagBit(tag,kMCWDecay); } //parent is W-boson
+        }
+      }
       SetTagBit(tag,kMCElectron);	
       if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInStack() - Checking ancestors of electrons");
-      if (pPdg == 23) { SetTagBit(tag,kMCZDecay); } //parent is Z-boson
-      else if (pPdg == 24) { SetTagBit(tag,kMCWDecay); } //parent is W-boson
-      else if (pPdg == 111) { SetTagBit(tag,kMCPi0Decay); } //Pi0 Dalitz decay
+      if (pPdg == 111) { SetTagBit(tag,kMCPi0Decay); } //Pi0 Dalitz decay
       else if (pPdg == 221) { SetTagBit(tag,kMCEtaDecay); } //Eta Dalitz decay
       else if((499 < pPdg && pPdg < 600)||(4999 < pPdg && pPdg < 6000)) { SetTagBit(tag,kMCEFromB); } //b-->e decay
       else if((399 < pPdg && pPdg < 500)||(3999 < pPdg && pPdg < 5000)) { //check charm decay
@@ -390,11 +398,19 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
     
     //Electron check.  Where did that electron come from?
     else if(mPdg == 11){ //electron
+      if(pPdg == 11){
+        Int_t iGrandma = parent->GetMother();
+        if(iGrandma >= 0) {
+          AliAODMCParticle* gma = (AliAODMCParticle*)mcparticles->At(iGrandma);
+          Int_t gPdg = TMath::Abs(gma->GetPdgCode());
+
+          if (gPdg == 23) { SetTagBit(tag,kMCZDecay); } //parent is Z-boson
+          else if (gPdg == 24) { SetTagBit(tag,kMCWDecay); } //parent is W-boson
+        }
+      }
       SetTagBit(tag,kMCElectron);	
       if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Checking ancestors of electrons");
-      if      (pPdg == 23) { SetTagBit(tag,kMCZDecay); } //parent is Z-boson
-      else if (pPdg == 24) { SetTagBit(tag,kMCWDecay); } //parent is W-boson
-      else if (pPdg == 111) { SetTagBit(tag,kMCPi0Decay); } //Pi0 Dalitz decay
+      if (pPdg == 111) { SetTagBit(tag,kMCPi0Decay); } //Pi0 Dalitz decay
       else if (pPdg == 221) { SetTagBit(tag,kMCEtaDecay); } //Eta Dalitz decay
       else if((499 < pPdg && pPdg < 600)||(4999 < pPdg && pPdg < 6000)) { SetTagBit(tag,kMCEFromB);} //b-hadron decay
       else if((399 < pPdg && pPdg < 500)||(3999 < pPdg && pPdg < 5000)) { //c-hadron decay check
