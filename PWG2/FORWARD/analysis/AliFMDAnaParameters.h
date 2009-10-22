@@ -61,7 +61,7 @@ public:
   
   enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR, kNOCTP };
   
-  enum Energy { k900 , k10000, k14000 };
+  enum Energy { k900 , k10000, k14000 , k7000};
   
   enum MagField {k0G, k5G};
   
