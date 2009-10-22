@@ -114,8 +114,9 @@ public:
   void     SetEnergy(Energy energy) {fEnergy = energy;}
   void     SetMagField(MagField magfield) {fMagField = magfield;}
   char*    GetPath(const char* species);
-
-
+  void     SetCollisionSystem(Species collsystem) {fSpecies = collsystem;}
+  void     PrintStatus();
+  
 protected:
   
   AliFMDAnaParameters();
