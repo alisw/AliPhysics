@@ -111,7 +111,7 @@ void MonitorGui(AliTPCMonitor *fMon)
   fFrameMain = new TGMainFrame(gClient->GetRoot(),10,10,kMainFrame | kVerticalFrame);
   fFrameMain->SetLayoutBroken(kTRUE);
 
-  TGTextButton*  fFrameSelForm    = new TGTextButton(fFrameMain,  "Sel. Format "         );
+//  TGTextButton*  fFrameSelForm    = new TGTextButton(fFrameMain,  "Sel. Format "         );
   TGTextButton*  fFrameSelFil     = new TGTextButton(fFrameMain,  "Sel. File/Stream"     );
   TGTextButton*  fFrameFFT        = new TGTextButton(fFrameMain,  "FFT"                  );
   TGTextButton*  fFrameWRITE      = new TGTextButton(fFrameMain,  "Write Channel"        );
@@ -131,7 +131,7 @@ void MonitorGui(AliTPCMonitor *fMon)
   TGTextButton*  fFramewrite      = new TGTextButton(fFrameMain,  "Write Histos"         );
   TGTextButton*  fFrameQuit       = new TGTextButton(fFrameMain,  "Quit"                 );
  
-  fFrameSelForm->SetCommand(   "InitDialog(1)"     );
+//  fFrameSelForm->SetCommand(   "InitDialog(1)"     );
   fFrameSelFil->SetCommand(    "OpenDir()"        );
   fFrameFFT->SetCommand(       "FFT()"             );
   fFrameWRITE->SetCommand(     "WriteChannel()"    );
@@ -150,10 +150,12 @@ void MonitorGui(AliTPCMonitor *fMon)
   fFrameQuit->SetCommand(      "Quit()"            );
   
   fFrameCalcBSL->SetDown(  1);
-  fFrameCheckPed->SetDown( 0);
+  fFrameCheckPed->SetDown( 1);
+  fFrameChDisFit->SetDown( 1);
   fFrameCh10bit->SetDown(  0);
   fFrameCheckVerb->SetDown(0);
   fFrameCheckProcOne->SetDown(0);
+  SetPedestalRun(0); // !!
   
   TGLayoutHints* fLayout = new TGLayoutHints(kLHintsLeft | kLHintsTop,5,5,5,5);
   fFrameMain->AddFrame(fFrameSideA     , fLayout);
@@ -163,21 +165,21 @@ void MonitorGui(AliTPCMonitor *fMon)
   fFrameMain->AddFrame(fFrameRMS       , fLayout);
   fFrameMain->AddFrame(fFrameSetConf   , fLayout);
   fFrameMain->AddFrame(fFrameSelFil    , fLayout);
-  fFrameMain->AddFrame(fFrameSelForm   , fLayout);
+//  fFrameMain->AddFrame(fFrameSelForm   , fLayout);
   fFrameMain->AddFrame(fFrameFFT       , fLayout);
 //  Int_t step = (Int_t)(ysize/2.);
   Int_t start = 5; 
   
-  fFrameSelForm->MoveResize(     10, (Int_t)(start+ 1.0*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
-  fFrameSelFil->MoveResize(      10, (Int_t)(start+ 2.0*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+//  fFrameSelForm->MoveResize(     10, (Int_t)(start+ 1.0*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameSelFil->MoveResize(      10, (Int_t)(start+ 1.0*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
  
-  fFrameSetConf->MoveResize(     10, (Int_t)(start+ 4.5*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameSetConf->MoveResize(     10, (Int_t)(start+ 2.5*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
  
-  fFrameCalcBSL->MoveResize(     10, (Int_t)(start+   6*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
-  fFrameCheckPed->MoveResize(    10, (Int_t)(start+   7*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
-  fFrameChDisFit->MoveResize(    10, (Int_t)(start+   8*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
-  fFrameCh10bit->MoveResize(     10, (Int_t)(start+   9*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
-  fFrameCheckVerb->MoveResize(   10, (Int_t)(start+  10*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameCalcBSL->MoveResize(     10, (Int_t)(start+   5*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameCheckPed->MoveResize(    10, (Int_t)(start+   6*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameChDisFit->MoveResize(    10, (Int_t)(start+   7*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameCh10bit->MoveResize(     10, (Int_t)(start+   8*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameCheckVerb->MoveResize(   10, (Int_t)(start+   9*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
   
   
   yfirst = start+ 14*ysize;
@@ -362,8 +364,9 @@ void OpenDir()
   string   firsts   = fname.substr(ffirst,1);
   Int_t    firstsl  = strcmp(firsts.data(),":");
   Int_t    firstcol = strcmp(firsts.data(),"@");
-  if(fname.find("rfio")!=string::npos|| fname.find("http")!=string::npos  || !firstsl || !firstcol  )  fstart= ffirst  ;
-  else                                                                                                 fstart= ffirst-1; 
+  if ( (fname.find("mem:")!=string::npos) || (fname.find("rfio")!=string::npos) || (fname.find("http")!=string::npos)
+       || !firstsl || !firstcol  )  fstart= ffirst  ;
+  else                              fstart= ffirst-1; 
   
   if(fstart <0){ cout << " return : missing slash at beginning of file " << endl ; return ;}
   

@@ -61,11 +61,14 @@ h2f->Draw("col");
 
 
 //Root includes
+#include <TROOT.h>
 #include <TH2C.h>
 #include <TH1F.h>
 #include <TMap.h>
+#include <TGraph.h>
 #include <TObjString.h>
-
+#include <TTimeStamp.h>
+#include <TCanvas.h>
 //AliRoot includes
 #include "AliTPCCalROC.h"
 #include "AliAltroRawStream.h"
@@ -95,13 +98,20 @@ AliTPCCalibRaw::AliTPCCalibRaw() :
   fLastSignal(0),
   fNOkPlus(0),
   fNOkMinus(0),
+  fNanoSec(0),
   fArrCurrentPhaseDist(4),
   fArrCurrentPhase(kNRCU),
   fArrFailEventNumber(100),
-  fArrALTROL1Phase(1000),
+  fArrALTROL1Phase(100000),
   fArrALTROL1PhaseEvent(kNRCU),
   fArrALTROL1PhaseFailEvent(kNRCU),
-  fHnDrift(0x0)
+  fHnDrift(0x0),
+  fVOccupancyEvent(100000),
+  fVSignalSumEvent(100000),
+  fVOccupancySenEvent(100000),
+  fVSignalSumSenEvent(100000),
+  fVNfiredPadsSenEvent(100000),
+  fVTimeStampEvent(100000)
 {
   //
   // Default ctor
@@ -133,13 +143,20 @@ fPeakTimeBin(0),
 fLastSignal(0),
 fNOkPlus(0),
 fNOkMinus(0),
+fNanoSec(0),
 fArrCurrentPhaseDist(4),
 fArrCurrentPhase(kNRCU),
 fArrFailEventNumber(100),
-fArrALTROL1Phase(1000),
+fArrALTROL1Phase(100000),
 fArrALTROL1PhaseEvent(kNRCU),
 fArrALTROL1PhaseFailEvent(kNRCU),
-fHnDrift(0x0)
+fHnDrift(0x0),
+fVOccupancyEvent(100000),
+fVSignalSumEvent(100000),
+fVOccupancySenEvent(100000),
+fVSignalSumSenEvent(100000),
+fVNfiredPadsSenEvent(100000),
+fVTimeStampEvent(100000)
 {
   //
   // Default ctor
@@ -184,12 +201,39 @@ Int_t AliTPCCalibRaw::Update(const Int_t isector, const Int_t iRow, const Int_t 
   if (iPad<0) return 0;
   if (iTimeBin<0) return 0;
   if (!fFirstTimeStamp) fFirstTimeStamp=GetTimeStamp();
+  //
+  Int_t iChannel  = fROC->GetRowIndexes(isector)[iRow]+iPad; //  global pad position in sector
+  //occupancy
+  fVOccupancyEvent.GetMatrixArray()[GetNevents()]++;
+  fVSignalSumEvent.GetMatrixArray()[GetNevents()]+=signal;
+  //occupancy in sensitive regions
+  Int_t npads=(Int_t)fROC->GetNPads(isector,iRow);
+  Int_t cpad=iPad-npads/2;
+  if (isector<(Int_t)fROC->GetNInnerSector()){
+    //IROC case (spot)
+    if ( iRow>19 && iRow<46 ){
+      if ( TMath::Abs(cpad)<7 ){
+        fVOccupancySenEvent.GetMatrixArray()[GetNevents()]++;
+        fVSignalSumSenEvent.GetMatrixArray()[GetNevents()]+=signal;
+        if (iChannel!=fCurrentChannel) fVNfiredPadsSenEvent.GetMatrixArray()[GetNevents()]++;
+      }
+    }
+  } else if ( iRow>75 ){
+    //OROC case (outer corners and last three rows are sensitive)
+    Int_t padEdge=(Int_t)TMath::Min(iPad,npads-iPad);
+    Int_t nrows=(Int_t)fROC->GetNRows(isector);
+    if ((nrows-iRow-1)<3 || padEdge<((((Int_t)iRow-76)/4+1))*2){
+      fVOccupancySenEvent.GetMatrixArray()[GetNevents()]++;
+      fVSignalSumSenEvent.GetMatrixArray()[GetNevents()]+=signal;
+      if (iChannel!=fCurrentChannel) fVNfiredPadsSenEvent.GetMatrixArray()[GetNevents()]++;
+    }
+  }
+  //
   if ( (iTimeBin>fLastTimeBin) || (iTimeBin<fFirstTimeBin)   ) return 0;
   //don't process edge pads
   if (IsEdgePad(isector,iRow,iPad)) return 0;
 //   Double_t x[kHnBinsDV]={1,isector,0};
 //   fHnDrift->Fill(x);
-  Int_t iChannel  = fROC->GetRowIndexes(isector)[iRow]+iPad; //  global pad position in sector
   if (fCurrentChannel==iChannel){
     if (fPadProcessed) return 0;
   } else {
@@ -229,6 +273,11 @@ void AliTPCCalibRaw::UpdateDDL(){
   // fill ALTRO L1 information
   //
   
+  //set nanoseconds
+  if (!fNanoSec) {
+    TTimeStamp s;
+    fNanoSec=s.GetNanoSec();
+  }
   // current phase
   Int_t phase=(Int_t)(GetL1PhaseTB()*4.);
   //Fill pahse information of current rcu and event
@@ -245,6 +294,8 @@ void AliTPCCalibRaw::ResetEvent()
   //
 
   fCurrentChannel=-1;
+  fCurrentRow=-1;
+  fCurrentPad=-1;
   fArrCurrentPhaseDist.Zero();
 }
 //_____________________________________________________________________
@@ -267,7 +318,7 @@ void AliTPCCalibRaw::EndEvent()
   }
   // store phase of current event
   if (fArrALTROL1Phase.GetNrows()<=GetNevents())
-    fArrALTROL1Phase.ResizeTo(GetNevents()+1000);
+    fArrALTROL1Phase.ResizeTo(GetNevents()+10000);
   (fArrALTROL1Phase.GetMatrixArray())[GetNevents()]=phaseMaxEntries;
   
   //loop over RCUs and test failures
@@ -290,6 +341,18 @@ void AliTPCCalibRaw::EndEvent()
     fArrFailEventNumber.GetMatrixArray()[fNFailL1PhaseEvent]=GetNevents();
   }
   fNFailL1PhaseEvent+=fail;
+  //time stamps
+  fVTimeStampEvent.GetMatrixArray()[GetNevents()]=GetTimeStamp()-fFirstTimeStamp+fNanoSec*1e-9;
+  fNanoSec=0;
+  //occupance related
+  if (fVOccupancyEvent.GetNrows()<=GetNevents()){
+    fVOccupancyEvent.ResizeTo(GetNevents()+10000);
+    fVSignalSumEvent.ResizeTo(GetNevents()+10000);
+    fVOccupancySenEvent.ResizeTo(GetNevents()+10000);
+    fVSignalSumSenEvent.ResizeTo(GetNevents()+10000);
+    fVTimeStampEvent.ResizeTo(GetNevents()+10000);
+    fVNfiredPadsSenEvent.ResizeTo(GetNevents()+10000);
+  }
   IncrementNevents();
 }
 //_____________________________________________________________________
@@ -437,8 +500,133 @@ void AliTPCCalibRaw::Analyse()
 //    TVectorF *arrF=MakeArrL1PhaseFailRCU(ircu);
 //     arrF->ResizeTo(1);
   }
-
-  //Analyse drift velocity
+  //resize occupancy arrays
+  fVTimeStampEvent.ResizeTo(GetNevents());
+  fVOccupancyEvent.ResizeTo(GetNevents());
+  fVOccupancySenEvent.ResizeTo(GetNevents());
+  fVSignalSumEvent.ResizeTo(GetNevents());
+  fVSignalSumSenEvent.ResizeTo(GetNevents());
+  fVNfiredPadsSenEvent.ResizeTo(GetNevents());
+  //Analyse drift velocity TODO
   
+}
+//_____________________________________________________________________
+TGraph* AliTPCCalibRaw::MakeGraphOccupancy(const Int_t type, const Int_t xType)
+{
+  //
+  // create occupancy graph (of samples abouve threshold)
+  // type=0:   number of samples
+  // type=1:   mean data volume (ADC counts/sample)
+  // type=2:   data volume (ADC counts)
+  // type=3:   samples per ADC count
+  // type=4:   sample occupancy
+  //
+  // type=5: number of sample sensitive / number of samples
+  //
+  // same in sensitive regions:
+  // type=10:  number of samples
+  // type=11:  mean data volume (ADC counts/sample)
+  // type=12:  data volume (ADC counts)
+  // type=13:  samples per ADC count
+  // type=14:   sample occupancy
+  //
+  // type=16: number of samples sensitive / number of pads sensitive
+  // type=17: pad occupancy in sensitive regions
+  // xType=0:  vs. time stamp
+  // xType=1:  vs. event counter
+  //
+
+  TString title("Event occupancy");
+  TString xTitle("Time");
+  TString yTitle("number of samples");
+  TGraph *gr=new TGraph(GetNevents());
+  TVectorF *vOcc=&fVOccupancyEvent;
+  TVectorF *vSum=&fVSignalSumEvent;
+  TVectorF *vPads=&fVNfiredPadsSenEvent;
+  Double_t norm=557568.;
+  if (type>=10){
+    vOcc=&fVOccupancySenEvent;
+    vSum=&fVSignalSumSenEvent;
+    vPads=&fVNfiredPadsSenEvent;
+    norm=33012.;
+  }
+  for (Int_t i=0;i<GetNevents(); ++i){
+    Double_t nAboveThreshold=vOcc->GetMatrixArray()[i];
+    Double_t nSumADC        =vSum->GetMatrixArray()[i];
+    Double_t timestamp      =fVTimeStampEvent.GetMatrixArray()[i]+fFirstTimeStamp;
+    Double_t nPads          =vPads->GetMatrixArray()[i];
+    Double_t x=timestamp;
+    Double_t y=0;
+    //
+    if (xType==1)     x=i;
+    //
+    if (type%10==0)            y=nAboveThreshold;
+    if (type%10==1&&nAboveThreshold>0)      y=nSumADC/nAboveThreshold;
+    if (type%10==2)            y=nSumADC;
+    if (type%10==3&&nSumADC>0) y=nAboveThreshold/nSumADC;
+    if (type%10==4)            y=nAboveThreshold/(norm*(fLastTimeBin-fFirstTimeBin));
+    if (type==5)               y=fVOccupancySenEvent.GetMatrixArray()[i]/fVOccupancyEvent.GetMatrixArray()[i];
+    if (type==16&&nPads>0)     y=nAboveThreshold/nPads;
+    if (type==17)              y=nPads/norm;
+    //
+    gr->SetPoint(i,x,y);
+  }
+  if (xType==1) xTitle="Event";
+  if (type%10==1)      yTitle="Mean ADC counts/sample";
+  else if (type%10==2) yTitle="Data volume [ADC counts]";
+  else if (type%10==3) yTitle="samples per ADC count";
+  else if (type%10==4) yTitle="sample occupancy";
+  if (type==5)         yTitle="N samples (sensitive) / N samples";
+  if (type%10==6)      yTitle="N samples / N pads";
+  if (type==17)        yTitle="Pad Occupancy";
+  if (type>=10)        yTitle+=" (sensitive)";
+  title=yTitle+":"+xTitle;
+  title+=";"+xTitle+";"+yTitle;
+  gr->SetTitle(title.Data());
+  gr->SetEditable(kFALSE);
+  return gr;
+}
+//_____________________________________________________________________
+TGraph* AliTPCCalibRaw::MakeGraphNoiseEvents()
+{
+  //
+  //
+  //
+  return 0;  
+}
+//_____________________________________________________________________
+TCanvas* AliTPCCalibRaw::MakeCanvasOccupancy(const Int_t xType, Bool_t sen)
+{
+  //
+  // Create a canvas with occupancy information of all 'type's (see MakeGraphOccupancy)
+  // xType=0: vs. timestamp
+  // xType=1: vs. event number
+  //
+  // sen=kTRUE: for sensitive regions
+  //
+
+  TString name("RawOccupancy_");
+  TString title("Raw Occupancy vs. ");
+  if (xType==0){
+    name+="Time";
+    title+="time";
+  } else if (xType==1){
+    name+="Event";
+    title+="event";
+  }
+  if (sen){
+    name+="Sen";
+    title+=" (sensitive)";
+  }
+  TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject(name.Data());
+  if (!c) c=new TCanvas(name.Data(),title.Data());
+  c->Clear();
+  c->Divide(2,2);
+  for (Int_t i=0;i<4;++i){
+    c->cd(i+1);
+    TGraph *gr=MakeGraphOccupancy(i+10*(Int_t)sen,xType);
+    gr->Draw("alp");
+  }
+  return c;
 }
 

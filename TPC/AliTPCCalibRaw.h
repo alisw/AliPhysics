@@ -20,6 +20,8 @@
 class TH2C;
 class TH1F;
 class TMap;
+class TGraph;
+class TCanvas;
 
 class AliTPCCalibRaw : public AliTPCCalibRawBase {
 public:
@@ -47,13 +49,25 @@ public:
   const TVectorF *GetALTROL1PhaseEventsRCU(Int_t rcu) const {return (TVectorF*)fArrALTROL1PhaseEvent.At(rcu);}
   const TVectorF *GetALTROL1PhaseFailEventsRCU(Int_t rcu) const {return (TVectorF*)fArrALTROL1PhaseFailEvent.At(rcu);}
 
-  void  SetRangePeakDetection(Int_t minus, Int_t plus) { fPeakDetMinus=minus; fPeakDetPlus=plus;}
+  const TVectorF *GetOccupancyEvent()          const {return &fVOccupancyEvent;}
+  const TVectorF *GetOccupancyEventSensitive() const {return &fVOccupancySenEvent;}
+  const TVectorF *GetSignalSumEvent()          const {return &fVSignalSumEvent;}
+  const TVectorF *GetSignalSumEventSensitive() const {return &fVSignalSumSenEvent;}
+  const TVectorF *GetFiredPadsSensitive()      const {return &fVNfiredPadsSenEvent;}
+  const TVectorF *GetEventTimeStamps()         const {return &fVTimeStampEvent;}
+  UInt_t GetFirstTimeStamp() const {return fFirstTimeStamp;}
   
+  void  SetRangePeakDetection(Int_t minus, Int_t plus) { fPeakDetMinus=minus; fPeakDetPlus=plus;}
+  //Phase info
   TH2C *MakeHistL1RCUEvents(Int_t type=0);
   TH2C *MakeHistL1RCUEventsIROC(Int_t type=0);
   TH2C *MakeHistL1RCUEventsOROC(Int_t type=0);
   TH1F *MakeHistL1PhaseDist();
   TVectorF *MakeVectL1PhaseDist();
+  //Occupancy info
+  TGraph*  MakeGraphOccupancy(const Int_t type=0, const Int_t xType=0);
+  TGraph*  MakeGraphNoiseEvents();
+  TCanvas* MakeCanvasOccupancy(const Int_t xType=1, Bool_t sen=kFALSE);
 
   const THnSparseI *GetHnDrift() const {return fHnDrift;}
 //   AliTPCCalPad *CreateCalPadL1Mean();
@@ -80,6 +94,7 @@ private:
   Int_t     fLastSignal;             //! last signal processed
   Int_t     fNOkPlus;                //! number of processed time bins fullfilling peak criteria
   Int_t     fNOkMinus;               //! number of processed time bins fullfilling peak criteria
+  Int_t     fNanoSec;                //! current nano seconds stamp
 //
   //L1 phase stuff
   TVectorF fArrCurrentPhaseDist;       //!Phase distribution of the current event
@@ -91,6 +106,13 @@ private:
   //drift velocity stuff
   enum {kHnBinsDV=3};
   THnSparseI *fHnDrift;                //Histogram last time bin vs. ROC, Time
+  //occupancy
+  TVectorF fVOccupancyEvent;           //occupancy per event (number of samples above threshold)
+  TVectorF fVSignalSumEvent;           //occupancy per event (sum of all adc values)
+  TVectorF fVOccupancySenEvent;        //occupancy per event (number of samples abouve threshold) in sensitive regions
+  TVectorF fVSignalSumSenEvent;        //occupancy per event (sum of all adc values) in sensitive regions
+  TVectorF fVNfiredPadsSenEvent;       //number of pads with a signal above threshold in sensitive regions
+  TVectorF fVTimeStampEvent;           //timestamp for all events
   
   TVectorF *MakeArrL1PhaseRCU(Int_t rcu, Bool_t force=kFALSE);
   TVectorF *MakeArrL1PhaseFailRCU(Int_t rcu, Bool_t force=kFALSE);
@@ -101,7 +123,7 @@ private:
   AliTPCCalibRaw(AliTPCCalibRaw &calib);
   AliTPCCalibRaw& operator = (const  AliTPCCalibRaw &source);
 
-  ClassDef(AliTPCCalibRaw,2) //  Analysis of the Altro header information
+  ClassDef(AliTPCCalibRaw,3) //  Analysis of the Altro header information
 };
 
 //----------------------
@@ -121,7 +143,7 @@ inline TVectorF *AliTPCCalibRaw::MakeArrL1PhaseFailRCU(Int_t rcu, Bool_t force)
 {
   TVectorF *arr=(TVectorF*)fArrALTROL1PhaseFailEvent.UncheckedAt(rcu);
   if (!arr && force) {
-    arr=new TVectorF(1000);
+    arr=new TVectorF(100);
     fArrALTROL1PhaseFailEvent.AddAt(arr,rcu);
   }
   return arr;

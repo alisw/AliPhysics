@@ -578,6 +578,10 @@ Int_t AliTPCMonitor::ReadDataNew(Int_t secid)
              continue;
            }
     skip=kFALSE;
+    //test if the TPC has data
+    UChar_t *data=0;
+    fRawReader->Select("TPC");
+    if (!fRawReader->ReadNextData(data)) skip=kTRUE;
     fEventNumber = fRawReader->GetEventIndex();
     fEventNumberOld = fRawReader->GetEventIndex();
   }

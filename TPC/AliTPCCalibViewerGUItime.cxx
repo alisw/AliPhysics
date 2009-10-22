@@ -598,14 +598,13 @@ void AliTPCCalibViewerGUItime::Reload(Int_t first)
       fTree->SetBranchStatus(s.Data(),0);
       continue;
     }
-    fListVariables->AddEntry(SubstituteUnderscores(branchTitle.Data()),id);
+//     fListVariables->AddEntry(SubstituteUnderscores(branchTitle.Data()),id);
+    fListVariables->AddEntry(branchTitle.Data(),id);
     ++idCount;
   }
   //trick to display modifications
-  if (!first){
-    fListVariables->Resize(fListVariables->GetWidth()-1, fListVariables->GetHeight());
-    fListVariables->Resize(fListVariables->GetWidth()+1, fListVariables->GetHeight());
-  }
+  fListVariables->Resize(fListVariables->GetWidth()-1, fListVariables->GetHeight());
+  fListVariables->Resize(fListVariables->GetWidth()+1, fListVariables->GetHeight());
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::AddReferenceTree(const char* treeFileName, const char* refName)
@@ -696,13 +695,13 @@ void AliTPCCalibViewerGUItime::GetHistogramTitle(TString &title)
   title=fDrawString;
   Int_t pos=title.First(">>");
   if (pos>0) title=title(0,pos);
-  if (!fIsCustomDraw){
+//   if (!fIsCustomDraw){
     if (fRadioXrun->GetState()==kButtonDown){
       title+=":Run";
     } else if (fRadioXtime->GetState()==kButtonDown){
       title+=":Date";
     }
-  }
+//   }
   TString cuts;
   GetCutString(cuts);
   TObjArray *arr=title.Tokenize(":");
@@ -790,19 +789,20 @@ void AliTPCCalibViewerGUItime::DoDraw() {
   graphOutput&=(drawString.First(">>")<0); //histogram output in custom draw
   graphOutput&=fRadioXhist->GetState()!=kButtonDown; //histogram drawing selected
   graphOutput&=!(fIsCustomDraw&&!fDrawString.Contains(":")); //custom draw 1D
+  if (fIsCustomDraw&&fDrawString.Contains(":")) HandleButtonsDrawSel(-kRadioXhist);
   Bool_t drawSame=optString.Contains("same",TString::kIgnoreCase);
 //   optString+="goff";
   if (graphOutput) {
     drawString.Prepend("run:time:");
     optString="goff";
   }else{
-    if (!fIsCustomDraw){
+//     if (!fIsCustomDraw){
       if (fRadioXrun->GetState()==kButtonDown){
         drawString+=":run";
       } else if (fRadioXtime->GetState()==kButtonDown){
         drawString+=":time";
       }
-    }
+//     }
   }
   TVirtualPad *padsave=gPad;
   fCanvMain->GetCanvas()->cd();
@@ -876,7 +876,8 @@ void AliTPCCalibViewerGUItime::DoDraw() {
   }
   
   //Set time axis if choosen as x-variables
-  if (fRadioXtime->GetState()==kButtonDown&&!fIsCustomDraw&&!drawSame){
+//   if (fRadioXtime->GetState()==kButtonDown&&!fIsCustomDraw&&!drawSame){
+  if (fRadioXtime->GetState()==kButtonDown&&!drawSame){
     TAxis *xaxis=fCurrentHist->GetXaxis();
     xaxis->SetTimeFormat("#splitline{%d.%m}{%H:%M}");
     xaxis->SetTimeDisplay(1);
@@ -973,12 +974,18 @@ void AliTPCCalibViewerGUItime::HandleButtonsDrawSel(Int_t id)
   }
   
   Bool_t doDraw=kFALSE;
+  Bool_t noDraw=kFALSE;
+  if (id<-1){
+    noDraw=kTRUE;
+    id=TMath::Abs(id);
+  }
   switch (id) {
   case (kRadioXhist):
     doDraw=(fRadioXtime->GetState()==kButtonDown||fRadioXrun->GetState()==kButtonDown);
     if (doDraw){
       fRadioXrun->SetState(kButtonUp);
       fRadioXtime->SetState(kButtonUp);
+      fRadioXhist->SetState(kButtonDown);
     }
     break;
   case (kRadioXrun):
@@ -986,6 +993,7 @@ void AliTPCCalibViewerGUItime::HandleButtonsDrawSel(Int_t id)
     if (doDraw){
       fRadioXhist->SetState(kButtonUp);
       fRadioXtime->SetState(kButtonUp);
+      fRadioXrun->SetState(kButtonDown);
     }
     break;
   case (kRadioXtime):
@@ -993,10 +1001,11 @@ void AliTPCCalibViewerGUItime::HandleButtonsDrawSel(Int_t id)
     if (doDraw){
       fRadioXrun->SetState(kButtonUp);
       fRadioXhist->SetState(kButtonUp);
+      fRadioXtime->SetState(kButtonDown);
     }
     break;
   }
-  if (doDraw) DoCustomCutsDraw();
+  if (doDraw&&!noDraw) DoCustomCutsDraw();
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::UpdateParName()
