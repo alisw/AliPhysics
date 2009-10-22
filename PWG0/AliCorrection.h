@@ -23,7 +23,7 @@ class AliCorrection : public TNamed
 {
 public:
   AliCorrection();
-  AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC);
+  AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Helper::AnalysisMode analysisMode = (AliPWG0Helper::AnalysisMode) (AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn));
   AliCorrection(const AliCorrection& c);
 
   virtual ~AliCorrection();

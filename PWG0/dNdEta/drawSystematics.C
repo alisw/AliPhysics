@@ -798,8 +798,10 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
 
   const Char_t* changes[]  = { "pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdlessddmore", "sdmoreddless", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdlessddmore25", "sdmoreddless25"};
   Float_t scalesND[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0 };
-  Float_t scalesDD[] = {1.0, 1.5, 0.5, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 1.25, 0.75, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75};
-  Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 0.5, 1.5, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75, 0.75, 1.25};
+  //Float_t scalesDD[] = {1.0, 1.5, 0.5, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 1.25, 0.75, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75};
+  //Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 0.5, 1.5, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75, 0.75, 1.25};
+  Float_t scalesDD[] = {1.0, 1.4, 0.6, 1.0, 1.0, 1.4, 0.6, 1.4, 0.6, 1.25, 0.75, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75};
+  Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.4, 0.6, 1.4, 0.6, 0.4, 1.6, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75, 0.75, 1.25};
   Int_t nChanges = 17;
 
   /*
@@ -1544,4 +1546,45 @@ void runStudy(const char* baseCorrectionMapFile = "correction_map.root", const c
   }
 
   legend->Draw();
+}
+
+void ChangePtInCorrection(const char* fileName = "correction_map.root", const char* dirName = "dndeta_correction")
+{
+  loadlibs();
+  if (!TFile::Open(fileName))
+    return;
+
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(dirName, dirName);
+  if (!dNdEtaCorrection->LoadHistograms())
+    return;
+
+  dNdEtaCorrection->Finish();
+
+  AliCorrection* corr = dNdEtaCorrection->GetCorrection(AlidNdEtaCorrection::kTrack2Particle);
+ 
+  Printf(">>>> Before");
+  corr->PrintInfo(0);
+
+  Float_t factor = 0.5;
+  Float_t ptCutOff = 0.2;
+  
+  TH3* gene = corr->GetTrackCorrection()->GetGeneratedHistogram();
+  TH3* meas = corr->GetTrackCorrection()->GetMeasuredHistogram();
+  
+  for (Int_t z = 1; z <= gene->GetZaxis()->FindBin(ptCutOff - 0.01); z++)
+  {
+    Float_t localFactor = 1 - (ptCutOff - gene->GetZaxis()->GetBinCenter(z)) / ptCutOff * factor;
+    Printf("%f %f", gene->GetZaxis()->GetBinCenter(z), localFactor);
+    for (Int_t x = 1; x <= gene->GetNbinsX(); x++)
+      for (Int_t y = 1; y <= gene->GetNbinsY(); y++)
+      {
+        gene->SetBinContent(x, y, z, gene->GetBinContent(x, y, z) * localFactor);
+        meas->SetBinContent(x, y, z, meas->GetBinContent(x, y, z) * localFactor);
+      }
+  }
+  
+  dNdEtaCorrection->Finish();
+  
+  Printf(">>>> After");
+  corr->PrintInfo(0);
 }

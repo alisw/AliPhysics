@@ -35,7 +35,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
     void SetTrigger(AliPWG0Helper::Trigger trigger) { fTrigger = trigger; }
     void SetFillPhi(Bool_t flag = kTRUE) { fFillPhi = flag; }
     void SetDeltaPhiCut(Float_t cut) { fDeltaPhiCut = cut; }
-
+    
     void SetOption(const char* opt) { fOption = opt; }
 
  protected:
@@ -82,6 +82,7 @@ class AlidNdEtaTask : public AliAnalysisTask {
     TH2F* fEtaPhi;                //! raw eta - phi distribution
     TH2F* fZPhi[2];               //! raw z - phi distribution from tracklets per layer (only SPD)
     TH1F* fDeltaPhi;              //! histogram of delta_phi values for tracklets (only for SPD analysis)
+    TH1F* fDeltaTheta;            //! histogram of delta_theta values for tracklets (only for SPD analysis)
     TH2F* fFiredChips;            //! fired chips l1+l2 vs. number of tracklets (only for SPD analysis)
     TGraph* fTriggerVsTime;       //! trigger as function of event time
     TH1F* fStats;                 //! further statistics : bin 1 = vertexer 3d, bin 2 = vertexer z

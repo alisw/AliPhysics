@@ -21,8 +21,8 @@ class TTree;
 class AliPWG0Helper : public TObject
 {
   public:
-    enum Trigger { kMB1 = 0, kMB2, kMB3, kSPDFASTOR, kOfflineMB1, kOfflineMB2, kOfflineMB3, kOfflineFASTOR }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
-    enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS };
+    enum Trigger { kAcceptAll = -1, kMB1 = 0, kMB2, kMB3, kSPDFASTOR, kOfflineMB1, kOfflineMB2, kOfflineMB3, kOfflineFASTOR }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
+    enum AnalysisMode { kInvalid = -1, kSPD = 0x1, kTPC = 0x2, kTPCITS = 0x4, kFieldOn = 0x8 };
     // in case we want to use bitmaps...
     enum MCProcessType { kInvalidProcess = -1, kND = 0x1, kDD = 0x2, kSD = 0x4 };
 

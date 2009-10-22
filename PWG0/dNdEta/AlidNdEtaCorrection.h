@@ -35,7 +35,7 @@ public:
   };
 
   AlidNdEtaCorrection();
-  AlidNdEtaCorrection(const Char_t* name, const Char_t* title, AliPWG0Helper::AnalysisMode analysis = AliPWG0Helper::kTPC);
+  AlidNdEtaCorrection(const Char_t* name, const Char_t* title, AliPWG0Helper::AnalysisMode analysis = (AliPWG0Helper::AnalysisMode) (AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn));
 
   virtual Long64_t Merge(TCollection* list);
 

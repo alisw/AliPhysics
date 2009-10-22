@@ -28,6 +28,10 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   // aProof option: 0 no proof
   //                1 proof with chain
   //                2 proof with dataset
+  //
+  // option is passed to the task(s)
+  //   option SAVE is removed and results in moving the output files to maps/<ds name>/<trigger>/<det>
+  //
   
   TString taskName;
   if (runWhat == 0 || runWhat == 2)
@@ -49,7 +53,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
 
   if (aProof)
   {
-    TProof::Open("alicecaf");
+    TProof::Open("alicecaf"); 
     //gProof->SetParallel(1);
 
     // Enable the needed package
@@ -68,8 +72,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     }
     else
     {
-      gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-16-Release/AF-v4-16");
-      gProof->EnablePackage("AF-v4-16");
+      gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-17-Release/AF-v4-17");
+      gProof->EnablePackage("AF-v4-17");
     }
 
     gProof->UploadPackage("$ALICE_ROOT/PWG0base");
@@ -97,13 +101,13 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDVZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks Kinks Cascades AliESDTZERO ALIESDACORDE MuonTracks TrdTracks CaloClusters");
   mgr->SetInputEventHandler(esdH);
 
-  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD;
+  AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn;
   AliPWG0Helper::Trigger      trigger      = AliPWG0Helper::kMB1;
 
   AliPWG0Helper::PrintConf(analysisMode, trigger);
 
   AliESDtrackCuts* esdTrackCuts = 0;
-  if (analysisMode != AliPWG0Helper::kSPD)
+  if (!(analysisMode & AliPWG0Helper::kSPD))
   {
     // selection of esd tracks
     gROOT->ProcessLine(".L ../CreateStandardCuts.C");
@@ -116,13 +120,22 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     esdTrackCuts->SetHistogramsOn(kTRUE);
   }
 
-  cInput  = mgr->GetCommonInputContainer();
-
+  cInput = mgr->GetCommonInputContainer();
+  
+  // remove SAVE option if set
+  Bool_t save = kFALSE;
+  TString optStr(option);
+  if (optStr.Contains("SAVE"))
+  {
+    optStr = optStr(0,optStr.Index("SAVE")) + optStr(optStr.Index("SAVE")+4, optStr.Length());
+    save = kTRUE;
+  }
+  
   // Create, add task
   if (runWhat == 0 || runWhat == 2)
   {
     Load("AlidNdEtaTask", aDebug);
-    task = new AlidNdEtaTask(option);
+    task = new AlidNdEtaTask(optStr);
 
     if (mc)
       task->SetReadMC();
@@ -136,7 +149,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     task->SetTrigger(trigger);
     task->SetAnalysisMode(analysisMode);
     task->SetTrackCuts(esdTrackCuts);
-    task->SetDeltaPhiCut(0.05);
+    //task->SetDeltaPhiCut(0.05);
 
     mgr->AddTask(task);
 
@@ -150,7 +163,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   if (runWhat == 1 || runWhat == 2)
   {
     Load("AlidNdEtaCorrectionTask", aDebug);
-    task2 = new AlidNdEtaCorrectionTask(option);
+    task2 = new AlidNdEtaCorrectionTask(optStr);
 
     // syst. error flags
     //task2->SetFillPhi();
@@ -191,6 +204,42 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     // process dataset
 
     mgr->StartAnalysis("proof", data, nRuns, offset);
+    
+    if (save)
+    {
+      TString path("maps/");
+      path += TString(data).Tokenize("/")->Last()->GetName();
+      
+      switch (trigger)
+      {
+        case AliPWG0Helper::kMB1:
+        case AliPWG0Helper::kOfflineMB1: path += "/mb1"; break;
+        case AliPWG0Helper::kMB2:
+        case AliPWG0Helper::kOfflineMB2: path += "/mb2"; break;
+        case AliPWG0Helper::kMB3:
+        case AliPWG0Helper::kOfflineMB3: path += "/mb3"; break;
+        case AliPWG0Helper::kFASTOR:
+        case AliPWG0Helper::kOfflineFASTOR: path += "/fastor"; break;
+        default: Printf("ERROR: Trigger undefined for path to files"); return;
+      }
+      
+      if (analysisMode & AliPWG0Helper::kSPD)
+        path += "/spd";
+      
+      if (analysisMode & AliPWG0Helper::kTPC)
+        path += "/tpc";
+        
+      gSystem->mkdir(path, kTRUE);
+      if (runWhat == 0 || runWhat == 2)
+        gSystem->Rename("analysis_esd_raw.root", path + "/analysis_esd_raw.root");
+      if (runWhat == 1 || runWhat == 2)
+      {
+        gSystem->Rename("analysis_mc.root", path + "/analysis_mc.root");
+        gSystem->Rename("correction_map.root", path + "/correction_map.root");
+      }
+      
+      Printf(">>>>> Moved files to %s", path.Data());
+    }
   }
   else if (aProof == 3)
   {

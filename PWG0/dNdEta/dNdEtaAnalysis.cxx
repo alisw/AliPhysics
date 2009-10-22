@@ -262,13 +262,13 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     //     alpha = triggered events with vertex at a given vertex position / all triggered events with vertex
     //     triggered events without vertex and 0 multiplicity at a given vertex position = alpha * all triggered events with 0 multiplicity
     //   afterwards we still correct for the trigger efficiency
+    // at the same time calculate expectation from MC (not used, just to check the value)
 
     //TH2* measuredEvents = fData->GetEventCorrection()->GetMeasuredHistogram();
     TH2* correctedEvents = fData->GetEventCorrection()->GetGeneratedHistogram();
 
     TH2* eTrig =    correction->GetVertexRecoCorrection()->GetEventCorrection()->GetGeneratedHistogram();
     TH2* eTrigVtx = correction->GetVertexRecoCorrection()->GetEventCorrection()->GetMeasuredHistogram();
-    //TH1* eTrigVtx_projx = eTrigVtx->ProjectionX("eTrigVtx_projx", 2, rawMeasured->GetNbinsY()+1);
     TH1* eTrigVtx_projx = eTrigVtx->ProjectionX("eTrigVtx_projx", 2, rawMeasured->GetNbinsY()+1);
 
     //new TCanvas; correctedEvents->DrawCopy("TEXT");
@@ -285,6 +285,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     TH1* kineBias = (TH1*) vertexDist->Clone("kineBias");
     kineBias->Reset();
 
+    // loop over vertex bins
     for (Int_t i = 1; i <= rawMeasured->GetNbinsX(); i++)
     {
       Double_t alpha = (Double_t) vertexDist->GetBinContent(i) / allEventsWithVertex;
@@ -302,10 +303,16 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       // multiply with trigger correction if set above
       events *= fData->GetEventCorrection()->GetCorrectionHistogram()->GetBinContent(i, 1);
 
-      Printf("Bin %d, alpha is %.2f, fZ is %.3f, number of events with 0 mult.: %.2f", i, alpha * 100., fZ, events);
+      // calculate how many events we would have got with a pure MC-based correction
+      //   in the given bin: measured events with vertex (mult > 0) * triggered events with mult 0 (mc) / events with vertex and mult > 0 (mc) * trigger correction for bin 0
+      Double_t mcEvents = vertexDist->GetBinContent(i) * eTrig->GetBinContent(i, 1) / eTrigVtx_projx->GetBinContent(i) * fData->GetEventCorrection()->GetCorrectionHistogram()->GetBinContent(i, 1);
+
+      Printf("Bin %d, alpha is %.2f, fZ is %.3f, number of events with 0 mult.: %.2f (MC comparison: %.2f)", i, alpha * 100., fZ, events, mcEvents);
 
       correctedEvents->SetBinContent(i, 1, events);
     }
+    
+    Printf("In |vtx-z| < 10 cm: %d events have been added", (Int_t) correctedEvents->Integral(vertexDist->FindBin(-9.9), vertexDist->FindBin(9.9), 1, 1));
 
     //new TCanvas; correctedEvents->DrawCopy("TEXT");
     //new TCanvas; kineBias->DrawCopy();
@@ -321,7 +328,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
   TH1D* vertexHist = (TH1D*) tmp->ProjectionX("_px", 0, tmp->GetNbinsY() + 1, "e");
 
   // create pt hist
-  if (fAnalysisMode == AliPWG0Helper::kTPC || fAnalysisMode == AliPWG0Helper::kTPCITS)
+  if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
   {
     // reset all ranges
     dataHist->GetXaxis()->SetRange(0, 0);
@@ -362,7 +369,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
   // integrate over pt (with pt cut) (TPC, TPCITS) or multiplicity (SPD)
   Int_t ptLowBin = 1;
-  if (ptCut > 0 && fAnalysisMode != AliPWG0Helper::kSPD)
+  if (ptCut > 0 && (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS))
     ptLowBin = dataHist->GetZaxis()->FindBin(ptCut);
     
   //new TCanvas; dataHist->DrawCopy();
@@ -409,7 +416,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
       // adjust acceptance range
       // produce with drawPlots.C: DetermineAcceptance(...)
-      if (fAnalysisMode == AliPWG0Helper::kSPD)
+      if (fAnalysisMode & AliPWG0Helper::kSPD)
       {
         //const Int_t binBeginSPD[30] = { 18, 16, 15, 14, 13, 13, 12, 11, 9, 7, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1 }; // by eye
         //const Int_t binBeginSPD[30] = { -1, -1, -1, -1, 16, 14, 12, 10, 9, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, -1, -1, -1, -1}; // limit in correction map is 5
@@ -421,14 +428,14 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
         binBegin = binBeginSPD;
       }
-      else if (fAnalysisMode == AliPWG0Helper::kTPC)
+      else if (fAnalysisMode & AliPWG0Helper::kTPC)
       {
         //const Int_t binBeginTPC[30] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1}; // limit 5, pt cut off 0.2 mev/c
         const Int_t binBeginTPC[maxBins] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 9, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}; // limit 5
 
         binBegin = binBeginTPC;
       }
-      else if (fAnalysisMode == AliPWG0Helper::kTPCITS)
+      else if (fAnalysisMode & AliPWG0Helper::kTPCITS)
       {
         // TODO create map
       }
@@ -501,7 +508,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       Float_t ptCutOffCorrection = 1;
 
       // find pt cut off correction factor
-      if (fAnalysisMode != AliPWG0Helper::kSPD)
+      if ((fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS) && (fAnalysisMode & AliPWG0Helper::kFieldOn))
       {
         if (correction && ptCut > 0)
             ptCutOffCorrection = correction->GetMeasuredFraction(correctionType, ptCut, vtxVsEta->GetYaxis()->GetBinCenter(iEta), vertexBinBegin, vertexBinEnd);

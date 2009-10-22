@@ -114,6 +114,59 @@ TPad* DrawChange(Bool_t spd, const char* basename, const char** changes, Int_t n
   return p;
 }
 
+TPad* DrawChangeRatios(Bool_t spd, TFile* file1, TFile* file2, const char* basename, const char** changes, Int_t nChanges, Int_t nDraw, Int_t* colors, const char** names = 0, Float_t scale = 0.10)
+{  
+  Float_t etaMax = 1.05;
+  if (spd)
+    etaMax = 1.79;
+
+  TH1F* hRatios[100];
+  for(Int_t i=0; i<nChanges; i++) {
+    hRatios[i] = (TH1F*)file1->Get(Form("%s%s",basename,changes[i]));
+    hRatios[i]->SetLineWidth(1);
+    hRatios[i]->SetMarkerStyle(22);
+    hRatios[i]->SetMarkerSize(0.8);
+    
+    hRatio2 = (TH1F*)file2->Get(Form("%s%s",basename,changes[i]));
+    hRatios[i]->Divide(hRatio2);
+
+    Float_t average = hRatios[i]->Integral(hRatios[i]->FindBin(-1), hRatios[i]->FindBin(1)) / (hRatios[i]->FindBin(1) - hRatios[i]->FindBin(-1) + 1);
+    Printf("%s: %.2f %%" , hRatios[i]->GetTitle(), (average - 1) * 100);
+  }
+  
+  TPad* p = DrawCanvasAndPad("syst_changeInXsection",700,400);
+  p->SetRightMargin(0.2);
+  p->SetLeftMargin(0.13);
+  
+  TH2F* null = new TH2F("","",100,-etaMax, etaMax,100,1. - scale,1. + scale);
+  null->GetXaxis()->SetTitle("#eta");
+  null->GetYaxis()->SetTitle(hRatios[0]->GetYaxis()->GetTitle());
+  null->Draw();
+  
+  line = new TLine(-etaMax, 1, etaMax, 1);
+  line->Draw();
+
+  TLatex* text[100];
+
+  for(Int_t i=1; i<nDraw; i++) {
+    hRatios[i]->SetLineColor(colors[i]);
+    hRatios[i]->SetMarkerColor(colors[i]);
+    hRatios[i]->Draw("HISTPL SAME");
+    
+    TString str(hRatios[i]->GetTitle());
+    
+    if (names)
+      str = names[i];
+    
+    text[i] = new TLatex(etaMax + 0.03,hRatios[i]->GetBinContent(hRatios[i]->FindBin(etaMax-0.1))-0.002,str.Data());
+    text[i]->SetTextAlign(11);
+    text[i]->SetTextColor(colors[i]);
+    text[i]->Draw();
+  }
+  
+  return p;
+}
+
 void DrawEffectOfChangeInCrossSection(Bool_t spd = kFALSE, const char* fileName = "systematics_vtxtrigger_compositions.root") 
 {
   TFile::Open(fileName);
@@ -124,6 +177,20 @@ void DrawEffectOfChangeInCrossSection(Bool_t spd = kFALSE, const char* fileName 
   Int_t colors[] = {1,1,4,1,2,2,4,2,1};
 
   c = DrawChange(spd, "ratio_vertexReco_triggerBias_", changes, 17, 9, colors, 0);
+  c->SaveAs("cross_sections.eps");
+}
+
+void DrawEffectOfChangeInCrossSection2Files(Bool_t spd = kFALSE, const char* fileName1 = "systematics_vtxtrigger_compositions.root", const char* fileName2) 
+{
+  file1 = TFile::Open(fileName1);
+  file2 = TFile::Open(fileName2);
+
+  const Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdmoreddless25", "sdlessddmore25" };
+  //const Char_t* changes[]  = { "pythia", "qgsm", "phojet" };
+  //const Int_t nChanges = 3;
+  Int_t colors[] = {1,1,4,1,2,2,4,2,1};
+
+  c = DrawChangeRatios(spd, file1, file2, "ratio_vertexReco_triggerBias_", changes, 17, 9, colors, 0);
   c->SaveAs("cross_sections.eps");
 }
 
