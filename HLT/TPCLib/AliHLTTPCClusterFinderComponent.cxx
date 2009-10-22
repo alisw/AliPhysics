@@ -187,7 +187,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 {
   // see header file for class documentation
   if ( fClusterFinder )
-    return EINPROGRESS;
+    return -EINPROGRESS;
 
   //Test if the OCDB entries used by AliTPCTransform is availible
   AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();  
@@ -338,10 +338,10 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
   if(fReader == NULL){
     HLTFatal("Digit reader not initialized, skipping HLT TPC cluster reconstruction.");
     size=0;
-    return 0;    
+    return -ENODEV;    
   }
 
-  if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )){
+  if(!IsDataEvent()){
     size=0;
     return 0;
   }
