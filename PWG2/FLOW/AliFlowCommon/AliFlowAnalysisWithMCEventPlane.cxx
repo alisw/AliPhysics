@@ -59,7 +59,8 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
    fHistProDiffFlowPtEtaPOI(NULL),
    fHistProDiffFlowPtPOI(NULL),
    fHistProDiffFlowEtaPOI(NULL),
-   fHistSpreadOfFlow(NULL)
+   fHistSpreadOfFlow(NULL),
+   fHarmonic(2)
 {
 
   // Constructor.
@@ -124,6 +125,9 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsMCEP");
   fHistList->Add(fCommonHistsRes);
   
+  // store harmonic in common control histogram: 
+  (fCommonHists->GetHarmonic())->Fill(0.5,fHarmonic);
+  
   fHistRP = new TH1F("Flow_RP_MCEP","Flow_RP_MCEP",100,0.,3.14);
   fHistRP->SetXTitle("Reaction Plane Angle");
   fHistRP->SetYTitle("Counts");
@@ -171,7 +175,7 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   fHistList->Add(fHistSpreadOfFlow);           
  
   fEventNumber = 0;  //set number of events to zero
-      
+        
 } 
  
 //-----------------------------------------------------------------------
@@ -187,7 +191,7 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
     fCommonHists->FillControlHistograms(anEvent);
 
     //get the Q vector from the FlowEvent
-    AliFlowVector vQ = anEvent->GetQ(); 
+    AliFlowVector vQ = anEvent->GetQ(fHarmonic); 
     //cout<<"vQ.Mod() = " << vQ.Mod() << endl;
     //for chi calculation:
     *fQsum += vQ;
@@ -198,7 +202,7 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
     fHistRP->Fill(aRP);   
     
     Double_t dPhi = 0.;
-    Double_t dv2  = 0.;
+    Double_t dv  = 0.;
     Double_t dPt  = 0.;
     Double_t dEta = 0.;
     //Double_t dPi = TMath::Pi();  
@@ -215,33 +219,33 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
 	if (pTrack){
 	  if (pTrack->InRPSelection()){
             dPhi = pTrack->Phi();
-            dv2  = TMath::Cos(2*(dPhi-aRP));
+            dv  = TMath::Cos(fHarmonic*(dPhi-aRP));
 	         dPt  = pTrack->Pt();
 	         dEta = pTrack->Eta();
             //no-name int. flow (to be improved = name needed!):
-            fHistProIntFlow->Fill(0.,dv2);
+            fHistProIntFlow->Fill(0.,dv);
             //no-name int. flow e-b-e (to be improved = name needed!):
-            flowEBE->Fill(0.,dv2);
+            flowEBE->Fill(0.,dv);
             //differential flow (Pt, Eta, RP):
-            fHistProDiffFlowPtEtaRP->Fill(dPt,dEta,dv2,1.);
+            fHistProDiffFlowPtEtaRP->Fill(dPt,dEta,dv,1.);
             //differential flow (Pt, RP):
-            fHistProDiffFlowPtRP->Fill(dPt,dv2,1.);
+            fHistProDiffFlowPtRP->Fill(dPt,dv,1.);
             //differential flow (Eta, RP):
-            fHistProDiffFlowEtaRP->Fill(dEta,dv2,1.);
+            fHistProDiffFlowEtaRP->Fill(dEta,dv,1.);
           }
 	  if (pTrack->InPOISelection()) {
 	    dPhi = pTrack->Phi();
 	    //if (dPhi<0.) dPhi+=2*TMath::Pi();
 	    //calculate flow v2:
-	    dv2  = TMath::Cos(2*(dPhi-aRP));
+	    dv  = TMath::Cos(fHarmonic*(dPhi-aRP));
 	    dPt  = pTrack->Pt();
 	    dEta = pTrack->Eta();
 	    //differential flow (Pt, Eta, POI):
-            fHistProDiffFlowPtEtaPOI->Fill(dPt,dEta,dv2,1.);
+            fHistProDiffFlowPtEtaPOI->Fill(dPt,dEta,dv,1.);
 	    //differential flow (Pt, POI):
-            fHistProDiffFlowPtPOI->Fill(dPt,dv2,1.);
+            fHistProDiffFlowPtPOI->Fill(dPt,dv,1.);
             //differential flow (Eta, POI):
-            fHistProDiffFlowEtaPOI->Fill(dEta,dv2,1.); 
+            fHistProDiffFlowEtaPOI->Fill(dEta,dv,1.); 
 	  }	      
 	}//track selected
       }//loop over tracks
@@ -315,13 +319,19 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
    
   Int_t iNbinsPt  = AliFlowCommonConstants::GetNbinsPt();  
   Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta(); 
+  
+  // access harmonic:
+  if(fCommonHists && fCommonHists->GetHarmonic())
+  {
+   fHarmonic = (Int_t)(fCommonHists->GetHarmonic())->GetBinContent(1); // to be improved (moved somewhere else?)
+  } 
          
   // no-name int. flow (to be improved):
   Double_t dV = fHistProIntFlow->GetBinContent(1);  
   Double_t dErrV = fHistProIntFlow->GetBinError(1); // to be improved (treatment of errors for non-Gaussian distribution needed!)  
   // fill no-name int. flow (to be improved):
   fCommonHistsRes->FillIntegratedFlow(dV,dErrV);
-  cout<<"dV{MC} is       "<<dV<<" +- "<<dErrV<<endl;
+  cout<<"dV"<<fHarmonic<<"{MC} is       "<<dV<<" +- "<<dErrV<<endl;
   
   //RP:
   TH1F* fHistPtRP = fCommonHists->GetHistPtRP(); 
@@ -332,7 +342,7 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   //differential flow (RP, Pt): 
   Double_t dvPtRP = 0.;           
   Double_t dErrvPtRP = 0.;
-  for(Int_t b=1;b<iNbinsPt;b++)
+  for(Int_t b=1;b<=iNbinsPt;b++)
   {
    dvPtRP    = fHistProDiffFlowPtRP->GetBinContent(b);
    dErrvPtRP = fHistProDiffFlowPtRP->GetBinError(b);//to be improved (treatment of errors for non-Gaussian distribution needed!)
@@ -353,12 +363,12 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   }
   // fill integrated flow (RP):
   fCommonHistsRes->FillIntegratedFlowRP(dVRP,dErrVRP);
-  cout<<"dV{MC} (RP) is  "<<dVRP<<" +- "<<dErrVRP<<endl;
+  cout<<"dV"<<fHarmonic<<"{MC} (RP) is  "<<dVRP<<" +- "<<dErrVRP<<endl;
   
   //differential flow (RP, Eta): 
   Double_t dvEtaRP = 0.;           
   Double_t dErrvEtaRP = 0.;
-  for(Int_t b=1;b<iNbinsEta;b++)
+  for(Int_t b=1;b<=iNbinsEta;b++)
   {
    dvEtaRP    = fHistProDiffFlowEtaRP->GetBinContent(b);
    dErrvEtaRP = fHistProDiffFlowEtaRP->GetBinError(b);//to be improved (treatment of errors for non-Gaussian distribution needed!)
@@ -371,21 +381,21 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   Double_t dVPOI = 0.;
   Double_t dErrVPOI = 0.;
   Double_t dSumPOI = 0.;
-  Double_t dv2proPtPOI = 0.;
+  Double_t dvproPtPOI = 0.;
   Double_t dErrdifcombPtPOI = 0.; 
-  Double_t dv2proEtaPOI = 0.;
+  Double_t dvproEtaPOI = 0.;
   Double_t dErrdifcombEtaPOI = 0.;   
   //Pt:
   if(fHistProDiffFlowPtPOI) {
-    for(Int_t b=1;b<iNbinsPt;b++){
-      dv2proPtPOI = fHistProDiffFlowPtPOI->GetBinContent(b);
+    for(Int_t b=1;b<=iNbinsPt;b++){
+      dvproPtPOI = fHistProDiffFlowPtPOI->GetBinContent(b);
       dErrdifcombPtPOI = fHistProDiffFlowPtPOI->GetBinError(b);//to be improved (treatment of errors for non-Gaussian distribution needed!)
       //fill TH1D
-      fCommonHistsRes->FillDifferentialFlowPtPOI(b, dv2proPtPOI, dErrdifcombPtPOI); 
+      fCommonHistsRes->FillDifferentialFlowPtPOI(b, dvproPtPOI, dErrdifcombPtPOI); 
       if (fHistPtPOI){
 	//integrated flow (POI)
 	dYieldPtPOI = fHistPtPOI->GetBinContent(b);
-	dVPOI += dv2proPtPOI*dYieldPtPOI;
+	dVPOI += dvproPtPOI*dYieldPtPOI;
 	dSumPOI += dYieldPtPOI;
 	//error on integrated flow
 	dErrVPOI += dYieldPtPOI*dYieldPtPOI*dErrdifcombPtPOI*dErrdifcombPtPOI;
@@ -397,19 +407,19 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
     dErrVPOI /= (dSumPOI*dSumPOI);
     dErrVPOI = TMath::Sqrt(dErrVPOI); 
   }
-  cout<<"dV{MC} (POI) is "<<dVPOI<<" +- "<<dErrVPOI<<endl;
+  cout<<"dV"<<fHarmonic<<"{MC} (POI) is "<<dVPOI<<" +- "<<dErrVPOI<<endl;
 
   fCommonHistsRes->FillIntegratedFlowPOI(dVPOI,dErrVPOI);
   
   //Eta:
   if(fHistProDiffFlowEtaPOI)
   {
-   for(Int_t b=1;b<iNbinsEta;b++)
+   for(Int_t b=1;b<=iNbinsEta;b++)
    {
-    dv2proEtaPOI = fHistProDiffFlowEtaPOI->GetBinContent(b);
+    dvproEtaPOI = fHistProDiffFlowEtaPOI->GetBinContent(b);
     dErrdifcombEtaPOI = fHistProDiffFlowEtaPOI->GetBinError(b);//to be improved (treatment of errors for non-Gaussian distribution needed!)
     //fill common hist results:
-    fCommonHistsRes->FillDifferentialFlowEtaPOI(b, dv2proEtaPOI, dErrdifcombEtaPOI); 
+    fCommonHistsRes->FillDifferentialFlowEtaPOI(b, dvproEtaPOI, dErrdifcombEtaPOI); 
    }
   }   
   

@@ -210,6 +210,7 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
  // MCEP = monte carlo event plane
  if (MCEP) {
    AliFlowAnalysisWithMCEventPlane *mcep = new AliFlowAnalysisWithMCEventPlane();
+   // mcep->SetHarmonic(2); // default is v2
    mcep->Init();
  }
 
@@ -220,7 +221,9 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
    if(usePhiWeights) qc->SetUsePhiWeights(usePhiWeights);
    if(usePtWeights) qc->SetUsePtWeights(usePtWeights);
    if(useEtaWeights) qc->SetUseEtaWeights(useEtaWeights);
-   qc->SetCalculate2DFlow(kTRUE);   
+   // qc->SetHarmonic(2); // default is v2
+   // qc->SetApplyCorrectionForNUA(kTRUE); // default
+   // qc->SetCalculate2DFlow(kFALSE); // default  
    qc->SetEvaluateNestedLoopsForIntFlow(kFALSE);
    qc->SetEvaluateNestedLoopsForDiffFlow(kFALSE);
    qc->Init();  

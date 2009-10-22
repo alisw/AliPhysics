@@ -97,6 +97,10 @@ class AliFlowAnalysisWithMCEventPlane {
    void      SetHistSpreadOfFlow(TH1D* aHistSpreadOfFlow) 
      {this->fHistSpreadOfFlow = aHistSpreadOfFlow; }    
    
+   // harmonic:
+   void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
+   Int_t GetHarmonic() const {return this->fHarmonic;};
+ 
  private:
  
    AliFlowAnalysisWithMCEventPlane(const AliFlowAnalysisWithMCEventPlane& aAnalysis);             //copy constructor
@@ -125,7 +129,8 @@ class AliFlowAnalysisWithMCEventPlane {
    TProfile*    fHistProDiffFlowPtPOI;    // profile used to calculate the differential flow (Pt) of POI particles 
    TProfile*    fHistProDiffFlowEtaPOI;   // profile used to calculate the differential flow (Eta) of POI particles
    TH1D*        fHistSpreadOfFlow;        // histogram filled with NONAME integrated flow calculated e-b-e    
-   
+   Int_t        fHarmonic;                // harmonic 
+    
    ClassDef(AliFlowAnalysisWithMCEventPlane,1)  // Analyse particle distribution versus MC reaction plane
      };
 
