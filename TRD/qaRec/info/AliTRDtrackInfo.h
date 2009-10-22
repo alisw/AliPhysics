@@ -29,12 +29,12 @@ public:
     kNTrackRefs = 12
   };
   class AliESDinfo{
-  friend class AliTRDtrackInfo;
+    friend class AliTRDtrackInfo;  // Friend class
   public:
     AliESDinfo();
-    AliESDinfo(const AliESDinfo&);
+    AliESDinfo(const AliESDinfo &esd);
     virtual ~AliESDinfo();
-    AliESDinfo& operator=(const AliESDinfo&);
+    AliESDinfo& operator=(const AliESDinfo &esd);
 
     Int_t       GetId() const {return fId;}
     ULong_t     GetStatus() const {return fStatus;}
@@ -51,7 +51,7 @@ public:
     ULong_t     fStatus;        // ESD track status
     Int_t       fKinkIndex;     // ESD kink index
     UShort_t    fTPCncls;       // Number of Clusters inside TPC
-    Double32_t  fTRDr[AliPID::kSPECIES];  
+    Double32_t  fTRDr[AliPID::kSPECIES];  // TRD radial position
     UChar_t     fTRDpidQuality; // TRD PID quality
     Int_t       fTRDnSlices;    // number of slices used for PID
     Double32_t *fTRDslices;     //[fTRDnSlices] 
@@ -65,9 +65,9 @@ public:
   public:
     //typedef AliTrackReference (const* constAliTrackReference);
     AliMCinfo();
-    AliMCinfo(const AliMCinfo&);
+    AliMCinfo(const AliMCinfo &mc);
     virtual ~AliMCinfo();
-    AliMCinfo& operator=(const AliMCinfo&);
+    AliMCinfo& operator=(const AliMCinfo &mc);
     Int_t   GetLabel() const {return fLabel;}
     Int_t   GetNTrackRefs() const {return fNTrackRefs;}
     Int_t   GetPDG() const {return fPDG;}
@@ -84,17 +84,17 @@ public:
   };
 
   AliTRDtrackInfo();
-  AliTRDtrackInfo(const AliTRDtrackInfo &);
+  AliTRDtrackInfo(const AliTRDtrackInfo &trdInfo);
   ~AliTRDtrackInfo();
   
 //  void               Clear(const Option_t *){}
   void               Delete(const Option_t *);
   
-  AliTRDtrackInfo&   operator=(const AliTRDtrackInfo &);
+  AliTRDtrackInfo&   operator=(const AliTRDtrackInfo &trdInfo);
   
   void               AddTrackRef(const AliTrackReference *trackRef);
   
-  Int_t              GetTrackId() { return fESD.fId;}
+  Int_t              GetTrackId() const { return fESD.fId;}
   const AliESDinfo*  GetESDinfo() const { return &fESD; }
   const AliMCinfo*   GetMCinfo() const { return fMC; }
   Int_t              GetNumberOfClusters() const;
@@ -108,7 +108,7 @@ public:
   ULong_t            GetStatus() const {return fESD.fStatus;}
   AliTRDtrackV1*     GetTrack() const { return fTRDtrack; }
   AliTrackReference* GetTrackRef(Int_t entry) const;
-  AliTrackReference* GetTrackRef(AliTRDseedV1* tracklet) const;
+  AliTrackReference* GetTrackRef(AliTRDseedV1* const tracklet) const;
 
   Bool_t             IsCurved() const {return TestBit(kCurv);}
   Bool_t             IsPrimary() const {return TestBit(kPrim);}
@@ -128,7 +128,7 @@ public:
   void               SetTrackId(Int_t id) {fESD.fId = id;}
   void               SetTrack(const AliTRDtrackV1 *track);
   void               SetESDpidQuality(UChar_t q) { fESD.fTRDpidQuality = q;}
-  void               SetSlices(Int_t n, Double32_t*);
+  void               SetSlices(Int_t n, Double32_t *s);
   inline void        SetESDpid(Double_t *);
   
 private:
@@ -153,7 +153,7 @@ inline void AliTRDtrackInfo::SetMC()
 }
 
 //________________________________________________________
-inline void AliTRDtrackInfo::SetESDpid(Double_t *r)
+inline void AliTRDtrackInfo::SetESDpid(Double_t * const r)
 { 
   for(Int_t is = AliPID::kSPECIES; is--;) fESD.fTRDr[is] = r[is];
 }

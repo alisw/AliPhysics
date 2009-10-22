@@ -29,15 +29,11 @@
 
 #include "AliTrackReference.h"
 #include "AliExternalTrackParam.h"
-#include "AliLog.h"
 
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDtrackerV1.h"
-
-#include <cstdio>
-#include <cstdlib>
 
 #include "AliTRDtrackInfo.h"
 
@@ -95,6 +91,10 @@ AliTRDtrackInfo::AliMCinfo::AliMCinfo(const AliMCinfo &mc)
   ,fPDG(mc.fPDG)
   ,fNTrackRefs(mc.fNTrackRefs)
 {
+  //
+  // Constructor
+  //
+
   memset(fTrackRefs, 0, sizeof(AliTrackReference *) * 12);
   for(Int_t ien = 0; ien < 12; ien++){
     if(mc.fTrackRefs[ien])
@@ -113,6 +113,10 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo()
   ,fTRDslices(0x0)
   ,fOP(0x0)
 {
+  //
+  // Constructor
+  //
+
   memset(fTRDr, 0, AliPID::kSPECIES*sizeof(Double32_t));
 }
 
@@ -127,6 +131,10 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
   ,fTRDslices(0x0)
   ,fOP(0x0)
 {
+  //
+  // Constructor
+  //
+
   memcpy(fTRDr, esd.fTRDr, AliPID::kSPECIES*sizeof(Double32_t));
 
   if(fTRDnSlices){
@@ -143,6 +151,7 @@ AliTRDtrackInfo::~AliTRDtrackInfo()
   //
   // Destructor
   //
+
   if(fMC) delete fMC;
   if(fTRDtrack) delete fTRDtrack;
 }
@@ -150,6 +159,10 @@ AliTRDtrackInfo::~AliTRDtrackInfo()
 //___________________________________________________
 AliTRDtrackInfo::AliMCinfo::~AliMCinfo()
 {
+  //
+  // Destructor
+  //
+
   fNTrackRefs = 0;
   for(Int_t ien = 0; ien < 12; ien++){
     if(fTrackRefs[ien]) delete fTrackRefs[ien];
@@ -160,6 +173,10 @@ AliTRDtrackInfo::AliMCinfo::~AliMCinfo()
 //___________________________________________________
 AliTRDtrackInfo::AliESDinfo::~AliESDinfo()
 {
+  //
+  // Destructor
+  //
+
   if(fTRDnSlices){
     delete [] fTRDslices;
     fTRDslices = 0x0;
@@ -200,6 +217,10 @@ AliTRDtrackInfo& AliTRDtrackInfo::operator=(const AliTRDtrackInfo &trdInfo)
 //___________________________________________________
 AliTRDtrackInfo::AliMCinfo& AliTRDtrackInfo::AliMCinfo::operator=(const AliMCinfo &mc)
 {
+  //
+  // Assignment operator
+  //
+
   fLabel      = mc.fLabel;
   fPDG        = mc.fPDG;
   fNTrackRefs = mc.fNTrackRefs;
@@ -218,6 +239,10 @@ AliTRDtrackInfo::AliMCinfo& AliTRDtrackInfo::AliMCinfo::operator=(const AliMCinf
 //___________________________________________________
 AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESDinfo &esd)
 {
+  //
+  // Assignment operator
+  //
+
   fId          = esd.fId;
   fStatus      = esd.fStatus; 
   fTRDpidQuality = esd.fTRDpidQuality;
@@ -292,7 +317,7 @@ AliTrackReference* AliTRDtrackInfo::GetTrackRef(Int_t idx) const
 }
 
 //___________________________________________________
-AliTrackReference* AliTRDtrackInfo::GetTrackRef(AliTRDseedV1* tracklet) const
+AliTrackReference* AliTRDtrackInfo::GetTrackRef(AliTRDseedV1* const tracklet) const
 {
 //
 // Returns a track reference
@@ -352,6 +377,10 @@ Int_t AliTRDtrackInfo::GetNTracklets() const
 //___________________________________________________
 void AliTRDtrackInfo::SetSlices(Int_t n, Double32_t *s)
 {
+  //
+  // Set the slices
+  //
+
   if(fESD.fTRDnSlices != n){
     fESD.fTRDnSlices = 0;
     delete [] fESD.fTRDslices;
