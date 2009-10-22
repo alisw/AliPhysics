@@ -737,6 +737,11 @@ void AliFlowAnalysisWithQCumulants::Finish()
  
  this->AccessConstants();          
  
+ if(fCommonHists && fCommonHists->GetHarmonic())
+ {
+  fHarmonic = (Int_t)(fCommonHists->GetHarmonic())->GetBinContent(1); // to be improved (moved somewhere else)
+ } 
+
  // **************************
  // **** ACCESS THE FLAGS ****
  // **************************    
@@ -3144,42 +3149,51 @@ void AliFlowAnalysisWithQCumulants::WriteHistograms(TString outputFileName)
 
 void AliFlowAnalysisWithQCumulants::BookCommonHistograms()
 {
- // book common control histograms and common histograms for final results
- 
+ // Book common control histograms and common histograms for final results.
  // common control histogram (ALL events)
- fCommonHists = new AliFlowCommonHist("AliFlowCommonHistQC");
+ TString commonHistsName = "AliFlowCommonHistQC";
+ commonHistsName += fAnalysisLabel->Data();
+ fCommonHists = new AliFlowCommonHist(commonHistsName.Data());
  fHistList->Add(fCommonHists);  
- 
  // common control histogram (for events with 2 and more particles)
- fCommonHists2nd = new AliFlowCommonHist("AliFlowCommonHist2ndOrderQC");
+ TString commonHists2ndOrderName = "AliFlowCommonHist2ndOrderQC";
+ commonHists2ndOrderName += fAnalysisLabel->Data();
+ fCommonHists2nd = new AliFlowCommonHist(commonHists2ndOrderName.Data());
  fHistList->Add(fCommonHists2nd);  
- 
  // common control histogram (for events with 4 and more particles)
- fCommonHists4th = new AliFlowCommonHist("AliFlowCommonHist4thOrderQC");
+ TString commonHists4thOrderName = "AliFlowCommonHist4thOrderQC";
+ commonHists4thOrderName += fAnalysisLabel->Data();
+ fCommonHists4th = new AliFlowCommonHist(commonHists4thOrderName.Data());
  fHistList->Add(fCommonHists4th);  
- 
  // common control histogram (for events with 6 and more particles)
- fCommonHists6th = new AliFlowCommonHist("AliFlowCommonHist6thOrderQC");
+ TString commonHists6thOrderName = "AliFlowCommonHist6thOrderQC";
+ commonHists6thOrderName += fAnalysisLabel->Data();
+ fCommonHists6th = new AliFlowCommonHist(commonHists6thOrderName.Data());
  fHistList->Add(fCommonHists6th);  
- 
  // common control histogram (for events with 8 and more particles)
- fCommonHists8th = new AliFlowCommonHist("AliFlowCommonHist8thOrderQC");
- fHistList->Add(fCommonHists8th);  
-  
+ TString commonHists8thOrderName = "AliFlowCommonHist8thOrderQC";
+ commonHists8thOrderName += fAnalysisLabel->Data();
+ fCommonHists8th = new AliFlowCommonHist(commonHists8thOrderName.Data());
+ fHistList->Add(fCommonHists8th);    
  // common histograms for final results (calculated for events with 2 and more particles)
- fCommonHistsResults2nd = new AliFlowCommonHistResults("AliFlowCommonHistResults2ndOrderQC");
- fHistList->Add(fCommonHistsResults2nd); 
- 
+ TString commonHistResults2ndOrderName = "AliFlowCommonHistResults2ndOrderQC";
+ commonHistResults2ndOrderName += fAnalysisLabel->Data();
+ fCommonHistsResults2nd = new AliFlowCommonHistResults(commonHistResults2ndOrderName.Data());
+ fHistList->Add(fCommonHistsResults2nd);  
  // common histograms for final results (calculated for events with 4 and more particles)
- fCommonHistsResults4th = new AliFlowCommonHistResults("AliFlowCommonHistResults4thOrderQC");
- fHistList->Add(fCommonHistsResults4th);
- 
+ TString commonHistResults4thOrderName = "AliFlowCommonHistResults4thOrderQC";
+ commonHistResults4thOrderName += fAnalysisLabel->Data();
+ fCommonHistsResults4th = new AliFlowCommonHistResults(commonHistResults4thOrderName.Data());
+ fHistList->Add(fCommonHistsResults4th); 
  // common histograms for final results (calculated for events with 6 and more particles)
- fCommonHistsResults6th = new AliFlowCommonHistResults("AliFlowCommonHistResults6thOrderQC");
- fHistList->Add(fCommonHistsResults6th); 
- 
+ TString commonHistResults6thOrderName = "AliFlowCommonHistResults6thOrderQC";
+ commonHistResults6thOrderName += fAnalysisLabel->Data();
+ fCommonHistsResults6th = new AliFlowCommonHistResults(commonHistResults6thOrderName.Data());
+ fHistList->Add(fCommonHistsResults6th);  
  // common histograms for final results (calculated for events with 8 and more particles)
- fCommonHistsResults8th = new AliFlowCommonHistResults("AliFlowCommonHistResults8thOrderQC");
+ TString commonHistResults8thOrderName = "AliFlowCommonHistResults8thOrderQC";
+ commonHistResults8thOrderName += fAnalysisLabel->Data();
+ fCommonHistsResults8th = new AliFlowCommonHistResults(commonHistResults8thOrderName.Data());
  fHistList->Add(fCommonHistsResults8th); 
  
 } // end of void AliFlowAnalysisWithQCumulants::BookCommonHistograms()
@@ -8488,31 +8502,49 @@ void AliFlowAnalysisWithQCumulants::StoreDiffFlowFlags()
 
 void AliFlowAnalysisWithQCumulants::GetPointersForCommonHistograms(TList *outputListHistos) 
 {
- // a) Access all pointers to common control and common result histograms and profiles.
+ // Access all pointers to common control and common result histograms and profiles.
  
  if(outputListHistos)  
  {
-  AliFlowCommonHist *commonHist = dynamic_cast<AliFlowCommonHist*>(outputListHistos->FindObject("AliFlowCommonHistQC"));
+  TString commonHistsName = "AliFlowCommonHistQC";
+  commonHistsName += fAnalysisLabel->Data();
+  AliFlowCommonHist *commonHist = dynamic_cast<AliFlowCommonHist*>(outputListHistos->FindObject(commonHistsName.Data()));
   if(commonHist) this->SetCommonHists(commonHist); 
-  AliFlowCommonHist *commonHist2nd = dynamic_cast<AliFlowCommonHist*>(outputListHistos->FindObject("AliFlowCommonHist2ndOrderQC"));
-  if(commonHist2nd) this->SetCommonHists2nd(commonHist2nd); 
-  AliFlowCommonHist *commonHist4th = dynamic_cast<AliFlowCommonHist*>(outputListHistos->FindObject("AliFlowCommonHist4thOrderQC"));
-  if(commonHist4th) this->SetCommonHists4th(commonHist4th);
-  AliFlowCommonHist *commonHist6th = dynamic_cast<AliFlowCommonHist*>(outputListHistos->FindObject("AliFlowCommonHist6thOrderQC"));
-  if(commonHist6th) this->SetCommonHists6th(commonHist6th);
-  AliFlowCommonHist *commonHist8th = dynamic_cast<AliFlowCommonHist*>(outputListHistos->FindObject("AliFlowCommonHist8thOrderQC"));
-  if(commonHist8th) this->SetCommonHists8th(commonHist8th);
+  TString commonHists2ndOrderName = "AliFlowCommonHist2ndOrderQC";
+  commonHists2ndOrderName += fAnalysisLabel->Data();
+  AliFlowCommonHist *commonHist2nd = dynamic_cast<AliFlowCommonHist*>(outputListHistos->FindObject(commonHists2ndOrderName.Data()));
+  if(commonHist2nd) this->SetCommonHists2nd(commonHist2nd);   
+  TString commonHists4thOrderName = "AliFlowCommonHist4thOrderQC";
+  commonHists4thOrderName += fAnalysisLabel->Data();
+  AliFlowCommonHist *commonHist4th = dynamic_cast<AliFlowCommonHist*>(outputListHistos->FindObject(commonHists4thOrderName.Data()));
+  if(commonHist4th) this->SetCommonHists4th(commonHist4th);  
+  TString commonHists6thOrderName = "AliFlowCommonHist6thOrderQC";
+  commonHists6thOrderName += fAnalysisLabel->Data();
+  AliFlowCommonHist *commonHist6th = dynamic_cast<AliFlowCommonHist*>(outputListHistos->FindObject(commonHists6thOrderName.Data()));
+  if(commonHist6th) this->SetCommonHists6th(commonHist6th);  
+  TString commonHists8thOrderName = "AliFlowCommonHist8thOrderQC";
+  commonHists8thOrderName += fAnalysisLabel->Data();
+  AliFlowCommonHist *commonHist8th = dynamic_cast<AliFlowCommonHist*>(outputListHistos->FindObject(commonHists8thOrderName.Data()));
+  if(commonHist8th) this->SetCommonHists8th(commonHist8th);  
+  TString commonHistResults2ndOrderName = "AliFlowCommonHistResults2ndOrderQC"; 
+  commonHistResults2ndOrderName += fAnalysisLabel->Data(); 
   AliFlowCommonHistResults *commonHistRes2nd = dynamic_cast<AliFlowCommonHistResults*>
-                                               (outputListHistos->FindObject("AliFlowCommonHistResults2ndOrderQC"));
-  if(commonHistRes2nd) this->SetCommonHistsResults2nd(commonHistRes2nd); 
+                                               (outputListHistos->FindObject(commonHistResults2ndOrderName.Data()));
+  if(commonHistRes2nd) this->SetCommonHistsResults2nd(commonHistRes2nd);   
+  TString commonHistResults4thOrderName = "AliFlowCommonHistResults4thOrderQC";
+  commonHistResults4thOrderName += fAnalysisLabel->Data();
   AliFlowCommonHistResults *commonHistRes4th = dynamic_cast<AliFlowCommonHistResults*>
-                                               (outputListHistos->FindObject("AliFlowCommonHistResults4thOrderQC"));
-  if(commonHistRes4th) this->SetCommonHistsResults4th(commonHistRes4th);
+                                               (outputListHistos->FindObject(commonHistResults4thOrderName.Data()));
+  if(commonHistRes4th) this->SetCommonHistsResults4th(commonHistRes4th);  
+  TString commonHistResults6thOrderName = "AliFlowCommonHistResults6thOrderQC";
+  commonHistResults6thOrderName += fAnalysisLabel->Data();
   AliFlowCommonHistResults *commonHistRes6th = dynamic_cast<AliFlowCommonHistResults*>
-                                               (outputListHistos->FindObject("AliFlowCommonHistResults6thOrderQC"));
-  if(commonHistRes6th) this->SetCommonHistsResults6th(commonHistRes6th);
+                                               (outputListHistos->FindObject(commonHistResults6thOrderName.Data()));
+  if(commonHistRes6th) this->SetCommonHistsResults6th(commonHistRes6th);  
+  TString commonHistResults8thOrderName = "AliFlowCommonHistResults8thOrderQC";
+  commonHistResults8thOrderName += fAnalysisLabel->Data();
   AliFlowCommonHistResults *commonHistRes8th = dynamic_cast<AliFlowCommonHistResults*>
-                                               (outputListHistos->FindObject("AliFlowCommonHistResults8thOrderQC"));  
+                                               (outputListHistos->FindObject(commonHistResults8thOrderName.Data()));  
   if(commonHistRes8th) this->SetCommonHistsResults8th(commonHistRes8th);
  } else
    {
