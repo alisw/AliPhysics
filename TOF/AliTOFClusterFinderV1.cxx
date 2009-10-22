@@ -668,7 +668,7 @@ void AliTOFClusterFinderV1::FindOnePadClusterPerStrip(Int_t nSector,
   //
 
   const Int_t kMaxNumberOfTracksPerDigit = 3;
-  const Int_t kMaxNumberOfDigitsPerVolume = 3;
+  const Int_t kMaxNumberOfDigitsPerVolume = 10;
 
   Int_t jj = 0;
 
@@ -789,7 +789,7 @@ void AliTOFClusterFinderV1::FindClustersWithoutTOT(Int_t nSector,
   //
 
   const Int_t kMaxNumberOfTracksPerDigit = 3;
-  const Int_t kMaxNumberOfDigitsPerVolume = 3;
+  const Int_t kMaxNumberOfDigitsPerVolume = 10;
 
   Int_t jj = 0;
 
@@ -911,7 +911,7 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 
   const Int_t kMaxNumberOfInterestingPads = 4;
   const Int_t kMaxNumberOfTracksPerDigit = 3;
-  const Int_t kMaxNumberOfDigitsPerVolume = 3;
+  const Int_t kMaxNumberOfDigitsPerVolume = 10;
 
   Int_t ii = 0;
 
@@ -1371,7 +1371,7 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
 
   const Int_t kMaxNumberOfInterestingPads = 4;
   const Int_t kMaxNumberOfTracksPerDigit = 3;
-  const Int_t kMaxNumberOfDigitsPerVolume = 3;
+  const Int_t kMaxNumberOfDigitsPerVolume = 10;
 
   Int_t ii = 0;
 
@@ -1773,7 +1773,7 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
 
   const Int_t kMaxNumberOfInterestingPads = 4;
   const Int_t kMaxNumberOfTracksPerDigit = 3;
-  const Int_t kMaxNumberOfDigitsPerVolume = 3;
+  const Int_t kMaxNumberOfDigitsPerVolume = 10;
 
   Int_t ii = 0;
 
@@ -2186,7 +2186,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 
   const Int_t kMaxNumberOfInterestingPads = 4;
   const Int_t kMaxNumberOfTracksPerDigit = 3;
-  const Int_t kMaxNumberOfDigitsPerVolume = 3;
+  const Int_t kMaxNumberOfDigitsPerVolume = 10;
 
   Int_t ii = 0;
 

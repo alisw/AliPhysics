@@ -58,7 +58,7 @@ class AliTOFDigitMap : public TObject
     Int_t CheckedIndex(Int_t *vol) const;
  private:
     enum {
-      kMaxDigitsPerPad = 3
+      kMaxDigitsPerPad = 10
     };
 
     Int_t fNSector;                       // Number of sectors
