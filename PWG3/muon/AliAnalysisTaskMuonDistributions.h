@@ -1,8 +1,12 @@
 #ifndef ALIANALYSISTASKMUONDISTRIBUTIONS_H
 #define ALIANALYSISTASKMUONDISTRIBUTIONS_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* Analysis Task for Muon/Dimuon distributions */
+
 #include "AliAnalysisTaskSE.h"
-#include "TMath.h"
 
 class TH1D;
 class TParticle ;
@@ -27,7 +31,7 @@ class AliAnalysisTaskMuonDistributions : public AliAnalysisTaskSE {
   void UserCreateOutputObjects();
   
   void SetBeamEnergy(Double_t en) {fBeamEnergy=en;}
-  void SetAnalysisType(const char* type) {fAnalysisType=type;}
+  void SetAnalysisType(const char* type) {fkAnalysisType=type;}
   void SetInvMassFitLimits(Double_t xmin, Double_t xmax) {fInvMassFitLimitMin=xmin; fInvMassFitLimitMax=xmax;}
   void SetPsiFitLimits(Double_t xmin, Double_t xmax) {fPsiFitLimitMin=xmin; fPsiFitLimitMax=xmax;}
   void SetBckFitLimits(Double_t xmin, Double_t xmax) {fBckFitLimitMin=xmin; fBckFitLimitMax=xmax;}
@@ -36,22 +40,22 @@ class AliAnalysisTaskMuonDistributions : public AliAnalysisTaskSE {
  protected:
   
   Double_t fBeamEnergy;   // Energy of the beam (required for the CS angle)
-  Double_t fInvMassFitLimitMin;  // invariant mass spectrum fit limits 
-  Double_t fInvMassFitLimitMax;
-  Double_t fPsiFitLimitMin;  // psi fit limits 
-  Double_t fPsiFitLimitMax;
-  Double_t fBckFitLimitMin;  // bck fit limits 
-  Double_t fBckFitLimitMax;
+  Double_t fInvMassFitLimitMin;  // invariant mass spectrum fit lower limit 
+  Double_t fInvMassFitLimitMax;  // invariant mass spectrum fit upper limit 
+  Double_t fPsiFitLimitMin;  // psi fit lower limits 
+  Double_t fPsiFitLimitMax;  // psi fit upper limits 
+  Double_t fBckFitLimitMin;  // bck fit lower limits 
+  Double_t fBckFitLimitMax;  // bck fit upper limits
   Bool_t fInvariantMassFit; // flag to perform or not inv. mass fit
     
-  const char* fAnalysisType; //ESD or AOD based analysis
-  TList *fOutput;
+  const char* fkAnalysisType; //ESD or AOD based analysis
+  TList *fOutput;  // output file
       
-  Float_t InvMass (Float_t, Float_t, Float_t, Float_t, Float_t, Float_t, Float_t, Float_t);
-  Float_t Rapidity (Float_t, Float_t);
-  Double_t CostCS (Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t);
-  Double_t CostHE (Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t);
-  void FitInvMass(TH1D* );
+  Float_t InvMass (Float_t e1, Float_t px1, Float_t py1, Float_t pz1, Float_t e2, Float_t px2, Float_t py2, Float_t pz2) const;
+  Float_t Rapidity (Float_t e, Float_t pz) const;
+  Double_t CostCS (Double_t px1, Double_t py1, Double_t pz1, Double_t e1, Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2);
+  Double_t CostHE (Double_t px1, Double_t py1, Double_t pz1, Double_t e1, Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2);
+  void FitInvMass(TH1D* histo);
   
   ClassDef(AliAnalysisTaskMuonDistributions,1);
 };
