@@ -2,10 +2,13 @@
 #define ALIANALYSISTASKJETCORRECTIONS_H
 
 #include "AliAnalysisTaskSE.h"
+ 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-//
-// corrections to jet energy by sona 
-// 
+// ***
+// corrections to jet energy by sona.pochybova@cern.ch 
+// ***
 
 class AliJetFinder;
 class AliESDEvent;

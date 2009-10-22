@@ -1,41 +1,44 @@
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TInterpreter.h>
-#include <TChain.h>
+// **************************************
+// Task used for estimating a charged to neutral correction
+// 
+// *******************************************
+
+
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TH3F.h>
 #include <TList.h>
 #include <TTree.h>
-#include <TBranch.h>
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
-#include <TObjArray.h>
 #include <TRefArray.h>
-#include <TArrayD.h>
-#include <fstream>
 #include <TVector3.h>
-#include <TVectorD.h>
-#include <TMatrixDSym.h>
-#include <TMatrixDSymEigen.h>
-#include <TStyle.h>
 #include <TProfile.h>
 
 #include "AliAnalysisTaskJetCorrections.h"
 #include "AliAnalysisManager.h"
-#include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "AliAODHandler.h"
 #include "AliAODTrack.h"
 #include "AliAODJet.h"
-#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
-#include "AliStack.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliGenCocktailEventHeader.h"
-
 
 #include "AliAnalysisHelperJetTasks.h"
 
@@ -228,7 +231,7 @@ void AliAnalysisTaskJetCorrections::UserCreateOutputObjects()
   //
   // Create the output container
   //
-  Printf("Analysing event  %s :: # %5d\n", gSystem->pwd(), (Int_t) fEntry);
+  //  Printf("Analysing event  %s :: # %5d\n", gSystem->pwd(), (Int_t) fEntry);
 
   if(fUseAODInput){
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -961,19 +964,25 @@ void AliAnalysisTaskJetCorrections::Terminate(Option_t *)
 } 
 
 //_______________________________________User defined functions_____________________________________________________________________________________
-void AliAnalysisTaskJetCorrections::GetThrustAxis(TVector3 &n01, TVector3 * pTrack,const Int_t &nTracks)
+
+void AliAnalysisTaskJetCorrections::GetThrustAxis(TVector3 &n01, TVector3 * pTrack, const Int_t &nTracks)
 {
   //
-  // Getthrust axis
-  // 
+  // fetch the thrust axis
+  //
   TVector3 psum;
   Double_t psum1 = 0;
   Double_t psum2 = 0;
   Double_t thrust[kTracks];
   Double_t th = -3;
+  Double_t tpom = -1;
+  Int_t j = 0;
+
   
-  for(Int_t j = 0; j < nTracks; j++)
+  //  for(Int_t j = 0; j < nTracks; j++)
+  while(TMath::Abs(th-tpom) > 10e-7 && j < nTracks)
     {
+      th = tpom;
       psum.SetXYZ(0., 0., 0.);
       psum1 = 0;
       psum2 = 0;
@@ -988,12 +997,13 @@ void AliAnalysisTaskJetCorrections::GetThrustAxis(TVector3 &n01, TVector3 * pTra
       
       thrust[j] = psum1/psum2;
       
-      if(th == thrust[j]) 
-	break;
+      //      if(th == thrust[j]) 
+      //	break;
       
-      th = thrust[j];
+      tpom = thrust[j];
       
       n01 = psum.Unit();
+      j++;
     }
 }
 //______________________________________________________________________________________________________

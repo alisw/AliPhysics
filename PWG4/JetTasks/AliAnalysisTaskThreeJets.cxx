@@ -1,8 +1,30 @@
-#include <TSystem.h>
+
+// ******
+// Task for topological study of three jet events by sona
+// *****
+// *****
+// *****
+
+
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TH3F.h>
 #include <TList.h>
 #include <TTree.h>
 #include <TLorentzVector.h>
@@ -22,18 +44,12 @@
 #include "AliAODTrack.h"
 #include "AliAODJet.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
 
 
 #include "AliAnalysisHelperJetTasks.h"
 
-//
-//
-// Trhreee jet task by sona
-//
-//
 
 ClassImp(AliAnalysisTaskThreeJets)
 
@@ -241,7 +257,7 @@ void AliAnalysisTaskThreeJets::UserCreateOutputObjects()
   //
   // Create the output container
   //
-  Printf("Analysing event  %s :: # %5d\n", gSystem->pwd(), (Int_t) fEntry);
+  //  Printf("Analysing event  %s :: # %5d\n", gSystem->pwd(), (Int_t) fEntry);
 
   if(fUseAODInput){
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -1163,6 +1179,7 @@ Bool_t AliAnalysisTaskThreeJets::IsPrimChar(TParticle* aParticle, Int_t aTotalPr
 
 //______________________________________________________________________________________________________
 
+
 void AliAnalysisTaskThreeJets::GetThrustAxis(TVector3 &n01, TVector3 * pTrack, const Int_t &nTracks)
 {
   //
@@ -1173,9 +1190,14 @@ void AliAnalysisTaskThreeJets::GetThrustAxis(TVector3 &n01, TVector3 * pTrack, c
   Double_t psum2 = 0;
   Double_t thrust[kTracks];
   Double_t th = -3;
+  Double_t tpom = -1;
+  Int_t j = 0;
+
   
-  for(Int_t j = 0; j < nTracks; j++)
+  //  for(Int_t j = 0; j < nTracks; j++)
+  while(TMath::Abs(th-tpom) > 10e-7 && j < nTracks)
     {
+      th = tpom;
       psum.SetXYZ(0., 0., 0.);
       psum1 = 0;
       psum2 = 0;
@@ -1190,12 +1212,13 @@ void AliAnalysisTaskThreeJets::GetThrustAxis(TVector3 &n01, TVector3 * pTrack, c
       
       thrust[j] = psum1/psum2;
       
-      if(th == thrust[j]) 
-	break;
+      //      if(th == thrust[j]) 
+      //	break;
       
-      th = thrust[j];
+      tpom = thrust[j];
       
       n01 = psum.Unit();
+      j++;
     }
 }
 
@@ -1203,15 +1226,14 @@ void AliAnalysisTaskThreeJets::GetThrustAxis(TVector3 &n01, TVector3 * pTrack, c
 
 void AliAnalysisTaskThreeJets::GetEventShapes(TVector3 &n01, TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes)
 {       
-  //
-  // get the event shape
-  //
   TVector3 psum;
+  TVector3 pTrackPerp[kTracks];
   Double_t psum1 = 0;
   Double_t psum2 = 0;
   Double_t thrust[kTracks];
   Double_t th = -3;
-  
+  Double_t tpom = -1;
+
   //Sphericity calculation
   TMatrixDSym m(3);
   Double_t s00 = 0;
@@ -1229,32 +1251,41 @@ void AliAnalysisTaskThreeJets::GetEventShapes(TVector3 &n01, TVector3 * pTrack, 
   Double_t ptot = 0;
   
   Double_t c = -10;
-  
-  for(Int_t j = 0; j < nTracks; j++)
+
+//
+//loop for thrust calculation  
+//
+  Int_t k = 0;
+  while(TMath::Abs(th-tpom) > 10e-7 && k < nTracks)
     {  
+      th = tpom;
       psum.SetXYZ(0., 0., 0.);
       psum1 = 0;
       psum2 = 0;
       for(Int_t i = 0; i < nTracks; i++)
 	{
-	  psum1 += (TMath::Abs(n01.Dot(pTrack[i])));
-	  psum2 += pTrack[i].Mag();
-	  
-	  if (n01.Dot(pTrack[i]) > 0) psum += pTrack[i];
-	  if (n01.Dot(pTrack[i]) < 0) psum -= pTrack[i];
+	  pTrackPerp[i].SetXYZ(pTrack[i].X(), pTrack[i].Y(), 0);
+
+	  psum1 += (TMath::Abs(n01.Dot(pTrackPerp[i])));
+	  psum2 += pTrackPerp[i].Mag();
+
+	  if (n01.Dot(pTrackPerp[i]) > 0) psum += pTrackPerp[i];
+	  if (n01.Dot(pTrackPerp[i]) < 0) psum -= pTrackPerp[i];
 	}
       
-      thrust[j] = psum1/psum2;
-      if(th == thrust[j]) 
- 	break;
+      thrust[k] = psum1/psum2;
       
-      th = thrust[j];
-      
+      tpom = thrust[k];
       n01 = psum.Unit();
+      k++;
+//      Printf("========== %d +++ th :: %f, tpom :: %f=============\n", k, th, tpom);
     }
 
   eventShapes[0] = th;
 
+//
+//other event shapes variables
+//
   for(Int_t j = 0; j < nTracks; j++)
     {  
       s00 = s00 + (pTrack[j].Px()*pTrack[j].Px())/pTrack[j].Mag();
@@ -1272,7 +1303,7 @@ void AliAnalysisTaskThreeJets::GetEventShapes(TVector3 &n01, TVector3 * pTrack, 
       ptot += pTrack[j].Mag();
     }
 
-  if(ptot !=0)
+  if(ptot < 10e-10 && ptot > 0.)
     {
       m(0,0) = s00/ptot;
       m(0,1) = s01/ptot;
@@ -1292,14 +1323,16 @@ void AliAnalysisTaskThreeJets::GetEventShapes(TVector3 &n01, TVector3 * pTrack, 
       Double_t sphericity = (3/2)*(eigenVal(2)+eigenVal(1));
       eventShapes[1] = sphericity;
 
-      Double_t aplaarity = (3/2)*(eigenVal(2));
-      eventShapes[2] = aplaarity;
+      Double_t aplanarity = (3/2)*(eigenVal(2));
+      eventShapes[2] = aplanarity;
 
       c = 3*(eigenVal(0)*eigenVal(1)+eigenVal(0)*eigenVal(2)+eigenVal(1)*eigenVal(2));
       eventShapes[3] = c;
     }
 }
   
+
+
 //__________________________________________________________________________________________________________________________
 
 Double_t AliAnalysisTaskThreeJets::Exponent(Double_t x,const Double_t * const par) const
