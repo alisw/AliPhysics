@@ -51,15 +51,9 @@ class AliAnalysisTaskThreeJets : public AliAnalysisTaskSE
   virtual void SetBranchGen(const char* c){fBranchGen = c;}
   virtual void SetBranchRec(const char* c){fBranchRec = c;}
 
-/*   virtual void SetUseBkg(Bool_t b) {fUseBkg = b;} */
-/*   virtual void SetUseSimTPC(Bool_t b) {fUseFastTPC = b;} */
-
   virtual void FillTopology(TH2F * Dalitz, TH1F * fhMu34, TH1F * fhMu45, TH1F * fhMu35, Double_t * x, TVector3 * pRest, Double_t xsection);
 
   virtual Double_t SetR(Double_t b){fR = b; return fR;} 
-//  TArrayD * GetThrustParamMC(AliMCEvent* mcEvent, Int_t  nstudymin, Double_t ptcutoff, Double_t etacutoff, Bool_t chom, TArrayD * evsh);
-  virtual void GetThrustAxis(TVector3 &n01, TVector3 * p_track,const Int_t &nTracks);
-  virtual void GetEventShapes(TVector3 &n01, TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes);
   virtual Bool_t IsPrimChar(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t adebug);
 
   Double_t Exponent(Double_t x,const Double_t * const par) const;
@@ -89,58 +83,58 @@ class AliAnalysisTaskThreeJets : public AliAnalysisTaskSE
   Int_t fGlobVar; // globvar
   Double_t fXsection; // xsectio
 
-  TH2F * fhX3X4Rec; //
-  TH2F * fhX3X4Gen; //
+TH2F * fhX3X4Rec; // Dalitz variables, reconstructed
+  TH2F * fhX3X4Gen; // Dalitz variables, generated
   
-  TH1F * fhMu35Rec; //
-  TH1F * fhMu34Rec; //
-  TH1F * fhMu45Rec; //
+  TH1F * fhMu35Rec; // scaled masses, 35, reconstructed
+  TH1F * fhMu34Rec; // scaled masses, 34, reconstructed
+  TH1F * fhMu45Rec; // scaled masses, 45, reconstructed
   
-  TH1F * fhMu35Gen; //
-  TH1F * fhMu34Gen; //
-  TH1F * fhMu45Gen; //
+  TH1F * fhMu35Gen; // scaled masses, 35, generated
+  TH1F * fhMu34Gen; // scaled masses, 34, generated
+  TH1F * fhMu45Gen; // scaled masses, 45, generated
 
-  TH1I * fhInOut; //
-  TH1F * fhThrustRec2; //
-  TH1F * fhThrustRec3; // 
+  TH1I * fhInOut; // number of gen. vs number of rec.
+  TH1F * fhThrustRec2; // thrust for reco 2-jet events
+  TH1F * fhThrustRec3; // thrust for reco 3-jet events
 
-  TH1F * fhThrustGen2; //
-  TH1F * fhThrustGen3; // 
+  TH1F * fhThrustGen2; // thrust for gen 2-jet events
+  TH1F * fhThrustGen3; // thrust for gen 3-jet events
 
-  TH1F * fhCGen2; //
-  TH1F * fhCGen3; // 
+  TH1F * fhCGen2; // C-variable for gen 2-jets
+  TH1F * fhCGen3; // C-variable for gen 3-jets
 
-  TH1F * fhSGen2; //
-  TH1F * fhSGen3; // 
+  TH1F * fhSGen2; // Sphericity for gen 2-jets
+  TH1F * fhSGen3; // Sphericity for gen 3-jets
 
-  TH1F * fhAGen2; // 
-  TH1F * fhAGen3; //
+  TH1F * fhAGen2; // A-variable for gen 2-jets
+TH1F * fhAGen3; // A-variable for gen 3-jets
 
-  TH1F * fhCRec2; // 
-  TH1F * fhCRec3; // 
+  TH1F * fhCRec2; // C-variable for reco 2-jets
+  TH1F * fhCRec3; // C-variable for reco 3-jets
 
-  TH1F * fhSRec2; //
-  TH1F * fhSRec3; //
+  TH1F * fhSRec2; // Sphericity for reco 2-jets
+  TH1F * fhSRec3; // Sphericity for reco 3-jets
 
-  TH1F * fhARec2; //
-  TH1F * fhARec3; //
+  TH1F * fhARec2; // A-variable for reco 2-jets
+  TH1F * fhARec3; // A-variable for reco 3-jets
 
-  TH2F * fhX3; //
-  TH2F * fhX4; //
-  TH2F * fhX5; //
+  TH2F * fhX3; // dX3 vs X3 rec
+  TH2F * fhX4; // dX4 vs X4 rec
+  TH2F * fhX5; // dX5 vs X5 rec
 
-  TProfile * fhXSec; //
-  TH2F * fhX3X4Rec60; //
-  TH2F * fhX3X4Rec60100; //
-  TH2F * fhX3X4Rec100; //
-  TH2F * fhX3X4Gen60; //
-  TH2F * fhX3X4Gen60100; //
-  TH2F * fhX3X4Gen100; //
+  TProfile * fhXSec; // cross-section vs PtHard
+  TH2F * fhX3X4Rec60; // Dalitz plane for Esum < 60, reco
+  TH2F * fhX3X4Rec60100; // Dalitz plane for 60 < Esum < 100, reco
+  TH2F * fhX3X4Rec100; // Dalitz plane for Esum > 100, reco^M 
+  TH2F * fhX3X4Gen60; // Dalitz plane for Esum < 60, gen
+  TH2F * fhX3X4Gen60100; // Dalitz plane for 60 < Esum < 100, gen
+  TH2F * fhX3X4Gen100; // Dalitz plane for Esum > 100, gen
 
-  TH2F * fhdPhiThrustGen; //
-  TH2F * fhdPhiThrustGenALL; //
-  TH2F * fhdPhiThrustRec; //
-  TH2F * fhdPhiThrustRecALL; //
+  TH2F * fhdPhiThrustGen; // energy distribution with rspct to thrust axis, gen, 2-jets
+  TH2F * fhdPhiThrustGenALL; // energy distribution with rspct to thrust axis, gen 3-jets
+  TH2F * fhdPhiThrustRec; // energy distribution with rspct to thrust axis, reco, 2-jets
+  TH2F * fhdPhiThrustRecALL; // energy distribution with rspct to thrust axis, reco, 3-jets
 
   ClassDef(AliAnalysisTaskThreeJets, 1)
 };
