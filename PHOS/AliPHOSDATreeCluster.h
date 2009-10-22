@@ -1,3 +1,10 @@
+#ifndef AliPHOSDATreeCluster_H
+#define AliPHOSDATreeCluster_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id:$*/
+
 // --
 // --
 // Implementation for TTree output in PHOS DA
@@ -5,9 +12,6 @@
 // --
 // -- Author: Hisayuki Torii (Hiroshima Univ.)
 // --
-
-#ifndef AliPHOSDATreeCluster_H
-#define AliPHOSDATreeCluster_H
 
 #include <iostream>
 #include "AliPHOSDATreeDigit.h"
@@ -37,19 +41,17 @@ class AliPHOSDATreeCluster{
   bool CalculateProperty();
   int GetNDigits() const{ return fNDigits; };
   AliPHOSDATreeDigit& GetDigit(int ndigit){
-    if( ndigit >= 0 && ndigit < fNDigits ) return fDigits[ndigit];
-    else std::cout<<" AliPHOSDATreeCluster::GetDigit("<<ndigit<<")::Error. Out of range > "<<fNDigits<<std::endl;
+    return fDigits[ndigit];
   };
   AliPHOSDATreeDigit& GetMaxDigit(){
-    if( fNDigits >= 0 ) return fDigits[0];
-    else std::cout<<" AliPHOSDATreeCluster::GetMaxDigit()::Warning No digit information."<<std::endl;
+    return fDigits[0];
   };
   bool Append(AliPHOSDATreeDigit& digit);
   bool Append(AliPHOSDATreeCluster& cluster);
   bool IsNeighbor(const AliPHOSDATreeDigit& digit) const;
   bool IsNeighbor(const AliPHOSDATreeCluster& cluster) const;
   void Reset();
-  void Print(char* opt="");
+  void Print(Option_t *option="") const;
 
  private:
 

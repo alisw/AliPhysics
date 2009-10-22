@@ -1,3 +1,9 @@
+#ifndef AliPHOSDATreeEvent_H
+#define AliPHOSDATreeEvent_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id:$*/
 // --
 // --
 // Implementation for TTree output in PHOS DA
@@ -6,8 +12,6 @@
 // -- Author: Hisayuki Torii (Hiroshima Univ.)
 // --
 
-#ifndef AliPHOSDATreeEvent_H
-#define AliPHOSDATreeEvent_H
 #include <iostream>
 #include <Rtypes.h>
 #include <ctime>
@@ -31,10 +35,10 @@ class AliPHOSDATreeEvent{
   int GetNDigits() const{ return fNDigits; };
   int GetNClusters() const{ return fNClusters; };
   AliPHOSDATreeCluster& GetCluster(int nclusters){
-    if( nclusters < fNClusters ) return fClusters[nclusters];
+    return fClusters[nclusters];
   };
   AliPHOSDATreeDigit& GetDigit(int ndigits){
-    if( ndigits < fNDigits ) return fDigits[ndigits];
+    return fDigits[ndigits];
   };
   bool Fill(float fenergy,int row,int col);
   bool Fill(AliPHOSDATreeDigit& digit);
@@ -46,7 +50,7 @@ class AliPHOSDATreeEvent{
     fNDigits = 0;
     fNClusters = 0;
   };
-  void Print(char* opt="");
+  void Print(Option_t *option="") const;
 
  private:
   bool Clusterize(AliPHOSDATreeDigit& digit);

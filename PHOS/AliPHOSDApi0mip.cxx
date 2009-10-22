@@ -1,3 +1,19 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+/* $Id:$*/
+
 // --
 // --
 // Implementation for TTree output in PHOS DA
@@ -9,6 +25,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <math.h>
+#include "AliLog.h"
 #include "AliPHOSDApi0mip.h"
 ClassImp(AliPHOSDApi0mip)
 //----------------------------------------------------------------
@@ -82,6 +99,13 @@ AliPHOSDApi0mip::AliPHOSDApi0mip(const AliPHOSDApi0mip& da):
     fCreateTree = false;
     fTTree = 0;
   }
+}
+//-------------------------------------------------------------------
+AliPHOSDApi0mip& AliPHOSDApi0mip::operator= (const AliPHOSDApi0mip&)
+{
+  // Operator= is not implemented yet
+  AliFatal("Operator= is not implemented");  
+  return *this;
 }
 //-------------------------------------------------------------------
 AliPHOSDApi0mip::~AliPHOSDApi0mip(){
@@ -308,14 +332,15 @@ void AliPHOSDApi0mip::FillHist(AliPHOSDATreeEvent* event){
   //
 }
 //-------------------------------------------------------------------
-void AliPHOSDApi0mip::Print(char* opt){
+void AliPHOSDApi0mip::Print(Option_t *option) const
+{
   // Print Out
 
   //fTFile->ls();
   //fTTree->Print();
   if( fEvent ){
     //fEvent->ExecuteClustering();
-    fEvent->Print(opt);
+    fEvent->Print(option);
   }
 }
 //-------------------------------------------------------------------

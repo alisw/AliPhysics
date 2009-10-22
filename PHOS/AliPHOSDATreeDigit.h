@@ -1,3 +1,10 @@
+#ifndef AliPHOSDATreeDigit_H
+#define AliPHOSDATreeDigit_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id:$*/
+
 // --
 // --
 // Implementation for TTree output in PHOS DA
@@ -6,8 +13,6 @@
 // -- Author: Hisayuki Torii (Hiroshima Univ.)
 // --
 
-#ifndef AliPHOSDATreeDigit_H
-#define AliPHOSDATreeDigit_H
 class AliPHOSDATreeDigit {
 
   friend std::ostream& operator<<(std::ostream& out,const AliPHOSDATreeDigit& digit);
@@ -28,7 +33,7 @@ class AliPHOSDATreeDigit {
   short GetDigitId() const{return fAbsId; };
   bool IsValid() const { if( fAbsId>=0 && fAbsId < 3584 ) return true; return false; };
   bool IsNeighbor(const AliPHOSDATreeDigit &digit) const;
-  void Print(char* opt="");
+  void Print(Option_t *opt="") const;
 
   //AliPHOSDATreeDigit(float energy,int mod,int row,int col):fEnergy(energy),fAbsId(mod*3584+row*56+col){/**/};
   //void Set(float energy,int mod,int row,int col){
