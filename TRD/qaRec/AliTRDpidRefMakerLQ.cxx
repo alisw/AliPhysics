@@ -56,7 +56,7 @@ ClassImp(AliTRDpidRefMakerLQ)
 //__________________________________________________________________
 AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ()
   :AliTRDpidRefMaker("PIDrefMakerLQ", "PID(LQ) Reference Maker")
-  ,fPIDbin(-1)
+  ,fPIDbin(0xff)
 {
   //
   // AliTRDpidRefMakerLQ default constructor
@@ -201,7 +201,7 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
   AliDebug(2, Form("Data[%d]", fData->GetEntries()));
   pdfs->cd();
 
-  TCanvas *cc = new TCanvas("cc", "", 500, 500);
+  //TCanvas *cc = new TCanvas("cc", "", 500, 500);
 
   Float_t *data[] = {0x0, 0x0};
 //  TPrincipal principal(2, "ND");
