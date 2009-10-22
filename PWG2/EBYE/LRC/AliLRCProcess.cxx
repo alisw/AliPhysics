@@ -65,40 +65,44 @@ AliLRCProcess::AliLRCProcess(const AliLRCProcess& lrc):
 
 AliLRCProcess& AliLRCProcess::operator = (const AliLRCProcess& lrc) {
   //assignment operator
-  fIsEventOpend = lrc.fIsEventOpend;
-  fIsOnline = lrc.fIsOnline;
-  fDisplayInitOnDemandWarning = lrc.fDisplayInitOnDemandWarning;
-  fEventCount = lrc.fEventCount;
-  fStartForwardETA = lrc.fStartForwardETA;
-  fEndForwardETA = lrc.fEndForwardETA;
-  fStartBakwardETA = lrc.fStartBakwardETA;
-  fEndBakwardETA = lrc.fEndBakwardETA;
-  fHiPt = lrc.fHiPt;
-  fLoPt = lrc.fLoPt;
-  fHiMult = lrc.fHiMult;
-  fLoMult = lrc.fLoMult;
-  fMultBins = lrc.fMultBins;
-  fPtBins = lrc.fPtBins;
-  fSumPtFw = lrc.fSumPtFw;
-  fSumPtBw = lrc.fSumPtBw;
-  fNchFw = lrc.fNchFw;
-  fNchBw = lrc.fNchBw;
-  fOutList = lrc.fOutList;
-  fShortDef = lrc.fShortDef;
-  fHistPt = lrc.fHistPt;
-  fHistEta = lrc.fHistEta;
-  fHistNN = lrc.fHistNN;
-  fHistPtN = lrc.fHistPtN;
-  fHistPtPt = lrc.fHistPtPt;
-  fProfNberr = lrc.fProfNberr;
-  fProfdPtB = lrc.fProfdPtB;
-  fProfTestLRC = lrc.fProfTestLRC;
-  fHistPtForward = lrc.fHistPtForward;
-  fHistEtaForward = lrc.fHistEtaForward;
-  fHistNchForward = lrc.fHistNchForward;
-  fHistPtBakward = lrc.fHistPtBakward;
-  fHistEtaBakward = lrc.fHistEtaBakward;
-  fHistNchBakward = lrc.fHistNchBakward;
+  if(this != &lrc) {
+    TObject::operator=(lrc);
+    fIsEventOpend = lrc.fIsEventOpend;
+    fIsOnline = lrc.fIsOnline;
+    fDisplayInitOnDemandWarning = lrc.fDisplayInitOnDemandWarning;
+    fEventCount = lrc.fEventCount;
+    fStartForwardETA = lrc.fStartForwardETA;
+    fEndForwardETA = lrc.fEndForwardETA;
+    fStartBakwardETA = lrc.fStartBakwardETA;
+    fEndBakwardETA = lrc.fEndBakwardETA;
+    fHiPt = lrc.fHiPt;
+    fLoPt = lrc.fLoPt;
+    fHiMult = lrc.fHiMult;
+    fLoMult = lrc.fLoMult;
+    fMultBins = lrc.fMultBins;
+    fPtBins = lrc.fPtBins;
+    fSumPtFw = lrc.fSumPtFw;
+    fSumPtBw = lrc.fSumPtBw;
+    fNchFw = lrc.fNchFw;
+    fNchBw = lrc.fNchBw;
+    fOutList = lrc.fOutList;
+    fShortDef = lrc.fShortDef;
+    fHistPt = lrc.fHistPt;
+    fHistEta = lrc.fHistEta;
+    fHistNN = lrc.fHistNN;
+    fHistPtN = lrc.fHistPtN;
+    fHistPtPt = lrc.fHistPtPt;
+    fProfNberr = lrc.fProfNberr;
+    fProfdPtB = lrc.fProfdPtB;
+    fProfTestLRC = lrc.fProfTestLRC;
+    fHistPtForward = lrc.fHistPtForward;
+    fHistEtaForward = lrc.fHistEtaForward;
+    fHistNchForward = lrc.fHistNchForward;
+    fHistPtBakward = lrc.fHistPtBakward;
+    fHistEtaBakward = lrc.fHistEtaBakward;
+    fHistNchBakward = lrc.fHistNchBakward;
+  }
+  return *this;
 }
 
 Bool_t AliLRCProcess::InitDataMembers()

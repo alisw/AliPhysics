@@ -311,6 +311,7 @@ void AliMultiplicityTask::Exec(Option_t*)
     case AliPWG0Helper::kTPCITS:
     	etaRange = 1.0; break;
     case AliPWG0Helper::kSPD: etaRange = 1.0; break;
+    default: break;
   }
 
   if (!fReadMC) // Processing of ESD information
