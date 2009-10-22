@@ -1801,9 +1801,11 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   //-----------------------------------------------------------------
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
   if (gAlice){ // Set correctly the magnetic field in the ExB calculation
-    AliMagF * field = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField());
-    if (field) {
-      calib->SetExBField(field);
+    if (!calib->GetExB()){
+      AliMagF * field = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField()); 
+      if (field) {
+	calib->SetExBField(field);
+      }
     }
   }
 
