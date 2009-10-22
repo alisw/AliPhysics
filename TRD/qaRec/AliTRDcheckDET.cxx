@@ -182,6 +182,27 @@ Bool_t AliTRDcheckDET::PostProcess(){
   ax->SetRangeUser(-0.5, nTriggerClasses+.5);
   h->GetYaxis()->SetRangeUser(0,1);
 
+  // track status
+  h=dynamic_cast<TH1F*>(fContainer->At(kTrackStatus));
+  Float_t ok = h->GetBinContent(1);
+  Int_t nerr = h->GetNbinsX();
+  for(Int_t ierr=nerr; ierr--;){
+    h->SetBinContent(ierr+1, 1.e2*h->GetBinContent(ierr+1)/ok);
+  }
+  h->SetBinContent(1, 0.);
+
+  // tracklet status
+  TObjArray *arr = dynamic_cast<TObjArray*>(fContainer->UncheckedAt(kTrackletStatus));
+  for(Int_t ily = AliTRDgeometry::kNlayer; ily--;){
+    h=dynamic_cast<TH1F*>(arr->At(ily));
+    Float_t ok = h->GetBinContent(1);
+    Int_t nerr = h->GetNbinsX();
+    for(Int_t ierr=nerr; ierr--;){
+      h->SetBinContent(ierr+1, 1.e2*h->GetBinContent(ierr+1)/ok);
+    }
+    h->SetBinContent(1, 0.);
+  }
+
   fNRefFigures = 18;
 
   return kTRUE;
@@ -194,7 +215,9 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
   //
   gPad->SetLogy(0);
   gPad->SetLogx(0);
-  TH1 *h = 0x0;
+  TH1 *h = 0x0; TObjArray *arr=0x0;
+  TLegend *leg = 0x0;
+  Bool_t kFIRST(1);
   switch(ifig){
   case kNclustersTrack:
     (h=(TH1F*)fContainer->FindObject("hNcls"))->Draw("pl");
@@ -231,15 +254,33 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
   case kNtracksSector:
     h = (TH1F*)fContainer->FindObject("hNtrksSector");
     if(!MakeBarPlot(h, kGreen)) break;
-    PutTrendValue("NTracksSector", h->GetMean(2));
-    PutTrendValue("NTracksSectorRMS", h->GetRMS(2));
+    PutTrendValue("NTracksSector", h->Integral()/h->GetNbinsX());
     return kTRUE;
   case kTrackStatus:
-    ((TH1I *)fContainer->FindObject("hTrackStatus"))->Draw("c");
-    gPad->SetLogy(1);
+    if(!(h=(TH1F *)fContainer->FindObject("hTrackStatus"))) break;
+    h->GetXaxis()->SetRangeUser(0.5, -1);
+    h->GetYaxis()->CenterTitle();
+    h->Draw("c");
+    PutTrendValue("TrackStatus", h->Integral());
+    gPad->SetLogy(0);
     return kTRUE;
   case kTrackletStatus:
-    ((TH2S *)fContainer->FindObject("hTrackletStatus"))->Draw("colz");
+    if(!(arr = dynamic_cast<TObjArray*>(fContainer->At(kTrackletStatus)))) break;
+    leg = new TLegend(.68, .7, .98, .98);
+    leg->SetBorderSize(1);leg->SetFillColor(0);
+    leg->SetHeader("TRD layer");
+    for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
+      if(!(h=dynamic_cast<TH1F*>(arr->At(ily)))) continue;
+      if(kFIRST){
+        h->Draw("c");
+        h->GetXaxis()->SetRangeUser(0.5, -1);
+        h->GetYaxis()->CenterTitle();
+        kFIRST = kFALSE;
+      } else h->Draw("samec");
+      leg->AddEntry(h, Form("%d", ily), "l");
+      PutTrendValue(Form("TrackletStatus%d", ily), h->Integral());
+    }
+    leg->Draw();
     gPad->SetLogy(0);
     return kTRUE;
   case kChi2:
@@ -288,7 +329,7 @@ TObjArray *AliTRDcheckDET::Histos(){
 
   // Register Histograms
   TH1 * h = NULL;
-  TAxis *axis = NULL;
+  TAxis *ax = NULL;
   if(!(h = (TH1F *)gROOT->FindObject("hNcls"))){
     h = new TH1F("hNcls", "N_{clusters} / track", 181, -0.5, 180.5);
     h->GetXaxis()->SetTitle("N_{clusters}");
@@ -353,36 +394,34 @@ TObjArray *AliTRDcheckDET::Histos(){
   } else h->Reset();
   fContainer->AddAt(h, kNtracksSector);
 
-  if(!(h = (TH1I *)gROOT->FindObject("hTrackStatus"))){
-    h = new TH1I("hTrackStatus", "Track Status", 7,0,7);
-    axis = h->GetXaxis();
-    axis->SetBinLabel(axis->GetFirst() + 0, "OK");
-    axis->SetBinLabel(axis->GetFirst() + 1, "PROL");
-    axis->SetBinLabel(axis->GetFirst() + 2, "PROP");
-    axis->SetBinLabel(axis->GetFirst() + 3, "ADJ");
-    axis->SetBinLabel(axis->GetFirst() + 4, "SNP");
-    axis->SetBinLabel(axis->GetFirst() + 5, "TLIN");
-    axis->SetBinLabel(axis->GetFirst() + 6, "UP");
+  if(!(h = (TH1F*)gROOT->FindObject("hTrackStatus"))){
+    const Int_t nerr = 7;
+    h = new TH1F("hTrackStatus", "Track Status", nerr, -0.5, nerr-0.5);
+    Char_t *label[nerr] = {"OK", "PROL", "PROP", "AJST", "SNP", "TINI", "UPDT"};
+    ax = h->GetXaxis();
+    for(Int_t ierr=nerr; ierr--;) ax->SetBinLabel(ierr+1, label[ierr]);
+    h->SetYTitle("Relative Error to Good [%]");
   }
   fContainer->AddAt(h, kTrackStatus);
 
-  if(!(h = (TH2S *)gROOT->FindObject("hTrackletStatus"))){
-    h = new TH2S("hTrackletStatus", "Tracklet status", 6,0,6,8,0,8);
-    axis = h->GetYaxis();
-    axis->SetBinLabel(1, "OK");
-    axis->SetBinLabel(2, "Geom");
-    axis->SetBinLabel(3, "Boun");
-    axis->SetBinLabel(4, "NoCl");
-    axis->SetBinLabel(5, "NoAttach");
-    axis->SetBinLabel(6, "NoClTr");
-    axis->SetBinLabel(7, "NoFit");
-    axis->SetBinLabel(8, "Chi2");
-    h->GetXaxis()->SetTitle("layer");
+  TObjArray *arr = new TObjArray(AliTRDgeometry::kNlayer);
+  arr->SetOwner(kTRUE);  arr->SetName("TrackletStatus");
+  fContainer->AddAt(arr, kTrackletStatus);
+  for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){
+    if(!(h = (TH1F *)gROOT->FindObject(Form("hTrackletStatus%d", ily)))){
+      const Int_t nerr = 8;
+      h = new TH1F(Form("hTrackletStatus%d", ily), "Tracklet status", nerr, -0.5, nerr-0.5);
+      h->SetLineColor(ily+1);
+      Char_t *label[nerr] = {"OK", "Geom", "Bound", "NoCl", "NoAttach", "NoClTr", "NoFit", "Chi2"};
+      ax = h->GetXaxis();
+      for(Int_t ierr=nerr; ierr--;) ax->SetBinLabel(ierr+1, label[ierr]);
+      h->SetYTitle("Relative Error to Good [%]");
+    } else h->Reset();
+    arr->AddAt(h, ily);
   }
-  fContainer->AddAt(h, kTrackletStatus);
 
   // <PH> histos
-  TObjArray *arr = new TObjArray(2);
+  arr = new TObjArray(2);
   arr->SetOwner(kTRUE);  arr->SetName("<PH>");
   fContainer->AddAt(arr, kPH);
   if(!(h = (TH1F *)gROOT->FindObject("hPHt"))){
@@ -445,17 +484,29 @@ TObjArray *AliTRDcheckDET::Histos(){
 */
 
 //_______________________________________________________
-TH1 *AliTRDcheckDET::PlotTrackStatus(const AliTRDtrackV1 *track){
-  //
-  // Plot the track status
-  //
+TH1 *AliTRDcheckDET::PlotTrackStatus(const AliTRDtrackV1 *track)
+{
+//
+// Plot the track propagation status. The following errors are defined (see AliTRDtrackV1::ETRDtrackError)
+//   PROL - track prolongation failure
+//   PROP - track propagation failure
+//   AJST - crossing sectors failure
+//   SNP  - too large bending
+//   TINI - tracklet initialization failure
+//   UPDT - track position/covariance update failure 
+//
+// Performance plot looks as below:
+//Begin_Html
+//<img src="TRD/trackStatus.gif">
+//End_Html
+//
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
   TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH1I *>(fContainer->At(kTrackStatus)))){
+  if(!(h = dynamic_cast<TH1F *>(fContainer->At(kTrackStatus)))){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
@@ -464,24 +515,41 @@ TH1 *AliTRDcheckDET::PlotTrackStatus(const AliTRDtrackV1 *track){
 }
 
 //_______________________________________________________
-TH1 *AliTRDcheckDET::PlotTrackletStatus(const AliTRDtrackV1 *track){
-  //
-  // Plot the track status
-  //
+TH1 *AliTRDcheckDET::PlotTrackletStatus(const AliTRDtrackV1 *track)
+{
+//
+// Plot the tracklet propagation status. The following errors are defined for tracklet (see AliTRDtrackV1::ETRDlayerError)
+//   Geom   - 
+//   Bound  - tracklet too close to chamber walls
+//   NoCl   - no clusters in the track roads
+//   NoAttach - fail to attach clusters
+//   NoClTr - fail to use clusters for fit
+//   NoFit  - tracklet fit failled
+//   Chi2   - chi2 tracklet-track over threshold
+//
+// Performance plot looks as below:
+//Begin_Html
+//<img src="TRD/trackletStatus.gif">
+//End_Html
+//
   if(track) fkTrack = track;
   if(!fkTrack){
     AliWarning("No Track defined.");
     return 0x0;
   }
-  TH1 *h = 0x0;
-  if(!(h = dynamic_cast<TH2S *>(fContainer->At(kTrackletStatus)))){
-    AliWarning("No Histogram defined.");
+  TObjArray *arr =0x0;
+  if(!(arr = dynamic_cast<TObjArray*>(fContainer->At(kTrackletStatus)))){
+    AliWarning("Histograms not defined.");
     return 0x0;
   }
-  UChar_t status = 0;
-  for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
-    status = fkTrack->GetStatusTRD(il);
-    h->Fill(il, status);
+
+  TH1 *h = 0x0;
+  for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){
+    if(!(h = dynamic_cast<TH1F*>(arr->At(ily)))){
+      AliWarning(Form("Missing histo for layer %d.", ily));
+      continue;
+    }
+    h->Fill(fkTrack->GetStatusTRD(ily));
   }
   return h;
 }

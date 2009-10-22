@@ -85,6 +85,7 @@ private:
   TH1* MakePlotNTracklets();
   TH1* MakePlotPulseHeight();
   Bool_t MakeBarPlot(TH1 *histo, Int_t Color);
+
   AliTRDeventInfo *fEventInfo;         //! ESD Header
   TMap *fTriggerNames;                 //! Containing trigger class names
   AliTRDReconstructor *fReconstructor; // TRD Reconstructor
