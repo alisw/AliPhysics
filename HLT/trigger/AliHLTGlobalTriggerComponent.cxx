@@ -82,8 +82,14 @@ void AliHLTGlobalTriggerComponent::GetOutputDataSize(unsigned long& constBase, d
 {
   // Returns the output data size estimate.
 
-  constBase = sizeof(AliHLTGlobalTriggerDecision);
-  inputMultiplier = 1;
+  // the real size can actually not be determined here since an arbitrary
+  // number of objects can be part of the decision
+  // collect the known ones and add a margin
+  constBase = 0;
+  constBase += 2*sizeof(AliHLTGlobalTriggerDecision);
+  constBase += sizeof(AliHLTCTPData);
+  constBase += 5*sizeof(AliHLTTriggerDecision);
+  inputMultiplier = 2;
 }
 
 
