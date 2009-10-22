@@ -140,6 +140,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 	int Configure(const char* arguments);
+	int ScanConfigurationArgument(int argc, const char** argv);
 	int Reconfigure(const char* cdbEntry, const char* chainId);
 	
 	using AliHLTProcessor::DoEvent;
@@ -201,7 +202,13 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 
 	Bool_t fDoMC;
 
-	ClassDef(AliHLTTPCClusterFinderComponent, 6)
+	/// the default configuration entry for this component
+	static const char* fgkOCDBEntryPacked; //!transient
+	static const char* fgkOCDBEntryUnpacked; //!transient
+	static const char* fgkOCDBEntryDecoder; //!transient
+	static const char* fgkOCDBEntry32Bit; //!transient
+
+	ClassDef(AliHLTTPCClusterFinderComponent, 7)
 
 };
 #endif

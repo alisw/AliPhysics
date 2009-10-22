@@ -69,8 +69,10 @@ private:
   AliAltroRawStreamV3 * fAltroRawStreamV3;                   //! transient
   
   AliHLTTPCMapping *fMapping;                                //! transient
+
+  Bool_t fSkipDataReadingFlag;                                       //! transient
   
-  ClassDef(AliHLTTPCDigitReader32Bit, 0)
+  ClassDef(AliHLTTPCDigitReader32Bit, 1)
     
 };
 #endif

@@ -617,6 +617,21 @@ void AliHLTTPCClusterFinder::FindClusters(){
 }
 
 
+Bool_t AliHLTTPCClusterFinder::UpdateCalibDB(){
+  
+  //update the db
+  AliTPCcalibDB::Instance()->Update();
+
+  //uptate the transform class
+  AliTPCTransform * tmp = AliTPCcalibDB::Instance()->GetTransform(); 
+  if(!tmp){
+    HLTError("AliHLTTPCClusterFinder::UpdateCAlibDB: Offline transform not in AliTPCcalibDB.");
+    return 0;
+  }
+  fOfflineTransform = tmp;
+  return 1;
+}
+
 //---------------------------------- Under this line the old sorted clusterfinder functions can be found --------------------------------
 
 

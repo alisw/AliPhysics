@@ -218,6 +218,8 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   vector<AliHLTTPCClusterFinder::MCWeight> GetClusterMCInfo(){return fClusterMCVector;}
 
+  Bool_t UpdateCalibDB();
+
  protected: 
   /** copy constructor prohibited */
   AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder&);

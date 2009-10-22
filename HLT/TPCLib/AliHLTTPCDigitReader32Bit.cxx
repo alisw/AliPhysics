@@ -45,7 +45,8 @@ AliHLTTPCDigitReader32Bit::AliHLTTPCDigitReader32Bit()
   fRawReader(NULL),
   fRawReaderMemory(NULL),
   fAltroRawStreamV3(NULL),
-  fMapping(NULL)
+  fMapping(NULL),
+  fSkipDataReadingFlag(kFALSE)
 {
   // see header file for class documentation
   // or
@@ -97,7 +98,7 @@ int AliHLTTPCDigitReader32Bit::InitBlock(void* ptr,unsigned long size, Int_t pat
   fRawReaderMemory->SetMemory(reinterpret_cast<UChar_t*>(ptr), ULong_t(size));
   fRawReaderMemory->SetEquipmentID(ddlno);
   fRawReaderMemory->Reset();
-  fRawReaderMemory->NextEvent();
+  fSkipDataReadingFlag = fRawReaderMemory->NextEvent();
 
 #ifndef HAVE_NOT_ALTRORAWSTREAMV3
   if(fAltroRawStreamV3 != NULL){
@@ -109,7 +110,9 @@ int AliHLTTPCDigitReader32Bit::InitBlock(void* ptr,unsigned long size, Int_t pat
   if (!fAltroRawStreamV3){
     return -ENODEV;
   }
-  fAltroRawStreamV3->NextDDL();
+
+  fSkipDataReadingFlag = fAltroRawStreamV3->NextDDL();
+
 #else
   HLTError("AltroRawStreamV3 is not available in this AliRoot version");
 #endif //HAVE_NOT_ALTRORAWSTREAMV3
@@ -142,6 +145,10 @@ void AliHLTTPCDigitReader32Bit::SetUnsorted(bool unsorted)
 bool AliHLTTPCDigitReader32Bit::NextChannel()
 {
   // see header file for class documentation
+  if(fSkipDataReadingFlag == kFALSE){
+    return kFALSE;
+  }
+
 #ifndef HAVE_NOT_ALTRORAWSTREAMV3
   return fAltroRawStreamV3->NextChannel(); 
 #else

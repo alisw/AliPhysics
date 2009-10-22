@@ -57,6 +57,11 @@ using namespace std;
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterFinderComponent)
 
+const char* AliHLTTPCClusterFinderComponent::fgkOCDBEntryPacked="HLT/ConfigTPC/TPCClusterFinderPacked";
+const char* AliHLTTPCClusterFinderComponent::fgkOCDBEntryUnpacked="HLT/ConfigTPC/TPCClusterFinderUnpacked";
+const char* AliHLTTPCClusterFinderComponent::fgkOCDBEntryDecoder="HLT/ConfigTPC/TPCClusterFinderDecoder";
+const char* AliHLTTPCClusterFinderComponent::fgkOCDBEntry32Bit="HLT/ConfigTPC/TPCClusterFinder32Bit";
+
 AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(int mode)
   :
   fClusterFinder(NULL),
@@ -202,6 +207,29 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
   fClusterFinder = new AliHLTTPCClusterFinder();
 
+  // first configure the default
+  int iResult = 0;
+  switch(fModeSwitch){
+  case kClusterFinderPacked:
+    iResult=ConfigureFromCDBTObjString(fgkOCDBEntryPacked);
+    break;
+  case kClusterFinderUnpacked: 	 
+    iResult=ConfigureFromCDBTObjString(fgkOCDBEntryUnpacked);
+    break;
+  case kClusterFinderDecoder:
+    iResult=ConfigureFromCDBTObjString(fgkOCDBEntryDecoder);
+    break;
+  case kClusterFinder32Bit:
+    iResult=ConfigureFromCDBTObjString(fgkOCDBEntry32Bit);
+    break;
+  }
+
+  // configure from the command line parameters if specified
+  if (iResult>=0 && argc>0)
+    iResult=ConfigureFromArgumentString(argc, argv);
+  // return iResult;
+
+  /*
   Int_t iResult=0;
   TString configuration="";
   TString argument="";
@@ -216,6 +244,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   } else {
     iResult=Reconfigure(NULL, NULL);
   }
+  */
 
   //Checking for conflicting arguments
   if(fClusterDeconv){
@@ -279,7 +308,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     fClusterFinder->SetLastTimeBin(fLastTimeBin);
   }
 
-  return 0;
+  return iResult;
 }
 
 int AliHLTTPCClusterFinderComponent::DoDeinit()
@@ -481,6 +510,203 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
   return iResult;
 }
 
+int AliHLTTPCClusterFinderComponent::ScanConfigurationArgument(int argc, const char** argv){
+
+  // see header file for class documentation
+
+  if (argc<=0) return 0;
+  int i=0;
+  TString argument=argv[i];
+
+  if (argument.CompareTo("-update-calibdb")==0 || argument.CompareTo("-update-transform")==0 ){
+    if(fClusterFinder->UpdateCalibDB()){
+      HLTDebug("CalibDB and offline transform successfully updated.");
+    }
+    else{
+      HLTError("CalibDB could not be updated.");
+    }
+    return 1;
+  }
+
+  if (argument.CompareTo("-deconvolute-time")==0){
+    HLTDebug("Switching on deconvolution in time direction.");
+    fDeconvTime = kTRUE;
+    fClusterFinder->SetDeconvTime(fDeconvTime);
+    return 1;
+  }
+
+  if (argument.CompareTo("-deconvolute-pad")==0){
+    HLTDebug("Switching on deconvolution in pad direction.");
+    fDeconvPad = kTRUE;
+    fClusterFinder->SetDeconvPad(fDeconvPad);
+    return 1;
+  }
+
+  if (argument.CompareTo("-timebins")==0 || argument.CompareTo("timebins" )==0){
+    HLTWarning("Argument %s is depreciated after moving to the offline AliTPCTransform class for xyz calculations.",argument.Data());
+    /*
+      if (++i>=argc) return -EPROTO;
+      argument=argv[i];
+      AliHLTTPCTransform::SetNTimeBins(argument.Atoi());
+      fClusterFinder->UpdateLastTimeBin();
+      HLTInfo("number of timebins set to %d, zbin=%f", AliHLTTPCTransform::GetNTimeBins(), AliHLTTPCTransform::GetZWidth());
+      return 2;
+    */
+    if(argument.CompareTo("timebins")==0){
+      HLTWarning("Argument 'timebins' is old, please switch to new argument naming convention (-timebins). The timebins argument will still work, but please change anyway.");
+    }
+    return 2;
+  }
+  
+  if (argument.CompareTo("-first-timebin")==0){
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fFirstTimeBin = argument.Atoi();
+    if(fFirstTimeBin>=0){
+      HLTDebug("fFirstTimeBin set to %d",fFirstTimeBin);
+      fClusterFinder->SetFirstTimeBin(fFirstTimeBin);
+    }
+    else{
+      HLTError("-first-timebin specifier is negative: %d",fFirstTimeBin);
+    }
+    return 2;
+  }
+
+  if (argument.CompareTo("-last-timebin")==0){
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fLastTimeBin = argument.Atoi();
+    if(fLastTimeBin<AliHLTTPCTransform::GetNTimeBins()){
+      HLTDebug("fLastTimeBin set to %d",fLastTimeBin);
+    }
+    else{
+      HLTError("fLastTimeBins is too big: %d. Maximum: %d",fLastTimeBin,AliHLTTPCTransform::GetNTimeBins());
+    }
+    return 2;
+  }
+ 
+  if (argument.CompareTo("-sorted")==0) {
+    fUnsorted=0;
+    HLTDebug("Swithching unsorted off.");
+    fClusterFinder->SetUnsorted(0);
+    return 1;
+  } 
+  
+  if (argument.CompareTo("-do-mc")==0) {
+    fDoMC=kTRUE;
+    fClusterFinder->SetDoMC(fDoMC);
+    HLTDebug("Setting fDoMC to true.");
+    return 1;
+  }
+
+  if (argument.CompareTo("-active-pads")==0 || argument.CompareTo("activepads")==0){
+    if(argument.CompareTo("activepads" )==0){
+      HLTWarning("Please change to new component argument naming scheme and use '-active-pads' instead of 'activepads'");
+    }
+    HLTDebug("Switching on ActivePads");
+    fGetActivePads = 1;
+    fClusterFinder->SetDoPadSelection(kTRUE);
+    return 1;
+  }
+
+  if (argument.CompareTo("-occupancy-limit")==0 || argument.CompareTo("occupancy-limit")==0){
+    if(argument.CompareTo("occupancy-limit" )==0){
+      HLTWarning("Please switch to new component argument naming convention, use '-occupancy-limit' instead of 'occupancy-limit'");
+    }
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fClusterFinder->SetOccupancyLimit(argument.Atof());
+    HLTDebug("Occupancy limit set to occulimit %f", argument.Atof());
+    return 2;
+  }
+
+  if (argument.CompareTo("rawreadermode")==0){
+    if (++i>=argc) return -EPROTO;
+    HLTWarning("Argument 'rawreadermode' is deprecated");
+    return 2;
+  }
+  
+  if (argument.CompareTo("pp-run")==0){
+    HLTWarning("Argument 'pp-run' is obsolete, deconvolution is swiched off in both time and pad directions by default.");
+    fClusterDeconv = false;
+    return 1;
+  }
+
+  if (argument.CompareTo("adc-threshold" )==0){
+    if (++i>=argc) return -EPROTO;
+    HLTWarning("'adc-threshold' is no longer a valid argument, please use TPCZeroSuppression component if you want to zerosuppress data.");
+    return 2;
+  } 
+  
+  if (argument.CompareTo("oldrcuformat" )==0){
+    if (++i>=argc) return -EPROTO;
+    HLTWarning("Argument 'oldrcuformat' is deprecated.");
+    return 2;
+  }
+  
+  if (argument.CompareTo("unsorted" )==0 || argument.CompareTo("-unsorted" )==0){
+    HLTWarning("Argument is obsolete, unsorted reading is default.");
+    //    fClusterFinder->SetUnsorted(1);
+    return 1;
+  }
+  if (argument.CompareTo("nsigma-threshold")==0){
+    if (++i>=argc) return -EPROTO;
+    HLTWarning("Argument 'nsigma-threshold' argument is obsolete.");
+    return 2;
+  }
+
+  // unknown argument
+  return -EINVAL;
+}
+
+int AliHLTTPCClusterFinderComponent::Reconfigure(const char* cdbEntry, const char* /*chainId*/)
+{  
+  // see header file for class documentation
+
+  const char* entry=cdbEntry;
+  if (!entry || entry[0]==0){
+    switch(fModeSwitch){
+    case kClusterFinderPacked:
+      entry=fgkOCDBEntryPacked;
+      break;
+    case kClusterFinderUnpacked: 	 
+      entry=fgkOCDBEntryUnpacked;
+      break;
+    case kClusterFinderDecoder:
+      entry=fgkOCDBEntryDecoder;
+      break;
+    case kClusterFinder32Bit:
+      entry=fgkOCDBEntry32Bit;
+      break;
+    }
+  }
+
+  return ConfigureFromCDBTObjString(entry);
+
+  /*
+  int iResult=0;
+  
+  const char* path="HLT/ConfigTPC/ClusterFinderComponent";
+  if (cdbEntry) path=cdbEntry;
+  if (path) {
+    HLTInfo("reconfigure from entry %s, chain id %s", path, (chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path);//,GetRunNo());
+    if (pEntry) {
+      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
+      if (pString) {
+	HLTInfo("received configuration object: %s", pString->GetString().Data());
+	iResult = Configure(pString->GetString().Data());
+      } else {
+	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
+      }
+    } else {
+      HLTError("can not fetch object \"%s\" from CDB", path);
+    }
+  }
+  return iResult;
+  */
+}
+
 int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
   // see header file for class documentation
   int iResult=0;
@@ -510,13 +736,17 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
 	fClusterFinder->SetDeconvPad(fDeconvPad);
       }
       else if (argument.CompareTo("-timebins")==0 || argument.CompareTo("timebins" )==0){
+	HLTWarning("Argument %s is depreciated after moving to the offline AliTPCTransform class for xyz calculations.",argument.Data());
+	/*
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	AliHLTTPCTransform::SetNTimeBins(((TObjString*)pTokens->At(i))->GetString().Atoi());
 	fClusterFinder->UpdateLastTimeBin();
 	HLTInfo("number of timebins set to %d, zbin=%f", AliHLTTPCTransform::GetNTimeBins(), AliHLTTPCTransform::GetZWidth());
+	*/
 	if(argument.CompareTo("timebins")==0){
 	  HLTWarning("Argument 'timebins' is old, please switch to new argument naming convention (-timebins). The timebins argument will still work, but please change anyway.");
 	}
+	
       }
       else if (argument.CompareTo("-first-timebin")==0){
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
@@ -590,6 +820,9 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTWarning("Argument 'nsigma-threshold' argument is obsolete.");
       }
+      else if (argument.CompareTo("-update-calibdb")==0){
+	fClusterFinder->UpdateCalibDB();
+      }
       else {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
@@ -605,27 +838,3 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
   return iResult;
 }
 
-int AliHLTTPCClusterFinderComponent::Reconfigure(const char* cdbEntry, const char* chainId)
-{
-  
-  int iResult=0;
-  // see header file for class documentation
-  const char* path="HLT/ConfigTPC/ClusterFinderComponent";
-  if (cdbEntry) path=cdbEntry;
-  if (path) {
-    HLTInfo("reconfigure from entry %s, chain id %s", path, (chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
-    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
-    if (pEntry) {
-      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
-      if (pString) {
-	HLTInfo("received configuration object: %s", pString->GetString().Data());
-	iResult = Configure(pString->GetString().Data());
-      } else {
-	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
-      }
-    } else {
-      HLTError("can not fetch object \"%s\" from CDB", path);
-    }
-  }
-  return iResult;
-}
