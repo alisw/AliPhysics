@@ -243,35 +243,6 @@ class AliFlowAnalysisWithQCumulants{
   TH1D* GetDiffFlowSumOfEventWeights(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowSumOfEventWeights[i][j][k][l];};
   void SetDiffFlowSumOfProductOfEventWeights(TH1D* const dfsopoew, Int_t i, Int_t j, Int_t k, Int_t l) {this->fDiffFlowSumOfProductOfEventWeights[i][j][k][l] = dfsopoew;};
   TH1D* GetDiffFlowSumOfProductOfEventWeights(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowSumOfProductOfEventWeights[i][j][k][l];};
-  // ...
-  void SetFinalCorrelations2D(TH2D* const fCorrelations2D, Int_t i, Int_t j, Int_t k, Int_t l) {this->fFinalCorrelations2D[i][j][k][l] = fCorrelations2D;};
-  TH2D* GetFinalCorrelations2D(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fFinalCorrelations2D[i][j][k][l];};
-  void SetFinalCorrelations1D(TH1D* const fCorrelations1D, Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) {this->fFinalCorrelations1D[i][j][k][l][m] = fCorrelations1D;};
-  TH1D* GetFinalCorrelations1D(Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) const {return this->fFinalCorrelations1D[i][j][k][l][m];};
-  void SetFinalCorrections2D(TH2D* const fCorrections2D, Int_t i, Int_t j, Int_t k, Int_t l) {this->fFinalCorrections2D[i][j][k][l] = fCorrections2D;};
-  TH2D* GetFinalCorrections2D(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fFinalCorrections2D[i][j][k][l];};
-  void SetFinalCorrections1D(TH1D* const fCorrections1D, Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) {this->fFinalCorrections1D[i][j][k][l][m] = fCorrections1D;};
-  TH1D* GetFinalCorrections1D(Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) const {return this->fFinalCorrections1D[i][j][k][l][m];}; 
-  void SetFinalCovariances2D(TH2D* const fCovariances2D, Int_t i, Int_t j, Int_t k, Int_t l) {this->fFinalCovariances2D[i][j][k][l] = fCovariances2D;};
-  TH2D* GetFinalCovariances2D(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fFinalCovariances2D[i][j][k][l];};
-  void SetFinalCovariances1D(TH1D* const fCovariances1D, Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) {this->fFinalCovariances1D[i][j][k][l][m] = fCovariances1D;};
-  TH1D* GetFinalCovariances1D(Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) const {return this->fFinalCovariances1D[i][j][k][l][m];};  
-  void SetFinalCumulants2D(TH2D* const fCumulants2D, Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) {this->fFinalCumulants2D[i][j][k][l][m] = fCumulants2D;};
-  TH2D* GetFinalCumulants2D(Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) const {return this->fFinalCumulants2D[i][j][k][l][m];};
-  void SetFinalCumulantsPt(TH1D* const fCumulantsPt, Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) {this->fFinalCumulantsPt[i][j][k][l][m] = fCumulantsPt;};
-  TH1D* GetFinalCumulantsPt(Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) const {return this->fFinalCumulantsPt[i][j][k][l][m];};
-  void SetFinalCumulantsEta(TH1D* const fCumulantsEta, Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) {this->fFinalCumulantsEta[i][j][k][l][m] = fCumulantsEta;};
-  TH1D* GetFinalCumulantsEta(Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) const {return this->fFinalCumulantsEta[i][j][k][l][m];};
-  void SetFinalFlow2D(TH2D* const fFlow2D, Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) {this->fFinalFlow2D[i][j][k][l][m] = fFlow2D;};
-  TH2D* GetFinalFlow2D(Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) const {return this->fFinalFlow2D[i][j][k][l][m];};
-  void SetFinalFlowPt(TH1D* const fFlowPt, Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) {this->fFinalFlowPt[i][j][k][l][m] = fFlowPt;};
-  TH1D* GetFinalFlowPt(Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) const {return this->fFinalFlowPt[i][j][k][l][m];};
-  void SetFinalFlowEta(TH1D* const fFlowEta, Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) {this->fFinalFlowEta[i][j][k][l][m] = fFlowEta;};
-  TH1D* GetFinalFlowEta(Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) const {return this->fFinalFlowEta[i][j][k][l][m];};
-  void SetNonEmptyBins2D(TH2D* const fneb2D, Int_t i) {this->fNonEmptyBins2D[i] = fneb2D;}; // to be improved (removed)
-  TH2D* GetNonEmptyBins2D(Int_t i) const {return this->fNonEmptyBins2D[i];}; // to be improved (removed)
-  void SetNonEmptyBins1D(TH1D* const fneb1D, Int_t i, Int_t j) {this->fNonEmptyBins1D[i][j] = fneb1D;}; // to be improved (removed)
-  TH1D* GetNonEmptyBins1D(Int_t i, Int_t j) const {return this->fNonEmptyBins1D[i][j];}; // to be improved (removed)
   
   // x.) debugging and cross-checking:
   void SetNestedLoopsList(TList* nllist) {this->fNestedLoopsList = nllist;};
@@ -430,34 +401,6 @@ class AliFlowAnalysisWithQCumulants{
   TProfile2D *fCorrelationsPro[2][2][2][4]; // [0=RP,1=POI][0=pWeights not used,1=pWeights used][0=exact eWeights,1=non-exact eWeights][corr.'s index]
   TProfile2D *fProductsOfCorrelationsPro[2][2][2][5]; // [0=RP,1=POI][0=pW not used,1=pW used][0=exact eWeights,1=non-exact eWeights][products' index]
   TProfile2D *fCorrectionTermsPro[2][2][2][2][2]; // [0=RP,1=POI][0=pW not used,1=pW used][0=e eW,1=ne eW][0=sin terms,1=cos terms][corr. terms' index]
-  // nested lists to hold histograms with results:
-  //TList *fDiffFlowResults; // list to hold all lists with histos with results for diff. flow, cumulants, correlations, covariances and corrections 
-  TList *fDFRType[2]; // [0=RP,1=POI] 
-  TList *fDFRParticleWeights[2][2]; // [0=RP,1=POI][0=pWeights not used,1=pWeights used]
-  TList *fDFREventWeights[2][2][2]; // [0=RP,1=POI][0=pWeights not used,1=pWeights used][0=exact eWeights,1=non-exact eWeights]  
-  TList *fDFRCorrections[2][2][2][2]; // [0=RP,1=POI][0=pWeights not used,1=pWeights used][0=exact eWeights,1=non-exact eWeights][0=not corr,1=corr]  
-  TList *fDiffFlowFinalCorrelations[2][2][2]; // [0=RP,1=POI][0=pWeights not used,1=pWeights used][0=exact eWeights,1=non-exact eWeights]
-  TList *fDiffFlowFinalCorrections[2][2][2]; // [0=RP,1=POI][0=pWeights not used,1=pWeights used][0=exact eWeights,1=non-exact eWeights] 
-  TList *fDiffFlowFinalCovariances[2][2][2]; // [0=RP,1=POI][0=pWeights not used,1=pWeights used][0=exact eWeights,1=non-exact eWeights] 
-  TList *fDiffFlowFinalCumulants[2][2][2][2]; // [0=RP,1=POI][0=pWeights not used,1=pWeights used][0=exact eW,1=non-exact eW][0=not corr,1=corr] 
-  TList *fDiffFlowFinalFlow[2][2][2][2]; // [0=RP,1=POI][0=pWeights not used,1=pWeights used][0=exact eW,1=non-exact eW][0=not corr,1=corr]
-  TH2D *fFinalCorrelations2D[2][2][2][4]; // [0=RP,1=POI][0=pW not used,1=pW used][0=exact eW,1=non-exact eW][index of correlations] 
-  TH1D *fFinalCorrelations1D[2][2][2][2][4]; // [0=RP,1=POI][0=pW not used,1=pW used][0=exact eW,1=non-exact eW][0=pt,1=eta][index of correlations] 
-  TH2D *fFinalCorrections2D[2][2][2][4]; // [0=RP,1=POI][0=pW not used,1=pW used][0=exact eW,1=non-exact eW][corr.to cumulant of order] 
-  TH1D *fFinalCorrections1D[2][2][2][2][4]; // [0=RP,1=POI][0=pW not used,1=pW used][0=exact eW,1=non-exact eW][0=pt,1=eta][corr. to cumulant of order] 
-  TH2D *fFinalCovariances2D[2][2][2][5]; // [0=RP,1=POI][0=pW not used,1=pW used][0=exact eW,1=non-exact eW][index of covariances] 
-  TH1D *fFinalCovariances1D[2][2][2][2][5]; // [0=RP,1=POI][0=pW not used,1=pW used][0=exact eW,1=non-exact eW][0=pt,1=eta][index of covariances] 
-  TH2D *fFinalCumulants2D[2][2][2][2][4]; // [0=RP,1=POI][0=pW not used,1=pW used][0=e eW,1=ne eW][0=not corr,1=corr][cumulant's order] 
-  TH1D *fFinalCumulantsPt[2][2][2][2][4]; // [0=RP,1=POI][0=pW nu,1=pW u][0=e eW,1=ne eW][0=nc,1=corr][cumulant's order] 
-  TH1D *fFinalCumulantsEta[2][2][2][2][4]; // [0=RP,1=POI][0=pW nu,1=pW u][0=e eW,1=ne eW][0=nc,1=corr][cumulant's order]
-  TH2D *fFinalFlow2D[2][2][2][2][4]; // [0=RP,1=POI][0=pW not used,1=pW used][0=e eW,1=ne eW][0=not corr,1=corr][order of flow estimate] 
-  TH1D *fFinalFlowPt[2][2][2][2][4]; // [0=RP,1=POI][0=pW not used,1=pW used][0=e eW,1=ne eW][0=not corr,1=corr][order of flow estimate] 
-  TH1D *fFinalFlowEta[2][2][2][2][4]; // [0=RP,1=POI][0=pW not used,1=pW used][0=e eW,1=ne eW][0=not corr,1=corr][order of flow estimate] 
-  TH2D *fNonEmptyBins2D[2]; // [0=RP,1=POI] // to be improved (removed)
-  TH1D *fNonEmptyBins1D[2][2]; // [0=RP,1=POI][0=pt,1=eta] // to be improved (removed)
-  TH1D *fSumOfEventWeightsForDiffFlow[2][2][2][4]; // [0=pt,1=eta][0=RP,1=POI][0=power 1,1=power 2][0=eW for <2'>, 1=eW for <4'>, ...]
-  TH1D *fProductOfEventWeightsForDiffFlow[2][2][8][8]; // [0=pt,1=eta][0=RP,1=POI]  [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>] x 
-                                                       //                           [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>]
         
   // 5.) distributions:
   TList *fDistributionsList; // list to hold all distributions
