@@ -108,19 +108,25 @@ Float_t  AliMCParticle::GetTPCTrackLength(Float_t bz,  Float_t ptmin, Int_t &cou
   // deadWidth - dead zone in r-phi
   // Additional output:
   // counter   - number of circles
- 
+
+    if (fNTrackRef == 0) return 0.; 
+
     const Float_t kRMin = 90;
     const Float_t kRMax = 245;
     const Float_t kZMax = 250;
     const Float_t kMinPt= ptmin; 
+
     Float_t length =0;
     Int_t nrefs = fNTrackRef;
+
+    
     AliExternalTrackParam param;
     Double_t cv[21];
     for (Int_t i = 0; i < 21; i++) cv[i]=0;
     counter=0; 
     //
     //
+    
     AliTrackReference *ref0 = (AliTrackReference*) (fTrackReferences->At(0));
     Float_t direction = 0;
   //
