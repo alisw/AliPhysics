@@ -246,35 +246,38 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
     }
   }
   //
+  // simple caching non thread save
+  static Double_t vdcorrectionTime=1;
+  static Double_t time0corrTime=0;
+  static Int_t    lastStampT=-1;
   //
-  Double_t vdcorrectionTime=1;
-  Double_t time0corrTime=0;
-  //
-  if(fCurrentRecoParam&&fCurrentRecoParam->GetUseDriftCorrectionTime()>0) {
-    vdcorrectionTime = (1+AliTPCcalibDB::Instance()->
-      GetVDriftCorrectionTime(fCurrentTimeStamp, 
-			      AliTPCcalibDB::Instance()->GetRun(),
-			      sector%36>=18,
-			      fCurrentRecoParam->GetUseDriftCorrectionTime()));			  
-    time0corrTime= AliTPCcalibDB::Instance()->
-      GetTime0CorrectionTime(fCurrentTimeStamp, 
-			     AliTPCcalibDB::Instance()->GetRun(),
-			     sector%36>=18,
-			     fCurrentRecoParam->GetUseDriftCorrectionTime());	
+  if (lastStampT!=fCurrentTimeStamp){
+    lastStampT=fCurrentTimeStamp;
+    if(fCurrentRecoParam&&fCurrentRecoParam->GetUseDriftCorrectionTime()>0) {
+      vdcorrectionTime = (1+AliTPCcalibDB::Instance()->
+			  GetVDriftCorrectionTime(fCurrentTimeStamp, 
+						  AliTPCcalibDB::Instance()->GetRun(),
+						  sector%36>=18,
+						  fCurrentRecoParam->GetUseDriftCorrectionTime()));			  
+      time0corrTime= AliTPCcalibDB::Instance()->
+	GetTime0CorrectionTime(fCurrentTimeStamp, 
+			       AliTPCcalibDB::Instance()->GetRun(),
+			       sector%36>=18,
+			       fCurrentRecoParam->GetUseDriftCorrectionTime());	
+    }
+    //
+    if(fCurrentRecoParam&&fCurrentRecoParam->GetUseDriftCorrectionGY()>0) {
+      Float_t xyzPad[3];
+      AliTPCROC::Instance()->GetPositionGlobal(sector, TMath::Nint(x[0]) ,TMath::Nint(x[1]), xyzPad);
+      
+      Double_t corrGy= (1+(xyzPad[1])*AliTPCcalibDB::Instance()->
+			GetVDriftCorrectionGy(fCurrentTimeStamp, 
+					      AliTPCcalibDB::Instance()->GetRun(),
+					      sector%36>=18,
+					      fCurrentRecoParam->GetUseDriftCorrectionGY()));
+      vdcorrectionTime *=corrGy;
+    }
   }
-  //
-  if(fCurrentRecoParam&&fCurrentRecoParam->GetUseDriftCorrectionGY()>0) {
-    Float_t xyzPad[3];
-    AliTPCROC::Instance()->GetPositionGlobal(sector, TMath::Nint(x[0]) ,TMath::Nint(x[1]), xyzPad);
-    
-    Double_t corrGy= (1+(xyzPad[1])*AliTPCcalibDB::Instance()->
-		      GetVDriftCorrectionGy(fCurrentTimeStamp, 
-					    AliTPCcalibDB::Instance()->GetRun(),
-					    sector%36>=18,
-					    fCurrentRecoParam->GetUseDriftCorrectionGY()));
-    vdcorrectionTime *=corrGy;
-  }
-  
 
 
   if (!param){

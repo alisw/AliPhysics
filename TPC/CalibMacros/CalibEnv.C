@@ -7,7 +7,8 @@ gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
 CalibEnv("run.list");
 TFile f("dcsTime.root")
 */
- 
+#include "TMVA/TSpline1.h"
+#include "TMVA/TSpline2.h"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -50,6 +51,8 @@ AliTPCcalibDButil *dbutil =0;
 TTree * dcsTree=0;
 TString refFile="dummy.root"; 
 TTreeSRedirector *pcstream =0;
+void GetNearest(TGraph *graph, Double_t x, Double_t &dx, Double_t &y);
+void GetInterpoloationSigma(TGraph *graph, Double_t x, Double_t &dx, Double_t &sy, Double_t deltaX);
 //
 //
 void ProcessRun(Int_t irun, Int_t startTime, Int_t endTime);
@@ -450,6 +453,7 @@ void ProcessDrift(Int_t run, Int_t timeStamp){
   static Double_t     vlaserA[3]={0,0,0};
   static Double_t     vlaserC[3]={0,0,0};
   static Double_t     vcosmicAll=0;
+  
 
   if (array){
     laserA[0]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_DELAY_LASER_ALL_A");
@@ -475,4 +479,79 @@ void ProcessDrift(Int_t run, Int_t timeStamp){
     "vlaserC1="<<vlaserC[1]<<
     "vlaserC2="<<vlaserC[2]<<
     "vcosmicAll="<<vcosmicAll;
+
+  //
+  // define distance to measurement
+  //
+  static Double_t dlaserA=0; 
+  static Double_t dlaserC=0; 
+  static Double_t dcosmic=0; 
+  static Double_t slaserA=0; 
+  static Double_t slaserC=0; 
+  static Double_t scosmic=0; 
+  static Double_t  vclaserA[3]={0,0,0};
+  static Double_t  vclaserC[3]={0,0,0};
+  static Double_t  vccosmicAll=0;
+  Double_t dummy;
+  Double_t deltaX=1800; // +-0.5 hour
+  for (Int_t i=0;i<3;i++){
+    if (laserA[i]) GetNearest(laserA[i],timeStamp,dlaserA,vclaserA[i]);
+    if (laserC[i]) GetNearest(laserC[i],timeStamp,dlaserC,vclaserC[i]);
+  }  
+  if (laserA[1]) GetInterpoloationSigma(laserA[1],timeStamp,dummy,slaserA,deltaX);
+  if (laserC[1]) GetInterpoloationSigma(laserC[1],timeStamp,dummy,slaserC,deltaX);
+
+  if (cosmicAll) GetNearest(cosmicAll,timeStamp,dcosmic,vccosmicAll);
+  if (cosmicAll) GetInterpoloationSigma(cosmicAll,timeStamp,dummy,scosmic,deltaX);
+  (*pcstream)<<"dcs"<<
+    "vclaserA0="<<vclaserA[0]<<
+    "vclaserA1="<<vclaserA[1]<<
+    "vclaserA2="<<vclaserA[2]<<
+    "vclaserC0="<<vclaserC[0]<<
+    "vclaserC1="<<vclaserC[1]<<
+    "vclaserC2="<<vclaserC[2]<<
+    "vccosmicAll="<<vccosmicAll<<
+    "dlaserA="<<dlaserA<<
+    "dlaserC="<<dlaserC<<
+    "dcosmic="<<dcosmic<<
+    "slaserA="<<slaserA<<
+    "slaserC="<<slaserC<<
+    "scosmic="<<scosmic;
+}
+
+void GetNearest(TGraph *graph, Double_t xref, Double_t &dx, Double_t &y){
+  //
+  // find the closest point to xref  in x  direction
+  // return dx and value 
+  Int_t index=0;
+  index = TMath::BinarySearch(graph->GetN(), graph->GetX(),xref);
+  if (index<0) index=0;
+  if (index>=graph->GetN()-1) index=graph->GetN()-2;
+  if (xref-graph->GetX()[index]>graph->GetX()[index]-xref) index++;
+  dx = xref-graph->GetX()[index];
+  y  = graph->GetY()[index];
+}
+
+
+void GetInterpoloationSigma(TGraph *graph, Double_t x, Double_t &/*dx*/, Double_t &sy,Double_t deltaX){
+  //
+  //
+  //
+  TMVA::TSpline1 * spline1= new TMVA::TSpline1("spline1",graph);
+  Double_t deltas[1000];
+  Int_t counter=0;
+  Int_t index=0;
+  index = TMath::BinarySearch(graph->GetN(), graph->GetX(),x);
+  if (index<1) index=1;
+  if (index>=graph->GetN()-1) index=graph->GetN()-2;
+  
+  for (Int_t idelta=-10; idelta<=10; idelta++){
+    Double_t y0=0,dummy=0;
+    Double_t lx=x+idelta*deltaX/20.;
+    deltas[counter]=spline1->Eval(lx)-graph->GetY()[index];
+    counter++;
+    deltas[counter]=spline1->Eval(lx)-graph->GetY()[index+1];
+    counter++;
+  }
+  sy=TMath::RMS(counter,deltas);
 }

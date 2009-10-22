@@ -296,8 +296,7 @@ void AliTPCcalibDB::SetRun(Long64_t run)
 
 void AliTPCcalibDB::Update(){
 	//
-	AliCDBEntry * entry=0;
-  
+  AliCDBEntry * entry=0;
   Bool_t cdbCache = AliCDBManager::Instance()->GetCacheFlag(); // save cache status
   AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
   
@@ -424,7 +423,6 @@ void AliTPCcalibDB::Update(){
 
   //
   AliCDBManager::Instance()->SetCacheFlag(cdbCache); // reset original CDB cache
-  
 }
 
 
@@ -1570,6 +1568,8 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_
   //
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
+  if (run<=0 && fTransform) run = fTransform->GetCurrentRunNumber();
+  UpdateRunInformations(run,kFALSE);
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
   if (!array) return 0;
   TGraphErrors *laserA= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
@@ -1601,6 +1601,8 @@ Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t
   //
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
+  if (run<=0 && fTransform) run = fTransform->GetCurrentRunNumber();
+  UpdateRunInformations(run,kFALSE);
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
   if (!array) return 0;
   TGraphErrors *laserA= (TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
@@ -1641,7 +1643,9 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   // side      - the drift velocity gy correction per side (CE and Laser tracks)
   //
   // Notice - Extrapolation outside of calibration range  - using constant function
-  //
+  // 
+  if (run<=0 && fTransform) run = fTransform->GetCurrentRunNumber();
+  UpdateRunInformations(run,kFALSE);
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
   if (!array) return 0;
   TGraphErrors *laserA= (TGraphErrors*)array->FindObject("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_A");
