@@ -47,7 +47,8 @@ ClassImp(AliT0Trigger)
 AliT0Trigger::AliT0Trigger()
   : AliTriggerDetector(),
     fT0(0x0),
-    fDigits(0x0)
+  fDigits(0x0),
+  fTrigPar(0x0) 
 {
    SetName("T0");
    CreateInputs();
