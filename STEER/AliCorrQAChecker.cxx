@@ -42,7 +42,7 @@
 ClassImp(AliCorrQAChecker)
 
 //__________________________________________________________________
-Double_t * AliCorrQAChecker::Check(AliQAv1::ALITASK_t index, TNtupleD ** nData) 
+Double_t * AliCorrQAChecker::CheckN(AliQAv1::ALITASK_t index, TNtupleD ** nData, AliDetectorRecoParam * /*recoParam*/) 
 {
  // check the QA of correlated data stored in a ntuple
   
@@ -72,4 +72,20 @@ Double_t * AliCorrQAChecker::Check(AliQAv1::ALITASK_t index, TNtupleD ** nData)
  // }
   return test ; 
 }
+//__________________________________________________________________
+void   AliCorrQAChecker::Run(AliQAv1::ALITASK_t tsk, TNtupleD ** nt, AliDetectorRecoParam * recoParam) 
+{
+    // special run for TNtupleD
+	AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s", AliQAv1::GetAliTaskName(tsk))) ; 
+  
+	Double_t * rv = NULL ;
+  rv = CheckN(tsk, nt, recoParam) ;
+	SetQA(tsk, rv) ; 	
+	
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Test result of %s", AliQAv1::GetAliTaskName(tsk))) ;
+	
+  if (rv) 
+    delete [] rv ; 
+  Finish() ; 
+} 
 

@@ -62,7 +62,7 @@ AliMUONQAChecker::AliMUONQAChecker(const AliMUONQAChecker& qac) :
 
 //______________________________________________________________________________
 Double_t *
-AliMUONQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
+AliMUONQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/)
 {
   /// Check objects in list
   

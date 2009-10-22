@@ -29,8 +29,8 @@ public:
   AliACORDEQAChecker() : AliQACheckerBase("ACORDE","ACORDE Quality Assurance Data Checker") {;}          // constructor
 //  AliACORDEQAChecker(const AliACORDEQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // constructor   
   virtual ~AliACORDEQAChecker() {;} // destructor
-using AliQACheckerBase::Check;
- virtual Double_t * Check(AliQAv1::ALITASK_t, TObjArray **, AliDetectorRecoParam * /*recoParam*/) ; 
+
+  virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * recoParam) ;
 
   Double_t CheckAcordeRefHits(TObjArray *AcordeList, TObjArray *AcordeRef) const;
 

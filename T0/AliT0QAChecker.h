@@ -31,7 +31,7 @@ public:
  virtual ~AliT0QAChecker() {;}
  Double_t CheckRaw(TObjArray *listrec , TObjArray *listref) const ;
 private:
-  virtual Double_t * Check(AliQAv1::ALITASK_t, TObjArray ** list) ;
+  virtual Double_t * Check(AliQAv1::ALITASK_t, TObjArray ** list, AliDetectorRecoParam * recoParam) ;
   
   ClassDef(AliT0QAChecker,1)  // description 
 

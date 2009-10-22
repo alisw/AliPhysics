@@ -28,9 +28,9 @@ public:
 
 protected:
 
-  using AliQACheckerBase::Check;
+    //using AliQACheckerBase::Check;
   
-  virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list) ;
+  virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * recoParam) ;
   virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;	
 	
   Double_t * CheckRaws(TObjArray** list);

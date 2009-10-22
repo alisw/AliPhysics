@@ -84,7 +84,7 @@ AliITSQAChecker& AliITSQAChecker::operator=(const AliITSQAChecker& qac){
 }
 
 //____________________________________________________________________________
-Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list)
+Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/)
 {
   
   // Super-basic check on the QA histograms on the input list:

@@ -44,7 +44,7 @@
 ClassImp(AliHMPIDQAChecker)
 
 //_________________________________________________________________
-Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list) 
+Double_t * AliHMPIDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/) 
 {
 //
 // Main check function: Depending on the TASK, different checks are applied

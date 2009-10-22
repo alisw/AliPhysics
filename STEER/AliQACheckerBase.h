@@ -48,7 +48,6 @@ public:
   void           SetRefandData(TDirectory * ref, TObjArray ** refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
 
 protected:
-  virtual      Double_t * Check(AliQAv1::ALITASK_t index, AliDetectorRecoParam * recoParam) ;
   virtual      Double_t * Check(AliQAv1::ALITASK_t, TObjArray **, AliDetectorRecoParam * recoParam) ; 
 
   Double_t     DiffC(const TH1 * href, const TH1 * hin) const ;   
@@ -63,6 +62,9 @@ protected:
   Float_t     * fUpTestValue    ; // array of upper bounds for INFO, WARNING, ERROR, FATAL   
   TCanvas **    fImage          ;//[AliRecoParam::kNSpecies] 
   Bool_t        fPrintImage     ;//! flag to print the images or not
+
+private:
+  Double_t * Check(AliQAv1::ALITASK_t index, AliDetectorRecoParam * recoParam) ;
 
   ClassDef(AliQACheckerBase,2)  // description 
 

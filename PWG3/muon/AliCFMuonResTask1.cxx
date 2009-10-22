@@ -346,7 +346,7 @@ void AliCFMuonResTask1::UserExec(Option_t *)
   PostData(2,fCFManager->GetParticleContainer()) ;
 }
 //________________________________________________________________________
-const Float_t AliCFMuonResTask1::Imass(Float_t e1, Float_t px1, Float_t py1, Float_t pz1,
+Float_t AliCFMuonResTask1::Imass(Float_t e1, Float_t px1, Float_t py1, Float_t pz1,
 				   Float_t e2, Float_t px2, Float_t py2, Float_t pz2) 
 {
 // invariant mass calculation
@@ -355,7 +355,7 @@ const Float_t AliCFMuonResTask1::Imass(Float_t e1, Float_t px1, Float_t py1, Flo
     return imassrec;
 }
 //________________________________________________________________________
-const Float_t AliCFMuonResTask1::Rap(Float_t e, Float_t pz) 
+Float_t AliCFMuonResTask1::Rap(Float_t e, Float_t pz) 
 {
 // calculate rapidity
     Float_t rap;
@@ -369,7 +369,7 @@ const Float_t AliCFMuonResTask1::Rap(Float_t e, Float_t pz)
     }
 }
 //________________________________________________________________________
-const Float_t AliCFMuonResTask1::Phideg(Float_t phi) 
+Float_t AliCFMuonResTask1::Phideg(Float_t phi) 
 {
 // calculate Phi in range [-180,180] 
     Float_t phideg;
@@ -379,7 +379,7 @@ const Float_t AliCFMuonResTask1::Phideg(Float_t phi)
 	return phideg;
 }
 //________________________________________________________________________
-const Double_t AliCFMuonResTask1::CostCS(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
+Double_t AliCFMuonResTask1::CostCS(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2,
 Double_t Energy)
 {
@@ -428,7 +428,7 @@ Double_t Energy)
 //________________________________________________________________________
 
 //________________________________________________________________________
-const Double_t AliCFMuonResTask1::CostHE(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
+Double_t AliCFMuonResTask1::CostHE(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 {
   TLorentzVector PMu1CM, PMu2CM, PDimuCM; // In the CM frame 
@@ -467,7 +467,7 @@ Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 //________________________________________________________________________
 
 //________________________________________________________________________
-const Double_t AliCFMuonResTask1::PhiCS(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
+Double_t AliCFMuonResTask1::PhiCS(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2,
 Double_t Energy)
 {
@@ -517,7 +517,7 @@ Double_t Energy)
 //________________________________________________________________________
 
 //________________________________________________________________________
-const Double_t AliCFMuonResTask1::PhiHE(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
+Double_t AliCFMuonResTask1::PhiHE(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2, Double_t Energy)
 {
    TLorentzVector PMu1CM, PMu2CM, PProjCM, PTargCM, PDimuCM; // In the CM frame 
