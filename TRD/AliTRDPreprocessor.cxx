@@ -914,7 +914,7 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   // parse it/them and store TObjArrays in the CDB
   //
   // return 0 for success, otherwise:
-  //  5 : Could not get the SOR and EOR file from the FXS
+  //  5 : Could not get the (SOR and EOR) or SOR file from the FXS
   //  8 : Both files are not valid
   // 10 : SOR XML is not well-formed
   // 11 : EOR XML is not well-formed
@@ -929,71 +929,66 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
 
   // get the XML files
   Log("Requesting the 2 summaryfiles from the FXS..");
-  const char *xmlFileS = GetFile(kDCS,"CONFIGSUMMARYSOR","");
-  const char *xmlFileE = GetFile(kDCS,"CONFIGSUMMARYEOR","");
+  TString xmlFileS = GetFile(kDCS,"CONFIGSUMMARYSOR","");
+  TString xmlFileE = GetFile(kDCS,"CONFIGSUMMARYEOR","");
   // Request EOR and SOR files from the fxs, if both are not found exit
 
   Bool_t fileExistE = kTRUE, fileExistS = kTRUE;
-  Log(Form("Statusbits 1: SOR: %d, EOR: %d.", fileExistS, fileExistE));
 
   // check if the files are there
-  if (xmlFileS == NULL) {
-    Log(Form("Warning: SOR file %s not found!", xmlFileS));
+  if (xmlFileS.IsNull()) {
+	  Log(Form("Warning: SOR file %s not found!", xmlFileS.Data()));
     fileExistS = kFALSE;
-  } else Log(Form("SOR file found: %s", xmlFileS));
+  } else Log(Form("SOR file found: %s", xmlFileS.Data()));
 
-  if (xmlFileE == NULL) {
-    Log(Form("Warning: EOR file %s not found!", xmlFileE));
+  if (xmlFileE.IsNull()) {
+    Log(Form("Warning: EOR file %s not found!", xmlFileE.Data()));
     fileExistE = kFALSE;
-  } else Log(Form("EOR file found: %s", xmlFileE));
+  } else Log(Form("EOR file found: %s", xmlFileE.Data()));
 
   if (fileExistS==0 && fileExistE==0) {
-    Log(Form("ERROR: SOR and EOR files not found: %s and %s", xmlFileS, xmlFileE));
+    Log(Form("ERROR: SOR and EOR files not found: %s and %s", xmlFileS.Data(), xmlFileE.Data()));
     return 5;
   }
-
-  Log(Form("Statusbits 2: SOR: %d, EOR: %d.", fileExistS, fileExistE));
 
   // test the files
   if (fileExistS) {
     Log("Checking if SOR file is valid.");
     std::ifstream fileTestS;
-    fileTestS.open(xmlFileS, std::ios_base::binary | std::ios_base::in);
+    fileTestS.open(xmlFileS.Data(), std::ios_base::binary | std::ios_base::in);
     if (!fileTestS.good() || fileTestS.eof() || !fileTestS.is_open()) {
-      Log(Form("Warning: File %s not valid!",xmlFileS));
+      Log(Form("Warning: File %s not valid!",xmlFileS.Data()));
       fileExistS = kFALSE;
+      return 5;
     }
     Log("Checking if SOR file is not empty.");
     fileTestS.seekg(0, std::ios_base::end);
     if (static_cast<int>(fileTestS.tellg()) < 2) {
-      Log(Form("Warning: File %s is empty!",xmlFileS));
+      Log(Form("Warning: File %s is empty!",xmlFileS.Data()));
       fileExistS = kFALSE;
+      return 5;
     }
   }
 
-  Log(Form("Statusbits 3: SOR: %d, EOR: %d.", fileExistS, fileExistE));
 
   if (fileExistE) {
     Log("Checking if EOR file is valid.");
     std::ifstream fileTestE;
-    fileTestE.open(xmlFileE, std::ios_base::binary | std::ios_base::in);
+    fileTestE.open(xmlFileE.Data(), std::ios_base::binary | std::ios_base::in);
     if (!fileTestE.good() || fileTestE.eof() || !fileTestE.is_open()) {
-      Log(Form("Warning: File %s not valid!",xmlFileE));
+      Log(Form("Warning: File %s not valid!",xmlFileE.Data()));
       fileExistE = kFALSE;
     }
     Log("Checking if EOR file is not empty.");
     fileTestE.seekg(0, std::ios_base::end);
     if (static_cast<int>(fileTestE.tellg()) < 2) {
-      Log(Form("Warning: File %s is empty!",xmlFileE));
+      Log(Form("Warning: File %s is empty!",xmlFileE.Data()));
       fileExistE = kFALSE;
     }
   }
 
-  Log(Form("Statusbits 4: SOR: %d, EOR: %d.", fileExistS, fileExistE));
-
   if (fileExistS==0 && fileExistE==0) {
     Log("ERROR: Both files (SOR/EOR) are not valid!");
-    Log(Form("Statusbits 5: SOR: %d, EOR: %d.", fileExistS, fileExistE));
     return 8;
   }
 
@@ -1001,10 +996,10 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
 
   // make a robust XML validation
   TSAXParser testParser;
-  if (fileExistS && testParser.ParseFile(xmlFileS) < 0 ) {
+  if (fileExistS && testParser.ParseFile(xmlFileS.Data()) < 0 ) {
     Log("ERROR: XML content (SOR) is not well-formed.");
     return 10;
-  } else if (fileExistE && testParser.ParseFile(xmlFileE) < 0 ) {
+  } else if (fileExistE && testParser.ParseFile(xmlFileE.Data()) < 0 ) {
     Log("ERROR: XML content (EOR) is not well-formed.");
     return 11;
   }
@@ -1015,11 +1010,11 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   AliTRDSaxHandler saxHandlerS, saxHandlerE;
   if (fileExistS) {
     saxParserS.ConnectToHandler("AliTRDSaxHandler", &saxHandlerS);
-    saxParserS.ParseFile(xmlFileS);
+    saxParserS.ParseFile(xmlFileS.Data());
   }
   if (fileExistE) {
     saxParserE.ConnectToHandler("AliTRDSaxHandler", &saxHandlerE);
-    saxParserE.ParseFile(xmlFileE);
+    saxParserE.ParseFile(xmlFileE.Data());
   }
   // report errors of the parser if present
   if (fileExistS && saxParserS.GetParseCode() != 0) {
