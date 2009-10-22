@@ -41,6 +41,7 @@
 #include "AliHLTMisc.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
+#include "AliHLTMessage.h"
 
 class AliCDBEntry;
 
@@ -216,48 +217,6 @@ int AliHLTReconstructor::InitStreamerInfos()
     {
     TObjArray* pSchemas=dynamic_cast<TObjArray*>(pObject);
     if (pSchemas) {
-      for (int i=0; i<pSchemas->GetEntriesFast(); i++) {
-	if (pSchemas->At(i)) {
-	  TStreamerInfo* pSchema=dynamic_cast<TStreamerInfo*>(pSchemas->At(i));
-	  if (pSchema) {
-	    int version=pSchema->GetClassVersion();
-	    TClass* pClass=TClass::GetClass(pSchema->GetName());
-	    if (pClass) {
-	      if (pClass->GetClassVersion()==version) {
-		AliDebug(0,Form("skipping schema definition %d version %d to class %s as this is the native version", i, version, pSchema->GetName()));
-		continue;
-	      }
-	      TObjArray* pInfos=pClass->GetStreamerInfos();
-	      if (pInfos /*&& version<pInfos->GetEntriesFast()*/) {
-		if (pInfos->At(version)==NULL) {
-		  TStreamerInfo* pClone=(TStreamerInfo*)pSchema->Clone();
-		  if (pClone) {
-		    pClone->SetClass(pClass);
-		    pClone->BuildOld();
-		    pInfos->AddAtAndExpand(pClone, version);
-		    AliDebug(0,Form("adding schema definition %d version %d to class %s", i, version, pSchema->GetName()));
-		  } else {
-		    AliError(Form("skipping schema definition %d (%s), unable to create clone object", i, pSchema->GetName()));
-		  }
-		} else {
-		  TStreamerInfo* pInfo=dynamic_cast<TStreamerInfo*>(pInfos->At(version));
-		  if (pInfo && pInfo->GetClassVersion()==version) {
-		    AliDebug(0,Form("schema definition %d version %d already available in class %s", i, version, pSchema->GetName()));
-		  } else {
-		    AliError(Form("can not verify version for already existing schema definition %d (%s) version %d: version of existing definition is %d", i, pSchema->GetName(), version, pInfo?pInfo->GetClassVersion():-1));
-		  }
-		}
-	      } else {
-		AliError(Form("skipping schema definition %d (%s), unable to set version %d in info array of size %d", i, pSchema->GetName(), version, pInfos?pInfos->GetEntriesFast():-1));
-	      }
-	    } else {
-	      AliError(Form("skipping schema definition %d (%s), unable to find class", i, pSchema->GetName()));
-	    }
-	  } else {
-	    AliError(Form("skipping schema definition %d, not of TStreamerInfo", i));
-	  }
-	}
-      }
     } else {
       AliError(Form("internal mismatch in OCDB entry %s: wrong class type", fgkCalibStreamerInfoEntry));
     }
@@ -265,6 +224,54 @@ int AliHLTReconstructor::InitStreamerInfos()
     AliWarning(Form("missing HLT reco data (%s), skipping initialization of streamer info for TObjects in HLT raw data payload", fgkCalibStreamerInfoEntry));
   }
   return 0;
+}
+
+int AliHLTReconstructor::InitStreamerInfos(TObjArray* pSchemas) const
+{
+  // init streamer infos for HLT reconstruction from an array of TStreamerInfo objects
+
+  for (int i=0; i<pSchemas->GetEntriesFast(); i++) {
+    if (pSchemas->At(i)) {
+      TStreamerInfo* pSchema=dynamic_cast<TStreamerInfo*>(pSchemas->At(i));
+      if (pSchema) {
+	int version=pSchema->GetClassVersion();
+	TClass* pClass=TClass::GetClass(pSchema->GetName());
+	if (pClass) {
+	  if (pClass->GetClassVersion()==version) {
+	    AliDebug(0,Form("skipping schema definition %d version %d to class %s as this is the native version", i, version, pSchema->GetName()));
+	    continue;
+	  }
+	  TObjArray* pInfos=pClass->GetStreamerInfos();
+	  if (pInfos /*&& version<pInfos->GetEntriesFast()*/) {
+	    if (pInfos->At(version)==NULL) {
+	      TStreamerInfo* pClone=(TStreamerInfo*)pSchema->Clone();
+	      if (pClone) {
+		pClone->SetClass(pClass);
+		pClone->BuildOld();
+		pInfos->AddAtAndExpand(pClone, version);
+		AliDebug(0,Form("adding schema definition %d version %d to class %s", i, version, pSchema->GetName()));
+	      } else {
+		AliError(Form("skipping schema definition %d (%s), unable to create clone object", i, pSchema->GetName()));
+	      }
+	    } else {
+	      TStreamerInfo* pInfo=dynamic_cast<TStreamerInfo*>(pInfos->At(version));
+	      if (pInfo && pInfo->GetClassVersion()==version) {
+		AliDebug(0,Form("schema definition %d version %d already available in class %s, skipping ...", i, version, pSchema->GetName()));
+	      } else {
+		AliError(Form("can not verify version for already existing schema definition %d (%s) version %d: version of existing definition is %d", i, pSchema->GetName(), version, pInfo?pInfo->GetClassVersion():-1));
+	      }
+	    }
+	  } else {
+	    AliError(Form("skipping schema definition %d (%s), unable to set version %d in info array of size %d", i, pSchema->GetName(), version, pInfos?pInfos->GetEntriesFast():-1));
+	  }
+	} else {
+	  AliError(Form("skipping schema definition %d (%s), unable to find class", i, pSchema->GetName()));
+	}
+      } else {
+	AliError(Form("skipping schema definition %d, not of TStreamerInfo", i));
+      }
+    }
+  }
 }
 
 void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clustersTree*/) const 
@@ -417,6 +424,27 @@ void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd, bo
 
   if (bVerbose)
     PrintHLTOUTContent(pHLTOUT);
+
+  int blockindex=pHLTOUT->SelectFirstDataBlock(kAliHLTDataTypeStreamerInfo);
+  if (blockindex>=0) {
+    const AliHLTUInt8_t* pBuffer=NULL;
+    AliHLTUInt32_t size=0;
+    if (pHLTOUT->GetDataBuffer(pBuffer, size)>=0) {
+      TObject* pObject=AliHLTMessage::Extract(pBuffer, size);
+      if (pObject) {
+	TObjArray* pArray=dynamic_cast<TObjArray*>(pObject);
+	if (pArray) {
+	  InitStreamerInfos(pArray);
+	} else {
+	  AliError(Form("wrong class type of streamer info list: expected TObjArray, but object is of type %s", pObject->Class()->GetName()));
+	}
+      } else {
+	AliError(Form("failed to extract object from data block of type %s", AliHLTComponent::DataType2Text(kAliHLTDataTypeStreamerInfo).c_str()));
+      }
+    } else {
+      AliError(Form("failed to get data buffer for block of type %s", AliHLTComponent::DataType2Text(kAliHLTDataTypeStreamerInfo).c_str()));
+    }
+  }
 
   if (fFctProcessHLTOUT) {
     typedef int (*AliHLTSystemProcessHLTOUT)(AliHLTSystem* pInstance, AliHLTOUT* pHLTOUT, AliESDEvent* esd);

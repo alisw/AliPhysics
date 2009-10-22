@@ -52,9 +52,9 @@ AliHLTAgentUtil gAliHLTAgentUtil;
 ClassImp(AliHLTAgentUtil)
 
 AliHLTAgentUtil::AliHLTAgentUtil()
-  :
-  AliHLTModuleAgent("Util"),
-  fCompStatDataHandler(NULL)
+  : AliHLTModuleAgent("Util")
+  , fCompStatDataHandler(NULL)
+  , fStreamerInfoDataHandler(NULL)
 {
   // see header file for class documentation
   // or
@@ -143,6 +143,11 @@ int AliHLTAgentUtil::GetHandlerDescription(AliHLTComponentDataType dt,
       return 1;
   }
 
+  // handler for the component statistics data blocks {'ROOTSTRI':'HLT '}
+  if (dt==kAliHLTDataTypeStreamerInfo) {
+      desc=AliHLTOUTHandlerDesc(kProprietary, dt, GetModuleId());
+      return 1;
+  }
   return 0;
 }
 
@@ -160,6 +165,13 @@ AliHLTOUTHandler* AliHLTAgentUtil::GetOutputHandler(AliHLTComponentDataType dt,
     return fCompStatDataHandler;
   }
 
+  // handler for the component statistics data blocks {'ROOTSTRI':'HLT '}
+  if (dt==kAliHLTDataTypeStreamerInfo) {
+    if (fStreamerInfoDataHandler==NULL)
+      fStreamerInfoDataHandler=new AliHLTStreamerInfoHandler;
+    return fStreamerInfoDataHandler;
+  }
+
   return NULL;
 }
 
@@ -171,6 +183,11 @@ int AliHLTAgentUtil::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
   if (pInstance==fCompStatDataHandler) {
     delete fCompStatDataHandler;
     fCompStatDataHandler=NULL;
+  }
+
+  if (pInstance==fStreamerInfoDataHandler) {
+    delete fStreamerInfoDataHandler;
+    fStreamerInfoDataHandler=NULL;
   }
   return 0;
 }

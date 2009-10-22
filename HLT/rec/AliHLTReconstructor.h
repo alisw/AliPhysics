@@ -212,6 +212,12 @@ public:
   int InitStreamerInfos();
 
   /**
+   * Init streamer infos for the relevant classes to be extracted from HLT raw
+   * data payload.
+   */
+  int InitStreamerInfos(TObjArray* pSchemas) const;
+
+  /**
    * This Reconstructor function is not applicable for the AliHLTReconstructor
    * as it gets a detector specific digits tree. But HLT processes all detectors.
    * Furthermore it's purely simulated data. <br>

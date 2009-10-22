@@ -12,6 +12,7 @@
 */
 
 #include "AliHLTModuleAgent.h"
+#include "AliHLTOUTHandler.h"
 
 class AliHLTOUTHandler;
 
@@ -77,6 +78,27 @@ class AliHLTAgentUtil : public AliHLTModuleAgent {
 
   int DeleteOutputHandler(AliHLTOUTHandler* pInstance);
 
+  /**
+   * The handler for trigger decision blocks in the HLTOUT stream.
+   */
+  class AliHLTStreamerInfoHandler : public AliHLTOUTHandler {
+  public:
+    /** constructor */
+    AliHLTStreamerInfoHandler();
+    /** destructor */
+    ~AliHLTStreamerInfoHandler();
+
+    /// inherited from AliHLTOUTHandler
+    /// do nothing for the moment, the streamer info is handled
+    /// in AliHLTReconstructor
+    int ProcessData(AliHLTOUT* /*pData*/) {return 0;}
+
+  private:
+    /** copy constructor forbidden */
+    AliHLTStreamerInfoHandler(const AliHLTStreamerInfoHandler&);
+    /** assignment operator forbidden */
+    AliHLTStreamerInfoHandler& operator=(const AliHLTStreamerInfoHandler&);
+  };
  protected:
 
  private:
@@ -87,6 +109,9 @@ class AliHLTAgentUtil : public AliHLTModuleAgent {
 
   /** the one and only handler for compstat blocks */
   AliHLTOUTHandler* fCompStatDataHandler; //!transient
+
+  /** dummy handler for streamer info blocks */
+  AliHLTOUTHandler* fStreamerInfoDataHandler; //!transient
   
   ClassDef(AliHLTAgentUtil, 1);
 };
