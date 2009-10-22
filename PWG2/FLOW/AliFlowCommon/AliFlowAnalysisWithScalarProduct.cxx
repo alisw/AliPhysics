@@ -156,20 +156,17 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 
     //fill control histograms     
     fCommonHists->FillControlHistograms(anEvent);
-    
-    //get the Q vector from the FlowEvent
-    //AliFlowVector vQ = anEvent->GetQ();   //NOT EQUAL TO Qa+Qb
-    //fHistProM -> Fill(1,vQ.GetMult()-1);  //NOT EQUAL TO Ma+Mb
-    //get Q vectors for the subevents
+        
+    //get Q vectors for the eta-subevents
     AliFlowVector vQa = anEvent->GetQsub(-1.,-0.01);  
     AliFlowVector vQb = anEvent->GetQsub(0.01,1.);
-    Double_t sumX = vQa.X() + vQb.X();
-    Double_t sumY = vQa.Y() + vQb.Y();
-    TVector2 temp(sumX,sumY);
-    AliFlowVector vQ(temp,0.,0.,0.,0.,0.,0.,0.,0.);
-
-    fHistProM -> Fill(1,vQa.GetMult()+vQb.GetMult()-1);
-    fHistProM -> Fill(2,vQa.GetMult()*vQb.GetMult());
+    //get total Q vector
+    AliFlowVector vQ = vQa + vQb;
+    
+    //fill the multiplicity histograms for the prefactor
+    fHistProM -> Fill(1,vQ.GetMult()-1);                //<M-1>
+    fHistProM -> Fill(2,vQa.GetMult()*vQb.GetMult());   //<Ma*Mb>
+    //scalar product of the two subevents
     Double_t dQaQb = vQa*vQb; 
     fHistProQaQb -> Fill(0.,dQaQb);    
                 
@@ -191,7 +188,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	  else cerr<<"dModulus is zero!"<<endl;
 
 	  TVector2 vQm = vQ;
-	  //subtrackt particle from the flowvector if used to define it
+	  //subtract particle from the flowvector if used to define it
 	  if (pTrack->InRPSelection()) {
 	    Double_t dQmX = vQm.X() - dUX;
 	    Double_t dQmY = vQm.Y() - dUY;
