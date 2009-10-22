@@ -609,7 +609,7 @@ void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, const char* f
         //point error
         Int_t err=1;
         if (rocErr) {
-          err=TMth::Nint(rocErr->GetValue(irow,ipad));
+          err=TMath::Nint(rocErr->GetValue(irow,ipad));
           if (err==0) err=1;
         }
         //add points to the fitters

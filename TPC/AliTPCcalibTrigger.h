@@ -41,9 +41,15 @@ public:
   Bool_t HasTOF(TObjString *tname);
   Bool_t HasACORDE(TObjString *tname);
   Bool_t HasPIXEL(TObjString *tname);
-  Bool_t HasTRD(TObjString *tname);
+  Int_t HasTRD(TObjString *tname);
 public:
   TMap *fHisMap;      // map of the histogram per trigger class 
+  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
+private:
+   AliTPCcalibTrigger(const AliTPCcalibTrigger&); // Not implemented
+   AliTPCcalibTrigger& operator=(const AliTPCcalibTrigger&); // Not implemented
+ 
   ClassDef(AliTPCcalibTrigger, 1); 
 };
 

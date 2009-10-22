@@ -146,7 +146,7 @@ void AliTPCcalibTrigger::Process(AliESDEvent *event){
   //
   TObjString str(event->GetFiredTriggerClasses());
   Bool_t hasPIXEL=HasPIXEL(&str);
-  Bool_t hasTRD=HasTRD(&str);
+  Int_t  hasTRD=HasTRD(&str);
   Bool_t hasTOF=HasTOF(&str);
   Bool_t hasACORDE=HasACORDE(&str);
   //
@@ -218,18 +218,21 @@ void AliTPCcalibTrigger::Process(AliESDEvent *event){
       Int_t nclITS=track->GetITSclusters(kokot);
       Int_t nclTPC=track->GetTPCNcls();
       Int_t nclTRD=track->GetTRDclusters(kokot);
+      Int_t ntlTRD=track->GetTRDntracklets();
       ULong_t tstatus = track->GetStatus();
       (*cstream) << "Track" <<
 	"run="<<fRun<<
 	"time="<<fTime<<
 	"tname.="<<&str<<
 	"status="<<status<<	
+	"tstatus="<<tstatus<<	
 	//
 	"ntracks="<<ntracks<<
 	"tstatus="<<status<<
 	"nclITS="<<nclITS<<
 	"nclTPC="<<nclTPC<<
 	"nclTRD="<<nclTRD<<
+  "ntlTRD="<<ntlTRD<<
 	//
 	"pixel="<<hasPIXEL<<
 	"trd="<<hasTRD<<
@@ -342,7 +345,7 @@ void AliTPCcalibTrigger::MakeTree(TTreeStream &pcstream, const char *tname){
   TObjString str(tname);
   Bool_t isAll  = str.String().Contains("all");
   Bool_t hasPIXEL=HasPIXEL(&str);
-  Bool_t hasTRD=HasTRD(&str);
+  Int_t  hasTRD=HasTRD(&str);
   Bool_t hasTOF=HasTOF(&str);
   Bool_t hasACORDE=HasACORDE(&str);
   for (Long64_t i = 0; i < his->GetNbins(); ++i) {
@@ -385,10 +388,17 @@ Bool_t AliTPCcalibTrigger::HasPIXEL(TObjString *tname){
   return (tname->String().Contains("0SCO")>0);
 }
 
-Bool_t AliTPCcalibTrigger::HasTRD(TObjString *tname){
-  Bool_t result = kFALSE;
-  result|=(tname->String().Contains("TRD")>0);
-  result|=(tname->String().Contains("1H")>0);
+Int_t AliTPCcalibTrigger::HasTRD(TObjString *tname){
+  //
+  // Returns a mask containing TRD trigger information
+  // 0: No TRD trigger fired
+  // 1: TRD L1 fired
+  // 2: TRD L0 (krypton trigger) fired
+  //
+  Int_t result = 0;
+  if(tname->String().Contains("TRD")) result = 1;     // Normal TRD L1 name
+  if(tname->String().Contains("0HPT1")) result = 1;   // Old TRD L1 name
+  if(tname->String().Contains("0HWU") && !tname->String().Contains("TRD")) result = 2;  // pretrigger always input for L1
   return result;
 }
 
