@@ -166,7 +166,10 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
            fConfigOK = kFALSE;
            return;
         }
-        fHighVoltage = new AliDCSSensorArray(startTime, endTime, confTree);
+        time_t timeStart = (time_t)(((TString)GetRunParameter("DAQ_time_start")).Atoi());
+	time_t timeEnd = (time_t)(((TString)GetRunParameter("DAQ_time_end")).Atoi());
+        fHighVoltage = new AliDCSSensorArray (UInt_t(timeStart), 
+	                                    UInt_t(timeEnd), confTree);
       }
 
    // High voltage status values
