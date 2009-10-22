@@ -55,6 +55,7 @@ public:
 	void                Finish() const ; 
 	virtual TH1 *       GetDigitsData(const Int_t index)                       = 0 ; 
 	virtual TH1 *       GetESDsData(const Int_t index)                         = 0 ; 
+  AliRecoParam::EventSpecie_t GetEventSpecie() const { return fEventSpecie ; }
 	virtual TH1 *       GetHitsData(const Int_t index)                         = 0 ; 
 	virtual TH1 *       GetRecPointsData(const Int_t index)                    = 0 ; 
 	virtual TH1 *       GetRawsData(const Int_t index)                         = 0 ; 
@@ -62,6 +63,7 @@ public:
 	const Char_t *      GetDetectorDirName() const { return fDetectorDirName.Data() ; }
   TList *             GetParameterList() const { return fParameterList[AliRecoParam::AConvert(fEventSpecie)] ; }
   virtual const AliDetectorRecoParam * GetRecoParam() { return NULL ; }
+  Int_t               GetRun() const { return fRun ; } 
 	Int_t               Increment() { return ++fCycleCounter ; } 
 	virtual TObjArray** Init(AliQAv1::TASKINDEX_t, Int_t cycles = -1)                                 = 0 ;
   TObjArray*          Init(AliQAv1::TASKINDEX_t, AliRecoParam::EventSpecie_t es, Int_t cycles = -1) ;
