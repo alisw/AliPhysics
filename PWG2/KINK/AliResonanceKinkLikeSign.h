@@ -34,7 +34,8 @@ class AliResonanceKinkLikeSign : public AliAnalysisTaskSE {
   TList       *fListOfHistos; //! List 
   TF1         *f1;
   TF1         *f2;  
-  TH1D        *fNegKaonLikeSign; //! negative spectrum
+  TH1D        *fPosKaonLikeSign; //! negative spectrum
+  TH2D        *fLikeSignInvmassPt; //! negative spectrum
   
   AliResonanceKinkLikeSign(const AliResonanceKinkLikeSign&); // not implemented
   AliResonanceKinkLikeSign& operator=(const AliResonanceKinkLikeSign&); // not implemented
