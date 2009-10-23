@@ -15,7 +15,7 @@
 //                        class AliResonanceKinkLikeSign
 //        Example of an analysis task for producing a like-sign background for resonances having at least one 
 //        kaon-kink in their decay products. 
-//        Background is calculated from a negative kaon kink and a negative track.
+//        Background is calculated from a positive kaon kink and a negative track.
 //-----------------------------------------------------------------------------------------------------------------
 
 #include "TChain.h"
@@ -23,6 +23,7 @@
 #include "TVector3.h"
 #include "TF1.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include <TDatabasePDG.h>
 #include <TParticlePDG.h>
 #include "TLorentzVector.h"
@@ -38,14 +39,14 @@ ClassImp(AliResonanceKinkLikeSign)
 
 //________________________________________________________________________
 AliResonanceKinkLikeSign::AliResonanceKinkLikeSign() 
-  : AliAnalysisTaskSE(), fESD(0), fListOfHistos(0), f1(0), f2(0), fNegKaonLikeSign(0)
+  : AliAnalysisTaskSE(), fESD(0), fListOfHistos(0), f1(0), f2(0), fPosKaonLikeSign(0), fLikeSignInvmassPt(0)
 {
   // Constructor
 }
 
 //________________________________________________________________________
 AliResonanceKinkLikeSign::AliResonanceKinkLikeSign(const char *name) 
-  : AliAnalysisTaskSE(name), fESD(0), fListOfHistos(0), f1(0), f2(0), fNegKaonLikeSign(0)
+  : AliAnalysisTaskSE(name), fESD(0), fListOfHistos(0), f1(0), f2(0), fPosKaonLikeSign(0), fLikeSignInvmassPt(0)
 
 {
   // Constructor
@@ -95,14 +96,16 @@ void AliResonanceKinkLikeSign::CreateOutputObjects()
    //OpenFile(1);  //uncomment for proof analysis 
    
     // for K*0(892)
-   fNegKaonLikeSign=new TH1D("fNegKaonLikeSign"," ", 60,0.6,1.2);
+   fPosKaonLikeSign=new TH1D("fPosKaonLikeSign"," ", 60,0.6,1.2);
+   fLikeSignInvmassPt=new TH2D("fLikeSignInvmassPt"," ", 60,0.6,1.2, 100,0.0,10.0);
    
    // for phi(1020)
- //  fNegKaonLikeSign=new TH1D("fNegKaonLikeSign"," ", 70,0.99,1.088);
+ //  fPosKaonLikeSign=new TH1D("fPosKaonLikeSign"," ", 70,0.99,1.088);
     
 
    fListOfHistos=new TList();
-   fListOfHistos->Add(fNegKaonLikeSign);  
+   fListOfHistos->Add(fPosKaonLikeSign);
+   fListOfHistos->Add(fLikeSignInvmassPt);     
 
 }
 
@@ -136,7 +139,7 @@ void AliResonanceKinkLikeSign::Exec(Option_t *)
       continue;
     }
     
-    if (trackpos->GetSign() > 0) continue;
+    if (trackpos->GetSign() < 0) continue;
     
     trackpos->GetPxPyPz(ptrackpos);
     
@@ -161,68 +164,68 @@ void AliResonanceKinkLikeSign::Exec(Option_t *)
   
     if(posTrackMom.Perp()<=0.25) continue; 
 	
-    //Uncomment the following block if the Like Sign is made of K- kink + negative track
+    //Uncomment the following block if the Like Sign is made of K+ kink + positive track
     
-    //Int_t indexKink=trackpos->GetKinkIndex(0);
-    //Int_t kaonKinkFlag=0;
-//     if(indexKink<0){
-// 		
-//         AliESDkink *kink=fESD->GetKink(TMath::Abs(IndexKink)-1);
-// 	const TVector3 motherMfromKink(kink->GetMotherP());
-// 	const TVector3 daughterMKink(kink->GetDaughterP());
-// 	Float_t qt=kink->GetQt();
-// 
-//         Double_t maxDecAngKmu=f1->Eval(motherMfromKink.Mag(),0.,0.,0.);
-//         Double_t maxDecAngpimu=f2->Eval(motherMfromKink.Mag(),0.,0.,0.);
-// 
-//         Float_t kinkAngle=TMath::RadToDeg()*kink->GetAngle(2);
-// 	 
-// 	Float_t energyDaughterMu=TMath::Sqrt(daughterMKink.Mag()*daughterMKink.Mag()+0.105658*0.105658);
-//         Float_t p1XM= motherMfromKink.Px();
-//         Float_t p1YM= motherMfromKink.Py();
-//         Float_t p1ZM= motherMfromKink.Pz();
-//         Float_t p2XM= daughterMKink.Px();
-//         Float_t p2YM= daughterMKink.Py();
-//         Float_t p2ZM= daughterMKink.Pz();
-//         Float_t p3Daughter=TMath::Sqrt(((p1XM-p2XM)*(p1XM-p2XM))+((p1YM-p2YM)*(p1YM-p2YM))+((p1ZM-p2ZM)*(p1ZM-p2ZM)));
-//         Double_t invariantMassKmu= TMath::Sqrt((energyDaughterMu+p3Daughter)*(energyDaughterMu+p3Daughter)-motherMfromKink.Mag()*motherMfromKink.Mag());
-// 
-//         if((kinkAngle>maxDecAngpimu)&&(qt>0.05)&&(qt<0.25)&&((kink->GetR()>110.)&&(kink->GetR()<230.))&&(TMath::Abs(posTrackMom.Eta())<1.1)&&(invariantMassKmu<0.6)) {
-// 
-//           if(posTrackMom.Mag()<=1.1) {
-//  	   kaonKinkFlag=1;
-//  	  }
-// 	  else 
-// 	  if (kinkAngle<maxDecAngKmu) {
-// 	   kaonKinkFlag=1;	
-// 	  }
-// 	}
-// 
-//     }  //End Kink Information   
-//     
-//     if(kaonKinkFlag==0) continue; 
-//     if(kaonKinkFlag==1) p4pos.SetVectM(posTrackMom,daughter1Mass);
+    Int_t IndexKink=trackpos->GetKinkIndex(0);
+    Int_t kaonKinkFlag=0;
+    if(IndexKink<0){
+		
+        AliESDkink *kink=fESD->GetKink(TMath::Abs(IndexKink)-1);
+	const TVector3 motherMfromKink(kink->GetMotherP());
+	const TVector3 daughterMKink(kink->GetDaughterP());
+	Float_t qt=kink->GetQt();
 
-      // Comment the following statements till the "for" if the Like Sign of K- kink + negative track is needed
+        Double_t maxDecAngKmu=f1->Eval(motherMfromKink.Mag(),0.,0.,0.);
+        Double_t maxDecAngpimu=f2->Eval(motherMfromKink.Mag(),0.,0.,0.);
 
-      UInt_t status=trackpos->GetStatus();
-      if((status&AliESDtrack::kTPCrefit)==0) continue;
-      if(trackpos->GetTPCclusters(0)<50) continue;
-      if((trackpos->GetTPCchi2()/trackpos->GetTPCclusters(0))>3.5) continue;
-      Double_t extCovPos[15];
-      trackpos->GetExternalCovariance(extCovPos);    
-      if(extCovPos[0]>2) continue;
-      if(extCovPos[2]>2) continue;    
-      if(extCovPos[5]>0.5) continue;  
-      if(extCovPos[9]>0.5) continue;
-      if(extCovPos[14]>2) continue; 
+        Float_t kinkAngle=TMath::RadToDeg()*kink->GetAngle(2);
+	 
+	Float_t energyDaughterMu=TMath::Sqrt(daughterMKink.Mag()*daughterMKink.Mag()+0.105658*0.105658);
+        Float_t p1XM= motherMfromKink.Px();
+        Float_t p1YM= motherMfromKink.Py();
+        Float_t p1ZM= motherMfromKink.Pz();
+        Float_t p2XM= daughterMKink.Px();
+        Float_t p2YM= daughterMKink.Py();
+        Float_t p2ZM= daughterMKink.Pz();
+        Float_t p3Daughter=TMath::Sqrt(((p1XM-p2XM)*(p1XM-p2XM))+((p1YM-p2YM)*(p1YM-p2YM))+((p1ZM-p2ZM)*(p1ZM-p2ZM)));
+        Double_t invariantMassKmu= TMath::Sqrt((energyDaughterMu+p3Daughter)*(energyDaughterMu+p3Daughter)-motherMfromKink.Mag()*motherMfromKink.Mag());
 
-       p4pos.SetVectM(posTrackMom,daughter1Mass);
+        if((kinkAngle>maxDecAngpimu)&&(qt>0.05)&&(qt<0.25)&&((kink->GetR()>110.)&&(kink->GetR()<230.))&&(TMath::Abs(posTrackMom.Eta())<1.1)&&(invariantMassKmu<0.6)) {
+
+          if(posTrackMom.Mag()<=1.1) {
+ 	   kaonKinkFlag=1;
+ 	  }
+	  else 
+	  if (kinkAngle<maxDecAngKmu) {
+	   kaonKinkFlag=1;	
+	  }
+	}
+
+    }  //End Kink Information   
+    
+    if(kaonKinkFlag==0) continue; 
+    if(kaonKinkFlag==1) p4pos.SetVectM(posTrackMom,daughter1Mass);
+
+      // Comment the following statements till the "for" if the Like Sign of K+ kink + positive track is needed
+
+//       UInt_t status=trackpos->GetStatus();
+//       if((status&AliESDtrack::kTPCrefit)==0) continue;
+//       if(trackpos->GetTPCclusters(0)<50) continue;
+//       if((trackpos->GetTPCchi2()/trackpos->GetTPCclusters(0))>3.5) continue;
+//       Double_t extCovPos[15];
+//       trackpos->GetExternalCovariance(extCovPos);    
+//       if(extCovPos[0]>2) continue;
+//       if(extCovPos[2]>2) continue;    
+//       if(extCovPos[5]>0.5) continue;  
+//       if(extCovPos[9]>0.5) continue;
+//       if(extCovPos[14]>2) continue; 
+// 
+//        p4pos.SetVectM(posTrackMom,daughter1Mass);
 
       for (Int_t j=0; j<fESD->GetNumberOfTracks(); j++) {
         if(iTracks==j) continue;
         AliESDtrack* trackneg=fESD->GetTrack(j);
-        if (trackneg->GetSign() > 0) continue;
+        if (trackneg->GetSign() < 0) continue;
 	
 	trackneg->GetPxPyPz(ptrackneg);
         Float_t negSigmaToVertex = GetSigmaToVertex(trackneg);
@@ -263,7 +266,8 @@ void AliResonanceKinkLikeSign::Exec(Option_t *)
 	
 	p4comb=p4pos;
 	p4comb+=p4neg;
-	fNegKaonLikeSign->Fill(p4comb.M());
+	fPosKaonLikeSign->Fill(p4comb.M());
+	fLikeSignInvmassPt->Fill(p4comb.M(), p4comb.Vect().Pt());
 	
       } //inner track loop 
 

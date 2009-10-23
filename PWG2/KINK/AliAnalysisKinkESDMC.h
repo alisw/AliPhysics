@@ -13,9 +13,9 @@
 //                    mspyrop@phys.uoa.gr
 //-----------------------------------------------------------------
 
-class AliESDEvent;
 class AliESDVertex;
 class AliESDtrack;
+class AliESDEvent;
 class TF1;
 class TH1F;
 class TH2F;

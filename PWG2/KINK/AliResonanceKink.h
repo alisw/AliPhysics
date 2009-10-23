@@ -138,7 +138,11 @@ class AliResonanceKink : public TObject {
   Double_t    fMaxCov2;
   Double_t    fMaxCov5;
   Double_t    fMaxCov9;
-  Double_t    fMaxCov14;    
+  Double_t    fMaxCov14;
+  TH2D        *fInvmassPt;   
+  TH2D        *fInvmassPtTrue;   
+  TH2D        *fMCInvmassPt; 
+  TH2D        *fMCInvmassPtTrue;         
 //  Bool_t      fTPCrefitFlag;
   
   AliResonanceKink(const AliResonanceKink&); // not implemented

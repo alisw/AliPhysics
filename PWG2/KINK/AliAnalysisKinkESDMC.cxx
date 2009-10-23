@@ -58,7 +58,7 @@ AliAnalysisKinkESDMC::AliAnalysisKinkESDMC(const char *name)
 
   // Define input and output slots here
   // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
+ // DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 }
 
@@ -182,7 +182,7 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
      return;
   }
 
-  if (fDebug > 0)   Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
+  Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
 
   AliStack* stack=mcEvent->Stack();
   
@@ -195,8 +195,6 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
   Double_t vpos[3];
   vertex->GetXYZ(vpos);
     fZpr->Fill(vpos[2]);         
-// fZvXv->Fill( vpos[1], vpos[2]);  
-// fZvYv->Fill( vpos[0], vpos[2]);  
 
   Double_t vtrack[3], ptrack[3];
   
@@ -213,7 +211,7 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
 
     AliESDtrack* track = esd->GetTrack(iTracks);
     if (!track) {
-      if (fDebug > 0) Printf("ERROR: Could not receive track %d", iTracks);
+      Printf("ERROR: Could not receive track %d", iTracks);
       continue;
     }
     
@@ -226,11 +224,9 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
     TParticle * part = stack->Particle(label);
     if (!part) continue;
 // loop only on Primary tracks
-// gia oles tis troxies 5/7/2009      if (label > nPrim) continue;
-//      if (label > nPrim) continue; /// primary tracks only 
-     //  ta nominal cauts tis apomakrynoun ols  if (label < nPrim) continue;    // gia tis secondary  , 5/7/2009
+      if (label > nPrim) continue; /// primary tracks only   , 26/8/09  EFF study
 
-      //   pt cut at 300 MeV
+      //    pt cut at 300 MeV
         if ( (track->Pt())<.300)continue;
 
 //    UInt_t status=track->GetStatus();
@@ -270,7 +266,7 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
     track->GetImpactParameters(bpos,bCovpos);
     
     if (bCovpos[0]<=0 || bCovpos[2]<=0) {
-     if (fDebug > 0) Printf("Estimated b resolution lower or equal zero!");
+     Printf("Estimated b resolution lower or equal zero!");
      bCovpos[0]=0; bCovpos[2]=0;
     }
 
@@ -281,10 +277,7 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
 //  test for secondary kinks   , 5/7/2009  
     if(nSigmaToVertex>=4) continue;
  //    if((dcaToVertexXYpos>3.0)||(dcaToVertexZpos>3.0)) continue;  //arxiko 
-     //if((dcaToVertexXYpos>0.4)||(dcaToVertexZpos>3.0)) continue;// me Zpos > 5 clen the secondaries
-     if((dcaToVertexXYpos>2.4)||(dcaToVertexZpos>5.0)) continue;// me Zpos > 5 clen the secondaries
-    // if((dcaToVertexXYpos>3.0)||(dcaToVertexZpos>3.0)) continue; // me ayto krataei 4 fakes apo ta 5
-    // if((dcaToVertexXYpos>4.0)||(dcaToVertexZpos>5.0)) continue;
+     if((dcaToVertexXYpos>4.0)||(dcaToVertexZpos>5.0)) continue;   // 27/8
     
 
  //  cut on eta 
@@ -315,7 +308,6 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
 	   const TVector3 daughterMKink(kink->GetDaughterP());
 	   Float_t qT=kink->GetQt();
 
-           //fHistEta->Fill(trackEta) ;  //   Eta distr
            fHistQtAll->Fill(qT) ;  //  Qt   distr
                   
            fptKink->Fill(motherMfromKink.Pt()); /// pt from kink
@@ -324,13 +316,12 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
 
 //       fake kinks, small Qt and small kink angle
     if(( kinkAngle<1.)&&(TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==13)) fHistQt1  ->Fill(qT) ;  //  Qt   distr
-           if ( qT<0.012) fcodeH->Fill( TMath::Abs(code1), TMath::Abs(dcode1) );
+
            if(qT<0.012) continue;  // remove fake kinks
-           if( (kinkAngle<1.)  ) continue;
 
 //remove the double taracks 
-            
-           //if( (kinkAngle<1.)  ) continue;
+           if( (kinkAngle<1.)  ) continue;
+
 //
 
       if((kink->GetR()>120.)&&(kink->GetR()<220.)&&(TMath::Abs(trackEta)<0.9)&&(label<nPrim)) {
@@ -340,9 +331,9 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
                fHistPtKPDG->Fill(track->Pt());  // ALL KAONS (pdg) inside ESD  kink sample
            fHistEta->Fill(trackEta) ;  //   Eta distr of PDG kink ESD  kaons
     fMultESDK->Fill(nGoodTracks);
+      fHistQt2->Fill(qT);  // PDG ESD kaons            
      }
      }
-           if( (qT>0.05)&& ( qT<0.25)  )   fHistQt2->Fill(qT);  // candidate kaon kinks
 
 //          maximum decay angle at a given mother momentum
 	   Double_t maxDecAngKmu=f1->Eval(motherMfromKink.Mag(),0.,0.,0.);
@@ -365,32 +356,30 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
          fM1kaon->Fill(invariantMassKmu);
 
 //  kaon selection from kinks
-if((kinkAngle>maxDecAngpimu)&&(qT>0.05)&&(qT<0.25)&&((kink->GetR()>120.)&&(kink->GetR()<220.))&&(TMath::Abs(trackEta)<0.9)&&(invariantMassKmu<0.6)) {
-              //  fHistEtaK->Fill(trackEta);
+//if((kinkAngle>maxDecAngpimu)&&(qT>0.05)&&(qT<0.25)&&((kink->GetR()>120.)&&(kink->GetR()<220.))&&(TMath::Abs(trackEta)<0.9)&&(invariantMassKmu<0.6)) {
+if((kinkAngle>maxDecAngpimu)&&(qT>0.04)&&(qT<0.30)&&((kink->GetR()>120.)&&(kink->GetR()<220.))&&(TMath::Abs(trackEta)<0.9)&&(invariantMassKmu<0.6)) {
 
-                // if(TMath::Abs(code1)==321) fAngMomKC->Fill(motherMfromKink.Mag(), kinkAngle);  // real kaons
+        if( (kinkAngle>maxDecAngKmu*1.1) && ( motherMfromKink.Mag()> 1.2 ) ) fcodeH->Fill(TMath::Abs(code1), TMath::Abs(dcode1));
+                if ( (kinkAngle>maxDecAngKmu*1.1) && ( motherMfromKink.Mag()> 1.2 ) )  fAngMomKC->Fill(motherMfromKink.Mag(), kinkAngle);
 
-//                fHistQt1  ->Fill(qT) ;  //  Qt   distr
-                if ( (kinkAngle>maxDecAngKmu) && ( motherMfromKink.Mag()> 1.1 ) ) continue; // maximum angle selection
 
-                if(TMath::Abs(code1)==321) fAngMomKC->Fill(motherMfromKink.Mag(), kinkAngle);  // real kaons
+                 if ( (kinkAngle>maxDecAngKmu*1.1) && ( motherMfromKink.Mag()> 1.2 ) ) continue; // maximum angle selection revised 22/10/2009
+
                                     fHistPtKaon->Fill(track->Pt());   //all PID kink-kaon
 
-// background inside the identified kaons, e.g KK  ,  Kp
-         if((TMath::Abs(code1)==321)&&(( TMath::Abs(dcode1)) >=(TMath::Abs(code1)) )) fdcodeH->Fill( TMath::Abs(code1), TMath::Abs(dcode1));
 //  kaons from k to mun and k to pipi and to e decay 
          if(       ( (TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==13))||    
            ( (TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==11))  ||    
            ( (TMath::Abs(code1)==321)&&(TMath::Abs(dcode1)==211))  ) { 
-  //       if((TMath::Abs(code1)==321) ) { 
 
-         if ( label< nPrim ) fPtPrKink->Fill(track->Pt());
+         if ( label<=nPrim ) fPtPrKink->Fill(track->Pt());
              fKinkKaon->Fill(track->Pt());        
                 fHistEtaK->Fill(trackEta);
                              }
          else {
              fKinkKaonBg->Fill(track->Pt());     
-          }   // primary and secondary 
+ fdcodeH->Fill( TMath::Abs(code1), TMath::Abs(dcode1));   // put it here,  22/10/2009
+          }   // primary and all +BG    
 
         }  //  kink selection 
                   
@@ -437,12 +426,14 @@ for (Int_t iMc = 0; iMc < nPrim; iMc++)
 
     
   // fMultiplMC->Fill(nPrim);
+       Int_t nMCKpi =0;
 
 	    Int_t firstD=particle->GetFirstDaughter();
 	    Int_t lastD=particle->GetLastDaughter();
 //loop on secondaries
-	     for (Int_t k=firstD;k<lastD;k++) {
-	     TParticle*    daughter1=stack->Particle(k+1);
+	     for (Int_t k=firstD;k<=lastD;k++) {
+              if ( k > 0 )    {
+	     TParticle*    daughter1=stack->Particle(k);   // 27/8   
 	     Float_t dcode = daughter1->GetPdgCode();
 
         mcProcess=daughter1->GetUniqueID();
@@ -453,9 +444,10 @@ for (Int_t iMc = 0; iMc < nPrim; iMc++)
 
 		 if (((daughter1->R())>120)&&((daughter1->R())<220) ){
         if (( ( code==321 )&& ( dcode ==-13  ))|| (( code == -321 )&& ( dcode == 13))) fgenPtEtR->Fill( ptK );//to muon
-        if (( ( code==321 )&& ( dcode ==211  ))|| (( code == -321 )&& ( dcode ==-211))) fgenPtEtR->Fill( ptK );//to pion
+      //  if (( ( code==321 )&& ( dcode ==211  ))|| (( code == -321 )&& ( dcode ==-211))) fgenPtEtR->Fill( ptK );//to pion
         if (( ( code==321 )&& ( dcode ==-11  ))|| (( code == -321 )&& ( dcode ==11))) fgenPtEtR->Fill( ptK );// to electr
-
+        if (( ( code==321 )&& ( dcode ==211  ))|| (( code == -321 )&& ( dcode ==-211)))    nMCKpi++ ; 
+ 
   //fMultMCK->Fill(nPrim);
 		 frad->Fill(daughter1->R());
     nMCKinkKs++;
@@ -465,11 +457,14 @@ for (Int_t iMc = 0; iMc < nPrim; iMc++)
 
 		 
 		    if (((daughter1->R())>120)&&((daughter1->R())<220)){
-		    fgenpt->Fill(ptK);
+		 //   fgenpt->Fill(ptK);
 		    }
 		    }
 		    }//    decay
+         } // positive k
        }//  daughters
+              if( nMCKpi == 1) fgenPtEtR->Fill(ptK);  //  k to pipi
+              if( nMCKpi > 1) fgenpt->Fill(ptK);// k to pipipi
 
       }   /// kaons
 
