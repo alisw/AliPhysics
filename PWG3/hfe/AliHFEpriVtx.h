@@ -12,12 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/**************************************************************************
- *                                                                        *
- * QA class of primary vertex study for Heavy Flavor electrons            * 
- *                                                                        *
- **************************************************************************/
+//
+// QA class of primary vertex study for Heavy Flavor electrons
+//
 
 #ifndef ALIHFEPRIVTX_H
 #define ALIHFEPRIVTX_H
@@ -45,8 +42,8 @@ class AliHFEpriVtx : public TObject {
 
                 void CreateHistograms(TString hnopt=""); // create histograms
                 void Init();
-                void SetEvent(AliESDEvent* ESD){fESD1=ESD;}; // set ESD pointer
-                void SetStack(AliStack* stack){fStack=stack;} // set stack pointer
+                void SetEvent(AliESDEvent * const ESD){fESD1=ESD;}; // set ESD pointer
+                void SetStack(AliStack * const stack){fStack=stack;} // set stack pointer
                 void CountNtracks(Int_t sourcePart, Int_t recpid, Double_t recprob); // count number of tracks passed certain cut
                 void FillNtracks(); // fill counted number of tracks
                 void CountPriVxtElecContributor(AliESDtrack *ESDelectron, Int_t sourcePart, Int_t recpid, Double_t recprob); 

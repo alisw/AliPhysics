@@ -12,14 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/**************************************************************************
- *                                                                        *
- * Secondary vertexing construction Class                                 *
- *  Construct secondary vertex from Beauty hadron with electron and       *
- *  hadrons, then apply selection criteria                                *
- *                                                                        *
- **************************************************************************/
-
+//
+//  Secondary vertexing construction Class
+//  Construct secondary vertex from Beauty hadron with electron and
+//  hadrons, then apply selection criteria
+//
 
 #ifndef ALIHFESECVTX_H
 #define ALIHFESECVTX_H

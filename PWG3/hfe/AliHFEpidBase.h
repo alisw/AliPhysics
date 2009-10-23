@@ -12,6 +12,10 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+//
+// Base Class for Detector PID Objects
+// For more information see the implementation file
+//
 #ifndef ALIHFEPIDBASE_H
 #define ALIHFEPIDBASE_H
  
@@ -28,17 +32,13 @@ struct AliHFEpidObject{
       kESDanalysis,
       kAODanalysis
     }AnalysisType_t;
-    AliVParticle *fRecTrack;
-    AliVParticle *fMCtrack;
-    UChar_t fAnalysisType;
+    AliVParticle *fRecTrack;    // Reconstructed track
+    AliVParticle *fMCtrack;     // Monte Carlo track
+    UChar_t fAnalysisType;      // Analysis Mode (ESD or AOD)
     AliHFEpidObject():fRecTrack(NULL), fMCtrack(NULL), fAnalysisType(kESDanalysis){}
 };
 
 class AliHFEpidBase : public TNamed{
-  enum{
-    kQAon = BIT(14),
-    kHasMCData = BIT(15)
-  };
   public:
     AliHFEpidBase(const Char_t *name);
     AliHFEpidBase(const AliHFEpidBase &c);
@@ -61,6 +61,11 @@ class AliHFEpidBase : public TNamed{
     void Copy(TObject &ref) const;
     virtual void AddQAhistograms(TList *){};
   private:
+    enum{
+      kQAon = BIT(14),
+      kHasMCData = BIT(15)
+    };
+
     Int_t fDebugLevel;              // Debug Level
 
     ClassDef(AliHFEpidBase, 1)      // Base class for detector Electron ID

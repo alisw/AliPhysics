@@ -12,6 +12,11 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+//
+// Detector PID Class for Monte Carlo PID
+// Returns PDG code of a particle
+// For more information see the impelmentation file
+//
 #ifndef ALIHFEPIDMC_H
 #define ALIHFEPIDMC_H
 

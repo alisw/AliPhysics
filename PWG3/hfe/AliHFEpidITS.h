@@ -12,6 +12,10 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+//
+// PID development class for ITS
+// does proton rejection via dE/dx
+// For more information see implementation file
 #ifndef ALIHFEPIDITS_H
 #define ALIHFEPIDITS_H
 
@@ -23,11 +27,6 @@ class AliVParticle;
 class TList;
 
 class AliHFEpidITS : public AliHFEpidBase{
-  enum{
-    kITSsigV1 = 0,
-    kITSsigV2 = 1,
-    kHistosSigAll = 2
-  };
   public:
     AliHFEpidITS(const Char_t *name);
     AliHFEpidITS(const AliHFEpidITS &ref);
@@ -46,6 +45,11 @@ class AliHFEpidITS : public AliHFEpidBase{
     void FillHistogramsSignalV1(Double_t p, Double_t signal, Int_t species);
     void FillHistogramsSignalV2(Double_t p, Double_t signal, Int_t species);
   private:
+    enum{
+      kITSsigV1 = 0,
+      kITSsigV2 = 1,
+      kHistosSigAll = 2
+    };
     TList *fQAlist;      // QA histograms for ITS pid
 
     ClassDef(AliHFEpidITS, 0)  // PID class for ITS

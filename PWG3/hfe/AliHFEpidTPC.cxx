@@ -12,26 +12,23 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-/************************************************************************
- *                                                                      *
- * Class for TPC PID                                                    *
- * Implements the abstract base class AliHFEpidBase                     *
- *                                                                      *
- * Class contains TPC specific cuts and QA histograms                   *
- * Two selection strategies are offered: Selection of certain value     *
- * regions in the TPC dE/dx (by IsSelected), and likelihoods            *
- *                                                                      *
- * Authors:                                                             *
- *                                                                      *
- *   Markus Fasel <M.Fasel@gsi.de>                                      *
- *   Markus Heide <mheide@uni-muenster.de>                              *
- *                                                                      *
- *                                                                      *
- ************************************************************************/
+//
+// Class for TPC PID
+// Implements the abstract base class AliHFEpidBase
+// 
+// Class contains TPC specific cuts and QA histograms
+// Two selection strategies are offered: Selection of certain value
+// regions in the TPC dE/dx (by IsSelected), and likelihoods
+//
+// Authors: 
+//
+//   Markus Fasel <M.Fasel@gsi.de> 
+//   Markus Heide <mheide@uni-muenster.de> 
+//  
 #include <TH2I.h>
 #include <TList.h>
 #include <TMath.h>
-#include <TParticle.h>
+//#include <TParticle.h>
 
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
@@ -41,7 +38,7 @@
 #include "AliMCParticle.h"
 #include "AliPID.h"
 #include "AliTPCpidESD.h"
-#include "AliVParticle.h"
+//#include "AliVParticle.h"
 
 #include "AliHFEpidTPC.h"
 
@@ -275,12 +272,13 @@ Double_t  AliHFEpidTPC::Suppression(const AliESDtrack *track, Int_t species)
 {
   //ratio of likelihoods to be whatever species/to be an electron;
   //as a cross-check for possible particle type suppression compared to electrons
+  const Double_t kVerySmall = 1e-10;
   if(!track) return -20;
-  if((Likelihood(track,species) == -2.)||(Likelihood(track,0)== -2.))
+  if((TMath::Abs(Likelihood(track,species) + 2) < kVerySmall)||(TMath::Abs(Likelihood(track,0) + 2 ) < kVerySmall))
     return -30;
-  if(Likelihood(track,species) == 0.)
+  if(TMath::Abs(Likelihood(track,species)) < kVerySmall)
     return -10;
-  if (Likelihood(track,0) == 0.)
+  if (TMath::Abs(Likelihood(track,0)) < kVerySmall)
     return 10.;
   else
     return TMath::Log10(Likelihood(track,species)/(Likelihood(track,0)));
@@ -290,6 +288,8 @@ Double_t  AliHFEpidTPC::Suppression(const AliESDtrack *track, Int_t species)
 
 //___________________________________________________________________
 void AliHFEpidTPC::FillTPChistograms(const AliESDtrack *track, const AliMCParticle *mctrack){
+  // 
+  // Fill the QA histogtrams
   //
   if(!track)
     return;
@@ -345,6 +345,9 @@ void AliHFEpidTPC::FillTPChistograms(const AliESDtrack *track, const AliMCPartic
 
 //___________________________________________________________________
 void AliHFEpidTPC::AddQAhistograms(TList *qaList){
+  //
+  // Create QA histograms for TPC PID
+  //
   fQAList = new TList;
   fQAList->SetName("fTPCqaHistos");
 

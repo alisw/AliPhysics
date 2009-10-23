@@ -12,22 +12,16 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/**************************************************************************
- *                                                                        *
- * Secondary vertexing construction Class                                 *
- *  Construct secondary vertex from Beauty hadron with electron and       *
- *  hadrons, then apply selection criteria                                *
- *                                                                        *
- * Authors:                                                               *
- *   MinJung Kweon <minjung@physi.uni-heidelberg.de>                      *
- *                                                                        *
- **************************************************************************/
+//
+// Secondary vertexing construction Class
+//  Construct secondary vertex from Beauty hadron with electron and
+//  hadrons, then apply selection criteria
+//
+// Authors:
+//   MinJung Kweon <minjung@physi.uni-heidelberg.de>
+//
 
-#include <iostream>
 #include <TH2F.h>
-#include <TH3F.h>
-#include <TLorentzVector.h>
-#include <TNtuple.h>
 #include <TParticle.h>
 
 #include <AliESDEvent.h>
@@ -36,7 +30,6 @@
 #include <AliKFParticle.h>
 #include <AliKFVertex.h>
 #include <AliLog.h>
-#include <AliPID.h>
 #include <AliStack.h>
 
 ClassImp(AliHFEsecVtx)

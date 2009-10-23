@@ -12,6 +12,15 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+//
+// Class for TOF PID
+// Implements the abstract base class AliHFEpidBase
+// IsInitialized() does the PID decision
+// 
+// Authors:
+//   Markus Fasel  <M.Fasel@gsi.de>
+//   Matus Kalisky <matus.kalisky@cern.ch>  (contact)
+//
 
 #include <TH2F.h>
 #include <TList.h>
@@ -122,6 +131,9 @@ Int_t AliHFEpidTOF::IsSelected(AliHFEpidObject *vtrack)
 
 //___________________________________________________________________
 Int_t AliHFEpidTOF::MakePIDesd(AliESDtrack *track, AliMCParticle * /*mcTrack*/){
+  //
+  // Does particle identification as discribed in IsSelected
+  //
   Long_t status = 0;
   status = track->GetStatus(); 
 

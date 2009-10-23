@@ -12,23 +12,20 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-/************************************************************************
- *                                                                      *
- * Class for TRD PID                                                    *
- * Implements the abstract base class AliHFEpidBase                     *
- * Make PID does the PID decision                                       *
- * Class further contains TRD specific cuts and QA histograms           *
- *                                                                      *
- * Authors:                                                             *
- *   Markus Fasel <M.Fasel@gsi.de>                                      *
- *                                                                      *
- ************************************************************************/
-#include <TMath.h>
+//
+// Class for TRD PID
+// Implements the abstract base class AliHFEpidBase
+// Make PID does the PID decision
+// Class further contains TRD specific cuts and QA histograms
+//
+// Authors:
+//   Markus Fasel <M.Fasel@gsi.de>
+//
 #include <TParticle.h>
 
 #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
-#include "AliVParticle.h"
+//#include "AliVParticle.h"
 
 #include "AliHFEpidMC.h"
 

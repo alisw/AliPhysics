@@ -12,18 +12,18 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-/*
- * The analysis task:
- * Filling an AliCFContainer with the quantities pt, eta and phi
- * for tracks which survivied the particle cuts (MC resp. ESD tracks)
- * Track selection is done using the AliHFE package
- * 
- * Author:
- *  Raphaelle Bailhache <R.Bailhache@gsi.de>
- *  Markus Fasel <M.Fasel@gsi.de>
- *  Matus Kalisky <matus.kalisky@cern.ch>
- *  MinJung Kweon <minjung@physi.uni-heidelberg.de>
- */
+//
+// The analysis task:
+// Filling an AliCFContainer with the quantities pt, eta and phi
+// for tracks which survivied the particle cuts (MC resp. ESD tracks)
+// Track selection is done using the AliHFE package
+// 
+// Author:
+//  Raphaelle Bailhache <R.Bailhache@gsi.de>
+//  Markus Fasel <M.Fasel@gsi.de>
+//  Matus Kalisky <matus.kalisky@cern.ch>
+//  MinJung Kweon <minjung@physi.uni-heidelberg.de>
+//
 #include <TAxis.h>
 #include <TCanvas.h>
 #include <TChain.h>
@@ -87,7 +87,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fHistSECVTX(0x0)
 {
   //
-  // Default constructor
+  // Dummy constructor
   //
   DefineInput(0, TChain::Class());
   DefineOutput(0, TH1I::Class());
@@ -227,6 +227,10 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
 
 //____________________________________________________________
 void AliAnalysisTaskHFE::ConnectInputData(Option_t *){
+  //
+  // Connecting the input
+  // Called once per worker
+  //
 /*  TTree *esdchain = dynamic_cast<TChain *>(GetInputData(0));
   if(!esdchain){
     AliError("ESD chain empty");
@@ -253,6 +257,16 @@ void AliAnalysisTaskHFE::ConnectInputData(Option_t *){
 
 //____________________________________________________________
 void AliAnalysisTaskHFE::CreateOutputObjects(){
+  //
+  // Creating output container and output objects
+  // Here we also Initialize the correction framework container and 
+  // the objects for
+  // - PID
+  // - MC QA
+  // - SecVtx
+  // QA histograms are created if requested
+  // Called once per worker
+  //
   fNEvents = new TH1I("nEvents", "Number of Events in the Analysis", 2, 0, 2); // Number of Events neccessary for the analysis and not a QA histogram
   fNElectronTracksEvent = new TH1I("nElectronTracksEvent", "Number of Electron Candidates", 100, 0, 100);
   // First Step: TRD alone
@@ -944,7 +958,11 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
     fPIDperformance->SetBinEdges(idim, binEdges2[idim]);
 }
 
+//____________________________________________________________
 void AliAnalysisTaskHFE::AddPIDdetector(Char_t *detector){
+  //
+  // Adding PID detector to the task
+  //
   if(!fPIDdetectors.Length()) 
     fPIDdetectors = detector;
   else
@@ -952,7 +970,7 @@ void AliAnalysisTaskHFE::AddPIDdetector(Char_t *detector){
 }
 
 //____________________________________________________________
-void AliAnalysisTaskHFE::PrintStatus(){
+void AliAnalysisTaskHFE::PrintStatus() const {
   //
   // Print Analysis status
   //
@@ -1000,7 +1018,7 @@ Bool_t AliAnalysisTaskHFE::LabelContainer::Append(Int_t label){
 }
 
 //____________________________________________________________
-Bool_t AliAnalysisTaskHFE::LabelContainer::Find(Int_t label){
+Bool_t AliAnalysisTaskHFE::LabelContainer::Find(Int_t label) const {
   //
   // Find track in the list of labels
   //
@@ -1069,13 +1087,14 @@ Int_t AliAnalysisTaskHFE::IsSignalElectron(AliVParticle *fTrack) const{
 }
 
 //__________________________________________
-Float_t AliAnalysisTaskHFE::GetRapidity(TParticle *part)
+Float_t AliAnalysisTaskHFE::GetRapidity(TParticle *part) const
 {
-      // return rapidity
-
-       Float_t rapidity;
-       if(!((part->Energy() - part->Pz())*(part->Energy() + part->Pz())>0)) rapidity=-999;
-       else rapidity = 0.5*(TMath::Log((part->Energy()+part->Pz()) / (part->Energy()-part->Pz())));
-       return rapidity;
+  //
+  // return rapidity
+  //
+  Float_t rapidity;
+  if(!((part->Energy() - part->Pz())*(part->Energy() + part->Pz())>0)) rapidity=-999;
+  else rapidity = 0.5*(TMath::Log((part->Energy()+part->Pz()) / (part->Energy()-part->Pz())));
+  return rapidity;
 }
 

@@ -12,22 +12,21 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- * ITS PID class
- * checks ITS PID based on ITS dE/dx truncated mean
- *
- * Authors: Matus Kalisky <matus.kalisky@cern.ch>
- *          Markus Fasel <M.Fasel@gsi.de>
- *
- */
+//
+// ITS PID class
+// checks ITS PID based on ITS dE/dx truncated mean
+//
+// Authors: Matus Kalisky <matus.kalisky@cern.ch>
+//          Markus Fasel <M.Fasel@gsi.de>
+//
 #include <TClass.h>
 #include <TH2F.h>
 #include <TList.h>
 #include <TMath.h>
 #include <TString.h>
 
-#include "AliAODTrack.h"
-#include "AliAODMCParticle.h"
+//#include "AliAODTrack.h"
+//#include "AliAODMCParticle.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliPID.h"

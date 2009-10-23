@@ -12,6 +12,11 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+//
+// Task for Heavy Flavour Electron Analysis
+// Fills a single-inclusive electron pt-spectrum
+// For further information see implementation file
+//
 #ifndef ALIANALYSISTASKHFE_H
 #define ALIANALYSISTASKHFE_H
 
@@ -36,12 +41,6 @@ class TH1I;
 class TList;
 
 class AliAnalysisTaskHFE : public AliAnalysisTask{
-  enum{
-    kIsSecVtxOn = BIT(19),
-    kIsPriVtxOn = BIT(20),
-    kIsRunningPostProcess = BIT(21),
-    kHasMCdata = BIT(22)
-  };
   public:
   enum{
     kPIDqa = 0,
@@ -72,20 +71,26 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     void SetPriVtxOn(Bool_t option = kTRUE)        { SetBit(kIsPriVtxOn, option); };
     void SetSecVtxOn(Bool_t option = kTRUE)        { SetBit(kIsSecVtxOn, option); };
     void SetRunPostProcess(Bool_t option = kTRUE)  { SetBit(kIsRunningPostProcess, option); };
-    void SetPIDdetectors(Char_t *detectors){ fPIDdetectors = detectors; }
+    void SetPIDdetectors(Char_t * const detectors){ fPIDdetectors = detectors; }
     void SetPIDStrategy(UInt_t strategy) { fPIDstrategy = strategy; }
     void AddPIDdetector(Char_t *detector);
-    void PrintStatus();
-    Float_t GetRapidity(TParticle *part);
+    void PrintStatus() const;
+    Float_t GetRapidity(TParticle *part) const;
  
   private:
+    enum{
+      kIsSecVtxOn = BIT(19),
+      kIsPriVtxOn = BIT(20),
+      kIsRunningPostProcess = BIT(21),
+      kHasMCdata = BIT(22)
+    };
     class LabelContainer{
       public:
         LabelContainer(Int_t capacity);
         ~LabelContainer() {delete[] fContainer; };
 
         Bool_t Append(Int_t label);
-        Bool_t Find(Int_t Label);
+        Bool_t Find(Int_t Label) const;
         Int_t Next();
         void ResetIterator(){ fCurrent = fBegin; }
 

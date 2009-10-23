@@ -12,18 +12,18 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-/************************************************************************
- *                                                                      *
- * Cut menagement class implemented by the                              *
- * ALICE Heavy Flavour Electron Group                                   *
- *                                                                      *
- * Authors:                                                             *
- *   Raphaelle Bailhache <R.Bailhache@gsi.de>                           *
- *   Markus Fasel <M.Fasel@gsi.de>                                      *
- *   Markus Heide <mheide@uni-muenster.de>                              *
- *   Matus Kalisky <m.kalisky@uni-muenster.de>                          *
- *                                                                      *
- ************************************************************************/
+//
+// Cut menagement class implemented by the
+// ALICE Heavy Flavour Electron Group
+// Interface to the correction framework
+// Provides a set of standard cuts 
+// 
+// Authors:
+//   Raphaelle Bailhache <R.Bailhache@gsi.de>
+//   Markus Fasel <M.Fasel@gsi.de>
+//   Markus Heide <mheide@uni-muenster.de>
+//   Matus Kalisky <m.kalisky@uni-muenster.de>
+//
 #include <TClass.h>
 #include <TList.h>
 #include <TObjArray.h>
@@ -39,7 +39,6 @@
 #include "AliCFTrackKineCuts.h"
 #include "AliCFTrackQualityCuts.h"
 #include "AliESDtrack.h"
-#include "AliMCParticle.h"
 
 #include "AliHFEcuts.h"
 
@@ -110,6 +109,10 @@ AliHFEcuts::~AliHFEcuts(){
 
 //__________________________________________________________________
 void AliHFEcuts::Initialize(AliCFManager *cfm){
+  //
+  // Initializes the cut objects from the correction framework
+  // Publishes the cuts to the correction framework manager
+  //
   if(IsInDebugMode()){
      fHistQA = new TList;
     fHistQA->SetName("CutQAhistograms");

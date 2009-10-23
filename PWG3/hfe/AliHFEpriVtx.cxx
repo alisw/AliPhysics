@@ -12,21 +12,15 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/**************************************************************************
- *                                                                        *
- *  QA class of primary vertex study for Heavy Flavor electrons           *
- *                                                                        *
- * Authors:                                                               *
- *   MinJung Kweon <minjung@physi.uni-heidelberg.de>                      *
- *                                                                        *
- **************************************************************************/
+//
+//  QA class of primary vertex study for Heavy Flavor electrons
+//
+// Authors:
+//   MinJung Kweon <minjung@physi.uni-heidelberg.de>
+//
 
 
-#include <iostream>
 #include <TH2F.h>
-#include <TH3F.h>
-#include "TLorentzVector.h"
-#include <TNtuple.h>
 #include <TParticle.h>
 
 #include "AliESDEvent.h"
