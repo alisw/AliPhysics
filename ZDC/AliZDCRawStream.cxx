@@ -401,19 +401,19 @@ Bool_t AliZDCRawStream::Next()
   // --- decoding mapping of connected ADC ch. ---
   // ---------------------------------------------
   // In the SOD event ADC ch. mapping is written
-  if(fEvType==10 && fSODReading){
-    //printf("\n-> AliZDCRawStream::Next() - fBuffer[%d] = %x\n",fPosition, fBuffer);
+  if(fEvType==10){
+   if(fSODReading){
     
     if(fPosition>=fDataOffset){
       if((fBuffer&0xff000001) == 0xff000001){ // ************** Mapping
         // DARC 1st datum @ fDataOffset+1 \ ZRC 1st valid datum fDataOffset=0
         if((fPosition==fDataOffset+1) || (fPosition==fDataOffset)){ 
-	   //printf("\n\n ------ AliZDCRawStream -> Reading mapping from StartOfData event ------\n");
+	   printf("\n\n ------ AliZDCRawStream -> Reading mapping from StartOfData event ------\n");
 	   fCurrentCh=0; fCurrScCh=0;	
         }
 	else{
-	  //printf(" ------ AliZDCRawStream -> End of ZDC StartOfData event ------\n\n");
-          //printf("AliZDCRawStream: fSODReading after SOD reading set to %d\n", fSODReading);
+	  printf(" ------ AliZDCRawStream -> End of ZDC StartOfData event ------\n\n");
+          fSODReading = kFALSE;
 	  return kFALSE;
 	}
       }
@@ -574,8 +574,9 @@ Bool_t AliZDCRawStream::Next()
         }*/
       }//reading channel mapping
     }
-    fPosition++;
-    return kTRUE;
+   } // if fSODREading
+   fPosition++;
+   return kTRUE;
   } // ------------------------------- SOD event
   
   // -------------------------------------------
@@ -610,12 +611,12 @@ Bool_t AliZDCRawStream::Next()
       fPosition++;
       return kTRUE;
     }
-  } // ------------------------------- DARC data
+  } // ------------------------------- End of DARC data
   
-  // -------------------------------------------
+  // ---------------------------------------------
   // --- ZDC data
   // --- ADCs + VME scaler + trigger card + P.U.
-  // -------------------------------------------
+  // ---------------------------------------------
   else if(fPosition>=fDataOffset){
     
     //printf("AliZDCRawStream: fSODReading = %d\n", fSODReading);
