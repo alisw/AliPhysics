@@ -22,9 +22,9 @@ Double_t test2(Double_t *x,Double_t *p)
 
 //__________________________________________________//
 AliProtonFeedDownAnalysis *GetProtonFeedDownAnalysisObject(const char* analysisLevel = "ESD", 
-					   const char* esdAnalysisType = "TPC", 
+					   const char* esdAnalysisType = "Hybrid", 
 					   const char* pidMode = "Bayesian") {
-gROOT->LoadMacro(" $ALICE_ROOT/PWG2/SPECTRA/macros/configProtonAnalysisBaseObject.C"); 
+gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/configProtonAnalysisBaseObject.C"); 
   //Function to setup the AliProtonAnalysis object and return it
   AliProtonAnalysisBase *baseAnalysis = GetProtonAnalysisBaseObject(analysisLevel,esdAnalysisType,pidMode);
 
