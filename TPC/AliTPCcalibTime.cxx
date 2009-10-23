@@ -52,11 +52,12 @@ Comments to be written here:
   gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
   AliXRDPROOFtoolkit tool;
   AliXRDPROOFtoolkit::FilterList("timeitstpc.txt","* itstpc",1) 
+  AliXRDPROOFtoolkit::FilterList("timetoftpc.txt","* pointMatch",1) 
   AliXRDPROOFtoolkit::FilterList("time.txt","* trackInfo",1) 
   AliXRDPROOFtoolkit::FilterList("timelaser.txt","* laserInfo",1) 
 
   TChain * chainTPCITS = tool.MakeChainRandom("timeitstpc.txt.Good","itstpc",0,10000); 
-  TChain * chainTPCTOF = tool.MakeChainRandom("time.txt","pointMatch",0,10000); 
+  TChain * chainTPCTOF = tool.MakeChainRandom("timetoftpc.txt","pointMatch",0,500); 
   TChain * chainTime = tool.MakeChainRandom("time.txt.Good","trackInfo",0,10000);
   TChain * chainLaser = tool.MakeChainRandom("timelaser.txt.Good","laserInfo",0,10000);
   chainTime->Lookup();
@@ -958,10 +959,11 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *fr
   if (TMath::Abs(pITS.GetTgl()-pTPC.GetTgl())>kMaxAngle) return;
   align->AddTrackParams(&pITS,&pTPC);
   align->SetTimeStamp(fTime);
-  Int_t nupdates=align->GetNUpdates();
   //  align->SetRunNumber(fRun );
   static Int_t entry=-1;
   entry++;
+  //  Int_t nupdates=align->GetNUpdates();
+  Int_t nupdates=entry;
   align->SetOutRejSigma(1.+1./Double_t(nupdates));
   TTreeSRedirector *cstream = GetDebugStreamer();  
   if (cstream && align->GetState() && align->GetState()->GetNrows()>2 ){
@@ -1084,9 +1086,10 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *fr
     pTOF.PropagateTo(pTPC.GetX(),fMagF);
     align->AddTrackParams(&pTOF,&pTPC);
     align->SetTimeStamp(fTime);
-    Int_t nupdates=align->GetNUpdates();
     static Int_t entry=-1;
     entry++;
+    //    Int_t nupdates=align->GetNUpdates();
+    Int_t nupdates=entry;
     align->SetOutRejSigma(1.+1./Double_t(nupdates));
     
     //
