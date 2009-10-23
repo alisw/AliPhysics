@@ -5,6 +5,7 @@
 
 
 #include "AliKFParticle.h"
+#include "AliKFVertex.h"
 
 class AliESDtrack;
 class AliESDVertex;
@@ -39,11 +40,10 @@ public:
   AliHLTVertexer(const AliHLTVertexer &t);
   AliHLTVertexer &operator = (const AliHLTVertexer & ){ return *this; }
 
-  AliESDEvent *fESD;
-  AliESDTrackInfo *fTrackInfos;
-
+  AliESDEvent *fESD; // pointer to esd event
+  AliESDTrackInfo *fTrackInfos; // information about esd tracks
+  AliKFVertex fPrimaryVtx; // reconstructed KF primary vertex
   ClassDef(AliHLTVertexer,0)   //HLT vertex finder
-
 };
 
 

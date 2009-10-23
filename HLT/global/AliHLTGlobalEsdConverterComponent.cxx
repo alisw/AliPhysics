@@ -45,6 +45,7 @@
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloClusterReader.h"
 #include "AliESDCaloCluster.h"
+#include "AliHLTVertexer.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -417,12 +418,12 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     }
       
       // primary vertex & V0's 
-      /*
-      //AliHLTVertexer vertexer;
-      //vertexer.SetESD( pESD );
-      //vertexer.FindPrimaryVertex();
-      //vertexer.FindV0s();
-      */
+      
+      AliHLTVertexer vertexer;
+      vertexer.SetESD( pESD );
+      vertexer.FindPrimaryVertex();
+      vertexer.FindV0s();
+      
       if (iAddedDataBlocks>0 && pTree) {
        pTree->Fill();
       }
