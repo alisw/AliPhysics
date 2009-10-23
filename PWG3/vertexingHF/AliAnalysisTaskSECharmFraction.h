@@ -38,15 +38,15 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *option);  
 
   void SetNPtBins(Int_t nbins,const Double_t *ptbins);
-  void SetSignalInvMassCut(Double_t signalInvMassCut=0.027){fsignalInvMassCut=signalInvMassCut;}
-  void SetLargeInvMassCut(Double_t largeInvMassCut=2.){flargeInvMassCut=largeInvMassCut;}
-  void SetSideBandInvMassCut(Double_t sidebandInvMassCut=0.054){// default value ~ 2x3 times inv mass resol.: a factor 2 is applied w.r.t. 3sigma, should be safe enough to exclude most of the reflections 
+  void SetSignalInvMassCut(const Double_t signalInvMassCut=0.027){fsignalInvMassCut=signalInvMassCut;}
+  void SetLargeInvMassCut(const Double_t largeInvMassCut=2.){flargeInvMassCut=largeInvMassCut;}
+  void SetSideBandInvMassCut(const Double_t sidebandInvMassCut=0.054){// default value ~ 2x3 times inv mass resol.: a factor 2 is applied w.r.t. 3sigma, should be safe enough to exclude most of the reflections 
     fsidebandInvMassCut=sidebandInvMassCut;  
   }
-  void SetSideBandInvMassWindow(Double_t sidebandInvMassWindow=0.066){//~ 6 times inv. mass resol.
+  void SetSideBandInvMassWindow(const Double_t sidebandInvMassWindow=0.108){//~ 6 times inv. mass resol.
     fsidebandInvMassWindow=sidebandInvMassWindow;
   }  
-  void SetAcceptanceCut(Double_t eta=0.9,Double_t nITSpoints=5.,Double_t nSPDpoints=2.){fAcceptanceCuts[0]=eta;fAcceptanceCuts[1]=nITSpoints;fAcceptanceCuts[0]=nSPDpoints;}
+  void SetAcceptanceCut(const Double_t eta=0.9,const Double_t nITSpoints=5.,const Double_t nSPDpoints=2.){fAcceptanceCuts[0]=eta;fAcceptanceCuts[1]=nITSpoints;fAcceptanceCuts[2]=nSPDpoints;}
   void SetStandardMassSelection();
   Int_t SetStandardCuts(Double_t pt,Double_t invMassCut);
   void CheckInvMassD0(AliAODRecoDecayHF2Prong *d,Double_t &invMassD0,Double_t &invMassD0bar,Bool_t &isPeakD0,Bool_t &isPeakD0bar,Bool_t &isSideBandD0,Bool_t &isSideBandD0bar);
@@ -79,7 +79,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   Double_t    fmD0PDG;                      //  MC D0 mass
   Int_t        fnbins;                      // Number of pt bins
   Double_t *fptbins;                        //[fnbins] ptbins 
-  Double_t *fAcceptanceCuts;                //[3] array with acceptance cuts
+  Double_t fAcceptanceCuts[3];                // array with acceptance cuts
   Double_t fsignalInvMassCut;               // invariant mass cut to define signal region
   Double_t flargeInvMassCut;                // invariant mass cut to accept all inv mass window
   Double_t fsidebandInvMassCut;             // invariant mass cut to define side band region lower limit

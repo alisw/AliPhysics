@@ -58,7 +58,7 @@ ClassImp(AliAnalysisTaskSECharmFraction)
       fmD0PDG(),
       fnbins(),
       fptbins(0),
-      fAcceptanceCuts(0),
+      fAcceptanceCuts(),
       fsignalInvMassCut(),
       flargeInvMassCut(),
       fsidebandInvMassCut(),
@@ -95,7 +95,7 @@ ClassImp(AliAnalysisTaskSECharmFraction)
       fmD0PDG(),
       fnbins(),
       fptbins(0),
-      fAcceptanceCuts(0),
+      fAcceptanceCuts(),
       fsignalInvMassCut(),
       flargeInvMassCut(),
       fsidebandInvMassCut(),
@@ -136,7 +136,7 @@ ClassImp(AliAnalysisTaskSECharmFraction)
   fptbins[2]=3.;
   fptbins[3]=5.;
   fptbins[4]=1000.;
-  fAcceptanceCuts=new Double_t[3];
+  //fAcceptanceCuts=new Double_t[3];
   SetAcceptanceCut();
   SetStandardMassSelection();
   DefineOutput(1, TH1F::Class());
@@ -158,7 +158,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
     fmD0PDG(),
     fnbins(),
     fptbins(0),
-    fAcceptanceCuts(0),
+    fAcceptanceCuts(),
     fsignalInvMassCut(),
     flargeInvMassCut(),
     fsidebandInvMassCut(),
@@ -189,7 +189,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
   
   SetNPtBins(nptbins,ptbins);
   SetStandardMassSelection();
-  fAcceptanceCuts=new Double_t[3];
+  //  fAcceptanceCuts=new Double_t[3];
   SetAcceptanceCut();
   // Define input and output slots here
  
@@ -222,10 +222,10 @@ AliAnalysisTaskSECharmFraction::~AliAnalysisTaskSECharmFraction()
     delete fptbins;
     fptbins =0;
   }
-  if(fAcceptanceCuts){
+  /*  if(fAcceptanceCuts){
     delete fAcceptanceCuts;
     fAcceptanceCuts=0;
-  }
+    }*/
   if (fNentries) {
     delete fNentries;
     fNentries = 0;
@@ -343,7 +343,28 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
-
+  
+  // ################ NAMING SCHEME ###################################
+  //            LISTS NAMING SCHEME
+  // "list" + cut selection string + MC selection string
+  //      cut strings:  "NC" =nocuts, "LSC"= loose cuts, "TGHC"= tight cuts
+  //      MC sel. strings: "sign"= D0 from c quark
+  //                       "fromDstar" = D0 from Dstar from c quark
+  //                       "fromB"= D0from B decay (->from b quark) + D0from Dstar from B
+  //                       "back"= backgroun, generic except the cas "other"
+  //                       "other"= background case for candidates made of a pion and a kaon coming from the same D0 (in 4 prong) or from D+
+  //
+  //           HISTS NAMING SCHEME 
+  // 
+  //  "h" + specific name + cut selection string + MC selection string + (InvMass region string) + (pt string)
+  //
+  //        cut selection strings    = those for lists
+  //        MC selection strings     = those for lists
+  //        inv mass region strings  : "PM" or "SB" for global properties and pt integrated histos
+  //                                   "_PkMss" or "_SBMss" for impact par. pt dependent histos
+  //                   pt string     : "_pt" + integer number of ptbin
+  //
+  //###################################################################
 
   TString namehist;
   TString titlehist;
@@ -2597,6 +2618,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     isSideBandD0=kFALSE;
     isSideBandD0bar=kFALSE;
     isSideBand=kFALSE;
+    isinacceptance=kFALSE;
     okd0tight=0;
     okd0bartight=0;
     okd0loose=0;
@@ -2617,16 +2639,17 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     //
     // ######## CHECK FOR ACCEPTANCE ##########
     ptD0=d->Pt();
-    isinacceptance = (TMath::Abs(d->EtaProng(0))<fAcceptanceCuts[0]&&TMath::Abs(d->EtaProng(1))<fAcceptanceCuts[0]);
+    isinacceptance = (TMath::Abs(d->EtaProng(0))<fAcceptanceCuts[0]&&TMath::Abs(d->EtaProng(1))<fAcceptanceCuts[0]); //eta acceptance
     
     //######## INVARIANT MASS SELECTION ###############
     CheckInvMassD0(d,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar);
-    if(isSideBandD0&&isSideBandD0bar)isSideBand=kTRUE;// TEMPORARY, NOT DONE IN THE METHOD CALLED ABOVE ONLY FOR FURTHER SIDE BAND STUDY
+    if((isSideBandD0||isSideBandD0bar)&&!(isPeakD0||isPeakD0bar))isSideBand=kTRUE;// TEMPORARY, NOT DONE IN THE METHOD CALLED ABOVE ONLY FOR FURTHER SIDE BAND STUDY
   
     // INVESTIGATE SIGNAL TYPE : ACCESS TO MC INFORMATION
     aodDMC=GetD0toKPiSignalType(d,arrayMC,signallevel,massmumtrue,vtxTrue);
-    fSignalType->Fill(signallevel);
     if(!isinacceptance)signallevel=9;
+    fSignalType->Fill(signallevel);
+  
     // END OF BACKGROUND TYPE SELECTION
 
     // NOW APPLY CUTS
@@ -2660,14 +2683,14 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     if(signallevel==1)FillHistos(d,flistLsCutsSignal,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==2)FillHistos(d,flistLsCutsFromDstar,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==3||signallevel==4)FillHistos(d,flistLsCutsFromB,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==9)FillHistos(d,flistLsCutsBack,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
+    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10)FillHistos(d,flistLsCutsBack,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==5||signallevel==6)FillHistos(d,flistLsCutsOther,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
 
     //TIGHT CUTS Case
     if(signallevel==1)FillHistos(d,flistTghCutsSignal,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==2)FillHistos(d,flistTghCutsFromDstar,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==3||signallevel==4)FillHistos(d,flistTghCutsFromB,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
-    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==9)FillHistos(d,flistTghCutsBack,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
+    else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10)FillHistos(d,flistTghCutsBack,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==5||signallevel==6)FillHistos(d,flistTghCutsOther,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     
     
@@ -2679,7 +2702,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
     
   }
-
+  
   // ####################### POST OUTPUT TLIST DATA #########################
   // ####### histo for #AOD entries already posted
   
@@ -2716,29 +2739,41 @@ Int_t AliAnalysisTaskSECharmFraction::SetStandardCuts(Double_t pt,Double_t invMa
   //                            
   // the way the cuts are set is for further development
   //   (to be interfaced with AliAnalsysTaskSETuneCuts)
+  //
+  // Cuts: 
+  // 0 = inv. mass half width [GeV]
+  // 1 = dca [cm]
+  // 2 = cosThetaStar
+  // 3 = pTK [GeV/c]
+  // 4 = pTPi [GeV/c]
+  // 5 = d0K [cm]   upper limit!
+  // 6 = d0Pi [cm]  upper limit!
+  // 7 = d0d0 [cm^2]
+  // 8 = cosThetaPoint
+
   Int_t ptbin=-1;
   if (pt>0. && pt<=1.) {
     ptbin=0;
-    fVHFtight->SetD0toKpiCuts(invMassCut,0.04,0.8,0.5,0.5,0.05,0.05,-0.0003,0.7);
+    fVHFtight->SetD0toKpiCuts(invMassCut,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.5);
     fVHFloose->SetD0toKpiCuts(invMassCut,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
   }
   
   if(pt>1. && pt<=3.) {
     ptbin=1;  
-    fVHFtight->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.0003,0.9);
+    fVHFtight->SetD0toKpiCuts(invMassCut,0.03,0.8,0.6,0.6,0.05,0.05,-0.0002,0.6);
     fVHFloose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
     //printf("I'm in the bin %d\n",ptbin);
   }
   
   if(pt>3. && pt<=5.){
     ptbin=2;  
-    fVHFtight->SetD0toKpiCuts(invMassCut,0.015,0.8,0.7,0.7,0.05,0.05,-0.0002,0.9);
+    fVHFtight->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.0001,0.8);
     fVHFloose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
     //printf("I'm in the bin %d\n",ptbin);
   }
   if(pt>5.){
     ptbin=3;
-    fVHFtight->SetD0toKpiCuts(invMassCut,0.015,0.8,0.7,0.7,0.05,0.05,-0.0002,0.95);
+    fVHFtight->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00005,0.8);
     fVHFloose->SetD0toKpiCuts(invMassCut,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
   }//if(pt>5)
   return ptbin;
@@ -2775,7 +2810,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
   // THE FOLLOWING SCHEME IS ADOPTED: signaltype is set to
                         //  1:signal (D0 prompt); 2: signal D0 from Dstar; 3: D0 fromB 4: D0 from Dstar fromB
                         // then background categories: -1: one or both daughters is a fake track
-                        //                             5: one or both daughters come from a D meson != D0
+                        //                             5: both daughters come from a D meson != D0
                         //                             6: both daughters come from a D0->4prongs  
                         //                             7: both daughetrs are primaries
                         //                             8: generic background (can include one of the previous if desired)
@@ -2881,13 +2916,26 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
     // A particle coming from nothing
     signaltype=10;
     return aodDMC;
- 
+    
   }
   Bool_t isfromDstar=kFALSE;
   //  matchtoMC=d->MatchToMC(421,arrayMC,2,pdgdaughters);
   grandmoth1=(AliAODMCParticle*)arrayMC->At(mum1->GetMother());
   if(TMath::Abs(grandmoth1->GetPdgCode())==413||TMath::Abs(grandmoth1->GetPdgCode())==423)isfromDstar=kTRUE;// D0 COMING FROM A D0*
   
+  /*
+  //CHECK FOR CABIBBO SUPPRESSED DECAY
+  Int_t isCabibSup=0,pdgKaon;
+ 
+  pdgKaon=b1->GetPdgCode();
+  if(TMath::Abs(pdgKaon)!=321)pdgKaon=b2->GetPdgCode();
+  if(pdgmum>0&&pdgKaon>0)isCabibSup=1;
+  if(pdgmum<0&&pdgKaon<0)isCabibSup=1;
+  if(isCabibSup){
+    signaltype=0;
+    return aodDMC;
+  }
+  */
   //	  if(fcheckMCD0){//THIS CHECK IS NEEDED TO AVOID POSSIBLE FAILURE IN THE SECOND WHILE, FOR DEBUGGING
   while(TMath::Abs(grandmoth1->GetPdgCode())!=4&&TMath::Abs(grandmoth1->GetPdgCode())!=5){
     if(grandmoth1->GetMother()==-1){

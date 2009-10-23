@@ -90,138 +90,138 @@ AliAnalysisTaskSECharmFraction* AddTaskCharmFraction(const char* fileout="d0D0.r
   // Now container for TLists 
   last=5;
   //##########  NO CUTS TLISTS CONTAINER ##############à
-  containername="coutput_nc_sign";
+  containername="clistNCsign";
   containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_nc_sign = mgr->CreateContainer(containername.Data(),TList::Class(),
+  AliAnalysisDataContainer *clistNCsign = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_nc_sign);
+  mgr->ConnectOutput(hfTask,last,clistNCsign);
   last++;
 
 
-  containername="coutput_nc_back";
+  containername="clistNCback";
   containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_nc_back = mgr->CreateContainer(containername.Data(),TList::Class(),
+  AliAnalysisDataContainer *clistNCback = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_nc_back);
+  mgr->ConnectOutput(hfTask,last,clistNCback);
   last++;
 
-  containername="coutput_nc_fromB";
+  containername="clistNCfromB";
   containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_nc_fromB = mgr->CreateContainer(containername.Data(),TList::Class(),
+  AliAnalysisDataContainer *clistNCfromB = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_nc_fromB);
-  last++;
-
-
-  containername="coutput_nc_fromDstar";
-  containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_nc_fromDstar = mgr->CreateContainer(containername.Data(),TList::Class(),
-							   AliAnalysisManager::kOutputContainer, 
-							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_nc_fromDstar);
+  mgr->ConnectOutput(hfTask,last,clistNCfromB);
   last++;
 
 
-  containername="coutput_nc_other";
+  containername="clistNCfromDstar";
   containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_nc_other = mgr->CreateContainer(containername.Data(),TList::Class(),
+  AliAnalysisDataContainer *clistNCfromDstar = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_nc_other);
+  mgr->ConnectOutput(hfTask,last,clistNCfromDstar);
+  last++;
+
+
+  containername="clistNCother";
+  containername.Append(str.Data());
+  AliAnalysisDataContainer *clistNCother = mgr->CreateContainer(containername.Data(),TList::Class(),
+							   AliAnalysisManager::kOutputContainer, 
+							   fileout);
+  mgr->ConnectOutput(hfTask,last,clistNCother);
   last++;
 
 
   //######### LOOSE CUTS TLISTS CONTAINER #############
-  containername="coutput_ls_sign";
+  containername="clistLSCsign";
   containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_ls_sign = mgr->CreateContainer(containername.Data(),TList::Class(),
+  AliAnalysisDataContainer *clistLSCsign = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_ls_sign);
+  mgr->ConnectOutput(hfTask,last,clistLSCsign);
   last++;
 
 
-  containername="coutput_ls_back";
+  containername="clistLSCback";
   containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_ls_back = mgr->CreateContainer(containername.Data(),TList::Class(),
+  AliAnalysisDataContainer *clistLSCback = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_ls_back);
+  mgr->ConnectOutput(hfTask,last,clistLSCback);
   last++;
 
-  containername="coutput_ls_fromB";
+  containername="clistLSCfromB";
   containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_ls_fromB = mgr->CreateContainer(containername.Data(),TList::Class(),
+  AliAnalysisDataContainer *clistLSCfromB = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_ls_fromB);
-  last++;
-
-
-  containername="coutput_ls_fromDstar";
-  containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_ls_fromDstar = mgr->CreateContainer(containername.Data(),TList::Class(),
-							   AliAnalysisManager::kOutputContainer, 
-							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_ls_fromDstar);
+  mgr->ConnectOutput(hfTask,last,clistLSCfromB);
   last++;
 
 
-  containername="coutput_ls_other";
+  containername="clistLSCfromDstar";
   containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_ls_other = mgr->CreateContainer(containername.Data(),TList::Class(),
+  AliAnalysisDataContainer *clistLSCfromDstar = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_ls_other);
+  mgr->ConnectOutput(hfTask,last,clistLSCfromDstar);
+  last++;
+
+
+  containername="clistLSCother";
+  containername.Append(str.Data());
+  AliAnalysisDataContainer *clistLSCother = mgr->CreateContainer(containername.Data(),TList::Class(),
+							   AliAnalysisManager::kOutputContainer, 
+							   fileout);
+  mgr->ConnectOutput(hfTask,last,clistLSCother);
   last++;
 
 
 
   //######### TIGHT CUTS TLISTS CONTAINER #############
-    containername="coutput_tgh_sign";
+    containername="clistTGHCsign";
   containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_tgh_sign = mgr->CreateContainer(containername.Data(),TList::Class(),
+  AliAnalysisDataContainer *clistTGHCsign = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_tgh_sign);
+  mgr->ConnectOutput(hfTask,last,clistTGHCsign);
   last++;
 
 
-  containername="coutput_tgh_back";
+  containername="clistTGHCback";
   containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_tgh_back = mgr->CreateContainer(containername.Data(),TList::Class(),
+  AliAnalysisDataContainer *clistTGHCback = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_tgh_back);
+  mgr->ConnectOutput(hfTask,last,clistTGHCback);
   last++;
 
-  containername="coutput_tgh_fromB";
+  containername="clistTGHCfromB";
   containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_tgh_fromB = mgr->CreateContainer(containername.Data(),TList::Class(),
+  AliAnalysisDataContainer *clistTGHCfromB = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_tgh_fromB);
-  last++;
-
-
-  containername="coutput_tgh_fromDstar";
-  containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_tgh_fromDstar = mgr->CreateContainer(containername.Data(),TList::Class(),
-							   AliAnalysisManager::kOutputContainer, 
-							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_tgh_fromDstar);
+  mgr->ConnectOutput(hfTask,last,clistTGHCfromB);
   last++;
 
 
-  containername="coutput_tgh_other";
+  containername="clistTGHCfromDstar";
   containername.Append(str.Data());
-  AliAnalysisDataContainer *coutput_tgh_other = mgr->CreateContainer(containername.Data(),TList::Class(),
+  AliAnalysisDataContainer *clistTGHCfromDstar = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
 							   fileout);
-  mgr->ConnectOutput(hfTask,last,coutput_tgh_other);
+  mgr->ConnectOutput(hfTask,last,clistTGHCfromDstar);
+  last++;
+
+
+  containername="clistTGHCother";
+  containername.Append(str.Data());
+  AliAnalysisDataContainer *clistTGHCother = mgr->CreateContainer(containername.Data(),TList::Class(),
+							   AliAnalysisManager::kOutputContainer, 
+							   fileout);
+  mgr->ConnectOutput(hfTask,last,clistTGHCother);
   
 
 
