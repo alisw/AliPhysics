@@ -46,6 +46,7 @@ class AliHFMassFitter : public TNamed {
 
   //getters
   TH1F*    GetHistoClone() const;
+  void     GetRangeFit(Double_t &minvalue, Double_t &maxvalue) const {minvalue=fminMass; maxvalue=fmaxMass;}
   Double_t GetMinRangeFit()const {return fminMass;}
   Double_t GetMaxRangeFit()const {return fmaxMass;}
   Int_t    GetBinN()       const {return fNbin;}
@@ -62,14 +63,14 @@ class AliHFMassFitter : public TNamed {
   void     FillNtuParam();
   TNtuple* GetNtuParam() const {return fntuParam;}
   TNtuple* NtuParamOneShot(char *ntuname="ntupar");
-
   void     WriteHisto(TString path="./");
   void     WriteNtuple(TString path="./") const;
+  void     DrawFit() const;
   void     Reset();
 
   void     Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const; 
-  void     Background(Double_t nOfSigma,Double_t &background,Double_t &errbackground) const; 
   void     Signal(Double_t min,Double_t max,Double_t &signal,Double_t &errsignal) const; 
+  void     Background(Double_t nOfSigma,Double_t &background,Double_t &errbackground) const; 
   void     Background(Double_t min,Double_t max,Double_t &background,Double_t &errbackground) const; 
   void     Significance(Double_t nOfSigma,Double_t &significance,Double_t &errsignificance) const;
   void     Significance(Double_t min,Double_t max,Double_t &significance,Double_t &errsignificance) const;

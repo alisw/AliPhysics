@@ -17,18 +17,26 @@ void AliHFMassFitterTest(TH1F *hinvMass, Int_t typeb, Int_t types, Int_t factor4
   
   fitter->SetReflectionSigmaFactor(factor4refl);
   //fitter->SetRangeFit(min,max);
-  fitter->MassFitter();
+  fitter->MassFitter(kTRUE); //kFALSE do not draw the histogram
   
   TNtuple *ntu=fitter->NtuParamOneShot("ntuInvMass");
-  Double_t err1,err3,err6;
-  Double_t significance1sigma,significance3sigma,significance6sigma;
-  fitter->Significance(1,significance1sigma,err1);
-  fitter->Significance(3,significance3sigma,err3);
-  fitter->Significance(6,significance6sigma,err6);
 
-  cout<<"N sigma \t significance\n";
-  cout<<"1\t"<<significance1sigma<<endl;
-  cout<<"3\t"<<significance3sigma<<endl;
-  cout<<"6\t"<<significance6sigma<<endl;
+  Double_t mD0pdg=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  Double_t sigmaval= 0.027;
+  Double_t min=mD0pdg-sigmaval, max=mD0pdg+sigmaval;
+  Double_t significance3sigma,significanceRange,signal3sigma,signalRange,bkg3sigma,bkgRange;
+  Double_t err3,errRange,errS3,errSRange,errB3,errBRange;
+
+  fitter->Signal(3,signal3sigma,errS3);
+  fitter->Signal(min, max,signalRange,errSRange);
+  fitter->Background(3,bkg3sigma,errB3);
+  fitter->Background(min, max,bkgRange,errBRange);
+  fitter->Significance(3,significance3sigma,err3);
+  fitter->Significance(min, max,significanceRange,errRange);
+
+  cout<<"# 3 sigma: \n signal = "<<signal3sigma<<" +/- "<<errS3<<"\t backgdround = "<<bkg3sigma<<" +/- "<<errB3<<"\tsignificance = "<<significance3sigma<<" +/- "<<err3<<"\n";
+
+  cout<<"# range ("<<min<<", "<<max<<"): \n signal = "<<signalRange<<" +/- "<<errSRange<<"\t backgdround = "<<bkgRange<<" +/- "<<errBRange<<"\tsignificance = "<<significanceRange<<" +/- "<<errRange<<"\n";
+
 
 }
