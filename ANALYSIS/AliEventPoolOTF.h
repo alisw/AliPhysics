@@ -62,6 +62,7 @@ class AliEventPoolOTF : public AliVEventPool
     AliDetectorTagCuts*  fDetectorCuts;  // Detector cuts
     AliEventTagCuts*     fEventCuts;     // Event    cuts
     TGridResult*         fGridTags;      // Tags from a grid file collection
+    TChain*              fChain;         // Current chain
     const char*          fTagDirectory;  // Directory with local tag files
     // Common pool cuts
     // Multiplicity

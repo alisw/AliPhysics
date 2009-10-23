@@ -183,7 +183,7 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts,
   TString path;
 
   TTree*      cTree     = 0; 
-  TEntryList* localList = 0;
+  TEntryList* localList = new TEntryList();
 
   Int_t iAccepted = 0;
   Int_t iev       = 0;
@@ -204,7 +204,7 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts,
     if(runTagCuts->IsAccepted(tag)) {
       if(lhcTagCuts->IsAccepted(tag->GetLHCTag())) {
 	if(detTagCuts->IsAccepted(tag->GetDetectorTags())) {
-	  if ((iev == 0) || !aod) localList = new TEntryList();
+	  if ((iev == 0) || !aod) localList->Reset();
 	  Int_t iEvents = tag->GetNEvents();
 	  const TClonesArray *tagList = tag->GetEventTags();
 	  for(Int_t i = 0; i < iEvents; i++) {
@@ -237,7 +237,8 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts,
   AliInfo(Form("Accepted events: %d",iAccepted));
   esdChain->ls();
   esdChain->SetEntryList(fGlobalList,"ne");
-   
+  delete tag;
+  
   return esdChain;
 }
 

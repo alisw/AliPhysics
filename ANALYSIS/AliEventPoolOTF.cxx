@@ -45,6 +45,7 @@ AliEventPoolOTF::AliEventPoolOTF():
     fDetectorCuts(0),
     fEventCuts(0),
     fGridTags(0),
+    fChain(0),
     fTagDirectory(0),
     fValueMin(),
     fValueMax(),
@@ -66,6 +67,7 @@ AliEventPoolOTF::AliEventPoolOTF(const char* name, const char* title):
     fDetectorCuts(new AliDetectorTagCuts()),
     fEventCuts(new AliEventTagCuts()),
     fGridTags(0),
+    fChain(0),
     fTagDirectory("."),
     fValueMin(),
     fValueMax(),
@@ -88,6 +90,7 @@ AliEventPoolOTF::AliEventPoolOTF(const AliEventPoolOTF& obj):
     fDetectorCuts(0),
     fEventCuts(0),
     fGridTags(0),
+    fChain(0),
     fTagDirectory(0),
     fValueMin(),
     fValueMax(),
@@ -124,7 +127,11 @@ void AliEventPoolOTF::Init()
 TChain* AliEventPoolOTF::GetNextChain()
 {
     //
-    TChain* chain = 0;
+    if (fChain) {
+	delete fChain;
+	fChain = 0;
+    }
+
     fBinNumber++;
     if (fNoMore) {
 	return 0;
@@ -137,7 +144,7 @@ TChain* AliEventPoolOTF::GetNextChain()
 	fEventCuts->SetMultiplicityRange(Int_t(fValue[kMultiplicity]) , Int_t(fValue[kMultiplicity] + fValueStep[kMultiplicity]));
 	fEventCuts->SetPrimaryVertexZRange(fValue[kZVertex] , fValue[kZVertex] + fValueStep[kZVertex]);
 	fEventCuts->SetEventPlaneAngleRange(fValue[kEventPlane] , fValue[kEventPlane] + fValueStep[kEventPlane]);
-	chain = fTagAnalysis->QueryTags(fRunCuts, fLHCCuts, fDetectorCuts, fEventCuts);
+	fChain = fTagAnalysis->QueryTags(fRunCuts, fLHCCuts, fDetectorCuts, fEventCuts);
 //
 //      Next bin 
 //
@@ -152,7 +159,7 @@ TChain* AliEventPoolOTF::GetNextChain()
 		break;
 	    }
 	}
-	return chain;
+	return fChain;
     }
 }
 
