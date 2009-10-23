@@ -1,21 +1,21 @@
 //-*- Mode: C++ -*-
 // $Id$
 
-/**************************************************************************
- * Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
- *                                                                        *
- * Authors: Per Thomas Hille for the ALICE                                *
- * offline/HLT Project. Contributors are mentioned in the code where      *
- * appropriate.                                                           *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
+//*                                                                        *
+//* Authors: Per Thomas Hille for the ALICE                                *
+//* offline/HLT Project. Contributors are mentioned in the code where      *
+//* appropriate.                                                           *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************/
 
 #ifndef ALIHLTPHOSONLINEDISPLAYEVENTTAB_H
 #define ALIHLTPHOSONLINEDISPLAYEVENTTAB_H
@@ -88,12 +88,12 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
   void FindFourierBlocks(AliHLTHOMERReader *homeReaderPtr) const;
 
   void ResetDisplay();
-  TGTab               *fTab;
-  TGTab               *fSubTab1;
-  TRootEmbeddedCanvas *fEc1, *fEc2, *fEc3, *fEc4, *fEc5, *fEc6;
-  TGCompositeFrame    *fSubF1, *fSubF2, *fSubF3;
-  TCanvas *fgCanvasPtr[NGAINS];
-  AliHLTPHOSOnlineDisplayTH2D *fgLegoPlotPtr[NGAINS];
+  TGTab               *fTab; //!
+  TGTab               *fSubTab1; //!
+  TRootEmbeddedCanvas *fEc1, *fEc2, *fEc3, *fEc4, *fEc5, *fEc6; //!
+  TGCompositeFrame    *fSubF1, *fSubF2, *fSubF3; //!
+  TCanvas *fgCanvasPtr[NGAINS]; //!
+  AliHLTPHOSOnlineDisplayTH2D *fgLegoPlotPtr[NGAINS]; //!
 
   /*
   int *fChannelData[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
@@ -110,6 +110,8 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
 
  private:
   AliHLTPHOSOnlineDisplayEventTab();
+  AliHLTPHOSOnlineDisplayEventTab(const AliHLTPHOSOnlineDisplayEventTab&);
+  AliHLTPHOSOnlineDisplayEventTab& operator=(const AliHLTPHOSOnlineDisplayEventTab&);
 
   void FillRawData(const AliHLTPHOSChannelRawDataStruct &rawStr);
   
