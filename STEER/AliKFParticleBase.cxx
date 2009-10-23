@@ -390,20 +390,21 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
     }
 
     Double_t *ffP = fP, *ffC = fC, tmpP[8], tmpC[36];
-    if( fNDF==-1 ){      
+    if( fNDF==-1 ){            
       GetMeasurement( fVtxGuess, tmpP, tmpC );
       ffP = tmpP;
       ffC = tmpC;
     }
 
     Double_t m[8], mV[36];
+
     if( Daughter.fC[35]>0 ){
       Daughter.GetMeasurement( fVtxGuess, m, mV );
     } else {
       for( Int_t i=0; i<8; i++ ) m[i] = Daughter.fP[i];
       for( Int_t i=0; i<36; i++ ) mV[i] = Daughter.fC[i];
     }
-
+ 
     //*
 
     Double_t mS[6];
@@ -411,7 +412,7 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
       Double_t mSi[6] = { ffC[0]+mV[0], 
 			  ffC[1]+mV[1], ffC[2]+mV[2], 
 			  ffC[3]+mV[3], ffC[4]+mV[4], ffC[5]+mV[5] };
-      
+     
       mS[0] = mSi[2]*mSi[5] - mSi[4]*mSi[4];
       mS[1] = mSi[3]*mSi[4] - mSi[1]*mSi[5];
       mS[2] = mSi[0]*mSi[5] - mSi[3]*mSi[3];
@@ -433,6 +434,7 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
     //* Residual (measured - estimated)
     
     Double_t zeta[3] = { m[0]-ffP[0], m[1]-ffP[1], m[2]-ffP[2] };    
+
     
     //* CHt = CH' - D'
     
@@ -484,18 +486,20 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
     ffC[26] += mV[26];
     ffC[27] += mV[27];
     
-    //* New estimation of the vertex position r += K*zeta
+ 
+   //* New estimation of the vertex position r += K*zeta
     
     for(Int_t i=0;i<7;++i) 
       fP[i] = ffP[i] + k0[i]*zeta[0] + k1[i]*zeta[1] + k2[i]*zeta[2];
     
     //* New covariance matrix C -= K*(mCH')'
-   
+
     for(Int_t i=0, k=0;i<7;++i){
-      for(Int_t j=0;j<=i;++j,++k) 
+      for(Int_t j=0;j<=i;++j,++k){
 	fC[k] = ffC[k] - (k0[i]*mCHt0[j] + k1[i]*mCHt1[j] + k2[i]*mCHt2[j] );
+      }
     }
-    
+  
     //* Calculate Chi^2 
 
     fNDF  += 2;
@@ -504,6 +508,7 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
     fChi2 += (mS[0]*zeta[0] + mS[1]*zeta[1] + mS[3]*zeta[2])*zeta[0]
       +      (mS[1]*zeta[0] + mS[2]*zeta[1] + mS[4]*zeta[2])*zeta[1]
       +      (mS[3]*zeta[0] + mS[4]*zeta[1] + mS[5]*zeta[2])*zeta[2];     
+
   }
 }
 
@@ -1490,93 +1495,42 @@ Double_t AliKFParticleBase::GetDeviationFromParticle( const AliKFParticleBase &p
 
 
 
-void AliKFParticleBase::SubtractFromVertex( Double_t v[], Double_t Cv[], 
-				     Double_t &vChi2, Int_t vNDF ) const 
+void AliKFParticleBase::SubtractFromVertex(  AliKFParticleBase &Vtx ) const
 {    
   //* Subtract the particle from the vertex  
-  
+
   Double_t fld[3];  
   {
-    GetFieldValue( v, fld );
+    GetFieldValue( Vtx.fP, fld );
     const Double_t kCLight =  0.000299792458;
     fld[0]*=kCLight; fld[1]*=kCLight; fld[2]*=kCLight;
   }
 
   Double_t m[8];
   Double_t mCm[36];
-    
-  Transport( GetDStoPoint(v), m, mCm );
 
-  Double_t d[3] = { v[0]-m[0], v[1]-m[1], v[2]-m[2] };
-  Double_t sigmaS = .1+10.*TMath::Sqrt( (d[0]*d[0]+d[1]*d[1]+d[2]*d[2])/
-					(m[3]*m[3]+m[4]*m[4]+m[5]*m[5])  );
-  
-  Double_t h[6];
-
-  h[0] = m[3]*sigmaS;
-  h[1] = m[4]*sigmaS;
-  h[2] = m[5]*sigmaS; 
-  h[3] = ( h[1]*fld[2]-h[2]*fld[1] )*GetQ();
-  h[4] = ( h[2]*fld[0]-h[0]*fld[2] )*GetQ();
-  h[5] = ( h[0]*fld[1]-h[1]*fld[0] )*GetQ();
-    
-  //* Fit of daughter momentum (Px,Py,Pz) to fVtxGuess vertex
-  {
-    Double_t zeta[3] = { v[0]-m[0], v[1]-m[1], v[2]-m[2] };
-    
-    Double_t mVv[6] = 
-      { mCm[ 0] + h[0]*h[0], 
-	mCm[ 1] + h[1]*h[0], mCm[ 2] + h[1]*h[1],			     
-	mCm[ 3] + h[2]*h[0], mCm[ 4] + h[2]*h[1], mCm[ 5] + h[2]*h[2] };
-    
-    Double_t mVvp[9]=
-      { mCm[ 6] + h[0]*h[3], mCm[ 7] + h[1]*h[3], mCm[ 8] + h[2]*h[3],
-	mCm[10] + h[0]*h[4], mCm[11] + h[1]*h[4], mCm[12] + h[2]*h[4],
-	mCm[15] + h[0]*h[5], mCm[16] + h[1]*h[5], mCm[17] + h[2]*h[5] };
-      
-    Double_t mS[6] = 
-      { mVv[2]*mVv[5] - mVv[4]*mVv[4],
-	mVv[3]*mVv[4] - mVv[1]*mVv[5], mVv[0]*mVv[5] - mVv[3]*mVv[3],
-	mVv[1]*mVv[4] - mVv[2]*mVv[3], mVv[1]*mVv[3] - mVv[0]*mVv[4], 
-	mVv[0]*mVv[2] - mVv[1]*mVv[1] };		 
-      
-    Double_t s = ( mVv[0]*mS[0] + mVv[1]*mS[1] + mVv[3]*mS[3] );
-    s = ( s > 1.E-20 )  ?1./s :0;
-    
-    mS[0]*=s; mS[1]*=s; mS[2]*=s; mS[3]*=s; mS[4]*=s; mS[5]*=s;
-      
-    Double_t mSz[3] = { (mS[0]*zeta[0]+mS[1]*zeta[1]+mS[3]*zeta[2]),
-		       (mS[1]*zeta[0]+mS[2]*zeta[1]+mS[4]*zeta[2]),
-		       (mS[3]*zeta[0]+mS[4]*zeta[1]+mS[5]*zeta[2]) };
-    
-    Double_t px = m[3] + mVvp[0]*mSz[0] + mVvp[1]*mSz[1] + mVvp[2]*mSz[2];
-    Double_t py = m[4] + mVvp[3]*mSz[0] + mVvp[4]*mSz[1] + mVvp[5]*mSz[2];
-    Double_t pz = m[5] + mVvp[6]*mSz[0] + mVvp[7]*mSz[1] + mVvp[8]*mSz[2];
-    
-    h[0] = px*sigmaS;
-    h[1] = py*sigmaS;
-    h[2] = pz*sigmaS; 
-    h[3] = ( h[1]*fld[2]-h[2]*fld[1] )*GetQ();
-    h[4] = ( h[2]*fld[0]-h[0]*fld[2] )*GetQ();
-    h[5] = ( h[0]*fld[1]-h[1]*fld[0] )*GetQ();
+  if( Vtx.fIsLinearized ){
+    GetMeasurement( Vtx.fVtxGuess, m, mCm );
+  } else {
+    GetMeasurement( Vtx.fP, m, mCm );
   }
-    
+  
   Double_t mV[6];
     
-  mV[ 0] = mCm[ 0] + h[0]*h[0];
-  mV[ 1] = mCm[ 1] + h[1]*h[0];
-  mV[ 2] = mCm[ 2] + h[1]*h[1];
-  mV[ 3] = mCm[ 3] + h[2]*h[0];
-  mV[ 4] = mCm[ 4] + h[2]*h[1];
-  mV[ 5] = mCm[ 5] + h[2]*h[2];
+  mV[ 0] = mCm[ 0];
+  mV[ 1] = mCm[ 1];
+  mV[ 2] = mCm[ 2];
+  mV[ 3] = mCm[ 3];
+  mV[ 4] = mCm[ 4];
+  mV[ 5] = mCm[ 5];
      
   //* 
 	    
   Double_t mS[6];
   {
-    Double_t mSi[6] = { mV[0]-Cv[0], 
-		       mV[1]-Cv[1], mV[2]-Cv[2], 
-		       mV[3]-Cv[3], mV[4]-Cv[4], mV[5]-Cv[5] };
+    Double_t mSi[6] = { mV[0]-Vtx.fC[0], 
+			mV[1]-Vtx.fC[1], mV[2]-Vtx.fC[2], 
+			mV[3]-Vtx.fC[3], mV[4]-Vtx.fC[4], mV[5]-Vtx.fC[5] };
     
     mS[0] = mSi[2]*mSi[5] - mSi[4]*mSi[4];
     mS[1] = mSi[3]*mSi[4] - mSi[1]*mSi[5];
@@ -1597,15 +1551,15 @@ void AliKFParticleBase::SubtractFromVertex( Double_t v[], Double_t Cv[],
     
   //* Residual (measured - estimated)
     
-  Double_t zeta[3] = { m[0]-v[0], m[1]-v[1], m[2]-v[2] };
+  Double_t zeta[3] = { m[0]-Vtx.fP[0], m[1]-Vtx.fP[1], m[2]-Vtx.fP[2] };
         
   //* mCHt = mCH' - D'
     
   Double_t mCHt0[3], mCHt1[3], mCHt2[3];
     
-  mCHt0[0]=Cv[ 0] ;      mCHt1[0]=Cv[ 1] ;      mCHt2[0]=Cv[ 3] ;
-  mCHt0[1]=Cv[ 1] ;      mCHt1[1]=Cv[ 2] ;      mCHt2[1]=Cv[ 4] ;
-  mCHt0[2]=Cv[ 3] ;      mCHt1[2]=Cv[ 4] ;      mCHt2[2]=Cv[ 5] ;
+  mCHt0[0]=Vtx.fC[ 0] ;      mCHt1[0]=Vtx.fC[ 1] ;      mCHt2[0]=Vtx.fC[ 3] ;
+  mCHt0[1]=Vtx.fC[ 1] ;      mCHt1[1]=Vtx.fC[ 2] ;      mCHt2[1]=Vtx.fC[ 4] ;
+  mCHt0[2]=Vtx.fC[ 3] ;      mCHt1[2]=Vtx.fC[ 4] ;      mCHt2[2]=Vtx.fC[ 5] ;
   
   //* Kalman gain K = mCH'*S
     
@@ -1619,22 +1573,26 @@ void AliKFParticleBase::SubtractFromVertex( Double_t v[], Double_t Cv[],
     
   //* New estimation of the vertex position r += K*zeta
     
+  Double_t dChi2 = -(mS[0]*zeta[0] + mS[1]*zeta[1] + mS[3]*zeta[2])*zeta[0]
+    +      (mS[1]*zeta[0] + mS[2]*zeta[1] + mS[4]*zeta[2])*zeta[1]
+    +      (mS[3]*zeta[0] + mS[4]*zeta[1] + mS[5]*zeta[2])*zeta[2];
+
+  if( Vtx.fChi2 - dChi2 < 0 ) return;
+
   for(Int_t i=0;i<3;++i) 
-    v[i] -= k0[i]*zeta[0] + k1[i]*zeta[1] + k2[i]*zeta[2];
+    Vtx.fP[i] -= k0[i]*zeta[0] + k1[i]*zeta[1] + k2[i]*zeta[2];       
     
   //* New covariance matrix C -= K*(mCH')'
     
   for(Int_t i=0, k=0;i<3;++i){
     for(Int_t j=0;j<=i;++j,++k) 
-      Cv[k] += k0[i]*mCHt0[j] + k1[i]*mCHt1[j] + k2[i]*mCHt2[j];
+      Vtx.fC[k] += k0[i]*mCHt0[j] + k1[i]*mCHt1[j] + k2[i]*mCHt2[j];
   }
     
   //* Calculate Chi^2 
-  
-  vNDF  -= 2;
-  vChi2 -= (mS[0]*zeta[0] + mS[1]*zeta[1] + mS[3]*zeta[2])*zeta[0]
-    +      (mS[1]*zeta[0] + mS[2]*zeta[1] + mS[4]*zeta[2])*zeta[1]
-    +      (mS[3]*zeta[0] + mS[4]*zeta[1] + mS[5]*zeta[2])*zeta[2];  
+
+  Vtx.fNDF  -= 2;
+  Vtx.fChi2 -= dChi2;
 }
 
 

@@ -326,7 +326,7 @@ class AliKFParticle :public AliKFParticleBase
 
 inline void AliKFParticle::SetField( Double_t Bz )
 { 
-  fgBz = -Bz;//!!!
+  fgBz = Bz;
 }
 
 
@@ -859,7 +859,7 @@ inline Double_t AliKFParticle::GetDeviationFromParticle( const AliKFParticle &p 
 
 inline void AliKFParticle::SubtractFromVertex( AliKFParticle &v ) const 
 {
-  AliKFParticleBase::SubtractFromVertex( v.fP, v.fC, v.fChi2, v.fNDF);
+  AliKFParticleBase::SubtractFromVertex( v );
 }
 
 inline Double_t AliKFParticle::GetFieldAlice()

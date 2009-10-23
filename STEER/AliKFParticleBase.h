@@ -220,8 +220,8 @@ class AliKFParticleBase :public TObject {
 
   //* Subtract the particle from the vertex  
 
-  void SubtractFromVertex( Double_t v[], Double_t Cv[], 
-			   Double_t &vChi2, Int_t vNDF ) const ;
+  void SubtractFromVertex( AliKFParticleBase &Vtx ) const;
+
   
  protected:
 

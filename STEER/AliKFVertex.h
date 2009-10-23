@@ -49,7 +49,7 @@ class AliKFVertex : public AliKFParticle
 
   //* Number of tracks composing the vertex
 
-  Int_t GetNContributors() const { return (fNDF+3)/2; }
+  Int_t GetNContributors() const { return fIsConstrained ?fNDF/2:(fNDF+3)/2; }
 
   //* 
   //* CONSTRUCTION OF THE VERTEX BY ITS DAUGHTERS 

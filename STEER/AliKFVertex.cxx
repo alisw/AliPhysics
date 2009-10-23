@@ -17,7 +17,6 @@
 
 
 #include "AliKFVertex.h"
-#include "Riostream.h"
 
 ClassImp(AliKFVertex)
 
@@ -47,7 +46,7 @@ void     AliKFVertex::Print(Option_t* ) const
   */
 
 void AliKFVertex::SetBeamConstraint( Double_t x, Double_t y, Double_t z, 
-				      Double_t errX, Double_t errY, Double_t errZ )
+				     Double_t errX, Double_t errY, Double_t errZ )
 {
   // Set beam constraint to the vertex
   fP[0] = x;
@@ -72,8 +71,15 @@ void AliKFVertex::ConstructPrimaryVertex( const AliKFParticle *vDaughters[],
 					  Double_t ChiCut  )
 {
   //* Primary vertex finder with simple rejection of outliers
+
   if( NDaughters<2 ) return;
+  double constrP[3]={fP[0], fP[1], fP[2]};
+  double constrC[6]={fC[0], fC[1], fC[2], fC[3], fC[4], fC[5]};
+
   Construct( vDaughters, NDaughters, 0, -1, fIsConstrained );
+
+  SetVtxGuess( fVtxGuess[0], fVtxGuess[1], fVtxGuess[2] );
+
   for( int i=0; i<NDaughters; i++ ) vtxFlag[i] = 1;
 
   Int_t nRest = NDaughters;
@@ -82,7 +88,7 @@ void AliKFVertex::ConstructPrimaryVertex( const AliKFParticle *vDaughters[],
       Double_t worstChi = 0.;
       Int_t worstDaughter = 0;
       for( Int_t it=0; it<NDaughters; it++ ){
-	if( !vtxFlag[it] ) continue;
+	if( !vtxFlag[it] ) continue;	
 	const AliKFParticle &p = *(vDaughters[it]);
 	AliKFVertex tmp = *this - p;
 	Double_t chi = p.GetDeviationFromVertex( tmp );      
@@ -97,6 +103,23 @@ void AliKFVertex::ConstructPrimaryVertex( const AliKFParticle *vDaughters[],
       *this -= *(vDaughters[worstDaughter]);
       nRest--;
     } 
+
+  if( nRest>=2 ){// final refit     
+    SetVtxGuess( fP[0], fP[1], fP[2] );
+    if( fIsConstrained ){
+      fP[0] = constrP[0];
+      fP[1] = constrP[1];
+      fP[2] = constrP[2];
+      for( int i=0; i<6; i++ ) fC[i] = constrC[i];
+    }
+    int nDaughtersNew=0;
+    const AliKFParticle **vDaughtersNew=new const AliKFParticle *[NDaughters];
+    for( int i=0; i<NDaughters; i++ ){
+      if( vtxFlag[i] )  vDaughtersNew[nDaughtersNew++] = vDaughters[i];
+    }
+    Construct( vDaughtersNew, nDaughtersNew, 0, -1, fIsConstrained );
+    delete[] vDaughtersNew;
+  }
 
   if( nRest<=2 && GetChi2()>ChiCut*ChiCut*GetNDF() ){
     for( int i=0; i<NDaughters; i++ ) vtxFlag[i] = 0;
