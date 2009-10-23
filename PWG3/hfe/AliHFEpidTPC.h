@@ -40,28 +40,30 @@ class AliHFEpidTPC : public AliHFEpidBase{
     kHistTPCproton = 4,
     kHistTPCothers = 5,
     kHistTPCall = 6,
-    kHistTPCprobEl = 7,
-    kHistTPCprobPi = 8,
-    kHistTPCprobMu = 9,
-    kHistTPCprobKa = 10,
-    kHistTPCprobPro = 11,
-    kHistTPCprobOth = 12,
-    kHistTPCprobAll = 13,
-    kHistTPCsuppressPi = 14,
-    kHistTPCsuppressMu = 15,
-    kHistTPCsuppressKa = 16,
-    kHistTPCsuppressPro = 17,
-    kHistTPCenhanceElPi = 18,
-    kHistTPCenhanceElMu = 19,
-    kHistTPCenhanceElKa = 20,
-    kHistTPCenhanceElPro = 21,
-    kHistTPCElprobPi = 22,
-    kHistTPCElprobMu = 23,
-    kHistTPCElprobKa = 24,
-    kHistTPCElprobPro = 25
+    kHistTPCselected = 7,
+    kHistTPCprobEl = 8,
+    kHistTPCprobPi = 9,
+    kHistTPCprobMu = 10,
+    kHistTPCprobKa = 11,
+    kHistTPCprobPro = 12,
+    kHistTPCprobOth = 13,
+    kHistTPCprobAll = 14,
+    kHistTPCsuppressPi = 15,
+    kHistTPCsuppressMu = 16,
+    kHistTPCsuppressKa = 17,
+    kHistTPCsuppressPro = 18,
+    kHistTPCenhanceElPi = 19,
+    kHistTPCenhanceElMu = 20,
+    kHistTPCenhanceElKa = 21,
+    kHistTPCenhanceElPro = 22,
+    kHistTPCElprobPi = 23,
+    kHistTPCElprobMu = 24,
+    kHistTPCElprobKa = 25,
+    kHistTPCElprobPro = 26
   } QAHist_t;
   enum{
-    kAsymmetricSigmaCut = BIT(20)
+    kAsymmetricSigmaCut = BIT(20),
+    kRejection = BIT(21)
   };
   public:
     AliHFEpidTPC(const Char_t *name);
@@ -75,8 +77,10 @@ class AliHFEpidTPC : public AliHFEpidBase{
 
     void AddTPCdEdxLineCrossing(Int_t species, Double_t sigma);
     Bool_t HasAsymmetricSigmaCut() const { return TestBit(kAsymmetricSigmaCut);}
+    Bool_t HasParticleRejection() const { return TestBit(kRejection); }
     void SetTPCnSigma(Short_t nSigma) { fNsigmaTPC = nSigma; };
     inline void SetAsymmetricTPCsigmaCut(Float_t pmin, Float_t pmax, Float_t sigmaMin, Float_t sigmaMax);
+    inline void SetRejectParticle(Int_t species, Float_t pmin, Float_t sigmaMin, Float_t pmax, Float_t sigmaMax);
 
   protected:
     void Copy(TObject &o) const;
@@ -84,6 +88,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     void FillTPChistograms(const AliESDtrack *track, const AliMCParticle *mctrack);
     Int_t MakePIDaod(AliAODTrack *aodTrack, AliAODMCParticle *mcTrack);
     Int_t MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
+    Int_t Reject(AliESDtrack *track);
     Double_t Likelihood(const AliESDtrack *track, Int_t species, Float_t rsig = 2.);
     Double_t Suppression(const AliESDtrack *track, Int_t species);
 
@@ -93,6 +98,8 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Float_t fPAsigCut[2];                                   // Momentum region where to perform asymmetric sigma cut
     Float_t fNAsigmaTPC[2];                                 // Asymmetric TPC Sigma band        
     Short_t fNsigmaTPC;                                     // TPC sigma band
+    Float_t fRejection[4*AliPID::kSPECIES];                 // All informations for Particle Rejection, order pmin, sigmin, pmax, sigmax
+    UChar_t fRejectionEnabled;                              // Bitmap for enabled particle rejection
     AliPID *fPID;                                           //! PID Object
     AliTPCpidESD *fPIDtpcESD;                               //! TPC PID object
     TList *fQAList;                                         //! QA histograms
@@ -106,6 +113,16 @@ inline void AliHFEpidTPC::SetAsymmetricTPCsigmaCut(Float_t pmin, Float_t pmax, F
   fNAsigmaTPC[0] = sigmaMin; 
   fNAsigmaTPC[1] = sigmaMax; 
   SetBit(kAsymmetricSigmaCut, kTRUE);
+}
+
+inline void AliHFEpidTPC::SetRejectParticle(Int_t species, Float_t pmin, Float_t sigmaMin, Float_t pmax, Float_t sigmaMax){
+  if(species < 0 || species >= AliPID::kSPECIES) return;
+  fRejection[4*species]   = pmin;
+  fRejection[4*species+1] = sigmaMin;
+  fRejection[4*species+2] = pmax;
+  fRejection[4*species+3] = sigmaMax;
+  SETBIT(fRejectionEnabled, species);
+  SetBit(kRejection, kTRUE);
 }
  
 #endif

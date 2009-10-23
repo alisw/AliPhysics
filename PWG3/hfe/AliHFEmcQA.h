@@ -37,6 +37,7 @@ class TH2F;
 class TParticle;
 class TString;
 class AliStack;
+class AliAODMCParticle;
 
 //________________________________________________________________
 class AliHFEmcQA: public TObject {
@@ -44,6 +45,12 @@ class AliHFEmcQA: public TObject {
         public: 
                 enum heavyType {kCharm=4, kBeauty=5, kElectronPDG=11};
                 enum qType {kQuark, kantiQuark, kHadron, keHadron, kDeHadron, kElectron, kElectron2nd};
+                enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6};
+                enum ProcessType
+                        {
+                        kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
+                        };
+
                 AliHFEmcQA();
                 AliHFEmcQA(const AliHFEmcQA &p); // copy constructor
                 AliHFEmcQA &operator=(const AliHFEmcQA &); // assignment operator
@@ -53,12 +60,16 @@ class AliHFEmcQA: public TObject {
                 void PostAnalyze();
                 void CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt=""); // create histograms for mc qa analysis
                 void SetStack(AliStack* const stack){fStack=stack;} // set stack pointer
+                void SetMCArray(TClonesArray* const mcarry){fMCArray=mcarry;} // set mcarray pointer
                 void Init();
 
                 void GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark); // get heavy quark kinematics distribution
                 void GetHadronKine(TParticle *part, const Int_t kquark); // get heavy hadron kinematics distribution
                 void GetDecayedKine(TParticle *part, const Int_t kquark, const Int_t kdecayed, Int_t icut); // get decay electron kinematics distribution
+		void GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed, Int_t icut); // get decay electron kinematics for AOD 
                 void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
+		Int_t GetElectronSource(TParticle* mcpart); // return electron source id 
+		Int_t GetElectronSource(AliAODMCParticle *mcpart); // return electron source id for AOD
 
         protected:
                 void IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel); // 
@@ -67,19 +78,15 @@ class AliHFEmcQA: public TObject {
                 Bool_t IsFromInitialShower(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from initial parton shower 
                 Bool_t IsFromFinalParton(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from final parton shower
                 Float_t GetRapidity(TParticle *part); // return rapidity
+		Float_t GetRapidity(AliAODMCParticle *part); // return rapidity
 
                 AliStack* fStack; // stack pointer           
+		TClonesArray *fMCArray; // mc array pointer
 
                 static const Int_t fgkGluon; // gluon pdg code
                 static const Int_t fgkMaxGener; // ancester level wanted to be checked 
                 static const Int_t fgkMaxIter; // number of iteration to find out matching particle 
                 static const Int_t fgkqType; // number of particle type to be checked
-
-
-                enum ProcessType
-                        {
-                        kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
-                        };
 
                 struct AliHists{
                         TH1F *fPdgCode; // histogram to store particle pdg code

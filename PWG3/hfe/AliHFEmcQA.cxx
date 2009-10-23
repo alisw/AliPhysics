@@ -48,6 +48,7 @@
 #include <AliESDInputHandler.h>
 #include <AliESDVertex.h>
 #include <AliStack.h>
+#include <AliAODMCParticle.h>
 
 #include "AliHFEmcQA.h"
 
@@ -61,6 +62,7 @@ ClassImp(AliHFEmcQA)
 //_______________________________________________________________________________________________
 AliHFEmcQA::AliHFEmcQA() : 
         fStack(0x0) 
+        ,fMCArray(0x0)
         ,fNparents(0) 
 {
         // Default constructor
@@ -71,6 +73,7 @@ AliHFEmcQA::AliHFEmcQA() :
 AliHFEmcQA::AliHFEmcQA(const AliHFEmcQA&p):
         TObject(p)
         ,fStack(0x0) 
+        ,fMCArray(0x0)
         ,fNparents(p.fNparents) 
 {
         // Copy constructor
@@ -457,6 +460,7 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
       return; 
     }
     Int_t iq = kquark - kCharm; 
+    Bool_t IsFinalOpenCharm = kFALSE;
 
 /*
     if (iTrack < 0) { 
@@ -487,6 +491,13 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
     // if the mother is charmed hadron  
     Bool_t isMotherDirectCharm = kFALSE;
     if ( int(abs(maPdgcode)/100.) == kCharm || int(abs(maPdgcode)/1000.) == kCharm ) { 
+
+         for (Int_t i=0; i<fNparents; i++){
+            if (abs(maPdgcode)==fParentSelect[0][i]){
+              IsFinalOpenCharm = kTRUE;
+            } 
+         }  
+         if (!IsFinalOpenCharm) return ;
 
           // iterate until you find B hadron as a mother or become top ancester 
           for (Int_t i=1; i<fgkMaxIter; i++){
@@ -565,6 +576,103 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
     } // end of if
 }
 
+//____________________________________________________________________
+void  AliHFEmcQA::GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed, Int_t icut)
+{
+  // decay electron kinematics
+
+  if (kquark != kCharm && kquark != kBeauty) {
+    AliDebug(1, "This task is only for heavy quark QA, return\n");
+    return;
+  }
+
+  Int_t iq = kquark - kCharm;
+  Bool_t IsFinalOpenCharm = kFALSE;
+
+  if ( abs(mcpart->GetPdgCode()) != kdecayed ) return;
+
+  // mother
+  Int_t iLabel = mcpart->GetMother();
+  if (iLabel<0){
+    AliDebug(1, "Stack label is negative, return\n");
+    return;
+  }
+
+  AliAODMCParticle *partMother = (AliAODMCParticle*)fMCArray->At(iLabel);
+  AliAODMCParticle *partMotherCopy = partMother;
+  Int_t maPdgcode = partMother->GetPdgCode();
+  Int_t maPdgcodeCopy = maPdgcode;
+
+  Bool_t isMotherDirectCharm = kFALSE;
+  if ( int(abs(maPdgcode)/100.) == kCharm || int(abs(maPdgcode)/1000.) == kCharm ) {
+
+    for (Int_t i=0; i<fNparents; i++){
+       if (abs(maPdgcode)==fParentSelect[0][i]){
+         IsFinalOpenCharm = kTRUE;
+       }
+    } 
+    if (!IsFinalOpenCharm) return;
+
+    for (Int_t i=1; i<fgkMaxIter; i++){
+
+       Int_t jLabel = partMother->GetMother();
+       if (jLabel == -1){
+         isMotherDirectCharm = kTRUE;
+         break; // if there is no ancester
+       }
+       if (jLabel < 0){ // safety protection
+         AliDebug(1, "Stack label is negative, return\n");
+         return;
+       }
+
+       // if there is an ancester
+       AliAODMCParticle* grandMa = (AliAODMCParticle*)fMCArray->At(jLabel);
+       Int_t grandMaPDG = grandMa->GetPdgCode();
+
+       for (Int_t j=0; j<fNparents; j++){
+          if (abs(grandMaPDG)==fParentSelect[1][j]){
+
+            if (kquark == kCharm) return;
+            // fill electron kinematics
+            fHist[iq][kElectron2nd][icut].fPdgCode->Fill(mcpart->GetPdgCode());
+            fHist[iq][kElectron2nd][icut].fPt->Fill(mcpart->Pt());
+            fHist[iq][kElectron2nd][icut].fY->Fill(GetRapidity(mcpart));
+            fHist[iq][kElectron2nd][icut].fEta->Fill(mcpart->Eta());
+
+            // fill mother hadron kinematics
+            fHist[iq][kDeHadron][icut].fPdgCode->Fill(grandMaPDG);
+            fHist[iq][kDeHadron][icut].fPt->Fill(grandMa->Pt());
+            fHist[iq][kDeHadron][icut].fY->Fill(GetRapidity(grandMa));
+            fHist[iq][kDeHadron][icut].fEta->Fill(grandMa->Eta());
+
+            return;
+          }
+       }
+
+       partMother = grandMa;
+    } // end of iteration 
+  } // end of if
+  if ((isMotherDirectCharm == kTRUE && kquark == kCharm) || kquark == kBeauty) {
+    for (Int_t i=0; i<fNparents; i++){
+       if (abs(maPdgcodeCopy)==fParentSelect[iq][i]){
+
+         // fill electron kinematics
+         fHist[iq][kElectron][icut].fPdgCode->Fill(mcpart->GetPdgCode());
+         fHist[iq][kElectron][icut].fPt->Fill(mcpart->Pt());
+         fHist[iq][kElectron][icut].fY->Fill(GetRapidity(mcpart));
+         fHist[iq][kElectron][icut].fEta->Fill(mcpart->Eta());
+
+         // fill mother hadron kinematics
+         fHist[iq][keHadron][icut].fPdgCode->Fill(maPdgcodeCopy);
+         fHist[iq][keHadron][icut].fPt->Fill(partMotherCopy->Pt());
+         fHist[iq][keHadron][icut].fY->Fill(GetRapidity(partMotherCopy));
+         fHist[iq][keHadron][icut].fEta->Fill(partMotherCopy->Eta());
+
+       }
+    }
+  } // end of if
+
+}
 
 //__________________________________________
 void AliHFEmcQA::IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel)
@@ -666,7 +774,172 @@ Float_t AliHFEmcQA::GetRapidity(TParticle *part)
       // return rapidity
 
        Float_t rapidity;        
-       if(part->Energy() - part->Pz() == 0 || part->Energy() + part->Pz() == 0) rapidity=-999; 
+       if(!((part->Energy() - part->Pz())*(part->Energy() + part->Pz())>0)) rapidity=-999; 
        else rapidity = 0.5*(TMath::Log((part->Energy()+part->Pz()) / (part->Energy()-part->Pz()))); 
        return rapidity;
+}
+
+//__________________________________________
+Float_t AliHFEmcQA::GetRapidity(AliAODMCParticle *part)
+{
+      // return rapidity
+
+       Float_t rapidity;        
+       if(!((part->E() - part->Pz())*(part->E() + part->Pz())>0)) rapidity=-999; 
+       else rapidity = 0.5*(TMath::Log((part->E()+part->Pz()) / (part->E()-part->Pz()))); 
+       return rapidity;
+}
+
+//__________________________________________
+Int_t AliHFEmcQA::GetElectronSource(AliAODMCParticle *mcpart)
+{        
+  // decay electron's origin 
+
+  if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
+       
+  Int_t origin = -1;
+  Bool_t IsFinalOpenCharm = kFALSE;
+
+  // mother
+  Int_t iLabel = mcpart->GetMother();
+  if (iLabel<0){
+    AliDebug(1, "Stack label is negative, return\n");
+    return -1;
+  } 
+       
+  AliAODMCParticle *partMother = (AliAODMCParticle*)fMCArray->At(iLabel);
+  Int_t maPdgcode = partMother->GetPdgCode();
+  
+  // if the mother is charmed hadron  
+  if ( int(abs(maPdgcode)/100.) == kCharm || int(abs(maPdgcode)/1000.) == kCharm ) {
+    
+    for (Int_t i=0; i<fNparents; i++){
+       if (abs(maPdgcode)==fParentSelect[0][i]){
+         IsFinalOpenCharm = kTRUE;
+       }
+    }
+    if (!IsFinalOpenCharm) return -1;
+
+    // iterate until you find B hadron as a mother or become top ancester 
+    for (Int_t i=1; i<fgkMaxIter; i++){
+
+       Int_t jLabel = partMother->GetMother();
+       if (jLabel == -1){
+         origin = kDirectCharm;
+         return origin;
+       }
+       if (jLabel < 0){ // safety protection
+         AliDebug(1, "Stack label is negative, return\n");
+         return -1;
+       }
+
+       // if there is an ancester
+       AliAODMCParticle* grandMa = (AliAODMCParticle*)fMCArray->At(jLabel);
+       Int_t grandMaPDG = grandMa->GetPdgCode();
+
+       for (Int_t i=0; i<fNparents; i++){
+          if (abs(grandMaPDG)==fParentSelect[1][i]){
+            origin = kBeautyCharm;
+            return origin;
+          }
+       }
+
+       partMother = grandMa;
+    } // end of iteration 
+  } // end of if
+  else if ( int(abs(maPdgcode)/100.) == kBeauty || int(abs(maPdgcode)/1000.) == kBeauty ) {
+    for (Int_t i=0; i<fNparents; i++){
+       if (abs(maPdgcode)==fParentSelect[1][i]){
+         origin = kDirectBeauty;
+         return origin;
+       }
+    }
+  } // end of if
+  else if ( abs(maPdgcode) == 22 ) {
+    origin = kGamma;
+    return origin;
+  } // end of if
+  else if ( abs(maPdgcode) == 111 ) {
+    origin = kPi0;
+    return origin;
+  } // end of if
+
+  return origin;
+}
+
+//__________________________________________
+Int_t AliHFEmcQA::GetElectronSource(TParticle* mcpart)
+{
+  // decay electron's origin 
+
+  if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
+
+  Int_t origin = -1;
+  Bool_t IsFinalOpenCharm = kFALSE;
+
+  Int_t iLabel = mcpart->GetFirstMother();
+  if (iLabel<0){
+    AliDebug(1, "Stack label is negative, return\n");
+    return -1;
+  }
+
+  TParticle *partMother = fStack->Particle(iLabel);
+  Int_t maPdgcode = partMother->GetPdgCode();
+
+   // if the mother is charmed hadron  
+   if ( int(abs(maPdgcode)/100.) == kCharm || int(abs(maPdgcode)/1000.) == kCharm ) {
+
+     for (Int_t i=0; i<fNparents; i++){
+        if (abs(maPdgcode)==fParentSelect[0][i]){
+          IsFinalOpenCharm = kTRUE;
+        }
+     }
+     if (!IsFinalOpenCharm) return -1;
+
+     // iterate until you find B hadron as a mother or become top ancester 
+     for (Int_t i=1; i<fgkMaxIter; i++){
+
+        Int_t jLabel = partMother->GetFirstMother();
+        if (jLabel == -1){
+          origin = kDirectCharm;
+          return origin;
+        }
+        if (jLabel < 0){ // safety protection
+          AliDebug(1, "Stack label is negative, return\n");
+          return -1;
+        }
+
+        // if there is an ancester
+        TParticle* grandMa = fStack->Particle(jLabel);
+        Int_t grandMaPDG = grandMa->GetPdgCode();
+
+        for (Int_t i=0; i<fNparents; i++){
+           if (abs(grandMaPDG)==fParentSelect[1][i]){
+             origin = kBeautyCharm;
+             return origin;
+           }
+        }
+
+        partMother = grandMa;
+     } // end of iteration 
+   } // end of if
+   else if ( int(abs(maPdgcode)/100.) == kBeauty || int(abs(maPdgcode)/1000.) == kBeauty ) {
+     for (Int_t i=0; i<fNparents; i++){
+        if (abs(maPdgcode)==fParentSelect[1][i]){
+          origin = kDirectBeauty;
+          return origin;
+        }
+     }
+   } // end of if
+   else if ( abs(maPdgcode) == 22 ) {
+     origin = kGamma;
+     return origin;
+   } // end of if
+   else if ( abs(maPdgcode) == 111 ) {
+     origin = kPi0;
+     return origin;
+   } // end of if
+   else origin = kElse;
+
+   return origin;
 }

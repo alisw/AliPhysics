@@ -819,6 +819,7 @@ Int_t AliHFEsecVtx::PairOrigin(AliESDtrack* track1, AliESDtrack* track2)
         // caution : it can also return parton pdg code if it originated from same string or gluon spliting. 
         //           
 
+        if (track1->GetLabel()<0 || track2->GetLabel()<0) return 0;
         TParticle* part1 = fStack->Particle(TMath::Abs(track1->GetLabel()));
         TParticle* part2 = fStack->Particle(TMath::Abs(track2->GetLabel()));
         if (!(part1)) return 0;

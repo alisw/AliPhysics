@@ -151,8 +151,15 @@ Int_t AliHFEpidTRD::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle * /*mcTrack*
 
   Double_t pidProbs[AliPID::kSPECIES];
   esdTrack->GetTRDpid(pidProbs);
-  if(pidProbs[AliPID::kElectron] > GetTRDthresholds(0.91, p)) return 11;
-  return 0;
+  if(IsQAon())FillHistogramsLikelihood(0, p, pidProbs[AliPID::kElectron]);
+  Double_t threshold = GetTRDthresholds(0.91, p);
+  AliDebug(1, Form("Threshold: %f\n", threshold));
+  if(IsQAon()) (dynamic_cast<TH2F *>(fContainer->At(kHistTRDthresholds)))->Fill(p, threshold);
+  if(pidProbs[AliPID::kElectron] > threshold){
+    if(IsQAon()) FillHistogramsLikelihood(1, p, pidProbs[AliPID::kElectron]);
+    return 11;
+  }
+  return 211;
 }
 
 //___________________________________________________________________
@@ -162,7 +169,8 @@ Double_t AliHFEpidTRD::GetTRDthresholds(Double_t electronEff, Double_t p){
   // 
   Double_t params[4];
   GetParameters(electronEff, params);
-  return 1. - params[0] * p - params[1] * TMath::Exp(-params[2] * p) - params[3];
+  Double_t threshold = 1. - params[0] - params[1] * p - params[2] * TMath::Exp(-params[3] * p);
+  return TMath::Max(TMath::Min(threshold, 0.99), 0.2); // truncate the threshold upperwards to 0.999 and lowerwards to 0.2 and exclude unphysical values
 }
 
 //___________________________________________________________________
@@ -203,7 +211,7 @@ void AliHFEpidTRD::GetParameters(Double_t electronEff, Double_t *parameters){
   //
   // return parameter set for the given efficiency bin
   //
-  Int_t effbin = static_cast<Int_t>((electronEff - 0.7)/0.3 * 6.);
+  Int_t effbin = static_cast<Int_t>((electronEff - 0.7)/0.05);
   memcpy(parameters, fThreshParams + effbin * 4, sizeof(Double_t) * 4);
 }
 
@@ -322,6 +330,11 @@ void AliHFEpidTRD::AddQAhistograms(TList *l){
   Double_t momentumBins[kMomentumBins];
   for(Int_t ibin = 0; ibin < kMomentumBins; ibin++)
     momentumBins[ibin] = static_cast<Double_t>(TMath::Power(10,TMath::Log10(kPtMin) + (TMath::Log10(kPtMax)-TMath::Log10(kPtMin))/(kMomentumBins-1)*static_cast<Double_t>(ibin)));
+  // Likelihood Histograms
+  fContainer->AddAt(new TH2F("fTRDlikeBefore", "TRD Electron Likelihood before cut", kMomentumBins - 1, momentumBins, 1000, 0, 1), kHistTRDlikeBefore);
+  fContainer->AddAt(new TH2F("fTRDlikeAfter", "TRD Electron Likelihood after cut", kMomentumBins - 1, momentumBins, 1000, 0, 1), kHistTRDlikeAfter);
+  fContainer->AddAt(new TH2F("fTRDthesholds", "TRD Electron thresholds", kMomentumBins - 1, momentumBins, 1000, 0, 1), kHistTRDthresholds);
+  // Signal Histograms
   fContainer->AddAt(new TH2F("fTRDSigV1all", "TRD Signal (all particles, Method 1)", kMomentumBins - 1, momentumBins, kSigBinsMeth1, kMinSig, kMaxSigMeth1), kHistTRDSigV1);
   fContainer->AddAt(new TH2F("fTRDSigV2all", "TRD Signal (all particles, Method 2)", kMomentumBins - 1, momentumBins, kSigBinsMeth2, kMinSig, kMaxSigMeth2), kHistTRDSigV2);
   for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
@@ -331,3 +344,19 @@ void AliHFEpidTRD::AddQAhistograms(TList *l){
   l->AddLast(fContainer);
 }
 
+//___________________________________________________________________
+void AliHFEpidTRD::FillHistogramsLikelihood(Int_t whenFilled, Float_t p, Float_t elProb){
+  //
+  // Fill Likelihood Histogram before respectively after decision
+  //
+  TH2F *histo = NULL;
+  if(whenFilled)
+    histo = dynamic_cast<TH2F *>(fContainer->At(kHistTRDlikeAfter));
+  else
+    histo = dynamic_cast<TH2F *>(fContainer->At(kHistTRDlikeBefore));
+  if(!histo){
+    AliError("QA histograms not found");
+    return;
+  }
+  histo->Fill(p, elProb);
+}

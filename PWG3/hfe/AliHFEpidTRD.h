@@ -37,9 +37,12 @@ class AliHFEpidTRD : public AliHFEpidBase{
       kThreshParams = 24
     };
     enum{
-      kHistTRDSigV1 = 0,
-      kHistTRDSigV2 = 1,
-      kHistOverallSpecies = 2
+      kHistTRDlikeBefore = 0,
+      kHistTRDlikeAfter = 1,
+      kHistTRDthresholds = 2,
+      kHistTRDSigV1 = 3,
+      kHistTRDSigV2 = 4,
+      kHistOverallSpecies = 5
     };
     AliHFEpidTRD(const Char_t *name);
     AliHFEpidTRD(const AliHFEpidTRD &ref);
@@ -64,6 +67,7 @@ class AliHFEpidTRD : public AliHFEpidBase{
     virtual void AddQAhistograms(TList *l);
     void GetParameters(Double_t electronEff, Double_t *parameters);
 
+    void FillHistogramsLikelihood(Int_t whenFilled, Float_t p, Float_t elProb);
     void FillHistogramsTRDSignalV1(Double_t signal, Double_t p, Int_t species);
     void FillHistogramsTRDSignalV2(Double_t signal, Double_t p, Int_t species);
   private:
