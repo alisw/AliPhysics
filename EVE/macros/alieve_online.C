@@ -19,24 +19,6 @@ void alieve_online_init()
     Fatal("alieve_online.C", "Failed loading MultiView.C in compiled mode.");
   }
 
-  gROOT->LoadMacro("primary_vertex.C");
-  gROOT->LoadMacro("esd_tracks.C");
-  //  Disabled due to memory leaks
-  //  gROOT->LoadMacro("trd_tracks.C++");
-  gROOT->LoadMacro("trd_detectors.C++");
-
-  gROOT->LoadMacro("its_clusters.C++");
-  gROOT->LoadMacro("tpc_clusters.C++");
-  gROOT->LoadMacro("tof_clusters.C++");
-  gROOT->LoadMacro("hmpid_clusters.C++");
-  gROOT->LoadMacro("emcal_digits.C++");
-
-  gROOT->LoadMacro("acorde_raw.C");
-  gROOT->LoadMacro("its_raw.C");
-  gROOT->LoadMacro("tpc_raw.C");
-  gROOT->LoadMacro("tof_raw.C");
-  gROOT->LoadMacro("vzero_raw.C");
-
   TEveUtil::AssertMacro("VizDB_scan.C");
 
   TEveBrowser *browser = gEve->GetBrowser();
@@ -53,6 +35,55 @@ void alieve_online_init()
                              geom_gentle_rhoz());
 
   // See visscan_init.C for how to add TRD / MUON geometry.
+
+  //============================================================================
+  // Standard macros to execute -- not all are enabled by default.
+  //============================================================================
+
+  AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
+
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex",             "",                kTRUE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse",     "",                kTRUE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box",         "kFALSE, 3, 3, 3", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex_spd",         "",                kTRUE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse_spd", "",                kTRUE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box_spd",     "kFALSE, 3, 3, 3", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex_tpc",         "",                kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Ellipse", "primary_vertex.C", "primary_vertex_ellipse_tpc", "",                kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX Box",     "primary_vertex.C", "primary_vertex_box_tpc",     "kFALSE, 3, 3, 3", kFALSE));
+
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus ITS",   "its_clusters.C++",   "its_clusters"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TPC",   "tpc_clusters.C++",   "tpc_clusters"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TOF",   "tof_clusters.C++",   "tof_clusters"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus HMPID", "hmpid_clusters.C++", "hmpid_clusters"));
+
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clus TOF",   "emcal_digits.C++",   "emcal_digits"));
+
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ITS",     "its_raw.C",     "its_raw"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TPC",     "tpc_raw.C",     "tpc_raw"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TOF",     "tof_raw.C",     "tof_raw"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW VZERO",   "vzero_raw.C",   "vzero_raw"));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ACORDE",  "acorde_raw.C",  "acorde_raw"));
+
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_tracks.C", "esd_tracks",             "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_tracks.C", "esd_tracks_MI",          "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_tracks.C", "esd_tracks_by_category", "", kTRUE));
+
+  // ???
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC TRD", "trd_detectors.C++", "trd_detectors",         "", kFALSE));
+  // trd_tracks disabled due to memory leaks
+
+  //----------------------------------------------------------------------------
+
+  slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
+  slot->StartEmbedding();
+  AliEveMacroExecutorWindow* exewin = new AliEveMacroExecutorWindow(exec);
+  slot->StopEmbedding("DataSelection");
+  exewin->PopulateMacros();
+
+  //============================================================================
+  // Final GUI setup
+  //============================================================================
 
   browser->GetTabRight()->SetTab(1);
 
@@ -90,36 +121,6 @@ void alieve_online_init()
 
 void alieve_online_on_new_event()
 {
-  if (AliEveEventManager::HasRawReader())
-    its_raw();
-  its_clusters();
-
-  if (AliEveEventManager::HasRawReader())
-    tpc_raw();
-  tpc_clusters();
-
-  if (AliEveEventManager::HasRawReader())
-    tof_raw();
-  tof_clusters();
-
-  hmpid_clusters();
-
-  if (AliEveEventManager::HasRawReader())
-    acorde_raw();
-
-  if (AliEveEventManager::HasRawReader())
-    vzero_raw();
-
-  emcal_digits();
-
-  primary_vertex();
-  esd_tracks();
-
-  //  Disabled due to memory leaks
-  //  if (AliEveEventManager::HasESDfriend()) trd_tracks();
-  //  AliSysInfo::AddStamp("EveTRDTr");
-  trd_detectors();
-
   AliESDEvent* esd = AliEveEventManager::AssertESD();
   Double_t x[3];
   esd->GetPrimaryVertex()->GetXYZ(x);
