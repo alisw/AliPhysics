@@ -16,20 +16,21 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/)
     return NULL;
   }   
 
-  TString filename="",out1name="",out2name="",out3name="",out4name="";
+  TString filename="",out1name="",out2name="",out3name="",out4name="",inname="";
   if(flag==0){
     filename="D0InvMass.root"; 
     out1name="coutputmassD01";
     out2name="coutputmassD02";
     out3name="nEntriesD0";
     out4name="coutputmassD0distr";
+    inname="cinputmassD0_0";
   } else {
-    filename="LSD0.root";
+    filename="D0InvMassLikeSign.root";
     out1name="coutputmassLS1";
     out2name="coutputmassLS2";
     out3name="nEntriesLS";
     out4name="coutputmassLSdistr";
-
+    inname="cinputmassD0_1";
   }
 
   // Aanalysis task    
@@ -40,7 +41,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/)
   
   //
   // Create containers for input/output
-  AliAnalysisDataContainer *cinputmassD0 = mgr->CreateContainer("cinputmassD0",TChain::Class(), 
+  AliAnalysisDataContainer *cinputmassD0 = mgr->CreateContainer(inname,TChain::Class(), 
 							  AliAnalysisManager::kInputContainer);
 
   AliAnalysisDataContainer *coutputmassD01 = mgr->CreateContainer(out1name,TList::Class(),
