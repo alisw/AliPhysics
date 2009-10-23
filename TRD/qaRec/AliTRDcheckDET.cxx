@@ -644,6 +644,9 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
     AliWarning("No Histogram defined.");
     return 0x0;
   }
+  Int_t nTracklets = fkTrack->GetNumberOfTracklets();
+  h->Fill(nTracklets);
+  if(!fkESD) return h;
   Int_t status = fkESD->GetStatus();
 /*  printf("in/out/refit/pid: TRD[%d|%d|%d|%d]\n", status &AliESDtrack::kTRDin ? 1 : 0, status &AliESDtrack::kTRDout ? 1 : 0, status &AliESDtrack::kTRDrefit ? 1 : 0, status &AliESDtrack::kTRDpid ? 1 : 0);*/
   if((status & AliESDtrack::kTRDin) != 0){
@@ -655,9 +658,8 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
     if(!(hMethod = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsSTA))))
       AliWarning("Method: StandAlone.  Histogram not processed!");
   }
-  Int_t nTracklets = fkTrack->GetNumberOfTracklets();
-  h->Fill(nTracklets);
   hMethod->Fill(nTracklets);
+
   if(fDebugLevel > 3){
     if(nTracklets == 1){
       // If we have one Tracklet, check in which layer this happens
