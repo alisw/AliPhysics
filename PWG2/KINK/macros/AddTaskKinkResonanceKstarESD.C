@@ -1,0 +1,66 @@
+AliAnalysisTaskKinkResonance *AddTaskKinkResonanceKstarESD(Short_t lCollidingSystems=0 /*0 = pp, 1 = AA*/)
+{
+// Creates, configures and attaches to the train a kink resonance task.
+// Get the pointer to the existing analysis manager via the static access method.
+//==============================================================================
+AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+ if (!mgr) {
+ ::Error("AddTaskKinkResonanceKstarESD", "No analysis manager to connect to.");
+return NULL;
+}
+
+// Check the analysis type using the event handlers connected to the analysis manager.
+//==============================================================================
+if (!mgr->GetInputEventHandler()) {
+ ::Error("AddTaskKinkResonanceKstarESD", "This task requires an input event handler");
+ return NULL;
+}
+TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+ if (type != "ESD") {
+ ::Error("AddTaskKinkResonanceKstarESD", "This task needs an ESD input handler");
+return NULL;
+}
+if (!mgr->GetMCtruthEventHandler()) {
+ ::Error("AddTaskKinkResonanceKstarESD", "This task needs an MC handler");
+ return NULL;
+}
+
+// Setup the analysis object
+  
+  AliResonanceKink  *kinkResonanceObjectKESD=new AliResonanceKink();
+  kinkResonanceObjectKESD->InitOutputHistograms(60, 0.6, 1.2);
+  kinkResonanceObjectKESD->SetPDGCodes(kKPlus, kPiPlus, AliResonanceKink::kKstar0); 
+  kinkResonanceObjectKESD->SetAnalysisType("ESD"); // "ESD" or "MC"
+  kinkResonanceObjectKESD->SetMaxNsigmaToVertex(4.0);
+  kinkResonanceObjectKESD->SetMaxDCAxy(3.0);
+  kinkResonanceObjectKESD->SetMaxDCAzaxis(3.0);
+  kinkResonanceObjectKESD->SetPtTrackCut(0.25);
+  kinkResonanceObjectKESD->SetMinTPCclusters(50);
+  kinkResonanceObjectKESD->SetMaxChi2PerTPCcluster(3.5);
+  kinkResonanceObjectKESD->SetMaxCov0(2.0);
+  kinkResonanceObjectKESD->SetMaxCov2(2.0);
+  kinkResonanceObjectKESD->SetMaxCov5(0.5);
+  kinkResonanceObjectKESD->SetMaxCov9(0.5);
+  kinkResonanceObjectKESD->SetMaxCov14(2.0);
+
+// Create and configure the task
+AliAnalysisTaskKinkResonance *taskresonanceKstarESD = new AliAnalysisTaskKinkResonance("TaskResKstarESDKinkPID");
+taskresonanceKstarESD->SetAnalysisKinkObject(kinkResonanceObjectKESD);
+mgr->AddTask(taskresonanceKstarESD);
+
+// Create ONLY the output containers for the data produced by the task.
+// Get and connect other common input/output containers via the manager as below
+//==============================================================================
+TString outname = "PP";
+if (lCollidingSystems) outname = "AA";
+if (mgr->GetMCtruthEventHandler()) outname += "-MC-";
+outname += "KinkResonanceList.root";
+AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("KinkResKstarESD",
+							   TList::Class(),
+							   AliAnalysisManager::kOutputContainer,
+						 	   outname );
+
+mgr->ConnectInput(taskresonanceKstarESD, 0, mgr->GetCommonInputContainer());
+mgr->ConnectOutput(taskresonanceKstarESD, 1, coutput1);
+return taskresonanceKstarESD;
+} 
