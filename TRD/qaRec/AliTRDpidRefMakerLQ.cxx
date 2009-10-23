@@ -180,11 +180,35 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
   pdfs->cd();
 
   //TCanvas *cc = new TCanvas("cc", "", 500, 500);
-
+  LinkPIDdata();
   Float_t *data[] = {0x0, 0x0};
+  // allocate storage
+  data[0] = new Float_t[kMaxStat];data[1] = new Float_t[kMaxStat];
   for(Int_t ip=AliTRDCalPID::kNMom; ip--; ){ 
     for(Int_t is=AliPID::kSPECIES; is--;) {
-      Int_t n = fData->Draw("dEdx[0]:dEdx[1]", Form("s==%d", is), "goff");
+      Int_t n(0); // index of data
+      for(Int_t itrk; itrk<fData->GetEntries() & n<kMaxStat; itrk++){
+        if(!(fData->GetEntry(itrk))) continue;
+        if(fPIDbin!=is) continue;
+        for(Int_t ily=fPIDdataArray->fNtracklets; ily--;){
+          if((fPIDdataArray->fData[ily].fPLbin & 0xf)!= ip) continue;
+          
+          Float_t dedx[] = {0., 0.};
+          for(Int_t islice=AliTRDCalPID::kNSlicesNN; islice--;){
+            Int_t jslice = islice>kNN2LQtransition;
+            dedx[jslice]+=fPIDdataArray->fData[ily].fdEdx[islice];
+          }
+          
+          // check data integrity
+          if(dedx[0]<1.e-30) continue;
+          if(dedx[1]<1.e-30) continue;
+
+          // store data
+          data[0][n] = TMath::Log(dedx[0]);
+          data[1][n] = TMath::Log(dedx[1]);
+          n++; if(n==kMaxStat) break;
+        }
+      }
 
       // estimate bucket statistics
       Int_t nb(kMinBuckets), // number of buckets
@@ -197,13 +221,6 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
       if(ns<Int_t(kMinStat)){
         AliWarning(Form("Not enough entries [%d] for %s[%d].", n, AliPID::ParticleShortName(is), ip));
         continue;
-      }
-      // allocate storage
-      data[0] = new Float_t[n];data[1] = new Float_t[n];
-      // fill
-      Double_t *v0 = fData->GetV1(), *v1 = fData->GetV2();
-      for(Int_t in=n; in--;){
-        data[0][in]=v0[in]; data[1][in]=v1[in];
       }
 
       // build PDF
@@ -243,10 +260,9 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
       // write results to output array
       //pdf.GetStatus();
       pdf.Write(Form("%s[%d]", AliPID::ParticleShortName(is), ip));
-
-      delete [] data[0]; delete [] data[1];
     }
   }
+  delete [] data[0]; delete [] data[1];
   pdfs->Write();
   fCalib->Close(); delete fCalib;
 

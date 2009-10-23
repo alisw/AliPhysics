@@ -27,8 +27,10 @@ class TObjArray;
 class AliTRDpidRefMakerLQ : public AliTRDpidRefMaker {
 public:
   enum ETRDpidRefMakerLQsteer{
-    kMinStat    = 50  // minimum statistics/bucket 14%
-   ,kMinBuckets = 450 // minimum number of buckets [lambda(6)*alpha(1.5)*regions(50)]
+    kMaxStat    = 180000 // maximum statistics/PID bin
+   ,kMinStat    = 50     // minimum statistics/bucket 14%
+   ,kMinBuckets = 450    // minimum number of buckets [lambda(6)*alpha(1.5)*regions(50)]
+   ,kNN2LQtransition = 4 // index of NN slices where first LQ slice ends 
   };
   AliTRDpidRefMakerLQ();
   ~AliTRDpidRefMakerLQ();
