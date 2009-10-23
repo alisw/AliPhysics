@@ -28,7 +28,7 @@
 
 class AliAnalysisTaskFemto : public AliAnalysisTask {
  public:
-  AliAnalysisTaskFemto() : AliAnalysisTask(), fESD(0), fAOD(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0) {}
+ AliAnalysisTaskFemto() : AliAnalysisTask(), fESD(0), fAOD(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0), fConfigMacro(0) {}
     AliAnalysisTaskFemto(const char *name, const char *aConfigMacro);
   AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask);
   virtual ~AliAnalysisTaskFemto();
