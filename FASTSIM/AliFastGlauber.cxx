@@ -50,7 +50,6 @@
 // from AliRoot
 #include "AliFastGlauber.h"
 // from root
-#include <Riostream.h>
 #include <TCanvas.h>
 #include <TF1.h>
 #include <TF2.h>
@@ -59,7 +58,6 @@
 #include <TH2F.h>
 #include <TLegend.h>
 #include <TMath.h>
-#include <TROOT.h>
 #include <TRandom.h>
 #include <TStyle.h>
 
@@ -1039,7 +1037,7 @@ Double_t AliFastGlauber::Binaries(Double_t b) const
   //
   // Return number of binary hard collisions normalized to 1 at b=0
   //
-  if(b==0) b=1e-4;
+  if(b < 1.e-4) b = 1e-4;
   return fgWSN->Eval(b)/fgWSN->Eval(1e-4);
 }
 
@@ -1086,7 +1084,7 @@ Double_t AliFastGlauber::GetNumberOfBinaries(Double_t b) const
   //
   // Return number of binary hard collisions at b
   //
-  if(b==0) b=1e-4;
+  if(b<1.e-4) b=1e-4;
   return fgWSN->Eval(b);
 }
 
@@ -1095,7 +1093,7 @@ Double_t AliFastGlauber::Participants(Double_t  b) const
   //
   // Return the number of participants normalized to 1 at b=0
   //
-  if(b==0) b=1e-4;
+  if(b<1.e-4) b=1e-4;
   return (fgWParticipants->Eval(b)/fgWParticipants->Eval(1e-4));
 }
 
@@ -1104,7 +1102,7 @@ Double_t AliFastGlauber::GetNumberOfParticipants(Double_t  b) const
   //
   // Return the number of participants for impact parameter b
   //
-  if(b==0) b=1e-4;
+  if(b<1.e-4) b=1e-4;
   return (fgWParticipants->Eval(b));
 }
 
@@ -1113,7 +1111,7 @@ Double_t AliFastGlauber::GetNumberOfCollisions(Double_t  b) const
   //
   // Return the number of collisions for impact parameter b
   //
-  if(b==0) b=1e-4;
+  if(b<1.e-4) b=1e-4;
   return (fgWStaa->Eval(b)*fSigmaNN);
 }
 
