@@ -76,13 +76,7 @@
 #include <TF1.h>
 
 #include "AliESDtrack.h"
-#include "AliTrackPointArray.h"
-#include "AliGeomManager.h"
-#include "AliTrackFitterKalman.h"
-#include "AliTrackFitterRieman.h"
-#include "AliESDfriendTrack.h"
 #include "AliESDEvent.h"
-#include "AliESDVertex.h"
 #include "AliExternalTrackParam.h"
 
 #include "AliRelAlignerKalman.h"
@@ -1358,6 +1352,7 @@ Bool_t AliRelAlignerKalman::Merge( const AliRelAlignerKalman* al )
   fPH = ph;
 
   //merge stats
+  if (!success) return kFALSE; //no point in merging stats if merge not succesful
   fNProcessedEvents += al->fNProcessedEvents;
   fNUpdates += al->fNUpdates;
   fNOutliers += al->fNOutliers;

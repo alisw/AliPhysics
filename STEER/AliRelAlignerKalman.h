@@ -14,10 +14,10 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <TMath.h>
-#include <TObject.h>
 #include <TVectorD.h>
 #include <TMatrix.h>
 
+class TObject;
 class AliExternalTrackParam;
 class AliESDEvent;
 class AliESDtrack;
@@ -114,8 +114,8 @@ public:
     Bool_t IsPositiveDefinite( const TMatrixD& mat ) const;
     void SetTimeStamp( const UInt_t ts ) { fTimeStamp = ts; }
     UInt_t GetTimeStamp() const {return fTimeStamp;}
-    void SetRunNumber( const UInt_t rn ) { fRunNumber = rn; }
-    UInt_t GetRunNumber() const {return fRunNumber;}
+    void SetRunNumber( const Int_t rn ) { fRunNumber = rn; }
+    Int_t GetRunNumber() const {return fRunNumber;}
     Int_t Compare(const TObject *obj) const;
     Bool_t IsSortable() const { return kTRUE; }
     
@@ -172,7 +172,7 @@ private:
     Int_t fNProcessedEvents; //number of processed events
     Int_t fTrackInBuffer; //!number of tracks in buffer
     UInt_t fTimeStamp;    //time stamp
-    UInt_t fRunNumber;    //run number
+    Int_t fRunNumber;    //run number
 
     //TPC stuff
     Double_t fTPCvd; //TPC drift velocity
