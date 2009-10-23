@@ -29,9 +29,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "TString.h"
 #include "TFile.h"
-#include "TTreeStream.h"
 
 #include "AliTRDrawFastStream.h"
 #include "AliTRDgeometry.h"
@@ -43,7 +41,6 @@
 #include "AliTRDdigitsParam.h"
 #include "AliTRDrawTPStream.h"
 
-#include "AliLog.h"
 #include "AliRawReader.h"
 
 #define END_OF_TRACKLET_MARKEROLD 0xaaaaaaaa
@@ -128,12 +125,6 @@ Short_t AliTRDrawFastStream::fgROBordering[] =
   {
     0, 1, 2, 3
   };
-Bool_t  AliTRDrawFastStream::fDumpingEnable = kFALSE;
-Int_t  AliTRDrawFastStream::fDumpingSM = -1;
-Int_t  AliTRDrawFastStream::fDumpingStack = -1;
-Int_t  AliTRDrawFastStream::fDumpingLayer = -1;
-Int_t  AliTRDrawFastStream::fDumpingROB = -1;
-Int_t  AliTRDrawFastStream::fDumpingMCM = -1;
 
 Int_t  AliTRDrawFastStream::fgLastHC = -1;
 Int_t  AliTRDrawFastStream::fgLastROB = -1;
@@ -357,7 +348,9 @@ Bool_t AliTRDrawFastStream::SkipWords(UInt_t iw)
 //------------------------------------------------------------
 Bool_t AliTRDrawFastStream::SetReader(AliRawReader *reader)
 {
-
+  // 
+  // set raw reader pointer
+  // 
   if (reader != 0) {
     fRawReader = reader;
     if (fRawReader) {
@@ -1805,6 +1798,7 @@ Bool_t AliTRDrawFastStream::SkipMCMdata(UInt_t iw)
 //------------------------------------------------------------
 Bool_t AliTRDrawFastStream::SetGlobalNTimebins()
 {
+  // get number of time bin info from HC headers then set 
   Int_t nHCs=0;
   while (SetNTimebins()==kFALSE){
     if (fgDebugFlag) AliDebug(11,Form("Failed to get number of time bin information from the %sth HC",nHCs));
