@@ -1,5 +1,5 @@
 {
-  gSystem->Load("libHFE.so");
+  gSystem->Load("libPWG3hfe.so");
   // Set the include paths
-  gROOT->ProcessLine(".include HFE");
+  gROOT->ProcessLine(".include PWG3hfe");
 }
