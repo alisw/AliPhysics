@@ -26,6 +26,7 @@ public:
 
   const AliGRPObject* GetGRPData() const { return fGRPData; }
 
+  void        SetGRPEntry(AliGRPObject* source);
   Bool_t      ReadGRPEntry();
   Bool_t      SetMagField();
 

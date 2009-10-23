@@ -117,6 +117,11 @@ Bool_t AliGRPManager::SetMagField()
     }
   }
   //
+  if (!fGRPData) {
+    AliError("GRP Data is not loaded");
+    return kFALSE;
+  }
+  //
   // Construct the field map out of the information retrieved from GRP.
   Bool_t ok = kTRUE;
   // L3
@@ -227,3 +232,16 @@ AliRunInfo* AliGRPManager::GetRunInfo()
 
   return new AliRunInfo(lhcState, beamType, beamEnergy, runType, activeDetectors);
 }
+
+//_____________________________________________________________________________
+void AliGRPManager::SetGRPEntry(AliGRPObject* source)
+{
+  // Create a GRP entry from the extrnaly provide GRP object
+  // To be used by HLT to create an online GRP instance
+  if (!source) return;
+  if (fGRPData) delete fGRPData;
+  fGRPData = new AliGRPObject(*source);
+  AliInfo("Created GRP Data from external object");
+  //
+}
+ 
