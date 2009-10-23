@@ -54,7 +54,7 @@ public:
     kTrackerBusPatchOccupancy = 4, ///< Bus patch occupancies
     kTrackerBusPatchNofPads   = 5, ///< Number of pads per bus patch
     kTrackerBusPatchNofManus  = 6, ///< Number of manus per bus patch
-    kTrackerBusPatchConfig    = 7, ///< Configuration of the tracker
+    kTrackerBusPatchConfig    = 7 ///< Configuration of the tracker
   };
          
   /// Rec points histograms indices

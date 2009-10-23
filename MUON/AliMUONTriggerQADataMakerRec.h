@@ -81,7 +81,7 @@ public:
   enum ERecPoints { 
     kNAnalyzedEvents           = 0, ///< Number of analyzed events per event specie
     kTriggerRPCtrips           = 1, ///< Trips in trigger chambers
-    kTriggerRPChv              = 2, ///< Trigger chamber HV index
+    kTriggerRPChv              = 2  ///< Trigger chamber HV index
   };
   
 //  /// ESD histograms indices

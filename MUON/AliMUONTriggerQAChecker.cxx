@@ -29,7 +29,7 @@
 
 #include "AliRecoParam.h"
 #include "AliMUONTriggerQADataMakerRec.h"
-#include "AliQAV1.h"
+#include "AliQAv1.h"
 #include "TH1.h"
 #include "TPaveText.h"
 #include "TString.h"
