@@ -21,20 +21,12 @@
 ///
 /// Implementation of AliQACheckerBase for MCH and MTR
 ///
-/// For the moment we only implement the checking of raw data QA for the tracker
-/// by looking at the occupancy at the manu level.
-/// We count the number of manus above a given occupancy threshold, and
-/// depending on that number, the resulting QA flag is warning, error or fatal.
-/// (there's no "info" type in this case).
-///
 /// \author Laurent Aphecetche, Subatech
 
-#include "AliLog.h"
-#include "AliMUONVTrackerData.h"
-#include "AliMpManuIterator.h"
-#include "AliQAv1.h"
-#include <TDirectory.h>
-#include <TH1.h>
+#include "AliMUONRecoParam.h"
+#include "AliMUONTrackerQAChecker.h"
+#include "AliMUONTriggerQAChecker.h"
+#include "AliCodeTimer.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONQAChecker)
@@ -42,196 +34,86 @@ ClassImp(AliMUONQAChecker)
 
 //__________________________________________________________________
 AliMUONQAChecker::AliMUONQAChecker() : 
-    AliQACheckerBase("MUON","MUON Quality Assurance Data Maker") 
+    AliQACheckerBase("MUON","MUON Quality Assurance Data Maker"),
+fCheckers(new TObjArray)
 {
 	/// ctor
+  fCheckers->SetOwner(kTRUE);
+  fCheckers->Add(new AliMUONTrackerQAChecker());
+  fCheckers->Add(new AliMUONTriggerQAChecker());
 }          
 
 //__________________________________________________________________
 AliMUONQAChecker::~AliMUONQAChecker() 
 {
 	/// dtor
+  delete fCheckers;
 }
-
-//__________________________________________________________________
-AliMUONQAChecker::AliMUONQAChecker(const AliMUONQAChecker& qac) : 
-    AliQACheckerBase(qac.GetName(), qac.GetTitle()) 
-{
-	/// copy ctor 
-}   
 
 //______________________________________________________________________________
 Double_t *
-AliMUONQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/)
+AliMUONQAChecker::Check(AliQAv1::ALITASK_t index, 
+                        TObjArray** list, 
+                        AliDetectorRecoParam * recoParam)
 {
   /// Check objects in list
   
-  if ( index == AliQAv1::kRAW ) 
+  AliCodeTimerAuto(AliQAv1::GetTaskName(index),0);
+  
+  TIter next(fCheckers);
+  AliMUONVQAChecker* qac;
+  AliMUONRecoParam* muonRecoParam = static_cast<AliMUONRecoParam*>(recoParam);
+  AliMUONVQAChecker::ECheckCode* ecc(0x0);
+  Double_t* rv = new Double_t[AliRecoParam::kNSpecies];
+  for ( Int_t i = 0; i < AliRecoParam::kNSpecies; ++i ) 
   {
-    return CheckRaws(list);
+    rv[i] = -1.0;
   }
   
-  if ( index == AliQAv1::kREC)
+  while ( ( qac = static_cast<AliMUONVQAChecker*>(next())) )
   {
-    return CheckRecPoints(list);
-  }
-  
-  if ( index == AliQAv1::kESD )
-  {
-    return CheckESD(list);
-  }
-  
-  AliWarning(Form("Checker for task %d not implement for the moment",index));
-  return NULL;
-}
-
-//______________________________________________________________________________
-TH1* 
-AliMUONQAChecker::GetHisto(TObjArray* list, const char* hname, Int_t specie) const
-{
-  /// Get a given histo from the list
-  TH1* h = static_cast<TH1*>(list->FindObject(Form("%s_%s",AliRecoParam::GetEventSpecieName(specie),hname)));
-  if (!h)
-  {
-    AliError(Form("Did not find expected histo %s",hname));
-  }
-  return h;
-}
-
-//______________________________________________________________________________
-Double_t *
-AliMUONQAChecker::CheckRecPoints(TObjArray ** list)
-{
-  /// Check rec points
-  /// Very binary check for the moment. 
-  
-  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    rv[specie] = 1.0 ; 
-  
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    TH1* h = GetHisto(list[specie],"hTrackerNumberOfClustersPerDE",specie);
-  
-    if ( !h ) rv[specie] =  0.75; // only a warning if histo not found, in order not to kill anything because QA failed...
-  
-    else if ( h->GetMean() == 0.0 ) rv[specie] =  MarkHisto(*h,0.0);
-  }
-  return rv;
-}
-
-//______________________________________________________________________________
-Double_t 
-AliMUONQAChecker::MarkHisto(TH1& histo, Double_t value) const
-{
-  /// Mark histo as originator of some QA error/warning
-  
-  if ( value != 1.0 )
-  {
-    histo.SetBit(AliQAv1::GetQABit());
-  }
-  
-  return value;
-}
-
-//______________________________________________________________________________
-Double_t *
-AliMUONQAChecker::CheckESD(TObjArray ** list)
-{
-  /// Check ESD
-  
-  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    rv[specie] = 1.0 ; 
-  
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    
-    TH1* h = GetHisto(list[specie],"hESDnTracks",specie);
-  
-    if (!h) rv[specie] = 0.75;
-  
-    else if ( h->GetMean() == 0.0 ) rv[specie] =  MarkHisto(*h,0.0); // no track -> fatal
-  
-    h = GetHisto(list[specie],"hESDMatchTrig",specie);
-  
-    if (!h) rv[specie] =  0.75;
-  
-    else if (h->GetMean() == 0.0 ) rv[specie] = MarkHisto(*h,0.25); // no trigger matching -> error
-  }
-  return rv;
-}
-
-//______________________________________________________________________________
-Double_t *
-AliMUONQAChecker::CheckRaws(TObjArray ** list)
-{
-  /// Check raws
-
-  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    rv[specie] = 1.0 ; 
- 
-  Bool_t IsAnyTrackerDataPresent = kFALSE;
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    TIter next(list[specie]);
-    TObject* object;
-    AliMUONVTrackerData* data(0x0);
-  
-    while ( (object=next()) && !data )
-      {
-        if (object->InheritsFrom("AliMUONVTrackerData"))
-          {
-            data = static_cast<AliMUONVTrackerData*>(object);
-          }
-      }
-
-    if ( !data ) 
-      {
-        AliWarning(Form("Did not find TrackerData for specie %s !",AliRecoParam::GetEventSpecieName(specie)));
-        continue;
-      }
-  
-    IsAnyTrackerDataPresent = kTRUE;
-    AliMpManuIterator it;
-    Int_t detElemId;
-    Int_t manuId;
-    Int_t n50(0); // number of manus with occupancy above 0.5
-    Int_t n75(0); // number of manus with occupancy above 0.75
-    Int_t n(0); // number of manus with some occupancy
-  
-    while ( it.Next(detElemId,manuId) )
-      {
-        Float_t occ = data->Manu(detElemId,manuId,2);
-        if (occ > 0 ) ++n;
-        if (occ >= 0.5 ) ++n50;
-        if (occ >= 0.75 ) ++n75;    
-      }
-
-    AliDebug(1,Form("n %d n50 %d n75 %d",n,n50,n75));
-  
-    if ( n == 0 ) 
-      {
-        AliError("Oups. Got zero occupancy in all manus ?!");
-        rv[specie] =  0.0;
-      }
-
-    if ( n75 ) 
-      {
-        AliError(Form("Got %d manus with occupancy above 0.75",n75));
-        rv[specie] =  0.1;
-      }
-    
-    if ( n50 ) 
-      {
-        AliWarning(Form("Got %d manus with occupancy above 0.5",n50));
-        rv[specie] =  0.9;
-      }
-  }
-  
-  if ( !IsAnyTrackerDataPresent ) 
-    {
-      AliError("Did not find any TrackerData in the list !");
-      return NULL;
+    if ( index == AliQAv1::kRAW ) 
+    {    
+      ecc = qac->CheckRaws(list,muonRecoParam);
     }
+
+    if ( index == AliQAv1::kREC)
+    {
+      ecc = qac->CheckRecPoints(list,muonRecoParam);
+    }
+    
+    if ( index == AliQAv1::kESD )
+    {
+      ecc = qac->CheckESD(list,muonRecoParam);
+    }
+    
+    if ( ecc ) 
+    {
+      for ( Int_t i = 0; i < AliRecoParam::kNSpecies; ++i ) 
+      {
+        switch ( ecc[i] ) 
+        {
+          case AliMUONVQAChecker::kInfo:
+            rv[i] = 1.0;
+            break;
+          case AliMUONVQAChecker::kWarning:
+            rv[i] = 0.75;
+            break;
+          case AliMUONVQAChecker::kError:
+            rv[i] = 0.25;
+            break;
+          case AliMUONVQAChecker::kFatal:
+            rv[i] = -1.0;
+            break;
+          default:
+            rv[i] = -1.0;
+            break;
+        }
+      }
+    }
+  }
+  
+  delete[] ecc;
   
   return rv;
 }

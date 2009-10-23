@@ -286,6 +286,16 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// Retrieve high value of DE occupancy limit
   Float_t DEOccupancyHighLimit() const { return fDEOccupancyLimits[1]; }
   
+  /// Set the missing pad fraction limit
+  void SetMissingPadFractionLimit(float v) { fMissingPadFractionLimit = v; }
+  /// Get the missing pad fraction limit
+  Float_t MissingPadFractionLimit() const { return fMissingPadFractionLimit; }
+  
+  /// Set the fraction of buspatches outside the occupancy limits
+  void SetFractionOfBuspatchOutsideOccupancyLimit(float v) { fFractionOfBuspatchOutsideOccupancyLimit = v; }
+  /// Get the fraction of buspatches outside the occupancy limits
+  Float_t FractionOfBuspatchOutsideOccupancyLimit() const { return fFractionOfBuspatchOutsideOccupancyLimit; }
+
   virtual void Print(Option_t *option = "") const;
   
  private:
@@ -378,14 +388,17 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   Double32_t fManuOccupancyLimits[2]; ///< low and high thresholds for manu occupancy cut
   Double32_t fBuspatchOccupancyLimits[2]; ///< low and high thresholds for bus patch occupancy cut
   Double32_t fDEOccupancyLimits[2]; ///< low and high thresholds for DE occupancy cut
-  
+
+  Double32_t fMissingPadFractionLimit; ///< above this fraction, we consider we have too few pads alive...
+  Double32_t fFractionOfBuspatchOutsideOccupancyLimit; ///< above this limit, we consider we have too many buspatches out of the allowed occupancy range
+
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
   void SetCosmicParam();
   void SetCalibrationParam();
   
-  ClassDef(AliMUONRecoParam,14) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,15) // MUON reco parameters
 };
 
 #endif

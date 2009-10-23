@@ -61,8 +61,14 @@
 #pragma link C++ class AliMUONPadStatusMapMaker+;
 
 // QA
+#pragma link C++ class AliMUONVQADataMakerRec+;
+#pragma link C++ class AliMUONVQAChecker+;
 #pragma link C++ class AliMUONQADataMakerRec+;
 #pragma link C++ class AliMUONQAChecker+;
+#pragma link C++ class AliMUONTrackerQADataMakerRec+;
+#pragma link C++ class AliMUONTrackerQAChecker+;
+#pragma link C++ class AliMUONTriggerQADataMakerRec+;
+#pragma link C++ class AliMUONTriggerQAChecker+;
 
 #pragma link C++ class AliMUONVTrackerDataMaker+;
 #pragma link C++ class AliMUONTrackerDataMaker+;

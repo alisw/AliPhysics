@@ -16,31 +16,29 @@
 
 class TH1;
 class TObjArray;
+class AliMUONRecoParam;
+class AliMUONVQAChecker;
 
 class AliMUONQAChecker: public AliQACheckerBase {
 
 public:
   AliMUONQAChecker();
-  AliMUONQAChecker(const AliMUONQAChecker& qac);
   virtual ~AliMUONQAChecker();
 
-  virtual void   Init(const AliQAv1::DETECTORINDEX_t det) ; 
+  virtual void Init(const AliQAv1::DETECTORINDEX_t det); 
 
 protected:
 
-    //using AliQACheckerBase::Check;
-  
-  virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * recoParam) ;
-  virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;	
-	
-  Double_t * CheckRaws(TObjArray** list);
-  Double_t * CheckRecPoints(TObjArray** list);
-  Double_t * CheckESD(TObjArray** list);
-  TH1* GetHisto(TObjArray* list, const char* hname, Int_t specie) const;
-  Double_t MarkHisto(TH1& histo, Double_t value) const;
-  
+  virtual Double_t* Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * recoParam); 
+
+  virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const;	
+
 private:
+  AliMUONQAChecker(const AliMUONQAChecker& qac);
+  AliMUONQAChecker& operator=(const AliMUONQAChecker& qac);
   
+  TObjArray* fCheckers; ///< internal checkers
+
   ClassDef(AliMUONQAChecker,1)  // MUON quality assurance checker
 
 };
