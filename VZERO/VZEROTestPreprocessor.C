@@ -163,7 +163,7 @@ TMap* CreateDCSAliasMap()
 		valueSet->Add(dcsVal);
 		
 		if(aliasName.Contains("HV")) {
-			dcsVal = new AliDCSValue((Float_t) (val+random.Gaus(0,10)), timeStamp+10);
+			dcsVal = new AliDCSValue((Float_t) (val+random.Gaus(0,100)), timeStamp+10);
 			valueSet->Add(dcsVal);
 		}
 		

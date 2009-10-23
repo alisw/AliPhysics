@@ -49,6 +49,7 @@ AliVZERODataDCS::AliVZERODataDCS():
 	fIsProcessed(kFALSE)
 {
   // Default constructor
+  for(int i=0;i<kNHvChannel;i++) fDeadChannel[i] = kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -62,6 +63,7 @@ AliVZERODataDCS::AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime):
 {
 
   // constructor with arguments
+  	for(int i=0;i<kNHvChannel;i++) fDeadChannel[i] = kFALSE;
 
 	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
 	TTimeStamp(startTime).AsString(),
@@ -116,9 +118,14 @@ void AliVZERODataDCS::ProcessData(TMap& aliasMap){
     UInt_t iValue=0;
     while((aValue = (AliDCSValue*) iterarray.Next())) {
    		values[iValue] = aValue->GetFloat();
+		if(iValue>0) {
+			Float_t variation ;
+			if(values[iValue-1]>0.) variation = TMath::Abs(values[iValue]-values[iValue-1])/values[iValue-1];
+			if(variation > 0.10) fDeadChannel[GetOfflineChannel(iAlias)] = kTRUE;
+		}
    		times[iValue] = (Double_t) (aValue->GetTimeStamp());
 		fHv[iAlias]->Fill(values[iValue]);
-		printf("%s %f\n",fAliasNames[iAlias].Data(),values[iValue]);
+		printf("%s %f Dead=%d\n",fAliasNames[iAlias].Data(),values[iValue],fDeadChannel[GetOfflineChannel(iAlias)]);
    		iValue++;
     }      
     CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs 

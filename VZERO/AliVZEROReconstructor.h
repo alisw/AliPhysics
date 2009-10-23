@@ -51,6 +51,9 @@ public:
   AliVZEROCalibData *GetCalibData() const; 
   AliVZEROTriggerData *GetTriggerData() const; 
 
+  enum {kInvalidADC   =  -1024,
+        kInvalidTime  =  -1};
+
 protected:
   AliESDVZERO*        fESDVZERO;       // ESD output object  
   AliESDEvent*             fESD;       // ESD object
@@ -65,7 +68,7 @@ private:
 
   Int_t              fCollisionMode;  // =0->p-p, =1->A-A
   Float_t            fBeamEnergy;     // beam energy
-  
+    
   ClassDef(AliVZEROReconstructor, 0)  // class for the VZERO reconstruction
 };
 

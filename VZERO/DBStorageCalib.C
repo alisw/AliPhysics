@@ -100,6 +100,17 @@ Float_t WidthHVs[64] =
   
 calibda->SetWidthHV(WidthHVs);
 
+Bool_t DeadChannels[64] =  
+{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0 };
+  
+calibda->SetDeadMap(DeadChannels);
+
 Float_t GainFactors[128] =
 { 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
   50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 
@@ -151,7 +162,7 @@ AliCDBId id("VZERO/Calib/Data",0,9999999);
 //set to AliVZEROCalibData by the CDB classes during storage 
 md->SetResponsible("Brigitte Cheynis");
 md->SetBeamPeriod(0);
-md->SetAliRootVersion("August 2008");
+md->SetAliRootVersion("October 2009");
 md->SetComment("Prototype");
 md->PrintMetaData();
 

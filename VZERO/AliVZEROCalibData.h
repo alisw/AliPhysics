@@ -35,6 +35,8 @@ class AliVZEROCalibData: public TNamed {
   Float_t* GetMeanHV()   const {return (float*)fMeanHV;} 
   Float_t  GetWidthHV(Int_t channel)	const {return fWidthHV[channel];}
   Float_t* GetWidthHV()   const {return (float*)fWidthHV;}
+  Bool_t   IsChannelDead(Int_t channel)	const {return fDeadChannel[channel];}
+  Bool_t*  GetDeadMap()   const {return (bool*)fDeadChannel;} 
    
   Float_t  GetGain(Int_t channel)	const {return fGain[channel];}
   Float_t* GetGain()   const {return (float*)fGain;}  
@@ -55,6 +57,8 @@ class AliVZEROCalibData: public TNamed {
   void     SetMeanHV(Float_t* MeanHV);  
   void     SetWidthHV(Float_t val, Int_t channel) {fWidthHV[channel]=val;}
   void     SetWidthHV(Float_t* WidthHV); 
+  void     SetDeadChannel(Bool_t val, Int_t channel) {fDeadChannel[channel]=val;}
+  void     SetDeadMap(Bool_t* deadMap);  
    
   void 	   SetGain(Float_t val, Int_t channel) {fGain[channel]=val;}
   void 	   SetGain(Float_t* Gain);  
@@ -76,8 +80,9 @@ class AliVZEROCalibData: public TNamed {
   Float_t  fGain[128];	       // Gain factor used in digitization only  
   Float_t  fTimeOffset[64];
   Float_t  fTimeGain[64];
+  Bool_t   fDeadChannel[64];
 
-  ClassDef(AliVZEROCalibData,2)    // VZERO Calibration data
+  ClassDef(AliVZEROCalibData,3)    // VZERO Calibration data
 };
 
 #endif

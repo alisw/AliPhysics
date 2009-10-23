@@ -147,6 +147,13 @@ void AliVZEROCalibData::SetWidthHV(Float_t* WidthHV)
 }
 
 //________________________________________________________________
+void AliVZEROCalibData::SetDeadMap(Bool_t* deadMap) 
+{
+  if(deadMap) for(int t=0; t<64; t++) fDeadChannel[t] = deadMap[t];
+  else for(int t=0; t<64; t++) fDeadChannel[t] = kFALSE;
+}
+
+//________________________________________________________________
 void AliVZEROCalibData::SetGain(Float_t* Gain) 
 {
   if(Gain) for(int t=0; t<128; t++) fGain[t] = Gain[t];

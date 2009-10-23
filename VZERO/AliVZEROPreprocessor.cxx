@@ -105,7 +105,8 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 	// Writes VZERO PMs HV values into VZERO calibration object
 	calibData->SetMeanHV(fData->GetMeanHV());
 	calibData->SetWidthHV(fData->GetWidthHV());
-    
+  	calibData->SetDeadMap(fData->GetDeadMap());
+	   
    // *************** From DAQ ******************
    
 	TString sourcesId = "V00da_results";

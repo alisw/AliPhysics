@@ -160,9 +160,14 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
      // Channels(aliroot numbering) will be ordered in the tree
      for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
+         if(fCalibData->IsChannelDead(iChannel)){
+	    adc[iChannel]  = (Float_t) kInvalidADC; 
+	    time[iChannel] = (Float_t) kInvalidTime;	 
+         }
          new ((*digitsArray)[digitsArray->GetEntriesFast()])
              AliVZEROdigit(iChannel, adc[iChannel], time[iChannel],
 	                   width[iChannel], BBFlag[iChannel], BGFlag[iChannel],integrator[iChannel]);
+        
      }          
      digitsTree->Fill();
   }

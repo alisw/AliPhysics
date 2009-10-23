@@ -20,7 +20,7 @@ class TH1F;
 
 class AliVZERODataDCS : public TObject {
 public:
-  enum {kNAliases=64,kNGraphs=64};
+  enum {kNAliases=64,kNGraphs=64,kNHvChannel=64,kNLvChannel=16};
   enum {kHvMin=0, kHvMax=2000};
   
   AliVZERODataDCS();
@@ -43,6 +43,7 @@ public:
   
   Float_t* GetMeanHV()    const {return (float*)fMeanHV;}
   Float_t* GetWidthHV()   const {return (float*)fWidthHV;}
+  Bool_t * GetDeadMap()   const {return (bool*)fDeadChannel;}
 
 // Getter of Offline Channel number as used in aliroot (defined by aliroot 
 // numbering convention) from DCS Channel number
@@ -73,13 +74,14 @@ private:
   
   TString fAliasNames[kNAliases];        // aliases for DCS data
   TClonesArray fGraphs;		         // Array containing  graphics
-  TH1F *fHv[kNAliases];                  // High Voltage histograms
-  Float_t fMeanHV[kNAliases];            // High Voltage mean values
-  Float_t fWidthHV[kNAliases];           // High Voltage widths
- 
+  TH1F *fHv[kNHvChannel];                  // High Voltage histograms
+  Float_t fMeanHV[kNHvChannel];            // High Voltage mean values
+  Float_t fWidthHV[kNHvChannel];           // High Voltage widths
+  Bool_t  fDeadChannel[kNHvChannel];       // Dead Map 
+  
   Bool_t fIsProcessed;                   // bool to know processing status
   
-  ClassDef(AliVZERODataDCS, 2);
+  ClassDef(AliVZERODataDCS, 3);
 };
 
 #endif
