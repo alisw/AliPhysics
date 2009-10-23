@@ -18,13 +18,13 @@ void RunAnalysisAODVertexingHF()
 
   gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/vertexingHF -g"); 
   //
-  TString trainName = "Test";
+  TString trainName = "D2H";
   TString analysisMode = "grid"; // "local", "grid", or "proof"
   TString inputMode    = "list"; // "list", "xml", or "dataset"
-  Long64_t nentries=1234567890,firstentry=0;
+  Long64_t nentries=1000,firstentry=0;
   Bool_t useParFiles=kFALSE;
   Bool_t useAlienPlugin=kTRUE;
-  TString pluginmode="test";
+  TString pluginmode="full";
   Bool_t saveProofToAlien=kFALSE;
   TString proofOutdir = "";
   TString loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/";
@@ -155,6 +155,7 @@ void RunAnalysisAODVertexingHF()
       gROOT->LoadMacro(makeAODInputChain.Data());
       chainAOD = MakeAODInputChain();// with this it reads ./AliAOD.root and ./AliAOD.VertexingHF.root
       //chainAOD = MakeAODInputChain("alien:///alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/180100/",1,1);
+      printf("ENTRIES %d\n",chainAOD->GetEntries());
     } else if(inputMode=="xml") {
       // xml
       gROOT->LoadMacro(makeAODInputChain.Data());
@@ -168,7 +169,7 @@ void RunAnalysisAODVertexingHF()
 
   // Create the analysis manager
   AliAnalysisManager *mgr  = new AliAnalysisManager("My Manager","My Manager");
-  mgr->SetDebugLevel(0);
+  mgr->SetDebugLevel(10);
   // Connect plug-in to the analysis manager
   if(useAlienPlugin) mgr->SetGridHandler(alienHandler);
 
@@ -186,15 +187,15 @@ void RunAnalysisAODVertexingHF()
   // Analysis tasks (wagons of the train)   
   //
   TString taskName;
-
-  taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSECompareHF *cmpTask = AddTaskCompareHF();
+  
+  //taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
+  //gROOT->LoadMacro(taskName.Data());
+  //AliAnalysisTaskSECompareHF *cmpTask = AddTaskCompareHF();
   
   taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass();
-
+  AliAnalysisTaskSED0Mass *d0massLikeSignTask = AddTaskD0Mass(1); 
   
   taskName="AddTaskDplus.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
@@ -203,7 +204,7 @@ void RunAnalysisAODVertexingHF()
   //taskName="AddTaskSelectHF.C"; taskName.Prepend(loadMacroPath.Data());
   //gROOT->LoadMacro(taskName.Data());
   //AliAnalysisTaskSESelectHF *seleTask = AddTaskSelectHF();
-
+  
   taskName="AddTaskBkgLikeSignD0.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   AliAnalysisTaskSEBkgLikeSignD0 *lsD0Task = AddTaskBkgLikeSignD0();
@@ -212,9 +213,9 @@ void RunAnalysisAODVertexingHF()
   gROOT->LoadMacro(taskName.Data());
   AliAnalysisTaskSEBkgLikeSignJPSI *lsJPSITask = AddTaskBkgLikeSignJPSI();
 
-  taskName="AddTaskBtoJPSItoEle.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSEBtoJPSItoEle *jpsiTask = AddTaskBtoJPSItoEle();
+  //taskName="AddTaskBtoJPSItoEle.C"; taskName.Prepend(loadMacroPath.Data());
+  //gROOT->LoadMacro(taskName.Data());
+  //AliAnalysisTaskSEBtoJPSItoEle *jpsiTask = AddTaskBtoJPSItoEle();
 
   taskName="AddTaskCFMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
@@ -224,7 +225,7 @@ void RunAnalysisAODVertexingHF()
   gROOT->LoadMacro(taskName.Data());
   Int_t switchMC[5]={1,1,1,1,1};
   AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0.root",switchMC);
-
+  
   // attach a private task (not committed)
   // (the files MyTask.h MyTask.cxx AddMyTask.C have to be declared in plugin
   // configuration, see below)
@@ -281,7 +282,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    // Set versions of used packages
    plugin->SetAPIVersion("V2.4");
    plugin->SetROOTVersion("v5-24-00");
-   plugin->SetAliROOTVersion("v4-18-06-AN");
+   plugin->SetAliROOTVersion("v4-18-07-AN");
    // Declare input data to be processed.
    // Method 1: Create automatically XML collections using alien 'find' command.
    // Define production directory LFN
@@ -302,7 +303,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //plugin->AddDataFile("/alice/cern.ch/user/r/rbala/newtrain/collection/collection_aod_lhc08w.xml");
    //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
    // Define alien work directory where all files will be copied. Relative to alien $HOME.
-   plugin->SetGridWorkingDir("lhc09a5_061009");
+   plugin->SetGridWorkingDir("lhc09a5_231009");
    // Declare alien output directory. Relative to working directory.
    plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
    // Declare the analysis source files names separated by blancs. To be compiled runtime
