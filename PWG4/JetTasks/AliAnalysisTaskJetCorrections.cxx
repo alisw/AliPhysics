@@ -965,47 +965,4 @@ void AliAnalysisTaskJetCorrections::Terminate(Option_t *)
 
 //_______________________________________User defined functions_____________________________________________________________________________________
 
-void AliAnalysisTaskJetCorrections::GetThrustAxis(TVector3 &n01, TVector3 * pTrack, const Int_t &nTracks)
-{
-  //
-  // fetch the thrust axis
-  //
-  TVector3 psum;
-  Double_t psum1 = 0;
-  Double_t psum2 = 0;
-  Double_t thrust[kTracks];
-  Double_t th = -3;
-  Double_t tpom = -1;
-  Int_t j = 0;
-
-  
-  //  for(Int_t j = 0; j < nTracks; j++)
-  while(TMath::Abs(th-tpom) > 10e-7 && j < nTracks)
-    {
-      th = tpom;
-      psum.SetXYZ(0., 0., 0.);
-      psum1 = 0;
-      psum2 = 0;
-      for(Int_t i = 0; i < nTracks; i++)
-	{
-	  psum1 += (TMath::Abs(n01.Dot(pTrack[i])));
-	  psum2 += pTrack[i].Mag();
-	  
-	  if (n01.Dot(pTrack[i]) > 0) psum += pTrack[i];
-	  if (n01.Dot(pTrack[i]) < 0) psum -= pTrack[i];
-	}
-      
-      thrust[j] = psum1/psum2;
-      
-      //      if(th == thrust[j]) 
-      //	break;
-      
-      tpom = thrust[j];
-      
-      n01 = psum.Unit();
-      j++;
-    }
-}
-//______________________________________________________________________________________________________
-
   
