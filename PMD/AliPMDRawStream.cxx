@@ -37,7 +37,11 @@
 #include "AliPMDPatchBusHeader.h"
 #include "AliPMDddldata.h"
 #include "AliPMDRawStream.h"
+#include "AliPMDMappingData.h"
 #include "AliRawReader.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
 
 ClassImp(AliPMDRawStream)
 
@@ -46,7 +50,8 @@ ClassImp(AliPMDRawStream)
 AliPMDRawStream::AliPMDRawStream(AliRawReader* rawReader) :
     fRawReader(rawReader),
     fData(NULL),
-    fPosition(-1)
+    fPosition(-1),
+    fMapData(GetMappingData())
 {
 // create an object to read PMD raw digits
 
@@ -59,7 +64,8 @@ AliPMDRawStream::AliPMDRawStream(const AliPMDRawStream& stream) :
   TObject(stream),
   fRawReader(NULL),
   fData(NULL),
-  fPosition(-1)
+  fPosition(-1),
+  fMapData(GetMappingData())
 {
 // copy constructor
 
@@ -128,71 +134,37 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
       startColBus[ibus] = -1;
       endColBus[ibus]   = -1;
     }
-
-  // open the ddl file info to know the module
-  TString ddlinfofileName(gSystem->Getenv("ALICE_ROOT"));
-  ddlinfofileName += "/PMD/PMD_ddl_info.dat";
-
-  ifstream infileddl;
-  infileddl.open(ddlinfofileName.Data(), ios::in); // ascii file
-  if(!infileddl) AliError("Could not read the ddl info file");
-
-  Int_t ddlno;
-  Int_t modno;
-  Int_t modulePerDDL;
-  Int_t moduleddl[6];
-
-  for(Int_t jddl = 0; jddl < 6; jddl++)
-    {
-      if (infileddl.eof()) break;
-      infileddl >> ddlno >> modulePerDDL;
-      moduleddl[jddl] = modulePerDDL;
-
-      if (modulePerDDL == 0) continue;
-      for (Int_t im = 0; im < modulePerDDL; im++)
-	{
-	  infileddl >> modno;
-	}
-    }
-
-  infileddl.close();
-
+  
   if (iddl == 0)
     {
-      modulePerDDL = moduleddl[iddl];
-      Ddl0Mapping(modulePerDDL, moduleNo, mcmperBus, startRowBus, 
+      Ddl0Mapping(moduleNo, mcmperBus, startRowBus, 
 		  endRowBus, startColBus, endColBus);
 
     }
   else if (iddl == 1)
     {
-      modulePerDDL = moduleddl[iddl];
-      Ddl1Mapping(modulePerDDL, moduleNo, mcmperBus, startRowBus, 
+      Ddl1Mapping(moduleNo, mcmperBus, startRowBus, 
 		  endRowBus, startColBus, endColBus);
       
     }
   else if (iddl == 2)
     {
-      modulePerDDL = moduleddl[iddl];
-      Ddl2Mapping(modulePerDDL, moduleNo, mcmperBus, startRowBus, 
+      Ddl2Mapping(moduleNo, mcmperBus, startRowBus, 
 		  endRowBus, startColBus, endColBus);
     }
   else if (iddl == 3)
     {
-      modulePerDDL = moduleddl[iddl];
-      Ddl3Mapping(modulePerDDL, moduleNo, mcmperBus, startRowBus, 
+      Ddl3Mapping(moduleNo, mcmperBus, startRowBus, 
 		  endRowBus, startColBus, endColBus);
     }
   else if (iddl == 4)
     {
-      modulePerDDL = moduleddl[iddl];
-      Ddl4Mapping(modulePerDDL, moduleNo, mcmperBus, startRowBus, 
+      Ddl4Mapping(moduleNo, mcmperBus, startRowBus, 
 		  endRowBus, startColBus, endColBus);
     }
   else if (iddl == 5)
     {
-      modulePerDDL = moduleddl[iddl];
-      Ddl5Mapping(modulePerDDL, moduleNo, mcmperBus, startRowBus, 
+      Ddl5Mapping(moduleNo, mcmperBus, startRowBus, 
 		  endRowBus, startColBus, endColBus);
   }
 
@@ -622,275 +594,156 @@ UInt_t AliPMDRawStream::GetNextWord()
 }
 
 //_____________________________________________________________________________
-void AliPMDRawStream::Ddl0Mapping(Int_t modulePerDDL, 
-				  Int_t moduleNo[],    Int_t mcmperBus[],
+void AliPMDRawStream::Ddl0Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
 				  Int_t startRowBus[], Int_t endRowBus[],
 				  Int_t startColBus[], Int_t endColBus[])
 {
   // DDL0 Mapping 
 
-  Int_t moduleno, totPatchBus, bPatchBus, ePatchBus;
-  Int_t ibus, totmcm, rows, rowe, cols, cole;
+  Int_t iddl = 0;
 
-  TString fileName(gSystem->Getenv("ALICE_ROOT"));
-  fileName += "/PMD/PMD_Mapping_ddl0.dat";
-
-  ifstream infile;
-  infile.open(fileName.Data(), ios::in); // ascii file
-  if(!infile)
-    AliError("Could not read the mapping file for DDL No = 0");
-
-  for (Int_t im = 0; im < modulePerDDL; im++)
+  for(Int_t ibus = 1; ibus < 51; ibus++)
     {
-      infile >> moduleno;
-      infile >> totPatchBus >> bPatchBus >> ePatchBus;
-      
-      if (totPatchBus == 0) continue;
-
-      for(Int_t i=0; i<totPatchBus; i++)
-	{
-	  infile >> ibus >> totmcm >> rows >> rowe >> cols >> cole;
-	  
-	  moduleNo[ibus]     = moduleno;
-	  mcmperBus[ibus]    = totmcm;
-	  startRowBus[ibus]  = rows;
-	  startColBus[ibus]  = cols;
-	  endRowBus[ibus]    = rowe;
-	  endColBus[ibus]    = cole;
-	  
-	}
-      
+      moduleNo[ibus]     = fMapData->GetModuleNo(iddl,ibus);
+      mcmperBus[ibus]    = fMapData->GetMcmperBus(iddl,ibus);
+      startRowBus[ibus]  = fMapData->GetStartRowBus(iddl,ibus);
+      startColBus[ibus]  = fMapData->GetStartColBus(iddl,ibus);
+      endRowBus[ibus]    = fMapData->GetEndRowBus(iddl,ibus);
+      endColBus[ibus]    = fMapData->GetEndColBus(iddl,ibus);
     }
-  
-  infile.close();
 
 }
 
 //_____________________________________________________________________________
-void AliPMDRawStream::Ddl1Mapping(Int_t modulePerDDL,
-				  Int_t moduleNo[],    Int_t mcmperBus[],
+void AliPMDRawStream::Ddl1Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
 				  Int_t startRowBus[], Int_t endRowBus[],
 				  Int_t startColBus[], Int_t endColBus[])
 {
   // DDL1 Mapping 
 
-  Int_t moduleno, totPatchBus, bPatchBus, ePatchBus;
-  Int_t ibus, totmcm, rows, rowe, cols, cole;
+  Int_t iddl = 1;
 
-  TString fileName(gSystem->Getenv("ALICE_ROOT"));
-  fileName += "/PMD/PMD_Mapping_ddl1.dat";
-
-  ifstream infile;
-  infile.open(fileName.Data(), ios::in); // ascii file
-  if(!infile)
-    AliError("Could not read the mapping file for DDL No = 1");
-
-  for (Int_t im = 0; im < modulePerDDL; im++)
+  for(Int_t ibus = 1; ibus < 51; ibus++)
     {
-      infile >> moduleno;
-      infile >> totPatchBus >> bPatchBus >> ePatchBus;
-
-      if (totPatchBus == 0) continue;
-
-      for(Int_t i=0; i<totPatchBus; i++)
-	{
-	  infile >> ibus >> totmcm >> rows >> rowe >> cols >> cole;
+      moduleNo[ibus]     = fMapData->GetModuleNo(iddl,ibus);
+      mcmperBus[ibus]    = fMapData->GetMcmperBus(iddl,ibus);
+      startRowBus[ibus]  = fMapData->GetStartRowBus(iddl,ibus);
+      startColBus[ibus]  = fMapData->GetStartColBus(iddl,ibus);
+      endRowBus[ibus]    = fMapData->GetEndRowBus(iddl,ibus);
+      endColBus[ibus]    = fMapData->GetEndColBus(iddl,ibus);
 	  
-	  moduleNo[ibus]     = moduleno;
-	  mcmperBus[ibus]    = totmcm;
-	  startRowBus[ibus]  = rows;
-	  startColBus[ibus]  = cols;
-	  endRowBus[ibus]    = rowe;
-	  endColBus[ibus]    = cole;
-	  
-	}
-      
     }
-  
-  infile.close();
+
 
 }
 
 //_____________________________________________________________________________
-void AliPMDRawStream::Ddl2Mapping(Int_t modulePerDDL,
-				  Int_t moduleNo[],    Int_t mcmperBus[],
+void AliPMDRawStream::Ddl2Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
 				  Int_t startRowBus[], Int_t endRowBus[],
 				  Int_t startColBus[], Int_t endColBus[])
 {
   // DDL2 Mapping 
 
-  Int_t moduleno, totPatchBus, bPatchBus, ePatchBus;
-  Int_t ibus, totmcm, rows, rowe, cols, cole;
+  Int_t iddl = 2;
 
-
-  TString fileName(gSystem->Getenv("ALICE_ROOT"));
-  fileName += "/PMD/PMD_Mapping_ddl2.dat";
-
-  ifstream infile;
-  infile.open(fileName.Data(), ios::in); // ascii file
-  if(!infile)
-    AliError("Could not read the mapping file for DDL No = 2");
-
-  for (Int_t im = 0; im < modulePerDDL; im++)
+  for(Int_t ibus = 1; ibus < 51; ibus++)
     {
-      infile >> moduleno;
-      infile >> totPatchBus >> bPatchBus >> ePatchBus;
-
-      if (totPatchBus == 0) continue;
-
-      for(Int_t i=0; i<totPatchBus; i++)
-	{
-	  infile >> ibus >> totmcm >> rows >> rowe >> cols >> cole;
+      moduleNo[ibus]     = fMapData->GetModuleNo(iddl,ibus);
+      mcmperBus[ibus]    = fMapData->GetMcmperBus(iddl,ibus);
+      startRowBus[ibus]  = fMapData->GetStartRowBus(iddl,ibus);
+      startColBus[ibus]  = fMapData->GetStartColBus(iddl,ibus);
+      endRowBus[ibus]    = fMapData->GetEndRowBus(iddl,ibus);
+      endColBus[ibus]    = fMapData->GetEndColBus(iddl,ibus);
 	  
-	  moduleNo[ibus]     = moduleno;
-	  mcmperBus[ibus]    = totmcm;
-	  startRowBus[ibus]  = rows;
-	  startColBus[ibus]  = cols;
-	  endRowBus[ibus]    = rowe;
-	  endColBus[ibus]    = cole;
-	  
-	}
-      
     }
-  
-  infile.close();
 
 }
 
 //_____________________________________________________________________________
-void AliPMDRawStream::Ddl3Mapping(Int_t modulePerDDL,
-				  Int_t moduleNo[],    Int_t mcmperBus[],
+void AliPMDRawStream::Ddl3Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
 				  Int_t startRowBus[], Int_t endRowBus[],
 				  Int_t startColBus[], Int_t endColBus[])
 {
   // DDL3 Mapping 
 
-  Int_t moduleno, totPatchBus, bPatchBus, ePatchBus;
-  Int_t ibus, totmcm, rows, rowe, cols, cole;
+  Int_t iddl = 3;
 
-  TString fileName(gSystem->Getenv("ALICE_ROOT"));
-  fileName += "/PMD/PMD_Mapping_ddl3.dat";
-
-  ifstream infile;
-  infile.open(fileName.Data(), ios::in); // ascii file
-  if(!infile)
-    AliError("Could not read the mapping file for DDL No = 3");
-
-  for (Int_t im = 0; im < modulePerDDL; im++)
+  for(Int_t ibus = 1; ibus < 51; ibus++)
     {
-      infile >> moduleno;
-      infile >> totPatchBus >> bPatchBus >> ePatchBus;
-
-      if (totPatchBus == 0) continue;
-
-      for(Int_t i=0; i<totPatchBus; i++)
-	{
-	  infile >> ibus >> totmcm >> rows >> rowe >> cols >> cole;
+      moduleNo[ibus]     = fMapData->GetModuleNo(iddl,ibus);
+      mcmperBus[ibus]    = fMapData->GetMcmperBus(iddl,ibus);
+      startRowBus[ibus]  = fMapData->GetStartRowBus(iddl,ibus);
+      startColBus[ibus]  = fMapData->GetStartColBus(iddl,ibus);
+      endRowBus[ibus]    = fMapData->GetEndRowBus(iddl,ibus);
+      endColBus[ibus]    = fMapData->GetEndColBus(iddl,ibus);
 	  
-	  moduleNo[ibus]     = moduleno;
-	  mcmperBus[ibus]    = totmcm;
-	  startRowBus[ibus]  = rows;
-	  startColBus[ibus]  = cols;
-	  endRowBus[ibus]    = rowe;
-	  endColBus[ibus]    = cole;
-	  
-	}
-      
     }
-  
-  infile.close();
 
 }
 
 //_____________________________________________________________________________
-void AliPMDRawStream::Ddl4Mapping(Int_t modulePerDDL,
-				  Int_t moduleNo[],    Int_t mcmperBus[],
+void AliPMDRawStream::Ddl4Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
 				  Int_t startRowBus[], Int_t endRowBus[],
 				  Int_t startColBus[], Int_t endColBus[])
 {
   // DDL4 Mapping 
 
-  Int_t moduleno, totPatchBus, bPatchBus, ePatchBus;
-  Int_t ibus, totmcm, rows, rowe, cols, cole;
+  Int_t iddl = 4;
 
-  TString fileName(gSystem->Getenv("ALICE_ROOT"));
-  fileName += "/PMD/PMD_Mapping_ddl4.dat";
-
-  ifstream infile;
-  infile.open(fileName.Data(), ios::in); // ascii file
-  if(!infile)
-    AliError("Could not read the mapping file for DDL No = 4");
-
-  for (Int_t im = 0; im < modulePerDDL; im++)
+  for(Int_t ibus = 1; ibus < 51; ibus++)
     {
-      infile >> moduleno;
-      infile >> totPatchBus >> bPatchBus >> ePatchBus;
-
-      if (totPatchBus == 0) continue;
-
-      for(Int_t i=0; i<totPatchBus; i++)
-	{
-	  infile >> ibus >> totmcm >> rows >> rowe >> cols >> cole;
+      moduleNo[ibus]     = fMapData->GetModuleNo(iddl,ibus);
+      mcmperBus[ibus]    = fMapData->GetMcmperBus(iddl,ibus);
+      startRowBus[ibus]  = fMapData->GetStartRowBus(iddl,ibus);
+      startColBus[ibus]  = fMapData->GetStartColBus(iddl,ibus);
+      endRowBus[ibus]    = fMapData->GetEndRowBus(iddl,ibus);
+      endColBus[ibus]    = fMapData->GetEndColBus(iddl,ibus);
 	  
-	  moduleNo[ibus]     = moduleno;
-	  mcmperBus[ibus]    = totmcm;
-	  startRowBus[ibus]  = rows;
-	  startColBus[ibus]  = cols;
-	  endRowBus[ibus]    = rowe;
-	  endColBus[ibus]    = cole;
-	  
-	}
-      
     }
+
   
-  infile.close();
-	
 }
 
 //_____________________________________________________________________________
-void AliPMDRawStream::Ddl5Mapping(Int_t modulePerDDL,
-				  Int_t moduleNo[],    Int_t mcmperBus[],
+void AliPMDRawStream::Ddl5Mapping(Int_t moduleNo[],    Int_t mcmperBus[],
 				  Int_t startRowBus[], Int_t endRowBus[],
 				  Int_t startColBus[], Int_t endColBus[])
 {
   // DDL5 Mapping 
 
-  Int_t moduleno, totPatchBus, bPatchBus, ePatchBus;
-  Int_t ibus, totmcm, rows, rowe, cols, cole;
+  Int_t iddl = 5;
 
-
-  TString fileName(gSystem->Getenv("ALICE_ROOT"));
-  fileName += "/PMD/PMD_Mapping_ddl5.dat";
-
-  ifstream infile;
-  infile.open(fileName.Data(), ios::in); // ascii file
-  if(!infile)
-    AliError("Could not read the mapping file for DDL No = 5");
-
-  for (Int_t im = 0; im < modulePerDDL; im++)
+  for(Int_t ibus = 1; ibus < 51; ibus++)
     {
-      infile >> moduleno;
-      infile >> totPatchBus >> bPatchBus >> ePatchBus;
-
-      if (totPatchBus == 0) continue;
-
-      for(Int_t i=0; i<totPatchBus; i++)
-	{
-	  infile >> ibus >> totmcm >> rows >> rowe >> cols >> cole;
+      moduleNo[ibus]     = fMapData->GetModuleNo(iddl,ibus);
+      mcmperBus[ibus]    = fMapData->GetMcmperBus(iddl,ibus);
+      startRowBus[ibus]  = fMapData->GetStartRowBus(iddl,ibus);
+      startColBus[ibus]  = fMapData->GetStartColBus(iddl,ibus);
+      endRowBus[ibus]    = fMapData->GetEndRowBus(iddl,ibus);
+      endColBus[ibus]    = fMapData->GetEndColBus(iddl,ibus);
 	  
-	  moduleNo[ibus]     = moduleno;
-	  mcmperBus[ibus]    = totmcm;
-	  startRowBus[ibus]  = rows;
-	  startColBus[ibus]  = cols;
-	  endRowBus[ibus]    = rowe;
-	  endColBus[ibus]    = cole;
-	  
-	}
-      
     }
+
+}
+//_____________________________________________________________________________
+
+AliPMDMappingData* AliPMDRawStream::GetMappingData() const
+{
+  // Fetching the mapping data from CDB
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Mapping");
   
-  infile.close();
-	
+  if(!entry) AliFatal("Mapping object retrieval failed!");
+  
+  AliPMDMappingData *mapdata=0;
+  if (entry) mapdata = (AliPMDMappingData*) entry->GetObject();
+  
+  if (!mapdata)  AliFatal("No Mapping data from CDB !");
+  
+  return mapdata;
 }
 
+
+
+//_____________________________________________________________________________
 
