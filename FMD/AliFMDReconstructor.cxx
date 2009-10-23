@@ -426,11 +426,11 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   // Make rough multiplicity 
   Double_t mult     = Energy2Multiplicity(det, rng, sec, str, edep);
   // Get rid of nonsense mult
-  if (mult > 20) { 
-    AliWarning(Form("The mutliplicity in FMD%d%c[%2d,%3d]=%f > 20 "
-		    "(ADC: %d, Energy: %f)", det, rng, sec, str, mult, 
-		    counts, edep));
-  }
+  //if (mult > 20) { 
+  //  AliWarning(Form("The mutliplicity in FMD%d%c[%2d,%3d]=%f > 20 "
+  //		    "(ADC: %d, Energy: %f)", det, rng, sec, str, mult, 
+  //		    counts, edep));
+  // }
   if (mult < 0)  return; 
   AliFMDDebug(10, ("FMD%d%c[%2d,%3d]: "
 		    "ADC: %d, Counts: %d, Energy: %f, Mult: %f",
