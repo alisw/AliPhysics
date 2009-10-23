@@ -272,6 +272,8 @@ int AliHLTReconstructor::InitStreamerInfos(TObjArray* pSchemas) const
       }
     }
   }
+
+  return 0;
 }
 
 void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clustersTree*/) const 
