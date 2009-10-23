@@ -183,7 +183,7 @@ private:
   Int_t     fCurrentRow;            //! current row processed
   Float_t   fMaxPadSignal;          //! maximum bin of current pad
   Int_t     fMaxTimeBin;            //! time bin with maximum value
-  TVectorF  fPadSignal;             //! signal of current Pad
+  Float_t   fPadSignal[1024];       //! signal of current Pad
   Float_t   fPadPedestal;           //! Pedestal Value of current pad
   Float_t   fPadNoise;              //! Noise Value of current pad
   

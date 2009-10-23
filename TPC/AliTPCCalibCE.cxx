@@ -352,7 +352,7 @@ AliTPCCalibCE::AliTPCCalibCE() :
   fCurrentRow(-1),
   fMaxPadSignal(-1),
   fMaxTimeBin(-1),
-  fPadSignal(1024),
+//   fPadSignal(1024),
   fPadPedestal(0),
   fPadNoise(0),
   fVTime0Offset(72),
@@ -368,6 +368,7 @@ AliTPCCalibCE::AliTPCCalibCE() :
   fFirstTimeBin=650;
   fLastTimeBin=1000;
   fParam->Update();
+  for (Int_t i=0;i<1024;++i) fPadSignal[i]=0;
 }
 //_____________________________________________________________________
 AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
@@ -426,7 +427,7 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
   fCurrentRow(-1),
   fMaxPadSignal(-1),
   fMaxTimeBin(-1),
-  fPadSignal(1024),
+//   fPadSignal(1024),
   fPadPedestal(0),
   fPadNoise(0),
   fVTime0Offset(72),
@@ -438,7 +439,8 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
   //
   // AliTPCSignal copy constructor
   //
-
+  for (Int_t i=0;i<1024;++i) fPadSignal[i]=0;
+  
   for (Int_t iSec = 0; iSec < 72; ++iSec){
     const AliTPCCalROC *calQ   = (AliTPCCalROC*)sig.fCalRocArrayQ.UncheckedAt(iSec);
     const AliTPCCalROC *calT0  = (AliTPCCalROC*)sig.fCalRocArrayT0.UncheckedAt(iSec);
@@ -565,7 +567,7 @@ AliTPCCalibCE::AliTPCCalibCE(const TMap *config) :
   fCurrentRow(-1),
   fMaxPadSignal(-1),
   fMaxTimeBin(-1),
-  fPadSignal(1024),
+//   fPadSignal(1024),
   fPadPedestal(0),
   fPadNoise(0),
   fVTime0Offset(72),
@@ -601,6 +603,8 @@ AliTPCCalibCE::AliTPCCalibCE(const TMap *config) :
   if (config->GetValue("UseL1Phase")) fUseL1Phase = (Bool_t)((TObjString*)config->GetValue("UseL1Phase"))->GetString().Atoi();
   if (config->GetValue("SecRejectRatio")) fSecRejectRatio = ((TObjString*)config->GetValue("SecRejectRatio"))->GetString().Atof();
 
+  for (Int_t i=0;i<1024;++i) fPadSignal[i]=0;
+  
   fParam->Update();
 }
 
@@ -687,7 +691,7 @@ Int_t AliTPCCalibCE::Update(const Int_t icsector,
   }
 
   //fill signals for current pad
-  fPadSignal.GetMatrixArray()[icTimeBin]=csignal;
+  fPadSignal[icTimeBin]=csignal;
   if ( csignal > fMaxPadSignal ){
     fMaxPadSignal = csignal;
     fMaxTimeBin   = icTimeBin;
@@ -739,7 +743,7 @@ void AliTPCCalibCE::FindPedestal(Float_t part)
 
         //fill pedestal histogram
     for (Int_t i=fFirstTimeBin; i<=fLastTimeBin; ++i){
-      padSignal = fPadSignal.GetMatrixArray()[i];
+      padSignal = fPadSignal[i];
       if (padSignal<=0) continue;
       if (padSignal>max && i>10) {
         max = padSignal;
@@ -825,10 +829,10 @@ void AliTPCCalibCE::FindCESignal(TVectorD &param, Float_t &qSum, const TVectorF 
   }
 //   printf("L1 phase TB: %f\n",GetL1PhaseTB());
   if (cemaxpos!=0){
-    ceQmax = fPadSignal.GetMatrixArray()[cemaxpos]-fPadPedestal;
+    ceQmax = fPadSignal[cemaxpos]-fPadPedestal;
     for (Int_t i=cemaxpos-kCemin; i<=cemaxpos+kCemax; ++i){
       if ( (i>fFirstTimeBin) && (i<fLastTimeBin) ){
-        Float_t signal = fPadSignal.GetMatrixArray()[i]-fPadPedestal;
+        Float_t signal = fPadSignal[i]-fPadPedestal;
         if (signal>0) {
           ceTime+=signal*(i+0.5);
           ceRMS +=signal*(i+0.5)*(i+0.5);
@@ -870,8 +874,8 @@ void AliTPCCalibCE::FindCESignal(TVectorD &param, Float_t &qSum, const TVectorF 
 Bool_t AliTPCCalibCE::IsPeak(Int_t pos, Int_t tminus, Int_t tplus) const
 {
   //
-    // Check if 'pos' is a Maximum. Consider 'tminus' timebins before
-    // and 'tplus' timebins after 'pos'
+  // Check if 'pos' is a Maximum. Consider 'tminus' timebins before
+  // and 'tplus' timebins after 'pos'
   //
   if ( (pos-tminus)<fFirstTimeBin || (pos+tplus)>fLastTimeBin ) return kFALSE;
   for (Int_t iTime = pos; iTime>pos-tminus; --iTime)
@@ -891,13 +895,14 @@ void AliTPCCalibCE::FindLocalMaxima(TVectorF &maxima)
   //
   Float_t ceThreshold = fNoiseThresholdMax*TMath::Max(fPadNoise,Float_t(1.));  // threshold for the signal
   Int_t   count       = 0;
-//    Int_t   tminus      = 2;
-//    Int_t   tplus       = 3;
-  for (Int_t i=fLastTimeBin-fPeakDetPlus-1; i>=fFirstTimeBin+fPeakDetMinus; --i){
-    if ( (fPadSignal[i]-fPadPedestal)>ceThreshold && IsPeak(i,fPeakDetMinus,fPeakDetPlus) ){
+  
+  for (Int_t i=fLastTimeBin-fPeakDetPlus+1; i>=fFirstTimeBin+fPeakDetMinus; --i){
+    if ( (fPadSignal[i]-fPadPedestal)<ceThreshold ) continue;
+    if (IsPeak(i,fPeakDetMinus,fPeakDetPlus) ){
       if (count<maxima.GetNrows()){
         maxima.GetMatrixArray()[count++]=i;
         GetHistoTmean(fCurrentSector,kTRUE)->Fill(i);
+        i-=(fPeakDetMinus+fPeakDetPlus-1); // next peak cannot be at bin  fPeakDetMinus+fPeakDetPlus-1
       }
     }
   }
@@ -1120,44 +1125,48 @@ void AliTPCCalibCE::EndEvent()
       //-----------------------------  Debug end  ------------------------------
     }// end channel loop
 
-    TVectorD paramPol1(3);
-    TVectorD paramPol2(6);
-    TMatrixD matPol1(3,3);
-    TMatrixD matPol2(6,6);
-    Float_t  chi2Pol1=0;
-    Float_t  chi2Pol2=0;
 
-    if ( (fNevents>0) && (fOldRunNumber==fRunNumber) ){
-      if ( iSec < 36 ){
-        calIroc->GlobalFit(&calIrocOutliers,0,paramPol1,matPol1,chi2Pol1,0);
-        calIroc->GlobalFit(&calIrocOutliers,0,paramPol2,matPol2,chi2Pol2,1);
-      } else {
-        calOroc->GlobalFit(&calOrocOutliers,0,paramPol1,matPol1,chi2Pol1,0);
-        calOroc->GlobalFit(&calOrocOutliers,0,paramPol2,matPol2,chi2Pol2,1);
+    //do fitting now only in debug mode
+    if (GetDebugLevel()>0){
+      TVectorD paramPol1(3);
+      TVectorD paramPol2(6);
+      TMatrixD matPol1(3,3);
+      TMatrixD matPol2(6,6);
+      Float_t  chi2Pol1=0;
+      Float_t  chi2Pol2=0;
+      
+      if ( (fNevents>0) && (fOldRunNumber==fRunNumber) ){
+        if ( iSec < 36 ){
+          calIroc->GlobalFit(&calIrocOutliers,0,paramPol1,matPol1,chi2Pol1,0);
+          calIroc->GlobalFit(&calIrocOutliers,0,paramPol2,matPol2,chi2Pol2,1);
+        } else {
+          calOroc->GlobalFit(&calOrocOutliers,0,paramPol1,matPol1,chi2Pol1,0);
+          calOroc->GlobalFit(&calOrocOutliers,0,paramPol2,matPol2,chi2Pol2,1);
+        }
+        
+        GetParamArrayPol1(iSec,kTRUE)->AddAtAndExpand(new TVectorD(paramPol1), fNevents);
+        GetParamArrayPol2(iSec,kTRUE)->AddAtAndExpand(new TVectorD(paramPol2), fNevents);
       }
-
-      GetParamArrayPol1(iSec,kTRUE)->AddAtAndExpand(new TVectorD(paramPol1), fNevents);
-      GetParamArrayPol2(iSec,kTRUE)->AddAtAndExpand(new TVectorD(paramPol2), fNevents);
-    }
-
-	//-------------------------------  Debug start  ------------------------------
-    if ( GetStreamLevel()>0 ){
-      TTreeSRedirector *streamer=GetDebugStreamer();
-      if ( streamer ) {
-        (*streamer) << "DataRoc" <<
-//		"Event=" << fEvent <<
-          "RunNumber=" << fRunNumber <<
-          "TimeStamp="   << fTimeStamp <<
-          "Sector="<< iSec <<
-          "hMeanT.=" << hMeanT <<
-          "median=" << median <<
-          "paramPol1.=" << &paramPol1 <<
-          "paramPol2.=" << &paramPol2 <<
-          "matPol1.="   << &matPol1 <<
-          "matPol2.="   << &matPol2 <<
-          "chi2Pol1="   << chi2Pol1 <<
-          "chi2Pol2="   << chi2Pol2 <<
-          "\n";
+      
+  //-------------------------------  Debug start  ------------------------------
+      if ( GetStreamLevel()>0 ){
+        TTreeSRedirector *streamer=GetDebugStreamer();
+        if ( streamer ) {
+          (*streamer) << "DataRoc" <<
+//    "Event=" << fEvent <<
+            "RunNumber=" << fRunNumber <<
+            "TimeStamp="   << fTimeStamp <<
+            "Sector="<< iSec <<
+            "hMeanT.=" << hMeanT <<
+            "median=" << median <<
+            "paramPol1.=" << &paramPol1 <<
+            "paramPol2.=" << &paramPol2 <<
+            "matPol1.="   << &matPol1 <<
+            "matPol2.="   << &matPol2 <<
+            "chi2Pol1="   << chi2Pol1 <<
+            "chi2Pol2="   << chi2Pol2 <<
+            "\n";
+        }
       }
     }
 	//-------------------------------  Debug end  ------------------------------
@@ -1487,7 +1496,7 @@ void AliTPCCalibCE::ResetPad()
     //  Reset pad infos -- Should be called after a pad has been processed
     //
     for (Int_t i=fFirstTimeBin; i<fLastTimeBin+1; ++i)
-	fPadSignal.GetMatrixArray()[i] = 0;
+      fPadSignal[i] = 0;
     fMaxTimeBin   = -1;
     fMaxPadSignal = -1;
     fPadPedestal  = -1;
