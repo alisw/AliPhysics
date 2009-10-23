@@ -46,6 +46,7 @@
 #include "AliMUONVTriggerStore.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMpCathodType.h"
+#include "AliMpCDB.h"
 #include "AliMpDEManager.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
@@ -83,6 +84,12 @@ AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONCalibrationData* cal
     fCopyYInput[i]->SetOwner();
   }
 
+  // force loading of mapping if not already done
+  if ( !AliMpDDLStore::Instance(kFALSE) )
+  {
+    AliMpCDB::LoadDDLStore();
+  }
+  
   SetCopyInput();
   
   Factory(calibData);
