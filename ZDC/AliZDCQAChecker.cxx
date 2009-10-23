@@ -28,7 +28,8 @@
 ClassImp(AliZDCQAChecker)
 
 //____________________________________________________________________________
-Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list) 
+Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
+      AliDetectorRecoParam * /*recoParam*/) 
 {
   // Checks the QA histograms on the input list: 
   //
