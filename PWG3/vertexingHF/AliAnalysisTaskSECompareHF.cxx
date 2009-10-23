@@ -137,6 +137,10 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
+  // In case there is an AOD handler writing a standard AOD, use the AOD 
+  // event in memory rather than the input (ESD) event.
+  if (!aod && AODEvent() && IsStandardAOD()) aod = dynamic_cast<AliAODEvent*> (AODEvent());
+
   fHistNEvents->Fill(0); // count event
   // Post the data already here
   PostData(1,fOutput);
