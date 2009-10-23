@@ -1,27 +1,50 @@
+/**************************************************************************
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
+
+/* $Id: AliTRDv0Info.cxx 27496 2008-07-22 08:35:45Z cblume $ */
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Reconstruction QA                                                     //
+//                                                                        //
+//  Gathers all information necessary for reference data selection about  //
+//  the track and (in case) its corresponding V0.                         //
+//  Carries out the selection of electrons (from gamma conversions),      //
+//  pions (from K0s decays) and protons (from Lambda and Anti-Lambda      //
+//  decays) by cuts specific for the respective decay and particle        //
+//  species.                                                              //
+//  (M.Heide, 2009/10/06)                                                 //
+//                                                                        //
+//  Authors:                                                              //
+//   Alex Bercuci <A.Bercuci@gsi.de>                                      //
+//   Alex Wilk    <wilka@uni-muenster.de>                                 //
+//   Markus Heide <mheide@uni-muenster.de>                                //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include "TMath.h"
+
 #include "AliESDtrack.h"
-#include "AliESDEvent.h"
 #include "AliESDv0.h"
-#include "AliTRDv0Info.h"
-#include "AliTRDtrackInfo.h"
 #include "AliESDInputHandler.h"
 #include "AliAnalysisManager.h"
-#include "AliTRDtrackInfo.h"
 #include "AliLog.h"
 
-//Gathers all information necessary for reference data selection about the
-//track and (in case) its corresponding V0.
-//Carries out the selection of electrons (from gamma conversions), pions
-//(from K0s decays) and protons (from Lambda and Anti-Lambda decays) by
-//cuts specific for the respective decay and particle species.
-//(M.Heide, 2009/10/06)
-
-// Authors:
-//   Alex Bercuci <A.Bercuci@gsi.de>
-//   Alex Wilk    <wilka@uni-muenster.de>
-//   Markus Heide <mheide@uni-muenster.de>
-// 
-
+#include "AliTRDv0Info.h"
+#include "AliTRDtrackInfo.h"
+#include "AliTRDtrackInfo.h"
 
 ClassImp(AliTRDv0Info)
 
@@ -30,8 +53,7 @@ AliTRDv0Info::AliTRDv0Info()
   : TObject()
   ,fESD(0x0)
   ,fHasV0(0)      
-  ,fQuality(0)
-    
+  ,fQuality(0)    
   ,fMomentum(0)
   ,fDCA(10)
   ,fPointingAngle(10)
@@ -39,18 +61,18 @@ AliTRDv0Info::AliTRDv0Info()
   ,fPsiPair(99)
   ,fMagField(0)
   ,fRadius(0)
-    
   ,fTrackID(0)
   ,fV0Momentum(0)
-
-
   ,fTrackP(0x0)
   ,fTrackN(0x0)
   ,fTrack(0x0)
   ,fNindex(0)
   ,fPindex(0)
-  
 {
+  //
+  // Default constructor
+  //
+
   memset(fPplus, 0, 2*kNlayer*sizeof(Float_t));
   memset(fPminus, 0, 2*kNlayer*sizeof(Float_t));
   memset(fDetPID, 0, 2*kNDaughters*kNDetectors*AliPID::kSPECIES*sizeof(Float_t));
@@ -175,8 +197,12 @@ void AliTRDv0Info::GetESDv0Info(AliESDv0 *esdv0)
     
 }
 //_________________________________________________
-Float_t  AliTRDv0Info::V0Momentum(AliESDv0 *esdv0)
-{//Reconstructed momentum of V0 mother particle
+Float_t  AliTRDv0Info::V0Momentum(AliESDv0 *esdv0) const
+{
+  //
+  // Reconstructed momentum of V0 mother particle
+  //
+
   Double_t mn[3] = {0,0,0};
   Double_t mp[3] = {0,0,0};
 
@@ -189,8 +215,11 @@ Float_t  AliTRDv0Info::V0Momentum(AliESDv0 *esdv0)
 }
 
 //_________________________________________________
-Double_t AliTRDv0Info::InvMass(Int_t part1, Int_t part2, AliESDv0 *esdv0)
-{//Invariant mass of reconstructed V0 mother
+Double_t AliTRDv0Info::InvMass(Int_t part1, Int_t part2, AliESDv0 *esdv0) const
+{
+  //
+  // Invariant mass of reconstructed V0 mother
+  //
 
   const Double_t kpmass[5] = {AliPID::ParticleMass(AliPID::kElectron),AliPID::ParticleMass(AliPID::kMuon),AliPID::ParticleMass(AliPID::kPion),AliPID::ParticleMass(AliPID::kKaon),AliPID::ParticleMass(AliPID::kProton)};
   //Masses of electrons, muons, pions, kaons and protons, as implemented in ROOT
@@ -262,8 +291,8 @@ Float_t AliTRDv0Info::PsiPair(AliESDv0 *esdv0)
 
   Double_t radiussum = TMath::Sqrt(x*x + y*y) + 50;//radius to which tracks shall be propagated
 
-  Double_t MomPosProp[3];
-  Double_t MomNegProp[3];
+  Double_t momPosProp[3];
+  Double_t momNegProp[3];
     
   AliExternalTrackParam nt(*fTrackN), pt(*fTrackP);
     
@@ -273,26 +302,27 @@ Float_t AliTRDv0Info::PsiPair(AliESDv0 *esdv0)
     fPsiPair =  -5.;
   if(pt.PropagateTo(radiussum,fMagField) == 0)
     fPsiPair = -5.;
-  pt.GetPxPyPz(MomPosProp);//Get momentum vectors of tracks after propagation
-  nt.GetPxPyPz(MomNegProp);
+  pt.GetPxPyPz(momPosProp);//Get momentum vectors of tracks after propagation
+  nt.GetPxPyPz(momNegProp);
   
-  Double_t p_ele =
-    TMath::Sqrt(MomNegProp[0]*MomNegProp[0]+MomNegProp[1]*MomNegProp[1]+MomNegProp[2]*MomNegProp[2]);//absolute momentum value of negative daughter
-  Double_t p_pos =
-    TMath::Sqrt(MomPosProp[0]*MomPosProp[0]+MomPosProp[1]*MomPosProp[1]+MomPosProp[2]*MomPosProp[2]);//absolute momentum value of positive daughter
+  Double_t pEle =
+    TMath::Sqrt(momNegProp[0]*momNegProp[0]+momNegProp[1]*momNegProp[1]+momNegProp[2]*momNegProp[2]);//absolute momentum value of negative daughter
+  Double_t pPos =
+    TMath::Sqrt(momPosProp[0]*momPosProp[0]+momPosProp[1]*momPosProp[1]+momPosProp[2]*momPosProp[2]);//absolute momentum value of positive daughter
     
   Double_t scalarproduct =
-    MomPosProp[0]*MomNegProp[0]+MomPosProp[1]*MomNegProp[1]+MomPosProp[2]*MomNegProp[2];//scalar product of propagated positive and negative daughters' momenta
+    momPosProp[0]*momNegProp[0]+momPosProp[1]*momNegProp[1]+momPosProp[2]*momNegProp[2];//scalar product of propagated positive and negative daughters' momenta
     
-  Double_t chipair = TMath::ACos(scalarproduct/(p_ele*p_pos));//Angle between propagated daughter tracks
+  Double_t chipair = TMath::ACos(scalarproduct/(pEle*pPos));//Angle between propagated daughter tracks
 
   fPsiPair =  TMath::Abs(TMath::ASin(deltat/chipair));  
 
   return fPsiPair; 
 
 }
+
 //_________________________________________________
-void AliTRDv0Info::V0fromTrack(AliTRDtrackInfo *track, Int_t ivertex)
+void AliTRDv0Info::V0fromTrack(AliTRDtrackInfo * const track, Int_t ivertex)
 {//Checks if track is a secondary vertex daughter (due to V0 finder)
   
   fMagField = fESD->GetMagneticField();
@@ -337,29 +367,34 @@ Float_t AliTRDv0Info::Radius(AliESDv0 *esdv0)
   return fRadius;
 
 }
+
 //_________________________________________________
-Int_t AliTRDv0Info::Quality(AliESDv0 *esdv0)
-{ //Checking track and V0 quality status in order to exclude vertices based on poor information
-  Float_t NclsN;
-  NclsN = fTrackN->GetTPCNcls();//number of found clusters in TPC for negative track
-  Float_t NclsFN;
-  NclsFN = fTrackN->GetTPCNclsF();//number of findable clusters in TPC for negative track
-  Float_t NclsP;
-  NclsP = fTrackP->GetTPCNcls();//number of found clusters in TPC for positive track
-  Float_t NclsFP;
-  NclsFP = fTrackP->GetTPCNclsF();//number of findable clusters in TPC for positive track
+Int_t AliTRDv0Info::Quality(AliESDv0 *const esdv0)
+{ 
+  //
+  // Checking track and V0 quality status in order to exclude vertices based on poor information
+  //
+
+  Float_t nClsN;
+  nClsN = fTrackN->GetTPCNcls();//number of found clusters in TPC for negative track
+  Float_t nClsFN;
+  nClsFN = fTrackN->GetTPCNclsF();//number of findable clusters in TPC for negative track
+  Float_t nClsP;
+  nClsP = fTrackP->GetTPCNcls();//number of found clusters in TPC for positive track
+  Float_t nClsFP;
+  nClsFP = fTrackP->GetTPCNclsF();//number of findable clusters in TPC for positive track
   
   fQuality = 0;
 
 
-  Float_t ClsRatioN; 
-  Float_t ClsRatioP;
+  Float_t clsRatioN; 
+  Float_t clsRatioP;
 
-  if((NclsFN == 0) || (NclsFP == 0))
+  if((nClsFN == 0) || (nClsFP == 0))
     return 2;
     
-  ClsRatioN = NclsN/NclsFN; //ratios of found to findable clusters in TPC 
-  ClsRatioP = NclsP/NclsFP;
+  clsRatioN = nClsN/nClsFN; //ratios of found to findable clusters in TPC 
+  clsRatioP = nClsP/nClsFP;
     
   if (!(esdv0->GetOnFlyStatus()))//accept only vertices from online V0 finder
     return 3;
@@ -372,7 +407,7 @@ Int_t AliTRDv0Info::Quality(AliESDv0 *esdv0)
   if (fTrackP->GetKinkIndex(0)>0  ||
       fTrackN->GetKinkIndex(0)>0 )//exclude tracks with kinks
     return 6;
-  if((ClsRatioN < 0.6)||(ClsRatioP < 0.6))//exclude tracks with low ratio of found to findable TPC clusters
+  if((clsRatioN < 0.6)||(clsRatioP < 0.6))//exclude tracks with low ratio of found to findable TPC clusters
     return 7;
   fQuality = 1;
   return fQuality;

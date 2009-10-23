@@ -1,9 +1,15 @@
 #ifndef ALITRDV0INFO_H
 #define ALITRDV0INFO_H
-
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id: AliTRDv0Info.h 34132 2009-08-06 11:18:32Z cblume $ */
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Reconstruction QA                                                     //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #ifndef Root_TObject
 #include "TObject.h"
@@ -57,8 +63,8 @@ public:
   AliTRDv0Info();
   virtual ~AliTRDv0Info(){}
 
-  Float_t Pplus[2*kNlayer];
-  Float_t Pminus[2*kNlayer];
+/*   Float_t Pplus[2*kNlayer];       // Positives */
+/*   Float_t Pminus[2*kNlayer];      // Negatives */
 
  
   void Print(Option_t *opt=0x0) const;
@@ -100,20 +106,19 @@ private:
   AliTRDv0Info(const AliTRDv0Info&);
   AliTRDv0Info& operator=(const AliTRDv0Info&);
 
- void GetESDv0Info(AliESDv0 *esdv0);//gets most of the variables below
+  void GetESDv0Info(AliESDv0 *esdv0);//gets most of the variables below
   void GetDetectorPID();//operating with likelihood values of different detectors
-  Int_t Quality(AliESDv0 *esdv0);//checks for track/vertex quality criteria
-  Double_t InvMass(Int_t part1, Int_t part2, AliESDv0 *esdv0);//invariant mass of mother
+  Int_t Quality(AliESDv0 * const esdv0);//checks for track/vertex quality criteria
+  Double_t InvMass(Int_t part1, Int_t part2, AliESDv0 *esdv0) const;//invariant mass of mother
   Float_t PsiPair(AliESDv0 *esdv0);//angle between daughters in plane perpendicular to magnetic field (characteristically around zero for conversions)
   Float_t OpenAngle(AliESDv0 *esdv0);//opening angle between V0 daughters; close to zero for conversions
   Float_t Radius(AliESDv0 *esdv0);//distance of secondary to primary vertex in x-y-plane 
   Float_t DCA() const {return fDCA;}//distance of closest approach between supposed daughter tracks
   Float_t PointingAngle() const {return fPointingAngle;}//pointing angle: between vector from primary to secondary vertex and reconstructed momentum of V0 mother particle
-  Float_t V0Momentum(AliESDv0 *esdv0);//reconstructed momentum of V0 mother particle
-  void V0fromTrack(AliTRDtrackInfo *track, Int_t ivertex);//checks if a track belongs to a vertex found by V0 finder
+  Float_t V0Momentum(AliESDv0 *esdv0) const;//reconstructed momentum of V0 mother particle
+  void V0fromTrack(AliTRDtrackInfo * const track, Int_t ivertex);//checks if a track belongs to a vertex found by V0 finder
   
-  AliESDEvent *fESD;
-
+  AliESDEvent *fESD; // ESD event
 
   Bool_t fHasV0; //Does this track belong to a vertex from a V0 finder?
  
@@ -135,7 +140,7 @@ private:
   
   Double_t fInvMass[kNDecays];  // invariant mass for different decay scenarios (conversions, K0s, Lambda->p+pi-, Lambda->p-pi+)
 
-  Double_t fMagField;
+  Double_t fMagField; //magnetic field strength
 
   Float_t fRadius; //distance of decay/conversion from primary vertex in x-y plane
 
@@ -147,38 +152,26 @@ private:
   //____________________________________________________________
   //Upper and lower limits for cut variables:
 
-  Float_t fUpDCA[kNDecays];  
-  
-  Float_t fUpPointingAngle[kNDecays];
-  
-  Float_t fUpOpenAngle[kNDecays];
-
-  Float_t fDownOpenAngle[kNDecays];
-  
-  Float_t fUpPsiPair[kNDecays];
-
-  Float_t fDownPsiPair[kNDecays];
-  
-  Double_t fUpInvMass[kNDecays][kNMomBins]; 
-
-  Double_t fDownInvMass[kNDecays]; 
-
-  Float_t fUpRadius[kNDecays];
-
-  Float_t fDownRadius[kNDecays];
-
-  Float_t fDownTPCPIDneg[AliPID::kSPECIES];
-
-  Float_t fDownTPCPIDpos[AliPID::kSPECIES];
-
+  Float_t fUpDCA[kNDecays];                  // DCA, upper limit
+  Float_t fUpPointingAngle[kNDecays];        // pointing angle, upper limit
+  Float_t fUpOpenAngle[kNDecays];            // opening angle, upper limit
+  Float_t fDownOpenAngle[kNDecays];          // opening angle, lower limit
+  Float_t fUpPsiPair[kNDecays];              // psi angle, upper limit
+  Float_t fDownPsiPair[kNDecays];            // psi angle, lower limit
+  Double_t fUpInvMass[kNDecays][kNMomBins];  // invariant mass, upper limit
+  Double_t fDownInvMass[kNDecays];           // invariant mass, lower limit
+  Float_t fUpRadius[kNDecays];               // radius, upper limit
+  Float_t fDownRadius[kNDecays];             // radius, lower limit
+  Float_t fDownTPCPIDneg[AliPID::kSPECIES];  // TPC PID negatives, lower limit
+  Float_t fDownTPCPIDpos[AliPID::kSPECIES];  // TPC PID positives, lower limit
  
   AliESDtrack *fTrackP; //positive daughter
   AliESDtrack *fTrackN; //negative daughter
   AliESDtrack *fTrack; //the current track in the ESDtrack loop (either positive or negative)
 
 
-  Int_t fNindex;//indices of positive and negative daughter track
-  Int_t fPindex;
+  Int_t fNindex; //indices of positive and negative daughter track
+  Int_t fPindex; //indices of positive and negative daughter track
   
   
   ClassDef(AliTRDv0Info, 0) // extracted V0 MC information
