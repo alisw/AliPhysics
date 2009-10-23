@@ -116,10 +116,11 @@ void AliVZERODataDCS::ProcessData(TMap& aliasMap){
     Double_t *values = new Double_t[nentries];
 
     UInt_t iValue=0;
+    Float_t variation = 0.0;
+    
     while((aValue = (AliDCSValue*) iterarray.Next())) {
    		values[iValue] = aValue->GetFloat();
 		if(iValue>0) {
-			Float_t variation ;
 			if(values[iValue-1]>0.) variation = TMath::Abs(values[iValue]-values[iValue-1])/values[iValue-1];
 			if(variation > 0.10) fDeadChannel[GetOfflineChannel(iAlias)] = kTRUE;
 		}
