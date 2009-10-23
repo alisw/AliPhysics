@@ -1,4 +1,4 @@
-AliAnalysisTaskSEDplus *AddTaskDplus()
+AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE)
 {
   //                                                                                                                                    
   // Test macro for the AliAnalysisTaskSE for heavy-flavour candidates                                                                  
@@ -17,7 +17,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus()
 
 
   // Aanalysis task                                                                                                                     
-  AliAnalysisTaskSEDplus *dplusTask = new AliAnalysisTaskSEDplus("DplusAnalysis");
+  AliAnalysisTaskSEDplus *dplusTask = new AliAnalysisTaskSEDplus("DplusAnalysis",storeNtuple);
   dplusTask->SetDebugLevel(0);
   mgr->AddTask(dplusTask);
 
@@ -28,20 +28,23 @@ AliAnalysisTaskSEDplus *AddTaskDplus()
   AliAnalysisDataContainer *coutputDplus = mgr->CreateContainer("coutputDplus",TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,
                                                            "InvMassDplus.root");
-  AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer("coutputDplus2",TNtuple::Class(),
+  if(storeNtuple){
+    AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer("coutputDplus2",TNtuple::Class(),
                                                            AliAnalysisManager::kOutputContainer,
 								 "InvMassDplus_nt1.root");
-  AliAnalysisDataContainer *coutputDplus3 = mgr->CreateContainer("coutputDplus3",TNtuple::Class(),
+    AliAnalysisDataContainer *coutputDplus3 = mgr->CreateContainer("coutputDplus3",TNtuple::Class(),
                                                            AliAnalysisManager::kOutputContainer,
 								 "InvMassDplus_nt2.root");
-  coutputDplus2->SetSpecialOutput();
-  coutputDplus3->SetSpecialOutput();
-
+    coutputDplus2->SetSpecialOutput();
+    coutputDplus3->SetSpecialOutput();
+  }
   mgr->ConnectInput(dplusTask,0,mgr->GetCommonInputContainer());
 
   mgr->ConnectOutput(dplusTask,1,coutputDplus);
-  mgr->ConnectOutput(dplusTask,2,coutputDplus2);
-  mgr->ConnectOutput(dplusTask,3,coutputDplus3);
-
+  
+  if(storeNtuple){
+    mgr->ConnectOutput(dplusTask,2,coutputDplus2);
+    mgr->ConnectOutput(dplusTask,3,coutputDplus3);
+  }
   return dplusTask;
 }
