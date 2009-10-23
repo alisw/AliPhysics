@@ -12,25 +12,22 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-/************************************************************************
- *                                                                      *
- * PID Steering Class                                                   *
- * Interface to the user task                                           *
- *                                                                      *
- * Authors:                                                             *
- *   Markus Fasel <M.Fasel@gsi.de>                                      *
- *                                                                      *
- ************************************************************************/
+//
+// PID Steering Class 
+// Interface to the user task
+// 
+// Authors:
+//   Markus Fasel <M.Fasel@gsi.de>
+//
+#include <TAxis.h>
 #include <TClass.h>
 #include <THnSparse.h>
-#include <TH3F.h>
 #include <TIterator.h>
 #include <TList.h>
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TString.h>
 
-#include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliPID.h"

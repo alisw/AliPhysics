@@ -12,6 +12,11 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+//
+// Cut container class for the ALICE HFE group
+// Serves also as interface to the correction Framework
+// Provides a set of standard cuts
+//
 #ifndef ALIHFECUTS_H
 #define ALIHFECUTS_H
 
@@ -31,18 +36,6 @@ class TObjArray;
 class TList;
 
 class AliHFEcuts : public TObject{
-  enum{
-    kDebugMode = BIT(14)
-  };
-  typedef enum{
-    kPrimary = 0,
-    kProductionVertex = 1,
-    kSigmaToVertex = 2,
-    kDCAToVertex = 3,
-    kITSPixel = 4,
-    kMaxImpactParam = 5
-  } Require_t;
-
   public:
     typedef enum{
       kStepMCGenerated = 0,
@@ -112,6 +105,17 @@ class AliHFEcuts : public TObject{
     Int_t GetDebugLevel() const { return fDebugLevel; };
 
   private:
+    enum{
+      kDebugMode = BIT(14)
+    };
+    typedef enum{
+      kPrimary = 0,
+      kProductionVertex = 1,
+      kSigmaToVertex = 2,
+      kDCAToVertex = 3,
+      kITSPixel = 4,
+      kMaxImpactParam = 5
+    } Require_t;
     void SetParticleGenCutList();
     void SetAcceptanceCutList();
     void SetRecKineITSTPCCutList();

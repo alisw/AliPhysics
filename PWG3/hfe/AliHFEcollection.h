@@ -2,21 +2,21 @@
  * See cxx source for full Copyright notice      
  */
 
-/************************************************************************
- *                                                                      *
- * Class for AliHFEcollection                                           *
- * Serves as a data container - currently based on internal TList       *
- *                                                                      *
- * Authors:                                                             *
- *   Markus Fasel  <M.Fasel@gsi.de>                                     *
- *   Matus Kalisky <matus.kalisky@cern.ch>  (contact)                   *
- ************************************************************************/
+//                                                                      
+// Class for AliHFEcollection                                           
+// Serves as a data container - currently based on internal TList      
+//                                                                      
+// Authors:                                                             
+//   Markus Fasel  <M.Fasel@gsi.de>                                    
+//   Matus Kalisky <matus.kalisky@cern.ch>  (contact)                   
+//
 
-/*
- * Provides an option for storing and creating histograms outside the
- * analysis class
- * the performance will be improved once the TMap is used insted of TTree
- */
+
+//
+// Provides an option for storing and creating histograms outside the
+// analysis class
+// the performance will be improved once the TMap is used insted of TTree
+//
 
 /*
  * vesion: 1.0.1

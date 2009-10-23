@@ -12,41 +12,27 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/**************************************************************************
- *                                                                        *
- * QA class of Heavy Flavor quark and fragmeted/decayed particles         *
- * -Check kinematics of Heavy Quarks/hadrons, and decayed leptons         *
- *    pT, rapidity                                                        *
- *    decay lepton kinematics w/wo acceptance                             *
- *    heavy hadron decay length, electron pT fraction carried from decay  *
- * -Check yield of Heavy Quarks/hadrons                                   *
- *    Number of produced heavy quark                                      *
- *    Number of produced hadron of given pdg code                         *
- *                                                                        *
- *                                                                        *
- * Authors:                                                               *
- *   MinJung Kweon <minjung@physi.uni-heidelberg.de>                      *
- *                                                                        *
- **************************************************************************/
+//
+// QA class of Heavy Flavor quark and fragmeted/decayed particles
+// -Check kinematics of Heavy Quarks/hadrons, and decayed leptons
+//    pT, rapidity
+//    decay lepton kinematics w/wo acceptance
+//    heavy hadron decay length, electron pT fraction carried from decay
+// -Check yield of Heavy Quarks/hadrons
+//    Number of produced heavy quark
+//    Number of produced hadron of given pdg code
+//
+//
+// Authors:
+//   MinJung Kweon <minjung@physi.uni-heidelberg.de>
+//
 
-
-#include <iostream>
 #include <TH2F.h>
-#include <TCanvas.h>
-#include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TCut.h>
-#include <TRandom.h>
-#include <TDatabasePDG.h>
-#include <TROOT.h>
 #include <TParticle.h>
 
 #include <AliLog.h>
-#include <AliESDEvent.h>
-#include <AliESDtrack.h>
-#include <AliESDInputHandler.h>
-#include <AliESDVertex.h>
 #include <AliStack.h>
 #include <AliAODMCParticle.h>
 
@@ -98,7 +84,7 @@ AliHFEmcQA::~AliHFEmcQA()
 }
 
 //_______________________________________________________________________________________________
-void AliHFEmcQA::PostAnalyze()
+void AliHFEmcQA::PostAnalyze() const
 {
 }
 
@@ -460,7 +446,7 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
       return; 
     }
     Int_t iq = kquark - kCharm; 
-    Bool_t IsFinalOpenCharm = kFALSE;
+    Bool_t isFinalOpenCharm = kFALSE;
 
 /*
     if (iTrack < 0) { 
@@ -494,10 +480,10 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
 
          for (Int_t i=0; i<fNparents; i++){
             if (abs(maPdgcode)==fParentSelect[0][i]){
-              IsFinalOpenCharm = kTRUE;
+              isFinalOpenCharm = kTRUE;
             } 
          }  
-         if (!IsFinalOpenCharm) return ;
+         if (!isFinalOpenCharm) return ;
 
           // iterate until you find B hadron as a mother or become top ancester 
           for (Int_t i=1; i<fgkMaxIter; i++){
@@ -587,7 +573,7 @@ void  AliHFEmcQA::GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, I
   }
 
   Int_t iq = kquark - kCharm;
-  Bool_t IsFinalOpenCharm = kFALSE;
+  Bool_t isFinalOpenCharm = kFALSE;
 
   if ( abs(mcpart->GetPdgCode()) != kdecayed ) return;
 
@@ -608,10 +594,10 @@ void  AliHFEmcQA::GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, I
 
     for (Int_t i=0; i<fNparents; i++){
        if (abs(maPdgcode)==fParentSelect[0][i]){
-         IsFinalOpenCharm = kTRUE;
+         isFinalOpenCharm = kTRUE;
        }
     } 
-    if (!IsFinalOpenCharm) return;
+    if (!isFinalOpenCharm) return;
 
     for (Int_t i=1; i<fgkMaxIter; i++){
 
@@ -769,7 +755,7 @@ void AliHFEmcQA::ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &mo
 }
 
 //__________________________________________
-Float_t AliHFEmcQA::GetRapidity(TParticle *part)
+Float_t AliHFEmcQA::GetRapidity(TParticle *part) const
 {
       // return rapidity
 
@@ -780,7 +766,7 @@ Float_t AliHFEmcQA::GetRapidity(TParticle *part)
 }
 
 //__________________________________________
-Float_t AliHFEmcQA::GetRapidity(AliAODMCParticle *part)
+Float_t AliHFEmcQA::GetRapidity(AliAODMCParticle *part) const
 {
       // return rapidity
 
@@ -798,7 +784,7 @@ Int_t AliHFEmcQA::GetElectronSource(AliAODMCParticle *mcpart)
   if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
        
   Int_t origin = -1;
-  Bool_t IsFinalOpenCharm = kFALSE;
+  Bool_t isFinalOpenCharm = kFALSE;
 
   // mother
   Int_t iLabel = mcpart->GetMother();
@@ -815,10 +801,10 @@ Int_t AliHFEmcQA::GetElectronSource(AliAODMCParticle *mcpart)
     
     for (Int_t i=0; i<fNparents; i++){
        if (abs(maPdgcode)==fParentSelect[0][i]){
-         IsFinalOpenCharm = kTRUE;
+         isFinalOpenCharm = kTRUE;
        }
     }
-    if (!IsFinalOpenCharm) return -1;
+    if (!isFinalOpenCharm) return -1;
 
     // iterate until you find B hadron as a mother or become top ancester 
     for (Int_t i=1; i<fgkMaxIter; i++){
@@ -875,7 +861,7 @@ Int_t AliHFEmcQA::GetElectronSource(TParticle* mcpart)
   if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
 
   Int_t origin = -1;
-  Bool_t IsFinalOpenCharm = kFALSE;
+  Bool_t isFinalOpenCharm = kFALSE;
 
   Int_t iLabel = mcpart->GetFirstMother();
   if (iLabel<0){
@@ -891,10 +877,10 @@ Int_t AliHFEmcQA::GetElectronSource(TParticle* mcpart)
 
      for (Int_t i=0; i<fNparents; i++){
         if (abs(maPdgcode)==fParentSelect[0][i]){
-          IsFinalOpenCharm = kTRUE;
+          isFinalOpenCharm = kTRUE;
         }
      }
-     if (!IsFinalOpenCharm) return -1;
+     if (!isFinalOpenCharm) return -1;
 
      // iterate until you find B hadron as a mother or become top ancester 
      for (Int_t i=1; i<fgkMaxIter; i++){

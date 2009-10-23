@@ -12,19 +12,16 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-/************************************************************************
- *                                                                      *
- * Extra cuts implemented by the ALICE Heavy Flavour Electron Group     *
- * Cuts stored here:                                                    *
- * - ITS pixels                                                         *
- * - TPC cluster ratio                                                  *
- * - TRD tracklets                                                      *
- *                                                                      *
- * Authors:                                                             *
- *   Markus Fasel <M.Fasel@gsi.de>                                      *
- *                                                                      *
- ************************************************************************/
-#include <TAxis.h>
+//
+// Extra cuts implemented by the ALICE Heavy Flavour Electron Group
+// Cuts stored here:
+// - ITS pixels
+// - TPC cluster ratio
+// - TRD tracklets
+//
+// Authors:
+//   Markus Fasel <M.Fasel@gsi.de>
+//
 #include <TClass.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -33,7 +30,6 @@
 #include <TMath.h>
 
 #include "AliESDtrack.h"
-#include "AliLog.h"
 #include "AliMCParticle.h"
 
 #include "AliHFEextraCuts.h"

@@ -12,28 +12,19 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-/************************************************************************
- *                                                                      *
- * Class for TRD PID                                                    *
- * Implements the abstract base class AliHFEpidbase                     *
- * Make PID does the PID decision                                       *
- * Class further contains TRD specific cuts and QA histograms           *
- *                                                                      *
- * Authors:                                                             *
- *   Markus Fasel <M.Fasel@gsi.de>                                      *
- *                                                                      *
- ************************************************************************/
-#include <TAxis.h>
-#include <TFile.h>
+//
+// Class for TRD PID
+// Implements the abstract base class AliHFEpidbase 
+// Make PID does the PID decision 
+// Class further contains TRD specific cuts and QA histograms 
+//  
+// Authors: 
+//   Markus Fasel <M.Fasel@gsi.de>  
+// 
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TIterator.h>
-#include <TKey.h>
-#include <TMap.h>
-#include <TObjArray.h>
-#include <TObjString.h>
+#include <TList.h>
 #include <TString.h>
-#include <TROOT.h>
 
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
@@ -140,12 +131,18 @@ Int_t AliHFEpidTRD::IsSelected(AliHFEpidObject *track){
 
 //______________________________________________________
 Int_t AliHFEpidTRD::MakePIDaod(AliAODTrack * /*aodTrack*/, AliAODMCParticle * /*aodmc*/){
+  //
+  // Does PID decision for AOD tracks as discribed above
+  //
   AliError("AOD PID not yet implemented");
   return 0;
 }
 
 //______________________________________________________
 Int_t AliHFEpidTRD::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle * /*mcTrack*/){
+  //
+  // Does PID decision for ESD tracks as discribed above
+  //
   Double_t p = esdTrack->GetOuterParam() ? esdTrack->GetOuterParam()->P() : esdTrack->P();
   if(p < 2.0) return 0;
 

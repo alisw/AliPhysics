@@ -12,6 +12,11 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+//
+// Class for TPC PID
+// Does electron selection based on dE/dx
+// For more information please check the implementation file
+//
 #ifndef ALIHFEPIDTPC_H
 #define ALIHFEPIDTPC_H
 
@@ -32,39 +37,6 @@ class AliTPCpidESD;
 class AliVParticle;
 
 class AliHFEpidTPC : public AliHFEpidBase{
-  typedef enum{
-    kHistTPCelectron = 0,
-    kHistTPCpion = 1,
-    kHistTPCmuon = 2,
-    kHistTPCkaon = 3,
-    kHistTPCproton = 4,
-    kHistTPCothers = 5,
-    kHistTPCall = 6,
-    kHistTPCselected = 7,
-    kHistTPCprobEl = 8,
-    kHistTPCprobPi = 9,
-    kHistTPCprobMu = 10,
-    kHistTPCprobKa = 11,
-    kHistTPCprobPro = 12,
-    kHistTPCprobOth = 13,
-    kHistTPCprobAll = 14,
-    kHistTPCsuppressPi = 15,
-    kHistTPCsuppressMu = 16,
-    kHistTPCsuppressKa = 17,
-    kHistTPCsuppressPro = 18,
-    kHistTPCenhanceElPi = 19,
-    kHistTPCenhanceElMu = 20,
-    kHistTPCenhanceElKa = 21,
-    kHistTPCenhanceElPro = 22,
-    kHistTPCElprobPi = 23,
-    kHistTPCElprobMu = 24,
-    kHistTPCElprobKa = 25,
-    kHistTPCElprobPro = 26
-  } QAHist_t;
-  enum{
-    kAsymmetricSigmaCut = BIT(20),
-    kRejection = BIT(21)
-  };
   public:
     AliHFEpidTPC(const Char_t *name);
     AliHFEpidTPC(const AliHFEpidTPC &ref);
@@ -93,6 +65,39 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Double_t Suppression(const AliESDtrack *track, Int_t species);
 
   private:
+    typedef enum{
+      kHistTPCelectron = 0,
+      kHistTPCpion = 1,
+      kHistTPCmuon = 2,
+      kHistTPCkaon = 3,
+      kHistTPCproton = 4,
+      kHistTPCothers = 5,
+      kHistTPCall = 6,
+      kHistTPCselected = 7,
+      kHistTPCprobEl = 8,
+      kHistTPCprobPi = 9,
+      kHistTPCprobMu = 10,
+      kHistTPCprobKa = 11,
+      kHistTPCprobPro = 12,
+      kHistTPCprobOth = 13,
+      kHistTPCprobAll = 14,
+      kHistTPCsuppressPi = 15,
+      kHistTPCsuppressMu = 16,
+      kHistTPCsuppressKa = 17,
+      kHistTPCsuppressPro = 18,
+      kHistTPCenhanceElPi = 19,
+      kHistTPCenhanceElMu = 20,
+      kHistTPCenhanceElKa = 21,
+      kHistTPCenhanceElPro = 22,
+      kHistTPCElprobPi = 23,
+      kHistTPCElprobMu = 24,
+      kHistTPCElprobKa = 25,
+      kHistTPCElprobPro = 26
+    } QAHist_t;
+    enum{
+      kAsymmetricSigmaCut = BIT(20),
+      kRejection = BIT(21)
+    };
     Double_t fLineCrossingSigma[AliPID::kSPECIES];          // with of the exclusion point
     UChar_t fLineCrossingsEnabled;                          // Bitmap showing which line crossing is set
     Float_t fPAsigCut[2];                                   // Momentum region where to perform asymmetric sigma cut

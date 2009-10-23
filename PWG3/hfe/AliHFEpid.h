@@ -12,6 +12,11 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+//
+// Steering class for electron identification
+// Combines detector PID objects
+// For more information please check the implementation file
+//
 #ifndef ALIHFEPID_H
 #define ALIHFEPID_H
 
@@ -30,27 +35,7 @@ class AliMCParticle;
 class TList;
 
 class AliHFEpid : public TObject{
-  enum{
-    kIsQAOn = BIT(14),
-    kHasMCData = BIT(15)
-  };
-  enum{
-    kMCpid = 0,
-    kESDpid = 1,
-    kITSpid = 2,
-    kTPCpid = 3,
-    kTRDpid = 4,
-    kTOFpid = 5,
-    kNdetectorPID = 6
-  };
-  enum{
-    kCombinedTPCTRD=0
-  };
-  enum{
-    kTRDSignal = 0,
-    kITSSignal = 1
-  };
-  public:
+ public:
     AliHFEpid();
     AliHFEpid(const AliHFEpid &c);
     AliHFEpid &operator=(const AliHFEpid &c);
@@ -83,6 +68,26 @@ class AliHFEpid : public TObject{
     Bool_t IdentifyStrategy4(AliHFEpidObject *track);
     Bool_t IdentifyStrategy5(AliHFEpidObject *track);
   private:
+    enum{
+      kIsQAOn = BIT(14),
+      kHasMCData = BIT(15)
+    };
+    enum{
+      kMCpid = 0,
+      kESDpid = 1,
+      kITSpid = 2,
+      kTPCpid = 3,
+      kTRDpid = 4,
+      kTOFpid = 5,
+      kNdetectorPID = 6
+    };
+    enum{
+      kCombinedTPCTRD=0
+    };
+    enum{
+      kTRDSignal = 0,
+      kITSSignal = 1
+    };
     AliHFEpidBase *fDetectorPID[kNdetectorPID];     //! Detector PID classes
     UInt_t fEnabledDetectors;                       //  Enabled Detectors
     UInt_t fPIDstrategy;                            //  PID Strategy

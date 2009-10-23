@@ -12,6 +12,11 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+//
+// Extra Cuts from the ALICE HFE Group
+// Container for cuts which are currently not implemented by
+// the Correction Framework
+//
 #ifndef ALIHFEEXTRACUTS_H
 #define ALIHFEEXTRACUTS_H
 

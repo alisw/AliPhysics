@@ -12,6 +12,11 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+//
+// TRD PID Class
+// Does PID either on a x% electron efficiency basis or on dE/dx
+// For more information please check the implementation file
+//
 #ifndef ALIHFEPIDTRD_H
 #define ALIHFEPIDTRD_H
 

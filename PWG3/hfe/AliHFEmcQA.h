@@ -12,18 +12,16 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/**************************************************************************
- *                                                                        *
- * QA class of Heavy Flavor quark and fragmeted/decayed particles         *
- * -Check kinematics of Heavy Quarks/hadrons, and decayed leptons         *
- *    pT, rapidity                                                        *
- *    decay lepton kinematics w/wo acceptance                             *
- *    heavy hadron decay length, electron pT fraction carried from decay  *
- * -Check yield of Heavy Quarks/hadrons                                   *
- *    Number of produced heavy quark                                      *
- *    Number of produced hadron of given pdg code                         *
- *                                                                        *
- **************************************************************************/
+//
+// QA class of Heavy Flavor quark and fragmeted/decayed particles
+// -Check kinematics of Heavy Quarks/hadrons, and decayed leptons
+//    pT, rapidity
+//    decay lepton kinematics w/wo acceptance
+//    heavy hadron decay length, electron pT fraction carried from decay 
+// -Check yield of Heavy Quarks/hadrons
+//    Number of produced heavy quark
+//    Number of produced hadron of given pdg code
+//
 
 #ifndef ALIHFEMCQA_H
 #define ALIHFEMCQA_H
@@ -57,7 +55,7 @@ class AliHFEmcQA: public TObject {
 
                 virtual ~AliHFEmcQA();
 
-                void PostAnalyze();
+                void PostAnalyze() const;
                 void CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt=""); // create histograms for mc qa analysis
                 void SetStack(AliStack* const stack){fStack=stack;} // set stack pointer
                 void SetMCArray(TClonesArray* const mcarry){fMCArray=mcarry;} // set mcarray pointer
@@ -77,8 +75,8 @@ class AliHFEmcQA: public TObject {
                 void ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // report if the quark production process is unknown
                 Bool_t IsFromInitialShower(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from initial parton shower 
                 Bool_t IsFromFinalParton(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from final parton shower
-                Float_t GetRapidity(TParticle *part); // return rapidity
-		Float_t GetRapidity(AliAODMCParticle *part); // return rapidity
+                Float_t GetRapidity(TParticle *part) const; // return rapidity
+		Float_t GetRapidity(AliAODMCParticle *part) const; // return rapidity
 
                 AliStack* fStack; // stack pointer           
 		TClonesArray *fMCArray; // mc array pointer
