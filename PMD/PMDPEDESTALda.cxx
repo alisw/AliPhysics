@@ -3,7 +3,7 @@ PMD DA for online calibration
 
 contact: basanta@phy.iitb.ac.in
 Link:
-Reference Run:/afs/cern.ch/user/b/bnandi/public/pedestaldata/run37820.raw
+Reference Run:/afs/cern.ch/user/s/sjena/public/run83496.raw
 Run Type: PEDESTAL
 DA Type: LDC
 Number of events needed: 1000
@@ -18,7 +18,6 @@ extern "C" {
 
 #include "event.h"
 #include "monitor.h"
-//#include "daqDA.h"
 
 #include <Riostream.h>
 #include <stdio.h>
@@ -27,6 +26,8 @@ extern "C" {
 //AliRoot
 #include "AliRawReaderDate.h"
 #include "AliPMDCalibPedestal.h"
+#include "AliLog.h"
+#include "AliCDBManager.h"
 
 //ROOT
 #include "TFile.h"
@@ -35,6 +36,7 @@ extern "C" {
 #include "TTree.h"
 #include "TROOT.h"
 #include "TPluginManager.h"
+#include "TSystem.h"
 
 /* Main routine
       Arguments: 
@@ -94,6 +96,39 @@ int main(int argc, char **argv) {
     struct eventHeaderStruct *event;
     eventTypeType eventT = 0;
     Int_t iev=0;
+
+    // Get run number
+    /*
+    if (getenv("DATE_RUN_NUMBER")==0) {
+      printf("DATE_RUN_NUMBER not properly set.\n");
+      return -1;
+    }
+    int runNr = atoi(getenv("DATE_RUN_NUMBER"));
+    */
+    int runNr = 0;
+
+
+    if (gSystem->AccessPathName("localOCDB/PMD/Calib/Mapping",kFileExists))
+      {
+	if (gSystem->mkdir("localOCDB/PMD/Calib/Mapping",kTRUE) != 0)
+	  {
+	    printf("Failed to create directory: localOCDB/PMD/Calib/Mapping");
+	    return -1;
+	  }
+      }
+    status = daqDA_DB_getFile("PMD/Calib/Mapping","localOCDB/PMD/Calib/Mapping/Run0_999999999_v0_s0.root");
+    if (status)
+      {
+	printf("Failed to get PMD-Mapping file (PMD/Calib/Mapping) from DAQdetDB, status=%d\n", status);
+	return -1;
+      }
+
+    // Global initializations
+    AliLog::SetGlobalLogLevel(AliLog::kError);
+    AliCDBManager *man = AliCDBManager::Instance();
+    man->SetDefaultStorage("local://localOCDB");
+    man->SetRun(runNr);
+
     
     /* main loop (infinite) */
     for(;;) {
