@@ -89,7 +89,7 @@ void runBatch(const char *chainlistfile) {
 //   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clist1", TList::Class(),AliAnalysisManager::kOutputContainer,"Femto.ESD.root");
   
   gROOT->LoadMacro("AddTaskFemto.C");
-  AliAnalysisTaskFemto *taskfemto = AddTaskFemto();
+  AliAnalysisTaskFemto *taskfemto = AddTaskFemto("$ALICE_ROOT/PWG2/FEMTOSCOPY/macros/Batch/ConfigFemtoAnalysis.C");
 
 //   cout << "What ???" << endl;
 //   int deb;
