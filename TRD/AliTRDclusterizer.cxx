@@ -453,23 +453,29 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
       ioArray->AddLast(c);
     }
     fClusterTree->Fill();
+    ioArray->Clear();
   } else {
-    
-    Int_t detOld = -1;
+    Int_t detOld = -1, nw(0);
     for (Int_t i = 0; i < nRecPoints; i++) {
       AliTRDcluster *c = (AliTRDcluster *) RecPoints()->UncheckedAt(i);
       if(c->GetDetector() != detOld){
+        nw += ioArray->GetEntriesFast();
         fClusterTree->Fill();
         ioArray->Clear();
         detOld = c->GetDetector();
       } 
       ioArray->AddLast(c);
     }
+    if(ioArray->GetEntriesFast()){
+      nw += ioArray->GetEntriesFast();
+      fClusterTree->Fill();
+      ioArray->Clear();
+    }
+    AliDebug(2, Form("Clusters FOUND[%d] WRITTEN[%d] STATUS[%s]", nRecPoints, nw, nw==nRecPoints?"OK":"FAILED"));
   }
   delete ioArray;
 
   return kTRUE;  
-
 }
 
 //_____________________________________________________________________________
@@ -774,6 +780,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     return kFALSE;
   }
 
+
   fMaxThresh            = fReconstructor->GetRecoParam()->GetClusMaxThresh();
   fSigThresh            = fReconstructor->GetRecoParam()->GetClusSigThresh();
   fMinMaxCutSigma       = fReconstructor->GetRecoParam()->GetMinMaxCutSigma();
@@ -790,6 +797,8 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     AliError("Strange Detector number Missmatch!");
     return kFALSE;
   }
+
+  AliDebug(2, Form("Det[%d] @ Sec[%d] Stk[%d] Ly[%d]", fDet, isector, istack, fLayer));
 
   // TRD space point transformation
   fTransform->SetDetector(det);
