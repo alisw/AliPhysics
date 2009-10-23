@@ -180,7 +180,7 @@ const char* AliTPCConfigParser::GetData(const char *key, UInt_t position)
   //Get value for the speciefied key
   //
   TObjArray *arr=((TObjArray*)fConfigMap->FindObject(key));
-  if (position>=arr->GetEntries()) return "";
+  if (position>=(UInt_t)(arr->GetEntries())) return "";
   TObject *val=arr->At(position);
   if ( !val ) return "";
   return (((TObjString*)val)->GetString()).Data();
@@ -203,7 +203,7 @@ const char* AliTPCConfigParser::GetData(const TObject *key, UInt_t position)
   //Get value for the speciefied key
   //
   TObjArray *arr=((TObjArray*)fConfigMap->FindObject(key));
-  if (position>=arr->GetEntries()) return "";
+  if (position>=((UInt_t)arr->GetEntries())) return "";
   TObject *val=arr->At(position);
   if ( !val ) return "";
   return (((TObjString*)val)->GetString()).Data();
