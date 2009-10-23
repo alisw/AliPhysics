@@ -20,6 +20,7 @@ class AliESDtrack;
 class AliTPCcalibLaser;
 class TGraphErrors;
 class AliSplineFit;
+class AliESDfriendTrack;
 
 #include "TTreeStream.h"
 #include "TMap.h"
