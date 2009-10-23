@@ -86,13 +86,15 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, AliMUONRecoParam* )
   const Int_t kNrawsHistos = sizeof(histoRawsPercentIndex)/sizeof(histoRawsPercentIndex[0]);
 
   // MOVE THESE TO REFERENCE HISTOS
-  Float_t safeFactor = 5.;
-  Float_t alarmPercentTrigAlgo[AliMUONTriggerQADataMakerRec::kNtrigAlgoErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., 100., 100., 100., 100., safeFactor*1., safeFactor*1., safeFactor*1.};
-  Float_t alarmPercentCalib[AliMUONTriggerQADataMakerRec::kNtrigCalibSummaryBins] = {safeFactor*0.4, safeFactor*1., 6.2, 0.0001, safeFactor*0.4};
-  Float_t alarmPercentReadout[AliMUONTriggerQADataMakerRec::kNtrigStructErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., safeFactor*1.};
-
-  Float_t* alarmPercent[kNrawsHistos] = {alarmPercentTrigAlgo, alarmPercentCalib, alarmPercentReadout};
-
+// START WITH THOSE COMMENTED OUT UNTIL WE GAIN CONFIDENCE...
+//  Float_t safeFactor = 5.;
+//  Float_t alarmPercentTrigAlgo[AliMUONTriggerQADataMakerRec::kNtrigAlgoErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., 100., 100., 100., 100., safeFactor*1., safeFactor*1., safeFactor*1.};
+//  Float_t alarmPercentCalib[AliMUONTriggerQADataMakerRec::kNtrigCalibSummaryBins] = {safeFactor*0.4, safeFactor*1., 6.2, 0.0001, safeFactor*0.4};
+//  Float_t alarmPercentReadout[AliMUONTriggerQADataMakerRec::kNtrigStructErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., safeFactor*1.};
+//
+//  Float_t* alarmPercent[kNrawsHistos] = {alarmPercentTrigAlgo, alarmPercentCalib, alarmPercentReadout};
+// END OF COWARD COMMENTING...
+  
   TH1* currHisto = 0x0;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     for(Int_t ihisto = 0; ihisto<kNrawsHistos; ihisto++){
