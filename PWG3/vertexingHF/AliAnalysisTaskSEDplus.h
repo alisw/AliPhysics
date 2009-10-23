@@ -24,7 +24,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
  public:
 
   AliAnalysisTaskSEDplus();
-  AliAnalysisTaskSEDplus(const char *name);
+  AliAnalysisTaskSEDplus(const char *name, Bool_t fillNtuple=kFALSE);
   virtual ~AliAnalysisTaskSEDplus();
 
 
@@ -41,15 +41,12 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   AliAnalysisTaskSEDplus(const AliAnalysisTaskSEDplus &source);
   AliAnalysisTaskSEDplus& operator=(const AliAnalysisTaskSEDplus& source); 
   TList   *fOutput; //! list send on output slot 0
-  TNtuple *fNtupleDplus; // output ntuple
-  TNtuple *fNtupleDplusbackg; // output ntuple
-  TH1F    *fHistMass;    // output histogram
-  TH1F    *fHistSignal;    // output histogram
-  TH1F    *fHistBackground;    // output histogram
-  
+  TNtuple *fNtupleDplus; //! output ntuple
+  TNtuple *fNtupleDplusbackg; //! output ntuple
+  Bool_t fFillNtuple;   // flag for filling ntuple
   AliAnalysisVertexingHF *fVHF;  // Vertexer heavy flavour (used to pass the cuts)
   
-  ClassDef(AliAnalysisTaskSEDplus,3); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,4); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
