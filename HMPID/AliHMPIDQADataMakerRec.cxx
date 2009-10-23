@@ -148,6 +148,8 @@ void AliHMPIDQADataMakerRec::InitRaws()
   TH2F *hDilo[14];
   TH2I *hPadMap[42]; //AMORE monitoring
   TH1I *hPadQ[42]; //AMORE monitoring
+   
+  
   for(Int_t iddl =0; iddl<AliHMPIDRawStream::kNDDL; iddl++) {
     
     hSumErr[iddl] = new TH1F(Form("hSumErrDDL%i",iddl), Form("Error summary for DDL %i;??;??",iddl), 2*kNerr,0,2*kNerr);
@@ -156,7 +158,7 @@ void AliHMPIDQADataMakerRec::InitRaws()
       hSumErr[iddl]->GetXaxis()->SetBinLabel((2*ilabel+1),Form("%i  %s",ilabel+1,AliHMPIDRawStream::GetErrName(ilabel)));
     }
     
-    Add2RawsList(hSumErr[iddl],iddl,expert,!image, !saveCorr);
+   Add2RawsList(hSumErr[iddl],iddl,expert,!image, !saveCorr);
     
     hDilo[iddl] = new TH2F(Form("hDiloDDL%i",iddl),Form("Dilogic response at DDL;Row # ;Dilogic #",iddl),24,1,25,10,1,11);
     Add2RawsList(hDilo[iddl],14+iddl,expert,!image, !saveCorr);
@@ -164,7 +166,7 @@ void AliHMPIDQADataMakerRec::InitRaws()
   for(Int_t iCh = AliHMPIDParam::kMinCh; iCh <=AliHMPIDParam::kMaxCh ;iCh++) {
     for(Int_t iPc = AliHMPIDParam::kMinPc; iPc <= AliHMPIDParam::kMaxPc ;iPc++) {
       hPadMap[iPc+6*iCh] = new TH2I(Form("hPadMap_Ch_%i_Pc%i",iCh,iPc),Form("Pad Map of Ch: %i Pc: %i;Pad X;Pad Y;",iCh,iPc),80,0,80,48,0,48);
-      Add2RawsList(hPadMap[iPc+6*iCh],28+iPc+6*iCh,expert,!image, !saveCorr); 
+     Add2RawsList(hPadMap[iPc+6*iCh],28+iPc+6*iCh,expert,!image, !saveCorr); 
       hPadQ[iPc+6*iCh]   = new TH1I(Form("hPadQ_Ch_%i_Pc%i",iCh,iPc),Form("Pad Charge of Ch: %i Pc: %i;Pad Q;Entries;",iCh,iPc),4100,0,4100);
       Add2RawsList(hPadQ[iPc+6*iCh],70+iPc+6*iCh,expert,!image, !saveCorr); 
     }//PC loop
@@ -172,7 +174,21 @@ void AliHMPIDQADataMakerRec::InitRaws()
   
   TH2I *hGeneralErrorSummary = new TH2I("GeneralErrorSummary"," DDL index vs Error type plot", 2*kNerr, 0, 2*kNerr, 2*AliHMPIDRawStream::kNDDL,0,2*AliHMPIDRawStream::kNDDL);
   for(Int_t igenlabel =0 ; igenlabel< kNerr; igenlabel++) hGeneralErrorSummary->GetXaxis()->SetBinLabel((2*igenlabel+1),Form("%i  %s",igenlabel+1,AliHMPIDRawStream::GetErrName(igenlabel)));
-  Add2RawsList(hGeneralErrorSummary,14+14+42+42, !expert, image, !saveCorr);
+  Add2RawsList(hGeneralErrorSummary,14+14+42+42, expert, image, !saveCorr);
+  
+  //for DQM shifter
+  TH2F *hHmpPadMapRaws = new TH2F("hHmpPadMapRaws","HMP Pad Map;pad x;pad y;Q (ADC)",480,0,480,432,0,432);
+  Add2RawsList(hHmpPadMapRaws,14+14+42+42+1,!expert,image,!saveCorr);
+  
+  TProfile *fHmpPadOcc = new TProfile("fHmpPadOcc","HMP Average pad occupancy per DDL;;Pad occupancy (%)",14,0.5,14.5);
+  fHmpPadOcc->SetFillColor(5);
+  for(Int_t iddl=0;iddl<14;iddl++)  fHmpPadOcc->GetXaxis()->SetBinLabel(iddl+1,Form("DDL_%d",iddl+1));
+  Add2RawsList(fHmpPadOcc,14+14+42+42+2,!expert,image,!saveCorr);  
+ 
+  TH1F *hHmpPadQ = new TH1F("hHmpPadQ","HMP Pad charge distribution;pad Q (ADC);Entries",4100,0,4100);
+  hHmpPadQ->Sumw2();
+  Add2RawsList(hHmpPadQ,14+14+42+42+3,!expert,image,!saveCorr);  
+  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::InitESDs()
@@ -205,31 +221,46 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 //
 // Filling Raws QA histos
 //
-	  rawReader->Reset() ; 
-		AliHMPIDRawStream stream(rawReader);
-
+    rawReader->Reset() ; 
+    AliHMPIDRawStream stream(rawReader);
+    Int_t shiftX[7]={320,160,320,160,0,160,0};
+    Int_t shiftY[7]={0,0,144,144,144,288,288};
+    Int_t ddlOcc[14]={0};  
+    Bool_t isHMPin=kFALSE;
     fEvtRaw++;
-
     while(stream.Next())
      {
        UInt_t ddl=stream.GetDDLNumber(); //returns 0,1,2 ... 13
+       isHMPin=kFALSE;
        if(ddl > 13) continue;
        for(Int_t iErr =1; iErr<(Int_t)AliHMPIDRawStream::kSumErr; iErr++){
-         Int_t numOfErr = stream.GetErrors(ddl,iErr);
-         GetRawsData(ddl)->Fill(iErr,numOfErr);
-         //Printf("err type %i   ddl number %i  Num of errors %i",iErr,ddl,numOfErr);
-        ((TH2I*)GetRawsData(14+14+42+42))->Fill(iErr,ddl,iErr); //
+       Int_t numOfErr = stream.GetErrors(ddl,iErr);
+       GetRawsData(ddl)->Fill(iErr,numOfErr);
+       ((TH2I*)GetRawsData(14+14+42+42))->Fill(iErr,ddl,iErr); //
        }
        UInt_t word; Int_t Nddl, r, d, a;//pc,pcX,pcY;      
        for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
-       AliHMPIDDigit dig(stream.GetPadArray()[iPad],stream.GetChargeArray()[iPad]);dig.Raw(word,Nddl,r,d,a);
+       isHMPin=kTRUE;
+        AliHMPIDDigit dig(stream.GetPadArray()[iPad],stream.GetChargeArray()[iPad]);dig.Raw(word,Nddl,r,d,a);    
+       //for DQM shifter 
+       ((TH2F*)GetRawsData(14+14+42+42+1))->Fill(shiftX[(Int_t)(dig.Ch())]+dig.PadChX(),shiftY[(Int_t)(dig.Ch())]+dig.PadChY(),dig.Q());
+       GetRawsData(14+14+42+42+3)->Fill(dig.Q());
+       ddlOcc[ddl]++;
+       
        GetRawsData(ddl+14)->Fill(r,d);
        GetRawsData(28+stream.Pc(Nddl,r,d,a)+6*AliHMPIDParam::DDL2C(ddl))->Fill(stream.PadPcX(Nddl,r,d,a),stream.PadPcY(Nddl,r,d,a));
        GetRawsData(70+stream.Pc(Nddl,r,d,a)+6*AliHMPIDParam::DDL2C(ddl))->Fill(stream.GetChargeArray()[iPad]);
-       }      
+       }
+       if(isHMPin==kTRUE) {
+    for(Int_t iddl=0;iddl<14;iddl++){
+    (TProfile*)(GetRawsData(14+14+42+42+2))->Fill(iddl+1,ddlOcc[iddl]*100.0/(6.0*24.0*80));
+   }     
+       }       
      }
 
     //   stream.Delete();
+     
+    
    
 }
 
@@ -354,7 +385,7 @@ void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
         TH1F *h = (TH1F*)histos[specie]->At(14+iddl); //ddl histos scaled by the number of events 
         h->Scale(1./(Float_t)fEvtRaw);
       }
-    }
+     }
   }
    AliQAChecker::Instance()->Run(AliQAv1::kHMPID, task, histos);
 }
