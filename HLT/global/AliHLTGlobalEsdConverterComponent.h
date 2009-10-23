@@ -102,6 +102,9 @@ protected:
   /// solenoid b field
   Double_t fSolenoidBz; //! transient
 
+  /// fill track parameters, constrained to vertex
+  Bool_t fFillVtxConstrainedTracks; //! transient
+
   ClassDef(AliHLTGlobalEsdConverterComponent, 0)
 };
 #endif

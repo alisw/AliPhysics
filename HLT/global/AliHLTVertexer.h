@@ -31,9 +31,9 @@ public:
   virtual ~AliHLTVertexer(){ delete[] fTrackInfos; }
 
   void SetESD( AliESDEvent *event );
-
   void FindPrimaryVertex();
   void FindV0s();
+  const AliESDTrackInfo *TrackInfos(){ return fTrackInfos; }  
 
  private:
   

@@ -56,6 +56,7 @@ AliHLTGlobalEsdConverterComponent::AliHLTGlobalEsdConverterComponent()
   , fVerbosity(0)
   , fESD(NULL)
   , fSolenoidBz(-5.00668)
+  , fFillVtxConstrainedTracks( 0 )
 {
   // see header file for class documentation
   // or
@@ -91,6 +92,12 @@ int AliHLTGlobalEsdConverterComponent::Configure(const char* arguments)
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	fSolenoidBz=((TObjString*)pTokens->At(i))->GetString().Atof();
+	continue;
+      }
+      else if (argument.CompareTo("-fitTracks2Vertex")==0) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	HLTInfo("Filling of vertex constrained tracks is set set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	fFillVtxConstrainedTracks=((TObjString*)pTokens->At(i))->GetString().Atoi();
 	continue;
       } else {
 	HLTError("unknown argument %s", argument.Data());
@@ -423,6 +430,14 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       vertexer.SetESD( pESD );
       vertexer.FindPrimaryVertex();
       vertexer.FindV0s();
+
+      // relate the tracks to vertex
+      if( fFillVtxConstrainedTracks ){
+	for( Int_t i = 0; i<pESD->GetNumberOfTracks(); i++){
+	  if( !vertexer.TrackInfos()[i].fPrimUsedFlag ) continue;
+	  pESD->GetTrack(i)->RelateToVertex( pESD->GetPrimaryVertex(), fESD->GetMagneticField(),5. );
+	}
+      }
       
       if (iAddedDataBlocks>0 && pTree) {
        pTree->Fill();

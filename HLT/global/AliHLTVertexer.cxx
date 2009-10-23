@@ -46,7 +46,7 @@ void AliHLTVertexer::SetESD( AliESDEvent *event )
 
   delete[] fTrackInfos;
   fESD = event;
-  std::cout<<"vertexer field = "<<-fESD->GetMagneticField() <<std::endl;
+
   AliKFParticle::SetField( -fESD->GetMagneticField() );
 
   Int_t nESDTracks=event->GetNumberOfTracks(); 
@@ -105,7 +105,12 @@ void AliHLTVertexer::FindPrimaryVertex(  )
   if( fPrimaryVtx.GetNContributors()>3 ){
     AliESDVertex vESD( fPrimaryVtx.Parameters(), fPrimaryVtx.CovarianceMatrix(), fPrimaryVtx.GetChi2(), fPrimaryVtx.GetNContributors() );
     fESD->SetPrimaryVertexTracks( &vESD );
+  } else {
+    for( Int_t i = 0; i<nTracks; i++)
+      fTrackInfos[i].fPrimUsedFlag = 0;
   }
+
+
   delete[] vSelected;
   delete[] vIndex;
   delete[] vFlag;
