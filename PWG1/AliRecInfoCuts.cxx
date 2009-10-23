@@ -31,6 +31,7 @@ AliRecInfoCuts::AliRecInfoCuts(const Char_t* name,const Char_t *title) : AliESDt
 , fMinNClustersTRD(0)
 , fTPCITSMatchingRadius(0)
 , fTPCTRDMatchingRadius(0)
+, fMinNTrackletsTRD(0)
 {
   // init data members with defaults
   Init();
