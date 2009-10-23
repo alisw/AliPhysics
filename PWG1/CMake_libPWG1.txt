@@ -32,6 +32,8 @@ set(SRCS
 	AliPerformanceTPC.cxx
 	AliAlignmentDataFilterITS.cxx
 	AliTrackMatchingTPCITSCosmics.cxx
+        AliRelAlignerKalmanArray.cxx
+        AliAnalysisTaskITSTPCalignment.cxx
 )
 
 # fill list of header files from list of source files

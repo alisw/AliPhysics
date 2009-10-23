@@ -48,6 +48,7 @@
 #pragma link C++ class AliAnalysisTaskV0QA+;
 #pragma link C++ class AliMaterialBudget+;
 
-
+#pragma link C++ class AliRelAlignerKalmanArray+;
+#pragma link C++ class AliAnalysisTaskITSTPCalignment+;
 
 #endif
