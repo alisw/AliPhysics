@@ -138,7 +138,7 @@ void processTRD(TNamed *otask)
   for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
     c->Clear();
     if(!task->GetRefFigure(ipic)) continue;
-    c->SaveAs(Form("%s_Fig%02d.gif", task->GetName(), ipic));
+    c->SaveAs(Form("%s_Fig%02d.gif", task->GetName(), ipic), "gif");
   }
   delete task;
 }

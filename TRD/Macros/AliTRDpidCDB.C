@@ -49,6 +49,31 @@ void generatePIDDB()
 }
 
 //___________________________________________________________________
+void generatePIDDBNN(const char *fileNN = "NN.root")
+{
+// Write TRD PID DB using the reference data from file "file"
+
+
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  man->SetSpecificStorage("TRD/Calib/PIDNN", "local://.");
+  man->SetRun(0);
+
+  AliCDBStorage *gStorLoc = man->GetStorage("local://$ALICE_ROOT/OCDB");
+  if (!gStorLoc) return;
+
+  AliTRDCalPID *pidNN = new AliTRDCalPIDNN("pidNN", "NN TRD PID object"); 	 
+  pidNN->LoadReferences(fileNN); 	 
+  AliCDBMetaData *md= new AliCDBMetaData();
+  md->SetObjectClassName("AliTRDCalPIDNN");
+  md->SetResponsible("Alexander Wilk");
+  md->SetBeamPeriod(1);
+  md->SetAliRootVersion("v4-16-Release"); //root version
+  md->SetComment("NN PID for TRD");
+  gStorLoc->Put(pidNN, AliCDBId("TRD/Calib/PIDNN", 0, 999999999, 0, 1), md, AliCDBManager::kReference);
+}
+
+//___________________________________________________________________
 AliTRDCalPID* getPIDObject(const char *method="NN")
 {
 // Returns PIDLQ object.

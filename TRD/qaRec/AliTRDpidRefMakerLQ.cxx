@@ -56,7 +56,6 @@ ClassImp(AliTRDpidRefMakerLQ)
 //__________________________________________________________________
 AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ()
   :AliTRDpidRefMaker("PIDrefMakerLQ", "PID(LQ) Reference Maker")
-  ,fPIDbin(0xff)
 {
   //
   // AliTRDpidRefMakerLQ default constructor
@@ -93,13 +92,9 @@ void AliTRDpidRefMakerLQ::CreateOutputObjects()
     }
     fContainer->AddAt(arr, 1+ip);
   }
-
-  fData = new TTree(GetName(), Form("Reference data for %s", GetName()));
-  fData->Branch("ps", &fPIDbin, "p/b");
-  fData->Branch("dEdx" , fdEdx , Form("dEdx[%d]/F", GetNslices()));
 }
 
-
+/*
 //________________________________________________________________________
 Float_t* AliTRDpidRefMakerLQ::CookdEdx(AliTRDseedV1 *trklt)
 {
@@ -113,7 +108,7 @@ Float_t* AliTRDpidRefMakerLQ::CookdEdx(AliTRDseedV1 *trklt)
   fdEdx[0] = TMath::Log(dedx[0]+dedx[1]);
   fdEdx[1] = TMath::Log(dedx[2]);
   return fdEdx;
-}
+}*/
 
 //__________________________________________________________________
 TObject* AliTRDpidRefMakerLQ::GetOCDBEntry(Option_t *opt)
@@ -153,23 +148,6 @@ Bool_t AliTRDpidRefMakerLQ::GetRefFigure(Int_t ifig)
   return kTRUE;
 }
 
-
-//________________________________________________________________________
-void AliTRDpidRefMakerLQ::Fill()
-{
-  // get particle type
-  Int_t fSbin = TMath::LocMax(AliPID::kSPECIES, fPID);
-  // get momentum bin
-  Int_t fPbin = AliTRDpidUtil::GetMomentumBin(fP);
-  fPIDbin = ((fSbin&0xf)<<4)|(fPbin&0xf);
-  // fill data
-  fData->Fill();
-  // fill monitor
-  ((TH2*)fContainer->At(0))->Fill(fSbin, fPbin);
-  TH2* h2 = (TH2*)((TObjArray*)fContainer->At(1+fPbin))->At(fSbin);
-  h2->Fill(fdEdx[0], fdEdx[1]);
-}
-
 //________________________________________________________________________
 Bool_t AliTRDpidRefMakerLQ::PostProcess()
 {
@@ -204,13 +182,9 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
   //TCanvas *cc = new TCanvas("cc", "", 500, 500);
 
   Float_t *data[] = {0x0, 0x0};
-//  TPrincipal principal(2, "ND");
-//  for(Int_t ip=AliTRDCalPID::kNMom; ip--; ){ 
-  for(Int_t ip=5; ip>0; ip-=10){ 
+  for(Int_t ip=AliTRDCalPID::kNMom; ip--; ){ 
     for(Int_t is=AliPID::kSPECIES; is--;) {
-//      principal.Clear();
-      Int_t bin = (is<<4) | ip;
-      Int_t n = fData->Draw("dEdx[0]:dEdx[1]", Form("ps==%d", bin), "goff");
+      Int_t n = fData->Draw("dEdx[0]:dEdx[1]", Form("s==%d", is), "goff");
 
       // estimate bucket statistics
       Int_t nb(kMinBuckets), // number of buckets

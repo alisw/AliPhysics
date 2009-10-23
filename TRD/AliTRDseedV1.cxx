@@ -888,7 +888,6 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
 // Author : Alexandru Bercuci <A.Bercuci@gsi.de>
 // Debug  : level >3
 
-  Bool_t kPRINT = kFALSE;
   if(!fkReconstructor->GetRecoParam() ){
     AliError("Seed can not be used without a valid RecoParam.");
     return kFALSE;
@@ -913,7 +912,8 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
   if(fkReconstructor->IsHLT())cp.SetRPhiMethod(AliTRDcluster::kCOG);
   Calibrate();
 
-  if(kPRINT) printf("AttachClusters() sy[%f] road[%f]\n", syRef, kroady);
+  AliDebug(4, "");
+  AliDebug(4, Form("syKalman[%f] rY[%f] rZ[%f]", syRef, kroady, kroadz));
 
   // working variables
   const Int_t kNrows = 16;
@@ -944,7 +944,9 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
     // get estimated road
     kroady = 3.*TMath::Sqrt(12.*(s2yTrk + s2yCl));
 
-    if(kPRINT) printf("  %2d dx[%f] yt[%f] zt[%f] sT[um]=%6.2f sy[um]=%6.2f syTilt[um]=%6.2f yRoad[mm]=%f\n", it, dx, yt, zt, 1.e4*TMath::Sqrt(s2yTrk), 1.e4*TMath::Sqrt(cp.GetSigmaY2()), 1.e4*TMath::Sqrt(s2yCl), 1.e1*kroady);
+    AliDebug(5, Form("  %2d x[%f] yt[%f] zt[%f]", it, dx, yt, zt));
+
+    AliDebug(5, Form("  syTrk[um]=%6.2f syCl[um]=%6.2f syClTlt[um]=%6.2f Ry[mm]=%f", 1.e4*TMath::Sqrt(s2yTrk), 1.e4*TMath::Sqrt(cp.GetSigmaY2()), 1.e4*TMath::Sqrt(s2yCl), 1.e1*kroady));
 
     // select clusters
     cond[0] = yt; cond[2] = kroady;
@@ -961,7 +963,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
         continue;
       }*/
       Int_t r = c->GetPadRow();
-      if(kPRINT) printf("\t\t%d dy[%f] yc[%f] r[%d]\n", ic, TMath::Abs(dy), c->GetY(), r);
+      AliDebug(5, Form("   -> dy[%f] yc[%f] r[%d]", TMath::Abs(dy), c->GetY(), r));
       clst[r][ncl[r]] = c;
       blst[r][ncl[r]] = kTRUE;
       idxs[r][ncl[r]] = idx[ic];
@@ -976,18 +978,21 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
     }
     if(kBUFFER) break;
   }
-  if(kPRINT) printf("Found %d clusters\n", ncls);
-  if(ncls<kClmin) return kFALSE;
- 
+  AliDebug(4, Form("Found %d clusters. Processing ...", ncls));
+  if(ncls<kClmin){ 
+    AliDebug(2, Form("CLUSTERS FOUND %d LESS THAN THRESHOLD %d.", ncls, kClmin));
+    return kFALSE;
+  }
+
   // analyze each row individualy
   Double_t mean, syDis;
   Int_t nrow[] = {0, 0, 0}, nr = 0, lr=-1;
   for(Int_t ir=kNrows; ir--;){
     if(!(ncl[ir])) continue;
     if(lr>0 && lr-ir != 1){
-      if(kPRINT) printf("W - gap in rows attached !!\n"); 
+      AliDebug(2, "Gap in rows attached"); 
     }
-    if(kPRINT) printf("\tir[%d] lr[%d] n[%d]\n", ir, lr, ncl[ir]);
+    AliDebug(5, Form("  r[%d] n[%d]", ir, ncl[ir]));
     // Evaluate truncated mean on the y direction
     if(ncl[ir] > 3) AliMathBase::EvaluateUni(ncl[ir], yres[ir], mean, syDis, Int_t(ncl[ir]*.8));
     else {
@@ -1013,7 +1018,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
     }
 
     // TODO check mean and sigma agains cluster resolution !!
-    if(kPRINT) printf("\tr[%2d] m[%f %5.3fsigma] s[%f]\n", ir, mean, TMath::Abs(mean/syDis), syDis);
+    AliDebug(4, Form("  m[%f (%5.3fs)] s[%f]", mean, TMath::Abs(mean/syDis), syDis));
     // select clusters on a 3 sigmaDistr level
     Bool_t kFOUND = kFALSE;
     for(Int_t ic = ncl[ir]; ic--;){
@@ -1026,7 +1031,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
     if(kFOUND) nr++; 
     lr = ir; if(nr>=3) break;
   }
-  if(kPRINT) printf("lr[%d] nr[%d] nrow[0]=%d nrow[1]=%d nrow[2]=%d\n", lr, nr, nrow[0], nrow[1], nrow[2]);
+  AliDebug(4, Form("  nr[%d = %d + %d + %d]", nr, nrow[0], nrow[1], nrow[2]));
 
   // classify cluster rows
   Int_t row = -1;
@@ -1048,9 +1053,11 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
     SetBit(kRowCross, kTRUE); // mark pad row crossing
     break;
   }
-  if(kPRINT) printf("\trow[%d] n[%d]\n\n", row, nrow[0]);
-  if(row<0) return kFALSE;
-
+  AliDebug(4, Form("  Ncl[rowMax = %d] = %d", row, nrow[0]));
+  if(row<0){ 
+    AliDebug(2, Form("WRONG ROW %d.", row));
+    return kFALSE;
+  }
   // Select and store clusters 
   // We should consider here :
   //  1. How far is the chamber boundary
@@ -1058,7 +1065,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
   Int_t n = 0;
   for (Int_t ir = 0; ir < nr; ir++) {
     Int_t jr = row + ir*lr; 
-    if(kPRINT) printf("\tattach %d clusters for row %d\n", ncl[jr], jr);
+    AliDebug(4, Form("  Ncl[%d] @ R[%d] attaching ...", ncl[jr], jr));
     for (Int_t ic = 0; ic < ncl[jr]; ic++) {
       if(!blst[jr][ic])continue;
       c = clst[jr][ic];
@@ -1075,7 +1082,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
 
   // number of minimum numbers of clusters expected for the tracklet
   if (n < kClmin){
-    //AliWarning(Form("Not enough clusters to fit the tracklet %d [%d].", n, kClmin));
+    AliDebug(2, Form("NOT ENOUGH CLUSTERS TO FIT THE TRACKLET %d [%d].", n, kClmin));
     return kFALSE;
   }
   SetN(n);
@@ -1625,7 +1632,9 @@ void AliTRDseedV1::Print(Option_t *o) const
   AliInfo("    |  x[cm]  |      y[cm]       |      z[cm]      |  dydx |  dzdx |");
   AliInfo(Form("Fit | %7.2f | %7.2f+-%7.2f | %7.2f+-%7.2f| %5.2f | ----- |", x, GetY(), TMath::Sqrt(cov[0]), GetZ(), TMath::Sqrt(cov[2]), fYfit[1]));
   AliInfo(Form("Ref | %7.2f | %7.2f+-%7.2f | %7.2f+-%7.2f| %5.2f | %5.2f |", x, fYref[0]-fX*fYref[1], TMath::Sqrt(fRefCov[0]), fZref[0]-fX*fYref[1], TMath::Sqrt(fRefCov[2]), fYref[1], fZref[1]))
-
+  AliInfo(Form("P / Pt [GeV/c] = %f / %f", GetMomentum(), fPt));
+  AliInfo(Form("dEdx [a.u.]    = %f / %f / %f / %f / %f/ %f / %f / %f", fdEdx[0], fdEdx[1], fdEdx[2], fdEdx[3], fdEdx[4], fdEdx[5], fdEdx[6], fdEdx[7]));
+  AliInfo(Form("PID            = %5.3f / %5.3f / %5.3f / %5.3f / %5.3f", fProb[0], fProb[1], fProb[2], fProb[3], fProb[4]));
 
   if(strcmp(o, "a")!=0) return;
 

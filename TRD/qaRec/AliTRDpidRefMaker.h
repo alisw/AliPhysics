@@ -8,7 +8,8 @@
 //   - AliTRDpidRefMakerNN (Neural Networks)
 //   - AliTRDpidRefMakerLQ (Multidimensional Likelihood)
 //
-// Responsible : Alex Bercuci <A.Bercuci@gsi.de>
+// Authors: Alex Bercuci <A.Bercuci@gsi.de>
+//          Alex Wilk    <wilka@uni-muenster.de>
 //
 /////////////////////////////////////////////////////////////
 
@@ -31,7 +32,6 @@ class AliTRDReconstructor;
 class AliTRDseedV1;
 class AliTRDpidRefMaker : public AliTRDrecoTask
 {
-
 public:
   enum ETRDpidRefMakerPBins {
     k006  =  0
@@ -52,40 +52,70 @@ public:
    ,kMC = 1 // use MC as reference
    ,kRec= 2 // use Reconstructed PID as reference
   };
-  AliTRDpidRefMaker(const char *name=0, const char *title=0);
+
+  struct AliTRDpidRefData {
+    AliTRDpidRefData() : fPLbin(0xff) {
+      memset(fdEdx, 0, 8*sizeof(Float_t));
+    }
+    virtual ~AliTRDpidRefData(){}
+    UChar_t fPLbin;   // momentum / layer bin
+    Float_t fdEdx[8]; // dEdx array
+    ClassDef(AliTRDpidRefData, 1)  // PID data representation
+  };
+  struct AliTRDpidRefDataArray {
+    AliTRDpidRefDataArray();
+    virtual ~AliTRDpidRefDataArray();
+    void    PushBack(Int_t ly, Int_t p, Float_t *dedx);
+    void    Reset();
+
+    Int_t   fNtracklets;     // number of tracklets
+    AliTRDpidRefData *fData; //[fNtracklets] PID data array
+  private:
+    AliTRDpidRefDataArray(const AliTRDpidRefMaker::AliTRDpidRefDataArray& ref);
+    AliTRDpidRefDataArray& operator=(const AliTRDpidRefMaker::AliTRDpidRefDataArray& ref);
+    ClassDef(AliTRDpidRefDataArray, 1)  // track PID data representation
+  };
+
+  AliTRDpidRefMaker(const char *name="PIDrefMaker", const char *title="PID Reference Maker");
 
   virtual ~AliTRDpidRefMaker();
   
   void    ConnectInputData(Option_t *opt);
   void    CreateOutputObjects();
   void    Exec(Option_t *option);
+  Float_t GetPthreshold() const { return fPthreshold;}
 
-  void    SetAbundance(Float_t train, Float_t test);
+  void    SetAbundance(Float_t train);
+  void    SetPthreshold(Float_t t) { fPthreshold = t;}
   void    SetRefPID(ETRDpidRefMakerSource select, void *source, Float_t *pid);
   void    SetSource(ETRDpidRefMakerSource pid, ETRDpidRefMakerSource momentum) {fRefPID = pid; fRefP = momentum;}
 
+
 protected:
-  virtual Float_t* CookdEdx(AliTRDseedV1*) = 0;
-  virtual Int_t    GetNslices() const = 0;
+  virtual Bool_t   CheckQuality(AliTRDseedV1* trklt);
+  virtual Float_t* CookdEdx(AliTRDseedV1* trklt);
+  virtual void     LinkPIDdata();
   virtual void     Fill();
 
   AliTRDReconstructor *fReconstructor;  //! reconstructor needed for recalculation the PID
   TObjArray     *fV0s;                  //! v0 array
   TTree         *fData;                 //! dEdx-P data
-  ETRDpidRefMakerSource fRefPID;     // reference PID source
-  ETRDpidRefMakerSource fRefP;       // reference momentum source
-  Float_t       fTrainFreq;             //! training sample relative abundance
-  Float_t       fTestFreq;              //! testing sample relative abundance
-  Char_t        fLy;                    //! TRD layer
+  AliTRDpidRefDataArray *fPIDdataArray; //! pid data array
+  ETRDpidRefMakerSource  fRefPID;       // reference PID source
+  ETRDpidRefMakerSource  fRefP;         // reference momentum source
+  UChar_t       fPIDbin;                //! species bin
+  Float_t       fFreq;                  //! training sample relative abundance
   Float_t       fP;                     //! momentum
-  Float_t       fdEdx[10];              //! dEdx array
+  Float_t       fdEdx[8];               //! dEdx array
   Float_t       fPID[AliPID::kSPECIES]; //! pid from v0s
 
 private:
   AliTRDpidRefMaker(const AliTRDpidRefMaker&);              // not implemented
   AliTRDpidRefMaker& operator=(const AliTRDpidRefMaker&);   // not implemented
 
-  ClassDef(AliTRDpidRefMaker, 2); // TRD PID reference  maker base class
+  Float_t        fPthreshold;            // momentum threshold [GeV/c]
+
+  ClassDef(AliTRDpidRefMaker, 3); // TRD PID reference  maker base class
 };
 
 #endif

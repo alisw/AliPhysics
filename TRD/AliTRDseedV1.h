@@ -7,7 +7,9 @@
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-//  The TRD offline tracklet                                              //
+// \class AliTRDseedV1
+// \brief The TRD offline tracklet
+// \author Alexandru Bercuci
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 

@@ -30,6 +30,46 @@
 // 
 
 ClassImp(AliTRDpidRefMaker)
+ClassImp(AliTRDpidRefMaker::AliTRDpidRefData)
+ClassImp(AliTRDpidRefMaker::AliTRDpidRefDataArray)
+
+//________________________________________________________________________
+AliTRDpidRefMaker::AliTRDpidRefDataArray::AliTRDpidRefDataArray() :
+  fNtracklets(0)
+  ,fData(0x0)
+{
+  // Constructor of data array
+  fData = new AliTRDpidRefData[AliTRDgeometry::kNlayer];
+}
+
+//________________________________________________________________________
+AliTRDpidRefMaker::AliTRDpidRefDataArray::~AliTRDpidRefDataArray()
+{
+  // Destructor
+  delete [] fData;
+}
+
+//________________________________________________________________________
+void AliTRDpidRefMaker::AliTRDpidRefDataArray::PushBack(Int_t ly, Int_t p, Float_t *dedx)
+{
+// Add PID data to the end of the array 
+  fData[fNtracklets].fPLbin= (ly<<4) | (p&0xf);
+  memcpy(fData[fNtracklets].fdEdx, dedx, 8*sizeof(Float_t));
+  fNtracklets++;
+}
+
+//________________________________________________________________________
+void AliTRDpidRefMaker::AliTRDpidRefDataArray::Reset()
+{
+// Reset content
+
+  if(!fNtracklets) return;
+  while(fNtracklets--){
+    fData[fNtracklets].fPLbin = 0xff;
+    memset(fData[fNtracklets].fdEdx, 0, 8*sizeof(Float_t));
+  }
+  fNtracklets=0;
+}
 
 //________________________________________________________________________
 AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title) 
@@ -37,12 +77,13 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title)
   ,fReconstructor(0x0)
   ,fV0s(0x0)
   ,fData(0x0)
+  ,fPIDdataArray(0x0)
   ,fRefPID(kMC)
   ,fRefP(kMC)
-  ,fTrainFreq(1.)
-  ,fTestFreq(0.)
-  ,fLy(-1)
+  ,fPIDbin(0xff)
+  ,fFreq(1.)
   ,fP(-1.)
+  ,fPthreshold(0.5)
 {
   //
   // Default constructor
@@ -61,7 +102,24 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title)
 //________________________________________________________________________
 AliTRDpidRefMaker::~AliTRDpidRefMaker() 
 {
+  if(fPIDdataArray) delete fPIDdataArray;
   if(fReconstructor) delete fReconstructor;
+}
+
+//________________________________________________________________________
+Bool_t AliTRDpidRefMaker::CheckQuality(AliTRDseedV1* /*trklt*/)
+{
+// Place holder for checking tracklet quality for PID.
+  return kTRUE;  
+}
+
+
+//________________________________________________________________________
+Float_t* AliTRDpidRefMaker::CookdEdx(AliTRDseedV1 *trklt)
+{
+  trklt->CookdEdx(AliTRDpidUtil::kNNslices);
+  memcpy(fdEdx, trklt->GetdEdx(), AliTRDpidUtil::kNNslices*sizeof(Float_t));
+  return fdEdx;
 }
 
 
@@ -91,6 +149,10 @@ void AliTRDpidRefMaker::CreateOutputObjects()
   h2->GetYaxis()->SetNdivisions(511);
 
   fContainer->AddAt(h2, 0);
+
+  fData = new TTree(GetName(), Form("Reference data for %s", GetName()));
+  fData->Branch("s", &fPIDbin, "s/b");
+  fData->Branch("data", &fPIDdataArray);
 }
 
 //________________________________________________________________________
@@ -99,78 +161,79 @@ void AliTRDpidRefMaker::Exec(Option_t *)
   // Main loop
   // Called for each event
 
-  
-
-
-
-//   DEBUG ?!
-//   for(Int_t iv0=0; iv0<fV0s->GetEntriesFast(); iv0++){
-//     v0 = dynamic_cast<AliTRDv0Info*>(fV0s->At(iv0));
-//     v0->Print();
-//   }
-  
-  Int_t labelsacc[10000]; // MC labels
-  memset(labelsacc, 0, sizeof(Int_t) * 10000);
-
   AliTRDtrackInfo     *track = 0x0;
-  //AliTRDv0Info           *v0 = 0x0;
   AliTRDtrackV1    *trackTRD = 0x0;
   AliTrackReference     *ref = 0x0;
-  //AliExternalTrackParam *esd = 0x0;
-  AliTRDseedV1 *trackletTRD = 0x0;
-  for(Int_t itrk=0, nTRD=0; itrk<fTracks->GetEntriesFast(); itrk++){
+  const AliTRDtrackInfo::AliESDinfo *infoESD = 0x0;
+  for(Int_t itrk=0; itrk<fTracks->GetEntriesFast(); itrk++){
     track = (AliTRDtrackInfo*)fTracks->UncheckedAt(itrk);
     if(!track->HasESDtrack()) continue;
+    trackTRD = track->GetTrack();
+    infoESD  = track->GetESDinfo();
+    Double32_t *infoPID = infoESD->GetSliceIter();
+    Int_t n = infoESD->GetNSlices() - AliTRDgeometry::kNlayer;
+    Double32_t *p = &infoPID[n];
+
+
     ULong_t status = track->GetStatus();
     if(!(status&AliESDtrack::kTPCout)) continue;
 
-    if(!(trackTRD = track->GetTrack())) continue; 
-    //&&(track->GetNumberOfClustersRefit()
-
-    // TOO STRONG and might introduce a bias if short 
-    // tracks are to be analysed (A.Bercuci 23.09.09) 
-    // use only tracks that hit 6 chambers
-    //if(!(TRDtrack->GetNumberOfTracklets() == AliTRDgeometry::kNlayer)) continue;
-     
-
-    if(HasMCdata()) labelsacc[nTRD++] = track->GetLabel();
-
     // fill the pid information
-    memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
-    switch(fRefPID){
-    case kV0: SetRefPID(kV0, track, fPID); break;
-    case kMC: SetRefPID(kMC, track, fPID); break;
-    case kRec: SetRefPID(kRec, trackTRD, fPID); break;
-    }
+    SetRefPID(fRefPID, track, fPID);
 
-    // fill the momentum and dE/dx information
-    trackTRD -> SetReconstructor(fReconstructor);
+    // prepare PID data array
+    if(!fPIDdataArray){ 
+      fPIDdataArray = new AliTRDpidRefDataArray();
+    } else fPIDdataArray->Reset();
+
+    // fill PID information
     for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
-      if(!(trackletTRD = trackTRD -> GetTracklet(ily))) continue;
-      if(!CookdEdx(trackletTRD)) continue;
-      switch(fRefP){
-      case kMC:
-        if(!HasMCdata()){
-          AliError("Could not retrive reference momentum from MC");
-          return;
+
+      // fill P & dE/dx information
+      if(HasFriends()){ // from TRD track
+        if(!trackTRD) continue;
+        AliTRDseedV1 *trackletTRD(0x0);
+        trackTRD -> SetReconstructor(fReconstructor);
+        if(!(trackletTRD = trackTRD -> GetTracklet(ily))) continue;
+        if(!CheckQuality(trackletTRD)) continue;
+        if(!CookdEdx(trackletTRD)) continue;
+
+        // fill momentum information
+        fP = 0.;
+        switch(fRefP){
+        case kMC:
+          if(!(ref = track->GetTrackRef(trackletTRD))) continue;
+          fP = ref->P();
+          break;
+        case kRec:
+          fP = trackletTRD->GetMomentum();
+          break;
+        default: continue;
         }
-        if(!(ref = track->GetTrackRef(trackletTRD))) continue;
-        fP = ref->P();
-        break;
-      case kRec:
-        fP = trackletTRD->GetMomentum();
-        break;
-      default:
-        AliWarning("Momentum reference source not implemented");
-        return;
+      } else { // from ESD track
+        // fill momentum information
+        switch(fRefP){
+        case kMC:
+          if(!(ref = track->GetTrackRef(ily))) continue;
+          fP = ref->P();
+          break;
+        case kRec:
+          fP = p[ily];
+          break;
+        default: continue;
+        } 
+        Double32_t *it = &infoPID[ily*AliTRDCalPID::kNSlicesNN];
+        for(Int_t is=AliTRDCalPID::kNSlicesNN; is--; it++) fdEdx[is] = (*it);
       }
-      fLy = ily;
-      Fill();
+
+      // momentum threshold
+      if(fP < fPthreshold) continue;
+
+      // store information
+      fPIDdataArray->PushBack(ily, AliTRDpidUtil::GetMomentumBin(fP), fdEdx);
     }
 
-    for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-      AliDebug(4, Form("PDG is %d %f", iPart, fPID[iPart]));
-    }
+    Fill();
   }
 
   PostData(0, fContainer);
@@ -182,9 +245,27 @@ void AliTRDpidRefMaker::Exec(Option_t *)
 void AliTRDpidRefMaker::Fill() 
 {
 // Fill data tree
+
+  if(!fPIDdataArray->fNtracklets) return;
+  fPIDbin = TMath::LocMax(AliPID::kSPECIES, fPID); // get particle type
+// Fill data tree
   fData->Fill();
+
+  
+  // fill monitor
+  for(Int_t ily=fPIDdataArray->fNtracklets; ily--;){
+    Int_t pBin = fPIDdataArray->fData[ily].fPLbin & 0xf;
+    ((TH2*)fContainer->At(0))->Fill(fPIDbin, pBin);
+  }
 }
 
+//________________________________________________________________________
+void AliTRDpidRefMaker::LinkPIDdata() 
+{
+// Link data tree to data members
+  fData->SetBranchAddress("s", &fPIDbin);
+  fData->SetBranchAddress("data", &fPIDdataArray);
+}
 
 //________________________________________________________________________
 void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, void *source, Float_t *pid) 
@@ -195,6 +276,8 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, void *source, Fl
 // - kMC  - MC truth [default]
 // - kRec - outside detectors
 
+
+  memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
   switch(select){ 
   case kV0:
     {
@@ -242,7 +325,8 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, void *source, Fl
     break;
   case kRec:
     { 
-      AliTRDtrackV1 *trackTRD = static_cast<AliTRDtrackV1*>(source);
+      AliTRDtrackInfo *track = static_cast<AliTRDtrackInfo*>(source);
+      AliTRDtrackV1 *trackTRD = track->GetTrack();
       trackTRD -> SetReconstructor(fReconstructor);
       //fReconstructor -> SetOption("nn");
       trackTRD -> CookPID();
@@ -256,24 +340,25 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, void *source, Fl
     AliWarning("PID reference source not implemented");
     return;
   }
+  AliDebug(4, Form("Ref PID [%] : %s[%5.2f] %s[%5.2f] %s[%5.2f] %s[%5.2f] %s[%5.2f]"
+    ,AliPID::ParticleShortName(0), 1.e2*fPID[0]
+    ,AliPID::ParticleShortName(1), 1.e2*fPID[1]
+    ,AliPID::ParticleShortName(2), 1.e2*fPID[2]
+    ,AliPID::ParticleShortName(3), 1.e2*fPID[3]
+    ,AliPID::ParticleShortName(4), 1.e2*fPID[4]
+  ));
 }
 
 //________________________________________________________________________
-void AliTRDpidRefMaker::SetAbundance(Float_t train, Float_t test) 
+void AliTRDpidRefMaker::SetAbundance(Float_t train) 
 {
 // Split data sample between trainning and testing
 
-  if(fTrainFreq<0. || fTrainFreq >1. ||
-     fTestFreq<0.  || fTestFreq >1.){
+  if(train<0. || train >1.){
     AliWarning("The input data should be in the interval [0, 1]");
     return;
   }
-  if(TMath::Abs(fTrainFreq+fTestFreq - 1.) > 0.001){
-    AliWarning("The sum of the 2 abundances should pe one.");
-    return;
-  }
 
-  fTrainFreq = train; 
-  fTestFreq = test;
+  fFreq = train; 
 }
 
