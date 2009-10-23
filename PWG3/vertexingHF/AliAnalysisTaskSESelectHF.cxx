@@ -107,6 +107,10 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
   
   AliAODEvent *aodIn = dynamic_cast<AliAODEvent*> (InputEvent());
 
+  // In case there is an AOD handler writing a standard AOD, use the AOD 
+  // event in memory rather than the input (ESD) event.
+  if (!aodIn && AODEvent() && IsStandardAOD()) aodIn = dynamic_cast<AliAODEvent*> (AODEvent());
+
   // load D0->Kpi candidates                                                   
   TClonesArray *inputArrayD0toKpi =
     (TClonesArray*)aodIn->GetList()->FindObject("D0toKpi");

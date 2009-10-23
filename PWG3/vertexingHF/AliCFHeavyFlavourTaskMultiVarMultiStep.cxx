@@ -176,6 +176,9 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	fEvents++;
 	if (fEvents%10000 ==0) AliDebug(2,Form("Event %d",fEvents));
 	AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
+	// In case there is an AOD handler writing a standard AOD, use the AOD 
+	// event in memory rather than the input (ESD) event.
+	if (!aodEvent && AODEvent() && IsStandardAOD()) aodEvent = dynamic_cast<AliAODEvent*> (AODEvent());
 	fCFManager->SetEventInfo(aodEvent);
 	
 	// MC-event selection

@@ -301,6 +301,10 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   //cout<<"I'm in UserExec"<<endl;
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
+  // In case there is an AOD handler writing a standard AOD, use the AOD 
+  // event in memory rather than the input (ESD) event.
+  if (!aod && AODEvent() && IsStandardAOD()) aod = dynamic_cast<AliAODEvent*> (AODEvent());
+
   TClonesArray *inputArray=0;
 
   if(fArray==0){ //D0 candidates

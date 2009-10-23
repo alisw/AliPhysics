@@ -166,6 +166,10 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
+  // In case there is an AOD handler writing a standard AOD, use the AOD 
+  // event in memory rather than the input (ESD) event.
+  if (!aod && AODEvent() && IsStandardAOD()) aod = dynamic_cast<AliAODEvent*> (AODEvent());
+
   // load Dplus->Kpipi candidates                                                   
   TClonesArray *array3Prong =
     (TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
