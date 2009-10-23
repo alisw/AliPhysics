@@ -510,44 +510,101 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					Double_t cuts[7] = {9999999., 1.1, 0., 9999999., 9999999., 0.,0.027}; 
 					//cuts of the D0 analysis (looser) see AliAnalysisTaskSED0Mass.cxx
 					if (pt <= 1){
+					  
+					  //coutputmassD02
 					  cuts[0] = 400; //dca (um)
 					  cuts[1] = 0.8; //cosTstar
 					  cuts[2] = 0.5; //pt  (GeV/c)
 					  cuts[3] = 500; //d0  (um)
 					  cuts[4] = -25000; //d0xd0 (um^2)
 					  cuts[5] = 0.7; //cosTpointing
+					  /*
+					  //PPR
+					  cuts[0] = 400; //dca (um)
+					  cuts[1] = 0.8; //cosTstar
+					  cuts[2] = 0.5; //pt  (GeV/c)
+					  cuts[3] = 500; //d0  (um)
+					  cuts[4] = -20000; //d0xd0 (um^2)
+					  cuts[5] = 0.5; //cosTpointing
+					  */
 					}
+					/* //not same cuts for pt = 1 to 2 and 1 to 3 GeV in case must match them because of poor stat
+					else if (pt > 1 && pt <= 2){
+					 
+					  //coutputmassD02
+					  cuts[0] = 300;
+					  cuts[1] = 0.8;
+					  cuts[2] = 0.6;
+					  cuts[3] = 1000;
+					  cuts[4] = -25000;
+					  cuts[5] = 0.7;
+					  
+					  //PPR
+					  cuts[0] = 300;
+					  cuts[1] = 0.8;
+					  cuts[2] = 0.6;
+					  cuts[3] = 500;
+					  cuts[4] = -20000;
+					  cuts[5] = 0.6;
+					  
+					  }
+					*/
 					else if (pt > 1 && pt <= 3){
-						cuts[0] = 200;
-						cuts[1] = 0.8;
-						cuts[2] = 0.7;
-						cuts[3] = 1000;
-						cuts[4] = -25000;
-						cuts[5] = 0.8;
+					  
+					  //coutputmassD02
+					  cuts[0] = 200;
+					  cuts[1] = 0.8;
+					  cuts[2] = 0.7;
+					  cuts[3] = 1000;
+					  cuts[4] = -25000;
+					  cuts[5] = 0.8;
+					  /*
+					  //PPR
+					  cuts[0] = 300;
+					  cuts[1] = 0.8;
+					  cuts[2] = 0.6;
+					  cuts[3] = 500;
+					  cuts[4] = -20000;
+					  cuts[5] = 0.6;
+					  */
 					}
 					else if (pt > 3 && pt <= 5){
-						cuts[0] = 200;
-						cuts[1] = 0.8;
-						cuts[2] = 0.7;
-						cuts[3] = 500;
-						cuts[4] = -15000;
-						cuts[5] = 0.8;
+					  
+					  //coutputmassD02
+					  cuts[0] = 200;
+					  cuts[1] = 0.8;
+					  cuts[2] = 0.7;
+					  cuts[3] = 500;
+					  cuts[4] = -15000;
+					  cuts[5] = 0.8;
+					  /*
+					  //PPR
+					  cuts[0] = 200;
+					  cuts[1] = 0.8;
+					  cuts[2] = 0.7;
+					  cuts[3] = 500;
+					  cuts[4] = -10000;
+					  cuts[5] = 0.8;
+					  */
 					}
-// 					else if (pt > 3 && pt <= 5){
-// 						cuts[0] = 200;
-// 						cuts[1] = 0.8;
-// 						cuts[2] = 0.7;
-// 						cuts[3] = 500;
-// 						cuts[4] = -10000;
-// 						cuts[5] = 0.8;
-// 					}
 					else if (pt > 5){
-						cuts[0] = 200;
-						cuts[1] = 0.8;
-						cuts[2] = 0.7;
-						cuts[3] = 500;
-						cuts[4] = -15000;
-						cuts[5] = 0.9;
+					  
+					  //coutputmassD02
+					  cuts[0] = 200;
+					  cuts[1] = 0.8;
+					  cuts[2] = 0.7;
+					  cuts[3] = 500;
+					  cuts[4] = -15000;
+					  cuts[5] = 0.9;
+					  /*
+					  //PPR
+					  cuts[0] = 200;
+					  cuts[1] = 0.8;
+					  cuts[2] = 0.7;
+					  cuts[3] = 500;
+					  cuts[4] = -5000;
+					  cuts[5] = 0.8;
+					  */
 					}
 				
 					Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
