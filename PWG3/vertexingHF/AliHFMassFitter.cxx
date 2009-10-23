@@ -129,9 +129,24 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
 
 AliHFMassFitter::~AliHFMassFitter() {
   cout<<"AliHFMassFitter destructor called"<<endl;
-  if(fhistoInvMass) delete   fhistoInvMass;
-  if(fntuParam)     delete   fntuParam;
-  if(fFitPars)      delete[] fFitPars;
+  if(fhistoInvMass) {
+    cout<<"deleting histogram..."<<endl;
+    delete fhistoInvMass;
+    fhistoInvMass=NULL;
+  }
+  if(fntuParam){
+    cout<<"deleting ntuple..."<<endl;
+    delete fntuParam;
+
+    fntuParam=NULL;
+  }
+
+  if(fFitPars) {
+    delete[] fFitPars;
+    cout<<"deleting parameter array..."<<endl;
+    fFitPars=NULL;
+  }
+
   fcounter = 0;
 }
 
@@ -159,7 +174,10 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
   fSideBandr= mfit.fSideBandr;
   fcounter= mfit.fcounter;
   if(mfit.fParsSize > 0){
-    if(fFitPars) delete[] fFitPars;
+    if(fFitPars) {
+      delete[] fFitPars;
+      fFitPars=NULL;
+    }
     fFitPars=new Float_t[fParsSize];
     memcpy(fFitPars,mfit.fFitPars,mfit.fParsSize*sizeof(Float_t));
   }
@@ -201,7 +219,9 @@ void AliHFMassFitter::ComputeParSize() {
 
 //___________________________________________________________________________
 void AliHFMassFitter::SetHisto(TH1F *histoToFit){
-  fhistoInvMass = (TH1F*)histoToFit->Clone();
+  //fhistoInvMass = (TH1F*)histoToFit->Clone();
+  fhistoInvMass = new TH1F(*histoToFit);
+  cout<<"SetHisto pointer "<<fhistoInvMass<<endl;
 }
 
 //___________________________________________________________________________
@@ -217,9 +237,18 @@ void AliHFMassFitter::SetHisto(TH1F *histoToFit){
 //___________________________________________________________________________
 
 void AliHFMassFitter::Reset() {
+  cout<<"Reset called: delete histogram, set mean value to 1.85 and sigma to 0.012"<<endl;
   fMass=1.85;
   fSigmaSgn=0.012;
-  delete fhistoInvMass;
+  cout<<"Reset "<<fhistoInvMass<<endl;
+  if(fhistoInvMass) {
+    cout<<"esiste"<<endl;
+    //delete fhistoInvMass;
+    fhistoInvMass=NULL;
+    cout<<fhistoInvMass<<endl;
+  }
+  else cout<<"histogram doesn't exist, do not delete"<<endl;
+  
 }
 
 //_________________________________________________________________________
@@ -561,6 +590,8 @@ Bool_t AliHFMassFitter::SideBandsBounds(){
   else {
   fSideBandl=(Int_t)((fMass-4.*fSigmaSgn-minHisto)/width);
   fSideBandr=(Int_t)((fMass+4.*fSigmaSgn-minHisto)/width);
+//   cout<<"\tfMass = "<<fMass<<"\tfSigmaSgn = "<<fSigmaSgn<<"\tminHisto = "<<minHisto<<endl;
+//   cout<<"\tbinleft = "<<fSideBandl<<"\tbinright = "<<fSideBandr<<endl;
   }
 
   if (fSideBandl==0) {
@@ -821,30 +852,40 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     }
   */
   
-  if(draw){
-    TCanvas *canvas=new TCanvas(fhistoInvMass->GetName(),fhistoInvMass->GetName());
-    TH1F *fhistocopy=new TH1F(*fhistoInvMass);
-    canvas->cd();
-    fhistocopy->DrawClone();
-    if(ftypeOfFit4Sgn == 1) funcbkg1->DrawClone("sames");
-    else funcbkg->DrawClone("sames");
-    funcmass->DrawClone("sames");
-    cout<<"Drawn"<<endl;
-  }
+//   if(draw){
+//     TCanvas *canvas=new TCanvas(fhistoInvMass->GetName(),fhistoInvMass->GetName());
+//     TH1F *fhistocopy=new TH1F(*fhistoInvMass);
+//     canvas->cd();
+//     fhistocopy->DrawClone();
+//     if(ftypeOfFit4Sgn == 1) funcbkg1->DrawClone("sames");
+//     else funcbkg->DrawClone("sames");
+//     funcmass->DrawClone("sames");
+//     cout<<"Drawn"<<endl;
+//   }
 
-  if(funcmass->GetParameter(nFitPars-1) <=0 || funcmass->GetParameter(nFitPars-2) <=0 || funcmass->GetParameter(nFitPars-3) <=0 ) {
-    cout<<"IntS or mean or sigma negative"<<endl;
+  if(funcmass->GetParameter(nFitPars-1) <0 || funcmass->GetParameter(nFitPars-2) <0 || funcmass->GetParameter(nFitPars-3) <0 ) {
+    cout<<"IntS or mean or sigma negative. You may tray to SetInitialGaussianSigma(..) and SetInitialGaussianMean(..)"<<endl;
     return kFALSE;
   }
 
   //increase counter of number of fits done
   fcounter++;
 
-  if (ftypeOfFit4Sgn == 1) delete funcbkg1;
-  delete funcbkg;
-  delete funcmass;
+  if (ftypeOfFit4Sgn == 1 && funcbkg1) {
+    delete funcbkg1;
+    funcbkg1=NULL;
+  }
+  if (funcbkg) {
+    delete funcbkg;
+    funcbkg=NULL;
+  }
+  if (funcmass) {
+    delete funcmass;
+    funcmass=NULL;
+  }
 
   AddFunctionsToHisto();
+  if (draw) DrawFit();
  
 
   return kTRUE;
@@ -911,6 +952,11 @@ void AliHFMassFitter::AddFunctionsToHisto(){
   hlist->ls();
 
   TF1 *b=(TF1*)hlist->FindObject(bkgname.Data());
+  if(!b){
+    cout<<bkgname<<" not found, cannot produce "<<bkgname<<"FullRange and "<<bkgname<<"Recalc"<<endl;
+    return;
+  }
+
   bkgname += "FullRange";
   TF1 *bfullrange=new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,np,"AliHFMassFitter","FitFunction4Bkg");
   //cout<<bfullrange->GetName()<<endl;
@@ -920,6 +966,8 @@ void AliHFMassFitter::AddFunctionsToHisto(){
     bfullrange->SetParameter(i,b->GetParameter(i));
     bfullrange->SetParError(i,b->GetParError(i));
   }
+  bfullrange->SetLineStyle(4);
+  bfullrange->SetLineColor(14);
 
   bkgnamesave += "Recalc";
 
@@ -943,15 +991,21 @@ void AliHFMassFitter::AddFunctionsToHisto(){
     blastpar->SetParError(2,mass->GetParError(2));
   }
 
-  blastpar->SetLineStyle(2);
+  blastpar->SetLineStyle(1);
   blastpar->SetLineColor(2);
 
   hlist->Add(bfullrange->Clone());
   hlist->Add(blastpar->Clone());
   hlist->ls();
   
-  delete bfullrange;
-  delete blastpar;
+  if(bfullrange) {
+    delete bfullrange;
+    bfullrange=NULL;
+  }
+  if(blastpar) {
+    delete blastpar;
+    blastpar=NULL;
+  }
 }
 
 //_________________________________________________________________________
@@ -981,22 +1035,54 @@ void AliHFMassFitter::WriteHisto(TString path) {
 
   cout<<fcounter<<" "<<hget->GetName()<<" written in "<<path<<endl;
 
-  delete output;
+  if(output) {
+    delete output;
+    output=NULL;
+  }
 
 }
 
 //_________________________________________________________________________
 
 void AliHFMassFitter::WriteNtuple(TString path) const{
-  TNtuple* nget=(TNtuple*)fntuParam->Clone();
+  //TNtuple* nget=(TNtuple*)fntuParam->Clone();
   path += "HFMassFitterOutput.root";
   TFile *output = new TFile(path.Data(),"update");
   output->cd();
-  nget->Write();
+  fntuParam->Write();
+  //nget->Write();
   output->Close();
-  cout<<nget->GetName()<<" written in "<<path<<endl;
-  delete nget;
-  delete output;
+  //cout<<nget->GetName()<<" written in "<<path<<endl;
+  cout<<fntuParam->GetName()<<" written in "<<path<<endl;
+  /*
+  if(nget) {
+    //delete nget;
+    nget=NULL;
+  }
+  */
+  if(output) {
+    delete output;
+    output=NULL;
+  }
+}
+
+//_________________________________________________________________________
+
+void AliHFMassFitter::DrawFit() const{
+
+  TString cvtitle="fit of ";
+  cvtitle+=fhistoInvMass->GetName();
+  TString cvname="c";
+  cvname+=fcounter;
+
+  TCanvas *c=new TCanvas(cvname,cvtitle);
+  c->cd();
+  GetHistoClone()->Draw("hist");
+  GetHistoClone()->GetFunction("funcbkgFullRange")->Draw("same");
+  GetHistoClone()->GetFunction("funcbkgRecalc")->Draw("same");
+  GetHistoClone()->GetFunction("funcmass")->Draw("same");
+
+
 }
 
 
@@ -1130,7 +1216,7 @@ void AliHFMassFitter::Signal(Double_t min, Double_t max, Double_t &signal,Double
 
   Double_t mass=funcmass->Integral(min, max)/fhistoInvMass->GetBinWidth(4);
   signal=mass - background;
-  errsignal=TMath::Sqrt((intSerr/intS*mass)*(intSerr/intS*mass)/*assume relative error is the same as for total integral*/ + errbackground*errbackground);
+  errsignal=(intSerr/intS)*signal;/*assume relative error is the same as for total integral*/
 
 }
 
