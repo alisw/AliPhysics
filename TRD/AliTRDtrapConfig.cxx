@@ -924,11 +924,11 @@ Short_t AliTRDtrapConfig::ChipmaskToMCMlist( Int_t cmA, Int_t cmB, UShort_t link
   Short_t i;
   for( i = 0 ; i < fgkMaxMcm ; i++ ) {
      if( (cmA & (1 << i)) != 0 ) {
-	fMcmlist[nmcm] = (linkpair*2 << 7) | i;
+       fMcmlist[nmcm] = ((linkpair*2) << 7) | i;
 	++nmcm;
     }
     if( (cmB & (1 << i)) != 0 ) {
-       fMcmlist[nmcm] = (linkpair*2+1 << 7) | i;
+       fMcmlist[nmcm] = ((linkpair*2+1) << 7) | i;
        ++nmcm;
     }
   }

@@ -322,8 +322,8 @@ Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob
             fADCF[ch][tb] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP) + (fgAddBaseline << fgkAddDigits);
           }
           else {
-            fADCR[ch][tb] = digits->GetData(padrow, padcol, tb) << fgkAddDigits + (fgAddBaseline << fgkAddDigits);
-            fADCF[ch][tb] = digits->GetData(padrow, padcol, tb) << fgkAddDigits + (fgAddBaseline << fgkAddDigits);
+            fADCR[ch][tb] = (digits->GetData(padrow, padcol, tb) + fgAddBaseline) << fgkAddDigits;
+            fADCF[ch][tb] = (digits->GetData(padrow, padcol, tb) + fgAddBaseline) << fgkAddDigits;
           }
         }
       }
@@ -609,8 +609,8 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
         fADCF[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP) + (fgAddBaseline << fgkAddDigits);
       }
       else {
-        fADCR[iAdc][iTimeBin] = adcArray->GetData(GetRow(), GetCol(iAdc), iTimeBin) << fgkAddDigits + (fgAddBaseline << fgkAddDigits);
-        fADCF[iAdc][iTimeBin] = adcArray->GetData(GetRow(), GetCol(iAdc), iTimeBin) << fgkAddDigits + (fgAddBaseline << fgkAddDigits);
+        fADCR[iAdc][iTimeBin] = (adcArray->GetData(GetRow(), GetCol(iAdc), iTimeBin)  + fgAddBaseline) << fgkAddDigits;
+        fADCF[iAdc][iTimeBin] = (adcArray->GetData(GetRow(), GetCol(iAdc), iTimeBin)  + fgAddBaseline) << fgkAddDigits;
       }
     }
   }
