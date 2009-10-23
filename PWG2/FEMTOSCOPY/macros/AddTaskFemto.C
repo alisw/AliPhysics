@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskFemto *AddTaskFemto()
+AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnalysis.C")
 {
 // Creates a proton analysis task and adds it to the analysis manager.
   
@@ -30,15 +30,19 @@ AliAnalysisTaskFemto *AddTaskFemto()
   // C. Create the task, add it to manager.
   //===========================================================================
 //  gSystem->SetIncludePath("-I$ROOTSYS/include  -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I$ALICE_ROOT/include");
+
   if (TProofMgr::GetListOfManagers()->GetEntries()) {
-    if (dynamic_cast<TProofLite *> gProof)
-      gProof->Exec(".L ConfigFemtoAnalysis.C");
+    if (dynamic_cast<TProofLite *> gProof) {
+      char *macrocommand[10000];
+      sprintf(macrocommand, ".L %s", configMacroName);
+      gProof->Exec(macrocommand);
+    }
     else
-      gProof->Load("ConfigFemtoAnalysis.C");
+      gProof->Load(configMacroName);
   }  
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto");
+  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName);
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
