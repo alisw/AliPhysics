@@ -59,8 +59,11 @@ class AliFlowAnalysisWithQCumulants{
     virtual void StoreHarmonic();
   // 2.) method Make() and methods called within Make():
   virtual void Make(AliFlowEventSimple *anEvent);
-    // 2a.) integrated flow:
+    // 2a.) common:
     virtual void FillAverageMultiplicities(Int_t nRP);
+    virtual void FillCommonControlHistograms(AliFlowEventSimple *anEvent);
+    virtual void ResetEventByEventQuantities();
+    // 2b.) integrated flow:
     virtual void CalculateIntFlowCorrelations(); 
     virtual void CalculateIntFlowProductOfCorrelations();
     virtual void CalculateIntFlowSumOfEventWeights();
@@ -68,11 +71,12 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateIntFlowCorrectionsForNUASinTerms();  
     virtual void CalculateIntFlowCorrectionsForNUACosTerms();
     // ...  
-    virtual void CalculateWeightedCorrelationsForIntegratedFlow();
+    virtual void CalculateIntFlowCorrelationsUsingParticleWeights();
     virtual void CalculateWeightedQProductsForIntFlow();
     virtual void EvaluateNestedLoopsForIntegratedFlow(AliFlowEventSimple* anEvent); 
-    // 2b.) differential flow:
-    virtual void CalculateReducedCorrelations1D(TString type, TString ptOrEta); // type = RP or POI
+    // 2c.) differential flow:
+    virtual void CalculateDiffFlowCorrelations1D(TString type, TString ptOrEta); // type = RP or POI
+    virtual void CalculateDiffFlowCorrelationsUsingParticleWeights1D(TString type, TString ptOrEta); // type = RP or POI 
     virtual void CalculateDiffFlowProductOfCorrelations(TString type, TString ptOrEta); // type = RP or POI
     virtual void CalculateDiffFlowSumOfEventWeights(TString type, TString ptOrEta); // type = RP or POI
     virtual void CalculateDiffFlowSumOfProductOfEventWeights(TString type, TString ptOrEta); // type = RP or POI
@@ -334,6 +338,7 @@ class AliFlowAnalysisWithQCumulants{
   TMatrixD *fImQ; // fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
   TMatrixD *fSMpk; // fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p}
   TH1D *fIntFlowCorrelationsEBE; // 1st bin: <2>, 2nd bin: <4>, 3rd bin: <6>, 4th bin: <8>
+  TH1D *fIntFlowEventWeightsForCorrelationsEBE; // 1st bin: eW_<2>, 2nd bin: eW_<4>, 3rd bin: eW_<6>, 4th bin: eW_<8>
   TH1D *fIntFlowCorrelationsAllEBE; // to be improved (add comment)
   TH1D *fIntFlowCorrectionTermsForNUAEBE[2]; // [0=sin terms,1=cos terms], NUA = non-uniform acceptance
   //  3d.) profiles:
@@ -377,6 +382,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fImRPQ1dEBE[3][2][4][9]; // imaginary part [0=r,1=p,2=q][0=pt,1=eta][m][k]
   TProfile *fs1dEBE[3][2][9]; // [0=r,1=p,2=q][0=pt,1=eta][k] // to be improved
   TH1D *fDiffFlowCorrelationsEBE[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][reduced correlation index]
+  TH1D *fDiffFlowEventWeightsForCorrelationsEBE[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][event weights for reduced correlation index]
   // 2D:
   TProfile2D *fReRPQ2dEBE[3][4][9]; // real part of r_{m*n,k}(pt,eta), p_{m*n,k}(pt,eta) and q_{m*n,k}(pt,eta)
   TProfile2D *fImRPQ2dEBE[3][4][9]; // imaginary part of r_{m*n,k}(pt,eta), p_{m*n,k}(pt,eta) and q_{m*n,k}(pt,eta)
