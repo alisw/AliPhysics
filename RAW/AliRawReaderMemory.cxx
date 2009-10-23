@@ -143,7 +143,7 @@ Bool_t AliRawReaderMemory::ReadNextData(UChar_t*& data)
   fPosition += fCount;
   fCount = 0;
 
-  if(fBuffers[fCurrent].GetBufferSize()-currentPosition<0){
+  if(fBuffers[fCurrent].GetBufferSize()<currentPosition){
     Error("ReadNextData","Current position exceeds buffersize.");
     return kFALSE;
   }
