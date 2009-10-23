@@ -48,6 +48,7 @@ ClassImp(AliHFEpid)
 //____________________________________________________________
 AliHFEpid::AliHFEpid():
   fEnabledDetectors(0),
+  fPIDstrategy(0),
   fQAlist(0x0),
   fDebugLevel(0)
 {
@@ -61,6 +62,7 @@ AliHFEpid::AliHFEpid():
 AliHFEpid::AliHFEpid(const AliHFEpid &c):
   TObject(c),
   fEnabledDetectors(c.fEnabledDetectors),
+  fPIDstrategy(0),
   fQAlist(0x0),
   fDebugLevel(c.fDebugLevel)
 {
@@ -93,6 +95,7 @@ AliHFEpid& AliHFEpid::operator=(const AliHFEpid &c){
 
   if(this != &c){
     fEnabledDetectors = c.fEnabledDetectors;
+    fPIDstrategy = c.fPIDstrategy;
     fQAlist = 0x0;
     fDebugLevel = c.fDebugLevel;
   
@@ -128,27 +131,43 @@ AliHFEpid::~AliHFEpid(){
 }
 
 //____________________________________________________________
-Bool_t AliHFEpid::InitializePID(TString detectors){
+Bool_t AliHFEpid::InitializePID(TString arg){
   //
   // Initializes PID Object:
   // + Defines which detectors to use
   // + Initializes Detector PID objects
   // + Handles QA
   //
-  AliInfo(Form("Doing InitializePID for Detectors %s end", detectors.Data()));
   fDetectorPID[kMCpid] = new AliHFEpidMC("Monte Carlo PID"); // Always there
-  fDetectorPID[kITSpid] = new AliHFEpidITS("ITS development PID");  // Development version of the ITS pid, for the moment always there
   SETBIT(fEnabledDetectors, kMCpid);
+  // Initialize detector PIDs according to PID Strategies
+  if(arg.BeginsWith("Strategy")){
+    arg.ReplaceAll("Strategy", "");
+    fPIDstrategy = arg.Atoi();
+    AliInfo(Form("PID Strategy %d enabled", fPIDstrategy));
+    Int_t strategyStatus = kTRUE;
+    switch(fPIDstrategy){
+      case 1: InitStrategy1(); break;
+      case 2: InitStrategy2(); break;
+      case 3: InitStrategy3(); break;
+      case 4: InitStrategy4(); break;
+      case 5: InitStrategy5(); break;
+      default: strategyStatus = kFALSE;
+    }
+    return strategyStatus;
+  }
+  // No Strategy defined, Initialize according to detectors specified
+  AliInfo(Form("Doing InitializePID for Detectors %s end", arg.Data()));
+  fDetectorPID[kITSpid] = new AliHFEpidITS("ITS development PID");  // Development version of the ITS pid, for the moment always there
   SETBIT(fEnabledDetectors, kITSpid);
   
-  TObjArray *detsEnabled = detectors.Tokenize(":");
+  TObjArray *detsEnabled = arg.Tokenize(":");
   TIterator *detIterator = detsEnabled->MakeIterator();
   TObjString *det = 0x0;
   while((det = dynamic_cast<TObjString *>(detIterator->Next()))){
     if(det->String().CompareTo("TPC") == 0){
       AliInfo("Doing TPC PID");
       fDetectorPID[kTPCpid] = new AliHFEpidTPC("TPC PID");
-      (dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid]))->SetAsymmetricTPCsigmaCut(2., 10., 0., 4.);
       SETBIT(fEnabledDetectors, kTPCpid);
     } else if(det->String().CompareTo("TRD") == 0){
       fDetectorPID[kTRDpid] = new AliHFEpidTRD("TRD PID");
@@ -180,6 +199,18 @@ Bool_t AliHFEpid::IsSelected(AliHFEpidObject *track){
   if(!track->fRecTrack){
     // MC Event
     return (TMath::Abs(fDetectorPID[kMCpid]->IsSelected(track)) == 11);
+  }
+  if(fPIDstrategy > 0 && fPIDstrategy < 6){
+    Int_t pid = 0;
+    switch(fPIDstrategy){
+      case 1: pid = IdentifyStrategy1(track); break;
+      case 2: pid = IdentifyStrategy2(track); break;
+      case 3: pid = IdentifyStrategy3(track); break;
+      case 4: pid = IdentifyStrategy4(track); break;
+      case 5: pid = IdentifyStrategy5(track); break;
+      default: break;
+    }
+    return pid;
   }
   if(TESTBIT(fEnabledDetectors, kTPCpid)){
     if(IsQAOn() && fDebugLevel > 1){ 
@@ -220,6 +251,7 @@ Bool_t AliHFEpid::MakePidTpcTrd(AliHFEpidObject *track){
   // momentum slices
   //
   if(track->fAnalysisType != AliHFEpidObject::kESDanalysis) return kFALSE; //AOD based detector PID combination not yet implemented
+  AliDebug(1, "Analysis Type OK, do PID");
   AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(track->fRecTrack);
   AliHFEpidTRD *trdPid = dynamic_cast<AliHFEpidTRD *>(fDetectorPID[kTRDpid]);
   Int_t pdg = TMath::Abs(fDetectorPID[kMCpid]->IsSelected(track));
@@ -232,18 +264,25 @@ Bool_t AliHFEpid::MakePidTpcTrd(AliHFEpidObject *track){
     case 2212:  pid = AliPID::kProton; break;
     default:    pid = -1;
   };
+  Double_t content[10];
+  content[0] = pid;
+  content[1] = esdTrack->P();
+  content[2] = esdTrack->GetTPCsignal();
+  content[3] = trdPid->GetTRDSignalV1(esdTrack, pid);
   if(IsQAOn() && fDebugLevel > 1){
-    Double_t content[10];
-    content[0] = pid;
-    content[1] = esdTrack->P();
-    content[2] = esdTrack->GetTPCsignal();
-    content[3] = trdPid->GetTRDSignalV1(esdTrack, pid);
     content[4] = trdPid->GetTRDSignalV2(esdTrack, pid);
     AliDebug(1, Form("Momentum: %f, TRD Signal: Method 1[%f], Method 2[%f]", content[1], content[3], content[4]));
     (dynamic_cast<THnSparseF *>(fQAlist->At(kTRDSignal)))->Fill(content);
   }
-  Int_t trdDecision = 0;  // TRD decision 0 means outside the allowed momentum region
-  return ((trdDecision = trdPid->IsSelected(track)) == 11 || trdDecision == 0) && fDetectorPID[kTPCpid]->IsSelected(track) == 11;
+  if(content[1] > 2){ // perform combined
+    AliDebug(1, "Momentum bigger 2 GeV/c, doing combined PID"); 
+    if(content[2] > 65 && content[3] > 500) return kTRUE;
+    else return kFALSE;
+  }
+  else {
+    AliDebug(1, "Momentum smaller 2GeV/c, doing TPC alone PID");
+    return fDetectorPID[kTPCpid]->IsSelected(track) == 11;
+  }
 }
 
 //____________________________________________________________
@@ -327,3 +366,95 @@ void AliHFEpid::SetQAOn(){
   }
 }
 
+//____________________________________________________________
+void AliHFEpid::InitStrategy1(){
+  //
+  // TPC alone, 3-sigma cut
+  //
+  AliHFEpidTPC *pid = new AliHFEpidTPC("strat1TPCpid");
+  pid->SetTPCnSigma(3);
+  Bool_t status = pid->InitializePID();
+  if(IsQAOn() && status) pid->SetQAOn(fQAlist);
+  if(HasMCData() && status) pid->SetHasMCData();
+  fDetectorPID[kTPCpid] = pid;
+}
+
+//____________________________________________________________
+void AliHFEpid::InitStrategy2(){
+  //
+  // TPC alone, symmetric 3 sigma cut and asymmetric sigma cut in the momentum region between 2GeV/c and 10 GeV/c and sigma between -1 and 100
+  //
+  AliHFEpidTPC *pid = new AliHFEpidTPC("strat2TPCpid");
+  pid->SetTPCnSigma(3);
+  pid->SetAsymmetricTPCsigmaCut(2., 10., 0., 4.);
+  Bool_t status = pid->InitializePID();
+  if(IsQAOn() && status) pid->SetQAOn(fQAlist);
+  if(HasMCData() && status) pid->SetHasMCData();
+  fDetectorPID[kTPCpid] = pid;
+}
+
+//____________________________________________________________
+void AliHFEpid::InitStrategy3(){
+  //
+  // TPC alone, symmetric 3 sigma cut and 2 - -100 sigma pion rejection
+  //   
+  AliHFEpidTPC *pid = new AliHFEpidTPC("strat3TPCpid");
+  pid->SetTPCnSigma(3);
+  pid->SetRejectParticle(AliPID::kPion, 0., -100., 10., 3.);
+  Bool_t status = pid->InitializePID();
+  if(IsQAOn() && status) pid->SetQAOn(fQAlist);
+  if(HasMCData() && status) pid->SetHasMCData();
+  fDetectorPID[kTPCpid] = pid;
+}
+
+//____________________________________________________________
+void AliHFEpid::InitStrategy4(){
+  //
+  // TPC and TRD combined, TPC 3 sigma cut and TRD NN 90% el efficiency level above 2 GeV/c
+  //
+  InitStrategy1();
+  AliHFEpidTRD *trdpid = new AliHFEpidTRD("strat4TRDpid");
+  Bool_t status = trdpid->InitializePID();
+  if(IsQAOn() && status) trdpid->SetQAOn(fQAlist);
+  if(HasMCData() && status) trdpid->SetHasMCData();
+  fDetectorPID[kTRDpid] = trdpid;
+}
+
+//____________________________________________________________
+void AliHFEpid::InitStrategy5(){
+  //
+  // TPC and TRD combined, TPC 3 sigma cut and TRD NN 90% el efficiency level above 2 GeV/c
+  //
+  InitStrategy1();
+  AliHFEpidTRD *trdpid = new AliHFEpidTRD("strat5TRDpid");
+  Bool_t status = trdpid->InitializePID();
+  if(IsQAOn() && status) trdpid->SetQAOn(fQAlist);
+  if(HasMCData() && status) trdpid->SetHasMCData();
+  fDetectorPID[kTRDpid] = trdpid;
+}
+
+//____________________________________________________________
+Bool_t AliHFEpid::IdentifyStrategy1(AliHFEpidObject *track){
+  return TMath::Abs(fDetectorPID[kTPCpid]->IsSelected(track)) == 11;
+}
+
+//____________________________________________________________
+Bool_t AliHFEpid::IdentifyStrategy2(AliHFEpidObject *track){
+  return TMath::Abs(fDetectorPID[kTPCpid]->IsSelected(track)) == 11;
+}
+
+//____________________________________________________________
+Bool_t AliHFEpid::IdentifyStrategy3(AliHFEpidObject *track){
+  return TMath::Abs(fDetectorPID[kTPCpid]->IsSelected(track)) == 11;
+}
+
+//____________________________________________________________
+Bool_t AliHFEpid::IdentifyStrategy4(AliHFEpidObject *track){
+  Int_t trdpid = TMath::Abs(fDetectorPID[kTRDpid]->IsSelected(track));
+  return (trdpid == 0 || trdpid == 11) && (TMath::Abs(fDetectorPID[kTPCpid]->IsSelected(track)) == 11);
+}
+
+//____________________________________________________________
+Bool_t AliHFEpid::IdentifyStrategy5(AliHFEpidObject *track){
+  return MakePidTpcTrd(track);
+}

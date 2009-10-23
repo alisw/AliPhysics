@@ -31,6 +31,8 @@
 
 #include "AliCFAcceptanceCuts.h"
 #include "AliCFCutBase.h"
+#include "AliCFEventGenCuts.h"
+#include "AliCFEventRecCuts.h"
 #include "AliCFManager.h"
 #include "AliCFParticleGenCuts.h"
 #include "AliCFTrackIsPrimaryCuts.h"
@@ -49,6 +51,7 @@ AliHFEcuts::AliHFEcuts():
   fMinClustersTPC(0),
   fMinTrackletsTRD(0),
   fCutITSPixel(0),
+  fCheckITSLayerStatus(kTRUE),
   fMaxChi2clusterTPC(0.),
   fMinClusterRatioTPC(0.),
   fSigmaToVtx(0.),
@@ -73,6 +76,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fMinClustersTPC(c.fMinClustersTPC),
   fMinTrackletsTRD(c.fMinTrackletsTRD),
   fCutITSPixel(c.fCutITSPixel),
+  fCheckITSLayerStatus(c.fCheckITSLayerStatus),
   fMaxChi2clusterTPC(c.fMaxChi2clusterTPC),
   fMinClusterRatioTPC(c.fMinClusterRatioTPC),
   fSigmaToVtx(c.fSigmaToVtx),
@@ -120,8 +124,13 @@ void AliHFEcuts::Initialize(AliCFManager *cfm){
   SetHFElectronITSCuts();
   SetHFElectronTRDCuts();
 
+  // Connect the event cuts
+  /*SetEventCutList(kEventStepGenerated);
+  SetEventCutList(kEventStepReconstructed);
+  cfm->SetEventCutsList(kEventStepGenerated, dynamic_cast<TObjArray *>(fCutList->FindObject("fEvGenCuts")));
+  cfm->SetEventCutsList(kEventStepReconstructed, dynamic_cast<TObjArray *>(fCutList->FindObject("fEvRecCuts")));*/
   
-  // Connect the cuts
+  // Connect the particle cuts
   cfm->SetParticleCutsList(kStepMCGenerated, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartGenCuts")));
   cfm->SetParticleCutsList(kStepMCInAcceptance, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartAccCuts")));
   cfm->SetParticleCutsList(kStepRecKineITSTPC, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartRecKineITSTPCCuts")));
@@ -141,6 +150,61 @@ void AliHFEcuts::Initialize(){
   SetHFElectronITSCuts();
   SetHFElectronTRDCuts();
 
+}
+
+//__________________________________________________________________
+void AliHFEcuts::SetEventInfo(TObject *ev){
+  //
+  // Safe wrapper for AliCFManager::SetEventInfo that does a preselection of
+  // cut objects that need a special event info according to the object type
+  // in the argument. 
+  // Gets rid of a few run time messages
+  //
+  if(!TString(ev->IsA()->GetName()).CompareTo("AliMCEvent")){
+    TObjArray *genCuts = dynamic_cast<TObjArray *>(fCutList->FindObject("fPartGenCuts"));
+    if(genCuts){
+      AliCFParticleGenCuts *myGenCut = dynamic_cast<AliCFParticleGenCuts *>(genCuts->FindObject("fCutsGenMC"));
+      if(myGenCut) myGenCut->SetEvtInfo(ev);
+    }
+  } else if(!TString(ev->IsA()->GetName()).CompareTo("AliESDEvent")){
+    TObjArray *primCuts = dynamic_cast<TObjArray *>(fCutList->FindObject("fPartPrimCuts"));
+    if(primCuts){
+      AliCFTrackIsPrimaryCuts *myPrimCut = dynamic_cast<AliCFTrackIsPrimaryCuts *>(primCuts->FindObject("fCutsPrimaryCuts"));
+      if(myPrimCut) myPrimCut->SetEvtInfo(ev);
+    }
+  }
+}
+
+//__________________________________________________________________
+void AliHFEcuts::SetEventCutList(Int_t istep){
+  // 
+  // Cuts for Event Selection
+  //
+  TObjArray *arr = new TObjArray;
+  if(istep == kEventStepGenerated){
+    AliCFEventGenCuts *evGenCuts = new AliCFEventGenCuts("fCutsEvGen", "Event Generated cuts");
+    evGenCuts->SetNTracksCut(1);
+    evGenCuts->SetRequireVtxCuts(kTRUE);
+    evGenCuts->SetVertexXCut(-1, 1);
+    evGenCuts->SetVertexYCut(-1, 1);
+    evGenCuts->SetVertexZCut(-30, 30);
+
+    arr->SetName("fEvGenCuts");
+    arr->AddLast(evGenCuts);
+  } else {
+    AliCFEventRecCuts *evRecCuts = new AliCFEventRecCuts("fCutsEvRec", "Event Reconstructed cuts");
+    evRecCuts->SetUseSPDVertex();
+    evRecCuts->SetNTracksCut(1);
+    evRecCuts->SetRequireVtxCuts(kTRUE);
+    evRecCuts->SetVertexXCut(-1, 1);
+    evRecCuts->SetVertexYCut(-1, 1);
+    evRecCuts->SetVertexZCut(-30, 30);
+
+
+    arr->SetName("fEvRecCuts");
+    arr->AddLast(evRecCuts);
+  }
+  fCutList->AddLast(arr);
 }
 
 //__________________________________________________________________
@@ -284,6 +348,7 @@ void AliHFEcuts::SetHFElectronITSCuts(){
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupPixels","Extra cuts from the HFE group");
   if(IsRequireITSpixel()){
     hfecuts->SetRequireITSpixel(AliHFEextraCuts::ITSPixel_t(fCutITSPixel));
+    hfecuts->SetCheckITSstatus(fCheckITSLayerStatus);
   }
   
   if(IsInDebugMode()) hfecuts->SetQAOn(fHistQA);

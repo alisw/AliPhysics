@@ -46,12 +46,12 @@ void runElectronTask(const char *treelist = 0x0){
   hfecuts->CreateStandardCuts();
   AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE;
   task->SetHFECuts(hfecuts);
-  task->AddPIDdetector("TPC");
+  task->SetPIDStrategy("Strategy4");
   task->SetQAOn(AliAnalysisTaskHFE::kPIDqa);
   task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
   task->SetSecVtxOn();
   pidEffManager->AddTask(task);
-  task->ConnectInput(0, pidEffManager->CreateContainer("esdTree", TChain::Class(), AliAnalysisManager::kInputContainer));
+  task->ConnectInput(0, pidEffManager->GetCommonInputContainer());
   task->ConnectOutput(0, pidEffManager->CreateContainer("nEvents", TH1I::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));
   task->ConnectOutput(1, pidEffManager->CreateContainer("Results", TList::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));
   task->ConnectOutput(2, pidEffManager->CreateContainer("QA", TList::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));

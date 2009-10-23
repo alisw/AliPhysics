@@ -48,6 +48,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     kMCqa =1 
   };
     AliAnalysisTaskHFE();
+    AliAnalysisTaskHFE(const char * name);
     AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref);
     AliAnalysisTaskHFE& operator=(const AliAnalysisTaskHFE &ref);
     virtual ~AliAnalysisTaskHFE();
@@ -72,6 +73,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     void SetSecVtxOn(Bool_t option = kTRUE)        { SetBit(kIsSecVtxOn, option); };
     void SetRunPostProcess(Bool_t option = kTRUE)  { SetBit(kIsRunningPostProcess, option); };
     void SetPIDdetectors(Char_t *detectors){ fPIDdetectors = detectors; }
+    void SetPIDStrategy(UInt_t strategy) { fPIDstrategy = strategy; }
     void AddPIDdetector(Char_t *detector);
     void PrintStatus();
     Float_t GetRapidity(TParticle *part);
@@ -100,6 +102,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTask{
     
     ULong_t fQAlevel;                     // QA level
     TString fPIDdetectors;                // Detectors for Particle Identification
+    UInt_t fPIDstrategy;                  // PID Strategy
     AliESDEvent *fESD;                    //! The ESD Event
     AliMCEvent *fMC;                      //! The MC Event
     AliCFManager *fCFM;                   //! Correction Framework Manager

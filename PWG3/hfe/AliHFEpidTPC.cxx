@@ -53,6 +53,7 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
     AliHFEpidBase(name)
   , fLineCrossingsEnabled(0)
   , fNsigmaTPC(3)
+  , fRejectionEnabled(0)
   , fPID(NULL)
   , fPIDtpcESD(NULL)
   , fQAList(NULL)
@@ -72,6 +73,7 @@ AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
     AliHFEpidBase("")
   , fLineCrossingsEnabled(0)
   , fNsigmaTPC(2)
+  , fRejectionEnabled(0)
   , fPID(NULL)
   , fPIDtpcESD(NULL)
   , fQAList(NULL)
@@ -103,6 +105,7 @@ void AliHFEpidTPC::Copy(TObject &o) const{
 
   target.fLineCrossingsEnabled = fLineCrossingsEnabled;
   target.fNsigmaTPC = fNsigmaTPC;
+  target.fRejectionEnabled = fRejectionEnabled;
   target.fPID = new AliPID(*fPID);
   target.fPIDtpcESD = new AliTPCpidESD(*fPIDtpcESD);
   target.fQAList = dynamic_cast<TList *>(fQAList->Clone());
@@ -176,22 +179,50 @@ Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
     }
   }
   if(isLineCrossing) return 0;
+
+  // Check particle rejection
+  if(HasParticleRejection()){
+    Int_t reject = Reject(esdTrack);
+    AliDebug(1, Form("PID code from Rejection: %d", reject));
+    if(reject != 0) return reject;
+  }
   // Check whether distance from the electron line is smaller than n-sigma
 
   // Perform Asymmetric n-sigma cut if required, else perform symmetric TPC sigma cut
   Float_t nsigma = fPIDtpcESD->GetNumberOfSigmas(esdTrack, AliPID::kElectron);
   Float_t p = 0.;
+  Int_t pdg = 0;
   if(HasAsymmetricSigmaCut() && (p = esdTrack->P()) >= fPAsigCut[0] && p <= fPAsigCut[1]){ 
-    if(nsigma >= fNAsigmaTPC[0] && nsigma <= fNAsigmaTPC[1]) return 11; 
+    if(nsigma >= fNAsigmaTPC[0] && nsigma <= fNAsigmaTPC[1]) pdg = 11; 
   } else {
-    if(TMath::Abs(nsigma) < fNsigmaTPC ) return 11;
+    if(TMath::Abs(nsigma) < fNsigmaTPC ) pdg = 11;
   }
-  return 0;
+  if(IsQAon() && pdg != 0) (dynamic_cast<TH2I *>(fQAList->At(kHistTPCselected)))->Fill(esdTrack->GetInnerParam() ? esdTrack->GetInnerParam()->P() : esdTrack->P(), esdTrack->GetTPCsignal());
+  return pdg;
 }
 
 //___________________________________________________________________
 Int_t AliHFEpidTPC::MakePIDaod(AliAODTrack * /*aodTrack*/, AliAODMCParticle * /*mctrack*/){
   AliError("AOD PID not yet implemented");
+  return 0;
+}
+
+//___________________________________________________________________
+Int_t AliHFEpidTPC::Reject(AliESDtrack *track){
+  //
+  // reject particles based on asymmetric sigma cut
+  //
+  Int_t pdc[AliPID::kSPECIES] = {11,13,211,321,2212};
+  Double_t p = track->GetOuterParam() ? track->GetOuterParam()->P() : track->P();
+  for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
+    if(!TESTBIT(fRejectionEnabled, ispec)) continue;
+    AliDebug(1, Form("Particle Rejection enabled for species %d", ispec));
+    // Particle rejection enabled
+    if(p < fRejection[4*ispec] || p > fRejection[4*ispec+2]) continue;
+    Double_t sigma = fPIDtpcESD->GetNumberOfSigmas(track, static_cast<AliPID::EParticleType>(ispec));
+    AliDebug(1, Form("Sigma %f, min %f, max %f", sigma, fRejection[4*ispec + 1], fRejection[4*ispec+3]));
+    if(sigma >= fRejection[4*ispec+1] && sigma <= fRejection[4*ispec+3]) return pdc[ispec] * track->Charge();
+  }
   return 0;
 }
 
@@ -317,13 +348,14 @@ void AliHFEpidTPC::AddQAhistograms(TList *qaList){
   fQAList = new TList;
   fQAList->SetName("fTPCqaHistos");
 
-  fQAList->AddAt(new TH2I("fHistTPCelectron","TPC signal for Electrons", 200, 0, 20, 60, 0, 600), kHistTPCelectron); 
-  fQAList->AddAt(new TH2I("fHistTPCmuon","TPC signal for Muons", 200, 0, 20, 60, 0, 600), kHistTPCmuon);
-  fQAList->AddAt(new TH2I("fHistTPCpion","TPC signal for Pions", 200, 0, 20, 60, 0, 600), kHistTPCpion);
-  fQAList->AddAt(new TH2I("fHistTPCkaon","TPC signal for Kaons", 200, 0, 20, 60, 0, 600), kHistTPCkaon);
-  fQAList->AddAt(new TH2I("fHistTPCproton","TPC signal for Protons", 200, 0, 20, 60, 0, 600), kHistTPCproton);
-  fQAList->AddAt(new TH2I("fHistTPCothers","TPC signal for other species", 200, 0, 20, 60, 0, 600), kHistTPCothers);
-  fQAList->AddAt(new TH2I("fHistTPCall","TPC signal for all species", 200, 0, 20, 60, 0, 600), kHistTPCall);
+  fQAList->AddAt(new TH2I("fHistTPCelectron","TPC signal for Electrons", 200, 0, 20, 200, 0, 200), kHistTPCelectron); 
+  fQAList->AddAt(new TH2I("fHistTPCmuon","TPC signal for Muons", 200, 0, 20, 200, 0, 200), kHistTPCmuon);
+  fQAList->AddAt(new TH2I("fHistTPCpion","TPC signal for Pions", 200, 0, 20, 200, 0, 200), kHistTPCpion);
+  fQAList->AddAt(new TH2I("fHistTPCkaon","TPC signal for Kaons", 200, 0, 20, 200, 0, 200), kHistTPCkaon);
+  fQAList->AddAt(new TH2I("fHistTPCproton","TPC signal for Protons", 200, 0, 20, 200, 0, 200), kHistTPCproton);
+  fQAList->AddAt(new TH2I("fHistTPCothers","TPC signal for other species", 200, 0, 20, 200, 0, 200), kHistTPCothers);
+  fQAList->AddAt(new TH2I("fHistTPCall","TPC signal for all species", 200, 0, 20, 200, 0, 200), kHistTPCall);
+  fQAList->AddAt(new TH2I("fHistTPCselected","TPC signal for all selected particles", 200, 0, 20, 200, 0, 200), kHistTPCselected);
 
   fQAList->AddAt(new TH2F("fHistTPCprobEl","TPC likelihood for electrons to be an electron vs. p", 200, 0.,20.,200,0.,1.), kHistTPCprobEl);
   fQAList->AddAt(new TH2F("fHistTPCprobPi","TPC likelihood for pions to be an electron vs. p",  200, 0.,20.,200, 0.,1.), kHistTPCprobPi);

@@ -53,6 +53,10 @@ class AliHFEcuts : public TObject{
       kStepHFEcutsITS = 5,
       kStepHFEcutsTRD = 6
     } CutStep_t;
+    typedef enum{
+      kEventStepGenerated = 0,
+      kEventStepReconstructed = 1
+    } EventCutStep_t;
     enum{
       kNcutSteps = 7,
       kNcutESDSteps = 4
@@ -71,6 +75,7 @@ class AliHFEcuts : public TObject{
     TList *GetQAhistograms() const { return fHistQA; }
     
     void SetDebugMode();
+    void SetEventInfo(TObject *ev);
     void UnsetDebugMode() { SetBit(kDebugMode, kFALSE); }
     Bool_t IsInDebugMode() const { return TestBit(kDebugMode); };
     
@@ -84,6 +89,7 @@ class AliHFEcuts : public TObject{
     
     // Setters
     inline void SetCutITSpixel(UChar_t cut);
+    void SetCheckITSLayerStatus(Bool_t checkITSLayerStatus) { fCheckITSLayerStatus = checkITSLayerStatus; }
     void SetMinNClustersTPC(UChar_t minClustersTPC) { fMinClustersTPC = minClustersTPC; }
     void SetMinNTrackletsTRD(UChar_t minNtrackletsTRD) { fMinTrackletsTRD = minNtrackletsTRD; }
     void SetMaxChi2perClusterTPC(Double_t chi2) { fMaxChi2clusterTPC = chi2; };
@@ -112,6 +118,7 @@ class AliHFEcuts : public TObject{
     void SetRecPrimaryCutList();
     void SetHFElectronITSCuts();
     void SetHFElectronTRDCuts();
+    void SetEventCutList(Int_t istep);
   
     ULong64_t fRequirements;  	  // Bitmap for requirements
     Double_t fDCAtoVtx[2];	      // DCA to Vertex
@@ -120,6 +127,7 @@ class AliHFEcuts : public TObject{
     UChar_t fMinClustersTPC;	    // Min.Number of TPC clusters
     UChar_t fMinTrackletsTRD;	    // Min. Number of TRD tracklets
     UChar_t fCutITSPixel;	        // Cut on ITS pixel
+    Bool_t  fCheckITSLayerStatus;       // Check ITS layer status
     Double_t fMaxChi2clusterTPC;	// Max Chi2 per TPC cluster
     Double_t fMinClusterRatioTPC;	// Min. Ratio findable / found TPC clusters
     Double_t fSigmaToVtx;	        // Sigma To Vertex
@@ -172,7 +180,7 @@ void AliHFEcuts::CreateStandardCuts(){
   fProdVtx[2] = -3;
   fProdVtx[3] = 3;
   SetRequireDCAToVertex();
-  fDCAtoVtx[0] = 4.;
+  fDCAtoVtx[0] = 2.;
   fDCAtoVtx[1] = 10.;
   fMinClustersTPC = 50;
   fMinTrackletsTRD = 0;

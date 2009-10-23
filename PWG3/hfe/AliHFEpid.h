@@ -56,7 +56,7 @@ class AliHFEpid : public TObject{
     AliHFEpid &operator=(const AliHFEpid &c);
     ~AliHFEpid();
     
-    Bool_t InitializePID(TString detectors);
+    Bool_t InitializePID(TString argument);
     Bool_t IsSelected(AliHFEpidObject *track);
 
     Bool_t IsQAOn() const { return TestBit(kIsQAOn); };
@@ -70,9 +70,22 @@ class AliHFEpid : public TObject{
     Bool_t MakePidTpcTof(AliHFEpidObject *track);
     Bool_t MakePidTpcTrd(AliHFEpidObject *track);
     void MakePlotsItsTpc(AliHFEpidObject *track);
+
+    // Stratgies
+    void InitStrategy1();
+    void InitStrategy2();
+    void InitStrategy3();
+    void InitStrategy4();
+    void InitStrategy5();
+    Bool_t IdentifyStrategy1(AliHFEpidObject *track);
+    Bool_t IdentifyStrategy2(AliHFEpidObject *track);
+    Bool_t IdentifyStrategy3(AliHFEpidObject *track);
+    Bool_t IdentifyStrategy4(AliHFEpidObject *track);
+    Bool_t IdentifyStrategy5(AliHFEpidObject *track);
   private:
     AliHFEpidBase *fDetectorPID[kNdetectorPID];     //! Detector PID classes
     UInt_t fEnabledDetectors;                       //  Enabled Detectors
+    UInt_t fPIDstrategy;                            //  PID Strategy
     TList *fQAlist;                                 //! QA histograms
     Int_t fDebugLevel;                              //  Debug Level
 

@@ -22,11 +22,11 @@ AliAnalysisTask *AddTaskHFE(){
   AliHFEcuts *hfecuts = new AliHFEcuts;
   hfecuts->CreateStandardCuts();
   hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
+  hfecuts->SetMinNTrackletsTRD(1);
   //hfecuts->SetCheckITSLayerStatus(kFALSE);
 
-  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE;
-  task->AddPIDdetector("TPC");
-  //task->SetPIDStrategy(3);  
+  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE("Heavy Flavour Electron Analysis");
+  task->SetPIDStrategy(4);  
   task->SetHFECuts(hfecuts);
   task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
   task->SetSecVtxOn();

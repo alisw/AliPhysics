@@ -69,6 +69,43 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   AliAnalysisTask("PID efficiency Analysis", "")
   , fQAlevel(0)
   , fPIDdetectors("")
+  , fPIDstrategy(0)
+  , fESD(0x0)
+  , fMC(0x0)
+  , fCFM(0x0)
+  , fCorrelation(0x0)
+  , fPIDperformance(0x0)
+  , fPID(0x0)
+  , fCuts(0x0)
+  , fSecVtx(0x0)
+  , fMCQA(0x0)
+  , fNEvents(0x0)
+  , fNElectronTracksEvent(0x0)
+  , fQA(0x0)
+  , fOutput(0x0)
+  , fHistMCQA(0x0)
+  , fHistSECVTX(0x0)
+{
+  //
+  // Default constructor
+  //
+  DefineInput(0, TChain::Class());
+  DefineOutput(0, TH1I::Class());
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
+
+  // Initialize cuts
+  fPID = new AliHFEpid;
+
+  SetHasMCData();
+}
+
+//____________________________________________________________
+AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
+  AliAnalysisTask(name, "")
+  , fQAlevel(0)
+  , fPIDdetectors("")
+  , fPIDstrategy(0)
   , fESD(0x0)
   , fMC(0x0)
   , fCFM(0x0)
@@ -104,6 +141,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   AliAnalysisTask(ref)
   , fQAlevel(ref.fQAlevel)
   , fPIDdetectors(ref.fPIDdetectors)
+  , fPIDstrategy(ref.fPIDstrategy)
   , fESD(ref.fESD)
   , fMC(ref.fMC)
   , fCFM(ref.fCFM)
@@ -134,6 +172,7 @@ AliAnalysisTaskHFE &AliAnalysisTaskHFE::operator=(const AliAnalysisTaskHFE &ref)
   AliAnalysisTask::operator=(ref);
   fQAlevel = ref.fQAlevel;
   fPIDdetectors = ref.fPIDdetectors;
+  fPIDstrategy = ref.fPIDstrategy;
   fESD = ref.fESD;
   fMC = ref.fMC;
   fCFM = ref.fCFM;
@@ -233,14 +272,14 @@ void AliAnalysisTaskHFE::CreateOutputObjects(){
   // Temporary fix: Initialize particle cuts with 0x0
   for(Int_t istep = 0; istep < fCFM->GetParticleContainer()->GetNStep(); istep++)
     fCFM->SetParticleCutsList(istep, 0x0);
-  if(fCuts){
-    fCuts->Initialize(fCFM);
-    if(fCuts->IsInDebugMode()){
-      fQA->Add(fCuts->GetQAhistograms());
-    }
-  } else {
-    AliError("Cuts not available. Output will be meaningless");
+  if(!fCuts){
+    AliWarning("Cuts not available. Default cuts will be used");
+    fCuts = new AliHFEcuts;
+    fCuts->CreateStandardCuts();
   }
+  fCuts->Initialize(fCFM);
+  if(fCuts->IsInDebugMode()) fQA->Add(fCuts->GetQAhistograms());
+ 
   // add output objects to the List
   fOutput->AddAt(fCFM->GetParticleContainer(), 0);
   fOutput->AddAt(fCorrelation, 1);
@@ -255,8 +294,11 @@ void AliAnalysisTaskHFE::CreateOutputObjects(){
     fQA->Add(fPID->GetQAhistograms());
   }
   fPID->SetHasMCData(HasMCData());
-  if(!fPIDdetectors.Length()) AddPIDdetector("TPC");
-  fPID->InitializePID(fPIDdetectors.Data());     // Only restrictions to TPC allowed 
+  if(!fPIDdetectors.Length() && ! fPIDstrategy) AddPIDdetector("TPC");
+  if(fPIDstrategy)
+    fPID->InitializePID(Form("Strategy%d", fPIDstrategy));
+  else
+    fPID->InitializePID(fPIDdetectors.Data());     // Only restrictions to TPC allowed 
 
   // mcQA----------------------------------
   if (IsQAOn(kMCqa)) {
@@ -268,8 +310,12 @@ void AliAnalysisTaskHFE::CreateOutputObjects(){
     fMCQA->CreateHistograms(AliHFEmcQA::kBeauty,0,"mcqa_");              // create histograms for beauty
     fMCQA->CreateHistograms(AliHFEmcQA::kCharm,1,"mcqa_barrel_");        // create histograms for charm 
     fMCQA->CreateHistograms(AliHFEmcQA::kBeauty,1,"mcqa_barrel_");       // create histograms for beauty
-    fMCQA->CreateHistograms(AliHFEmcQA::kCharm,2,"mcqa_unitY_");        // create histograms for charm 
-    fMCQA->CreateHistograms(AliHFEmcQA::kBeauty,2,"mcqa_unitY_");       // create histograms for beauty
+    fMCQA->CreateHistograms(AliHFEmcQA::kCharm,2,"mcqa_unitY_");         // create histograms for charm 
+    fMCQA->CreateHistograms(AliHFEmcQA::kBeauty,2,"mcqa_unitY_");        // create histograms for beauty
+    fMCQA->CreateHistograms(AliHFEmcQA::kCharm,3,"mcqa_reccut_");        // create histograms for charm 
+    fMCQA->CreateHistograms(AliHFEmcQA::kBeauty,3,"mcqa_reccut_");       // create histograms for beauty
+    fMCQA->CreateHistograms(AliHFEmcQA::kCharm,4,"mcqa_recpidcut_");     // create histograms for charm 
+    fMCQA->CreateHistograms(AliHFEmcQA::kBeauty,4,"mcqa_recpidcut_");    // create histograms for beauty
     TIter next(gDirectory->GetList());
     TObject *obj;
     int counter = 0;
@@ -326,7 +372,6 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
     AliError("HFE cuts not available");
     return;
   }
-  fCFM->SetEventInfo(fMC);
 
   //fCFM->CheckEventCuts(AliCFManager::kEvtGenCuts, fMC);
   Double_t container[6];
@@ -378,6 +423,7 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
   //
   // Loop MC
   //
+  fCuts->SetEventInfo(fMC);
   for(Int_t imc = fMC->GetNumberOfTracks(); imc--;){
     mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(imc));
 
@@ -411,6 +457,7 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
 
   Bool_t signal = kTRUE;
 
+  fCuts->SetEventInfo(fESD);
   for(Int_t itrack = 0; itrack < fESD->GetNumberOfTracks(); itrack++){
     
     track = fESD->GetTrack(itrack);
@@ -432,6 +479,7 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
     
     // Check if it is electrons near the vertex
     if(!(mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(TMath::Abs(track->GetLabel()))))) continue;
+    TParticle* mctrack4QA = fMC->Stack()->Particle(TMath::Abs(track->GetLabel()));
 
     container[3] = mctrack->Pt();
     container[4] = mctrack->Eta();
@@ -492,6 +540,12 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
       ((THnSparseF *)fCorrelation->At(0))->Fill(container);
     }
 
+   if (IsQAOn(kMCqa)) {
+     // mc qa for after the reconstruction cuts  
+     AliDebug(2, "Running MC QA");
+     fMCQA->GetDecayedKine(mctrack4QA, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 3);  // charm
+     fMCQA->GetDecayedKine(mctrack4QA, AliHFEmcQA::kBeauty,  AliHFEmcQA::kElectronPDG, 3); // beauty 
+    } 
 
     // track accepted, do PID
     AliHFEpidObject hfetrack;
@@ -501,6 +555,12 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
     if(!fPID->IsSelected(&hfetrack)) continue;
     nElectronCandidates++;
 
+   if (IsQAOn(kMCqa)) {
+     // mc qa for after the reconstruction and pid cuts  
+     AliDebug(2, "Running MC QA");
+     fMCQA->GetDecayedKine(mctrack4QA, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG, 4);  // charm
+     fMCQA->GetDecayedKine(mctrack4QA, AliHFEmcQA::kBeauty,  AliHFEmcQA::kElectronPDG, 4); // beauty 
+    } 
 
     // Fill Containers
     if(signal) {
@@ -907,15 +967,7 @@ void AliAnalysisTaskHFE::PrintStatus(){
   printf("\n");
   printf("\tQA: \n");
   printf("\t\tPID: %s\n", IsQAOn(kPIDqa) ? "YES" :  "NO");
-  if(fCuts) {
-    if(fCuts->IsInDebugMode()) {
-      printf("\t\tCUTS: YES\n");
-    } else {
-      printf("\t\tCUTS: NO\n");
-    }
-  } else {
-    printf("\t\tCUTS: NO\n");
-  }
+  printf("\t\tCUTS: %s\n", (fCuts != NULL && fCuts->IsInDebugMode()) ? "YES" : "NO");
   printf("\t\tMC: %s\n", IsQAOn(kMCqa) ? "YES" : "NO");
   printf("\n");
 }
@@ -1022,7 +1074,7 @@ Float_t AliAnalysisTaskHFE::GetRapidity(TParticle *part)
       // return rapidity
 
        Float_t rapidity;
-       if(part->Energy() - part->Pz() == 0 || part->Energy() + part->Pz() == 0) rapidity=-999;
+       if(!((part->Energy() - part->Pz())*(part->Energy() + part->Pz())>0)) rapidity=-999;
        else rapidity = 0.5*(TMath::Log((part->Energy()+part->Pz()) / (part->Energy()-part->Pz())));
        return rapidity;
 }
