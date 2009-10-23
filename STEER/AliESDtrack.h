@@ -279,6 +279,8 @@ public:
   Double_t GetTOFsignalRaw() const {return fTOFsignalRaw;}
   void    SetTOFsignalDz(Double_t dz) {fTOFsignalDz=dz;}
   Double_t GetTOFsignalDz() const {return fTOFsignalDz;}
+  void    SetTOFsignalDx(Double_t dx) {fTOFsignalDx=dx;}
+  Double_t GetTOFsignalDx() const {return fTOFsignalDx;}
   Double_t GetTOFchi2() const {return fTOFchi2;}
   void    SetTOFpid(const Double_t *p);
   void    SetTOFLabel(const Int_t *p);
@@ -431,6 +433,7 @@ protected:
   Double32_t fTOFsignalToT;   // detector's ToT signal
   Double32_t fTOFsignalRaw;   // detector's uncorrected time signal
   Double32_t fTOFsignalDz;    // local z  of track's impact on the TOF pad 
+  Double32_t fTOFsignalDx;    // local x  of track's impact on the TOF pad 
   Double32_t fTOFInfo[10];    //! TOF informations
 
   Double32_t fHMPIDtrkX;       // x of the track impact, LORS 
@@ -458,7 +461,7 @@ protected:
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,52)  //ESDtrack 
+  ClassDef(AliESDtrack,53)  //ESDtrack 
 };
 
 
