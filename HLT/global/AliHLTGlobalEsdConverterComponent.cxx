@@ -46,6 +46,7 @@
 #include "AliHLTCaloClusterReader.h"
 #include "AliESDCaloCluster.h"
 #include "AliHLTVertexer.h"
+#include "AliTPCseed.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -150,6 +151,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeTrack);
   list.push_back(kAliHLTDataTypeTrackMC);
   list.push_back(kAliHLTDataTypeCaloCluster);
+  list.push_back(kAliHLTDataTypedEdx );
 }
 
 AliHLTComponentDataType AliHLTGlobalEsdConverterComponent::GetOutputDataType()
@@ -306,6 +308,17 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     }
   }
 
+  // read dEdx information (if present)
+
+  AliHLTFloat32_t *dEdxTPC = 0; 
+  Int_t ndEdxTPC = 0;
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypedEdx|kAliHLTDataOriginTPC);
+       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    dEdxTPC = reinterpret_cast<AliHLTFloat32_t*>( pBlock->fPtr );
+    ndEdxTPC = pBlock->fSize / sizeof(AliHLTFloat32_t);
+    break;
+  }
+
   // convert the TPC tracks to ESD tracks
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
@@ -339,7 +352,16 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCin);
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCout);
 	iotrack.SetTPCPoints(points);
-
+	if( element->TrackID()<ndEdxTPC ){
+	  AliTPCseed s;
+	  s.Set( element->GetX(), element->GetAlpha(),
+		 element->GetParameter(), element->GetCovariance() );
+	  s.SetdEdx( dEdxTPC[element->TrackID()] );
+	  s.CookPID();
+	  iotrack.SetTPCpid(s.TPCrPIDs() );
+	} else {
+	  if( dEdxTPC ) HLTWarning("Wrong number of dEdx TPC labels");
+	}
 	pESD->AddTrack(&iotrack);
 	if (fVerbosity>0) element->Print();
       }

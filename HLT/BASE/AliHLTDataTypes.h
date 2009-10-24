@@ -430,6 +430,13 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 #define kAliHLTJetDataTypeID                  {'H','L','T','J','E','T','V','0'}
 
+/** dEdx  data
+ * Common data type for the dEdx 
+ * format depends on the origin (detector)
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTdEdxDataTypeID {'D','E','D','X',' ',' ',' ',' '}
+
 using namespace std;
 
 extern "C" {
@@ -1029,6 +1036,11 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */	
   extern const AliHLTComponentDataType kAliHLTDataTypeCaloCluster; 
+
+  /** Container of dEdx
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypedEdx;
 
   //////////////////////////////////////////////////////////////////////////
   //

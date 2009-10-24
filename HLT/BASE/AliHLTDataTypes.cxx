@@ -192,6 +192,9 @@ const AliHLTComponentDataType fgkITSTracksDataType = AliHLTComponentDataTypeInit
 /** Container of HLT calorimeter clusters */
 const AliHLTComponentDataType kAliHLTDataTypeCaloCluster = AliHLTComponentDataTypeInitializer( "CALOCLU", kAliHLTDataOriginAny );
 
+/** Container of dEdx */
+const AliHLTComponentDataType kAliHLTDataTypedEdx = AliHLTComponentDataTypeInitializer( "DEDX    ", kAliHLTDataOriginAny );
+
 //////////////////////////////////////////////////////////////////////////
 //
 // Data origin variables, to be used with the operator|
