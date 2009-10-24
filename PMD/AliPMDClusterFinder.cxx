@@ -388,6 +388,18 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 	  xpos   = pmddigit->GetRow();
 	  ypos   = pmddigit->GetColumn();
 	  adc    = pmddigit->GetADC();
+
+	  if(det < 0 || det > 1)
+	    {
+	      AliError(Form("*CPV/PRE NUMBER WRONG %d *",det));
+	      continue; 
+	    }
+	  if(smn == -1)
+	    {
+	      AliError(Form("*MODULE NUMBER WRONG %d *",smn));
+	      continue; 
+	    }
+
 	  if(xpos < 0 || xpos > 48 || ypos < 0 || ypos > 96)
 	    {
 	      AliError(Form("*Row %d and Column NUMBER %d NOT Valid *",
@@ -406,7 +418,7 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 
 	  // Hot cell - set the cell adc = 0
 	  Float_t hotflag = fCalibHot->GetHotChannel(det,smn,xpos,ypos);
-	  if (hotflag == 1) adc1 = 0;
+	  if (hotflag == 1.) adc1 = 0;
 
 	  // CALIBRATION
 	  Float_t gain = fCalibGain->GetGainFact(det,smn,xpos,ypos);
@@ -621,6 +633,11 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  Int_t col = pmdddl->GetColumn();
 	  Int_t sig = pmdddl->GetSignal();
 
+	  if(det < 0 || det > 1)
+	    {
+	      AliError(Form("*CPV/PRE NUMBER WRONG %d *",det));
+	      continue; 
+	    }
 	  if(smn == -1)
 	    {
 	      AliError(Form("*MODULE NUMBER WRONG %d *",smn));
@@ -645,9 +662,10 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  // Float_t sig1 = (Float_t) sig;
 	  Float_t sig1 = (Float_t) sig - (pedmean + 3.0*pedrms);
 
+
 	  // Hot cell - set the cell adc = 0
 	  Float_t hotflag = fCalibHot->GetHotChannel(det,smn,row,col);
-	  if (hotflag == 1) sig1 = 0;
+	  if (hotflag == 1.) sig1 = 0;
 
 	  // CALIBRATION
 	  Float_t gain = fCalibGain->GetGainFact(det,smn,row,col);
