@@ -458,7 +458,7 @@ int AliHLTTPCdEdxComponent::DoEvent
 	tTPC.SetClusterPointer( row, c );
 	
 	AliTPCTrackerPoint &point = *( tTPC.GetTrackPoint( row ) );
-	tTPC.Propagate( TMath::DegToRad()*(sec%18*20.+10.), fSolenoidBz, c->GetX() );
+	tTPC.Propagate( TMath::DegToRad()*(sec%18*20.+10.), c->GetX(), fSolenoidBz );
 	Double_t angle2 = tTPC.GetSnp()*tTPC.GetSnp();
 	angle2 = (angle2<1) ?TMath::Sqrt(angle2/(1-angle2)) :10.; 
 	point.SetAngleY( angle2 );
