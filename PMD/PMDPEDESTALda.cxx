@@ -7,7 +7,7 @@ Reference Run:/afs/cern.ch/user/s/sjena/public/run83496.raw
 Run Type: PEDESTAL
 DA Type: LDC
 Number of events needed: 1000
-Input Files: 
+Input Files: Run0_999999999_v0_s0.root from the DAQ DB for mapping
 Output Files: pmd_ped.root, to be exported to the DAQ FXS, pedestal230*.ped
 Trigger types used: PHYSICS_EVENT
 

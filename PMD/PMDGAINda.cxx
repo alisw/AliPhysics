@@ -3,11 +3,11 @@ PMD DA for online calibration
 
 contact: basanta@phy.iitb.ac.in
 Link:
-Reference run:/afs/cern.ch/user/b/bnandi/public/gaindata/pythia100evts.date
+Reference run:/afs/cern.ch/user/s/sjena/public/run83496.raw
 Run Type: PHYSICS
 DA Type: MON
 Number of events needed: 1 million for PB+PB, 200 milion for p+p
-Input Files: PMD_PED.root, PMD_GAIN_CONFIGFILE, pmd_gain_tempfile.dat
+Input Files: Run0_999999999_v0_s0.root,PMD_PED.root, PMD_GAIN_CONFIGFILE, pmd_gain_tempfile.dat
 Output Files: PMDGAINS.root, to be exported to the DAQ FES
 Trigger types used: PHYSICS_EVENT
 
