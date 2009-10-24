@@ -190,6 +190,7 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
 	t->SetTOFsignalToT(seed->GetTOFsignalToT());
 	t->SetTOFsignalRaw(seed->GetTOFsignalRaw());
 	t->SetTOFsignalDz(seed->GetTOFsignalDz());
+	t->SetTOFsignalDx(seed->GetTOFsignalDx());
 	t->SetTOFCalChannel(seed->GetTOFCalChannel());
 	Int_t tlab[3]; seed->GetTOFLabel(tlab);
 	t->SetTOFLabel(tlab);
@@ -204,12 +205,13 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent* event) {
 	delete track;
 
 	Double_t time[10]; t->GetIntegratedTimes(time);
-	AliDebug(2,Form(" %6d  %f %f %f %f %6d %3d %f  %f %f %f %f %f",
+	AliDebug(2,Form(" %6d  %f %f %f %f % %6d %3d %f  %f %f %f %f %f",
 			i,
 			t->GetTOFsignalRaw(),
 			t->GetTOFsignal(),
 			t->GetTOFsignalToT(),
 			t->GetTOFsignalDz(),
+			t->GetTOFsignalDx(),
 			t->GetTOFCalChannel(),
 			t->GetTOFcluster(),
 			t->GetIntegratedLength(),
@@ -489,8 +491,8 @@ void AliTOFtrackerV1::MatchTracks( ){
     t->SetTOFsignalRaw(rawTime);
     t->SetTOFsignalDz(dzTW);
 
-
     Float_t deltaY = trackTOFin->GetY()-bestCluster->GetY();
+    t->SetTOFsignalDx(deltaY);
 
     Float_t distR = (trackTOFin->GetX()-bestCluster->GetX())*
       (trackTOFin->GetX()-bestCluster->GetX());

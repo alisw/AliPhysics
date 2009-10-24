@@ -206,6 +206,7 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
 	t->SetTOFsignalToT(seed->GetTOFsignalToT());
 	t->SetTOFsignalRaw(seed->GetTOFsignalRaw());
 	t->SetTOFsignalDz(seed->GetTOFsignalDz());
+	t->SetTOFsignalDx(seed->GetTOFsignalDx());
 	t->SetTOFCalChannel(seed->GetTOFCalChannel());
 	Int_t tlab[3]; seed->GetTOFLabel(tlab);    
 	t->SetTOFLabel(tlab);
@@ -219,25 +220,19 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
 	t->UpdateTrackParams(track,AliESDtrack::kTOFout); // to be checked - AdC
 	delete track;
 	Double_t time[10]; t->GetIntegratedTimes(time);
-	AliDebug(2,Form(" %6d  %f %f %f %f %6d %3d %f  %f %f %f %f %f",
+	AliDebug(2,Form(" %6d  %f %f %f %f %f %6d %3d %f  %f %f %f %f %f",
 			i,
 			t->GetTOFsignalRaw(),
 			t->GetTOFsignal(),
 			t->GetTOFsignalToT(),
 			t->GetTOFsignalDz(),
+			t->GetTOFsignalDx(),
 			t->GetTOFCalChannel(),
 			t->GetTOFcluster(),
 			t->GetIntegratedLength(),
 			time[0], time[1], time[2], time[3], time[4]
 			)
 		 );
-
-	//Double_t info[10]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-	//seed->GetTOFInfo(info);
-	//t->SetTOFInfo(info);
-	t->GetTOFInfo(info);
-	AliDebug(2,Form(" (B)distance=%f; residual in the pad reference frame: dX=%f, dZ=%f", info[0],info[1],info[2]));
-
       }
     }
   }
@@ -677,6 +672,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Float_t rawTime=AliTOFGeometry::TdcBinWidth()*c->GetTDCRAW()+kTimeOffset; // RAW time,in ps
     t->SetTOFsignalRaw(rawTime);
     t->SetTOFsignalDz(mindistZ);
+    t->SetTOFsignalDx(mindistY);
 
     Float_t info[10] = {mindist,mindistY,mindistZ,
 			0.,0.,0.,0.,0.,0.,0.};
