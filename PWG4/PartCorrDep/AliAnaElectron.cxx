@@ -703,8 +703,14 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       Double_t teta = pos.Eta();
       Double_t tmom = mom.Mag();
       
-      TLorentzVector mom2(mom,0.);
-      Bool_t in =  GetFidutialCut()->IsInFidutialCut(mom2,fCalorimeter) ;
+      //TLorentzVector mom2(mom,0.);
+      Bool_t in = kFALSE;
+      if(mom.Phi() > 80. && mom.Phi() < 190. &&
+	 mom.Eta() > -0.7 && mom.Eta() < 0.7) in = kTRUE;
+      ////////////////////////////
+      //THIS HAS A MEM LEAK JLK 24-Oct-09
+      //Bool_t in =  GetFidutialCut()->IsInFidutialCut(mom2,fCalorimeter) ;
+      ///////////////////////////
       if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, eta %2.2f in fidutial cut %d\n",track->Pt(), track->Phi(), track->Eta(), in);
       if(mom.Pt() > GetMinPt() && in) {
 	
@@ -1209,7 +1215,13 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
 
       TLorentzVector mom(px,py,pz,e);
       TLorentzVector pos(vx,vy,vz,vt);
-      Bool_t in = GetFidutialCut()->IsInFidutialCut(mom,fCalorimeter);
+      Bool_t in = kFALSE;
+      if(mom.Phi() > 80. && mom.Phi() < 190. &&
+	 mom.Eta() > -0.7 && mom.Eta() < 0.7) in = kTRUE;
+      /////////////////////////////////
+      //THIS HAS A MEM LEAK JLK 24-Oct-09
+      //Bool_t in = GetFidutialCut()->IsInFidutialCut(mom,fCalorimeter);
+      ////////////////////////////////
       if(mom.Pt() < GetMinPt()) continue;
       if(!in) continue;
 
