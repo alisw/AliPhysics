@@ -705,7 +705,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       
       //TLorentzVector mom2(mom,0.);
       Bool_t in = kFALSE;
-      if(mom.Phi() > 80. && mom.Phi() < 190. &&
+      if(mom.Phi()*180./TMath::Pi() > 80. && mom.Phi()*180./TMath::Pi() < 190. &&
 	 mom.Eta() > -0.7 && mom.Eta() < 0.7) in = kTRUE;
       ////////////////////////////
       //THIS HAS A MEM LEAK JLK 24-Oct-09
@@ -1216,7 +1216,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       TLorentzVector mom(px,py,pz,e);
       TLorentzVector pos(vx,vy,vz,vt);
       Bool_t in = kFALSE;
-      if(mom.Phi() > 80. && mom.Phi() < 190. &&
+      if(mom.Phi()*180./TMath::Pi() > 80. && mom.Phi()*180./TMath::Pi() < 190. &&
 	 mom.Eta() > -0.7 && mom.Eta() < 0.7) in = kTRUE;
       /////////////////////////////////
       //THIS HAS A MEM LEAK JLK 24-Oct-09
