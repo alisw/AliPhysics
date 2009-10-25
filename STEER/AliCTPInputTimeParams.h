@@ -11,7 +11,7 @@ class AliCTPInputTimeParams : public TObject {
 
 public:
                          AliCTPInputTimeParams();
-                         AliCTPInputTimeParams( TString& name, UInt_t& level, UInt_t delay, TString edge );   
+                         AliCTPInputTimeParams( TString& name, UInt_t& level, UInt_t delay, TString edge, UInt_t deltamin, UInt_t deltamax );   
 
               virtual   ~AliCTPInputTimeParams() {}
                          AliCTPInputTimeParams( const AliCTPInputTimeParams &ctptime );
@@ -22,10 +22,11 @@ public:
                UInt_t    GetLevel()     const { return fLevel; }       
                UInt_t    GetDelay() const { return fDelay; }  
               TString    GetEdge()    const { return fEdge; }      
-
+               UInt_t    GetDeltaMin() const { return fDeltaMin; }  
+               UInt_t    GetDeltaMax() const { return fDeltaMax; }  
      // Setters
                  void    SetCTPInputTimeParams( TString name, UInt_t level, 
-                                       UInt_t delay, TString edge );
+                            UInt_t delay, TString edge, UInt_t deltamin, UInt_t deltamax );
               
          virtual void    Print( const Option_t* opt ="" ) const;
                                
@@ -35,10 +36,12 @@ protected:
               UInt_t    fLevel; 
               UInt_t    fDelay;
 	     TString	fEdge;
+	      UInt_t	fDeltaMin;
+	      UInt_t	fDeltaMax;
                          
 private:                         
 
-   ClassDef( AliCTPInputTimeParams, 1 )  
+   ClassDef( AliCTPInputTimeParams, 2 )  
 };                                                                         
 
 

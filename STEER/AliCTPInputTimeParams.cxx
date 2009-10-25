@@ -27,17 +27,21 @@ AliCTPInputTimeParams::AliCTPInputTimeParams():
   fName(0),
   fLevel(0),        
   fDelay(0),        
-  fEdge(0)
+  fEdge(0),
+  fDeltaMin(0),
+  fDeltaMax(0)
 {
  // Default constructor
 }     
 
 //_____________________________________________________________________________
-AliCTPInputTimeParams::AliCTPInputTimeParams( TString& name, UInt_t& level, UInt_t delay, TString edge ):
+AliCTPInputTimeParams::AliCTPInputTimeParams( TString& name, UInt_t& level, UInt_t delay, TString edge, UInt_t deltamin, UInt_t deltamax ):
   fName(name),        
   fLevel(level),        
   fDelay( delay),
-  fEdge(edge)
+  fEdge(edge),
+  fDeltaMin(deltamin),
+  fDeltaMax(deltamax)
 {
 }
 //_____________________________________________________________________________
@@ -46,7 +50,10 @@ AliCTPInputTimeParams::AliCTPInputTimeParams(const AliCTPInputTimeParams &ctptim
  fName(ctptime.fName),
  fLevel(ctptime.fLevel),
  fDelay(ctptime.fDelay),
- fEdge(ctptime.fEdge)
+ fEdge(ctptime.fEdge),
+ fDeltaMin(ctptime.fDeltaMin),
+ fDeltaMax(ctptime.fDeltaMax)
+
 {
  // copy constructor
 }
@@ -60,15 +67,19 @@ AliCTPInputTimeParams& AliCTPInputTimeParams::operator=(const AliCTPInputTimePar
  fLevel=ctptime.fLevel;
  fDelay=ctptime.fDelay;
  fEdge=ctptime.fEdge;
+ fDeltaMin=ctptime.fDeltaMin;
+ fDeltaMax=ctptime.fDeltaMax;
  return *this;
 }
 //_____________________________________________________________________________
-void AliCTPInputTimeParams::SetCTPInputTimeParams( TString name, UInt_t level, UInt_t delay, TString edge )
+void AliCTPInputTimeParams::SetCTPInputTimeParams( TString name, UInt_t level, UInt_t delay, TString edge, UInt_t deltamin, UInt_t deltamax )
 {
   fName = name;        
   fLevel = level;        
   fDelay = delay;
   fEdge = edge;
+  fDeltaMin = deltamin;
+  fDeltaMax = deltamax;
 }
 
 //_____________________________________________________________________________
@@ -80,4 +91,6 @@ void AliCTPInputTimeParams::Print( const Option_t* ) const
   cout << "  Level:      " << fLevel << endl;
   cout << "  Delay:      " << fDelay << endl;
   cout << "  Edge:       " << fEdge << endl;
+  cout << "  DeltaMin:   " << fDeltaMin << endl;
+  cout << "  DeltaMax:   " << fDeltaMax << endl;
 }

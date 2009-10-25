@@ -7,6 +7,7 @@
 
 #include<TNamed.h>
 #include<TObjArray.h>
+#include<AliCTPInputTimeParams.h>
 
 class TNamed;
 
@@ -23,7 +24,7 @@ public:
 	static AliCTPTimeParams* LoadCTPTimeParams(TString filename);	
 	static AliCTPTimeParams* LoadCTPTimeParamsFromString(const char* timeparams);
 		Bool_t ProcessCTPTimeParamsLine(const char* line);
-		  void AddInput( TString& inputName, UInt_t& inputLevel, UInt_t inputDelay, TString inputEdge );
+		  void AddInput( TString& inputName, UInt_t& inputLevel, UInt_t inputDelay, TString inputEdge, UInt_t deltamin, UInt_t deltamax );
 		  void AddDelayL0L1L2(UInt_t delayL1L0, UInt_t delayL2L0);
 	  virtual void Print(const Option_t* opt="") const;
 		//Setters
@@ -31,13 +32,14 @@ public:
 		//Getters
 		UInt_t  GetDelayL1L0()   const { return fDelayL1L0; }
 	        UInt_t  GetDelayL2L0()   const { return fDelayL2L0; }                  const TObjArray* GetInputTimeParams() const { return &fCTPInputTimeParams; }
+      AliCTPInputTimeParams* GetTimeParamsForInput(TString inputname);
                 enum {kNMaxInputs = 60}; //CTP can manage up to 60 trigger detector inputs
 private:
 			UInt_t fDelayL1L0;
 			UInt_t fDelayL2L0;
 			TObjArray fCTPInputTimeParams;
 
-  ClassDef( AliCTPTimeParams, 1 ) 
+  ClassDef( AliCTPTimeParams, 2 ) 
 };
 
 #endif

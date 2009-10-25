@@ -79,9 +79,9 @@ AliCTPTimeParams::~AliCTPTimeParams()
 }
 
 //______________________________________________________________________________
-void AliCTPTimeParams::AddInput( TString& inputName, UInt_t& inputLevel, UInt_t inputDelay, TString inputEdge )
+void AliCTPTimeParams::AddInput( TString& inputName, UInt_t& inputLevel, UInt_t inputDelay, TString inputEdge, UInt_t deltamin, UInt_t deltamax )
 {
- fCTPInputTimeParams.AddLast( new AliCTPInputTimeParams(inputName, inputLevel, inputDelay, inputEdge ));
+ fCTPInputTimeParams.AddLast( new AliCTPInputTimeParams(inputName, inputLevel, inputDelay, inputEdge, deltamin, deltamax ));
 }
 
 //______________________________________________________________________________
@@ -89,6 +89,17 @@ void AliCTPTimeParams::AddDelayL0L1L2(UInt_t delayL1L0, UInt_t delayL2L0)
 {
  fDelayL1L0 = delayL1L0;
  fDelayL2L0 = delayL2L0;
+}
+//______________________________________________________________________________
+AliCTPInputTimeParams* AliCTPTimeParams::GetTimeParamsForInput( TString inputname)
+{
+Int_t ninputs = fCTPInputTimeParams.GetEntriesFast();
+for ( Int_t i=0; i < ninputs; i++ )
+ {
+  AliCTPInputTimeParams* ctpinputtime = (AliCTPInputTimeParams*)fCTPInputTimeParams.At(i);
+  if (inputname == ctpinputtime->GetInputName() ) return ctpinputtime;
+ }
+return NULL;
 }
 //______________________________________________________________________________
 AliCTPTimeParams* AliCTPTimeParams::LoadCTPTimeParams(TString filename)
@@ -170,17 +181,17 @@ Bool_t AliCTPTimeParams::ProcessCTPTimeParamsLine(const char* line)
    delete tokens;
   }
   else {
-   if (strline.BeginsWith("0")) { level = 0; }   // determine the input level (0, 1 or 2)
-   else if (strline.BeginsWith("1")) { level = 1; }
-   else if (strline.BeginsWith("2")) { level = 2; } 
-   else {
-	   return 0; // file not in the right format!
-   }
+    if (strline.BeginsWith("0")) { level = 0; }   // determine the input level (0, 1 or 2)
+    else if (strline.BeginsWith("1")) { level = 1; }
+    else if (strline.BeginsWith("2")) { level = 2; } 
+    else return kFALSE; // file not in the right format!
    
-   TObjArray *tokens = strline.Tokenize(" \t");
-   AddInput(((TObjString*)tokens->At(0))->String(), level, ((TObjString*)tokens->At(2))->String().Atoi(), ((TObjString*)tokens->At(1))->String() );
+    TObjArray *tokens = strline.Tokenize(" \t");
+    Int_t ntokens = tokens->GetEntriesFast();
+    if (ntokens == 5)  AddInput(((TObjString*)tokens->At(0))->String(), level, ((TObjString*)tokens->At(2))->String().Atoi(), ((TObjString*)tokens->At(1))->String(),  ((TObjString*)tokens->At(3))->String().Atoi(), ((TObjString*)tokens->At(4))->String().Atoi());
+    else if (ntokens == 3) AddInput(((TObjString*)tokens->At(0))->String(), level, ((TObjString*)tokens->At(2))->String().Atoi(), ((TObjString*)tokens->At(1))->String(),  0, 0); //the old format is used - no DeltaMin & DeltaMax!
+         else return kFALSE; // file not in the right format!
   }
-
 return kTRUE;
 }
 
