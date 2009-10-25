@@ -975,7 +975,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
     mgr->SetMCtruthEventHandler(mcHandler);
   }
   // Be sure you are told what you are doing
-  mgr->SetDebugLevel(10);
+  // mgr->SetDebugLevel(10);
 	
   // Declare Common Input Tchain
   AliAnalysisDataContainer *cinput1 = NULL;
