@@ -58,6 +58,7 @@ AliTRIPreprocessor::AliTRIPreprocessor(AliShuttleInterface* shuttle) :
 	//
 	
 	AddRunType("PHYSICS");
+	AddRunType("STANDALONE_PULSER");
 }
 
 //______________________________________________________________________________________________
