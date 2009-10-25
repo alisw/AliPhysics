@@ -108,7 +108,7 @@ const Double_t AliMUONConstants::fgkMuonFilterZEnd = -1471.-120.;
 const Double_t AliMUONConstants::fgkMuonFilterX0 = 1.76;
 
 // Defaults parameters for track reconstruction
-Double_t  AliMUONConstants::fgChamberThicknessInX0 = 0.03;
+Double_t  AliMUONConstants::fgChamberThicknessInX0 = 0.045;
 
 const Double_t AliMUONConstants::fgkMostProbBendingMomentum = 2.0;
 

@@ -77,13 +77,13 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// return kTRUE/kFALSE if tracks are selected according to their slope/impact parameter
   Bool_t   SelectOnTrackSlope() const {return fSelectTrackOnSlope;}
   
-  /// set the vertex dispersion (cm) in non bending plane (used for original tracking only)
+  /// set the vertex dispersion (cm) in non bending plane
   void     SetNonBendingVertexDispersion(Double_t val) {fNonBendingVertexDispersion = val;} 
-  /// return the vertex dispersion (cm) in non bending plane (used for original tracking only)
+  /// return the vertex dispersion (cm) in non bending plane
   Double_t GetNonBendingVertexDispersion() const {return fNonBendingVertexDispersion;}
-  /// set the vertex dispersion (cm) in bending plane (used for original tracking only)
+  /// set the vertex dispersion (cm) in bending plane
   void     SetBendingVertexDispersion(Double_t val) {fBendingVertexDispersion = val;} 
-  /// return the vertex dispersion (cm) in bending plane (used for original tracking only)
+  /// return the vertex dispersion (cm) in bending plane
   Double_t GetBendingVertexDispersion() const {return fBendingVertexDispersion;}
   
   /// set the maximum distance to the track to search for compatible cluster(s) in non bending direction

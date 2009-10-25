@@ -60,7 +60,7 @@ private:
   
   AliMUONTrack* RetrackFromDigits(const AliMUONTrack& track);
   
-  void AddClusterToTracks(const AliMUONVClusterStore &localClusterStore, AliMUONVTrackStore &trackStore);
+  Bool_t AddClusterToTracks(const AliMUONVClusterStore &localClusterStore, AliMUONVTrackStore &trackStore);
   
 private:
     

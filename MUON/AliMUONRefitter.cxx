@@ -110,7 +110,7 @@ AliMUONVTrackStore* AliMUONRefitter::ReconstructFromDigits()
   TIter next(fkESDInterface->CreateTrackIterator());
   while ((track = static_cast<AliMUONTrack*>(next()))) {
     AliMUONTrack *newTrack = RetrackFromDigits(*track);
-    newTrackStore->Add(newTrack);
+    if (newTrack) newTrackStore->Add(newTrack);
     delete newTrack;
   }
   
@@ -319,10 +319,16 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(const AliMUONTrack& track)
     }
     
     // add the new cluster(s) to the tracks
-    AddClusterToTracks(*newClusterStore, *newTrackStore);
+    if (!AddClusterToTracks(*newClusterStore, *newTrackStore)) {
+      delete newClusterStore;
+      delete newTrackStore;
+      return 0x0;
+    }
     
   }
   
+  if (newTrackStore->GetSize() > 1000) AliInfo(Form("%d tracks to refit... be patient!!",newTrackStore->GetSize()));
+					       
   // refit the tracks and pick up the best one
   AliMUONTrack *currentTrack, *bestTrack = 0x0;
   Double_t currentChi2, bestChi2 = AliMUONTrack::MaxChi2();
@@ -335,7 +341,7 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(const AliMUONTrack& track)
     if (param) *param = *((AliMUONTrackParam*) track.GetTrackParamAtCluster()->First());
     
     // refit the track
-    if (!fTracker->RefitTrack(*currentTrack)) break;
+    if (!fTracker->RefitTrack(*currentTrack)) continue;
     
     // find best track (the one with the higher number of cluster or the best chi2 in case of equality)
     currentNCluster = currentTrack->GetNClusters();
@@ -357,14 +363,20 @@ AliMUONTrack* AliMUONRefitter::RetrackFromDigits(const AliMUONTrack& track)
 }
 
 //_____________________________________________________________________________
-void AliMUONRefitter::AddClusterToTracks(const AliMUONVClusterStore &clusterStore, AliMUONVTrackStore &trackStore)
+Bool_t AliMUONRefitter::AddClusterToTracks(const AliMUONVClusterStore &clusterStore, AliMUONVTrackStore &trackStore)
 {
   /// add clusters to each of the given tracks
   /// duplicate the tracks if there are several clusters and add one cluster per copy
   
   // create new track store if there are more than 1 cluster to add per track
   Int_t nClusters = clusterStore.GetSize();
-  if (nClusters < 1) return;
+  if (nClusters < 1) return kTRUE;
+  
+  // check if we will exceed the maximum allowed number of tracks
+  if (nClusters * trackStore.GetSize() > fkRecoParam->GetMaxTrackCandidates()) {
+    AliError(Form("Too many track candidates (%d tracks). Stop refitting.", nClusters * trackStore.GetSize()));
+    return kFALSE;
+  }
   
   AliMUONTrackParam dummyParam;
   AliMUONTrack *currentTrack, *track;
@@ -381,7 +393,7 @@ void AliMUONRefitter::AddClusterToTracks(const AliMUONVClusterStore &clusterStor
     
     // add the new cluster(s) to the tracks
     // duplicate the tracks if there are several clusters
-    // the loop after loading the last cluster which is added to the current track
+    // stop the loop after loading the last cluster which is added to the current track
     iCluster = 0;
     TIter nextCluster(clusterStore.CreateIterator());
     while ((newCluster = static_cast<AliMUONVCluster*>(nextCluster())) && (iCluster < nClusters - 1)) {
@@ -408,6 +420,8 @@ void AliMUONRefitter::AddClusterToTracks(const AliMUONVClusterStore &clusterStor
     currentTrack->AddTrackParamAtCluster(dummyParam, *newCluster, kTRUE);
     
   }
+  
+  return kTRUE;
   
 }
 
