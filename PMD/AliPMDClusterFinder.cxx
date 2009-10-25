@@ -394,13 +394,13 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 	      AliError(Form("*CPV/PRE NUMBER WRONG %d *",det));
 	      continue; 
 	    }
-	  if(smn == -1)
+	  if(smn == -1 || smn > 23)
 	    {
 	      AliError(Form("*MODULE NUMBER WRONG %d *",smn));
 	      continue; 
 	    }
 
-	  if(xpos < 0 || xpos > 48 || ypos < 0 || ypos > 96)
+	  if(xpos < 0 || xpos > 47 || ypos < 0 || ypos > 95)
 	    {
 	      AliError(Form("*Row %d and Column NUMBER %d NOT Valid *",
 			    xpos, ypos));
@@ -633,23 +633,25 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  Int_t col = pmdddl->GetColumn();
 	  Int_t sig = pmdddl->GetSignal();
 
+
 	  if(det < 0 || det > 1)
 	    {
 	      AliError(Form("*CPV/PRE NUMBER WRONG %d *",det));
 	      continue; 
 	    }
-	  if(smn == -1)
+	  if(smn < 0 || smn > 23)
 	    {
 	      AliError(Form("*MODULE NUMBER WRONG %d *",smn));
 	      continue; 
 	    }
-	  if(row < 0 || row > 48 || col < 0 || col > 96)
+	  if(row < 0 || row > 47 || col < 0 || col > 95)
 	    {
 	      AliError(Form("*Row %d and Column NUMBER %d NOT Valid *",
 			    row, col));
 
 	      continue; 
 	    }
+
 
 	  // Pedestal Subtraction
 	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,row,col);
