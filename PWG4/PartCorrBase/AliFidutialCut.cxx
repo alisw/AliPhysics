@@ -17,7 +17,10 @@
 //_________________________________________________________________________
 // Class for track/cluster acceptance selection
 // Selection in Central barrel, EMCAL and PHOS
-//                
+//  
+// Several selection regions possible for the different
+// detectors
+//
 //*-- Author: Gustavo Conesa (LNF-INFN) 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -27,7 +30,7 @@
 #include <TLorentzVector.h>
 #include <TString.h>
 //#include <TArrayF.h>
-  
+
 //---- ANALYSIS system ----
 #include "AliFidutialCut.h"
 
@@ -122,91 +125,65 @@ AliFidutialCut::~AliFidutialCut() {
 
 
 //_______________________________________________________________
-Bool_t AliFidutialCut::IsInFidutialCut(TLorentzVector momentum, TString det) const
+Bool_t AliFidutialCut::IsInFidutialCut(const TLorentzVector momentum, const TString det) const
 {
   //Selects EMCAL or PHOS cluster or CTS track if it is inside eta-phi defined regions
 
-  Double_t phi = momentum.Phi();
-  if(phi<0) phi+=TMath::TwoPi() ;
-  Double_t eta =  momentum.Eta();
-  //printf("IsInFidutialCut::Det: %s, phi = %f, eta = %f\n", det.Data(),phi*TMath::RadToDeg(), eta);
-
-  Float_t * maxeta = new Float_t;
-  Float_t * maxphi = new Float_t;
-  Float_t * mineta = new Float_t;
-  Float_t * minphi = new Float_t;
-  Int_t nphiregions = 0;
-  Int_t netaregions = 0;
-  Bool_t selection = kFALSE;
-
   if(det == "CTS"){
-    netaregions =  fCTSFidCutMaxEta->GetSize();
-    nphiregions =  fCTSFidCutMaxPhi->GetSize();
-    if(netaregions !=  fCTSFidCutMinEta->GetSize() || nphiregions !=  fCTSFidCutMinPhi->GetSize())
-      printf("AliFidutialCut::IsInFidutialCut() - Wrong number of CTS fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d\n",
-		    netaregions, fCTSFidCutMinEta->GetSize(),  nphiregions, fCTSFidCutMinPhi->GetSize());
-    
-    maxeta = fCTSFidCutMaxEta->GetArray();
-    maxphi = fCTSFidCutMaxPhi->GetArray();
-    mineta = fCTSFidCutMinEta->GetArray();
-    minphi = fCTSFidCutMinPhi->GetArray();
-    selection =  fCTSFidutialCut ; 
+	  if(!fCTSFidutialCut)  return kTRUE; //Fidutial cut not requested, accept all tracks  
+	  else return CheckFidutialRegion(momentum, fCTSFidCutMinPhi  , fCTSFidCutMaxPhi , fCTSFidCutMinEta  , fCTSFidCutMaxEta  );
   }
-  else   if(det == "EMCAL"){
-    netaregions =  fEMCALFidCutMaxEta->GetSize();
-    nphiregions =  fEMCALFidCutMaxPhi->GetSize();
-    if(netaregions !=  fEMCALFidCutMinEta->GetSize() || nphiregions !=  fEMCALFidCutMinPhi->GetSize())
-      printf("AliFidutialCut::IsInFidutialCut() - Wrong number of EMCAL fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d\n",
-		    netaregions, fEMCALFidCutMinEta->GetSize(),  nphiregions, fEMCALFidCutMinPhi->GetSize());
-    
-    maxeta = fEMCALFidCutMaxEta->GetArray();
-    maxphi = fEMCALFidCutMaxPhi->GetArray();
-    mineta = fEMCALFidCutMinEta->GetArray();
-    minphi = fEMCALFidCutMinPhi->GetArray();
-    selection =  fEMCALFidutialCut ; 
+  else   if(det == "EMCAL") {
+	  if(!fEMCALFidutialCut) return kTRUE; //Fidutial cut not requested, accept all clusters  
+	  else return CheckFidutialRegion(momentum, fEMCALFidCutMinPhi, fEMCALFidCutMaxPhi, fEMCALFidCutMinEta, fEMCALFidCutMaxEta);
   }
-  else   if(det == "PHOS"){
-    netaregions =  fPHOSFidCutMaxEta->GetSize();
-    nphiregions =  fPHOSFidCutMaxPhi->GetSize();
-    if(netaregions !=  fPHOSFidCutMinEta->GetSize() || nphiregions !=  fPHOSFidCutMinPhi->GetSize())
-      printf("AliFidutialCut::IsInFidutialCut() - Wrong number of PHOS fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d\n",
-		    netaregions, fPHOSFidCutMinEta->GetSize(),  nphiregions, fPHOSFidCutMinPhi->GetSize());
-    
-    maxeta = fPHOSFidCutMaxEta->GetArray();
-    maxphi = fPHOSFidCutMaxPhi->GetArray();
-    mineta = fPHOSFidCutMinEta->GetArray();
-    minphi = fPHOSFidCutMinPhi->GetArray();
-    selection =  fPHOSFidutialCut ; 
+  else   if(det == "PHOS")  {
+	  if(!fPHOSFidutialCut) return kTRUE; //Fidutial cut not requested, accept all clusters 
+	  else return CheckFidutialRegion(momentum, fPHOSFidCutMinPhi , fPHOSFidCutMaxPhi , fPHOSFidCutMinEta , fPHOSFidCutMaxEta );
   }
-  else
-    printf("AliFidutialCut::IsInFidutialCut() - Wrong detector name = %s\n", det.Data());
+  else{
+	  printf("AliFidutialCut::IsInFidutialCut() - Wrong detector name = %s\n", det.Data());
+	  return kFALSE;
+  }
 
-  //printf("IsInFidutialCut::nphiregions = %d, netaregions = %d\n",nphiregions, netaregions);
+}
 
-  if(!selection) return kTRUE; //No cuts applied, all tracks/clusters used
+//_______________________________________________________________
+Bool_t AliFidutialCut::CheckFidutialRegion(const TLorentzVector momentum, const TArrayF* minphi, const TArrayF* maxphi, const TArrayF* mineta, const TArrayF* maxeta) const {
+  //Given the selection regions in Eta and Phi, check if particle is in this region.
 
-  //Eta fidutial cut
-  Bool_t bInEtaFidCut = kFALSE;
-  for(Int_t ieta = 0; ieta < netaregions; ieta++)
-    if(eta > mineta[ieta] && eta < maxeta[ieta]) bInEtaFidCut = kTRUE;
+    Double_t phi = momentum.Phi();
+	if(phi < 0) phi+=TMath::TwoPi() ;
+	Double_t eta =  momentum.Eta();
+	//printf("IsInFidutialCut::Det: %s, phi = %f, eta = %f\n", det.Data(),phi*TMath::RadToDeg(), eta);
 
-  if(bInEtaFidCut){
-    //printf("Eta cut passed\n");
-    //Phi fidutial cut
-    Bool_t bInPhiFidCut = kFALSE;
-    for(Int_t iphi = 0; iphi < nphiregions; iphi++)
-      if(phi > minphi[iphi] *TMath::DegToRad()&& phi < maxphi[iphi]*TMath::DegToRad()) bInPhiFidCut = kTRUE ;
+	Int_t netaregions =  fCTSFidCutMaxEta->GetSize();
+    Int_t nphiregions =  fCTSFidCutMaxPhi->GetSize();
+    if(netaregions !=  mineta->GetSize() || nphiregions !=  minphi->GetSize())
+		printf("AliFidutialCut::IsInFidutialCut() - Wrong number of fidutial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d\n",
+			   netaregions, mineta->GetSize(),  nphiregions, minphi->GetSize());
+	
+	//Eta fidutial cut
+	Bool_t bInEtaFidCut = kFALSE;
+	for(Int_t ieta = 0; ieta < netaregions; ieta++)
+		if(eta > mineta->GetAt(ieta) && eta < maxeta->GetAt(ieta)) bInEtaFidCut = kTRUE;
+
+	if(bInEtaFidCut){
+		//printf("Eta cut passed\n");
+		//Phi fidutial cut
+		Bool_t bInPhiFidCut = kFALSE;
+		for(Int_t iphi = 0; iphi < nphiregions; iphi++)
+			if(phi > minphi->GetAt(iphi) *TMath::DegToRad()&& phi < maxphi->GetAt(iphi)*TMath::DegToRad()) bInPhiFidCut = kTRUE ;
+	  
+		if(bInPhiFidCut) {
+			//printf("IsInFidutialCut:: %s cluster/track accepted\n",det.Data());
+			return kTRUE;
+		}
+		else return kFALSE;
     
-    if(bInPhiFidCut) {
-      //printf("IsInFidutialCut:: %s cluster/track accepted\n",det.Data());
-      return kTRUE;
-    }
-    else return kFALSE;
-    
-  }//In eta fid cut
-  else
+	}//In eta fid cut
+	else
     return kFALSE;
-  
 }
 
 

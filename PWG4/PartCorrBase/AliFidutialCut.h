@@ -7,6 +7,9 @@
 //_________________________________________________________________________
 // Class for track/cluster acceptance selection
 // Selection in Central barrel, EMCAL and PHOS
+//  
+// Several selection regions possible for the different
+// detectors
 //
 //*-- Author: Gustavo Conesa (INFN-LNF)
 
@@ -32,8 +35,8 @@ public:
   void InitParameters();
   
   void Print(const Option_t * opt)const;
-  
-  Bool_t IsInFidutialCut(TLorentzVector l, TString det) const ;
+  Bool_t CheckFidutialRegion(const TLorentzVector lv, const TArrayF* minphi, const TArrayF* maxphi, const TArrayF* mineta, const TArrayF* maxeta) const ;
+  Bool_t IsInFidutialCut    (const TLorentzVector lv, const TString det) const ;
   
   void DoCTSFidutialCut(Bool_t b) {fCTSFidutialCut = b; }
   void DoEMCALFidutialCut(Bool_t b) {fEMCALFidutialCut = b; }
