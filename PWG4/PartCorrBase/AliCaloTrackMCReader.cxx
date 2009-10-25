@@ -193,7 +193,10 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
 					     Int_t &ncalo) {
   //Fill AODCaloClusters or TParticles lists of PHOS or EMCAL
   //In PHOS
-  if(fFillPHOS && fFidutialCut->IsInFidutialCut(momentum,"PHOS") && momentum.Pt() > fPHOSPtMin){
+  if(fFillPHOS && momentum.Pt() > fPHOSPtMin){
+	  
+	if(!fFidutialCut->IsInFidutialCut(momentum,"PHOS")) return;
+	  
     Int_t index = iParticle ;
     Int_t pdg = TMath::Abs(particle->GetPdgCode());
     if(fCheckOverlap) 
@@ -214,7 +217,10 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
   }
   
   //In EMCAL
-  if(fFillEMCAL && fFidutialCut->IsInFidutialCut(momentum,"EMCAL") && momentum.Pt() > fEMCALPtMin){
+  if(fFillEMCAL  && momentum.Pt() > fEMCALPtMin){
+	  
+	if(!fFidutialCut->IsInFidutialCut(momentum,"EMCAL")) return;
+	  
     Int_t index = iParticle ;
     Int_t pdg = TMath::Abs(particle->GetPdgCode());
     //Int_t pdgorg=pdg;
@@ -269,9 +275,12 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
       charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
       particle->Momentum(momentum);
       //---------- Charged particles ----------------------
-      if((charge != 0) && (momentum.Pt() > fCTSPtMin) && (fFidutialCut->IsInFidutialCut(momentum,"CTS"))){
-	if(fFillCTS){
+      if(charge != 0){
+		 if(fFillCTS && (momentum.Pt() > fCTSPtMin)){
 	  //Particles in CTS acceptance
+		
+	  if(!fFidutialCut->IsInFidutialCut(momentum,"CTS")) continue;
+		
 	  if(fDebug > 3 && momentum.Pt() > 0.2)
 	    printf("AliCaloTrackMCReader::FillInputEvent() - CTS : Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 		   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
