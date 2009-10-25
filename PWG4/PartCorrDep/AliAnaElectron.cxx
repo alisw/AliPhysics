@@ -707,11 +707,15 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       Bool_t in = kFALSE;
       if(mom.Phi()*180./TMath::Pi() > 80. && mom.Phi()*180./TMath::Pi() < 190. &&
 	 mom.Eta() > -0.7 && mom.Eta() < 0.7) in = kTRUE;
+      //Also check the track
+      if(track->Phi()*180./TMath::Pi() > 80. && track->Phi()*180./TMath::Pi() < 190. &&
+	 track->Eta() > -0.7 && track->Eta() < 0.7) in = kTRUE;
       ////////////////////////////
       //THIS HAS A MEM LEAK JLK 24-Oct-09
       //Bool_t in =  GetFidutialCut()->IsInFidutialCut(mom2,fCalorimeter) ;
       ///////////////////////////
-      if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, eta %2.2f in fidutial cut %d\n",track->Pt(), track->Phi(), track->Eta(), in);
+      if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Track(Extrap) pt %2.2f(%2.2f), phi %2.2f(%2.2f), eta %2.2f(%2.2f) in fidutial cut %d\n",track->Pt(), mom.Pt(), track->Phi(), mom.Phi(), track->Eta(),mom.Eta(), in);
+
       if(mom.Pt() > GetMinPt() && in) {
 	
 	Double_t dEdx = pid->GetTPCsignal();
