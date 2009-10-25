@@ -172,15 +172,14 @@ int main(int argc, char **argv) {
     Int_t iev=0;
 
     // Get run number
-    /*
+
     if (getenv("DATE_RUN_NUMBER")==0) {
       printf("DATE_RUN_NUMBER not properly set.\n");
       return -1;
     }
     int runNr = atoi(getenv("DATE_RUN_NUMBER"));
-    */
 
-    int runNr = 0;
+    //int runNr = 0;
 
     if (gSystem->AccessPathName("localOCDB/PMD/Calib/Mapping",kFileExists))
       {
