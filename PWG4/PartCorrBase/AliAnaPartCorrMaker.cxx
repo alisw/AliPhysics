@@ -30,7 +30,7 @@
 #include "TList.h"
 #include "TH1.h"
 //#include "Riostream.h"
-#include <TObjectTable.h>
+//#include <TObjectTable.h>
 
 //---- AliRoot system ---- 
 #include "AliAnaPartCorrBaseClass.h" 
@@ -243,8 +243,8 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
 	  printf("*** Skip event *** %d \n",iEntry);
 	  return ;
   }
-  printf(">>>>>>>>>> BEFORE >>>>>>>>>>>\n");
-  gObjectTable->Print();
+  //printf(">>>>>>>>>> BEFORE >>>>>>>>>>>\n");
+  //gObjectTable->Print();
   //Loop on analysis algorithms
   if(fAnaDebug > 0 ) printf("*** Begin analysis *** \n");
   Int_t nana = fAnalysisContainer->GetEntries() ;
@@ -260,8 +260,8 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
   
   fReader->ResetLists();
   
-  printf(">>>>>>>>>> AFTER >>>>>>>>>>>\n");
-  gObjectTable->Print();
+  //printf(">>>>>>>>>> AFTER >>>>>>>>>>>\n");
+  //gObjectTable->Print();
 	
   if(fAnaDebug > 0 ) printf("*** End analysis *** \n");
   
