@@ -66,6 +66,9 @@ public:
   enum MagField {k0G, k5G};
   
   enum Species {kPP, kPbPb};
+
+  /** DO NOT USE THIS - ONLY FOR IO */
+  AliFMDAnaParameters();
   
   /** Singleton access
       @return  single to */
@@ -115,11 +118,9 @@ public:
   void     SetMagField(MagField magfield) {fMagField = magfield;}
   char*    GetPath(const char* species);
   void     SetCollisionSystem(Species collsystem) {fSpecies = collsystem;}
-  void     PrintStatus();
-  
+  void     PrintStatus() const;
+  void     Print(Option_t* /* option */) const { PrintStatus(); }
 protected:
-  
-  AliFMDAnaParameters();
   
   AliFMDAnaParameters(const AliFMDAnaParameters& o) 
     : TNamed(o),
