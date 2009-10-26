@@ -569,7 +569,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     //   AliFemtoModelWeightGeneratorBasic *tWeightkp = new AliFemtoModelWeightGeneratorBasic();
     //   tWeightkp->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
     AliFemtoModelWeightGeneratorLednicky *tWeightkm = new AliFemtoModelWeightGeneratorLednicky();
-    tWeightkm->SetPairType(AliFemtoModelWeightGenerator::KaonMinusKaonMinus());
+    tWeightkm->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
     tWeightkm->SetCoulOn();
     tWeightkm->SetQuantumOn();
     tWeightkm->SetStrongOff();
