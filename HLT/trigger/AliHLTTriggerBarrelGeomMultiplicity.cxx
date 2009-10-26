@@ -392,7 +392,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::ScanConfigurationArgument(int argc, con
       return 2;
     }    
 
-  if (argument.CompareTo("-trgname")==0) 
+  if (argument.CompareTo("-triggername")==0) 
     {
       if (++i>=argc) return -EPROTO;
       
