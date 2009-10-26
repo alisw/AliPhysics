@@ -230,7 +230,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoInit(int argc, const char** argv)
 }
 
 int AliHLTTriggerBarrelGeomMultiplicity::DoDeinit()
-{
+ {
   // see header file for class documentation
   return 0;
 }
