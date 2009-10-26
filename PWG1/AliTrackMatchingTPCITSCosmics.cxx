@@ -130,6 +130,15 @@ void AliTrackMatchingTPCITSCosmics::CreateOutputObjects()
   // Create the output container
   //
 
+  // load the geometry  
+  if(!gGeoManager) {    
+    AliGeomManager::LoadGeometry(fGeometryFileName.Data());
+    if(!gGeoManager) { 
+      printf("AliTrackMatchingTPCITSCosmics::CreateOutputObjects(): no geometry loaded \n");
+      return;
+    }
+  }
+
   // Several histograms are more conveniently managed in a TList
   fList = new TList();
   fList->SetOwner();
@@ -153,13 +162,10 @@ void AliTrackMatchingTPCITSCosmics::Exec(Option_t */*option*/)
   // Execute analysis for current event:
   // write ITS AliTrackPoints for selected tracks to fspTree
   
-  // load the geometry  
-  if(!gGeoManager) {    
-    AliGeomManager::LoadGeometry(fGeometryFileName.Data());
-    if(!gGeoManager) { 
-      printf("AliAlignmentDataFilterITS::Exec(): no geometry loaded \n");
-      return;
-    }
+  // check the geometry  
+  if(!gGeoManager) { 
+    printf("AliTrackMatchingTPCITSCosmics::Exec(): no geometry loaded \n");
+    return;
   }
 
   if(!fESD) {
