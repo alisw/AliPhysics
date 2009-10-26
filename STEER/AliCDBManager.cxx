@@ -1109,6 +1109,11 @@ void AliCDBManager::ClearCache(){
 void AliCDBManager::UnloadFromCache(const char* path){
 // unload cached object
 
+	if(!fActiveStorages.GetEntries()) {
+		AliDebug(2, Form("No active storages. Object \"%s\" is not unloaded from cache", path));
+		return;
+	}
+
 	AliCDBPath queryPath(path);
 	if(!queryPath.IsValid()) return;
 
