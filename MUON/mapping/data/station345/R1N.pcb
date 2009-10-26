@@ -1,11 +1,12 @@
 # NonBending PCB. Density 1. Rounded (type 1)
 # Placing motifs starting bottom left and going counter-clockwise
-# from R38 towards R35
+# from C1 towards C5
 
 SIZES 0.714285714 2.5 40 40
 
-MOTIF R38 30  0
-MOTIF R39 45  0
-MOTIF R37 49  6
-MOTIF R36 43  6
-MOTIF R35 30  6
+MOTIF C1  0  0
+MOTIF C2  6  0
+MOTIF C3 13  0
+
+MOTIF C4 10 10
+MOTIF C5  0  9

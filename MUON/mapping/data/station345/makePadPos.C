@@ -24,7 +24,8 @@ std::vector<std::pair<int,int> > make_pattern(const std::string& what)
       cols.push_back(std::make_pair<int,int>(0,8));
     }
   else if ( what == "O9" || what == "O10" || what == "O11" || what == "O12" 
-	    || what == "O18" || what == "O19" || what == "O20" )
+	    || what == "O18" || what == "O19" || what == "O20" || 
+           what == "O23" || what == "O24" )
     {
       add(cols,0,32);
       add(cols,0,32);
@@ -102,7 +103,7 @@ std::vector<std::pair<int,int> > make_pattern(const std::string& what)
       for ( int i = 0; i <  4; ++i ) add(cols,0,4);
     }
   else if ( what == "O1" || what == "O2" || what == "O13" ||
-	    what == "O15" || what == "O16" )
+	    what == "O15" || what == "O16" || what == "O21" || what == "O22" )
     {
       for ( int i = 0; i < 8; ++i ) add(cols,0,8);
     }
@@ -516,6 +517,434 @@ std::vector<std::pair<int,int> > make_pattern(const std::string& what)
     add(cols,29,7);
     add(cols,15,21);
     add(cols,0,36);
+  }
+  else if ( what == "A1" ) 
+  {
+    for ( int i = 0; i < 6; ++i ) 
+    {
+      add(cols,0,8);
+    }
+    for ( int i = 0; i < 2; ++i ) 
+    {
+      add(cols,1,7);
+    }
+    add(cols,1,2);    
+  }
+  else if ( what == "A2" ) 
+  {
+    add(cols,1,13);
+    for ( int i = 0; i < 3; ++i ) 
+    {
+      add(cols,0,14);
+    }
+    add(cols,0,9);
+  }
+  else if ( what == "A3" ) 
+  {
+    add(cols,8,5);
+    for ( int i = 0; i < 4; ++i ) 
+    {
+      add(cols,0,13);
+    }
+    add(cols,0,7);
+  }
+  else if ( what == "A4" ) 
+  {
+    add(cols,6,6);
+    for ( int i = 0; i < 4; ++i ) 
+    {
+      add(cols,0,12);
+    }
+    add(cols,0,10);
+  }
+  else if ( what == "A5" ) 
+  {
+    add(cols,10,2);
+    for ( int i = 0; i < 3; ++i ) 
+    {
+      add(cols,0,12);
+    }
+    add(cols,1,11);
+    add(cols,1,11);
+    add(cols,1,4);
+  }
+  else if ( what == "A6" ) 
+  {
+    add(cols,4,7);
+    for ( int i = 0; i < 5; ++i ) 
+    {
+      add(cols,0,11);
+    }
+    add(cols,0,2);
+  }
+  else if ( what == "A7" ) 
+  {
+    add(cols,2,9);
+    for ( int i = 0; i < 5; ++i ) 
+    {
+      add(cols,0,11);
+    }
+  }
+  else if ( what == "A8" ) 
+  {
+    add(cols,0,27);
+    add(cols,5,22);
+    add(cols,9,15);
+  }  
+  else if ( what == "A9" ) 
+  {
+    add(cols,0,11);
+    add(cols,1,53);
+  }  
+  else if ( what == "A18" || what == "A19" ) 
+  {
+    add(cols,0,48);
+    add(cols,0,16);
+  }  
+  else if ( what == "A17" ) 
+  {
+    add(cols,16,32);
+    add(cols,0,32);
+  }  
+  else if ( what == "A19" || what == "A16" ) 
+  {
+    add(cols,32,16);
+    add(cols,0,48);
+  }  
+  else if ( what == "A15" ) 
+  {
+    add(cols,11,51);
+    add(cols,0,13);
+  }
+  else if ( what == "A14" ) 
+  {
+    add(cols,11,49);
+    add(cols,0,15);
+  }
+  else if ( what == "A13" ) 
+  {
+    add(cols,12,45);
+    add(cols,0,19);
+  }
+  else if ( what == "A12" ) 
+  {
+    add(cols,0,38);
+    add(cols,12,26);
+  }
+  else if ( what == "A11" ) 
+  {
+    add(cols,0,30);
+    add(cols,22,34);
+  }
+  else if ( what == "A10" ) 
+  {
+    add(cols,0,21);
+    add(cols,12,43);
+  }
+  else if ( what == "C1" ) 
+  {
+    add(cols,0,9);
+    add(cols,0,9);
+    add(cols,0,10);
+    add(cols,0,10);
+    add(cols,0,10);
+    add(cols,0,10);
+    add(cols,4,6);
+  }
+  else if ( what == "C2" ) 
+  {
+    add(cols,0,4);
+    for ( int i = 0; i < 6; ++i ) 
+    {
+      add(cols,0,10);
+    }
+  }
+  else if ( what == "C3" ) 
+  {
+    for ( int i = 0; i < 4; ++i ) 
+    {
+      add(cols,0,10);
+    }
+    add(cols,0,6);
+    add(cols,0,4);
+    add(cols,0,4);
+    add(cols,0,3);
+    add(cols,0,2);
+    add(cols,0,2);
+    add(cols,0,1);
+    add(cols,0,1);
+    add(cols,0,1);
+  }
+  else if ( what == "C4" )
+  {
+    add(cols,2,4);
+    for ( int i = 0; i < 7; ++i )
+    {
+      add(cols,0,6);
+    }
+    add(cols,2,4);
+    add(cols,2,4);
+    add(cols,3,3);
+    add(cols,4,2);
+    add(cols,4,2);
+    add(cols,5,1);
+    add(cols,5,1);
+    add(cols,5,1);
+  }
+  else if ( what == "C5" )
+  {
+    add(cols,0,7);
+    add(cols,0,7);
+    for ( int i = 0; i < 8; ++i )
+    {
+      add(cols,1,6);
+    }
+    add(cols,1,2);
+  }
+  else if ( what == "C6" ) 
+  {
+    add(cols,0,48);
+    add(cols,0,16);
+  }
+  else if ( what == "C7" ) 
+  {
+    add(cols,16,32);
+    add(cols,0,32);
+  }
+  else if ( what == "C8" )
+  {
+    add(cols,32,16);
+    add(cols,0,48);
+  }
+  else if ( what == "C9" )
+  {
+    add(cols,0,36);
+    add(cols,0,21);
+    add(cols,0,7);        
+  }
+  else if ( what == "C10" )
+  {
+    add(cols,0,36);
+    add(cols,15,21);
+    add(cols,29,7);
+  }
+  else if ( what == "O25" )
+  {
+    add(cols,0,32);
+    add(cols,0,32);
+  }
+  else if ( what == "O26" ) 
+  {
+    for ( int i = 0; i < 4; ++i ) 
+    {
+      add(cols,0,16);
+    }
+  }
+  else if ( what == "E1" )
+  {
+    add(cols,0,15);
+    add(cols,0,15);
+    add(cols,1,14);
+    add(cols,1,14);
+    add(cols,9,6);
+  }
+  else if ( what == "E2" ) 
+  {
+    add(cols,0,8);
+    add(cols,1,13);
+    add(cols,1,13);
+    add(cols,1,13);
+    add(cols,2,12);
+    add(cols,11,3);
+    add(cols,13,1);
+    add(cols,13,1);
+  }
+  else if ( what == "E3" ) 
+  {
+    add(cols,0,9);
+    add(cols,0,11);
+    add(cols,0,11);
+    add(cols,1,11);
+    add(cols,1,11);
+    add(cols,4,8);
+    add(cols,11,1);
+    add(cols,11,1);
+    add(cols,11,1);
+  }
+  else if ( what == "E4" ) 
+  {
+    add(cols,0,3);
+    add(cols,0,10);
+    add(cols,1,9);
+    add(cols,1,9);
+    add(cols,1,10);
+    add(cols,1,10);
+    add(cols,1,10);
+    add(cols,10,1);
+    add(cols,10,1);
+    add(cols,10,1);
+  }
+  else if ( what == "E5" ) 
+  {
+    add(cols,0,9);
+    add(cols,1,8);
+    add(cols,1,8);
+    add(cols,1,9);
+    add(cols,1,9);
+    add(cols,1,9);
+    add(cols,1,9);
+    add(cols,9,1);
+    add(cols,9,1);
+    add(cols,9,1);
+  }
+  else if ( what == "E6" )
+  {
+    for (int i = 0; i < 3; ++ i )
+    {
+      add(cols,0,8);
+    }
+    for (int i = 0; i < 5; ++ i )
+    {
+      add(cols,1,8);
+    }
+  }
+  else if ( what == "O27" ) 
+  {
+    for (int i = 0; i < 8; ++ i )
+    {
+      add(cols,0,8);
+    }
+  }
+  else if ( what == "E7" )
+  {
+    add(cols,0,17);
+    add(cols,0,17);
+    add(cols,0,17);
+    add(cols,6,10);
+    add(cols,13,3);
+  }
+  else if ( what == "E8" )
+  {
+    add(cols,10,12);
+    add(cols,0,25);
+    add(cols,1,27);
+  }
+  else if ( what == "E9" )
+  {
+    add(cols,0,24);
+    add(cols,0,11);
+    add(cols,-23,4);
+    add(cols,26,14);
+    add(cols,29,11);
+  }
+  else if ( what == "E10" )
+  {
+    add(cols,13,14);
+    add(cols,0,30);
+    add(cols,2,1);
+    add(cols,-27,6);
+    add(cols,30,13);    
+  }
+  else if ( what == "E11" )
+  {
+    add(cols,10,21);
+    add(cols,0,15);
+    add(cols,-29,5);
+    add(cols,32,13);
+    add(cols,35,10);    
+  }
+  else if ( what == "E12" )
+  {
+    add(cols,0,35);
+    add(cols,0,12);
+    add(cols,-33,6);
+    add(cols,36,11);    
+  }
+  else if ( what == "E13" ) 
+  {
+    add(cols,1,2);
+    add(cols,0,43);
+    add(cols,3,3);
+    add(cols,-41,8);
+    add(cols,45,8);    
+  }
+  else if ( what == "E14" )
+  {
+    add(cols,0,2);
+    add(cols,2,5);
+    add(cols,-9,43);
+    add(cols,49,10);
+    add(cols,55,4);
+  }
+  else if ( what == "E15" )
+  {
+    add(cols,1,1);
+    add(cols,0,3);
+    add(cols,-5,54);
+    add(cols,55,6);    
+  }
+  else if ( what == "E16" ) 
+  {
+    add(cols,0,60);
+    add(cols,57,3);
+    add(cols,59,1);    
+  }
+  else if ( what == "E17" )
+  {
+    add(cols,3,61);
+    add(cols,0,3);
+  }
+  else if ( what == "E18" ) 
+  {
+    add(cols,1,62);
+    add(cols,0,2);    
+  }
+  else if ( what == "E19" ) 
+  {
+    add(cols,0,63);
+    add(cols,0,1);    
+  }
+  else if ( what == "S0" )
+  {
+    add(cols,0,40);
+    add(cols,16,24);
+  }
+  else if ( what == "S1" ) 
+  {
+    add(cols,0,16);
+    add(cols,0,40);
+    add(cols,32,8);
+  }
+  else if ( what == "S2" || what == "S6" ) 
+  {
+    add(cols,0,32);
+    add(cols,0,32);
+  }
+  else if ( what == "S3" ) 
+  {
+    add(cols,32,8);
+    add(cols,0,40);
+    add(cols,0,16);
+  }
+  else if ( what == "S4" ) 
+  {
+    add(cols,0,64);
+  }
+  else if ( what == "S5" ) 
+  {
+    add(cols,0,8);
+    add(cols,0,40);
+  }
+  else if ( what == "S7" ) 
+  {
+    add(cols,24,16);
+    add(cols,0,40);
+    add(cols,0,8);
+  }
+  else if ( what == "S8" ) 
+  {
+    add(cols,0,40);
+    add(cols,0,24);
   }
   return cols;
 }

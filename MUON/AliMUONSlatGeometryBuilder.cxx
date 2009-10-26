@@ -320,30 +320,45 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	sprintf(idSlatCh5,"SLA%d",i+kNslats3-1);
 	detElemId = 509 - (i + kNslats3-1-4);
 	moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	if (detElemId % 2 == 0)
+	if (detElemId == 508 || detElemId == 509) // Round slat, new rotation due to mapping convention
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
+					      TGeoRotation("rot1",90,180+angle,90,90+angle,180,0) );
+	else {
+	  if (detElemId % 2 == 0)
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
-						TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
-	else
+						TGeoRotation("rot1",90,angle,90,90+angle,0,0) );	  
+	  else 
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
 						TGeoRotation("rot1",90,angle,90,270+angle,180,0) ); 
-
+	}
+     
 	sprintf(idSlatCh5,"SLA%d",3*kNslats3-2+i);
 	detElemId = 500 + (i + kNslats3-1-4);
 	moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	if (detElemId % 2 == 0)
+	if (detElemId == 500 || detElemId == 501) // Round slat, new rotation due to mapping convention
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
+					      TGeoRotation("rot2",90,angle,90,90+angle,0,0) );
+	else {
+	  if (detElemId % 2 == 1) 
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
+						TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );	   
+	  else
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
 						TGeoRotation("rot2",90,180+angle,90,270+angle,0,0) );
-	else
-	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
-						TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
+	}
 
 	if (i > 0) { 
 	  sprintf(idSlatCh5,"SLA%d",kNslats3-1-i);
 	  detElemId = 509 + (i + kNslats3-1-4);
   	  moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	  if (detElemId % 2 == 0 && detElemId != 510)
+	  if (detElemId % 2 == 0 ) {
+	    if (detElemId == 510) // Round slat, new rotation due to mapping convention
+	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3), 
+						  TGeoRotation("rot3",90,180+angle,90,270+angle,0,0) );
+	    else
 	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3), 
 						  TGeoRotation("rot3",90,angle,90,90+angle,0,0) );
+	  }
 	  else
 	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3), 
 						  TGeoRotation("rot3",90,angle,90,270+angle,180,0) );
@@ -351,9 +366,14 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  sprintf(idSlatCh5,"SLA%d",3*kNslats3-2-i);
 	  detElemId = 518 - (i + kNslats3-1-4);
   	  moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	  if (detElemId % 2 == 1 && detElemId != 517)
+	  if (detElemId % 2 == 1) {
+	    if (detElemId == 517) // Round slat, new rotation due to mapping convention
+	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
+						  TGeoRotation("rot4",90,angle,90,270+angle,180,0) );
+	    else
 	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
 						  TGeoRotation("rot4",90,180+angle,90,90+angle,180,0) );
+	  }
 	  else
 	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
 						  TGeoRotation("rot4",90,180+angle,90,270+angle,0,0) );   
@@ -362,39 +382,60 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	sprintf(idSlatCh6,"SLB%d",kNslats3-1+i);  
 	detElemId = 609 - (i  + kNslats3-1-4);
   	moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	if (detElemId % 2 == 0)
+	if (detElemId == 608 || detElemId == 609) // Round slat, new rotation due to mapping convention
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
+					      TGeoRotation("rot5",90,180+angle,90,90+angle,180,0));
+	else {
+	  if (detElemId % 2 == 0) 
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
-				     TGeoRotation("rot5",90,angle,90,90+angle,0,0) );
-	else
+						TGeoRotation("rot5",90,angle,90,90+angle,0,0));
+	  else
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
-				     TGeoRotation("rot5",90,angle,90,270+angle,180,0) );
+						TGeoRotation("rot5",90,angle,90,270+angle,180,0));
+	}
 
 	sprintf(idSlatCh6,"SLB%d",3*kNslats3-2+i);
 	detElemId = 600 + (i + kNslats3-1-4);
   	moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	if (detElemId % 2 == 0)
-	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
-						TGeoRotation("rot6",90,180+angle,90,270+angle,0,0) );
-	else
+	if (detElemId == 600 || detElemId == 601) // Round slat, new rotation due to mapping convention
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
+					      TGeoRotation("rot6",90,angle,90,90+angle,0,0) );
+	else {
+	  if (detElemId % 2 == 1) 
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
 						TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) ); 
+	  else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
+						TGeoRotation("rot6",90,180+angle,90,270+angle,0,0) );
+	}
 
 	if (i > 0) { 
 	  sprintf(idSlatCh6,"SLB%d",kNslats3-1-i);
 	  detElemId = 609 + (i + kNslats3-1-4);
   	  moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	  if (detElemId % 2 == 0 && detElemId != 610)
+	  if (detElemId % 2 == 0 ) {
+	    if (detElemId == 610) // Round slat, new rotation due to mapping convention
+	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3),
+						  TGeoRotation("rot7",90,180+angle,90,270+angle,0,0) );
+	    else
 	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3),
 						  TGeoRotation("rot7",90,angle,90,90+angle,0,0) );
+	  }
 	  else
 	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3),
 						  TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
+
 	  sprintf(idSlatCh6,"SLB%d",3*kNslats3-2-i);
 	  detElemId = 618 - (i + kNslats3-1-4);
   	  moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	  if (detElemId % 2 == 1 && detElemId != 617)
+	  if (detElemId % 2 == 1) {
+	    if (detElemId == 617) // Round slat, new rotation due to mapping convention
+	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
+						  TGeoRotation("rot8",90,angle,90,270+angle,180,0) );
+	    else
 	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
 						  TGeoRotation("rot8",90,180+angle,90,90+angle,180,0) );
+	  }
 	  else
 	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
 						  TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) );   
@@ -559,9 +600,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 		  compOperation+="B";
 		}
 		compOperation+="Tube";
-		compName=Form("composite%d%c",iCh,volLetter[iVol]);
+		compName=Form("composite%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
 		composite[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 
-		
 		// Reset shape to volume      
 		mVol->SetShape((TGeoShape*)composite[lIndex]);
 	      }
@@ -637,68 +677,89 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 						    (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
 	  }
 
+	  // Different rotation due to new mapping convention
 	  if (i == 0 || i == 1) { // first vertical spacers
 	    GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05V", idSlatCh5, 
-						    (2*i-1)*10+quadrant,TGeoTranslation(xvFrame2,0.,0.)); 
+						    (2*i-1)*10+quadrant,TGeoTranslation(-xvFrame2,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0)); 
 	    GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06V", idSlatCh6, 
-						    (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));	  
+						    (2*i-1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));	  
 	    if (i == 0) { // rounded spacer for central slat (J.C.)
 	      GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SC5D", idSlatCh5, 
-								  (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
+								  (2*i)*10+quadrant,TGeoTranslation(xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
 	      GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SC6D", idSlatCh6, 
-								  (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
+								  (2*i)*10+quadrant,TGeoTranslation(xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
 
 	    }
 	    if (i == 1) { // rounded + vertical spacer for rounded slat (J.C.)
 	      GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SD5D", idSlatCh5, 
-								  (2*i)*10+quadrant,TGeoTranslation(-xvFrame,-kYpos3[1],0.));
+								  (2*i)*10+quadrant,TGeoTranslation(xvFrame,-kYpos3[1],0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
 	      GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SD6D", idSlatCh6, 
-								  (2*i)*10+quadrant,TGeoTranslation(-xvFrame,-kYpos3[1],0.));
+								  (2*i)*10+quadrant,TGeoTranslation(xvFrame,-kYpos3[1],0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
 	    }
 	  }
 
 	  // position the panels and the insulating material 
 	  for (j = 0; j < kNPCB3[i]; j++){
-	    index++;
+ 	    index++;
 	    xx = kSensLength * (-kNPCB3[i]/2. + j + 0.5); 
 	    Float_t xx2 = xx - pcbDLength3/2.; 
 	    Float_t xx3 = xx + (kSensLength-csvPcbLength)/2.;
 
 	    Float_t zPanel = spar[2] - nomexbpar[2]; 
 
-	    if (i==0 && j==0){ // Rounded pcb of central slat (SR1, NR1)
-	      GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SC5X", idSlatCh5, 2*index-1,TGeoTranslation(xx3,0.,zPanel));
-	      GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SC5X", idSlatCh5, 2*index,TGeoTranslation(xx3,0.,-zPanel));
-	      GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SC5I", idSlatCh5, index,TGeoTranslation(xx3,0.,0.));
-	      GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SC6X", idSlatCh6, 2*index-1,TGeoTranslation(xx3,0.,zPanel));
-	      GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SC6X", idSlatCh6, 2*index,TGeoTranslation(xx3,0.,-zPanel));
-	      GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SC6I", idSlatCh6, index,TGeoTranslation(xx3,0.,0.));
-	    } else { 	      
-	      if (i==1 && j==0){ // Rounded pcb of rounded slats (SR2. NR2)
-		GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SD5X", idSlatCh5, 2*index-1,TGeoTranslation(xx,0.,zPanel));
-		GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SD5X", idSlatCh5, 2*index,TGeoTranslation(xx,0.,-zPanel));
-		GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SD5I", idSlatCh5, index,TGeoTranslation(xx,0.,0.));
-		GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SD6X", idSlatCh6, 2*index-1,TGeoTranslation(xx,0.,zPanel));
-		GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SD6X", idSlatCh6, 2*index,TGeoTranslation(xx,0.,-zPanel));
-		GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SD6I", idSlatCh6, index,TGeoTranslation(xx,0.,0.));
-	      } else { 	      
-		if ( (i == 0 || i == 1 || i == 2) && j == kNPCB3[i]-1) { // 1 pcb is shortened by 5cm 
-		  GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SB5X", idSlatCh5, 2*index-1,TGeoTranslation(xx2,0.,zPanel));
-		  GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SB5X", idSlatCh5, 2*index,TGeoTranslation(xx2,0.,-zPanel));
-		  GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SB5I", idSlatCh5, index,TGeoTranslation(xx2,0.,0.));
-		} else {		
-		  GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05X", idSlatCh5, 2*index-1,TGeoTranslation(xx,0.,zPanel));
-		  GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05X", idSlatCh5, 2*index,TGeoTranslation(xx,0.,-zPanel));
-		  GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05I", idSlatCh5, index,TGeoTranslation(xx,0.,0.));
-		}	   
-		GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06X", idSlatCh6, 2*index-1,TGeoTranslation(xx,0.,zPanel));
-		GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06X", idSlatCh6, 2*index,TGeoTranslation(xx,0.,-zPanel));
-		GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06I", idSlatCh6, index,TGeoTranslation(xx,0.,0.));	    		
+	    if (i==0 || i==1) { // Different rotation due to new mapping convention
+	      if (i==0 && j==0) { // Rounded pcb of central slat (SR1, NR1)		
+		GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SC5X", idSlatCh5, 2*index-1,TGeoTranslation(-xx3,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SC5X", idSlatCh5, 2*index,TGeoTranslation(-xx3,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SC5I", idSlatCh5, index,TGeoTranslation(-xx3,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SC6X", idSlatCh6, 2*index-1,TGeoTranslation(-xx3,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SC6X", idSlatCh6, 2*index,TGeoTranslation(-xx3,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SC6I", idSlatCh6, index,TGeoTranslation(-xx3,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      } 
+	      else {
+		if (i==1 && j==0){ // Rounded pcb of rounded slats (SR2. NR2)
+		  GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SD5X", idSlatCh5, 2*index-1,TGeoTranslation(-xx,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		  GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SD5X", idSlatCh5, 2*index,TGeoTranslation(-xx,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		  GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SD5I", idSlatCh5, index,TGeoTranslation(-xx,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		  GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SD6X", idSlatCh6, 2*index-1,TGeoTranslation(-xx,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		  GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SD6X", idSlatCh6, 2*index,TGeoTranslation(-xx,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		  GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("SD6I", idSlatCh6, index,TGeoTranslation(-xx,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		}
+		else {
+		  if (j == kNPCB3[i]-1) { // 1 pcb is shortened by 5cm 
+		    GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SB5X", idSlatCh5, 2*index-1,TGeoTranslation(-xx2,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		    GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SB5X", idSlatCh5, 2*index,TGeoTranslation(-xx2,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		    GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SB5I", idSlatCh5, index,TGeoTranslation(-xx2,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		  } 
+		  else {		
+		    GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05X", idSlatCh5, 2*index-1,TGeoTranslation(-xx,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		    GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05X", idSlatCh5, 2*index,TGeoTranslation(-xx,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		    GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05I", idSlatCh5, index,TGeoTranslation(-xx,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		  }
+		  GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06X", idSlatCh6, 2*index-1,TGeoTranslation(-xx,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		  GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06X", idSlatCh6, 2*index,TGeoTranslation(-xx,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		  GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06I", idSlatCh6, index,TGeoTranslation(-xx,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+		}
 	      }
+	    }
+	    else { 	      
+	      if (i==2 && j == kNPCB3[i]-1) { // 1 pcb is shortened by 5cm 
+		GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SB5X", idSlatCh5, 2*index-1,TGeoTranslation(xx2,0.,zPanel));
+		GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SB5X", idSlatCh5, 2*index,TGeoTranslation(xx2,0.,-zPanel));
+		GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SB5I", idSlatCh5, index,TGeoTranslation(xx2,0.,0.));
+	      } else {		
+		GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05X", idSlatCh5, 2*index-1,TGeoTranslation(xx,0.,zPanel));
+		GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05X", idSlatCh5, 2*index,TGeoTranslation(xx,0.,-zPanel));
+		GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05I", idSlatCh5, index,TGeoTranslation(xx,0.,0.));
+	      }
+	      GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06X", idSlatCh6, 2*index-1,TGeoTranslation(xx,0.,zPanel));
+	      GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06X", idSlatCh6, 2*index,TGeoTranslation(xx,0.,-zPanel));
+	      GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06I", idSlatCh6, index,TGeoTranslation(xx,0.,0.));	    		
 	    }
 	  }
 	}
       }
+
       
       // position the nomex volume inside the panel volume
       gMC->Gspos("S05N",1,"S05C",0.,0.,0.,0,"ONLY"); 
@@ -797,7 +858,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  gMC->Gspos("S06E",2*index-1,"SD6B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
 	  gMC->Gspos("S06E",2*index  ,"SD6B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
 	}
-      }
+      }      
       
       //
       //Geometry of the support pannel Verticla length 3.62m, horizontal length 1.62m, internal radius  dMotherInner of SC05 and SC06  (F. Orsini, Saclay)
@@ -1019,9 +1080,14 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       sprintf(idSlatCh7,"SLC%d",kNslats4-1+i);
       detElemId = 713 - (i + kNslats4-1-6);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      if (detElemId % 2 == 0)
+      if (detElemId % 2 == 0) {
+	if (detElemId == 712) // Round slat, new rotation due to mapping convention
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, ySlat41, -zSlat4 + dzCh4),
-				   TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
+					      TGeoRotation("rot1",90,180+angle,90,90+angle,180,0) );
+	else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, ySlat41, -zSlat4 + dzCh4),
+					      TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
+      }
       else
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, ySlat41, -zSlat4 + dzCh4),
 				   TGeoRotation("rot1",90,angle,90,270+angle,180,0) );
@@ -1029,72 +1095,110 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       sprintf(idSlatCh7,"SLC%d",3*kNslats4-2+i);
       detElemId = 700 + (i + kNslats4-1-6);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      if (detElemId % 2 == 0)
+      if (detElemId % 2 == 1) {
+	if (detElemId == 701) // Round slat, new rotation due to mapping convention
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, ySlat41, zSlat4 - dzCh4),
-				   TGeoRotation("rot2",90,180+angle,90,270+angle,0,0) );
+					      TGeoRotation("rot2",90,angle,90,90+angle,0,0) );
+	else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, ySlat41, zSlat4 - dzCh4),
+					      TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
+      }
       else
-	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, ySlat41, zSlat4 - dzCh4),
-				   TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
+	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, ySlat41, zSlat4 - dzCh4),
+					    TGeoRotation("rot2",90,180+angle,90,270+angle,0,0) );
+
       if (i > 0) { 
 	sprintf(idSlatCh7,"SLC%d",kNslats4-1-i);
 	detElemId = 713 + (i + kNslats4-1-6);
         moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	if (detElemId % 2 == 0 && detElemId != 714)
+	if (detElemId % 2 == 0) {
+	  if (detElemId == 714) // Round slat, new rotation due to mapping convention
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, -ySlat41, -zSlat4 + dzCh4),
+						TGeoRotation("rot3",90,180+angle,90,270+angle,0,0) );
+	  else
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, -ySlat41, -zSlat4 + dzCh4),
 						TGeoRotation("rot3",90,angle,90,90+angle,0,0) );
+	}
 	else
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, -ySlat41, -zSlat4 + dzCh4),
 						TGeoRotation("rot3",90,angle,90,270+angle,180,0) );
+
 	sprintf(idSlatCh7,"SLC%d",3*kNslats4-2-i);
 	detElemId = 726 - (i + kNslats4-1-6);
         moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	if (detElemId % 2 == 1 && detElemId != 725 )
+	if (detElemId % 2 == 1) {
+	  if (detElemId == 725) // Round slat, new rotation due to mapping convention
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, -ySlat41, zSlat4 - dzCh4),
-				     TGeoRotation("rot4",90,180+angle,90,90+angle,180,0) );
+						TGeoRotation("rot4",90,angle,90,270+angle,180,0) );
+	  else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, -ySlat41, zSlat4 - dzCh4),
+						TGeoRotation("rot4",90,180+angle,90,90+angle,180,0) );
+	}
 	else
-	     GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, -ySlat41, zSlat4 - dzCh4),
-				     TGeoRotation("rot4",90,180+angle,90,270+angle,0,0) ); 
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, -ySlat41, zSlat4 - dzCh4),
+					      TGeoRotation("rot4",90,180+angle,90,270+angle,0,0) ); 
       }
 
       sprintf(idSlatCh8,"SLD%d",kNslats4-1+i);
       detElemId = 813 - (i + kNslats4-1-6);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      if (detElemId % 2 == 0)
+      if (detElemId % 2 == 0) {
+	if (detElemId == 812) // Round slat, new rotation due to mapping convention
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, ySlat42, -zSlat4 + dzCh4),
-				   TGeoRotation("rot5",90,angle,90,90+angle,0,0) );
+					      TGeoRotation("rot5",90,180+angle,90,90+angle,180,0) );
+	else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, ySlat42, -zSlat4 + dzCh4),
+					      TGeoRotation("rot5",90,angle,90,90+angle,0,0) );
+      }
       else
-	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, ySlat42, -zSlat4 + dzCh4),
-				   TGeoRotation("rot5",90,angle,90,270+angle,180,0) ); 
+	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, ySlat42, -zSlat4 + dzCh4),
+					    TGeoRotation("rot5",90,angle,90,270+angle,180,0) ); 
 
       sprintf(idSlatCh8,"SLD%d",3*kNslats4-2+i);
       detElemId = 800 + (i + kNslats4-1-6);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      if (detElemId % 2 == 0)
+      if (detElemId % 2 == 1) {
+	if (detElemId == 801) // Round slat, new rotation due to mapping convention
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, ySlat42, zSlat4 - dzCh4),
-				   TGeoRotation("rot6",90,180+angle,90,270+angle,0,0) );
+					      TGeoRotation("rot6",90,angle,90,90+angle,0,0) );
+	else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, ySlat42, zSlat4 - dzCh4),
+					      TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) );
+      }
       else
-	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, ySlat42, zSlat4 - dzCh4),
-				   TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) );
+	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, ySlat42, zSlat4 - dzCh4),
+					    TGeoRotation("rot6",90,180+angle,90,270+angle,0,0) );
       if (i > 0) { 
 	sprintf(idSlatCh8,"SLD%d",kNslats4-1-i);
 	detElemId = 813 + (i + kNslats4-1-6);
         moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	if (detElemId % 2 == 0 && detElemId != 814)
+	if (detElemId % 2 == 0) {
+	  if (detElemId == 814) // Round slat, new rotation due to mapping convention
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, -ySlat42, -zSlat4 + dzCh4),
+						TGeoRotation("rot7",90,180+angle,90,270+angle,0,0) );
+	  else
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, -ySlat42, -zSlat4 + dzCh4),
 						TGeoRotation("rot7",90,angle,90,90+angle,0,0) );
+	}
 	else
-	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, -ySlat42, -zSlat4 + dzCh4),
-						TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, -ySlat42, -zSlat4 + dzCh4),
+					      TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
+
 	sprintf(idSlatCh8,"SLD%d",3*kNslats4-2-i);
 	detElemId = 826 - (i + kNslats4-1-6);
         moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	if (detElemId % 2 == 1 && detElemId != 825 )
+	if (detElemId % 2 == 1) {
+	  if (detElemId == 825 ) // Round slat, new rotation due to mapping convention
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, -ySlat42, zSlat4 - dzCh4),
-				     TGeoRotation("rot8",90,180+angle,90,90+angle,180,0) ); 
+						TGeoRotation("rot8",90,angle,90,270+angle,180,0) ); 
+	  else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, -ySlat42, zSlat4 - dzCh4),
+						TGeoRotation("rot8",90,180+angle,90,90+angle,180,0) ); 
+	}
 	else
-	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, -ySlat42, zSlat4 - dzCh4),
-				     TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) );
-	  
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, -ySlat42, zSlat4 - dzCh4),
+					      TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) );
+       
       }
     }
      
@@ -1221,7 +1325,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 		compOperation+="B";
 	      }	      
 	      compOperation+="Tube4";
-	      compName=Form("composite4%d%c",iCh,volLetter[iVol]);
+	      compName=Form("composite4%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
 	      composite4[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 
 	      
 	      // Reset shape to volume      
@@ -1278,24 +1382,33 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07V", idSlatCh7, (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
 	  GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("S08V", idSlatCh8, (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
 	  GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("S08V", idSlatCh8, (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
-	} else { // Vertical and Rounded+Vertical spacer 
-	  GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07V", idSlatCh7, (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
-	  GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("SD7D", idSlatCh7, (2*i)*10+quadrant,TGeoTranslation(-xvFrame,-kYpos41[1],0.));
-	  GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("S08V", idSlatCh8, (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
-	  GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("SD8D", idSlatCh8, (2*i)*10+quadrant,TGeoTranslation(-xvFrame,-kYpos42[1],0.));
+	} else { // Vertical and Rounded+Vertical spacer - Different rotation due to new mapping convention
+	  GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07V", idSlatCh7, (2*i-1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	  GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("SD7D", idSlatCh7, (2*i)*10+quadrant,TGeoTranslation(xvFrame,-kYpos41[1],0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	  GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("S08V", idSlatCh8, (2*i-1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	  GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("SD8D", idSlatCh8, (2*i)*10+quadrant,TGeoTranslation(+xvFrame,-kYpos42[1],0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
 	}
 	// position the panels and the insulating material 
 	for (j = 0; j < kNPCB4[i]; j++){
 	  index++;
 	  xx = kSensLength * (-kNPCB4[i]/2.+j+.5); 
 	  Float_t zPanel = spar[2] - nomexbpar[2]; 
-	  if (i==1 && j==0){ // Rounded pcb of rounded slat
-	    GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("SD7X", idSlatCh7, 2*index-1,TGeoTranslation(xx,0.,zPanel));
-	    GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("SD7X", idSlatCh7, 2*index,TGeoTranslation(xx,0.,-zPanel));
-	    GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("SD7I", idSlatCh7, index,TGeoTranslation(xx,0.,0.));
-	    GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("SD8X", idSlatCh8, 2*index-1,TGeoTranslation(xx,0.,zPanel));
-	    GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("SD8X", idSlatCh8, 2*index,TGeoTranslation(xx,0.,-zPanel));
-	    GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("SD8I", idSlatCh8, index,TGeoTranslation(xx,0.,0.));
+	  if (i==1) { // Different rotation due to new mapping convention
+	    if (j==0){ // Rounded pcb of rounded slat
+	      GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("SD7X", idSlatCh7, 2*index-1,TGeoTranslation(-xx,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("SD7X", idSlatCh7, 2*index,TGeoTranslation(-xx,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("SD7I", idSlatCh7, index,TGeoTranslation(-xx,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("SD8X", idSlatCh8, 2*index-1,TGeoTranslation(-xx,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("SD8X", idSlatCh8, 2*index,TGeoTranslation(-xx,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("SD8I", idSlatCh8, index,TGeoTranslation(-xx,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	    } else { 	      
+	      GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07X", idSlatCh7, 2*index-1,TGeoTranslation(-xx,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07X", idSlatCh7, 2*index,TGeoTranslation(-xx,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07I", idSlatCh7, index,TGeoTranslation(-xx,0.,0.));
+	      GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("S08X", idSlatCh8, 2*index-1,TGeoTranslation(-xx,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("S08X", idSlatCh8, 2*index,TGeoTranslation(-xx,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("S08I", idSlatCh8, index,TGeoTranslation(-xx,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	    }
 	  } else { 	      
 	    GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07X", idSlatCh7, 2*index-1,TGeoTranslation(xx,0.,zPanel));
 	    GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07X", idSlatCh7, 2*index,TGeoTranslation(xx,0.,-zPanel));
@@ -1571,48 +1684,75 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       sprintf(idSlatCh9,"SLE%d",kNslats5-1+i);
       detElemId = 913 - (i + kNslats5-1-6);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      if (detElemId % 2 == 0)
+      if (detElemId % 2 == 0) {
+	if (detElemId == 912) // Round slat, new rotation due to mapping convention
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
+					      TGeoRotation("rot1",90,180+angle,90,90+angle,180,0) );
+	else
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
 					      TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
+      }
       else
-	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
-					      TGeoRotation("rot1",90,angle,90,270+angle,180,0) );
+	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
+					    TGeoRotation("rot1",90,angle,90,270+angle,180,0) );
       sprintf(idSlatCh9,"SLE%d",3*kNslats5-2+i);
       detElemId = 900 + (i + kNslats5-1-6);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      if (detElemId % 2 == 0)
+      if (detElemId % 2 == 1) {
+	if (detElemId == 901) // Round slat, new rotation due to mapping convention
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
-					      TGeoRotation("rot2",90,180+angle,90,270+angle,0,0) );
-      else
+					      TGeoRotation("rot2",90,angle,90,90+angle,0,0) );
+	else
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
 					      TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
+      }
+      else
+	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
+					    TGeoRotation("rot2",90,180+angle,90,270+angle,0,0) );      
+
       if (i > 0) { 
 	sprintf(idSlatCh9,"SLE%d",kNslats5-1-i);
 	detElemId = 913 + (i + kNslats5-1-6);
 	moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      if (detElemId % 2 == 0  && detElemId != 914)
+	if (detElemId % 2 == 0) {
+	  if (detElemId == 914) // Round slat, new rotation due to mapping convention
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
-				     TGeoRotation("rot3",90,angle,90,90+angle,0,0) );
-      else
+					      TGeoRotation("rot3",90,180+angle,90,270+angle,0,0) );
+	  else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
+						TGeoRotation("rot3",90,angle,90,90+angle,0,0) );
+	}
+	else
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
 				     TGeoRotation("rot3",90,angle,90,270+angle,180,0) );
+
 	sprintf(idSlatCh9,"SLE%d",3*kNslats5-2-i);
 	detElemId = 926 - (i + kNslats5-1-6);
 	moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	if (detElemId % 2 == 1 && detElemId != 925 )
+	if (detElemId % 2 == 1) {
+	  if (detElemId == 925) // Round slat, new rotation due to mapping convention
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
+						TGeoRotation("rot4",90,angle,90,270+angle,180,0) );
+	  else
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
 						TGeoRotation("rot4",90,180+angle,90,90+angle,180,0)  );
+	}
 	else
-	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
-						TGeoRotation("rot4",90,180+angle,90,270+angle,0,0)  );   
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
+					      TGeoRotation("rot4",90,180+angle,90,270+angle,0,0)  );   
       }
 
       sprintf(idSlatCh10,"SLF%d",kNslats5-1+i);
       detElemId = 1013 - (i + kNslats5-1-6);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      if (detElemId % 2 == 0)
+      if (detElemId % 2 == 0) {
+	if (detElemId == 1012) // Round slat, new rotation due to mapping convention
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
+					      TGeoRotation("rot5",90,180+angle,90,90+angle,180,0) );
+	else
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
 					      TGeoRotation("rot5",90,angle,90,90+angle,0,0) );
+      }
       else
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
 					      TGeoRotation("rot5",90,angle,90,270+angle,180,0) );
@@ -1620,30 +1760,47 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       sprintf(idSlatCh10,"SLF%d",3*kNslats5-2+i);
       detElemId = 1000 + (i + kNslats5-1-6);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      if (detElemId % 2 == 0)
+      if (detElemId % 2 == 1) {
+	if (detElemId == 1001) // Round slat, new rotation due to mapping convention
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
-					      TGeoRotation("rot6",90,180+angle,90,270+angle,0,0) );
-      else
+					      TGeoRotation("rot6",90,angle,90,90+angle,0,0) ); 
+	else
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
 					      TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) ); 
+      }
+      else
+	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
+					    TGeoRotation("rot6",90,180+angle,90,270+angle,0,0) );
+
       if (i > 0) { 
 	sprintf(idSlatCh10,"SLF%d",kNslats5-1-i);
 	detElemId = 1013 + (i + kNslats5-1-6);
         moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      if (detElemId % 2 == 0  && detElemId != 1014)
+	if (detElemId % 2 == 0) {  
+	  if (detElemId == 1014) // Round slat, new rotation due to mapping convention
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
+						TGeoRotation("rot7",90,180+angle,90,270+angle,0,0) );
+	  else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
+						TGeoRotation("rot7",90,angle,90,90+angle,0,0) );
+	}
+	else
 	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
-				     TGeoRotation("rot7",90,angle,90,90+angle,0,0) );
-      else
-	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
-				     TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
+					      TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
+
 	sprintf(idSlatCh10,"SLF%d",3*kNslats5-2-i);
 	detElemId = 1026 - (i + kNslats5-1-6);
         moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	if (detElemId % 2 == 1 && detElemId != 1025 )
+	if (detElemId % 2 == 1) {
+	  if (detElemId == 1025) // Round slat, new rotation due to mapping convention
 	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
-					      TGeoRotation("rot8",90,180+angle,90,90+angle,180,0) );
+						TGeoRotation("rot8",90,angle,90,270+angle,180,0) );
+	  else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
+						TGeoRotation("rot8",90,180+angle,90,90+angle,180,0) );
+	}
 	else
-	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
 					      TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) ); 
       }
     }
@@ -1771,7 +1928,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 		compOperation+="B";
 	      }
 	      compOperation+="Tube5";
-	      compName=Form("composite5%d%c",iCh,volLetter[iVol]);
+	      compName=Form("composite5%c%d%c",slatType[iSlatType],iCh,volLetter[iVol]);
 	      composite5[lIndex] = new TGeoCompositeShape(compName, compOperation.Data()); 
 	      
 	      // Reset shape to volume      
@@ -1826,11 +1983,11 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09V", idSlatCh9, (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
 	  GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10V", idSlatCh10, (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
 	  GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10V", idSlatCh10, (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
-	} else {  // Vertical and Rounded+Vertical spacer
-	  GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09V", idSlatCh9, (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
-	  GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("SD9D", idSlatCh9, (2*i)*10+quadrant,TGeoTranslation(-xvFrame,-kYpos5[1],0.));
-	  GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10V", idSlatCh10, (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
-	  GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("SD0D", idSlatCh10, (2*i)*10+quadrant,TGeoTranslation(-xvFrame,-kYpos5[1],0.));
+	} else {  // Vertical and Rounded+Vertical spacer - Different rotation due to new mapping convention
+	  GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09V", idSlatCh9, (2*i-1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	  GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("SD9D", idSlatCh9, (2*i)*10+quadrant,TGeoTranslation(xvFrame,-kYpos5[1],0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	  GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10V", idSlatCh10, (2*i-1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	  GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("SD0D", idSlatCh10, (2*i)*10+quadrant,TGeoTranslation(xvFrame,-kYpos5[1],0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
 	}
 
 	// position the panels and the insulating material 
@@ -1839,18 +1996,26 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  xx = kSensLength * (-kNPCB5[i]/2.+j+.5); 
 
 	  Float_t zPanel = spar[2] - nomexbpar[2]; 
-	  if (i==1 && j==0){ // Rounded pcb of rounded slat 
-	    GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("SD9X", idSlatCh9, 2*index-1,TGeoTranslation(xx,0.,zPanel));
-	    GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("SD9X", idSlatCh9, 2*index,TGeoTranslation(xx,0.,-zPanel));
-	    GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("SD9I", idSlatCh9, index,TGeoTranslation(xx,0.,0.));
-	    GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("SD0X", idSlatCh10, 2*index-1,TGeoTranslation(xx,0.,zPanel));
-	    GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("SD0X", idSlatCh10, 2*index,TGeoTranslation(xx,0.,-zPanel));
-	    GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("SD0I", idSlatCh10, index,TGeoTranslation(xx,0.,0.));
+	  if (i==1) { // Different rotation due to new mapping convention
+	    if (j==0) { // Rounded pcb of rounded slat 
+	    GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("SD9X", idSlatCh9, 2*index-1,TGeoTranslation(-xx,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	    GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("SD9X", idSlatCh9, 2*index,TGeoTranslation(-xx,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	    GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("SD9I", idSlatCh9, index,TGeoTranslation(-xx,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	    GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("SD0X", idSlatCh10, 2*index-1,TGeoTranslation(-xx,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	    GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("SD0X", idSlatCh10, 2*index,TGeoTranslation(-xx,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	    GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("SD0I", idSlatCh10, index,TGeoTranslation(-xx,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	    } else { 
+	      GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09X", idSlatCh9, 2*index-1,TGeoTranslation(-xx,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09X", idSlatCh9, 2*index,TGeoTranslation(-xx,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09I", idSlatCh9, index,TGeoTranslation(-xx,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));	    
+	      GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10X", idSlatCh10, 2*index-1,TGeoTranslation(-xx,0.,zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10X", idSlatCh10, 2*index,TGeoTranslation(-xx,0.,-zPanel),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	      GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10I", idSlatCh10, index,TGeoTranslation(-xx,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	    }
 	  } else { 
 	    GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09X", idSlatCh9, 2*index-1,TGeoTranslation(xx,0.,zPanel));
 	    GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09X", idSlatCh9, 2*index,TGeoTranslation(xx,0.,-zPanel));
-	    GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09I", idSlatCh9, index,TGeoTranslation(xx,0.,0.));
-	    
+	    GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09I", idSlatCh9, index,TGeoTranslation(xx,0.,0.));	    
 	    GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10X", idSlatCh10, 2*index-1,TGeoTranslation(xx,0.,zPanel));
 	    GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10X", idSlatCh10, 2*index,TGeoTranslation(xx,0.,-zPanel));
 	    GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10I", idSlatCh10, index,TGeoTranslation(xx,0.,0.));

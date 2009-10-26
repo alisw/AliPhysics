@@ -45,7 +45,7 @@
 
 #endif
 
-void testGraphicsMotif(Option_t* motifType = "R43", const TVector2& padSizes = TVector2(5,0.5))
+void testGraphicsMotif(Option_t* motifType = "R43", Double_t padsizex=5.0, Double_t padsizey=0.5)
 {
   // Warning : this function leaks memory. But should be fine as only used 
   // interactively to check a few motifs at once...
@@ -66,8 +66,8 @@ void testGraphicsMotif(Option_t* motifType = "R43", const TVector2& padSizes = T
     return;
   }
   type->Print("G");
-  AliMpMotif* motif = new AliMpMotif(motifType,type,padSizes);
-  AliMpMotifPosition* pos = new AliMpMotifPosition(0,motif,TVector2(0,0));
+  AliMpMotif* motif = new AliMpMotif(motifType,type,padsizex,padsizey);
+  AliMpMotifPosition* pos = new AliMpMotifPosition(0,motif,0,0);
   AliMpVPainter* painter = AliMpVPainter::CreatePainter(pos);
   if (!painter)
   {
@@ -110,7 +110,7 @@ void testGraphicsSlat(AliMp::PlaneType planeType = AliMp::kBendingPlane,
   Char_t c1Name[255];
   Char_t c1NameJpg[255];
   
-  for (Int_t i = 0; i < 2; i++) {
+  for (Int_t i = 0; i < 19; i++) {
     sprintf(c1Name, "%s%d", "c1", i);
     c1[i]= new TCanvas(c1Name,slatName[i],10,10,1200,800);     
 
