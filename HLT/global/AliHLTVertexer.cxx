@@ -117,7 +117,6 @@ void AliHLTVertexer::FindPrimaryVertex(  )
   delete[] vFlag;
 }
 
-
 void AliHLTVertexer::FindV0s(  )
 {
   //* V0 finder
@@ -126,7 +125,6 @@ void AliHLTVertexer::FindV0s(  )
   //AliKFVertex primVtx( *fESD->GetPrimaryVertexTracks() );
   AliKFVertex &primVtx = fPrimaryVtx;
   if( primVtx.GetNContributors()<3 ) return;
-
   for( Int_t iTr = 0; iTr<nTracks; iTr++ ){ 
     AliESDTrackInfo &info = fTrackInfos[iTr];
     info.fPrimDeviation = info.fParticle.GetDeviationFromVertex( primVtx );
@@ -153,8 +151,7 @@ void AliHLTVertexer::FindV0s(  )
       AliKFParticle V0( info.fParticle, jnfo.fParticle );     
 
       //* check V0 Chi^2
-
-      if( V0.GetNDF()<1 ) continue;
+      
       if( V0.GetChi2()<0 || V0.GetChi2() > 9.*V0.GetNDF() ) continue;
 
       //* subtruct daughters from primary vertex 

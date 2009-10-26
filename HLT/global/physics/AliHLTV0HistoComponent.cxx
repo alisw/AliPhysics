@@ -199,9 +199,9 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
       double ap = (l1-l2)/(l1+l2);
 
       // AP plot
-      if( dev1>3.5 && dev2>3.5 ){
+      //if( dev1>3.5 && dev2>3.5 ){
 	if( fAP ) fAP->Fill( ap, pt );
-      }
+	//}
 
       // kShort finder 
             
@@ -212,7 +212,7 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
       if( r>=2. && fabs( ap )>= 0.4 ){                    
 	fNLambdas++;
 	AliKFParticle kP, kpi;
-	if( ap<0 ){ 
+       if( ap<0 ){ 
 	  kP = AliKFParticle( *t1->GetInnerParam(), 2212 );
 	  kpi = AliKFParticle( *t2->GetInnerParam(), 211 );
 	} else {
