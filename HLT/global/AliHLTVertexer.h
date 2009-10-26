@@ -20,9 +20,10 @@ public:
   class AliESDTrackInfo
     {
     public:
-      AliESDTrackInfo(): fParticle(),fPrimUsedFlag(0),fOK(0){}
+      AliESDTrackInfo(): fParticle(),fPrimDeviation(0),fPrimUsedFlag(0),fOK(0){}
       
       AliKFParticle fParticle; //* assigned KFParticle
+      Double_t fPrimDeviation; //* deviation from the primary vertex
       Bool_t fPrimUsedFlag;    //* flag shows that the particle was used for primary vertex fit
       Bool_t fOK;              //* is the track good enough
     };

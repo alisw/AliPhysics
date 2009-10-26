@@ -47,7 +47,7 @@ void AliHLTVertexer::SetESD( AliESDEvent *event )
   delete[] fTrackInfos;
   fESD = event;
 
-  AliKFParticle::SetField( -fESD->GetMagneticField() );
+  AliKFParticle::SetField( fESD->GetMagneticField() );
 
   Int_t nESDTracks=event->GetNumberOfTracks(); 
   fTrackInfos = new AliESDTrackInfo[ nESDTracks ];
@@ -90,6 +90,7 @@ void AliHLTVertexer::FindPrimaryVertex(  )
   Int_t nSelected = 0;
   for( Int_t i = 0; i<nTracks; i++){ 
     if(!fTrackInfos[i].fOK ) continue;
+    if( fESD->GetTrack(i)->GetTPCNcls()<60  ) continue;
     const AliKFParticle &p = fTrackInfos[i].fParticle;
     Double_t chi = p.GetDeviationFromVertex( fPrimaryVtx );      
     if( chi > 3.5 ) continue;
@@ -124,21 +125,29 @@ void AliHLTVertexer::FindV0s(  )
   int nTracks = fESD->GetNumberOfTracks();
   //AliKFVertex primVtx( *fESD->GetPrimaryVertexTracks() );
   AliKFVertex &primVtx = fPrimaryVtx;
+  if( primVtx.GetNContributors()<3 ) return;
+
+  for( Int_t iTr = 0; iTr<nTracks; iTr++ ){ 
+    AliESDTrackInfo &info = fTrackInfos[iTr];
+    info.fPrimDeviation = info.fParticle.GetDeviationFromVertex( primVtx );
+  }
 
   for( Int_t iTr = 0; iTr<nTracks; iTr++ ){ //* first daughter
 
+    if( fESD->GetTrack(iTr)->GetTPCNcls()<60  ) continue;
     AliESDTrackInfo &info = fTrackInfos[iTr];
     if( !info.fOK ) continue;    
-    //if( info.fPrimUsedFlag ) continue;
+    if( info.fParticle.GetQ() >0 ) continue;    
+    if( info.fPrimDeviation <2.5 ) continue;
 
-    for( Int_t jTr = iTr+1; jTr<nTracks; jTr++ ){  //* second daughter
+    for( Int_t jTr = 0; jTr<nTracks; jTr++ ){  //* second daughter
+
+      if( fESD->GetTrack(jTr)->GetTPCNcls()<60  ) continue;
       AliESDTrackInfo &jnfo = fTrackInfos[jTr];
       if( !jnfo.fOK ) continue;
-      
-      //* check for different charge
-
-      if( info.fParticle.GetQ() == jnfo.fParticle.GetQ() ) continue;      
-
+      if( jnfo.fParticle.GetQ() < 0 ) continue;
+      if( jnfo.fPrimDeviation <2.5 ) continue;
+   
       //* construct V0 mother
 
       AliKFParticle V0( info.fParticle, jnfo.fParticle );     
@@ -146,14 +155,12 @@ void AliHLTVertexer::FindV0s(  )
       //* check V0 Chi^2
 
       if( V0.GetNDF()<1 ) continue;
-      if( TMath::Sqrt(TMath::Abs(V0.GetChi2()/V0.GetNDF())) >3. ) continue;
+      if( V0.GetChi2()<0 || V0.GetChi2() > 9.*V0.GetNDF() ) continue;
 
       //* subtruct daughters from primary vertex 
 
       AliKFVertex primVtxCopy = primVtx;    
        
-      if( info.fPrimUsedFlag && jnfo.fPrimUsedFlag ) continue;
-
       if( info.fPrimUsedFlag ){	
 	if( primVtxCopy.GetNContributors()<=2 ) continue;
 	primVtxCopy -= info.fParticle;
@@ -176,16 +183,24 @@ void AliHLTVertexer::FindV0s(  )
 
       //* Check chi^2 for a case
 
-      if( TMath::Sqrt( TMath::Abs(V0.GetChi2()/V0.GetNDF()) >3. )) continue;
+      if( V0.GetChi2()<0 || V0.GetChi2()> 9.*V0.GetNDF() ) continue;
 
-      //* Get V0 decay length with estimated error
+      // Abschtand in [cm]
+
+      double dx = V0.GetX()-primVtxCopy.GetX();
+      double dy = V0.GetY()-primVtxCopy.GetY();
+      double r = sqrt(dx*dx + dy*dy);
+      //if( r>30 ) continue;
+      if( r<.2 ) continue;
+
+     //* Get V0 decay length with estimated error
 
       Double_t length, sigmaLength;
       if( V0.GetDecayLength( length, sigmaLength ) ) continue;
 
-      //* Reject V0 if it decays too close to the primary vertex
+      //* Reject V0 if it decays too close[sigma] to the primary vertex
 
-      if( length  <3.*sigmaLength ) continue;
+      if( length  <3.5*sigmaLength ) continue;
 
       //* Get V0 invariant mass 
 
