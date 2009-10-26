@@ -184,6 +184,16 @@ void AliAlignmentDataFilterITS::CreateOutputObjects()
 {
   // Create the output container
   //
+  
+  // load the geometry  
+  if(!gGeoManager) {    
+    printf("AliAlignmentDataFilterITS::CreateOutputObjects(): loading geometry from %s\n",fGeometryFileName.Data());
+    AliGeomManager::LoadGeometry(fGeometryFileName.Data());
+    if(!gGeoManager) { 
+      printf("AliAlignmentDataFilterITS::CreateOutputObjects(): no geometry loaded \n");
+      return;
+    }
+  }
 
   // Several histograms are more conveniently managed in a TList
   fListOfHistos = new TList();
@@ -253,14 +263,10 @@ void AliAlignmentDataFilterITS::Exec(Option_t */*option*/)
   // Execute analysis for current event:
   // write ITS AliTrackPoints for selected tracks to fspTree
   
-  // load the geometry  
-  if(!gGeoManager) {    
-    printf("AliAlignmentDataFilterITS::Exec(): loading geometry from %s\n",fGeometryFileName.Data());
-    AliGeomManager::LoadGeometry(fGeometryFileName.Data());
-    if(!gGeoManager) { 
-      printf("AliAlignmentDataFilterITS::Exec(): no geometry loaded \n");
-      return;
-    }
+  // check the geometry  
+  if(!gGeoManager) { 
+    printf("AliAlignmentDataFilterITS::Exec(): no geometry loaded \n");
+    return;
   }
 
   // check if we have AliITSRecoParam
