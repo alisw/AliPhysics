@@ -20,9 +20,6 @@
 #include "AliHLTEMCALConstants.h"
 #include "assert.h"
 
-
-
-
 using namespace EmcalHLTConst;
 
 //AliHLTCaloMapper
