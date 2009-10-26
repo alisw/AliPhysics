@@ -28,6 +28,13 @@
 
 #endif
 
+//Change the bool depending on what information you want to print
+// when all FALSE, prints minimum cluster information.
+Bool_t kPrintKine = kTRUE; //Do not use for raw data.
+Bool_t kPrintCaloCells = kFALSE;
+Bool_t kPrintTrackMatches = kFALSE;
+Bool_t kPrintClusterCells = kFALSE;
+
 void TestESD() {
 
   TFile* f = new TFile("AliESDs.root");
@@ -40,15 +47,36 @@ void TestESD() {
   Float_t pos[3] = {0.,0.,0.};
 
   for(Int_t iev = 0; iev < nEvt; iev++) {
-    cout << "Event: " << iev+1 << "/" << nEvt << endl;
+    cout << "<<<< Event: " << iev+1 << "/" << nEvt << " >>>>"<<endl;
     esdTree->GetEvent(iev);
-
+	  
+	//In case you want to play with MC data
+	AliStack *stack = 0;
+	if(kPrintKine){  
+		AliRunLoader *rl = AliRunLoader::Open("galice.root",AliConfig::GetDefaultEventFolderName(),  "read");
+		rl->LoadKinematics();  
+		rl->GetEvent(iev);
+		stack = rl->Stack();
+	}  
+  	  
+	//get reconstructed vertex position
+	Double_t vertex_position[3];
+	esd->GetVertex()->GetXYZ(vertex_position);
+	  
+	//GetCellsClusters Array  
+    AliESDCaloCells &cells= *(esd->GetEMCALCells());
+	  // Uncomment to see the full list of digit amplitudes and times.
+	if(kPrintCaloCells){  
+		Int_t nTotalCells = cells.GetNumberOfCells() ;  
+		Int_t type        = cells.GetType();
+		for (Int_t icell=  0; icell <  nTotalCells; icell++) {
+			cout<<"Cell   : "<<icell<<"/"<<nTotalCells<<" ID: "<<cells.GetCellNumber(icell)<<" Amplitude: "<<cells.GetAmplitude(icell)<<" Time: "<<cells.GetTime(icell)<<endl;	  
+		}// cell loop
+	}
+	  
+	//GetCaloClusters Array
     TRefArray* caloClusters = new TRefArray();
     esd->GetEMCALClusters(caloClusters);
-
-    //get reconstructed vertex position
-    Double_t vertex_position[3];
-    esd->GetVertex()->GetXYZ(vertex_position);
 
     //loop over clusters
     Int_t nclus = caloClusters->GetEntries();
@@ -77,28 +105,55 @@ void TestESD() {
 	   << " Index: " << trackIndex << " #Labels: " << nLabels << " Index: " 
 	   << labelIndex << endl;
 
-      if(trackIndex >= 0) {
-	AliESDtrack* track = esd->GetTrack(trackIndex);
-	Double_t tphi = track->GetOuterParam()->Phi();
-	Double_t teta = track->GetOuterParam()->Eta();
-	Double_t tmom = track->GetOuterParam()->P();
-	cout << "\t Track Momentum: " << tmom << " phi: " << tphi << " eta: " << teta << endl;
+	if(kPrintTrackMatches && trackIndex >= 0) {
+		AliESDtrack* track = esd->GetTrack(trackIndex);
+		Double_t tphi = track->GetOuterParam()->Phi();
+		Double_t teta = track->GetOuterParam()->Eta();
+		Double_t tmom = track->GetOuterParam()->P();
+		cout << "\t Track Momentum: " << tmom << " phi: " << tphi << " eta: " << teta << endl;
 
-	Double_t deta = teta - ceta;
-	Double_t dphi = tphi - cphi;
-	if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
-	if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
-	Double_t dR = sqrt(dphi*dphi + deta*deta);
+		Double_t deta = teta - ceta;
+		Double_t dphi = tphi - cphi;
+		if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
+		if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
+		Double_t dR = sqrt(dphi*dphi + deta*deta);
 
-	Double_t pOverE = tmom/energy;
+		Double_t pOverE = tmom/energy;
 
-	if(dR < 0.02 && pOverE < 1.8 && nCells > 1) {
-	  cout << "\n\t Excellent MATCH! dR = " << dR << " p/E = " << pOverE << " nCells = " << nCells << endl;
+		if(dR < 0.02 && pOverE < 1.8 && nCells > 1) {
+			cout << "\n\t Excellent MATCH! dR = " << dR << " p/E = " << pOverE << " nCells = " << nCells << endl;
+		}
+
 	}
-
-      }
-
-    }
+		
+	//Get CaloCells of cluster and print
+	if(kPrintClusterCells){	
+		UShort_t * index = clus->GetCellsAbsId() ;
+		Double_t * fraction = clus->GetCellsAmplitudeFraction() ;
+		for(Int_t i = 0; i < nCells ; i++){
+			Int_t absId =   index[i]; // or clus->GetCellNumber(i) ;
+			Double_t ampFract =  fraction[i];
+			Float_t amp       = cells.GetCellAmplitude(absId) ;
+			Float_t time      = cells.GetCellTime(absId);
+			cout<<"         Cluster Cell: AbsID : "<< absId << "; Amplitude "<< amp << "; Fraction "<<ampFract<<"; Time " <<time<<endl;
+		}
+	}
+		
+	//Print primary info
+	if(!stack || !kPrintKine) continue;
+	if(labelIndex >= 0 && labelIndex < stack->GetNtrack()){
+		TParticle * particle = stack->Particle(labelIndex);
+		//Print primary values
+		cout<<"         More  contributing primary: "<<particle->GetName()<< "; Energy "<<particle->Energy()<<endl;   
+		for(Int_t i = 1; i < nLabels; i++){
+			particle = stack->Particle(clus->(GetLabels()->At(i)));
+			cout<<"         Other contributing primary: "<<particle->GetName()<< "; Energy "<<particle->Energy()<<endl;
+		}
+	}
+	else if( labelIndex >= stack->GetNtrack()) cout <<"PROBLEM, label is too large : "<<labelIndex<<" >= particles in stack "<< stack->GetNtrack() <<endl;
+	else cout<<"Negative label!!!  : "<<labelIndex<<endl;
+		
+	}
 
 
   }
