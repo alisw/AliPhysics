@@ -29,6 +29,7 @@ public:
   static Bool_t Contain(const char * str1, const char * str2);
   typedef void (*StampCallback_t)(const Char_t * desription);
   static  void AddCallBack(StampCallback_t callback);
+  static  TTree* Test();
 private:
   AliSysInfo(const AliSysInfo& source);
   AliSysInfo& operator= (const AliSysInfo& rec);
