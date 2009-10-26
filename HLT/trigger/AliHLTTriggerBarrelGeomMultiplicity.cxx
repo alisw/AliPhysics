@@ -21,6 +21,7 @@
 /// @brief  HLT trigger component for charged particle multiplicity 
 ///         within a geometrical acceptance in the central barrel.
 
+
 // see header file for class documentation
 // or
 // refer to README to build package
