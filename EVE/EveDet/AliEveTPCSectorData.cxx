@@ -512,5 +512,5 @@ AliEveTPCSectorData::SegmentInfo::SegmentInfo() :
 {
   // Constructor.
 
-  memset(fYStep, sizeof(fYStep), 0);
+  memset(fYStep, 0, sizeof(fYStep));
 }
