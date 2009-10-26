@@ -54,6 +54,10 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   void SetMostProbableProton();
   void SetNoMostProbable(); 
 
+  void SetMomRangeTOFpidIs(const float& minp, const float& maxp);
+  void SetMomRangeTPCpidIs(const float& minp, const float& maxp);
+  void SetMomRangeITSpidIs(const float& minp, const float& maxp);
+
  private:   // here are the quantities I want to cut on...
 
   int               fCharge;             // particle charge
@@ -80,6 +84,13 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
 
   float             fMaxImpactXY;        // Max XY impact parameter
   float             fMaxImpactZ;         // Max Z impact parameter
+
+  float             fMinPforTOFpid;  // momentum from which TOF PID is requested
+  float             fMaxPforTOFpid;  // momentum till which TOF PID is requested
+  float             fMinPforTPCpid;  // momentum from which TPC PID is requested
+  float             fMaxPforTPCpid;  // momentum till which TPC PID is requested
+  float             fMinPforITSpid;  // momentum from which ITS PID is requested
+  float             fMaxPforITSpid;  // momentum till which ITS PID is requested
 
   float PidFractionElectron(float mom) const;
   float PidFractionPion(float mom) const;
