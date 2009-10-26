@@ -616,7 +616,7 @@ void AliFastGlauber::DrawIntRadius(Double_t b) const
   fgWIntRadius->Draw("same");
 }
 
-Double_t AliFastGlauber::WSb(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WSb(const Double_t* x, const Double_t* par)
 {
   //
   //  Woods-Saxon Parameterisation
@@ -631,7 +631,7 @@ Double_t AliFastGlauber::WSb(Double_t* x, Double_t* par)
   return y; //fm^-3
 }
 
-Double_t AliFastGlauber::WSbz(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WSbz(const Double_t* x, const Double_t* par)
 {
   //
   //  Wood Saxon Parameterisation
@@ -648,7 +648,7 @@ Double_t AliFastGlauber::WSbz(Double_t* x, Double_t* par)
   return y; //fm^-3
 }
 
-Double_t AliFastGlauber::WSz(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WSz(const Double_t* x, const Double_t* par)
 {
   //
   //  Wood Saxon Parameterisation
@@ -665,7 +665,7 @@ Double_t AliFastGlauber::WSz(Double_t* x, Double_t* par)
   return y; //fm^-3
 }
 
-Double_t AliFastGlauber::WSta(Double_t* x, Double_t* /*par*/)
+Double_t AliFastGlauber::WSta(const Double_t* x, const Double_t* /*par*/)
 {
   //
   //  Thickness function T_A
@@ -677,7 +677,7 @@ Double_t AliFastGlauber::WSta(Double_t* x, Double_t* /*par*/)
   return y; //fm^-2
 }
 
-Double_t AliFastGlauber::WStarfi(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WStarfi(const Double_t* x, const Double_t* par)
 {
   //
   //  Kernel for overlap function: T_A(s)*T_A(s-b)
@@ -690,7 +690,7 @@ Double_t AliFastGlauber::WStarfi(Double_t* x, Double_t* par)
   return y; //fm^-3
 }
 
-Double_t AliFastGlauber::WStaa(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WStaa(const Double_t* x, const Double_t* par)
 {
   //
   //  Overlap function 
@@ -734,7 +734,7 @@ Double_t AliFastGlauber::WStaa(Double_t* x, Double_t* par)
   return y;
 }
 
-Double_t AliFastGlauber::WKParticipants(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WKParticipants(const Double_t* x, const Double_t* par)
 {
   //
   //  Kernel for number of participants
@@ -763,7 +763,7 @@ Double_t AliFastGlauber::WKParticipants(Double_t* x, Double_t* par)
   return y; //fm^-1
 }
 
-Double_t AliFastGlauber::WParticipants(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WParticipants(const Double_t* x, const Double_t* par)
 {
   //
   //  Number of Participants as 
@@ -790,7 +790,7 @@ Double_t AliFastGlauber::WParticipants(Double_t* x, Double_t* par)
   return y; //no units
 }
 
-Double_t AliFastGlauber::WSgeo(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WSgeo(const Double_t* x, const Double_t* par)
 {
   //
   //  Geometrical Cross-Section
@@ -803,7 +803,7 @@ Double_t AliFastGlauber::WSgeo(Double_t* x, Double_t* par)
   return y; //fm
 }
 
-Double_t AliFastGlauber::WSbinary(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WSbinary(const Double_t* x, const Double_t* par)
 {
   //
   //  Number of binary hard collisions
@@ -816,7 +816,7 @@ Double_t AliFastGlauber::WSbinary(Double_t* x, Double_t* par)
   return y; //fm
 }
 
-Double_t AliFastGlauber::WSN(Double_t* x, Double_t* /*par*/)
+Double_t AliFastGlauber::WSN(const Double_t* x, const Double_t* /*par*/)
 {
   //
   //  Number of hard processes per event
@@ -826,7 +826,7 @@ Double_t AliFastGlauber::WSN(Double_t* x, Double_t* /*par*/)
   return y; //no units
 }
 
-Double_t AliFastGlauber::WEnergyDensity(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WEnergyDensity(const Double_t* x, const Double_t* par)
 {
   //
   //  Initial energy density 
@@ -845,7 +845,7 @@ Double_t AliFastGlauber::WEnergyDensity(Double_t* x, Double_t* par)
   return y; //fm^-4
 }
 
-Double_t AliFastGlauber::WAlmond(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WAlmond(const Double_t* x, const Double_t* par)
 {
   //
   //  Almond shaped interaction region
@@ -864,7 +864,7 @@ Double_t AliFastGlauber::WAlmond(Double_t* x, Double_t* par)
   return y; //fm^-4
 }
 
-Double_t AliFastGlauber::WIntRadius(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WIntRadius(const Double_t* x, const Double_t* par)
 {
   //
   //  Average interaction density over radius 
@@ -889,7 +889,7 @@ Double_t AliFastGlauber::WIntRadius(Double_t* x, Double_t* par)
   return y; //fm^-3
 }
 
-Double_t AliFastGlauber::WPathLength0(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WPathLength0(const Double_t* x, const Double_t* par)
 {
   //
   //  Path Length as a function of phi 
@@ -935,7 +935,7 @@ Double_t AliFastGlauber::WPathLength0(Double_t* x, Double_t* par)
   return y; //fm
 }
 
-Double_t AliFastGlauber::WPathLength(Double_t* x, Double_t* par)
+Double_t AliFastGlauber::WPathLength(const Double_t* x, const Double_t* par)
 {
   //
   //  Path Length as a function of phi 
@@ -1019,7 +1019,7 @@ Double_t AliFastGlauber::FractionOfHardCrossSection(Double_t b1, Double_t b2) co
   return fgWSbinary->Integral(b1, b2)/fgWSbinary->Integral(0., 100.);
 }
 
-Double_t AliFastGlauber::NHard(Double_t b1, Double_t b2) const
+Double_t AliFastGlauber::NHard(const Double_t b1, const Double_t b2) const
 {
   //
   //  Number of binary hard collisions 

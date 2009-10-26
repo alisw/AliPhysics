@@ -164,22 +164,22 @@ class AliFastGlauber : public TObject {
     AliFastGlauber& operator=(const AliFastGlauber & rhs);
     void Copy(TObject&) const;
  protected:
-    static Double_t WSb            (Double_t *xx, Double_t *par);
-    static Double_t WSbz           (Double_t *xx, Double_t *par);
-    static Double_t WSz            (Double_t *xx, Double_t *par);
-    static Double_t WSta           (Double_t *xx, Double_t *par);
-    static Double_t WStarfi        (Double_t *xx, Double_t *par);
-    static Double_t WStaa          (Double_t *xx, Double_t *par);
-    static Double_t WKParticipants (Double_t *xx, Double_t *par);
-    static Double_t WParticipants  (Double_t *xx, Double_t *par);    
-    static Double_t WSgeo          (Double_t *xx, Double_t *par);
-    static Double_t WSbinary       (Double_t *xx, Double_t *par);
-    static Double_t WSN            (Double_t *xx, Double_t *par);
-    static Double_t WAlmond        (Double_t *xx, Double_t *par);
-    static Double_t WPathLength0   (Double_t *xx, Double_t *par);
-    static Double_t WPathLength    (Double_t *xx, Double_t *par);
-    static Double_t WIntRadius     (Double_t *xx, Double_t *par);
-    static Double_t WEnergyDensity (Double_t *xx, Double_t *par);
+    static Double_t WSb            (const Double_t *xx, const Double_t *par);
+    static Double_t WSbz           (const Double_t *xx, const Double_t *par);
+    static Double_t WSz            (const Double_t *xx, const Double_t *par);
+    static Double_t WSta           (const Double_t *xx, const Double_t *par);
+    static Double_t WStarfi        (const Double_t *xx, const Double_t *par);
+    static Double_t WStaa          (const Double_t *xx, const Double_t *par);
+    static Double_t WKParticipants (const Double_t *xx, const Double_t *par);
+    static Double_t WParticipants  (const Double_t *xx, const Double_t *par);    
+    static Double_t WSgeo          (const Double_t *xx, const Double_t *par);
+    static Double_t WSbinary       (const Double_t *xx, const Double_t *par);
+    static Double_t WSN            (const Double_t *xx, const Double_t *par);
+    static Double_t WAlmond        (const Double_t *xx, const Double_t *par);
+    static Double_t WPathLength0   (const Double_t *xx, const Double_t *par);
+    static Double_t WPathLength    (const Double_t *xx, const Double_t *par);
+    static Double_t WIntRadius     (const Double_t *xx, const Double_t *par);
+    static Double_t WEnergyDensity (const Double_t *xx, const Double_t *par);
 
     void Reset() const;
  private:
