@@ -294,6 +294,9 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
     dig[3]=d->GetPadz();
     dig[4]=d->GetPadx();
 
+    /* check valid index */
+    if (dig[0]==-1||dig[1]==-1||dig[2]==-1||dig[3]==-1||dig[4]==-1) continue;
+
     // Do not reconstruct anything in the holes
     if (dig[0]==13 || dig[0]==14 || dig[0]==15 ) { // sectors with holes
       if (dig[1]==2) { // plate with holes
@@ -387,6 +390,9 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
     dig[2]=d->GetStrip();
     dig[3]=d->GetPadz();
     dig[4]=d->GetPadx();
+
+    /* check valid index */
+    if (dig[0]==-1||dig[1]==-1||dig[2]==-1||dig[3]==-1||dig[4]==-1) continue;
 
     // Do not reconstruct anything in the holes
     if (dig[0]==13 || dig[0]==14 || dig[0]==15 ) { // sectors with holes
@@ -507,6 +513,9 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	if (detectorIndex[4]<10) ftxt << "  " << detectorIndex[4];
 	else              ftxt << " " << detectorIndex[4];
       }
+
+    /* check valid index */
+    if (detectorIndex[0]==-1||detectorIndex[1]==-1||detectorIndex[2]==-1||detectorIndex[3]==-1||detectorIndex[4]==-1) continue;
 
       // Do not reconstruct anything in the holes
       if (detectorIndex[0]==13 || detectorIndex[0]==14 || detectorIndex[0]==15 ) { // sectors with holes
@@ -650,6 +659,9 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 	if (detectorIndex[4]<10) ftxt << "  " << detectorIndex[4];
 	else              ftxt << " " << detectorIndex[4];
       }
+
+    /* check valid index */
+    if (detectorIndex[0]==-1||detectorIndex[1]==-1||detectorIndex[2]==-1||detectorIndex[3]==-1||detectorIndex[4]==-1) continue;
 
       // Do not reconstruct anything in the holes
       if (detectorIndex[0]==13 || detectorIndex[0]==14 || detectorIndex[0]==15 ) { // sectors with holes

@@ -425,6 +425,9 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
       detectorIndex[3] = detectorIndex[4];//padx
       detectorIndex[4] = dummy;//padz
 
+    /* check valid index */
+    if (detectorIndex[0]==-1||detectorIndex[1]==-1||detectorIndex[2]==-1||detectorIndex[3]==-1||detectorIndex[4]==-1) continue;
+
       // Do not reconstruct anything in the holes
       if (detectorIndex[0]==13 || detectorIndex[0]==14 || detectorIndex[0]==15 ) { // sectors with holes
 	if (detectorIndex[1]==2) { // plate with holes
