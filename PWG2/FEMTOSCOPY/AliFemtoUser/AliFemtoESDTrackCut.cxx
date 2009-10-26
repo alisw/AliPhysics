@@ -97,7 +97,13 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
     fRemoveKinks(kFALSE),
     fMostProbable(0), 
     fMaxImpactXY(1000.0),
-    fMaxImpactZ(1000.0)
+    fMaxImpactZ(1000.0),
+    fMinPforTOFpid(0.0),
+    fMaxPforTOFpid(10000.0),
+    fMinPforTPCpid(0.0),
+    fMaxPforTPCpid(10000.0),
+    fMinPforITSpid(0.0),
+    fMaxPforITSpid(10000.0)
 {
   // Default constructor
   fNTracksPassed = fNTracksFailed = 0;
@@ -201,6 +207,32 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	  return false;
 	}
     }
+  Bool_t tTPCPidIn = (track->Flags()&AliFemtoTrack::kTPCpid)>0;
+  Bool_t tITSPidIn = (track->Flags()&AliFemtoTrack::kITSpid)>0;
+  Bool_t tTOFPidIn = (track->Flags()&AliFemtoTrack::kTOFpid)>0;
+  
+  if(fMinPforTOFpid > 0 && track->P().mag() > fMinPforTOFpid &&
+     track->P().mag() < fMaxPforTOFpid && !tTOFPidIn)
+    {
+      fNTracksFailed++;
+      return false;
+    }
+  
+  if(fMinPforTPCpid > 0 && track->P().mag() > fMinPforTPCpid &&
+     track->P().mag() < fMaxPforTPCpid && !tTPCPidIn)
+    {
+      fNTracksFailed++;
+      return false;
+    }
+  
+  if(fMinPforITSpid > 0 && track->P().mag() > fMinPforITSpid &&
+     track->P().mag() < fMaxPforITSpid && !tITSPidIn)
+    {
+      fNTracksFailed++;
+      return false;
+    }
+  
+
   float tEnergy = ::sqrt(track->P().mag2()+fMass*fMass);
   float tRapidity = 0.5*::log((tEnergy+track->P().z())/(tEnergy-track->P().z()));
   float tPt = ::sqrt((track->P().x())*(track->P().x())+(track->P().y())*(track->P().y()));
@@ -451,3 +483,22 @@ float AliFemtoESDTrackCut::PidFractionProton(float mom) const
 	  +8.354116e-02*mom*mom       
 	  -4.608098e-02*mom*mom*mom);  
 }
+
+void AliFemtoESDTrackCut::SetMomRangeTOFpidIs(const float& minp, const float& maxp)
+{
+  fMinPforTOFpid = minp;
+  fMaxPforTOFpid = maxp;
+}
+
+void AliFemtoESDTrackCut::SetMomRangeTPCpidIs(const float& minp, const float& maxp)
+{
+  fMinPforTPCpid = minp;
+  fMaxPforTPCpid = maxp;
+}
+
+void AliFemtoESDTrackCut::SetMomRangeITSpidIs(const float& minp, const float& maxp)
+{
+  fMinPforITSpid = minp;
+  fMaxPforITSpid = maxp;
+}
+
