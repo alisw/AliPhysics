@@ -73,8 +73,8 @@ AliHLTTriggerBarrelGeomMultiplicity::~AliHLTTriggerBarrelGeomMultiplicity()
 const char* AliHLTTriggerBarrelGeomMultiplicity::GetTriggerName() const 
 {
   // see header file for class documentation
-  const char* name = fTriggerName;
-  if(name) return name;
+  //  const char* name = fTriggerName;
+  //  if(name) return name;
   return "BarrelGeomMultiplicityTrigger";
 }
 
@@ -392,7 +392,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::ScanConfigurationArgument(int argc, con
       return 2;
     }    
 
-  if (argument.CompareTo("-triggername")==0) 
+  if (argument.CompareTo("-trgname")==0) 
     {
       if (++i>=argc) return -EPROTO;
       
