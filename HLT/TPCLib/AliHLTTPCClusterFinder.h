@@ -18,6 +18,7 @@
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCDigitReader.h"
+#include "AliTPCRecoParam.h"
 
 class AliHLTTPCPad;
 class AliHLTTPCSpacePointData;
@@ -285,12 +286,14 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   AliTPCTransform * fOfflineTransform;                             //! transient
 
+  AliTPCRecoParam fOfflineTPCRecoParam;                            //! transient
+
   Float_t fTimeMeanDiff;                                           //! transient
 
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
 #endif
   
-  ClassDef(AliHLTTPCClusterFinder,9) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder,10) //Fast cluster finder
 };
 #endif

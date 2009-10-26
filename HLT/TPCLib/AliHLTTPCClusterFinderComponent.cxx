@@ -192,6 +192,10 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   //Test if the OCDB entries used by AliTPCTransform is availible
   AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();  
   //
+  if(!calib){
+    HLTError("AliTPCcalibCD does not exist");
+    return -ENOENT;
+  }
   AliTPCCalPad * time0TPC = calib->GetPadTime0(); 
   if(!time0TPC){
     HLTError("OCDB entry TPC/Calib/PadTime0 (AliTPCcalibDB::GetPadTime0()) is not available.");
@@ -203,7 +207,6 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     HLTError("OCDB entry TPC/Calib/Parameters (AliTPCcalibDB::GetParameters()) is not available.");
     return -ENOENT;
   }
-
 
   fClusterFinder = new AliHLTTPCClusterFinder();
 
@@ -228,6 +231,11 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
   // return iResult;
+
+  if(iResult>=0){
+    //initialize the magnetic field from CDB
+    iResult = ConfigureFromCDBTObjString(kAliHLTCDBSolenoidBz);
+  }
 
   /*
   Int_t iResult=0;
@@ -517,6 +525,19 @@ int AliHLTTPCClusterFinderComponent::ScanConfigurationArgument(int argc, const c
   if (argc<=0) return 0;
   int i=0;
   TString argument=argv[i];
+
+  if (argument.CompareTo("-solenoidBz")==0){
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
+    if(!calib){
+      HLTError("CalibDB not availible");
+    }
+    Float_t magneticField = argument.Atof();
+    calib->SetExBField(magneticField);
+    HLTInfo("SolenoidBz is set to %f in the calibDB",magneticField);
+    return 2;
+  }
 
   if (argument.CompareTo("-update-calibdb")==0 || argument.CompareTo("-update-transform")==0 ){
     if(fClusterFinder->UpdateCalibDB()){

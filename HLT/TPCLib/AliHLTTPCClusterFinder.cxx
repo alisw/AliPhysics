@@ -86,12 +86,18 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fDoMC(kFALSE),
   fClusterMCVector(),
   fOfflineTransform(NULL),
+  fOfflineTPCRecoParam(),
   fTimeMeanDiff(2)
 {
   //constructor  
   fOfflineTransform = AliTPCcalibDB::Instance()->GetTransform(); 
   if(!fOfflineTransform){
     HLTError("AliHLTTPCClusterFinder():  Offline transform not in AliTPCcalibDB.");
+  }
+  else{
+    fOfflineTPCRecoParam.SetUseExBCorrection(1);
+    fOfflineTPCRecoParam.SetUseTOFCorrection(1);
+    fOfflineTransform->SetCurrentRecoParam(&fOfflineTPCRecoParam);
   }
 }
 
