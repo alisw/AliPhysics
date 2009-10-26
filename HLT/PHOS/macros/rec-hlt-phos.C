@@ -27,7 +27,7 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
   // define the analysis chain to be run
   //
    
-  int moduleStart = 2;
+  int moduleStart = 0;
   int moduleEnd = 4;
   int rcuStart = 0;
   int rcuEnd = 3;
