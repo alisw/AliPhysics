@@ -870,15 +870,23 @@ void AliCDBGrid::QueryValidFiles()
 		return;
 	}
 
-	AliCDBId validFileId;
-	for(int i=0; i<res->GetEntries(); i++){
-		TString filename = res->GetKey(i, "lfn");
-		if(filename == "") continue;
-		AliDebug(2,Form("Found valid file: %s", filename.Data()));
-		Bool_t result = FilenameToId(filename, validFileId);
-		if(result) {
-			fValidFileIds.AddLast(validFileId.Clone());
-		}
+	TIter next(res);
+	TMap *map;
+	while ((map = (TMap*)next())) {
+	  TObjString *entry;
+	  if ((entry = (TObjString *) ((TMap *)map)->GetValue("lfn"))) {
+	    TString& filename = entry->String();
+	    if(filename.IsNull()) continue;
+	    AliDebug(2,Form("Found valid file: %s", filename.Data()));
+	    AliCDBId *validFileId = new AliCDBId;
+	    Bool_t result = FilenameToId(filename, *validFileId);
+	    if(result) {
+	      fValidFileIds.AddLast(validFileId);
+	    }
+	    else {
+	      delete validFileId;
+	    }
+	  }
 	}
 	delete res;
 
