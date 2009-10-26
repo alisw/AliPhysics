@@ -143,7 +143,7 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 
   fNevt++; 
   Double_t containerInput[13] ;
-  Double_t BeamEnergy=7000;
+  Double_t beamEnergy=7000;
  
 ////////
 //// MC
@@ -242,10 +242,10 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 	Float_t imassmc = Imass(e0,px0,py0,pz0,e1,px1,py1,pz1);
 	//Float_t rapmc_check=Rap((e0+e1),(pz0+pz1));
 	
-	Double_t costCS = CostCS((Double_t) px0,(Double_t) py0,(Double_t) pz0,(Double_t) e0, (Double_t)charge0,(Double_t) px1,(Double_t) py1,(Double_t) pz1,(Double_t) e1, BeamEnergy);
+	Double_t costCS = CostCS((Double_t) px0,(Double_t) py0,(Double_t) pz0,(Double_t) e0, (Double_t)charge0,(Double_t) px1,(Double_t) py1,(Double_t) pz1,(Double_t) e1, beamEnergy);
 	Double_t costHE = CostHE((Double_t) px0,(Double_t) py0,(Double_t) pz0,(Double_t) e0, (Double_t)charge0,(Double_t) px1,(Double_t) py1,(Double_t) pz1,(Double_t) e1);
-	Double_t phiCS = PhiCS((Double_t) px0,(Double_t) py0,(Double_t) pz0,(Double_t) e0, (Double_t)charge0,(Double_t) px1,(Double_t) py1,(Double_t) pz1,(Double_t) e1, BeamEnergy);
-	Double_t phiHE = PhiHE((Double_t) px0,(Double_t) py0,(Double_t) pz0,(Double_t) e0, (Double_t)charge0,(Double_t) px1,(Double_t) py1,(Double_t) pz1,(Double_t) e1, BeamEnergy);
+	Double_t phiCS = PhiCS((Double_t) px0,(Double_t) py0,(Double_t) pz0,(Double_t) e0, (Double_t)charge0,(Double_t) px1,(Double_t) py1,(Double_t) pz1,(Double_t) e1, beamEnergy);
+	Double_t phiHE = PhiHE((Double_t) px0,(Double_t) py0,(Double_t) pz0,(Double_t) e0, (Double_t)charge0,(Double_t) px1,(Double_t) py1,(Double_t) pz1,(Double_t) e1, beamEnergy);
 
 	containerInput[0] = fNevt+0.5 ;   
 	containerInput[1] = rapmc0 ;   
@@ -313,10 +313,10 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 		    Float_t raprec=Rap((er1+er2),(pzr1+pzr2));
 		    Float_t imassrec = Imass(er1,pxr1,pyr1,pzr1,er2,pxr2,pyr2,pzr2);
 		    
-		    Double_t costCSrec = CostCS((Double_t) pxr1,(Double_t) pyr1,(Double_t)pzr1,(Double_t) er1, (Double_t)zr1,(Double_t) pxr2,(Double_t) pyr2,(Double_t)pzr2,(Double_t) er2, BeamEnergy);
+		    Double_t costCSrec = CostCS((Double_t) pxr1,(Double_t) pyr1,(Double_t)pzr1,(Double_t) er1, (Double_t)zr1,(Double_t) pxr2,(Double_t) pyr2,(Double_t)pzr2,(Double_t) er2, beamEnergy);
 		    Double_t costHErec = CostHE((Double_t) pxr1,(Double_t) pyr1,(Double_t)pzr1,(Double_t) er1, (Double_t)zr1,(Double_t) pxr2,(Double_t) pyr2,(Double_t)pzr2,(Double_t) er2);
-		    Double_t phiCSrec = PhiCS((Double_t) pxr1,(Double_t) pyr1,(Double_t)pzr1,(Double_t) er1, (Double_t)zr1,(Double_t) pxr2,(Double_t) pyr2,(Double_t)pzr2,(Double_t) er2, BeamEnergy);
-		    Double_t phiHErec = PhiHE((Double_t) pxr1,(Double_t) pyr1,(Double_t)pzr1,(Double_t) er1, (Double_t)zr1,(Double_t) pxr2,(Double_t) pyr2,(Double_t)pzr2,(Double_t) er2, BeamEnergy);
+		    Double_t phiCSrec = PhiCS((Double_t) pxr1,(Double_t) pyr1,(Double_t)pzr1,(Double_t) er1, (Double_t)zr1,(Double_t) pxr2,(Double_t) pyr2,(Double_t)pzr2,(Double_t) er2, beamEnergy);
+		    Double_t phiHErec = PhiHE((Double_t) pxr1,(Double_t) pyr1,(Double_t)pzr1,(Double_t) er1, (Double_t)zr1,(Double_t) pxr2,(Double_t) pyr2,(Double_t)pzr2,(Double_t) er2, beamEnergy);
 
 		    containerInput[0] = fNevt+0.5 ;   
 		    containerInput[1] = rap1 ;   
@@ -347,7 +347,7 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 }
 //________________________________________________________________________
 Float_t AliCFMuonResTask1::Imass(Float_t e1, Float_t px1, Float_t py1, Float_t pz1,
-				   Float_t e2, Float_t px2, Float_t py2, Float_t pz2) 
+				   Float_t e2, Float_t px2, Float_t py2, Float_t pz2) const
 {
 // invariant mass calculation
     Float_t imassrec = TMath::Sqrt((e1+e2)*(e1+e2)-((px1+px2)*(px1+px2)+
@@ -355,11 +355,11 @@ Float_t AliCFMuonResTask1::Imass(Float_t e1, Float_t px1, Float_t py1, Float_t p
     return imassrec;
 }
 //________________________________________________________________________
-Float_t AliCFMuonResTask1::Rap(Float_t e, Float_t pz) 
+Float_t AliCFMuonResTask1::Rap(Float_t e, Float_t pz) const
 {
 // calculate rapidity
     Float_t rap;
-    if(e!=pz){
+    if(TMath::Abs(e-pz)>1e-7){
 	rap = 0.5*TMath::Log((e+pz)/(e-pz));
 	return rap;
     }
@@ -369,7 +369,7 @@ Float_t AliCFMuonResTask1::Rap(Float_t e, Float_t pz)
     }
 }
 //________________________________________________________________________
-Float_t AliCFMuonResTask1::Phideg(Float_t phi) 
+Float_t AliCFMuonResTask1::Phideg(Float_t phi) const
 {
 // calculate Phi in range [-180,180] 
     Float_t phideg;
@@ -383,46 +383,47 @@ Double_t AliCFMuonResTask1::CostCS(Double_t px1, Double_t py1, Double_t pz1, Dou
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2,
 Double_t Energy)
 {
-  TLorentzVector PMu1CM, PMu2CM, PProjCM, PTargCM, PDimuCM; // In the CM. frame
-  TLorentzVector PMu1Dimu, PMu2Dimu, PProjDimu, PTargDimu; // In the dimuon rest frame
+// calculate costCS
+  TLorentzVector pMu1CM, pMu2CM, pProjCM, pTargCM, pDimuCM; // In the CM. frame
+  TLorentzVector pMu1Dimu, pMu2Dimu, pProjDimu, pTargDimu; // In the dimuon rest frame
   TVector3 beta,zaxisCS;
   Double_t mp=0.93827231;
   //
   // --- Fill the Lorentz vector for projectile and target in the CM frame
   //
-  PProjCM.SetPxPyPzE(0.,0.,-Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
-  PTargCM.SetPxPyPzE(0.,0.,Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
+  pProjCM.SetPxPyPzE(0.,0.,-Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
+  pTargCM.SetPxPyPzE(0.,0.,Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
   //
   // --- Get the muons parameters in the CM frame 
   //
-  PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-  PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+  pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+  pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
   //
   // --- Obtain the dimuon parameters in the CM frame
   //
-  PDimuCM=PMu1CM+PMu2CM;
+  pDimuCM=pMu1CM+pMu2CM;
   //
   // --- Translate the dimuon parameters in the dimuon rest frame
   //
-  beta=(-1./PDimuCM.E())*PDimuCM.Vect();
-  PMu1Dimu=PMu1CM;
-  PMu2Dimu=PMu2CM;
-  PProjDimu=PProjCM;
-  PTargDimu=PTargCM;
-  PMu1Dimu.Boost(beta);
-  PMu2Dimu.Boost(beta);
-  PProjDimu.Boost(beta);
-  PTargDimu.Boost(beta);
+  beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+  pMu1Dimu=pMu1CM;
+  pMu2Dimu=pMu2CM;
+  pProjDimu=pProjCM;
+  pTargDimu=pTargCM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
+  pProjDimu.Boost(beta);
+  pTargDimu.Boost(beta);
   //
   // --- Determine the z axis for the CS angle 
   //
-  zaxisCS=(((PProjDimu.Vect()).Unit())-((PTargDimu.Vect()).Unit())).Unit();
+  zaxisCS=(((pProjDimu.Vect()).Unit())-((pTargDimu.Vect()).Unit())).Unit();
   //				     
   // --- Determine the CS angle (angle between mu+ and the z axis defined above)
   Double_t cost;
   
-  if(charge1>0) cost = zaxisCS.Dot((PMu1Dimu.Vect()).Unit());
-  else cost = zaxisCS.Dot((PMu2Dimu.Vect()).Unit());
+  if(charge1>0) cost = zaxisCS.Dot((pMu1Dimu.Vect()).Unit());
+  else cost = zaxisCS.Dot((pMu2Dimu.Vect()).Unit());
   return cost;
 }
 //________________________________________________________________________
@@ -431,36 +432,37 @@ Double_t Energy)
 Double_t AliCFMuonResTask1::CostHE(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 {
-  TLorentzVector PMu1CM, PMu2CM, PDimuCM; // In the CM frame 
-  TLorentzVector PMu1Dimu, PMu2Dimu; // In the dimuon rest frame
+// calculate costHE
+  TLorentzVector pMu1CM, pMu2CM, pDimuCM; // In the CM frame 
+  TLorentzVector pMu1Dimu, pMu2Dimu; // In the dimuon rest frame
   TVector3 beta,zaxisCS;
   //
   // --- Get the muons parameters in the CM frame
   //
-  PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-  PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+  pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+  pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
   //
   // --- Obtain the dimuon parameters in the CM frame
   //
-  PDimuCM=PMu1CM+PMu2CM;
+  pDimuCM=pMu1CM+pMu2CM;
   //
   // --- Translate the muon parameters in the dimuon rest frame
   //
-  beta=(-1./PDimuCM.E())*PDimuCM.Vect();
-  PMu1Dimu=PMu1CM;
-  PMu2Dimu=PMu2CM;
-  PMu1Dimu.Boost(beta);
-  PMu2Dimu.Boost(beta);
+  beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+  pMu1Dimu=pMu1CM;
+  pMu2Dimu=pMu2CM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
   //
   // --- Determine the z axis for the calculation of the polarization angle (i.e. the direction of the dimuon in the CM system)
   //
   TVector3 zaxis;
-  zaxis=(PDimuCM.Vect()).Unit();
+  zaxis=(pDimuCM.Vect()).Unit();
   
   // --- Calculation of the polarization angle (angle between mu+ and the z axis defined above)
   Double_t cost;
-  if(charge1>0) cost = zaxis.Dot((PMu1Dimu.Vect()).Unit()); 
-  else cost = zaxis.Dot((PMu2Dimu.Vect()).Unit()); 
+  if(charge1>0) cost = zaxis.Dot((pMu1Dimu.Vect()).Unit()); 
+  else cost = zaxis.Dot((pMu2Dimu.Vect()).Unit()); 
   
   return cost;
 }
@@ -471,46 +473,47 @@ Double_t AliCFMuonResTask1::PhiCS(Double_t px1, Double_t py1, Double_t pz1, Doub
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2,
 Double_t Energy)
 {
-   TLorentzVector PMu1CM, PMu2CM, PProjCM, PTargCM, PDimuCM; // In the CM frame
-   TLorentzVector PMu1Dimu, PMu2Dimu, PProjDimu, PTargDimu; // In the dimuon rest frame
+// calculate phiCS
+   TLorentzVector pMu1CM, pMu2CM, pProjCM, pTargCM, pDimuCM; // In the CM frame
+   TLorentzVector pMu1Dimu, pMu2Dimu, pProjDimu, pTargDimu; // In the dimuon rest frame
    TVector3 beta,yaxisCS, xaxisCS, zaxisCS;
    Double_t mp=0.93827231;
    //
    // --- Fill the Lorentz vector for projectile and target in the CM frame
    //
-   PProjCM.SetPxPyPzE(0.,0.,-Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
-   PTargCM.SetPxPyPzE(0.,0.,Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
+   pProjCM.SetPxPyPzE(0.,0.,-Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
+   pTargCM.SetPxPyPzE(0.,0.,Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
    //
    // --- Get the muons parameters in the CM frame 
    //
-   PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-   PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+   pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+   pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
    //
    // --- Obtain the dimuon parameters in the CM frame
    //
-   PDimuCM=PMu1CM+PMu2CM;
+   pDimuCM=pMu1CM+pMu2CM;
    //
    // --- Translate the dimuon parameters in the dimuon rest frame
    //
-   beta=(-1./PDimuCM.E())*PDimuCM.Vect();
-   PMu1Dimu=PMu1CM;
-   PMu2Dimu=PMu2CM;
-   PProjDimu=PProjCM;
-   PTargDimu=PTargCM;
-   PMu1Dimu.Boost(beta);
-   PMu2Dimu.Boost(beta);
-   PProjDimu.Boost(beta);
-   PTargDimu.Boost(beta);
+   beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+   pMu1Dimu=pMu1CM;
+   pMu2Dimu=pMu2CM;
+   pProjDimu=pProjCM;
+   pTargDimu=pTargCM;
+   pMu1Dimu.Boost(beta);
+   pMu2Dimu.Boost(beta);
+   pProjDimu.Boost(beta);
+   pTargDimu.Boost(beta);
    //
    // --- Determine the z axis for the CS angle 
    //
-   zaxisCS=(((PProjDimu.Vect()).Unit())-((PTargDimu.Vect()).Unit())).Unit();
-   yaxisCS=(((PProjDimu.Vect()).Unit()).Cross((PTargDimu.Vect()).Unit())).Unit();
+   zaxisCS=(((pProjDimu.Vect()).Unit())-((pTargDimu.Vect()).Unit())).Unit();
+   yaxisCS=(((pProjDimu.Vect()).Unit()).Cross((pTargDimu.Vect()).Unit())).Unit();
    xaxisCS=(yaxisCS.Cross(zaxisCS)).Unit();
  
    Double_t phi;
-   if(charge1>0) phi = TMath::ATan2((PMu1Dimu.Vect()).Dot(yaxisCS),((PMu1Dimu.Vect()).Dot(xaxisCS)));
-   else phi = TMath::ATan2((PMu2Dimu.Vect()).Dot(yaxisCS),((PMu2Dimu.Vect()).Dot(xaxisCS)));
+   if(charge1>0) phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxisCS),((pMu1Dimu.Vect()).Dot(xaxisCS)));
+   else phi = TMath::ATan2((pMu2Dimu.Vect()).Dot(yaxisCS),((pMu2Dimu.Vect()).Dot(xaxisCS)));
      
    return phi;
 }
@@ -520,47 +523,48 @@ Double_t Energy)
 Double_t AliCFMuonResTask1::PhiHE(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2, Double_t Energy)
 {
-   TLorentzVector PMu1CM, PMu2CM, PProjCM, PTargCM, PDimuCM; // In the CM frame 
-   TLorentzVector PMu1Dimu, PMu2Dimu, PProjDimu, PTargDimu; // In the dimuon rest frame
+// calculate phiHE
+   TLorentzVector pMu1CM, pMu2CM, pProjCM, pTargCM, pDimuCM; // In the CM frame 
+   TLorentzVector pMu1Dimu, pMu2Dimu, pProjDimu, pTargDimu; // In the dimuon rest frame
    TVector3 beta,xaxis,yaxis,zaxis;
    Double_t mp=0.93827231;
  
    //
    // --- Get the muons parameters in the CM frame
    //
-   PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-   PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+   pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+   pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
    //
    // --- Obtain the dimuon parameters in the CM frame
    //
-   PDimuCM=PMu1CM+PMu2CM;
+   pDimuCM=pMu1CM+pMu2CM;
    //
    // --- Translate the muon parameters in the dimuon rest frame
    // 
-   zaxis=(PDimuCM.Vect()).Unit();
+   zaxis=(pDimuCM.Vect()).Unit();
  
-   beta=(-1./PDimuCM.E())*PDimuCM.Vect();
+   beta=(-1./pDimuCM.E())*pDimuCM.Vect();
  
-   PProjCM.SetPxPyPzE(0.,0.,-Energy,TMath::Sqrt(Energy*Energy+mp*mp));
-   PTargCM.SetPxPyPzE(0.,0.,Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
+   pProjCM.SetPxPyPzE(0.,0.,-Energy,TMath::Sqrt(Energy*Energy+mp*mp));
+   pTargCM.SetPxPyPzE(0.,0.,Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
  
-   PProjDimu=PProjCM;
-   PTargDimu=PTargCM;
+   pProjDimu=pProjCM;
+   pTargDimu=pTargCM;
  
-   PProjDimu.Boost(beta);
-   PTargDimu.Boost(beta);
+   pProjDimu.Boost(beta);
+   pTargDimu.Boost(beta);
    
-   yaxis=((PProjDimu.Vect()).Cross(PTargDimu.Vect())).Unit();
+   yaxis=((pProjDimu.Vect()).Cross(pTargDimu.Vect())).Unit();
    xaxis=(yaxis.Cross(zaxis)).Unit();
    
-   PMu1Dimu=PMu1CM;
-   PMu2Dimu=PMu2CM;
-   PMu1Dimu.Boost(beta);
-   PMu2Dimu.Boost(beta);
+   pMu1Dimu=pMu1CM;
+   pMu2Dimu=pMu2CM;
+   pMu1Dimu.Boost(beta);
+   pMu2Dimu.Boost(beta);
  
    Double_t phi;
-   if(charge1>0) phi = TMath::ATan2((PMu1Dimu.Vect()).Dot(yaxis),(PMu1Dimu.Vect()).Dot(xaxis));
-   else phi = TMath::ATan2((PMu2Dimu.Vect()).Dot(yaxis),(PMu2Dimu.Vect()).Dot(xaxis));
+   if(charge1>0) phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxis),(pMu1Dimu.Vect()).Dot(xaxis));
+   else phi = TMath::ATan2((pMu2Dimu.Vect()).Dot(yaxis),(pMu2Dimu.Vect()).Dot(xaxis));
    
    return phi;
 }
