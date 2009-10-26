@@ -64,7 +64,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   int runNegativePions = 1;
   int runPositiveKaons = 1;
   int runNegativeKaons = 1;
-	
+  int runPositiveNegativeKaons = 1;
 
   if (runPositivePions) {
     // *** Begin pion-pion (positive) analysis ***
@@ -382,8 +382,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   if (runPositiveKaons) {
     // *** Begin Kaon-Kaon (positive) analysis
-    AliFemtoVertexMultAnalysis *ankp = new AliFemtoVertexMultAnalysis(10, -15.6, 15.6, 1, 2, 20000);
-    ankp->SetNumEventsToMix(10);
+    AliFemtoVertexMultAnalysis *ankp = new AliFemtoVertexMultAnalysis(18, -15.6, 15.6, 1, 2, 20000);
+    ankp->SetNumEventsToMix(5);
     ankp->SetMinSizePartCollection(2);
 
     AliFemtoBasicEventCut* meckp = new AliFemtoBasicEventCut();
@@ -397,19 +397,16 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     dtckp->SetPidProbProton(0.0,0.5);
     dtckp->SetCharge(1.0);
     dtckp->SetMostProbableKaon();
+    dtckp->SetMomRangeTOFpidIs(0.6,10000.);
     dtckp->SetPt(0.15,2.0);
     dtckp->SetMass(KaonMass);
-    dtckp->SetRapidity(-0.8,0.8);
     // Track quality cuts
     dtckp->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
-    //dtckp->SetStatus(AliESDtrack::kTPCrefit);
-    //  dtckp->SetminTPCclsF(95);
     dtckp->SetminTPCncls(50);
     dtckp->SetRemoveKinks(kTRUE);
     dtckp->SetLabel(kFALSE);
     dtckp->SetMaxITSChiNdof(2.5);
     dtckp->SetMaxTPCChiNdof(3.0);
-    //  dtckp->SetMaxSigmaToVertex(3.0);
     dtckp->SetMaxImpactXY(3.0);
     dtckp->SetMaxImpactZ(3.0);
 
@@ -494,8 +491,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   if (runNegativeKaons) {
     // *** Begin Kaon-Kaon (negative) analysis
-    AliFemtoVertexMultAnalysis *ankm = new AliFemtoVertexMultAnalysis(10, -15.6, 15.6, 1, 2, 20000);
-    ankm->SetNumEventsToMix(10);
+    AliFemtoVertexMultAnalysis *ankm = new AliFemtoVertexMultAnalysis(18, -15.6, 15.6, 1, 2, 20000);
+    ankm->SetNumEventsToMix(5);
     ankm->SetMinSizePartCollection(2);
 
     AliFemtoBasicEventCut* meckm = new AliFemtoBasicEventCut();
@@ -507,21 +504,18 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     dtckm->SetPidProbMuon(0.0,0.5);
     dtckm->SetPidProbPion(0.0,0.5);
     dtckm->SetPidProbProton(0.0,0.5);
-    dtckm->SetCharge(1.0);
+    dtckp->SetMomRangeTOFpidIs(0.6,10000.);
+    dtckm->SetCharge(-1.0);
     dtckm->SetMostProbableKaon();
     dtckm->SetPt(0.15,2.0);
     dtckm->SetMass(KaonMass);
-    dtckm->SetRapidity(-0.8,0.8);
     // Track quality cuts
     dtckm->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
-    //dtckm->SetStatus(AliESDtrack::kTPCrefit);
-    //  dtckm->SetminTPCclsF(95);
     dtckm->SetminTPCncls(50);
     dtckm->SetRemoveKinks(kTRUE);
     dtckm->SetLabel(kFALSE);
     dtckm->SetMaxITSChiNdof(2.5);
     dtckm->SetMaxTPCChiNdof(3.0);
-    //  dtckm->SetMaxSigmaToVertex(3.0);
     dtckm->SetMaxImpactXY(3.0);
     dtckm->SetMaxImpactZ(3.0);
 
@@ -572,10 +566,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     tFreezekm->SetSelectPrimaryFromHidden(false);
 
     // And the weight generator                                                                    
-    //   AliFemtoModelWeightGeneratorBasic *tWeightkm = new AliFemtoModelWeightGeneratorBasic();
-    //   tWeightkm->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
+    //   AliFemtoModelWeightGeneratorBasic *tWeightkp = new AliFemtoModelWeightGeneratorBasic();
+    //   tWeightkp->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
     AliFemtoModelWeightGeneratorLednicky *tWeightkm = new AliFemtoModelWeightGeneratorLednicky();
-    tWeightkm->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
+    tWeightkm->SetPairType(AliFemtoModelWeightGenerator::KaonMinusKaonMinus());
     tWeightkm->SetCoulOn();
     tWeightkm->SetQuantumOn();
     tWeightkm->SetStrongOff();
@@ -583,8 +577,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
     // Create a manager that will connect it  
     AliFemtoModelManager *tModelManagerkm = new AliFemtoModelManager();
-    tModelManagerkm->AcceptFreezeOutGenerator(tFreezekm);
-    tModelManagerkm->AcceptWeightGenerator(tWeightkm);
+    tModelManagerkm->AcceptFreezeOutGenerator(tFreezekp);
+    tModelManagerkm->AcceptWeightGenerator(tWeightkp);
     tModelManagerkm->CreateCopyHiddenInfo(kFALSE);
 
     c3dsmallkm = new AliFemtoModelBPLCMSCorrFctn("c3dsmallkm",30, 0.0, 0.6);
@@ -601,8 +595,376 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
     Manager->AddAnalysis(ankm);	  
 
-    // *** End Kaon-Kaon (positive) analysis
+    // *** End Kaon-Kaon (negative) analysis
   }
+
+  if (runPositiveNegativeKaons) {
+    // *** Begin Kaon+Kaon- analysis
+    AliFemtoVertexMultAnalysis *ankpkm = new AliFemtoVertexMultAnalysis(18, -15.6, 15.6, 1, 2, 20000);
+    ankpkm->SetNumEventsToMix(5);
+    ankpkm->SetMinSizePartCollection(2);
+
+    AliFemtoBasicEventCut* meckpkm = new AliFemtoBasicEventCut();
+    meckpkm->SetEventMult(1,100000);
+    meckpkm->SetVertZPos(-1000,1000);
+	
+    AliFemtoESDTrackCut* dtckp = new AliFemtoESDTrackCut();
+    dtckp->SetPidProbKaon(0.7,1.001);
+    dtckp->SetPidProbMuon(0.0,0.5);
+    dtckp->SetPidProbPion(0.0,0.5);
+    dtckp->SetPidProbProton(0.0,0.5);
+    dtckp->SetMomRangeTOFpidIs(0.6,10000.);
+    dtckp->SetCharge(1.0);
+    dtckp->SetMostProbableKaon();
+    dtckp->SetPt(0.15,2.0);
+    dtckp->SetMass(KaonMass);
+    // Track quality cuts
+    dtckp->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
+    dtckp->SetminTPCncls(50);
+    dtckp->SetRemoveKinks(kTRUE);
+    dtckp->SetLabel(kFALSE);
+    dtckp->SetMaxITSChiNdof(2.5);
+    dtckp->SetMaxTPCChiNdof(3.0);
+    dtckp->SetMaxImpactXY(3.0);
+    dtckp->SetMaxImpactZ(3.0);
+
+    AliFemtoESDTrackCut* dtckm = new AliFemtoESDTrackCut();
+    dtckm->SetPidProbKaon(0.7,1.001);
+    dtckm->SetPidProbMuon(0.0,0.5);
+    dtckm->SetPidProbPion(0.0,0.5);
+    dtckm->SetPidProbProton(0.0,0.5);
+    dtckm->SetMomRangeTOFpidIs(0.6,10000.);
+    dtckm->SetCharge(-1.0);
+    dtckm->SetMostProbableKaon();
+    dtckm->SetPt(0.15,2.0);
+    dtckm->SetMass(KaonMass);
+    // Track quality cuts
+    dtckm->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
+    dtckm->SetminTPCncls(50);
+    dtckm->SetRemoveKinks(kTRUE);
+    dtckm->SetLabel(kFALSE);
+    dtckm->SetMaxITSChiNdof(2.5);
+    dtckm->SetMaxTPCChiNdof(3.0);
+    dtckm->SetMaxImpactXY(3.0);
+    dtckm->SetMaxImpactZ(3.0);
+
+
+    AliFemtoCutMonitorParticleYPt *cutPassYPtkp = new AliFemtoCutMonitorParticleYPt("cutPasskp", 0.493677);
+    AliFemtoCutMonitorParticleYPt *cutFailYPtkp = new AliFemtoCutMonitorParticleYPt("cutFailkp", 0.493677);
+    dtckp->AddCutMonitor(cutPassYPtkp, cutFailYPtkp);
+
+    AliFemtoCutMonitorParticleYPt *cutPassYPtkm = new AliFemtoCutMonitorParticleYPt("cutPasskm", 0.493677);
+    AliFemtoCutMonitorParticleYPt *cutFailYPtkm = new AliFemtoCutMonitorParticleYPt("cutFailkm", 0.493677);
+    dtckm->AddCutMonitor(cutPassYPtkm, cutFailYPtkm);
+
+    AliFemtoCutMonitorParticlePtPDG *cutPassPidkp = new AliFemtoCutMonitorParticlePtPDG("cutPasskp", 0.493677);
+    AliFemtoCutMonitorParticlePtPDG *cutFailPidkp = new AliFemtoCutMonitorParticlePtPDG("cutFailkp", 0.493677);
+    dtckp->AddCutMonitor(cutPassPidkp, cutFailPidkp);
+
+    AliFemtoCutMonitorParticlePtPDG *cutPassPidkm = new AliFemtoCutMonitorParticlePtPDG("cutPasskm", 0.493677);
+    AliFemtoCutMonitorParticlePtPDG *cutFailPidkm = new AliFemtoCutMonitorParticlePtPDG("cutFailkm", 0.493677);
+    dtckm->AddCutMonitor(cutPassPidkm, cutFailPidkm);
+  
+    AliFemtoCutMonitorParticleMomRes *cutPassMRkp = new AliFemtoCutMonitorParticleMomRes("cutPasskp");
+    AliFemtoCutMonitorParticleMomRes *cutFailMRkp = new AliFemtoCutMonitorParticleMomRes("cutFailkp");
+    dtckp->AddCutMonitor(cutPassMRkp, cutFailMRkp);
+
+    AliFemtoCutMonitorParticleMomRes *cutPassMRkm = new AliFemtoCutMonitorParticleMomRes("cutPasskm");
+    AliFemtoCutMonitorParticleMomRes *cutFailMRkm = new AliFemtoCutMonitorParticleMomRes("cutFailkm");
+    dtckm->AddCutMonitor(cutPassMRkm, cutFailMRkm);
+
+    AliFemtoCutMonitorParticleVertPos *cutPassVPkp = new AliFemtoCutMonitorParticleVertPos("cutPasskp");
+    AliFemtoCutMonitorParticleVertPos *cutFailVPkp = new AliFemtoCutMonitorParticleVertPos("cutFailkp");
+    dtckp->AddCutMonitor(cutPassVPkp, cutFailVPkp);
+
+    AliFemtoCutMonitorParticleVertPos *cutPassVPkm = new AliFemtoCutMonitorParticleVertPos("cutPasskm");
+    AliFemtoCutMonitorParticleVertPos *cutFailVPkm = new AliFemtoCutMonitorParticleVertPos("cutFailkm");
+    dtckm->AddCutMonitor(cutPassVPkm, cutFailVPkm);
+
+    AliFemtoCutMonitorEventMult *cutPassEvMkpkm = new AliFemtoCutMonitorEventMult("cutPasskpkm");
+    AliFemtoCutMonitorEventMult *cutFailEvMkpkm = new AliFemtoCutMonitorEventMult("cutFailkpkm");
+    meckpkm->AddCutMonitor(cutPassEvMkpkm, cutFailEvMkpkm);
+ 
+    AliFemtoCutMonitorEventVertex *cutPassEvVkpkm = new AliFemtoCutMonitorEventVertex("cutPasskpkm");
+    AliFemtoCutMonitorEventVertex *cutFailEvVkpkm = new AliFemtoCutMonitorEventVertex("cutFailkpkm");
+    meckpkm->AddCutMonitor(cutPassEvVkpkm, cutFailEvVkpkm);
+
+    AliFemtoShareQualityTPCEntranceSepPairCut *sqpckpkm = new AliFemtoShareQualityTPCEntranceSepPairCut();
+    sqpckpkm->SetShareQualityMax(0.0);
+    sqpckpkm->SetShareFractionMax(0.02);
+    sqpckpkm->SetRemoveSameLabel(kFALSE);
+    sqpckpkm->SetTPCEntranceSepMinimum(3.0);
+
+    ankpkm->SetEventCut(meckpkm);
+    ankpkm->SetFirstParticleCut(dtckp);
+    ankpkm->SetSecondParticleCut(dtckm);
+    ankpkm->SetPairCut(sqpckpkm);
+
+    AliFemtoQinvCorrFctn *cqinvkpkm= new AliFemtoQinvCorrFctn("qinvcf",100,0.0,1.0);
+
+    AliFemtoModelBPLCMSCorrFctn *c3dsmallkpkm;
+    AliFemtoModelCorrFctn *c1dpikpkm;
+
+    // Setting up the model calculation
+    // First create the freeze-out generator
+    AliFemtoModelGausRinvFreezeOutGenerator *tFreezekpkm = new AliFemtoModelGausRinvFreezeOutGenerator();
+    tFreezekpkm->SetSizeInv(1.8*TMath::Sqrt(2.0));
+    tFreezekpkm->SetSelectPrimaryFromHidden(false);
+
+    // And the weight generator                                                                    
+    AliFemtoModelWeightGeneratorLednicky *tWeightkpkm = new AliFemtoModelWeightGeneratorLednicky();
+    tWeightkpkm->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonMinus());
+    tWeightkpkm->SetCoulOn();
+    tWeightkpkm->SetQuantumOn();
+    tWeightkpkm->SetStrongOff();
+    tWeightkpkm->Set3BodyOff();
+
+    // Create a manager that will connect it  
+    AliFemtoModelManager *tModelManagerkpkm = new AliFemtoModelManager();
+    tModelManagerkpkm->AcceptFreezeOutGenerator(tFreezekpkm);
+    tModelManagerkpkm->AcceptWeightGenerator(tWeightkpkm);
+    tModelManagerkpkm->CreateCopyHiddenInfo(kFALSE);
+
+    c3dsmallkpkm = new AliFemtoModelBPLCMSCorrFctn("c3dsmallkpkm",30, 0.0, 0.6);
+    c3dsmallkpkm->ConnectToManager(tModelManagerkpkm);
+
+    c1dpikpkm = new AliFemtoModelCorrFctn("c1dpikpkm",100,0.0,1.0);
+    c1dpikpkm->ConnectToManager(tModelManagerkpkm);
+
+    //###
+    ankpkm->AddCorrFctn(cqinvkpkm);
+ 
+    ankpkm->AddCorrFctn(c3dsmallkpkm);
+    ankpkm->AddCorrFctn(c1dpikpkm);
+
+    Manager->AddAnalysis(ankpkm);	  
+
+    // *** End Kaon+Kaon-  analysis
+  }
+  //   if (runPositiveKaons) {
+  //     // *** Begin Kaon-Kaon (positive) analysis
+  //     AliFemtoVertexMultAnalysis *ankp = new AliFemtoVertexMultAnalysis(10, -15.6, 15.6, 1, 2, 20000);
+  //     ankp->SetNumEventsToMix(10);
+  //     ankp->SetMinSizePartCollection(2);
+
+  //     AliFemtoBasicEventCut* meckp = new AliFemtoBasicEventCut();
+  //     meckp->SetEventMult(1,100000);
+  //     meckp->SetVertZPos(-1000,1000);
+	
+  //     AliFemtoESDTrackCut* dtckp = new AliFemtoESDTrackCut();
+  //     dtckp->SetPidProbKaon(0.7,1.001);
+  //     dtckp->SetPidProbMuon(0.0,0.5);
+  //     dtckp->SetPidProbPion(0.0,0.5);
+  //     dtckp->SetPidProbProton(0.0,0.5);
+  //     dtckp->SetCharge(1.0);
+  //     dtckp->SetMostProbableKaon();
+  //     dtckp->SetPt(0.15,2.0);
+  //     dtckp->SetMass(KaonMass);
+  //     dtckp->SetRapidity(-0.8,0.8);
+  //     // Track quality cuts
+  //     dtckp->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
+  //     //dtckp->SetStatus(AliESDtrack::kTPCrefit);
+  //     //  dtckp->SetminTPCclsF(95);
+  //     dtckp->SetminTPCncls(50);
+  //     dtckp->SetRemoveKinks(kTRUE);
+  //     dtckp->SetLabel(kFALSE);
+  //     dtckp->SetMaxITSChiNdof(2.5);
+  //     dtckp->SetMaxTPCChiNdof(3.0);
+  //     //  dtckp->SetMaxSigmaToVertex(3.0);
+  //     dtckp->SetMaxImpactXY(3.0);
+  //     dtckp->SetMaxImpactZ(3.0);
+
+  //     AliFemtoCutMonitorParticleYPt *cutPassYPtkp = new AliFemtoCutMonitorParticleYPt("cutPasskp", 0.493677);
+  //     AliFemtoCutMonitorParticleYPt *cutFailYPtkp = new AliFemtoCutMonitorParticleYPt("cutFailkp", 0.493677);
+  //     dtckp->AddCutMonitor(cutPassYPtkp, cutFailYPtkp);
+
+  //     AliFemtoCutMonitorParticlePtPDG *cutPassPidkp = new AliFemtoCutMonitorParticlePtPDG("cutPasskp", 0.493677);
+  //     AliFemtoCutMonitorParticlePtPDG *cutFailPidkp = new AliFemtoCutMonitorParticlePtPDG("cutFailkp", 0.493677);
+  //     dtckp->AddCutMonitor(cutPassPidkp, cutFailPidkp);
+
+  //     AliFemtoCutMonitorParticleMomRes *cutPassMRkp = new AliFemtoCutMonitorParticleMomRes("cutPasskp");
+  //     AliFemtoCutMonitorParticleMomRes *cutFailMRkp = new AliFemtoCutMonitorParticleMomRes("cutFailkp");
+  //     dtckp->AddCutMonitor(cutPassMRkp, cutFailMRkp);
+
+  //     AliFemtoCutMonitorParticleVertPos *cutPassVPkp = new AliFemtoCutMonitorParticleVertPos("cutPasskp");
+  //     AliFemtoCutMonitorParticleVertPos *cutFailVPkp = new AliFemtoCutMonitorParticleVertPos("cutFailkp");
+  //     dtckp->AddCutMonitor(cutPassVPkp, cutFailVPkp);
+
+  //     AliFemtoCutMonitorEventMult *cutPassEvMkp = new AliFemtoCutMonitorEventMult("cutPasskp");
+  //     AliFemtoCutMonitorEventMult *cutFailEvMkp = new AliFemtoCutMonitorEventMult("cutFailkp");
+  //     meckp->AddCutMonitor(cutPassEvMkp, cutFailEvMkp);
+
+  //     AliFemtoCutMonitorEventVertex *cutPassEvVkp = new AliFemtoCutMonitorEventVertex("cutPasskp");
+  //     AliFemtoCutMonitorEventVertex *cutFailEvVkp = new AliFemtoCutMonitorEventVertex("cutFailkp");
+  //     meckp->AddCutMonitor(cutPassEvVkp, cutFailEvVkp);
+
+  //     AliFemtoShareQualityTPCEntranceSepPairCut *sqpckp = new AliFemtoShareQualityTPCEntranceSepPairCut();
+  //     sqpckp->SetShareQualityMax(0.0);
+  //     sqpckp->SetShareFractionMax(0.02);
+  //     sqpckp->SetRemoveSameLabel(kFALSE);
+  //     sqpckp->SetTPCEntranceSepMinimum(3.0);
+
+  //     ankp->SetEventCut(meckp);
+  //     ankp->SetFirstParticleCut(dtckp);
+  //     ankp->SetSecondParticleCut(dtckp);
+  //     ankp->SetPairCut(sqpckp);
+
+  //     AliFemtoQinvCorrFctn *cqinvkp= new AliFemtoQinvCorrFctn("qinvcf",100,0.0,1.0);
+
+  //     AliFemtoModelBPLCMSCorrFctn *c3dsmallkp;
+  //     AliFemtoModelCorrFctn *c1dpikp;
+
+  //     // Setting up the model calculation
+  //     // First create the freeze-out generator
+  //     AliFemtoModelGausRinvFreezeOutGenerator *tFreezekp = new AliFemtoModelGausRinvFreezeOutGenerator();
+  //     tFreezekp->SetSizeInv(1.8*TMath::Sqrt(2.0));
+  //     tFreezekp->SetSelectPrimaryFromHidden(false);
+
+  //     // And the weight generator                                                                    
+  //     //   AliFemtoModelWeightGeneratorBasic *tWeightkp = new AliFemtoModelWeightGeneratorBasic();
+  //     //   tWeightkp->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
+  //     AliFemtoModelWeightGeneratorLednicky *tWeightkp = new AliFemtoModelWeightGeneratorLednicky();
+  //     tWeightkp->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
+  //     tWeightkp->SetCoulOn();
+  //     tWeightkp->SetQuantumOn();
+  //     tWeightkp->SetStrongOff();
+  //     tWeightkp->Set3BodyOff();
+
+  //     // Create a manager that will connect it  
+  //     AliFemtoModelManager *tModelManagerkp = new AliFemtoModelManager();
+  //     tModelManagerkp->AcceptFreezeOutGenerator(tFreezekp);
+  //     tModelManagerkp->AcceptWeightGenerator(tWeightkp);
+  //     tModelManagerkp->CreateCopyHiddenInfo(kFALSE);
+
+  //     c3dsmallkp = new AliFemtoModelBPLCMSCorrFctn("c3dsmallkp",30, 0.0, 0.6);
+  //     c3dsmallkp->ConnectToManager(tModelManagerkp);
+
+  //     c1dpikp = new AliFemtoModelCorrFctn("c1dpikp",100,0.0,1.0);
+  //     c1dpikp->ConnectToManager(tModelManagerkp);
+
+  //     //###
+  //     ankp->AddCorrFctn(cqinvkp);
+ 
+  //     ankp->AddCorrFctn(c3dsmallkp);
+  //     ankp->AddCorrFctn(c1dpikp);
+
+  //     Manager->AddAnalysis(ankp);	  
+
+  //     // *** End Kaon-Kaon (positive) analysis
+  //   }
+
+  //   if (runNegativeKaons) {
+  //     // *** Begin Kaon-Kaon (negative) analysis
+  //     AliFemtoVertexMultAnalysis *ankm = new AliFemtoVertexMultAnalysis(10, -15.6, 15.6, 1, 2, 20000);
+  //     ankm->SetNumEventsToMix(10);
+  //     ankm->SetMinSizePartCollection(2);
+
+  //     AliFemtoBasicEventCut* meckm = new AliFemtoBasicEventCut();
+  //     meckm->SetEventMult(1,100000);
+  //     meckm->SetVertZPos(-1000,1000);
+	
+  //     AliFemtoESDTrackCut* dtckm = new AliFemtoESDTrackCut();
+  //     dtckm->SetPidProbKaon(0.7,1.001);
+  //     dtckm->SetPidProbMuon(0.0,0.5);
+  //     dtckm->SetPidProbPion(0.0,0.5);
+  //     dtckm->SetPidProbProton(0.0,0.5);
+  //     dtckm->SetCharge(1.0);
+  //     dtckm->SetMostProbableKaon();
+  //     dtckm->SetPt(0.15,2.0);
+  //     dtckm->SetMass(KaonMass);
+  //     dtckm->SetRapidity(-0.8,0.8);
+  //     // Track quality cuts
+  //     dtckm->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
+  //     //dtckm->SetStatus(AliESDtrack::kTPCrefit);
+  //     //  dtckm->SetminTPCclsF(95);
+  //     dtckm->SetminTPCncls(50);
+  //     dtckm->SetRemoveKinks(kTRUE);
+  //     dtckm->SetLabel(kFALSE);
+  //     dtckm->SetMaxITSChiNdof(2.5);
+  //     dtckm->SetMaxTPCChiNdof(3.0);
+  //     //  dtckm->SetMaxSigmaToVertex(3.0);
+  //     dtckm->SetMaxImpactXY(3.0);
+  //     dtckm->SetMaxImpactZ(3.0);
+
+  //     AliFemtoCutMonitorParticleYPt *cutPassYPtkm = new AliFemtoCutMonitorParticleYPt("cutPasskm", 0.493677);
+  //     AliFemtoCutMonitorParticleYPt *cutFailYPtkm = new AliFemtoCutMonitorParticleYPt("cutFailkm", 0.493677);
+  //     dtckm->AddCutMonitor(cutPassYPtkm, cutFailYPtkm);
+
+  //     AliFemtoCutMonitorParticlePtPDG *cutPassPidkm = new AliFemtoCutMonitorParticlePtPDG("cutPasskm", 0.493677);
+  //     AliFemtoCutMonitorParticlePtPDG *cutFailPidkm = new AliFemtoCutMonitorParticlePtPDG("cutFailkm", 0.493677);
+  //     dtckm->AddCutMonitor(cutPassPidkm, cutFailPidkm);
+
+  //     AliFemtoCutMonitorParticleMomRes *cutPassMRkm = new AliFemtoCutMonitorParticleMomRes("cutPasskm");
+  //     AliFemtoCutMonitorParticleMomRes *cutFailMRkm = new AliFemtoCutMonitorParticleMomRes("cutFailkm");
+  //     dtckm->AddCutMonitor(cutPassMRkm, cutFailMRkm);
+
+  //     AliFemtoCutMonitorParticleVertPos *cutPassVPkm = new AliFemtoCutMonitorParticleVertPos("cutPasskm");
+  //     AliFemtoCutMonitorParticleVertPos *cutFailVPkm = new AliFemtoCutMonitorParticleVertPos("cutFailkm");
+  //     dtckm->AddCutMonitor(cutPassVPkm, cutFailVPkm);
+
+  //     AliFemtoCutMonitorEventMult *cutPassEvMkm = new AliFemtoCutMonitorEventMult("cutPasskm");
+  //     AliFemtoCutMonitorEventMult *cutFailEvMkm = new AliFemtoCutMonitorEventMult("cutFailkm");
+  //     meckm->AddCutMonitor(cutPassEvMkm, cutFailEvMkm);
+
+  //     AliFemtoCutMonitorEventVertex *cutPassEvVkm = new AliFemtoCutMonitorEventVertex("cutPasskm");
+  //     AliFemtoCutMonitorEventVertex *cutFailEvVkm = new AliFemtoCutMonitorEventVertex("cutFailkm");
+  //     meckm->AddCutMonitor(cutPassEvVkm, cutFailEvVkm);
+
+  //     AliFemtoShareQualityTPCEntranceSepPairCut *sqpckm = new AliFemtoShareQualityTPCEntranceSepPairCut();
+  //     sqpckm->SetShareQualityMax(0.0);
+  //     sqpckm->SetShareFractionMax(0.02);
+  //     sqpckm->SetRemoveSameLabel(kFALSE);
+  //     sqpckm->SetTPCEntranceSepMinimum(3.0);
+
+  //     ankm->SetEventCut(meckm);
+  //     ankm->SetFirstParticleCut(dtckm);
+  //     ankm->SetSecondParticleCut(dtckm);
+  //     ankm->SetPairCut(sqpckm);
+
+  //     AliFemtoQinvCorrFctn *cqinvkm= new AliFemtoQinvCorrFctn("qinvcf",100,0.0,1.0);
+
+  //     AliFemtoModelBPLCMSCorrFctn *c3dsmallkm;
+  //     AliFemtoModelCorrFctn *c1dpikm;
+
+  //     // Setting up the model calculation
+  //     // First create the freeze-out generator
+  //     AliFemtoModelGausRinvFreezeOutGenerator *tFreezekm = new AliFemtoModelGausRinvFreezeOutGenerator();
+  //     tFreezekm->SetSizeInv(1.8*TMath::Sqrt(2.0));
+  //     tFreezekm->SetSelectPrimaryFromHidden(false);
+
+  //     // And the weight generator                                                                    
+  //     //   AliFemtoModelWeightGeneratorBasic *tWeightkm = new AliFemtoModelWeightGeneratorBasic();
+  //     //   tWeightkm->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
+  //     AliFemtoModelWeightGeneratorLednicky *tWeightkm = new AliFemtoModelWeightGeneratorLednicky();
+  //     tWeightkm->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
+  //     tWeightkm->SetCoulOn();
+  //     tWeightkm->SetQuantumOn();
+  //     tWeightkm->SetStrongOff();
+  //     tWeightkm->Set3BodyOff();
+
+  //     // Create a manager that will connect it  
+  //     AliFemtoModelManager *tModelManagerkm = new AliFemtoModelManager();
+  //     tModelManagerkm->AcceptFreezeOutGenerator(tFreezekm);
+  //     tModelManagerkm->AcceptWeightGenerator(tWeightkm);
+  //     tModelManagerkm->CreateCopyHiddenInfo(kFALSE);
+
+  //     c3dsmallkm = new AliFemtoModelBPLCMSCorrFctn("c3dsmallkm",30, 0.0, 0.6);
+  //     c3dsmallkm->ConnectToManager(tModelManagerkm);
+
+  //     c1dpikm = new AliFemtoModelCorrFctn("c1dpikm",100,0.0,1.0);
+  //     c1dpikm->ConnectToManager(tModelManagerkm);
+
+  //     //###
+  //     ankm->AddCorrFctn(cqinvkm);
+ 
+  //     ankm->AddCorrFctn(c3dsmallkm);
+  //     ankm->AddCorrFctn(c1dpikm);
+
+  //     Manager->AddAnalysis(ankm);	  
+
+  //     // *** End Kaon-Kaon (positive) analysis
+  //   }
+
   return Manager;
 }                         
                       
