@@ -369,6 +369,7 @@ class AliTRDrawFastStream : public AliTRDrawStreamBase
   
   Bool_t   DecodeSMHeader(void *buffer, UInt_t length); // decode a buffer
   Bool_t   SetReader(AliRawReader *reader); // set the raw reader to use
+  void     SetNoErrorWarning() {fWarnError = kFALSE;} // disable warning and error info
     	   
   // from MCM Header Word
   // rob and mcm ordering
@@ -429,7 +430,6 @@ class AliTRDrawFastStream : public AliTRDrawStreamBase
  
   static void    SetNoDebug() {fgDebugFlag = kFALSE;} // allow debug info
   static void    EnableMemoryReset() {fgEnableMemoryReset = kTRUE;} // allow memory reset
-  static void    SetNoErrorWarning() {fgWarnError = kFALSE;} // disable warning and error info
   static void    SetForceCleanDataOnly() {fgCleanDataOnly = kTRUE;} // clean data only
   static void    AllowCorruptedData() {fgCleanDataOnly = kFALSE;} // accept corrupted data
 
@@ -543,6 +543,7 @@ class AliTRDrawFastStream : public AliTRDrawStreamBase
   Short_t fCOL;          // column - row from MCM
   Short_t fExtendedCOL;  // virtual column for extended digit container
   Bool_t  fIsShared;     // true if the pad is shared pad
+  Bool_t  fWarnError;    // no errors no warnings
 
   Bool_t  fBufferRead;   // set true if the buffer for one ddl is read
 
@@ -556,7 +557,6 @@ class AliTRDrawFastStream : public AliTRDrawStreamBase
 
   static Bool_t fgExtraSkip; // whether we should skip the leading 24 words
   static Bool_t fgSkipCDH; // whether we should skip CDH (8 words)
-  static Bool_t fgWarnError; // no errors no warnings
   static Bool_t fgCleanDataOnly; // release only clean events = no errors
   static Bool_t fgDebugFlag; // allow debugging info
   static Bool_t fgEnableMemoryReset; // allow memory reset

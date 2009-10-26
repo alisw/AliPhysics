@@ -64,6 +64,7 @@ class AliTRDrawStreamBase : public TObject
   virtual Bool_t    Init() {TRD_NOIMP(); return -1;}     
 
   virtual Bool_t    SetRawVersion(Int_t /*fraw*/) {TRD_NOIMP(); return 0;} 
+  virtual void      SetNoErrorWarning() {TRD_NOIMP();}
   
   virtual Bool_t    IsCurrentPadShared() const {TRD_NOIMP(); return 0;}
   virtual void      SetSharedPadReadout(Bool_t /*fv*/) {TRD_NOIMP();} 

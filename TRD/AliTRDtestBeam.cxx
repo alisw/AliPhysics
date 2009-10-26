@@ -501,11 +501,11 @@ AliTRDrawStream *AliTRDtestBeam::GetTRDrawStream()
   reader->ReadHeader();
   //AliTRDrawStream::RawBufferMissAligned(kTRUE);
 
-  AliTRDrawStream::SetNoErrorWarning();
   AliTRDrawStream::SetExtraWordsFix();
   AliTRDrawStream::AllowCorruptedData();
   
   AliTRDrawStream *tb = new AliTRDrawStream(reader); 
+  tb->SetNoErrorWarning();
   //tb->Init();
   return tb;
   /*

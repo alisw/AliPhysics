@@ -400,6 +400,7 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   Int_t    DecodeSM(AliRawReader *reader);        // used with raw reader
 	   
   Bool_t   SetReader(AliRawReader *reader); // set the raw reader to use
+  void     SetNoErrorWarning() {fWarnError = kFALSE;} // disable warning and error info
     	   
   // info from Supermodule Index Word
   Bool_t    IsTrackletEnableBitSet() const {return fSM.fTrackletEnable;} // get status of tracklet enable bit
@@ -517,7 +518,6 @@ class AliTRDrawStream : public AliTRDrawStreamBase
  
   static void    SetNoDebug() {fgDebugFlag = kFALSE;} // allow debug info
   static void    EnableMemoryReset() {fgEnableMemoryReset = kTRUE;} // allow memory reset
-  static void    SetNoErrorWarning() {fgWarnError = kFALSE;} // disable warning and error info
   static void    SetForceCleanDataOnly() {fgCleanDataOnly = kTRUE;} // clean data only
   static void    AllowCorruptedData() {fgCleanDataOnly = kFALSE;} // accept corrupted data
 
@@ -638,12 +638,12 @@ class AliTRDrawStream : public AliTRDrawStreamBase
 
   AliTRDfeeParam      *fTRDfeeParam; // pointer to the fee params
   Int_t   fCommonAdditive; // baseline value
+  Bool_t  fWarnError; // no errors no warnings
 
   // STATIC 
 
   static Bool_t fgExtraSkip; // whether we should skip the leading 24 words
   static Bool_t fgSkipCDH; // whether we should skip CDH (8 words)
-  static Bool_t fgWarnError; // no errors no warnings
   static Bool_t fgCleanDataOnly; // release only clean events = no errors
   static Bool_t fgDebugFlag; // allow debugging info
   static Bool_t fgEnableMemoryReset; // allow memory reset
