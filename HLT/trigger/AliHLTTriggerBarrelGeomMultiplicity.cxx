@@ -70,9 +70,11 @@ AliHLTTriggerBarrelGeomMultiplicity::~AliHLTTriggerBarrelGeomMultiplicity()
   // see header file for class documentation
 }
 
-const char* AliHLTTriggerBarrelGeomMultiplicity::GetTriggerName() const
+const char* AliHLTTriggerBarrelGeomMultiplicity::GetTriggerName() const 
 {
   // see header file for class documentation
+  const char* name = fTriggerName;
+  if(name) return name;
   return "BarrelGeomMultiplicityTrigger";
 }
 
@@ -235,7 +237,8 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoDeinit()
 
 int AliHLTTriggerBarrelGeomMultiplicity::ReadPreprocessorValues(const char* /*modules*/)
 {
-  // see header file for class documentation
+    // see header file for function documentation
+  int nDetectorGeoms=0;
 
   // TODO 2009-10-10: implementation
   // for the moment very quick, just reload the magnetic field
