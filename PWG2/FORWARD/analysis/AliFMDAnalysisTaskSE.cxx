@@ -5,6 +5,7 @@
 #include "AliMCEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliFMDAnaParameters.h"
+#include "AliLog.h"
 
 ClassImp(AliFMDAnalysisTaskSE)
 
@@ -15,7 +16,8 @@ AliAnalysisTaskSE(),
   fSharing("Sharing",kFALSE),
   fDensity("Density",kFALSE),
   fBackground("BackgroundCorrected",kFALSE),
-  fDndeta("dNdeta",kFALSE)
+  fDndeta("dNdeta",kFALSE), 
+  fParams(0)
 {
   // Default constructor
 }
@@ -26,9 +28,10 @@ AliFMDAnalysisTaskSE::AliFMDAnalysisTaskSE(const char* name):
   fSharing("Sharing",kFALSE),
   fDensity("Density",kFALSE),
   fBackground("BackgroundCorrected",kFALSE),
-  fDndeta("dNdeta",kFALSE)
+  fDndeta("dNdeta",kFALSE), 
+  fParams(0)
 {
-  
+  SetParams(AliFMDAnaParameters::Instance());
   DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________
@@ -105,6 +108,24 @@ void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
   fDndeta.Terminate("");
 
 }
+
+//_____________________________________________________________________
+void AliFMDAnalysisTaskSE::Print(Option_t* option) const
+{
+  AliInfo(Form("FMD Single Event Analysis Task\n"
+	       "Parameters set to %p", fParams));
+  TString opt(option);
+  opt.ToLower();
+  if (opt.Contains("s")) { 
+    fSharing.Print(option);     
+    fDensity.Print(option);     
+    fBackground.Print(option);  
+    fDndeta.Print(option);      
+  }
+  if (opt.Contains("p") && fParams) 
+    fParams->Print(option);      
+}
+
 //_____________________________________________________________________
 //
 // EOF

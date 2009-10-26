@@ -6,6 +6,7 @@
 #include "AliFMDAnalysisTaskDensity.h"
 #include "AliFMDAnalysisTaskBackgroundCorrection.h"
 #include "AliFMDAnalysisTaskDndeta.h"
+class AliFMDAnaParameters;
 
 /** @defgroup FMD_ana Analysis tasks 
     @brief Various classes to do analysis tasks 
@@ -27,23 +28,27 @@
 
 class AliFMDAnalysisTaskSE : public AliAnalysisTaskSE
 {
- public:
-    AliFMDAnalysisTaskSE();
-    AliFMDAnalysisTaskSE(const char* name);
-    virtual ~AliFMDAnalysisTaskSE() {;}
- AliFMDAnalysisTaskSE(const AliFMDAnalysisTaskSE& o) : AliAnalysisTaskSE(),
-						       fListOfHistos(o.fListOfHistos),
-						       fSharing(o.fSharing),
-						       fDensity(o.fDensity),
-						       fBackground(o.fBackground),
-						       fDndeta(o.fDndeta)   {}
-    AliFMDAnalysisTaskSE& operator=(const AliFMDAnalysisTaskSE&) { return *this; }
+public:				// 
+  AliFMDAnalysisTaskSE();
+  AliFMDAnalysisTaskSE(const char* name);
+  virtual ~AliFMDAnalysisTaskSE() {;}
+  AliFMDAnalysisTaskSE(const AliFMDAnalysisTaskSE& o) 
+    : AliAnalysisTaskSE(),
+      fListOfHistos(o.fListOfHistos),
+      fSharing(o.fSharing),
+      fDensity(o.fDensity),
+      fBackground(o.fBackground),
+      fDndeta(o.fDndeta),   
+      fParams(o.fParams)
+  {}
+  AliFMDAnalysisTaskSE& operator=(const AliFMDAnalysisTaskSE&) { return *this; }
   
   virtual void Init();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* /*option*/);
-  void  Terminate(Option_t */*option*/);
-  
+  void         Terminate(Option_t */*option*/);
+  void         SetParams(AliFMDAnaParameters* p) { fParams = p; }
+  void         Print(Option_t* option="") const;
 private:
   
   TList* fListOfHistos;
@@ -51,6 +56,8 @@ private:
   AliFMDAnalysisTaskDensity              fDensity;
   AliFMDAnalysisTaskBackgroundCorrection fBackground;
   AliFMDAnalysisTaskDndeta               fDndeta;
+  AliFMDAnaParameters*                   fParams;
+
   
   ClassDef(AliFMDAnalysisTaskSE, 1);
 

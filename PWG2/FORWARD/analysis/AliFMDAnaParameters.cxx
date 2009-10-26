@@ -80,8 +80,8 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fMagField(k5G),
   fSpecies(kPP)
 {
-  
-  
+  // Do not use this - it is only for IO 
+  fgInstance = this;
   //fVerticies.Add(new TVector2(4.2231, 26.6638));
   // fVerticies.Add(new TVector2(1.8357, 27.9500));
   // Default constructor 
@@ -192,7 +192,8 @@ void AliFMDAnaParameters::InitEventSelectionEff() {
 }
 //____________________________________________________________________
 
-void AliFMDAnaParameters::PrintStatus() {
+void AliFMDAnaParameters::PrintStatus() const
+{
   
   TString energystring;
   switch(fEnergy) {
