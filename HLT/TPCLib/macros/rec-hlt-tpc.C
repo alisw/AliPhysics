@@ -194,7 +194,7 @@ void rec_hlt_tpc(const char* input="./", char* opt="ESD")
       } else if (clusterFinderType==2) {
 	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinderPacked", publisher.Data(), "-timebins 1001 -sorted");
       } else {
-	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinder32Bit", publisher.Data(), "-timebins 1001");
+	AliHLTConfiguration cfconf(cf.Data(), "TPCClusterFinder32Bit", publisher.Data(), "");
       }
       if (trackerInput.Length()>0) trackerInput+=" ";
       trackerInput+=cf;
