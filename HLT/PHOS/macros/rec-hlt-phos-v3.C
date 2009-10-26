@@ -5,7 +5,7 @@
 void rec_hlt_phos()//, char* opt="decoder ESD")
 {
   //  AliCDBManager::Instance()->SetDefaultStorage("raw://");
-  AliCDBManager::Instance()->SetDefaultStorage("raw://");
+  //  AliCDBManager::Instance()->SetDefaultStorage("raw://");
   if(!gSystem->AccessPathName("galice.root")){
     cerr << "please delete the galice.root or run at different place." << endl;
     return;
@@ -49,8 +49,8 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
 	  // Raw analyzer
 	  arg = "";
 	  ra.Form("PHS-RA_%02d_%d", module, rcu);
-	  //	  AliHLTConfiguration rawConf(ra.Data(), "PhosRawCrudev2", publisher.Data(), arg.Data())
-;	  AliHLTConfiguration rawConf(ra.Data(), "PhosRawCrudev3", publisher.Data(), arg.Data());
+	  //	  AliHLTConfiguration rawConf(ra.Data(), "PhosRawCrudev2", publisher.Data(), arg.Data());
+	  AliHLTConfiguration rawConf(ra.Data(), "PhosRawCrude", publisher.Data(), arg.Data());
 	  
 	  // digit maker components
 	  dm.Form("PHS-DM_%02d_%d", module, rcu);
@@ -80,12 +80,11 @@ void rec_hlt_phos()//, char* opt="decoder ESD")
 
   TString arg, ec, em, hp, ef;
   
-  em.Form("ESD-MAKER");
 
   ec.Form("ESD-CONVERTER");
   arg = "";
 
-  AliHLTConfiguration emConf(em.Data(), "PhosEsdEntriesMaker", ecInput.Data(), "");
+  //  AliHLTConfiguration emConf(em.Data(), "PhosEsdEntriesMaker", ecInput.Data(), "");
 
   AliHLTConfiguration esdcconf(ec.Data(), "GlobalEsdConverter"   , ecInput.Data(), "");
   

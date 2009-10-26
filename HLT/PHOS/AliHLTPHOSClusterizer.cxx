@@ -189,35 +189,17 @@ AliHLTPHOSClusterizer::AreNeighbours(AliHLTPHOSDigitDataStruct* digit1,
   //see header file for documentation
   if ( (digit1->fModule == digit2->fModule) /*&& (coord1[1]==coord2[1])*/ ) // inside the same PHOS module
     { 
-//       Int_t rowdiff = TMath::Abs( digit1->fZ - digit2->fZ );  
-//       Int_t coldiff = TMath::Abs( digit1->fX - digit2->fX ); 
-//       if (( coldiff <= 1   &&  rowdiff == 0 ) || ( coldiff == 0 &&  rowdiff <= 1 ))
-// 	{
-// 	  cout << "Are neighbours: digit (E = "  << digit1->fEnergy << ") with x = " << digit1->fX << " and z = " << digit1->fZ << 
-// 	    " is neighbour with digit (E = " << digit2->fEnergy << ") with x = " << digit2->fX << " and z = " << digit2->fZ << endl;
-
-// 	  if(TMath::Abs(digit1->fTime - digit2->fTime ) < fEmcTimeGate)
-// 	    {
-// 	      return 1; 
-// 	    }
-// 	}
-
-      Float_t rowdiff = TMath::Abs( digit1->fZ - digit2->fZ );  
-      Float_t coldiff = TMath::Abs( digit1->fX - digit2->fX ); 
-      if (( coldiff <= 2.4   &&  rowdiff < 0.4 ) || ( coldiff < 0.4 &&  rowdiff <= 2.4 ))
+      Int_t rowdiff = TMath::Abs( digit1->fZ - digit2->fZ );  
+      Int_t coldiff = TMath::Abs( digit1->fX - digit2->fX ); 
+      if (( coldiff <= 1   &&  rowdiff == 0 ) || ( coldiff == 0 &&  rowdiff <= 1 ))
 	{
 	  //	  cout << "Are neighbours: digit (E = "  << digit1->fEnergy << ") with x = " << digit1->fX << " and z = " << digit1->fZ << 
-	  //	    " is neighbour with digit (E = " << digit2->fEnergy << ") with x = " << digit2->fX << " and z = " << digit2->fZ << endl;
+	    //	    " is neighbour with digit (E = " << digit2->fEnergy << ") with x = " << digit2->fX << " and z = " << digit2->fZ << endl;
 
 	  if(TMath::Abs(digit1->fTime - digit2->fTime ) < fEmcTimeGate)
 	    {
 	      return 1; 
 	    }
-	}
-      else
-	{
-	  //  cout << "Not neighbours: digit (E = "  << digit1->fEnergy << ") with x = " << digit1->fX << " and z = " << digit1->fZ << 
-	  //  " is not neighbour with digit (E = " << digit2->fEnergy << ") with x = " << digit2->fX << " and z = " << digit2->fZ << endl;
 	}
     }
   return 0;
