@@ -31,6 +31,7 @@
 // header files of library components
 #include "AliHLTGlobalTrackMergerComponent.h"
 #include "AliHLTGlobalEsdConverterComponent.h"
+#include "AliHLTV0HistoComponent.h"
 
 /** global instance for agent registration */
 AliHLTGlobalAgent gAliHLTGlobalAgent;
@@ -61,6 +62,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   if (!pHandler) return -EINVAL;
   pHandler->AddComponent(new AliHLTGlobalTrackMergerComponent);
   pHandler->AddComponent(new AliHLTGlobalEsdConverterComponent);
+  pHandler->AddComponent(new AliHLTV0HistoComponent );
   return 0;
 }
 

@@ -5,7 +5,8 @@ CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
 		AliHLTGlobalTrackMergerComponent.h \
 		AliHLTGlobalTrackMerger.h \
 		AliHLTGlobalAgent.h \
-		AliHLTVertexer.h
+		AliHLTVertexer.h \
+		physics/AliHLTV0HistoComponent.h
 
 # 		
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
@@ -14,7 +15,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 
 MODULE_DHDR:= 
 
-EINCLUDE 	:= HLT/global \
+EINCLUDE 	:= HLT/global HLT/global/physics \
 		   HLT/BASE \
 		   HLT/BASE/util \
 		   TPC \
