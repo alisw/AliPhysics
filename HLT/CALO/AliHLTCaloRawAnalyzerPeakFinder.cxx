@@ -126,19 +126,19 @@ AliHLTCaloRawAnalyzerPeakFinder::Evaluate(Int_t /*start*/, Int_t length)
       for(int i=0; i < tmpLength; i++)
 	{  
 	  //fDAmpl += fAVectorPtr[i]*fIntDataPtr[i]; removed 18 april 2008    
-	  fDAmpl += fAVectorPtr[i]*fDoubleDataPtr[i];   
+	  fDAmpl += fAVectorPtr[i]*fShortDataPtr[i];   
 	}
 
       for(int i=0; i < tmpLength; i++)
 	{   
 	  //  fDTof += fTVectorPtr[i]*fIntDataPtr[i];  removed 18 april 2008   
-	  fDTof += fTVectorPtr[i]*fDoubleDataPtr[i]; 
+	  fDTof += fTVectorPtr[i]*fShortDataPtr[i]; 
 	}
       
       if(fDAmpl > 900)
 	{
 	  //	  Double_t tmpMax = MaxValue(const_cast<unsigned int*>(fIntDataPtr), tmpLength);  removed 18 april 2008   
-	  double tmpMax = fUtilitiesPtr->MaxValue(fDoubleDataPtr, tmpLength); 
+	  double tmpMax = fUtilitiesPtr->MaxValue(fShortDataPtr, tmpLength); 
 
 	  if(tmpMax == 1023)
 	    {

@@ -36,8 +36,8 @@ class AliHLTCaloRawAnalyzerPeakFinder : public AliHLTCaloRawAnalyzer
 * @param tVectPtr the peakfinder vector for timing
 * @param size size in number of values of the time vector
 */
-  virtual void SetTVector(Double_t *tVectPtr =0, Int_t size = 0);
-
+//  virtual void SetTVector(Double_t *tVectPtr =0, Int_t size = 0);
+  void SetTVector(Double_t *tVectPtr =0, Int_t size = 0);
 
 
 /**
@@ -51,8 +51,8 @@ class AliHLTCaloRawAnalyzerPeakFinder : public AliHLTCaloRawAnalyzer
 * @param aVectPtr the peakfinder vector for timing
 * @param size size in number of values of the time vector
 */
-  virtual void SetAVector(Double_t *aVectPtr =0, Int_t size =0);
-
+//  virtual void SetAVector(Double_t *aVectPtr =0, Int_t size =0);
+ void SetAVector(Double_t *aVectPtr =0, Int_t size =0);
 
 /**
 * Extraction of timing and energy using the Peakfinde Algorithm.
@@ -65,7 +65,7 @@ class AliHLTCaloRawAnalyzerPeakFinder : public AliHLTCaloRawAnalyzer
 * @param start the start index of the subarray of the data array. 
 * @param length the number of samples to use starting from index 
 **/
-  virtual void Evaluate(Int_t start = 0, Int_t length = 100);
+   virtual void Evaluate(Int_t start = 0, Int_t length = 100);
  
  private:
  AliHLTCaloRawAnalyzerPeakFinder(const AliHLTCaloRawAnalyzerPeakFinder & );

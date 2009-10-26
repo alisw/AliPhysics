@@ -16,10 +16,7 @@ class AliHLTCaloRawAnalyzerCrude : public AliHLTCaloRawAnalyzer
   AliHLTCaloRawAnalyzerCrude();
   virtual ~AliHLTCaloRawAnalyzerCrude();
   virtual void Evaluate(int start = 0, int lenght = 100);
-  virtual void EvaluateShort(int start = 0, int lenght = 100);
- private:
-  //  ClassDef(AliHLTCaloRawAnalyzerCrude, 2) 
-  
+private:
 };
 
 #endif
