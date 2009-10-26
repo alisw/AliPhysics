@@ -23,23 +23,19 @@ TH1F* hije;
 
 TLegend* leg;
 
-void plotMCRates(char* hijfname = "scale/histosLHC08d6.root",
-		 char* jjfname = "scale/histosscaledLHC09b2ESD.root",
-		 char* bfname = "scale/histosscaledLHC09b4.root",
-		 char* wfname = "scale/histosWBoson.root") {
+void plotMCRates(char* hijfname = "data/scaled25Oct09/histosLHC08d6.root",
+		 char* jjfname = "data/scaled25Oct09/TOTALhistosscaled-LHC09b2-0.root",
+		 char* bfname = "data/scaled25Oct09/histosscaledLHC09b4AODc.root",
+		 char* wfname = "data/scaled25Oct09/histosWBoson.root") {
 
   //For HIJING need to divide by the number of events, which we
   //can get from the file and do when we perform scaling
   double hijscale = 0.05*(1.E6)*0.5*7700; //0-5% * seconds*lumi*PbPb x-section
   //For bjet and jet-jet events
   double pyscale = (1.E6)*0.5*208*208*100/360; //seconds*lumi*Pb*Pb*acceptance
-  double bscale = pyscale*0.10; //Branching ratio for forced
-				//semi-leptonic decays
-  double wscale = pyscale*6.29e-05; //JLK: This is temporary X-sec
-				     //info from 2-29 GeV bin until we
-				     //get pyxsec files; also need to
-				     //divide by nTrials.  For now,
-				     //use nEvt
+  double bscale = pyscale; //Do we need the Branching ratio for forced
+				//semi-leptonic decays?
+  double wscale = pyscale; 
   
   TFile* hijfile = new TFile(hijfname);
   if(!hijfile) { printf("NO HIJING FILE\n"); return; }
@@ -72,13 +68,12 @@ void plotMCRates(char* hijfname = "scale/histosLHC08d6.root",
 
   TFile* wfile = new TFile(wfname);
   if(!wfile) { printf("NO W-BOSON FILE\n"); return; }
-  TList* wlist = (TList*)wfile->Get("histos");
-  TH2F* wmcele = (TH2F*)histos->FindObject("AnaElectron_hPtMCElectron");
-  TH1F* wmchad = (TH1F*)histos->FindObject("AnaElectron_hPtMCHadron");
-  TH1F* wmult = (TH1F*)histos->FindObject("AnaElectron_hRefMult");
+  TH2F* wmcele = (TH2F*)wfile->Get("AnaElectron_hPtMCElectron");
+  TH1F* wmchad = (TH1F*)wfile->Get("AnaElectron_hPtMCHadron");
+  TH1F* wmult = (TH1F*)wfile->Get("AnaElectron_hRefMult");
   Int_t nEvtW = wmult->GetEntries();
-  wmcele->Scale(wscale/nEvtW);
-  wmchad->Scale(wscale/nEvtW);
+  wmcele->Scale(wscale);
+  wmchad->Scale(wscale);
 
   printf("Event statistics: %d (HIJING)  %d (JET-JET)  %d (B-JET)  %d (W-Boson)\n",nEvt,nEvtJJ,nEvtB,nEvtW);
 
@@ -138,14 +133,22 @@ void plotMCRates(char* hijfname = "scale/histosLHC08d6.root",
 
 }
 
-void ScaleAndConfigure(TH1F* hist,Double_t scale, Int_t color,Bool_t keepErr)
+void ScaleAndConfigure(TH1F* hist,Double_t scale, Int_t color,Bool_t keepErr=kFALSE)
 {
   hist->Scale(scale);
   hist->SetLineColor(color);
   hist->SetLineWidth(2);
   if(keepErr == kFALSE) {
     //remove the error bars - useful for MC rates
-    for(Int_t i = 1; i < hist->GetNbinsX(); i++) {
+    for(Int_t i = 1; i <= hist->GetNbinsX(); i++) {
+      if(hist->GetBinContent(i) > 0.) {
+        if(hist->GetBinError(i)/hist->GetBinContent(i) > 0.5) {
+          Double_t avg = 0.;
+          if(i > 1 && i < hist->GetNbinsX())
+            avg = (hist->GetBinContent(i-1) + hist->GetBinContent(i+1))/2.;
+          hist->SetBinContent(i,avg);
+        }
+      }
       hist->SetBinError(i,0.);
     }
   }
@@ -158,7 +161,7 @@ void drawAnnualYields() {
   gPad->SetLogy();
   all->SetXTitle("p_{T} (GeV/c)");
   all->SetYTitle("Annual yield");
-  all->GetYaxis()->SetRangeUser(1.E1,3.E9);
+  all->GetYaxis()->SetRangeUser(1,6.E8);
   all->GetXaxis()->SetRangeUser(0.,50.);
   all->Draw();
   bele->Draw("same");  
@@ -178,6 +181,7 @@ void drawAnnualYields() {
   leg->AddEntry(conv,"Conversion e","l");
   leg->AddEntry(wz,"W Boson e","l");
   leg->Draw();
+  crates->Print("MCRates_all.pdf");
 
 }
 
@@ -188,7 +192,7 @@ void drawSigBkg() {
   gPad->SetLogy();
   all->SetXTitle("p_{T} (GeV/c)");
   all->SetYTitle("Annual yield");
-  all->GetYaxis()->SetRangeUser(1.E1,3.E9);
+  all->GetYaxis()->SetRangeUser(1.,6.E8);
   all->GetXaxis()->SetRangeUser(0.,50.);
   all->Draw();
   sige->Draw("same");  
@@ -204,6 +208,7 @@ void drawSigBkg() {
   leg1->AddEntry(bkge,"Jet-Jet Events","l");
   leg1->AddEntry(walle,"W-decay Events","l");
   leg1->Draw();
+  csigbkg->Print("MCRates_byEventSource.pdf");
 
 }
 
@@ -220,7 +225,7 @@ void drawPtCutRates() {
   TH1F* convptcut = GetPtCutHisto(conv);
   TH1F* wzptcut = GetPtCutHisto(wz);
   alleptcut->GetXaxis()->SetRangeUser(0,50);
-  alleptcut->GetYaxis()->SetRangeUser(100,alleptcut->GetMaximum()*2);
+  alleptcut->GetYaxis()->SetRangeUser(10,6.e8);
   alleptcut->SetXTitle("p_{T}^{cut} (GeV/c)");
   alleptcut->SetYTitle("Annual Yield in EMCAL for p_{T}>p_{T}^{cut}");
   alleptcut->SetTitle("Annual electron yield in Pb+Pb for p_{T}>p_{T}^{cut}");
@@ -232,6 +237,7 @@ void drawPtCutRates() {
   convptcut->Draw("same");
   wzptcut->Draw("same");
   leg->Draw();
+  cptcut->Print("MCRates_ptcut_all.pdf");
 
 }
 
@@ -260,11 +266,11 @@ void drawHadEleRatios() {
     allratio->SetBinError(i,0.);
     behratio->SetBinError(i,0.);
   }
-  allratio->Rebin();
-  behratio->Rebin();
-  allratio->GetYaxis()->SetRangeUser(1,10000);
-  allratio->GetXaxis()->SetRangeUser(0,50);
-  behratio->GetXaxis()->SetRangeUser(0,50);
+  allratio->Rebin(5); allratio->Scale(1./5.);
+  behratio->Rebin(5); behratio->Scale(1./5.);
+  allratio->GetYaxis()->SetRangeUser(50,1e4);
+  allratio->GetXaxis()->SetRangeUser(0,49);
+  behratio->GetXaxis()->SetRangeUser(0,49);
   allratio->SetMarkerStyle(20);
   behratio->SetMarkerStyle(24);
   allratio->Fit("pol0");
@@ -276,7 +282,7 @@ void drawHadEleRatios() {
   heleg->AddEntry(allratio,"All electrons","l");
   heleg->AddEntry(behratio,"Bottom electrons","p");
   heleg->Draw();
-
+  ceh->Print("MCRates_heratio.pdf");
 }
 
 TH1F* GetPtCutHisto(TH1F* input) 
