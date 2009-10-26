@@ -161,7 +161,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), arg.Data());
 	} else {
 #ifndef HAVE_NOT_ALTRORAWSTREAMV3
-	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinder32Bit", publisher.Data(), arg.Data());
+	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinder32Bit", publisher.Data(),"");
 #else
 	  // using the AltroDecoder if the official V3 decoder is not
 	  // available in the offline code
