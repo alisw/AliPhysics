@@ -1,29 +1,67 @@
+//
+// This is an example macro for creation of a pair manager
+// for a resonance analysis with the PWG2/RESONANCES package.
+// Its output is an AliRsnPairManager which will be added to the task.
+// It will contain:
+// - signal (inv. mass)
+// - true pairs (inv. mass)
+// - like-sign (inv. mass)
+// - true pairs (inv. mass, resolution)
+// All histogram are done w.r. to Pt or Eta and w.r. to multiplicity.
+// The binnings are hard-coded. Change them according to your preferences.
+//
+// Arguments:
+// -- pairMgrName : a name for the pair manager which must contain
+//                  some keywords to choose amond the available cuts
+//                  and PID selection available here (this is a personal customization)
+// -- resonancePDG: PDG code of resonance (for true pairs)
+// -- type1, type2: particle species for track 1 and 2 in the pair (using AliPID enumeration)
+//
+// NOTE:
+// the keyword available here are the following:
+// -- "NOPID": completely no PID analysis (only primary track cuts are applied)
+// -- "BB"   : all tracks are used, but the TPC Bethe-Bloch cut is applied (cut value = 0.2)
+// -- "PID"  : realistic PID is used
+//
 AliRsnPairManager* RsnConfig
 (
-  AliRsnPair::EPairType  pidType,        // PID type (NoPID, RealisticPID or PerfectPID)
   const char            *pairMgrName,    // name for the pair manager
   Int_t                  resonancePDG,   // PDG code of resonance (for true pairs)
   AliPID::EParticleType  type1,          // PID of one member of decay (+)
-  AliPID::EParticleType  type2,          // PID of other member of decay (-)
-  Double_t               bbCut = 10000.0 // Bethe-Bloch TPC cut value (large --> excluded)
+  AliPID::EParticleType  type2           // PID of other member of decay (-)
 )
 {
-//
-// Creates an AliRsnPairMgr for a specified resonance, which contains:
-// - signal (inv. mass)
-// - event mixing (inv. mass)
-// - like-sign (inv. mass)
-// - true pairs (inv. mass, resolution)
-//
-// For all pairs, a binning in Pt and Eta is provided, and a cut in multiplicity
-// which defines a multiplicity bin where the analysis is computed.
-//
-// Arguments define how the pair manager must be built, and are explained above
-//
-
   // === NAME DEFINITIONS =========================================================================
 
   AliRsnPairManager  *pairMgr  = new AliRsnPairManager(pairMgrName);
+
+  // examines the given name to define details about track selection and cuts
+  TString               str(pairMgrName);
+  AliRsnPair::EPairType pidType;
+  Bool_t                useBBCut;
+  if (str.Contains("NOPID"))
+  {
+    pidType  = AliRsnPair::kNoPID;
+    useBBCut = kFALSE;
+    Info("RsnConfig", "PID TYPE = No PID        -- BB CUT: not used");
+  }
+  else if (str.Contains("BB"))
+  {
+    pidType  = AliRsnPair::kNoPID;
+    useBBCut = kTRUE;
+    Info("RsnConfig", "PID TYPE = No PID        -- BB CUT: used");
+  }
+  else if (str.Contains("PID"))
+  {
+    pidType  = AliRsnPair::kRealisticPID;
+    useBBCut = kFALSE;
+    Info("RsnConfig", "PID TYPE = Realistic PID -- BB CUT: not used");
+  }
+  else
+  {
+    Error("RsnConfig", "Unrecognized keywords in the name. Can't continue");
+    return 0x0;
+  }
 
   // === PAIR DEFINITIONS =========================================================================
 
@@ -69,13 +107,14 @@ AliRsnPairManager* RsnConfig
   AliRsnCutESDPrimary *cutESDPrimary = new AliRsnCutESDPrimary("cutESDPrimary");
   cutESDPrimary->GetCuts()->SetMaxCovDiagonalElements(2.0, 2.0, 0.5, 0.5, 2.0);
   cutESDPrimary->GetCuts()->SetRequireSigmaToVertex(kTRUE);
-  cutESDPrimary->GetCuts()->SetMaxNsigmaToVertex(4.0);
+  cutESDPrimary->GetCuts()->SetMaxNsigmaToVertex(3.0);
   cutESDPrimary->GetCuts()->SetRequireTPCRefit(kTRUE);
   cutESDPrimary->GetCuts()->SetAcceptKinkDaughters(kFALSE);
   cutESDPrimary->GetCuts()->SetMinNClustersTPC(50);
   cutESDPrimary->GetCuts()->SetMaxChi2PerClusterTPC(3.5);
   // -- Bethe-Bloch with kaon mass hypothesis
-  AliRsnCutBetheBloch *cutKaonBB = new AliRsnCutBetheBloch("cutKaonBB", bbCut, AliPID::kKaon);
+  Double_t sigmaTPC = 0.065;
+  AliRsnCutBetheBloch *cutKaonBB = new AliRsnCutBetheBloch("cutKaonBB", 3.0 * sigmaTPC, AliPID::kKaon);
   cutKaonBB->SetCalibConstant(0, 0.76176e-1);
   cutKaonBB->SetCalibConstant(1, 10.632);
   cutKaonBB->SetCalibConstant(2, 0.13279e-4);
@@ -92,14 +131,12 @@ AliRsnPairManager* RsnConfig
   // cut set definition for all pairs
   AliRsnCutSet *cutSetParticle = new AliRsnCutSet("trackCuts");
   cutSetParticle->AddCut(cutESDPrimary);
-  if (pidType == AliRsnPair::kNoPID && bbCut < 10.0)
+  if (useBBCut)
   {
-    Info("RsnConfig", "PID TYPE = NOPID AND BB CUT = %f -- Adding this cut", bbCut);
     cutSetParticle->AddCut(cutKaonBB);
     cutSetParticle->SetCutScheme("cutKaonBB&cutESDPrimary");
   }
   else {
-    Info("RsnConfig", "PID TYPE = %d AND BB CUT = %f -- Excluding cut", pidType, bbCut);
     cutSetParticle->SetCutScheme("cutESDPrimary");
   }
 
@@ -129,8 +166,8 @@ AliRsnPairManager* RsnConfig
 
   // define all binnings
   AliRsnFunctionAxis *axisIM   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairInvMass,    1000,  0.0,   2.0);
-  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,          400,  0.0,  10.0);
-  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          10, -1.0,   1.0);
+  AliRsnFunctionAxis *axisPt   = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairPt,           40,  0.0,  10.0);
+  AliRsnFunctionAxis *axisEta  = new AliRsnFunctionAxis(AliRsnFunctionAxis::kPairEta,          20, -1.5,   1.5);
   AliRsnFunctionAxis *axisMult = new AliRsnFunctionAxis(AliRsnFunctionAxis::kEventMult,         8,  0.0, 200.0);
 
   // function #1: pt, mult

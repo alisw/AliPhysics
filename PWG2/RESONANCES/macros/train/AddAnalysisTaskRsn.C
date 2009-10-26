@@ -3,10 +3,10 @@
 //
 Bool_t AddAnalysisTaskRsn
 (
-  Bool_t sourceESD  = kTRUE         // if true, the source of data is ESD, otherwise is AOD from filter task
+  Bool_t sourceESD  = kTRUE // if true, the source of data is ESD, otherwise is AOD from filter task
 )
 {
-  //AliLog::SetClassDebugLevel("AliRsnCut", AliLog::kDebug+3);
+  AliLog::SetClassDebugLevel("AliMCEvent", AliLog::kWarning);
   //AliLog::SetClassDebugLevel("AliRsnCutStd", AliLog::kDebug+3);
   //AliLog::SetClassDebugLevel("AliRsnCutBetheBloch", AliLog::kDebug+3);
 
@@ -14,7 +14,7 @@ Bool_t AddAnalysisTaskRsn
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   // initialize task with 4 slots:
-  AliRsnAnalysisSE *task = new AliRsnAnalysisSE("RsnAnalysis", 4);
+  AliRsnAnalysisSE *task = new AliRsnAnalysisSE("RsnAnalysis", 2);
   
   // set prior probabilities for PID
   task->SetPriorProbability(AliPID::kElectron, 0.02);
@@ -30,22 +30,16 @@ Bool_t AddAnalysisTaskRsn
   // initialize analysis manager with pairs from config
   AliRsnAnalysisManager *anaMgr = 0x0;
 
-  // manager #0: phi NO PID
+  // manager #0: phi
   anaMgr = task->GetAnalysisManager(0);
-  anaMgr->Add(RsnConfig(AliRsnPair::kNoPID, "PHI"  , 333, AliPID::kKaon, AliPID::kKaon));
-  anaMgr->Add(RsnConfig(AliRsnPair::kNoPID, "PHIBB", 333, AliPID::kKaon, AliPID::kKaon, 0.2));
-  // manager #1: phi with PID (realistic & perfect)
+  anaMgr->Add(RsnConfig("PHI_NOPID", 333, AliPID::kKaon, AliPID::kKaon));
+  anaMgr->Add(RsnConfig("PHI_BB"   , 333, AliPID::kKaon, AliPID::kKaon));
+  anaMgr->Add(RsnConfig("PHI_PID"  , 333, AliPID::kKaon, AliPID::kKaon));
+  // manager #1: kstar
   anaMgr = task->GetAnalysisManager(1);
-  anaMgr->Add(RsnConfig(AliRsnPair::kRealisticPID, "PHI", 333, AliPID::kKaon, AliPID::kKaon));
-  anaMgr->Add(RsnConfig(AliRsnPair::kPerfectPID  , "PHI", 333, AliPID::kKaon, AliPID::kKaon));
-  // manager #2: kstar NO PID
-  anaMgr = task->GetAnalysisManager(2);
-  anaMgr->Add(RsnConfig(AliRsnPair::kNoPID, "KSTAR"  , 313, AliPID::kPion, AliPID::kKaon));
-  anaMgr->Add(RsnConfig(AliRsnPair::kNoPID, "KSTARBB", 313, AliPID::kPion, AliPID::kKaon, 0.2));
-  // manager #1: kstar with PID (realistic & perfect)
-  anaMgr = task->GetAnalysisManager(3);
-  anaMgr->Add(RsnConfig(AliRsnPair::kRealisticPID, "KSTAR", 313, AliPID::kPion, AliPID::kKaon));
-  anaMgr->Add(RsnConfig(AliRsnPair::kPerfectPID  , "KSTAR", 313, AliPID::kPion, AliPID::kKaon));
+  anaMgr->Add(RsnConfig("KSTAR_NOPID", 313, AliPID::kPion, AliPID::kKaon));
+  anaMgr->Add(RsnConfig("KSTAR_BB"   , 313, AliPID::kPion, AliPID::kKaon));
+  anaMgr->Add(RsnConfig("KSTAR_PID"  , 313, AliPID::kPion, AliPID::kKaon));
 
   // setup cuts for events (good primary vertex)
   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 3);
@@ -63,15 +57,11 @@ Bool_t AddAnalysisTaskRsn
 
   // define and connect output containers
   AliAnalysisDataContainer *outputInfo = mgr->CreateContainer("RsnInfo", TList::Class(), AliAnalysisManager::kOutputContainer, "info.root");
-  AliAnalysisDataContainer *outputRsn[4];
-  outputRsn[0] = mgr->CreateContainer("PHI_NOPID"  , TList::Class(), AliAnalysisManager::kOutputContainer, "phi_nopid.root");
-  outputRsn[1] = mgr->CreateContainer("PHI_PID"    , TList::Class(), AliAnalysisManager::kOutputContainer, "phi_pid.root");
-  outputRsn[2] = mgr->CreateContainer("KSTAR_NOPID", TList::Class(), AliAnalysisManager::kOutputContainer, "kstar_nopid.root");
-  outputRsn[3] = mgr->CreateContainer("KSTAR_PID"  , TList::Class(), AliAnalysisManager::kOutputContainer, "kstar_pid.root");
+  AliAnalysisDataContainer *outputRsn[2];
+  outputRsn[0] = mgr->CreateContainer("PHI"  , TList::Class(), AliAnalysisManager::kOutputContainer, "phi.root");
+  outputRsn[1] = mgr->CreateContainer("KSTAR", TList::Class(), AliAnalysisManager::kOutputContainer, "kstar.root");
 
   mgr->ConnectOutput(task, 1, outputInfo);
   mgr->ConnectOutput(task, 2, outputRsn[0]);
   mgr->ConnectOutput(task, 3, outputRsn[1]);
-  mgr->ConnectOutput(task, 4, outputRsn[2]);
-  mgr->ConnectOutput(task, 5, outputRsn[3]);
 }
