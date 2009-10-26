@@ -29,7 +29,8 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3():
   AliHLTProcessor(),
   fAnalyzerPtr(0),
   fMapperPtr(0),     
-  fkDoPushRawData(false),
+  //  fkDoPushRawData(false),
+   fkDoPushRawData(false),
   fPhosEventCount(0),
   fSanityInspectorPtr(0),
   fRawReaderMemoryPtr(0),
@@ -136,10 +137,15 @@ int
 AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& /*trigData*/, 
 					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
+
+  /*
+
   if( fPhosEventCount%300 == 0 )
     {
       cout << __FILE__<<__LINE__<< " Processing event " << fPhosEventCount << endl;
     }
+  */
+
   //  Int_t blockSize          = 0;
  
   Int_t blockSize          = -1;
