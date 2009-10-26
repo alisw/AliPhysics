@@ -84,10 +84,10 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
     static AliTOFClusterFinderV1 tofClus(fTOFcalib);
 
     // decoder version option
-    if (optionString.Contains("DecoderV1"))
-      tofClus.SetDecoderVersion(1);
-    else
+    if (optionString.Contains("DecoderV0"))
       tofClus.SetDecoderVersion(0);
+    else
+      tofClus.SetDecoderVersion(1);
     
     tofClus.Digits2RecPoints(rawReader, clustersTree);
   }
@@ -95,10 +95,10 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
     static AliTOFClusterFinder tofClus(fTOFcalib);
     
     // decoder version option
-    if (optionString.Contains("DecoderV1"))
-      tofClus.SetDecoderVersion(1);
-    else
+    if (optionString.Contains("DecoderV0"))
       tofClus.SetDecoderVersion(0);
+    else
+      tofClus.SetDecoderVersion(1);
 
     tofClus.Digits2RecPoints(rawReader, clustersTree);
   }
@@ -121,10 +121,10 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     static AliTOFClusterFinderV1 tofClus(fTOFcalib);
 
     // decoder version option
-    if (optionString.Contains("DecoderV1"))
-      tofClus.SetDecoderVersion(1);
-    else
+    if (optionString.Contains("DecoderV0"))
       tofClus.SetDecoderVersion(0);
+    else
+      tofClus.SetDecoderVersion(1);
     
     tofClus.Digits2RecPoints(digitsTree, clustersTree);
   }
@@ -132,10 +132,10 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     static AliTOFClusterFinder tofClus(fTOFcalib);
 
     // decoder version option
-    if (optionString.Contains("DecoderV1"))
-      tofClus.SetDecoderVersion(1);
-    else
+    if (optionString.Contains("DecoderV0"))
       tofClus.SetDecoderVersion(0);
+    else
+      tofClus.SetDecoderVersion(1);
     
     tofClus.Digits2RecPoints(digitsTree, clustersTree);
   }
@@ -154,10 +154,10 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     static AliTOFClusterFinderV1 tofClus(fTOFcalib);
 
     // decoder version option
-    if (optionString.Contains("DecoderV1"))
-      tofClus.SetDecoderVersion(1);
-    else
+    if (optionString.Contains("DecoderV0"))
       tofClus.SetDecoderVersion(0);
+    else
+      tofClus.SetDecoderVersion(1);
     
     tofClus.Raw2Digits(reader, digitsTree);
   }
@@ -165,10 +165,10 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     static AliTOFClusterFinder tofClus(fTOFcalib);
 
     // decoder version option
-    if (optionString.Contains("DecoderV1"))
-      tofClus.SetDecoderVersion(1);
-    else
+    if (optionString.Contains("DecoderV0"))
       tofClus.SetDecoderVersion(0);
+    else
+      tofClus.SetDecoderVersion(1);
     
     tofClus.Raw2Digits(reader, digitsTree);
   }
