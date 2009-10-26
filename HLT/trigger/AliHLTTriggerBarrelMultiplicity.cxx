@@ -34,6 +34,7 @@
 #include "AliHLTGlobalBarrelTrack.h"
 #include "TObjArray.h"
 #include "TObjString.h"
+#include "TVector3.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTriggerBarrelMultiplicity)

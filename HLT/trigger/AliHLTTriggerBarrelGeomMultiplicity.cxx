@@ -58,6 +58,7 @@ AliHLTTriggerBarrelGeomMultiplicity::AliHLTTriggerBarrelGeomMultiplicity()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  fDetectorArray = new TObjArray(1);
 
   fDetectorArray = new TObjArray(1);
 
@@ -372,7 +373,6 @@ int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromFile(const char *fi
     }
   HLTInfo("received %d detector geometries", nDetectorGeoms);
 
-
   return nDetectorGeoms;
 }
 
@@ -392,7 +392,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::ScanConfigurationArgument(int argc, con
       return 2;
     }    
 
-  if (argument.CompareTo("-triggername")==0) 
+  if (argument.CompareTo("-trgname")==0) 
     {
       if (++i>=argc) return -EPROTO;
       
