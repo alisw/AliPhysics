@@ -80,10 +80,12 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateDiffFlowProductOfCorrelations(TString type, TString ptOrEta); // type = RP or POI
     virtual void CalculateDiffFlowSumOfEventWeights(TString type, TString ptOrEta); // type = RP or POI
     virtual void CalculateDiffFlowSumOfProductOfEventWeights(TString type, TString ptOrEta); // type = RP or POI
+    virtual void CalculateDiffFlowCorrectionsForNUASinTerms(TString type, TString ptOrEta);  
+    virtual void CalculateDiffFlowCorrectionsForNUACosTerms(TString type, TString ptOrEta);
     // ...
     virtual void CalculateCorrelationsForDifferentialFlow2D(TString type); // type = RP or POI
-    virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms(TString type); // type = RP or POI  
-    virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowSinTerms(TString type); // type = RP or POI
+    //virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms(TString type); // type = RP or POI  
+    //virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowSinTerms(TString type); // type = RP or POI
     virtual void CalculateWeightedCorrelationsForDifferentialFlow2D(TString type); 
     virtual void EvaluateNestedLoopsForDifferentialFlow(AliFlowEventSimple* anEvent);
   // 3.) method Finish() and methods called within Finish():
@@ -108,10 +110,12 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateDiffFlowCovariances(TString type, TString ptOrEta); 
     virtual void CalculateDiffFlowCumulants(TString type, TString ptOrEta); 
     virtual void CalculateDiffFlow(TString type, TString ptOrEta); 
+    virtual void FinalizeCorrectionTermsForNUADiffFlow(TString type, TString ptOrEta); 
+    virtual void CalculateDiffFlowCumulantsCorrectedForNUA(TString type, TString ptOrEta);   
+    virtual void CalculateDiffFlowCorrectedForNUA(TString type, TString ptOrEta); 
     virtual void CalculateFinalResultsForRPandPOIIntegratedFlow(TString type); // to be improved (add also possibility to integrate over eta yield)
     virtual void FillCommonHistResultsDiffFlow(TString type);
     
-    virtual void CalculateFinalCorrectionsForNonUniformAcceptanceForDifferentialFlow(Bool_t useParticleWeights, TString type);    
     virtual void CompareResultsFromNestedLoopsAndFromQVectorsForDiffFlow(Bool_t useParticleWeights); 
         
     // to be improved (removed):
@@ -227,6 +231,8 @@ class AliFlowAnalysisWithQCumulants{
   TProfile* GetDiffFlowCorrelationsPro(Int_t i, Int_t j, Int_t k) const {return this->fDiffFlowCorrelationsPro[i][j][k];};
   void SetDiffFlowProductOfCorrelationsPro(TProfile* const dfpocp, Int_t i, Int_t j, Int_t k, Int_t l) {this->fDiffFlowProductOfCorrelationsPro[i][j][k][l] = dfpocp;};
   TProfile* GetDiffFlowProductOfCorrelationsPro(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowProductOfCorrelationsPro[i][j][k][l];};
+  void SetDiffFlowCorrectionTermsForNUAPro(TProfile* const dfctfnp, Int_t i, Int_t j, Int_t k, Int_t l) {this->fDiffFlowCorrectionTermsForNUAPro[i][j][k][l] = dfctfnp;};
+  TProfile* GetDiffFlowCorrectionTermsForNUAPro(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowCorrectionTermsForNUAPro[i][j][k][l];};  
   // 2D:
   void SetCorrelationsPro(TProfile2D* const correlPro, Int_t i, Int_t j, Int_t k, Int_t l) {this->fCorrelationsPro[i][j][k][l] = correlPro;};
   TProfile2D* GetCorrelationsPro(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fCorrelationsPro[i][j][k][l];};
@@ -247,6 +253,8 @@ class AliFlowAnalysisWithQCumulants{
   TH1D* GetDiffFlowSumOfEventWeights(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowSumOfEventWeights[i][j][k][l];};
   void SetDiffFlowSumOfProductOfEventWeights(TH1D* const dfsopoew, Int_t i, Int_t j, Int_t k, Int_t l) {this->fDiffFlowSumOfProductOfEventWeights[i][j][k][l] = dfsopoew;};
   TH1D* GetDiffFlowSumOfProductOfEventWeights(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowSumOfProductOfEventWeights[i][j][k][l];};
+  void SetDiffFlowCorrectionTermsForNUAHist(TH1D* const dfctfnh, Int_t i, Int_t j, Int_t k, Int_t l) {this->fDiffFlowCorrectionTermsForNUAHist[i][j][k][l] = dfctfnh;};
+  TH1D* GetDiffFlowCorrectionTermsForNUAHist(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowCorrectionTermsForNUAHist[i][j][k][l];};  
   
   // x.) debugging and cross-checking:
   void SetNestedLoopsList(TList* nllist) {this->fNestedLoopsList = nllist;};
@@ -370,6 +378,7 @@ class AliFlowAnalysisWithQCumulants{
   TList *fDiffFlowCorrelationsHistList[2][2]; // list to hold histograms with all correlations for differential flow [0=RP,1=POI][0=pt,1=eta] 
   TList *fDiffFlowSumOfEventWeightsHistList[2][2][2]; // list to hold histograms with sum of linear/quadratic event weights [0=RP,1=POI][0=pt,1=eta][0=linear 1,1=quadratic]
   TList *fDiffFlowSumOfProductOfEventWeightsHistList[2][2]; // list to hold histograms with sum of products of event weights [0=RP,1=POI][0=pt,1=eta]
+  TList *fDiffFlowCorrectionsHistList[2][2]; // list to hold histograms with correction term for NUA for differential flow [0=RP,1=POI][0=pt,1=eta] 
   TList *fDiffFlowCovariancesHistList[2][2]; // list to hold histograms with all covariances for differential flow [0=RP,1=POI][0=pt,1=eta] 
   TList *fDiffFlowCumulantsHistList[2][2]; // list to hold histograms with all cumulants for differential flow [0=RP,1=POI][0=pt,1=eta] 
   TList *fDiffFlowHistList[2][2]; // list to hold histograms with final results for differential flow [0=RP,1=POI][0=pt,1=eta]
@@ -383,6 +392,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fs1dEBE[3][2][9]; // [0=r,1=p,2=q][0=pt,1=eta][k] // to be improved
   TH1D *fDiffFlowCorrelationsEBE[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][reduced correlation index]
   TH1D *fDiffFlowEventWeightsForCorrelationsEBE[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][event weights for reduced correlation index]
+  TH1D *fDiffFlowCorrectionTermsForNUAEBE[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
   // 2D:
   TProfile2D *fReRPQ2dEBE[3][4][9]; // real part of r_{m*n,k}(pt,eta), p_{m*n,k}(pt,eta) and q_{m*n,k}(pt,eta)
   TProfile2D *fImRPQ2dEBE[3][4][9]; // imaginary part of r_{m*n,k}(pt,eta), p_{m*n,k}(pt,eta) and q_{m*n,k}(pt,eta)
@@ -392,6 +402,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fDiffFlowCorrelationsPro[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][correlation index]
   TProfile *fDiffFlowProductOfCorrelationsPro[2][2][8][8]; // [0=RP,1=POI][0=pt,1=eta] [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>] x 
                                                            //                          [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>]
+  TProfile *fDiffFlowCorrectionTermsForNUAPro[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
                                                               
   //  4e.) histograms holding final results:
   // 1D:
@@ -402,6 +413,7 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fDiffFlowSumOfEventWeights[2][2][2][4]; // [0=RP,1=POI][0=pt,1=eta][0=linear 1,1=quadratic][0=<2'>,1=<4'>,2=<6'>,3=<8'>]
   TH1D *fDiffFlowSumOfProductOfEventWeights[2][2][8][8]; // [0=RP,1=POI][0=pt,1=eta]  [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>] x 
                                                          //                           [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>]
+  TH1D *fDiffFlowCorrectionTermsForNUAHist[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
        
   // 2D:
   TProfile2D *fCorrelationsPro[2][2][2][4]; // [0=RP,1=POI][0=pWeights not used,1=pWeights used][0=exact eWeights,1=non-exact eWeights][corr.'s index]
