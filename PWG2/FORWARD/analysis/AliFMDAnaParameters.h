@@ -185,7 +185,7 @@ protected:
   MagField fMagField;                 //Magnetic field
   Species  fSpecies;                  //PbPb or pp ?
   
-  ClassDef(AliFMDAnaParameters,0) // Manager of parameters
+  ClassDef(AliFMDAnaParameters,1) // Manager of parameters
 };
 
 #endif
