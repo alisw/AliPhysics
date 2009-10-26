@@ -2,12 +2,13 @@
 contact: Boris.Polishchuk@cern.ch
 link: http://aliceinfo.cern.ch/static/phpBB3/viewtopic.php?f=4&t=17
 reference run: /castor/cern.ch/alice/phos/2007/10/02/13/07000008232001.10.root
-run type: STANDALONE
+run type: LED
 DA type: MON
 number of events needed: 1000
-input files: RCU0.data  RCU1.data  RCU2.data  RCU3.data
+number of events needed: 1000
+input files: Mod0RCU0.data Mod0RCU1.data Mod0RCU2.data Mod0RCU3.data Mod1RCU0.data Mod1RCU1.data Mod1RCU2.data Mod1RCU3.data Mod2RCU0.data Mod2RCU1.data Mod2RCU2.data Mod2RCU3.data Mod3RCU0.data Mod3RCU1.data Mod3RCU2.data Mod3RCU3.data Mod4RCU0.data Mod4RCU1.data Mod4RCU2.data Mod4RCU3.data 
 Output files: PHOS_Module2_BCM.root
-Trigger types used: CALIBRATION_EVENT or PHYSICS
+Trigger types used: CALIBRATION_EVENT
 */
 
 
@@ -30,6 +31,7 @@ extern "C" {
 #include "AliPHOSRawFitterv1.h"
 #include "AliCaloAltroMapping.h"
 #include "AliCaloRawStreamV3.h"
+#include "AliLog.h"
 
 
 /* Main routine
@@ -44,6 +46,9 @@ int main(int argc, char **argv) {
                                         "RIO",
                                         "TStreamerInfo()");
 
+  AliLog::SetGlobalDebugLevel(0) ;
+  AliLog::SetGlobalLogLevel(AliLog::kFatal);
+  
   int status;
   
   if (argc!=2) {
@@ -51,30 +56,62 @@ int main(int argc, char **argv) {
     return -1;
   }
   
+  short offset, threshold;
 
   /* Retrieve mapping files from DAQ DB */
-  const char* mapFiles[4] = {"RCU0.data","RCU1.data","RCU2.data","RCU3.data"};
-
-  for(Int_t iFile=0; iFile<4; iFile++) {
+  const char* mapFiles[20] = {
+    "Mod0RCU0.data",
+    "Mod0RCU1.data",
+    "Mod0RCU2.data",
+    "Mod0RCU3.data",
+    "Mod1RCU0.data",
+    "Mod1RCU1.data",
+    "Mod1RCU2.data",
+    "Mod1RCU3.data",
+    "Mod2RCU0.data",
+    "Mod2RCU1.data",
+    "Mod2RCU2.data",
+    "Mod2RCU3.data",
+    "Mod3RCU0.data",
+    "Mod3RCU1.data",
+    "Mod3RCU2.data",
+    "Mod3RCU3.data",
+    "Mod4RCU0.data",
+    "Mod4RCU1.data",
+    "Mod4RCU2.data",
+    "Mod4RCU3.data"
+  };
+  
+  for(Int_t iFile=0; iFile<20; iFile++) {
     int failed = daqDA_DB_getFile(mapFiles[iFile], mapFiles[iFile]);
-    if(failed) {
+    if(failed) { 
       printf("Cannot retrieve file %s from DAQ DB. Exit.\n",mapFiles[iFile]);
       return -1;
     }
   }
   
   /* Open mapping files */
-  AliAltroMapping *mapping[4];
+  AliAltroMapping *mapping[20];
   TString path = "./";
-  path += "RCU";
+
+  path += "Mod";
   TString path2;
-  for(Int_t i = 0; i < 4; i++) {
+  TString path3;
+  Int_t iMap = 0;
+
+  for(Int_t iMod = 0; iMod < 5; iMod++) {
     path2 = path;
-    path2 += i;
-    path2 += ".data";
-    mapping[i] = new AliCaloAltroMapping(path2.Data());
-  }
-  
+    path2 += iMod;
+    path2 += "RCU";
+
+    for(Int_t iRCU=0; iRCU<4; iRCU++) {
+      path3 = path2;
+      path3 += iRCU;
+      path3 += ".data";
+      mapping[iMap] = new AliCaloAltroMapping(path3.Data());
+      iMap++;
+    }
+  }  
 
   /* define data source : this is argument 1 */  
   status=monitorSetDataSource( argv[1] );
@@ -111,12 +148,12 @@ int main(int argc, char **argv) {
   
   Float_t q[64][56][2];
 
-  Int_t gain     = -1;
   Int_t cellX    = -1;
   Int_t cellZ    = -1;
   Int_t nBunches =  0;
   Int_t nFired   = -1;
   Int_t sigStart, sigLength;
+  Int_t caloFlag;
 
   /* main loop (infinite) */
   for(;;) {
@@ -161,39 +198,47 @@ int main(int argc, char **argv) {
 
       rawReader = new AliRawReaderDate((void*)event);
       AliCaloRawStreamV3 stream(rawReader,"PHOS",mapping);
-      AliPHOSRawFitterv0 fitter();
+      AliPHOSRawFitterv1 fitter;
       fitter.SubtractPedestals(kTRUE); // assume that data is non-ZS
       
       while (stream.NextDDL()) {
 	while (stream.NextChannel()) {
 
+	  /* Retrieve ZS parameters from data*/
+	  short value = stream.GetAltroCFG1();
+	  bool ZeroSuppressionEnabled = (value >> 15) & 0x1;
+	  bool AutomaticBaselineSubtraction = (value >> 14) & 0x1;
+	  if(ZeroSuppressionEnabled) {
+	    offset = (value >> 10) & 0xf;
+	    threshold = value & 0x3ff;
+	    fitter.SubtractPedestals(kFALSE);
+	    fitter.SetAmpOffset(offset);
+	    fitter.SetAmpThreshold(threshold);
+	  }
+	  
 	  cellX    = stream.GetCellX();
 	  cellZ    = stream.GetCellZ();
 	  caloFlag = stream.GetCaloFlag();  // 0=LG, 1=HG, 2=TRU
-
+	  
+	  if(caloFlag!=0 && caloFlag!=1) continue; //TRU data!
+	  
 	  // In case of oscillating signals with ZS, a channel can have several bunches
 	  nBunches = 0;
 	  while (stream.NextBunch()) {
 	    nBunches++;
-	    if (nBunches > 1) continue;
-	    sigStart  = fRawStream.GetStartTimeBin();
-	    sigLength = fRawStream.GetBunchLength();
-	    fitter.SetSamples(fRawStream->GetSignals(),sigStart,sigLength);
+	    sigStart  = stream.GetStartTimeBin();
+	    sigLength = stream.GetBunchLength();
+	    fitter.SetChannelGeo(stream.GetModule(),cellX,cellZ,caloFlag);
+	    fitter.Eval(stream.GetSignals(),sigStart,sigLength);
+	    q[cellX][cellZ][caloFlag] = fitter.GetSignalQuality();
+	    printf("q[%d][%d][%d] = %.3f\n",cellX,cellZ,caloFlag,q[cellX][cellZ][caloFlag]);
 	  } // End of NextBunch()
 	  
-	  fitter.SetNBunches(nBunches);
-	  fitter.SetChannelGeo(module,cellX,cellZ,caloFlag);
-	  fitter.Eval();
-
-	  if (nBunches>1 || caloFlag!=0 || caloFlag!=1 || fitter.GetSignalQuality()>1) continue;
-	  
-	  q[cellX][cellZ][caloFlag] = fitter.GetSignalQuality();
-	  
-	  if(gain && dc.GetEnergy()>40)
+	  if(caloFlag==1 && fitter.GetEnergy()>40)
 	    nFired++;
 	}
       }
-	
+      
       da2->FillQualityHistograms(q);
       da2->FillFiredCellsHistogram(nFired);
       //da1.UpdateHistoFile();
@@ -214,7 +259,7 @@ int main(int argc, char **argv) {
     }
   }
   
-  for(Int_t i = 0; i < 4; i++) delete mapping[i];  
+  for(Int_t i = 0; i < 20; i++) delete mapping[i];  
 
   /* Be sure that all histograms are saved */
   delete da2;
