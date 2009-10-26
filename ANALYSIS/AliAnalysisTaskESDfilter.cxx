@@ -1199,9 +1199,11 @@ void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aod
     }// end else
 
     if (pidSave) {
+      if(!aodtrack->GetDetPid()){// prevent memory leak when calling SetAODPID twice for the same track
 	detpid = new AliAODPid();
 	SetDetectorRawSignals(detpid,esdtrack,timezero, bfield);
 	aodtrack->SetDetPID(detpid);
+      }
     }
 }
 
