@@ -46,7 +46,7 @@
 #include "AliHLTCaloClusterReader.h"
 #include "AliESDCaloCluster.h"
 #include "AliHLTVertexer.h"
-#include "AliTPCseed.h"
+//#include "AliTPCseed.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -353,12 +353,13 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCout);
 	iotrack.SetTPCPoints(points);
 	if( element->TrackID()<ndEdxTPC ){
-	  AliTPCseed s;
-	  s.Set( element->GetX(), element->GetAlpha(),
-		 element->GetParameter(), element->GetCovariance() );
-	  s.SetdEdx( dEdxTPC[element->TrackID()] );
-	  s.CookPID();
-	  iotrack.SetTPCpid(s.TPCrPIDs() );
+	  iotrack.SetTPCsignal( dEdxTPC[element->TrackID()], 0, 0 ); 
+	  //AliTPCseed s;
+	  //s.Set( element->GetX(), element->GetAlpha(),
+	  //element->GetParameter(), element->GetCovariance() );
+	  //s.SetdEdx( dEdxTPC[element->TrackID()] );
+	  //s.CookPID();
+	  //iotrack.SetTPCpid(s.TPCrPIDs() );
 	} else {
 	  if( dEdxTPC ) HLTWarning("Wrong number of dEdx TPC labels");
 	}
