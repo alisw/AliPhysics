@@ -218,14 +218,14 @@ void AliHLTTriggerDomain::Add(const AliHLTDomainEntry& entry)
       }
       else if (ientry->SubsetOf(entry))
       {
-        ientry->SetBit(14, true);  // mark for removal.
+        ientry->SetBit(BIT(14), true);  // mark for removal.
       }
     }
     else
     {
       if (ientry->SubsetOf(entry))
       {
-        ientry->SetBit(14, true);  // mark for removal.
+        ientry->SetBit(BIT(14), true);  // mark for removal.
       }
       else if (entry.SubsetOf(*ientry))
       {
@@ -347,7 +347,7 @@ void AliHLTTriggerDomain::Remove(const AliHLTDomainEntry& entry)
     {
       if (ientry->SubsetOf(entry))
       {
-        ientry->SetBit(14, true);  // mark for removal.
+        ientry->SetBit(BIT(14), true);  // mark for removal.
       }
       else if (entry.SubsetOf(*ientry))
       {
@@ -366,7 +366,7 @@ void AliHLTTriggerDomain::Remove(const AliHLTDomainEntry& entry)
       }
       else if (ientry->SubsetOf(entry))
       {
-        ientry->SetBit(14, true);  // mark for removal.
+        ientry->SetBit(BIT(14), true);  // mark for removal.
       }
     }
   }
@@ -712,7 +712,7 @@ AliHLTTriggerDomain& AliHLTTriggerDomain::operator -= (const AliHLTTriggerDomain
           new (fEntries[newIndex++]) AliHLTDomainEntry(kTRUE, intersect);
           if (currentEntry->IdenticalTo(intersect))
           {
-            currentEntry->SetBit(14, true);
+            currentEntry->SetBit(BIT(14), true);
           }
         }
       }
@@ -902,7 +902,7 @@ void AliHLTTriggerDomain::MergeEntries(
   for (Int_t i = startOfIntersects; i < fEntries.GetEntriesFast(); i++)
   {
     const AliHLTDomainEntry* ientry = static_cast<const AliHLTDomainEntry*>( fEntries[i] );
-    if (ientry->TestBit(14))
+    if (ientry->TestBit(BIT(14)))
     {
       fEntries.RemoveAt(i);
       anythingRemoved = true;
@@ -922,10 +922,10 @@ void AliHLTTriggerDomain::MarkForDeletionSubsetsOf(const AliHLTDomainEntry& entr
   for (Int_t i = min; i < fEntries.GetEntriesFast(); i++)
   {
     AliHLTDomainEntry* ientry = static_cast<AliHLTDomainEntry*>( fEntries[i] );
-    if (ientry->TestBit(14)) continue;
+    if (ientry->TestBit(BIT(14))) continue;
     if (ientry->SubsetOf(entry))
     {
-      ientry->SetBit(14, true);
+      ientry->SetBit(BIT(14), true);
     }
   }
 }
@@ -940,7 +940,7 @@ void AliHLTTriggerDomain::RemoveMarkedEntries()
   for (Int_t i = 0; i < fEntries.GetEntriesFast(); i++)
   {
     const AliHLTDomainEntry* ientry = static_cast<const AliHLTDomainEntry*>( fEntries[i] );
-    if (ientry->TestBit(14))
+    if (ientry->TestBit(BIT(14)))
     {
       fEntries.RemoveAt(i);
       anythingRemoved = true;
@@ -960,7 +960,7 @@ void AliHLTTriggerDomain::Optimise()
   // Check that the first entry is not and exclusion which would be redundent.
   if (fEntries.GetEntriesFast() == 0) return;
   AliHLTDomainEntry* firstEntry = static_cast<AliHLTDomainEntry*>( fEntries[0] );
-  if (firstEntry->Exclusive()) firstEntry->SetBit(14, true);
+  if (firstEntry->Exclusive()) firstEntry->SetBit(BIT(14), true);
   
   for (Int_t i = 1; i < fEntries.GetEntriesFast(); i++)
   {
@@ -972,13 +972,13 @@ void AliHLTTriggerDomain::Optimise()
     for (Int_t j = i-1; j >= 0; j--)
     {
       AliHLTDomainEntry* jentry = static_cast<AliHLTDomainEntry*>( fEntries[j] );
-      if (jentry->TestBit(14)) continue;
+      if (jentry->TestBit(BIT(14))) continue;
       // Find entries that intersect
       if (jentry->SubsetOf(*ientry))
       {
         // jentry is a subset of ientry so it is redundant because for all values
         // ientry will override jentry when calling IncludeInReadout.
-        jentry->SetBit(14, true);
+        jentry->SetBit(BIT(14), true);
       }
       else if (*ientry == *jentry)
       {
@@ -988,7 +988,7 @@ void AliHLTTriggerDomain::Optimise()
         
         if (ientry->SubsetOf(*jentry))
         {
-          ientry->SetBit(14, true);
+          ientry->SetBit(BIT(14), true);
           goto processNextEntry;
         }
       }
@@ -998,7 +998,7 @@ void AliHLTTriggerDomain::Optimise()
     // (pattern matching) list without hitting any and overlapping entries.
     // So now we need to check if ientry is an exclusion. If it is, then it is
     // redundant and we can mark it for removal.
-    if (ientry->Exclusive()) ientry->SetBit(14, true);
+    if (ientry->Exclusive()) ientry->SetBit(BIT(14), true);
     
     processNextEntry: ;
   }

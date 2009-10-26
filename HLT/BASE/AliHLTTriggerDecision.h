@@ -100,7 +100,7 @@ class AliHLTTriggerDecision : public TObject
    * The decision is stored in bit 15 of the fBits field.
    * \returns true if the event was triggered and should be readout.
    */
-  bool Result() const { return TestBit(15) == 1; }
+  bool Result() const { return TestBit(BIT(15)) == 1; }
   
   /**
    * Sets the result of the trigger decision.
@@ -108,7 +108,7 @@ class AliHLTTriggerDecision : public TObject
    * \param value  The value to set; true if the event triggered and should be
    *     readout and false otherwise.
    */
-  void Result(bool value) { SetBit(15, value); }
+  void Result(bool value) { SetBit(BIT(15), value); }
   
   /**
    * Returns the name of the trigger decision.
