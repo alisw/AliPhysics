@@ -36,7 +36,6 @@
 #include "AliHLTGlobalBarrelTrack.h"
 #include "TObjArray.h"
 #include "TObjString.h"
-#include "TObjArray.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "TFile.h"
@@ -59,6 +58,7 @@ AliHLTTriggerBarrelGeomMultiplicity::AliHLTTriggerBarrelGeomMultiplicity()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
   fDetectorArray = new TObjArray(1);
 
   fDetectorArray = new TObjArray;
@@ -175,6 +175,7 @@ n  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
 template<class T>
 bool AliHLTTriggerBarrelGeomMultiplicity::CheckCondition(T* track, float b)
 {
+
   bool ret = false;
 
   // see header file for class documentation
@@ -229,7 +230,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoInit(int argc, const char** argv)
 }
 
 int AliHLTTriggerBarrelGeomMultiplicity::DoDeinit()
- {
+{
   // see header file for class documentation
   return 0;
 }

@@ -62,6 +62,7 @@ void AliHLTTriggerDetectorGeom::SetInitialPoint(Double_t *point)
     }
 }
 
+
 void AliHLTTriggerDetectorGeom::SetNormVector(Double_t *nVector)
 {
   // See header file for class documentation

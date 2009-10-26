@@ -111,7 +111,6 @@ class AliHLTTriggerBarrelGeomMultiplicity : public AliHLTTrigger
   bool CheckCondition(T* track, float b);
 
   // check whether a track is in the desired detectors
-
   template<class T>
   bool IsInDetectors(T* track, float b);
 
