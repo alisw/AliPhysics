@@ -173,6 +173,7 @@ n  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
 
 }
 
+
 template<class T>
 bool AliHLTTriggerBarrelGeomMultiplicity::CheckCondition(T* track, float b)
 {
