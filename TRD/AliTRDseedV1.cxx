@@ -1009,8 +1009,8 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
       TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
       TVectorD vdy(ncl[ir], yres[ir]);
       UChar_t stat(0);
-      if(IsKink()) SETBIT(stat, 0);
-      if(IsStandAlone()) SETBIT(stat, 1);
+      if(IsKink()) SETBIT(stat, 1);
+      if(IsStandAlone()) SETBIT(stat, 2);
       cstreamer << "AttachClusters"
           << "stat="   << stat
           << "det="    << fDet
@@ -1076,23 +1076,27 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
       if(!blst[jr][ic])continue;
       c = clst[jr][ic];
       Int_t it = c->GetPadTime();
+      Int_t idx = it+kNtb*ir;
+      if(fClusters[idx]){
+        AliDebug(2, Form("Cluster position already allocated tb[%2d] r[%d]. Skip !", it, jr));
+        SetErrorMsg(kAttachMultipleCl);
+        continue;
+      }
+
       // TODO proper indexing of clusters !!
-      fIndexes[it+kNtb*ir]  = chamber->GetTB(it)->GetGlobalIndex(idxs[jr][ic]);
-      fClusters[it+kNtb*ir] = c;
-  
-      //printf("\tid[%2d] it[%d] idx[%d]\n", ic, it, fIndexes[it]);
-  
+      fIndexes[idx]  = chamber->GetTB(it)->GetGlobalIndex(idxs[jr][ic]);
+      fClusters[idx] = c;
       n++;
     }
   }  
+  SetN(n);
 
   // number of minimum numbers of clusters expected for the tracklet
-  if (n < kClmin){
-    AliDebug(2, Form("NOT ENOUGH CLUSTERS TO FIT THE TRACKLET %d [%d].", n, kClmin));
+  if (GetN() < kClmin){
+    AliDebug(2, Form("NOT ENOUGH CLUSTERS ATTACHED TO THE TRACKLET %d [%d] FROM FOUND [%d].", GetN(), kClmin, n));
     SetErrorMsg(kAttachClAttach);
     return kFALSE;
   }
-  SetN(n);
 
   // Load calibration parameters for this tracklet  
   Calibrate();

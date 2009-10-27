@@ -70,6 +70,7 @@ public:
   enum ETRDtrackletError {
     kAttachClFound = 1  // not enough clusters found
    ,kAttachRow          // found row < 0
+   ,kAttachMultipleCl   // multiple clusters attached to time bin
    ,kAttachClAttach     // not enough clusters attached
   };
 
@@ -207,7 +208,7 @@ private:
   Float_t          fDiffT;                  //! transversal diffusion coefficient
   Char_t           fClusterIdx;             //! clusters iterator
   UChar_t          fErrorMsg;               // processing error
-  UShort_t         fN;                      // number of clusters attached/used/shared
+  UInt_t           fN;                      // number of clusters attached/used/shared
   Short_t          fDet;                    // TRD detector
   AliTRDcluster   *fClusters[kNclusters];   // Clusters
   Float_t          fPad[3];                 // local pad definition : length/width/tilt 
@@ -364,25 +365,28 @@ inline void AliTRDseedV1::SetCovRef(const Double_t *cov)
 //____________________________________________________________
 inline void AliTRDseedV1::SetN(Int_t n)
 {
-  if(n<0 || n>= (1<<5)) return; 
-  fN &= ~0x1f;
-  fN |= n;
+  if(n<0 || n>kNclusters) return; 
+  UInt_t mask(0x3f); 
+  fN &= ~mask; 
+  fN |= (n&mask);
 }
 
 //____________________________________________________________
 inline void AliTRDseedV1::SetNUsed(Int_t n)
 {
-  if(n<0 || n>= (1<<5)) return; 
-  fN &= ~(0x1f<<5);
-  n <<= 5; fN |= n;
+  if(n<0 || n>kNclusters) return; 
+  UInt_t mask(0x3f<<6); 
+  fN &= ~mask;
+  n <<= 6; fN |= (n&mask);
 }
 
 //____________________________________________________________
 inline void AliTRDseedV1::SetNShared(Int_t n)
 {
-  if(n<0 || n>= (1<<5)) return; 
-  fN &= ~(0x1f<<10);
-  n <<= 10; fN |= n;
+  if(n<0 || n>kNclusters) return; 
+  UInt_t mask(0x3f<<12); 
+  fN &= ~mask;
+  n <<= 12; fN |= (n&mask);
 }
 
 
