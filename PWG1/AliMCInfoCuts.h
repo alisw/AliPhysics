@@ -7,6 +7,7 @@
 // Author: J.Otwinowski 04/02/2008 
 //------------------------------------------------------------------------------
 
+#include <TPDGCode.h>
 #include "AliAnalysisCuts.h"
 
 class TArrayI;
@@ -75,16 +76,16 @@ private:
   // PDG tracked particles (later added to aTrackParticles)
   enum enumData {
     kNParticles = 10, // number of particles below
-    ep = -11,
-    em = 11,
-    mup = -13,
-    mum = 13,
-    pip = 211,
-    pim = -211,
-    kp = 321,
-    km = -321,
-    prot = 2212,
-    protbar = -2212
+    ep = kPositron,
+    em = kElectron,
+    mup = kMuonPlus,
+    mum = kMuonMinus,
+    pip = kPiPlus,
+    pim = kPiMinus,
+    kp = kKPlus,
+    km = kKMinus,
+    prot = kProton,
+    protbar = kProtonBar
   };
 
   AliMCInfoCuts(const AliMCInfoCuts&); // not implemented
