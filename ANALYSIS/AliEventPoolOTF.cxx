@@ -136,19 +136,26 @@ TChain* AliEventPoolOTF::GetNextChain()
     if (fNoMore) {
 	return 0;
     } else {
-	printf("Current bin (lower) %13.3f %13.3f %13.3f \n", fValue[kMultiplicity], fValue[kZVertex], fValue[kEventPlane]);
-	printf("Current bin (upper) %13.3f %13.3f %13.3f \n", fValue[kMultiplicity] + fValueStep[kMultiplicity], 
-	                                                      fValue[kZVertex]      + fValueStep[kZVertex], 
-	                                                      fValue[kEventPlane]   + fValueStep[kEventPlane]);
-	
+    printf("Current bin (lower) %13.3f %13.3f %13.3f %13.3f %13.3f \n", fValue[kMultiplicity], fValue[kZVertex], fValue[kEventPlane],fValue[kLeadingParticleEta],fValue[kLeadingParticlePhi]);
+    printf("Current bin (upper) %13.3f %13.3f %13.3f %13.3f %13.3f \n", fValue[kMultiplicity] + fValueStep[kMultiplicity], 
+	   fValue[kZVertex]      + fValueStep[kZVertex], 
+	   fValue[kEventPlane]   + fValueStep[kEventPlane],
+	   fValue[kLeadingParticleEta]   + fValueStep[kLeadingParticleEta],
+           fValue[kLeadingParticlePhi]   + fValueStep[kLeadingParticlePhi]
+    
+	   );
+
 	fEventCuts->SetMultiplicityRange(Int_t(fValue[kMultiplicity]) , Int_t(fValue[kMultiplicity] + fValueStep[kMultiplicity]));
 	fEventCuts->SetPrimaryVertexZRange(fValue[kZVertex] , fValue[kZVertex] + fValueStep[kZVertex]);
-	fEventCuts->SetEventPlaneAngleRange(fValue[kEventPlane] , fValue[kEventPlane] + fValueStep[kEventPlane]);
+        fEventCuts->SetEtaLeadingParticleRange(fValue[kLeadingParticleEta] , fValue[kLeadingParticleEta] + fValueStep[kLeadingParticleEta]);
+        fEventCuts->SetPhiLeadingParticleRange(fValue[kLeadingParticlePhi] , fValue[kLeadingParticlePhi] + fValueStep[kLeadingParticlePhi]);
+        fEventCuts->SetEventPlaneAngleRange(fValue[kEventPlane] , fValue[kEventPlane] + fValueStep[kEventPlane]);
+    
 	fChain = fTagAnalysis->QueryTags(fRunCuts, fLHCCuts, fDetectorCuts, fEventCuts);
 //
 //      Next bin 
 //
-	for (Int_t i = 2; i >= 0; i--) 
+	for (Int_t i = 5; i >= 0; i--) 
 	{
 	    fValue[i] += fValueStep[i];
 	    if (i > 0  && fValue[i] >= fValueMax[i]) {
@@ -171,7 +178,7 @@ void  AliEventPoolOTF::GetCurrentBin(Float_t* /*bin*/)
 Int_t AliEventPoolOTF::GetDimension()
 {
     //
-    return (3);
+    return (5);
 }
 
 void AliEventPoolOTF::InitArrays()
@@ -181,7 +188,9 @@ void AliEventPoolOTF::InitArrays()
     SetMultiplicityBinning(0, 20000, 20000);
     SetZVertexBinning(-1000., 1000., 2000.);
     SetEventPlaneBinning(-1000., 1000., 2000.);
-    SetLeadingParticleEtaBinning(-1.0, 1.0, 2.);    
+    SetEventPlaneBinning(-1000., 1000., 2000.);
+    SetLeadingParticleEtaBinning(-13.0, 13.0, 26.); 
+    SetLeadingParticlePhiBinning(0, 2*(TMath::Pi()),2*(TMath::Pi()));   
     for (Int_t i = 0; i < 4; i++) fValue[i] = fValueMin[i];
 }
 

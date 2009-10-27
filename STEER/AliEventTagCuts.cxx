@@ -22,6 +22,7 @@
 class AliLog;
 class AliESD;
 
+#include "TMath.h"
 #include "AliEventTag.h"
 #include "AliEventTagCuts.h"
 
@@ -36,12 +37,14 @@ AliEventTagCuts::AliEventTagCuts() :
   fBunchCrossNumberMin(0), fBunchCrossNumberMax(0xFFFF), 
   fBunchCrossNumberFlag(kFALSE),
   fEventType(7), fEventTypeFlag(kFALSE),
-
   fNParticipantsMin(-1), fNParticipantsMax(10000),
   fNParticipantsFlag(kFALSE),
   fImpactParamMin(-1.0), fImpactParamMax(1000.0),
   fImpactParamFlag(kFALSE),
-
+  fEtaMin(-13.0), fEtaMax(13.0), 
+  fEtaFlag(kFALSE),
+  fPhiMin(0.), fPhiMax(2*(TMath::Pi())), 
+  fPhiFlag(kFALSE),
   fVxMin(-1000.0), fVxMax(1000.0), 
   fVxFlag(kFALSE),
   fVyMin(-1000.0), fVyMax(1000.0),  
@@ -187,6 +190,8 @@ void AliEventTagCuts::Reset() {
   fNParticipantsFlag = kFALSE;
   fImpactParamFlag = kFALSE;
 
+  fEtaFlag = kFALSE;
+  fPhiFlag = kFALSE;
   fVxFlag = kFALSE;
   fVyFlag = kFALSE;
   fVzFlag = kFALSE;
@@ -258,6 +263,8 @@ void AliEventTagCuts::Reset() {
 
   fEventType = 7;
 
+  fEtaMin = -13.0; fEtaMax = 13.0;
+  fPhiMin = 0.; fPhiMax = 2*(TMath::Pi());
   fVxMin = -1000.0; fVxMax = 1000.0; 
   fVyMin = -1000.0; fVyMax = 1000.0;  
   fVzMin = -1000.0; fVzMax = 1000.0;
@@ -414,6 +421,23 @@ void AliEventTagCuts::SetPrimaryVertexZRange(Float_t low, Float_t high) {
   fVzMax = high; 
   fVzFlag = kTRUE;
 }
+
+//___________________________________________________________________________
+ void AliEventTagCuts::SetEtaLeadingParticleRange(Float_t low, Float_t high) {
+  //Sets the eta range of LP 
+  //and the corresponding flag to kTRUE if the cut is used.
+  fEtaMin = low;
+  fEtaMax = high; 
+  fEtaFlag = kTRUE;
+}
+//__________________________________________________________________________
+void AliEventTagCuts::SetPhiLeadingParticleRange(Float_t low, Float_t high) {
+  //Sets the eta range of LP 
+  //and the corresponding flag to kTRUE if the cut is used.
+  fPhiMin = low;
+  fPhiMax = high; 
+  fPhiFlag = kTRUE;
+} 
 
 //___________________________________________________________________________
 void AliEventTagCuts::SetPrimaryVertexZErrorRange(Float_t low, Float_t high) {
@@ -930,6 +954,14 @@ Bool_t AliEventTagCuts::IsAccepted(AliEventTag *EvTag) const {
     if((EvTag->GetBunchCrossNumber() < fBunchCrossNumberMin) || (EvTag->GetBunchCrossNumber() > fBunchCrossNumberMax))
       return kFALSE;
 
+
+ if(fEtaFlag)
+    if((EvTag->GetEtaMaxPt() < fEtaMin) || (EvTag->GetEtaMaxPt() > fEtaMax))
+      return kFALSE;
+
+  if(fPhiFlag)
+    if((EvTag->GetPhiMaxPt() < fPhiMin) || (EvTag->GetPhiMaxPt() > fPhiMax))
+      return kFALSE;
 
   if(fVzFlag)
     if((EvTag->GetVertexZ() < fVzMin) || (EvTag->GetVertexZ() > fVzMax))

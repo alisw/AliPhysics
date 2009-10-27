@@ -33,6 +33,8 @@ class AliEventTagCuts : public TObject {
   void SetNParticipantsRange(Int_t low, Int_t high);
   void SetImpactParamRange(Float_t low, Float_t high);
 
+  void SetEtaLeadingParticleRange(Float_t low, Float_t high);
+  void SetPhiLeadingParticleRange(Float_t low, Float_t high);
   void SetPrimaryVertexXRange(Float_t low, Float_t high);
   void SetPrimaryVertexYRange(Float_t low, Float_t high);
   void SetPrimaryVertexZRange(Float_t low, Float_t high);
@@ -121,6 +123,11 @@ class AliEventTagCuts : public TObject {
   Float_t fImpactParamMin, fImpactParamMax;                   // Impact parameter range
   Bool_t fImpactParamFlag;                                    // Shows whether this cut is used or not
 
+  Float_t fEtaMin, fEtaMax;                                   // Definition of the range of the eta leading
+  Bool_t fEtaFlag;                                            // Shows whether this cut is used or not
+  Float_t fPhiMin, fPhiMax;                                   // Definition of the range of the phi leading
+  Bool_t fPhiFlag;                                            // Shows whether this cut is used or not  
+         
   Float_t fVxMin, fVxMax;                                     // Definition of the range of the Vx
   Bool_t fVxFlag;                                             // Shows whether this cut is used or not
   Float_t fVyMin, fVyMax;                                     // Definition of the range of the Vy
