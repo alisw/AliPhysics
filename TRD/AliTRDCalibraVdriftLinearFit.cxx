@@ -334,10 +334,9 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
 	//parE->Print();
       }
 
-      delete linearfitterhisto;
+      //delete linearfitterhisto;
       
     }// if something
   }
    
 }
-
