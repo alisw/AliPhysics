@@ -213,7 +213,7 @@ void AliPHOSDA1::FillHistograms(Float_t e[64][56][2], Float_t t[64][56][2])
     for (Int_t iZ=0; iZ<56; iZ++) {
 
       // HG/LG
-      if(e[iX][iZ][0] && e[iX][iZ][1]) {
+      if(e[iX][iZ][0]>10. && e[iX][iZ][1]>10. && e[iX][iZ][1]<900.) {
 	if(fHgLgRatio[iX][iZ]) {
 // 	  printf("iX=%d iZ=%d,e[iX][iZ][1]=%.3f,e[iX][iZ][0]=%.3f, t1=%.3f,t0=%.3f\n",
 // 		 iX,iZ,e[iX][iZ][1],e[iX][iZ][0], t[iX][iZ][1],t[iX][iZ][0]);
