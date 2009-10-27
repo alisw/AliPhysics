@@ -43,6 +43,8 @@ void AliRecInfoCuts::Init()
   // set default values 
   SetMinTPCsignalN();
   SetMaxAbsTanTheta();
+  SetMinNClustersTRD();
+  SetMinNTrackletsTRD();
   SetTPCITSMatchingRadius();
   SetTPCTRDMatchingRadius();
 }
