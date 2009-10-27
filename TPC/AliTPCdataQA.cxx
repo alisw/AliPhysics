@@ -91,6 +91,7 @@ using namespace std;
 
 //header file
 #include "AliTPCdataQA.h"
+#include "AliLog.h"
 
 ClassImp(AliTPCdataQA)
 
@@ -116,8 +117,14 @@ AliTPCdataQA::AliTPCdataQA() : /*FOLD00*/
   fHistQVsTimeSideC(0),
   fHistQMaxVsTimeSideA(0),
   fHistQMaxVsTimeSideC(0),
+  fHistOccupancyVsEvent(0),
+  fHistNclustersVsEvent(0),
   fEventCounter(0),
   fIsAnalysed(kFALSE),
+  fMaxEvents(500000),           // Max events for event histograms
+  fEventsPerBin(1000),          // Events per bin for event histograms
+  fSignalCounter(0),            // Signal counter
+  fClusterCounter(0),           // Cluster counter
   fAllBins(0),
   fAllSigBins(0),
   fAllNSigBins(0),
@@ -153,8 +160,14 @@ fHistQVsTimeSideA(0),
 fHistQVsTimeSideC(0),
 fHistQMaxVsTimeSideA(0),
 fHistQMaxVsTimeSideC(0),
+fHistOccupancyVsEvent(0),
+fHistNclustersVsEvent(0),
 fEventCounter(0),
 fIsAnalysed(kFALSE),
+fMaxEvents(500000),
+fEventsPerBin(1000),
+fSignalCounter(0),
+fClusterCounter(0),
 fAllBins(0),
 fAllSigBins(0),
 fAllNSigBins(0),
@@ -191,8 +204,14 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
   fHistQVsTimeSideC(0),
   fHistQMaxVsTimeSideA(0),
   fHistQMaxVsTimeSideC(0),
+  fHistOccupancyVsEvent(0),
+  fHistNclustersVsEvent(0),
   fEventCounter(ped.GetEventCounter()),
   fIsAnalysed(ped.GetIsAnalysed()),
+  fMaxEvents(ped.GetMaxEvents()),
+  fEventsPerBin(ped.GetEventsPerBin()),
+  fSignalCounter(ped.GetSignalCounter()),
+  fClusterCounter(ped.GetClusterCounter()),
   fAllBins(0),
   fAllSigBins(0),
   fAllNSigBins(0),
@@ -239,6 +258,14 @@ AliTPCdataQA::AliTPCdataQA(const AliTPCdataQA &ped) : /*FOLD00*/
     fHistQMaxVsTimeSideC = new TProfile(*ped.GetHistQMaxVsTimeSideC());
     fHistQMaxVsTimeSideC->SetDirectory(0);
   }
+  if(ped.GetHistOccupancyVsEventConst()) {
+    fHistOccupancyVsEvent  = new TH1F(*ped.GetHistOccupancyVsEventConst());
+    fHistOccupancyVsEvent->SetDirectory(0);
+  }
+  if(ped.GetHistNclustersVsEventConst()) {
+    fHistNclustersVsEvent  = new TH1F(*ped.GetHistNclustersVsEventConst());
+    fHistNclustersVsEvent->SetDirectory(0);
+  }
 }
 
 //_____________________________________________________________________
@@ -265,8 +292,14 @@ AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/
   fHistQVsTimeSideC(0),
   fHistQMaxVsTimeSideA(0),
   fHistQMaxVsTimeSideC(0),
+  fHistOccupancyVsEvent(0),
+  fHistNclustersVsEvent(0),
   fEventCounter(0),
   fIsAnalysed(kFALSE),
+  fMaxEvents(500000),
+  fEventsPerBin(1000),
+  fSignalCounter(0),
+  fClusterCounter(0),
   fAllBins(0),
   fAllSigBins(0),
   fAllNSigBins(0),
@@ -281,6 +314,8 @@ AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/
   if (config->GetValue("LastTimeBin"))  fLastTimeBin = ((TObjString*)config->GetValue("LastTimeBin"))->GetString().Atoi();
   if (config->GetValue("AdcMin"))       fAdcMin = ((TObjString*)config->GetValue("AdcMin"))->GetString().Atoi();
   if (config->GetValue("AdcMax"))       fAdcMax = ((TObjString*)config->GetValue("AdcMax"))->GetString().Atoi();
+  if (config->GetValue("MaxEvents"))    fMaxEvents = ((TObjString*)config->GetValue("MaxEvents"))->GetString().Atoi();
+  if (config->GetValue("EventsPerBin")) fAdcMax = ((TObjString*)config->GetValue("EventsPerBin"))->GetString().Atoi();
 }
 
 //_____________________________________________________________________
@@ -321,6 +356,8 @@ AliTPCdataQA::~AliTPCdataQA() /*FOLD00*/
   delete fHistQVsTimeSideC;
   delete fHistQMaxVsTimeSideA;
   delete fHistQMaxVsTimeSideC;
+  delete fHistOccupancyVsEvent;
+  delete fHistNclustersVsEvent;
 
   for (Int_t iRow = 0; iRow < fRowsMax; iRow++) {
     delete [] fAllBins[iRow];
@@ -330,6 +367,95 @@ AliTPCdataQA::~AliTPCdataQA() /*FOLD00*/
   delete [] fAllSigBins;
   delete [] fAllNSigBins;
 }
+
+//_____________________________________________________________________
+TH1F* AliTPCdataQA::GetHistOccupancyVsEvent()
+{
+  //
+  // Create Occupancy vs event histogram
+  // (we create this histogram differently then the other histograms
+  //  because this we want to be able to access and copy
+  //  from AliTPCQAMakerRec before it normally would be created)
+  //
+  if(!fHistOccupancyVsEvent) {
+
+    Int_t nBins = fMaxEvents/fEventsPerBin;
+    fHistOccupancyVsEvent = new TH1F("hOccupancyVsEvent", "Occupancy vs event number (~time); Event number; Occupancy", nBins, 0, nBins*fEventsPerBin);
+    fHistOccupancyVsEvent->SetDirectory(0);
+    fHistOccupancyVsEvent->GetXaxis()->SetRange(0, 10);
+  }
+  
+  return fHistOccupancyVsEvent;
+}
+
+//_____________________________________________________________________
+TH1F* AliTPCdataQA::GetHistNclustersVsEvent()
+{
+  //
+  // Create Nclusters vs event histogram
+  // (we create this histogram differently then the other histograms
+  //  because this we want to be able to access and copy
+  //  from AliTPCQAMakerRec before it normally would be created)
+  //
+  if(!fHistNclustersVsEvent) {
+
+    Int_t nBins = fMaxEvents/fEventsPerBin;
+    fHistNclustersVsEvent = new TH1F("hNclustersVsEvent", "Nclusters vs event number (~time); Event number; Nclusters per event", nBins, 0, nBins*fEventsPerBin);
+    fHistNclustersVsEvent->SetDirectory(0);
+    fHistNclustersVsEvent->GetXaxis()->SetRange(0, 10);
+  }
+  
+  return fHistNclustersVsEvent;
+}
+
+//_____________________________________________________________________
+void AliTPCdataQA::UpdateEventHistograms()
+{
+  // Update histograms that display occupancy and 
+  // number of clusters as a function of number of 
+  // events
+  if (!fHistOccupancyVsEvent)
+    GetHistOccupancyVsEvent();
+  if (!fHistNclustersVsEvent)
+    GetHistNclustersVsEvent();
+  
+  Float_t averageOccupancy =
+    Float_t(fSignalCounter)/fEventsPerBin/(fLastTimeBin - fFirstTimeBin +1.0)
+    / 570132; // 570,132 is number of pads
+  if(fEventCounter<=fMaxEvents) 
+    UpdateEventHisto(fHistOccupancyVsEvent, averageOccupancy);
+  fSignalCounter = 0;
+  
+  Float_t averageNclusters =
+    Float_t(fClusterCounter)/fEventsPerBin;
+  if(fEventCounter<=fMaxEvents) 
+    UpdateEventHisto(fHistNclustersVsEvent, averageNclusters);
+  fClusterCounter = 0;
+}
+
+//_____________________________________________________________________
+void AliTPCdataQA::UpdateEventHisto(TH1F* hist, Float_t average)
+{
+  // Do the actually updating of each histogram and 
+  // change the visible range if needed
+  
+  // in case someone would have overwritten the value here
+  // (not so pretty  but OK for this I think)
+  fEventsPerBin = hist->GetXaxis()->GetBinWidth(1);
+  Int_t bin = TMath::Nint(Float_t(fEventCounter)/fEventsPerBin);
+  
+  if (hist->GetBinContent(bin)>0) { 
+    AliError("Bin already filled. This should not happen.");
+  } else {
+    hist->SetBinContent(bin, average);
+  }
+  
+  // expand the visible range of the histogram if needed
+  if(hist->GetXaxis()->GetLast()<= bin) {
+    hist->GetXaxis()->SetRange(0, Int_t(1.3*bin));
+  }
+}
+
 //_____________________________________________________________________
 Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *rawStreamV3)
 {
@@ -385,8 +511,12 @@ Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *rawReader)
   //
   AliTPCRawStreamV3 rawStreamV3(rawReader, (AliAltroMapping**)fMapping);
   Bool_t res=ProcessEvent(&rawStreamV3);
-  if(res)
+  if(res) {
     fEventCounter++; // only increment event counter if there is TPC data
+
+    if(fEventCounter%fEventsPerBin==0)
+      UpdateEventHistograms();
+  }
   return res;
 }
 
@@ -657,6 +787,8 @@ Int_t AliTPCdataQA::Update(const Int_t iSector, /*FOLD00*/
   //
 
   SetExpandDigit(iRow, iPad, iTimeBin, signal);
+
+  fSignalCounter++;
   
   return 1; // signal was accepted
 }
@@ -806,6 +938,7 @@ void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
   } // end loop over rows
   
   //  cout << "Number of local maximas found: " << nLocalMaxima << endl;
+  fClusterCounter += nLocalMaxima;
 }
 
 //_____________________________________________________________________

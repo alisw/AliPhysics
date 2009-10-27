@@ -29,7 +29,7 @@
 class AliTPCQADataMakerRec: public AliQADataMakerRec {
 
 public:
-  enum HRawsType_t         {kTPCdataQA=0, kOccupancy, kOccupancyVsSector, kNClustersPerEventVsSector, kQVsSector, kQmaxVsSector} ; 
+  enum HRawsType_t         {kRawsOccupancy=0, kRawsOccupancyVsSector, kRawsNClustersPerEventVsSector, kRawsQVsSector, kRawsQmaxVsSector, kRawsOccupancyVsEvent, kRawsNclustersVsEvent} ; 
   enum HDigitType_t        {kDigitsADC=0} ; 
   enum HRECPOINTsType_t    {KClusters=0, kRatio, kPt} ; 
   enum HESDsType_t         {kQmaxShort=0, kQmaxMedium, kQmaxLong, kQShort, kQMedium, kQLong, kRow} ; 
@@ -39,6 +39,16 @@ public:
   AliTPCQADataMakerRec& operator = (const AliTPCQADataMakerRec& qadm) ;
   virtual ~AliTPCQADataMakerRec(); 
   
+  void SetBeautifyOption(Int_t value)  {fBeautifyOption= value;}
+  void SetOccHighLimit(Float_t value)  {fOccHighLimit  = value;}
+  void SetQmaxLowLimit(Float_t value)  {fQmaxLowLimit  = value;}
+  void SetQmaxHighLimit(Float_t value) {fQmaxHighLimit = value;}
+
+  Int_t   GetBeautifyOption() const {return fBeautifyOption;}
+  Float_t GetOccHighLimit() const {return fOccHighLimit; }
+  Float_t GetQmaxLowLimit() const {return fQmaxLowLimit; }
+  Float_t GetQmaxHighLimit() const {return fQmaxHighLimit;}
+
 private:
   virtual void   StartOfDetectorCycle() {}; // empty 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray** list) ;
@@ -62,10 +72,14 @@ private:
   
   virtual void LoadMaps();
 
-  
   AliTPCAltroMapping *fMapping[6]; //! Pointers to ALTRO mapping
   AliTPCdataQA** fTPCdataQA;//! TPC calibration object for making raw data QA
 
+  Int_t   fBeautifyOption;//! 0:no beautify, !=0:beautify RAW 
+  Float_t fOccHighLimit;  //! high limit for accepting occupancy values
+  Float_t fQmaxLowLimit;  //! low limit for accepting Qmax values
+  Float_t fQmaxHighLimit; //! high limit for accepting Qmax values
+  
   ClassDef(AliTPCQADataMakerRec,1)  // TPC Rec Quality Assurance Data Maker 
 };
 

@@ -66,6 +66,10 @@ public:
   TProfile* GetHistQVsTimeSideC()    const {return fHistQVsTimeSideC;}
   TProfile* GetHistQMaxVsTimeSideA() const {return fHistQMaxVsTimeSideA;}
   TProfile* GetHistQMaxVsTimeSideC() const {return fHistQMaxVsTimeSideC;}
+  TH1F*     GetHistOccupancyVsEventConst() const {return fHistOccupancyVsEvent;}
+  TH1F*     GetHistNclustersVsEventConst() const {return fHistNclustersVsEvent;}
+  TH1F*     GetHistOccupancyVsEvent();
+  TH1F*     GetHistNclustersVsEvent();
 
   //
   AliTPCAltroMapping **GetAltroMapping() { return fMapping; };
@@ -78,10 +82,15 @@ public:
   Int_t  GetAdcMax()       const { return fAdcMax;       }
   Int_t  GetEventCounter() const { return fEventCounter; }
   Bool_t GetIsAnalysed()   const { return fIsAnalysed;   }
+  Int_t  GetMaxEvents()      const { return fMaxEvents;     }
+  Int_t  GetEventsPerBin()   const { return fEventsPerBin;  }
+  Int_t  GetSignalCounter()  const { return fSignalCounter; }
+  Int_t  GetClusterCounter() const { return fClusterCounter;}
+
   void  SetRangeTime(Int_t tMin, Int_t tMax){ fFirstTimeBin=tMin; fLastTimeBin=tMax;}  // Set time bin range that is used for the pedestal calibration
   void  SetRangeAdc (Int_t aMin, Int_t aMax){ fAdcMin=aMin; fAdcMax=aMax; }  // Set adc range for the pedestal calibration
-
-
+  void  SetMaxEvents   (Int_t value) { fMaxEvents = value; }
+  void  SetEventsPerBin(Int_t value) { fEventsPerBin = value; }
 
 private:
   Int_t Update(const Int_t iSector, const Int_t iRow, const Int_t iPad,
@@ -96,6 +105,8 @@ private:
   Float_t GetQ(const Float_t* adcArray, const Int_t time,
 	       const Int_t pad, const Int_t maxTimeBins, 
 	       Int_t& timeMin,Int_t& timeMax,Int_t& padMin,Int_t& padMax);
+  void UpdateEventHistograms();
+  void UpdateEventHisto(TH1F* hist, Float_t average);
 
   Int_t fFirstTimeBin;              //  First Time bin needed for analysis
   Int_t fLastTimeBin;               //  Last Time bin needed for analysis
@@ -123,8 +134,16 @@ private:
   TProfile* fHistQMaxVsTimeSideA;   // QMax vs time (side A)
   TProfile* fHistQMaxVsTimeSideC;   // QMax vs time (side C)
 
+  TH1F* fHistOccupancyVsEvent;      // Occupancy vs event number (~time)
+  TH1F* fHistNclustersVsEvent;      // Nclusters vs event number (~time)
+
   Int_t   fEventCounter;            // event Counter
   Bool_t  fIsAnalysed;              // Set to true after Analyse has been called
+
+  Int_t fMaxEvents;                 // Max events for event histograms
+  Int_t fEventsPerBin;              // Events per bin for event histograms
+  Int_t fSignalCounter;             // Signal counter
+  Int_t fClusterCounter;            // Cluster counter
   //
   //  Expand buffer
   //
@@ -137,7 +156,7 @@ private:
 
 
 public:
-  ClassDef(AliTPCdataQA, 4)  // Implementation of the TPC pedestal and noise calibration
+  ClassDef(AliTPCdataQA, 5)  // Implementation of the TPC Raw QA
 };
 
 

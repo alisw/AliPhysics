@@ -51,6 +51,7 @@
 #include <TClonesArray.h>
 #include <TString.h>
 #include <TSystem.h>
+#include <TBox.h>
 
 // --- Standard library ---
 
@@ -69,9 +70,13 @@ ClassImp(AliTPCQADataMakerRec)
 
 //____________________________________________________________________________ 
 AliTPCQADataMakerRec::AliTPCQADataMakerRec() : 
-  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kTPC), 
-		    "TPC Rec Quality Assurance Data Maker"),
-  fTPCdataQA(NULL)
+AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kTPC), 
+		  "TPC Rec Quality Assurance Data Maker"),
+  fTPCdataQA(NULL),
+  fBeautifyOption(1),   // 0:no beautify, !=0:beautify RAW 
+  fOccHighLimit(1e-4),  // high limit for accepting occupancy values
+  fQmaxLowLimit(8),    // low limit for accepting Qmax values
+  fQmaxHighLimit(40)    // high limit for accepting Qmax values
 {
   // ctor
   fTPCdataQA = new AliTPCdataQA*[AliRecoParam::kNSpecies] ;
@@ -85,7 +90,11 @@ AliTPCQADataMakerRec::AliTPCQADataMakerRec() :
 //____________________________________________________________________________ 
 AliTPCQADataMakerRec::AliTPCQADataMakerRec(const AliTPCQADataMakerRec& qadm) :
   AliQADataMakerRec(),
-  fTPCdataQA(NULL)
+  fTPCdataQA(NULL),
+  fBeautifyOption(qadm.GetBeautifyOption()),
+  fOccHighLimit(qadm.GetOccHighLimit()),
+  fQmaxLowLimit(qadm.GetQmaxLowLimit()),
+  fQmaxHighLimit(qadm.GetQmaxHighLimit())
 {
   //copy ctor 
   // Does not copy the calibration object, instead InitRaws have to be
@@ -143,16 +152,20 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
                            //         RAW data files with no TPC data
 
       SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
-      TH1F * histRawsOccupancy                 = (TH1F*)GetRawsData(kOccupancy) ;
-      TH1F * histRawsOccupancyVsSector         = (TH1F*)GetRawsData(kOccupancyVsSector) ;
-      TH1F * histRawsNClustersPerEventVsSector = (TH1F*)GetRawsData(kNClustersPerEventVsSector) ;
-      TH1F * histRawsQVsSector                 = (TH1F*)GetRawsData(kQVsSector) ;
-      TH1F * histRawsQmaxVsSector              = (TH1F*)GetRawsData(kQmaxVsSector) ;
+      TH1F * histRawsOccupancy                 = (TH1F*)GetRawsData(kRawsOccupancy) ;
+      TH1F * histRawsOccupancyVsSector         = (TH1F*)GetRawsData(kRawsOccupancyVsSector) ;
+      TH1F * histRawsNClustersPerEventVsSector = (TH1F*)GetRawsData(kRawsNClustersPerEventVsSector) ;
+      TH1F * histRawsQVsSector                 = (TH1F*)GetRawsData(kRawsQVsSector) ;
+      TH1F * histRawsQmaxVsSector              = (TH1F*)GetRawsData(kRawsQmaxVsSector) ;
+      TH1F * histRawsOccupancyVsEvent          = (TH1F*)GetRawsData(kRawsOccupancyVsEvent) ;
+      TH1F * histRawsNclustersVsEvent          = (TH1F*)GetRawsData(kRawsNclustersVsEvent) ;
       if ( !histRawsOccupancy ||
-          !histRawsOccupancyVsSector ||
-          !histRawsNClustersPerEventVsSector ||
-          !histRawsQVsSector ||
-          !histRawsQmaxVsSector) {
+	   !histRawsOccupancyVsSector ||
+	   !histRawsNClustersPerEventVsSector ||
+	   !histRawsQVsSector ||
+	   !histRawsQmaxVsSector ||
+	   !histRawsOccupancyVsEvent ||
+	   !histRawsNclustersVsEvent ) {
         AliError("Something very wrong here, corrupted memory ?????. Please check\n") ; 
         continue ; 
       }
@@ -171,12 +184,10 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
         histRawsQVsSector->Reset();
         histRawsQmaxVsSector->Reset();
       
-        TH1F* hNorm72 = new TH1F("hNorm72", "histogram to normalize 72 sectors",
-                                 72, 0, 72);
-        hNorm72->Sumw2();
-        TH1F* hNorm108 = new TH1F("hNorm108", "histogram to normalize 108 sectors (medium and long pads are split up)",
-                                  108, 0, 108);
-        hNorm108->Sumw2();
+        TH1F* hNormOcc = new TH1F("hNormOcc", 0, 72, 0, 72);
+        hNormOcc->Sumw2();
+        TH1F* hNormNclusters = new TH1F("hNormNclusters", 0, 72, 0, 72);
+        hNormNclusters->Sumw2();
 
         for (Int_t iSec = 0; iSec < 72; iSec++) {
 	
@@ -192,45 +203,130 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
           const Int_t nRows = occupancyROC->GetNrows(); 
           for (Int_t iRow = 0; iRow < nRows; iRow++) {
 
-            Int_t helpSector = iSec;
-            if(iRow>=64)
-              helpSector += 36; // OROC (long pads)
-
             const Int_t nPads = occupancyROC->GetNPads(iRow); 
             for (Int_t iPad = 0; iPad < nPads; iPad++) {
-	
-              histRawsOccupancy->Fill(occupancyROC->GetValue(iRow, iPad));
-              hNorm72->Fill(iSec);
-              histRawsOccupancyVsSector
-              ->Fill(iSec, occupancyROC->GetValue(iRow, iPad));
-
-              const Int_t nClusters = TMath::Nint(nclusterROC->GetValue(iRow, iPad));
-	    
-              if(nClusters>0) {
 	      
+              histRawsOccupancy->Fill(occupancyROC->GetValue(iRow, iPad));
+              hNormOcc->Fill(iSec);
+              histRawsOccupancyVsSector
+		->Fill(iSec, occupancyROC->GetValue(iRow, iPad));
+	      
+              const Int_t nClusters = TMath::Nint(nclusterROC->GetValue(iRow, iPad));
+	      
+              if(nClusters>0) {
+		
+		hNormNclusters->Fill(iSec,nClusters);
                 histRawsNClustersPerEventVsSector->Fill(iSec, nClusters);
-                hNorm108->Fill(helpSector, nClusters);
-                histRawsQVsSector->Fill(helpSector, 
-                                       nClusters*qROC->GetValue(iRow, iPad));
-                histRawsQmaxVsSector->Fill(helpSector, 
-                                          nClusters*qmaxROC->GetValue(iRow, iPad));
+                histRawsQVsSector->Fill(iSec, 
+					nClusters*qROC->GetValue(iRow, iPad));
+                histRawsQmaxVsSector->Fill(iSec, 
+					   nClusters*qmaxROC->GetValue(iRow, iPad));
               }
             }
           }
         } // end loop over sectors
       
+	// update event histograms - copy info from TPDdataQA histos
+	TH1F* hQAOccVsEvent = fTPCdataQA[specie]->GetHistOccupancyVsEvent();
+	TH1F* hQANclVsEvent = fTPCdataQA[specie]->GetHistNclustersVsEvent();
+	
+	// the two event histograms should have the same number of bins
+	const Int_t nBins = hQAOccVsEvent->GetXaxis()->GetNbins();
+	for(Int_t bin = 1; bin <= nBins; bin++) {
+	  
+	  histRawsOccupancyVsEvent->SetBinContent(bin, hQAOccVsEvent->GetBinContent(bin));
+	  histRawsNclustersVsEvent->SetBinContent(bin, hQANclVsEvent->GetBinContent(bin));
+	}
+	
+	histRawsOccupancyVsEvent->GetXaxis()->SetRange(hQAOccVsEvent->GetXaxis()->GetFirst(), hQAOccVsEvent->GetXaxis()->GetLast());
+	histRawsNclustersVsEvent->GetXaxis()->SetRange(hQANclVsEvent->GetXaxis()->GetFirst(), hQANclVsEvent->GetXaxis()->GetLast());
+
         // Normalize histograms
-        histRawsOccupancyVsSector->Divide(hNorm72);
+        histRawsOccupancyVsSector->Divide(hNormOcc);
         histRawsNClustersPerEventVsSector->Scale(1.0/Float_t(eventCounter));
-        histRawsQVsSector->Divide(hNorm108);
-        histRawsQmaxVsSector->Divide(hNorm108);
-        delete hNorm72;
-        delete hNorm108;
+        histRawsQVsSector->Divide(hNormNclusters);
+        histRawsQmaxVsSector->Divide(hNormNclusters);
+        delete hNormOcc;
+        delete hNormNclusters;
+
+	if(fBeautifyOption!=0) {
+	  // Help make the histogram easier to interpret for the DQM shifter
+	  
+	  histRawsOccupancyVsSector->ResetBit(AliQAv1::GetQABit());
+	  histRawsQmaxVsSector->ResetBit(AliQAv1::GetQABit());
+
+	  histRawsOccupancyVsSector->SetMinimum(0.0);
+	  if(histRawsOccupancyVsSector->GetMaximum()<1.5*fOccHighLimit)
+	    histRawsOccupancyVsSector->SetMaximum(1.5*fOccHighLimit);
+	  
+	  histRawsQmaxVsSector->SetMinimum(0.0);
+	  if(histRawsQmaxVsSector->GetMaximum()<1.5*fQmaxHighLimit)
+	    histRawsQmaxVsSector->SetMaximum(1.5*fQmaxHighLimit);
+	  
+	  Double_t xminOcc = histRawsOccupancyVsSector->GetXaxis()->GetXmin();
+	  Double_t xmaxOcc = histRawsOccupancyVsSector->GetXaxis()->GetXmax();
+	  Double_t yminOcc = histRawsOccupancyVsSector->GetMinimum();
+	  Double_t ymaxOcc = histRawsOccupancyVsSector->GetMaximum();
+	  
+	  Double_t xminQmax = histRawsQmaxVsSector->GetXaxis()->GetXmin();
+	  Double_t xmaxQmax = histRawsQmaxVsSector->GetXaxis()->GetXmax();
+	  Double_t yminQmax = histRawsQmaxVsSector->GetMinimum();
+	  Double_t ymaxQmax = histRawsQmaxVsSector->GetMaximum();
+	  
+	  TBox* boxOccOk = new TBox(xminOcc,0,xmaxOcc,fOccHighLimit);
+	  boxOccOk->SetFillColor(kGreen);
+	  histRawsOccupancyVsSector->GetListOfFunctions()->Add(boxOccOk);
+	  
+	  TBox* boxQmaxOk = new TBox(xminQmax,fQmaxLowLimit,xmaxQmax,fQmaxHighLimit);
+	  boxQmaxOk->SetFillColor(kGreen);
+	  histRawsQmaxVsSector->GetListOfFunctions()->Add(boxQmaxOk);
+	  
+	  
+	  for(Int_t bin = 1; bin <= 72; bin++) {
+	    
+	    if(histRawsOccupancyVsSector->GetBinContent(bin)<=0 ||
+	       histRawsOccupancyVsSector->GetBinContent(bin)>fOccHighLimit) {
+	      
+	      histRawsOccupancyVsSector->SetBit(AliQAv1::GetQABit());
+
+	      TBox* boxErr = 
+		new TBox(histRawsOccupancyVsSector->GetXaxis()->GetBinLowEdge(bin), yminOcc,
+			 histRawsOccupancyVsSector->GetXaxis()->GetBinUpEdge(bin), ymaxOcc);
+	      boxErr->SetFillColor(kRed);
+	      histRawsOccupancyVsSector->GetListOfFunctions()->Add(boxErr);
+	    }
+	    
+	    if(histRawsQmaxVsSector->GetBinContent(bin)<fQmaxLowLimit||
+	       histRawsQmaxVsSector->GetBinContent(bin)>fQmaxHighLimit) {
+	      
+	      // Mark that histogram has error
+	      histRawsQmaxVsSector->SetBit(AliQAv1::GetQABit());
+
+	      TBox* boxErr = 
+		new TBox(histRawsQmaxVsSector->GetXaxis()->GetBinLowEdge(bin), yminQmax,
+			 histRawsQmaxVsSector->GetXaxis()->GetBinUpEdge(bin), ymaxQmax);
+	      boxErr->SetFillColor(kRed);
+	      histRawsQmaxVsSector->GetListOfFunctions()->Add(boxErr);
+	    }
+	  }
+
+	  // Now we have to add a copy of the histograms to draw
+	  // because the boxes covers the data points
+	  TH1F* hOccCopy = new TH1F(*histRawsOccupancyVsSector);
+	  hOccCopy->SetOption("SAME P");
+	  histRawsOccupancyVsSector->GetListOfFunctions()->Add(hOccCopy);
+
+	  TH1F* hQmaxCopy = new TH1F(*histRawsQmaxVsSector);
+	  hQmaxCopy->SetOption("SAME P");
+	  histRawsQmaxVsSector->GetListOfFunctions()->Add(hQmaxCopy);
+
+	} // end beautify
       }
     }
   }
   AliQAChecker::Instance()->Run(AliQAv1::kTPC, task, list) ;  
 }
+
 
 //____________________________________________________________________________ 
 void AliTPCQADataMakerRec::InitESDs()
@@ -256,6 +352,9 @@ void AliTPCQADataMakerRec::InitESDs()
 	     50, 0, 5);
   histESDpt->Sumw2();
   Add2ESDsList(histESDpt, kPt, !expert, image);
+
+  // This means we are not running DQM so do not beautify
+  SetBeautifyOption(0);
 }
 
 //____________________________________________________________________________ 
@@ -274,6 +373,11 @@ void AliTPCQADataMakerRec::InitRaws()
   const Bool_t image    = kTRUE ; 
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    
+    // It might happen that we will be in this method a few times because
+    // we create all dataQAs at the first call to this method
+    if(fTPCdataQA[specie]!=0) // data QA already created
+      continue;
     fTPCdataQA[specie] = new AliTPCdataQA(AliRecoParam::ConvertIndex(specie));
     LoadMaps(); // Load Altro maps
     fTPCdataQA[specie]->SetAltroMapping(fMapping); // set Altro mapping
@@ -285,31 +389,59 @@ void AliTPCQADataMakerRec::InitRaws()
     new TH1F("hRawsOccupancy", "Occupancy (all pads); Occupancy; Counts",
 	     100, 0, 1);
   histRawsOccupancy->Sumw2();
-  Add2RawsList(histRawsOccupancy, kOccupancy, !expert, image, !saveCorr);
+  Add2RawsList(histRawsOccupancy, kRawsOccupancy, expert, image, !saveCorr);
   
   TH1F * histRawsOccupancyVsSector = 
     new TH1F("hRawsOccupancyVsSector", "Occupancy vs sector; Sector; Occupancy",
 	     72, 0, 72);
   histRawsOccupancyVsSector->Sumw2();
-  Add2RawsList(histRawsOccupancyVsSector, kOccupancyVsSector, !expert, image, !saveCorr);
+  histRawsOccupancyVsSector->SetMarkerStyle(20);
+  histRawsOccupancyVsSector->SetOption("P");
+  histRawsOccupancyVsSector->SetStats(kFALSE);
+  Add2RawsList(histRawsOccupancyVsSector, kRawsOccupancyVsSector, !expert, image, !saveCorr);
 
   TH1F * histRawsNClustersPerEventVsSector = 
     new TH1F("hRawsNClustersPerEventVsSector", "Nclusters per event vs sector; Sector; Nclusters per event",
 	     72, 0, 72);
   histRawsNClustersPerEventVsSector->Sumw2();
-  Add2RawsList(histRawsNClustersPerEventVsSector, kNClustersPerEventVsSector, !expert, image, !saveCorr);
+  Add2RawsList(histRawsNClustersPerEventVsSector, kRawsNClustersPerEventVsSector, expert, image, !saveCorr);
   
   TH1F * histRawsQVsSector = 
-    new TH1F("hRawsQVsSector", "<Q> vs sector (OROC med: 36-71, long: 72-107); Sector; <Q>",
-	     108, 0, 108);
+    new TH1F("hRawsQVsSector", "<Q> vs sector; Sector; <Q>",
+	     72, 0, 72);
   histRawsQVsSector->Sumw2();
-  Add2RawsList(histRawsQVsSector, kQVsSector, !expert, image, !saveCorr);
+  Add2RawsList(histRawsQVsSector, kRawsQVsSector, expert, image, !saveCorr);
 
   TH1F * histRawsQmaxVsSector = 
-    new TH1F("hRawsQmaxVsSector", "<Qmax> vs sector (OROC med: 36-71, long: 72-107); Sector; <Qmax>",
-	     108, 0, 108);
+    new TH1F("hRawsQmaxVsSector", "<Qmax> vs sector; Sector; <Qmax>",
+	     72, 0, 72);
   histRawsQmaxVsSector->Sumw2();
-  Add2RawsList(histRawsQmaxVsSector, kQmaxVsSector, !expert, image, !saveCorr);
+  histRawsQmaxVsSector->SetMarkerStyle(20);
+  histRawsQmaxVsSector->SetOption("P");
+  histRawsQmaxVsSector->SetStats(kFALSE);
+  Add2RawsList(histRawsQmaxVsSector, kRawsQmaxVsSector, !expert, image, !saveCorr);
+
+  // Get histogram information from data QA to build copy
+  TH1F* hOccHelp = fTPCdataQA[0]->GetHistOccupancyVsEvent();
+  TH1F * histRawsOccupancyVsEvent = 
+    new TH1F("hRawsOccupancyVsEvent", hOccHelp->GetTitle(),
+	     hOccHelp->GetXaxis()->GetNbins(),
+	     hOccHelp->GetXaxis()->GetXmin(), hOccHelp->GetXaxis()->GetXmax());
+  histRawsOccupancyVsEvent->SetMarkerStyle(20);
+  histRawsOccupancyVsEvent->SetOption("P");
+  histRawsOccupancyVsEvent->SetStats(kFALSE);
+  Add2RawsList(histRawsOccupancyVsEvent, kRawsOccupancyVsEvent, !expert, image, !saveCorr);
+
+  // Get histogram information from data QA to build copy
+  TH1F* hNclHelp = fTPCdataQA[0]->GetHistNclustersVsEvent();
+  TH1F * histRawsNclustersVsEvent = 
+    new TH1F("hRawsNclustersVsEvent", hNclHelp->GetTitle(),
+	     hNclHelp->GetXaxis()->GetNbins(),
+	     hNclHelp->GetXaxis()->GetXmin(), hNclHelp->GetXaxis()->GetXmax());
+  histRawsNclustersVsEvent->SetMarkerStyle(20);
+  histRawsNclustersVsEvent->SetOption("P");
+  histRawsNclustersVsEvent->SetStats(kFALSE);
+  Add2RawsList(histRawsNclustersVsEvent, kRawsNclustersVsEvent, !expert, image, !saveCorr);
 }
 
 //____________________________________________________________________________ 
@@ -322,6 +454,9 @@ void AliTPCQADataMakerRec::InitDigits()
              1000, 0, 1000);
   histDigitsADC->Sumw2();
   Add2DigitsList(histDigitsADC, kDigitsADC, !expert, image);
+
+  // This means we are not running DQM so do not beautify
+  SetBeautifyOption(0);
 }
 
 //____________________________________________________________________________ 
@@ -371,6 +506,9 @@ void AliTPCQADataMakerRec::InitRecPoints()
 	     159, 0, 159);
   histRecPointsRow->Sumw2();
   Add2RecPointsList(histRecPointsRow, kRow, !expert, image);
+
+  // This means we are not running DQM so do not beautify
+  SetBeautifyOption(0);
 }
 
 //____________________________________________________________________________
@@ -496,6 +634,9 @@ void AliTPCQADataMakerRec::LoadMaps()
   path += "/TPC/mapping/Patch";
 
   for(Int_t i = 0; i < 6; i++) {
+
+    if(fMapping[i]!=0) // mapping already loaded
+      continue;
     TString path2 = path;
     path2 += i;
     path2 += ".data";

@@ -7,24 +7,41 @@
 /* $Id: $ */
 
 /*
-  Based on AliPHOSQAChecker.
-  Checks the quality assurance by comparing with reference data.
-  P. Christiansen, Lund, January 2008.
+  Checks implemented a la AliMUONQAChecker.
+  Checks the quality assurance by very simple checks on histogram content.
+  P. Christiansen, Lund, September 2009.
 */
+
+// --- ROOT header files ---
+#include <TObjArray.h>
 
 // --- AliRoot header files ---
 #include "AliQACheckerBase.h"
+#include "AliDetectorRecoParam.h"
 
 class AliTPCQAChecker: public AliQACheckerBase {
-
-public:
-  AliTPCQAChecker() : AliQACheckerBase("TPC","TPC Quality Assurance Checker") {;}          // ctor
-  AliTPCQAChecker(const AliTPCQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
+  
+ public:
+ AliTPCQAChecker() : AliQACheckerBase("TPC","TPC Quality Assurance Checker"), fDebug(0) {;}          // ctor
+ AliTPCQAChecker(const AliTPCQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()), fDebug(qac.GetDebugLevel()) {;} // cpy ctor   
   virtual ~AliTPCQAChecker() {;} // dtor
 
+  virtual Double_t * Check(AliQAv1::ALITASK_t, TObjArray **, AliDetectorRecoParam * recoParam); 
+  void Init(const AliQAv1::DETECTORINDEX_t det); 
+  void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const;
+
+  Int_t GetDebugLevel() const {return fDebug;}
+  void  SetDebugLevel(Int_t value) {fDebug = value;}
+  
 private:
   
-  ClassDef(AliTPCQAChecker,1)  // TPC Quality Assurance Checker
+  Double_t CheckRAW(Int_t specie, TObjArray* list);
+  Double_t CheckREC(Int_t specie, TObjArray* list);
+  Double_t CheckESD(Int_t specie, TObjArray* list);
+
+  Int_t fDebug;
+  
+  ClassDef(AliTPCQAChecker,2)  // TPC Quality Assurance Checker
 
 };
 
