@@ -140,22 +140,24 @@ void visscan_init(const TString& cdburi = "",
   // Additional GUI components
   //==============================================================================
 
+  // Macro / data selection
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
   slot->StartEmbedding();
   AliEveMacroExecutorWindow* exewin = new AliEveMacroExecutorWindow(exec);
   slot->StopEmbedding("DataSelection");
   exewin->PopulateMacros();
 
-  slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
-  slot->StartEmbedding();
-  new AliQAHistViewer(gClient->GetRoot(), 600, 400, kTRUE);
-  slot->StopEmbedding("QA histograms");
-
-  //event selection tab
+  // Event selection tab
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
   slot->StartEmbedding();
   new AliEveEventSelectorWindow(gClient->GetRoot(), 600, 400, AliEveEventManager::GetMaster()->GetEventSelector());
   slot->StopEmbedding("Selections");
+
+  // QA viewer
+  slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
+  slot->StartEmbedding();
+  new AliQAHistViewer(gClient->GetRoot(), 600, 400, kTRUE);
+  slot->StopEmbedding("QA histograms");
 
   browser->GetTabRight()->SetTab(1);
 

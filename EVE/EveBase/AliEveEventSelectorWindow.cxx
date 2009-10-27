@@ -59,10 +59,10 @@ AliEveEventSelectorWindow::AliEveEventSelectorWindow(const TGWindow *p, UInt_t w
 
   //draw box frame
   TGHorizontalFrame* hframedraw = new TGHorizontalFrame(this);
-  AddFrame(hframedraw, new TGLayoutHints((kLHintsExpandX), 5,5));
+  AddFrame(hframedraw, new TGLayoutHints((kLHintsExpandX), 5,5,2,1));
 
-  TGLabel* drawlabel = new TGLabel(hframedraw, "Draw expression:");
-  hframedraw->AddFrame(drawlabel, new TGLayoutHints((kLHintsLeft)));
+  TGLabel* drawlabel = new TGLabel(hframedraw, "Draw preview");
+  hframedraw->AddFrame(drawlabel, new TGLayoutHints(kLHintsLeft, 2,6,2));
   fPDrawFormula = new TGTextEntry(hframedraw);
   hframedraw->AddFrame(fPDrawFormula, new TGLayoutHints(kLHintsExpandX));
   TGTextButton* buttondraw = new TGTextButton(hframedraw,"Draw");
@@ -76,16 +76,16 @@ AliEveEventSelectorWindow::AliEveEventSelectorWindow(const TGWindow *p, UInt_t w
 
   //text selection frame
   TGHorizontalFrame *hframetxtsel = new TGHorizontalFrame(this);
-  AddFrame(hframetxtsel, new TGLayoutHints((kLHintsExpandX), 5,5));
+  AddFrame(hframetxtsel, new TGLayoutHints((kLHintsExpandX), 5,5,1,1));
 
-  TGLabel* exprlabel = new TGLabel(hframetxtsel, "Expression:");
-  hframetxtsel->AddFrame(exprlabel, new TGLayoutHints(kLHintsLeft));
+  TGLabel* exprlabel = new TGLabel(hframetxtsel, "Expression");
+  hframetxtsel->AddFrame(exprlabel, new TGLayoutHints(kLHintsLeft, 6,2,2));
 
   TGCheckButton* checktextsel = new TGCheckButton(hframetxtsel);
   checktextsel->Connect("Toggled(Bool_t)", "AliEveEventSelector",
                         fPSelector, "SetSelectOnString(Bool_t)");
   checktextsel->SetState(fPSelector->GetSelectOnString() ? kButtonDown : kButtonUp);
-  hframetxtsel->AddFrame(checktextsel, new TGLayoutHints(kLHintsLeft));
+  hframetxtsel->AddFrame(checktextsel, new TGLayoutHints(kLHintsLeft, 0,0,1));
 
   fPEntryLowerBound = new TGNumberEntry(hframetxtsel);
   hframetxtsel->AddFrame(fPEntryLowerBound, new TGLayoutHints(kLHintsLeft));
@@ -100,25 +100,25 @@ AliEveEventSelectorWindow::AliEveEventSelectorWindow(const TGWindow *p, UInt_t w
 
   //trigger cuts frame
   TGHorizontalFrame* hframetrigger = new TGHorizontalFrame(this);
-  AddFrame(hframetrigger, new TGLayoutHints((kLHintsLeft), 5,5));
+  AddFrame(hframetrigger, new TGLayoutHints((kLHintsLeft|kLHintsExpandX), 5,5,1,1));
 
-  TGLabel* triglabel = new TGLabel(hframetrigger, "Trigger type:");
-  hframetrigger->AddFrame(triglabel, new TGLayoutHints(kLHintsLeft));
+  TGLabel* triglabel = new TGLabel(hframetrigger, "Trigger type");
+  hframetrigger->AddFrame(triglabel, new TGLayoutHints(kLHintsLeft, 0,2,2));
   fPCheckTriggerSimple = new TGCheckButton(hframetrigger);
   fPCheckTriggerSimple->Connect("Toggled(Bool_t)","AliEveEventSelector",
                           fPSelector,"SetSelectOnTriggerType(Bool_t)");
   fPCheckTriggerSimple->SetState(fPSelector->GetSelectOnTriggerType() ? kButtonDown : kButtonUp );
-  hframetrigger->AddFrame(fPCheckTriggerSimple, new TGLayoutHints(kLHintsLeft));
+  hframetrigger->AddFrame(fPCheckTriggerSimple, new TGLayoutHints(kLHintsLeft, 0,0,1));
   fPComboBoxTrigger = new TGComboBox(hframetrigger);
-  fPComboBoxTrigger->Resize(100,20);
+  fPComboBoxTrigger->Resize(200,20);
   fPComboBoxTrigger->Connect("Selected(const char*)","AliEveEventSelectorWindow",
                              this,"DoHandleTriggerFromComboBox(const char*)");
   hframetrigger->AddFrame(fPComboBoxTrigger, new TGLayoutHints(kLHintsLeft));
 
-  TGLabel* labelfreetrig = new TGLabel(hframetrigger, "Trigger type expression:");
-  hframetrigger->AddFrame(labelfreetrig, new TGLayoutHints(kLHintsLeft));
+  TGLabel* labelfreetrig = new TGLabel(hframetrigger, "Expression");
+  hframetrigger->AddFrame(labelfreetrig, new TGLayoutHints(kLHintsLeft, 4,2,2));
   fPCheckTriggerString = new TGCheckButton(hframetrigger);
-  hframetrigger->AddFrame(fPCheckTriggerString, new TGLayoutHints(kLHintsLeft));
+  hframetrigger->AddFrame(fPCheckTriggerString, new TGLayoutHints(kLHintsLeft, 0,0,1));
   fPCheckTriggerString->Connect("Toggled(Bool_t)","AliEveEventSelector",
                            fPSelector,"SetSelectOnTriggerString(Bool_t)");
   fPCheckTriggerString->SetState(fPSelector->GetSelectOnTriggerString() ? kButtonDown : kButtonUp );
@@ -131,15 +131,15 @@ AliEveEventSelectorWindow::AliEveEventSelectorWindow(const TGWindow *p, UInt_t w
 
   //multiplicity cuts frame
   TGHorizontalFrame* hframemult = new TGHorizontalFrame(this);
-  AddFrame(hframemult, new TGLayoutHints((kLHintsLeft), 5,5));
+  AddFrame(hframemult, new TGLayoutHints((kLHintsLeft), 5,5,1,1));
 
-  TGLabel* multlabel = new TGLabel(hframemult, "Multiplicity:");
-  hframemult->AddFrame(multlabel, new TGLayoutHints(kLHintsLeft));
+  TGLabel* multlabel = new TGLabel(hframemult, "Multiplicity");
+  hframemult->AddFrame(multlabel, new TGLayoutHints(kLHintsLeft, 7,2,2));
   TGCheckButton* checkmult = new TGCheckButton(hframemult);
   checkmult->Connect("Toggled(Bool_t)", "AliEveEventSelector",
                       fPSelector,"SetSelectOnMultiplicity(Bool_t)");
   checkmult->SetState(fPSelector->GetSelectOnMultiplicity() ? kButtonDown : kButtonUp );
-  hframemult->AddFrame(checkmult, new TGLayoutHints(kLHintsLeft));
+  hframemult->AddFrame(checkmult, new TGLayoutHints(kLHintsLeft, 0,0,1));
   fPEntryMultLow = new TGNumberEntry(hframemult);
   hframemult->AddFrame(fPEntryMultLow, new TGLayoutHints(kLHintsLeft));
   fPEntryMultHigh = new TGNumberEntry(hframemult);
@@ -151,10 +151,10 @@ AliEveEventSelectorWindow::AliEveEventSelectorWindow(const TGWindow *p, UInt_t w
 
   //wrap around
   TGHorizontalFrame* hframewrap = new TGHorizontalFrame(this);
-  AddFrame(hframewrap, new TGLayoutHints((kLHintsLeft), 5,5));
+  AddFrame(hframewrap, new TGLayoutHints((kLHintsLeft), 5,5,1,2));
 
-  TGLabel* wraplabel = new TGLabel(hframewrap, "Wrap around at the end.");
-  hframewrap->AddFrame(wraplabel, new TGLayoutHints(kLHintsLeft));
+  TGLabel* wraplabel = new TGLabel(hframewrap, "Wrap around at the end:");
+  hframewrap->AddFrame(wraplabel, new TGLayoutHints(kLHintsLeft, 0,4,1));
   TGCheckButton* checkwraparound = new TGCheckButton(hframewrap);
   hframewrap->AddFrame(checkwraparound, new TGLayoutHints(kLHintsLeft));
   checkwraparound->Connect("Toggled(Bool_t)","AliEveEventSelector",
@@ -254,11 +254,12 @@ void AliEveEventSelectorWindow::DoDrawHistogram()
   TTree* tree = fPSelector->GetESDTree();
   TString str = fPDrawFormula->GetText();
   str += ">>selectionhist";
+
+  TH1 *hist = dynamic_cast<TH1*>(gDirectory->Get("selectionhist"));
+  if (hist) delete hist;
+
+  TEvePadHolder padSwitch(kTRUE, fPCanvas->GetCanvas());
   tree->Draw(str);
-  TH1* hist = dynamic_cast<TH1*>(gDirectory->Get("selectionhist"));
-  if (hist) hist->Draw();
-  TCanvas* canvas = fPCanvas->GetCanvas();
-  canvas->Update();
 }
 
 //______________________________________________________________________________
