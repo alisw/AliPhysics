@@ -13,6 +13,7 @@
 //  Author Ph. Crochet
 
 #include <TObject.h>
+#include "AliMUONRawStreamTriggerHP.h"
 
 class AliMUONLocalStruct;
 class TArrayS;
@@ -114,6 +115,7 @@ class AliMUONLocalTrigger : public TObject {
   void SetY4Pattern(UShort_t pat) {fY4Pattern = pat;}
 
   void SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& localStruct);
+  void SetLocalStruct(Int_t loCircuit, const AliMUONRawStreamTriggerHP::AliLocalStruct& localStruct);
 
   Bool_t IsNull() const;
   

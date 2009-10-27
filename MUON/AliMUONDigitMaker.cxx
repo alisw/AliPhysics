@@ -364,22 +364,7 @@ AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
           {
             // fill local trigger
             AliMUONLocalTrigger localTrigger;
-            localTrigger.SetLoCircuit(loCircuit);
-            localTrigger.SetLoStripX((Int_t)localStruct->GetXPos());
-            localTrigger.SetLoStripY((Int_t)localStruct->GetYPos());
-            localTrigger.SetLoDev((Int_t)localStruct->GetXDev());
-            localTrigger.SetLoSdev((Int_t)localStruct->GetSXDev());
-            localTrigger.SetLoTrigY((Int_t)localStruct->GetTrigY());
-            localTrigger.SetLoLpt(localStruct->GetLpt());
-            localTrigger.SetLoHpt(localStruct->GetHpt());
-            localTrigger.SetX1Pattern(localStruct->GetX1());
-            localTrigger.SetX2Pattern(localStruct->GetX2());
-            localTrigger.SetX3Pattern(localStruct->GetX3());
-            localTrigger.SetX4Pattern(localStruct->GetX4());
-            localTrigger.SetY1Pattern(localStruct->GetY1());
-            localTrigger.SetY2Pattern(localStruct->GetY2());
-            localTrigger.SetY3Pattern(localStruct->GetY3());
-            localTrigger.SetY4Pattern(localStruct->GetY4());
+	    localTrigger.SetLocalStruct(loCircuit, *localStruct);
             fTriggerStore->Add(localTrigger);
           }
           

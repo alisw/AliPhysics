@@ -202,6 +202,39 @@ void AliMUONLocalTrigger::SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& lo
 
 }
 
+//----------------------------------------------------------------------
+void AliMUONLocalTrigger::SetLocalStruct(Int_t loCircuit, const AliMUONRawStreamTriggerHP::AliLocalStruct& localStruct)
+{
+/// Set local trigger info from rawdata localStruct (new raw reader)
+
+  // set id'
+  SetLoCircuit(loCircuit);
+
+  // set X, Y, dev, Sdev and TrigY
+  SetLoStripX((Int_t)localStruct.GetXPos());
+  SetLoStripY((Int_t)localStruct.GetYPos());
+  SetLoDev((Int_t)localStruct.GetXDev());
+  SetLoSdev((Int_t)localStruct.GetSXDev());
+  SetLoTrigY((Int_t)localStruct.GetTrigY());
+ 
+  // set L(H)pt
+  SetLoLpt(localStruct.GetLpt());
+  SetLoHpt(localStruct.GetHpt());
+
+  // set pattern X
+  SetX1Pattern(localStruct.GetX1());
+  SetX2Pattern(localStruct.GetX2());
+  SetX3Pattern(localStruct.GetX3());
+  SetX4Pattern(localStruct.GetX4());
+
+  // set pattern Y
+  SetY1Pattern(localStruct.GetY1());
+  SetY2Pattern(localStruct.GetY2());
+  SetY3Pattern(localStruct.GetY3());
+  SetY4Pattern(localStruct.GetY4());
+
+}
+
 namespace
 {
   const char* AsString(Int_t t)

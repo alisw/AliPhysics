@@ -21,6 +21,8 @@ class AliMUONVDigitStore;
 class TObjectArray;
 class TMap;
 class AliMpDCSNamer;
+class AliMUONVTriggerStore;
+class AliMUONGlobalTrigger;
 
 class AliMUONTriggerQADataMakerRec: public AliMUONVQADataMakerRec {
 
@@ -48,33 +50,38 @@ public:
 
   /// Raw histograms indices
   
-  enum ERaw { 
-    kTriggerScalers           = 22, ///< Trigger scalers histogram per plane index
-    kTriggerScalersDisplay    = 30, ///< Trigger scalers display histogram per plane index
-    kTriggerScalersTime       = 38, ///< Trigger scalers acquisition time index
-    kTriggerCalibSummary      = 39, ///< Summary of responding strips/boards and noisy strips 
-    kTriggeredBoards          = 40,  ///< Triggered boards histogram index
-    kTriggerBoardsDisplay     = 41, ///< Triggered boards display histogram index
-    kTriggerErrorLocalXPos = 50,  ///< Local board: Number of XPos Error vs Local Board Id
-    kTriggerErrorLocalYPos = 51,  ///< Local board: Number of YPos Error vs Local Board Id
-    kTriggerErrorLocalDev = 52,  ///< Local board: Number of Deviation Error vs Local Board
-    kTriggerErrorLocalTriggerDec = 53,  ///< Local board: Number of Trigger Decision (All Pt) Error vs Local Board Id
-    kTriggerErrorLocalLPtLSB = 54,  ///< Local board: Number of LSB Low Pt Error vs Local Board Id
-    kTriggerErrorLocalLPtMSB = 55,  ///< Local board: Number of MSB Low Pt Error vs Local Board Id
-    kTriggerErrorLocalHPtLSB = 56,  ///< Local board: Number of LSB High Pt Error vs Local Board Id
-    kTriggerErrorLocalHPtMSB = 57,  ///< Local board: Number of MSB High Pt Error vs Local Board Id
-    kTriggerErrorLocal2RegionalLPtLSB = 58,  ///< Local to Regional: Number of LPt LSB error vs Local Board Id
-    kTriggerErrorLocal2RegionalLPtMSB = 59,  ///< Local to Regional: Number of LPt MSB error vs Local Board Id
-    kTriggerErrorLocal2RegionalHPtLSB = 60,  ///< Local to Regional: Number of HPt LSB error vs Local Board Id
-    kTriggerErrorLocal2RegionalHPtMSB = 61,  ///< Local to Regional: Number of HPt MSB error vs Local Board Id
-    kTriggerErrorOutGlobalFromInGlobal = 62,  ///< Global board: Number of error vs output bit 
-    kTriggerError = 63,  ///< percentage of error for each trigger decision level (Local, Reg->Local, Reg, Reg->Glob, Global)
-    kTriggerErrorLocalTrigY = 64,  ///< Local board: Number of TrigY Error vs Local Board Id
-    kTriggerErrorLocalYCopy = 65,  ///< Local board: Number of Y Copy Error vs Local Board Id
-
-    kRawNAnalyzedEvents = 66, ///< Number of analyzed events per event specie
-    kTriggerReadOutErrors = 67, ///< Number of read-out errors
-    kTriggerGlobalOutput = 68 //< Histo including Global outputs and Global algo errors
+  enum ERaw {
+    kTriggerScalersTime       = 22, ///< Trigger scalers acquisition time index
+    kTriggerScalers           = 23, ///< Trigger scalers histogram per plane index
+    kTriggerScalersDisplay    = 31, ///< Trigger scalers display histogram per plane index
+    kTriggerCalibSummary      = 40, ///< Number of responding strips/boards and noisy strips 
+    kTriggerCalibSummaryNorm  = 41, ///< Percentage of responding strips/boards and noisy strips
+    kTriggerErrorLocalXPos = 50, ///< Local board: Number of XPos Error vs Local Board Id
+    kTriggerErrorLocalYPos = 51, ///< Local board: Number of YPos Error vs Local Board Id
+    kTriggerErrorLocalDev  = 52, ///< Local board: Number of Deviation Error vs Local Board
+    kTriggerErrorLocalTriggerDec = 53, ///< Local board: Number of Trigger Decision (All Pt) Error vs Local Board Id
+    kTriggerErrorLocalLPtLSB = 54, ///< Local board: Number of LSB Low Pt Error vs Local Board Id
+    kTriggerErrorLocalLPtMSB = 55, ///< Local board: Number of MSB Low Pt Error vs Local Board Id
+    kTriggerErrorLocalHPtLSB = 56, ///< Local board: Number of LSB High Pt Error vs Local Board Id
+    kTriggerErrorLocalHPtMSB = 57, ///< Local board: Number of MSB High Pt Error vs Local Board Id
+    kTriggerErrorLocalTrigY  = 58, ///< Local board: Number of TrigY Error vs Local Board Id
+    kTriggerErrorLocal2RegionalLPtLSB  = 59, ///< Local to Regional: Number of LPt LSB error vs Local Board Id
+    kTriggerErrorLocal2RegionalLPtMSB  = 60, ///< Local to Regional: Number of LPt MSB error vs Local Board Id
+    kTriggerErrorLocal2RegionalHPtLSB  = 61, ///< Local to Regional: Number of HPt LSB error vs Local Board Id
+    kTriggerErrorLocal2RegionalHPtMSB  = 62, ///< Local to Regional: Number of HPt MSB error vs Local Board Id
+    kTriggerErrorOutGlobalFromInGlobal = 63, ///< Global board: Number of error vs output bit 
+    kTriggerErrorSummary      = 64,  ///< Number of errors for each trigger decision level (Local, Reg->Local, Reg, Reg->Glob, Global)
+    kTriggerErrorSummaryNorm  = 65,  ///< Percentage of errors for each trigger decision level
+    kTriggerErrorLocalYCopy     = 67, ///< Local board: Number of Y Copy Error vs Local Board Id
+    kTriggerErrorLocalYCopyTest = 68, ///< Local Board: Number of Y copy error tests (for normalization)
+    kTriggerErrorLocalYCopyNorm = 69, ///< Local Board: Number of Y Copy Error vs Local Board Id Normalized to the number of tests
+    kTriggeredBoards          = 70,  ///< Triggered boards histogram index
+    kTriggerBoardsDisplay     = 71,  ///< Triggered boards display histogram index
+    kTriggerReadOutErrors     = 80,  ///< Number of read-out errors
+    kTriggerReadOutErrorsNorm = 81,  ///< Percentage of read-out errors
+    kTriggerGlobalOutput      = 90,  ///< Number of Global outputs and Global algo errors
+    kTriggerGlobalOutputNorm  = 91,  ///< Percentage of Global outputs and Global algo errors
+    kRawNAnalyzedEvents       = 100  ///< Number of analyzed events per event specie
   };
          
   /// Rec points histograms indices
@@ -131,53 +138,21 @@ private:
   TObjArray* GetDCSValues(Int_t iMeas, Int_t detElemId,
 			  TMap* triggerDcsMap, AliMpDCSNamer& triggerDcsNamer);
   void RawTriggerInRegional2OutRegional();
-  void RawTriggerInGlobal2OutGlobal();
-  void RawTriggerMatchOutLocal();
-  void RawTriggerMatchOutLocalInRegional();
-  void RawTriggerMatchOutGlobalFromInGlobal();
-	
-  Int_t fTriggerOutputLocalDataTriggerDec[235]; ///< Data Local Trigger decision for each active Local Board
-  Int_t fTriggerOutputLocalDataTrigY[235]; ///< Data Local Trigger Y decision for each active Local Board
-  Int_t fTriggerOutputLocalDataLPtDec[2][235]; ///< Data Local decision Low Pt for each active Local Board (2 Bits -> 0:LSB, 1:MSB)
-  Int_t fTriggerOutputLocalDataHPtDec[2][235]; ///< Data Local decision High Pt for each active Local Board (2 Bits -> 0:LSB, 1:MSB)
-  Int_t fTriggerOutputLocalDataXPos[235]; ///< Data Local XPos for each active Local Board
-  Int_t fTriggerOutputLocalDataYPos[235]; ///< Data Local YPos for each active Local Board
-  Int_t fTriggerOutputLocalDataDev[235]; ///< Data Local deviation for each active Local Board
+  UChar_t RawTriggerInGlobal2OutGlobal(UInt_t globalInput[4]);
+  void RawTriggerMatchOutLocal(AliMUONVTriggerStore& inputTriggerStore, AliMUONVTriggerStore& recoTriggerStore);
+  //void RawTriggerMatchOutLocalInRegional();
+  void RawTriggerMatchOutGlobalFromInGlobal(AliMUONGlobalTrigger& inputLocalTrigger,
+					    AliMUONGlobalTrigger& recoGlobalTrigger);
 
-  Int_t fTriggerOutputLocalRecTriggerDec[235]; ///< Reconstructed Local Trigger decision for each active Local Board
-  Int_t fTriggerOutputLocalRecTrigY[235]; ///< Reconstructed Local Trigger Y decision for each active Local Board
-  Int_t fTriggerOutputLocalRecLPtDec[2][235]; ///< Reconstructed Local decision Low Pt for each active Local Board (2 Bits -> 0:LSB, 1:MSB)
-  Int_t fTriggerOutputLocalRecHPtDec[2][235]; ///< Reconstructed Local decision High Pt for each active Local Board (2 Bits -> 0:LSB, 1:MSB)
-  Int_t fTriggerOutputLocalRecXPos[235]; ///< Reconstructed Local XPos for each active Local Board
-  Int_t fTriggerOutputLocalRecYPos[235]; ///< Reconstructed Local YPos for each active Local Board
-  Int_t fTriggerOutputLocalRecDev[235]; ///< Reconstructed Local deviation for each active Local Board
+  //Int_t fTriggerOutputRegionalData[16]; ///< Data Regional Trigger decision for each Regional Board (1R:0, 2R:1, ... , 1L:8, ...) -> 4 bits LPt, 4 bits HPt
+  //Int_t fTriggerInputRegionalRecLPt[2][16][16]; ///< Reconstructed Regional Input LPt for each Regional Board ([bit][reg][loc]) (reg -> 1R:0, 2R:1, ... , 1L:8, ...)
+  //Int_t fTriggerInputRegionalRecHPt[2][16][16]; ///< Reconstructed Regional Input HPt for each Regional Board ([bit][reg][loc]) (reg -> 1R:0, 2R:1, ... , 1L:8, ...)
+  //Int_t fTriggerOutputRegionalRec[16]; ///< Reconstructed Regional Trigger decision for each Regional Board (8 Bits)
 
-  Int_t fTriggerInputRegionalDataLPt[2][235]; ///< Data Regional Input LPt for each Local board
-  Int_t fTriggerInputRegionalDataHPt[2][235]; ///< Data Regional Input HPt for each Local board
-  Int_t fTriggerOutputRegionalData[16]; ///< Data Regional Trigger decision for each Regional Board (1R:0, 2R:1, ... , 1L:8, ...) -> 4 bits LPt, 4 bits HPt
-  Int_t fTriggerInputRegionalRecLPt[2][16][16]; ///< Reconstructed Regional Input LPt for each Regional Board ([bit][reg][loc]) (reg -> 1R:0, 2R:1, ... , 1L:8, ...)
-  Int_t fTriggerInputRegionalRecHPt[2][16][16]; ///< Reconstructed Regional Input HPt for each Regional Board ([bit][reg][loc]) (reg -> 1R:0, 2R:1, ... , 1L:8, ...)
-  Int_t fTriggerOutputRegionalRec[16]; ///< Reconstructed Regional Trigger decision for each Regional Board (8 Bits)
-
-  Int_t fTriggerInputGlobalDataLPt[16][4]; ///< Data Global inputs LPt (1R:0, 2R:1, ... , 1L:8, ...)
-  Int_t fTriggerInputGlobalDataHPt[16][4]; ///< Data Global inputs HPt (1R:0, 2R:1, ... , 1L:8, ...)
-  Int_t fTriggerOutputGlobalData[6]; ///< Data Global outputs
-  Int_t fTriggerOutputGlobalRecFromGlobalInput[6]; //< Reconstructed Global outputs from Global inputs
-  Int_t fTriggerOutputGlobalRecFromLocalInput[6]; //< Reconstructed Global outputs from Local inputs
-  Int_t fTriggerOutputGlobalRecFromLocalOutput[6]; //< Reconstructed Global outputs from Local outputs
-  Int_t fgitmp[4]; //< Tempory used to store Global inputs
-  Int_t fgotmp[6]; //< Tempory used to store Global outputs
-
-  Int_t fTriggerPatternX1[243][16]; ///< Local pattern X1
-  Int_t fTriggerPatternX2[243][16]; ///< Local pattern X2
-  Int_t fTriggerPatternX3[243][16]; ///< Local pattern X3
-  Int_t fTriggerPatternX4[243][16]; ///< Local pattern X4
-  Int_t fTriggerPatternY1[243][16]; ///< Local pattern Y1
-  Int_t fTriggerPatternY2[243][16]; ///< Local pattern Y2
-  Int_t fTriggerPatternY3[243][16]; ///< Local pattern Y3
-  Int_t fTriggerPatternY4[243][16]; ///< Local pattern Y4
-
-  Bool_t fTriggerErrorLocalYCopy[235]; ///< True if Y copy error for Local Board i
+  //Int_t fTriggerInputGlobalDataLPt[16][4]; ///< Data Global inputs LPt (1R:0, 2R:1, ... , 1L:8, ...)
+  //Int_t fTriggerInputGlobalDataHPt[16][4]; ///< Data Global inputs HPt (1R:0, 2R:1, ... , 1L:8, ...)
+  //Int_t fTriggerOutputGlobalRecFromLocalInput[6]; //< Reconstructed Global outputs from Local inputs
+  //Int_t fTriggerOutputGlobalRecFromLocalOutput[6]; //< Reconstructed Global outputs from Local outputs
   
   AliMUONDigitMaker* fDigitMaker; //!< pointer to digit maker
   AliMUONCalibrationData* fCalibrationData; //!< Used to load Local, Regional and Global masks

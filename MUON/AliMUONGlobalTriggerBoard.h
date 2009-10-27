@@ -47,8 +47,12 @@ class AliMUONGlobalTriggerBoard : public AliMUONTriggerBoard
       void             MaskGlobalInput();
                        /// Global input 4 words (32bits) from regional responses
       UInt_t*          GetGlobalInput() { return fGlobalInput; }
+
+      void             RecomputeRegional(UInt_t globalInput[4]);
       
    private:
+
+      UShort_t InvertPairBits(Int_t iReg);
 
       UShort_t fRegionalResponse[16]; ///< Regional board responses
       UInt_t   fGlobalInput[4];       ///< Global input 

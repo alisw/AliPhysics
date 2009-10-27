@@ -24,7 +24,7 @@
 /// For the moment we only implement the checking of raw data QA for the trigger
 /// by looking at the local structure and trigger response errors.
 ///
-/// \author Diego Stocc, Subatech
+/// \author Diego Stocco, Subatech
 
 
 #include "AliRecoParam.h"
@@ -79,9 +79,9 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, AliMUONRecoParam* )
   }
 
   Int_t histoRawsPercentIndex[] = {
-    AliMUONTriggerQADataMakerRec::kTriggerError, 
-    AliMUONTriggerQADataMakerRec::kTriggerCalibSummary,
-    AliMUONTriggerQADataMakerRec::kTriggerReadOutErrors
+    AliMUONTriggerQADataMakerRec::kTriggerErrorSummaryNorm, 
+    AliMUONTriggerQADataMakerRec::kTriggerCalibSummaryNorm,
+    AliMUONTriggerQADataMakerRec::kTriggerReadOutErrorsNorm
   };
   const Int_t kNrawsHistos = sizeof(histoRawsPercentIndex)/sizeof(histoRawsPercentIndex[0]);
 
