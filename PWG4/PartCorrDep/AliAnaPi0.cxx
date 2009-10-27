@@ -57,7 +57,7 @@ ClassImp(AliAnaPi0)
 AliAnaPi0::AliAnaPi0() : AliAnaPartCorrBaseClass(),
 fNCentrBin(0),fNZvertBin(0),fNrpBin(0),
 fNPID(0),fNmaxMixEv(0), fZvtxCut(0.),fCalorimeter(""),
-fEventsList(0x0), fhEtalon(0x0),
+fEMCALGeoName("EMCAL_COMPLETE"),fEventsList(0x0), fhEtalon(0x0),
 fhRe1(0x0),fhMi1(0x0),fhRe2(0x0),fhMi2(0x0),fhRe3(0x0),fhMi3(0x0),fhEvents(0x0),
 fhPrimPt(0x0), fhPrimAccPt(0x0), fhPrimY(0x0), fhPrimAccY(0x0), fhPrimPhi(0x0), fhPrimAccPhi(0x0)
 #ifdef __PHOSUTIL__
@@ -76,8 +76,8 @@ fhPrimPt(0x0), fhPrimAccPt(0x0), fhPrimY(0x0), fhPrimAccY(0x0), fhPrimPhi(0x0), 
 //________________________________________________________________________________________________________________________________________________
 AliAnaPi0::AliAnaPi0(const AliAnaPi0 & ex) : AliAnaPartCorrBaseClass(ex),  
 fNCentrBin(ex.fNCentrBin),fNZvertBin(ex.fNZvertBin),fNrpBin(ex.fNrpBin),
-fNPID(ex.fNPID),fNmaxMixEv(ex.fNmaxMixEv),fZvtxCut(ex.fZvtxCut), fCalorimeter(ex.fCalorimeter), 
-fEventsList(ex.fEventsList), fhEtalon(ex.fhEtalon),
+fNPID(ex.fNPID),fNmaxMixEv(ex.fNmaxMixEv),fZvtxCut(ex.fZvtxCut), fCalorimeter(ex.fCalorimeter),
+fEMCALGeoName(ex.fEMCALGeoName), fEventsList(ex.fEventsList), fhEtalon(ex.fhEtalon),
 fhRe1(ex.fhRe1),fhMi1(ex.fhMi1),fhRe2(ex.fhRe2),fhMi2(ex.fhMi2),fhRe3(ex.fhRe3),fhMi3(ex.fhMi3),fhEvents(ex.fhEvents),
 fhPrimPt(ex.fhPrimPt), fhPrimAccPt(ex.fhPrimAccPt), fhPrimY(ex.fhPrimY), 
 fhPrimAccY(ex.fhPrimAccY), fhPrimPhi(ex.fhPrimPhi), fhPrimAccPhi(ex.fhPrimAccPhi)
@@ -102,7 +102,7 @@ AliAnaPi0 & AliAnaPi0::operator = (const AliAnaPi0 & ex)
   
   fNCentrBin = ex.fNCentrBin  ; fNZvertBin = ex.fNZvertBin  ; fNrpBin = ex.fNrpBin  ; 
   fNPID = ex.fNPID  ; fNmaxMixEv = ex.fNmaxMixEv  ; fZvtxCut = ex.fZvtxCut  ;  fCalorimeter = ex.fCalorimeter  ;  
-  fEventsList = ex.fEventsList  ;  fhEtalon = ex.fhEtalon  ; 
+  fEMCALGeoName = ex.fEMCALGeoName ; fEventsList = ex.fEventsList  ;  fhEtalon = ex.fhEtalon  ; 
   fhRe1 = ex.fhRe1  ; fhMi1 = ex.fhMi1  ; fhRe2 = ex.fhRe2  ; fhMi2 = ex.fhMi2  ; 
   fhRe3 = ex.fhRe3  ; fhMi3 = ex.fhMi3  ; fhEvents = ex.fhEvents  ; 
   fhPrimPt = ex.fhPrimPt  ;  fhPrimAccPt = ex.fhPrimAccPt  ;  fhPrimY = ex.fhPrimY  ;  
@@ -154,6 +154,7 @@ void AliAnaPi0::InitParameters()
   fNmaxMixEv = 10;
   fZvtxCut   = 40;
   fCalorimeter  = "PHOS";
+  fEMCALGeoName = "EMCAL_COMPLETE";
 }
 //________________________________________________________________________________________________________________________________________________
 void AliAnaPi0::Init()
@@ -195,7 +196,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
 #ifdef __EMCALUTIL__
   printf("AliAnaPi0::GetCreateOutputObjects() - EMCAL geometry initialized!\n");
-  fEMCALGeo = new AliEMCALGeoUtils("EMCALgeo") ;
+  fEMCALGeo = new AliEMCALGeoUtils(fEMCALGeoName) ;
 #endif
 
   TList * outputContainer = new TList() ; 

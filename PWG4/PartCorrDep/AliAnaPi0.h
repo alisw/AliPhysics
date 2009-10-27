@@ -65,6 +65,9 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TString GetCalorimeter()   const {return fCalorimeter ; }
   void SetCalorimeter(TString det)    {fCalorimeter = det ; }
   
+  void SetEMCALGeometryName(TString name)   { fEMCALGeoName = name ; }
+  TString EMCALGeometryName() const { return fEMCALGeoName ; }
+	
   void Terminate(TList* outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
 	
@@ -72,15 +75,16 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
   
   private:
-  Int_t fNCentrBin ;		//number of bins in event container for centrality
-  Int_t fNZvertBin ;		//number of bins in event container for vertex position
-  Int_t fNrpBin ;			//number of bins in event container for reaction plain
-  Int_t fNPID ;			//Number of possible PID combinations
-  Int_t fNmaxMixEv ;		//Maximal number of events stored in buffer for mixing
-  Float_t fZvtxCut ;		//Cut on vertex position
-  TString fCalorimeter ;     //Select Calorimeter for IM
-  
-  TList ** fEventsList ;	//! containers for photons in stored events
+  Int_t fNCentrBin ;	  // Number of bins in event container for centrality
+  Int_t fNZvertBin ;	  // Number of bins in event container for vertex position
+  Int_t fNrpBin ;		  // Number of bins in event container for reaction plain
+  Int_t fNPID ;			  // Number of possible PID combinations
+  Int_t fNmaxMixEv ;	  // Maximal number of events stored in buffer for mixing
+  Float_t fZvtxCut ;	  // Cut on vertex position
+  TString fCalorimeter ;  // Select Calorimeter for IM
+  TString fEMCALGeoName;  // Name of geometry to use.
+
+  TList ** fEventsList ;  //! containers for photons in stored events
   
   //Histograms
   
