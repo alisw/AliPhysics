@@ -198,22 +198,20 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** li
         while ( (hdata = static_cast<TH1 *>(next())) ) {
           TString cln(hdata->ClassName()) ; 
           if ( cln.Contains("TH1") ) {
-            if ( hdata) { 
-              if ( hdata->TestBit(AliQAv1::GetExpertBit()) )  // does not perform the test for expert data
-                continue ; 
-              TH1 * href = NULL ; 
-              if (fRefSubDir) 
-                href  = static_cast<TH1*>(fRefSubDir->Get(hdata->GetName())) ;
-              else if (fRefOCDBSubDir[specie])
-                href  = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(hdata->GetName())) ;
-              if (!href) 
-                test[specie] = -1 ; // no reference data ; 
-              else {
-                Double_t rv =  DiffK(hdata, href) ;
-                AliDebug(AliQAv1::GetQADebugLevel(), Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
-                test[specie] += rv ; 
-                count[specie]++ ;
-              }
+            if ( hdata->TestBit(AliQAv1::GetExpertBit()) )  // does not perform the test for expert data
+              continue ; 
+            TH1 * href = NULL ; 
+            if (fRefSubDir) 
+              href  = static_cast<TH1*>(fRefSubDir->Get(hdata->GetName())) ;
+            else if (fRefOCDBSubDir[specie])
+              href  = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(hdata->GetName())) ;
+            if (!href) 
+              test[specie] = -1 ; // no reference data ; 
+            else {
+              Double_t rv =  DiffK(hdata, href) ;
+              AliDebug(AliQAv1::GetQADebugLevel(), Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
+              test[specie] += rv ; 
+              count[specie]++ ;
             }
           } else
             AliError("Data type cannot be processed") ;
