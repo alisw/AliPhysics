@@ -1202,6 +1202,7 @@ const Char_t *fIncludes =
 const Char_t *fMacroTemplate[7] = {
 ""
 ,"  if (!track) return kFALSE;\n"
+"  return kFALSE;\n"
 
 ,"  n = 0;\n"
 "  r=0x0;\n"
@@ -1214,9 +1215,11 @@ const Char_t *fMacroTemplate[7] = {
 "    h->GetXaxis()->SetTitle("");\n"
 "    h->GetYaxis()->SetTitle("");\n"
 "  } else h->Reset();\n"
+"  return h;\n"
 
 ,"  if (!track) return kFALSE;\n"
 "  if (!track2) return kFALSE;\n"
+"  return kFALSE;\n"
 
 ,"  n = 0;\n"
 "  r=0x0;\n"
@@ -1231,6 +1234,7 @@ const Char_t *fMacroTemplate[7] = {
 "    h->GetXaxis()->SetTitle("");\n"
 "    h->GetYaxis()->SetTitle("");\n"
 "  } else h->Reset();\n"
+"  return h;\n"
 };
 //______________________________________________________
 void AliEveTRDMacroWizzard::Create(Int_t typ)
