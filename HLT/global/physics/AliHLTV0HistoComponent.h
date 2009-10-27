@@ -68,11 +68,14 @@ private:
    */ 
   int Configure(const char* arguments);
   
-  TH1F *fKShort;; // KShort inv. mass
-  TH1F *fLambda; // Lambda inv. mass
-  TH2F *fAP; // Armenteros-Podolanski 
+  TH1F *fGamma;   // Gamma inv. mass
+  TH1F *fKShort;   // Ks inv. mass
+  TH1F *fLambda;   // Lambda inv. mass
+  TH2F *fAP;       // Armenteros-Podolanski 
+  TH2F *fGammaXY;  // XY distribution of gamma convertions
+  Int_t fNGammas; // n found total
   Int_t fNKShorts; // n found total
-  Int_t fNLambdas;  // n found total
+  Int_t fNLambdas; // n found total
 
   ClassDef(AliHLTV0HistoComponent, 0);
 

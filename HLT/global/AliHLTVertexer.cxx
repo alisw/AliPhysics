@@ -132,7 +132,6 @@ void AliHLTVertexer::FindV0s(  )
 
   for( Int_t iTr = 0; iTr<nTracks; iTr++ ){ //* first daughter
 
-    if( fESD->GetTrack(iTr)->GetTPCNcls()<60  ) continue;
     AliESDTrackInfo &info = fTrackInfos[iTr];
     if( !info.fOK ) continue;    
     if( info.fParticle.GetQ() >0 ) continue;    
@@ -140,7 +139,6 @@ void AliHLTVertexer::FindV0s(  )
 
     for( Int_t jTr = 0; jTr<nTracks; jTr++ ){  //* second daughter
 
-      if( fESD->GetTrack(jTr)->GetTPCNcls()<60  ) continue;
       AliESDTrackInfo &jnfo = fTrackInfos[jTr];
       if( !jnfo.fOK ) continue;
       if( jnfo.fParticle.GetQ() < 0 ) continue;
@@ -148,11 +146,11 @@ void AliHLTVertexer::FindV0s(  )
    
       //* construct V0 mother
 
-      AliKFParticle V0( info.fParticle, jnfo.fParticle );     
+      AliKFParticle v0( info.fParticle, jnfo.fParticle );     
 
       //* check V0 Chi^2
       
-      if( V0.GetChi2()<0 || V0.GetChi2() > 9.*V0.GetNDF() ) continue;
+      if( v0.GetChi2()<0 || v0.GetChi2() > 9.*v0.GetNDF() ) continue;
 
       //* subtruct daughters from primary vertex 
 
@@ -166,44 +164,31 @@ void AliHLTVertexer::FindV0s(  )
 	if( primVtxCopy.GetNContributors()<=2 ) continue;
 	primVtxCopy -= jnfo.fParticle;
       }
-      //* Check V0 Chi^2 deviation from primary vertex 
+      //* Check v0 Chi^2 deviation from primary vertex 
 
-      if( V0.GetDeviationFromVertex( primVtxCopy ) >3. ) continue;
+      if( v0.GetDeviationFromVertex( primVtxCopy ) >3. ) continue;
 
       //* Add V0 to primary vertex to improve the primary vertex resolution
 
-      primVtxCopy += V0;      
+      primVtxCopy += v0;      
 
       //* Set production vertex for V0
 
-      V0.SetProductionVertex( primVtxCopy );
+      v0.SetProductionVertex( primVtxCopy );
 
       //* Check chi^2 for a case
 
-      if( V0.GetChi2()<0 || V0.GetChi2()> 9.*V0.GetNDF() ) continue;
-
-      // Abschtand in [cm]
-
-      double dx = V0.GetX()-primVtxCopy.GetX();
-      double dy = V0.GetY()-primVtxCopy.GetY();
-      double r = sqrt(dx*dx + dy*dy);
-      //if( r>30 ) continue;
-      if( r<.2 ) continue;
-
-     //* Get V0 decay length with estimated error
+      if( v0.GetChi2()<0 || v0.GetChi2()> 9.*v0.GetNDF() ) continue;
+      
+      //* Get V0 decay length with estimated error
 
       Double_t length, sigmaLength;
-      if( V0.GetDecayLength( length, sigmaLength ) ) continue;
+      if( v0.GetDecayLength( length, sigmaLength ) ) continue;
 
       //* Reject V0 if it decays too close[sigma] to the primary vertex
 
       if( length  <3.5*sigmaLength ) continue;
 
-      //* Get V0 invariant mass 
-
-      // Double_t mass, sigmaMass;
-      //if( V0.GetMass( mass, sigmaMass ) ) continue;   
-      
       //* add ESD v0 
       
       AliESDv0 v0ESD( *fESD->GetTrack( iTr ), iTr, *fESD->GetTrack( jTr ), jTr );  
