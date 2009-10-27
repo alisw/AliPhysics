@@ -106,7 +106,6 @@ void loadmacros ()
   loadmacro("MUONReCalcGlobalTrigger");    // Bogdan       
   loadmacro("MUONRecoCheck");              // Hermine, Alessandro
   loadmacro("MUONRefit");                  // Philippe P.
-  // loadmacro("MUONResoEffChamber");      // Nicolas
   loadmacro("MUONStatusMap");              // Laurent
   loadmacro("MUONSurveyUtil");             // Javier
   loadmacro("MUONSurveyCh1");              // Javier
