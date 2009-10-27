@@ -32,9 +32,9 @@ using namespace std;
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCTrackArray.h"
-#include "AliHLTTPCTrack.h"
-//#include "AliHLTGlobalBarrelTrack.h"
+//#include "AliHLTTPCTrackArray.h"
+//#include "AliHLTTPCTrack.h"
+#include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTExternalTrackParam.h"
 #include "AliHLTDataTypes.h"
 
@@ -47,31 +47,30 @@ using namespace std;
 #include "TObjArray.h"
 
 
-AliHLTTPCTrackHistoComponent gAliHLTTPCTrackHistoComponent;
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCTrackHistoComponent)
 
 AliHLTTPCTrackHistoComponent::AliHLTTPCTrackHistoComponent()
-  :
-  fMinSlice(35),
-  fMaxSlice(0),
-  fMinPartition(5),
-  fMaxPartition(0),
-  //fReset(0),
-  fNEvents(0),
-  fNtotTracks(0),
-  fNEvtMod(20),
-  fMeanMultiplicity(NULL),
-  fMultiplicity(NULL),
-  fDeDxVsP(NULL),
-  fClusters(NULL),
-  fTracks(NULL),
-  //fNClusterVsXY(NULL),
-  //fChargeVsXY(NULL),
-  fTracksArray(NULL)
-  //fClustersArray(NULL),
-  //fNSpacePoints(NULL)
+    :
+    fMinSlice(35)
+  , fMaxSlice(0)
+  , fMinPartition(5)
+  , fMaxPartition(0)
+  //, fReset(0)
+  , fNEvents(0)
+  , fNtotTracks(0)
+  , fEvtMod(20)
+  , fBufferSize(5000)
+  , fMeanMultiplicity(NULL)
+  , fMultiplicity(NULL)
+  //, fDeDxVsP(NULL)
+  , fClusters(NULL)
+  , fTracks(NULL)
+  //, fNClusterVsXY(NULL)
+  //, fChargeVsXY(NULL)
+  //, fTracksArray(NULL)
+  //, fClustersArray(NULL)
+  //, fNSpacePoints(NULL)
 {
   // see header file for class documentation
   // or
@@ -79,6 +78,8 @@ AliHLTTPCTrackHistoComponent::AliHLTTPCTrackHistoComponent()
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
+
+const char* AliHLTTPCTrackHistoComponent::fgkOCDBEntry="HLT/ConfigTPC/TPCTrackHisto";
 
 AliHLTTPCTrackHistoComponent::~AliHLTTPCTrackHistoComponent(){
 // see header file for class documentation
@@ -95,12 +96,11 @@ const char* AliHLTTPCTrackHistoComponent::GetComponentID(){
 
 void AliHLTTPCTrackHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list){
 // see header file for class documentation
+  
   list.clear();
   list.push_back(AliHLTTPCDefinitions::fgkClustersDataType|kAliHLTDataOriginTPC);
-  list.push_back(AliHLTTPCDefinitions::fgkTrackSegmentsDataType|kAliHLTDataOriginTPC);
-  //list.push_back(AliHLTTPCDefinitions::fgkTracksDataType);
   list.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
-  list.push_back(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC);
+  //list.push_back(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC);
 }
 
 AliHLTComponentDataType AliHLTTPCTrackHistoComponent::GetOutputDataType(){
@@ -132,28 +132,43 @@ int AliHLTTPCTrackHistoComponent::DoInit( int argc, const char** argv ){
 // see header file for class documentation
  
   fClusters = new TNtuple("fClusters", "fClusters", "charge:qmax:residualY:residualZ"); 
-  fClusters->SetCircular(5000);
   fTracks   = new TNtuple("fTracks",  "fTracks",  "pt:eta:psi:nclusters"); 
+ 
+  fClusters->SetCircular(5000);
   fTracks->SetCircular(5000);
-  fTracksArray = new AliHLTTPCTrackArray();
+ 
+  //fTracksArray = new AliHLTTPCTrackArray();
 
   fMultiplicity     = new TH1F("fMultiplicity",     "Track multiplicity per event",     1000,           0, 1000);
-  fMeanMultiplicity = new TH1F("fMeanMultiplicity", "Mean track multiplicity vs. #evt", 10000/fNEvtMod, 0, 10000);
-  fDeDxVsP          = new TProfile("fDeDxVsP",      "E-deposition per unit length vs. p",100, 0, 100);
+  fMeanMultiplicity = new TH1F("fMeanMultiplicity", "Mean track multiplicity vs. #evt", 10000/fEvtMod, 0, 10000);
+  //fDeDxVsP          = new TProfile("fDeDxVsP",      "E-deposition per unit length vs. p",100, 0, 100);
   
-  int iResult = 0;
-  TString configuration = "";
-  TString argument = "";
-  for(int i=0; i<argc && iResult>=0; i++){
-      argument = argv[i];
-      if(!configuration.IsNull()) configuration += " ";
-      configuration += argument;
-  }
+  // first configure the default
+  int iResult=0;
+  if (iResult>=0) iResult=ConfigureFromCDBTObjString(fgkOCDBEntry);
+
+  // configure from the command line parameters if specified
+  if (iResult>=0 && argc>0)
+    iResult=ConfigureFromArgumentString(argc, argv);
   
-  if(!configuration.IsNull()){
-     iResult = Configure(configuration.Data());
-  }  
-  return iResult; 
+  return iResult;
+
+  
+  
+  
+//   int iResult = 0;
+//   TString configuration = "";
+//   TString argument = "";
+//   for(int i=0; i<argc && iResult>=0; i++){
+//       argument = argv[i];
+//       if(!configuration.IsNull()) configuration += " ";
+//       configuration += argument;
+//   }
+//   
+//   if(!configuration.IsNull()){
+//      iResult = Configure(configuration.Data());
+//   }  
+//   return iResult; 
 }
   
 int AliHLTTPCTrackHistoComponent::DoDeinit(){
@@ -161,14 +176,27 @@ int AliHLTTPCTrackHistoComponent::DoDeinit(){
   
   delete fClusters;
   delete fTracks;
-  delete fTracksArray;
+  //delete fTracksArray;
 
   delete fMultiplicity;
   delete fMeanMultiplicity;
-  delete fDeDxVsP;
+  //delete fDeDxVsP;
 
   return 0;
 }
+
+int AliHLTTPCTrackHistoComponent::Reconfigure(const char* cdbEntry, const char* /*chainId*/){
+// see header file for class documentation
+
+  // configure from the specified antry or the default one
+  const char* entry=cdbEntry;
+  if (!entry || entry[0]==0) {
+     entry=fgkOCDBEntry;
+  }
+
+  return ConfigureFromCDBTObjString(entry);
+}
+
 
 int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/){
 // see header file for class documentation
@@ -177,17 +205,9 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
 
   fNEvents++;
 
-  if(!fTracksArray) fTracksArray = new AliHLTTPCTrackArray();
+  //if(!fTracksArray) fTracksArray = new AliHLTTPCTrackArray();
 
   const AliHLTComponentBlockData *iter = NULL;
-
-//   //----------------- loop over slice tracks ----------------------//
-//  
-//   for(iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkTrackSegmentsDataType); iter != NULL; iter = GetNextInputBlock()){
-//       if(iter->fDataType!=AliHLTTPCDefinitions::fgkTrackSegmentsDataType)continue;
-//       ReadTracks(iter,totalTracks);
-//   }
-  
  
  
   //----------------- loop over cluster blocks ---------------------//
@@ -224,7 +244,7 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
 
   } // end of loop over cluster data blocks
   
-  HLTInfo("TrackHisto found %d spacepoints",totalSpacePoints);
+  HLTDebug("TrackHisto found %d spacepoints",totalSpacePoints);
   
   
   
@@ -238,46 +258,47 @@ int AliHLTTPCTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
       ReadTracks(iter,totalTracks);
   }
   
-  HLTInfo("TrackHisto found %d tracks", totalTracks);  
+  HLTDebug("TrackHisto found %d tracks", totalTracks);  
 
   fMultiplicity->Fill(totalTracks);
   
   fNtotTracks += totalTracks;
-  if(fNEvents%fNEvtMod==0){    
-     fMeanMultiplicity->Fill(fNEvents, Float_t(fNtotTracks)/(fNEvtMod));
-     //HLTInfo("Event number: %d, total tracks accummulated %d", fNEvents, fNtotTracks);
+  
+  if(fNEvents%fEvtMod==0){    
+     fMeanMultiplicity->Fill(fNEvents, Float_t(fNtotTracks)/(fEvtMod));
+     //HLTInfo("-------------- Event number: %d, total tracks accummulated %d", fNEvents, fNtotTracks);
      fNtotTracks = 0;
   }
 
   PushHisto();
   
-  delete fTracksArray; fTracksArray = NULL;
+  //delete fTracksArray; fTracksArray = NULL;
   return 0;
 }
  
-int AliHLTTPCTrackHistoComponent::Configure(const char* arguments){
-// see header file for class documentation
-   
-   int iResult=0;
-   if (!arguments) return iResult;
-   
-   TString allArgs=arguments;
-   TString argument;
-   
-   TObjArray* pTokens=allArgs.Tokenize(" ");
-   if (pTokens) {
-     for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
-       argument=((TObjString*)pTokens->At(i))->GetString();
-       if (argument.IsNull()) continue;
-
-       HLTError("unknown argument %s", argument.Data());
-       iResult=-EINVAL;
-       break;
-     }
-     delete pTokens;
-   }   
-   return iResult;
- }
+// int AliHLTTPCTrackHistoComponent::Configure(const char* arguments){
+// // see header file for class documentation
+//    
+//    int iResult=0;
+//    if (!arguments) return iResult;
+//    
+//    TString allArgs=arguments;
+//    TString argument;
+//    
+//    TObjArray* pTokens=allArgs.Tokenize(" ");
+//    if (pTokens) {
+//      for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
+//        argument=((TObjString*)pTokens->At(i))->GetString();
+//        if (argument.IsNull()) continue;
+// 
+//        HLTError("unknown argument %s", argument.Data());
+//        iResult=-EINVAL;
+//        break;
+//      }
+//      delete pTokens;
+//    }   
+//    return iResult;
+// }
  
 void AliHLTTPCTrackHistoComponent::ReadTracks(const AliHLTComponentBlockData* iter,Int_t &tt){
 // see header file for class documentation
@@ -289,58 +310,55 @@ void AliHLTTPCTrackHistoComponent::ReadTracks(const AliHLTComponentBlockData* it
   if( slice     > fMaxSlice )	  fMaxSlice     = slice;
   if( partition < fMinPartition ) fMinPartition = partition;
   if( partition > fMaxPartition ) fMaxPartition = partition;
-   
-  AliHLTTracksData *trackData = (AliHLTTracksData*)(iter->fPtr);
-  AliHLTUInt32_t nTracks = trackData->fCount;
-
-  AliHLTExternalTrackParam *track = (AliHLTExternalTrackParam*)trackData->fTracklets;
-  tt+= nTracks;
-
-  fTracksArray->FillTracksChecked(trackData->fTracklets,trackData->fCount,iter->fSize,slice,true);
   
   Int_t usedSpacePoints = 0;
   
-  for(AliHLTUInt32_t i=0;i<nTracks;i++){
-
-    AliHLTTPCTrack * tpcTrack = 0;
-    tpcTrack = (AliHLTTPCTrack*) fTracksArray->GetTrack(i);
-    if(!tpcTrack) continue;
-    Double_t trackLength = GetTrackLength(tpcTrack);
-   
-    UInt_t nHits = track->fNPoints;
-    fTracks->Fill( 1./track->fq1Pt, track->fSinPsi, track->fTgl, nHits/*, GetEventId()*/ ); 
-         
-    const UInt_t *hitnum = track->fPointIDs;
-    
-    Double_t totCharge = 0;
-    for(UInt_t h=0; h<nHits; h++){
-       
-      UInt_t idTrack = hitnum[h];
-      Int_t sliceTrack = (idTrack>>25) & 0x7f;
-      Int_t patchTrack = (idTrack>>22) & 0x7;
-      UInt_t pos = idTrack&0x3fffff;
-      
-      // use the fClustersArray that was filled in the cluster loop
-      if( !fClustersArray[sliceTrack][patchTrack]  ) continue;
-      if( fNSpacePoints[sliceTrack][patchTrack]<pos ) HLTError("Space point array out of boundaries!");
-      
-      Float_t resy = 0., resz = 0.;
-      
-      FillResidual(pos,sliceTrack,patchTrack,resy,resz);
-      
-      totCharge += (fClustersArray[sliceTrack][patchTrack])[pos].fCharge;   
-    
-      fClusters->Fill( (fClustersArray[sliceTrack][patchTrack])[pos].fCharge, (fClustersArray[sliceTrack][patchTrack])[pos].fQMax, resy, resz/*, GetEventId()*/ );
-    
-      usedSpacePoints++;
-    }
-    
-    if(trackLength > 0) fDeDxVsP->Fill(track->fq1Pt*TMath::Sqrt(1.+track->fTgl*track->fTgl), totCharge/trackLength);
+  vector<AliHLTGlobalBarrelTrack> tracksVector;
+  AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(iter->fPtr), iter->fSize, tracksVector);
   
-    UChar_t *tmpP = (UChar_t*)track;
-    tmpP += sizeof(AliHLTExternalTrackParam)+track->fNPoints*sizeof(UInt_t);
-    track = (AliHLTExternalTrackParam*)tmpP;
-  }
+  tt = tracksVector.size();
+  
+   for(vector<AliHLTGlobalBarrelTrack>::iterator element=tracksVector.begin();  element!=tracksVector.end(); element++){
+ 
+//     Double_t trackLength = GetTrackLength(tpcTrack);      
+      UInt_t nHits = element->GetNumberOfPoints();
+      fTracks->Fill( 1./element->OneOverPt(), element->GetSnp(), element->GetTgl(), nHits );  
+      
+      Double_t totCharge = 0;
+      const UInt_t *hitnum = element->GetPoints();
+      for(UInt_t i=0; i<element->GetNumberOfPoints(); i++){
+          
+	  UInt_t idTrack   = hitnum[i];
+          Int_t sliceTrack = (idTrack>>25) & 0x7f;
+          Int_t patchTrack = (idTrack>>22) & 0x7;
+          UInt_t pos       = idTrack&0x3fffff;
+
+          if( !fClustersArray[sliceTrack][patchTrack]    ) continue;
+          if(  fNSpacePoints[sliceTrack][patchTrack]<pos ) HLTError("Space point array out of boundaries!"); 
+	  
+	  totCharge += (fClustersArray[sliceTrack][patchTrack])[pos].fCharge; 
+	  
+	  Float_t xyz[3]; xyz[0] = xyz[1] = xyz[2] = 0.;
+       
+          xyz[0] = (fClustersArray[sliceTrack][patchTrack])[pos].fX;
+          xyz[1] = (fClustersArray[sliceTrack][patchTrack])[pos].fY;
+          xyz[2] = (fClustersArray[sliceTrack][patchTrack])[pos].fZ;
+       
+          AliHLTTPCTransform::Local2Global(xyz,slice); 
+	  
+	  Double_t p[2]   = { xyz[1], xyz[2]};
+          Double_t cov[3] = { (fClustersArray[sliceTrack][patchTrack])[pos].fSigmaY2, 0., (fClustersArray[sliceTrack][patchTrack])[pos].fSigmaZ2};  
+ 	  Double_t *res = element->GetResiduals(p,cov,kFALSE); 
+ 	  
+ 	  //HLTInfo("resy: %f, resz: %f", res[0], res[1]);
+ 	  
+ 	  if(!res)  res[0] = res[1] = -1000.;
+ 	  else      fClusters->Fill( (fClustersArray[sliceTrack][patchTrack])[pos].fCharge, (fClustersArray[sliceTrack][patchTrack])[pos].fQMax, res[0], res[1]);
+           
+ 	  usedSpacePoints++;      
+       }        
+   //if(trackLength > 0) fDeDxVsP->Fill(element->OneOverPt()*TMath::Sqrt(1.+element->GetTgl()*element->GetTgl()), totCharge/trackLength);       
+   }
 }
 
 void AliHLTTPCTrackHistoComponent::PushHisto(){
@@ -352,152 +370,177 @@ void AliHLTTPCTrackHistoComponent::PushHisto(){
     PushBack( (TObject*)fClusters,         kAliHLTDataTypeTNtuple  |kAliHLTDataOriginTPC, fSpecification);
     PushBack( (TObject*)fMultiplicity,     kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC, fSpecification);
     PushBack( (TObject*)fMeanMultiplicity, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC, fSpecification); 
-    PushBack( (TObject*)fDeDxVsP,          kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC, fSpecification);
+    //PushBack( (TObject*)fDeDxVsP,          kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC, fSpecification);
 }
 
-void AliHLTTPCTrackHistoComponent::FillResidual(UInt_t pos,AliHLTUInt8_t slice,AliHLTUInt8_t partition,Float_t& resy,Float_t& resz){
+int AliHLTTPCTrackHistoComponent::ScanConfigurationArgument(int argc, const char** argv){
 // see header file for class documentation
  
-  AliHLTTPCSpacePointData *cl =  &fClustersArray[slice][partition][pos];
-  if(!cl) return;
+  if (argc<=0) return 0;
+  int i=0;
+  TString argument=argv[i];
 
-  AliHLTTPCTrack *gtrack = NULL;
+  // -event-modulo
+  if (argument.CompareTo("-event-modulo")==0) {
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fEvtMod=argument.Atof();
+    return 2;
+  }    
 
-   for(int i=0;i<fTracksArray->GetNTracks();i++){
-       
-       AliHLTTPCTrack *tt = fTracksArray->GetCheckedTrack(i); 
-       UInt_t *hitnum =tt->GetHitNumbers();
-       Int_t nHits = tt->GetNHits();
-         
- 	for(Int_t h=0; h<nHits; h++){
- 	    UInt_t id=hitnum[h];
-             Int_t Tslice = (id>>25) & 0x7f;
-             Int_t Tpatch = (id>>22) & 0x7;
-             UInt_t Tpos = id&0x3fffff; 
-             if(Tslice==slice && Tpatch==partition && Tpos==pos){
- 	       gtrack = tt; 
- 	       break;
-             }
-         }
-   }
-   
-  if(!gtrack) return;
-
-  Int_t tslice = gtrack->GetSector();
-
-  /*
-  Double_t radius = gtrack->GetRadius();      // radius
-  Double_t kappa = gtrack->GetKappa();        // curvature = 1/R , signed
-  Double_t lambda = atan( gtrack->GetTgl() ); // dipAngle lambda
-
-  // ------------------------------------
-  // ++ Get first/last point of the track
-  
-  Double_t xyzL[3];      // lastpoint of track
-  Double_t xyzF[3];      // firstpoint of track
-  
-  xyzF[0] = gtrack->GetFirstPointX();
-  xyzF[1] = gtrack->GetFirstPointY();
-  xyzF[2] = gtrack->GetFirstPointZ();
-  
-  xyzL[0] = gtrack->GetLastPointX();
-  xyzL[1] = gtrack->GetLastPointY();
-  xyzL[2] = gtrack->GetLastPointZ();
-
-  // --------------------------
-  // ++ Calculate length of the track
-  
-  Double_t s = 0.;       // length of the track
-  if (  AliHLTTPCTransform::GetBFieldValue() == 0. || kappa == 0 ) 
-    s = sqrt ( (xyzL[0] - xyzF[0])*(xyzL[0] - xyzF[0]) + (xyzL[1] - xyzF[1])*(xyzL[1] - xyzF[1]) ); 
-  else {
-    // Calculate the length of the track. If it is to flat in in s,z plane use sxy, otherwise use sz
-    if (fabs(lambda) > 0.05){
-      // length of track calculated out of z
-      s = fabs( (xyzL[2] - xyzF[2]) / sin(lambda) ); // length of track calculated out of z
-    }
-    else {
-      Double_t d = (xyzL[0] - xyzF[0])*(xyzL[0] - xyzF[0]) + (xyzL[1] - xyzF[1])*(xyzL[1] - xyzF[1]); 
-      // length of track calculated out of xy
-      s = fabs ( acos( 0.5 * (2 - (d / (radius*radius)))) / ( kappa * cos(lambda) ) ); 		
-    }
-  }
-  */  //???
-  
-  gtrack->Rotate(tslice,kTRUE);
-  
-  //Double_t padrows = 0;                   
-    
-  Float_t xyzC[3];       // cluster tmp
-  Float_t xyzTtmp[3];    // track tmp
-
-  xyzC[0] = cl->fX;
-  xyzC[1] = cl->fY;
-  xyzC[2] = cl->fZ;
- 
-  Int_t padrow = AliHLTTPCTransform::GetPadRow(cl->fX);
-
-  xyzTtmp[0] = gtrack->GetFirstPointX();
-
-  if(gtrack->GetCrossingPoint(padrow,xyzTtmp)) {
-    // ----------------------
-       // ++ Calculate Residuals
-       
-       Float_t deltaY = ( xyzC[1] - xyzTtmp[1] );
-       Float_t deltaZ = ( xyzC[2] - xyzTtmp[2] );
-       
-       resy = deltaY;
-       resz = deltaZ;
-  } else {
-    resy = -1000;
-    resz = -1000;
-  }
+  // -buffer-size
+  if (argument.CompareTo("-buffer-size")==0) {
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fBufferSize=argument.Atof();
+    return 2;
+  }    
+  return -EINVAL;
 }
 
-Double_t AliHLTTPCTrackHistoComponent::GetTrackLength(AliHLTTPCTrack *hltTrack)
-{
-  
-  AliHLTTPCTrack * gtrack = hltTrack;
+// void AliHLTTPCTrackHistoComponent::FillResidual(UInt_t pos,AliHLTUInt8_t slice,AliHLTUInt8_t partition,Float_t& resy,Float_t& resz){
+// // see header file for class documentation
+//  
+//   AliHLTTPCSpacePointData *cl =  &fClustersArray[slice][partition][pos];
+//   if(!cl) return;
+// 
+//   AliHLTTPCTrack *gtrack = NULL;
+// 
+//    for(int i=0;i<fTracksArray->GetNTracks();i++){
+//        
+//        AliHLTTPCTrack *tt = fTracksArray->GetCheckedTrack(i); 
+//        UInt_t *hitnum =tt->GetHitNumbers();
+//        Int_t nHits = tt->GetNHits();
+//          
+//  	for(Int_t h=0; h<nHits; h++){
+//  	    UInt_t id=hitnum[h];
+//              Int_t Tslice = (id>>25) & 0x7f;
+//              Int_t Tpatch = (id>>22) & 0x7;
+//              UInt_t Tpos = id&0x3fffff; 
+//              if(Tslice==slice && Tpatch==partition && Tpos==pos){
+//  	       gtrack = tt; 
+//  	       break;
+//              }
+//          }
+//    }
+//    
+//   if(!gtrack) return;
+// 
+//   Int_t tslice = gtrack->GetSector();
+// 
+//   /*
+//   Double_t radius = gtrack->GetRadius();      // radius
+//   Double_t kappa = gtrack->GetKappa();        // curvature = 1/R , signed
+//   Double_t lambda = atan( gtrack->GetTgl() ); // dipAngle lambda
+// 
+//   // ------------------------------------
+//   // ++ Get first/last point of the track
+//   
+//   Double_t xyzL[3];      // lastpoint of track
+//   Double_t xyzF[3];      // firstpoint of track
+//   
+//   xyzF[0] = gtrack->GetFirstPointX();
+//   xyzF[1] = gtrack->GetFirstPointY();
+//   xyzF[2] = gtrack->GetFirstPointZ();
+//   
+//   xyzL[0] = gtrack->GetLastPointX();
+//   xyzL[1] = gtrack->GetLastPointY();
+//   xyzL[2] = gtrack->GetLastPointZ();
+// 
+//   // --------------------------
+//   // ++ Calculate length of the track
+//   
+//   Double_t s = 0.;       // length of the track
+//   if (  AliHLTTPCTransform::GetBFieldValue() == 0. || kappa == 0 ) 
+//     s = sqrt ( (xyzL[0] - xyzF[0])*(xyzL[0] - xyzF[0]) + (xyzL[1] - xyzF[1])*(xyzL[1] - xyzF[1]) ); 
+//   else {
+//     // Calculate the length of the track. If it is to flat in in s,z plane use sxy, otherwise use sz
+//     if (fabs(lambda) > 0.05){
+//       // length of track calculated out of z
+//       s = fabs( (xyzL[2] - xyzF[2]) / sin(lambda) ); // length of track calculated out of z
+//     }
+//     else {
+//       Double_t d = (xyzL[0] - xyzF[0])*(xyzL[0] - xyzF[0]) + (xyzL[1] - xyzF[1])*(xyzL[1] - xyzF[1]); 
+//       // length of track calculated out of xy
+//       s = fabs ( acos( 0.5 * (2 - (d / (radius*radius)))) / ( kappa * cos(lambda) ) ); 		
+//     }
+//   }
+//   */  //???
+//   
+//   gtrack->Rotate(tslice,kTRUE);
+//   
+//   //Double_t padrows = 0;                   
+//     
+//   Float_t xyzC[3];       // cluster tmp
+//   Float_t xyzTtmp[3];    // track tmp
+// 
+//   xyzC[0] = cl->fX;
+//   xyzC[1] = cl->fY;
+//   xyzC[2] = cl->fZ;
+//  
+//   Int_t padrow = AliHLTTPCTransform::GetPadRow(cl->fX);
+// 
+//   xyzTtmp[0] = gtrack->GetFirstPointX();
+// 
+//   if(gtrack->GetCrossingPoint(padrow,xyzTtmp)) {
+//     // ----------------------
+//        // ++ Calculate Residuals
+//        
+//        Float_t deltaY = ( xyzC[1] - xyzTtmp[1] );
+//        Float_t deltaZ = ( xyzC[2] - xyzTtmp[2] );
+//        
+//        resy = deltaY;
+//        resz = deltaZ;
+//   } else {
+//     resy = -1000;
+//     resz = -1000;
+//   }
+// }
 
-  //Caculate the HLT Track Length
-
-  Double_t radius = gtrack->GetRadius();      // radius 
-  Double_t kappa = gtrack->GetKappa();        // curvature = 1/R , signed 
-  Double_t lambda = atan( gtrack->GetTgl() ); // dipAngle lambda 
-
-  // ------------------------------------ 
-  // ++ Get first/last point of the track 
-   
-  Double_t xyzL[3];      // lastpoint of track 
-  Double_t xyzF[3];      // firstpoint of track 
-   
-  xyzF[0] = gtrack->GetFirstPointX(); 
-  xyzF[1] = gtrack->GetFirstPointY(); 
-  xyzF[2] = gtrack->GetFirstPointZ(); 
-   
-  xyzL[0] = gtrack->GetLastPointX(); 
-  xyzL[1] = gtrack->GetLastPointY(); 
-  xyzL[2] = gtrack->GetLastPointZ(); 
-
-  // -------------------------- 
-  // ++ Calculate length of the track 
-   
-  Double_t s = 0.;       // length of the track 
-  if (  AliHLTTPCTransform::GetBFieldValue() == 0. || kappa == 0 )  
-    s = sqrt ( (xyzL[0] - xyzF[0])*(xyzL[0] - xyzF[0]) 
-	       + (xyzL[1] - xyzF[1])*(xyzL[1] - xyzF[1]) );  
-  else { 
-    // Calculate the length of the track. If it is to flat in in s,z plane use sxy, otherwise use sz 
-    if (fabs(lambda) > 0.05){ 
-      // length of track calculated out of z 
-      s = fabs( (xyzL[2] - xyzF[2]) / sin(lambda) ); // length of track calculated out of z 
-  } else { 
-      Double_t d = (xyzL[0] - xyzF[0])*(xyzL[0] - xyzF[0]) 
-	+ (xyzL[1] - xyzF[1])*(xyzL[1] - xyzF[1]);  
-      // length of track calculated out of xy 
-      s = fabs ( acos( 0.5 * (2 - (d / (radius*radius)))) 
-		 / ( kappa * cos(lambda) ) );                  
-    } 
-  }
-  return s;
-}
+// Double_t AliHLTTPCTrackHistoComponent::GetTrackLength(AliHLTTPCTrack *hltTrack){
+// // see header file for class documentation
+//   
+//   AliHLTTPCTrack * gtrack = hltTrack;
+// 
+//   //Caculate the HLT Track Length
+// 
+//   Double_t radius = gtrack->GetRadius();      // radius 
+//   Double_t kappa = gtrack->GetKappa();        // curvature = 1/R , signed 
+//   Double_t lambda = atan( gtrack->GetTgl() ); // dipAngle lambda 
+// 
+//   // ------------------------------------ 
+//   // ++ Get first/last point of the track 
+//    
+//   Double_t xyzL[3];      // lastpoint of track 
+//   Double_t xyzF[3];      // firstpoint of track 
+//    
+//   xyzF[0] = gtrack->GetFirstPointX(); 
+//   xyzF[1] = gtrack->GetFirstPointY(); 
+//   xyzF[2] = gtrack->GetFirstPointZ(); 
+//    
+//   xyzL[0] = gtrack->GetLastPointX(); 
+//   xyzL[1] = gtrack->GetLastPointY(); 
+//   xyzL[2] = gtrack->GetLastPointZ(); 
+// 
+//   // -------------------------- 
+//   // ++ Calculate length of the track 
+//    
+//   Double_t s = 0.;       // length of the track 
+//   if (  AliHLTTPCTransform::GetBFieldValue() == 0. || kappa == 0 )  
+//     s = sqrt ( (xyzL[0] - xyzF[0])*(xyzL[0] - xyzF[0]) 
+// 	       + (xyzL[1] - xyzF[1])*(xyzL[1] - xyzF[1]) );  
+//   else { 
+//     // Calculate the length of the track. If it is to flat in in s,z plane use sxy, otherwise use sz 
+//     if (fabs(lambda) > 0.05){ 
+//       // length of track calculated out of z 
+//       s = fabs( (xyzL[2] - xyzF[2]) / sin(lambda) ); // length of track calculated out of z 
+//   } else { 
+//       Double_t d = (xyzL[0] - xyzF[0])*(xyzL[0] - xyzF[0]) 
+// 	+ (xyzL[1] - xyzF[1])*(xyzL[1] - xyzF[1]);  
+//       // length of track calculated out of xy 
+//       s = fabs ( acos( 0.5 * (2 - (d / (radius*radius)))) 
+// 		 / ( kappa * cos(lambda) ) );                  
+//     } 
+//   }
+//   return s;
+// }
