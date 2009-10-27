@@ -176,13 +176,15 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
         TList * listDetQAD =static_cast<TList *>(entry->GetObject()) ;
         if ( strcmp(listDetQAD->ClassName(), "TList") != 0 ) {
           AliError(Form("Expected a Tlist and found a %s for detector %s", listDetQAD->ClassName(), det)) ; 
+          listDetQAD = NULL ; 
           continue ; 
-        }       
-        TIter next(listDetQAD) ;
-        TObjArray * ar ; 
-        while ( (ar = (TObjArray*)next()) ) 
-          if ( listDetQAD ) 
+        } 
+        if ( listDetQAD ) {
+          TIter next(listDetQAD) ;
+          TObjArray * ar ; 
+          while ( (ar = (TObjArray*)next()) ) 
             dirOCDB[specie] = static_cast<TObjArray *>(listDetQAD->FindObject(Form("%s/%s", task, AliRecoParam::GetEventSpecieName(specie)))) ;             
+        }
       }
     }
   }
