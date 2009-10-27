@@ -10,7 +10,7 @@
 /// \class AliMUONVQADataMakerRec
 /// \brief Interface for a MUON QADataMakerRec
 /// 
-/// author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
 #  include "TObject.h"

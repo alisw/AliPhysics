@@ -10,7 +10,7 @@
 /// \class AliMUONContourHandler
 /// \brief Holder for MUON tracker contours
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
 #  include "TObject.h"

@@ -33,9 +33,13 @@ class AliMUONChamberCalibrationTask : public AliAnalysisTaskSE
 
  public:
 
-  // enumarate the list of the available modes for the calibration
-  enum Calibration_t { NOGAIN, GAINCONSTANTCAPA, GAIN, INJECTIONGAIN }; 
-  typedef Calibration_t Calibration_t;
+  /// enumerate the list of the available modes for the calibration
+  enum Calibration_t { 
+    NOGAIN, 
+    GAINCONSTANTCAPA, 
+    GAIN, 
+    INJECTIONGAIN 
+  }; 
 
   // Constructors
   AliMUONChamberCalibrationTask();
@@ -54,6 +58,7 @@ class AliMUONChamberCalibrationTask : public AliAnalysisTaskSE
   virtual void Terminate( Option_t* option = "" ); 
 
   // Getters
+  /// Return TTree filled with the cluster information
   TTree* OutputTree() { return fClusterInfoTree; }
 
   UInt_t BuildClusterMap( AliMUONTrack &track );

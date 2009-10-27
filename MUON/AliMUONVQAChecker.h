@@ -10,7 +10,7 @@
 /// \class AliMUONVQAChecker
 /// \brief Base class for a MUON QA checker
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
 #  include "TObject.h"
