@@ -15,7 +15,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  /** 
- * @file   AliHLTPHOSClusterizer.cxx
+ * @file   AliHLTPHOSDigitMaker.cxx
  * @author Oystein Djuvsland
  * @date 
  * @brief  Digit maker for PHOS HLT  
@@ -31,6 +31,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTPHOSDigitMaker.h"
+#include "AliHLTLogging.h"
 
 #include "AliHLTPHOSConstants.h"
 #include "AliHLTPHOSMapper.h"
@@ -42,12 +43,13 @@
 #include "AliPHOSEMCAGeometry.h"
 #include "TH2F.h"
 
+
 ClassImp(AliHLTPHOSDigitMaker);
 
 using namespace PhosHLTConst;
 
 AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
-  //  AliHLTPHOSBase(),
+  AliHLTLogging(),
   fShmPtr(0),
   fDigitStructPtr(0),
   fDigitCount(0),
@@ -95,13 +97,13 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
   AliHLTPHOSChannelDataStruct* currentchannel = 0;
   AliHLTPHOSChannelDataStruct* currentchannelLG = 0;  
   AliHLTPHOSChannelDataStruct* tmpchannel = 0;
-  
+
   fShmPtr->SetMemory(channelDataHeader);
   currentchannel = fShmPtr->NextChannel();
-
+  
   while(currentchannel != 0)
     {
-      if(availableSize < totSize) return -1;
+        if(availableSize < totSize) return -1;
 
       AliHLTPHOSMapper::GetChannelCoord(currentchannel->fChannelID, coord1);
       
@@ -111,7 +113,6 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 	  
 	  if(coord1[2] == HIGHGAIN) // We got a completely new crystal
 	    {
-
 	      if(currentchannel->fEnergy < MAXBINVALUE) // Make sure we don't have signal overflow
 		{
 		  AliHLTPHOSMapper::GetLocalCoord(currentchannel->fChannelID, locCoord);
@@ -133,7 +134,6 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 
 	      else // Ooops, overflow, we try the next channel... 
 		{
-	
 		  currentchannel = fShmPtr->NextChannel();
 		  if(currentchannel != 0) // There was a next channel
 		    {
@@ -210,7 +210,7 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 		}
 	      else //Fine, no more channels, better add this one...
 		{
-		  AliHLTPHOSMapper::GetLocalCoord(currentchannel->fChannelID, locCoord);
+		  AliHLTPHOSMapper::GetLocalCoord(currentchannelLG->fChannelID, locCoord);
 		  AddDigit(currentchannelLG, coord1, locCoord);
 		  j++;
 		  totSize += sizeof(AliHLTPHOSDigitDataStruct);

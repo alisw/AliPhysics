@@ -39,6 +39,7 @@
 #include "AliHLTPHOSDigitDataStruct.h"
 #include "AliHLTPHOSChannelDataStruct.h"
 #include "AliHLTDataTypes.h"
+#include "AliHLTLogging.h"
 
 /**
  * @class AliHLTPHOSDigitMaker
@@ -55,7 +56,7 @@ class AliHLTPHOSMapper;
 using namespace PhosHLTConst;
 
 //class AliHLTPHOSDigitMaker : public AliHLTPHOSBase
-class AliHLTPHOSDigitMaker
+class AliHLTPHOSDigitMaker : public AliHLTLogging
 {
 public:
 
@@ -67,7 +68,7 @@ public:
 
   /** Copy constructor */  
   AliHLTPHOSDigitMaker(const AliHLTPHOSDigitMaker &) : 
-    //    AliHLTPHOSBase(),
+    AliHLTLogging(),
     fShmPtr(0),
     fDigitStructPtr(0),
     fDigitCount(0),
@@ -145,12 +146,12 @@ private:
     if(channelCoordinates[2] == HIGHGAIN)
       {
 	fDigitStructPtr->fEnergy = channelData->fEnergy*fHighGainFactors[channelCoordinates[0]][channelCoordinates[1]];
-	//	printf("HG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f \n", channelCoordinates[0], channelCoordinates[1], channelData->fEnergy, fDigitStructPtr->fEnergy);
+	//	HLTDebug("HG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f \n", channelCoordinates[0], channelCoordinates[1], channelData->fEnergy, fDigitStructPtr->fEnergy);
       }
     else
       {
 	fDigitStructPtr->fEnergy = channelData->fEnergy*fLowGainFactors[channelCoordinates[0]][channelCoordinates[1]];
-	//	printf("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", channelCoordinates[0], channelCoordinates[1], channelData->fEnergy, fDigitStructPtr->fEnergy); 
+	//	HLTDebug("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", channelCoordinates[0], channelCoordinates[1], channelData->fEnergy, fDigitStructPtr->fEnergy); 
       }
     fDigitStructPtr->fTime = channelData->fTime * 0.0000001; //TODO
     fDigitStructPtr->fCrazyness = channelData->fCrazyness;

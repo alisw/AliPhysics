@@ -131,6 +131,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   
   fDigitMakerPtr->SetDigitDataPtr(reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outputPtr));
 
+
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
