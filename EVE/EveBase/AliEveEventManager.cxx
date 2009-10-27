@@ -425,6 +425,8 @@ void AliEveEventManager::Open()
   // If i use open directly, we get fatal.
   // Is AccessPathName check ok for xrootd / alien? Yes, not for http.
   // Seems not to work for alien anymore.
+  // Fixed in ROOT on 27.10.2009, rev 30888.
+  // To revert after we move to root-5.26.
   TFile *gafile = TFile::Open(gaPath);
   if (gafile)
   {
