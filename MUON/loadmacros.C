@@ -74,19 +74,25 @@ void loadmacros ()
 {
   init();
 
+  loadmacro("AddTaskMuonAlignment");       // Javier
+  loadmacro("AddTaskMuonReAlign");         // Javier
   loadmacro("DecodeRecoCocktail");         // Hermine, Alessandro     
+  loadmacro("DIMUONFakes");                // Philippe P.
   loadmacro("fastMUONGen");                // Hermine, Alessandro
   loadmacro("fastMUONSim");                // Hermine, Alessandro
   loadmacro("loadFromOCDB");               // Philippe P.
   loadmacro("MakeMUONFullMisAlignment");   // Javier, Ivana
   loadmacro("MakeMUONResMisAlignment");    // Javier, Ivana
   loadmacro("MakeMUONZeroMisAlignment");   // Javier, Ivana
+  loadmacro("MakeMUONRecoParamArray");     // Philippe P.
+  loadmacro("MakeMUONSingleRecoParam");    // Philippe P.
   loadmacro("MergeMuonLight");             // Hermine, Alessandro
   loadmacro("MUONAlignment");              // Javier   
   loadmacro("MUONCheck");                  // Frederic          
   loadmacro("MUONCheckDI");                // Artur
   loadmacro("MUONCheckMisAligner");        // Javier
   loadmacro("MUONClusterInfo");            // Philippe P.
+  loadmacro("MUONFakes");                  // Philippe P.
   loadmacro("MUONefficiency");             // Christophe
   loadmacro("MUONGenerateBusPatch");       // Christian
   loadmacro("MUONGenerateGeometryData");   // Ivana
@@ -103,6 +109,11 @@ void loadmacros ()
   // loadmacro("MUONResoEffChamber");      // Nicolas
   loadmacro("MUONStatusMap");              // Laurent
   loadmacro("MUONSurveyUtil");             // Javier
+  loadmacro("MUONSurveyCh1");              // Javier
+  loadmacro("MUONSurveyCh2");              // Javier
+  loadmacro("MUONSurveyCh3");              // Javier
+  loadmacro("MUONSurveyCh4");              // Javier
+  loadmacro("MUONSurveyCh5");              // Javier
   loadmacro("MUONSurveyCh8L");             // Javier
   loadmacro("MUONTimeRawStreamTracker");   // Artur
   loadmacro("MUONTimeRawStreamTrigger");   // Artur 
@@ -111,9 +122,10 @@ void loadmacros ()
   loadmacro("MUONTriggerEfficiency");      // Bogdan
   loadmacro("MUONTriggerEfficiencyPt");    // Bogdan
   loadmacro("ReadRecoCocktail");           // Hermine, Alessandro   
+  loadmacro("runDataReconstruction");      // Laurent
   loadmacro("runReconstruction");          // Laurent
   loadmacro("runSimulation");              // Laurent
   loadmacro("TestMUONPreprocessor");       // Laurent
   loadmacro("TestRecPoints");              // Diego
-  loadmacro("TestRecPoints");              // Diego
+  loadmacro("UpdateCDBCTPConfig");         // Bogdan
 }
