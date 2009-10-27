@@ -910,6 +910,9 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   if (fEventHeader){
     fTimeStamp = fEventHeader->Get("Timestamp");
     fEventType = fEventHeader->Get("Type");
+    AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+    transform->SetCurrentTimeStamp(fTimeStamp);
+    transform->SetCurrentRun(rawReader->GetRunNumber());
   }
   
   // creaate one TClonesArray for all clusters
@@ -978,7 +981,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     if (input.GetSector() != fSector)
       AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",fSector,input.GetSector()));
     
-    Int_t nRows = fParam->GetNRow(fSector);
+    //Int_t nRows = fParam->GetNRow(fSector);
     
     AliTPCCalROC * gainROC    = gainTPC->GetCalROC(fSector);  // pad gains per given sector
     // Begin loop over altro data
