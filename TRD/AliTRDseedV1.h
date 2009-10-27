@@ -67,6 +67,11 @@ public:
    ,kKink       = BIT(18) // kink prolongation tracklet
    ,kStandAlone = BIT(19) // tracklet build during stand alone track finding
   };
+  enum ETRDtrackletError {
+    kAttachClFound = 1  // not enough clusters found
+   ,kAttachRow          // found row < 0
+   ,kAttachClAttach     // not enough clusters attached
+  };
 
   AliTRDseedV1(Int_t det = -1);
   ~AliTRDseedV1();
@@ -102,6 +107,7 @@ public:
   void      GetCovRef(Double_t *cov) const { memcpy(cov, &fRefCov, 7*sizeof(Double_t));}
   static Double_t GetCovSqrt(const Double_t * const c, Double_t *d);
   static Double_t GetCovInv(const Double_t * const c, Double_t *d);
+  UChar_t   GetErrorMsg() const      { return fErrorMsg;}
   Float_t   GetdX() const            { return fdX;}
   const Float_t*  GetdEdx() const    { return &fdEdx[0];}
   Float_t   GetdQdl(Int_t ic, Float_t *dx=NULL) const;
@@ -159,6 +165,7 @@ public:
   void      SetC(Float_t c)          { fC = c;}
   void      SetChi2(Float_t chi2)    { fChi2 = chi2;}
   inline void SetCovRef(const Double_t *cov);
+  void      SetErrorMsg(Int_t err)   { fErrorMsg = err;}
   void      SetIndexes(Int_t i, Int_t idx) { fIndexes[i]  = idx; }
   void      SetLabels(Int_t *lbls)   { memcpy(fLabels, lbls, 3*sizeof(Int_t)); }
   void      SetKink(Bool_t k = kTRUE){ SetBit(kKink, k);}
@@ -199,6 +206,7 @@ private:
   Float_t          fDiffL;                  //! longitudinal diffusion coefficient
   Float_t          fDiffT;                  //! transversal diffusion coefficient
   Char_t           fClusterIdx;             //! clusters iterator
+  UChar_t          fErrorMsg;               // processing error
   UShort_t         fN;                      // number of clusters attached/used/shared
   Short_t          fDet;                    // TRD detector
   AliTRDcluster   *fClusters[kNclusters];   // Clusters
@@ -225,7 +233,7 @@ private:
   static TLinearFitter   *fgFitterY;        // Linear Fitter for tracklet fit in xy-plane
   static TLinearFitter   *fgFitterZ;        // Linear Fitter for tracklet fit in xz-plane
 
-  ClassDef(AliTRDseedV1, 7)                 // The offline TRD tracklet 
+  ClassDef(AliTRDseedV1, 8)                 // The offline TRD tracklet 
 };
 
 //____________________________________________________________

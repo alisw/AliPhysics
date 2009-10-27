@@ -77,6 +77,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   ,fDiffL(0.)
   ,fDiffT(0.)
   ,fClusterIdx(0)
+  ,fErrorMsg(0)
   ,fN(0)
   ,fDet(det)
   ,fPt(0.)
@@ -123,6 +124,7 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   ,fDiffL(0.)
   ,fDiffT(0.)
   ,fClusterIdx(0)
+  ,fErrorMsg(0)
   ,fN(0)
   ,fDet(-1)
   ,fPt(0.)
@@ -200,6 +202,7 @@ void AliTRDseedV1::Copy(TObject &ref) const
   target.fDiffL         = fDiffL;
   target.fDiffT         = fDiffT;
   target.fClusterIdx    = 0;
+  target.fErrorMsg      = fErrorMsg;
   target.fN             = fN;
   target.fDet           = fDet;
   target.fPt            = fPt;
@@ -263,6 +266,7 @@ void AliTRDseedV1::Reset()
   fExB=0.;fVD=0.;fT0=0.;fS2PRF=0.;
   fDiffL=0.;fDiffT=0.;
   fClusterIdx=0;
+  fErrorMsg = 0;
   fN=0;
   fDet=-1;
   fPt=0.;
@@ -981,6 +985,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
   AliDebug(4, Form("Found %d clusters. Processing ...", ncls));
   if(ncls<kClmin){ 
     AliDebug(2, Form("CLUSTERS FOUND %d LESS THAN THRESHOLD %d.", ncls, kClmin));
+    SetErrorMsg(kAttachClFound);
     return kFALSE;
   }
 
@@ -1056,6 +1061,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
   AliDebug(4, Form("  Ncl[rowMax = %d] = %d", row, nrow[0]));
   if(row<0){ 
     AliDebug(2, Form("WRONG ROW %d.", row));
+    SetErrorMsg(kAttachRow);
     return kFALSE;
   }
   // Select and store clusters 
@@ -1083,6 +1089,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
   // number of minimum numbers of clusters expected for the tracklet
   if (n < kClmin){
     AliDebug(2, Form("NOT ENOUGH CLUSTERS TO FIT THE TRACKLET %d [%d].", n, kClmin));
+    SetErrorMsg(kAttachClAttach);
     return kFALSE;
   }
   SetN(n);

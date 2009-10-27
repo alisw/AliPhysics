@@ -678,6 +678,9 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   Double_t driftLength = .5*AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick();
   AliTRDtrackingChamber *chamber = NULL;
   
+  Int_t debugLevel = fkReconstructor->IsDebugStreaming() ? fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) : 0;
+  TTreeSRedirector *cstreamer = fkReconstructor->IsDebugStreaming() ? fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker) : 0x0;
+
   AliTRDseedV1 tracklet, *ptrTracklet = NULL;
   // in case of stand alone tracking we store all the pointers to the tracklets in a temporary array
   AliTRDseedV1 *tracklets[kNPlanes];
@@ -822,10 +825,26 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       }
       if(!tracklet.AttachClusters(chamber, kTRUE)){   
         t.SetStatus(AliTRDtrackV1::kNoAttach, ily);
+        if(debugLevel>3){
+          AliTRDseedV1 trackletCp(*ptrTracklet);
+          UChar_t status(t.GetStatusTRD(ily));
+          (*cstreamer)   << "FollowBackProlongation2"
+          <<"status="    << status
+          <<"tracklet.=" << &trackletCp
+          << "\n";
+        }
         continue;
       }
       if(tracklet.GetN() < fgNTimeBins*fkReconstructor->GetRecoParam() ->GetFindableClusters()){
         t.SetStatus(AliTRDtrackV1::kNoClustersTracklet, ily);
+        if(debugLevel>3){
+          AliTRDseedV1 trackletCp(*ptrTracklet);
+          UChar_t status(t.GetStatusTRD(ily));
+          (*cstreamer)   << "FollowBackProlongation2"
+          <<"status="    << status
+          <<"tracklet.=" << &trackletCp
+          << "\n";
+        }
         continue;
       }
       ptrTracklet->UpdateUsed();
@@ -860,39 +879,36 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     Double_t cov[3]; ptrTracklet->GetCovAt(x, cov);
     Double_t p[2] = { ptrTracklet->GetY(), ptrTracklet->GetZ()};
     Double_t chi2 = ((AliExternalTrackParam)t).GetPredictedChi2(p, cov);
-    if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 2 && fkReconstructor->IsDebugStreaming()){
-      Double_t ytrack = ptrTracklet->GetYref(0);
-      Double_t ztrack = ptrTracklet->GetZref(0);
-      Double_t ytracklet = ptrTracklet->GetYfit(0);
-      Double_t ztracklet = ptrTracklet->GetZfit(0);
-      Double_t phitrack = ptrTracklet->GetYref(1);
-      Double_t phitracklet = ptrTracklet->GetYfit(1);
-      Double_t thetatrack = ptrTracklet->GetZref(1);
-      Double_t thetatracklet = ptrTracklet->GetZfit(1);
-   
-      TTreeSRedirector &mystreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
-      mystreamer << "FollowBackProlongation1"
-        << "il="              << ily
-        << "x="               << x
-        << "ytrack="          << ytrack
-        << "ztrack="          << ztrack
-        << "ytracklet="       << ytracklet
-        << "ztracklet="       << ztracklet
-        << "phitrack="        << phitrack
-        << "thetatrack="      << thetatrack
-        << "phitracklet="     << phitracklet
-        << "thetatracklet="   << thetatracklet
-        << "chi2="            << chi2
-        << "\n";
-    }
     // update Kalman with the TRD measurement
     if(chi2>1e+10){ // TODO
       t.SetStatus(AliTRDtrackV1::kChi2, ily);
+      if(debugLevel > 2){
+        UChar_t status(t.GetStatusTRD());
+        AliTRDseedV1  trackletCp(*ptrTracklet);
+        AliTRDtrackV1 trackCp(t);
+        trackCp.SetOwner();
+        (*cstreamer) << "FollowBackProlongation1"
+            << "status="      << status
+            << "tracklet.="   << &trackletCp
+            << "track.="      << &trackCp
+            << "\n";
+      }
       continue; 
     }
     if(!t.Update(p, cov, chi2)) {
       n=-1; 
       t.SetStatus(AliTRDtrackV1::kUpdate);
+      if(debugLevel > 2){
+        UChar_t status(t.GetStatusTRD());
+        AliTRDseedV1  trackletCp(*ptrTracklet);
+        AliTRDtrackV1 trackCp(t);
+        trackCp.SetOwner();
+        (*cstreamer) << "FollowBackProlongation1"
+            << "status="      << status
+            << "tracklet.="   << &trackletCp
+            << "track.="      << &trackCp
+            << "\n";
+      }
       break;
     }
     // fill residuals ?!
@@ -927,12 +943,11 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   //printf("clusters[%d] chi2[%f] x[%f] status[%d ", n, t.GetChi2(), t.GetX(), t.GetStatusTRD());
   //for(int i=0; i<6; i++) printf("%d ", t.GetStatusTRD(i)); printf("]\n");
 
-  if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 1 && fkReconstructor->IsDebugStreaming()){
-    TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+  if(debugLevel > 1){
     Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
     AliTRDtrackV1 track(t);
     track.SetOwner();
-    cstreamer << "FollowBackProlongation"
+    (*cstreamer) << "FollowBackProlongation0"
         << "EventNumber=" << eventNumber
         << "ncl="         << n
         << "track.="      << &track
