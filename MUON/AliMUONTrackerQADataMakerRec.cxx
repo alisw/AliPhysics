@@ -929,7 +929,7 @@ void AliMUONTrackerQADataMakerRec::MakeESDs(AliESDEvent* esd)
   
   // load ESD event in the interface
   AliMUONESDInterface esdInterface;
-  if (GetRecoParam()) AliMUONESDInterface::ResetTracker(GetRecoParam());
+  if (GetRecoParam()) AliMUONESDInterface::ResetTracker(GetRecoParam(), kFALSE);
   else AliError("Unable to get recoParam: use default ones for residual calculation");
   esdInterface.LoadEvent(*esd);
   

@@ -92,7 +92,7 @@ When using alien, the path definition can be eg.
 AliMUONCDB class is used to populate the CDB with fake calibration objects for testing purposes.
 Real calibration data will normally be handled by the Shuttle (see READMEshuttle).
 
-The various WriteXXX() methods may be used to populate MUON tracker and trigger 
+The various WriteXXX() static methods may be used to populate MUON tracker and trigger 
 information.
 A full set of calibration data types can be created from scratch using, from
 the Root prompt (from within the $ALICE_ROOT/MUON directory to get the correct
@@ -100,11 +100,10 @@ list of libraries loaded by the loadlibs.C macro)
 
 <pre>
 root[0] AliMpCDB::LoadAll2(); 
-root[1] AliMUONCDB cdb;
-root[2] Int_t startRun = 0;
-root[3] Bool_t defaultValues = kTRUE;
-root[4] cdb.WriteTrigger(startRun);
-root[5] cdb.WriteTracker(defaultValues,startRun);
+root[1] Int_t startRun = 0;
+root[2] Bool_t defaultValues = kTRUE;
+root[3] AliMUONCDB::WriteTrigger(startRun);
+root[4] AliMUONCDB::WriteTracker(defaultValues,startRun);
 </pre>
 
 
@@ -119,11 +118,12 @@ AliMUONVStore* ped = AliMUONCalibrationData::CreatePedestals(67138);
 </pre>
 
 If you want to plot calibration data (not terribly usefull as it's a really global view),
- use the Plot() function of AliMUONCDB, e.g.  
+ use the Plot() function of AliMUONCDB (this require to load the segmentation), e.g.  
  
 <pre>
-AliMUONCDB cdb(cdbpath);
-cdb.Plot(*ped,"pedestal")
+AliCDBManager::Instance()->SetRun(0);
+AliMUONCDB::LoadMapping(kTRUE);
+AliMUONCDB::Plot(*ped,"pedestal");
 </pre>
 
 which will create 2 histograms : pedestal_0 (mean) and pedestal_1 (sigma).

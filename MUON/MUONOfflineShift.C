@@ -46,9 +46,9 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
-#include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
+#include "AliMUONCDB.h"
 #include "AliMUONPainterDataRegistry.h"
 #include "AliMUONRecoParam.h"
 #include "AliMUONTrackerDataMaker.h"
@@ -89,10 +89,8 @@ Int_t DataMakerReading(const char* input,
   
   AliMUONVTrackerDataMaker* dm(0x0);
   
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get("MUON/Calib/RecoParam");
-  AliMUONRecoParam* recoParam(0x0);
-  
-  if ( entry ) recoParam = static_cast<AliMUONRecoParam*>(entry->GetObject());
+  AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
+  if (!recoParam) return 0;
   
   if ( strlen(cdbPath) > 0 ) 
   {
@@ -230,8 +228,7 @@ void MUONOfflineShift(const char* input="alien:///alice/data/2009/LHC09a/0000674
   AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
   AliCDBManager::Instance()->SetRun(runNumber);
 
-  AliMpCDB::LoadDDLStore();
-  AliMpCDB::LoadManuStore();
+  if (!AliMUONCDB::LoadMapping()) return;
   
   TStopwatch timer1;
   TStopwatch timer2;

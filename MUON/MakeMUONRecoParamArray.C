@@ -99,8 +99,7 @@ void MakeMUONRecoParamArray(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::I
   }
   
   // save RecoParam in CDB
-  AliMUONCDB cdb;
-  cdb.WriteToCDB(&recoParams, "MUON/Calib/RecoParam", startRun, endRun, "reconstruction parameters for MUON", "Philippe Pillot");
+  AliMUONCDB::WriteToCDB(&recoParams, "MUON/Calib/RecoParam", startRun, endRun, "reconstruction parameters for MUON", "Philippe Pillot");
   
 }
 

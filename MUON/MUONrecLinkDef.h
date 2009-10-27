@@ -75,4 +75,7 @@
 
 #pragma link C++ class AliMUONQAMappingCheck+;
 
+// OCDB access
+#pragma link C++ class AliMUONCDB+;
+
 #endif

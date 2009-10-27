@@ -171,8 +171,7 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
   for (ievent = fFirstEvent; ievent < endOfLoop; ++ievent ) 
   {
     nev++;    
-    tree->GetEvent(ievent);
-    if (!fESD) 
+    if (tree->GetEvent(ievent) <= 0) 
     {
       Error("CheckESD", "no ESD object found for event %d", ievent);
       return ;

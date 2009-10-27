@@ -23,6 +23,7 @@
 // MUON includes
 #include "AliMUONCDB.h"
 #include "AliMUONTriggerEfficiencyCells.h"
+#include "AliCDBManager.h"
 #include "AliCDBRunRange.h"
 #include "Riostream.h"
 
@@ -72,6 +73,6 @@ void MUONTriggerChamberEfficiency(Bool_t addMapInSimulation=kFALSE,
 
     if(!addMapInSimulation) return;
 
-    AliMUONCDB muonCDB;
-  muonCDB.WriteToCDB("MUON/Calib/TriggerEfficiency",effMap,0,AliCDBRunRange::Infinity(),true);
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    AliMUONCDB::WriteToCDB("MUON/Calib/TriggerEfficiency",effMap,0,AliCDBRunRange::Infinity(),true);
 }

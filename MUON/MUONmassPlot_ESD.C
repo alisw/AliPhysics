@@ -15,13 +15,13 @@
 
 // STEER includes
 #include "AliLog.h"
-#include "AliMagF.h"
+#include "AliCDBManager.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
-#include "AliTracker.h"
 #include "AliESDMuonTrack.h"
 
 // MUON includes
+#include "AliMUONCDB.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONESDInterface.h"
@@ -29,7 +29,7 @@
 
 /// \ingroup macros
 /// \file MUONmassPlot_ESD.C
-/// \brief Macro MUONefficiency.C for ESD
+/// \brief Macro MUONmassPlot_ESD.C for ESD
 ///
 /// \author Ch. Finck, Subatech, April. 2004
 ///
@@ -43,25 +43,26 @@
 ///
 /// Add parameters and histograms for analysis 
 
-Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.root", 
-		  Int_t FirstEvent = 0, Int_t LastEvent = 10000, char* esdFileName = "AliESDs.root", Int_t ResType = 553, 
-                  Float_t Chi2Cut = 100., Float_t PtCutMin = 1., Float_t PtCutMax = 10000.,
-                  Float_t massMin = 9.17,Float_t massMax = 9.77)
+Bool_t MUONmassPlot(const char* esdFileName = "AliESDs.root", const char* geoFilename = "geometry.root",
+		    const char* ocdbPath = "local://$ALICE_ROOT/OCDB",
+		    Int_t FirstEvent = 0, Int_t LastEvent = 10000, Int_t ExtrapToVertex = -1,
+		    Int_t ResType = 553, Float_t Chi2Cut = 100., Float_t PtCutMin = 1.,
+		    Float_t PtCutMax = 10000., Float_t massMin = 9.17,Float_t massMax = 9.77)
 {
-/// \param ExtrapToVertex (default -1)
-///   -	<0: no extrapolation;
-///   -	=0: extrapolation to (0,0,0);
-///   -	>0: extrapolation to ESDVertex if available, else to (0,0,0)
-/// \param FirstEvent (default 0)
-/// \param LastEvent (default 0)
-/// \param ResType    553 for Upsilon, anything else for J/Psi (default 553)
-/// \param Chi2Cut    to keep only tracks with chi2 per d.o.f. < Chi2Cut (default 100)
-/// \param PtCutMin   to keep only tracks with transverse momentum > PtCutMin (default 1)
-/// \param PtCutMax   to keep only tracks with transverse momentum < PtCutMax (default 10000)
-/// \param massMin   (default 9.17 for Upsilon) 
-/// \param massMax   (default 9.77 for Upsilon);  
-///         to calculate the reconstruction efficiency for resonances with invariant mass
-///         massMin < mass < massMax.
+  /// \param FirstEvent (default 0)
+  /// \param LastEvent (default 10000)
+  /// \param ExtrapToVertex (default -1)
+  ///   -	<0: no extrapolation;
+  ///   -	=0: extrapolation to (0,0,0);
+  ///   -	>0: extrapolation to ESDVertex if available, else to (0,0,0)
+  /// \param ResType    553 for Upsilon, anything else for J/Psi (default 553)
+  /// \param Chi2Cut    to keep only tracks with chi2 per d.o.f. < Chi2Cut (default 100)
+  /// \param PtCutMin   to keep only tracks with transverse momentum > PtCutMin (default 1)
+  /// \param PtCutMax   to keep only tracks with transverse momentum < PtCutMax (default 10000)
+  /// \param massMin   (default 9.17 for Upsilon) 
+  /// \param massMax   (default 9.77 for Upsilon);  
+  ///         to calculate the reconstruction efficiency for resonances with invariant mass
+  ///         massMin < mass < massMax.
 
   cout << "MUONmassPlot " << endl;
   cout << "FirstEvent " << FirstEvent << endl;
@@ -118,7 +119,7 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
   Double_t fPxRec1, fPyRec1, fPzRec1, fE1;
   Double_t fPxRec2, fPyRec2, fPzRec2, fE2;
 
-  Int_t ntrackhits, nevents;
+  Int_t ntrackhits;
   Double_t fitfmin;
   Double_t fZVertex=0;
   Double_t fYVertex=0;
@@ -127,7 +128,7 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
   Double_t errYVtx=0;
  
   TLorentzVector fV1, fV2, fVtot;
-
+  
   // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
   if (!gGeoManager) {
     TGeoManager::Import(geoFilename);
@@ -137,47 +138,47 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
     }
   }
   
-  // set mag field
-  // waiting for mag field in CDB 
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
-    printf("Loading field map...\n");
-    AliMagF* field = new AliMagF("Maps","Maps",1.,1.,AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
-  }
-  // set the magnetic field for track extrapolations
-  AliMUONTrackExtrap::SetField();
-
-
   // open the ESD file
   TFile* esdFile = TFile::Open(esdFileName);
   if (!esdFile || !esdFile->IsOpen()) {
     Error("MUONmass_ESD", "opening ESD file %s failed", esdFileName);
     return kFALSE;
   }
-  
   AliESDEvent* esd = new AliESDEvent();
   TTree* tree = (TTree*) esdFile->Get("esdTree");
   if (!tree) {
-    Error("CheckESD", "no ESD tree found");
+    Error("MUONmass_ESD", "no ESD tree found");
     return kFALSE;
   }
-//  tree->SetBranchAddress("ESD", &esd);
   esd->ReadFromTree(tree);
   
-  nevents = (Int_t)tree->GetEntries();
+  // get run number
+  if (tree->GetEvent(0) <= 0) {
+    Error("MUONmass_ESD", "no ESD object found for event 0");
+    return kFALSE;
+  }
+  Int_t runNumber = esd->GetRunNumber();
+  
+  // load necessary data from OCDB
+  AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+  AliCDBManager::Instance()->SetRun(runNumber);
+  if (!AliMUONCDB::LoadField()) return kFALSE;
+  
+  // set the magnetic field for track extrapolations
+  AliMUONTrackExtrap::SetField();
   
   AliMUONTrackParam trackParam;
 
   // Loop over events
+  Int_t nevents = (Int_t)tree->GetEntries();
   for (Int_t iEvent = FirstEvent; iEvent <= TMath::Min(LastEvent, nevents - 1); iEvent++) {
 
     // get the event summary data
-    tree->GetEvent(iEvent);
-    if (!esd) {
-      Error("CheckESD", "no ESD object found for event %d", iEvent);
+    if (tree->GetEvent(iEvent) <= 0) {
+      Error("MUONmass_ESD", "no ESD object found for event %d", iEvent);
       return kFALSE;
     }
-
+    
     // get the SPD reconstructed vertex (vertexer) and fill the histogram
     AliESDVertex* Vertex = (AliESDVertex*) esd->GetVertex();
     if (Vertex->GetNContributors()) {
@@ -236,7 +237,7 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
 
       // condition for good track (Chi2Cut and PtCut)
 
-      if ((ch1 < Chi2Cut) && (pt1 > PtCutMin) && (pt1 < PtCutMax)) {
+//      if ((ch1 < Chi2Cut) && (pt1 > PtCutMin) && (pt1 < PtCutMax)) {
 
 	// fill histos hPtMuon and hChi2PerDof
 	hPtMuon->Fill(pt1);
@@ -283,7 +284,7 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
 	  Float_t ch2 = fitfmin  / (2.0 * ntrackhits - 5);
 
 	  // condition for good track (Chi2Cut and PtCut)
-	  if ((ch2 < Chi2Cut) && (pt2 > PtCutMin)  && (pt2 < PtCutMax)) {
+//	  if ((ch2 < Chi2Cut) && (pt2 > PtCutMin)  && (pt2 < PtCutMax)) {
 
 	    // condition for opposite charges
 	    if ((fCharge1 * fCharge2) == -1) {
@@ -313,10 +314,10 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
 	      }
 
 	    } // if (fCharge1 * fCharge2) == -1)
-	  } // if ((ch2 < Chi2Cut) && (pt2 > PtCutMin) && (pt2 < PtCutMax))
+//	  } // if ((ch2 < Chi2Cut) && (pt2 > PtCutMin) && (pt2 < PtCutMax))
 	  delete muonTrack2;
 	} //  for (Int_t iTrack2 = iTrack + 1; iTrack2 < iTrack; iTrack2++)
-      } // if (ch1 < Chi2Cut) && (pt1 > PtCutMin)&& (pt1 < PtCutMax) )
+//      } // if (ch1 < Chi2Cut) && (pt1 > PtCutMin)&& (pt1 < PtCutMax) )
       delete muonTrack;
     } // for (Int_t iTrack = 0; iTrack < nrectracks; iTrack++)
 

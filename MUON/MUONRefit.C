@@ -32,18 +32,13 @@
 #include <TROOT.h>
 
 // STEER includes
-#include "AliMagF.h"
-#include "AliTracker.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-#include "AliRecoParam.h"
 #include "AliCDBManager.h"
-#include "AliCDBEntry.h"
-#include "AliCDBPath.h"
 #include "AliGeomManager.h"
 
 // MUON includes
-#include "AliMpCDB.h"
+#include "AliMUONCDB.h"
 #include "AliMUONRecoParam.h"
 #include "AliMUONESDInterface.h"
 #include "AliMUONRefitter.h"
@@ -51,34 +46,21 @@
 #include "AliMUONTrack.h"
 #include "AliMUONVTrackStore.h"
 #include "AliMUONTrackParam.h"
-#include "AliMUONTrackExtrap.h"
 #endif
 
 const Int_t printLevel = 1;
 
-void Prepare();
 TTree* GetESDTree(TFile *esdFile);
 
 //-----------------------------------------------------------------------
-void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", const char* esdFileNameOut = "AliESDs_New.root")
+void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", const char* esdFileNameOut = "AliESDs_New.root",
+	       const char* geoFilename = "geometry.root", const char* ocdbPath = "local://$ALICE_ROOT/OCDB")
 {
+  /// Example of muon refitting:
   /// refit ESD tracks from ESD pads (i.e. re-clusterized the attached ESD clusters);
   /// reset the charge of the digit using their raw charge before refitting;
   /// compare results with original ESD tracks; 
   /// write results in a new ESD file
-  
-  // prepare the refitting
-  gRandom->SetSeed(1);
-  Prepare();
-  
-  // reconstruction parameters for the refitting
-  AliMUONRecoParam* recoParam = AliMUONRecoParam::GetLowFluxParam();
-  Info("MUONRefit", "\n Reconstruction parameters for refitting:");
-  recoParam->Print("FULL");
-  
-  AliMUONESDInterface esdInterface;
-  AliMUONRefitter refitter(recoParam);
-  refitter.Connect(&esdInterface);
   
   // open the ESD file and tree
   TFile* esdFile = TFile::Open(esdFileNameIn);
@@ -92,7 +74,39 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
   // connect ESD event to the ESD tree
   AliESDEvent* esd = new AliESDEvent();
   esd->ReadFromTree(esdTree);
-
+  
+  // get run number
+  if (esdTree->GetEvent(0) <= 0) {
+    Error("MUONRefit", "no ESD object found for event 0");
+    return;
+  }
+  Int_t runNumber = esd->GetRunNumber();
+  
+  // Import TGeo geometry
+  if (!gGeoManager) {
+    AliGeomManager::LoadGeometry(geoFilename);
+    if (!gGeoManager) {
+      Error("MUONRefit", "getting geometry from file %s failed", "generated/galice.root");
+      exit(-1);
+    }
+  }
+  
+  // load necessary data from OCDB
+  AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+  AliCDBManager::Instance()->SetRun(runNumber);
+  if (!AliMUONCDB::LoadField()) return;
+  if (!AliMUONCDB::LoadMapping(kTRUE)) return;
+  
+  // reconstruction parameters for the refitting
+  AliMUONRecoParam* recoParam = AliMUONRecoParam::GetLowFluxParam();
+  Info("MUONRefit", "\n Reconstruction parameters for refitting:");
+  recoParam->Print("FULL");
+  
+  AliMUONESDInterface esdInterface;
+  AliMUONRefitter refitter(recoParam);
+  refitter.Connect(&esdInterface);
+  gRandom->SetSeed(1);
+  
   // timer start...
   TStopwatch timer;
   
@@ -115,7 +129,7 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
     if (nTracks < 1) continue;
     
     // load the current event
-    esdInterface.LoadEvent(*esd);
+    esdInterface.LoadEvent(*esd, kFALSE);
     
     // loop over digit to modify their charge
     AliMUONVDigit *digit;
@@ -194,60 +208,9 @@ void MUONRefit(Int_t nevents = -1, const char* esdFileNameIn = "AliESDs.root", c
   // free memory
   esdFile->Close();
   delete esd;
+  delete recoParam;
   
   cout<<endl<<"time to refit: R:"<<timer.RealTime()<<" C:"<<timer.CpuTime()<<endl<<endl;
-}
-
-//-----------------------------------------------------------------------
-void Prepare()
-{
-  /// Set the geometry, the magnetic field, the mapping and the reconstruction parameters
-  
-  // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
-  if (!gGeoManager) {
-    AliGeomManager::LoadGeometry("geometry.root");
-    if (!gGeoManager) {
-      Error("MUONRefit", "getting geometry from file %s failed", "generated/galice.root");
-      return;
-    }
-  }
-  
-  // set  mag field 
-  // waiting for mag field in CDB 
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
-    printf("Loading field map...\n");
-    AliMagF* field = new AliMagF("Maps","Maps",1.,1.,AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
-  }
-  // set the magnetic field for track extrapolations
-  AliMUONTrackExtrap::SetField();
-  
-  // Load mapping
-  AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  man->SetRun(0);
-  if ( ! AliMpCDB::LoadDDLStore() ) {
-    Error("MUONRefit","Could not access mapping from OCDB !");
-    exit(-1);
-  }
-  
-  // Load initial reconstruction parameters from OCDB
-  AliMUONRecoParam* recoParam = 0x0;
-  AliCDBPath path("MUON","Calib","RecoParam");
-  AliCDBEntry *entry=man->Get(path.GetPath());
-  if(entry) {
-    recoParam = dynamic_cast<AliMUONRecoParam*>(entry->GetObject());
-    entry->SetOwner(0);
-    AliCDBManager::Instance()->UnloadFromCache(path.GetPath());
-  }
-  if (!recoParam) {
-    printf("Couldn't find RecoParam object in OCDB: create default one");
-    recoParam = AliMUONRecoParam::GetLowFluxParam();
-  }
-  Info("MUONRefit", "\n initial recontruction parameters:");
-  recoParam->Print("FULL");
-  AliMUONESDInterface::ResetTracker(recoParam);
-  
 }
 
 //-----------------------------------------------------------------------

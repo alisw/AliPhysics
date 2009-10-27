@@ -16,14 +16,17 @@
 /* $Id$ */
 
 //-----------------------------------------------------------------------------
-/// \class AliMUONCDB
+/// \namespace AliMUONCDB
 ///
-/// Helper class to experience the OCDB
-/// It allows to generate dummy (but complete) containers for all the
+/// Helper functions to experience the OCDB
+///
+/// They allow to read magnetic field, mapping and recoParam from OCDB
+///
+/// And also to generate dummy (but complete) containers for all the
 /// calibration data types we have for tracker and trigger, and to write
 /// them into OCDB.
 ///
-/// For more information, please see READMECDB
+/// For more information, please see READMEcalib
 ///
 // \author Laurent Aphecetche
 //-----------------------------------------------------------------------------
@@ -47,9 +50,11 @@
 #include "AliMUONVCalibParam.h"
 #include "AliMUONGlobalCrateConfig.h"
 #include "AliMUONRegionalTriggerConfig.h"
+#include "AliMUONRecoParam.h"
 
 #include "AliMpCDB.h"
 #include "AliMpConstants.h"
+#include "AliMpDEStore.h"
 #include "AliMpDDLStore.h"
 #include "AliMpManuStore.h"
 #include "AliMpDEManager.h"
@@ -64,6 +69,7 @@
 #include "AliCodeTimer.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliGRPManager.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
 
@@ -79,11 +85,8 @@
 #include <TStopwatch.h>
 #include <TSystem.h>
 #include <TMath.h>
+#include <TGeoGlobalMagField.h>
 
-
-/// \cond CLASSIMP
-ClassImp(AliMUONCDB)
-/// \endcond
 
 namespace
 {
@@ -164,26 +167,142 @@ Double_t GetRandom(Double_t mean, Double_t sigma, Bool_t mustBePositive)
 }
 
 //_____________________________________________________________________________
-AliMUONCDB::AliMUONCDB(const char* cdbpath)
-: TObject(),
-  fCDBPath(cdbpath),
-  fMaxNofChannelsToGenerate(-1)
+Bool_t AliMUONCDB::CheckOCDB(Bool_t pathOnly)
 {
-  /// ctor
-    // Load mapping
-    if ( ! AliMpCDB::LoadDDLStore() ) {
-      AliFatal("Could not access mapping from OCDB !");
-    }
-
-    if ( ! AliMpCDB::LoadManuStore() ) {
-      AliFatal("Could not access run-dependent mapping from OCDB !");
-    }
+  /// Check that OCDB path and run number are properly set
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  
+  // first OCDB path
+  if (!man->IsDefaultStorageSet()) {
+    AliErrorGeneral("AliMUONCDB", "OCDB path must be properly set");
+    return kFALSE;
+  }
+  
+  // then run number if required
+  if (pathOnly) return kTRUE;
+  if (man->GetRun() < 0) {
+    AliErrorGeneral("AliMUONCDB", "Run number must be properly set");
+    return kFALSE;
+  }
+  
+  return kTRUE;
+  
 }
 
 //_____________________________________________________________________________
-AliMUONCDB::~AliMUONCDB()
+Bool_t AliMUONCDB::CheckMapping(Bool_t segmentationOnly)
 {
-  /// dtor
+  /// Check that the mapping has been loaded
+  
+  // first the segmentation
+  if (!AliMpSegmentation::Instance(false)) {
+    AliErrorGeneral("AliMUONCDB", "Mapping segmentation must be loaded first");
+    return kFALSE;
+  }
+  
+  // then the others if required
+  if (segmentationOnly) return kTRUE;
+  if (!AliMpDDLStore::Instance(false) || !AliMpDEStore::Instance(false) || !AliMpManuStore::Instance(false)) {
+    AliErrorGeneral("AliMUONCDB", "Full mapping must be loaded first");
+    return kFALSE;
+  }
+  
+  return kTRUE;
+  
+}
+
+//_____________________________________________________________________________
+Bool_t AliMUONCDB::LoadField()
+{
+  /// Load magnetic field (existing field will be deleted).
+  /// OCDB path and run number are supposed to be set.
+  
+  AliInfoGeneral("AliMUONCDB","Loading field map from GRP...");
+  
+  if (!AliMUONCDB::CheckOCDB()) return kFALSE;
+  
+  AliGRPManager grpMan;
+  
+  // make sure the old field is deleted even if it is locked
+  if(TGeoGlobalMagField::Instance()->IsLocked()) delete TGeoGlobalMagField::Instance();
+  
+  if (!grpMan.ReadGRPEntry() || !grpMan.SetMagField()) {
+    AliErrorGeneral("AliMUONCDB", "failed to load magnetic field from OCDB");
+    return kFALSE;
+  }
+  
+  return kTRUE;
+  
+}
+
+//_____________________________________________________________________________
+Bool_t AliMUONCDB::LoadMapping(Bool_t segmentationOnly)
+{
+  /// Load mapping (existing mapping will be unloaded).
+  /// OCDB path and run number are supposed to be set.
+  
+  AliInfoGeneral("AliMUONCDB", "Loading mapping from OCDB...");
+  
+  if (!AliMUONCDB::CheckOCDB()) return kFALSE;
+  
+  // in case it has already been set
+  AliMpCDB::UnloadAll();
+  
+  if (segmentationOnly) {
+    
+    if (!AliMpCDB::LoadMpSegmentation(kTRUE)){
+      AliErrorGeneral("AliMUONCDB", "failed to load segmentation from OCDB");
+      return kFALSE;
+    }
+    
+  } else {
+    
+    if (!AliMpCDB::LoadAll(kTRUE)) {
+      AliErrorGeneral("AliMUONCDB", "failed to load mapping from OCDB");
+      return kFALSE;
+    }
+    
+  }
+  
+  return kTRUE;
+  
+}
+
+//_____________________________________________________________________________
+AliMUONRecoParam* AliMUONCDB::LoadRecoParam()
+{
+  /// Load and return reconstruction parameters.
+  /// OCDB path is supposed to be set.
+  
+  AliInfoGeneral("AliMUONCDB", "Loading RecoParam from OCDB...");
+  
+  if (!AliMUONCDB::CheckOCDB()) return kFALSE;
+  
+  AliMUONRecoParam* recoParam = 0x0;
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("MUON/Calib/RecoParam");
+  
+  if(entry) {
+    
+    // load recoParam according OCDB content (single or array)
+    if (!(recoParam = dynamic_cast<AliMUONRecoParam*>(entry->GetObject()))) {
+      
+      TObjArray* recoParamArray = static_cast<TObjArray*>(entry->GetObject());
+      
+      for(Int_t i = 0; i < recoParamArray->GetEntriesFast(); i++) {
+	recoParam = static_cast<AliMUONRecoParam*>(recoParamArray->UncheckedAt(i));
+	if (recoParam->IsDefault()) break;
+	recoParam = 0x0;
+      }
+      
+    }
+    
+  }
+  
+  if (!recoParam) AliErrorGeneral("AliMUONCDB", "failed to load RecoParam from OCDB");
+  
+  return recoParam;
+  
 }
 
 //_____________________________________________________________________________
@@ -203,7 +322,7 @@ AliMUONCDB::Diff(AliMUONVStore& store1, AliMUONVStore& store2,
   
   if ( !sopt.Contains("ABS") && !sopt.Contains("REL") && !sopt.Contains("PERCENT") )
   {
-    AliErrorClass(Form("opt %s not supported. Only ABS, REL, PERCENT are",opt));
+    AliErrorGeneral("AliMUONCDB", Form("opt %s not supported. Only ABS, REL, PERCENT are",opt));
     return 0x0;
   }
   
@@ -263,6 +382,8 @@ AliMUONCDB::Plot(const AliMUONVStore& store, const char* name, Int_t nbins)
   /// contained inside store.
   /// It produces histograms named name_0, name_1, etc...
   
+  if (!AliMUONCDB::CheckMapping(kTRUE)) return;
+  
   TIter next(store.CreateIterator());
   AliMUONVCalibParam* param;
   Int_t n(0);
@@ -286,7 +407,7 @@ AliMUONCDB::Plot(const AliMUONVStore& store, const char* name, Int_t nbins)
       {
         h[i] = new TH1F(Form("%s_%d",name,i),Form("%s_%d",name,i),
                             nbins,xmin[i],xmax[i]);
-        AliInfo(Form("Created histogram %s",h[i]->GetName()));
+        AliInfoGeneral("AliMUONCDB", Form("Created histogram %s",h[i]->GetName()));
       }
     }
     
@@ -314,10 +435,10 @@ AliMUONCDB::Plot(const AliMUONVStore& store, const char* name, Int_t nbins)
   
   for ( Int_t i = 0; i < kNStations; ++i )
   {
-    AliInfo(Form("Station %d %d ",(i+1),nPerStation[i]));
+    AliInfoGeneral("AliMUONCDB", Form("Station %d %d ",(i+1),nPerStation[i]));
   }
 
-  AliInfo(Form("Number of channels = %d",n));
+  AliInfoGeneral("AliMUONCDB", Form("Number of channels = %d",n));
   
   delete[] nPerStation;
 }
@@ -327,6 +448,8 @@ Int_t
 AliMUONCDB::MakeHVStore(TMap& aliasMap, Bool_t defaultValues)
 {
   /// Create a HV store
+  
+  if (!AliMUONCDB::CheckMapping()) return 0;
   
   AliMpDCSNamer hvNamer("TRACKER");
   
@@ -379,7 +502,7 @@ AliMUONCDB::MakeHVStore(TMap& aliasMap, Bool_t defaultValues)
   
   delete aliases;
   
-  AliInfo(Form("%d HV channels and %d switches",nChannels,nSwitch));
+  AliInfoGeneral("AliMUONCDB", Form("%d HV channels and %d switches",nChannels,nSwitch));
   
   return nChannels+nSwitch;
 }
@@ -389,6 +512,8 @@ Int_t
 AliMUONCDB::MakeTriggerDCSStore(TMap& aliasMap, Bool_t defaultValues)
 {
   /// Create a Trigger HV and Currents store
+  
+  if (!AliMUONCDB::CheckMapping()) return 0;
   
   AliMpDCSNamer triggerDCSNamer("TRIGGER");
   
@@ -427,7 +552,7 @@ AliMUONCDB::MakeTriggerDCSStore(TMap& aliasMap, Bool_t defaultValues)
   
   delete aliases;
   
-  AliInfo(Form("Trigger channels I -> %i   HV -> %i",nChannels[0], nChannels[1]));
+  AliInfoGeneral("AliMUONCDB", Form("Trigger channels I -> %i   HV -> %i",nChannels[0], nChannels[1]));
   
   return nChannels[0] + nChannels[1];
 }
@@ -440,7 +565,9 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
   /// otherwise mean and sigma are from a gaussian (with parameters
   /// defined below by the kPedestal* constants)
 
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAutoGeneral("",0);
+  
+  if (!AliMUONCDB::CheckMapping()) return 0;
   
   Int_t nchannels(0);
   Int_t nmanus(0);
@@ -524,12 +651,11 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
     Bool_t ok = pedestalStore.Add(ped);
     if (!ok)
     {
-      AliError(Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
+      AliErrorGeneral("AliMUONCDB", Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
     }
-    if ( fMaxNofChannelsToGenerate > 0 && nchannels >= fMaxNofChannelsToGenerate ) break;
   }
   
-  AliInfo(Form("%d Manus and %d channels.",nmanus,nchannels));
+  AliInfoGeneral("AliMUONCDB", Form("%d Manus and %d channels.",nmanus,nchannels));
   return nchannels;
 }
 
@@ -539,7 +665,7 @@ AliMUONCDB::MakeRejectListStore(Bool_t defaultValues)
 {
   /// Create a reject list
   
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAutoGeneral("",0);
 
   AliMUONRejectList* rl = new AliMUONRejectList;
   
@@ -559,7 +685,9 @@ AliMUONCDB::MakeOccupancyMapStore(AliMUONVStore& occupancyMapStore, Bool_t defau
 {
   /// Create an occupancy map.
   
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAutoGeneral("",0);
+  
+  if (!AliMUONCDB::CheckMapping()) return 0;
   
   Int_t nmanus(0);
   
@@ -582,7 +710,7 @@ AliMUONCDB::MakeOccupancyMapStore(AliMUONVStore& occupancyMapStore, Bool_t defau
     
     Int_t numberOfChannelsInManu = de->NofChannelsInManu(manuId);
     
-    if (!defaultValues) occ = gRandom->Rndm(1.0);
+    if (!defaultValues) occ = gRandom->Rndm(1);
 
     Double_t sumn = occ*nevents;
     
@@ -595,7 +723,7 @@ AliMUONCDB::MakeOccupancyMapStore(AliMUONVStore& occupancyMapStore, Bool_t defau
     Bool_t ok = occupancyMapStore.Add(occupancy);
     if (!ok)
     {
-      AliError(Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
+      AliErrorGeneral("AliMUONCDB", Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
     }
   }
   
@@ -608,6 +736,8 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, const char* file)
 {
   /// Read the capacitance values from file and append them to the capaStore
   
+  if (!AliMUONCDB::CheckMapping()) return 0;
+  
   return AliMUONTrackerIO::ReadCapacitances(file,capaStore);
 }
 
@@ -619,7 +749,9 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues)
   /// otherwise they are from a gaussian with parameters defined in the
   /// kCapa* constants below.
 
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAutoGeneral("",0);
+  
+  if (!AliMUONCDB::CheckMapping()) return 0;
   
   Int_t nchannels(0);
   Int_t nmanus(0);
@@ -654,7 +786,7 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues)
       Bool_t ok = capaStore.Add(capa);
       if (!ok)
       {
-        AliError(Form("Could not set serialNumber=%d manuId=%d",serialNumber,manuId));
+        AliErrorGeneral("AliMUONCDB", Form("Could not set serialNumber=%d manuId=%d",serialNumber,manuId));
       }      
     }
     
@@ -684,12 +816,12 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues)
   
   Float_t percent = 0;
   if ( nmanus ) percent = 100*nmanusOK/nmanus;
-  AliInfo(Form("%5d manus with serial number (out of %5d manus = %3.0f%%)",
+  AliInfoGeneral("AliMUONCDB", Form("%5d manus with serial number (out of %5d manus = %3.0f%%)",
                nmanusOK,nmanus,percent));
-  AliInfo(Form("%5d channels",nchannels));
+  AliInfoGeneral("AliMUONCDB", Form("%5d channels",nchannels));
   if ( percent < 100 ) 
   {
-    AliWarning("Did not get all serial numbers. capaStore is incomplete !!!!");
+    AliWarningGeneral("AliMUONCDB", "Did not get all serial numbers. capaStore is incomplete !!!!");
   }
   return nchannels;
   
@@ -705,7 +837,9 @@ AliMUONCDB::MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues)
   /// otherwise parameters are taken from gaussians with parameters 
   /// defined in the k* constants below.
   
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAutoGeneral("",0);
+  
+  if (!AliMUONCDB::CheckMapping()) return 0;
   
   Int_t nchannels(0);
   Int_t nmanus(0);
@@ -765,22 +899,21 @@ AliMUONCDB::MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues)
     Bool_t ok = gainStore.Add(gain);
     if (!ok)
     {
-      AliError(Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
+      AliErrorGeneral("AliMUONCDB", Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
     }
-    if ( fMaxNofChannelsToGenerate > 0 && nchannels >= fMaxNofChannelsToGenerate ) break;
   }
   
-  AliInfo(Form("%d Manus and %d channels.",nmanus,nchannels));
+  AliInfoGeneral("AliMUONCDB", Form("%d Manus and %d channels.",nmanus,nchannels));
   return nchannels;
 }
 
 //_____________________________________________________________________________
 Int_t
-AliMUONCDB::MakeLocalTriggerMaskStore(AliMUONVStore& localBoardMasks) const
+AliMUONCDB::MakeLocalTriggerMaskStore(AliMUONVStore& localBoardMasks)
 {
   /// Generate local trigger masks store. All masks are set to FFFF
   
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAutoGeneral("",0);
   
   Int_t ngenerated(0);
   // Generate fake mask values for all localboards and put that into
@@ -804,14 +937,14 @@ AliMUONCDB::MakeLocalTriggerMaskStore(AliMUONVStore& localBoardMasks) const
 
 //_____________________________________________________________________________
 Int_t
-AliMUONCDB::MakeRegionalTriggerConfigStore(AliMUONRegionalTriggerConfig& rtm) const
+AliMUONCDB::MakeRegionalTriggerConfigStore(AliMUONRegionalTriggerConfig& rtm)
 {
   /// Make a regional trigger config store. Mask is set to FFFF for each local board (Ch.F.)
   
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAutoGeneral("",0);
   
   if ( ! rtm.ReadData(AliMpFiles::LocalTriggerBoardMapping()) ) {
-    AliErrorStream() << "Error when reading from mapping file" << endl;
+    AliErrorGeneral("AliMUONCDB", "Error when reading from mapping file");
     return 0;
   }
     
@@ -821,11 +954,11 @@ AliMUONCDB::MakeRegionalTriggerConfigStore(AliMUONRegionalTriggerConfig& rtm) co
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONCDB::MakeGlobalTriggerConfigStore(AliMUONGlobalCrateConfig& gtm) const
+AliMUONCDB::MakeGlobalTriggerConfigStore(AliMUONGlobalCrateConfig& gtm)
 {
   /// Make a global trigger config store. All masks (disable) set to 0x00 for each Darc board (Ch.F.)
   
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAutoGeneral("",0);
   
   return gtm.ReadData(AliMpFiles::GlobalTriggerBoardMapping());
 }
@@ -833,11 +966,11 @@ AliMUONCDB::MakeGlobalTriggerConfigStore(AliMUONGlobalCrateConfig& gtm) const
 
 //_____________________________________________________________________________
 AliMUONTriggerLut* 
-AliMUONCDB::MakeTriggerLUT(const char* file) const
+AliMUONCDB::MakeTriggerLUT(const char* file)
 {
   /// Make a triggerlut object, from a file.
   
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAutoGeneral("",0);
   
   AliMUONTriggerLut* lut = new AliMUONTriggerLut;
   lut->ReadFromFile(file);
@@ -846,11 +979,11 @@ AliMUONCDB::MakeTriggerLUT(const char* file) const
 
 //_____________________________________________________________________________
 AliMUONTriggerEfficiencyCells*
-AliMUONCDB::MakeTriggerEfficiency(const char* file) const
+AliMUONCDB::MakeTriggerEfficiency(const char* file)
 {
   /// Make a trigger efficiency object from a file.
   
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAutoGeneral("",0);
   
   return new AliMUONTriggerEfficiencyCells(file);
 }
@@ -889,14 +1022,14 @@ AliMUONCDB::WriteToCDB(TObject* object, const char* calibpath, Int_t startRun, I
 {
   /// Write a given object to OCDB
   
+  if (!AliMUONCDB::CheckOCDB(kTRUE)) return;
+  
   AliCDBId id(calibpath,startRun,endRun);
   AliCDBMetaData md;
   md.SetAliRootVersion(gROOT->GetVersion());
   md.SetComment(comment);
   md.SetResponsible(responsible);
-  AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage(fCDBPath);
-  man->Put(object,id,&md);
+  AliCDBManager::Instance()->Put(object,id,&md);
 }
 
 //_____________________________________________________________________________
@@ -906,9 +1039,11 @@ AliMUONCDB::MakeNeighbourStore(AliMUONVStore& neighbourStore)
   /// Fill the neighbours store with, for each channel, a TObjArray of its
   /// neighbouring pads (including itself)
   
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAutoGeneral("",0);
   
-  AliInfo("Generating NeighbourStore. This will take a while. Please be patient.");
+  if (!AliMUONCDB::CheckMapping()) return 0;
+  
+  AliInfoGeneral("AliMUONCDB", "Generating NeighbourStore. This will take a while. Please be patient.");
   
   Int_t nchannels(0);
   
@@ -936,7 +1071,7 @@ AliMUONCDB::MakeNeighbourStore(AliMUONVStore& neighbourStore)
       Bool_t ok = neighbourStore.Add(calibParam);
       if (!ok)
       {
-        AliError(Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
+        AliErrorGeneral("AliMUONCDB", Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
         return -1;
       }      
     }
@@ -975,22 +1110,13 @@ AliMUONCDB::MakeNeighbourStore(AliMUONVStore& neighbourStore)
 
 //_____________________________________________________________________________
 void
-AliMUONCDB::SetMaxNofChannelsToGenerate(Int_t n)
-{
-  /// Set the maximum number of channels to generate (used for testing only)
-  /// n < 0 means no limit
-  fMaxNofChannelsToGenerate = n;
-}
-
-//_____________________________________________________________________________
-void
 AliMUONCDB::WriteLocalTriggerMasks(Int_t startRun, Int_t endRun)
 {  
   /// Write local trigger masks to OCDB
   
   AliMUONVStore* ltm = new AliMUON1DArray(AliMpConstants::TotalNofLocalBoards()+1);
   Int_t ngenerated = MakeLocalTriggerMaskStore(*ltm);
-  AliInfo(Form("Ngenerated = %d",ngenerated));
+  AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));
   if (ngenerated>0)
   {
     WriteToCDB("MUON/Calib/LocalTriggerBoardMasks",ltm,startRun,endRun,true);
@@ -1006,7 +1132,7 @@ AliMUONCDB::WriteRegionalTriggerConfig(Int_t startRun, Int_t endRun)
   
   AliMUONRegionalTriggerConfig* rtm = new AliMUONRegionalTriggerConfig();
   Int_t ngenerated = MakeRegionalTriggerConfigStore(*rtm);
-  AliInfo(Form("Ngenerated = %d",ngenerated));
+  AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));
   if (ngenerated>0)
   {
     WriteToCDB("MUON/Calib/RegionalTriggerConfig",rtm,startRun,endRun,true);
@@ -1024,7 +1150,7 @@ AliMUONCDB::WriteGlobalTriggerConfig(Int_t startRun, Int_t endRun)
   AliMUONGlobalCrateConfig* gtm = new AliMUONGlobalCrateConfig();
 
   Int_t ngenerated = MakeGlobalTriggerConfigStore(*gtm);
-  AliInfo(Form("Ngenerated = %d",ngenerated));
+  AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));
   if (ngenerated>0)
   {
     WriteToCDB("MUON/Calib/GlobalTriggerCrateConfig",gtm,startRun,endRun,true);
@@ -1069,7 +1195,7 @@ AliMUONCDB::WriteNeighbours(Int_t startRun, Int_t endRun)
   
   AliMUONVStore* neighbours = Create2DMap();
   Int_t ngenerated = MakeNeighbourStore(*neighbours);
-  AliInfo(Form("Ngenerated = %d",ngenerated));
+  AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));
   if (ngenerated>0)
   {
     WriteToCDB("MUON/Calib/Neighbours",neighbours,startRun,endRun,true);
@@ -1089,7 +1215,7 @@ AliMUONCDB::WriteHV(Bool_t defaultValues,
   
   TMap* hvStore = new TMap;
   Int_t ngenerated = MakeHVStore(*hvStore,defaultValues);
-  AliInfo(Form("Ngenerated = %d",ngenerated));
+  AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));
   if (ngenerated>0)
   {
     WriteToCDB("MUON/Calib/HV",hvStore,startRun,endRun,defaultValues);
@@ -1109,7 +1235,7 @@ AliMUONCDB::WriteTriggerDCS(Bool_t defaultValues,
   
   TMap* triggerDCSStore = new TMap;
   Int_t ngenerated = MakeTriggerDCSStore(*triggerDCSStore,defaultValues);
-  AliInfo(Form("Ngenerated = %d",ngenerated));
+  AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));
   if (ngenerated>0)
   {
     WriteToCDB("MUON/Calib/TriggerDCS",triggerDCSStore,startRun,endRun,defaultValues);
@@ -1129,7 +1255,7 @@ AliMUONCDB::WritePedestals(Bool_t defaultValues,
   
   AliMUONVStore* pedestalStore = Create2DMap();
   Int_t ngenerated = MakePedestalStore(*pedestalStore,defaultValues);
-  AliInfo(Form("Ngenerated = %d",ngenerated));
+  AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));
   WriteToCDB("MUON/Calib/Pedestals",pedestalStore,startRun,endRun,defaultValues);
   delete pedestalStore;
 }
@@ -1146,7 +1272,7 @@ AliMUONCDB::WriteOccupancyMap(Bool_t defaultValues,
   
   AliMUONVStore* occupancyMapStore = Create2DMap();
   Int_t ngenerated = MakeOccupancyMapStore(*occupancyMapStore,defaultValues);
-  AliInfo(Form("Ngenerated = %d",ngenerated));
+  AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));
   WriteToCDB("MUON/Calib/OccupancyMap",occupancyMapStore,startRun,endRun,defaultValues);
   delete occupancyMapStore;
 }
@@ -1179,7 +1305,7 @@ AliMUONCDB::WriteGains(Bool_t defaultValues,
   
   AliMUONVStore* gainStore = Create2DMap();
   Int_t ngenerated = MakeGainStore(*gainStore,defaultValues);
-  AliInfo(Form("Ngenerated = %d",ngenerated));  
+  AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));  
   WriteToCDB("MUON/Calib/Gains",gainStore,startRun,endRun,defaultValues);
   delete gainStore;
 }
@@ -1195,7 +1321,7 @@ AliMUONCDB::WriteCapacitances(const char* filename,
   
   AliMUONVStore* capaStore = new AliMUON1DMap(16828);
   Int_t ngenerated = MakeCapacitanceStore(*capaStore,filename);
-  AliInfo(Form("Ngenerated = %d",ngenerated));
+  AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));
   if ( ngenerated > 0 ) 
   {
     WriteToCDB("MUON/Calib/Capacitances",capaStore,startRun,endRun,filename);
@@ -1215,7 +1341,7 @@ AliMUONCDB::WriteCapacitances(Bool_t defaultValues,
   
   AliMUONVStore* capaStore = new AliMUON1DMap(16828);
   Int_t ngenerated = MakeCapacitanceStore(*capaStore,defaultValues);
-  AliInfo(Form("Ngenerated = %d",ngenerated));
+  AliInfoGeneral("AliMUONCDB", Form("Ngenerated = %d",ngenerated));
   WriteToCDB("MUON/Calib/Capacitances",capaStore,startRun,endRun,defaultValues);
   delete capaStore;
 }

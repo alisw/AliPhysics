@@ -10,7 +10,6 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONRawClusterV2.cxx \
         AliMUONDigitMaker.cxx \
         AliMUONRawWriter.cxx \
-        AliMUONCDB.cxx \
         AliMUONVDigitStore.cxx \
         AliMUONDigitStoreV1.cxx \
         AliMUONDigitStoreV1Iterator.cxx \

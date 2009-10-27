@@ -65,7 +65,7 @@ Two options here. You can either use a pre-done set of ASCII pedestals files (ge
  
 We've written an AliMUONPedestalEventGenerator which creates fake pedestal events. The pedestal values
 are taken from the Offline Condition DataBase (OCDB) (which is itself fakely filled
-using the WritePedestals() method of AliMUONCDB class
+using the static WritePedestals() method of AliMUONCDB class
 
 So first generate a valid pedestal CDB entry by using the AliMUONCDB class. There's one
  little trick : you should first point to the "default" OCDB (local://$ALICE_ROOT/OCDB) in
@@ -89,11 +89,11 @@ root[] AliCDBManager::Instance()->SetRun(0); // only if you've not put the mappi
 root[] AliMpCDB::LoadDDLStore(); // only if you've not put the mapping in test OCDB
 // below are lines to be executed whatever you did with the mapping...
 root[] const char* cdbpath="local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
-root[] AliMUONCDB cdb(cdbpath)
+root[] AliCDBManager::Instance()->SetDefaultStorage(cdbpath);
 root[] Bool_t defaultValues = kFALSE; // to generate random values instead of plain zeros...
 root[] Int_t startRun = 80;
 root[] Int_t endRun = 80;
-root[] cdb.WritePedestals(defaultValues, startRun, endRun);
+root[] AliMUONCDB::WritePedestals(defaultValues, startRun, endRun);
 </pre>
 
 Expected output is (don't worry about the warnings, they are harmless) :
@@ -165,12 +165,12 @@ entry by using the AliMUONCDB class, from the Root prompt:
 
 <pre>
 const char* cdbpath="local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
-AliMUONCDB cdb(cdbpath)
+root[] AliCDBManager::Instance()->SetDefaultStorage(cdbpath);
 Bool_t defaultValues = kFALSE; // to generate random values instead of plain zeros...
 Int_t gainRun = 80;
 Int_t pedRun = 81;
-cdb.WritePedestals(defaultValues, pedRun, pedRun);
-cdb.WriteGains(defaultValues, gainRun, gainRun);
+AliMUONCDB::WritePedestals(defaultValues, pedRun, pedRun);
+AliMUONCDB::WriteGains(defaultValues, gainRun, gainRun);
 </pre>
 
 Expected output is (don't worry about the warnings, they are harmless) :

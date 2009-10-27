@@ -33,6 +33,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 // MUON includes
+#include "AliMUONCDB.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONESDInterface.h"
@@ -43,34 +44,31 @@
 #include "AliHeader.h"
 #include "AliLoader.h"
 #include "AliStack.h"
-#include "AliMagF.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
-#include "AliTracker.h"
 #include "AliCDBManager.h"
 #include "AliESDMuonTrack.h"
 
 // ROOT includes
 #include "TTree.h"
 #include "TNtuple.h"
-#include "TBranch.h"
-#include "TClonesArray.h"
 #include "TLorentzVector.h"
 #include "TFile.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TParticle.h"
-#include "TTree.h"
 #include "TString.h"
 #include <Riostream.h>
 #include <TGeoManager.h>
 #include <TROOT.h>
 #include <TF1.h>
+#include <TMath.h>
 
 #endif
 
-Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geometry.root", char* esdFileName = "AliESDs.root",
-                       Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEvent = 1000000 )
+Bool_t MUONefficiency(char* filename = "generated/galice.root", char* esdFileName = "AliESDs.root",
+		      char* geoFilename = "geometry.root", char* ocdbPath = "local://$ALICE_ROOT/OCDB",
+		      Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEvent = 1000000 )
 { 
 /// \param ExtrapToVertex (default -1) 
 ///  -	<0: no extrapolation;
@@ -83,10 +81,6 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
 
 
   // MUONefficiency starts
-
-  // Set default CDB storage
-  AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   Double_t MUON_MASS = 0.105658369;
   Double_t UPSILON_MASS = 9.4603 ;
@@ -198,21 +192,40 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
   if (!gGeoManager) {
     TGeoManager::Import(geoFilename);
     if (!gGeoManager) {
-      Error("MUONmass_ESD", "getting geometry from file %s failed", filename);
+      Error("MUONefficiency", "getting geometry from file %s failed", geoFilename);
       return kFALSE;
     }
   }
   
-  // set  mag field 
-  // waiting for mag field in CDB 
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
-    printf("Loading field map...\n");
-    AliMagF* field = new AliMagF("Maps","Maps",1.,1.,AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
+  // open the ESD file
+  TFile* esdFile = TFile::Open(esdFileName);
+  if (!esdFile || !esdFile->IsOpen()) {
+    Error("MUONefficiency", "opening ESD file %s failed", esdFileName);
+    return kFALSE;
   }
+
+  AliESDEvent* esd = new AliESDEvent();
+  TTree* tree = (TTree*) esdFile->Get("esdTree");
+  if (!tree) {
+    Error("MUONefficiency", "no ESD tree found");
+    return kFALSE;
+  } 
+  esd->ReadFromTree(tree);
+
+  // get run number
+  if (tree->GetEvent(0) <= 0) {
+    Error("MUONefficiency", "no ESD object found for event 0");
+    return kFALSE;
+  }
+  Int_t runNumber = esd->GetRunNumber();
+
+  // load necessary data from OCDB
+  AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+  AliCDBManager::Instance()->SetRun(runNumber);
+  if (!AliMUONCDB::LoadField()) return kFALSE;
+
   // set the magnetic field for track extrapolations
   AliMUONTrackExtrap::SetField();
-
 
   // open run loader and load gAlice, kinematics and header
   AliRunLoader* runLoader = AliRunLoader::Open(filename);
@@ -227,25 +240,12 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
     Error("MUONefficiency", "no galice object found");
     return kFALSE;
   }
-  
-  // open the ESD file
-  TFile* esdFile = TFile::Open(esdFileName);
-  if (!esdFile || !esdFile->IsOpen()) {
-    Error("MUONefficiency", "opening ESD file %s failed", esdFileName);
-    return kFALSE;
-  }
-  
-  AliESDEvent* esd = new AliESDEvent();
-  TTree* tree = (TTree*) esdFile->Get("esdTree");
-  if (!tree) {
-    Error("CheckESD", "no ESD tree found");
-    return kFALSE;
-  } 
-  esd->ReadFromTree(tree);
 
   runLoader->LoadHeader();
-  Int_t runNumber = runLoader->GetHeader()->GetRun();
-  AliCDBManager::Instance()->SetRun(runNumber);
+  if (runNumber != runLoader->GetHeader()->GetRun()) {
+    Error("MUONefficiency", "mismatch between run number from ESD and from runLoader");
+    return kFALSE;
+  }
 
   nevents = runLoader->GetNumberOfEvents();
   AliMUONTrackParam trackParam;
@@ -326,8 +326,7 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
 
     
     // get the event summary data
-    tree->GetEvent(iEvent);
-    if (!esd) {
+    if (tree->GetEvent(iEvent) <= 0) {
       Error("CheckESD", "no ESD object found for event %d", iEvent);
       return kFALSE;
     }

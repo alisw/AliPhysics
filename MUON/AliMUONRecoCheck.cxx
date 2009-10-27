@@ -140,6 +140,21 @@ void AliMUONRecoCheck::ResetStores()
 }
 
 //_____________________________________________________________________________
+Int_t AliMUONRecoCheck::GetRunNumber()
+{
+  /// Return the run number of the current ESD event
+  
+  if (fESDEventOwner && fRecoTrackStore == 0x0) {
+    if (!fESDTree || fESDTree->GetEvent(fCurrentEvent) <= 0) {
+      AliError(Form("fails to read ESD object for event %d: cannot get the run number",fCurrentEvent));
+      return -1;
+    }
+  }
+  
+  return fESDEvent->GetRunNumber();
+}
+
+//_____________________________________________________________________________
 Int_t AliMUONRecoCheck::NumberOfEvents() const
 {
   /// Return the number of events
@@ -148,13 +163,15 @@ Int_t AliMUONRecoCheck::NumberOfEvents() const
 }
 
 //_____________________________________________________________________________
-AliMUONVTrackStore* AliMUONRecoCheck::ReconstructedTracks(Int_t event)
+AliMUONVTrackStore* AliMUONRecoCheck::ReconstructedTracks(Int_t event, Bool_t refit)
 {
   /// Return a track store containing the reconstructed tracks (converted into 
-  /// MUONTrack objects) for a given event
+  /// MUONTrack objects) for a given event.
+  /// Track parameters at each clusters are computed or not depending on the flag "refit".
+  /// If not, only the track parameters at first cluster are valid.
   
   if (!fESDEventOwner) {
-    MakeReconstructedTracks();
+    if (fRecoTrackStore == 0x0) MakeReconstructedTracks(refit);
     return fRecoTrackStore;
   }
 
@@ -170,7 +187,7 @@ AliMUONVTrackStore* AliMUONRecoCheck::ReconstructedTracks(Int_t event)
       AliError(Form("fails to read ESD object for event %d", event));
       return 0x0;
     }
-    MakeReconstructedTracks();
+    MakeReconstructedTracks(refit);
     return fRecoTrackStore;
   }
 }
@@ -182,7 +199,7 @@ AliMUONVTrackStore* AliMUONRecoCheck::TrackRefs(Int_t event)
   /// MUONTrack objects) for a given event
   
   if (!fESDEventOwner) {
-    MakeTrackRefs();
+    if (fTrackRefStore == 0x0) MakeTrackRefs();
     return fTrackRefStore;
   }
 
@@ -208,8 +225,10 @@ AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event)
   /// Return a track store containing the reconstructible tracks for a given event
 
   if (!fESDEventOwner) {
-    if (TrackRefs(event) == 0x0) return 0x0;
-    MakeReconstructibleTracks();
+    if (fRecoTrackRefStore == 0x0) {
+      if (TrackRefs(event) == 0x0) return 0x0;
+      MakeReconstructibleTracks();
+    }
     return fRecoTrackRefStore;
   }
 
@@ -227,7 +246,7 @@ AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event)
 }
 
 //_____________________________________________________________________________
-void AliMUONRecoCheck::MakeReconstructedTracks()
+void AliMUONRecoCheck::MakeReconstructedTracks(Bool_t refit)
 {
   /// Make reconstructed tracks
   if (!(fRecoTrackStore = AliMUONESDInterface::NewTrackStore())) return;
@@ -236,7 +255,7 @@ void AliMUONRecoCheck::MakeReconstructedTracks()
   Int_t nTracks = (Int_t) fESDEvent->GetNumberOfMuonTracks();
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     AliESDMuonTrack* esdTrack = fESDEvent->GetMuonTrack(iTrack);
-    if (esdTrack->ContainTrackerData()) AliMUONESDInterface::Add(*esdTrack, *fRecoTrackStore);
+    if (esdTrack->ContainTrackerData()) AliMUONESDInterface::Add(*esdTrack, *fRecoTrackStore, refit);
   }
   
 }

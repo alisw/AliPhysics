@@ -192,6 +192,9 @@ Every option/parameter can be set one by one. Here is the complete list of avail
 - <code>SetDefaultBendingReso(Int_t iCh, Double_t val)</code>: Set the default bending resolution of chamber iCh
 - <code>SetMaxTriggerTracks(Int_t val)</code>: Set the maximum number of trigger tracks above which the tracking is cancelled
 - <code>SetMaxTrackCandidates(Int_t val)</code>: Set the maximum number of track candidates above which the tracking abort
+- <code>SetManuOccupancyLimits(float low, float high)</code>: Set the limits for the acceptable manu occupancy
+- <code>SetBuspatchOccupancyLimits(float low, float high)</code>: Set the limits for the acceptable bp occupancy
+- <code>SetDEOccupancyLimits(float low, float high)</code>: Set the limits for the acceptable DE occupancy
 
 We can use the method Print("FULL") to printout all the parameters and options set in the class AliMUONRecoParam.
 
@@ -244,7 +247,21 @@ The AliESDMuonPad objects contain:
 \section rec_s6 Conversion between MUON/ESD objects
 
 Every conversion between MUON objects (AliMUONVDigit/AliMUONVCluster/AliMUONTrack) and ESD objects
-(AliESDMuonPad/AliESDMuonCluster/AliESDMuonTrack) is done by the class AliMUONESDInterface. There are 2 ways of using this class:
+(AliESDMuonPad/AliESDMuonCluster/AliESDMuonTrack) is done by the class AliMUONESDInterface.
+
+WARNING: some of these conversions require input from outside, namely the magnetic field map, the geometry, the reconstruction parameters
+and/or the mapping segmentation. In particular:
+- The conversion of ESDPads to MUON digits requires the mapping segmentation.
+- The conversion of a MUON track to an ESD track requires the magnetic field and the geometry to extrapolate the track parameters at vertex
+and compute the correction of multiple scattering and energy loss in the front absorber.
+- While converting an ESD track to a MUON track, the track is refitted by using the cluster position stored in ESD in order to recover the
+track parameters at each cluster. This refitting needs both the magnetic field and the reconstruction parameters initially used to
+reconstruct the tracks to be correct. The reconstruction parameters can be passed to the interface by using the static method
+AliMUONESDTrack::ResetTracker(const AliMUONRecoParam* recoParam, Bool_t info). The refitting can however be disconnected by user (using flag
+in the fonction parameters). In that case, none of these external inputs is necessary anymore but only the track parameters at first cluster,
+which is then copied directly from the ESD, is meaningful.
+
+There are 2 ways of using this class:
 
 1) Using the static methods to convert the objects one by one (and possibly put them into the provided store):
 - Get track parameters at vertex, at DCA, ...:
@@ -272,20 +289,21 @@ Every conversion between MUON objects (AliMUONVDigit/AliMUONVCluster/AliMUONTrac
   AliMUONESDInterface::MUONToESD(*locTrg, esdTrack, trackId, triggerTrack);
 \endverbatim
 
-- Convert an AliESDMuonTrack to an AliMUONTrack:
+- Convert an AliESDMuonTrack to an AliMUONTrack (the parameters at each clusters are recomputed or not according to the flag "refit".
+if not, only the parameters at first cluster are relevant):
 \verbatim
   ...
   AliESDMuonTrack* esdTrack = esd->GetMuonTrack(iTrack);
   AliMUONTrack track;
-  AliMUONESDInterface::ESDToMUON(*esdTrack, track);
+  AliMUONESDInterface::ESDToMUON(*esdTrack, track, refit);
 \endverbatim
   
-- Add an AliESDMuonTrack (converted into AliMUONTrack object) into an AliMUONVTrackStore:
+- Add an AliESDMuonTrack (converted into AliMUONTrack object) into an AliMUONVTrackStore (same remark as above about the flag "refit"):
 \verbatim
   ...
   AliESDMuonTrack* esdTrack = esd->GetMuonTrack(iTrack);
   AliMUONVTrackStore *trackStore = AliMUONESDInteface::NewTrackStore();
-  AliMUONTrack* trackInStore = AliMUONESDInterface::Add(*esdTrack, *trackStore);
+  AliMUONTrack* trackInStore = AliMUONESDInterface::Add(*esdTrack, *trackStore, refit);
 \endverbatim
 
 2) Loading an entire ESDEvent and using the finders and/or the iterators to access the corresponding MUON objects:
@@ -333,10 +351,11 @@ Note: You can change (via static method) the type of the store this class is usi
 \section rec_s7 ESD cluster/track refitting
 
 We can re-clusterize and re-track the clusters/tracks stored into the ESD by using the class AliMUONRefitter. This class gets the MUON objects
-to be refitted from an instance of AliMUONESDInterface (see section @ref rec_s6), then uses the reconstruction framework to refit the
-objects. The reconstruction parameters are still set via the class AliMUONRecoParam (see section @ref rec_s5). The initial data are not changed.
-Results are stored into new MUON objects. The aim of the refitting is to be able to study effects of changing the reconstruction parameter, the
-calibration parameters or the alignment without re-running the entire reconstruction.
+to be refitted from an instance of AliMUONESDInterface (see section @ref rec_s6), then uses the reconstruction framework to refit them. The new
+reconstruction parameters are still set via the class AliMUONRecoParam (see section @ref rec_s4) and passed to refitter through its constructor.
+The old reconstruction parameters, the mapping, the magnetic field and/or the geometry may also be needed to convert the ESD objects to MUON ones
+and/or to refit them. The initial data are not changed. Results are stored into new MUON objects. The aim of the refitting is to be able to
+study effects of changing the reconstruction parameter, the calibration parameters or the alignment without re-running the entire reconstruction.
 
 To use this class we first have to connect it to the ESD interface containing MUON objects:
 \verbatim

@@ -33,20 +33,19 @@
 #include <TMath.h>
 
 // STEER includes
-#include "AliMagF.h"
-#include "AliTracker.h"
 #include "AliESDEvent.h"
 #include "AliRecoParam.h"
 #include "AliCDBManager.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
+#include "AliHeader.h"
 
 // MUON includes
 #include "AliMpConstants.h"
-#include "AliMpCDB.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpPad.h"
+#include "AliMUONCDB.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONPadInfo.h"
@@ -63,13 +62,12 @@
 
 const Int_t printLevel = 1;
 
-void Prepare();
 TTree* GetESDTree(TFile *esdFile);
 UInt_t buildClusterMap(AliMUONTrack &track);
 
 //-----------------------------------------------------------------------
-void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root",
-		     const char* inFileName = "galice.root", const char* outFileName = "clusterInfo.root")
+void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root", const char* inFileName = "galice.root",
+		     const TString ocdbPath = "local://$ALICE_ROOT/OCDB", const char* outFileName = "clusterInfo.root")
 {
   /// 1) if (esdFileName != "")
   /// loop over ESD event and fill AliMUONClusterInfo object with cluster + corresponding track parameters;
@@ -97,18 +95,21 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
   AliMUONVClusterStore* clusterStore = 0x0;
   AliMUONVDigitStore* digitStore = 0x0;
   
-  // prepare the refitting during ESD->MUON conversion
-  Prepare();
-  
   // open the ESD file and tree and connect the ESD event
   TFile* esdFile = 0x0;
   TTree* esdTree = 0x0;
   AliESDEvent* esd = 0x0;
+  Int_t runNumber = -1;
   if (useESD) {
     esdFile = TFile::Open(esdFileName);
     esdTree = GetESDTree(esdFile);
     esd = new AliESDEvent();
     esd->ReadFromTree(esdTree);
+    if (esdTree->GetEvent(0) <= 0) {
+      Error("MUONClusterInfo", "no ESD object found for event 0");
+      return;
+    }
+    runNumber = esd->GetRunNumber();
   }
   
   // get the cluster from RecPoints
@@ -119,7 +120,23 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
     MUONLoader = rl->GetDetectorLoader("MUON");
     MUONLoader->LoadRecPoints("READ");   
     MUONLoader->LoadDigits("READ");
+    rl->LoadHeader();
+    if (runNumber < 0) runNumber = rl->GetHeader()->GetRun();
   }
+  
+  // load necessary data from OCDB
+  AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+  AliCDBManager::Instance()->SetRun(runNumber);
+  if (!AliMUONCDB::LoadField()) return;
+  if (!AliMUONCDB::LoadMapping(kTRUE)) return;
+  AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
+  if (!recoParam) return;
+  
+  // reset tracker for track restoring initial track parameters at cluster
+  AliMUONESDInterface::ResetTracker(recoParam);
+  
+  // prepare access to calibration data
+  calibData = new AliMUONCalibrationData(runNumber);
   
   // prepare the output tree
   gROOT->cd();
@@ -180,10 +197,6 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
 	treeD->GetEvent(0);
       }
     }
-    
-    // prepare access to calibration data
-    if (useESD && !calibData) calibData = new AliMUONCalibrationData(esd->GetESDRun()->GetRunNumber());
-    else if (!calibData) calibData = new AliMUONCalibrationData(rl->GetRunNumber());
     
     //----------------------------------------------//
     // ------------- fill cluster info ------------ //
@@ -372,6 +385,7 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
   if (useRecPoints) {
     MUONLoader->UnloadDigits();
     MUONLoader->UnloadRecPoints();
+    rl->UnloadHeader();
     delete rl;
   }
   if (useESD) {
@@ -379,36 +393,6 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
     delete esd;
   }
   cout<<endl<<"time to fill cluster/track info: R:"<<timer.RealTime()<<" C:"<<timer.CpuTime()<<endl<<endl;
-}
-
-//-----------------------------------------------------------------------
-void Prepare()
-{
-  /// Set the magnetic field, the mapping and the reconstruction parameters
-  
-  gRandom->SetSeed(0);
-  
-  // set mag field
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
-    printf("Loading field map...\n");
-    AliMagF* field = new AliMagF("Maps","Maps",1.,1.,AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
-  }
-  
-  // Load mapping
-  AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  man->SetRun(0);
-  if ( ! AliMpCDB::LoadDDLStore() ) {
-    Error("Prepare","Could not access mapping from OCDB !");
-    exit(-1);
-  }
-  
-  // Reset the reconstruction parameters for track refitting if needed
-  // (by default will use Kalman filter + Smoother)
-  //  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
-  //  AliMUONESDInterface::ResetTracker(muonRecoParam);
-  
 }
 
 //-----------------------------------------------------------------------

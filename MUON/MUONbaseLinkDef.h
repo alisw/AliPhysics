@@ -41,9 +41,6 @@
 #pragma link C++ class AliMUONDigitMaker+;
 #pragma link C++ class AliMUONRawWriter+;
 
-// calibration access
-#pragma link C++ class AliMUONCDB+;
-
 #endif
 
 

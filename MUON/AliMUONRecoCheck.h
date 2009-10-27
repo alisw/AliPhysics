@@ -27,13 +27,16 @@ public:
   virtual ~AliMUONRecoCheck();
 
   /// Return the list of reconstructed tracks
-  AliMUONVTrackStore* ReconstructedTracks(Int_t event);
+  AliMUONVTrackStore* ReconstructedTracks(Int_t event, Bool_t refit = kTRUE);
   
   /// Return reference muon tracks
   AliMUONVTrackStore* TrackRefs(Int_t event);
 
   /// Return reconstructible reference tracks
   AliMUONVTrackStore* ReconstructibleTracks(Int_t event);
+  
+  /// Return the run number of the current ESD event
+  Int_t GetRunNumber();
   
   /// Return the total number of events.
   Int_t NumberOfEvents() const;
@@ -52,7 +55,7 @@ private:
 
   void ResetStores();
   
-  void MakeReconstructedTracks();
+  void MakeReconstructedTracks(Bool_t refit);
   
   void MakeTrackRefs();
   

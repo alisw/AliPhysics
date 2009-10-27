@@ -40,16 +40,14 @@
 
 #include "AliMUONAlignment.h"
 #include "AliMUONTrack.h"
-#include "AliMUONTrackExtrap.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONESDInterface.h"
+#include "AliMUONCDB.h"
 
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-#include "AliMagF.h"
-#include "AliTracker.h"
-#include "AliGRPManager.h"
 #include "AliCDBManager.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
@@ -80,21 +78,16 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
     }
   }
   
-  // CDB manager
+  // load necessary data from OCDB
   AliCDBManager* cdbManager = AliCDBManager::Instance();
   cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdbManager->SetRun(0);
-
-  // set  mag field 
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
-    printf("Loading field map...\n");
-    AliGRPManager *grpMan = new AliGRPManager();
-    grpMan->ReadGRPEntry();
-    grpMan->SetMagField();
-    delete grpMan;
-  }
-  // set the magnetic field for track extrapolations
-  AliMUONTrackExtrap::SetField();
+  if (!AliMUONCDB::LoadField()) return;
+  AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
+  if (!recoParam) return;
+  
+  // reset tracker for restoring initial track parameters at cluster
+  AliMUONESDInterface::ResetTracker(recoParam);
 
   Double_t parameters[4*156];
   Double_t errors[4*156];

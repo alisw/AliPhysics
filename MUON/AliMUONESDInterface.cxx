@@ -49,6 +49,8 @@
 #include <TMath.h>
 #include <TMatrixD.h>
 #include <Riostream.h>
+#include <TGeoGlobalMagField.h>
+#include <TVirtualMagField.h>
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONESDInterface
@@ -141,7 +143,7 @@ void AliMUONESDInterface::Reset()
 }
 
 //_____________________________________________________________________________
-void AliMUONESDInterface::LoadEvent(AliESDEvent& esdEvent)
+void AliMUONESDInterface::LoadEvent(AliESDEvent& esdEvent, Bool_t refit)
 {
   /// Extract MUON data from the given ESD event
   
@@ -162,7 +164,7 @@ void AliMUONESDInterface::LoadEvent(AliESDEvent& esdEvent)
     if (!esdTrack->ContainTrackerData()) continue;
     
     // add it to track store
-    AliMUONTrack* track = Add(*esdTrack, *fTracks);
+    AliMUONTrack* track = Add(*esdTrack, *fTracks, refit);
     
     // prepare cluster map
     AliMpExMap* cMap = new AliMpExMap;
@@ -435,7 +437,7 @@ AliMUONVCluster* AliMUONESDInterface::FindClusterInTrack(const AliMUONTrack& tra
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 
 //_____________________________________________________________________________
-void AliMUONESDInterface::ResetTracker(const AliMUONRecoParam* recoParam)
+void AliMUONESDInterface::ResetTracker(const AliMUONRecoParam* recoParam, Bool_t info)
 {
   /// Reset the MUON tracker using "recoParam" if provided.
   /// If not provided, will use Kalman filter + Smoother
@@ -447,18 +449,27 @@ void AliMUONESDInterface::ResetTracker(const AliMUONRecoParam* recoParam)
     
     fgRecoParam = new AliMUONRecoParam(*recoParam);
     
+    if (info) cout<<"I-AliMUONESDInterface::ResetTracker: will refit tracks with provided RecoParam:"<<endl;
+    
   } else {
     
     fgRecoParam = AliMUONRecoParam::GetLowFluxParam();
     
     cout<<"W-AliMUONESDInterface::ResetTracker: RecoParam not provided. Will use default LowFlux parametrization:"<<endl;
+    
+  }
+  
+  // print useful parameters for refitting
+  if (info) {
     cout<<"                                     --> Tracking mode = "<<fgRecoParam->GetTrackingMode()<<endl;
     if (fgRecoParam->UseSmoother()) cout<<"                                     --> Use Smoother"<<endl;
     else cout<<"                                     --> Do not use smoother"<<endl;
     cout<<"                                     --> Vertex dispersion in bending direction = "
-        <<fgRecoParam->GetBendingVertexDispersion()<<" cm"<<endl;
-    
+    <<fgRecoParam->GetBendingVertexDispersion()<<" cm"<<endl;
   }
+  
+  if (!TGeoGlobalMagField::Instance()->GetField())
+    cout<<"W-AliMUONESDInterface::ResetTracker: Magnetic field has not been set --> assume field is OFF"<<endl;
   
   fgTracker = AliMUONTracker::CreateTrackReconstructor(fgRecoParam,0x0);
   
@@ -642,11 +653,12 @@ void AliMUONESDInterface::SetParamCov(const AliMUONTrackParam& trackParam, AliES
 }
 
 //_____________________________________________________________________________
-void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrack& track)
+void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrack& track, Bool_t refit)
 {
   /// Transfert data from ESDMuon track to MUON track.
-  /// The track parameters at each cluster are obtained by refitting the track
+  /// If refit = kTRUE, the track parameters at each cluster are obtained by refitting the track
   /// or by extrapolating the parameters at the first one if the refit failed.
+  /// If refit = kFALSE, only the track parameters at first cluster are valid.
   /// note: You can set the recoParam used to refit the MUON track with ResetTracker(...);
   ///       By default we use Kalman filter + Smoother
   
@@ -708,15 +720,20 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
       esdCluster = (AliESDMuonCluster*) esdTrack.GetClusters().After(esdCluster);
     }
     
-    // recompute parameters at first cluster in case of those stored
-    // in ESD are not related to the most upstream cluster
-    AliMUONTrackParam *firstTrackParam = (AliMUONTrackParam*) track.GetTrackParamAtCluster()->First();
-    firstTrackParam->SetZ(esdTrack.GetZUncorrected()); // reset the z to the one stored in ESD
-    AliMUONTrackExtrap::ExtrapToZCov(firstTrackParam,firstTrackParam->GetClusterPtr()->GetZ());
-    
     // refit the track to get better parameters and covariances at each cluster (temporary disable track improvement)
-    if (!fgTracker) ResetTracker();
-    if (!fgTracker->RefitTrack(track, kFALSE) && track.GetGlobalChi2() < AliMUONTrack::MaxChi2()) track.UpdateCovTrackParamAtCluster();
+    if (refit) {
+      
+      AliMUONTrackParam *firstTrackParam = (AliMUONTrackParam*) track.GetTrackParamAtCluster()->First();
+      AliMUONTrackParam paramSave(*firstTrackParam);
+      
+      if (!fgTracker) ResetTracker();
+      
+      if (!fgTracker->RefitTrack(track, kFALSE) && track.GetGlobalChi2() < AliMUONTrack::MaxChi2()) {
+	*firstTrackParam = paramSave;
+	track.UpdateCovTrackParamAtCluster();
+      }
+      
+    }
     
   } else {
     
@@ -798,6 +815,11 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonCluster& esdCluster, AliMUON
 void AliMUONESDInterface::ESDToMUON(const AliESDMuonPad& esdPad, AliMUONVDigit& digit)
 {
   /// Transfert data from ESDMuon pad to MUON digit
+  
+  if (!AliMpSegmentation::Instance(kFALSE)) {
+    cout<<"E-AliMUONESDInterface::ESDToMUON: need mapping segmentation to convert ESD pad to MUON digit"<<endl;
+    return;
+  }
   
   const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(esdPad.GetDetElemId(), esdPad.GetManuId());  
   AliMpPad pad = seg->PadByLocation(esdPad.GetManuId(), esdPad.GetManuChannel(), kFALSE);
@@ -972,13 +994,14 @@ void AliMUONESDInterface::MUONToESD(const AliMUONVDigit& digit, AliESDMuonPad& e
 }
 
 //___________________________________________________________________________
-AliMUONTrack* AliMUONESDInterface::Add(const AliESDMuonTrack& esdTrack, AliMUONVTrackStore& trackStore)
+AliMUONTrack* AliMUONESDInterface::Add(const AliESDMuonTrack& esdTrack, AliMUONVTrackStore& trackStore, Bool_t refit)
 {
   /// Create MUON track from ESDMuon track and add it to the store
+  /// Track parameters at each clusters are recomputed or not depending on the flag "refit"
   /// return a pointer to the track into the store (0x0 if the track already exist)
   if(trackStore.FindObject(esdTrack.GetUniqueID())) return 0x0;
   AliMUONTrack* track = trackStore.Add(AliMUONTrack());
-  ESDToMUON(esdTrack, *track);
+  ESDToMUON(esdTrack, *track, refit);
   return track;
 }
 

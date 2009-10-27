@@ -510,5 +510,6 @@ void AliMpCDB::UnloadAll()
   delete AliMpDDLStore::Instance(false);
   delete AliMpSegmentation::Instance(false);
   delete AliMpDEStore::Instance(false);
+  delete AliMpManuStore::Instance(false);
 }
 

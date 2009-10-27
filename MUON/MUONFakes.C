@@ -1,30 +1,24 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 // ROOT includes
-#include <TTree.h>
 #include <TFile.h>
 #include <TH1.h>
 #include <TCanvas.h>
 #include <Riostream.h>
 #include <TROOT.h>
 #include <TClonesArray.h>
-#include <TGeoGlobalMagField.h>
 #include <TArrayI.h>
 
 // STEER includes
 #include "AliLog.h"
-#include "AliMagF.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-#include "AliESDMuonCluster.h"
-#include "AliCDBPath.h"
-#include "AliCDBEntry.h"
 #include "AliCDBManager.h"
   
 // MUON includes
+#include "AliMUONCDB.h"
 #include "AliMUONTrack.h"
 #include "AliMUONVTrackStore.h"
 #include "AliMUONTrackParam.h"
-#include "AliMUONTrackExtrap.h"
 #include "AliMUONESDInterface.h"
 #include "AliMUONRecoCheck.h"
 #include "AliMUONVCluster.h"
@@ -40,18 +34,17 @@
 /// Results are saved in the root file Fakes.root
 /// Results are relevent provided that you use the same recoParams as for the reconstruction
 
-void Prepare(AliMUONRecoParam *&recoParam, Double_t &sigmaCut);
-TTree* GetESDTree(TFile *esdFile);
 Bool_t TrackMatched(AliMUONTrack &track, AliMUONTrack &trackRef, Float_t &fractionOfMatchCluster, Double_t sigmaCut);
 Bool_t IsRecontructible(AliMUONTrack &track, AliMUONRecoParam &recoParam);
-AliMUONTrack* MatchWithTrackRef(AliESDMuonTrack &muonTrack, AliMUONVTrackStore &trackRefStore,
+AliMUONTrack* MatchWithTrackRef(AliMUONTrack &muonTrack, AliMUONVTrackStore &trackRefStore,
 				Float_t &fractionOfMatchCluster, Bool_t useLabel, Double_t sigmaCut);
 Int_t RemoveConnectedFakes(AliMUONVTrackStore &fakeTrackStore, AliMUONVTrackStore &trackRefStore, AliMUONRecoParam &recoParam,
 			   Bool_t useLabel, Double_t sigmaCut, TH1F &hFractionOfConnectedClusters);
 
 //-----------------------------------------------------------------------
 void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent = -1,
-	       const TString esdFileName = "AliESDs.root", const TString SimDir = "./generated/")
+	       const TString esdFileName = "AliESDs.root", const TString SimDir = "./generated/",
+	       const TString ocdbPath = "local://$ALICE_ROOT/OCDB")
 {
   
   //Reset ROOT and connect tree file
@@ -86,19 +79,17 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
   TH1F *hPhiM = new TH1F("hPhiM"," matched track phi distribution",100,-1.,9.);
   TH1F *hPhiF = new TH1F("hPhiF"," fake track phi distribution",100,-1.,9.);
   
-  // prepare for analysis
-  AliMUONRecoParam *recoParam = 0x0;
-  Double_t sigmaCut = -1;
-  Prepare(recoParam, sigmaCut);
-  
-  // link to reconstructed tracks
-  TFile* esdFile = TFile::Open(esdFileName);
-  TTree* esdTree = GetESDTree(esdFile);
-  AliESDEvent* esd = new AliESDEvent();
-  esd->ReadFromTree(esdTree);
-  
-  // link to simulated tracks
+  // link to reconstructed and simulated tracks
   AliMUONRecoCheck rc(esdFileName, SimDir);
+  
+  // load necessary data from OCDB
+  AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+  AliCDBManager::Instance()->SetRun(rc.GetRunNumber());
+  AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
+  if (!recoParam) return;
+  
+  // get sigma cut from recoParam to associate clusters with TrackRefs in case the label are not used
+  Double_t sigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking();
   
   // initialize global counters
   Int_t nReconstructibleTracks = 0;
@@ -118,18 +109,13 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
   
   // Loop over ESD events
   FirstEvent = TMath::Max(0, FirstEvent);
-  LastEvent = (LastEvent>=0) ? TMath::Min((Int_t)esdTree->GetEntries() - 1, LastEvent) : (Int_t)esdTree->GetEntries() - 1;
+  LastEvent = (LastEvent>=0) ? TMath::Min(rc.NumberOfEvents() - 1, LastEvent) : rc.NumberOfEvents() - 1;
   for (Int_t iEvent = FirstEvent; iEvent <= LastEvent; iEvent++) {
     
-    // get the ESD of current event
-    esdTree->GetEvent(iEvent);
-    if (!esd) {
-      Error("CheckESD", "no ESD object found for event %d", iEvent);
-      return;
-    }
-    
-    // convert TrackRef to MUON tracks
+    // get reconstructed and simulated tracks
+    AliMUONVTrackStore* muonTrackStore = rc.ReconstructedTracks(iEvent, kFALSE);
     AliMUONVTrackStore* trackRefStore = rc.TrackRefs(iEvent);
+    if (!muonTrackStore || !trackRefStore) continue;
     
     // count the number of reconstructible tracks
     TIter next(trackRefStore->CreateIterator());
@@ -142,22 +128,26 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
     Int_t nTrackerTracks = 0;
     trackReconstructedYet = kFALSE;
     AliMUONVTrackStore *fakeTrackStore = AliMUONESDInterface::NewTrackStore();
+    const AliESDEvent* esd = rc.GetESDEvent();
     Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks() ;
     for (Int_t iTrack = 0; iTrack <  nTracks;  iTrack++) {
       
-      AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
+      AliESDMuonTrack* esdTrack = esd->GetMuonTrack(iTrack);
       
       // skip ghosts
-      if (!muonTrack->ContainTrackerData()) continue;
+      if (!esdTrack->ContainTrackerData()) continue;
       nTrackerTracks++;
       
+      // find the corresponding MUON track
+      AliMUONTrack* muonTrack = (AliMUONTrack*) muonTrackStore->FindObject(esdTrack->GetUniqueID());
+      
       // get track info
-      Int_t nClusters = muonTrack->GetNClusters();
-      Double_t normalizedChi2 = muonTrack->GetChi2() / (2. * muonTrack->GetNHit() - 5);
-      Double_t p = muonTrack->P();
-      Double_t pT = muonTrack->Pt();
-      Double_t eta = muonTrack->Eta();
-      Double_t phi = muonTrack->Phi();
+      Int_t nClusters = esdTrack->GetNClusters();
+      Double_t normalizedChi2 = esdTrack->GetChi2() / (2. * esdTrack->GetNHit() - 5);
+      Double_t p = esdTrack->P();
+      Double_t pT = esdTrack->Pt();
+      Double_t eta = esdTrack->Eta();
+      Double_t phi = esdTrack->Phi();
       
       // fill global histograms
       hNumberOfClusters->Fill(nClusters);
@@ -208,7 +198,7 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
 	hPhiF->Fill(phi);
 	
 	// store fake tracks
-	AliMUONESDInterface::Add(*muonTrack, *fakeTrackStore);
+	fakeTrackStore->Add(*muonTrack);
 	
       }
       
@@ -354,74 +344,6 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
   cout << "REMINDER: results are relevent provided that you use the same recoParams as for the reconstruction" << endl;
   cout << endl;
   
-  // clear memory
-  delete esd;
-  esdFile->Close();
-  delete recoParam;
-  
-}
-
-//-----------------------------------------------------------------------
-void Prepare(AliMUONRecoParam *&recoParam, Double_t &sigmaCut)
-{
-  /// Set the magnetic field and return recoParam and sigmaCut to associate cluster and trackRef
-  
-  // prepare OCDB access
-  AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  man->SetRun(0);
-  
-  // set  mag field 
-  // waiting for mag field in CDB 
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
-    printf("Loading field map...\n");
-    AliMagF* field = new AliMagF("Maps","Maps",1.,1., AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
-  }
-  // set the magnetic field for track extrapolations
-  AliMUONTrackExtrap::SetField();
-  
-  // Load initial reconstruction parameters from OCDB
-  AliCDBPath path("MUON","Calib","RecoParam");
-  AliCDBEntry *entry=man->Get(path.GetPath());
-  if(entry) {
-    recoParam = dynamic_cast<AliMUONRecoParam*>(entry->GetObject());
-    entry->SetOwner(0);
-    AliCDBManager::Instance()->UnloadFromCache(path.GetPath());
-  }
-  if (!recoParam) {
-    printf("Couldn't find RecoParam object in OCDB: create default one");
-    recoParam = AliMUONRecoParam::GetLowFluxParam();
-  }
-  
-  Info("MUONFakes", "\n recontruction parameters:");
-  recoParam->Print("FULL");
-  AliMUONESDInterface::ResetTracker(recoParam);
-  
-  // sigma cut to associate clusters with TrackRefs in case the label are not used
-  sigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking(); 
-  
-}
-
-//-----------------------------------------------------------------------
-TTree* GetESDTree(TFile *esdFile)
-{
-  /// Check that the file is properly open
-  /// Return pointer to the ESD Tree
-  
-  if (!esdFile || !esdFile->IsOpen()) {
-    Error("GetESDTree", "opening ESD file failed");
-    exit(-1);
-  }
-  
-  TTree* tree = (TTree*) esdFile->Get("esdTree");
-  if (!tree) {
-    Error("GetESDTree", "no ESD tree found");
-    exit(-1);
-  }
-  
-  return tree;
-  
 }
 
 //-----------------------------------------------------------------------
@@ -470,7 +392,7 @@ Bool_t IsRecontructible(AliMUONTrack &track, AliMUONRecoParam &recoParam)
 }
 
 //-----------------------------------------------------------------------
-AliMUONTrack* MatchWithTrackRef(AliESDMuonTrack &muonTrack, AliMUONVTrackStore &trackRefStore,
+AliMUONTrack* MatchWithTrackRef(AliMUONTrack &muonTrack, AliMUONVTrackStore &trackRefStore,
 				Float_t &fractionOfMatchCluster, Bool_t useLabel, Double_t sigmaCut)
 {
   /// Return if the trackRef matched with the reconstructed track and the fraction of matched clusters
@@ -481,27 +403,20 @@ AliMUONTrack* MatchWithTrackRef(AliESDMuonTrack &muonTrack, AliMUONVTrackStore &
   if (useLabel) { // by using the MC label
     
     // get the corresponding simulated track if any
-    Int_t label = muonTrack.GetLabel();
+    Int_t label = muonTrack.GetMCLabel();
     matchedTrackRef = (AliMUONTrack*) trackRefStore.FindObject(label);
     
     // get the fraction of matched clusters
     if (matchedTrackRef) {
       Int_t nMatchClusters = 0;
-      if (muonTrack.ClustersStored()) {
-	AliESDMuonCluster* cluster = (AliESDMuonCluster*) muonTrack.GetClusters().First();
-	while (cluster) {
-	  if (cluster->GetLabel() == label) nMatchClusters++;
-	  cluster = (AliESDMuonCluster*) muonTrack.GetClusters().After(cluster);
-	}
-      }
-      fractionOfMatchCluster = ((Float_t)nMatchClusters) / ((Float_t)muonTrack.GetNClusters());
+      Int_t nClusters = muonTrack.GetNClusters();
+      for (Int_t iCl = 0; iCl < nClusters; iCl++)
+	if (((AliMUONTrackParam*) muonTrack.GetTrackParamAtCluster()->UncheckedAt(iCl))->GetClusterPtr()->GetMCLabel() == label)
+	  nMatchClusters++;
+      fractionOfMatchCluster = ((Float_t)nMatchClusters) / ((Float_t)nClusters);
     }
     
   } else { // by comparing cluster/TrackRef positions
-    
-    // convert ESD track to MUON track
-    AliMUONTrack track;
-    AliMUONESDInterface::ESDToMUON(muonTrack,track);
     
     // look for the corresponding simulated track if any
     TIter next(trackRefStore.CreateIterator());
@@ -510,7 +425,7 @@ AliMUONTrack* MatchWithTrackRef(AliESDMuonTrack &muonTrack, AliMUONVTrackStore &
       
       // check compatibility
       Float_t f = 0.;
-      if (TrackMatched(track, *trackRef, f, sigmaCut)) {
+      if (TrackMatched(muonTrack, *trackRef, f, sigmaCut)) {
 	matchedTrackRef = trackRef;
 	fractionOfMatchCluster = f;
 	break;
@@ -547,7 +462,7 @@ Int_t RemoveConnectedFakes(AliMUONVTrackStore &fakeTrackStore, AliMUONVTrackStor
     
     // look for the most connected fake track
     AliMUONTrack *connectedFake = 0x0;
-    Float_t fractionOfConnectedClusters = 0.;
+    Double_t fractionOfConnectedClusters = 0.;
     TIter next2(fakeTrackStore.CreateIterator());
     AliMUONTrack* fakeTrack;
     while ( ( fakeTrack = static_cast<AliMUONTrack*>(next2()) ) ) {
@@ -567,7 +482,7 @@ Int_t RemoveConnectedFakes(AliMUONVTrackStore &fakeTrackStore, AliMUONVTrackStor
       if (nConnectedClusters == 0) continue;
       
       // check if it is the most connected fake track
-      Float_t f = ((Float_t)nConnectedClusters) / ((Float_t)fakeTrack->GetNClusters());
+      Double_t f = ((Double_t)nConnectedClusters) / ((Double_t)fakeTrack->GetNClusters());
       if (f > fractionOfConnectedClusters) {
 	connectedFake = fakeTrack;
 	fractionOfConnectedClusters = f;

@@ -29,28 +29,24 @@
 #include "TClonesArray.h"
 #include "TH1.h"
 #include "TFile.h"
-#include <TGeoManager.h>
 
 // STEER includes
-#include "AliRun.h"
-#include "AliHeader.h"
-#include "AliMC.h"
-#include "AliStack.h"
-#include "AliMagF.h"
-#include "AliTracker.h"
+#include "AliCDBManager.h"
 
 // MUON includes
+#include "AliMUONCDB.h"
 #include "AliMUONConstants.h"
 #include "AliMUONTrack.h"
 #include "AliMUONRecoCheck.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONVTrackStore.h"
 
 Int_t TrackCheck( Bool_t *compTrack);
 
-void MUONRecoCheck (Int_t nEvent = -1, char* geoFilename = "geometry.root", 
-                    char * pathSim="./generated/", char * esdFileName="AliESDs.root")
+void MUONRecoCheck (Int_t nEvent = -1, char * pathSim="./generated/", char * esdFileName="AliESDs.root",
+                    const char* ocdbPath = "local://$ALICE_ROOT/OCDB")
 {
   
   Bool_t compTrack[10];
@@ -60,7 +56,6 @@ void MUONRecoCheck (Int_t nEvent = -1, char* geoFilename = "geometry.root",
   Int_t iTrack = 0;
   AliMUONTrack* trackOK(0x0);
   Int_t trackID = 0;
-  Double_t sigmaCut = 4.;  // 4 sigmas cut
   Double_t maxChi2 = 999.;
   AliMUONTrackParam *trackParam;
   Double_t x1,y1,z1,pX1,pY1,pZ1,p1;
@@ -78,26 +73,20 @@ void MUONRecoCheck (Int_t nEvent = -1, char* geoFilename = "geometry.root",
   TH1F *hResMomVertex = new TH1F("hResMomVertex"," delta P vertex (GeV/c)",100,-10.,10);
   TH1F *hResMomFirstCluster = new TH1F("hResMomFirstCluster"," delta P first cluster (GeV/c)",100,-10.,10);
   
-  // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
-  if (!gGeoManager) {
-    TGeoManager::Import(geoFilename);
-    if (!gGeoManager) {
-      Error("MUONmass_ESD", "getting geometry from file %s failed", geoFilename);
-      return;
-    }
-  }
+  AliMUONRecoCheck rc(esdFileName, pathSim);
   
-  // set  mag field 
-  // waiting for mag field in CDB 
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
-    printf("Loading field map...\n");
-    AliMagF* field = new AliMagF("Maps","Maps",1.,1.,AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
-  }
+  // load necessary data from OCDB
+  AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+  AliCDBManager::Instance()->SetRun(rc.GetRunNumber());
+  AliMUONCDB::LoadField();
+  AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
+  if (!recoParam) return;
+  
   // set the magnetic field for track extrapolations
   AliMUONTrackExtrap::SetField();
 
-  AliMUONRecoCheck rc(esdFileName, pathSim);
+  // get sigma cut from recoParam to associate clusters with TrackRefs
+  Double_t sigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking();
   
   Int_t nevents = rc.NumberOfEvents();
   
@@ -112,7 +101,7 @@ void MUONRecoCheck (Int_t nEvent = -1, char* geoFilename = "geometry.root",
   {
     if (!(ievent%10)) printf(" **** event # %d  \n",ievent);
     
-    AliMUONVTrackStore* trackStore = rc.ReconstructedTracks(ievent);
+    AliMUONVTrackStore* trackStore = rc.ReconstructedTracks(ievent, kFALSE);
     AliMUONVTrackStore* trackRefStore = rc.ReconstructibleTracks(ievent);
     
     hReconstructible->Fill(trackRefStore->GetSize());

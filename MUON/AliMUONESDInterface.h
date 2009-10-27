@@ -44,7 +44,7 @@ public: // methods to play with internal objects
   
   virtual void Clear(Option_t* = "");
   
-  void LoadEvent(AliESDEvent& esdEvent);
+  void LoadEvent(AliESDEvent& esdEvent,  Bool_t refit = kTRUE);
   
   /// Return internal track store
   AliMUONVTrackStore* GetTracks() const {return fTracks;}
@@ -83,8 +83,8 @@ public: // methods to play with internal objects
   
 public: // static methods
   
-  /// Reset the MUON tracker (using "recoParam" if provided)
-  static void ResetTracker(const AliMUONRecoParam* recoParam = 0x0);
+  // Reset the MUON tracker (using "recoParam" if provided)
+  static void ResetTracker(const AliMUONRecoParam* recoParam = 0x0, Bool_t info = kTRUE);
   
   /// Set the version of track store
   static void UseTrackStore(TString name) {fgTrackStoreName = name;}
@@ -114,7 +114,7 @@ public: // static methods
   static void SetParamCov(const AliMUONTrackParam& trackParam, AliESDMuonTrack& esdTrack);
   
   // ESDMuon objects --> MUON objects conversion
-  static void ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrack& track);
+  static void ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrack& track, Bool_t refit = kTRUE);
   static void ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONLocalTrigger& locTrg);
   static void ESDToMUON(const AliESDMuonCluster& esdCluster, AliMUONVCluster& cluster);
   static void ESDToMUON(const AliESDMuonPad& esdPad, AliMUONVDigit& digit);
@@ -129,7 +129,7 @@ public: // static methods
   
   // Add ESD object into the corresponding MUON store
   // return a pointer to the corresponding MUON object into the store
-  static AliMUONTrack*    Add(const AliESDMuonTrack& esdTrack, AliMUONVTrackStore& trackStore);
+  static AliMUONTrack*    Add(const AliESDMuonTrack& esdTrack, AliMUONVTrackStore& trackStore, Bool_t refit = kTRUE);
   static void             Add(const AliESDMuonTrack& esdTrack, AliMUONVTriggerStore& triggerStore);
   static AliMUONVCluster* Add(const AliESDMuonCluster& esdCluster, AliMUONVClusterStore& clusterStore);
   static AliMUONVDigit*   Add(const AliESDMuonPad& esdPad, AliMUONVDigitStore& digitStore);
