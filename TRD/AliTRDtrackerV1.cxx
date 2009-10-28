@@ -177,7 +177,7 @@ Int_t AliTRDtrackerV1::Clusters2Tracks(AliESDEvent *esd)
     //AliInfo(Form("Processing supermodule %i ...", ism));
     ntracks += Clusters2TracksSM(ism, esd);
   }
-  AliInfo(Form("Number of found tracks : %d", ntracks));
+  AliInfo(Form("Number of tracks: !TRDin[%d]", ntracks));
   return ntracks;
 }
 
@@ -516,8 +516,8 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
       if (PropagateToX(tt, xTPC, fgkMaxStep)) seed->UpdateTrackParams(&tt, AliESDtrack::kTRDbackup);
     }
   }
-  AliInfo(Form("Number of loaded seeds: %d",nseed));
-  AliInfo(Form("Number of found tracks from loaded seeds: %d",found));
+  AliInfo(Form("Number of seeds: TRDout[%d]", nseed));
+  AliInfo(Form("Number of tracks: TRDrefit[%d]", found));
   
   return 0;
 }
@@ -555,8 +555,10 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     Int_t   index   = 0;
     AliTRDseedV1 *tracklet = GetTracklet(&t, iplane, index);
     if(!tracklet) continue;
-    if(!tracklet->IsOK()) AliWarning("tracklet not OK");
-    
+    if(!tracklet->IsOK()){ 
+      AliDebug(1, Form("Tracklet Det[%d] !OK", tracklet->GetDetector()));
+      continue;
+    }
     Double_t x  = tracklet->GetX();//GetX0();
     // reject tracklets which are not considered for inward refit
     if(x > t.GetX()+fgkMaxStep) continue;
@@ -2198,7 +2200,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
       //AliInfo(Form("Number of Tracks after iteration step %d: %d\n", iconf, ntracks));
       if(ntracks == kMaxTracksStack) break;
     }
-    if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 1) AliInfo(Form("Candidate TRD tracks %d in iteration %d.", ntracks, fSieveSeeding));
+    AliDebug(2, Form("Candidate TRD tracks %d in iteration %d.", ntracks, fSieveSeeding));
     
     if(!ntracks) break;
     
@@ -2348,7 +2350,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
 
         AliTRDtrackV1 *track = MakeTrack(&sseed[trackIndex*kNPlanes], trackParams);
         if(!track){
-          AliWarning("Fail to build a TRD Track.");
+          AliDebug(1, "Track building failed.");
           continue;
         }
       
@@ -2561,9 +2563,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
     x0[iLayer] = glb[0];
   }
 
-  if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 2){
-    AliInfo(Form("Making seeds Stack[%d] Config[%d] Tracks[%d]...", istack, config, ntracks));
-  }
+  AliDebug(2, Form("Making seeds Stack[%d] Config[%d] Tracks[%d]...", istack, config, ntracks));
 
   // Build seeding layers
   ResetSeedTB();
@@ -2603,9 +2603,12 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
         c[2] = fSeedTB[2]->GetNearestCluster(cond2);
         //printf("Found c[1] candidate 2 %p\n", c[2]);
         if(!c[2]) continue;
-              
-       	//AliInfo("Seeding clusters found. Building seeds ...");
-       	//for(Int_t i = 0; i < kNSeedPlanes; i++) printf("%i. coordinates: x = %6.3f, y = %6.3f, z = %6.3f\n", i, c[i]->GetX(), c[i]->GetY(), c[i]->GetZ());
+
+       	AliDebug(3, Form("Seeding clusters\n 0[%6.3f %6.3f %6.3f]\n 1[%6.3f %6.3f %6.3f]\n 2[%6.3f %6.3f %6.3f]\n 3[%6.3f %6.3f %6.3f].",
+          c[0]->GetX(), c[0]->GetY(), c[0]->GetZ(),
+          c[1]->GetX(), c[1]->GetY(), c[1]->GetZ(),
+          c[2]->GetX(), c[2]->GetY(), c[2]->GetZ(),
+          c[3]->GetX(), c[3]->GetY(), c[3]->GetZ()));
               
         for (Int_t il = 0; il < kNPlanes; il++) cseed[il].Reset();
       
@@ -2670,12 +2673,12 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
               <<"\n";
         }
         if(chi2[0] > fkReconstructor->GetRecoParam() ->GetChi2Z()/*7./(3. - sLayer)*//*iter*/){
-          //AliInfo(Form("Failed chi2 filter on chi2Z [%f].", chi2[0]));
+          AliDebug(3, Form("Filter on chi2Z [%f].", chi2[0]));
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
         }
         if(chi2[1] > fkReconstructor->GetRecoParam() ->GetChi2Y()/*1./(3. - sLayer)*//*iter*/){
-          //AliInfo(Form("Failed chi2 filter on chi2Y [%f].", chi2[1]));
+          AliDebug(3, Form("Filter on chi2Y [%f].", chi2[1]));
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
         }
@@ -2683,29 +2686,29 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
       
         // try attaching clusters to tracklets
         Int_t mlayers = 0; 
-	AliTRDcluster *cl = NULL;
+        AliTRDcluster *cl = NULL;
         for(int iLayer=0; iLayer<kNSeedPlanes; iLayer++){
           Int_t jLayer = planes[iLayer];
-	  Int_t nNotInChamber = 0;
+          Int_t nNotInChamber = 0;
           if(!cseed[jLayer].AttachClusters(stack[jLayer], kTRUE)) continue;
-	  if(/*fkReconstructor->IsHLT()*/kFALSE){ 
-	    cseed[jLayer].UpdateUsed();
-	    if(!cseed[jLayer].IsOK()) continue;
-	  }else{
-	    cseed[jLayer].Fit();
-	    cseed[jLayer].UpdateUsed();
-	    cseed[jLayer].ResetClusterIter();
-	    while((cl = cseed[jLayer].NextCluster())){
-	      if(!cl->IsInChamber()) nNotInChamber++;
-	    }
-	    //printf("clusters[%d], used[%d], not in chamber[%d]\n", cseed[jLayer].GetN(), cseed[jLayer].GetNUsed(), nNotInChamber);
-	    if(cseed[jLayer].GetN() - (cseed[jLayer].GetNUsed() + nNotInChamber) < 5) continue; // checking for Cluster which are not in chamber is a much stronger restriction on real data
-	  }
+          if(/*fkReconstructor->IsHLT()*/kFALSE){ 
+            cseed[jLayer].UpdateUsed();
+            if(!cseed[jLayer].IsOK()) continue;
+          }else{
+            cseed[jLayer].Fit();
+            cseed[jLayer].UpdateUsed();
+            cseed[jLayer].ResetClusterIter();
+            while((cl = cseed[jLayer].NextCluster())){
+              if(!cl->IsInChamber()) nNotInChamber++;
+            }
+            //printf("clusters[%d], used[%d], not in chamber[%d]\n", cseed[jLayer].GetN(), cseed[jLayer].GetNUsed(), nNotInChamber);
+            if(cseed[jLayer].GetN() - (cseed[jLayer].GetNUsed() + nNotInChamber) < 5) continue; // checking for Cluster which are not in chamber is a much stronger restriction on real data
+          }
           mlayers++;
         }
 
         if(mlayers < kNSeedPlanes){ 
-          //AliInfo(Form("Failed updating all seeds %d [%d].", mlayers, kNSeedPlanes));
+          AliDebug(2, Form("Found only %d tracklets out of %d. Skip.", mlayers, kNSeedPlanes));
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
         }
@@ -2716,7 +2719,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
           for(int iLayer=0; iLayer<kNPlanes-kNSeedPlanes; iLayer++){
             Int_t jLayer = planesExt[iLayer];
             if(!(chamber = stack[jLayer])) continue;
-            cseed[jLayer].AttachClusters(chamber, kTRUE);
+            if(!cseed[jLayer].AttachClusters(chamber, kTRUE)) continue;
             cseed[jLayer].Fit();
           }
           fTrackQuality[ntracks] = 1.; // dummy value
@@ -2737,7 +2740,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
         Double_t like = CookLikelihood(&cseed[0], planes); // to be checked
       
         if (TMath::Log(1.E-9 + like) < fkReconstructor->GetRecoParam() ->GetTrackLikelihood()){
-          //AliInfo(Form("Failed likelihood %f[%e].", TMath::Log(1.E-9 + like), like));
+          AliDebug(3, Form("Filter on likelihood %f[%e].", TMath::Log(1.E-9 + like), like));
           AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
           continue;
         }
@@ -2748,6 +2751,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
         fSeedLayer[ntracks]  = config;/*sLayer;*/
       
         // attach clusters to the extrapolation seeds
+        Int_t elayers(0);
         for(int iLayer=0; iLayer<kNPlanes-kNSeedPlanes; iLayer++){
           Int_t jLayer = planesExt[iLayer];
           if(!(chamber = stack[jLayer])) continue;
@@ -2761,6 +2765,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
           cseed[jLayer] = pseed;
           FitTiltedRieman(cseed,  kTRUE);
           cseed[jLayer].Fit(kTRUE);
+          elayers++;
         }
       
         // AliInfo("Extrapolation done.");
@@ -2783,9 +2788,17 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
               << "\n";
         }
               
-        if(fkReconstructor->GetRecoParam()->HasImproveTracklets() && ImproveSeedQuality(stack, cseed) < 4){
-          AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
-          continue;
+        if(fkReconstructor->GetRecoParam()->HasImproveTracklets()){ 
+          AliTRDseedV1 bseed[AliTRDgeometry::kNlayer];
+          for(Int_t jLayer=AliTRDgeometry::kNlayer; jLayer--;) bseed[jLayer] = cseed[jLayer];
+
+          if(ImproveSeedQuality(stack, cseed) < mlayers+elayers){
+            AliTRDtrackerDebug::SetCandidateNumber(AliTRDtrackerDebug::GetCandidateNumber() + 1);
+            AliDebug(3, "Filter on improve seeds.");
+          } else {
+            // store results
+            for(Int_t jLayer=AliTRDgeometry::kNlayer; jLayer--;) cseed[jLayer] = bseed[jLayer];
+          }
         }
         //AliInfo("Improve seed quality done.");
       
@@ -2978,61 +2991,80 @@ Int_t AliTRDtrackerV1::ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDs
   
   // make a local working copy
   AliTRDtrackingChamber *chamber = NULL;
-  AliTRDseedV1 bseed[6];
-  Int_t nLayers = 0;
-  for (Int_t jLayer = 0; jLayer < 6; jLayer++) bseed[jLayer] = cseed[jLayer];
-  
-  Float_t lastquality = 10000.0;
-  Float_t lastchi2    = 10000.0;
-  Float_t chi2        =  1000.0;
+  AliTRDseedV1 bseed[AliTRDgeometry::kNlayer];
+
+  Float_t quality(0.), 
+          lQuality[] = {1.e3, 1.e3, 1.e3, 1.e3, 1.e3, 1.e3};
+  Int_t rLayers(0);
+  for(Int_t jLayer=AliTRDgeometry::kNlayer; jLayer--;){ 
+    bseed[jLayer] = cseed[jLayer];
+    if(!bseed[jLayer].IsOK()) continue;
+    rLayers++;
+    lQuality[jLayer] = bseed[jLayer].GetQuality(kTRUE);
+    quality    += lQuality[jLayer];
+  }
+  Float_t chi2 = FitTiltedRieman(bseed, kTRUE);
 
   for (Int_t iter = 0; iter < 4; iter++) {
-    Float_t sumquality = 0.0;
-    Float_t squality[6];
-    Int_t   sortindexes[6];
-
-    for (Int_t jLayer = 0; jLayer < 6; jLayer++) {
-      squality[jLayer]  = bseed[jLayer].IsOK() ? bseed[jLayer].GetQuality(kTRUE) : 1000.;
-      sumquality += squality[jLayer];
-    }
-    if ((sumquality >= lastquality) || (chi2       >     lastchi2)) break;
-
-    nLayers = 0;
-    lastquality = sumquality;
-    lastchi2    = chi2;
-    if (iter > 0) for (Int_t jLayer = 0; jLayer < 6; jLayer++) cseed[jLayer] = bseed[jLayer];
-
-    TMath::Sort(6, squality, sortindexes, kFALSE);
-    for (Int_t jLayer = 5; jLayer > 1; jLayer--) {
-      Int_t bLayer = sortindexes[jLayer];
+    // Try better cluster set
+    Int_t nLayers(0); Float_t qualitynew(0.);
+    Int_t  indexes[6];
+    TMath::Sort(Int_t(AliTRDgeometry::kNlayer), lQuality, indexes, kFALSE);
+    for(Int_t jLayer=AliTRDgeometry::kNlayer; jLayer--;) {
+      Int_t bLayer = indexes[jLayer];
+      bseed[bLayer].Reset("c");
       if(!(chamber = stack[bLayer])) continue;
-      bseed[bLayer].AttachClusters(chamber, kTRUE);
+      if(!bseed[bLayer].AttachClusters(chamber, kTRUE)) continue;
       bseed[bLayer].Fit(kTRUE);
-      if(bseed[bLayer].IsOK()) nLayers++;
+      if(!bseed[bLayer].IsOK()) continue;
+      nLayers++;
+      lQuality[jLayer] = bseed[jLayer].GetQuality(kTRUE);
+      qualitynew    += lQuality[jLayer];
     }
+    if(rLayers > nLayers){
+      AliDebug(1, Form("Lost %d tracklets while improving.", rLayers-nLayers));
+      break;
+    } else rLayers=nLayers;
 
-    chi2 = FitTiltedRieman(bseed, kTRUE);
+    if(qualitynew >= quality){ 
+      AliDebug(4, Form("Quality worsen in iter[%d].", iter));
+      break;
+    } else quality = qualitynew;
+
+    // try improve track parameters
+    AliTRDseedV1 tseed[AliTRDgeometry::kNlayer];
+    for(Int_t jLayer=AliTRDgeometry::kNlayer; jLayer--;) tseed[jLayer]=bseed[jLayer];
+    Float_t chi2new = FitTiltedRieman(tseed, kTRUE);
+    if(chi2new > chi2){ 
+      AliDebug(4, Form("Chi2 worsen in iter[%d].", iter));
+      break;
+    } else chi2 = chi2new;
+
+    // store better tracklets
+    for(Int_t jLayer=AliTRDgeometry::kNlayer; jLayer--;) bseed[jLayer]=tseed[jLayer];
+
+
     if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) >= 7 && fkReconstructor->IsDebugStreaming()){
       Int_t eventNumber 		= AliTRDtrackerDebug::GetEventNumber();
       Int_t candidateNumber = AliTRDtrackerDebug::GetCandidateNumber();
       TLinearFitter *tiltedRieman = GetTiltedRiemanFitter();
       TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
       cstreamer << "ImproveSeedQuality"
-    << "EventNumber=" 		<< eventNumber
-    << "CandidateNumber="	<< candidateNumber
-    << "Iteration="				<< iter
-    << "S0.="							<< &bseed[0]
-    << "S1.="							<< &bseed[1]
-    << "S2.="							<< &bseed[2]
-    << "S3.="							<< &bseed[3]
-    << "S4.="							<< &bseed[4]
-    << "S5.="							<< &bseed[5]
-    << "FitterT.="				<< tiltedRieman
-    << "\n";
+        << "EventNumber=" 		<< eventNumber
+        << "CandidateNumber="	<< candidateNumber
+        << "Iteration="				<< iter
+        << "S0.="							<< &bseed[0]
+        << "S1.="							<< &bseed[1]
+        << "S2.="							<< &bseed[2]
+        << "S3.="							<< &bseed[3]
+        << "S4.="							<< &bseed[4]
+        << "S5.="							<< &bseed[5]
+        << "FitterT.="				<< tiltedRieman
+        << "\n";
     }
   } // Loop: iter
   // we are sure that at least 2 tracklets are OK !
-  return nLayers+2;
+  return rLayers;
 }
 
 //_________________________________________________________________________

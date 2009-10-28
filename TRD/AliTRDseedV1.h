@@ -53,7 +53,9 @@ class AliTRDseedV1 : public AliTRDtrackletBase
 
 public:
   enum ETRDtrackletBuffers {    
-    kNtb       = 31     // max clusters/pad row
+    kNbits     = 6      // bits to store number of clusters
+   ,kMask      = 0x3f   // bit mask
+   ,kNtb       = 31     // max clusters/pad row
    ,kNclusters = 2*kNtb // max number of clusters/tracklet
    ,kNslices   = 10     // max dEdx slices
   };
@@ -124,10 +126,10 @@ public:
   Int_t     GetIndexes(Int_t i) const{ return i<0 || i>=kNclusters ? -1 : fIndexes[i];}
   Int_t     GetLabels(Int_t i) const { return fLabels[i];}  
   Float_t   GetMomentum(Float_t *err = NULL) const;
-  Int_t     GetN() const             { return (Int_t)fN&0x1f;}
+  Int_t     GetN() const             { return (Int_t)fN&kMask;}
   Int_t     GetN2() const            { return GetN();}
-  Int_t     GetNUsed() const         { return Int_t((fN>>5)&0x1f);}
-  Int_t     GetNShared() const       { return Int_t((fN>>10)&0x1f);}
+  Int_t     GetNUsed() const         { return Int_t((fN>>kNbits)&kMask);}
+  Int_t     GetNShared() const       { return Int_t(((fN>>kNbits)>>kNbits)&kMask);}
   Float_t   GetQuality(Bool_t kZcorr) const;
   Float_t   GetPadLength() const     { return fPad[0];}
   Float_t   GetPadWidth() const      { return fPad[1];}
@@ -161,7 +163,7 @@ public:
   inline AliTRDcluster* PrevCluster();
   void      Print(Option_t *o = "") const;
   inline void ResetClusterIter(Bool_t forward = kTRUE);
-  void      Reset();
+  void      Reset(Option_t *opt="");
 
   void      SetC(Float_t c)          { fC = c;}
   void      SetChi2(Float_t chi2)    { fChi2 = chi2;}
@@ -366,27 +368,26 @@ inline void AliTRDseedV1::SetCovRef(const Double_t *cov)
 inline void AliTRDseedV1::SetN(Int_t n)
 {
   if(n<0 || n>kNclusters) return; 
-  UInt_t mask(0x3f); 
-  fN &= ~mask; 
-  fN |= (n&mask);
+  fN &= ~kMask; 
+  fN |= (n&kMask);
 }
 
 //____________________________________________________________
 inline void AliTRDseedV1::SetNUsed(Int_t n)
 {
   if(n<0 || n>kNclusters) return; 
-  UInt_t mask(0x3f<<6); 
+  UInt_t mask(kMask<<kNbits); 
   fN &= ~mask;
-  n <<= 6; fN |= (n&mask);
+  n=n<<kNbits; fN |= (n&mask);
 }
 
 //____________________________________________________________
 inline void AliTRDseedV1::SetNShared(Int_t n)
 {
   if(n<0 || n>kNclusters) return; 
-  UInt_t mask(0x3f<<12); 
+  UInt_t mask((kMask<<kNbits)<<kNbits); 
   fN &= ~mask;
-  n <<= 12; fN |= (n&mask);
+  n = (n<<kNbits)<<kNbits; fN|=(n&mask);
 }
 
 

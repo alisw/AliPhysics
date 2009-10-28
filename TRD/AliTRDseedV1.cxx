@@ -258,24 +258,26 @@ Bool_t AliTRDseedV1::Init(AliTRDtrackV1 *track)
 
 
 //_____________________________________________________________________________
-void AliTRDseedV1::Reset()
+void AliTRDseedV1::Reset(Option_t *opt)
 {
-  //
-  // Reset seed
-  //
+//
+// Reset seed. If option opt="c" is given only cluster arrays are cleared.
+//
+  for(Int_t ic=kNclusters; ic--;) fIndexes[ic] = -1;
+  memset(fClusters, 0, kNclusters*sizeof(AliTRDcluster*));
+  fN=0;
+  if(strcmp(opt, "c")==0) return;
+
   fExB=0.;fVD=0.;fT0=0.;fS2PRF=0.;
   fDiffL=0.;fDiffT=0.;
   fClusterIdx=0;
   fErrorMsg = 0;
-  fN=0;
   fDet=-1;
   fPt=0.;
   fdX=0.;fX0=0.; fX=0.; fY=0.; fZ=0.;
   fS2Y=0.; fS2Z=0.;
   fC=0.; fChi2 = 0.;
 
-  for(Int_t ic=kNclusters; ic--;) fIndexes[ic] = -1;
-  memset(fClusters, 0, kNclusters*sizeof(AliTRDcluster*));
   memset(fPad, 0, 3*sizeof(Float_t));
   fYref[0] = 0.; fYref[1] = 0.; 
   fZref[0] = 0.; fZref[1] = 0.; 

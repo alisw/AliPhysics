@@ -599,7 +599,7 @@ void AliTRDchamberTimeBin::GetClusters(const Double_t * const cond, Int_t *index
     //AliInfo(Form("z[%d] y [%d %d]", z, fPositions[z], upper));
     for(Int_t y = fPositions[z]; y < (Int_t)upper; y++){
       if(ncl == BufferSize){
-        AliInfo("Buffer size riched. Some clusters may be lost.");
+        AliDebug(1, Form("Buffer size [%d] riched. Some clusters may be lost.", BufferSize));
         return;	//Buffer filled
       }
       
