@@ -44,7 +44,7 @@ ClassImp(AliAnalysisTaskStrange)
 
 //________________________________________________________________________
 AliAnalysisTaskStrange::AliAnalysisTaskStrange() 
-  : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), fOption("no"), fListHist(),
+  : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), fUseCut("infoCut"), fListHist(),
     fHistPrimaryVertexPosX(0), fHistPrimaryVertexPosY(0), fHistPrimaryVertexPosZ(0),
     fHistTrackMultiplicity(0), fHistV0Multiplicity(0),
     fHistDcaPosToPrimVertex(0), fHistDcaNegToPrimVertex(0),
@@ -67,8 +67,8 @@ AliAnalysisTaskStrange::AliAnalysisTaskStrange()
   // Dummy constructor
 }
 //________________________________________________________________________
-AliAnalysisTaskStrange::AliAnalysisTaskStrange(const char *name, const char *optCuts) 
-  : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), fOption(optCuts), fListHist(),
+AliAnalysisTaskStrange::AliAnalysisTaskStrange(const char *name) 
+  : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), fUseCut("infocut"), fListHist(),
     fHistPrimaryVertexPosX(0), fHistPrimaryVertexPosY(0), fHistPrimaryVertexPosZ(0),
     fHistTrackMultiplicity(0), fHistV0Multiplicity(0),
     fHistDcaPosToPrimVertex(0), fHistDcaNegToPrimVertex(0),
@@ -246,16 +246,16 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
   }
 
   if (!(lEvent->GetNumberOfTracks())) {
-    Printf("Strange analysis task: There is no track in this event");
+    //Printf("Strange analysis task: There is no track in this event");
     return;
   }
   fHistTrackMultiplicity->Fill(lEvent->GetNumberOfTracks());
 
   Double_t tPrimaryVtxPosition[3];
-  Double_t tPrimaryVtxCov[3];
+
   Int_t nv0s = 0;
   nv0s = lEvent->GetNumberOfV0s();
-  //  Printf("Strange analysis task: There are %d v0s in this event",nv0s);
+  //Printf("Strange analysis task: There are %d v0s in this event",nv0s);
 
   Int_t    lOnFlyStatus = 0, nv0sOn = 0, nv0sOff = 0;
   Double_t lChi2V0 = 0;
@@ -263,9 +263,19 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
   Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
   Double_t lV0CosineOfPointingAngle = 0;
   Double_t lV0Radius = 0;
+  Double_t lV0DecayLength = 0;
   Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
   Double_t lPt       = 0, lRapK0s = 0, lRapLambda = 0;
   Double_t lAlphaV0  = 0, lPtArmV0 = 0;
+
+  Double_t  tV0Position[3];
+
+  Double_t lMagneticField      = 999;
+
+
+  //***********************
+  // ESD loop
+  //***********************
 
   if(fAnalysisType == "ESD") {
 
@@ -278,44 +288,13 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
     fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
     fHistPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
 
-    Double_t lMagneticField = ((AliESDEvent*)lEvent)->GetMagneticField();
-
-    primaryVtx->GetCovMatrix(tPrimaryVtxCov); 
-    AliAODVertex *primary = new AliAODVertex(tPrimaryVtxPosition, tPrimaryVtxCov, primaryVtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
+    lMagneticField = ((AliESDEvent*)lEvent)->GetMagneticField();
   
-    // V0 variables:
-    // to get info from ESD files and fill AliAODVertex:
-    Double_t  tdcaDaughterToPrimVertex[2];                 // ..[0] = Pos and ..[1] = Neg
-    Double_t  tMomPos[3];
-    Double_t  tMomNeg[3];
-    Double_t  tV0Position[3];
-    Double_t  tV0Cov[6];
-
-    // to fill AliAODtrack:
-    Double_t  tTrackP[3];
-    Double_t  tTrackPosition[3];
-    Double_t  tTrackCovTr[21];
-    Double_t  tTrackPid[10];
-
-    AliAODTrack  *myPosAodTrack  = new AliAODTrack();
-    AliAODTrack  *myNegAodTrack  = new AliAODTrack();
-    AliAODVertex *myAODVertex    = new AliAODVertex();
-    AliAODv0     *myAODv0        = new AliAODv0();
 
     for (Int_t iV0 = 0; iV0 < nv0s; iV0++)
       {// This is the begining of the V0 loop  
 	AliESDv0 *v0 = ((AliESDEvent*)lEvent)->GetV0(iV0);
 	if (!v0) continue;
-
-	// AliAODVertex
-	v0->GetXYZ(tV0Position[0], tV0Position[1], tV0Position[2]);
-	v0->GetPosCov(tV0Cov);
-	myAODVertex->SetPosition(tV0Position[0],tV0Position[1],tV0Position[2]);
-	myAODVertex->SetCovMatrix(tV0Cov);
-	myAODVertex->SetChi2perNDF(v0->GetChi2V0());
-	myAODVertex->SetID((Short_t)iV0);
-	myAODVertex->SetParent(primary);
-	myAODVertex->SetType(AliAODVertex::kV0);
 
 	// AliAODtrack (V0 Daughters)
 	UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
@@ -326,91 +305,53 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
 	if (!pTrack || !nTrack) {
 	  Printf("ERROR: Could not retreive one of the daughter track");
 	  continue;
-	}
-	UInt_t lLabelPos = (UInt_t)TMath::Abs(pTrack->GetLabel());
-	UInt_t lLabelNeg = (UInt_t)TMath::Abs(nTrack->GetLabel());
+	}	
 
-	myPosAodTrack->SetID((Short_t)(pTrack->GetID()));  
-	myPosAodTrack->SetLabel(lLabelPos);
-	pTrack->GetPxPyPz(tTrackP);
-	myPosAodTrack->SetP(tTrackP);
-	pTrack->GetXYZ(tTrackPosition);
-	myPosAodTrack->SetPosition(tTrackPosition,kFALSE);
-	pTrack->GetCovarianceXYZPxPyPz(tTrackCovTr);
-	myPosAodTrack->SetCovMatrix(tTrackCovTr);
-	pTrack->GetESDpid(tTrackPid);
-	myPosAodTrack->SetPID(tTrackPid);
-	myPosAodTrack->SetCharge((Short_t)(pTrack->Charge()));
-	myPosAodTrack->SetITSClusterMap(pTrack->GetITSClusterMap());
-	myPosAodTrack->SetProdVertex(myAODVertex);
-	myPosAodTrack->SetUsedForVtxFit(kTRUE);
-	myPosAodTrack->SetUsedForPrimVtxFit(kFALSE);
-	myPosAodTrack->SetType(AliAODTrack::kSecondary);
-	myPosAodTrack->ConvertAliPIDtoAODPID();
+	// Tracks quality cuts 
+	if ( ( (pTrack->GetTPCNcls()) < 80 ) || ( (nTrack->GetTPCNcls()) < 80 ) ) continue;
+	
+	// TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
+	if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;      
+	if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
 
-	myNegAodTrack->SetID((Short_t)(nTrack->GetID()));
-	myNegAodTrack->SetLabel(lLabelNeg);
-	nTrack->GetPxPyPz(tTrackP);
-	myNegAodTrack->SetP(tTrackP);
-	nTrack->GetXYZ(tTrackPosition);
-	myNegAodTrack->SetPosition(tTrackPosition,kFALSE);
-	nTrack->GetCovarianceXYZPxPyPz(tTrackCovTr);
-	myNegAodTrack->SetCovMatrix(tTrackCovTr);
-	nTrack->GetESDpid(tTrackPid);
-	myNegAodTrack->SetPID(tTrackPid);
-	myNegAodTrack->SetCharge((Short_t)(nTrack->Charge()));
-	myNegAodTrack->SetITSClusterMap(nTrack->GetITSClusterMap());
-	myNegAodTrack->SetProdVertex(myAODVertex);
-	myNegAodTrack->SetUsedForVtxFit(kTRUE);
-	myNegAodTrack->SetUsedForPrimVtxFit(kFALSE);
-	myNegAodTrack->SetType(AliAODTrack::kSecondary);
-	myNegAodTrack->ConvertAliPIDtoAODPID();
-   
-	myAODVertex->AddDaughter(myPosAodTrack);
-	myAODVertex->AddDaughter(myNegAodTrack);
+	// DCA between daughter and Primary Vertex:
+	if (pTrack) lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],lMagneticField) );
 
-	// filling myAODv0
-	lDcaV0Daughters    = v0->GetDcaV0Daughters();
-	lDcaV0ToPrimVertex = v0->GetD(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
+	if (nTrack) lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],lMagneticField) );
 
-	if (pTrack) tdcaDaughterToPrimVertex[0] = TMath::Abs(pTrack->GetD(tPrimaryVtxPosition[0],
-									  tPrimaryVtxPosition[1],
-									  lMagneticField) );
+	// VO's main characteristics:
+	lOnFlyStatus             = v0->GetOnFlyStatus();
+	lChi2V0                  = v0->GetChi2V0();
+	lDcaV0Daughters          = v0->GetDcaV0Daughters();
+	lDcaV0ToPrimVertex       = v0->GetD(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
+	lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1], tPrimaryVtxPosition[2]);
+	v0->GetXYZ(tV0Position[0], tV0Position[1], tV0Position[2]);
+	lV0Radius      = TMath::Sqrt(tV0Position[0]*tV0Position[0]+tV0Position[1]*tV0Position[1]);
+	lV0DecayLength = TMath::Sqrt(TMath::Power(tV0Position[0] - tPrimaryVtxPosition[0],2) +
+		                     TMath::Power(tV0Position[1] - tPrimaryVtxPosition[1],2) +
+		                     TMath::Power(tV0Position[2] - tPrimaryVtxPosition[2],2 ));
 
-	if (nTrack) tdcaDaughterToPrimVertex[1] = TMath::Abs(nTrack->GetD(tPrimaryVtxPosition[0],
-									  tPrimaryVtxPosition[1],
-									  lMagneticField) );
+	// Invariant mass
+	v0->ChangeMassHypothesis(310);
+	lInvMassK0s = v0->GetEffMass();
+	v0->ChangeMassHypothesis(3122);
+	lInvMassLambda = v0->GetEffMass();
+	v0->ChangeMassHypothesis(-3122);
+	lInvMassAntiLambda = v0->GetEffMass();
 
-	v0->GetPPxPyPz(tMomPos[0],tMomPos[1],tMomPos[2]); 
-	v0->GetNPxPyPz(tMomNeg[0],tMomNeg[1],tMomNeg[2]); 
-
-	myAODv0->Fill(myAODVertex, lDcaV0Daughters, lDcaV0ToPrimVertex, tMomPos, tMomNeg, tdcaDaughterToPrimVertex);
-	myAODv0->SetOnFlyStatus(v0->GetOnFlyStatus());
-    
-	// common part
-	lV0Radius = myAODv0->RadiusV0();
-	lDcaPosToPrimVertex = myAODv0->DcaPosToPrimVertex();
-	lDcaNegToPrimVertex = myAODv0->DcaNegToPrimVertex();
-
-	lOnFlyStatus = myAODv0->GetOnFlyStatus();
-	lChi2V0 = myAODv0->Chi2V0();
-	lDcaV0Daughters = myAODv0->DcaV0Daughters();
-	lDcaV0ToPrimVertex = myAODv0->DcaV0ToPrimVertex();
-	lV0CosineOfPointingAngle = myAODv0->CosPointingAngle(tPrimaryVtxPosition);
-
-	lInvMassK0s = myAODv0->MassK0Short();
-	lInvMassLambda = myAODv0->MassLambda();
-	lInvMassAntiLambda = myAODv0->MassAntiLambda();
-
-	lPt        = TMath::Sqrt(myAODv0->Pt2V0());
-	lRapK0s    = myAODv0->RapK0Short();
-	lRapLambda = myAODv0->RapLambda();
-	lAlphaV0   = myAODv0->AlphaV0();
-	lPtArmV0   = myAODv0->PtArmV0();
-
-
+	// Rapidity:
+	lRapK0s    = v0->Y(310);
+	lRapLambda = v0->Y(3122);
+	
+	// Pt:
+	lPt = v0->Pt();
+	
+	// Armenteros variables: !!
+	lAlphaV0      = v0->AlphaV0();
+	lPtArmV0      = v0->PtArmV0();
+	
 	// Selections:
-	if (fOption.Contains("yes")) {
+	if (fUseCut.Contains("yes")) {
 	  if ( (lDcaPosToPrimVertex      < 0.036 )||
 	       (lDcaNegToPrimVertex      < 0.036 )||
 	       (lDcaV0Daughters          > 0.5 )  ||
@@ -424,7 +365,7 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
 	fHistDcaPosToPrimVertexZoom->Fill(lDcaPosToPrimVertex,lOnFlyStatus);
 	fHistDcaNegToPrimVertexZoom->Fill(lDcaNegToPrimVertex,lOnFlyStatus);
 	fHistRadiusV0->Fill(lV0Radius,lOnFlyStatus);
-	fHistDecayLengthV0->Fill(myAODv0->DecayLengthV0(tPrimaryVtxPosition),lOnFlyStatus);
+	fHistDecayLengthV0->Fill(lV0DecayLength,lOnFlyStatus);
 	fHistDcaV0Daughters->Fill(lDcaV0Daughters,lOnFlyStatus);
 	fHistChi2->Fill(lChi2V0,lOnFlyStatus);
 	fHistCosPointAngle->Fill(lV0CosineOfPointingAngle,lOnFlyStatus);
@@ -477,12 +418,12 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
 	}
       } // end V0 loop
 
-    if (primary)       delete primary;
-    if (myPosAodTrack) delete myPosAodTrack;
-    if (myNegAodTrack) delete myNegAodTrack;
-    if (myAODVertex)   delete myAODVertex;
-    if (myAODv0)       delete myAODv0;
   }
+
+  //***********************
+  // AOD loop
+  //***********************
+
   else if(fAnalysisType == "AOD") {
 
     const AliAODVertex *primaryVtx = ((AliAODEvent*)lEvent)->GetPrimaryVertex();
@@ -496,33 +437,33 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
   
     for (Int_t iV0 = 0; iV0 < nv0s; iV0++) 
       {// This is the begining of the V0 loop
-	AliAODv0 *v0 = ((AliAODEvent*)lEvent)->GetV0(iV0);
-	if (!v0) continue;
+	AliAODv0 *myAODv0 = ((AliAODEvent*)lEvent)->GetV0(iV0);
+	if (!myAODv0) continue;
 
 	// common part
-	lV0Radius = v0->RadiusV0();
-	lDcaPosToPrimVertex = v0->DcaPosToPrimVertex();
-	lDcaNegToPrimVertex = v0->DcaNegToPrimVertex();
+	lV0Radius                = myAODv0->RadiusV0();
+	lDcaPosToPrimVertex      = myAODv0->DcaPosToPrimVertex();
+	lDcaNegToPrimVertex      = myAODv0->DcaNegToPrimVertex();
+	lOnFlyStatus             = myAODv0->GetOnFlyStatus();
+	lChi2V0                  = myAODv0->Chi2V0();
+	lDcaV0Daughters          = myAODv0->DcaV0Daughters();
+	lDcaV0ToPrimVertex       = myAODv0->DcaV0ToPrimVertex();
+	lV0DecayLength           = myAODv0->DecayLengthV0(tPrimaryVtxPosition);
+	lV0CosineOfPointingAngle = myAODv0->CosPointingAngle(tPrimaryVtxPosition);
 
-	lOnFlyStatus = v0->GetOnFlyStatus();
-	lChi2V0 = v0->Chi2V0();
-	lDcaV0Daughters = v0->DcaV0Daughters();
-	lDcaV0ToPrimVertex = v0->DcaV0ToPrimVertex();
-	lV0CosineOfPointingAngle = v0->CosPointingAngle(tPrimaryVtxPosition);
+	lInvMassK0s        = myAODv0->MassK0Short();
+	lInvMassLambda     = myAODv0->MassLambda();
+	lInvMassAntiLambda = myAODv0->MassAntiLambda();
 
-	lInvMassK0s = v0->MassK0Short();
-	lInvMassLambda = v0->MassLambda();
-	lInvMassAntiLambda = v0->MassAntiLambda();
-
-	lPt        = TMath::Sqrt(v0->Pt2V0());
-	lRapK0s    = v0->RapK0Short();
-	lRapLambda = v0->RapLambda();
-	lAlphaV0   = v0->AlphaV0();
-	lPtArmV0   = v0->PtArmV0();
+	lPt        = TMath::Sqrt(myAODv0->Pt2V0());
+	lRapK0s    = myAODv0->RapK0Short();
+	lRapLambda = myAODv0->RapLambda();
+	lAlphaV0   = myAODv0->AlphaV0();
+	lPtArmV0   = myAODv0->PtArmV0();
 
 
 	// Selections:
-	if (fOption.Contains("yes")) {
+	if (fUseCut.Contains("yes")) {
 	  if ( (lDcaPosToPrimVertex      < 0.036 )||
 	       (lDcaNegToPrimVertex      < 0.036 )||
 	       (lDcaV0Daughters          > 0.5 )  ||
@@ -536,7 +477,7 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
 	fHistDcaPosToPrimVertexZoom->Fill(lDcaPosToPrimVertex,lOnFlyStatus);
 	fHistDcaNegToPrimVertexZoom->Fill(lDcaNegToPrimVertex,lOnFlyStatus);
 	fHistRadiusV0->Fill(lV0Radius,lOnFlyStatus);
-	fHistDecayLengthV0->Fill(v0->DecayLengthV0(tPrimaryVtxPosition),lOnFlyStatus);
+	fHistDecayLengthV0->Fill(lV0DecayLength,lOnFlyStatus);
 	fHistDcaV0Daughters->Fill(lDcaV0Daughters,lOnFlyStatus);
 	fHistChi2->Fill(lChi2V0,lOnFlyStatus);
 	fHistCosPointAngle->Fill(lV0CosineOfPointingAngle,lOnFlyStatus);

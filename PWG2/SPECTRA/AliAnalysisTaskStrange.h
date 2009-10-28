@@ -23,26 +23,29 @@ class AliAODEvent;
 class AliAnalysisTaskStrange : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskStrange();
-  AliAnalysisTaskStrange(const char *name,  const char *optCuts);
+  AliAnalysisTaskStrange(const char *name);
   virtual ~AliAnalysisTaskStrange() {}
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  void   SetCollidingSystems(Short_t collidingSystems = 0) {fCollidingSystems = collidingSystems;}
+  void   SetCollidingSystems(Int_t collidingSystems = 0) {fCollidingSystems = collidingSystems;}
   void   SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
-  
+  void   SetAnalysisCut(const char* useCut) {fUseCut = useCut;}
+   
  private:
   TString      fAnalysisType;                   //  ESD or AOD
-  Short_t      fCollidingSystems;               //  Colliding systems 0/1 for pp/PbPb  
-  TString      fOption;                         //  Option for the selections
+  Int_t        fCollidingSystems;               //  Colliding systems 0/1 for pp/PbPb  
+  TString      fUseCut;                         //  "yes" or "no"
+
   TList       *fListHist;                       //! List of histograms
+
   TH1F        *fHistPrimaryVertexPosX;          //! Primary vertex position in X
   TH1F        *fHistPrimaryVertexPosY;          //! Primary vertex position in Y
   TH1F        *fHistPrimaryVertexPosZ;          //! Primary vertex position in Z
-  TH1F        *fHistTrackMultiplicity;          //! V0 multiplicity distribution
-  TH1F        *fHistV0Multiplicity;
+  TH1F        *fHistTrackMultiplicity;          //! Track multiplicity distribution
+  TH1F        *fHistV0Multiplicity;             //! V0 multiplicity distribution
 
   TH2F        *fHistDcaPosToPrimVertex;         //! Dca of V0 positive daughter to primary vertex
   TH2F        *fHistDcaNegToPrimVertex;         //! Dca of V0 negative daughter to primary vertex
