@@ -9,6 +9,7 @@
 
 TH1F *alltte,      *alltrk,      *allemc;
 TH1F *sumtte,      *sumtrk,      *sumemc;
+TH1F *sumHFemc,    *sumHFmc;
 TH1F *bpttte,      *bpttrk,      *bptemc;
 TH1F *cpttte,      *cpttrk,      *cptemc;
 TH1F *candbpttte,  *candbpttrk,  *candbptemc;
@@ -131,18 +132,21 @@ void plotNPERates(char* which = "TTE",
   convptemc = (TH1F*)combEMC->ProjectionX("convemc",5,5);
   dalitzptemc = (TH1F*)combEMC->ProjectionX("dalitzemc",6,6);
   otherptemc = (TH1F*)combEMC->ProjectionX("otheremc",8,8);
-  sumemc = (TH1F*)bptemc->Clone(); sumemc->SetName("sumemc");
-  sumemc->Add(cptemc); sumemc->Add(candbptemc); sumemc->Add(convptemc);
-  sumemc->Add(dalitzptemc); //sumemc->Add(otherptemc);
   misidptemc = (TH1F*)combEMC->ProjectionX("misidemc",9,9);
 
   wzptemc = (TH1F*)wemc->ProjectionX("wz",7,7);
   allemc->Add(wzptemc);
+  sumemc = (TH1F*)bptemc->Clone(); sumemc->SetName("sumemc");
+  sumemc->Add(cptemc); sumemc->Add(candbptemc); sumemc->Add(convptemc);
+  sumemc->Add(dalitzptemc); //sumemc->Add(otherptemc);
   sumemc->Add(wzptemc);
+  sumHFemc = (TH1F*)bptemc->Clone(); sumHFemc->SetName("sumHFemc");
+  sumHFemc->Add(cptemc); sumHFemc->Add(candbptemc); sumHFemc->Add(wzptemc);
 
   double myscale = 1.; //we already scaled them
   ScaleAndConfigure(allemc,myscale,kBlack,kFALSE);
   ScaleAndConfigure(sumemc,myscale,kBlack,kFALSE);
+  ScaleAndConfigure(sumHFemc,myscale,kBlack,kFALSE);
   ScaleAndConfigure(bptemc,myscale,kRed,kFALSE);
   ScaleAndConfigure(cptemc,myscale,kBlue,kFALSE);
   ScaleAndConfigure(candbptemc,myscale,kViolet,kFALSE);
@@ -202,6 +206,7 @@ void plotNPERates(char* which = "TTE",
   drawAnnualYields(which);
   drawComparePID();
   drawPtCutRates(which);
+  drawCompareTruth();
 
 }
 
@@ -209,6 +214,7 @@ void ScaleAndConfigure(TH1F* hist,Double_t scale, Int_t color,Bool_t keepErr)
 {
   hist->Scale(scale);
   hist->SetLineColor(color);
+  hist->SetMarkerColor(color);
   hist->SetLineWidth(2);
   if(keepErr == kFALSE) {
     //remove the error bars - useful for MC rates
@@ -237,7 +243,7 @@ void ScaleAndConfigure(TH1F* hist,Double_t scale, Int_t color,Bool_t keepErr)
       hist->SetBinError(i,TMath::Sqrt(hist->GetBinContent(i)));
     }
   }
-
+  
 }
 
 void drawAnnualYields(char* which = "EMC") {
@@ -266,12 +272,12 @@ void drawAnnualYields(char* which = "EMC") {
     wzptemc->Rebin(2); wzptemc->Scale(0.5);
     misidptemc->Rebin(2); misidptemc->Scale(0.5);
     /*
-    allemc->GetYaxis()->SetRangeUser(1.,allemc->GetMaximum()*2.);
-    allemc->GetXaxis()->SetRangeUser(0.,49.);
+    allemc->GetYaxis()->SetRangeUser(1.,2.e6);
+    allemc->GetXaxis()->SetRangeUser(10.,49.);
     allemc->Draw();
     */
-    sumemc->GetYaxis()->SetRangeUser(1.,sumemc->GetMaximum()*2.);
-    sumemc->GetXaxis()->SetRangeUser(0.,49.);
+    sumemc->GetYaxis()->SetRangeUser(1.,2.e6);
+    sumemc->GetXaxis()->SetRangeUser(10.,49.);
     sumemc->Draw();
     bptemc->Draw("same");
     cptemc->Draw("same");
@@ -300,12 +306,12 @@ void drawAnnualYields(char* which = "EMC") {
     dalitzpttte->Rebin(2); dalitzpttte->Scale(0.5);
     wzpttte->Rebin(2); wzpttte->Scale(0.5);
     misidpttte->Rebin(2); misidpttte->Scale(0.5);
-    /*    alltte->GetYaxis()->SetRangeUser(1.,alltte->GetMaximum()*2.);
-    alltte->GetXaxis()->SetRangeUser(0.,49.);
+    /*    alltte->GetYaxis()->SetRangeUser(1.,2.e6);
+    alltte->GetXaxis()->SetRangeUser(10.,49.);
     alltte->Draw();
     */
-    sumtte->GetYaxis()->SetRangeUser(1.,sumtte->GetMaximum()*2.);
-    sumtte->GetXaxis()->SetRangeUser(0.,49.);
+    sumtte->GetYaxis()->SetRangeUser(1.,2.e6);
+    sumtte->GetXaxis()->SetRangeUser(10.,49.);
     sumtte->Draw();
     bpttte->Draw("same");
     cpttte->Draw("same");
@@ -323,35 +329,78 @@ void drawAnnualYields(char* which = "EMC") {
 
 void drawComparePID() {
 
-  TCanvas* crates = new TCanvas();
-  crates->cd();
+  TCanvas* crates = new TCanvas("crates","",0,0,1600,600);
+  crates->Divide(2,1);
+  crates->cd(1);
   gPad->SetLogy();
   alltrk->SetXTitle("p_{T} (GeV/c)");
-  alltrk->SetYTitle("Annual yield of electron candidates");
+  alltrk->SetYTitle("Annual yield in EMCAL dN/dp_{T} (GeV/c)^{-1}");
   alltrk->SetTitle("PID comparison: Tracking only vs. EMCAL only");
+  alltrk->Smooth(2);
   alltrk->Rebin(2); alltrk->Scale(0.5);
   alltrk->GetYaxis()->SetRangeUser(10.,alltrk->GetMaximum()*2.);
-  alltrk->GetXaxis()->SetRangeUser(0.,49.);
+  alltrk->GetXaxis()->SetRangeUser(10.,49.);
   alltrk->Draw();
+  misidpttrk->Smooth(2);
   misidpttrk->Rebin(2); misidpttrk->Scale(0.5);
   misidpttrk->Draw("same");
   TH1F* tempallemc = (TH1F*)allemc->Clone();
   tempallemc->SetNameTitle("tempallemc","tempallemc");
   tempallemc->SetLineColor(kBlue);
+  tempallemc->Rebin(2); tempallemc->Scale(0.5);
   tempallemc->Draw("same");
   
   TH1F* tempmisidemc = (TH1F*)misidptemc->Clone();
   tempmisidemc->SetNameTitle("tempmisidemc","tempmisidemc");
   tempmisidemc->SetLineColor(kOrange-3);
+  tempmisidemc->Rebin(2); tempmisidemc->Scale(0.5);
   tempmisidemc->Draw("same");
 
   TLegend* leg2 = new TLegend(0.35,0.6,0.9,0.9);
   leg2->SetTextSize(leg->GetTextSize()*1.2);
-  leg2->AddEntry(alltrk,"All electrons (Tracking PID only)","l");
-  leg2->AddEntry(misidpttrk,"Hadron contamination (Tracking PID only)","l");
-  leg2->AddEntry(tempallemc,"All electrons (EMCAL PID)","l");
-  leg2->AddEntry(tempmisidemc,"Hadron contamination (EMCAL PID)","l");
+  leg2->AddEntry(alltrk,"Electron Candidates (Tracking PID only)","l");
+  leg2->AddEntry(misidpttrk,"Hadron Contamination (Tracking PID only)","l");
+  leg2->AddEntry(tempallemc,"Electron Candidates (EMCAL PID)","l");
+  leg2->AddEntry(tempmisidemc,"Hadron Contamination (EMCAL PID)","l");
   leg2->Draw();
+
+  crates->cd(2);
+  gPad->SetLogy();
+  TH1F* subtrk = (TH1F*)alltrk->Clone();
+  for(Int_t i = 1; i <= alltrk->GetNbinsX(); i++) {
+    Double_t diff = alltrk->GetBinContent(i) - misidpttrk->GetBinContent(i);
+    Double_t unc = diff/TMath::Sqrt(diff+2.*misidpttrk->GetBinContent(i));
+    //    printf("Cand %d, Contam %d, diff %d, unc %d\n",alltrk->GetBinContent(i),misidpttrk->GetBinContent(i), diff, unc);
+    subtrk->SetBinContent(i,diff);
+    subtrk->SetBinError(i,unc);
+  }
+  subtrk->SetYTitle("Annual yield in EMCAL dN/dp_{T} (GeV/c)^{-1}");
+  subtrk->SetLineColor(kRed);
+  subtrk->Draw();
+  //  sumtrk->Rebin(2); sumtrk->Scale(0.5);
+  //sumtrk->Draw("same");
+
+  TH1F* subemc = (TH1F*)tempallemc->Clone();
+  for(Int_t i = 1; i <= tempallemc->GetNbinsX(); i++) {
+    Double_t diff = tempallemc->GetBinContent(i) - tempmisidemc->GetBinContent(i);
+    Double_t unc = 0.;
+    if(diff > 0.) 
+      unc = diff/TMath::Sqrt(diff+2.*tempmisidemc->GetBinContent(i));
+    //printf("Cand %d, Contam %d, diff %d, unc %d\n",tempallemc->GetBinContent(i),tempmisidemc->GetBinContent(i), diff, unc);
+    subemc->SetBinContent(i,diff);
+    subemc->SetBinError(i,unc);
+  }
+  subemc->SetLineColor(kCyan);
+  subemc->Draw("same");
+  TLegend *legx = new TLegend(0.3,0.7,0.9,0.9);
+  legx->AddEntry(subtrk,"Signal (candidates - contam) (Tracking PID only)","l");
+  legx->AddEntry(subemc,"Signal (candidates - contam) (EMCAL PID)","l");
+  legx->Draw();
+
+  TLatex* latex = new TLatex(0.5,0.6,"Unc = #frac{S}{#sqrt{S+2B}}");
+  latex->SetNDC();
+  latex->Draw();
+
   crates->Print("NPERates_PIDCompare_all.pdf");
 }
 
@@ -372,9 +421,9 @@ void drawPtCutRates(char* which = "EMC") {
     TH1F* misidptcut = GetPtCutHisto(misidptemc);
     alleptcut->SetXTitle("p_{T}^{cut} (GeV/c)");
     alleptcut->SetYTitle("Annual Yield in EMCAL for p_{T}>p_{T}^{cut}");
-    alleptcut->SetTitle("Annual non-phot. electrons for p_{T}>p_{T}^{cut} (EMCAL pid)");
-    alleptcut->GetXaxis()->SetRangeUser(0,49);
-    alleptcut->GetYaxis()->SetRangeUser(1,alleptcut->GetMaximum()*2);
+    alleptcut->SetTitle("Pb+Pb, 5.5 TeV reconstructed N-P electrons (EMCAL pid)");
+    alleptcut->GetXaxis()->SetRangeUser(10.,49.);
+    alleptcut->GetYaxis()->SetRangeUser(1,4.e5);
     alleptcut->Draw();
     beleptcut->Draw("same");
     celeptcut->Draw("same");
@@ -398,9 +447,9 @@ void drawPtCutRates(char* which = "EMC") {
     TH1F* misidptcut = GetPtCutHisto(misidpttte);
     alleptcut->SetXTitle("p_{T}^{cut} (GeV/c)");
     alleptcut->SetYTitle("Annual Yield in EMCAL for p_{T}>p_{T}^{cut}");
-    alleptcut->SetTitle("Annual non-phot. electrons for p_{T}>p_{T}^{cut} (Tracking+EMCAL pid)");
-    alleptcut->GetXaxis()->SetRangeUser(0,49);
-    alleptcut->GetYaxis()->SetRangeUser(1,alleptcut->GetMaximum()*2);
+    alleptcut->SetTitle("Pb+Pb, 5.5 TeV reconstructed N-P electrons (Tracking+EMCAL pid)");
+    alleptcut->GetXaxis()->SetRangeUser(10.,49.);
+    alleptcut->GetYaxis()->SetRangeUser(1,4.e5);
     alleptcut->Draw();
     beleptcut->Draw("same");
     celeptcut->Draw("same");
@@ -416,6 +465,53 @@ void drawPtCutRates(char* which = "EMC") {
 
 }
 
+TH1F* drawCompareTruth() {
+  TFile* f = new TFile("MCElectrons.root");
+  if(!f) { printf("No MC electron file.  exiting\n"); return;}
+  TH1F* mctruth = (TH1F*)f->Get("b");
+  TH1F* temp = (TH1F*)f->Get("c");
+  mctruth->Add(temp);
+  temp = (TH1F*)f->Get("candb");
+  mctruth->Add(temp);
+  temp = (TH1F*)f->Get("wz");
+  mctruth->Add(temp);
+
+  TFile* effic = new TFile("elec_eff.root");
+  TH1F* heff = (TH1F*)effic->Get("h111");
+
+  TH1F* hcorr = (TH1F*)sumHFemc->Clone();
+  hcorr->SetName("hcorr");
+  for(Int_t i = 1; i < heff->GetNbinsX(); i++) {
+    Double_t pt = heff->GetBinCenter(i);
+    Double_t eff = heff->GetBinContent(i);    
+    Double_t corr = 0.;
+    if(eff > 0.) corr = hcorr->GetBinContent(i)/eff;
+    hcorr->SetBinContent(i,corr);
+  }
+  TCanvas* ctruth = new TCanvas();
+  ctruth->cd();
+  gPad->SetLogy();
+  mctruth->SetTitle("Comparison of MC and reco HF+W electrons");
+  mctruth->SetMarkerColor(kBlack); mctruth->SetLineColor(kBlack);
+  mctruth->SetYTitle("Annual yield in EMCAL dN/dp_{T} (GeV/c)^{-1}");
+  mctruth->SetXTitle("p_{T} (GeV/c)");
+  mctruth->GetXaxis()->SetRangeUser(10.,49.);
+  mctruth->Draw();
+  hcorr->SetMarkerColor(kRed);
+  hcorr->SetLineColor(kRed);
+  hcorr->Draw("same");
+  sumHFemc->SetMarkerColor(kBlue);
+  sumHFemc->SetLineColor(kBlue);
+  sumHFemc->Draw("same");
+  TLegend *legy = new TLegend(0.3,0.7,0.9,0.9);
+  legy->AddEntry(mctruth,"MC HF+W electrons","l");
+  legy->AddEntry(sumHFemc,"Rec (EMCAL) HF+W electrons","l");
+  legy->AddEntry(hcorr,"Eff. corrected reco HF+W electrons","l");
+  legy->Draw();
+
+  ctruth->Print("NPERates_TruthComparison.pdf");
+
+}
 
 TH1F* GetPtCutHisto(TH1F* input) 
 {
