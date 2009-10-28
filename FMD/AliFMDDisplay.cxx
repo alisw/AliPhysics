@@ -901,6 +901,7 @@ AliFMDDisplay::ProcessESD(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
   return kTRUE;
 }
 
+//____________________________________________________________________
 Double_t
 AliFMDDisplay::GetADCThreshold(UShort_t d, Char_t r, 
 			       UShort_t s, UShort_t t) const

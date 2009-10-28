@@ -56,7 +56,7 @@ public:
   /** Write an array of AliFMDDigit objects as raw ALTRO data. 
       @param digits Array of AliFMDDigit objects to convert to raw
       ALTRO data. */
-  virtual void WriteDigits(TClonesArray* digits);
+  virtual Long_t WriteDigits(TClonesArray* digits);
   /** Do zero-suppression of channel data. 
       @param data      Contain @a nWords of valid data.  On input, it 
                        contains the full channel data.  On output it

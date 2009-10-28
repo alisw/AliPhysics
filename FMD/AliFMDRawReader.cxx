@@ -132,21 +132,80 @@ AliFMDRawReader::NewDDL(AliAltroRawStreamV3& input, UShort_t& det)
   UInt_t ddl = input.GetDDLNumber();
   AliFMDDebug(2, ("DDL number %d", ddl));
 
-  // Get zero suppression flag
-  fZeroSuppress[ddl] = input.GetZeroSupp();
+  /* Note, previously, the ALTROCFG1 register was interpreted as 
+   * 
+   * Bits    Value    Description
+   *   0- 3      0/1   1st Baseline filter, mode 
+   *   4- 5   Over-1   2nd baseline filter, # of pre-samples
+   *   6- 9   factor   2nd baseline filter, # of post-samples 
+   *  10-          0   2nd baseline filter, enable
+   *  11-12       00   Zero suppression, glitch filter mode
+   *  13-15      001   Zero suppression, # of post samples
+   *  16-17       01   Zero suppression, # of pre  samples
+   *  18         0/1   Zero suppression, enable
+   *
+   * The interpretation used in AliAltroRawStreamerV3 - which
+   * corresponds directly to ALTRO DPCFG register - is 
+   *
+   * Bits    Value  Description
+   *   0- 3    0/1   1st Baseline filter, mode 
+   *   4         0   Polarity (if '1', then "1's inverse")
+   *   5- 6     01   Zero suppression, # of pre samples
+   *   7-10   0001   Zero suppression, # of post samples
+   *  11         0   2nd baseline filter, enable
+   *  12-13     00   Zero suppression, glitch filter mode
+   *  14-16 factor   2nd baseline filter, # of post-samples
+   *  17-18     01   2nd baseline filter, # of pre-samples 
+   *  19       0/1   Zero suppression, enable
+   *
+   *  Writing 'x' for variable values, that means we have the
+   *  following patterns for the 2 cases 
+   *
+   *    bit #  20   16   12    8    4    0
+   *     old    |0x01|0010|00xx|xxxx|xxxx|
+   *     new    |x01x|xx00|0000|1010|xxxx|
+   *
+   *  That means that we can check if bits 10-13 are '1000' or
+   *  '0000', which will tell us if the value was written with the
+   *  new or the old interpretation.    That is, we can check that 
+   *
+   *    if (((altrocfg1 >> 10) & 0x8) == 0x8) { 
+   *      // old interpretation 
+   *    }
+   *    else { 
+   *      // New interpretation 
+   *    }
+   *
+   * That means, that we should never 
+   *
+   *  - change the # of zero suppression post samples 
+   *  - Turn on 2nd baseline correction 
+   *  - Change the zero-suppression glitch filter mode
+   *
+   * This change as introduced in version 1.2 of Rcu++
+   */
+  UInt_t cfg1 = input.GetAltroCFG1();
+  if (((cfg1 >> 10) & 0x8) == 0x8) {
+    UInt_t cfg2 = input.GetAltroCFG2();
+    fZeroSuppress[ddl] = (cfg1 >> 0) & 0x1;
+    fNoiseFactor[ddl]  = (cfg1 >> 6) & 0xF;
+    fSampleRate[ddl]   = (cfg2 >> 0) & 0xF;
+  }
+  else {
+    fZeroSuppress[ddl] = input.GetZeroSupp();
+    // WARNING: We store the noise factor in the 2nd baseline
+    // filters excluded post samples, since we'll never use that
+    // mode. 
+    fNoiseFactor[ddl]  = input.GetNPostsamples();
+    // WARNING: We store the sample rate in the number of pre-trigger
+    // samples, since we'll never use that mode.
+    fSampleRate[ddl]     = input.GetNPretriggerSamples();
+  }
   AliFMDDebug(3, ("RCU @ DDL %d zero suppression: %s", 
 		   ddl, (fZeroSuppress[ddl] ? "yes" : "no")));
-
-  // WARNING: We store the noise factor in the 2nd baseline
-  // filters excluded post samples, since we'll never use that
-  // mode. 
-  fNoiseFactor[ddl]  = input.GetNPostsamples();
-  AliFMDDebug(3, ("RCU @ DDL %d noise factor: %d", ddl,fNoiseFactor[ddl]));
-    
-  // WARNING: We store the sample rate in the number of pre-trigger
-  // samples, since we'll never use that mode.
-  fSampleRate[ddl]     = input.GetNPretriggerSamples();
+  AliFMDDebug(3, ("RCU @ DDL %d noise factor: %d", ddl,fNoiseFactor[ddl]));    
   AliFMDDebug(3, ("RCU @ DDL %d sample rate: %d", ddl,fSampleRate[ddl]));
+
 
   // Get Errors seen 
   Int_t nChAddrMismatch = input.GetNChAddrMismatch();

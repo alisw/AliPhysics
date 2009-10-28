@@ -140,14 +140,15 @@ AliFMDRawWriter::Exec(Option_t*)
     return;
   }
   
-  TClonesArray* digits = new TClonesArray("AliFMDDigit", 1000);
   fFMD->SetTreeAddress();
-  TBranch* digitBranch = digitTree->GetBranch(fFMD->GetName());
-  if (!digitBranch) {
-    AliError(Form("no branch for %s", fFMD->GetName()));
-    return;
-  }
-  digitBranch->SetAddress(&digits);
+  TClonesArray* digits = fFMD->Digits(); 
+  // new TClonesArray("AliFMDDigit", 1000);
+  // TBranch* digitBranch = digitTree->GetBranch(fFMD->GetName());
+  // if (!digitBranch) {
+  //   AliError(Form("no branch for %s", fFMD->GetName()));
+  //   return;
+  // }
+  // digitBranch->SetAddress(&digits);
   
   Int_t nEvents = Int_t(digitTree->GetEntries());
   AliFMDDebug(5, ("Got a total of %5d events from tree", nEvents));
@@ -164,12 +165,12 @@ AliFMDRawWriter::Exec(Option_t*)
 
 #if 1
 //____________________________________________________________________
-void
+Long_t
 AliFMDRawWriter::WriteDigits(TClonesArray* digits)
 {
   // WRite an array of digits to disk file 
   Int_t nDigits = digits->GetEntries();
-  if (nDigits < 1) return;
+  if (nDigits < 1) return 0;
   AliFMDDebug(5, ("Got a total of %5d digits from tree", nDigits));
 
   AliFMDParameters* pars = AliFMDParameters::Instance();
@@ -192,9 +193,10 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
   // The Altro buffer 
   AliAltroBufferV3* altro = 0;
   
-  Int_t totalWords = 0;
-  Int_t nCounts    = 0;
-  
+  Int_t  totalWords = 0;
+  Int_t  nCounts    = 0;
+  Long_t nBits      = 0;
+
   // Loop over the digits in the event.  Note, that we assume the
   // the digits are in order in the branch.   If they were not, we'd
   // have to cache all channels before we could write the data to
@@ -240,7 +242,8 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
 			 time, prevaddr, nWords));
 	totalWords += nWords;
 	ZeroSuppress(data.fArray, nWords, peds.fArray, noise.fArray, threshold);
-	if (altro) altro->WriteChannel(prevaddr,nWords,data.fArray,threshold);
+	if (altro) 
+	  /*nBits+=*/altro->WriteChannel(prevaddr,nWords,data.fArray,threshold);
 	data.Reset(-1);
 	peds.Reset(0);
 	noise.Reset(0);
@@ -255,8 +258,8 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
 	  // When the first argument is false, we write the real
 	  // header. 
 	  AliFMDDebug(15, ("Closing output"));
-	  altro->Flush();
-	  altro->WriteDataHeader(kFALSE, kFALSE);
+	  /* nBits += */ altro->Flush();
+	  /* nBits += */ altro->WriteDataHeader(kFALSE, kFALSE);
 	  delete altro;
 	  altro = 0;
 	}
@@ -300,13 +303,15 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
   // already 
   if (altro) {
     ZeroSuppress(data.fArray, nWords, peds.fArray, noise.fArray, threshold);
-    if (nWords > 0) altro->WriteChannel(prevaddr,nWords,data.fArray,threshold);
-    altro->Flush();
-    altro->WriteDataHeader(kFALSE, kFALSE);
+    if (nWords > 0) 
+      /* nBits += */ altro->WriteChannel(prevaddr,nWords,data.fArray,threshold);
+    /* nBits += */ altro->Flush();
+    /* nBits += */ altro->WriteDataHeader(kFALSE, kFALSE);
     delete altro;
   }
-  AliFMDDebug(5, ("Wrote a total of %d words for %d counts", 
-		  nWords, nCounts));
+  AliFMDDebug(5, ("Wrote a total of %d words in %d bytes for %d counts", 
+		  nWords, nBits / 8, nCounts));
+  return nBits;
 }
 //____________________________________________________________________
 void
