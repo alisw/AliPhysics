@@ -823,8 +823,8 @@ Int_t AliHFEmcQA::GetElectronSource(AliAODMCParticle *mcpart)
        AliAODMCParticle* grandMa = (AliAODMCParticle*)fMCArray->At(jLabel);
        Int_t grandMaPDG = grandMa->GetPdgCode();
 
-       for (Int_t i=0; i<fNparents; i++){
-          if (abs(grandMaPDG)==fParentSelect[1][i]){
+       for (Int_t j=0; j<fNparents; j++){
+          if (abs(grandMaPDG)==fParentSelect[1][j]){
             origin = kBeautyCharm;
             return origin;
           }
@@ -899,8 +899,8 @@ Int_t AliHFEmcQA::GetElectronSource(TParticle* mcpart)
         TParticle* grandMa = fStack->Particle(jLabel);
         Int_t grandMaPDG = grandMa->GetPdgCode();
 
-        for (Int_t i=0; i<fNparents; i++){
-           if (abs(grandMaPDG)==fParentSelect[1][i]){
+        for (Int_t j=0; j<fNparents; j++){
+           if (abs(grandMaPDG)==fParentSelect[1][j]){
              origin = kBeautyCharm;
              return origin;
            }
