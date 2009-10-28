@@ -75,7 +75,7 @@ Long64_t AliRelAlignerKalmanArray::Merge( TCollection* list )
   AliRelAlignerKalmanArray *arrayFromList;
   if (!list) return 0;
   TIter next(list);
-  while ( arrayFromList = dynamic_cast<AliRelAlignerKalmanArray*>(next()) )
+  while ( (arrayFromList = dynamic_cast<AliRelAlignerKalmanArray*>(next())) )
   {
     if (arrayFromList==this) continue;
 
@@ -121,7 +121,7 @@ TObjArray* AliRelAlignerKalmanArray::SortedMerge( TObjArray* input )
   timeStampIn = alignerOut->GetTimeStamp();
   SetCurrentTimeBin( timeStampIn );
   TIter next(input);
-  while ( alignerIn = dynamic_cast<AliRelAlignerKalman*>(next()) )
+  while ( (alignerIn = dynamic_cast<AliRelAlignerKalman*>(next())) )
   {
     timeStampIn = alignerIn->GetTimeStamp();
     if ( IsInCurrentTimeBin(timeStampIn) )
