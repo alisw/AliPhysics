@@ -131,6 +131,22 @@ void plotMCRates(char* hijfname = "data/scaled25Oct09/histosLHC08d6.root",
   drawHadEleRatios();
   drawSigBkg();
 
+  TFile* mcout = new TFile("MCElectrons.root","RECREATE");
+  all->Write();
+  bele->Write();
+  cele->Write();
+  candb->Write();
+  conv->Write();
+  dalitz->Write();
+  wz->Write();
+  other->Write();
+  mchad->Write();
+  sige->Write();
+  bkge->Write();
+  walle->Write();
+  hije->Write();
+  mcout->Close();
+
 }
 
 void ScaleAndConfigure(TH1F* hist,Double_t scale, Int_t color,Bool_t keepErr=kFALSE)
@@ -160,9 +176,10 @@ void drawAnnualYields() {
   crates->cd();
   gPad->SetLogy();
   all->SetXTitle("p_{T} (GeV/c)");
-  all->SetYTitle("Annual yield");
-  all->GetYaxis()->SetRangeUser(1,6.E8);
-  all->GetXaxis()->SetRangeUser(0.,50.);
+  all->SetTitle("MC electrons in Pb+Pb, 5.5 TeV");
+  all->SetYTitle("Annual yield in EMCAL dN/dp_{T} (GeV/c)^{-1}");
+  all->GetYaxis()->SetRangeUser(1,2.E6);
+  all->GetXaxis()->SetRangeUser(10.,50.);
   all->Draw();
   bele->Draw("same");  
   cele->Draw("same");  
@@ -191,7 +208,8 @@ void drawSigBkg() {
   csigbkg->cd();
   gPad->SetLogy();
   all->SetXTitle("p_{T} (GeV/c)");
-  all->SetYTitle("Annual yield");
+  all->SetTitle("MC electrons in Pb+Pb, 5.5 TeV");
+  all->SetYTitle("Annual Yield in EMCAL dN/dp_{T} (GeV/c)^{-1}");
   all->GetYaxis()->SetRangeUser(1.,6.E8);
   all->GetXaxis()->SetRangeUser(0.,50.);
   all->Draw();
@@ -224,11 +242,11 @@ void drawPtCutRates() {
   TH1F* dalitzptcut = GetPtCutHisto(dalitz);
   TH1F* convptcut = GetPtCutHisto(conv);
   TH1F* wzptcut = GetPtCutHisto(wz);
-  alleptcut->GetXaxis()->SetRangeUser(0,50);
-  alleptcut->GetYaxis()->SetRangeUser(10,6.e8);
+  alleptcut->GetXaxis()->SetRangeUser(10,50);
+  alleptcut->GetYaxis()->SetRangeUser(10,2.e6);
   alleptcut->SetXTitle("p_{T}^{cut} (GeV/c)");
   alleptcut->SetYTitle("Annual Yield in EMCAL for p_{T}>p_{T}^{cut}");
-  alleptcut->SetTitle("Annual electron yield in Pb+Pb for p_{T}>p_{T}^{cut}");
+  alleptcut->SetTitle("MC electrons in Pb+Pb, 5.5 TeV");
   alleptcut->Draw();
   beleptcut->Draw("same");
   celeptcut->Draw("same");
@@ -249,7 +267,7 @@ void drawHadEleRatios() {
   gStyle->SetOptStat(0);
   TH1F* allratio = (TH1F*)all->Clone();
   TH1F* behratio = (TH1F*)bele->Clone();
-  allratio->SetTitle("Pb+Pb, 5.5 TeV");
+  allratio->SetTitle("MC hadrons and electrons in Pb+Pb, 5.5 TeV");
   allratio->SetXTitle("p_{T} (GeV/c)");
   allratio->SetYTitle("Hadrons/Electrons");
   for(Int_t i = 1; i < all->GetNbinsX(); i++) {
@@ -269,8 +287,8 @@ void drawHadEleRatios() {
   allratio->Rebin(5); allratio->Scale(1./5.);
   behratio->Rebin(5); behratio->Scale(1./5.);
   allratio->GetYaxis()->SetRangeUser(50,1e4);
-  allratio->GetXaxis()->SetRangeUser(0,49);
-  behratio->GetXaxis()->SetRangeUser(0,49);
+  allratio->GetXaxis()->SetRangeUser(10.,49.);
+  behratio->GetXaxis()->SetRangeUser(10.,49.);
   allratio->SetMarkerStyle(20);
   behratio->SetMarkerStyle(24);
   allratio->Fit("pol0");
