@@ -27,6 +27,7 @@
 #include <TList.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TMap.h>
 #include <TVector3.h>
 #include <TGeoManager.h>
 
@@ -149,14 +150,49 @@ void AliAlignmentDataFilterITS::ConnectInputData(Option_t *)
   if(!tree) {
     printf("ERROR: Could not read chain from input slot 0\n");
   } else {
-    // Disable all branches and enable only the needed ones
+    // Get the OCDB path and the list of OCDB objects used for reco 
+    TMap *cdbMap = (TMap*)(tree->GetTree()->GetUserInfo())->FindObject("cdbMap");
+    TList *cdbList = (TList*)(tree->GetTree()->GetUserInfo())->FindObject("cdbList");
 
+    //cdbList->Print();
+    // write the list to the user info of the output tree
+    if(!fspTree) {
+      printf("ERROR: fspTree does not exist\n");
+    } else {
+      TMap *cdbMapCopy = new TMap(cdbMap->GetEntries());	 
+      cdbMapCopy->SetOwner(1);	 
+      cdbMapCopy->SetName("cdbMap");	 
+      TIter iter1(cdbMap->GetTable());	 
+ 	 
+      TPair* pair = 0;	 
+      while((pair = dynamic_cast<TPair*> (iter1.Next()))){	 
+	TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());	 
+	TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());	 
+	cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
+      }	 
+
+      TList *cdbListCopy = new TList();	 
+      cdbListCopy->SetOwner(1);	 
+      cdbListCopy->SetName("cdbList");	 
+      
+      TIter iter2(cdbList);	 
+      
+      TObjString* cdbEntry=0;
+      while((cdbEntry =(TObjString*)(iter2.Next()))) {
+	cdbListCopy->Add(new TObjString(*cdbEntry));
+      }	 
+      cdbListCopy->Print();
+
+
+      fspTree->GetUserInfo()->Add(cdbMapCopy);	 
+      fspTree->GetUserInfo()->Add(cdbListCopy);
+    }
+
+    // Disable all branches and enable only the needed ones
     tree->SetBranchStatus("fTriggerMask", 1);
     tree->SetBranchStatus("fSPDVertex*", 1);
-
     tree->SetBranchStatus("ESDfriend*", 1);
     tree->SetBranchAddress("ESDfriend.",&fESDfriend);
-
     tree->SetBranchStatus("fSPDMult*", 1);
     
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -291,6 +327,20 @@ void AliAlignmentDataFilterITS::Exec(Option_t */*option*/)
 
   // Post the data for slot 0
   fHistNevents->Fill(0);
+
+
+  // write field value to spTree UserInfo
+  if(!((fspTree->GetUserInfo())->FindObject("BzkGauss"))) {
+    Double_t bz=fESD->GetMagneticField();
+    TString bzString; bzString+=bz;
+    TObjString *bzObjString = new TObjString(bzString);
+    TList *bzList = new TList();	 
+    bzList->SetOwner(1);	 
+    bzList->SetName("BzkGauss");	 
+    bzList->Add(bzObjString);
+    fspTree->GetUserInfo()->Add(bzList);
+  }
+
 
   // Process event as Cosmic or Collision
   //if(esd->GetEventType()== ???? ) {
