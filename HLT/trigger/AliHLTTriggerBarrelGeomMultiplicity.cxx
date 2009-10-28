@@ -240,7 +240,6 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoDeinit()
 int AliHLTTriggerBarrelGeomMultiplicity::ReadPreprocessorValues(const char* /*modules*/)
 {
     // see header file for function documentation
-  int nDetectorGeoms=0;
 
   // TODO 2009-10-10: implementation
   // for the moment very quick, just reload the magnetic field
