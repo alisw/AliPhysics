@@ -69,7 +69,7 @@ class AliTRDclusterizer : public TNamed
   virtual         ~AliTRDclusterizer();
   AliTRDclusterizer &operator=(const AliTRDclusterizer &c);
 
-  void     Copy(const TObject &c) const;
+  void     Copy(TObject &c) const;
 
   Bool_t   Open(const Char_t *name, Int_t nEvent = 0);
   Bool_t   OpenInput(Int_t nEvent = 0);

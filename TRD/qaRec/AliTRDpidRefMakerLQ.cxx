@@ -187,7 +187,7 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
   for(Int_t ip=AliTRDCalPID::kNMom; ip--; ){ 
     for(Int_t is=AliPID::kSPECIES; is--;) {
       Int_t n(0); // index of data
-      for(Int_t itrk=0; itrk<fData->GetEntries() & n<kMaxStat; itrk++){
+      for(Int_t itrk=0; (itrk < fData->GetEntries()) & (n<kMaxStat); itrk++){
         if(!(fData->GetEntry(itrk))) continue;
         if(fPIDbin!=is) continue;
         for(Int_t ily=fPIDdataArray->fNtracklets; ily--;){

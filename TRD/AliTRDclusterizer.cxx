@@ -271,7 +271,7 @@ AliTRDclusterizer &AliTRDclusterizer::operator=(const AliTRDclusterizer &c)
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizer::Copy(const TObject &c) const
+void AliTRDclusterizer::Copy(TObject &c) const
 {
   //
   // Copy function
