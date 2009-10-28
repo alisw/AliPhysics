@@ -86,7 +86,7 @@ int AliHLTGlobalEsdConverterComponent::Configure(const char* arguments)
   TObjArray* pTokens=allArgs.Tokenize(" ");
   if (pTokens) {
     for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
-      argument=((TObjString*)pTokens->At(i))->GetString();
+      argument=((TObjString*)pTokens->At(i))->GetString();	
       if (argument.IsNull()) continue;
       
       if (argument.CompareTo("-solenoidBz")==0) {
@@ -95,7 +95,7 @@ int AliHLTGlobalEsdConverterComponent::Configure(const char* arguments)
 	fSolenoidBz=((TObjString*)pTokens->At(i))->GetString().Atof();
 	continue;
       }
-      else if (argument.CompareTo("-fitTracks2Vertex")==0) {
+      else if (argument.CompareTo("-fitTracksToVertex")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("Filling of vertex constrained tracks is set set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	fFillVtxConstrainedTracks=((TObjString*)pTokens->At(i))->GetString().Atoi();
@@ -184,7 +184,11 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
       // -tree
     } else if (argument.CompareTo("-tree")==0) {
       fWriteTree=1;
-
+    }else if (argument.CompareTo("-fitTracksToVertex")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+	  argument = argv[i];
+	  HLTInfo("Filling of vertex constrained tracks is set set to: %s", argument.Data());
+	  fFillVtxConstrainedTracks=argument.Atoi();
     } else {
       HLTError("unknown argument %s", argument.Data());
       break;
@@ -451,16 +455,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       
       AliHLTVertexer vertexer;
       vertexer.SetESD( pESD );
+      vertexer.SetFillVtxConstrainedTracks( fFillVtxConstrainedTracks );
       vertexer.FindPrimaryVertex();
       vertexer.FindV0s();
-
-      // relate the tracks to vertex
-      if( fFillVtxConstrainedTracks ){
-	for( Int_t i = 0; i<pESD->GetNumberOfTracks(); i++){
-	  if( !vertexer.TrackInfos()[i].fPrimUsedFlag ) continue;
-	  pESD->GetTrack(i)->RelateToVertex( pESD->GetPrimaryVertex(), fESD->GetMagneticField(),5. );
-	}
-      }
       
       if (iAddedDataBlocks>0 && pTree) {
        pTree->Fill();

@@ -29,14 +29,16 @@ ClassImp(AliHLTVertexer)
 AliHLTVertexer::AliHLTVertexer():
   fESD(0),
   fTrackInfos(0),
-  fPrimaryVtx()
+  fPrimaryVtx(),
+  fFillVtxConstrainedTracks(1)
 {
 }
 
 AliHLTVertexer::AliHLTVertexer(const AliHLTVertexer & ):
   fESD(0),
   fTrackInfos(0),
-  fPrimaryVtx()
+  fPrimaryVtx(),
+  fFillVtxConstrainedTracks(1)
 {
 }
 
@@ -72,7 +74,6 @@ void AliHLTVertexer::SetESD( AliESDEvent *event )
   }
 }
 
-
 void AliHLTVertexer::FindPrimaryVertex(  )
 {
   //* Find event primary vertex
@@ -90,7 +91,7 @@ void AliHLTVertexer::FindPrimaryVertex(  )
   Int_t nSelected = 0;
   for( Int_t i = 0; i<nTracks; i++){ 
     if(!fTrackInfos[i].fOK ) continue;
-    if( fESD->GetTrack(i)->GetTPCNcls()<60  ) continue;
+    //if( fESD->GetTrack(i)->GetTPCNcls()<60  ) continue;
     const AliKFParticle &p = fTrackInfos[i].fParticle;
     Double_t chi = p.GetDeviationFromVertex( fPrimaryVtx );      
     if( chi > 3.5 ) continue;
@@ -106,6 +107,16 @@ void AliHLTVertexer::FindPrimaryVertex(  )
   if( fPrimaryVtx.GetNContributors()>3 ){
     AliESDVertex vESD( fPrimaryVtx.Parameters(), fPrimaryVtx.CovarianceMatrix(), fPrimaryVtx.GetChi2(), fPrimaryVtx.GetNContributors() );
     fESD->SetPrimaryVertexTracks( &vESD );
+
+    // relate the tracks to vertex
+
+    if( fFillVtxConstrainedTracks ){      
+      for( Int_t i = 0; i<nTracks; i++ ){
+	if( !fTrackInfos[i].fPrimUsedFlag ) continue;	
+	fESD->GetTrack(i)->RelateToVertex( &vESD, fESD->GetMagneticField(),100. );
+      }
+    }
+
   } else {
     for( Int_t i = 0; i<nTracks; i++)
       fTrackInfos[i].fPrimUsedFlag = 0;
@@ -125,10 +136,14 @@ void AliHLTVertexer::FindV0s(  )
   //AliKFVertex primVtx( *fESD->GetPrimaryVertexTracks() );
   AliKFVertex &primVtx = fPrimaryVtx;
   if( primVtx.GetNContributors()<3 ) return;
+
+  bool *constrainedV0   = new bool[nTracks];
   for( Int_t iTr = 0; iTr<nTracks; iTr++ ){ 
     AliESDTrackInfo &info = fTrackInfos[iTr];
     info.fPrimDeviation = info.fParticle.GetDeviationFromVertex( primVtx );
+    constrainedV0[iTr] = 0;
   }
+  
 
   for( Int_t iTr = 0; iTr<nTracks; iTr++ ){ //* first daughter
 
@@ -193,7 +208,20 @@ void AliHLTVertexer::FindV0s(  )
       
       AliESDv0 v0ESD( *fESD->GetTrack( iTr ), iTr, *fESD->GetTrack( jTr ), jTr );  
       fESD->AddV0( &v0ESD );
+
+      // relate the tracks to vertex
+
+      if( fFillVtxConstrainedTracks ){
+	if( constrainedV0[iTr] || constrainedV0[jTr]
+	    || info.fPrimDeviation < 4. || jnfo.fPrimDeviation <4. ) continue;
+	AliESDVertex vESD(v0.Parameters(), v0.CovarianceMatrix(), v0.GetChi2(), 2);
+	fESD->GetTrack(iTr)->RelateToVertex( &vESD, fESD->GetMagneticField(),100. );
+	fESD->GetTrack(jTr)->RelateToVertex( &vESD, fESD->GetMagneticField(),100. );
+	constrainedV0[iTr] = 1;
+	constrainedV0[jTr] = 1;	
+      }
     }
   }
+  delete[] constrainedV0;
 }
 

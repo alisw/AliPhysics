@@ -34,6 +34,7 @@ public:
   void SetESD( AliESDEvent *event );
   void FindPrimaryVertex();
   void FindV0s();
+  void SetFillVtxConstrainedTracks( bool v ){ fFillVtxConstrainedTracks = v; }
   const AliESDTrackInfo *TrackInfos(){ return fTrackInfos; }  
 
  private:
@@ -44,6 +45,8 @@ public:
   AliESDEvent *fESD; // pointer to esd event
   AliESDTrackInfo *fTrackInfos; // information about esd tracks
   AliKFVertex fPrimaryVtx; // reconstructed KF primary vertex
+  bool fFillVtxConstrainedTracks; // flag to fill vtx constrained tracks to esd
+
   ClassDef(AliHLTVertexer,0)   //HLT vertex finder
 };
 
