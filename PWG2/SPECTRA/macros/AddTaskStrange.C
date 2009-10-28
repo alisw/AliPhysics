@@ -1,5 +1,5 @@
-AliAnalysisTaskStrange *AddTaskStrange(Short_t lCollidingSystems=0,  /*0 = pp, 1 = AA*/
-                                       const char *optCuts="")
+AliAnalysisTaskStrange *AddTaskStrange(Short_t lCollidingSystems=0,  /*0 = pp, 1 = AA*/,
+				       TString lAnalysisCut="no" )
 {
 // Creates, configures and attaches to the train a strangeness task.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -19,9 +19,10 @@ AliAnalysisTaskStrange *AddTaskStrange(Short_t lCollidingSystems=0,  /*0 = pp, 1
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
    // Create and configure the task
-	AliAnalysisTaskStrange *taskstrange = new AliAnalysisTaskStrange("TaskStrange", optCuts);
+	AliAnalysisTaskStrange *taskstrange = new AliAnalysisTaskStrange("TaskStrange");
    taskstrange->SetCollidingSystems(lCollidingSystems);
    taskstrange->SetAnalysisType(type);
+   taskstrange->SetAnalysisCut(lAnalysisCut);
    mgr->AddTask(taskstrange);
 
    // Create ONLY the output containers for the data produced by the task.
@@ -36,7 +37,7 @@ AliAnalysisTaskStrange *AddTaskStrange(Short_t lCollidingSystems=0,  /*0 = pp, 1
 								   AliAnalysisManager::kOutputContainer,
 								   outname );
                            
-	mgr->ConnectInput(taskstrange, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectInput(taskstrange, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskstrange, 1, coutput1);
    return taskstrange;
 }   
