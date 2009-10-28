@@ -22,8 +22,8 @@ public:
                UInt_t    GetLevel()     const { return fLevel; }       
                UInt_t    GetDelay() const { return fDelay; }  
               TString    GetEdge()    const { return fEdge; }      
-               UInt_t    GetDeltaMin() const { return fDeltaMin; }  
-               UInt_t    GetDeltaMax() const { return fDeltaMax; }  
+               Int_t    GetDeltaMin() const { return fDeltaMin; }  
+               Int_t    GetDeltaMax() const { return fDeltaMax; }  
      // Setters
                  void    SetCTPInputTimeParams( TString name, UInt_t level, 
                             UInt_t delay, TString edge, UInt_t deltamin, UInt_t deltamax );
@@ -36,12 +36,12 @@ protected:
               UInt_t    fLevel; 
               UInt_t    fDelay;
 	     TString	fEdge;
-	      UInt_t	fDeltaMin;
-	      UInt_t	fDeltaMax;
+	      Int_t	fDeltaMin;
+	      Int_t	fDeltaMax;
                          
 private:                         
 
-   ClassDef( AliCTPInputTimeParams, 2 )  
+   ClassDef( AliCTPInputTimeParams, 3 )  
 };                                                                         
 
 

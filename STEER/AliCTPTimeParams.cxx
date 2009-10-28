@@ -93,13 +93,30 @@ void AliCTPTimeParams::AddDelayL0L1L2(UInt_t delayL1L0, UInt_t delayL2L0)
 //______________________________________________________________________________
 AliCTPInputTimeParams* AliCTPTimeParams::GetTimeParamsForInput( TString inputname)
 {
+ // Get AliCTPInputTimeParams for input name
 Int_t ninputs = fCTPInputTimeParams.GetEntriesFast();
 for ( Int_t i=0; i < ninputs; i++ )
  {
   AliCTPInputTimeParams* ctpinputtime = (AliCTPInputTimeParams*)fCTPInputTimeParams.At(i);
   if (inputname == ctpinputtime->GetInputName() ) return ctpinputtime;
  }
+cout << "Input: " << inputname << " not found." << endl;
 return NULL;
+}
+//______________________________________________________________________________
+Int_t AliCTPTimeParams::GetDeltasforClass(TString classname,Int_t& deltamin,Int_t& deltamax)
+{
+ // Get deltamin and deltamax for given class
+ // Assumes that descriptor = DINPU
+ // ret: 0=OK, 1= input doea not exist
+ TString input(classname(1,4)); 
+ AliCTPInputTimeParams* tprm = GetTimeParamsForInput(input);
+ if(tprm){
+  deltamin=tprm->GetDeltaMin();
+  deltamax=tprm->GetDeltaMax();
+  return 0;
+ }
+ return 1;
 }
 //______________________________________________________________________________
 AliCTPTimeParams* AliCTPTimeParams::LoadCTPTimeParams(TString filename)

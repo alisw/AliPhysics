@@ -33,6 +33,8 @@ public:
 		UInt_t  GetDelayL1L0()   const { return fDelayL1L0; }
 	        UInt_t  GetDelayL2L0()   const { return fDelayL2L0; }                  const TObjArray* GetInputTimeParams() const { return &fCTPInputTimeParams; }
       AliCTPInputTimeParams* GetTimeParamsForInput(TString inputname);
+      Int_t GetDeltasforClass(TString classname,Int_t& deltamin,Int_t& deltamax);
+
                 enum {kNMaxInputs = 60}; //CTP can manage up to 60 trigger detector inputs
 private:
 			UInt_t fDelayL1L0;
