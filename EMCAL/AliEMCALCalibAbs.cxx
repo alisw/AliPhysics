@@ -61,11 +61,11 @@ void AliEMCALCalibAbs::ReadTextCalibAbsInfo(Int_t nSM, const TString &txtFileNam
 
   // list of values to be read
   // first: overall values for the whole SuperModule
-  Int_t CalibMethod; 
-  Int_t CalibPass; 
-  Float_t AbsoluteCalib; 
+  Int_t iCalibMethod; 
+  Int_t iCalibPass; 
+  Float_t absoluteCalib; 
   // third: info for each tower
-  Float_t RelativeCalib; // (ADC>GeV relative gain/conversion), value around 1
+  Float_t relativeCalib; // (ADC>GeV relative gain/conversion), value around 1
   // end - all values
 
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
@@ -80,15 +80,15 @@ void AliEMCALCalibAbs::ReadTextCalibAbsInfo(Int_t nSM, const TString &txtFileNam
     t->SetSuperModuleNum(iSM);
 
     // first: overall values for the whole SuperModule
-    inputFile >> CalibMethod >> CalibPass >> AbsoluteCalib;
-    t->SetCalibMethod(CalibMethod);
-    t->SetCalibPass(CalibPass);
-    t->SetAbsoluteCalib(AbsoluteCalib);
+    inputFile >> iCalibMethod >> iCalibPass >> absoluteCalib;
+    t->SetCalibMethod(iCalibMethod);
+    t->SetCalibPass(iCalibPass);
+    t->SetAbsoluteCalib(absoluteCalib);
 
     // third: info for each tower
     for (Int_t j=0; j<nAPDPerSM; j++) {
       inputFile >> iCol >> iRow 
-		>> RelativeCalib;
+		>> relativeCalib;
 
       // assume that this info is already swapped and done for this basis?
       if (swapSides) {
@@ -97,7 +97,7 @@ void AliEMCALCalibAbs::ReadTextCalibAbsInfo(Int_t nSM, const TString &txtFileNam
 	iRow = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
 
-      t->SetRelativeCalib(iCol, iRow, RelativeCalib);
+      t->SetRelativeCalib(iCol, iRow, relativeCalib);
     }
 
   } // i, SuperModule
@@ -123,7 +123,7 @@ void AliEMCALCalibAbs::WriteTextCalibAbsInfo(const TString &txtFileName,
   Int_t iRow = 0;
 
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
-  Float_t RelativeCalib = 0;
+  Float_t relativeCalib = 0;
   for (Int_t i = 0; i < fNSuperModule; i++) {
     AliEMCALSuperModuleCalibAbs * t = (AliEMCALSuperModuleCalibAbs*) fSuperModuleData[i];
 
@@ -138,7 +138,7 @@ void AliEMCALCalibAbs::WriteTextCalibAbsInfo(const TString &txtFileName,
       iCol = j / AliEMCALGeoParams::fgkEMCALRows;
       iRow = j % AliEMCALGeoParams::fgkEMCALRows;
 
-      RelativeCalib = t->GetRelativeCalib(iCol, iRow);
+      relativeCalib = t->GetRelativeCalib(iCol, iRow);
 
       if (swapSides) {
 	// C side, oriented differently than A side: swap is requested
@@ -147,7 +147,7 @@ void AliEMCALCalibAbs::WriteTextCalibAbsInfo(const TString &txtFileName,
       }
 
       outputFile << iCol << " " << iRow 
-		 << " " << RelativeCalib << endl;
+		 << " " << relativeCalib << endl;
     }
 
   } // i, SuperModule
@@ -184,23 +184,23 @@ void AliEMCALCalibAbs::ReadTreeCalibAbsInfo(TTree *tree,
   Int_t iSM = 0; // SuperModule index
   // list of values to be read
   // first: overall values for the whole SuperModule
-  Int_t CalibMethod; 
-  Int_t CalibPass = 0; 
-  Float_t AbsoluteCalib = 0; 
+  Int_t iCalibMethod; 
+  Int_t iCalibPass = 0; 
+  Float_t absoluteCalib = 0; 
   // third: info for each tower
-  Float_t RelativeCalib[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Float_t relativeCalib[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
   // end - all values
 
   // just to make the initializations of the arrays are done correctly, let's use memset
-  memset(RelativeCalib, 0, sizeof(RelativeCalib)); 
+  memset(relativeCalib, 0, sizeof(relativeCalib)); 
 
   // declare the branches
   tree->SetBranchAddress("iSM", &iSM);
-  tree->SetBranchAddress("CalibMethod", &CalibMethod);
-  tree->SetBranchAddress("CalibPass", &CalibPass);
-  tree->SetBranchAddress("AbsoluteCalib", &AbsoluteCalib);
+  tree->SetBranchAddress("CalibMethod", &iCalibMethod);
+  tree->SetBranchAddress("CalibPass", &iCalibPass);
+  tree->SetBranchAddress("AbsoluteCalib", &absoluteCalib);
   //
-  tree->SetBranchAddress("RelativeCalib", RelativeCalib);
+  tree->SetBranchAddress("RelativeCalib", relativeCalib);
 
   // indices for looping over the towers
   Int_t iCol = 0;
@@ -214,9 +214,9 @@ void AliEMCALCalibAbs::ReadTreeCalibAbsInfo(TTree *tree,
 
     t->SetSuperModuleNum(iSM);
     // first, overall values
-    t->SetCalibMethod(CalibMethod);
-    t->SetCalibPass(CalibPass);
-    t->SetAbsoluteCalib(AbsoluteCalib);
+    t->SetCalibMethod(iCalibMethod);
+    t->SetCalibPass(iCalibPass);
+    t->SetAbsoluteCalib(absoluteCalib);
 
     // third: info for each tower
     for (Int_t j=0; j<nAPDPerSM; j++) {
@@ -233,7 +233,7 @@ void AliEMCALCalibAbs::ReadTreeCalibAbsInfo(TTree *tree,
 	iRowMod = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
 
-      t->SetRelativeCalib(iColMod, iRowMod, RelativeCalib[iCol][iRow]);
+      t->SetRelativeCalib(iColMod, iRowMod, relativeCalib[iCol][iRow]);
     }
 
   } // loop over entries
@@ -258,15 +258,15 @@ void AliEMCALCalibAbs::WriteRootCalibAbsInfo(const TString &rootFileName,
   Int_t iSM = 0; // SuperModule index
   // list of values to be written
   // first: overall values for the whole SuperModule
-  Int_t CalibMethod = 0; 
-  Int_t CalibPass = 0; 
-  Float_t AbsoluteCalib = 0; 
+  Int_t iCalibMethod = 0; 
+  Int_t iCalibPass = 0; 
+  Float_t absoluteCalib = 0; 
   // third: info for each tower
-  Float_t RelativeCalib[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Float_t relativeCalib[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
   // end - all values
 
   // just to make the initializations of the arrays are done correctly, let's use memset
-  memset(RelativeCalib, 0, sizeof(RelativeCalib)); 
+  memset(relativeCalib, 0, sizeof(relativeCalib)); 
 
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
   // for looping over towers
@@ -276,20 +276,20 @@ void AliEMCALCalibAbs::WriteRootCalibAbsInfo(const TString &rootFileName,
   // declare the branches
   // first
   tree->Branch("iSM", &iSM, "iSM/I");
-  tree->Branch("CalibMethod", &CalibMethod, "CalibMethod/I");
-  tree->Branch("CalibPass", &CalibPass, "CalibPass/I");
-  tree->Branch("AbsoluteCalib", &AbsoluteCalib, "AbsoluteCalib/F");
+  tree->Branch("CalibMethod", &iCalibMethod, "CalibMethod/I");
+  tree->Branch("CalibPass", &iCalibPass, "CalibPass/I");
+  tree->Branch("AbsoluteCalib", &absoluteCalib, "AbsoluteCalib/F");
   // third: info for each tower; see if a 2D array works OK or if we'll have to use 1D arrays instead 
-  tree->Branch( "RelativeCalib", &RelativeCalib, Form("RelativeCalib[%d][%d]/F", AliEMCALGeoParams::fgkEMCALCols, AliEMCALGeoParams::fgkEMCALRows) );
+  tree->Branch( "RelativeCalib", &relativeCalib, Form("RelativeCalib[%d][%d]/F", AliEMCALGeoParams::fgkEMCALCols, AliEMCALGeoParams::fgkEMCALRows) );
 
   for (iSM = 0; iSM < fNSuperModule; iSM++) {
     AliEMCALSuperModuleCalibAbs * t = (AliEMCALSuperModuleCalibAbs*) fSuperModuleData[iSM];
 
     iSM = t->GetSuperModuleNum();
     // first, overall values
-    CalibMethod = t->GetCalibMethod();
-    CalibPass = t->GetCalibPass();
-    AbsoluteCalib = t->GetAbsoluteCalib();
+    iCalibMethod = t->GetCalibMethod();
+    iCalibPass = t->GetCalibPass();
+    absoluteCalib = t->GetAbsoluteCalib();
 
     // third: info for each tower
     for (Int_t j=0; j<nAPDPerSM; j++) {
@@ -306,7 +306,7 @@ void AliEMCALCalibAbs::WriteRootCalibAbsInfo(const TString &rootFileName,
 	iRowMod = AliEMCALGeoParams::fgkEMCALRows-1 - iRow;
       }
 
-      RelativeCalib[iColMod][iRowMod] = t->GetRelativeCalib(iCol, iRow);
+      relativeCalib[iColMod][iRowMod] = t->GetRelativeCalib(iCol, iRow);
     }
 
     tree->Fill();

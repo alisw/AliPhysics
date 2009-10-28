@@ -51,7 +51,7 @@ class AliCaloCalibPedestal : public TObject {
   Bool_t ProcessEvent(AliCaloRawStreamV3    *in);
   
   // Mapping handling
-  AliCaloAltroMapping **GetAltroMapping() { return fMapping; };
+  AliCaloAltroMapping **GetAltroMapping() const { return fMapping; };
   void  SetAltroMapping(AliCaloAltroMapping **mapp) { fMapping = mapp; };
 
   // Parameter/cut handling

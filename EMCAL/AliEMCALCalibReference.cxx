@@ -62,17 +62,17 @@ void AliEMCALCalibReference::ReadTextCalibReferenceInfo(Int_t nSM, const TString
 
   // list of values to be read
   // first: overall values for the whole SuperModule
-  Int_t ReferenceTime; 
+  Int_t iReferenceTime; 
   // second: additional info for LED Reference and SM temperature
-  Float_t LEDRefAmp;
-  Float_t LEDRefAmpRMS;
-  Int_t LEDRefHighLow;
-  Float_t Temperature;
-  Float_t TemperatureRMS;
+  Float_t rLEDRefAmp;
+  Float_t rLEDRefAmpRMS;
+  Int_t iLEDRefHighLow;
+  Float_t temperature;
+  Float_t temperatureRMS;
   // third: info for each tower
-  Int_t HighLow; // 
-  Float_t LEDAmp; // low gain eq. amplitude
-  Float_t LEDAmpRMS; //
+  Int_t iHighLow; // 
+  Float_t rLEDAmp; // low gain eq. amplitude
+  Float_t rLEDAmpRMS; //
   // end - all values
 
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
@@ -87,26 +87,26 @@ void AliEMCALCalibReference::ReadTextCalibReferenceInfo(Int_t nSM, const TString
     t->SetSuperModuleNum(iSM);
 
     // first: overall values for the whole SuperModule
-    inputFile >> ReferenceTime;
-    t->SetReferenceTime(ReferenceTime);
+    inputFile >> iReferenceTime;
+    t->SetReferenceTime(iReferenceTime);
 
     // second: additional info for LED Reference and SM temperature
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) {
-      inputFile >> id >> LEDRefHighLow >> LEDRefAmp >> LEDRefAmpRMS;
-      t->SetLEDRefHighLow(id, LEDRefHighLow);
-      t->SetLEDRefAmp(id, LEDRefAmp);
-      t->SetLEDRefAmpRMS(id, LEDRefAmpRMS);
+      inputFile >> id >> iLEDRefHighLow >> rLEDRefAmp >> rLEDRefAmpRMS;
+      t->SetLEDRefHighLow(id, iLEDRefHighLow);
+      t->SetLEDRefAmp(id, rLEDRefAmp);
+      t->SetLEDRefAmpRMS(id, rLEDRefAmpRMS);
     }
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) {
-      inputFile >> id >> Temperature >> TemperatureRMS;
-      t->SetTemperature(id, Temperature);
-      t->SetTemperatureRMS(id, TemperatureRMS);
+      inputFile >> id >> temperature >> temperatureRMS;
+      t->SetTemperature(id, temperature);
+      t->SetTemperatureRMS(id, temperatureRMS);
     }
 
     // third: info for each tower
     for (Int_t j=0; j<nAPDPerSM; j++) {
       inputFile >> iCol >> iRow 
-		>> HighLow >> LEDAmp >> LEDAmpRMS;
+		>> iHighLow >> rLEDAmp >> rLEDAmpRMS;
 
       // assume that this info is already swapped and done for this basis?
       if (swapSides) {
@@ -117,9 +117,9 @@ void AliEMCALCalibReference::ReadTextCalibReferenceInfo(Int_t nSM, const TString
 
       AliEMCALCalibReferenceVal * v = t->GetAPDVal(iCol, iRow);
 
-      v->SetHighLow(HighLow);
-      v->SetLEDAmp(LEDAmp);
-      v->SetLEDAmpRMS(LEDAmpRMS);
+      v->SetHighLow(iHighLow);
+      v->SetLEDAmp(rLEDAmp);
+      v->SetLEDAmpRMS(rLEDAmpRMS);
     }
 
   } // i, SuperModule
@@ -216,42 +216,42 @@ void AliEMCALCalibReference::ReadTreeCalibReferenceInfo(TTree *tree,
   Int_t iSM = 0; // SuperModule index
   // list of values to be read
   // first: overall values for the whole SuperModule
-  Int_t ReferenceTime= {0}; 
+  Int_t iReferenceTime= {0}; 
   // second: additional info for LED Reference and SM temperature
-  Float_t LEDRefAmp[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};
-  Float_t LEDRefAmpRMS[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};
-  Int_t LEDRefHighLow[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};
-  Float_t Temperature[AliEMCALGeoParams::fgkEMCALTempSensors]= {0};
-  Float_t TemperatureRMS[AliEMCALGeoParams::fgkEMCALTempSensors]= {0};
+  Float_t rLEDRefAmp[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};
+  Float_t rLEDRefAmpRMS[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};
+  Int_t iLEDRefHighLow[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};
+  Float_t temperature[AliEMCALGeoParams::fgkEMCALTempSensors]= {0};
+  Float_t temperatureRMS[AliEMCALGeoParams::fgkEMCALTempSensors]= {0};
   // third: info for each tower
-  Int_t HighLow[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
-  Float_t LEDAmp[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
-  Float_t LEDAmpRMS[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Int_t iHighLow[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Float_t rLEDAmp[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Float_t rLEDAmpRMS[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
   // end - all values
 
   // just to make the initializations of the arrays are done correctly, let's use memset
-  memset(LEDRefAmp, 0, sizeof(LEDRefAmp)); 
-  memset(LEDRefAmpRMS, 0, sizeof(LEDRefAmpRMS)); 
-  memset(LEDRefHighLow, 0, sizeof(LEDRefHighLow)); 
-  memset(Temperature, 0, sizeof(Temperature)); 
-  memset(TemperatureRMS, 0, sizeof(TemperatureRMS)); 
-  memset(HighLow, 0, sizeof(HighLow)); 
-  memset(LEDAmp, 0, sizeof(LEDAmp)); 
-  memset(LEDAmpRMS, 0, sizeof(LEDAmpRMS)); 
+  memset(rLEDRefAmp, 0, sizeof(rLEDRefAmp)); 
+  memset(rLEDRefAmpRMS, 0, sizeof(rLEDRefAmpRMS)); 
+  memset(iLEDRefHighLow, 0, sizeof(iLEDRefHighLow)); 
+  memset(temperature, 0, sizeof(temperature)); 
+  memset(temperatureRMS, 0, sizeof(temperatureRMS)); 
+  memset(iHighLow, 0, sizeof(iHighLow)); 
+  memset(rLEDAmp, 0, sizeof(rLEDAmp)); 
+  memset(rLEDAmpRMS, 0, sizeof(rLEDAmpRMS)); 
 
   // declare the branches
   tree->SetBranchAddress("iSM", &iSM);
-  tree->SetBranchAddress("ReferenceTime", &ReferenceTime);
+  tree->SetBranchAddress("ReferenceTime", &iReferenceTime);
   //
-  tree->SetBranchAddress("LEDRefAmp", LEDRefAmp);
-  tree->SetBranchAddress("LEDRefAmpRMS", LEDRefAmpRMS);
-  tree->SetBranchAddress("LEDRefHighLow", LEDRefHighLow);
-  tree->SetBranchAddress("Temperature", Temperature);
-  tree->SetBranchAddress("TemperatureRMS", TemperatureRMS);
+  tree->SetBranchAddress("LEDRefAmp", rLEDRefAmp);
+  tree->SetBranchAddress("LEDRefAmpRMS", rLEDRefAmpRMS);
+  tree->SetBranchAddress("LEDRefHighLow", iLEDRefHighLow);
+  tree->SetBranchAddress("Temperature", temperature);
+  tree->SetBranchAddress("TemperatureRMS", temperatureRMS);
   //
-  tree->SetBranchAddress("HighLow", HighLow);
-  tree->SetBranchAddress("LEDAmp", LEDAmp);
-  tree->SetBranchAddress("LEDAmpRMS", LEDAmpRMS);
+  tree->SetBranchAddress("HighLow", iHighLow);
+  tree->SetBranchAddress("LEDAmp", rLEDAmp);
+  tree->SetBranchAddress("LEDAmpRMS", rLEDAmpRMS);
 
   // indices for looping over the towers
   Int_t iCol = 0;
@@ -265,17 +265,17 @@ void AliEMCALCalibReference::ReadTreeCalibReferenceInfo(TTree *tree,
 
     t->SetSuperModuleNum(iSM);
     // first, overall values
-    t->SetReferenceTime(ReferenceTime);
+    t->SetReferenceTime(iReferenceTime);
 
     // second: additional info for LED references and SM temperatures
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) {
-      t->SetLEDRefAmp(j, LEDRefAmp[j]);
-      t->SetLEDRefAmpRMS(j, LEDRefAmpRMS[j]);
-      t->SetLEDRefHighLow(j, LEDRefHighLow[j]);
+      t->SetLEDRefAmp(j, rLEDRefAmp[j]);
+      t->SetLEDRefAmpRMS(j, rLEDRefAmpRMS[j]);
+      t->SetLEDRefHighLow(j, iLEDRefHighLow[j]);
     }
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) {
-      t->SetTemperature(j, Temperature[j]);
-      t->SetTemperatureRMS(j, TemperatureRMS[j]);
+      t->SetTemperature(j, temperature[j]);
+      t->SetTemperatureRMS(j, temperatureRMS[j]);
     }
 
     // third: info for each tower
@@ -295,9 +295,9 @@ void AliEMCALCalibReference::ReadTreeCalibReferenceInfo(TTree *tree,
 
       AliEMCALCalibReferenceVal * v = t->GetAPDVal(iColMod, iRowMod);
 
-      v->SetHighLow(HighLow[iCol][iRow]);
-      v->SetLEDAmp(LEDAmp[iCol][iRow]);
-      v->SetLEDAmpRMS(LEDAmpRMS[iCol][iRow]);
+      v->SetHighLow(iHighLow[iCol][iRow]);
+      v->SetLEDAmp(rLEDAmp[iCol][iRow]);
+      v->SetLEDAmpRMS(rLEDAmpRMS[iCol][iRow]);
     }
 
   } // loop over entries
@@ -322,28 +322,28 @@ void AliEMCALCalibReference::WriteRootCalibReferenceInfo(const TString &rootFile
   Int_t iSM = 0; // SuperModule index
   // list of values to be written
   // first: overall values for the whole SuperModule
-  Int_t ReferenceTime = 0; 
+  Int_t iReferenceTime = 0; 
   // second: additional info for LED Reference and SM temperature
-  Float_t LEDRefAmp[AliEMCALGeoParams::fgkEMCALLEDRefs] = {0};
-  Float_t LEDRefAmpRMS[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};
-  Int_t LEDRefHighLow[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};
-  Float_t Temperature[AliEMCALGeoParams::fgkEMCALTempSensors]= {0};
-  Float_t TemperatureRMS[AliEMCALGeoParams::fgkEMCALTempSensors]= {0};
+  Float_t rLEDRefAmp[AliEMCALGeoParams::fgkEMCALLEDRefs] = {0};
+  Float_t rLEDRefAmpRMS[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};
+  Int_t iLEDRefHighLow[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};
+  Float_t temperature[AliEMCALGeoParams::fgkEMCALTempSensors]= {0};
+  Float_t temperatureRMS[AliEMCALGeoParams::fgkEMCALTempSensors]= {0};
   // third: info for each tower
-  Int_t HighLow[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
-  Float_t LEDAmp[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
-  Float_t LEDAmpRMS[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Int_t iHighLow[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Float_t rLEDAmp[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Float_t rLEDAmpRMS[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
   // end - all values
 
   // just to make the initializations of the arrays are done correctly, let's use memset
-  memset(LEDRefAmp, 0, sizeof(LEDRefAmp)); 
-  memset(LEDRefAmpRMS, 0, sizeof(LEDRefAmpRMS)); 
-  memset(LEDRefHighLow, 0, sizeof(LEDRefHighLow)); 
-  memset(Temperature, 0, sizeof(Temperature)); 
-  memset(TemperatureRMS, 0, sizeof(TemperatureRMS)); 
-  memset(HighLow, 0, sizeof(HighLow)); 
-  memset(LEDAmp, 0, sizeof(LEDAmp)); 
-  memset(LEDAmpRMS, 0, sizeof(LEDAmpRMS)); 
+  memset(rLEDRefAmp, 0, sizeof(rLEDRefAmp)); 
+  memset(rLEDRefAmpRMS, 0, sizeof(rLEDRefAmpRMS)); 
+  memset(iLEDRefHighLow, 0, sizeof(iLEDRefHighLow)); 
+  memset(temperature, 0, sizeof(temperature)); 
+  memset(temperatureRMS, 0, sizeof(temperatureRMS)); 
+  memset(iHighLow, 0, sizeof(iHighLow)); 
+  memset(rLEDAmp, 0, sizeof(rLEDAmp)); 
+  memset(rLEDAmpRMS, 0, sizeof(rLEDAmpRMS)); 
 
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
   // for looping over towers
@@ -353,34 +353,34 @@ void AliEMCALCalibReference::WriteRootCalibReferenceInfo(const TString &rootFile
   // declare the branches
   // first
   tree->Branch("iSM", &iSM, "iSM/I");
-  tree->Branch("ReferenceTime", &ReferenceTime, "ReferenceTime/I");
+  tree->Branch("ReferenceTime", &iReferenceTime, "ReferenceTime/I");
   // second  
-  tree->Branch( "LEDRefAmp", &LEDRefAmp, Form("LEDRefAmp[%d]/F", AliEMCALGeoParams::fgkEMCALLEDRefs) );
-  tree->Branch( "LEDRefAmpRMS", &LEDRefAmpRMS, Form("LEDRefAmpRMS[%d]/F", AliEMCALGeoParams::fgkEMCALLEDRefs) );
-  tree->Branch( "LEDRefHighLow", &LEDRefHighLow, Form("LEDRefHighLow[%d]/I", AliEMCALGeoParams::fgkEMCALLEDRefs) );
-  tree->Branch( "Temperature", &Temperature, Form("Temperature[%d]/F", AliEMCALGeoParams::fgkEMCALTempSensors) );
-  tree->Branch( "TemperatureRMS", &TemperatureRMS, Form("TemperatureRMS[%d]/F", AliEMCALGeoParams::fgkEMCALTempSensors) );
+  tree->Branch( "LEDRefAmp", &rLEDRefAmp, Form("LEDRefAmp[%d]/F", AliEMCALGeoParams::fgkEMCALLEDRefs) );
+  tree->Branch( "LEDRefAmpRMS", &rLEDRefAmpRMS, Form("LEDRefAmpRMS[%d]/F", AliEMCALGeoParams::fgkEMCALLEDRefs) );
+  tree->Branch( "LEDRefHighLow", &iLEDRefHighLow, Form("LEDRefHighLow[%d]/I", AliEMCALGeoParams::fgkEMCALLEDRefs) );
+  tree->Branch( "Temperature", &temperature, Form("Temperature[%d]/F", AliEMCALGeoParams::fgkEMCALTempSensors) );
+  tree->Branch( "TemperatureRMS", &temperatureRMS, Form("TemperatureRMS[%d]/F", AliEMCALGeoParams::fgkEMCALTempSensors) );
   // third: info for each tower; see if a 2D array works OK or if we'll have to use 1D arrays instead 
-  tree->Branch( "HighLow", &HighLow, Form("HighLow[%d][%d]/I", AliEMCALGeoParams::fgkEMCALCols, AliEMCALGeoParams::fgkEMCALRows) );
-  tree->Branch( "LEDAmp", &LEDAmp, Form("LEDAmp[%d][%d]/F", AliEMCALGeoParams::fgkEMCALCols, AliEMCALGeoParams::fgkEMCALRows) );
-  tree->Branch( "LEDAmpRMS", &LEDAmpRMS, Form("LEDAmpRMS[%d][%d]/F", AliEMCALGeoParams::fgkEMCALCols, AliEMCALGeoParams::fgkEMCALRows) );
+  tree->Branch( "HighLow", &iHighLow, Form("HighLow[%d][%d]/I", AliEMCALGeoParams::fgkEMCALCols, AliEMCALGeoParams::fgkEMCALRows) );
+  tree->Branch( "LEDAmp", &rLEDAmp, Form("LEDAmp[%d][%d]/F", AliEMCALGeoParams::fgkEMCALCols, AliEMCALGeoParams::fgkEMCALRows) );
+  tree->Branch( "LEDAmpRMS", &rLEDAmpRMS, Form("LEDAmpRMS[%d][%d]/F", AliEMCALGeoParams::fgkEMCALCols, AliEMCALGeoParams::fgkEMCALRows) );
 
   for (iSM = 0; iSM < fNSuperModule; iSM++) {
     AliEMCALSuperModuleCalibReference * t = (AliEMCALSuperModuleCalibReference*) fSuperModuleData[iSM];
 
     iSM = t->GetSuperModuleNum();
     // first, overall values
-    ReferenceTime = t->GetReferenceTime();
+    iReferenceTime = t->GetReferenceTime();
 
     // second: additional info for LED references and SM temperatures
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALLEDRefs; j++) {
-      LEDRefAmp[j] = t->GetLEDRefAmp(j);
-      LEDRefAmpRMS[j] = t->GetLEDRefAmpRMS(j);
-      LEDRefHighLow[j] = t->GetLEDRefHighLow(j);
+      rLEDRefAmp[j] = t->GetLEDRefAmp(j);
+      rLEDRefAmpRMS[j] = t->GetLEDRefAmpRMS(j);
+      iLEDRefHighLow[j] = t->GetLEDRefHighLow(j);
     }
     for (Int_t j=0; j<AliEMCALGeoParams::fgkEMCALTempSensors; j++) {
-      Temperature[j] = t->GetTemperature(j);
-      TemperatureRMS[j] = t->GetTemperatureRMS(j);
+      temperature[j] = t->GetTemperature(j);
+      temperatureRMS[j] = t->GetTemperatureRMS(j);
     }
 
     // third: info for each tower
@@ -400,9 +400,9 @@ void AliEMCALCalibReference::WriteRootCalibReferenceInfo(const TString &rootFile
 
       AliEMCALCalibReferenceVal * v = t->GetAPDVal(iCol, iRow);
 
-      HighLow[iColMod][iRowMod] = v->GetHighLow();
-      LEDAmp[iColMod][iRowMod] = v->GetLEDAmp();
-      LEDAmpRMS[iColMod][iRowMod] = v->GetLEDAmpRMS();
+      iHighLow[iColMod][iRowMod] = v->GetHighLow();
+      rLEDAmp[iColMod][iRowMod] = v->GetLEDAmp();
+      rLEDAmpRMS[iColMod][iRowMod] = v->GetLEDAmpRMS();
     }
 
     tree->Fill();

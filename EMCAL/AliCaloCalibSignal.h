@@ -45,10 +45,10 @@ class AliCaloCalibSignal : public TObject {
   // Event processing methods:
   Bool_t ProcessEvent(AliRawReader *rawReader);
   Bool_t ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp); // added header for time info
-  Bool_t CheckFractionAboveAmp(int *AmpVal, int resultArray[]); // check fraction of signals to check for LED events
+  Bool_t CheckFractionAboveAmp(const int *AmpVal, int resultArray[]); // check fraction of signals to check for LED events
 
   // Mapping handling
-  AliCaloAltroMapping **GetAltroMapping() { return fMapping; };
+  AliCaloAltroMapping **GetAltroMapping() const { return fMapping; };
   void  SetAltroMapping(AliCaloAltroMapping **mapp) { fMapping = mapp; };
 
   // Parameter/cut handling
@@ -72,7 +72,7 @@ class AliCaloCalibSignal : public TObject {
   int GetNLowGain(int towId) const { return fNLowGain[towId];};	//!
 
   // also for LED reference
-  int GetNRef(int imod, int istripMod, int igain) const //!
+  int GetNRef(const int imod, const int istripMod, const int igain) //!
     { int refId = GetRefNum(imod, istripMod, igain); return fNRef[refId];}; //!
   int GetNRef(int refId) const { return fNRef[refId];}; //!
 
@@ -84,27 +84,19 @@ class AliCaloCalibSignal : public TObject {
   int GetRows() const {return fRows;}; //The number of rows per module
   int GetLEDRefs() const {return fLEDRefs;}; //The number of LED references/monitors per module
   int GetModules() const {return fModules;}; //The number of modules
-  int GetTowerNum(int imod, int icol, int irow) const { return (imod*fColumns*fRows + icol*fRows + irow);}; // help index
 
-  int GetChannelNum(int imod, int icol, int irow, int igain) const { return (igain*fModules*fColumns*fRows + imod*fColumns*fRows + icol*fRows + irow);}; // channel number with gain included
+  int GetTowerNum(const int imod, const int icol, const int irow) const { return (imod*fColumns*fRows + icol*fRows + irow);}; // help index
 
-  Bool_t DecodeChannelNum(int chanId, int *imod, int *icol, int *irow, int *igain) const {
-    *igain = chanId/(fModules*fColumns*fRows);
-    *imod = (chanId/(fColumns*fRows)) % fModules;
-    *icol = (chanId/fRows) % fColumns;
-    *irow = chanId % fRows;
-    return kTRUE;
-  }; // return the module, column, row, and gain for a given channel number
+  int GetChannelNum(const int imod, const int icol, const int irow, const int igain) const { return (igain*fModules*fColumns*fRows + imod*fColumns*fRows + icol*fRows + irow);}; // channel number with gain included
+
+  Bool_t DecodeChannelNum(const int chanId, 
+			  int *imod, int *icol, int *irow, int *igain) const; // return the module, column, row, and gain for a given channel number
 
   // LED reference indexing
-  int GetRefNum(int imod, int istripMod, int igain) const { return (igain*fModules*fLEDRefs + imod*fLEDRefs + istripMod);}; // channel number with gain included
+  int GetRefNum(const int imod, const int istripMod, const int igain) const { return (igain*fModules*fLEDRefs + imod*fLEDRefs + istripMod);}; // channel number with gain included
 
-  Bool_t DecodeRefNum(int refId, int *imod, int *istripMod, int *igain) const {
-    *igain = refId/(fModules*fLEDRefs);
-    *imod = (refId/(fLEDRefs)) % fModules;
-    *istripMod = refId % fLEDRefs;
-    return kTRUE;
-  }; // return the module, stripModule, and gain for a given reference number
+  Bool_t DecodeRefNum(const int refId, 
+		      int *imod, int *istripMod, int *igain) const; // return the module, stripModule, and gain for a given reference number
 
   // Basic Counters
   int GetNEvents() const {return fNEvents;};

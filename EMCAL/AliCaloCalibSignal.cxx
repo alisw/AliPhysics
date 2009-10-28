@@ -207,7 +207,7 @@ void AliCaloCalibSignal::CreateTrees()
 
 //_____________________________________________________________________
 void AliCaloCalibSignal::ResetInfo()
-{
+{ // reset trees and counters
   Zero(); // set all counters to 0
   DeleteTrees(); // delete previous stuff
   CreateTrees(); // and create some new ones
@@ -233,19 +233,19 @@ void AliCaloCalibSignal::Zero()
 }
 
 //_____________________________________________________________________
-Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(int *AmpVal, 
+Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(const int *iAmpVal, 
 						 int resultArray[])
-{
+{ // check fraction of towers, per column, that are above amplitude cut
   Bool_t returnCode = false;
     
-  int TowerNum = 0;
+  int iTowerNum = 0;
   double fraction = 0;
   for (int i = 0; i<fModules; i++) {
     for (int j = 0; j<fColumns; j++) {
       int nAbove = 0;
       for (int k = 0; k<fRows; k++) {
-	TowerNum = GetTowerNum(i,j,k);
-	if (AmpVal[TowerNum] > fAmpCut) { 
+	iTowerNum = GetTowerNum(i,j,k);
+	if (iAmpVal[iTowerNum] > fAmpCut) { 
 	  nAbove++;
 	}
       }
@@ -270,7 +270,7 @@ Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(int *AmpVal,
 // Parameter/cut handling
 //_____________________________________________________________________
 void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
-{
+{ // set parameters from file
   static const string delimitor("::");
 	
   // open, check input file
@@ -296,29 +296,29 @@ void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
 		
     while ( ( s.rdstate() & ios::failbit ) == 0 ) {
 			
-      string key_value; 
-      s >> key_value;
+      string keyValue; 
+      s >> keyValue;
       
       // check stream status
       if( s.rdstate() & ios::failbit ) break;
 			
       // skip rest of line if comments found
-      if( key_value.substr( 0, 2 ) == "//" ) break;
+      if( keyValue.substr( 0, 2 ) == "//" ) break;
 			
-      // look for "::" in key_value pair
-      size_t position = key_value.find( delimitor );
+      // look for "::" in keyValue pair
+      size_t position = keyValue.find( delimitor );
       if( position == string::npos ) {
-	printf("wrong format for key::value pair: %s\n", key_value.c_str());
+	printf("wrong format for key::value pair: %s\n", keyValue.c_str());
       }
 				
-      // split key_value pair
-      string key( key_value.substr( 0, position ) );
-      string value( key_value.substr( position+delimitor.size(), 
-				      key_value.size()-delimitor.size() ) );
+      // split keyValue pair
+      string key( keyValue.substr( 0, position ) );
+      string value( keyValue.substr( position+delimitor.size(), 
+				      keyValue.size()-delimitor.size() ) );
 			
       // check value does not contain a new delimitor
       if( value.find( delimitor ) != string::npos ) {
-	printf("wrong format for key::value pair: %s\n", key_value.c_str());
+	printf("wrong format for key::value pair: %s\n", keyValue.c_str());
       }
       
       // debug: check key value pair
@@ -350,7 +350,7 @@ void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
 
 //_____________________________________________________________________
 void AliCaloCalibSignal::WriteParametersToFile(const char *parameterFile)
-{
+{ // write parameters to file
   static const string delimitor("::");
   ofstream out( parameterFile );
   out << "// " << parameterFile << endl;
@@ -445,14 +445,14 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
   fNEvents++; // one more event
 
   // use maximum numbers to set array sizes
-  int AmpValHighGain[fgkMaxTowers];
-  int AmpValLowGain[fgkMaxTowers];
-  memset(AmpValHighGain, 0, sizeof(AmpValHighGain));
-  memset(AmpValLowGain, 0, sizeof(AmpValLowGain));
+  int iAmpValHighGain[fgkMaxTowers];
+  int iAmpValLowGain[fgkMaxTowers];
+  memset(iAmpValHighGain, 0, sizeof(iAmpValHighGain));
+  memset(iAmpValLowGain, 0, sizeof(iAmpValLowGain));
 
   // also for LED reference
-  int LEDAmpVal[fgkMaxRefs * 2]; // factor 2 is for the two gain values
-  memset(LEDAmpVal, 0, sizeof(LEDAmpVal));
+  int iLEDAmpVal[fgkMaxRefs * 2]; // factor 2 is for the two gain values
+  memset(iLEDAmpVal, 0, sizeof(iLEDAmpVal));
 
   int sample; // temporary value
   int gain = 0; // high or low gain
@@ -461,8 +461,8 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
   int nLowChan = 0; 
   int nHighChan = 0; 
 
-  int TowerNum = 0; // array index for regular towers
-  int RefNum = 0; // array index for LED references
+  int iTowerNum = 0; // array index for regular towers
+  int iRefNum = 0; // array index for LED references
 
   // loop first to get the fraction of channels with amplitudes above cut
 
@@ -510,23 +510,23 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
 
       if ( in->IsHighGain() || in->IsLowGain() ) { // regular tower
 	// get tower number for AmpVal array
-	TowerNum = GetTowerNum(arrayPos, in->GetColumn(), in->GetRow()); 
+	iTowerNum = GetTowerNum(arrayPos, in->GetColumn(), in->GetRow()); 
 
 	if (gain == 0) {
 	  // fill amplitude into the array	   
-	  AmpValLowGain[TowerNum] = max - min;
+	  iAmpValLowGain[iTowerNum] = max - min;
 	  nLowChan++;
 	} 
 	else if (gain==1) {//fill the high gain ones
 	  // fill amplitude into the array
-	  AmpValHighGain[TowerNum] = max - min;
+	  iAmpValHighGain[iTowerNum] = max - min;
 	  nHighChan++;
 	}//end if gain
       } // regular tower
       else if ( in->IsLEDMonData() ) { // LED ref.; 
 	// strip # is coded is 'column' in the channel maps 
-	RefNum = GetRefNum(arrayPos, in->GetColumn(), gain); 
-	LEDAmpVal[RefNum] = max - min;
+	iRefNum = GetRefNum(arrayPos, in->GetColumn(), gain); 
+	iLEDAmpVal[iRefNum] = max - min;
       } // end of LED ref
 
       } // nsamples>0 check, some data found for this channel; not only trailer/header      
@@ -547,7 +547,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
   if (fReqFractionAboveAmp) {
     bool ok = false;
     if (nHighChan > 0) { 
-      ok = CheckFractionAboveAmp(AmpValHighGain, checkResultArray); 
+      ok = CheckFractionAboveAmp(iAmpValHighGain, checkResultArray); 
     }
     if (!ok) return false; // skip event
   }
@@ -569,19 +569,19 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
       if (checkResultArray[i*fColumns + j] > 0) { // column passed check 
       for(int k=0; k<fRows; k++){
 	
-	TowerNum = GetTowerNum(i, j, k); 
+	iTowerNum = GetTowerNum(i, j, k); 
 
-	if(AmpValHighGain[TowerNum]) {
-	  fAmp = AmpValHighGain[TowerNum];
+	if(iAmpValHighGain[iTowerNum]) {
+	  fAmp = iAmpValHighGain[iTowerNum];
 	  fChannelNum = GetChannelNum(i,j,k,1);
-	  fTreeAmpVsTime->Fill();//fChannelNum,fHour,AmpValHighGain[TowerNum]);
-	  fNHighGain[TowerNum]++;
+	  fTreeAmpVsTime->Fill();//fChannelNum,fHour,AmpValHighGain[iTowerNum]);
+	  fNHighGain[iTowerNum]++;
 	}
-	if(AmpValLowGain[TowerNum]) {
-	  fAmp = AmpValLowGain[TowerNum];
+	if(iAmpValLowGain[iTowerNum]) {
+	  fAmp = iAmpValLowGain[iTowerNum];
 	  fChannelNum = GetChannelNum(i,j,k,0);
-	  fTreeAmpVsTime->Fill();//fChannelNum,fHour,AmpValLowGain[TowerNum]);
-	  fNLowGain[TowerNum]++;
+	  fTreeAmpVsTime->Fill();//fChannelNum,fHour,AmpValLowGain[iTowerNum]);
+	  fNLowGain[iTowerNum]++;
 	}
       } // rows
       } // column passed check
@@ -600,8 +600,8 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
       if ( (checkResultArray[i*fColumns + iColFirst]>0) || (checkResultArray[i*fColumns + iColFirst + 1]>0) ) { // at least one column in strip passed check 
       for (gain=0; gain<2; gain++) {
 	fRefNum = GetRefNum(i, j, gain); 
-	if (LEDAmpVal[fRefNum]) {
-	  fAmp = LEDAmpVal[fRefNum];
+	if (iLEDAmpVal[fRefNum]) {
+	  fAmp = iLEDAmpVal[fRefNum];
 	  fTreeLEDAmpVsTime->Fill();//fRefNum,fHour,fAmp);
 	  fNRef[fRefNum]++;
 	}
@@ -670,22 +670,22 @@ Bool_t AliCaloCalibSignal::Analyze()
   memset(profile, 0, sizeof(profile));
 
   char name[200]; // for profile id and title
-  int TowerNum = 0;
+  int iTowerNum = 0;
 
   for (int i = 0; i<fModules; i++) {
     for (int ic=0; ic<fColumns; ic++){
       for (int ir=0; ir<fRows; ir++) {
 
-	TowerNum = GetTowerNum(i, ic, ir);
+	iTowerNum = GetTowerNum(i, ic, ir);
 	// high gain
-	if (fNHighGain[TowerNum] > 0) {
+	if (fNHighGain[iTowerNum] > 0) {
 	  fChannelNum = GetChannelNum(i, ic, ir, 1); 
 	  sprintf(name, "profileChan%d", fChannelNum);
 	  profile[fChannelNum] = new TProfile(name, name, numProfBins, timeMin, timeMax, "s");
 	}
 
 	// same for low gain
-	if (fNLowGain[TowerNum] > 0) {
+	if (fNLowGain[iTowerNum] > 0) {
 	  fChannelNum = GetChannelNum(i, ic, ir, 0); 
 	  sprintf(name, "profileChan%d", fChannelNum);
 	  profile[fChannelNum] = new TProfile(name, name, numProfBins, timeMin, timeMax, "s");
@@ -790,3 +790,24 @@ Bool_t AliCaloCalibSignal::Analyze()
 
   return kTRUE;
 }
+
+//_____________________________________________________________________
+Bool_t AliCaloCalibSignal::DecodeChannelNum(const int chanId, 
+					    int *imod, int *icol, int *irow, int *igain) const  
+{ // return the module, column, row, and gain for a given channel number
+  *igain = chanId/(fModules*fColumns*fRows);
+  *imod = (chanId/(fColumns*fRows)) % fModules;
+  *icol = (chanId/fRows) % fColumns;
+  *irow = chanId % fRows;
+  return kTRUE;
+} 
+
+//_____________________________________________________________________
+Bool_t AliCaloCalibSignal::DecodeRefNum(const int refId, 
+					int *imod, int *istripMod, int *igain) const 
+{ // return the module, stripModule, and gain for a given reference number
+  *igain = refId/(fModules*fLEDRefs);
+  *imod = (refId/(fLEDRefs)) % fModules;
+  *istripMod = refId % fLEDRefs;
+  return kTRUE;
+} 

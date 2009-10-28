@@ -337,29 +337,29 @@ void AliCaloCalibPedestal::SetParametersFromFile(const char *parameterFile)
 		
     while ( ( s.rdstate() & ios::failbit ) == 0 ) {
 			
-      string key_value; 
-      s >> key_value;
+      string keyValue; 
+      s >> keyValue;
       
       // check stream status
       if( s.rdstate() & ios::failbit ) break;
 			
       // skip rest of line if comments found
-      if( key_value.substr( 0, 2 ) == "//" ) break;
+      if( keyValue.substr( 0, 2 ) == "//" ) break;
 			
-      // look for "::" in key_value pair
-      size_t position = key_value.find( delimitor );
+      // look for "::" in keyValue pair
+      size_t position = keyValue.find( delimitor );
       if( position == string::npos ) {
-	printf("wrong format for key::value pair: %s\n", key_value.c_str());
+	printf("wrong format for key::value pair: %s\n", keyValue.c_str());
       }
 				
-      // split key_value pair
-      string key( key_value.substr( 0, position ) );
-      string value( key_value.substr( position+delimitor.size(), 
-				      key_value.size()-delimitor.size() ) );
+      // split keyValue pair
+      string key( keyValue.substr( 0, position ) );
+      string value( keyValue.substr( position+delimitor.size(), 
+				      keyValue.size()-delimitor.size() ) );
 			
       // check value does not contain a new delimitor
       if( value.find( delimitor ) != string::npos ) {
-	printf("wrong format for key::value pair: %s\n", key_value.c_str());
+	printf("wrong format for key::value pair: %s\n", keyValue.c_str());
       }
       
       // debug: check key value pair

@@ -14,7 +14,9 @@ class TString;
 class TTree;
 
 /*
-  Objects of this class contain info on APD calibration and map info
+  Objects of this class contain info on APD calibration and map info,
+  such as V30 and other parameters from the tests in Catania/Houston,
+  as well as info on which APD is located where.  
 */
 
 // ******* internal class definition *************
@@ -95,8 +97,8 @@ class AliEMCALSuperModuleCalibMapAPD : public TObject {
     { return &fAPDVal[icol][irow]; };
 
  private:
-  Int_t fSuperModuleNum;
-  AliEMCALCalibMapAPDVal fAPDVal[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];
+  Int_t fSuperModuleNum; // SuperModule index
+  AliEMCALCalibMapAPDVal fAPDVal[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; // APD calibration info
   
   ClassDef(AliEMCALSuperModuleCalibMapAPD, 2) // help class
 };
@@ -123,13 +125,12 @@ public:
   // pointer to stored info.
   Int_t GetNSuperModule() const { return fNSuperModule; }; 
 
-  // - via the index in the stored array:
+  // on a SuperModule level
   virtual AliEMCALSuperModuleCalibMapAPD * GetSuperModuleCalibMapAPDId(Int_t smIndex) const
-   { return (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[smIndex]; };
+    { return (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[smIndex]; }; // - via the index in the stored array:
 
-  // - or via the actual SM number
-  virtual AliEMCALSuperModuleCalibMapAPD * GetSuperModuleCalibMapAPDNum(Int_t smNum) const;
-
+  virtual AliEMCALSuperModuleCalibMapAPD * GetSuperModuleCalibMapAPDNum(Int_t smNum) const;   // - or via the actual SM number
+  
   // method to calculate gain M from fit parameters, and HV value
   Float_t GetGain(Float_t fitPar[3], Float_t HV) const 
     { return (fitPar[0] + fitPar[1] * exp(fitPar[2]*HV)); };

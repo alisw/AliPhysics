@@ -54,7 +54,7 @@ void AliEMCALCalibTimeDepCorrection::InitCorrection(Int_t nSM, Int_t nBins, Floa
   Int_t iCol = 0;
   Int_t iRow = 0;
   Int_t nCorr = nBins;
-  Float_t Correction = val;
+  Float_t correction = val;
 
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
@@ -68,7 +68,7 @@ void AliEMCALCalibTimeDepCorrection::InitCorrection(Int_t nSM, Int_t nBins, Floa
       t->GetCorrection(iCol,iRow)->Set(nCorr);
       for (Int_t k=0; k<nCorr; k++) {
 	// add to TArray
-	t->GetCorrection(iCol,iRow)->AddAt(Correction, k); // AddAt = SetAt..
+	t->GetCorrection(iCol,iRow)->AddAt(correction, k); // AddAt = SetAt..
       }
     }
 
@@ -108,7 +108,7 @@ void AliEMCALCalibTimeDepCorrection::ReadTextInfo(Int_t nSM, const TString &txtF
   Int_t iCol = 0;
   Int_t iRow = 0;
   Int_t nCorr = 0;
-  Float_t Correction = 0;
+  Float_t correction = 0;
 
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
@@ -138,9 +138,9 @@ void AliEMCALCalibTimeDepCorrection::ReadTextInfo(Int_t nSM, const TString &txtF
       // set size of TArray
       t->GetCorrection(iCol,iRow)->Set(nCorr);
       for (Int_t k=0; k<nCorr; k++) {
-	inputFile >> Correction;
+	inputFile >> correction;
 	// add to TArray
-	t->GetCorrection(iCol,iRow)->AddAt(Correction, k);
+	t->GetCorrection(iCol,iRow)->AddAt(correction, k);
       }
     }
 

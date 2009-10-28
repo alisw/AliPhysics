@@ -60,12 +60,12 @@ void AliEMCALCalibMapAPD::ReadTextCalibMapAPDInfo(Int_t nSM, const TString &txtF
   Int_t iRow = 0;
   // list of values to be read
   Int_t iHW = 0;
-  Int_t APDNum = 0;
-  Float_t V30 = 0;     
-  Float_t Par[3] = {0};   
-  Float_t ParErr[3] = {0}; 
-  Int_t BreakDown = 0;
-  Float_t DarkCurrent = 0; 
+  Int_t iAPDNum = 0;
+  Float_t v30 = 0;     
+  Float_t par[3] = {0};   
+  Float_t parErr[3] = {0}; 
+  Int_t iBreakDown = 0;
+  Float_t darkCurrent = 0; 
   // end - all values
 
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
@@ -81,10 +81,10 @@ void AliEMCALCalibMapAPD::ReadTextCalibMapAPDInfo(Int_t nSM, const TString &txtF
 
     for (Int_t j=0; j<nAPDPerSM; j++) {
       inputFile >> iCol >> iRow >> iHW 
-		>> APDNum >> V30 
-		>> Par[0] >> Par[1] >> Par[2]
-		>> ParErr[0] >> ParErr[1] >> ParErr[2]
-		>> BreakDown >> DarkCurrent;
+		>> iAPDNum >> v30 
+		>> par[0] >> par[1] >> par[2]
+		>> parErr[0] >> parErr[1] >> parErr[2]
+		>> iBreakDown >> darkCurrent;
 
       // assume that this info is already swapped and done for this basis?
       if (swapSides) {
@@ -96,16 +96,16 @@ void AliEMCALCalibMapAPD::ReadTextCalibMapAPDInfo(Int_t nSM, const TString &txtF
       AliEMCALCalibMapAPDVal * v = t->GetAPDVal(iCol, iRow);
 
       v->SetHardWareId(iHW);
-      v->SetAPDNum(APDNum);
-      v->SetV30(V30);
-      v->SetPar(0, Par[0]);
-      v->SetPar(1, Par[1]);
-      v->SetPar(2, Par[2]);
-      v->SetParErr(0, ParErr[0]);
-      v->SetParErr(1, ParErr[1]);
-      v->SetParErr(2, ParErr[2]);
-      v->SetBreakDown(BreakDown);
-      v->SetDarkCurrent(DarkCurrent);
+      v->SetAPDNum(iAPDNum);
+      v->SetV30(v30);
+      v->SetPar(0, par[0]);
+      v->SetPar(1, par[1]);
+      v->SetPar(2, par[2]);
+      v->SetParErr(0, parErr[0]);
+      v->SetParErr(1, parErr[1]);
+      v->SetParErr(2, parErr[2]);
+      v->SetBreakDown(iBreakDown);
+      v->SetDarkCurrent(darkCurrent);
     }
 
   } // i, SuperModule
@@ -191,12 +191,12 @@ void AliEMCALCalibMapAPD::ReadTreeCalibMapAPDInfo(TTree *tree,
   Int_t iRow = 0;
   // list of values to be read
   Int_t iHW = 0;
-  Int_t APDNum = 0;
-  Float_t V30 = 0;     
-  Float_t Par[3] = {0};   
-  Float_t ParErr[3] = {0}; 
-  Int_t BreakDown = 0;
-  Float_t DarkCurrent = 0; 
+  Int_t iAPDNum = 0;
+  Float_t v30 = 0;     
+  Float_t par[3] = {0};   
+  Float_t parErr[3] = {0}; 
+  Int_t iBreakDown = 0;
+  Float_t darkCurrent = 0; 
   // end - all values
 
   // declare the branches
@@ -204,12 +204,12 @@ void AliEMCALCalibMapAPD::ReadTreeCalibMapAPDInfo(TTree *tree,
   tree->SetBranchAddress("iCol", &iCol);
   tree->SetBranchAddress("iRow", &iRow);
   tree->SetBranchAddress("iHW", &iHW);
-  tree->SetBranchAddress("APDNum", &APDNum);
-  tree->SetBranchAddress("V30", &V30);
-  tree->SetBranchAddress("Par", Par);
-  tree->SetBranchAddress("ParErr", ParErr);
-  tree->SetBranchAddress("BreakDown", &BreakDown);
-  tree->SetBranchAddress("DarkCurrent", &DarkCurrent);
+  tree->SetBranchAddress("APDNum", &iAPDNum);
+  tree->SetBranchAddress("V30", &v30);
+  tree->SetBranchAddress("Par", par);
+  tree->SetBranchAddress("ParErr", parErr);
+  tree->SetBranchAddress("BreakDown", &iBreakDown);
+  tree->SetBranchAddress("DarkCurrent", &darkCurrent);
 
   for (int ient=0; ient<tree->GetEntries(); ient++) {
     tree->GetEntry(ient);
@@ -228,16 +228,16 @@ void AliEMCALCalibMapAPD::ReadTreeCalibMapAPDInfo(TTree *tree,
     AliEMCALCalibMapAPDVal * v = t->GetAPDVal(iCol, iRow);
 
     v->SetHardWareId(iHW);
-    v->SetAPDNum(APDNum);
-    v->SetV30(V30);
-    v->SetPar(0, Par[0]);
-    v->SetPar(1, Par[1]);
-    v->SetPar(2, Par[2]);
-    v->SetParErr(0, ParErr[0]);
-    v->SetParErr(1, ParErr[1]);
-    v->SetParErr(2, ParErr[2]);
-    v->SetBreakDown(BreakDown);
-    v->SetDarkCurrent(DarkCurrent);
+    v->SetAPDNum(iAPDNum);
+    v->SetV30(v30);
+    v->SetPar(0, par[0]);
+    v->SetPar(1, par[1]);
+    v->SetPar(2, par[2]);
+    v->SetParErr(0, parErr[0]);
+    v->SetParErr(1, parErr[1]);
+    v->SetParErr(2, parErr[2]);
+    v->SetBreakDown(iBreakDown);
+    v->SetDarkCurrent(darkCurrent);
   } // 
 
   return;
@@ -259,12 +259,12 @@ void AliEMCALCalibMapAPD::WriteRootCalibMapAPDInfo(const TString &rootFileName,
   // variables for filling the TTree
   Int_t iSM = 0; // SuperModule index
   Int_t iHW = 0;
-  Int_t APDNum = 0;
-  Float_t V30 = 0;     
-  Float_t Par[3] = {0};   
-  Float_t ParErr[3] = {0}; 
-  Int_t BreakDown = 0;
-  Float_t DarkCurrent = 0; 
+  Int_t iAPDNum = 0;
+  Float_t v30 = 0;     
+  Float_t par[3] = {0};   
+  Float_t parErr[3] = {0}; 
+  Int_t iBreakDown = 0;
+  Float_t darkCurrent = 0; 
   //
   Int_t iCol = 0;
   Int_t iRow = 0;
@@ -273,12 +273,12 @@ void AliEMCALCalibMapAPD::WriteRootCalibMapAPDInfo(const TString &rootFileName,
   tree->Branch("iCol", &iCol, "iCol/I");
   tree->Branch("iRow", &iRow, "iRow/I");
   tree->Branch("iHW", &iHW, "iHW/I");
-  tree->Branch("APDNum", &APDNum, "APDNum/I");
-  tree->Branch("V30", &V30, "V30/F");
-  tree->Branch("Par", &Par, "Par[3]/F");
-  tree->Branch("ParErr", &ParErr, "ParErr[3]/F");
-  tree->Branch("BreakDown", &BreakDown, "BreakDown/I");
-  tree->Branch("DarkCurrent", &DarkCurrent, "DarkCurrent/F");
+  tree->Branch("APDNum", &iAPDNum, "APDNum/I");
+  tree->Branch("V30", &v30, "V30/F");
+  tree->Branch("Par", &par, "Par[3]/F");
+  tree->Branch("ParErr", &parErr, "ParErr[3]/F");
+  tree->Branch("BreakDown", &iBreakDown, "BreakDown/I");
+  tree->Branch("DarkCurrent", &darkCurrent, "DarkCurrent/F");
 
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
 
@@ -298,14 +298,14 @@ void AliEMCALCalibMapAPD::WriteRootCalibMapAPDInfo(const TString &rootFileName,
       }
 
       iHW = v->GetHardWareId(); 
-      APDNum = v->GetAPDNum();
-      V30 = v->GetV30();
+      iAPDNum = v->GetAPDNum();
+      v30 = v->GetV30();
       for (int k=0; k<3; k++) {
-	Par[k] = v->GetPar(k);
-	ParErr[k] = v->GetParErr(k);
+	par[k] = v->GetPar(k);
+	parErr[k] = v->GetParErr(k);
       } 
-      BreakDown = v->GetBreakDown();
-      DarkCurrent = v->GetDarkCurrent();
+      iBreakDown = v->GetBreakDown();
+      darkCurrent = v->GetDarkCurrent();
 
       tree->Fill();
     }
