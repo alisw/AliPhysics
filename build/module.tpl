@@ -269,6 +269,11 @@ endif
 	   echo "#pragma link C++ class $(i)+;" >> $@ ;)
 	$(MUTE)echo '#endif' >> $@
 
+ifneq ($(findstring solaris,$(ALICE_TARGET)),)
+# shameful hack....
+CINTFLAGS := $(filter-out -library=stlport4,$(CINTFLAGS))
+endif
+
 $(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) @MODULE@/module.mk
 ifndef ALIQUIET
 	 @echo "***** Creating $@ *****";

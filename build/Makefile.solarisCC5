@@ -29,7 +29,7 @@ FFLAGS        = $(FOPT) $(CLIBFOPT) $(CLIBDEFS)  -KPIC
 DEPENDFFLAGS  = $(FFLAGS) 
 
 # rootcint flags
-CINTFLAGS     = 
+CINTFLAGS     := 
 
 SHLIB         = 
 SOEXT 	      = so
