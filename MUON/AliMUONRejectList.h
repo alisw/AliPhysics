@@ -28,6 +28,7 @@ public:
   AliMUONRejectList& operator=(const AliMUONRejectList& rl);
   virtual ~AliMUONRejectList();
 
+  /// Clone this object
   virtual TObject* Clone(const char* /*name*/="") const { return new AliMUONRejectList(*this); }
   
   /// Whether or not all our probabilities are 0.0 or 1.0
@@ -52,26 +53,35 @@ private:
   
 private:
   
-  Bool_t fIsBinary; /// Whether or not we only store zeros and ones for probabilities  
+  Bool_t fIsBinary; ///< Whether or not we only store zeros and ones for probabilities  
 
-  UInt_t fMaxNofDEs; //< max number of detection elements (for allocation purposes)  
-  UInt_t fMaxNofBPs; //< max number of bus patches (for allocation purposes)
-  UInt_t fMaxNofManus; //< max number of manus (for allocation purposes)
+  UInt_t fMaxNofDEs; ///< max number of detection elements (for allocation purposes)  
+  UInt_t fMaxNofBPs; ///< max number of bus patches (for allocation purposes)
+  UInt_t fMaxNofManus; ///< max number of manus (for allocation purposes)
   
-  UInt_t fNofDEs; //< actual number of detection elements for which we have probabilities
-  UInt_t fNofBPs; //< actual number of bus patches for which we have probabilities
-  UInt_t fNofManus; //< actual number of manus for which we have probabilities
+  UInt_t fNofDEs; ///< actual number of detection elements for which we have probabilities
+  UInt_t fNofBPs; ///< actual number of bus patches for which we have probabilities
+  UInt_t fNofManus; ///< actual number of manus for which we have probabilities
 
-  UInt_t* fDEIds; //[fMaxNofDEs] array of detection element ids
-  Float_t* fDEProbas; //[fMaxNofDEs] array of probabilities of DEs
+  /// array of detection element ids
+  UInt_t* fDEIds; //[fMaxNofDEs] 
 
-  UInt_t* fBPIds; //[fMaxNofBPs] array of bus patch ids
-  Float_t* fBPProbas; //[fMaxNofBPs] array of proba for bus patches
+  /// array of probabilities of DEs
+  Float_t* fDEProbas; //[fMaxNofDEs] 
 
-  UInt_t* fManuIds; //[fMaxNofManus] array of manu ids
-  Float_t* fManuProbas; //[fMaxNofManus] array of proba for manus
+  /// array of bus patch ids
+  UInt_t* fBPIds; //[fMaxNofBPs] 
+  
+  /// array of proba for bus patches
+  Float_t* fBPProbas; //[fMaxNofBPs]
 
-  AliMUONVStore* fChannels; // probabilities for all channels
+  /// array of manu ids
+  UInt_t* fManuIds; //[fMaxNofManus]
+  
+  /// array of proba for manus
+  Float_t* fManuProbas; //[fMaxNofManus]
+
+  AliMUONVStore* fChannels; ///< probabilities for all channels
   
   ClassDef(AliMUONRejectList,1) // (probabilistic) Reject list for MUON Tracker
 };

@@ -65,6 +65,7 @@ public:
   /// Whether we should do something or not
   Bool_t IsApplicable() { return fIsApplicable; }
   
+  /// Return log book parameter
   TString GetLogBookParam(const char* parname)
   { return TString(AliPreprocessor::GetRunParameter(parname)); }
   

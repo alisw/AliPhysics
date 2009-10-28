@@ -34,7 +34,9 @@ protected:
   virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const;	
 
 private:
+  /// Not implemented
   AliMUONQAChecker(const AliMUONQAChecker& qac);
+  /// Not implemented
   AliMUONQAChecker& operator=(const AliMUONQAChecker& qac);
   
   TObjArray* fCheckers; ///< internal checkers

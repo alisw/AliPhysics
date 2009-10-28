@@ -21,7 +21,9 @@ public:
   AliMUONQADataMakerRec(Bool_t tracker=kTRUE, Bool_t trigger=kTRUE);         
   virtual ~AliMUONQADataMakerRec();
 
+  /// Return tracker sub-qadatamaker
   AliMUONVQADataMakerRec* Tracker() const { return fTracker; }
+  /// Return trigger sub-qadatamaker
   AliMUONVQADataMakerRec* Trigger() const { return fTrigger; }
   
   virtual void InitDigits(); 
@@ -41,8 +43,9 @@ public:
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list);
 
 private:
-  
+  /// Not implemented
   AliMUONQADataMakerRec(const AliMUONQADataMakerRec& qadm);   
+  /// Not implemented
   AliMUONQADataMakerRec& operator=(const AliMUONQADataMakerRec& qadm);
 
   AliMUONVQADataMakerRec* fTracker; ///< tracker sub-qadatamaker

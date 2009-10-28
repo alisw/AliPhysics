@@ -39,6 +39,8 @@ public:
   void EndOfDetectorCycleRaws(Int_t specie, TObjArray** list);
   void EndOfDetectorCycleRecPoints(Int_t specie, TObjArray** list);
   void EndOfDetectorCycleESDs(Int_t specie, TObjArray** list);
+
+  /// Empty implementation 
   void EndOfDetectorCycleDigits(Int_t, TObjArray**) {}
     
   virtual void MakeDigits(TTree* dig); 
@@ -146,8 +148,10 @@ private:
                          Int_t indexNumber, Bool_t replace=kFALSE);
 
 private:
-	AliMUONTrackerQADataMakerRec(const AliMUONTrackerQADataMakerRec& rhs);
-	AliMUONTrackerQADataMakerRec& operator=(const AliMUONTrackerQADataMakerRec& rhs);
+  /// Not implemented
+  AliMUONTrackerQADataMakerRec(const AliMUONTrackerQADataMakerRec& rhs);
+  /// Not implemented
+  AliMUONTrackerQADataMakerRec& operator=(const AliMUONTrackerQADataMakerRec& rhs);
   
   AliMUONVDigitStore*   fDigitStore; //!< pointer to digits store
   AliMUONDigitMaker*    fDigitMaker;  //!< pointer to digit maker

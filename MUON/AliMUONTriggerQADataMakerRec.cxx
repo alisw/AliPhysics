@@ -410,6 +410,7 @@ void AliMUONTriggerQADataMakerRec::InitRecPoints()
 //____________________________________________________________________________ 
 void AliMUONTriggerQADataMakerRec::InitESDs()
 {
+  /// Empty implementation
 }
 
 //____________________________________________________________________________
@@ -705,6 +706,7 @@ void AliMUONTriggerQADataMakerRec::MakeRecPoints(TTree* /*clustersTree*/)
 //____________________________________________________________________________
 void AliMUONTriggerQADataMakerRec::MakeESDs(AliESDEvent* /*esd*/)
 {  
+  /// Empty implementation
 }
 
 

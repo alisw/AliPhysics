@@ -38,6 +38,8 @@ public:
   void EndOfDetectorCycleRaws(Int_t specie, TObjArray** list);
   void EndOfDetectorCycleRecPoints(Int_t specie, TObjArray** list);
   void EndOfDetectorCycleESDs(Int_t specie, TObjArray** list);
+  
+  /// Empty implementation
   void EndOfDetectorCycleDigits(Int_t , TObjArray** ) {}
     
   virtual void MakeRaws(AliRawReader* rawReader); 
@@ -129,15 +131,15 @@ public:
   };
   
 private:
-
+  /// Not implemented
   AliMUONTriggerQADataMakerRec(const AliMUONTriggerQADataMakerRec& qadm);   
+  /// Not implemented
   AliMUONTriggerQADataMakerRec& operator=(const AliMUONTriggerQADataMakerRec& qadm);
 
   void DisplayTriggerInfo();
   Bool_t FillTriggerDCSHistos();
   TObjArray* GetDCSValues(Int_t iMeas, Int_t detElemId,
 			  TMap* triggerDcsMap, AliMpDCSNamer& triggerDcsNamer);
-  void RawTriggerInRegional2OutRegional();
   UChar_t RawTriggerInGlobal2OutGlobal(UInt_t globalInput[4]);
   void RawTriggerMatchOutLocal(AliMUONVTriggerStore& inputTriggerStore, AliMUONVTriggerStore& recoTriggerStore);
   //void RawTriggerMatchOutLocalInRegional();

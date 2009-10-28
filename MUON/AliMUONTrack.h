@@ -134,7 +134,7 @@ class AliMUONTrack : public TObject
 
   virtual void Clear(Option_t* opt="");
   
-  // return the maximum chi2 above which the track can be considered as abnormal (due to extrapolation failure, ...)
+  /// return the maximum chi2 above which the track can be considered as abnormal (due to extrapolation failure, ...)
   static Double_t MaxChi2() {return fgkMaxChi2;}
 
 
