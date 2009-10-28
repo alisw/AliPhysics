@@ -158,6 +158,7 @@
 #pragma link C++ class AliSymMatrix+;
 #pragma link C++ class AliSymBDMatrix+;
 #pragma link C++ class AliRectMatrix+;
+#pragma link C++ class AliParamSolver+;
 
 #pragma link C++ class AliGRPManager+;
 #pragma link C++ class AliDCSArray+;
