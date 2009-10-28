@@ -14,6 +14,7 @@
 #include "AliAODVertex.h"
 
 class TGeoHMatrix;
+class TString;
 
 class AliAODHeader : public AliVHeader {
 
@@ -51,6 +52,7 @@ class AliAODHeader : public AliVHeader {
   UInt_t    GetPeriodNumber()       const { return fPeriodNumber; }
   ULong64_t GetTriggerMask()        const { return fTriggerMask; }
   UChar_t   GetTriggerCluster()     const { return fTriggerCluster; }
+  TString   GetFiredTriggerClasses()const { return fFiredTriggers;}
   UInt_t    GetEventType()          const { return fEventType; }
   Double_t  GetMagneticField()      const { return fMagneticField; }
   Double_t  GetMuonMagFieldScale()  const { return fMuonMagFieldScale; }
@@ -81,6 +83,7 @@ class AliAODHeader : public AliVHeader {
   void SetOrbitNumber(UInt_t nOr)              { fOrbitNumber = nOr; }
   void SetPeriodNumber(UInt_t nPer)            { fPeriodNumber = nPer; }
   void SetTriggerMask(ULong64_t trigMsk)       { fTriggerMask = trigMsk; }
+  void SetFiredTriggerClasses(TString trig)    { fFiredTriggers = trig;}
   void SetTriggerCluster(UChar_t trigClus)     { fTriggerCluster = trigClus; }
   void SetEventType(UInt_t evttype)            { fEventType = evttype; }
   void SetMagneticField(Double_t magFld)       { fMagneticField = magFld; }
@@ -136,6 +139,7 @@ class AliAODHeader : public AliVHeader {
   Int_t       fNQTheta;             // number of QTheta elements
   Double32_t *fQTheta;              // [fNQTheta] values to store Lee-Yang-Zeros
   ULong64_t   fTriggerMask;         // Trigger Type (mask)
+  TString     fFiredTriggers;       // String with fired triggers
   Int_t       fRunNumber;           // Run Number
   Int_t       fRefMult;             // reference multiplicity
   Int_t       fRefMultPos;          // reference multiplicity of positive particles
@@ -145,13 +149,12 @@ class AliAODHeader : public AliVHeader {
   UInt_t      fPeriodNumber;        // Period Number
   UShort_t    fBunchCrossNumber;    // BunchCrossingNumber
   UChar_t     fTriggerCluster;      // Trigger cluster (mask)
-
   Double32_t      fDiamondXY[2];    // Interaction diamond (x,y) in RUN
   Double32_t      fDiamondCovXY[3]; // Interaction diamond covariance (x,y) in RUN
   TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix];   //PHOS module position and orientation matrices
   TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
 
-  ClassDef(AliAODHeader,8);
+  ClassDef(AliAODHeader,9);
 };
 
 #endif

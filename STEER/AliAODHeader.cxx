@@ -22,6 +22,7 @@
 
 #include "AliAODHeader.h"
 #include <TGeoMatrix.h>
+#include <TObjString.h>
 
 ClassImp(AliAODHeader)
 
@@ -38,6 +39,7 @@ AliAODHeader::AliAODHeader() :
   fNQTheta(0),
   fQTheta(0x0),
   fTriggerMask(0),
+  fFiredTriggers(),
   fRunNumber(-999),  
   fRefMult(-999),
   fRefMultPos(-999),
@@ -76,6 +78,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fNQTheta(0),
   fQTheta(0x0),
   fTriggerMask(0),
+  fFiredTriggers(),
   fRunNumber(nRun),
   fRefMult(-999),
   fRefMultPos(-999),
@@ -129,6 +132,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fNQTheta(0),
   fQTheta(0x0),
   fTriggerMask(trigMask),
+  fFiredTriggers(),
   fRunNumber(nRun),  
   fRefMult(refMult),
   fRefMultPos(refMultPos),
@@ -172,6 +176,7 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fNQTheta(0),
   fQTheta(0x0),
   fTriggerMask(hdr.fTriggerMask),
+  fFiredTriggers(hdr.fFiredTriggers),
   fRunNumber(hdr.fRunNumber),  
   fRefMult(hdr.fRefMult), 
   fRefMultPos(hdr.fRefMultPos), 
@@ -224,6 +229,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fZDCN2Energy      = hdr.fZDCN2Energy;
     fZDCP2Energy      = hdr.fZDCP2Energy;
     fTriggerMask      = hdr.fTriggerMask;
+    fFiredTriggers    = hdr.fFiredTriggers;
     fRunNumber        = hdr.fRunNumber;
     fRefMult          = hdr.fRefMult;
     fRefMultPos       = hdr.fRefMultPos;

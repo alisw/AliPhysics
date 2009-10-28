@@ -93,10 +93,10 @@ class AliAODEvent : public AliVEvent {
   void      SetTriggerMask(ULong64_t n) {fHeader->SetTriggerMask(n);}
   void      SetTriggerCluster(UChar_t n) {fHeader->SetTriggerCluster(n);}
 
-  UInt_t    GetEventType()  const { return fHeader ? fHeader->GetEventType() : 0;}
-  ULong64_t GetTriggerMask() const {return fHeader ? fHeader->GetTriggerMask() : 0;}
-  UChar_t   GetTriggerCluster() const {return fHeader ? fHeader->GetTriggerCluster() : 0;}
-
+  UInt_t    GetEventType()          const { return fHeader ? fHeader->GetEventType() : 0;}
+  ULong64_t GetTriggerMask()        const { return fHeader ? fHeader->GetTriggerMask() : 0;}
+  UChar_t   GetTriggerCluster()     const { return fHeader ? fHeader->GetTriggerCluster() : 0;}
+  TString   GetFiredTriggerClasses()const { return fHeader->GetFiredTriggerClasses();};
   Double_t  GetZDCN1Energy()        const { return fHeader ? fHeader->GetZDCN1Energy() : -999.; }
   Double_t  GetZDCP1Energy()        const { return fHeader ? fHeader->GetZDCP1Energy() : -999.; }
   Double_t  GetZDCN2Energy()        const { return fHeader ? fHeader->GetZDCN2Energy() : -999.; }
