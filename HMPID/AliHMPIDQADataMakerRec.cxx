@@ -253,7 +253,7 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
        }
        if(isHMPin==kTRUE) {
     for(Int_t iddl=0;iddl<14;iddl++){
-    (TProfile*)(GetRawsData(14+14+42+42+2))->Fill(iddl+1,ddlOcc[iddl]*100.0/(6.0*24.0*80));
+    GetRawsData(14+14+42+42+2)->Fill(iddl+1,ddlOcc[iddl]*100.0/(6.0*24.0*80));
    }     
        }       
      }
