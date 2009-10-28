@@ -51,12 +51,12 @@ class AliTRDclusterizer : public TNamed
 
   struct MaxStruct
   {
-    Int_t       row;
-    Int_t       col;
-    Int_t       time;
-    Short_t     signals[3];
-    UChar_t     padStatus;
-    Bool_t      fivePad;
+    Int_t       row;           // row of the current cluster candidate
+    Int_t       col;           // col of the current cluster candidate
+    Int_t       time;          // time -"-
+    Short_t     signals[3];    // signals of the maximum pad and it's twon neigbours
+    UChar_t     padStatus;     // padStatus of the current cluster candidate
+    Bool_t      fivePad;       // is this cluster candidate part of a 5 pad cluster (two overlaping clusters)?
   MaxStruct():row(-1),col(0),time(0),padStatus(0),fivePad(kFALSE)
       {memset(signals, 0, 3*sizeof(Short_t));}
     MaxStruct &operator=(const MaxStruct &a)
@@ -69,7 +69,7 @@ class AliTRDclusterizer : public TNamed
   virtual         ~AliTRDclusterizer();
   AliTRDclusterizer &operator=(const AliTRDclusterizer &c);
 
-  void     Copy(TObject &c) const;
+  void     Copy(const TObject &c) const;
 
   Bool_t   Open(const Char_t *name, Int_t nEvent = 0);
   Bool_t   OpenInput(Int_t nEvent = 0);
