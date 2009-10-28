@@ -27,18 +27,16 @@
 
 // --- ROOT system ---
 #include <TClonesArray.h>
-#include <TFile.h> 
 #include <TH1D.h> 
 #include <TH2D.h>
 #include <TH3D.h>
 #include <TProfile.h>
 #include <TF1.h>
-#include <TCanvas.h>
-#include <TStopwatch.h>
 
 // --- AliRoot header files ---
 #include "AliESDEvent.h"
-#include "AliLog.h"
+#include "AliQAChecker.h"
+
 #include "AliTRDdigit.h"
 #include "AliTRDhit.h"
 #include "AliTRDcluster.h"
@@ -46,8 +44,6 @@
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDarrayADC.h"
-#include "AliTRDrawStream.h"
-#include "AliQAChecker.h"
 
 ClassImp(AliTRDQADataMaker)
 
@@ -346,7 +342,7 @@ void AliTRDQADataMaker::InitSDigits()
 }
 
 //____________________________________________________________________________
-void AliTRDQADataMaker::MakeESDs(AliESDEvent * esd)
+void AliTRDQADataMaker::MakeESDs(AliESDEvent * const esd)
 {
   //
   // Make QA data from ESDs
@@ -486,7 +482,7 @@ Double_t AliTRDQADataMaker::GetExtZ(const AliExternalTrackParam *in) const
 }
 
 //____________________________________________________________________________
-void AliTRDQADataMaker::MakeHits(TClonesArray * hits)
+void AliTRDQADataMaker::MakeHits(TClonesArray * const hits)
 {
   //
   // Make QA data from Hits
@@ -541,7 +537,7 @@ void AliTRDQADataMaker::MakeHits(TTree * hitTree)
 }
 
 //____________________________________________________________________________
-void AliTRDQADataMaker::MakeDigits(TClonesArray * digits)
+void AliTRDQADataMaker::MakeDigits(TClonesArray * const digits)
 {
   //
   // Makes data from Digits
@@ -602,7 +598,7 @@ void AliTRDQADataMaker::MakeDigits(TTree * digits)
 }
 
 //____________________________________________________________________________
-void AliTRDQADataMaker::MakeSDigits(TClonesArray * sdigits)
+void AliTRDQADataMaker::MakeSDigits(TClonesArray * const sdigits)
 {
   //
   // Makes data from Digits
@@ -664,7 +660,7 @@ void AliTRDQADataMaker::MakeSDigits(TTree * digits)
 }
 
 //____________________________________________________________________________
-void AliTRDQADataMaker::MakeRaws(AliRawReader* rawReader)
+void AliTRDQADataMaker::MakeRaws(AliRawReader * const rawReader)
 {
   //
   // Makes QA data from raw data
@@ -795,7 +791,7 @@ void AliTRDQADataMaker::StartOfDetectorCycle()
 }
 
 //__________________________________________________________________________
-Int_t AliTRDQADataMaker::CheckPointer(TObject *obj, const char *name) 
+Int_t AliTRDQADataMaker::CheckPointer(TObject * const obj, const char *name) 
 {
   //
   // Checks initialization of pointers

@@ -1,5 +1,5 @@
-#ifndef AliTRDQADATAMAKER_H
-#define AliTRDQADATAMAKER_H
+#ifndef ALITRDQADATAMAKER_H
+#define ALITRDQADATAMAKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -44,20 +44,20 @@ class AliTRDQADataMaker: public AliQADataMaker {
   virtual void InitSDigits() ;
 
   virtual void MakeHits(TTree * hitTree);
-  virtual void MakeHits(TClonesArray * hits);
+  virtual void MakeHits(TClonesArray * const hits);
 
   virtual void MakeSDigits(TTree *sdigitTree);
-  virtual void MakeSDigits(TClonesArray * sigits); 
+  virtual void MakeSDigits(TClonesArray * const sigits); 
 
   virtual void MakeDigits(TTree *digitTree);
-  virtual void MakeDigits(TClonesArray * digits); 
+  virtual void MakeDigits(TClonesArray * const digits); 
 
-  virtual void MakeRaws(AliRawReader* rawReader); 
+  virtual void MakeRaws(AliRawReader * const rawReader); 
   virtual void MakeRecPoints(TTree * recpo); 
-  virtual void MakeESDs(AliESDEvent * esd);
+  virtual void MakeESDs(AliESDEvent * const esd);
 
   virtual void StartOfDetectorCycle() ; 
-  Int_t    CheckPointer(TObject *obj, const char *name);
+  Int_t        CheckPointer(TObject * const obj, const char *name);
 
   // internal methods
   Int_t    GetSector(const Double_t alpha) const;

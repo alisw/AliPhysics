@@ -26,26 +26,20 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include <TClonesArray.h>
-#include <TFile.h> 
 #include <TH1D.h> 
 #include <TH2D.h>
 #include <TH3D.h>
 #include <TProfile.h>
 #include <TF1.h>
-#include <TCanvas.h>
 
 // --- AliRoot header files ---
 #include "AliESDEvent.h"
-#include "AliLog.h"
 #include "AliRawReader.h"
+#include "AliQAChecker.h"
+
 #include "AliTRDcluster.h"
 #include "AliTRDQADataMakerRec.h"
-#include "AliTRDgeometry.h"
-//#include "AliTRDdataArrayI.h"
 #include "AliTRDrawStream.h"
-
-#include "AliQAChecker.h"
 
 ClassImp(AliTRDQADataMakerRec)
 
@@ -55,6 +49,8 @@ ClassImp(AliTRDQADataMakerRec)
 {
   //
   // Default constructor
+  //
+
 }
 
 //____________________________________________________________________________ 
@@ -491,7 +487,7 @@ void AliTRDQADataMakerRec::InitRaws()
 }
 
 //____________________________________________________________________________
-void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
+void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * const esd)
 {
   //
   // Make QA data from ESDs
@@ -660,11 +656,11 @@ Int_t AliTRDQADataMakerRec::GetStack(const AliExternalTrackParam *paramOut) cons
   // calculates the stack the track is in
   //
   
-  const Double_t L = -0.9;
-  const Double_t W = (2*L)/5;
+  const Double_t l = -0.9;
+  const Double_t w = (2*l)/5;
 
   Double_t tan = paramOut->GetZ() / paramOut->GetX();
-  Double_t pos = (tan - L) / W;
+  Double_t pos = (tan - l) / w;
   return (Int_t) pos;
 }
 
@@ -987,7 +983,7 @@ void AliTRDQADataMakerRec::StartOfDetectorCycle()
 }
 
 //__________________________________________________________________________
-Int_t AliTRDQADataMakerRec::CheckPointer(TObject *obj, const char *name) 
+Int_t AliTRDQADataMakerRec::CheckPointer(TObject * const obj, const char *name) 
 {
   //
   // Checks initialization of pointers
@@ -997,7 +993,8 @@ Int_t AliTRDQADataMakerRec::CheckPointer(TObject *obj, const char *name)
   return !!obj;
 }
 //__________________________________________________________________________
-void AliTRDQADataMakerRec::BuildRatio(TH1D *ratio, TH1D *histN, TH1D*histD) {
+void AliTRDQADataMakerRec::BuildRatio(TH1D *ratio, TH1D * const histN, TH1D * const histD) 
+{
   //
   // Calculate the ratio of two histograms 
   // error are calculated assuming the histos have the same counts
@@ -1028,9 +1025,13 @@ void AliTRDQADataMakerRec::BuildRatio(TH1D *ratio, TH1D *histN, TH1D*histD) {
   ratio->SetMaximum(1.1);
   ratio->SetMarkerStyle(20);
 }
-//__________________________________________________________________________
 
-Int_t AliTRDQADataMakerRec::FillBits(TH1D *hist, Int_t code, Int_t offset) {
+//__________________________________________________________________________
+Int_t AliTRDQADataMakerRec::FillBits(TH1D *hist, Int_t code, Int_t offset) 
+{
+  //
+  // Fill bits
+  //
 
   Int_t nb = 0;
   UInt_t test = 1;

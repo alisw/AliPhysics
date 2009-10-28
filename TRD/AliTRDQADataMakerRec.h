@@ -1,5 +1,5 @@
-#ifndef AliTRDQADataMakerRec_H
-#define AliTRDQADataMakerRec_H
+#ifndef ALITRDQADATAMAKERREC_H
+#define ALITRDQADATAMAKERREC_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -45,18 +45,18 @@ class AliTRDQADataMakerRec: public AliQADataMakerRec {
 
   virtual void MakeRaws(AliRawReader* rawReader); 
   virtual void MakeRecPoints(TTree * recpo); 
-  virtual void MakeESDs(AliESDEvent * esd);
+  virtual void MakeESDs(AliESDEvent * const esd);
 
   virtual void StartOfDetectorCycle() ; 
-  Int_t    CheckPointer(TObject *obj, const char *name);
+  Int_t        CheckPointer(TObject * const obj, const char *name);
 
   // internal methods
-  Int_t    GetSector(Double_t alpha) const;
-  Int_t    GetStack(const AliExternalTrackParam *paramOut) const;
-  Double_t GetExtZ(const AliExternalTrackParam *paramIn) const;
-  Int_t    FillBits(TH1D *hist, Int_t code, Int_t offset);
+  Int_t        GetSector(Double_t alpha) const;
+  Int_t        GetStack(const AliExternalTrackParam *paramOut) const;
+  Double_t     GetExtZ(const AliExternalTrackParam *paramIn) const;
+  Int_t        FillBits(TH1D *hist, Int_t code, Int_t offset);
 
-  void BuildRatio(TH1D *ratio, TH1D *histN, TH1D *histD);
+  void         BuildRatio(TH1D *ratio, TH1D * const histN, TH1D * const histD);
 
   ClassDef(AliTRDQADataMakerRec,1)   // Creates the TRD QA data
 

@@ -647,7 +647,7 @@ AliTRDarrayADC *AliTRDdigitsManager::GetDigits(Int_t det) const
   // Returns the digits array for one detector
   //
 
-  Int_t RecoDet = fRawRec ? 0 : det;
+  Int_t recoDet = fRawRec ? 0 : det;
 
   if (!fDigits)   
     {
@@ -656,8 +656,8 @@ AliTRDarrayADC *AliTRDdigitsManager::GetDigits(Int_t det) const
 
   if (!fHasSDigits)
     {
-      ((AliTRDarrayADC *) fDigits->At(RecoDet))->SetNdet(det);
-      return (AliTRDarrayADC *) fDigits->At(RecoDet); 
+      ((AliTRDarrayADC *) fDigits->At(recoDet))->SetNdet(det);
+      return (AliTRDarrayADC *) fDigits->At(recoDet); 
     }
   else
     {
@@ -674,7 +674,7 @@ AliTRDarraySignal *AliTRDdigitsManager::GetSDigits(Int_t det) const
   // Returns the sdigits array for one detector
   //
 
-  Int_t RecoDet = fRawRec ? 0 : det;
+  Int_t recoDet = fRawRec ? 0 : det;
 
   if (!fDigits)   
     {
@@ -684,8 +684,8 @@ AliTRDarraySignal *AliTRDdigitsManager::GetSDigits(Int_t det) const
 
   if (fHasSDigits)
     {
-      ((AliTRDarraySignal *) fDigits->At(RecoDet))->SetNdet(det);
-      return (AliTRDarraySignal *) fDigits->At(RecoDet);
+      ((AliTRDarraySignal *) fDigits->At(recoDet))->SetNdet(det);
+      return (AliTRDarraySignal *) fDigits->At(recoDet);
     }
   else
     {
@@ -703,15 +703,15 @@ AliTRDarrayDictionary *AliTRDdigitsManager::GetDictionary(Int_t det
   // Returns the dictionary for one detector
   //
 
-  Int_t RecoDet = fRawRec ? 0 : det;
+  Int_t recoDet = fRawRec ? 0 : det;
 
   if (fUseDictionaries == kFALSE)
     {
       return 0x0;
     }
 
-  ((AliTRDarrayDictionary *) fDigits->At(RecoDet))->SetNdet(det);
-  return (AliTRDarrayDictionary *) fDict[i]->At(RecoDet);
+  ((AliTRDarrayDictionary *) fDigits->At(recoDet))->SetNdet(det);
+  return (AliTRDarrayDictionary *) fDict[i]->At(recoDet);
   
 }
 
@@ -738,9 +738,9 @@ AliTRDSignalIndex *AliTRDdigitsManager::GetIndexes(Int_t det)
   // Returns indexes of active pads
   //
 
-  Int_t RecoDet = fRawRec ? 0 : det;
+  Int_t recoDet = fRawRec ? 0 : det;
 
-  return (AliTRDSignalIndex *) fSignalIndexes->At(RecoDet);
+  return (AliTRDSignalIndex *) fSignalIndexes->At(recoDet);
 
 }
 
@@ -751,18 +751,18 @@ void AliTRDdigitsManager::RemoveDigits(Int_t det)
    // Clear memory at det for Digits
    //
 
-  Int_t RecoDet = fRawRec ? 0 : det;
+  Int_t recoDet = fRawRec ? 0 : det;
 
-  if (fDigits->At(RecoDet))
+  if (fDigits->At(recoDet))
     {
       if (fHasSDigits) 
         {
-          AliTRDarraySignal *arr = (AliTRDarraySignal *) fDigits->RemoveAt(RecoDet);
+          AliTRDarraySignal *arr = (AliTRDarraySignal *) fDigits->RemoveAt(recoDet);
           delete arr;
 	}
       else 
         {
-          AliTRDarrayADC    *arr = (AliTRDarrayADC *)    fDigits->RemoveAt(RecoDet);
+          AliTRDarrayADC    *arr = (AliTRDarrayADC *)    fDigits->RemoveAt(recoDet);
           delete arr;
 	}
     }
@@ -776,7 +776,7 @@ void AliTRDdigitsManager::RemoveDictionaries(Int_t det)
   // Clear memory
   //
 
-  Int_t RecoDet = fRawRec ? 0 : det;
+  Int_t recoDet = fRawRec ? 0 : det;
 
   if (fUseDictionaries == kFALSE) 
     {
@@ -785,9 +785,9 @@ void AliTRDdigitsManager::RemoveDictionaries(Int_t det)
 
   for (Int_t i = 0; i < kNDict; i++) 
     {
-      if (fDict[i]->At(RecoDet))
+      if (fDict[i]->At(recoDet))
 	{
-	  AliTRDarrayDictionary *arr = (AliTRDarrayDictionary *) fDict[i]->RemoveAt(RecoDet);
+	  AliTRDarrayDictionary *arr = (AliTRDarrayDictionary *) fDict[i]->RemoveAt(recoDet);
           delete arr;
 	}
     }
@@ -801,11 +801,11 @@ void AliTRDdigitsManager::RemoveIndexes(Int_t det)
    // Clear memory
    //
 
-  Int_t RecoDet = fRawRec ? 0 : det;
+  Int_t recoDet = fRawRec ? 0 : det;
 
-  if (fSignalIndexes->At(RecoDet))
+  if (fSignalIndexes->At(recoDet))
     {
-      AliTRDSignalIndex *arr = (AliTRDSignalIndex *) fSignalIndexes->RemoveAt(RecoDet);
+      AliTRDSignalIndex *arr = (AliTRDSignalIndex *) fSignalIndexes->RemoveAt(recoDet);
       delete arr;
     }
 
@@ -818,9 +818,9 @@ void AliTRDdigitsManager::ClearIndexes(Int_t det)
   // Clear memory
   //
   
-  Int_t RecoDet = fRawRec ? 0 : det;
+  Int_t recoDet = fRawRec ? 0 : det;
 
-  ((AliTRDSignalIndex *) fSignalIndexes->At(RecoDet))->ClearAll();  
+  ((AliTRDSignalIndex *) fSignalIndexes->At(recoDet))->ClearAll();  
 
 }
 
