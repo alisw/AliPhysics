@@ -30,6 +30,7 @@
 #include "AliTagAnalysis.h"
 
 #include <TMath.h>
+#include <TChain.h>
 #include <TGridResult.h>
 
 ClassImp(AliEventPoolOTF)
