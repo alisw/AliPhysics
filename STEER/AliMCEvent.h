@@ -52,7 +52,7 @@ public:
 
     virtual void SetStdNames()                             {;}
     virtual void Print(Option_t */*option=""*/)  const     {;}
-    
+    virtual void PreReadAll();
 
     // Header
     virtual AliVHeader* GetHeader()          const         {return 0;}

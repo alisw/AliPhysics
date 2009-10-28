@@ -636,6 +636,8 @@ Bool_t AliMCEvent::IsPhysicalPrimary(Int_t i)
 
 void AliMCEvent::InitEvent()
 {
+//
+// Initialize the subsidiary event structure
     if (fSubsidiaryEvents) {
 	TIter next(fSubsidiaryEvents);
 	AliMCEvent* evt;
@@ -658,6 +660,23 @@ void AliMCEvent::InitEvent()
 	    ioffs += (evt->GetNumberOfTracks() - evt->GetNumberOfPrimaries());	    
 	}
     }
+}
+void AliMCEvent::PreReadAll()                              
+{
+    // Preread the MC information
+    Int_t i;
+    // secondaries
+    for (i = fStack->GetNprimary(); i < fStack->GetNtrack(); i++) 
+    {
+	GetTrack(i);
+    }
+    // primaries
+    for (i = 0; i < fStack->GetNprimary(); i++) 
+    {
+	GetTrack(i);
+    }
+    
+    
 }
 
 

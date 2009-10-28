@@ -66,7 +66,8 @@ AliMCEventHandler::AliMCEventHandler() :
     fReadTR(kTRUE),
     fInitOk(kFALSE),
     fSubsidiaryHandlers(0),
-    fEventsInContainer(0)
+    fEventsInContainer(0),
+    fPreReadMode(kNoPreRead)
 {
   //
   // Default constructor
@@ -97,7 +98,8 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fReadTR(kTRUE),
     fInitOk(kFALSE),
     fSubsidiaryHandlers(0),
-    fEventsInContainer(0)
+    fEventsInContainer(0),
+    fPreReadMode(kNoPreRead)
 {
   //
   // Constructor
@@ -286,6 +288,11 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
 	}
 	fMCEvent->InitEvent();
     }
+    
+    if (fPreReadMode == kLmPreRead) {
+	fMCEvent->PreReadAll();
+    }
+
     return result;
     
 }

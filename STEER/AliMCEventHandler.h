@@ -35,6 +35,9 @@ class AliMCEvent;
 class AliMCEventHandler : public AliVEventHandler
 {
 public:
+
+    enum PreReadMode_t {kNoPreRead = 0, kLmPreRead = 1, kHmPreRead = 2};
+
     AliMCEventHandler();
     AliMCEventHandler(const char* name, const char* title);
     virtual ~AliMCEventHandler();
@@ -57,6 +60,7 @@ public:
     virtual void         SetReadTR(Bool_t flag) { fReadTR = flag; }
     virtual void         AddSubsidiaryHandler(AliMCEventHandler* handler);
     virtual void         SetNumberOfEventsInContainer(Int_t nev) {fEventsInContainer = nev;}
+    virtual void         SetPreReadMode(PreReadMode_t mode) {fPreReadMode = mode;}
     //
     AliMCEvent* MCEvent() const {return fMCEvent;} 
     TTree*      TreeTR()  const {return fTreeTR;}
@@ -96,7 +100,9 @@ private:
     Bool_t                 fReadTR;             // determines if TR shall be read
     Bool_t                 fInitOk;             // Initialization ok
     TList                 *fSubsidiaryHandlers; //! List of subsidiary MC handlers (for example for Background)
-    Int_t                  fEventsInContainer;  //! Number of events in container class 
+    Int_t                  fEventsInContainer;  //! Number of events in container class
+    PreReadMode_t          fPreReadMode;        //! Pre reading mode
+    
     ClassDef(AliMCEventHandler,1)  //MC Truth EventHandler class
 };
 #endif 
