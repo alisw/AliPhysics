@@ -697,6 +697,8 @@ void AliMUONTriggerQADataMakerRec::MakeDigits(TTree* digitsTree)
 //____________________________________________________________________________
 void AliMUONTriggerQADataMakerRec::MakeRecPoints(TTree* /*clustersTree*/)
 {
+  /// Fill histogram with total number of analyzed events for normalization purposes
+
   // Do nothing in case of calibration event
   if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
 	
@@ -981,6 +983,10 @@ TObjArray*
 AliMUONTriggerQADataMakerRec::GetDCSValues(Int_t iMeas, Int_t detElemId,
 					   TMap* triggerDcsMap, AliMpDCSNamer& triggerDcsNamer)
 {
+  //
+  /// Get values of DCS data points from the map
+  //
+
   if ( AliMpDEManager::GetStationType(detElemId) != AliMp::kStationTrigger) return 0x0;
 
   TString currAlias = triggerDcsNamer.DCSChannelName(detElemId, 0, iMeas);
