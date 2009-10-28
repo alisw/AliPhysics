@@ -54,7 +54,6 @@ class AliAnalysisTaskJetCorrections : public AliAnalysisTaskSE
 
   virtual Double_t SetR(Double_t b){fR = b; return fR;} 
 
-  virtual void GetThrustAxis(TVector3 &n01, TVector3 * pTrack,const Int_t &nTracks);
  private:
   AliAnalysisTaskJetCorrections(const AliAnalysisTaskJetCorrections&);
   AliAnalysisTaskJetCorrections& operator = (const AliAnalysisTaskJetCorrections&);
