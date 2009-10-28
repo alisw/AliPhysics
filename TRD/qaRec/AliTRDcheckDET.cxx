@@ -397,7 +397,7 @@ TObjArray *AliTRDcheckDET::Histos(){
   if(!(h = (TH1F*)gROOT->FindObject("hTrackStatus"))){
     const Int_t nerr = 7;
     h = new TH1F("hTrackStatus", "Track Status", nerr, -0.5, nerr-0.5);
-    Char_t *label[nerr] = {"OK", "PROL", "PROP", "AJST", "SNP", "TINI", "UPDT"};
+    const Char_t *label[nerr] = {"OK", "PROL", "PROP", "AJST", "SNP", "TINI", "UPDT"};
     ax = h->GetXaxis();
     for(Int_t ierr=nerr; ierr--;) ax->SetBinLabel(ierr+1, label[ierr]);
     h->SetYTitle("Relative Error to Good [%]");
@@ -412,7 +412,7 @@ TObjArray *AliTRDcheckDET::Histos(){
       const Int_t nerr = 8;
       h = new TH1F(Form("hTrackletStatus%d", ily), "Tracklet status", nerr, -0.5, nerr-0.5);
       h->SetLineColor(ily+1);
-      Char_t *label[nerr] = {"OK", "Geom", "Bound", "NoCl", "NoAttach", "NoClTr", "NoFit", "Chi2"};
+      const Char_t *label[nerr] = {"OK", "Geom", "Bound", "NoCl", "NoAttach", "NoClTr", "NoFit", "Chi2"};
       ax = h->GetXaxis();
       for(Int_t ierr=nerr; ierr--;) ax->SetBinLabel(ierr+1, label[ierr]);
       h->SetYTitle("Relative Error to Good [%]");

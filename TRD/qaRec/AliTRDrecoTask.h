@@ -53,7 +53,7 @@ public:
   virtual Bool_t Load(const Char_t *filename = "TRD.Performance.root");
   virtual Bool_t Save(TObjArray * const res);
   virtual Bool_t PostProcess();
-  virtual Bool_t PutTrendValue(Char_t *name, Double_t val);
+  virtual Bool_t PutTrendValue(const Char_t *name, Double_t val);
   virtual void   SetDebugLevel(Int_t level);
   virtual void   SetFriends(Bool_t fr = kTRUE) {SetBit(kFriends, fr);}
   virtual void   SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}

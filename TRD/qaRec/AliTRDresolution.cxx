@@ -80,11 +80,11 @@
 
 ClassImp(AliTRDresolution)
 
-UChar_t AliTRDresolution::fgNElements[kNhistos] = {
+UChar_t const AliTRDresolution::fgNElements[kNhistos] = {
   2, 2, 5, 5,
   2, 5, 12, 2, 11
 };
-Char_t* AliTRDresolution::fgPerformanceName[kNhistos] = {
+Char_t const * AliTRDresolution::fgPerformanceName[kNhistos] = {
      "Charge"
     ,"Cluster2Track"
     ,"Tracklet2Track"
@@ -95,7 +95,7 @@ Char_t* AliTRDresolution::fgPerformanceName[kNhistos] = {
     ,"TOF/HMPID2MC"
     ,"TRD2MC"
 };
-Char_t *AliTRDresolution::fgAxTitle[46][4] = {
+Char_t const *AliTRDresolution::fgAxTitle[46][4] = {
   // Charge
   {"Impv", "x [cm]", "I_{mpv}", "x/x_{0}"}
  ,{"dI/Impv", "x/x_{0}", "#delta I/I_{mpv}", "x[cm]"}
@@ -1846,7 +1846,7 @@ Bool_t AliTRDresolution::GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t 
   for(Int_t jp=0; jp<(Int_t)ip; jp++) nref+=fgNElements[jp];
   UChar_t jdx = idx<0?0:idx;
   for(Int_t jc=0; jc<TMath::Min(jdx,fgNElements[ip]-1); jc++) nref++;
-  Char_t **at = fgAxTitle[nref];
+  const Char_t **at = fgAxTitle[nref];
 
   PutTrendValue(Form("%s_%s", fgPerformanceName[ip], at[0]), gm->GetMean(2));
   PutTrendValue(Form("%s_%sRMS", fgPerformanceName[ip], at[0]), gm->GetRMS(2));
@@ -1896,7 +1896,7 @@ Bool_t AliTRDresolution::GetGraphTrack(Float_t *bb, Int_t idx, Int_t il)
   Int_t nref = 0;
   for(Int_t jp=0; jp<Int_t(kMCtrackTRD); jp++) nref+=fgNElements[jp];
   for(Int_t jc=0; jc<idx; jc++) nref++;
-  Char_t **at = fgAxTitle[nref];
+  const Char_t **at = fgAxTitle[nref];
 
   TGraphErrors *gm = 0x0, *gs = 0x0;
   TObjArray *a0 = fGraphS, *a1 = 0x0;
@@ -1961,7 +1961,7 @@ Bool_t AliTRDresolution::GetGraphTrackTPC(Float_t *bb, Int_t sel)
   Int_t nref = 0;
   for(Int_t jp=0; jp<Int_t(kMCtrackTPC); jp++) nref+=fgNElements[jp];
   for(Int_t jc=0; jc<sel; jc++) nref++;
-  Char_t **at = fgAxTitle[nref];
+  const Char_t **at = fgAxTitle[nref];
 
   TGraphErrors *gm = 0x0, *gs = 0x0;
   TObjArray *a0 = fGraphS, *a1 = 0x0;

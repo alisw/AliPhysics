@@ -127,7 +127,7 @@ Bool_t AliTRDrecoTask::GetRefFigure(Int_t /*ifig*/)
 }
 
 //_______________________________________________________
-Bool_t AliTRDrecoTask::PutTrendValue(Char_t *name, Double_t val)
+Bool_t AliTRDrecoTask::PutTrendValue(const Char_t *name, Double_t val)
 {
 // Generic publisher for trend values
 
