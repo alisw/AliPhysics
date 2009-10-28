@@ -63,7 +63,7 @@ endif
 #-------------------------------------------------------------------------------
 # Check if DATE is installed
 
-ifneq ($(shell date-config 2>&1 | grep -i usage),)
+ifneq ($(shell which date-config | grep "^/"),)
 DATEFLAGS := -DALI_DATE $(shell date-config --cflags | tr \" \')
 CXXFLAGS  += $(DATEFLAGS)
 CFLAGS    += $(DATEFLAGS)
