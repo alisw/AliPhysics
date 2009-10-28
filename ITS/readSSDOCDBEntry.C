@@ -13,9 +13,11 @@
 #include "AliITSGainSSDv2.h"
 #include "AliITSBadChannelsSSDv2.h"
 #include "AliITSNoiseSSDv2.h"
+#include "AliITSPedestalSSDv2.h"
 #include "AliITSGainSSD.h"
 #include "AliITSBadChannelsSSD.h"
 #include "AliITSNoiseSSD.h"
+#include "AliITSPedestalSSD.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #endif
@@ -25,12 +27,15 @@
 
 
 //====================================================================//
-void Noise(AliCDBManager * man, Int_t runNumber);
+void Noise(AliCDBManager * man);
+void Pedestal(AliCDBManager * man);
 void BadChannelMap(AliCDBManager * man);
 void GainCalibration(AliCDBManager * man);
+void ReadOldSSDPedestal(TObjArray *array, AliITSPedestalSSDv2 *pedestalSSD);
 void ReadOldSSDNoise(TObjArray *array, AliITSNoiseSSDv2 *noiseSSD);
 void ReadOldSSDBadChannels(TObjArray *array, AliITSBadChannelsSSDv2 *badChannelsSSD);
 void ReadOldSSDGain(TObjArray *array, AliITSGainSSDv2 *gainSSD);
+void drawNoiseDistributions(Int_t runNumber);
 //====================================================================//
 
 //_____________________________________________________________________//
@@ -44,7 +49,7 @@ void readSSDOCDBEntry(const char* type = "alien", Int_t runNumber = 0) {
   AliCDBManager * man = AliCDBManager::Instance();
   
   if(gType == "alien") {
-    man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB/");
+    man->SetDefaultStorage("alien://folder=/alice/data/2009/Reference/");
   }
   else if(gType == "local") 
     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
@@ -55,18 +60,166 @@ void readSSDOCDBEntry(const char* type = "alien", Int_t runNumber = 0) {
   
   man->SetRun(runNumber);
     
-  Noise(man,runNumber);
-  BadChannelMap(man);
-  GainCalibration(man);
+  Pedestal(man);
+  //Noise(man);
+  //BadChannelMap(man);
+  //GainCalibration(man);
 }
 
 //_____________________________________________________________________//
-void Noise(AliCDBManager * man, Int_t runNumber) {
+void drawNoiseDistributions(Int_t runNumber) {
+  //Draws the noise distributions for each side and layer
+  TString filename = "noiseDistributionsSSD."; filename += runNumber;
+  filename += ".root";
+  TFile *f = TFile::Open(filename.Data());
+  TH1F *gHistNoisePSideLayer5 = dynamic_cast<TH1F *>(f->Get("gHistNoisePSideLayer5"));
+  TH1F *gHistNoiseNSideLayer5 = dynamic_cast<TH1F *>(f->Get("gHistNoiseNSideLayer5"));
+  TH1F *gHistNoisePSideLayer6 = dynamic_cast<TH1F *>(f->Get("gHistNoisePSideLayer6"));
+  TH1F *gHistNoiseNSideLayer6 = dynamic_cast<TH1F *>(f->Get("gHistNoiseNSideLayer6"));
+
+  TCanvas *c1 = new TCanvas("c1","Noise distribution (P-side, Layer 5)",
+			    0,0,400,400);
+  c1->SetFillColor(10); c1->SetHighLightColor(10); c1->SetLogy();
+  gHistNoisePSideLayer5->SetStats(kFALSE); gHistNoisePSideLayer5->Draw();
+
+  TCanvas *c2 = new TCanvas("c2","Noise distribution (N-side, Layer 5)",
+			    400,0,400,400);
+  c2->SetFillColor(10); c2->SetHighLightColor(10); c2->SetLogy();
+  gHistNoiseNSideLayer5->SetStats(kFALSE); gHistNoiseNSideLayer5->Draw();
+
+  TCanvas *c3 = new TCanvas("c3","Noise distribution (P-side, Layer 6)",
+			    0,400,400,400);
+  c3->SetFillColor(10); c3->SetHighLightColor(10); c3->SetLogy();
+  gHistNoisePSideLayer6->SetStats(kFALSE); gHistNoisePSideLayer6->Draw();
+
+  TCanvas *c4 = new TCanvas("c4","Noise distribution (N-side, Layer 6)",
+			    400,400,400,400);
+  c4->SetFillColor(10); c4->SetHighLightColor(10); c4->SetLogy();
+  gHistNoiseNSideLayer6->SetStats(kFALSE); gHistNoiseNSideLayer6->Draw();
+}
+
+//_____________________________________________________________________//
+void drawPedestalDistributions(Int_t runNumber) {
+  //Draws the pedestal distributions for each side and layer
+  TString filename = "pedestalDistributionsSSD."; filename += runNumber;
+  filename += ".root";
+  TFile *f = TFile::Open(filename.Data());
+  TH1F *gHistPedestalPSideLayer5 = dynamic_cast<TH1F *>(f->Get("gHistPedestalPSideLayer5"));
+  TH1F *gHistPedestalNSideLayer5 = dynamic_cast<TH1F *>(f->Get("gHistPedestalNSideLayer5"));
+  TH1F *gHistPedestalPSideLayer6 = dynamic_cast<TH1F *>(f->Get("gHistPedestalPSideLayer6"));
+  TH1F *gHistPedestalNSideLayer6 = dynamic_cast<TH1F *>(f->Get("gHistPedestalNSideLayer6"));
+
+  TCanvas *c1 = new TCanvas("c1","Pedestal distribution (P-side, Layer 5)",
+			    0,0,400,400);
+  c1->SetFillColor(10); c1->SetHighLightColor(10); c1->SetLogy();
+  gHistPedestalPSideLayer5->SetStats(kFALSE); gHistPedestalPSideLayer5->Draw();
+  
+  TCanvas *c2 = new TCanvas("c2","Pedestal distribution (N-side, Layer 5)",
+			    400,0,400,400);
+  c2->SetFillColor(10); c2->SetHighLightColor(10); c2->SetLogy();
+  gHistPedestalNSideLayer5->SetStats(kFALSE); gHistPedestalNSideLayer5->Draw();
+  
+  TCanvas *c3 = new TCanvas("c3","Pedestal distribution (P-side, Layer 6)",
+			    0,400,400,400);
+  c3->SetFillColor(10); c3->SetHighLightColor(10); c3->SetLogy();
+  gHistPedestalPSideLayer6->SetStats(kFALSE); gHistPedestalPSideLayer6->Draw();
+  
+  TCanvas *c4 = new TCanvas("c4","Pedestal distribution (N-side, Layer 6)",
+			    400,400,400,400);
+  c4->SetFillColor(10); c4->SetHighLightColor(10); c4->SetLogy();
+  gHistPedestalNSideLayer6->SetStats(kFALSE); gHistPedestalNSideLayer6->Draw();
+}
+
+//_____________________________________________________________________//
+void Pedestal(AliCDBManager * man) {
+  //Reads the noise OCDB file
   const Int_t fgkSSDMODULES = 1698;
   const Int_t fgkSSDSTRIPSPERMODULE = 1536;
   static const Int_t fgkDefaultNStripsSSD = 768;
 
+  Int_t runNumber = man->GetRun();
+
+  //pedestal histograms
+  TH1F *gHistPedestalPSideLayer5 = new TH1F("gHistPedestalPSideLayer5",
+					    "Pedestal values (P-side, Layer5); ADC counts; Entries;",
+					    1000,-100,100);
+  TH1F *gHistPedestalNSideLayer5 = new TH1F("gHistPedestalNSideLayer5",
+					    "Pedestal values (N-side, Layer5); ADC counts; Entries;",
+					    1000,-100,100);
+  TH1F *gHistPedestalPSideLayer6 = new TH1F("gHistPedestalPSideLayer6",
+					    "Pedestal values (P-side, Layer6); ADC counts; Entries;",
+					    1000,-100,100);
+  TH1F *gHistPedestalNSideLayer6 = new TH1F("gHistPedestalNSideLayer6",
+					    "Pedestal values (N-side, Layer6); ADC counts; Entries;",
+					    1000,-100,100);
+
+  Int_t fLayer = 0,fLadder = 0, fModule = 0;
+  
+  AliITSPedestalSSDv2 *pedestalSSD = new AliITSPedestalSSDv2();
+  AliCDBEntry *entryPedestalSSD = man->Get("ITS/Ref/PedestalSSD");
+  TObject *empty = (TObject *)entryPedestalSSD->GetObject();
+  TString objectname = empty->GetName();
+  if(objectname=="TObjArray") {
+    TObjArray *pedestalSSDOld = (TObjArray *)entryPedestalSSD->GetObject();
+    ReadOldSSDPedestal(pedestalSSDOld, pedestalSSD);
+  }
+  else if(objectname=="AliITSPedestalSSDv2") {
+    cout<<"Reading the new format of the calibration file..."<<endl;
+    pedestalSSD = (AliITSPedestalSSDv2 *)entryPedestalSSD->GetObject();
+  }
+
+  Double_t pedestal = 0.0;
+  for (Int_t i = 0; i < fgkSSDMODULES; i++) {
+    AliITSgeomTGeo::GetModuleId(i+500,fLayer,fLadder,fModule);      
+    //cout<<"Pedestal for module: "<<i+500<<" - Layer: "<<fLayer<<endl;
+    for(Int_t j = 0; j < fgkDefaultNStripsSSD; j++) {
+      pedestal = pedestalSSD->GetPedestalP(i,j);
+      if(fLayer == 5) 
+	gHistPedestalPSideLayer5->Fill(pedestal);
+      if(fLayer == 6) 
+	gHistPedestalPSideLayer6->Fill(pedestal);
+      
+      pedestal = pedestalSSD->GetPedestalN(i,j);
+      if(fLayer == 5) 
+	gHistPedestalNSideLayer5->Fill(pedestal);
+      if(fLayer == 6) 
+	gHistPedestalNSideLayer6->Fill(pedestal);
+    }//loop over strips
+  }//loop over modules
+
+  TString output = "pedestalDistributionsSSD."; output += runNumber; 
+  output += ".root";
+  TFile *f = TFile::Open(output.Data(),"recreate");
+  gHistPedestalPSideLayer5->Write();
+  gHistPedestalNSideLayer5->Write();
+  gHistPedestalPSideLayer6->Write();
+  gHistPedestalNSideLayer6->Write();
+  f->Close();
+}
+
+//_____________________________________________________________________//
+void Noise(AliCDBManager * man) {
+  //Reads the noise OCDB file
+  const Int_t fgkSSDMODULES = 1698;
+  const Int_t fgkSSDSTRIPSPERMODULE = 1536;
+  static const Int_t fgkDefaultNStripsSSD = 768;
+
+  Int_t runNumber = man->GetRun();
+
   //noise histograms
+  TH1F *gHistNoisePSideLayer5 = new TH1F("gHistNoisePSideLayer5",
+					 "Noise values (P-side, Layer5); ADC counts; Entries;",
+					 1000,0,1000);
+  TH1F *gHistNoiseNSideLayer5 = new TH1F("gHistNoiseNSideLayer5",
+					 "Noise values (N-side, Layer5); ADC counts; Entries;",
+					 1000,0,1000);
+  TH1F *gHistNoisePSideLayer6 = new TH1F("gHistNoisePSideLayer6",
+					 "Noise values (P-side, Layer6); ADC counts; Entries;",
+					 1000,0,1000);
+  TH1F *gHistNoiseNSideLayer6 = new TH1F("gHistNoiseNSideLayer6",
+					 "Noise values (N-side, Layer6); ADC counts; Entries;",
+					 1000,0,1000);
+
   Int_t fLayer = 0,fLadder = 0, fModule = 0;
   Int_t fHistCounter = 0;
   TString fTitle;
@@ -101,19 +254,38 @@ void Noise(AliCDBManager * man, Int_t runNumber) {
   
   Double_t noise = 0.0;
   for (Int_t i = 0; i < fgkSSDMODULES; i++) {
-    //cout<<"Noise for module: "<<i+1<<endl;
+    AliITSgeomTGeo::GetModuleId(i+500,fLayer,fLadder,fModule);      
+    //cout<<"Noise for module: "<<i+500<<" - Layer: "<<fLayer<<endl;
     for(Int_t j = 0; j < fgkDefaultNStripsSSD; j++) {
       noise = noiseSSD->GetNoiseP(i,j);
       hNoiseModule[i]->SetBinContent(j+1,noise);
+      if(fLayer == 5) 
+	gHistNoisePSideLayer5->Fill(noise);
+      if(fLayer == 6) 
+	gHistNoisePSideLayer6->Fill(noise);
+      
       noise = noiseSSD->GetNoiseN(i,j);
       hNoiseModule[i]->SetBinContent(fgkSSDSTRIPSPERMODULE-j,noise);
+      if(fLayer == 5) 
+	gHistNoiseNSideLayer5->Fill(noise);
+      if(fLayer == 6) 
+	gHistNoiseNSideLayer6->Fill(noise);
     }//loop over strips
   }//loop over modules
   
-  TString output = "noiseSSD."; output += runNumber; output += ".root";
-  TFile *f = TFile::Open(output.Data(),"recreate");
+  TString output1 = "noiseSSD."; output1 += runNumber; output1 += ".root";
+  TFile *f1 = TFile::Open(output1.Data(),"recreate");
   array->Write();
-  f->Close();
+  f1->Close();
+
+  TString output2 = "noiseDistributionsSSD."; output2 += runNumber; 
+  output2 += ".root";
+  TFile *f2 = TFile::Open(output2.Data(),"recreate");
+  gHistNoisePSideLayer5->Write();
+  gHistNoiseNSideLayer5->Write();
+  gHistNoisePSideLayer6->Write();
+  gHistNoiseNSideLayer6->Write();
+  f2->Close();
 }
 
 //_____________________________________________________________________//
@@ -376,6 +548,29 @@ void ReadOldSSDNoise(TObjArray *array,
 	noiseSSD->AddNoiseP(iModule,iStrip,noise);
       if(iStrip >= fgkSSDPSIDESTRIPSPERMODULE)
 	noiseSSD->AddNoiseN(iModule,1535 - iStrip,noise);
+    }//loop over strips
+  }//loop over modules      
+}
+
+//_____________________________________________________________________//
+void ReadOldSSDPedestal(TObjArray *array, 
+			AliITSPedestalSSDv2 *pedestalSSD) {
+  const Int_t fgkSSDSTRIPSPERMODULE = 1536;
+  const Int_t fgkSSDPSIDESTRIPSPERMODULE = 768;
+
+  Int_t fNMod = array->GetEntries();
+  cout<<"Converting old calibration object for pedestal..."<<endl;
+
+  //PEDESTAL
+  Double_t pedestal = 0.0;
+  for (Int_t iModule = 0; iModule < fNMod; iModule++) {
+    AliITSPedestalSSD *pedestalModule = (AliITSPedestalSSD*) (array->At(iModule));
+    for(Int_t iStrip = 0; iStrip < fgkSSDSTRIPSPERMODULE; iStrip++) {
+      pedestal = (iStrip < fgkSSDPSIDESTRIPSPERMODULE) ? pedestalModule->GetPedestalP(iStrip) : pedestalModule->GetPedestalN(1535 - iStrip);
+      if(iStrip < fgkSSDPSIDESTRIPSPERMODULE)
+	pedestalSSD->AddPedestalP(iModule,iStrip,pedestal);
+      if(iStrip >= fgkSSDPSIDESTRIPSPERMODULE)
+	pedestalSSD->AddPedestalN(iModule,1535 - iStrip,pedestal);
     }//loop over strips
   }//loop over modules      
 }

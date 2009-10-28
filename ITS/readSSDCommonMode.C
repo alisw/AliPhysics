@@ -22,6 +22,7 @@
 /*  $Id:  $    */
 
 //============================================================//
+static const Int_t fgkNumOfChips = 6;      //number of SSD chips per module per side
 static const Int_t fgkNumOfLDCs = 8;      //number of SSD LDCs
 static const Int_t fgkNumOfDDLs = 16;      //number of SSD DDLs
 static const Int_t fgkSSDMODULES = 1698;      //total number of SSD modules
@@ -58,27 +59,35 @@ TList *initCM() {
   Int_t gLayer = 0,gLadder = 0, gModule = 0;
   Int_t gHistCounter = 0;
   TString gTitle;
-  TH1F *gHistSSDCMModule[2*fgkSSDMODULES]; 
+  TH1F *gHistSSDCMModule[2*fgkSSDMODULES][fgkNumOfChips]; 
   for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
     AliITSgeomTGeo::GetModuleId(iModule,gLayer,gLadder,gModule);
-    gTitle = "SSD_CM_PSide_Layer"; gTitle += gLayer;
-    gTitle += "_Ladder"; gTitle += gLadder;
-    gTitle += "_Module"; gTitle += gModule;
-    gHistSSDCMModule[gHistCounter] = new TH1F(gTitle.Data(),gTitle.Data(),
-					      100,-50.,50.);
-    gHistSSDCMModule[gHistCounter]->GetXaxis()->SetTitle("CM");
-    list->Add(gHistSSDCMModule[gHistCounter]);
+    for(Int_t iChip = 0; iChip < fgkNumOfChips; iChip++) {
+      gTitle = "SSD_CM_PSide_Layer"; gTitle += gLayer;
+      gTitle += "_Ladder"; gTitle += gLadder;
+      gTitle += "_Module"; gTitle += gModule;
+      gTitle += "_Chip"; gTitle += iChip+1;
+      gHistSSDCMModule[gHistCounter][iChip] = new TH1F(gTitle.Data(),
+						       gTitle.Data(),
+						       100,-50.,50.);
+      gHistSSDCMModule[gHistCounter][iChip]->GetXaxis()->SetTitle("CM");
+      list->Add(gHistSSDCMModule[gHistCounter][iChip]);
+    }
     gHistCounter += 1;
   }
   for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
     AliITSgeomTGeo::GetModuleId(iModule,gLayer,gLadder,gModule);
-    gTitle = "SSD_CM_NSide_Layer"; gTitle += gLayer;
-    gTitle += "_Ladder"; gTitle += gLadder;
-    gTitle += "_Module"; gTitle += gModule;
-    gHistSSDCMModule[gHistCounter] = new TH1F(gTitle.Data(),gTitle.Data(),
-					      100,-50.,50.);
-    gHistSSDCMModule[gHistCounter]->GetXaxis()->SetTitle("CM");
-    list->Add(gHistSSDCMModule[gHistCounter]);
+    for(Int_t iChip = 0; iChip < fgkNumOfChips; iChip++) {
+      gTitle = "SSD_CM_NSide_Layer"; gTitle += gLayer;
+      gTitle += "_Ladder"; gTitle += gLadder;
+      gTitle += "_Module"; gTitle += gModule;
+      gTitle += "_Chip"; gTitle += iChip+1;
+      gHistSSDCMModule[gHistCounter][iChip] = new TH1F(gTitle.Data(),
+						       gTitle.Data(),
+						       100,-50.,50.);
+    gHistSSDCMModule[gHistCounter][iChip]->GetXaxis()->SetTitle("CM");
+    list->Add(gHistSSDCMModule[gHistCounter][iChip]);
+    }
     gHistCounter += 1;
   }
 
@@ -104,65 +113,126 @@ void makeCM(const char* filename, Int_t nEvents, TList *list) {
   //==================================================//
     
   //==================================================//
-  TH2F *fHistPSideCMMapLayer5 = new TH2F("fHistPSideCMMapLayer5",
+  TH2F *fHistPSideMeanCMMapLayer5 = new TH2F("fHistPSideMeanCMMapLayer5",
 					 "Layer 5 - P side;N_{module};N_{ladder}",
 					 22,1,23,
 					 34,500,534);
-  fHistPSideCMMapLayer5->GetXaxis()->SetTitleColor(1);
-  fHistPSideCMMapLayer5->GetZaxis()->SetRangeUser(0.,20.);
-  fHistPSideCMMapLayer5->SetStats(kFALSE);
-  fHistPSideCMMapLayer5->GetYaxis()->SetTitleOffset(1.8);
-  fHistPSideCMMapLayer5->GetXaxis()->SetNdivisions(22);
-  fHistPSideCMMapLayer5->GetYaxis()->SetNdivisions(34);
-  fHistPSideCMMapLayer5->GetXaxis()->SetLabelSize(0.03);
-  fHistPSideCMMapLayer5->GetYaxis()->SetLabelSize(0.03);
-  fHistPSideCMMapLayer5->GetZaxis()->SetTitleOffset(1.6);
-  fHistPSideCMMapLayer5->GetZaxis()->SetTitle("RMS(CM) (p-side)");
+  fHistPSideMeanCMMapLayer5->GetXaxis()->SetTitleColor(1);
+  fHistPSideMeanCMMapLayer5->GetZaxis()->SetRangeUser(0.,20.);
+  fHistPSideMeanCMMapLayer5->SetStats(kFALSE);
+  fHistPSideMeanCMMapLayer5->GetYaxis()->SetTitleOffset(1.8);
+  fHistPSideMeanCMMapLayer5->GetXaxis()->SetNdivisions(22);
+  fHistPSideMeanCMMapLayer5->GetYaxis()->SetNdivisions(34);
+  fHistPSideMeanCMMapLayer5->GetXaxis()->SetLabelSize(0.03);
+  fHistPSideMeanCMMapLayer5->GetYaxis()->SetLabelSize(0.03);
+  fHistPSideMeanCMMapLayer5->GetZaxis()->SetTitleOffset(1.6);
+  fHistPSideMeanCMMapLayer5->GetZaxis()->SetTitle("RMS(CM) (p-side)");
 
-  TH2F *fHistNSideCMMapLayer5 = new TH2F("fHistNSideCMMapLayer5",
+  TH2F *fHistNSideMeanCMMapLayer5 = new TH2F("fHistNSideMeanCMMapLayer5",
 					 "Layer 5 - N side;N_{module};N_{ladder}",
 					 22,1,23,
 					 34,500,534);
-  fHistNSideCMMapLayer5->GetXaxis()->SetTitleColor(1);
-  fHistNSideCMMapLayer5->GetZaxis()->SetRangeUser(0.,20.);
-  fHistNSideCMMapLayer5->SetStats(kFALSE);
-  fHistNSideCMMapLayer5->GetYaxis()->SetTitleOffset(1.8);
-  fHistNSideCMMapLayer5->GetXaxis()->SetNdivisions(22);
-  fHistNSideCMMapLayer5->GetYaxis()->SetNdivisions(34);
-  fHistNSideCMMapLayer5->GetXaxis()->SetLabelSize(0.03);
-  fHistNSideCMMapLayer5->GetYaxis()->SetLabelSize(0.03);
-  fHistNSideCMMapLayer5->GetZaxis()->SetTitleOffset(1.6);
-  fHistNSideCMMapLayer5->GetZaxis()->SetTitle("RMS(CM) (n-side)");
+  fHistNSideMeanCMMapLayer5->GetXaxis()->SetTitleColor(1);
+  fHistNSideMeanCMMapLayer5->GetZaxis()->SetRangeUser(0.,20.);
+  fHistNSideMeanCMMapLayer5->SetStats(kFALSE);
+  fHistNSideMeanCMMapLayer5->GetYaxis()->SetTitleOffset(1.8);
+  fHistNSideMeanCMMapLayer5->GetXaxis()->SetNdivisions(22);
+  fHistNSideMeanCMMapLayer5->GetYaxis()->SetNdivisions(34);
+  fHistNSideMeanCMMapLayer5->GetXaxis()->SetLabelSize(0.03);
+  fHistNSideMeanCMMapLayer5->GetYaxis()->SetLabelSize(0.03);
+  fHistNSideMeanCMMapLayer5->GetZaxis()->SetTitleOffset(1.6);
+  fHistNSideMeanCMMapLayer5->GetZaxis()->SetTitle("RMS(CM) (n-side)");
   
-  TH2F *fHistPSideCMMapLayer6 = new TH2F("fHistPSideCMMapLayer6",
+  TH2F *fHistPSideMeanCMMapLayer6 = new TH2F("fHistPSideMeanCMMapLayer6",
 					 "Layer 6 - P side;N_{module};N_{ladder}",
 					 25,1,26,
 					 38,600,638);
-  fHistPSideCMMapLayer6->GetXaxis()->SetTitleColor(1);
-  fHistPSideCMMapLayer6->GetZaxis()->SetRangeUser(0.,20.);
-  fHistPSideCMMapLayer6->SetStats(kFALSE);
-  fHistPSideCMMapLayer6->GetYaxis()->SetTitleOffset(1.8);
-  fHistPSideCMMapLayer6->GetXaxis()->SetNdivisions(25);
-  fHistPSideCMMapLayer6->GetYaxis()->SetNdivisions(38);
-  fHistPSideCMMapLayer6->GetXaxis()->SetLabelSize(0.03);
-  fHistPSideCMMapLayer6->GetYaxis()->SetLabelSize(0.03);
-  fHistPSideCMMapLayer6->GetZaxis()->SetTitleOffset(1.6);
-  fHistPSideCMMapLayer6->GetZaxis()->SetTitle("RMS(CM) (p-side)");
+  fHistPSideMeanCMMapLayer6->GetXaxis()->SetTitleColor(1);
+  fHistPSideMeanCMMapLayer6->GetZaxis()->SetRangeUser(0.,20.);
+  fHistPSideMeanCMMapLayer6->SetStats(kFALSE);
+  fHistPSideMeanCMMapLayer6->GetYaxis()->SetTitleOffset(1.8);
+  fHistPSideMeanCMMapLayer6->GetXaxis()->SetNdivisions(25);
+  fHistPSideMeanCMMapLayer6->GetYaxis()->SetNdivisions(38);
+  fHistPSideMeanCMMapLayer6->GetXaxis()->SetLabelSize(0.03);
+  fHistPSideMeanCMMapLayer6->GetYaxis()->SetLabelSize(0.03);
+  fHistPSideMeanCMMapLayer6->GetZaxis()->SetTitleOffset(1.6);
+  fHistPSideMeanCMMapLayer6->GetZaxis()->SetTitle("RMS(CM) (p-side)");
 
-  TH2F *fHistNSideCMMapLayer6 = new TH2F("fHistNSideCMMapLayer6",
+  TH2F *fHistNSideMeanCMMapLayer6 = new TH2F("fHistNSideMeanCMMapLayer6",
 					 "Layer 6 - N side;N_{module};N_{ladder}",
 					 25,1,26,
 					 38,600,638);
-  fHistNSideCMMapLayer6->GetXaxis()->SetTitleColor(1);
-  fHistNSideCMMapLayer6->GetZaxis()->SetRangeUser(0.,20.);
-  fHistNSideCMMapLayer6->SetStats(kFALSE);
-  fHistNSideCMMapLayer6->GetYaxis()->SetTitleOffset(1.8);
-  fHistNSideCMMapLayer6->GetXaxis()->SetNdivisions(25);
-  fHistNSideCMMapLayer6->GetYaxis()->SetNdivisions(38);
-  fHistNSideCMMapLayer6->GetXaxis()->SetLabelSize(0.03);
-  fHistNSideCMMapLayer6->GetYaxis()->SetLabelSize(0.03);
-  fHistNSideCMMapLayer6->GetZaxis()->SetTitleOffset(1.6);
-  fHistNSideCMMapLayer6->GetZaxis()->SetTitle("RMS(CM) (n-side)");
+  fHistNSideMeanCMMapLayer6->GetXaxis()->SetTitleColor(1);
+  fHistNSideMeanCMMapLayer6->GetZaxis()->SetRangeUser(0.,20.);
+  fHistNSideMeanCMMapLayer6->SetStats(kFALSE);
+  fHistNSideMeanCMMapLayer6->GetYaxis()->SetTitleOffset(1.8);
+  fHistNSideMeanCMMapLayer6->GetXaxis()->SetNdivisions(25);
+  fHistNSideMeanCMMapLayer6->GetYaxis()->SetNdivisions(38);
+  fHistNSideMeanCMMapLayer6->GetXaxis()->SetLabelSize(0.03);
+  fHistNSideMeanCMMapLayer6->GetYaxis()->SetLabelSize(0.03);
+  fHistNSideMeanCMMapLayer6->GetZaxis()->SetTitleOffset(1.6);
+  fHistNSideMeanCMMapLayer6->GetZaxis()->SetTitle("RMS(CM) (n-side)");
+
+  //____________________________________________________________//
+  TH2F *fHistPSideRMSCMMapLayer5 = new TH2F("fHistPSideRMSCMMapLayer5",
+					 "Layer 5 - P side;N_{module};N_{ladder}",
+					 22,1,23,
+					 34,500,534);
+  fHistPSideRMSCMMapLayer5->GetXaxis()->SetTitleColor(1);
+  fHistPSideRMSCMMapLayer5->GetZaxis()->SetRangeUser(0.,20.);
+  fHistPSideRMSCMMapLayer5->SetStats(kFALSE);
+  fHistPSideRMSCMMapLayer5->GetYaxis()->SetTitleOffset(1.8);
+  fHistPSideRMSCMMapLayer5->GetXaxis()->SetNdivisions(22);
+  fHistPSideRMSCMMapLayer5->GetYaxis()->SetNdivisions(34);
+  fHistPSideRMSCMMapLayer5->GetXaxis()->SetLabelSize(0.03);
+  fHistPSideRMSCMMapLayer5->GetYaxis()->SetLabelSize(0.03);
+  fHistPSideRMSCMMapLayer5->GetZaxis()->SetTitleOffset(1.6);
+  fHistPSideRMSCMMapLayer5->GetZaxis()->SetTitle("RMS(CM) (p-side)");
+
+  TH2F *fHistNSideRMSCMMapLayer5 = new TH2F("fHistNSideRMSCMMapLayer5",
+					 "Layer 5 - N side;N_{module};N_{ladder}",
+					 22,1,23,
+					 34,500,534);
+  fHistNSideRMSCMMapLayer5->GetXaxis()->SetTitleColor(1);
+  fHistNSideRMSCMMapLayer5->GetZaxis()->SetRangeUser(0.,20.);
+  fHistNSideRMSCMMapLayer5->SetStats(kFALSE);
+  fHistNSideRMSCMMapLayer5->GetYaxis()->SetTitleOffset(1.8);
+  fHistNSideRMSCMMapLayer5->GetXaxis()->SetNdivisions(22);
+  fHistNSideRMSCMMapLayer5->GetYaxis()->SetNdivisions(34);
+  fHistNSideRMSCMMapLayer5->GetXaxis()->SetLabelSize(0.03);
+  fHistNSideRMSCMMapLayer5->GetYaxis()->SetLabelSize(0.03);
+  fHistNSideRMSCMMapLayer5->GetZaxis()->SetTitleOffset(1.6);
+  fHistNSideRMSCMMapLayer5->GetZaxis()->SetTitle("RMS(CM) (n-side)");
+  
+  TH2F *fHistPSideRMSCMMapLayer6 = new TH2F("fHistPSideRMSCMMapLayer6",
+					 "Layer 6 - P side;N_{module};N_{ladder}",
+					 25,1,26,
+					 38,600,638);
+  fHistPSideRMSCMMapLayer6->GetXaxis()->SetTitleColor(1);
+  fHistPSideRMSCMMapLayer6->GetZaxis()->SetRangeUser(0.,20.);
+  fHistPSideRMSCMMapLayer6->SetStats(kFALSE);
+  fHistPSideRMSCMMapLayer6->GetYaxis()->SetTitleOffset(1.8);
+  fHistPSideRMSCMMapLayer6->GetXaxis()->SetNdivisions(25);
+  fHistPSideRMSCMMapLayer6->GetYaxis()->SetNdivisions(38);
+  fHistPSideRMSCMMapLayer6->GetXaxis()->SetLabelSize(0.03);
+  fHistPSideRMSCMMapLayer6->GetYaxis()->SetLabelSize(0.03);
+  fHistPSideRMSCMMapLayer6->GetZaxis()->SetTitleOffset(1.6);
+  fHistPSideRMSCMMapLayer6->GetZaxis()->SetTitle("RMS(CM) (p-side)");
+
+  TH2F *fHistNSideRMSCMMapLayer6 = new TH2F("fHistNSideRMSCMMapLayer6",
+					 "Layer 6 - N side;N_{module};N_{ladder}",
+					 25,1,26,
+					 38,600,638);
+  fHistNSideRMSCMMapLayer6->GetXaxis()->SetTitleColor(1);
+  fHistNSideRMSCMMapLayer6->GetZaxis()->SetRangeUser(0.,20.);
+  fHistNSideRMSCMMapLayer6->SetStats(kFALSE);
+  fHistNSideRMSCMMapLayer6->GetYaxis()->SetTitleOffset(1.8);
+  fHistNSideRMSCMMapLayer6->GetXaxis()->SetNdivisions(25);
+  fHistNSideRMSCMMapLayer6->GetYaxis()->SetNdivisions(38);
+  fHistNSideRMSCMMapLayer6->GetXaxis()->SetLabelSize(0.03);
+  fHistNSideRMSCMMapLayer6->GetYaxis()->SetLabelSize(0.03);
+  fHistNSideRMSCMMapLayer6->GetZaxis()->SetTitleOffset(1.6);
+  fHistNSideRMSCMMapLayer6->GetZaxis()->SetTitle("RMS(CM) (n-side)");
   //==================================================//
 
   TChain *chain = new TChain("RAW");
@@ -193,39 +263,62 @@ void makeCM(const char* filename, Int_t nEvents, TList *list) {
       gStripNumber = (gSSDStream.GetSideFlag() == 0) ? gSSDStream.GetStrip() : -gSSDStream.GetStrip() + 2*fgkNumberOfPSideStrips;
       //Printf("Module id: %d - Strip: %d - strip number: %d - Signal: %lf",gSSDStream.GetModuleID(),gSSDStream.GetStrip(),gStripNumber,signal);
       if(TMath::Abs(gSSDStream.GetStrip()) < 7)
-	((TH1*)list->At(gSSDStream.GetModuleID()-500))->Fill(gSSDStream.GetSignal());
+	((TH1*)list->At((gSSDStream.GetModuleID()-500)*fgkNumOfChips+gSSDStream.GetStrip()))->Fill(gSSDStream.GetSignal());
       if(TMath::Abs(gSSDStream.GetStrip()) > 6)
-	((TH1*)list->At(1698+gSSDStream.GetModuleID()-500))->Fill(gSSDStream.GetSignal());
-      
+	((TH1*)list->At(fgkSSDMODULES*fgkNumOfChips+(gSSDStream.GetModuleID()-500)*fgkNumOfChips+gSSDStream.GetStrip()-fgkNumOfChips))->Fill(gSSDStream.GetSignal());
     }//streamer loop
   }//event loop
   
   //compute the rms of the CM values
+  TH1F *gHistCMDummy = new TH1F("gHistCMDummy","",100,-50.,50.);
+  Double_t meanPsideCM = 0.0, meanNsideCM = 0.0;
   Double_t rmsPsideCM = 0.0, rmsNsideCM = 0.0;
-  for(Int_t i = 0; i < 1698; i++) {
+  for(Int_t iModule = 0; iModule < fgkSSDMODULES; iModule++) {
+      meanPsideCM = 0.0; meanNsideCM = 0.0;
     rmsPsideCM = 0.0; rmsNsideCM = 0.0;
-    AliITSgeomTGeo::GetModuleId(i+500,gLayer,gLadder,gModule);
-    //Printf("%s - %s",((TH1*)list->At(i))->GetName(),
-    //((TH1*)list->At(1698+i))->GetName());
-    rmsPsideCM = ((TH1*)list->At(i))->GetRMS();
-    rmsNsideCM = ((TH1*)list->At(1698+i))->GetRMS();
+    AliITSgeomTGeo::GetModuleId(iModule+500,gLayer,gLadder,gModule);
+  
+    gHistCMDummy->Clear();
+    for(Int_t iChip = 0; iChip < fgkNumOfChips; iChip++) {
+      //cout<<"Name: "<<dynamic_cast<TH1*>(list->At(iModule*fgkNumOfChips+iChip))->GetName()<<endl;
+      gHistCMDummy->Add((TH1*)list->At(iModule*fgkNumOfChips+iChip));
+    } 
+    meanPsideCM = TMath::Abs(gHistCMDummy->GetMean());
+    rmsPsideCM = gHistCMDummy->GetRMS();
+
+    gHistCMDummy->Clear();
+    for(Int_t iChip = 0; iChip < fgkNumOfChips; iChip++) {
+      //cout<<"Name: "<<dynamic_cast<TH1*>(list->At(fgkSSDMODULES*fgkNumOfChips+iModule*fgkNumOfChips+iChip))->GetName()<<endl;
+      gHistCMDummy->Add((TH1*)list->At(fgkSSDMODULES*fgkNumOfChips+iModule*fgkNumOfChips+iChip));
+    }
+    meanNsideCM = TMath::Abs(gHistCMDummy->GetMean());
+    rmsNsideCM = gHistCMDummy->GetRMS();
+
+    if(meanPsideCM == 0) meanPsideCM = 0.001;
+    if(meanNsideCM == 0) meanNsideCM = 0.001;
     if(rmsPsideCM == 0) rmsPsideCM = 0.001;
     if(rmsNsideCM == 0) rmsNsideCM = 0.001;
-    //Printf("rmsPside: %lf - rmsNside: %lf",rmsPsideCM,rmsNsideCM);
+ 
     if(gLayer == 5) {
-      fHistPSideCMMapLayer5->SetBinContent(gModule,gLadder,rmsPsideCM);
-      fHistNSideCMMapLayer5->SetBinContent(gModule,gLadder,rmsNsideCM);
+      fHistPSideMeanCMMapLayer5->SetBinContent(gModule,gLadder,meanPsideCM);
+      fHistNSideMeanCMMapLayer5->SetBinContent(gModule,gLadder,meanNsideCM);
+      fHistPSideRMSCMMapLayer5->SetBinContent(gModule,gLadder,rmsPsideCM);
+      fHistNSideRMSCMMapLayer5->SetBinContent(gModule,gLadder,rmsNsideCM);
     }
      if(gLayer == 6) {
-      fHistPSideCMMapLayer6->SetBinContent(gModule,gLadder,rmsPsideCM);
-      fHistNSideCMMapLayer6->SetBinContent(gModule,gLadder,rmsNsideCM);
+      fHistPSideMeanCMMapLayer6->SetBinContent(gModule,gLadder,meanPsideCM);
+      fHistNSideMeanCMMapLayer6->SetBinContent(gModule,gLadder,meanNsideCM);
+      fHistPSideRMSCMMapLayer6->SetBinContent(gModule,gLadder,rmsPsideCM);
+      fHistNSideRMSCMMapLayer6->SetBinContent(gModule,gLadder,rmsNsideCM);
     }
     }
 
   TFile *foutput = TFile::Open("SSD.CM.root","recreate");
   list->Write();
-  fHistPSideCMMapLayer5->Write(); fHistNSideCMMapLayer5->Write();
-  fHistPSideCMMapLayer6->Write(); fHistNSideCMMapLayer6->Write();
+  fHistPSideMeanCMMapLayer5->Write(); fHistNSideMeanCMMapLayer5->Write();
+  fHistPSideMeanCMMapLayer6->Write(); fHistNSideMeanCMMapLayer6->Write();
+  fHistPSideRMSCMMapLayer5->Write(); fHistNSideRMSCMMapLayer5->Write();
+  fHistPSideRMSCMMapLayer6->Write(); fHistNSideRMSCMMapLayer6->Write();
   foutput->Close();
 }
   
@@ -235,18 +328,33 @@ void drawSSDCM(const char* filename = "SSD.CM.root") {
 
   TFile *f = TFile::Open(filename);  
 
-  TCanvas *c1 = new TCanvas("c1","CM values",0,0,700,650);
+  TCanvas *c1 = new TCanvas("c1","Mean of CM values",0,0,700,650);
   c1->SetFillColor(10); c1->SetHighLightColor(10); c1->Divide(2,2);
   c1->cd(1);
-  TH1F *fHistPSideCMMapLayer5 = dynamic_cast<TH1F *>(f->Get("fHistPSideCMMapLayer5"));
-  fHistPSideCMMapLayer5->Draw("colz");
+  TH2F *fHistPSideMeanCMMapLayer5 = dynamic_cast<TH2F *>(f->Get("fHistPSideMeanCMMapLayer5"));
+  fHistPSideMeanCMMapLayer5->Draw("colz");
   c1->cd(2);
-  TH1F *fHistNSideCMMapLayer5 = dynamic_cast<TH1F *>(f->Get("fHistNSideCMMapLayer5"));
-  fHistNSideCMMapLayer5->Draw("colz");
+  TH2F *fHistNSideMeanCMMapLayer5 = dynamic_cast<TH2F *>(f->Get("fHistNSideMeanCMMapLayer5"));
+  fHistNSideMeanCMMapLayer5->Draw("colz");
   c1->cd(3);
-  TH1F *fHistPSideCMMapLayer6 = dynamic_cast<TH1F *>(f->Get("fHistPSideCMMapLayer6"));
-  fHistPSideCMMapLayer6->Draw("colz");
+  TH2F *fHistPSideMeanCMMapLayer6 = dynamic_cast<TH2F *>(f->Get("fHistPSideMeanCMMapLayer6"));
+  fHistPSideMeanCMMapLayer6->Draw("colz");
   c1->cd(4);
-  TH1F *fHistNSideCMMapLayer6 = dynamic_cast<TH1F *>(f->Get("fHistNSideCMMapLayer6"));
-  fHistNSideCMMapLayer6->Draw("colz");
+  TH2F *fHistNSideMeanCMMapLayer6 = dynamic_cast<TH2F *>(f->Get("fHistNSideMeanCMMapLayer6"));
+  fHistNSideMeanCMMapLayer6->Draw("colz");
+
+  TCanvas *c2 = new TCanvas("c2","RMS of CM values",100,100,700,650);
+  c2->SetFillColor(10); c2->SetHighLightColor(10); c2->Divide(2,2);
+  c2->cd(1);
+  TH2F *fHistPSideRMSCMMapLayer5 = dynamic_cast<TH2F *>(f->Get("fHistPSideRMSCMMapLayer5"));
+  fHistPSideRMSCMMapLayer5->Draw("colz");
+  c2->cd(2);
+  TH2F *fHistNSideRMSCMMapLayer5 = dynamic_cast<TH2F *>(f->Get("fHistNSideRMSCMMapLayer5"));
+  fHistNSideRMSCMMapLayer5->Draw("colz");
+  c2->cd(3);
+  TH2F *fHistPSideRMSCMMapLayer6 = dynamic_cast<TH2F *>(f->Get("fHistPSideRMSCMMapLayer6"));
+  fHistPSideRMSCMMapLayer6->Draw("colz");
+  c2->cd(4);
+  TH2F *fHistNSideRMSCMMapLayer6 = dynamic_cast<TH2F *>(f->Get("fHistNSideRMSCMMapLayer6"));
+  fHistNSideRMSCMMapLayer6->Draw("colz");
 }
