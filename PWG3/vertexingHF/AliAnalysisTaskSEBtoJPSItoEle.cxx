@@ -28,6 +28,8 @@ class TROOT;
 #include <TClonesArray.h>
 #include <TDatabasePDG.h>
 
+#include "AliAnalysisManager.h"
+#include "AliAODHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
@@ -166,21 +168,35 @@ void AliAnalysisTaskSEBtoJPSItoEle::UserExec(Option_t */*option*/)
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
-  // In case there is an AOD handler writing a standard AOD, use the AOD 
-  // event in memory rather than the input (ESD) event.
-  if (!aod && AODEvent() && IsStandardAOD()) aod = dynamic_cast<AliAODEvent*> (AODEvent());
+  TClonesArray *inputArrayJPSItoEle = 0;
 
-  // AOD primary vertex
-  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
-  
-  // load JPSI candidates                                                   
-  TClonesArray *inputArrayJPSItoEle =
-    (TClonesArray*)aod->GetList()->FindObject("JPSItoEle");
+  if(!aod && AODEvent() && IsStandardAOD()) {
+    // In case there is an AOD handler writing a standard AOD, use the AOD 
+    // event in memory rather than the input (ESD) event.    
+    aod = dynamic_cast<AliAODEvent*> (AODEvent());
+    // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+    // have to taken from the AOD event hold by the AliAODExtension
+    AliAODHandler* aodHandler = (AliAODHandler*) 
+      ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    if(aodHandler->GetExtensions()) {
+      AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+      AliAODEvent *aodFromExt = ext->GetAOD();
+      // load Jpsi candidates   
+      inputArrayJPSItoEle=(TClonesArray*)aodFromExt->GetList()->FindObject("JPSItoEle");
+    }
+  } else {
+    // load Jpsi candidates                                                   
+    inputArrayJPSItoEle=(TClonesArray*)aod->GetList()->FindObject("JPSItoEle");
+  }
+
   if(!inputArrayJPSItoEle) {
     printf("AliAnalysisTaskSECompareHF::UserExec: JPSItoEle branch not found!\n");
     return;
   } 
 
+  // AOD primary vertex
+  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+  
   // load MC particles
   TClonesArray* mcArray = 
      dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));

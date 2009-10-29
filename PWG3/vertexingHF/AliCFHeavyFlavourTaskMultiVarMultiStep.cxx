@@ -41,6 +41,8 @@
 #include "AliCFManager.h"
 #include "AliCFContainer.h"
 #include "AliLog.h"
+#include "AliAnalysisManager.h"
+#include "AliAODHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
@@ -176,9 +178,33 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	fEvents++;
 	if (fEvents%10000 ==0) AliDebug(2,Form("Event %d",fEvents));
 	AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
-	// In case there is an AOD handler writing a standard AOD, use the AOD 
-	// event in memory rather than the input (ESD) event.
-	if (!aodEvent && AODEvent() && IsStandardAOD()) aodEvent = dynamic_cast<AliAODEvent*> (AODEvent());
+
+	TClonesArray *arrayD0toKpi=0;
+
+	if(!aodEvent && AODEvent() && IsStandardAOD()) {
+	  // In case there is an AOD handler writing a standard AOD, use the AOD 
+	  // event in memory rather than the input (ESD) event.    
+	  aodEvent = dynamic_cast<AliAODEvent*> (AODEvent());
+	  // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+	  // have to taken from the AOD event hold by the AliAODExtension
+	  AliAODHandler* aodHandler = (AliAODHandler*) 
+	    ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+	  if(aodHandler->GetExtensions()) {
+	    AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+	    AliAODEvent *aodFromExt = ext->GetAOD();
+	    arrayD0toKpi=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+	  }
+	} else {
+	  arrayD0toKpi=(TClonesArray*)aodEvent->GetList()->FindObject("D0toKpi");
+	}
+
+
+	if (!arrayD0toKpi) {
+	  AliError("Could not find array of HF vertices");
+	  return;
+	}
+
+
 	fCFManager->SetEventInfo(aodEvent);
 	
 	// MC-event selection
@@ -335,9 +361,6 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	fCountMC += icountMC;
 	fCountAcc += icountAcc;
 
-	// load heavy flavour vertices
-	TClonesArray *arrayD0toKpi = (TClonesArray*)((aodEvent->GetList())->FindObject("D0toKpi")); 	
-	if (!arrayD0toKpi) AliError("Could not find array of HF vertices");
 	AliDebug(2, Form("Found %d vertices",arrayD0toKpi->GetEntriesFast()));
 
 	Int_t pdgDgD0toKpi[2]={321,211};

@@ -25,6 +25,9 @@
 #include <TList.h>
 #include <TString.h>
 #include <TH1F.h>
+
+#include "AliAnalysisManager.h"
+#include "AliAODHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
@@ -166,13 +169,25 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
-  // In case there is an AOD handler writing a standard AOD, use the AOD 
-  // event in memory rather than the input (ESD) event.
-  if (!aod && AODEvent() && IsStandardAOD()) aod = dynamic_cast<AliAODEvent*> (AODEvent());
+  TClonesArray *array3Prong = 0;
 
-  // load Dplus->Kpipi candidates                                                   
-  TClonesArray *array3Prong =
-    (TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
+  if(!aod && AODEvent() && IsStandardAOD()) {
+    // In case there is an AOD handler writing a standard AOD, use the AOD 
+    // event in memory rather than the input (ESD) event.    
+    aod = dynamic_cast<AliAODEvent*> (AODEvent());
+    // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+    // have to taken from the AOD event hold by the AliAODExtension
+    AliAODHandler* aodHandler = (AliAODHandler*) 
+      ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    if(aodHandler->GetExtensions()) {
+      AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+      AliAODEvent *aodFromExt = ext->GetAOD();
+      array3Prong=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
+    }
+  } else {
+    array3Prong=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
+  }
+
   if(!array3Prong) {
     printf("AliAnalysisTaskSEDplus::UserExec: Charm3Prong branch not found!\n");
     return;

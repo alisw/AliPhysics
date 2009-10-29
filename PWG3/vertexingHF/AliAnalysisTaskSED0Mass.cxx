@@ -31,6 +31,8 @@
 #include <TH2F.h>
 #include <TDatabasePDG.h>
 
+#include "AliAnalysisManager.h"
+#include "AliAODHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
@@ -41,6 +43,7 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSED0Mass.h"
+
 
 ClassImp(AliAnalysisTaskSED0Mass)
 
@@ -301,33 +304,40 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   //cout<<"I'm in UserExec"<<endl;
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
-  // In case there is an AOD handler writing a standard AOD, use the AOD 
-  // event in memory rather than the input (ESD) event.
-  if (!aod && AODEvent() && IsStandardAOD()) aod = dynamic_cast<AliAODEvent*> (AODEvent());
+  TString bname;
+  if(fArray==0){ //D0 candidates
+    // load D0->Kpi candidates
+    //cout<<"D0 candidates"<<endl;
+    bname="D0toKpi";
+  } else { //LikeSign candidates
+    // load like sign candidates
+    //cout<<"LS candidates"<<endl;
+    bname="LikeSign2Prong";
+  }
 
   TClonesArray *inputArray=0;
 
-  if(fArray==0){ //D0 candidates
-    // load D0->Kpi candidates                                                   
-    //cout<<"D0 candidates"<<endl;
-    inputArray =
-      (TClonesArray*)aod->GetList()->FindObject("D0toKpi");
-    if(!inputArray) {
-      printf("AliAnalysisTaskSECompareHFpt::UserExec: D0toKpi branch not found!\n");
-      return;
+  if(!aod && AODEvent() && IsStandardAOD()) {
+    // In case there is an AOD handler writing a standard AOD, use the AOD 
+    // event in memory rather than the input (ESD) event.    
+    aod = dynamic_cast<AliAODEvent*> (AODEvent());
+    // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+    // have to taken from the AOD event hold by the AliAODExtension
+    AliAODHandler* aodHandler = (AliAODHandler*) 
+      ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    if(aodHandler->GetExtensions()) {
+      AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+      AliAODEvent *aodFromExt = ext->GetAOD();
+      inputArray=(TClonesArray*)aodFromExt->GetList()->FindObject(bname.Data());
     }
+  } else {
+    inputArray=(TClonesArray*)aod->GetList()->FindObject(bname.Data());
+  }
 
-  } else { //LikeSign candidates
 
-    //cout<<"LS candidates"<<endl;
-    // load like sign candidates
-    inputArray =
-      (TClonesArray*)aod->GetList()->FindObject("LikeSign2Prong");
-    if(!inputArray) {
-      printf("AliAnalysisTaskSEBkgLikeSignD0::UserExec: LikeSign2Prong branch not found!\n");
-      return;
-    }
-
+  if(!inputArray) {
+    printf("AliAnalysisTaskSED0Mass::UserExec: input branch not found!\n");
+    return;
   }
   
   // AOD primary vertex
@@ -350,6 +360,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     return;
   }
   
+  //printf("VERTEX Z %f %f\n",vtx1->GetZ(),mcHeader->GetVtxZ());
 
   //histogram filled with 1 for every AOD
   fNentries->Fill(1);
@@ -369,8 +380,6 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       unsetvtx=kTRUE;
     }
     
-
-
     //check reco daughter in acceptance
     Double_t eta0=d->EtaProng(0);
     Double_t eta1=d->EtaProng(1);
