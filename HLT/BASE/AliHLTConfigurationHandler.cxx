@@ -83,7 +83,10 @@ int AliHLTConfigurationHandler::Destroy()
   if (fgpInstance==this) {
     nofInstances=fgNofInstances--;
   }
-  if (nofInstances==0) delete this;
+  if (fgNofInstances==0) {
+    delete fgpInstance;
+    fgpInstance = NULL;
+  }
   return nofInstances;
 }
 
