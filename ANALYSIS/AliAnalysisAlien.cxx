@@ -620,7 +620,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             }        
             Printf("Exporting merged collection <%s> and copying to AliEn.", schunk.Data());
             cbase->ExportXML(Form("file://%s", schunk.Data()),kFALSE,kFALSE, schunk, "Merged runs");
-            TFile::Cp(Form("file:%s",file.Data()), Form("alien://%s/%s",workdir.Data(), file.Data()));
+            TFile::Cp(Form("file:%s",schunk.Data()), Form("alien://%s/%s",workdir.Data(), schunk.Data()));
             if (!FileExists(schunk)) {
                Error("CreateDataset", "Copy command did NOT succeed for %s", schunk.Data());
                delete arr;
