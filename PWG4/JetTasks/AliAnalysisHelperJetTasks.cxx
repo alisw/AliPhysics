@@ -374,54 +374,6 @@ Bool_t AliAnalysisHelperJetTasks::PythiaInfoFromFile(const char* currFile,Float_
   return kTRUE;
 }
 
-
-Bool_t AliAnalysisHelperJetTasks::GetThrustAxis(TVector3 &n01, TVector3 * pTrack, const Int_t &nTracks)
-{
-  //
-  // fetch the thrust axis
-  // sona.pochybova@cern.ch
-
-  const Int_t kTracks = 1000;
-  if(nTracks>kTracks)return kFALSE;
-
-  TVector3 psum;
-  Double_t psum1 = 0;
-  Double_t psum2 = 0;
-  Double_t thrust[kTracks];
-  Double_t th = -3;
-  Double_t tpom = -1;
-  Int_t j = 0;
-
-  
-  //  for(Int_t j = 0; j < nTracks; j++)
-  while(TMath::Abs(th-tpom) > 10e-7 && j < nTracks)
-    {
-      th = tpom;
-      psum.SetXYZ(0., 0., 0.);
-      psum1 = 0;
-      psum2 = 0;
-      for(Int_t i = 0; i < nTracks; i++)
-	{
-	  psum1 += (TMath::Abs(n01.Dot(pTrack[i])));
-	  psum2 += pTrack[i].Mag();
-	  
-	  if (n01.Dot(pTrack[i]) > 0) psum += pTrack[i];
-	  if (n01.Dot(pTrack[i]) < 0) psum -= pTrack[i];
-	}
-      
-      thrust[j] = psum1/psum2;
-      
-      //      if(th == thrust[j]) 
-      //	break;
-      
-      tpom = thrust[j];
-      
-      n01 = psum.Unit();
-      j++;
-    }
-  return kTRUE;
-}
-
 //___________________________________________________________________________________________________________
 
 Bool_t AliAnalysisHelperJetTasks::GetEventShapes(TVector3 &n01, TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes)
@@ -433,15 +385,26 @@ Bool_t AliAnalysisHelperJetTasks::GetEventShapes(TVector3 &n01, TVector3 * pTrac
   const Int_t kTracks = 1000;
   if(nTracks>kTracks)return kFALSE;
 
-  TVector3 psum;
+  //variables for thrust calculation
   TVector3 pTrackPerp[kTracks];
-  Double_t psum1 = 0;
   Double_t psum2 = 0;
+
+  TVector3 psum;
+  TVector3 psum02;
+  TVector3 psum03;
+
+  Double_t psum1 = 0;
+  Double_t psum102 = 0;
+  Double_t psum103 = 0;
+
   Double_t thrust[kTracks];
   Double_t th = -3;
-  Double_t tpom = -1;
+  Double_t thrust02[kTracks];
+  Double_t th02 = -4;
+  Double_t thrust03[kTracks];
+  Double_t th03 = -5;
 
-  //Sphericity calculation
+  //Sphericity calculation variables
   TMatrixDSym m(3);
   Double_t s00 = 0;
   Double_t s01 = 0;
@@ -462,33 +425,141 @@ Bool_t AliAnalysisHelperJetTasks::GetEventShapes(TVector3 &n01, TVector3 * pTrac
 //
 //loop for thrust calculation  
 //
-  Int_t k = 0;
-  while(TMath::Abs(th-tpom) > 10e-7 && k < nTracks)
-    {  
-      th = tpom;
-      psum.SetXYZ(0., 0., 0.);
-      psum1 = 0;
-      psum2 = 0;
-      for(Int_t i = 0; i < nTracks; i++)
-	{
-	  pTrackPerp[i].SetXYZ(pTrack[i].X(), pTrack[i].Y(), 0);
-
-	  psum1 += (TMath::Abs(n01.Dot(pTrackPerp[i])));
-	  psum2 += pTrackPerp[i].Mag();
-
-	  if (n01.Dot(pTrackPerp[i]) > 0) psum += pTrackPerp[i];
-	  if (n01.Dot(pTrackPerp[i]) < 0) psum -= pTrackPerp[i];
-	}
-      
-      thrust[k] = psum1/psum2;
-      
-      tpom = thrust[k];
-      n01 = psum.Unit();
-      k++;
-//      Printf("========== %d +++ th :: %f, tpom :: %f=============\n", k, th, tpom);
+    
+  for(Int_t i = 0; i < nTracks; i++)
+    {
+      pTrackPerp[i].SetXYZ(pTrack[i].X(), pTrack[i].Y(), 0);
+      psum2 += pTrackPerp[i].Mag();
     }
 
-  eventShapes[0] = th;
+  //additional starting axis    
+  TVector3 n02;
+  n02 = pTrack[1].Unit();
+  n02.SetZ(0.);   
+  TVector3 n03;
+  n03 = pTrack[2].Unit();
+  n03.SetZ(0.);
+
+  //switches for calculating thrust for different starting points
+  Int_t switch1 = 1;
+  Int_t switch2 = 1;
+  Int_t switch3 = 1;
+
+  //indexes for iteration of different starting points
+  Int_t l1 = 0;
+  Int_t l2 = 0;
+  Int_t l3 = 0;
+
+  //maximal number of iterations
+  //  Int_t nMaxIter = 100;
+ 
+  for(Int_t k = 0; k < nTracks; k++)
+    {  
+      
+      if(switch1 == 1){
+	psum.SetXYZ(0., 0., 0.);
+	psum1 = 0;
+	for(Int_t i = 0; i < nTracks; i++)
+	  {
+	    psum1 += (TMath::Abs(n01.Dot(pTrackPerp[i])));
+	    if (n01.Dot(pTrackPerp[i]) > 0) psum += pTrackPerp[i];
+	    if (n01.Dot(pTrackPerp[i]) < 0) psum -= pTrackPerp[i];
+	  }
+	thrust[l1] = psum1/psum2;
+      }
+
+      if(switch2 == 1){
+	psum02.SetXYZ(0., 0., 0.);
+	psum102 = 0;
+	for(Int_t i = 0; i < nTracks; i++)
+	  {
+	    psum102 += (TMath::Abs(n02.Dot(pTrackPerp[i])));
+	    if (n02.Dot(pTrackPerp[i]) > 0) psum02 += pTrackPerp[i];
+	    if (n02.Dot(pTrackPerp[i]) < 0) psum02 -= pTrackPerp[i];
+	  }
+	thrust02[l2] = psum102/psum2;
+      }
+      
+      if(switch3 == 1){
+	psum03.SetXYZ(0., 0., 0.);
+	psum103 = 0;
+	for(Int_t i = 0; i < nTracks; i++)
+	  {
+	    psum103 += (TMath::Abs(n03.Dot(pTrackPerp[i])));
+	    if (n03.Dot(pTrackPerp[i]) > 0) psum03 += pTrackPerp[i];
+	    if (n03.Dot(pTrackPerp[i]) < 0) psum03 -= pTrackPerp[i];
+	  }
+	thrust03[l3] = psum103/psum2;
+      }
+
+      //check whether thrust value converged    
+      if(TMath::Abs(th-thrust[l1]) < 10e-7){
+      	switch1 = 0;
+      }
+      
+      if(TMath::Abs(th02-thrust02[l2]) < 10e-7){
+	switch2 = 0;
+      }
+
+      if(TMath::Abs(th03-thrust03[l3]) < 10e-7){
+	switch3 = 0;
+      }
+
+      //if it didn't, continue with the calculation
+      if(switch1 == 1){
+	th = thrust[l1]; 
+	n01 = psum.Unit();
+	l1++;
+      }
+
+      if(switch2 == 1){
+	th02 = thrust02[l2];
+	n02 = psum02.Unit();
+	l2++;
+      }
+
+      if(switch3 == 1){
+	th03 = thrust03[l3];
+	n03 = psum03.Unit();
+	l3++;
+      }
+
+      //if thrust values for all starting direction converged check if to the same value
+      if(switch2 == 0 && switch1 == 0 && switch3 == 0){
+	if(TMath::Abs(th-th02) < 10e-7 && TMath::Abs(th-th03) < 10e-7 && TMath::Abs(th02-th03) < 10e-7){
+	  eventShapes[0] = th;
+	  Printf("===== THRUST VALUE FOUND AT %d :: %f\n", k, th);
+	  break;
+	}
+	//if they did not, reset switches
+	else{
+	  switch1 = 1;
+	  //	  th = -1.;
+	  switch2 = 1;
+	  //	  th02 = -2.;
+	  switch3 = 1;
+	  //	  th03 = -4.;
+	}
+      }
+
+      //      Printf("========== %d +++ th :: %f=============\n", l1, th);
+      //      Printf("========== %d +++ th2 :: %f=============\n", l2, th02);
+      //      Printf("========== %d +++ th3 :: %f=============\n", l3, th03);
+      
+    }
+
+  //if no common limitng value was found, take the maximum and take the corresponding thrust axis
+  if(switch1 == 1 && switch2 == 1 && switch3 == 1){
+    eventShapes[0] = TMath::Max(thrust[l1-1], thrust02[l2-1]);
+    eventShapes[0] = TMath::Max(eventShapes[0], thrust03[l3-1]);
+    if(TMath::Abs(eventShapes[0]-thrust[l1-1]) < 10e-7)
+      n01 = n01;
+    if(TMath::Abs(eventShapes[0]-thrust02[l2-1]) < 10e-7)
+      n01 = n02;
+    if(TMath::Abs(eventShapes[0]-thrust03[l3-1]) < 10e-7)
+      n01 = n03;
+    Printf("NO LIMITING VALUE FOUND :: MAXIMUM = %f\n", eventShapes[0]);
+  }
 
 //
 //other event shapes variables
