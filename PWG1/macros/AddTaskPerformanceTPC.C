@@ -182,14 +182,13 @@ AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseES
   //
   // Create containers for input
   //
-  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  mgr->ConnectInput(task, 0, cinput);
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
   //
   // Create containers for output
   //
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("coutput", TList::Class(), AliAnalysisManager::kOutputContainer, Form("TPC.%s.root", task->GetName()));
-  mgr->ConnectOutput(task, 0, coutput);
+  AliAnalysisDataContainer *coutput_tpc = mgr->CreateContainer("TPC", TList::Class(), AliAnalysisManager::kOutputContainer, Form("TPC.%s.root", task->GetName()));
+  mgr->ConnectOutput(task, 0, coutput_tpc);
 
 return task;  
 }
