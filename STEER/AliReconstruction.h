@@ -44,10 +44,11 @@ class AliRunInfo;
 class AliGRPObject;
 class THashTable;
 class AliTriggerRunScalers;
+class AliCTPTimeParams;
+
 #include "AliQAv1.h"
 #include "AliEventInfo.h"
 #include "AliRecoParam.h"
-#include "AliTriggerRunScalers.h"
 
 class AliReconstruction: public TSelector {
 public:
@@ -168,6 +169,7 @@ private:
   Bool_t         SetRunNumberFromData();
   Bool_t         LoadCDB();
   Bool_t         LoadTriggerScalersCDB();
+  Bool_t         LoadCTPTimeParamsCDB();
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESDEvent*& esd);
   Bool_t         RunHLTTracking(AliESDEvent*& esd);
@@ -250,6 +252,7 @@ private:
   AliRunInfo*    fRunInfo;            // an object which contains essential global conditions information
   AliEventInfo   fEventInfo;          // an object which contains essential event information
   AliTriggerRunScalers* fRunScalers;  // an object which contains the trigger counters for xsection
+  AliCTPTimeParams* fCTPTimeParams;   // an object which contains the trigger delays
   AliRunLoader*  fRunLoader;          //! current run loader object
   AliRawReader*  fRawReader;          //! current raw data reader
   AliRawReader*  fParentRawReader;    //! parent raw data reader in case of AliRawReaderHLT

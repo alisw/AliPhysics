@@ -189,6 +189,8 @@
 #include "AliV0vertexer.h"
 #include "AliVertexer.h"
 #include "AliVertexerTracks.h"
+#include "AliTriggerRunScalers.h"
+#include "AliCTPTimeParams.h" 
 
 ClassImp(AliReconstruction)
 
@@ -238,6 +240,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRunInfo(NULL),
   fEventInfo(),
   fRunScalers(NULL),
+  fCTPTimeParams(NULL),  
 
   fRunLoader(NULL),
   fRawReader(NULL),
@@ -339,6 +342,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunInfo(NULL),
   fEventInfo(),
   fRunScalers(NULL),
+  fCTPTimeParams(NULL),
 
   fRunLoader(NULL),
   fRawReader(NULL),
@@ -464,7 +468,9 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   delete fRunScalers; fRunScalers = NULL;
   if (rec.fRunScalers) fRunScalers = new AliTriggerRunScalers(*rec.fRunScalers); 
 
-  
+  delete fCTPTimeParams; fCTPTimeParams = NULL;
+  if (rec.fCTPTimeParams) fCTPTimeParams = new AliCTPTimeParams(*rec.fCTPTimeParams);
+
   fRunLoader       = NULL;
   fRawReader       = NULL;
   fParentRawReader = NULL;
@@ -540,6 +546,7 @@ AliReconstruction::~AliReconstruction()
   }
   delete fGRPData;
   delete fRunScalers;
+  delete fCTPTimeParams;
   fOptions.Delete();
   if (fAlignObjArray) {
     fAlignObjArray->Delete();
@@ -1160,6 +1167,21 @@ Bool_t AliReconstruction::LoadTriggerScalersCDB()
   return kTRUE;
 }
 //_____________________________________________________________________________
+Bool_t AliReconstruction::LoadCTPTimeParamsCDB()
+{
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtime");
+
+  if (entry) {
+
+       AliInfo("Found an AliCTPTimeParams in GRP/CTP/CTPtime, reading it");
+       fCTPTimeParams = dynamic_cast<AliCTPTimeParams*> (entry->GetObject());
+       entry->SetOwner(0);
+       return kTRUE;
+  }
+  
+  return kFALSE; 
+}
+//_____________________________________________________________________________
 Bool_t AliReconstruction::Run(const char* input)
 {
   // Run Run Run
@@ -1334,6 +1356,11 @@ void AliReconstruction::Begin(TTree *)
   }
   AliSysInfo::AddStamp("LoadTriggerScalersCDB");
 
+  if (!LoadCTPTimeParamsCDB()) {
+    Abort("LoadCTPTimeParamsCDB", TSelector::kAbortProcess);
+    return;
+  }
+  AliSysInfo::AddStamp("LoadCTPTimeParamsCDB");
 
   // Read the reconstruction parameters from OCDB
   if (!InitRecoParams()) {
