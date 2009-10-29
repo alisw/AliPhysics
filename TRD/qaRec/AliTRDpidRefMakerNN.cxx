@@ -123,12 +123,12 @@ Bool_t AliTRDpidRefMakerNN::PostProcess()
 
   // train the neural networks and build the refrence histos for 2-dim LQ
   gSystem->Exec(Form("mkdir ./Networks_%d/",fDate));
-  if(fDebugLevel>=2) Printf("TrainMomBin [%d] [%d]", fTrainMomBin, kAll);
+  AliDebug(2, Form("TrainMomBin [%d] [%d]", fTrainMomBin, kAll));
 
   // train single network for a single momentum (recommended)
   if(!(fTrainMomBin == kAll)){
     if(fTrain[fTrainMomBin][0] -> GetN() < fMinTrain){
-      if(fDebugLevel>=2) Printf("Warning in AliTRDpidRefMakerNN::PostProcess : Not enough events for training available! Please check Data sample!");
+      AliDebug(2, Form("Warning in AliTRDpidRefMakerNN::PostProcess : Not enough events for training available! Please check Data sample!"));
       return kFALSE;
     }
     MakeRefs(fTrainMomBin);
@@ -139,7 +139,7 @@ Bool_t AliTRDpidRefMakerNN::PostProcess()
   else{
     for(Int_t iMomBin = 0; iMomBin < AliTRDCalPID::kNMom; iMomBin++){
       if(fTrain[iMomBin][0] -> GetN() < fMinTrain){
-  if(fDebugLevel>=2) Printf("Warning in AliTRDpidRefMakerNN::PostProcess : Not enough events for training available for momentum bin [%d]! Please check Data sample!", iMomBin);
+        AliDebug(2, Form("Warning in AliTRDpidRefMakerNN::PostProcess : Not enough events for training available for momentum bin [%d]! Please check Data sample!", iMomBin));
   continue;
       }
       MakeRefs(fTrainMomBin);
@@ -168,7 +168,7 @@ void AliTRDpidRefMakerNN::MakeTrainingLists()
     return;
   }
 
-  if(fDebugLevel>=2) Printf("\n Making training lists! \n");
+  AliDebug(2, "  Making training lists! \n");
 
   Int_t nPart[AliPID::kSPECIES][AliTRDCalPID::kNMom];
   memset(nPart, 0, AliPID::kSPECIES*AliTRDCalPID::kNMom*sizeof(Int_t));
@@ -186,12 +186,9 @@ void AliTRDpidRefMakerNN::MakeTrainingLists()
     for(Int_t ily=AliTRDgeometry::kNlayer; ily--;) nPart[fPIDbin][fPIDdataArray->fData[ily].fPLbin & 0xf]++;
   }
 
-  if(fDebugLevel>=2){ 
-    Printf("Particle multiplicities:");
-    for(Int_t iMomBin = 0; iMomBin <AliTRDCalPID::kNMom; iMomBin++)
-      Printf("Momentum[%d]  Elecs[%d] Muons[%d] Pions[%d] Kaons[%d] Protons[%d]", iMomBin, nPart[AliPID::kElectron][iMomBin], nPart[AliPID::kMuon][iMomBin], nPart[AliPID::kPion][iMomBin], nPart[AliPID::kKaon][iMomBin], nPart[AliPID::kProton][iMomBin]);
-    Printf("\n");
-  }
+  AliDebug(2, "Particle multiplicities:");
+  for(Int_t iMomBin = 0; iMomBin <AliTRDCalPID::kNMom; iMomBin++)
+    AliDebug(2, Form("Momentum[%d]  Elecs[%d] Muons[%d] Pions[%d] Kaons[%d] Protons[%d]", iMomBin, nPart[AliPID::kElectron][iMomBin], nPart[AliPID::kMuon][iMomBin], nPart[AliPID::kPion][iMomBin], nPart[AliPID::kKaon][iMomBin], nPart[AliPID::kProton][iMomBin]));
 
   // implement counter of training and test sample size
   Int_t iTrain[AliTRDCalPID::kNMom], iTest[AliTRDCalPID::kNMom];
@@ -208,9 +205,8 @@ void AliTRDpidRefMakerNN::MakeTrainingLists()
     } 
     iTrain[iMomBin] = Int_t(iTrain[iMomBin] * .66);
     iTest[iMomBin] = Int_t( iTrain[iMomBin] * .5);
-    if(fDebugLevel>=2) Printf("Momentum[%d]  Train[%d] Test[%d]", iMomBin, iTrain[iMomBin], iTest[iMomBin]);
+    AliDebug(2, Form("Momentum[%d]  Train[%d] Test[%d]", iMomBin, iTrain[iMomBin], iTest[iMomBin]));
   }
-  if(fDebugLevel>=2) Printf("\n");
 
 
   // reset couters
@@ -237,12 +233,9 @@ void AliTRDpidRefMakerNN::MakeTrainingLists()
     }
   }
   
-  if(fDebugLevel>=2){ 
-    Printf("Particle multiplicities in both lists:");
-    for(Int_t iMomBin = 0; iMomBin <AliTRDCalPID::kNMom; iMomBin++)
-      Printf("Momentum[%d]  Elecs[%d] Muons[%d] Pions[%d] Kaons[%d] Protons[%d]", iMomBin, nPart[AliPID::kElectron][iMomBin], nPart[AliPID::kMuon][iMomBin], nPart[AliPID::kPion][iMomBin], nPart[AliPID::kKaon][iMomBin], nPart[AliPID::kProton][iMomBin]);
-    Printf("\n");
-  }
+  AliDebug(2, "Particle multiplicities in both lists:");
+  for(Int_t iMomBin = 0; iMomBin <AliTRDCalPID::kNMom; iMomBin++)
+    AliDebug(2, Form("Momentum[%d]  Elecs[%d] Muons[%d] Pions[%d] Kaons[%d] Protons[%d]", iMomBin, nPart[AliPID::kElectron][iMomBin], nPart[AliPID::kMuon][iMomBin], nPart[AliPID::kPion][iMomBin], nPart[AliPID::kKaon][iMomBin], nPart[AliPID::kProton][iMomBin]));
 }
 
 
@@ -294,18 +287,18 @@ void AliTRDpidRefMakerNN::MakeRefs(Int_t mombin)
   fNet[iChamb] -> SetLearningMethod(TMultiLayerPerceptron::kStochastic);       // set learning method
   fNet[iChamb] -> TMultiLayerPerceptron::SetEta(0.001);                        // set learning speed
   if(!fContinueTraining){
-    if(fDebugLevel>=2) fNet[iChamb] -> Train(nEpochs,"text update=10, graph");
+    if(DebugLevel()>=2) fNet[iChamb] -> Train(nEpochs,"text update=10, graph");
     else fNet[iChamb] -> Train(nEpochs,"");
   }
   else{
     fNet[iChamb] -> LoadWeights(Form("./Networks_%d/MomBin_%d/Net%d_%d",fTrainPath, mombin, iChamb, kMoniTrain - 1));
-    if(fDebugLevel>=2) fNet[iChamb] -> Train(nEpochs,"text update=10, graph+");      
+    if(DebugLevel()>=2) fNet[iChamb] -> Train(nEpochs,"text update=10, graph+");      
     else fNet[iChamb] -> Train(nEpochs,"+");                   
   }
   bFirstLoop[iChamb] = kFALSE;
       }
       else{    
-  if(fDebugLevel>=2) fNet[iChamb] -> Train(nEpochs,"text update=10, graph+");      
+  if(DebugLevel()>=2) fNet[iChamb] -> Train(nEpochs,"text update=10, graph+");      
   else fNet[iChamb] -> Train(nEpochs,"+");                   
       }
       
@@ -415,7 +408,7 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
     gEffisTrain -> SetPointError(iLoop, 0, pionEffiErrTrain[iLoop]);
     hElecs -> Reset();
     hPions -> Reset();
-    if(fDebugLevel>=2) Printf("TrainingLoop[%d] PionEfficiency[%f +/- %f]", iLoop, pionEffiTrain[iLoop], pionEffiErrTrain[iLoop]);
+    AliDebug(2, Form("TrainingLoop[%d] PionEfficiency[%f +/- %f]", iLoop, pionEffiTrain[iLoop], pionEffiErrTrain[iLoop]));
     // end training loop
     
 
@@ -465,7 +458,7 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
     gEffisTest -> SetPointError(iLoop, 0, pionEffiErrTest[iLoop]);
     hElecs -> Reset();
     hPions -> Reset();
-    if(fDebugLevel>=2) Printf("TestLoop[%d] PionEfficiency[%f +/- %f] \n", iLoop, pionEffiTest[iLoop], pionEffiErrTest[iLoop]);
+    AliDebug(2, Form("TestLoop[%d] PionEfficiency[%f +/- %f] \n", iLoop, pionEffiTest[iLoop], pionEffiErrTest[iLoop]));
     
   } //   end training loop
 

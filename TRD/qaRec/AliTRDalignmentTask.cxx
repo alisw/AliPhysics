@@ -124,20 +124,6 @@ TH1* AliTRDalignmentTask::PlotTrackPoints(const AliTRDtrackV1 *track)
 }
 
 
-//________________________________________________________
-void AliTRDalignmentTask::Terminate(Option_t *)
-{
-// Documentation to come
-
-  if(fDebugStream){ 
-    delete fDebugStream;
-    fDebugStream = 0x0;
-    fDebugLevel = 0;
-  }
-  if(HasPostProcess()) PostProcess();
-}
-
-
 
 //________________________________________________________
 Bool_t AliTRDalignmentTask::IsIdenticalWithOneOf(AliTrackPoint * const p, AliTrackPointArray *parray, int nmax) {

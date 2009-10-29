@@ -21,7 +21,6 @@ public:
   virtual ~AliTRDmultiplicity();
   void    CreateOutputObjects();
   void    Exec(Option_t *);
-  void    Terminate(Option_t *);
 
 private:
   AliTRDmultiplicity(const AliTRDmultiplicity&);

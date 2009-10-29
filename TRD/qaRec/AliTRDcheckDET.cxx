@@ -127,7 +127,7 @@ void AliTRDcheckDET::Exec(Option_t *opt){
   Int_t nTracks = 0;		// Count the number of tracks per event
   Int_t triggermask = fEventInfo->GetEventHeader()->GetTriggerMask();
   TString triggername =  fEventInfo->GetRunInfo()->GetFiredTriggerClasses(triggermask);
-  if(fDebugLevel > 6)printf("Trigger cluster: %d, Trigger class: %s\n", triggermask, triggername.Data());
+  AliDebug(6, Form("Trigger cluster: %d, Trigger class: %s\n", triggermask, triggername.Data()));
   dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTrigger))->Fill(triggermask);
   for(Int_t iti = 0; iti < fTracks->GetEntriesFast(); iti++){
     if(!fTracks->UncheckedAt(iti)) continue;
@@ -598,7 +598,7 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     nclusters += tracklet->GetN();
-    if(fDebugLevel > 2){
+    if(DebugLevel() > 2){
       Int_t crossing = Int_t(tracklet->IsRowCross());
       Int_t detector = tracklet->GetDetector();
       Float_t theta = TMath::ATan(tracklet->GetZref(1));
@@ -611,7 +611,7 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
         if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
         pdg = fkMC->GetPDG();
       }
-      (*fDebugStream) << "NClustersTrack"
+      (*DebugStream()) << "NClustersTrack"
         << "Detector="  << detector
         << "crossing="  << crossing
         << "momentum="	<< momentum
@@ -660,7 +660,7 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
   }
   hMethod->Fill(nTracklets);
 
-  if(fDebugLevel > 3){
+  if(DebugLevel() > 3){
     if(nTracklets == 1){
       // If we have one Tracklet, check in which layer this happens
       Int_t layer = -1;
@@ -668,7 +668,7 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
       for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
         if((tracklet = fkTrack->GetTracklet(il)) && tracklet->IsOK()){layer =  il; break;}
       }
-      (*fDebugStream) << "NTrackletsTrack"
+      (*DebugStream()) << "NTrackletsTrack"
         << "Layer=" << layer
         << "\n";
     }
@@ -807,10 +807,10 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
     zmax = pp->GetRow0() - epsilon;
     // ignore y-crossing (material)
     if((z + deltaZ > zmin && z - deltaZ < zmax) && (y + deltaY > ymin && y - deltaY < ymax)) nFindable++;
-      if(fDebugLevel > 3){
+      if(DebugLevel() > 3){
         Double_t posTracklet[2] = {tracklet ? tracklet->GetYfit(0) : 0, tracklet ? tracklet->GetZfit(0) : 0};
         Int_t hasTracklet = tracklet ? 1 : 0;
-        (*fDebugStream)   << "FindableTracklets"
+        (*DebugStream())   << "FindableTracklets"
           << "layer="     << il
           << "ytracklet=" << posTracklet[0]
           << "ytrack="    << y
@@ -822,7 +822,7 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
   }
   
   h->Fill(nFindable > 0 ? TMath::Min(nFound/static_cast<Double_t>(nFindable), 1.) : 1);
-  if(fDebugLevel > 2) AliInfo(Form("Findable[Found]: %d[%d|%f]", nFindable, nFound, nFound/static_cast<Float_t>(nFindable > 0 ? nFindable : 1)));
+  AliDebug(2, Form("Findable[Found]: %d[%d|%f]", nFindable, nFound, nFound/static_cast<Float_t>(nFindable > 0 ? nFindable : 1)));
   return h;
 }
 
@@ -877,7 +877,7 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
       Int_t localtime        = c->GetLocalTimeBin();
       Double_t absoluteCharge = TMath::Abs(c->GetQ());
       h->Fill(localtime, absoluteCharge);
-      if(fDebugLevel > 3){
+      if(DebugLevel() > 3){
         Double_t distance[2];
         GetDistanceToTracklet(distance, tracklet, c);
         Float_t theta = TMath::ATan(tracklet->GetZref(1));
@@ -890,7 +890,7 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
           if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
           pdg = fkMC->GetPDG();
         }
-        (*fDebugStream) << "PHt"
+        (*DebugStream()) << "PHt"
           << "Detector="	<< detector
           << "crossing="	<< crossing
           << "Timebin="		<< localtime
@@ -1001,7 +1001,7 @@ TH1 *AliTRDcheckDET::PlotChargeTracklet(const AliTRDtrackV1 *track){
       qTot += TMath::Abs(c->GetQ());
     }
     h->Fill(qTot);
-    if(fDebugLevel > 3){
+    if(DebugLevel() > 3){
       Int_t crossing = (Int_t)tracklet->IsRowCross();
       Int_t detector = tracklet->GetDetector();
       Float_t theta = TMath::ATan(tracklet->GetZfit(1));
@@ -1014,7 +1014,7 @@ TH1 *AliTRDcheckDET::PlotChargeTracklet(const AliTRDtrackV1 *track){
 	      if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
         pdg = fkMC->GetPDG();
       }
-      (*fDebugStream) << "ChargeTracklet"
+      (*DebugStream()) << "ChargeTracklet"
         << "Detector="  << detector
         << "crossing="  << crossing
         << "momentum="	<< momentum

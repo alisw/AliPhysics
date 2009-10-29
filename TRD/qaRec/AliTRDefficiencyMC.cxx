@@ -103,10 +103,10 @@ void AliTRDefficiencyMC::Exec(Option_t *){
       isContamination = IsRegistered(trkInf,indexAccepted,naccepted);
       if(!trkInf->GetNTrackRefs()){
         // We reject the track since the Monte Carlo Information is missing
-        printf("Error: Track Reference missing for Track %d\n", trkInf->GetLabel());
+        AliDebug(1, Form("Error: Track Reference missing for Track %d", trkInf->GetLabel()));
         isContamination = kTRUE;
         // Debugging
-        if(trackTRD && fDebugLevel > 5) FillStreamTrackWOMC(trkInf);
+        if(trackTRD && DebugLevel() > 5) FillStreamTrackWOMC(trkInf);
       }	
       if(isContamination){
         // reject kink (we count these only once)
@@ -116,7 +116,7 @@ void AliTRDefficiencyMC::Exec(Option_t *){
         continue;
       }
       // Accept track
-      if(fDebugLevel > 3)printf("Accept track\n");
+      AliDebug(4, "Accept track");
       // Register track as accepted
       indexAccepted[naccepted++] = itinf;
     }else{
@@ -147,9 +147,9 @@ void AliTRDefficiencyMC::Exec(Option_t *){
   FillHistograms(nrejected, &indexRejected[0], kRejected);
   FillHistograms(ncontamination, &indexContamination[0], kContamination);
   Int_t nall = naccepted + nrejected;
-  //if(fDebugLevel>=1)
-  printf("%3d Tracks: MC[%3d] TRD[%3d | %5.2f%%] \n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nall, naccepted, nall ? 1.E2*Float_t(naccepted)/Float_t(nall) : 0.);
-  printf("%3d Tracks: ALL[%3d] Contamination[%3d | %5.2f%%] \n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nall + ncontamination, ncontamination, nall ? 1.E2*Float_t(ncontamination)/Float_t(nall + ncontamination) : 0.);
+  //if(DebugLevel()>=1)
+  AliInfo(Form("%3d Tracks: MC[%3d] TRD[%3d | %5.2f%%] \n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nall, naccepted, nall ? 1.E2*Float_t(naccepted)/Float_t(nall) : 0.));
+  AliInfo(Form("%3d Tracks: ALL[%3d] Contamination[%3d | %5.2f%%] \n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nall + ncontamination, ncontamination, nall ? 1.E2*Float_t(ncontamination)/Float_t(nall + ncontamination) : 0.));
 
   PostData(0, fContainer);
 }
@@ -270,7 +270,7 @@ Bool_t AliTRDefficiencyMC::IsFindable(AliTRDtrackInfo * const trkInf){
   //
   const Float_t kAlpha = 0.349065850;
   
-  if(fDebugLevel>10) printf("Analysing Track References\n");
+  AliDebug(10, "Analysing Track References\n");
   // Check if track is findable
   Double_t mom = 0.;
   Float_t xmin = 10000.0, xmax = 0.0; 
@@ -282,7 +282,7 @@ Bool_t AliTRDefficiencyMC::IsFindable(AliTRDtrackInfo * const trkInf){
   AliTrackReference *trackRef = 0x0;
   for(Int_t itr = 0; itr < trkInf->GetNTrackRefs(); itr++){
     trackRef = trkInf->GetTrackRef(itr);
-    if(fDebugLevel>10) printf("%d. x[%f], y[%f], z[%f]\n", itr, trackRef->LocalX(), trackRef->LocalY(), trackRef->Z());
+    AliDebug(10, Form("%d. x[%f], y[%f], z[%f]\n", itr, trackRef->LocalX(), trackRef->LocalY(), trackRef->Z()));
     x = trackRef->LocalX(); 
         
     // Be Sure that we are inside TRD
@@ -300,7 +300,7 @@ Bool_t AliTRDefficiencyMC::IsFindable(AliTRDtrackInfo * const trkInf){
     }
     if(itr > 0){
       Float_t dist = TMath::Abs(x - lastx);
-      if(fDebugLevel>10) printf("x = %f, lastx = %f, dist = %f\n", x, lastx, dist);
+      AliDebug(10, Form("x = %f, lastx = %f, dist = %f\n", x, lastx, dist));
       if(TMath::Abs(dist - 3.7) < 0.1) nLayers++; 	// ref(i+1) has to be larger than ref(i)
     }
     lastx = x;
@@ -312,10 +312,7 @@ Bool_t AliTRDefficiencyMC::IsFindable(AliTRDtrackInfo * const trkInf){
     if(mom < 0.55) findable = kFALSE;									// momentum cut at 0.6
     Double_t yangle = (ymax -ymin)/(xmax - xmin);
     Double_t zangle = (zmax -zmin)/(xmax - xmin);
-    if(fDebugLevel>10){
-      printf("track: y-Angle = %f, z-Angle = %f\n", yangle, zangle);
-      printf("nLayers = %d\n", nLayers);
-    }
+    AliDebug(10, Form("\ntrack: y-Angle = %f, z-Angle = %f\nnLayers = %d", yangle, zangle, nLayers));
     if(TMath::ATan(TMath::Abs(yangle)) > 45.) findable = kFALSE;
     if(TMath::ATan(TMath::Abs(zangle)) > 45.) findable = kFALSE;
     if(nLayers < 4) findable = kFALSE;
@@ -324,10 +321,10 @@ Bool_t AliTRDefficiencyMC::IsFindable(AliTRDtrackInfo * const trkInf){
     for(Int_t iref = 1; iref < trkInf->GetNTrackRefs(); iref++)
       if(sector[iref] != sector[0]) samesec = kFALSE;
     if(!samesec) findable = kFALSE;		// Discard all tracks which are passing more than one sector
-    if(fDebugLevel){
+    if(DebugLevel()){
       Double_t trackAngle = TMath::ATan(yangle);
       Bool_t primary = trkInf->IsPrimary();
-      (*fDebugStream) << "NotFoundTrack"
+      (*DebugStream()) << "NotFoundTrack"
         << "Momentum=" 	<< mom
         << "trackAngle="<< trackAngle
         << "NLayers="	<< nLayers
@@ -354,7 +351,7 @@ void AliTRDefficiencyMC::FillHistograms(Int_t nTracks, Int_t *indices, FillingMo
   AliTRDtrackInfo *trkInf = 0x0;
   for(Int_t itk = 0; itk < nTracks; itk++){
     trkInf = dynamic_cast<AliTRDtrackInfo *>(fTracks->At(indices[itk]));
-    if(fDebugLevel > 2)printf("Accepted MC track: %d\n", trkInf->GetLabel());
+    AliDebug(3, Form("Accepted MC track: %d\n", trkInf->GetLabel()));
     if(trkInf->GetNTrackRefs()){
       // use Monte-Carlo Information for Momentum and PID
       trkmom = trkInf->GetTrackRef(0)->P();
@@ -462,7 +459,7 @@ void AliTRDefficiencyMC::FillStreamTrackWOMC(AliTRDtrackInfo * const trkInf){
       realPhi = realtrack->GetTrackRef(0)->Phi();
     }
   }
-  (*fDebugStream) << "TrackingEffMCfake"
+  (*DebugStream()) << "TrackingEffMCfake"
     << "Event="	<< event
     << "Label=" << label
     << "labelTRD=" << labelTRD

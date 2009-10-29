@@ -359,26 +359,24 @@ void AliTRDcheckESD::Terminate(Option_t *)
   // geometrical efficiency
   TH2I *h2 = (TH2I*)fHistos->At(kTRDstat);
   TH1 *h1[2] = {0x0, 0x0};
-  h1[0] = h2->ProjectionX("px0", kTPCout, kTPCout);
-  h1[1] = h2->ProjectionX("px1", kTRDin, kTRDin);
+  h1[0] = h2->ProjectionX("checkESDx0", kTPCout, kTPCout);
+  h1[1] = h2->ProjectionX("checkESDx1", kTRDin, kTRDin);
   Process(h1, GetGraph(0));
   delete h1[0];delete h1[1];
 
   // tracking efficiency
-  h1[0] = h2->ProjectionX("px0", kTRDin, kTRDin);
-  h1[1] = h2->ProjectionX("px1", kTRDout, kTRDout);
+  h1[0] = h2->ProjectionX("checkESDx0", kTRDin, kTRDin);
+  h1[1] = h2->ProjectionX("checkESDx1", kTRDout, kTRDout);
   Process(h1, GetGraph(1));
   delete h1[1];
 
   // PID efficiency
-  //h1[0] = h2->ProjectionX("px0", kTRDin, kTRDin);
-  h1[1] = h2->ProjectionX("px1", kTRDpid, kTRDpid);
+  h1[1] = h2->ProjectionX("checkESDx1", kTRDpid, kTRDpid);
   Process(h1, GetGraph(2));
   delete h1[1];
 
   // Refit efficiency
-  //h1[0] = h2->ProjectionX("px0", kTRDin, kTRDin);
-  h1[1] = h2->ProjectionX("px1", kTRDref, kTRDref);
+  h1[1] = h2->ProjectionX("checkESDx1", kTRDref, kTRDref);
   Process(h1, GetGraph(3));
   delete h1[1];
 }

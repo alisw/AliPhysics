@@ -336,7 +336,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       ((TH2I*)arr->At(0))->Fill(dydx, dy);
       ((TH2I*)arr->At(1))->Fill(dydx, dy/TMath::Sqrt(cov[0] /*+ sx2*/ + sy2));
   
-      if(fDebugLevel>=1){
+/*      if(DebugLevel()>=3){
         // Get z-position with respect to anode wire
         //AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
         Int_t istk = fGeo->GetStack(c->GetDetector());
@@ -346,17 +346,17 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
         d -= ((Int_t)(2 * d)) / 2.0;
         if (d > 0.25) d  = 0.5 - d;
 
-/*        AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
+        AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
         fCl->Add(clInfo);
         clInfo->SetCluster(c);
         clInfo->SetGlobalPosition(yt, zt, dydx, dzdx);
         clInfo->SetResolution(dy);
         clInfo->SetAnisochronity(d);
         clInfo->SetDriftLength(dx);
-        (*fDebugStream) << "ClusterResiduals"
+        (*DebugStream()) << "ClusterResiduals"
           <<"clInfo.=" << clInfo
-          << "\n";*/
-      }
+          << "\n";
+      }*/
     }
   }
   return (TH2I*)arr->At(0);
@@ -489,8 +489,8 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
   // register reference histo for mini-task
   h = (TH2I*)arr->At(0);
 
-  if(fDebugLevel>=1){
-    (*fDebugStream) << "trackIn"
+  if(DebugLevel()>=1){
+    (*DebugStream()) << "trackIn"
       << "x="       << x
       << "P="       << &PAR
       << "C="       << &COV
@@ -498,7 +498,7 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
 
     Double_t y = tracklet->GetY(); 
     Double_t z = tracklet->GetZ(); 
-    (*fDebugStream) << "trackletIn"
+    (*DebugStream()) << "trackletIn"
       << "y="       << y
       << "z="       << z
       << "Vy="      << cov[0]
@@ -557,8 +557,8 @@ TH1* AliTRDresolution::PlotTrackTPC(const AliTRDtrackV1 *track)
   }
 
   // fill debug for MC 
-  if(fDebugLevel>=1){
-    (*fDebugStream) << "trackInMC"
+  if(DebugLevel()>=1){
+    (*DebugStream()) << "trackInMC"
       << "P="   << &PARMC
       << "\n";
   }
@@ -590,10 +590,10 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   Float_t pt0, x0, y0, z0, dx, dy, dz, dydx0, dzdx0;
   Double_t covR[7]/*, cov[3]*/;
 
-  if(fDebugLevel>=1){
+  if(DebugLevel()>=1){
     Double_t dX[12], dY[12], dZ[12], dPt[12], cCOV[12][15];
     fkMC->PropagateKalman(dX, dY, dZ, dPt, cCOV);
-    (*fDebugStream) << "MCkalman"
+    (*DebugStream()) << "MCkalman"
       << "pdg="  << pdg
       << "dx0="  << dX[0]
       << "dx1="  << dX[1]
@@ -625,8 +625,8 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
 
     // MC track position at reference radial position
     dx  = x0 - x;
-    if(fDebugLevel>=1){
-      (*fDebugStream) << "MC"
+    if(DebugLevel()>=1){
+      (*DebugStream()) << "MC"
         << "det="     << det
         << "pdg="     << pdg
         << "pt="      << pt0
@@ -683,8 +683,8 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     }
 
     // Fill Debug stream for Kalman track
-    if(fDebugLevel>=1){
-      (*fDebugStream) << "MCtrack"
+    if(DebugLevel()>=1){
+      (*DebugStream()) << "MCtrack"
         << "pt="      << pt
         << "x="       << x
         << "y="       << y
@@ -728,10 +728,10 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     }
   
     // Fill Debug stream for tracklet
-    if(fDebugLevel>=1){
+    if(DebugLevel()>=1){
       Float_t s2y = tt.GetS2Y();
       Float_t s2z = tt.GetS2Z();
-      (*fDebugStream) << "MCtracklet"
+      (*DebugStream()) << "MCtracklet"
         << "rc="    << rc
         << "x="     << x
         << "y="     << y
@@ -780,9 +780,9 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       clInfo->SetTilt(tilt);
 
       // Fill Debug Tree
-      if(fDebugLevel>=2){
+      if(DebugLevel()>=2){
         //clInfo->Print();
-        (*fDebugStream) << "MCcluster"
+        (*DebugStream()) << "MCcluster"
           <<"clInfo.=" << clInfo
           << "\n";
       }
@@ -1848,13 +1848,18 @@ Bool_t AliTRDresolution::GetGraphPlot(Float_t *bb, ETRDresolutionPlot ip, Int_t 
   for(Int_t jc=0; jc<TMath::Min(jdx,fgNElements[ip]-1); jc++) nref++;
   const Char_t **at = fgAxTitle[nref];
 
-  PutTrendValue(Form("%s_%s", fgPerformanceName[ip], at[0]), gm->GetMean(2));
-  PutTrendValue(Form("%s_%sRMS", fgPerformanceName[ip], at[0]), gm->GetRMS(2));
-  gs->Sort(&TGraph::CompareY); Int_t n = gs->GetN();
-  PutTrendValue(Form("%s_%sSigMin", fgPerformanceName[ip], at[0]), gs->GetY()[0]);
-  PutTrendValue(Form("%s_%sSigMax", fgPerformanceName[ip], at[0]), gs->GetY()[n-1]);
-  gs->Sort(&TGraph::CompareX); 
-  
+  Int_t n(0);
+  if((n=gm->GetN())) {
+    PutTrendValue(Form("%s_%s", fgPerformanceName[ip], at[0]), gm->GetMean(2));
+    PutTrendValue(Form("%s_%sRMS", fgPerformanceName[ip], at[0]), gm->GetRMS(2));
+  }
+
+  if((n=gs->GetN())){
+    gs->Sort(&TGraph::CompareY);
+    PutTrendValue(Form("%s_%sSigMin", fgPerformanceName[ip], at[0]), gs->GetY()[0]);
+    PutTrendValue(Form("%s_%sSigMax", fgPerformanceName[ip], at[0]), gs->GetY()[n-1]);
+    gs->Sort(&TGraph::CompareX); 
+  }
 
   // axis range
   TAxis *ax = 0x0;

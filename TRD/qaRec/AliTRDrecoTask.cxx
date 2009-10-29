@@ -19,6 +19,7 @@
 #include "TMethodArg.h"
 #include "TFile.h"
 #include "TList.h"
+#include "TMap.h"
 #include "TH1.h"
 #include "TF1.h"
 #include "TObjArray.h"
@@ -31,19 +32,20 @@
 #include "AliTRDrecoTask.h"
 
 ClassImp(AliTRDrecoTask)
-FILE* AliTRDrecoTask::fgFile = 0x0;
+
+TList* AliTRDrecoTask::fgTrendPoint(0x0);
+TTreeSRedirector* AliTRDrecoTask::fgDebugStream(0x0);
 //_______________________________________________________
 AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   : AliAnalysisTask(name, title)
   ,fNRefFigures(0)
-  ,fDebugLevel(0)
-  ,fPlotFuncList(0x0)
   ,fContainer(0x0)
   ,fTracks(0x0)
   ,fkTrack(0x0)
   ,fkMC(0x0)
   ,fkESD(0x0)
-  ,fDebugStream(0x0)
+  ,fDebugLevel(0)
+  ,fPlotFuncList(0x0)
 {
   DefineInput(0, TObjArray::Class());
   DefineOutput(0, TObjArray::Class());
@@ -55,10 +57,10 @@ AliTRDrecoTask::~AliTRDrecoTask()
 
   // Generic task destructor
 
-  printf(" %s (%s)\n", GetName(), GetTitle());
-  if(fDebugStream){ 
-    delete fDebugStream;
-    fDebugStream = 0x0;
+  AliDebug(1, Form(" Ending %s (%s)\n", GetName(), GetTitle()));
+  if(fgDebugStream){ 
+    delete fgDebugStream;
+    fgDebugStream = 0x0;
   }
 
   if(fPlotFuncList){
@@ -73,10 +75,12 @@ AliTRDrecoTask::~AliTRDrecoTask()
     fContainer = 0x0;
   }
 
-  if(fgFile){
-    fflush(fgFile);
-    fclose(fgFile);
-    fgFile = 0x0;
+  if(fgTrendPoint){
+    TFile::Open("TRD.PerformanceTrend.root", "UPDATE");
+    fgTrendPoint->Write();
+    delete fgTrendPoint;
+    fgTrendPoint=0x0;
+    gFile->Close();
   }
 }
 
@@ -131,10 +135,11 @@ Bool_t AliTRDrecoTask::PutTrendValue(const Char_t *name, Double_t val)
 {
 // Generic publisher for trend values
 
-  if(!fgFile){
-    fgFile = fopen("TRD.Performance.txt", "at");
+  if(!fgTrendPoint){
+    fgTrendPoint = new TList();
+    fgTrendPoint->SetOwner();
   }
-  fprintf(fgFile, "%s_%s %f\n", GetName(), name, val);
+  fgTrendPoint->AddLast(new TNamed(Form("%s_%s", GetName(), name), Form("%f", val)));
   return kTRUE;
 }
 
@@ -214,7 +219,7 @@ void AliTRDrecoTask::SetDebugLevel(Int_t level)
   fDebugLevel = level;
   if(fDebugLevel>=1){
     TDirectory *savedir = gDirectory;
-    fDebugStream = new TTreeSRedirector(Form("TRD.DBG%s.root", GetName()));
+    fgDebugStream = new TTreeSRedirector("TRD.DebugPerformance.root");
     savedir->cd();
   }
 }
@@ -226,11 +231,12 @@ void AliTRDrecoTask::Terminate(Option_t *)
   // Terminate
   //
 
-  if(fDebugStream){ 
-    delete fDebugStream;
-    fDebugStream = 0x0;
+  if(fgDebugStream){ 
+    delete fgDebugStream;
+    fgDebugStream = 0x0;
     fDebugLevel = 0;
   }
+  if(HasPostProcess()) PostProcess();
 }
 
 //________________________________________________________

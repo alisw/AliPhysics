@@ -40,15 +40,14 @@ public:
   virtual void   CreateOutputObjects() = 0;
   virtual void   Exec(Option_t *);
 
-  Int_t          GetDebugLevel() const { return fDebugLevel;}
-  Int_t          GetNRefFigures() const { return fNRefFigures; } 
+  Int_t          GetNRefFigures() const  { return fNRefFigures; } 
   TList*         GetPlotFunctors() const { return fPlotFuncList;}
   virtual Bool_t GetRefFigure(Int_t ifig);
 
-  Bool_t         HasFriends() const {return TestBit(kFriends);};
-  Bool_t         HasMCdata() const {return TestBit(kMCdata);};
-  Bool_t         HasPostProcess() const {return TestBit(kPostProcess);};
-  virtual TObjArray* Histos() {return fContainer;}
+  Bool_t         HasFriends() const      { return TestBit(kFriends);};
+  Bool_t         HasMCdata() const       { return TestBit(kMCdata);};
+  Bool_t         HasPostProcess() const  { return TestBit(kPostProcess);};
+  virtual TObjArray* Histos()            { return fContainer;}
 
   virtual Bool_t Load(const Char_t *filename = "TRD.Performance.root");
   virtual Bool_t Save(TObjArray * const res);
@@ -61,23 +60,26 @@ public:
   virtual void   Terminate(Option_t *);
 
 protected:
-  void   InitFunctorList();
-  void   Adjust(TF1 *f, TH1 * const h);
+  Int_t          DebugLevel() const      { return fDebugLevel;}
+  static TTreeSRedirector* DebugStream() { return fgDebugStream;}
+  void           InitFunctorList();
+  void           Adjust(TF1 *f, TH1 * const h);
 
   UChar_t   fNRefFigures;  //! no of reference figures reported by task
-  UChar_t   fDebugLevel;   //! Debug level 
-  TList     *fPlotFuncList;//! plot functors list
   TObjArray *fContainer;   //! container to store results
   TObjArray *fTracks;      //! Array of tracks
   const AliTRDtrackV1    *fkTrack;         //! current track
   const AliTRDtrackInfo::AliMCinfo  *fkMC; //! MC info
   const AliTRDtrackInfo::AliESDinfo *fkESD;//! ESD info
-  TTreeSRedirector *fDebugStream;   //! Debug stream 
-  static FILE *fgFile;         //! trend file streamer
 
 private:
   AliTRDrecoTask(const AliTRDrecoTask&);
   AliTRDrecoTask& operator=(const AliTRDrecoTask&);
+
+  UChar_t   fDebugLevel;   //! Debug level 
+  TList     *fPlotFuncList;//! plot functors list
+  static TList     *fgTrendPoint;          //! trend point
+  static TTreeSRedirector *fgDebugStream;  //! Debug stream 
 
   ClassDef(AliTRDrecoTask, 1) // base TRD reconstruction task
 };

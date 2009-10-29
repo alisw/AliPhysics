@@ -160,7 +160,7 @@ void AliTRDefficiency::Exec(Option_t *)
     new ((*fMissed)[nMiss]) AliTRDtrackInfo(*track);
     nMiss++;
   }
-  if(fDebugLevel>=2) printf("%3d Tracks: ESD[%3d] TPC[%3d] TRD[%3d | %5.2f%%] Off[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), fTracks->GetEntriesFast(), nTPC, nTRD, nTPC ? 1.E2*nTRD/float(nTPC) : 0., fMissed->GetEntriesFast());
+  AliDebug(2, Form("%3d Tracks: ESD[%3d] TPC[%3d] TRD[%3d | %5.2f%%] Off[%d]", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), fTracks->GetEntriesFast(), nTPC, nTRD, nTPC ? 1.E2*nTRD/float(nTPC) : 0., fMissed->GetEntriesFast()));
 
 
   // Find double tracks
@@ -235,17 +235,17 @@ void AliTRDefficiency::Exec(Option_t *)
       pidx = AliTRDCalPID::GetPartIndex(tt->GetPDG());
       pidx = TMath::Max(pidx, 0);
       ((TProfile*)fContainer->At(pidx))->Fill(mom, 0.);
-      if(fDebugLevel>=2) printf("\tNOT bFOUND Id[%d] Mom[%f]\n", tt->GetTrackId(), mom);
+      AliDebug(2, Form("  NOT bFOUND Id[%d] Mom[%f]\n", tt->GetTrackId(), mom));
     }
   }
 
-  if(fDebugLevel>=2) printf("%3d Tracks: ESD[%3d] TPC[%3d] TRD[%3d | %5.2f%%] Off[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), fTracks->GetEntriesFast(), nTPC, nTRD, nTPC ? 1.E2*nTRD/float(nTPC) : 0., fMissed->GetEntriesFast());
+  AliDebug(2, Form("%3d Tracks: ESD[%3d] TPC[%3d] TRD[%3d | %5.2f%%] Off[%d]", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), fTracks->GetEntriesFast(), nTPC, nTRD, nTPC ? 1.E2*nTRD/float(nTPC) : 0., fMissed->GetEntriesFast()));
 
   //fMissed->Delete();
 	// check for double countings
 	Int_t indices[10000]; memset(indices, 0, sizeof(Int_t) * 10000);
 	TMath::Sort(nTRD, labelsacc, indices);
-	if(fDebugLevel > 2){
+	if(DebugLevel() > 2){
 	for(Int_t itk = 0; itk < nTRD - 1; itk++)
 		if(labelsacc[indices[itk]] ==labelsacc[indices[itk + 1]]) printf("Double counted MC track: %d\n", labelsacc[indices[itk]]);
 	}

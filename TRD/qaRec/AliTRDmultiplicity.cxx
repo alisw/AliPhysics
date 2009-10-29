@@ -154,7 +154,7 @@ void AliTRDmultiplicity::Exec(Option_t *)
             if(counterTracklet==AliTRDgeometry::kNlayer) AliTRDtrackerV1::FitRiemanTilt(const_cast<AliTRDtrackV1 *>(trackTRD), 0x0, kTRUE, counterTracklet, points);
             else continue;
 
-            if(fDebugLevel>=1){
+            if(DebugLevel()>=1){
               for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
                 //printf("---------------------------------------- %i %i %f %f %f \n",counterTracklet,il,points[il].GetX(),points[il].GetY(),points[il].GetZ());
                 Double_t pointX=points[il].GetX();
@@ -162,7 +162,7 @@ void AliTRDmultiplicity::Exec(Option_t *)
                 Double_t pointZ=points[il].GetZ();
 
 
-                (*fDebugStream)   << "TrackletsinTRD"
+                (*DebugStream())   << "TrackletsinTRD"
                     << "standalone=" << standAlone
                     << "eventcounter=" << fEventCounter
                     << "layer="     << il
@@ -255,14 +255,14 @@ void AliTRDmultiplicity::Exec(Option_t *)
 
        
 
-        if(fDebugLevel>=1){
+        if(DebugLevel()>=1){
           for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
             //printf("---------------------------------------- %i %i %f %f %f \n",counterTracklet,il,points[il].GetX(),points[il].GetY(),points[il].GetZ());
             Double_t pointX=points[il].GetX();
             Double_t pointY=points[il].GetY();
             Double_t pointZ=points[il].GetZ();
             
-            (*fDebugStream)   << "TrackletsinTRD"
+            (*DebugStream())   << "TrackletsinTRD"
                 << "standalone=" << standAlone
                 << "eventcounter=" << fEventCounter
                 << "layer="     << il
@@ -284,27 +284,5 @@ void AliTRDmultiplicity::Exec(Option_t *)
   
   PostData(0, fContainer);
 }
-
-//____________________________________________________________________
-void AliTRDmultiplicity::Terminate(Option_t *)
-{
-  //
-  // Terminate
-  //
-
-  if(fDebugStream){ 
-    delete fDebugStream;
-    fDebugStream = 0x0;
-    fDebugLevel = 0;
-  }
-
-  fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
-  if (!fContainer) {
-    Printf("ERROR: list not available");
-    return;
-  }
-
-}
-
 
 

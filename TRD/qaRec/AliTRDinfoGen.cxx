@@ -16,12 +16,19 @@
 /* $Id: AliTRDinfoGen.cxx 27496 2008-07-22 08:35:45Z cblume $ */
 
 ////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-//  Reconstruction QA                                                     //
-//                                                                        //
-//  Authors:                                                              //
-//    Markus Fasel <M.Fasel@gsi.de>                                       //
-//                                                                        //
+//
+//  Tender wagon for TRD performance/calibration train
+//
+// In this wagon the information from
+//   - ESD
+//   - Friends [if available]
+//   - MC [if available]
+// are grouped into AliTRDtrackInfo objects and fed to worker tasks
+//
+//  Authors:
+//    Markus Fasel <M.Fasel@gsi.de>
+//    Alexandru Bercuci <A.Bercuci@gsi.de>
+//
 ////////////////////////////////////////////////////////////////////////////
 
 #include <TClonesArray.h>
@@ -197,9 +204,7 @@ void AliTRDinfoGen::Exec(Option_t *){
   }
   
   Int_t nTRD = 0, nTPC = 0, nclsTrklt;
-  if(fDebugLevel>=1){ 
-    printf("Entry[%3d] Tracks: ESD[%d] MC[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracksESD, nTracksMC);
-  }
+  AliDebug(2, Form("Entry[%3d] Tracks: ESD[%d] MC[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracksESD, nTracksMC));
   AliESDtrack *esdTrack = 0x0;
   AliESDfriendTrack *esdFriendTrack = 0x0;
   TObject *calObject = 0x0;
@@ -208,7 +213,7 @@ void AliTRDinfoGen::Exec(Option_t *){
   AliTRDcluster *cl = 0x0;
   for(Int_t itrk = 0; itrk < nTracksESD; itrk++){
     esdTrack = fESDev->GetTrack(itrk);
-    if(fDebugLevel>=2) printf("\n%3d ITS[%d] TPC[%d] TRD[%d]\n", itrk, esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2));
+    AliDebug(3, Form("\n%3d ITS[%d] TPC[%d] TRD[%d]\n", itrk, esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2)));
     if(esdTrack->GetNcls(1)) nTPC++;
     if(esdTrack->GetNcls(2)) nTRD++;
 
@@ -216,9 +221,9 @@ void AliTRDinfoGen::Exec(Option_t *){
     const AliExternalTrackParam *op = esdTrack->GetOuterParam();
     Double_t xyz[3];
     if(op){
-        op->GetXYZ(xyz);
-        op->Global2LocalPosition(xyz, op->GetAlpha());
-        if(fDebugLevel>=2) printf("op @ X[%7.3f]\n", xyz[0]);
+      op->GetXYZ(xyz);
+      op->Global2LocalPosition(xyz, op->GetAlpha());
+      AliDebug(3, Form("op @ X[%7.3f]\n", xyz[0]));
     }
 
     // read MC info
@@ -255,11 +260,11 @@ void AliTRDinfoGen::Exec(Option_t *){
       while(jref<nRefs){
         ref = mcParticle->GetTrackReference(jref);
         if(ref->LocalX() > fgkTOF) break;
-        if(fDebugLevel>=3) printf("\ttrackRef[%2d (%2d)] @ %7.3f OK\n", jref-iref, jref, ref->LocalX());
+        AliDebug(4, Form("  trackRef[%2d (%2d)] @ %7.3f OK", jref-iref, jref, ref->LocalX()));
         fTrackInfo->AddTrackRef(ref);
         jref++;
       }
-      if(fDebugLevel>=2) printf("NtrackRefs[%d(%d)]\n", fTrackInfo->GetNTrackRefs(), nRefs);
+      AliDebug(3, Form("NtrackRefs[%d(%d)]", fTrackInfo->GetNTrackRefs(), nRefs));
     } else {
       new (fTrackInfo) AliTRDtrackInfo();
       fTrackInfo->SetPDG(fPdg);
@@ -287,7 +292,7 @@ void AliTRDinfoGen::Exec(Option_t *){
         if(strcmp(calObject->IsA()->GetName(),"AliTRDtrackV1") != 0) continue; // Look for the TRDtrack
         if(!(track = dynamic_cast<AliTRDtrackV1*>(calObject))) break;
         nTRD++;
-        if(fDebugLevel>=3) printf("TRD track OK\n");
+        AliDebug(4, Form("TRD track OK"));
         // Set the clusters to unused
         for(Int_t ipl = 0; ipl < AliTRDgeometry::kNlayer; ipl++){
           if(!(tracklet = track->GetTracklet(ipl))) continue;
@@ -297,13 +302,13 @@ void AliTRDinfoGen::Exec(Option_t *){
         fTrackInfo->SetTrack(track);
         break;
       }
-      if(fDebugLevel>=2) printf("Ntracklets[%d]\n", fTrackInfo->GetNTracklets());
-    } else if(fDebugLevel>=2) printf("No ESD friends\n");
+      AliDebug(3, Form("Ntracklets[%d]\n", fTrackInfo->GetNTracklets()));
+    } else AliDebug(3, "No ESD friends");
     if(op) fTrackInfo->SetOuterParam(op);
 
-    if(fDebugLevel >= 1){
+    if(DebugLevel() >= 1){
       AliTRDtrackInfo info(*fTrackInfo);
-      (*fDebugStream) << "trackInfo"
+      (*DebugStream()) << "trackInfo"
       << "TrackInfo.=" << &info
       << "\n";
       info.Delete("");
@@ -312,7 +317,7 @@ void AliTRDinfoGen::Exec(Option_t *){
     fContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
     fTrackInfo->Delete("");
   }
-  if(fDebugLevel>=2) printf("%3d Tracks: TPC[%d] TRD[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTPC, nTRD);
+  AliDebug(3, Form("%3d Tracks: TPC[%d] TRD[%d]\n", (Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTPC, nTRD));
 
 //   AliESDv0 *v0 = 0x0;
 //   for(Int_t iv0=0; iv0<fESD->GetNumberOfV0s(); iv0++){
@@ -322,11 +327,8 @@ void AliTRDinfoGen::Exec(Option_t *){
 
   // Insert also MC tracks which are passing TRD where the track is not reconstructed
   if(HasMCdata()){
-    if(fDebugLevel > 10){
-      printf("Output of the MC track map:\n");
-      for(Int_t itk = 0; itk < nTracksMC;  itk++)
-        printf("trackMap[%d] = %s\n", itk, trackMap[itk] == kTRUE ? "TRUE" : "kFALSE");
-    }
+    AliDebug(10, "Output of the MC track map:");
+    for(Int_t itk = 0; itk < nTracksMC;  itk++) AliDebug(10, Form("trackMap[%d] = %s", itk, trackMap[itk] == kTRUE ? "TRUE" : "kFALSE"));
   
     for(Int_t itk = 0; itk < nTracksMC; itk++){
       if(trackMap[itk]) continue;
@@ -339,14 +341,12 @@ void AliTRDinfoGen::Exec(Option_t *){
       fTrackInfo->SetPDG(fPdg);
       while(iref<nRefs){
         ref = mcParticle->GetTrackReference(iref);
-        if(fDebugLevel > 3) printf("\ttrackRef[%2d] @ %7.3f", iref, ref->LocalX());
         if(ref->LocalX() > 250. && ref->LocalX() < 370.){
-          if(fDebugLevel > 3) printf(" OK\n");
+          AliDebug(4, Form("  trackRef[%2d] @ %7.3f IN", iref, ref->LocalX()));
           fTrackInfo->AddTrackRef(ref);
           nRefsTRD++;
         }
-        else
-          if(fDebugLevel > 3) printf("\n");
+        else AliDebug(4, Form("  trackRef[%2d] @ %7.3f OUT", iref, ref->LocalX()));
         iref++;
       }
       if(!nRefsTRD){
@@ -357,14 +357,14 @@ void AliTRDinfoGen::Exec(Option_t *){
       }
       fTrackInfo->SetPrimary(mcParticle->Particle()->IsPrimary());
       fTrackInfo->SetLabel(itk);
-      if(fDebugLevel >= 1){
+      if(DebugLevel() >= 1){
         AliTRDtrackInfo info(*fTrackInfo);
-        (*fDebugStream) << "trackInfo"
+        (*DebugStream()) << "trackInfo"
         << "TrackInfo.=" << &info
         << "\n";
         info.Delete("");
       }
-      if(fDebugLevel > 2)printf("Registering rejected MC track with label %d\n", itk);
+      AliDebug(3, Form("Registering rejected MC track with label %d", itk));
       fContainer->Add(new AliTRDtrackInfo(*fTrackInfo));
       fTrackInfo->Delete("");
     }

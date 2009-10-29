@@ -186,7 +186,7 @@ void AliTRDcalibration::CreateOutputObjects()
   }
 
   // Debug level
-  fTRDCalibraFillHisto->SetDebugLevel(fDebugLevel); //debug stuff
+  fTRDCalibraFillHisto->SetDebugLevel(DebugLevel()); //debug stuff
 
   // Init the stuff
   fTRDCalibraFillHisto->Init2Dhistos(); // initialise the histos
@@ -207,7 +207,7 @@ void AliTRDcalibration::CreateOutputObjects()
   if(fVdriftLinear) fContainer->Add(fTRDCalibraFillHisto->GetVdriftLinearFit()); // Other drift velocity 
   if(fVector2d) fContainer->Add(fTRDCalibraFillHisto->GetCalibraVector()); //calibra vector
       
-  if(fDebugLevel) {
+  if(DebugLevel()) {
     
     // Init the debug histos
     fNbTRDTrack = new TH1F("TRDTrack","TRDTrack",500,0,500);
@@ -306,7 +306,7 @@ void AliTRDcalibration::Exec(Option_t *)
   
     fTRDCalibraFillHisto->UpdateHistogramsV1(ftrdTrack);
 
-    if(fDebugLevel) {
+    if(DebugLevel()) {
       
       Bool_t standalonetracklet = kFALSE;  
       const AliTRDseedV1 *tracklet = 0x0;
@@ -374,7 +374,7 @@ void AliTRDcalibration::Exec(Option_t *)
     
   }
   
-  if(fDebugLevel) {
+  if(DebugLevel()) {
     
     //Fill Histos
     fNbTRDTrack->Fill(nbTrdTracks);

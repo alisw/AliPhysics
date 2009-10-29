@@ -1069,7 +1069,7 @@ void AliTRDcheckPID::EvaluatePionEfficiency(TObjArray * const histoContainer, TO
       gPtrThres[iMethod]->SetPoint(iMom, mom, fUtil->GetThreshold());
       gPtrThres[iMethod]->SetPointError(iMom, 0., 0.);
 
-      if(fDebugLevel>=2) Printf(Form("Pion Efficiency for 2-dim LQ is : %f +/- %f\n\n", methodName[iMethod].Data()), fUtil->GetPionEfficiency(), fUtil->GetError());
+      AliDebug(2, Form("Pion Efficiency for %s is : %f +/- %f", methodName[iMethod].Data(), fUtil->GetPionEfficiency(), fUtil->GetError()));
     }
   }
 }
