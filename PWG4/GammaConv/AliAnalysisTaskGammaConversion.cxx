@@ -254,7 +254,6 @@ void AliAnalysisTaskGammaConversion::SetESDtrackCuts()
 void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
 {
   // Execute analysis for current event
-	
   ConnectInputData("");
 	
   //Each event needs an empty branch
@@ -320,10 +319,10 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
 	
   //Process the v0 information with no cuts
   ProcessV0sNoCut();
-	
+
   // Process the v0 information
   ProcessV0s();
-	
+  
   //Fill Gamma AOD
   FillAODWithConversionGammas() ; 
 	
@@ -933,18 +932,19 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
     /*AliESDv0 * cV0 = */fV0Reader->GetV0(i);
 		
     if(fV0Reader->CheckForPrimaryVertex() == kFALSE){
-      return;
+      continue;
     }
 
     if( !fV0Reader->GetV0(i)->GetOnFlyStatus()){
-      return;
+      continue;
     }
 
-    if( !(fV0Reader->GetNegativeESDTrack()->GetStatus() & AliESDtrack::kTPCrefit) || 
-        !(fV0Reader->GetPositiveESDTrack()->GetStatus() & AliESDtrack::kTPCrefit) ){
-      return;
+
+    if( !((fV0Reader->GetNegativeESDTrack())->GetStatus() & AliESDtrack::kTPCrefit) || 
+        !((fV0Reader->GetPositiveESDTrack())->GetStatus() & AliESDtrack::kTPCrefit) ){
+      continue;
     }
-		
+
     if(fDoMCTruth){
 			
       if(fV0Reader->HasSameMCMother() == kFALSE){
@@ -1125,7 +1125,6 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     fElectronv1.push_back(fV0Reader->GetCurrentV0()->GetPindex());
     fElectronv2.push_back(fV0Reader->GetCurrentV0()->GetNindex());
 		
-		
     //----------------------------------- checking for "real" conversions (MC match) --------------------------------------
     if(fDoMCTruth){
 			
@@ -1228,6 +1227,9 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
   }//while(fV0Reader->NextV0)
   fHistograms->FillHistogram("ESD_NumberOfSurvivingV0s", nSurvivingV0s);
   fHistograms->FillHistogram("ESD_NumberOfV0s", fV0Reader->GetNumberOfV0s());
+
+  fV0Reader->ResetV0IndexNumber();
+
 }
 
 void AliAnalysisTaskGammaConversion::FillAODWithConversionGammas(){

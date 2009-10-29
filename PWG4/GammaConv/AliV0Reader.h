@@ -584,7 +584,6 @@ class AliV0Reader : public TObject {
 
   void SetDoCF(Bool_t flag){fDoCF = flag;}
 
-	
  private:
   AliStack * fMCStack;           // pointer to MonteCarlo particle stack 
   AliMCEventHandler* fMCTruth;   // for CF    pointer to the MC object
@@ -661,12 +660,14 @@ class AliV0Reader : public TObject {
 
   Bool_t fUseOwnXYZCalculation; //flag that determines if we use our own calculation of xyz (markus)
 
-  Bool_t fDoCF;
+  Bool_t fDoCF; //flag
+
+  Bool_t fUpdateV0AlreadyCalled; //flag
 	
   vector<AliKFParticle> fCurrentEventGoodV0s; //vector of good v0s
   vector<AliKFParticle> fPreviousEventGoodV0s; // vector of good v0s from prevous events
 	
-  ClassDef(AliV0Reader,5)
+  ClassDef(AliV0Reader,6)
 };
 #endif
 
