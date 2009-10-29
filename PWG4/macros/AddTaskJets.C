@@ -21,6 +21,71 @@ AliAnalysisTaskJets *AddTaskJets(){
 
 
 
+Int_t AddTaskJetsDelta(char *nonStdFile = ""){
+
+  // Adds a whole set of jet finders  all to be written
+  // to a delta AOD
+  
+  // this can in principle be done also with on the fly 
+  // if we have an ESD input jet fidner task does automatically fetch the ouput aod
+
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr) {
+      ::Error("AddTaskJetsDelta", "No analysis manager to connect to.");
+      return 0;
+   }  
+   
+   // Check the analysis type using the event handlers connected to the analysis manager.
+   //==============================================================================
+   if (!mgr->GetInputEventHandler()) {
+      ::Error("AddTaskJetsDelta", "This task requires an input event handler");
+      return 0;
+   }
+
+  AliAODHandler *aodh = (AliAODHandler*)mgr->GetOutputEventHandler();
+  if (!aodh) {
+    ::Error("AddTaskJetsDelta", "This task needs an output event handler");
+    return 0;
+  }   
+
+
+
+  TString type = mgr->GetInputEventHandler()->GetDataType();
+
+  AliAnalysisTaskJets *jetana = 0;
+  Int_t iCount = 0;
+
+
+  const char *cJF[3]        = {"UA1","UA1","UA1"};
+  const Float_t radius[3]   = {0.4, 0.7, 1.0};
+  // flag first bit AOD, second bit AODMC2 third bit AODMC2
+  // i.e. 7 all, 6 only MC2 and MC
+  // this stay at three
+  const UInt_t  flag[3]     = {6,7,7};
+  const char *cReader[3] = {"AOD","AODMC","AODMC2"};  
+
+  for(int i = 0; i< 3;i++){
+    for(int ib = 0;ib<3;ib++){
+      if(flag[i]&(1<<ib)){
+	jetana = AddTaskJets(cReader[ib],cJF[i],radius[i]);
+	if(jetana){
+	  char *cRadius = "";
+	  if(radius[i]>0)cRadius = Form("%02d",(int)(radius[i]*10));
+	  jetana->SetNonStdBranch(Form("jets%s_%s%s",cReader[ib],cJF[i],cRadius));
+	  iCount++;
+	}
+      }
+    }
+  }
+    
+  Printf("Added %d JetFinders",iCount);
+}
+
+
+
+
+
+
 AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius)
 {
   // Creates a jet finder task, configures it and adds it to the analysis manager.
@@ -61,7 +126,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius)
    char *cRadius = "";
    if(radius>0)cRadius = Form("%02d",(int)(radius*10));
 
-   jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s%s%s",jr,jf,cRadius));
+   jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s_%s%s",jr,jf,cRadius));
    TString type = mgr->GetInputEventHandler()->GetDataType();
    if (type == "AOD") jetana->SetNonStdBranch(Form("jets%s",jf));
    
@@ -70,7 +135,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius)
    TString c_jf(jf);
    c_jf.ToLower();
 
-   AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist%s%s%s",c_jr.Data(),c_jf.Data(),cRadius), TList::Class(),
+   AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist_%s_%s%s",c_jr.Data(),c_jf.Data(),cRadius), TList::Class(),
 							     AliAnalysisManager::kOutputContainer, Form("jethist_%s_%s%s.root",c_jr.Data(),c_jf.Data(),cRadius));
    // Connect jet finder to task.
    jetana->SetJetFinder(jetFinder);
@@ -98,7 +163,6 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetRadius(0.7);
     
     jetFinder = new AliCdfJetFinder();
-    jetFinder->SetOutputFile("jets.root");
     if (jh) jetFinder->SetJetHeader(jh);
     break;
 
@@ -112,8 +176,8 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     if (jh) jetFinder->SetJetHeader(jh);
     break;
 
-
   case "FASTJET":
+    // DEFAULT is ANTI KT
     AliFastJetHeaderV1 *jh = new AliFastJetHeaderV1();
     jh->SetRparam(0.4); // setup parameters                                  
     if(radius>0)jh->SetRparam(radius);
