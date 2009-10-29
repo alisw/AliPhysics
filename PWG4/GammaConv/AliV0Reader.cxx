@@ -100,6 +100,7 @@ AliV0Reader::AliV0Reader() :
   fUseImprovedVertex(kFALSE),
   fUseOwnXYZCalculation(kFALSE),
   fDoCF(kFALSE),
+  fUpdateV0AlreadyCalled(kFALSE),
   fCurrentEventGoodV0s(),
   fPreviousEventGoodV0s()
 {
@@ -163,6 +164,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fUseImprovedVertex(original.fUseImprovedVertex),
   fUseOwnXYZCalculation(original.fUseOwnXYZCalculation),
   fDoCF(original.fDoCF),
+  fUpdateV0AlreadyCalled(original.fUpdateV0AlreadyCalled),
   fCurrentEventGoodV0s(original.fCurrentEventGoodV0s),
   fPreviousEventGoodV0s(original.fPreviousEventGoodV0s)
 {
@@ -184,7 +186,7 @@ AliV0Reader::~AliV0Reader()
 
 void AliV0Reader::Initialize(){
   //see header file for documentation
-	
+  fUpdateV0AlreadyCalled = kFALSE;	
   // Get the input handler from the manager
   fESDHandler = (AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(fESDHandler == NULL){
@@ -235,8 +237,6 @@ Bool_t AliV0Reader::CheckForPrimaryVertex(){
   return fESDEvent->GetPrimaryVertex()->GetNContributors()>0;
 }
 
-
-
 Bool_t AliV0Reader::NextV0(){
   //see header file for documentation
 	
@@ -249,14 +249,15 @@ Bool_t AliV0Reader::NextV0(){
       fCurrentV0IndexNumber++;
       continue;
     }
-
+ 
     Double_t containerInput[3];
     if(fDoCF){
       containerInput[0] = GetMotherCandidatePt();
       containerInput[1] = GetMotherCandidateEta();
       containerInput[2] = GetMotherCandidateMass();
     }
-
+    
+   
     //checks if on the fly mode is set
     if ( !fCurrentV0->GetOnFlyStatus() ){
       if(fHistograms != NULL){
@@ -268,7 +269,7 @@ Bool_t AliV0Reader::NextV0(){
     if(fDoCF){
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepGetOnFly);		// for CF	
     }
-
+    
     //checks if we have a prim vertex
     if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) { 
       if(fHistograms != NULL){
@@ -293,20 +294,6 @@ Bool_t AliV0Reader::NextV0(){
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepTPCPID);			// for CF
     }
 		
-    /*		
-    if(fUseOwnXYZCalculation == kFALSE){
-      fCurrentV0->GetXYZ(fCurrentXValue,fCurrentYValue,fCurrentZValue);
-    }
-    else{
-      Double_t convpos[2];
-      convpos[0]=0;
-      convpos[1]=0;
-      GetConvPosXY(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField(),convpos);
-      fCurrentXValue = convpos[0];
-      fCurrentYValue = convpos[1];
-      fCurrentZValue = GetConvPosZ(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField());
-    }
-    */	
     if(GetXYRadius()>fMaxR){ // cuts on distance from collision point
       if(fHistograms != NULL){
 	fHistograms->FillHistogram("ESD_CutR_InvMass",GetMotherCandidateMass());
@@ -427,7 +414,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
 	
   if(fCurrentNegativeESDTrack->GetSign() == fCurrentPositiveESDTrack->GetSign()){             // avoid like sign
     iResult=kFALSE;
-    if(fHistograms != NULL){
+    if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
       fHistograms->FillHistogram("ESD_CutLikeSign_InvMass",GetMotherCandidateMass());
     }
   }
@@ -442,9 +429,8 @@ Bool_t AliV0Reader::UpdateV0Information(){
       !(fCurrentPositiveESDTrack->GetStatus() & AliESDtrack::kTPCrefit) ){
     //  if( !(fCurrentNegativeESDTrack->GetStatus() & AliESDtrack::kITSrefit) || 
     //      !(fCurrentPositiveESDTrack->GetStatus() & AliESDtrack::kITSrefit) ){
-		
     iResult=kFALSE;
-    if(fHistograms != NULL){
+    if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
       fHistograms->FillHistogram("ESD_CutRefit_InvMass",GetMotherCandidateMass());
     }
   }
@@ -453,7 +439,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
       fCurrentPositiveESDTrack->GetKinkIndex(0) > 0) {			
 		
     iResult=kFALSE;
-    if(fHistograms != NULL){
+    if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
       fHistograms->FillHistogram("ESD_CutKink_InvMass",GetMotherCandidateMass());
     }
   }
@@ -465,7 +451,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
 	fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
 	fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ){
       iResult=kFALSE;
-      if(fHistograms != NULL){
+      if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
 	fHistograms->FillHistogram("ESD_CutdEdxSigmaElectronLine_InvMass",GetMotherCandidateMass());
       }
     }
@@ -474,7 +460,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
 	 fTPCpid->GetNumberOfSigmas(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
 	 fTPCpid->GetNumberOfSigmas(fCurrentPositiveESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
 	iResult=kFALSE;
-	if(fHistograms != NULL){
+	if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
 	  fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
 	}
       }
@@ -485,15 +471,12 @@ Bool_t AliV0Reader::UpdateV0Information(){
 	 fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
 	 fTPCpid->GetNumberOfSigmas(fCurrentNegativeESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
 	iResult=kFALSE;
-	if(fHistograms != NULL){
+	if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
 	  fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
 	}
       }
     }
   }
-
-
-
 	
   if(fCurrentNegativeKFParticle != NULL){
     delete fCurrentNegativeKFParticle;
@@ -578,10 +561,6 @@ Bool_t AliV0Reader::UpdateV0Information(){
     }
   }
 	
-  //  if(iResult==kTRUE){
-  //	fCurrentEventGoodV0s.push_back(*fCurrentMotherKFCandidate); // moved it to NextV0() after all the cuts are applied
-  //  }
-
 
   // for CF
   Double_t containerInput[3];
@@ -594,6 +573,24 @@ Bool_t AliV0Reader::UpdateV0Information(){
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepTPCRefit);		// for CF	
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepKinks);		// for CF	
   }
+  
+
+  if(fUseOwnXYZCalculation == kFALSE){
+    fCurrentV0->GetXYZ(fCurrentXValue,fCurrentYValue,fCurrentZValue);
+  }
+  else{
+    Double_t convpos[2];
+    convpos[0]=0;
+    convpos[1]=0;
+    GetConvPosXY(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField(),convpos);
+    fCurrentXValue = convpos[0];
+    fCurrentYValue = convpos[1];
+    fCurrentZValue = GetConvPosZ(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField());
+  }
+
+
+  fUpdateV0AlreadyCalled = kTRUE;
+
   return iResult;
 }
 
@@ -611,20 +608,6 @@ Bool_t AliV0Reader::HasSameMCMother(){
 	}
     }
   }
-
-  if(fUseOwnXYZCalculation == kFALSE){
-    fCurrentV0->GetXYZ(fCurrentXValue,fCurrentYValue,fCurrentZValue);
-  }
-  else{
-    Double_t convpos[2];
-    convpos[0]=0;
-    convpos[1]=0;
-    GetConvPosXY(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField(),convpos);
-    fCurrentXValue = convpos[0];
-    fCurrentYValue = convpos[1];
-    fCurrentZValue = GetConvPosZ(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField());
-  }
-  
   return iResult;
 }
 
