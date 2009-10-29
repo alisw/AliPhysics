@@ -72,8 +72,8 @@ class AliAnalysisKinkESDMC : public AliAnalysisTaskSE {
    TH2F        *fZvYv; // two dime of Z vrs Y of vtx main           
    TH2F        *fXvYv; // two dime of X vrs Y of main tracks vtx main           
    TH1F        *fPtPrKink; // pt of Primary PDG kaons inside the selected ones by the kink topology              
-   TF1         *f1;
-   TF1         *f2;
+   TF1         *f1; // upper limit curve for the decay K->mu
+   TF1         *f2; // upper limit curve for the decay pi->mu
   TList        *fListOfHistos; // list of histos
 
   AliAnalysisKinkESDMC(const AliAnalysisKinkESDMC&); // not implemented

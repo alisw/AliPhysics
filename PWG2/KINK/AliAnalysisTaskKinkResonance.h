@@ -30,7 +30,7 @@ class AliAnalysisTaskKinkResonance : public AliAnalysisTaskSE {
   
  private:
   TList             *fList; // List 
-  AliResonanceKink  *fKinkResonance;
+  AliResonanceKink  *fKinkResonance; // resonance object configured externaly
   
   AliAnalysisTaskKinkResonance(const AliAnalysisTaskKinkResonance&); // not implemented
   AliAnalysisTaskKinkResonance& operator=(const AliAnalysisTaskKinkResonance&); // not implemented

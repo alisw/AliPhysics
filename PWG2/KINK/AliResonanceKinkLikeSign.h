@@ -32,8 +32,8 @@ class AliResonanceKinkLikeSign : public AliAnalysisTaskSE {
  private:
   AliESDEvent *fESD;    //! ESD object
   TList       *fListOfHistos; //! List 
-  TF1         *f1;
-  TF1         *f2;  
+  TF1         *f1; //upper limit curve for the decay K->mu
+  TF1         *f2;  //upper limit curve for the decay pi->mu
   TH1D        *fPosKaonLikeSign; //! negative spectrum
   TH2D        *fLikeSignInvmassPt; //! negative spectrum
   

@@ -118,31 +118,31 @@ class AliResonanceKink : public TObject {
   TH2D        *fSimEtaPtKink; // Eta pT Sim one kaon kink spectrum   
   TH1D        *fhdr ; // radial impact  
   TH1D        *fhdz ; // z impact
-  TF1         *f1;
-  TF1         *f2;  
+  TF1         *f1; //upper limit curve for the decay K->mu
+  TF1         *f2;  //upper limit curve for the decay pi->mu
   TString     fAnalysisType;//"ESD" or "MC"
   TH1D        *fvtxz ; // vtx z component
   Int_t       fNbins; // bins
   Float_t     fLowX;// lowx
   Float_t     fHighX; // high x
-  Int_t       fdaughter1pdg;
-  Int_t       fdaughter2pdg;  
-  Int_t       fresonancePDGcode;
-  Float_t     fMaxNSigmaToVertex;
-  Double_t    fMinPtTrackCut;
-  Double_t    fMaxDCAxy;
-  Double_t    fMaxDCAzaxis;
-  Int_t       fMinTPCclusters;
-  Double_t    fMaxChi2PerTPCcluster;
-  Double_t    fMaxCov0;  
-  Double_t    fMaxCov2;
-  Double_t    fMaxCov5;
-  Double_t    fMaxCov9;
-  Double_t    fMaxCov14;
-  TH2D        *fInvmassPt;   
-  TH2D        *fInvmassPtTrue;   
-  TH2D        *fMCInvmassPt; 
-  TH2D        *fMCInvmassPtTrue;         
+  Int_t       fdaughter1pdg; // pdg code of the resonance's first daughter
+  Int_t       fdaughter2pdg;  // pdg code of the resonance's second daughter
+  Int_t       fresonancePDGcode; // pdg code of the resonance
+  Float_t     fMaxNSigmaToVertex; // standard cut to select primary tracks
+  Double_t    fMinPtTrackCut; // lower pt cut for the tracks
+  Double_t    fMaxDCAxy; // impact parameter in the xy plane
+  Double_t    fMaxDCAzaxis; // impact parameter in the z axis
+  Int_t       fMinTPCclusters; // standard cut for the TPC clusters
+  Double_t    fMaxChi2PerTPCcluster; // standard cut for the chi2 of the TPC clusters
+  Double_t    fMaxCov0;  // standard cut
+  Double_t    fMaxCov2; // standard cut
+  Double_t    fMaxCov5; // standard cut
+  Double_t    fMaxCov9; // standard cut
+  Double_t    fMaxCov14; // standard cut
+  TH2D        *fInvmassPt;  // 2D histo for invariant mass calculation in pt bins (all pairs, ESD) 
+  TH2D        *fInvmassPtTrue;  // 2D histo for invariant mass calculation in pt bins (true pairs, ESD) 
+  TH2D        *fMCInvmassPt; // 2D histo for invariant mass calculation in pt bins (all pairs, MC)
+  TH2D        *fMCInvmassPtTrue;  // 2D histo for invariant mass calculation in pt bins (true pairs, MC)       
 //  Bool_t      fTPCrefitFlag;
   
   AliResonanceKink(const AliResonanceKink&); // not implemented
