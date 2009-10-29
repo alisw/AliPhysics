@@ -21,7 +21,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
+#include <cstdlib>
+#include <iostream>
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -124,6 +125,7 @@ ClassImp(AliAnalysisTaskThreeJets)
 
 							 fhdPhiThrustRec(0x0),
 							 fhdPhiThrustRecALL(0x0)
+
 {
 
 }
@@ -726,23 +728,40 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
       pTav[i] = pTsum/nInJet[i]; 
     }
   
-  TMath::Sort(nAccTr, pTracksMC, idxTracksMC);
-  for(Int_t i = 0; i < nAccTr; i++)
+  TMath::Sort(nAllTracksMC, pTrackMCAll, idxTracksMC);
+  for(Int_t i = 0; i < nAllTracksMC; i++)
     {
-      jetTracksSortMC[i] = jetTracksMC[idxTracksMC[i]];
+      jetTracksSortMC[i] = vTrackMCAll[idxTracksMC[i]];
       pTrackMC[i].SetXYZ(jetTracksSortMC[i].Px(), jetTracksSortMC[i].Py(), jetTracksSortMC[i].Pz());
       vTrackMC[i].SetPxPyPzE(jetTracksSortMC[i].Px(), jetTracksSortMC[i].Py(), jetTracksSortMC[i].Pz(), jetTracksSortMC[i].E());
     }
 
   TVector3 n01MC = pTrackMC[0].Unit();
+  n01MC.SetZ(0.);
+
   //Thrust calculation, iterative method
   if(nGenSel > 1)
     { 
 //       if(fGlobVar == 1)
 // 	{
-      AliAnalysisHelperJetTasks::GetEventShapes(n01MC, pTrackMC, nAccTr, eventShapes);
+      Printf("**************Shapes for MC*************");
+      AliAnalysisHelperJetTasks::GetEventShapes(n01MC, pTrackMC, nAllTracksMC, eventShapes);
 // 	}
-      
+      if(eventShapes[0] < 2/TMath::Pi()){
+	Double_t eventShapesTest[4];
+	TVector3 n01Test;
+	Int_t rnd_max = nAllTracksMC;
+	Int_t k = (rand()%rnd_max)+3;
+	while(TMath::Abs(pTrackMC[k].X()) < 10e-5 && TMath::Abs(pTrackMC[k].Y()) < 10e-5){
+	  k--;
+	}
+	n01Test = pTrackMC[k].Unit();
+	n01Test.SetZ(0.);
+	AliAnalysisHelperJetTasks::GetEventShapes(n01Test, pTrackMC, nAllTracksMC, eventShapesTest);
+	eventShapes[0] = TMath::Max(eventShapes[0], eventShapesTest[0]);
+	if(TMath::Abs(eventShapes[0]-eventShapesTest[0]) < 10e-7) n01MC = n01Test;
+      }
+
       Double_t s = eventShapes[1];
       Double_t a = eventShapes[2];
       Double_t c = eventShapes[3];
@@ -785,13 +804,13 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
       pGen[i].SetXYZ(vGen[i].Px(), vGen[i].Py(), vGen[i].Pz());
       vsumGen += vGen[i];
     }
-  if(eventShapes[0] >0.8 )
+  if(eventShapes[0] > 0.8 && nGenSel > 1)
     {
       for(Int_t i = 0; i < nGenSel; i++)
 	fhdPhiThrustGen->Fill(n01MC.DeltaPhi(pGen[i]), jetGen[i].E());
     }
  
-  if(eventShapes[0] <= 0.8)   
+  if(eventShapes[0] <= 0.8 && nGenSel > 1)   
     {
       for(Int_t i = 0; i < nGenSel; i++)
 	fhdPhiThrustGenALL->Fill(n01MC.DeltaPhi(pGen[i]), jetGen[i].E());
@@ -903,9 +922,9 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
       eRec[rj] = recSelJets[rj].E();
     }
  
-  //  Int_t nAODtracks = fAOD->GetNumberOfTracks();
+  Int_t nAODtracks = fAOD->GetNumberOfTracks();
   Int_t nTracks = 0; //tracks accepted in the whole event
-  //  Int_t nTracksALL = 0;
+  Int_t nTracksALL = 0;
   TLorentzVector jetTracks[kTracks];
   TLorentzVector jetTracksSort[kTracks];
   Double_t * eTracks = new Double_t[kTracks];
@@ -935,10 +954,10 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
 	  AliAODTrack * track = (AliAODTrack*)jetTracksAOD->At(i);
 	  track->GetCovarianceXYZPxPyPz(cv);
 	  if(cv[14] > 1000.) continue;
-	  jetTrack[nTracks] = *track;
-	  jetTracks[nTracks].SetPxPyPzE(jetTrack[nTracks].Px(), jetTrack[nTracks].Py(), jetTrack[nTracks].Pz(), jetTrack[nTracks].E());
-	  eTracks[nTracks] = jetTracks[nTracks].E();
-	  pTracks[nTracks] = jetTracks[nTracks].Pt();
+	  //	  jetTrack[nTracks] = *track;
+	  //	  jetTracks[nTracks].SetPxPyPzE(jetTrack[nTracks].Px(), jetTrack[nTracks].Py(), jetTrack[nTracks].Pz(), jetTrack[nTracks].E());
+	  //	  eTracks[nTracks] = jetTracks[nTracks].E();
+	  //	  pTracks[nTracks] = jetTracks[nTracks].Pt();
 	  nTracks++;
 	  nJetTracks++;
 	}
@@ -947,12 +966,26 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
       jetMult[nAccJets] = jetTracksAOD->GetEntries();
       nAccJets++;
     }
-  
+ 
   if (nAccJets == 0) return;
 
+  for(Int_t i = 0; i < nAODtracks; i++)
+    {
+      AliAODTrack * track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(i));
+      if(!track) continue;
+      track->GetCovarianceXYZPxPyPz(cv);
+      if(cv[14] > 1000.) continue;
+      jetTrack[nTracksALL] = *track;
+      jetTracks[nTracksALL].SetPxPyPzE(jetTrack[nTracksALL].Px(), jetTrack[nTracksALL].Py(), jetTrack[nTracksALL].Pz(), jetTrack[nTracksALL].E());
+      eTracks[nTracksALL] = jetTracks[nTracksALL].E();
+      pTracks[nTracksALL] = jetTracks[nTracksALL].Pt();
+      nTracksALL++;
+    }
+      
+
   TLorentzVector vTrack[kTracks];
-  TMath::Sort(nTracks, pTracks, idxTracks);
-  for(Int_t i = 0; i < nTracks; i++)
+  TMath::Sort(nTracksALL, pTracks, idxTracks);
+  for(Int_t i = 0; i < nTracksALL; i++)
     {
       jetTracksSort[i] = jetTracks[idxTracks[i]];
       pTrack[i].SetXYZ(jetTracksSort[i].Px(), jetTracksSort[i].Py(), jetTracksSort[i].Pz());
@@ -968,16 +1001,35 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
 
   //Thrust, iterative method, AODs
   TVector3 n01 = pTrack[0].Unit();
+  n01.SetZ(0.);
   if(nAccJets > 1)
     {
 //       if(fGlobVar == 1)
 // 	{
-      AliAnalysisHelperJetTasks::GetEventShapes(n01, pTrack, nTracks, eventShapesRec);
-// 	}
-//       fGlobVar = 0;      
-//       Double_t Max3 = TMath::Max(eventShapesRec0[0],eventShapesRec1[0]);
-//       Double_t Max4 = TMath::Max(eventShapesRec3[0],eventShapesRec2[0]);
- 
+      Printf("*********Shapes for AOD********");
+      AliAnalysisHelperJetTasks::GetEventShapes(n01, pTrack, nTracksALL, eventShapesRec);
+      // 	}
+      if(eventShapesRec[0] < 2/TMath::Pi()){
+	Double_t eventShapesTest[4];
+	TVector3 n01Test;
+	Int_t rnd_max = nTracksALL;
+	Int_t k = (rand()%rnd_max)+3;
+	while(TMath::Abs(pTrack[k].X()) < 10e-5 && TMath::Abs(pTrack[k].Y()) < 10e-5){
+	  k--;
+	}
+	
+	n01Test = pTrack[k].Unit();
+	n01Test.SetZ(0.);
+	AliAnalysisHelperJetTasks::GetEventShapes(n01Test, pTrack, nTracksALL, eventShapesTest);
+	eventShapesRec[0] = TMath::Max(eventShapesRec[0], eventShapesTest[0]);
+	if(TMath::Abs(eventShapesRec[0]-eventShapesTest[0]) < 10e-7) n01 = n01Test;
+      }
+    
+	
+      //       fGlobVar = 0;      
+      //       Double_t Max3 = TMath::Max(eventShapesRec0[0],eventShapesRec1[0]);
+      //       Double_t Max4 = TMath::Max(eventShapesRec3[0],eventShapesRec2[0]);
+      
       Double_t thrust = eventShapesRec[0];
       
       if(eventShapesRec[0] > 0.8)
@@ -1020,7 +1072,6 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
 	  }
 	  break;
 	}
-      
     }
 
   //rest frame for reconstructed jets
@@ -1171,7 +1222,7 @@ Bool_t AliAnalysisTaskThreeJets::IsPrimChar(TParticle* aParticle, Int_t aTotalPr
   {
     if (adebug)
       printf("Dropping particle because it is not charged.\n");
-    return kFALSE;
+    return kTRUE;
   }
 
   return kTRUE;
