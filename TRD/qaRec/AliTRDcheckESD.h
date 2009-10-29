@@ -22,6 +22,7 @@ class AliESDEvent;
 class AliMCEvent;
 class TH1;
 class TObjArray;
+class TGraph;
 class TGraphErrors;
 class AliTRDcheckESD : public AliAnalysisTask {
 public:
@@ -29,11 +30,11 @@ public:
     kMC = BIT(0)
   };
   enum ETRDcheckESDhistos {
-    kNCl  = 0 // number of clusters per track
-   ,kTRDstat  // TRD tracks status
-   ,kResults  // graphs as results
+    kNCl  = 0    // number of clusters per track
+   ,kTRDstat     // TRD tracks status
+   ,kTRDmom      // TRD track momentum
    ,kNhistos = 3 // number of histograms
-   ,kNgraphs = 4 // number of graphs
+   ,kNgraphs = 6 // number of graphs
   };
   enum ETRDcheckESDbits {
     kTPCout = 1 // track left TPC
@@ -48,7 +49,7 @@ public:
   
   void          ConnectInputData(Option_t *);
   void          CreateOutputObjects();
-  TGraphErrors* GetGraph(Int_t id, Option_t *opt="bc");
+  TGraph*       GetGraph(Int_t id, Option_t *opt="bc");
   void          Exec(Option_t *);
 
   Bool_t        HasMC() const { return TESTBIT(fStatus, kMC);}
@@ -71,7 +72,8 @@ private:
   AliESDEvent      *fESD;              // ESD event
   AliMCEvent       *fMC;               // MC event
   TObjArray        *fHistos;           // QA histos
+  TObjArray        *fResults;          // QA graphs
   static FILE *fgFile;                 //! trend file streamer
-  ClassDef(AliTRDcheckESD, 2)          // user oriented TRD analysis based on ESD-MC data
+  ClassDef(AliTRDcheckESD, 3)          // user oriented TRD analysis based on ESD-MC data
 };
 #endif

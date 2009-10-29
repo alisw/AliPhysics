@@ -31,6 +31,7 @@
 #include <TObject.h>
 #include <TH2I.h>
 #include <TGraphErrors.h>
+#include <TGraphAsymmErrors.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TROOT.h>
@@ -66,6 +67,7 @@ AliTRDcheckESD::AliTRDcheckESD():
   ,fESD(0x0)
   ,fMC(0x0)
   ,fHistos(0x0)
+  ,fResults(0x0)
 {
   //
   // Default constructor
@@ -82,6 +84,10 @@ AliTRDcheckESD::~AliTRDcheckESD()
   if(fHistos){
     //fHistos->Delete();
     delete fHistos;
+  }
+  if(fResults){
+    fResults->Delete();
+    delete fResults;
   }
 }
 
@@ -113,7 +119,7 @@ void AliTRDcheckESD::CreateOutputObjects()
 }
 
 //____________________________________________________________________
-TGraphErrors* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
+TGraph* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
 {
 // Retrieve graph with "id"
 // Possible options are :
@@ -124,13 +130,15 @@ TGraphErrors* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
          kCLEAR = strstr(opt, "c"); // clear existing graph
 
   const Char_t *name[] = {
-    "Geo", "Trk", "Pid", "Ref"
+    "Geo", "Trk", "Pid", "Ref", "Max06", "Mean09"
   };
   const Char_t *title[] = {
     "TRD geometrical efficiency (TRDin/TPCout)"
     ,"TRD tracking efficiency (TRDout/TRDin)"
     ,"TRD PID efficiency (TRDpid/TRDin)"
     ,"TRD refit efficiency (TRDrefit/TRDin)"
+    ,"TRD Eloss (Max/90% quantile)"
+    ,"TRD Eloss (Mean/60% quantile)"
   };
   const Int_t ngr = sizeof(name)/sizeof(Char_t*);
   if(ngr != kNgraphs){
@@ -138,15 +146,14 @@ TGraphErrors* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
     return 0x0;
   }
 
-  TObjArray *res = 0x0;
-  if(!(res = (TObjArray*)fHistos->At(kResults)) ||
-      (id < 0 || id >= ngr)){
-    AliWarning("Graph array missing.");
-    return 0x0;
+  if(!fResults){
+    fResults = new TObjArray(kNgraphs);
+    fResults->SetOwner();
+    fResults->SetName("results");
   }
 
-  TGraphErrors *g = 0x0;
-  if((g = dynamic_cast<TGraphErrors*>(res->At(id)))){
+  TGraph *g = 0x0;
+  if((g = dynamic_cast<TGraph*>(fResults->At(id)))){
     if(kCLEAR){ 
       for(Int_t ip=g->GetN(); ip--;) g->RemovePoint(ip);
     } else {
@@ -155,9 +162,35 @@ TGraphErrors* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
     }
   } else {
     if(kBUILD){
-      g = new TGraphErrors();
+      switch(id){
+      case 0:
+        g = new TGraphErrors();
+        break;
+      case 1:
+        g = new TGraphErrors();
+        break;
+      case 2:
+        g = new TGraphErrors();
+        break;
+      case 3:
+        g = new TGraphErrors();
+        break;
+      case 4:
+        g = new TGraphAsymmErrors(6);
+        g->SetMarkerStyle(22);g->SetMarkerColor(kRed);
+        g->SetLineColor(kBlack);g->SetLineWidth(2);
+        break;
+      case 5:
+        g = new TGraphAsymmErrors(6);
+        g->SetMarkerStyle(21);
+        g->SetLineColor(kRed);g->SetLineWidth(2);
+        break;
+      default:
+        AliWarning(Form("Graph index[%d] missing/not defined.", id));
+        return 0x0;
+      }
       g->SetNameTitle(name[id], title[id]);
-      res->AddAt(g, id);
+      fResults->AddAt(g, id);
     }
   }
   return g;
@@ -211,6 +244,7 @@ void AliTRDcheckESD::Exec(Option_t *){
 
     // look at external track param
     const AliExternalTrackParam *op = esdTrack->GetOuterParam();
+    const AliExternalTrackParam *ip = esdTrack->GetInnerParam();
     Double_t xyz[3];
     if(op){
       op->GetXYZ(xyz);
@@ -273,6 +307,15 @@ void AliTRDcheckESD::Exec(Option_t *){
     }
     if(/*status & AliESDtrack::k*/bTRDpid) h->Fill(pt, kTRDpid);
     if(status & AliESDtrack::kTRDrefit) h->Fill(pt, kTRDref);
+
+    if(ip){
+      h = (TH2I*)fHistos->At(kTRDmom);
+      Float_t p(0.);
+      for(Int_t ily=6; ily--;){
+        if((p=esdTrack->GetTRDmomentum(ily))<0.) continue;
+        h->Fill(ip->GetP()-p, ily);
+      }
+    }
   }  
   PostData(0, fHistos);
 }
@@ -306,10 +349,15 @@ TObjArray* AliTRDcheckESD::Histos()
   } else h->Reset();
   fHistos->AddAt(h, kTRDstat);
 
-  // results array
-  TObjArray *res = new TObjArray();
-  res->SetName("Results");
-  fHistos->AddAt(res, kResults);
+  // energy loss
+  if(!(h = (TH2I*)gROOT->FindObject("hTRDmom"))){
+    h = new TH2I("hTRDmom", "TRD energy loss", 100, -1., 2., 6, -0.5, 5.5);
+    h->GetXaxis()->SetTitle("p_{inner} - p_{ly} [GeV/c]");
+    h->GetYaxis()->SetTitle("layer");
+    h->GetZaxis()->SetTitle("entries");
+  } else h->Reset();
+  fHistos->AddAt(h, kTRDmom);
+
   return fHistos;
 }
 
@@ -349,36 +397,48 @@ void AliTRDcheckESD::Terminate(Option_t *)
 {
 // Steer post-processing 
 
-  TObjArray *res = 0x0;
-  if(!(res = (TObjArray*)fHistos->At(kResults))){
-    AliWarning("Graph container missing.");
-    return;
-  }
-  if(!res->GetEntriesFast()) res->Expand(kNgraphs);
-  
+
   // geometrical efficiency
   TH2I *h2 = (TH2I*)fHistos->At(kTRDstat);
   TH1 *h1[2] = {0x0, 0x0};
   h1[0] = h2->ProjectionX("checkESDx0", kTPCout, kTPCout);
   h1[1] = h2->ProjectionX("checkESDx1", kTRDin, kTRDin);
-  Process(h1, GetGraph(0));
+  Process(h1, (TGraphErrors*)GetGraph(0));
   delete h1[0];delete h1[1];
 
   // tracking efficiency
   h1[0] = h2->ProjectionX("checkESDx0", kTRDin, kTRDin);
   h1[1] = h2->ProjectionX("checkESDx1", kTRDout, kTRDout);
-  Process(h1, GetGraph(1));
+  Process(h1, (TGraphErrors*)GetGraph(1));
   delete h1[1];
 
   // PID efficiency
   h1[1] = h2->ProjectionX("checkESDx1", kTRDpid, kTRDpid);
-  Process(h1, GetGraph(2));
+  Process(h1, (TGraphErrors*)GetGraph(2));
   delete h1[1];
 
   // Refit efficiency
   h1[1] = h2->ProjectionX("checkESDx1", kTRDref, kTRDref);
-  Process(h1, GetGraph(3));
+  Process(h1, (TGraphErrors*)GetGraph(3));
   delete h1[1];
+  if(!(h2 = dynamic_cast<TH2I*>(fHistos->At(kTRDmom)))) return;
+ 
+  TGraphAsymmErrors *g06 = (TGraphAsymmErrors*)GetGraph(4), *g09 = (TGraphAsymmErrors*)GetGraph(5);
+  TAxis *ax=h2->GetXaxis();
+  const Int_t nq(4);
+  const Double_t xq[nq] = {0.05, 0.2, 0.8, 0.95};
+  Double_t yq[nq];
+  for(Int_t ily=6; ily--;){
+    h1[0] = h2->ProjectionX("checkESDp0", ily+1, ily+1);
+    h1[0]->GetQuantiles(nq,yq,xq);
+    g06->SetPoint(ily, Float_t(ily), ax->GetBinCenter(h1[0]->GetMaximumBin()));
+    g06->SetPointError(ily, 0., 0., TMath::Abs(yq[0]), yq[3]);
+    g09->SetPoint(ily, Float_t(ily), h1[0]->GetMean());
+    g09->SetPointError(ily, 0., 0., TMath::Abs(yq[1]), yq[2]);
+
+    //printf(" max[%f] mean[%f] q[%f %f %f %f]\n", ax->GetBinCenter(h1[0]->GetMaximumBin()), h1[0]->GetMean(), yq[0], yq[1], yq[2], yq[3]);
+    delete h1[0];
+  }
 }
 
 //____________________________________________________________________
