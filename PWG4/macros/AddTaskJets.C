@@ -3,6 +3,24 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius = -1);
 
 AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf,Float_t radius = -1); // for the new AF
 
+AliAnalysisTaskJets *AddTaskJets(){
+  // fills the standard "jets" branch in the AOD
+  // need the ESDFilter to run before, to access the AODtracks
+  // Tracks selected by the first Filter (1<<0)
+  // needs to be adapted for different cuts
+  
+  // UA1 as standard chosen, since it is the most robust and simple JF
+  // R = 0.4 suffficient to provide accurate jet axis for correlation studies
+  // energy resolution suffers a little
+  // Acceptance of jets not limited by the Jet Finder but should be done
+  // by user to abs(eta) < 0.5 
+
+  return AddTaskJets("AOD","UA1",0.4);
+
+}
+
+
+
 AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius)
 {
   // Creates a jet finder task, configures it and adds it to the analysis manager.
@@ -100,13 +118,6 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetRparam(0.4); // setup parameters                                  
     if(radius>0)jh->SetRparam(radius);
     jh->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
-    // tmp CKB for checking with leticia
-    jh->SetRparam(0.2); // setup parameters 
-    jh->SetPtMin(0.); 
-    jh->SetRapRange(-0.9,0.9); 
-    jh->SetGhostArea(0.01); 
-    jh->SetGhostEtaMax(7.);
-    // BKC
     jetFinder = new AliFastJetFinder();
     if (jh) jetFinder->SetJetHeader(jh);
     break;
@@ -124,7 +135,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetLegoNbinEta(274);
     jh->SetLegoEtaMin(-2);
     jh->SetLegoEtaMax(+2);
-    jh->SetMinJetEt(10.);
+    jh->SetMinJetEt(5.);
     jh->SetJetEtaMax(1.5);
     jh->SetJetEtaMin(-1.5);
 
@@ -144,7 +155,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetLegoNbinEta(274);
     jh->SetLegoEtaMin(-2);
     jh->SetLegoEtaMax(+2);
-    jh->SetMinJetEt(10.);
+    jh->SetMinJetEt(5.);
     jh->SetJetEtaMax(1.5);
     jh->SetJetEtaMin(-1.5);
     jetFinder = new AliUA1JetFinderV1();
