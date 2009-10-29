@@ -427,7 +427,7 @@ int AliHLTTPCdEdxComponent::DoEvent
 
       // set the clusters
       
-      for( Int_t ic=0; ic<currTrack->fNPoints; ic++){	    
+      for( UInt_t ic=0; ic<currTrack->fNPoints; ic++){	    
 	UInt_t id = currTrack->fPointIDs[ic];
 	int iSlice = id>>25;
 	int iPatch = (id>>22)&0x7; 
