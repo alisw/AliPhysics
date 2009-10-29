@@ -1024,7 +1024,7 @@ int AliHLTComponent::CleanupInputObjects()
   if (!fpInputObjects) return 0;
   TObjArray* array=fpInputObjects;
   fpInputObjects=NULL;
-  for (int i=0; i<array->GetEntries(); i++) {
+  for (int i=0; i<array->GetEntriesFast(); i++) {
     TObject* pObj=array->At(i);
     // grrr, garbage collection strikes back: When read via AliHLTMessage
     // (CreateInputObject), and written to a TFile afterwards, the
