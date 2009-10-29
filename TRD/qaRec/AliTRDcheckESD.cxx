@@ -310,10 +310,10 @@ void AliTRDcheckESD::Exec(Option_t *){
 
     if(ip){
       h = (TH2I*)fHistos->At(kTRDmom);
-      Float_t p(0.);
+      Float_t pp(0.);
       for(Int_t ily=6; ily--;){
-        if((p=esdTrack->GetTRDmomentum(ily))<0.) continue;
-        h->Fill(ip->GetP()-p, ily);
+        if((pp=esdTrack->GetTRDmomentum(ily))<0.) continue;
+        h->Fill(ip->GetP()-pp, ily);
       }
     }
   }  
