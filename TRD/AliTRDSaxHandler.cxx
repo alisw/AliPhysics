@@ -17,27 +17,27 @@
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-//  The SAX XML file handler used in the preprocessor                     //
+//  The SAX XML file handler used in the TRD preprocessor                 //
 //                                                                        //
-//  Author:                                                               //
+//  Authors:                                                              //
 //    Frederick Kramer (kramer@ikf.uni-frankfurt.de)                      //
+//    Thomas Bird      (thomas@thomasbird.com)                            //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+
 #include <TList.h>
+#include <TMath.h>
+#include "AliLog.h"
+#include "Cal/AliTRDCalDCSGTUTgu.h"
+#include "Cal/AliTRDCalDCSPTR.h"
+
 #include <TXMLAttr.h>
 #include <TObjArray.h>
-#include <TMath.h>
-
-#include "AliLog.h"
-
 #include "AliTRDSaxHandler.h"
 #include "AliTRDgeometry.h"
-
 #include "Cal/AliTRDCalDCS.h"
-#include "Cal/AliTRDCalDCSGTUTgu.h"
 #include "Cal/AliTRDCalDCSFEE.h"
-#include "Cal/AliTRDCalDCSPTR.h"
 #include "Cal/AliTRDCalDCSGTU.h"
 
 ClassImp(AliTRDSaxHandler)
@@ -70,9 +70,7 @@ AliTRDSaxHandler::AliTRDSaxHandler()
   ,fSegment(0)
   ,fBoardInfo(0)
 {
-  //
   // AliTRDSaxHandler default constructor
-  //
   fFEEArr->SetOwner();
   fPTRArr->SetOwner();
 }
@@ -105,19 +103,14 @@ AliTRDSaxHandler::AliTRDSaxHandler(const AliTRDSaxHandler &sh)
   ,fSegment(0)
   ,fBoardInfo(0)
 {
-  //
   // AliTRDSaxHandler copy constructor
-  //
 }
 
 //_____________________________________________________________________________
 AliTRDSaxHandler &AliTRDSaxHandler::operator=(const AliTRDSaxHandler &sh)
 {
-  //
   // Assignment operator
-  //
   if (&sh == this) return *this;
-
   new (this) AliTRDSaxHandler(sh);
   return *this;
 }
@@ -125,10 +118,7 @@ AliTRDSaxHandler &AliTRDSaxHandler::operator=(const AliTRDSaxHandler &sh)
 //_____________________________________________________________________________
 AliTRDSaxHandler::~AliTRDSaxHandler()
 {
-  //
   // AliTRDSaxHandler destructor
-  //
-
   if (fFEEArr) {
     delete fFEEArr;
     fFEEArr    = 0x0;
@@ -145,7 +135,6 @@ AliTRDSaxHandler::~AliTRDSaxHandler()
     delete fCalDCSObj;
     fCalDCSObj = 0x0;
   }
-
 }
 
 //_____________________________________________________________________________
@@ -159,14 +148,14 @@ AliTRDCalDCS* AliTRDSaxHandler::GetCalDCSObj()
 }
 
 //_____________________________________________________________________________
-void AliTRDSaxHandler::OnStartDocument()
+void AliTRDSaxHandler::OnStartDocument() const
 {
   // if something should happen right at the beginning of the
   // XML document, this must happen here
 }
 
 //_____________________________________________________________________________
-void AliTRDSaxHandler::OnEndDocument()
+void AliTRDSaxHandler::OnEndDocument() const
 {
   // if something should happen at the end of the XML document
   // this must be done here
@@ -176,8 +165,8 @@ void AliTRDSaxHandler::OnEndDocument()
 bool AliTRDSaxHandler::CompareString(TString str, const char *str2)
 {
   // compre strings, ignoring case
-  return !(bool)str.CompareTo(str2,str.kIgnoreCase);
   // returns true if they are the same, else false
+  return !(bool)str.CompareTo(str2,str.kIgnoreCase);
 }
 
 
@@ -199,7 +188,6 @@ void AliTRDSaxHandler::OnStartElement(const char *name, const TList *attributes)
   }
 
   if (fSystem == kInsideGTU) {
-//     cout << "Start: " << tagName << " " << fLevel1Tag << " " << fLevel2Tag << " " << fInsideBoardInfo << "\n";
     if (CompareString(tagName, "tgu")) fLevel1Tag = kInsideTgu;
     if (CompareString(tagName, "board_info")) {
       fInsideBoardInfo = true;
@@ -225,7 +213,6 @@ void AliTRDSaxHandler::OnStartElement(const char *name, const TList *attributes)
   } else if (fSystem == kInsideFEE) {
     if (CompareString(tagName, "gaintbl")) fLevel1Tag = kInsideGainTable;
   }
-  
 
   // set if we are inside rstate 
   // (in principle not necessary - just to be more safe against stupid tags)
@@ -322,7 +309,6 @@ void AliTRDSaxHandler::OnStartElement(const char *name, const TList *attributes)
     }
     
     if (fInsideBoardInfo) {
-//       cout << tagName << ": " << attribName << "=" << attribValue  << "\n";
       if (CompareString(tagName, "board_info") && CompareString(attribName, "board_id"))    fBoardInfo->SetId(attribValue);
       if (CompareString(tagName, "board_info") && CompareString(attribName, "design_type")) fBoardInfo->SetType(attribValue.Atoi());
       if (CompareString(tagName, "board_info") && CompareString(attribName, "pci_ga"))      fBoardInfo->SetPciGa(attribValue.Atoi());
@@ -451,8 +437,6 @@ void AliTRDSaxHandler::OnEndElement(const char *name)
   }
 
   if (fSystem == kInsideGTU) {
-//     cout << "Close: " << tagName << " " << fLevel1Tag << " " << fLevel2Tag << " " << fInsideBoardInfo << "\n";
-
 //     if (CompareString(tagName, "run")) { 
 //       fDCSGTUObj->SetSORFlag(TString(fContent(fContent.Length()-1,1)).Atoi());
 //       fDCSGTUObj->SetRunNumber(TString(fContent(0,fContent.Length()-2)).Atoi());
@@ -505,7 +489,7 @@ void AliTRDSaxHandler::OnCharacters(const char *characters)
 }
 
 //_____________________________________________________________________________
-void AliTRDSaxHandler::OnComment(const char* /*text*/)
+void AliTRDSaxHandler::OnComment(const char* /*text*/) const
 {
   // comments within the XML file are ignored
 }
@@ -532,7 +516,7 @@ void AliTRDSaxHandler::OnFatalError(const char *text)
 }
 
 //_____________________________________________________________________________
-void AliTRDSaxHandler::OnCdataBlock(const char* /*text*/, Int_t /*len*/)
+void AliTRDSaxHandler::OnCdataBlock(const char* /*text*/, Int_t /*len*/) const
 {
   // process character data blocks here
   // not implemented and should not be used here
