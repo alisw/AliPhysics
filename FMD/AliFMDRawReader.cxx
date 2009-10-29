@@ -187,11 +187,15 @@ AliFMDRawReader::NewDDL(AliAltroRawStreamV3& input, UShort_t& det)
   UInt_t cfg1 = input.GetAltroCFG1();
   if (((cfg1 >> 10) & 0x8) == 0x8) {
     UInt_t cfg2 = input.GetAltroCFG2();
-    fZeroSuppress[ddl] = (cfg1 >> 0) & 0x1;
-    fNoiseFactor[ddl]  = (cfg1 >> 6) & 0xF;
-    fSampleRate[ddl]   = (cfg2 >> 0) & 0xF;
+    AliFMDDebug(3, ("We have data from older MiniConf 0x%x cfg2=0x%08x", 
+		    ((cfg1 >> 10) & 0x8), cfg2));
+    fZeroSuppress[ddl] = (cfg1 >>  0) & 0x1;
+    fNoiseFactor[ddl]  = (cfg1 >>  6) & 0xF;
+    fSampleRate[ddl]   = (cfg2 >> 20) & 0xF;
   }
   else {
+    AliFMDDebug(3, ("We have data from newer MiniConf 0x%x", 
+		    ((cfg1 >> 10) & 0x8)));
     fZeroSuppress[ddl] = input.GetZeroSupp();
     // WARNING: We store the noise factor in the 2nd baseline
     // filters excluded post samples, since we'll never use that
@@ -263,7 +267,7 @@ AliFMDRawReader::NewChannel(AliAltroRawStreamV3& input,  UShort_t det,
 		  "hardware address 0x%03x", ddl, hwaddr));
     return -1;
   }
-  AliFMDDebug(3, ("Board: 0x%02x, Altro: 0x%x, Channel: 0x%x", 
+  AliFMDDebug(4, ("Board: 0x%02x, Altro: 0x%x, Channel: 0x%x", 
 		  board, chip, channel));
 
   // Get the 'conditions'
