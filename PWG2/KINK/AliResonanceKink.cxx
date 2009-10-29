@@ -249,9 +249,9 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
       continue;
     }
 
-    if(particle->GetNDaughters()>2) continue;
-
        if(TMath::Abs(particle->GetPdgCode())==fresonancePDGcode) {
+       
+       if(particle->GetNDaughters()>2) continue;
       
        Int_t firstD=particle->GetFirstDaughter();
        Int_t lastD=particle->GetLastDaughter();

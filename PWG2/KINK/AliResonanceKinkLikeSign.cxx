@@ -166,11 +166,11 @@ void AliResonanceKinkLikeSign::Exec(Option_t *)
 	
     //Uncomment the following block if the Like Sign is made of K+ kink + positive track
     
-    Int_t IndexKink=trackpos->GetKinkIndex(0);
+    Int_t indexKink=trackpos->GetKinkIndex(0);
     Int_t kaonKinkFlag=0;
-    if(IndexKink<0){
+    if(indexKink<0){
 		
-        AliESDkink *kink=fESD->GetKink(TMath::Abs(IndexKink)-1);
+        AliESDkink *kink=fESD->GetKink(TMath::Abs(indexKink)-1);
 	const TVector3 motherMfromKink(kink->GetMotherP());
 	const TVector3 daughterMKink(kink->GetDaughterP());
 	Float_t qt=kink->GetQt();

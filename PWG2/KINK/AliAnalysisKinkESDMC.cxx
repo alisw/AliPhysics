@@ -417,7 +417,7 @@ for (Int_t iMc = 0; iMc < nPrim; iMc++)
 
    if( ptK <0.300) continue;
 
-      Float_t code = particle->GetPdgCode();
+      Int_t code = particle->GetPdgCode();
             Int_t  mcProcess=-1011;
       if ((code==321)||(code==-321)){
 	    
@@ -434,7 +434,7 @@ for (Int_t iMc = 0; iMc < nPrim; iMc++)
 	     for (Int_t k=firstD;k<=lastD;k++) {
               if ( k > 0 )    {
 	     TParticle*    daughter1=stack->Particle(k);   // 27/8   
-	     Float_t dcode = daughter1->GetPdgCode();
+	     Int_t dcode = daughter1->GetPdgCode();
 
         mcProcess=daughter1->GetUniqueID();
      if (mcProcess==4) {        
