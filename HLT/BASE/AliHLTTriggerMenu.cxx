@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -35,7 +35,9 @@ AliHLTTriggerMenu::AliHLTTriggerMenu() :
   fSymbols(AliHLTTriggerMenuSymbol::Class(), 100),
   fItems(AliHLTTriggerMenuItem::Class(), 100),
   fDefaultDescription(),
-  fDefaultDomain()
+  fDefaultDomain(),
+  fDefaultConditionOperator("||"),
+  fDefaultDomainOperator("|")
 {
   // Default constructor.
 }
@@ -53,7 +55,9 @@ AliHLTTriggerMenu::AliHLTTriggerMenu(const AliHLTTriggerMenu& obj) :
   fSymbols(AliHLTTriggerMenuSymbol::Class(), obj.fSymbols.GetEntriesFast()),
   fItems(AliHLTTriggerMenuItem::Class(), obj.fItems.GetEntriesFast()),
   fDefaultDescription(obj.fDefaultDescription),
-  fDefaultDomain(obj.fDefaultDomain)
+  fDefaultDomain(obj.fDefaultDomain),
+  fDefaultConditionOperator(obj.fDefaultConditionOperator),
+  fDefaultDomainOperator(obj.fDefaultDomainOperator)
 {
   // Copy constructor performs a deep copy.
   
@@ -88,6 +92,8 @@ AliHLTTriggerMenu& AliHLTTriggerMenu::operator = (const AliHLTTriggerMenu& obj)
     }
     fDefaultDescription = obj.fDefaultDescription;
     fDefaultDomain = obj.fDefaultDomain;
+    fDefaultConditionOperator = obj.fDefaultConditionOperator;
+    fDefaultDomainOperator = obj.fDefaultDomainOperator;
   }
   return *this;
 }
@@ -106,9 +112,10 @@ void AliHLTTriggerMenu::Print(Option_t* option) const
   }
   cout << endl;
   cout << setw(10) << "Prescalar" <<  " | "
+       << setw(10) << "Priority" <<  " | "
        << setw(60) << "Trigger condition" << " | "
        << setw(60) << "Domain merge expression" << setw(0) << endl;
-  cout << setfill('-') << setw(10) << "-" <<  "-+-"
+  cout << setfill('-') << setw(10) << "-" <<  "-+-" << setw(10) << "-" <<  "-+-"
        << setw(60) << "-" << "-+-"
        << setw(60) << "-" << setw(0) << setfill(' ') << endl;
   for (UInt_t i = 0; i < NumberOfItems(); i++)
@@ -136,7 +143,9 @@ void AliHLTTriggerMenu::Print(Option_t* option) const
     Symbol(i)->Print("compact");
   }
   if (NumberOfSymbols() == 0) cout << "(none)" << endl;
-  cout << "Default trigger description: \"" << fDefaultDescription << "\"" << endl;
+  cout << "Default trigger condition operator: " << fDefaultConditionOperator << endl;
+  cout << "   Default trigger domain operator: " << fDefaultDomainOperator << endl;
+  cout << "       Default trigger description: \"" << fDefaultDescription << "\"" << endl;
   cout << "Default "; fDefaultDomain.Print();
 }
 
@@ -148,3 +157,24 @@ void AliHLTTriggerMenu::Clear(Option_t* option)
   fSymbols.Clear(option);
   fItems.Clear(option);
 }
+
+
+void AliHLTTriggerMenu::AddSymbol(const AliHLTTriggerMenuSymbol& entry)
+{
+  // Adds a new symbol to the trigger menu.
+  
+  for (Int_t i = 0; i < fSymbols.GetEntriesFast(); i++)
+  {
+    const char* symbolname = static_cast<AliHLTTriggerMenuSymbol*>(fSymbols.UncheckedAt(i))->Name();
+    if ( strcmp(symbolname, entry.Name()) == 0 )
+    {
+      Warning("AliHLTTriggerMenu::AddSymbol",
+              "The symbol '%s' already exists in the trigger menu. Will not add the new entry.",
+              entry.RealName()
+             );
+      return;
+    }
+  }
+  new (fSymbols[fSymbols.GetEntriesFast()]) AliHLTTriggerMenuSymbol(entry);
+}
+

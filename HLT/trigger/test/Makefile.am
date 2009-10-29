@@ -6,9 +6,11 @@ AM_CPPFLAGS			= -I$(top_srcdir)/BASE \
 
 EXTRA_DIST			= 
 
-check_PROGRAMS			= testTriggerDomain
+check_PROGRAMS			= testTriggerDomain testGlobalTriggerComponent
 
 testTriggerDomain_SOURCES 	= testTriggerDomain.C
+
+testGlobalTriggerComponent_SOURCES	= testGlobalTriggerComponent.C
 
 
 # linker flags
@@ -22,6 +24,10 @@ LDFLAGS_COMMON			= -L@ROOTLIBDIR@ \
 testTriggerDomain_LDADD 	= $(LDADD_COMMON)
 
 testTriggerDomain_LDFLAGS	= $(LDFLAGS_COMMON)
+
+testGlobalTriggerComponent_LDADD 	= $(LDADD_COMMON)
+
+testGlobalTriggerComponent_LDFLAGS	= $(LDFLAGS_COMMON)
 
 TESTS				= $(check_PROGRAMS)
 

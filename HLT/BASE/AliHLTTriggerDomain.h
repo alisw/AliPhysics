@@ -375,6 +375,16 @@ class AliHLTTriggerDomain : public TObject
   }
   
   /**
+   * Checks if two domains are equal, i.e. have the same domain rules.
+   */
+  bool operator == (const AliHLTTriggerDomain& domain) const;
+  
+  /**
+   * Checks if two domains are not equal, i.e. have different domain rules.
+   */
+  bool operator != (const AliHLTTriggerDomain& domain) const { return not this->operator==(domain); }
+  
+  /**
    * Typecase operator to create a DDL readout list object from the trigger domain.
    */
   operator AliHLTReadoutList () const;

@@ -72,6 +72,16 @@ AliHLTTriggerDecision::~AliHLTTriggerDecision()
 }
 
 
+void AliHLTTriggerDecision::ReadoutList(const AliHLTReadoutList& value)
+{
+  // Replaces the readout list in the trigger domain with the new value.
+  
+  AliHLTReadoutList fullReadout = ~ AliHLTReadoutList(0x0);
+  fTriggerDomain.Remove(fullReadout);
+  fTriggerDomain.Add(value);
+}
+
+
 void AliHLTTriggerDecision::Print(Option_t* option) const
 {
   // Prints the contents of the trigger decision.

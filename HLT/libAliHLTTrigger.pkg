@@ -11,6 +11,7 @@
 CLASS_HDRS:= \
                 AliHLTTrigger.h                             \
                 AliHLTGlobalTrigger.h                       \
+                AliHLTGlobalTriggerWrapper.h                \
                 AliHLTGlobalTriggerConfig.h                 \
                 AliHLTGlobalTriggerComponent.h              \
 		AliHLTTriggerBarrelMultiplicity.h           \
@@ -62,6 +63,7 @@ include $(MODDIR)/hlt.conf
 
 SRCS:=$(patsubst %,trigger/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,trigger/%,$(CLASS_HDRS))
+CINTSTUBS:=$(patsubst %,trigger/%,$(STUB_HDRS))
 HDRS:=$(patsubst %,trigger/%,$(MODULE_HDRS))
 DHDR:=$(patsubst %,trigger/%,$(MODULE_DHDR))
 CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)

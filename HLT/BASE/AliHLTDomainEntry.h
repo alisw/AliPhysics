@@ -205,6 +205,7 @@ class AliHLTDomainEntry : public TObject
    * \return  true if the domain entries are identical or if they overlap (match)
    *    due to wild card values. False is returned if there is absolutely no
    *    overlap between this and the right hand side domain entries.
+   * \note No comparison is done for the exclude flag.
    */
   bool operator == (const AliHLTDomainEntry& rhs) const
   {
@@ -217,6 +218,7 @@ class AliHLTDomainEntry : public TObject
    * \return  true if the domain entries do not overlap (match) in any way, also
    *    after considering any wild card values. False is returned if the entries
    *    are identical or if they overlap due to wild card values.
+   * \note No comparison is done for the exclude flag.
    */
   bool operator != (const AliHLTDomainEntry& rhs) const
   {

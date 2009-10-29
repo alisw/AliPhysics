@@ -12,10 +12,10 @@
 /// @brief  Declaration of the AliHLTGlobalTriggerComponent component class.
 
 #include "AliHLTTrigger.h"
+#include "TClonesArray.h"
 
 class AliHLTTriggerMenu;
 class AliHLTGlobalTrigger;
-class TClonesArray;
 
 /**
  * \class AliHLTGlobalTriggerComponent
@@ -55,6 +55,8 @@ class TClonesArray;
  *      Used to force the component to use an existing class for the global HLT trigger
  *      class implementation, with the name of <i>classname</i> and found in the file
  *      <i>filename</i>.
+ * \li -skipctp <br>
+ *      Indicates that the CTP data should not be added to the global HLT trigger decision.
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -135,12 +137,31 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    */
   virtual int DoTrigger();
   
+  /**
+   * Reconfigures the component by loading the trigger menu from the given
+   * CDB entry.
+   * \param cdbEntry  The CDB path to the trigger menu to load.
+   * \param chainId   The ID of the component in the chain.
+   * \returns  Zero on success and non-zero values otherwise.
+   */
+  virtual int Reconfigure(const char* cdbEntry, const char* chainId);
+  
  private:
 
   /// Not implemented. Do not allow copying of this object.
   AliHLTGlobalTriggerComponent(const AliHLTGlobalTriggerComponent& obj);
   /// Not implemented. Do not allow copying of this object.
   AliHLTGlobalTriggerComponent& operator = (const AliHLTGlobalTriggerComponent& obj);
+  
+  /**
+   * Loads a trigger menu object from the CDB.
+   * \param cdbPath <i>in</i> The path in the CDB to load the trigger menu object from.
+   * \param menu  <i>out</i> A pointer that gets filled with the new trigger menu object.
+   * \returns  Zero if the trigger menu object was found and the pointer to it
+   *   set in the <i>menu</i> variable. If a non-zero error code is returned then
+   *   the <i>menu</i> variable is not changed at all.
+   */
+  int LoadTriggerMenu(const char* cdbPath, const AliHLTTriggerMenu*& menu);
   
   /**
    * Generates the code for the global trigger to apply the given trigger menu.
@@ -150,14 +171,19 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    *  AliHLTGlobalTrigger::CreateNew(name)
    * \endcode
    * where name is the name of the generated class as returned by this method.
+   *
+   * The name of the generated code file is stored in the variable fCodeFileName
+   * and the fDeleteCodeFile is set to true.
+   *
    * \param menu <i>in</i> The trigger menu to create the global trigger class from.
    * \param name <i>out</i> The name of the generated class.
+   * \param filename <i>out</i> The name of the generated file containing the code.
    * \param includePaths <i>in</i> The list of include path strings.
    * \param includeFiles <i>in</i> The list of include file strings.
    * \returns  The error code suitable to return in DoInit. Zero on success.
    */
   int GenerateTrigger(
-      const AliHLTTriggerMenu* menu, TString& name,
+      const AliHLTTriggerMenu* menu, TString& name, TString& filename,
       const TClonesArray& includePaths, const TClonesArray& includeFiles
     );
   
@@ -170,6 +196,13 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    * \returns  The error code suitable to return in DoInit. Zero on success.
    */
   int LoadTriggerClass(const char* filename, const TClonesArray& includePaths);
+  
+  /**
+   * Unloads the code that was previously loaded by LoadTriggerClass.
+   * \param filename  The name of the file containing the global trigger class logic to be unloaded.
+   * \returns  The error code suitable to return in DoInit. Zero on success.
+   */
+  int UnloadTriggerClass(const char* filename);
   
   /**
    * Searches for the specified symbol name in the given list.
@@ -187,6 +220,18 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    * \returns  The error code suitable to return in DoInit. Zero on success.
    */
   int BuildSymbolList(const AliHLTTriggerMenu* menu, TClonesArray& list);
+  
+  /**
+   * Extracts the trailing operator in a C++ expression and returns the found
+   * operator in a separate output string.
+   * [in/out] \param  expr  The C++ expression to check. The trailing operator
+   *      is removed from the expression if found.
+   * [out] \param  op   The output variable which will be filled with the
+   *      operator found in the expression.
+   * \return  true if the trailing operator was found in the expression and
+   *      false otherwise.
+   */
+  bool ExtractedOperator(TString& expr, TString& op);
 
   /**
    * Add trigger decisions according to the active CTP trigger classes
@@ -207,8 +252,14 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   bool fDebugMode;  //! Indicates if the generated global trigger class should be in debug mode.
   bool fRuntimeCompile;  //! Indicates if the generated global trigger class should be compiled
   bool fSkipCTPCounters; //! Indicates whether to ship CTP info with the trigger decision
+  bool fDeleteCodeFile; //! If true then the code file indicated by fCodeFileName should be deleted during DoDeinit.
   TString fCodeFileName; //! base file name of the generated code for the global trigger
+  TString fClassName;  //! The generated/loaded trigger class name.
   TClonesArray* fCTPDecisions; //! AliHLTTriggerDecision objects for the CTP classes
+  unsigned long fBufferSizeConst; //! Constant size estimate for GetOutputDataSize.
+  double fBufferSizeMultiplier; //! Buffer size multiplier estimate for GetOutputDataSize.
+  TClonesArray fIncludePaths; //! Paths specified by the -includepath command line option.
+  TClonesArray fIncludeFiles; //! Files specified by the -include command line option.
 
   static const char* fgkTriggerMenuCDBPath; //! The path string to read the trigger menu from the CDB.
   

@@ -138,11 +138,7 @@ class AliHLTTriggerDecision : public TObject
   /**
    * Sets the DDL readout list associated with this trigger decision.
    */
-  void ReadoutList(const AliHLTReadoutList& value)
-  {
-    fTriggerDomain.Remove(kAliHLTDAQRDOUTDataTypeID, kAliHLTDataOriginAny);
-    fTriggerDomain.Add(value);
-  }
+  void ReadoutList(const AliHLTReadoutList& value);
   
   /**
    * Returns the trigger domain associated with this trigger decision.

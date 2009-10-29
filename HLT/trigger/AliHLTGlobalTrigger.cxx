@@ -20,96 +20,35 @@
 /// @date   19 Dec 2008
 /// @brief  Implementation of the AliHLTGlobalTrigger base class.
 ///
-/// The AliHLTGlobalTriggerComponent class is an abstract class from which a
-/// derived class is constructed by AliHLTTriggerMenu on the fly. The derived
+/// The AliHLTGlobalTrigger base class is an abstract class from which a
+/// derived class is constructed from AliHLTTriggerMenu on the fly. The derived
 /// class then implements triggering based on the particular trigger menu.
 
 #include "AliHLTGlobalTrigger.h"
-#include "AliHLTGlobalTriggerDecision.h"
-#include <cstring>
+#include "AliHLTGlobalTriggerWrapper.h"
+#include "TClass.h"
 
 ClassImp(AliHLTGlobalTrigger)
 
-// Static factory array.
-AliHLTGlobalTrigger::Factory*
-AliHLTGlobalTrigger::Factory::fFactory[AliHLTGlobalTrigger::Factory::kMaxFactories]
-  = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
-
-AliHLTGlobalTrigger::AliHLTGlobalTrigger() :
-  AliHLTLogging(),
-  fCounters()
+AliHLTGlobalTrigger* AliHLTGlobalTrigger::CreateNew(const char* name)
 {
-  // Default constructor.
-}
-
-
-AliHLTGlobalTrigger::~AliHLTGlobalTrigger()
-{
-  // Default destructor.
-}
-
-
-AliHLTGlobalTrigger* AliHLTGlobalTrigger::Factory::CreateNew(const char* name)
-{
-  // Creates a new instance of the named trigger class.
+  // Creates a new instance of the named global trigger class.
   
-  for (int i = 0; i < kMaxFactories; i++)
+  TClass* c = TClass::GetClass(name);
+  if (c == NULL) return NULL;
+  if (c->GetDeclFileLine() == -1 and c->GetImplFileLine() == -1)
   {
-    if (fFactory[i] != NULL)
-    {
-      if (strcmp(fFactory[i]->ClassName(), name) == 0)
-      {
-        return fFactory[i]->New();
-      }
-    }
+    // Could not find the implementation lines which should be there if the code
+    // was compiled. So assuming that this is an interpreted class. In this case
+    // we need to use a interface wrapper class to make things work properly.
+    AliHLTGlobalTriggerWrapper* trigger = new AliHLTGlobalTriggerWrapper(name);
+    if (not trigger->IsValid()) return NULL;
+    return trigger;
   }
-  return NULL;
-}
-
-
-AliHLTGlobalTrigger::Factory::Factory() : AliHLTLogging()
-{
-  // Default constructor resisters the class factory.
-  
-  for (int i = 0; i < kMaxFactories; i++)
+  else
   {
-    if (fFactory[i] == NULL)
-    {
-      fFactory[i] = this;
-      return;
-    }
-  }
-  
-  HLTFatal("Trying to register too many global trigger factories.");
-}
-
-
-AliHLTGlobalTrigger::Factory::~Factory()
-{
-  // The default destructor deregisters the factory.
-  
-  for (int i = 0; i < kMaxFactories; i++)
-  {
-    if (fFactory[i] == this)
-    {
-      fFactory[i] = NULL;
-      return;
-    }
-  }
-  
-  HLTFatal("Could not find factory to deregister.");
-}
-
-
-void AliHLTGlobalTrigger::ResetCounters(UInt_t number)
-{
-  // Resets the trigger counters.
-  
-  fCounters.Set(number);
-  for (UInt_t i = 0; i < number; i++)
-  {
-    fCounters[i] = 0;
+    return static_cast<AliHLTGlobalTrigger*>(c->New());
   }
 }
 

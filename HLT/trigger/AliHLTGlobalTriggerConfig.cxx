@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -194,6 +194,25 @@ void AliHLTGlobalTriggerConfig::AddSymbol(
 
 
 void AliHLTGlobalTriggerConfig::AddItem(
+    UInt_t priority, const char* conditionExpr, const char* domainExpr,
+    UInt_t prescalar, const char* description
+  )
+{
+  // Adds a new entry to the trigger menu with a particular priority.
+  
+  if (fgMenu == NULL) NewMenu("");
+  
+  AliHLTTriggerMenuItem entry;
+  entry.TriggerCondition(conditionExpr);
+  entry.MergeExpression(domainExpr);
+  entry.PreScalar(prescalar);
+  entry.Priority(priority);
+  if (description != NULL) entry.Description(description);
+  fgMenu->AddItem(entry);
+}
+
+
+void AliHLTGlobalTriggerConfig::AddItem(
     const char* conditionExpr, const char* domainExpr, UInt_t prescalar,
     const char* description
   )
@@ -203,9 +222,27 @@ void AliHLTGlobalTriggerConfig::AddItem(
   if (fgMenu == NULL) NewMenu("");
   
   AliHLTTriggerMenuItem entry;
-  entry.TriggerCondision(conditionExpr);
+  entry.TriggerCondition(conditionExpr);
   entry.MergeExpression(domainExpr);
   entry.PreScalar(prescalar);
+  if (description != NULL) entry.Description(description);
+  fgMenu->AddItem(entry);
+}
+
+
+void AliHLTGlobalTriggerConfig::AddItem(
+    UInt_t priority, const char* conditionExpr, const char* domainExpr,
+    const char* description
+  )
+{
+  // Adds a new entry to the trigger menu with a particular priority.
+  
+  if (fgMenu == NULL) NewMenu("");
+  
+  AliHLTTriggerMenuItem entry;
+  entry.TriggerCondition(conditionExpr);
+  entry.MergeExpression(domainExpr);
+  entry.Priority(priority);
   if (description != NULL) entry.Description(description);
   fgMenu->AddItem(entry);
 }
@@ -220,7 +257,7 @@ void AliHLTGlobalTriggerConfig::AddItem(
   if (fgMenu == NULL) NewMenu("");
   
   AliHLTTriggerMenuItem entry;
-  entry.TriggerCondision(conditionExpr);
+  entry.TriggerCondition(conditionExpr);
   entry.MergeExpression(domainExpr);
   if (description != NULL) entry.Description(description);
   fgMenu->AddItem(entry);
@@ -251,6 +288,24 @@ AliHLTTriggerDomain& AliHLTGlobalTriggerConfig::DefaultTriggerDomain()
   
   if (fgMenu == NULL) NewMenu("");
   return fgMenu->DefaultTriggerDomain();
+}
+
+
+void AliHLTGlobalTriggerConfig::SetDefaultConditionOperator(const char* op)
+{
+  // Sets the default operator for trigger condition merging.
+  
+  if (fgMenu == NULL) NewMenu("");
+  fgMenu->DefaultConditionOperator(op);
+}
+
+
+void AliHLTGlobalTriggerConfig::SetDefaultDomainOperator(const char* op)
+{
+  // Sets the default operator for trigger domain merging.
+  
+  if (fgMenu == NULL) NewMenu("");
+  fgMenu->DefaultDomainOperator(op);
 }
 
 

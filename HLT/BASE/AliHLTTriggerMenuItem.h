@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id:$
+// $Id$
 #ifndef ALIHLTTRIGGERMENUITEM_H
 #define ALIHLTTRIGGERMENUITEM_H
 /* This file is property of and copyright by the ALICE HLT Project        *
@@ -17,7 +17,29 @@
 
 /**
  * \class AliHLTTriggerMenuItem
- * TODO
+ * A trigger menu item is used to store the information for a single entry in the
+ * HLT global trigger menu AliHLTTriggerMenu.
+ * It stores information about the trigger condition, trigger domain merging
+ * expression, trigger priority and the prescalar to apply.
+ * The trigger condition is an expression which indicates that must be true
+ * for the trigger menu entry to be fired. A fired item will then use the trigger
+ * domain merging expression for the computation of the final global trigger domain.
+ *
+ * \note The following symbol names are reserved and should not be used in either
+ * the trigger condition or merging expressions:
+ *   _domain_
+ *   _description_
+ *   _item_result_
+ *   _group_result_
+ *   _previous_match_
+ *   _trigger_matched_
+ *   FillFromMenu
+ *   NewEvent
+ *   Add
+ *   CalculateTriggerDecision
+ *   GetCounters
+ *   SetCounters
+ *   CreateNew
  */
 class AliHLTTriggerMenuItem : public TObject
 {
@@ -52,12 +74,12 @@ class AliHLTTriggerMenuItem : public TObject
   /**
    * Returns the trigger condition expression.
    */
-  const char* TriggerCondision() const { return fConditionExpr.Data(); }
+  const char* TriggerCondition() const { return fConditionExpr.Data(); }
   
   /**
    * Set the trigger condition expression.
    */
-  void TriggerCondision(const char* value) { fConditionExpr = value; }
+  void TriggerCondition(const char* value) { fConditionExpr = value; }
   
   /**
    * Returns the trigger domain merging expression.
@@ -78,6 +100,16 @@ class AliHLTTriggerMenuItem : public TObject
    * Set the pre-scalar value. A value of zero turns off the prescalar.
    */
   void PreScalar(UInt_t value) { fPrescalar = value; }
+  
+  /**
+   * Returns the priority value.
+   */
+  UInt_t Priority() const { return fPriority; }
+  
+  /**
+   * Set the priority value. Higher values give a higher priority.
+   */
+  void Priority(UInt_t value) { fPriority = value; }
 
  private:
   
@@ -85,8 +117,9 @@ class AliHLTTriggerMenuItem : public TObject
   TString fConditionExpr;  /// The trigger condition expression.
   TString fDomainExpr;  /// Trigger domain merging expression.
   UInt_t fPrescalar;  /// Pre-scalar value used to optionally reduce the trigger rate. Every modulus n'th event is triggered, where n equals the pre-scalar value.
+  UInt_t fPriority;  /// Priority of the trigger menu item. Higher values have higher priority.
   
-  ClassDef(AliHLTTriggerMenuItem, 2) // Trigger menu item for global HLT trigger.
+  ClassDef(AliHLTTriggerMenuItem, 3) // Trigger menu item for global HLT trigger.
 };
 
 #endif // ALIHLTTRIGGERMENUITEM_H

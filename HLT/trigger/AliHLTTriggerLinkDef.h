@@ -5,7 +5,7 @@
 #pragma link off all functions;
 #pragma link C++ class AliHLTTrigger+;
 #pragma link C++ class AliHLTGlobalTrigger+;
-#pragma link C++ class AliHLTGlobalTrigger::Factory+;
+#pragma link C++ class AliHLTGlobalTriggerWrapper+;
 #pragma link C++ class AliHLTGlobalTriggerConfig+;
 #pragma link C++ class AliHLTGlobalTriggerComponent+;
 #pragma link C++ class AliHLTTriggerBarrelMultiplicity+;

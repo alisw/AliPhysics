@@ -201,7 +201,7 @@ void AliHLTGlobalTriggerDecision::SetCounters(const TArrayL64& counters, Long64_
   // Sets the counter array.
   // If the number of events is specified, an additional counter is added at the end.
   fCounters = counters;
-  if (eventCount>0) {
+  if (eventCount>=0) {
     int size=fCounters.GetSize();
     fCounters.Set(size+1);
     fCounters[size]=eventCount;

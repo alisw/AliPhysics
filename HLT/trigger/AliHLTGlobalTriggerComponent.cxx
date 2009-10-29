@@ -41,13 +41,28 @@
 #include "TSystem.h"
 #include "TInterpreter.h"
 #include "TDatime.h"
+#include "TClass.h"
 #include <fstream>
 #include <cerrno>
 #include <cassert>
+#include <vector>
+#include <algorithm>
 
 ClassImp(AliHLTGlobalTriggerComponent)
 
 const char* AliHLTGlobalTriggerComponent::fgkTriggerMenuCDBPath = "HLT/ConfigHLT/HLTGlobalTrigger";
+
+
+namespace
+{
+  /**
+   * This method is used as a comparison functor with the STL sort routines.
+   */
+  bool AliHLTDescendingNumbers(UInt_t a, UInt_t b)
+  {
+    return a > b;
+  }
+} // end of namespace
 
 
 AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
@@ -56,8 +71,14 @@ AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
 	fDebugMode(false),
 	fRuntimeCompile(true),
 	fSkipCTPCounters(false),
+	fDeleteCodeFile(false),
 	fCodeFileName(),
-	fCTPDecisions(NULL)
+	fClassName(),
+	fCTPDecisions(NULL),
+	fBufferSizeConst(2*(sizeof(AliHLTGlobalTriggerDecision) + sizeof(AliHLTReadoutList))),
+	fBufferSizeMultiplier(1.),
+	fIncludePaths(TObjString::Class()),
+	fIncludeFiles(TObjString::Class())
 {
   // Default constructor.
   
@@ -82,14 +103,8 @@ void AliHLTGlobalTriggerComponent::GetOutputDataSize(unsigned long& constBase, d
 {
   // Returns the output data size estimate.
 
-  // the real size can actually not be determined here since an arbitrary
-  // number of objects can be part of the decision
-  // collect the known ones and add a margin
-  constBase = 0;
-  constBase += 2*sizeof(AliHLTGlobalTriggerDecision);
-  constBase += sizeof(AliHLTCTPData);
-  constBase += 5*sizeof(AliHLTTriggerDecision);
-  inputMultiplier = 2;
+  constBase = fBufferSizeConst;
+  inputMultiplier = fBufferSizeMultiplier;
 }
 
 
@@ -98,11 +113,13 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   // Initialises the global trigger component.
   
   fDebugMode = false;
+  fClassName = "";
+  fCodeFileName = "";
+  fDeleteCodeFile = false;
   const char* configFileName = NULL;
   const char* codeFileName = NULL;
-  TString classname;
-  TClonesArray includePaths(TObjString::Class());
-  TClonesArray includeFiles(TObjString::Class());
+  fIncludePaths.Clear();
+  fIncludeFiles.Clear();
   
   for (int i = 0; i < argc; i++)
   {
@@ -131,7 +148,7 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
         HLTError("The include path was not specified." );
         return -EINVAL;
       }
-      new (includePaths[includePaths.GetEntriesFast()]) TObjString(argv[i+1]);
+      new (fIncludePaths[fIncludePaths.GetEntriesFast()]) TObjString(argv[i+1]);
       i++;
       continue;
     }
@@ -143,7 +160,7 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
         HLTError("The include file name was not specified." );
         return -EINVAL;
       }
-      new (includeFiles[includeFiles.GetEntriesFast()]) TObjString(argv[i+1]);
+      new (fIncludeFiles[fIncludeFiles.GetEntriesFast()]) TObjString(argv[i+1]);
       i++;
       continue;
     }
@@ -183,7 +200,7 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
         HLTError("The custom trigger class name was not specified." );
         return -EINVAL;
       }
-      classname = argv[i+2];
+      fClassName = argv[i+2];
       i += 2;
       continue;
     }
@@ -210,66 +227,37 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   
   // Try load the trigger menu from the CDB if it is not loaded yet with the
   // -config option
-  if (menu == NULL and AliCDBManager::Instance() != NULL)
+  int result = -ENOENT;
+  if (menu == NULL)
   {
-    AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
-    if (store == NULL)
-    {
-      HLTError("Could not get the the default storage for the CDB.");
-      return -EIO;
-    }
-    Int_t version = store->GetLatestVersion(fgkTriggerMenuCDBPath, GetRunNo());
-    Int_t subVersion = store->GetLatestSubVersion(fgkTriggerMenuCDBPath, GetRunNo(), version);
-    AliCDBEntry* entry = AliCDBManager::Instance()->Get(fgkTriggerMenuCDBPath, GetRunNo(), version, subVersion);
-    if (entry == NULL)
-    {
-      HLTError("Could not get the CDB entry for \"%s\".", fgkTriggerMenuCDBPath);
-      return -EIO;
-    }
-    TObject* obj = entry->GetObject();
-    if (obj == NULL)
-    {
-      HLTError("Configuration object for \"%s\" is missing.", fgkTriggerMenuCDBPath);
-      return -ENOENT;
-    }
-    if (obj->IsA() != AliHLTTriggerMenu::Class())
-    {
-      HLTError("Wrong type for configuration object in \"%s\". Found a %s but we expect a AliHLTTriggerMenu.",
-               fgkTriggerMenuCDBPath, obj->ClassName()
-      );
-      return -EPROTO;
-    }
-    menu = dynamic_cast<AliHLTTriggerMenu*>(obj);
+    result = LoadTriggerMenu(fgkTriggerMenuCDBPath, menu);
   }
-  
   if (menu == NULL)
   {
     HLTError("No trigger menu configuration found or specified.");
-    return -ENOENT;
+    return result;
   }
   
-  int result = 0;
   if (codeFileName == NULL)
   {
-    HLTDebug("Generating custom HLT trigger class.");
-    result = GenerateTrigger(menu, classname, includePaths, includeFiles);
+    result = GenerateTrigger(menu, fClassName, fCodeFileName, fIncludePaths, fIncludeFiles);
+    if (result == 0) fDeleteCodeFile = true;
   }
   else
   {
-    HLTDebug("Loading HLT trigger class from file '%s'.", codeFileName);
-    result = LoadTriggerClass(codeFileName, includePaths);
+    result = LoadTriggerClass(codeFileName, fIncludePaths);
+    if (result == 0) fCodeFileName = codeFileName;
   }
   if (result != 0) return result;
   
-  fTrigger = AliHLTGlobalTrigger::CreateNew(classname.Data());
+  fTrigger = AliHLTGlobalTrigger::CreateNew(fClassName.Data());
   if (fTrigger == NULL)
   {
-    HLTError("Could not create a new instance of '%s'.", classname.Data());
+    HLTError("Could not create a new instance of '%s'.", fClassName.Data());
     return -EIO;
   }
   
   fTrigger->FillFromMenu(*menu);
-  fTrigger->ResetCounters(menu->NumberOfItems());
 
   // setup the CTP accounting in AliHLTComponent
   SetupCTPData();
@@ -291,19 +279,23 @@ Int_t AliHLTGlobalTriggerComponent::DoDeinit()
     delete fTrigger;
     fTrigger = NULL;
   }
-
-  if (!fCodeFileName.IsNull() && gSystem->AccessPathName(fCodeFileName)==0 && !fDebugMode) {
-    fCodeFileName.ReplaceAll(".cxx", "*");
-    TString command="rm "; command+=fCodeFileName;
-    gSystem->Exec(command);
-  }
-  fCodeFileName="";
   
   if (fCTPDecisions) {
     fCTPDecisions->Delete();
     delete fCTPDecisions;
   }
   fCTPDecisions=NULL;
+  
+  Int_t result = UnloadTriggerClass(fCodeFileName);
+  if (result != 0) return result;
+  
+  if (fDeleteCodeFile and !fCodeFileName.IsNull() && gSystem->AccessPathName(fCodeFileName)==0 && !fDebugMode) {
+    fCodeFileName.ReplaceAll(".cxx", "*");
+    TString command="rm "; command+=fCodeFileName;
+    gSystem->Exec(command);
+  }
+  fCodeFileName="";
+  fDeleteCodeFile=false;
 
   return 0;
 }
@@ -333,6 +325,10 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     return 0;
   }
 
+  // Copy the trigger counters in case we need to set them back to their original
+  // value because the PushBack method fails with ENOSPC.
+  TArrayL64 originalCounters = fTrigger->GetCounters();
+  
   fTrigger->NewEvent();
   
   // Fill in the input data.
@@ -354,7 +350,6 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   TString description;
   AliHLTTriggerDomain triggerDomain;
   bool triggerResult = fTrigger->CalculateTriggerDecision(triggerDomain, description);
-  
   AliHLTGlobalTriggerDecision decision(
       triggerResult,
       // The following will cause the decision to be generated with default values
@@ -374,7 +369,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     decision.ReadoutList(maskedList);
   }
 
-  decision.SetCounters(fTrigger->Counters(), GetEventCount()+1);
+  decision.SetCounters(fTrigger->GetCounters(), GetEventCount()+1);
   static UInt_t lastTime=0;
   TDatime time;
   if (time.Get()-lastTime>5) {
@@ -401,18 +396,135 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
 
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 3);
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 4);
-  TriggerEvent(&decision);
+  if (TriggerEvent(&decision) == -ENOSPC)
+  {
+    // Increase the estimated buffer space required if the PushBack methods in TriggerEvent
+    // returned the "no buffer space" error code. Also remember to set the trigger counters
+    // back to what they were, otherwise triggers will be double counted when we try to reprocess
+    // this event with larger buffers.
+    fBufferSizeConst += 1024*1024;
+    fBufferSizeMultiplier *= 2.;
+    fTrigger->SetCounters(originalCounters);
+    return -ENOSPC;
+  }
+  return 0;
+}
+
+
+int AliHLTGlobalTriggerComponent::Reconfigure(const char* cdbEntry, const char* chainId)
+{
+  // Reconfigure the component by loading the trigger menu and recreating the
+  // trigger logic class.
+  
+  const char* path = fgkTriggerMenuCDBPath;
+  const char* id = "(unknown)";
+  if (cdbEntry != NULL) path = cdbEntry;
+  if (chainId != NULL and chainId[0] != '\0') id = chainId;
+  HLTInfo("Reconfiguring from '%s' for chain component '%s'.", path, id);
+  
+  const AliHLTTriggerMenu* menu = NULL;
+  int result = LoadTriggerMenu(path, menu);
+  if (result != 0) return result;
+  
+  TString className;
+  TString codeFileName;
+  result = GenerateTrigger(menu, className, codeFileName, fIncludePaths, fIncludeFiles);
+  if (result != 0) return result;
+  
+  AliHLTGlobalTrigger* trigger = AliHLTGlobalTrigger::CreateNew(className.Data());
+  if (trigger == NULL)
+  {
+    HLTError("Could not create a new instance of '%s'.", className.Data());
+    // Make sure to cleanup after the new code file.
+    UnloadTriggerClass(codeFileName);
+    if (not codeFileName.IsNull() and gSystem->AccessPathName(codeFileName)==0 and not fDebugMode)
+    {
+      codeFileName.ReplaceAll(".cxx", "*");
+      TString command="rm "; command+=codeFileName;
+      gSystem->Exec(command);
+    }
+    return -EIO;
+  }
+  
+  if (fTrigger != NULL)
+  {
+    delete fTrigger;
+    fTrigger = NULL;
+  }
+  
+  fTrigger = trigger;
+  fTrigger->FillFromMenu(*menu);
+
+  // Set the default values from the trigger menu.
+  SetDescription(menu->DefaultDescription());
+  SetTriggerDomain(menu->DefaultTriggerDomain());
+  
+  // Cleanup the old class code.
+  UnloadTriggerClass(fCodeFileName);
+  if (fDeleteCodeFile and not fCodeFileName.IsNull() and gSystem->AccessPathName(fCodeFileName)==0 and not fDebugMode)
+  {
+    fCodeFileName.ReplaceAll(".cxx", "*");
+    TString command="rm "; command+=fCodeFileName;
+    gSystem->Exec(command);
+  }
+  fCodeFileName = codeFileName;
+  fDeleteCodeFile = true;  // Since we generated a new class.
+  
+  return 0;
+}
+
+
+int AliHLTGlobalTriggerComponent::LoadTriggerMenu(const char* cdbPath, const AliHLTTriggerMenu*& menu)
+{
+  // Loads the trigger menu object from the CDB path.
+  
+  HLTDebug("Trying to load trigger menu from '%s'.", cdbPath);
+  if (AliCDBManager::Instance() == NULL)
+  {
+    HLTError("CDB manager object not found.");
+    return -EIO;
+  }
+  AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
+  if (store == NULL)
+  {
+    HLTError("Could not get the the default storage for the CDB.");
+    return -EIO;
+  }
+  Int_t version = store->GetLatestVersion(cdbPath, GetRunNo());
+  Int_t subVersion = store->GetLatestSubVersion(cdbPath, GetRunNo(), version);
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get(cdbPath, GetRunNo(), version, subVersion);
+  if (entry == NULL)
+  {
+    HLTError("Could not get the CDB entry for \"%s\".", cdbPath);
+    return -EIO;
+  }
+  TObject* obj = entry->GetObject();
+  if (obj == NULL)
+  {
+    HLTError("Configuration object for \"%s\" is missing.", cdbPath);
+    return -ENOENT;
+  }
+  if (obj->IsA() != AliHLTTriggerMenu::Class())
+  {
+    HLTError("Wrong type for configuration object in \"%s\". Found a %s but we expect a AliHLTTriggerMenu.",
+             cdbPath, obj->ClassName()
+    );
+    return -EPROTO;
+  }
+  menu = static_cast<AliHLTTriggerMenu*>(obj);
   return 0;
 }
 
 
 int AliHLTGlobalTriggerComponent::GenerateTrigger(
-    const AliHLTTriggerMenu* menu, TString& name,
+    const AliHLTTriggerMenu* menu, TString& name, TString& filename,
     const TClonesArray& includePaths, const TClonesArray& includeFiles
   )
 {
   // Generates the global trigger class that will implement the specified trigger menu.
   // See header for more details.
+  
+  HLTDebug("Generating custom HLT trigger class named %s using trigger menu %p.", ((void*)menu), name.Data());
   
   // Create a new UUID and replace the '-' characters with '_' to make it a valid
   // C++ symbol name.
@@ -426,13 +538,13 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   // Create the name of the new class.
   name = "AliHLTGlobalTriggerImpl_";
   name += uuidstr;
-  fCodeFileName = name + ".cxx";
+  filename = name + ".cxx";
   
   // Open a text file to write the code and generate the new class.
-  fstream code(fCodeFileName.Data(), ios_base::out | ios_base::trunc);
+  fstream code(filename.Data(), ios_base::out | ios_base::trunc);
   if (not code.good())
   {
-    HLTError("Could not open file '%s' for writing.", fCodeFileName.Data());
+    HLTError("Could not open file '%s' for writing.", filename.Data());
     return -EIO;
   }
   
@@ -440,10 +552,11 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   int result = BuildSymbolList(menu, symbols);
   if (result != 0) return result;
   
-  //code << "#ifndef __CINT__" << endl;
+  code << "#if !defined(__CINT__) || defined(__MAKECINT__)" << endl;
   code << "#include <cstring>" << endl;
   code << "#include \"TString.h\"" << endl;
   code << "#include \"TClonesArray.h\"" << endl;
+  code << "#include \"AliHLTLogging.h\"" << endl;
   code << "#include \"AliHLTGlobalTrigger.h\"" << endl;
   code << "#include \"AliHLTGlobalTriggerDecision.h\"" << endl;
   code << "#include \"AliHLTDomainEntry.h\"" << endl;
@@ -452,7 +565,6 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   code << "#include \"AliHLTTriggerMenu.h\"" << endl;
   code << "#include \"AliHLTTriggerMenuItem.h\"" << endl;
   code << "#include \"AliHLTTriggerMenuSymbol.h\"" << endl;
-  //code << "#endif //__CINT__" << endl;
   
   // Add any include files that were specified on the command line.
   for (Int_t i = 0; i < includeFiles.GetEntriesFast(); i++)
@@ -461,11 +573,41 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
     code << "#include \"" << file.Data() << "\"" << endl;
   }
   
-  code << "class " << name << " : public AliHLTGlobalTrigger" << endl;
+  if (fDebugMode)
+  {
+    code << "#else" << endl;
+    code << "const char* gFunctionName = \"???\";" << endl;
+    code << "#define HLTDebug(msg) if (CheckFilter(kHLTLogDebug) && CheckGroup(Class_Name())) SendMessage(kHLTLogDebug, Class_Name(), ::gFunctionName, __FILE__, __LINE__, msg)" << endl;
+  }
+  code << "#endif" << endl;
+  
+  code << "class " << name << " :" << endl;
+  // Add appropriate #ifdef sections since we need to prevent inheritance from
+  // AliHLTGlobalTrigger. CINT does not seem to support multiple inheritance nor
+  // multiple levels of inheritance. Neither of the following schemes worked:
+  //
+  // 1)  class AliHLTGlobalTrigger : public AliHLTLogging {};
+  //     class AliHLTGlobalTriggerImpl_xyz : public AliHLTGlobalTrigger {};
+  //
+  // 2)  class AliHLTGlobalTrigger {};
+  //     class AliHLTGlobalTriggerImpl_xyz : public AliHLTGlobalTrigger, public AliHLTLogging {};
+  //
+  // Thus, we are forced to just inherit from AliHLTLogging when running in the CINT
+  // interpreter. But we anyway have to call the global trigger implementation class
+  // through the AliHLTGlobalTriggerWrapper so this is not such a problem.
+  code << "#if !defined(__CINT__) || defined(__MAKECINT__)" << endl;
+  code << "  public AliHLTGlobalTrigger," << endl;
+  code << "#endif" << endl;
+  code << "  public AliHLTLogging" << endl;
   code << "{" << endl;
   code << "public:" << endl;
   
-  code << "  " << name << "() : AliHLTGlobalTrigger()";
+  // Generate constructor method.
+  code << "  " << name << "() :" << endl;
+  code << "#if !defined(__CINT__) || defined(__MAKECINT__)" << endl;
+  code << "    AliHLTGlobalTrigger()," << endl;
+  code << "#endif" << endl;
+  code << "    AliHLTLogging()";
   // Write the symbols in the trigger menu in the initialisation list.
   for (Int_t i = 0; i < symbols.GetEntriesFast(); i++)
   {
@@ -485,15 +627,21 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   code << endl << "  {" << endl;
   if (fDebugMode)
   {
+    code << "#ifdef __CINT__" << endl;
+    code << "    gFunctionName = \"" << name.Data() <<"\";" << endl;
+    code << "#endif" << endl;
     code << "    SetLocalLoggingLevel(kHLTLogAll);" << endl;
-    code << "    HLTInfo(\"Creating new instance at %p.\", this);" << endl;
+    code << "    HLTDebug(Form(\"Creating new instance at %p.\", this));" << endl;
   }
   code << "  }" << endl;
   
   code << "  virtual ~" << name << "() {" << endl;
   if (fDebugMode)
   {
-    code << "    HLTInfo(\"Deleting instance at %p.\", this);" << endl;
+    code << "#ifdef __CINT__" << endl;
+    code << "    gFunctionName = \"~" << name.Data() << "\";" << endl;
+    code << "#endif" << endl;
+    code << "    HLTDebug(Form(\"Deleting instance at %p.\", this));" << endl;
   }
   code << "  }" << endl;
   
@@ -501,8 +649,12 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   code << "  virtual void FillFromMenu(const AliHLTTriggerMenu& menu) {" << endl;
   if (fDebugMode)
   {
-    code << "    HLTDebug(\"Filling description entries from trigger menu for global trigger %p.\", this);" << endl;
+    code << "#ifdef __CINT__" << endl;
+    code << "    gFunctionName = \"FillFromMenu\";" << endl;
+    code << "#endif" << endl;
+    code << "    HLTDebug(Form(\"Filling description entries from trigger menu for global trigger %p.\", this));" << endl;
   }
+  code << "    fCounter.Set(menu.NumberOfItems());" << endl;
   for (UInt_t i = 0; i < menu->NumberOfItems(); i++)
   {
     code << "    fMenuItemDescription" << i << " = (menu.Item(" << i
@@ -510,8 +662,8 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   }
   if (fDebugMode)
   {
-    code << "    HLTDebug(\"Finished filling description entries from trigger menu.\");" << endl;
-    code << "    HLTDebug(\"Filling domain entries from trigger menu symbols for global trigger %p.\", this);" << endl;
+    code << "    HLTDebug(Form(\"Finished filling description entries from trigger menu.\"));" << endl;
+    code << "    HLTDebug(Form(\"Filling domain entries from trigger menu symbols for global trigger %p.\", this));" << endl;
   }
   code << "    for (Int_t i = 0; i < menu.SymbolArray().GetEntriesFast(); i++) {" << endl;
   code << "      const AliHLTTriggerMenuSymbol* symbol = dynamic_cast<const"
@@ -520,11 +672,11 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   for (Int_t i = 0; i < symbols.GetEntriesFast(); i++)
   {
     AliHLTTriggerMenuSymbol* symbol = static_cast<AliHLTTriggerMenuSymbol*>( symbols.UncheckedAt(i) );
-    code << "      if (strcmp(symbol->Name(), \"" << symbol->RealName() << "\") == 0) {" << endl;
+    code << "      if (strcmp(symbol->Name(), \"" << symbol->Name() << "\") == 0) {" << endl;
     if (fDebugMode)
     {
-      code << "        HLTDebug(\"Assinging domain entry value to match for symbol '%s' to '%s'.\","
-              " symbol->Name(), symbol->BlockType().AsString().Data());" << endl;
+      code << "        HLTDebug(Form(\"Assinging domain entry value corresponding with symbol '%s' to '%s'.\","
+              " symbol->Name(), symbol->BlockType().AsString().Data()));" << endl;
     }
     code << "        " << symbol->Name() << "DomainEntry = symbol->BlockType();" << endl;
     code << "        continue;" << endl;
@@ -533,7 +685,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   code << "    }" << endl;
   if (fDebugMode)
   {
-    code << "    HLTDebug(\"Finished filling domain entries from trigger menu symbols.\");" << endl;
+    code << "    HLTDebug(Form(\"Finished filling domain entries from trigger menu symbols.\"));" << endl;
   }
   code << "  }" << endl;
   
@@ -541,13 +693,26 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   code << "  virtual void NewEvent() {" << endl;
   if (fDebugMode)
   {
-    code << "    HLTDebug(\"New event for global trigger object %p, initialising variables to default values.\", this);" << endl;
+    code << "#ifdef __CINT__" << endl;
+    code << "    gFunctionName = \"NewEvent\";" << endl;
+    code << "#endif" << endl;
+    code << "    HLTDebug(Form(\"New event for global trigger object %p, initialising variables to default values.\", this));" << endl;
   }
   // Write code to initialise the symbols in the trigger menu to their default values.
   for (Int_t i = 0; i < symbols.GetEntriesFast(); i++)
   {
     AliHLTTriggerMenuSymbol* symbol = static_cast<AliHLTTriggerMenuSymbol*>( symbols.UncheckedAt(i) );
-    code << "    " << symbol->Name() << " = " << symbol->DefaultValue() << ";" << endl;
+    // CINT has problems with the implicit equals operator for complex types, so if
+    // the type has a equals operater we need to write the operator call explicitly.
+    TClass* clas = TClass::GetClass(symbol->Type());
+    if (clas != NULL and clas->GetMethodAny("operator=") != NULL)
+    {
+      code << "    " << symbol->Name() << ".operator = (" << symbol->DefaultValue() << ");" << endl;
+    }
+    else
+    {
+      code << "    " << symbol->Name() << " = " << symbol->DefaultValue() << ";" << endl;
+    }
     if (strcmp(symbol->ObjectClass(), "AliHLTTriggerDecision") == 0)
     {
       code << "    " << symbol->Name() << "TriggerDomain.Clear();" << endl;
@@ -555,18 +720,24 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   }
   if (fDebugMode)
   {
-    code << "    HLTDebug(\"Finished initialising variables.\");" << endl;
+    code << "    HLTDebug(Form(\"Finished initialising variables.\"));" << endl;
   }
   code << "  }" << endl;
   
   // Generate the Add method.
   code << "  virtual void Add(const TObject* _object_, const AliHLTComponentDataType& _type_, AliHLTUInt32_t _spec_) {" << endl;
+  if (fDebugMode)
+  {
+    code << "#ifdef __CINT__" << endl;
+    code << "    gFunctionName = \"Add\";" << endl;
+    code << "#endif" << endl;
+  }
   code << "    AliHLTDomainEntry _type_spec_(_type_, _spec_);" << endl;
   if (fDebugMode)
   {
-    code << "    HLTDebug(\"Adding TObject %p, with class name '%s' from data block"
+    code << "    HLTDebug(Form(\"Adding TObject %p, with class name '%s' from data block"
             " '%s', to global trigger object %p\", _object_, _object_->ClassName(),"
-            " _type_spec_.AsString().Data(), this);" << endl;
+            " _type_spec_.AsString().Data(), this));" << endl;
     code << "    _object_->Print();" << endl;
     code << "    bool _object_assigned_ = false;" << endl;
   }
@@ -582,26 +753,26 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
     {
       if (isTrigDecision)
       {
-        code << "    HLTDebug(\"Trying to match input object to class '"
+        code << "    HLTDebug(Form(\"Trying to match input object to class '"
              << symbol->ObjectClass() << "', trigger name '" << symbol->RealName()
              << "' and block type '%s'\", " << symbol->Name()
-             << "DomainEntry.AsString().Data());" << endl;
+             << "DomainEntry.AsString().Data()));" << endl;
       }
       else
       {
-        code << "    HLTDebug(\"Trying to match input object to class '"
+        code << "    HLTDebug(Form(\"Trying to match input object to class '"
              << symbol->ObjectClass() << "' and block type '%s'\", "
-             << symbol->Name() << "DomainEntry.AsString().Data());" << endl;
+             << symbol->Name() << "DomainEntry.AsString().Data()));" << endl;
       }
     }
     code << "    const " << symbol->ObjectClass() << "* " << symbol->Name()
          << "_object_ = dynamic_cast<const " << symbol->ObjectClass()
          << "*>(_object_);" << endl;
-    code << "    if (" << symbol->Name() << "_object_ != NULL and ";
+    code << "    if (" << symbol->Name() << "_object_ != NULL && ";
     if (isTrigDecision)
     {
       code << "strcmp(" << symbol->Name() << "_object_->Name(), \""
-           << symbol->RealName() << "\") == 0 and ";
+           << symbol->Name() << "\") == 0 && ";
     }
     code << symbol->Name() << "DomainEntry == _type_spec_) {" << endl;
     TString fullname = symbol->Name();
@@ -615,84 +786,259 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
     }
     if (fDebugMode)
     {
-      code << "      HLTDebug(\"Added TObject %p with class name '%s' to variable "
-           << symbol->Name() << "\", _object_, _object_->ClassName());" << endl;
+      code << "      HLTDebug(Form(\"Added TObject %p with class name '%s' to variable "
+           << symbol->Name() << "\", _object_, _object_->ClassName()));" << endl;
       code << "      _object_assigned_ = true;" << endl;
     }
     code << "    }" << endl;
   }
   if (fDebugMode)
   {
-    code << "    if (not _object_assigned_) HLTDebug(\"Did not assign TObject %p"
-            " with class name '%s' to any variable.\", _object_, _object_->ClassName());"
+    code << "    if (! _object_assigned_) {" << endl;
+    code << "      HLTDebug(Form(\"Did not assign TObject %p"
+            " with class name '%s' to any variable.\", _object_, _object_->ClassName()));"
          << endl;
+    code << "    }" << endl;
   }
   code << "  }" << endl;
   
   // Generate the CalculateTriggerDecision method.
+  // This requires code to be generated that checks which items in the trigger menu
+  // have their conditions asserted and then the trigger domain is generated from
+  // those fired items.
+  // The processing will start from the highest priority trigger group and stop
+  // after at least one trigger from the current priority group being processed
+  // is positive. For each priority group all the trigger menu items are checked.
+  // Their combined trigger condition expression must be true for the trigger priority
+  // group to be triggered positive. The full condition expression is formed by
+  // concatenating the individual condition expressions. If no trailing operators are
+  // used in the individual expressions then the default condition operator is placed
+  // between two concatenated condition expressions.
+  // If a trigger priority group has at least one trigger fired then the trigger domain
+  // is calculated such that it will give the same result as the concatenated trigger
+  // domain merging expressions for all the individual trigger menu items with
+  // positive results. Again, if no trailing operators are used in the individual
+  // merging expressions then the default domain operator is placed between two
+  // expression fragments.
   code << "  virtual bool CalculateTriggerDecision(AliHLTTriggerDomain& _domain_, TString& _description_) {" << endl;
   if (fDebugMode)
   {
-    code << "    HLTDebug(\"Calculating global HLT trigger result with trigger object at %p.\", this);" << endl;
+    code << "#ifdef __CINT__" << endl;
+    code << "    gFunctionName = \"CalculateTriggerDecision\";" << endl;
+    code << "#endif" << endl;
+    code << "    HLTDebug(Form(\"Calculating global HLT trigger result with trigger object at %p.\", this));" << endl;
   }
-  code << "    bool result=false;" << endl;
+  
+  // Build a list of priorities used in the trigger menu.
+  std::vector<UInt_t> priorities;
   for (UInt_t i = 0; i < menu->NumberOfItems(); i++)
   {
     const AliHLTTriggerMenuItem* item = menu->Item(i);
-    TString triggerCondision = item->TriggerCondision();
-    TString mergeExpr = item->MergeExpression();
-    for (Int_t j = 0; j < symbols.GetEntriesFast(); j++)
+    bool priorityNotInList = std::find(priorities.begin(), priorities.end(), item->Priority()) == priorities.end();
+    if (priorityNotInList) priorities.push_back(item->Priority());
+  }
+  std::sort(priorities.begin(), priorities.end(), AliHLTDescendingNumbers);
+  // From the priority list, build the priority groups in the correct order,
+  // i.e. highest priority first.
+  // The priority group is a list of vectors of integers. The integers are the
+  // index numbers into the trigger menu item list for the items which form part
+  // of the priority group.
+  std::vector<std::vector<Int_t> > priorityGroup;
+  priorityGroup.insert(priorityGroup.begin(), priorities.size(), std::vector<Int_t>());
+  for (size_t n = 0; n < priorities.size(); n++)
+  {
+    UInt_t priority = priorities[n];
+    for (UInt_t i = 0; i < menu->NumberOfItems(); i++)
     {
-      AliHLTTriggerMenuSymbol* symbol = static_cast<AliHLTTriggerMenuSymbol*>( symbols.UncheckedAt(j) );
-      if (strcmp(symbol->ObjectClass(), "AliHLTTriggerDecision") != 0) continue;
-      TString newname = symbol->Name();
-      newname += "TriggerDomain";
-      mergeExpr.ReplaceAll(symbol->RealName(), newname);
-      triggerCondision.ReplaceAll(symbol->RealName(), symbol->Name());
+      const AliHLTTriggerMenuItem* item = menu->Item(i);
+      if (item->Priority() == priority) priorityGroup[n].push_back(i);
     }
+  }
+  
+  for (size_t n = 0; n < priorityGroup.size(); n++)
+  {
     if (fDebugMode)
     {
-      code << "    HLTDebug(\"Trying trigger condition " << i
-           << " (Description = '%s').\", fMenuItemDescription" << i << ".Data());"
-           << endl;
+      code << "    HLTDebug(Form(\"Processing trigger priority group " << priorities[n] << "\"));" << endl;
     }
-    code << "    if (" << triggerCondision << ") {" << endl;
-    code << "      IncrementCounter(" << i << ");" << endl;
-    const char* indentation = "";
-    if (item->PreScalar() != 0)
+    code << "    ";
+    if (n == 0) code << "UInt_t ";
+    code << "_previous_match_ = 0xFFFFFFFF;" << endl;
+    code << "    ";
+    if (n == 0) code << "bool ";
+    code << "_trigger_matched_ = false;" << endl;
+    code << "    ";
+    if (n == 0) code << "bool ";
+    code << "_group_result_ = false;" << endl;
+    std::vector<TString> conditionOperator;
+    conditionOperator.insert(conditionOperator.begin(), priorityGroup[n].size(), TString(""));
+    std::vector<TString> domainOperator;
+    domainOperator.insert(domainOperator.begin(), priorityGroup[n].size(), TString(""));
+    for (size_t m = 0; m < priorityGroup[n].size(); m++)
     {
-      indentation = "  ";
-      code << "      if ((GetCounter(" << i << ") % " << item->PreScalar() << ") == 1) {" << endl;
+      UInt_t i = priorityGroup[n][m];
+      const AliHLTTriggerMenuItem* item = menu->Item(i);
+      TString triggerCondition = item->TriggerCondition();
+      TString mergeExpr = item->MergeExpression();
+      // Replace the symbols found in the trigger condition and merging expressions
+      // with appropriate compilable versions.
+      for (Int_t j = 0; j < symbols.GetEntriesFast(); j++)
+      {
+        AliHLTTriggerMenuSymbol* symbol = static_cast<AliHLTTriggerMenuSymbol*>( symbols.UncheckedAt(j) );
+        bool symbolNamesDifferent = strcmp(symbol->RealName(), symbol->Name()) != 0;
+        if (strcmp(symbol->ObjectClass(), "AliHLTTriggerDecision") == 0)
+        {
+          TString newname = symbol->Name();
+          newname += "TriggerDomain";
+          mergeExpr.ReplaceAll(symbol->RealName(), newname);
+        }
+        else
+        {
+          if (symbolNamesDifferent) mergeExpr.ReplaceAll(symbol->RealName(), symbol->Name());
+        }
+        if (symbolNamesDifferent) triggerCondition.ReplaceAll(symbol->RealName(), symbol->Name());
+      }
+      // We allow the trigger conditions and merging expressions to have trailing operators.
+      // Thus, we need to extract the operators and cleanup the expressions so that they will
+      // compile. This means that we silently ignore the trailing operator if not needed.
+      if (ExtractedOperator(triggerCondition, conditionOperator[m]))
+      {
+        // If the trailing operator is the same as the default operator then reset
+        // the value in the operator list so that the default is used in the generated
+        // code. This creates more compact code.
+        if (conditionOperator[m] == menu->DefaultConditionOperator()) conditionOperator[m] = "";
+      }
+      if (ExtractedOperator(mergeExpr, domainOperator[m]))
+      {
+        if (domainOperator[m] == menu->DefaultDomainOperator()) domainOperator[m] = "";
+      }
+      if (fDebugMode)
+      {
+        code << "    HLTDebug(Form(\"Trying trigger condition " << i
+             << " (Description = '%s').\", fMenuItemDescription" << i << ".Data()));"
+             << endl;
+      }
+      code << "    ";
+      if (n == 0 and m == 0) code << "bool ";
+      code << "_item_result_ = false;" << endl;
+      code << "    if (" << triggerCondition << ") {" << endl;
+      code << "      ++fCounter[" << i << "];" << endl;
+      const char* indentation = "";
+      if (item->PreScalar() != 0)
+      {
+        indentation = "  ";
+        code << "      if ((fCounter[" << i << "] % " << item->PreScalar() << ") == 1) {" << endl;
+      }
+      code << indentation << "      _item_result_ = true;" << endl;
+      if (fDebugMode)
+      {
+        code << indentation << "      HLTDebug(Form(\"Matched trigger condition " << i
+             << " (Description = '%s').\", fMenuItemDescription" << i << ".Data()));" << endl;
+      }
+      if (item->PreScalar() != 0)
+      {
+        code << "      }" << endl;
+      }
+      code << "    }" << endl;
+      if (m == 0)
+      {
+        // Since this is the first item of the trigger group,
+        // the generated trigger logic can be simplified a little.
+        code << "    _group_result_ = _item_result_;" << endl;
+        code << "    if (_item_result_) {" << endl;
+        code << "      _domain_ = " << mergeExpr.Data() << ";" << endl;
+        code << "      _description_ = fMenuItemDescription" << i << ";" << endl;
+        code << "      _previous_match_ = " << i << ";" << endl;
+        code << "      _trigger_matched_ = true;" << endl;
+        code << "    }" << endl;
+      }
+      else
+      {
+        bool switchWillBeEmpty = true;
+        for (size_t k = 0; k < m; k++)
+        {
+          if (conditionOperator[k] == "") continue;
+          switchWillBeEmpty = false;
+        }
+        if (switchWillBeEmpty)
+        {
+          code << "    _group_result_ = _group_result_ "
+               << menu->DefaultConditionOperator() << " _item_result_;" << endl;
+        }
+        else
+        {
+          code << "    switch(_previous_match_) {" << endl;
+          for (size_t k = 0; k < m; k++)
+          {
+            if (conditionOperator[k] == "") continue;
+            code << "    case " << k << ": _group_result_ = _group_result_ "
+                 << conditionOperator[k] << " _item_result_; break;" << endl;
+          }
+          code << "    default: _group_result_ = _group_result_ "
+               << menu->DefaultConditionOperator() << " _item_result_;" << endl;
+          code << "    }" << endl;
+        }
+        code << "    if (_item_result_) {" << endl;
+        code << "      if (_trigger_matched_) {" << endl;
+        switchWillBeEmpty = true;
+        for (size_t k = 0; k < m; k++)
+        {
+          if (domainOperator[k] == "") continue;
+          switchWillBeEmpty = false;
+        }
+        if (switchWillBeEmpty)
+        {
+          code << "        _domain_ = _domain_ " << menu->DefaultDomainOperator() << " "
+               << mergeExpr.Data() << ";" << endl;
+        }
+        else
+        {
+          code << "        switch(_previous_match_) {" << endl;
+          for (size_t k = 0; k < m; k++)
+          {
+            if (domainOperator[k] == "") continue;
+            code << "        case " << k << ": _domain_ = _domain_ "
+                 << domainOperator[k] << " " << mergeExpr.Data() << "; break;" << endl;
+          }
+          code << "        default: _domain_ = _domain_ "
+               << menu->DefaultDomainOperator() << " " << mergeExpr.Data() << ";" << endl;
+          code << "        }" << endl;
+        }
+        code << "        _description_ += \",\";" << endl;
+        code << "        _description_ += fMenuItemDescription" << i << ";" << endl;
+        code << "      } else {" << endl;
+        code << "        _domain_ = " << mergeExpr.Data() << ";" << endl;
+        code << "        _description_ = fMenuItemDescription" << i << ";" << endl;
+        code << "      }" << endl;
+        code << "      _previous_match_ = " << i << ";" << endl;
+        code << "      _trigger_matched_ = true;" << endl;
+        code << "    }" << endl;
+      }
     }
-    code << indentation << "      _domain_ |= " << mergeExpr.Data() << ";" << endl;
-    code << indentation << "      if (!_description_.IsNull()) _description_+= \",\";" << endl;
-    code << indentation << "      _description_ += fMenuItemDescription" << i << ";" << endl;
+    code << "    if (_group_result_) {" << endl;
     if (fDebugMode)
     {
-      code << indentation << "      HLTDebug(\"Matched trigger condition " << i
-           << " (Description = '%s').\", fMenuItemDescription" << i << ".Data());" << endl;
+      if (n < priorities.size() - 1)
+      {
+        code << "      HLTDebug(Form(\"Matched triggers in trigger priority group " << priorities[n]
+             << ". Stopping processing here because all other trigger groups have lower priority.\"));" << endl;
+      }
+      else
+      {
+        code << "      HLTDebug(Form(\"Matched triggers in trigger priority group " << priorities[n] << ".\"));" << endl;
+      }
     }
-    code << indentation << "      result=true;" << endl;
-    if (item->PreScalar() != 0)
-    {
-      code << "      }" << endl;
-    }
+    code << "      return true;" << endl;
     code << "    }" << endl;
   }
-  code << "    return result;" << endl;
+  code << "    _domain_.Clear();" << endl;
+  code << "    _description_ = \"\";" << endl;
+  code << "    return false;" << endl;
   code << "  }" << endl;
   
-  // Generate the custom Factory class.
-  code << "  class FactoryImpl : public AliHLTGlobalTrigger::Factory" << endl;
-  code << "  {" << endl;
-  code << "  public:" << endl;
-  code << "    virtual const char* ClassName() const {" << endl;
-  code << "      return \"" << name << "\";" << endl;
-  code << "    }" << endl;
-  code << "    virtual AliHLTGlobalTrigger* New() const {" << endl;
-  code << "      return new " << name << "();" << endl;
-  code << "    }" << endl;
-  code << "  };" << endl;
+  // Generate getter and setter methods for the counters.
+  code << "  const TArrayL64& GetCounters() const { return fCounter; }" << endl;
+  code << "  void SetCounters(const TArrayL64& counters) { fCounter = counters; }" << endl;
   
   code << "private:" << endl;
   // Add the symbols in the trigger menu to the list of private variables.
@@ -710,17 +1056,21 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   {
     code << "  TString fMenuItemDescription" << i << ";" << endl;
   }
+  code << "  TArrayL64 fCounter;" << endl;
+  code << "#if !defined(__CINT__) || defined(__MAKECINT__)" << endl;
+  code << "  ClassDef(" << name.Data() << ", 0)" << endl;
+  code << "#else" << endl;
+  code << "  virtual const char* Class_Name() const { return \"" << name.Data() << "\"; }" << endl;
+  code << "#endif" << endl;
   code << "};" << endl;
-  
-  // Write a global object for the Factory class for automatic registration.
-  code << "namespace {" << endl;
-  code << "  const " << name << "::FactoryImpl gkFactoryImpl;" << endl;
-  code << "};" << endl;
+  code << "#if !defined(__CINT__) || defined(__MAKECINT__)" << endl;
+  code << "ClassImp(" << name.Data() << ")" << endl;
+  code << "#endif" << endl;
   
   code.close();
   
   // Now we need to compile and load the new class.
-  result = LoadTriggerClass(fCodeFileName, includePaths);
+  result = LoadTriggerClass(filename, includePaths);
   return result;
 }
 
@@ -730,6 +1080,8 @@ int AliHLTGlobalTriggerComponent::LoadTriggerClass(
   )
 {
   // Loads the code for a custom global trigger class implementation on the fly.
+  
+  HLTDebug("Loading HLT trigger class from file '%s'.", filename);
   
   TString compiler = gSystem->GetBuildCompilerVersion();
   if (fRuntimeCompile && (compiler.Contains("gcc") or compiler.Contains("icc")))
@@ -744,14 +1096,14 @@ int AliHLTGlobalTriggerComponent::LoadTriggerClass(
     // $ALICE_ROOT subfolders
     includePath = "-I${ALICE_ROOT}/include -I${ALICE_ROOT}/HLT/BASE -I${ALICE_ROOT}/HLT/trigger";
 #endif
-    HLTDebug("using include settings: %s", includePath.Data());
     // Add any include paths that were specified on the command line.
     for (Int_t i = 0; i < includePaths.GetEntriesFast(); i++)
     {
       TString path = static_cast<TObjString*>(includePaths.UncheckedAt(i))->String();
-      includePath += " ";
+      includePath += " -I";
       includePath += path;
     }
+    HLTDebug("using include settings: %s", includePath.Data());
     gSystem->SetIncludePath(includePath);
     gSystem->SetFlagsOpt("-O3 -DNDEBUG");
     gSystem->SetFlagsDebug("-g3 -DDEBUG -D__DEBUG");
@@ -774,13 +1126,58 @@ int AliHLTGlobalTriggerComponent::LoadTriggerClass(
   else
   {
     // If we do not support the compiler then try interpret the class instead.
-    TString cmd = ".x ";
+    TString cmd = ".L ";
     cmd += filename;
     Int_t errorcode = TInterpreter::kNoError;
     gROOT->ProcessLine(cmd, &errorcode);
     if (errorcode != TInterpreter::kNoError)
     {
       HLTFatal("Could not load interpreted global trigger menu implementation"
+               " (Interpreter error code = %d).",
+               errorcode
+      );
+      return -ENOENT;
+    }
+  }
+  
+  return 0;
+}
+
+
+int AliHLTGlobalTriggerComponent::UnloadTriggerClass(const char* filename)
+{
+  // Unloads the code previously loaded by LoadTriggerClass.
+  
+  HLTDebug("Unloading HLT trigger class in file '%s'.", filename);
+  
+  TString compiler = gSystem->GetBuildCompilerVersion();
+  if (fRuntimeCompile && (compiler.Contains("gcc") or compiler.Contains("icc")))
+  {
+    TString libname = filename;
+    Ssiz_t dotpos = libname.Last('.');
+    if (0 <= dotpos and dotpos < libname.Length()) libname[dotpos] = '_';
+    libname += ".";
+    libname += gSystem->GetSoExt();
+    
+    char* path = NULL;
+    int result = 0;
+    if ((path = gSystem->DynamicPathName(libname)) != NULL)
+    {
+      result = gInterpreter->UnloadFile(path);
+      delete [] path;
+    }
+    if (result != TInterpreter::kNoError) return -ENOENT;
+  }
+  else
+  {
+    // If we do not support the compiler then try interpret the class instead.
+    TString cmd = ".U ";
+    cmd += filename;
+    Int_t errorcode = TInterpreter::kNoError;
+    gROOT->ProcessLine(cmd, &errorcode);
+    if (errorcode != TInterpreter::kNoError)
+    {
+      HLTFatal("Could not unload interpreted global trigger menu implementation"
                " (Interpreter error code = %d).",
                errorcode
       );
@@ -829,7 +1226,7 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
   for (UInt_t i = 0; i < menu->NumberOfItems(); i++)
   {
     const AliHLTTriggerMenuItem* item = menu->Item(i);
-    TString str = item->TriggerCondision();
+    TString str = item->TriggerCondition();
     Ssiz_t start = 0;
     do
     {
@@ -885,15 +1282,72 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
   return 0;
 }
 
+
+bool AliHLTGlobalTriggerComponent::ExtractedOperator(TString& expr, TString& op)
+{
+  // Extracts the trailing operator from the expression.
+  
+  Ssiz_t i = 0;
+  // First skip the trailing whitespace.
+  bool whitespace = true;
+  for (i = expr.Length()-1; i >= 0 and whitespace; i--)
+  {
+    switch (expr[i])
+    {
+    case ' ': case '\t': case '\r': case '\n':
+      whitespace = true;
+      break;
+    default:
+      whitespace = false;
+    }
+  }
+  if (i < 0 or whitespace) return false;
+  
+  // Now find the first whitespace character before the trailing symbol.
+  bool nonwhitespace = true;
+  for (; i >= 0 and nonwhitespace; i--)
+  {
+    switch (expr[i])
+    {
+    case ' ': case '\t': case '\r': case '\n':
+      nonwhitespace = false;
+      break;
+    default:
+      nonwhitespace = true;
+    }
+  }
+  if (i < 0 or nonwhitespace) return false;
+  
+  // Extract the last symbols and check if it is a valid operator.
+  TString s = expr;
+  s.Remove(0, i+2);
+  if (s == "and" or s == "and_eq" or s == "bitand" or s == "bitor" or
+      s == "compl" or s == "not" or s == "not_eq" or s == "or" or
+      s == "or_eq" or s == "xor" or s == "xor_eq" or s == "&&" or
+      s == "&=" or s == "&" or s == "|" or s == "~" or s == "!" or
+      s == "!=" or s == "||" or s == "|=" or s == "^" or s == "^=" or
+      s == "==" or s == "+" or s == "-" or s == "*" or s == "/" or
+      s == "%" or s == ">" or s == "<" or s == ">=" or s == "<="
+     )
+  {
+    expr.Remove(i+1);
+    op = s;
+    return true;
+  }
+  
+  return false;
+}
+
+
 int AliHLTGlobalTriggerComponent::PrintStatistics(const AliHLTGlobalTrigger* pTrigger, AliHLTComponentLogSeverity level, int offset) const
 {
   // print some statistics
   int totalEvents=GetEventCount()+offset;
-  for (int i=0; i<pTrigger->Counters().GetSize(); i++) {
-    ULong64_t count=pTrigger->Counters()[i];
+  for (int i=0; i<pTrigger->GetCounters().GetSize(); i++) {
+    ULong64_t count=pTrigger->GetCounters()[i];
     float ratio=0;
     if (totalEvents>0) ratio=100*(float)count/totalEvents;
-    HLTLog(level, "Item %d: total events: %d - triggered events: %llu (%.1f%%)", i, totalEvents, count, ratio);
+    HLTLog(level, "Item %d: total events: %d - counted events: %llu (%.1f%%)", i, totalEvents, count, ratio);
   }
   return 0;
 }

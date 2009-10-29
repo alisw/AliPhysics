@@ -1,4 +1,4 @@
-// $Id:$
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -34,7 +34,8 @@ AliHLTTriggerMenuItem::AliHLTTriggerMenuItem() :
   fDescription(),
   fConditionExpr(),
   fDomainExpr(),
-  fPrescalar(0)
+  fPrescalar(0),
+  fPriority(0)
 {
   // Default constructor.
 }
@@ -54,6 +55,7 @@ void AliHLTTriggerMenuItem::Print(Option_t* option) const
   if (opt.Contains("compact"))
   {
     cout << setw(10) << fPrescalar << " | "
+         << setw(10) << fPriority << " | "
          << setw(60) << fConditionExpr.Data() << " | "
          << setw(60) << fDomainExpr.Data() << setw(0) << endl;
   }
@@ -63,6 +65,7 @@ void AliHLTTriggerMenuItem::Print(Option_t* option) const
     cout << "   Trigger condition expression = " << fConditionExpr.Data() << endl;
     cout << "Trigger domain merge expression = " << fDomainExpr.Data() << endl;
     cout << "                     Pre-scalar = " << fPrescalar << endl;
+    cout << "                       Priority = " << fPriority << endl;
   }
 }
 
