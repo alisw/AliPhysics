@@ -28,6 +28,9 @@
 #include <TDatabasePDG.h>
 #include <TMath.h>
 #include <TROOT.h>
+
+#include "AliAnalysisManager.h"
+#include "AliAODHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF.h"
@@ -2538,13 +2541,25 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
-  // In case there is an AOD handler writing a standard AOD, use the AOD 
-  // event in memory rather than the input (ESD) event.
-  if (!aod && AODEvent() && IsStandardAOD()) aod = dynamic_cast<AliAODEvent*> (AODEvent());
+  TClonesArray *arrayD0toKpi=0;
 
-  // load D0->Kpi candidates                                                   
-  TClonesArray *arrayD0toKpi =
-    (TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+  if(!aod && AODEvent() && IsStandardAOD()) {
+    // In case there is an AOD handler writing a standard AOD, use the AOD 
+    // event in memory rather than the input (ESD) event.    
+    aod = dynamic_cast<AliAODEvent*> (AODEvent());
+    // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+    // have to taken from the AOD event hold by the AliAODExtension
+    AliAODHandler* aodHandler = (AliAODHandler*) 
+      ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    if(aodHandler->GetExtensions()) {
+      AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+      AliAODEvent *aodFromExt = ext->GetAOD();
+      arrayD0toKpi=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+    }
+  } else {
+    arrayD0toKpi=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+  }
+
   if(!arrayD0toKpi) {
     Printf("AliAnalysisTaskSECharmFraction::UserExec: D0toKpi branch not found!\n");
     return;

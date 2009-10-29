@@ -28,6 +28,8 @@
 #include <TList.h>
 #include <TH1F.h>
 
+#include "AliAnalysisManager.h"
+#include "AliAODHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
@@ -204,29 +206,37 @@ void AliAnalysisTaskSEBkgLikeSignJPSI::UserExec(Option_t */*option*/)
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
-  // In case there is an AOD handler writing a standard AOD, use the AOD 
-  // event in memory rather than the input (ESD) event.
-  if (!aod && AODEvent() && IsStandardAOD()) aod = dynamic_cast<AliAODEvent*> (AODEvent());
+  TClonesArray *arrayJPSItoEle = 0;
+  TClonesArray *arrayLikeSign = 0;
 
-  // load heavy flavour vertices
-  TClonesArray *arrayVerticesHF =
-    (TClonesArray*)aod->GetList()->FindObject("VerticesHF");
-  if(!arrayVerticesHF) {
-    printf("AliAnalysisTaskSEBkgLikeSignJPSI::UserExec: VerticesHF branch not found!\n");
-    return;
+  if(!aod && AODEvent() && IsStandardAOD()) {
+    // In case there is an AOD handler writing a standard AOD, use the AOD 
+    // event in memory rather than the input (ESD) event.    
+    aod = dynamic_cast<AliAODEvent*> (AODEvent());
+    // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+    // have to taken from the AOD event hold by the AliAODExtension
+    AliAODHandler* aodHandler = (AliAODHandler*) 
+      ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    if(aodHandler->GetExtensions()) {
+      AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+      AliAODEvent *aodFromExt = ext->GetAOD();
+      // load Jpsi candidates   
+      arrayJPSItoEle=(TClonesArray*)aodFromExt->GetList()->FindObject("JPSItoEle");
+      // load like sign candidates
+      arrayLikeSign=(TClonesArray*)aodFromExt->GetList()->FindObject("LikeSign2Prong");
+    }
+  } else {
+    // load Jpsi candidates                                                   
+    arrayJPSItoEle=(TClonesArray*)aod->GetList()->FindObject("JPSItoEle");
+    // load like sign candidates
+    arrayLikeSign=(TClonesArray*)aod->GetList()->FindObject("LikeSign2Prong");
   }
 
-  // load JPSI->ee candidates                                                   
-  TClonesArray *arrayJPSItoEle =
-    (TClonesArray*)aod->GetList()->FindObject("JPSItoEle");
+
   if(!arrayJPSItoEle) {
     printf("AliAnalysisTaskSEBkgLikeSignJPSI::UserExec: JPSItoEle branch not found!\n");
     return;
   }
-
-  // load like sign candidates
-  TClonesArray *arrayLikeSign =
-    (TClonesArray*)aod->GetList()->FindObject("LikeSign2Prong");
   if(!arrayLikeSign) {
     printf("AliAnalysisTaskSEBkgLikeSignJPSI::UserExec: LikeSign2Prong branch not found!\n");
     return;

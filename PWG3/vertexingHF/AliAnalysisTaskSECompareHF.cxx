@@ -26,6 +26,8 @@
 #include <TList.h>
 #include <TH1F.h>
 
+#include "AliAnalysisManager.h"
+#include "AliAODHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "AliESDtrack.h"
@@ -136,40 +138,56 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-  
-  // In case there is an AOD handler writing a standard AOD, use the AOD 
-  // event in memory rather than the input (ESD) event.
-  if (!aod && AODEvent() && IsStandardAOD()) aod = dynamic_cast<AliAODEvent*> (AODEvent());
 
-  fHistNEvents->Fill(0); // count event
-  // Post the data already here
-  PostData(1,fOutput);
+  TClonesArray *inputArrayVertices = 0;
+  TClonesArray *inputArrayD0toKpi = 0;
+  TClonesArray *inputArrayDstar = 0;
 
-  // load HF vertices                     
-  TClonesArray *inputArrayVertices =
-    (TClonesArray*)aod->GetList()->FindObject("VerticesHF");
+  if(!aod && AODEvent() && IsStandardAOD()) {
+    // In case there is an AOD handler writing a standard AOD, use the AOD 
+    // event in memory rather than the input (ESD) event.    
+    aod = dynamic_cast<AliAODEvent*> (AODEvent());
+    // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+    // have to taken from the AOD event hold by the AliAODExtension
+    AliAODHandler* aodHandler = (AliAODHandler*) 
+      ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    if(aodHandler->GetExtensions()) {
+      AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+      AliAODEvent *aodFromExt = ext->GetAOD();
+      // load HF vertices                
+      inputArrayVertices = (TClonesArray*)aodFromExt->GetList()->FindObject("VerticesHF");
+      // load D0->Kpi candidates
+      inputArrayD0toKpi = (TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+      // load D*+ candidates                                                   
+      inputArrayDstar = (TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+    }
+  } else {
+    // load HF vertices                
+    inputArrayVertices = (TClonesArray*)aod->GetList()->FindObject("VerticesHF");
+    // load D0->Kpi candidates                                                 
+    inputArrayD0toKpi = (TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+    // load D*+ candidates                                                   
+    inputArrayDstar = (TClonesArray*)aod->GetList()->FindObject("Dstar");
+  }
+
+
   if(!inputArrayVertices) {
     printf("AliAnalysisTaskSECompareHF::UserExec: Vertices branch not found!\n");
     return;
   }
-
-  // load D0->Kpi candidates                                                   
-  TClonesArray *inputArrayD0toKpi =
-    (TClonesArray*)aod->GetList()->FindObject("D0toKpi");
   if(!inputArrayD0toKpi) {
     printf("AliAnalysisTaskSECompareHF::UserExec: D0toKpi branch not found!\n");
     return;
   }
-
- 
-  // load D*+ candidates                                                   
-  TClonesArray *inputArrayDstar =
-    (TClonesArray*)aod->GetList()->FindObject("Dstar");
   if(!inputArrayDstar) {
     printf("AliAnalysisTaskSECompareHF::UserExec: Dstar branch not found!\n");
     return;
   }
   
+
+  fHistNEvents->Fill(0); // count event
+  // Post the data already here
+  PostData(1,fOutput);
 
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
