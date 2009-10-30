@@ -25,14 +25,6 @@ else
 @PACKAGE@SOFLAGS:=$(PACKSOFLAGS)
 endif
 
-ifdef DYEXT
-ifndef PACKDYFLAGS
-@PACKAGE@DYFLAGS:=$(DYFLAGS)
-else
-@PACKAGE@DYFLAGS:=$(PACKDYFLAGS)
-endif
-endif
-
 ifndef PACKLDFLAGS
 @PACKAGE@LDFLAGS:=$(LDFLAGS)
 else
@@ -140,19 +132,12 @@ endif
 
 @PACKAGE@LIB:=$(LIBPATH)/lib@PACKAGE@.$(SOEXT)
 
-ifneq ($(DYEXT),)
-@PACKAGE@DLIB:=$(LIBPATH)/lib@PACKAGE@.$(DYEXT)
-endif
-
 @PACKAGE@ALIB:=$(LIBPATH)/lib@PACKAGE@.$(AEXT)
 
 #Add this to the modules libs
 ifeq ($(TYPE),lib)
 @MODULE@LIBS += $(@PACKAGE@LIB)
 @MODULE@ALIBS += $(@PACKAGE@ALIB)
-ifneq ($(DYEXT),)
-@MODULE@DLIBS += $(@PACKAGE@DLIB)
-endif
 endif
 
 #The actual binary file
@@ -167,19 +152,12 @@ endif
 ifeq ($(TYPE),lib)
 ALLLIBS += $(@PACKAGE@LIB)
 ALLALIBS += $(@PACKAGE@ALIB)
-ifneq ($(DYEXT),)
-ALLLIBS += $(@PACKAGE@DLIB)
-endif
 BINLIBS += -l@PACKAGE@
 else
 ALLEXECS += $(@PACKAGE@BIN)
 endif
 
-ifeq ($(DYEXT),)
 @PACKAGE@LIB := $(@PACKAGE@LIB)
-else
-@PACKAGE@LIB := $(@PACKAGE@LIB)
-endif
 
 # include all dependence files
 INCLUDEFILES +=$(@PACKAGE@DEP)
@@ -203,13 +181,6 @@ endif
 
 #------------------------------------------------------------------------
 
-ifneq (,$(findstring macosx,$(ALICE_TARGET)))
-$(@PACKAGE@LIB): $(@PACKAGE@DLIB) $(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
-ifndef ALIQUIET
-	  @echo "***** Linking library $@ *****"
-endif
-	  $(MUTE)rm -f $@; cd $(dir $@); ln -s $(notdir $(@PACKAGE@DLIB)) $(notdir $@)
-else
 $(@PACKAGE@LIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking library $@ *****"
@@ -219,19 +190,6 @@ endif
 	  $(SHLD) $(@PACKAGE@SOFLAGS) -o "$(CURDIR)"/$@ $(patsubst $(@MODULE@DIRO)/%,%,$(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);\
 	  chmod a-w "$(CURDIR)"/$@ ;\
 	  cd $(ALICE_ROOT)
-endif
-
-ifneq ($(DYEXT),)
-$(@PACKAGE@DLIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
-ifndef ALIQUIET
-	  @echo "***** Linking library $@ *****"
-endif
-	  \rm -f "$(CURDIR)"/$@ ;\
-	  cd $(@MODULE@DIRO) ;\
-	  $(DYLD) $(@PACKAGE@DYFLAGS) -o "$(CURDIR)"/$@ $(patsubst $(@MODULE@DIRO)/%,%,$(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(DYLIB);\
-	  chmod a-w "$(CURDIR)"/$@ ;\
-	  cd $(ALICE_ROOT) 
-endif
 
 #------------------------------------------------------------------------
 
@@ -293,9 +251,6 @@ endif
 
 ifeq ($(TYPE),lib)
 all-@MODULE@: $(@PACKAGE@LIB)
-ifneq ($(DYEXT),)
-all-@MODULE@: $(@PACKAGE@DLIB)
-endif
 else
 all-@MODULE@: $(@PACKAGE@BIN)
 endif

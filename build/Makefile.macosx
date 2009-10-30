@@ -61,14 +61,9 @@ LD            = export MACOSX_DEPLOYMENT_TARGET=$(MACOSX_MAJOR).$(MACOSX_MINOR) 
 LDFLAGS       = $(OPT) $(DICTLOAD)
 
 SHLD	     := $(LD)
-SOFLAGS      := -bundle -undefined dynamic_lookup
+SOFLAGS      := -dynamiclib -undefined dynamic_lookup -single_module
 SHLIB        := 
 SOEXT 	     := so
-
-DYLD	     := $(LD)
-DYFLAGS       = -dynamiclib -undefined dynamic_lookup -single_module
-DYLIB        := 
-DYEXT        := dylib
 
 ALLD	      = ar
 ALFLAGS       = cr
