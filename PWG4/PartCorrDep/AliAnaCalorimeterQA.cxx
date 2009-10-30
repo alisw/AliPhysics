@@ -23,7 +23,7 @@
 
 
 // --- ROOT system ---
-#include "Riostream.h"
+//#include "Riostream.h"
 #include "TObjArray.h"
 #include "TParticle.h"
 #include "TDatabasePDG.h"
@@ -49,7 +49,8 @@ ClassImp(AliAnaCalorimeterQA)
   
 //____________________________________________________________________________
   AliAnaCalorimeterQA::AliAnaCalorimeterQA() : 
-    AliAnaPartCorrBaseClass(), fCalorimeter(""), fStyleMacro(""), fhE(0),fhPt(0),fhPhi(0),fhEta(0), fhEtaPhi(0), 
+    AliAnaPartCorrBaseClass(), fCalorimeter(""), fStyleMacro(""), fMakePlots(kFALSE),
+	fhE(0),fhPt(0),fhPhi(0),fhEta(0), fhEtaPhi(0), 
     fhECharged(0),fhPtCharged(0),fhPhiCharged(0),fhEtaCharged(0), fhEtaPhiCharged(0), 
     fhEChargedNoOut(0),fhPtChargedNoOut(0),fhPhiChargedNoOut(0),fhEtaChargedNoOut(0), fhEtaPhiChargedNoOut(0), 
     fhDeltaE(0), fhDeltaPt(0),fhDeltaPhi(0),fhDeltaEta(0), fhRatioE(0), fhRatioPt(0),fhRatioPhi(0),fhRatioEta(0),
@@ -81,7 +82,7 @@ ClassImp(AliAnaCalorimeterQA)
 
 //____________________________________________________________________________
 AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :   
-  AliAnaPartCorrBaseClass(qa), fCalorimeter(qa.fCalorimeter), fStyleMacro(qa.fStyleMacro),
+  AliAnaPartCorrBaseClass(qa), fCalorimeter(qa.fCalorimeter), fStyleMacro(qa.fStyleMacro), fMakePlots(qa.fMakePlots),
   fhE(qa.fhE),fhPt(qa.fhPt), fhPhi(qa.fhPhi), fhEta(qa.fhEta), 
   fhEtaPhi(qa.fhEtaPhi), fhECharged(qa.fhECharged),fhPtCharged(qa.fhPtCharged),fhPhiCharged(qa.fhPhiCharged),
   fhEtaCharged(qa.fhEtaCharged), fhEtaPhiCharged(qa.fhEtaPhiCharged), 
@@ -132,7 +133,8 @@ AliAnaCalorimeterQA & AliAnaCalorimeterQA::operator = (const AliAnaCalorimeterQA
 
   fCalorimeter  = qa.fCalorimeter;
   fStyleMacro   = qa.fStyleMacro;	
-	
+  fMakePlots  = qa.fMakePlots;
+  
   fhE      = qa.fhE;
   fhPt     = qa.fhPt;
   fhPhi    = qa.fhPhi;
@@ -918,12 +920,12 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		    Int_t label = calo->GetLabel(0);
 			
 	        if(label < 0 || !stack) {
-				printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() *** bad label or no stack ***:  label %d \n", label);
+				if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() *** bad label or no stack ***:  label %d \n", label);
 				continue;
 	        }
 	        
 	        if(label >=  stack->GetNtrack()) {
-				printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
+				if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
 				continue ;
 	        }
 			
@@ -1002,16 +1004,16 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 					else   pi0 = primary;
 				
 					if(!pi0 || mother < 0 ) continue ;
-					cout<<"pi0 pointer "<<pi0<<" pdg "<<pdgpi0<<" "<<pi0->GetPdgCode()<<endl;
-					cout<<"MOTHER PI0 LABEL "<<mother<<" pt" << pi0->Pt()<<" status "<<pi0->GetStatusCode()<<endl;
+					//cout<<"pi0 pointer "<<pi0<<" pdg "<<pdgpi0<<" "<<pi0->GetPdgCode()<<endl;
+					//cout<<"MOTHER PI0 LABEL "<<mother<<" pt" << pi0->Pt()<<" status "<<pi0->GetStatusCode()<<endl;
 					if(pi0->GetNDaughters() == 2){
-					  cout<<"pi0, 2 daughters "<<endl;
+					  //cout<<"pi0, 2 daughters "<<endl;
 						Int_t id1 = pi0->GetFirstDaughter();
 						Int_t id2 = pi0->GetFirstDaughter()+1;
 						p1=GetMCStack()->Particle(id1);
 						p2=GetMCStack()->Particle(id2);
 						
-						if(p1->GetFirstMother()!=p2->GetFirstMother()) cout <<"Decay photon mothers are not the same!!"<<endl;
+						//if(p1->GetFirstMother()!=p2->GetFirstMother()) cout <<"Decay photon mothers are not the same!!"<<endl;
 						if(p1->GetPdgCode()==22 && p2->GetPdgCode()==22){
 							// cout<<"2 photons, labels "<< id1<<" "<<id2<<endl;
 							for(UInt_t ilabel = 0; ilabel < calo->GetNLabel(); ilabel++){
@@ -1197,10 +1199,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 						fhPhiChargedNoOut    ->Fill(phi);
 						fhEtaChargedNoOut    ->Fill(eta);
 						fhEtaPhiChargedNoOut ->Fill(eta,phi);	
-						if ( (track->GetStatus() & status) == status) printf("ITS+TPC\n");
+						if(GetDebug() >= 0 && ((track->GetStatus() & status) == status)) printf("ITS+TPC\n");
 					}
 					else {
-						printf("ERROR: Could not receive track %d\n", trackIndex);
+						if(GetDebug() >= 0) printf("ERROR: Could not receive track %d\n", trackIndex);
 					}
 				}// non negative track index
 			}//do only if input are ESDs
@@ -1230,7 +1232,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		cell = (AliAODCaloCells *) GetEMCALCells();	
 	
 	if(!cell) {
-		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - ABORT: No CELLS available for analysis");
+		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No CELLS available for analysis");
 		abort();
 	}
 	
@@ -1490,6 +1492,8 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 //__________________________________________________________________
 void  AliAnaCalorimeterQA::Terminate(TList* outputList) 
 {
+	//Do plots if requested
+	if(!fMakePlots) return;
 	
 	//Do some plots to end
 	 if(fStyleMacro!="")gROOT->Macro(fStyleMacro); 
