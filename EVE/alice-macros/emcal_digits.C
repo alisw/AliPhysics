@@ -79,6 +79,22 @@ void emcal_digits()
 
     gEve->AddElement(q, l);
     smodules[sm] = q;
+
+    // Add line
+    /*
+    TEveLine *ll = new TEveLine("Test");
+    ll->SetMainColor(kRed);
+    ll->SetLineWidth(2);
+
+    ll->SetNextPoint(0, -20, -20);
+    ll->SetNextPoint(0,  20, -20);
+    ll->SetNextPoint(0,  20,  20);
+    ll->SetNextPoint(0, -20,  20);
+    ll->SetNextPoint(0, -20, -20);
+    ll->RefMainTrans() = q->RefMainTrans();
+
+    q->AddElement(ll);
+    */
   }
 
   TClonesArray *digits = 0;
