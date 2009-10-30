@@ -55,7 +55,15 @@ ClassImp(AliVZEROQADataMakerRec)
   AliVZEROQADataMakerRec::AliVZEROQADataMakerRec() : 
 	AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kVZERO), "VZERO Quality Assurance Data Maker"),
 	fCalibData(0x0),
-    fEvent(0), fNTotEvents(0), fNSubEvents(0), fTrendingUpdateEvent(0), fTrendingUpdateTime(0), fCycleStartTime(0), fCycleStopTime(0), fMonitorRate(0.)
+        fEvent(0), 
+        fNTotEvents(0), 
+        fNSubEvents(0), 
+        fTrendingUpdateEvent(0), 
+        fNTrendingUpdates(0), 
+        fTrendingUpdateTime(0), 
+        fCycleStartTime(0), 
+        fCycleStopTime(0), 
+        fMonitorRate(0.)
     
 {
    // Constructor
@@ -67,7 +75,12 @@ ClassImp(AliVZEROQADataMakerRec)
   }
    for(Int_t i=0; i<64; i++){  
        fEven[i] = 0;   
-       fOdd[i]  = 0;  }
+       fOdd[i]  = 0;
+	   fChargePerChannel[i] = 0.;  
+	   fFlagPerChannel[i] = 0.;  
+	   fMeanChargePerChannel[i] = 0.;  
+	   fMeanFlagPerChannel[i] = 0.;  
+  }
   
    for(Int_t i=0; i<128; i++){  
        fADCmean[i] = 0.0;   }	
@@ -77,7 +90,15 @@ ClassImp(AliVZEROQADataMakerRec)
   AliVZEROQADataMakerRec::AliVZEROQADataMakerRec(const AliVZEROQADataMakerRec& qadm) :
   AliQADataMakerRec(),
 	fCalibData(0x0),
-    fEvent(0), fNTotEvents(0), fNSubEvents(0), fTrendingUpdateEvent(0), fTrendingUpdateTime(0), fCycleStartTime(0), fCycleStopTime(0), fMonitorRate(0.)
+        fEvent(0), 
+        fNTotEvents(0), 
+        fNSubEvents(0), 
+        fTrendingUpdateEvent(0), 
+        fNTrendingUpdates(0), 
+        fTrendingUpdateTime(0), 
+        fCycleStartTime(0), 
+        fCycleStopTime(0), 
+        fMonitorRate(0.)
   
 {
   // Copy constructor 
@@ -234,7 +255,7 @@ void AliVZEROQADataMakerRec::InitESDs()
  void AliVZEROQADataMakerRec::InitRaws()
  {
    // Creates RAW histograms in Raws subdir
-   
+
    const Bool_t expert   = kTRUE ; 
    const Bool_t saveCorr = kTRUE ; 
    const Bool_t image    = kTRUE ; 
@@ -439,12 +460,52 @@ void AliVZEROQADataMakerRec::InitESDs()
  	sprintf(name,"TREND_MeanChargePerRing");
  	sprintf(title,"Mean Charge per Event and per Ring versus time ");
  	trend = new AliVZEROTrending(name, title);
- 	Add2RawsList(trend,kRawMeanChargePerRing, !expert, !image, !saveCorr); iHisto++;
+ 	Add2RawsList(trend,kRawMeanChargePerRing, expert, !image, !saveCorr); iHisto++;
 	 
  	sprintf(name,"TREND_MeanFlagPerRing");
  	sprintf(title,"Mean Flag per Event and per Ring versus time ");
  	trend = new AliVZEROTrending(name, title);
- 	Add2RawsList(trend,kRawMeanFlagPerRing, !expert, !image, !saveCorr); iHisto++;
+ 	Add2RawsList(trend,kRawMeanFlagPerRing, expert, !image, !saveCorr); iHisto++;
+	 
+ 	sprintf(name,"H1D_DQMFlag");
+ 	sprintf(title,"Current Flag per Event / Mean Flag per Event ");
+ 	h1d = new TH1D(name, title, kNChannelBins, kChannelMin, kChannelMax);
+	h1d->SetFillColor(29);
+	h1d->SetLineWidth(2);
+	h1d->GetXaxis()->SetLabelSize(0.06);
+    h1d->GetXaxis()->SetNdivisions(808,kFALSE);
+	h1d->GetXaxis()->SetBinLabel(4, "V0C");h1d->GetXaxis()->SetBinLabel(5, "R0");
+	h1d->GetXaxis()->SetBinLabel(12, "V0C");h1d->GetXaxis()->SetBinLabel(13, "R1");
+	h1d->GetXaxis()->SetBinLabel(20, "V0C");h1d->GetXaxis()->SetBinLabel(21, "R2");
+	h1d->GetXaxis()->SetBinLabel(28, "V0C");h1d->GetXaxis()->SetBinLabel(29, "R3");
+	h1d->GetXaxis()->SetBinLabel(36, "V0A");h1d->GetXaxis()->SetBinLabel(37, "R0");
+	h1d->GetXaxis()->SetBinLabel(44, "V0A");h1d->GetXaxis()->SetBinLabel(45, "R1");
+	h1d->GetXaxis()->SetBinLabel(52, "V0A");h1d->GetXaxis()->SetBinLabel(53, "R2");
+	h1d->GetXaxis()->SetBinLabel(60, "V0A");h1d->GetXaxis()->SetBinLabel(61, "R3");
+	h1d->GetXaxis()->CenterTitle();
+    h1d->GetXaxis()->SetTitleOffset(0.8);
+    h1d->GetXaxis()->SetNdivisions(808,kFALSE);
+ 	Add2RawsList(h1d,kRawDQMFlag, !expert, image, !saveCorr); iHisto++;
+	 
+ 	sprintf(name,"H1D_DQMCharge");
+ 	sprintf(title,"Current Charge per Event / Mean Charge per Event ");
+ 	h1d = new TH1D(name, title, kNChannelBins, kChannelMin, kChannelMax);
+	h1d->SetFillColor(29);
+	h1d->SetLineWidth(2);
+	h1d->GetXaxis()->SetLabelSize(0.06);
+    h1d->GetXaxis()->SetNdivisions(808,kFALSE);
+	h1d->GetXaxis()->SetBinLabel(4, "V0C");h1d->GetXaxis()->SetBinLabel(5, "R0");
+	h1d->GetXaxis()->SetBinLabel(12, "V0C");h1d->GetXaxis()->SetBinLabel(13, "R1");
+	h1d->GetXaxis()->SetBinLabel(20, "V0C");h1d->GetXaxis()->SetBinLabel(21, "R2");
+	h1d->GetXaxis()->SetBinLabel(28, "V0C");h1d->GetXaxis()->SetBinLabel(29, "R3");
+	h1d->GetXaxis()->SetBinLabel(36, "V0A");h1d->GetXaxis()->SetBinLabel(37, "R0");
+	h1d->GetXaxis()->SetBinLabel(44, "V0A");h1d->GetXaxis()->SetBinLabel(45, "R1");
+	h1d->GetXaxis()->SetBinLabel(52, "V0A");h1d->GetXaxis()->SetBinLabel(53, "R2");
+	h1d->GetXaxis()->SetBinLabel(60, "V0A");h1d->GetXaxis()->SetBinLabel(61, "R3");
+	h1d->GetXaxis()->CenterTitle();
+    h1d->GetXaxis()->SetTitleOffset(0.8);
+    h1d->GetXaxis()->SetNdivisions(808,kFALSE);
+ 	Add2RawsList(h1d,kRawDQMCharge, !expert, image, !saveCorr); iHisto++;
 	 
  	AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
  }
@@ -674,10 +735,14 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 
 	   int side = offlineCh/32;
 	   int ring = (offlineCh - 32*side) / 8;
-	   if(BBFlag) fFlagPerRing[side*4 + ring] += 1;
+	   if(BBFlag) {
+	   		fFlagPerRing[side*4 + ring] += 1;
+	   		fFlagPerChannel[offlineCh] += 1;
+	   }	
 
 	   if(charge<1023 && chargeEoI > 5.*sigma){ 
 		   fChargePerRing[side*4 + ring] += chargeEoI;	
+	   	   fChargePerChannel[offlineCh] += chargeEoI;
 		   ((TH2I*)GetRawsData((integrator == 0 ? kChargeEoICycleInt0 : kChargeEoICycleInt1)))->Fill(offlineCh,chargeEoI);
 		   ((TH2D*)GetRawsData(kRawMIPChannel))->Fill(offlineCh,mipEoI);
         	   if(offlineCh<32) {
@@ -853,7 +918,8 @@ void AliVZEROQADataMakerRec::StartOfDetectorCycle()
 
 //-------------------------------------------------------------------------------------------------
 void AliVZEROQADataMakerRec::AddTrendingEntry(){   
-     printf("AddTrendingEntry\n");
+     //printf("AddTrendingEntry\n");
+	fNTrendingUpdates++;
 	
 	// Normalize to the number of events
 	for(int i=0; i<8;i++){
@@ -861,6 +927,24 @@ void AliVZEROQADataMakerRec::AddTrendingEntry(){
 //		fFlagPerRing[i] *= TMath::Power(10.,i)/fTrendingUpdateEvent;
 		fChargePerRing[i] /= fTrendingUpdateEvent;
 		fFlagPerRing[i] /= fTrendingUpdateEvent;
+	}
+	
+	GetRawsData(kRawDQMCharge)->Reset();
+	GetRawsData(kRawDQMFlag)->Reset();
+
+	for(int i=0; i<64;i++){
+		fChargePerChannel[i] /= fTrendingUpdateEvent;
+		fFlagPerChannel[i] /= fTrendingUpdateEvent;
+		
+		if(fMeanChargePerChannel[i]) GetRawsData(kRawDQMCharge)->Fill(i,fChargePerChannel[i]/fMeanChargePerChannel[i]);
+		else GetRawsData(kRawDQMCharge)->Fill(i,0.);
+		
+		if(fMeanFlagPerChannel[i]) GetRawsData(kRawDQMFlag)->Fill(i,fFlagPerChannel[i]/fMeanFlagPerChannel[i]);
+		else GetRawsData(kRawDQMFlag)->Fill(i,0.);
+		
+		fMeanChargePerChannel[i] = (fMeanChargePerChannel[i] * (fNTrendingUpdates-1) + fChargePerChannel[i]) / fNTrendingUpdates;
+		fMeanFlagPerChannel[i] = (fMeanFlagPerChannel[i] * (fNTrendingUpdates-1) + fFlagPerChannel[i]) / fNTrendingUpdates;
+		
 	}
 	
 	TTimeStamp currentTime;
@@ -872,6 +956,10 @@ void AliVZEROQADataMakerRec::AddTrendingEntry(){
 	for(int i=0; i<8;i++){
 		fChargePerRing[i] = 0.;
 		fFlagPerRing[i] = 0.;
+	}
+	for(int i=0; i<64;i++){
+		fChargePerChannel[i] = 0.;
+		fFlagPerChannel[i] = 0.;
 	}
 	
 }

@@ -19,6 +19,7 @@
 #include <TH1.h>
 
 class TGraph;
+class TMultiGraph;
 
 class AliVZEROTrending  : public TH1 {
 public:
@@ -34,6 +35,7 @@ public:
 	UInt_t GetNEntries(){return fNEntries;};
 	void AddEntry(Double_t * data, UInt_t time);
 	void PrintEntry(UInt_t entry);	
+	virtual void Draw(Option_t  *option="");
 
 private:
 	
@@ -42,12 +44,12 @@ private:
 	Double_t fData[8][kDataSize];
 	Double_t fTime[kDataSize];
 	UInt_t fNEntries;
+	TMultiGraph *fMultiGraphs;
+	TGraph * fGraphs[8];
 	
-	
-	ClassDef( AliVZEROTrending, 1 )  
+	ClassDef( AliVZEROTrending, 2 )  
 	
 };
 
 #endif // ALIVZEROTRENDING_H
-
 

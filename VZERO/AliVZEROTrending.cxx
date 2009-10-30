@@ -21,6 +21,9 @@
 //  These histo are the one which will be looked at by QA Shifter
 // 
 #include "TGraph.h"
+#include "TMultiGraph.h"
+#include "TLegend.h"
+#include "TString.h"
 
 #include "AliLog.h"
 #include "AliVZEROTrending.h"
@@ -28,21 +31,24 @@
 ClassImp(AliVZEROTrending)
 
 //_____________________________________________________________________________
-AliVZEROTrending::AliVZEROTrending() : TH1(), fNEntries(0)
+AliVZEROTrending::AliVZEROTrending() : TH1(), fNEntries(0), fMultiGraphs(NULL)
 {
 	// Default constructor
+	for(int i=0; i<8;i++) fGraphs[i] = NULL;
 }
 //_____________________________________________________________________________
-AliVZEROTrending::AliVZEROTrending(const char* name, const char* title) : TH1(), fNEntries(0)
+AliVZEROTrending::AliVZEROTrending(const char* name, const char* title) : TH1(), fNEntries(0), fMultiGraphs(NULL)
 {
 	SetName(name);
 	SetTitle(title);
+	for(int i=0; i<8;i++) fGraphs[i] = NULL;
 }
 //_____________________________________________________________________________
 AliVZEROTrending::AliVZEROTrending(const AliVZEROTrending &trend) : 
-	TH1(), fNEntries(trend.fNEntries)
+	TH1(), fNEntries(trend.fNEntries), fMultiGraphs(NULL)
 {
 	// Copy constructor
+	for(int i=0; i<8;i++) fGraphs[i] = NULL;
 	SetName(trend.GetName());
 	SetTitle(trend.GetTitle());
 	for (int i = 0; i < kDataSize; i++) {
@@ -55,7 +61,8 @@ AliVZEROTrending::AliVZEROTrending(const AliVZEROTrending &trend) :
 
 //_____________________________________________________________________________
 AliVZEROTrending::~AliVZEROTrending(){
-	// Destructor
+	delete [] fGraphs;
+	delete fMultiGraphs;
 }
 // -----------------------------------------------------------------			
 void AliVZEROTrending::AddEntry(Double_t * data, UInt_t time)
@@ -83,9 +90,9 @@ void AliVZEROTrending::AddEntry(Double_t * data, UInt_t time)
 		}
 		
 	}
-	//printf("sizeof UInt_t Double_t %d %d\n",sizeof(UInt_t),sizeof(Double_t));
-	//printf("Add Entry %d @ %f : %f %f %f %f %f %f %f %f \n",fNEntries,fTime[fNEntries-1], 
-	//	data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
+// 	printf("sizeof UInt_t Double_t %d %d\n",sizeof(UInt_t),sizeof(Double_t));
+// 	printf("Add Entry %d @ %f : %f %f %f %f %f %f %f %f \n",fNEntries,fTime[fNEntries-1], 
+// 		data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
 }			
 // -----------------------------------------------------------------			
 void AliVZEROTrending::PrintEntry(UInt_t entry)
@@ -99,3 +106,33 @@ void AliVZEROTrending::PrintEntry(UInt_t entry)
 
 	}
 }			
+
+// -----------------------------------------------------------------			
+void AliVZEROTrending::Draw(Option_t *option){
+    TString opt = option;	
+	fMultiGraphs = new TMultiGraph();
+	fMultiGraphs->SetTitle(GetTitle());
+	
+	for(int i=0;i<8;i++) {
+		fGraphs[i] = new TGraph(GetNEntries(), GetTime(), GetChannel(i));
+		fGraphs[i]->SetLineWidth(2);
+		fGraphs[i]->SetLineColor(i<4 ? i+1 : i -3);
+		fGraphs[i]->SetLineStyle(i<4 ? 1 : 2);
+	 	fMultiGraphs->Add(fGraphs[i]);
+	}
+
+	fMultiGraphs->Draw("AL");
+	fMultiGraphs->GetXaxis()->SetTimeDisplay(1);
+	fMultiGraphs->GetXaxis()->SetNdivisions(505,kFALSE);
+	fMultiGraphs->Draw("AL");
+	TLegend * legend = new TLegend(0.7,0.65,0.86,0.88);
+	legend->AddEntry(fGraphs[4],"V0A - Ring0","l");
+	legend->AddEntry(fGraphs[5],"V0A - Ring1","l");
+	legend->AddEntry(fGraphs[6],"V0A - Ring2","l");
+	legend->AddEntry(fGraphs[7],"V0A - Ring3","l");
+	legend->AddEntry(fGraphs[0],"V0C - Ring0","l");
+	legend->AddEntry(fGraphs[1],"V0C - Ring1","l");
+	legend->AddEntry(fGraphs[2],"V0C - Ring2","l");
+	legend->AddEntry(fGraphs[3],"V0C - Ring3","l");
+	legend->Draw();
+}

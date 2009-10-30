@@ -36,7 +36,7 @@ public:
 		  ,kMultiV0A,kMultiV0C,kChargeV0A,kChargeV0C,kChargeV0 
 		  ,kV0ATime,kV0CTime,kDiffTime
 		  ,kRawMIPV0A,kRawMIPV0C,kRawMIPV0,kRawMIPChannel
-		  ,kRawMeanChargePerRing,kRawMeanFlagPerRing} ;
+		  ,kRawMeanChargePerRing,kRawMeanFlagPerRing,kRawDQMCharge,kRawDQMFlag} ;
 	
  enum HESDType_t {kCellMultiV0A,kCellMultiV0C,kMIPMultiV0A,kMIPMultiV0C,kMIPMultiChannel
 		  ,kBBFlag,kBGFlag,kChargeChannel,kTimeChannel
@@ -72,14 +72,19 @@ private:
   size_t fNTotEvents;
   size_t fNSubEvents;
   size_t fTrendingUpdateEvent;
+  size_t fNTrendingUpdates;
   size_t fTrendingUpdateTime;
   UInt_t fCycleStartTime;
   UInt_t fCycleStopTime;
   Double_t fMonitorRate;
   Double_t fChargePerRing[8];
   Double_t fFlagPerRing[8];
+  Double_t fChargePerChannel[64];
+  Double_t fFlagPerChannel[64];
+  Double_t fMeanChargePerChannel[64];
+  Double_t fMeanFlagPerChannel[64];
 
-  ClassDef(AliVZEROQADataMakerRec,1)  // description 
+  ClassDef(AliVZEROQADataMakerRec,2)  // description 
 
 };
 
