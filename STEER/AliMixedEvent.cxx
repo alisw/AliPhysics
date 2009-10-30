@@ -126,47 +126,67 @@ Int_t AliMixedEvent::EventIndex(Int_t itrack)
   return  TMath::BinarySearch(fNEvents, fNTracksCumul, itrack);
 }
 
-void AliMixedEvent::ComputeVtx(TObjArray *vertices, Double_t *pos,Double_t *sig){
+Bool_t AliMixedEvent::ComputeVtx(TObjArray *vertices, Double_t *pos,Double_t *sig,Int_t *nContributors){
 //
 // Calculate the mean vertex psoitions from events in the buffer
  
     Int_t nentries = vertices->GetEntriesFast();
     Double_t sum[3]={0.,0.,0.};
     Double_t sumsigma[6]={0.,0.,0.,0.,0.,0.};
+
     
     for(Int_t ivtx = 0; ivtx < nentries; ivtx++){
 	AliVVertex *vtx=(AliVVertex*)vertices->UncheckedAt(ivtx);
-	if(!vtx) return;
 	Double_t covariance[6];
 	vtx->GetCovarianceMatrix(covariance);
 	Double_t vtxPos[3];
 	vtx->GetXYZ(vtxPos);
-	if(covariance[0]==0) continue;
+	if(TMath::Abs(covariance[0])<1.e-13) {
+	return kFALSE;
+	}else{
 	sum[0]+=vtxPos[0]*(1./covariance[0]);
 	sumsigma[0]+=(1./covariance[0]);
-	if(covariance[2]==0) continue;
+	}
+	if(TMath::Abs(covariance[2])<1.e-13) {
+	return kFALSE;
+	}else{
 	sum[1]+=vtxPos[1]*(1./covariance[2]);
 	sumsigma[2]+=(1./covariance[2]);
-	if(covariance[5]==0) continue;
+	}
+	if(TMath::Abs(covariance[5])<1.e-13) {
+	return kFALSE;
+	}else{
 	sum[2]+=vtxPos[2]*(1./covariance[5]);
 	sumsigma[5]+=(1./covariance[5]);
-	if(covariance[1]==0) continue;
+	}
+	if(TMath::Abs(covariance[1])<1.e-13) {
+         sumsigma[1]+=0.;
+	}else{
 	sumsigma[1]+=(1./covariance[1]);
-	if(covariance[3]==0) continue;
+	}
+	if(TMath::Abs(covariance[3])<1.e-13) {
+	sumsigma[3]+=0.;
+	}else{
 	sumsigma[3]+=(1./covariance[3]);
-	if(covariance[4]==0) continue;
+	}
+	if(TMath::Abs(covariance[4])<1.e-13) {
+	sumsigma[4]+=0.;
+	}else{
 	sumsigma[4]+=(1./covariance[4]);
+	}
+
+     nContributors[0]=nContributors[0]+vtx->GetNContributors();
     }
     
     for(Int_t i=0;i<3;i++){
-	if(sumsigma[i]==0) continue;
+	if(TMath::Abs(sumsigma[i])<1.e-13) continue;
 	pos[i]=sum[i]/sumsigma[i];
     }
     for(Int_t i2=0;i2<6;i2++){
-	if(sumsigma[i2]==0) {sig[i2]=0.; continue;}
+	if(TMath::Abs(sumsigma[i2])<1.e-13) {sig[i2]=0.; continue;}
 	sig[i2]=1./sumsigma[i2];
     }
-    return;
+    return kTRUE;
 }
 
 
