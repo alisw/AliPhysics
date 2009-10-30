@@ -68,7 +68,7 @@ void AliDAJetFinder::FindJets()
     TMatrixD *mPyx= new TMatrixD();
     TMatrixD *mY  = new TMatrixD();
 	InitDetAnn(dEtSum,xData,vPx,vPy,mPyx,mY);
-	if (!fNin) return;
+	if (fNin < fNclustMax) return;
 
 	Int_t nc=1, nk;
 	DoubleClusters(nc,nk,vPy,mY);
