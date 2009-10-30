@@ -861,7 +861,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
 		
 
     AliLog::SetGlobalDebugLevel(0);
-    AliLog::SetGlobalLogLevel(AliLog::kError);
+    AliLog::SetGlobalLogLevel(AliLog::kFatal);
 		
     // ------------------------------------------------------------------------
 		
