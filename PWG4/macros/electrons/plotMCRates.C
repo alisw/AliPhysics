@@ -29,6 +29,12 @@ void plotMCRates() {
 void drawAnnualYields() {
 
   TCanvas* crates = new TCanvas();
+  crates->SetFillColor(0);
+  crates->SetBorderMode(0);
+  crates->SetBorderSize(2);
+  crates->SetFrameBorderMode(0);
+  crates->SetFrameBorderMode(0);
+
   crates->cd();
   gPad->SetLogy();
   allmc->SetXTitle("p_{T} (GeV/c)");
@@ -45,6 +51,7 @@ void drawAnnualYields() {
   wzmc->Draw("same");
 
   leg = new TLegend(0.6,0.6,0.9,0.9);
+  leg->SetFillColor(0);
   leg->SetTextSize(leg->GetTextSize()*1.2);
   leg->AddEntry(allmc,"All MC electrons","l");
   leg->AddEntry(belemc,"Bottom e","l");
@@ -61,6 +68,12 @@ void drawAnnualYields() {
 void drawSigBkg() {
 
   TCanvas* csigbkg = new TCanvas();
+  csigbkg->SetFillColor(0);
+  csigbkg->SetBorderMode(0);
+  csigbkg->SetBorderSize(2);
+  csigbkg->SetFrameBorderMode(0);
+  csigbkg->SetFrameBorderMode(0);
+
   csigbkg->cd();
   gPad->SetLogy();
   allmc->SetXTitle("p_{T} (GeV/c)");
@@ -75,6 +88,7 @@ void drawSigBkg() {
   wallemc->Draw("same");
 
   TLegend* leg1 = new TLegend(0.6,0.6,0.9,0.9);
+  leg1->SetFillColor(0);
   leg1->SetTextSize(leg->GetTextSize()*1.2);
   leg1->AddEntry(allmc,"All MC electrons","l");
   leg1->AddEntry(sigemc,"B-Jet Events","l");
@@ -89,6 +103,12 @@ void drawSigBkg() {
 void drawPtCutRates() {
 
   TCanvas* cptcut = new TCanvas();
+  cptcut->SetFillColor(0);
+  cptcut->SetBorderMode(0);
+  cptcut->SetBorderSize(2);
+  cptcut->SetFrameBorderMode(0);
+  cptcut->SetFrameBorderMode(0);
+
   cptcut->cd();
   gPad->SetLogy();
   TH1F* alleptcut = GetPtCutHisto(allmc);
@@ -118,6 +138,12 @@ void drawPtCutRates() {
 void drawHadEleRatios() {
 
   TCanvas* ceh = new TCanvas();
+  ceh->SetFillColor(0);
+  ceh->SetBorderMode(0);
+  ceh->SetBorderSize(2);
+  ceh->SetFrameBorderMode(0);
+  ceh->SetFrameBorderMode(0);
+
   ceh->cd();
   gPad->SetLogy();
   gStyle->SetOptStat(0);
@@ -147,11 +173,12 @@ void drawHadEleRatios() {
   behratio->GetXaxis()->SetRangeUser(10.,49.);
   allratio->SetMarkerStyle(20);
   behratio->SetMarkerStyle(24);
-  allratio->Fit("pol0");
+  behratio->SetMarkerColor(1);
   allratio->Draw();
   behratio->Draw("psame");
 
   TLegend *heleg = new TLegend(0.4,0.75,0.75,0.9);
+  heleg->SetFillColor(0);
   heleg->SetTextSize(heleg->GetTextSize()*1.5);
   heleg->AddEntry(allratio,"All electrons","l");
   heleg->AddEntry(behratio,"Bottom electrons","p");
