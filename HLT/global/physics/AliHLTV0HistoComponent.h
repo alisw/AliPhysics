@@ -68,6 +68,21 @@ private:
    */ 
   int Configure(const char* arguments);
   
+  // cuts: 
+  // [0] == 0   --- N clusters on each daughter track
+  // [1] == 2.5 --- (daughter-primVtx)/sigma >= cut
+  // [2] == 3.5 --- (v0 - primVtx)/sigma <= cut
+  // [3] == 3.0 --- (decay_length)/sigma >= cut
+  // [4] == 0.0 --- (decay_length)[cm]   >= cut
+  // [5] == 300.0 --- (v0 radius)[cm]    <= cut
+  // [6] == 3.5  --- (v0 mass - true value)/sigma <= cut (for identification)
+  // [7] == 0.05 --- (v0 mass - true value)       <= cut (for identification)
+
+  Double_t fGammaCuts[8]; // cuts for gammas
+  Double_t fKsCuts[8]; // cuts for Ks
+  Double_t fLambdaCuts[8]; // cuts for Lambdas
+  Double_t fAPCuts[8]; // cuts for AP plot
+
   TH1F *fGamma;   // Gamma inv. mass
   TH1F *fKShort;   // Ks inv. mass
   TH1F *fLambda;   // Lambda inv. mass

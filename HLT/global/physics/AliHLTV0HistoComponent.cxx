@@ -142,6 +142,52 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fNKShorts = 0;
   fNLambdas = 0;
 
+  // cuts: 
+  // [0] == 0   --- N clusters on each daughter track
+  // [1] == 2.5 --- (daughter-primVtx)/sigma >= cut
+  // [2] == 3.5 --- (v0 - primVtx)/sigma <= cut
+  // [3] == 3.0 --- (decay_length)/sigma >= cut
+  // [4] == 0.0 --- (decay_length)[cm]   >= cut
+  // [5] == 300.0 --- (v0 radius)[cm]    <= cut
+  // [6] == 3.5  --- (v0 mass - true value)/sigma <= cut (for identification)
+  // [7] == 0.05 --- (v0 mass - true value)       <= cut (for identification)
+
+  fGammaCuts[0] = 0;
+  fGammaCuts[1] = 2.5;
+  fGammaCuts[2] = 3.5;
+  fGammaCuts[3] = 3.0;
+  fGammaCuts[4] = 0.0;
+  fGammaCuts[5] = 300.0;
+  fGammaCuts[6] = 3.5;
+  fGammaCuts[7] = 0.05;
+
+  fAPCuts[0] = 0;
+  fAPCuts[1] = 2.5;
+  fAPCuts[2] = 3.5;
+  fAPCuts[3] = 3.0;
+  fAPCuts[4] = 0.0;
+  fAPCuts[5] = 50.0;
+  fAPCuts[6] = 4.0;
+  fAPCuts[7] = 0.05;
+
+  fKsCuts[0] = 60;
+  fKsCuts[1] = 2.5;
+  fKsCuts[2] = 3.5;
+  fKsCuts[3] = 3.0;
+  fKsCuts[4] = 1.5;
+  fKsCuts[5] = 50.0;
+  fKsCuts[6] = 4.0;
+  fKsCuts[7] = 0.1;
+
+  fLambdaCuts[0] = 0;
+  fLambdaCuts[1] = 3.0;
+  fLambdaCuts[2] = 3.5;
+  fLambdaCuts[3] = 3.0;
+  fLambdaCuts[4] = 4.0;
+  fLambdaCuts[5] = 50.0;
+  fLambdaCuts[6] = 4.0;
+  fLambdaCuts[7] = 0.1;
+
   int iResult=0;
   TString configuration="";
   TString argument="";
@@ -200,17 +246,36 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
       double dev2 = kf2.GetDeviationFromVertex( primVtx );
       
       AliKFParticle v0( kf1, kf2 );
+      double devPrim = v0.GetDeviationFromVertex( primVtx );
       primVtx+=v0;
       v0.SetProductionVertex( primVtx );
 
+      Double_t length, sigmaLength;
+      if( v0.GetDecayLength( length, sigmaLength ) ) continue;
+
+      double dx = v0.GetX()-primVtx.GetX();
+      double dy = v0.GetY()-primVtx.GetY();
+      double r = sqrt(dx*dx + dy*dy);
+
       // Gamma finder
+
       bool isGamma = 0;
-      {
+      
+      if( 
+	 t1->GetTPCNcls()>=fGammaCuts[0]
+	 && t2->GetTPCNcls()>=fGammaCuts[0]
+	 && dev1>=fGammaCuts[1]
+	 && dev2>=fGammaCuts[1]
+	 && devPrim <= fGammaCuts[2]
+	 && length >= fGammaCuts[3]*sigmaLength
+	 && length >= fGammaCuts[4]
+	 && r <= fGammaCuts[5]
+	 ){
 	double mass, error;       
 	v0.GetMass(mass,error);
 	if( fGamma ) fGamma->Fill( mass );
 
-	if( TMath::Abs(mass)<0.05 ){
+	if( TMath::Abs(mass)<fGammaCuts[6]*error && TMath::Abs(mass)<fGammaCuts[7] ){
 	  AliKFParticle gamma = v0;
 	  gamma.SetMassConstraint(0);
 	  if( fGammaXY ) fGammaXY->Fill(gamma.GetX(), gamma.GetY());
@@ -221,16 +286,9 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
       
       if( isGamma ) continue;
 
-      double dx = v0.GetX()-primVtx.GetX();
-      double dy = v0.GetY()-primVtx.GetY();
-      double r = sqrt(dx*dx + dy*dy);
-
-      if( r>50. ) continue;
-
       // AP plot
 
-      double ap=0;
-
+      double pt=0, ap=0;
       {
 	AliKFParticle kf01 = kf1, kf02 = kf2;
 	kf01.SetProductionVertex(v0);
@@ -243,19 +301,39 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 	double p = sqrt(px*px+py*py+pz*pz);
 	double l1 = (px*px1 + py*py1 + pz*pz1)/p;
 	double l2 = (px*px2 + py*py2 + pz*pz2)/p;
-	double pt = sqrt(px1*px1+py1*py1+pz1*pz1 - l1*l1);
+	pt = sqrt(px1*px1+py1*py1+pz1*pz1 - l1*l1);
 	ap = (l1-l2)/(l1+l2);
+      }
+
+      if( 
+	 t1->GetTPCNcls()>=fAPCuts[0]
+	 && t2->GetTPCNcls()>=fAPCuts[0]
+	 && dev1>=fAPCuts[1]
+	 && dev2>=fAPCuts[1]
+	 && devPrim <= fAPCuts[2]
+	 && length >= fAPCuts[3]*sigmaLength
+	 && length >= fAPCuts[4]
+	 && r <= fAPCuts[5]
+	 ){	
 	if( fAP ) fAP->Fill( ap, pt );
       } 
 
-      double length = v0.GetDecayLength();
 
       // KShort finder
       
       bool isKs = 0;
       
-      if( t1->GetTPCNcls()>=60 && t2->GetTPCNcls()>=60 && length>=1.5 ){
-	
+      if( 
+	 t1->GetTPCNcls()>=fKsCuts[0]
+	 && t2->GetTPCNcls()>=fKsCuts[0]
+	 && dev1>=fKsCuts[1]
+	 && dev2>=fKsCuts[1]
+	 && devPrim <= fKsCuts[2]
+	 && length >= fKsCuts[3]*sigmaLength
+	 && length >= fKsCuts[4]
+	 && r <= fKsCuts[5]
+	 ){	
+    
 	AliKFParticle piN( *t1->GetInnerParam(), 211 );	
 	AliKFParticle piP( *t2->GetInnerParam(), 211 );	
 	
@@ -266,21 +344,27 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 	Ks.GetMass( mass, error);
 	if( fKShort ) fKShort->Fill( mass );
 	
-	if( TMath::Abs( mass - kKsMass )<3.5*error ){  
+	if( TMath::Abs( mass - kKsMass )<=fKsCuts[6]*error && TMath::Abs( mass - kKsMass )<=fKsCuts[7] ){  
 	  isKs = 1;
 	  fNKShorts++;
 	}
       }
       
       if( isKs ) continue;
-
+      
       // Lambda finder 
      
-      if( t1->GetTPCNcls()>=60 && t2->GetTPCNcls()>=60 
-	  && dev1>=3. && dev2>=3. 
-	  && length>=4. 
-	  && TMath::Abs( ap )>.4
-	  ){
+      if( 
+	 t1->GetTPCNcls()>=fLambdaCuts[0]
+	 && t2->GetTPCNcls()>=fLambdaCuts[0]
+	 && dev1>=fLambdaCuts[1]
+	 && dev2>=fLambdaCuts[1]
+	 && devPrim <= fLambdaCuts[2]
+	 && length >= fLambdaCuts[3]*sigmaLength
+	 && length >= fLambdaCuts[4]
+	 && r <= fLambdaCuts[5]
+	 && TMath::Abs( ap )>.4
+	 ){
 	
 	AliKFParticle kP, kpi;
 	if( ap<0 ){ 
@@ -297,7 +381,7 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 	lambda.GetMass( mass, error);
 	if( fLambda ) fLambda->Fill( mass );
 
-	if( TMath::Abs( mass - kLambdaMass )<3.5*error ){  
+	if( TMath::Abs( mass - kLambdaMass )<=fLambdaCuts[6]*error && TMath::Abs( mass - kKsMass )<=fLambdaCuts[7] ){
 	  fNLambdas++;
 	}	
       }
@@ -330,18 +414,64 @@ int AliHLTV0HistoComponent::Configure(const char* arguments)
   TString argument;
   
   TObjArray* pTokens=allArgs.Tokenize(" ");
-  
+  int bMissingParam=0;
+  double par[8];
+
   if (pTokens) {
     for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
       argument=((TObjString*)pTokens->At(i))->GetString();
       if (argument.IsNull()) continue;
-      
-      if (argument.CompareTo("-plot-all")==0) {
-      //HLTInfo("Ploting charge of all clusters");
-      //fPlotAll = kTRUE;
-      //continue;
-      }      
-      else {
+
+      if (argument.CompareTo("-cutsGamma")==0) {
+	TString spar = "";	
+	for( int j=0; j<8; j++ ){
+	  if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	  spar+=" ";
+	  spar+=((TObjString*)pTokens->At(i))->GetString();
+	  fGammaCuts[j]=((TObjString*)pTokens->At(i))->GetString().Atof();
+	}
+	if( !bMissingParam ){
+	  HLTInfo("Gamma cuts are set to: %s", spar.Data());
+	  continue;
+	}
+      } else if (argument.CompareTo("-cutsAP")==0) {
+	TString spar = "";	
+	for( int j=0; j<8; j++ ){
+	  if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	  spar+=" ";
+	  spar+=((TObjString*)pTokens->At(i))->GetString();
+	  fAPCuts[j]=((TObjString*)pTokens->At(i))->GetString().Atof();
+	}
+	if( !bMissingParam ){
+	  HLTInfo("AP cuts are set to: %s", spar.Data());
+	  continue;
+	}
+      }
+      else if (argument.CompareTo("-cutsKs")==0) {
+	TString spar = "";	
+	for( int j=0; j<8; j++ ){
+	  if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	  spar+=" ";
+	  spar+=((TObjString*)pTokens->At(i))->GetString();
+	  fKsCuts[j]=((TObjString*)pTokens->At(i))->GetString().Atof();
+	}
+	if( !bMissingParam ){
+	  HLTInfo("KShort cuts are set to: %s", spar.Data());
+	  continue;
+	}
+      } else if (argument.CompareTo("-cutsLambda")==0) {
+	TString spar = "";	
+	for( int j=0; j<8; j++ ){
+	  if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	  spar+=" ";
+	  spar+=((TObjString*)pTokens->At(i))->GetString();
+	  fLambdaCuts[j]=((TObjString*)pTokens->At(i))->GetString().Atof();
+	}
+	if( !bMissingParam ){
+	  HLTInfo("Lampda cuts are set to: %s", spar.Data());
+	  continue;
+	}
+      }else {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
 	break;

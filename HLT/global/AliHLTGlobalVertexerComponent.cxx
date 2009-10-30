@@ -37,7 +37,6 @@ using namespace std;
 #include "AliESDVertex.h"
 #include "AliESDv0.h"
 #include "AliHLTMessage.h"
-#include "AliHLTVertexer.h"
 #include "TMath.h"
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
@@ -56,7 +55,7 @@ AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerComponent()
   fHistPrimVertexZY(0),
   fNEvents(0),
   fPlotHistograms(1),
-  fFillVtxConstrainedTracks(1),
+  fFitTracksToVertex(1),
   fConstrainedTrackDeviation(4.),
   fV0DaughterPrimDeviation( 2.5 ),
   fV0PrimDeviation( 3.5 ),
@@ -132,29 +131,29 @@ int AliHLTGlobalVertexerComponent::DoInit( int argc, const char** argv )
 {
   // init
   
-  fHistPrimVertexXY = new TH2F("primVertexXY","HLT:  Primary vertex distribution in XY",60,-5.,5.,60,-5.,5.);
+  fHistPrimVertexXY = new TH2F("primVertexXY","HLT:  Primary vertex distribution in XY",60,-2.,2.,60,-2.,2.);
   fHistPrimVertexXY->SetMarkerStyle(8);
   fHistPrimVertexXY->SetMarkerSize(0.4);
   fHistPrimVertexXY->SetYTitle("Y");
   fHistPrimVertexXY->SetXTitle("X");
   fHistPrimVertexXY->SetStats(0);
-  fHistPrimVertexXY->SetOption("COLZ");
+  //fHistPrimVertexXY->SetOption("COLZ");
 
-  fHistPrimVertexZX = new TH2F("primVertexZX","HLT:  Primary vertex distribution in ZX",60,-15.,15.,60,-5.,5.);
+  fHistPrimVertexZX = new TH2F("primVertexZX","HLT:  Primary vertex distribution in ZX",60,-15.,15.,60,-2.,2.);
   fHistPrimVertexZX->SetMarkerStyle(8);
   fHistPrimVertexZX->SetMarkerSize(0.4);
   fHistPrimVertexZX->SetYTitle("X");
   fHistPrimVertexZX->SetXTitle("Z");
   fHistPrimVertexZX->SetStats(0);
-  fHistPrimVertexZX->SetOption("COLZ");
+  //fHistPrimVertexZX->SetOption("COLZ");
 
-  fHistPrimVertexZY = new TH2F("primVertexZY","HLT:  Primary vertex distribution in ZY",60,-15.,15.,60,-5.,5.);
+  fHistPrimVertexZY = new TH2F("primVertexZY","HLT:  Primary vertex distribution in ZY",60,-10.,10.,60,-2.,2.);
   fHistPrimVertexZY->SetMarkerStyle(8);
   fHistPrimVertexZY->SetMarkerSize(0.4);
   fHistPrimVertexZY->SetYTitle("Y");
   fHistPrimVertexZY->SetXTitle("Z");
   fHistPrimVertexZY->SetStats(0);
-  fHistPrimVertexZY->SetOption("COLZ");
+  //fHistPrimVertexZY->SetOption("COLZ");
 
   fNEvents =0;
 
@@ -189,7 +188,7 @@ int AliHLTGlobalVertexerComponent::DoDeinit()
   fHistPrimVertexZY = 0;
 
   fPlotHistograms = 1;
-  fFillVtxConstrainedTracks = 1;
+  fFitTracksToVertex = 1;
   fConstrainedTrackDeviation = 4.;
   fV0DaughterPrimDeviation = 2.5 ;
   fV0PrimDeviation =3.5;
@@ -213,12 +212,10 @@ int AliHLTGlobalVertexerComponent::DoEvent(const AliHLTComponentEventData& /*evt
     event->GetStdContent();
 
     // primary vertex & V0's 
-      
-    AliHLTVertexer vertexer;
-    vertexer.SetESD( event );
-    vertexer.SetFillVtxConstrainedTracks( fFillVtxConstrainedTracks );
-    vertexer.FindPrimaryVertex();
-    vertexer.FindV0s();
+          
+    SetESD( event );
+    FindPrimaryVertex();
+    FindV0s();
     const AliESDVertex *vPrim = event->GetPrimaryVertexTracks();
 
     // plot histograms
@@ -260,19 +257,13 @@ int AliHLTGlobalVertexerComponent::Configure(const char* arguments)
       if (argument.CompareTo("-fitTracksToVertex")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("fitTracksToVertex is set set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-	fFillVtxConstrainedTracks=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	fFitTracksToVertex=((TObjString*)pTokens->At(i))->GetString().Atoi();
 	continue;
       }
       else if (argument.CompareTo("-plotHistograms")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("plotHistograms is set set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	fPlotHistograms=((TObjString*)pTokens->At(i))->GetString().Atoi();
-	continue;
-      }
-      else if (argument.CompareTo("-fillVtxConstrainedTracks")==0) {
-	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTInfo("Filling of vertex constrained tracks is set set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-	fFillVtxConstrainedTracks=((TObjString*)pTokens->At(i))->GetString().Atoi();
 	continue;
       }
       else if (argument.CompareTo("-constrainedTrackDeviation")==0) {
@@ -426,7 +417,7 @@ void AliHLTGlobalVertexerComponent::FindPrimaryVertex(  )
 
     // relate the tracks to vertex
 
-    if( fFillVtxConstrainedTracks ){      
+    if( fFitTracksToVertex ){      
       for( Int_t i = 0; i<nTracks; i++ ){
 	if( !fTrackInfos[i].fPrimUsedFlag ) continue;	  
 	if( fTrackInfos[i].fPrimDeviation > fConstrainedTrackDeviation ) continue;
@@ -523,7 +514,7 @@ void AliHLTGlobalVertexerComponent::FindV0s(  )
 
       // relate the tracks to vertex
 
-      if( fFillVtxConstrainedTracks ){
+      if( fFitTracksToVertex ){
 	if( constrainedV0[iTr] || constrainedV0[jTr]
 	    || info.fPrimDeviation < fConstrainedTrackDeviation || jnfo.fPrimDeviation < fConstrainedTrackDeviation ) continue;
 	AliESDVertex vESD(v0.Parameters(), v0.CovarianceMatrix(), v0.GetChi2(), 2);

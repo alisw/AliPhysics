@@ -103,7 +103,7 @@ private:
   Int_t fNEvents; // n of processed events
 
   Bool_t fPlotHistograms;// flag to produce histogramms
-  Bool_t fFillVtxConstrainedTracks; // flag to store vertex constrained track parameters
+  Bool_t fFitTracksToVertex; // flag to store vertex constrained track parameters
   Double_t fConstrainedTrackDeviation; // deviation of a track from prim.vtx <=cut 
   Double_t fV0DaughterPrimDeviation; // v0: daughters deviation from prim vertex >= cut
   Double_t fV0PrimDeviation; // v0: v0 deviation from prim vertex <= cut
