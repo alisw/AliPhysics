@@ -35,16 +35,6 @@
 #include "AliTRDpidRefMaker.h"
 #endif
 
-/* class TTree; */
-/* class TObjArray; */
-/* class TEventList; */
-/* class TMultiLayerPerceptron; */
-/* class AliPID; */
-/* class AliTRDtrackV1; */
-/* class AliTRDReconstructor; */
-
-/* class AliTRDpidRefMakerNN : public AliTRDrecoTask */
-
 class TEventList;
 class TMultiLayerPerceptron;
 class AliTRDpidRefMakerNN : public AliTRDpidRefMaker
