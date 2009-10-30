@@ -64,6 +64,8 @@ AliMUON2DMapIteratorByI::operator=(const TIterator& /*rhs*/)
 AliMUON2DMapIteratorByI::~AliMUON2DMapIteratorByI()
 {
   /// dtor
+  delete fIter1;
+  delete fIter2;
 }
 
 //_____________________________________________________________________________
@@ -101,6 +103,7 @@ AliMUON2DMapIteratorByI::Next()
   
   if (!o)
   {
+    delete fIter2;
     fIter2 = NextIterator();
     return Next();
   }  
