@@ -6,6 +6,7 @@ TRACKING_CA:=	tracking-ca/AliHLTTPCCATrack.h \
 		tracking-ca/AliHLTTPCCATracker.h \
 		tracking-ca/AliHLTTPCCAOutTrack.h  \
 		tracking-ca/AliHLTTPCCATrackParam.h \
+		tracking-ca/AliHLTTPCCATrackParam2.h \
 		tracking-ca/AliHLTTPCCATrackConvertor.h \
 		tracking-ca/AliHLTTPCCAParam.h     \
 		tracking-ca/AliHLTTPCCARow.h \

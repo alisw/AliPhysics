@@ -184,16 +184,16 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fKsCuts[3] = 3.0;
   fKsCuts[4] = 1.5;
   fKsCuts[5] = 50.0;
-  fKsCuts[6] = 5.0;
+  fKsCuts[6] = 4.0;
   fKsCuts[7] = 0.03;
 
-  fLambdaCuts[0] = 0;
+  fLambdaCuts[0] = 60;
   fLambdaCuts[1] = 3.0;
   fLambdaCuts[2] = 3.5;
   fLambdaCuts[3] = 3.0;
-  fLambdaCuts[4] = 4.0;
+  fLambdaCuts[4] = 3.0;
   fLambdaCuts[5] = 50.0;
-  fLambdaCuts[6] = 5.0;
+  fLambdaCuts[6] = 4.0;
   fLambdaCuts[7] = 0.03;
 
   int iResult=0;
@@ -354,8 +354,7 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 	
 	double mass, error;
 	Ks.GetMass( mass, error);
-	if( fKShort ) fKShort->Fill( mass );
-	
+	if( fKShort ) fKShort->Fill( mass );	
 	if( TMath::Abs( mass - kKsMass )<=fKsCuts[6]*error && TMath::Abs( mass - kKsMass )<=fKsCuts[7] ){  
 	  isKs = 1;
 	  fNKShorts++;
@@ -375,7 +374,7 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 	 && length >= fLambdaCuts[3]*sigmaLength
 	 && length >= fLambdaCuts[4]
 	 && r <= fLambdaCuts[5]
-	 && TMath::Abs( ap )>.4
+	 && TMath::Abs( ap )>.3
 	 ){
 	
 	AliKFParticle kP, kpi;
@@ -392,10 +391,9 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 	double mass, error;
 	lambda.GetMass( mass, error);
 	if( fLambda ) fLambda->Fill( mass );
-
 	if( TMath::Abs( mass - kLambdaMass )<=fLambdaCuts[6]*error && TMath::Abs( mass - kLambdaMass )<=fLambdaCuts[7] ){
 	  fNLambdas++;
-	}	
+	}
       }
 
     }// V0's
