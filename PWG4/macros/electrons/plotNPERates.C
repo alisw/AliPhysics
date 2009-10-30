@@ -19,6 +19,7 @@ void plotNPERates(const char* which = "TTE") {
 
   //define common legend
   leg = new TLegend(0.5,0.6,0.9,0.9);
+  leg->SetFillColor(0);
   leg->SetTextSize(leg->GetTextSize()*1.2);
   //leg->AddEntry(alltte,"All N-P e candidates","l");
   leg->AddEntry(sumtte,"All N-P electrons","l");
@@ -39,6 +40,12 @@ void plotNPERates(const char* which = "TTE") {
 void drawAnnualYields(char* which = "EMC") {
 
   TCanvas* crates = new TCanvas();
+  crates->SetFillColor(0);
+  crates->SetBorderMode(0);
+  crates->SetBorderSize(2);
+  crates->SetFrameBorderMode(0);
+  crates->SetFrameBorderMode(0);
+
   crates->cd();
   gPad->SetLogy();
 
@@ -119,6 +126,11 @@ void drawAnnualYields(char* which = "EMC") {
 void drawPtCutRates(char* which = "EMC") {
 
   TCanvas* cptcut = new TCanvas();
+  cptcut->SetFillColor(0);
+  cptcut->SetBorderMode(0);
+  cptcut->SetBorderSize(2);
+  cptcut->SetFrameBorderMode(0);
+  cptcut->SetFrameBorderMode(0);
   cptcut->cd();
   gPad->SetLogy();
   if(strcmp(which,"EMC")==0) {
@@ -211,6 +223,12 @@ TH1F* drawCompareTruth() {
   eerr->SetFillColor(kRed-8);
 
   TCanvas* ctruth = new TCanvas();
+  ctruth->SetFillColor(0);
+  ctruth->SetBorderMode(0);
+  ctruth->SetBorderSize(2);
+  ctruth->SetFrameBorderMode(0);
+  ctruth->SetFrameBorderMode(0);
+
   ctruth->cd();
   gPad->SetLogy();
   mctruth->SetTitle("Comparison of MC and reco HF+W electrons");
@@ -227,6 +245,7 @@ TH1F* drawCompareTruth() {
   sumHFemc->SetLineColor(kBlue);
   sumHFemc->Draw("same");
   TLegend *legy = new TLegend(0.3,0.7,0.9,0.9);
+  legy->SetFillColor(0);
   legy->AddEntry(mctruth,"MC HF+W electrons","l");
   legy->AddEntry(sumHFemc,"Rec (EMCAL) HF+W electrons","l");
   legy->AddEntry(hcorr,"Eff. corrected reco HF+W electrons","l");

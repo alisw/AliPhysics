@@ -17,6 +17,7 @@ void plotPIDCompare(char* which = "TTE") {
 
   //define common legend
   TLegend* leg = new TLegend(0.5,0.6,0.9,0.9);
+  leg->SetFillColor(0);
   leg->SetTextSize(leg->GetTextSize()*1.2);
   //leg->AddEntry(alltte,"All N-P e candidates","l");
   leg->AddEntry(sumtte,"All N-P electrons","l");
@@ -31,6 +32,11 @@ void plotPIDCompare(char* which = "TTE") {
   gStyle->SetOptStat(0);
   
   TCanvas* crates = new TCanvas("crates","",0,0,1600,600);
+  crates->SetFillColor(0);
+  crates->SetBorderMode(0);
+  crates->SetBorderSize(2);
+  crates->SetFrameBorderMode(0);
+  crates->SetFrameBorderMode(0);
   crates->Divide(2,1);
   crates->cd(1);
   gPad->SetLogy();
@@ -58,6 +64,7 @@ void plotPIDCompare(char* which = "TTE") {
   temphemc->Draw("same");
 
   TLegend* leg2 = new TLegend(0.35,0.6,0.9,0.9);
+  leg2->SetFillColor(0);
   leg2->SetTextSize(leg->GetTextSize()*1.2);
   leg2->AddEntry(alltrk,"Electron Candidates (Tracking PID only)","l");
   leg2->AddEntry(htrk,"Hadron Contamination (Tracking PID only)","l");
@@ -80,6 +87,7 @@ void plotPIDCompare(char* which = "TTE") {
   }
   subtrk->SetYTitle("Annual yield in EMCAL dN/dp_{T} (GeV/c)^{-1}");
   subtrk->SetLineColor(kRed);
+  subtrk->SetMarkerStyle(20); subtrk->SetMarkerColor(kRed);
   subtrk->Draw();
   //  sumtrk->Rebin(2); sumtrk->Scale(0.5);
   //sumtrk->Draw("same");
@@ -88,22 +96,49 @@ void plotPIDCompare(char* which = "TTE") {
   for(Int_t i = 1; i <= tempallemc->GetNbinsX(); i++) {
     Double_t diff = tempallemc->GetBinContent(i) - temphemc->GetBinContent(i);
     Double_t unc = 0.;
-    if(diff < 0.) diff = 0.;
+    if(diff < 0.) diff = subemc->GetBinContent(i-1);
     if(diff > 0)
       unc = diff/TMath::Sqrt(diff+2.*temphemc->GetBinContent(i));
     //    printf("Cand %d, Contam %d, diff %d, unc %d\n",tempallemc->GetBinContent(i),temphemc->GetBinContent(i), diff, unc);
     subemc->SetBinContent(i,diff);
     subemc->SetBinError(i,unc);
   }
-  subemc->SetLineColor(kCyan);
-  subemc->Draw("same");
 
+  TFile* effic = new TFile("elec_eff.root");
+  TH1F* heff = (TH1F*)effic->Get("h111");
+  heff->Rebin(2); heff->Scale(0.5);
+  TH1F* hcorr = (TH1F*)subemc->Clone();
+  hcorr->SetName("hcorr");
+  for(Int_t i = 1; i < heff->GetNbinsX(); i++) {
+    Double_t pt = heff->GetBinCenter(i);
+    Double_t eff = heff->GetBinContent(i);
+    Double_t corr = 0.;
+    if(eff > 0.) corr = hcorr->GetBinContent(i)/eff;
+    hcorr->SetBinContent(i,corr);
+  }
+
+  Double_t efinal = 0.258;
+  TGraphErrors* eerr = new TGraphErrors();
+  eerr->SetName("emcErr");
+  for(Int_t i = 1; i <= hcorr->GetNbinsX(); i++) {
+    eerr->SetPoint(i-1,hcorr->GetBinCenter(i),hcorr->GetBinContent(i));
+    eerr->SetPointError(i-1,0.,efinal*hcorr->GetBinContent(i));
+  }
+  eerr->SetFillColor(kRed-8);
+  eerr->Draw("3same");
+  subtrk->Draw("same");
+  hcorr->SetMarkerStyle(20); hcorr->SetMarkerColor(kBlue);
+  hcorr->SetLineColor(kBlue);
+  hcorr->Draw("same");
+  
   allmc->Draw("same");
   mchad->Draw("same");
 
   TLegend *legx = new TLegend(0.3,0.7,0.9,0.9);
-  legx->AddEntry(subtrk,"Signal (candidates - contam) (Tracking PID only)","l");
-  legx->AddEntry(subemc,"Signal (candidates - contam) (EMCAL PID)","l");
+  legx->SetFillColor(0);
+  legx->AddEntry(subtrk,"Signal (candidates - contam) (Tracking PID only)","pl");
+  legx->AddEntry(hcorr,"Eff. corrected signal (EMCAL PID)","pl");
+  legx->AddEntry(eerr,"Systematic uncertainty","f");
   legx->AddEntry(allmc,"MC Electrons","l");
   legx->AddEntry(mchad,"MC Hadrons","l");
   legx->Draw();
