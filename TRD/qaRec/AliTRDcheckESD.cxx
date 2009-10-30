@@ -119,6 +119,64 @@ void AliTRDcheckESD::CreateOutputObjects()
 }
 
 //____________________________________________________________________
+Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
+{
+  if(!gPad){
+    AliWarning("Please provide a canvas to draw results.");
+    return kFALSE;
+  }
+  TGraph *g(0x0); TH1 *h(0x0); TLegend *leg(0x0);
+  switch(ifig){
+  case kNCl:
+    if(!fHistos || !(h=(TH1I*)fHistos->At(kNCl))) break;
+    h->Draw("c");
+    return kTRUE;
+  case kTRDstat:
+    leg=new TLegend(.5, .75, .98, .98);
+    leg->SetBorderSize(1); leg->SetFillColor(0);
+    leg->SetHeader("Tracking Efficiency");
+    for(Int_t ieff=0; ieff<4; ieff++){
+      if(!(g=GetGraph(ieff, ""))) break;
+      if(!ieff){
+        if((h=(TH1S*)gROOT->FindObject("frame"))) delete h;
+        h=new TH1S("h","",100, 0., 15.);
+        h->SetLineColor(1);h->SetLineWidth(1);
+        h->SetMinimum(0.2);h->SetMaximum(1.2);
+        h->SetXTitle("p_{T} [GeV/c]");
+        h->SetYTitle("Efficiency");
+        h->Draw();
+      }
+      g->Draw("pc"); leg->AddEntry(g, g->GetTitle(), "pl");
+    }
+    leg->Draw();
+    return kTRUE;
+  case kTRDmom:
+    leg=new TLegend(.6, .75, .98, .98);
+    leg->SetBorderSize(1); leg->SetFillColor(0);
+    leg->SetHeader("Energy loss");
+    for(Int_t ieff=0; ieff<2; ieff++){
+      if(!(g=GetGraph(4+ieff, ""))) break;
+      if(!ieff){
+        if((h=(TH1S*)gROOT->FindObject("frame"))) delete h;
+        h=new TH1S("h","",100, -0.5, 5.5);
+        h->SetLineColor(0);h->SetLineWidth(1);
+        h->SetMinimum(-0.5);h->SetMaximum(1.2);
+        h->SetXTitle("layer");
+        h->SetYTitle("p_{T}^{Inner TPC} - p_{T}^{layer} [GeV/c]");
+        h->Draw();
+      }
+      g->Draw("p"); leg->AddEntry(g, g->GetTitle(), "pl");
+    }
+    leg->Draw();
+    return kTRUE;
+  default:
+    break;
+  }
+  AliInfo(Form("Reference plot [%d] missing result", ifig));
+  return kFALSE;
+}
+
+//____________________________________________________________________
 TGraph* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
 {
 // Retrieve graph with "id"
@@ -165,15 +223,23 @@ TGraph* AliTRDcheckESD::GetGraph(Int_t id, Option_t *opt)
       switch(id){
       case 0:
         g = new TGraphErrors();
+        g->SetMarkerStyle(7);g->SetMarkerColor(kBlack);
+        g->SetLineColor(kBlack);
         break;
       case 1:
         g = new TGraphErrors();
+        g->SetMarkerStyle(7);g->SetMarkerColor(kRed);
+        g->SetLineColor(kRed);
         break;
       case 2:
         g = new TGraphErrors();
+        g->SetMarkerStyle(7);g->SetMarkerColor(kBlue);
+        g->SetLineColor(kBlue);
         break;
       case 3:
         g = new TGraphErrors();
+        g->SetMarkerStyle(7);g->SetMarkerColor(kGreen);
+        g->SetLineColor(kGreen);
         break;
       case 4:
         g = new TGraphAsymmErrors(6);

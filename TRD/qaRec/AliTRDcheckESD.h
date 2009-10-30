@@ -49,11 +49,10 @@ public:
   
   void          ConnectInputData(Option_t *);
   void          CreateOutputObjects();
-  TGraph*       GetGraph(Int_t id, Option_t *opt="bc");
+  Bool_t        GetRefFigure(Int_t ifig);
   void          Exec(Option_t *);
 
   Bool_t        HasMC() const { return TESTBIT(fStatus, kMC);}
-  TObjArray*    Histos();
   Bool_t        Load(const Char_t *fn, const Char_t *name=0x0);
   void          SetMC(Bool_t mc = kTRUE) { mc ? SETBIT(fStatus, kMC) : CLRBIT(fStatus, kMC);}
   Bool_t        PutTrendValue(const Char_t *name, Double_t val);
@@ -65,6 +64,8 @@ private:
 
   AliTRDcheckESD(const AliTRDcheckESD&);
   AliTRDcheckESD& operator=(const AliTRDcheckESD&);
+  TGraph*       GetGraph(Int_t id, Option_t *opt="bc");
+  TObjArray*    Histos();
   void          Process(TH1 **h, TGraphErrors *g);
   void          PrintStatus(ULong_t s);
 
