@@ -51,12 +51,14 @@ AliHLTV0HistoComponent::AliHLTV0HistoComponent()
   fGamma(0),
   fKShort(0),
   fLambda(0),
+  fPi0(0),
   fAP(0),
   fGammaXY(0),
   fNEvents(0),
   fNGammas(0),
   fNKShorts(0),
-  fNLambdas(0)
+  fNLambdas(0),
+  fNPi0s(0)
 {
   // see header file for class documentation
   // or
@@ -121,6 +123,11 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fLambda = new TH1F("hLambda","HLT:  #Lambda^{0} inv mass",50,1.0,1.4); 
   fLambda->SetFillColor(kGreen);
   fLambda->SetStats(0);
+
+  fPi0 = new TH1F("hPi0","HLT:  #Pi^{0} inv mass",50,0.2,0.4); 
+  fPi0->SetFillColor(kGreen);
+  fPi0->SetStats(0);
+  
   fAP = new TH2F("hAP","HLT:  Armenteros-Podolanski plot",60,-1.,1.,60,0.,0.3);
   fAP->SetMarkerStyle(8);
   fAP->SetMarkerSize(0.4);
@@ -141,6 +148,7 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fNGammas = 0;
   fNKShorts = 0;
   fNLambdas = 0;
+  fNPi0s = 0;
 
   // cuts: 
   // [0] == 0   --- N clusters on each daughter track
@@ -158,7 +166,7 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fGammaCuts[3] = 3.0;
   fGammaCuts[4] = 0.0;
   fGammaCuts[5] = 300.0;
-  fGammaCuts[6] = 3.5;
+  fGammaCuts[6] = 100.;
   fGammaCuts[7] = 0.05;
 
   fAPCuts[0] = 0;
@@ -177,7 +185,7 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fKsCuts[4] = 1.5;
   fKsCuts[5] = 50.0;
   fKsCuts[6] = 4.0;
-  fKsCuts[7] = 0.1;
+  fKsCuts[7] = 0.03;
 
   fLambdaCuts[0] = 0;
   fLambdaCuts[1] = 3.0;
@@ -186,7 +194,7 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fLambdaCuts[4] = 4.0;
   fLambdaCuts[5] = 50.0;
   fLambdaCuts[6] = 4.0;
-  fLambdaCuts[7] = 0.1;
+  fLambdaCuts[7] = 0.03;
 
   int iResult=0;
   TString configuration="";
@@ -232,6 +240,9 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 
     const double kKsMass = 0.49767;
     const double kLambdaMass = 1.11568;
+    const double kPi0Mass = 0.13498;
+
+    std::vector<AliKFParticle> vGammas;
 
     for (Int_t iv=0; iv<nV0; iv++) {
 	
@@ -272,15 +283,16 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 	 && r <= fGammaCuts[5]
 	 ){
 	double mass, error;       
-	v0.GetMass(mass,error);
+	v0.GetMass(mass,error);	
 	if( fGamma ) fGamma->Fill( mass );
 
-	if( TMath::Abs(mass)<fGammaCuts[6]*error && TMath::Abs(mass)<fGammaCuts[7] ){
+	if( TMath::Abs(mass)<=fGammaCuts[6]*error && TMath::Abs(mass)<=fGammaCuts[7] ){	  
 	  AliKFParticle gamma = v0;
 	  gamma.SetMassConstraint(0);
 	  if( fGammaXY ) fGammaXY->Fill(gamma.GetX(), gamma.GetY());
 	  isGamma = 1;
 	  fNGammas++;
+	  vGammas.push_back( gamma );
 	}	     
       }
       
@@ -381,25 +393,45 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 	lambda.GetMass( mass, error);
 	if( fLambda ) fLambda->Fill( mass );
 
-	if( TMath::Abs( mass - kLambdaMass )<=fLambdaCuts[6]*error && TMath::Abs( mass - kKsMass )<=fLambdaCuts[7] ){
+	if( TMath::Abs( mass - kLambdaMass )<=fLambdaCuts[6]*error && TMath::Abs( mass - kLambdaMass )<=fLambdaCuts[7] ){
 	  fNLambdas++;
 	}	
       }
 
     }// V0's
+
+
+    // Pi0 finder 
+
+    for(UInt_t g1=0;g1<vGammas.size();g1++){
+      for(UInt_t g2=g1+1;g2<vGammas.size();g2++){
+	AliKFParticle pi0(vGammas.at(g1),vGammas.at(g2));
+	double mass, error;
+	pi0.GetMass(mass,error);
+	fPi0->Fill(mass);
+	if( TMath::Abs( mass - kPi0Mass )<=0.02 ){
+	  fNPi0s++;
+	}
+      }
+    }
+
   
     if( fGamma ) PushBack( (TObject*) fGamma, kAliHLTDataTypeHistogram,0);
     
     if( fKShort ) PushBack( (TObject*) fKShort, kAliHLTDataTypeHistogram,0);
     
     if( fLambda ) PushBack( (TObject*) fLambda, kAliHLTDataTypeHistogram, 0);
+ 
+    if( fPi0 ) PushBack( (TObject*) fPi0, kAliHLTDataTypeHistogram, 0);
     
     if( fAP ) PushBack( (TObject*) fAP, kAliHLTDataTypeHistogram,0);    
 
     if( fGammaXY ) PushBack( (TObject*) fGammaXY, kAliHLTDataTypeHistogram,0);
   }  
-  
-  HLTInfo("Found %d Gammas, %d KShorts and %d Lambdas in %d events", fNGammas, fNKShorts, fNLambdas, fNEvents );
+  if( fNPi0s>0 ){
+    HLTWarning("Wow! Found %d Gammas, %d KShorts, %d Lambdas and even %d Pi0's !!!!! in %d events", fNGammas, fNKShorts, fNLambdas, fNPi0s, fNEvents );    
+  }
+  else HLTInfo("Found %d Gammas, %d KShorts, %d Lambdas and %d Pi0's in %d events", fNGammas, fNKShorts, fNLambdas, fNPi0s, fNEvents );
   
   return 0;
 }

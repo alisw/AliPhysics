@@ -86,12 +86,14 @@ private:
   TH1F *fGamma;   // Gamma inv. mass
   TH1F *fKShort;   // Ks inv. mass
   TH1F *fLambda;   // Lambda inv. mass
+  TH1F *fPi0;      // Pi0 inv. mass
   TH2F *fAP;       // Armenteros-Podolanski 
   TH2F *fGammaXY;  // XY distribution of gamma convertions
   Int_t fNEvents; // n of processed events
   Int_t fNGammas; // n found total
   Int_t fNKShorts; // n found total
   Int_t fNLambdas; // n found total
+  Int_t fNPi0s; // n found total
 
   ClassDef(AliHLTV0HistoComponent, 0);
 
