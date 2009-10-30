@@ -59,8 +59,6 @@
 #include <sstream>
 #endif
 
-#include "AliSysInfo.h"
-
 const char* OUTPUT_FILE = "mch.occupancy";
 const char* DAVERSION = "MUONTRKOCCda v1.2 ($Id$)";
 
@@ -292,11 +290,6 @@ int main(int argc, char **argv)
         ++numberOfBadEvents;
       }
 
-      if ( numberOfEvents % 10 == 0 ) 
-      {
-        AliSysInfo::AddStamp(Form("Event%d",numberOfEvents),1,numberOfEvents,-1);
-      }
-      
       delete event;
       
       delete rawReader;
