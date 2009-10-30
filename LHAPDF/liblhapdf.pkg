@@ -42,6 +42,7 @@ lhapdf5.5.1/src/wrapgsg.f \
 lhapdf5.5.1/src/wraph1.f \
 lhapdf5.5.1/src/wraplacg.f \
 lhapdf5.5.1/src/wrapowpi.f \
+lhapdf5.5.1/src/wrapmrst.f \
 lhapdf5.5.1/src/wrapQCDNUM3.f \
 lhapdf5.5.1/src/wrapQCDNUM4.f \
 lhapdf5.5.1/src/wrapQCDNUM.f \
