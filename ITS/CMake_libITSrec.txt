@@ -98,6 +98,7 @@ set(SRCS
 		AliITSQASPDChecker.cxx 
                 AliITSQASDDChecker.cxx 
                 AliITSQASSDChecker.cxx 
+                AliITSQASSDRefData.cxx 
 		AliITSTrackleterSPDEff.cxx 
                 AliITSRealignTracks.cxx
 )

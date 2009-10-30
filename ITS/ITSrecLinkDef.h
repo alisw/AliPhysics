@@ -132,5 +132,6 @@
 #pragma link C++ class AliITSQASPDChecker+;
 #pragma link C++ class AliITSQASDDChecker+;
 #pragma link C++ class AliITSQASSDChecker+;
+#pragma link C++ class AliITSQASSDRefData+;
 
 #endif

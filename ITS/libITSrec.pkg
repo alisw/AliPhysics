@@ -98,6 +98,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSQASPDChecker.cxx \
                 AliITSQASDDChecker.cxx \
                 AliITSQASSDChecker.cxx \
+                AliITSQASSDRefData.cxx \
 		AliITSTrackleterSPDEff.cxx 
 
 
