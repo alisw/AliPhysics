@@ -270,16 +270,16 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
 	  mcDaughter1= (AliMCParticle*) mcEvent->GetTrack(firstD);  
 	  mcDaughter2= (AliMCParticle*) mcEvent->GetTrack(lastD);  	  
         }
-        else {
+        else 
 	    if(fdaughter2pdg==kdaughterKaon) {
               daughterParticle1=stack->Particle(lastD);
               daughterParticle2=stack->Particle(firstD); 
 	      mcDaughter1= (AliMCParticle*) mcEvent->GetTrack(lastD);
 	      mcDaughter2= (AliMCParticle*) mcEvent->GetTrack(firstD); 
              }    //to ensure that the first daughter is always the kaon
-            else continue;
-	}      
- 
+	     
+       if(TMath::Abs(daughterParticle1->GetPdgCode())!=321) continue;
+       
        TParticle* daughters1Daughter=0;
        TParticle* daughters2Daughter=0;       
        Int_t mcProcessDaughters1Daughter = -999;
