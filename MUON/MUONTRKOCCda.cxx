@@ -201,7 +201,7 @@ int main(int argc, char **argv)
     
     for(;;)
     {
-      struct eventHeaderStruct *event;
+      struct eventHeaderStruct *event(0x0);
       eventTypeType eventT;
       
       status=monitorGetEventDynamic((void **)&event);
