@@ -53,13 +53,13 @@ class AliTOFDigitMap : public TObject
     void   ResetDigit(Int_t *vol);
     Int_t  GetNumberOfDigits(Int_t *vol);
 
- private:
-    // Check index
-    Int_t CheckedIndex(Int_t *vol) const;
- private:
     enum {
       kMaxDigitsPerPad = 10
     };
+
+ private:
+    // Check index
+    Int_t CheckedIndex(Int_t *vol) const;
 
     Int_t fNSector;                       // Number of sectors
     Int_t fNplate;                        // Number of plates

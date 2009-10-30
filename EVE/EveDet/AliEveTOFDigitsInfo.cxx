@@ -305,11 +305,12 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
 
 TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
 {
+  const Int_t kND = AliTOFDigitMap::kMaxDigitsPerPad;
 
   Int_t newCounter = 0;
-  Int_t nDigitsInVolume[3] = {-1, -1, -1};
-  Int_t dummy[3] = {-1, -1, -1};
-  Int_t informations[4] = {-1, -1, -1, -1};
+  Int_t nDigitsInVolume[kND];
+  Int_t dummy[3];
+  Int_t informations[4];
 
   Int_t nStrips=19;
 
@@ -337,11 +338,16 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
 	vol[4] = iPadZ;
 
 	for(Int_t iPadX=0; iPadX<fGeom->NpadX(); iPadX++) {
+
+	  for (Int_t ii=0; ii<4; ii++) informations[ii]=-1;
+	  for (Int_t ii=0; ii<3; ii++) dummy[ii]=-1;
+	  for (Int_t ii=0; ii<kND; ii++) nDigitsInVolume[ii]=-1;
+
 	  vol[3] = iPadX;
 
 	  fTOFdigitMap->GetDigitIndex(vol, nDigitsInVolume);
 
-	  for (Int_t ii=0; ii<3; ii++) {
+	  for (Int_t ii=0; ii<kND; ii++) {
 	    //if (ii!=0) continue;
 	    if (nDigitsInVolume[ii]>=0 ) {
 
@@ -361,10 +367,6 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
 	    }
 
 	  }
-
-	  for (Int_t ii=0; ii<4; ii++) informations[ii]=-1;
-	  for (Int_t ii=0; ii<3; ii++) dummy[ii]=-1;
-	  for (Int_t ii=0; ii<3; ii++) nDigitsInVolume[ii]=-1;
 
 	}
       }
