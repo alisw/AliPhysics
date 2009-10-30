@@ -74,6 +74,20 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
    AliESDpidCuts *electronID = new AliESDpidCuts("Electrons", "Electron PID cuts");
    electronID->SetTPCnSigmaCut(AliPID::kElectron, 3.);
 
+   // tighter cuts on primary particles for high pT tracks
+   // needed as input for jetfinder 
+   AliESDtrackCuts* esdTrackCutsH = new AliESDtrackCuts("Standard Track Cuts + ITSRefit", "High pT ESD Track Cuts");
+   esdTrackCutsH->SetMinNClustersTPC(50);
+   esdTrackCutsH->SetMaxChi2PerClusterTPC(3.5);
+   esdTrackCutsH->SetRequireTPCRefit(kTRUE);
+   esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
+   esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
+   esdTrackCutsH->SetDCAToVertex2D(kTRUE);
+   esdTrackCutsH->SetRequireSigmaToVertex(kFALSE);
+   esdTrackCutsH->SetAcceptKinkDaughters(kFALSE);
+   esdTrackCutsH->SetRequireITSRefit(kTRUE); // additional cut 
+
+ 
 
    // Compose the filter
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
@@ -87,7 +101,9 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
    // 8
    trackFilter->AddCuts(electronID);
    electronID->SetFilterMask(4);       // AND with Pixel Cuts
-
+   // 16
+   trackFilter->AddCuts(esdTrackCutsH);
+ 
    // Filter with cuts on V0s
    AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("Standard V0 Cuts pp", "ESD V0 Cuts");
    esdV0Cuts->SetMinRadius(0.2);
@@ -102,7 +118,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
    esdfilter->SetTrackFilter(trackFilter);
    esdfilter->SetV0Filter(v0Filter);
 
-
+ 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
@@ -115,6 +131,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
       AliAnalysisDataContainer *coutputEx = mgr->CreateContainer("cFilterList", TList::Class(),
 								   AliAnalysisManager::kOutputContainer,"pyxsec_hists.root");
       mgr->ConnectOutput (kinefilter,  1,coutputEx);
-   }   
+     }   
    return esdfilter;
-}   
+ }
+ 
