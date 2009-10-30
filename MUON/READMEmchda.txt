@@ -4,12 +4,18 @@
 
 \page README_mchda Tracking DA
  
-The detector algorithm is implemented for the Muon Tracking in the AliRoot framework.
-The main code is located in MUONTRKda.cxx and it runs in each Muon Tracking LDC.
- 
+The detector algorithms are implemented for the Muon Tracking in the AliRoot framework.
+We currently have 3 DAs for MCH :
+
+- MUONTRKPEDda.cxx for PEDESTAL runs, running at the end of data taking on each LDC.
+- MUONTRKGAINda.cxx for CALIBRATION runs, running at the end of data taking on each LDC.
+- MUONTRKOCCda.cxx for PHYSICS runs, running during data taking on each LDC.
+
 \section da_s1 The Muon Tracking Calibration
 
-The Muon tracking chambers needs two types of calibration in order to work properly :
+The Muon tracking chambers needs three types of calibration in order to work properly 
+(to be more precise pedestals are required, gains are needed to get the best charge measurement possible, and the occupancy
+ is needed in order not to spend all the reconstruction time in hot-spots). 
 
 \subsection da_ss1 Pedestals
 
@@ -49,15 +55,21 @@ end of the 10 runs sequence
 
 Then the SHUTTLE process the ASCII files and store the result on the OCDB
 
+\subsection da_ss3 Occupancy
+
+For PHYSICS (or STANDALONE) runs, the MUONTRKOCCda, which is a monitoring DA, keep track of how many times
+ each channel has been hit during the run. The output is an ASCII file containing the needed information to 
+ compute the occupancy values. This file is written to the DAQ FXS so the SHUTTLE can transfer it to the OCDB.
+
 \section da_s2 Using the DA Online
 
 You have a line command help. To have it just type :
 
 \verbatim
-> MUONTRKda.exe -h
+> MUONTRKPEDda.exe -h
 
-******************* ./MUONTRKda.exe usage **********************
-./MUONTRKda.exe -options, the available options are :
+******************* ./MUONTRKPEDda.exe usage **********************
+./MUONTRKPEDda.exe -options, the available options are :
 -h help                   (this screen)
 
  Input
@@ -86,9 +98,10 @@ You have a line command help. To have it just type :
  
 \section da_s3 Using the DA Offline
  
-For the time being the DA can be used only with a RAW data DATE format as input.
-The development of an offline version is under way.
-
+The DAs normally runs with a RAW data DATE format as input
+ If you get a file in root format (e.g. from alien), you can de-rootify it using the
+  "deroot" program which is part of aliroot. Note that PED and GAIN DAs work with ROOT input files as well.
+  
 \section da_s4 In case of trouble
 
 Please contact :
@@ -96,7 +109,8 @@ Please contact :
 Jean-Luc Charvet : jean-luc.charvet@cea.fr 
 or
 Alberto Baldisseri : a.baldisseri@cea.fr
-
+or
+Laurent Aphecetche : laurent.aphecetche@subatech.in2p3.fr (for OCC DA)
 
 This chapter is defined in the READMEMchda.txt file.
 */
