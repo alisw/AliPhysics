@@ -30,6 +30,8 @@
 #include <TObjArray.h>
 #include <TObject.h>
 #include <TH2I.h>
+#include <TPad.h>
+#include <TLegend.h>
 #include <TGraphErrors.h>
 #include <TGraphAsymmErrors.h>
 #include <TFile.h>
