@@ -398,10 +398,10 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
 	fDeDxQmax->Fill(vecQmax); 
 	fDeDxQtot->Fill(vecQtot); 
 	fDeDxRatioMaxTot->Fill(vecRatioMaxTot); 
-	fDeDxRatioQmax->Fill(vecRatioTrackletTot); 
-	fDeDxRatioQtot->Fill(vecRatioTrackletMax); 
-	fDeDxRatioTruncQmax->Fill(vecRatioTrackletTruncTot); 
-	fDeDxRatioTruncQtot->Fill(vecRatioTrackletTruncMax); 
+	fDeDxRatioQmax->Fill(vecRatioTrackletMax); 
+	fDeDxRatioQtot->Fill(vecRatioTrackletTot); 
+	fDeDxRatioTruncQmax->Fill(vecRatioTrackletTruncMax); 
+	fDeDxRatioTruncQtot->Fill(vecRatioTrackletTruncTot); 
 	//
 	TTreeSRedirector * cstream =  GetDebugStreamer();
 	if (cstream){
