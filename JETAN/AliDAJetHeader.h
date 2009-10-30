@@ -20,10 +20,12 @@ class AliDAJetHeader : public AliJetHeader
 	virtual ~AliDAJetHeader() {}
 
 	void SelectJets		(Bool_t seljets ) { fSelectJets=seljets; }
+    void SetRadius      (Float_t radius );
 	void SetNclust		(Int_t ncl      ) { fNclustMax=ncl ; fFixedCl=kTRUE; }
 	void SetEtMin		(Float_t etmin  ) { fEtMin =etmin;  }
 
 	Bool_t   GetSelJets()	const { return fSelectJets; }
+    Float_t  GetRadius()	const { return fRadius;    }
 	Int_t    GetNclustMax() const { return fNclustMax; }
 	Bool_t   GetFixedCl()	const { return fFixedCl; }
 	Float_t  GetEtMin()		const { return fEtMin;   }
@@ -31,10 +33,11 @@ class AliDAJetHeader : public AliJetHeader
   protected:
 	AliDAJetHeader(const AliDAJetHeader &jh);
 	AliDAJetHeader& operator=(const AliDAJetHeader &jh);
-	Bool_t		fSelectJets;					//select jets among clusters
-	Int_t		fNclustMax;						//number of clusters when to stop annealing
-	Bool_t		fFixedCl;						//use a fixed fNclustMax
-	Float_t		fEtMin;							//minimum energy for found jets
+	Bool_t		fSelectJets;					// select jets among clusters
+    Float_t 	fRadius;						// jet "radius"
+	Int_t		fNclustMax;						// number of clusters when to stop annealing
+	Bool_t		fFixedCl;						// use a fixed fNclustMax
+	Float_t		fEtMin;							// minimum energy for found jets
 
 	ClassDef(AliDAJetHeader,2)
 };
