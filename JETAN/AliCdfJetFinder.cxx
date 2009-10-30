@@ -428,7 +428,7 @@ void AliCdfJetFinder::FindCones()
 
   if (fDebug) { cout << "\n\n\n\n\n\n------------------\nBegin Event Analysis\n------------------\n\n" << endl ;}
 
-  cout << "fNPart = " << fNPart << endl;
+  if(fDebug)cout << "fNPart = " << fNPart << endl;
 
   TBits lkupTable ( fNPart ) ;  // bit container ; 1-to-1 corespondence with fIdxArray
 
@@ -436,7 +436,7 @@ void AliCdfJetFinder::FindCones()
     { // loop over particles in event until all flags are set
     UInt_t firstnonflagged = lkupTable.FirstNullBit() ; // set the index to the first NON flagged bit ; less conditions
 
-    cout << "\n\nfirst_non_flagged : " << firstnonflagged << endl;
+    if(fDebug)cout << "\n\nfirst_non_flagged : " << firstnonflagged << endl;
 
     ++fNJets; // incrementing the jet counter
     if (fDebug) { printf("JET %d \n", fNJets); }
