@@ -1,45 +1,14 @@
 #-*- Mode: Makefile -*-
 
-SRCS:= 	AliTreeDraw.cxx \
-	AliMCInfo.cxx	\
-	AliGenV0Info.cxx	\
-	AliGenKinkInfo.cxx	\
-	AliGenInfoMaker.cxx	\
-	AliESDRecInfo.cxx \
-	AliESDRecV0Info.cxx \
-	AliESDRecKinkInfo.cxx \
-	AliRecInfoMaker.cxx \
-	AliComparisonDraw.cxx \
-	AliRecInfoCuts.cxx \
-	AliMCInfoCuts.cxx \
-	AliComparisonTask.cxx \
-	AliComparisonRes.cxx \
-	AliComparisonEff.cxx \
-	AliComparisonDEdx.cxx \
-	AliComparisonDCA.cxx \
-	AliComparisonObject.cxx \
-	AliGenInfoTask.cxx  \
-	AliMCTrackingTestTask.cxx \
-	AliTPCtaskPID.cxx \
-	AliTPCtaskQA.cxx \
-	AliPerformanceTask.cxx \
-	AliPerformanceObject.cxx \
-	AliPerformanceRes.cxx \
-	AliPerformanceEff.cxx \
-	AliPerformanceDEdx.cxx \
-	AliPerformanceDCA.cxx \
-	AliPerformanceTPC.cxx \
-	AliPerformanceMC.cxx \
-	AliAlignmentDataFilterITS.cxx \
-        AliTrackMatchingTPCITSCosmics.cxx \
-	AliAnalysisTaskV0QA.cxx \
-	AliMaterialBudget.cxx \
-	AliPerformanceMatch.cxx \
-        AliRelAlignerKalmanArray.cxx\
-        AliAnalysisTaskITSTPCalignment.cxx
+ORGSRCS  := $(wildcard PWG1/*.cxx)
+ORGSRCS  += $(wildcard PWG1/global/*.cxx)
+ORGSRCS  += $(wildcard PWG1/ITS/*.cxx)
+ORGSRCS  += $(wildcard PWG1/TPC/*.cxx)
+ORGSRCS  += $(wildcard PWG1/TRD/*.cxx)
+ORGSRCS  += $(wildcard PWG1/TRD/info/*.cxx)
 
+SRCS:= $(patsubst PWG1/%, %, ${ORGSRCS})
 HDRS:= $(SRCS:.cxx=.h)
-
 DHDR:= PWG1LinkDef.h
 
 EINCLUDE:= STEER TPC ITS TRD

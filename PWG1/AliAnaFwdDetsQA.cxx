@@ -29,6 +29,8 @@
 #include "TCanvas.h"
 #include "TVector3.h"
 #include "TParticle.h"
+#include "AliVParticle.h"
+#include "AliMCParticle.h"
 #include "AliESDEvent.h"
 #include "AliESDv0.h"
 #include "AliESDcascade.h"
@@ -248,7 +250,7 @@ void AliAnaFwdDetsQA::UserExec(Option_t */*option*/)
   Int_t nV0C = 0;
   for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfTracks(); iTracks++) {//Check this loop again
     if (!stack->IsPhysicalPrimary(iTracks)) continue;
-    AliMCParticle* track = mcEvent->GetTrack(iTracks);
+    AliMCParticle* track = (AliMCParticle*)mcEvent->GetTrack(iTracks);
     TParticle* particle = track->Particle();
     if (!particle) continue;
     if (track->Charge() == 0) continue;

@@ -7,6 +7,7 @@
 
 #include "THnSparse.h"
 #include "TList.h"
+#include "AliPID.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
@@ -20,6 +21,8 @@ class TLorentzVector;
 class AliAnalysisManager;
 class AliAnalysisDataContainer;
 class AliESDtrackCuts;
+class AliMCEventHandler;
+class AliStack;
 class TChain;
 
 class AliAnalysisTaskV0QA : public AliAnalysisTask {

@@ -60,7 +60,7 @@
 ClassImp(AliESDresolParams)
 
 
- AliESDresolParams*    AliESDresolParams::fgInstance = 0; //! Instance of this class (singleton implementation)
+ AliESDresolParams*    AliESDresolParams::fgInstance = 0x0; //! Instance of this class (singleton implementation)
 
 
 AliESDresolParams::AliESDresolParams() :
