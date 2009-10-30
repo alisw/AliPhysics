@@ -122,7 +122,8 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
       //TString runPar = GetRunParameter("HLTStatus");
       //if(runPar=="1") {
       if(GetHLTStatus()) {
-	if(ExtractHLT()) return 1; // for testing!
+	//if(ExtractHLT()) return 1; // for testing!
+	ExtractHLT();
       } 
       // DAQ if HLT failed
       if(!fVdriftHLT) {
@@ -1079,4 +1080,3 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   Log("SUCCESS: Processing of the DCS config summary file DONE.");  
   return 0;
 }
-
