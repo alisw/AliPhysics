@@ -42,8 +42,8 @@
 #include "AliTRDpidRefMakerNN.h"
 #include "AliTRDpidUtil.h"
 
-#include "../Cal/AliTRDCalPID.h"
-#include "../Cal/AliTRDCalPIDNN.h"
+#include "Cal/AliTRDCalPID.h"
+#include "Cal/AliTRDCalPIDNN.h"
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDv0Info.h"
 

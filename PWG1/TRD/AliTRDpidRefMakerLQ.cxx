@@ -43,10 +43,10 @@
 //#include <TMarker.h>
 
 #include "AliLog.h"
-#include "../../STAT/TKDPDF.h"
+#include "../STAT/TKDPDF.h"
 #include "AliTRDpidRefMakerLQ.h"
-#include "../Cal/AliTRDCalPID.h"
-#include "../Cal/AliTRDCalPIDLQ.h"
+#include "Cal/AliTRDCalPID.h"
+#include "Cal/AliTRDCalPIDLQ.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"
