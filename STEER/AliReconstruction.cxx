@@ -1169,11 +1169,11 @@ Bool_t AliReconstruction::LoadTriggerScalersCDB()
 //_____________________________________________________________________________
 Bool_t AliReconstruction::LoadCTPTimeParamsCDB()
 {
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtime");
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
 
   if (entry) {
 
-       AliInfo("Found an AliCTPTimeParams in GRP/CTP/CTPtime, reading it");
+       AliInfo("Found an AliCTPTimeParams in GRP/CTP/CTPtiming, reading it");
        fCTPTimeParams = dynamic_cast<AliCTPTimeParams*> (entry->GetObject());
        entry->SetOwner(0);
        return kTRUE;
