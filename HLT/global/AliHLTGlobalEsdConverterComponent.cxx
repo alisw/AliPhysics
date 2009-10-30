@@ -45,8 +45,6 @@
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloClusterReader.h"
 #include "AliESDCaloCluster.h"
-#include "AliHLTVertexer.h"
-//#include "AliTPCseed.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -57,7 +55,6 @@ AliHLTGlobalEsdConverterComponent::AliHLTGlobalEsdConverterComponent()
   , fVerbosity(0)
   , fESD(NULL)
   , fSolenoidBz(-5.00668)
-  , fFillVtxConstrainedTracks( 0 )
 {
   // see header file for class documentation
   // or
@@ -93,12 +90,6 @@ int AliHLTGlobalEsdConverterComponent::Configure(const char* arguments)
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	fSolenoidBz=((TObjString*)pTokens->At(i))->GetString().Atof();
-	continue;
-      }
-      else if (argument.CompareTo("-fitTracksToVertex")==0) {
-	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTInfo("Filling of vertex constrained tracks is set set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-	fFillVtxConstrainedTracks=((TObjString*)pTokens->At(i))->GetString().Atoi();
 	continue;
       } else {
 	HLTError("unknown argument %s", argument.Data());
@@ -184,11 +175,6 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
       // -tree
     } else if (argument.CompareTo("-tree")==0) {
       fWriteTree=1;
-    }else if (argument.CompareTo("-fitTracksToVertex")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-	  argument = argv[i];
-	  HLTInfo("Filling of vertex constrained tracks is set set to: %s", argument.Data());
-	  fFillVtxConstrainedTracks=argument.Atoi();
     } else {
       HLTError("unknown argument %s", argument.Data());
       break;
@@ -451,14 +437,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       iAddedDataBlocks++;
     }
       
-      // primary vertex & V0's 
-      
-      AliHLTVertexer vertexer;
-      vertexer.SetESD( pESD );
-      vertexer.SetFillVtxConstrainedTracks( fFillVtxConstrainedTracks );
-      vertexer.FindPrimaryVertex();
-      vertexer.FindV0s();
-      
+       
       if (iAddedDataBlocks>0 && pTree) {
        pTree->Fill();
       }

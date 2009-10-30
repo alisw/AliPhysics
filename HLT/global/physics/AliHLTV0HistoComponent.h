@@ -73,6 +73,7 @@ private:
   TH1F *fLambda;   // Lambda inv. mass
   TH2F *fAP;       // Armenteros-Podolanski 
   TH2F *fGammaXY;  // XY distribution of gamma convertions
+  Int_t fNEvents; // n of processed events
   Int_t fNGammas; // n found total
   Int_t fNKShorts; // n found total
   Int_t fNLambdas; // n found total

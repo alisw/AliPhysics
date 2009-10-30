@@ -53,6 +53,7 @@ AliHLTV0HistoComponent::AliHLTV0HistoComponent()
   fLambda(0),
   fAP(0),
   fGammaXY(0),
+  fNEvents(0),
   fNGammas(0),
   fNKShorts(0),
   fNLambdas(0)
@@ -136,6 +137,7 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fGammaXY->SetStats(0);
   fGammaXY->SetOption("COLZ");
 
+  fNEvents =0;
   fNGammas = 0;
   fNKShorts = 0;
   fNLambdas = 0;
@@ -172,6 +174,8 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
   
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
     return 0;
+
+  fNEvents++;
 
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
 
@@ -275,6 +279,7 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
       if( t1->GetTPCNcls()>=60 && t2->GetTPCNcls()>=60 
 	  && dev1>=3. && dev2>=3. 
 	  && length>=4. 
+	  && TMath::Abs( ap )>.4
 	  ){
 	
 	AliKFParticle kP, kpi;
@@ -310,7 +315,7 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
     if( fGammaXY ) PushBack( (TObject*) fGammaXY, kAliHLTDataTypeHistogram,0);
   }  
   
-  HLTInfo("Found %d Gammas, %d KShorts and %d Lambdas total", fNGammas, fNKShorts, fNLambdas );
+  HLTInfo("Found %d Gammas, %d KShorts and %d Lambdas in %d events", fNGammas, fNKShorts, fNLambdas, fNEvents );
   
   return 0;
 }
@@ -332,16 +337,10 @@ int AliHLTV0HistoComponent::Configure(const char* arguments)
       if (argument.IsNull()) continue;
       
       if (argument.CompareTo("-plot-all")==0) {
-	HLTInfo("Ploting charge of all clusters");
-	//fPlotAll = kTRUE;
-	continue;
-      }
-      
-      else if (argument.CompareTo("-plot-trackclusters")==0) {
-	HLTInfo("Ploting charge of clusters used on a track");
-	//fPlotAll = kFALSE;
-	continue;
-      }
+      //HLTInfo("Ploting charge of all clusters");
+      //fPlotAll = kTRUE;
+      //continue;
+      }      
       else {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
