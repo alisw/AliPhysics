@@ -124,7 +124,7 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fLambda->SetFillColor(kGreen);
   fLambda->SetStats(0);
 
-  fPi0 = new TH1F("hPi0","HLT:  #Pi^{0} inv mass",50,0.2,0.4); 
+  fPi0 = new TH1F("hPi0","HLT:  #Pi^{0} inv mass",50,0.0,0.2); 
   fPi0->SetFillColor(kGreen);
   fPi0->SetStats(0);
   
@@ -409,7 +409,7 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 	double mass, error;
 	pi0.GetMass(mass,error);
 	fPi0->Fill(mass);
-	if( TMath::Abs( mass - kPi0Mass )<=0.02 ){
+	if( TMath::Abs( mass - kPi0Mass )<=0.03 ){
 	  fNPi0s++;
 	}
       }
