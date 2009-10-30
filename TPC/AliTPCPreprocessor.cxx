@@ -952,8 +952,10 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
    AliDCSSensor *sensor=0;
    for (Int_t isensor=0; isensor<kNumPressureSensors; ++isensor ) {
       sensor = fPressure->GetSensor(kPressureSensorNames[isensor]);
-      sensor->SetNameTitle(kPressureSensorNames[isensor],kPressureSensorNames[isensor]);       
-      ceObjects->Add(sensor);
+      if (sensor) {
+       sensor->SetNameTitle(kPressureSensorNames[isensor],kPressureSensorNames[isensor]);       
+       ceObjects->Add(sensor);
+      }
    }
  }   
 
