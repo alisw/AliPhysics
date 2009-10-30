@@ -184,7 +184,7 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fKsCuts[3] = 3.0;
   fKsCuts[4] = 1.5;
   fKsCuts[5] = 50.0;
-  fKsCuts[6] = 4.0;
+  fKsCuts[6] = 5.0;
   fKsCuts[7] = 0.03;
 
   fLambdaCuts[0] = 0;
@@ -193,7 +193,7 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fLambdaCuts[3] = 3.0;
   fLambdaCuts[4] = 4.0;
   fLambdaCuts[5] = 50.0;
-  fLambdaCuts[6] = 4.0;
+  fLambdaCuts[6] = 5.0;
   fLambdaCuts[7] = 0.03;
 
   int iResult=0;
