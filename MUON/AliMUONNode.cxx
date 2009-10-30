@@ -24,7 +24,7 @@
 /// Proceedings of the IEEE, Vol. 80, No. 9, September 1992, p. 1449
 ///
 /// 
-/// \Author Laurent Aphecetche, Subatech
+/// \author Laurent Aphecetche, Subatech
 
 #include "AliMUONNode.h"
 

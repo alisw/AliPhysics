@@ -1394,5 +1394,6 @@ AliMUONVPainter::CreatePainter(const char* className,
 void
 AliMUONVPainter::PaintArea(Int_t fillColor)
 {
+  /// Draw a filled area
   AliMUONContourPainter::Paint(*(Contour()),-1,-1,fillColor);
 }

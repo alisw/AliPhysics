@@ -23,17 +23,22 @@ class AliMUONVQAChecker : public TObject
 {
 public:
   enum ECheckCode {
-    kFatal=-1,
-    kError=0,
-    kWarning=1,
-    kInfo=2
+    kFatal=-1,  ///< error is really serious
+    kError=0,   ///< normal error, i.e. something is wrong
+    kWarning=1, ///< warning, i.e. might become an error later on
+    kInfo=2     ///< just so you know...
   };
   
   AliMUONVQAChecker();
   virtual ~AliMUONVQAChecker();
   
+  /// Check the QA object(s) for the raw data
   virtual ECheckCode * CheckRaws(TObjArray** list, AliMUONRecoParam* recoParam) = 0;
+  
+  /// Check the QA object(s) for the RecPoints
   virtual ECheckCode * CheckRecPoints(TObjArray** list, AliMUONRecoParam* recoParam) = 0;
+  
+  /// Check the QA object(s) for the ESD
   virtual ECheckCode * CheckESD(TObjArray** list, AliMUONRecoParam* recoParam) = 0;
   
   ClassDef(AliMUONVQAChecker,1) // Interface for a MUON QA checker

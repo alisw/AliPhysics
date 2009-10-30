@@ -149,6 +149,7 @@ fIsRunning(kFALSE),
 fIsOwnerOfRawReader(kTRUE),
 fIsEventByEvent(kFALSE)
 {
+  /// Ctor from raw data reader
   if (fRawReader) 
   {
     fRawReader->NextEvent(); // to be sure to get run number available

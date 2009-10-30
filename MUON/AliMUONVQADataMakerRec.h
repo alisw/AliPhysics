@@ -34,19 +34,31 @@ public:
   AliMUONVQADataMakerRec(AliQADataMakerRec* master);
   virtual ~AliMUONVQADataMakerRec();
   
+  /// Initialization for handling Digits
   virtual void InitDigits() = 0; 
+  /// Initialization for handling ESD
   virtual void InitESDs() = 0; 
+  /// Initialization for handling Raws
   virtual void InitRaws() = 0; 
+  /// Initialization for handling RecPoints
   virtual void InitRecPoints() = 0; 
   
+  /// Produces QA data for Raws
   virtual void MakeRaws(AliRawReader* rawReader) = 0; 
+  /// Produces QA data for Digits
   virtual void MakeDigits(TTree* dig) = 0; 
+  /// Produces QA data for RecPoints
   virtual void MakeRecPoints(TTree* recpo) = 0;
+  /// Produces QA data for ESD
   virtual void MakeESDs(AliESDEvent* esd) = 0;
   
+  /// Wrap up things at each cycle for Raws
   virtual void EndOfDetectorCycleRaws(Int_t specie, TObjArray** list) = 0;
+  /// Wrap up things at each cycle for RecPoints
   virtual void EndOfDetectorCycleRecPoints(Int_t specie, TObjArray** list) = 0;
+  /// Wrap up things at each cycle for ESD
   virtual void EndOfDetectorCycleESDs(Int_t specie, TObjArray** list) = 0;
+  /// Wrap up things at each cycle for Digits
   virtual void EndOfDetectorCycleDigits(Int_t specie, TObjArray** list) = 0;
 
 protected:

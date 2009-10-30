@@ -29,12 +29,15 @@ public:
   
   Bool_t Adopt(AliMUONContour* contour); 
   
+  /// Get all the contours as a map
   TMap* AllContourMap() const { return fAllContourMap; }
   
+  /// Get all the contours as an array
   TObjArray* AllContourArray() const { return fAllContourArray; }
   
   AliMUONContour* GetContour(const char* contourname) const;
   
+  /// Get detection element geometrical transformations
   AliMpExMap* GetTransformations() const { return fTransformations; }
   
   void Print(Option_t* opt="") const;

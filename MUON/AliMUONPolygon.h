@@ -25,6 +25,7 @@ public:
   AliMUONPolygon& operator=(const AliMUONPolygon& rhs);
   virtual ~AliMUONPolygon();
 
+  /// Create a full copy of this object
   virtual TObject* Clone(const char* /*newname*/="") const { return new AliMUONPolygon(*this); }
   
   Bool_t Contains(Double_t x, Double_t y) const;
@@ -38,10 +39,13 @@ public:
   
   void SetVertex(Int_t i, Double_t x, Double_t y);
 
+  /// Return the x-coordinate of the i-th vertex
   Double_t X(Int_t i) const { return fX[i]; }
 
+  /// Return the y-coordinate of the i-th vertex
   Double_t Y(Int_t i) const { return fY[i]; }
 
+  /// Get the number of vertices of this polygon
   Int_t NumberOfVertices() const { return fN; }
   
   void Print(Option_t* opt="") const;
