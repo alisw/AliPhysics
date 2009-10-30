@@ -545,14 +545,13 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
 
   if (xk == GetX()) return kTRUE;
 
-  Double_t xyz0[3], // track position BEFORE propagation 
-           xyz1[3], // track position AFTER propagation 
+  Double_t xyz0[3] = {GetX(), GetY(), GetZ()}, // track position BEFORE propagation 
            b[3];    // magnetic field 
-  GetXYZ(xyz0);
-  AliTracker::GetBxByBz(xyz0, b);
+  GetBxByBz(b);
   if(!AliExternalTrackParam::PropagateToBxByBz(xk,b)) return kFALSE;
  
-  GetXYZ(xyz1);
+  // local track position AFTER propagation 
+  Double_t xyz1[3] = {GetX(), GetY(), GetZ()};
   if(xyz0[0] < xk) {
     xrho = -xrho;
     if (IsStartedTimeIntegral()) {
