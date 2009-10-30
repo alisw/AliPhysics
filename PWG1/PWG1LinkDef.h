@@ -4,6 +4,12 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliAnaFwdDetsQA+;
+#pragma link C++ class AliAnalysisTaskVtXY+;
+#pragma link C++ class AliComparisonSelector+;
+#pragma link C++ class AliESDresolParams+;
+#pragma link C++ class AliESDresolMakerFast+;
+
 #pragma link C++ class AliTreeDraw+;
 //
 #pragma link C++ class AliTPCdigitRow+;
@@ -50,5 +56,31 @@
 
 #pragma link C++ class AliRelAlignerKalmanArray+;
 #pragma link C++ class AliAnalysisTaskITSTPCalignment+;
+
+// TRD performance classes
+#pragma link C++ class  AliTRDclusterInfo+;
+#pragma link C++ class  AliTRDv0Info+;
+#pragma link C++ class  AliTRDtrackInfo+;
+#pragma link C++ class  AliTRDeventInfo+;
+#pragma link C++ class  AliTRDtrackInfo::AliESDinfo+;
+#pragma link C++ class  AliTRDtrackInfo::AliMCinfo+;
+#pragma link C++ class  AliTRDcheckESD+;
+#pragma link C++ class  AliTRDinfoGen+;
+#pragma link C++ class  AliTRDrecoTask+;
+#pragma link C++ class  AliTRDcheckDET+;
+#pragma link C++ class  AliTRDresolution+;
+#pragma link C++ class  AliTRDefficiency+;
+#pragma link C++ class  AliTRDefficiencyMC+;
+#pragma link C++ class  AliTRDcheckPID+;
+// TRD offline calibration classes
+#pragma link C++ class  AliTRDmultiplicity+;
+#pragma link C++ class  AliTRDclusterResolution+;
+#pragma link C++ class  AliTRDalignmentTask+;
+#pragma link C++ class  AliTRDcalibration+;
+#pragma link C++ class  AliTRDpidRefMaker+;
+#pragma link C++ class  AliTRDpidRefMaker::AliTRDpidRefData+;
+#pragma link C++ class  AliTRDpidRefMaker::AliTRDpidRefDataArray+;
+#pragma link C++ class  AliTRDpidRefMakerLQ+;
+#pragma link C++ class  AliTRDpidRefMakerNN+;
 
 #endif

@@ -12,6 +12,7 @@ class AliAnalysisTask;
 class TTree;
 class AliESDEvent;
 class AliRelAlignerKalman;
+class AliRelAlignerKalmanArray;
 class TH2F;
 
 class AliAnalysisTaskITSTPCalignment : public AliAnalysisTask

@@ -19,6 +19,7 @@ class TTreeSRedirector;
 class AliMCEventHadnler;
 class TParticle;
 class AliMCInfo;
+class AliMCParticle;
 class AliESDRecInfo;
 class AliESDEvent;
 class AliMCEvent;
