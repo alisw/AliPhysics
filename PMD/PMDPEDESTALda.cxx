@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 					  "TStreamerInfo()");
 
     
-    AliPMDCalibPedestal calibped;
+    AliPMDCalibPedestal *calibped = new AliPMDCalibPedestal();
 
     TTree *ped = NULL;
 
@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 
 		AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 		TObjArray *pmdddlcont = new TObjArray();
-		calibped.ProcessEvent(rawReader,pmdddlcont);
+		calibped->ProcessEvent(rawReader,pmdddlcont);
 		
 		delete pmdddlcont;
 		pmdddlcont = 0;
@@ -203,7 +203,7 @@ int main(int argc, char **argv) {
     
     if (eventT==END_OF_RUN) {
       printf("EOR event detected\n");
-      calibped.Analyse(ped);
+      calibped->Analyse(ped);
     }
     
     TFile * pedRun = new TFile ("PMD_PED.root","RECREATE"); 
@@ -212,6 +212,8 @@ int main(int argc, char **argv) {
 
     delete ped;
     ped = 0;
+
+    delete calibped;
 
 /* store the pedestal file in database */
 

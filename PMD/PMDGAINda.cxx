@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 
     // Reads the pedestal file and keep the values in memory for subtraction
 
-    AliPMDCalibGain calibgain;
+    AliPMDCalibGain *calibgain = new AliPMDCalibGain();
 
     // Fetch the pedestal file - PMD_PED.root 
 
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 	return -1;
       }
     
-    Int_t pstatus = calibgain.ExtractPedestal("PMD_PED.root");
+    Int_t pstatus = calibgain->ExtractPedestal("PMD_PED.root");
 
     if(pstatus == -3) return -3;
 
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
 	status = daqDA_DB_getFile("pmd_gain_tempfile.dat","pmd_gain_tempfile.dat");
 	if(!status)
 	  {
-	    calibgain.ReadTempFile("pmd_gain_tempfile.dat");
+	    calibgain->ReadTempFile("pmd_gain_tempfile.dat");
 	  }
 	else
 	  {
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 	status = daqDA_DB_getFile("PMD_HOT.root","PMD_HOT.root");
 	if(!status)
 	  {
-	    calibgain.ExtractHotChannel("PMD_HOT.root");
+	    calibgain->ExtractHotChannel("PMD_HOT.root");
 	  }
 	else
 	  {
@@ -248,7 +248,7 @@ int main(int argc, char **argv) {
 		//if(nevents_physics%100 == 0)printf("Physis Events = %d\n",nevents_physics);
 		AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 		TObjArray *pmdddlcont = new TObjArray();
-		calibgain.ProcessEvent(rawReader, pmdddlcont);
+		calibgain->ProcessEvent(rawReader, pmdddlcont);
 
 		if (totevt%hotevtsize == 0) hotfilestatus = true;
 		delete pmdddlcont;
@@ -275,7 +275,7 @@ int main(int argc, char **argv) {
 
 	TTree *hot = new TTree("hot","PMD Hot cell tree");
 	
-	calibgain.FindHotCell(hot,xvar);
+	calibgain->FindHotCell(hot,xvar);
 	
 	hot->Write();
 	hotRun->Close();
@@ -296,7 +296,7 @@ int main(int argc, char **argv) {
 
 	TTree *hot = new TTree("hot","PMD Hot cell tree");
 	
-	calibgain.FindHotCell(hot,xvar);
+	calibgain->FindHotCell(hot,xvar);
 	
 	hot->Write();
 	hotRun->Close();
@@ -322,7 +322,7 @@ int main(int argc, char **argv) {
 	printf("***  Writing the intermediate ASCII file    ***\n");
 	printf("-----------------------------------------------\n");
 
-	calibgain.WriteTempFile("pmd_gain_tempfile.dat");
+	calibgain->WriteTempFile("pmd_gain_tempfile.dat");
 
 	// Store the Intermediate ascii file in the DB
 	status = daqDA_DB_storeFile("pmd_gain_tempfile.dat","pmd_gain_tempfile.dat");
@@ -342,7 +342,7 @@ int main(int argc, char **argv) {
 	printf("***  Writing the PMDGAINS.root file           ***\n");
 	printf("-----------------------------------------------\n");
 
-	calibgain.Analyse(ic, meanc);
+	calibgain->Analyse(ic, meanc);
 
 	TFile * gainRun = new TFile ("PMDGAINS.root","RECREATE"); 
 	ic->Write();
@@ -368,6 +368,7 @@ int main(int argc, char **argv) {
     delete meanc;
     meanc = 0;
     
+    delete calibgain;
 
     /* store the result file on FES */
  
