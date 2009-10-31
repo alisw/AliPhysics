@@ -206,6 +206,7 @@ int AliHLTReconstructor::InitStreamerInfos()
   // The relevant streamer info for a specific run is stored in the OCDB.
   // The method evaluates the following entries:
   // - HLT/Calib/StreamerInfo
+  int iResult=0;
 
   // to be activated later, this is supposed to go as patch into the v4-17-Release branch
   // which doe snot have the AliHLTMisc implementation
@@ -217,13 +218,14 @@ int AliHLTReconstructor::InitStreamerInfos()
     {
     TObjArray* pSchemas=dynamic_cast<TObjArray*>(pObject);
     if (pSchemas) {
+      iResult=InitStreamerInfos(pSchemas);
     } else {
       AliError(Form("internal mismatch in OCDB entry %s: wrong class type", fgkCalibStreamerInfoEntry));
     }
   } else {
     AliWarning(Form("missing HLT reco data (%s), skipping initialization of streamer info for TObjects in HLT raw data payload", fgkCalibStreamerInfoEntry));
   }
-  return 0;
+  return iResult;
 }
 
 int AliHLTReconstructor::InitStreamerInfos(TObjArray* pSchemas) const
