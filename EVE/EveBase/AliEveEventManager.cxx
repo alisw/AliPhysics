@@ -901,7 +901,8 @@ void AliEveEventManager::Close()
 
   if (fESDTree) {
     delete fESD;       fESD       = 0;
-    delete fESDfriend; fESDfriend = 0;
+    // delete fESDfriend; // friend tree is deleted with the tree
+    fESDfriend = 0;
     fESDfriendExists = kFALSE;
 
     delete fESDTree;   fESDTree = 0;
