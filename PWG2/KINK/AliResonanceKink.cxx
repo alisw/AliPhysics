@@ -259,10 +259,10 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
        if((firstD<0)||(firstD>=stack->GetNtrack())) continue;
        if((lastD<0)||(lastD>=stack->GetNtrack())) continue;
        
-       TParticle *daughterParticle1;
-       TParticle *daughterParticle2;
-       AliMCParticle *mcDaughter1;
-       AliMCParticle *mcDaughter2;       
+       TParticle *daughterParticle1 = 0;
+       TParticle *daughterParticle2 = 0;
+       AliMCParticle   *mcDaughter1 = 0;
+       AliMCParticle   *mcDaughter2 = 0;       
                
         if(fdaughter1pdg==kdaughterKaon) {  
           daughterParticle1=stack->Particle(firstD);
@@ -280,16 +280,16 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
 	     
        if(TMath::Abs(daughterParticle1->GetPdgCode())!=321) continue;
        
-       TParticle* daughters1Daughter=0;
-       TParticle* daughters2Daughter=0;       
-       Int_t mcProcessDaughters1Daughter = -999;
-       Int_t mcProcessDaughters2Daughter = -999;       
-       AliMCParticle *mcDaughters1Daughter;
+       TParticle       *daughters1Daughter = 0;
+       TParticle       *daughters2Daughter = 0;       
+       Int_t   mcProcessDaughters1Daughter = -999;
+       Int_t   mcProcessDaughters2Daughter = -999;       
+       AliMCParticle *mcDaughters1Daughter = 0;
        
        if(mcDaughter1->Charge()==0) continue;
        if(mcDaughter2->Charge()==0) continue;       //accept resonance decays in two charged daughters
 
-       Int_t nDecayKaonDaughter=-99; 
+       Int_t nDecayKaonDaughter = -99; 
        for(Int_t ia=0; ia<daughterParticle1->GetNDaughters(); ia++) {
        if(((daughterParticle1->GetFirstDaughter()+ia)>0)&&((daughterParticle1->GetFirstDaughter()+ia)<stack->GetNtrack())) {
 	   daughters1Daughter=stack->Particle(daughterParticle1->GetFirstDaughter()+ia);
@@ -301,7 +301,7 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
         }
        }
        
-       Int_t nProcessDaughter=-99; 
+       Int_t nProcessDaughter = -99; 
        for(Int_t ib=0; ib<daughterParticle2->GetNDaughters(); ib++) {
         if(((daughterParticle2->GetFirstDaughter()+ib)>0)&&((daughterParticle2->GetFirstDaughter()+ib)<stack->GetNtrack())) {
 	   daughters2Daughter=stack->Particle(daughterParticle2->GetFirstDaughter()+ib);
@@ -313,7 +313,7 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
         }
        }  
        
-       Int_t numberOfCharged=0;
+       Int_t numberOfCharged = 0;
        if((mcProcessDaughters1Daughter==4)&&(nDecayKaonDaughter>=0)) {
          for(Int_t ic=nDecayKaonDaughter; ic<=daughterParticle1->GetLastDaughter(); ic++) {
 	   if ((ic>=0)&&(ic<stack->GetNtrack())) mcDaughters1Daughter= dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(ic));
