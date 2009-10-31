@@ -24,7 +24,7 @@
 #include <EMCAL/AliEMCALGeometry.h>
 #include <EMCAL/AliEMCALDigit.h>
 
-#include <iostream>
+#include <Riostream.h>
 #endif
 
 void emcal_digits()
@@ -79,22 +79,6 @@ void emcal_digits()
 
     gEve->AddElement(q, l);
     smodules[sm] = q;
-
-    // Add line
-    /*
-    TEveLine *ll = new TEveLine("Test");
-    ll->SetMainColor(kRed);
-    ll->SetLineWidth(2);
-
-    ll->SetNextPoint(0, -20, -20);
-    ll->SetNextPoint(0,  20, -20);
-    ll->SetNextPoint(0,  20,  20);
-    ll->SetNextPoint(0, -20,  20);
-    ll->SetNextPoint(0, -20, -20);
-    ll->RefMainTrans() = q->RefMainTrans();
-
-    q->AddElement(ll);
-    */
   }
 
   TClonesArray *digits = 0;
@@ -123,7 +107,7 @@ void emcal_digits()
       amp  = dig->GetAmp(); //amplitude in cell (digit)
       time = dig->GetTime();//time of creation of digit after collision
 
-      std::cout<<"Cell ID "<<id<<" Amp "<<amp<<std::endl;//" time "<<time<<endl;
+      cout<<"Cell ID "<<id<<" Amp "<<amp<<endl;//" time "<<time<<endl;
 
       //Geometry methods
       geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
@@ -132,19 +116,19 @@ void emcal_digits()
 					iIphi, iIeta,iphi,ieta);
       //Gives label of cell in eta-phi position per each supermodule
 
-      std::cout<< "SModule "<<iSupMod<<"; Tower "<<iTower
+      cout<< "SModule "<<iSupMod<<"; Tower "<<iTower
 	  <<"; Eta "<<iIeta<<"; Phi "<<iIphi
-	  <<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<std::endl;
+	  <<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<endl;
 
       geom->RelPosCellInSModule(id, x, y, z);
-      std::cout << x <<" "<< y <<" "<< z <<std::endl;
+      cout << x <<" "<< y <<" "<< z <<endl;
 
       TEveQuadSet* q = smodules[iSupMod];
       q->AddQuad(y, z);
       q->QuadValue(TMath::Nint(amp));
       q->QuadId(new AliEMCALDigit(*dig));
     } else {
-      std::cout<<"Digit pointer 0x0"<<std::endl;
+      cout<<"Digit pointer 0x0"<<endl;
     }
   }
 
