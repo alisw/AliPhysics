@@ -1,5 +1,7 @@
 #!/bin/bash
 
+[ -d reco/local ] || mkdir reco/local
+[ -d reco/log   ] || mkdir reco/log
 
 if [ "$1" == "-local" ] && [ ! -z $2 ]
 then
