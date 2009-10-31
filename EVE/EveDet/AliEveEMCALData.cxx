@@ -27,6 +27,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALHit.h"
 #include "AliEMCALDigit.h"
+
 #include "AliEMCALRecPoint.h"
 #include "AliESDCaloCells.h"
 #include "AliESDCaloCluster.h"
@@ -89,7 +90,7 @@ AliEveEMCALData::AliEveEMCALData(AliRunLoader* rl, TGeoNode* node, TGeoHMatrix* 
   fSMfull(10),
   fSMhalf(2),
   fRunLoader(rl),
-  fDebug(2),
+  fDebug(0),
   fPoint(0)
 {
   
@@ -116,7 +117,7 @@ AliEveEMCALData::~AliEveEMCALData()
 
   DeleteSuperModules();
   delete fTree;
-  delete fEmcal;
+  // delete fEmcal; // deleted by run-loader
   delete fGeom;
   delete fNode;
   delete fHMatrix;

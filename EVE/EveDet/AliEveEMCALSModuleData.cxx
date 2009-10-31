@@ -147,9 +147,7 @@ void AliEveEMCALSModuleData::Init(Int_t sm)
   fEtaTileSize = fGeom->GetPhiTileSize();
 
   TGeoBBox* bbbox = (TGeoBBox*) fNode->GetDaughter(0) ->GetVolume()->GetShape();
-  bbbox->Dump();
   TGeoBBox* sbbox = (TGeoBBox*) fNode->GetDaughter(10)->GetVolume()->GetShape();
-  sbbox->Dump();
 
   fMatrix = (TGeoMatrix*) fNode->GetDaughter(sm)->GetMatrix();
 

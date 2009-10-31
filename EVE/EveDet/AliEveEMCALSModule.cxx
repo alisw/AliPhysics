@@ -47,16 +47,12 @@ AliEveEMCALSModule::AliEveEMCALSModule(Int_t smid, const Text_t* n, const Text_t
   fEMCALData(0),
   fEMCALSModuleData(0),
   fFrameColor((Color_t)10),
-  fRTS(1),
   fSModuleID(smid),
   fQuadSet(new TEveQuadSet(n,t)),
   fQuadSet2(new TEveQuadSet(n,t)),
   fPointSet(new TEvePointSet(n)),
-  fThreshold(0),
-  fMaxVal(4096),
   fClusterSize(5),
   fHitSize(5),
-  fColorArray(0),
   fDebug(0)
 {
   // Constructor.
@@ -92,16 +88,12 @@ AliEveEMCALSModule::AliEveEMCALSModule(const AliEveEMCALSModule &esm) :
   fEMCALData(esm.fEMCALData),
   fEMCALSModuleData(esm.fEMCALSModuleData),
   fFrameColor(esm.fFrameColor),
-  fRTS(esm.fRTS),
   fSModuleID(esm.fSModuleID),
   fQuadSet(esm.fQuadSet),
   fQuadSet2(esm.fQuadSet2),
   fPointSet(esm.fPointSet),
-  fThreshold(esm.fThreshold),
-  fMaxVal(esm.fMaxVal),
   fClusterSize(esm.fClusterSize),
   fHitSize(esm.fHitSize),
-  fColorArray(esm.fColorArray),
   fDebug(esm.fDebug)
 {
   // Copy constructor.
@@ -137,13 +129,20 @@ AliEveEMCALSModule::~AliEveEMCALSModule()
 
   fPointSet->DecDenyDestroy();
   fQuadSet->DecDenyDestroy();
+  fQuadSet2->DecDenyDestroy();
 
   if(fEMCALData) fEMCALData->DecRefCount();
+  /*
+  // These are static so should not be deleted.
+  // Also, they are reference counted so DecRefCount() should be called.
+  // However, due to incomprehensible way of their initialization in ComputeBBox()
+  // it is better to just leave them.
+  // This should be cleaned up.
   if(fFrameBigBox)   fFrameBigBox->Delete();
   if(fFrameSmallBox) fFrameSmallBox->Delete();
   if(fFrameDigPalette) fFrameDigPalette->Delete();
   if(fFrameCluPalette) fFrameCluPalette->Delete();
-
+  */
 }
 
 //______________________________________________________________________________
@@ -200,32 +199,6 @@ void AliEveEMCALSModule::ComputeBBox()
 }
 
 //______________________________________________________________________________
-void AliEveEMCALSModule::SetThreshold(Short_t t)
-{
-  //
-  // Digit amplitude threshold
-  //
-
-  fThreshold = TMath::Min(t, (Short_t)(fMaxVal - 1));
-  ClearColorArray();
-  IncRTS();
-
-}
-
-//______________________________________________________________________________
-void AliEveEMCALSModule::SetMaxVal(Int_t mv)
-{
-  //
-  // Digit amplitude maximum value
-  //
-
-  fMaxVal = TMath::Max(mv, (Int_t)(fThreshold + 1));
-  ClearColorArray();
-  IncRTS();
-
-}
-
-//______________________________________________________________________________
 void AliEveEMCALSModule::SetClusterSize(Int_t size)
 {
   //
@@ -233,8 +206,6 @@ void AliEveEMCALSModule::SetClusterSize(Int_t size)
   //
 
   fClusterSize = TMath::Max(1, size);
-  IncRTS();
-
 }
 
 //______________________________________________________________________________
@@ -245,71 +216,6 @@ void AliEveEMCALSModule::SetHitSize(Int_t size)
   //
 
   fHitSize = TMath::Max(1, size);
-  IncRTS();
-
-}
-
-//______________________________________________________________________________
-void AliEveEMCALSModule::SetupColor(Int_t val, UChar_t* pixel) const
-{
-  //
-  // RGBA color for amplitude "val"
-  //
-
-  Float_t div  = TMath::Max(1, fMaxVal - fThreshold);
-  Int_t   nCol = gStyle->GetNumberOfColors();
-  Int_t   cBin = (Int_t) TMath::Nint(nCol*(val - fThreshold)/div);
-
-  TEveUtil::TEveUtil::ColorFromIdx(gStyle->GetColorPalette(TMath::Min(nCol - 1, cBin)), pixel);
-
-}
-
-//______________________________________________________________________________
-Int_t AliEveEMCALSModule::ColorIndex(Int_t val) const
-{
-  //
-  // Index color
-  //
-
-  if(val < fThreshold) val = fThreshold;
-  if(val > fMaxVal)    val = fMaxVal;
-
-  Float_t div  = TMath::Max(1, fMaxVal - fThreshold);
-  Int_t   nCol = gStyle->GetNumberOfColors();
-  Int_t   cBin = (Int_t) TMath::Nint(nCol*(val - fThreshold)/div);
-
-  return gStyle->GetColorPalette(TMath::Min(nCol - 1, cBin));
-
-}
-
-//______________________________________________________________________________
-void AliEveEMCALSModule::SetupColorArray() const
-{
-  //
-  // Build array of colors
-  //
-
-  if(fColorArray)
-    return;
-
-  fColorArray = new UChar_t [4 * (fMaxVal - fThreshold + 1)];
-  UChar_t* p = fColorArray;
-  for(Int_t v=fThreshold; v<=fMaxVal; ++v, p+=4)
-    SetupColor(v, p);
-
-}
-
-//______________________________________________________________________________
-void AliEveEMCALSModule::ClearColorArray()
-{
-  //
-  // Delete array of colors
-  //
-
-  if(fColorArray) {
-    delete [] fColorArray;
-    fColorArray = 0;
-  }
 }
 
 //______________________________________________________________________________
@@ -326,8 +232,6 @@ void AliEveEMCALSModule::SetDataSource(AliEveEMCALData* data)
 
   // Get pointer on SM data
   fEMCALSModuleData = GetSModuleData();
-
-  IncRTS();
 }
 
 //______________________________________________________________________________
@@ -409,7 +313,7 @@ void AliEveEMCALSModule::UpdateQuads()
 	  fQuadSet->QuadValue(amp);
 	} // end digits loop
       }
-    else { printf("There is no digits in SM %d \n", smId); }
+    else { if (fDebug) printf("There is no digits in SM %d \n", smId); }
 
     // hits --------------------------
     bufferHit = fEMCALSModuleData->GetHitBuffer();
@@ -431,7 +335,7 @@ void AliEveEMCALSModule::UpdateQuads()
 	  fPointSet->SetMarkerColor((Color_t)2);
 	}
       }
-    else {printf("There is no hits in SM %d \n", smId); }
+    else { if (fDebug) printf("There is no hits in SM %d \n", smId); }
 
     // clusters ------------------------
 
@@ -475,7 +379,7 @@ void AliEveEMCALSModule::UpdateQuads()
 
 	} // end clusters loop
       }
-    else { printf("There is no clusters in SM %d \n", smId); }
+    else { if (fDebug) printf("There is no clusters in SM %d \n", smId); }
 
   } // end if (fEMCALSModuleData != 0)
 
@@ -492,5 +396,4 @@ void AliEveEMCALSModule::SetSModuleID(Int_t id)
   if (id > 12) id = 12;
 
   fSModuleID = id;
-  IncRTS();
 }
