@@ -2983,7 +2983,6 @@ void AliReconstruction::CleanUp()
     AliQAManager::QAManager()->ShowQA() ; 
   AliQAManager::Destroy() ; 
   
-  TGeoGlobalMagField::Instance()->SetField(NULL);
 }
 
 void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
