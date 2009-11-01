@@ -440,7 +440,11 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	    Int_t col = pmdddl->GetColumn();
 	    Int_t sig = pmdddl->GetSignal();
 	    
-	    if (mcm == 0 || smn == -1) continue;
+	    if (mcm == 0) continue;
+	    if (det < 0 || det > 1)  continue;
+	    if (smn < 0 || smn > 23) continue;
+	    if (row < 0 || row > 47) continue;
+	    if (col < 0 || col > 95) continue;
 
 	    if (det == 0)
 	    {
