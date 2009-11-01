@@ -85,6 +85,13 @@ class AliHLTGlobalTriggerWrapper : public AliHLTGlobalTrigger, public AliHLTLogg
    * \param counters  The array of trigger counters to use.
    */
   virtual void SetCounters(const TArrayL64& counters);
+  
+  /**
+   * Indicates if the CINT interpreter had problems with the interpreted class
+   * during a call to one of the interface methods overloaded from AliHLTGlobalTrigger.
+   * \returns true if there was a problem with the method call.
+   */
+  virtual bool CallFailed() const { return fCallFailed; }
 
   /// Returns true if the wrapper object has setup the underlying object class properly.
   bool IsValid() const;
@@ -104,6 +111,7 @@ class AliHLTGlobalTriggerWrapper : public AliHLTGlobalTrigger, public AliHLTLogg
   TMethodCall fCalculateTriggerDecisionCall;  /// Method call object for CalculateTriggerDecision method.
   mutable TMethodCall fGetCountersCall;  /// Method call object for GetCounters method.
   TMethodCall fSetCountersCall;  /// Method call object for SetCounters method.
+  mutable bool fCallFailed;  /// Indicates if the last method call failed or not.
   
   ClassDef(AliHLTGlobalTriggerWrapper, 0) // Wrapper class to interface with an interpreted global trigger class.
 };

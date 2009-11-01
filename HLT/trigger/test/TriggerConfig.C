@@ -58,9 +58,11 @@ void SingleGroupTestConfig()
 void PrescalarTestConfig()
 {
 	AliHLTGlobalTriggerConfig config("Prescalar test config");
-	config.AddItem(2, "triggerTPC", "triggerTPC", 2, "TPC trigger");
+	config.AddItem(2, "triggerTPC", "triggerTPC", 3, "TPC trigger");
 	config.AddItem(1, "triggerMUON", "triggerMUON", "MUON trigger");
 	config.SetDefaultConditionOperator("||");
+	config.SetDefaultTriggerDescription("No trigger");
+	config.SetDefaultTriggerDomain(AliHLTTriggerDomain("*******:HLT "));
 }
 
 /**
@@ -70,9 +72,13 @@ void SymbolTestConfig()
 {
 	AliHLTGlobalTriggerConfig config("Symbol test config");
 	config.AddSymbol("domain-All", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:***,-DAQRDOUT:TST\")");
+	config.AddSymbol("PHOSclusters", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"CLUSTERS:PHOS\")");
+	config.AddSymbol("PHOStracks", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"TRACKS:PHOS\")");
+	config.AddSymbol("domainPHOS", "AliHLTTriggerDomain", "", "PHOSclusters | PHOStracks");
+	config.AddSymbol("triggerTPC", "bool", "this->Result()", "false", "AliHLTTriggerDecision");
 	config.AddSymbol("trigClasses", "AliHLTUInt64_t", "this->GetTriggerClasses()", "0x0", "AliHLTEventSummary");
-	config.AddItem(2, "true", "domain-All", 5, "Pass through");
-	config.AddItem(1, "trigClasses == 0x2", "domain-All", "Trigger class 2");
+	config.AddItem(2, "true", "domain-All", 4, "Pass through");
+	config.AddItem(1, "trigClasses == 0x2", "triggerTPC | domainPHOS", "Trigger class 2");
 }
 
 /**
@@ -83,11 +89,17 @@ void ComplexTestConfig()
 {
 	AliHLTGlobalTriggerConfig config("Complex test config");
 	config.AddSymbol("domain-All", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:***,-DAQRDOUT:TST\")");
-	config.AddItem(3, "true", "domain-All", 5, "Pass through");
-	config.AddItem(2, "triggerSSD", "triggerSSD", "SSD trigger");
-	config.AddItem(2, "triggerMUON", "triggerMUON", "MUON trigger");
+	config.AddSymbol("PHOSclusters", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"CLUSTERS:PHOS\")");
+	config.AddSymbol("PHOStracks", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"TRACKS:PHOS\")");
+	config.AddSymbol("domainPHOS", "AliHLTTriggerDomain", "", "PHOSclusters | PHOStracks");
+	config.AddItem(4, "true", "domain-All", 7, "Pass through");
+	config.AddItem(3, "triggerSSD", "triggerSSD |", "SSD trigger 1");
+	config.AddItem(3, "triggerMUON", "triggerMUON", "MUON trigger 1");
+	config.AddItem(2, "triggerSSD ||", "triggerSSD | domainPHOS", "SSD trigger 2");
+	config.AddItem(2, "triggerMUON ||", "triggerMUON", "MUON trigger 2");
 	config.AddItem(1, "triggerTPC", "triggerTPC | triggerSSD | triggerMUON", "Slow trigger");
-	config.SetDefaultDomain(AliHLTTriggerDomain("*******:MUON"));
+	config.SetDefaultTriggerDomain(AliHLTTriggerDomain("*******:MUON"));
+	config.SetDefaultConditionOperator("&&");
 }
 
 /**

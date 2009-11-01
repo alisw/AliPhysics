@@ -131,7 +131,11 @@ AliHLTConfiguration::~AliHLTConfiguration()
   // see header file for function documentation
   if (fgConfigurationHandler) {
     if (fgConfigurationHandler->FindConfiguration(fID.Data())!=NULL) {
-      fgConfigurationHandler->RemoveConfiguration(this);
+      // 30 Dec 2009 - Cannot use the 'this' pointer in the RemoveConfiguration
+      // method since the fgConfigurationHandler contains clone objects and therefor
+      // the remove method will not find this object in the list to remove.
+      //fgConfigurationHandler->RemoveConfiguration(this);
+      fgConfigurationHandler->RemoveConfiguration(fID.Data());
     }
   }
   if (fArgv != NULL) {

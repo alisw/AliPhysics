@@ -3,6 +3,7 @@
 set(SRCS
 trigger/AliHLTTrigger.cxx
 trigger/AliHLTGlobalTrigger.cxx
+trigger/AliHLTGlobalTriggerWrapper.cxx
 trigger/AliHLTGlobalTriggerConfig.cxx
 trigger/AliHLTGlobalTriggerComponent.cxx
 trigger/AliHLTTriggerBarrelMultiplicity.cxx

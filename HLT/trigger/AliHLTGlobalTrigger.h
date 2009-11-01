@@ -79,6 +79,14 @@ class AliHLTGlobalTrigger
   virtual void SetCounters(const TArrayL64& counters) = 0;
   
   /**
+   * Method for checking if the last call to one of the AliHLTGlobalTrigger
+   * methods failed. This is used by the AliHLTGlobalTriggerWrapper to indicate
+   * if the CINT interpreter had problems with the interpreted class.
+   * \returns true if there was a problem with the method call.
+   */
+  virtual bool CallFailed() const { return false; }
+  
+  /**
    * Creates a new instance of a particular global trigger class.
    * \param name  The name of the class to create.
    * \returns the new trigger class instance which needs to be deleted by the

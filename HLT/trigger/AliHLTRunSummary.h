@@ -156,6 +156,6 @@ private:
   /** Detector run statistics classes */
   TObjArray* fDetectorArray;                     //! transient
 
-  ClassDef(AliHLTRunSummary, 0);  
+  ClassDef(AliHLTRunSummary, 1);  
 };
 #endif

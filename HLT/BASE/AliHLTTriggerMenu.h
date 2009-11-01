@@ -52,17 +52,17 @@
  * domain merging expressions) are allowed to have a dangling trailing operator.
  * The trailing operator will then make sense in the full concatenated expression.
  * If no such trailing operator is found then the default trigger conditions operator
- * is used implicitly, as defined in the trigger menu.
+ * is used implicitly for the concatenation, as defined in the trigger menu.
  * If the full concatenated condition expression evaluates to true then the priority
  * group's result is also true and the output trigger domain can be calculated.
  * This is done by taking all the merging expressions from only those trigger menu
  * items whose trigger condition expression fragments were true, and concatenating
  * those merging expression fragments together to arrive at the full merging expression.
  * The final trigger domain is calculated by evaluating the merging expression.
- * Note that the concatenation of the merging expression fragments working in the
+ * Note that the concatenation of the merging expression fragments works in the
  * same manner as the trigger condition expressions. So a trailing operator is
  * allowed in each trigger menu item's merging expression, and is implicitly removed
- * if not needed, but used to concatenate with the next expression required.
+ * if not needed, but used to concatenate with the next triggered expression.
  * The default domain merging operator is used if no trailing operator is present
  * but a concatenation is required.
  * The evaluation of trigger menu items stops at the first priority group whose

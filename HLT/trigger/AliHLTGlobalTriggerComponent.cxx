@@ -258,6 +258,7 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   }
   
   fTrigger->FillFromMenu(*menu);
+  if (fTrigger->CallFailed()) return -EPROTO;
 
   // setup the CTP accounting in AliHLTComponent
   SetupCTPData();
@@ -328,14 +329,17 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   // Copy the trigger counters in case we need to set them back to their original
   // value because the PushBack method fails with ENOSPC.
   TArrayL64 originalCounters = fTrigger->GetCounters();
+  if (fTrigger->CallFailed()) return -EPROTO;
   
   fTrigger->NewEvent();
+  if (fTrigger->CallFailed()) return -EPROTO;
   
   // Fill in the input data.
   const TObject* obj = GetFirstInputObject();
   while (obj != NULL)
   {
     fTrigger->Add(obj, GetDataType(), GetSpecification());
+    if (fTrigger->CallFailed()) return -EPROTO;
     obj = GetNextInputObject();
   }
 
@@ -350,6 +354,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   TString description;
   AliHLTTriggerDomain triggerDomain;
   bool triggerResult = fTrigger->CalculateTriggerDecision(triggerDomain, description);
+  if (fTrigger->CallFailed()) return -EPROTO;
   AliHLTGlobalTriggerDecision decision(
       triggerResult,
       // The following will cause the decision to be generated with default values
@@ -370,6 +375,8 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   }
 
   decision.SetCounters(fTrigger->GetCounters(), GetEventCount()+1);
+  if (fTrigger->CallFailed()) return -EPROTO;
+  
   static UInt_t lastTime=0;
   TDatime time;
   if (time.Get()-lastTime>5) {
@@ -405,6 +412,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     fBufferSizeConst += 1024*1024;
     fBufferSizeMultiplier *= 2.;
     fTrigger->SetCounters(originalCounters);
+    if (fTrigger->CallFailed()) return -EPROTO;
     return -ENOSPC;
   }
   return 0;
@@ -454,6 +462,7 @@ int AliHLTGlobalTriggerComponent::Reconfigure(const char* cdbEntry, const char* 
   
   fTrigger = trigger;
   fTrigger->FillFromMenu(*menu);
+  if (fTrigger->CallFailed()) return -EPROTO;
 
   // Set the default values from the trigger menu.
   SetDescription(menu->DefaultDescription());
@@ -666,6 +675,10 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
     code << "    HLTDebug(Form(\"Filling domain entries from trigger menu symbols for global trigger %p.\", this));" << endl;
   }
   code << "    for (Int_t i = 0; i < menu.SymbolArray().GetEntriesFast(); i++) {" << endl;
+  // 30 Oct 2009 - CINT sometimes evaluates the dynamic_cast incorrectly.
+  // Have to use the TClass system for extra protection.
+  code << "      if (menu.SymbolArray().UncheckedAt(i) == NULL) continue;" << endl;
+  code << "      if (menu.SymbolArray().UncheckedAt(i)->IsA() != AliHLTTriggerMenuSymbol::Class()) continue;" << endl;
   code << "      const AliHLTTriggerMenuSymbol* symbol = dynamic_cast<const"
            " AliHLTTriggerMenuSymbol*>(menu.SymbolArray().UncheckedAt(i));" << endl;
   code << "      if (symbol == NULL) continue;" << endl;
@@ -765,7 +778,10 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
              << symbol->Name() << "DomainEntry.AsString().Data()));" << endl;
       }
     }
-    code << "    const " << symbol->ObjectClass() << "* " << symbol->Name()
+    // 30 Oct 2009 - CINT sometimes evaluates the dynamic_cast incorrectly.
+    // Have to use the TClass system for extra protection.
+    code << "    const " << symbol->ObjectClass() << "* " << symbol->Name() << "_object_ = NULL;" << endl;
+    code << "    if (_object_->IsA() == " << symbol->ObjectClass() << "::Class()) " << symbol->Name()
          << "_object_ = dynamic_cast<const " << symbol->ObjectClass()
          << "*>(_object_);" << endl;
     code << "    if (" << symbol->Name() << "_object_ != NULL && ";
@@ -954,33 +970,19 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
       }
       else
       {
-        bool switchWillBeEmpty = true;
-        for (size_t k = 0; k < m; k++)
-        {
-          if (conditionOperator[k] == "") continue;
-          switchWillBeEmpty = false;
-        }
-        if (switchWillBeEmpty)
+        if (conditionOperator[m-1] == "")
         {
           code << "    _group_result_ = _group_result_ "
                << menu->DefaultConditionOperator() << " _item_result_;" << endl;
         }
         else
         {
-          code << "    switch(_previous_match_) {" << endl;
-          for (size_t k = 0; k < m; k++)
-          {
-            if (conditionOperator[k] == "") continue;
-            code << "    case " << k << ": _group_result_ = _group_result_ "
-                 << conditionOperator[k] << " _item_result_; break;" << endl;
-          }
-          code << "    default: _group_result_ = _group_result_ "
-               << menu->DefaultConditionOperator() << " _item_result_;" << endl;
-          code << "    }" << endl;
+          code << "    _group_result_ = _group_result_ "
+               << conditionOperator[m-1] << " _item_result_;" << endl;
         }
         code << "    if (_item_result_) {" << endl;
         code << "      if (_trigger_matched_) {" << endl;
-        switchWillBeEmpty = true;
+        bool switchWillBeEmpty = true;
         for (size_t k = 0; k < m; k++)
         {
           if (domainOperator[k] == "") continue;
@@ -1343,8 +1345,10 @@ int AliHLTGlobalTriggerComponent::PrintStatistics(const AliHLTGlobalTrigger* pTr
 {
   // print some statistics
   int totalEvents=GetEventCount()+offset;
-  for (int i=0; i<pTrigger->GetCounters().GetSize(); i++) {
-    ULong64_t count=pTrigger->GetCounters()[i];
+  const TArrayL64& counters = pTrigger->GetCounters();
+  if (pTrigger->CallFailed()) return -EPROTO;
+  for (int i = 0; i < counters.GetSize(); i++) {
+    ULong64_t count = counters[i];
     float ratio=0;
     if (totalEvents>0) ratio=100*(float)count/totalEvents;
     HLTLog(level, "Item %d: total events: %d - counted events: %llu (%.1f%%)", i, totalEvents, count, ratio);
@@ -1395,6 +1399,7 @@ int AliHLTGlobalTriggerComponent::AddCTPDecisions(AliHLTGlobalTrigger* pTrigger,
     else pDecision->TriggerDomain().Add(pCTPData->ReadoutList());
 
     pTrigger->Add(fCTPDecisions->At(i), kAliHLTDataTypeTriggerDecision, kAliHLTVoidDataSpec);
+    if (pTrigger->CallFailed()) return -EPROTO;
   }
 
   return 0;
