@@ -317,16 +317,16 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep()
 	// ----- output data -----
 	
 	//slot 0 : default output tree (by default handled by AliAnalysisTaskSE)
-	AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("ctree0", TTree::Class(),AliAnalysisManager::kOutputContainer,"output.root");
+	AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("ctree0", TTree::Class(),AliAnalysisManager::kOutputContainer,"CFtaskHFoutput.root");
 	
 	//now comes user's output objects :
 	
 	// output TH1I for event counting
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist0", TH1I::Class(),AliAnalysisManager::kOutputContainer,"output.root");
+	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist0", TH1I::Class(),AliAnalysisManager::kOutputContainer,"CFtaskHFoutput.root");
 	// output Correction Framework Container (for acceptance & efficiency calculations)
-	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,"output.root");
+	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ccontainer0", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,"CFtaskHFoutput.root");
 // Unfolding - correlation matrix
-        AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("corr0", THnSparseD::Class(),AliAnalysisManager::kOutputContainer,"output.root");
+        AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("corr0", THnSparseD::Class(),AliAnalysisManager::kOutputContainer,"CFtaskHFoutput.root");
 
 	mgr->AddTask(task);
 	
