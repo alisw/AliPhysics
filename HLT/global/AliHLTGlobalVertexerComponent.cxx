@@ -231,7 +231,7 @@ int AliHLTGlobalVertexerComponent::DoEvent(const AliHLTComponentEventData& /*evt
       if( fHistPrimVertexZY ) PushBack( (TObject*) fHistPrimVertexZY, kAliHLTDataTypeHistogram,0);
     }
     
-    PushBack( (TObject*) event, kAliHLTDataTypeESDObject, 0);
+    PushBack( (TObject*) event, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
   }
     
   return 0;
