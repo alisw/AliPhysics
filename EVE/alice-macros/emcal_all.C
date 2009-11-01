@@ -116,7 +116,6 @@ void emcal_all(const UInt_t evtNum = 0, Bool_t digFile = 0,
       AliEveEMCALSModule* esm = new AliEveEMCALSModule(sm,Form("SM %d Element \n", sm),"test");
       //      esm->SetSModuleID(sm);
       esm->SetDataSource(emcal_data);
-      esm->ComputeBBox();
       esm->UpdateQuads();
       l->AddElement(esm);
     }

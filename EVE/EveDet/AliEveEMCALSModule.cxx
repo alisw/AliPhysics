@@ -32,18 +32,18 @@
 
 ClassImp(AliEveEMCALSModule)
 
-Bool_t AliEveEMCALSModule::fStaticInit = kFALSE;
-
-TEveFrameBox*    AliEveEMCALSModule::fFrameBigBox = 0;
-TEveFrameBox*    AliEveEMCALSModule::fFrameSmallBox = 0;
-TEveRGBAPalette* AliEveEMCALSModule::fFrameDigPalette = 0;
-TEveRGBAPalette* AliEveEMCALSModule::fFrameCluPalette = 0;
+Bool_t           AliEveEMCALSModule::fStaticInit = kFALSE;
+Float_t          AliEveEMCALSModule::fgSMBigBBox[3];
+Float_t          AliEveEMCALSModule::fgSMSmallBBox[3];
+TEveFrameBox*    AliEveEMCALSModule::fgFrameBigBox = 0;
+TEveFrameBox*    AliEveEMCALSModule::fgFrameSmallBox = 0;
+TEveRGBAPalette* AliEveEMCALSModule::fgFrameDigPalette = 0;
+TEveRGBAPalette* AliEveEMCALSModule::fgFrameCluPalette = 0;
 
 AliEveEMCALSModule::AliEveEMCALSModule(Int_t smid, const Text_t* n, const Text_t* t) :
   TEveElement(fFrameColor),
   TNamed(n,t),
   TAtt3D(),
-  TAttBBox(),
   fEMCALData(0),
   fEMCALSModuleData(0),
   fFrameColor((Color_t)10),
@@ -64,10 +64,6 @@ AliEveEMCALSModule::AliEveEMCALSModule(Int_t smid, const Text_t* n, const Text_t
   }
   SetName(name);
 
-  for(Int_t i=0; i<3; i++) fSMBigBBox[i] = 0.;
-  for(Int_t i=0; i<3; i++) fSMSmallBBox[i] = 0.;
-  for(Int_t i=0; i<3; i++) fSMBBoxCenter[i] = 0.;
-
   // Hits
   fPointSet->IncDenyDestroy();
   AddElement(fPointSet);
@@ -84,7 +80,6 @@ AliEveEMCALSModule::AliEveEMCALSModule(const AliEveEMCALSModule &esm) :
   TEveElement(fFrameColor),
   TNamed(),
   TAtt3D(),
-  TAttBBox(),
   fEMCALData(esm.fEMCALData),
   fEMCALSModuleData(esm.fEMCALSModuleData),
   fFrameColor(esm.fFrameColor),
@@ -104,10 +99,6 @@ AliEveEMCALSModule::AliEveEMCALSModule(const AliEveEMCALSModule &esm) :
     sprintf(name,"Half Super Module %02d",fSModuleID);
   }
   SetName(name);
-
-  for(Int_t i=0; i<3; i++) fSMBigBBox[i] = 0.;
-  for(Int_t i=0; i<3; i++) fSMSmallBBox[i] = 0.;
-  for(Int_t i=0; i<3; i++) fSMBBoxCenter[i] = 0.;
 
   // Hits
   fPointSet->IncDenyDestroy();
@@ -132,17 +123,6 @@ AliEveEMCALSModule::~AliEveEMCALSModule()
   fQuadSet2->DecDenyDestroy();
 
   if(fEMCALData) fEMCALData->DecRefCount();
-  /*
-  // These are static so should not be deleted.
-  // Also, they are reference counted so DecRefCount() should be called.
-  // However, due to incomprehensible way of their initialization in ComputeBBox()
-  // it is better to just leave them.
-  // This should be cleaned up.
-  if(fFrameBigBox)   fFrameBigBox->Delete();
-  if(fFrameSmallBox) fFrameSmallBox->Delete();
-  if(fFrameDigPalette) fFrameDigPalette->Delete();
-  if(fFrameCluPalette) fFrameCluPalette->Delete();
-  */
 }
 
 //______________________________________________________________________________
@@ -161,41 +141,33 @@ void AliEveEMCALSModule::DropData()
 }
 
 //______________________________________________________________________________
-void AliEveEMCALSModule::ComputeBBox()
+void AliEveEMCALSModule::InitStatics(AliEveEMCALSModuleData* md)
 {
   //
   // Bounding box, Framebox and Palette
   //
 
-  fEMCALSModuleData->GetSModuleBigBox(fSMBigBBox[0],fSMBigBBox[1], fSMBigBBox[2]);
-  fEMCALSModuleData->GetSModuleSmallBox(fSMSmallBBox[0],fSMSmallBBox[1], fSMSmallBBox[2]);
-
   if (fStaticInit) return;
   fStaticInit = kTRUE;
 
-  fFrameBigBox = new TEveFrameBox();
-  fFrameBigBox->SetAABoxCenterHalfSize(0, 0, 0, fSMBigBBox[0], fSMBigBBox[1], fSMBigBBox[2]);
-  fFrameBigBox->SetFrameColor((Color_t)10);
-  fFrameDigPalette = new TEveRGBAPalette(0,512);
-  fFrameDigPalette->SetLimits(0, 1024);
-  fFrameDigPalette->IncRefCount();
+  md->GetSModuleBigBox(fgSMBigBBox[0],fgSMBigBBox[1], fgSMBigBBox[2]);
+  md->GetSModuleSmallBox(fgSMSmallBBox[0],fgSMSmallBBox[1], fgSMSmallBBox[2]);
 
-  fFrameSmallBox = new TEveFrameBox();
-  fFrameSmallBox->SetAABoxCenterHalfSize(0, 0, 0, fSMSmallBBox[0], fSMSmallBBox[1], fSMSmallBBox[2]);
-  fFrameSmallBox->SetFrameColor((Color_t)10);
-  fFrameCluPalette  = new TEveRGBAPalette(0,512);
-  fFrameCluPalette->SetLimits(0, 1024);
-  fFrameCluPalette->IncRefCount();
+  fgFrameBigBox = new TEveFrameBox();
+  fgFrameBigBox->SetAABoxCenterHalfSize(0, 0, 0, fgSMBigBBox[0], fgSMBigBBox[1], fgSMBigBBox[2]);
+  fgFrameBigBox->SetFrameColor((Color_t)10);
+  fgFrameBigBox->IncRefCount();
+  fgFrameDigPalette = new TEveRGBAPalette(0,512);
+  fgFrameDigPalette->SetLimits(0, 1024);
+  fgFrameDigPalette->IncRefCount();
 
-  BBoxInit();
-
-  fBBox[0] = - 2*fSMBigBBox[0];
-  fBBox[1] = + 2*fSMBigBBox[0];
-  fBBox[2] = - 2*fSMBigBBox[1];
-  fBBox[3] = + 2*fSMBigBBox[1];
-  fBBox[4] = - 2*fSMBigBBox[2];
-  fBBox[5] = + 2*fSMBigBBox[2];
-
+  fgFrameSmallBox = new TEveFrameBox();
+  fgFrameSmallBox->SetAABoxCenterHalfSize(0, 0, 0, fgSMSmallBBox[0], fgSMSmallBBox[1], fgSMSmallBBox[2]);
+  fgFrameSmallBox->SetFrameColor((Color_t)10);
+  fgFrameSmallBox->IncRefCount();
+  fgFrameCluPalette  = new TEveRGBAPalette(0,512);
+  fgFrameCluPalette->SetLimits(0, 1024);
+  fgFrameCluPalette->IncRefCount();
 }
 
 //______________________________________________________________________________
@@ -278,7 +250,10 @@ void AliEveEMCALSModule::UpdateQuads()
   */
 
   if (fEMCALSModuleData != 0) {
-    
+
+    if (!fStaticInit)
+      InitStatics(fEMCALSModuleData);
+
     // digits ------------------------
 
     // Define TEveQuadSet for digits
@@ -287,10 +262,10 @@ void AliEveEMCALSModule::UpdateQuads()
     fQuadSet->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
     fQuadSet->SetDefHeight(fEMCALSModuleData->GetEtaTileSize());
     fQuadSet->RefMainTrans().SetFrom(*fEMCALSModuleData->GetSModuleMatrix());
-    fQuadSet->SetPalette(fFrameDigPalette);
+    fQuadSet->SetPalette(fgFrameDigPalette);
     if(smId<fEMCALSModuleData->GetNsmf()) 
-      fQuadSet->SetFrame(fFrameBigBox);
-    else fQuadSet->SetFrame(fFrameSmallBox);
+      fQuadSet->SetFrame(fgFrameBigBox);
+    else fQuadSet->SetFrame(fgFrameSmallBox);
 
     // Get the digit information from the buffer
     bufferDigit = fEMCALSModuleData->GetDigitBuffer();
@@ -345,10 +320,10 @@ void AliEveEMCALSModule::UpdateQuads()
     fQuadSet2->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
     fQuadSet2->SetDefHeight(fEMCALSModuleData->GetEtaTileSize());
     fQuadSet2->RefMainTrans().SetFrom(*fEMCALSModuleData->GetSModuleMatrix());
-    fQuadSet2->SetPalette(fFrameCluPalette);
+    fQuadSet2->SetPalette(fgFrameCluPalette);
     if(smId<fEMCALSModuleData->GetNsmf()) 
-      fQuadSet2->SetFrame(fFrameBigBox);
-    else fQuadSet2->SetFrame(fFrameSmallBox);
+      fQuadSet2->SetFrame(fgFrameBigBox);
+    else fQuadSet2->SetFrame(fgFrameSmallBox);
 
     // Get the cluster information from the buffer
     bufferCluster = fEMCALSModuleData->GetClusterBuffer();

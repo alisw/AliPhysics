@@ -25,8 +25,7 @@ class AliEveEMCALSModuleData;
 
 class AliEveEMCALSModule : public TEveElement,
                            public TNamed,
-                           public TAtt3D,
-			   public TAttBBox
+                           public TAtt3D
 {
 
  public:
@@ -35,7 +34,6 @@ class AliEveEMCALSModule : public TEveElement,
 
   void DropData();
 
-  virtual void   ComputeBBox();
   virtual Bool_t CanEditMainColor() const { return kTRUE; }
 
   void  SetDataSource(AliEveEMCALData *data);
@@ -61,15 +59,15 @@ class AliEveEMCALSModule : public TEveElement,
   Int_t                   fHitSize;           //  Hit point size
   Int_t                   fDebug;             //  Debug option
 
-  Float_t                 fSMBigBBox[3];      //  Bounding Box of full SM
-  Float_t                 fSMSmallBBox[3];    //  Bounding Box of half SM
-  Float_t                 fSMBBoxCenter[3];   //  Bounding Box Center of full SM
+  static void InitStatics(AliEveEMCALSModuleData* md);
 
-  static   Bool_t          fStaticInit;        // Flag for static variable initialization.
-  static   TEveFrameBox    *fFrameBigBox;      // Frame box per full SM
-  static   TEveFrameBox    *fFrameSmallBox;    // Frame box per half SM
-  static   TEveRGBAPalette *fFrameDigPalette;  // Signal to color mapping for EMCAL digits
-  static   TEveRGBAPalette *fFrameCluPalette;  // Signal to color mapping for EMCAL clusters
+  static   Bool_t           fStaticInit;       // Flag for static variable initialization.
+  static   Float_t          fgSMBigBBox[3];    //  Bounding Box of full SM
+  static   Float_t          fgSMSmallBBox[3];  //  Bounding Box of half SM
+  static   TEveFrameBox    *fgFrameBigBox;     // Frame box per full SM
+  static   TEveFrameBox    *fgFrameSmallBox;   // Frame box per half SM
+  static   TEveRGBAPalette *fgFrameDigPalette; // Signal to color mapping for EMCAL digits
+  static   TEveRGBAPalette *fgFrameCluPalette; // Signal to color mapping for EMCAL clusters
 
   void SetupColor(Int_t val, UChar_t* pix) const;
 
