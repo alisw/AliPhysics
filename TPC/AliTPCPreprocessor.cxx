@@ -942,8 +942,9 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
 // Temperature maps 
 
  if (fTemp) {
-    fTemp->SetNameTitle("TempMap","TempMap");
-    ceObjects->Add(fTemp);
+    AliTPCSensorTempArray *tempMap = new AliTPCSensorTempArray(*fTemp);
+    tempMap->SetNameTitle("TempMap","TempMap");
+    ceObjects->Add(tempMap);
  }
 
 // Pressure maps
