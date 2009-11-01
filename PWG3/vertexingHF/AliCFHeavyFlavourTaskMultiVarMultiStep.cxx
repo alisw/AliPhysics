@@ -1126,7 +1126,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
         corr2->Draw("text");
       
 
-	TFile* file_projection = new TFile("file_projection.root","RECREATE");
+	TFile* file_projection = new TFile("CFtaskHFprojection.root","RECREATE");
 
         corr1->Write();
         corr2->Write();
