@@ -97,7 +97,7 @@ void AliITSQASSDRefData::AddReference(const char* name="",
     return;
   }
   
-  if(name!=""&&GetID(name)!=-1) {
+  if( (strcmp(name,"")!=0) && GetID(name)!=-1) {
     AliError(Form("Reference with name %s already exists. Choose other name or use SetReferenceValue(const char*, Double_t) to overwrite",name));
     return;
   }
