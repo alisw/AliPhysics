@@ -2,13 +2,13 @@
 #include "TTree.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "TRD/qaRec/macros/AliTRDperformanceTrain.h"
-#include "TRD/qaRec/AliTRDresolution.h"
-#include "TRD/qaRec/AliTRDclusterResolution.h"
-#include "TRD/qaRec/AliTRDalignmentTask.h"
+#include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
+#include "PWG1/TRD/AliTRDresolution.h"
+#include "PWG1/TRD/AliTRDclusterResolution.h"
+#include "PWG1/TRD/AliTRDalignmentTask.h"
 #endif
 
-#include "TRD/qaRec/macros/helper.C"
+#include "PWG1/TRD/macros/helper.C"
 void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
   Int_t map = ParseOptions(trd);

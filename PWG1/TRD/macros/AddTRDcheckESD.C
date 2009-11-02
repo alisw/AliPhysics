@@ -1,7 +1,7 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "TRD/qaRec/AliTRDcheckESD.h"
+#include "PWG1/TRD/AliTRDcheckESD.h"
 #endif
 
 void AddTRDcheckESD(AliAnalysisManager *mgr)
