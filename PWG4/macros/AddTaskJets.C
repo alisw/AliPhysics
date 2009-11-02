@@ -56,21 +56,22 @@ Int_t AddTaskJetsDelta(char *nonStdFile = ""){
   Int_t iCount = 0;
 
 
-  const char *cJF[3]        = {"UA1","UA1","UA1"};
-  const Float_t radius[3]   = {0.4, 0.7, 1.0};
+  const char *cJF[7]        = {"UA1","UA1","UA1","CDF","DA","SISCONE","FASTJET"};
+  const Float_t radius[7]   = {  0.4,  0.7,  1.0,  0.7, 0.7,      0.4,      0.4};
+  const UInt_t  flag[7]     = {    6,    7,    7,    7,   7,        7,        7};
   // flag first bit AOD, second bit AODMC2 third bit AODMC2
   // i.e. 7 all, 6 only MC2 and MC
   // this stay at three
-  const UInt_t  flag[3]     = {6,7,7};
   const char *cReader[3] = {"AOD","AODMC","AODMC2"};  
 
-  for(int i = 0; i< 3;i++){
+  for(int i = 0; i< 7;i++){
     for(int ib = 0;ib<3;ib++){
       if(flag[i]&(1<<ib)){
 	jetana = AddTaskJets(cReader[ib],cJF[i],radius[i]);
 	if(jetana){
 	  char *cRadius = "";
-	  if(radius[i]>0)cRadius = Form("%02d",(int)(radius[i]*10));
+	  if(radius[i]>0)cRadius = Form("%02d",(int)((radius[i]+0.01)*10.)); // add an offset beacuse of precision
+	  Printf(cRadius);
 	  jetana->SetNonStdBranch(Form("jets%s_%s%s",cReader[ib],cJF[i],cRadius));
 	  iCount++;
 	}
@@ -124,7 +125,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius)
    }
 
    char *cRadius = "";
-   if(radius>0)cRadius = Form("%02d",(int)(radius*10));
+   if(radius>0)cRadius = Form("%02d",(int)((radius+0.01)*10.));
 
    jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s_%s%s",jr,jf,cRadius));
    TString type = mgr->GetInputEventHandler()->GetDataType();
@@ -161,7 +162,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
   case "CDF":
     AliCdfJetHeader *jh = new AliCdfJetHeader();
     jh->SetRadius(0.7);
-    
+    if(radius>0)jh->SetRadius(radius);    
     jetFinder = new AliCdfJetFinder();
     if (jh) jetFinder->SetJetHeader(jh);
     break;
@@ -171,7 +172,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetComment("DA jet code with default parameters");
     jh->SelectJets(kTRUE);
     jh->SetRadius(0.7);
-    
+    if(radius>0)jh->SetRadius(radius);
     jetFinder = new AliDAJetFinder();
     if (jh) jetFinder->SetJetHeader(jh);
     break;
@@ -183,6 +184,46 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     if(radius>0)jh->SetRparam(radius);
     jh->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
     jetFinder = new AliFastJetFinder();
+    if (jh) jetFinder->SetJetHeader(jh);
+    break;
+
+  case "FASTKT":
+    AliFastJetHeaderV1 *jh = new AliFastJetHeaderV1();
+    jh->SetRparam(0.4); // setup parameters                                  
+    if(radius>0)jh->SetRparam(radius);
+    jh->SetAlgorithm(0); // kt from fastjet/JetDefinition.hh
+    jetFinder = new AliFastJetFinder();
+    if (jh) jetFinder->SetJetHeader(jh);
+    break;
+
+  case "SISCONE":
+    AliSISConeJetHeader * jh = new AliSISConeJetHeader();
+
+    jh->SetJetEtaMax(1.5);
+    jh->SetJetEtaMin(-1.5);
+
+    //siscone parameters
+    jh->SetConeRadius(0.4);                   // default cone radius
+    if(radius>0)jh->SetConeRadius(radius);   // cone radius
+
+    jh->SetOverlapThreshold(0.75);            // overlap parameter, between 0 and 1 excluded!! 0.75 value is advised
+    jh->SetPtProtojetMin(0);                  // pt min of protojets
+    jh->SetMinJetPt(10);                      // Ptmin of jets (GeV)
+
+    //do you want to subtract BG (0 = no, 1 = yes)
+    jh->SetBGMode(0);
+
+    //for background
+    jh->SetRapRange( -0.9, 0.9);              // rapidity range for subtracting background must be < ghostmaxrap-0.95*R
+    jh->SetPhiRange(0 , 2*TMath::Pi());       // phi range for subtracting background
+    
+    //to determine jets area
+    jh->SetBGAlgorithm(1);                    // algorithm for rho calculation : 0 = kT, 1 = Cambridge
+    jh->SetGhostEtaMax(4);                    // eta max where ghosts are generated 
+    jh->SetGhostArea(0.05);                   // area of a ghost 
+    jh->SetMeanGhostKt(1e-100);               // average transverse momentum of the ghosts.
+    jh->SetAreaTypeNumber(4);                 // from 1 to 5 : 1 = active_area, 2 = active_area_explicit_ghosts, 3 = one_ghost_passive_area, 4 = passive_area, 5 = voronoi_area
+    jetFinder = new AliSISConeJetFinder();
     if (jh) jetFinder->SetJetHeader(jh);
     break;
 
@@ -277,7 +318,7 @@ AliJetReader *CreateJetReader(Char_t *jr){
     AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
     jrh->SetComment("AOD Reader");
     jrh->SetPtCut(0.);
-    jrh->SetTestFilterMask(1<<0);
+    jrh->SetTestFilterMask(16); // Change this one for a different set of cuts
     // Define reader and set its header
     er = new AliJetAODReader();
     er->SetReaderHeader(jrh);
