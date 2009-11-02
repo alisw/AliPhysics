@@ -78,7 +78,8 @@ AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent() :
 	fIdToEntry(),
 	fMaxEntryPerBusPatch(),
 	fWarnForUnexpecedBlock(false),
-	fUseIdealGain(false)
+	fUseIdealGain(false),
+	fWarnIfPadSkipped(false)
 {
 	///
 	/// Default constructor.
@@ -189,6 +190,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	fMaxEntryPerBusPatch.clear();
 	fWarnForUnexpecedBlock = false;
 	fUseIdealGain = false;
+	fWarnIfPadSkipped = false;
 	const char* lutFileName = NULL;
 	bool useCDB = false;
 	typedef AliHLTMUONHitReconstructor HR;
@@ -397,6 +399,12 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 		if (strcmp( argv[i], "-makechannels" ) == 0)
 		{
 			makeChannels = true;
+			continue;
+		}
+		
+		if (strcmp( argv[i], "-warnifpadskipped" ) == 0)
+		{
+			fWarnIfPadSkipped = true;
 			continue;
 		}
 	
@@ -1049,6 +1057,7 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 	
 	AliMUONCalibrationData calibData(AliCDBManager::Instance()->GetRun());
 	
+	bool skippedPads = false;
 	Int_t chamberId;
 	
 	for(Int_t iCh = 6; iCh < 10; iCh++)
@@ -1082,7 +1091,7 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 				Double_t realX, realY, realZ;
 				Double_t localX, localY, localZ;
 				Float_t calibA0Coeff,calibA1Coeff,pedestal,sigma;
-				Int_t thresold,saturation;
+				Float_t thresold,saturation;
 				
 				// Pad Info of a slat to print in lookuptable
 				for (Int_t iX = 0; iX<= maxIX ; iX++)
@@ -1107,7 +1116,8 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 					manuId = pad.GetLocation().GetFirst();
 #endif
 					manuId &= 0x7FF; // 11 bits 
-					if(!calibData.Pedestals(detElemId, manuId)) continue;
+					if (calibData.Gains(detElemId, manuId) == NULL) continue;
+					if (calibData.Pedestals(detElemId, manuId) == NULL) continue;
 			
 					buspatchId = ddlStore->GetBusPatchId(detElemId,manuId);
 					
@@ -1156,8 +1166,8 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 					{
 						calibA0Coeff = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 0);
 						calibA1Coeff = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 1);
-						thresold = (calibData.Gains(detElemId, manuId))->ValueAsInt(channelId, 2);
-						saturation = (calibData.Gains(detElemId, manuId))->ValueAsInt(channelId, 4);
+						thresold = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 2);
+						saturation = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 4);
 					}
 					
 					pedestal = (calibData.Pedestals(detElemId, manuId))->ValueAsFloat(channelId, 0);
@@ -1173,10 +1183,14 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 					    sigma == AliMUONVCalibParam::InvalidFloatValue()
 					   )
 					{
-						HLTWarning("Skipping pad on detection element %d, MANU %d, channel %d, since"
-							" the calibration data contains invalid values in that channel.",
-							detElemId, manuId, channelId
-						);
+						if (fWarnIfPadSkipped)
+						{
+							HLTWarning("Skipping pad on detection element %d, MANU %d, channel %d, since"
+								" the calibration data contains invalid values in that channel.",
+								detElemId, manuId, channelId
+							);
+						}
+						skippedPads = true;
 						continue;
 					}
 					
@@ -1200,8 +1214,8 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 					lut.fSigma = sigma;
 					lut.fA0 = calibA0Coeff;
 					lut.fA1 = calibA1Coeff;
-					lut.fThres = thresold;
-					lut.fSat = saturation;
+					lut.fThres = Int_t(thresold);
+					lut.fSat = Int_t(saturation);
 					
 					HLTDebug("lut : detele : %d, id : %d, manu : %d, channel : %d, iX : %d, iY: %d, (X,Y) : (%f, %f), padsize : %f, plane : %d, ped : %f, sigma : %f",
 						lut.fDetElemId,idManuChannel,manuId,channelId,lut.fIX,lut.fIY,lut.fRealX,lut.fRealY,lut.fHalfPadSize,lut.fPlane,lut.fPed,lut.fSigma
@@ -1213,6 +1227,14 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 			} // iCath loop
 		} // detElemId loop
 	} // ichamber loop
+	
+	if (skippedPads and not fWarnIfPadSkipped)
+	{
+		HLTWarning("Skipped pads since they contained invalid calibration values."
+			" Use the -warnifpadskipped argument to generate detailed information"
+			" about which pads were skipped."
+		);
+	}
 
 	try
 	{

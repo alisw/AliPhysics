@@ -111,6 +111,9 @@ extern "C" struct AliHLTMUONHitRecoLutRow;
  * \li -makechannels <br>
  *      This option will cause the component to generate extra channel information
  *      for each cluster found in the form of CHANNELS data blocks. <br>
+ * \li -warnifpadskipped <br>
+ *      If this option is set the a warning message is generated for every pad that
+ *      is skipped because it contains invalid value markers in the calibration data. <br>
  *
  * <h2>Standard configuration:</h2>
  * This component should normally be configured with either of the two sets of
@@ -209,6 +212,7 @@ private:
 	MaxEntryPerBusPatch fMaxEntryPerBusPatch ;///< map to load maximum allowed buspatch entries for each buspatch
 	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
 	bool fUseIdealGain;  ///< Flag to indicate that ideal gain should be used and not loaded from the CDB.
+	bool fWarnIfPadSkipped;  ///< Flag for controlling if extensive warnings should be generated when skipping pads.
 	
 	ClassDef(AliHLTMUONHitReconstructorComponent, 0) // Hit reconstructor component for dHLT tracker DDL raw data.
 };
