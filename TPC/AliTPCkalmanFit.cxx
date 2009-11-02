@@ -1130,8 +1130,8 @@ Double_t AliTPCkalmanFit::GetTPCDeltaXYZ(Int_t coord, Int_t volID, Int_t icoords
   if (ncalibs==0) return 0;
   Double_t xyz[3]={0,0,0};
   Double_t dxdydz[6]={0,0,0,0,0,0};
-  Double_t alpha;
-  Double_t r;
+  Double_t alpha=0;
+  Double_t r=0;
   if(icoordsys==0){alpha=TMath::ATan2(y,x); r =TMath::Sqrt(y*y+x*x);}
   if(icoordsys==1){alpha=y; r=x;}
   Double_t ca    = TMath::Cos(alpha);
@@ -1177,13 +1177,13 @@ Double_t AliTPCkalmanFit::GetTPCtransXYZ(Int_t coord, Int_t volID, Int_t calibID
   if (calibID>=ncalibs) return 0;
   //Int_t volID=-1;
   //Double_t xyz[3]={x,y,z};
-  Double_t r;
-  Double_t alpha;
+  Double_t r=0;
+  Double_t alpha=0;
   if(icoordsys==0){r=TMath::Sqrt(x*x+y*y); alpha = TMath::ATan2(y,x);}
   if(icoordsys==1){r=x; alpha = y;}
   Double_t ca    = TMath::Cos(alpha);
   Double_t sa    = TMath::Sin(alpha);
-  Double_t xyz[3];
+  Double_t xyz[3]={0,0,0};
   if(icoordsys==0){xyz[0]=x;xyz[1]=y;xyz[2]=z;} 
   if(icoordsys==1){xyz[0]=x*ca; xyz[1]=x*sa; xyz[2]=z;}
   //xyz[3]=param; xyz[4]=volID;

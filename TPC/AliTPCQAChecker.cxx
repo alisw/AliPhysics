@@ -37,7 +37,7 @@ ClassImp(AliTPCQAChecker)
 //__________________________________________________________________
 Double_t *
 AliTPCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, 
-		       AliDetectorRecoParam * recoParam)
+		       AliDetectorRecoParam * /*recoParam*/)
 {
   /* It is important to understand the destinction between indexed tasks (AliQAv1::TASKINDEX_t) which are used in the DataMaker classes and indexed tasks (AliQAv1::ALITASK_t) whihc are used in the checker class.
 
