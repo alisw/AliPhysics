@@ -17,12 +17,9 @@
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCTrackSegmentData.h"
 
-//class AliHLTTPCConfMapper;
 class TNtuple;
 class TH1F;
-//class TProfile;
-//class AliHLTTPCTrackArray;
-//class AliHLTTPCTrack;
+class TProfile;
 
 /**
  * @class AliHLTTPCTrackHistoComponent
@@ -56,9 +53,7 @@ class TH1F;
  * Not Tested
  *
  * <h2>Output size:</h2>
- * Size varibles in Ntuple
- *
- * 
+ * Size variables in Ntuple
  *
  * @ingroup alihlt_tpc_components
  */
@@ -115,14 +110,10 @@ private:
    * Parse a string for the configuration arguments and set the component
    * properties.
    */ 
-  //int Configure(const char* arguments);
- 
+  
   void ReadTracks(const AliHLTComponentBlockData* iter,Int_t &tt);
 
   void PushHisto();
-  //void FillResidual( UInt_t pos,AliHLTUInt8_t slice,AliHLTUInt8_t patch,Float_t& resy,Float_t& resz);
-
-  //Double_t GetTrackLength(AliHLTTPCTrack *hltTrack);
  
   AliHLTUInt8_t fMinSlice;     //! transient
   AliHLTUInt8_t fMaxSlice;     //! transient
@@ -132,8 +123,9 @@ private:
   Int_t fNEvents;    //! transient
   Int_t fNtotTracks; //! transient
 
-  Int_t fEvtMod; //! number of events reached to reset the counter
+  Int_t fEvtMod;     //! number of events reached to reset the counter
   Int_t fBufferSize; //! size of circular buffer (number of entries) for the ntuples
+  Bool_t fdEdx;      //! plot dEdx
   //  Bool_t fReset;  //! Reset track counter every certain events
 
   TH1F *fMeanMultiplicity; //! transient (mean multiplicity for every 20 evts vs. #evt by Z.Y.)
@@ -141,21 +133,20 @@ private:
      
   //TH2F *fNClusterVsXY;   //! transient (#Clusters vs. x, y positions, by ZY)
   //TH2F *fChargeVsXY;     //! transient (Charge distr. vs. x, y added by ZY)
-  //TProfile *fDeDxVsP;    //! transient (dEdX vs. p)
+  TProfile *fDeDxVsP;    //! transient (dEdX vs. p)
 
   TNtuple *fClusters;                             //! transient  
   TNtuple *fTracks;                               //! transient
 
   vector<UInt_t> fTrackClusterID[36][6];          //! transient
- 
-  //AliHLTTPCTrackArray     *fTracksArray;          //! transient
+
   AliHLTTPCSpacePointData *fClustersArray[36][6]; //! transient
   UInt_t                   fNSpacePoints[36][6];  //! transient
   
   /** the default configuration entry for this component */
   static const char* fgkOCDBEntry; //!transient
 
-  ClassDef(AliHLTTPCTrackHistoComponent, 3);
+  ClassDef(AliHLTTPCTrackHistoComponent, 4);
 
 };
 #endif
