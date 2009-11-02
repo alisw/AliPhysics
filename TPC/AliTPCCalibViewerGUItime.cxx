@@ -130,6 +130,8 @@ TGCompositeFrame(p,w,h),
   fLblValueXVal(0x0),
   fLblValueYVal(0x0),
   fBtnDumpRuns(0x0),
+  fContAliases(0x0),
+  fListAliases(0x0),
   //content bottom
   fContCustom(0x0),
   fContCustomCuts(0x0),
@@ -354,6 +356,37 @@ void AliTPCCalibViewerGUItime::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h
   fContRight->AddFrame(fBtnDumpRuns, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
   fBtnDumpRuns->Connect("Clicked()", "AliTPCCalibViewerGUItime", this, "DoDumpRuns()");
   fBtnDumpRuns->SetToolTipText("Press to dump the run numbers of the current selection.");
+  //group frame for value information
+  fContAliases = new TGGroupFrame(fContRight, "Aliases", kVerticalFrame | kFitWidth | kFitHeight);
+  fContRight->AddFrame(fContAliases, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 10, 0));
+  // list of aliases
+  fListAliases = new TGListBox(fContAliases);
+  fContAliases->AddFrame(fListAliases, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+  fListAliases->Connect("Selected(Int_t)", "AliTPCCalibViewerGUItime", this, "DoNewSelectionAliases()");
+//   fListAliases->Resize(0,88);
+  //buttons
+  TGCompositeFrame *frame1 = new TGCompositeFrame(fContAliases, 200, 23, kHorizontalFrame | kFitWidth | kFitHeight);
+  fContAliases->AddFrame(frame1, new TGLayoutHints(kLHintsCenterX | kLHintsExpandX , 0, 0, 0, 0));
+  // add button
+  TGTextButton *btnAdd = new TGTextButton(frame1, "&Add");
+  frame1->AddFrame(btnAdd, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
+  btnAdd->Connect("Clicked()", "AliTPCCalibViewerGUItime", this, "DoAddAlias()");
+  btnAdd->SetToolTipText("Press to add an alias.");
+  btnAdd->Resize(0,22);
+  // del button
+  TGTextButton *btnDel = new TGTextButton(frame1, "&Del");
+  frame1->AddFrame(btnDel, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
+  btnDel->Connect("Clicked()", "AliTPCCalibViewerGUItime", this, "DoDelAlias()");
+  btnDel->SetToolTipText("Press to delete the selected alias.");
+  btnDel->Resize(0,22);
+  // update button
+  TGTextButton *btnUp = new TGTextButton(frame1, "&Upd");
+  frame1->AddFrame(btnUp, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
+  btnUp->Connect("Clicked()", "AliTPCCalibViewerGUItime", this, "UpdateAliasList()");
+  btnUp->SetToolTipText("Press to update the alias list.");
+  btnUp->Resize(0,22);
+  
+
   
    // =========================================================================
    // ****************** bottom content of fContTopBottom *********************
@@ -643,7 +676,7 @@ const char* AliTPCCalibViewerGUItime::GetDrawString(){
   return branchName.Data();
 }
 //______________________________________________________________________________
-const char* AliTPCCalibViewerGUItime::GetDrawOption(){
+const char* AliTPCCalibViewerGUItime::GetDrawOptionString(){
   //
   // get user selected draw options
   //
@@ -784,11 +817,13 @@ void AliTPCCalibViewerGUItime::DoDraw() {
   TString drawString=fDrawString;
   TString cutString;
   GetCutString(cutString);
-  TString optString  = GetDrawOption();
+  TString optString  = GetDrawOptionString();
   Bool_t graphOutput=!fNoGraph;  //ttree buffer for V1, V2... too small
   graphOutput&=(drawString.First(">>")<0); //histogram output in custom draw
   graphOutput&=fRadioXhist->GetState()!=kButtonDown; //histogram drawing selected
-  graphOutput&=!(fIsCustomDraw&&!fDrawString.Contains(":")); //custom draw 1D
+//   graphOutput&=!(fIsCustomDraw&&!fDrawString.Contains(":")); //custom draw 1D
+//   graphOutput&=fDrawString.CountChar(':')<2; //custom draw 1D
+  if (fIsCustomDraw&&fDrawString.Contains(":")) HandleButtonsDrawSel(-kRadioXhist);
   if (fIsCustomDraw&&fDrawString.Contains(":")) HandleButtonsDrawSel(-kRadioXhist);
   Bool_t drawSame=optString.Contains("same",TString::kIgnoreCase);
 //   optString+="goff";
@@ -812,17 +847,6 @@ void AliTPCCalibViewerGUItime::DoDraw() {
     fCurrentGraph=0x0;
     fCurrentHist=0x0;
   }
-//   if (fCurrentGraph) {
-//     delete fCurrentGraph;
-//     fCurrentGraph=0x0;
-//     //fCurrentHist in case of graph is the interrnal histogram,
-//     //  which is deleted by the graph itself.
-//     fCurrentHist=0x0;
-//   }
-//   if (fCurrentHist)  {
-//     delete fCurrentHist;
-//     fCurrentHist=0x0;
-//   }
   //select data
   fTree->Draw(drawString.Data(),cutString.Data(),optString.Data());
   if (fTree->GetSelectedRows()==-1) return;
@@ -831,15 +855,10 @@ void AliTPCCalibViewerGUItime::DoDraw() {
   GetHistogramTitle(title);
   Bool_t drawGraph=kFALSE;
   if (graphOutput){
-    if (fIsCustomDraw){
-      if (fDrawString.Contains(":")){
+    drawGraph=kTRUE;
+    if (fIsCustomDraw&&fDrawString.Contains(":")){
         fValuesX.SetElements(fTree->GetV4());
-        drawGraph=kTRUE;
-      } else {
-        drawGraph=kFALSE;
-      }
     }else{
-      drawGraph=kTRUE;
       if (fRadioXrun->GetState()==kButtonDown){
         fValuesX.SetElements(fTree->GetV1());
       } else if (fRadioXtime->GetState()==kButtonDown){
@@ -848,7 +867,27 @@ void AliTPCCalibViewerGUItime::DoDraw() {
         drawGraph=kFALSE;
       }
     }
-  }//create graph according to selection
+  }
+//   if (graphOutput){
+//     if (fIsCustomDraw){
+//       if (fDrawString.Contains(":")){
+//         fValuesX.SetElements(fTree->GetV4());
+//         drawGraph=kTRUE;
+//       } else {
+//         drawGraph=kFALSE;
+//       }
+//     }else{
+//       drawGraph=kTRUE;
+//       if (fRadioXrun->GetState()==kButtonDown){
+//         fValuesX.SetElements(fTree->GetV1());
+//       } else if (fRadioXtime->GetState()==kButtonDown){
+//         fValuesX.SetElements(fTree->GetV2());
+//       } else {
+//         drawGraph=kFALSE;
+//       }
+//     }
+//   }
+//create graph according to selection
   if (drawGraph){
     TGraph *graph=new TGraph(fValuesX,fValuesY);
     TString grDraw="p";
@@ -1187,6 +1226,67 @@ const char* AliTPCCalibViewerGUItime::SubstituteUnderscores(const char* in)
   s.ReplaceAll("|{","_{");
   return s.Data();
 }
+
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItime::DoNewSelectionAliases()
+{
+  //
+  //
+  //
+  if (!fTree) return;
+  TList *l=fTree->GetListOfAliases();
+  if (!l) return;
+  TString selectedVariable="";
+  if (!fListAliases->GetSelectedEntry()) return;
+  selectedVariable = fListAliases->GetSelectedEntry()->GetTitle();
+  fDrawString=selectedVariable;
+  fIsCustomDraw=kFALSE;
+  DoDraw();
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItime::DoAddAlias()
+{
+  //
+  //
+  //
+  new AliTPCCalibViewerGUItimeAddAliasFrame(gClient->GetRoot(), fContTopBottom, 400, 200, kVerticalFrame, this);
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItime::DoDelAlias()
+{
+  //
+  //
+  //
+  if (!fTree) return;
+  TList *l=fTree->GetListOfAliases();
+  if (!l) return;
+  TString selectedVariable="";
+  if (!fListAliases->GetSelectedEntry()) return;
+  selectedVariable = fListAliases->GetSelectedEntry()->GetTitle();
+  l->Remove(l->FindObject(selectedVariable.Data()));
+  UpdateAliasList();
+}
+
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItime::UpdateAliasList()
+{
+  //
+  //
+  //
+  printf("UpdateAliasList\n");
+  if (!fTree) return;
+  TList *l=fTree->GetListOfAliases();
+  if (!l) return;
+  TIter nextAlias(l);
+  TObject *o;
+  fListAliases->RemoveAll();
+  Int_t id=0;
+  while( (o=nextAlias()) ){
+    fListAliases->AddEntry(o->GetName(),id++);
+  }
+  fListAliases->Resize(fListAliases->GetWidth()-1, fListAliases->GetHeight());
+  fListAliases->Resize(fListAliases->GetWidth()+1, fListAliases->GetHeight());
+}
 //______________________________________________________________________________
 TObjArray* AliTPCCalibViewerGUItime::ShowGUI(const char* fileName, const char* treeName) {
    //
@@ -1253,3 +1353,135 @@ TObjArray* AliTPCCalibViewerGUItime::ShowGUI(TChain *chain) {
 
   return guiArray;
 }
+
+
+////////////////////////////////////////////////////////////////////////
+//
+//   GUI Alias frame
+//
+////////////////////////////////////////////////////////////////////////
+
+
+ClassImp(AliTPCCalibViewerGUItimeAddAliasFrame)
+
+AliTPCCalibViewerGUItimeAddAliasFrame::AliTPCCalibViewerGUItimeAddAliasFrame(const TGWindow *p, const TGWindow *main,
+                                                                             UInt_t w, UInt_t h, UInt_t options,
+                                                                             AliTPCCalibViewerGUItime *gui, TString strAlias) :
+  fMain(0x0),
+  fTxt1(0x0),
+  fTxt2(0x0),
+  fGUI(0x0)
+{
+  fMain = new TGTransientFrame(p, main, w, h, options);
+  fMain->Connect("CloseWindow()", "AliTPCCalibViewerGUItimeAddAliasFrame", this, "DoCancel()");
+  fMain->DontCallClose(); // to avoid double deletions.
+  
+   // use hierarchical cleaning
+  fMain->SetCleanup(kDeepCleanup);
+
+  //layout
+  TGLayoutHints *l1 = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 2, 2, 2, 2);
+  TGLayoutHints *l2 = new TGLayoutHints(kLHintsTop | kLHintsRight | kLHintsExpandX, 2, 2, 0, 5);
+//   TGLayoutHints *l3 = new TGLayoutHints(kLHintsTop | kLHintsRight, 5, 5, 5, 5);
+  
+  //input fields
+  TGCompositeFrame *f1 = new TGCompositeFrame(fMain, 60, 20, kVerticalFrame);
+  fMain->AddFrame(f1, l1);
+  TGCompositeFrame *frameName    = new TGCompositeFrame(f1);
+  TGCompositeFrame *frameFormula = new TGCompositeFrame(f1);
+  f1->AddFrame(frameName,l2);
+  f1->AddFrame(frameFormula,l2);
+  TGLabel *lblTxt1   = new TGLabel(frameName, "Name:");
+  TGLabel *lblTxt2   = new TGLabel(frameFormula, "Formula:");
+  fTxt1 = new TGTextEntry(frameName, new TGTextBuffer(1000));
+  fTxt2 = new TGTextEntry(frameFormula, new TGTextBuffer(1000));
+  
+  frameName->AddFrame(lblTxt1, l2);
+  frameName->AddFrame(fTxt1, l2);
+  frameFormula->AddFrame(lblTxt2, l2);
+  frameFormula->AddFrame(fTxt2, l2);
+  
+  fTxt1->Resize(350, fTxt1->GetDefaultHeight());
+  fTxt2->Resize(350, fTxt2->GetDefaultHeight());
+
+  //ok and cancel buttons
+  TGHorizontalFrame *frame = new TGHorizontalFrame(fMain, 60, 20, kFixedWidth);
+  
+  TGTextButton *okButton = new TGTextButton(frame, "&Ok", 1);
+  okButton->Connect("Clicked()", "AliTPCCalibViewerGUItimeAddAliasFrame", this, "DoOK()");
+  TGTextButton *cancelButton = new TGTextButton(frame, "&Cancel", 2);
+  cancelButton->Connect("Clicked()", "AliTPCCalibViewerGUItimeAddAliasFrame", this, "DoCancel()");
+  
+  
+  frame->AddFrame(okButton, l1);
+  frame->AddFrame(cancelButton, l1);
+  
+  frame->Resize(150, okButton->GetDefaultHeight());
+  
+  fMain->AddFrame(frame, new TGLayoutHints(kLHintsBottom | kLHintsRight, 2, 2, 5, 1));
+  
+  fGUI=gui;
+  TString aliasName, alias;
+  if (!strAlias.IsNull()){
+    TChain *c=fGUI->GetChain();
+    if (c){
+      TList *l=c->GetListOfAliases();
+      if (l){
+        TNamed *d=(TNamed*)l->FindObject(strAlias);
+        if (d){
+          aliasName=d->GetName();
+          alias=d->GetTitle();
+        }
+      }
+    }
+  }else{
+    alias=fGUI->GetCustomDrawString();
+  }
+  fTxt1->SetText(aliasName.Data(),kFALSE);
+  fTxt2->SetText(alias.Data(),kFALSE);
+
+  fMain->MapSubwindows();
+  fMain->Resize();
+  
+   // position relative to the parent's window
+  fMain->CenterOnParent();
+  
+  fMain->SetWindowName("Alias Editor");
+  
+  fMain->MapWindow();
+  
+}
+//______________________________________________________________________________
+AliTPCCalibViewerGUItimeAddAliasFrame::~AliTPCCalibViewerGUItimeAddAliasFrame()
+{
+  //
+  //
+  //
+  fMain->DeleteWindow();  // deletes fMain
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItimeAddAliasFrame::DoOK()
+{
+  //
+  //
+  //
+  TString aliasName=fTxt1->GetText();
+  TString alias=fTxt2->GetText();
+  if (!aliasName.IsNull()&&!alias.IsNull()){
+    TChain *c=fGUI->GetChain();
+    if (c){
+      c->SetAlias(aliasName.Data(),alias.Data());
+    }
+  }
+  fGUI->UpdateAliasList();
+  delete this;
+}
+//______________________________________________________________________________
+void AliTPCCalibViewerGUItimeAddAliasFrame::DoCancel()
+{
+  //
+  //
+  //
+  delete this;
+}
+

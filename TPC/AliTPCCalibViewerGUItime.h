@@ -80,7 +80,8 @@ public:
   void SetConfigFileName(const char* file) {fConfigFile=file;}
   
   const char* GetDrawString();
-  const char* GetDrawOption();
+  const char* GetDrawOptionString();
+  const char* GetCustomDrawString() const {return fComboCustomDraw->GetTextEntry()?fComboCustomDraw->GetTextEntry()->GetText():"";}
   void GetCutString(TString &cutStr);
   TChain* GetChain() const {return fTree;}
   //Slots
@@ -93,6 +94,10 @@ public:
   void DoChangeSelectionList() {Reload(0);}
   void HandleButtonsDrawSel(Int_t id = -1);              
   void MouseMove(Int_t event, Int_t x, Int_t y, TObject */*selected*/);
+  void DoNewSelectionAliases();
+  void DoAddAlias();
+  void DoDelAlias();
+  void UpdateAliasList();
   
  private:
   TFile*  fFile;                          //file that keeps the tree
@@ -153,6 +158,8 @@ public:
   TGLabel             *fLblValueXVal;       // value of the data point hoovered
   TGLabel             *fLblValueYVal;       // value of the data point hoovered
   TGTextButton        *fBtnDumpRuns;        // draw button
+  TGGroupFrame        *fContAliases;         // container to keep data point information
+  TGListBox           *fListAliases;        // list of aliases
   //content bottom
   TGCompositeFrame    *fContCustom;         // container for custom draw command GUI elements
   TGCompositeFrame    *fContCustomCuts;     // container for custom cut options GUI elements
@@ -184,6 +191,35 @@ private:
   
   ClassDef(AliTPCCalibViewerGUItime, 0)
     
+};
+
+////////////////////////////////////////////////////////////////////////
+//
+//   GUI Alias frame
+//
+////////////////////////////////////////////////////////////////////////
+
+class AliTPCCalibViewerGUItimeAddAliasFrame : public TObject {
+public:
+  AliTPCCalibViewerGUItimeAddAliasFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
+             UInt_t options, AliTPCCalibViewerGUItime *gui, TString strAlias="");
+  virtual ~AliTPCCalibViewerGUItimeAddAliasFrame();
+  
+   // slots
+  void DoOK();
+  void DoCancel();
+  
+
+private:
+  TGTransientFrame    *fMain;           //Main frame
+  TGTextEntry         *fTxt1, *fTxt2;   //text input
+
+  AliTPCCalibViewerGUItime *fGUI;       //pointer to mother process
+
+  AliTPCCalibViewerGUItimeAddAliasFrame(const AliTPCCalibViewerGUItimeAddAliasFrame &r);
+  AliTPCCalibViewerGUItimeAddAliasFrame &operator = (const AliTPCCalibViewerGUItimeAddAliasFrame &r);
+
+  ClassDef(AliTPCCalibViewerGUItimeAddAliasFrame,0)
 };
 
 #endif
