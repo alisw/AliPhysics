@@ -42,6 +42,7 @@
 #include "AliHLTTriggerPhosClusterEnergy.h"
 #include "AliHLTTriggerPhosMip.h"
 #include "AliHLTTriggerTrdClusterMultiplicity.h"
+#include "AliHLTTriggerGammaConversion.h"
 
 /** global instance for agent registration */
 AliHLTTriggerAgent gAliHLTTriggerAgent;
@@ -76,7 +77,8 @@ int AliHLTTriggerAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
   pHandler->AddComponent(new AliHLTTriggerBarrelCosmic);
   pHandler->AddComponent(new AliHLTTriggerPhosClusterEnergy); 
   pHandler->AddComponent(new AliHLTTriggerPhosMip); 
-  pHandler->AddComponent(new AliHLTTriggerTrdClusterMultiplicity); 
+  pHandler->AddComponent(new AliHLTTriggerTrdClusterMultiplicity);
+  pHandler->AddComponent(new AliHLTTriggerGammaConversion);
   return 0;
 }
 

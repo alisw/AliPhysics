@@ -24,4 +24,5 @@
 #pragma link C++ class AliHLTTriggerDetectorGeom+;
 #pragma link C++ class AliHLTTriggerDetectorGeomRectangle+;
 #pragma link C++ class AliHLTTriggerDecisionParameters+;
+#pragma link C++ class AliHLTTriggerGammaConversion+;
 #endif

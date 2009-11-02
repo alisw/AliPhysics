@@ -29,7 +29,8 @@ CLASS_HDRS:= \
 		AliHLTTriggerBarrelGeomMultiplicity.h	    \
 		AliHLTTriggerDetectorGeom.h		    \
 		AliHLTTriggerDetectorGeomRectangle.h	    \
-		AliHLTTriggerDecisionParameters.h
+		AliHLTTriggerDecisionParameters.h           \
+		AliHLTTriggerGammaConversion.h
 
 # library sources
 MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
