@@ -51,14 +51,14 @@ AliTPCcalibDButil *dbutil =0;
 TTree * dcsTree=0;
 TString refFile="dummy.root"; 
 TTreeSRedirector *pcstream =0;
-void GetNearest(TGraph *graph, Double_t x, Double_t &dx, Double_t &y);
-void GetInterpoloationSigma(TGraph *graph, Double_t x, Double_t &dx, Double_t &sy, Double_t deltaX);
 //
 //
 void ProcessRun(Int_t irun, Int_t startTime, Int_t endTime);
 void GetProductionInfo(Int_t run, Int_t &nalien, Int_t &nRawAlien, Int_t &nlocal, Int_t &nRawLocal);
 void ProcessDrift(Int_t run, Int_t timeStamp);
-
+void ProcessDriftCE(Int_t run, Int_t timeStamp);
+void ProcessDriftAll(Int_t run, Int_t timeStamp);
+void ProcessKryptonTime(Int_t run, Int_t timeStamp);
 void CalibEnv(const char * runList, Int_t first=1, Int_t last=-1){
   //
   // runList - listOfRuns to process
@@ -108,6 +108,11 @@ void CalibEnv(const char * runList, Int_t first=1, Int_t last=-1){
       endTime  =senHV->GetEndTime();
       if (startTime>0&&endTime>0) break;
     }
+    dbutil->FilterCE(120., 3., 4.,pcstream);
+    dbutil->FilterTracks(irun, 10.,pcstream);
+    AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(irun);		 
+    //if (goofieArray) dbutil->FilterGoofie(goofieArray,2,4,pcstream);
+    // don't filter goofie for the moment
     ProcessRun(irun, startTime,endTime);
   }
   delete pcstream;  
@@ -339,6 +344,9 @@ void ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       "tempSkirtA.="<<&vecSkirtTempA<<
       "tempSkirtC.="<<&vecSkirtTempC;
     ProcessDrift(irun, itime);
+    ProcessDriftCE(irun,itime);
+    ProcessDriftAll(irun,itime);
+    ProcessKryptonTime(irun,itime);
     (*pcstream)<<"dcs"<<	
       //noise data
       "meanNoise.="<<&vNoiseMean<<
@@ -450,10 +458,14 @@ void ProcessDrift(Int_t run, Int_t timeStamp){
   TGraphErrors *laserA[3]={0,0,0};
   TGraphErrors *laserC[3]={0,0,0};
   TGraphErrors *cosmicAll=0;
+  TGraphErrors *laserAE[3]={0,0,0};
+  TGraphErrors *laserCE[3]={0,0,0};
+  TGraphErrors *cosmicAllE=0;
   static Double_t     vlaserA[3]={0,0,0};
   static Double_t     vlaserC[3]={0,0,0};
   static Double_t     vcosmicAll=0;
-  
+  static Double_t     vdrift1=0;
+  vdrift1=AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(timeStamp,run,0,1);
 
   if (array){
     laserA[0]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_DELAY_LASER_ALL_A");
@@ -464,13 +476,13 @@ void ProcessDrift(Int_t run, Int_t timeStamp){
     laserC[2]=(TGraphErrors*)array->FindObject("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_C");
     cosmicAll =(TGraphErrors*)array->FindObject("TGRAPHERRORS_MEAN_VDRIFT_COSMICS_ALL");
   }
-  if (laserA[0]) vlaserA[0]= laserA[0]->Eval(timeStamp);
-  if (laserA[1]) vlaserA[1]= laserA[1]->Eval(timeStamp);
-  if (laserA[2]) vlaserA[2]= laserA[2]->Eval(timeStamp);
-  if (laserC[0]) vlaserC[0]= laserC[0]->Eval(timeStamp);
-  if (laserC[1]) vlaserC[1]= laserC[1]->Eval(timeStamp);
-  if (laserC[2]) vlaserC[2]= laserC[2]->Eval(timeStamp);
-  if (cosmicAll) vcosmicAll= cosmicAll->Eval(timeStamp); 
+  if (laserA[0]) vlaserA[0]= AliTPCcalibDButil::EvalGraphConst(laserA[0],timeStamp);
+  if (laserA[1]) vlaserA[1]= AliTPCcalibDButil::EvalGraphConst(laserA[1],timeStamp);
+  if (laserA[2]) vlaserA[2]= AliTPCcalibDButil::EvalGraphConst(laserA[2],timeStamp);
+  if (laserC[0]) vlaserC[0]= AliTPCcalibDButil::EvalGraphConst(laserC[0],timeStamp);
+  if (laserC[1]) vlaserC[1]= AliTPCcalibDButil::EvalGraphConst(laserC[1],timeStamp);
+  if (laserC[2]) vlaserC[2]= AliTPCcalibDButil::EvalGraphConst(laserC[2],timeStamp);
+  if (cosmicAll) vcosmicAll= AliTPCcalibDButil::EvalGraphConst(cosmicAll,timeStamp); 
   (*pcstream)<<"dcs"<<
     "vlaserA0="<<vlaserA[0]<<
     "vlaserA1="<<vlaserA[1]<<
@@ -478,7 +490,8 @@ void ProcessDrift(Int_t run, Int_t timeStamp){
     "vlaserC0="<<vlaserC[0]<<
     "vlaserC1="<<vlaserC[1]<<
     "vlaserC2="<<vlaserC[2]<<
-    "vcosmicAll="<<vcosmicAll;
+    "vcosmicAll="<<vcosmicAll<<
+    "vdrift1="<<vdrift1;
 
   //
   // define distance to measurement
@@ -492,17 +505,11 @@ void ProcessDrift(Int_t run, Int_t timeStamp){
   static Double_t  vclaserA[3]={0,0,0};
   static Double_t  vclaserC[3]={0,0,0};
   static Double_t  vccosmicAll=0;
-  Double_t dummy;
-  Double_t deltaX=1800; // +-0.5 hour
   for (Int_t i=0;i<3;i++){
-    if (laserA[i]) GetNearest(laserA[i],timeStamp,dlaserA,vclaserA[i]);
-    if (laserC[i]) GetNearest(laserC[i],timeStamp,dlaserC,vclaserC[i]);
+    if (laserA[i]) AliTPCcalibDButil::GetNearest(laserA[i],timeStamp,dlaserA,vclaserA[i]);
+    if (laserC[i]) AliTPCcalibDButil::GetNearest(laserC[i],timeStamp,dlaserC,vclaserC[i]);
   }  
-  if (laserA[1]) GetInterpoloationSigma(laserA[1],timeStamp,dummy,slaserA,deltaX);
-  if (laserC[1]) GetInterpoloationSigma(laserC[1],timeStamp,dummy,slaserC,deltaX);
-
-  if (cosmicAll) GetNearest(cosmicAll,timeStamp,dcosmic,vccosmicAll);
-  if (cosmicAll) GetInterpoloationSigma(cosmicAll,timeStamp,dummy,scosmic,deltaX);
+  if (cosmicAll) AliTPCcalibDButil::GetNearest(cosmicAll,timeStamp,dcosmic,vccosmicAll);
   (*pcstream)<<"dcs"<<
     "vclaserA0="<<vclaserA[0]<<
     "vclaserA1="<<vclaserA[1]<<
@@ -519,39 +526,139 @@ void ProcessDrift(Int_t run, Int_t timeStamp){
     "scosmic="<<scosmic;
 }
 
-void GetNearest(TGraph *graph, Double_t xref, Double_t &dx, Double_t &y){
+void ProcessDriftCE(Int_t run,Int_t timeStamp){
   //
-  // find the closest point to xref  in x  direction
-  // return dx and value 
-  Int_t index=0;
-  index = TMath::BinarySearch(graph->GetN(), graph->GetX(),xref);
-  if (index<0) index=0;
-  if (index>=graph->GetN()-1) index=graph->GetN()-2;
-  if (xref-graph->GetX()[index]>graph->GetX()[index]-xref) index++;
-  dx = xref-graph->GetX()[index];
-  y  = graph->GetY()[index];
-}
-
-
-void GetInterpoloationSigma(TGraph *graph, Double_t x, Double_t &/*dx*/, Double_t &sy,Double_t deltaX){
+  // dump drift calibration data CE
+  //
+  TObjArray *arrT=AliTPCcalibDB::Instance()->GetCErocTtime();
+  AliTPCParam *param=AliTPCcalibDB::Instance()->GetParameters();
+  static TVectorD tdriftCE(74);
+  static TVectorD tndriftCE(74);
+  static TVectorD vdriftCE(74);
+  static TVectorD tcdriftCE(74);
+  static TVectorD tddriftCE(74);
+  static Double_t ltime0A;
+  static Double_t ltime0C;
   //
   //
   //
-  TMVA::TSpline1 * spline1= new TMVA::TSpline1("spline1",graph);
-  Double_t deltas[1000];
-  Int_t counter=0;
-  Int_t index=0;
-  index = TMath::BinarySearch(graph->GetN(), graph->GetX(),x);
-  if (index<1) index=1;
-  if (index>=graph->GetN()-1) index=graph->GetN()-2;
-  
-  for (Int_t idelta=-10; idelta<=10; idelta++){
-    Double_t y0=0,dummy=0;
-    Double_t lx=x+idelta*deltaX/20.;
-    deltas[counter]=spline1->Eval(lx)-graph->GetY()[index];
-    counter++;
-    deltas[counter]=spline1->Eval(lx)-graph->GetY()[index+1];
-    counter++;
+  ltime0A  = dbutil->GetLaserTime0(run,timeStamp,36000,0);
+  ltime0C  = dbutil->GetLaserTime0(run,timeStamp,36000,1);
+  //
+  for (Int_t i=0; i<arrT->GetEntries();i++){
+    tdriftCE[i]=0;
+    vdriftCE[i]=0;
+    TGraph *graph = (TGraph*)arrT->At(i);
+    if (!graph) continue;
+    tdriftCE[i]=AliTPCcalibDButil::EvalGraphConst(graph,timeStamp);
+    Double_t deltaT,gry;
+    AliTPCcalibDButil::GetNearest(graph,timeStamp,deltaT,gry);
+    tndriftCE[i]=graph->GetN();
+    tcdriftCE[i]=gry;	       
+    tddriftCE[i]=deltaT;	       
+    if (i%36<18){
+      vdriftCE[i] =(param->GetZLength(i)/(tdriftCE[i]*param->GetTSample()*(1.-ltime0A)-param->GetL1Delay()))/param->GetDriftV();
+    }else{
+      vdriftCE[i] =(param->GetZLength(i)/(tdriftCE[i]*param->GetTSample()*(1.-ltime0A)-param->GetL1Delay()))/param->GetDriftV();
+    }
   }
-  sy=TMath::RMS(counter,deltas);
+
+  (*pcstream)<<"dcs"<<  
+    "tdriftCE.="<<&tdriftCE<<
+    "vdriftCE.="<<&vdriftCE<<
+    "tndriftCE.="<<&tndriftCE<<
+    "tcdriftCE.="<<&tcdriftCE<<
+    "tddriftCE.="<<&tddriftCE<<
+    "ltime0A="<<ltime0A<<
+    "ltime0C="<<ltime0C;
+   }
+
+
+void ProcessDriftAll(Int_t run,Int_t timeStamp){
+  //
+  // dump drift calibration data  all calibrations form DB util
+  // test of utils
+  static Double_t vdriftCEA=0, vdriftCEC=0, vdriftCEM=0;
+  static Double_t vdriftLTA=0, vdriftLTC=0, vdriftLTM=0;
+  static Double_t dce=0, dla=0,dlc=0,dlm=0;
+  static Double_t ltime0A;
+  static Double_t ltime0C;
+  static Double_t     vdrift1=0;
+  vdrift1=AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(timeStamp,run,0,1);
+  
+  //
+  vdriftCEA= dbutil->GetVDriftTPCCE(dla,run,timeStamp,36000,0);
+  vdriftCEC= dbutil->GetVDriftTPCCE(dlc,run,timeStamp,36000,1);
+  vdriftCEM= dbutil->GetVDriftTPCCE(dlm,run,timeStamp,36000,2);
+  //
+  vdriftLTA= dbutil->GetVDriftTPCLaserTracks(dla,run,timeStamp,36000,0);
+  vdriftLTC= dbutil->GetVDriftTPCLaserTracks(dlc,run,timeStamp,36000,1);
+  vdriftLTM= dbutil->GetVDriftTPCLaserTracks(dlm,run,timeStamp,36000,2);
+  //
+  ltime0A  = dbutil->GetLaserTime0(run,timeStamp,36000,0);
+  ltime0C  = dbutil->GetLaserTime0(run,timeStamp,36000,1);
+
+  (*pcstream)<<"dcs"<<  
+    //
+    "vdriftCEA="<<vdriftCEA<<
+    "vdriftCEC="<<vdriftCEC<<
+    "vdriftCEM="<<vdriftCEM<<
+    "dce="<<dce<<
+    "vdriftLTA="<<vdriftLTA<<
+    "vdriftLTC="<<vdriftLTC<<
+    "vdriftLTM="<<vdriftLTM<<
+    "dla="<<dla<<
+    "dlc="<<dlc<<
+    "dlm="<<dlm<<
+    "vdrift1="<<vdrift1;
+
 }
+
+
+
+void ProcessKryptonTime(Int_t run, Int_t timeStamp){
+  //
+  // Dumping  krypton calibration results
+  //
+  static TObjArray * krArray=0;
+  if (!krArray) {
+    AliCDBEntry* entry = AliCDBManager::Instance()->Get("TPC/Calib/TimeGainKrypton", run);
+    if (entry){
+      krArray = (TObjArray*)entry->GetObject();
+    }
+  }
+  static TVectorD krMean(74);
+  static TVectorD krErr(74);
+  static TVectorD krDist(74);
+  TGraphErrors *gr=0;
+  Double_t deltaT=0,gry=0;
+  if (krArray){
+    for (Int_t isec=0; isec<72; isec++){
+      krMean[isec]=0;
+      krDist[isec]=0;
+      krErr[isec]=0;
+      gr=(TGraphErrors*)krArray->At(isec);
+      if (gr) {
+	krMean[isec]=gr->Eval(timeStamp);
+	AliTPCcalibDButil::GetNearest(gr, timeStamp,deltaT,gry);
+	krDist[isec]=deltaT;
+      }     
+      if (72+isec<krArray->GetEntries()) {
+	gr=(TGraphErrors*)krArray->At(72+isec);
+	if (gr) krErr[isec]=gr->Eval(timeStamp);
+      }
+    }
+    krMean[72]= TMath::Median(36,krMean.GetMatrixArray());
+    krMean[73]= TMath::Median(36,&(krMean.GetMatrixArray()[36]));
+    krErr[72]= TMath::Median(36,krErr.GetMatrixArray());
+    krErr[73]= TMath::Median(36,&(krErr.GetMatrixArray()[36]));
+  }
+  (*pcstream)<<"dcs"<<
+    "krMean.="<<&krMean<<
+    "krErr.="<<&krErr<<
+    "krDist.="<<&krDist;
+}
+
+
+
+

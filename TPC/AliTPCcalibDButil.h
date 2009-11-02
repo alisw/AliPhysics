@@ -12,6 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include <TArrayI.h>
 
 class AliDCSSensorArray;
 class AliTPCcalibDB;
@@ -19,6 +20,8 @@ class AliTPCCalPad;
 class AliTPCmapper;
 class AliTPCCalibRaw;
 class TGraph;
+class TGraphErrors;
+class TTreeSRedirector;
 
 class AliTPCcalibDButil : public TObject
 {
@@ -86,9 +89,26 @@ public:
   //
   // graph tools
   //
-  static Double_t  GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Double_t deltaT=86400, Double_t deltaTLaser=3600, Int_t valType=0);
-  static Double_t  GetVDriftTPC(Int_t run, Int_t timeStamp, Double_t deltaT=86400, Double_t deltaTLaser=3600, Int_t valType=0);
+  static Double_t GetLaserTime0(Int_t run, Int_t timeStamp, Int_t deltaT, Int_t side);
+  static TGraph* FilterGraphMedian(TGraph * graph, Float_t sigmaCut, Double_t &medianY);
+  static TGraph* FilterGraphMedianAbs(TGraph * graph, Float_t cut, Double_t &medianY);
+  static TGraphErrors* FilterGraphMedianErr(TGraphErrors * graph, Float_t sigmaCut,Double_t &medianY);
+  //
+  static void Sort(TGraph *graph);
+  static void SmoothGraph(TGraph *graph, Double_t delta);
   static Int_t     GetNearest(TGraph *graph, Double_t xref, Double_t &dx, Double_t &y);
+  static Double_t EvalGraphConst(TGraph *graph, Double_t xref);
+  
+  void FilterCE(Double_t deltaT=100, Double_t cutAbs=10, Double_t cutSigma=4., TTreeSRedirector *pcstream=0);
+  void FilterTracks(Int_t run, Double_t cutSigma=20., TTreeSRedirector *pcstream=0);
+
+  void FilterGoofie(AliDCSSensorArray * goofieArray, Double_t deltaT=2, Double_t cutSigma=4., TTreeSRedirector *pcstream=0);
+  static Double_t  GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Double_t deltaT=86400, Double_t deltaTLaser=3600, Int_t valType=0);
+  static Double_t  GetVDriftTPC(Double_t &dist, Int_t run, Int_t timeStamp, Double_t deltaT=86400, Double_t deltaTLaser=3600, Int_t valType=0);
+  static Double_t  GetVDriftTPCLaserTracks(Double_t &dist,Int_t run, Int_t timeStamp, Double_t deltaT=43200, Int_t side=2);
+  static Double_t  GetVDriftTPCCE(Double_t &dist, Int_t run, Int_t timeStamp, Double_t deltaT=43200, Int_t side=2);
+  Int_t MakeRunList(Int_t startRun, Int_t stopRun); // find the list of usable runs
+  Int_t FindRunTPC(Int_t    itime, Bool_t debug=kFALSE);
 private:
   AliTPCcalibDB *fCalibDB;            //pointer to calibDB object
   AliTPCCalPad  *fPadNoise;           //noise information
@@ -128,7 +148,17 @@ private:
   Float_t fPulTmaxLimitAbs;              //maximum variation of Pulser Signals (time) before pads will be treated as outliers
   Float_t fPulQmaxLimitAbs;              //maximum variation of Pulser Signals (charge) before pads will be treated as outliers
   Float_t fPulQminLimit;                 //minimum charge value for Pulser Signals before pads will be treated as outliers
+
+  //
+  // helpers to get the run number for given time stamps
+  //
+  // filters  
   
+public:
+  TArrayI fRuns;                         // run list with OCDB info
+  TArrayI fRunsStart;                    // start time for given run
+  TArrayI fRunsStop;                     // stop time for given run
+private:
   AliTPCcalibDButil (const AliTPCcalibDButil& );
   AliTPCcalibDButil& operator= (const AliTPCcalibDButil& );
 

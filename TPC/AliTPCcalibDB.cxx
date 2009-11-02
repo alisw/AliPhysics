@@ -1571,9 +1571,9 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_
   //
   Double_t result;
   // mode TPC crossing and laser 
-  if (mode==1) {
-    result=AliTPCcalibDButil::GetVDriftTPC(run,timeStamp);
-    
+  Double_t deltaT=0;
+  if (mode==1) {   
+    result=AliTPCcalibDButil::GetVDriftTPC(deltaT,run,timeStamp);    
   }
 
   return result;
