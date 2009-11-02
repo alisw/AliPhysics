@@ -63,6 +63,8 @@ Double_t * AliCorrQAChecker::CheckN(AliQAv1::ALITASK_t index, TNtupleD ** nData,
       AliError(Form("nRawCorr not found in %s", fDataSubDir->GetName())) ; 
     } else {
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+        if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
+          continue ; 
         TObjArray * bList = nData[specie]->GetListOfBranches() ; 
         for (Int_t b = 0 ; b < bList->GetEntries() ; b++) {
           AliInfo(Form("Ntuple %s parameter name %d : %s", nData[specie]->GetName(), b, bList->At(b)->GetName())) ;  
