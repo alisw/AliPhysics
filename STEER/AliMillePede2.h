@@ -156,6 +156,7 @@ class AliMillePede2: public TObject
  protected:
   //
   Int_t                LocalFit(double *localParams=0);
+  Bool_t               IsZero(Double_t v,Double_t eps=1e-16)   const {return TMath::Abs(v)<eps;}                  
   //
  protected:
   //

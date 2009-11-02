@@ -330,12 +330,12 @@ void AliMillePede2::SetLocalEquation(double *dergb, double *derlc, double lMeas,
   fRecord->AddResidual(lMeas);
   //
   // Retrieve local param interesting indices
-  for (int i=0;i<fNLocPar;i++) if (derlc[i]!=0.0) {fRecord->AddIndexValue(i,derlc[i]); derlc[i] = 0.0;}
+  for (int i=0;i<fNLocPar;i++) if (!IsZero(derlc[i])) {fRecord->AddIndexValue(i,derlc[i]); derlc[i] = 0.0;}
   //
   fRecord->AddWeight( 1.0/lSigma/lSigma );
   //
   // Idem for global parameters
-  for (int i=0;i<fNGloPar;i++) if (dergb[i]!=0.0) {
+  for (int i=0;i<fNGloPar;i++) if (!IsZero(dergb[i])) {
     fRecord->AddIndexValue(i,dergb[i]); dergb[i] = 0.0;
     fRecord->MarkGroup(fParamGrID[i]);
   }
@@ -358,12 +358,12 @@ void AliMillePede2::SetLocalEquation(int *indgb, double *dergb, int ngb, int *in
   fRecord->AddResidual(lMeas);
   //
   // Retrieve local param interesting indices
-  for (int i=0;i<nlc;i++) if (derlc[i]!=0.0) {fRecord->AddIndexValue(indlc[i],derlc[i]); derlc[i]=0.; indlc[i]=0;}
+  for (int i=0;i<nlc;i++) if (!IsZero(derlc[i])) {fRecord->AddIndexValue(indlc[i],derlc[i]); derlc[i]=0.; indlc[i]=0;}
   //
   fRecord->AddWeight( 1./lSigma/lSigma );
   //
   // Idem for global parameters
-  for (int i=0;i<ngb;i++) if (dergb[i]!=0.0) {fRecord->AddIndexValue(indgb[i],dergb[i]); dergb[i]=0.; indgb[i]=0;} 
+  for (int i=0;i<ngb;i++) if (!IsZero(dergb[i])) {fRecord->AddIndexValue(indgb[i],dergb[i]); dergb[i]=0.; indgb[i]=0;} 
   //
 }
 
@@ -377,9 +377,9 @@ void AliMillePede2::SetGlobalConstraint(double *dergb, double val, double sigma)
   fRecord->Reset();
   fRecord->AddResidual(val);
   fRecord->AddWeight(sigma);
-  for (int i=0; i<fNGloPar; i++) if (dergb[i]!=0)  fRecord->AddIndexValue(i,dergb[i]);
+  for (int i=0; i<fNGloPar; i++) if (!IsZero(dergb[i]))  fRecord->AddIndexValue(i,dergb[i]);
   fNGloConstraints++;
-  if (sigma==0) fNLagrangeConstraints++;
+  if (IsZero(sigma)) fNLagrangeConstraints++;
   //  printf("NewConstraint:\n"); fRecord->Print(); //RRR
   SaveRecordConstraint();
   //
@@ -393,9 +393,9 @@ void AliMillePede2::SetGlobalConstraint(const int *indgb, double *dergb, int ngb
   fRecord->Reset();
   fRecord->AddResidual(val);
   fRecord->AddWeight(sigma);   // dummy
-  for (int i=0; i<ngb; i++) if (dergb[i]!=0)  fRecord->AddIndexValue(indgb[i],dergb[i]);
+  for (int i=0; i<ngb; i++) if (!IsZero(dergb[i]))  fRecord->AddIndexValue(indgb[i],dergb[i]);
   fNGloConstraints++;
-  if (sigma==0) fNLagrangeConstraints++;
+  if (IsZero(sigma)) fNLagrangeConstraints++;
   SaveRecordConstraint();
   //
 }
@@ -521,6 +521,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     if ( (absres >= fResCutInit && fIter ==1 ) ||
 	 (absres >= fResCut     && fIter > 1)) {
       if (fLocFitAdd) fNLocFitsRejected++;      
+      //      printf("reject res %5ld %+e\n",fCurrRecDataID,resid);
       return 0;
     }
     // 
@@ -533,6 +534,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   //
   if (fNStdDev != 0 && nDoF>0 && lChi2 > Chi2DoFLim(fNStdDev,nDoF)*fChi2CutFactor) { // check final chi2
     if (fLocFitAdd) fNLocFitsRejected++;      
+    //    printf("reject chi2 %5ld: %+e\n",fCurrRecDataID, lChi2);
     return 0;
   }
   //
@@ -576,7 +578,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
       for (int jg=ig+1;jg--;) {	// matCGlo is symmetric by construction  
 	int jIDg = indGlo[jg];
 	if ( fSigmaPar[jIDg] <= 0.) continue;                                    // fixed parameter RRRCheck
-	if ( (vl = weight*derGlo[ig]*derGlo[jg])!=0 ) {
+	if ( !IsZero(vl = weight*derGlo[ig]*derGlo[jg]) ) {
 	  fFillIndex[nfill]   = jIDg;
 	  fFillValue[nfill++] = fLocFitAdd ? vl:-vl;
 	}
@@ -610,7 +612,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     vl = 0;
     Double_t *rowGLIDg =  matCGloLoc(iCIDg);
     for (int kl=0;kl<maxLocUsed;kl++) if (rowGLIDg[kl]) vl += rowGLIDg[kl]*fVecBLoc[kl];
-    if  (vl!=0) fVecBGlo[iIDg] -= fLocFitAdd ? vl : -vl;
+    if  (!IsZero(vl)) fVecBGlo[iIDg] -= fLocFitAdd ? vl : -vl;
     //
     int nfill = 0;
     for (int jCIDg=0;jCIDg<=iCIDg; jCIDg++) {  
@@ -620,15 +622,15 @@ Int_t AliMillePede2::LocalFit(double *localParams)
       Double_t *rowGLJDg =  matCGloLoc(jCIDg);
       for (int kl=0;kl<maxLocUsed;kl++) {
 	// diag terms
-	if ( (vll=rowGLIDg[kl]*rowGLJDg[kl])!=0 ) vl += matCLoc.QueryDiag(kl)*vll;
+	if ( (!IsZero(vll=rowGLIDg[kl]*rowGLJDg[kl])) ) vl += matCLoc.QueryDiag(kl)*vll;
 	//
 	// off-diag terms
 	for (int ll=0;ll<kl;ll++) {
-	  if ( (vll=rowGLIDg[kl]*rowGLJDg[ll])!=0 ) vl += matCLoc(kl,ll)*vll;
-	  if ( (vll=rowGLIDg[ll]*rowGLJDg[kl])!=0 ) vl += matCLoc(kl,ll)*vll;
+	  if ( !IsZero(vll=rowGLIDg[kl]*rowGLJDg[ll]) ) vl += matCLoc(kl,ll)*vll;
+	  if ( !IsZero(vll=rowGLIDg[ll]*rowGLJDg[kl]) ) vl += matCLoc(kl,ll)*vll;
 	}
       }
-      if (vl!=0) {
+      if (!IsZero(vl)) {
 	fFillIndex[nfill]   = jIDg;
 	fFillValue[nfill++] = fLocFitAdd ? -vl : vl;
       }
@@ -662,7 +664,7 @@ Int_t AliMillePede2::GlobalFit(Double_t *par, Double_t *error, Double_t *pull)
     res = GlobalFitIteration();
     if (!res) break;
     //
-    if (fChi2CutFactor != fChi2CutRef) {    
+    if (!IsZero(fChi2CutFactor-fChi2CutRef)) {    
       fChi2CutFactor = TMath::Sqrt(fChi2CutFactor);
       if (fChi2CutFactor < 1.2*fChi2CutRef) {
 	fChi2CutFactor = fChi2CutRef;
@@ -717,7 +719,7 @@ Int_t AliMillePede2::GlobalFitIteration()
   fNLagrangeConstraints = 0;
   for (int i=0; i<fNGloConstraints; i++) {
     ReadRecordConstraint(i);
-    if ( fRecord->GetValue(1)==0 ) fNLagrangeConstraints++; // exact constraint (no error) -> Lagrange multiplier 
+    if ( IsZero(fRecord->GetValue(1)) ) fNLagrangeConstraints++; // exact constraint (no error) -> Lagrange multiplier 
   }
   //
   // if needed, readjust the size of the global vector (for matrices this is done automatically)
@@ -853,7 +855,7 @@ Int_t AliMillePede2::GlobalFitIteration()
 	for (int ic=0;ic<=ir;ic++) { // matrix is symmetric
 	  int jID = indV[ic];
 	  double vl = der[ir]*der[ic]*sig2i;
-	  if (vl!=0) matCGlo(iID,jID) += vl;
+	  if (!IsZero(vl)) matCGlo(iID,jID) += vl;
 	}
 	fVecBGlo[iID] += val*der[ir]*sig2i;
       }
