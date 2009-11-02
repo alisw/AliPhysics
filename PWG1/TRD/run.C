@@ -23,7 +23,6 @@
 // gSystem->Load("libMemStatGui.so")
 // gSystem->Load("libANALYSIS.so")
 // gSystem->Load("libANALYSISalice.so")
-// gSystem->Load("libTRDqaRec.so")
 // gSystem->Load("libPWG1.so");
 // gSystem->Load("libNetx.so") ;
 // gSystem->Load("libRAliEn.so");
@@ -65,26 +64,24 @@
 #include "TRD/AliTRDtrackerV1.h"
 #include "TRD/AliTRDcalibDB.h"
 
-#include "TRD/qaRec/macros/AliTRDperformanceTrain.h"
-#include "TRD/qaRec/macros/AddTRDcheckESD.C"
-#include "TRD/qaRec/macros/AddTRDinfoGen.C"
-#include "TRD/qaRec/macros/AddTRDcheckDET.C"
-#include "TRD/qaRec/macros/AddTRDefficiency.C"
-#include "TRD/qaRec/macros/AddTRDresolution.C"
-#include "TRD/qaRec/macros/AddTRDcheckPID.C"
+#include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
+#include "PWG1/TRD/macros/AddTRDcheckESD.C"
+#include "PWG1/TRD/macros/AddTRDinfoGen.C"
+#include "PWG1/TRD/macros/AddTRDcheckDET.C"
+#include "PWG1/TRD/macros/AddTRDefficiency.C"
+#include "PWG1/TRD/macros/AddTRDresolution.C"
+#include "PWG1/TRD/macros/AddTRDcheckPID.C"
 
-#include "PWG1/macros/AddPerformanceTask.C"
 #endif
 
-#include "../../TRD/qaRec/macros/AliTRDperformanceTrain.h"
-#include "../../PWG1/macros/AddPerformanceTask.h"
+#include "macros/AliTRDperformanceTrain.h"
 
 
 Bool_t MEM = kFALSE;
 
 TChain* MakeChainLST(const char* filename = 0x0);
 TChain* MakeChainXML(const char* filename = 0x0);
-void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t nev=1234567890, Long64_t first = 0)
+void run(Char_t *trd="ALL", const Char_t *files=0x0, Long64_t nev=1234567890, Long64_t first = 0)
 {
   TMemStat *mem = 0x0;
   if(MEM){ 
@@ -102,9 +99,10 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   AliLog::SetGlobalLogLevel(AliLog::kError);
   if(gSystem->Load("libANALYSIS.so")<0) return;
   if(gSystem->Load("libANALYSISalice.so")<0) return;
+  if(gSystem->Load("libPWG1.so")<0) return;
 
-  Bool_t fHasMCdata = 1;//HasReadMCData(trd);
-  //Bool_t fHasFriends = HasReadFriendData(trd);
+  Bool_t fHasMCdata =  HasReadMCData(trd);
+  Bool_t fHasFriends = HasReadFriendData(trd);
   
   // INITIALIZATION OF RUNNING ENVIRONMENT
   //TODO We should use the GRP if available similar to AliReconstruction::InitGRP()!
@@ -147,60 +145,10 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   if(fHasMCdata) mgr->SetMCtruthEventHandler(mcH = new AliMCEventHandler());
   //mgr->SetDebugLevel(10);
 
-
-
-///////////////////////////////////////////////////////////
-///////////////         TRD                     ///////////
-///////////////////////////////////////////////////////////
-  // TRD specific library
-  if(gSystem->Load("libTRDqaRec.so")<0) return;
-  // TRD data containers
-  AliAnalysisDataContainer *ci[] = {0x0, 0x0, 0x0};
-
-
-  // initialize TRD settings
-  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-  AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBins());
-
-  // plug (set of) TRD wagons in the train
-  if(trd){
-    for(Int_t it=0; it<NTRDQATASKS; it++){
-      if(gROOT->LoadMacro(Form("$ALICE_ROOT/TRD/qaRec/macros/Add%s.C+", TString(fgkTRDtaskClassName[it])(3,20).Data()))) {
-        Error("run.C", Form("Error loading %s task.", fgkTRDtaskClassName[it]));
-        return;
-      } 
-  
-      switch(it){
-      case kCheckESD:
-        AddTRDcheckESD(mgr); break;
-      case kInfoGen:
-        AddTRDinfoGen(mgr, trd, 0x0, ci); break;
-      case kCheckDET:
-        AddTRDcheckDET(mgr, trd, ci); break;
-      case kEfficiency:
-        AddTRDefficiency(mgr, trd, ci); break;
-      case kResolution:
-        AddTRDresolution(mgr, trd, ci); break;
-      case kCheckPID:
-        AddTRDcheckPID(mgr, trd, ci); break;
-      default:
-        Warning("run.C", Form("No performance task registered at slot %d.", it)); 
-      }
-    }
-  }
-
-///////////////////////////////////////////////////////////
-///////////////         TPC                     ///////////
-///////////////////////////////////////////////////////////
-  if(gSystem->Load("libPWG1.so")<0) return;
-  
-  // BUILD STEERING TASK FOR TPC
-  if(tpc){
-    if(gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddPerformanceTask.C+")) {
-      Error("run.C", "Error loading AliPerformanceTask task.");
-      return;
-    } 
-    AddPerformanceTask(mgr, tpc);
+  gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
+  if(! AddTrainPerformanceTRD(fHasMCdata, fHasFriends, trd)) {
+    Error("run.C", "Error loading TRD train.");
+    return;
   }
 
   if (!mgr->InitAnalysis()) return;
@@ -214,7 +162,6 @@ void run(Char_t *trd="ALL", Char_t *tpc="ALL", const Char_t *files=0x0, Long64_t
   timer.Stop();
   timer.Print();  
 
-  cal->Terminate();
   TGeoGlobalMagField::Instance()->SetField(NULL);
   delete cdbManager;
 

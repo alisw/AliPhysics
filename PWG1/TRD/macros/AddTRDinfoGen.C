@@ -1,12 +1,12 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "TRD/qaRec/AliTRDinfoGen.h"
-#include "TRD/qaRec/info/AliTRDeventInfo.h"
-#include "TRD/qaRec/macros/AliTRDperformanceTrain.h"
+#include "PWG1/TRD/AliTRDinfoGen.h"
+#include "PWG1/TRD/info/AliTRDeventInfo.h"
+#include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
 #endif
 
-#include "TRD/qaRec/macros/helper.C"
+#include "PWG1/TRD/macros/helper.C"
 void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **/*ci*/, AliAnalysisDataContainer **co)
 {
   Int_t map = ParseOptions(trd);
