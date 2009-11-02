@@ -143,6 +143,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeTrackMC);
   list.push_back(kAliHLTDataTypeCaloCluster);
   list.push_back(kAliHLTDataTypedEdx );
+  list.push_back(kAliHLTDataTypeESDVertex );
 }
 
 AliHLTComponentDataType AliHLTGlobalEsdConverterComponent::GetOutputDataType()
@@ -362,6 +363,14 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d", 
 	       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);
     }
+  }
+
+
+  // Get ITS SPD vertex
+
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS); iter != NULL; iter = GetNextInputObject() ) {
+    AliESDVertex *vtx = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) );
+    pESD->SetPrimaryVertexSPD( vtx );
   }
 
   // now update ESD tracks with the ITS info

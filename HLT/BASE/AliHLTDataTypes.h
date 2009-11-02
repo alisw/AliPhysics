@@ -276,6 +276,13 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTMCObjectDataTypeID    {'A','L','I','M','C','_','V','0'}
 
+/** ESDVertex data block
+ * an AliESDVertex object of varying origin
+ * The 'V0' at the end allows a versioning
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTESDVertexDataTypeID    {'E','S','D','V','T','X','V','0'}
+
 /** ESD data block
  * an AliESD object of varying origin
  * The 'V0' at the end allows a versioning
@@ -897,6 +904,11 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeMCObject;
+
+  /** ESD vertex object data specification, origin is 'any' 
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeESDVertex;
 
   /** ESD object data specification, origin is 'any' 
    * @ingroup alihlt_component_datatypes

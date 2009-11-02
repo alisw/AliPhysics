@@ -37,6 +37,7 @@
 #include "AliHLTITSClusterFinderComponent.h"
 #include "AliHLTITSClusterHistoComponent.h"
 #include "AliHLTITSTrackerComponent.h"
+#include "AliHLTITSVertexerSPDComponent.h"
 
 /** global instance for agent registration */
 AliHLTITSAgent gAliHLTITSAgent;
@@ -137,6 +138,7 @@ int AliHLTITSAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTITSClusterFinderComponent(AliHLTITSClusterFinderComponent::kClusterFinderSSD));
   pHandler->AddComponent(new AliHLTITSClusterHistoComponent);
   pHandler->AddComponent(new AliHLTITSTrackerComponent);
+  pHandler->AddComponent(new AliHLTITSVertexerSPDComponent);
 
   return 0;
 }
