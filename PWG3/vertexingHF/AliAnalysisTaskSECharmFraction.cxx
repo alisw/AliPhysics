@@ -58,6 +58,7 @@ ClassImp(AliAnalysisTaskSECharmFraction)
     : AliAnalysisTaskSE(),
       fVHFloose(0),
       fVHFtight(0),
+      fReadMC(kFALSE),
       fmD0PDG(),
       fnbins(),
       fptbins(0),
@@ -95,6 +96,7 @@ ClassImp(AliAnalysisTaskSECharmFraction)
     : AliAnalysisTaskSE(name),
       fVHFloose(0),
       fVHFtight(0),
+      fReadMC(kFALSE),
       fmD0PDG(),
       fnbins(),
       fptbins(0),
@@ -158,6 +160,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
   : AliAnalysisTaskSE(name),
     fVHFloose(0),
     fVHFtight(0),
+    fReadMC(kFALSE),
     fmD0PDG(),
     fnbins(),
     fptbins(0),
@@ -2567,36 +2570,39 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
-  
-  
-  // load MC particles
-  TClonesArray *arrayMC = 
-    (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-  if(!arrayMC) {
-    Printf("AliAnalysisTaskSECharmFraction::UserExec: MC particles branch not found!\n");
-    return;
-  }
-  
-  // load MC header
-  AliAODMCHeader *aodmcHeader = 
-    (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-  if(!aodmcHeader) {
-    Printf("AliAnalysisTaskSECharmFraction::UserExec: MC header branch not found!\n");
-    return;
-  }
-  
-  // MC primary vertex
+  TClonesArray *arrayMC=0;
+  AliAODMCHeader *aodmcHeader=0;
   Double_t vtxTrue[3];
-  aodmcHeader->GetVertex(vtxTrue);
   
+  if(fReadMC){
+    // load MC particles
+    arrayMC = 
+      (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    if(!arrayMC) {
+      Printf("AliAnalysisTaskSECharmFraction::UserExec: MC particles branch not found!\n");
+      return;
+    }
+    
+    // load MC header
+    aodmcHeader = 
+      (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if(!aodmcHeader) {
+      Printf("AliAnalysisTaskSECharmFraction::UserExec: MC header branch not found!\n");
+      return;
+    }
+    
+    // MC primary vertex
+    aodmcHeader->GetVertex(vtxTrue);
+  }    
   if (!aod) {
     Printf("ERROR: aod not available");
     return;
   }
+  
   //histogram filled with 1 for every AOD
   fNentries->Fill(1);
   PostData(1,fNentries);
-
+  
 
   //Printf("There are %d tracks in this event", aod->GetNumberOfTracks());
   //  Int_t nTotHF=0,nTotDstar=0,nTot3Prong=0;
@@ -2610,7 +2616,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   Double_t invMassD0,invMassD0bar,ptD0,massmumtrue;
   
  
-  AliAODRecoDecayHF *aodDMC=0x0;// to be used to create a fake true sec vertex
+  AliAODRecoDecayHF *aodDMC=0;// to be used to create a fake true sec vertex
   // make trkIDtoEntry register (temporary)
   Int_t trkIDtoEntry[100000];
   for(Int_t it=0;it<aod->GetNumberOfTracks();it++) {
@@ -2629,7 +2635,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   //	cout<<"Number of D0->Kpi: "<<nD0toKpi<<endl;
   
   for (Int_t iD0toKpi = 0; iD0toKpi < nD0toKpi; iD0toKpi++) {
-    if(aodDMC!=0x0)delete aodDMC;
+    if(aodDMC)delete aodDMC;
       
     isPeakD0=kFALSE;
     isPeakD0bar=kFALSE;
@@ -2664,7 +2670,10 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     if((isSideBandD0||isSideBandD0bar)&&!(isPeakD0||isPeakD0bar))isSideBand=kTRUE;// TEMPORARY, NOT DONE IN THE METHOD CALLED ABOVE ONLY FOR FURTHER SIDE BAND STUDY
   
     // INVESTIGATE SIGNAL TYPE : ACCESS TO MC INFORMATION
-    aodDMC=GetD0toKPiSignalType(d,arrayMC,signallevel,massmumtrue,vtxTrue);
+    if(fReadMC){
+      aodDMC=GetD0toKPiSignalType(d,arrayMC,signallevel,massmumtrue,vtxTrue);
+    }
+    else signallevel=0;
     if(!isinacceptance)signallevel=9;
     fSignalType->Fill(signallevel);
   
@@ -2691,30 +2700,30 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     //            CANDIDATE VARIABLES   
 
     //NO CUTS Case: force okD0 and okD0bar = kTRUE
-    if(signallevel==1)FillHistos(d,flistNoCutsSignal,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
+    if(signallevel==1||signallevel==0)FillHistos(d,flistNoCutsSignal,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==2)FillHistos(d,flistNoCutsFromDstar,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==3||signallevel==4)FillHistos(d,flistNoCutsFromB,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10||signallevel==9)FillHistos(d,flistNoCutsBack,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==5||signallevel==6)FillHistos(d,flistNoCutsOther,ptbin,kTRUE,kTRUE,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
 
     //LOOSE CUTS Case
-    if(signallevel==1)FillHistos(d,flistLsCutsSignal,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
+    if(signallevel==1||signallevel==0)FillHistos(d,flistLsCutsSignal,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==2)FillHistos(d,flistLsCutsFromDstar,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==3||signallevel==4)FillHistos(d,flistLsCutsFromB,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10)FillHistos(d,flistLsCutsBack,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==5||signallevel==6)FillHistos(d,flistLsCutsOther,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
 
     //TIGHT CUTS Case
-    if(signallevel==1)FillHistos(d,flistTghCutsSignal,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
+    if(signallevel==1||signallevel==0)FillHistos(d,flistTghCutsSignal,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==2)FillHistos(d,flistTghCutsFromDstar,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==3||signallevel==4)FillHistos(d,flistTghCutsFromB,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10)FillHistos(d,flistTghCutsBack,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==5||signallevel==6)FillHistos(d,flistTghCutsOther,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBand,massmumtrue,aodDMC,vtxTrue);
     
     
-    if(aodDMC!=0x0){
+    if(aodDMC){
       delete aodDMC;
-      aodDMC=0x0;
+      aodDMC=0;
     }
     
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
@@ -2837,9 +2846,9 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
                         //                            11: end of the method without output
                         //                            12: different result than MatchToMC method
 
-  AliAODMCParticle *mum1=0x0;
-  AliAODMCParticle *b1=0x0,*b2=0x0;
-  AliAODMCParticle *grandmoth1=0x0;
+  AliAODMCParticle *mum1=0;
+  AliAODMCParticle *b1=0,*b2=0;
+  AliAODMCParticle *grandmoth1=0;
   massMumTrue=-1;
   
   Int_t pdgmum,dglabels[2],matchtoMC;
@@ -2847,8 +2856,8 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
   // get daughter AOD tracks
   AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
   AliAODTrack *trk1 = (AliAODTrack*)d->GetDaughter(1);
-  AliAODRecoDecayHF *aodDMC=0x0;
-  if(trk0==0x0||trk1==0x0){
+  AliAODRecoDecayHF *aodDMC=0;
+  if(!trk0 || !trk1){
     AliDebug(2,"Delete tracks I AM \n");
   
     signaltype=-1;
@@ -2895,7 +2904,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
   matchtoMC=d->MatchToMC(421,arrayMC,2,pdgdaughters);
   aodDMC=ConstructFakeTrueSecVtx(b1,b2,mum1,primaryVtx);
  
-  if(aodDMC==0x0){
+  if(aodDMC){
     signaltype=10;
     return aodDMC;
   }
@@ -3008,15 +3017,15 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
 AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::ConstructFakeTrueSecVtx(const AliAODMCParticle *b1, const AliAODMCParticle *b2, const AliAODMCParticle *mum,Double_t *primaryVtxTrue){
   // CONSTRUCT A FAKE TRUE SECONDARY VERTEX (aodDMC)  
   //!!!NOTE THAT ONLY ONE MOTHER IS CONSIDERED: THE METHOD REQUIRES THE DAUGHTERS COME FROM THE SAME MOTHER !!
-  if(b1==0x0||b2==0x0)return 0x0;
-  if(mum==0x0)return 0x0;
+  if(!b1 || !b2)return 0;
+  if(!mum)return 0;
   Double_t pD[3],xD[3],pXtrTrue[2],pYtrTrue[2],pZtrTrue[2],xtr1[3],xtr2[3];
   Int_t charge[2]={0,0};
   if(b1->Charge()==-1)charge[0]=1;
   else {
     if(b2->Charge()==-1){
       //printf("Same charges for prongs \n");
-      return 0x0;
+      return 0;
     }
     charge[1]=1;
   }
@@ -3025,7 +3034,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::ConstructFakeTrueSecVtx(const
   pYtrTrue[charge[0]]=b1->Py();
   pZtrTrue[charge[0]]=b1->Pz();
   if(!b1->XvYvZv(xtr1)){
-    return 0x0;
+    return 0;
   }
   
   pXtrTrue[charge[1]]=b2->Px();
@@ -3034,11 +3043,11 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::ConstructFakeTrueSecVtx(const
   
   if(!mum->PxPyPz(pD)){
     //printf("!D from B:Get momentum failed \n");
-    return 0x0;
+    return 0;
   }
   if(!mum->XvYvZv(xD)){
     //printf("!D from B:Get position failed \n");
-    return 0x0;
+    return 0;
   }
   /* ############ THIS HAPPENS FROM TIME TO TIME: NUMERIC PROBLEM KNOWN #################
      if(pXtrTrue[0]+pXtrTrue[1]!=pD[0]){
@@ -3046,7 +3055,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::ConstructFakeTrueSecVtx(const
   
   
   if(!b2->XvYvZv(xtr2)){
-    return 0x0;
+    return 0;
   }
   Double_t d0dummy[2]={0.,0.};//TEMPORARY : dummy d0 for AliAODRecoDeay constructor
   AliAODRecoDecayHF* aodDMC=new AliAODRecoDecayHF(primaryVtxTrue,xD,2,0,pXtrTrue,pYtrTrue,pZtrTrue,d0dummy);
@@ -3132,26 +3141,26 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
     if(okD0)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0);
     if(okD0bar)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
   }
-  
-  if(massmumtrue>0.){
-    str="hMassTrue";
-    str.Append(namehist.Data());
-    ((TH1F*)list->FindObject(str.Data()))->Fill(massmumtrue);
-    
-    if(isPeakD0||isPeakD0bar){
+  if(fReadMC){
+    if(massmumtrue>0.){
       str="hMassTrue";
       str.Append(namehist.Data());
-      str.Append("PM");
       ((TH1F*)list->FindObject(str.Data()))->Fill(massmumtrue);
-    }
-    if(isSideBand){
-      str="hMassTrue";
-      str.Append(namehist.Data());
-      str.Append("SB");
-      ((TH1F*)list->FindObject(str.Data()))->Fill(massmumtrue);
+      
+      if(isPeakD0||isPeakD0bar){
+	str="hMassTrue";
+	str.Append(namehist.Data());
+	str.Append("PM");
+	((TH1F*)list->FindObject(str.Data()))->Fill(massmumtrue);
+      }
+      if(isSideBand){
+	str="hMassTrue";
+	str.Append(namehist.Data());
+	str.Append("SB");
+	((TH1F*)list->FindObject(str.Data()))->Fill(massmumtrue);
+      }
     }
   }
-  
   // ################ D0 Impact Parameter Histos #####################
   if((isPeakD0&&okD0)||(isPeakD0bar&&okD0bar)){
     str="hd0D0";
@@ -3166,7 +3175,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
     ((TH1F*)list->FindObject(str.Data()))->Fill(d->ImpParXY()*10000.);
      
     
-    if(vtxTrue){
+    if(fReadMC && vtxTrue){
       str="hd0D0VtxTrue";
       str.Append(namehist.Data());
       str.Append("PM");
@@ -3179,7 +3188,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
       ((TH1F*)list->FindObject(str.Data()))->Fill(d->AliAODRecoDecay::ImpParXY(vtxTrue)*10000.);
     }
     
-    if(aodDMC!=0x0){
+    if(fReadMC && aodDMC){
       aodDMC->Print("");
       aodDMC->ImpParXY();
       aodDMC->Print("");
@@ -3209,7 +3218,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
     ((TH1F*)list->FindObject(str.Data()))->Fill(d->ImpParXY()*10000.);
     
     
-    if(vtxTrue){
+    if(fReadMC&&vtxTrue){
       str="hd0D0VtxTrue";
       str.Append(namehist.Data());
       str.Append("SB");
@@ -3223,7 +3232,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
       
     }
     
-    if(aodDMC!=0x0){
+    if(fReadMC && aodDMC){
       str="hMCd0D0";
       str.Append(namehist.Data());
       str.Append("SB");
@@ -3243,7 +3252,8 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 
 
 void AliAnalysisTaskSECharmFraction::SetNPtBins(Int_t nbins,const Double_t *ptbins){
-  if((fptbins)!=0x0)delete fptbins;
+  // SET THE PT BINS
+  if(fptbins)delete fptbins;
   fnbins=nbins;fptbins=new Double_t[fnbins];
   memcpy(fptbins,ptbins,fnbins*sizeof(Double_t));
   return;
