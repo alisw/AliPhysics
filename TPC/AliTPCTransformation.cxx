@@ -349,9 +349,9 @@ Double_t AliTPCTransformation::GetDeltaXYZ(Int_t coord, Int_t volID, Double_t pa
     Double_t rrphiz[3]={0,0,0};
     if (fFormulaX) rrphiz[0] = fFormulaX(xyz,fFixedParam->GetMatrixArray());
     if (fFormulaY) rrphiz[1] = fFormulaY(xyz,fFixedParam->GetMatrixArray());
-    Double_t alpha = TMath::ATan2(y,x);
-    Double_t ca    = TMath::Cos(alpha);
-    Double_t sa    = TMath::Sin(alpha);
+    alpha = TMath::ATan2(y,x);
+    ca    = TMath::Cos(alpha);
+    sa    = TMath::Sin(alpha);
     if (coord==0) return ca*rrphiz[0]-sa*rrphiz[1];
     if (coord==1) return sa*rrphiz[0]+ca*rrphiz[1];
     if (coord==3) return rrphiz[0];
