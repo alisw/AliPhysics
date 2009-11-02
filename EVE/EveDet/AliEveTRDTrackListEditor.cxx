@@ -1,7 +1,7 @@
-// Author: Benjamin Hess   25/09/2008
+// Author: Benjamin Hess   30/10/2009
 
 /*************************************************************************
- * Copyright (C) 2008, Alexandru Bercuci, Benjamin Hess.                 *
+ * Copyright (C) 2008-2009, Alexandru Bercuci, Benjamin Hess.            *
  * All rights reserved.                                                  *
  *************************************************************************/
 
@@ -1108,6 +1108,8 @@ AliEveTRDMacroWizzard::AliEveTRDMacroWizzard(const TGWindow* p)
   ,fText(0x0)
   ,fCombo(0x0)
   ,fTextEdit(0x0)
+  ,fbCreate(0x0)
+  ,fbCancel(0x0)
 {
   const Int_t width = 300;
 
@@ -1157,6 +1159,15 @@ AliEveTRDMacroWizzard::AliEveTRDMacroWizzard(const TGWindow* p)
   fCombo->Resize(width, fText->GetDefaultHeight());
   fFrameType->AddFrame(fCombo, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2));
 
+  // horizontal frame
+  TGHorizontalFrame *fFrameAction = new TGHorizontalFrame(this,10,10,kHorizontalFrame);
+  fbCancel = new TGTextButton(fFrameAction, "Cancel");
+  fbCancel->SetToolTipText("Exit macro creation wizzard");
+  fFrameAction->AddFrame(fbCancel, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2)); 
+  fbCreate = new TGTextButton(fFrameAction, "Done");
+  fbCreate->SetToolTipText("Use settings to create the macro");
+  fFrameAction->AddFrame(fbCreate, new TGLayoutHints(kLHintsRight | kLHintsTop,2,2,2,2)); 
+
 
   // horizontal frame
   TGHorizontalFrame *fFrameText = new TGHorizontalFrame(this,10,10,kHorizontalFrame);
@@ -1170,6 +1181,7 @@ AliEveTRDMacroWizzard::AliEveTRDMacroWizzard(const TGWindow* p)
   AddFrame(fFrameName, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameComment, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
   AddFrame(fFrameType, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
+  AddFrame(fFrameAction, new TGLayoutHints(kLHintsRight | kLHintsTop | kLHintsExpandX,2,2,2,2));
 
   TGHorizontal3DLine *fLine = new TGHorizontal3DLine(this, 281, 2);
   AddFrame(fLine, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsExpandX,2,2,2,2));
@@ -1186,7 +1198,12 @@ AliEveTRDMacroWizzard::AliEveTRDMacroWizzard(const TGWindow* p)
   MapWindow();
 
   // Do the linking
-  fCombo->Connect("Selected(Int_t)", "AliEveTRDMacroWizzard", this, "Create(Int_t)");
+  //fCombo->Connect("Selected(Int_t)", "AliEveTRDMacroWizzard", this, "Create(Int_t)");
+  fbCreate->Connect("Clicked()", "AliEveTRDMacroWizzard", this, "HandleCreate()");
+  fbCancel->Connect("Clicked()", "AliEveTRDMacroWizzard", this, "CloseWindow()");
+
+  // Standard choice
+  fCombo->Select(1, kFALSE);
 }  
 
 const Char_t *fIncludes = 
@@ -1202,39 +1219,43 @@ const Char_t *fIncludes =
 const Char_t *fMacroTemplate[7] = {
 ""
 ,"  if (!track) return kFALSE;\n"
-"  return kFALSE;\n"
 
 ,"  n = 0;\n"
-"  r=0x0;\n"
+"  r = 0x0;\n"
 "  if (!track) return;\n"
 
 ,"  if (!track) return 0x0;\n"
-"  TH1* h = 0x0;\n"
+"  TH1* h = 0x0;\n\n"
+"// Set bins, xmin and xmax here\n"
+"  Int_t n = 1;\n"
+"  Double_t xmin = 0;\n"
+"  Double_t xmax = 100;\n\n" 
 "  if(!(h = (TH1*)gROOT->FindObject(\"h\"))){\n"
 "    h = new TH1(\"h\", \"Title\", n, xmin, xmax);\n"
 "    h->GetXaxis()->SetTitle("");\n"
 "    h->GetYaxis()->SetTitle("");\n"
 "  } else h->Reset();\n"
-"  return h;\n"
 
 ,"  if (!track) return kFALSE;\n"
 "  if (!track2) return kFALSE;\n"
-"  return kFALSE;\n"
 
 ,"  n = 0;\n"
-"  r=0x0;\n"
+"  r = 0x0;\n"
 "  if (!track) return;\n"
 "  if (!track2) return;\n"
 
 ,"  if (!track) return 0x0;\n"
 "  if (!track2) return 0x0;\n"
-"  TH1* h = 0x0;\n"
+"  TH1* h = 0x0;\n\n"
+"// Set bins, xmin and xmax here\n"
+"  Int_t n = 1;\n"
+"  Double_t xmin = 0;\n"
+"  Double_t xmax = 100;\n\n" 
 "  if(!(h = (TH1*)gROOT->FindObject(\"h\"))){\n"
 "    h = new TH1(\"h\", \"Title\", n, xmin, xmax);\n"
 "    h->GetXaxis()->SetTitle("");\n"
 "    h->GetYaxis()->SetTitle("");\n"
 "  } else h->Reset();\n"
-"  return h;\n"
 };
 //______________________________________________________
 void AliEveTRDMacroWizzard::Create(Int_t typ)
@@ -1242,14 +1263,28 @@ void AliEveTRDMacroWizzard::Create(Int_t typ)
   const Char_t *name = fText->GetText();
   if(strcmp(name,"")==0){
     AliInfo("Please specify a name for your macro.");
-    fCombo->Select(-1);
+    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
+                 "Please specify a name for your macro.", kMBIconExclamation, kMBOk);
+    //fCombo->Select(-1);
+    return;
+  }
+
+  // Note: gSystem->AccessPathName(...) returns kTRUE, if the access FAILED!
+  if(!gSystem->AccessPathName(Form("./%s.C", name))){
+    // If there is already a file with this name -> Error
+    AliInfo(Form("A macro \"%s.C\" already exists in the current directory!\nPlease choose another name!", name));
+    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
+                 Form("A macro \"%s.C\" already exists in the current directory!\nPlease choose another name!", name), kMBIconExclamation, kMBOk);
+    //fCombo->Select(-1);
     return;
   }
 
   FILE* fp = 0x0;
   if(!(fp = fopen(Form("%s.C", name), "wt"))){
     AliInfo("Couldn't create macro file.");
-    fCombo->Select(-1);
+    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
+                 "Couldn't create macro file.", kMBIconExclamation, kMBOk);
+    //fCombo->Select(-1);
     return;
   }
 
@@ -1280,9 +1315,11 @@ void AliEveTRDMacroWizzard::Create(Int_t typ)
     break;
   default:
     AliInfo(Form("Unknown typ[%d]", typ));
+    new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
+                 Form("Unknown typ[%d]", typ), kMBIconExclamation, kMBOk);
     fclose(fp);
     gSystem->Exec(Form("rm -f %s.C", name));
-    fCombo->Select(-1);
+    //fCombo->Select(-1);
     return;
   }
   
@@ -1299,4 +1336,10 @@ void AliEveTRDMacroWizzard::Create(Int_t typ)
 void AliEveTRDMacroWizzard::Create(Char_t *name)
 {
   Emit("Create(Char_t*)", Form("%s.C", name));
+}
+
+//______________________________________________________
+void AliEveTRDMacroWizzard::HandleCreate()
+{
+  Create(fCombo->GetSelected());
 }

@@ -1,7 +1,7 @@
-// Author: Benjamin Hess   25/09/2008
+// Author: Benjamin Hess   30/10/2009
 
 /*************************************************************************
- * Copyright (C) 2008, Alexandru Bercuci, Benjamin Hess.                 *
+ * Copyright (C) 2008-2009, Alexandru Bercuci, Benjamin Hess.            *
  * All rights reserved.                                                  *
  *************************************************************************/
 
@@ -158,6 +158,7 @@ public:
   AliEveTRDMacroWizzard(const TGWindow* p = 0);
   void Create(Int_t typ); //*SIGNAL*
   void Create(Char_t *pname); //*SIGNAL*
+  void HandleCreate();
 
 private:
   AliEveTRDMacroWizzard(const AliEveTRDMacroWizzard&);
@@ -166,8 +167,10 @@ private:
   TGTextEntry *fText;
   TGComboBox  *fCombo;
   TGTextEdit  *fTextEdit;
+  TGTextButton *fbCreate;                  // "Done" button
+  TGTextButton *fbCancel;                  // "Cancel" button
   
-  ClassDef(AliEveTRDMacroWizzard, 0);    // Helper class to create macro templates 
+  ClassDef(AliEveTRDMacroWizzard, 0);      // Helper class to create macro templates 
 };
 
 #endif
