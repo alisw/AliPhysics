@@ -12,8 +12,14 @@ void qa(Int_t runNumber) {
   gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-17-Release.rec/AF-v4-17-rec.par");
   gProof->EnablePackage("AF-v4-17-rec.par");
 
-  gProof->Load(Form("%s/AliAnalysisTaskCosmic.cxx++g",
-		    gSystem->ExpandPathName("$ALICE_ROOT/PWG1/cosmic"));
+  // Enable analysis libs
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSISalice.so");
+  gProof->Exec("gSystem->Load(\"libANALYSIS.so\");",kTRUE);
+  gProof->Exec("gSystem->Load(\"libANALYSISalice.so\");",kTRUE);
+
+  gProof->Load(Form("%s/PWG1/cosmic/AliAnalysisTaskCosmic.cxx++g",
+		    gSystem->Getenv("ALICE_ROOT")));
 
   //____________________________________________//
   // Make the analysis manager
@@ -38,7 +44,7 @@ void qa(Int_t runNumber) {
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("proof",
-		     Form("ALIREC/aliprod/run%d",runNumber));
+		     Form("/ALIREC/aliprod/run%d",runNumber));
 
   timer.Stop();
   timer.Print();
