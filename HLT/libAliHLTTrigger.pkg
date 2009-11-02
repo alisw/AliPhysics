@@ -15,6 +15,9 @@ CLASS_HDRS:= \
                 AliHLTGlobalTriggerConfig.h                 \
                 AliHLTGlobalTriggerComponent.h              \
 		AliHLTTriggerBarrelMultiplicity.h           \
+		AliHLTD0Trigger.h           \
+		AliHLTD0toKpi.h           \
+		AliHLTTriggerITSMultiplicity.h           \
 		AliHLTTriggerBarrelCosmic.h                 \
                 AliHLTTriggerAgent.h                        \
                 AliHLTEventSummary.h                        \
@@ -52,7 +55,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # enable automatic generation. 
 MODULE_DHDR:= 	AliHLTTriggerLinkDef.h
 
-EINCLUDE := HLT/BASE HLT/BASE/util HLT/trigger HLT/TPCLib HLT/TRD TRD
+EINCLUDE := HLT/BASE HLT/BASE/util HLT/trigger HLT/TPCLib HLT/TRD TRD HLT/ITS
 
 LIBRARY_DEP := -lHLTbase 
 
