@@ -1,4 +1,4 @@
-AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calorimeter)
+AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calorimeter, Bool_t kUseKinematics = kFALSE, Bool_t kPrintSettings = kFALSE)
 {
   // Creates a PartCorr task, configures it and adds it to the analysis manager.
   
@@ -16,8 +16,11 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
     ::Error("AddTaskPartCorr", "This task requires an input event handler");
     return NULL;
   }
-   //TString dataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  
+   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+   //cout<<"DATA TYPE :: "<<inputDataType<<endl;
+   // inputDataType: data managed by the input handler
+   // data: can be same as one managed by input handler, or the output AOD created by the filter. By default use AOD
+	
    // Configure analysis
    //===========================================================================
   
@@ -25,15 +28,26 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliCaloTrackReader * reader = 0x0;
   if(data=="AOD") reader = new AliCaloTrackAODReader();
   else if(data=="ESD") reader = new AliCaloTrackESDReader();
-  else if(data=="MC") reader = new AliCaloTrackMCReader();
+  else if(data=="MC" && dataType == "ESD") reader = new AliCaloTrackMCReader();
   reader->SetDebug(-1);//10 for lots of messages
   if(calorimeter == "EMCAL") reader->SwitchOnEMCALCells();
   if(calorimeter == "PHOS")  reader->SwitchOnPHOSCells();
+  if(kUseKinematics){
+	if(inputDataType == "ESD"){
+		reader->SwitchOnStack();          
+		reader->SwitchOffAODMCParticles(); 
+	}
+	else if(inputDataType == "AOD"){
+		reader->SwitchOffStack();          
+		reader->SwitchOnAODMCParticles(); 
+	}
+  }
+	
   //Min particle pT
   reader->SetEMCALPtMin(0.2); 
   reader->SetPHOSPtMin(0.2);
   reader->SetCTSPtMin(0.2);
-  reader->Print("");
+  if(kPrintSettings) reader->Print("");
   
   // ##### Analysis algorithm settings ####
 
@@ -45,7 +59,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   pid->SetDispersionCut(1.5);
   pid->SetTOFCut(5.e-9);
   pid->SetDebug(-1);
-  pid->Print("");
+  if(kPrintSettings) pid->Print("");
 	
   AliFidutialCut * fidCut = new AliFidutialCut();
   fidCut->DoCTSFidutialCut(kFALSE) ;
@@ -55,11 +69,19 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliAnaCalorimeterQA *qa = new AliAnaCalorimeterQA();
   qa->SetDebug(-1); //10 for lots of messages
   qa->SetCalorimeter(calorimeter);
-  qa->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  if(kUseKinematics) qa->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else  qa->SwitchOffDataMC() ;
   qa->AddToHistogramsName(Form("AnaCaloQA_%s",calorimeter.Data()));
   qa->SetFidutialCut(fidCut);
   qa->SwitchOnFidutialCut();
-  qa->Print("");	
+  if(kPrintSettings) qa->Print("");	
+	
+  AliFidutialCut * fidCut1stYear = new AliFidutialCut();
+  fidCut1stYear->DoCTSFidutialCut(kFALSE) ;
+  fidCut1stYear->DoEMCALFidutialCut(kTRUE) ;
+  fidCut1stYear->DoPHOSFidutialCut(kTRUE) ;
+  fidCut1stYear->SetSimpleEMCALFidutialCut(0.7,80.,120.);
+  fidCut1stYear->SetSimplePHOSFidutialCut(0.12,260.,320.);
 	
   AliAnaPhoton *anaphoton1 = new AliAnaPhoton();
   anaphoton1->SetDebug(-1); //10 for lots of messages
@@ -67,21 +89,23 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaphoton1->SetMinDistanceToBadChannel(2, 4, 5);
   anaphoton1->SetCaloPID(pid);
   anaphoton1->SetCalorimeter(calorimeter);
-  anaphoton1->SwitchOffDataMC() ;//Access MC stack and fill more histograms
+  if(kUseKinematics) anaphoton1->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else  anaphoton1->SwitchOffDataMC() ;
   anaphoton1->SwitchOffCaloPID();
   anaphoton1->SwitchOffCaloPIDRecalculation(); //recommended for EMCAL
-  anaphoton1->SwitchOffFidutialCut();
+  anaphoton1->SwitchOnFidutialCut();
+  anaphoton1->SetFidutialCut(fidCut1stYear);
   anaphoton1->SetOutputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
-  anaphoton1->Print("");
+  if(kPrintSettings) anaphoton1->Print("");
 
   AliAnaPi0 *anapi0 = new AliAnaPi0();
-  anapi0->SetDebug(-1);//10 for lots of messages
+  anapi0->SetDebug(0);//10 for lots of messages
   anapi0->SetInputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
   anapi0->SetCaloPID(pid);
   anapi0->SetCalorimeter(calorimeter);
   anapi0->SwitchOnFidutialCut();
   anapi0->SwitchOffDataMC() ;//Access MC stack and fill more histograms
-  anapi0->Print("");
+  if(kPrintSettings) anapi0->Print("");
   
 //  AliAnaNeutralMeson *ananeutral = new AliAnaNeutralMeson();
 //  ananeutral->SetDebug(-1);//10 for lots of messages
@@ -114,28 +138,30 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaphoton2->SetMinPt(5);
   anaphoton2->SetCaloPID(pid);
   anaphoton2->SetCalorimeter(calorimeter);
-  anaphoton2->SwitchOffDataMC() ;//Access MC stack and fill more histograms
+  if(kUseKinematics) anaphoton2->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else  anaphoton2->SwitchOffDataMC() ;
   anaphoton2->SwitchOnCaloPID();
   if(calorimeter == "EMCAL") anaphoton2->SwitchOnCaloPIDRecalculation();
   anaphoton2->SwitchOffFidutialCut();
   anaphoton2->SetOutputAODName(Form("DirectPhotons%s",calorimeter.Data()));
   anaphoton2->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   anaphoton2->AddToHistogramsName("AnaPhotonCorr_");
-  anaphoton2->Print("");
+  if(kPrintSettings) anaphoton2->Print("");
   // ### Isolation analysis ###	
   
   AliIsolationCut * ic = new AliIsolationCut();
   ic->SetConeSize(0.5);
   ic->SetPtThreshold(1.);
   ic->SetICMethod(AliIsolationCut::kPtThresIC);
-  ic->Print("");
+  if(kPrintSettings) ic->Print("");
   
   AliAnaParticleIsolation *anaisol = new AliAnaParticleIsolation();
   anaisol->SetDebug(-1);
   //anaisol->SetMinPt(5);
   anaisol->SetInputAODName(Form("DirectPhotons%s",calorimeter.Data()));
   anaisol->SetCalorimeter(calorimeter);
-  anaisol->SwitchOffDataMC() ;//Access MC stack and fill more histograms
+  if(kUseKinematics) anaisol->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else  anaisol->SwitchOffDataMC() ;
   //Select clusters with no pair, if both clusters with pi0 mass
   anaisol->SwitchOffInvariantMass();
   //anaisol->SetNeutralMesonSelection(nms);
@@ -146,7 +172,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaisol->SwitchOffReIsolation();
   //Multiple IC
   anaisol->SwitchOffSeveralIsolation() ;
-  anaisol->Print("");
+  if(kPrintSettings) anaisol->Print("");
   
   // ### Correlation with Jet Finder AOD output
   AliAnaParticleJetFinderCorrelation *anacorrjet = new AliAnaParticleJetFinderCorrelation();
@@ -159,7 +185,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anacorrjet->SetDeltaPhiCutRange(0.5,5.5);//Mostly Open Cuts 
   anacorrjet->SetRatioCutRange(0.01,3); //Mostly Open Cuts
   anacorrjet->UseJetRefTracks(kFALSE); //Not working now
-  anacorrjet->Print("");
+  if(kPrintSettings) anacorrjet->Print("");
   
   // ### Correlation with hadrons
   AliAnaParticleHadronCorrelation *anacorrhadron = new AliAnaParticleHadronCorrelation();
@@ -177,7 +203,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
     anacorrhadron->SwitchOnCaloPID();
     anacorrhadron->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
   }
-  anacorrhadron->Print("");
+  if(kPrintSettings) anacorrhadron->Print("");
   
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
@@ -190,10 +216,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->AddAnalysis(anacorrjet,5);
   maker->AddAnalysis(anacorrhadron,6);
   //maker->AddAnalysis(ananeutral,7);
-  maker->SetAnaDebug(-1)  ;
+  maker->SetAnaDebug(0)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker()  ;
-  maker->Print("");
+  if(kPrintSettings) maker->Print("");
   
   printf("======================== \n");
   printf(" End Configuration of PartCorr analysis with detector %s \n",calorimeter.Data());
