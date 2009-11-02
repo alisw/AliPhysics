@@ -1163,6 +1163,23 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 					pedestal = (calibData.Pedestals(detElemId, manuId))->ValueAsFloat(channelId, 0);
 					sigma = (calibData.Pedestals(detElemId, manuId))->ValueAsFloat(channelId, 1);
 					
+					// Check if any of the values fetched from the calibration data are
+					// invalid. If they are then skip this pad.
+					if (calibA0Coeff == AliMUONVCalibParam::InvalidFloatValue() or
+					    calibA1Coeff == AliMUONVCalibParam::InvalidFloatValue() or
+					    thresold == AliMUONVCalibParam::InvalidFloatValue() or
+					    saturation == AliMUONVCalibParam::InvalidFloatValue() or
+					    pedestal == AliMUONVCalibParam::InvalidFloatValue() or
+					    sigma == AliMUONVCalibParam::InvalidFloatValue()
+					   )
+					{
+						HLTWarning("Skipping pad on detection element %d, MANU %d, channel %d, since"
+							" the calibration data contains invalid values in that channel.",
+							detElemId, manuId, channelId
+						);
+						continue;
+					}
+					
 					if (plane == 0)
 						halfPadSize = padSizeX;
 					else
