@@ -30,7 +30,8 @@ TRACKING_CA:=	tracking-ca/AliHLTTPCCATrack.h \
 		tracking-ca/AliHLTTPCCAStandaloneFramework.h \
 		tracking-ca/AliTPCtrackerCA.h \
 		tracking-ca/AliHLTTPCCATrackerFramework.h \
-                tracking-ca/AliHLTTPCCAInputDataCompressorComponent.h
+                tracking-ca/AliHLTTPCCAInputDataCompressorComponent.h \
+                tracking-ca/AliHLTTPCCAGPUTracker.h
 #TRACKING_CA:=	
 
 CLASS_HDRS:=  	AliHLTTPCTransform.h \
@@ -124,9 +125,6 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 # 		tracking/AliHLTTPCHistogram1D.h \
 # 		tracking/AliHLTTPCHistogramAdaptive.h
 
-#GPU Tracker Interface
-CLASS_HDRS	+= tracking-ca/AliHLTTPCCAGPUTracker.h
-include $(MODDIR)/libAliHLTTPC.conf
 
 MODULE_SRCS = 	$(CLASS_HDRS:.h=.cxx) \
 		AliHLTTPCLog.cxx
@@ -156,6 +154,7 @@ EINCLUDE 	:= HLT/TPCLib \
 		   TPC \
 		   RAW \
 		   STEER 
+ELIBS		:= dl
 
 LIBRARY_DEP := -lHLTbase -lAliHLTRCU -lAliHLTUtil \
                -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase \
