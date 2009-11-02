@@ -107,23 +107,21 @@ void AliAnalysisTaskESDMCLabelAddition::AddMCLabel()
   for (Int_t nMuTrack = 0; nMuTrack < nMuTracks; ++nMuTrack) {
     
     esdTrack = esd->GetMuonTrack(nMuTrack);
-    esdTrack->SetLabel(-1);
     
     // skip ghosts
     if (!esdTrack->ContainTrackerData()) continue;
     
-    // try to match the reconstructed track with a simulated one
-    AliMUONTrack* matchedTrackRef = MatchWithTrackRef(*esdTrack, *trackRefStore);
+    // convert ESD track to MUON track (without recomputing track parameters at each clusters)
+    AliMUONTrack muonTrack;
+    AliMUONESDInterface::ESDToMUON(*esdTrack, muonTrack, kFALSE);
     
-    if (matchedTrackRef) {
-      
-      // set the MC label
-      esdTrack->SetLabel(matchedTrackRef->GetUniqueID());
-       
-      // remove already matched trackRefs
-      trackRefStore->Remove(*matchedTrackRef);
-      
-    }
+    // try to match the reconstructed track with a simulated one
+    Int_t nMatchClusters = 0;
+    AliMUONTrack* matchedTrackRef = rc.FindCompatibleTrack(muonTrack, *trackRefStore, nMatchClusters, kFALSE, fgkSigmaCut);
+    
+    // set the MC label
+    if (matchedTrackRef) esdTrack->SetLabel(matchedTrackRef->GetUniqueID());
+    else esdTrack->SetLabel(-1);
     
   }
   
@@ -136,99 +134,5 @@ void AliAnalysisTaskESDMCLabelAddition::Terminate(Option_t */*option*/)
   // Terminate analysis
   //
   AliDebug(2, "Terminate()");
-}
-
-
-//----------------------------------------------------------------------
-AliMUONTrack* AliAnalysisTaskESDMCLabelAddition::ESDToMUON(AliESDMuonTrack &esdTrack)
-{
-  /// Convert an ESD track into a MUON track with dummy parameters (just to fill the clusters).
-  /// It is the responsability of the user to delete the track afterward
-  
-  AliMUONTrack *track = new AliMUONTrack();
-  
-  // ckeck whether the ESD track contains clusters
-  if(!esdTrack.ClustersStored()) return track;
-  
-  // track parameters at first cluster
-  AliMUONTrackParam param;
-  AliMUONESDInterface::GetParamAtFirstCluster(esdTrack, param);
-  AliMUONESDInterface::GetParamCov(esdTrack, param);
-  
-  // create empty cluster
-  AliMUONVClusterStore* cStore = AliMUONESDInterface::NewClusterStore();
-  AliMUONVCluster* cluster = cStore->CreateCluster(0,0,0);
-  
-  // loop over ESD clusters
-  AliESDMuonCluster *esdCluster = (AliESDMuonCluster*) esdTrack.GetClusters().First();
-  while (esdCluster) {
-    
-    // copy cluster information
-    AliMUONESDInterface::ESDToMUON(*esdCluster, *cluster);
-    
-    // only set the Z parameter to avoid error in the AddTrackParamAtCluster(...) method
-    param.SetZ(cluster->GetZ());
-    
-    // add common track parameters at current cluster
-    track->AddTrackParamAtCluster(param, *cluster, kTRUE);
-    
-    esdCluster = (AliESDMuonCluster*) esdTrack.GetClusters().After(esdCluster);
-  }
-  
-  // clean memory
-  delete cluster;
-  delete cStore;
-  
-  return track;
-  
-}
-
-
-//----------------------------------------------------------------------
-AliMUONTrack* AliAnalysisTaskESDMCLabelAddition::MatchWithTrackRef(AliESDMuonTrack &esdTrack,
-								   AliMUONVTrackStore &trackRefStore)
-{
-  /// Return the trackRef matched with the reconstructed track and the fraction of matched clusters
-  
-  AliMUONTrack *matchedTrackRef = 0x0;
-  
-  // convert ESD track to MUON track
-  AliMUONTrack *track = ESDToMUON(esdTrack);
-  
-  // look for the corresponding simulated track if any
-  TIter next(trackRefStore.CreateIterator());
-  AliMUONTrack* trackRef;
-  while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) ) {
-    
-    // check compatibility
-    if (TrackMatched(*track, *trackRef)) {
-      matchedTrackRef = trackRef;
-      break;
-    }
-    
-  }
-  
-  // clean memory
-  delete track;
-  
-  return matchedTrackRef;
-  
-}
-
-
-//----------------------------------------------------------------------
-Bool_t AliAnalysisTaskESDMCLabelAddition::TrackMatched(AliMUONTrack &track, AliMUONTrack &trackRef)
-{
-  /// Try to match 2 tracks
-  
-  Bool_t compTrack[10];
-  Int_t nMatchClusters = track.CompatibleTrack(&trackRef, fgkSigmaCut, compTrack);
-  Double_t fractionOfMatchCluster = ((Double_t)nMatchClusters) / ((Double_t)track.GetNClusters());
-  
-  if ((compTrack[0] || compTrack[1] || compTrack[2] || compTrack[3]) && // at least 1 cluster matched in st 1 & 2
-      (compTrack[6] || compTrack[7] || compTrack[8] || compTrack[9]) && // at least 1 cluster matched in st 4 & 5
-      fractionOfMatchCluster > 0.5) return kTRUE;                       // more than 50% of clusters matched
-  else return kFALSE;
-  
 }
 
