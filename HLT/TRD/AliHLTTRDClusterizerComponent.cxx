@@ -82,7 +82,8 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
   fyPosMethod(1),
   fgeometryFileName(""),
   fProcessTracklets(kFALSE),
-  fHLTstreamer(kTRUE)
+  fHLTstreamer(kTRUE),
+  fTC(kFALSE)
 {
   // Default constructor
 
@@ -433,6 +434,11 @@ int AliHLTTRDClusterizerComponent::Configure(const char* arguments){
 	HLTInfo("Don't use fast raw streamer");
 	continue;
       }
+      else if (argument.CompareTo("-tailcancellation")==0) {
+	fTC = kTRUE;
+	HLTInfo("Useing tailcancellation");
+	continue;
+      }
       else if (argument.CompareTo("-rawver")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("Raw data version is: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
@@ -545,10 +551,9 @@ int AliHLTTRDClusterizerComponent::SetParams()
 #   define AliTRDRecoParamSetLUT(b) fRecoParam->SetLUT()
 # endif
 
-  switch(fRecoDataType){
-  case 0: AliTRDRecoParamSetTailCancelation(kTRUE); HLTDebug("Enableing Tail Cancelation"); break;
-  case 1: AliTRDRecoParamSetTailCancelation(kFALSE); HLTDebug("Enableing Tail Cancelation"); break;
-  }
+  if(fTC){AliTRDRecoParamSetTailCancelation(kTRUE); HLTDebug("Enableing Tail Cancelation"); }
+  else{AliTRDRecoParamSetTailCancelation(kFALSE); HLTDebug("Enableing Tail Cancelation"); }
+
   switch(fyPosMethod){
   case 0: AliTRDRecoParamSetGAUS(kFALSE); AliTRDRecoParamSetLUT(kFALSE); break;
   case 1: AliTRDRecoParamSetGAUS(kFALSE); AliTRDRecoParamSetLUT(kTRUE); break;

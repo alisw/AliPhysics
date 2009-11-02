@@ -89,8 +89,9 @@ private:
   TString fgeometryFileName;
   Bool_t fProcessTracklets; // write the L! tracklets to output
   Bool_t fHLTstreamer;      // use FastStreamer
+  Bool_t fTC;               // using tail cancellation
 
-  ClassDef(AliHLTTRDClusterizerComponent, 3)
+  ClassDef(AliHLTTRDClusterizerComponent, 4)
 
 };
 #endif

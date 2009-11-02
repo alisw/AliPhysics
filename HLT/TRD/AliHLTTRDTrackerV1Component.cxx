@@ -248,7 +248,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 #endif      
 
       AliHLTTRDUtils::ReadClusters(fClusterArray, block.fPtr, block.fSize, &fNtimeBins);
-      HLTDebug("Reading number of time bins from input block. Changing number of timebins to %d", fNtimeBins);
+      HLTDebug("Reading number of time bins from input block. Setting number of timebins to %d", fNtimeBins);
       AliTRDtrackerV1::SetNTimeBins(fNtimeBins);
 
       HLTDebug("TClonesArray of clusters: nbEntries = %i", fClusterArray->GetEntriesFast());
@@ -347,8 +347,7 @@ int AliHLTTRDTrackerV1Component::Configure(const char* arguments){
       } 
       else if (argument.CompareTo("-NTimeBins")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTInfo("Setting number of time bins to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-	fNtimeBins=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	HLTInfo("Option depreceated");
 	continue;
       } 
       else if (argument.CompareTo("-geometry")==0) {
@@ -475,22 +474,6 @@ int AliHLTTRDTrackerV1Component::SetParams()
   else{
     HLTInfo("Geometry Already Loaded!");
   }
-
-  if (fNtimeBins <= 0)
-    {
-      HLTError("Sorry. Tracker needs number of time bins. At the moment you have to provide it with -NTimeBins <value>. The simulation always had 24 and the real data 30. Take your pick. Make sure the information is correct. Ask offline to implement how to propagate this information into clusters/cluster tree.");
-      return -EINVAL;
-    }
-  if (fNtimeBins < 24 || fNtimeBins > 30)
-    {
-      HLTWarning("The number of time bins seems to be strange = %d. But okay. Let's try it...", fNtimeBins);
-    }
-  if (fNtimeBins != 24)
-    {
-      HLTWarning("All PID methods eagerly await 24 time bins, so PID will NOT work!", fNtimeBins);
-    }
-  HLTDebug("Setting number of time bins of the tracker to: %i", fNtimeBins);
-  AliTRDtrackerV1::SetNTimeBins(fNtimeBins);
   
   if (fRecoParamType == 0)
     {
@@ -553,7 +536,7 @@ int AliHLTTRDTrackerV1Component::SetParams()
       HLTDebug("Magnetic field is OFF.");
     }else{
       // magnetic field ON
-      field = new AliMagF("Maps","Maps",1.,1.,AliMagF::k5kG);
+      field = new AliMagF("Maps","Maps",-1.,-1.,AliMagF::k5kG);
       TGeoGlobalMagField::Instance()->SetField(field);
       HLTDebug("Magnetic field is ON.");
       if( fMagneticField < 0 )
