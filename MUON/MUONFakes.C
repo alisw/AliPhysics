@@ -34,12 +34,12 @@
 /// Results are saved in the root file Fakes.root
 /// Results are relevent provided that you use the same recoParams as for the reconstruction
 
-Bool_t TrackMatched(AliMUONTrack &track, AliMUONTrack &trackRef, Float_t &fractionOfMatchCluster, Double_t sigmaCut);
-Bool_t IsRecontructible(AliMUONTrack &track, AliMUONRecoParam &recoParam);
-AliMUONTrack* MatchWithTrackRef(AliMUONTrack &muonTrack, AliMUONVTrackStore &trackRefStore,
-				Float_t &fractionOfMatchCluster, Bool_t useLabel, Double_t sigmaCut);
-Int_t RemoveConnectedFakes(AliMUONVTrackStore &fakeTrackStore, AliMUONVTrackStore &trackRefStore, AliMUONRecoParam &recoParam,
-			   Bool_t useLabel, Double_t sigmaCut, TH1F &hFractionOfConnectedClusters);
+UInt_t requestedStationMask = 0;
+Bool_t request2ChInSameSt45 = kFALSE;
+Double_t sigmaCut = -1.;
+
+Int_t RemoveConnectedFakes(AliMUONVTrackStore &fakeTrackStore, AliMUONVTrackStore &trackRefStore,
+			   Bool_t useLabel, TH1F &hFractionOfConnectedClusters);
 
 //-----------------------------------------------------------------------
 void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent = -1,
@@ -89,7 +89,11 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
   if (!recoParam) return;
   
   // get sigma cut from recoParam to associate clusters with TrackRefs in case the label are not used
-  Double_t sigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking();
+  sigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking();
+  // compute the mask of requested stations from recoParam
+  for (Int_t i = 0; i < 5; i++) if (recoParam->RequestStation(i)) requestedStationMask |= ( 1 << i );
+  // get from recoParam whether a track need 2 chambers hit in the same station (4 or 5) or not to be reconstructible
+  request2ChInSameSt45 = !recoParam->MakeMoreTrackCandidates();
   
   // initialize global counters
   Int_t nReconstructibleTracks = 0;
@@ -121,7 +125,7 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
     TIter next(trackRefStore->CreateIterator());
     AliMUONTrack* trackRef;
     while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) ) {
-      if (IsRecontructible(*trackRef,*recoParam)) nReconstructibleTracks++;
+      if (trackRef->IsValid(requestedStationMask, request2ChInSameSt45)) nReconstructibleTracks++;
     }
     
     // loop over ESD tracks
@@ -158,21 +162,21 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
       hPhi->Fill(phi);
       
       // try to match the reconstructed track with a simulated one
-      Float_t fractionOfMatchCluster = 0.;
-      AliMUONTrack* matchedTrackRef = MatchWithTrackRef(*muonTrack, *trackRefStore, fractionOfMatchCluster, useLabel, sigmaCut);
+      Int_t nMatchClusters = 0;
+      AliMUONTrack* matchedTrackRef = rc.FindCompatibleTrack(*muonTrack, *trackRefStore, nMatchClusters, useLabel, sigmaCut);
       
       // take actions according to matching result
       if (matchedTrackRef) {
 	
 	// global counter
 	nTotMatchedTracks++;
-	if (!IsRecontructible(*matchedTrackRef,*recoParam)) {
+	if (!matchedTrackRef->IsValid(requestedStationMask, request2ChInSameSt45)) {
 	  trackReconstructedYet = kTRUE;
 	  nTotTracksReconstructedYet++;
 	}
 	
 	// fill histograms
-	hFractionOfMatchedClusters->Fill(fractionOfMatchCluster);
+	hFractionOfMatchedClusters->Fill(((Float_t) nMatchClusters) / ((Float_t) nClusters));
 	hNumberOfClustersMC->Fill(matchedTrackRef->GetNClusters());
 	hNumberOfClustersM->Fill(nClusters);
 	hChi2PerDofM->Fill(normalizedChi2);
@@ -213,8 +217,7 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
     if (fakeTrackStore->GetSize() > 0) {
       
       // remove the most connected fake tracks
-      Int_t nFreeMissingTracks = RemoveConnectedFakes(*fakeTrackStore, *trackRefStore, *recoParam,
-						      useLabel, sigmaCut, *hFractionOfConnectedClusters);
+      Int_t nFreeMissingTracks = RemoveConnectedFakes(*fakeTrackStore, *trackRefStore,  useLabel, *hFractionOfConnectedClusters);
       
       // remove the remaining free reconstructible tracks
       Int_t nAdditionalTracks = fakeTrackStore->GetSize() - nFreeMissingTracks;
@@ -347,101 +350,8 @@ void MUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent =
 }
 
 //-----------------------------------------------------------------------
-Bool_t TrackMatched(AliMUONTrack &track, AliMUONTrack &trackRef, Float_t &fractionOfMatchCluster, Double_t sigmaCut)
-{
-  /// Try to match 2 tracks
-  
-  Bool_t compTrack[10];
-  Int_t nMatchClusters = track.CompatibleTrack(&trackRef, sigmaCut, compTrack);
-  fractionOfMatchCluster = ((Float_t)nMatchClusters) / ((Float_t)track.GetNClusters());
-  
-  if ((compTrack[0] || compTrack[1] || compTrack[2] || compTrack[3]) && // at least 1 cluster matched in st 1 & 2
-      (compTrack[6] || compTrack[7] || compTrack[8] || compTrack[9]) && // at least 1 cluster matched in st 4 & 5
-      fractionOfMatchCluster > 0.5) return kTRUE;                       // more than 50% of clusters matched
-  else return kFALSE;
-  
-}
-
-//-----------------------------------------------------------------------
-Bool_t IsRecontructible(AliMUONTrack &track, AliMUONRecoParam &recoParam)
-{
-  /// Check il the track is reconstructible
-  Int_t nMinChHitInSt45 = (recoParam.MakeMoreTrackCandidates()) ? 2 : 3;
-  Int_t currentCh, previousCh = -1, nChHitInSt45 = 0;
-  Bool_t clusterInSt[5];
-  for (Int_t iSt = 0; iSt < 5; iSt++) clusterInSt[iSt] = !recoParam.RequestStation(iSt);
-  
-  AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->First());
-  while (trackParam) {
-    
-    currentCh = trackParam->GetClusterPtr()->GetChamberId();
-    
-    clusterInSt[currentCh/2] = kTRUE;
-    
-    if (currentCh > 5 && currentCh != previousCh) {
-      nChHitInSt45++;
-      previousCh = currentCh;
-    }
-    
-    trackParam = static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->After(trackParam));
-  }
-  
-  return (clusterInSt[0] && clusterInSt[1] && clusterInSt[2] &&
-          clusterInSt[3] && clusterInSt[4] && nChHitInSt45 >= nMinChHitInSt45);
-  
-}
-
-//-----------------------------------------------------------------------
-AliMUONTrack* MatchWithTrackRef(AliMUONTrack &muonTrack, AliMUONVTrackStore &trackRefStore,
-				Float_t &fractionOfMatchCluster, Bool_t useLabel, Double_t sigmaCut)
-{
-  /// Return if the trackRef matched with the reconstructed track and the fraction of matched clusters
-  
-  AliMUONTrack *matchedTrackRef = 0x0;
-  fractionOfMatchCluster = 0.;
-  
-  if (useLabel) { // by using the MC label
-    
-    // get the corresponding simulated track if any
-    Int_t label = muonTrack.GetMCLabel();
-    matchedTrackRef = (AliMUONTrack*) trackRefStore.FindObject(label);
-    
-    // get the fraction of matched clusters
-    if (matchedTrackRef) {
-      Int_t nMatchClusters = 0;
-      Int_t nClusters = muonTrack.GetNClusters();
-      for (Int_t iCl = 0; iCl < nClusters; iCl++)
-	if (((AliMUONTrackParam*) muonTrack.GetTrackParamAtCluster()->UncheckedAt(iCl))->GetClusterPtr()->GetMCLabel() == label)
-	  nMatchClusters++;
-      fractionOfMatchCluster = ((Float_t)nMatchClusters) / ((Float_t)nClusters);
-    }
-    
-  } else { // by comparing cluster/TrackRef positions
-    
-    // look for the corresponding simulated track if any
-    TIter next(trackRefStore.CreateIterator());
-    AliMUONTrack* trackRef;
-    while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) ) {
-      
-      // check compatibility
-      Float_t f = 0.;
-      if (TrackMatched(muonTrack, *trackRef, f, sigmaCut)) {
-	matchedTrackRef = trackRef;
-	fractionOfMatchCluster = f;
-	break;
-      }
-      
-    }
-    
-  }
-  
-  return matchedTrackRef;
-  
-}
-
-//-----------------------------------------------------------------------
-Int_t RemoveConnectedFakes(AliMUONVTrackStore &fakeTrackStore, AliMUONVTrackStore &trackRefStore, AliMUONRecoParam &recoParam,
-			  Bool_t useLabel, Double_t sigmaCut, TH1F &hFractionOfConnectedClusters)
+Int_t RemoveConnectedFakes(AliMUONVTrackStore &fakeTrackStore, AliMUONVTrackStore &trackRefStore,
+			   Bool_t useLabel, TH1F &hFractionOfConnectedClusters)
 {
   /// loop over reconstructible TrackRef not associated with reconstructed track:
   /// for each of them, find and remove the most connected the fake track, if any,
@@ -456,7 +366,7 @@ Int_t RemoveConnectedFakes(AliMUONVTrackStore &fakeTrackStore, AliMUONVTrackStor
   while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) ) {
     
     // skip not reconstructible trackRefs
-    if (!IsRecontructible(*trackRef,recoParam)) continue;
+    if (!trackRef->IsValid(requestedStationMask, request2ChInSameSt45)) continue;
     
     Int_t label = trackRef->GetUniqueID();
     
@@ -475,7 +385,7 @@ Int_t RemoveConnectedFakes(AliMUONVTrackStore &fakeTrackStore, AliMUONVTrackStor
 	    nConnectedClusters++;
       } else { // by comparing cluster/TrackRef positions
 	Bool_t compTrack[10];
-	nConnectedClusters = fakeTrack->CompatibleTrack(trackRef, sigmaCut, compTrack);
+	nConnectedClusters = fakeTrack->FindCompatibleClusters(*trackRef, sigmaCut, compTrack);
       }
       
       // skip non-connected fake tracks

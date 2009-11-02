@@ -45,20 +45,17 @@
 #include <TLorentzVector.h>
 #include <TParticle.h>
 #include <TSystem.h>
-#include <TGeoManager.h>
-#include "AliMUONCDB.h"
 #include "AliMUONRecoCheck.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackLight.h"
 #include "AliMUONPairLight.h"
 #include "AliMUONVTrackStore.h"
-#include "AliMUONTrackExtrap.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
+#include "AliESDMuonTrack.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "AliCDBManager.h"
 /*TODO: need to update this with changes made to ITS
 #include "AliITSVertexerPPZ.h"
 #include "AliITSLoader.h"
@@ -69,8 +66,7 @@
 void DecodeRecoCocktail(
     char* recodir=".",          // The directory containing galice.root for reconstructed data.
     char* simdir="generated/",  // The directory containing galice.root for simulated data.
-    char* outFileName = "MuonLight.root", // The output filename containing AliMUONTrackLight and AliMUONPairLight objects.
-    char* geoFilename = "geometry.root"  // The filename containing the geometry.
+    char* outFileName = "MuonLight.root" // The output filename containing AliMUONTrackLight and AliMUONPairLight objects.
   )
 {
 /// \param recodir      The directory containing galice.root for reconstructed data.
@@ -92,24 +88,7 @@ void DecodeRecoCocktail(
   treeOut->Branch("muons",&muonArray); 
   treeOut->Branch("dimuons",&dimuonArray); 
   
-  // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
-  if (!gGeoManager) {
-    TGeoManager::Import(geoFilename);
-    if (!gGeoManager) {
-      Error("MUONmass_ESD", "getting geometry from file %s failed", geoFilename);
-      return;
-    }
-  }
-  
-  // load necessary data from OCDB
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  AliCDBManager::Instance()->SetRun(0);
-  if (!AliMUONCDB::LoadField()) return;
-  // set the magnetic field for track extrapolations
-  AliMUONTrackExtrap::SetField();
-
   AliMUONRecoCheck *rc = new AliMUONRecoCheck("AliESDs.root", simdir);
-  Int_t nev = rc->NumberOfEvents();
   
   /*TODO: need to update this with changes made to ITS
   AliITSLoader* ITSloader =  (AliITSLoader*) runLoaderSim->GetLoader("ITSLoader");
@@ -125,6 +104,7 @@ void DecodeRecoCocktail(
   
   TLorentzVector v; 
  
+  Int_t nev = rc->NumberOfEvents();
   for(Int_t ievent = 0; ievent < nev; ievent++){ // loop over events 
     
     /*TODO: need to update this with changes made to ITS
@@ -143,36 +123,45 @@ void DecodeRecoCocktail(
     AliMUONVTrackStore* trackRefs = rc->TrackRefs(ievent);
     AliStack* pstack = (const_cast<AliMCEventHandler*>(rc->GetMCEventHandler()))->MCEvent()->Stack();
     
-    TIter next(recoTracks->CreateIterator());
-    AliMUONTrack* trackReco = NULL;
-    
-    Int_t nTrackReco = recoTracks->GetSize();
-    Int_t nTracksESD = rc->GetESDEvent()->GetNumberOfMuonTracks();
-    if (nTrackReco != nTracksESD) printf ("Tracks in recoTracks (%d) and in ESD (%d) do not match!\n", nTrackReco, nTracksESD);
+    // loop over ESD tracks
     Int_t nreftracks = 0;
-    Int_t itrRec = 0;
-    while ( (trackReco = static_cast<AliMUONTrack*>(next())) != NULL )
-    {
-      // assign parameters concerning the reconstructed tracks
-      AliMUONTrackLight muLight;
+    const AliESDEvent* esd = rc->GetESDEvent();
+    Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks() ;
+    for (Int_t iTrack = 0; iTrack <  nTracks;  iTrack++) {
       
-      muLight.FillFromESD(rc->GetESDEvent()->GetMuonTrack(itrRec));
-      // muLight.FillFromAliMUONTrack(trackReco);
+      AliESDMuonTrack* esdTrack = esd->GetMuonTrack(iTrack);
       
-      // find the reference track and store further information	
-      TParticle *part = muLight.FindRefTrack(trackReco, trackRefs, pstack);
-      if (part) { 
+      // skip ghosts
+      if (!esdTrack->ContainTrackerData()) continue;
+      
+      // find the corresponding MUON track
+      AliMUONTrack* trackReco = (AliMUONTrack*) recoTracks->FindObject(esdTrack->GetUniqueID());
+      
+      // try to match the reconstructed track with a simulated one
+      Int_t nMatchClusters = 0;
+      AliMUONTrack* matchedTrackRef = rc->FindCompatibleTrack(*trackReco, *trackRefs, nMatchClusters, kFALSE, 10.);
+      
+      if (matchedTrackRef) {
+	
+	//store new referenced track in the muonArray
+	AliMUONTrackLight* muLight = new ((*muonArray)[nreftracks++]) AliMUONTrackLight();
+	
+	// assign parameters concerning the reconstructed tracks
+	muLight->FillFromESD(esdTrack);
+	// muLight->FillFromAliMUONTrack(trackReco);
+	
+	// store further information related to the simulated track
+	muLight->SetTrackPythiaLine(matchedTrackRef->GetUniqueID());
+	TParticle *part = pstack->Particle(matchedTrackRef->GetUniqueID());
+	muLight->SetTrackPDGCode(part->GetPdgCode());
 	v.SetPxPyPzE(part->Px(), part->Py(), part->Pz(), part->Energy());
-	muLight.SetPGen(v); 
-	muLight.FillMuonHistory(pstack, part);
+	muLight->SetPGen(v); 
+	muLight->FillMuonHistory(pstack, part);
 	// 	  muLight.PrintInfo("A");
-	//store the referenced track in the muonArray:
-	TClonesArray &muons = *muonArray;
-	new (muons[nreftracks++]) AliMUONTrackLight(muLight);
-      } 
+	
+      }
       
-      itrRec++;
-    }  // end reco track
+    } // end esd track
     
     // now loop over muon pairs to build dimuons
     Int_t nmuons = muonArray->GetEntriesFast(); 

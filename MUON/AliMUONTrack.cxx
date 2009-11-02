@@ -472,15 +472,16 @@ Bool_t AliMUONTrack::UpdateCovTrackParamAtCluster()
 }
 
   //__________________________________________________________________________
-Bool_t AliMUONTrack::IsValid(UInt_t requestedStationMask)
+Bool_t AliMUONTrack::IsValid(UInt_t requestedStationMask, Bool_t request2ChInSameSt45)
 {
   /// check the validity of the current track:
   /// at least one cluster per requested station
   /// and at least 2 chambers in stations 4 & 5 that contain cluster(s)
+  /// + if request2ChInSameSt45 = kTRUE: 2 chambers hit in the same station (4 or 5)
   
   Int_t nClusters = GetNClusters();
   AliMUONTrackParam *trackParam;
-  Int_t currentCh, currentSt, previousCh = -1, nChHitInSt45 = 0;
+  Int_t currentCh, currentSt, previousCh = -1, nChHitInSt4 = 0, nChHitInSt5 = 0;
   UInt_t presentStationMask(0);
   
   // first loop over clusters
@@ -493,15 +494,28 @@ Bool_t AliMUONTrack::IsValid(UInt_t requestedStationMask)
     // build present station mask
     presentStationMask |= ( 1 << currentSt );
     
-    // count the number of chambers in station 4 & 5 that contain cluster(s)
-    if (currentCh > 5 && currentCh != previousCh) {
-      nChHitInSt45++;
+    // count the number of chambers hit in station 4 that contain cluster(s)
+    if (currentSt == 3 && currentCh != previousCh) {
+      nChHitInSt4++;
+      previousCh = currentCh;
+    }
+    
+    // count the number of chambers hit in station 5 that contain cluster(s)
+    if (currentSt == 4 && currentCh != previousCh) {
+      nChHitInSt5++;
       previousCh = currentCh;
     }
     
   }
   
-  return (((requestedStationMask & presentStationMask) == requestedStationMask) && (nChHitInSt45 >= 2));
+  // at least one cluster per requested station
+  if ((requestedStationMask & presentStationMask) != requestedStationMask) return kFALSE;
+  
+  // 2 chambers hit in the same station (4 or 5)
+  if (request2ChInSameSt45) return (nChHitInSt4 == 2 || nChHitInSt5 == 2);
+  // or 2 chambers hit in station 4 & 5 together
+  else return (nChHitInSt4+nChHitInSt5 >= 2);
+  
 }
 
   //__________________________________________________________________________
@@ -1066,10 +1080,11 @@ Double_t AliMUONTrack::GetNormalizedChi2() const
 }
 
   //__________________________________________________________________________
-Int_t AliMUONTrack::CompatibleTrack(AliMUONTrack* track, Double_t sigmaCut, Bool_t compatibleCluster[10]) const
+Int_t AliMUONTrack::FindCompatibleClusters(AliMUONTrack &track, Double_t sigmaCut, Bool_t compatibleCluster[10]) const
 {
-  /// for each chamber: return kTRUE (kFALSE) if clusters are compatible (not compatible).
-  /// nMatchClusters = number of clusters of "this" track matched with one cluster of track "track"
+  /// Try to match clusters from this track with clusters from the given track within the provided sigma cut:
+  /// - Fill the array compatibleCluster[iCh] with kTRUE if a compatible cluster has been found in chamber iCh.
+  /// - Return the number of clusters of "this" track matched with one cluster of the given track.
   AliMUONTrackParam *trackParamAtCluster1, *trackParamAtCluster2;
   AliMUONVCluster *cluster1, *cluster2;
   Double_t chi2, dX, dY;
@@ -1079,7 +1094,7 @@ Int_t AliMUONTrack::CompatibleTrack(AliMUONTrack* track, Double_t sigmaCut, Bool
   Int_t nMatchClusters = 0;
   for ( Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) compatibleCluster[ch] = kFALSE;
 
-  if (!fTrackParamAtCluster || !this->fTrackParamAtCluster) return nMatchClusters;
+  if (!track.fTrackParamAtCluster || !this->fTrackParamAtCluster) return nMatchClusters;
   
   // Loop over clusters of first track
   trackParamAtCluster1 = (AliMUONTrackParam*) this->fTrackParamAtCluster->First();
@@ -1088,13 +1103,13 @@ Int_t AliMUONTrack::CompatibleTrack(AliMUONTrack* track, Double_t sigmaCut, Bool
     cluster1 = trackParamAtCluster1->GetClusterPtr();
     
     // Loop over clusters of second track
-    trackParamAtCluster2 = (AliMUONTrackParam*) track->fTrackParamAtCluster->First();
+    trackParamAtCluster2 = (AliMUONTrackParam*) track.fTrackParamAtCluster->First();
     while (trackParamAtCluster2) {
       
       cluster2 = trackParamAtCluster2->GetClusterPtr();
       
       //prepare next step
-      trackParamAtCluster2 = (AliMUONTrackParam*) track->fTrackParamAtCluster->After(trackParamAtCluster2);
+      trackParamAtCluster2 = (AliMUONTrackParam*) track.fTrackParamAtCluster->After(trackParamAtCluster2);
       
       // check DE Id
       if (cluster1->GetDetElemId() != cluster2->GetDetElemId()) continue;
@@ -1114,6 +1129,23 @@ Int_t AliMUONTrack::CompatibleTrack(AliMUONTrack* track, Double_t sigmaCut, Bool
   }
   
   return nMatchClusters;
+}
+
+//__________________________________________________________________________
+Bool_t AliMUONTrack::Match(AliMUONTrack &track, Double_t sigmaCut, Int_t &nMatchClusters) const
+{
+  /// Try to match this track with the given track. Matching conditions:
+  /// - more than 50% of clusters from this track matched with clusters from the given track
+  /// - at least 1 cluster matched before and 1 cluster matched after the dipole
+  
+  Bool_t compTrack[10];
+  nMatchClusters = FindCompatibleClusters(track, sigmaCut, compTrack);
+  
+  if ((compTrack[0] || compTrack[1] || compTrack[2] || compTrack[3]) && // at least 1 cluster matched in st 1 & 2
+      (compTrack[6] || compTrack[7] || compTrack[8] || compTrack[9]) && // at least 1 cluster matched in st 4 & 5
+      2 * nMatchClusters > GetNClusters()) return kTRUE;                // more than 50% of clusters matched
+  else return kFALSE;
+  
 }
 
 //__________________________________________________________________________

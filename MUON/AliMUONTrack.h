@@ -38,7 +38,7 @@ class AliMUONTrack : public TObject
   Bool_t        UpdateTrackParamAtCluster();
   Bool_t        UpdateCovTrackParamAtCluster();
   
-  Bool_t IsValid(UInt_t requestedStationMask);
+  Bool_t IsValid(UInt_t requestedStationMask, Bool_t request2ChInSameSt45 = kFALSE);
   
   void TagRemovableClusters(UInt_t requestedStationMask);
   
@@ -94,7 +94,8 @@ class AliMUONTrack : public TObject
   Int_t    GetNDF() const;
   Double_t GetNormalizedChi2() const;
 
-  Int_t CompatibleTrack(AliMUONTrack* track, Double_t sigma2Cut, Bool_t compatibleCluster[10]) const;
+  Int_t  FindCompatibleClusters(AliMUONTrack &track, Double_t sigma2Cut, Bool_t compatibleCluster[10]) const;
+  Bool_t Match(AliMUONTrack &track, Double_t sigma2Cut, Int_t &nMatchClusters) const;
   
   /// return pointer to track parameters at vertex (can be 0x0)
   AliMUONTrackParam* GetTrackParamAtVertex() const {return fTrackParamAtVertex;}

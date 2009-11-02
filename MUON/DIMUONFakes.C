@@ -33,9 +33,7 @@
 /// Results are saved in the root file DiFakes.root
 /// Results are relevent provided that you use the same recoParams as for the reconstruction
 
-Bool_t TrackMatched(AliMUONTrack &track, AliMUONTrack &trackRef, Float_t &fractionOfMatchCluster, Double_t sigmaCut);
-AliMUONTrack* MatchWithTrackRef(AliMUONTrack &muonTrack, AliMUONVTrackStore &trackRefStore,
-				Float_t &fractionOfMatchCluster, Bool_t useLabel, Double_t sigmaCut);
+Double_t sigmaCut = -1.;
 
 //-----------------------------------------------------------------------
 void DIMUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent = -1,
@@ -78,7 +76,7 @@ void DIMUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent
   if (!recoParam) return;
   
   // get sigma cut from recoParam to associate clusters with TrackRefs in case the label are not used
-  Double_t sigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking();
+  sigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking();
   
   TLorentzVector vMu1, vMu2, vDiMu;
   
@@ -106,8 +104,8 @@ void DIMUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent
       AliMUONTrack* muonTrack = (AliMUONTrack*) muonTrackStore->FindObject(esdTrack->GetUniqueID());
       
       // try to match the reconstructed track with a simulated one
-      Float_t fractionOfMatchCluster = 0.;
-      AliMUONTrack* matchedTrackRef = MatchWithTrackRef(*muonTrack, *trackRefStore, fractionOfMatchCluster, useLabel, sigmaCut);
+      Int_t nMatchClusters = 0;
+      AliMUONTrack* matchedTrackRef = rc.FindCompatibleTrack(*muonTrack, *trackRefStore, nMatchClusters, useLabel, sigmaCut);
       
       // take actions according to matching result
       if (matchedTrackRef) {
@@ -267,70 +265,6 @@ void DIMUONFakes(Bool_t useLabel = kFALSE, Int_t FirstEvent = 0, Int_t LastEvent
   histoFile->Write();
   cDiFakesSummary.Write();
   histoFile->Close();
-  
-}
-
-//-----------------------------------------------------------------------
-Bool_t TrackMatched(AliMUONTrack &track, AliMUONTrack &trackRef, Float_t &fractionOfMatchCluster, Double_t sigmaCut)
-{
-  /// Try to match 2 tracks
-  
-  Bool_t compTrack[10];
-  Int_t nMatchClusters = track.CompatibleTrack(&trackRef, sigmaCut, compTrack);
-  fractionOfMatchCluster = ((Float_t)nMatchClusters) / ((Float_t)track.GetNClusters());
-  
-  if ((compTrack[0] || compTrack[1] || compTrack[2] || compTrack[3]) && // at least 1 cluster matched in st 1 & 2
-      (compTrack[6] || compTrack[7] || compTrack[8] || compTrack[9]) && // at least 1 cluster matched in st 4 & 5
-      fractionOfMatchCluster > 0.5) return kTRUE;                       // more than 50% of clusters matched
-  else return kFALSE;
-  
-}
-
-//-----------------------------------------------------------------------
-AliMUONTrack* MatchWithTrackRef(AliMUONTrack &muonTrack, AliMUONVTrackStore &trackRefStore,
-				Float_t &fractionOfMatchCluster, Bool_t useLabel, Double_t sigmaCut)
-{
-  /// Return if the trackRef matched with the reconstructed track and the fraction of matched clusters
-  
-  AliMUONTrack *matchedTrackRef = 0x0;
-  fractionOfMatchCluster = 0.;
-  
-  if (useLabel) { // by using the MC label
-    
-    // get the corresponding simulated track if any
-    Int_t label = muonTrack.GetMCLabel();
-    matchedTrackRef = (AliMUONTrack*) trackRefStore.FindObject(label);
-    
-    // get the fraction of matched clusters
-    if (matchedTrackRef) {
-      Int_t nMatchClusters = 0;
-      Int_t nClusters = muonTrack.GetNClusters();
-      for (Int_t iCl = 0; iCl < nClusters; iCl++)
-	if (((AliMUONTrackParam*) muonTrack.GetTrackParamAtCluster()->UncheckedAt(iCl))->GetClusterPtr()->GetMCLabel() == label)
-	  nMatchClusters++;
-      fractionOfMatchCluster = ((Float_t)nMatchClusters) / ((Float_t)nClusters);
-    }
-    
-  } else { // by comparing cluster/TrackRef positions
-    
-    // look for the corresponding simulated track if any
-    TIter next(trackRefStore.CreateIterator());
-    AliMUONTrack* trackRef;
-    while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) ) {
-      
-      // check compatibility
-      Float_t f = 0.;
-      if (TrackMatched(muonTrack, *trackRef, f, sigmaCut)) {
-	matchedTrackRef = trackRef;
-	fractionOfMatchCluster = f;
-	break;
-      }
-      
-    }
-    
-  }
-  
-  return matchedTrackRef;
   
 }
 

@@ -18,6 +18,7 @@ class TTree;
 class AliESDEvent;
 class AliMCEventHandler;
 class AliMUONVTrackStore;
+class AliMUONTrack;
 
 class AliMUONRecoCheck : public TObject 
 {
@@ -33,7 +34,7 @@ public:
   AliMUONVTrackStore* TrackRefs(Int_t event);
 
   /// Return reconstructible reference tracks
-  AliMUONVTrackStore* ReconstructibleTracks(Int_t event);
+  AliMUONVTrackStore* ReconstructibleTracks(Int_t event, UInt_t requestedStationMask = 0x1F, Bool_t request2ChInSameSt45 = kTRUE);
   
   /// Return the run number of the current ESD event
   Int_t GetRunNumber();
@@ -46,6 +47,10 @@ public:
   
   /// Return the interface to the Monte Carlo data of current event
   const AliMCEventHandler* GetMCEventHandler() { return fMCEventHandler; }
+  
+  /// Return the track from the store matched with the given track (or 0x0) and the fraction of matched clusters.
+  static AliMUONTrack* FindCompatibleTrack(AliMUONTrack &track, AliMUONVTrackStore &trackStore,
+					   Int_t &nMatchClusters, Bool_t useLabel = kFALSE, Double_t sigmaCut = 10.);
   
 private:
   /// Not implemented
@@ -61,7 +66,7 @@ private:
   
   void CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefStore);
   
-  void MakeReconstructibleTracks();
+  void MakeReconstructibleTracks(UInt_t requestedStationMask, Bool_t request2ChInSameSt45 = kTRUE);
 
 private:
   AliMCEventHandler* fMCEventHandler; ///< to access MC truth information

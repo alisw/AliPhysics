@@ -220,14 +220,15 @@ AliMUONVTrackStore* AliMUONRecoCheck::TrackRefs(Int_t event)
 }
 
 //_____________________________________________________________________________
-AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event)
+AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event, UInt_t requestedStationMask, Bool_t request2ChInSameSt45)
 {
-  /// Return a track store containing the reconstructible tracks for a given event
+  /// Return a track store containing the reconstructible tracks for a given event,
+  /// according to the mask of requested stations and the minimum number of chambers hit in stations 4 & 5.
 
   if (!fESDEventOwner) {
     if (fRecoTrackRefStore == 0x0) {
       if (TrackRefs(event) == 0x0) return 0x0;
-      MakeReconstructibleTracks();
+      MakeReconstructibleTracks(requestedStationMask, request2ChInSameSt45);
     }
     return fRecoTrackRefStore;
   }
@@ -240,7 +241,7 @@ AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event)
   if (fRecoTrackRefStore != 0x0) return fRecoTrackRefStore;
   else {
     if (TrackRefs(event) == 0x0) return 0x0;
-    MakeReconstructibleTracks();
+    MakeReconstructibleTracks(requestedStationMask, request2ChInSameSt45);
     return fRecoTrackRefStore;
   }
 }
@@ -502,7 +503,7 @@ void AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefSt
 }
 
 //_____________________________________________________________________________
-void AliMUONRecoCheck::MakeReconstructibleTracks()
+void AliMUONRecoCheck::MakeReconstructibleTracks(UInt_t requestedStationMask, Bool_t request2ChInSameSt45)
 {
   /// Isolate the reconstructible tracks
   if (!(fRecoTrackRefStore = AliMUONESDInterface::NewTrackStore())) return;
@@ -510,36 +511,59 @@ void AliMUONRecoCheck::MakeReconstructibleTracks()
   // create iterator on trackRef
   TIter next(fTrackRefStore->CreateIterator());
   
-  // loop over trackRef
+  // loop over trackRef and add reconstructible tracks to fRecoTrackRefStore
   AliMUONTrack* track;
   while ( ( track = static_cast<AliMUONTrack*>(next()) ) ) {
-    
-    Bool_t* chamberInTrack = new Bool_t(AliMUONConstants::NTrackingCh());
-    for (Int_t iCh = 0; iCh < AliMUONConstants::NTrackingCh(); iCh++) chamberInTrack[iCh] = kFALSE;
-    
-    // loop over trackRef's hits to get hit chambers
-    Int_t nTrackHits = track->GetNClusters();
-    for (Int_t iHit = 0; iHit < nTrackHits; iHit++) {
-      AliMUONVCluster* hit = ((AliMUONTrackParam*) track->GetTrackParamAtCluster()->UncheckedAt(iHit))->GetClusterPtr(); 
-      chamberInTrack[hit->GetChamberId()] = kTRUE;
-    } 
-    
-    // track is reconstructible if the particle is depositing a hit
-    // in the following chamber combinations:
-    Bool_t trackOK = kTRUE;
-    if (!chamberInTrack[0] && !chamberInTrack[1]) trackOK = kFALSE;
-    if (!chamberInTrack[2] && !chamberInTrack[3]) trackOK = kFALSE;
-    if (!chamberInTrack[4] && !chamberInTrack[5]) trackOK = kFALSE;
-    Int_t nHitsInLastStations = 0;
-    for (Int_t iCh = 6; iCh < AliMUONConstants::NTrackingCh(); iCh++)
-      if (chamberInTrack[iCh]) nHitsInLastStations++; 
-    if(nHitsInLastStations < 3) trackOK = kFALSE;
-    
-    // Add reconstructible tracks to fRecoTrackRefStore
-    if (trackOK) fRecoTrackRefStore->Add(*track);
-    
-    delete [] chamberInTrack;
+    if (track->IsValid(requestedStationMask, request2ChInSameSt45)) fRecoTrackRefStore->Add(*track);
   }
 
+}
+
+//_____________________________________________________________________________
+AliMUONTrack* AliMUONRecoCheck::FindCompatibleTrack(AliMUONTrack &track, AliMUONVTrackStore &trackStore,
+						    Int_t &nMatchClusters, Bool_t useLabel, Double_t sigmaCut)
+{
+  /// Return the track from the store matched with the given track (or 0x0) and the number of matched clusters.
+  /// Matching is done by using the MC label of by comparing cluster/TrackRef positions according to the flag "useLabel".
+  /// WARNING: Who match who matters since the matching algorithm uses the *fraction* of matched clusters of the given track
+  
+  AliMUONTrack *matchedTrack = 0x0;
+  nMatchClusters = 0;
+  
+  if (useLabel) { // by using the MC label
+    
+    // get the corresponding simulated track if any
+    Int_t label = track.GetMCLabel();
+    matchedTrack = (AliMUONTrack*) trackStore.FindObject(label);
+    
+    // get the fraction of matched clusters
+    if (matchedTrack) {
+      Int_t nClusters = track.GetNClusters();
+      for (Int_t iCl = 0; iCl < nClusters; iCl++)
+	if (((AliMUONTrackParam*) track.GetTrackParamAtCluster()->UncheckedAt(iCl))->GetClusterPtr()->GetMCLabel() == label)
+	  nMatchClusters++;
+    }
+    
+  } else { // by comparing cluster/TrackRef positions
+    
+    // look for the corresponding simulated track if any
+    TIter next(trackStore.CreateIterator());
+    AliMUONTrack* track2;
+    while ( ( track2 = static_cast<AliMUONTrack*>(next()) ) ) {
+      
+      // check compatibility
+      Int_t n = 0;
+      if (track.Match(*track2, sigmaCut, n)) {
+	matchedTrack = track2;
+	nMatchClusters = n;
+	break;
+      }
+      
+    }
+    
+  }
+  
+  return matchedTrack;
+  
 }
 

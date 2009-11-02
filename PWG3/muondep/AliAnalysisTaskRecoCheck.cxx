@@ -4,8 +4,6 @@
 #include "TIterator.h"
 
 #include "AliStack.h"
-#include "AliMagF.h"
-#include "AliTracker.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -23,8 +21,8 @@
 #include "AliMUONPairLight.h"
 #include "AliMUONVTrackStore.h"
 #include "AliMUONTrack.h"
+#include "AliMUONESDInterface.h"
 #include "AliMUONRecoCheck.h"
-#include "AliMUONTrackExtrap.h"
 
 // analysis task for decoding reconstructed tracks and kinematics (AliMUONRecoCheck)
 // Authors: Bogdan Vulpescu
@@ -67,9 +65,6 @@ void AliAnalysisTaskRecoCheck::ConnectInputData(Option_t *)
       fESDEvent = esdH->GetEvent();
   }
   
-  // calculate the filed map in the L3 magnet using the current value
-  AliMUONTrackExtrap::SetField();
-
 }
 
 //________________________________________________________________________
@@ -111,8 +106,6 @@ void AliAnalysisTaskRecoCheck::Exec(Option_t *)
      return;
   }
 
-  Int_t eventNumber = fESDEvent->GetEventNumberInFile();
-
   fArray1Mu->Clear();
   fArray2Mu->Clear();
 
@@ -120,42 +113,43 @@ void AliAnalysisTaskRecoCheck::Exec(Option_t *)
 
   AliMUONRecoCheck *rc = new AliMUONRecoCheck(fESDEvent, eventHandler);
 
-  AliMUONVTrackStore* trackRefs = rc->TrackRefs(eventNumber);
-  AliMUONVTrackStore* recoTracks = rc->ReconstructedTracks(eventNumber);
+  AliMUONVTrackStore* trackRefs = rc->TrackRefs(-1);
   AliStack* pstack = mcEvent->Stack();
   
-  TIter next(recoTracks->CreateIterator());
-  AliMUONTrack* trackReco = NULL;
-  
-  Int_t nTrackReco = recoTracks->GetSize();
-  Int_t nTracksESD = fESDEvent->GetNumberOfMuonTracks();
-  //printf("Tracks in recoTracks (%d) and in ESD (%d).\n", nTrackReco, nTracksESD); 
-
-  if (nTrackReco != nTracksESD) printf ("Tracks in recoTracks (%d) and in ESD (%d) do not match!\n", nTrackReco, nTracksESD);
-  
+  // loop over ESD tracks
   Int_t nreftracks = 0;
-  Int_t itrRec = 0;
-  while ( (trackReco = static_cast<AliMUONTrack*>(next())) != NULL ) {
-    // assign parameters concerning the reconstructed tracks
-    AliMUONTrackLight muLight;
+  for (Int_t iTrack = 0; iTrack <  nTracks;  iTrack++) {
     
-    muLight.FillFromESD(fESDEvent->GetMuonTrack(itrRec));
+    AliESDMuonTrack* esdTrack = fESDEvent->GetMuonTrack(iTrack);
     
-    // find the reference track and store further information	
-    TParticle *part = muLight.FindRefTrack(trackReco, trackRefs, pstack);
-    if (part) { 
+    // skip ghosts
+    if (!esdTrack->ContainTrackerData()) continue;
+    
+    // convert ESD track to MUON track (without recomputing track parameters at each clusters)
+    AliMUONTrack muonTrack;
+    AliMUONESDInterface::ESDToMUON(*esdTrack, muonTrack, kFALSE);
+    
+    // try to match the reconstructed track with a simulated one
+    Int_t nMatchClusters = 0;
+    AliMUONTrack* matchedTrackRef = rc->FindCompatibleTrack(muonTrack, *trackRefs, nMatchClusters, kFALSE, 10.);
+    
+    if (matchedTrackRef) {
+      
+      //store new referenced track in the muonArray with parameters from the reconstructed tracks
+      AliMUONTrackLight* muLight = new ((*fArray1Mu)[nreftracks++]) AliMUONTrackLight(esdTrack);
+      
+      // store further information related to the simulated track
+      muLight->SetTrackPythiaLine(matchedTrackRef->GetUniqueID());
+      TParticle *part = pstack->Particle(matchedTrackRef->GetUniqueID());
+      muLight->SetTrackPDGCode(part->GetPdgCode());
       v.SetPxPyPzE(part->Px(), part->Py(), part->Pz(), part->Energy());
-      muLight.SetPGen(v); 
-      muLight.FillMuonHistory(pstack, part);
-      //muLight.PrintInfo("A");
-      //store the referenced track in the muonArray:
-      TClonesArray &muons = *fArray1Mu;
-      new (muons[nreftracks++]) AliMUONTrackLight(muLight);
-    } 
+      muLight->SetPGen(v); 
+      muLight->FillMuonHistory(pstack, part);
+      
+    }
     
-    itrRec++;
-  }  // end reco track
-
+  } // end esd track
+  
   // now loop over muon pairs to build dimuons
   Int_t nmuons = fArray1Mu->GetEntriesFast(); 
   Int_t ndimuons = 0; 
