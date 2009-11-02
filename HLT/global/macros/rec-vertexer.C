@@ -118,9 +118,9 @@ void rec_vertexer(const char* input="./")
   
   new AliHLTConfiguration("v0HistoOut", "V0Histo"   , "global-vertexer", "");
 
-  new AliHLTConfiguration("GVhistorootfile", "ROOTFileWriter", "global-vertexer" , "-datafile GVv0Histograms -concatenate-events -overwrite");
+  new AliHLTConfiguration("GVhistorootfile", "ROOTFileWriter", "global-vertexer" , "-datafile primaryVertexHistograms -concatenate-events -overwrite");
   
-  new AliHLTConfiguration("v0historootfile", "ROOTFileWriter", "v0HistoOut" , "-datafile v0Histograms -concatenate-events -overwrite");
+  new AliHLTConfiguration("v0historootfile", "ROOTFileWriter", "v0HistoOut" , "-datafile secondaryVertexHistograms -concatenate-events -overwrite");
 
   option+="v0historootfile";
 
