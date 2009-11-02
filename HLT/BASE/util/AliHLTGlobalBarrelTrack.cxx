@@ -59,7 +59,7 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTGlobalBarrelTrack& 
   fPoints.assign(t.fPoints.begin(), t.fPoints.end());
 }
 
-AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTExternalTrackParam& p)
+AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTExternalTrackParam& p )
   : AliKalmanTrack()
   , fPoints()
   , fLastX(p.fLastX)
@@ -74,6 +74,7 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTExternalTrackParam&
   Set(p.fX, p.fAlpha, &p.fY, p.fC);
   SetPoints(p.fPointIDs, p.fNPoints);
   SetNumberOfClusters(p.fNPoints);
+  //SetIntegratedLength(GetPathLengthTo( GetLastPointX(), b);
 }
 
 template <class c>
@@ -90,7 +91,45 @@ AliHLTGlobalBarrelTrack::~AliHLTGlobalBarrelTrack()
   // see header file for class documentation
 }
 
-int AliHLTGlobalBarrelTrack::ConvertTrackDataArray(const AliHLTTracksData* pTracks, unsigned sizeInByte, vector<AliHLTGlobalBarrelTrack> &tgtArray)
+
+Double_t AliHLTGlobalBarrelTrack::GetPathLengthTo( Double_t x, Double_t b ) const
+{
+  // calculate the trajectory length for dx step
+    
+  Double_t dx = x - GetX();
+  Double_t ey = GetSnp();
+  if( TMath::Abs( ey )>=kAlmost1 ) return 0;
+
+  Double_t ex = TMath::Sqrt(1-ey*ey);
+  Double_t k  = GetC(b);
+
+  Double_t ey1 = k * dx + ey;
+
+  // check for intersection with X=x
+
+  if ( TMath::Abs( ey1 ) >= kAlmost1  ) return 0;
+
+  Double_t ex1 = TMath::Sqrt(1-ey1*ey1);
+
+  Double_t dx2 = dx * dx;
+  Double_t ss = ey + ey1;
+  Double_t cc = ex + ex1;
+
+  if ( TMath::Abs( cc ) < 1.e-4  ) return 0;
+
+  Double_t tg = ss / cc; 
+  Double_t dl = dx * TMath::Sqrt( 1 + tg * tg );
+  Double_t dSin = dl * k / 2;
+  if ( dSin > 1 ) dSin = 1;
+  if ( dSin < -1 ) dSin = -1;
+  Double_t dS = ( TMath::Abs( k ) > 1.e-4 )  ? ( 2 * TMath::ASin( dSin ) / k ) : dl;
+
+  return dS*TMath::Sqrt(1 + GetTgl()*GetTgl() );
+}
+
+
+
+int AliHLTGlobalBarrelTrack::ConvertTrackDataArray(const AliHLTTracksData* pTracks, unsigned sizeInByte, vector<AliHLTGlobalBarrelTrack> &tgtArray )
 {
   // see header file for class documentation
   int iResult=0;

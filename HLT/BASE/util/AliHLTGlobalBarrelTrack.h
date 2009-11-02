@@ -70,6 +70,8 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   /// Inherited from TObject, prints the track parameters
   virtual void Print(Option_t* option = "") const;
 
+  Double_t GetPathLengthTo( Double_t x, Double_t b ) const;
+
  protected:
 
  private:
