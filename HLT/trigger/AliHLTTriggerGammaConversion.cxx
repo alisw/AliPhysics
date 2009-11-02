@@ -43,11 +43,11 @@ ClassImp(AliHLTTriggerGammaConversion)
 
 AliHLTTriggerGammaConversion::AliHLTTriggerGammaConversion() 
   : AliHLTTrigger()
-  , fMaxInvMass(0.0)
+  , fMaxInvMass(0.05)
   , fPtMax(0.0)
   , fPtMin(0.0)
-  , fMaxDca(0.0)
-  , fMaxR(0)
+  , fMaxDca(10.0)
+  , fMaxR(200)
   , fNReconstructedGammas(0)
 {
   // see header file for class documentation
