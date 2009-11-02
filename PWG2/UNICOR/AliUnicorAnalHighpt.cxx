@@ -45,7 +45,8 @@ AliUnicorAnalHighpt::AliUnicorAnalHighpt(Char_t *nam, Double_t emi, Double_t ema
   ax[1] = new TAxis(2,-0.5,1.5);   ax[1]->SetTitle("weigth"); // 1 or ass pt
   ax[2] = new TAxis(5,0,0.5);      ax[2]->SetTitle("centrality");
   ax[3] = new TAxis(3,emi,ema);    ax[3]->SetTitle("trig eta");
-  ax[4] = new TAxis(8,-pi,pi);     ax[4]->SetTitle("trig phi"); // w.r.t. RP
+  ax[4] = new TAxis(1,-pi,pi);     ax[4]->SetTitle("trig phi"); // w.r.t. RP
+  //  ax[4] = new TAxis(8,-pi,pi);     ax[4]->SetTitle("trig phi"); // w.r.t. RP
   double a5[]={0,2.5,3,4,6,8,10,15,20,30,50,100};
   ax[5] = new TAxis(11,a5);        ax[5]->SetTitle("trig pt (GeV)");
   ax[6] = new TAxis(20,-ewi,ewi);  ax[6]->SetTitle("ass eta - trig eta"); 
@@ -59,7 +60,7 @@ AliUnicorAnalHighpt::AliUnicorAnalHighpt(Char_t *nam, Double_t emi, Double_t ema
   printf("%s object named %s created\n",ClassName(),GetName());
 }
 //=============================================================================
-void AliUnicorAnalHighpt::Process(AliUnicorEvent *ev0, AliUnicorEvent *ev1) 
+void AliUnicorAnalHighpt::Process(const AliUnicorEvent * const ev0, const AliUnicorEvent * const ev1) 
 {
   // process pairs from one or two (if mixing) events
   // true pairs are within the triangle (j<i), mixed - all
@@ -93,9 +94,9 @@ void AliUnicorAnalHighpt::Process(AliUnicorEvent *ev0, AliUnicorEvent *ev1)
       double dphi = order*(phi1-phi0);
       dphi = TVector2::Phi_mpi_pi(dphi);
       if (dphi<-1) dphi+=2*TMath::Pi(); 
-      phi0 = TVector2::Phi_mpi_pi(phi0-rpphi);  // wrt. reaction plane
-      pair->Fill(tmr,0,cent,eta0,phi0,pt0,deta,dphi,pt1/pt0,1);   // number of pairs
-      pair->Fill(tmr,1,cent,eta0,phi0,pt0,deta,dphi,pt1/pt0,pt1); // weigthed with ass pt
+      double relphi = TVector2::Phi_mpi_pi(phi0-rpphi);  // wrt. reaction plane
+      pair->Fill((double)tmr,0.0,cent,eta0,relphi,pt0,deta,dphi,pt1/pt0,1.0); // number of pairs
+      pair->Fill((double)tmr,1.0,cent,eta0,relphi,pt0,deta,dphi,pt1/pt0,pt1); // weigthed with ass pt
     }
   }
 }

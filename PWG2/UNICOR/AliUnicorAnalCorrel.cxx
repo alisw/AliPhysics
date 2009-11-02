@@ -43,30 +43,45 @@ AliUnicorAnalCorrel::AliUnicorAnalCorrel(Char_t *nam, Double_t emi, Double_t ema
   TParticlePDG *part1 = AliUnicorAnal::fgPDG.GetParticle(fPid1);
   fMass0 = part0? part0->Mass() : 0;
   fMass1 = part1? part1->Mass() : 0;
-
   double pi = TMath::Pi();
+
+  // correlation function
+
+  double ptbins[]={0,0.1,0.2,0.3,0.4,0.5,0.7,1.0};
+  double qbins[100];
+  for (int i=0;i<20;i++) qbins[i]=i*0.005;
+  for (int i=0;i<45;i++) qbins[20+i]=0.1+i*0.02;
+
   TAxis *ax[8];
   ax[0] = new TAxis(3,-0.5,2.5);ax[0]->SetTitle("trumixrot");
   ax[1] = new TAxis(5,0,0.5);   ax[1]->SetTitle("centrality");
   ax[2] = new TAxis(3,emi,ema); ax[2]->SetTitle("pair y");
   //ax[3] = new TAxis(8,-pi,pi);  ax[3]->SetTitle("pair phi"); // wrt event plane
   ax[3] = new TAxis(1,-pi,pi);  ax[3]->SetTitle("pair phi"); // wrt event plane
-  double a0[]={0,0.1,0.2,0.3,0.4,0.5,0.7,1.0};
-  ax[4] = new TAxis(7,a0);      ax[4]->SetTitle("(pair pt)/2 (GeV)");
+  ax[4] = new TAxis(7,ptbins);  ax[4]->SetTitle("(pair pt)/2 (GeV)");
   ax[5] = new TAxis(8,0,pi);    ax[5]->SetTitle("q-theta");
   ax[6] = new TAxis(16,-pi,pi); ax[6]->SetTitle("q-phi");
-  double a1[100];
-  for (int i=0;i<20;i++) a1[i]=i*0.005;
-  for (int i=0;i<45;i++) a1[20+i]=0.1+i*0.02;
-  ax[7] = new TAxis(64,a1);     ax[7]->SetTitle("q (GeV/c)");
+  ax[7] = new TAxis(64,qbins);  ax[7]->SetTitle("q (GeV/c)");
   AliUnicorHN *pair = new AliUnicorHN("pair",8,ax);
   for (int i=0; i<8; i++) delete ax[i];
   fHistos.Add(pair);
+
+  // two-track resolution monitoring histogram
+
+  ax[0] = new TAxis(3,-0.5,2.5);    ax[0]->SetTitle("trumixrot");
+  ax[1] = new TAxis(2,-0.5,1.5);    ax[1]->SetTitle("cut applied");
+  ax[2] = new TAxis(7,ptbins);      ax[2]->SetTitle("(pair pt)/2 (GeV)");
+  ax[3] = new TAxis(80,-0.02,0.02); ax[3]->SetTitle("dtheta");
+  ax[4] = new TAxis(80,-0.04,0.04); ax[4]->SetTitle("dphi");
+  AliUnicorHN *twot = new AliUnicorHN("twot",5,ax);
+  for (int i=0; i<5; i++) delete ax[i];
+  fHistos.Add(twot);
+
   gROOT->cd();
   printf("%s object named %s created\n",ClassName(),GetName());
 }
 //=============================================================================
-void AliUnicorAnalCorrel::Process(Int_t tmr, AliUnicorEvent *ev0, AliUnicorEvent *ev1, Double_t phirot) 
+void AliUnicorAnalCorrel::Process(Int_t tmr, const AliUnicorEvent * const ev0, const AliUnicorEvent * const ev1, Double_t phirot) 
 {
   // process pairs from one or two (if mixing) events
   // tmr tells which histogram (bins) to fill: tru,mix,rot
@@ -76,6 +91,7 @@ void AliUnicorAnalCorrel::Process(Int_t tmr, AliUnicorEvent *ev0, AliUnicorEvent
 
   static TRandom2 ran;
   AliUnicorHN *pair = (AliUnicorHN*) fHistos.At(0);
+  AliUnicorHN *twot = (AliUnicorHN*) fHistos.At(1);
 
   // mixing-and-rotating-proof centrality and reaction plane angle
   // (but not rotation-proof for rotation angles much different from 0 and 180)
@@ -96,16 +112,18 @@ void AliUnicorAnalCorrel::Process(Int_t tmr, AliUnicorEvent *ev0, AliUnicorEvent
       if (ev0==ev1 && j<i && fPid0==fPid1 ) continue; 
       if (ev0==ev1 && j==i) continue; // beware, not even when rotated or non-identical
       if (!ev1->ParticleGood(j,fPid1)) continue;
-      if (!ev0->PairGood(ev0->ParticleP(i),ev0->ParticleTheta(i),ev0->ParticlePhi(i),
-			 ev1->ParticleP(j),ev1->ParticleTheta(j),ev1->ParticlePhi(j)+phirot)) continue;
       fPa.Set0(fMass0,ev0->ParticleP(i),ev0->ParticleTheta(i),ev0->ParticlePhi(i));
       fPa.Set1(fMass1,ev1->ParticleP(j),ev1->ParticleTheta(j),ev1->ParticlePhi(j)+phirot);
       if (ev0==ev1 && fPid0==fPid1 && ran.Rndm()>=0.5) fPa.Swap();
+      twot->Fill((double) tmr, 0.0, fPa.Pt()/2.0, fPa.DTheta(), fPa.DPhi(),1.0);
+      if (!ev0->PairGood(ev0->ParticleP(i),ev0->ParticleTheta(i),ev0->ParticlePhi(i),
+			 ev1->ParticleP(j),ev1->ParticleTheta(j),ev1->ParticlePhi(j)+phirot)) continue;
+      twot->Fill((double) tmr, 1.0, fPa.Pt()/2.0, fPa.DTheta(), fPa.DPhi(),1.0);
       fPa.CalcLAB();
       fPa.CalcPairCM();
       if (fPa.QCM()==0) return; // should not be too frequent
       double phi = TVector2::Phi_mpi_pi(fPa.Phi()-rpphi);
-      pair->Fill(tmr,                    // 0 for tru, 1 for mix, 2 for rot
+      pair->Fill((double) tmr,           // 0 for tru, 1 for mix, 2 for rot
 		 cent,                   // centrality
 		 fPa.Rapidity(),         // pair rapidity
 		 phi,                    // pair phi wrt reaction plane

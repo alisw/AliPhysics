@@ -50,7 +50,6 @@ AliUnicorAnalGlobal::AliUnicorAnalGlobal(Char_t *nam) : AliUnicorAnal(nam)
   fHistos.Add(dire);
   fHistos.Add(zver);
   gROOT->cd();
-  printf("%s object named %s created\n",ClassName(),GetName());
 }
 //=============================================================================
 void AliUnicorAnalGlobal::Process(AliUnicorEvent *ev) const

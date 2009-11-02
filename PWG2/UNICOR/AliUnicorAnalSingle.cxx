@@ -67,7 +67,6 @@ AliUnicorAnalSingle::AliUnicorAnalSingle(Char_t *nam, Double_t emi, Double_t ema
   fHistos.Add(cyp);
   fHistos.Add(epd);
   gROOT->cd();
-  printf("%s object named %s created\n",ClassName(),GetName());
 }
 //=============================================================================
 void AliUnicorAnalSingle::Process(AliUnicorEvent *ev) 

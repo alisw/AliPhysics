@@ -15,16 +15,20 @@
 #include <TObjArray.h>
 #include <TDatabasePDG.h>
 
+class TCollection;
+
 //=============================================================================
 class AliUnicorAnal : public TNamed {
    
  public:
-  AliUnicorAnal(char *nam="anal");                                   // constructor
-  virtual ~AliUnicorAnal()     {printf("%s object named %s deleted\n",ClassName(),GetName());}
-  void Save(const char *outfil, const char *mode="update");  // save histograms 
+  AliUnicorAnal(char *nam="anal");                                       // constructor
+  virtual ~AliUnicorAnal() {}                                            // destructor
+  Long64_t Merge(const TCollection * const list);                // sumup histograms
+  void     Save(const char *outfil, const char *mode="update");  // save histograms 
+  TObject *GetHist(int i)                                        {return fHistos.At(i);}
 
  protected:
-  static TDatabasePDG fgPDG; // particle database
+  static TDatabasePDG fgPDG;  // particle database
   TObjArray fHistos;          // histograms
 
   ClassDef(AliUnicorAnal,1)

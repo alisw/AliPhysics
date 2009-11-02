@@ -19,8 +19,8 @@ class TTree;
 //=============================================================================
 class AliUnicorEvent : public TObject {
  public:
-  AliUnicorEvent() : TObject(){printf("AliUnicorEvent object created\n");}
-  virtual ~AliUnicorEvent()   {printf("AliUnicorEvent object deleted\n");}
+  AliUnicorEvent() : TObject(){}                      // constructor
+  virtual ~AliUnicorEvent()   {}                      // destructor
 
   // interface part
 
@@ -28,7 +28,7 @@ class AliUnicorEvent : public TObject {
   virtual Double_t    Etamin() const = 0;     // experiment's acceptance
   virtual Double_t    Etamax() const = 0;
   virtual Bool_t      Good() const = 0;  
-  virtual Double_t    Centrality() = 0;       // centrality (0,1); 0 is most central
+  virtual Double_t    Centrality() const = 0; // centrality (0,1); 0 is most central
   virtual void        RP(Double_t &qx, Double_t &qy) const = 0;
   virtual Double_t    RPphi() const = 0;
   virtual Double_t    Zver() const = 0;       // z-vertex (-1,1)

@@ -18,12 +18,11 @@
 //=============================================================================
 // unicor analysis task
 //=============================================================================
-#include "AliESDInputHandler.h"
-#include "AliAnalysisManager.h"
 #include "AliUnicorAnalGlobal.h"
 #include "AliUnicorAnalSingle.h"
 #include "AliUnicorAnalCorrel.h"
 #include "AliUnicorAnalPtfluc.h"
+#include "AliUnicorAnalHighpt.h"
 #include "AliUnicorEventAliceESD.h"
 #include "AliAnalysisTaskUnicor.h"
 
@@ -53,6 +52,7 @@ void AliAnalysisTaskUnicor::UserCreateOutputObjects()
   fOutputList->Add(new AliUnicorAnalCorrel("cnn",fEv0->Etamin(),fEv0->Etamax(),-211,-211));
   fOutputList->Add(new AliUnicorAnalCorrel("cpp",fEv0->Etamin(),fEv0->Etamax(), 211, 211));
   fOutputList->Add(new AliUnicorAnalPtfluc("ptf",0,0));
+  fOutputList->Add(new AliUnicorAnalHighpt("hpt",fEv0->Etamin(),fEv0->Etamax(),0,0));
 }
 //=============================================================================
 void AliAnalysisTaskUnicor::UserExec(Option_t */*option*/)
@@ -70,16 +70,18 @@ void AliAnalysisTaskUnicor::UserExec(Option_t */*option*/)
   ((AliUnicorAnalCorrel *) fOutputList->At(5))->Process(0,fEv0,fEv0,0);
   ((AliUnicorAnalCorrel *) fOutputList->At(5))->Process(2,fEv0,fEv0,TMath::DegToRad()*180);
   ((AliUnicorAnalPtfluc *) fOutputList->At(6))->Process(0,fEv0,fEv0);
+  ((AliUnicorAnalHighpt *) fOutputList->At(7))->Process(fEv0,fEv0);
   PostData(1, fOutputList);
 } 
 //=============================================================================
 void AliAnalysisTaskUnicor::Terminate(Option_t */*option*/)
 {
   // terminate
-  printf("terminate\n");
-  int n = fOutputList->GetEntries();
-  if (n) ((AliUnicorAnal *) fOutputList->At(0))->Save("unicor-result.root","recreate");
-  for (int i=1; i<n; i++) ((AliUnicorAnal *) fOutputList->At(i))->Save("unicor-result.root");
+
+  printf("terminate \n");
+  TList *outputlist = (TList*) GetOutputData(1);
+  int n = outputlist->GetEntries();
+  if (n) ((AliUnicorAnal *) outputlist->At(0))->Save("unicor-result.root","recreate");
+  for (int i=1; i<n; i++) ((AliUnicorAnal *) outputlist->At(i))->Save("unicor-result.root");
 }
 //=============================================================================
-

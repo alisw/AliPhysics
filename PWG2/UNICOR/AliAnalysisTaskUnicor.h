@@ -7,10 +7,13 @@
 
 // Author: Dariusz Miskowiec 2007
 
+//=============================================================================
+// unicor analysis task
+//=============================================================================
 #include "AliAnalysisTaskSE.h"
 class AliUnicorEventAliceESD;
 
-/*****************************************************************************/
+//=============================================================================
 class AliAnalysisTaskUnicor : public AliAnalysisTaskSE {
    
  public:                                        
@@ -24,10 +27,10 @@ class AliAnalysisTaskUnicor : public AliAnalysisTaskSE {
 
  protected:
   AliUnicorEventAliceESD *fEv0;                       //! data/analysis interface
-  TList          *fOutputList;                //  list of analysis objects
+  TList          *fOutputList;                //! list of analysis objects
 
   ClassDef(AliAnalysisTaskUnicor,1)
 };
-/*****************************************************************************/
+//=============================================================================
 
 #endif

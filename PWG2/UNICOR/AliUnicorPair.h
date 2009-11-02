@@ -19,8 +19,9 @@
 class AliUnicorPair : public TObject {
    
  public:
-   AliUnicorPair();                       // constructor
-   virtual ~AliUnicorPair()               {printf("AliUnicorPair object deleted\n");}
+   AliUnicorPair() : fP0(), fP1(), fP(), fQ(), fBeta(), fBetat(), fBetaz(), fUbeta(), 
+     fUbetat(), fUbetaz(), fCMp(), fCMq(), fBuf() {} // constructor
+   virtual ~AliUnicorPair() {}                               // destructor
    void Set0(double m,double p,double theta,double phi)  {fP0.SetXYZM(0,0,p,m); fP0.SetTheta(theta); fP0.SetPhi(phi);}
    void Set1(double m,double p,double theta,double phi)  {fP1.SetXYZM(0,0,p,m); fP1.SetTheta(theta); fP1.SetPhi(phi);}
    void SetMXYZ0(double m,double px,double py,double pz) {fP0.SetXYZM(px,py,pz,m);}

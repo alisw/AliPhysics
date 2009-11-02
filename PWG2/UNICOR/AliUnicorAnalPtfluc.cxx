@@ -51,7 +51,7 @@ AliUnicorAnalPtfluc::AliUnicorAnalPtfluc(Char_t *nam, Int_t pid0, Int_t pid1) :
   printf("%s object named %s created\n",ClassName(),GetName());
 }
 //=============================================================================
-void AliUnicorAnalPtfluc::Process(Int_t tmr, AliUnicorEvent *ev0, AliUnicorEvent *ev1) 
+void AliUnicorAnalPtfluc::Process(Int_t tmr, AliUnicorEvent * const ev0, AliUnicorEvent * const ev1) 
 {
   // process pairs from one or two (if mixing) events
 
@@ -100,12 +100,12 @@ void AliUnicorAnalPtfluc::Process(Int_t tmr, AliUnicorEvent *ev0, AliUnicorEvent
       }
       dphi = TVector2::Phi_mpi_pi(dphi);
       dphi*=TMath::RadToDeg();
-      pair->Fill(tmr, cent, 0, dphi, deta, 1);   // number of pairs
-      pair->Fill(tmr, cent, 1, dphi, deta, pt0);
-      pair->Fill(tmr, cent, 2, dphi, deta, pt1);
-      pair->Fill(tmr, cent, 3, dphi, deta, pt0*pt0);
-      pair->Fill(tmr, cent, 4, dphi, deta, pt1*pt1);
-      pair->Fill(tmr, cent, 5, dphi, deta, pt0*pt1);
+      pair->Fill((double) tmr, cent, 0.0, dphi, deta, 1.0);   // number of pairs
+      pair->Fill((double) tmr, cent, 1.0, dphi, deta, pt0);
+      pair->Fill((double) tmr, cent, 2.0, dphi, deta, pt1);
+      pair->Fill((double) tmr, cent, 3.0, dphi, deta, pt0*pt0);
+      pair->Fill((double) tmr, cent, 4.0, dphi, deta, pt1*pt1);
+      pair->Fill((double) tmr, cent, 5.0, dphi, deta, pt0*pt1);
     }
   }
 }
