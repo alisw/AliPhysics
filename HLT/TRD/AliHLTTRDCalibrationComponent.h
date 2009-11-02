@@ -46,6 +46,7 @@ public:
   const char* GetComponentID();
   void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
   AliHLTComponentDataType GetOutputDataType();
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
 	
@@ -67,6 +68,7 @@ protected:
 				   vector<AliHLTComponent_BlockData>& outputBlocks);
   /* 	virtual Int_t ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData); */
   virtual Int_t ShipDataToFXS(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
+  virtual Int_t  EORCalibration();
 	
   using AliHLTCalibrationProcessor::ProcessCalibration;
   //using AliHLTCalibrationProcessor::ShipDataToFXS;
@@ -76,16 +78,21 @@ private:
   AliHLTTRDCalibrationComponent(const AliHLTTRDCalibrationComponent&);
   /** assignment operator prohibited */
   AliHLTTRDCalibrationComponent& operator=(const AliHLTTRDCalibrationComponent&);
-  void FormOutput();
+  void FormOutput(Int_t param);
 
   AliHLTUInt32_t fOutputSize;    // output size
   TClonesArray* fTracksArray;    // array containing the input
   TObjArray* fOutArray;          // array containing the output
+  TObjArray* fAfterRunArray;     // array with after run processing output 
+  TObjArray* fDisplayArray;        //array with online display histos
   UInt_t fNevent;                 // number of processed events
   UInt_t feveryNevent;            // push back every nth event
   Bool_t fRecievedTimeBins;      // already recived the number of time bins?
-
+  TObjArray *fTrgStrings;        // name of trigger classes to accept or reject
+  Int_t  fAccRejTrg;             // do we actually accept or reject the trigger strings?
+  
   ClassDef(AliHLTTRDCalibrationComponent, 1)
 
 };
 #endif
+

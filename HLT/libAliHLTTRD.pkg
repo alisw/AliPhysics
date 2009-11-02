@@ -43,7 +43,7 @@ MODULE_HDRS:= \
 # enable automatic generation. 
 MODULE_DHDR:=
 
-EINCLUDE := HLT/BASE HLT/BASE/util HLT/TRD TRD STEER RAW
+EINCLUDE := HLT/BASE HLT/BASE/util HLT/TRD TRD TRD/Cal STEER RAW
 
 LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lESD -lCDB -lTRDrec -lTRDbase \
                -lSTEER -lSTEERBase -lRAWDatarec

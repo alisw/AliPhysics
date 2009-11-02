@@ -89,6 +89,7 @@ void AliHLTTRDTracklet::CopyDataMembers(const AliTRDseedV1* const inTracklet)
 void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1* const outTracklet) const
 {
   //outTracklet->Reset(); we always use a fresh trdtracklet as input, so this is useless
+  outTracklet->SetBit(AliTRDseedV1::kOwner);
 
   outTracklet->fN      = fN;
   outTracklet->fDet    = fDet;
@@ -176,3 +177,4 @@ void AliHLTTRDTracklet::Print(Bool_t printClusters) const
     
 //   }
 // }
+

@@ -94,7 +94,8 @@ void AliHLTTRDTrack::CopyDataMembers(const AliTRDtrackV1* const inTrack)
 void AliHLTTRDTrack::ExportTRDTrack(AliTRDtrackV1* const outTrack) const
 {
   //outTrack->Reset(); we always use a new fresh trdtrack as input, so this is useless
-  
+  outTrack->SetBit(AliTRDtrackV1::kOwner);  
+
   outTrack->fDE=fDE;
   outTrack->fFakeRatio=fFakeRatio;
   outTrack->fChi2=fChi2;
@@ -218,3 +219,4 @@ void AliHLTTRDTrack::Print(Bool_t printTracklets) const
 //     }
 //   }
 // }
+
