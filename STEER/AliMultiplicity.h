@@ -36,6 +36,7 @@ class AliMultiplicity : public TObject {
   else {Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;}}
 
   Int_t GetLabel(Int_t i, Int_t layer) const;
+  void  SetLabel(Int_t i, Int_t layer, Int_t label);
   
 // methods to access single cluster information
   Int_t GetNumberOfSingleClusters() const {return fNsingle;}

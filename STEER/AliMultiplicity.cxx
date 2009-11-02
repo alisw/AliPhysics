@@ -177,3 +177,20 @@ AliMultiplicity::~AliMultiplicity(){
   if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
 
 }
+
+//______________________________________________________________________
+void AliMultiplicity::SetLabel(Int_t i, Int_t layer, Int_t label)
+{
+    if(i>=0 && i<fNtracks) {
+	if (layer == 0) {
+	    fLabels[i] = label;
+	    return;
+	} else if (layer == 1) {
+	    if (fLabelsL2) {
+		fLabelsL2[i] = label;
+		return;
+	    }
+	}
+    }
+    Error("SetLabel","Invalid track number %d or layer %d",i,layer);
+}
