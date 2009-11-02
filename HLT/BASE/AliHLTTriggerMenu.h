@@ -276,7 +276,7 @@ class AliHLTTriggerMenu : public TObject
   TString fDefaultConditionOperator;  /// The default operator to use to merge trigger conditions from the same priority group.
   TString fDefaultDomainOperator;  /// The default operator to use to merge trigger domains from the same priority group.
   
-  ClassDef(AliHLTTriggerMenu, 2) // Trigger menu for the global HLT trigger.
+  ClassDef(AliHLTTriggerMenu, 3) // Trigger menu for the global HLT trigger.
 };
 
 #endif // ALIHLTTRIGGERMENU_H
