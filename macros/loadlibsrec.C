@@ -83,4 +83,6 @@ void loadlibsrec ()
   gSystem->Load("libTOFbase");
   gSystem->Load("libTOFrec");
   gSystem->Load("libTOFsim");
+
+  gSystem->Load("libHLTbase");
 }
