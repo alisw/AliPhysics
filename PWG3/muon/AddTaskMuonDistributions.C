@@ -29,6 +29,7 @@ AliAnalysisTaskMuonDistributions *AddTaskMuonDistributions(const char *kAnalysis
   //
   MuonDistributionsTask->SetInvMassFitLimits(2.,5.5);
   MuonDistributionsTask->SetPsiFitLimits(2.9,3.3);
+  MuonDistributionsTask->SetPsiPFitLimits(3.3,4.2);
   MuonDistributionsTask->SetBckFitLimits(2.,2.8);
   //
   // perform fit to the invariant mass spectrum
