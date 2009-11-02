@@ -44,6 +44,7 @@ public:
   Bool_t                 IsCross(AliESDtrack *tr0, AliESDtrack *tr1);
   Bool_t                 IsSame (AliESDtrack *tr0, AliESDtrack *tr1);
   void                   ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *friendTrack);
+  void                   ProcessAlignTRD(AliESDtrack* track, AliESDfriendTrack *friendTrack);
   void                   ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *friendTrack);
 
   THnSparse*    GetHistVdriftLaserA(Int_t index=1){return fHistVdriftLaserA[index];};
