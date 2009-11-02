@@ -216,7 +216,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->AddAnalysis(anacorrjet,5);
   maker->AddAnalysis(anacorrhadron,6);
   //maker->AddAnalysis(ananeutral,7);
-  maker->SetAnaDebug(0)  ;
+  maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker()  ;
   if(kPrintSettings) maker->Print("");
