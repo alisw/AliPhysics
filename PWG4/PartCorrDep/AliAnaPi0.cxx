@@ -531,7 +531,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
    }//stack exists and data is MC
   }//read stack
   else if(GetReader()->ReadAODMCParticles()){
-	  printf("AliAnaPi0::MakeAnalysisFillHistograms() - Acceptance calculation with MCParticles not implemented yet\n");
+		if(GetDebug() >= 0)  printf("AliAnaPi0::MakeAnalysisFillHistograms() - Acceptance calculation with MCParticles not implemented yet\n");
   }	
   
 }	

@@ -436,8 +436,8 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
     }
   }//Good label value
   else{
-    if(label < 0 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() *** bad label or no stack ***:  label %d \n", label);
-    if(label >=  mcparticles->GetEntriesFast()) printf("AliMCAnalysisUtils::CheckOriginInAOD() *** large label ***:  label %d, n tracks %d \n", label, mcparticles->GetEntriesFast());
+    if(label < 0 && (fDebug >= 0) ) printf("AliMCAnalysisUtils::CheckOriginInAOD() *** bad label or no stack ***:  label %d \n", label);
+    if(label >=  mcparticles->GetEntriesFast() &&  (fDebug > 0) ) printf("AliMCAnalysisUtils::CheckOriginInAOD() *** large label ***:  label %d, n tracks %d \n", label, mcparticles->GetEntriesFast());
     SetTagBit(tag,kMCUnknown);
   }//Bad label
   
