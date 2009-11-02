@@ -114,17 +114,17 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
 {
   // init
   
-  fGamma = new TH1F("hGamma","HLT:  #gamma inv mass",50,-.05,.2); 
+  fGamma = new TH1F("hGamma","HLT:  #gamma inv mass",50,-.06,.2); 
   fGamma->SetFillColor(kGreen);
   fGamma->SetStats(0);
   fKShort = new TH1F("hKShort","HLT:  K_{s}^{0} inv mass",80,0.4,.6); 
   fKShort->SetFillColor(kGreen);
   fKShort->SetStats(0);
-  fLambda = new TH1F("hLambda","HLT:  #Lambda^{0} inv mass",50,1.0,1.4); 
+  fLambda = new TH1F("hLambda","HLT:  #Lambda^{0} inv mass",50,1.0,1.36); 
   fLambda->SetFillColor(kGreen);
   fLambda->SetStats(0);
 
-  fPi0 = new TH1F("hPi0","HLT:  #Pi^{0} inv mass",50,0.0,0.4); 
+  fPi0 = new TH1F("hPi0","HLT:  #Pi^{0} inv mass",50,0.0,0.38); 
   fPi0->SetFillColor(kGreen);
   fPi0->SetStats(0);
   
@@ -187,14 +187,14 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fKsCuts[6] = 4.0;
   fKsCuts[7] = 0.03;
 
-  fLambdaCuts[0] = 60;
-  fLambdaCuts[1] = 3.0;
-  fLambdaCuts[2] = 3.5;
-  fLambdaCuts[3] = 3.0;
-  fLambdaCuts[4] = 3.0;
-  fLambdaCuts[5] = 50.0;
-  fLambdaCuts[6] = 4.0;
-  fLambdaCuts[7] = 0.03;
+  fLambdaCuts[0] = 60;   // [0] == 60  --- N clusters on each daughter track
+  fLambdaCuts[1] = 3.0;  // [1] == 3.0 --- (daughter-primVtx)/sigma >= cut
+  fLambdaCuts[2] = 3.0;  // [2] == 3.0 --- (v0 - primVtx)/sigma <= cut
+  fLambdaCuts[3] = 3.5;  // [3] == 3.5 --- (decay_length)/sigma >= cut
+  fLambdaCuts[4] = 4.0;  // [4] == 0.0 --- (decay_length)[cm]   >= cut
+  fLambdaCuts[5] = 50.0; // [5] == 300.0 --- (v0 radius)[cm]    <= cut
+  fLambdaCuts[6] = 4.0;  // [6] == 3.5  --- (v0 mass - true value)/sigma <= cut (for identification)
+  fLambdaCuts[7] = 0.03; // [7] == 0.05 --- (v0 mass - true value)       <= cut (for identification)
 
   int iResult=0;
   TString configuration="";
@@ -374,7 +374,7 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 	 && length >= fLambdaCuts[3]*sigmaLength
 	 && length >= fLambdaCuts[4]
 	 && r <= fLambdaCuts[5]
-	 && TMath::Abs( ap )>.3
+	 //&& TMath::Abs( ap )>.3
 	 ){
 	
 	AliKFParticle kP, kpi;
@@ -427,9 +427,9 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
     if( fGammaXY ) PushBack( (TObject*) fGammaXY, kAliHLTDataTypeHistogram,0);
   }  
   if( fNPi0s>0 ){
-    HLTWarning("Wow! Found %d Gammas, %d KShorts, %d Lambdas and even %d Pi0's !!!!! in %d events", fNGammas, fNKShorts, fNLambdas, fNPi0s, fNEvents );    
+    HLTInfo("Found %d Gammas, %d KShorts, %d Lambdas and %d Pi0's in %d events", fNGammas, fNKShorts, fNLambdas, fNPi0s, fNEvents );    
   }
-  else HLTInfo("Found %d Gammas, %d KShorts, %d Lambdas and %d Pi0's in %d events", fNGammas, fNKShorts, fNLambdas, fNPi0s, fNEvents );
+  else HLTInfo("Found %d Gammas, %d KShorts and %d Lambdas in %d events", fNGammas, fNKShorts, fNLambdas, fNEvents );
   
   return 0;
 }
@@ -445,7 +445,6 @@ int AliHLTV0HistoComponent::Configure(const char* arguments)
   
   TObjArray* pTokens=allArgs.Tokenize(" ");
   int bMissingParam=0;
-  double par[8];
 
   if (pTokens) {
     for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
