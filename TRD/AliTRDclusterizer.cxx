@@ -666,10 +666,12 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   else
     fRawStream->SetReader(rawReader);
 
-  if(fReconstructor->IsHLT())
+  if(fReconstructor->IsHLT()){
     fRawStream->SetSharedPadReadout(kFALSE);
+    fRawStream->SetNoErrorWarning();
+  }
 
-  AliInfo(Form("Stream version: %s", fRawStream->IsA()->GetName()));
+  AliDebug(1,Form("Stream version: %s", fRawStream->IsA()->GetName()));
   
   Int_t det    = 0;
   while ((det = fRawStream->NextChamber(fDigitsManager,fTrackletContainer)) >= 0){

@@ -2923,6 +2923,9 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 * const seeds, Double_t *
     return ptrTrack;
   }
 
+  if(TMath::Abs(track.GetY())>1000) 
+    return NULL;
+
   track.ResetCovariance(1);
   Int_t nc = TMath::Abs(FollowBackProlongation(track));
   if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 5 && fkReconstructor->IsDebugStreaming()){
