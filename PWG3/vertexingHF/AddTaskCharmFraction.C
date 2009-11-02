@@ -28,7 +28,7 @@ AliAnalysisTaskSECharmFraction* AddTaskCharmFraction(const char* fileout="d0D0.r
   AliAnalysisTaskSECharmFraction *hfTask;
  
   hfTask = new AliAnalysisTaskSECharmFraction("AliAnalysisTaskSECharmFraction");
-    
+  hfTask->SetReadMC(kTRUE);    
 
   /*  ############### HERE THE POSSIBILITY TO SWITCH ON/OFF THE TLISTS AND MC SELECTION WILL BE SET #########à
 

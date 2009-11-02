@@ -36,7 +36,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);  
-
+  void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetNPtBins(Int_t nbins,const Double_t *ptbins);
   void SetSignalInvMassCut(const Double_t signalInvMassCut=0.027){fsignalInvMassCut=signalInvMassCut;}
   void SetLargeInvMassCut(const Double_t largeInvMassCut=2.){flargeInvMassCut=largeInvMassCut;}
@@ -76,6 +76,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
  
   AliAnalysisVertexingHF *fVHFloose;        // Vertexer heavy flavour
   AliAnalysisVertexingHF *fVHFtight;        // Vertexer heavy flavour
+  Bool_t  fReadMC;                          // Flag To switch on/off access to MC 
   Double_t    fmD0PDG;                      //  MC D0 mass
   Int_t        fnbins;                      // Number of pt bins
   Double_t *fptbins;                        //[fnbins] ptbins 
