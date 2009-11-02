@@ -62,6 +62,8 @@ AliAnalysisTaskMuonDistributions::AliAnalysisTaskMuonDistributions() :
   fInvMassFitLimitMax(5.),
   fPsiFitLimitMin(2.9),
   fPsiFitLimitMax(3.3),
+  fPsiPFitLimitMin(3.3),
+  fPsiPFitLimitMax(4.),
   fBckFitLimitMin(2.2),
   fBckFitLimitMax(2.85),
   fInvariantMassFit(kFALSE),
@@ -77,6 +79,8 @@ AliAnalysisTaskMuonDistributions::AliAnalysisTaskMuonDistributions(const Char_t*
   fInvMassFitLimitMax(5.),
   fPsiFitLimitMin(2.9),
   fPsiFitLimitMax(3.3),
+  fPsiPFitLimitMin(3.3),
+  fPsiPFitLimitMax(4.),
   fBckFitLimitMin(2.2),
   fBckFitLimitMax(2.85),
   fInvariantMassFit(kFALSE),
@@ -112,6 +116,8 @@ AliAnalysisTaskMuonDistributions::AliAnalysisTaskMuonDistributions(const AliAnal
   fInvMassFitLimitMax(c.fInvMassFitLimitMax),
   fPsiFitLimitMin(c.fPsiFitLimitMin),
   fPsiFitLimitMax(c.fPsiFitLimitMax),
+  fPsiPFitLimitMin(c.fPsiPFitLimitMin),
+  fPsiPFitLimitMax(c.fPsiPFitLimitMax),
   fBckFitLimitMin(c.fBckFitLimitMin),
   fBckFitLimitMax(c.fBckFitLimitMax),
   fInvariantMassFit(c.fInvariantMassFit),
@@ -278,6 +284,7 @@ void AliAnalysisTaskMuonDistributions::Terminate(Option_t *)
   
   printf("Using beam Energy=%f \n",fBeamEnergy);
 
+  fOutput = dynamic_cast<TList*> (GetOutputData(1));
   TH1D *hNumberMuonTracks = dynamic_cast<TH1D*> (fOutput->FindObject("hNumberMuonTracks"));  
   TH1D *hMassDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hMassDimu"));  
   TH1D *hPtDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hPtDimu"));  
@@ -287,44 +294,43 @@ void AliAnalysisTaskMuonDistributions::Terminate(Option_t *)
   TH1D *hP = dynamic_cast<TH1D*> (fOutput->FindObject("hP"));  
   TH1D *hPt = dynamic_cast<TH1D*> (fOutput->FindObject("hPt"));  
   TH1D *hRapidity = dynamic_cast<TH1D*> (fOutput->FindObject("hRapidity"));  
-
-  TCanvas *c0 = new TCanvas("c0","Plots",xmin,ymin,600,600);
-  c0->Divide(2,2);
-  c0->cd(1);
-  hNumberMuonTracks->Draw();
-  
-  xmin+=20; ymin+=20;
-  TCanvas *c1 = new TCanvas("c1","Muon kinematic distributions Plots",xmin,ymin,600,600);
-  c1->Divide(2,2);  
-  c1->cd(1);
-  gPad->SetLogy(1);
-  hP->Draw();
-  c1->cd(2);
-  gPad->SetLogy(1);
-  hPt->Draw();
-  c1->cd(3);
-  hRapidity->Draw();
-  
-  xmin+=20; ymin+=20;
-  TCanvas *c2 = new TCanvas("c2","Dimuon kinematic distributions Plots",xmin,ymin,600,600);
-  c2->Divide(2,2);  
-  c2->cd(1);
-  gPad->SetLogy(1);
-  hPtDimu->Draw();
-  c2->cd(2);
-  hRapidityDimu->Draw();
-  c2->cd(3);
-  hCostCSDimu->Draw();
-  c2->cd(4);
-  hCostHEDimu->Draw();
-  
-  xmin+=20; ymin+=20;
-  TCanvas *c3 = new TCanvas("c3","Invariant Mass Plots",xmin,ymin,600,600);
-  gPad->SetLogy(1);
-  hMassDimu->Draw();  
-  if(fInvariantMassFit) FitInvMass(hMassDimu);
-  c3->Update();
-
+ 
+   TCanvas *c0 = new TCanvas("c0","Plots",xmin,ymin,600,600);
+   c0->Divide(2,2);
+   c0->cd(1);
+   hNumberMuonTracks->Draw();
+   
+   xmin+=20; ymin+=20;
+   TCanvas *c1 = new TCanvas("c1","Muon kinematic distributions Plots",xmin,ymin,600,600);
+   c1->Divide(2,2);  
+   c1->cd(1);
+   gPad->SetLogy(1);
+   hP->Draw();
+   c1->cd(2);
+   gPad->SetLogy(1);
+   hPt->Draw();
+   c1->cd(3);
+   hRapidity->Draw();
+   
+   xmin+=20; ymin+=20;
+   TCanvas *c2 = new TCanvas("c2","Dimuon kinematic distributions Plots",xmin,ymin,600,600);
+   c2->Divide(2,2);  
+   c2->cd(1);
+   gPad->SetLogy(1);
+   hPtDimu->Draw();
+   c2->cd(2);
+   hRapidityDimu->Draw();
+   c2->cd(3);
+   hCostCSDimu->Draw();
+   c2->cd(4);
+   hCostHEDimu->Draw();
+   
+   xmin+=20; ymin+=20;
+   TCanvas *c3 = new TCanvas("c3","Invariant Mass Plots",xmin,ymin,600,600);
+   gPad->SetLogy(1);
+   hMassDimu->Draw();  
+   if(fInvariantMassFit) FitInvMass(hMassDimu);
+   c3->Update();
 }
 
 //________________________________________________________________________
@@ -357,7 +363,7 @@ Float_t AliAnalysisTaskMuonDistributions::Rapidity(Float_t e, Float_t pz) const
 Double_t AliAnalysisTaskMuonDistributions::CostCS(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 {
-//TMath
+// 
 // costCS calculation
 //
   TLorentzVector pMu1CM, pMu2CM, pProjCM, pTargCM, pDimuCM; // In the CM. frame
@@ -449,66 +455,112 @@ void AliAnalysisTaskMuonDistributions::FitInvMass(TH1D *histo)
 //
 // Fit to the Invariant Mass Spectrum
 //
-  TF1 *gau = new TF1("gau","gaus",fPsiFitLimitMin,fPsiFitLimitMax);
+  TF1 *gaupsi = new TF1("gaupsi","gaus",fPsiFitLimitMin,fPsiFitLimitMax);
+  TF1 *gaupsip = new TF1("gaupsip","gaus",fPsiPFitLimitMin,fPsiPFitLimitMax);
   TF1 *ex = new TF1("ex","expo",fBckFitLimitMin,fBckFitLimitMax);    
-  TF1 *tot = new TF1("mtot","gaus(0)+expo(3)",fInvMassFitLimitMin,fInvMassFitLimitMax);
-  Double_t par[5];
+  TF1 *tot = new TF1("mtot","gaus(0)+expo(3)+gaus(5)",fInvMassFitLimitMin,fInvMassFitLimitMax);
+  Double_t par[8];
   Double_t binWidth= histo->GetBinWidth(1);
-  gau->SetLineColor(3);
-  gau->SetLineWidth(2);
-  histo->Fit(gau,"RlQ"); 
-  ex->SetLineColor(4);
+  gaupsi->SetLineColor(kGreen);
+  gaupsi->SetLineWidth(2);
+  histo->Fit(gaupsi,"Rl0"); 
+  ex->SetLineColor(kBlue);
   ex->SetLineWidth(2);
-  histo->Fit(ex,"RlQ+");
-  gau->GetParameters(&par[0]);
+  histo->Fit(ex,"Rl+");
+  gaupsip->SetLineColor(kAzure-9);
+  gaupsip->SetLineWidth(2);
+  gaupsip->SetParLimits(1,3.6,3.75);
+  gaupsip->SetParLimits(2,0.8*gaupsi->GetParameter(2),1.2*gaupsi->GetParameter(2));
+  histo->Fit(gaupsip,"Rl0+"); 
+  gaupsi->GetParameters(&par[0]);
   ex->GetParameters(&par[3]);
+  gaupsip->GetParameters(&par[5]);
   tot->SetParameters(par);   
   tot->SetLineColor(2);
   tot->SetLineWidth(2);
+  tot->SetParLimits(6,3.6,3.75);   //limit for the psi(2S) parameters
+  tot->SetParLimits(7,0.8*gaupsi->GetParameter(2),1.2*gaupsi->GetParameter(2)); //limit for the psi(2S) parameters
   histo->Fit(tot,"Rl+");
   histo->Draw("e");
   Double_t chi2 = tot->GetChisquare();
   Double_t ndf = tot->GetNDF();
+  
   Float_t meanPsi= tot->GetParameter(1);
   Float_t sigPsi= tot->GetParameter(2)*1000.;
   Double_t nPsiFit = TMath::Sqrt(2*3.1415)*tot->GetParameter(0)*tot->GetParameter(2)/binWidth;
+  TF1 *psifix = new TF1("psifix","gaus",2.,5.);  
+  psifix->SetParameter(0,tot->GetParameter(0));  
+  psifix->SetParameter(1,tot->GetParameter(1));  
+  psifix->SetParameter(2,tot->GetParameter(2));  
+  psifix->SetLineColor(kGreen);
+  psifix->Draw("same");
+  Double_t nPsi2933 = psifix->Integral(2.9,3.3)/binWidth;
+  
   TF1 *exfix = new TF1("exfix","expo",2.,5.);  
   exfix->SetParameter(0,tot->GetParameter(3));  
   exfix->SetParameter(1,tot->GetParameter(4));  
   Double_t nBck = exfix->Integral(2.9,3.3)/binWidth;
   
+  Float_t meanPsiP= tot->GetParameter(6);
+  Float_t sigPsiP= tot->GetParameter(7)*1000.;
+  Double_t nPsiPFit = TMath::Sqrt(2*3.1415)*tot->GetParameter(5)*tot->GetParameter(7)/binWidth;
+  TF1 *psipfix = new TF1("psipfix","gaus",3.,5.);  
+  psipfix->SetParameter(0,tot->GetParameter(5));  
+  psipfix->SetParameter(1,tot->GetParameter(6));  
+  psipfix->SetParameter(2,tot->GetParameter(7));  
+  psipfix->SetLineColor(kAzure-9);
+  psipfix->Draw("same");
+  
   printf("\n\n****************************************************************************\n");
   char psitext[100];
-  sprintf(psitext,"N. J/#psi (2.9-3.3)=%10.0f",nPsiFit);
-  printf("\nN. J/psi (2.9-3.3)=%10.0f\n",nPsiFit);
-  TLatex *psilatex = new TLatex(4.5,0.85*histo->GetMaximum(),psitext);
+  sprintf(psitext,"N. J/#psi = %10.0f",nPsiFit);
+  printf("\nN. J/psi = %10.0f\n",nPsiFit);
+  TLatex *psilatex = new TLatex(4.,0.85*histo->GetMaximum(),psitext);
   psilatex->SetTextColor(2);
   psilatex->SetTextSize(0.03);
   psilatex->SetTextAlign(2);
   psilatex->Draw();
   
   char psi2text[100];
-  sprintf(psi2text,"J/#psi m=%4.3f GeV #sigma=%4.2f MeV",meanPsi,sigPsi);
-  printf("J/psi m=%4.3f GeV sigma=%4.2f MeV\n",meanPsi,sigPsi);
-  TLatex *psi2latex = new TLatex(4.5,0.425*histo->GetMaximum(),psi2text);
+  sprintf(psi2text,"J/#psi m=%4.3f GeV   #sigma= %4.2f MeV",meanPsi,sigPsi);
+  printf("J/psi m= %4.3f GeV sigma= %4.2f MeV\n",meanPsi,sigPsi);
+  TLatex *psi2latex = new TLatex(4.,0.425*histo->GetMaximum(),psi2text);
   psi2latex->SetTextColor(2);
   psi2latex->SetTextSize(0.03);
   psi2latex->SetTextAlign(2);
   psi2latex->Draw();
   
   char sbtext[100];
-  sprintf(sbtext,"S/B (2.9-3.3)=%4.2f ",nPsiFit/nBck);
-  printf("S/B (2.9-3.3)=%4.2f\n",nPsiFit/nBck);
-  TLatex *sblatex = new TLatex(4.5,0.212*histo->GetMaximum(),sbtext);
+  sprintf(sbtext,"S/B (2.9-3.3)= %4.2f ",nPsi2933/nBck);
+  printf("S/B (2.9-3.3)= %4.2f\n",nPsi2933/nBck);
+  TLatex *sblatex = new TLatex(4.,0.212*histo->GetMaximum(),sbtext);
   sblatex->SetTextColor(2);
   sblatex->SetTextSize(0.03);
   sblatex->SetTextAlign(2);
   sblatex->Draw();
   
+  char psiptext[100];
+  sprintf(psiptext,"N. #psi(2S) = %10.0f",nPsiPFit);
+  printf("\npsi(2S) = %10.0f\n",nPsiPFit);
+  TLatex *psiplatex = new TLatex(4.,0.106*histo->GetMaximum(),psiptext);
+  psiplatex->SetTextColor(2);
+  psiplatex->SetTextSize(0.03);
+  psiplatex->SetTextAlign(2);
+  psiplatex->Draw();
+  
+  char psip2text[100];
+  sprintf(psip2text,"#psi(2S) m=%4.3f GeV   #sigma= %4.2f MeV",meanPsiP,sigPsiP);
+  printf("psi(2S) m= %4.3f GeV sigma= %4.2f MeV\n",meanPsiP,sigPsiP);
+  TLatex *psip2latex = new TLatex(4.,0.053*histo->GetMaximum(),psip2text);
+  psip2latex->SetTextColor(2);
+  psip2latex->SetTextSize(0.03);
+  psip2latex->SetTextAlign(2);
+  psip2latex->Draw();
+  
   char chi2text[100];
-  sprintf(chi2text,"#chi^2/ndf =%4.2f ",chi2/ndf);
-  printf("chi^2/ndf =%4.2f\n",chi2/ndf);
-  TLatex *chi2latex = new TLatex(4.5,0.106*histo->GetMaximum(),chi2text);
+  sprintf(chi2text,"#chi^2/ndf = %4.2f ",chi2/ndf);
+  printf("chi^2/ndf = %4.2f\n",chi2/ndf);
+  TLatex *chi2latex = new TLatex(4.,0.026*histo->GetMaximum(),chi2text);
   chi2latex->SetTextColor(2);
   chi2latex->SetTextSize(0.03);
   chi2latex->SetTextAlign(2);

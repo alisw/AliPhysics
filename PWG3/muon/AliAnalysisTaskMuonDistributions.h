@@ -34,6 +34,7 @@ class AliAnalysisTaskMuonDistributions : public AliAnalysisTaskSE {
   void SetAnalysisType(const char* type) {fkAnalysisType=type;}
   void SetInvMassFitLimits(Double_t xmin, Double_t xmax) {fInvMassFitLimitMin=xmin; fInvMassFitLimitMax=xmax;}
   void SetPsiFitLimits(Double_t xmin, Double_t xmax) {fPsiFitLimitMin=xmin; fPsiFitLimitMax=xmax;}
+  void SetPsiPFitLimits(Double_t xmin, Double_t xmax) {fPsiPFitLimitMin=xmin; fPsiPFitLimitMax=xmax;}
   void SetBckFitLimits(Double_t xmin, Double_t xmax) {fBckFitLimitMin=xmin; fBckFitLimitMax=xmax;}
   void FitInvariantMassSpectrum(Bool_t massfit=kFALSE) {fInvariantMassFit=massfit;}
  
@@ -44,6 +45,8 @@ class AliAnalysisTaskMuonDistributions : public AliAnalysisTaskSE {
   Double_t fInvMassFitLimitMax;  // invariant mass spectrum fit upper limit 
   Double_t fPsiFitLimitMin;  // psi fit lower limits 
   Double_t fPsiFitLimitMax;  // psi fit upper limits 
+  Double_t fPsiPFitLimitMin;  // psi(2S) fit lower limits 
+  Double_t fPsiPFitLimitMax;  // psi(2S) fit upper limits 
   Double_t fBckFitLimitMin;  // bck fit lower limits 
   Double_t fBckFitLimitMax;  // bck fit upper limits
   Bool_t fInvariantMassFit; // flag to perform or not inv. mass fit
