@@ -24,7 +24,7 @@ class AliUnicorAnalCorrel : public AliUnicorAnal {
 	      Int_t pid0=0, Int_t pid1=0);     // constructor
   virtual ~AliUnicorAnalCorrel(){}                     // destructor
   // process one (tru) or two (mix) events
-  void Process(Int_t tmr, AliUnicorEvent *ev0, AliUnicorEvent *ev1, Double_t phirot);
+  void Process(Int_t tmr, const AliUnicorEvent * const ev0, const AliUnicorEvent * const ev1, Double_t phirot);
 
  protected:
   Int_t    fPid0;                       // particle species 0

@@ -19,9 +19,9 @@ class AliUnicorHN;
 class AliUnicorAnalPtfluc : public AliUnicorAnal {
    
  public:
-  AliUnicorAnalPtfluc(Char_t *nam="correl", Int_t pid0=0, Int_t pid1=0);  // constructor
-  virtual ~AliUnicorAnalPtfluc(){}                                        // destructor
-  void Process(Int_t tmr, AliUnicorEvent *ev0, AliUnicorEvent *ev1);              // process event(s)
+  AliUnicorAnalPtfluc(Char_t *nam="correl", Int_t pid0=0, Int_t pid1=0);    // constructor
+  virtual ~AliUnicorAnalPtfluc(){}                                          // destructor
+  void Process(Int_t tmr, AliUnicorEvent * const ev0, AliUnicorEvent * const ev1);  // process event(s)
 
  protected:
   Int_t    fPid0;                       // particle species 0

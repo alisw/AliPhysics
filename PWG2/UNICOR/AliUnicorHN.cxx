@@ -44,6 +44,7 @@ AliUnicorHN::AliUnicorHN(Char_t *nam, Int_t ndim, TAxis **ax)
   // with number of bins equal to the product of the numbers of bins in all 
   // dimensions. For easy inspection the histogram range was set to -0.5,n-0.5.
 
+  for (int i=0; i<fNdim; i++) ax[i]->SetName(Form("axis%d",i));
   for (int i=0; i<fNdim; i++) ax[i]->Copy(fAxis[i]); 
 
   // for speed reasons, number of bins of each axis is stored on fNbins
@@ -53,7 +54,7 @@ AliUnicorHN::AliUnicorHN(Char_t *nam, Int_t ndim, TAxis **ax)
   fMbins[fNdim-1] = 1;
   for (int i=0; i<fNdim; i++) fNbins[i] = fAxis[i].GetNbins();
   for (int i=fNdim-1; i>0; i--) fMbins[i-1] = fMbins[i]*fNbins[i];
-  printf("%d-dimensional histogram %s with %d bins created\n",fNdim,nam,GetNbinsX());
+  printf("   %d-dimensional histogram %s with %d bins created\n",fNdim,nam,GetNbinsX());
 }
 //=============================================================================
 AliUnicorHN::AliUnicorHN(Char_t *filnam, Char_t *nam) 
@@ -65,10 +66,8 @@ AliUnicorHN::AliUnicorHN(Char_t *filnam, Char_t *nam)
   TFile *f = TFile::Open(filnam,"read");
   f->cd(nam);
   TAxis *ax[fgkMaxNdim];
-  char axnam[1000];
   for (fNdim=0; fNdim<fgkMaxNdim; fNdim++) {
-    sprintf(axnam,"axis%d",fNdim);
-    ax[fNdim] = (TAxis *) gDirectory->Get(axnam);
+    ax[fNdim] = (TAxis *) gDirectory->Get(Form("axis%d",fNdim));
     if (ax[fNdim]) ax[fNdim]->Copy(fAxis[fNdim]); 
     else break;
   }
@@ -99,7 +98,7 @@ Int_t AliUnicorHN::Albins(Int_t n, TAxis **ax)
   return nbins;
 }
 //=============================================================================
-Int_t AliUnicorHN::MulToOne(Int_t *k) const 
+Int_t AliUnicorHN::MulToOne(const Int_t * const k) const 
 {
   // Calculate the 1-dim index n from n-dim indices k[fNdim].
   // Valid k[i] should be between 0 and fNbins[i]-1.
@@ -140,7 +139,7 @@ void AliUnicorHN::OneToMul(Int_t n, Int_t *k) const
   }
 }
 //=============================================================================
-Int_t AliUnicorHN::Fill(Double_t *xx, Double_t w) 
+Int_t AliUnicorHN::Fill(Double_t *xx, Double_t w)  
 {
   // Fill the histogram. The array xx holds the abscissa information, w is the 
   // weigth. The 1-dim histogram is filled using the standard Fill method 
@@ -160,6 +159,7 @@ Int_t AliUnicorHN::Fill(Double_t x0, Double_t x1, ...)
   for (int i=2; i<fNdim; i++) xx[i] = va_arg(ap,Double_t);
   Double_t weigth = va_arg(ap,Double_t);
   va_end(ap);
+  //for (int i=0; i<fgkMaxNdim; i++) printf("%8.2f ",xx[i]); printf("%6.2f \n",weigth);
   return Fill(xx,weigth);
 }
 //=============================================================================
@@ -177,11 +177,7 @@ Int_t AliUnicorHN::Write() const
   if (dest) {
     dest->cd();
     nbytes += histo.Write("histo");
-    char axnam[1000];
-    for (int i=0; i<fNdim; i++) {
-      sprintf(axnam,"axis%d",i);
-      nbytes += fAxis[i].Write(axnam);
-    }
+    for (int i=0; i<fNdim; i++) nbytes += fAxis[i].Write();
     printf("   %s stored in %s\n",GetName(),dest->GetPath());
     dest->cd("..");
   }
@@ -240,7 +236,7 @@ AliUnicorHN *AliUnicorHN::ProjectAlong(char *nam, Int_t dim, Int_t first, Int_t 
   return his;
 }
 //=============================================================================
-TH1D *AliUnicorHN::ProjectOn(char *nam, Int_t dim, Int_t *first, Int_t *last) const 
+TH1D *AliUnicorHN::ProjectOn(char *nam, Int_t dim, const Int_t * const first, const Int_t * const last) const 
 {
   // Project on dimension dim. Use only bins between first[i] and last[i]. 
   // Use root convention: bin=1 is the first bin, bin=nbins is the last. 
@@ -300,7 +296,7 @@ TH1D *AliUnicorHN::ProjectOn(char *nam, Int_t dim, Int_t *first, Int_t *last) co
   return his;
 }
 //=============================================================================
-TH1D *AliUnicorHN::ProjectOn(char *nam, Int_t dim, Double_t *first, Double_t *last) 
+TH1D *AliUnicorHN::ProjectOn(char *nam, Int_t dim, const Double_t * const first, const Double_t * const last) 
 {
   // Project on dimension dim. Use only bins between first[i] and last[i]. 
 
@@ -314,7 +310,7 @@ TH1D *AliUnicorHN::ProjectOn(char *nam, Int_t dim, Double_t *first, Double_t *la
   return ProjectOn(nam,dim,kfirst,klast);
 }
 //=============================================================================
-TH2D *AliUnicorHN::ProjectOn(char *nam, Int_t dim0, Int_t dim1, Int_t *first, Int_t *last) const
+TH2D *AliUnicorHN::ProjectOn(char *nam, Int_t dim0, Int_t dim1, const Int_t * const first, const Int_t * const last) const
 {
   // Project on dim1 vs dim0. Use only bins between first[i] and last[i]. 
   // Use root convention: bin=1 is the first bin, bin=nbins is the last. 

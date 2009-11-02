@@ -22,7 +22,7 @@ class AliUnicorAnalHighpt : public AliUnicorAnal {
 	      Double_t emi=-1, Double_t ema=1, 
 	      Int_t pid0=0, Int_t pid1=0);   // constructor
   virtual ~AliUnicorAnalHighpt(){}                   // destructor
-  void Process(AliUnicorEvent *ev0, AliUnicorEvent *ev1);    // process 1 (tru) or 2 (mix) events
+  void Process(const AliUnicorEvent * const ev0, const AliUnicorEvent * const ev1);  // process 1 (tru) or 2 (mix) events
 
  protected:
   Int_t    fPid0;                            // particle species 0

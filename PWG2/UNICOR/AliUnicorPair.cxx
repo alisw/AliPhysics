@@ -26,11 +26,3 @@
 ClassImp(AliUnicorPair)
 
 //=============================================================================
-AliUnicorPair::AliUnicorPair() : fP0(), fP1(), fP(), fQ(), fBeta(), fBetat(), fBetaz(), fUbeta(), 
-		 fUbetat(), fUbetaz(), fCMp(), fCMq(), fBuf() 
-{
-  // constructor
-
-  printf("AliUnicorPair object created\n");
-}
-//=============================================================================

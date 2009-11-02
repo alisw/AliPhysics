@@ -58,14 +58,14 @@ Bool_t AliUnicorEventAliceESD::ParticleGood(Int_t i, Int_t pidi) const
 
   AliESDtrack *track = fESD->GetTrack(i);
   if (!track->IsOn(AliESDtrack::kTPCrefit)) return 0;        // TPC refit
-  if (track->GetTPCNcls() < 120) return 0;                   // number of TPC clusters
+  if (track->GetTPCNcls() < 100) return 0;                   // number of TPC clusters
   const AliExternalTrackParam *tp = track->GetTPCInnerParam();
   if (!tp) return 0;           
 
   Float_t r,z;
   track->GetImpactParameters(r,z);
-  //  if (fabs(z)>0.2) return 0;                          // impact parameter in z
-  //  if (fabs(r)>0.1) return 0;                          // impact parameter in xy
+  if (fabs(z)>0.2) return 0;                          // impact parameter in z
+  if (fabs(r)>0.1) return 0;                          // impact parameter in xy
 
   // pid
 
@@ -84,17 +84,8 @@ Bool_t AliUnicorEventAliceESD::PairGood(Double_t /*p0*/, Double_t the0, Double_t
 
   // two-track separation cut
 
-  double r = 85; // TPC entrance radius in cm
-  double x0 = r*sin(the0)*cos(phi0);
-  double x1 = r*sin(the1)*cos(phi0);
-  double y0 = r*sin(the0)*sin(phi0);
-  double y1 = r*sin(the1)*sin(phi1);
-  double z0 = r*cos(the0);
-  double z1 = r*cos(the1);
-  double dx = x1-x0;
-  double dy = y1-y0;
-  double dz = z1-z0;
-  double dist2 = dx*dx+dy*dy+dz*dz;
-  return dist2>2*2;
+  double dthe = the1-the0;
+  double dphi = TVector2::Phi_mpi_pi(phi1-phi0);
+  return (fabs(dthe)>0.005 || fabs(dphi)>0.030);
 }
 //=============================================================================

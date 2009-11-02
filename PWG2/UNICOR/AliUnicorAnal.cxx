@@ -23,6 +23,9 @@
 
 #include <TROOT.h>
 #include <TFile.h>
+#include <TCollection.h>
+#include <TClass.h>
+#include <TH1.h>
 #include "AliUnicorAnal.h"
 
 ClassImp(AliUnicorAnal)
@@ -30,15 +33,31 @@ ClassImp(AliUnicorAnal)
 TDatabasePDG AliUnicorAnal::fgPDG;
 
 //=============================================================================
-AliUnicorAnal::AliUnicorAnal(char *nam) : TNamed(nam,nam), fHistos() 
-{
+AliUnicorAnal::AliUnicorAnal(char *nam) : TNamed(nam,nam), fHistos() {
+
   // constructor
 
   fHistos.SetOwner(1);
   TDirectory *dir = gROOT->mkdir(GetName());
   dir->cd();
-
   printf("%s object named %s created\n",ClassName(),GetName());
+}
+//=============================================================================
+Long64_t AliUnicorAnal::Merge(const TCollection * const list) {
+
+  // sumup fHistos objects
+
+  for (int i=0; i<fHistos.GetEntries(); i++) {
+    if (fHistos.At(i)->IsA()->InheritsFrom("TH1")) {
+      TH1 *hi = (TH1*) fHistos.At(i);
+      TIter next(list);
+      while (AliUnicorAnal *analtoadd = (AliUnicorAnal*) next()) {
+	TH1 *histotoadd = (TH1*) analtoadd->GetHist(i);
+	hi->Add(histotoadd);
+      }
+    }
+  }
+  return 0;
 }
 //=============================================================================
 void AliUnicorAnal::Save(const char *outfil, const char *mode) 
@@ -46,7 +65,7 @@ void AliUnicorAnal::Save(const char *outfil, const char *mode)
   // store histograms on file in a directory named after the object
   // mode should be "update" (default) or "new"
 
-  printf("%s saving  histograms on %s (%s)\n",GetName(),outfil,mode);  
+  printf("%s %s: saving histograms on %s (%s)\n",ClassName(),GetName(),outfil,mode);  
   TFile * f = TFile::Open(outfil, mode);
   TDirectory *dest = f->mkdir(GetName());
   dest->cd();
