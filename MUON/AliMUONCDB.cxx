@@ -1369,7 +1369,7 @@ AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
   WriteGains(defaultValues,startRun,endRun);
   WriteCapacitances(defaultValues,startRun,endRun);
   WriteNeighbours(startRun,endRun);
-  WriteOccupancyMap(startRun,endRun,defaultValues);
-  WriteRejectList(startRun,endRun,defaultValues);
+  WriteOccupancyMap(defaultValues,startRun,endRun);
+  WriteRejectList(defaultValues,startRun,endRun);
 }
 
