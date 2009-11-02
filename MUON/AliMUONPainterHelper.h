@@ -132,13 +132,16 @@ private:
   /// Not implemented
   AliMUONPainterHelper& operator=(const AliMUONPainterHelper&);
   
+  AliMUONContourHandler* Exploded() const;
+  AliMUONContourHandler* Real() const;
+  
 private:
   static AliMUONPainterHelper* fgInstance; ///< global instance
   
   TObjArray* fPainterMatrices; ///< default matrices
   AliMUONPainterEnv* fEnv; ///< resources
   mutable AliMUONContourHandler* fReal; ///< contours in real coordinates
-  AliMUONContourHandler* fExploded; ///< contours in exploded coordinates
+  mutable AliMUONContourHandler* fExploded; ///< contours in exploded coordinates
   
   ClassDef(AliMUONPainterHelper,3) // Helper class for painters
 };

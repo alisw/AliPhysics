@@ -70,9 +70,15 @@ fAllContourArray(0x0)
   /// before you've loaded the mapping in memory (see e.g. AliMpCDB::LoadDDLStore)
   ///
   
-  fTransformations = GenerateTransformations(explodedView);
+  if ( explodedView ) 
+  {
+    fTransformations = GenerateTransformations(explodedView);
+  }
+  
   AliMUONManuContourMaker manuMaker(fTransformations);
+  
   TObjArray* manus = manuMaker.GenerateManuContours(kTRUE);
+  
   if (manus)
   {
     manus->SetOwner(kFALSE);
@@ -85,6 +91,7 @@ fAllContourArray(0x0)
 AliMUONContourHandler::~AliMUONContourHandler()
 {
   /// Dtor
+  delete fTransformations;
   delete fAllContourMap;
   delete fAllContourArray;
 }
@@ -122,6 +129,13 @@ AliMUONContourHandler::CreateContourList(const TObjArray& manuContours)
   
   AliCodeTimerAuto("",0);
   
+  Int_t start(0);
+  
+  if ( !fTransformations )
+  {
+    start = 2; // skip chamber and station contours, as we seem to be in 3D
+  }
+    
   TIter next(&manuContours);
   AliMUONContour* contour;
   TObjArray* mapArray = new TObjArray;
@@ -132,7 +146,7 @@ AliMUONContourHandler::CreateContourList(const TObjArray& manuContours)
     
     TString key(contour->GetName());
     TObjArray* s = key.Tokenize("/");
-    for ( Int_t i = 0; i < s->GetLast(); ++i ) 
+    for ( Int_t i = start; i < s->GetLast(); ++i ) 
     {
       TMap* m = static_cast<TMap*>(mapArray->At(i));
       if (!m)
@@ -183,9 +197,6 @@ AliMUONContourHandler::GenerateAllContours(const TObjArray& manuContours)
   
   // Get the list of contours to create
   TObjArray* mapArray = CreateContourList(manuContours);
-  
-  // Now loop over the mapArray to actually create the contours
-  TIter next2(mapArray,kIterBackward);
   
   fAllContourMap = new TMap(20000,1);
   fAllContourMap->SetOwnerKeyValue(kTRUE,kTRUE);
@@ -326,7 +337,7 @@ AliMUONContourHandler::GetContour(const char* contourname) const
 
 //_____________________________________________________________________________
 void
-AliMUONContourHandler::Print(Option_t* /*opt*/) const
+AliMUONContourHandler::Print(Option_t* opt) const
 {
   /// printout
   
@@ -336,5 +347,12 @@ AliMUONContourHandler::Print(Option_t* /*opt*/) const
                  fAllContourMap->AverageCollisions(),
                  fAllContourMap->GetSize(),
                  fAllContourMap->Capacity()) << endl;
+  }
+  TString sopt(opt);
+  sopt.ToUpper();
+  
+  if ( sopt.Contains("ALL") || sopt.Contains("FULL") )
+  {
+    fAllContourMap->Print();
   }
 }

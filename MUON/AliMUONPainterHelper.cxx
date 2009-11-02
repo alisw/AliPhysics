@@ -102,9 +102,7 @@ fExploded(0x0)
   if ( ! AliMpCDB::LoadDDLStore() ) 
   {
     AliFatal("Could not access DDL Store from OCDB !");
-  }
-  
-  fExploded = new AliMUONContourHandler(kTRUE);
+  }  
 }
 
 //_____________________________________________________________________________
@@ -119,13 +117,31 @@ AliMUONPainterHelper::~AliMUONPainterHelper()
 }
 
 //_____________________________________________________________________________
+AliMUONContourHandler*
+AliMUONPainterHelper::Exploded() const
+{
+  /// Create exploded contour handler
+  if (!fExploded) fExploded = new AliMUONContourHandler(kTRUE);
+  return fExploded;
+}
+
+//_____________________________________________________________________________
+AliMUONContourHandler*
+AliMUONPainterHelper::Real() const
+{
+  /// Create real contour handler
+  if (!fReal) fReal = new AliMUONContourHandler(kFALSE);
+  return fReal;
+}
+
+//_____________________________________________________________________________
 AliMUONContour*
 AliMUONPainterHelper::GetContour(const char* contourName, Bool_t explodedView) const
 {
   /// Get a contour by name  
   if (explodedView) 
   {
-    return fExploded->GetContour(contourName);
+    return Exploded()->GetContour(contourName);
   }
   else
   {
@@ -319,7 +335,7 @@ AliMUONPainterHelper::Global2Local(Int_t detElemId,
 {
   /// Local to global transformation of coordinates
   
-  TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(fExploded->GetTransformations()->GetValue(detElemId));
+  TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(Exploded()->GetTransformations()->GetValue(detElemId));
   Double_t pg[3] = { xg, yg, zg };
   Double_t pl[3] = { 0., 0., 0. };
   matrix->MasterToLocal(pg, pl);
@@ -336,7 +352,7 @@ AliMUONPainterHelper::Local2Global(Int_t detElemId,
 {
   /// Local to (exploded) global transformation of coordinates
   
-  TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(fExploded->GetTransformations()->GetValue(detElemId));
+  TGeoHMatrix* matrix = static_cast<TGeoHMatrix*>(Exploded()->GetTransformations()->GetValue(detElemId));
   Double_t pl[3] = { xl, yl, zl };
   Double_t pg[3] = { 0., 0., 0. };
   matrix->LocalToMaster(pl, pg);
@@ -413,7 +429,7 @@ AliMUONPainterHelper::RegisterContour(AliMUONContour* contour, Bool_t explodedVi
   AliMUONContourHandler* ch = fReal;
   if ( explodedView ) 
   {
-    ch = fExploded;
+    ch = Exploded();
   }
   if (!ch)
   {
@@ -563,11 +579,14 @@ AliMUONPainterHelper::GetAllContoursAsArray(Bool_t explodedView) const
 {
   /// Get the contours in a specially arranged array (orderer by hierarchy level)
   
-  if ( explodedView ) return fExploded->AllContourArray(); // fExploded should always be created
-  
-  if (!fReal) fReal = new AliMUONContourHandler(kFALSE); // fReal might be first asked here.
-  
-  return fReal->AllContourArray();
+  if ( explodedView ) 
+  {
+    return Exploded()->AllContourArray();
+  }
+  else
+  {
+    return Real()->AllContourArray();
+  }
 }
 
 
