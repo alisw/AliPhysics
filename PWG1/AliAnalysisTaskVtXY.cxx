@@ -178,8 +178,8 @@ void AliAnalysisTaskVtXY::Terminate(Option_t *)
     Printf("ERROR: fList not available");
     return;
   }
-  TProfile *fHistVtx = (TProfile *)fList->At(0);
-  TProfile *fHistVty = (TProfile *)fList->At(1);
+  fHistVtx = (TProfile *)fList->At(0);
+  fHistVty = (TProfile *)fList->At(1);
   TCanvas *c1 = new TCanvas("AliAnalysisTaskVtXY","Vtx analysis",10,10,800,800);
   c1->SetFillColor(10); c1->SetHighLightColor(10);
   c1->Divide(1,2);
