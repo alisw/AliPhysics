@@ -77,8 +77,8 @@
 #include <EveDet/AliEveTRDTrackList.h>
 #include <EveDet/AliEveTRDTrackListEditor.h>
 
-#include <PWG1/TRD/AliTRDrecoTask.h>
-#include <PWG1/TRD/macros/AliTRDperformanceTrain.h>
+#include <../PWG1/TRD/AliTRDrecoTask.h>
+#include <../PWG1/TRD/macros/AliTRDperformanceTrain.h>
 
 ClassImp(AliEveTRDTrackList)
 
