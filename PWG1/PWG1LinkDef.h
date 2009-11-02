@@ -6,13 +6,13 @@
 
 #pragma link C++ class AliAnaFwdDetsQA+;
 #pragma link C++ class AliAnalysisTaskVtXY+;
-#pragma link C++ class AliComparisonSelector+;
 #pragma link C++ class AliESDresolParams+;
 #pragma link C++ class AliESDresolMakerFast+;
 
 #pragma link C++ class AliTreeDraw+;
 //
 #pragma link C++ class AliTPCdigitRow+;
+#pragma link C++ class AliTPCComparisonPID+;
 #pragma link C++ class AliMCInfo+;
 #pragma link C++ class AliGenV0Info+;
 #pragma link C++ class AliGenKinkInfo+;
