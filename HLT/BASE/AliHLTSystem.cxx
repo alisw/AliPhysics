@@ -1086,7 +1086,7 @@ int AliHLTSystem::LoadComponentLibraries(const char* libraries)
       TString libs(libraries);
       TObjArray* pTokens=libs.Tokenize(" ");
       if (pTokens) {
-	int iEntries=pTokens->GetEntries();
+	int iEntries=pTokens->GetEntriesFast();
 	for (int i=0; i<iEntries && iResult>=0; i++) {
 	  iResult=fpComponentHandler->LoadLibrary((((TObjString*)pTokens->At(i))->GetString()).Data());
 	}
@@ -1158,7 +1158,7 @@ int AliHLTSystem::ScanOptions(const char* options)
     TString alloptions(options);
     TObjArray* pTokens=alloptions.Tokenize(" ");
     if (pTokens) {
-      int iEntries=pTokens->GetEntries();
+      int iEntries=pTokens->GetEntriesFast();
       for (int i=0; i<iEntries; i++) {
 	TString token=(((TObjString*)pTokens->At(i))->GetString());
 	if (token.Contains("loglevel=")) {
@@ -1370,7 +1370,7 @@ int AliHLTSystem::BuildTaskListsFromReconstructionChains(AliRawReader* rawReader
   // build task list for chains
   TObjArray* pTokens=chains.Tokenize(" ");
   if (pTokens) {
-    int iEntries=pTokens->GetEntries();
+    int iEntries=pTokens->GetEntriesFast();
     for (int i=0; i<iEntries && iResult>=0; i++) {
       const char* pCID=((TObjString*)pTokens->At(i))->GetString().Data();
       AliHLTConfiguration* pConf=fpConfigurationHandler->FindConfiguration(pCID);
@@ -1449,7 +1449,7 @@ int AliHLTSystem::AddHLTOUTTask(const char* hltoutchains)
   TString chains=hltoutchains;
   TObjArray* pTokens=chains.Tokenize(" ");
   if (pTokens) {
-    int iEntries=pTokens->GetEntries();
+    int iEntries=pTokens->GetEntriesFast();
     for (int i=0; i<iEntries && iResult>=0; i++) {
       const char* token=((TObjString*)pTokens->At(i))->GetString().Data();
       AliHLTConfiguration* pConf=fpConfigurationHandler->FindConfiguration(token);

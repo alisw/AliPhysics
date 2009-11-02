@@ -128,7 +128,7 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
       fBaseName=argv[i];
       TObjArray* pTokens=fBaseName.Tokenize(".");
       if (pTokens) {
-	int iEntries=pTokens->GetEntries();
+	int iEntries=pTokens->GetEntriesFast();
 	if (iEntries>1) {
 	  int n=0;
 	  fBaseName=((TObjString*)pTokens->At(n++))->GetString();

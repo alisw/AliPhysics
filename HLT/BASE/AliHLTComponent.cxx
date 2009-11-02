@@ -375,7 +375,7 @@ int AliHLTComponent::SetComponentDescription(const char* desc)
   TString descriptor=desc;
   TObjArray* pTokens=descriptor.Tokenize(" ");
   if (pTokens) {
-    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
+    for (int i=0; i<pTokens->GetEntriesFast() && iResult>=0; i++) {
       TString argument=((TObjString*)pTokens->At(i++))->GetString();
       if (!argument || argument.IsNull()) continue;
 
@@ -2088,7 +2088,7 @@ int AliHLTComponent::SetStopwatches(TObjArray* pStopwatches)
   if (pStopwatches==NULL) return -EINVAL;
 
   int iResult=0;
-  for (int i=0 ; i<(int)kSWTypeCount && pStopwatches->GetEntries(); i++)
+  for (int i=0 ; i<(int)kSWTypeCount && pStopwatches->GetEntriesFast(); i++)
     SetStopwatch(pStopwatches->At(i), (AliHLTStopwatchType)i);
   return iResult;
 }
@@ -2330,20 +2330,20 @@ int AliHLTComponent::ExtractComponentTableEntry(const AliHLTUInt8_t* pBuffer, Al
   TObjArray* pTokens=descriptor.Tokenize("{");
   if (pTokens) {
     int n=0;
-    if (pTokens->GetEntries()>n) {
+    if (pTokens->GetEntriesFast()>n) {
       retChainId=((TObjString*)pTokens->At(n++))->GetString();
     }
-    if (pTokens->GetEntries()>n) {
+    if (pTokens->GetEntriesFast()>n) {
       compId=((TObjString*)pTokens->At(n++))->GetString();
     }
     delete pTokens;
   }
   if (!compId.IsNull() && (pTokens=compId.Tokenize(":"))!=NULL) {
     int n=0;
-    if (pTokens->GetEntries()>n) {
+    if (pTokens->GetEntriesFast()>n) {
       compId=((TObjString*)pTokens->At(n++))->GetString();
     }
-    if (pTokens->GetEntries()>n) {
+    if (pTokens->GetEntriesFast()>n) {
       compArgs=((TObjString*)pTokens->At(n++))->GetString();
     }
     delete pTokens;
@@ -2393,12 +2393,12 @@ int AliHLTComponent::ScanECSParam(const char* ecsParam)
   TString string=ecsParam;
   TObjArray* parameter=string.Tokenize(";");
   if (parameter) {
-    for (int i=0; i<parameter->GetEntries(); i++) {
+    for (int i=0; i<parameter->GetEntriesFast(); i++) {
       TString entry=((TObjString*)parameter->At(i))->GetString();
       HLTDebug("scanning ECS entry: %s", entry.Data());
       TObjArray* entryParams=entry.Tokenize("=");
       if (entryParams) {
-	if (entryParams->GetEntries()>1) {
+	if (entryParams->GetEntriesFast()>1) {
 	  if ((((TObjString*)entryParams->At(0))->GetString()).CompareTo("CTP_TRIGGER_CLASS")==0) {
 	    int result=InitCTPTriggerClasses((((TObjString*)entryParams->At(1))->GetString()).Data());
 	    if (iResult>=0 && result<0) iResult=result;

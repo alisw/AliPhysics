@@ -173,11 +173,11 @@ int AliHLTCTPData::InitCTPTriggerClasses(const char* ctpString)
   TObjArray* classEntries=string.Tokenize(",");
   if (classEntries) {
     enum {kBit=0, kName, kDetectors};
-    for (int i=0; i<classEntries->GetEntries(); i++) {
+    for (int i=0; i<classEntries->GetEntriesFast(); i++) {
       TString entry=((TObjString*)classEntries->At(i))->GetString();
       TObjArray* entryParams=entry.Tokenize(":");
       if (entryParams) {
-	if (entryParams->GetEntries()==3 &&
+	if (entryParams->GetEntriesFast()==3 &&
 	    (((TObjString*)entryParams->At(kBit))->GetString()).IsDigit()) {
 	  int index=(((TObjString*)entryParams->At(kBit))->GetString()).Atoi();
 	  if (index<gkNCTPTriggerClasses) {
@@ -311,7 +311,7 @@ void AliHLTCTPData::Increment(const char* classIds)
   TString string=classIds;
   TObjArray* classEntries=string.Tokenize(",");
   if (classEntries) {
-    for (int i=0; i<classEntries->GetEntries(); i++) {
+    for (int i=0; i<classEntries->GetEntriesFast(); i++) {
       int index=Index(((TObjString*)classEntries->At(i))->GetString().Data());
       if (index>=0 && index<fCounters.GetSize()) fCounters[index]++;
     }
