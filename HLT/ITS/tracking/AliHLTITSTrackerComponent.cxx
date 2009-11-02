@@ -275,6 +275,7 @@ int AliHLTITSTrackerComponent::DoInit( int argc, const char** argv )
   if(AliGeomManager::GetGeometry()==NULL){
     AliGeomManager::LoadGeometry();
   }
+  AliGeomManager::ApplyAlignObjsFromCDB("ITS");
 
   TString arguments = "";
   for ( int i = 0; i < argc; i++ ) {
