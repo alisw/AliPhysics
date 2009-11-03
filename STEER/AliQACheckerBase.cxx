@@ -387,7 +387,10 @@ void AliQACheckerBase::SetQA(AliQAv1::ALITASK_t index, Double_t * value) const
 	// sets the QA according the return value of the Check
 
   AliQAv1 * qa = AliQAv1::Instance(index) ;
+
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    if (! qa->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)))
+      continue ;
     if (  value == NULL ) { // No checker is implemented, set all QA to Fatal
       qa->Set(AliQAv1::kFATAL, specie) ; 
     } else {
