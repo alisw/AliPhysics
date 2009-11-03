@@ -37,17 +37,17 @@ class AliAnalysisTaskParticleCorrelation : public AliAnalysisTaskSE
   
   void SetConfigFileName(TString name ) {fConfigName = name ; }
   TString GetConfigFileName() const {return fConfigName ; }
-
-  void SetAnalysisMaker(AliAnaPartCorrMaker *maker) {fAna = maker;} 
+	
+  void SetAnalysisMaker(AliAnaPartCorrMaker * const maker) {fAna = maker;} 
   
  private:
   AliAnalysisTaskParticleCorrelation(const AliAnalysisTaskParticleCorrelation&); // Not implemented
   AliAnalysisTaskParticleCorrelation& operator=(const AliAnalysisTaskParticleCorrelation&); // Not implemented
   
-  AliAnaPartCorrMaker* fAna; //  Pointer to the manager class 
-  TList * fOutputContainer ; //! Histogram container
-  TString fConfigName ; //Configuration file name
-  
+  AliAnaPartCorrMaker* fAna;  //  Pointer to the manager class 
+  TList * fOutputContainer ;  //! Histogram container
+  TString fConfigName ;       // Configuration file name
+	
   ClassDef(AliAnalysisTaskParticleCorrelation, 2); // Analysis task for standard gamma correlation analysis
 };
 

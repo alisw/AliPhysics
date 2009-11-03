@@ -67,7 +67,7 @@ public:
   virtual Int_t GetEventNumber() const ;
 		
   virtual AliCaloTrackReader * GetReader() const {return fReader ; }
-  virtual void SetReader(AliCaloTrackReader * reader) { fReader = reader ; }
+  virtual void SetReader(AliCaloTrackReader * const reader) { fReader = reader ; }
   
   virtual void Terminate(TList * /*outputList*/) {;}
 	
@@ -86,7 +86,8 @@ public:
 
   virtual TClonesArray* GetInputAODBranch() const {return fInputAODBranch ;}
   virtual TClonesArray* GetOutputAODBranch() const {return fOutputAODBranch ;}
-
+  virtual TClonesArray* GetAODBranch(TString aodBranchName) const ;
+	
 //	virtual TClonesArray* GetAODCaloClusters() const {return fAODCaloClusters ;}
   virtual TClonesArray* GetAODCaloClusters() const ;
   virtual TClonesArray* GetAODTracks() const ;	
@@ -107,19 +108,19 @@ public:
   
   //Analysis helpers classes pointers setters and getters
   virtual AliCaloPID * GetCaloPID() const {return  fCaloPID ;}
-  virtual void SetCaloPID(AliCaloPID * pid) { fCaloPID = pid ;}
+  virtual void SetCaloPID(AliCaloPID * const pid) { fCaloPID = pid ;}
   
   virtual AliFidutialCut * GetFidutialCut() const {return  fFidCut ;}
-  virtual void SetFidutialCut(AliFidutialCut * fc) { fFidCut = fc ;}
+  virtual void SetFidutialCut(AliFidutialCut * const fc) { fFidCut = fc ;}
   
   virtual AliIsolationCut * GetIsolationCut() const {return  fIC ;}
-  virtual void SetIsolationCut(AliIsolationCut * fc) { fIC = fc ;}
+  virtual void SetIsolationCut(AliIsolationCut * const ic) { fIC = ic ;}
   
   virtual AliMCAnalysisUtils * GetMCAnalysisUtils() const {return  fMCUtils ;}
-  virtual void SetMCAnalysisUtils(AliMCAnalysisUtils * mcutils) { fMCUtils = mcutils ;}	
+  virtual void SetMCAnalysisUtils(AliMCAnalysisUtils * const mcutils) { fMCUtils = mcutils ;}	
   
   virtual AliNeutralMesonSelection * GetNeutralMesonSelection() const {return  fNMS ;}
-  virtual void SetNeutralMesonSelection(AliNeutralMesonSelection * nms) { fNMS = nms ;}
+  virtual void SetNeutralMesonSelection(AliNeutralMesonSelection * const nms) { fNMS = nms ;}
   
   virtual Bool_t     IsDataMC() const {return fDataMC ; }
   virtual void SwitchOnDataMC()    {fDataMC = kTRUE ; }
