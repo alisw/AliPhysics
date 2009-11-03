@@ -87,6 +87,10 @@ class AliHLTD0Trigger : public AliHLTTrigger
   int ScanConfigurationArgument(int argc, const char** argv);
 
  private:
+  /// Not implemented. Do not allow copying of this object.
+  AliHLTD0Trigger(const AliHLTD0Trigger& );
+  /// Not implemented. Do not allow copying of this object.
+  AliHLTD0Trigger& operator=(const  AliHLTD0Trigger& );
 
   /// inherited from AliHLTTrigger: calculate the trigger
   virtual int DoTrigger();
