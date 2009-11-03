@@ -407,7 +407,7 @@ void AliHLTTRDCalibrationComponent::FormOutput(Int_t param)
   hPH2d->Print();
   HLTDebug("GetPRF2d = 0x%x; NEntries = %i; size = %i", hPRF2d, hPRF2d->GetEntries(), sizeof(hPRF2d));
   hPRF2d->Print();
-  HLTDebug("GetVdriftLinearFit = 0x%x; size = %i", hVdriftLinearFit, sizeof(hVdriftLinearFit)); 
+  //HLTDebug("GetVdriftLinearFit = 0x%x; size = %i", hVdriftLinearFit, sizeof(hVdriftLinearFit)); 
   
   HLTDebug("output Array: pointer = 0x%x; NEntries = %i; size = %i", fOutArray, fOutArray->GetEntries(), sizeof(fOutArray));
    
