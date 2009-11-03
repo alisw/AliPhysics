@@ -119,7 +119,11 @@ AliHLTGlobalTriggerWrapper::AliHLTGlobalTriggerWrapper(const char* classname) :
     HLTError("Could not create a new object of type '%s'.", classname);
   }
   
-  G__set_errmsgcallback(reinterpret_cast<void*>(AliHLTOnErrorInCINT));
+  // Matthias 2009-11-03: temporarily disabled, on some systems the warning
+  // is interpreted an an error, so we have a litle problem with root
+  // HLT/trigger/AliHLTGlobalTriggerWrapper.cxx:122: error: ISO C++ forbids
+  // casting between pointer-to-function and pointer-to-object
+  //G__set_errmsgcallback(reinterpret_cast<void*>(AliHLTOnErrorInCINT));
 }
 
 
