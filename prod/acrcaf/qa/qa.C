@@ -15,11 +15,10 @@ void qa(Int_t runNumber) {
   // Enable analysis libs
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libPWG1.so");
   gProof->Exec("gSystem->Load(\"libANALYSIS.so\");",kTRUE);
   gProof->Exec("gSystem->Load(\"libANALYSISalice.so\");",kTRUE);
-
-  gProof->Load(Form("%s/PWG1/cosmic/AliAnalysisTaskCosmic.cxx++g",
-		    gSystem->Getenv("ALICE_ROOT")));
+  gProof->Exec("gSystem->Load(\"libPWG1.so\");",kTRUE);
 
   //____________________________________________//
   // Make the analysis manager
