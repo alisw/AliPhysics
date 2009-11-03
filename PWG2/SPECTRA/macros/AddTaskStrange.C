@@ -1,4 +1,4 @@
-AliAnalysisTaskStrange *AddTaskStrange(Short_t lCollidingSystems=0,  /*0 = pp, 1 = AA*/,
+AliAnalysisTaskStrange *AddTaskStrange(Short_t lCollidingSystems=0,  /*0 = pp, 1 = AA*/
 				       TString lAnalysisCut="no" )
 {
 // Creates, configures and attaches to the train a strangeness task.
