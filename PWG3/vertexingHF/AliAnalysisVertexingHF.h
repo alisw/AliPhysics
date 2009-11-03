@@ -8,7 +8,7 @@
 //            Reconstruction of heavy-flavour decay candidates
 //      
 //  Origin: E.Bruna, G.E.Bruno, A.Dainese, F.Prino, R.Romita, X.M.Zhang
-//  Contact: andrea.dainese@lnl.infn.it
+//  Contact: andrea.dainese@pd.infn.it
 //-------------------------------------------------------------------------
 
 #include <TNamed.h>
@@ -57,15 +57,24 @@ class AliAnalysisVertexingHF : public TNamed {
   void SetDstarOff() { fDstar=kFALSE; }
   void SetLikeSignOn() { fLikeSign=kTRUE; }
   void SetLikeSignOff() { fLikeSign=kFALSE; }
+  void SetMixEventOn() { fMixEvent=kTRUE; }
+  void SetMixEventOff() { fMixEvent=kFALSE; }
+  void SetInputAOD() { fInputAOD=kTRUE; }
   Bool_t GetD0toKpi() { return fD0toKpi; }
   Bool_t GetJPSItoEle() { return fJPSItoEle; }
   Bool_t Get3Prong() { return f3Prong; }
   Bool_t Get4Prong() { return f4Prong; }
   Bool_t GetDstar()  { return fDstar; }
   Bool_t GetLikeSign() { return fLikeSign; }
+  Bool_t GetMixEvent() { return fMixEvent; }
+  Bool_t GetInputAOD() { return fInputAOD; }
+  Bool_t GetRecoPrimVtxSkippingTrks() {return fRecoPrimVtxSkippingTrks;}
+  Bool_t GetRmTrksFromPrimVtx(){return fRmTrksFromPrimVtx;}
   void SetFindVertexForDstar(Bool_t vtx=kTRUE) { fFindVertexForDstar=vtx; }
   void SetRecoPrimVtxSkippingTrks() 
     { fRecoPrimVtxSkippingTrks=kTRUE; fRmTrksFromPrimVtx=kFALSE;}
+  void UnsetRecoPrimVtxSkippingTrks()
+    { fRecoPrimVtxSkippingTrks=kFALSE; fRmTrksFromPrimVtx=kFALSE;}
   void SetRmTrksFromPrimVtx() 
     {fRmTrksFromPrimVtx=kTRUE; fRecoPrimVtxSkippingTrks=kFALSE; }
   void SetTrackFilter(AliAnalysisFilter* trackF) { fTrackFilter = trackF; }
@@ -154,6 +163,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t f4Prong;    // D0->Kpipipi
   Bool_t fDstar;     // D*->D0pi
   Bool_t fLikeSign;  // Like-sign pairs
+  Bool_t fMixEvent; // event mixing
 
   // single-track cuts
   AliAnalysisFilter *fTrackFilter; //  Track Filter for displaced vertices
@@ -288,11 +298,11 @@ class AliAnalysisVertexingHF : public TNamed {
 		       Double_t *px,Double_t *py,Double_t *pz) const;
   void   SelectTracksAndCopyVertex(AliVEvent *event,
 				   TObjArray &seleTrksArray,Int_t &nSeleTrks,
-				   UChar_t *seleFlags);
+				   UChar_t *seleFlags,Int_t *evtNumber);
   void   SetPrimaryVertex(AliESDVertex *v1) { fV1 = v1; }
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
   //
-  ClassDef(AliAnalysisVertexingHF,11);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,12);  // Reconstruction of HF decay candidates
 };
 
 

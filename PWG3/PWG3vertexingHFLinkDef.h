@@ -12,6 +12,7 @@
 #pragma link C++ class AliAODRecoCascadeHF+;
 #pragma link C++ class AliAnalysisVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSEVertexingHF+;
+#pragma link C++ class AliAnalysisTaskMEVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSESelectHF+;
 #pragma link C++ class AliAnalysisTaskSECompareHF+;
 #pragma link C++ class AliAnalysisTaskSEDplus+;
