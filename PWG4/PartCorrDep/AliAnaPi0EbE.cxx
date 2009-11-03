@@ -549,7 +549,10 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
 		 GetReader()->GetDataType() != AliCaloTrackReader::kMC){
 		  aodpi0.SetInputFileIndex(input);
-		  aodpi0.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetReader(), aodpi0.GetInputFileIndex()));
+		  Int_t tag	=0;
+		  tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetReader(), aodpi0.GetInputFileIndex());
+		  //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabel(), GetReader(), aodpi0.GetInputFileIndex(), tag);
+		  aodpi0.SetTag(tag);
 		  if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Origin of candidate %d\n",aodpi0.GetTag());
       }
     }//Work with stack also   
