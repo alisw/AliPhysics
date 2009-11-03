@@ -1,4 +1,4 @@
-AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data)
+AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kUseKinematics = kFALSE, Bool_t kPrintSettings = kFALSE)
 {
   // Creates a PartCorr task for calorimeters performance studies, configures it and adds it to the analysis manager.
   
@@ -16,7 +16,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data)
     ::Error("AddTaskPartCorr", "This task requires an input event handler");
     return NULL;
   }
-   //TString dataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
    // Configure analysis
    //===========================================================================
@@ -32,8 +32,20 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data)
   reader->SetEMCALPtMin(0.2); 
   reader->SetPHOSPtMin(0.2);
   reader->SetCTSPtMin(0.2);
-  //reader->Print("");
+  if(kPrintSettings) reader->Print("");
   
+  if(kUseKinematics){
+		if(inputDataType == "ESD"){
+			reader->SwitchOnStack();          
+			reader->SwitchOffAODMCParticles(); 
+		}
+		else if(inputDataType == "AOD"){
+			reader->SwitchOffStack();          
+			reader->SwitchOnAODMCParticles(); 
+		}
+   }
+   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
+
   // ##### Analysis algorithm settings ####
 
   AliFidutialCut * fidCut = new AliFidutialCut();
@@ -44,20 +56,22 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data)
   AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
   emcalQA->SetDebug(-1); //10 for lots of messages
   emcalQA->SetCalorimeter("EMCAL");
-  emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-  emcalQA->AddToHistogramsName("EMCAL"); //Begining of histograms name
+  if(kUseKinematics && inputDataType!="AOD") emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  else  emcalQA->SwitchOffDataMC() ;
+  emcalQA->AddToHistogramsName("EMCAL_"); //Begining of histograms name
   emcalQA->SetFidutialCut(fidCut);
   emcalQA->SwitchOnFidutialCut();
-  //emcalQA->Print("");	
+  if(kPrintSettings) emcalQA->Print("");	
 	
   AliAnaCalorimeterQA *phosQA = new AliAnaCalorimeterQA();
   phosQA->SetDebug(-1); //10 for lots of messages
   phosQA->SetCalorimeter("PHOS");
-  phosQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-  phosQA->AddToHistogramsName("PHOS");//Begining of histograms name
+  if(kUseKinematics && inputDataType!="AOD") phosQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  else  phosQA->SwitchOffDataMC() ;  
+  phosQA->AddToHistogramsName("PHOS_");//Begining of histograms name
   phosQA->SetFidutialCut(fidCut);
   phosQA->SwitchOnFidutialCut();
-  //phosQA->Print("");	
+  if(kPrintSettings)phosQA->Print("");	
   
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
@@ -67,7 +81,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data)
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker()  ;
-  maker->Print("");
+  if(kPrintSettings) maker->Print("");
   
   printf("======================== \n");
   printf(" End Configuration of Calorimeter QA \n");
