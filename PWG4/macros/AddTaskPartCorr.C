@@ -69,7 +69,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliAnaCalorimeterQA *qa = new AliAnaCalorimeterQA();
   qa->SetDebug(-1); //10 for lots of messages
   qa->SetCalorimeter(calorimeter);
-  if(kUseKinematics && data!="AOD") qa->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  if(kUseKinematics && inputDataType!="AOD") qa->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else  qa->SwitchOffDataMC() ;
   qa->AddToHistogramsName(Form("AnaCaloQA_%s",calorimeter.Data()));
   qa->SetFidutialCut(fidCut);

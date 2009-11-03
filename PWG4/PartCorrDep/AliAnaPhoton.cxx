@@ -680,7 +680,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 	// Access MC information in stack if requested, check that it exists.
 	Int_t label =ph->GetLabel();
 	if(label < 0) {
-		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
+		printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
 		continue;
 	}
 		
@@ -689,7 +689,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 	if(GetReader()->ReadStack()){
 				
 		if(label >=  stack->GetNtrack()) {
-			if(GetDebug() > 2)  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
+			if(GetDebug() > 2)  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
 			continue ;
 		}
 		
