@@ -340,8 +340,13 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	// The first one can be updated already at that stage here, while the two others
 	// eventually require to update from the ITS tracks before. The exact scheme
 	// needs to be checked 
+	iotrack.SetID( element->TrackID() );
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCin);
-	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCout);
+	{
+	  AliHLTGlobalBarrelTrack outPar(*element);
+	  outPar.AliExternalTrackParam::PropagateTo( element->GetLastPointX(), fSolenoidBz );
+	  iotrack.UpdateTrackParams(&outPar,AliESDtrack::kTPCout);
+	}
 	iotrack.SetTPCPoints(points);
 	if( element->TrackID()<ndEdxTPC ){
 	  iotrack.SetTPCsignal( dEdxTPC[element->TrackID()], 0, 0 ); 
