@@ -187,6 +187,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetDoPadSelection(Bool_t input){fDoPadSelection=input;}
   void SetLastTimeBin(Int_t ltb){fLastTimeBin=ltb;}
   void SetFirstTimeBin(Int_t ftb){fFirstTimeBin=ftb;}
+  void SetReleaseMemory( Bool_t v ){ fReleaseMemory = v;}
   void UpdateLastTimeBin(){fLastTimeBin=AliHLTTPCTransform::GetNTimeBins();}
 
 //---------------------------------- Under this line the old sorted clusterfinder functions can be found --------------------------------
@@ -290,10 +291,12 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   Float_t fTimeMeanDiff;                                           //! transient
 
+  Bool_t fReleaseMemory; //! flag to release the memory after each event
+
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
 #endif
   
-  ClassDef(AliHLTTPCClusterFinder,10) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder,11) //Fast cluster finder
 };
 #endif

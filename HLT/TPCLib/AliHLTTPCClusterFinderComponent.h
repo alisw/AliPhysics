@@ -200,15 +200,15 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	/** Last timebin taken in to account when reading the data */
 	Int_t fLastTimeBin;                                                            //!transient
 
-	Bool_t fDoMC;
-
+	Bool_t fDoMC; // flag to provide MC labels
+	Bool_t fReleaseMemory; // flag to release the memory after each event
 	/// the default configuration entry for this component
 	static const char* fgkOCDBEntryPacked; //!transient
 	static const char* fgkOCDBEntryUnpacked; //!transient
 	static const char* fgkOCDBEntryDecoder; //!transient
 	static const char* fgkOCDBEntry32Bit; //!transient
 
-	ClassDef(AliHLTTPCClusterFinderComponent, 7)
+	ClassDef(AliHLTTPCClusterFinderComponent, 8)
 
 };
 #endif

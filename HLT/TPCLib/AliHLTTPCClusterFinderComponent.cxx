@@ -77,7 +77,8 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(int mode)
   fGetActivePads(0),
   fFirstTimeBin(-1),
   fLastTimeBin(-1),
-  fDoMC(kFALSE)
+  fDoMC(kFALSE),
+  fReleaseMemory( kFALSE )
 {
   // see header file for class documentation
   // or
@@ -619,6 +620,12 @@ int AliHLTTPCClusterFinderComponent::ScanConfigurationArgument(int argc, const c
     HLTDebug("Setting fDoMC to true.");
     return 1;
   }
+  if (argument.CompareTo("-release-memory")==0) {
+    fReleaseMemory=kTRUE;
+    fClusterFinder->SetReleaseMemory( fReleaseMemory );
+    HLTDebug("Setting fReleaseMemory to true.");
+    return 1;
+  }
 
   if (argument.CompareTo("-active-pads")==0 || argument.CompareTo("activepads")==0){
     if(argument.CompareTo("activepads" )==0){
@@ -799,6 +806,11 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
 	fDoMC=kTRUE;
 	fClusterFinder->SetDoMC(fDoMC);
 	HLTInfo("Setting fDoMC to true.");
+      }
+      else if (argument.CompareTo("-release-memory")==0) {
+	fReleaseMemory = kTRUE;
+	fClusterFinder->SetReleaseMemory( kTRUE );
+	HLTInfo("Setting fReleaseMemory to true.");
       }
       else if (argument.CompareTo("-active-pads")==0 || argument.CompareTo("activepads")==0){
 	if(argument.CompareTo("activepads" )==0){
