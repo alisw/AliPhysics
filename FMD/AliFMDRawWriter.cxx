@@ -160,7 +160,7 @@ AliFMDRawWriter::Exec(Option_t*)
     WriteDigits(digits);
   }
   loader->UnloadDigits();
-  delete digits;
+  //delete digits;
 }
 
 #if 1
