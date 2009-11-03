@@ -58,6 +58,7 @@ fNentries(0),
 fVHFPPR(0),
 fVHFloose(0),
 fArray(0),
+fReadMC(0),
 fLsNormalization(1.)
 
 {
@@ -75,6 +76,7 @@ fNentries(0),
 fVHFPPR(0),
 fVHFloose(0),
 fArray(0),
+fReadMC(0),
 fLsNormalization(1.)
 {
   // Default constructor
@@ -344,20 +346,23 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
   //vtx1->Print();
 
-  // load MC particles
-  TClonesArray *mcArray = 
-    (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-  if(!mcArray) {
-    printf("AliAnalysisTaskSED0Mass::UserExec: MC particles branch not found!\n");
-    return;
-  }
+  TClonesArray *mcArray = 0;
+  AliAODMCHeader *mcHeader = 0;
+
+  if(fReadMC) {
+    // load MC particles
+    mcArray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    if(!mcArray) {
+      printf("AliAnalysisTaskSED0Mass::UserExec: MC particles branch not found!\n");
+      return;
+    }
   
-  // load MC header
-  AliAODMCHeader *mcHeader = 
-    (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-  if(!mcHeader) {
-    printf("AliAnalysisTaskSED0Mass::UserExec: MC header branch not found!\n");
-    return;
+    // load MC header
+    mcHeader = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if(!mcHeader) {
+      printf("AliAnalysisTaskSED0Mass::UserExec: MC header branch not found!\n");
+      return;
+    }
   }
   
   //printf("VERTEX Z %f %f\n",vtx1->GetZ(),mcHeader->GetVtxZ());
@@ -397,73 +402,75 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     pdgs[0]=321;
     Double_t minvD0bar = d->InvMassD0bar();
     //apply cut on invariant mass on the pair
-    if(TMath::Abs(minvD0-mPDG)<0.03 || TMath::Abs(minvD0bar-mPDG)<0.03){
-      //cout<<"inside mass cut"<<endl;
-      Int_t pdgDgD0toKpi[2]={321,211};
-      Int_t lab=d->MatchToMC(421,mcArray,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+     if(fReadMC){
+       if(TMath::Abs(minvD0-mPDG)<0.03 || TMath::Abs(minvD0bar-mPDG)<0.03){
+	 //cout<<"inside mass cut"<<endl;
+	 Int_t pdgDgD0toKpi[2]={321,211};
+	 Int_t lab=d->MatchToMC(421,mcArray,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+ 
+	 if(lab>=0){ //signal
+	   if(fArray==1) cout<<"LS signal: ERROR"<<endl;
+	   for (Int_t iprong=0; iprong<2; iprong++){
+	     AliAODTrack *prong=(AliAODTrack*)d->GetDaughter(iprong);
+	     Int_t labprong=prong->GetLabel();
 
-      if(lab>=0){ //signal
-	if(fArray==1) cout<<"LS signal: ERROR"<<endl;
-	for (Int_t iprong=0; iprong<2; iprong++){
-	  AliAODTrack *prong=(AliAODTrack*)d->GetDaughter(iprong);
-	  Int_t labprong=prong->GetLabel();
+	     //cout<<"prong name = "<<prong->GetName()<<" label = "<<prong->GetLabel()<<endl;
+	     AliAODMCParticle *mcprong=0;
+	     if(labprong>=0)  mcprong= (AliAODMCParticle*)mcArray->At(labprong);
+	     Int_t pdgprong=mcprong->GetPdgCode();
+	     if(TMath::Abs(pdgprong)==211) {
+	       //cout<<"pi"<<endl;
+	       ((TH1F*)fDistr->FindObject("hptpiS"))->Fill(d->PtProng(iprong));
+	       ((TH1F*)fDistr->FindObject("hd0piS"))->Fill(d->Getd0Prong(iprong));
+	     }
 
-	  //cout<<"prong name = "<<prong->GetName()<<" label = "<<prong->GetLabel()<<endl;
-	  AliAODMCParticle *mcprong=0;
-	  if(labprong>=0)  mcprong= (AliAODMCParticle*)mcArray->At(labprong);
-	  Int_t pdgprong=mcprong->GetPdgCode();
-	  if(TMath::Abs(pdgprong)==211) {
-	    //cout<<"pi"<<endl;
-	    ((TH1F*)fDistr->FindObject("hptpiS"))->Fill(d->PtProng(iprong));
-	    ((TH1F*)fDistr->FindObject("hd0piS"))->Fill(d->Getd0Prong(iprong));
-	  }
+	     if(TMath::Abs(pdgprong)==321) {
+	       //cout<<"kappa"<<endl;
+	       ((TH1F*)fDistr->FindObject("hptKS"))->Fill(d->PtProng(iprong));
+	       ((TH1F*)fDistr->FindObject("hd0KS"))->Fill(d->Getd0Prong(iprong));
+	     }
+	     ((TH1F*)fDistr->FindObject("hdcaS"))->Fill(d->GetDCA());
 
-	  if(TMath::Abs(pdgprong)==321) {
-	    //cout<<"kappa"<<endl;
-	    ((TH1F*)fDistr->FindObject("hptKS"))->Fill(d->PtProng(iprong));
-	    ((TH1F*)fDistr->FindObject("hd0KS"))->Fill(d->Getd0Prong(iprong));
-	  }
-	  ((TH1F*)fDistr->FindObject("hdcaS"))->Fill(d->GetDCA());
+	   }
 
-	}
+	   if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
+	     ((TH1F*)fDistr->FindObject("hcosthetastarS"))->Fill(d->CosThetaStarD0());
+	   else ((TH1F*)fDistr->FindObject("hcosthetastarS"))->Fill(d->CosThetaStarD0bar());
 
-	if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
-	  ((TH1F*)fDistr->FindObject("hcosthetastarS"))->Fill(d->CosThetaStarD0());
-	else ((TH1F*)fDistr->FindObject("hcosthetastarS"))->Fill(d->CosThetaStarD0bar());
+	   ((TH1F*)fDistr->FindObject("hd0d0S"))->Fill(d->Prodd0d0());
 
-	((TH1F*)fDistr->FindObject("hd0d0S"))->Fill(d->Prodd0d0());
+	   ((TH1F*)fDistr->FindObject("hcosthetapointS"))->Fill(d->CosPointingAngle());
+	   ((TH1F*)fDistr->FindObject("hcosthpointd0d0S"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
 
-	((TH1F*)fDistr->FindObject("hcosthetapointS"))->Fill(d->CosPointingAngle());
-	((TH1F*)fDistr->FindObject("hcosthpointd0d0S"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
-
-	//cout<<"ok point"<<endl;
+	   //cout<<"ok point"<<endl;
 
        
-      } else{ //Background or LS
-	//cout<<"is background"<<endl;
-	AliAODTrack *prong=(AliAODTrack*)d->GetDaughter(0);
-	if(!prong) cout<<"No daughter found";
-	else{
-	  if(prong->Charge()==1) {fTotPosPairs[4]++;} else {fTotNegPairs[4]++;}
-	}
-	((TH1F*)fDistr->FindObject("hptB"))->Fill(d->PtProng(0));
-	//cout<<"ptok"<<endl;
-	((TH1F*)fDistr->FindObject("hd0B"))->Fill(d->Getd0Prong(0));
-	//cout<<"d0ok"<<endl;
-	((TH1F*)fDistr->FindObject("hdcaB"))->Fill(d->GetDCA());
-	//cout<<"dcaok"<<endl;
-	((TH1F*)fDistr->FindObject("hcosthetastarB"))->Fill(d->CosThetaStarD0());
-	((TH1F*)fDistr->FindObject("hcosthetastarB"))->Fill(d->CosThetaStarD0bar());	
-	((TH1F*)fDistr->FindObject("hd0d0B"))->Fill(d->Prodd0d0());
-	//cout<<"d0d0ok"<<endl;
-	((TH1F*)fDistr->FindObject("hcosthetapointB"))->Fill(d->CosPointingAngle());
-	((TH1F*)fDistr->FindObject("hcosthpointd0d0B"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
+	 } else{ //Background or LS
+	   //cout<<"is background"<<endl;
+	   AliAODTrack *prong=(AliAODTrack*)d->GetDaughter(0);
+	   if(!prong) cout<<"No daughter found";
+	   else{
+	     if(prong->Charge()==1) {fTotPosPairs[4]++;} else {fTotNegPairs[4]++;}
+	   }
+	   ((TH1F*)fDistr->FindObject("hptB"))->Fill(d->PtProng(0));
+	   //cout<<"ptok"<<endl;
+	   ((TH1F*)fDistr->FindObject("hd0B"))->Fill(d->Getd0Prong(0));
+	   //cout<<"d0ok"<<endl;
+	   ((TH1F*)fDistr->FindObject("hdcaB"))->Fill(d->GetDCA());
+	   //cout<<"dcaok"<<endl;
+	   ((TH1F*)fDistr->FindObject("hcosthetastarB"))->Fill(d->CosThetaStarD0());
+	   ((TH1F*)fDistr->FindObject("hcosthetastarB"))->Fill(d->CosThetaStarD0bar());	
+	   ((TH1F*)fDistr->FindObject("hd0d0B"))->Fill(d->Prodd0d0());
+	   //cout<<"d0d0ok"<<endl;
+	   ((TH1F*)fDistr->FindObject("hcosthetapointB"))->Fill(d->CosPointingAngle());
+	   ((TH1F*)fDistr->FindObject("hcosthpointd0d0B"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
 
-	//cout<<"pointok"<<endl;
+	   //cout<<"pointok"<<endl;
 
-      }
-
-    } //inv mass cut
+      
+	 }
+       } //inv mass cut
+     }
   
      //cuts order
 //       printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
@@ -554,7 +561,8 @@ void AliAnalysisTaskSED0Mass::FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *pa
 
     TString fillthis="";
     Int_t pdgDgD0toKpi[2]={321,211};
-    Int_t labD0 = part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+    Int_t labD0=-1;
+    if (fReadMC) labD0 = part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
 
     //count candidates selected by cuts
     fNentries->Fill(2);

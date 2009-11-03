@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/)
+AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kTRUE)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -37,6 +37,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/)
   AliAnalysisTaskSED0Mass *massD0Task = new AliAnalysisTaskSED0Mass("D0MassAndDistrAnalysis");
   massD0Task->SetDebugLevel(0);
   massD0Task->SetArray(flag);
+  massD0Task->SetReadMC(readMC);
   mgr->AddTask(massD0Task);
   
   //
