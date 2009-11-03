@@ -31,16 +31,6 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
       return NULL;
    }   
    
-   // Filtering of MC particles (decays conversions etc)
-   // this task is also needed to set the MCEventHandler
-   // to the AODHandler, this will not be needed when
-   // AODHandler goes to ANALYSISalice
-   AliAnalysisTaskMCParticleFilter *kinefilter = 0;
-   if (useKineFilter) {
-      kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Kine Filter");
-      mgr->AddTask(kinefilter);
-   }   
-
    // Create the task, add it to the manager and configure it.
    //===========================================================================   
    // Barrel tracks filter
@@ -49,7 +39,20 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
    // Muons
    AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
    mgr->AddTask(esdmuonfilter);
-   
+
+   // Filtering of MC particles (decays conversions etc)
+   // this task has to go AFTER all other filter tasks
+   // since it fills the AODMC array with all
+   // selected MC Particles, only this way we have the 
+   // AODMCparticle information available for following tasks
+   AliAnalysisTaskMCParticleFilter *kinefilter = 0;
+   if (useKineFilter) {
+      kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Kine Filter");
+      mgr->AddTask(kinefilter);
+   }   
+
+
+
    // Cuts on primary tracks
    AliESDtrackCuts* esdTrackCutsL = new AliESDtrackCuts("Standard Track Cuts", "ESD Track Cuts");
    esdTrackCutsL->SetMinNClustersTPC(50);
@@ -131,7 +134,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE)
       AliAnalysisDataContainer *coutputEx = mgr->CreateContainer("cFilterList", TList::Class(),
 								   AliAnalysisManager::kOutputContainer,"pyxsec_hists.root");
       mgr->ConnectOutput (kinefilter,  1,coutputEx);
-     }   
+   }   
    return esdfilter;
  }
  

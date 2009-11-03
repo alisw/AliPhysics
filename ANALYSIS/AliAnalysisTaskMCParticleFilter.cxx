@@ -180,7 +180,7 @@ void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
     AliMCEventHandler *mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()); 
     AliAODHandler *aodH = dynamic_cast<AliAODHandler*> ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if(!aodH){
-      Printf("%s:&d Could not get AODHandler",(char*)__FILE__,__LINE__);
+      AliWarning("Could not get AODHandler");
       return;
     }
     aodH->SetMCEventHandler(mcH);
@@ -224,6 +224,13 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
     AliWarning("No MC handler Found");
     return;
   }
+  
+  AliAODHandler *aodH = dynamic_cast<AliAODHandler*> ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+  if(!aodH){
+    AliWarning("Could not get AODHandler");
+    return;
+  }
+
 
 
   // fetch the output 
@@ -383,6 +390,7 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 
   AliInfo(Form("Taken daughters %d/%d of %d charm",iTaken,iAll,iCharm));
 
+  aodH->StoreMCParticles();
   PostData(1,fHistList);
 
   return;
