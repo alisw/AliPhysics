@@ -191,7 +191,7 @@ void AliEventPoolOTF::InitArrays()
     SetEventPlaneBinning(-1000., 1000., 2000.);
     SetEventPlaneBinning(-1000., 1000., 2000.);
     SetLeadingParticleEtaBinning(-13.0, 13.0, 26.); 
-    SetLeadingParticlePhiBinning(0, 2*(TMath::Pi()),2*(TMath::Pi()));   
+    SetLeadingParticlePhiBinning(-13.0, 13.0, 26.);   
     for (Int_t i = 0; i < 4; i++) fValue[i] = fValueMin[i];
 }
 
