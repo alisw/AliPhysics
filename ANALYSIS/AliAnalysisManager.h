@@ -67,7 +67,8 @@ enum EAliAnalysisFlags {
    virtual Bool_t      ProcessCut(Long64_t entry) {return Process(entry);}
    virtual Bool_t      Process(Long64_t entry);
    virtual Int_t       GetEntry(Long64_t entry, Int_t getall = 0);
-   TFile              *OpenProofFile(const char *name, const char *option);
+   TFile              *OpenProofFile(AliAnalysisDataContainer *cont, const char *option);
+   static TFile       *OpenFile(AliAnalysisDataContainer *cont, const char *option, Bool_t ignoreProof=kFALSE);
    void                PackOutput(TList *target);
    void                UnpackOutput(TList *source);
    virtual void        Terminate();
@@ -91,6 +92,7 @@ enum EAliAnalysisFlags {
    void                RegisterExtraFile(const char *fname);
    void                SetAnalysisType(EAliAnalysisExecMode mode) {fMode = mode;}
    void                SetCurrentEntry(Long64_t entry) {fCurrentEntry = entry;}
+   static void         SetCommonFileName(const char *name) {fgCommonFileName = name;}
    void                SetDebugLevel(UInt_t level) {fDebug = level;}
    void                SetSpecialOutputLocation(const char *location) {fSpecialOutputLocation = location;}
    void                SetDisableBranches(Bool_t disable=kTRUE) {TObject::SetBit(kDisableBranches,disable);}
@@ -105,6 +107,7 @@ enum EAliAnalysisFlags {
    AliVEventHandler*   GetInputEventHandler()   {return fInputEventHandler;}
    AliVEventHandler*   GetOutputEventHandler()  {return fOutputEventHandler;}
    AliVEventHandler*   GetMCtruthEventHandler() {return fMCtruthEventHandler;}
+   static const char  *GetCommonFileName()      {return fgCommonFileName.Data();}
    AliAnalysisDataContainer *GetCommonInputContainer() {return fCommonInput;}
    AliAnalysisDataContainer *GetCommonOutputContainer() {return fCommonOutput;}
    AliAnalysisGrid*    GetGridHandler()         {return fGridHandler;}
@@ -167,6 +170,7 @@ private:
    AliAnalysisGrid        *fGridHandler;         //! Grid handler plugin
    TString                 fExtraFiles;          // List of extra files to be merged
 
+   static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
    ClassDef(AliAnalysisManager,5)  // Analysis manager class
 };   

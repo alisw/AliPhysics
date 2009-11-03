@@ -463,27 +463,9 @@ TFile *AliAnalysisTask::OpenFile(Int_t iout, Option_t *option) const
       Error("OpenFile", "No output slot for task %s with index %d", GetName(), iout);
       return NULL;
    }   
-   // We allow file opening also on the slaves (AG)
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   // Method delegated to the analysis manager (A.G. 02/11/09)
    AliAnalysisDataContainer *cont = GetOutputSlot(iout)->GetContainer();
-   TFile *f = NULL;
-   if (!strlen(cont->GetFileName())) {
-      Error("OpenFile", "No file name specified for container %s", cont->GetName());
-      return f;
-   }   
-   if (mgr->GetAnalysisType()==AliAnalysisManager::kProofAnalysis && cont->IsSpecialOutput())
-      f = mgr->OpenProofFile(cont->GetFileName(),option);
-   else {
-      // Check first if the file is already opened
-      f = (TFile*)gROOT->GetListOfFiles()->FindObject(cont->GetFileName());
-      if (!f) f = new TFile(cont->GetFileName(), option);
-   }   
-   if (f && !f->IsZombie()) {
-      cont->SetFile(f);
-      return f;
-   }
-   cont->SetFile(NULL);
-   return NULL;
+   return AliAnalysisManager::OpenFile(cont, option);
 }
 
 //______________________________________________________________________________

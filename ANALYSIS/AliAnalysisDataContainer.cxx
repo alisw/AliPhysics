@@ -63,6 +63,7 @@ AliAnalysisDataContainer::AliAnalysisDataContainer() : TNamed(),
                           fDataReady(kFALSE),
                           fOwnedData(kFALSE),
                           fFileName(),
+                          fFolderName(),
                           fFile(NULL),
                           fData(NULL),
                           fType(NULL),
@@ -78,6 +79,7 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const char *name, TClass *typ
                           fDataReady(kFALSE),
                           fOwnedData(kFALSE),
                           fFileName(),
+                          fFolderName(),
                           fFile(NULL),
                           fData(NULL),
                           fType(type),
@@ -94,6 +96,7 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const AliAnalysisDataContaine
                           fDataReady(cont.fDataReady),
                           fOwnedData(kFALSE),
                           fFileName(cont.fFileName),
+                          fFolderName(cont.fFolderName),
                           fFile(NULL),
                           fData(cont.fData),
                           fType(NULL),
@@ -124,8 +127,9 @@ AliAnalysisDataContainer &AliAnalysisDataContainer::operator=(const AliAnalysisD
    if (&cont != this) {
       TNamed::operator=(cont);
       fDataReady = cont.fDataReady;
-      fOwnedData = kFALSE;  // !!! Data owned by cont.
+      fOwnedData = kFALSE;
       fFileName = cont.fFileName;
+      fFolderName = cont.fFolderName;
       fFile = NULL;
       fData = cont.fData;
       GetType();
@@ -282,7 +286,10 @@ void AliAnalysisDataContainer::PrintContainer(Option_t *option, Int_t indent) co
       if (!fConsumers || !fConsumers->GetEntriesFast()) printf("-none-\n");
       else printf("\n");
    }
-   printf("Filename: %s\n", fFileName.Data());
+   if (fFolderName.Length())
+     printf("Filename: %s  folder: %s\n", fFileName.Data(), fFolderName.Data());
+   else
+     printf("Filename: %s\n", fFileName.Data());
    TIter next(fConsumers);
    AliAnalysisTask *task;
    while ((task=(AliAnalysisTask*)next())) task->PrintTask(option, indent+3);
@@ -327,6 +334,27 @@ Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *)
       //AliWarning(Form("Data for container %s can be published only by producer task %s", GetName(), fProducer->GetName()));   
       return kFALSE;           
    }              
+}
+
+//______________________________________________________________________________
+void AliAnalysisDataContainer::SetFileName(const char *filename)
+{
+// The filename field can be actually composed by the actual file name followed
+// by :dirname (optional):
+// filename = file_name[:dirname]
+// No slashes (/) allowed
+  fFileName = filename;
+  fFolderName = "";
+  Int_t index = fFileName.Index(":");
+  // Fill the folder name
+  if (index >= 0) {
+    fFolderName = fFileName(index+1, fFileName.Length()-index);
+    fFileName.Remove(index);
+  }  
+  if (!fFileName.Length())
+    Fatal("SetFileName", "Empty file name");   
+  if (fFileName.Index("/")>=0)
+    Fatal("SetFileName", "No slashes (/) allowed in the file name");   
 }
 
 //______________________________________________________________________________

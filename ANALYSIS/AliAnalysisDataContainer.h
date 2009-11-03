@@ -52,6 +52,7 @@ enum EAnalysisContainerFlags {
    // Getters
    TObject                  *GetData() const      {return fData;}
    const char               *GetFileName() const  {return fFileName.Data();}
+   const char               *GetFolderName() const {return fFolderName.Data();}
    TFile                    *GetFile() const      {return fFile;}
    TClass                   *GetType() const;
    AliAnalysisTask          *GetProducer() const  {return fProducer;}
@@ -63,7 +64,7 @@ enum EAnalysisContainerFlags {
    void                      SetDataOwned(Bool_t flag) {fOwnedData = flag;}
    void                      SetPostEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kPostEventLoop,flag);}
    void                      SetSpecialOutput(Bool_t flag=kTRUE) {TObject::SetBit(kSpecialOutput,flag);}
-   void                      SetFileName(const char *filename) {fFileName = filename;}
+   void                      SetFileName(const char *filename);
    void                      SetFile(TFile *f) {fFile = f;}
    void                      SetProducer(AliAnalysisTask *prod, Int_t islot);
    void                      AddConsumer(AliAnalysisTask *cons, Int_t islot);
@@ -93,13 +94,14 @@ protected:
    Bool_t                    fDataReady;  // Flag that data is ready
    Bool_t                    fOwnedData;  // Flag data ownership
    TString                   fFileName;   // File storing the data
+   TString                   fFolderName; // Folder name in the output file
    TFile                    *fFile;       //! Opened file
    TObject                  *fData;       // Contained data
    TClass                   *fType;       //! Type of contained data
    AliAnalysisTask          *fProducer;   // Analysis task to which the slot belongs
    TObjArray                *fConsumers;  // List of consumers of the data
    
-   ClassDef(AliAnalysisDataContainer,1)  // Class describing a data container for analysis
+   ClassDef(AliAnalysisDataContainer,2)  // Class describing a data container for analysis
 };
 
 //==============================================================================
