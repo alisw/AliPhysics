@@ -2,7 +2,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Gaute Ovrebekk <ovrebekk@ift.uib.no>                  *
+//* Primary Authors: S.Gorbunov <sergey.gorbunov@kip.uni-heidelberg.de>    *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -15,7 +15,7 @@
 //**************************************************************************
 
 /** @file   AliHLTV0HistoComponent.cxx
-    @author Gaute Ovrebekk
+    @author Sergey Gorbunov
     @brief  Component for ploting charge in clusters
 */
 
@@ -93,7 +93,7 @@ void AliHLTV0HistoComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list
 AliHLTComponentDataType AliHLTV0HistoComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTDataTypeHistogram;
+  return kAliHLTDataTypeHistogram  | kAliHLTDataOriginOut;
 }
 
 void AliHLTV0HistoComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
