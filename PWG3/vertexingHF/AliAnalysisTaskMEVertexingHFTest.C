@@ -42,7 +42,7 @@ void AliAnalysisTaskMEVertexingHFTest()
   aodHandler->SetCreateNonStandardAOD();
   mgr->SetOutputEventHandler(aodHandler);
   
-  gROOT->LoadMacro("AddTaskMixing.C");
+  gROOT->LoadMacro("AddTaskHFMixing.C");
   AliAnalysisTaskMEVertexingHF *hfTask = AddTaskHFMixing();
   
   
