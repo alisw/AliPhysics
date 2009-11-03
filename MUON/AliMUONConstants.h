@@ -81,7 +81,7 @@ class AliMUONConstants : public TObject {
     /// Return z-position of absorber end
     static Double_t AbsZEnd() {return fgkAbsZEnd;}
     /// Return chamber thickness in X0
-    static Double_t ChamberThicknessInX0() {return fgChamberThicknessInX0;}
+    static Double_t ChamberThicknessInX0(Int_t chId) {return (chId >= 0 && chId < 10) ? fgChamberThicknessInX0[chId] : 0.;}
     /// Return Trigger ToF Limit (75 ns)
     static Float_t TriggerTofLimit() {return fgkTriggerTofLimit;}
     /// Return default trigger chamber resolution in non bending direction
@@ -131,7 +131,7 @@ class AliMUONConstants : public TObject {
     static Float_t  fgPitch;             ///< Wire pitch for St2 & Slats
     static Float_t  fgPitchSt1;          ///< Wire pitch for Station 1
 
-    static Double_t  fgChamberThicknessInX0; ///< default chamber thickness in X0 for reconstruction
+    static Double_t  fgChamberThicknessInX0[10]; ///< default chamber thickness in X0 for reconstruction
     
     static Double_t fgCoilZ; ///< Coil z-position
     static Double_t fgCoilL; ///< Coil lenght

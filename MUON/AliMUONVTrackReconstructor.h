@@ -64,7 +64,7 @@ class AliMUONVTrackReconstructor : public TObject {
 
   const AliMUONRecoParam* fkRecoParam; ///< reference to reco parameters
   
-  Double_t fMaxMCSAngle2; ///< maximum angle dispersion due to MCS
+  Double_t* fMaxMCSAngle2; ///< maximum angle dispersion due to MCS
   
   // Functions
   AliMUONVTrackReconstructor (const AliMUONVTrackReconstructor& rhs); ///< copy constructor

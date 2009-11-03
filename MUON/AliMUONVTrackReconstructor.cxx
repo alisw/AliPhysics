@@ -101,7 +101,7 @@ fRecTracksPtr(0x0),
 fNRecTracks(0),
 fClusterServer(clusterServer),
 fkRecoParam(recoParam),
-fMaxMCSAngle2(0.)
+fMaxMCSAngle2(0x0)
 {
   /// Constructor for class AliMUONVTrackReconstructor
   /// WARNING: if clusterServer=0x0, no clusterization will be possible at this level
@@ -116,7 +116,9 @@ fMaxMCSAngle2(0.)
   AliMUONTrackParam param;
   Double_t inverseBendingP = (GetRecoParam()->GetMinBendingMomentum() > 0.) ? 1./GetRecoParam()->GetMinBendingMomentum() : 1.;
   param.SetInverseBendingMomentum(inverseBendingP);
-  fMaxMCSAngle2 = AliMUONTrackExtrap::GetMCSAngle2(param, AliMUONConstants::ChamberThicknessInX0(), 1.);
+  fMaxMCSAngle2 = new Double_t [AliMUONConstants::NTrackingCh()];
+  for (Int_t iCh=0; iCh<AliMUONConstants::NTrackingCh(); iCh++)
+    fMaxMCSAngle2[iCh] = AliMUONTrackExtrap::GetMCSAngle2(param, AliMUONConstants::ChamberThicknessInX0(iCh), 1.);
   
 }
 
@@ -125,6 +127,7 @@ AliMUONVTrackReconstructor::~AliMUONVTrackReconstructor()
 {
   /// Destructor for class AliMUONVTrackReconstructor
   delete fRecTracksPtr;
+  delete[] fMaxMCSAngle2;
 }
 
   //__________________________________________________________________________
@@ -198,18 +201,31 @@ Bool_t AliMUONVTrackReconstructor::IsAcceptable(AliMUONTrackParam &trackParam)
   
   // MCS dipersion
   Double_t angleMCS2 = 0.;
-  if (AliMUONTrackExtrap::IsFieldON() && chamber < 6)
-    angleMCS2 = AliMUONTrackExtrap::GetMCSAngle2(trackParam, AliMUONConstants::ChamberThicknessInX0(), 1.);
-  else angleMCS2 = fMaxMCSAngle2;
   Double_t impactMCS2 = 0.;
-  if (!GetRecoParam()->SelectOnTrackSlope()) for (Int_t iCh=0; iCh<=chamber; iCh++)
-    impactMCS2 += AliMUONConstants::DefaultChamberZ(chamber) * AliMUONConstants::DefaultChamberZ(chamber) * angleMCS2;
+  if (AliMUONTrackExtrap::IsFieldON() && chamber < 6) {
+    
+    // track momentum is known
+    for (Int_t iCh=0; iCh<=chamber; iCh++) {
+      Double_t localMCS2 = AliMUONTrackExtrap::GetMCSAngle2(trackParam, AliMUONConstants::ChamberThicknessInX0(iCh), 1.);
+      angleMCS2 += localMCS2;
+      impactMCS2 += AliMUONConstants::DefaultChamberZ(chamber) * AliMUONConstants::DefaultChamberZ(chamber) * localMCS2;
+    }
+    
+  } else {
+    
+    // track momentum is unknown
+    for (Int_t iCh=0; iCh<=chamber; iCh++) {
+      angleMCS2 += fMaxMCSAngle2[iCh];
+      impactMCS2 += AliMUONConstants::DefaultChamberZ(chamber) * AliMUONConstants::DefaultChamberZ(chamber) * fMaxMCSAngle2[iCh];
+    }
+    
+  }
   
   // ------ track selection in non bending direction ------
   if (GetRecoParam()->SelectOnTrackSlope()) {
     
     // check if non bending slope is within tolerances
-    Double_t nonBendingSlopeErr = TMath::Sqrt(kParamCov(1,1) + (chamber + 1.) * angleMCS2);
+    Double_t nonBendingSlopeErr = TMath::Sqrt(kParamCov(1,1) + angleMCS2);
     if ((TMath::Abs(trackParam.GetNonBendingSlope()) - sigmaCut * nonBendingSlopeErr) > GetRecoParam()->GetMaxNonBendingSlope()) return kFALSE;
     
   } else {
@@ -235,7 +251,7 @@ Bool_t AliMUONVTrackReconstructor::IsAcceptable(AliMUONTrackParam &trackParam)
     if (GetRecoParam()->SelectOnTrackSlope()) {
       
       // check if bending slope is within tolerances
-      Double_t bendingSlopeErr = TMath::Sqrt(kParamCov(3,3) + (chamber + 1.) * angleMCS2);
+      Double_t bendingSlopeErr = TMath::Sqrt(kParamCov(3,3) + angleMCS2);
       if ((TMath::Abs(trackParam.GetBendingSlope()) - sigmaCut * bendingSlopeErr) > GetRecoParam()->GetMaxBendingSlope()) return kFALSE;
       
     } else {
@@ -269,9 +285,12 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsBetweenChambers(const AliM
   Double_t bendingSlope = 0., bendingSlopeErr = 0., bendingImpactParam = 0., bendingImpactParamErr = 0., bendingImpactParamErr2 = 0.;
   Double_t bendingMomentum = 0., bendingMomentumErr = 0.;
   Double_t bendingVertexDispersion2 = GetRecoParam()->GetBendingVertexDispersion() * GetRecoParam()->GetBendingVertexDispersion();
-  Double_t impactMCS2 = 0; // maximum impact parameter dispersion**2 due to MCS in chamber
-  if (!GetRecoParam()->SelectOnTrackSlope() || AliMUONTrackExtrap::IsFieldON()) for (Int_t iCh=0; iCh<=ch1; iCh++)
-    impactMCS2 += AliMUONConstants::DefaultChamberZ(iCh) * AliMUONConstants::DefaultChamberZ(iCh) * fMaxMCSAngle2;
+  Double_t angleMCS2 = 0.; // maximum angular dispersion**2 due to MCS in chamber
+  Double_t impactMCS2 = 0.; // maximum impact parameter dispersion**2 due to MCS in chamber
+  for (Int_t iCh=0; iCh<=ch1; iCh++) {
+    angleMCS2 += fMaxMCSAngle2[iCh];
+    impactMCS2 += AliMUONConstants::DefaultChamberZ(iCh) * AliMUONConstants::DefaultChamberZ(iCh) * fMaxMCSAngle2[iCh];
+  }
   Double_t sigmaCut = GetRecoParam()->GetSigmaCutForTracking();
   
   // Create iterators to loop over clusters in both chambers
@@ -298,7 +317,7 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsBetweenChambers(const AliM
       if (GetRecoParam()->SelectOnTrackSlope()) {
 	
 	// check if non bending slope is within tolerances
-	nonBendingSlopeErr = TMath::Sqrt((cluster1->GetErrX2() + cluster2->GetErrX2()) / dZ / dZ + (ch1 + 1.) * fMaxMCSAngle2);
+	nonBendingSlopeErr = TMath::Sqrt((cluster1->GetErrX2() + cluster2->GetErrX2()) / dZ / dZ + angleMCS2);
 	if ((TMath::Abs(nonBendingSlope) - sigmaCut * nonBendingSlopeErr) > GetRecoParam()->GetMaxNonBendingSlope()) continue;
 	
       } else {
@@ -327,7 +346,7 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsBetweenChambers(const AliM
 	if (GetRecoParam()->SelectOnTrackSlope()) {
 	  
 	  // check if bending slope is within tolerances
-	  bendingSlopeErr = TMath::Sqrt((cluster1->GetErrY2() + cluster2->GetErrY2()) / dZ / dZ + (ch1 + 1.) * fMaxMCSAngle2);
+	  bendingSlopeErr = TMath::Sqrt((cluster1->GetErrY2() + cluster2->GetErrY2()) / dZ / dZ + angleMCS2);
 	  if ((TMath::Abs(bendingSlope) - sigmaCut * bendingSlopeErr) > GetRecoParam()->GetMaxBendingSlope()) continue;
 	  
 	} else {
@@ -746,7 +765,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInChamber(AliMUONTrack &trac
   }
   
   // Add MCS effect
-  AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),-1.);
+  AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(trackParam.GetClusterPtr()->GetChamberId()),-1.);
   
   // Printout for debuging
   if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
@@ -893,7 +912,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
   }
   
   // Add MCS effect
-  AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),-1.);
+  AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(trackParam.GetClusterPtr()->GetChamberId()),-1.);
   
   // Printout for debuging
   if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
@@ -928,7 +947,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
       }
       
       // add MCS effect
-      AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCluster2,AliMUONConstants::ChamberThicknessInX0(),-1.);
+      AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCluster2,AliMUONConstants::ChamberThicknessInX0(ch2),-1.);
       
       // reset cluster iterator of chamber 1
       nextInCh1.Reset();
@@ -1031,7 +1050,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
     AliMUONTrackExtrap::LinearExtrapToZCov(&trackParam, AliMUONConstants::DefaultChamberZ(ch2));
     
     // add MCS effect for next step
-    AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),-1.);
+    AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(ch2),-1.);
     
     // reset cluster iterator of chamber 1
     nextInCh1.Reset();

@@ -444,7 +444,7 @@ Bool_t AliMUONTrack::UpdateCovTrackParamAtCluster()
     trackParamAtCluster->SetCovariances(startingTrackParam->GetCovariances());
     
     // add MCS effect
-    AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(),-1.);
+    AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(expectedChamber-1),-1.);
     
     // add MCS in missing chambers if any
     currentChamber = trackParamAtCluster->GetClusterPtr()->GetChamberId();
@@ -452,7 +452,7 @@ Bool_t AliMUONTrack::UpdateCovTrackParamAtCluster()
       // extrapolation to the missing chamber
       if (!AliMUONTrackExtrap::ExtrapToZCov(trackParamAtCluster, AliMUONConstants::DefaultChamberZ(expectedChamber))) extrapStatus = kFALSE;
       // add MCS effect
-      AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(),-1.);
+      AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(expectedChamber),-1.);
       expectedChamber++;
     }
     
@@ -958,7 +958,7 @@ void AliMUONTrack::ComputeMCSCovariances(TMatrixD& mcsCovariances) const
         AliMUONTrackExtrap::ExtrapToZ(&extrapTrackParam, zMCS[size]);
         
         // Save multiple scattering dispersion angle in missing chamber
-        mcsAngle2[size] = AliMUONTrackExtrap::GetMCSAngle2(extrapTrackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
+        mcsAngle2[size] = AliMUONTrackExtrap::GetMCSAngle2(extrapTrackParam,AliMUONConstants::ChamberThicknessInX0(expectedChamber),1.);
         
       } else mcsAngle2[size] = 0.;
       
@@ -970,7 +970,7 @@ void AliMUONTrack::ComputeMCSCovariances(TMatrixD& mcsCovariances) const
     zMCS[size] = trackParamAtCluster->GetZ();
     
     // Save multiple scattering dispersion angle in current chamber
-    mcsAngle2[size] = AliMUONTrackExtrap::GetMCSAngle2(*trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(),1.);
+    mcsAngle2[size] = AliMUONTrackExtrap::GetMCSAngle2(*trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(currentChamber),1.);
     
     // Save indice in zMCS array corresponding to the current cluster
     indices[iCluster] = size;

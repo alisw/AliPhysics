@@ -370,7 +370,7 @@ Bool_t AliMUONTrackReconstructorK::RetracePartialTrack(AliMUONTrack &trackCandid
     trackParamAtCluster->SetCovariances(startingTrackParam->GetCovariances());
     
     // add MCS effect
-    AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(),-1.);
+    AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(expectedChamber+1),-1.);
     
     // reset propagator for smoother
     if (GetRecoParam()->UseSmoother()) trackParamAtCluster->ResetPropagator();
@@ -382,7 +382,7 @@ Bool_t AliMUONTrackReconstructorK::RetracePartialTrack(AliMUONTrack &trackCandid
       if (!AliMUONTrackExtrap::ExtrapToZCov(trackParamAtCluster, AliMUONConstants::DefaultChamberZ(expectedChamber),
 					    GetRecoParam()->UseSmoother())) extrapStatus = kFALSE;
       // add MCS effect
-      AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(),-1.);
+      AliMUONTrackExtrap::AddMCSEffect(trackParamAtCluster,AliMUONConstants::ChamberThicknessInX0(expectedChamber),-1.);
       expectedChamber--;
     }
     
@@ -533,20 +533,20 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInChamber(AliMUONTrack &trackCandi
   }
   
   // Add MCS effect
-  AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),-1.);
+  Int_t currentChamber = extrapTrackParamAtCh.GetClusterPtr()->GetChamberId();
+  AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(currentChamber),-1.);
   
   // reset propagator for smoother
   if (GetRecoParam()->UseSmoother()) extrapTrackParamAtCh.ResetPropagator();
   
   // Add MCS in the missing chamber(s) if any
-  Int_t currentChamber = extrapTrackParamAtCh.GetClusterPtr()->GetChamberId();
   while (currentChamber > nextChamber + 1) {
     // extrapolation to the missing chamber
     currentChamber--;
     if (!AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(currentChamber),
 					  GetRecoParam()->UseSmoother())) return kFALSE;
     // add MCS effect
-    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),-1.);
+    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(currentChamber),-1.);
   }
   
   //Extrapolate trackCandidate to chamber
@@ -712,20 +712,20 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
   }
   
   // Add MCS effect
-  AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),-1.);
+  Int_t currentChamber = extrapTrackParamAtCh.GetClusterPtr()->GetChamberId();
+  AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(currentChamber),-1.);
   
   // reset propagator for smoother
   if (GetRecoParam()->UseSmoother()) extrapTrackParamAtCh.ResetPropagator();
   
   // Add MCS in the missing chamber(s) if any
-  Int_t currentChamber = extrapTrackParamAtCh.GetClusterPtr()->GetChamberId();
   while (ch1 < ch2 && currentChamber > ch2 + 1) {
     // extrapolation to the missing chamber
     currentChamber--;
     if (!AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(currentChamber),
 					  GetRecoParam()->UseSmoother())) return kFALSE;
     // add MCS effect
-    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),-1.);
+    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(currentChamber),-1.);
   }
   
   //Extrapolate trackCandidate to chamber "ch2"
@@ -798,7 +798,7 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
       extrapTrackParam = extrapTrackParamAtCluster2;
       
       // add MCS effect
-      AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParam,AliMUONConstants::ChamberThicknessInX0(),-1.);
+      AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParam,AliMUONConstants::ChamberThicknessInX0(ch2),-1.);
       
       // reset propagator for smoother
       if (GetRecoParam()->UseSmoother()) extrapTrackParam.ResetPropagator();
@@ -913,7 +913,7 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
   if (GetRecoParam()->TrackAllTracks() || !foundTwoClusters) {
     
     // add MCS effect for next step
-    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),-1.);
+    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(ch2),-1.);
     
     //Extrapolate trackCandidate to chamber "ch1"
     Bool_t normalExtrap = AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(ch1),
