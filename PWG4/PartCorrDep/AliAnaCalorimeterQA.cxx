@@ -865,7 +865,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	if(IsDataMC()) { 
 		stack =  GetMCStack() ;
 		if(!stack) {
-			printf("Stack not available, have you switched on the MC data?\n");
+			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Stack not available, have you switched on the MC data?\n");
 			return;
 		}
 	}
