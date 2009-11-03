@@ -27,6 +27,7 @@
 #include <TEventList.h>
 #include <TEntryList.h>
 #include <TTreeFormula.h>
+#include <TMap.h>
 
 //ROOT-AliEn
 #include <TGridResult.h>
@@ -371,6 +372,16 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
   Int_t ientry    = 0;
   Int_t cEntries  = 0;
 
+  Int_t iRejectedRun = 0;
+  Int_t iRejectedLHC = 0;
+  Int_t iRejectedDet = 0;
+  Int_t iRejectedEvt = 0;
+
+  Int_t iTotalEvents = 0;
+
+  Int_t iAcceptedEvtInFile = 0;
+  Int_t iRejectedEvtInFile = 0;
+
   //Defining tag objects
   AliRunTag   *tag   = new AliRunTag;
   AliEventTag *evTag = new AliEventTag;
@@ -388,12 +399,15 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
 	ientry   = 0;
     }
     //Event list
+    iTotalEvents += tag->GetNEvents();
     if ((iev == 0) || !aod) localList->Reset();
     if(runTagCuts->IsAccepted(tag)) {
       if(lhcTagCuts->IsAccepted(tag->GetLHCTag())) {
 	if(detTagCuts->IsAccepted(tag->GetDetectorTags())) {
 	  Int_t iEvents = tag->GetNEvents();
 	  const TClonesArray *tagList = tag->GetEventTags();
+	  iRejectedEvtInFile = 0;
+	  iAcceptedEvtInFile = 0;
 	  for(Int_t i = 0; i < iEvents; i++) {
 	    evTag = (AliEventTag *) tagList->At(i);
 	    guid = evTag->GetGUID(); 
@@ -402,19 +416,34 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
 	    if(evTagCuts->IsAccepted(evTag)) {
 		if(aod) localList->Enter(iev);
 		else localList->Enter(i);
+		iAcceptedEvtInFile++;
+	    }
+	    else {
+	      iRejectedEvt++;
+	      iRejectedEvtInFile++;
 	    }
 	    iev++;
 	  }//event loop
 	  if ((ientry == cEntries-1) || !aod) {
-	      collection->WriteBody(iTagFiles+1,guid,lfn,turl,localList);
-	      iAccepted += localList->GetN();
+	    iAccepted += localList->GetN();
+	    collection->WriteBody(iTagFiles+1,guid,lfn,turl,localList,iAcceptedEvtInFile,iRejectedEvtInFile);
 	  }
 	}//detector tag cuts
+	else {
+	  iRejectedDet += tag->GetNEvents();
+	}
       }//lhc tag cuts 
+      else {
+	iRejectedLHC += tag->GetNEvents();
+      }
     }//run tag cuts
+    else {
+      iRejectedRun += tag->GetNEvents();
+    }
     tag->Clear();
     ientry++;
   }//tag file loop
+  collection->WriteSummary(iTotalEvents, iAccepted, iRejectedRun, iRejectedLHC, iRejectedDet, iRejectedEvt);
   collection->Export();
   
   delete tag;
@@ -444,11 +473,20 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
   TString lfn;
   TEntryList* localList = new TEntryList();
   
-
   Int_t iAccepted = 0;
   Int_t iev       = 0;
   Int_t ientry    = 0;
   Int_t cEntries  = 0;
+
+  Int_t iRejectedRun = 0;
+  Int_t iRejectedLHC = 0;
+  Int_t iRejectedDet = 0;
+  Int_t iRejectedEvt = 0;
+
+  Int_t iTotalEvents = 0;
+
+  Int_t iAcceptedEvtInFile = 0;
+  Int_t iRejectedEvtInFile = 0;
 
   //Defining tag objects
   AliRunTag *tag     = new AliRunTag;
@@ -477,12 +515,15 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
       current = fChain->GetTreeNumber();
     }
     //Event list
+    iTotalEvents += tag->GetNEvents();
     if ((iev == 0) || !aod) localList->Reset();
     if(fRunFormula->EvalInstance(iTagFiles) == 1) {
       if(fLHCFormula->EvalInstance(iTagFiles) == 1) { 	 
 	if(fDetectorFormula->EvalInstance(iTagFiles) == 1) { 	 
 	  Int_t iEvents = fEventFormula->GetNdata();
 	  const TClonesArray *tagList = tag->GetEventTags();
+	  iRejectedEvtInFile = 0;
+	  iAcceptedEvtInFile = 0;
 	  for(Int_t i = 0; i < iEvents; i++) {
 	    evTag = (AliEventTag *) tagList->At(i);
 	    guid = evTag->GetGUID(); 
@@ -491,18 +532,33 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
 	    if(fEventFormula->EvalInstance(i) == 1) {
 		if(aod) localList->Enter(iev);
 		else localList->Enter(i);
+		iAcceptedEvtInFile++;
+	    }
+	    else {
+	      iRejectedEvt++;
+	      iRejectedEvtInFile++;
 	    }
 	    iev++;
 	  }//event loop
 	  if ((ientry == cEntries-1) || !aod) {
-	      collection->WriteBody(iTagFiles+1,guid,lfn,turl,localList);
-	      iAccepted += localList->GetN();
+	    collection->WriteBody(iTagFiles+1,guid,lfn,turl,localList,iAcceptedEvtInFile, iRejectedEvtInFile);
+	    iAccepted += localList->GetN();
 	  }
 	}//detector tag cuts
+	else {
+	  iRejectedDet += tag->GetNEvents();
+	}
       }//lhc tag cuts 
+      else {
+	iRejectedLHC += tag->GetNEvents();
+      }
     }//run tag cuts
+    else {
+      iRejectedRun += tag->GetNEvents();
+    }
     ientry++;
   }//tag file loop
+  collection->WriteSummary(iTotalEvents, iAccepted, iRejectedRun, iRejectedLHC, iRejectedDet, iRejectedEvt);
   collection->Export();
 
   delete tag;
@@ -559,6 +615,10 @@ TChain *AliTagAnalysis::GetChainFromCollection(const char* collectionname,
   fGlobalList = new TEntryList();
   AliXMLCollection *collection = AliXMLCollection::Open(collectionname);
 
+  // Tag selection summary per file
+  TMap *tagCutSummary = new TMap();
+  tagCutSummary->SetName("TagCutSumm");
+
   collection->Reset();
   while (collection->Next()) {
     AliInfo(Form("Adding: %s",collection->GetTURL("")));
@@ -568,11 +628,51 @@ TChain *AliTagAnalysis::GetChainFromCollection(const char* collectionname,
     list->SetFileName(collection->GetTURL(""));
     fGlobalList->Add(list);
     iAccepted += list->GetN();
+    if (collection->GetCutSumm())
+      tagCutSummary->Add(new TObjString(collection->GetTURL("")), new TObjString(collection->GetCutSumm()));
   }
 
   fAnalysisChain->SetEntryList(fGlobalList,"ne");
   
   AliInfo(Form("Number of selected events: %d",iAccepted));
+
+  TList *aUserInfo = fAnalysisChain->GetUserInfo();
+  aUserInfo->Add(tagCutSummary);
+
+  Int_t iAccEv;
+  Int_t iTotalEvents;
+  Int_t iRejRun;
+  Int_t iRejLHC;
+  Int_t iRejDet;
+  Int_t iRejEvt;
+
+  collection->GetCollectionSummary(&iTotalEvents, &iAccEv, &iRejRun, &iRejLHC, &iRejDet, &iRejEvt);
+ 
+  char nstr[2000];
+
+  sprintf(nstr, "TotalEvents=%i", iTotalEvents);
+  TObjString *iTotStr = new TObjString(nstr);
+  aUserInfo->Add(iTotStr);
+
+  sprintf(nstr, "AcceptedEvents=%i", iAccepted);
+  TObjString *iAccStr = new TObjString(nstr);
+  aUserInfo->Add(iAccStr);
+
+  sprintf(nstr, "RejectedRun=%i", iRejRun);
+  TObjString *iRejRunStr = new TObjString(nstr);
+  aUserInfo->Add(iRejRunStr);
+
+  sprintf(nstr, "RejectedLHC=%i", iRejLHC);
+  TObjString *iRejLHCStr = new TObjString(nstr);
+  aUserInfo->Add(iRejLHCStr);
+
+  sprintf(nstr, "RejectedDet=%i", iRejDet);
+  TObjString *iRejDetStr = new TObjString(nstr);
+  aUserInfo->Add(iRejDetStr);
+
+  sprintf(nstr, "RejectedEvt=%i", iRejEvt);
+  TObjString *iRejEvtStr = new TObjString(nstr);
+  aUserInfo->Add(iRejEvtStr);
 
   return fAnalysisChain;
 }

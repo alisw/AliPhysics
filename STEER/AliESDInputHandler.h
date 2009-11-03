@@ -15,7 +15,7 @@
 class TChain;
 class TTree;
 class AliRunTag;
-
+class TMap;
 
 class AliESDInputHandler : public AliInputEventHandler {
 
@@ -32,6 +32,9 @@ class AliESDInputHandler : public AliInputEventHandler {
     AliESDEvent         *GetEvent()        const {return fEvent;}
     Option_t            *GetAnalysisType() const {return fAnalysisType;}
     Option_t            *GetDataType() const;
+    // Tag cut summary analysis
+    Int_t                GetNEventAcceptedInFile();
+    Int_t                GetNEventRejectedInFile();
     // HLT analysis
     AliESDEvent         *GetHLTEvent()     const {return fHLTEvent;}
     TTree               *GetHLTTree()      const {return fHLTTree;}    
@@ -52,6 +55,8 @@ class AliESDInputHandler : public AliInputEventHandler {
     AliESDEvent    *fHLTEvent;     //! Pointer to the HLT Event (if present)
     TTree          *fHLTTree;      //! Pointer to the HLT Event (if present)
     Bool_t          fUseHLT;       //  Flag to access HLT Events
+    // ESD Tag Cut Summary
+    TMap           *fTagCutSumm;   //! Tag cut summary map
     // ESD Tags (optional)
     Bool_t          fUseTags;    //  Flag to use tags
     TChain         *fChainT;     //! File with event tags

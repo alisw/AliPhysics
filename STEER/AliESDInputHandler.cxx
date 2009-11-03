@@ -29,6 +29,7 @@
 #include <TString.h>
 #include <TObjString.h>
 #include <TProcessID.h>
+#include <TMap.h>
 
 #include "AliESDInputHandler.h"
 #include "AliESDEvent.h"
@@ -50,6 +51,7 @@ AliESDInputHandler::AliESDInputHandler() :
   fHLTEvent(0x0),
   fHLTTree(0x0),
   fUseHLT(kFALSE),
+  fTagCutSumm(0x0),
   fUseTags(kFALSE),
   fChainT(0),
   fTreeT(0),
@@ -68,7 +70,7 @@ AliESDInputHandler::~AliESDInputHandler()
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
     AliInputEventHandler(name, title), fEvent(0x0), fAnalysisType(0),
-     fNEvents(0),  fHLTEvent(0x0), fHLTTree(0x0), fUseHLT(kFALSE), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0)
+    fNEvents(0),  fHLTEvent(0x0), fHLTTree(0x0), fUseHLT(kFALSE), fTagCutSumm(0x0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0)
 {
     // Constructor
 }
@@ -230,4 +232,82 @@ Option_t *AliESDInputHandler::GetDataType() const
 {
 // Returns handled data type.
    return gESDDataType;
+}
+
+Int_t AliESDInputHandler::GetNEventAcceptedInFile()
+{
+  // Get number of events in file accepted by the tag cuts
+  // return -1 if no info is available
+  if (!fTagCutSumm) {
+    TList *luo = fTree->GetUserInfo();
+    if (!luo) {
+      AliInfo(Form("No user info in input tree - no tag cut summary\n"));
+      return -1;
+    }
+    for (int iluo=0; iluo<luo->GetEntries(); iluo++) {
+      fTagCutSumm = dynamic_cast<TMap *>(luo->At(iluo));
+      if (fTagCutSumm) break;
+    }
+    if (!fTagCutSumm) {
+      AliInfo(Form("No tag summary map in input tree\n"));
+      return -1;
+    }
+  }
+
+  TObjString *ostr = 0;
+  if (fTagCutSumm->FindObject(fTree->GetCurrentFile()->GetName()))
+    ostr = (TObjString *) fTagCutSumm->GetValue(fTree->GetCurrentFile()->GetName());
+  else {
+    AliInfo(Form("No tag cut summary for file %s\n", fTree->GetCurrentFile()->GetName()));
+    return -1;
+  }
+  char *iTagInfo;
+  iTagInfo = strdup(ostr->GetString().Data());
+
+  Int_t iAcc = atoi(strtok(iTagInfo, ","));
+  
+  AliInfo(Form("Got %i accepted events for file %s", iAcc,  fTree->GetCurrentFile()->GetName()));
+  
+  free(iTagInfo);
+
+  return iAcc;
+}
+Int_t AliESDInputHandler::GetNEventRejectedInFile()
+{
+  // Get number of events in file rejected by the tag cuts
+  // return -1 if no info is available
+  if (!fTagCutSumm) {
+    TList *luo = fTree->GetUserInfo();
+    if (!luo) {
+      AliInfo(Form("No user info in input tree - no tag cut summary\n"));
+      return -1;
+    }
+    for (int iluo=0; iluo<luo->GetEntries(); iluo++) {
+      fTagCutSumm = dynamic_cast<TMap *>(luo->At(iluo));
+      if (fTagCutSumm) break;
+    }
+    if (!fTagCutSumm) {
+      AliInfo(Form("No tag summary map in input tree\n"));
+      return -1;
+    }
+  }
+
+  TObjString *ostr = 0;
+  if (fTagCutSumm->FindObject(fTree->GetCurrentFile()->GetName()))
+    ostr = (TObjString *) fTagCutSumm->GetValue(fTree->GetCurrentFile()->GetName());
+  else {
+    AliInfo(Form("No tag cut summary for file %s\n", fTree->GetCurrentFile()->GetName()));
+    return -1;
+  }
+  char *iTagInfo;
+  iTagInfo = strdup(ostr->GetString().Data());
+
+  strtok(iTagInfo, ",");
+  Int_t iRej = atoi(strtok(NULL, ","));
+  
+  AliInfo(Form("Got %i accepted events for file %s", iRej,  fTree->GetCurrentFile()->GetName()));
+  
+  free(iTagInfo);
+
+  return iRej;
 }

@@ -43,7 +43,14 @@ ClassImp(AliXMLCollection)
     fEventListIter(0),
     fCurrent(0),
     fCollectionName(),
-    fout() {
+    fout(),
+    fTotalEvents(0),
+    fAcceptedEvents(0),
+    fRejectedRun(0),
+    fRejectedLHC(0),
+    fRejectedDet(0),
+    fRejectedEvt(0)
+{
   //Default constructor
 }
 
@@ -55,7 +62,13 @@ AliXMLCollection::AliXMLCollection(const char *localcollectionfile) :
     fEventListIter(0),
     fCurrent(0),
     fCollectionName(),
-    fout()
+    fout(),
+    fTotalEvents(0),
+    fAcceptedEvents(0),
+    fRejectedRun(0),
+    fRejectedLHC(0),
+    fRejectedDet(0),
+    fRejectedEvt(0)
  {
    // Create Alien event collection, by reading collection for the specified
    // file.
@@ -77,7 +90,13 @@ AliXMLCollection::AliXMLCollection(const AliXMLCollection& collection):
   fEventListIter(0),
   fCurrent(0),
   fCollectionName(collection.fCollectionName),
-  fout()
+  fout(),
+  fTotalEvents(0),
+  fAcceptedEvents(0),
+  fRejectedRun(0),
+  fRejectedLHC(0),
+  fRejectedDet(0),
+  fRejectedEvt(0)
 {
   //copy constructor
 
@@ -111,6 +130,32 @@ Bool_t AliXMLCollection::WriteHeader() {
   fout<<"<?xml version=\"1.0\"?>\n";
   fout<<"<alien>\n";
   fout<<"  "<<collectionHeader<<"\n";  
+
+  return kTRUE;
+}
+
+//___________________________________________________________________________
+Bool_t AliXMLCollection::WriteSummary(Int_t aTotal, Int_t aAccepted, Int_t aRejRun, Int_t aRejLHC, Int_t aRejDet, Int_t aRejEvt)
+{
+  // Write selection summary
+
+  TString collectionSummary = "<summary";
+  collectionSummary += " acceptedEvents=\"";
+  collectionSummary += aAccepted;
+  collectionSummary += "\" totalEvent=\"";
+  collectionSummary += aTotal;
+  collectionSummary += "\" rejectedRun=\"";
+  collectionSummary += aRejRun;
+  collectionSummary += "\" rejectedLHC=\"";
+  collectionSummary += aRejLHC;
+  collectionSummary += "\" rejectedDet=\"";
+  collectionSummary += aRejDet;
+  collectionSummary += "\" rejectedEvt=\"";
+  collectionSummary += aRejEvt;
+  collectionSummary += "\" />";
+  
+  // Open the output stream
+  fout<<"  "<<collectionSummary<<"\n";  
 
   return kTRUE;
 }
@@ -150,7 +195,48 @@ Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* 
   
   return kTRUE;
 }
+//___________________________________________________________________________
+Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char *lfn, const char *turl, TEntryList *list, Int_t accSum, Int_t rejSum)
+{
+  //Writes the body of the xml collection with tag cuts summary
+  TString listline;
+  for(Int_t i = 0; i < list->GetN(); i++) {
+    listline += list->GetEntry(i);
+    listline += ",";
+  }  
+  listline = listline(0,listline.Length()-1);
 
+  TString line0 = "<event name=\"";
+  line0 += counter;
+  line0 += "\">";
+  
+  TString line1 = "<file name=\"AliESDs.root\" ";
+  line1 += "guid=\"";
+  line1 += guid;
+  line1 += "\" ";
+  line1 += "lfn=\"";
+  line1 += lfn;
+  line1 += "\" ";
+  line1 += "turl=\"";
+  line1 += turl;
+  line1 += "\" ";
+  line1 += "evlist=\"";
+  line1 += listline;
+  line1 += "\" ";
+  line1 += "cutsumm=\"";
+  line1 += accSum;
+  line1 += ",";
+  line1 += rejSum;
+  line1 += "\"";
+  line1 += " />";
+  
+  fout<<"    "<<line0<<"\n";
+  fout<<"      "<<line1<<"\n";
+  fout<<"    </event>\n";
+  
+  return kTRUE;
+  
+}
 //___________________________________________________________________________
 Bool_t AliXMLCollection::Export() {
   //Closes the stream
@@ -253,6 +339,22 @@ const char *AliXMLCollection::GetLFN(const char* ) {
 }
 
 //__________________________________________________________________________
+const char *AliXMLCollection::GetCutSumm() {
+  // Get a file's tag cuts summary. Returns 0 in case of error.
+  
+  if (fCurrent) {
+    TMap *obj = (TMap *) fCurrent->GetValue("");
+    if (obj) {
+      if (obj->GetValue("cutsumm")) {
+	return (((TObjString *) obj->GetValue("cutsumm"))->GetName());
+      }
+    }
+  }
+  Error("GetTagSumm", "cannot get Tag Cut Summary");
+  return 0;
+
+}
+//__________________________________________________________________________
 Bool_t AliXMLCollection::OverlapCollection(TGridCollection * comparator) {
   // return kTRUE if comparator overlaps with this
   if ((!comparator)) return kFALSE;
@@ -329,7 +431,7 @@ void AliXMLCollection::ParseXML() {
       // files
       XMLNodePointer_t xfile = xml.GetChild(xevent);
       if (!xfile) continue;
-      
+
       Bool_t firstfile=kTRUE;
       do {
 	// here we have an event file
@@ -343,6 +445,11 @@ void AliXMLCollection::ParseXML() {
 	TObjString *olfn  = new TObjString(xml.GetAttr(xfile,"lfn"));
 	TObjString *oguid = new TObjString(xml.GetAttr(xfile,"guid"));
 	TObjString *oevlist = new TObjString(xml.GetAttr(xfile, "evlist"));
+	TObjString *otagsumm;
+	if (xml.GetAttr(xfile, "cutsumm"))
+	  otagsumm = new TObjString(xml.GetAttr(xfile, "cutsumm"));
+	else 
+	  otagsumm = 0;
 	Info("ParseXML","Collection: %s - turl: %s eventlist: %s",
 	     fXmlFile.Data(),oturl->GetName(),oevlist->GetName());
 	if (strcmp(oevlist->GetName(),"") != 0) {
@@ -357,6 +464,8 @@ void AliXMLCollection::ParseXML() {
 	attributes->Add(new TObjString("turl"),oturl);
 	attributes->Add(new TObjString("lfn"),olfn);
 	attributes->Add(new TObjString("guid"),oguid);
+	if (otagsumm)
+	  attributes->Add(new TObjString("cutsumm"),otagsumm);
 	files->Add(new TObjString(xml.GetAttr(xfile,"name")) , attributes);
 	
 	// we add the first file always as a file without name to the map
@@ -367,6 +476,28 @@ void AliXMLCollection::ParseXML() {
       } while ((xfile = xml.GetNext(xfile)));
       fEventList->Add(files);
     }
+    else {
+      if (xml.GetAttr(xevent, "acceptedEvents")) {
+	// Read list summary
+	fAcceptedEvents = atoi(xml.GetAttr(xevent, "acceptedEvents"));
+	fTotalEvents = atoi(xml.GetAttr(xevent, "totalEvent"));
+	fRejectedRun = atoi(xml.GetAttr(xevent, "rejectedRun"));
+	fRejectedLHC = atoi(xml.GetAttr(xevent, "rejectedLHC"));
+	fRejectedDet = atoi(xml.GetAttr(xevent, "rejectedDet"));
+	fRejectedEvt = atoi(xml.GetAttr(xevent, "rejectedEvt"));
+      }
+    }
   } while ((xevent =  xml.GetNext(xevent)));
 }
 
+Bool_t      AliXMLCollection::GetCollectionSummary(Int_t *aTot, Int_t *aAcc, Int_t *aRejRun, Int_t *aRejLHC, Int_t *aRejDet, Int_t *aRejEvt)
+{
+  // Return read list summary
+  *aTot = fTotalEvents;
+  *aAcc = fAcceptedEvents;
+  *aRejRun = fRejectedRun;
+  *aRejLHC = fRejectedLHC;
+  *aRejDet = fRejectedDet;
+  *aRejEvt = fRejectedEvt;
+  return kTRUE;
+}

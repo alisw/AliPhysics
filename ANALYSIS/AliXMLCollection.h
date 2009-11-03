@@ -34,7 +34,9 @@ class AliXMLCollection : public TGridCollection {
   
   //____________________________________________________//
   Bool_t WriteHeader();
+  Bool_t WriteSummary(Int_t aTotal, Int_t aAccepted, Int_t aRejRun, Int_t aRejLHC, Int_t aRejDet, Int_t aRejEvt);
   Bool_t WriteBody(Int_t counter, const char* guid, const char *lfn, const char *turl, TEntryList *fEntryList);
+  Bool_t WriteBody(Int_t counter, const char* guid, const char *lfn, const char *turl, TEntryList *fEntryListm, Int_t accSum, Int_t rejSum);
   Bool_t Export();
 
   void SetCollectionName(const char* name) {fCollectionName = name;}
@@ -49,9 +51,11 @@ class AliXMLCollection : public TGridCollection {
   const char *GetTURL(const char *name);
   const char *GetLFN(const char *name);
   const char *GetGUID(const char *name);
+  const char *GetCutSumm();
   TEntryList *GetEventList(const char *filename) const;
   TEntryList *GetEntryList(const char *filename) { return GetEventList(filename); }
   Bool_t      OverlapCollection(TGridCollection * comparator);
+  Bool_t      GetCollectionSummary(Int_t *aTot, Int_t *aAcc, Int_t *aRejRun, Int_t *aRejLHC, Int_t *aRejDet, Int_t *aRejEvt);
 
   static AliXMLCollection *Open(const char *localcollectionfile);
 
@@ -65,6 +69,14 @@ class AliXMLCollection : public TGridCollection {
   TMap    *fCurrent;        // current event file map
   TString  fCollectionName;   //the name of the xml file
   ofstream fout; // The output stream
+
+  // List summary information
+  Int_t    fTotalEvents;    // Total no. of events in collection
+  Int_t    fAcceptedEvents; // No. of accepted events in collection
+  Int_t    fRejectedRun;    // No. of events rejected by Run cuts
+  Int_t    fRejectedLHC;    // No. of events rejected by LHC cuts
+  Int_t    fRejectedDet;    // No. of events rejected by Detector cuts
+  Int_t    fRejectedEvt;    // No. of events rejected by Event cuts
   
   AliXMLCollection & operator=(const AliXMLCollection & ) {return *this;}
 
