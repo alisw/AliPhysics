@@ -1247,7 +1247,7 @@ TFile *AliAnalysisManager::OpenFile(AliAnalysisDataContainer *cont, const char *
     f = mgr->OpenProofFile(cont,option);
   else {
     // Check first if the file is already opened
-    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
+    f = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
     if (f) {
       // Check if option "UPDATE" was preserved 
       TString opt(option);
@@ -1255,7 +1255,7 @@ TFile *AliAnalysisManager::OpenFile(AliAnalysisDataContainer *cont, const char *
       if ((opt=="UPDATE") && (opt!=f->GetOption())) 
         ::Fatal("AliAnalysisManager::OpenFile", "File %s already opened, but not in UPDATE mode!", cont->GetFileName());
     } else {
-      f = new TFile(filename, option);
+      f = TFile::Open(filename, option);
     }    
   }   
   if (f && !f->IsZombie() && !f->TestBit(TFile::kRecovered)) {
