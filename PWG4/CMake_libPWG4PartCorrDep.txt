@@ -7,8 +7,9 @@ set(SRCS
        PartCorrDep/AliAnaParticleIsolation.cxx PartCorrDep/AliAnaParticlePartonCorrelation.cxx 
        PartCorrDep/AliAnaParticleHadronCorrelation.cxx PartCorrDep/AliAnaParticleJetFinderCorrelation.cxx
        PartCorrDep/AliAnaParticleJetLeadingConeCorrelation.cxx PartCorrDep/AliAnaChargedParticles.cxx
-       PartCorrDep/AliAnaCalorimeterQA.cxx PartCorrDep/AliAnaNeutralMeson.cxx  
-       PartCorrDep/AliAnaElectron.cxx    
+       PartCorrDep/AliAnaCalorimeterQA.cxx PartCorrDep/AliAnaElectron.cxx    
+       PartCorrDep/AliAnalysisTaskTaggedPhotons.cxx PartCorrDep/AliAnaOmegaToPi0Gamma.cxx
+
 )
 
 # fill list of header files from list of source files
