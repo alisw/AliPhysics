@@ -37,7 +37,7 @@ class AliAnaPartCorrMaker : public TObject {
 
   Int_t GetAnaDebug() const  { return fAnaDebug ; }
   void SetAnaDebug(Int_t d)  { fAnaDebug = d ; }
-
+	
   Bool_t AreHistogramsMade() const { return fMakeHisto ; }
   void SwitchOnHistogramsMaker()   { fMakeHisto = kTRUE ; }
   void SwitchOffHistogramsMaker()  { fMakeHisto = kFALSE ; }
@@ -77,7 +77,7 @@ class AliAnaPartCorrMaker : public TObject {
  
   AliCaloTrackReader *  fReader ;   // Pointer to reader 
   TList * fAODBranchList ;          //! List with AOD branches created and needed in analysis
-	
+
   ClassDef(AliAnaPartCorrMaker,2)
 } ;
  

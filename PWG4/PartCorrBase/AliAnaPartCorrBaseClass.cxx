@@ -34,6 +34,8 @@
 #include "AliNeutralMesonSelection.h"
 #include "AliAODCaloCells.h" 
 #include "AliAODEvent.h"
+#include "AliAODHandler.h"
+#include "AliAnalysisManager.h"
 
 ClassImp(AliAnaPartCorrBaseClass)
   
@@ -224,12 +226,55 @@ void AliAnaPartCorrBaseClass::ConnectAODEMCALCells() {
 }
 
 //___________________________________________________
+TClonesArray * AliAnaPartCorrBaseClass::GetAODBranch(TString aodName) const {
+	//Recover ouput and input AOD pointers for each event in the maker
+	
+	//Delta AODs
+	AliAODHandler* aodHandler = (AliAODHandler*) 
+	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler()); 
+	if (aodHandler->GetExtensions()) { 
+		AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject(GetReader()->GetDeltaAODFileName()); 
+		if(ext){
+			AliAODEvent *aodEvent = ext->GetAOD(); 
+			TClonesArray * aodbranch =  (TClonesArray*) aodEvent->FindListObject(aodName);
+			if(aodbranch) return aodbranch;
+			 else return  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(aodName);
+		}
+		else{//If no Delta AODs, kept in standard branch, to revise. 
+			return (TClonesArray *) fReader->GetOutputEvent()->FindListObject(aodName);
+		}
+	}
+	else{ //If no Delta AODs, kept in standard branch, to revise. 
+		return (TClonesArray *) fReader->GetOutputEvent()->FindListObject(aodName);
+	}
+}
+
+
+//___________________________________________________
 void AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() {
   //Recover ouput and input AOD pointers for each event in the maker
-
-  fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
-  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);		
-
+	
+  //Delta AODs
+  AliAODHandler* aodHandler = (AliAODHandler*) 
+	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler()); 
+  if (aodHandler->GetExtensions()) { 
+	  AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject(GetReader()->GetDeltaAODFileName()); 
+	  if(ext){
+	  AliAODEvent *aodEvent = ext->GetAOD(); 
+	  fOutputAODBranch = (TClonesArray*) aodEvent->FindListObject(fOutputAODName);
+	  fInputAODBranch = (TClonesArray*) aodEvent->FindListObject(fInputAODName); 	  
+	  if(!fOutputAODBranch) fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
+	  if(!fInputAODBranch)  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);
+	  }
+	  else{//If no Delta AODs, kept in standard branch, to revise. 
+		  fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
+		  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);		
+	  }
+  }
+  else{ //If no Delta AODs, kept in standard branch, to revise. 
+	fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
+	fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);		
+  }
 }
 
 //__________________________________________________

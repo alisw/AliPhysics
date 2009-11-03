@@ -54,7 +54,8 @@ ClassImp(AliCaloTrackReader)
 	fSecondInputFileName(""),fSecondInputFirstEvent(0), 
 	fAODCTSNormalInputEntries(0), fAODEMCALNormalInputEntries(0), 
     fAODPHOSNormalInputEntries(0), fTrackStatus(0), 
-	fReadStack(kFALSE), fReadAODMCParticles(kFALSE)
+	fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
+	fWriteOutputStdAOD(kFALSE), fDeltaAODFileName("deltaAODPartCorr.root")
 {
   //Ctor
   
@@ -86,7 +87,8 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :
   fAODEMCALNormalInputEntries(g.fAODEMCALNormalInputEntries), 
   fAODPHOSNormalInputEntries(g.fAODPHOSNormalInputEntries),
   fTrackStatus(g.fTrackStatus),
-  fReadStack(g.fReadStack), fReadAODMCParticles(g.fReadAODMCParticles)
+  fReadStack(g.fReadStack), fReadAODMCParticles(g.fReadAODMCParticles),
+  fWriteOutputStdAOD(g.fWriteOutputStdAOD), fDeltaAODFileName(g.fDeltaAODFileName)
 {
   // cpy ctor
   
@@ -140,6 +142,9 @@ AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & 
   fTrackStatus        = source.fTrackStatus;
   fReadStack          = source.fReadStack;
   fReadAODMCParticles = source.fReadAODMCParticles;	
+	
+  fWriteOutputStdAOD  = source.fWriteOutputStdAOD;
+  fDeltaAODFileName   = source.fDeltaAODFileName;
 	
   return *this;
   
@@ -350,7 +355,8 @@ void AliCaloTrackReader::InitParameters()
   fSecondInputFirstEvent = 0 ;
   fReadStack             = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file
   fReadAODMCParticles    = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file
-	
+  fWriteOutputStdAOD     = kFALSE;
+  fDeltaAODFileName      = "deltaAODPartCorr.root";
 }
 
 
@@ -381,8 +387,10 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
 	  printf("Second Input First Event   =     %d\n", fSecondInputFirstEvent) ;
   }
 	
-	 printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
-	
+  printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
+  printf("Write in std AOD    =     %d\n", fWriteOutputStdAOD) ;
+  printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
+
   printf("    \n") ;
 } 
 
@@ -441,5 +449,9 @@ void AliCaloTrackReader::ResetLists() {
   if(fAODPHOS)  fAODPHOS -> Clear();
   if(fEMCALCells) fEMCALCells -> Clear();
   if(fPHOSCells)  fPHOSCells -> Clear();
-
+  if(!fWriteOutputStdAOD){
+	  //Only keep copied tracks and clusters if requested
+	  fOutputEvent->GetTracks()      ->Clear();
+	  fOutputEvent->GetCaloClusters()->Clear();
+  }
 }

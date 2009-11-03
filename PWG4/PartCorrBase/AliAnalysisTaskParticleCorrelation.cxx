@@ -34,6 +34,7 @@
 #include "AliAnaPartCorrMaker.h"
 #include "AliCaloTrackReader.h"
 #include "AliPDG.h"
+#include "AliAnalysisManager.h"
 
 ClassImp(AliAnalysisTaskParticleCorrelation)
 
@@ -57,7 +58,7 @@ AliAnalysisTaskParticleCorrelation::AliAnalysisTaskParticleCorrelation(const cha
   // Default constructor
   
   DefineOutput(1, TList::Class());
-  
+
 }
 
 //_____________________________________________________
@@ -81,9 +82,11 @@ void AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects()
   //Get list of aod arrays, add each aod array to analysis frame 
   TClonesArray * array = 0;
   TList * list = fAna->GetAODBranchList();
+  TString deltaAODName = (fAna->GetReader())->GetDeltaAODFileName();
   for(Int_t iaod = 0; iaod < list->GetEntries(); iaod++){
     array = (TClonesArray*) list->At(iaod);
-    AddAODBranch("TClonesArray", &array);
+	if(deltaAODName!="") AddAODBranch("TClonesArray", &array, deltaAODName);//Put it in DeltaAOD file
+	else AddAODBranch("TClonesArray", &array);//Put it in standard AOD file
   } 
   
   //Histograms container
@@ -118,7 +121,11 @@ void AliAnalysisTaskParticleCorrelation::Init()
 
   // Initialise analysis
   fAna->Init();
-  
+
+  //Delta AOD
+  if((fAna->GetReader())->GetDeltaAODFileName()!="")
+	  AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile((fAna->GetReader())->GetDeltaAODFileName());
+
   if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::Init() - End\n");
   
 }

@@ -165,6 +165,12 @@ class AliCaloTrackReader : public TObject {
   Bool_t ReadStack()          const { return fReadStack            ; }
   Bool_t ReadAODMCParticles() const { return fReadAODMCParticles   ; }
 	
+  void SwitchOnWriteStdAOD()  {fWriteOutputStdAOD = kTRUE;}
+  void SwitchOffWriteStdAOD() {fWriteOutputStdAOD = kFALSE;}
+
+  void SetDeltaAODFileName(TString name ) {fDeltaAODFileName = name ; }
+  TString GetDeltaAODFileName() const {return fDeltaAODFileName ; }
+	
  protected:
   Int_t	           fEventNumber; // Event number
   TString          fCurrentFileName; // Current file name under analysis
@@ -208,7 +214,10 @@ class AliCaloTrackReader : public TObject {
   Bool_t         fReadStack          ; // Access kine information from stack
   Bool_t	     fReadAODMCParticles ; // Access kine information from filtered AOD MC particles
 	
-  ClassDef(AliCaloTrackReader,6)
+  Bool_t	     fWriteOutputStdAOD;   // Write selected standard tracks and caloclusters in output AOD
+  TString        fDeltaAODFileName ;   // Delta AOD file name
+
+  ClassDef(AliCaloTrackReader,7)
 } ;
 
 
