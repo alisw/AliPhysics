@@ -69,7 +69,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliAnaCalorimeterQA *qa = new AliAnaCalorimeterQA();
   qa->SetDebug(-1); //10 for lots of messages
   qa->SetCalorimeter(calorimeter);
-  if(kUseKinematics) qa->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  if(kUseKinematics && data!="AOD") qa->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else  qa->SwitchOffDataMC() ;
   qa->AddToHistogramsName(Form("AnaCaloQA_%s",calorimeter.Data()));
   qa->SetFidutialCut(fidCut);
@@ -99,7 +99,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   if(kPrintSettings) anaphoton1->Print("");
 
   AliAnaPi0 *anapi0 = new AliAnaPi0();
-  anapi0->SetDebug(0);//10 for lots of messages
+  anapi0->SetDebug(-1);//10 for lots of messages
   anapi0->SetInputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
   anapi0->SetCaloPID(pid);
   anapi0->SetCalorimeter(calorimeter);
@@ -107,27 +107,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anapi0->SwitchOffDataMC() ;//Access MC stack and fill more histograms
   if(kPrintSettings) anapi0->Print("");
   
-//  AliAnaNeutralMeson *ananeutral = new AliAnaNeutralMeson();
-//  ananeutral->SetDebug(-1);//10 for lots of messages
-//  ananeutral->SetInputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
-//  ananeutral->SetCaloPID(pid);
-//  //	ananeutral->SetNCentrBin(5); //number of bins in centrality 
-//  //	ananeutral->SetNZvertBin(5); //number of bins for vertex position
-//  //	ananeutral->SetNRPBin(6); //number of bins in reaction plain
-//  ananeutral->SetAnaPi0Eta(kTRUE); //whether analysis pi0 and eta
-//  ananeutral->SetAnaOmega(kTRUE);   //whether analysis omega
-//  ananeutral->SetNPID(3);
-//  ananeutral->SetInvMassCut(1.);
-//  ananeutral->SetNEventsMixed(6);
-//  ananeutral->SetNAsyBinsMinMax(200,0,1.);
-//  ananeutral->SetNPtBinsMinMax(200,0,20.);
-//  ananeutral->SetNMassBinsMinMas(200,0,1.);
-//  ananeutral->SetPi0MassPeakWidthCut(0.015);
-//  ananeutral->SetCalorimeter(calorimeter);
-//  ananeutral->SwitchOnFidutialCut();
-//  ananeutral->SwitchOffDataMC() ;//Access MC stack and fill more histograms
-//  ananeutral->AddToHistogramsName("AnaNeutralMeson_");
-//  ananeutral->Print("");
 	
   // -------------------------------------------------
   // --- Photon Isolation and Correlation Analysis ---
@@ -215,7 +194,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->AddAnalysis(anaisol,4);
   maker->AddAnalysis(anacorrjet,5);
   maker->AddAnalysis(anacorrhadron,6);
-  //maker->AddAnalysis(ananeutral,7);
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker()  ;
