@@ -1110,29 +1110,34 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal(AliMUONVTriggerStore&
       errorInXPosDev = kTRUE;
     }
 
-    // Skip following checks in case we previously found YCopy errors 
-    if ( skipBoard[iboard] ) continue;
-
-    if ( recoLocalTrigger->GetLoDecision() != inputLocalTrigger->GetLoDecision() ) {
-      ((TH1F*)GetRawsData(kTriggerErrorLocalTriggerDec))->Fill(loCircuit);
-    }
-
-    // Test Hpt and LPT
-    Int_t recoLut[2]  = { recoLocalTrigger->LoLpt(),  recoLocalTrigger->LoHpt() };
-    Int_t inputLut[2] = {inputLocalTrigger->LoLpt(), inputLocalTrigger->LoHpt() };
-    Int_t currIndex[2][2] = {{kTriggerErrorLocalLPtLSB, kTriggerErrorLocalLPtMSB},
-			     {kTriggerErrorLocalHPtMSB, kTriggerErrorLocalHPtMSB}};
-    for (Int_t ilut=0; ilut<2; ilut++){
-      Int_t bitDiff = recoLut[ilut]^inputLut[ilut];
-      if ( bitDiff == 0 ) continue;
-      for (Int_t ibit=0; ibit<2; ibit++){
-	Bool_t isBitDifferent = (bitDiff>>ibit)&1;
-	if ( isBitDifferent ){
-	  ((TH1F*)GetRawsData(currIndex[ilut][ibit]))->Fill(loCircuit);
-	  errorInLUT = kTRUE;
+    // Skip following checks in case we previously found YCopy error and YPos or trigY errors
+    if ( (!skipBoard[iboard]) || ( (recoLocalTrigger->LoStripY() == inputLocalTrigger->LoStripY()) && (recoLocalTrigger->LoTrigY() == inputLocalTrigger->LoTrigY())) ) {
+	
+	if ( recoLocalTrigger->GetLoDecision() != inputLocalTrigger->GetLoDecision() ) {
+	    ((TH1F*)GetRawsData(kTriggerErrorLocalTriggerDec))->Fill(loCircuit);
 	}
-      }
+	
+	// Test Hpt and LPT
+	Int_t recoLut[2]  = { recoLocalTrigger->LoLpt(),  recoLocalTrigger->LoHpt() };
+	Int_t inputLut[2] = {inputLocalTrigger->LoLpt(), inputLocalTrigger->LoHpt() };
+	Int_t currIndex[2][2] = {{kTriggerErrorLocalLPtLSB, kTriggerErrorLocalLPtMSB},
+				 {kTriggerErrorLocalHPtMSB, kTriggerErrorLocalHPtMSB}};
+	for (Int_t ilut=0; ilut<2; ilut++){
+	    Int_t bitDiff = recoLut[ilut]^inputLut[ilut];
+	    if ( bitDiff == 0 ) continue;
+	    for (Int_t ibit=0; ibit<2; ibit++){
+		Bool_t isBitDifferent = (bitDiff>>ibit)&1;
+		if ( isBitDifferent ){
+		    ((TH1F*)GetRawsData(currIndex[ilut][ibit]))->Fill(loCircuit);
+		    errorInLUT = kTRUE;
+		}
+	    }
+	}
     }
+    
+ 
+    // Skip following checks in case we previously found YCopy errors
+    if ( skipBoard[iboard] ) continue;
 
     if ( recoLocalTrigger->LoStripY() != inputLocalTrigger->LoStripY() ) {
       ((TH1F*)GetRawsData(kTriggerErrorLocalYPos))->Fill(loCircuit);
