@@ -192,6 +192,7 @@ class AliAODTrack : public AliVTrack {
   UInt_t   GetITSMUONClusterMap() const   { return fITSMuonClusterMap; }
   
   Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & fFilterMap) != 0);}
+  Bool_t  TestFilterMask(UInt_t filterMask) const {return (Bool_t) ((filterMask & fFilterMap) == filterMask);}
 
   AliAODPid    *GetDetPid() const { return fDetPid; }
   AliAODVertex *GetProdVertex() const { return (AliAODVertex*)fProdVertex.GetObject(); }
