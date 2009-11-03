@@ -98,6 +98,19 @@ AliCFGridSparse& AliCFGridSparse::operator=(const AliCFGridSparse &c)
 } 
 
 //____________________________________________________________________
+void AliCFGridSparse::SetBinLimits(Int_t ivar, Double_t min, Double_t max)
+{
+  //
+  // set a uniform binning for variable ivar
+  //
+  Int_t nBins = GetNBins(ivar);
+  Double_t * array = new Double_t[nBins+1];
+  for (Int_t iEdge=0; iEdge<=nBins; iEdge++) array[iEdge] = min + iEdge * (max-min)/nBins ;
+  fData->SetBinEdges(ivar, array);
+  delete [] array ;
+} 
+
+//____________________________________________________________________
 void AliCFGridSparse::SetBinLimits(Int_t ivar, const Double_t *array)
 {
   //

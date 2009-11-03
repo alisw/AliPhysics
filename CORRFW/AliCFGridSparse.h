@@ -32,7 +32,8 @@ class AliCFGridSparse : public AliCFFrame
   virtual Int_t      GetNVar() const {return fData->GetNdimensions();}
   virtual void       PrintBinLimits() const ;
   virtual void       PrintNBins() const ; 
-  virtual void       SetBinLimits(Int_t ivar, const Double_t * array);
+  virtual void       SetBinLimits(Int_t ivar, Double_t min, Double_t max); // for uniform bin width only
+  virtual void       SetBinLimits(Int_t ivar, const Double_t * array);     // for variable or uniform bin width
   virtual void       GetBinLimits(Int_t ivar, Double_t * array) const ;
   virtual Double_t * GetBinLimits(Int_t ivar) const ;
   virtual Long_t     GetNBinsTotal() const ;

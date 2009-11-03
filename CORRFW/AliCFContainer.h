@@ -34,7 +34,8 @@ class AliCFContainer : public AliCFFrame
   virtual Int_t      GetNVar()                                       const {return fGrid[0]->GetNVar();}
   virtual void       PrintBinLimits()                                const {fGrid[0]->PrintBinLimits();}
   virtual void       PrintNBins()                                    const {fGrid[0]->PrintNBins();}
-  virtual void       SetBinLimits(Int_t ivar, const Double_t * array) ;
+  virtual void       SetBinLimits(Int_t ivar, Double_t min, Double_t max) ; // for uniform bin width only
+  virtual void       SetBinLimits(Int_t ivar, const Double_t * array) ;     // for variable or uniform bin width
   virtual void       GetBinLimits(Int_t ivar, Double_t * array)      const {return fGrid[0]->GetBinLimits(ivar,array);}
   virtual Double_t * GetBinLimits(Int_t ivar)                        const {return fGrid[0]->GetBinLimits(ivar);}
   virtual Long_t     GetNBinsTotal()                                 const {return fGrid[0]->GetNBinsTotal()*fNStep;}
@@ -104,6 +105,12 @@ class AliCFContainer : public AliCFFrame
 inline void AliCFContainer::SetBinLimits(Int_t ivar, const Double_t* array) {
   for (Int_t iStep=0; iStep<GetNStep(); iStep++) {
     fGrid[iStep]->SetBinLimits(ivar,array);
+  }
+}
+
+inline void AliCFContainer::SetBinLimits(Int_t ivar, Double_t min, Double_t max) {
+  for (Int_t iStep=0; iStep<GetNStep(); iStep++) {
+    fGrid[iStep]->SetBinLimits(ivar,min,max);
   }
 }
 
