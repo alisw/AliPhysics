@@ -88,6 +88,7 @@ void loadmacros ()
   loadmacro("MakeMUONSingleRecoParam");    // Philippe P.
   loadmacro("MergeMuonLight");             // Hermine, Alessandro
   loadmacro("MUONAlignment");              // Javier   
+  loadmacro("MUONChamberMaterialBudget");  // Philippe P.   
   loadmacro("MUONCheck");                  // Frederic          
   loadmacro("MUONCheckDI");                // Artur
   loadmacro("MUONCheckMisAligner");        // Javier
