@@ -6,6 +6,7 @@ SRCS:=   vertexingHF/AliAODRecoDecayHF.cxx \
        vertexingHF/AliAODRecoCascadeHF.cxx \
        vertexingHF/AliAnalysisVertexingHF.cxx \
        vertexingHF/AliAnalysisTaskSEVertexingHF.cxx \
+       vertexingHF/AliAnalysisTaskMEVertexingHF.cxx \
        vertexingHF/AliAnalysisTaskSESelectHF.cxx \
        vertexingHF/AliAnalysisTaskSECompareHF.cxx \
        vertexingHF/AliAnalysisTaskSEDplus.cxx \

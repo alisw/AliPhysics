@@ -20,7 +20,7 @@
 // class AliAnalysisTaskSEVertexingHF. 
 // An example of usage in the macro AliAnalysisTaskSEVertexingHFTest.C.
 //
-//  Contact: andrea.dainese@lnl.infn.it
+//  Contact: andrea.dainese@pd.infn.it
 //  Contributors: E.Bruna, G.E.Bruno, A.Dainese, C.Di Gliglio,
 //                F.Prino, R.Romita, X.M.Zhang
 //----------------------------------------------------------------------------
@@ -48,6 +48,7 @@
 #include "AliAODRecoCascadeHF.h"
 #include "AliAnalysisFilter.h"
 #include "AliAnalysisVertexingHF.h"
+#include "AliMixedEvent.h"
 
 ClassImp(AliAnalysisVertexingHF)
 
@@ -67,6 +68,7 @@ f3Prong(kTRUE),
 f4Prong(kTRUE),
 fDstar(kTRUE),
 fLikeSign(kFALSE),
+fMixEvent(kFALSE),
 fTrackFilter(0x0),
 fTrackFilterSoftPi(0x0),
 fFindVertexForDstar(kTRUE)
@@ -98,6 +100,7 @@ f3Prong(source.f3Prong),
 f4Prong(source.f4Prong),
 fDstar(source.fDstar),
 fLikeSign(source.fLikeSign),
+fMixEvent(source.fMixEvent),
 fTrackFilter(source.fTrackFilter),
 fTrackFilterSoftPi(source.fTrackFilterSoftPi),
 fFindVertexForDstar(source.fFindVertexForDstar)
@@ -133,6 +136,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   f4Prong = source.f4Prong;
   fDstar = source.fDstar;
   fLikeSign = source.fLikeSign;
+  fMixEvent = source.fMixEvent;
   fTrackFilter = source.fTrackFilter;
   fTrackFilterSoftPi = source.fTrackFilterSoftPi;
   fFindVertexForDstar = source.fFindVertexForDstar;
@@ -170,9 +174,10 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   // Input:  ESD or AOD
   // Output: AOD (additional branches added)
 
-
-  TString evtype = event->IsA()->GetName();
-  fInputAOD = ((evtype=="AliAODEvent") ? kTRUE : kFALSE);
+  if(!fMixEvent){
+    TString evtype = event->IsA()->GetName();
+    fInputAOD = ((evtype=="AliAODEvent") ? kTRUE : kFALSE);
+  } // if we do mixing AliVEvent is a AliMixedEvent
 
   if(fInputAOD) {
     AliDebug(2,"Creating HF candidates from AOD");
@@ -293,12 +298,14 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
     AliDebug(1," No primary vertex from tracks");
     return;
   }
-  TString primTitle = primary->GetTitle();
+
+  TString primTitle=primary->GetTitle();
   if(!primTitle.Contains("VertexerTracks") ||
      primary->GetNContributors()<=0) {
     AliDebug(1," No primary vertex from tracks");
     return;
   }
+  
 
   // call function that applies sigle-track selection,
   // for displaced tracks and soft pions (both charges) for D*,
@@ -306,7 +313,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   TObjArray seleTrksArray(trkEntries);
   UChar_t  *seleFlags = new UChar_t[trkEntries]; // bit 0: displaced, bit 1: softpi
   Int_t     nSeleTrks=0;
-  SelectTracksAndCopyVertex(event,seleTrksArray,nSeleTrks,seleFlags);
+  Int_t *evtNumber    = new Int_t[trkEntries];
+  SelectTracksAndCopyVertex(event,seleTrksArray,nSeleTrks,seleFlags,evtNumber);
     
   AliDebug(1,Form(" Selected tracks: %d",nSeleTrks));
     
@@ -348,6 +356,10 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
       if(!TESTBIT(seleFlags[iTrkN1],kBitDispl)) continue;
 
+      if(fMixEvent) {
+	if(evtNumber[iTrkP1]==evtNumber[iTrkN1]) continue;
+      }
+
       if(postrack1->Charge()==negtrack1->Charge()) { // like-sign 
 	isLikeSign2Prong=kTRUE;
 	if(!fLikeSign)    continue;
@@ -355,12 +367,15 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
       } else { // unlike-sign
 	isLikeSign2Prong=kFALSE;
 	if(postrack1->Charge()<0 || negtrack1->Charge()>0) continue;  // this is needed to avoid double-counting of unlike-sign
+	if(fMixEvent) {
+	  if(evtNumber[iTrkP1]==evtNumber[iTrkN1]) continue;
+	}
+       
       }
 
       // back to primary vertex
       postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
       negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
-      //printf("********** %d %d\n",postrack1->GetID(),negtrack1->GetID());
 
       // DCA between the two tracks
       dcap1n1 = postrack1->GetDCA(negtrack1,fBzkG,xdummy,ydummy);
@@ -425,6 +440,12 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    if(iTrkSoftPi==iTrkP1 || iTrkSoftPi==iTrkN1) continue;
 
 	    if(!TESTBIT(seleFlags[iTrkSoftPi],kBitSoftPi)) continue;
+
+	    if(fMixEvent) {
+	      if(evtNumber[iTrkP1]==evtNumber[iTrkSoftPi] || 
+		 evtNumber[iTrkN1]==evtNumber[iTrkSoftPi] || 
+		 evtNumber[iTrkP1]==evtNumber[iTrkN1]) continue;
+	    }
 
 	    if(iTrkSoftPi%1==0) AliDebug(1,Form("    1st loop on pi_s: track number %d of %d",iTrkSoftPi,nSeleTrks));  
 
@@ -520,6 +541,12 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
 	if(!TESTBIT(seleFlags[iTrkP2],kBitDispl)) continue;
 
+	if(fMixEvent) {
+	  if(evtNumber[iTrkP1]==evtNumber[iTrkP2] || 
+	     evtNumber[iTrkN1]==evtNumber[iTrkP2] ||
+	     evtNumber[iTrkP1]==evtNumber[iTrkN1]) continue;
+	}
+
 	if(isLikeSign2Prong) { // like-sign pair -> have to build only like-sign triplet 
 	  if(postrack1->Charge()>0) { // ok: like-sign triplet (+++)
 	    isLikeSign3Prong=kTRUE;
@@ -528,6 +555,11 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  }
 	} else { // normal triplet (+-+)
 	  isLikeSign3Prong=kFALSE; 
+	  if(fMixEvent) {
+	    if(evtNumber[iTrkP1]==evtNumber[iTrkP2] || 
+	       evtNumber[iTrkN1]==evtNumber[iTrkP2] ||
+	       evtNumber[iTrkP1]==evtNumber[iTrkN1]) continue;
+	  }
 	}
 
 	// back to primary vertex
@@ -614,6 +646,14 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    if(negtrack2->Charge()>0) continue;
 
 	    if(!TESTBIT(seleFlags[iTrkN2],kBitDispl)) continue;
+	    if(fMixEvent){ 
+	      if(evtNumber[iTrkP1]==evtNumber[iTrkN2] || 
+		 evtNumber[iTrkN1]==evtNumber[iTrkN2] || 
+		 evtNumber[iTrkP2]==evtNumber[iTrkN2] ||
+		 evtNumber[iTrkP1]==evtNumber[iTrkN1] ||
+		 evtNumber[iTrkP1]==evtNumber[iTrkP2] ||
+		 evtNumber[iTrkN1]==evtNumber[iTrkP2]) continue;
+	    }
 
 	    // back to primary vertex
 	    postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
@@ -675,6 +715,12 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
 	if(!TESTBIT(seleFlags[iTrkN2],kBitDispl)) continue;
 
+	if(fMixEvent) {
+	  if(evtNumber[iTrkP1]==evtNumber[iTrkN2] || 
+	     evtNumber[iTrkN1]==evtNumber[iTrkN2] ||
+	     evtNumber[iTrkP1]==evtNumber[iTrkN1]) continue;
+	}
+
 	if(isLikeSign2Prong) { // like-sign pair -> have to build only like-sign triplet 
 	  if(postrack1->Charge()<0) { // ok: like-sign triplet (---)
 	    isLikeSign3Prong=kTRUE;
@@ -682,7 +728,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    continue;
 	  }
 	} else { // normal triplet (-+-)
-	  isLikeSign3Prong=kFALSE; 
+	  isLikeSign3Prong=kFALSE;
 	}
 
 	// back to primary vertex
@@ -785,6 +831,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   threeTrackArray->Delete(); delete threeTrackArray;
   fourTrackArray->Delete();  delete fourTrackArray;
   delete [] seleFlags; seleFlags=NULL;
+  if(evtNumber) {delete [] evtNumber; evtNumber=NULL;}
 
   if(fInputAOD) {
     seleTrksArray.Delete(); 
@@ -862,7 +909,7 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   tmpCascade->GetSecondaryVtx()->RemoveDaughters();
   tmpCascade->UnsetOwnPrimaryVtx(); 
   delete tmpCascade; tmpCascade=NULL;
-  if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
+  if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx && !fMixEvent) {
     rd2Prong->UnsetOwnPrimaryVtx();
   }
   if(primVertexAOD) {delete primVertexAOD; primVertexAOD=NULL;}
@@ -884,7 +931,6 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   okD0=kFALSE; okJPSI=kFALSE; okD0fromDstar=kFALSE;
 
   Double_t px[2],py[2],pz[2],d0[2],d0err[2];
-
   AliESDtrack *postrack = (AliESDtrack*)twoTrackArray->UncheckedAt(0);
   AliESDtrack *negtrack = (AliESDtrack*)twoTrackArray->UncheckedAt(1);
 
@@ -908,10 +954,10 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
     AliDebug(2," candidate didn't pass mass cut");
     return 0x0;    
   }
-  
   // primary vertex to be used by this candidate
   AliAODVertex *primVertexAOD  = PrimaryVertex(twoTrackArray,event);
   if(!primVertexAOD) return 0x0;
+
 
   Double_t d0z0[2],covd0z0[3];
   postrack->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
@@ -942,7 +988,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   //if(fDebug && fDstar) printf("   %d\n",(Int_t)okD0fromDstar);
 
   // remove the primary vertex (was used only for selection)
-  if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
+  if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx && !fMixEvent) {
     the2Prong->UnsetOwnPrimaryVtx();
   }
   
@@ -1041,7 +1087,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   }
   //if(fDebug) printf("ok3Prong: %d\n",(Int_t)ok3Prong);
 
-  if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
+  if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx && !fMixEvent) {
     the3Prong->UnsetOwnPrimaryVtx();
   }
 
@@ -1149,7 +1195,7 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
   Int_t checkD0,checkD0bar;
   ok4Prong=the4Prong->SelectD0(fD0to4ProngsCuts,checkD0,checkD0bar);
 
-  if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
+  if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx && !fMixEvent) {
     the4Prong->UnsetOwnPrimaryVtx();
   }
 
@@ -1538,7 +1584,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
 //-----------------------------------------------------------------------------
 void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
 				   TObjArray &seleTrksArray,Int_t &nSeleTrks,
-						       UChar_t *seleFlags)
+			           UChar_t *seleFlags,Int_t *evtNumber)
 {
   // Apply single-track preselection.
   // Fill a TObjArray with selected tracks (for displaced vertices or
@@ -1573,7 +1619,8 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
  
   // transfer ITS tracks from event to arrays
   for(Int_t i=0; i<entries; i++) {
-    AliVTrack *track = (AliVTrack*)event->GetTrack(i);
+    AliVTrack *track;
+    track = (AliVTrack*)event->GetTrack(i);
 
     // TEMPORARY: check that the cov matrix is there
     Double_t covtest[21];
@@ -1598,6 +1645,25 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(AliVEvent *event,
 
     // single track selection
     okDisplaced=kFALSE; okSoftPi=kFALSE;
+    if(fMixEvent){
+      evtNumber[i]=((AliMixedEvent*)event)->EventIndex(i);
+      const AliVVertex* eventVtx=((AliMixedEvent*)event)->GetEventVertex(i);
+      Double_t vtxPos[3],primPos[3],primCov[6],trasl[3];
+      eventVtx->GetXYZ(vtxPos);
+      vprimary->GetXYZ(primPos);
+      eventVtx->GetCovarianceMatrix(primCov);
+      for(Int_t ind=0;ind<3;ind++){
+	trasl[ind]=vtxPos[ind]-primPos[ind];
+      }
+      
+      Bool_t isTransl=esdt->Translate(trasl,primCov);
+      if(!isTransl) {
+	delete esdt;
+	esdt = NULL;
+	continue;
+      }
+    }
+
     if(SingleTrkCuts(esdt,okDisplaced,okSoftPi)) {
       seleTrksArray.AddLast(esdt);
       seleFlags[nSeleTrks]=0;
