@@ -17,11 +17,12 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 // ROOT includes
-#include "TFile.h"
-#include "TTree.h"
+#include "TGrid.h"
+#include "TString.h"
 
 // MUON includes
 #include "AliMUONCDB.h"
+#include "AliMUONCalibrationData.h"
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliCDBManager.h"
 #include "AliCDBRunRange.h"
@@ -38,41 +39,54 @@
 ///
 /// \author Diego Stocco, INFN Torino
 
-void MUONTriggerChamberEfficiency(Bool_t addMapInSimulation=kFALSE,
-				  const char *inputDir=".")
+void MUONTriggerChamberEfficiency(Char_t* inputFile="./MUON.TriggerEfficiencyMap.root",
+				  Bool_t addMapInLocalOCDB = kFALSE,
+				  Int_t firstRun=0, Int_t lastRun = AliCDBRunRange::Infinity(),
+				  Bool_t useMeanValues = kFALSE)
 {
-/// \param addMapInSimulation (default kFALSE);
-///     kTRUE: creates file MUON/Calib/TriggerEfficiency/Run0_99999999_v0_s?.root
-///            with calculated chamber efficiency which can be used in the next simulation
-/// \param inputDir 
-///     path to AliESDs.root (default ".")
+/// \param inputFile (default "./MUON.TriggerEfficiencyMaps.root")
+///     File with the numerator and denominator histos for efficiency calculation
+///     (It is the output of the PWG3/muon/AliAnalysisTaskTrigChEff analysis
+/// \param addMapInLocalOCDB (default kFALSE)
+///     if the map is OK, add it in local OCDB
+/// \param firstRun (default 0)
+///     first run of validity for CDB object
+/// \param lastRun (default AliCDBRunRange::Infinity())
+///     last run of validity for CDB Object
+/// \param useMeanValues (default kFALSE)
+///     Fill local board maps with the average RPC efficiency
+///    (useful when the statistics is low (i.e. for cosmic runs))
 
-    Char_t filename[150], *className = "AliMUONTriggerEfficiencyCells";
-    sprintf(filename,"%s/AliESDs.root",inputDir);
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
-    TFile *file = new TFile(filename,"read");
-    if(!file){
-	cerr << "Cannot find " << filename << "\nExit!" << endl;
-	return;
-    }
-    
-    TTree *esdTree = (TTree*)file->Get("esdTree");
-    if(!esdTree){
-	cerr << "Cannot find esdTree in " << filename << "\nExit!" << endl;
-	return;
-    }
-    
-    AliMUONTriggerEfficiencyCells *effMap = 
-      (AliMUONTriggerEfficiencyCells*)esdTree->GetUserInfo()->FindObject(className);
-    if(!effMap){
-	cerr << "Cannot find " << className << " in esdTree.\nExit!" << endl;
-	return;
-    }
+  AliMUONTriggerEfficiencyCells* effMap = new AliMUONTriggerEfficiencyCells(inputFile);
+  if ( useMeanValues ){
+    AliCDBManager::Instance()->SetRun(firstRun);
+    effMap->LowStatisticsSettings();
+  }
 
+  if ( !addMapInLocalOCDB ){
+    AliCDBManager::Instance()->SetRun(firstRun);
     effMap->DisplayEfficiency();
-
-    if(!addMapInSimulation) return;
-
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-    AliMUONCDB::WriteToCDB("MUON/Calib/TriggerEfficiency",effMap,0,AliCDBRunRange::Infinity(),true);
+  }
+  else
+    AliMUONCDB::WriteToCDB("MUON/Calib/TriggerEfficiency", effMap, firstRun, lastRun,true);
 }
+
+//____________________________________________________________
+void ShowOCDBmap(Int_t runNumber = 0, TString ocdbPath="local://$ALICE_ROOT/OCDB")
+{
+/// \param runNumber (default 0)
+///     run number
+/// \param ocdbPath(default "local://$ALICE_ROOT/OCDB")
+///     path to OCDB
+  if ( ocdbPath.BeginsWith("alien://") || ocdbPath.BeginsWith("raw://"))
+    TGrid::Connect("alien://");
+
+  AliCDBManager::Instance()->SetDefaultStorage(ocdbPath.Data());
+  AliCDBManager::Instance()->SetRun(runNumber);
+  AliMUONCalibrationData calib(runNumber);
+
+  calib.TriggerEfficiency()->DisplayEfficiency();
+}
+

@@ -180,7 +180,8 @@ root [1] MUONTriggerEfficiencyPt()
 
 \section trigger_s5 How to get trigger chamber efficiency from data
 
-Trigger chamber efficiency map is calculated during reconstruction and saved in AliESDs.root
+Trigger chamber efficiency map is calculated from AliESDs.root with the analysis task: PWG3/muon/AliMUONTriggerChamberEff.
+The output of the task is a file filename="MUON.TriggerEfficiencyMap.root" containing the numerator and denominator histograms for the efficiency calculation.
 In order to view and save the map, use macro MUONTriggerChamberEfficiency.C
 
 To compile MUONTriggerChamberEfficiency.C
@@ -191,12 +192,24 @@ To compile MUONTriggerChamberEfficiency.C
 
 To run MUONTriggerChamberEfficiency.C
 <pre>
-MUONTriggerChamberEfficiency();
+MUONTriggerChamberEfficiency("filename");
 </pre>
 
-If you want to make the calculated map available for next simulation use option kTRUE, i.e.
+If you want to make the calculated map available for next simulation use option kTRUE, and specify the run validity:
 <pre>
-MUONTriggerChamberEfficiency(kTRUE);
+MUONTriggerChamberEfficiency("filename",kTRUE,firstRun,lastRun);
+</pre>
+
+The last option allows to set the efficiency of each board of an RPC with the mean value of the chamber: this is useful when the efficiency was calculated with low statistics (like in cosmic runs).
+<pre>
+MUONTriggerChamberEfficiency("filename",kFALSE,firstRun,lastRun,kTRUE);
+</pre>
+
+Finally, to have a look to the map stored in the OCDB for the run runNumber, do:
+<pre>
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONTriggerChamberEfficiency.C+
+ShowOCDBmap(runNumber)
 </pre>
 
 When running next simulation, please remember to activate trigger efficiency

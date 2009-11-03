@@ -35,21 +35,18 @@ public:
 
   Bool_t SumRunEfficiency(const AliMUONTriggerEfficiencyCells &other);
 
+  Bool_t LowStatisticsSettings(Bool_t useMeanValues=kTRUE);
 
   // Methods for display
-  void DisplayEfficiency(Bool_t perSlat=kFALSE,
-			 const Char_t* cdbStorage = "local://$ALICE_ROOT/OCDB",
-			 Int_t runNumber=0);
+  void DisplayEfficiency(Bool_t perSlat=kFALSE);
 
   // Methods for efficiency check
   /// Set the list of fired strips
   void SetFiredStrips(TList *firedStrips){fFiredStrips = firedStrips;}
-  void CheckFiredStrips(const Char_t* cdbStorage = "local://$ALICE_ROOT/OCDB",
-			Int_t runNumber=0);
-                                // Check for strips with lower counts than others:
-                                // syntomatic of possible read-out problems in boards
+  void CheckFiredStrips(); // Check for strips with lower counts than others:
+                           // syntomatic of possible read-out problems in boards
 protected:
-    void Reset();
+    void Reset(Bool_t resetAll = kTRUE);
     void ReadFile(const Char_t* filename="$ALICE_ROOT/MUON/data/efficiencyCells.dat");
     void CalculateEfficiency(Int_t trigger44, Int_t trigger34,
 			     Float_t &efficiency, Float_t &error,
@@ -62,13 +59,15 @@ private:
     void ReadFileBoards(ifstream &file);
     void ReadHistoBoards(const Char_t* filename="MUON.TriggerEfficiencyMap.root");
     void InitHistos();
-    void FillHistosFromList();
-    Bool_t GetListsForCheck(const Char_t* cdbStorage, Int_t runNumber);
-    
+    void FillHistosFromList(Bool_t useMeanValues = kFALSE);
+    Bool_t GetListsForCheck();
+
     static const Int_t fgkNcathodes=2; ///<Number of cathodes
     static const Int_t fgkNchambers=4; ///<Number of chambers
     static const Int_t fgkNplanes=8;   ///<Number of planes
 
+    /// Return the current plane
+    Int_t GetPlane(Int_t chamber, Int_t cathode){ return fgkNchambers * cathode + chamber; }
     
     TH1F *fBoardEfficiency[fgkNplanes];///< the boards content
     TH1F *fSlatEfficiency[fgkNplanes];///< the slats content
