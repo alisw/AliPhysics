@@ -102,7 +102,7 @@ Float_t AliDAQ::fgkNumberOfLdcs[AliDAQ::kNDetectors] = {
   4,
   2,
   1,
-  4,
+  5,
   1,
   1,
   0.5,
