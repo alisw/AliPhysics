@@ -32,12 +32,45 @@ else
     shift
   fi
 
+  CAFROOT=v5-24-00b-caf
+  BASE=
+  
+  if [ "$1" == "-ALICE_pro" ]
+  then
+    shift
+ 
+    CAFROOT=ALICE_pro
+    BASE=/afs/cern.ch/alice/library/afs_volumes/vol12
+  fi
+
+  if [ "$1" == "-ALICE_new" ]
+  then
+    shift
+ 
+    CAFROOT=ALICE_new
+    BASE=/afs/cern.ch/alice/library/afs_volumes/vol02
+  fi
+
+  if [ ! -z $BASE ]
+  then
+    echo "Setting ROOT and AliRoot to $CAFROOT"    
+
+    export ROOTSYS=$BASE/root
+    export PATH=$ROOTSYS/bin:$PATH
+    export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+
+    export ALICE_ROOT=$BASE/AliRoot
+    export ALICE_TARGET=`root-config --arch`
+    export LD_LIBRARY_PATH=$ALICE_ROOT/lib/tgt_${ALICE_TARGET}:$LD_LIBRARY_PATH
+    export PATH=$ALICE_ROOT/bin/tgt_${ALICE_TARGET}:$PATH
+  fi 
+
   [ -z $1 ] && { echo "Usage: rec.sh [-local] <run_number>"; exit 1; }
 
   nev=${2:-10000}
   fev=${3:-0}
 
   cd reco
-  aliroot -q run.C\($1,$nev,$fev\)
+  aliroot -q run.C\($1,$nev,$fev,\"$CAFROOT\"\)
 
 fi

@@ -1,8 +1,9 @@
-void run(Int_t runNumber,Int_t nev=10000, Int_t firstev=0)
+void run(Int_t runNumber, Int_t nev = 10000, Int_t firstev = 0, const char* rootVersion = 0)
 {
   gEnv->SetValue("XSec.GSI.DelegProxy","2");
   // Select ROOT version
-  TProof::Mgr("aliprod@alicecaf")->SetROOTVersion("v5-24-00b-caf");
+  if (rootVersion)
+    TProof::Mgr("aliprod@alicecaf")->SetROOTVersion(rootVersion);
   // Login to CAF
   TProof::Open("aliprod@alicecaf");
 
