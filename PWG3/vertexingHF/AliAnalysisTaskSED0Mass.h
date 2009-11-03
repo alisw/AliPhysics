@@ -38,9 +38,10 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
   void SetArray(Int_t type=AliAnalysisTaskSED0Mass::kD0){fArray=type;}
-
   enum{kD0,kLS};
-  
+
+  void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
+
  private:
 
   AliAnalysisTaskSED0Mass(const AliAnalysisTaskSED0Mass &source);
@@ -53,6 +54,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   AliAnalysisVertexingHF *fVHFPPR;  // Vertexer heavy flavour (used to pass the cuts)
   AliAnalysisVertexingHF *fVHFloose;  // Vertexer heavy flavour (used to pass the cuts)
   Int_t    fArray;        //   can be D0 or Like Sign candidates
+  Bool_t   fReadMC;       // flag for MC array: kTRUE = read it, kFALSE = do not read it
 
   Int_t    fTotPosPairs[5];     //
   Int_t    fTotNegPairs[5];     // 
