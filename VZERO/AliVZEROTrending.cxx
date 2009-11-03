@@ -61,8 +61,11 @@ AliVZEROTrending::AliVZEROTrending(const AliVZEROTrending &trend) :
 
 //_____________________________________________________________________________
 AliVZEROTrending::~AliVZEROTrending(){
-	delete [] fGraphs;
-	delete fMultiGraphs;
+  if (fGraphs) {
+    for (Int_t i=0; i<8; ++i) delete fGraphs[i];
+    delete [] fGraphs;
+  }
+  delete fMultiGraphs;
 }
 // -----------------------------------------------------------------			
 void AliVZEROTrending::AddEntry(Double_t * data, UInt_t time)
