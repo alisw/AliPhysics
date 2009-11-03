@@ -372,7 +372,7 @@ Bool_t AliAODHandler::FinishEvent()
   // Fill data structures
   if(fFillAOD){
     fAODEvent->MakeEntriesReferencable();
-    StoreMCParticles();
+    // StoreMCParticles();
     FillTree();
     if (fExtensions) {
       TIter next(fExtensions);

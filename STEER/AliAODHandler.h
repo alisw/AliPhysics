@@ -78,8 +78,9 @@ class AliAODHandler : public AliVEventHandler {
     //
     void                 SetInputTree(TTree* /*tree*/) {;}
     void                 SetMCEventHandler(AliMCEventHandler* mcH) {fMCEventH = mcH;} // For internal use
+    void StoreMCParticles(); // Store MC particles, only to be called from AliAnalyisTaskMCParticleFilter
+
  private:
-    void StoreMCParticles();
     void SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader *genHeader); // Utility function t catch different types of eventheaders
     AliAODHandler(const AliAODHandler&);             // Not implemented
     AliAODHandler& operator=(const AliAODHandler&);  // Not implemented
