@@ -221,12 +221,6 @@ int AliHLTITSVertexerSPDComponent::ReadConfigurationString(  const char* argumen
       fDefRunVtx[2] = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
       HLTInfo( "Default run vertex is set to (%f,%f,%f)",fDefRunVtx[0],
 	       fDefRunVtx[1],fDefRunVtx[2] );
-      for( int i=0; i<3; i++){
-	fRunVtx[i] = fDefRunVtx[i];
-	fRunVtxNew[i] = fDefRunVtx[i];
-      }
-      fRunVtx[3] = 0.;
-      fRunVtxNew[3] = 0.;
       continue;
     }
 
@@ -401,7 +395,7 @@ int AliHLTITSVertexerSPDComponent::DoEvent
 {
   //* process event
 
-  AliHLTUInt32_t maxBufferSize = size;
+  //AliHLTUInt32_t maxBufferSize = size;
   size = 0; // output size
 
   if (!IsDataEvent()) return 0;
@@ -514,7 +508,7 @@ int AliHLTITSVertexerSPDComponent::DoEvent
 	double y0 = cu.fY - vtxY;
 	double z0 = cu.fZ - vtxZ;
 	double bestR2 = 1.e10;
-	int bestDn=-1, bestBin =0;
+	int bestDn=-1, bestBinDn =0;
 	double bestV[3]={0,0,0};
 	for( int icDn=0; icDn<nCluDn; icDn++ ){
 	  AliHLTITSVZCluster &cd = clusters[0][iPhi][icDn];
@@ -538,16 +532,16 @@ int AliHLTITSVertexerSPDComponent::DoEvent
 	    bestV[0] = xv;
 	    bestV[1] = yv;
 	    bestV[2] = zv;
-	    bestBin = zbin;
+	    bestBinDn = zbin;
 	  }
 	}
 	if( bestDn>=0 ){
 	  double w = 1./(1.+bestR2);
-	  histX[bestBin]+=bestV[0]*w;
-	  histY[bestBin]+=bestV[1]*w;
-	  histZ[bestBin]+=bestV[2]*w;
-	  histW[bestBin]+=w;
-	  histN[bestBin]+=1;
+	  histX[bestBinDn]+=bestV[0]*w;
+	  histY[bestBinDn]+=bestV[1]*w;
+	  histZ[bestBinDn]+=bestV[2]*w;
+	  histW[bestBinDn]+=w;
+	  histN[bestBinDn]+=1;
 	}
       }
     }

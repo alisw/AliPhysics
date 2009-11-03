@@ -111,7 +111,6 @@ Double_t AliHLTGlobalBarrelTrack::GetPathLengthTo( Double_t x, Double_t b ) cons
 
   Double_t ex1 = TMath::Sqrt(1-ey1*ey1);
 
-  Double_t dx2 = dx * dx;
   Double_t ss = ey + ey1;
   Double_t cc = ex + ex1;
 
