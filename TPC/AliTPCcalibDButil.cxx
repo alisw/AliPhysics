@@ -50,7 +50,7 @@
 ClassImp(AliTPCcalibDButil)
 AliTPCcalibDButil::AliTPCcalibDButil() :
   TObject(),
-  fCalibDB(AliTPCcalibDB::Instance()),
+  fCalibDB(0),
   fPadNoise(0x0),
   fPedestals(0x0),
   fPulserTmean(0x0),
@@ -116,6 +116,7 @@ void AliTPCcalibDButil::UpdateFromCalibDB()
   //
   // Update pointers from calibDB
   //
+  if (!fCalibDB) fCalibDB=AliTPCcalibDB::Instance();
   fPadNoise=fCalibDB->GetPadNoise();
   fPedestals=fCalibDB->GetPedestals();
   fPulserTmean=fCalibDB->GetPulserTmean();
@@ -1392,7 +1393,7 @@ Double_t  AliTPCcalibDButil::GetVDriftTPC(Double_t &dist, Int_t run, Int_t timeS
 
   Double_t t0= AliTPCcalibDButil::GetTriggerOffsetTPC(run,timeStamp, deltaT, deltaTLaser,valType);
   Double_t vcosmic=  AliTPCcalibDButil::EvalGraphConst(cosmicAll, timeStamp);
-  if (timeStamp>cosmicAll->GetX()[cosmicAll->GetN()-1])  vcosmic=timeStamp>cosmicAll->GetY()[cosmicAll->GetN()-1];
+  if (timeStamp>cosmicAll->GetX()[cosmicAll->GetN()-1])  vcosmic=cosmicAll->GetY()[cosmicAll->GetN()-1];
   if (timeStamp<cosmicAll->GetX()[0])  vcosmic=cosmicAll->GetY()[0];
   return  vcosmic+t0;
 
@@ -1482,7 +1483,7 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCCE(Double_t &dist,Int_t run, Int_t time
     Int_t mtime   =TMath::Nint((graphA->GetX()[0]+graphA->GetX()[graphA->GetN()-1])*0.5);
     ltime0A       = GetLaserTime0(run,mtime,TMath::Nint(deltaT),0);
     if (driftCalib) corrPTA =  driftCalib->GetPTRelative(timeStamp,0);
-    corrA = (param->GetZLength(36)/(timeA*param->GetTSample()*(1.-ltime0A)-param->GetL1Delay()-3.*param->GetZSigma()/param->GetDriftV()))/param->GetDriftV()-1;
+    corrA = (param->GetZLength(36)/(timeA*param->GetTSample()*(1.-ltime0A)-param->GetL1Delay()-0*param->GetZSigma()/param->GetDriftV()))/param->GetDriftV()-1;
     corrA-=corrPTA;
   }
   if (graphC&&graphC->GetN()>0){
@@ -1491,7 +1492,7 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCCE(Double_t &dist,Int_t run, Int_t time
     Int_t mtime=TMath::Nint((graphC->GetX()[0]+graphC->GetX()[graphC->GetN()-1])*0.5);
     ltime0C       = GetLaserTime0(run,mtime,TMath::Nint(deltaT),0);
     if (driftCalib) corrPTC =  driftCalib->GetPTRelative(timeStamp,0);
-    corrC = (param->GetZLength(54)/(timeC*param->GetTSample()*(1.-ltime0C)-param->GetL1Delay()-3.*param->GetZSigma()/param->GetDriftV()))/param->GetDriftV()-1;
+    corrC = (param->GetZLength(54)/(timeC*param->GetTSample()*(1.-ltime0C)-param->GetL1Delay()-0*param->GetZSigma()/param->GetDriftV()))/param->GetDriftV()-1;
     corrC-=corrPTC;
   }
   
@@ -1751,31 +1752,155 @@ Double_t AliTPCcalibDButil::EvalGraphConst(TGraph *graph, Double_t xref){
   return graph->Eval( xref);
 }
 
+Float_t AliTPCcalibDButil::FilterSensor(AliDCSSensor * sensor, Double_t ymin, Double_t ymax, Double_t maxdy,  Double_t sigmaCut){
+  //
+  // Filter DCS sensor information
+  //   ymin     - minimal value
+  //   ymax     - max value
+  //   maxdy    - maximal deirivative
+  //   sigmaCut - cut on values and derivative in terms of RMS distribution
+  // Return value - accepted fraction
+  // 
+  // Algorithm:
+  //
+  // 0. Calculate median and rms of values in specified range
+  // 1. Filter out outliers - median+-sigmaCut*rms
+  //    values replaced by median
+  //
+  AliSplineFit * fit    = sensor->GetFit();
+  if (!fit) return 0.;
+  Int_t          nknots = fit->GetKnots();
+  if (nknots==0) {
+    delete fit;
+    sensor->SetFit(0);
+    return 0;
+  }
+  //
+  Double_t *yin0  = new Double_t[nknots];
+  Double_t *yin1  = new Double_t[nknots];
+  Int_t naccept=0;
+  
+  for (Int_t iknot=0; iknot< nknots; iknot++){
+    if (fit->GetY0()[iknot]>ymin && fit->GetY0()[iknot]<ymax){
+      yin0[naccept]  = fit->GetY0()[iknot];
+      yin1[naccept]  = fit->GetY1()[iknot];
+      if (TMath::Abs(fit->GetY1()[iknot])>maxdy) yin1[naccept]=0;
+      naccept++;
+    }
+  }
+  if (naccept<1) {
+    delete fit;
+    sensor->SetFit(0);
+    return 0.;
+  }
+  Double_t medianY0=0, medianY1=0;
+  Double_t rmsY0   =0, rmsY1=0;
+  medianY0 = TMath::Median(naccept, yin0);
+  medianY1 = TMath::Median(naccept, yin1);
+  rmsY0    = TMath::RMS(naccept, yin0);
+  rmsY1    = TMath::RMS(naccept, yin1);
+  naccept=0;
+  //
+  // 1. Filter out outliers - median+-sigmaCut*rms
+  //    values replaced by median
+  //    if replaced the derivative set to 0
+  //
+  for (Int_t iknot=0; iknot< nknots; iknot++){
+    Bool_t isOK=kTRUE;
+    if (TMath::Abs(fit->GetY0()[iknot]-medianY0)>sigmaCut*rmsY0) isOK=kFALSE;
+    if (TMath::Abs(fit->GetY1()[iknot]-medianY1)>sigmaCut*rmsY1) isOK=kFALSE;
+    if (nknots<2) fit->GetY1()[iknot]=0;
+    if (TMath::Abs(fit->GetY1()[iknot])>maxdy) fit->GetY1()[iknot]=0;
+    if (!isOK){
+      fit->GetY0()[iknot]=medianY0;
+      fit->GetY1()[iknot]=0;
+    }else{
+      naccept++;
+    }
+  }
+  delete [] yin0;
+  delete [] yin1;
+  return Float_t(naccept)/Float_t(nknots);
+}
+
+Float_t  AliTPCcalibDButil::FilterTemperature(AliTPCSensorTempArray *tempArray, Double_t ymin, Double_t ymax, Double_t sigmaCut){
+  //
+  // Filter temperature array
+  // tempArray    - array of temperatures         -
+  // ymin         - minimal accepted temperature  - default 15
+  // ymax         - maximal accepted temperature  - default 22
+  // sigmaCut     - values filtered on interval median+-sigmaCut*rms - defaut 5
+  // return value - fraction of filtered sensors
+  const Double_t kMaxDy=0.1;
+  Int_t nsensors=tempArray->NumSensors();
+  if (nsensors==0) return 0.;
+  Int_t naccept=0;
+  for (Int_t isensor=0; isensor<nsensors; isensor++){
+    AliDCSSensor *sensor = tempArray->GetSensorNum(isensor);
+    if (!sensor) continue;
+    //printf("%d\n",isensor);
+    FilterSensor(sensor,ymin,ymax,kMaxDy, sigmaCut);
+    if (sensor->GetFit()==0){
+      delete sensor;
+      tempArray->RemoveSensorNum(isensor);
+    }else{
+      naccept++;
+    }
+  }
+  return Float_t(naccept)/Float_t(nsensors);
+}
+
 
 void AliTPCcalibDButil::FilterCE(Double_t deltaT, Double_t cutAbs, Double_t cutSigma, TTreeSRedirector *pcstream){
   //
   // Filter CE data
-  // 0.  remove outlyers
-  //     0.1 absolute cut
-  //     0.2 nsigma cut
-  // 1.  smooth the graphs
+  // Input parameters:
+  //    deltaT   - smoothing window (in seconds)
+  //    cutAbs   - max distance of the time info to the median (in time bins)
+  //    cutSigma - max distance (in the RMS)
+  //    pcstream - optional debug streamer to store original and filtered info
+  // Hardwired parameters:
+  //    kMinPoints =10;       // minimal number of points to define the CE
+  //    kMinSectors=12;       // minimal number of sectors to define sideCE
+  // Algorithm:
+  // 0. Filter almost emty graphs (kMinPoints=10)
+  // 1. calculate median and RMS per side
+  // 2. Filter graphs - in respect with side medians 
+  //                  - cutAbs and cutDelta used
+  // 3. Cut in respect wit the graph median - cutAbs and cutRMS used
+  // 4. Calculate mean for A side and C side
   //
-  const Int_t kMinPoints=5;  // minimal number of points to define the CE
-  TObjArray *arrT=fCalibDB->GetCErocTtime();
+  const Int_t kMinPoints =10;       // minimal number of points to define the CE
+  const Int_t kMinSectors=12;       // minimal number of sectors to define sideCE
+  const Int_t kMinTime   =400;     // minimal arrival time of CE
+  TObjArray *arrT=AliTPCcalibDB::Instance()->GetCErocTtime();
   Double_t medianY=0;
-  TObjArray*  cearray =   fCalibDB->GetCEData(); 
+  TObjArray*  cearray =AliTPCcalibDB::Instance()->GetCEData(); 
   if (!cearray) return;
+  Double_t tmin=-1;
+  Double_t tmax=-1;
+  //
+  //
   AliTPCSensorTempArray *tempMapCE = (AliTPCSensorTempArray *)cearray->FindObject("TempMap");
   AliDCSSensor * cavernPressureCE  = (AliDCSSensor *) cearray->FindObject("CavernPressure");
   if ( tempMapCE && cavernPressureCE){
-    // recalculate P/T correction map for time of the CE
-    AliTPCCalibVdrift * driftCalib = new AliTPCCalibVdrift(tempMapCE,cavernPressureCE ,0);
-    driftCalib->SetName("driftPTCE");
-    driftCalib->SetTitle("driftPTCE");
-    cearray->AddLast(driftCalib);
+    //
+    Bool_t isOK = FilterTemperature(tempMapCE)>0.1;
+    FilterSensor(cavernPressureCE,960,1050,10, 5.);
+    if (cavernPressureCE->GetFit()==0) isOK=kFALSE;
+    if (isOK)  {      
+      // recalculate P/T correction map for time of the CE
+      AliTPCCalibVdrift * driftCalib = new AliTPCCalibVdrift(tempMapCE,cavernPressureCE ,0);
+      driftCalib->SetName("driftPTCE");
+      driftCalib->SetTitle("driftPTCE");
+      cearray->AddLast(driftCalib);
+    }
   }
+  //
+  // 0. Filter almost emty graphs
+  //
 
-  for (Int_t i=0; i<arrT->GetEntries();i++){
+  for (Int_t i=0; i<72;i++){
     TGraph *graph= (TGraph*)arrT->At(i);
     if (!graph) continue;
     if (graph->GetN()<kMinPoints){
@@ -1783,7 +1908,74 @@ void AliTPCcalibDButil::FilterCE(Double_t deltaT, Double_t cutAbs, Double_t cutS
       delete graph;  // delete empty graph
       continue;
     }
-    TGraph* graphTS0= AliTPCcalibDButil::FilterGraphMedianAbs(graph,cutAbs,medianY);
+    if (tmin<0) tmin = graph->GetX()[0];
+    if (tmax<0) tmax = graph->GetX()[graph->GetN()-1];
+    //
+    if (tmin>graph->GetX()[0]) tmin=graph->GetX()[0];
+    if (tmax<graph->GetX()[graph->GetN()-1]) tmax=graph->GetX()[graph->GetN()-1];
+  }
+  //
+  // 1. calculate median and RMS per side
+  //
+  TArrayF arrA(100000), arrC(100000);
+  Int_t nA=0, nC=0;
+  Double_t medianA=0, medianC=0;
+  Double_t rmsA=0, rmsC=0;
+  for (Int_t isec=0; isec<72;isec++){
+    TGraph *graph= (TGraph*)arrT->At(isec);
+    if (!graph) continue;
+    for (Int_t ipoint=kMinPoints-1; ipoint<graph->GetN();ipoint++){
+      if (graph->GetY()[ipoint]<kMinTime) continue;
+      if (nA>=arrA.fN) arrA.Set(nA*2);
+      if (nC>=arrC.fN) arrC.Set(nC*2);
+      if (isec%36<18)  arrA[nA++]= graph->GetY()[ipoint];
+      if (isec%36>=18) arrC[nC++]= graph->GetY()[ipoint];
+    }
+  }
+  if (nA>0){
+    medianA=TMath::Median(nA,arrA.fArray);
+    rmsA   =TMath::RMS(nA,arrA.fArray);
+  }
+  if (nC>0){
+    medianC=TMath::Median(nC,arrC.fArray);
+    rmsC   =TMath::RMS(nC,arrC.fArray);
+  }
+  //
+  // 2. Filter graphs - in respect with side medians
+  //  
+  TArrayD vecX(100000), vecY(100000);
+  for (Int_t isec=0; isec<72;isec++){
+    TGraph *graph= (TGraph*)arrT->At(isec);
+    if (!graph) continue;
+    Double_t median = (isec%36<18) ? medianA: medianC;
+    Double_t rms    = (isec%36<18) ? rmsA:    rmsC;
+    Int_t naccept=0;
+    for (Int_t ipoint=kMinPoints-1; ipoint<graph->GetN();ipoint++){
+      if (TMath::Abs(graph->GetY()[ipoint]-median)>cutAbs) continue;
+      if (TMath::Abs(graph->GetY()[ipoint]-median)>cutSigma*rms) continue;
+      vecX[naccept]= graph->GetX()[ipoint];
+      vecY[naccept]= graph->GetY()[ipoint];
+      naccept++;
+    }
+    if (naccept<kMinPoints){
+      arrT->AddAt(0,isec);
+      delete graph;  // delete empty graph
+      continue;
+    }
+    TGraph *graph2 = new TGraph(naccept, vecX.fArray, vecY.fArray);
+    delete graph;
+    arrT->AddAt(graph2,isec);
+  }
+  //
+  // 3. Cut in respect wit the graph median
+  //
+  for (Int_t i=0; i<72;i++){
+    TGraph *graph= (TGraph*)arrT->At(i);
+    if (!graph) continue;
+    //
+    // filter in range
+    //
+    TGraph* graphTS0= FilterGraphMedianAbs(graph,cutAbs,medianY);
     if (!graphTS0) continue;
     if (graphTS0->GetN()<kMinPoints) {
       delete graphTS0;  
@@ -1791,8 +1983,7 @@ void AliTPCcalibDButil::FilterCE(Double_t deltaT, Double_t cutAbs, Double_t cutS
       arrT->AddAt(0,i);
       continue;
     }
-    TGraph* graphTS= AliTPCcalibDButil::FilterGraphMedian(graphTS0,cutSigma,medianY);
-    
+    TGraph* graphTS= FilterGraphMedian(graphTS0,cutSigma,medianY);    
     graphTS->Sort();
     AliTPCcalibDButil::SmoothGraph(graphTS,deltaT);      
     if (pcstream){
@@ -1811,6 +2002,54 @@ void AliTPCcalibDButil::FilterCE(Double_t deltaT, Double_t cutAbs, Double_t cutS
     arrT->AddAt(graphTS,i);
     delete graph;
   }
+  //
+  // Recalculate the mean time A side C side
+  //
+  TArrayF xA(200), yA(200), eA(200), xC(200),yC(200), eC(200);
+  Int_t meanPoints=(nA+nC)/72;  // mean number of points
+  for (Int_t itime=0; itime<200; itime++){
+    nA=0, nC=0;
+    Double_t time=tmin+(tmax-tmin)*Float_t(itime)/200.;
+    for (Int_t i=0; i<72;i++){
+      TGraph *graph= (TGraph*)arrT->At(i);
+      if (!graph) continue;
+      if (graph->GetN()<(meanPoints/4)) continue;
+      if ( (i%36)<18 )  arrA[nA++]=graph->Eval(time);
+      if ( (i%36)>=18 ) arrC[nC++]=graph->Eval(time);
+    }
+    xA[itime]=time;
+    xC[itime]=time;
+    yA[itime]=(nA>0)? TMath::Mean(nA,arrA.fArray):0;
+    yC[itime]=(nC>0)? TMath::Mean(nC,arrC.fArray):0;
+    eA[itime]=(nA>0)? TMath::RMS(nA,arrA.fArray):0;
+    eC[itime]=(nC>0)? TMath::RMS(nC,arrC.fArray):0;
+  }
+  //
+  Double_t rmsTA = TMath::RMS(200,yA.fArray)+TMath::Mean(200,eA.fArray);
+  Double_t rmsTC = TMath::RMS(200,yC.fArray)+TMath::Mean(200,eC.fArray);
+  if (pcstream){
+    Int_t run = AliTPCcalibDB::Instance()->GetRun();
+    (*pcstream)<<"filterAC"<<
+      "run="<<run<<
+      "nA="<<nA<<
+      "nC="<<nC<<
+      "rmsTA="<<rmsTA<<
+      "rmsTC="<<rmsTC<<
+      "\n";
+  }
+  //
+  TGraphErrors *grA = new TGraphErrors(200,xA.fArray,yA.fArray,0, eA.fArray);
+  TGraphErrors *grC = new TGraphErrors(200,xC.fArray,yC.fArray,0, eC.fArray);
+  TGraph* graphTSA= FilterGraphMedian(grA,cutSigma,medianY);
+  if (graphTSA&&graphTSA->GetN()) SmoothGraph(graphTSA,deltaT);   
+  TGraph* graphTSC= FilterGraphMedian(grC,cutSigma,medianY);
+  if (graphTSC&&graphTSC->GetN()>0) SmoothGraph(graphTSC,deltaT);   
+  delete grA; 
+  delete grC;
+  if (nA<kMinSectors) arrT->AddAt(0,72);
+  else arrT->AddAt(graphTSA,72);
+  if (nC<kMinSectors) arrT->AddAt(0,73);
+  else arrT->AddAt(graphTSC,73);
 }
 
 
@@ -1871,11 +2110,11 @@ void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t d
     if (sensor &&  sensor->GetGraph()){
       TGraph * graph = sensor->GetGraph();
       if (isensor==3 && graph->GetN()>1){ // drift velocity
-	TGraph * graphv = AliTPCcalibDButil::FilterGraphMedianAbs(graph,0.2,medianY);
+	TGraph * graphv = FilterGraphMedianAbs(graph,0.2,medianY);
 	delete graph;
 	graph=graphv;
       }
-      TGraph * graph2 = AliTPCcalibDButil::FilterGraphMedian(graph,cutSigma,medianY);
+      TGraph * graph2 = FilterGraphMedian(graph,cutSigma,medianY);
       if (!graph2) continue;
       AliTPCcalibDButil::SmoothGraph(graph2,deltaT);
       if (pcstream){

@@ -192,8 +192,8 @@ AliTPCcalibDB::AliTPCcalibDB():
   fTemperatureArray(100000),    //! array of temperature sensors - per run - Just for calibration studies
   fVdriftArray(100000),                 //! array of v drift interfaces
   fDriftCorrectionArray(100000),  //! array of drift correction
-  fRunList(100000)              //! run list - indicates try to get the run param 
-
+  fRunList(100000),              //! run list - indicates try to get the run param 
+  fDButil(0)
 {
   //
   // constructor
@@ -229,7 +229,8 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fTemperatureArray(0),   //! array of temperature sensors - per run - Just for calibration studies
   fVdriftArray(0),         //! array of v drift interfaces
   fDriftCorrectionArray(0),         //! array of v drift interfaces
-  fRunList(0)              //! run list - indicates try to get the run param 
+  fRunList(0),              //! run list - indicates try to get the run param 
+  fDButil(0)
 {
   //
   // Copy constructor invalid -- singleton implementation
@@ -300,7 +301,7 @@ void AliTPCcalibDB::Update(){
   AliCDBEntry * entry=0;
   Bool_t cdbCache = AliCDBManager::Instance()->GetCacheFlag(); // save cache status
   AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
-  
+  fDButil = new AliTPCcalibDButil;   
   //
   entry          = GetCDBEntry("TPC/Calib/PadGainFactor");
   if (entry){
@@ -794,6 +795,8 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
   //
   // - > Don't use it for reconstruction - Only for Calibration studies
   //
+  if (run<0) return;
+  if (fRunList[run]>0 &&force==kFALSE) return;
   AliCDBEntry * entry = 0;
   if (run>= fRunList.GetSize()){
     fRunList.Set(run*2+1);
@@ -806,7 +809,9 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
     fDriftCorrectionArray.Expand(run*2+1);
     fTimeGainSplinesArray.Expand(run*2+1);
   }
-  if (fRunList[run]>0 &&force==kFALSE) return;
+
+  fRunList[run]=1;  // sign as used
+
   //
   entry = AliCDBManager::Instance()->Get("GRP/GRP/Data",run);
   if (entry)  {
@@ -847,14 +852,31 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
   if (entry)  {
     fTemperatureArray.AddAt(entry->GetObject(),run);
   }
-  fRunList[run]=1;  // sign as used
+  //apply fDButil filters
+
+  fDButil->UpdateFromCalibDB();
+  if (fTemperature) fDButil->FilterTemperature(fTemperature);
 
   AliDCSSensor * press = GetPressureSensor(run,0);
   AliTPCSensorTempArray * temp = GetTemperatureSensor(run);
-  if (press && temp){
+  Bool_t accept=kTRUE;
+  if (temp) {
+    accept = fDButil->FilterTemperature(temp)>0.1;
+  }
+  if (press) {
+    const Double_t kMinP=950.;
+    const Double_t kMaxP=1050.;
+    const Double_t kMaxdP=10.;
+    const Double_t kSigmaCut=4.;
+    fDButil->FilterSensor(press,kMinP,kMaxP,kMaxdP,kSigmaCut);
+    if (press->GetFit()==0) accept=kFALSE;
+  }
+  if (press && temp &&accept){
     AliTPCCalibVdrift * vdrift = new AliTPCCalibVdrift(temp, press,0);
     fVdriftArray.AddAt(vdrift,run);
   }
+  fDButil->FilterCE(120., 3., 4.,0);
+  fDButil->FilterTracks(run, 10.,0);
 }
 
 
@@ -1570,10 +1592,26 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
   Double_t result;
-  // mode TPC crossing and laser 
-  Double_t deltaT=0;
-  if (mode==1) {   
-    result=AliTPCcalibDButil::GetVDriftTPC(deltaT,run,timeStamp);    
+  // mode 1  automatic mode - according to the distance to the valid calibration
+  //                        -  
+  Double_t deltaP=0,  driftP=0,  wP  = 0.;
+  Double_t deltaLT=0, driftLT=0, wLT = 0.;
+  Double_t deltaCE=0, driftCE=0, wCE = 0.;
+  driftP  = fDButil->GetVDriftTPC(deltaP,run,timeStamp); 
+  driftCE = fDButil->GetVDriftTPCCE(deltaCE, run,timeStamp,36000,2);
+  driftLT = fDButil->GetVDriftTPCLaserTracks(deltaLT,run,timeStamp,36000,2);
+  deltaP   = TMath::Abs(deltaP);
+  deltaLT  = TMath::Abs(deltaLT);
+  deltaCE  = TMath::Abs(deltaCE);
+  if (mode==1) {
+    const Double_t kEpsilon=0.0000000001;
+    Double_t meanDist= (deltaP+deltaLT+deltaCE)*0.3;
+    if (meanDist<1.) return driftLT;
+    wP  = meanDist/(deltaP +0.005*meanDist);
+    wLT = meanDist/(deltaLT+0.005*meanDist);
+    wCE = meanDist/(deltaCE+0.001*meanDist);
+    if (TMath::Abs(driftCE)<kEpsilon) wCE=0;  // invalid calibration
+    result = (driftP*wP+driftLT*wLT+driftCE*wCE)/(wP+wLT+wCE);
   }
 
   return result;
@@ -1593,7 +1631,7 @@ Double_t AliTPCcalibDB::GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t
   // Notice - Extrapolation outside of calibration range  - using constant function
   //
   Double_t result=0;
-  if (mode==1) result=AliTPCcalibDButil::GetTriggerOffsetTPC(run,timeStamp);    
+  if (mode==1) result=fDButil->GetTriggerOffsetTPC(run,timeStamp);    
   result  *=fParam->GetZLength();
 
   return result;

@@ -98,9 +98,15 @@ public:
   static void SmoothGraph(TGraph *graph, Double_t delta);
   static Int_t     GetNearest(TGraph *graph, Double_t xref, Double_t &dx, Double_t &y);
   static Double_t EvalGraphConst(TGraph *graph, Double_t xref);
+  //
+  // Filter sensors
+  //
+  static Float_t FilterSensor(AliDCSSensor * sensor, Double_t ymin, Double_t ymax, Double_t maxdy, Double_t sigmaCut); 
+
   
-  void FilterCE(Double_t deltaT=100, Double_t cutAbs=10, Double_t cutSigma=4., TTreeSRedirector *pcstream=0);
-  void FilterTracks(Int_t run, Double_t cutSigma=20., TTreeSRedirector *pcstream=0);
+  static void FilterCE(Double_t deltaT=100, Double_t cutAbs=10, Double_t cutSigma=4., TTreeSRedirector *pcstream=0);
+  static void FilterTracks(Int_t run, Double_t cutSigma=20., TTreeSRedirector *pcstream=0);
+  static Float_t FilterTemperature(AliTPCSensorTempArray *tempArray, Double_t ymin=15, Double_t ymax=22, Double_t sigmaCut=5); 
 
   void FilterGoofie(AliDCSSensorArray * goofieArray, Double_t deltaT=2, Double_t cutSigma=4., TTreeSRedirector *pcstream=0);
   static Double_t  GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Double_t deltaT=86400, Double_t deltaTLaser=3600, Int_t valType=0);

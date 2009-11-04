@@ -34,6 +34,7 @@ class AliGRPObject;
 class AliTPCCalibRaw;
 class TMap;
 class AliMagF;
+class AliTPCcalibDButil;
 //class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
@@ -190,6 +191,7 @@ protected:
   static AliTPCcalibDB* fgInstance;  // singleton control
   static Bool_t       fgTerminated;  // termination control 
   static TObjArray    fgExBArray;    // array of ExB corrections
+  AliTPCcalibDButil   *fDButil;       // utility class
   ClassDef(AliTPCcalibDB, 0)
  private:
    AliTPCcalibDB (const AliTPCcalibDB& );
