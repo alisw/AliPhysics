@@ -48,7 +48,7 @@ class AliHLTPHOSMapper : public AliHLTLogging
   static void GetChannelCoord(const UShort_t channelId, UShort_t* channelCoord);
   static void ChannelId2Coordinate(const UShort_t channelId, AliHLTPHOSCoordinate &channelCoord );
   static void GetLocalCoord(const UShort_t channelId, Float_t* localCoord);
-  static int GetDDLFromSpec(Int_t specification);
+  int GetDDLFromSpec(Int_t specification);
   int GetModuleFromSpec(Int_t specification);
 
   struct fAltromap{ 
