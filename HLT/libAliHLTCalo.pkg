@@ -22,10 +22,10 @@ AliHLTCaloSanityInspector.h \
 AliHLTCaloSharedMemoryInterfacev2.h \
 AliHLTCaloFourier.h \
 AliHLTCaloConstants.h \
-AliHLTCaloConstantsHandler.h 
-##AliHLTCaloClusterizer.h \
-##AliHLTCaloDigitMaker.h \
-##AliHLTCaloClusterAnalyser.h 
+AliHLTCaloConstantsHandler.h \
+AliHLTCaloClusterizer.h \
+AliHLTCaloDigitMaker.h \
+AliHLTCaloClusterAnalyser.h 
 
 
 ## all source files of this module
@@ -36,12 +36,12 @@ MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
 
 ## all header files of this module
 MODULE_HDRS:= 	$(CLASS_HDRS) \
-		AliHLTCaloConstant.h 
-##		AliHLTCaloDigitDataStruct.h \
-##		AliHLTCaloDigitContainerDataStruct.h \
-##		AliHLTCaloRecPointDataStruct.h \
-##		AliHLTCaloRecPointContainerStruct.h \
-##		AliHLTCaloRecPointHeaderStruct.h \
+		AliHLTCaloConstant.h \
+		AliHLTCaloDigitDataStruct.h \
+		AliHLTCaloDigitContainerDataStruct.h \
+		AliHLTCaloRecPointDataStruct.h \
+		AliHLTCaloRecPointContainerStruct.h \
+		AliHLTCaloRecPointHeaderStruct.h 
 ##		AliHLTCaloChannelDataStruct.h \
 ##		AliHLTCaloChannelDataHeaderStruct.h 
 
