@@ -195,37 +195,37 @@ if(rawStream.Next())
         dy[2]=rawStream.GetWord(2);
         dy[3]=rawStream.GetWord(3);
         tmpDy=dy[0];
-        for(Int_t r=0;r<30;++r)
+        for(Int_t r=0;r<30;r++)
         {
                 kroSingle[r] = tmpDy & 1;
                 tmpDy>>=1;
         }
         tmpDy=dy[1];
-        for(Int_t r=30;r<60;++r)
+        for(Int_t r=30;r<60;r++)
         {
                 kroSingle[r] = tmpDy & 1;
                 tmpDy>>=1;
         }
         tmpDy=dy[2];
-        for(Int_t r=0;r<30;++r)
+        for(Int_t r=0;r<30;r++)
         {
                 kroMulti[r] = tmpDy & 1;
                 tmpDy>>=1;
         }
         tmpDy=dy[3];
-        for(Int_t r=30;r<60;++r)
+        for(Int_t r=30;r<60;r++)
         {
                 kroMulti[r] = tmpDy & 1;
                 tmpDy>>=1;
         }
         contSingle=0;
 	contMulti=0;
-        for(Int_t r=0;r<60;++r)
+        for(Int_t r=0;r<60;r++)
         {
                 if(kroSingle[r]==1)
                 {
                         GetRawsData(0)->Fill(r+1);
-                        contSingle=contSingle+1;
+                        contSingle++;
                 }
 		if(kroMulti[r]==1)
 		{
