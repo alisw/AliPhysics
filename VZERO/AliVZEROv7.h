@@ -66,6 +66,7 @@ private:
   Double_t fV0APMBWd, fV0APMBHt, fV0APMBTh, fV0APMBWdW, fV0APMBHtW;     // Parameters for Photo-Multiplier
   Double_t fV0APMBAng, fV0APMBThW, fV0APMTR1, fV0APMTR2, fV0APMTR3;     // Parameters for Photo-Multiplier
   Double_t fV0APMTR4, fV0APMTH, fV0APMTB;                               // Parameters for Photo-Multiplier
+  Double_t fV0AFEEBWd, fV0AFEEBHt, fV0AFEEBTh;                          // Parameters for Front End Electronics
   Float_t fV0AnMeters;                                                  // Must be calculated depending on each ring
   
 // V0A Parameters related to light production:

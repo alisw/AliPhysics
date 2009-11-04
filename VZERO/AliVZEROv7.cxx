@@ -112,6 +112,9 @@ AliVZEROv7:: AliVZEROv7():AliVZERO(),
    fV0APMTR4(2.70), 
    fV0APMTH(10.0), 
    fV0APMTB(1.0),
+   fV0AFEEBWd(26.5),
+   fV0AFEEBHt(20.5),
+   fV0AFEEBTh(7.5),   
    fV0AnMeters(fV0AR6*0.01),
    fV0ALightYield(93.75),
    fV0ALightAttenuation(0.05), 
@@ -171,6 +174,9 @@ AliVZEROv7::AliVZEROv7(const char *name, const char *title):AliVZERO(name,title)
    fV0APMTR4(2.70), 
    fV0APMTH(10.0), 
    fV0APMTB(1.0),
+   fV0AFEEBWd(26.5),
+   fV0AFEEBHt(20.5),
+   fV0AFEEBTh(7.5),
    fV0AnMeters(fV0AR6*0.01),
    fV0ALightYield(93.75),
    fV0ALightAttenuation(0.05),
@@ -597,47 +603,6 @@ void AliVZEROv7::CreateGeometry()
     v0AR5->SetLineColor(kV0AColorSci);
     v0ASci->AddNode(v0AR5,1);
     v0ASec->AddNode(v0ASci,1); 
-
-    /// PMBox
-    TGeoVolume* v0APM = new TGeoVolumeAssembly("V0APM");
-    new TGeoBBox("sV0APMB1", fV0APMBWd/2., fV0APMBHt/2., fV0APMBTh/2.);
-    new TGeoBBox("sV0APMB2", fV0APMBWd/2.-fV0APMBWdW, fV0APMBHt/2.-fV0APMBHtW, fV0APMBTh/2.-fV0APMBThW);
-    TGeoCompositeShape *sV0APMB = new TGeoCompositeShape("sV0APMB","sV0APMB1-sV0APMB2");
-    TGeoVolume *v0APMB = new TGeoVolume("V0APMB",sV0APMB, medV0APMAlum);
-    v0APMB->SetLineColor(kV0AColorPMA);
-    v0APM->AddNode(v0APMB,1);
-
-    /// PMTubes
-    TGeoTube *sV0APMT1 = new TGeoTube("sV0APMT1", fV0APMTR1, fV0APMTR2, fV0APMTH/2.);
-    TGeoVolume *v0APMT1 = new TGeoVolume("V0APMT1", sV0APMT1, medV0APMGlass);
-    TGeoTube *sV0APMT2 = new TGeoTube("sV0APMT2", fV0APMTR3, fV0APMTR4, fV0APMTH/2.);
-    TGeoVolume *v0APMT2 = new TGeoVolume("V0APMT2", sV0APMT2, medV0APMAlum);
-    TGeoVolume *v0APMT = new TGeoVolumeAssembly("V0APMT");
-    TGeoTube *sV0APMTT = new TGeoTube("sV0APMTT", 0., fV0APMTR4, fV0APMTB/2.);
-    TGeoVolume *v0APMTT = new TGeoVolume("V0APMTT", sV0APMTT, medV0APMAlum);
-    v0APMT1->SetLineColor(kV0AColorPMG);
-    v0APMT2->SetLineColor(kV0AColorPMA);
-    v0APMTT->SetLineColor(kV0AColorPMA);
-    rot = new TGeoRotation("rot", 90, 0, 180, 0, 90, 90);
-    v0APMT->AddNode(v0APMT1,1,rot);
-    v0APMT->AddNode(v0APMT2,1,rot);
-    v0APMT->AddNode(v0APMTT,1,new TGeoCombiTrans(0,-(fV0APMTH+fV0APMTB)/2.,0,rot));
-    double autoShift = (fV0APMBWd-2*fV0APMBWdW)/4.;
-    v0APM->AddNode(v0APMT, 1, new TGeoTranslation(-1.5*autoShift, 0, 0));
-    v0APM->AddNode(v0APMT, 2, new TGeoTranslation(-0.5*autoShift, 0, 0));
-    v0APM->AddNode(v0APMT, 3, new TGeoTranslation(+0.5*autoShift, 0, 0));
-    v0APM->AddNode(v0APMT, 4, new TGeoTranslation(+1.5*autoShift, 0, 0));
-
-    /// PM
-    rot = new TGeoRotation("rot");
-    rot->RotateX(90-fV0APMBAng);
-    rot->RotateZ(-90.+22.5);
-    double cosAngPMB = TMath::Cos(fV0APMBAng*TMath::DegToRad());
-    double sinAngPMB = TMath::Sin(fV0APMBAng*TMath::DegToRad());
-    double shiftZ = fV0APMBHt/2. * cosAngPMB
-      -   ( fV0ASciWd + 2 * fV0AOctWd + 2 * fV0APlaWd )/2.   -   fV0APMBTh/2. * sinAngPMB;
-    double shiftR = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
-    v0ASec->AddNode(v0APM,1, new TGeoCombiTrans( shiftR*cos225+1.07, shiftR*sin225, shiftZ, rot));
     
     // Aluminium nails 
     TGeoTube *sV0ANail1 = new TGeoTube("sV0ANail1", 0.0, 0.4, 5.09/2.);
@@ -677,6 +642,259 @@ void AliVZEROv7::CreateGeometry()
     TGeoVolume *v0ASuppul = new TGeoVolume("V0ASuppul", sV0ASuppul, medV0ASup);
     v0ASuppul->SetLineColor(kV0AColorOct);
     v0LE->AddNode(v0ASuppul,1);
+
+    // PMBoxes and FEEBoxes for sector 1
+
+     /// PMBox
+    TGeoVolume* v0APM = new TGeoVolumeAssembly("V0APM");
+    new TGeoBBox("sV0APMB1", fV0APMBWd/2., fV0APMBHt/2., fV0APMBTh/2.);
+    new TGeoBBox("sV0APMB2", fV0APMBWd/2.-fV0APMBWdW, fV0APMBHt/2.-fV0APMBHtW, fV0APMBTh/2.-fV0APMBThW);
+    TGeoCompositeShape *sV0APMB = new TGeoCompositeShape("sV0APMB","sV0APMB1-sV0APMB2");
+    TGeoVolume *v0APMB = new TGeoVolume("V0APMB",sV0APMB, medV0APMAlum);
+    v0APMB->SetLineColor(kV0AColorPMA);
+    v0APM->AddNode(v0APMB,1);
+
+    /// PMTubes
+    TGeoTube *sV0APMT1 = new TGeoTube("sV0APMT1", fV0APMTR1, fV0APMTR2, fV0APMTH/2.);
+    TGeoVolume *v0APMT1 = new TGeoVolume("V0APMT1", sV0APMT1, medV0APMGlass);
+    TGeoTube *sV0APMT2 = new TGeoTube("sV0APMT2", fV0APMTR3, fV0APMTR4, fV0APMTH/2.);
+    TGeoVolume *v0APMT2 = new TGeoVolume("V0APMT2", sV0APMT2, medV0APMAlum);
+    TGeoVolume *v0APMT = new TGeoVolumeAssembly("V0APMT");
+    TGeoTube *sV0APMTT = new TGeoTube("sV0APMTT", 0., fV0APMTR4, fV0APMTB/2.);
+    TGeoVolume *v0APMTT = new TGeoVolume("V0APMTT", sV0APMTT, medV0APMAlum);
+    v0APMT1->SetLineColor(kV0AColorPMG);
+    v0APMT2->SetLineColor(kV0AColorPMA);
+    v0APMTT->SetLineColor(kV0AColorPMA);
+    rot = new TGeoRotation("rot", 90, 0, 180, 0, 90, 90);
+    v0APMT->AddNode(v0APMT1,1,rot);
+    v0APMT->AddNode(v0APMT2,1,rot);
+    v0APMT->AddNode(v0APMTT,1,new TGeoCombiTrans(0,-(fV0APMTH+fV0APMTB)/2.,0,rot));
+    double autoShift = (fV0APMBWd-2*fV0APMBWdW)/4.;
+    v0APM->AddNode(v0APMT, 1, new TGeoTranslation(-1.5*autoShift, 0, 0));
+    v0APM->AddNode(v0APMT, 2, new TGeoTranslation(-0.5*autoShift, 0, 0));
+    v0APM->AddNode(v0APMT, 3, new TGeoTranslation(+0.5*autoShift, 0, 0));
+    v0APM->AddNode(v0APMT, 4, new TGeoTranslation(+1.5*autoShift, 0, 0));
+
+    /// PM
+    rot = new TGeoRotation("rot");
+    rot->RotateX(90-fV0APMBAng);
+    rot->RotateZ(-90.+22.5);
+    double cosAngPMB = TMath::Cos(fV0APMBAng*TMath::DegToRad());
+    double sinAngPMB = TMath::Sin(fV0APMBAng*TMath::DegToRad());
+    double shiftZ = fV0APMBHt/2. * cosAngPMB
+      -   ( fV0ASciWd + 2 * fV0AOctWd + 2 * fV0APlaWd )/2.   -   fV0APMBTh/2. * sinAngPMB;
+    double shiftR = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    v0LE->AddNode(v0APM,1, new TGeoCombiTrans( shiftR*cos225 - 3.8, shiftR*sin225 + 12.0, shiftZ, rot));
+
+
+    //FEEBox
+    TGeoVolume* v0AFEE = new TGeoVolumeAssembly("V0AFEE");
+    new TGeoBBox("sV0AFEEB1", fV0AFEEBWd/2., fV0AFEEBHt/2., fV0AFEEBTh/2.);
+    new TGeoBBox("sV0AFEEB2", fV0AFEEBWd/2.-fV0APMBWdW, fV0AFEEBHt/2.-fV0APMBHtW, fV0AFEEBTh/2.-fV0APMBThW);
+    TGeoCompositeShape *sV0AFEEB = new TGeoCompositeShape("sV0AFEEB","sV0AFEEB1-sV0AFEEB2");
+    TGeoVolume *v0AFEEB = new TGeoVolume("V0AFEEB",sV0AFEEB, medV0APMAlum);
+    v0AFEEB->SetLineColor(kV0AColorPMA);
+    v0AFEE->AddNode(v0AFEEB,1);
+
+    //FEE
+    rot = new TGeoRotation("rot");
+    rot->RotateX(90);
+    rot->RotateZ(-90.0+22.5);
+    double cosAngFEEB = TMath::Cos(fV0APMBAng*TMath::DegToRad());
+    double sinAngFEEB = TMath::Sin(fV0APMBAng*TMath::DegToRad());
+    double FEEshiftZ = fV0AFEEBHt/2. * cosAngFEEB - ( fV0ASciWd + 2 * fV0AOctWd + 2 * fV0APlaWd )/2.   -   fV0AFEEBTh/2. * sinAngFEEB;
+    double FEEshiftR = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    v0LE->AddNode(v0AFEE,1, new TGeoCombiTrans( FEEshiftR*cos225+2.0, fV0AFEEBHt/2. + fV0AFEEBTh/2., FEEshiftZ + 8.0, rot));
+
+    // PMBoxes and FEEBoxes for sector 2
+
+     /// PMBox
+    TGeoVolume* v0APM2 = new TGeoVolumeAssembly("V0APM2");
+    new TGeoBBox("sV0APMB12", fV0APMBWd/2., fV0APMBHt/2., fV0APMBTh/2.);
+    new TGeoBBox("sV0APMB22", fV0APMBWd/2.-fV0APMBWdW, fV0APMBHt/2.-fV0APMBHtW, fV0APMBTh/2.-fV0APMBThW);
+    TGeoCompositeShape *sV0APMB2 = new TGeoCompositeShape("sV0APMB2","sV0APMB12-sV0APMB22");
+    TGeoVolume *v0APMB2 = new TGeoVolume("V0APMB2",sV0APMB2, medV0APMAlum);
+    v0APMB2->SetLineColor(kV0AColorPMA);
+    v0APM2->AddNode(v0APMB,1);
+
+    /// PMTubes
+    TGeoTube *sV0APMT12 = new TGeoTube("sV0APMT12", fV0APMTR1, fV0APMTR2, fV0APMTH/2.);
+    TGeoVolume *v0APMT12 = new TGeoVolume("V0APMT12", sV0APMT12, medV0APMGlass);
+    TGeoTube *sV0APMT22 = new TGeoTube("sV0APMT22", fV0APMTR3, fV0APMTR4, fV0APMTH/2.);
+    TGeoVolume *v0APMT22 = new TGeoVolume("V0APMT22", sV0APMT22, medV0APMAlum);
+    TGeoVolume *v0APMT222 = new TGeoVolumeAssembly("V0APMT222");
+    TGeoTube *sV0APMTT2 = new TGeoTube("sV0APMTT2", 0., fV0APMTR4, fV0APMTB/2.);
+    TGeoVolume *v0APMTT2 = new TGeoVolume("V0APMTT2", sV0APMTT2, medV0APMAlum);
+    v0APMT12->SetLineColor(kV0AColorPMG);
+    v0APMT22->SetLineColor(kV0AColorPMA);
+    v0APMTT2->SetLineColor(kV0AColorPMA);
+    rot = new TGeoRotation("rot", 90, 0, 180, 0, 90, 90);
+    v0APMT222->AddNode(v0APMT12,1,rot);
+    v0APMT222->AddNode(v0APMT22,1,rot);
+    v0APMT222->AddNode(v0APMTT2,1,new TGeoCombiTrans(0,-(fV0APMTH+fV0APMTB)/2.,0,rot));
+    double autoShift2 = (fV0APMBWd-2*fV0APMBWdW)/4.;
+    v0APM2->AddNode(v0APMT222, 1, new TGeoTranslation(-1.5*autoShift2, 0, 0));
+    v0APM2->AddNode(v0APMT222, 2, new TGeoTranslation(-0.5*autoShift2, 0, 0));
+    v0APM2->AddNode(v0APMT222, 3, new TGeoTranslation(+0.5*autoShift2, 0, 0));
+    v0APM2->AddNode(v0APMT222, 4, new TGeoTranslation(+1.5*autoShift2, 0, 0));
+
+    /// PM
+    rot = new TGeoRotation("rot");
+    rot->RotateX(90-fV0APMBAng);
+    rot->RotateZ(-90.+22.5+22.5+22.5);
+    double cosAngPMB2 = TMath::Cos(fV0APMBAng*TMath::DegToRad());
+    double sinAngPMB2 = TMath::Sin(fV0APMBAng*TMath::DegToRad());
+    double shiftZ2 = fV0APMBHt/2. * cosAngPMB2
+      -   ( fV0ASciWd + 2 * fV0AOctWd + 2 * fV0APlaWd )/2.   -   fV0APMBTh/2. * sinAngPMB2;
+    double shiftR2 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    v0LE->AddNode(v0APM2,1, new TGeoCombiTrans( shiftR2*cos225 - 52.0, shiftR2*sin225 + 46.5, shiftZ2, rot));
+
+
+    //FEEBox
+    TGeoVolume* v0AFEE2 = new TGeoVolumeAssembly("V0AFEE2");
+    new TGeoBBox("sV0AFEEB12", fV0AFEEBWd/2., fV0AFEEBHt/2., fV0AFEEBTh/2.);
+    new TGeoBBox("sV0AFEEB22", fV0AFEEBWd/2.-fV0APMBWdW, fV0AFEEBHt/2.-fV0APMBHtW, fV0AFEEBTh/2.-fV0APMBThW); 
+    TGeoCompositeShape *sV0AFEEB2 = new TGeoCompositeShape("sV0AFEEB2","sV0AFEEB12-sV0AFEEB22");
+    TGeoVolume *v0AFEEB2 = new TGeoVolume("V0AFEEB2",sV0AFEEB2, medV0APMAlum);
+    v0AFEEB2->SetLineColor(kV0AColorPMA);
+    v0AFEE2->AddNode(v0AFEEB2,1);
+
+    //FEE
+    rot = new TGeoRotation("rot");
+    rot->RotateX(90);
+    rot->RotateZ(-90.0+22.5+22.5+22.5);
+    double cosAngFEEB2 = TMath::Cos(fV0APMBAng*TMath::DegToRad());
+    double sinAngFEEB2 = TMath::Sin(fV0APMBAng*TMath::DegToRad()); 
+    double FEEshiftZ2 = fV0AFEEBHt/2. * cosAngFEEB2 - ( fV0ASciWd + 2 * fV0AOctWd + 2 * fV0APlaWd )/2.   -   fV0AFEEBTh/2. * sinAngFEEB2;
+    double FEEshiftR2 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    v0LE->AddNode(v0AFEE2,1, new TGeoCombiTrans( FEEshiftR2*cos225 - 28.0, fV0AFEEBHt + fV0AFEEBTh + 32.0, FEEshiftZ2 + 8.0, rot));
+
+    // PMBoxes and FEEBoxes for sector 3
+
+     /// PMBox
+    TGeoVolume* v0APM3 = new TGeoVolumeAssembly("V0APM3");
+    new TGeoBBox("sV0APMB13", fV0APMBWd/2., fV0APMBHt/2., fV0APMBTh/2.);
+    new TGeoBBox("sV0APMB23", fV0APMBWd/2.-fV0APMBWdW, fV0APMBHt/2.-fV0APMBHtW, fV0APMBTh/2.-fV0APMBThW);
+    TGeoCompositeShape *sV0APMB3 = new TGeoCompositeShape("sV0APMB3","sV0APMB13-sV0APMB23");
+    TGeoVolume *v0APMB3 = new TGeoVolume("V0APMB3",sV0APMB3, medV0APMAlum);
+    v0APMB3->SetLineColor(kV0AColorPMA);
+    v0APM3->AddNode(v0APMB,1);
+
+    /// PMTubes
+    TGeoTube *sV0APMT13 = new TGeoTube("sV0APMT13", fV0APMTR1, fV0APMTR2, fV0APMTH/2.);
+    TGeoVolume *v0APMT13 = new TGeoVolume("V0APMT13", sV0APMT13, medV0APMGlass);
+    TGeoTube *sV0APMT23 = new TGeoTube("sV0APMT23", fV0APMTR3, fV0APMTR4, fV0APMTH/2.);
+    TGeoVolume *v0APMT23 = new TGeoVolume("V0APMT23", sV0APMT23, medV0APMAlum);
+    TGeoVolume *v0APMT3 = new TGeoVolumeAssembly("V0APMT3");
+    TGeoTube *sV0APMTT3 = new TGeoTube("sV0APMTT3", 0., fV0APMTR4, fV0APMTB/2.);
+    TGeoVolume *v0APMTT3 = new TGeoVolume("V0APMTT3", sV0APMTT3, medV0APMAlum);
+    v0APMT13->SetLineColor(kV0AColorPMG);
+    v0APMT23->SetLineColor(kV0AColorPMA);
+    v0APMTT3->SetLineColor(kV0AColorPMA);
+    rot = new TGeoRotation("rot", 90, 0, 180, 0, 90, 90);
+    v0APMT3->AddNode(v0APMT13,1,rot);
+    v0APMT3->AddNode(v0APMT23,1,rot);
+    v0APMT3->AddNode(v0APMTT3,1,new TGeoCombiTrans(0,-(fV0APMTH+fV0APMTB)/2.,0,rot));
+    double autoShift3 = (fV0APMBWd-2*fV0APMBWdW)/4.;
+    v0APM3->AddNode(v0APMT3, 1, new TGeoTranslation(-1.5*autoShift3, 0, 0));
+    v0APM3->AddNode(v0APMT3, 2, new TGeoTranslation(-0.5*autoShift3, 0, 0));
+    v0APM3->AddNode(v0APMT3, 3, new TGeoTranslation(+0.5*autoShift3, 0, 0));
+    v0APM3->AddNode(v0APMT3, 4, new TGeoTranslation(+1.5*autoShift3, 0, 0));
+
+    /// PM
+    rot = new TGeoRotation("rot");
+    rot->RotateX(90-fV0APMBAng);
+    rot->RotateZ(90.-22.5-22.5-22.5);
+    double cosAngPMB3 = TMath::Cos(fV0APMBAng*TMath::DegToRad());
+    double sinAngPMB3 = TMath::Sin(fV0APMBAng*TMath::DegToRad());
+    double shiftZ3 = fV0APMBHt/2. * cosAngPMB3
+      -   ( fV0ASciWd + 2 * fV0AOctWd + 2 * fV0APlaWd )/2.   -   fV0APMBTh/2. * sinAngPMB3;
+    double shiftR3 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    v0LE->AddNode(v0APM3,1, new TGeoCombiTrans( -shiftR3*cos225 + 52.0, shiftR3*sin225 + 46.5, shiftZ3, rot));
+
+
+    //FEEBox
+    TGeoVolume* v0AFEE3 = new TGeoVolumeAssembly("V0AFEE3");
+    new TGeoBBox("sV0AFEEB13", fV0AFEEBWd/2., fV0AFEEBHt/2., fV0AFEEBTh/2.);
+    new TGeoBBox("sV0AFEEB3", fV0AFEEBWd/2.-fV0APMBWdW, fV0AFEEBHt/2.-fV0APMBHtW, fV0AFEEBTh/2.-fV0APMBThW); 
+    TGeoCompositeShape *sV0AFEEB3 = new TGeoCompositeShape("sV0AFEEB3","sV0AFEEB13-sV0AFEEB23");
+    TGeoVolume *v0AFEEB3 = new TGeoVolume("V0AFEEB3",sV0AFEEB3, medV0APMAlum);
+    v0AFEEB3->SetLineColor(kV0AColorPMA);
+    v0AFEE3->AddNode(v0AFEEB2,1);
+
+    //FEE
+    rot = new TGeoRotation("rot");
+    rot->RotateX(90);
+    rot->RotateZ(90.0-22.5-22.5-22.5);
+    double cosAngFEEB3 = TMath::Cos(fV0APMBAng*TMath::DegToRad());
+    double sinAngFEEB3 = TMath::Sin(fV0APMBAng*TMath::DegToRad());
+    double FEEshiftZ3 = fV0AFEEBHt/2. * cosAngFEEB3 - ( fV0ASciWd + 2 * fV0AOctWd + 2 * fV0APlaWd )/2.   -   fV0AFEEBTh/2. * sinAngFEEB3;
+    double FEEshiftR3 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    v0LE->AddNode(v0AFEE3,1, new TGeoCombiTrans( -FEEshiftR3*cos225 + 28.0, fV0AFEEBHt + fV0AFEEBTh + 32.0, FEEshiftZ3 + 8.0, rot));
+
+    // PMBoxes and FEEBoxes for sector 4
+
+     /// PMBox
+    TGeoVolume* v0APM4 = new TGeoVolumeAssembly("V0APM4");
+    new TGeoBBox("sV0APMB14", fV0APMBWd/2., fV0APMBHt/2., fV0APMBTh/2.);
+    new TGeoBBox("sV0APMB24", fV0APMBWd/2.-fV0APMBWdW, fV0APMBHt/2.-fV0APMBHtW, fV0APMBTh/2.-fV0APMBThW);
+    TGeoCompositeShape *sV0APMB4 = new TGeoCompositeShape("sV0APMB4","sV0APMB14-sV0APMB24");
+    TGeoVolume *v0APMB4 = new TGeoVolume("V0APMB4",sV0APMB4, medV0APMAlum);
+    v0APMB4->SetLineColor(kV0AColorPMA);
+    v0APM4->AddNode(v0APMB4,1);
+
+    /// PMTubes
+    TGeoTube *sV0APMT14 = new TGeoTube("sV0APMT14", fV0APMTR1, fV0APMTR2, fV0APMTH/2.);
+    TGeoVolume *v0APMT14 = new TGeoVolume("V0APMT14", sV0APMT14, medV0APMGlass);
+    TGeoTube *sV0APMT24 = new TGeoTube("sV0APMT24", fV0APMTR3, fV0APMTR4, fV0APMTH/2.);
+    TGeoVolume *v0APMT24 = new TGeoVolume("V0APMT24", sV0APMT24, medV0APMAlum);
+    TGeoVolume *v0APMT4 = new TGeoVolumeAssembly("V0APMT4");
+    TGeoTube *sV0APMTT4 = new TGeoTube("sV0APMTT4", 0., fV0APMTR4, fV0APMTB/2.);
+    TGeoVolume *v0APMTT4 = new TGeoVolume("V0APMTT4", sV0APMTT4, medV0APMAlum);
+    v0APMT14->SetLineColor(kV0AColorPMG);
+    v0APMT24->SetLineColor(kV0AColorPMA);
+    v0APMTT4->SetLineColor(kV0AColorPMA);
+    rot = new TGeoRotation("rot", 90, 0, 180, 0, 90, 90);
+    v0APMT4->AddNode(v0APMT14,1,rot);
+    v0APMT4->AddNode(v0APMT24,1,rot);
+    v0APMT4->AddNode(v0APMTT4,1,new TGeoCombiTrans(0,-(fV0APMTH+fV0APMTB)/2.,0,rot));
+    double autoShift4 = (fV0APMBWd-2*fV0APMBWdW)/4.;
+    v0APM4->AddNode(v0APMT4, 1, new TGeoTranslation(-1.5*autoShift4, 0, 0));
+    v0APM4->AddNode(v0APMT4, 2, new TGeoTranslation(-0.5*autoShift4, 0, 0));
+    v0APM4->AddNode(v0APMT4, 3, new TGeoTranslation(+0.5*autoShift4, 0, 0));
+    v0APM4->AddNode(v0APMT4, 4, new TGeoTranslation(+1.5*autoShift4, 0, 0));
+
+    /// PM
+    rot = new TGeoRotation("rot");
+    rot->RotateX(90-fV0APMBAng);
+    rot->RotateZ(+90.-22.5);
+    double cosAngPMB4 = TMath::Cos(fV0APMBAng*TMath::DegToRad());
+    double sinAngPMB4 = TMath::Sin(fV0APMBAng*TMath::DegToRad());
+    double shiftZ4 = fV0APMBHt/2. * cosAngPMB4
+      -   ( fV0ASciWd + 2 * fV0AOctWd + 2 * fV0APlaWd )/2.   -   fV0APMBTh/2. * sinAngPMB4;
+    double shiftR4 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    v0LE->AddNode(v0APM4,1, new TGeoCombiTrans( -shiftR4*cos225 + 3.8, shiftR4*sin225 + 12.0, shiftZ4, rot));
+
+
+    //FEEBox
+    TGeoVolume* v0AFEE4 = new TGeoVolumeAssembly("V0AFEE4");
+    new TGeoBBox("sV0AFEEB14", fV0AFEEBWd/2., fV0AFEEBHt/2., fV0AFEEBTh/2.);
+    new TGeoBBox("sV0AFEEB24", fV0AFEEBWd/2.-fV0APMBWdW, fV0AFEEBHt/2.-fV0APMBHtW, fV0AFEEBTh/2.-fV0APMBThW);
+    TGeoCompositeShape *sV0AFEEB4 = new TGeoCompositeShape("sV0AFEEB4","sV0AFEEB14-sV0AFEEB24");
+    TGeoVolume *v0AFEEB4 = new TGeoVolume("V0AFEEB4",sV0AFEEB4, medV0APMAlum);
+    v0AFEEB4->SetLineColor(kV0AColorPMA);
+    v0AFEE4->AddNode(v0AFEEB,1);
+
+    //FEE
+    rot = new TGeoRotation("rot");
+    rot->RotateX(90);
+    rot->RotateZ(+90.0-22.5);
+    double cosAngFEEB4 = TMath::Cos(fV0APMBAng*TMath::DegToRad());
+    double sinAngFEEB4 = TMath::Sin(fV0APMBAng*TMath::DegToRad());
+    double FEEshiftZ4 = fV0AFEEBHt/2. * cosAngFEEB4 - ( fV0ASciWd + 2 * fV0AOctWd + 2 * fV0APlaWd )/2.   -   fV0AFEEBTh/2. * sinAngFEEB4;
+    double FEEshiftR4 = fV0AR6  +  fV0AOctH2 + fV0APlaAl;
+    v0LE->AddNode(v0AFEE4,1, new TGeoCombiTrans( -FEEshiftR4*cos225-2.0, fV0AFEEBHt/2. + fV0AFEEBTh/2., FEEshiftZ4 + 8.0, rot));
+
   
 
     //Definition of sector 5
