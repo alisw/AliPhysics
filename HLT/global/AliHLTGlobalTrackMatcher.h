@@ -73,6 +73,9 @@ private:
   AliHLTGlobalTrackMatcher(const AliHLTGlobalTrackMatcher & );
   AliHLTGlobalTrackMatcher & operator = (const AliHLTGlobalTrackMatcher &);
 
+  Int_t *fBestMatchesArray;
+  Float_t *fTrackDistanceArray;
+
   ClassDef(AliHLTGlobalTrackMatcher,1) //Merging base class
 };
 
