@@ -32,17 +32,15 @@
 //#include "AliHLTPHOSBase.h"
 
 #include "Rtypes.h"
-// #include "TClonesArray.h"
-
 #include "AliHLTPHOSConstants.h" 
-
-using namespace  PhosHLTConst;
 
 class TObjArray;
 class TH1F;
-//class TH2F;
 class AliHLTCaloClusterReader;
 struct AliHLTCaloClusterHeaderStruct;
+
+
+using namespace  PhosHLTConst;
 
 
 /** 
@@ -52,27 +50,15 @@ struct AliHLTCaloClusterHeaderStruct;
  * of AliESDCalocluster as input and fills several histograms
  *
  * Histograms (1D):
- * - Total number of clusters per event
- * - Energy distribution of clusters
- * - Total energy in event
- * - Invariant mass of two clusters
- * - Number of cells in clusters
- * - Fraction of cells with energy deposit
+ *  * - Invariant mass of two clusters
  * 
- * Histograms (2D):
- * - Number of cells in cluster vs cluster energy
- * - Number of clusters vs total energy
- *
  * @ingroup alihlt_phos
  */
 
-
-
-//class AliHLTPHOSInvMassHistogramProducer : public AliHLTPHOSBase
 class AliHLTPHOSInvMassHistogramProducer 
 {
  public:
-
+  
   /** Constructor */
   AliHLTPHOSInvMassHistogramProducer();
 
@@ -82,8 +68,8 @@ class AliHLTPHOSInvMassHistogramProducer
   /** Copy constructor */
   AliHLTPHOSInvMassHistogramProducer(const AliHLTPHOSInvMassHistogramProducer &) :
     fClusterReader(NULL),
-    fHistTwoClusterInvMass(0),
-    fHistArrayPtr(0)
+    fHistTwoClusterInvMass(NULL),
+    fHistArrayPtr(NULL)
   {
     // Copy constructor not implemented
   }

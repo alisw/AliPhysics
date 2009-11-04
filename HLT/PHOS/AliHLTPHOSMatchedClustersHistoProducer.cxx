@@ -106,8 +106,7 @@ Int_t AliHLTPHOSMatchedClustersHistoProducer::DoEvent(AliHLTCaloClusterHeaderStr
   AliHLTCaloClusterDataStruct* cluster;
   while ( ( cluster = fClusterReader->NextCluster() ) ) {
     
-    fHistMatchQuality->Fill(cluster->fMatchedTrackDistance);
-    if(cluster->fTrackDistance > -999) {
+    if(cluster->fTracksMatched->GetSize()>0) {
       fHistMatchedEnergy->Fill(cluster->fEnergy);
     } else {
       fHistUnMatchedEnergy->Fill(cluster->fEnergy);
