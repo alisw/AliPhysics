@@ -6,6 +6,7 @@ CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
 		AliHLTGlobalTrackMerger.h \
 		AliHLTGlobalAgent.h \
 		AliHLTGlobalVertexerComponent.h \
+		AliHLTGlobalTrackMatcher.h \
 		physics/AliHLTV0HistoComponent.h
 
 # 		
