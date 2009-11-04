@@ -167,13 +167,13 @@ void AliHFEcuts::SetEventInfo(TObject *ev){
     TObjArray *genCuts = dynamic_cast<TObjArray *>(fCutList->FindObject("fPartGenCuts"));
     if(genCuts){
       AliCFParticleGenCuts *myGenCut = dynamic_cast<AliCFParticleGenCuts *>(genCuts->FindObject("fCutsGenMC"));
-      if(myGenCut) myGenCut->SetEvtInfo(ev);
+      if(myGenCut) myGenCut->SetMCEventInfo(ev);
     }
   } else if(!TString(ev->IsA()->GetName()).CompareTo("AliESDEvent")){
     TObjArray *primCuts = dynamic_cast<TObjArray *>(fCutList->FindObject("fPartPrimCuts"));
     if(primCuts){
       AliCFTrackIsPrimaryCuts *myPrimCut = dynamic_cast<AliCFTrackIsPrimaryCuts *>(primCuts->FindObject("fCutsPrimaryCuts"));
-      if(myPrimCut) myPrimCut->SetEvtInfo(ev);
+      if(myPrimCut) myPrimCut->SetMCEventInfo(ev);
     }
   }
 }
