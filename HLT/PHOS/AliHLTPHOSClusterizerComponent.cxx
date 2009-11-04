@@ -193,6 +193,35 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   return 0;
 }
 
+int 
+AliHLTPHOSClusterizerComponent::Reconfigure(const char* cdbEntry, const char* /*chainId*/)
+{  
+  // see header file for class documentation
+
+  const char* path="HLT/ConfigPHOS/ClusterizerComponent";
+
+  if (cdbEntry) path = cdbEntry;
+
+  return ConfigureFromCDBTObjString(cdbEntry);
+}
+
+int 
+AliHLTPHOSClusterizerComponent::ScanConfigurationArgument(int argc, const char **argv)
+{
+  //See header file for documentation
+
+  if(argc <= 0) return 0;
+
+  int i=0;
+
+  TString argument=argv[i];
+
+  if (argument.CompareTo("-solenoidBz")==0){
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
+
+}
 int
 AliHLTPHOSClusterizerComponent::DoInit(int argc, const char** argv )
 {
