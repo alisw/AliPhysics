@@ -62,7 +62,7 @@ AliCFContainer::AliCFContainer(const Char_t* name, const Char_t* title, const In
 
   // The grids 
   fGrid = new AliCFGridSparse*[fNStep]; //the grids at the various selection steps
-  char gname[30];
+  char gname[100];
   for (Int_t istep=0; istep<fNStep; istep++) {
     sprintf(gname,"%s%s%i",GetName(),"_SelStep", istep);
     fGrid[istep] = new AliCFGridSparse(gname,title,nVarIn,nBinIn);
