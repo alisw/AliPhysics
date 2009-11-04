@@ -35,7 +35,7 @@ class AliTPCTempMap : public TNamed  {
 
   Double_t GetTemperature(Double_t x, Double_t y, Double_t z, UInt_t timeSec);
   Double_t GetTemperature(Double_t x, Double_t y, Double_t z, TTimeStamp &stamp);
-
+  Bool_t  IsOK(Float_t value);
  protected:
   
   AliTPCSensorTempArray *fTempArray;   // Array of Sensors (initialized in Constructor)

@@ -121,7 +121,7 @@ Double_t AliTPCTempMap::GetTempGradientY(UInt_t timeSec, Int_t side){
      x[1]=entry->GetX();
      x[2]=entry->GetY();    
      Double_t y = fTempArray->GetValue(timeSec,isensor); // get temperature value
-     fitter->AddPoint(x,y,1); // add values to LinearFitter
+     if (IsOK(y)) fitter->AddPoint(x,y,1); // add values to LinearFitter
      i++;
    }
 
@@ -167,7 +167,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
   TLinearFitter *fitter = new TLinearFitter(3);
   Double_t *x = new Double_t[3];
   Double_t y = 0;
-  const Float_t kMinT=10, kMaxT =30, kMaxDelta=0.5;
+  const Float_t kMaxDelta=0.5;
   
   if (type == 1 || type == 2 || type == 4) {
     fitter->SetFormula("x0++x1++TMath::Sin(x2)"); // returns Z,Y gradient
@@ -183,7 +183,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
     AliTPCSensorTemp *entry = (AliTPCSensorTemp*)fTempArray->GetSensorNum(isensor);
     if (entry->GetType()==type && entry->GetSide()==side){
       Float_t temperature= fTempArray->GetValue(timeSec,isensor); // get temperature value
-      if (temperature>kMinT && temperature<kMaxT) {temps[i]=temperature; i++;}
+      if (IsOK(temperature)) {temps[i]=temperature; i++;}
     }
   }
   Float_t medianTemp = TMath::Median(i, temps);
@@ -202,7 +202,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 	x[2]=entry->GetY();    
 	y = fTempArray->GetValue(timeSec,isensor); // get temperature value
 	if (TMath::Abs(y-medianTemp)>kMaxDelta+4.*rmsTemp) continue;
-	fitter->AddPoint(x,y,1); // add values to LinearFitter
+	if (IsOK(y)) fitter->AddPoint(x,y,1); // add values to LinearFitter
 	i++;
       }
     } else if (type==2) { // in case of IFC also usage of TS values
@@ -212,7 +212,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 	x[2]=entry->GetPhi();    
 	y = fTempArray->GetValue(timeSec,isensor);
 	if (TMath::Abs(y-medianTemp)>kMaxDelta+4.*rmsTemp) continue;
-	fitter->AddPoint(x,y,1); 
+	if (IsOK(y)) fitter->AddPoint(x,y,1); 
 	i++;
       }
     } else if (type==1){
@@ -222,7 +222,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 	x[2]=entry->GetPhi();    
 	y = fTempArray->GetValue(timeSec,isensor);
 	if (TMath::Abs(y-medianTemp)>kMaxDelta+4.*rmsTemp) continue;
-	fitter->AddPoint(x,y,1);
+	if (IsOK(y)) fitter->AddPoint(x,y,1);
 	i++;	
       }
     } else if (type==4) { // ONLY IFC
@@ -232,7 +232,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
 	x[2]=entry->GetPhi();    
 	y = fTempArray->GetValue(timeSec,isensor);
 	if (TMath::Abs(y-medianTemp)>kMaxDelta+4.*rmsTemp) continue;
-	fitter->AddPoint(x,y,1); 
+	if (IsOK(y)) fitter->AddPoint(x,y,1); 
 	i++;
       }
     }
@@ -445,3 +445,12 @@ Double_t AliTPCTempMap::GetTemperature(Double_t x, Double_t y, Double_t z, UInt_
 
 }
 
+
+Bool_t  AliTPCTempMap::IsOK(Float_t value){
+  //
+  //
+  //
+  const Float_t kMinT=15;
+  const Float_t kMaxT=25;
+  return (value>kMinT && value<kMaxT);
+}
