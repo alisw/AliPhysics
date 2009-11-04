@@ -40,11 +40,15 @@ CLASS_HDRS:=	  AliHLTPHOSClusterizer.h \
 		  AliHLTPHOSMonitorTriggerComponent.h \
 		  AliHLTPHOSESDEntriesMakerComponent.h \
 		  AliHLTPHOSESDCaloClusterWriterComponent.h \
-		  AliHLTPHOSFourier.h \
 		  AliHLTPHOSHistoProdInvMass.h \
 		  AliHLTPHOSHistoProdMatchedTracks.h \
 		  AliHLTPHOSHistoProdClusterEnergy.h \
-		  AliHLTPHOSHistoProdCellEnergy.h 
+		  AliHLTPHOSHistoProdCellEnergy.h \
+		  AliHLTPHOSPhysicsHistogramProducer.h \
+		  AliHLTPHOSFourier.h \
+		  AliHLTPHOSDigitReader.h
+
+>>>>>>> - adding digit reader to build system
 MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
 
 MODULE_HDRS:=	  $(CLASS_HDRS) \
