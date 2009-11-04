@@ -22,7 +22,8 @@
 #include "AliHLTEMCALDefinitions.h"
 
 
-AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent() : AliHLTCaloRawAnalyzerComponentv3()
+AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent() : 
+AliHLTCaloRawAnalyzerComponentv3("EMCAL")
 {
   
 

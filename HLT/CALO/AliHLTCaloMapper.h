@@ -27,30 +27,30 @@
 #include "AliHLTCaloConstants.h"
 #include "Rtypes.h"
 #include "AliHLTLogging.h"
-
-using namespace CaloHLTConst;
-
+#include "AliHLTCaloConstantsHandler.h"
 
 class AliHLTCaloCoordinate;
+class AliHLTCaloConstants;
 
-class AliHLTCaloMapper : public AliHLTLogging
+class AliHLTCaloMapper : public AliHLTLogging, public AliHLTCaloConstantsHandler
 {
 public:
-  AliHLTCaloMapper(const unsigned long speficication);
+  AliHLTCaloMapper(TString det);
+  AliHLTCaloMapper(const unsigned long specification, TString det);
   virtual ~AliHLTCaloMapper();
   virtual void InitAltroMapping( const unsigned long specification ) = 0; 
   virtual void InitDDLSpecificationMapping() = 0;
   bool GetIsInitializedMapping();
   char* GetFilePath();
-  int GetDDLFromSpec( const AliHLTUInt32_t spec );
-  static unsigned long GetSpecFromDDLIndex( const int ddlindex );
-  //  UInt_t  GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd);
+ 
   int  GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd);
+  void GetChannelCoord(const UShort_t channelId, UShort_t* channelCoord);
   static void ChannelId2Coordinate(const int channelId,    AliHLTCaloCoordinate &channelCoord);
-
-  // static void GetLocalCoord(const int channelId, Float_t* localCoord) = 0; 
+  virtual void GetLocalCoord(const int channelId, Float_t* localCoord) const; 
+  int GetDDLFromSpec( const AliHLTUInt32_t spec );
+  int GetModuleFromSpec(Int_t specification);
+  static unsigned long GetSpecFromDDLIndex( const int ddlindex );
   
-  virtual void GetLocalCoord(const int channelId, Float_t* localCoord) const = 0; 
 
  struct fAltromap{ 
     char fZRow; // Coordinate in Z direction (beam direction) relatve to one Module

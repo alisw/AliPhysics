@@ -20,7 +20,12 @@ AliHLTCaloMapper.h \
 AliHLTCaloDefinitions.h \
 AliHLTCaloSanityInspector.h \
 AliHLTCaloSharedMemoryInterfacev2.h \
-AliHLTCaloFourier.h
+AliHLTCaloFourier.h \
+AliHLTCaloConstants.h \
+AliHLTCaloConstantsHandler.h 
+##AliHLTCaloClusterizer.h \
+##AliHLTCaloDigitMaker.h \
+##AliHLTCaloClusterAnalyser.h 
 
 
 ## all source files of this module
@@ -30,9 +35,15 @@ AliHLTCaloFourier.h
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
 
 ## all header files of this module
-MODULE_HDRS:= 	$(CLASS_HDRS)				\
-		AliHLTCaloConstants.h
-
+MODULE_HDRS:= 	$(CLASS_HDRS) \
+		AliHLTCaloConstant.h 
+##		AliHLTCaloDigitDataStruct.h \
+##		AliHLTCaloDigitContainerDataStruct.h \
+##		AliHLTCaloRecPointDataStruct.h \
+##		AliHLTCaloRecPointContainerStruct.h \
+##		AliHLTCaloRecPointHeaderStruct.h \
+##		AliHLTCaloChannelDataStruct.h \
+##		AliHLTCaloChannelDataHeaderStruct.h 
 
 ## the link def file for this module
 ## generated automatically if empty

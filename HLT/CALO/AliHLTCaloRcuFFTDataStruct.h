@@ -6,7 +6,7 @@
 
 
 #include "Rtypes.h"
-#include "AliHLTCaloConstants.h"
+#include "AliHLTCaloConstant.h"
 
 using namespace CaloHLTConst;
 

@@ -14,7 +14,7 @@
 class AliHLTCaloRawAnalyzerPeakFinderComponent: public AliHLTCaloRawAnalyzerComponentv3
 {
  public:
-  AliHLTCaloRawAnalyzerPeakFinderComponent();
+  AliHLTCaloRawAnalyzerPeakFinderComponent(TString det);
   virtual ~AliHLTCaloRawAnalyzerPeakFinderComponent();
 
   virtual int Deinit();
@@ -30,7 +30,7 @@ class AliHLTCaloRawAnalyzerPeakFinderComponent: public AliHLTCaloRawAnalyzerComp
   virtual Bool_t LoadPFVector() { return true; }; 
   virtual Bool_t LoadPFVector(const int /*startindex*/, const int /*Nsamples*/, const int /*tau*/, const int /*fs*/) {  return true; };
 
-  AliHLTCaloRawAnalyzerPeakFinderComponent(const AliHLTCaloRawAnalyzerPeakFinderComponent & ); 
+  AliHLTCaloRawAnalyzerPeakFinderComponent(const AliHLTCaloRawAnalyzerPeakFinderComponent &, TString det ); 
   
   /*
   AliHLTCaloRawAnalyzerPeakFinderComponent & operator = (const AliHLTCaloRawAnalyzerPeakFinderComponent)
@@ -38,6 +38,9 @@ class AliHLTCaloRawAnalyzerPeakFinderComponent: public AliHLTCaloRawAnalyzerComp
       return *this;
     };
   */
+
+private:
+    AliHLTCaloRawAnalyzerPeakFinderComponent();
 };
 
 

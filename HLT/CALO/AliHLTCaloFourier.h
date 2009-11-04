@@ -31,7 +31,7 @@
 #include "AliHLTCaloRcuFFTDataStruct.h"
 
 //using namespace PhosHLTConst;
-using namespace CaloHLTConst;
+//using namespace CaloHLTConst;
 
 using namespace std;
 

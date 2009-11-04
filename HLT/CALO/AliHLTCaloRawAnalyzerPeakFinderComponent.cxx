@@ -25,7 +25,8 @@
 //AliHLTCaloRawAnalyzerPeakFinderComponent gAliHLTCaloRawAnalyzerPeakFinderComponent;
 
 //___________________________________________________________________________________________________________
-AliHLTCaloRawAnalyzerPeakFinderComponent::AliHLTCaloRawAnalyzerPeakFinderComponent():AliHLTCaloRawAnalyzerComponentv3()
+AliHLTCaloRawAnalyzerPeakFinderComponent::AliHLTCaloRawAnalyzerPeakFinderComponent(TString det) : 
+AliHLTCaloRawAnalyzerComponentv3(det)
 {
   fAnalyzerPtr = new AliHLTCaloRawAnalyzerPeakFinder();
 
@@ -53,7 +54,8 @@ AliHLTCaloRawAnalyzerPeakFinderComponent::~AliHLTCaloRawAnalyzerPeakFinderCompon
 
 
 //___________________________________________________________________________________________________________
-AliHLTCaloRawAnalyzerPeakFinderComponent::AliHLTCaloRawAnalyzerPeakFinderComponent(const AliHLTCaloRawAnalyzerPeakFinderComponent & ) : AliHLTCaloRawAnalyzerComponentv3()
+AliHLTCaloRawAnalyzerPeakFinderComponent::AliHLTCaloRawAnalyzerPeakFinderComponent(const AliHLTCaloRawAnalyzerPeakFinderComponent &, TString det) : 
+AliHLTCaloRawAnalyzerComponentv3(det)
 {
 
 }

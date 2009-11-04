@@ -22,7 +22,7 @@
 #include "AliHLTCaloChannelDataStruct.h"
 #include "AliHLTCaloCoordinate.h"
 #include "Rtypes.h"
-#include "AliHLTCaloConstants.h"
+#include "AliHLTCaloConstant.h"
 
 ///comment
 

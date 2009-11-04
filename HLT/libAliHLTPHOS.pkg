@@ -58,7 +58,8 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSCoordinate.h \
 	          AliHLTPHOSChannelRawDataStruct.h
 
-MODULE_DHDR:=	  AliHLTPHOSLinkDef.h
+##Left empty for auto generation:
+MODULE_DHDR:=	  
 
 EINCLUDE     := HLT/BASE HLT/BASE/util STEER RAW PHOS
 

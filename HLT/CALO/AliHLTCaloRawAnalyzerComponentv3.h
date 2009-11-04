@@ -97,17 +97,21 @@ class AliAltroRawStreamV3;
 
 #include "AliHLTProcessor.h"
 #include "AliHLTCaloDefinitions.h"
+#include "AliHLTCaloConstantsHandler.h"
 
+class AliHLTCaloConstants;
 class AliHLTCaloMapper;
 
 
 //class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloRcuProcessor
-class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTProcessor
+class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, public AliHLTProcessor 
 {
  public:
 
-  /** Standard constructor */
-  AliHLTCaloRawAnalyzerComponentv3();
+  /** Constructor must be initialized to specific calorimeter */
+  AliHLTCaloRawAnalyzerComponentv3(TString det);
+  
+
 
   /** Destructor */
   virtual ~AliHLTCaloRawAnalyzerComponentv3();
@@ -162,6 +166,9 @@ virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype) = 0;
   AliHLTCaloMapper *fMapperPtr;     
  private:
 
+/** Keep default constructor private since it should not be used */
+  AliHLTCaloRawAnalyzerComponentv3();
+
   /** Keep the copy constructor private since it should not be used */
   AliHLTCaloRawAnalyzerComponentv3(const AliHLTCaloRawAnalyzerComponentv3 & );
 
@@ -204,7 +211,7 @@ virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype) = 0;
   class RawDataWriter 
   {
   public:
-    RawDataWriter();
+    RawDataWriter(AliHLTCaloConstants* cConst);
     ~RawDataWriter();
     //   void WriteChannelId(const UShort_t channeldid );
     void NewChannel( );
@@ -216,6 +223,9 @@ virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype) = 0;
     void NewEvent();
    
   private:
+    
+    //Default constructor, should not be used. 
+    RawDataWriter();    
     RawDataWriter (const RawDataWriter  & );
     RawDataWriter & operator = (const RawDataWriter &);
     void Init();

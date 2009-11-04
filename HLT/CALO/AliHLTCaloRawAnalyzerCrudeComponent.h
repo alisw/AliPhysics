@@ -14,9 +14,9 @@
 class AliHLTCaloRawAnalyzerCrudeComponent: public AliHLTCaloRawAnalyzerComponentv3
 {
  public:
-  AliHLTCaloRawAnalyzerCrudeComponent();
+  AliHLTCaloRawAnalyzerCrudeComponent(TString det);
   virtual ~AliHLTCaloRawAnalyzerCrudeComponent();
-  AliHLTCaloRawAnalyzerCrudeComponent(const AliHLTCaloRawAnalyzerCrudeComponent & );
+  AliHLTCaloRawAnalyzerCrudeComponent(const AliHLTCaloRawAnalyzerCrudeComponent &, TString det );
   // AliHLTCaloRawAnalyzerCrudeComponent & operator = (const AliHLTCaloRawAnalyzerCrudeComponent)
   //  {
   //   return *this;
@@ -25,6 +25,9 @@ class AliHLTCaloRawAnalyzerCrudeComponent: public AliHLTCaloRawAnalyzerComponent
   virtual int Deinit();
   virtual const char* GetComponentID();
   virtual AliHLTComponent* Spawn() = 0;
+
+private:
+  AliHLTCaloRawAnalyzerCrudeComponent();
 };
 
 #endif

@@ -30,17 +30,19 @@
 #include "unistd.h"
 #include <iostream>
 #include "AliHLTCaloCoordinate.h"
-
-using namespace CaloHLTConst;
+#include "AliHLTCaloConstantsHandler.h"
+#include "AliHLTCaloConstants.h"
 
 //ClassImp(AliHLTCaloMapper)
 
-AliHLTCaloMapper::AliHLTCaloMapper( const unsigned long  specification ) :  AliHLTLogging(), 
-									    fHw2geomapPtr(0),
-									    fCellSize(0),
-									    fSpecification(specification),
-									    fIsInitializedMapping(false),
-									    fSpecificationMapPtr(0)
+AliHLTCaloMapper::AliHLTCaloMapper( const unsigned long  specification , TString det) :  
+  AliHLTLogging(), 
+  AliHLTCaloConstantsHandler(det),
+  fHw2geomapPtr(0),
+  fCellSize(0),
+  fSpecification(specification),
+  fIsInitializedMapping(false),
+  fSpecificationMapPtr(0)
 {  
   //see header file for class documentation
 }
@@ -77,6 +79,79 @@ AliHLTCaloMapper::GetFilePath()
 }
 
 
+int 
+AliHLTCaloMapper::GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd)
+{
+  Short_t index = GetDDLFromSpec(spec);
+  if( index < 0 )
+    {
+      //      HLTError("Specification 0x%X not consistent with single DDL in PHOS", spec);
+      return index;
+    }
+  else
+    {
+      return ((fHw2geomapPtr[hadd].fXCol   ) |
+	      ((fHw2geomapPtr[hadd].fZRow  ) << 6) |
+	      (fHw2geomapPtr[hadd].fGain << 12) |
+	      fSpecificationMapPtr[index].fModId << 13);
+    }
+}
+
+
+
+// UShort_t
+// AliHLTCaloMapper::GetChannelID(Int_t specification, Int_t hwAddress)
+// {
+  
+//   Short_t index = 0;
+
+//   if(specification == 0x00001) index = 0;
+//   else if(specification == 0x00002) index = 1;
+//   else if(specification == 0x00004) index = 2;
+//   else if(specification == 0x00008) index = 3;
+
+//   else if(specification == 0x00010) index = 4;
+//   else if(specification == 0x00020) index = 5;
+//   else if(specification == 0x00040) index = 6;
+//   else if(specification == 0x00080) index = 7;
+
+//   else if(specification == 0x00100) index = 8;
+//   else if(specification == 0x00200) index = 9;
+//   else if(specification == 0x00400) index = 10;
+//   else if(specification == 0x00800) index = 11;
+
+//   else if(specification == 0x01000) index = 12;
+//   else if(specification == 0x02000) index = 13;
+//   else if(specification == 0x04000) index = 14;
+//   else if(specification == 0x08000) index = 15;
+
+//   else if(specification == 0x10000) index = 16;
+//   else if(specification == 0x20000) index = 17;
+//   else if(specification == 0x40000) index = 18;
+//   else if(specification == 0x80000) index = 19;
+
+//   else HLTError("Specification 0x%X not consistent with single DDL in PHOS", specification);
+//   //  HLTError("Channel ID: 0x%X Coordinates: x = %d, z = %d, gain = %d", ((fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[index].fRcuXOffset) |((fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[index].fRcuZOffset) << 6) | (fHw2geomapPtr[hwAddress].fGain << 12) | fSpecificationMapPtr[index].fModId << 13),
+//   //	   fHw2geomapPtr[hwAddress].fXCol,
+//   //	   fHw2geomapPtr[hwAddress].fZRow, 
+//   //	   fHw2geomapPtr[hwAddress].fGain);
+//   return ((fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[index].fRcuXOffset) |
+// 	  ((fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[index].fRcuZOffset) << 6) |
+// 	  (fHw2geomapPtr[hwAddress].fGain << 12) |
+// 	  fSpecificationMapPtr[index].fModId << 13);
+// }
+
+
+void
+AliHLTCaloMapper::GetChannelCoord(const UShort_t channelId, UShort_t* channelCoord)
+{
+  channelCoord[0] = channelId&0x3f;
+  channelCoord[1] = (channelId >> 6)&0x3f;
+  channelCoord[2] = (channelId >> 12)&0x1;
+  channelCoord[3] = (channelId >> 13)&0x1f;
+  //  printf("Channel ID: 0x%X Coordinates: x = %d, z = %d, gain = %d\n", channelId, channelCoord[0], channelCoord[1], channelCoord[2]);
+}
+
 void
 AliHLTCaloMapper::ChannelId2Coordinate(const int channelId,    AliHLTCaloCoordinate &channelCoord)
 {
@@ -85,6 +160,15 @@ AliHLTCaloMapper::ChannelId2Coordinate(const int channelId,    AliHLTCaloCoordin
   channelCoord.fGain = (channelId >> 12)&0x1;
   channelCoord.fModuleId  = (channelId >> 13)&0x1f;
   //  printf("Channel ID: 0x%X Coordinates: x = %d, z = %d, gain = %d\n", channelId, channelCoord[0], channelCoord[1], channelCoord[2]);
+}
+
+
+void
+AliHLTCaloMapper::GetLocalCoord(const int channelId, Float_t* localCoord) const
+{
+  localCoord[0] = (static_cast<Float_t>(channelId&0x3f) - fCaloConstants->GetNXCOLUMNSMOD()/2)* fCaloConstants->GetCELLSTEP();
+  localCoord[1] = (static_cast<Float_t>((channelId >> 6)&0x3f) - fCaloConstants->GetNZROWSMOD()/2) * fCaloConstants->GetCELLSTEP();
+  //  printf("Local coordinates: x = %f, z = %f\n", channelCoord[0], channelCoord[1]);
 }
 
 
@@ -108,27 +192,21 @@ AliHLTCaloMapper::GetDDLFromSpec( const AliHLTUInt32_t spec )
 }
 
 
-  
-// UInt_t 
-// AliHLTCaloMapper::GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd)
-int 
-AliHLTCaloMapper::GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd)
+Int_t 
+AliHLTCaloMapper::GetModuleFromSpec(Int_t specification)
 {
-  Short_t index = GetDDLFromSpec(spec);
-  if( index < 0 )
-    {
-      //      HLTError("Specification 0x%X not consistent with single DDL in PHOS", spec);
-      return index;
-    }
-  else
-    {
-      return ((fHw2geomapPtr[hadd].fXCol   ) |
-	      ((fHw2geomapPtr[hadd].fZRow  ) << 6) |
-	      (fHw2geomapPtr[hadd].fGain << 12) |
-	      fSpecificationMapPtr[index].fModId << 13);
-    }
-}
+  Int_t module = -1;
+      
+  if(specification & 0xf) module = 0;
+  else if((specification >> 4) & 0xf) module = 1;
+  else if((specification >> 8) & 0xf) module = 2;
+  else if((specification >> 12) & 0xf) module = 3;
+  else if((specification >> 16) & 0xf) module = 4;
+ 
+  else HLTError("Specification 0x%X not consistent with single module in PHOS", specification);
 
+  return module;
+}
 
 
 unsigned long 

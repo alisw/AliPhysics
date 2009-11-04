@@ -1,14 +1,14 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTCALOConstants.h 34622 2009-09-04 13:22:01Z odjuvsla $
+// $Id: AliHLTCALOConstant.h 34622 2009-09-04 13:22:01Z odjuvsla $
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
- * University of Oslo, Norway, 2006                                       *
+ * University of Oslo, Norway, 2009                                       *
  *                                                                        * 
- * Author: Per Thomas Hille perthi@fys.uio.no for the ALICE DCS Project.  *
+ * Author: Svein Lindal, slindal@fys.uio.no for the ALICE PHOS Project.  *
  * Contributors are mentioned in the code where appropriate.              *
- * Please report bugs to perthi@fys.uio.no                                * 
+ * Please report bugs to slindal@fys.uio.no                                * 
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -22,80 +22,62 @@
 #ifndef ALIHLTCALOCONSTANTS_H
 #define ALIHLTCALOCONSTANTS_H
 
-namespace CaloHLTConst
+
+class AliHLTCaloConstants
 {
-  //  const int ALTROMAXTRALERSIZE = 7;  
-  //  const int  DDLBLOCKSIZE = 5;
+public:
+  AliHLTCaloConstants();
+  virtual ~AliHLTCaloConstants();
 
-  //  const int NZROWSRCU     =   56;                    /**<Number of rows per module*/       
-  //  const int NXCOLUMNSRCU  =   16; 
-  //  const int NZROWSMOD      =  56;                    /**<Number of rows per module*/       
-  //  const int NXCOLUMNSMOD   =  64;                 /**<Number of columns per module*/ 
- 
+  virtual int GetMAXHOSTS() = 0;
+  virtual int GetDEFAULTEVENTPORT() = 0; 
+  virtual int GetMAXBINVALUE() = 0;
+  virtual int GetHIGHGAIN() = 0;
+  virtual int GetLOWGAIN() = 0;
+  virtual int GetALTROMAXSAMPLES() = 0;
+  virtual int GetALTROMAXPRESAMPLES() = 0;
+  virtual int GetNZROWSRCU() = 0;
+  virtual int GetNXCOLUMNSRCU() = 0;
+  virtual int GetNZROWSMOD() = 0;
+  virtual int GetNXCOLUMNSMOD() = 0;
+  virtual int GetNGAINS() = 0;
+  virtual int GetNDATATYPES() = 0;
+  virtual int GetPFMAXPATHLENGTH() = 0;
+  virtual int GetPFDEFAULTNSAMPLES() = 0;
+  virtual int GetPFDEFAULTSTARTINDEX() = 0;
+  virtual int GetDEFAULTTAU() = 0;
+  virtual int GetDEFAULTFS() = 0;
+  virtual int GetMODULE0() = 0;
+  virtual int GetMODULE1() = 0;
+  virtual int GetMODULE2() = 0;     
+  virtual int GetMODULE3() = 0;
+  virtual int GetMODULE4() = 0;
+  virtual int GetCSPSPERFEE() = 0;
+  virtual int GetRCU0() = 0;
+  virtual int GetRCU1() = 0;
+  virtual int GetRCU2() = 0;
+  virtual int GetRCU3() = 0;
+  virtual int GetZ0() = 0;
+  virtual int GetZ1() = 0;
+  virtual int GetX0() = 0;
+  virtual int GetX1() = 0;
+  virtual int GetNMODULES() = 0;
+  virtual int GetNRCUS() = 0;
+  virtual int GetNRCUSPERMODULE() = 0;
+  virtual int GetNRCUSPERTOTAL() = 0;
+  virtual int GetNFEECS() = 0;
+  virtual int GetNALTROS() = 0;
+  virtual int GetNALTROCHANNELS() = 0;
+  virtual int GetNBRANCHES() = 0;
+  virtual float GetCELLSTEP() = 0;
 
-  // const int NGAINS         =   2;                             /**<Number of gains per ALTRO channel*/
-
-  const int NALTROS        =   4;                             /**<Number of ALTROs per frontend card*/
-  const int NALTROCHANNELS =  16;
-  const int NBRANCHES      =   2;      
-  const int CSPSPERFEE    = 32;
-  const int NGAINS         =   2;    
-  const int HIGHGAIN    =   1;
-  const int LOWGAIN     =   0;
-  const int MAXBINVALUE = 1023;
-  const int ALTROMAXSAMPLES = 1008;                           /**<The maximum number of samples of the ALTRO*/
-  const int ALTROMAXPRESAMPLES = 15;   
-  
-
-  //  const int NDATATYPES     =   10;    
-
-  //  const int  PFMAXPATHLENGTH = 256;
+// #ifndef __CINT__
+//   const unsigned char PFVECTORDIR[] = "/HLT/PHOS/PFVectors";
+// #endif
 
 
-#ifndef __CINT__
-  const unsigned char PFVECTORDIR[] = "/HLT/PHOS/PFVectors";
-#endif
 
-  //  const int PFDEFAULTNSAMPLES = 70;
-  //  const int PFDEFAULTSTARTINDEX = 0;
 
-  //  const int DEFAULTTAU = 2;    /**<Assume that the signal rise time of the altrp pulses is 2 us (nominal value of the electronics)*/
-  //  const int  DEFAULTFS = 10;   /**<Assume that the signal is samples with 10 MHZ samle rate*/
-
-  //  const int MODULE0     = 0;
-  //  const int MODULE1     = 1;
-  //  const int MODULE2     = 2;
-  // const int MODULE3     = 3;
-  // const int MODULE4     = 4;
-
-  //  const int CSPSPERFEE    = 32;
-
-  //  const int RCU0       = 0;
-  //  const int RCU1       = 1;
-  //  const int RCU2       = 2;
-  //  const int RCU3       = 3;
-
-  
-  //  const int Z0         = 0;
-  //  const int Z1         = 1;
-  //  const int X0         = 0;
-  //  const int X1         = 1;
-
-  //  const int NMODULES    =      5;                             /**<Number of modules of the PHOS detector*/
-  //  const int NRCUS       =      4;                             /**<Number of RCUs per Module*/
- 
-  //              NRCUSPERMODULE
-
-  //  const int NRCUSPERMODULE =  4 ;                            /**<Number of RCUs per Module*/
-  //  const int NRCUSPERTOTAL =  NMODULES*NRCUSPERMODULE;   /**<Total number of RCUs for PHOS*/
-  //  const int NFEECS         =  14;                             /**<Number of Frontend cards per branch*/
-
-  
-  const int MAXHOSTS = 20;
-  const int DEFAULTEVENTPORT = 42001;
-}
-
+};
 
 #endif
-
-

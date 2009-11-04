@@ -24,8 +24,11 @@
 #include "AliRawReaderMemory.h"
 #include "AliAltroRawStreamV3.h"
 #include "AliCaloRawStreamV3.h"
+#include "AliHLTCaloConstantsHandler.h"
+#include "AliHLTCaloConstants.h"
 
-AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3():
+AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
+  AliHLTCaloConstantsHandler(det),
   AliHLTProcessor(),
   fAnalyzerPtr(0),
   fMapperPtr(0),     
@@ -54,7 +57,7 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3():
  
   // if( fkDoPushRawData == true  )
     {
-      fRawDataWriter  = new RawDataWriter(); 
+      fRawDataWriter  = new RawDataWriter(fCaloConstants); 
     }
 
     fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("EMCAL"));  
@@ -386,13 +389,13 @@ AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 
 
 
-AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::RawDataWriter() :  //fIsFirstChannel(true),
+AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::RawDataWriter(AliHLTCaloConstants* cConst) :  //fIsFirstChannel(true),
 								    fRawDataBuffer(0),
 								    fCurrentChannelSize(0),
 								    //    fIsFirstChannel(true),
 								    fBufferIndex(0),
 								    //	    fBufferSize( NZROWSRCU*NXCOLUMNSRCU*ALTROMAXSAMPLES*NGAINS +1000 ),
-								    fBufferSize( 64*56*ALTROMAXSAMPLES*NGAINS +1000 ),
+								    fBufferSize( 64*56*cConst->GetNGAINS()*cConst->GetALTROMAXSAMPLES() +1000 ),
 								    fCurrentChannelIdPtr(0),
 								    fCurrentChannelSizePtr(0),
 								    fCurrentChannelDataPtr(0),

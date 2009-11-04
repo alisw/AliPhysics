@@ -23,7 +23,8 @@
 //AliHLTCaloRawAnalyzerCrudeComponent gAliHLTCaloRawAnalyzerCrudeComponent;
 
 //___________________________________________________________________________
-AliHLTCaloRawAnalyzerCrudeComponent::AliHLTCaloRawAnalyzerCrudeComponent()
+AliHLTCaloRawAnalyzerCrudeComponent::AliHLTCaloRawAnalyzerCrudeComponent(TString det) :
+AliHLTCaloRawAnalyzerComponentv3(det)
 {
   fAnalyzerPtr = new AliHLTCaloRawAnalyzerCrude();
 } 
@@ -39,7 +40,8 @@ AliHLTCaloRawAnalyzerCrudeComponent::~AliHLTCaloRawAnalyzerCrudeComponent()
 }
 
 //___________________________________________________________________________
-AliHLTCaloRawAnalyzerCrudeComponent::AliHLTCaloRawAnalyzerCrudeComponent(const AliHLTCaloRawAnalyzerCrudeComponent & ):AliHLTCaloRawAnalyzerComponentv3()
+AliHLTCaloRawAnalyzerCrudeComponent::AliHLTCaloRawAnalyzerCrudeComponent(const AliHLTCaloRawAnalyzerCrudeComponent &, TString det ):
+AliHLTCaloRawAnalyzerComponentv3(det)
 {
 
 }
