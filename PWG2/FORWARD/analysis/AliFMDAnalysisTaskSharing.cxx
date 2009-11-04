@@ -18,6 +18,8 @@
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
 #include "AliFMDAnaParameters.h"
+#include "TH1F.h"
+#include "TObjString.h"
 //#include "/home/canute/ALICE/AliRoot/PWG0/AliPWG0Helper.h"
 //#include "AliFMDParameters.h"
 #include "AliGenEventHeader.h"
@@ -26,6 +28,13 @@
 #include "AliMCParticle.h"
 #include "AliFMDStripIndex.h"
 
+// This is the task to do the FMD sharing or hit merging.
+// It reads the input ESDFMD data and posts an ESDFMD object to
+// the tasks that must be performed after this task ie.
+// Density, BackgroundCorrection and Dndeta.
+// Author: Hans Hjersing Dalsgaard, hans.dalsgaard@cern.ch
+ 
+
 ClassImp(AliFMDAnalysisTaskSharing)
 
 //_____________________________________________________________________
@@ -33,8 +42,6 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing()
 : fDebug(0),
   fESD(0x0),
   foutputESDFMD(),
-  fEnergy(0),
-  fNstrips(0),
   fSharedThis(kFALSE),
   fSharedPrev(kFALSE),
   fDiagList(0),
@@ -56,8 +63,6 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing(const char* name, Bool_t SE
     fDebug(0),
     fESD(0x0),
     foutputESDFMD(),
-    fEnergy(0),
-    fNstrips(0),
     fSharedThis(kFALSE),
     fSharedPrev(kFALSE),
     fDiagList(0),
@@ -66,6 +71,7 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing(const char* name, Bool_t SE
     fStatus(kTRUE),
     fLastTrackByStrip(0)
 {
+  // named constructor
   fStandalone = SE;
   if(fStandalone) {
     DefineInput (0, AliESDEvent::Class());
@@ -78,6 +84,7 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing(const char* name, Bool_t SE
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::CreateOutputObjects()
 {
+  // Create the output objects
   if(!foutputESDFMD)
     foutputESDFMD = new AliESDFMD();
   
@@ -119,7 +126,7 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
       TH1F* hEdist        = new TH1F(Form("Edist_before_sharing_FMD%d%c", det, ringChar),
 				     Form("Edist_before_sharing_FMD%d%c", det, ringChar),
 				     1000,0,25);
-      TH1F* hEdist_after  = new TH1F(Form("Edist_after_sharing_FMD%d%c", det, ringChar),
+      TH1F* hEdistAfter  = new TH1F(Form("Edist_after_sharing_FMD%d%c", det, ringChar),
 				     Form("Edist_after_sharing_FMD%d%c", det, ringChar),
 				     1000,0,25);
       
@@ -128,7 +135,7 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
       //				     Form("N_strips_hit_FMD%d%c",det,ringChar),
       //				     25,0,25);
       fDiagList->Add(hEdist);
-      fDiagList->Add(hEdist_after);
+      fDiagList->Add(hEdistAfter);
       //fDiagList->Add(hNstripsHit);
       
       for(Int_t i = 0; i< pars->GetNvtxBins(); i++) {
@@ -151,13 +158,14 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::ConnectInputData(Option_t */*option*/)
 {
+  // connect the input data
   if(fStandalone)
     fESD = (AliESDEvent*)GetInputData(0);
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 {
-
+  //perform analysis on one event
   AliESD* old = fESD->GetAliESDOld();
   if (old) {
     fESD->CopyFromOldESD();
@@ -213,8 +221,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
       for(UShort_t sec =0; sec < nsec;  sec++) {
 	fSharedThis      = kFALSE;
 	fSharedPrev      = kFALSE;
-	fEnergy = 0;
-	fNstrips = 0;
+	
 	for(UShort_t strip = 0; strip < nstr; strip++) {
 	  foutputESDFMD->SetMultiplicity(det,ring,sec,strip,0.);
 	  Float_t mult = fmd->Multiplicity(det,ring,sec,strip);
@@ -229,26 +236,26 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 	  hEdist->Fill(mult);
 	  if(fmd->IsAngleCorrected())
 	    mult = mult/TMath::Cos(Eta2Theta(eta));
-	  Float_t Eprev = 0;
-	  Float_t Enext = 0;
+	  Float_t prevE = 0;
+	  Float_t nextE = 0;
 	  if(strip != 0)
 	    if(fmd->Multiplicity(det,ring,sec,strip-1) != AliESDFMD::kInvalidMult) {
-	      Eprev = fmd->Multiplicity(det,ring,sec,strip-1);
+	      prevE = fmd->Multiplicity(det,ring,sec,strip-1);
 	      if(fmd->IsAngleCorrected())
-		Eprev = Eprev/TMath::Cos(Eta2Theta(fmd->Eta(det,ring,sec,strip-1)));
+		prevE = prevE/TMath::Cos(Eta2Theta(fmd->Eta(det,ring,sec,strip-1)));
 	    }
 	  if(strip != nstr - 1)
 	    if(fmd->Multiplicity(det,ring,sec,strip+1) != AliESDFMD::kInvalidMult) {
-	      Enext = fmd->Multiplicity(det,ring,sec,strip+1);
+	      nextE = fmd->Multiplicity(det,ring,sec,strip+1);
 	      if(fmd->IsAngleCorrected())
-		Enext = Enext/TMath::Cos(Eta2Theta(fmd->Eta(det,ring,sec,strip+1)));
+		nextE = nextE/TMath::Cos(Eta2Theta(fmd->Eta(det,ring,sec,strip+1)));
 	    }
 	  
-	  Float_t merged_energy = GetMultiplicityOfStrip(mult,eta,Eprev,Enext,det,ring,sec,strip);
+	  Float_t mergedEnergy = GetMultiplicityOfStrip(mult,eta,prevE,nextE,det,ring,sec,strip);
 
-	  if(merged_energy > 0 )
+	  if(mergedEnergy > 0 )
 	    nHits++;
-	  foutputESDFMD->SetMultiplicity(det,ring,sec,strip,merged_energy);
+	  foutputESDFMD->SetMultiplicity(det,ring,sec,strip,mergedEnergy);
 	  foutputESDFMD->SetEta(det,ring,sec,strip,eta);
 	  
 	}
@@ -267,15 +274,16 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
 //_____________________________________________________________________
 Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
 							  Float_t eta,
-							  Float_t Eprev,
-							  Float_t Enext,
+							  Float_t prevE,
+							  Float_t nextE,
 							  UShort_t   det,
 							  Char_t  ring,
 							  UShort_t /*sec*/,
 							  UShort_t /*strip*/) {
+  //analyse and perform sharing on one strip
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
  
-  Float_t merged_energy = 0;
+  Float_t mergedEnergy = 0;
   //Float_t nParticles = 0;
   Float_t cutLow  = 0.15;
   if(ring == 'I')
@@ -290,7 +298,7 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
   Float_t cutHigh = pars->GetMPV(det,ring,eta) - 3*pars->GetSigma(det,ring,eta);
    
   // Float_t cutPart = pars->GetMPV(det,ring,eta) - 5*pars->GetSigma(det,ring,eta);
-  Float_t Etotal  = mult;
+  Float_t totalE  = mult;
   
 
     //std::cout<<det<<ring<<"   "<<sec<<"    "<<strip<<"   "<<cutLow<<std::endl;
@@ -305,7 +313,7 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
     fSharedPrev      = kFALSE;
     return 0;
     }*/
-  if(mult<Enext && Enext>cutHigh && foutputESDFMD->GetUniqueID() == kTRUE)
+  if(mult<nextE && nextE>cutHigh && foutputESDFMD->GetUniqueID() == kTRUE)
     {
       fSharedThis      = kFALSE;
       fSharedPrev      = kFALSE;
@@ -319,40 +327,40 @@ Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
       return 0;
     }
   
-  if(Eprev > cutLow && Eprev < cutHigh && !fSharedPrev ) {
-    Etotal += Eprev;
+  if(prevE > cutLow && prevE < cutHigh && !fSharedPrev ) {
+    totalE += prevE;
   }
   
-  if(Enext > cutLow && Enext < cutHigh ) {
-    Etotal += Enext;
+  if(nextE > cutLow && nextE < cutHigh ) {
+    totalE += nextE;
     fSharedThis      = kTRUE;
   }
   TH1F* hEdist = (TH1F*)fDiagList->FindObject(Form("Edist_after_sharing_FMD%d%c",det,ring));
-  hEdist->Fill(Etotal);
+  hEdist->Fill(totalE);
   
-  Etotal = Etotal*TMath::Cos(Eta2Theta(eta));
-  if(Etotal > 0) {
+  totalE = totalE*TMath::Cos(Eta2Theta(eta));
+  if(totalE > 0) {
     
-    merged_energy = Etotal;
+    mergedEnergy = totalE;
     fSharedPrev      = kTRUE;
     // if(det == 1 && ring =='I')
-    // std::cout<<Form("Merged signals %f %f %f into %f , %f in strip %d, sec %d, ring %c, det %d",Eprev, mult, Enext, Etotal/TMath::Cos(Eta2Theta(eta)),Etotal,strip,sec,ring,det )<<std::endl;
+    // std::cout<<Form("Merged signals %f %f %f into %f , %f in strip %d, sec %d, ring %c, det %d",prevE, mult, nextE, totalE/TMath::Cos(Eta2Theta(eta)),totalE,strip,sec,ring,det )<<std::endl;
   }
-    else{// if(Etotal > 0) {
+    else{// if(totalE > 0) {
       //if(det == 3 && ring =='I')
-      //	std::cout<<Form("NO HIT  for  %f %f %f into %f , %f in strip %d, sec %d, ring %c, det %d, cuts %f , %f",Eprev, mult, Enext, Etotal/TMath::Cos(Eta2Theta(eta)),Etotal,strip,sec,ring,det,cutPart,cutHigh )<<std::endl;
+      //	std::cout<<Form("NO HIT  for  %f %f %f into %f , %f in strip %d, sec %d, ring %c, det %d, cuts %f , %f",prevE, mult, nextE, totalE/TMath::Cos(Eta2Theta(eta)),totalE,strip,sec,ring,det,cutPart,cutHigh )<<std::endl;
     fSharedThis      = kFALSE;
     fSharedPrev      = kFALSE;
   }
-  // merged_energy = mult;
+  // mergedEnergy = mult;
   
-  return merged_energy; 
+  return mergedEnergy; 
   //}  
 }
 
 //_____________________________________________________________________
-Float_t AliFMDAnalysisTaskSharing::Eta2Theta(Float_t eta) {
-
+Float_t AliFMDAnalysisTaskSharing::Eta2Theta(Float_t eta) const{
+  //convert the eta of a strip to a theta
   Float_t theta = 2*TMath::ATan(TMath::Exp(-1*eta));
   
   if(eta < 0)
@@ -369,7 +377,7 @@ Float_t AliFMDAnalysisTaskSharing::Eta2Theta(Float_t eta) {
 
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::ProcessPrimary() {
-  
+  //Get the undspoiled MC dN/deta before event cuts
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   AliMCEvent* mcEvent = eventHandler->MCEvent();
   if(!mcEvent)
