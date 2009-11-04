@@ -115,14 +115,16 @@ private:
   Bool_t                CheckRange(QABIT_t bit) const ;
   Bool_t                CheckRange(AliRecoParam::EventSpecie_t es) const ;
   const char *          GetBitName(QABIT_t bit) const ;
-  ULong_t               GetStatus(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es) const  { return fQA[det*fNEventSpecies+(Int_t)TMath::Log2(es)] ;}
+  ULong_t               GetStatus(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es) const  { return fQA[det*fNEventSpecies+AliRecoParam::AConvert(es)] ;}
   void                  Finish() const ;  
   ULong_t               Offset(ALITASK_t tsk) const ;
   void                  ShowASCIIStatus(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t det, ALITASK_t tsk, ULong_t status) const ; 
+  void                  Reset(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es) ;  
+
   void                  ResetStatus(DETECTORINDEX_t det) ; 
   void                  Set(DETECTORINDEX_t det) { fDet = det ;}
   void                  Set(ALITASK_t tsk) { fTask = tsk ; AliDebug(GetQADebugLevel(), Form("Ready to set QA status in %s", GetAliTaskName(tsk) )) ; }
-  void                  SetStatus(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es, ULong_t status) { fQA[det*fNEventSpecies+(Int_t)TMath::Log2(es)] = status ; }
+  void                  SetStatus(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es, ULong_t status) { fQA[det*fNEventSpecies+AliRecoParam::AConvert(es)] = status ; }
   void                  SetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit) ;
   void                  UnSetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es, QABIT_t bit) ;
   

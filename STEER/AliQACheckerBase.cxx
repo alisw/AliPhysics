@@ -395,13 +395,13 @@ void AliQACheckerBase::SetQA(AliQAv1::ALITASK_t index, Double_t * value) const
       qa->Set(AliQAv1::kFATAL, specie) ; 
     } else {
       if ( value[specie] >= fLowTestValue[AliQAv1::kFATAL] && value[specie] < fUpTestValue[AliQAv1::kFATAL] ) 
-        qa->Set(AliQAv1::kFATAL, specie) ; 
+        qa->Set(AliQAv1::kFATAL, AliRecoParam::ConvertIndex(specie)) ; 
       else if ( value[specie] > fLowTestValue[AliQAv1::kERROR] && value[specie] <= fUpTestValue[AliQAv1::kERROR]  )
-        qa->Set(AliQAv1::kERROR, specie) ; 
+        qa->Set(AliQAv1::kERROR, AliRecoParam::ConvertIndex(specie)) ; 
       else if ( value[specie] > fLowTestValue[AliQAv1::kWARNING] && value[specie] <= fUpTestValue[AliQAv1::kWARNING]  )
-        qa->Set(AliQAv1::kWARNING, specie) ;
+        qa->Set(AliQAv1::kWARNING, AliRecoParam::ConvertIndex(specie)) ;
       else if ( value[specie] > fLowTestValue[AliQAv1::kINFO] && value[specie] <= fUpTestValue[AliQAv1::kINFO] ) 
-        qa->Set(AliQAv1::kINFO, specie) ; 	
+        qa->Set(AliQAv1::kINFO, AliRecoParam::ConvertIndex(specie)) ; 	
     }
   }
 }

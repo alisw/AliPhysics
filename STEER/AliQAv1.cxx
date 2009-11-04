@@ -726,6 +726,23 @@ ULong_t AliQAv1::Offset(ALITASK_t tsk) const
 }
 
 //_______________________________________________________________
+void AliQAv1::Reset(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es)
+{
+    // resets all the bits for a given tsk and event specie
+  CheckRange(det) ; 
+  CheckRange(tsk) ;
+  CheckRange(es) ;
+	
+  ULong_t offset = Offset(tsk) ;
+  ULong_t status = GetStatus(det, es) ;
+	for ( Int_t bit = 0 ; bit < kNBIT ; bit++) {
+		offset+= bit ;
+		status = status & ~1 << offset ;		
+	}  
+  SetStatus(det, es, status) ;
+}
+
+//_______________________________________________________________
 void AliQAv1::ResetStatus(DETECTORINDEX_t det) 
 { 
   // reset the status of det for all event specie
@@ -791,7 +808,9 @@ void AliQAv1::SetStatusBit(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::Eve
   CheckRange(tsk) ;
   CheckRange(bit) ;
   CheckRange(es) ;
-
+  
+  Reset(det, tsk, es) ; 
+  
   ULong_t offset = Offset(tsk) ;
   ULong_t status = GetStatus(det, es) ;
   offset+= bit ;
