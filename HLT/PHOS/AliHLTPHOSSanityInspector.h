@@ -82,6 +82,9 @@ public:
   /** Check for and heal insanity */
   Int_t CheckAndHealInsanity(UShort_t* data, Int_t nSamples);  //Not completely reliable
 
+  /** Check for and heal insanity */
+  Int_t CheckAndHealInsanity(UShort_t* data, Int_t nSamples);  //Not completely reliable
+
   /** Set the max difference between 2 samples before flagging insanity */
   void SetMaxDifference(Int_t maxDiff) { fMaxDifference = maxDiff; }
     
