@@ -100,6 +100,8 @@ Bool_t AliMultiEventInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 {
     // Initialisation necessary for each new tree
     fTree = tree;
+    fTree->GetEntry(0);
+    
     if (!fTree) return kFALSE;
     // Get pointer to AOD event
     fEventBuffer[0]->ReadFromTree(fTree, "");
