@@ -88,7 +88,7 @@ void AliTOFQADataMakerRec::InitRaws()
   h0->Sumw2() ;
   Add2RawsList(h0, 0, !expert, image, !saveCorr) ;
 
-  TH1F * h1  = new TH1F("hTOFRawsTime", "Raws Time Spectrum in TOF (ns);Measured TOF time [ns];Counts", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFRawsTime", "Raws Time Spectrum in TOF (ns);Measured TOF time [ns];Counts", 20000, 0., 2000) ; 
   h1->Sumw2() ;
   Add2RawsList(h1, 1, !expert, image, !saveCorr) ;
 
@@ -117,7 +117,7 @@ void AliTOFQADataMakerRec::InitDigits()
   h0->Sumw2() ;
   Add2DigitsList(h0, 0, !expert, image) ;
   
-  TH1F * h1  = new TH1F("hTOFDigitsTime", "Digits Time Spectrum in TOF (ns);Digitized TOF time [ns];Counts", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFDigitsTime", "Digits Time Spectrum in TOF (ns);Digitized TOF time [ns];Counts", 20000, 0., 2000) ; 
   h1->Sumw2() ;
   Add2DigitsList(h1, 1, !expert, image) ;
   
@@ -145,11 +145,11 @@ void AliTOFQADataMakerRec::InitRecPoints()
   h0->Sumw2() ;
   Add2RecPointsList(h0, 0, !expert, image) ;
 
-  TH1F * h1  = new TH1F("hTOFRecPointsTime", "RecPoints Time Spectrum in TOF (ns);Calibrated TOF time [ns];Counts", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFRecPointsTime", "RecPoints Time Spectrum in TOF (ns);Calibrated TOF time [ns];Counts", 20000, 0., 2000) ; 
   h1->Sumw2() ;
   Add2RecPointsList(h1, 1, !expert, image) ;
 
-  TH1F * h2  = new TH1F("hTOFRecPointsRawTime", "RecPoints raw Time Spectrum in TOF (ns);Measured TOF time [ns];Counts", 2000, 0., 200) ; 
+  TH1F * h2  = new TH1F("hTOFRecPointsRawTime", "RecPoints raw Time Spectrum in TOF (ns);Measured TOF time [ns];Counts", 20000, 0., 2000) ; 
   h2->Sumw2() ;
   Add2RecPointsList(h2, 2, !expert, image) ;
 
@@ -176,11 +176,11 @@ void AliTOFQADataMakerRec::InitESDs()
   h0->Sumw2() ; 
   Add2ESDsList(h0, 0, !expert, image) ;
 
-  TH1F * h1  = new TH1F("hTOFESDsTime", "Time Spectrum in TOF (ns);Calibrated TOF time [ns];Counts", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFESDsTime", "Time Spectrum in TOF (ns);Calibrated TOF time [ns];Counts", 20000, 0., 2000) ; 
   h1->Sumw2() ;
   Add2ESDsList(h1, 1, !expert, image) ;
 
-  TH1F * h2  = new TH1F("hTOFESDsRawTime", "raw Time Spectrum in TOF (ns);Measured TOF time [ns];Counts", 2000, 0., 200) ; 
+  TH1F * h2  = new TH1F("hTOFESDsRawTime", "raw Time Spectrum in TOF (ns);Measured TOF time [ns];Counts", 20000, 0., 2000) ; 
   h2->Sumw2() ;
   Add2ESDsList(h2, 2, !expert, image) ;
 

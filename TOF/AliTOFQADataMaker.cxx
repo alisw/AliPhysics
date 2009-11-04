@@ -180,7 +180,7 @@ void AliTOFQADataMaker::InitRaws()
   h0->GetXaxis()->SetTitle("TOF raw number [10 power]");
   Add2RawsList(h0, 0, expert) ;
 
-  TH1F * h1  = new TH1F("hTOFRawsTime", "Raws Time Spectrum in TOF (ns)", 2000, 0., 200) ;
+  TH1F * h1  = new TH1F("hTOFRawsTime", "Raws Time Spectrum in TOF (ns)", 20000, 0., 2000) ;
   h1->Sumw2() ;
   h1->GetXaxis()->SetTitle("Measured TOF time [ns]");
   Add2RawsList(h1, 1, expert) ;
@@ -214,12 +214,12 @@ void AliTOFQADataMaker::InitRecPoints()
   h0->GetXaxis()->SetTitle("TOF recPoint number [10 power]");
   Add2RecPointsList(h0, 0, expert) ;
 
-  TH1F * h1  = new TH1F("hTOFRecPointsTime", "RecPoints Time Spectrum in TOF (ns)", 2000, 0., 200) ;
+  TH1F * h1  = new TH1F("hTOFRecPointsTime", "RecPoints Time Spectrum in TOF (ns)", 20000, 0., 2000) ;
   h1->Sumw2() ;
   h1->GetXaxis()->SetTitle("Calibrated TOF time [ns]");
   Add2RecPointsList(h1, 1, expert) ;
 
-  TH1F * h2  = new TH1F("hTOFRecPointsRawTime", "RecPoints raw Time Spectrum in TOF (ns)", 2000, 0., 200) ;
+  TH1F * h2  = new TH1F("hTOFRecPointsRawTime", "RecPoints raw Time Spectrum in TOF (ns)", 20000, 0., 2000) ;
   h2->Sumw2() ;
   h2->GetXaxis()->SetTitle("Measured TOT [ns]");
   h2->GetYaxis()->SetTitle("Measured TOF time [ns]");
@@ -253,12 +253,12 @@ void AliTOFQADataMaker::InitESDs()
   h0->GetXaxis()->SetTitle("Number of TOF matched ESD tracks [10 power]");
   Add2ESDsList(h0, 0, expert) ;
 
-  TH1F * h1  = new TH1F("hTOFESDsTime", "Time Spectrum in TOF (ns)", 2000, 0., 200) ;
+  TH1F * h1  = new TH1F("hTOFESDsTime", "Time Spectrum in TOF (ns)", 20000, 0., 2000) ;
   h1->Sumw2() ;
   h1->GetXaxis()->SetTitle("Calibrated TOF time [ns]");
   Add2ESDsList(h1, 1, expert) ;
 
-  TH1F * h2  = new TH1F("hTOFESDsRawTime", "raw Time Spectrum in TOF (ns)", 2000, 0., 200) ;
+  TH1F * h2  = new TH1F("hTOFESDsRawTime", "raw Time Spectrum in TOF (ns)", 20000, 0., 2000) ;
   h2->Sumw2() ;
   h2->GetXaxis()->SetTitle("Measured TOF time [ns]");
   Add2ESDsList(h2, 2, expert) ;
