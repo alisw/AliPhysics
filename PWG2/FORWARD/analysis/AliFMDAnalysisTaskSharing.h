@@ -2,13 +2,13 @@
 #define ALIFMDANALYSISTASKSHARING_H
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+ * See cxx source for full Copyright notice                               
+ **/
  
 #include "AliAnalysisTask.h"
-#include "TH1F.h"
-#include "TObjString.h"
+
 #include "AliESDFMD.h"
-#include "TTree.h"
+//#include "TTree.h"
 #include "AliESDEvent.h"
 #include "AliFMDFloatMap.h"
 class TChain;
@@ -32,8 +32,6 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
       fESD(o.fESD),
       // fOutputESD(),
       foutputESDFMD(o.foutputESDFMD),
-      fEnergy(o.fEnergy),
-      fNstrips(o.fNstrips),
       fSharedThis(o.fSharedThis),
       fSharedPrev(o.fSharedPrev),
       fDiagList(),
@@ -57,25 +55,25 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
     void SetOutputList(TList* outlist) {fDiagList = outlist;}
     void SetVertex(AliESDVertex* vertex) {fEsdVertex = vertex;}
     void SetInputESD(AliESDEvent* esd) {fESD = esd;}
-    Bool_t GetEventStatus() {return fStatus;}
+    Bool_t GetEventStatus() const {return fStatus;}
  private:
-    Float_t Eta2Theta(Float_t eta);
+    Float_t Eta2Theta(Float_t eta) const ;
     Double_t EtaFromStrip(UShort_t det, Char_t ring, UShort_t sector, UShort_t strip, Double_t zvtx);
     void ProcessPrimary();
     
     Int_t         fDebug;        //  Debug flag
     AliESDEvent*  fESD;          //! ESD
     // AliESDEvent   fOutputESD;
-    AliESDFMD*    foutputESDFMD;
-    Float_t       fEnergy;
-    Int_t         fNstrips;
-    Bool_t        fSharedThis;
-    Bool_t        fSharedPrev;
-    TList*        fDiagList;
-    Bool_t        fStandalone;
-    AliESDVertex* fEsdVertex;
-    Bool_t        fStatus;
-    AliFMDFloatMap fLastTrackByStrip;
+    AliESDFMD*    foutputESDFMD; // the output ESDFMD object
+    // Float_t       fEnergy;       
+    // Int_t         fNstrips;
+    Bool_t        fSharedThis;        // was this strip shared?
+    Bool_t        fSharedPrev;        // was the previous strip shared?
+    TList*        fDiagList;          // list of diag histos
+    Bool_t        fStandalone;        // do we run standalone or in SE task
+    AliESDVertex* fEsdVertex;         // vtx info from the ESD
+    Bool_t        fStatus;            // event status
+    AliFMDFloatMap fLastTrackByStrip; // the last track to hit this strip
     
     ClassDef(AliFMDAnalysisTaskSharing, 0); // Analysis task for FMD analysis
 };
