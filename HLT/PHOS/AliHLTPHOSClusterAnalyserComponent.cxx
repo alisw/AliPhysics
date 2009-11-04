@@ -18,6 +18,11 @@
 #include "AliHLTPHOSClusterAnalyser.h"
 #include "AliHLTPHOSRecPointHeaderStruct.h"
 #include "AliHLTCaloClusterDataStruct.h"
+#include "TGeoManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliCDBPath.h"
+
 
 /** @file   AliHLTPHOSClusterAnalyserComponent.cxx
     @author Oystein Djuvsland
@@ -35,10 +40,7 @@
 using namespace std;
 #endif
 
-const AliHLTComponentDataType AliHLTPHOSClusterAnalyserComponent::fgkInputDataTypes[]=
-  {
-    kAliHLTVoidDataType,{0,"",""}
-  };
+TGeoManager* gGeoManager = NULL;
 
 AliHLTPHOSClusterAnalyserComponent gAliHLTPHOSClusterAnalyserComponent;
 
@@ -46,9 +48,11 @@ AliHLTPHOSClusterAnalyserComponent gAliHLTPHOSClusterAnalyserComponent;
 AliHLTPHOSClusterAnalyserComponent::AliHLTPHOSClusterAnalyserComponent(): AliHLTPHOSProcessor(), 
 									  fClusterAnalyserPtr(0),
 									  fDoDeconvolution(0),
-									  fDoCalculateMoments(0)
+									  fDoCalculateMoments(0),
+									  fPHOSGeometry(0)
 {
   //See headerfile for documentation
+   
 }
 
 AliHLTPHOSClusterAnalyserComponent::~AliHLTPHOSClusterAnalyserComponent()
@@ -198,6 +202,56 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
 
 }
 
+int 
+AliHLTPHOSClusterAnalyserComponent::Reconfigure(const char *cdbEntry, const char *chainId)
+{
+  // see header file for class documentation
+
+  // configure from the specified entry or the default
+  const char* entry=cdbEntry;
+
+  if (!entry)
+    {
+      HLTDebug("No CDB path specified");
+      entry = fOCDBEntry; 
+    }
+
+  const char *path = cdbEntry;
+  AliCDBPath tmpPath("GRP","Geometry","Data");
+  if(!path) path = tmpPath.GetPath();
+  
+  if(path)
+    {
+      //     const char* chainId=GetChainId();
+      HLTInfo("configure from entry %s, chain id %s", path, (chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+      if (pEntry) 
+	{
+	  if(!fPHOSGeometry) 
+	    {
+	      delete fPHOSGeometry;
+	      fPHOSGeometry = 0;
+	    }
+
+	  gGeoManager = (TGeoManager*) pEntry->GetObject();
+  
+	  fPHOSGeometry = new AliPHOSGeoUtils("PHOS", "noCPV");
+	  fClusterAnalyserPtr->SetGeometry(fPHOSGeometry);
+
+	}
+      else
+	{
+	  HLTError("can not fetch object \"%s\" from OCDB", path);
+	  nDetectorGeoms=-ENOENT;
+	}
+    }
+
+
+  
+  return 0;
+} 
+
+
 int
 AliHLTPHOSClusterAnalyserComponent::DoInit(int argc, const char** argv )
 {
@@ -231,6 +285,19 @@ AliHLTPHOSClusterAnalyserComponent::DoInit(int argc, const char** argv )
 	}
 
     }
+
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    
+  AliCDBPath path("GRP","Geometry","Data");
+  AliCDBManager::Instance()->GetDefaultStorage();
+  AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path.GetPath()/*,GetRunNo()*/);
+  //   if(!pEntry) AliFatal("Unable to load geometry from CDB!");
+  //   pEntry->SetOwner(0);
+
+  gGeoManager = (TGeoManager*) pEntry->GetObject();
+  
+  fPHOSGeometry = new AliPHOSGeoUtils("PHOS", "noCPV");
+  fClusterAnalyserPtr->SetGeometry(fPHOSGeometry);
 
   return 0;
 }

@@ -97,17 +97,22 @@ protected:
 
 private:
   /** Copy constructor */
- AliHLTPHOSClusterAnalyserComponent(const AliHLTPHOSClusterAnalyserComponent &);
- /** Assignment */
- AliHLTPHOSClusterAnalyserComponent & operator = (const AliHLTPHOSClusterAnalyserComponent);
+  AliHLTPHOSClusterAnalyserComponent(const AliHLTPHOSClusterAnalyserComponent &);
+  /** Assignment */
+  AliHLTPHOSClusterAnalyserComponent & operator = (const AliHLTPHOSClusterAnalyserComponent);
  
- AliHLTPHOSClusterAnalyser* fClusterAnalyserPtr;
+  /** The cluster analyser */
+  AliHLTPHOSClusterAnalyser* fClusterAnalyserPtr;  //COMMENT
  
- Bool_t fDoDeconvolution;
- Bool_t fDoCalculateMoments;
- 
- static const AliHLTComponentDataType fgkInputDataTypes[];
-   
+  /** Do we do deconvolution? */
+  Bool_t fDoDeconvolution;                         //COMMENT
+  
+  /** Do we calculate moments? */ 
+  Bool_t fDoCalculateMoments;                      //COMMENT
+  
+  /** The PHOS geometry */
+  AliPHOSGeoUtils *fPHOSGeometry;                  //!transient
+  
 };
 
 #endif
