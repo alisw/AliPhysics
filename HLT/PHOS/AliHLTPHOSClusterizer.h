@@ -36,20 +36,14 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-//#include "AliHLTPHOSBase.h"
-#include "AliPHOSLoader.h"
 
 #include "AliHLTPHOSRecPointContainerStruct.h"
 #include "AliHLTPHOSRecPointDataStruct.h"
 #include "AliHLTPHOSDigitContainerDataStruct.h"
 #include "AliHLTPHOSDigitDataStruct.h"
+#include "AliHLTLogging.h"
 
 #include "AliPHOSGeometry.h"
-
-class TClonesArray;
-class AliPHOSDigit;
-class AliPHOSRecoParamEmc;
-class AliPHOSRecoParam;
 
 /** 
  * @class AliHLTPHOSClusterizer
@@ -60,7 +54,7 @@ class AliPHOSRecoParam;
  * @ingroup alihlt_phos
  */
 //class AliHLTPHOSClusterizer : public AliHLTPHOSBase
-class AliHLTPHOSClusterizer 
+class AliHLTPHOSClusterizer : public AliHLTLogging
 {
   
 public:
@@ -73,7 +67,7 @@ public:
 
   /** Copy constructor */  
   AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &) : 
-    //    AliHLTPHOSBase(),
+    AliHLTLogging(),
     fRecPointDataPtr(0),
     fDigitDataPtr(0),
     fEmcClusteringThreshold(0),
@@ -100,9 +94,6 @@ public:
   /** Set rec point data buffer */
   void SetRecPointDataPtr(AliHLTPHOSRecPointDataStruct* recPointDataPtr);
 
-  /** Set reco parameters */
-  void SetRecoParameters(AliPHOSRecoParam* recoPars);
-
   /** Set emc clustering threshold */
   void SetEmcClusteringThreshold(Float_t threshold) { fEmcClusteringThreshold = threshold; }
 
@@ -122,7 +113,7 @@ public:
    * @param digIndex index of the digit in the digit container
    * @param recPoint pointer to the current rec point
    */
-  virtual void ScanForNeighbourDigits(Int_t digIndex, AliHLTPHOSRecPointDataStruct* recPoint);
+  virtual Int_t ScanForNeighbourDigits(Int_t digIndex, AliHLTPHOSRecPointDataStruct* recPoint);
 
   /**
    * Checks if two digits are neighbours
@@ -157,6 +148,9 @@ protected:
 
   /** Maximum difference in index to be a neighbour */
   Int_t fMaxDigitIndexDiff;                                    //COMMENT
+
+  /** Current available buffer size */
+  UInt_t fAvailableSize;                                       //COMMENT
 
   ClassDef(AliHLTPHOSClusterizer, 0);
 };

@@ -193,7 +193,7 @@ class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTPHOSRcuProcessor
   Int_t fMaxPeakPosition;                             //COMMENT
 
 
-  const bool fkDoPushRawData;
+  bool fDoPushRawData;
   
   // const UShort_t* fRawDataBuffer;
   // RawDataWriter *fRawDataWriter; 

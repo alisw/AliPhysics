@@ -50,7 +50,7 @@ using namespace std;
 ClassImp(AliHLTPHOSClusterizer);
 
 AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():
-  //  AliHLTPHOSBase(),
+  AliHLTLogging(),
   fRecPointDataPtr(0),
   fDigitDataPtr(0),
   fEmcClusteringThreshold(0),
@@ -79,31 +79,15 @@ AliHLTPHOSClusterizer::SetRecPointDataPtr(AliHLTPHOSRecPointDataStruct* recPoint
   fRecPointDataPtr = recPointDataPtr;
 }
 
-void
-AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParam* params)
-{
-  //see header file for documentation
-#ifndef HAVE_NOT_PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
-  // the new AliPHOSRecoParam functions, available from revision
-  //  fEmcClusteringThreshold = params->GetEMCClusteringThreshold();
-  // fEmcMinEnergyThreshold = params->GetEMCMinE();
-  //  fLogWeight = params->GetEMCLogWeight();
-  params++;
-  params--;
-#else
-  fEmcClusteringThreshold = params->GetClusteringThreshold();
-  fEmcMinEnergyThreshold = params->GetMinE();
-  fLogWeight = params->GetLogWeight();
-#endif
-}  
-
 Int_t 
 AliHLTPHOSClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
 {
   //see header file for documentation
   Int_t nRecPoints = 0;
 
-  UInt_t maxRecPointSize = sizeof(AliHLTPHOSRecPointDataStruct) + (sizeof(AliHLTPHOSDigitDataStruct) << 7); //Reasonable estimate... 
+  fAvailableSize = availableSize;
+
+  //  UInt_t maxRecPointSize = sizeof(AliHLTPHOSRecPointDataStruct) + (sizeof(AliHLTPHOSDigitDataStruct) << 7); //Reasonable estimate... 
 
   //Clusterization starts
   for(UInt_t i = 0; i < fDigitContainerPtr->fNDigits; i++)
@@ -114,9 +98,10 @@ AliHLTPHOSClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
 	{
 	  continue;
 	}
-      if(availableSize < (totSize + maxRecPointSize)) 
+      if(fAvailableSize <=0)
 	{
-	  return -1; //Might get out of buffer, exiting
+	  HLTError("Out of buffer, stopping clusterisation");
+	  return -1; 
 	}
 
       // First digit is placed at the fDigits member variable in the recpoint
@@ -128,6 +113,13 @@ AliHLTPHOSClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
       // Assigning digit data to the digit pointer
       fRecPointDataPtr->fDigits = fDigitContainerPtr->fDigitDataStruct[i];
 
+      fAvailableSize -= sizeof(AliHLTPHOSRecPointDataStruct) + sizeof(AliHLTPHOSDigitDataStruct);
+      if(fAvailableSize <=0)
+	{
+	  HLTError("Out of buffer, stopping clusterisation");
+	  return -1; 
+	}
+
       // Incrementing the pointer to be ready for new entry
       fDigitDataPtr++;
 
@@ -137,7 +129,10 @@ AliHLTPHOSClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
       nRecPoints++;
 
       // Scanning for the neighbours
-      ScanForNeighbourDigits(i, fRecPointDataPtr);
+      if(ScanForNeighbourDigits(i, fRecPointDataPtr) < 0)
+	{
+	  return -1;
+	}
 
       totSize += sizeof(AliHLTPHOSRecPointDataStruct) + (fDigitsInCluster-1)*sizeof(AliHLTPHOSDigitDataStruct);   
       fRecPointDataPtr->fMultiplicity = fDigitsInCluster;     
@@ -148,7 +143,7 @@ AliHLTPHOSClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
    return nRecPoints;
 }
 
-void
+Int_t
 AliHLTPHOSClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTPHOSRecPointDataStruct* recPoint)
 {
   //see header file for documentation
@@ -169,6 +164,13 @@ AliHLTPHOSClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTPHOSRecPointDat
 		  // Assigning value to digit ptr
 		  *fDigitDataPtr = fDigitContainerPtr->fDigitDataStruct[j];
 		  // Incrementing digit pointer to be ready for new entry
+		  fAvailableSize -= sizeof(AliHLTPHOSRecPointDataStruct) + sizeof(AliHLTPHOSDigitDataStruct);
+		  if(fAvailableSize <=0)
+		    {
+		      HLTError("Out of buffer, stopping clusterisation");
+		      return -1; 
+		    }
+
 		  fDigitDataPtr++;
 
 		  recPoint->fAmp += fDigitContainerPtr->fDigitDataStruct[j].fEnergy;
@@ -179,7 +181,7 @@ AliHLTPHOSClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTPHOSRecPointDat
 	    }
 	}
     }
-  return;
+  return 0;
 }
 
 Int_t 

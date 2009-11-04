@@ -40,7 +40,7 @@ AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3():
   fBunchSizeCut(0),
   fMinPeakPosition(0),
   fMaxPeakPosition(100),
-  fkDoPushRawData(true),
+  fDoPushRawData(false),
 
   fRawDataWriter(0)
 {
@@ -53,7 +53,7 @@ AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3():
 
   fSanityInspectorPtr = new AliHLTPHOSSanityInspector();
 
-  if( fkDoPushRawData == true  )
+  if( fDoPushRawData == true  )
     {
       
       fRawDataWriter  = new AliHLTPHOSRawAnalyzerComponentv3::RawDataWriter();
@@ -199,7 +199,7 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
   fRawReaderMemoryPtr->Reset();
   fRawReaderMemoryPtr->NextEvent();
   
-  if( fkDoPushRawData == true)
+  if( fDoPushRawData == true)
     {
       fRawDataWriter->NewEvent( );
     }
@@ -226,7 +226,7 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	      UShort_t* firstBunchPtr = 0;
 	      UShort_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
 	    
-	      if( fkDoPushRawData == true)
+	      if( fDoPushRawData == true)
 		{
 		  fRawDataWriter->SetChannelId( chId );
 		}
@@ -234,37 +234,42 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 		{
 		  nSamples = fAltroRawStreamPtr->GetBunchLength();
 		  
-		  if( fkDoPushRawData == true)
+		  if( fDoPushRawData == true)
 		    {
 		      //		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetStartTimeBin()  );
 		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
 		    }
 		  firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
 		}
-	      
-	      totSize += sizeof( AliHLTPHOSChannelDataStruct );
-	      if(totSize > size)
-		{
-		  HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
-		  return -1;
-		}
+	      if(firstBunchPtr)
+		{	      
+		  totSize += sizeof( AliHLTPHOSChannelDataStruct );
+		  if(totSize > size)
+		    {
+		      HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
+		      return -1;
+		    }
 
-	      fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
-	      fAnalyzerPtr->Evaluate(0, nSamples);  
+		  fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
+		  fAnalyzerPtr->Evaluate(0, nSamples);  
 	   
-	      //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
-	      {
-		channelDataPtr->fChannelID =  chId;
-		channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
+		  //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
+		  {
+		    channelDataPtr->fChannelID =  chId;
+		    channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
 		
 		
-		channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
-		channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
-		channelCount++;
-		channelDataPtr++; // Updating position of the free output.
-	      }   
+		    channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
+		    channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
+		    channelCount++;
+		    channelDataPtr++; // Updating position of the free output.
+		  }   
+		}
 	    }
-	  fRawDataWriter->NewChannel();
+	  if(fDoPushRawData)
+	    {
+	      fRawDataWriter->NewChannel();
+	    }
 	}
     }
   
@@ -273,13 +278,13 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
   channelDataHeaderPtr->fAlgorithm   = fAlgorithm;
   channelDataHeaderPtr->fInfo        = 0;
 
-  if( fkDoPushRawData == true)
+  if( fDoPushRawData == true)
     {
       tmpsize += fRawDataWriter->CopyBufferToSharedMemory( (UShort_t *)channelDataPtr, size, totSize);
     }
 
   // channelDataHeaderPtr->fHasRawData  = false;
-  channelDataHeaderPtr->fHasRawData = fkDoPushRawData;
+  channelDataHeaderPtr->fHasRawData = fDoPushRawData;
 
   HLTDebug("Number of channels: %d", channelCount);
   //returning the size used
@@ -325,6 +330,10 @@ AliHLTPHOSRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 	{
 	  fMaxPeakPosition = atoi(argv[i+1]);
 	}  
+      if(!strcmp("-pushrawdata", argv[i]))
+	{
+	  fDoPushRawData = true;
+	}
     }
  
   if(fMapperPtr->GetIsInitializedMapping() == false)
