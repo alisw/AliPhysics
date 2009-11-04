@@ -105,6 +105,7 @@ AliHLTPHOSClusterizer::ClusterizeEvent(AliHLTPHOSDigitHeaderStruct *digitHeader,
 	{
 	  continue;
 	}
+
       if(fAvailableSize < (sizeof(AliHLTPHOSRecPointDataStruct)))
 	{
 	  HLTError("Out of buffer, stopping clusterisation");

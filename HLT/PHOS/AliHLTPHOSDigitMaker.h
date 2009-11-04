@@ -112,7 +112,7 @@ public:
    * @param channelDataHeader is the data header from the AliHLTPHOSRawAnalyzer
    * @return the number of digits found
    */
-  Int_t MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataHeader, AliHLTUInt32_t availableSize);
+  Int_t MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataHeader, AliHLTUInt32_t availableSize)
 
 
   /**
