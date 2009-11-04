@@ -121,7 +121,6 @@ private:
   
   /** The PHOS geometry */
   AliPHOSGeoUtils *fPHOSGeometry;                  //!transient
-                   
 };
 
 #endif
