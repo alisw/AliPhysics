@@ -177,16 +177,11 @@ protected:
   AliHLTPHOSRecPointDataStruct* fRecPointStructArrayPtr;        //! transient
 
   /** Number of digits in event */
-  Int_t fDigitCount;              
-
-  /** If the clusterizer is doing clusterization of the whole module */
-  Bool_t fModuleClusterizationMode;                             //COMMENT
+  Int_t fDigitCount;                                            //COMMENT
 
   /** If one should consider crazyness or not */                              
   Bool_t fNoCrazyness;                                          //COMMENT
 
-  /** interface function, see @ref AliHLTComponent for description */
-  //  static const AliHLTComponentDataType fgkInputDataTypes[];     //COMMENT
 };
 
 #endif

@@ -42,24 +42,18 @@ ClassImp(AliHLTPHOSClusterAnalyser);
 
 AliHLTPHOSClusterAnalyser::AliHLTPHOSClusterAnalyser() :
   //  AliHLTPHOSBase(),
-  fLogWeight(0),
+  fLogWeight(4.5),
   fRecPointDataPtr(0),
   fNRecPoints(0),
   fCaloClusterDataPtr(0),
   fCaloClusterHeaderPtr(0),
   fPHOSGeometry(0),
-  fAnalyzerPtr(0),
   fDoClusterFit(false),
   fHaveCPVInfo(false),
   fDoPID(false),
   fHaveDistanceToBadChannel(false)
 {
   //See header file for documentation
-  fLogWeight = 4.5;
-
-  fAnalyzerPtr = new AliHLTPHOSPhysicsAnalyzer();
-  //  fPHOSGeometry = AliPHOSGeometry::GetInstance("noCPV");
-  fPHOSGeometry = new AliPHOSGeoUtils("PHOS", "noCPV");
 }
 
 AliHLTPHOSClusterAnalyser::~AliHLTPHOSClusterAnalyser() 
@@ -176,9 +170,7 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
 	{
 	  return -1; //Might get out of buffer, exiting
 	}
-      //      cout << "Local Position (x:z:module): " << recPointPtr->fX << " : "<< recPointPtr->fZ << " : " << recPointPtr->fModule << endl;
       fPHOSGeometry->Local2Global(recPointPtr->fModule, recPointPtr->fX, recPointPtr->fZ, globalPos);
-      // cout << "Global Position (x:y:z): " << globalPos[0] << " : "<< globalPos[1] << " : " << globalPos[2] << endl << endl;
 
       caloClusterPtr->fGlobalPos[0] = globalPos[0];
       caloClusterPtr->fGlobalPos[1] = globalPos[1];
@@ -242,16 +234,14 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
 	}
 
       caloClusterPtr->fClusterType = (AliESDCaloCluster::kPHOSCluster);
-      //      totSize += sizeof(AliHLTCaloClusterDataStruct) + (caloClusterPtr->fNCells)*(sizeof(Short_t) +sizeof(Float_t)-1);   
+      
       totSize += sizeof(AliHLTCaloClusterDataStruct) + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));   
 
-      //      caloClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(cellAmpFracPtr);
       caloClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(cellIDPtr);
       recPointPtr = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(digitPtr);
       digitPtr = &(recPointPtr->fDigits);  
     }
-  //  cout << "CA: Energy End: " << fCaloClusterDataPtr->fEnergy << endl;
-  //cout << "CA totSize: " << totSize << endl;
+
   return fNRecPoints;
 
 }

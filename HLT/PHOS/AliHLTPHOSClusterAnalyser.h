@@ -39,7 +39,6 @@
 
 //#include "AliHLTPHOSBase.h"
 
-class AliHLTPHOSPhysicsAnalyzer;
 class AliHLTPHOSRecPointHeaderStruct;
 class AliHLTPHOSRecPointDataStruct;
 class AliHLTCaloClusterHeaderStruct;
@@ -74,7 +73,6 @@ public:
     fCaloClusterDataPtr(0),
     fCaloClusterHeaderPtr(0),
     fPHOSGeometry(0),
-    fAnalyzerPtr(0),
     fDoClusterFit(false),
     fHaveCPVInfo(false),
     fDoPID(false),
@@ -182,6 +180,11 @@ public:
    */
   void SetHaveDistanceToBadChannel() { fHaveDistanceToBadChannel = true; }
 
+  /**
+   * Set the PHOS Geometry
+   */
+  void SetGeometry(AliPHOSGeoUtils *geom) { fPHOSGeometry = geom; }
+
 private:
   
   /** Used for calculation of center of gravity */
@@ -201,10 +204,6 @@ private:
 
   /** Instance of the PHOS geometry */
   AliPHOSGeoUtils *fPHOSGeometry;                           //! transient
-
-  //TODO: should not use PhysicsAnalyzer for global coord!
-  /** */
-  AliHLTPHOSPhysicsAnalyzer *fAnalyzerPtr;                  //! transient
 
   /** Should we do cluster fitting? */
   Bool_t fDoClusterFit;                                     //COMMENT
