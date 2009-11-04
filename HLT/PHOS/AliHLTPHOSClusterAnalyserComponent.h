@@ -40,7 +40,7 @@
 #include "AliHLTPHOSProcessor.h"
 
 class AliHLTPHOSClusterAnalyser;
-
+class AliPHOSGeoUtils;
 /**
  * @class AliHLTPHOSClusterAnalyserComponent
  *
@@ -95,6 +95,15 @@ protected:
   /** interface function, see @ref AliHLTComponent for description */
   int Deinit();
 
+  /** interface function, see @ref AliHLTComponent for description */
+  int Reconfigure(const char* cdbEntry, const char* chainId);
+
+  /** interface function, see @ref AliHLTComponent for description */
+  int ScanConfigurationArgument(int argc, const char** argv);
+
+  /** Get the PHOS geometry from OCDB */
+  int GetGeometryFromCDB();
+
 private:
   /** Copy constructor */
   AliHLTPHOSClusterAnalyserComponent(const AliHLTPHOSClusterAnalyserComponent &);
@@ -112,7 +121,7 @@ private:
   
   /** The PHOS geometry */
   AliPHOSGeoUtils *fPHOSGeometry;                  //!transient
-  
+                   
 };
 
 #endif

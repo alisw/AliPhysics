@@ -117,6 +117,8 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
                                         std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
   //See headerfile for documentation
+
+  if(blocks == 0) return 0;
   
   UInt_t offset           = 0;
   UInt_t mysize           = 0;
@@ -247,11 +249,11 @@ AliHLTPHOSClusterizerComponent::DoInit(int argc, const char** argv )
 
   const char *path = "HLT/ConfigPHOS/ClusterizerComponent";
 
-  ConfigureFromCDBTObjString(path);
+  //  ConfigureFromCDBTObjString(path);
 
   for (int i = 0; i < argc; i++)
     {
-      ScanConfigurationArgument(i, argv[i]);
+      ScanConfigurationArgument(i, argv);
     }
 
   return 0;

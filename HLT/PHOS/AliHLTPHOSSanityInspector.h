@@ -33,8 +33,6 @@
 #include "Rtypes.h"
 
 
-class AliHLTAltroData;
-
 /** 
  * @class AliHLTPHOSSanityInspector
  * Sanity inspector for PHOS HLT. It takes raw data as input and checks it for insanity
@@ -79,14 +77,8 @@ public:
   
   
   /** Check for insanity */
-  Int_t CheckInsanity(const UInt_t* data, const Int_t nSamples) const;
+  Int_t CheckInsanity(const UShort_t* data, const Int_t nSamples) const;
   
-  /** Check for and heal insanity */
-  Int_t CheckAndHealInsanity(UInt_t* data, Int_t nSamples);  //Not completely reliable
-
-  /** Check for and heal insanity */
-  Int_t CheckAndHealInsanity(Int_t* data, Int_t nSamples);  //Not completely reliable
-
   /** Check for and heal insanity */
   Int_t CheckAndHealInsanity(UShort_t* data, Int_t nSamples);  //Not completely reliable
 

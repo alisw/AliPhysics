@@ -98,7 +98,7 @@ AliHLTPHOSClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
 	{
 	  continue;
 	}
-      if(fAvailableSize <=0)
+      if(fAvailableSize < (sizeof(AliHLTPHOSRecPointDataStruct)))
 	{
 	  HLTError("Out of buffer, stopping clusterisation");
 	  return -1; 
@@ -113,12 +113,7 @@ AliHLTPHOSClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
       // Assigning digit data to the digit pointer
       fRecPointDataPtr->fDigits = fDigitContainerPtr->fDigitDataStruct[i];
 
-      fAvailableSize -= sizeof(AliHLTPHOSRecPointDataStruct) + sizeof(AliHLTPHOSDigitDataStruct);
-      if(fAvailableSize <=0)
-	{
-	  HLTError("Out of buffer, stopping clusterisation");
-	  return -1; 
-	}
+      fAvailableSize -= (sizeof(AliHLTPHOSRecPointDataStruct));
 
       // Incrementing the pointer to be ready for new entry
       fDigitDataPtr++;
@@ -135,6 +130,8 @@ AliHLTPHOSClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
 	}
 
       totSize += sizeof(AliHLTPHOSRecPointDataStruct) + (fDigitsInCluster-1)*sizeof(AliHLTPHOSDigitDataStruct);   
+      HLTDebug("Initial available size: %d, used size: %d, remaining available size: %d, should be: %d", availableSize, totSize, fAvailableSize, availableSize-totSize);
+      
       fRecPointDataPtr->fMultiplicity = fDigitsInCluster;     
 
       fRecPointDataPtr = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(fDigitDataPtr);
@@ -162,14 +159,15 @@ AliHLTPHOSClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTPHOSRecPointDat
 			       &(fDigitContainerPtr->fDigitDataStruct[j])))
 		{
 		  // Assigning value to digit ptr
-		  *fDigitDataPtr = fDigitContainerPtr->fDigitDataStruct[j];
-		  // Incrementing digit pointer to be ready for new entry
-		  fAvailableSize -= sizeof(AliHLTPHOSRecPointDataStruct) + sizeof(AliHLTPHOSDigitDataStruct);
-		  if(fAvailableSize <=0)
+		  if(fAvailableSize < sizeof(AliHLTPHOSDigitDataStruct))
 		    {
 		      HLTError("Out of buffer, stopping clusterisation");
 		      return -1; 
 		    }
+		  fAvailableSize -= sizeof(AliHLTPHOSDigitDataStruct);
+
+		  *fDigitDataPtr = fDigitContainerPtr->fDigitDataStruct[j];
+		  // Incrementing digit pointer to be ready for new entry
 
 		  fDigitDataPtr++;
 

@@ -50,7 +50,7 @@ AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3():
   fRawReaderMemoryPtr = new AliRawReaderMemory();
 
   fAltroRawStreamPtr = new AliAltroRawStreamV3(fRawReaderMemoryPtr);
-
+  //  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("PHOS"));
   fSanityInspectorPtr = new AliHLTPHOSSanityInspector();
 
   if( fDoPushRawData == true  )
@@ -197,17 +197,18 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
   fRawReaderMemoryPtr->Reset();
   fRawReaderMemoryPtr->NextEvent();
   
-  if( fDoPushRawData == true)
-    {
-      fRawDataWriter->NewEvent( );
-    }
+ //  if( fDoPushRawData == true)
+//     {
+//       fRawDataWriter->NewEvent( );
+//     }
   if(fAltroRawStreamPtr != NULL)
     {
       delete fAltroRawStreamPtr;
       fAltroRawStreamPtr=NULL;
     }
   
-  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("PHOS"));
+  //  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("PHOS"));
+  fAltroRawStreamPtr = new AliAltroRawStreamV3(fRawReaderMemoryPtr);
 
   if(fAltroRawStreamPtr->NextDDL())
     {
@@ -225,18 +226,18 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	      UShort_t* firstBunchPtr = 0;
 	      UShort_t chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
 	    
-	      if( fDoPushRawData == true)
-		{
-		  fRawDataWriter->SetChannelId( chId );
-		}
+// 	      if( fDoPushRawData == true)
+// 		{
+// 		  fRawDataWriter->SetChannelId( chId );
+// 		}
 	      while( fAltroRawStreamPtr->NextBunch() == true )
 		{
 		  nSamples = fAltroRawStreamPtr->GetBunchLength();
 		  
-		  if( fDoPushRawData == true)
-		    {
-		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
-		    }
+// 		  if( fDoPushRawData == true)
+// 		    {
+// 		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
+// 		    }
 		  firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
 		}
 	      if(firstBunchPtr)
@@ -247,10 +248,10 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 		      HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
 		      return -1;
 		    }
-		  if(fInspectSanity)
-		    {
-		      crazyness = fSanityInspectorPtr->CheckAndHealInsanity(firstBunchPtr, nSamples);
-		    }
+// 		  if(fInspectSanity)
+// 		    {
+// 		      crazyness = fSanityInspectorPtr->CheckAndHealInsanity(firstBunchPtr, nSamples);
+// 		    }
 
 		  fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
 		  fAnalyzerPtr->Evaluate(0, nSamples);  
@@ -264,10 +265,10 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 		  channelDataPtr++; // Updating position of the free output.
 		}
 	    }
-	  if(fDoPushRawData)
-	    {
-	      fRawDataWriter->NewChannel();
-	    }
+// 	  if(fDoPushRawData)
+// 	    {
+// 	      fRawDataWriter->NewChannel();
+// 	    }
 	}
     }
   
@@ -276,10 +277,10 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
   channelDataHeaderPtr->fAlgorithm   = fAlgorithm;
   channelDataHeaderPtr->fInfo        = 0;
 
-  if( fDoPushRawData == true)
-    {
-      tmpsize += fRawDataWriter->CopyBufferToSharedMemory( (UShort_t *)channelDataPtr, size, totSize);
-    }
+//   if( fDoPushRawData == true)
+//     {
+//       tmpsize += fRawDataWriter->CopyBufferToSharedMemory( (UShort_t *)channelDataPtr, size, totSize);
+//     }
 
   // channelDataHeaderPtr->fHasRawData  = false;
   channelDataHeaderPtr->fHasRawData = fDoPushRawData;

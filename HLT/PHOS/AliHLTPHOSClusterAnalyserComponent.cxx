@@ -18,6 +18,7 @@
 #include "AliHLTPHOSClusterAnalyser.h"
 #include "AliHLTPHOSRecPointHeaderStruct.h"
 #include "AliHLTCaloClusterDataStruct.h"
+#include "AliPHOSGeoUtils.h"
 #include "TGeoManager.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -203,31 +204,17 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
 }
 
 int 
-AliHLTPHOSClusterAnalyserComponent::Reconfigure(const char *cdbEntry, const char *chainId)
+AliHLTPHOSClusterAnalyserComponent::Reconfigure(const char *cdbEntry, const char */*chainId*/)
 {
   // see header file for class documentation
 
   // configure from the specified entry or the default
 
-  ConfigureFromCDBObject(cdbEntry, chainId);
+  ConfigureFromCDBTObjString(cdbEntry);
   
   return 0;
 } 
 
-int 
-AliHLTPHOSClusterAnalyserComponent::ConfigureFromCDBObject(const char *cdbEntry, const char *chainId)
-{
-  const char* entry=cdbEntry;
-
-  if (!entry)
-    {
-      HLTDebug("No CDB path specified");
-      entry = fOCDBEntry; 
-    }
-
-  const char *path = cdbEntry;
-  
-}
 
 int 
 AliHLTPHOSClusterAnalyserComponent::ScanConfigurationArgument(int argc, const char **argv)
@@ -286,7 +273,7 @@ AliHLTPHOSClusterAnalyserComponent::DoInit(int argc, const char** argv )
 
   for (int i = 0; i < argc; i++)
     {
-      ScanConfigurationArgument(i, argv[i]);
+      ScanConfigurationArgument(i, argv);
     }
 
   return 0;
@@ -297,9 +284,9 @@ AliHLTPHOSClusterAnalyserComponent::GetGeometryFromCDB()
 {
 
   AliCDBPath path("GRP","Geometry","Data");
-  if(path)
+  if(path.GetPath())
     {
-      HLTInfo("configure from entry %s, chain id %s", path, (chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+      HLTInfo("configure from entry %s", path.GetPath());
       AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
       if (pEntry) 
 	{

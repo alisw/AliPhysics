@@ -103,7 +103,7 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
   
   while(currentchannel != 0)
     {
-        if(availableSize < totSize) return -1;
+      if(availableSize < totSize) return -1;
 
       AliHLTPHOSMapper::GetChannelCoord(currentchannel->fChannelID, coord1);
       
@@ -192,7 +192,6 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 			}
 		      else // Oh well, better use the low gain channel then
 			{
-			  //			  cout << "Reverse: Overflow!" << endl;
 			  AliHLTPHOSMapper::GetLocalCoord(currentchannel->fChannelID, locCoord);
 			  AddDigit(currentchannelLG, coord1, locCoord);
 			  j++;

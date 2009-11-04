@@ -122,7 +122,6 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
     fClusterizerPtr(0),
     fRecPointStructArrayPtr(0),
     fDigitCount(0),
-    fModuleClusterizationMode(0),
     fNoCrazyness(0)
   {
     //Copy constructor not implemented
@@ -164,6 +163,12 @@ protected:
 
   /** interface function, see @ref AliHLTComponent for description */
   int Deinit();
+
+  /** interface function, see @ref AliHLTComponent for description */
+  int Reconfigure(const char* cdbEntry, const char* chainId);
+
+  /** interface function, see @ref AliHLTComponent for description */
+  int ScanConfigurationArgument(int argc, const char** argv);
 
  private:
 
