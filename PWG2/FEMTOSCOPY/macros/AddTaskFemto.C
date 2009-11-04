@@ -52,8 +52,11 @@ AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnaly
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
+  TString outputfile = AliAnalysisManager::GetCommonFileName();  
+  outputfile += ":PWG2FEMTO";
   AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("femtolist",  TList::Class(),
-							       AliAnalysisManager::kOutputContainer,"Femto.ESD.root");
+  							       AliAnalysisManager::kOutputContainer,outputfile);
+
 
    mgr->ConnectInput(taskfemto, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskfemto, 0, cout_femto);
