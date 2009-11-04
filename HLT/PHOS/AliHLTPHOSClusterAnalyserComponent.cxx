@@ -208,6 +208,15 @@ AliHLTPHOSClusterAnalyserComponent::Reconfigure(const char *cdbEntry, const char
   // see header file for class documentation
 
   // configure from the specified entry or the default
+
+  ConfigureFromCDBObject(cdbEntry, chainId);
+  
+  return 0;
+} 
+
+int 
+AliHLTPHOSClusterAnalyserComponent::ConfigureFromCDBObject(const char *cdbEntry, const char *chainId)
+{
   const char* entry=cdbEntry;
 
   if (!entry)
@@ -217,12 +226,79 @@ AliHLTPHOSClusterAnalyserComponent::Reconfigure(const char *cdbEntry, const char
     }
 
   const char *path = cdbEntry;
-  AliCDBPath tmpPath("GRP","Geometry","Data");
-  if(!path) path = tmpPath.GetPath();
   
+}
+
+int 
+AliHLTPHOSClusterAnalyserComponent::ScanConfigurationArgument(int argc, const char **argv)
+{
+  //See header file for documentation
+
+  if(argc <= 0) return 0;
+
+  int i=0;
+
+  TString argument=argv[i];
+
+  if (argument.CompareTo("-dodeconvolution") == 0)
+    {
+      fDoDeconvolution = true;
+      return 1;
+    }
+  if (argument.CompareTo("-doclusterfit") == 0)
+    {
+      fClusterAnalyserPtr->SetDoClusterFit();
+      fDoCalculateMoments = true;
+      return 1;
+    }
+  if (argument.CompareTo("-haveCPV") == 0)
+    {
+      fClusterAnalyserPtr->SetHaveCPVInfo();
+      return 1;
+    }
+  if (argument.CompareTo("-doPID") == 0)
+    {
+      fClusterAnalyserPtr->SetDoPID();
+      return 1;
+    }
+  if (argument.CompareTo("-havedistbadchannel") == 0)
+    {
+      fClusterAnalyserPtr->SetHaveDistanceToBadChannel();
+      return 1;
+    }
+
+  return 0;
+}
+
+int
+AliHLTPHOSClusterAnalyserComponent::DoInit(int argc, const char** argv )
+{
+
+  //See headerfile for documentation
+  
+  fClusterAnalyserPtr = new AliHLTPHOSClusterAnalyser();
+
+  const char *path = "HLT/ConfigPHOS/ClusterAnalyserComponent";
+
+  GetGeometryFromCDB();
+
+  ConfigureFromCDBTObjString(path);
+
+  for (int i = 0; i < argc; i++)
+    {
+      ScanConfigurationArgument(i, argv[i]);
+    }
+
+  return 0;
+}
+
+int 
+AliHLTPHOSClusterAnalyserComponent::GetGeometryFromCDB()
+{
+
+  AliCDBPath path("GRP","Geometry","Data");
   if(path)
     {
-      //     const char* chainId=GetChainId();
       HLTInfo("configure from entry %s, chain id %s", path, (chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
       AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
       if (pEntry) 
@@ -242,62 +318,6 @@ AliHLTPHOSClusterAnalyserComponent::Reconfigure(const char *cdbEntry, const char
       else
 	{
 	  HLTError("can not fetch object \"%s\" from OCDB", path);
-	  nDetectorGeoms=-ENOENT;
 	}
     }
-
-
-  
-  return 0;
-} 
-
-
-int
-AliHLTPHOSClusterAnalyserComponent::DoInit(int argc, const char** argv )
-{
-
-  //See headerfile for documentation
-  
-  fClusterAnalyserPtr = new AliHLTPHOSClusterAnalyser();
-  ScanArgumentsModule(argc, argv);
-  for (int i = 0; i < argc; i++)
-    {
-      if(!strcmp("-dodeconvolution", argv[i]))
-	{
-	  fDoDeconvolution = true;
-	}
-      if(!strcmp("-doclusterfit", argv[i]))
-	{
-	  fClusterAnalyserPtr->SetDoClusterFit();
-	  fDoCalculateMoments = true;
-	}
-      if(!strcmp("-haveCPV", argv[i]))
-	{
-	  fClusterAnalyserPtr->SetHaveCPVInfo();
-	}
-      if(!strcmp("-doPID", argv[i]))
-	{
-	  fClusterAnalyserPtr->SetDoPID();
-	} 
-      if(!strcmp("-havedistbadchannel", argv[i]))
-	{
-	  fClusterAnalyserPtr->SetHaveDistanceToBadChannel();
-	}
-
-    }
-
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-    
-  AliCDBPath path("GRP","Geometry","Data");
-  AliCDBManager::Instance()->GetDefaultStorage();
-  AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path.GetPath()/*,GetRunNo()*/);
-  //   if(!pEntry) AliFatal("Unable to load geometry from CDB!");
-  //   pEntry->SetOwner(0);
-
-  gGeoManager = (TGeoManager*) pEntry->GetObject();
-  
-  fPHOSGeometry = new AliPHOSGeoUtils("PHOS", "noCPV");
-  fClusterAnalyserPtr->SetGeometry(fPHOSGeometry);
-
-  return 0;
 }

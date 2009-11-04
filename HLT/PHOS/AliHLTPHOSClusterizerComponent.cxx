@@ -216,12 +216,24 @@ AliHLTPHOSClusterizerComponent::ScanConfigurationArgument(int argc, const char *
 
   TString argument=argv[i];
 
-  if (argument.CompareTo("-solenoidBz")==0){
-    if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
+  if (argument.CompareTo("-digitthreshold") == 0)
+    {
+    if (++i >= argc) return -EPROTO;
+    argument = argv[i];
+    fClusterizerPtr->SetEmcMinEnergyThreshold(argument.Atof());
+    return 1;
+  }
+
+  if (argument.CompareTo("-recpointthreshold") == 0)
+    {
+    if (++i >= argc) return -EPROTO;
+    argument = argv[i];
+    fClusterizerPtr->SetEmcClusteringThreshold(argument.Atof());
+    return 1;
+  }
 
 }
+
 int
 AliHLTPHOSClusterizerComponent::DoInit(int argc, const char** argv )
 {
@@ -233,18 +245,15 @@ AliHLTPHOSClusterizerComponent::DoInit(int argc, const char** argv )
   fNoCrazyness = false;
   //
 
-  ScanArgumentsModule(argc, argv);
+  const char *path = "HLT/ConfigPHOS/ClusterizerComponent";
+
+  ConfigureFromCDBTObjString(path);
+
   for (int i = 0; i < argc; i++)
     {
-      if(!strcmp("-digitthreshold", argv[i]))
-	{
-	  fClusterizerPtr->SetEmcMinEnergyThreshold(atof(argv[i+1]));
-	}
-      if(!strcmp("-recpointthreshold", argv[i]))
-	{
-	  fClusterizerPtr->SetEmcClusteringThreshold(atof(argv[i+1]));
-	}
+      ScanConfigurationArgument(i, argv[i]);
     }
+
   return 0;
 }
 
