@@ -13,11 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#ifndef ALIHLTPHOSINVMASSHISTOGRAMPRODUCER_H
-#define ALIHLTPHOSINVMASSHISTOGRAMPRODUCER_H
+#ifndef ALIHLTPHOSHISTOPRODINVMASS_H
+#define ALIHLTPHOSHISTOPRODINVMASS_H
 
 /** 
- * @file   AliHLTPHOSInvMassHistogramProducer
+ * @file   AliHLTPHOSHistoProdInvMass
  * @author Albin Gaignette and Svein Lindal slindal@fys.uio.no
  * @date 
  * @brief  Produces Invariant mass histograms of PHOS clusters
@@ -44,7 +44,7 @@ using namespace  PhosHLTConst;
 
 
 /** 
- * @class AliHLTPHOSInvMassHistogramProducer
+ * @class AliHLTPHOSHistoProdInvMass
  *
  * Class produces physics histograms for PHOS. It takes a TClonesArray
  * of AliESDCalocluster as input and fills several histograms
@@ -55,18 +55,19 @@ using namespace  PhosHLTConst;
  * @ingroup alihlt_phos
  */
 
-class AliHLTPHOSInvMassHistogramProducer 
+class AliHLTPHOSHistoProdInvMass 
 {
- public:
+
+public:
   
   /** Constructor */
-  AliHLTPHOSInvMassHistogramProducer();
+  AliHLTPHOSHistoProdInvMass();
 
   /** Destructor */
-  virtual ~AliHLTPHOSInvMassHistogramProducer();
+  virtual ~AliHLTPHOSHistoProdInvMass();
 
   /** Copy constructor */
-  AliHLTPHOSInvMassHistogramProducer(const AliHLTPHOSInvMassHistogramProducer &) :
+  AliHLTPHOSHistoProdInvMass(const AliHLTPHOSHistoProdInvMass &) :
     fClusterReader(NULL),
     fHistTwoClusterInvMass(NULL),
     fHistArrayPtr(NULL)
@@ -75,7 +76,7 @@ class AliHLTPHOSInvMassHistogramProducer
   }
 
   /** Assignment operator */
-  AliHLTPHOSInvMassHistogramProducer & operator= (const AliHLTPHOSInvMassHistogramProducer)
+  AliHLTPHOSHistoProdInvMass & operator= (const AliHLTPHOSHistoProdInvMass)
   {
     // assignment
     return *this;
@@ -100,7 +101,7 @@ class AliHLTPHOSInvMassHistogramProducer
   /** Pointer to the array of histograms */
   TObjArray *fHistArrayPtr;                     //!transient
 
-  ClassDef(AliHLTPHOSInvMassHistogramProducer, 0);
+  ClassDef(AliHLTPHOSHistoProdInvMass, 0);
 
 };
  

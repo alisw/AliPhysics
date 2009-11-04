@@ -40,10 +40,11 @@ CLASS_HDRS:=	  AliHLTPHOSClusterizer.h \
 		  AliHLTPHOSMonitorTriggerComponent.h \
 		  AliHLTPHOSESDEntriesMakerComponent.h \
 		  AliHLTPHOSESDCaloClusterWriterComponent.h \
-		  AliHLTPHOSInvMassHistogramProducer.h \
-		  AliHLTPHOSMatchedClustersHistoProducer.h \
-		  AliHLTPHOSFourier.h
-
+		  AliHLTPHOSFourier.h \
+		  AliHLTPHOSHistoProdInvMass.h \
+		  AliHLTPHOSHistoProdMatchedTracks.h \
+		  AliHLTPHOSHistoProdClusterEnergy.h \
+		  AliHLTPHOSHistoProdCellEnergy.h 
 MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
 
 MODULE_HDRS:=	  $(CLASS_HDRS) \

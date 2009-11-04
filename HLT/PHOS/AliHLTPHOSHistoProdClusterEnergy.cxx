@@ -15,10 +15,10 @@
  **************************************************************************/
 
 /** 
- * @file   AliHLTPHOSInvMassHistogramProducer
- * @author Albin Gaignette
+ * @file   AliHLTPHOSHistoProdClusterEnergy
+ * @author Albin Gaignette & Svein Lindal
  * @date 
- * @brief  Histogram producer for PHOS HLT 
+ * @brief  Produces histograms of cluster energy distributions 
  */
 
 // see header file for class documentation
@@ -27,7 +27,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSInvMassHistogramProducer.h"
+#include "AliHLTPHOSHistoProdClusterEnergy.h"
 //#include "AliESDCaloCluster.h"
 #include "TMath.h"
 
@@ -37,41 +37,49 @@
 //#include "TClonesArray.h"
 //#include <iostream>
 #include "TH1F.h"
-//#include "TH2F.h"
+#include "TH2F.h"
 
-AliHLTPHOSInvMassHistogramProducer::AliHLTPHOSInvMassHistogramProducer() :
+AliHLTPHOSHistoProdClusterEnergy::AliHLTPHOSHistoProdClusterEnergy() :
   fClusterReader(NULL),
-  fHistTwoClusterInvMass(0),
-  fHistArrayPtr(0)
+  fHistClusterEnergy(NULL),
+  fHistClusterEnergyVsNCells(NULL),
+  fHistArrayPtr(NULL)
 {
   // See header file for documentation
   fHistArrayPtr = new TObjArray;
   fClusterReader = new AliHLTCaloClusterReader();
 
-  fHistTwoClusterInvMass = new TH1F("fHistTwoClusterInvMass", "Invariant mass of two clusters", 200, 0, 1);
-  fHistTwoClusterInvMass->GetXaxis()->SetTitle("m_{#gamma#gamma} GeV");
-  fHistTwoClusterInvMass->GetYaxis()->SetTitle("Number of counts");
-  fHistTwoClusterInvMass->SetMarkerStyle(21);
-  fHistArrayPtr->AddLast(fHistTwoClusterInvMass);
+  fHistClusterEnergy = new TH1F("fHistClusterEnergy", "Distribution of total energy in clusters", 200, 0, 1);
+  fHistClusterEnergy->GetXaxis()->SetTitle("E GeV");
+  fHistClusterEnergy->GetYaxis()->SetTitle("Number of counts");
+  fHistClusterEnergy->SetMarkerStyle(21);
+  fHistArrayPtr->AddLast(fHistClusterEnergy);
+
+  fHistClusterEnergyVsNCells = new TH2F("fHistClusterEnergyVsNCells", "Distribution of Energy vs Number of Cells in cluster", 200, 0, 200, 50, 0 , 50);
+  fHistClusterEnergyVsNCells->GetXaxis()->SetTitle("Energy in cluster (GeV)");
+  fHistClusterEnergyVsNCells->GetYaxis()->SetTitle("Number of Cells in cluster");
+  fHistClusterEnergyVsNCells->SetMarkerStyle(21);
+  fHistArrayPtr->AddLast(fHistClusterEnergyVsNCells);
+
+
 }
 
-AliHLTPHOSInvMassHistogramProducer::~AliHLTPHOSInvMassHistogramProducer()
+AliHLTPHOSHistoProdClusterEnergy::~AliHLTPHOSHistoProdClusterEnergy()
 {
-  if(fHistTwoClusterInvMass)
-    {
-      delete fHistTwoClusterInvMass;
-      fHistTwoClusterInvMass = 0;
+  if(fHistClusterEnergy){
+      delete fHistClusterEnergy;
+      fHistClusterEnergy = 0;
     }
 }
 
-TObjArray* AliHLTPHOSInvMassHistogramProducer::GetHistograms()
+TObjArray* AliHLTPHOSHistoProdClusterEnergy::GetHistograms()
 {  
   // See header file for documentation
 
   return fHistArrayPtr;
 }
 
-Int_t AliHLTPHOSInvMassHistogramProducer::DoEvent(AliHLTCaloClusterHeaderStruct* cHeader) {   
+Int_t AliHLTPHOSHistoProdClusterEnergy::DoEvent(AliHLTCaloClusterHeaderStruct* cHeader) {   
   
   fClusterReader->SetMemory(cHeader);
   
@@ -97,7 +105,7 @@ Int_t AliHLTPHOSInvMassHistogramProducer::DoEvent(AliHLTCaloClusterHeaderStruct*
       // Calcul of the mass m of the pion 
       Double_t m =(TMath::Sqrt(2 * cEnergy[ipho]* cEnergy[jpho]*(1-TMath::Cos(theta))));
       
-      fHistTwoClusterInvMass->Fill(m);
+      fHistClusterEnergy->Fill(m);
     }
   }
   

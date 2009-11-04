@@ -13,11 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#ifndef ALIHLTPHOSMATCHEDCLUSTERSHISTOPRODUCER_H
-#define ALIHLTPHOSMATCHEDCLUSTERSHISTOPRODUCER_H
+#ifndef ALIHLTPHOSHISTOPRODCELLENERGY
+#define ALIHLTPHOSHISTOPRODCELLENERGY
 
 /** 
- * @file   AliHLTPHOSMatchedClustersHistoProducer
+ * @file   AliHLTPHOSHistoProdCellEnergy
  * @author Albin Gaignette and Svein Lindal slindal@fys.uio.no
  * @date 
  * @brief  Produces Invariant mass histograms of PHOS clusters
@@ -32,66 +32,52 @@
 //#include "AliHLTPHOSBase.h"
 
 #include "Rtypes.h"
-// #include "TClonesArray.h"
-
 #include "AliHLTPHOSConstants.h" 
-
-using namespace  PhosHLTConst;
 
 class TObjArray;
 class TH1F;
-//class TH2F;
+class TH2F;
 class AliHLTCaloClusterReader;
 struct AliHLTCaloClusterHeaderStruct;
 
 
+using namespace  PhosHLTConst;
+
+
 /** 
- * @class AliHLTPHOSMatchedClustersHistoProducer
+ * @class AliHLTPHOSHistoProdCellEnergy
  *
  * Class produces physics histograms for PHOS. It takes a TClonesArray
  * of AliESDCalocluster as input and fills several histograms
  *
  * Histograms (1D):
- * - Total number of clusters per event
- * - Energy distribution of clusters
- * - Total energy in event
- * - Invariant mass of two clusters
- * - Number of cells in clusters
- * - Fraction of cells with energy deposit
+ *  * - Invariant mass of two clusters
  * 
- * Histograms (2D):
- * - Number of cells in cluster vs cluster energy
- * - Number of clusters vs total energy
- *
  * @ingroup alihlt_phos
  */
 
-
-
-//class AliHLTPHOSMatchedClustersHistoProducer : public AliHLTPHOSBase
-class AliHLTPHOSMatchedClustersHistoProducer 
+class AliHLTPHOSHistoProdCellEnergy 
 {
  public:
-
+  
   /** Constructor */
-  AliHLTPHOSMatchedClustersHistoProducer();
+  AliHLTPHOSHistoProdCellEnergy();
 
   /** Destructor */
-  virtual ~AliHLTPHOSMatchedClustersHistoProducer();
+  virtual ~AliHLTPHOSHistoProdCellEnergy();
 
   /** Copy constructor */
-  AliHLTPHOSMatchedClustersHistoProducer(const AliHLTPHOSMatchedClustersHistoProducer &) :
+  AliHLTPHOSHistoProdCellEnergy(const AliHLTPHOSHistoProdCellEnergy &) :
     fClusterReader(NULL),
-    fHistArrayPtr(0),
-    fHistMatchQuality(0),
-    fHistMatchedEnergy(0),
-    fHistUnMatchedEnergy(0)
+    fHistCellEnergy(NULL),
+    fHistCellEnergyVsNCells(NULL),
+    fHistArrayPtr(NULL)
   {
     // Copy constructor not implemented
   }
 
   /** Assignment operator */
-  AliHLTPHOSMatchedClustersHistoProducer & operator= (const AliHLTPHOSMatchedClustersHistoProducer)
+  AliHLTPHOSHistoProdCellEnergy & operator= (const AliHLTPHOSHistoProdCellEnergy)
   {
     // assignment
     return *this;
@@ -110,20 +96,16 @@ class AliHLTPHOSMatchedClustersHistoProducer
   /** Cluster reader class   */
   AliHLTCaloClusterReader * fClusterReader;
 
+  /** Histogram of the 2 cluster invariant mass */
+  TH1F *fHistCellEnergy;                 //!transient
+
+  /** 2D histogram of cluster energy vs the number of cells in the cluster */
+  TH2F *fHistCellEnergyVsNCells;
+  
   /** Pointer to the array of histograms */
   TObjArray *fHistArrayPtr;                     //!transient
 
-  /** Histogram of the 2 cluster invariant mass */
-  TH1F *fHistMatchQuality;                 //!transient
-  
-  /** Histograms of the energy distribution of mached and unmatched clusters*/
-  TH1F *fHistMatchedEnergy;                 //!transient
-  TH1F *fHistUnMatchedEnergy;                 //!transient
-  
-  
-  
-
-  ClassDef(AliHLTPHOSMatchedClustersHistoProducer, 0);
+  ClassDef(AliHLTPHOSHistoProdCellEnergy, 0);
 
 };
  

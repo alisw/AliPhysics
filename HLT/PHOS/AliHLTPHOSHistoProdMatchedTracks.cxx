@@ -27,7 +27,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSMatchedClustersHistoProducer.h"
+#include "AliHLTPHOSHistoProdMatchedTracks.h"
 //#include "AliESDCaloCluster.h"
 #include "TMath.h"
 
@@ -39,10 +39,9 @@
 #include "TH1F.h"
 //#include "TH2F.h"
 
-AliHLTPHOSMatchedClustersHistoProducer::AliHLTPHOSMatchedClustersHistoProducer() :
+AliHLTPHOSHistoProdMatchedTracks::AliHLTPHOSHistoProdMatchedTracks() :
   fClusterReader(NULL),
   fHistArrayPtr(0),
-  fHistMatchQuality(0),
   fHistMatchedEnergy(0),
   fHistUnMatchedEnergy(0)
 {
@@ -70,7 +69,7 @@ AliHLTPHOSMatchedClustersHistoProducer::AliHLTPHOSMatchedClustersHistoProducer()
 }
 
 
-AliHLTPHOSMatchedClustersHistoProducer::~AliHLTPHOSMatchedClustersHistoProducer()
+AliHLTPHOSHistoProdMatchedTracks::~AliHLTPHOSHistoProdMatchedTracks()
 {
 
   if(fHistMatchQuality){
@@ -91,7 +90,7 @@ AliHLTPHOSMatchedClustersHistoProducer::~AliHLTPHOSMatchedClustersHistoProducer(
 }
 
 
-TObjArray* AliHLTPHOSMatchedClustersHistoProducer::GetHistograms()
+TObjArray* AliHLTPHOSHistoProdMatchedTracks::GetHistograms()
 {  
   // See header file for documentation
 
@@ -99,7 +98,7 @@ TObjArray* AliHLTPHOSMatchedClustersHistoProducer::GetHistograms()
 }
 
 
-Int_t AliHLTPHOSMatchedClustersHistoProducer::DoEvent(AliHLTCaloClusterHeaderStruct* cHeader) {   
+Int_t AliHLTPHOSHistoProdMatchedTracks::DoEvent(AliHLTCaloClusterHeaderStruct* cHeader) {   
   
   fClusterReader->SetMemory(cHeader);
   
