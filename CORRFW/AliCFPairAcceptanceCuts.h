@@ -42,7 +42,7 @@ class AliCFPairAcceptanceCuts : public AliCFCutBase
   virtual ~AliCFPairAcceptanceCuts() {delete fCutNeg; delete fCutPos; }
   Bool_t IsSelected(TObject* obj) ;
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
-  virtual void SetEvtInfo(TObject *mcInfo) ;
+  virtual void SetMCEventInfo(TObject *mcInfo) ;
   virtual AliCFAcceptanceCuts* GetNegCut() const {return fCutNeg;}
   virtual AliCFAcceptanceCuts* GetPosCut() const {return fCutPos;}
 

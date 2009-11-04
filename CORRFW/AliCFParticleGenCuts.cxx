@@ -760,7 +760,7 @@ Bool_t AliCFParticleGenCuts::IsA(AliAODMCParticle *mcPart, Int_t pdg, Bool_t abs
   return kTRUE;
 }
 //______________________________
-void AliCFParticleGenCuts::SetEvtInfo(TObject* mcEvent) {
+void AliCFParticleGenCuts::SetMCEventInfo(const TObject* mcEvent) {
   //
   // Sets pointer to MC event information (AliMCEvent)
   //
@@ -775,7 +775,6 @@ void AliCFParticleGenCuts::SetEvtInfo(TObject* mcEvent) {
     AliError("argument must point to an AliMCEvent or an AliAODEvent !");
     return ;
   }
-  
-  if (fIsAODMC) fMCInfo = dynamic_cast<AliAODEvent*>(mcEvent) ;
-  else          fMCInfo = dynamic_cast<AliMCEvent*> (mcEvent) ;
+
+  fMCInfo = (AliVEvent*)mcEvent ;
 }

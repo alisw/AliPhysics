@@ -137,7 +137,7 @@ Bool_t AliCFManager::CheckEventCuts(Int_t isel, TObject *obj, const TString  &se
 }
 
 //_____________________________________________________________________________
-void  AliCFManager::SetEventInfo(TObject *obj) const {
+void  AliCFManager::SetMCEventInfo(const TObject *obj) const {
 
   //Particle level cuts
 
@@ -150,7 +150,7 @@ void  AliCFManager::SetEventInfo(TObject *obj) const {
       TObjArrayIter iter(fPartCutList[isel]);
       AliCFCutBase *cut = 0;
       while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-	cut->SetEvtInfo(obj);
+	cut->SetMCEventInfo(obj);
       }    
     }
   }
@@ -166,7 +166,42 @@ void  AliCFManager::SetEventInfo(TObject *obj) const {
       TObjArrayIter iter(fEvtCutList[isel]);
       AliCFCutBase *cut = 0;
       while ( (cut = (AliCFCutBase*)iter.Next()) ) {
-	cut->SetEvtInfo(obj);
+	cut->SetMCEventInfo(obj);
+      }   
+    }
+  }
+}
+//_____________________________________________________________________________
+void  AliCFManager::SetRecEventInfo(const TObject *obj) const {
+
+  //Particle level cuts
+
+  if (!fPartCutList) {
+    AliWarning("No particle cut list found");
+  }
+  else {
+    for(Int_t isel=0;isel<fNStepPart; isel++){
+      if(!fPartCutList[isel])continue;  
+      TObjArrayIter iter(fPartCutList[isel]);
+      AliCFCutBase *cut = 0;
+      while ( (cut = (AliCFCutBase*)iter.Next()) ) {
+	cut->SetRecEventInfo(obj);
+      }    
+    }
+  }
+  
+  //Event level cuts 
+  
+  if (!fEvtCutList) {
+    AliWarning("No event cut list found");
+  }
+  else {
+    for(Int_t isel=0;isel<fNStepEvt; isel++){
+      if(!fEvtCutList[isel])continue;  
+      TObjArrayIter iter(fEvtCutList[isel]);
+      AliCFCutBase *cut = 0;
+      while ( (cut = (AliCFCutBase*)iter.Next()) ) {
+	cut->SetRecEventInfo(obj);
       }   
     }
   }

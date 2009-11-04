@@ -178,7 +178,7 @@ void AliCFAcceptanceCuts::SelectionBitMap(TObject* obj) {
 }
 
 
-void AliCFAcceptanceCuts::SetEvtInfo(TObject* mcInfo) {
+void AliCFAcceptanceCuts::SetMCEventInfo(const TObject* mcInfo) {
   //
   // Sets pointer to MC event information (AliMCEvent)
   //

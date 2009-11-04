@@ -44,7 +44,7 @@ class AliCFV0TopoCuts : public AliCFCutBase
   virtual ~AliCFV0TopoCuts() { } ;
   Bool_t IsSelected(TObject* v0) ;
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
-  void   SetEvtInfo(TObject* evt) {fEvent = (AliVEvent*)evt;}
+  void   SetRecEventInfo(const TObject* evt) {fEvent = (AliVEvent*)evt;}
   void   SetMaxDcaDaughters (Double32_t dca)  {fMaxDcaDaughters = dca;}
   void   SetMinDcaNeg       (Double32_t dca)  {fMinDcaNeg = dca;}
   void   SetMinDcaPos       (Double32_t dca)  {fMinDcaPos = dca;}

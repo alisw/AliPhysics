@@ -45,6 +45,7 @@
 #include "TChain.h"
 #include "AliCFParticleGenCuts.h"
 #include "AliAODv0.h"
+#include "TDatabasePDG.h"
 
 //__________________________________________________________________________
 AliCFV0Task::AliCFV0Task() :
@@ -131,8 +132,13 @@ void AliCFV0Task::UserExec(Option_t *)
     return;
   }
 
-  if (!fMCEvent) Error("UserExec","NO MC INFO FOUND!");
-  fCFManager->SetEventInfo(fMCEvent);
+  if (!fMCEvent) {
+    Error("UserExec","NO MC INFO FOUND!");
+    return;
+  }
+
+  fCFManager->SetMCEventInfo (fMCEvent);
+  fCFManager->SetRecEventInfo(fInputEvent);
 
   Bool_t isESDEvent = strcmp(fInputEvent->ClassName(),"AliESDEvent") == 0 ? kTRUE : kFALSE ;
   Bool_t isAODEvent = strcmp(fInputEvent->ClassName(),"AliAODEvent") == 0 ? kTRUE : kFALSE ;
@@ -147,7 +153,7 @@ void AliCFV0Task::UserExec(Option_t *)
   //loop on the MC event
   Info("UserExec","Looping on MC event");
   for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
-    AliMCParticle *mcPart  = fMCEvent->GetTrack(ipart);
+    AliMCParticle *mcPart  = (AliMCParticle*)fMCEvent->GetTrack(ipart);
 
     //check the MC-level cuts
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
@@ -166,14 +172,6 @@ void AliCFV0Task::UserExec(Option_t *)
   //Now go to rec level
   Info("UserExec","Looping on %s",fInputEvent->ClassName());
  
-  //SET THE ESD AS EVENT INFO IN RECONSTRUCTION CUTS
-  TObjArray* fCutsReco = fCFManager->GetParticleCutsList(AliCFManager::kPartRecCuts);
-  TObjArrayIter iter1(fCutsReco);
-  AliCFCutBase *cut = 0;
-  while ( (cut = (AliCFCutBase*)iter1.Next()) ) {
-    cut->SetEvtInfo(fInputEvent);
-  }
-
   if (isESDEvent && fRebuildV0s) RebuildV0s(fESD) ;
 
   Info("UserExec","There are %d V0s in event",fInputEvent->GetNumberOfV0s());
@@ -208,7 +206,7 @@ void AliCFV0Task::UserExec(Option_t *)
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pair)) continue;
     
     //check if associated MC v0 passes the cuts
-    AliMCParticle* mcV0 = fMCEvent->GetTrack(labMCV0);
+    AliMCParticle* mcV0 = (AliMCParticle*)fMCEvent->GetTrack(labMCV0);
     if (!mcV0) continue;
 
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcV0)) continue; 

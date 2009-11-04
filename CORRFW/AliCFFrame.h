@@ -31,6 +31,9 @@ class AliCFFrame : public TNamed
   virtual Int_t    * GetNBins()                                                  const = 0 ; // returns an array containing the bins for each variable
   virtual Float_t    GetBinCenter(Int_t ivar,Int_t ibin)                         const = 0 ; // the center of bin number ibin for variable ivar
   virtual Float_t    GetBinSize  (Int_t ivar,Int_t ibin)                         const = 0 ; // the   size of bin number ibin for variable ivar
+
+  //  virtual void       Clear() = 0 ; // clear all the cells
+  
   //virtual void       GetBinCenters(const Int_t *ibin, Float_t *binCenter)        const = 0 ; // 
   //virtual void       GetBinSizes  (const Int_t *ibin, Float_t *binSizes)         const = 0 ; //
 

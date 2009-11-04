@@ -44,7 +44,7 @@ class AliCFAcceptanceCuts : public AliCFCutBase
   virtual ~AliCFAcceptanceCuts() { };
   virtual Bool_t IsSelected(TObject* obj) ;
   virtual Bool_t IsSelected(TList*  /*list*/) {return kTRUE;}
-  virtual void   SetEvtInfo(TObject* mcInfo) ;
+  virtual void   SetMCEventInfo(const TObject* mcInfo) ;
   void SetMinNHitITS (Int_t nhits) {fMinNHitITS=nhits;} 
   void SetMinNHitTPC (Int_t nhits) {fMinNHitTPC=nhits;} 
   void SetMinNHitTRD (Int_t nhits) {fMinNHitTRD=nhits;} 

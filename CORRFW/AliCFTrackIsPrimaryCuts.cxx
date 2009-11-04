@@ -360,7 +360,7 @@ void AliCFTrackIsPrimaryCuts::Copy(TObject &c) const
   TNamed::Copy(c);
 }
 //__________________________________________________________________________________
-void AliCFTrackIsPrimaryCuts::SetEvtInfo(TObject* esd) {
+void AliCFTrackIsPrimaryCuts::SetRecEventInfo(const TObject* esd) {
   //
   // Sets pointer to esd event information (AliESDEvent)
   //

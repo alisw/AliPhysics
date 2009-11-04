@@ -97,7 +97,7 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
   // please use indices from the enumeration below
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t *bins);
   void SetHistogramBins(Int_t index, Int_t nbins, Double_t xmin, Double_t xmax);
-  virtual void SetEvtInfo(TObject* esd) ;
+  virtual void SetRecEventInfo(const TObject* esd) ;
 
   // indeces/counters for single selections
   enum { 

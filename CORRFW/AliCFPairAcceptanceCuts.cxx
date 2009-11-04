@@ -146,19 +146,19 @@ void AliCFPairAcceptanceCuts::SelectionBitMap(TObject* obj)
 }
 
 //______________________________
-void AliCFPairAcceptanceCuts::SetEvtInfo(TObject* mcInfo) {
+void AliCFPairAcceptanceCuts::SetMCEventInfo(TObject* mcInfo) {
   //
   // Sets pointer to MC event information (AliMCEvent)
   //
 
   if (!mcInfo) {
-    Error("SetEvtInfo","Pointer to MC Event is null !");
+    Error("SetMCEventInfo","Pointer to MC Event is null !");
     return;
   }
   
   TString className(mcInfo->ClassName());
   if (className.CompareTo("AliMCEvent") != 0) {
-    Error("SetEvtInfo","argument must point to an AliMCEvent !");
+    Error("SetMCEventInfo","argument must point to an AliMCEvent !");
     return ;
   }
   

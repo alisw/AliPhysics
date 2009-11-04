@@ -138,17 +138,21 @@ void AliCFSingleTrackTask::UserExec(Option_t *)
     return;
   }
 
-  if (!fMCEvent) Error("UserExec","NO MC INFO FOUND");
+  if (!fMCEvent) {
+    Error("UserExec","NO MC INFO FOUND");
+    return ;
+  }
   
-  //pass the MC evt handler to the cuts that need it 
-  fCFManager->SetEventInfo(fMCEvent);
+  //pass the evt info to the cuts that need it 
+  fCFManager->SetMCEventInfo (fMCEvent);
+  fCFManager->SetRecEventInfo(fEvent);
 
   // MC-event selection
   Double_t containerInput[2] ;
         
   //loop on the MC event
   for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
-    AliMCParticle *mcPart  = fMCEvent->GetTrack(ipart);
+    AliMCParticle *mcPart  = (AliMCParticle*)fMCEvent->GetTrack(ipart);
 
     //check the MC-level cuts
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
@@ -190,7 +194,7 @@ void AliCFSingleTrackTask::UserExec(Option_t *)
     Int_t label = track->GetLabel();
 
     if (label<0) continue;
-    AliMCParticle *mcPart  = fMCEvent->GetTrack(label);
+    AliMCParticle *mcPart  = (AliMCParticle*)fMCEvent->GetTrack(label);
     
     // check if this track was part of the signal
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue; 

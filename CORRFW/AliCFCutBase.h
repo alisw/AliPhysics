@@ -33,7 +33,8 @@ class AliCFCutBase : public AliAnalysisCuts
   virtual ~AliCFCutBase() {;} //dtor
   virtual Bool_t IsQAOn() const {return fIsQAOn;}; //QA flag getter
   virtual void SetQAOn(TList* list) {fIsQAOn=kTRUE; AddQAHistograms(list);} //QA flag setter
-  virtual void SetEvtInfo(TObject *) {;}; //Pass pointer to event-level info
+  virtual void  SetMCEventInfo(const TObject *) {} //Pass pointer to MC event
+  virtual void SetRecEventInfo(const TObject *) {} //Pass pointer to reconstructed event
   
  protected:
   Bool_t fIsQAOn;//qa checking on/off

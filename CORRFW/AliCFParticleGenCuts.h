@@ -55,7 +55,7 @@ class AliCFParticleGenCuts : public AliCFCutBase
   virtual ~AliCFParticleGenCuts() { };
   virtual Bool_t IsSelected(TObject* obj) ;
   Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
-  virtual void   SetEvtInfo(TObject* mcEvent) ;
+  virtual void   SetMCEventInfo(const TObject* mcEvent) ;
   void    SetAODMC(Bool_t flag) {fIsAODMC=flag;}
 
   Bool_t IsPrimaryCharged(AliVParticle *mcPart);
