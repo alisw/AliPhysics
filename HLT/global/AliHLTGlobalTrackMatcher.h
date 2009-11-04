@@ -80,7 +80,6 @@ private:
   AliHLTGlobalTrackMatcher(const AliHLTGlobalTrackMatcher & );
   AliHLTGlobalTrackMatcher & operator = (const AliHLTGlobalTrackMatcher &);
 
-
   ClassDef(AliHLTGlobalTrackMatcher,1) //Merging base class
 };
 
