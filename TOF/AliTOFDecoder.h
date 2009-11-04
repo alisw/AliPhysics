@@ -34,7 +34,7 @@
 
 //define DRM/LTM fixed number of words
 #define DRM_DATA_WORDS          5
-#define LTM_DATA_WORDS          33
+#define LTM_DATA_WORDS          48
 
 //define masks
 #define WORD_TYPE_MASK          0xf0000000
@@ -86,11 +86,10 @@
 
 #include "TObject.h"
 #include "AliTOFRawDataFormat.h"
-//#include "AliTOFHitData.h"
+#include "AliTOFHitData.h"
 //#include "AliTOFHitDataBuffer.h"
 //#include "AliTOFGeometry.h"
 
-class AliTOFHitData;
 class AliTOFHitDataBuffer;
 class AliRawDataHeader;
 
@@ -103,7 +102,7 @@ class AliTOFDecoder : public TObject
   AliTOFDecoder &operator = (const AliTOFDecoder &source); //operator =
   ~AliTOFDecoder(); //distructor
   
-  Bool_t Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh); //main decode function
+  Bool_t Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh); //main decode function
   void   SetVerbose(Int_t Verbose = 1) {fVerbose = Verbose;}; //set verbose level
   void   SetV2718Patch(Bool_t V2718Patch = kTRUE) {fV2718Patch = V2718Patch;}; //set V2718 patch (no DRM)
   void   SetDataBuffer(AliTOFHitDataBuffer *DB) {fDataBuffer = DB;}; //set up data buffer
@@ -165,8 +164,8 @@ enum {
   Int_t         fSpiderCurrentSlotID; //SPIDER current slot ID
   Int_t         fSpiderCurrentChain; //SPIDER current chain
   Int_t         fSpiderCurrentTDC; //SPIDER current TDC
-  Bool_t        fSpiderLeadingFlag[N_CHANNEL]; //SPIDER channel leading flag
-  AliTOFHitData fSpiderLeadingHit[N_CHANNEL]; //SPIDER channel leading hit
+  Bool_t        fSpiderLeadingFlag[8]; //SPIDER channel leading flag
+  AliTOFHitData fSpiderLeadingHit[8]; //SPIDER channel leading hit
 
   ClassDef(AliTOFDecoder, 2)
 };
