@@ -218,19 +218,19 @@ AliHLTPHOSClusterizerComponent::ScanConfigurationArgument(int argc, const char *
 
   if (argument.CompareTo("-digitthreshold") == 0)
     {
-    if (++i >= argc) return -EPROTO;
-    argument = argv[i];
-    fClusterizerPtr->SetEmcMinEnergyThreshold(argument.Atof());
-    return 1;
-  }
+      if (++i >= argc) return -EPROTO;
+      argument = argv[i];
+      fClusterizerPtr->SetEmcMinEnergyThreshold(argument.Atof());
+      return 1;
+    }
 
   if (argument.CompareTo("-recpointthreshold") == 0)
     {
-    if (++i >= argc) return -EPROTO;
-    argument = argv[i];
-    fClusterizerPtr->SetEmcClusteringThreshold(argument.Atof());
-    return 1;
-  }
+      if (++i >= argc) return -EPROTO;
+      argument = argv[i];
+      fClusterizerPtr->SetEmcClusteringThreshold(argument.Atof());
+      return 1;
+    }
 
 }
 
