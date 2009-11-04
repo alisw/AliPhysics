@@ -137,7 +137,8 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius)
    c_jf.ToLower();
 
    AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist_%s_%s%s",c_jr.Data(),c_jf.Data(),cRadius), TList::Class(),
-							     AliAnalysisManager::kOutputContainer, Form("jethist_%s_%s%s.root",c_jr.Data(),c_jf.Data(),cRadius));
+							     AliAnalysisManager::kOutputContainer, Form("%s:PWG4_jethist_%s_%s%s",AliAnalysisManager::GetCommonFileName(),
+													c_jr.Data(),c_jf.Data(),cRadius));
    // Connect jet finder to task.
    jetana->SetJetFinder(jetFinder);
    jetana->SetConfigFile("");

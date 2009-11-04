@@ -29,7 +29,7 @@ AliAnalysisTaskThreeJets * AddTaskThreeJets()
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_Corr = mgr->CreateContainer("threeJets", TList::Class(),AliAnalysisManager::kOutputContainer,"threeJets.root");
+  AliAnalysisDataContainer *coutput1_Corr = mgr->CreateContainer("threeJets", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_threeJets",AliAnalysisManager::GetCommonFileName()));
 
    mgr->ConnectInput  (threeJets, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (threeJets, 0, mgr->GetCommonOutputContainer());

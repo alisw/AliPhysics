@@ -35,7 +35,7 @@ AliAnalysisTaskPWG4PidDetEx *AddTaskPWG4PidDetEx()
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_PID = mgr->CreateContainer("histosPID", TList::Class(),AliAnalysisManager::kOutputContainer,"pwg4pid.root");
+   AliAnalysisDataContainer *coutput1_PID = mgr->CreateContainer("histosPID", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_pid",AliAnalysisManager::GetCommonFileName());
 
    mgr->ConnectInput  (taskPid, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (taskPid, 0, mgr->GetCommonOutputContainer());
