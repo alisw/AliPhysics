@@ -795,6 +795,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 
     ptrTracklet  = tracklets[ily];
     if(!ptrTracklet){ // BUILD TRACKLET
+      AliDebug(2, Form("Building tracklet ly[%d]", ily));
       // check data in supermodule
       if(!fTrSec[sm].GetNChambers()){ 
         t.SetStatus(AliTRDtrackV1::kNoClusters, ily);
@@ -850,7 +851,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         continue;
       }
       ptrTracklet->UpdateUsed();
-    }
+    } else AliDebug(2, Form("Use external tracklet ly[%d]", ily));
     // propagate track to the radial position of the tracklet
     ptrTracklet->UseClusters(); // TODO ? do we need this here ?
     // fit tracklet no tilt correction

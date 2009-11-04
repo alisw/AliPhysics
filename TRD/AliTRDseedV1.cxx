@@ -592,7 +592,6 @@ Bool_t AliTRDseedV1::CookPID()
     AliError("No access to AliTRDCalPID object");
     return kFALSE;
   }
-  //AliInfo(Form("Method[%d] : %s", fkReconstructor->GetRecoParam() ->GetPIDMethod(), pd->IsA()->GetName()));
 
   // calculate tracklet length TO DO
   Float_t length = (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
@@ -600,7 +599,8 @@ Bool_t AliTRDseedV1::CookPID()
   
   //calculate dE/dx
   CookdEdx(fkReconstructor->GetNdEdxSlices());
-  
+  AliDebug(4, Form("PID p[%f] dEdx[%f %f %f %f %f %f %f %f] l[%f]", GetMomentum(), fdEdx[0], fdEdx[1], fdEdx[2], fdEdx[3], fdEdx[4], fdEdx[5], fdEdx[6], fdEdx[7], length));
+
   // Sets the a priori probabilities
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++)
     fProb[ispec] = pd->GetProbability(ispec, GetMomentum(), &fdEdx[0], length, GetPlane());
@@ -1303,7 +1303,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     if(tilt) yc[n] -= (GetTilt()*(zc[n] - zt)); 
 
     fitterY.AddPoint(&xc[n], yc[n], TMath::Sqrt(sy[n]));
-    if(IsRowCross())fitterZ.AddPoint(&xc[n], qc[n], 1.);
+    if(IsRowCross()) fitterZ.AddPoint(&xc[n], qc[n], 1.);
     n++;
   }
 
@@ -1324,7 +1324,8 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
   // the y variance of the tracklet
   fX   = -fCov[1]/fCov[2];
 
-  // fit XZ
+  // collect second row clusters
+  Int_t m(0);
   if(IsRowCross()){
 /*    // THE LEADING CLUSTER METHOD
     Float_t xMin = fX0;
@@ -1351,9 +1352,11 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
       xc[n]   = fX0 - c->GetX();
       zc[n]   = c->GetZ();
       fitterZ.AddPoint(&xc[n], -qc[n], 1.);
-      n--;
+      n--;m++;
     }
-    // fit XZ
+  }
+  // fit XZ
+  if(m && IsRowCross()){
     fitterZ.Eval();
     if(fitterZ.GetFunctionParameter(1)!=0.){ 
       fX = -fitterZ.GetFunctionParameter(0)/fitterZ.GetFunctionParameter(1);
@@ -1369,6 +1372,9 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     // TODO correct formula
     //fS2Z     = sigma_x*TMath::Abs(fZref[1]);
   } else {
+    if(IsRowCross() && !m){
+      AliDebug(1, "Tracklet crossed row but no clusters found in neighbor row.");
+    }
     fZfit[0] = zc[0]; fZfit[1] = 0.;
     fS2Z     = GetPadLength()*GetPadLength()/12.;
   }

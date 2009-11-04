@@ -184,10 +184,14 @@ AliTRDtrackV1::AliTRDtrackV1(AliTRDseedV1 * const trklts, const Double_t p[5], c
   Double_t mostProbablePt=AliExternalTrackParam::GetMostProbablePt();
   Double_t p0=TMath::Sign(1/mostProbablePt,pp[4]);
   Double_t w0=cc[14]/(cc[14] + p0*p0), w1=p0*p0/(cc[14] + p0*p0);
+  AliDebug(4, Form("Pt mixing : w0[%4.2f] 1/pt0[%5.3f] w1[%4.2f] 1/pt[%5.3f]", w0, 1./p0, w1, 1./pp[4]));
   pp[4] = w0*p0 + w1*pp[4];
+
+
   cc[10]*=w1; cc[11]*=w1; cc[12]*=w1; cc[13]*=w1; cc[14]*=w1;
 
 	Set(x,alpha,pp,cc);
+  AliDebug(2, Form("Init @ x[%6.2f] pt[%5.3f]", x, 1./pp[4]));
   Int_t ncls = 0;
 	for(int iplane=0; iplane<kNplane; iplane++){
     fTrackletIndex[iplane] = 0xffff;
@@ -676,7 +680,6 @@ void AliTRDtrackV1::Print(Option_t *o) const
   AliInfo(Form("x[%7.2f] t[%7.4f] alpha[%f] mass[%f]", GetX(), GetIntegratedLength(), GetAlpha(), fMass));
   AliInfo(Form("Ntr[%1d] NtrPID[%1d] Ncl[%3d] lab[%3d]", GetNumberOfTracklets(), GetNumberOfTrackletsPID(), fN, fLab));
 
-  if(strcmp(o, "a")!=0) return;
   printf("|X| = (");
   const Double_t *curP = GetParameter();
   for (Int_t i = 0; i < 5; i++) printf("%7.2f ", curP[i]);
@@ -691,6 +694,7 @@ void AliTRDtrackV1::Print(Option_t *o) const
       k=-1; j--;
     }
   }
+  if(strcmp(o, "a")!=0) return;
 
   for(Int_t ip=0; ip<kNplane; ip++){
     if(!fTracklet[ip]) continue;
@@ -784,6 +788,7 @@ Bool_t  AliTRDtrackV1::Update(Double_t *p, Double_t *cov, Double_t chi2)
   //
   // Update track 
   //
+  AliDebug(2, Form("Point:\n  p=[%6.2f %6.2f]\n  V=[%6.2f %6.2f]\n    [%6.2f %6.2f]", p[0], p[1], cov[0], cov[1], cov[1], cov[2]));
   if(!AliExternalTrackParam::Update(p, cov)) return kFALSE;
 
   // Register info to track
