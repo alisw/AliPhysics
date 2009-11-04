@@ -196,8 +196,7 @@ Double_t * AliQACheckerBase::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** li
         TH1 * hdata ;
         count[specie] = 0 ; 
         while ( (hdata = static_cast<TH1 *>(next())) ) {
-          TString cln(hdata->ClassName()) ; 
-          if ( cln.Contains("TH1") ) {
+          if ( hdata->IsA()->InheritsFrom("TH1") ) {
             if ( hdata->TestBit(AliQAv1::GetExpertBit()) )  // does not perform the test for expert data
               continue ; 
             TH1 * href = NULL ; 
