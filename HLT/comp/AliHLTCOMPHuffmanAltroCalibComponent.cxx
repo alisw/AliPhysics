@@ -27,6 +27,7 @@ using namespace std;
 #include "AliHLTCOMPHuffmanAltro.h"
 #include "AliHLTCompDefinitions.h"
 #include "AliHLTStdIncludes.h"
+#include "AliHLTReadoutList.h"
 #include "TFile.h" // necessary for HuffmanData writing
 
 ClassImp(AliHLTCOMPHuffmanAltroCalibComponent)
@@ -365,7 +366,8 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::ShipDataToFXS( const AliHLTComponent
   Int_t dataspec = (Int_t) fSpecification;
 
   fHuffmanData->SetOCDBSpecifications(fOrigin, dataspec);
-  PushToFXS( (TObject*) fHuffmanData, "TPC", "HuffmanData" ) ;
+  static AliHLTReadoutList rdList(AliHLTReadoutList::kTPC);
+  PushToFXS( (TObject*) fHuffmanData, "TPC", "HuffmanData", rdList.Buffer() ) ;
   
   return 0;
 } // Int_t AliHLTCOMPHuffmanAltroCalibComponent::ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {

@@ -24,6 +24,7 @@
 //#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "TObjArray.h"
 #include "AliHLTPHOSUtilities.h"
+#include "AliHLTReadoutList.h"
 
 //#include <iostream>
 
@@ -217,7 +218,8 @@ AliHLTPHOSRcuDAComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtDa
   TFile *outFile =  new TFile(filename, "recreate");
   calibPtr->Write(); 
   outFile->Close();
-  PushToFXS( (TObject*)fPHOSDAPtr->GetHistoContainer(), "PHOS",  filename);
+  static AliHLTReadoutList rdList(AliHLTReadoutList::kPHOS);
+  PushToFXS( (TObject*)fPHOSDAPtr->GetHistoContainer(), "PHOS",  filename, rdList.Buffer());
   cout << "Finnished pushing data to HLT FXS" << endl;
   return 0;
 }  

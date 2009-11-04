@@ -210,7 +210,8 @@ Int_t AliHLTCalibrationProcessor::DoEvent( const AliHLTComponentEventData& evtDa
 
   // ** if event Type is not SOR or EOR -> fill DDLNumber list and process data
   if ( ! blkEOR  && !blkSOR ) {
-    
+
+#if 0    
     // ** Set DDLNumber List
     if ( trigData.fData != NULL) {
       AliHLTEventTriggerData* trg = ( AliHLTEventTriggerData* ) trigData.fData;
@@ -240,6 +241,7 @@ Int_t AliHLTCalibrationProcessor::DoEvent( const AliHLTComponentEventData& evtDa
 	} // if ( wordNdx > 0 ) {
       } // if ( trg != NULL) {
     } // if ( trigData.fData != NULL) {
+#endif
     
     // ** ProcessData
     iResult = ProcessCalibration( evtData, blocks, trigData, outputPtr, size, outputBlocks );

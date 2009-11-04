@@ -65,7 +65,7 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    *			Will be filled automatically if not supplied by the component.
    * @return neg. error code if failed 
    */
-  Int_t PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList = NULL);
+  Int_t PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList);
 
   /**
    * Insert an object into the output. FXS header will be inserted before the root object.
@@ -79,7 +79,7 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    *			Will be filled automatically if not supplied by the component.
    * @return neg. error code if failed 
    */
-   Int_t PushToFXS(void* pBuffer, int iSize, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList = NULL);
+   Int_t PushToFXS(void* pBuffer, int iSize, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList);
 
   /** Constants  */ 
   static const AliHLTUInt32_t fgkFXSProtocolHeaderSize;

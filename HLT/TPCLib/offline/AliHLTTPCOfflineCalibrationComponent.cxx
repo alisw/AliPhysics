@@ -38,6 +38,7 @@
 #include "AliTPCcalibTracksCuts.h"
 #include "AliTPCClusterParam.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTReadoutList.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCOfflineCalibrationComponent)
@@ -254,9 +255,10 @@ Int_t AliHLTTPCOfflineCalibrationComponent::ShipDataToFXS( const AliHLTComponent
       fTPCcalibTracksGain->Analyze();
       fTPCcalibTracks->Analyze();
    }
-   PushToFXS((TObject*)fTPCcalibAlign, "TPC", "TPCcalibAlign") ;
-   PushToFXS((TObject*)fTPCcalibTracksGain, "TPC", "TPCcalibTracksGain") ;
-   PushToFXS((TObject*)fTPCcalibTracks, "TPC", "TPCcalibTracks") ;
+   static AliHLTReadoutList rdList(AliHLTReadoutList::kTPC);
+   PushToFXS((TObject*)fTPCcalibAlign, "TPC", "TPCcalibAlign", rdList.Buffer()) ;
+   PushToFXS((TObject*)fTPCcalibTracksGain, "TPC", "TPCcalibTracksGain", rdList.Buffer()) ;
+   PushToFXS((TObject*)fTPCcalibTracks, "TPC", "TPCcalibTracks", rdList.Buffer()) ;
 
 return 0;
 }

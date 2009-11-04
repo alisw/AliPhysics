@@ -33,6 +33,7 @@ using namespace std;
 
 #include "AliHLTTPCCalibTimeGainComponent.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTReadoutList.h"
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -203,7 +204,8 @@ Int_t AliHLTTPCCalibTimeGainComponent::ShipDataToFXS( const AliHLTComponentEvent
   // see header file for class documentation
     
   if(fEnableAnalysis) fCalibTimeGain->Analyze();  
-  PushToFXS( (TObject*) fCalibTimeGain, "TPC", "TimeGain" ) ;
+  static AliHLTReadoutList rdList(AliHLTReadoutList::kTPC);
+  PushToFXS( (TObject*) fCalibTimeGain, "TPC", "TimeGain", rdList.Buffer() ) ;
   
   return 0;
 } 

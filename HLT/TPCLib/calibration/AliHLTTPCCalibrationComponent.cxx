@@ -34,6 +34,7 @@ using namespace std;
 #include "AliHLTTPCCalibrationComponent.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCAnalysisTaskcalib.h"
+#include "AliHLTReadoutList.h"
 
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -226,7 +227,8 @@ Int_t AliHLTTPCCalibrationComponent::ShipDataToFXS( const AliHLTComponentEventDa
   // see header file for class documentation
     
   if(fEnableAnalysis) fCalibTask->Analyze();  
-  PushToFXS( (TObject*) fCalibTask, "TPC", "CALIB" ) ;
+  static AliHLTReadoutList rdList(AliHLTReadoutList::kTPC);
+  PushToFXS( (TObject*) fCalibTask, "TPC", "CALIB", rdList.Buffer() ) ;
   
   return 0;
 } 
