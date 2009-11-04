@@ -62,9 +62,15 @@ private:
   
   //Angle of PHOS Modules to Y 
   //Float_t fPHOSAngles[5];
+  int fNModules;
 
   Int_t *fBestMatchesArray;
   Float_t *fTrackDistanceArray;
+
+  
+  AliHLTGlobalTrackMatcher(const AliHLTGlobalTrackMatcher & );
+  AliHLTGlobalTrackMatcher & operator = (const AliHLTGlobalTrackMatcher &);
+
 
   ClassDef(AliHLTGlobalTrackMatcher,1) //Merging base class
 };

@@ -33,7 +33,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliPID.h"
-
+#include "TArrayI.h"
 /**
  * @struct AliHLTCaloClusterHeaderStruct
  * Calorimeter cluster header describing the number of 
@@ -111,7 +111,10 @@ struct AliHLTCaloClusterDataStruct
   /** */
   Float_t fCellsAmpFraction;              //COMMENT
 
+  /** Labels of matching tracks. First entry is best match */
+  TArrayI* fTracksMatched;  //COMMENT
   
 };
+
 
 #endif

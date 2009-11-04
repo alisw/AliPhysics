@@ -63,14 +63,9 @@ AliHLTGlobalTrackMatcher::~AliHLTGlobalTrackMatcher()
     delete fPHOSGeom;
   fPHOSGeom = NULL;
 
-  if (fBestMatchesArray)
-    delete[] fBestMatchesArray;
-  fBestMatchesArray = NULL;
-
-  if (fTrackDistanceArray)
-    delete[] fTrackDistanceArray;
-  fTrackDistanceArray = NULL;
-
+  if (fClusterReader)
+    delete fClusterReader;
+  fClusterReader = NULL;
 }
 
 //_____________________________________________________________________________
@@ -86,15 +81,20 @@ Bool_t AliHLTGlobalTrackMatcher::Match(AliESDEvent* esdEvent, AliHLTCaloClusterH
   };
   
   
+
+  
   fClusterReader->SetMemory(clusterHeader);
   
   int nClusters = clusterHeader->fNClusters;
-  
   if( !(nClusters> 0) )
-    return false;
+    return 0;
+  
+  
+  Double_t tDistance[nClusters];
 
-  fBestMatchesArray = new int[nClusters];
-  fTrackDistanceArray = new Float_t[nClusters];
+  for(int i = 0; i < nClusters; i++) {
+    tDistance[i] = 99999;
+  }
   
   //Position of track intersection with cylindrical plane defined by PHOS radius
   Double_t trackPos[3] = {0,0,0};
@@ -126,6 +126,7 @@ Bool_t AliHLTGlobalTrackMatcher::Match(AliESDEvent* esdEvent, AliHLTCaloClusterH
     while( (cluster = fClusterReader->NextCluster()) ) {
             
       clusterIndex++;
+      
       //Get approximate distance between cluster and track
       Double_t clusterPos[3] = {cluster->fGlobalPos[0], cluster->fGlobalPos[1], cluster->fGlobalPos[2]};
       Double_t distanceSq = 0;
@@ -156,23 +157,45 @@ Bool_t AliHLTGlobalTrackMatcher::Match(AliESDEvent* esdEvent, AliHLTCaloClusterH
     
       //Is the track closer to the cluster than previous matches?
       distanceSq = clusterPos[0]*clusterPos[0] + clusterPos[2]* clusterPos[2];
-      if ( distanceSq  <  fTrackDistanceArray[clusterIndex] )  {
-	fBestMatchesArray[clusterIndex] = it;
-	fTrackDistanceArray[clusterIndex] = distanceSq;
-      }
-    }  
-  }//done looping over clusters 
-  
-  //now set the values in the ESD, or where? Return them as what?
-  
+     
+      //Is track close enough to be considered a match?
+      if( distanceSq < fMatchDistanceSq) {
+	
+	//Is this a better match than previous best match?
+	if ( distanceSq  < tDistance[clusterIndex] )  {
+	
+	  //Yes, add track label at beginning of array of matching track
+	  if( !(cluster->fTracksMatched) ) {
+	    cluster->fTracksMatched = new TArrayI(1);
+	    cluster->fTracksMatched->AddAt(track->GetLabel(), 0);
+	  } else {
+	    //Increase Array size by one
+	    cluster->fTracksMatched->Set(cluster->fTracksMatched->GetSize() + 1);
+	    //Move previous best match to last spot
+	    cluster->fTracksMatched->AddAt(cluster->fTracksMatched->GetAt(0), cluster->fTracksMatched->GetSize() - 1);
+	    //Finally add the new best to first spot
+	    cluster->fTracksMatched->AddAt(track->GetLabel(), 0);
+	      }
+	  
+	  //This is the new standard for best match
+	  tDistance[clusterIndex] = distanceSq;
+	  
+	}  else {
+	  
+	  //It's a match, but not best match
+	  
+	  //Increase Array size by one
+	  cluster->fTracksMatched->Set(cluster->fTracksMatched->GetSize() + 1);
+	  //Add new track at back of the array
+	  cluster->fTracksMatched->AddAt(track->GetLabel(), cluster->fTracksMatched->GetSize() - 1);
+	
+	}
 
-  //Reset Matching arrays
-  if(fBestMatchesArray)
-    delete[] fBestMatchesArray;
-  fBestMatchesArray = NULL;
+      } // if (distanceSq < fMaxDistanceSq)  
+    
+    } //cluster loopx
+  } // track loop 
 
-  if(fTrackDistanceArray)
-    delete[] fTrackDistanceArray;
-  fTrackDistanceArray = NULL;
+  return 0;
 
 }  
