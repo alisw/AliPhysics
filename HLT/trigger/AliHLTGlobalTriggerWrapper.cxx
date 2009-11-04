@@ -149,6 +149,7 @@ AliHLTGlobalTriggerWrapper::~AliHLTGlobalTriggerWrapper()
   // Default destructor.
   
   fClass->Destructor(fObject);
+  G__set_errmsgcallback(NULL);
 }
 
 
