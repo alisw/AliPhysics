@@ -19,13 +19,16 @@
 // Or have trackelt counter -- as not all histograms collected for tracks
 // are relevant for tracklets.
 
-TEveTrackList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=3)
+TEveTrackList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=3,
+				 Float_t d_theta=0.025, Float_t d_phi=0.08)
 {
   // radius - cylindrical radius to which the tracklets should be extrapolated
 
   AliESDEvent     *esd = AliEveEventManager::AssertESD();
   AliESDVertex    *pv  = esd->GetPrimaryVertexSPD();
   AliMultiplicity *mul = esd->GetMultiplicity();
+
+  AliMagF *field = AliEveEventManager::AssertMagField();
 
   TEveTrackList *cont = new TEveTrackList("SPD Tracklets");
   cont->SetTitle(Form("N=%d", mul->GetNumberOfTracklets()));
@@ -44,7 +47,11 @@ TEveTrackList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=3)
     AliEveTracklet* t = new AliEveTracklet(pv, theta, phi, prop);
     t->SetAttLineAttMarker(cont);
     t->SetElementName(Form("Tracklet %d", i));
-    t->SetElementTitle(Form("id=%d: theta=%.3f, phi=%.3f", i, theta, phi));
+    t->SetElementTitle(Form("id=%d: eta=%.3f, theta=%.3f, phi=%.3f",
+			    i, mul->GetEta(i), theta, phi));
+    // if some condition
+    mul->SetLabel(i, 0, 3);
+    // else mul->SetLabel(i, 0, 0);
 
     cont->AddElement(t);
   }

@@ -10,8 +10,13 @@
 #include "AliEveTrackCounter.h"
 
 #include "TEveManager.h"
+#include "AliEveEventManager.h"
 #include "AliEveTrack.h"
 #include "AliEveTracklet.h"
+
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
+#include "AliMultiplicity.h"
 
 #include <TEveGedEditor.h>
 
@@ -113,8 +118,10 @@ void AliEveTrackCounter::RegisterTracks(TEveTrackList* tlist, Bool_t goodTracks)
       if (goodTracks)
       {
         ++fGoodTracks;
+	t->GetESDTrack()->SetLabel(3);
       } else {
         t->SetLineStyle(fBadLineStyle);
+	t->GetESDTrack()->SetLabel(0);
       }
       ++fAllTracks;
     }
@@ -129,6 +136,9 @@ void AliEveTrackCounter::RegisterTracklets(TEveTrackList* tlist, Bool_t goodTrac
   // If goodTracks is true, they are considered as primary/good
   // tracks.
 
+  AliESDEvent     *esd = AliEveEventManager::AssertESD();
+  AliMultiplicity *mul = const_cast<AliMultiplicity*>(esd->GetMultiplicity());
+
   tlist->IncDenyDestroy();
   fTrackletLists.Add(tlist);
 
@@ -138,7 +148,7 @@ void AliEveTrackCounter::RegisterTracklets(TEveTrackList* tlist, Bool_t goodTrac
     AliEveTracklet* t = dynamic_cast<AliEveTracklet*>(*i);
     if (t != 0)
     {
-      if (goodTracks)
+      if (goodTracks && mul->GetLabel(t->GetIndex(), 0) == 3)
       {
         ++fGoodTracklets;
       } else {
@@ -180,12 +190,15 @@ void AliEveTrackCounter::DoTrackAction(AliEveTrack* track)
 
       case kCA_ToggleTrack:
       {
+	 AliESDtrack *esdt = track->GetESDTrack();
          if (track->GetLineStyle() == 1)
          {
             track->SetLineStyle(fBadLineStyle);
+	    esdt->SetLabel(esdt->GetLabel() & ~1);
             --fGoodTracks;
          } else {
             track->SetLineStyle(1);
+	    esdt->SetLabel(esdt->GetLabel() | 1);
             ++fGoodTracks;
          }
          track->ElementChanged();
@@ -233,12 +246,17 @@ void AliEveTrackCounter::DoTrackletAction(AliEveTracklet* track)
 
       case kCA_ToggleTrack:
       {
+         AliESDEvent     *esd = AliEveEventManager::AssertESD();
+	 AliMultiplicity *mul = const_cast<AliMultiplicity*>(esd->GetMultiplicity());
+
          if (track->GetLineStyle() == 1)
          {
             track->SetLineStyle(fBadLineStyle);
+	    mul->SetLabel(track->GetIndex(), 0, mul->GetLabel(track->GetIndex(), 0) & ~1);
             --fGoodTracklets;
          } else {
             track->SetLineStyle(1);
+	    mul->SetLabel(track->GetIndex(), 0, mul->GetLabel(track->GetIndex(), 0) | 1);
             ++fGoodTracklets;
          }
          track->ElementChanged();

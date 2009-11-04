@@ -22,7 +22,7 @@ class AliVVertex;
 class AliEveTracklet : public AliEveTrack
 {
 public:
-  AliEveTracklet(const AliVVertex* pv, Float_t theta, Float_t phi, TEveTrackPropagator* prop=0);
+  AliEveTracklet(Int_t index, const AliVVertex* pv, Float_t theta, Float_t phi, TEveTrackPropagator* prop=0);
   virtual ~AliEveTracklet() {}
 
   virtual void MakeTrack(Bool_t recurse=kTRUE);

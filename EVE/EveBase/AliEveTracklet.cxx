@@ -44,16 +44,15 @@ void AliEveTracklet::SetDefaultRadius(Float_t r)
 //==============================================================================
 
 //______________________________________________________________________________
-AliEveTracklet::AliEveTracklet(const AliVVertex* pv, Float_t theta, Float_t phi,
+AliEveTracklet::AliEveTracklet(Int_t index, const AliVVertex* pv, Float_t theta, Float_t phi,
                                TEveTrackPropagator* prop) :
   AliEveTrack()
 {
   // Constructor.
 
-  using namespace TMath;
-
+  fIndex = index;
   fV.Set(pv->GetX(), pv->GetY(), pv->GetZ());
-  fP.Set(Cos(phi), Sin(phi), 1.0/Tan(theta));
+  fP.Set(TMath::Cos(phi), TMath::Sin(phi), 1.0/TMath::Tan(theta));
 
   if (prop) SetPropagator(prop);
 }

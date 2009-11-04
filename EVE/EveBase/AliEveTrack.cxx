@@ -242,3 +242,19 @@ void AliEveTrack::SecSelectedTrack(AliEveTrack* track)
 
   Emit("SecSelectedTrack(AliEveTrack*)", (Long_t)track);
 }
+
+//______________________________________________________________________________
+AliESDtrack* AliEveTrack::GetESDTrack() const
+{
+  // Return source object dyn-casted to AliESDtrack.
+
+  return dynamic_cast<AliESDtrack*>(GetSourceObject());
+}
+
+//______________________________________________________________________________
+AliAODTrack* AliEveTrack::GetAODTrack() const
+{
+  // Return source object dyn-casted to AliAODTrack.
+
+  return dynamic_cast<AliAODTrack*>(GetSourceObject());
+}

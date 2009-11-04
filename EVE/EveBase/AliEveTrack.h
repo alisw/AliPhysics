@@ -43,6 +43,9 @@ public:
   virtual void SecSelected(TEveTrack*);        // *SIGNAL*
   virtual void SecSelectedTrack(AliEveTrack*); // *SIGNAL*
 
+  AliESDtrack* GetESDTrack() const;
+  AliAODTrack* GetAODTrack() const;
+
 protected:
 
 private:
