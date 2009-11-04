@@ -17,6 +17,10 @@ class AliPHOSGeoUtils;
 class TClonesArray;
 class TTreeStream;
 class TTreeSRedirector;
+class AliESDEvent;
+class AliHLTCaloClusterReader;
+struct AliHLTCaloClusterDataStruct;
+struct AliHLTCaloClusterHeaderStruct;
 
 #include "AliHLTLogging.h"
 #include "AliESDtrack.h"
@@ -38,9 +42,15 @@ public:
   void SetParameter(Double_t maxy=1., Double_t maxz=1., Double_t maxsnp=0.05, Double_t maxtgl=0.1, Double_t signed1Pt=0.001);
 
   // match tracks
-  Bool_t Match(AliHLTComponentBlockData* pBlock);
+  Bool_t Match(AliESDEvent *esdEvent, AliHLTCaloClusterHeaderStruct * clusterHeaderStruct);
 
 private:
+
+  AliHLTCaloClusterReader * fClusterReader;
+
+  //PHOS Geometry
+  AliPHOSGeoUtils* fPHOSGeom;
+
 
   // PHOS Geometry boundaries matching parameters
   const Double_t fMaxZ;    //! max Z track (cm)
@@ -48,13 +58,13 @@ private:
   const Double_t fMinX;
 
   const Double_t fDetRadius;
-  const Float_t fMaxSqDistance;
-  const Float_t fMatchingDistanceSq;
-  //PHOS Geometry
-  AliPHOSGeoUtils* fPHOSGeom;
-
+  const Double_t fMatchDistanceSq;
+  
   //Angle of PHOS Modules to Y 
   //Float_t fPHOSAngles[5];
+
+  Int_t *fBestMatchesArray;
+  Float_t *fTrackDistanceArray;
 
   ClassDef(AliHLTGlobalTrackMatcher,1) //Merging base class
 };

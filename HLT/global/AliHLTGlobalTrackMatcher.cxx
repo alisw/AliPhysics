@@ -17,9 +17,9 @@
  **************************************************************************/
 
 /** @file   AliHLTGlobalTrackMatcher.cxx
-    @author Jacek Otwinowski
+    @author Svein Lindal
     @date   
-    @brief  The HLT global merger base class
+    @brief  The HLT class Matching Calorimeter clusters to TPC tracks
 */
 
 //#include "AliTPCReconstructor.h"
@@ -27,7 +27,11 @@
 #include "AliHLTGlobalTrackMatcher.h"
 #include "AliExternalTrackParam.h"
 #include "AliHLTCaloClusterDataStruct.h"
+#include "AliHLTCaloClusterReader.h"
 #include "AliPHOSGeoUtils.h"
+#include "AliESDEvent.h"
+
+//struct AliHLTCaloClusterHeaderStruct;
 
 #if __GNUC__>= 3
 using namespace std;
@@ -36,55 +40,72 @@ using namespace std;
 ClassImp(AliHLTGlobalTrackMatcher)
 
 AliHLTGlobalTrackMatcher::AliHLTGlobalTrackMatcher() :
+  fClusterReader(NULL),
+  fPHOSGeom(NULL), 
   fMaxZ(64.+10.),
   fMaxX(72. + 72.*TMath::Sin(20) + 72.*TMath::Sin(40) +10. ), 
   fMinX(-72.-10.),
-  fPHOSGeom(NULL), 
-  fDetRadius(99999999),
-  fMaxSqDistance(99999),
-  fMatchingDistanceSq(9999999)
+
+  fDetRadius(-99999),
+  fMatchDistanceSq(400),
+  fBestMatchesArray(NULL),
+  fTrackDistanceArray(NULL)
 {
-  //Default constructor
-  
+  fClusterReader= new AliHLTCaloClusterReader();
   fPHOSGeom = new AliPHOSGeoUtils("PHOS", "noCPV");
-  //  fMaxX= ();
-  //fMinX=-72.-10.;
 }
 
 //_____________________________________________________________________________
 AliHLTGlobalTrackMatcher::~AliHLTGlobalTrackMatcher()
 {
   //Destructor
+  if (fPHOSGeom)
+    delete fPHOSGeom;
+  fPHOSGeom = NULL;
+
+  if (fBestMatchesArray)
+    delete[] fBestMatchesArray;
+  fBestMatchesArray = NULL;
+
+  if (fTrackDistanceArray)
+    delete[] fTrackDistanceArray;
+  fTrackDistanceArray = NULL;
+
 }
 
-  
-
-
-
 //_____________________________________________________________________________
-Bool_t AliHLTGlobalTrackMatcher::Match(AliHLTComponentBlockData* pBlock)
+Bool_t AliHLTGlobalTrackMatcher::Match(AliESDEvent* esdEvent, AliHLTCaloClusterHeaderStruct * clusterHeader)
 {
- 
-  Float_t shortestDistance = fMatchingDistance;
 
-  //Should be moved to constructor, fPHOSAngles should be a
-  Float_t fPHOSAngles[5] = {40, 20 , 0, -20 , 40};
-  Double_t fNormVector[1][3] = {{0, 0, 0}};
+  Double_t fNormVector[5][3] = {
+    {0, 0, 0}, 
+    {0, 0, 0}, 
+    {0, 10, 0}, 
+    {10*TMath::Cos(20), 10*TMath::Sin(20), 0}, 
+    {10*TMath::Cos(40), 10*TMath::Sin(40), 0}, 
+  };
   
-  //Helper variables, must be set dynamically;
-  int nt = 0;
-  AliExternalTrackParam * track = NULL;
-  AliHLTCaloClusterDataStruct * cluster = NULL;
-  Double_t bz = 0.0;
+  
+  fClusterReader->SetMemory(clusterHeader);
+  
+  int nClusters = clusterHeader->fNClusters;
+  
+  if( !(nClusters> 0) )
+    return false;
 
+  fBestMatchesArray = new int[nClusters];
+  fTrackDistanceArray = new Float_t[nClusters];
+  
+  //Position of track intersection with cylindrical plane defined by PHOS radius
   Double_t trackPos[3] = {0,0,0};
   
+  Double_t bz = esdEvent->GetMagneticField();
+  int nt = esdEvent->GetNumberOfTracks();
   for (int it = 0; it < nt; it++ ) {
-  
+    
+    AliExternalTrackParam * track = static_cast<AliExternalTrackParam*> (esdEvent->GetTrack(it)) ;
  
-    //Get track
- 
-    //See it track is even close to detector volume
+    //See if track is even close to detector volume
     if (! (track->GetXYZAt(fDetRadius, bz, trackPos)) )
       continue;
 
@@ -95,47 +116,63 @@ Bool_t AliHLTGlobalTrackMatcher::Match(AliHLTComponentBlockData* pBlock)
       continue;
  
     //Track is close to Detector volume
-    //loop over clusters and find clusters that are fairly near track
-    //for(int ic = 0; ic < nClusters; ic++) {
-    Double_t clusterPos[3] = {cluster->fGlobalPos[0], cluster->fGlobalPos[1], cluster->fGlobalPos[2]};
-    Double_t distanceSq = 0;
+    //loop over clusters to find clusters that are fairly close to track
     
-    //Find approximate distance between track and cluster
-    for(int i = 0; i < 3; i++) {
-      Float_t distance = trackPos[i] - clusterPos[1];
-      distanceSq += distance*distance;
-    }
+    //Set cluster reader to first cluster
+    fClusterReader->SetMemory(clusterHeader);
+    //Loop over clusters
+    int clusterIndex = -1;
+    AliHLTCaloClusterDataStruct* cluster;
+    while( (cluster = fClusterReader->NextCluster()) ) {
+            
+      clusterIndex++;
+      //Get approximate distance between cluster and track
+      Double_t clusterPos[3] = {cluster->fGlobalPos[0], cluster->fGlobalPos[1], cluster->fGlobalPos[2]};
+      Double_t distanceSq = 0;
+      for(int i = 0; i < 3; i++) {
+	Float_t distance = trackPos[i] - clusterPos[1];
+	distanceSq += distance*distance;
+      }
     
-    
-    if (distanceSq > fMaxSqDistance ) 
-      continue;
-
-    //We have a track in relatively close proximity to a cluster, do more accurate matching
-
-    //Get the module where the cluster is located
-    //Need CellId of one of the cells of the cluster;
-    int cellId = 0;
-    
-    Int_t relNumbering[4];
-    //BALLE check formart of relnumbering!!!!
-    fPHOSGeom->AbsToRelNumbering(cellId, relNumbering);
-    
-    //Project the track to the plane defined by the module geometry.
-    track->Intersect(clusterPos, fNormVector[(int) relNumbering[0]], bz);
-    
-    //Is the track closer to the cluster than previous matches.
-    if ( (Float_t distanceSq = clusterPos[0]*clusterPos[0] + clusterPos[2]* clusterPos[2]) < fTrackDistance[clusterIndex]*fTrackDistance[clusterIndex] ) {
+      if (distanceSq >( fMatchDistanceSq + 60) ) 
+	continue;
       
-      fBestMatches[clusterIndex] = trackIndex;
-      fTrackDistance[clusterIndex] = distanceSq;
-      
-    }
+      //We have a cluster in relatively close proximity to the track, do more accurate matching
+
+      //Get the module where the cluster is located
+      //Need CellId of one of the cells of the cluster;
+      UShort_t cellId = -1;
+      Double_t cellAmp = -1;
     
+      //Get a (any) cell in the cluster
+      fClusterReader->GetCell(cluster, cellId, cellAmp, (UInt_t) (0) );
+    
+      //Use cellId to find module nr;
+      Int_t relNumbering[4];
+      fPHOSGeom->AbsToRelNumbering(cellId, relNumbering);
+    
+      //Project the track to the plane defined by the module geometry and find intersection point
+      track->Intersect(clusterPos, fNormVector[relNumbering[0]], bz);
+    
+      //Is the track closer to the cluster than previous matches?
+      distanceSq = clusterPos[0]*clusterPos[0] + clusterPos[2]* clusterPos[2];
+      if ( distanceSq  <  fTrackDistanceArray[clusterIndex] )  {
+	fBestMatchesArray[clusterIndex] = it;
+	fTrackDistanceArray[clusterIndex] = distanceSq;
+      }
+    }  
   }//done looping over clusters 
   
-}
-
+  //now set the values in the ESD, or where? Return them as what?
   
 
+  //Reset Matching arrays
+  if(fBestMatchesArray)
+    delete[] fBestMatchesArray;
+  fBestMatchesArray = NULL;
 
+  if(fTrackDistanceArray)
+    delete[] fTrackDistanceArray;
+  fTrackDistanceArray = NULL;
 
+}  
