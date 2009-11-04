@@ -287,11 +287,13 @@ void AliAlignmentDataFilterITS::CreateOutputObjects()
   const AliTrackPointArray *array = 0;
   Float_t curv,curverr,runNumber;
   const TObjString *itsaligndata = 0;
+  const TObjString *itscalibrespsdd = 0;
   fspTree->Branch("SP","AliTrackPointArray",&array);
   fspTree->Branch("curv",&curv);
   fspTree->Branch("curverr",&curverr);
   fspTree->Branch("run",&runNumber);
   fspTree->Branch("ITSAlignData",&itsaligndata);
+  fspTree->Branch("ITSCalibRespSDD",&itscalibrespsdd);
   
 
   return;
@@ -371,11 +373,13 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
   AliTrackPointArray *arrayForTree=0;
   Float_t curv,curverr,runNumber;
   TObjString *itsaligndata=0;
+  TObjString *itscalibrespsdd = 0;
   fspTree->SetBranchAddress("SP",&arrayForTree);
   fspTree->SetBranchAddress("curv",&curv);
   fspTree->SetBranchAddress("curverr",&curverr);
   fspTree->SetBranchAddress("run",&runNumber);
   fspTree->SetBranchAddress("ITSAlignData",&itsaligndata);
+  fspTree->SetBranchAddress("ITSCalibRespSDD",&itscalibrespsdd);
 
 
   runNumber = (Float_t)esd->GetRunNumber();
@@ -390,6 +394,8 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
   cdbEntryString = cdbEntry->GetString();
   if(cdbEntryString.Contains("ITS/Align/Data")) 
     itsaligndata = new TObjString(*cdbEntry);
+  if(cdbEntryString.Contains("ITS/Calib/RespSDD")) 
+    itscalibrespsdd = new TObjString(*cdbEntry);
   }	 
 
 
@@ -712,11 +718,13 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
   AliTrackPointArray *arrayForTree=0;
   Float_t curv,curverr,runNumber;
   TObjString *itsaligndata=0;
+  TObjString *itscalibrespsdd = 0;
   fspTree->SetBranchAddress("SP",&arrayForTree);
   fspTree->SetBranchAddress("curv",&curv);
   fspTree->SetBranchAddress("curverr",&curverr);
   fspTree->SetBranchAddress("run",&runNumber);
   fspTree->SetBranchAddress("ITSAlignData",&itsaligndata);
+  fspTree->SetBranchAddress("ITSCalibRespSDD",&itscalibrespsdd);
 
 
   runNumber = (Float_t)esd->GetRunNumber();
@@ -731,6 +739,8 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
   cdbEntryString = cdbEntry->GetString();
   if(cdbEntryString.Contains("ITS/Align/Data")) 
     itsaligndata = new TObjString(*cdbEntry);
+  if(cdbEntryString.Contains("ITS/Calib/RespSDD")) 
+    itscalibrespsdd = new TObjString(*cdbEntry);
   }	 
 
   Int_t ntracks = esd->GetNumberOfTracks();
