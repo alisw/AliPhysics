@@ -76,6 +76,8 @@ void runBatch(const char *chainlistfile) {
 
   AliMCEventHandler *mcH = new AliMCEventHandler;
   mgr->SetMCtruthEventHandler(mcH);
+
+  mgr->SetCommonFileName("Femto.ESD.root");
   //____________________________________________//
   // 1st Pt task
 //   AliAnalysisTaskFemto *task1 = new AliAnalysisTaskFemto("TaskFemto");
