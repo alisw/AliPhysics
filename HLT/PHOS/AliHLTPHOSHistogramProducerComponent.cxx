@@ -112,32 +112,44 @@ AliHLTPHOSHistogramProducerComponent::DoEvent(const AliHLTComponentEventData& /*
 
 {
   //see header file for documentation
-
-  const AliHLTComponentBlockData* block = GetFirstInputBlock(AliHLTPHOSDefinitions::fgkESDCaloClusterDataType);
-  
-  if(block != 0)
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS); pBlock!=NULL; pBlock=GetNextInputBlock()) 
     {
-      HLTError("Number of clusters: %d", reinterpret_cast<TClonesArray*>(const_cast<AliHLTComponentBlockData*>(block))->GetEntries());
-      fPhysicsHistogramProducerPtr->AnalyseClusters(reinterpret_cast<TClonesArray*>(const_cast<AliHLTComponentBlockData*>(block)));
-    }
-  
-  //  block = GetFirstInputBlock(AliHLTPHOSDefinitions::fgkESDCaloCellsDataType);
-			     
-
-  if(block != 0)
-    {
+      AliHLTCaloClusterHeaderStruct *caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
       
+      if(fCellEnergy)
+	{
+	  fCellEnergyHistProducer->DoEvent(caloClusterHeaderPtr);
+	}
+      if(fClusterEnergy)
+	{
+	  fClusterEnergyHistProducer->DoEvent(caloClusterHeaderPtr);
+	}
+      if(fInvariantMass)
+	{
+	  fInvariantMassHistProducer->DoEvent(caloClusterHeaderPtr);
+	}
+      if(fMatchedTracks)
+	{
+	  fMatchedTracksHistProducer->DoEvent(caloClusterHeaderPtr);
+	}
     }
-  //  if(fEventCount%fPushModulo == 0)
-  //  {
-
-  HLTError("WRITING HISTOGRAMS!");
-  TFile* file = TFile::Open("/tmp/hist.root", "RECREATE");
-  (fPhysicsHistogramProducerPtr->GetHistograms())->Write();
-  file->Close();
-  PushBack(fPhysicsHistogramProducerPtr->GetHistograms(), AliHLTPHOSDefinitions::fgkPhysicsHistogramsDataType);
-      // }
-    
+  if(fCellEnergy)
+    {
+      PushBack(fCellEnergyHistProducer->GetHistograms(), AliHLTPHOSDefinitions::fgkPhysicsHistogramsDataType);
+    }
+  if(fClusterEnergy)
+    {
+      PushBack(fClusterEnergyHistProducer->GetHistograms(), AliHLTPHOSDefinitions::fgkPhysicsHistogramsDataType);
+    }
+  if(fInvariantMass)
+    {
+      PushBack(fInvariantMassHistProducer->GetHistograms(), AliHLTPHOSDefinitions::fgkPhysicsHistogramsDataType);
+    }
+  if(fMatchedTracks)
+    {
+      PushBack(fMatchedTracksHistProducer->GetHistograms(), AliHLTPHOSDefinitions::fgkPhysicsHistogramsDataType);
+    }
+      
   return 0;
 }
 
@@ -147,15 +159,30 @@ AliHLTPHOSHistogramProducerComponent::DoInit(int argc, const char** argv )
 {
   //see header file for documentation
 
-  fPhysicsHistogramProducerPtr = new AliHLTPHOSPhysicsHistogramProducer();
-  
+   
   for(int i = 0; i < argc; i++)
     {
-      if(!strcmp("-pushmodulo", argv[i]))
-	{
-	
-	  fPushModulo = atoi(argv[i+1]);
-	}
+      if(!strcmp("-cellenergy", argv[i+1])) fCellEnergy = true;
+      if(!strcmp("-clusterenergy", argv[i+1])) fClusterEnergy = true;
+      if(!strcmp("-invariantmass", argv[i+1])) fInvariantMass= true;
+      if(!strcmp("-matchedtracks", argv[i+1])) fMatchedTracks = true;
+    }
+  
+  if(fCellEnergy)
+    {
+      fCellEnergyHistProducer = new AliHLTPHOSHistoProdCellEnergy();
+    }
+  if(fClusterEnergy)
+    {
+      fClusterEnergyHistProducer = new AliHLTPHOSHistoProdClusterEnergy();
+    }
+  if(fInvariantMass)
+    {
+      fInvariantMassHistProducer = new AliHLTPHOSHistoProdInvMass();
+    }
+  if(fMatchedTracks)
+    {
+      fMatchedTracksHistProducer = new AliHLTPHOSHistoProdMatchedTracks();
     }
 
   return 0;
