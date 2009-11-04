@@ -40,6 +40,15 @@
 #include "AliHLTPHOSProcessor.h"
 
 class AliHLTPHOSPhysicsHistogramProducer;
+
+class AliHLTPHOSHistoProdCellEnergy;
+
+class AliHLTPHOSHistoProdClusterEnergy;
+
+class AliHLTPHOSHistoProdInvMass;
+
+class AliHLTPHOSHistoProdMatchedTracks;
+
 /**
  * @class AliHLTPHOSHistogramProducerComponent
  *
@@ -107,6 +116,20 @@ protected:
 
   AliHLTPHOSPhysicsHistogramProducer* fPhysicsHistogramProducerPtr;
   UInt_t fPushModulo;
+  
+  
+  Bool_t fCellEnergy; // make the cell energy histograms?
+  Bool_t fClusterEnergy; // make the cluster energy histograms?
+  Bool_t fInvariantMass; // make the invariant mass histograms?
+  Bool_t fMatchedTracks; // make the matched tracks histograms?
+  
+  AliHLTPHOSHistoProdCellEnergy *fCellEnergyHistProducer; // cell energy histogram producer
+
+  AliHLTPHOSHistoProdClusterEnergy *fClusterEnergyHistProducer; // cluster energy histogram producer
+
+  AliHLTPHOSHistoProdInvMass *fInvariantMassHistProducer; // invariant mass histogram producer
+
+  AliHLTPHOSHistoProdMatchedTracks *fMatchedTracksHistProducer; // matched tracks histogram producer
 
 };
 

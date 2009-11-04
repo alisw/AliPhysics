@@ -24,6 +24,11 @@
 #include "AliHLTPHOSPhysicsHistogramProducer.h"
 #include "AliHLTPHOSCaloClusterContainerStruct.h"
 #include "TClonesArray.h"
+#include "AliHLTPHOSHistoProdCellEnergy.h"
+#include "AliHLTPHOSHistoProdClusterEnergy.h"
+#include "AliHLTPHOSHistoProdInvMass.h"
+#include "AliHLTPHOSHistoProdMatchedTracks.h"
+
 /** 
  * @file   AliHLTPHOSHistogramProducerComponent.cxx
  * @author Oystein Djuvsland
