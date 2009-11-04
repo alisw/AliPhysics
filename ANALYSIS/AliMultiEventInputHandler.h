@@ -47,7 +47,6 @@ class AliMultiEventInputHandler : public AliInputEventHandler {
     Int_t          fNBuffered;    // Number of events actually buffered
     Int_t          fIndex;        // Pointer to most recent event
     Int_t          fCurrentBin;   // Current bin from the pool
-    TTree*         fTree;         // Pointer to the tree
     AliVEventPool* fEventPool;    // Pointer to the pool
     AliVEvent**    fEventBuffer;  // The event buffer
     ClassDef(AliMultiEventInputHandler, 1);

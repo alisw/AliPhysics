@@ -40,7 +40,6 @@ AliMultiEventInputHandler::AliMultiEventInputHandler() :
     fNBuffered(0),
     fIndex(0),
     fCurrentBin(0),
-    fTree(0),
     fEventPool(0),
     fEventBuffer(0)
 {
@@ -55,7 +54,6 @@ AliMultiEventInputHandler::AliMultiEventInputHandler(Int_t size, Int_t format) :
     fNBuffered(0),
     fIndex(0),
     fCurrentBin(0),
-    fTree(0),
     fEventPool(0),
     fEventBuffer(new AliVEvent*[size])
 {
@@ -78,7 +76,6 @@ AliMultiEventInputHandler::AliMultiEventInputHandler(const char* name, const cha
     fNBuffered(0),
     fIndex(0),
     fCurrentBin(0),
-    fTree(0),
     fEventPool(0),
     fEventBuffer(new AliVEvent*[size])
 {

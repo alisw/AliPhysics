@@ -450,7 +450,7 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
     } 
     // Connect to tree
     // prevent a memory leak when reading back the TList
-    if (!(strcmp(opt, "reconnect"))) fAODObjects->Delete();
+    // if (!(strcmp(opt, "reconnect"))) fAODObjects->Delete();
 
     // create a new TList from the UserInfo TList... 
     // copy constructor does not work...
