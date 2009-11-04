@@ -50,7 +50,7 @@ AliHLTPHOSSanityInspector::~AliHLTPHOSSanityInspector()
 
 
 Int_t  
-AliHLTPHOSSanityInspector::CheckInsanity(const UInt_t* data, const Int_t N) const
+AliHLTPHOSSanityInspector::CheckInsanity(const UShort_t* data, const Int_t N) const
 {
    //See header file for documentation
 
@@ -78,8 +78,7 @@ AliHLTPHOSSanityInspector::CheckInsanity(Int_t* data, Int_t N)
 
 
 Int_t 
-AliHLTPHOSSanityInspector::CheckAndHealInsanity(UInt_t* data, Int_t N)
-  //
+AliHLTPHOSSanityInspector::CheckAndHealInsanity(UShort_t* data, Int_t N)
 {
    //See header file for documentation
 
@@ -87,26 +86,25 @@ AliHLTPHOSSanityInspector::CheckAndHealInsanity(UInt_t* data, Int_t N)
 
   if(N > 3)
     {
-      //Require a stable start 
-      if((((Int_t)data[0] - (Int_t)data[1]) > fMaxDifference) || (((Int_t)data[1] - (Int_t)data[0]) > fMaxDifference))
+      if((((Short_t)data[0] - (Short_t)data[1]) > fMaxDifference) || (((Short_t)data[1] - (Short_t)data[0]) > fMaxDifference))
 	return -1;
-      if((((Int_t)data[1] - (Int_t)data[2]) > fMaxDifference) || (((Int_t)data[2] - (Int_t)data[1]) > fMaxDifference))
+      if((((Short_t)data[1] - (Short_t)data[2]) > fMaxDifference) || (((Short_t)data[2] - (Short_t)data[1]) > fMaxDifference))
 	return -1;
 
 
-      for(Int_t i = 2; i < N - 3; i++)
+      for(Short_t i = 2; i < N - 3; i++)
 	{
-	  if((((Int_t)data[i] - (Int_t)data[i+1]) > fMaxDifference) || (((Int_t)data[i+1] - (Int_t)data[i]) > fMaxDifference))
+	  if((((Short_t)data[i] - (Short_t)data[i+1]) > fMaxDifference) || (((Short_t)data[i+1] - (Short_t)data[i]) > fMaxDifference))
 	    {
 	      i++;
-	      if((((Int_t)data[i] -(Int_t)data[i+1]) > fMaxDifference) || (((Int_t)data[i+1] - (Int_t)data[i]) > fMaxDifference))
+	      if((((Short_t)data[i] -(Short_t)data[i+1]) > fMaxDifference) || (((Short_t)data[i+1] - (Short_t)data[i]) > fMaxDifference))
 		{
 		  i++;
-		  if((((Int_t)data[i] - (Int_t)data[i+1]) > fMaxDifference) || (((Int_t)data[i+1] - (Int_t)data[i]) > fMaxDifference))
+		  if((((Short_t)data[i] - (Short_t)data[i+1]) > fMaxDifference) || (((Short_t)data[i+1] - (Short_t)data[i]) > fMaxDifference))
 		    {
 		      return -2;  //Too crazy
 		    }
-		  data[i-1] = ((Int_t)data[i] + (Int_t)data[i-2])/2;
+		  data[i-1] = ((Short_t)data[i] + (Short_t)data[i-2])/2;
 		  crazyness++;
 		}
 	      else 
@@ -116,89 +114,23 @@ AliHLTPHOSSanityInspector::CheckAndHealInsanity(UInt_t* data, Int_t N)
       
       
       
-      if((((Int_t)data[N - 3] -(Int_t) data[N - 2]) > fMaxDifference) || 
-	 (((Int_t)data[N - 2] - (Int_t)data[N - 3]) > fMaxDifference))
+      if((((Short_t)data[N - 3] -(Short_t) data[N - 2]) > fMaxDifference) || 
+	 (((Short_t)data[N - 2] - (Short_t)data[N - 3]) > fMaxDifference))
 	{
-	  if((((Int_t)data[N - 2] - (Int_t)data[N - 1]) > fMaxDifference) || 
-	     (((Int_t)data[N - 1] - (Int_t)data[N - 2]) > fMaxDifference))
+	  if((((Short_t)data[N - 2] - (Short_t)data[N - 1]) > fMaxDifference) || 
+	     (((Short_t)data[N - 1] - (Short_t)data[N - 2]) > fMaxDifference))
 	    {
-	      data[N - 2] = ((Int_t)data[N - 3] +  (Int_t)data[N - 1])/2;
+	      data[N - 2] = ((Short_t)data[N - 3] +  (Short_t)data[N - 1])/2;
 	      return crazyness++;
 	    }
 	  return -4;
 
 	}
       
-      if((((Int_t)data[N - 2] - (Int_t)data[N - 1]) > fMaxDifference) || 
-	 (((Int_t)data[N - 1] - (Int_t)data[N - 2]) > fMaxDifference))
+      if((((Short_t)data[N - 2] - (Short_t)data[N - 1]) > fMaxDifference) || 
+	 (((Short_t)data[N - 1] - (Short_t)data[N - 2]) > fMaxDifference))
 	{
-	  //	  (Int_t)data[N - 3] = (Int_t)data[N - 4] -(Int_t) data[N - 5] + (Int_t)data[N-4];
-	  data[N - 1] = data[N - 2];
-	  return crazyness++;
-	}
-      
-    }
-  
-  return crazyness;
-  
-}
-
-
-
-Int_t 
-AliHLTPHOSSanityInspector::CheckAndHealInsanity(Int_t* data, Int_t N)
-{
-   //See header file for documentation
-
-  Int_t crazyness = 0;
-
-  if(N > 3)
-    {
-      if((((Int_t)data[0] - (Int_t)data[1]) > fMaxDifference) || (((Int_t)data[1] - (Int_t)data[0]) > fMaxDifference))
-	return -1;
-      if((((Int_t)data[1] - (Int_t)data[2]) > fMaxDifference) || (((Int_t)data[2] - (Int_t)data[1]) > fMaxDifference))
-	return -1;
-
-
-      for(Int_t i = 2; i < N - 3; i++)
-	{
-	  if((((Int_t)data[i] - (Int_t)data[i+1]) > fMaxDifference) || (((Int_t)data[i+1] - (Int_t)data[i]) > fMaxDifference))
-	    {
-	      i++;
-	      if((((Int_t)data[i] -(Int_t)data[i+1]) > fMaxDifference) || (((Int_t)data[i+1] - (Int_t)data[i]) > fMaxDifference))
-		{
-		  i++;
-		  if((((Int_t)data[i] - (Int_t)data[i+1]) > fMaxDifference) || (((Int_t)data[i+1] - (Int_t)data[i]) > fMaxDifference))
-		    {
-		      return -2;  //Too crazy
-		    }
-		  data[i-1] = ((Int_t)data[i] + (Int_t)data[i-2])/2;
-		  crazyness++;
-		}
-	      else 
-		return -3;    //Two spikes in a row? 
-	    }
-	}
-      
-      
-      
-      if((((Int_t)data[N - 3] -(Int_t) data[N - 2]) > fMaxDifference) || 
-	 (((Int_t)data[N - 2] - (Int_t)data[N - 3]) > fMaxDifference))
-	{
-	  if((((Int_t)data[N - 2] - (Int_t)data[N - 1]) > fMaxDifference) || 
-	     (((Int_t)data[N - 1] - (Int_t)data[N - 2]) > fMaxDifference))
-	    {
-	      data[N - 2] = ((Int_t)data[N - 3] +  (Int_t)data[N - 1])/2;
-	      return crazyness++;
-	    }
-	  return -4;
-
-	}
-      
-      if((((Int_t)data[N - 2] - (Int_t)data[N - 1]) > fMaxDifference) || 
-	 (((Int_t)data[N - 1] - (Int_t)data[N - 2]) > fMaxDifference))
-	{
-	  //	  (Int_t)data[N - 3] = (Int_t)data[N - 4] -(Int_t) data[N - 5] + (Int_t)data[N-4];
+	  //	  (Short_t)data[N - 3] = (Short_t)data[N - 4] -(Short_t) data[N - 5] + (Short_t)data[N-4];
 	  data[N - 1] = data[N - 2];
 	  return crazyness++;
 	}

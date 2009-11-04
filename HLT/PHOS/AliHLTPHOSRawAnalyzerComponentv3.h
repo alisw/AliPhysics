@@ -192,9 +192,12 @@ class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTPHOSRcuProcessor
   /** The maximum position a peak can have to be considered */
   Int_t fMaxPeakPosition;                             //COMMENT
 
-
-  bool fDoPushRawData;
+  /** Should we push raw data? */
+  bool fDoPushRawData;                                //COMMENT
   
+  /** Should we check for and heal insanity? */
+  bool fInspectSanity;                                //COMMENT
+
   // const UShort_t* fRawDataBuffer;
   // RawDataWriter *fRawDataWriter; 
 

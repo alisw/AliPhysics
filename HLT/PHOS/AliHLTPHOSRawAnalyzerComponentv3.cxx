@@ -41,7 +41,7 @@ AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3():
   fMinPeakPosition(0),
   fMaxPeakPosition(100),
   fDoPushRawData(false),
-
+  fInspectSanity(false),
   fRawDataWriter(0)
 {
   //comment
@@ -175,8 +175,6 @@ AliHLTPHOSRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
   return 0;
 }//end DoEvent
 
-
-
 Int_t
 AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize)
 {
@@ -194,8 +192,8 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
   //Adding to the total size of data written
   totSize += sizeof( AliHLTPHOSChannelDataHeaderStruct );
 
-  fRawReaderMemoryPtr->SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
-  fRawReaderMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + 1792  );
+  fRawReaderMemoryPtr->SetMemory(reinterpret_cast<UChar_t*>(iter->fPtr), static_cast<ULong_t>(iter->fSize));
+  fRawReaderMemoryPtr->SetEquipmentID(fMapperPtr->GetDDLFromSpec(iter->fSpecification) + 1792);
   fRawReaderMemoryPtr->Reset();
   fRawReaderMemoryPtr->NextEvent();
   
@@ -216,6 +214,7 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
       int cnt = 0;
       while( fAltroRawStreamPtr->NextChannel()  )
 	{ 
+	  // Removing TRUs
 	  if(  fAltroRawStreamPtr->GetHWAddress() < 128 || ( fAltroRawStreamPtr->GetHWAddress() ^ 0x800) < 128 ) 
 	    {
 	      continue; 
@@ -236,7 +235,6 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 		  
 		  if( fDoPushRawData == true)
 		    {
-		      //		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetStartTimeBin()  );
 		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
 		    }
 		  firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
@@ -249,21 +247,21 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 		      HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
 		      return -1;
 		    }
+		  if(fInspectSanity)
+		    {
+		      crazyness = fSanityInspectorPtr->CheckAndHealInsanity(firstBunchPtr, nSamples);
+		    }
 
 		  fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
 		  fAnalyzerPtr->Evaluate(0, nSamples);  
 	   
-		  //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
-		  {
-		    channelDataPtr->fChannelID =  chId;
-		    channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
+		  channelDataPtr->fChannelID =  chId;
+		  channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
 		
-		
-		    channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
-		    channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
-		    channelCount++;
-		    channelDataPtr++; // Updating position of the free output.
-		  }   
+		  channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
+		  channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
+		  channelCount++;
+		  channelDataPtr++; // Updating position of the free output.
 		}
 	    }
 	  if(fDoPushRawData)
@@ -314,10 +312,6 @@ AliHLTPHOSRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 
   for(int i = 0; i < argc; i++)
     {
-      if(!strcmp("-offset", argv[i]))
-	{
-	  fOffset = atoi(argv[i+1]);
-	}
       if(!strcmp("-bunchsizecut", argv[i]))
 	{
 	  fBunchSizeCut = atoi(argv[i+1]);
@@ -333,6 +327,10 @@ AliHLTPHOSRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
       if(!strcmp("-pushrawdata", argv[i]))
 	{
 	  fDoPushRawData = true;
+	}
+      if(!strcmp("-inspectsanity", argv[i]))
+	{
+	  fInspectSanity = true;
 	}
     }
  
