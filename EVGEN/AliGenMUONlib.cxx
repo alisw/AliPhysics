@@ -208,6 +208,102 @@ Double_t AliGenMUONlib::PtJpsiCDFscaledPP10( const Double_t *px, const Double_t 
   return x/TMath::Power(pass1,kxn);
 }
 
+Double_t AliGenMUONlib::PtJpsiCDFscaledPP9( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi pT
+//
+// pp 8.8 TeV
+// scaled from CDF data at 2 TeV
+//
+  const Double_t kpt0 = 5.245;
+  const Double_t kxn  = 4.071;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtJpsiCDFscaledPP7( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi pT
+//
+// pp 7 TeV
+// scaled from CDF data at 2 TeV
+
+  const Double_t kpt0 = 5.072;
+  const Double_t kxn  = 4.071;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtJpsiCDFscaledPP4( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi pT
+//
+// pp 3.94 TeV
+// scaled from CDF data at 2 TeV
+//
+  const Double_t kpt0 = 4.647;
+  const Double_t kxn  = 4.071;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtJpsiCDFscaledPPb9( const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+//
+// pPb 8.8 TeV, for EKS98 with minimum bias shadowing factor 0.80
+//
+  Double_t c[5] = {6.42774e-01, 1.86168e-02, -6.77296e-04, 8.93512e-06, 1.31586e-07};
+  Double_t x=*px;
+  Double_t y;
+  Int_t j;
+  y = c[j = 4];
+  while (j > 0) y  = y * x + c[--j];
+  //  
+  Double_t d = 1.+c[4]*TMath::Power(x,4);
+  return y/d * AliGenMUONlib::PtJpsiCDFscaledPP9(px,dummy);
+}
+
+Double_t AliGenMUONlib::PtJpsiCDFscaledPbP9( const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+//
+// Pbp 8.8 TeV, for EKS98 with minimum bias shadowing factor 0.80
+//
+  Double_t c[5] = {8.58557e-01, 5.39791e-02, -4.75180e-03, 2.49463e-04, 5.52396e-05};
+  Double_t x=*px;
+  Double_t y;
+  Int_t j;
+  y = c[j = 4];
+  while (j > 0) y  = y * x + c[--j];
+  //  
+  Double_t d = 1.+c[4]*TMath::Power(x,4);
+  return y/d * AliGenMUONlib::PtJpsiCDFscaledPP9(px,dummy);
+}
+
+Double_t AliGenMUONlib::PtJpsiCDFscaledPbPb4( const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+//
+// PbPb 3.94 TeV, for EKS98 with minimum bias shadowing factor 0.66
+//
+  Double_t c[5] = {6.01022e-01, 4.70988e-02, -2.27917e-03, 3.09885e-05, 1.31955e-06};
+  Double_t x=*px;
+  Double_t y;
+  Int_t j;
+  y = c[j = 4];
+  while (j > 0) y  = y * x + c[--j];
+  //  
+  Double_t d = 1.+c[4]*TMath::Power(x,4);
+  return y/d * AliGenMUONlib::PtJpsiCDFscaledPP4(px,dummy);
+}
+
 Double_t AliGenMUONlib::PtJpsiFlat( const Double_t */*px*/, const Double_t */*dummy*/ )
 {
   return 1.;
@@ -345,8 +441,6 @@ Double_t AliGenMUONlib::YJpsiCDFscaledPP( const Double_t *px, const Double_t* du
 
 Double_t AliGenMUONlib::YJpsiCDFscaledPP10( const Double_t *px, const Double_t */*dummy*/)
 {
-
-//
 // J/Psi y
 //
 // pp 10 TeV
@@ -367,6 +461,91 @@ Double_t AliGenMUONlib::YJpsiCDFscaledPP10( const Double_t *px, const Double_t *
         while (j > 0) y  = y * x + c[--j];
     } else {
         y =0.;
+    }
+
+    if(y<0) y=0;
+
+    return y;
+}
+
+Double_t AliGenMUONlib::YJpsiCDFscaledPP9( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+//
+// pp 8.8 TeV
+// rescaling of YJpsiPP(14 TeV) using 8.8 TeV / 14 TeV ratio of y-spectra in LO QCD 
+//
+    Double_t c[5] = {3.33882e+02, -1.30980e+02, 2.59082e+01, -3.08935e+00, 1.56375e-01};
+    Double_t x = TMath::Abs(px[0]);
+    Double_t y;
+
+    if (x < 3.7) {
+        y = 99.236 - 1.5498 * x * x;
+    } else if (x < 7.4) {
+	Int_t j;
+	y = c[j = 4];
+	while (j > 0) y  = y * x + c[--j];
+    } else {
+	y =0.;
+    }
+
+    if(y<0) y=0;
+
+    return y;
+}
+
+Double_t AliGenMUONlib::YJpsiCDFscaledPP9dummy(Double_t px)
+{
+    return AliGenMUONlib::YJpsiCDFscaledPP9(&px, (Double_t*) 0);
+}
+
+Double_t AliGenMUONlib::YJpsiCDFscaledPP7( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+//
+// pp 7 TeV
+// scaled from YJpsiPP(14 TeV) using 7 TeV / 14 TeV ratio of y-spectra in LO pQCD. 
+//
+
+    Double_t c[5] = {6.71181e+02, -3.69240e+02, 8.89644e+01, -1.04937e+01, 4.80959e-01};
+
+    Double_t x = TMath::Abs(px[0]);
+    Double_t y;
+
+    if (x < 4.0) {
+        y = 100.78 - 1.8353 * x * x;
+    } else if (x < 7.3) {
+        Int_t j;
+        y = c[j = 4];
+        while (j > 0) y  = y * x + c[--j];
+    } else {
+        y =0.;
+    }
+
+    if(y<0) y=0;
+
+    return y;
+}
+
+Double_t AliGenMUONlib::YJpsiCDFscaledPP4( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+//
+// pp 3.94 TeV
+// rescaling of YJpsiPP(14 TeV) using 3.94 TeV / 14 TeV ratio of y-spectra in LO QCD 
+//
+    Double_t c[5] = {4.00785e+02, -1.41159e+01, -3.28599e+01, 5.53048e+00, -2.45151e-01};
+    Double_t x = TMath::Abs(px[0]);
+    Double_t y;
+
+    if (x < 5.5) {
+        y = 107.389 - 2.7454 * x * x;
+    } else if (x < 7.0) {
+	Int_t j;
+	y = c[j = 4];
+	while (j > 0) y  = y * x + c[--j];
+    } else {
+	y =0.;
     }
 
     if(y<0) y=0;
@@ -402,6 +581,59 @@ Double_t AliGenMUONlib::YJpsiPP( const Double_t *px, const Double_t */*dummy*/)
     }
     
     return y;
+}
+
+Double_t AliGenMUONlib::YJpsiCDFscaledPPb9( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+//
+// pPb 8.8 TeV, for EKS98 with minimum bias shadowing factor 0.80
+//
+    Double_t c[7] = {7.52296e-01, 2.49917e-02, 3.36500e-03, 1.91187e-03, 2.92154e-04,
+		     -4.16509e-05,-7.62709e-06}; 
+    Double_t y;
+    Double_t x = px[0] + 0.47;              // rapidity shift
+    Int_t j;
+    y = c[j = 6];
+    while (j > 0) y = y * x + c[--j];
+    if(y<0) y=0;
+
+    return y * AliGenMUONlib::YJpsiCDFscaledPP9dummy(x);
+}
+
+Double_t AliGenMUONlib::YJpsiCDFscaledPbP9( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+//
+// Pbp 8.8 TeV, for EKS98 with minimum bias shadowing factor 0.80
+//
+    Double_t c[7] = {7.52296e-01, 2.49917e-02, 3.36500e-03, 1.91187e-03, 2.92154e-04,
+		     -4.16509e-05,-7.62709e-06}; 
+    Double_t y;
+    Double_t x = -px[0] + 0.47;              // rapidity shift
+    Int_t j;
+    y = c[j = 6];
+    while (j > 0) y = y * x + c[--j];
+    if(y<0) y=0;
+
+    return y * AliGenMUONlib::YJpsiCDFscaledPP9dummy(x);
+}
+
+Double_t AliGenMUONlib::YJpsiCDFscaledPbPb4( const Double_t *px, const Double_t *dummy)
+{
+// J/Psi y
+//
+// PbPb 3.94 TeV, for EKS98 with minimum bias shadowing factor 0.66
+//
+    Double_t c[4] = {5.95228e-01, 9.45069e-03, 2.44710e-04, -1.32894e-05}; 
+    Double_t x = px[0]*px[0];
+    Double_t y;
+    Int_t j;
+    y = c[j = 3];
+    while (j > 0) y  = y * x + c[--j];
+    if(y<0) y=0;
+
+    return y * AliGenMUONlib::YJpsiCDFscaledPP4(px,dummy);
 }
 
 Double_t AliGenMUONlib::YJpsiBPbPb( const Double_t *px, const Double_t */*dummy*/)
@@ -515,6 +747,103 @@ Double_t AliGenMUONlib::PtUpsilonCDFscaledPP10( const Double_t *px, const Double
   //
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
   return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtUpsilonCDFscaledPP9( const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon pT
+//
+// pp 8.8 TeV
+// scaled from CDF data at 2 TeV
+//
+  const Double_t kpt0 = 8.048;
+  const Double_t kxn  = 3.051;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtUpsilonCDFscaledPP7( const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon pT
+//
+// pp 7 TeV
+//
+// scaled from CDF data at 2 TeV
+
+  const Double_t kpt0 = 7.817;
+  const Double_t kxn  = 3.051;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtUpsilonCDFscaledPP4( const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon pT
+//
+// pp 3.94 TeV
+// scaled from CDF data at 2 TeV
+//
+  const Double_t kpt0 = 7.189;
+  const Double_t kxn  = 3.051;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtUpsilonCDFscaledPPb9( const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+//
+// pPb 8.8 TeV, for EKS98 with minimum bias shadowing factor 0.90
+//
+  Double_t c[5] = {7.64952e-01, 1.12501e-04, 4.96038e-04, -3.03198e-05, 3.74035e-06};
+  Double_t x=*px;
+  Double_t y;
+  Int_t j;
+  y = c[j = 4];
+  while (j > 0) y  = y * x + c[--j];
+  //  
+  Double_t d = 1.+c[4]*TMath::Power(x,4);
+  return y/d * AliGenMUONlib::PtUpsilonCDFscaledPP9(px,dummy);
+}
+
+Double_t AliGenMUONlib::PtUpsilonCDFscaledPbP9( const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+//
+// Pbp 8.8 TeV, for EKS98 with minimum bias shadowing factor 0.90
+//
+  Double_t c[5] = {1.09881e+00, 3.08329e-03, -2.00356e-04, 8.28991e-06, 2.52576e-06};
+  Double_t x=*px;
+  Double_t y;
+  Int_t j;
+  y = c[j = 4];
+  while (j > 0) y  = y * x + c[--j];
+  //  
+  Double_t d = 1.+c[4]*TMath::Power(x,4);
+  return y/d * AliGenMUONlib::PtUpsilonCDFscaledPP9(px,dummy);
+}
+
+Double_t AliGenMUONlib::PtUpsilonCDFscaledPbPb4( const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+//
+// PbPb 3.94 TeV, for EKS98 with minimum bias shadowing factor 0.85
+//
+  Double_t c[5] = {8.65872e-01, 2.05465e-03, 2.56063e-04, -1.65598e-05, 2.29209e-06};
+  Double_t x=*px;
+  Double_t y;
+  Int_t j;
+  y = c[j = 4];
+  while (j > 0) y  = y * x + c[--j];
+  //  
+  Double_t d = 1.+c[4]*TMath::Power(x,4);
+  return y/d * AliGenMUONlib::PtUpsilonCDFscaledPP4(px,dummy);
 }
 
 Double_t AliGenMUONlib::PtUpsilonFlat( const Double_t */*px*/, const Double_t */*dummy*/ )
@@ -643,20 +972,72 @@ Double_t AliGenMUONlib::YUpsilonFlat( const Double_t */*px*/, const Double_t */*
 
 Double_t AliGenMUONlib::YUpsilonCDFscaledPP10( const Double_t *px, const Double_t */*dummy*/)
 {
-
-//
 // Upsilon y
 //
 // pp 10 TeV
 // scaled from YUpsilonPP(14 TeV) using 10 TeV / 14 TeV ratio of y-spectra in LO pQCD. 
 // see S.Grigoryan, PWG3 Meeting, 27th Oct 2008
 //
-    Double_t c[4] = {1.12979e+00, -2.46155e-02, -7.37561e-04, 1.58824e-05};
+    Double_t c[4] = {1., -2.17877e-02, -6.52830e-04, 1.40578e-05};
     Double_t x = TMath::Abs(px[0]);
     if (x > 6.1) return 0.;
     Int_t j;
     Double_t y = c[j = 3];
     while (j > 0) y  = y * x*x +c[--j];
+    return y;
+}
+
+Double_t AliGenMUONlib::YUpsilonCDFscaledPP9( const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+//
+// pp 8.8 TeV
+// rescaling of YUpsilonPP(14 TeV) using 8.8 TeV / 14 TeV ratio of y-spectra in LO QCD 
+//
+    Double_t c[4] = {1., -2.37621e-02, -6.29610e-04, 1.47976e-05};
+    Double_t x = TMath::Abs(px[0]);
+    if (x > 6.1) return 0.;
+    Int_t j;
+    Double_t y = c[j = 3];
+    while (j > 0) y  = y * x*x +c[--j];
+    return y;
+}
+
+Double_t AliGenMUONlib::YUpsilonCDFscaledPP9dummy(Double_t px)
+{
+    return AliGenMUONlib::YUpsilonCDFscaledPP9(&px, (Double_t*) 0);
+}
+
+Double_t AliGenMUONlib::YUpsilonCDFscaledPP7( const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+//
+// pp 7 TeV
+// scaled from YUpsilonPP(14 TeV) using 7 TeV / 14 TeV ratio of y-spectra in LO pQCD. 
+//
+    Double_t c[4] = {1., -2.61009e-02, -6.83937e-04, 1.78451e-05};
+    Double_t x = TMath::Abs(px[0]);
+    if (x > 6.0) return 0.;
+    Int_t j;
+    Double_t y = c[j = 3];
+    while (j > 0) y  = y * x*x +c[--j];
+    return y;
+}
+
+Double_t AliGenMUONlib::YUpsilonCDFscaledPP4( const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+//
+// pp 3.94 TeV
+// rescaling of YUpsilonPP(14 TeV) using 3.94 TeV / 14 TeV ratio of y-spectra in LO QCD
+//
+    Double_t c[4] = {1., -3.91924e-02, -4.26184e-04, 2.10914e-05};
+    Double_t x = TMath::Abs(px[0]);
+    if (x > 5.7) return 0.;
+    Int_t j;
+    Double_t y = c[j = 3];
+    while (j > 0) y  = y * x*x +c[--j];
+
     return y;
 }
 
@@ -681,6 +1062,60 @@ Double_t AliGenMUONlib::YUpsilonPP( const Double_t *px, const Double_t */*dummy*
     while (j > 0) y  = y * x +c[--j];
     return y;
 }
+
+Double_t AliGenMUONlib::YUpsilonCDFscaledPPb9( const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+//
+// pPb 8.8 TeV, for EKS98 with minimum bias shadowing factor 0.90
+//
+    Double_t c[7] = {8.71829e-01, 4.77467e-02, 8.09671e-03, 6.45294e-04, -2.15730e-04,
+		     -4.67538e-05,-2.11683e-06}; 
+    Double_t y;
+    Double_t x = px[0] + 0.47;              // rapidity shift
+    Int_t j;
+    y = c[j = 6];
+    while (j > 0) y = y * x + c[--j];
+    if(y<0) y=0;
+
+    return y * AliGenMUONlib::YUpsilonCDFscaledPP9dummy(x);
+}
+
+Double_t AliGenMUONlib::YUpsilonCDFscaledPbP9( const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+//
+// Pbp 8.8 TeV, for EKS98 with minimum bias shadowing factor 0.90
+//
+    Double_t c[7] = {8.71829e-01, 4.77467e-02, 8.09671e-03, 6.45294e-04, -2.15730e-04,
+		     -4.67538e-05,-2.11683e-06}; 
+    Double_t y;
+    Double_t x = -px[0] + 0.47;              // rapidity shift
+    Int_t j;
+    y = c[j = 6];
+    while (j > 0) y = y * x + c[--j];
+    if(y<0) y=0;
+
+    return y * AliGenMUONlib::YUpsilonCDFscaledPP9dummy(x);
+}
+
+Double_t AliGenMUONlib::YUpsilonCDFscaledPbPb4( const Double_t *px, const Double_t *dummy)
+{
+// Upsilon y
+//
+// PbPb 3.94 TeV, for EKS98 with minimum bias shadowing factor 0.85
+//
+    Double_t c[4] = {8.27837e-01, 1.70115e-02, -1.26046e-03, 1.52091e-05}; 
+    Double_t x = px[0]*px[0];
+    Double_t y;
+    Int_t j;
+    y = c[j = 3];
+    while (j > 0) y  = y * x + c[--j];
+    if(y<0) y=0;
+
+    return y * AliGenMUONlib::YUpsilonCDFscaledPP4(px,dummy);
+}
+
 
 //                 particle composition
 //
@@ -1712,6 +2147,18 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiCDFscaledPP;
 	} else if (sname == "CDF pp 10") {
 	    func=PtJpsiCDFscaledPP10;
+	} else if (sname == "CDF pp 8.8") {
+	    func=PtJpsiCDFscaledPP9;
+	} else if (sname == "CDF pp 7") {
+	    func=PtJpsiCDFscaledPP7;
+	} else if (sname == "CDF pp 3.94") {
+	    func=PtJpsiCDFscaledPP4;
+	} else if (sname == "CDF pPb 8.8") {
+	    func=PtJpsiCDFscaledPPb9;
+	} else if (sname == "CDF Pbp 8.8") {
+	    func=PtJpsiCDFscaledPbP9;
+	} else if (sname == "CDF PbPb 3.94") {
+	    func=PtJpsiCDFscaledPbPb4;
 	} else if (sname == "Flat") {
 	    func=PtJpsiFlat;
 	} else {
@@ -1735,6 +2182,18 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtUpsilonCDFscaledPP;
 	} else if (sname == "CDF pp 10") {
 	    func=PtUpsilonCDFscaledPP10;
+	} else if (sname == "CDF pp 8.8") {
+	    func=PtUpsilonCDFscaledPP9;
+	} else if (sname == "CDF pp 7") {
+	    func=PtUpsilonCDFscaledPP7;
+	} else if (sname == "CDF pp 3.94") {
+	    func=PtUpsilonCDFscaledPP4;
+	} else if (sname == "CDF pPb 8.8") {
+	    func=PtUpsilonCDFscaledPPb9;
+	} else if (sname == "CDF Pbp 8.8") {
+	    func=PtUpsilonCDFscaledPbP9;
+	} else if (sname == "CDF PbPb 3.94") {
+	    func=PtUpsilonCDFscaledPbPb4;
 	} else if (sname == "Flat") {
 	    func=PtUpsilonFlat;
 	} else {
@@ -1855,6 +2314,18 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiCDFscaledPP;
 	} else if (sname == "CDF pp 10") {
 	    func=YJpsiCDFscaledPP10;
+	} else if (sname == "CDF pp 8.8") {
+	    func=YJpsiCDFscaledPP9;
+	} else if (sname == "CDF pp 7") {
+	    func=YJpsiCDFscaledPP7;
+	} else if (sname == "CDF pp 3.94") {
+	    func=YJpsiCDFscaledPP4;
+	} else if (sname == "CDF pPb 8.8") {
+	    func=YJpsiCDFscaledPPb9;
+	} else if (sname == "CDF Pbp 8.8") {
+	    func=YJpsiCDFscaledPbP9;
+	} else if (sname == "CDF PbPb 3.94") {
+	    func=YJpsiCDFscaledPbPb4;
 	} else if (sname == "Flat") {
 	    func=YJpsiFlat;
 	} else {
@@ -1878,6 +2349,18 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YUpsilonCDFscaledPP;
 	} else if (sname == "CDF pp 10") {
 	    func=YUpsilonCDFscaledPP10;
+	} else if (sname == "CDF pp 8.8") {
+	    func=YUpsilonCDFscaledPP9;
+	} else if (sname == "CDF pp 7") {
+	    func=YUpsilonCDFscaledPP7;
+	} else if (sname == "CDF pp 3.94") {
+	    func=YUpsilonCDFscaledPP4;
+	} else if (sname == "CDF pPb 8.8") {
+	    func=YUpsilonCDFscaledPPb9;
+	} else if (sname == "CDF Pbp 8.8") {
+	    func=YUpsilonCDFscaledPbP9;
+	} else if (sname == "CDF PbPb 3.94") {
+	    func=YUpsilonCDFscaledPbPb4;
 	} else if (sname == "Flat") {
 	    func=YUpsilonFlat;
 	} else {

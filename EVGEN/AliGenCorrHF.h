@@ -16,7 +16,7 @@
 
 class AliPythia;
 class TParticle;
-class TRandom;
+class TH2F;
 class TFile;
 class TString;
 
@@ -34,9 +34,9 @@ class AliGenCorrHF : public AliGenMC
     // force decay type
     virtual void SetDecayer(AliDecayer* decayer) {fDecayer = decayer;}
 
-    // Particle type parametrisation functions, needed by GetHadronPair
-    static Int_t IpCharm(TRandom* ran);
-    static Int_t IpBeauty(TRandom* ran);
+    // Hadron pair composition functions, needed by GetHadronPair
+    static void IpCharm(TH2F *hProbHH, Int_t &pdg3, Int_t &pdg4);
+    static void IpBeauty(TH2F *hProbHH, Int_t &pdg3, Int_t &pdg4);
 
     // Computation of cumulative sums of cell wght-s, needed by GetQuarkPair
     static Double_t ComputeIntegral(TFile* fG);
