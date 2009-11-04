@@ -53,7 +53,7 @@ AliAnalysisTaskJetCorrections * AddTaskJetCorrections(AliAnalysisManager* mgr ,A
 
   AliAnalysisDataContainer * coutpu0 = mgr->CreateContainer("coutpu0", TTree::Class(),
 				  AliAnalysisManager::kExchangeContainer);
-  AliAnalysisDataContainer *coutput1_jetCorr = mgr->CreateContainer("jetCorr", TList::Class(),AliAnalysisManager::kOutputContainer,"jetCorr.root");
+  AliAnalysisDataContainer *coutput1_jetCorr = mgr->CreateContainer("jetCorr", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_jetCorr",AliAnalysisManager::GetCommonFileName()));
 
    mgr->ConnectInput  (jetCorr, 0, cinput);
    mgr->ConnectOutput (jetCorr, 0, coutpu0);

@@ -27,7 +27,7 @@ AliAnalysisTaskJetSpectrum *AddTaskJetSpectrum()
    //      if(iAODanalysis)pwg4spec->SetAODInput(kTRUE);
    // pwg4spec->SetDebugLevel(11); 
    pwg4spec->SetBranchGen("jetsMC"); 
-   pwg4spec->SetBranchRec("jets"); 
+   pwg4spec->SetBranchRec("jetsAOD"); 
    mgr->AddTask(pwg4spec);
 
 
@@ -36,7 +36,7 @@ AliAnalysisTaskJetSpectrum *AddTaskJetSpectrum()
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer("pwg4spec", TList::Class(),AliAnalysisManager::kOutputContainer,"pwg4spec.root");
+   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer("pwg4spec", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_spec",AliAnalysisManager::GetCommonFileName()));
 
    mgr->ConnectInput  (pwg4spec, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (pwg4spec, 0, mgr->GetCommonOutputContainer());

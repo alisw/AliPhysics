@@ -34,7 +34,7 @@ AliAnalysisTaskJFSystematics *AddTaskJFSystematics(char *jf1 = "jetsMC",char *jf
    //==============================================================================
    AliAnalysisDataContainer *coutput1_jfs = mgr->CreateContainer(Form("pwg4jfs_%s_%s",jf1,jf2), 
 								 TList::Class(),AliAnalysisManager::kOutputContainer,
-								 Form("pwg4jfs_%s_%s.root",jf1,jf2));
+								 Form("%s:PWG4_jfs_%s_%s",AliAnalysisManager::GetCommonFileName(),jf1,jf2));
 
    mgr->ConnectInput  (pwg4jfs, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (pwg4jfs, 0, mgr->GetCommonOutputContainer());
