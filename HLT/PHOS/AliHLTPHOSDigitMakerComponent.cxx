@@ -17,13 +17,9 @@
 
 #include "AliHLTPHOSDigitMakerComponent.h"
 #include "AliHLTPHOSDigitMaker.h"
-#include "TTree.h"
-// #include "AliHLTPHOSProcessor.h"
-// #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSDigitDataStruct.h"
 #include "AliHLTPHOSChannelDataHeaderStruct.h"
 #include "AliHLTPHOSChannelDataStruct.h"
-#include "TClonesArray.h"
 #include "TFile.h"
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -49,7 +45,6 @@ AliHLTPHOSDigitMakerComponent::AliHLTPHOSDigitMakerComponent() :
   AliHLTPHOSProcessor(),
   fDigitMakerPtr(0),
   fDigitContainerPtr(0)
-  //  fEvtCnt(0)
 {
   //see header file for documentation
 }
@@ -86,12 +81,6 @@ AliHLTPHOSDigitMakerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>
   //see header file for documentation
   list.clear();
   list.push_back(AliHLTPHOSDefinitions::fgkChannelDataType);
-
-//   const AliHLTComponentDataType* pType=fgkInputDataTypes;
-//   while (pType->fID!=0) {
-//     list.push_back(*pType); 
-//     pType++;
-//   }
 }
 
 AliHLTComponentDataType 
@@ -156,7 +145,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   
   mysize += digitCount*sizeof(AliHLTPHOSDigitDataStruct);
 
-  HLTError("# of digits: %d, used memory size: %d, available size: %d", digitCount, mysize, size);
+  HLTDebug("# of digits: %d, used memory size: %d, available size: %d", digitCount, mysize, size);
 
 
   if(mysize > 0) 
@@ -169,6 +158,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
       bd.fSpecification = specification;
       outputBlocks.push_back(bd);
     }
+
   fDigitMakerPtr->Reset();
 
   size = mysize; 
