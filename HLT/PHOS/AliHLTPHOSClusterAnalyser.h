@@ -44,7 +44,7 @@ class AliHLTPHOSRecPointDataStruct;
 class AliHLTCaloClusterHeaderStruct;
 class AliHLTCaloClusterDataStruct;
 class AliPHOSGeoUtils;
-
+class AliHLTPHOSDigitHeaderStruct;
 /** 
  * @class AliHLTPHOSClusterAnalyser
  * ClusterAnalyser for PHOS HLT. Algorithms for center of gravity
@@ -93,7 +93,7 @@ public:
    * Set the rec point data buffer
    * @param recPointDataPtr is a pointer to the rec points
    */
-  void SetRecPointDataPtr(AliHLTPHOSRecPointHeaderStruct *recPointDataPtr);
+  void SetRecPointDataPtr(AliHLTPHOSRecPointHeaderStruct *recPointDataPtr, AliHLTPHOSDigitHeaderStruct *digitHeader);
 
 
   /** 
@@ -216,7 +216,9 @@ private:
 
   /** Do we have distance to bad channel? */
   Bool_t fHaveDistanceToBadChannel;                         //COMMENT
-  
+
+  /** Pointer to the digit header */
+  AliHLTPHOSDigitHeaderStruct *fDigitHeaderPtr;             //COMMENT
   
 };
 

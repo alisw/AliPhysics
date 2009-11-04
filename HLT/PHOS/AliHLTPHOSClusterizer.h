@@ -45,6 +45,8 @@
 
 #include "AliPHOSGeometry.h"
 
+class AliHLTPHOSDigitReader;
+
 /** 
  * @class AliHLTPHOSClusterizer
  * Clusterizer for PHOS HLT. The clusterizer takes digits as input, either
@@ -104,16 +106,15 @@ public:
   void SetEmcTimeGate(Float_t gate) { fEmcTimeGate = gate; }
   
   /** Starts clusterization of the event */ 
-  virtual Int_t ClusterizeEvent(UInt_t availableSize, UInt_t& totSize);
-  
+  virtual Int_t ClusterizeEvent(AliHLTPHOSDigitHeaderStruct *digitHeader, UInt_t availableSize, UInt_t& totSize);
+
   /**
    * For a given digit this digit scans for neighbouring digits which 
    * passes the threshold for inclusion in a rec point. If one is found 
    * it is added to the current rec point
-   * @param digIndex index of the digit in the digit container
    * @param recPoint pointer to the current rec point
    */
-  virtual Int_t ScanForNeighbourDigits(Int_t digIndex, AliHLTPHOSRecPointDataStruct* recPoint);
+  virtual Int_t ScanForNeighbourDigits(AliHLTPHOSRecPointDataStruct* recPoint);
 
   /**
    * Checks if two digits are neighbours
@@ -131,6 +132,14 @@ protected:
   /** Pointer to the digit output */
   AliHLTPHOSDigitDataStruct* fDigitDataPtr;                    //! transient
 
+  /** Pointer to the digit output */
+  AliHLTPHOSDigitDataStruct* fCurrentDigit;                    //! transient
+
+  /** Pointer to the digit output */
+  AliHLTPHOSDigitDataStruct* fStartDigit;                    //! transient
+
+  /** Pointer to the digit output */
+  AliHLTPHOSDigitDataStruct* fPreviousDigit;                    //! transient
   /** Energy threshold for starting a cluster for the calorimeter */
   Float_t fEmcClusteringThreshold;                             //COMMENT
 

@@ -37,7 +37,7 @@ AliHLTPHOSDigitDataStruct* AliHLTPHOSDigitReader::NextDigit()
 
   if(fCurrentDigit->fMemOffsetNext != 0)
     {
-      fNextDigit = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Int_t>(fCurrentDigit) + fCurrentDigit->fMemOffsetNext);
+      fNextDigit = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Long_t>(fCurrentDigit) + fCurrentDigit->fMemOffsetNext);
     }
   else
     {
@@ -51,7 +51,7 @@ void AliHLTPHOSDigitReader::DropDigit()
 {
   if(fCurrentDigit == fFirstDigit)
     {
-      fFirstDigit = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Int_t>(fFirstDigit) + fFirstDigit->fMemOffsetNext);
+      fFirstDigit = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Long_t>(fFirstDigit) + fFirstDigit->fMemOffsetNext);
       fDigitHeader->fFirstDigitOffset += fCurrentDigit->fMemOffsetNext;
     }
   else if(fCurrentDigit != 0)

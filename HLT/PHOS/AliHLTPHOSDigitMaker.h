@@ -89,11 +89,10 @@ public:
    * Sets the pointer to the output
    * @param the output pointer
    */
-  void SetDigitDataHeaderPtr(AliHLTPHOSDigitHeaderStruct *digitHeaderPtr) 
+  void SetDigitHeaderPtr(AliHLTPHOSDigitHeaderStruct *digitHeaderPtr) 
   { 
     fDigitHeaderPtr = digitHeaderPtr;
-    fDigitStructPtr = digitHeaderPtr + sizeof(AliHLTPHOSDigitHeaderStruct);
-    fDigitHeaderPtr.fStartPtr = reinterpret_cast<Char_t*>(fDigitStructPtr);
+    fDigitStructPtr = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Long_t>(digitHeaderPtr) + sizeof(AliHLTPHOSDigitHeaderStruct));
   }
 
   /**
@@ -113,7 +112,7 @@ public:
    * @param channelDataHeader is the data header from the AliHLTPHOSRawAnalyzer
    * @return the number of digits found
    */
-  Int_t MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataHeader, AliHLTUInt32_t availableSize)
+  Int_t MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataHeader, AliHLTUInt32_t availableSize);
 
 
   /**
@@ -130,7 +129,7 @@ public:
   void SetOrdered(bool val) { fOrdered = val; }
 
   /**
-   * Reset the digit maker */
+   * Reset the digit maker
    */
   void Reset() { fDigitCount = 0; }
 
@@ -142,7 +141,7 @@ public:
   /** 
    * Compare two digits, used during the sorting
    */
-  Int_t CompareDigits(const void *dig0, const void *dig);
+  static Int_t CompareDigits(const void *dig0, const void *dig);
 
   
 private:
@@ -195,6 +194,9 @@ private:
 
   /** Pointer to the AliHLTPHOSDigitDataStruct */
   AliHLTPHOSDigitDataStruct *fDigitStructPtr;                    //! transient
+
+  /** Pointer to the AliHLTPHOSDigitDataStruct */
+  AliHLTPHOSDigitHeaderStruct *fDigitHeaderPtr;                  //! transient
 
   /** Digit count */
   Int_t fDigitCount;                                             //COMMENT

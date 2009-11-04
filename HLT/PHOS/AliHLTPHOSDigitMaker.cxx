@@ -1,4 +1,4 @@
-3// $Id$
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -292,14 +292,17 @@ AliHLTPHOSDigitMaker::SortDigits()
 {
 
   // See header file for documentation
-  qsort(fDigitPtrArray, fDigitCount, sizeof(AliHLTPHOSDigitDataStruct*), AliHLTPHOSDigitMaker::CompareDigits);
 
-  fDigitHeaderPtr->fFirstDigitOffset = fDigitPtrArray[0] - (fDigitHeaderPtr + sizeof(AliHLTPHOSDigitHeaderStruct));
+  //  Int_t (*funcPtr)(const void*, const void*)  = &AliHLTPHOSDigitMaker::CompareDigits;
+
+  qsort(fDigitPtrArray, fDigitCount, sizeof(AliHLTPHOSDigitDataStruct*), CompareDigits);
+
+  fDigitHeaderPtr->fFirstDigitOffset = reinterpret_cast<Long_t>(fDigitPtrArray[0]) - reinterpret_cast<Long_t>(fDigitHeaderPtr) + sizeof(AliHLTPHOSDigitHeaderStruct);
   for(Int_t i = 0; i < fDigitCount-1; i++)
     {
       fDigitPtrArray[0]->fMemOffsetNext = fDigitPtrArray[i+1] - fDigitPtrArray[i];
     }
-  fDigitHeaderPtr->fLastDigitOffset = fDigitPtrArray[fDigitCount-1] - (fDigitHeaderPtr + sizeof(AliHLTPHOSDigitHeaderStruct));
+  fDigitHeaderPtr->fLastDigitOffset = reinterpret_cast<Long_t>(fDigitPtrArray[fDigitCount-1]) - (reinterpret_cast<Long_t>(fDigitHeaderPtr) + sizeof(AliHLTPHOSDigitHeaderStruct));
   fDigitPtrArray[fDigitCount-1]->fMemOffsetNext = 0;
 }
 
@@ -307,6 +310,5 @@ Int_t
 AliHLTPHOSDigitMaker::CompareDigits(const void *dig0, const void *dig1)
 {
   // See header file for documentation
-  return *((AliHLTPHOSDigitDataStruct**)(dig0))->fID - *((AliHLTPHOSDigitDataStruct**)(dig1))->fID;
+  return (*((AliHLTPHOSDigitDataStruct**)(dig0)))->fID - (*((AliHLTPHOSDigitDataStruct**)(dig1)))->fID;
 }
-

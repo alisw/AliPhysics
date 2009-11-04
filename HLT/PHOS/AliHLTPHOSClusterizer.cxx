@@ -36,6 +36,7 @@
 #include "AliHLTPHOSRecPointDataStruct.h"
 #include "AliHLTPHOSDigitDataStruct.h"
 #include "AliHLTPHOSDigitContainerDataStruct.h"
+#include "AliHLTPHOSDigitReader.h"
 #include "TClonesArray.h"
 #include "AliPHOSDigit.h"
 #ifndef HAVENOT__PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
@@ -100,7 +101,7 @@ AliHLTPHOSClusterizer::ClusterizeEvent(AliHLTPHOSDigitHeaderStruct *digitHeader,
 
       fDigitsInCluster = 0;
       
-      if(fCurrentDigit.fEnergy < fEmcClusteringThreshold)
+      if(fCurrentDigit->fEnergy < fEmcClusteringThreshold)
 	{
 	  continue;
 	}
@@ -148,11 +149,11 @@ AliHLTPHOSClusterizer::ScanForNeighbourDigits(AliHLTPHOSRecPointDataStruct* recP
 {
   //see header file for documentation
 
-  Int_t max = TMath::Min((Int_t)fDigitContainerPtr->fNDigits, (Int_t)fMaxDigitIndexDiff+index);
-  Int_t min = TMath::Max(0, (Int_t)(index - (Int_t)fMaxDigitIndexDiff));
+  //Int_t max = TMath::Min((Int_t)fDigitContainerPtr->fNDigits, (Int_t)fMaxDigitIndexDiff+index);
+  //  Int_t min = TMath::Max(0, (Int_t)(index - (Int_t)fMaxDigitIndexDiff));
 
-  max = fDigitContainerPtr->fNDigits;
-  min = 0;
+  //  Int_t max = fDigitContainerPtr->fNDigits;
+  //  Int_t min = 0;
 
   fDigitReader->Rewind();
 
@@ -163,8 +164,8 @@ AliHLTPHOSClusterizer::ScanForNeighbourDigits(AliHLTPHOSRecPointDataStruct* recP
 	  if(AreNeighbours(fStartDigit, fCurrentDigit))
 	    {
 	      fDigitReader->DropDigit();
-	      fPreviousDigit->fMemOffsetNext = reinterpret_cast<Int_t>(fCurrentDigit) - reinterpret_cast<Int_t>(fPreviousDigit);
-	      recPoint->fAmp += fCurrentDigit.fEnergy;
+	      fPreviousDigit->fMemOffsetNext = reinterpret_cast<Long_t>(fCurrentDigit) - reinterpret_cast<Long_t>(fPreviousDigit);
+	      recPoint->fAmp += fCurrentDigit->fEnergy;
 	      fDigitsInCluster++;
 	      ScanForNeighbourDigits(recPoint);
 	    }

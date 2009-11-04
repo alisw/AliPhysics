@@ -17,6 +17,7 @@
 #include "AliHLTPHOSClusterAnalyserComponent.h"
 #include "AliHLTPHOSClusterAnalyser.h"
 #include "AliHLTPHOSRecPointHeaderStruct.h"
+#include "AliHLTPHOSDigitDataStruct.h"
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliPHOSGeoUtils.h"
 #include "TGeoManager.h"
@@ -152,10 +153,9 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
 	  continue;
         }
       specification = specification|iter->fSpecification;
-      AliHLTPHOSDigitHeaderStruct *digitHeader = reinterpret_cast<AliHLTPHOSDigitHeaderStruct>(iter->fPtr);
+      AliHLTPHOSDigitHeaderStruct *digitHeader = reinterpret_cast<AliHLTPHOSDigitHeaderStruct*>(iter->fPtr);
       
-      fClusterAnalyserPtr->SetRecPointDataPtr(reinterpret_cast<AliHLTPHOSRecPointHeaderStruct*>(iter->fPtr + sizeof(AliHLTPHOSDigitHeaderStruct) + digitHeader->fNDigits*sizeof(AliHLTPHOSDigitDataStruct)));
-
+      fClusterAnalyserPtr->SetRecPointDataPtr(reinterpret_cast<AliHLTPHOSRecPointHeaderStruct*>(reinterpret_cast<Long_t>(iter->fPtr) + sizeof(AliHLTPHOSDigitHeaderStruct) + digitHeader->fNDigits*sizeof(AliHLTPHOSDigitDataStruct)), digitHeader);
       if(fDoDeconvolution)
 	{
 	  fClusterAnalyserPtr->DeconvoluteClusters();

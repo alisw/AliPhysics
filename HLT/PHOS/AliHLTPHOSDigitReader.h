@@ -29,7 +29,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 
-class AliHLTPHOSDigitDataStruct;
+#include "AliHLTPHOSDigitDataStruct.h"
 
 /** 
  * @class AliHLTPHOSDigitReader
@@ -39,6 +39,7 @@ class AliHLTPHOSDigitDataStruct;
  */
 class AliHLTPHOSDigitReader
 {
+
 public:
   AliHLTPHOSDigitReader();			
   virtual ~AliHLTPHOSDigitReader();
@@ -48,7 +49,7 @@ public:
     fDigitHeader = digitHeader; 
     if(fDigitHeader->fNDigits != 0)
       {
-	fFirstDigit = reinterpret_cast<AliHLTPHOSDigitDataStruct>(reinterpret_cast<Int_t>(fDigitHeader) + sizeof(AliHLTPHOSDigitHeaderStruct) + fDigitHeader->fFirstDigitOffset);
+	fFirstDigit = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Long_t>(fDigitHeader) + sizeof(AliHLTPHOSDigitHeaderStruct) + fDigitHeader->fFirstDigitOffset);
       }
     else 
       {
@@ -65,8 +66,7 @@ public:
 
   void Rewind() { fCurrentDigit = fFirstDigit; }
 
-  Int_t GetCurrentDigitOffset() { return reinterpret_cast<Int_t>(fCurrentDigit) - reinterpret_cast<Int_t>(fDigitHeader) + sizeof(AliHLTPHOSDigitHeaderStruct);
-
+  Int_t GetCurrentDigitOffset() { return reinterpret_cast<Long_t>(fCurrentDigit) - reinterpret_cast<Long_t>(fDigitHeader) + sizeof(AliHLTPHOSDigitHeaderStruct); }
 private:
   
   /** Pointer to the digit header */
@@ -75,12 +75,15 @@ private:
   /** Pointer to the current digit */
   AliHLTPHOSDigitDataStruct *fCurrentDigit;    //COMMENT
 
+  /** Pointer to the next digit */
+  AliHLTPHOSDigitDataStruct *fNextDigit;    //COMMENT
+
   /** Pointer to the current digit */
   AliHLTPHOSDigitDataStruct *fPrevDigit;    //COMMENT
 
   /** Pointer to the first digit */
   AliHLTPHOSDigitDataStruct *fFirstDigit;    //COMMENT
-};
+  };
 
 
 #endif

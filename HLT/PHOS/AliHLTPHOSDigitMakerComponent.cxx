@@ -118,8 +118,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   UInt_t specification = 0;
   AliHLTPHOSChannelDataHeaderStruct* tmpChannelData = 0;
   
-  fDigitMakerPtr->SetDigitDataPtr(reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outputPtr));
-
+  fDigitMakerPtr->SetDigitHeaderPtr(reinterpret_cast<AliHLTPHOSDigitHeaderStruct*>(outputPtr));
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
