@@ -117,7 +117,7 @@ void AliCorrQADataMakerRec::InitRecPoints()
 void AliCorrQADataMakerRec::InitRaws()
 {
   // createa ntuple taking all the parameters declared by detectors
-  if (fCorrNt) 
+  if (fCorrNt[AliRecoParam::AConvert(fEventSpecie)]) 
     return ; 
   delete fRawsQAList ; // not needed for the time being 
   fRawsQAList = NULL ; 
