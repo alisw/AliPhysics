@@ -80,9 +80,6 @@ Bool_t AliHLTGlobalTrackMatcher::Match(AliESDEvent* esdEvent, AliHLTCaloClusterH
     {10*TMath::Cos(40), 10*TMath::Sin(40), 0}, 
   };
   
-  
-
-  
   fClusterReader->SetMemory(clusterHeader);
   
   int nClusters = clusterHeader->fNClusters;
@@ -118,13 +115,10 @@ Bool_t AliHLTGlobalTrackMatcher::Match(AliESDEvent* esdEvent, AliHLTCaloClusterH
     //Track is close to Detector volume
     //loop over clusters to find clusters that are fairly close to track
     
-    //Set cluster reader to first cluster
     fClusterReader->SetMemory(clusterHeader);
-    //Loop over clusters
     int clusterIndex = -1;
     AliHLTCaloClusterDataStruct* cluster;
     while( (cluster = fClusterReader->NextCluster()) ) {
-            
       clusterIndex++;
       
       //Get approximate distance between cluster and track
@@ -175,7 +169,7 @@ Bool_t AliHLTGlobalTrackMatcher::Match(AliESDEvent* esdEvent, AliHLTCaloClusterH
 	    cluster->fTracksMatched->AddAt(cluster->fTracksMatched->GetAt(0), cluster->fTracksMatched->GetSize() - 1);
 	    //Finally add the new best to first spot
 	    cluster->fTracksMatched->AddAt(track->GetLabel(), 0);
-	      }
+	  }
 	  
 	  //This is the new standard for best match
 	  tDistance[clusterIndex] = distanceSq;
@@ -183,7 +177,6 @@ Bool_t AliHLTGlobalTrackMatcher::Match(AliESDEvent* esdEvent, AliHLTCaloClusterH
 	}  else {
 	  
 	  //It's a match, but not best match
-	  
 	  //Increase Array size by one
 	  cluster->fTracksMatched->Set(cluster->fTracksMatched->GetSize() + 1);
 	  //Add new track at back of the array

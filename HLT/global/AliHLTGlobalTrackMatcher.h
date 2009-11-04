@@ -8,7 +8,7 @@
 /** @file   AliHLTGlobalTrackMatcher.h
     @author Svein Lindal (svein.lindal@fys.uio.no)
     @date   
-    @brief  The HLT TPC Calorimeter cluster matcher base class
+    @brief  The HLT class matching TPC tracks to calorimeter clusters
 */
 
 
@@ -33,8 +33,10 @@ struct AliHLTCaloClusterHeaderStruct;
  * @author Jacek.Otwinowski@gsi.de
  */
 class AliHLTGlobalTrackMatcher : public AliHLTLogging {
+
 public:
   AliHLTGlobalTrackMatcher();
+
   /** destructor */
   virtual ~AliHLTGlobalTrackMatcher();
 
@@ -45,7 +47,8 @@ public:
   Bool_t Match(AliESDEvent *esdEvent, AliHLTCaloClusterHeaderStruct * clusterHeaderStruct);
 
 private:
-
+  
+  //Helper class reading calocluster structs.
   AliHLTCaloClusterReader * fClusterReader;
 
   //PHOS Geometry
@@ -53,9 +56,9 @@ private:
 
 
   // PHOS Geometry boundaries matching parameters
-  const Double_t fMaxZ;    //! max Z track (cm)
-  const Double_t fMaxX;    //! max Y track (cm)
-  const Double_t fMinX;
+  const Double_t fMaxZ;    //! max Z track    (cm)
+  const Double_t fMaxX;    //! max X track    (cm)
+  const Double_t fMinX;    //  min X of track (cm)
 
   const Double_t fDetRadius;
   const Double_t fMatchDistanceSq;
@@ -67,10 +70,8 @@ private:
   Int_t *fBestMatchesArray;
   Float_t *fTrackDistanceArray;
 
-  
   AliHLTGlobalTrackMatcher(const AliHLTGlobalTrackMatcher & );
   AliHLTGlobalTrackMatcher & operator = (const AliHLTGlobalTrackMatcher &);
-
 
   ClassDef(AliHLTGlobalTrackMatcher,1) //Merging base class
 };
