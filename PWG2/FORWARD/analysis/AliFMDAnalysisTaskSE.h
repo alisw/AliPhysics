@@ -52,11 +52,11 @@ public:				//
 private:
   
   TList* fListOfHistos;
-  AliFMDAnalysisTaskSharing              fSharing;
-  AliFMDAnalysisTaskDensity              fDensity;
-  AliFMDAnalysisTaskBackgroundCorrection fBackground;
-  AliFMDAnalysisTaskDndeta               fDndeta;
-  AliFMDAnaParameters*                   fParams;
+  AliFMDAnalysisTaskSharing              fSharing;     // Sharing task
+  AliFMDAnalysisTaskDensity              fDensity;     // Density task
+  AliFMDAnalysisTaskBackgroundCorrection fBackground;  // Background task
+  AliFMDAnalysisTaskDndeta               fDndeta;      // dN/deta task
+  AliFMDAnaParameters*                   fParams;      // Analysis parameters
 
   
   ClassDef(AliFMDAnalysisTaskSE, 1);
