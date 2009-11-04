@@ -163,7 +163,7 @@ AliTOFDecoder::~AliTOFDecoder()
 //_________________________________________________________________
 
 Bool_t
-AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh)
+AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh)
 {
   /* main decoding routine.
    * it loops over nWords 32-bit words 
