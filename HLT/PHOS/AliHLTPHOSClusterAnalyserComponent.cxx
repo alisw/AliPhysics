@@ -152,8 +152,9 @@ AliHLTPHOSClusterAnalyserComponent::DoEvent(const AliHLTComponentEventData& evtD
 	  continue;
         }
       specification = specification|iter->fSpecification;
-      fClusterAnalyserPtr->SetRecPointDataPtr(reinterpret_cast<AliHLTPHOSRecPointHeaderStruct*>(iter->fPtr));
-      //      HLTDebug("Number of rec points: %d", (reinterpret_cast<AliHLTPHOSRecPointHeaderStruct*>(iter->fPtr))->fNRecPoints);
+      AliHLTPHOSDigitHeaderStruct *digitHeader = reinterpret_cast<AliHLTPHOSDigitHeaderStruct>(iter->fPtr);
+      
+      fClusterAnalyserPtr->SetRecPointDataPtr(reinterpret_cast<AliHLTPHOSRecPointHeaderStruct*>(iter->fPtr + sizeof(AliHLTPHOSDigitHeaderStruct) + digitHeader->fNDigits*sizeof(AliHLTPHOSDigitDataStruct)));
 
       if(fDoDeconvolution)
 	{

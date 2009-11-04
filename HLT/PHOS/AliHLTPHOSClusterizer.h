@@ -152,6 +152,9 @@ protected:
   /** Current available buffer size */
   UInt_t fAvailableSize;                                       //COMMENT
 
+  /** object reading the digit */
+  AliHLTPHOSDigitReader *fDigitReader;                         //COMMENT
+
   ClassDef(AliHLTPHOSClusterizer, 0);
 };
 

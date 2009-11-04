@@ -58,12 +58,15 @@ AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():
   fEmcTimeGate(0),
   fDigitsInCluster(0),
   fDigitContainerPtr(0),
-  fMaxDigitIndexDiff(2*NZROWSMOD)
+  fMaxDigitIndexDiff(2*NZROWSMOD),
+  fDigitReader(0)
 {
   //See header file for documentation
   fEmcClusteringThreshold = 0.2;
   fEmcMinEnergyThreshold = 0.03;
   fEmcTimeGate = 1.e-6 ;
+
+  fDigitReader = new AliHLTPHOSDigitReader();
 }//end
 
 
@@ -80,51 +83,51 @@ AliHLTPHOSClusterizer::SetRecPointDataPtr(AliHLTPHOSRecPointDataStruct* recPoint
 }
 
 Int_t 
-AliHLTPHOSClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
+AliHLTPHOSClusterizer::ClusterizeEvent(AliHLTPHOSDigitHeaderStruct *digitHeader, UInt_t availableSize, UInt_t& totSize)
 {
   //see header file for documentation
   Int_t nRecPoints = 0;
 
   fAvailableSize = availableSize;
 
+  fDigitReader->SetDigitHeader(digitHeader);
+
   //  UInt_t maxRecPointSize = sizeof(AliHLTPHOSRecPointDataStruct) + (sizeof(AliHLTPHOSDigitDataStruct) << 7); //Reasonable estimate... 
 
   //Clusterization starts
-  for(UInt_t i = 0; i < fDigitContainerPtr->fNDigits; i++)
+  while((fCurrentDigit = fDigitReader->NextDigit()) != 0)
     { 
+
       fDigitsInCluster = 0;
       
-      if(fDigitContainerPtr->fDigitDataStruct[i].fEnergy < fEmcClusteringThreshold)
+      if(fCurrentDigit.fEnergy < fEmcClusteringThreshold)
 	{
 	  continue;
 	}
+
       if(fAvailableSize < (sizeof(AliHLTPHOSRecPointDataStruct)))
 	{
 	  HLTError("Out of buffer, stopping clusterisation");
 	  return -1; 
 	}
 
-      // First digit is placed at the fDigits member variable in the recpoint
-      fDigitDataPtr = &(fRecPointDataPtr->fDigits);
+      // Save the starting digit
+      fStartDigit = fCurrentDigit;
+      fPreviousDigit = fStartDigit;
+      // Get the offset of the digit starting the cluster relative to the start of the digit block
+      fRecPointDataPtr->fStartDigitOffset = fDigitReader->GetCurrentDigitOffset();
+      fDigitReader->DropDigit();
 
       fRecPointDataPtr->fAmp = 0;
-      fRecPointDataPtr->fModule = fDigitContainerPtr->fDigitDataStruct[i].fModule;
+      fRecPointDataPtr->fModule = fCurrentDigit->fModule;
 
-      // Assigning digit data to the digit pointer
-      fRecPointDataPtr->fDigits = fDigitContainerPtr->fDigitDataStruct[i];
-
-      fAvailableSize -= (sizeof(AliHLTPHOSRecPointDataStruct));
-
-      // Incrementing the pointer to be ready for new entry
-      fDigitDataPtr++;
-
-      fRecPointDataPtr->fAmp += fDigitContainerPtr->fDigitDataStruct[i].fEnergy;
-      fDigitContainerPtr->fDigitDataStruct[i].fEnergy = 0;
+      fRecPointDataPtr->fAmp += fCurrentDigit->fEnergy;
       fDigitsInCluster++;
+
       nRecPoints++;
 
       // Scanning for the neighbours
-      if(ScanForNeighbourDigits(i, fRecPointDataPtr) < 0)
+      if(ScanForNeighbourDigits(fRecPointDataPtr) < 0)
 	{
 	  return -1;
 	}
@@ -134,48 +137,36 @@ AliHLTPHOSClusterizer::ClusterizeEvent(UInt_t availableSize, UInt_t& totSize)
       
       fRecPointDataPtr->fMultiplicity = fDigitsInCluster;     
 
-      fRecPointDataPtr = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(fDigitDataPtr);
+      fRecPointDataPtr++;
     }//end of clusterization
 
    return nRecPoints;
 }
 
 Int_t
-AliHLTPHOSClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTPHOSRecPointDataStruct* recPoint)
+AliHLTPHOSClusterizer::ScanForNeighbourDigits(AliHLTPHOSRecPointDataStruct* recPoint)
 {
   //see header file for documentation
+
   Int_t max = TMath::Min((Int_t)fDigitContainerPtr->fNDigits, (Int_t)fMaxDigitIndexDiff+index);
   Int_t min = TMath::Max(0, (Int_t)(index - (Int_t)fMaxDigitIndexDiff));
 
   max = fDigitContainerPtr->fNDigits;
   min = 0;
-  for(Int_t j = min; j < max; j++)
+
+  fDigitReader->Rewind();
+
+  while((fCurrentDigit = fDigitReader->NextDigit()))
     {
-      if(fDigitContainerPtr->fDigitDataStruct[j].fEnergy > fEmcMinEnergyThreshold)
+      if(fCurrentDigit->fEnergy > fEmcMinEnergyThreshold)
 	{
-	  if(j != index)
+	  if(AreNeighbours(fStartDigit, fCurrentDigit))
 	    {
-	      if(AreNeighbours(&(fDigitContainerPtr->fDigitDataStruct[index]),
-			       &(fDigitContainerPtr->fDigitDataStruct[j])))
-		{
-		  // Assigning value to digit ptr
-		  if(fAvailableSize < sizeof(AliHLTPHOSDigitDataStruct))
-		    {
-		      HLTError("Out of buffer, stopping clusterisation");
-		      return -1; 
-		    }
-		  fAvailableSize -= sizeof(AliHLTPHOSDigitDataStruct);
-
-		  *fDigitDataPtr = fDigitContainerPtr->fDigitDataStruct[j];
-		  // Incrementing digit pointer to be ready for new entry
-
-		  fDigitDataPtr++;
-
-		  recPoint->fAmp += fDigitContainerPtr->fDigitDataStruct[j].fEnergy;
-		  fDigitContainerPtr->fDigitDataStruct[j].fEnergy = 0;	      
-		  fDigitsInCluster++;
-		  ScanForNeighbourDigits(j, recPoint);
-		}
+	      fDigitReader->DropDigit();
+	      fPreviousDigit->fMemOffsetNext = reinterpret_cast<Int_t>(fCurrentDigit) - reinterpret_cast<Int_t>(fPreviousDigit);
+	      recPoint->fAmp += fCurrentDigit.fEnergy;
+	      fDigitsInCluster++;
+	      ScanForNeighbourDigits(recPoint);
 	    }
 	}
     }
