@@ -16,30 +16,33 @@ AliAnalysisTaskMuonDistributions *AddTaskMuonDistributions(const char *kAnalysis
       return NULL;
    }   
    
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist1",TList::Class(),AliAnalysisManager::kOutputContainer,"MuonDistributions.root");
+   TString outputfile = AliAnalysisManager::GetCommonFileName();
+   outputfile += ":PWG3Muon_Dimuon";
 
-  AliAnalysisTaskMuonDistributions *MuonDistributionsTask = new AliAnalysisTaskMuonDistributions("AliAnalysisTaskMuonDistributions");
-  MuonDistributionsTask->SetAnalysisType(kAnalysisType);
-  //
-  // define by hand the beam energy
-  //
-  MuonDistributionsTask->SetBeamEnergy(5000.);
-  //
-  // define fits limits
-  //
-  MuonDistributionsTask->SetInvMassFitLimits(2.,5.5);
-  MuonDistributionsTask->SetPsiFitLimits(2.9,3.3);
-  MuonDistributionsTask->SetPsiPFitLimits(3.3,4.2);
-  MuonDistributionsTask->SetBckFitLimits(2.,2.8);
-  //
-  // perform fit to the invariant mass spectrum
-  //
-  MuonDistributionsTask->FitInvariantMassSpectrum(kFALSE);
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Dimuon",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+
+   AliAnalysisTaskMuonDistributions *MuonDistributionsTask = new AliAnalysisTaskMuonDistributions("AliAnalysisTaskMuonDistributions");
+   MuonDistributionsTask->SetAnalysisType(kAnalysisType);
+   //
+   // define by hand the beam energy
+   //
+   MuonDistributionsTask->SetBeamEnergy(5000.);
+   //
+   // define fits limits
+   //
+   MuonDistributionsTask->SetInvMassFitLimits(2.,5.5);
+   MuonDistributionsTask->SetPsiFitLimits(2.9,3.3);
+   MuonDistributionsTask->SetPsiPFitLimits(3.3,4.2);
+   MuonDistributionsTask->SetBckFitLimits(2.,2.8);
+   //
+   // perform fit to the invariant mass spectrum
+   //
+   MuonDistributionsTask->FitInvariantMassSpectrum(kFALSE);
   
-  mgr->AddTask(MuonDistributionsTask);
+   mgr->AddTask(MuonDistributionsTask);
  
-  mgr->ConnectInput(MuonDistributionsTask,0,mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(MuonDistributionsTask,1,coutput1);
- 
-  return MuonDistributionsTask;
+   mgr->ConnectInput(MuonDistributionsTask,0,mgr->GetCommonInputContainer());
+   mgr->ConnectOutput(MuonDistributionsTask,1,coutput1);
+  
+   return MuonDistributionsTask;
 }
