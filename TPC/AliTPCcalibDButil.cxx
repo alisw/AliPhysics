@@ -1464,6 +1464,7 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCCE(Double_t &dist,Int_t run, Int_t time
   // deltaT    - integration period to calculate time0 offset 
   // side      - 0 - A side,  1 - C side, 2 - mean from both sides
   TObjArray *arrT     =AliTPCcalibDB::Instance()->GetCErocTtime();
+  if (!arrT) return 0;
   AliTPCParam *param  =AliTPCcalibDB::Instance()->GetParameters();
   TObjArray*  cearray =AliTPCcalibDB::Instance()->GetCEData(); 
   AliTPCCalibVdrift * driftCalib = (AliTPCCalibVdrift *)cearray->FindObject("driftPTCE");
@@ -1717,6 +1718,7 @@ void AliTPCcalibDButil::SmoothGraph(TGraph *graph, Double_t delta){
   Sort(graph);
   Int_t npoints = graph->GetN();
   Double_t *outy=new Double_t[npoints];
+  
   for (Int_t ipoint=0; ipoint<npoints; ipoint++){
     Double_t lx=graph->GetX()[ipoint];
     Int_t index0=TMath::BinarySearch(npoints, graph->GetX(),lx-delta);
@@ -1729,6 +1731,24 @@ void AliTPCcalibDButil::SmoothGraph(TGraph *graph, Double_t delta){
       outy[ipoint]=graph->GetY()[ipoint];
     }
   }
+ //  TLinearFitter  fitter(3,"pol2");
+//   for (Int_t ipoint=0; ipoint<npoints; ipoint++){
+//     Double_t lx=graph->GetX()[ipoint];
+//     Int_t index0=TMath::BinarySearch(npoints, graph->GetX(),lx-delta);
+//     Int_t index1=TMath::BinarySearch(npoints, graph->GetX(),lx+delta);
+//     if (index0<0) index0=0;
+//     if (index1>=npoints-1) index1=npoints-1;
+//     fitter.ClearPoints();
+//     for (Int_t jpoint=0;jpoint<index1-index0; jpoint++)
+//     if ((index1-index0)>1){
+//       outy[ipoint]  = TMath::Mean(index1-index0, &(graph->GetY()[index0]));
+//     }else{
+//       outy[ipoint]=graph->GetY()[ipoint];
+//     }
+//   }
+
+
+
   for (Int_t ipoint=0; ipoint<npoints; ipoint++){
     graph->GetY()[ipoint] = outy[ipoint];
   }
@@ -1793,6 +1813,7 @@ Float_t AliTPCcalibDButil::FilterSensor(AliDCSSensor * sensor, Double_t ymin, Do
     sensor->SetFit(0);
     return 0.;
   }
+
   Double_t medianY0=0, medianY1=0;
   Double_t rmsY0   =0, rmsY1=0;
   medianY0 = TMath::Median(naccept, yin0);
@@ -1841,7 +1862,7 @@ Float_t  AliTPCcalibDButil::FilterTemperature(AliTPCSensorTempArray *tempArray, 
     //printf("%d\n",isensor);
     FilterSensor(sensor,ymin,ymax,kMaxDy, sigmaCut);
     if (sensor->GetFit()==0){
-      delete sensor;
+      //delete sensor;
       tempArray->RemoveSensorNum(isensor);
     }else{
       naccept++;
@@ -2096,47 +2117,6 @@ void AliTPCcalibDButil::FilterTracks(Int_t run, Double_t cutSigma, TTreeSRedirec
 }
 
 
-void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t deltaT, Double_t cutSigma, TTreeSRedirector *pcstream){
-  //
-  // Filter Goofie data
-  // 0.  remove outlyers      - cutSigma around median
-  // 1.  smooth the graphs    - deltaT - smoothing window
-  //  
-  for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
-    //
-    //
-    AliDCSSensor *sensor = goofieArray->GetSensor(isensor);       
-    Double_t medianY;    
-    if (sensor &&  sensor->GetGraph()){
-      TGraph * graph = sensor->GetGraph();
-      if (isensor==3 && graph->GetN()>1){ // drift velocity
-	TGraph * graphv = FilterGraphMedianAbs(graph,0.2,medianY);
-	delete graph;
-	graph=graphv;
-      }
-      TGraph * graph2 = FilterGraphMedian(graph,cutSigma,medianY);
-      if (!graph2) continue;
-      AliTPCcalibDButil::SmoothGraph(graph2,deltaT);
-      if (pcstream){
-	Int_t run = AliTPCcalibDB::Instance()->GetRun();
-	(*pcstream)<<"filterG"<<
-	  "run="<<run<<
-	  "isensor="<<isensor<<
-	  "mY="<<medianY<<
-	  "graph.="<<graph<<
-	  "graph2.="<<graph2<<
-	  "\n";
-      }      
-      if (graph2->GetN()<2) {delete graph2; continue;}
-      delete graph;
-      sensor->SetGraph(graph2);      
-    }
-  }
-}
-
-
-
-
 
 
 
@@ -2188,3 +2168,147 @@ Double_t AliTPCcalibDButil::GetLaserTime0(Int_t run, Int_t timeStamp, Int_t delt
   delete [] xlaser;
   return mean;
 }
+
+
+
+
+void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t deltaT, Double_t cutSigma, TTreeSRedirector *pcstream){
+  //
+  // Filter Goofie data
+  //
+  // 
+  // Ignore goofie if not enough points
+  //
+  const Int_t kMinPoints = 3;
+  //
+
+  TGraph *graphvd = goofieArray->GetSensorNum(2)->GetGraph();
+  TGraph *graphan = goofieArray->GetSensorNum(8)->GetGraph();
+  TGraph *graphaf = goofieArray->GetSensorNum(9)->GetGraph();
+  TGraph *graphpt = goofieArray->GetSensorNum(15)->GetGraph();
+  if (!graphvd) return;
+  if (graphvd->GetN()<kMinPoints){
+    delete graphvd;
+    goofieArray->GetSensorNum(2)->SetGraph(0);
+    return;
+  }
+  //
+  // 1. Caluclate medians of critical variables
+  //    drift velcocity
+  //    P/T
+  //    area near peak
+  //    area far  peak
+  //
+  Double_t medianpt=0;
+  Double_t medianvd=0;
+  Double_t medianan=0;
+  Double_t medianaf=0;
+  Int_t entries=graphvd->GetN();
+  TGraph * graphvd0 = AliTPCcalibDButil::FilterGraphMedianAbs(graphvd,0.03,medianvd);
+  TGraph * graphvd1 = AliTPCcalibDButil::FilterGraphMedian(graphvd0,2,medianvd);
+  TGraph * graphpt0 = AliTPCcalibDButil::FilterGraphMedianAbs(graphpt,10,medianpt);
+  TGraph * graphpt1 = AliTPCcalibDButil::FilterGraphMedian(graphpt0,2,medianpt);
+  TGraph * graphan0 = AliTPCcalibDButil::FilterGraphMedianAbs(graphan,10,medianan);
+  TGraph * graphan1 = AliTPCcalibDButil::FilterGraphMedian(graphan0,2,medianan);
+  TGraph * graphaf0 = AliTPCcalibDButil::FilterGraphMedianAbs(graphaf,10,medianaf);
+  TGraph * graphaf1 = AliTPCcalibDButil::FilterGraphMedian(graphaf0,2,medianaf);
+  delete graphvd0;
+  delete graphvd1;
+  delete graphpt0;
+  delete graphpt1;
+  delete graphan0;
+  delete graphan1;
+  delete graphaf0;
+  delete graphaf1;
+  //
+  // 2. Make outlyer graph
+  //
+  Int_t nOut=0;
+  TGraph graphOut(*graphvd);
+  for (Int_t i=0; i<entries;i++){
+    //
+    Bool_t isOut=kFALSE;
+    if (TMath::Abs(graphvd->GetY()[i]/medianvd-1.)>0.02) isOut|=kTRUE;
+    if (TMath::Abs(graphpt->GetY()[i]/medianpt-1.)>0.02) isOut|=kTRUE;
+    if (TMath::Abs(graphan->GetY()[i]/medianan-1.)>0.03) isOut|=kTRUE;
+    if (TMath::Abs(graphaf->GetY()[i]/medianaf-1.)>0.03) isOut|=kTRUE;
+    graphOut.GetY()[i]= (isOut)?1:0;
+    if (isOut) nOut++;
+  }
+  if (nOut<kMinPoints) return; 
+  //
+  // 3. Filter out outlyers - and smooth 
+  //
+  TVectorF vmedianArray(goofieArray->NumSensors());
+  TVectorF vrmsArray(goofieArray->NumSensors());
+  Double_t xnew[10000];
+  Double_t ynew[10000]; 
+  TObjArray junk;
+  junk.SetOwner(kTRUE);
+  Bool_t isOK=kTRUE;
+  //
+  //
+  for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
+    isOK=kTRUE;
+    AliDCSSensor *sensor = goofieArray->GetSensorNum(isensor); 
+    TGraph *graphOld=0, *graphNew=0, * graphNew0=0,*graphNew1=0,*graphNew2=0;
+    //
+    if (!sensor) continue;
+    graphOld = sensor->GetGraph();
+    if (graphOld) {
+      sensor->SetGraph(0);
+      Int_t nused=0;
+      for (Int_t i=0;i<entries;i++){
+	if (graphOut.GetY()[i]>0.5) continue;
+	xnew[nused]=graphOld->GetX()[i];
+	ynew[nused]=graphOld->GetY()[i];
+	nused++;
+      }
+      graphNew = new TGraph(nused,xnew,ynew);
+      junk.AddLast(graphNew);
+      junk.AddLast(graphOld);      
+      Double_t median=0;
+      graphNew0  = AliTPCcalibDButil::FilterGraphMedian(graphNew,cutSigma,median);
+      if (graphNew0!=0){
+	junk.AddLast(graphNew0);
+	graphNew1  = AliTPCcalibDButil::FilterGraphMedian(graphNew0,cutSigma,median);
+	if (graphNew1!=0){
+	  junk.AddLast(graphNew1);
+	  graphNew2  = AliTPCcalibDButil::FilterGraphMedian(graphNew1,cutSigma,median);
+	  if (graphNew2!=0) {
+	    AliTPCcalibDButil::SmoothGraph(graphNew2,deltaT);
+	    AliTPCcalibDButil::SmoothGraph(graphNew2,deltaT);
+	    AliTPCcalibDButil::SmoothGraph(graphNew2,deltaT);
+	    printf("%d\t%f\n",isensor, median);
+	    vmedianArray[isensor]=median;
+	    vrmsArray[isensor]   =median;
+	    //
+	  }
+	}
+      }
+    }
+    if (!graphOld) {  isOK=kFALSE; graphOld =&graphOut;}
+    if (!graphNew0) { isOK=kFALSE; graphNew0=graphOld;}
+    if (!graphNew1) { isOK=kFALSE; graphNew1=graphOld;}
+    if (!graphNew2) { isOK=kFALSE; graphNew2=graphOld;}
+    (*pcstream)<<"goofieA"<<
+      Form("isOK_%d.=",isensor)<<isOK<<      
+      Form("s_%d.=",isensor)<<sensor<<
+      Form("gr_%d.=",isensor)<<graphOld<<
+      Form("gr0_%d.=",isensor)<<graphNew0<<
+      Form("gr1_%d.=",isensor)<<graphNew1<<
+      Form("gr2_%d.=",isensor)<<graphNew2;
+      sensor->SetGraph(graphNew2);
+    }
+    (*pcstream)<<"goofieA"<<
+      "vmed.="<<&vmedianArray<<
+      "\n";
+    junk.Delete();   // delete temoprary graphs
+  
+}
+
+
+
+
+
+
