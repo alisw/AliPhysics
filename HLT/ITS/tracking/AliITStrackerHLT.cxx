@@ -783,8 +783,9 @@ Int_t AliITStrackerHLT::CorrectForPipeMaterial(AliHLTITSTrack *t,
   
   Float_t  dir = (InwardDirection ? 1. : -1.);
   Double_t rToGo= ( InwardDirection ? AliITSRecoParam::GetrInsidePipe() : AliITSRecoParam::GetrOutsidePipe());
-  Double_t xToGo;
-  if (!t->GetLocalXat(rToGo,xToGo)) return 0;
+  Double_t xToGo, phi,z;
+
+  if (!t->GetLocalXPhiZat(rToGo,xToGo,phi,z)) return 0;
 
   Double_t xOverX0,x0,lengthTimesMeanDensity;
 
@@ -872,8 +873,9 @@ Int_t AliITStrackerHLT::CorrectForShieldMaterial(AliHLTITSTrack *t,
     Error("CorrectForShieldMaterial"," Wrong shield name\n");
     return 0;
   }
-  Double_t xToGo;
-  if (!t->GetLocalXat(rToGo,xToGo)) return 0;
+  Double_t xToGo, phi,z;
+
+  if (!t->GetLocalXPhiZat(rToGo,xToGo,phi,z)) return 0;
 
   Double_t xOverX0,x0,lengthTimesMeanDensity;
   Int_t nsteps=1;
