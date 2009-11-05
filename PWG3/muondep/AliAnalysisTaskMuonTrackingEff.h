@@ -23,7 +23,8 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTask
   AliAnalysisTaskMuonTrackingEff(const AliAnalysisTaskMuonTrackingEff& rhs);
   AliAnalysisTaskMuonTrackingEff& operator=(const AliAnalysisTaskMuonTrackingEff&);
   AliAnalysisTaskMuonTrackingEff(const char* name,
-		     const AliMUONGeometryTransformer* transformer);
+				 const AliMUONGeometryTransformer* transformer,
+				 Bool_t isCosmic = kFALSE);
   virtual ~AliAnalysisTaskMuonTrackingEff();
 
   // Implementation of interface methods
@@ -33,6 +34,12 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTask
   virtual void Terminate(Option_t *option);
 
   static const Int_t fTotNbrOfDetectionElt;    ///< The total number of detection element in the tracking system.
+  static const Int_t fTotNbrOfChamber;
+
+  void ComputeErrors();                        ///< Compute the error on the efficiency (see .ccx for the formula)
+  
+  void SetCosmic(Bool_t isCosmic) {fIsCosmicData = isCosmic;};
+  Bool_t IsCosmic() {return fIsCosmicData;};
 
  private:
   const AliMUONGeometryTransformer* fTransformer;
@@ -41,6 +48,11 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTask
   TClonesArray* fDetEltEffHistList; //!<Detetcion efficiencies histograms list. 
   TClonesArray* fDetEltTDHistList;  //!<List of histograms of the tracks detected in the detection elements. 
   TClonesArray* fDetEltTTHistList;  //!<List of histograms of the tracks which have passed through the detection elements. 
+  TClonesArray* fChamberEffHistList;
+  TClonesArray* fChamberTDHistList;
+  TClonesArray* fChamberTTHistList;
+
+  Bool_t fIsCosmicData;
 
   ClassDef(AliAnalysisTaskMuonTrackingEff, 1)
 };

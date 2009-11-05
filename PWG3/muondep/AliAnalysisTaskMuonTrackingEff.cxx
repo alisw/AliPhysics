@@ -26,6 +26,8 @@
 #include <TList.h>
 #include <TClonesArray.h>
 #include <TH2F.h>
+#include <TH1F.h>
+#include <TMath.h>
 
 //ANALYSIS includes
 #include "AliAnalysisManager.h"
@@ -50,28 +52,37 @@
 ClassImp(AliAnalysisTaskMuonTrackingEff)
 
 const Int_t AliAnalysisTaskMuonTrackingEff::fTotNbrOfDetectionElt  = 156;
+const Int_t AliAnalysisTaskMuonTrackingEff::fTotNbrOfChamber  = 10;
 
 //________________________________________________________________________
 AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff()
-    :
-    AliAnalysisTask(),
-    fTransformer(0x0),
-    fESD(0x0),
-    fDetEltEffHistList(0x0),
-    fDetEltTDHistList(0x0),
-    fDetEltTTHistList(0x0)
+  :
+  fIsCosmicData(kFALSE),
+  AliAnalysisTask(),
+  fTransformer(0x0),
+  fESD(0x0),
+  fDetEltEffHistList(0x0),
+  fDetEltTDHistList(0x0),
+  fDetEltTTHistList(0x0),
+  fChamberEffHistList(0x0),
+  fChamberTDHistList(0x0),
+  fChamberTTHistList(0x0)
 {
 /// Default constructor
 }
 //________________________________________________________________________
 AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const AliAnalysisTaskMuonTrackingEff& src)
-    :
-    AliAnalysisTask(src),
-    fTransformer(0x0),
-    fESD(0x0),
-    fDetEltEffHistList(0x0),
-    fDetEltTDHistList(0x0),
-    fDetEltTTHistList(0x0)
+  :
+  fIsCosmicData(kFALSE),
+  AliAnalysisTask(src),
+  fTransformer(0x0),
+  fESD(0x0),
+  fDetEltEffHistList(0x0),
+  fDetEltTDHistList(0x0),
+  fDetEltTTHistList(0x0),
+  fChamberEffHistList(0x0),
+  fChamberTDHistList(0x0),
+  fChamberTTHistList(0x0)
 {
   /// copy ctor
   src.Copy(*this);
@@ -89,18 +100,25 @@ AliAnalysisTaskMuonTrackingEff& AliAnalysisTaskMuonTrackingEff::operator=(const 
 
 //________________________________________________________________________
 AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
-				       const AliMUONGeometryTransformer* transformer)
-    :
-    AliAnalysisTask(name, "AnalysisTaskESD"),
-    fTransformer(transformer),
-    fESD(0x0),
-    fDetEltEffHistList(0x0),
-    fDetEltTDHistList(0x0),
-    fDetEltTTHistList(0x0)
+							       const AliMUONGeometryTransformer* transformer,
+							       Bool_t isCosmic)
+  :
+  fIsCosmicData(kFALSE),
+  AliAnalysisTask(name, "AnalysisTaskESD"),
+  fTransformer(transformer),
+  fESD(0x0),
+  fDetEltEffHistList(0x0),
+  fDetEltTDHistList(0x0),
+  fDetEltTTHistList(0x0),
+  fChamberEffHistList(0x0),
+  fChamberTDHistList(0x0),
+  fChamberTTHistList(0x0)
 {
 //Constructor
 //-----------
     
+  fIsCosmicData = isCosmic;
+
 //Define detection element efficiency histograms
 //----------------------------------------------
 
@@ -109,6 +127,13 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
                                                                 //!<        3.the number of track used for the efficiency calculation chamber by chamber
     fDetEltTDHistList  = new TClonesArray("TH2F",fTotNbrOfDetectionElt + 1);
     fDetEltTTHistList  = new TClonesArray("TH2F",fTotNbrOfDetectionElt + 1);
+
+
+    fChamberEffHistList = new TClonesArray("TH1F", fTotNbrOfChamber + 3);
+    fChamberTDHistList = new TClonesArray("TH1F", fTotNbrOfChamber + 1);
+    fChamberTTHistList = new TClonesArray("TH1F", fTotNbrOfChamber + 1);
+
+
 
     for (Int_t i = 0; i<fTotNbrOfDetectionElt; ++i)
     {
@@ -142,6 +167,36 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
       ((TH2F*) fDetEltEffHistList->UncheckedAt(i)) -> SetOption("LEGO");
     }
 
+    for (Int_t j = 0; j < fTotNbrOfChamber; j++)
+      {
+	Char_t histName[255]; 
+	Char_t histTitle[255];
+
+
+	sprintf(histName,"Eff_ChamberNbr%d",j+1);
+	sprintf(histTitle,"ChamberNbr %d",j+1);
+	if (j<4) new ((*fChamberEffHistList)[j]) TH1F(histName, histTitle, 4, 0.0, 4.0);
+	else if (j<6) new ((*fChamberEffHistList)[j]) TH1F(histName, histTitle, 18, 0.0, 18.0);
+	if (j>=6) new ((*fChamberEffHistList)[j]) TH1F(histName, histTitle, 26, 0.0, 26.0);
+
+	sprintf(histName,"TD_ChamberNbr%d",j+1);
+	if (j<4) new ((*fChamberTDHistList)[j]) TH1F(histName, histTitle, 4, 0.0, 4.0);
+	else if (j<6) new ((*fChamberTDHistList)[j]) TH1F(histName, histTitle, 18, 0.0, 18.0);
+	if (j>=6) new ((*fChamberTDHistList)[j]) TH1F(histName, histTitle, 26, 0.0, 26.0);
+
+	sprintf(histName,"TT_ChamberNbr%d",j+1);
+	if (j<4) new ((*fChamberTTHistList)[j]) TH1F(histName, histTitle, 4, 0.0, 4.0);
+	else if (j<6) new ((*fChamberTTHistList)[j]) TH1F(histName, histTitle, 18, 0.0, 18.0);
+	if (j>=6) new ((*fChamberTTHistList)[j]) TH1F(histName, histTitle, 26, 0.0, 26.0);
+
+	((TH1F*) fChamberEffHistList->UncheckedAt(j)) -> GetXaxis() -> SetTitle("DetElement");
+	((TH1F*) fChamberEffHistList->UncheckedAt(j)) -> GetYaxis() -> SetTitle("Efficiency (%)");
+	((TH1F*) fChamberEffHistList->UncheckedAt(j)) -> GetXaxis() -> SetTitleOffset(1.8);
+	((TH1F*) fChamberEffHistList->UncheckedAt(j)) -> GetYaxis() -> SetTitleOffset(1.8); 
+	((TH1F*) fChamberEffHistList->UncheckedAt(j)) -> Sumw2();	
+      }
+
+
     new((*fDetEltTDHistList )[fTotNbrOfDetectionElt]) TH2F("TD_Chamber" ,"TD_Chamber" ,10,0,10,1,0,1); //!<Detected tracks.
     new((*fDetEltTTHistList )[fTotNbrOfDetectionElt]) TH2F("TT_Chamber" ,"TT_Chamber" ,10,0,10,1,0,1); //!<Tracks total number.
     new((*fDetEltEffHistList)[fTotNbrOfDetectionElt]) TH2F("fChamberEff","fChamberEff",10,0,10,1,0,1); //!<Chamber efficiency.
@@ -174,6 +229,39 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
     ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 2)) -> GetZaxis() -> SetTitleOffset(1.2); 
     ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 2)) -> SetOption("LEGO");    
 
+
+    new((*fChamberTDHistList )[fTotNbrOfChamber]) TH1F("TD_Chamber_2" ,"TD_Chamber_2" ,10,0,10); //!<Detected tracks.
+    new((*fChamberTTHistList )[fTotNbrOfChamber]) TH1F("TT_Chamber_2" ,"TT_Chamber_2" ,10,0,10); //!<Tracks total number.
+    new((*fChamberEffHistList)[fTotNbrOfChamber]) TH1F("fChamberEff_2","fChamberEff_2",10,0,10); //!<Chamber efficiency.
+
+    ((TH1F*) fChamberTDHistList->UncheckedAt(fTotNbrOfChamber)) -> Sumw2();
+    ((TH1F*) fChamberTTHistList->UncheckedAt(fTotNbrOfChamber)) -> Sumw2();
+
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber)) -> GetXaxis() -> SetTitle("Chamber number");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber)) -> GetYaxis() -> SetTitle("");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber)) -> GetXaxis() -> SetTitleOffset(1.8);
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber)) -> GetYaxis() -> SetTitleOffset(1.8); 
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber)) -> Sumw2();
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber)) -> SetOption("");
+  
+    new((*fChamberEffHistList)[11]) TH1F("TT_Chamber_2" ,"TT_Chamber_2" ,10,0,10); //!<Tracks total number by chamber.
+
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 1)) -> GetXaxis() -> SetTitle("Chamber number");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 1)) -> GetYaxis() -> SetTitle("");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 1)) -> GetXaxis() -> SetTitleOffset(1.8);
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 1)) -> GetYaxis() -> SetTitleOffset(1.8); 
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 1)) -> Sumw2();
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 1)) -> SetOption("");
+
+    new((*fChamberEffHistList)[12]) TH1F("Total_Number_of_Tracks_2" ,"Total_Number_of_Tracks_2" ,1,0,1); //!<Tracks total number.
+
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> GetXaxis() -> SetTitle("");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> GetYaxis() -> SetTitle("");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> GetXaxis() -> SetTitleOffset(1.8);
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> GetYaxis() -> SetTitleOffset(1.8); 
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> Sumw2();    
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> SetOption("");    
+
 //Define input & output
 //---------------------
 
@@ -182,6 +270,9 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
 
 // -Output slot 0 writes into a TClonesArray:
     DefineOutput(0, TClonesArray::Class());
+    DefineOutput(1, TClonesArray::Class());
+    DefineOutput(2, TClonesArray::Class());
+    DefineOutput(3, TClonesArray::Class());
 }
 
 
@@ -193,6 +284,9 @@ AliAnalysisTaskMuonTrackingEff::~AliAnalysisTaskMuonTrackingEff()
     delete fDetEltEffHistList;
     delete fDetEltTDHistList;
     delete fDetEltTTHistList;
+    delete fChamberEffHistList;
+    delete fChamberTDHistList;
+    delete fChamberTTHistList;
 }
 
 
@@ -229,7 +323,7 @@ void AliAnalysisTaskMuonTrackingEff::Exec(Option_t */*option*/)
     
    
     AliCheckMuonDetEltResponse* chamberEff;
-    chamberEff = new AliCheckMuonDetEltResponse(fTransformer, fESD, fDetEltTDHistList, fDetEltTTHistList);
+    chamberEff = new AliCheckMuonDetEltResponse(fTransformer, fESD, fDetEltTDHistList, fDetEltTTHistList, fChamberTDHistList, fChamberTTHistList);
     chamberEff->CheckDetEltResponse();
 
 
@@ -238,6 +332,13 @@ void AliAnalysisTaskMuonTrackingEff::Exec(Option_t */*option*/)
       ((TH2F*) fDetEltEffHistList->UncheckedAt(i))-> Divide( (TH2F*) fDetEltTDHistList->UncheckedAt(i),
 							     (TH2F*) fDetEltTTHistList->UncheckedAt(i), 100., 1.); 
     }
+
+    for (Int_t j = 0; j < 10; j++)
+      {
+	((TH1F*) fChamberEffHistList->UncheckedAt(j))-> Divide( (TH1F*) fChamberTDHistList->UncheckedAt(j),
+								(TH1F*) fChamberTTHistList->UncheckedAt(j), 100., 1.); 	
+      }
+
 
     ((TH2F*) fDetEltEffHistList->UncheckedAt(156))-> Divide( (TH2F*) fDetEltTDHistList->UncheckedAt(156),
 							     (TH2F*) fDetEltTTHistList->UncheckedAt(156), 100., 1.); 
@@ -250,8 +351,26 @@ void AliAnalysisTaskMuonTrackingEff::Exec(Option_t */*option*/)
     ((TH2F*) fDetEltEffHistList->UncheckedAt(158))-> Fill(0., 0., ((Double_t)fESD -> GetNumberOfMuonTracks()));
 
 
+    ((TH1F*) fChamberEffHistList->UncheckedAt(10))-> Divide( (TH1F*) fChamberTDHistList->UncheckedAt(10),
+							     (TH1F*) fChamberTTHistList->UncheckedAt(10), 100., 1.); 
+
+
+    ((TH1F*) fChamberEffHistList->UncheckedAt(11))-> Add   ( (TH1F*) fChamberTTHistList ->UncheckedAt(10),
+							     (TH1F*) fChamberEffHistList->UncheckedAt(11), 1., 0.); 
+
+
+    ((TH1F*) fChamberEffHistList->UncheckedAt(12))-> Fill(0., ((Double_t)fESD -> GetNumberOfMuonTracks()));
+
+    ComputeErrors();
+
+
 //Post the output data:
-    PostData(0, fDetEltEffHistList);  
+    PostData(0, fDetEltTDHistList);  
+    PostData(1, fDetEltTTHistList);  
+    PostData(2, fDetEltEffHistList);  
+    PostData(3, fChamberTDHistList);
+    PostData(4, fChamberTTHistList);
+    PostData(5, fChamberEffHistList);
 }
 
 
@@ -261,4 +380,33 @@ void AliAnalysisTaskMuonTrackingEff::Terminate(Option_t */*option*/)
 {
 //Terminate analysis
 
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskMuonTrackingEff::ComputeErrors()
+{
+  // Compute error on the efficiency
+  // eff = Ntd/Ntt
+  // error = max {1/Ntt, sqrt(eff*(1-eff)/Ntt)}
+
+  for (Int_t ii = 0; ii < 10; ii++)
+    {
+      Int_t NumberOfBins = ((TH1F*) fChamberEffHistList->UncheckedAt(ii))->GetNbinsX();
+      for (Int_t jj = 0; jj < NumberOfBins; jj++)
+	{
+	  Double_t Ntd = ((TH1F*) fChamberTDHistList->UncheckedAt(ii))->GetBinContent(jj);
+	  Double_t Ntt = ((TH1F*) fChamberTTHistList->UncheckedAt(ii))->GetBinContent(jj);
+
+	  if (Ntt > 0.0 && Ntd > 0.0)
+	    {
+	      Double_t eff = ((TH1F*) fChamberEffHistList->UncheckedAt(ii))->GetBinContent(jj)/100.0;
+	      Double_t err1 = 1.0/Ntt;
+	      Double_t err2 = TMath::Sqrt(eff*(1.0 - eff)/Ntt);
+	      Double_t error = TMath::Max(err1, err2);
+
+	      ((TH1F*) fChamberEffHistList->UncheckedAt(ii))->SetBinError(jj, error*100.0);
+	    }
+	}
+    }
 }

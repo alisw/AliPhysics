@@ -25,7 +25,7 @@
 
 
 
-void MuonTrackingEffAnalysis(const Bool_t alien = false, const Int_t run = 100, const char * fileName = "AliESDs.root", const char * geometryFileName = "geometry.root")
+void MuonTrackingEffAnalysis(const Bool_t alien = false, const Int_t run = 100, const char * fileName = "AliESDs.root", const char * geometryFileName = "geometry.root", Bool_t isCosmicData = kFALSE)
 {
 //Chain construction
     TChain *chain = new TChain("esdTree");
@@ -54,7 +54,7 @@ void MuonTrackingEffAnalysis(const Bool_t alien = false, const Int_t run = 100, 
 
 //Make analysis manager:
     AliAnalysisManager* mgr = new AliAnalysisManager("Manager", "Manager");  
-    AliAnalysisTaskMuonTrackingEff* ESDTask = new AliAnalysisTaskMuonTrackingEff("ESDTask", transformer);
+    AliAnalysisTaskMuonTrackingEff* ESDTask = new AliAnalysisTaskMuonTrackingEff("ESDTask", transformer, isCosmicData);
     AliESDInputHandler* inHandler = new AliESDInputHandler();
 
     mgr->SetInputEventHandler  (inHandler );
@@ -62,14 +62,29 @@ void MuonTrackingEffAnalysis(const Bool_t alien = false, const Int_t run = 100, 
     mgr->AddTask(ESDTask);
 
 //Create containers for input/output
-    AliAnalysisDataContainer* cinput1  =	mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer* cinput0  =	mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutput0 =
+	mgr->CreateContainer("TracksDetectedPerDE", TClonesArray::Class(),AliAnalysisManager::kOutputContainer, "MuonTrackingChamberEffHistos.root");
     AliAnalysisDataContainer *coutput1 =
-	mgr->CreateContainer("chistlist1", TClonesArray::Class(),AliAnalysisManager::kOutputContainer, "MuonTrackingChamberEffHistos.root"); 
+	mgr->CreateContainer("TotalTracksPerDE", TClonesArray::Class(),AliAnalysisManager::kOutputContainer, "MuonTrackingChamberEffHistos.root");
+    AliAnalysisDataContainer *coutput2 =
+	mgr->CreateContainer("EfficiencyPerDE", TClonesArray::Class(),AliAnalysisManager::kOutputContainer, "MuonTrackingChamberEffHistos.root");
+    AliAnalysisDataContainer *coutput3 =
+	mgr->CreateContainer("TracksDetectedPerChamber", TClonesArray::Class(),AliAnalysisManager::kOutputContainer, "MuonTrackingChamberEffHistos.root");
+    AliAnalysisDataContainer *coutput4 =
+	mgr->CreateContainer("TotalTracksPerChamber", TClonesArray::Class(),AliAnalysisManager::kOutputContainer, "MuonTrackingChamberEffHistos.root");
+    AliAnalysisDataContainer *coutput5 =
+	mgr->CreateContainer("EfficiencyPerChamber", TClonesArray::Class(),AliAnalysisManager::kOutputContainer, "MuonTrackingChamberEffHistos.root");
 
 //Connection
-    mgr->ConnectInput (ESDTask, 0, cinput1 );
-    mgr->ConnectOutput(ESDTask, 0, coutput1);
-   
+    mgr->ConnectInput (ESDTask, 0, cinput0 );
+    mgr->ConnectOutput(ESDTask, 0, coutput0);
+    mgr->ConnectOutput(ESDTask, 1, coutput1);
+    mgr->ConnectOutput(ESDTask, 2, coutput2);
+    mgr->ConnectOutput(ESDTask, 3, coutput3);
+    mgr->ConnectOutput(ESDTask, 4, coutput4);
+    mgr->ConnectOutput(ESDTask, 5, coutput5);
+  
 //Run analysis
     if(mgr->InitAnalysis())
     {
