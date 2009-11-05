@@ -130,6 +130,7 @@ AliQACheckerBase::~AliQACheckerBase()
   }
   delete[] fImage ; 
   delete[] fRefOCDBSubDir ; 
+  AliQAv1::GetQAResultFile()->Close() ; 
 }
 
 //____________________________________________________________________________
@@ -284,11 +285,9 @@ void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetec
 void AliQACheckerBase::Finish() const 
 {
 	// wrap up and save QA in proper file
+	AliQAv1::GetQAResultFile() ; 
 	AliQAv1 * qa = AliQAv1::Instance() ; 
-	//qa->Show() ;
-	AliQAv1::GetQAResultFile()->cd() ; 
-	qa->Write(qa->GetName(), kWriteDelete) ;   
-	AliQAv1::GetQAResultFile()->Close() ; 
+	qa->Write(AliQAv1::GetQAName(), kWriteDelete) ;   
 }
 
 //____________________________________________________________________________ 
