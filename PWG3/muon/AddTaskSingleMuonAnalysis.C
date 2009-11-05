@@ -24,7 +24,10 @@ AliAnalysisTaskSingleMu *AddTaskSingleMuonAnalysis(){
        return NULL;
     }	
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist0",TList::Class(),AliAnalysisManager::kOutputContainer,"SingleMuonAnalysis.root");
+   TString outputfile = AliAnalysisManager::GetCommonFileName();
+   outputfile += ":PWG3Muon_SingleMuon";
+
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("SingleMuon",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
 
   // Create the task, add it to the manager and configure it.
    //===========================================================================   
