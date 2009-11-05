@@ -414,6 +414,14 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.02");
+  rn->AddLine("");
+  rn->AddLine("Internal change (merging of AliMUONTrackerACFDataMaker and AliMUONTrackerOCDBDataMaker into AliMUONTrackerConditionDataMaker)");
+  rn->AddLine("Added --ocdb option");
+  rn->AddLine("Corrected the display of the configuration");
+  rn->AddLine("Corrected the interpretation of the switches for the HV display");
+  rn->AddLine("");
+  
   rn->AddLine("1.01");
   rn->AddLine("");
   rn->AddLine("Added the configuration as a possible OCDB data source");

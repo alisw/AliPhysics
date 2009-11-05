@@ -24,13 +24,11 @@ SRCS:=  AliMUONVPainter.cxx \
   AliMUONAttPainterSelectorFrame.cxx \
   AliMUONPainterDataSourceFrame.cxx \
   AliMUONPainterDataSourceItem.cxx \
-  AliMUONTrackerOCDBDataMaker.cxx \
   AliMUONPainterEnv.cxx \
   AliMUONMchViewApplication.cxx \
   AliMUONTrackerDataHistogrammer.cxx \
   AliMUONTrackerDataWrapper.cxx \
   AliMUONTrackerDataCompareDialog.cxx \
-  AliMUONTrackerACFDataMaker.cxx \
   AliMUONContourPainter.cxx \
   AliMUONPolygon.cxx \
   AliMUONContour.cxx \

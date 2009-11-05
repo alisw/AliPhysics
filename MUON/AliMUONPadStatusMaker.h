@@ -113,6 +113,8 @@ public:
 
   void Report(UInt_t mask);
   
+  static Float_t SwitchValue(const TObjArray& dcsArray);
+  
 private:
   /// Not implemented
   AliMUONPadStatusMaker(const AliMUONPadStatusMaker&);

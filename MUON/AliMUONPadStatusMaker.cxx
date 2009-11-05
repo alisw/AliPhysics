@@ -265,6 +265,49 @@ AliMUONPadStatusMaker::HVSt12Status(Int_t detElemId, Int_t sector,
 }
 
 //_____________________________________________________________________________
+Float_t
+AliMUONPadStatusMaker::SwitchValue(const TObjArray& dcsArray)
+{
+  /// Loop over the dcs value for a single switch to decide whether
+  /// we should consider it on or off
+  
+  // we'll count the number of ON/OFF for this pad, to insure
+  // consistency (i.e. if status changed during the run, we should
+  // at least notify this fact ;-) and hope it's not the norm)
+  Int_t nTrue(0);
+  Int_t nFalse(0);
+  TIter next(&dcsArray);
+  AliDCSValue* val;
+  
+  while ( ( val = static_cast<AliDCSValue*>(next()) ) )
+  {
+    if ( val->GetBool() )
+    {
+      ++nTrue;
+    }
+    else
+    {
+      ++nFalse;
+    }
+  }
+  
+  if ( (nTrue>0 && nFalse>0) )
+  {
+    // change of state during the run, consider it off
+    return 0.0;
+  }
+  
+  if ( nFalse ) 
+  {
+    /// switch = FALSE means the HV was flowding up to the PCB.
+    /// i.e. switch = FALSE = ON
+    return 1.0;    
+  }
+  
+  return 0.0;
+}
+
+//_____________________________________________________________________________
 Bool_t 
 AliMUONPadStatusMaker::HVSt345Status(Int_t detElemId, Int_t pcbIndex,
                                      Bool_t& hvChannelTooLow,
@@ -348,34 +391,8 @@ AliMUONPadStatusMaker::HVSt345Status(Int_t detElemId, Int_t pcbIndex,
     }
     else
     {
-      // we'll count the number of ON/OFF for this pad, to insure
-      // consistency (i.e. if status changed during the run, we should
-      // at least notify this fact ;-) and hope it's not the norm)
-      Int_t nTrue(0);
-      Int_t nFalse(0);
-      TIter next(values);
-      AliDCSValue* val;
-      
-      while ( ( val = static_cast<AliDCSValue*>(next()) ) )
-      {
-        if ( val->GetBool() )
-        {
-          ++nTrue;
-        }
-        else
-        {
-          ++nFalse;
-        }
-      }
-      
-      if ( (nTrue>0 && nFalse>0) )
-      {
-        AliWarning(Form("Status of HV Switch %s changed during this run nTrue=%d nFalse=%d! Will consider it OFF",
-                        hvSwitch.Data(),nTrue,nFalse));
-        error = kTRUE;
-      }
-      
-      if ( nFalse ) hvSwitchON = kFALSE;
+      Float_t sv = SwitchValue(*values);
+      if ( sv < 0.99 ) hvSwitchON = kFALSE;
     }
   }
   return error;

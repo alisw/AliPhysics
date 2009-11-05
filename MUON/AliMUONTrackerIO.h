@@ -26,19 +26,20 @@ public:
   virtual ~AliMUONTrackerIO();
 
   static Int_t ReadConfig(const char* filename, AliMUONVStore& confStore, Bool_t& changed);
-  static Int_t DecodeConfig(TString data, AliMUONVStore& confStore, Bool_t& changed);
-  static Int_t WriteConfig(ofstream& out, AliMUONVStore& confStore);
+  static Int_t DecodeConfig(const char* data, AliMUONVStore& confStore, Bool_t& changed);
+  static Int_t WriteConfig(ofstream& out, const AliMUONVStore& confStore);
   
   static Int_t ReadPedestals(const char* filename, AliMUONVStore& pedStore);
-  static Int_t DecodePedestals(TString data, AliMUONVStore& pedStore);
+  static Int_t DecodePedestals(const char* data, AliMUONVStore& pedStore);
   
   static Int_t ReadGains(const char* filename, AliMUONVStore& gainStore, TString& comment);
-  static Int_t DecodeGains(TString data, AliMUONVStore& gainStore, TString& comment);
+  static Int_t DecodeGains(const char* data, AliMUONVStore& gainStore, TString& comment);
   
   static Int_t ReadOccupancy(const char* filename, AliMUONVStore& occupancyMap);
-  static Int_t DecodeOccupancy(TString data, AliMUONVStore& occupancyMap);
+  static Int_t DecodeOccupancy(const char* data, AliMUONVStore& occupancyMap);
   
   static Int_t ReadCapacitances(const char* filename, AliMUONVStore& capaStore);
+  static Int_t DecodeCapacitances(const char* data, AliMUONVStore& capaStore);
   
   /// Error code constants
   enum ErrorCode

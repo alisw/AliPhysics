@@ -52,6 +52,7 @@ Int_t Usage()
   cout << "  --asciimapping : load mapping from ASCII files instead of OCDB (for debug and experts only...)" << endl;
   cout << "  --de detElemId : start by displaying the given detection element instead of the default view (which is all the chambers)" << endl;
   cout << "  --chamber chamberId (from 1 to 10) : start by displaying the given chamber instead of the default view (which is all the chambers)" << endl;
+  cout << "  --ocdb ocdbPath : read the mapping from the given OCDB" << endl;
   return -1;
 }
 
@@ -73,6 +74,7 @@ int main(int argc, char** argv)
   Int_t gix, giy;
   Int_t gox,goy;
   Bool_t ASCIImapping(kFALSE);
+  TString defaultOCDB("local://$ALICE_ROOT/OCDB");
   
   for ( Int_t i = 0; i <= args.GetLast(); ++i ) 
   {
@@ -108,6 +110,13 @@ int main(int argc, char** argv)
       nok += 2;
       ++i;      
     }
+    else if ( a == "--ocdb" )
+    {
+      defaultOCDB = static_cast<TObjString*>(args.At(i+1))->String();
+      cout << "Using default storage  = " << defaultOCDB.Data() << endl;
+      nok += 2;
+      ++i;
+    }
     else
     {
       return Usage();
@@ -121,7 +130,7 @@ int main(int argc, char** argv)
   
   AliWarningGeneral("main","FIXME ? Remove default storage and run number from here...");
   
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  AliCDBManager::Instance()->SetDefaultStorage(defaultOCDB.Data());
   AliCDBManager::Instance()->SetRun(0);
  
   if ( ASCIImapping ) 

@@ -24,9 +24,8 @@
 #include "AliMUONPainterHelper.h"
 #include "AliMUONPainterDataRegistry.h"
 #include "AliMUONRecoParam.h"
-#include "AliMUONTrackerACFDataMaker.h"
+#include "AliMUONTrackerConditionDataMaker.h"
 #include "AliMUONTrackerDataMaker.h"
-#include "AliMUONTrackerOCDBDataMaker.h"
 #include "AliRawReader.h"
 #include <TGButton.h>
 #include <TGComboBox.h>
@@ -174,14 +173,14 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
     
     /// OCDB selection
     
+  fOCDBTypes->AddEntry("Config",7);
+  fOCDBTypes->AddEntry("Occupancy",4);
+  fOCDBTypes->AddEntry("HV",3);
   fOCDBTypes->AddEntry("Pedestals",0);
   fOCDBTypes->AddEntry("Gains",1);
-  fOCDBTypes->AddEntry("Capacitances",2);
-  fOCDBTypes->AddEntry("HV",3);
-  fOCDBTypes->AddEntry("Occupancy",4);
   fOCDBTypes->AddEntry("StatusMap",5);
   fOCDBTypes->AddEntry("Status",6);
-  fOCDBTypes->AddEntry("Config",7);
+  fOCDBTypes->AddEntry("Capacitances",2);
   fOCDBTypes->Select(0);
   fOCDBTypes->Resize(100,20);
     
@@ -209,14 +208,14 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
     TGButton* openButtonACF = new TGPictureButton(fACFSelector,
                                                   gClient->GetPicture("fileopen.xpm"));
     openButtonACF->SetToolTipText("Click to open file dialog");
-    
-    fACFTypes->AddEntry("Pedestals",0);
-    fACFTypes->AddEntry("Gains",1);
-  fACFTypes->AddEntry("Capacitances",2);
-  fACFTypes->AddEntry("HV",3);
+
+  fACFTypes->AddEntry("Config",7);
   fACFTypes->AddEntry("Occupancy",4);
-    fACFTypes->Select(0);
-    fACFTypes->Resize(100,20);
+  fACFTypes->AddEntry("Pedestals",0);
+  fACFTypes->AddEntry("Gains",1);
+  fACFTypes->AddEntry("Capacitances",2);
+  fACFTypes->Select(0);
+  fACFTypes->Resize(100,20);
     
     fACFSelector->AddFrame(openButtonACF,new TGLayoutHints(kLHintsTop,5,5,5,5));                                      
     fACFSelector->AddFrame(fACFPath, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
@@ -384,8 +383,8 @@ AliMUONPainterDataSourceFrame::CreateACFDataSource(const TString& acfPath, const
 {
   /// Create an ACF data source for a given (path,type) 
 
-  AliMUONVTrackerDataMaker* reader = new AliMUONTrackerACFDataMaker(acfPath.Data(),
-                                                                    type.Data());
+  AliMUONVTrackerDataMaker* reader = new AliMUONTrackerConditionDataMaker(acfPath.Data(),
+                                                                          type.Data());
   
   if ( reader->IsValid() ) 
   {
@@ -416,9 +415,9 @@ AliMUONPainterDataSourceFrame::CreateOCDBDataSource(const TString& cdbPath,
 {
   /// Create an OCDB data source for a given (path,runnumber,type) triplet
   
-  AliMUONVTrackerDataMaker* reader = new AliMUONTrackerOCDBDataMaker(cdbPath.Data(),
-                                                                       runNumber,
-                                                                       type.Data());
+  AliMUONVTrackerDataMaker* reader = new AliMUONTrackerConditionDataMaker(runNumber,
+                                                                          cdbPath.Data(),
+                                                                          type.Data());
   
   if ( reader->IsValid() ) 
   {

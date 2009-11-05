@@ -53,7 +53,8 @@ SRCS:= AliMUONReconstructor.cxx \
        AliMUONVTrackerDataMaker.cxx \
        AliMUONTrackerDataMaker.cxx \
        AliMUONQAMappingCheck.cxx \
-       AliMUONCDB.cxx
+       AliMUONCDB.cxx \
+       AliMUONTrackerConditionDataMaker.cxx
        
 HDRS:= $(SRCS:.cxx=.h)
 

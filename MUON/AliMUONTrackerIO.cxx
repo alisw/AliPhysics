@@ -79,17 +79,16 @@ AliMUONTrackerIO::ReadOccupancy(const char* filename,AliMUONVStore& occupancyMap
   char line[1024];
   while ( in.getline(line,1024) )
   	stream << line << "\n";
-  datastring = TString(stream.str().c_str());
   
   in.close();
   
-  return DecodeOccupancy(datastring,occupancyMap);
+  return DecodeOccupancy(stream.str().c_str(),occupancyMap);
   
 }
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONTrackerIO::DecodeOccupancy(TString data, AliMUONVStore& occupancyMap)
+AliMUONTrackerIO::DecodeOccupancy(const char* data, AliMUONVStore& occupancyMap)
 {
   /// Decode occupancy string created append values to the occupancyMap store.
   /// Expected format of the file is :
@@ -102,7 +101,7 @@ AliMUONTrackerIO::DecodeOccupancy(TString data, AliMUONVStore& occupancyMap)
   }
   
   char line[1024];
-  istringstream in(data.Data());
+  istringstream in(data);
   
   Int_t n(0);
   
@@ -172,22 +171,20 @@ AliMUONTrackerIO::ReadPedestals(const char* filename, AliMUONVStore& pedStore)
     return kCannotOpenFile;
   }
   
-  TString datastring;
   ostringstream stream;
   char line[1024];
   while ( in.getline(line,1024) )
   	stream << line << "\n";
-  datastring = TString(stream.str().c_str());
   
   in.close();
 
-  return DecodePedestals(datastring,pedStore);
+  return DecodePedestals(stream.str().c_str(),pedStore);
   
 }
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONTrackerIO::DecodePedestals(TString data, AliMUONVStore& pedStore)
+AliMUONTrackerIO::DecodePedestals(const char* data, AliMUONVStore& pedStore)
 {
   /// Read pedestal Data (produced by the MUONTRKda.exe program for instance)
   /// and append the read values into the given VStore
@@ -198,7 +195,7 @@ AliMUONTrackerIO::DecodePedestals(TString data, AliMUONVStore& pedStore)
   Int_t busPatchID, manuID, manuChannel;
   Float_t pedMean, pedSigma;
   Int_t n(0);
-  istringstream in(data.Data());
+  istringstream in(data);
   
   while ( in.getline(line,1024) )
   {
@@ -255,31 +252,29 @@ AliMUONTrackerIO::ReadGains(const char* filename, AliMUONVStore& gainStore,
     return kCannotOpenFile;
   }
   
-  TString datastring;
   ostringstream stream;
   char line[1024];
   while ( in.getline(line,1024) )
   	stream << line << "\n";
-  datastring = TString(stream.str().c_str());
   
   in.close();
   
-  return DecodeGains(datastring,gainStore,comment);
+  return DecodeGains(stream.str().c_str(),gainStore,comment);
 
 }
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONTrackerIO::DecodeGains(TString data, AliMUONVStore& gainStore,
-                            TString& comment)
+AliMUONTrackerIO::DecodeGains(const char* data, AliMUONVStore& gainStore,
+                              TString& comment)
 {
   /// Read gain file (produced by the MUONTRKda.exe program for instance)
   /// and append the read values into the given VStore
-  /// To be used when the input is a TString (for instance when getting data 
+  /// To be used when the input is a string (for instance when getting data 
   /// from AMORE DB).
   
   char line[1024];
-  istringstream in(data.Data());
+  istringstream in(data);
   Int_t busPatchID, manuID, manuChannel;
   Float_t a0, a1;
   Int_t thres;
@@ -326,7 +321,7 @@ AliMUONTrackerIO::DecodeGains(TString data, AliMUONVStore& gainStore,
             in.getline(line,1024);
             in.getline(line,1024);
             // then get run and dac values
-	    Int_t iDAC(0);
+            Int_t iDAC(0);
             for ( Int_t i = 0; i < nDAC; ++i ) 
             {
               in.getline(line,1024);
@@ -402,20 +397,44 @@ AliMUONTrackerIO::DecodeGains(TString data, AliMUONVStore& gainStore,
 
 //_____________________________________________________________________________
 Int_t
-AliMUONTrackerIO::ReadCapacitances(const char* file, AliMUONVStore& capaStore)
+AliMUONTrackerIO::ReadCapacitances(const char* filename, AliMUONVStore& capaStore)
 {
   /// Read capacitance file
   /// and append the read values into the given VStore
   
-  ifstream in(gSystem->ExpandPathName(file));
-  if (in.bad()) return kCannotOpenFile;
+  TString sFilename(gSystem->ExpandPathName(filename));
+  
+  std::ifstream in(sFilename.Data());
+  if (!in.good()) 
+  {
+    return kCannotOpenFile;
+  }
+  
+  ostringstream stream;
+  char line[1024];
+  while ( in.getline(line,1024) )
+  	stream << line << "\n";
+  
+  in.close();
+  
+  return DecodeCapacitances(stream.str().c_str(),capaStore);
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMUONTrackerIO::DecodeCapacitances(const char* data, AliMUONVStore& capaStore)
+{
+  /// Read capacitances and append the read values into the given VStore
+  /// To be used when the input is a string (for instance when getting data 
+  /// from AMORE DB).
   
   Int_t ngenerated(0);
   
   char line[1024];
   Int_t serialNumber(-1);
   AliMUONVCalibParam* param(0x0);
-  
+  istringstream in(data);
+
   while ( in.getline(line,1024,'\n') )
   {
     if ( isdigit(line[0]) ) 
@@ -447,8 +466,6 @@ AliMUONTrackerIO::ReadCapacitances(const char* file, AliMUONVStore& capaStore)
     ++ngenerated;
   }
   
-  in.close();
-  
   return ngenerated;
 }
 
@@ -472,21 +489,19 @@ AliMUONTrackerIO::ReadConfig(const char* filename, AliMUONVStore& confStore, Boo
     return kCannotOpenFile;
   }
   
-  TString datastring;
   ostringstream stream;
   char line[1024];
   while ( in.getline(line,1024) )
   	stream << line << "\n";
-  datastring = TString(stream.str().c_str());
   
   in.close();
   
-  return DecodeConfig(datastring,confStore,changed);
+  return DecodeConfig(stream.str().c_str(),confStore,changed);
 }
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONTrackerIO::DecodeConfig(TString data, AliMUONVStore& confStore, Bool_t& changed)
+AliMUONTrackerIO::DecodeConfig(const char* data, AliMUONVStore& confStore, Bool_t& changed)
 {
   /// Read config data (produced by the MUONTRKda.exe program for instance)
   /// and append the read values into the given VStore
@@ -498,7 +513,7 @@ AliMUONTrackerIO::DecodeConfig(TString data, AliMUONVStore& confStore, Bool_t& c
   char line[1024];
   Int_t busPatchID, manuID;
   Int_t n(0);
-  istringstream in(data.Data());
+  istringstream in(data);
   
   while ( in.getline(line,1024) )
   {
@@ -537,7 +552,7 @@ AliMUONTrackerIO::DecodeConfig(TString data, AliMUONVStore& confStore, Bool_t& c
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONTrackerIO::WriteConfig(ofstream& out, AliMUONVStore& confStore)
+AliMUONTrackerIO::WriteConfig(ofstream& out, const AliMUONVStore& confStore)
 {
   /// Write the conf store as an ASCII file
   /// Note that we are converting (back) the detElemId into a busPatchId
