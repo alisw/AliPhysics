@@ -185,12 +185,15 @@ void AliOnlineReco::StartAliEve(mIntInt_i& mi)
 	gSystem->mkdir(Form("run%d_%d", run, (Int_t)procPID));
 	gSystem->cd(Form("run%d_%d", run, (Int_t)procPID));
 
-	const char *recMacroPath = "$ALICE_ROOT/MONITOR/rec.C";
+	TString recMacroPath(gSystem->Getenv("ONLINERECO_MACRO"));
+	if (recMacroPath.IsNull()) {
+	  recMacroPath = "$ALICE_ROOT/MONITOR/rec.C";
+	}
 
 	s = execlp("alieve",
 		   "alieve",
 		   "-q",
-		   Form("%s(\"mem://@*:\")", gSystem->ExpandPathName(recMacroPath)),
+		   Form("%s(\"mem://@*:\")", gSystem->ExpandPathName(recMacroPath.Data())),
 		   (char*) 0);
       }
 
