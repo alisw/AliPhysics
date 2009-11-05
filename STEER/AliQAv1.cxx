@@ -495,7 +495,7 @@ TFile * AliQAv1::GetQAResultFile()
 }
 
 //_______________________________________________________________
-const AliQAv1::QABIT_t AliQAv1::GetQAStatusBit(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t det, ALITASK_t tsk) const
+AliQAv1::QABIT_t AliQAv1::GetQAStatusBit(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t det, ALITASK_t tsk) const
 {
     // returns the QA bit set
   QABIT_t rv = kNULLBit ; 
