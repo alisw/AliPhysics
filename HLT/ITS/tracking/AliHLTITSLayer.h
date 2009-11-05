@@ -26,8 +26,7 @@ class AliHLTITSLayer
   ~AliHLTITSLayer();
   Int_t InsertCluster(AliITSRecPoint *c);
   void  SortClusters();
-  void ResetClusters();
-  void ResetWeights();
+  void ResetClusters(); 
   void SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin,Double_t ymax);
   const AliITSRecPoint *GetNextCluster(Int_t &ci,Bool_t test=kFALSE);
   void ResetRoad();
@@ -35,7 +34,6 @@ class AliHLTITSLayer
   Double_t GetR() const {return fR;}
   Int_t FindClusterIndex(Float_t z) const;
   AliITSRecPoint *GetCluster(Int_t i) const {return i<fN? fClusters[i]:0;} 
-  Float_t  *GetWeight(Int_t i)  {return i<fN ?&fClusterWeight[i]:0;}
   AliHLTITSDetector &GetDetector(Int_t n) const { return fDetectors[n]; }
   Int_t FindDetectorIndex(Double_t phi, Double_t z) const;
   Double_t GetThickness(Double_t y, Double_t z, Double_t &x0) const;
@@ -47,8 +45,6 @@ class AliHLTITSLayer
   void  SetSkip(Int_t skip){fSkip=skip;}
   void IncAccepted(){fAccepted++;}
   Int_t GetAccepted() const {return fAccepted;}    
-  Int_t GetClusterTracks(Int_t i, Int_t j) const {return fClusterTracks[i][j];}
-  void SetClusterTracks(Int_t i, Int_t j, Int_t c) {fClusterTracks[i][j]=c;}
 
  protected:
 
@@ -100,8 +96,7 @@ class AliHLTITSLayer
   Int_t    fNcs;                                        //number of clusters in current slice    
   Int_t fCurrentSlice;                                  //current slice
   //
-  Float_t  fClusterWeight[AliITSRecoParam::fgkMaxClusterPerLayer]; // probabilistic weight of the cluster
-  Int_t    fClusterTracks[4][AliITSRecoParam::fgkMaxClusterPerLayer]; //tracks registered to given cluster
+
   Float_t fZmax;      //    edges
   Float_t fYmin;      //   of  the
   Float_t fYmax;      //   "window"

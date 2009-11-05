@@ -352,7 +352,9 @@ int AliHLTITSTrackerComponent::DoEvent
   
   vector< AliExternalTrackParam > tracksTPC;
   vector< int > tracksTPCId;
-  std::vector<AliITSRecPoint> clusters;
+
+  fTracker->StartLoadClusters();
+  int nClustersTotal = 0;
 
   //int currentTrackID = 0;
 
@@ -393,8 +395,8 @@ int AliHLTITSTrackerComponent::DoEvent
 	Float_t hit[6] = { d.fY, d.fZ, d.fSigmaY2, d.fSigmaZ2, d.fQ, d.fSigmaYZ };
 	if( d.fLayer==4 ) hit[5] = -hit[5];
 
-	AliITSRecPoint p( lab, hit, info );
-	clusters.push_back( p );
+	fTracker->LoadCluster( AliITSRecPoint( lab, hit, info ) );
+	nClustersTotal++;
       }   
     }
     
@@ -403,7 +405,6 @@ int AliHLTITSTrackerComponent::DoEvent
   // set clusters to tracker
 
 
-  fTracker->LoadClusters( clusters );
   //timer.Stop();
   // Reconstruct the event
 
@@ -483,7 +484,7 @@ int AliHLTITSTrackerComponent::DoEvent
   int hz = ( int ) ( fFullTime > 1.e-10 ? fNEvents / fFullTime : 100000 );
   int hz1 = ( int ) ( fRecoTime > 1.e-10 ? fNEvents / fRecoTime : 100000 );
   HLTInfo( "ITS Tracker: output %d tracks;  input %d clusters, %d tracks; time: full %d / reco %d Hz",
-	      nITSUpdated, clusters.size(), tracksTPC.size(), hz, hz1 );
+	      nITSUpdated, nClustersTotal, tracksTPC.size(), hz, hz1 );
 
   return iResult;
 }

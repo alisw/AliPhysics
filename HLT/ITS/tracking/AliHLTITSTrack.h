@@ -65,9 +65,15 @@ class AliHLTITSTrack : public AliKalmanTrack
   Bool_t GetGlobalXYZat(Double_t xloc,Double_t &x,Double_t &y,Double_t &z) const;
   Bool_t GetPhiZat(Double_t r,Double_t &phi,Double_t &z) const;
   Bool_t GetLocalXat(Double_t r,Double_t &xloc) const;
+  Bool_t GetLocalXPhiZat(Double_t r,Double_t &xloc, double &phi, double &z ) const ;
 
   Int_t GetClusterIndex(Int_t i) const {return fIndex[i];}
   void SetClusterIndex(Int_t i, Int_t index ) { fIndex[i] = index;}
+
+  Bool_t GetYZAtPhiX( double phi, double x,
+		      double &y, double&z, double &snp, double cov[3] ) const;
+
+  Bool_t GetLocalYZat(Double_t xloc, Double_t &y, Double_t &z) const ;
 
  protected:
 

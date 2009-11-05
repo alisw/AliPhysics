@@ -197,6 +197,18 @@ GetGlobalXYZat(Double_t xloc, Double_t &x, Double_t &y, Double_t &z) const {
   return rc;
 }
 
+Bool_t AliHLTITSTrack::GetLocalYZat(Double_t xloc, Double_t &y, Double_t &z) const 
+{
+  // local YZ at x
+  Double_t dx=xloc - GetX();
+  Double_t f1=GetSnp(), f2=f1 + dx*GetC( GetBz() );
+  if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
+  if (TMath::Abs(f2) >= kAlmost1) return kFALSE;  
+  Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
+  y = GetY() + dx*(f1+f2)/(r1+r2);
+  z = GetZ() + dx*(r2 + f2*(f1+f2)/(r1+r2))*GetTgl();
+  return 1;
+}
 
 //____________________________________________________________________________
 Bool_t AliHLTITSTrack::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
@@ -228,7 +240,7 @@ Bool_t AliHLTITSTrack::PropagateToTGeo(Double_t xToGo, Int_t nstep, Double_t &xO
   //  These n steps are only used to take into account the curvature.
   //  The material is calculated with TGeo. (L.Gaudichet)
   //-------------------------------------------------------------------
-  
+
   Double_t startx = GetX(), starty = GetY(), startz = GetZ();
   Double_t sign = (startx<xToGo) ? -1.:1.;
   Double_t step = (xToGo-startx)/TMath::Abs(nstep);
@@ -336,30 +348,72 @@ GetPhiZat(Double_t r, Double_t &phi, Double_t &z) const {
 
 //____________________________________________________________________________
 Bool_t AliHLTITSTrack::
-GetLocalXat(Double_t r,Double_t &xloc) const {
-  //------------------------------------------------------------------
-  // This function returns the local x of the track 
-  // position estimated at the radius r. 
-  // The track curvature is neglected.
-  //------------------------------------------------------------------
-  Double_t d=GetD(0.,0.);
-  if (TMath::Abs(d) > r) { 
-    if (r>1e-1) return kFALSE; 
-    r = TMath::Abs(d); 
-  } 
+GetLocalXPhiZat(Double_t r,Double_t &xloc, double &phi, double &z ) const 
+{
+  // This function returns the local x of the track position estimated at the radius r. 
 
-  Double_t rcurr=TMath::Sqrt(GetX()*GetX() + GetY()*GetY());
-  Double_t globXYZcurr[3]; GetXYZ(globXYZcurr); 
-  Double_t phicurr=TMath::ATan2(globXYZcurr[1],globXYZcurr[0]);
-  Double_t phi;
-  if (GetX()>=0.) {
-    phi=phicurr+TMath::ASin(d/r)-TMath::ASin(d/rcurr);
-  } else {
-    phi=phicurr+TMath::ASin(d/r)+TMath::ASin(d/rcurr)-TMath::Pi();
-  }
+  double s = GetSnp();
+  double c = 1-s*s;
+  if( c<kAlmost0 ) return 0;
+  c = TMath::Sqrt(c);
+  double k = GetC( GetBz() );
 
-  xloc=r*(TMath::Cos(phi)*TMath::Cos(GetAlpha())
-         +TMath::Sin(phi)*TMath::Sin(GetAlpha())); 
+  double xc = GetX()*k - s; // center of the circle * curvature
+  double yc = GetY()*k + c;
+  double l2 = xc*xc + yc*yc;
 
-  return kTRUE;
+  if( l2<kAlmost0 ) return 0; // the track is curved and the center is close to (0,0)
+  
+  // a = (r^2+ l2/k^2 -1/k^2)/2 * k
+  double r2 = r*r;
+  double a = k*(r2 + GetX()*GetX() + GetY()*GetY())/2 + GetY()*c - GetX()*s;
+  double d = r2*l2-a*a;
+  if( d<kAlmost0 ) return 0; // no intersection
+
+  xloc = ( a*xc + yc*TMath::Sqrt(d) )/l2;
+
+  // transport to xloc
+
+  Double_t dx = xloc - GetX();
+
+  Double_t f1=s, f2= s + k*dx;
+  if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
+
+  Double_t c2=TMath::Sqrt(1.- f2*f2);
+  
+  double yloc = GetY() + dx*(f1+f2)/(c+c2);
+  double zloc = GetZ() + dx*(c2 + f2*(f1+f2)/(c+c2))*GetTgl();
+
+  phi = GetAlpha() + TMath::ATan2(yloc, xloc);
+  
+  // return the phi in [0,2pi]
+  phi -= ( (int) (phi/TMath::TwoPi()) )*TMath::TwoPi();
+  z = zloc;
+
+  return 1;
+}
+
+
+Bool_t AliHLTITSTrack::GetYZAtPhiX( double phi, double x,
+				    double &y, double&z, double &snp, double cov[3] ) const
+{
+  double bz = GetBz();
+  AliExternalTrackParam t(*this);
+  if( !t.Propagate( phi, x, bz ) ) return 0;
+
+  // rotate
+  
+  if (!t.Rotate(phi)) return 0;
+
+  if (!t.PropagateTo(x,bz)) return 0;  
+
+  y = t.GetY();
+  z = t.GetZ();
+  snp = t.GetSnp();
+  if( t.GetSigmaY2()<0 || t.GetSigmaZ2()<=0 ) return 0;
+
+  cov[0] = t.GetCovariance()[0];
+  cov[1] = t.GetCovariance()[1];
+  cov[2] = t.GetCovariance()[2];
+  return 1;
 }

@@ -28,14 +28,14 @@ class AliITStrackerHLT : public AliTracker {
 public:
 
   
-  void LoadClusters( std::vector<AliITSRecPoint> clusters );
+  void StartLoadClusters( Int_t guessForNClusters=0 );
+  void LoadCluster( const AliITSRecPoint &cluster);
   void Reconstruct( std::vector<AliExternalTrackParam> tracksTPC );
+
   std::vector< AliHLTITSTrack > &Tracks(){ return fTracks;}
 
   Bool_t TransportToX( AliExternalTrackParam *t, double x ) const;
   Bool_t TransportToPhiX( AliExternalTrackParam *t, double phi, double x ) const;
-  
-  void GetClusterErrors2( Int_t layer, const AliITSRecPoint *cluster, AliHLTITSTrack* track, double &err2Y, double &err2Z ) const ;
 
   AliITStrackerHLT();
   AliITStrackerHLT(const Char_t *geom);
@@ -56,9 +56,6 @@ public:
   Int_t RefitInward(AliESDEvent *event);
   
 
-  Double_t GetPredictedChi2MI(AliHLTITSTrack* track, const AliITSRecPoint *cluster,Int_t layer);
-  Int_t UpdateMI(AliHLTITSTrack* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;  
-
   TTreeSRedirector *GetDebugStreamer() {return fDebugStreamer;}
   static Int_t CorrectForTPCtoITSDeadZoneMaterial(AliHLTITSTrack *t);
 
@@ -68,6 +65,7 @@ public:
  
   void FollowProlongationTree(AliHLTITSTrack * otrack);
 
+  void Init();
 
 
 protected:
@@ -79,12 +77,11 @@ protected:
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   void CookLabel(AliHLTITSTrack *t,Float_t wrong) const;
 
-  void       SignDeltas(const TObjArray *clusterArray, Float_t zv);
   void BuildMaterialLUT(TString material);
   
-  Int_t CorrectForPipeMaterial(AliHLTITSTrack *t, TString direction="inward");
-  Int_t CorrectForShieldMaterial(AliHLTITSTrack *t, TString shield, TString direction="inward");
-  Int_t CorrectForLayerMaterial(AliHLTITSTrack *t, Int_t layerindex, Double_t oldGlobXYZ[3], TString direction="inward");
+  Int_t CorrectForPipeMaterial(AliHLTITSTrack *t, bool InwardDirection=1);
+  Int_t CorrectForShieldMaterial(AliHLTITSTrack *t, Int_t  shieldindex, bool InwardDirection=1);
+  Int_t CorrectForLayerMaterial(AliHLTITSTrack *t, Int_t layerindex, bool InwardDirection=1);
   void UpdateESDtrack(AliESDtrack *tESD,AliHLTITSTrack* track, ULong_t flags) const;
   
   Bool_t LocalModuleCoord(Int_t ilayer,Int_t idet,const AliHLTITSTrack *track,
@@ -115,6 +112,11 @@ protected:
   TTreeSRedirector *fDebugStreamer;      //!debug streamer
   AliITSChannelStatus *fITSChannelStatus;//! bitmaps with channel status for SPD and SDD
   std::vector< AliHLTITSTrack > fTracks;
+
+  double fLoadTime;
+  double fRecoTime;
+  int fNEvents;
+  std::vector<AliITSRecPoint> fClusters;
 
 private:
   AliITStrackerHLT(const AliITStrackerHLT &tracker);
