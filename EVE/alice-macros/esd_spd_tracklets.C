@@ -44,7 +44,7 @@ TEveTrackList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=3,
     Float_t theta = mul->GetTheta(i);
     Float_t phi   = mul->GetPhi(i);
 
-    AliEveTracklet* t = new AliEveTracklet(pv, theta, phi, prop);
+    AliEveTracklet* t = new AliEveTracklet(i, pv, theta, phi, prop);
     t->SetAttLineAttMarker(cont);
     t->SetElementName(Form("Tracklet %d", i));
     t->SetElementTitle(Form("id=%d: eta=%.3f, theta=%.3f, phi=%.3f",
