@@ -10,6 +10,7 @@ void runElectronTask(const char *treelist = 0x0){
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libCORRFW");
+    gSystem->Load("libPWG3hfe");
   }
   else{
     SetupPar("STEERBase");
@@ -18,10 +19,8 @@ void runElectronTask(const char *treelist = 0x0){
     SetupPar("ANALYSIS");
     SetupPar("ANALYSISalice");
     SetupPar("CORRFW");
-    SetupPar("Util");
+    SetupPar("PWG3hfe");
   }
-  SetupPar("HFE");
-//  gROOT->LoadMacro("AliAnalysisTaskHFE.cxx++");
  // AliLog::SetGlobalLogLevel(AliLog::kError);
   
   // Make the ESD chain
@@ -39,28 +38,28 @@ void runElectronTask(const char *treelist = 0x0){
   esdchain->SetBranchStatus("Tracks", 1);
   
   // Start the Analysis Manager and Create Handlers
-  AliAnalysisManager *pidEffManager = new AliAnalysisManager("Single Electron Analysis");
-  pidEffManager->SetInputEventHandler(new AliESDInputHandler);
-  pidEffManager->SetMCtruthEventHandler(new AliMCEventHandler);
+  AliAnalysisManager *electronAnalysis = new AliAnalysisManager("Single Electron Analysis");
+  electronAnalysis->SetInputEventHandler(new AliESDInputHandler);
+  electronAnalysis->SetMCtruthEventHandler(new AliMCEventHandler);
   AliHFEcuts *hfecuts = new AliHFEcuts;
   hfecuts->CreateStandardCuts();
-  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE;
+  AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE("Heavy Flavour Analysis");
   task->SetHFECuts(hfecuts);
-  task->SetPIDStrategy("Strategy4");
+  task->SetPIDStrategy(4);
   task->SetQAOn(AliAnalysisTaskHFE::kPIDqa);
   task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
   task->SetSecVtxOn();
-  pidEffManager->AddTask(task);
-  task->ConnectInput(0, pidEffManager->GetCommonInputContainer());
-  task->ConnectOutput(0, pidEffManager->CreateContainer("nEvents", TH1I::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));
-  task->ConnectOutput(1, pidEffManager->CreateContainer("Results", TList::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));
-  task->ConnectOutput(2, pidEffManager->CreateContainer("QA", TList::Class(), AliAnalysisManager::kOutputContainer, "HFEtask.root"));
+  electronAnalysis->AddTask(task);
+  task->ConnectInput(0, electronAnalysis->GetCommonInputContainer());
+  task->ConnectOutput(0, electronAnalysis->CreateContainer("nEvents", TH1I::Class(), AliAnalysisManager::kOutputContainer, "PWG3hfe.root"));
+  task->ConnectOutput(1, electronAnalysis->CreateContainer("Results", TList::Class(), AliAnalysisManager::kOutputContainer, "PWG3hfe.root"));
+  task->ConnectOutput(2, electronAnalysis->CreateContainer("QA", TList::Class(), AliAnalysisManager::kOutputContainer, "PWG3hfe.root"));
   
   // Run the Analysis
-  if(pidEffManager->InitAnalysis()){  
+  if(electronAnalysis->InitAnalysis()){  
     TStopwatch timer;
     timer.Start();
-    pidEffManager->StartAnalysis("local", esdchain);
+    electronAnalysis->StartAnalysis("local", esdchain);
     timer.Stop();
     timer.Print();
   }

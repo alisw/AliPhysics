@@ -128,10 +128,10 @@ void AliHFEcuts::Initialize(AliCFManager *cfm){
   SetHFElectronTRDCuts();
 
   // Connect the event cuts
-  /*SetEventCutList(kEventStepGenerated);
+  SetEventCutList(kEventStepGenerated);
   SetEventCutList(kEventStepReconstructed);
   cfm->SetEventCutsList(kEventStepGenerated, dynamic_cast<TObjArray *>(fCutList->FindObject("fEvGenCuts")));
-  cfm->SetEventCutsList(kEventStepReconstructed, dynamic_cast<TObjArray *>(fCutList->FindObject("fEvRecCuts")));*/
+  cfm->SetEventCutsList(kEventStepReconstructed, dynamic_cast<TObjArray *>(fCutList->FindObject("fEvRecCuts")));
   
   // Connect the particle cuts
   cfm->SetParticleCutsList(kStepMCGenerated, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartGenCuts")));
@@ -153,29 +153,6 @@ void AliHFEcuts::Initialize(){
   SetHFElectronITSCuts();
   SetHFElectronTRDCuts();
 
-}
-
-//__________________________________________________________________
-void AliHFEcuts::SetEventInfo(TObject *ev){
-  //
-  // Safe wrapper for AliCFManager::SetEventInfo that does a preselection of
-  // cut objects that need a special event info according to the object type
-  // in the argument. 
-  // Gets rid of a few run time messages
-  //
-  if(!TString(ev->IsA()->GetName()).CompareTo("AliMCEvent")){
-    TObjArray *genCuts = dynamic_cast<TObjArray *>(fCutList->FindObject("fPartGenCuts"));
-    if(genCuts){
-      AliCFParticleGenCuts *myGenCut = dynamic_cast<AliCFParticleGenCuts *>(genCuts->FindObject("fCutsGenMC"));
-      if(myGenCut) myGenCut->SetMCEventInfo(ev);
-    }
-  } else if(!TString(ev->IsA()->GetName()).CompareTo("AliESDEvent")){
-    TObjArray *primCuts = dynamic_cast<TObjArray *>(fCutList->FindObject("fPartPrimCuts"));
-    if(primCuts){
-      AliCFTrackIsPrimaryCuts *myPrimCut = dynamic_cast<AliCFTrackIsPrimaryCuts *>(primCuts->FindObject("fCutsPrimaryCuts"));
-      if(myPrimCut) myPrimCut->SetMCEventInfo(ev);
-    }
-  }
 }
 
 //__________________________________________________________________

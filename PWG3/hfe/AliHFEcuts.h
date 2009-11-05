@@ -68,7 +68,6 @@ class AliHFEcuts : public TObject{
     TList *GetQAhistograms() const { return fHistQA; }
     
     void SetDebugMode();
-    void SetEventInfo(TObject *ev);
     void UnsetDebugMode() { SetBit(kDebugMode, kFALSE); }
     Bool_t IsInDebugMode() const { return TestBit(kDebugMode); };
     

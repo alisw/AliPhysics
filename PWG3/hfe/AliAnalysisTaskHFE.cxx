@@ -437,7 +437,7 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
   //
   // Loop MC
   //
-  fCuts->SetEventInfo(fMC);
+  fCFM->SetMCEventInfo(fMC);
   for(Int_t imc = fMC->GetNumberOfTracks(); imc--;){
     mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(imc));
 
@@ -471,7 +471,7 @@ void AliAnalysisTaskHFE::Exec(Option_t *){
 
   Bool_t signal = kTRUE;
 
-  fCuts->SetEventInfo(fESD);
+  fCFM->SetRecEventInfo(fESD);
   for(Int_t itrack = 0; itrack < fESD->GetNumberOfTracks(); itrack++){
     
     track = fESD->GetTrack(itrack);
