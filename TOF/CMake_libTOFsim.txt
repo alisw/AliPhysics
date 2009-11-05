@@ -3,7 +3,6 @@
 set(SRCS
 AliTOF.cxx
 AliTOFv6T0.cxx
-AliTOFv5T0.cxx
 AliTOFhit.cxx
 AliTOFhitT0.cxx
 AliTOFHitMap.cxx
