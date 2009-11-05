@@ -312,12 +312,12 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
   if (fEllipticFlowValue != 0.) {  
     // set the value of the monte carlo event plane for the flow event
     cout << "settings for afterburner in TaskFlowEvent.cxx:" << endl;
-    cout << "fCount" << fCount << endl;
-    cout << "fNoOfLoops" << fNoOfLoops << endl;
-    cout << "fEllipticFlowValue" << fEllipticFlowValue << endl;
-    cout << "fSigmaEllipticFlowValue" << fSigmaEllipticFlowValue << endl;
-    cout << "fMultiplicityOfEvent" << fMultiplicityOfEvent << endl;
-    cout << "fSigmaMultiplicityOfEvent" << fSigmaMultiplicityOfEvent << endl;
+    cout << "fCount = " << fCount << endl;
+    cout << "fNoOfLoops = " << fNoOfLoops << endl;
+    cout << "fEllipticFlowValue = " << fEllipticFlowValue << endl;
+    cout << "fSigmaEllipticFlowValue = " << fSigmaEllipticFlowValue << endl;
+    cout << "fMultiplicityOfEvent = " << fMultiplicityOfEvent << endl;
+    cout << "fSigmaMultiplicityOfEvent = " << fSigmaMultiplicityOfEvent << endl;
 
     Double_t xRPangle=0.;
     Double_t xNewFlowValue = 0.;
@@ -353,8 +353,8 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     // This handler can return the current MC event
     if (!mcEvent) { Printf("ERROR: Could not retrieve MC event"); return;}
 
-    fCFManager1->SetEventInfo(mcEvent);
-    fCFManager2->SetEventInfo(mcEvent);
+    fCFManager1->SetMCEventInfo(mcEvent);
+    fCFManager2->SetMCEventInfo(mcEvent);
 
     // analysis 
     Printf("Number of MC particles: %d", mcEvent->GetNumberOfTracks());
@@ -382,8 +382,8 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     
     if (!mcEvent) {Printf("ERROR: Could not retrieve MC event"); return;}
 
-    fCFManager1->SetEventInfo(mcEvent);
-    fCFManager2->SetEventInfo(mcEvent);
+    fCFManager1->SetMCEventInfo(mcEvent);
+    fCFManager2->SetMCEventInfo(mcEvent);
 
 
     if (fAnalysisType == "ESDMC0") { 
