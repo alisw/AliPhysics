@@ -1437,7 +1437,16 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 					AliShuttleStatus *currentStatus = ReadShuttleStatus();
 					AliShuttleStatus::Status newStatus = AliShuttleStatus::kInvalid;
 					
-					if (currentStatus->GetStatus() <= AliShuttleStatus::kPPDone)
+					if (currentStatus->GetStatus() == AliShuttleStatus::kDCSStarted)
+					{
+						// in case the pp goes in TimeOut while retrieving the DCS DPs
+						// set status to kDCSError
+						
+						logMsg.Form("Process - Process of %s timed out while retrieving the DCS DataPoints. Run time: %d seconds. Killing... and setting status to DCSError.",
+								fCurrentDetector.Data(), expiredTime);
+						newStatus = AliShuttleStatus::kDCSError;
+					}
+					else if (currentStatus->GetStatus() <= AliShuttleStatus::kPPDone)
 					{
 						// in case pp not yet done set status to kPPTimeOut
 					
