@@ -61,10 +61,7 @@ AliVZEROTrending::AliVZEROTrending(const AliVZEROTrending &trend) :
 
 //_____________________________________________________________________________
 AliVZEROTrending::~AliVZEROTrending(){
-  if (fGraphs) {
-    for (Int_t i=0; i<8; ++i) delete fGraphs[i];
-    delete [] fGraphs;
-  }
+  for (Int_t i=0; i<8; ++i) delete fGraphs[i];
   delete fMultiGraphs;
 }
 // -----------------------------------------------------------------			
