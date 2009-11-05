@@ -177,33 +177,35 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
     if (!eventSpecieDir) 
       eventSpecieDir = subDir->mkdir(AliRecoParam::GetEventSpecieName(specie)) ; 
     eventSpecieDir->cd() ;    
-    if (list[specie]) {
-      TIter next(list[specie]) ; 
-      TObject * obj ; 
-      while( (obj = next()) ) {
-        if (!obj->TestBit(AliQAv1::GetExpertBit()))
-          obj->Write() ;
-      }
-      if (WriteExpert()) {
-        TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQAv1::GetExpert()) ; 
-        if (!expertDir)
-          expertDir = eventSpecieDir->mkdir(AliQAv1::GetExpert()) ; 
-        expertDir->cd() ;
-        next.Reset() ; 
+    if (list) {
+      if (list[specie]) {
+        TIter next(list[specie]) ; 
+        TObject * obj ; 
         while( (obj = next()) ) {
           if (!obj->TestBit(AliQAv1::GetExpertBit()))
-            continue ; 
-          obj->Write() ;
-        }      
+            obj->Write() ;
+        }
+        if (WriteExpert()) {
+          TDirectory * expertDir = eventSpecieDir->GetDirectory(AliQAv1::GetExpert()) ; 
+          if (!expertDir)
+            expertDir = eventSpecieDir->mkdir(AliQAv1::GetExpert()) ; 
+          expertDir->cd() ;
+          next.Reset() ; 
+          while( (obj = next()) ) {
+            if (!obj->TestBit(AliQAv1::GetExpertBit()))
+              continue ; 
+            obj->Write() ;
+          }      
+        }
       }
+    } 
+    else if ( fCorrNt ) {
+      if (fCorrNt[specie] && AliQAv1::GetDetIndex(GetName()) == AliQAv1::kCORR) {
+        eventSpecieDir->cd() ; 
+        fCorrNt[specie]->Write() ; 
+      }
+      fOutput->Save() ; 
     }
-    if ( !fCorrNt )
-      continue ; 
-    if (fCorrNt[specie] && AliQAv1::GetDetIndex(GetName()) == AliQAv1::kCORR) {
-      eventSpecieDir->cd() ; 
-      fCorrNt[specie]->Write() ; 
-    }
-    fOutput->Save() ; 
   }
 }
 
