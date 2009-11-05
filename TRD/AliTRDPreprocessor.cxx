@@ -684,7 +684,7 @@ Bool_t AliTRDPreprocessor::ExtractDriftVelocityDAQ()
       
       // if enough statistics store the results
       if ((nbtg >                  0) && 
-	  (nbfit        >= 0.5*nbE)) {
+	  (nbfit        >= 0.5*nbE) && (nbE > 30)) {
 	// create the cal objects
 	calibra->PutMeanValueOtherVectorFit(1,kTRUE);
 	calibra->PutMeanValueOtherVectorFit2(1,kTRUE);
@@ -797,7 +797,7 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
       Int_t nbE         = calibra->GetNumberEnt();
       // enough statistics
       if ((nbtg >                  0) && 
-	  (nbfit        >= 0.5*nbE)) {
+	  (nbfit        >= 0.5*nbE) && (nbE > 30)) {
 	// create the cal objects
 	calibra->PutMeanValueOtherVectorFit(1,kTRUE);
 	TObjArray object           = calibra->GetVectorFit();
@@ -836,7 +836,7 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
       Int_t nbE          = calibra->GetNumberEnt();
       // enough statistics
       if ((nbtg >                  0) && 
-	  (nbfit        >= 0.5*nbE)) {
+	  (nbfit        >= 0.5*nbE) && (nbE > 30)) {
 	// create the cal objects
 	calibra->PutMeanValueOtherVectorFit(1,kTRUE);
 	calibra->PutMeanValueOtherVectorFit2(1,kTRUE);
@@ -887,7 +887,7 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
       Int_t nbE          = calibra->GetNumberEnt();
       // enough statistics
       if ((nbtg >                  0) && 
-	  (nbfit        >= 0.95*nbE)) {
+	  (nbfit        >= 0.95*nbE) && (nbE > 30)) {
 	// create cal pad objects 
 	TObjArray object            = calibra->GetVectorFit();
 	TObject *objPRFpad          = calibra->CreatePadObjectPRF(&object);
