@@ -28,7 +28,10 @@ public:
   AliCheckMuonDetEltResponse(const AliMUONGeometryTransformer* transformer,
 			     AliESDEvent* esd,
 			     TClonesArray* detEltTDHistList,
-			     TClonesArray* detEltTTHistList);
+			     TClonesArray* detEltTTHistList,
+			     TClonesArray* chamberTDHistList,
+			     TClonesArray* chamberTTHistList,
+			     Bool_t isCosmic = kFALSE);
 
 //Destructor:
   virtual ~AliCheckMuonDetEltResponse();
@@ -37,21 +40,27 @@ public:
   void CheckDetEltResponse ();
   void TrackLoop ();
   void TrackParamLoop ();
+
+  void SetCosmic(Bool_t isCosmic) {fIsCosmicData = isCosmic;};
+  Bool_t IsCosmic() {return fIsCosmicData;};
  
 private:
   
-  void FillDetEltTDHisto (Int_t chamber, Int_t detElt,
-			  Double_t posXL, Double_t posYL);
+  void FillTDHistos (Int_t chamber, Int_t detElt,
+		     Double_t posXL, Double_t posYL);
 
-  void FillDetEltTTHisto (Int_t chamber, Int_t detElt,
-			  Double_t posXG, Double_t posYG, Double_t posZG,
-			  Double_t posXL, Double_t posYL, Double_t posZL);
+  void FillTTHistos (Int_t chamber, Int_t detElt,
+		     Double_t posXL, Double_t posYL);
 
-  void CalculMissClusterParam (AliMUONTrackParam* extrapTrackParam,
-			       Int_t firstMissCh, Int_t nbrOfMissCh);
+  void FindAndFillMissedDetElt (AliMUONTrackParam* extrapTrackParam,
+				Int_t firstMissCh, Int_t lastChamber);
 
-  void GetDetEltFromPosition (Int_t chamber,
-			      Double_t posX, Double_t posY, Double_t posZ);
+  void CoordinatesOfMissingCluster(Double_t x1, Double_t y1, Double_t z1,
+				   Double_t x2, Double_t y2, Double_t z2,
+				   Double_t& x, Double_t& y);
+
+  Bool_t CoordinatesInDetEltSt12(Int_t DeId, Double_t x, Double_t y);
+  Bool_t CoordinatesInDetEltSt345(Int_t DeId, Double_t x, Double_t y);
 
 
   Int_t fNCh; //!<Number of tracking chamber.
@@ -59,6 +68,7 @@ private:
   Int_t fNDE; //!<Number of detection element in the tracking system.
 
   Int_t FromDetElt2iDet (Int_t chamber, Int_t detElt);
+  Int_t FromDetElt2LocalId (Int_t chamber, Int_t detElt);
 
   const AliMUONGeometryTransformer* fTransformer; //!<Geometry transformer
 
@@ -66,8 +76,8 @@ private:
 
   Int_t fNbrClustersCh[10];      //!<Number of clusters in the chamber [fChamberNbr].
   Int_t fTracksTotalNbr;         //!<Total number of tracks in the event.
-  Int_t fGetDetElt[2];           //!<Detection elemtents obtained from position(X,Y,Z). fGetDetElt[1] is for the case where there is an overlap.
   Int_t fTrackFilter[10];        //!<To select track for the efficiency calculation.
+  Bool_t fIsCosmicData;          ///< Check if the data are cosmic rays (used only to cut cosmic shower at hte trigger level if true)
 
   TClonesArray     * fTrackParams;
   AliMUONTrackParam* fTrackParam;
@@ -75,6 +85,8 @@ private:
 
   TClonesArray* fDetEltTDHistList; //!<List of histograms of the tracks detected in the detection elements 
   TClonesArray* fDetEltTTHistList; //!<List of histograms of the tracks which have passed through the detection elements
+  TClonesArray* fChamberTDHistList; //!<List of histograms of the tracks detected in the chambers 
+  TClonesArray* fChamberTTHistList; //!<List of histograms of the tracks which have passed through the chambers
 
   static const Int_t fNbrOfChamber;            ///< The total number of chamber in the tracking system.
   static const Int_t fNbrOfStation;            ///< The total number of station in the tracking system.

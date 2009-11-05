@@ -38,6 +38,12 @@
 
 //include MUON/mapping:
 #include "mapping/AliMpDEManager.h"
+#include "mapping/AliMpSegmentation.h"
+#include "mapping/AliMpSlat.h"
+#include "mapping/AliMpSlatSegmentation.h"
+#include "mapping/AliMpSector.h"
+#include "mapping/AliMpSectorSegmentation.h"
+#include "mapping/AliMpPad.h"
 
 //include ROOT:
 #include <Riostream.h>
@@ -45,6 +51,7 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TH2F.h>
+#include <TH1F.h>
 #include <TClonesArray.h>
 #include <TPaveLabel.h>
 #include <TList.h>
@@ -59,7 +66,7 @@ const Int_t AliCheckMuonDetEltResponse::fNbrOfDetectionElt[10] = {4, 4, 4, 4, 18
 const Int_t AliCheckMuonDetEltResponse::fFirstDetectionElt[10] = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
 const Int_t AliCheckMuonDetEltResponse::fOffset                = 100;
 const Int_t AliCheckMuonDetEltResponse::fOverlapSize           = 15;
-const Int_t AliCheckMuonDetEltResponse::fYSlatSize             = 40;
+const Int_t AliCheckMuonDetEltResponse::fYSlatSize             = 20;
 
 //_____________________________________________________________________________
 AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse() 
@@ -67,6 +74,7 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse()
   fNCh(0),
   fNSt(0),
   fNDE(0),
+  fIsCosmicData(kFALSE),
   fTransformer(0x0),
   fESD(0x0),
   fTracksTotalNbr(0x0),
@@ -74,7 +82,9 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse()
   fTrackParam(0x0),
   fCluster(0x0),
   fDetEltTDHistList(0x0),
-  fDetEltTTHistList(0x0)
+  fDetEltTTHistList(0x0),
+  fChamberTDHistList(0x0),
+  fChamberTTHistList(0x0)
 {
 /// Default constructor
 
@@ -83,18 +93,10 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse()
     fNDE = AliAnalysisTaskMuonTrackingEff::fTotNbrOfDetectionElt;
 
     for (Int_t iCluster = 0; iCluster<fNCh; ++iCluster)
-    {
       fNbrClustersCh[iCluster] = 0;
-    }  
 
-    for (Int_t i=0; i<2; ++i)
-    {
-      fGetDetElt[i] = 0;
-    }
     for (Int_t i=0; i<fNCh; ++i)
-    {
       fTrackFilter[i] = 0;
-    } 
 }
 
 //_____________________________________________________________________________
@@ -103,6 +105,7 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliCheckMuonDetEltR
   fNCh(0),
   fNSt(0),
   fNDE(0),
+  fIsCosmicData(kFALSE),
   fTransformer(0x0),
   fESD(0x0),
   fTracksTotalNbr(0x0),
@@ -110,7 +113,9 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliCheckMuonDetEltR
   fTrackParam(0x0),
   fCluster(0x0),
   fDetEltTDHistList(0x0),
-  fDetEltTTHistList(0x0)
+  fDetEltTTHistList(0x0),
+  fChamberTDHistList(0x0),
+  fChamberTTHistList(0x0)
 {
  src.Copy(*this);
 }
@@ -129,39 +134,39 @@ AliCheckMuonDetEltResponse& AliCheckMuonDetEltResponse::operator=(const AliCheck
 AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTransformer* transformer,
 						       AliESDEvent* esd,
 						       TClonesArray* detEltTDHistList,
-						       TClonesArray* detEltTTHistList) 
+						       TClonesArray* detEltTTHistList,
+						       TClonesArray* chamberTDHistList,
+						       TClonesArray* chamberTTHistList,
+						       Bool_t isCosmic) 
 : TObject(),
   fNCh(0),
   fNSt(0),
   fNDE(0),
+  fIsCosmicData(kFALSE),
   fTransformer(transformer),
   fESD(esd),
   fTracksTotalNbr(0),
   fTrackParams(0x0),
   fTrackParam(0),
-  fCluster(0), 
+  fCluster(0),
   fDetEltTDHistList(detEltTDHistList),
-  fDetEltTTHistList(detEltTTHistList)
+  fDetEltTTHistList(detEltTTHistList),
+  fChamberTDHistList(chamberTDHistList),
+  fChamberTTHistList(chamberTTHistList)
 {
 /// Constructor
 
     fNCh = AliCheckMuonDetEltResponse::fNbrOfChamber;
     fNSt = AliCheckMuonDetEltResponse::fNbrOfStation;
     fNDE = AliAnalysisTaskMuonTrackingEff::fTotNbrOfDetectionElt;
+    fIsCosmicData = isCosmic;
 
     for (Int_t iCluster = 0; iCluster<fNCh; ++iCluster)
-    {
       fNbrClustersCh[iCluster] = 0;
-    }
-
-    for (Int_t i = 0; i <2 ; ++i)
-    {
-      fGetDetElt[i] = 0;
-    }
+    
     for (Int_t i=0; i<fNCh; ++i)
-    {
       fTrackFilter[i] = 0;
-    } 
+    
 }
 
 
@@ -205,12 +210,61 @@ void AliCheckMuonDetEltResponse::TrackLoop()
     {
       esdTrack   = fESD -> GetMuonTrack(iTrack);
   
-      if( esdTrack->ContainTrackerData() )
-      {
-	AliMUONESDInterface::ESDToMUON(*esdTrack, track);
-        fTrackParams = track.GetTrackParamAtCluster();
-	TrackParamLoop(); //!<Loop on trackParam.
-      }
+      if( esdTrack->ContainTrackerData() && esdTrack->GetMatchTrigger() > 0)
+	{
+	  if (fIsCosmicData)
+	    {
+	      // Beginnig of long stuff to check the number of trigger hit (to only keep muon trigger and cut cosmic showers)
+	      Int_t nTriggerHit = 0;
+	      Int_t nTriggerHitStrip[8] = {0, 0, 0, 0, 
+					   0, 0, 0, 0};
+	      UShort_t triggerPattern[8] = {esdTrack->GetTriggerX1Pattern(), esdTrack->GetTriggerX2Pattern(), esdTrack->GetTriggerX3Pattern(), esdTrack->GetTriggerX4Pattern(), 
+					    esdTrack->GetTriggerY1Pattern(), esdTrack->GetTriggerY2Pattern(), esdTrack->GetTriggerY3Pattern(), esdTrack->GetTriggerY4Pattern()};
+	      
+	      for (Int_t ii = 0; ii < 8; ii++)
+		{
+		  UShort_t pattern = triggerPattern[ii];
+		  Int_t binaryValue[16] = {0, 0, 0, 0,
+					   0, 0, 0, 0,
+					   0, 0, 0, 0,
+					   0, 0, 0, 0};
+		  
+		  for (Int_t jj = 15; jj >= 0; jj--)
+		    {
+		      Int_t base = 1;
+		      for (Int_t bb = 0; bb < jj; bb++)
+			base *= 2;
+		      
+		      if (pattern/base == 1)
+			{
+			  binaryValue[jj] = 1;
+			  pattern = pattern - base;
+			}
+		    }
+		}
+	      
+	      for (Int_t ii = 0; ii < 8; ii++)
+		nTriggerHit += nTriggerHitStrip[ii];
+	      // End of long stuff
+	      
+	      
+	      // Important part	  
+	      if (nTriggerHit < 10)
+		{
+		  AliMUONESDInterface::ESDToMUON(*esdTrack, track);
+		  fTrackParams = track.GetTrackParamAtCluster();
+		  TrackParamLoop(); //!<Loop on trackParam.
+		}
+	    }
+
+	  // No trigger cut is required for non-cosmic data
+	  else
+	    {
+	      AliMUONESDInterface::ESDToMUON(*esdTrack, track);
+	      fTrackParams = track.GetTrackParamAtCluster();
+	      TrackParamLoop(); //!<Loop on trackParam.
+	    }
+	}
     }
 }
 
@@ -219,29 +273,29 @@ void AliCheckMuonDetEltResponse::TrackLoop()
 //_____________________________________________________________________________
 void AliCheckMuonDetEltResponse::TrackParamLoop()
 {
-    Int_t nTrackParams = (Int_t) fTrackParams->GetEntriesFast();  //!<Number of trackParams in the track.
-    Int_t iTrackParam = 0;                                        //!<Number of the trackParam of the track.
-    Int_t oldChamber = -1, newChamber = 0; //!<To check if there is 0, 1 or 2 (overlap cases) clusters in the same chamber for a track.                                      
-    Int_t detElt;                          //!<Detection element Id.
+  Int_t nTrackParams = (Int_t) fTrackParams->GetEntriesFast();  //!<Number of trackParams in the track.
+  Int_t iTrackParam = 0;                                        //!<Number of the trackParam of the track.
+  Int_t oldChamber = -1, newChamber = 0; //!<To check if there is 0, 1 or 2 (overlap cases) clusters in the same chamber for a track.                                      
+  Int_t detElt;                          //!<Detection element Id.
   
-    for (Int_t ch = 0; ch < fNCh; ++ch)
+  for (Int_t ch = 0; ch < fNCh; ++ch)
     {
       fTrackFilter[ch] = 0;
     }
 
-    Double_t posXL, posYL, posZL;          //!<Local positions.
-    Double_t posXG, posYG, posZG;          //!<Global. positions.
-    Int_t chamberResponse [10] = {0};      //!<1 if the chamber has responded; 0 if not
-
-    for (iTrackParam = 0; iTrackParam < nTrackParams; ++iTrackParam)
+  Double_t posXL, posYL, posZL;          //!<Local positions.
+  Double_t posXG, posYG, posZG;          //!<Global. positions.
+  Int_t chamberResponse [10] = {0};      //!<1 if the chamber has responded; 0 if not
+  
+  for (iTrackParam = 0; iTrackParam < nTrackParams; ++iTrackParam)
     { 
       fTrackParam = (AliMUONTrackParam*) fTrackParams->At(iTrackParam);
       fCluster    = (AliMUONVCluster*  ) fTrackParam ->GetClusterPtr();    
       fTrackFilter   [fCluster->GetChamberId()] = 1;
       chamberResponse[fCluster->GetChamberId()] = 1;
     }
-
-    for (Int_t station = 0; station < fNSt-1; ++station)
+  
+  for (Int_t station = 0; station < fNSt-1; ++station)
     {
       Int_t filter;                                                  //<!
       Int_t ch1, ch2, ch3, ch4;                                      //<!
@@ -251,51 +305,58 @@ void AliCheckMuonDetEltResponse::TrackParamLoop()
       ch4 = 2*station + 3;                                           //<!
                                                                      //<!For the efficiency calculation the tracks
       if (station < 3 )                                              //<!reconstructed must have responded to the
-      {                                                              //<!criteria of the tracking. 
-	filter            = fTrackFilter[ch1];                       //<!And that's why the tracks usable for the 
-	fTrackFilter[ch1] = fTrackFilter[ch2];                       //<!intrinsic efficiency calculation are
-	fTrackFilter[ch2] = filter;                                  //<!the tracks which have one or two clusters
-      }                                                              //<!in each station. So the case where a track
-                                                                     //<!hasn't a cluster in a station is not
-      else                                                           //<!taking into account.
-      {                                                              //<!This part solves the problem. See the ALICE 
-	if (chamberResponse[ch3]*chamberResponse[ch4] != 0)          //<!note of Diego STOCCO on the trigger efficiency
-	{                                                            //<!
-	filter            = fTrackFilter[ch1];                       //<!
-	fTrackFilter[ch1] = fTrackFilter[ch2];                       //<!
-	fTrackFilter[ch2] = filter;                                  //<!
-	}                                                            //<!
-	else                                                         //<!
-	{                                                            //<!
-	fTrackFilter[ch1] = 0;                                       //<!
-	fTrackFilter[ch2] = 0;                                       //<!
-	}                                                            //<!
-                                                                     //<!
-	if (chamberResponse[ch1]*chamberResponse[ch2] != 0)          //<!
-	{                                                            //<!
-	filter            = fTrackFilter[ch3];                       //<!
-	fTrackFilter[ch3] = fTrackFilter[ch4];                       //<!
-	fTrackFilter[ch4] = filter;                                  //<!
-	}                                                            //<!
-	else                                                         //<!
-	{                                                            //<!
-	fTrackFilter[ch3] = 0;                                       //<!
-	fTrackFilter[ch4] = 0;                                       //<!
-	}                                                            //<!
-      }                                                              //<!
+	{                                                              //<!criteria of the tracking. 
+	  filter            = fTrackFilter[ch1];                       //<!And that's why the tracks usable for the 
+	  fTrackFilter[ch1] = fTrackFilter[ch2];                       //<!intrinsic efficiency calculation are
+	  fTrackFilter[ch2] = filter;                                  //<!the tracks which have one or two clusters
+	}                                                              //<!in each station. So the case where a track
+                                                                       //<!hasn't a cluster in a station is not
+      else                                                             //<!taking into account.
+	{                                                              //<!This part solves the problem. See the ALICE 
+	  if (chamberResponse[ch3]*chamberResponse[ch4] != 0)          //<!note of Diego STOCCO on the trigger efficiency
+	    {                                                            //<!
+	      filter            = fTrackFilter[ch1];                       //<!
+	      fTrackFilter[ch1] = fTrackFilter[ch2];                       //<!
+	      fTrackFilter[ch2] = filter;                                  //<!
+	    }                                                            //<!
+	  else                                                         //<!
+	    {                                                            //<!
+	      fTrackFilter[ch1] = 0;                                       //<!
+	      fTrackFilter[ch2] = 0;                                       //<!
+	    }                                                            //<!
+	  //<!
+	  if (chamberResponse[ch1]*chamberResponse[ch2] != 0)          //<!
+	    {                                                            //<!
+	      filter            = fTrackFilter[ch3];                       //<!
+	      fTrackFilter[ch3] = fTrackFilter[ch4];                       //<!
+	      fTrackFilter[ch4] = filter;                                  //<!
+	    }                                                            //<!
+	  else                                                         //<!
+	    {                                                            //<!
+	      fTrackFilter[ch3] = 0;                                       //<!
+	      fTrackFilter[ch4] = 0;                                       //<!
+	    }                                                            //<!
+	}                                                              //<!
     }                                                                //<!
+  
 
-    for (Int_t ch = 0; ch < fNCh; ++ch)
+  for (Int_t ch = 0; ch < fNCh; ++ch)
     {
       if (fTrackFilter[ch] == 1)
-      {
-	if ( chamberResponse[ch] != 0) ((TH2F*) fDetEltTDHistList->UncheckedAt(fNDE))->Fill(ch, 0);
-	if (!fDetEltTTHistList) ((TH2F*) fDetEltTTHistList->UncheckedAt(fNDE))->Fill(ch, 0);
-      }
+	{
+	  if ( chamberResponse[ch] != 0) 
+	    {
+	      ((TH2F*) fDetEltTDHistList->UncheckedAt(fNDE))->Fill(ch, 0);
+	      ((TH1F*) fChamberTDHistList->UncheckedAt(fNCh))->Fill(ch);	  
+	    }
+	  
+	  ((TH2F*) fDetEltTTHistList->UncheckedAt(fNDE))->Fill(ch, 0);
+	  ((TH1F*) fChamberTTHistList->UncheckedAt(fNCh))->Fill(ch);
+	}
     } 
-
- ///Begining of the loop:
-    for (iTrackParam = 0; iTrackParam < nTrackParams; ++iTrackParam)
+  
+  ///Begining of the loop:
+  for (iTrackParam = 0; iTrackParam < nTrackParams; ++iTrackParam)
     {
       fTrackParam = (AliMUONTrackParam*) fTrackParams->At(iTrackParam);
       fCluster    = (AliMUONVCluster*  ) fTrackParam ->GetClusterPtr(); 
@@ -303,123 +364,78 @@ void AliCheckMuonDetEltResponse::TrackParamLoop()
       newChamber  = fCluster->GetChamberId();
       detElt      = fCluster->GetDetElemId();
 
-   ///Global and local positions calculation:
+      ///Global and local positions calculation:
       posXG = fTrackParam->GetNonBendingCoor(); 
       posYG = fTrackParam->GetBendingCoor(); 
       posZG = fTrackParam->GetZ(); 
-
+      
       fTransformer->Global2Local(detElt, posXG, posYG, posZG, posXL, posYL, posZL);  //!<Transfomation from global to local positions.
-   
-   ///Filling histograms of the cluster positions on the detection element of the TRACKS DETECTED (TD):
-      FillDetEltTDHisto(newChamber, detElt, posXL, posYL);
-
-   ///Filling histograms of the cluster positions on the detection element of ALL THE TRACKS (TT):
-      FillDetEltTTHisto(newChamber, detElt, posXG, posYG, posZG, posXL, posYL, posZL);
+      
+      ///Filling histograms of the cluster positions on the detection element of the TRACKS DETECTED (TD):
+      FillTDHistos(newChamber, detElt, posXL, posYL);
+    
+      ///Filling histograms of the cluster positions on the detection element of ALL THE TRACKS (TT):
+      FillTTHistos(newChamber, detElt, posXL, posYL);
 
       if (newChamber != oldChamber) 
-      {
-	if (newChamber > oldChamber + 1)                                 //!<Check if it doesn't miss a chamber.
 	{
-	  Int_t nbrOfMissCh = newChamber - (oldChamber+1);                //!<Number of missing chambers.
-	  CalculMissClusterParam(fTrackParam, oldChamber+1, nbrOfMissCh); //!<Calculation of the parameters of the missing cluster(s).
+	  if (newChamber > oldChamber + 1)                                 //!<Check if it doesn't miss a chamber.
+	    {
+	      Int_t nbrMissChamber = newChamber - (oldChamber + 1);
+	      FindAndFillMissedDetElt(fTrackParam, oldChamber+1, nbrMissChamber); //!<Calculation of the parameters of the missing cluster(s).
+	    }
+	    
+	  if ( iTrackParam == nTrackParams - 1 && newChamber != fNCh-1)           //!<Check if the last chamber, chamber 9 (from 0 to 9) has responded.
+	    {	  
+	      FindAndFillMissedDetElt(fTrackParam, fNCh-1, 1);                      //!<Calculation of the parameters of the missing cluster(s) in the last chamber.
+	    }
 	}
-	if ( iTrackParam == nTrackParams - 1 && newChamber != fNCh-1)           //!<Check if the last chamber, chamber 9 (from 0 to 9) has responded.
-	{
-	  CalculMissClusterParam(fTrackParam, fNCh-1, 1);                      //!<Calculation of the parameters of the missing cluster(s) in the last chamber.
-	}
-      }
       oldChamber = newChamber; 
-    }
+    } 
 }
 
 
 
 //_____________________________________________________________________________
-void AliCheckMuonDetEltResponse::FillDetEltTDHisto(Int_t chamber,
-						   Int_t detElt,
-						   Double_t posXL,
-						   Double_t posYL)
+void AliCheckMuonDetEltResponse::FillTDHistos(Int_t chamber,
+					      Int_t detElt,
+					      Double_t posXL,
+					      Double_t posYL)
 {
-    if(fTrackFilter[chamber]== 1)
+  if(fTrackFilter[chamber]== 1)
     {
       Int_t iDet = 0; //!<Position of the detection element in the histograms' list.
       iDet = FromDetElt2iDet(chamber, detElt);
       ((TH2F*) fDetEltTDHistList->UncheckedAt(iDet))->Fill(posXL, posYL);
+      
+      Int_t detEltLocalId = 0;  //!<Id of the detection element in the station
+      detEltLocalId =  FromDetElt2LocalId(chamber, detElt);
+      ((TH1F*) fChamberTDHistList->UncheckedAt(chamber))->Fill(detEltLocalId);
     }
 }
 
 
 
+
 //_____________________________________________________________________________
-void AliCheckMuonDetEltResponse::FillDetEltTTHisto(Int_t chamber,
-						   Int_t detElt,
-						   Double_t posXG,
-						   Double_t posYG,
-						   Double_t posZG,
-						   Double_t posXL,
-						   Double_t posYL,
-						   Double_t posZL)
+void AliCheckMuonDetEltResponse::FillTTHistos(Int_t chamber,
+					      Int_t detElt,
+					      Double_t posXL,
+					      Double_t posYL)
 {
-    if(fTrackFilter[chamber] == 1)
+  if(fTrackFilter[chamber] == 1)
     {
       Int_t iDet = 0; //!<Position of the detection element in the histograms' list.
       iDet = FromDetElt2iDet(chamber, detElt);
-      if (!fDetEltTTHistList)  ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
+      ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
       
-      if(TMath::Abs(posYL) > fOverlapSize) //!<It is an overlap area. It can have two clusters for this track in this chamber.
-      {
-	GetDetEltFromPosition(chamber, posXG, posYG, posZG);
-	if(fGetDetElt[1] != 0) //<!There is a second detection element for the same (X,Y) in this chamber (overlap).
-	{
-	  if(fGetDetElt[1] != detElt)
-	  {
-	    fTransformer->Global2Local(fGetDetElt[1], posXG, posYG, posZG, posXL, posYL, posZL);  //!<Transfomation from global to local positions.
-	    iDet = FromDetElt2iDet(chamber, fGetDetElt[1]);
-	    if (!fDetEltTTHistList) ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
-	  }
-	  else
-	  {
-	    fTransformer->Global2Local(fGetDetElt[0], posXG, posYG, posZG, posXL, posYL, posZL);  //!<Transfomation from global to local positions.
-	    iDet = FromDetElt2iDet(chamber, fGetDetElt[0]);
-	    if (!fDetEltTTHistList) ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
-	  }
-	}
-      }
+      Int_t detEltLocalId = 0;  //!<Id of the detection element in the station
+      detEltLocalId =  FromDetElt2LocalId(chamber, detElt);
+      ((TH1F*) fChamberTTHistList->UncheckedAt(chamber))->Fill(detEltLocalId);
     }
 }
 
 
-
-//_____________________________________________________________________________
-void AliCheckMuonDetEltResponse::CalculMissClusterParam(AliMUONTrackParam* extrapTrackParam,
-							Int_t firstMissCh,
-							Int_t nbrOfMissCh)
-{
-//Calculation of the cluster parameter which was not detect by
-//the chamber.
-
-    for (Int_t iCh = 0; iCh<nbrOfMissCh; ++iCh)
-    {
-      Double_t exTraXL, exTraYL, exTraZL;   //!<Extrapolated local positions.
-      Double_t exTraXG, exTraYG, exTraZG;   //!<Extrapolated global positions.
-      Int_t missChamber= firstMissCh + iCh; //!<The missing chamber.
-      Int_t missDetElt = 0;
-
-      exTraZG = AliMUONConstants::DefaultChamberZ(missChamber);
-      AliMUONTrackExtrap::ExtrapToZ(extrapTrackParam, exTraZG);      //!<Extrapolation to the missing chamber.
-      exTraXG = extrapTrackParam->GetNonBendingCoor();               //!<Global X position extrapolated to the missing chamber.
-      exTraYG = extrapTrackParam->GetBendingCoor();                  //!<Global Y position extrapolated to the missing chamber.
-
-      GetDetEltFromPosition(missChamber, exTraXG, exTraYG, exTraZG); //!<Gives the detection element (fGetDetElt) with the position.
-      missDetElt = fGetDetElt[0];
-
-      if( missDetElt != 0 ) //!<Check if the track has passed trough a detection area
-      {
-	fTransformer->Global2Local(missDetElt, exTraXG, exTraYG, exTraZG, exTraXL, exTraYL, exTraZL);  //!<Transfomation from global to local positions.
-	FillDetEltTTHisto(missChamber, missDetElt, exTraXG, exTraYG, exTraZG, exTraXL, exTraYL, exTraZL);
-      }
-    }
-}
 
 
 
@@ -443,53 +459,133 @@ Int_t AliCheckMuonDetEltResponse::FromDetElt2iDet(Int_t chamber,
 
 
 //_____________________________________________________________________________
-void AliCheckMuonDetEltResponse::GetDetEltFromPosition(Int_t chamber,
-						       Double_t posX,
-						       Double_t posY,
-						       Double_t posZ)
+Int_t AliCheckMuonDetEltResponse::FromDetElt2LocalId(Int_t chamber, 
+						     Int_t detElt)
 {
 ///
-///Gives the detetection element fGetDetElt[0] corresponding to the position. In the case 
-///of an overlap (two detection element with the same (X,Y)) fGetDetElt[1] is calculated.
+///Connexion between the detection element X and its number in the station.
 ///
 
-    Int_t nbrOfDetElt =  AliMpDEManager::GetNofDEInChamber(chamber, kTRUE); //!<Number of detection elements in the chamber.
-    Int_t detElt = 0, lastDetElt = 0;
+    Int_t localId = 0; //!<Position of the detection element (detElt) in the histograms' list.
+    localId = detElt - (chamber+1) * 100;
 
-    Double_t posXL, posYL, posZL; //!<Local positions.
-    posXL = posYL = posZL = 1000.;
-    fGetDetElt[0] = fGetDetElt[1] = 0;
+    return localId;    
+}
 
-    if(chamber>3)
+
+
+//_____________________________________________________________________________
+void AliCheckMuonDetEltResponse::FindAndFillMissedDetElt(AliMUONTrackParam* extrapTrackParam, 
+							 Int_t firstMissCh,
+							 Int_t nbrMissCh)
+{
+///
+///Find which detection elements should have been hit but were missed, 
+///and fill the TT histos appropriately
+///
+  for (Int_t iCh = 0; iCh < nbrMissCh; ++iCh)
     {
-      Int_t shift  = 0;                                                    //!<|
-      if(posX<0) shift =    nbrOfDetElt /4 + 1;                            //!<|Method to avoid the loop on all elements of
-      if(posX>0) shift = (3*nbrOfDetElt)/4 + 1;                            //!<|detection, and just loop through fourth chamber.
-                                                                           //!<|
-      detElt = fOffset*(chamber+1) + shift;                                //!<|
-      lastDetElt = fOffset*(chamber+1) +(shift+nbrOfDetElt/2)%nbrOfDetElt; //!<|
+      Int_t chamber = firstMissCh + iCh;
+      Int_t nbrOfDetElt =  AliMpDEManager::GetNofDEInChamber(chamber, kTRUE); //!<Number of detection elements in the chamber.
       
-      Int_t nbr = 0;
-      while(detElt != lastDetElt) //!<Loop on fourth chamber.
-      {
+      Double_t pos1[6] = {0, 0, 0, 0, 0, 0};        //!<First point used to compute the extrapolated point (first 3 for global coordinates, last 3 for local).
+      Double_t pos2[6] = {0, 0, 0, 0, 0, 0};        //!<Second point used to compute the extrapolated point (first 3 for global coordinates, last 3 for local).
+      Double_t posMiss[2] = {0, 0};                 //!<(X, Y) local coordinates of the missing cluster.
+            
+      pos1[2] = AliMUONConstants::DefaultChamberZ(chamber);           //!<Z of point 1, defined by being the Z of the chamber in "perfect" position.
+      AliMUONTrackExtrap::ExtrapToZ(extrapTrackParam, pos1[2]);
+      pos1[0] = extrapTrackParam->GetNonBendingCoor();                //!<X of point 1, extrapolated by following the Track.
+      pos1[1] = extrapTrackParam->GetBendingCoor();                   //!<Y of point 1, extrapolated by following the Track.
+      
+      pos2[2] = AliMUONConstants::DefaultChamberZ(chamber) + AliMUONConstants::DzCh();   //!<Z of point 2, defined by being the Z of the chamber in "perfect" position 
+      AliMUONTrackExtrap::ExtrapToZ(extrapTrackParam, pos2[2]);                           //!< + plus a small shift (the distance between two stations in a same chamber).
+      pos2[0] = extrapTrackParam->GetNonBendingCoor();                                   //!<X of point 2, extrapolated by following the Track.                        
+      pos2[1] = extrapTrackParam->GetBendingCoor();                                      //!<Y of point 2, extrapolated by following the Track.                          
+      
+      
+      
+	for (Int_t iDE = 0; iDE < nbrOfDetElt; iDE++)                    //!<Loop on all the detection element of the chamber
+	  {
+	    Int_t deId = (chamber + 1)*fOffset + iDE;                        //!<detection element Id 
+	    
+	    fTransformer->Global2Local(deId, pos1[0], pos1[1], pos1[2], pos1[3], pos1[4], pos1[5]);      //!<convesrion of point 1 and 2 in the local coordinates
+	    fTransformer->Global2Local(deId, pos2[0], pos2[1], pos2[2], pos2[3], pos2[4], pos2[5]);
+	    
+	    CoordinatesOfMissingCluster(pos1[3], pos1[4], pos1[5], pos2[3], pos2[4], pos2[5], posMiss[0], posMiss[1]);
 
-	fTransformer->Global2Local(detElt, posX, posY, posZ, posXL, posYL, posZL);  //!<Transfomation from global to local positions.
+	    Bool_t IsMissed = kFALSE;
+	    if (chamber < 4)
+	      IsMissed = CoordinatesInDetEltSt12(deId, posMiss[0], posMiss[1]);
+	    else
+	      IsMissed = CoordinatesInDetEltSt345(deId, posMiss[0], posMiss[1]);
 
-	if(TMath::Abs(posYL)< fYSlatSize) //!<If |posYL|<20 => the cluster is in the detection element (-20<Ylocal<20 for each slat). 	
-	{
-	  fGetDetElt[nbr] = detElt;  
-	  ++nbr;
-	}	
-	shift  = (shift + 1)%nbrOfDetElt;
-	detElt = fOffset*(chamber+1) + shift;
-      }
+	    if (IsMissed)
+	      FillTTHistos(chamber, deId, posMiss[0], posMiss[1]);
+	    
+	  }
     }
-    
-    else //!<For the station 1 & 2 (4 detection elements in each chamber). 
-    {
-      if(posX>0 && posY>0) fGetDetElt[0] = fOffset*(chamber+1)    ;
-      if(posX<0 && posY>0) fGetDetElt[0] = fOffset*(chamber+1) + 1;
-      if(posX<0 && posY<0) fGetDetElt[0] = fOffset*(chamber+1) + 2;
-      if(posX>0 && posY<0) fGetDetElt[0] = fOffset*(chamber+1) + 3; 
-    }
+}
+
+
+
+//_____________________________________________________________________________
+void AliCheckMuonDetEltResponse::CoordinatesOfMissingCluster(Double_t x1, Double_t y1, Double_t z1,
+							     Double_t x2, Double_t y2, Double_t z2,
+							     Double_t& x, Double_t& y)
+{
+  //
+  //Compute the coordinates of the missing cluster.
+  //There are defined by the intersection between the straigth line joining two extrapolated points (1 and 2) and the detection element plane.
+  //In the local coordinates, this means Z=0 in the parametric equation of the line.
+  //
+
+  Double_t t = 0;
+  t = - z1 / (z2 - z1);
+  
+  x = t * (x2 - x1) + x1;
+  y = t * (y2 - y1) + y1;
+}
+
+
+//_____________________________________________________________________________
+Bool_t AliCheckMuonDetEltResponse::CoordinatesInDetEltSt345(Int_t DeId, Double_t x, Double_t y)
+{
+  //
+  //Return kTRUE if the coordinates are in the Detection Element, for station 3, 4 and 5.
+  //This is done by checking if a pad correspond to the (x, y) position.
+  //  
+
+  AliMpPad pad1;
+  AliMpPad pad2;
+
+  AliMpSlatSegmentation *segm1 = new AliMpSlatSegmentation(AliMpSegmentation::Instance(kFALSE)->GetSlat(DeId, AliMp::kCath0));
+  AliMpSlatSegmentation *segm2 = new AliMpSlatSegmentation(AliMpSegmentation::Instance(kFALSE)->GetSlat(DeId, AliMp::kCath1));
+  pad1 = segm1->PadByPosition(x, y, kFALSE);
+  pad2 = segm2->PadByPosition(x, y, kFALSE);
+ 
+  if (pad1.IsValid() || pad2.IsValid())
+    return kTRUE;
+  else
+    return kFALSE;
+}
+
+
+//_____________________________________________________________________________
+Bool_t AliCheckMuonDetEltResponse::CoordinatesInDetEltSt12(Int_t DeId, Double_t x, Double_t y)
+{
+  //Return kTRUE if the coordinates are in the Detection Element, for station 1 and 2.
+  //This is done by checking if a pad correspond to the (x, y) position.
+  
+  AliMpPad pad1;
+  AliMpPad pad2;
+
+  AliMpSectorSegmentation *segm1 = new AliMpSectorSegmentation(AliMpSegmentation::Instance(kFALSE)->GetSector(DeId, AliMp::kCath0));
+  AliMpSectorSegmentation *segm2 = new AliMpSectorSegmentation(AliMpSegmentation::Instance(kFALSE)->GetSector(DeId, AliMp::kCath1));
+  pad1 = segm1->PadByPosition(x, y, kFALSE);
+  pad2 = segm2->PadByPosition(x, y, kFALSE);
+ 
+  if (pad1.IsValid() || pad2.IsValid())
+    return kTRUE;
+  else
+    return kFALSE;
 }
