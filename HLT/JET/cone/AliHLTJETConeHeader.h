@@ -74,7 +74,7 @@ public:
   void SetJetCuts( AliHLTJETJetCuts* cuts )  { fJetCuts = cuts; }
  
   /** Set flag to use only leading seed */
-  void SetUseLeading( Bool_t b ) { fUseLeading = b; }
+  void SetUseLeading( Bool_t b )             { fUseLeading = b; }
 
   /*
    * ---------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ public:
   /** Get flag to use only leading seed 
    *  @return   if kTRUE, only leading seed is used
    */
-  Bool_t GetUseLeading() { return fUseLeading; }
+  Bool_t            GetUseLeading()  { return fUseLeading; }
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -113,10 +113,6 @@ private:
   
   /** if kTRUE, only leading seed is used */
   Bool_t                     fUseLeading;           // see above
-
-  /*
-    Int_t                      fgFinderType;
-  */
 
   ClassDef(AliHLTJETConeHeader, 1)
 

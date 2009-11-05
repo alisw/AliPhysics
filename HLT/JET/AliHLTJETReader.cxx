@@ -35,6 +35,7 @@ using namespace std;
 #include "TLorentzVector.h"
 #include "TParticle.h"
 #include "TParticlePDG.h"
+#include "TDatabasePDG.h"
 
 #include "AliHLTJETReader.h"
 
@@ -55,9 +56,10 @@ AliHLTJETReader::AliHLTJETReader()
   AliJetReader(),
   fESD(NULL), 
   fMC(NULL),
+  fHLTMC(NULL),
   fAOD(NULL),
 #ifdef HAVE_FASTJET
-  fMomentumVector( new vector<fastjet::PseudoJet> ),
+  fMomentumVector(NULL),
 #endif
   fGrid(NULL),
   fNJetCandidates(0),
@@ -117,48 +119,21 @@ Int_t AliHLTJETReader::Initialize() {
     iResult = -EINPROGRESS;
   }
   
-  // -- Initialize grid
-  // --------------------
-  if ( ! iResult ) {
-   
-    if ( fGrid )
-      delete fGrid;
-
-    if ( ! (fGrid = new AliHLTJETConeGrid()) ) {
-      HLTError("Error instanciating grid.");
-      iResult = -EINPROGRESS;
-    }
-  }
-  
-  if ( ! iResult ) {
-      fGrid->SetEtaRange(   readerHeader->GetFiducialEtaMin(),
-			    readerHeader->GetFiducialEtaMax(),
-			    readerHeader->GetGridEtaRange() );
-
-      fGrid->SetPhiRange(   readerHeader->GetFiducialPhiMin(),
-			    readerHeader->GetFiducialPhiMax(),
-			    readerHeader->GetGridPhiRange() );
-      
-      fGrid->SetBinning(    readerHeader->GetGridEtaBinning(),
-			    readerHeader->GetGridEtaBinning() );
-
-      fGrid->SetConeRadius( readerHeader->GetConeRadius() );
-
-      iResult = fGrid->Initialize();
+  // -- Initialize Algorithms
+  // --------------------------
+  if ( readerHeader->GetJetAlgorithm() >= AliHLTJETBase::kFFSCSquareCell )
+    iResult = InitializeFFSC();
+  else {
+#ifdef HAVE_FASTJET
+    iResult = InitializeFastjet();
+#else  
+    HLTError("Error FastJet not present.");
+    iResult = -EINPROGRESS;
+#endif
   }
  
-  // -- Initialize jet candidates
-  // ------------------------------
-  if ( ! iResult ) {
-    fJetCandidates = new TClonesArray("AliHLTJETConeJetCandidate", 30);
-    if ( ! fJetCandidates) {
-      HLTError("Error instanciating jet candidates.");
-      iResult = -EINPROGRESS;
-    }
-  }
- 
-  // -- Initialize cuts
-  // --------------------
+  // -- Get ptr to cuts from reader
+  // --------------------------------
  
   // -- Seed cuts
   if ( ! iResult ) {
@@ -166,9 +141,6 @@ Int_t AliHLTJETReader::Initialize() {
     if ( ! fSeedCuts ) {
       HLTError("Error getting ptr to seed cuts.");
       iResult = -EINPROGRESS;
-    }
-    else {
-      HLTInfo(" -= SeedCuts =- " );
     }
   }
 
@@ -193,15 +165,63 @@ Int_t AliHLTJETReader::Initialize() {
 void AliHLTJETReader::ResetEvent() {
   // see header file for class documentation
 
-  // -- clear grid
-  fGrid->Reset();
+  // -- Reset FFSC algorithms
+  // --------------------------
+  if (  GetReaderHeader()->GetJetAlgorithm() >= AliHLTJETBase::kFFSCSquareCell ) {
+    // -- clear grid
+    fGrid->Reset();
+    
+    // -- clear jet candidates
+    fJetCandidates->Clear();
+    
+    fNJetCandidates = 0;
+  }
 
-  // -- clear jet candidates
-  fJetCandidates->Clear();
-
-  fNJetCandidates = 0;
+  // -- Reset for FastJet algorithms
+  // ---------------------------------
+  else {
+    // -- Clear input vector
+    if ( fMomentumVector )
+      fMomentumVector->clear();
+  }
 
   return;  
+}
+
+/*
+ * ---------------------------------------------------------------------------------
+ *                                     Setter
+ * ---------------------------------------------------------------------------------
+ */
+
+// #################################################################################
+void AliHLTJETReader::SetInputEvent(const TObject* esd, const TObject* aod, const TObject* mc) {
+  // see header file for class documentation
+
+  //  Needs "useMC" flag for running in analysis task only
+
+  AliHLTJETReaderHeader* readerHeader = GetReaderHeader();
+
+  // -- Fill ESD
+  if ( esd && !readerHeader->GetUseMC() )
+    fESD = dynamic_cast<AliESDEvent*> (const_cast<TObject*>(esd));
+
+  // -- Fill AOD
+  else if ( aod && !readerHeader->GetUseMC() )
+    fAOD = dynamic_cast<AliAODEvent*> (const_cast<TObject*>(aod));
+
+  // -- Fill MC
+  else if ( mc && readerHeader->GetUseMC() ) {
+
+    // -- if off-line MC event, 
+    if ( !strcmp (mc->ClassName(),"AliMCEvent") )
+      fMC = dynamic_cast<AliMCEvent*> (const_cast<TObject*>(mc));
+    // -- if on-line MC event
+    else 
+      fHLTMC = dynamic_cast<AliHLTMCEvent*> (const_cast<TObject*>(mc));
+  }
+  
+  return;
 }
 
 /*
@@ -211,43 +231,79 @@ void AliHLTJETReader::ResetEvent() {
  */
 #ifdef HAVE_FASTJET
 // #################################################################################
-Bool_t AliHLTJETReader::FillMomentumArrayFast() {
+Bool_t AliHLTJETReader::FillVector() {
   // see header file for class documentation
 
   Bool_t bResult = kFALSE;
 
   if ( fESD )
-    bResult = FillMomentumArrayFastESD();
+    bResult = FillVectorESD();
   else if ( fMC )
-    bResult = FillMomentumArrayFastMC();
+    bResult = FillVectorMC();
+  else if ( fHLTMC )
+    bResult = FillVectorHLTMC();
   else if ( fAOD )
-    bResult = FillMomentumArrayFastAOD();
+    bResult = FillVectorAOD();
   
   return bResult;
 }
 
 // #################################################################################
-Bool_t AliHLTJETReader::FillMomentumArrayFastMC() {
+Bool_t AliHLTJETReader::FillVectorMC() {
   // see header file for class documentation
+
+  Bool_t bResult = kTRUE; 
 
   if ( ! fMC ) {
     HLTError( "No MC Event present!" );
     return kFALSE;
   }
-
-  // -- Clear input vector
-  if ( fMomentumVector )
-    fMomentumVector->clear();
-      
+  
+  // -- Reset Event
+  ResetEvent();
+   
   Int_t nTracks = 0;
 
-  TParticle* particle = NULL;
+  AliStack* stack = fMC->Stack();
 
-  // -- Loop over particles
-  // ------------------------
-  while ( (particle = fMC->NextParticle() ) ) {
+  for (Int_t iterStack = 0; iterStack < stack->GetNtrack() && bResult; iterStack++) {
+
+    TParticle *particle = stack->Particle(iterStack);
+    if ( !particle) {
+      HLTError( "Error reading particle %i out of %i", iterStack, stack->GetNtrack() );
+      bResult = kFALSE;
+      continue;
+    }
+
+    // ------------------------------
+    // -- Basic cuts on MC particle      --> To be done better XXX
+    // ------------------------------
+
+    // -- primary
+    if ( !(stack->IsPhysicalPrimary(iterStack)) )
+      continue;
     
-    // -- Apply cuts 
+    // -- final state
+    if ( particle->GetNDaughters() != 0 )
+      continue;
+
+    // -- particle in DB
+    TParticlePDG * particlePDG = particle->GetPDG();
+    if ( ! particlePDG ) {
+      particlePDG = TDatabasePDG::Instance()->GetParticle( particle->GetPdgCode() );
+
+      if ( ! particlePDG ) {
+	HLTError("Particle %i not in PDG database", particle->GetPdgCode() );
+	bResult = kFALSE;
+	continue;
+      }
+    }
+
+    // ------------------------
+    // -- Standard track cuts
+    // ------------------------
+
+    // -- Apply track cuts     
     if ( ! fTrackCuts->IsSelected(particle) )
       continue;
     
@@ -256,29 +312,115 @@ Bool_t AliHLTJETReader::FillMomentumArrayFastMC() {
 			     particle->Pz(), particle->Energy() ); 
     
     // -- label the particle into Fastjet algortihm
-    part.set_user_index( fMC->GetIndex() ); 
+    part.set_user_index( iterStack ); 
+
+    // -- Add to input_particles vector  
+    fMomentumVector->push_back(part);  
+
+    nTracks++;    
+  } // for (Int_t iterStack = 0; iterStack < stack->GetNtrack() && !bResult; iterStack++) {
+
+  HLTDebug(" Number of selected tracks %d", nTracks);
+
+  return kTRUE;
+}
+
+// #################################################################################
+Bool_t AliHLTJETReader::FillVectorHLTMC() {
+  // see header file for class documentation
+
+  if ( ! fHLTMC ) {
+    HLTError( "No HLT MC Event present!" );
+    return kFALSE;
+  }
+     
+  // -- Reset Event
+  ResetEvent();
+
+  Int_t nTracks = 0;
+
+  TParticle* particle = NULL;
+
+  // -- Loop over particles
+  // ------------------------
+  while ( (particle = fHLTMC->NextParticle() ) ) {
+    
+    // -- Apply track cuts 
+    if ( ! fTrackCuts->IsSelected(particle) )
+      continue;
+    
+    // -- Create PseudoJet object      
+    fastjet::PseudoJet part( particle->Px(), particle->Py(), 
+			     particle->Pz(), particle->Energy() ); 
+    
+    // -- label the particle into Fastjet algortihm
+    part.set_user_index( fHLTMC->GetIndex() ); 
 
     // -- Add to input_particles vector  
     fMomentumVector->push_back(part);  
 
     nTracks++;    
     
-  } // while ( (particle = fMC->NextParticle() ) ) {
+  } // while ( (particle = fHLTMC->NextParticle() ) ) {
   
-  HLTInfo(" Number of selected tracks %d \n", nTracks);
+  HLTInfo(" Number of selected tracks %d", nTracks);
 
   return kTRUE;
 }
 
 // #################################################################################
-Bool_t AliHLTJETReader::FillMomentumArrayFastESD() {
+Bool_t AliHLTJETReader::FillVectorESD() {
   // see header file for class documentation
 
-  return kTRUE;
+  Bool_t bResult = kTRUE;
+
+  if ( ! fESD ) {
+    HLTError( "No ESD Event present!" );
+    return kFALSE;
+  }
+
+  // -- Reset Event
+  ResetEvent();
+
+  Int_t nTracks = 0;
+
+  // -- Loop over particles
+  // ------------------------
+  for ( Int_t iter = 0; iter < fESD->GetNumberOfTracks() && bResult; iter++ ) {
+
+    AliESDtrack* esdTrack = fESD->GetTrack(iter);
+    if ( ! esdTrack ) {
+      HLTError("Could not read ESD track %d from %d", iter, fESD->GetNumberOfTracks() );
+      bResult = kFALSE;
+      continue;
+    }
+
+    // -- Apply track cuts 
+    if ( ! fTrackCuts->IsSelected(esdTrack) )
+      continue;
+
+    // -- Create PseudoJet object      
+    fastjet::PseudoJet part( esdTrack->Px(), esdTrack->Py(), 
+			     esdTrack->Pz(), esdTrack->E() ); 
+    
+    // -- label the particle into Fastjet algortihm
+    part.set_user_index( iter ); 
+
+    // -- Add to input_particles vector  
+    fMomentumVector->push_back(part);  
+
+    nTracks++; 
+
+  } // for ( Int_t iter = 0; iter < fESD->GetNumberOfTracks() && !iResult; iter++ ) {
+  
+  HLTInfo(" Number of selected tracks %d", nTracks);
+
+
+  return bResult;
 }
 
 // #################################################################################
-Bool_t AliHLTJETReader::FillMomentumArrayFastAOD() {
+Bool_t AliHLTJETReader::FillVectorAOD() {
   // see header file for class documentation
 
   return kFALSE;
@@ -301,9 +443,11 @@ Bool_t AliHLTJETReader::FillGrid() {
     bResult = FillGridESD();
   else if ( fMC )
     bResult = FillGridMC();
+  else if ( fHLTMC )
+    bResult = FillGridHLTMC();
   else if ( fAOD )
     bResult = FillGridAOD();
-  
+
   return bResult;
 }
 
@@ -311,10 +455,96 @@ Bool_t AliHLTJETReader::FillGrid() {
 Bool_t AliHLTJETReader::FillGridMC() {
   // see header file for class documentation
 
+  Bool_t bResult = kTRUE; 
+
   if ( ! fMC ) {
     HLTError( "No MC Event present!" );
     return kFALSE;
   }
+
+  // -- Reset Event
+  ResetEvent();
+
+  AliHLTJETReaderHeader* readerHeader = GetReaderHeader();
+
+  Int_t nTracks = 0;
+
+  AliStack* stack = fMC->Stack();
+
+  for (Int_t iterStack = 0; iterStack < stack->GetNtrack() && bResult; iterStack++) {
+
+    TParticle *particle = stack->Particle(iterStack);
+    if ( !particle) {
+      HLTError( "Error reading particle %i out of %i", iterStack, stack->GetNtrack() );
+      bResult = kFALSE;
+      continue;
+    }
+
+    // ------------------------------
+    // -- Basic cuts on MC particle      --> To be done better XXX
+    // ------------------------------
+
+    // -- primary
+    if ( !(stack->IsPhysicalPrimary(iterStack)) )
+      continue;
+
+    // -- final state
+    if ( particle->GetNDaughters() != 0 )
+      continue;
+
+    // -- particle in DB
+    TParticlePDG * particlePDG = particle->GetPDG();
+    if ( ! particlePDG ) {
+      particlePDG = TDatabasePDG::Instance()->GetParticle( particle->GetPdgCode() );
+
+      if ( ! particlePDG ) {
+	HLTError("Particle %i not in PDG database", particle->GetPdgCode() );
+	bResult = kFALSE;
+	continue;
+      }
+    }
+
+    // ------------------------
+    // -- Standard track cuts
+    // ------------------------
+
+    // -- Apply track cuts     
+    if ( ! fTrackCuts->IsSelected(particle) )
+      continue;
+
+    const Float_t aEtaPhi[]  = { particle->Eta(), particle->Phi(), particle->Pt() }; 
+          Int_t   aGridIdx[] = { -1, -1, -1, -1, -1 };
+
+    fGrid->FillTrack(particle, aEtaPhi, aGridIdx);
+	  
+    nTracks++;    
+
+    // -- Apply seed cuts 
+    if ( ! fSeedCuts->IsSelected(particle) )
+      continue;  
+
+    // -- Add Seed
+    AddSeed(aEtaPhi, const_cast<const Int_t*> (aGridIdx), readerHeader->GetConeRadius());
+    
+  } // for (Int_t iterStack = 0; iterStack < stack->GetNtrack() && !bResult; iterStack++) {
+
+  HLTInfo(" Number of selected tracks %d", nTracks);
+  HLTInfo(" Number of seeds %d", fNJetCandidates);
+
+  return kTRUE;
+}
+
+// #################################################################################
+Bool_t AliHLTJETReader::FillGridHLTMC() {
+  // see header file for class documentation
+
+  if ( ! fHLTMC ) {
+    HLTError( "No HLT MC Event present!" );
+    return kFALSE;
+  }
+
+  // -- Reset Event
+  ResetEvent();
 
   AliHLTJETReaderHeader* readerHeader = GetReaderHeader();
 
@@ -323,8 +553,10 @@ Bool_t AliHLTJETReader::FillGridMC() {
 
   // -- Loop over particles
   // ------------------------
-  while ( ( particle = fMC->NextParticle() ) ) {
+  while ( ( particle = fHLTMC->NextParticle() ) ) {
     
+    //    HLTError("=== nTracks %d ===",nTracks);
+
     // -- Apply track cuts 
     if ( ! fTrackCuts->IsSelected(particle) )
       continue;
@@ -332,6 +564,7 @@ Bool_t AliHLTJETReader::FillGridMC() {
     const Float_t aEtaPhi[]  = { particle->Eta(), particle->Phi(), particle->Pt() }; 
           Int_t   aGridIdx[] = { -1, -1, -1, -1, -1 };
 
+    // -- Fill grid
     fGrid->FillTrack(particle, aEtaPhi, aGridIdx);
 
     nTracks++;    
@@ -344,10 +577,10 @@ Bool_t AliHLTJETReader::FillGridMC() {
     AddSeed(aEtaPhi, const_cast<const Int_t*> (aGridIdx),
 	    readerHeader->GetConeRadius());
   
-  } // while ( (particle = fMC->NextParticle() ) ) {
+  } // while ( (particle = fHLTMC->NextParticle() ) ) {
   
-  HLTDebug(" Number of selected tracks %d", nTracks);
-  HLTDebug(" Number of seeds %d", fNJetCandidates);
+  HLTInfo(" Number of selected tracks %d", nTracks);
+  HLTInfo(" Number of seeds %d", fNJetCandidates);
 
   return kTRUE;
 }
@@ -363,6 +596,9 @@ Bool_t AliHLTJETReader::FillGridESD() {
     return kFALSE;
   }
 
+  // -- Reset Event
+  ResetEvent();
+
   AliHLTJETReaderHeader* readerHeader = GetReaderHeader();
 
   Int_t nTracks = 0;
@@ -373,7 +609,7 @@ Bool_t AliHLTJETReader::FillGridESD() {
 
     AliESDtrack* esdTrack = fESD->GetTrack(iter);
     if ( ! esdTrack ) {
-      HLTError("Could not read ESD track %d from %d\n", iter, fESD->GetNumberOfTracks() );
+      HLTError("Could not read ESD track %d from %d", iter, fESD->GetNumberOfTracks() );
       bResult = kFALSE;
       continue;
     }
@@ -386,7 +622,7 @@ Bool_t AliHLTJETReader::FillGridESD() {
           Int_t   aGridIdx[] = { -1, -1, -1, -1, -1 };
 
     // -- Fill grid
-	  fGrid->FillTrack(esdTrack, aEtaPhi, aGridIdx);
+    fGrid->FillTrack(esdTrack, aEtaPhi, aGridIdx);
 
     nTracks++;    
 
@@ -400,8 +636,8 @@ Bool_t AliHLTJETReader::FillGridESD() {
   
   } // for ( Int_t iter = 0; iter < fESD->GetNumberOfTracks() && !iResult; iter++ ) {
   
-  HLTDebug(" Number of selected tracks %d", nTracks);
-  HLTDebug(" Number of seeds %d", fNJetCandidates);
+  HLTInfo(" Number of selected tracks %d", nTracks);
+  HLTInfo(" Number of seeds %d", fNJetCandidates);
 
   return bResult;
 }
@@ -415,26 +651,6 @@ Bool_t AliHLTJETReader::FillGridAOD() {
 
 /*
  * ---------------------------------------------------------------------------------
- *                                     Setter
- * ---------------------------------------------------------------------------------
- */
-
-// #################################################################################
-void AliHLTJETReader::SetInputEvent(TObject* esd, TObject* aod, TObject* mc) {
-  // see header file for class documentation
-
-  if ( esd )
-    fESD = dynamic_cast<AliESDEvent*> (esd);
-  else if ( aod )
-    fAOD = dynamic_cast<AliAODEvent*> (aod);
-  else if ( mc )
-    fMC = dynamic_cast<AliHLTMCEvent*> (mc);
-  
-  return;
-}
-
-/*
- * ---------------------------------------------------------------------------------
  *                                     Seeds
  * ---------------------------------------------------------------------------------
  */
@@ -444,10 +660,12 @@ void AliHLTJETReader::AddSeed( const Float_t* aEtaPhi, const Int_t* aGridIdx,
 			       const Float_t coneRadius ) {
   // see header file for class documentation
 
-  Bool_t useWholeCell = kTRUE ; // XXXXXXXXXXXXXXXXx get reader header finder type balhh
-  useWholeCell = kFALSE ;
-  // -- Add track / particle
+  Bool_t useWholeCell = kTRUE;
 
+  if ( GetReaderHeader()->GetJetAlgorithm() == AliHLTJETBase::kFFSCRadiusCell )
+    useWholeCell = kFALSE ;
+
+  // -- Add track / particle
   new( (*fJetCandidates) [fNJetCandidates] ) AliHLTJETConeJetCandidate( aEtaPhi, 
 									aGridIdx,
 									coneRadius,
@@ -455,7 +673,81 @@ void AliHLTJETReader::AddSeed( const Float_t* aEtaPhi, const Int_t* aGridIdx,
   fNJetCandidates++;
 
   HLTDebug("Added Seed Pt=%f, Eta=%f, Phi=%f", aEtaPhi[kIdxPt], 
-	  aEtaPhi[kIdxEta], aEtaPhi[kIdxPhi] );
+	   aEtaPhi[kIdxEta], aEtaPhi[kIdxPhi] );
 
   return;
 }
+
+/*
+ * ---------------------------------------------------------------------------------
+ *                         Initialize - private
+ * ---------------------------------------------------------------------------------
+ */
+
+// #################################################################################
+Int_t AliHLTJETReader::InitializeFFSC() {
+  // see header file for class documentation
+
+  Int_t iResult = 0;
+  AliHLTJETReaderHeader* readerHeader = GetReaderHeader();
+
+  // -- Initialize grid
+  // --------------------
+  if ( fGrid )
+    delete fGrid;
+  
+  if ( ! (fGrid = new AliHLTJETConeGrid()) ) {
+    HLTError("Error instanciating grid.");
+    iResult = -EINPROGRESS;
+  }
+  
+  if ( ! iResult ) {
+    fGrid->SetEtaRange(   readerHeader->GetFiducialEtaMin(),
+			  readerHeader->GetFiducialEtaMax(),
+			  readerHeader->GetGridEtaRange() );
+    
+    fGrid->SetPhiRange(   readerHeader->GetFiducialPhiMin(),
+			  readerHeader->GetFiducialPhiMax(),
+			  readerHeader->GetGridPhiRange() );
+    
+    fGrid->SetBinning(    readerHeader->GetGridEtaBinning(),
+			  readerHeader->GetGridEtaBinning() );
+    
+    fGrid->SetConeRadius( readerHeader->GetConeRadius() );
+    
+    iResult = fGrid->Initialize();
+  }
+  
+  // -- Initialize jet candidates
+  // ------------------------------
+  if ( ! iResult ) {
+    fJetCandidates = new TClonesArray("AliHLTJETConeJetCandidate", 30);
+    if ( ! fJetCandidates) {
+      HLTError("Error instanciating jet candidates.");
+      iResult = -EINPROGRESS;
+    }
+  }
+ 
+  return iResult;
+}
+
+#ifdef HAVE_FASTJET
+// #################################################################################
+Int_t AliHLTJETReader::InitializeFastjet() {
+  // see header file for class documentation
+
+  Int_t iResult = 0;
+
+  // -- Initialize Vector
+  // ----------------------
+  if ( fMomentumVector )
+    delete fMomentumVector;
+  
+  if ( ! (fMomentumVector = new vector<fastjet::PseudoJet>) ) {
+    HLTError("Error instanciating momentum vector.");
+    iResult = -EINPROGRESS;
+  }
+ 
+  return iResult;
+}
+#endif

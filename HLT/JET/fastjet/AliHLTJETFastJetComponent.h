@@ -17,19 +17,50 @@
 
 #include "AliHLTProcessor.h"
 
-#include "AliFastJetFinder.h"
-#include "AliFastJetHeader.h"
-
 #include "AliHLTJETReader.h"
 #include "AliHLTJETReaderHeader.h"
 
 #include "AliHLTJETTrackCuts.h"
+#include "AliHLTJETJetCuts.h"
+
+#include "AliHLTJETFastJetFinder.h"
+#include "AliHLTJETFastJetHeader.h"
 
 /**
  * @class AliHLTJETFastJetComponent
  * Component to run the FastJet jetfinder
  *
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b JETFaseJetFinder <br>
+ * Library: \b libAliHLTJET.so     <br>
+ * Input Data Types: <br>
+ *  -  kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT --> class AliHLTMCEvent<br>
+ *  -  kAliHLTDataTypeESDObject|kAliHLTDataOriginOffline --> class AliHLTESDEvent <br>
+ *  -  kAliHLTDataTypeESDObject|kAliHLTDataOriginHLT --> class AliHLTESDEvent<br>
+ * Output Data Types: <br>
+ *  - kAliHLTDataTypeJet|kAliHLTDataOriginHLT --> class AliHLTJets<br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * There are no mandatrory arguments <br>
+ *
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li  -algorithm   <i> JetAlgorithm to be run </u><br>
+ *       - Possible values : Kt, AntiKt <br>
+ *       - Default : Kt <br>
+ *
+ * \li -coneRadius    <i> Cone radius for cone finder </i> <br>
+ *      - Default : 0.4 <br>
+ *
+ * \li -trackCutMinPt <i> min pt for cut on tracks, in GeV/c </i> <br>
+ *      - Default : 1.0 <br>
+ *
+ * \li -jetCutMinPt   <i> min Et for cut on found jets, in GeV/c </i> <br>
+ *      - Default : 15.0 <br>
+ *
  * @ingroup alihlt_jet
+ * @ingroup alihlt_jet_fastjet
  */
 
 class AliHLTJETFastJetComponent : public AliHLTProcessor {
@@ -129,22 +160,28 @@ private:
    * ---------------------------------------------------------------------------------
    */
   
-  /** pointer to the jet finder object */
-  AliFastJetFinder          *fJetFinder;                      //!transient
-  
-  /** Ptr to the jet finder header */ 
-  AliFastJetHeader          *fJetHeader;                      //!transient
-  
+   /** Ptr to the jet finder */
+  AliHLTJETFastJetFinder    *fJetFinder;                      //!transient
+
+  /** Ptr to the jet finder header */
+  AliHLTJETFastJetHeader    *fJetHeader;                      //!transient
+
   /** Ptr to jet reader */ 
   AliHLTJETReader           *fJetReader;                      //!transient
-
+  
   /** Ptr to jet reader header */ 
   AliHLTJETReaderHeader     *fJetReaderHeader;                //!transient
 
   /** Ptr to track cuts */ 
-  AliHLTJETTrackCuts        *fJetTrackCuts;                   //!transient
-  
-  ClassDef(AliHLTJETFastJetComponent, 0)
+  AliHLTJETTrackCuts        *fTrackCuts;                      //!transient
+
+  /** Ptr to jet cuts */ 
+  AliHLTJETJetCuts          *fJetCuts;                        //!transient
+
+  /** Ptr to jet container holding AliAODJets */
+  AliHLTJets                *fJets;       
+
+  ClassDef(AliHLTJETFastJetComponent, 1)
     
 };
 #endif

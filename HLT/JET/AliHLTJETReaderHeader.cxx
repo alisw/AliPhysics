@@ -54,7 +54,9 @@ AliHLTJETReaderHeader::AliHLTJETReaderHeader()
   fGridPhiBinning(0.0),
   fGridEtaRange(0.0),
   fGridPhiRange(0.0),
-  fConeRadius(0.0) {
+  fAlgorithm(AliHLTJETBase::kFFSCSquareCell),
+  fConeRadius(0.0),
+  fUseMC(kFALSE) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -93,6 +95,10 @@ Int_t AliHLTJETReaderHeader::Initialize() {
   HLTInfo(" Grid phi binning %f", fGridPhiBinning );
   HLTInfo(" Grid eta range   %f", fGridEtaRange );
   HLTInfo(" Grid phi range   %f", fGridPhiRange );
+  HLTInfo(" Algorithm        %s", AliHLTJETBase::fgkJetAlgorithmType[fAlgorithm] );
+
+  if (fUseMC) { HLTInfo(" Use Kinematics   TRUE"); }
+  else { HLTInfo( " Use Kinematics   FALSE"); }
 
   if ( ! fTrackCuts ) {
     HLTError("No track cuts set in reader header");
@@ -102,6 +108,17 @@ Int_t AliHLTJETReaderHeader::Initialize() {
     fTrackCuts->SetEtaRange( fFiducialEtaMin, fFiducialEtaMax );
     fTrackCuts->SetPhiRange( fFiducialPhiMin, fFiducialPhiMax );
     HLTInfo(" -= TrackCuts =- " );
+  }
+
+  if ( ! fSeedCuts ) {
+    HLTError("No seed cuts set in reader header");
+    iResult = -EINPROGRESS;
+  }
+  else {
+    fSeedCuts->SetEtaRange( fFiducialEtaMin+fConeRadius, 
+			     fFiducialEtaMax-fConeRadius );
+    fSeedCuts->SetPhiRange( fFiducialPhiMin, fFiducialPhiMax );
+    HLTInfo(" -= SeedCuts =- " );
   }
 
   return iResult;

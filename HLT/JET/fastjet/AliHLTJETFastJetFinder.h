@@ -1,18 +1,18 @@
 //-*- Mode: C++ -*-
 
-// $Id: AliHLTJETConeFinder.h  $
+// $Id: AliHLTJETFastJetFinder.h  $
 
-#ifndef ALIHLTJETCONEFINDER_H
-#define ALIHLTJETCONEFINDER_H
+#ifndef ALIHLTJETFASTJETFINDER_H
+#define ALIHLTJETFASTJETFINDER_H
 
 /* This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTJETConeFinder.h
+/** @file   AliHLTJETFastJetFinder.h
     @author Jochen Thaeder
     @date   
-    @brief  Jet cone finder
+    @brief  FastJet finder interface
 */
 
 // see below for class documentation
@@ -21,17 +21,19 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
+#include "fastjet/PseudoJet.hh"
+#include "fastjet/ClusterSequenceArea.hh"
+
 #include "AliJetFinder.h"
 
 #include "AliHLTJets.h"
 #include "AliHLTLogging.h"
 
 #include "AliHLTJETBase.h"
-#include "AliHLTJETConeGrid.h"
 
 /**
- * @class  AliHLTJETConeFinder
- * ConeFinder for jet finder
+ * @class  AliHLTJETFastJetFinder
+ * FastJet Interface for the fasjet package ( v.2.4.1 )
  *
  * <b>Usage in off-line</b><br>
  *  * Initialization phase :
@@ -47,19 +49,19 @@
  *  * Set the input event via the reader
  *      <pre>jetReader->SetInputEvent( ... )</pre>
  *  * Process one event 
- *      * Fill grid (contains reset per event)
- *           <pre>jetReader->FillGridXXX();</pre> 
+ *      * Fill input vector (contains reset per event)
+ *           <pre>jetReader->FillVectorXXX();</pre> 
  *           Where XXX is has to be replaced by MC, ESD or AOD, 
  *           depending, on the input object 
  *      * Process one event (contains reset per event)
- *          <pre>jetFinder->ProcessConeEvent();</pre>
+ *          <pre>jetFinder->ProcessHLTEvent();</pre>
  *   
- * @ingroup alihlt_jet_cone
+ * @ingroup alihlt_jet_fastjet
  */
 
-class AliHLTJETConeFinder : public AliJetFinder, public AliHLTLogging {
-  
-public:
+class AliHLTJETFastJetFinder : public AliJetFinder, public AliHLTLogging {
+ 
+ public:
 
   /*
    * ---------------------------------------------------------------------------------
@@ -68,10 +70,10 @@ public:
    */
 
   /** standard constructor */
-  AliHLTJETConeFinder();
+  AliHLTJETFastJetFinder();
 
   /** destructor */
-  virtual ~AliHLTJETConeFinder();
+  virtual ~AliHLTJETFastJetFinder();
 
   /*
    * ---------------------------------------------------------------------------------
@@ -100,7 +102,7 @@ public:
   
   /** Set ptr to output container */
   void SetOutputJets( AliHLTJets* jets ) { fJets = jets; }
-  
+
   /*
    * ---------------------------------------------------------------------------------
    *                                      Process
@@ -118,15 +120,24 @@ public:
    */
   Bool_t ProcessHLTEvent();
 
+  /*
+   * ---------------------------------------------------------------------------------
+   *                                      Helper
+   * ---------------------------------------------------------------------------------
+   */
+
+  /** Print found jets */
+  void PrintJets(vector<fastjet::PseudoJet> &jets, fastjet::ClusterSequenceArea &clust_seq);
+
   ///////////////////////////////////////////////////////////////////////////////////
 
 private:
 
   /** copy constructor prohibited */
-  AliHLTJETConeFinder (const AliHLTJETConeFinder&);
+  AliHLTJETFastJetFinder (const AliHLTJETFastJetFinder&);
 
   /** assignment operator prohibited */
-  AliHLTJETConeFinder& operator= (const AliHLTJETConeFinder&);
+  AliHLTJETFastJetFinder& operator= (const AliHLTJETFastJetFinder&);
 
   /*
    * ---------------------------------------------------------------------------------
@@ -134,21 +145,10 @@ private:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Sort seed descending in pt
-   *  if header::fUseLeading only is set, keep only seed with highest pt
-   *  @return 0 on success, < 0 on failure
-   */ 
-  Int_t FindConeLeading();
-
-  /** Find jets in one event
+  /** Find jets, fill jets and apply jet cuts in one event
    *  @return 0 on success, < 0 on failure
    */
-  Int_t FindConeJets();
-
-  /** Fill jets in output container and apply cuts
-   *  @return 0 on success, < 0 on failure
-   */
-  Int_t FillConeJets();
+  Int_t FindFastJets(); 
 
   /*
    * ---------------------------------------------------------------------------------
@@ -156,14 +156,13 @@ private:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Grid for cone finder */
-  AliHLTJETConeGrid           *fGrid;           //! transient
+  /** Input vector for fastJet */
+  vector<fastjet::PseudoJet>  *fInputVector;     //! transient
 
   /** Container of AliAODJets */
-  AliHLTJets                  *fJets;           //! transient
+  AliHLTJets                  *fJets;            //! transient
 
-  ClassDef(AliHLTJETConeFinder, 1)
-
+  ClassDef(AliHLTJETFastJetFinder,1)
 };
-#endif
 
+#endif

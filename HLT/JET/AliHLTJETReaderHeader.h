@@ -50,7 +50,7 @@ public:
    * ---------------------------------------------------------------------------------
    */
   
-  /** Initialize reader haeder for cone jet finder
+  /** Initialize reader header for cone jet finder
    *  @return 0 on success, otherwise <0
    */
   Int_t Initialize();
@@ -79,6 +79,12 @@ public:
 
   /** Set grid binning in phi */
   void SetGridPhiBinning( Float_t f ) { fGridPhiBinning = f; }
+
+  /** Set algorithm type */
+  void SetJetAlgorithm( AliHLTJETBase::JetAlgorithmType_t a ) { fAlgorithm = a; }
+
+  /** Set Usage of Kinematics */
+  void SetUseMC( Bool_t b ) { fUseMC = b; }
 
   /*
    * ---------------------------------------------------------------------------------
@@ -110,6 +116,12 @@ public:
 
   /** Get cone radius */
   Float_t GetConeRadius()                { return fConeRadius; }
+
+  /** Get algorithm type */
+  AliHLTJETBase::JetAlgorithmType_t GetJetAlgorithm() { return fAlgorithm; }
+
+  /** Get Usage of Kinematics */
+  Bool_t  GetUseMC()                     { return fUseMC; }
 
   ///////////////////////////////////////////////////////////////////////////////////
 
@@ -151,10 +163,16 @@ private:
    */
   Float_t                    fGridPhiRange;         // see above
 
-  // -- cone members
+  // -- Algorithm members
+
+  /** Algorithm */
+  AliHLTJETBase::JetAlgorithmType_t fAlgorithm;     // see above
 
   /** Cone radius */
   Float_t                    fConeRadius;           // see above
+  
+  /** Use MC Data -- only neede for off-line*/
+  Bool_t                     fUseMC;                // see above 
 
   ClassDef(AliHLTJETReaderHeader, 1)
 

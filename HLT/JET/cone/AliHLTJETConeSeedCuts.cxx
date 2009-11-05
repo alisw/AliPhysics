@@ -127,8 +127,6 @@ Bool_t AliHLTJETConeSeedCuts::IsSelected( AliESDtrack *esdTrack ) {
   if ( ( esdTrack->Eta() < fEtaMin ) || ( esdTrack->Eta() > fEtaMax ) )
     bResult = kFALSE;
 
-  cout << esdTrack->Phi() << endl;
-
   // -- cut on phi acceptance
   if ( ( esdTrack->Phi() < fPhiMin ) || ( esdTrack->Phi() > fPhiMax ) )
     bResult = kFALSE;

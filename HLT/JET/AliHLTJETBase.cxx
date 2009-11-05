@@ -56,7 +56,23 @@ ClassImp(AliHLTJETBase)
 AliHLTJETBase::~AliHLTJETBase() {
   // see header file for class documentation
 }
+
 /*
+ * ---------------------------------------------------------------------------------
+ *                              Initialize static const
+ * ---------------------------------------------------------------------------------
+ */
+
+//##################################################################################
+const Char_t *AliHLTJETBase::fgkJetAlgorithmType[] = { 
+  "Anti Kt", 
+  "Kt",
+  "FFSC SquareCell",
+  "FFSC RadiusCell"
+};
+
+#if 0
+
 //################################################################################## 
 Float_t AliHLTJETBase::GetDistance2( const Float_t eta1, const Float_t phi1, 
 				     const Float_t eta2, const Float_t phi2) {
@@ -64,12 +80,6 @@ Float_t AliHLTJETBase::GetDistance2( const Float_t eta1, const Float_t phi1,
   
   return ( (eta1-eta2)*(eta1-eta2) ) + ( (phi1-phi2)*(phi1-phi2) );
 }
-*/
-
-
-
-#if 0
-
 
 //##################################################################################
 void AliHLTJETBase::XYZtoRPhiEta( const Double_t *xyz, Double_t *rpe ) {

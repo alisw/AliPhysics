@@ -79,7 +79,7 @@ Bool_t AliHLTJETTrackCuts::IsSelected( TObject *obj ) {
   // see header file for class documentation
 
   Bool_t bResult = kTRUE;
-
+  
   if ( ! strcmp(obj->ClassName(),"TParticle") )
     bResult = IsSelected( dynamic_cast<TParticle*> (obj));
   else if ( ! strcmp(obj->ClassName(),"AliESDtrack") )
@@ -147,8 +147,6 @@ Bool_t AliHLTJETTrackCuts::IsSelected( AliESDtrack *esdTrack ) {
   // -- cut on eta acceptance
   if ( ( esdTrack->Eta() < fEtaMin ) || ( esdTrack->Eta() > fEtaMax ) )
     bResult = kFALSE;
-
-  cout << esdTrack->Phi() << endl;
 
   // -- cut on phi acceptance
   if ( ( esdTrack->Phi() < fPhiMin ) || ( esdTrack->Phi() > fPhiMax ) )

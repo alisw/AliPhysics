@@ -16,20 +16,28 @@
 #include "AliHLTLogging.h"
 #include "TObject.h"
 
-enum GridIndex_t   { kIdxPrimary, kIdxOutter, kIdxEtaPrimary, kIdxPhiPrimary, kIdxPhiOutter };
-enum EtaPhiIndex_t { kIdxEta, kIdxPhi, kIdxPt };
-enum TrackType_t   { kTrackMC, kTrackESD, kTrackAOD };
+/** Indices in grid position array */
+enum GridIndex_t { 
+  kIdxPrimary,    /**< 1D index for the main search area */
+  kIdxOutter,     /**< 1D index for the outter search area */
+  kIdxEtaPrimary, /**< 2D eta index for the main search area */
+  kIdxPhiPrimary, /**< 2D phi index for the main search area */
+  kIdxPhiOutter   /**< 2D phi index for the outter search area */
+};
 
-/**
-XXXX STILL TRUE???
- Different type of how to add tracks to a jet
-    0 : check for radius compared to every track 
-    in selected cell -- default
-    1 : check for radius compared to center 
-    of selected cell
-    2 : take whole cell
-*/
-enum FinderType_t { kSquareCellRegion, kRadiusCellRegion, kRadius, kSquareArea };
+/**  Indices in array */
+enum EtaPhiIndex_t { 
+  kIdxEta, /**< Eta */
+  kIdxPhi, /**< Phi */
+  kIdxPt   /**< Pt */
+};
+
+/** Used track types */
+enum TrackType_t { 
+  kTrackMC,   /**< TParticle */
+  kTrackESD,  /**< AliESDtrack */
+  kTrackAOD   /**< AliAODtrack */
+};
 
 /**
  * @class AliHLTJETBase
@@ -53,8 +61,18 @@ class AliHLTJETBase : public TObject, public AliHLTLogging {
   /** Destructor */
   ~AliHLTJETBase();  
 
-  // static Float_t GetDistance2( const Float_t eta1, const Float_t phi1, 
-  //		       const Float_t eta2, const Float_t phi2);
+  /** Types of jet algorithms */
+  enum JetAlgorithmType_t { 
+    kAntiKt,          /**< FastJet implementation of the Anti kt */
+    kKt,              /**< FastJet implementation of the kt  */
+    kFFSCSquareCell,  /**< Fast Fixed Seeded Cone, using a square cell */
+    kFFSCRadiusCell,  /**< Fast Fixed Seeded Cone, using a radius cell */
+    kJetAlgorithmMax  /**< Number of enum entries */
+  };
+    
+  /** Array of types of the Jet Algorithms */
+  static const Char_t *fgkJetAlgorithmType[];        //! transient
+
 
   ///////////////////////////////////////////////////////////////////////////////////
   
@@ -78,27 +96,28 @@ class AliHLTJETBase : public TObject, public AliHLTLogging {
 
 
 #if 0
-   */
-
-  static Int_t GetCellIndex( const Double_t* aEtaPhi, Int_t* aGridIndex );
-
-  static void XYZtoRPhiEta( const Double_t *xyz, Double_t *rpe );
-
-  static void XYZEtoRPhiEtaPt( const Double_t *xyze, Double_t *rpep );
-  static void XYZEtoRPhiEtaPt( const Float_t *xyze, Double_t *rpep );
-
-  static void XYZEtoEPhiEtaPt( const Double_t *xyze, Double_t *epep );
-  static void XYZEtoEPhiEtaPt( const Float_t *xyze, Double_t *epep );
-
-  static Double_t GetPtFromXYZ( const Double_t *pxpypz );
-  static Double_t GetPtFromXYZ( const Float_t *pxpypz );
-
-  static Double_t GetPhiFromXYZ( const Double_t *xyz );
-  static Double_t GetPhiFromXYZ( const Float_t *xyz );
-
-  static Double_t GetEtaFromXYZ( const Double_t *xyz );
-  static Double_t GetEtaFromXYZ( const Float_t *xyz );
 
 
+static Float_t GetDistance2( const Float_t eta1, const Float_t phi1, 
+			     const Float_t eta2, const Float_t phi2);
+
+static Int_t GetCellIndex( const Double_t* aEtaPhi, Int_t* aGridIndex );
+
+static void XYZtoRPhiEta( const Double_t *xyz, Double_t *rpe );
+
+static void XYZEtoRPhiEtaPt( const Double_t *xyze, Double_t *rpep );
+static void XYZEtoRPhiEtaPt( const Float_t *xyze, Double_t *rpep );
+
+static void XYZEtoEPhiEtaPt( const Double_t *xyze, Double_t *epep );
+static void XYZEtoEPhiEtaPt( const Float_t *xyze, Double_t *epep );
+
+static Double_t GetPtFromXYZ( const Double_t *pxpypz );
+static Double_t GetPtFromXYZ( const Float_t *pxpypz );
+
+static Double_t GetPhiFromXYZ( const Double_t *xyz );
+static Double_t GetPhiFromXYZ( const Float_t *xyz );
+
+static Double_t GetEtaFromXYZ( const Double_t *xyz );
+static Double_t GetEtaFromXYZ( const Float_t *xyz );
 
 #endif

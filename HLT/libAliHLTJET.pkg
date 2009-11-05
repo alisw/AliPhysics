@@ -19,7 +19,9 @@ CLASS_HDRS   		    :=	AliHLTJETAgent.h \
 				analysis/AliHLTJETAnalysisMerge.h \
 				analysis/AliHLTJETAnalysisComponent.h
 
-CLASS_HDRS_FJ 	            := 	AliHLTJETFastJetComponent.h	
+CLASS_HDRS_FJ 	            := 	fastjet/AliHLTJETFastJetHeader.h \
+				fastjet/AliHLTJETFastJetFinder.h \
+				fastjet/AliHLTJETFastJetComponent.h 
 
 ###############################################################################
 
@@ -37,6 +39,7 @@ EINCLUDE                    :=	HLT/BASE \
 				HLT/BASE/util \
 				HLT/JET \
 				HLT/JET/cone \
+				HLT/JET/fastjet \
 				HLT/JET/analysis \
 				ANALYSIS \
 				JETAN \

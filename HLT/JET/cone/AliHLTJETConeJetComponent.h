@@ -47,6 +47,14 @@
  *
  * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li  -algorithm   <i> JetAlgorithm to be run </u><br>
+ *       - Possible values : FSCSquareCell, FFSCRadiusCell <br>
+ *       - Default : FSCSquareCell <br>
+ *
+ * \li  -leading   <i> use leading seed only </u><br>
+ *       - Possible values : 0, 1 <br>
+ *       - Default : 0 <br>
+ *
  * \li -coneRadius    <i> Cone radius for cone finder </i> <br>
  *      - Default : 0.4 <br>
  *
@@ -184,7 +192,7 @@ private:
   /** Ptr to jet container holding AliAODJets */
   AliHLTJets                *fJets;                           //!transient 
   
-  ClassDef(AliHLTJETConeJetComponent, 0)
+  ClassDef(AliHLTJETConeJetComponent, 1)
     
 };
 #endif

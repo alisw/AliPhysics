@@ -25,7 +25,6 @@
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 
-
 #include "AliHLTLogging.h"
 #include "AliHLTMCEvent.h"
 
@@ -38,7 +37,12 @@
 
 /**
  * @class  AliHLTJETReader
- * Reader for jet finder
+ * This class is the reader class for the JetFinder in the HLT
+ * It implements the reading of ESDs and MCs. AOD reading is 
+ * not yet implemented
+ * <br>
+ * Usage :<br>
+ * - Initilize() // Initializes the reader dependent of the algorithm
  *
  * @ingroup alihlt_jet
  */
@@ -65,17 +69,32 @@ public:
    * ---------------------------------------------------------------------------------
    */
 
-
-  void SetTrackCuts( AliHLTJETTrackCuts * cuts) {fTrackCuts = cuts; }
-
-  /** Initialize reader for cone jet finder
+  /** Initialize reader 
    *  Calls AliHLTJETReaderHeader::Initialize
+   *  and the private Initialize methods
    *  @return 0 on success, otherwise <0
    */
   Int_t Initialize();
  
   /** Reset the event */
   void ResetEvent();
+
+  /*
+   * ---------------------------------------------------------------------------------
+   *                                     Setter
+   * ---------------------------------------------------------------------------------
+   */
+  
+  /** Set pointer to input event
+   *  Needs "useMC" flag for running in analysis task only
+   *  @param esd an AliESDEvent
+   *  @param aod an AliAODEvent
+   *  @param mc an AliHLTMCEvent
+   */
+  void SetInputEvent(const TObject* esd, const TObject* aod, const TObject* mc);
+
+  /** Set number of jet candates = seeds */
+  void SetNJetCandidates( Int_t i ) { fNJetCandidates = i; }
 
   /*
    * ---------------------------------------------------------------------------------
@@ -87,22 +106,27 @@ public:
   /** Fill tracks in fastjet momemtum vector
    *  @return kTRUE on success, otherwise kFALSE
    */
-  Bool_t FillMomentumArrayFast();
+  Bool_t FillVector();
 
   /** Fill MC tracks in fastjet momemtum vector
    *  @return kTRUE on success, otherwise kFALSE
    */
-  Bool_t FillMomentumArrayFastMC();
+  Bool_t FillVectorMC();
+
+  /** Fill HLT MC tracks in fastjet momemtum vector
+   *  @return kTRUE on success, otherwise kFALSE
+   */
+  Bool_t FillVectorHLTMC();
 
   /** Fill ESD tracks in fastjet momemtum vector
    *  @return kTRUE on success, otherwise kFALSE
    */
-  Bool_t FillMomentumArrayFastESD();
+  Bool_t FillVectorESD();
 
   /** Fill AOD tracks in fastjet momemtum vector
    *  @return kTRUE on success, otherwise kFALSE
    */
-  Bool_t FillMomentumArrayFastAOD();
+  Bool_t FillVectorAOD();
 #endif
 
   /*
@@ -121,6 +145,11 @@ public:
    */
   Bool_t FillGridMC();
 
+  /** Fill HLT MC tracks in momentum array 
+   *  @return kTRUE on success, otherwise kFALSE
+   */
+  Bool_t FillGridHLTMC();
+
   /** Fill ESD tracks in momentum array 
    *  @return kTRUE on success, otherwise kFALSE
    */
@@ -133,22 +162,6 @@ public:
 
   /*
    * ---------------------------------------------------------------------------------
-   *                                     Setter
-   * ---------------------------------------------------------------------------------
-   */
-  
-  /** Set pointer to input event
-   *  @param esd an AliESDEvent
-   *  @param aod an AliAODEvent
-   *  @param mc an AliHLTMCEvent
-   */
-  void SetInputEvent(TObject* esd, TObject* aod, TObject* mc);
-
-  /** Set number of jet candates = seeds */
-  void SetNJetCandidates( Int_t i ) { fNJetCandidates = i; }
-
-  /*
-   * ---------------------------------------------------------------------------------
    *                                     Getter
    * ---------------------------------------------------------------------------------
    */
@@ -156,25 +169,25 @@ public:
   /** Get Ptr to AliHLTJETReaderHeader
    *  @return ptr to AliHLTJETReaderHeader
    */
-  AliHLTJETReaderHeader* GetReaderHeader() { return dynamic_cast<AliHLTJETReaderHeader*>(fReaderHeader);}
+  AliHLTJETReaderHeader*      GetReaderHeader()       { return dynamic_cast<AliHLTJETReaderHeader*>(fReaderHeader);}
 
 #ifdef HAVE_FASTJET
   /** Get Ptr to input vector of Fastjet
    *  @return ptr to input vector of Fastjet
    */
-  vector<fastjet::PseudoJet>* GetMomentumVectorFast() { return fMomentumVector; }
+  vector<fastjet::PseudoJet>* GetVector()             { return fMomentumVector; }
 #endif
 
   /** Get Ptr to grid of cone finder
    *  @return ptr to grid of cone finder
    */
-  AliHLTJETConeGrid* GetGrid() { return fGrid; }
-  
+  AliHLTJETConeGrid*          GetGrid()               { return fGrid; }
+
   /** Get number of jet candates = seeds */
-  Int_t         GetNJetCandidates() { return fNJetCandidates; }
+  Int_t                       GetNJetCandidates()     { return fNJetCandidates; }
 
   /** Get ptr to jet candiates = seeds for cone finder */
-  TClonesArray* GetJetCandidates()  { return fJetCandidates; }
+  TClonesArray*               GetJetCandidates()      { return fJetCandidates; }
 
   /*
    * ---------------------------------------------------------------------------------
@@ -202,18 +215,45 @@ private:
 
   /*
    * ---------------------------------------------------------------------------------
+   *                         Initialize - private
+   * ---------------------------------------------------------------------------------
+   */
+  
+  /** Initialize reader for the FFSC cone jet finder
+   *  @return 0 on success, otherwise <0
+   */
+  Int_t InitializeFFSC();
+
+#ifdef HAVE_FASTJET
+  /** Initialize reader for the fastjet jet finders
+   *  @return 0 on success, otherwise <0
+   */
+  Int_t InitializeFastjet();
+#endif
+
+  /*
+   * ---------------------------------------------------------------------------------
    *                             Members - private
    * ---------------------------------------------------------------------------------
    */
 
+  // -- Input
+  // ----------
+
   /** ESD event */
   AliESDEvent                 *fESD;            //! transient
 
-  /** MC event */
-  AliHLTMCEvent               *fMC;             //! transient
+  /** off-line MC event */
+  AliMCEvent                  *fMC;             //! transient
+
+  /** on-line MC event */
+  AliHLTMCEvent               *fHLTMC;          //! transient
 
   /** AOD event */
   AliAODEvent                 *fAOD;            //! transient
+
+  // -- Particle structures
+  // ------------------------
 
 #ifdef HAVE_FASTJET
   /** Vector of fastjet momemtum entries */
@@ -223,11 +263,17 @@ private:
   /** Grid for cone finder */
   AliHLTJETConeGrid           *fGrid;           //! transient
 
+  // -- Output 
+  // -----------
+
   /** Number of jet candates = seeds */
   Int_t                        fNJetCandidates; // see above
 
   /** Jet candiates = seeds for cone finder */
   TClonesArray                *fJetCandidates;  //! transient
+
+  // -- Cuts
+  // ---------
 
   /** Ptr to seed cuts */
   AliHLTJETConeSeedCuts       *fSeedCuts;       //! transient

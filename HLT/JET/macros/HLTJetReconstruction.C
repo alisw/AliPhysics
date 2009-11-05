@@ -31,12 +31,20 @@ const Char_t* pprRunName[] = {
 };
 
 // ---------------------------------------------------------------------------- 
+// -- Jet Parameter 
+// ---------------------------------------------------------------------------- 
+
+Float_t aConeRadius[] = { 0.4, 0.7 };
+Float_t aCutPtSeed[]  = { 4.0, 7.0, 10.0 };
+Float_t aCutEtJet[]   = { 4.0, 7.0, 10.0, 15.0 };
+
+// ---------------------------------------------------------------------------- 
 
 
 /** HLTJetReconstruction test macro
  *  @param nEvents Number of events which should be processed
  */
-void HLTJetReconstruction(Int_t nEvents=1, Int_t idx=0, Bool_t generate=kFALSE, PprRun_t runType = kPythia6Jets104_125 ) {
+void HLTJetReconstruction(Int_t nEvents=1, Bool_t generate=kFALSE, PprRun_t runType = kPythia6Jets104_125 ) {
 
   TString writerInput;
   TString analysisInput;
@@ -81,13 +89,9 @@ void HLTJetReconstruction(Int_t nEvents=1, Int_t idx=0, Bool_t generate=kFALSE, 
   // -                         - //
   // ----------------------------//
 
-  Float_t aConeRadius[] = { 0.4, 0.7 };
-  Float_t aCutPtSeed[]  = { 4.0, 7.0, 10.0 };
-  Float_t aCutEtJet[]   = { 4.0, 7.0, 10.0, 15.0 };
-
-  Float_t coneRadius = 0.7;
-  Float_t cutPtSeed  = 4.0;
-  Float_t cutEtJet   = 7.0;
+  Float_t coneRadius = aConeRadius[0];
+  Float_t cutPtSeed  = aCutPtSeed[0];
+  Float_t cutEtJet   = aCutEtJet[1];
 
   Int_t seed = 12345;
 
@@ -97,15 +101,14 @@ void HLTJetReconstruction(Int_t nEvents=1, Int_t idx=0, Bool_t generate=kFALSE, 
   // -                         - //
   // ----------------------------//
 
-  // ------------------------------------------
-  // -- The ESDMCEventPublisher   
-  // ------------------------------------------
   if ( ! generate ) {
-
+    // ------------------------------------------
+    // -- The ESDMCEventPublisher   
+    // ------------------------------------------
     TString publisherId("ESDMCEventPublisher");
+    // ------------------------------------------
 
-    TString publisherArg( Form("-entrytype MCFAST -dataspec 0x0000001F -datapath /home/jthaeder/jet/data/HEAD_2009-03-17/FastGen/kPythia6Jets104_125_14TeV/JET-ETA=-0.2,0.2_JET-ET=50,1000_R=0.4_10ev") );
-    
+    TString publisherArg( Form("-entrytype MCFAST -dataspec 0x0000001F -datapath /home/jthaeder/jet/data/HEAD_2009-10-26/FastGen/kPythia6Jets125_150_14TeV/JET-ETA=-0.2,0.2_JET-ET=50,1000_R=0.4_200ev") );
     AliHLTConfiguration ESDMCEventPublisher(publisherId.Data(), "ESDMCEventPublisher", NULL, publisherArg.Data() );
 
     if (!analysisInput.IsNull()) analysisInput+=" ";
@@ -115,12 +118,12 @@ void HLTJetReconstruction(Int_t nEvents=1, Int_t idx=0, Bool_t generate=kFALSE, 
     jetInput += publisherId;
   }
 
-  // ------------------------------------------
-  // -- The MCGenerator
-  // ------------------------------------------
   else {
-    
+    // ------------------------------------------
+    // -- The MCGenerator
+    // ------------------------------------------    
     TString generatorId( Form("MCGenerator_%s", pprRunName[runType]) );
+    // ------------------------------------------
 
     TString generatorArg( Form("-seed %d -nevents %d -runtype %d -coneRadius %.1f -jetCutMinEt %.1f", 
 			       seed, nEvents, runType, coneRadius, cutEtJet));
@@ -143,10 +146,10 @@ void HLTJetReconstruction(Int_t nEvents=1, Int_t idx=0, Bool_t generate=kFALSE, 
   // ------------------------------------------
   // -- ConeJetFinder
   // ------------------------------------------
-
   TString jetId("JETConeJet");
+  // ------------------------------------------
 
-  TString jetArg( Form("-coneRadius %.1f -trackCutMinPt 0.0 -seedCutMinPt %.1f -jetCutMinEt %.1f",
+  TString jetArg( Form("-algorithm FSCSquareCell -leading 1 -coneRadius %.1f -trackCutMinPt 0.0 -seedCutMinPt %.1f -jetCutMinEt %.1f",
 		       coneRadius, cutPtSeed, cutEtJet) );
   
   AliHLTConfiguration jetCone(jetId.Data(), "JETConeJetFinder", jetInput.Data(), jetArg.Data()); 
@@ -176,8 +179,9 @@ void HLTJetReconstruction(Int_t nEvents=1, Int_t idx=0, Bool_t generate=kFALSE, 
   // ------------------------------------------
   // -- Jet Analysis 
   // ------------------------------------------
-
   TString analysisId("JETAnalysis");
+  // ------------------------------------------
+
   TString analysisArg("");
   
   AliHLTConfiguration jetAnalysis(analysisId.Data(), "JETAnalysis", analysisInput.Data(), analysisArg.Data() );

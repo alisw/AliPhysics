@@ -85,6 +85,15 @@ public:
   /** Set cut on min pt */
   void SetMinEt( Float_t f ) { fEtMin = f; }
 
+  /*
+   * ---------------------------------------------------------------------------------
+   *                                     Getter
+   * ---------------------------------------------------------------------------------
+   */
+  
+  /** Get cut on min pt */
+  Float_t GetMinEt() { return fEtMin; }
+
   ///////////////////////////////////////////////////////////////////////////////////
 
 private:
@@ -103,11 +112,6 @@ private:
 
   /** Minimum Et */
   Float_t            fEtMin;                    // see above
-
-#if 0
-  /** Distance between to jets */
-  Float_t            fDistanceCut;
-#endif
 
   ClassDef(AliHLTJETJetCuts, 1)
 

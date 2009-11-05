@@ -17,10 +17,10 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTJETConeJetComponent.cxx
+/** @file   AliHLTJETFastJetComponent.cxx
     @author Jochen Thaeder <thaeder@kip.uni-heidelberg.de>
     @date   
-    @brief  Component to run the ConeJet jetfinder
+    @brief   Component to run the FastJet jetfinder
 */
 
 #if __GNUC__>= 3
@@ -31,13 +31,13 @@ using namespace std;
 #include <cerrno>
 #include <sys/time.h>
 
-#include "AliHLTJETConeJetComponent.h" 
+#include "AliHLTJETFastJetComponent.h" 
 
 #include "TString.h"
 #include "TObjString.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTJETConeJetComponent)
+ClassImp(AliHLTJETFastJetComponent)
 
 /*
  * ---------------------------------------------------------------------------------
@@ -46,10 +46,10 @@ ClassImp(AliHLTJETConeJetComponent)
  */
 
 // #################################################################################
-AliHLTJETConeJetComponent::AliHLTJETConeJetComponent() :
+AliHLTJETFastJetComponent::AliHLTJETFastJetComponent() 
+  :
   fJetFinder(NULL),
   fJetHeader(NULL),
-  fSeedCuts(NULL),
   fJetReader(NULL),
   fJetReaderHeader(NULL),
   fTrackCuts(NULL),
@@ -60,12 +60,12 @@ AliHLTJETConeJetComponent::AliHLTJETConeJetComponent() :
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
 }
 
 // #################################################################################
-AliHLTJETConeJetComponent::~AliHLTJETConeJetComponent() {
+AliHLTJETFastJetComponent::~AliHLTJETFastJetComponent() {
   // see header file for class documentation
+
 }
 
 /*
@@ -76,13 +76,13 @@ AliHLTJETConeJetComponent::~AliHLTJETConeJetComponent() {
  */
 
 // #################################################################################
-const Char_t* AliHLTJETConeJetComponent::GetComponentID() {
+const Char_t* AliHLTJETFastJetComponent::GetComponentID() {
   // see header file for class documentation
-  return "JETConeJetFinder";
+  return "JETFastJetFinder";
 }
 
 // #################################################################################
-void AliHLTJETConeJetComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
+void AliHLTJETFastJetComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
   // see header file for class documentation
   list.clear(); 
   list.push_back( kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT );
@@ -91,13 +91,13 @@ void AliHLTJETConeJetComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
 }
 
 // #################################################################################
-AliHLTComponentDataType AliHLTJETConeJetComponent::GetOutputDataType() {
+AliHLTComponentDataType AliHLTJETFastJetComponent::GetOutputDataType() {
   // see header file for class documentation
   return (kAliHLTDataTypeJet|kAliHLTDataOriginHLT);
 }
 
 // #################################################################################
-void AliHLTJETConeJetComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
+void AliHLTJETFastJetComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
   // see header file for class documentation
 
   constBase = 1000;
@@ -105,9 +105,9 @@ void AliHLTJETConeJetComponent::GetOutputDataSize( ULong_t& constBase, Double_t&
 }
 
 // #################################################################################
-AliHLTComponent* AliHLTJETConeJetComponent::Spawn() {
+AliHLTComponent* AliHLTJETFastJetComponent::Spawn() {
   // see header file for class documentation
-  return new AliHLTJETConeJetComponent();
+  return new AliHLTJETFastJetComponent();
 }
 
 /*
@@ -119,24 +119,22 @@ AliHLTComponent* AliHLTJETConeJetComponent::Spawn() {
  */
 
 // #################################################################################
-Int_t AliHLTJETConeJetComponent::DoInit( Int_t argc, const Char_t** argv ) {
+Int_t AliHLTJETFastJetComponent::DoInit( Int_t argc, const Char_t** argv ) {
   // see header file for class documentation
 
   if ( fJetFinder || fJetHeader || fJetReader || fJetReaderHeader || 
-       fTrackCuts || fSeedCuts || fJetCuts || fJets )
+       fTrackCuts || fJetCuts || fJets )
     return -EINPROGRESS;
 
   // ---------------------------------------------------------------------
   // -- Defaults
   // ---------------------------------------------------------------------
 
-  TString comment       = "HLT Fast Fixed Seeded Cone finder ";
+  TString comment       = "HLT FastJet interface";
 
-  AliHLTJETBase::JetAlgorithmType_t algorithm = AliHLTJETBase::kFFSCSquareCell; 
-  Bool_t  leading       = kFALSE;
+  AliHLTJETBase::JetAlgorithmType_t algorithm = AliHLTJETBase::kKt; 
   Float_t coneRadius    =  0.4;
   Float_t trackCutMinPt =  1.0;
-  Float_t seedCutMinPt  =  5.0;
   Float_t jetCutMinEt   = 15.0;
 
   // ---------------------------------------------------------------------
@@ -162,42 +160,15 @@ Int_t AliHLTJETConeJetComponent::DoInit( Int_t argc, const Char_t** argv ) {
       TString parameter(argv[iter]);
       parameter.Remove(TString::kLeading, ' ');
       
-      if ( !parameter.CompareTo("FSCSquareCell") ) {
-	algorithm = AliHLTJETBase::kFFSCSquareCell;
+      if ( !parameter.CompareTo("Kt") ) {
+	algorithm = AliHLTJETBase::kKt;
 	comment += argument;
 	comment += " ";
 	comment += parameter;
 	comment += ' ';
       }
-      else if ( !parameter.CompareTo("FSCRadiusCell") ) {
-	algorithm = AliHLTJETBase::kFFSCRadiusCell;
-	comment += argument;
-	comment += " ";
-	comment += parameter;
-	comment += ' ';
-      }
-      else {
-	HLTError("Wrong parameter %s for argument %s.", parameter.Data(), argument.Data());
-	iResult=-EINVAL;
-      }
-    } 
-
-    // -- leading
-    else if ( !argument.CompareTo("-leading") ) {
-      if ((bMissingParam=(++iter>=argc))) break;
-      
-      TString parameter(argv[iter]);
-      parameter.Remove(TString::kLeading, ' ');
-      
-      if ( !parameter.CompareTo("0") ) {
-	leading = kFALSE;
-	comment += argument;
-	comment += " ";
-	comment += parameter;
-	comment += ' ';
-      }
-      else if ( !parameter.CompareTo("1") ) {
-	leading = kTRUE;
+      else if ( !parameter.CompareTo("AntiKt") ) {
+	algorithm = AliHLTJETBase::kAntiKt;
 	comment += argument;
 	comment += " ";
 	comment += parameter;
@@ -238,26 +209,6 @@ Int_t AliHLTJETConeJetComponent::DoInit( Int_t argc, const Char_t** argv ) {
       
       if ( parameter.IsFloat() ) {
 	trackCutMinPt = parameter.Atof();
-	comment += argument;
-	comment += " ";
-	comment += parameter;
-	comment += ' ';
-      }
-      else {
-	HLTError("Wrong parameter %s for argument %s.", parameter.Data(), argument.Data());
-	iResult=-EINVAL;
-      }
-    } 
-
-    // -- seedCutMinPt
-    else if ( !argument.CompareTo("-seedCutMinPt") ) {
-      if ((bMissingParam=(++iter>=argc))) break;
-      
-      TString parameter(argv[iter]);
-      parameter.Remove(TString::kLeading, ' ');
-      
-      if ( parameter.IsFloat() ) {
-	seedCutMinPt = parameter.Atof();
 	comment += argument;
 	comment += " ";
 	comment += parameter;
@@ -317,16 +268,6 @@ Int_t AliHLTJETConeJetComponent::DoInit( Int_t argc, const Char_t** argv ) {
   fTrackCuts->SetMinPt( trackCutMinPt );
 
   // ---------------------------------------------------------------------
-  // -- Jet Seed Cuts
-  // ---------------------------------------------------------------------
-  if ( ! (fSeedCuts = new AliHLTJETConeSeedCuts()) ) {
-    HLTError("Error instantiating seed cuts");
-    return -EINPROGRESS;
-  }
-
-  fSeedCuts->SetMinPt( seedCutMinPt );
-
-  // ---------------------------------------------------------------------
   // -- Jet Jet Cuts
   // ---------------------------------------------------------------------
   if ( ! (fJetCuts = new AliHLTJETJetCuts()) ) {
@@ -349,15 +290,10 @@ Int_t AliHLTJETConeJetComponent::DoInit( Int_t argc, const Char_t** argv ) {
 
   // Set prt to track cuts
   fJetReaderHeader->SetTrackCuts( fTrackCuts );
-  fJetReaderHeader->SetSeedCuts( fSeedCuts );
 
   // Set Eta min/max and Phi min/max
   fJetReaderHeader->SetFiducialEta( -0.9, 0.9) ;
   fJetReaderHeader->SetFiducialPhi(  0.0, TMath::TwoPi() ) ;
-
-  // Set grid binning
-  fJetReaderHeader->SetGridEtaBinning( 0.05 );
-  fJetReaderHeader->SetGridPhiBinning( 0.05 );
  
   // Set cone radius
   fJetReaderHeader->SetConeRadius(coneRadius);
@@ -385,19 +321,19 @@ Int_t AliHLTJETConeJetComponent::DoInit( Int_t argc, const Char_t** argv ) {
   // ---------------------------------------------------------------------
   // -- Jet Header
   // ---------------------------------------------------------------------
-  if ( ! (fJetHeader = new AliHLTJETConeHeader()) ) {
-    HLTError("Error instantiating cone jet header");
+  if ( ! (fJetHeader = new AliHLTJETFastJetHeader()) ) {
+    HLTError("Error instantiating fastjet header");
     return -EINPROGRESS;
   }
 
+  fJetHeader->SetReaderHeader(fJetReaderHeader);
   fJetHeader->SetJetCuts(fJetCuts);
-  fJetHeader->SetUseLeading(leading);
 
   // ---------------------------------------------------------------------
   // -- Jet Finder
   // ---------------------------------------------------------------------
-  if ( ! (fJetFinder = new AliHLTJETConeFinder()) ) {
-    HLTError("Error instantiating jet finder");
+  if ( ! (fJetFinder = new AliHLTJETFastJetFinder()) ) {
+    HLTError("Error instantiating fastjet finder");
     return -EINPROGRESS;
   }
 
@@ -409,7 +345,7 @@ Int_t AliHLTJETConeJetComponent::DoInit( Int_t argc, const Char_t** argv ) {
   // -- Initialize Jet Finder
   // ---------------------------------------------------------------------
   if ( (fJetFinder->Initialize()) ) {
-    HLTError("Error initializing cone jet finder");
+    HLTError("Error initializing fastjet finder");
     return -EINPROGRESS;
   }
 
@@ -417,10 +353,10 @@ Int_t AliHLTJETConeJetComponent::DoInit( Int_t argc, const Char_t** argv ) {
 }
 
 // #################################################################################
-Int_t AliHLTJETConeJetComponent::DoDeinit() {
+Int_t AliHLTJETFastJetComponent::DoDeinit() {
   // see header file for class documentation
 
-  if ( fJetFinder )
+ if ( fJetFinder )
     delete fJetFinder;
   fJetFinder = NULL;
 
@@ -436,14 +372,6 @@ Int_t AliHLTJETConeJetComponent::DoDeinit() {
     delete fJetReaderHeader;
   fJetReaderHeader = NULL;
 
-  if ( fTrackCuts )
-    delete fTrackCuts;
-  fTrackCuts = NULL;
-
-  if ( fSeedCuts )
-    delete fSeedCuts;
-  fSeedCuts = NULL;
-
   if ( fJetCuts )
     delete fJetCuts;
   fJetCuts = NULL;
@@ -451,12 +379,12 @@ Int_t AliHLTJETConeJetComponent::DoDeinit() {
   if ( fJets )
     delete fJets;
   fJets = NULL;
-  
+
   return 0;
 }
 
 // #################################################################################
-Int_t AliHLTJETConeJetComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/,
+Int_t AliHLTJETFastJetComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/,
 					  AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
 
@@ -481,16 +409,16 @@ Int_t AliHLTJETConeJetComponent::DoEvent( const AliHLTComponentEventData& /*evtD
     // -- Set input event
     fJetReader->SetInputEvent( NULL, NULL, const_cast<TObject*>(iter) );    
 
-    // -- Fill grid with MC
-    if ( ! fJetReader->FillGridHLTMC() ) {
-      HLTError("Error filling grid.");
+    // -- Fill vector with MC
+    if ( ! fJetReader->FillVectorHLTMC() ) {
+      HLTError("Error filling vector.");
       iResult = -EINPROGRESS;
     }
 
     // -- Find jets
     if ( !iResult) {
       if ( ! fJetFinder->ProcessHLTEvent() ) {
-	HLTError("Error processing cone event.");
+	HLTError("Error processing fastjet event.");
 	iResult = -EINPROGRESS;
       }
     }
@@ -512,16 +440,16 @@ Int_t AliHLTJETConeJetComponent::DoEvent( const AliHLTComponentEventData& /*evtD
     // -- Set input event
     fJetReader->SetInputEvent( const_cast<TObject*>(iter), NULL, NULL );    
   
-    // -- Fill grid with ESD
-    if ( ! fJetReader->FillGridESD() ) {
-      HLTError("Error filling grid.");
+    // -- Fill vector with ESD
+    if ( ! fJetReader->FillVectorESD() ) {
+      HLTError("Error filling vector.");
       iResult = -1;  
     }
 
     // -- Find jets
     if ( !iResult) {
       if ( ! fJetFinder->ProcessHLTEvent() ) {
-	HLTError("Error processing cone event.");
+	HLTError("Error processing fastjet event.");
 	iResult = -EINPROGRESS;
       }
     }
@@ -543,16 +471,16 @@ Int_t AliHLTJETConeJetComponent::DoEvent( const AliHLTComponentEventData& /*evtD
     // -- Set input event
     fJetReader->SetInputEvent( const_cast<TObject*>(iter), NULL, NULL );    
 
-    // -- Fill grid with ESD
-    if ( ! fJetReader->FillGridESD() ) {
-      HLTError("Error filling grid.");
+    // -- Fill vector with ESD
+    if ( ! fJetReader->FillVectorESD() ) {
+      HLTError("Error filling vector.");
       iResult = -1;  
     }
 
     // -- Find jets
     if ( !iResult) {
       if ( ! fJetFinder->ProcessHLTEvent() ) {
-	HLTError("Error processing cone event.");
+	HLTError("Error processing fastjet event.");
 	iResult = -EINPROGRESS;
       }
     }

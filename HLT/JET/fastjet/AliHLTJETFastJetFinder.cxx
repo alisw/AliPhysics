@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTJETConeFinder.cxx  $
+// $Id: AliHLTJETFastJetFinder.cxx  $
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -16,10 +16,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTJETConeFinder.cxx
+/** @file   AliHLTJETFastJetFinder.cxx
     @author Jochen Thaeder
     @date   
-    @brief  Jet cone finder
+    @brief  FastJet finder interface
 */
 
 // see header file for class documentation
@@ -32,16 +32,29 @@
 using namespace std;
 #endif
 
-#include "AliHLTJETReader.h"
+//#include "fastjet/AreaDefinition.hh"
+//#include "fastjet/JetDefinition.hh"
+// get info on how fastjet was configured
+//#include "fastjet/config.h"
 
-#include "AliHLTJETConeGrid.h"
-#include "AliHLTJETConeFinder.h"
-#include "AliHLTJETConeHeader.h"
-#include "AliHLTJETConeJetCandidate.h"
-#include "AliHLTJETConeEtaPhiCell.h"
+//#include <TLorentzVector.h>
+//#include <TArrayF.h>
+//#include <TClonesArray.h>
+
+//#include "AliAODJet.h"
+
+#include "AliHLTJETReader.h"
+#include "AliHLTJETJetCuts.h"
+
+#include "AliHLTJETFastJetFinder.h"
+#include "AliHLTJETFastJetHeader.h"
+
+//#include<sstream>  // needed for internal io
+//#include<vector> 
+//#include <cmath> 
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTJETConeFinder)
+ClassImp(AliHLTJETFastJetFinder)
 
 /*
  * ---------------------------------------------------------------------------------
@@ -50,10 +63,10 @@ ClassImp(AliHLTJETConeFinder)
  */
   
 // #################################################################################
-AliHLTJETConeFinder::AliHLTJETConeFinder()
-  : 
+AliHLTJETFastJetFinder::AliHLTJETFastJetFinder()
+  :
   AliJetFinder(),
-  fGrid(NULL),
+  fInputVector(NULL),
   fJets(NULL) {
   // see header file for class documentation
   // or
@@ -64,9 +77,9 @@ AliHLTJETConeFinder::AliHLTJETConeFinder()
 }
 
 // #################################################################################
-AliHLTJETConeFinder::~AliHLTJETConeFinder() {
+AliHLTJETFastJetFinder::~AliHLTJETFastJetFinder() { 
   // see header file for class documentation
-
+  
 }
 
 /*
@@ -76,7 +89,7 @@ AliHLTJETConeFinder::~AliHLTJETConeFinder() {
  */
 
 // #################################################################################
-Int_t AliHLTJETConeFinder::Initialize() {
+Int_t AliHLTJETFastJetFinder::Initialize() {
   // see header file for class documentation
 
   Int_t iResult = 0;
@@ -96,7 +109,7 @@ Int_t AliHLTJETConeFinder::Initialize() {
   }
  
   // -- Initialize Header
-  AliHLTJETConeHeader *header = dynamic_cast<AliHLTJETConeHeader*> (fHeader);
+  AliHLTJETFastJetHeader *header = dynamic_cast<AliHLTJETFastJetHeader*> (fHeader);
 
   iResult = header->Initialize();
   if ( iResult ) {
@@ -104,10 +117,10 @@ Int_t AliHLTJETConeFinder::Initialize() {
     return iResult;
   }
 
-  // -- Set ptr to grid
-  fGrid = reader->GetGrid();
-  if ( ! fGrid ) {
-    HLTError( "Getting ptr to grid failed!");
+  // -- Set ptr to vector
+  fInputVector = reader->GetVector();
+  if ( ! fInputVector ) {
+    HLTError( "Getting ptr to vector failed!");
     return -EINPROGRESS;
   }
 
@@ -121,7 +134,7 @@ Int_t AliHLTJETConeFinder::Initialize() {
 }
 
 // #################################################################################
-void AliHLTJETConeFinder::Reset() {
+void AliHLTJETFastJetFinder::Reset() {
   // see header file for class documentation
 
   // -- Reset output container
@@ -138,7 +151,7 @@ void AliHLTJETConeFinder::Reset() {
  */
 
 // #################################################################################
-Bool_t AliHLTJETConeFinder::ProcessEvent() {
+Bool_t AliHLTJETFastJetFinder::ProcessEvent() {
   // see header file for class documentation
 
   // -- Pick up jet reader
@@ -147,27 +160,15 @@ Bool_t AliHLTJETConeFinder::ProcessEvent() {
   // -- Reset
   Reset();
 
-  // -- Fill Grid
-  if ( !reader->FillGrid() ){
-    HLTError("Error filling grid.");
+  // -- Fill Vector
+  if ( !reader->FillVector() ){
+    HLTError("Error filling vector.");
     return kFALSE;  
   }
 
-  // -- Find Leading
-  if ( FindConeLeading()  ) {
-    HLTError("Error finding leading.");
-    return kFALSE;
-  }
-
-  // -- Find Jets 
-  if ( FindConeJets()  ) {
+  // -- Find Jets, fill jets and apply jet cuts 
+  if ( FindFastJets() ) {
     HLTError("Error finding jets.");
-    return kFALSE;
-  }
-
-  // -- Fill Jets and apply jet cuts
-  if ( FillConeJets()  ) {
-    HLTError("Error filling jets.");
     return kFALSE;
   }
 
@@ -175,31 +176,63 @@ Bool_t AliHLTJETConeFinder::ProcessEvent() {
 }
 
 // #################################################################################
-Bool_t AliHLTJETConeFinder::ProcessHLTEvent() {
+Bool_t AliHLTJETFastJetFinder::ProcessHLTEvent() {
   // see header file for class documentation
 
   // -- Reset
   Reset();
 
-  // -- Find Leading
-  if ( FindConeLeading()  ) {
-    HLTError("Error finding leading.");
-    return kFALSE;
-  }
-
-  // -- Find Jets 
-  if ( FindConeJets()  ) {
+  // -- Find Jets, fill jets and apply jet cuts 
+  if ( FindFastJets() ) {
     HLTError("Error finding jets.");
     return kFALSE;
   }
 
-  // -- Fill Jets and apply jet cuts
-  if ( FillConeJets()  ) {
-    HLTError("Error filling jets.");
-    return kFALSE;
-  }
-
   return kTRUE;
+}
+
+/*
+ * ---------------------------------------------------------------------------------
+ *                                      Helper
+ * ---------------------------------------------------------------------------------
+ */
+
+// #################################################################################
+void AliHLTJETFastJetFinder::PrintJets( vector<fastjet::PseudoJet> &jets,
+				  fastjet::ClusterSequenceArea &clust_seq ) {
+  // see header file for class documentation
+
+  // -- pick up fastjet header
+  AliHLTJETFastJetHeader *header = dynamic_cast<AliHLTJETFastJetHeader*> (fHeader);
+
+  // -- print header info
+  TString comment = header->GetComment();
+  comment += TString(clust_seq.strategy_string());
+
+  HLTInfo( "--------------------------------------------------------" );
+  HLTInfo( "%s", comment.Data() );
+  HLTInfo( "--------------------------------------------------------" );
+  
+  header->PrintParameters();
+
+  // -- print found jets
+  HLTInfo( "Number of unclustered particles: %i", clust_seq.unclustered_particles().size() );
+
+  HLTInfo( "Printing inclusive sub jets with pt > %f GeV", header->GetPtMin() );
+  HLTInfo( "-------------------------------------------------------" );
+  HLTInfo( " ijet   rap      phi        Pt         area  +-   err" );
+
+  for ( UInt_t jetIter = 0; jetIter < jets.size(); jetIter++ ) { 
+    
+    Double_t area       = clust_seq.area(jets[jetIter]);
+    Double_t area_error = clust_seq.area_error(jets[jetIter]);
+
+    HLTInfo( "%5u %9.5f %8.5f %10.3f %8.3f +- %6.3f",
+	    jetIter,jets[jetIter].rap(),jets[jetIter].phi(),jets[jetIter].perp(), area, area_error );
+
+  } // for ( Int_t jetIter = 0; jetIter < jets.size(); jetIter++ ) { 
+
+  return;
 }
 
 /*
@@ -209,113 +242,53 @@ Bool_t AliHLTJETConeFinder::ProcessHLTEvent() {
  */
 
 // #################################################################################
-Int_t AliHLTJETConeFinder::FindConeLeading() {
+Int_t AliHLTJETFastJetFinder::FindFastJets() {
   // see header file for class documentation
 
-  // -- Pick up jet reader
-  AliHLTJETReader *reader = dynamic_cast<AliHLTJETReader*> (fReader);
-
-  // -- Pick up jet canidates
-  TClonesArray* jetCandidates = reader->GetJetCandidates();
-
-  // -- Check for more than 1 jet candidate
-  if ( reader->GetNJetCandidates() > 1 ) {
-    
-    // -- Sort jet candidates with seed pt 
-    jetCandidates->Sort();
-    
-    // -- Use leading seed only
-    //    Keep index 0, remove the others
-    if ( (dynamic_cast<AliHLTJETConeHeader*> (fHeader))->GetUseLeading() ) {
-      
-      for ( Int_t iter = 1; iter < reader->GetNJetCandidates(); iter++ )
-	jetCandidates->RemoveAt(iter);
-      
-      reader->SetNJetCandidates(1);
-    }
-
-  } // if ( reader->GetNJetCandidates() > 1 ) {
-
-  // -- Resize the seed TClonesArray
-  jetCandidates->Compress();
-
-  return 0;
-}
-
-// #################################################################################
-Int_t AliHLTJETConeFinder::FindConeJets() {
-  // see header file for class documentation
-
-  Int_t iResult = 0;
-
-  // -- Pick up jet reader
-  AliHLTJETReader *reader = dynamic_cast<AliHLTJETReader*> (fReader);
-   
-  // -- Pick up jet canidates
-  TClonesArray* jetCandidates = reader->GetJetCandidates();
-
-  // -- Loop over jet candidates
-  for ( Int_t iter = 0; iter < reader->GetNJetCandidates(); iter++ ) {
-    
-    AliHLTJETConeJetCandidate* jet = reinterpret_cast<AliHLTJETConeJetCandidate*> ((*jetCandidates)[iter]);
-    
-    // -- Set iterator for cells around seed
-    fGrid->SetCellIter( jet->GetSeedEtaIdx(), jet->GetSeedPhiIdx() ); 
-
-    Int_t cellIdx = 0;
-    
-    // -- Loop over cells around ssed
-    while ( (cellIdx = fGrid->NextCell() ) >= 0 && !iResult) {
-
-      AliHLTJETConeEtaPhiCell* cell = NULL;
-      if ( ! (cell = reinterpret_cast<AliHLTJETConeEtaPhiCell*>(fGrid->UncheckedAt(cellIdx))) )
-	continue;
-      
-      if ( ( iResult = jet->AddCell(cell) ) ) {
-	HLTError( "Error adding cell %d to jet candiate %d", cellIdx, iter);
-	continue;
-      }
-    } // while ( (cellIdx = fGrid->NextCell() ) >= 0 && !iResult) {
-    
-  } // for ( Int_t iter = 0; iter < reader->GetNJetCandidates(); iter++ ) {
+  // -- pick up fastjet header
+  AliHLTJETFastJetHeader *header = dynamic_cast<AliHLTJETFastJetHeader*> (fHeader);
   
-  return iResult;
-}
+  // -- Run the jet clustering with the jet definition from the header
+  fastjet::ClusterSequenceArea clust_seq( (*fInputVector), 
+					  (*header->GetJetDefinition()),
+					  (*header->GetAreaDefinition()) );
 
-// #################################################################################
-Int_t AliHLTJETConeFinder::FillConeJets() {
-  // see header file for class documentation
-
-  Int_t iResult = 0;
-
-  // -- Pick up jet reader
-  AliHLTJETReader *reader = dynamic_cast<AliHLTJETReader*> (fReader);
-
-  // -- Pick up jet header
-  AliHLTJETConeHeader *header = dynamic_cast<AliHLTJETConeHeader*> (fHeader);
+  // -- Extract the inclusive jets with pt > ptmin, sorted by pt
+  vector<fastjet::PseudoJet> inclusive_jets = clust_seq.inclusive_jets(header->GetPtMin());
   
-  // -- Get jet canidates
-  TClonesArray* jetCandidates = reader->GetJetCandidates();
-  
+  // -- Subtract background 
+  vector<fastjet::PseudoJet> sub_jets = clust_seq.subtracted_jets((*header->GetRangeDefinition()),
+								  header->GetPtMin());  
+
+  // -- Sort jets into increasing pt
+  vector<fastjet::PseudoJet> jets = sorted_by_pt(sub_jets);  
+
+  // -- Fill jets in output container
+  // -----------------------------------
+
   // -- Get jet cuts
   AliHLTJETJetCuts* jetCuts = header->GetJetCuts();
 
   // -- Loop over jet candidates
-  for ( Int_t iter = 0; iter < reader->GetNJetCandidates(); iter++ ) {
-    
-    AliHLTJETConeJetCandidate* jet = reinterpret_cast<AliHLTJETConeJetCandidate*> ((*jetCandidates)[iter]);
-  
+  for ( UInt_t jetIter = 0; jetIter < jets.size(); jetIter++ ) { 
+
+    // -- Fill AOD jets
+    AliAODJet aodjet (jets[jetIter].px(), jets[jetIter].py(), 
+		      jets[jetIter].pz(), jets[jetIter].E());
+
     // -- Apply jet cuts 
-    if ( ! jetCuts->IsSelected(jet) )
+    if ( ! jetCuts->IsSelected(&aodjet) )
       continue;
 
-    // -- Add jet as AliAODJet
-    fJets->AddJet(jet->GetEta(), jet->GetPhi(), jet->GetPt(), jet->GetEt());
+    fJets->AddJet(&aodjet);
     
-  } // for ( Int_t iter = 0; iter < reader->GetNJetCandidates(); iter++ ) {
-  
-  // xxx  HLTDebug( "Added %d jets", fJets->GetNAODJets());
-  HLTInfo( "Added %d jets", fJets->GetNAODJets());
+  } // for ( Int_t jetIter = 0; jetIter < jets.size(); jetIter++ ) { 
 
-  return iResult;
+#if 0
+  // -- Print found jets
+  PrintJets( jets, clust_seq );
+#endif
+
+  return 0;
 }
+
