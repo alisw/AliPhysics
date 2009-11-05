@@ -48,7 +48,7 @@ Int_t AddTaskJetsDelta(char *nonStdFile = ""){
     return 0;
   }   
 
-
+  TString outFile(nonStdFile);
 
   TString type = mgr->GetInputEventHandler()->GetDataType();
 
@@ -73,6 +73,7 @@ Int_t AddTaskJetsDelta(char *nonStdFile = ""){
 	  if(radius[i]>0)cRadius = Form("%02d",(int)((radius[i]+0.01)*10.)); // add an offset beacuse of precision
 	  Printf(cRadius);
 	  jetana->SetNonStdBranch(Form("jets%s_%s%s",cReader[ib],cJF[i],cRadius));
+	  if(outFile.Length()>0)jetana->SetNonStdOutputFile(outFile.Data());
 	  iCount++;
 	}
       }
