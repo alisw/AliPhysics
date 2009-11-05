@@ -108,10 +108,10 @@ void CalibEnv(const char * runList, Int_t first=1, Int_t last=-1){
       endTime  =senHV->GetEndTime();
       if (startTime>0&&endTime>0) break;
     }
-    dbutil->FilterCE(120., 3., 4.,pcstream);
-    dbutil->FilterTracks(irun, 10.,pcstream);
+    //dbutil->FilterCE(120., 3., 4.,pcstream);
+    //dbutil->FilterTracks(irun, 10.,pcstream);
     AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(irun);		 
-    //if (goofieArray) dbutil->FilterGoofie(goofieArray,2,4,pcstream);
+    if (goofieArray) dbutil->FilterGoofie(goofieArray,0.5,4.,pcstream);
     // don't filter goofie for the moment
     ProcessRun(irun, startTime,endTime);
   }
@@ -580,16 +580,19 @@ void ProcessDriftAll(Int_t run,Int_t timeStamp){
   // test of utils
   static Double_t vdriftCEA=0, vdriftCEC=0, vdriftCEM=0;
   static Double_t vdriftLTA=0, vdriftLTC=0, vdriftLTM=0;
-  static Double_t dce=0, dla=0,dlc=0,dlm=0;
+  static Double_t vdriftP=0;
+  static Double_t dcea=0, dcec=0, dcem=0,  dla=0,dlc=0,dlm=0,dp=0;
   static Double_t ltime0A;
   static Double_t ltime0C;
-  static Double_t     vdrift1=0;
-  vdrift1=AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(timeStamp,run,0,1);
-  
+  static Double_t ctime0;
+  static Double_t vdrift1=0;
+  vdrift1= AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(timeStamp,run,0,1);
+  vdriftP = dbutil->GetVDriftTPC(dp, run, timeStamp, 86400, 3600,0);
+  ctime0 = AliTPCcalibDButil::GetTriggerOffsetTPC(run,timeStamp, 36000, 3600,0);
   //
-  vdriftCEA= dbutil->GetVDriftTPCCE(dla,run,timeStamp,36000,0);
-  vdriftCEC= dbutil->GetVDriftTPCCE(dlc,run,timeStamp,36000,1);
-  vdriftCEM= dbutil->GetVDriftTPCCE(dlm,run,timeStamp,36000,2);
+  vdriftCEA= dbutil->GetVDriftTPCCE(dcea,run,timeStamp,36000,0);
+  vdriftCEC= dbutil->GetVDriftTPCCE(dcec,run,timeStamp,36000,1);
+  vdriftCEM= dbutil->GetVDriftTPCCE(dcem,run,timeStamp,36000,2);
   //
   vdriftLTA= dbutil->GetVDriftTPCLaserTracks(dla,run,timeStamp,36000,0);
   vdriftLTC= dbutil->GetVDriftTPCLaserTracks(dlc,run,timeStamp,36000,1);
@@ -600,17 +603,22 @@ void ProcessDriftAll(Int_t run,Int_t timeStamp){
 
   (*pcstream)<<"dcs"<<  
     //
-    "vdriftCEA="<<vdriftCEA<<
+    "vdriftCEA="<<vdriftCEA<<   // drift velocity CE
     "vdriftCEC="<<vdriftCEC<<
     "vdriftCEM="<<vdriftCEM<<
-    "dce="<<dce<<
-    "vdriftLTA="<<vdriftLTA<<
+    "dcea="<<dcea<<
+    "dcec="<<dcec<<
+    "dcem="<<dcem<<
+    "vdriftLTA="<<vdriftLTA<<   // drift velocity laser tracks
     "vdriftLTC="<<vdriftLTC<<
     "vdriftLTM="<<vdriftLTM<<
     "dla="<<dla<<
     "dlc="<<dlc<<
     "dlm="<<dlm<<
-    "vdrift1="<<vdrift1;
+    "ctime0="<<ctime0<<
+    "vdriftP="<<vdriftP<<       // drift velocity comsic 
+    "dp="<<dp<<
+    "vdrift1="<<vdrift1;        // combined drift velocity
 
 }
 
