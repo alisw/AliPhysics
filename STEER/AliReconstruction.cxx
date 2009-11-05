@@ -189,6 +189,8 @@
 #include "AliV0vertexer.h"
 #include "AliVertexer.h"
 #include "AliVertexerTracks.h"
+#include "AliTriggerRunScalers.h"
+#include "AliCTPTimeParams.h" 
 
 ClassImp(AliReconstruction)
 
@@ -238,6 +240,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRunInfo(NULL),
   fEventInfo(),
   fRunScalers(NULL),
+  fCTPTimeParams(NULL),  
 
   fRunLoader(NULL),
   fRawReader(NULL),
@@ -339,6 +342,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunInfo(NULL),
   fEventInfo(),
   fRunScalers(NULL),
+  fCTPTimeParams(NULL),
 
   fRunLoader(NULL),
   fRawReader(NULL),
@@ -464,7 +468,9 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   delete fRunScalers; fRunScalers = NULL;
   if (rec.fRunScalers) fRunScalers = new AliTriggerRunScalers(*rec.fRunScalers); 
 
-  
+  delete fCTPTimeParams; fCTPTimeParams = NULL;
+  if (rec.fCTPTimeParams) fCTPTimeParams = new AliCTPTimeParams(*rec.fCTPTimeParams);
+
   fRunLoader       = NULL;
   fRawReader       = NULL;
   fParentRawReader = NULL;
@@ -540,6 +546,7 @@ AliReconstruction::~AliReconstruction()
   }
   delete fGRPData;
   delete fRunScalers;
+  delete fCTPTimeParams;
   fOptions.Delete();
   if (fAlignObjArray) {
     fAlignObjArray->Delete();
@@ -554,7 +561,7 @@ AliReconstruction::~AliReconstruction()
 void AliReconstruction::InitQA()
 {
   //Initialize the QA and start of cycle 
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
   
   if (fInitQACalled) return;
   fInitQACalled = kTRUE;
@@ -591,7 +598,7 @@ void AliReconstruction::InitQA()
     qam->SetCycleLength(AliQAv1::DETECTORINDEX_t(det), fQACycles[det]) ;  
     qam->SetWriteExpert(AliQAv1::DETECTORINDEX_t(det)) ;
   }
-  if (!fRawReader && !fInput && IsInTasks(AliQAv1::kRAWS))
+  if (!fRawReader && !fInput && fQATasks.Contains(AliQAv1::kRAWS))
     fQATasks.ReplaceAll(Form("%d",AliQAv1::kRAWS), "") ;
   qam->SetTasks(fQATasks) ; 
   qam->InitQADataMaker(AliCDBManager::Instance()->GetRun()) ; 
@@ -600,13 +607,13 @@ void AliReconstruction::InitQA()
     Bool_t sameCycle = kFALSE ;
     AliQADataMaker *qadm = qam->GetQADataMaker(AliQAv1::kGLOBAL);
     AliInfo(Form("Initializing the global QA data maker"));
-    if (IsInTasks(AliQAv1::kRECPOINTS)) {
+    if (fQATasks.Contains(Form("%d", AliQAv1::kRECPOINTS))) {
       qadm->StartOfCycle(AliQAv1::kRECPOINTS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
       TObjArray **arr=qadm->Init(AliQAv1::kRECPOINTS);
       AliTracker::SetResidualsArray(arr);
       sameCycle = kTRUE ; 
     }
-    if (IsInTasks(AliQAv1::kESDS)) {
+    if (fQATasks.Contains(Form("%d", AliQAv1::kESDS))) {
       qadm->StartOfCycle(AliQAv1::kESDS, AliCDBManager::Instance()->GetRun(), sameCycle) ; 
       qadm->Init(AliQAv1::kESDS);
     }
@@ -618,7 +625,7 @@ void AliReconstruction::InitQA()
 void AliReconstruction::MergeQA(const char *fileName)
 {
   //Initialize the QA and start of cycle 
-  AliCodeTimerAuto("") ;
+  AliCodeTimerAuto("",0) ;
   AliQAManager::QAManager()->Merge(AliCDBManager::Instance()->GetRun(),fileName) ; 
   AliSysInfo::AddStamp("MergeQA") ; 
 }
@@ -629,7 +636,7 @@ void AliReconstruction::InitCDB()
 // activate a default CDB storage
 // First check if we have any CDB storage set, because it is used 
 // to retrieve the calibration and alignment constants
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
 
   if (fInitCDBCalled) return;
   fInitCDBCalled = kTRUE;
@@ -649,15 +656,21 @@ void AliReconstruction::InitCDB()
     	AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     	AliDebug(2, Form("Default CDB storage is set to: %s", fCDBUri.Data()));
     	AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    } else {
-    	fCDBUri="local://$ALICE_ROOT/OCDB";
+	man->SetDefaultStorage(fCDBUri);
+    } 
+    else if (!man->GetRaw()){
+	fCDBUri="local://$ALICE_ROOT/OCDB";
     	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     	AliWarning("Default CDB storage not yet set !!!!");
     	AliWarning(Form("Setting it now to: %s", fCDBUri.Data()));
     	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    		
+	man->SetDefaultStorage(fCDBUri);
     }
-    man->SetDefaultStorage(fCDBUri);
+    else {    
+    	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	AliWarning("Default storage will be set after setting the Run Number!!!");
+    	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");    		
+    }
   }
 
   // Now activate the detector specific CDB storage locations
@@ -1125,7 +1138,7 @@ Bool_t AliReconstruction::InitGRP() {
 //_____________________________________________________________________________
 Bool_t AliReconstruction::LoadCDB()
 {
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
 
   AliCDBManager::Instance()->Get("GRP/CTP/Config");
 
@@ -1139,7 +1152,7 @@ Bool_t AliReconstruction::LoadCDB()
 //_____________________________________________________________________________
 Bool_t AliReconstruction::LoadTriggerScalersCDB()
 {
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
 
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/Scalers");
 
@@ -1154,10 +1167,25 @@ Bool_t AliReconstruction::LoadTriggerScalersCDB()
   return kTRUE;
 }
 //_____________________________________________________________________________
+Bool_t AliReconstruction::LoadCTPTimeParamsCDB()
+{
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
+
+  if (entry) {
+
+       AliInfo("Found an AliCTPTimeParams in GRP/CTP/CTPtiming, reading it");
+       fCTPTimeParams = dynamic_cast<AliCTPTimeParams*> (entry->GetObject());
+       entry->SetOwner(0);
+       return kTRUE;
+  }
+  
+  return kFALSE; 
+}
+//_____________________________________________________________________________
 Bool_t AliReconstruction::Run(const char* input)
 {
   // Run Run Run
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
 
   InitRun(input);
   if (GetAbort() != TSelector::kContinue) return kFALSE;
@@ -1167,6 +1195,8 @@ Bool_t AliReconstruction::Run(const char* input)
     Long64_t nEntries = (fLastEvent < 0) ? (TChain::kBigNumber) : (fLastEvent - fFirstEvent + 1);
     // Proof mode
     if (gProof) {
+      // Temporary fix for long raw-data runs (until socket timeout handling in PROOF is revised)
+      gProof->Exec("gEnv->SetValue(\"Proof.SocketActivityTimeout\",-1)", kTRUE);
 
       if (gGrid)
 	gProof->Exec("TGrid::Connect(\"alien://\")",kTRUE);
@@ -1214,7 +1244,7 @@ Bool_t AliReconstruction::Run(const char* input)
 //_____________________________________________________________________________
 void AliReconstruction::InitRawReader(const char* input)
 {
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
 
   // Init raw-reader and
   // set the input in case of raw data
@@ -1245,7 +1275,7 @@ void AliReconstruction::InitRun(const char* input)
 {
   // Initialization of raw-reader,
   // run number, CDB etc.
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
   AliSysInfo::AddStamp("Start");
 
   // Initialize raw-reader if any
@@ -1273,7 +1303,7 @@ void AliReconstruction::Begin(TTree *)
   // going into the event loop
   // Should follow the TSelector convention
   // i.e. initialize only the object on the client side
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
 
   AliReconstruction *reco = NULL;
   if (fInput) {
@@ -1326,6 +1356,11 @@ void AliReconstruction::Begin(TTree *)
   }
   AliSysInfo::AddStamp("LoadTriggerScalersCDB");
 
+  if (!LoadCTPTimeParamsCDB()) {
+    Abort("LoadCTPTimeParamsCDB", TSelector::kAbortProcess);
+    return;
+  }
+  AliSysInfo::AddStamp("LoadCTPTimeParamsCDB");
 
   // Read the reconstruction parameters from OCDB
   if (!InitRecoParams()) {
@@ -1354,7 +1389,7 @@ void AliReconstruction::SlaveBegin(TTree*)
   // Initialization related to run-loader,
   // vertexer, trackers, recontructors
   // In proof mode it is executed on the slave
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
 
   TProofOutputFile *outProofFile = NULL;
   if (fInput) {
@@ -1524,7 +1559,7 @@ Bool_t AliReconstruction::Process(Long64_t entry)
 {
   // run the reconstruction over a single entry
   // from the chain with raw data
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
 
   TTree *currTree = fChain->GetTree();
   AliRawVEvent *event = NULL;
@@ -1555,7 +1590,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   // run the reconstruction over a single event
   // The event loop is steered in Run method
 
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
 
   if (iEvent >= fRunLoader->GetNumberOfEvents()) {
     fRunLoader->SetEventNumber(iEvent);
@@ -1588,7 +1623,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (reconstructor && fRecoParam.GetDetRecoParamArray(iDet)) {
         const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
         reconstructor->SetRecoParam(par);
-        reconstructor->SetEventInfo(&fEventInfo);
+	reconstructor->SetEventInfo(&fEventInfo);
         if (fRunQA) {
           AliQAManager::QAManager()->SetRecoParam(iDet, par) ; 
           AliQAManager::QAManager()->SetEventSpecie(AliRecoParam::Convert(par->GetEventSpecie())) ;
@@ -1598,7 +1633,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   }
 
     // QA on single raw 
-  if (fRunQA && IsInTasks(AliQAv1::kRAWS)) {
+  if (fRunQA) {
     AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
     AliQAManager::QAManager()->RunOneEvent(fRawReader) ;  
   }
@@ -1730,7 +1765,6 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     // Propagate track to the beam pipe  (if not already done by ITS)
     //
     const Int_t ntracks = fesd->GetNumberOfTracks();
-    const Double_t kBz = fesd->GetMagneticField();
     const Double_t kRadius  = 2.8; //something less than the beam pipe radius
 
     TObjArray trkArray;
@@ -1748,7 +1782,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       ok = kFALSE;
       if (tpcTrack)
 	ok = AliTracker::
-	  PropagateTrackTo(tpcTrack,kRadius,track->GetMass(),kMaxStep,kFALSE);
+	  PropagateTrackToBxByBz(tpcTrack,kRadius,track->GetMass(),kMaxStep,kFALSE);
 
       if (ok) {
 	Int_t n=trkArray.GetEntriesFast();
@@ -1760,8 +1794,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (track->IsOn(AliESDtrack::kITSrefit)) continue;
 
       AliTracker::
-         PropagateTrackTo(track,kRadius,track->GetMass(),kMaxStep,kFALSE);
-      track->RelateToVertex(fesd->GetPrimaryVertexSPD(), kBz, kVeryBig);
+         PropagateTrackToBxByBz(track,kRadius,track->GetMass(),kMaxStep,kFALSE);
+      Double_t x[3]; track->GetXYZ(x);
+      Double_t b[3]; AliTracker::GetBxByBz(x,b);
+      track->RelateToVertexBxByBz(fesd->GetPrimaryVertexSPD(), b, kVeryBig);
 
     }
 
@@ -1796,7 +1832,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
              fesd->SetPrimaryVertexTracks(pvtx);
              for (Int_t i=0; i<ntracks; i++) {
 	         AliESDtrack *t = fesd->GetTrack(i);
-                 t->RelateToVertex(pvtx, kBz, kVeryBig);
+                 Double_t x[3]; t->GetXYZ(x);
+                 Double_t b[3]; AliTracker::GetBxByBz(x,b);
+                 t->RelateToVertexBxByBz(pvtx, b, kVeryBig);
              } 
           }
        }
@@ -1820,7 +1858,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
              fesd->SetPrimaryVertexTPC(pvtx);
              for (Int_t i=0; i<ntracks; i++) {
 	         AliESDtrack *t = fesd->GetTrack(i);
-                 t->RelateToVertexTPC(pvtx, kBz, kVeryBig);
+                 Double_t x[3]; t->GetXYZ(x);
+                 Double_t b[3]; AliTracker::GetBxByBz(x,b);
+                 t->RelateToVertexTPCBxByBz(pvtx, b, kVeryBig);
              } 
           }
        }
@@ -1846,14 +1886,14 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     // write ESD
     if (fCleanESD) CleanESD(fesd);
 
-  if (fRunQA && IsInTasks(AliQAv1::kESDS)) {
+  if (fRunQA) {
     AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
     AliQAManager::QAManager()->RunOneEvent(fesd) ; 
   }
   if (fRunGlobalQA) {
     AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
       qadm->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
-    if (qadm && IsInTasks(AliQAv1::kESDS))
+    if (qadm && fQATasks.Contains(Form("%d", AliQAv1::kESDS)))
       qadm->Exec(AliQAv1::kESDS, fesd);
   }
 
@@ -1909,7 +1949,7 @@ void AliReconstruction::SlaveTerminate()
   // Finalize the run on the slave side
   // Called after the exit
   // from the event loop
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
 
   if (fIsNewRunLoader) { // galice.root didn't exist
     fRunLoader->WriteHeader("OVERWRITE");
@@ -1967,9 +2007,9 @@ void AliReconstruction::SlaveTerminate()
   if (fRunGlobalQA) {
     AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
     if (qadm) {
-      if (IsInTasks(AliQAv1::kRECPOINTS)) 
+      if (fQATasks.Contains(Form("%d", AliQAv1::kRECPOINTS))) 
         qadm->EndOfCycle(AliQAv1::kRECPOINTS);
-      if (IsInTasks(AliQAv1::kESDS)) 
+      if (fQATasks.Contains(Form("%d", AliQAv1::kESDS))) 
         qadm->EndOfCycle(AliQAv1::kESDS);
       qadm->Finish();
     }
@@ -2027,7 +2067,7 @@ void AliReconstruction::Terminate()
 {
   // Create tags for the events in the ESD tree (the ESD tree is always present)
   // In case of empty events the tags will contain dummy values
-  AliCodeTimerAuto("");
+  AliCodeTimerAuto("",0);
 
   // Do not call the ESD tag creator in case of PROOF-based reconstruction
   if (!fInput) {
@@ -2045,7 +2085,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
 // run the local reconstruction
 
   static Int_t eventNr=0;
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",0)
 
   TString detStr = detectors;
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
@@ -2073,7 +2113,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
       AliInfo(Form("converting raw data digits into root objects for %s", 
 		   fgkDetectorName[iDet]));
 //      AliCodeTimerAuto(Form("converting raw data digits into root objects for %s", 
-//                            fgkDetectorName[iDet]));
+//                            fgkDetectorName[iDet]),0);
       loader->LoadDigits("update");
       loader->CleanDigits();
       loader->MakeDigitsContainer();
@@ -2084,7 +2124,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     }
     // local reconstruction
     AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
-    //AliCodeTimerAuto(Form("running reconstruction for %s", fgkDetectorName[iDet]));
+    //AliCodeTimerAuto(Form("running reconstruction for %s", fgkDetectorName[iDet]),0);
     loader->LoadRecPoints("update");
     loader->CleanRecPoints();
     loader->MakeRecPointsContainer();
@@ -2099,14 +2139,14 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
         if (fStopOnError) return kFALSE;
       } else {
         reconstructor->Reconstruct(digitsTree, clustersTree);
-        if (fRunQA && IsInTasks(AliQAv1::kDIGITSR)) {
+        if (fRunQA) {
           AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
           AliQAManager::QAManager()->RunOneEventInOneDetector(iDet, digitsTree) ; 
         }
       }
       loader->UnloadDigits();
     }
-		if (fRunQA && IsInTasks(AliQAv1::kRECPOINTS)) {
+		if (fRunQA) {
       AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
 			AliQAManager::QAManager()->RunOneEventInOneDetector(iDet, clustersTree) ; 
     }
@@ -2127,7 +2167,7 @@ Bool_t AliReconstruction::RunSPDTrackleting(AliESDEvent*& esd)
 {
 // run the SPD trackleting (for SPD efficiency purpouses)
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",0)
 
   Double_t vtxPos[3] = {0, 0, 0};
   Double_t vtxErr[3] = {0.0, 0.0, 0.0};
@@ -2177,7 +2217,7 @@ Bool_t AliReconstruction::RunVertexFinder(AliESDEvent*& esd)
 {
 // run the barrel tracking
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",0)
 
   AliVertexer *vertexer = CreateVertexer();
   if (!vertexer) return kFALSE;
@@ -2239,7 +2279,7 @@ Bool_t AliReconstruction::RunHLTTracking(AliESDEvent*& esd)
 {
 // run the HLT barrel tracking
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",0)
 
   if (!fRunLoader) {
     AliError("Missing runLoader!");
@@ -2295,7 +2335,7 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
 {
 // run the muon spectrometer tracking
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",0)
 
   if (!fRunLoader) {
     AliError("Missing runLoader!");
@@ -2346,7 +2386,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 {
 // run the barrel tracking
   static Int_t eventNr=0;
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",0)
 
   AliInfo("running tracking");
 
@@ -2531,7 +2571,7 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
 {
 // fill the event summary data
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",0)
     static Int_t eventNr=0; 
   TString detStr = detectors;
   
@@ -2588,7 +2628,7 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
   // stored in Trigger.root file and fills
   // the corresponding esd entries
 
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",0)
   
   AliInfo("Filling trigger information into the ESD");
 
@@ -2702,7 +2742,12 @@ Bool_t AliReconstruction::InitRunLoader()
   if (gAlice) delete gAlice;
   gAlice = NULL;
 
-  if (!gSystem->AccessPathName(fGAliceFileName.Data())) { // galice.root exists
+  TFile *gafile = TFile::Open(fGAliceFileName.Data());
+  //  if (!gSystem->AccessPathName(fGAliceFileName.Data())) { // galice.root exists
+  if (gafile) { // galice.root exists
+    gafile->Close();
+    delete gafile;
+
     // load all base libraries to get the loader classes
     TString libs = gSystem->GetLibraries();
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
@@ -3324,7 +3369,7 @@ Bool_t AliReconstruction::GetEventInfo()
 {
   // Fill the event info object
   // ...
-  AliCodeTimerAuto("")
+  AliCodeTimerAuto("",0)
 
   AliCentralTrigger *aCTP = NULL;
   if (fRawReader) {
