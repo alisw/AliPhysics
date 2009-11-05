@@ -78,7 +78,7 @@ public:
   static const char  *   GetQARefDefaultStorage() { return fgkQARefOCDBDefault.Data() ; }
   static const char  *   GetQARefFileName() { return fgQARefFileName ; }
   static const char  *   GetQARefStorage() { return fgQARefDirName.Data() ; }
-  const QABIT_t          GetQAStatusBit(AliRecoParam::EventSpecie_t es = AliRecoParam::kDefault, DETECTORINDEX_t det=kNULLDET, ALITASK_t tsk=kNULLTASK) const ; 
+  QABIT_t                GetQAStatusBit(AliRecoParam::EventSpecie_t es = AliRecoParam::kDefault, DETECTORINDEX_t det=kNULLDET, ALITASK_t tsk=kNULLTASK) const ; 
   static const char  *   GetRefOCDBDirName() { return fgkRefOCDBDirName.Data() ; }
   static const char  *   GetRefDataDirName() { return fgRefDataDirName.Data() ; }
 
