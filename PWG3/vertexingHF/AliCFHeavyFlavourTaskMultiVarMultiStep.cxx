@@ -205,7 +205,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	}
 
 
-	fCFManager->SetEventInfo(aodEvent);
+	fCFManager->SetRecEventInfo(aodEvent);
 	
 	// MC-event selection
 	Double_t containerInput[12] ;
