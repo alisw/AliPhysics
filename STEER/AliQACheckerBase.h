@@ -42,7 +42,7 @@ public:
   virtual void   MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ; 
   void           Run(AliQAv1::ALITASK_t tsk, AliDetectorRecoParam * recoParam = NULL); 
   void           Run(AliQAv1::ALITASK_t tsk, TObjArray ** list, AliDetectorRecoParam * recoParam = NULL); 
-  virtual void   Run(AliQAv1::ALITASK_t /*tsk*/, TNtupleD ** /*nt*/, AliDetectorRecoParam * /*recoParam*/) {;} 
+  void           Run(AliQAv1::ALITASK_t /*tsk*/, TNtupleD ** /*nt*/, AliDetectorRecoParam * /*recoParam*/) {;} 
   void           SetHiLo(Float_t * hiValue, Float_t * lowValue) ; 
   void           SetPrintImage(Bool_t opt = kTRUE) { fPrintImage = opt ; }
   void           SetRefandData(TDirectory * ref, TObjArray ** refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
