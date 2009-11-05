@@ -321,6 +321,7 @@ const char * AliQAv1::GetBitName(QABIT_t bit) const
 	TString bitName ;
 	switch (bit) {
 		case kNULLBit:
+			bitName = "NONE" ;
 			break ; 
 		case kINFO:
 			bitName = "INFO" ;
@@ -471,11 +472,11 @@ TFile * AliQAv1::GetQADataFile(const char * fileName)
 //_______________________________________________________________
 TFile * AliQAv1::GetQAResultFile() 
 {
-  // opens the file to store the  Quality Assurance Data Checker results
-	if (fgQAResultFile) 
-		fgQAResultFile->Close() ; 
-	fgQAResultFile = 0x0 ; 
-//	if (!fgQAResultFile) { 
+  // opens the file to store the  Quality Assurance Data Checker results	
+  if (fgQAResultFile) 
+    if (fgQAResultFile->IsOpen()) 
+      fgQAResultFile->Close();
+  
 		TString dirName(fgQAResultDirName) ; 
 		if ( dirName.Contains(fgkLabLocalFile)) 
 			dirName.ReplaceAll(fgkLabLocalFile, "") ;
@@ -489,9 +490,26 @@ TFile * AliQAv1::GetQAResultFile()
 			opt = "NEW" ; 
 		}
 		fgQAResultFile = TFile::Open(fileName, opt) ;   
-//	}
 	
 	return fgQAResultFile ;
+}
+
+//_______________________________________________________________
+const AliQAv1::QABIT_t AliQAv1::GetQAStatusBit(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t det, ALITASK_t tsk) const
+{
+    // returns the QA bit set
+  QABIT_t rv = kNULLBit ; 
+  if ( es == AliRecoParam::kDefault) 
+    es = fEventSpecie ; 
+  if ( det == kNULLDET ) 
+    det = fDet ; 
+  if ( tsk == kNULLTASK ) 
+    tsk = fTask ; 
+  for (Int_t bit = kINFO ; bit < kNBIT ; bit++) {
+		if (IsSet(det, tsk, es, QABIT_t(bit))) 
+      rv = QABIT_t(bit) ;
+	}
+  return rv ; 
 }
 
 //_______________________________________________________________
@@ -588,6 +606,7 @@ AliQAv1 * AliQAv1::Instance()
   if ( ! fgQA) {
     TFile * f = GetQAResultFile() ; 
     fgQA = static_cast<AliQAv1 *>(f->Get("QA")) ; 
+    f->Close() ; 
     if ( ! fgQA ) 
       fgQA = new AliQAv1() ;
   }
@@ -611,7 +630,7 @@ AliQAv1 * AliQAv1::Instance(const DETECTORINDEX_t det)
   
   if ( ! fgQA) {
     TFile * f = GetQAResultFile() ; 
-    fgQA = static_cast<AliQAv1 *>(f->Get("QA")) ; 
+    fgQA = static_cast<AliQAv1 *>(f->Get(GetQAName())) ; 
     if ( ! fgQA ) 
       fgQA = new AliQAv1(det) ;
   }		
@@ -875,14 +894,12 @@ void AliQAv1::ShowASCIIStatus(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t de
 {
 	// print the QA status in human readable format
 	TString text; 
-	for (Int_t bit = kINFO ; bit < kNBIT ; bit++) {
-		if (IsSet(det, tsk, es, QABIT_t(bit))) {
-			text = GetBitName(QABIT_t(bit)) ; 
-			text += " " ; 
-		}
-	}
-	if (! text.IsNull())
-		AliInfoClass(Form("           %8s %8s %4s 0x%4lx, Problem signalled: %8s \n", AliRecoParam::GetEventSpecieName(es), GetDetName(det).Data(), GetAliTaskName(tsk), status, text.Data())) ; 
+  QABIT_t bit = GetQAStatusBit(es, det, tsk) ; 
+  if ( bit != kNULLBit ) {
+    text = GetBitName(bit) ; 
+    text += " " ; 
+    AliInfoClass(Form("           %8s %8s %4s 0x%4lx, Problem signalled: %8s \n", AliRecoParam::GetEventSpecieName(es), GetDetName(det).Data(), GetAliTaskName(tsk), status, text.Data())) ; 
+  }
 }
 
 //_______________________________________________________________
