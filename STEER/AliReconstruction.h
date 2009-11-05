@@ -44,10 +44,11 @@ class AliRunInfo;
 class AliGRPObject;
 class THashTable;
 class AliTriggerRunScalers;
+class AliCTPTimeParams;
+
 #include "AliQAv1.h"
 #include "AliEventInfo.h"
 #include "AliRecoParam.h"
-#include "AliTriggerRunScalers.h"
 
 class AliReconstruction: public TSelector {
 public:
@@ -144,9 +145,6 @@ public:
   void    InitQA();
   void    MergeQA(const char *fileName = NULL); 
   void    SetWriteQAExpert() { fWriteQAExpertData = kTRUE ; }
-  Bool_t  IsRunQA() { return fRunQA ; } 
-  Bool_t  IsRunGlobalQA() { return fRunGlobalQA ; }
-  Bool_t  IsInTasks(AliQAv1::TASKINDEX_t tsk) { return fQATasks.Contains(Form("%d", tsk)) ; }
 
   // Plane Efficiency Evaluation
   void    SetRunPlaneEff(Bool_t flag=kFALSE)  {fRunPlaneEff = flag;}
@@ -171,6 +169,7 @@ private:
   Bool_t         SetRunNumberFromData();
   Bool_t         LoadCDB();
   Bool_t         LoadTriggerScalersCDB();
+  Bool_t         LoadCTPTimeParamsCDB();
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESDEvent*& esd);
   Bool_t         RunHLTTracking(AliESDEvent*& esd);
@@ -253,6 +252,7 @@ private:
   AliRunInfo*    fRunInfo;            // an object which contains essential global conditions information
   AliEventInfo   fEventInfo;          // an object which contains essential event information
   AliTriggerRunScalers* fRunScalers;  // an object which contains the trigger counters for xsection
+  AliCTPTimeParams* fCTPTimeParams;   // an object which contains the trigger delays
   AliRunLoader*  fRunLoader;          //! current run loader object
   AliRawReader*  fRawReader;          //! current raw data reader
   AliRawReader*  fParentRawReader;    //! parent raw data reader in case of AliRawReaderHLT
