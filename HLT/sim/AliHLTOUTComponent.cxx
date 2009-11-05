@@ -167,8 +167,15 @@ int AliHLTOUTComponent::DoDeinit()
       assert(*element);
       // wanted to have a dynamic_cast<AliHLTHOMERWriter*> here, but this results into
       // undefined symbol when loading the library
-      (*element)->Clear();
-      if (*element!=NULL) fpLibManager->DeleteWriter((AliHLTHOMERWriter*)(*element));
+      if (*element!=NULL) {
+	// this ia a quick fix for bug https://savannah.cern.ch/bugs/?58247
+	// it is unclear why the pointer is not valid any more, for more
+	// details: https://savannah.cern.ch/bugs/?58083
+	//(*element)->Clear();
+	//fpLibManager->DeleteWriter((AliHLTHOMERWriter*)(*element));
+      } else {
+	HLTError("writer instance is NULL");
+      }
       element=fWriters.erase(element);
     }
   }
