@@ -20,7 +20,8 @@
 // are relevant for tracklets.
 
 TEveTrackList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=3,
-				 Float_t d_theta=0.025, Float_t d_phi=0.08)
+				 Float_t dPhiWindow=0.080, Float_t dThetaWindow=0.025, 
+                                 Float_t dPhiShift05T=0.0045)
 {
   // radius - cylindrical radius to which the tracklets should be extrapolated
 
@@ -39,19 +40,32 @@ TEveTrackList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=3,
   prop->SetMaxR(radius);
   gEve->AddElement(cont);
 
+  const Float_t  Bz = TMath::Abs(field->SolenoidField());
+
+  const Double_t dPhiShift     = dPhiShift05T / 5.0 * Bz;
+  const Double_t dPhiWindow2   = dPhiWindow * dPhiWindow;
+  const Double_t dThetaWindow2 = dThetaWindow * dThetaWindow;
+
   for (Int_t i = 0; i < mul->GetNumberOfTracklets(); ++i)
   {
-    Float_t theta = mul->GetTheta(i);
-    Float_t phi   = mul->GetPhi(i);
+    Float_t theta  = mul->GetTheta(i);
+    Float_t phi    = mul->GetPhi(i);
+    Float_t dTheta = mul->GetDeltaTheta(i);
+    Float_t dPhi   = mul->GetDeltaPhi(i);
 
     AliEveTracklet* t = new AliEveTracklet(i, pv, theta, phi, prop);
     t->SetAttLineAttMarker(cont);
     t->SetElementName(Form("Tracklet %d", i));
-    t->SetElementTitle(Form("id=%d: eta=%.3f, theta=%.3f, phi=%.3f",
-			    i, mul->GetEta(i), theta, phi));
-    // if some condition
-    mul->SetLabel(i, 0, 3);
-    // else mul->SetLabel(i, 0, 0);
+    t->SetElementTitle(Form("Id = %d\nEta=%.3f, Theta=%.3f, dTheta=%.3f\nPhi=%.3f dPhi=%.3f",
+			    i, mul->GetEta(i), theta, dTheta, phi, dPhi));
+
+    dPhi -= dPhiShift;
+
+    Float_t d = dPhi*dPhi/dPhiWindow2 + dTheta*dTheta/dThetaWindow2;
+    if (d < 1.0f)
+      mul->SetLabel(i, 0, 3);
+    else
+      mul->SetLabel(i, 0, 0);
 
     cont->AddElement(t);
   }

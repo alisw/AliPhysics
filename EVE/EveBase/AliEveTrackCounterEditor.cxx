@@ -21,9 +21,11 @@
 #include "TGComboBox.h"
 #include "TGMsgBox.h"
 
+#include "TTree.h"
 #include "TH1F.h"
 
 #include "TCanvas.h"
+#include "TLatex.h"
 #include "TEveManager.h"
 
 #include "TROOT.h"
@@ -218,7 +220,7 @@ void AliEveTrackCounterEditor::DoPrintReport()
 {
    // Slot for PrintReport.
 
-   fM->OutputEventTracks();
+   fM->PrintEventTracks();
 }
 
 //______________________________________________________________________________
@@ -226,25 +228,7 @@ void AliEveTrackCounterEditor::DoFileReport()
 {
    // Slot for FileReport.
 
-   TString file(Form("ev-report-%03d.txt", fM->GetEventId()));
-   if (gSystem->AccessPathName(file) == kFALSE)
-   {
-      Int_t ret;
-      new TGMsgBox(fClient->GetRoot(), GetMainFrame(),
-                   "File Exist",
-                   Form("Event record for event %d already exist.\n Replace?", fM->GetEventId()),
-                   kMBIconQuestion, kMBYes | kMBNo, &ret);
-      if (ret == kMBNo)
-         return;
-   }
-   FILE* out = fopen(file, "w");
-   if (out) {
-      fM->OutputEventTracks(out);
-      fclose(out);
-   } else {
-      Error("AliEveTrackCounterEditor::DoFileReport",
-            "Can not open file '%s' for writing.", file.Data());
-   }
+   fM->OutputEventTracks();
 }
 
 //______________________________________________________________________________
@@ -252,58 +236,48 @@ void AliEveTrackCounterEditor::DoShowHistos()
 {
   // Slot for ShowHistos.
 
-  TH1F* hcnt = new TH1F("cnt", "Primeries per event", 41, -0.5, 40.5);
-  TH1F* hchg = new TH1F("chg", "Primary charge",       3, -1.5,  1.5);
-  TH1F* hpt  = new TH1F("pt",  "pT distribution",     40,  0.0,  8.0);
-  TH1F* heta = new TH1F("eta", "eta distribution",    40, -1.0,  1.0);
-  TH1F* hphi = new TH1F("phi", "phi distribution",    40, -3.1416, 3.1416);
+  static const TEveException kEH("AliEveTrackCounterEditor::DoShowHistos ");
 
-  Int_t nn; // fscanf return value
+  TEveUtil::Macro("show_scan_results.C");
 
-  for (Int_t i=0; i<1000; ++i)
-  {
-    TString file(Form("ev-report-%03d.txt", i));
-    if (gSystem->AccessPathName(file) == kFALSE)
-    {
-      Int_t   ev, ngoodtr, nalltr;
-      FILE* f = fopen(file, "read");
+  TTree* t = (TTree*) gDirectory->Get("SR");
 
-      nn = fscanf(f, "Event=%d\n", &ev);
-      if (nn != 1) { printf("SAFR0 %d\n", nn); fclose(f); return;  }
+  if (t == 0)
+    throw kEH + "Tree 'SR' with scan results not found.";
 
-      nn = fscanf(f, "GoodTracks=%d  AllTracks=%d\n", &ngoodtr, &nalltr);
-      if (nn != 2) { printf("SAFR1 %d\n", nn); fclose(f); return;  }
+  TCanvas *c = 0;
 
-      hcnt->Fill(ngoodtr);
-      for (Int_t t = 0; t < ngoodtr; ++t)
-      {
-        Int_t   id, chg;
-        Float_t pt, eta, phi;
-        nn = fscanf(f, "%d: chg=%d pt=%f eta=%f phi=%f\n", &id, &chg, &pt, &eta, &phi);
-        if (nn != 5) { printf("SAFR2 %d\n", nn); fclose(f); return;  }
-        hchg->Fill(chg);
-        hpt ->Fill(pt);
-        heta->Fill(eta);
-        hphi->Fill(phi);
-      }
-      fclose(f);
-    }
-  }
+  //----------------------------------------------------------------------------
+  // Tracks
+  //----------------------------------------------------------------------------
 
-  TCanvas* c;
-  if (gPad == 0 || gPad->GetCanvas()->IsEditable() == kFALSE) {
-    c = new TCanvas("Scanwas", "Scanning Results", 800, 600);
-  } else {
-    c = gPad->GetCanvas();
-    c->Clear();
-  }
+  c = new TCanvas("Tracks", "Track Scanning Results", 800, 600);
   c->Divide(2, 3);
 
-  c->cd(1); hcnt->Draw();
-  c->cd(2); hchg->Draw();
-  c->cd(3); hpt ->Draw();
-  c->cd(4); heta->Draw();
-  c->cd(5); hphi->Draw();
+  c->cd(1);
+  t->Draw("Sum$(T.fLabel & 1)");
+
+  c->cd(2);
+  t->Draw("T.GetSign()", "T.fLabel & 1");
+
+  c->cd(3);
+  t->Draw("T.GetSign()", "T.fLabel & 1");
+
+  c->cd(4);
+  t->Draw("T.Eta()", "T.fLabel & 1");
+
+  c->cd(5);
+  t->Draw("T.Phi()", "T.fLabel & 1");
+
+  c->Modified();
+  c->Update();
+
+  //----------------------------------------------------------------------------
+  // Trackelts
+  //----------------------------------------------------------------------------
+
+  c = new TCanvas("Tracklets", "Tracklet Scanning Results", 800, 600);
+  (new TLatex(0.2, 0.4, "Not yet available"))->Draw();
 
   c->Modified();
   c->Update();

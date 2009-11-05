@@ -20,6 +20,8 @@
 
 #include <TEveGedEditor.h>
 
+#include <TFile.h>
+
 //==============================================================================
 // AliEveTrackCounter
 //==============================================================================
@@ -277,18 +279,38 @@ void AliEveTrackCounter::DoTrackletAction(AliEveTracklet* track)
 /******************************************************************************/
 
 //______________________________________________________________________________
-void AliEveTrackCounter::OutputEventTracks(FILE* out)
+void AliEveTrackCounter::OutputEventTracks()
 {
   // Print good-track summary into a plain-text file by iteration
   // through all registered track-lists.
   // State of each track is determined by its line-style, it is
   // considered a good track if it's line style is solid.
 
-  if (out == 0)
   {
-    out = stdout;
-    fprintf(out, "AliEveTrackCounter::OutputEventTracks()\n");
+    TFile *f = TFile::Open("scan_results.root", "UPDATE");
+
+    AliESDEvent     *esd = AliEveEventManager::AssertESD();
+    TClonesArray    *trk = static_cast<TClonesArray*>   (esd->GetList()->FindObject("Tracks"));
+    AliMultiplicity *mul = const_cast <AliMultiplicity*>(esd->GetMultiplicity());
+
+    trk->Write(TString::Format("Tracks_%04d",    fEventId), kWriteDelete | kSingleKey);
+    mul->Write(TString::Format("Tracklets_%04d", fEventId), kWriteDelete);
+
+    f->Close();
   }
+}
+
+//______________________________________________________________________________
+void AliEveTrackCounter::PrintEventTracks()
+{
+  // Print good-track summary to stdout by iteration
+  // through all registered track-lists.
+  // State of each track is determined by its line-style, it is
+  // considered a good track if it's line style is solid.
+
+  FILE* out = stdout;
+
+  fprintf(out, "AliEveTrackCounter::PrintEventTracks()\n");
 
   fprintf(out, "Event=%d\n", fEventId);
   fprintf(out, "GoodTracks=%d  AllTracks=%d\n", fGoodTracks, fAllTracks);

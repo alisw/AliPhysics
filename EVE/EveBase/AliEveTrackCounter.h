@@ -45,7 +45,8 @@ public:
   Int_t GetClickAction() const  { return fClickAction; }
   void  SetClickAction(Int_t a) { fClickAction = a; }
 
-  void OutputEventTracks(FILE* out=0);
+  void OutputEventTracks();
+  void PrintEventTracks();
 
   static AliEveTrackCounter* fgInstance;
 
