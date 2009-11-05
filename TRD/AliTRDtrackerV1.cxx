@@ -3010,6 +3010,8 @@ Int_t AliTRDtrackerV1::ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDs
   Float_t chi2 = FitTiltedRieman(bseed, kTRUE);
 
   for (Int_t iter = 0; iter < 4; iter++) {
+    AliDebug(2, Form("Iter[%d] Q[%f] chi2[%f]", iter, quality, chi2));
+
     // Try better cluster set
     Int_t nLayers(0); Float_t qualitynew(0.);
     Int_t  indexes[6];

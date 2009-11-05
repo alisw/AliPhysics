@@ -71,7 +71,8 @@ public:
   };
   enum ETRDtrackletError {
     kAttachClFound = 1  // not enough clusters found
-   ,kAttachRow          // found row < 0
+   ,kAttachRowGap       // found gap attached rows
+   ,kAttachRow          // found 3 rows
    ,kAttachMultipleCl   // multiple clusters attached to time bin
    ,kAttachClAttach     // not enough clusters attached
   };
@@ -198,6 +199,8 @@ private:
   inline void SetN(Int_t n);
   inline void SetNUsed(Int_t n);
   inline void SetNShared(Int_t n);
+  inline void Swap(Int_t &n1, Int_t &n2);
+  inline void Swap(Double_t &d1, Double_t &d2);
 
   const AliTRDReconstructor *fkReconstructor;//! local reconstructor
   AliTRDcluster  **fClusterIter;            //! clusters iterator
@@ -388,6 +391,22 @@ inline void AliTRDseedV1::SetNShared(Int_t n)
   UInt_t mask((kMask<<kNbits)<<kNbits); 
   fN &= ~mask;
   n = (n<<kNbits)<<kNbits; fN|=(n&mask);
+}
+
+//____________________________________________________________
+inline void AliTRDseedV1::Swap(Int_t &n1, Int_t &n2)
+{
+// swap values of n1 with n2
+  Int_t tmp(n1);
+  n1=n2; n2=tmp;
+}
+
+//____________________________________________________________
+inline void AliTRDseedV1::Swap(Double_t &d1, Double_t &d2)
+{
+// swap values of d1 with d2
+  Double_t tmp(d1);
+  d1=d2; d2=tmp;
 }
 
 

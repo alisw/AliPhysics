@@ -265,7 +265,7 @@ void AliTRDseedV1::Reset(Option_t *opt)
 //
   for(Int_t ic=kNclusters; ic--;) fIndexes[ic] = -1;
   memset(fClusters, 0, kNclusters*sizeof(AliTRDcluster*));
-  fN=0;
+  fN=0; SetBit(kRowCross, kFALSE);
   if(strcmp(opt, "c")==0) return;
 
   fExB=0.;fVD=0.;fT0=0.;fS2PRF=0.;
@@ -594,12 +594,11 @@ Bool_t AliTRDseedV1::CookPID()
   }
 
   // calculate tracklet length TO DO
-  Float_t length = (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
-  /// TMath::Sqrt((1.0 - fSnp[iPlane]*fSnp[iPlane]) / (1.0 + fTgl[iPlane]*fTgl[iPlane]));
+  Float_t length = (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick())/ TMath::Sqrt((1.0 - GetSnp()*GetSnp()) / (1.0 + GetTgl()*GetTgl()));
   
   //calculate dE/dx
   CookdEdx(fkReconstructor->GetNdEdxSlices());
-  AliDebug(4, Form("PID p[%f] dEdx[%f %f %f %f %f %f %f %f] l[%f]", GetMomentum(), fdEdx[0], fdEdx[1], fdEdx[2], fdEdx[3], fdEdx[4], fdEdx[5], fdEdx[6], fdEdx[7], length));
+  AliDebug(4, Form("PID p[%f] dEdx[%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f %7.2f %7.2f] l[%f]", GetMomentum(), fdEdx[0], fdEdx[1], fdEdx[2], fdEdx[3], fdEdx[4], fdEdx[5], fdEdx[6], fdEdx[7], length));
 
   // Sets the a priori probabilities
   for(int ispec=0; ispec<AliPID::kSPECIES; ispec++)
@@ -895,7 +894,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
 // Debug  : level >3
 
   if(!fkReconstructor->GetRecoParam() ){
-    AliError("Seed can not be used without a valid RecoParam.");
+    AliError("Tracklets can not be used without a valid RecoParam.");
     return kFALSE;
   }
   // Initialize reco params for this tracklet
@@ -915,8 +914,8 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
   // define probing cluster (the perfect cluster) and default calibration
   Short_t sig[] = {0, 0, 10, 30, 10, 0,0};
   AliTRDcluster cp(fDet, 6, 75, 0, sig, 0);
-  if(fkReconstructor->IsHLT())cp.SetRPhiMethod(AliTRDcluster::kCOG);
-  Calibrate();
+  if(fkReconstructor->IsHLT()) cp.SetRPhiMethod(AliTRDcluster::kCOG);
+  if(!IsCalibrated()) Calibrate();
 
   AliDebug(4, "");
   AliDebug(4, Form("syKalman[%f] rY[%f] rZ[%f]", syRef, kroady, kroadz));
@@ -977,7 +976,7 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
       ncl[r]++; ncls++;
 
       if(ncl[r] >= kNcls) {
-        AliWarning(Form("Cluster candidates reached buffer limit %d. Some may be lost.", kNcls));
+        AliWarning(Form("Cluster candidates row[%d] reached buffer limit[%d]. Some may be lost.", r, kNcls));
         kBUFFER = kTRUE;
         break;
       }
@@ -986,116 +985,165 @@ Bool_t	AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t
   }
   AliDebug(4, Form("Found %d clusters. Processing ...", ncls));
   if(ncls<kClmin){ 
-    AliDebug(2, Form("CLUSTERS FOUND %d LESS THAN THRESHOLD %d.", ncls, kClmin));
+    AliDebug(1, Form("CLUSTERS FOUND %d LESS THAN THRESHOLD %d.", ncls, kClmin));
     SetErrorMsg(kAttachClFound);
     return kFALSE;
   }
 
   // analyze each row individualy
-  Double_t mean, syDis;
-  Int_t nrow[] = {0, 0, 0}, nr = 0, lr=-1;
-  for(Int_t ir=kNrows; ir--;){
+  Bool_t kRowSelection(kFALSE);
+  Double_t mean[]={1.e3, 1.e3, 1.3}, syDis[]={1.e3, 1.e3, 1.3};
+  Int_t nrow[] = {0, 0, 0}, rowId[] = {-1, -1, -1}, nr = 0, lr=-1;
+  TVectorD vdy[3];
+  for(Int_t ir=0; ir<kNrows; ir++){
     if(!(ncl[ir])) continue;
-    if(lr>0 && lr-ir != 1){
-      AliDebug(2, "Gap in rows attached"); 
+    if(lr>0 && ir-lr != 1){ 
+      AliDebug(2, "Rows attached not continuous. Turn on selection."); 
+      kRowSelection=kTRUE;
     }
+
     AliDebug(5, Form("  r[%d] n[%d]", ir, ncl[ir]));
     // Evaluate truncated mean on the y direction
-    if(ncl[ir] > 3) AliMathBase::EvaluateUni(ncl[ir], yres[ir], mean, syDis, Int_t(ncl[ir]*.8));
-    else {
-      mean = 0.; syDis = 0.;
-      continue;
-    } 
-
-    if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && fkReconstructor->IsDebugStreaming()){
-      TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
-      TVectorD vdy(ncl[ir], yres[ir]);
-      UChar_t stat(0);
-      if(IsKink()) SETBIT(stat, 1);
-      if(IsStandAlone()) SETBIT(stat, 2);
-      cstreamer << "AttachClusters"
-          << "stat="   << stat
-          << "det="    << fDet
-          << "pt="     << fPt
-          << "s2y="    << s2yTrk
-          << "dy="     << &vdy
-          << "m="      << mean
-          << "s="      << syDis
-          << "\n";
-    }
+    if(ncl[ir] < 4) continue;
+    AliMathBase::EvaluateUni(ncl[ir], yres[ir], mean[nr], syDis[nr], Int_t(ncl[ir]*.8));
 
     // TODO check mean and sigma agains cluster resolution !!
-    AliDebug(4, Form("  m[%f (%5.3fs)] s[%f]", mean, TMath::Abs(mean/syDis), syDis));
-    // select clusters on a 3 sigmaDistr level
+    AliDebug(4, Form("  m_%d[%+5.3f (%5.3fs)] s[%f]", nr, mean[nr], TMath::Abs(mean[nr]/syDis[nr]), syDis[nr]));
+    // remove outliers based on a 3 sigmaDistr level
     Bool_t kFOUND = kFALSE;
     for(Int_t ic = ncl[ir]; ic--;){
-      if(yres[ir][ic] - mean > 3. * syDis){ 
+      if(yres[ir][ic] - mean[nr] > 3. * syDis[nr]){ 
         blst[ir][ic] = kFALSE; continue;
       }
-      nrow[nr]++; kFOUND = kTRUE;
+      nrow[nr]++; rowId[nr]=ir; kFOUND = kTRUE;
     }
-    // exit loop
-    if(kFOUND) nr++; 
+    if(kFOUND){ 
+      vdy[nr].Use(nrow[nr], yres[ir]);
+      nr++; 
+    }
     lr = ir; if(nr>=3) break;
   }
-  AliDebug(4, Form("  nr[%d = %d + %d + %d]", nr, nrow[0], nrow[1], nrow[2]));
+  if(fkReconstructor->GetRecoParam()->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && fkReconstructor->IsDebugStreaming()){
+    TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+    UChar_t stat(0);
+    if(IsKink()) SETBIT(stat, 1);
+    if(IsStandAlone()) SETBIT(stat, 2);
+    cstreamer << "AttachClusters"
+        << "stat="   << stat
+        << "det="    << fDet
+        << "pt="     << fPt
+        << "s2y="    << s2yTrk
+        << "r0="     << rowId[0]
+        << "dy0="    << &vdy[0]
+        << "m0="     << mean[0]
+        << "s0="     << syDis[0]
+        << "r1="     << rowId[1]
+        << "dy1="    << &vdy[1]
+        << "m1="     << mean[1]
+        << "s1="     << syDis[1]
+        << "r2="     << rowId[2]
+        << "dy2="    << &vdy[2]
+        << "m2="     << mean[2]
+        << "s2="     << syDis[2]
+        << "\n";
+  }
 
-  // classify cluster rows
-  Int_t row = -1;
-  switch(nr){
-  case 1:
-    row = lr;
-    break;
-  case 2:
-    SetBit(kRowCross, kTRUE); // mark pad row crossing
-    if(nrow[0] > nrow[1]){ row = lr+1; lr = -1;}
-    else{ 
-      row = lr; lr = 1;
-      nrow[2] = nrow[1];
-      nrow[1] = nrow[0];
-      nrow[0] = nrow[2];
+
+  // analyze gap in rows attached 
+  if(kRowSelection){
+    SetErrorMsg(kAttachRowGap);
+    Int_t rowRemove(-1); 
+    if(nr==2){ // select based on minimum distance to track projection
+      if(TMath::Abs(mean[0])<TMath::Abs(mean[1])){ 
+        if(nrow[1]>nrow[0]) AliDebug(2, Form("Conflicting mean[%f < %f] but ncl[%d < %d].", TMath::Abs(mean[0]), TMath::Abs(mean[1]), nrow[0], nrow[1]));
+      }else{
+        if(nrow[1]<nrow[0]) AliDebug(2, Form("Conflicting mean[%f > %f] but ncl[%d > %d].", TMath::Abs(mean[0]), TMath::Abs(mean[1]), nrow[0], nrow[1]));
+        Swap(nrow[0],nrow[1]); Swap(rowId[0],rowId[1]);
+        Swap(mean[0],mean[1]); Swap(syDis[0],syDis[1]);
+      }
+      rowRemove=1; nr=1; 
+    } else if(nr==3){ // select based on 2 consecutive rows
+      if(rowId[1]==rowId[0]+1 && rowId[1]!=rowId[2]-1){ 
+        nr=2;rowRemove=2;
+      } else if(rowId[1]!=rowId[0]+1 && rowId[1]==rowId[2]-1){ 
+        Swap(nrow[0],nrow[2]); Swap(rowId[0],rowId[2]);
+        Swap(mean[0],mean[2]); Swap(syDis[0],syDis[2]);
+        nr=2; rowRemove=2;
+      }
     }
-    break;
-  case 3:
+    if(rowRemove>0){nrow[rowRemove]=0; rowId[rowRemove]=-1;}
+  }
+  AliDebug(4, Form("  Ncl[%d[%d] + %d[%d] + %d[%d]]", nrow[0], rowId[0],  nrow[1], rowId[1], nrow[2], rowId[2]));
+
+  if(nr==3){
     SetBit(kRowCross, kTRUE); // mark pad row crossing
-    break;
-  }
-  AliDebug(4, Form("  Ncl[rowMax = %d] = %d", row, nrow[0]));
-  if(row<0){ 
-    AliDebug(2, Form("WRONG ROW %d.", row));
     SetErrorMsg(kAttachRow);
-    return kFALSE;
+    const Float_t am[]={TMath::Abs(mean[0]), TMath::Abs(mean[1]), TMath::Abs(mean[2])};
+    AliDebug(4, Form("complex row configuration\n"
+      "  r[%d] n[%d] m[%6.3f] s[%6.3f]\n"
+      "  r[%d] n[%d] m[%6.3f] s[%6.3f]\n"
+      "  r[%d] n[%d] m[%6.3f] s[%6.3f]\n"
+      , rowId[0], nrow[0], am[0], syDis[0]
+      , rowId[1], nrow[1], am[1], syDis[1]
+      , rowId[2], nrow[2], am[2], syDis[2]));
+    Int_t id[]={0,1,2}; TMath::Sort(3, am, id, kFALSE);
+    // backup
+    Int_t rnn[3]; memcpy(rnn, nrow, 3*sizeof(Int_t));
+    Int_t rid[3]; memcpy(rid, rowId, 3*sizeof(Int_t));
+    Double_t rm[3]; memcpy(rm, mean, 3*sizeof(Double_t));
+    Double_t rs[3]; memcpy(rs, syDis, 3*sizeof(Double_t));
+    nrow[0]=rnn[id[0]]; rowId[0]=rid[id[0]]; mean[0]=rm[id[0]]; syDis[0]=rs[id[0]];
+    nrow[1]=rnn[id[1]]; rowId[1]=rid[id[1]]; mean[1]=rm[id[1]]; syDis[1]=rs[id[1]];
+    nrow[2]=0;          rowId[2]=-1; mean[2] = 1.e3; syDis[2] = 1.e3;
+    AliDebug(4, Form("solved configuration\n"
+      "  r[%d] n[%d] m[%+6.3f] s[%6.3f]\n"
+      "  r[%d] n[%d] m[%+6.3f] s[%6.3f]\n"
+      "  r[%d] n[%d] m[%+6.3f] s[%6.3f]\n"
+      , rowId[0], nrow[0], mean[0], syDis[0]
+      , rowId[1], nrow[1], mean[1], syDis[1]
+      , rowId[2], nrow[2], mean[2], syDis[2]));
+    nr=2;
+  } else if(nr==2) {
+    SetBit(kRowCross, kTRUE); // mark pad row crossing
+    if(nrow[1] > nrow[0]){ // swap row order
+      Swap(nrow[0],nrow[1]); Swap(rowId[0],rowId[1]);
+      Swap(mean[0],mean[1]); Swap(syDis[0],syDis[1]);
+    }
   }
+
   // Select and store clusters 
   // We should consider here :
   //  1. How far is the chamber boundary
   //  2. How big is the mean
-  Int_t n = 0;
+  Int_t n(0); Float_t dyc[kNclusters]; memset(dyc,0,kNclusters*sizeof(Float_t));
   for (Int_t ir = 0; ir < nr; ir++) {
-    Int_t jr = row + ir*lr; 
-    AliDebug(4, Form("  Ncl[%d] @ R[%d] attaching ...", ncl[jr], jr));
+    Int_t jr(rowId[ir]);
+    AliDebug(4, Form("  Attaching Ncl[%d]=%d ...", jr, ncl[jr]));
     for (Int_t ic = 0; ic < ncl[jr]; ic++) {
       if(!blst[jr][ic])continue;
       c = clst[jr][ic];
-      Int_t it = c->GetPadTime();
-      Int_t idx = it+kNtb*ir;
+      Int_t it(c->GetPadTime());
+      Int_t idx(it+kNtb*ir);
       if(fClusters[idx]){
-        AliDebug(2, Form("Cluster position already allocated tb[%2d] r[%d]. Skip !", it, jr));
+        AliDebug(4, Form("Many cluster candidates on row[%2d] tb[%2d].", jr, it));
+        // TODO should save also the information on where the multiplicity happened and its size
         SetErrorMsg(kAttachMultipleCl);
-        continue;
+        // TODO should also compare with mean and sigma for this row
+        if(yres[jr][ic] > dyc[idx]) continue;
       }
 
       // TODO proper indexing of clusters !!
       fIndexes[idx]  = chamber->GetTB(it)->GetGlobalIndex(idxs[jr][ic]);
       fClusters[idx] = c;
+      dyc[idx]        = yres[jr][ic];
       n++;
     }
-  }  
+  }
   SetN(n);
 
   // number of minimum numbers of clusters expected for the tracklet
   if (GetN() < kClmin){
-    AliDebug(2, Form("NOT ENOUGH CLUSTERS ATTACHED TO THE TRACKLET %d [%d] FROM FOUND [%d].", GetN(), kClmin, n));
+    AliDebug(1, Form("NOT ENOUGH CLUSTERS %d ATTACHED TO THE TRACKLET [min %d] FROM FOUND %d.", GetN(), kClmin, n));
     SetErrorMsg(kAttachClAttach);
     return kFALSE;
   }
