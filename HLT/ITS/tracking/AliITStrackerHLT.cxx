@@ -426,13 +426,13 @@ Int_t AliITStrackerHLT::Clusters2Tracks(AliESDEvent *event) {
   for( int itr=0; itr<event->GetNumberOfTracks(); itr++ ){
 
     AliESDtrack *esdTrack = event->GetTrack(itr);
-    esdTrack->myITS = esdTrack->myTPC;
+    //esdTrack->myITS = esdTrack->myTPC;
     if ((esdTrack->GetStatus()&AliESDtrack::kTPCin)==0) continue;
     //if (esdTrack->GetStatus()&AliESDtrack::kTPCout) continue;
     if (esdTrack->GetStatus()&AliESDtrack::kITSin) continue;
     if (esdTrack->GetKinkIndex(0)>0) continue;   //kink daughter
     
-    AliHLTITSTrack t(esdTrack->myTPC);
+    AliHLTITSTrack t(*esdTrack);
     t.SetTPCtrackId( itr );
     tracksTPC.push_back( t );
   }
@@ -443,7 +443,7 @@ Int_t AliITStrackerHLT::Clusters2Tracks(AliESDEvent *event) {
   for( unsigned int itr=0; itr<fTracks.size(); itr++ ){
     AliHLTITSTrack &t = fTracks[itr];    
     UpdateESDtrack(event->GetTrack(t.TPCtrackId()), &t, AliESDtrack::kITSin);          
-    event->GetTrack(t.TPCtrackId())->myITS = t;
+    //event->GetTrack(t.TPCtrackId())->myITS = t;
   }
  
 
