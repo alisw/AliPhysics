@@ -45,6 +45,8 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     void    SetCMSEnergy(Int_t einc)      { fCMSEnergy = einc; }
     void    SetSigmaReaction(Double_t sig)      { fSigmaReaction = sig; }    
     void    SetSigmaJPsi(Double_t sig)      { fSigmaJPsi = sig; }
+    void    SetSigmaChic1(Double_t sig)      { fSigmaChic1 = sig; }
+    void    SetSigmaChic2(Double_t sig)      { fSigmaChic2 = sig; }
     void    SetSigmaPsiP(Double_t sig)      { fSigmaPsiP = sig; }
     void    SetSigmaUpsilon(Double_t sig)   { fSigmaUpsilon = sig; }
     void    SetSigmaUpsilonP(Double_t sig)  { fSigmaUpsilonP = sig; }
@@ -70,11 +72,13 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     Float_t fMuonOriginCut; //use only muons whose "part->Vz()" value is larger than fMuonOrigin
     Int_t   fNSucceded;// Number of Succes in the (di)-muon generation in the acceptance
     Int_t   fNGenerated;// Number of generated cocktails
-    Double_t fJpsiPol, fPsiPPol, fUpsPol, fUpsPPol, fUpsPPPol;//Resonances polarization parameters
+    Double_t fJpsiPol, fChic1Pol, fChic2Pol, fPsiPPol, fUpsPol, fUpsPPol, fUpsPPPol;//Resonances polarization parameters
     Int_t    fPolFrame;//Resonances polarization frame (Collins-Soper / Helicity)
     Int_t fCMSEnergy; // CMS beam energy
     Double_t fSigmaReaction; //  cross-section pp
     Double_t fSigmaJPsi;      // cross-section JPsi resonance
+    Double_t fSigmaChic1;      // cross-section Chic1 resonance
+    Double_t fSigmaChic2;      // cross-section Chic2 resonance    
     Double_t fSigmaPsiP;      // cross-section Psi-prime resonance
     Double_t fSigmaUpsilon;   // cross-section Upsilon resonance
     Double_t fSigmaUpsilonP;  // cross-section Upsilon-prime resonance
@@ -83,7 +87,7 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     Double_t fSigmaBBbar;     // cross-section correlated beauty
     Bool_t   fSigmaSilent;    // hide values of cross-sections in output
 
-    ClassDef(AliGenMUONCocktailpp,3)  //  cocktail for physics in the Alice
+    ClassDef(AliGenMUONCocktailpp,4)  //  cocktail for physics in the Alice
 };
 
 #endif

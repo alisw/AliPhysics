@@ -2136,6 +2136,8 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	break;
     case kJpsiFamily:
     case kPsiP:
+    case kChic1:
+    case kChic2:
     case kJpsi:
 	if (sname == "Vogt" || sname == "Vogt PbPb") {
 	    func=PtJpsiPbPb;
@@ -2267,12 +2269,6 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
     case kChic0:
 	func=PtChic0;
 	break;
-    case kChic1:
-	func=PtChic1;
-	break;
-    case kChic2:
-	func=PtChic2;
-	break;
     case kChic:
 	func=PtChic;
 	break;
@@ -2303,6 +2299,8 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	break;
     case kJpsiFamily:
     case kPsiP:
+    case kChic1:
+    case kChic2:
     case kJpsi:
 	if (sname == "Vogt" || sname == "Vogt PbPb") {
 	    func=YJpsiPbPb;
@@ -2429,12 +2427,6 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	break;
     case kChic0:
 	func=YChic0;
-	break;
-    case kChic1:
-	func=YChic1;
-	break;
-    case kChic2:
-	func=YChic2;
 	break;
     case kChic:
 	func=YChic;
