@@ -97,15 +97,10 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
   if(!dcsAliasMap) return 1;
 
  	// The Processing of the DCS input data is forwarded to AliVZERODataDCS
-
 	fData->ProcessData(*dcsAliasMap);
-	//fData->Draw(""); 		// Draws the HV values as a function of time
-	//dcsAliasMap->Print("");	// Prints out the HV values
 
-	// Writes VZERO PMs HV values into VZERO calibration object
-	calibData->SetMeanHV(fData->GetMeanHV());
-	calibData->SetWidthHV(fData->GetWidthHV());
-  	calibData->SetDeadMap(fData->GetDeadMap());
+	// Writes VZERO PMs HV values into VZERO calibration object and Timing resolution parameters
+  	calibData->FillDCSData(fData);
 	   
    // *************** From DAQ ******************
    

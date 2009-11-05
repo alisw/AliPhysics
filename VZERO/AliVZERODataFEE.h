@@ -38,7 +38,7 @@ public:
 	
 	TMap * GetParameters() const {return fParameters;};
 	
-	enum { kNCIUBoards = 8, kNCIUParam = 15, kNChannelParam = 8, kNCCIUParam = 19, kNAliases  = kNChannelParam*8*kNCIUBoards +kNCIUParam*kNCIUBoards + kNCCIUParam };
+	enum { kNCIUBoards = 8, kNCIUParam = 13, kNChannelParam = 8, kNCCIUParam = 19, kNAliases  = kNChannelParam*8*kNCIUBoards +kNCIUParam*kNCIUBoards + kNCCIUParam };
 
 private:
 	

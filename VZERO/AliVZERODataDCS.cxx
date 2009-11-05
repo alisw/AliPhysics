@@ -25,6 +25,7 @@
 #include <TTimeStamp.h>
 #include <TMap.h>
 #include <TString.h>
+#include <TObjString.h>
 #include <TH1F.h>
 
 class TH2;
@@ -45,8 +46,10 @@ AliVZERODataDCS::AliVZERODataDCS():
 	fRun(0),
 	fStartTime(0),
 	fEndTime(0),
-        fGraphs("TGraph",kNGraphs),
+    fGraphs("TGraph",kNGraphs),
+	fFEEParameters(NULL),
 	fIsProcessed(kFALSE)
+
 {
   // Default constructor
   for(int i=0;i<kNHvChannel;i++) fDeadChannel[i] = kFALSE;
@@ -58,17 +61,20 @@ AliVZERODataDCS::AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime):
 	fRun(nRun),
 	fStartTime(startTime),
 	fEndTime(endTime),
-        fGraphs("TGraph",kNGraphs),
+	fGraphs("TGraph",kNGraphs),
+	fFEEParameters(new TMap()),
 	fIsProcessed(kFALSE)
+
 {
 
   // constructor with arguments
   	for(int i=0;i<kNHvChannel;i++) fDeadChannel[i] = kFALSE;
 
 	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
-	TTimeStamp(startTime).AsString(),
-	TTimeStamp(endTime).AsString()));
-
+		TTimeStamp(startTime).AsString(),
+		TTimeStamp(endTime).AsString()));
+	
+	fFEEParameters->SetOwnerValue();
 	Init();
 
 }
@@ -78,6 +84,7 @@ AliVZERODataDCS::~AliVZERODataDCS() {
 
   // destructor
   fGraphs.Clear("C");
+  delete fFEEParameters;
 
 }
 
@@ -103,42 +110,47 @@ void AliVZERODataDCS::ProcessData(TMap& aliasMap){
     //Introduce(iAlias, aliasArr);
     
     if(aliasArr->GetEntries()<2){
-      AliError(Form("Alias %s has just %d entries!",
+      AliWarning(Form("Alias %s has just %d entries!",
 		    fAliasNames[iAlias].Data(),aliasArr->GetEntries()));
-      continue;
     }
     
     TIter iterarray(aliasArr);
-    
-    Int_t nentries = aliasArr->GetEntries();
-    
-    Double_t *times = new Double_t[nentries];
-    Double_t *values = new Double_t[nentries];
+	
+    if(iAlias<kNHvChannel){ // Treating HV values
+    	Int_t nentries = aliasArr->GetEntries();
 
-    UInt_t iValue=0;
-    Float_t variation = 0.0;
-    
-    while((aValue = (AliDCSValue*) iterarray.Next())) {
-   		values[iValue] = aValue->GetFloat();
-		if(iValue>0) {
-			if(values[iValue-1]>0.) variation = TMath::Abs(values[iValue]-values[iValue-1])/values[iValue-1];
-			if(variation > 0.10) fDeadChannel[GetOfflineChannel(iAlias)] = kTRUE;
-		}
-   		times[iValue] = (Double_t) (aValue->GetTimeStamp());
-		fHv[iAlias]->Fill(values[iValue]);
-		printf("%s %f Dead=%d\n",fAliasNames[iAlias].Data(),values[iValue],fDeadChannel[GetOfflineChannel(iAlias)]);
-   		iValue++;
-    }      
-    CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs 
-    
-    delete[] values;
-    delete[] times;	      
+    	Double_t *times = new Double_t[nentries];
+    	Double_t *values = new Double_t[nentries];
+
+    	UInt_t iValue=0;
+    	Float_t variation = 0.0;
+
+    	while((aValue = (AliDCSValue*) iterarray.Next())) {
+   			values[iValue] = aValue->GetFloat();
+			if(iValue>0) {
+				if(values[iValue-1]>0.) variation = TMath::Abs(values[iValue]-values[iValue-1])/values[iValue-1];
+				if(variation > 0.10) fDeadChannel[GetOfflineChannel(iAlias)] = kTRUE;
+			}
+   			times[iValue] = (Double_t) (aValue->GetTimeStamp());
+			fHv[iAlias]->Fill(values[iValue]);
+			printf("%s %f Dead=%d\n",fAliasNames[iAlias].Data(),values[iValue],fDeadChannel[GetOfflineChannel(iAlias)]);
+   			iValue++;
+    	}      
+    	CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs 
+
+    	delete[] values;
+    	delete[] times;	
+	} else { // Treating FEE Parameters
+		AliDCSValue * lastVal = NULL;
+		while((aValue = (AliDCSValue*) iterarray.Next())) lastVal = aValue; // Take only the last value
+		fFEEParameters->Add(new TObjString(fAliasNames[iAlias].Data()),lastVal);
+	}      
   }
   
   	// calculate mean and rms of the first two histos
 	// and convert index to aliroot channel
-	for(int i=0;i<kNAliases;i++){
-	        Int_t iChannel     = GetOfflineChannel(i);	
+	for(int i=0;i<kNHvChannel;i++){
+	    Int_t iChannel     = GetOfflineChannel(i);	
 		fMeanHV[iChannel]  = fHv[i]->GetMean();
 		fWidthHV[iChannel] = fHv[i]->GetRMS();
 	}
@@ -168,6 +180,14 @@ void AliVZERODataDCS::Init(){
   		}
   	}
   }
+
+ // Time Resolution Parameters
+	
+	for(int iCIU = 0; iCIU<8 ; iCIU++){
+		fAliasNames[iAlias++] = Form("V00/FEE/CIU%d/TimeResolution",iCIU);
+		fAliasNames[iAlias++] = Form("V00/FEE/CIU%d/WidthResolution",iCIU);
+	}
+
   if(iAlias!=kNAliases) 
   	      AliError(Form("Number of DCS Aliases defined not correct"));
 

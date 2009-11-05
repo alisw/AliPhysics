@@ -8,7 +8,13 @@ man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
 // Setting gain and pedestal values :
 
-AliVZEROCalibData *calibda = new AliVZEROCalibData("Calib");
+AliVZEROCalibData *calibda = new AliVZEROCalibData("VZERO");
+	
+	UShort_t TimeResolution[8] = {0,0,0,0,0,0,0,0};
+	calibda->SetTimeResolution(TimeResolution);
+	
+	UShort_t WidthResolution[8] = {2,2,2,2,2,2,2,2};
+	calibda->SetWidthResolution(WidthResolution);
 
 Float_t Pedestals[128] =  
 { 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0,
@@ -162,7 +168,7 @@ AliCDBId id("VZERO/Calib/Data",0,9999999);
 //set to AliVZEROCalibData by the CDB classes during storage 
 md->SetResponsible("Brigitte Cheynis");
 md->SetBeamPeriod(0);
-md->SetAliRootVersion("October 2009");
+md->SetAliRootVersion("v4-17-Release");
 md->SetComment("Prototype");
 md->PrintMetaData();
 

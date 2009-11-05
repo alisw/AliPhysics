@@ -35,7 +35,6 @@
 #include "AliESDVZEROfriend.h"
 #include "AliVZEROdigit.h"
 #include "AliVZEROCalibData.h"
-#include "AliVZEROTriggerData.h"
 
 ClassImp(AliVZEROReconstructor)
 
@@ -45,7 +44,6 @@ AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
                         fESD(0x0),
                         fESDVZEROfriend(0x0),
                         fCalibData(GetCalibData()),
-                        fTriggerData(GetTriggerData()),
                         fCollisionMode(0),
                         fBeamEnergy(0.)
 {
@@ -122,8 +120,8 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 	 Int_t j       =  rawStream.GetOfflineChannel(i);
 	 Int_t board   = j / 8;
 	 adc[j]        =  ADC_max[i];
-	 time[j]       =  rawStream.GetTime(i)/ (25./256.) * fTriggerData->GetTimeResolution(board);
-	 width[j]      =  rawStream.GetWidth(i) / 0.4 * fTriggerData->GetWidthResolution(board);
+         time[j]       =  rawStream.GetTime(i)/ (25./256.) * fCalibData->GetTimeResolution(board);
+	 width[j]      =  rawStream.GetWidth(i) / 0.4 * fCalibData->GetWidthResolution(board);
 	 BBFlag[j]     =  rawStream.GetBBFlag(i,imax);
 	 BGFlag[j]     =  rawStream.GetBGFlag(i,imax); 
 	 integrator[j] =  rawStream.GetIntegratorFlag(i,imax); 
@@ -378,32 +376,3 @@ AliVZEROCalibData* AliVZEROReconstructor::GetCalibData() const
   return calibdata;
 }
 
-//_____________________________________________________________________________
-AliVZEROTriggerData* AliVZEROReconstructor::GetTriggerData() const
-{
-  // Gets calibration object for VZERO set
-
-  AliCDBManager *man = AliCDBManager::Instance();
-
-  AliCDBEntry *entry=0;
-
-  entry = man->Get("VZERO/Trigger/Data");
-
-//   if(!entry){
-//     AliWarning("Load of calibration data from default storage failed!");
-//     AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
-//     Int_t runNumber = man->GetRun();
-//     entry = man->GetStorage("local://$ALICE_ROOT/OCDB")
-//       ->Get("VZERO/Calib/Data",runNumber);
-// 	
-//   }
-
-  // Retrieval of data in directory VZERO/Calib/Data:
-
-  AliVZEROTriggerData *triggerdata = 0;
-
-  if (entry) triggerdata = (AliVZEROTriggerData*) entry->GetObject();
-  if (!triggerdata)  AliFatal("No trigger data from calibration database !");
-
-  return triggerdata;
-}

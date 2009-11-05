@@ -15,7 +15,7 @@ void VZEROTestPreprocessor()
 
    // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
-  AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 1);
+  AliTestShuttle* shuttle = new AliTestShuttle(12345, 0, 123450);
 
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
@@ -163,8 +163,10 @@ TMap* CreateDCSAliasMap()
 		valueSet->Add(dcsVal);
 		
 		if(aliasName.Contains("HV")) {
-			dcsVal = new AliDCSValue((Float_t) (val+random.Gaus(0,100)), timeStamp+10);
-			valueSet->Add(dcsVal);
+			for(int i=0;i<10;i++){
+				dcsVal = new AliDCSValue((Float_t) (val+random.Gaus(0,10)), timeStamp+10*i);
+				valueSet->Add(dcsVal);
+			}
 		}
 		
 		aliasMap->Add(new TObjString(aliasName), valueSet);

@@ -12,16 +12,20 @@
 
 #include "TNamed.h"
 #include "AliVZERO.h"
+#include "AliVZERODataDCS.h"
 
 class AliVZEROCalibData: public TNamed {
 
  public:
+  enum { kNCIUBoards = 8 };
+  
   AliVZEROCalibData();
   AliVZEROCalibData(const char* name);
   AliVZEROCalibData(const AliVZEROCalibData &calibda);
   AliVZEROCalibData& operator= (const AliVZEROCalibData &calibda);
   virtual ~AliVZEROCalibData();
   void Reset();
+  void FillDCSData(AliVZERODataDCS * data);
 
   Float_t  GetPedestal(Int_t channel)   const {return fPedestal[channel];}
   Float_t* GetPedestal()   const {return (float*)fPedestal;}
@@ -44,6 +48,12 @@ class AliVZEROCalibData: public TNamed {
   Float_t* GetTimeOffset()   const {return (float*)fTimeOffset;}
   Float_t  GetTimeGain(Int_t channel)	const {return fTimeGain[channel];}
   Float_t* GetTimeGain()   const {return (float*)fTimeGain;}
+
+  Float_t* GetTimeResolution() const {return (Float_t*) fTimeResolution;};
+  Float_t  GetTimeResolution(Int_t board ) const  {return (board<kNCIUBoards?fTimeResolution[board]:0);};
+
+  Float_t* GetWidthResolution() const {return (Float_t*) fWidthResolution;};
+  Float_t  GetWidthResolution(Int_t board ) const  {return (board<kNCIUBoards?fWidthResolution[board]:0);};
     
   void     SetPedestal(Float_t val, Int_t channel) {fPedestal[channel]=val;}
   void     SetPedestal(Float_t* Pedestal);
@@ -66,6 +76,12 @@ class AliVZEROCalibData: public TNamed {
   void     SetTimeOffset(Float_t* TimeOffset);
   void     SetTimeGain(Float_t val, Int_t channel) {fTimeGain[channel]=val;}
   void     SetTimeGain(Float_t* TimeGain);
+  
+  void 	   SetParameter(TString name, Float_t val);
+  void     SetTimeResolution(UShort_t *resols);
+  void     SetTimeResolution(UShort_t resol, Int_t board);
+  void     SetWidthResolution(UShort_t *resols);
+  void     SetWidthResolution(UShort_t resol, Int_t board);
 
   Float_t  GetMIPperADC(Int_t channel) const;
 
@@ -81,6 +97,8 @@ class AliVZEROCalibData: public TNamed {
   Float_t  fTimeOffset[64];
   Float_t  fTimeGain[64];
   Bool_t   fDeadChannel[64];
+  Float_t  fTimeResolution[kNCIUBoards]; // Time Resolution of the TDC (ns / channel)
+  Float_t  fWidthResolution[kNCIUBoards]; // Time Width Resolution of the TDC (ns / channel)
 
   ClassDef(AliVZEROCalibData,3)    // VZERO Calibration data
 };

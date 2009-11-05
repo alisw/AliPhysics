@@ -20,7 +20,7 @@ class TH1F;
 
 class AliVZERODataDCS : public TObject {
 public:
-  enum {kNAliases=64,kNGraphs=64,kNHvChannel=64,kNLvChannel=16};
+  enum {kNAliases=80,kNGraphs=64,kNHvChannel=64,kNLvChannel=16,kNCIUBoards = 8};
   enum {kHvMin=0, kHvMax=2000};
   
   AliVZERODataDCS();
@@ -44,7 +44,8 @@ public:
   Float_t* GetMeanHV()    const {return (float*)fMeanHV;}
   Float_t* GetWidthHV()   const {return (float*)fWidthHV;}
   Bool_t * GetDeadMap()   const {return (bool*)fDeadChannel;}
-
+  TMap * GetFEEParameters() const {return fFEEParameters;};
+  
 // Getter of Offline Channel number as used in aliroot (defined by aliroot 
 // numbering convention) from DCS Channel number
 
@@ -78,10 +79,11 @@ private:
   Float_t fMeanHV[kNHvChannel];            // High Voltage mean values
   Float_t fWidthHV[kNHvChannel];           // High Voltage widths
   Bool_t  fDeadChannel[kNHvChannel];       // Dead Map 
-  
+  TMap * fFEEParameters;  // TMap holding the FEE parameters of Time Resolution
+    
   Bool_t fIsProcessed;                   // bool to know processing status
   
-  ClassDef(AliVZERODataDCS, 3);
+  ClassDef(AliVZERODataDCS, 4);
 };
 
 #endif

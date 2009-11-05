@@ -19,7 +19,6 @@
 #include "AliESDVZERO.h"
 
 class AliVZEROCalibData;
-class AliVZEROTriggerData;
 class AliESDEvent;
 class AliESDVZEROfriend;
 
@@ -49,7 +48,6 @@ public:
   void GetCollisionMode();
   
   AliVZEROCalibData *GetCalibData() const; 
-  AliVZEROTriggerData *GetTriggerData() const; 
 
   enum {kInvalidADC   =  -1024,
         kInvalidTime  =  -1};
@@ -64,12 +62,11 @@ private:
   AliVZEROReconstructor& operator = (const AliVZEROReconstructor& reconstructor);
   
   AliVZEROCalibData* fCalibData;      //! calibration data
-  AliVZEROTriggerData* fTriggerData;      //! FEE parameters
 
   Int_t              fCollisionMode;  // =0->p-p, =1->A-A
   Float_t            fBeamEnergy;     // beam energy
     
-  ClassDef(AliVZEROReconstructor, 0)  // class for the VZERO reconstruction
+  ClassDef(AliVZEROReconstructor, 1)  // class for the VZERO reconstruction
 };
 
 #endif

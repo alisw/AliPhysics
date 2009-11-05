@@ -43,12 +43,6 @@ void DBStorageFEE(){
 	
 	UShort_t ResetWin2[N] = {16,16,16,16,16,16,16,16};
 	triggerData->SetResetWin2(ResetWin2);
-	
-	UShort_t TimeResolution[N] = {0,0,0,0,0,0,0,0};
-	triggerData->SetTimeResolution(TimeResolution);
-	
-	UShort_t WidthResolution[N] = {2,2,2,2,2,2,2,2};
-	triggerData->SetWidthResolution(WidthResolution);
 
 	Bool_t PedestalSubtraction[N] = {1,1,1,1,1,1,1,1};
 	triggerData->SetPedestalSubtraction(PedestalSubtraction);
@@ -86,6 +80,7 @@ void DBStorageFEE(){
 		}
 	}
 	
+	for(int i =0;i<5;i++) triggerData->SetTriggerSelected(i, i);
 	
 	// Creation of the object VZERO Trigger Configuration as a MetaData
 	
@@ -99,7 +94,7 @@ void DBStorageFEE(){
 	//set to AliVZEROCalibData by the CDB classes during storage 
 	md->SetResponsible("Brigitte Cheynis");
 	md->SetBeamPeriod(0);
-	md->SetAliRootVersion("January 2009");
+	md->SetAliRootVersion("v4-17-Release");
 	md->SetComment("Prototype");
 	md->PrintMetaData();
 	

@@ -62,8 +62,6 @@ AliVZEROTriggerData::AliVZEROTriggerData() :
 		fLatchWin1[i] = fLatchWin2[i] = 0;
 		fResetWin1[i] = fResetWin2[i] = 0;
 		fPedestalSubtraction[i] = kFALSE;
-		fTimeResolution[i] = 25./256.; // Default time resolution
-		fWidthResolution[i] = 0.4;     // Default time width resolution
 	}
 }
 //________________________________________________________________
@@ -97,10 +95,8 @@ AliVZEROTriggerData::AliVZEROTriggerData(Int_t nRun, UInt_t startTime, UInt_t en
 		fLatchWin1[i] = fLatchWin2[i] = 0;
 		fResetWin1[i] = fResetWin2[i] = 0;
 		fPedestalSubtraction[i] = kFALSE;
-		fTimeResolution[i] = 25./256.; // Default time resolution
-		fWidthResolution[i] = 0.4;     // Default time width resolution
 	}
-	TString namst = "Trigger_FEE";
+	TString namst = "VZERO_Trigger_FEE";
 	SetName(namst.Data());
 	SetTitle(namst.Data());
 	
@@ -157,8 +153,6 @@ void AliVZEROTriggerData::SetParameter(TString name, Float_t val){
 	else if(name.Contains("ResetWin1")) SetResetWin1((UShort_t) val,iBoard-1);
 	else if(name.Contains("ResetWin2")) SetResetWin2((UShort_t) val,iBoard-1);
 	else if(name.Contains("PedestalSubtraction")) SetPedestalSubtraction((Bool_t) val,iBoard-1);
-	else if(name.Contains("TimeResolution")) SetTimeResolution((UShort_t) val,iBoard-1);
-	else if(name.Contains("WidthResolution")) SetWidthResolution((UShort_t) val,iBoard-1);
 	else if(name.Contains("BBAThreshold")) SetBBAThreshold((UShort_t) val);
 	else if(name.Contains("BBCThreshold")) SetBBCThreshold((UShort_t) val);
 	else if(name.Contains("BGAThreshold")) SetBGAThreshold((UShort_t) val);
@@ -483,105 +477,6 @@ void AliVZEROTriggerData::SetPedestalSubtraction(Bool_t ped, Int_t board)
 	// Set Pedestal Subtraction Parameter
 	if((board<kNCIUBoards)) fPedestalSubtraction[board] = ped;
 	else AliError(Form("Board %d is not valid",board));
-}
-//________________________________________________________________
-void AliVZEROTriggerData::SetTimeResolution(UShort_t *resols){
-	// Set Time Resolution of the TDC
-	if(resols)  for(int t=0; t<kNCIUBoards; t++) SetTimeResolution(resols[t],t);
-	else AliFatal("Time Resolution not defined.");
-	
-}
-//________________________________________________________________
-void AliVZEROTriggerData::SetTimeResolution(UShort_t resol, Int_t board)
-{
-	// Set Time Resolution of the TDC
-	if((board<kNCIUBoards)) {
-		switch(resol){
-			case 0:
-				fTimeResolution[board] = 25./256.;
-				break;
-			case 1:
-				fTimeResolution[board] = 25./128.;
-				break;
-			case 2:
-				fTimeResolution[board] = 25./64.;
-				break;
-			case 3:
-				fTimeResolution[board] = 25./32.;
-				break;
-			case 4:
-				fTimeResolution[board] = 25./16.;
-				break;
-			case 5:
-				fTimeResolution[board] = 25./8.;
-				break;
-			case 6:
-				fTimeResolution[board] = 6.25;
-				break;
-			case 7:
-				fTimeResolution[board] = 12.5;
-				break;
-		}
-	} else AliError(Form("Board %d is not valid",board));
-}
-//________________________________________________________________
-void AliVZEROTriggerData::SetWidthResolution(UShort_t *resols){
-	// Set Time Width Resolution of the TDC
-	if(resols)  for(int t=0; t<kNCIUBoards; t++) SetWidthResolution(resols[t],t);
-	else AliFatal("Width Resolution not defined.");
-	
-}
-//________________________________________________________________
-void AliVZEROTriggerData::SetWidthResolution(UShort_t resol, Int_t board)
-{
-	// Set Time Width Resolution of the TDC
-	if((board<kNCIUBoards)){
-		switch(resol){
-			case 0:
-				fWidthResolution[board] = 25./256.;
-				break;
-			case 1:
-				fWidthResolution[board] = 25./128.;
-				break;
-			case 2:
-				fWidthResolution[board] = 25./64.;
-				break;
-			case 3:
-				fWidthResolution[board] = 25./32.;
-				break;
-			case 4:
-				fWidthResolution[board] = 25./16.;
-				break;
-			case 5:
-				fWidthResolution[board] = 25./8.;
-				break;
-			case 6:
-				fWidthResolution[board] = 6.25;
-				break;
-			case 7:
-				fWidthResolution[board] = 12.5;
-				break;
-			case 8:
-				fWidthResolution[board] = 25.;
-				break;
-			case 9:
-				fWidthResolution[board] = 50.;
-				break;
-			case 10:
-				fWidthResolution[board] = 100.;
-				break;
-			case 11:
-				fWidthResolution[board] = 200.;
-				break;
-			case 12:
-				fWidthResolution[board] = 400.;
-				break;
-			case 13:
-				fWidthResolution[board] = 800.;
-				break;
-				
-		}
-	}else AliError(Form("Board %d is not valid",board));
 }
 
 //________________________________________________________________

@@ -96,7 +96,7 @@ void AliVZERODataFEE::Init(){
 	for(int iCIU = 0; iCIU<8 ; iCIU++){
 		for(int iParam=0; iParam<kNCIUParam;iParam++){
 			fAliasNames[iAlias] = "V00/FEE/";
-			fAliasNames[iAlias] += Form("CIU%d/",iCIU+1);
+			fAliasNames[iAlias] += Form("CIU%d/",iCIU);
 			
 			fAliasNames[iAlias] += GetFEEParamName(iParam);
 			iAlias++;
@@ -104,7 +104,7 @@ void AliVZERODataFEE::Init(){
 		for(int iParam=kNCIUParam; iParam<kNCIUParam+kNChannelParam;iParam++){
 			for(int iCh=1;iCh<=8;iCh++){
 				fAliasNames[iAlias] = "V00/FEE/";
-				fAliasNames[iAlias] += Form("CIU%d/",iCIU+1);
+				fAliasNames[iAlias] += Form("CIU%d/",iCIU);
 			
 				fAliasNames[iAlias] += GetFEEParamName(iParam);
 				fAliasNames[iAlias] += Form("%d",iCh);
@@ -147,7 +147,6 @@ void AliVZERODataFEE::ProcessData(TMap& aliasMap){
 		AliDCSValue * lastVal = NULL;
 		while((aValue = (AliDCSValue*) iterarray.Next())) lastVal = aValue; // Take only the last value
 		
-		//AliInfo(Form("%s %f",fAliasNames[iAlias].Data(), val));
 		fParameters->Add(new TObjString(fAliasNames[iAlias].Data()),lastVal);
 		
 	}
@@ -178,16 +177,14 @@ TString AliVZERODataFEE::GetFEEParamName(Int_t iParam){
 		case 10: result = "ResetWin1"; break;
 		case 11: result = "ResetWin2"; break;
 		case 12: result = "PedestalSubtraction"; break;
-		case 13: result = "TimeResolution"; break;
-		case 14: result = "WidthResolution"; break;
-		case 15: result = "EnableCharge"; break;
-		case 16: result = "EnableTiming"; break;
-		case 17: result = "PedEven"; break;
-		case 18: result = "PedOdd"; break;
-		case 19: result = "PedCutEven"; break;
-		case 20: result = "PedCutOdd"; break;
-		case 21: result = "DelayHit"; break;
-		case 22: result = "DiscriThr"; break;
+		case 13: result = "EnableCharge"; break;
+		case 14: result = "EnableTiming"; break;
+		case 15: result = "PedEven"; break;
+		case 16: result = "PedOdd"; break;
+		case 17: result = "PedCutEven"; break;
+		case 18: result = "PedCutOdd"; break;
+		case 19: result = "DelayHit"; break;
+		case 20: result = "DiscriThr"; break;
 	}
 	return result;
 }
