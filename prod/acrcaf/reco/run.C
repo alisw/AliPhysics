@@ -2,14 +2,21 @@ void run(Int_t runNumber, Int_t nev = 10000, Int_t firstev = 0, const char* root
 {
   gEnv->SetValue("XSec.GSI.DelegProxy","2");
   // Select ROOT version
-  if (rootVersion)
+  if (rootVersion) 
     TProof::Mgr("aliprod@alicecaf")->SetROOTVersion(rootVersion);
+    
   // Login to CAF
   TProof::Open("aliprod@alicecaf");
 
   // Enable AliRoot
-  gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-17-Release.rec/AF-v4-17-rec.par");
-  gProof->EnablePackage("AF-v4-17-rec.par");
+  if(strcmp(rootVersion,"ROOT_new") && strcmp(rootVersion,"ROOT_pro")) {
+    cout << "Loading " << rootVersion << endl;
+    gProof->UploadPackage(Form("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-17-Release.rec/%s.par",rootVersion));
+    gProof->EnablePackage(Form("%s.par",rootVersion));
+  } else {
+    gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-17-Release.rec/AF-v4-17-rec.par");
+    gProof->EnablePackage("AF-v4-17-rec.par");
+  }
 
   gSystem->Load("libMonaLisa.so");
   TMonaLisaWriter monalisa("pcalishuttle02.cern.ch",
