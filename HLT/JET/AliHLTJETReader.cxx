@@ -180,9 +180,11 @@ void AliHLTJETReader::ResetEvent() {
   // -- Reset for FastJet algorithms
   // ---------------------------------
   else {
+#ifdef HAVE_FASTJET
     // -- Clear input vector
     if ( fMomentumVector )
       fMomentumVector->clear();
+#endif
   }
 
   return;  
@@ -314,8 +316,10 @@ Bool_t AliHLTJETReader::FillVectorMC() {
     // -- label the particle into Fastjet algortihm
     part.set_user_index( iterStack ); 
 
+#ifdef HAVE_FASTJET
     // -- Add to input_particles vector  
     fMomentumVector->push_back(part);  
+#endif
 
     nTracks++;    
   } // for (Int_t iterStack = 0; iterStack < stack->GetNtrack() && !bResult; iterStack++) {
@@ -356,8 +360,10 @@ Bool_t AliHLTJETReader::FillVectorHLTMC() {
     // -- label the particle into Fastjet algortihm
     part.set_user_index( fHLTMC->GetIndex() ); 
 
+#ifdef HAVE_FASTJET
     // -- Add to input_particles vector  
     fMomentumVector->push_back(part);  
+#endif
 
     nTracks++;    
     
@@ -406,8 +412,10 @@ Bool_t AliHLTJETReader::FillVectorESD() {
     // -- label the particle into Fastjet algortihm
     part.set_user_index( iter ); 
 
+#ifdef HAVE_FASTJET
     // -- Add to input_particles vector  
     fMomentumVector->push_back(part);  
+#endif
 
     nTracks++; 
 
