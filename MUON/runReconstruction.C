@@ -46,7 +46,8 @@ void runReconstruction(int seed, const char* input, const char* recoptions)
   MuonRec->SetRunVertexFinder(kFALSE);
   MuonRec->SetRunLocalReconstruction("MUON");
   MuonRec->SetRunTracking("MUON");
-  MuonRec->SetFillESD("");
+  MuonRec->SetFillESD("HLT");
+  MuonRec->SetOption("HLT", "libAliHLTMUON.so");
   MuonRec->SetLoadAlignData("MUON");
   MuonRec->SetNumberOfEventsPerFile(1000);
   MuonRec->SetOption("MUON",recoptions);

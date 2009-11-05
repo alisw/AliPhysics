@@ -40,13 +40,13 @@ void runSimulation(int seed, int nevents, const char* config)
   AliSimulation MuonSim(config);
   MuonSim.SetSeed(seed);
   MuonSim.SetMakeTrigger("MUON");
-  MuonSim.SetWriteRawData("MUON","raw.root",kTRUE);
+  MuonSim.SetWriteRawData("MUON HLT","raw.root",kTRUE);
 
   MuonSim.SetMakeDigits("MUON");
   MuonSim.SetMakeSDigits("MUON");
   MuonSim.SetMakeDigitsFromHits("");
 
-  MuonSim.SetRunHLT(""); // disable HLT for the time being
+  MuonSim.SetRunHLT("libAliHLTMUON.so chains=dHLT-sim");
 
   MuonSim.SetRunQA("MUON:ALL");
   
