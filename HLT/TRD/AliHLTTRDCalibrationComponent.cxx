@@ -208,7 +208,7 @@ Int_t AliHLTTRDCalibrationComponent::ScanArgument( int argc, const char** argv )
 Int_t AliHLTTRDCalibrationComponent::InitCalibration()
 {
 
-	 if(!fTrgStrings)
+  if(!fTrgStrings)
     fTrgStrings = new TObjArray();
 
   if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
@@ -325,17 +325,17 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
 	if(fAccRejTrg>0){
 	  TriggerPassed=kFALSE;
 	  for(int i = 0; i < fTrgStrings->GetEntriesFast(); i++){
-		const TObjString *const obString=(TObjString*)fTrgStrings->At(i);
-		const TString tString=obString->GetString();
-		//printf("Trigger Output: %i\n",EvaluateCTPTriggerClass(tString.Data(),trigData));
+	    const TObjString *const obString=(TObjString*)fTrgStrings->At(i);
+	    const TString tString=obString->GetString();
+	    //printf("Trigger Output: %i\n",EvaluateCTPTriggerClass(tString.Data(),trigData));
 	    if(EvaluateCTPTriggerClass(tString.Data(),trigData)){TriggerPassed=kTRUE; break;}
 	  }
 	}
 	else{
 	  TriggerPassed=kTRUE;
 	  for(int i = 0; i < fTrgStrings->GetEntriesFast(); i++){
-			const TObjString *const obString=(TObjString*)fTrgStrings->At(i);
-			const TString tString=obString->GetString();
+	    const TObjString *const obString=(TObjString*)fTrgStrings->At(i);
+	    const TString tString=obString->GetString();
 	    if(EvaluateCTPTriggerClass(tString.Data(),trigData)){TriggerPassed=kFALSE; break;}
 	  }
 	}
@@ -358,7 +358,7 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
       if(!fOutArray->At(0))FormOutput(0);
       if(!fDisplayArray->At(0))FormOutput(1);
       if (fNevent%feveryNevent==0 && fOutArray) {
-         PushBack(fDisplayArray, AliHLTTRDDefinitions::fgkCalibrationDataType);
+	PushBack(fDisplayArray, AliHLTTRDDefinitions::fgkCalibrationDataType);
       }
 
       fTracksArray->Delete();
@@ -398,16 +398,16 @@ void AliHLTTRDCalibrationComponent::FormOutput(Int_t param)
   }
   else{
     TH2S *hVdriftLinearFitOne = (TH2S *)(((AliTRDCalibraVdriftLinearFit *)fTRDCalibraFillHisto->GetVdriftLinearFit())->GetLinearFitterHisto(10,kTRUE));	
-  fDisplayArray->Add(hVdriftLinearFitOne);
+    fDisplayArray->Add(hVdriftLinearFitOne);
   }
 
-  HLTDebug("GetCH2d = 0x%x; NEntries = %i; size = %i", hCH2d, hCH2d->GetEntries(), sizeof(hCH2d));
+  HLTDebug("GetCH2d = 0x%x; NEntries = %i; size = %i", hCH2d, hCH2d->GetEntries(), sizeof(*hCH2d));
   hCH2d->Print();
-  HLTDebug("GetPH2d = 0x%x; NEntries = %i; size = %i", hPH2d, hPH2d->GetEntries(), sizeof(hPH2d));
+  HLTDebug("GetPH2d = 0x%x; NEntries = %i; size = %i", hPH2d, hPH2d->GetEntries(), sizeof(*hPH2d));
   hPH2d->Print();
-  HLTDebug("GetPRF2d = 0x%x; NEntries = %i; size = %i", hPRF2d, hPRF2d->GetEntries(), sizeof(hPRF2d));
+  HLTDebug("GetPRF2d = 0x%x; NEntries = %i; size = %i", hPRF2d, hPRF2d->GetEntries(), sizeof(*hPRF2d));
   hPRF2d->Print();
-  //HLTDebug("GetVdriftLinearFit = 0x%x; size = %i", hVdriftLinearFit, sizeof(hVdriftLinearFit)); 
+  //HLTDebug("GetVdriftLinearFit = 0x%x; size = %i", hVdriftLinearFitOne, sizeof(hVdriftLinearFitOne)); 
   
   HLTDebug("output Array: pointer = 0x%x; NEntries = %i; size = %i", fOutArray, fOutArray->GetEntries(), sizeof(fOutArray));
    
@@ -426,20 +426,20 @@ Int_t AliHLTTRDCalibrationComponent::ShipDataToFXS(const AliHLTComponentEventDat
   //fOutArray->Remove(fOutArray->FindObject("PH2d"));
   //fOutArray->Remove(fOutArray->FindObject("CH2d"));
 
-  if(!(fOutArray->FindObject("CH2d"))) {
-    TH2I * ch2d = new TH2I("CH2d","Nz0Nrphi0",100,0.0,300.0,540,0,540);
-    fOutArray->Add(ch2d);
-  }
+  //if(!(fOutArray->FindObject("CH2d"))) {
+  //  TH2I * ch2d = new TH2I("CH2d","Nz0Nrphi0",100,0.0,300.0,540,0,540);
+  //  fOutArray->Add(ch2d);
+  //}
 
-  if(!(fOutArray->FindObject("PH2d"))) {
-    TProfile2D * ph2d = new TProfile2D("PH2d","Nz0Nrphi0",30,-0.05,2.95,540,0,540);
-    fOutArray->Add(ph2d);
-  }
+  //if(!(fOutArray->FindObject("PH2d"))) {
+  //  TProfile2D * ph2d = new TProfile2D("PH2d","Nz0Nrphi0",30,-0.05,2.95,540,0,540);
+  //  fOutArray->Add(ph2d);
+  //}
 
-  if(!(fOutArray->FindObject("PRF2d"))) {
-    TProfile2D * prf2d = new TProfile2D("PRF2d","Nz0Nrphi0Ngp3",60,-9.0,9.0,540,0,540);
-    fOutArray->Add(prf2d);
-  }
+  //if(!(fOutArray->FindObject("PRF2d"))) {
+  //  TProfile2D * prf2d = new TProfile2D("PRF2d","Nz0Nrphi0Ngp3",60,-9.0,9.0,540,0,540);
+  //  fOutArray->Add(prf2d);
+  //}
 
 
   HLTDebug("Size of the fOutArray is %d\n",fOutArray->GetEntriesFast());
@@ -495,7 +495,7 @@ Int_t AliHLTTRDCalibrationComponent::EORCalibration()
   calibra->ResetVectorFit();
 
   // vdrift second method
-  calibra->SetMinEntries(100*20); // If there is less than 20000
+  calibra->SetMinEntries(100); // If there is less than 100
   hVdriftLinearFit->FillPEArray();
   calibra->AnalyseLinearFitters(hVdriftLinearFit);
   nbtg = 540;
@@ -571,8 +571,8 @@ Int_t AliHLTTRDCalibrationComponent::EORCalibration()
   
 
   if(coefgain||coefprf||coefdrift||coeft0||coefdriftsecond) {
-        PushBack(fAfterRunArray, AliHLTTRDDefinitions::fgkEORCalibrationDataType);
-      }
+    PushBack(fAfterRunArray, AliHLTTRDDefinitions::fgkEORCalibrationDataType);
+  }
 
   /*
   TString fileName="$ALIHLT_TOPDIR/build-debug/output/CalibHistoDump_run";
