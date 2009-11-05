@@ -1336,10 +1336,10 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 	}
 
 	if (timestampBeforeSOR == -1){
-		AliWarning("No value found before SOR!");
+		AliWarning("No value found before SOR");
 	}
 	if (timestampAfterEOR == -1){
-		AliWarning("No value found after EOR!");
+		AliWarning("No value found after EOR");
 	}
 
 	AliDebug(2,Form("Number of valid entries (within DCS query interval) = %i, from a total amount of %i entries",iCounts,nCounts));
@@ -1430,7 +1430,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 	AliDebug(2,"Calculating SD wrt Mean and SD wrt Median");
 	if (sdFlag){
 		for (Int_t i =0; i< nentriesUsed; i++){
-			AliInfo(Form("Entry %d: value = %f, weight = %f",i,arrayValues[i],arrayWeights[i]));
+			AliDebug(2,Form("Entry %d: value = %f, weight = %f",i,arrayValues[i],arrayWeights[i]));
 			temp += (arrayValues[i]-parameters[2])*(arrayValues[i]-parameters[2]);
 			temp1 += arrayWeights[i]*(arrayValues[i]-parameters[0])*(arrayValues[i]-parameters[0]);
 			sumweights += arrayWeights[i];
@@ -1461,11 +1461,15 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 	if (truncMeanFlag){
 		AliDebug(2,"Calculating Truncated Mean");
 		for (Int_t i =0; i< nentriesUsed; i++){
+			AliDebug(2,Form("Entry %d: value = %f, weight = %f",i,arrayValues[i],arrayWeights[i]));
 			if ((arrayValues[i]<=parameters[0]+3*parameters[3]) && (arrayValues[i]>=parameters[0]-3*parameters[3])){
-				AliDebug(2,Form("Entry %d: value = %f, weight = %f",i,arrayValues[i],arrayWeights[i]));
+				arrayValuesTruncMean[entriesTruncMean]=arrayValues[i];
+				arrayWeightsTruncMean[entriesTruncMean]=arrayWeights[i];
+				AliDebug(2,Form("For Truncated Mean: Entry %d: value = %f, weight = %f",entriesTruncMean,arrayValuesTruncMean[entriesTruncMean],arrayWeightsTruncMean[entriesTruncMean]));
 				entriesTruncMean++;			
-				arrayValuesTruncMean[i]=arrayValues[i];
-				arrayWeightsTruncMean[i]=arrayWeights[i];
+			}
+			else{
+				AliDebug(2,"Discarding entry");
 			}
 		}
 		// setting truncated mean 
