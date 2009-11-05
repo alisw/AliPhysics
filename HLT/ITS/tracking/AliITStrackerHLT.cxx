@@ -86,6 +86,7 @@ AliITStrackerHLT::AliITStrackerHLT()
    fDebugStreamer(0),
    fITSChannelStatus(0),
    fTracks(),
+   fITSOutTracks(),
    fLoadTime(0),
    fRecoTime(0),
    fNEvents(0),
@@ -109,6 +110,7 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
   fDebugStreamer(0),
   fITSChannelStatus(0),
   fTracks(),
+  fITSOutTracks(),
   fLoadTime(0),
    fRecoTime(0),
   fNEvents(0),
@@ -225,6 +227,7 @@ AliITStrackerHLT::AliITStrackerHLT(const AliITStrackerHLT &tracker)
  fDebugStreamer(tracker.fDebugStreamer),
  fITSChannelStatus(tracker.fITSChannelStatus),
  fTracks(),
+ fITSOutTracks(),
   fLoadTime(0),
    fRecoTime(0),
  fNEvents(0),
@@ -371,6 +374,7 @@ void AliITStrackerHLT::Reconstruct( std::vector<AliExternalTrackParam> tracksTPC
 
   Double_t pimass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
   fTracks.clear();
+  fITSOutTracks.clear();
 
   for( unsigned int itr=0; itr<tracksTPC.size(); itr++ ){
 
@@ -402,6 +406,12 @@ void AliITStrackerHLT::Reconstruct( std::vector<AliExternalTrackParam> tracksTPC
    
     TransportToX(t, 0 );
     fTracks.push_back( *t );  
+    if(  nclu>0 ){ // construct ITSOut track
+      AliHLTITSTrack tOut(*t);
+      if( FitOutward( &tOut ) ){
+	fITSOutTracks.push_back( *t );  	
+      }
+    }
   }
 
   timer.Stop();
@@ -573,6 +583,41 @@ void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track )
     track->SetClusterIndex(track->GetNumberOfClusters(), (ilayer<<28)+bestIdx);
     track->SetNumberOfClusters(track->GetNumberOfClusters()+1);  
   }
+}
+
+
+
+Int_t AliITStrackerHLT::FitOutward(AliHLTITSTrack * track ) 
+{
+
+  track->ResetCovariance(100);
+
+  for (Int_t iTrCl=track->GetNumberOfClusters()-1; iTrCl>=0; iTrCl--) {
+    
+    Int_t index = track->GetClusterIndex(iTrCl);
+    Int_t ilayer=(index & 0xf0000000) >> 28;
+    Int_t ic=(index & 0x0fffffff) >> 00;
+    const AliHLTITSLayer &layer=fLayers[ilayer];
+    AliITSRecPoint *cl = layer.GetCluster(ic); 
+    int idet = cl->GetDetectorIndex();
+    const AliHLTITSDetector &det=layer.GetDetector( idet );
+ 
+    // material between SSD and SDD, SDD and SPD
+    //if (ilayer==4 && !CorrectForShieldMaterial(track,1)) continue;
+    //if (ilayer==2 && !CorrectForShieldMaterial(track,0)) continue;
+    
+
+    // propagate to the intersection with the detector plane     
+    {
+      if (!TransportToPhiX( track, det.GetPhi(), det.GetR()+ cl->GetX() ) ) return 0;
+      CorrectForLayerMaterial(track,ilayer);
+    }
+
+    Double_t par[2]={ cl->GetY(), cl->GetZ()};
+    Double_t cov[3]={ cl->GetSigmaY2(), 0., cl->GetSigmaZ2()};
+    if( !track->AliExternalTrackParam::Update(par,cov) ) return 0;    
+  }
+  return 1;
 }
 
 

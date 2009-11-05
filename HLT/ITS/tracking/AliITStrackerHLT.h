@@ -33,6 +33,7 @@ public:
   void Reconstruct( std::vector<AliExternalTrackParam> tracksTPC );
 
   std::vector< AliHLTITSTrack > &Tracks(){ return fTracks;}
+  std::vector< AliHLTITSTrack > &ITSOutTracks(){ return fITSOutTracks;}
 
   Bool_t TransportToX( AliExternalTrackParam *t, double x ) const;
   Bool_t TransportToPhiX( AliExternalTrackParam *t, double phi, double x ) const;
@@ -64,6 +65,7 @@ public:
   AliHLTITSDetector & GetDetector(Int_t layer, Int_t n) const {return GetLayer(layer).GetDetector(n); }
  
   void FollowProlongationTree(AliHLTITSTrack * otrack);
+  Int_t FitOutward(AliHLTITSTrack * track );
 
   void Init();
 
@@ -111,7 +113,8 @@ protected:
 
   TTreeSRedirector *fDebugStreamer;      //!debug streamer
   AliITSChannelStatus *fITSChannelStatus;//! bitmaps with channel status for SPD and SDD
-  std::vector< AliHLTITSTrack > fTracks;
+  std::vector< AliHLTITSTrack > fTracks; // array of its-updated tracks
+  std::vector< AliHLTITSTrack > fITSOutTracks; // array of tracks, fitted outward with ITS only
 
   double fLoadTime;
   double fRecoTime;

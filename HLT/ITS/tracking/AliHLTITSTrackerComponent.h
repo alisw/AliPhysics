@@ -91,6 +91,9 @@ class AliHLTITSTrackerComponent : public AliHLTProcessor
     /** @see component interface @ref AliHLTComponent::GetOutputDataType */
     AliHLTComponentDataType GetOutputDataType() ;
 
+    /** @see component interface @ref AliHLTComponent::GetOutputDataType */
+    int  GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
+
     /** @see component interface @ref AliHLTComponent::GetOutputDataSize */
     virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) ;
 

@@ -120,14 +120,23 @@ void AliHLTITSTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
 AliHLTComponentDataType AliHLTITSTrackerComponent::GetOutputDataType()
 {
   // see header file for class documentation  
-  return kAliHLTDataTypeTrack|kAliHLTDataOriginITS;
+  return kAliHLTMultipleDataType;
+}
+
+int AliHLTITSTrackerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
+{
+  // see header file for class documentation  
+  tgtList.clear();
+  tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
+  tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut);
+  return tgtList.size();
 }
 
 void AliHLTITSTrackerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
   // define guess for the output data size
   constBase = 200;       // minimum size
-  inputMultiplier = 0.5; // size relative to input
+  inputMultiplier = 1.; // size relative to input
 }
 
 AliHLTComponent* AliHLTITSTrackerComponent::Spawn()
@@ -417,64 +426,71 @@ int AliHLTITSTrackerComponent::DoEvent
   // Fill output tracks
   int nITSUpdated = 0;
   {
-    unsigned int mySize = 0;    
-     
-    AliHLTTracksData* outPtr = ( AliHLTTracksData* )( outputPtr );
-
-    AliHLTExternalTrackParam* currOutTrack = outPtr->fTracklets;
-
-    mySize =   ( ( AliHLTUInt8_t * )currOutTrack ) -  ( ( AliHLTUInt8_t * )outputPtr );
-
-    outPtr->fCount = 0;
     
-    int nTracks = fTracker->Tracks().size();
+    for( int iOut=0; iOut<=1; iOut++ ){
 
-    for ( int itr = 0; itr < nTracks; itr++ ) {
+      unsigned int blockSize = 0;
 
-      const AliExternalTrackParam &tp = fTracker->Tracks()[itr];      
-      int id =  tracksTPCId[fTracker->Tracks()[itr].TPCtrackId()];
+      AliHLTTracksData* outPtr = ( AliHLTTracksData* )( outputPtr + size );
+      AliHLTExternalTrackParam* currOutTrack = outPtr->fTracklets;
+
+      blockSize =   ( ( AliHLTUInt8_t * )currOutTrack ) -  ( ( AliHLTUInt8_t * )outPtr );
+
+      outPtr->fCount = 0;
       
-      int nClusters = 0;
-      if( fTracker->Tracks()[itr].GetNumberOfClusters()>0 ) nITSUpdated++;
+      std::vector< AliHLTITSTrack > &tracks = (iOut==0)?fTracker->Tracks() :fTracker->ITSOutTracks();
 
-      unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + nClusters * sizeof( unsigned int );
-
-      if ( mySize + dSize > maxBufferSize ) {
-        HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d tracks are not stored", maxBufferSize, mySize, nTracks - itr + 1 );
-        iResult = -ENOSPC;
-        break;
+      int nTracks = tracks.size();
+      
+      for ( int itr = 0; itr < nTracks; itr++ ) {
+	AliHLTITSTrack &t = tracks[itr];
+	int id =  tracksTPCId[t.TPCtrackId()];      
+	int nClusters = t.GetNumberOfClusters();
+	if( iOut==0 && nClusters>0 ) nITSUpdated++;
+	
+	unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + nClusters * sizeof( unsigned int );
+	
+	if ( size + blockSize + dSize > maxBufferSize ) {
+	  HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d tracks are not stored", maxBufferSize, size + blockSize + dSize, nTracks - itr + 1 );
+	  iResult = -ENOSPC;
+	  break;
+	}
+	
+	currOutTrack->fAlpha = t.GetAlpha();
+	currOutTrack->fX = t.GetX();
+	currOutTrack->fY = t.GetY();
+	currOutTrack->fZ = t.GetZ();            
+	currOutTrack->fLastX = 0;
+	currOutTrack->fLastY = 0;
+	currOutTrack->fLastZ = 0;      
+	currOutTrack->fq1Pt = t.GetSigned1Pt();
+	currOutTrack->fSinPsi = t.GetSnp();
+	currOutTrack->fTgl = t.GetTgl();
+	for( int i=0; i<15; i++ ) currOutTrack->fC[i] = t.GetCovariance()[i];
+	currOutTrack->fTrackID = id;
+	currOutTrack->fFlags = 0;
+	currOutTrack->fNPoints = nClusters;    
+	for ( int i = 0; i < nClusters; i++ ) currOutTrack->fPointIDs[i] = t.GetClusterIndex( i );
+	currOutTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currOutTrack) + dSize );
+	blockSize += dSize;
+	outPtr->fCount++;
       }
-
-      currOutTrack->fAlpha = tp.GetAlpha();
-      currOutTrack->fX = tp.GetX();
-      currOutTrack->fY = tp.GetY();
-      currOutTrack->fZ = tp.GetZ();            
-      currOutTrack->fLastX = 0;
-      currOutTrack->fLastY = 0;
-      currOutTrack->fLastZ = 0;      
-      currOutTrack->fq1Pt = tp.GetSigned1Pt();
-      currOutTrack->fSinPsi = tp.GetSnp();
-      currOutTrack->fTgl = tp.GetTgl();
-      for( int i=0; i<15; i++ ) currOutTrack->fC[i] = tp.GetCovariance()[i];
-      currOutTrack->fTrackID = id;
-      currOutTrack->fFlags = 0;
-      currOutTrack->fNPoints = nClusters;    
-      currOutTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currOutTrack) + dSize );
-      mySize += dSize;
-      outPtr->fCount++;
-    }
   
 
-    AliHLTComponentBlockData resultData;
-    FillBlockData( resultData );
-    resultData.fOffset = 0;
-    resultData.fSize = mySize;
-    resultData.fDataType = kAliHLTDataTypeTrack|kAliHLTDataOriginITS;
-    outputBlocks.push_back( resultData );
-    size = resultData.fSize;  
-    
+      AliHLTComponentBlockData resultData;
+      FillBlockData( resultData );
+      resultData.fOffset = 0;
+      resultData.fSize = blockSize;
+      if( iOut==0 ){
+	resultData.fDataType = kAliHLTDataTypeTrack|kAliHLTDataOriginITS;
+      } else {
+	resultData.fDataType = kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut;
+      }
+      outputBlocks.push_back( resultData );
+      size += resultData.fSize;       
+    }  
   }
-
+  
   timer.Stop();
   fFullTime += timer.RealTime();
   fRecoTime += timerReco.RealTime();

@@ -238,6 +238,9 @@ const char kAliHLTDataOriginTRD[kAliHLTComponentDataTypefOriginSize]     = {'T',
 /** ITS */
 const char kAliHLTDataOriginITS[kAliHLTComponentDataTypefOriginSize]     = {'I','T','S',' '};
 
+/** ITSOut */
+const char kAliHLTDataOriginITSOut[kAliHLTComponentDataTypefOriginSize]     = {'I','T','S','O'};
+
 /** ITS-SPD */
 const char kAliHLTDataOriginITSSPD[kAliHLTComponentDataTypefOriginSize]  = {'I','S','P','D'};
 

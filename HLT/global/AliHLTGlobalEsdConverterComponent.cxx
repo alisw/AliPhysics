@@ -393,16 +393,35 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  ncl++;
 	}
 	//tITS.SetNumberOfClusters( ncl );
+	element->SetNumberOfClusters(0);
 	int tpcID=element->TrackID();
 	// the ITS tracker assigns the TPC track used as seed for a certain track to
 	// the trackID
 	if( tpcID<0 || tpcID>=pESD->GetNumberOfTracks()) continue;
-
 	AliESDtrack *tESD = pESD->GetTrack( tpcID );
 	if( tESD ) tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSin );
       }
     }
   }
+
+  // now update ESD tracks with the ITSOut info
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut);
+       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    vector<AliHLTGlobalBarrelTrack> tracks;
+    if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
+      for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
+	   element!=tracks.end(); element++) {
+	element->SetNumberOfClusters(0);
+	int tpcID=element->TrackID();
+	// the ITS tracker assigns the TPC track used as seed for a certain track to
+	// the trackID
+	if( tpcID<0 || tpcID>=pESD->GetNumberOfTracks()) continue;
+	AliESDtrack *tESD = pESD->GetTrack( tpcID );
+	if( tESD ) tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSout );
+      }
+    }
+  }
+
 
   // convert the HLT TRD tracks to ESD tracks                        
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
