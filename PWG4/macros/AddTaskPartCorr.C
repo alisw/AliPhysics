@@ -48,7 +48,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   reader->SetPHOSPtMin(0.2);
   reader->SetCTSPtMin(0.2);
   if(kPrintSettings) reader->Print("");
-  
+	
+  //Needed line, do not clear standard output AODs, we are not writing there
+  reader->SwitchOnWriteStdAOD();
+	
   // ##### Analysis algorithm settings ####
 
   // --------------------
@@ -71,7 +74,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   qa->SetCalorimeter(calorimeter);
   if(kUseKinematics && inputDataType!="AOD") qa->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else  qa->SwitchOffDataMC() ;
-  qa->AddToHistogramsName(Form("AnaCaloQA_%s",calorimeter.Data()));
+  //qa->AddToHistogramsName(Form("AnaCaloQA_%s",calorimeter.Data()));
+  qa->AddToHistogramsName("AnaCaloQA_");
   qa->SetFidutialCut(fidCut);
   qa->SwitchOnFidutialCut();
   if(kPrintSettings) qa->Print("");	
@@ -213,10 +217,14 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
   char name[128];
   sprintf(name,"PartCorr_%s",calorimeter.Data());
-cout<<"Name of task "<<name<<endl;
-  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form(name),TList::Class(),
-							   AliAnalysisManager::kOutputContainer, Form("PartCorr_%s.root",calorimeter.Data()));
+  cout<<"Name of task "<<name<<endl;
+  //AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form(name),TList::Class(),
+  	//					   AliAnalysisManager::kOutputContainer, Form("PartCorr_%s.root",calorimeter.Data()));
   
+  TString outputfile = AliAnalysisManager::GetCommonFileName(); 
+  //  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form("PartCorr_%s",calorimeter.Data()),  TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PartCorr_%s",outputfile.Data(),calorimeter.Data()));
+  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(calorimeter.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PartCorr",outputfile.Data()));
+
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
