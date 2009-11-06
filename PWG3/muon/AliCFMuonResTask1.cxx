@@ -149,7 +149,7 @@ void AliCFMuonResTask1::UserExec(Option_t *)
 //// MC
 //////// 
 
-  fCFManager->SetEventInfo(fMCEvent);
+  fCFManager->SetMCEventInfo(fMCEvent);  
   AliStack* stack = fMCEvent->Stack();
 
   // loop on the MC event
