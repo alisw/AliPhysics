@@ -24,7 +24,7 @@ class TEvePointSet;
 
 #endif
 
-TEvePointSet* hmpid_clusters(TEveElement* cont=0, Float_t maxR=1000)
+TEvePointSet* hmpid_clusters(TEveElement* cont=0)
 {
   const Int_t nCh=7;
   TClonesArray *cl[nCh] = {0,0,0,0,0,0,0};
@@ -63,17 +63,13 @@ TEvePointSet* hmpid_clusters(TEveElement* cont=0, Float_t maxR=1000)
     TClonesArray *arr=cl[i];
     Int_t ncl=arr->GetEntriesFast();
 
-    Float_t maxRsqr = maxR*maxR;
     while (ncl--) {
       AliCluster3D *c=(AliCluster3D*)arr->UncheckedAt(ncl);
       Float_t g[3]; //global coordinates
       c->GetGlobalXYZ(g);
-      if (g[0]*g[0]+g[1]*g[1] < maxRsqr)
-      {
-	clusters->SetNextPoint(g[0], g[1], g[2]);
-	AliCluster3D *atp = new AliCluster3D(*c);
-	clusters->SetPointId(atp);
-      }
+      clusters->SetNextPoint(g[0], g[1], g[2]);
+      AliCluster3D *atp = new AliCluster3D(*c);
+      clusters->SetPointId(atp);
     }
   }
 

@@ -20,7 +20,7 @@ void geom_hmpid()
     //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
     //PH TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(Form("HMPID_%d", i));
     char form[1000];
-    sprintf(form, "HMPID_%d", i);
+    sprintf(form, "Hmp%d_0", i);
     TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(form);
 
     TEveGeoTopNode* re = new TEveGeoTopNode(gGeoManager, node);
