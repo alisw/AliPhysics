@@ -145,7 +145,7 @@ void anaPartCorrJetAn(Int_t mode=mLocal, TString configName = "ConfigAnalysisGam
       GetAverageXsection(chainxs, xsection, ntrials);
       
       AliAnaScale * scale = new AliAnaScale("scale") ;
-      scale->Set(xsection/ntrials/kNumberOfEventsPerFile/nfiles) ;
+      scale->Set(xsection/ntrials/nfiles) ;
       scale->MakeSumw2(kFALSE);
       scale->SetDebugLevel(2);
       mgr->AddTask(scale);
@@ -214,6 +214,7 @@ void  LoadLibraries(const anaModes mode) {
     //gSystem->Load("libANALYSISalice");
     //gSystem->Load("libJETAN");
     //gSystem->Load("libPHOSUtils");
+	//gSystem->Load("libEMCALUtils");
     //gSystem->Load("libPWG4PartCorrBase");
     //gSystem->Load("libPWG4PartCorrDep");
 	
@@ -226,8 +227,8 @@ void  LoadLibraries(const anaModes mode) {
     SetupPar("ANALYSIS");
     SetupPar("ANALYSISalice");
     SetupPar("JETAN");
-    //If your analysis needs PHOS geometry uncomment following lines
-//      SetupPar("PHOSUtils");
+	SetupPar("PHOSUtils");
+	SetupPar("EMCALUtils");
 //      //Create Geometry
 //    TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
     SetupPar("PWG4PartCorrBase");
@@ -269,8 +270,11 @@ void  LoadLibraries(const anaModes mode) {
     gProof->UploadPackage("JETAN.par");
     gProof->EnablePackage("JETAN");
     // Enable PHOSUtils
-    //gProof->UploadPackage("PHOSUtils.par");
-    //gProof->EnablePackage("PHOSUtils");
+    gProof->UploadPackage("PHOSUtils.par");
+    gProof->EnablePackage("PHOSUtils");
+	// Enable PHOSUtils
+	gProof->UploadPackage("EMCALUtils.par");
+	gProof->EnablePackage("EMCALUtils");
     // Enable PartCorr analysis
     gProof->UploadPackage("PWG4PartCorrBase.par");
     gProof->EnablePackage("PWG4PartCorrBase");

@@ -131,7 +131,7 @@ void ana(Int_t mode=mLocal, TString configName = "ConfigAnalysisPhoton")
       GetAverageXsection(chainxs, xsection, ntrials);
       
       AliAnaScale * scale = new AliAnaScale("scale") ;
-      scale->Set(xsection/ntrials/kNumberOfEventsPerFile/nfiles) ;
+      scale->Set(xsection/ntrials/nfiles) ;
       scale->MakeSumw2(kFALSE);//If you want histograms with error bars set to kTRUE
       //scale->SetDebugLevel(2);
       mgr->AddTask(scale);
@@ -188,6 +188,7 @@ void  LoadLibraries(const anaModes mode) {
     //gSystem->Load("libANALYSIS");
     //gSystem->Load("libANALYSISalice");
     //gSystem->Load("libPHOSUtils");
+	//gSystem->Load("libEMCALUtils");
     //gSystem->Load("libPWG4PartCorrBase");
     //gSystem->Load("libPWG4PartCorrDep");
 	
@@ -199,9 +200,9 @@ void  LoadLibraries(const anaModes mode) {
     SetupPar("AOD");
     SetupPar("ANALYSIS");
     SetupPar("ANALYSISalice");
-//If your analysis needs PHOS geometry uncomment following lines
-//	SetupPar("PHOSUtils");
-//	//Create Geometry
+	SetupPar("PHOSUtils");
+	SetupPar("EMCALUtils");
+	  //	//Create Geometry
 //    TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
      SetupPar("PWG4PartCorrBase");
      SetupPar("PWG4PartCorrDep");
@@ -237,8 +238,11 @@ void  LoadLibraries(const anaModes mode) {
     gProof->UploadPackage("ANALYSIS.par");
     gProof->EnablePackage("ANALYSIS");
 	// Enable the PHOS geometry Package
-    //gProof->UploadPackage("PHOSUtils.par");
-    //gProof->EnablePackage("PHOSUtils");
+    gProof->UploadPackage("PHOSUtils.par");
+    gProof->EnablePackage("PHOSUtils");
+	// Enable the PHOS geometry Package
+	gProof->UploadPackage("EMCALUtils.par");
+	gProof->EnablePackage("EMCALUtils");	  
     // Enable PartCorr analysis
     gProof->UploadPackage("PWG4PartCorrBase.par");
     gProof->EnablePackage("PWG4PartCorrBase");
