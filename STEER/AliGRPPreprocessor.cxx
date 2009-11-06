@@ -58,7 +58,7 @@ class AliShuttleInterface;
 #include <AliTriggerConfiguration.h>
 #include <AliCTPTimeParams.h>
 
-const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required
+const Double_t kFitFraction = -1.;                 // Fraction of DCS sensor fits required
 
 ClassImp(AliGRPPreprocessor)
 
@@ -973,52 +973,89 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 	AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap);
 	//dcsSensorArray->Print();
 	if( fPressure->NumFits()<kNumSensors ) {
-		Log(Form("Problem with the pressure sensor values! Not all the %d pressure sensors have been fit",kNumSensors));
+		Log(Form("Check the pressure sensor values! Not all the %d pressure sensors have been fit",kNumSensors));
 	} 
+	Log(Form("Number of fits performed = %d",fPressure->NumFits()));
+
+	AliInfo(Form("==========CavernAtmosPressure==========="));
+	indexDP = kCavernAtmosPressure;
+	AliDCSSensor* sensorCavernP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
+	TGraph* graph = sensorCavernP2->GetGraph();
+	AliDebug(2,Form("graph = %p",graph));
+	AliDebug(3,Form("sensorCavernP2 = %p", sensorCavernP2));
+	if(((sensorCavernP2->GetFit()) || (GetEndTimeDCSQuery() - GetStartTimeDCSQuery() < 60)) && graph) {
+		if (sensorCavernP2->GetFit()){
+			Log(Form("Fit for Sensor %s found",fgkDCSDataPoints[indexDP]));
+		}
+		else {
+			Log(Form("Fit for sensor %s not found, but the query to the DCS archive lasted less than 60s and we have entries for the sensor - NOT going into error",fgkDCSDataPoints[indexDP]));
+		}
+		grpObj->SetCavernAtmosPressure(sensorCavernP2);
+		nEnvEntries++;
+	} 
+	//if (sensorP2) delete sensorP2;
 	else {
-		Log(Form("Number of fits performed = %d",fPressure->NumFits()));
-		AliInfo(Form("==========CavernAtmosPressure==========="));
-		indexDP = kCavernAtmosPressure;
-		AliDCSSensor* sensorCavernP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
-		AliDebug(2,Form("sensorCavernP2 = %p", sensorCavernP2));
-		if( sensorCavernP2->GetFit() ) {
-			Log(Form("Fit for Sensor %s found",fgkDCSDataPoints[indexDP]));
-			grpObj->SetCavernAtmosPressure(sensorCavernP2);
-			nEnvEntries++;
-		} 
-		//if (sensorP2) delete sensorP2;
-		else {
-			Log(Form("ERROR Sensor Fit for %s not found ", fgkDCSDataPoints[indexDP] ));
+		if (!graph){
+			Log(Form("ERROR!!! No graph found for Sensor %s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
 		}
-		AliInfo(Form("==========SurfaceAtmosPressure==========="));
-		indexDP = kSurfaceAtmosPressure;
-		AliDCSSensor* sensorP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
-		AliDebug(2,Form("sensorP2 = %p", sensorP2));
-		if( sensorP2->GetFit() ) {
-			Log(Form("Fit for Sendor %s found",fgkDCSDataPoints[indexDP]));
-			grpObj->SetSurfaceAtmosPressure(sensorP2);
-			nEnvEntries++;
-		} 
-		//if (sensorP2) delete sensorP2;
-		else {
-			Log(Form("ERROR Sensor Fit for %s not found ", fgkDCSDataPoints[indexDP] ));
+		else{
+			Log(Form("ERROR!!! Fit for %s not found for a run lasting more than 60s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
 		}
-		AliInfo(Form("==========CavernAtmosPressure2==========="));
-		indexDP = kCavernAtmosPressure2;
-		AliDCSSensor* sensorCavernP22 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
-		AliDebug(2,Form("sensorCavernP2_2 = %p", sensorCavernP22));
-		if( sensorCavernP22->GetFit() ) {
-			Log(Form("Fit for Sensor %s found",fgkDCSDataPoints[indexDP]));
-			grpObj->SetCavernAtmosPressure2(sensorCavernP22);
-			nEnvEntries++;
-		} 
-		//if (sensorP2) delete sensorP2;
-		else {
-			Log(Form("ERROR Sensor Fit for %s not found ", fgkDCSDataPoints[indexDP] ));
-		}
-		
 	}
 
+	AliInfo(Form("==========SurfaceAtmosPressure==========="));
+	indexDP = kSurfaceAtmosPressure;
+	AliDCSSensor* sensorP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
+	graph = sensorP2->GetGraph();
+	AliDebug(2,Form("graph = %p",graph));	
+	AliDebug(3,Form("sensorP2 = %p", sensorP2));
+	if(((sensorP2->GetFit()) || (GetEndTimeDCSQuery() - GetStartTimeDCSQuery() < 60)) && graph) {
+		if (sensorP2->GetFit()){
+			Log(Form("Fit for Sendor %s found",fgkDCSDataPoints[indexDP]));
+		}
+		else {
+			Log(Form("Fit for sensor %s not found, but the query to the DCS archive lasted less than 60s and we have entries for the sensor - NOT going into error",fgkDCSDataPoints[indexDP]));
+		}
+		grpObj->SetSurfaceAtmosPressure(sensorP2);
+		nEnvEntries++;
+	} 
+	//if (sensorP2) delete sensorP2;
+	else {
+		if (!graph){
+			Log(Form("ERROR!!! No graph found for Sensor %s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
+		}
+		else {
+			Log(Form("ERROR!!! Fit for %s not found for a run lasting more than 60s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
+		}
+	}
+
+	AliInfo(Form("==========CavernAtmosPressure2==========="));
+	indexDP = kCavernAtmosPressure2;
+	AliDCSSensor* sensorCavernP22 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
+	graph = sensorP2->GetGraph();
+	AliDebug(2,Form("graph = %p",graph));	
+	AliDebug(3,Form("sensorCavernP2_2 = %p", sensorCavernP22));
+	if(((sensorCavernP22->GetFit()) || (GetEndTimeDCSQuery() - GetStartTimeDCSQuery() < 60)) && graph) {
+		if (sensorCavernP22->GetFit()){
+			Log(Form("Fit for Sensor %s found",fgkDCSDataPoints[indexDP]));
+		}
+		else {
+			Log(Form("Fit for sensor %s not found, but the query to the DCS archive lasted less than 60s and we have entries for the sensor - NOT going into error",fgkDCSDataPoints[indexDP]));
+		}
+		grpObj->SetCavernAtmosPressure2(sensorCavernP22);
+		nEnvEntries++;
+	} 
+	//if (sensorP2) delete sensorP2;
+	else {
+		if (!graph){
+			Log(Form("ERROR!!! No graph found for Sensor %s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
+		}
+		else {
+			Log(Form("ERROR!!! Fit for %s not found for a run lasting more than 60s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
+		}
+	}
+	
+	
 	return nEnvEntries;
 }
 //_______________________________________________________________
@@ -1891,6 +1928,7 @@ AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap)
 	
 	TMap *map = fPressure->ExtractDCS(dcsAliasMap);
 	if (map) {
+		AliDebug(2,Form("Map has %d entries",map->GetEntries()));
 		fPressure->MakeSplineFit(map);
 		Double_t fitFraction = fPressure->NumFits()/fPressure->NumSensors(); 
 		if (fitFraction > kFitFraction ) {
