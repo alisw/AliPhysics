@@ -40,6 +40,11 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   /** destructor */
   ~AliHLTGlobalBarrelTrack();
 
+  /// inherited from AliKalmanTrack
+  Int_t GetClusterIndex(Int_t i) const { 
+    return (i<fPoints.size()) ?fPoints[i] :0;
+  } 
+
   /// Get the x position of the last assigned point
   Double_t GetLastPointX() const {return fLastX;}
   /// Get the y position of the last assigned point
@@ -75,10 +80,7 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
  protected:
 
  private:
-  /// inherited from AliKalmanTrack, dummy implementation
-  virtual Int_t GetClusterIndex(Int_t) const { 
-    return -1;
-  } 
+
   /// inherited from AliKalmanTrack, dummy implementation
   virtual Double_t GetPIDsignal() const {
     return 0.;
