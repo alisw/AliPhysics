@@ -370,6 +370,9 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  * \li -object-compression=level     <br>
  *      compression level for ROOT objects, default is defined by
  *      @ref ALIHLTCOMPONENT_DEFAULT_OBJECT_COMPRESSION
+ * \li -pushback-period=period     <br>
+ *      scale down for PushBack of objects, shipped only for one event
+ *      every <i>period</i> seconds
  *
  * @ingroup alihlt_component
  * @section alihltcomponent-members Class members
@@ -1180,6 +1183,9 @@ class AliHLTComponent : public AliHLTLogging {
    * Insert an object into the output.
    * If header is specified, it will be inserted before the root object,
    * default is no header.
+   * The publishing can be downscaled by means of the -pushback-period
+   * parameter. This is especially useful for histograms which do not
+   * need to be sent for every event.
    * @param pObject     pointer to root object
    * @param dt          data type of the object
    * @param spec        data specification
@@ -1195,6 +1201,9 @@ class AliHLTComponent : public AliHLTLogging {
    * Insert an object into the output.
    * If header is specified, it will be inserted before the root object,
    * default is no header.
+   * The publishing can be downscaled by means of the -pushback-period
+   * parameter. This is especially useful for histograms which do not
+   * need to be sent for every event.
    * @param pObject     pointer to root object
    * @param dtID        data type ID of the object
    * @param dtOrigin    data type origin of the object
@@ -1701,6 +1710,11 @@ class AliHLTComponent : public AliHLTLogging {
  /**  array of trigger class descriptors */
   AliHLTCTPData* fpCTPData;                                        //! transient
 
-  ClassDef(AliHLTComponent, 12)
+  /// update period for PushBack calls
+  int fPushbackPeriod;                                             //! transient
+  /// time of last executed PushBack
+  int fLastPushBackTime;                                           //! transient
+
+  ClassDef(AliHLTComponent, 13)
 };
 #endif

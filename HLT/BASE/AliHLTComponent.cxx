@@ -94,6 +94,8 @@ AliHLTComponent::AliHLTComponent()
   fCompressionLevel(ALIHLTCOMPONENT_DEFAULT_OBJECT_COMPRESSION)
   , fLastObjectSize(0)
   , fpCTPData(NULL)
+  , fPushbackPeriod(0)
+  , fLastPushBackTime(-1)
 {
   // see header file for class documentation
   // or
@@ -183,6 +185,9 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
   if (comenv) {
     SetComponentEnvironment(comenv, environParam);
   }
+  fPushbackPeriod=0;
+  fLastPushBackTime=-1;
+
   fComponentArgs="";
   const char** pArguments=NULL;
   int iNofChildArgs=0;
@@ -224,6 +229,14 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
 	    }
 	  } else {
 	    HLTError("wrong parameter for argument -object-compression, number expected");
+	  }
+	  // -pushback-period=
+	} else if (argument.BeginsWith("-pushback-period=")) {
+	  argument.ReplaceAll("-pushback-period=", "");
+	  if (argument.IsDigit()) {
+	    fPushbackPeriod=argument.Atoi();
+	  } else {
+	    HLTError("wrong parameter for argument -pushback-period, number expected");
 	  }
 	} else {
 	  pArguments[iNofChildArgs++]=argv[i];
@@ -1217,6 +1230,11 @@ int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& d
   ALIHLTCOMPONENT_BASE_STOPWATCH();
   int iResult=0;
   fLastObjectSize=0;
+  if (fPushbackPeriod>0) {
+    // suppress the output
+    TDatime time;
+    if (fLastPushBackTime<0 || (int)time.Get()-fLastPushBackTime<fPushbackPeriod) return 0;
+  }
   if (pObject) {
     AliHLTMessage msg(kMESS_OBJECT);
     msg.SetCompressionLevel(fCompressionLevel);
@@ -1272,6 +1290,12 @@ int AliHLTComponent::PushBack(const void* pBuffer, int iSize, const AliHLTCompon
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
+  if (fPushbackPeriod>0) {
+    // suppress the output
+    TDatime time;
+    if (fLastPushBackTime<0 || (int)time.Get()-fLastPushBackTime<fPushbackPeriod) return 0;
+  }
+
   return InsertOutputBlock(pBuffer, iSize, dt, spec, pHeader, headerSize);
 }
 
@@ -1687,6 +1711,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
       }
     }
     if (indexEOREvent>=0) {
+      fLastPushBackTime=0; // always send at EOR
       bAddComponentTableEntry=true;
       if (fpRunDesc!=NULL) {
 	if (fpRunDesc) {
@@ -1830,6 +1855,16 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 
   // reset the active triggers
   if (fpCTPData) fpCTPData->SetTriggers(0);
+
+  // set the time for the pushback period
+  if (fPushbackPeriod>0) {
+    // suppress the output
+    TDatime time;
+    if (fLastPushBackTime<0 || (int)time.Get()-fLastPushBackTime>=fPushbackPeriod) {
+      fLastPushBackTime=time.Get();
+    }
+  }
+
   return iResult;
 }
 
