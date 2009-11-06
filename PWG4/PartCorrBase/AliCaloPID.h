@@ -37,9 +37,7 @@ class TTask;
 //--- AliRoot system ---
 class AliAODCaloCluster;
 class AliAODPWG4Particle;
-#ifdef __EMCALUTIL__
 class AliEMCALPIDUtils;
-#endif
 
 class AliCaloPID : public TObject {
 	
@@ -150,13 +148,11 @@ class AliCaloPID : public TObject {
 	
   Bool_t fRecalculateBayesian; // Recalculate PID bayesian or use simple PID?
   Int_t  fParticleFlux;        // Particle flux for setting PID parameters
-#ifdef __EMCALUTIL__
-	AliEMCALPIDUtils * fEMCALPIDUtils; //Pointer to EMCALPID to redo the PID Bayesian calculation
-#endif
+  AliEMCALPIDUtils * fEMCALPIDUtils; //Pointer to EMCALPID to redo the PID Bayesian calculation
 	
 	
   ClassDef(AliCaloPID,4)
-    } ;
+} ;
 
 
 #endif //ALICALOPID_H

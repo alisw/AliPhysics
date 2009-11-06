@@ -127,7 +127,7 @@ void anaExampleTask(Int_t mode=mLocal)
       GetAverageXsection(chainxs, xsection, ntrials);
       
       AliAnaScale * scale = new AliAnaScale("scale") ;
-      scale->Set(xsection/ntrials/kNumberOfEventsPerFile/nfiles) ;
+      scale->Set(xsection/ntrials/nfiles) ;
       scale->MakeSumw2(kFALSE);//If you want histograms with error bars set to kTRUE
       //scale->SetDebugLevel(2);
       mgr->AddTask(scale);
@@ -183,6 +183,8 @@ void  LoadLibraries(const anaModes mode) {
     //gSystem->Load("libAOD");
     //gSystem->Load("libANALYSIS");
     //gSystem->Load("libANALYSISalice");
+	//gSystem->Load("libPHOSUtils");
+	//gSystem->Load("libEMCALUtils");	  
     //gSystem->Load("libPWG4PartCorrBase");
 	//gSystem->Load("libPWG4PartCorrDep");
 
@@ -194,6 +196,8 @@ void  LoadLibraries(const anaModes mode) {
     SetupPar("AOD");
     SetupPar("ANALYSIS");
     SetupPar("ANALYSISalice");
+    SetupPar("PHOSUtils");
+	SetupPar("EMCALUtils");
     SetupPar("PWG4PartCorrBase");
     SetupPar("PWG4PartCorrDep");
   }
@@ -220,6 +224,12 @@ void  LoadLibraries(const anaModes mode) {
     // Enable the Analysis Package
     gProof->UploadPackage("ANALYSIS.par");
     gProof->EnablePackage("ANALYSIS");
+	// Enable the PHOSUtils Package
+	gProof->UploadPackage("PHOSUtils.par");
+	gProof->EnablePackage("PHOSUtils");
+	// Enable the EMCALUtils Package
+	gProof->UploadPackage("EMCALUtils.par");
+	gProof->EnablePackage("EMCALUtils");
     // Enable PartCorr analysis
     gProof->UploadPackage("PWG4PartCorrBase.par");
     gProof->EnablePackage("PWG4PartCorrBase");
