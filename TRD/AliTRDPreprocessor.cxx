@@ -127,7 +127,8 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
       } 
       // DAQ if HLT failed
       if(!fVdriftHLT) {
-	if(ExtractDriftVelocityDAQ()) return 1; // for testing!
+	//if(ExtractDriftVelocityDAQ()) return 1; 
+	ExtractDriftVelocityDAQ(); // for testing!
       }
     }
   }
