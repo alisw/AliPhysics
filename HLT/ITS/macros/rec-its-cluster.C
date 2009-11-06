@@ -49,12 +49,17 @@ void rec_its_cluster(const char* input="./", char* opt="All")
   // init the HLT system in order to define the analysis chain below
   //
   AliHLTSystem* gHLT=AliHLTPluginBase::GetInstance();
+  int verbosity=1; // 1 higher verbosity, 0 reduced output
  
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
   // Setting up which output to give
   //
-  TString option="libAliHLTUtil.so libAliHLTRCU.so libAliHLTITS.so libAliHLTSample.so loglevel=0x7c chains=";
+  TString option;
+  option+="libAliHLTUtil.so libAliHLTRCU.so libAliHLTITS.so libAliHLTSample.so ";
+  option+="loglevel=";
+  option+=verbosity>0?"0x7c":"0x79";
+  option+=" chains=";
   Bool_t runspd=kFALSE, runsdd=kFALSE, runssd=kFALSE;
   TString allArgs=opt;
   TString argument;
@@ -107,7 +112,7 @@ void rec_its_cluster(const char* input="./", char* opt="All")
     for(ddlno=minddl;ddlno<=maxddl;ddlno++){  
       TString arg, publisher, cf;
       
-      arg.Form("-minid %d -datatype 'DDL_RAW ' 'ISPD ' -dataspec 0x%08x -verbose",ddlno, spec);
+      arg.Form("-minid %d -datatype 'DDL_RAW ' 'ISPD ' -dataspec 0x%08x %s",ddlno, spec, (verbosity>0?" -verbose":""));
       publisher.Form("DP_%d", ddlno);
       AliHLTConfiguration pubconf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
       
@@ -129,7 +134,7 @@ void rec_its_cluster(const char* input="./", char* opt="All")
     for(ddlno=minddl;ddlno<=maxddl;ddlno++){  
       TString arg, publisher, cf;
       
-      arg.Form("-minid %d -datatype 'DDL_RAW ' 'ISDD ' -dataspec 0x%08x -verbose",ddlno, spec); 
+      arg.Form("-minid %d -datatype 'DDL_RAW ' 'ISDD ' -dataspec 0x%08x %s",ddlno, spec, (verbosity>0?" -verbose":"")); 
       publisher.Form("DP_%d", ddlno);
       AliHLTConfiguration pubconf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
       
@@ -151,7 +156,7 @@ void rec_its_cluster(const char* input="./", char* opt="All")
     for(ddlno=minddl;ddlno<=maxddl;ddlno++){  
       TString arg, publisher, cf;
       
-      arg.Form("-minid %d -datatype 'DDL_RAW ' 'ISSD ' -dataspec 0x%08x -verbose",ddlno, spec);
+      arg.Form("-minid %d -datatype 'DDL_RAW ' 'ISSD ' -dataspec 0x%08x %s",ddlno, spec, (verbosity>0?" -verbose":""));
       publisher.Form("DP_%d", ddlno);
       AliHLTConfiguration pubconf(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
       
@@ -165,7 +170,7 @@ void rec_its_cluster(const char* input="./", char* opt="All")
     }
   }
 
-  AliHLTConfiguration cfconf("clusterHisto","ITSClusterHisto",dummyInput.Data(),"");
+  AliHLTConfiguration cfconf("clusterHisto","ITSClusterHisto",dummyInput.Data(),"-pushback-period=10");
   AliHLTConfiguration fwconf("histFile","ROOTFileWriter", "clusterHisto","-datafile ClusterHisto -concatenate-events -overwrite");
 
   option+="histFile";
