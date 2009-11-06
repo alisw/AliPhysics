@@ -82,8 +82,7 @@ AliITStrackerHLT::AliITStrackerHLT()
    fEsd(0),
    fUseTGeo(2),
    fxOverX0Pipe(-1.),
-   fxTimesRhoPipe(-1.),
-   fDebugStreamer(0),
+   fxTimesRhoPipe(-1.), 
    fITSChannelStatus(0),
    fTracks(),
    fITSOutTracks(),
@@ -107,7 +106,6 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
   fUseTGeo(2),
   fxOverX0Pipe(-1.),
   fxTimesRhoPipe(-1.),
-  fDebugStreamer(0),
   fITSChannelStatus(0),
   fTracks(),
   fITSOutTracks(),
@@ -212,7 +210,6 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
   for(Int_t i=0;i<2;i++) {fxOverX0Shield[i]=-1.;fxTimesRhoShield[i]=-1.;}
   for(Int_t i=0;i<6;i++) {fxOverX0Layer[i]=-1.;fxTimesRhoLayer[i]=-1.;}
   
-  fDebugStreamer = new TTreeSRedirector("ITSdebug.root");
   Init();
 }
 //------------------------------------------------------------------------
@@ -223,8 +220,7 @@ AliITStrackerHLT::AliITStrackerHLT(const AliITStrackerHLT &tracker)
  fEsd(tracker.fEsd),
  fUseTGeo(tracker.fUseTGeo),
  fxOverX0Pipe(tracker.fxOverX0Pipe),
- fxTimesRhoPipe(tracker.fxTimesRhoPipe),
- fDebugStreamer(tracker.fDebugStreamer),
+ fxTimesRhoPipe(tracker.fxTimesRhoPipe), 
  fITSChannelStatus(tracker.fITSChannelStatus),
  fTracks(),
  fITSOutTracks(),
@@ -261,10 +257,6 @@ AliITStrackerHLT::~AliITStrackerHLT()
   //
   //destructor
   //
-  if (fDebugStreamer) {
-    //fDebugStreamer->Close();
-    delete fDebugStreamer;
-  }
   if(fITSChannelStatus) delete fITSChannelStatus;
   delete [] fLayers;
 }

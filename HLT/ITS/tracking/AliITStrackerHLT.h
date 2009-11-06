@@ -57,7 +57,6 @@ public:
   Int_t RefitInward(AliESDEvent *event);
   
 
-  TTreeSRedirector *GetDebugStreamer() {return fDebugStreamer;}
   static Int_t CorrectForTPCtoITSDeadZoneMaterial(AliHLTITSTrack *t);
 
 
@@ -111,7 +110,6 @@ protected:
   Float_t fxOverX0Layer[6];              // material budget
   Float_t fxTimesRhoLayer[6];            // material budget
 
-  TTreeSRedirector *fDebugStreamer;      //!debug streamer
   AliITSChannelStatus *fITSChannelStatus;//! bitmaps with channel status for SPD and SDD
   std::vector< AliHLTITSTrack > fTracks; // array of its-updated tracks
   std::vector< AliHLTITSTrack > fITSOutTracks; // array of tracks, fitted outward with ITS only
