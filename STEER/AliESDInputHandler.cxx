@@ -311,3 +311,94 @@ Int_t AliESDInputHandler::GetNEventRejectedInFile()
 
   return iRej;
 }
+Bool_t AliESDInputHandler::GetCutSummaryForChain(Int_t *aTotal, Int_t *aAccepted, Int_t *aRejected)
+{
+  // Get number of events in the full chain
+  // Count accepted and rejected events
+  // return kFALSE if no info is available
+  if (!fTagCutSumm) {
+    TList *luo = fTree->GetUserInfo();
+    if (!luo) {
+      AliInfo(Form("No user info in input tree - no tag cut summary\n"));
+      return kFALSE;
+    }
+    for (int iluo=0; iluo<luo->GetEntries(); iluo++) {
+      fTagCutSumm = dynamic_cast<TMap *>(luo->At(iluo));
+      if (fTagCutSumm) break;
+    }
+    if (!fTagCutSumm) {
+      AliInfo(Form("No tag summary map in input tree\n"));
+      return kFALSE;
+    }
+  }
+  
+  TMapIter *tIter = new TMapIter(fTagCutSumm);
+  
+  Int_t iTotList=0, iAccList=0, iRejList=0;
+
+  TObject *cobj;
+  while (cobj = tIter->Next()) {
+    TObjString *kstr = (TObjString *) cobj;
+    TObjString *vstr = (TObjString *) fTagCutSumm->GetValue(kstr->GetString().Data());
+    //    printf("Got object value %s %s\n", kstr->GetString().Data(), vstr->GetString().Data());
+    char *iTagInfo;
+    iTagInfo = strdup(vstr->GetString().Data());
+    
+    Int_t iAcc = atoi(strtok(iTagInfo, ","));
+    Int_t iRej = atoi(strtok(NULL, ","));
+    
+    iAccList += iAcc;
+    iRejList += iRej;
+    iTotList += (iAcc+iRej);
+  }
+
+  *aTotal = iTotList;
+  *aAccepted = iAccList;
+  *aRejected = iRejList;
+
+  return kTRUE;
+}
+
+Int_t AliESDInputHandler::GetNFilesEmpty()
+{
+  // Count number of files in which all events were de-selected
+  // For such files Notify() will NOT be called
+  // return -1 if no info is available
+  if (!fTagCutSumm) {
+    TList *luo = fTree->GetUserInfo();
+    if (!luo) {
+      AliInfo(Form("No user info in input tree - no tag cut summary\n"));
+      return -1;
+    }
+    for (int iluo=0; iluo<luo->GetEntries(); iluo++) {
+      fTagCutSumm = dynamic_cast<TMap *>(luo->At(iluo));
+      if (fTagCutSumm) break;
+    }
+    if (!fTagCutSumm) {
+      AliInfo(Form("No tag summary map in input tree\n"));
+      return -1;
+    }
+  }
+  
+  TMapIter *tIter = new TMapIter(fTagCutSumm);
+  
+  Int_t iFilesEmpty = 0;
+
+  TObject *cobj;
+  while (cobj = tIter->Next()) {
+    TObjString *kstr = (TObjString *) cobj;
+    TObjString *vstr = (TObjString *) fTagCutSumm->GetValue(kstr->GetString().Data());
+    //    printf("Got object value %s %s\n", kstr->GetString().Data(), vstr->GetString().Data());
+    char *iTagInfo;
+    iTagInfo = strdup(vstr->GetString().Data());
+    
+    Int_t iAcc = atoi(strtok(iTagInfo, ","));
+    Int_t iRej = atoi(strtok(NULL, ","));
+    
+    if ((iAcc == 0) && ((iRej+iAcc)>0))
+      iFilesEmpty++;
+  }
+
+  return iFilesEmpty;
+  
+}

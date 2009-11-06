@@ -444,19 +444,28 @@ void AliXMLCollection::ParseXML() {
 	TObjString *oturl = new TObjString(xml.GetAttr(xfile,"turl"));
 	TObjString *olfn  = new TObjString(xml.GetAttr(xfile,"lfn"));
 	TObjString *oguid = new TObjString(xml.GetAttr(xfile,"guid"));
-	TObjString *oevlist = new TObjString(xml.GetAttr(xfile, "evlist"));
+
+	TObjString *oevlist;
+	if (xml.GetAttr(xfile, "evlist"))
+	  oevlist = new TObjString(xml.GetAttr(xfile, "evlist"));
+	else
+	  oevlist = 0;
+
 	TObjString *otagsumm;
 	if (xml.GetAttr(xfile, "cutsumm"))
 	  otagsumm = new TObjString(xml.GetAttr(xfile, "cutsumm"));
 	else 
 	  otagsumm = 0;
-	Info("ParseXML","Collection: %s - turl: %s eventlist: %s",
-	     fXmlFile.Data(),oturl->GetName(),oevlist->GetName());
-	if (strcmp(oevlist->GetName(),"") != 0) {
+
+	if (oevlist) {
+	  Info("ParseXML","Collection: %s - turl: %s eventlist: %s",
+	       fXmlFile.Data(),oturl->GetName(),oevlist->GetName());
 	  TEntryList *xmlevlist = new TEntryList(oturl->GetName(), oguid->GetName());
-	  TString stringevlist = oevlist->GetName();
-	  TObjArray *evlist = stringevlist.Tokenize(",");
-	  for (Int_t n = 0; n < evlist->GetEntries(); n++)  xmlevlist->Enter(atol(((TObjString *) evlist->At(n))->GetName()));
+	  if (strcmp(oevlist->GetName(),"") != 0) {
+	    TString stringevlist = oevlist->GetName();
+	    TObjArray *evlist = stringevlist.Tokenize(",");
+	    for (Int_t n = 0; n < evlist->GetEntries(); n++)  xmlevlist->Enter(atol(((TObjString *) evlist->At(n))->GetName()));
+	  }
 	  attributes->Add(new TObjString("evlist"), xmlevlist);
 	}
 	

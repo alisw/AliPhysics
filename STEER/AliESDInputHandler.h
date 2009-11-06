@@ -35,6 +35,8 @@ class AliESDInputHandler : public AliInputEventHandler {
     // Tag cut summary analysis
     Int_t                GetNEventAcceptedInFile();
     Int_t                GetNEventRejectedInFile();
+    Bool_t               GetCutSummaryForChain(Int_t *aTotal, Int_t *aAccepted, Int_t *aRejected);
+    Int_t                GetNFilesEmpty();
     // HLT analysis
     AliESDEvent         *GetHLTEvent()     const {return fHLTEvent;}
     TTree               *GetHLTTree()      const {return fHLTTree;}    
