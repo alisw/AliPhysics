@@ -44,6 +44,7 @@ class AliFlowAnalysisWithQCumulants{
   virtual void InitializeArraysForIntFlow();
   virtual void InitializeArraysForDiffFlow();
   virtual void InitializeArraysForDistributions();
+  virtual void InitializeArraysForNestedLoops();
   // 1.) method Init() and methods called within Init():
   virtual void Init();
     virtual void AccessConstants();
@@ -73,21 +74,24 @@ class AliFlowAnalysisWithQCumulants{
     // ...  
     virtual void CalculateIntFlowCorrelationsUsingParticleWeights();
     virtual void CalculateWeightedQProductsForIntFlow();
-    virtual void EvaluateNestedLoopsForIntegratedFlow(AliFlowEventSimple* anEvent); 
+    virtual void EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* anEvent); 
+    virtual void EvaluateIntFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent); 
+    virtual void EvaluateIntFlowCorrectionsForNUAWithNestedLoops(AliFlowEventSimple* anEvent);  
     // 2c.) differential flow:
-    virtual void CalculateDiffFlowCorrelations1D(TString type, TString ptOrEta); // type = RP or POI
-    virtual void CalculateDiffFlowCorrelationsUsingParticleWeights1D(TString type, TString ptOrEta); // type = RP or POI 
+    virtual void CalculateDiffFlowCorrelations(TString type, TString ptOrEta); // type = RP or POI
+    virtual void CalculateDiffFlowCorrelationsUsingParticleWeights(TString type, TString ptOrEta); // type = RP or POI 
     virtual void CalculateDiffFlowProductOfCorrelations(TString type, TString ptOrEta); // type = RP or POI
     virtual void CalculateDiffFlowSumOfEventWeights(TString type, TString ptOrEta); // type = RP or POI
     virtual void CalculateDiffFlowSumOfProductOfEventWeights(TString type, TString ptOrEta); // type = RP or POI
     virtual void CalculateDiffFlowCorrectionsForNUASinTerms(TString type, TString ptOrEta);  
     virtual void CalculateDiffFlowCorrectionsForNUACosTerms(TString type, TString ptOrEta);
     // ...
-    virtual void CalculateCorrelationsForDifferentialFlow2D(TString type); // type = RP or POI
+    //virtual void CalculateCorrelationsForDifferentialFlow2D(TString type); // type = RP or POI
     //virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms(TString type); // type = RP or POI  
     //virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowSinTerms(TString type); // type = RP or POI
-    virtual void CalculateWeightedCorrelationsForDifferentialFlow2D(TString type); 
-    virtual void EvaluateNestedLoopsForDifferentialFlow(AliFlowEventSimple* anEvent);
+    virtual void EvaluateDiffFlowCorrelationsWithNestedLoops(AliFlowEventSimple* anEvent, TString type, TString ptOrEta);
+    virtual void EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent, TString type, TString ptOrEta); 
+    virtual void EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoops(AliFlowEventSimple* anEvent, TString type, TString ptOrEta);
   // 3.) method Finish() and methods called within Finish():
   virtual void Finish();
     // 3a.) integrated flow:
@@ -104,7 +108,9 @@ class AliFlowAnalysisWithQCumulants{
     //virtual void ApplyCorrectionForNonUniformAcceptanceToCumulantsForIntFlow(Bool_t useParticleWeights, TString eventWeights); 
     //virtual void PrintQuantifyingCorrectionsForNonUniformAcceptance(Bool_t useParticleWeights, TString eventWeights);
     virtual void PrintFinalResultsForIntegratedFlow(TString type);
-    virtual void CompareResultsFromNestedLoopsAndFromQVectorsForIntFlow(Bool_t useParticleWeights);
+    virtual void CrossCheckIntFlowCorrelations();
+    virtual void CrossCheckIntFlowExtraCorrelations(); // extra correlations which appear only when particle weights are used
+    virtual void CrossCheckIntFlowCorrectionTermsForNUA(); 
     // 3b.) differential flow:
     virtual void FinalizeReducedCorrelations(TString type, TString ptOrEta);
     virtual void CalculateDiffFlowCovariances(TString type, TString ptOrEta); 
@@ -114,9 +120,9 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateDiffFlowCumulantsCorrectedForNUA(TString type, TString ptOrEta);   
     virtual void CalculateDiffFlowCorrectedForNUA(TString type, TString ptOrEta); 
     virtual void CalculateFinalResultsForRPandPOIIntegratedFlow(TString type); // to be improved (add also possibility to integrate over eta yield)
-    virtual void FillCommonHistResultsDiffFlow(TString type);
-    
-    virtual void CompareResultsFromNestedLoopsAndFromQVectorsForDiffFlow(Bool_t useParticleWeights); 
+    virtual void FillCommonHistResultsDiffFlow(TString type);   
+    virtual void CrossCheckDiffFlowCorrelations(TString type, TString ptOrEta); 
+    virtual void CrossCheckDiffFlowCorrectionTermsForNUA(TString type, TString ptOrEta); 
         
     // to be improved (removed):
     //virtual void FinalizeCorrelationsForDiffFlow(TString type, Bool_t useParticleWeights, TString eventWeights); 
@@ -194,6 +200,8 @@ class AliFlowAnalysisWithQCumulants{
   TProfile* GetIntFlowCorrelationsPro() const {return this->fIntFlowCorrelationsPro;};
   void SetIntFlowCorrelationsAllPro(TProfile* const intFlowCorrelationsAllPro) {this->fIntFlowCorrelationsAllPro = intFlowCorrelationsAllPro;};
   TProfile* GetIntFlowCorrelationsAllPro() const {return this->fIntFlowCorrelationsAllPro;};  
+  void SetIntFlowExtraCorrelationsPro(TProfile* const intFlowExtraCorrelationsPro) {this->fIntFlowExtraCorrelationsPro = intFlowExtraCorrelationsPro;};
+  TProfile* GetIntFlowExtraCorrelationsPro() const {return this->fIntFlowExtraCorrelationsPro;};  
   void SetIntFlowProductOfCorrelationsPro(TProfile* const intFlowProductOfCorrelationsPro) {this->fIntFlowProductOfCorrelationsPro = intFlowProductOfCorrelationsPro;};
   TProfile* GetIntFlowProductOfCorrelationsPro() const {return this->fIntFlowProductOfCorrelationsPro;};  
   void SetIntFlowCorrectionTermsForNUAPro(TProfile* const ifctfnp, Int_t sc) {this->fIntFlowCorrectionTermsForNUAPro[sc] = ifctfnp;};
@@ -259,37 +267,29 @@ class AliFlowAnalysisWithQCumulants{
   // x.) debugging and cross-checking:
   void SetNestedLoopsList(TList* nllist) {this->fNestedLoopsList = nllist;};
   TList* GetNestedLoopsList() const {return this->fNestedLoopsList;}; 
-  void SetEvaluateNestedLoopsForIntFlow(Bool_t const enlfif) {this->fEvaluateNestedLoopsForIntFlow = enlfif;};
-  Bool_t GetEvaluateNestedLoopsForIntFlow() const {return this->fEvaluateNestedLoopsForIntFlow;};
-  void SetEvaluateNestedLoopsForDiffFlow(Bool_t const enlfdf) {this->fEvaluateNestedLoopsForDiffFlow = enlfdf;};
-  Bool_t GetEvaluateNestedLoopsForDiffFlow() const {return this->fEvaluateNestedLoopsForDiffFlow;};
+  void SetEvaluateIntFlowNestedLoops(Bool_t const eifnl) {this->fEvaluateIntFlowNestedLoops = eifnl;};
+  Bool_t GetEvaluateIntFlowNestedLoops() const {return this->fEvaluateIntFlowNestedLoops;};
+  void SetEvaluateDiffFlowNestedLoops(Bool_t const edfnl) {this->fEvaluateDiffFlowNestedLoops = edfnl;};
+  Bool_t GetEvaluateDiffFlowNestedLoops() const {return this->fEvaluateDiffFlowNestedLoops;};  
+  void SetMaxAllowedMultiplicity(Int_t const maxAllowedMultiplicity) {this->fMaxAllowedMultiplicity = maxAllowedMultiplicity;};
+  Int_t GetMaxAllowedMultiplicity() const {return this->fMaxAllowedMultiplicity;};
   void SetEvaluateNestedLoops(TProfile* const enl) {this->fEvaluateNestedLoops = enl;};
-  TProfile* GetEvaluateNestedLoops() const {return this->fEvaluateNestedLoops;};
-  void SetDirectCorrelations(TProfile* const dc) {this->fDirectCorrelations = dc;};
-  TProfile* GetDirectCorrelations() const {return this->fDirectCorrelations;};
-  void SetDirectCorrectionsCos(TProfile* const dcc) {this->fDirectCorrectionsCos = dcc;};
-  TProfile* GetDirectCorrectionsCos() const {return this->fDirectCorrectionsCos;};
-  void SetDirectCorrectionsSin(TProfile* const dcs) {this->fDirectCorrectionsSin = dcs;};
-  TProfile* GetDirectCorrectionsSin() const {return this->fDirectCorrectionsSin;};
-  void SetDirectCorrelationsDiffFlow(TProfile* const dcdf) {this->fDirectCorrelationsDiffFlow = dcdf;};
-  TProfile* GetDirectCorrelationsDiffFlow() const {return this->fDirectCorrelationsDiffFlow;};
-  void SetDirectCorrectionsDiffFlowCos(TProfile* const dcdfc) {this->fDirectCorrectionsDiffFlowCos = dcdfc;};
-  TProfile* GetDirectCorrectionsDiffFlowCos() const {return this->fDirectCorrectionsDiffFlowCos;};
-  void SetDirectCorrectionsDiffFlowSin(TProfile* const dcdfs) {this->fDirectCorrectionsDiffFlowSin = dcdfs;};
-  TProfile* GetDirectCorrectionsDiffFlowSin() const {return this->fDirectCorrectionsDiffFlowSin;};
-  void SetDirectCorrelationsW(TProfile* const dcw) {this->fDirectCorrelationsW = dcw;};
-  TProfile* GetDirectCorrelationsW() const {return this->fDirectCorrelationsW;};
-  void SetDirectCorrectionsCosW(TProfile* const dccw) {this->fDirectCorrectionsCosW = dccw;};
-  TProfile* GetDirectCorrectionsCosW() const {return this->fDirectCorrectionsCosW;};
-  void SetDirectCorrectionsSinW(TProfile* const dcsw) {this->fDirectCorrectionsSinW = dcsw;};
-  TProfile* GetDirectCorrectionsSinW() const {return this->fDirectCorrectionsSinW;};
-  void SetDirectCorrelationsDiffFlowW(TProfile* const dcdfw) {this->fDirectCorrelationsDiffFlowW = dcdfw;};
-  TProfile* GetDirectCorrelationsDiffFlowW() const {return this->fDirectCorrelationsDiffFlowW;};
-  void SetDirectCorrectionsDiffFlowCosW(TProfile* const dcdfcw) {this->fDirectCorrectionsDiffFlowCosW = dcdfcw;};
-  TProfile* GetDirectCorrectionsDiffFlowCosW() const {return this->fDirectCorrectionsDiffFlowCosW;};
-  void SetDirectCorrectionsDiffFlowSinW(TProfile* const dcdfsw) {this->fDirectCorrectionsDiffFlowSinW = dcdfsw;};
-  TProfile* GetDirectCorrectionsDiffFlowSinW() const {return this->fDirectCorrectionsDiffFlowSinW;};
-  
+  TProfile* GetEvaluateNestedLoops() const {return this->fEvaluateNestedLoops;}; 
+  void SetIntFlowDirectCorrelations(TProfile* const ifdc) {this->fIntFlowDirectCorrelations = ifdc;};
+  TProfile* GetIntFlowDirectCorrelations() const {return this->fIntFlowDirectCorrelations;};
+  void SetIntFlowExtraDirectCorrelations(TProfile* const ifedc) {this->fIntFlowExtraDirectCorrelations = ifedc;};
+  TProfile* GetIntFlowExtraDirectCorrelations() const {return this->fIntFlowExtraDirectCorrelations;};
+  void SetIntFlowDirectCorrectionTermsForNUA(TProfile* const ifdctfn, Int_t sc) {this->fIntFlowDirectCorrectionTermsForNUA[sc] = ifdctfn;};
+  TProfile* GetIntFlowDirectCorrectionTermsForNUA(Int_t sc) const {return this->fIntFlowDirectCorrectionTermsForNUA[sc];};  
+  void SetCrossCheckInPtBinNo(Int_t const crossCheckInPtBinNo) {this->fCrossCheckInPtBinNo = crossCheckInPtBinNo;};
+  Int_t GetCrossCheckInPtBinNo() const {return this->fCrossCheckInPtBinNo;};
+  void SetCrossCheckInEtaBinNo(Int_t const crossCheckInEtaBinNo) {this->fCrossCheckInEtaBinNo = crossCheckInEtaBinNo;};
+  Int_t GetCrossCheckInEtaBinNo() const {return this->fCrossCheckInEtaBinNo;};
+  void SetDiffFlowDirectCorrelations(TProfile* const diffFlowDirectCorrelations,Int_t i,Int_t j,Int_t k){this->fDiffFlowDirectCorrelations[i][j][k]=diffFlowDirectCorrelations;};
+  TProfile* GetDiffFlowDirectCorrelations(Int_t i, Int_t j, Int_t k) const {return this->fDiffFlowDirectCorrelations[i][j][k];};
+  void SetDiffFlowDirectCorrectionTermsForNUA(TProfile* const dfdctfn, Int_t i, Int_t j, Int_t k, Int_t l) {this->fDiffFlowDirectCorrectionTermsForNUA[i][j][k][l] = dfdctfn;};
+  TProfile* GetDiffFlowDirectCorrectionTermsForNUA(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowDirectCorrectionTermsForNUA[i][j][k][l];};  
+        
  private:
   
   AliFlowAnalysisWithQCumulants(const AliFlowAnalysisWithQCumulants& afawQc);
@@ -352,7 +352,8 @@ class AliFlowAnalysisWithQCumulants{
   //  3d.) profiles:
   TProfile *fAvMultiplicity; // profile to hold average multiplicities and number of events for events with nRP>=0, nRP>=1, ... , and nRP>=8
   TProfile *fIntFlowCorrelationsPro; // average correlations <<2>>, <<4>>, <<6>> and <<8>> (with wrong errors!) 
-  TProfile *fIntFlowCorrelationsAllPro; // average all correlations for integrated flow (with wrong errors!) 
+  TProfile *fIntFlowCorrelationsAllPro; // average all correlations for integrated flow (with wrong errors!)
+  TProfile *fIntFlowExtraCorrelationsPro; // when particle weights are used some extra correlations appear 
   TProfile *fIntFlowProductOfCorrelationsPro; // average product of correlations <2>, <4>, <6> and <8>:  
   TProfile *fIntFlowCorrectionTermsForNUAPro[2]; // average correction terms for non-uniform acceptance (with wrong errors!) [0=sin terms,1=cos terms] 
   //  3e.) histograms with final results:
@@ -425,23 +426,20 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fDistributions[2][2][4]; // [0=pWeights not used,1=pWeights used][0=exact eWeights,1=non-exact eWeights][0=<2>,1=<4>,2=<6>,3=<8>]
     
   // x.) debugging and cross-checking:
-  // Remark: for weighted correlations cross-checking is performed only with phi weights (this is sufficient) 
   TList *fNestedLoopsList; // list to hold all profiles filled with nested loops
-  Bool_t fEvaluateNestedLoopsForIntFlow; // evaluate nested loops relevant for integrated flow
-  Bool_t fEvaluateNestedLoopsForDiffFlow; // evaluate nested loops relevant for differential flow
-  TProfile *fEvaluateNestedLoops; // profile with two bins to hold values of fEvaluateNestedLoopsForIntFlow and fEvaluateNestedLoopsForDiffFlow
-  TProfile *fDirectCorrelations; // reduced multi-particle correlations calculated with nested loop relevant for int. flow 
-  TProfile *fDirectCorrectionsCos; // corrections for non-uniform acceptance (cos terms) calculated with nested loops (int. flow)
-  TProfile *fDirectCorrectionsSin; // corrections for non-uniform acceptance (sin terms) calculated with nested loops (int. flow)
-  TProfile *fDirectCorrelationsDiffFlow; // multi-particle correlations calculated with nested loop relevant for diff. flow
-  TProfile *fDirectCorrectionsDiffFlowCos; // corrections for non-uniform acceptance (cos terms) calculated with nested loops (diff. flow)
-  TProfile *fDirectCorrectionsDiffFlowSin; // corrections for non-uniform acceptance (sin terms) calculated with nested loops (diff. flow)
-  TProfile *fDirectCorrelationsW; // weighted multi-particle correlations calculated with nested loop relevant for int. flow 
-  TProfile *fDirectCorrectionsCosW; // weighted corrections for non-uniform acceptance (cos terms) calculated with nested loops (int. flow)
-  TProfile *fDirectCorrectionsSinW; // weighted corrections for non-uniform acceptance (sin terms) calculated with nested loops (int. flow)
-  TProfile *fDirectCorrelationsDiffFlowW; // weighted reduced multi-particle correlations calculated with nested loop relevant for diff. flow
-  TProfile *fDirectCorrectionsDiffFlowCosW; // weighted corrections for non-uniform acceptance (cos terms) calculated with nested loops (diff. flow)
-  TProfile *fDirectCorrectionsDiffFlowSinW; // weighted corrections for non-uniform acceptance (sin terms) calculated with nested loops (diff. flow)
+  Bool_t fEvaluateIntFlowNestedLoops; // evaluate nested loops relevant for integrated flow
+  Bool_t fEvaluateDiffFlowNestedLoops; // evaluate nested loops relevant for differential flow
+  Int_t fMaxAllowedMultiplicity; // nested loops will be evaluated only for events with multiplicity <= fMaxAllowedMultiplicity
+  TProfile *fEvaluateNestedLoops; // profile with four bins: fEvaluateIntFlowNestedLoops, fEvaluateDiffFlowNestedLoops, fCrossCheckInPtBinNo and fCrossCheckInEtaBinNo 
+  // integrated flow:
+  TProfile *fIntFlowDirectCorrelations; // multiparticle correlations relevant for int. flow calculated with nested loops  
+  TProfile *fIntFlowExtraDirectCorrelations; // when particle weights are used some extra correlations appear   
+  TProfile *fIntFlowDirectCorrectionTermsForNUA[2]; // average correction terms for non-uniform acceptance evaluated with nested loops [0=sin terms,1=cos terms] 
+  // differential flow:
+  Int_t fCrossCheckInPtBinNo; // cross-check results for reduced correlations and corrections in this pt bin
+  Int_t fCrossCheckInEtaBinNo; // cross-check results for reduced correlations and corrections in this eta bin
+  TProfile *fDiffFlowDirectCorrelations[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][correlation index]
+  TProfile *fDiffFlowDirectCorrectionTermsForNUA[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
                   
   ClassDef(AliFlowAnalysisWithQCumulants, 0);
 };
