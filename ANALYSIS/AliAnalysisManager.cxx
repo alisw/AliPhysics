@@ -1281,6 +1281,10 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
 // Opens a special output file used in PROOF.
   TString line;
   TString filename = cont->GetFileName();
+  if (cont == fCommonOutput) {
+     if (fOutputEventHandler) filename = fOutputEventHandler->GetOutputFileName();
+     else Fatal("OpenProofFile","No output container. Aborting.");
+  }   
   TFile *f = NULL;
   if (fMode!=kProofAnalysis || !fSelector) {
     Fatal("OpenProofFile","Cannot open PROOF file %s: no PROOF or selector",filename.Data());
@@ -1292,7 +1296,7 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
       // Check if option "UPDATE" was preserved 
       TString opt(option);
       opt.ToUpper();
-      if ((opt=="UPDATE") && (opt!=f->GetOption())) 
+      if ((opt=="UPDATE") && (opt!=f->GetOption()))
         Fatal("OpenProofFile", "File %s already opened, but not in UPDATE mode!", cont->GetFileName());
     } else {
       f = new TFile(filename, option);
