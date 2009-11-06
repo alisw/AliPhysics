@@ -4308,17 +4308,22 @@ Int_t AliITStrackerMI::CheckSkipLayer(const AliITStrackMI *track,
   // without clusters, because we want to skip the layer.
   // In this case the return value is > 0:
   // return 1: the user requested to skip a layer
-  // return 2: track outside z acceptance of SSD/SDD and will cross both SPD
+  // return 2: track outside z acceptance
   //-----------------------------------------------------------------
 
   if (ForceSkippingOfLayer(ilayer)) return 1;
 
-  if (idet<0 && ilayer>1 && AliITSReconstructor::GetRecoParam()->GetExtendedEtaAcceptance()) {
+  Int_t innerLayCanSkip=0; // was 2, changed on 05.11.2009
+
+  if (idet<0 &&  // out in z
+      ilayer>innerLayCanSkip && 
+      AliITSReconstructor::GetRecoParam()->GetExtendedEtaAcceptance()) {
     // check if track will cross SPD outer layer
     Double_t phiAtSPD2,zAtSPD2;
     if (track->GetPhiZat(fgLayers[1].GetR(),phiAtSPD2,zAtSPD2)) {
       if (TMath::Abs(zAtSPD2)<2.*AliITSRecoParam::GetSPDdetzlength()) return 2;
     }
+    return 2; // always allow skipping, changed on 05.11.2009
   }
 
   return 0;
@@ -4460,7 +4465,7 @@ Bool_t AliITStrackerMI::LocalModuleCoord(Int_t ilayer,Int_t idet,
   xloc=0.; 
   zloc=0.;
 
-  if(idet<0) return kFALSE;
+  if(idet<0) return kTRUE; // track out of z acceptance of layer
 
   Int_t ndet=AliITSgeomTGeo::GetNDetectors(ilayer+1); // layers from 1 to 6 
 
@@ -4744,4 +4749,3 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
   }
 return;
 }
-
