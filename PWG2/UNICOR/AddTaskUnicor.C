@@ -10,9 +10,11 @@ AliAnalysisTaskUnicor *AddTaskUnicor()
   AliAnalysisTaskUnicor *mytask = new AliAnalysisTaskUnicor();
   mgr->AddTask(mytask);
   mgr->ConnectInput (mytask,0,mgr->GetCommonInputContainer());
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  outputfile += ":PWG2UNICOR"; 
   AliAnalysisDataContainer *coutpt = mgr->CreateContainer("unilis", TList::Class(),
-							  AliAnalysisManager::kOutputContainer,
-							  "unicor-result-as-list.root");
+  							  AliAnalysisManager::kOutputContainer,
+  							  outputfile);
   mgr->ConnectOutput(mytask,1,coutpt);
   return mytask;
 }
