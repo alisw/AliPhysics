@@ -56,8 +56,8 @@ void AliHLTTriggerMenuSymbol::Print(Option_t* option) const
   TString opt = option;
   if (opt.Contains("compact"))
   {
-    cout << setw(15) << fRealName << " | "
-         << setw(20) << fType << " | ";
+    cout << setw(15) << RealName() << " | "
+         << setw(20) << Type() << " | ";
     fBlockType.Print("noendl");
     cout << " | " << setw(20) << ObjectClass()
          << " | " << setw(25) << AssignExpression()
