@@ -45,7 +45,8 @@ AliHLTITSClusterHistoComponent::AliHLTITSClusterHistoComponent()
   fPhieta(NULL),                   
   fCharge(NULL),   
   fPlotCharge(kFALSE),   
-  fPlotXYPhiEta(kTRUE)
+  fPlotXYPhiEta(kTRUE),
+  fOutputSize(5000)
 {
   // see header file for class documentation
   // or
@@ -82,7 +83,7 @@ AliHLTComponentDataType AliHLTITSClusterHistoComponent::GetOutputDataType(){
 void AliHLTITSClusterHistoComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ){
   // see header file for class documentation
   // XXX TODO: Find more realistic values.
-  constBase = 5000;
+  constBase = fOutputSize;
   inputMultiplier = 2;
 }
 
@@ -152,9 +153,13 @@ int AliHLTITSClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
   
   const AliHLTComponentBlockData* iter = NULL;
   
-  if(!IsDataEvent()) return 0;
+  AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
+  if(!IsDataEvent(&eventType) && eventType!=gkAliEventTypeEndOfRun) {
+    // publish the histograms at the end of run
+    return 0;
+  }
   
-  for(iter = GetFirstInputBlock(kAliHLTDataTypeClusters); iter != NULL; iter = GetNextInputBlock()){
+  for(iter = GetFirstInputBlock(kAliHLTDataTypeClusters); eventType!=gkAliEventTypeEndOfRun && iter != NULL; iter = GetNextInputBlock()){
   
       if(iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSPD) && 
          iter->fDataType!=(kAliHLTAnyDataType|kAliHLTDataOriginITSSDD) && 
@@ -206,12 +211,19 @@ int AliHLTITSClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
   
   if(fPlotCharge){
      AliHLTUInt32_t fSpecification = 0x0;
-     PushBack( (TObject*) fCharge,kAliHLTDataTypeHistogram|kAliHLTDataOriginITS,fSpecification);
+     if (PushBack( (TObject*) fCharge,kAliHLTDataTypeHistogram|kAliHLTDataOriginITS,fSpecification)==-ENOSPC) {
+       fOutputSize+=GetLastObjectSize();
+     }
   }
   if(fPlotXYPhiEta){
      AliHLTUInt32_t fSpecification = 0x0;
-     PushBack( (TObject*) fXY,kAliHLTDataTypeHistogram|kAliHLTDataOriginITS,fSpecification);
-     for(Int_t ii=0;ii<6;ii++) PushBack( (TObject*) fPhieta[ii],kAliHLTDataTypeHistogram|kAliHLTDataOriginITS,fSpecification);
+     if (PushBack( (TObject*) fXY,kAliHLTDataTypeHistogram|kAliHLTDataOriginITS,fSpecification)==-ENOSPC) {
+       fOutputSize+=GetLastObjectSize();
+     }
+     for(Int_t ii=0;ii<6;ii++) 
+       if (PushBack( (TObject*) fPhieta[ii],kAliHLTDataTypeHistogram|kAliHLTDataOriginITS,fSpecification)==-ENOSPC) {
+	 fOutputSize+=GetLastObjectSize();
+       }
   }
   
   HLTDebug("ITSClusterHisto found %d Total Spacepoints", TotalSpacePoint);

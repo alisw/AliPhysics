@@ -96,8 +96,12 @@ private:
     
   Bool_t fPlotCharge;                      //! transient
   Bool_t fPlotXYPhiEta;                    //! transient
+
+  /// maximum required size of the output buffer
+  /// dynamically adjusted
+  int fOutputSize;                         //! transient
    
-  ClassDef(AliHLTITSClusterHistoComponent, 2);
+  ClassDef(AliHLTITSClusterHistoComponent, 3);
 
 };
 #endif
