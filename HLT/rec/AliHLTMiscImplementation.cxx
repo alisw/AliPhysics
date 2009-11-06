@@ -26,6 +26,8 @@
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
+#include "AliGRPManager.h"
+#include "TGeoGlobalMagField.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTMiscImplementation);
@@ -49,7 +51,14 @@ int AliHLTMiscImplementation::InitCDB(const char* cdbpath)
     log.Logging(kHLTLogError, "InitCDB", "CDB handling", "Could not get CDB instance");
   } else {
     if (cdbpath && cdbpath[0]!=0) {
-      pCDB->SetDefaultStorage(cdbpath);
+      TString uri=cdbpath;
+      if (!uri.BeginsWith("local://") &&
+	  !uri.Contains("://")) {
+	// assume a local path if no uri specifier is found
+	uri="local://";
+	uri+=cdbpath;
+      }
+      pCDB->SetDefaultStorage(uri);
       log.Logging(kHLTLogDebug, "InitCDB", "CDB handling", "CDB instance 0x%x", pCDB);
     } else if (!pCDB->IsDefaultStorageSet()) {
       const char* cdbUri="local://$ALICE_ROOT/OCDB";
@@ -68,7 +77,7 @@ int AliHLTMiscImplementation::SetCDBRunNo(int runNo)
   AliCDBManager* pCDB = AliCDBManager::Instance();
   AliHLTLogging log;
   if (!pCDB) {
-    log.Logging(kHLTLogError, "InitCDB", "CDB handling", "Could not get CDB instance");
+    log.Logging(kHLTLogError, "SetCDBRunNo", "CDB handling", "Could not get CDB instance");
   } else {
     pCDB->SetRun(runNo);
   }
@@ -94,36 +103,29 @@ TObject* AliHLTMiscImplementation::ExtractObject(AliCDBEntry* entry)
   return entry->GetObject();
 }
 
-int AliHLTMiscInitCDB(const char* cdbpath)
+int AliHLTMiscImplementation::InitMagneticField() const
 {
-  int iResult=0;
-  AliCDBManager* pCDB = AliCDBManager::Instance();
-  AliHLTLogging log;
-  if (!pCDB) {
-    log.Logging(kHLTLogError, "InitCDB", "CDB handling", "Could not get CDB instance");
-  } else {
-    if (cdbpath && cdbpath[0]!=0) {
-      pCDB->SetDefaultStorage(cdbpath);
-      log.Logging(kHLTLogDebug, "InitCDB", "CDB handling", "CDB instance 0x%x", pCDB);
-    } else if (!pCDB->IsDefaultStorageSet()) {
-      const char* cdbUri="local://$ALICE_ROOT/OCDB";
-      pCDB->SetDefaultStorage(cdbUri);
-      pCDB->SetRun(0);
-      log.Logging(kHLTLogInfo, "InitCDB", "CDB handling", "set default URI: %s", cdbUri);
-    }
-  }
-  return iResult;
-}
+  // see header file for function documentation
 
-int AliHLTMiscSetCDBRunNo(int runNo)
-{
-  int iResult=0;
-  AliCDBManager* pCDB = AliCDBManager::Instance();
-  AliHLTLogging log;
-  if (!pCDB) {
-    log.Logging(kHLTLogError, "InitCDB", "CDB handling", "Could not get CDB instance");
-  } else {
-    pCDB->SetRun(runNo);
+  // BAD: unit test fails if I call TGeoGlobalMagField::Instance()
+  // at this point. Something goes wrong in the cleaning of the global
+  // ROOT onject
+  /*
+  if (TGeoGlobalMagField::Instance()->GetField()) {
+    // everything set, but think about storing the currents for
+    // a cross-check
+    return 0;
   }
-  return iResult;
+  */
+
+  // The magnetic field is initialized once at the start
+  // of run. The fields are supposed to be constant througout the
+  // data taking of one run. The run is aborted if the changes
+  // exceed a certain limit.
+  AliGRPManager grpman;
+  if (grpman.ReadGRPEntry() && grpman.SetMagField()) {
+    return 0;
+  }
+
+  return -ENOENT;
 }

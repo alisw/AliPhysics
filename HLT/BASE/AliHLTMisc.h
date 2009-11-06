@@ -38,6 +38,8 @@ class AliHLTMisc : public TObject {
 
   virtual TObject* ExtractObject(AliCDBEntry* entry);
 
+  virtual int InitMagneticField() const;
+
  private:
   static AliHLTMisc* fgInstance;
 

@@ -28,6 +28,9 @@ class AliHLTMiscImplementation : public AliHLTMisc
   AliCDBEntry* LoadOCDBEntry(const char* path, int runNo=-1, int version = -1, int subVersion = -1);
 
   TObject* ExtractObject(AliCDBEntry* entry);
+
+  int InitMagneticField() const;
+
  private:
 
   ClassDef(AliHLTMiscImplementation, 0)

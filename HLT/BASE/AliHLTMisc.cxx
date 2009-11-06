@@ -90,26 +90,32 @@ AliHLTMisc& AliHLTMisc::Instance()
 
 int AliHLTMisc::InitCDB(const char* /*cdbpath*/)
 {
-  // see header file for function documentation
+  // default method, functionality is implemented in the child class
   return -EFAULT;
 }
 
 int AliHLTMisc::SetCDBRunNo(int /*runNo*/)
 {
-  // see header file for function documentation
+  // default method, functionality is implemented in the child class
   return -EFAULT;
 }
 
 AliCDBEntry* AliHLTMisc::LoadOCDBEntry(const char* /*path*/, int /*runNo*/, int /*version*/, int /*subVersion*/)
 {
-  // see header file for function documentation
+  // default method, functionality is implemented in the child class
   return NULL;
 }
 
 TObject* AliHLTMisc::ExtractObject(AliCDBEntry* /*entry*/)
 {
-  // see header file for function documentation
+  // default method, functionality is implemented in the child class
   return NULL;
+}
+
+int AliHLTMisc::InitMagneticField() const
+{
+  // default method, functionality is implemented in the child class
+  return -EFAULT;
 }
 
 ostream  &operator<<(ostream &out, const AliHLTComponentDataType &dt)

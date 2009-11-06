@@ -26,6 +26,7 @@
 #include "AliHLTComponentHandler.h"
 #include "AliHLTComponent.h"
 #include "AliHLTSystem.h"
+#include "AliHLTMisc.h"
 #include <cerrno>
 #include <cstring>
 /////////////////////////////////////////////////////////////////////////////////////
@@ -77,6 +78,13 @@ int AliHLTAnalysisInitSystem( unsigned long version, AliHLTAnalysisEnvironment* 
       strcpy(gRunType, runType);
     }
   }
+
+  // the AliRoot dependent code is implemented by the
+  // AliHLTMiscImplementation class in libHLTrec
+  AliHLTMisc::Instance().InitCDB(getenv("ALIHLT_HCDBDIR"));
+  AliHLTMisc::Instance().SetCDBRunNo(gRunDesc.fRunNo);
+  AliHLTMisc::Instance().InitMagneticField();
+
   return 0;
 }
 
@@ -123,22 +131,11 @@ int AliHLTAnalysisCreateComponent( const char* componentType, void* environParam
   if (!handle) return EINVAL;
 
   AliHLTComponent* comp=NULL;
-  string cdbPath;
-  const char* envvar = getenv("ALIHLT_HCDBDIR");
-  if (envvar) {
-    cdbPath=envvar;
-  } else {
-    envvar = getenv("ALICE_ROOT");
-    if (envvar) {
-      cdbPath=envvar;
-      cdbPath+="/OCDB";
-    }
-  }
+
   int ret = gComponentHandler->CreateComponent( componentType, comp);
   if (ret>=0 && comp) {
     const AliHLTAnalysisEnvironment* comenv=gComponentHandler->GetEnvironment();
     comp->SetComponentEnvironment(comenv, environParam);
-    comp->InitCDB(cdbPath.c_str(), gComponentHandler);
     if (comenv) {
       if (description) {
 	comp->SetComponentDescription(description);

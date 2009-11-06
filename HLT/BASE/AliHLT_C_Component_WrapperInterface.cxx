@@ -30,6 +30,7 @@ using namespace std;
 #include "AliHLT_C_Component_WrapperInterface.h"
 #include "AliHLTComponentHandler.h"
 #include "AliHLTComponent.h"
+#include "AliHLTMisc.h"
 #include <errno.h>
 
 static AliHLTComponentHandler *gComponentHandler_C = NULL;
@@ -112,7 +113,8 @@ int AliHLT_C_CreateComponent( const char* componentType, void* environParam, int
   if (!cdbPath) cdbPath = getenv("ALICE_ROOT");
   int ret = gComponentHandler_C->CreateComponent( componentType, comp);
   if (ret>=0 && comp) {
-    comp->InitCDB(cdbPath, gComponentHandler_C);
+    AliHLTMisc::Instance().InitCDB(cdbPath);
+    AliHLTMisc::Instance().SetCDBRunNo(gRunDesc.fRunNo);
     comp->SetRunDescription(&gRunDesc, gRunType);
     const AliHLTAnalysisEnvironment* comenv=gComponentHandler_C->GetEnvironment();
     ret=comp->Init(comenv, environParam, argc, argv);
