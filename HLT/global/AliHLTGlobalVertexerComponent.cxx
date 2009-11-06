@@ -74,10 +74,10 @@ AliHLTGlobalVertexerComponent::~AliHLTGlobalVertexerComponent()
 {
   // see header file for class documentation
 
-  delete[] fTrackInfos;
-  delete   fHistPrimVertexXY;
-  delete   fHistPrimVertexZX;
-  delete   fHistPrimVertexZY;
+  if( fTrackInfos ) delete[] fTrackInfos;
+  if( fHistPrimVertexXY ) delete   fHistPrimVertexXY;
+  if( fHistPrimVertexZX ) delete   fHistPrimVertexZX;
+  if( fHistPrimVertexZY ) delete   fHistPrimVertexZY;
 }
 
 // Public functions to implement AliHLTComponent's interface.
@@ -177,10 +177,10 @@ int AliHLTGlobalVertexerComponent::DoDeinit()
 {
   // see header file for class documentation
 
-  delete[] fTrackInfos;
-  delete fHistPrimVertexXY;
-  delete fHistPrimVertexZX;
-  delete fHistPrimVertexZY;
+  if( fTrackInfos ) delete[] fTrackInfos;
+  if( fHistPrimVertexXY ) delete fHistPrimVertexXY;
+  if( fHistPrimVertexZX ) delete fHistPrimVertexZX;
+  if( fHistPrimVertexZY ) delete fHistPrimVertexZY;
 
   fTrackInfos = 0;
   fHistPrimVertexXY = 0;
@@ -204,11 +204,14 @@ int AliHLTGlobalVertexerComponent::DoEvent(const AliHLTComponentEventData& /*evt
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
     return 0;
 
+  int iResult = 0;
+
   fNEvents++;
 
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
 
     AliESDEvent *event = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
+    if( !event ) continue;
     event->GetStdContent();
 
     // primary vertex & V0's 
@@ -222,19 +225,20 @@ int AliHLTGlobalVertexerComponent::DoEvent(const AliHLTComponentEventData& /*evt
 
     if( fPlotHistograms ){
       if( vPrim && vPrim->GetNContributors()>=3 ){
-	fHistPrimVertexXY->Fill( vPrim->GetX(),vPrim->GetY()  );
-	fHistPrimVertexZX->Fill( vPrim->GetZ(),vPrim->GetX()  );
-	fHistPrimVertexZY->Fill( vPrim->GetZ(),vPrim->GetY()  );    
+	if( fHistPrimVertexXY ) fHistPrimVertexXY->Fill( vPrim->GetX(),vPrim->GetY()  );
+	if( fHistPrimVertexZX ) fHistPrimVertexZX->Fill( vPrim->GetZ(),vPrim->GetX()  );
+	if( fHistPrimVertexZY ) fHistPrimVertexZY->Fill( vPrim->GetZ(),vPrim->GetY()  );    
       }  
-      if( fHistPrimVertexXY ) PushBack( (TObject*) fHistPrimVertexXY, kAliHLTDataTypeHistogram,0);
-      if( fHistPrimVertexZX ) PushBack( (TObject*) fHistPrimVertexZX, kAliHLTDataTypeHistogram,0);
-      if( fHistPrimVertexZY ) PushBack( (TObject*) fHistPrimVertexZY, kAliHLTDataTypeHistogram,0);
+      if( fHistPrimVertexXY ) PushBack( fHistPrimVertexXY, kAliHLTDataTypeHistogram,0);
+      if( fHistPrimVertexZX ) PushBack( fHistPrimVertexZX, kAliHLTDataTypeHistogram,0);
+      if( fHistPrimVertexZY ) PushBack( fHistPrimVertexZY, kAliHLTDataTypeHistogram,0);
     }
     
-    PushBack( (TObject*) event, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
+    iResult = PushBack( event, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
+    if( iResult<0 ) break;
   }
     
-  return 0;
+  return iResult;
 }
 
 int AliHLTGlobalVertexerComponent::Configure(const char* arguments)
@@ -347,12 +351,14 @@ void AliHLTGlobalVertexerComponent::SetESD( AliESDEvent *event )
 {
   //* Fill fTrackInfo array
 
-  delete[] fTrackInfos;
+  if( fTrackInfos ) delete[] fTrackInfos;
+  fTrackInfos = 0;
   fESD = event;
 
   AliKFParticle::SetField( fESD->GetMagneticField() );
 
   Int_t nESDTracks=event->GetNumberOfTracks(); 
+
   fTrackInfos = new AliESDTrackInfo[ nESDTracks ];
 
   for (Int_t iTr=0; iTr<nESDTracks; iTr++){ 
@@ -370,7 +376,11 @@ void AliHLTGlobalVertexerComponent::SetESD( AliESDEvent *event )
     
     //* Construct KFParticle for the track
 
-    info.fParticle = AliKFParticle( *pTrack->GetInnerParam(), 211 );    
+    if(  pTrack->GetStatus()&AliESDtrack::kITSin ){
+      info.fParticle = AliKFParticle( *pTrack, 211 );    
+    } else {
+      info.fParticle = AliKFParticle( *pTrack->GetInnerParam(), 211 );    
+    }
     info.fOK = 1;
   }
 }
