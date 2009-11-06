@@ -48,11 +48,12 @@ public:
     virtual void CreateStdContent()                        {;} 
     virtual void GetStdContent()                           {;}
     virtual void ReadFromTree(TTree * /*tree*/, Option_t* /*opt*/) {;}
-    virtual void WriteToTree(TTree* /*tree*/)  const {;}
+    virtual void WriteToTree(TTree* /*tree*/)  const       {;}
 
     virtual void SetStdNames()                             {;}
     virtual void Print(Option_t */*option=""*/)  const     {;}
     virtual void PreReadAll();
+    virtual void Reset()                                   {;}
 
     // Header
     virtual AliVHeader* GetHeader()          const         {return 0;}

@@ -190,6 +190,7 @@ class AliAODEvent : public AliVEvent {
 		   Int_t pmdClusSize = 0
 		   );
   void    ClearStd();
+  void    Reset() {ClearStd();} 
   void    ReadFromTree(TTree *tree, Option_t* opt = "");
   void    WriteToTree(TTree* tree) const {tree->Branch(fAODObjects);}
 

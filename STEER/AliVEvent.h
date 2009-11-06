@@ -39,7 +39,7 @@ public:
   virtual void ReadFromTree(TTree *tree, Option_t* opt) = 0;
   virtual void WriteToTree(TTree* tree) const = 0;
 
-  //virtual void Reset() = 0;
+  virtual void Reset() = 0;
   //virtual void ResetStdContent() = 0;
   virtual void SetStdNames() = 0;
 
