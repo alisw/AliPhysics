@@ -66,7 +66,7 @@ const Int_t AliMUONRawStreamTrackerHP::fgkMaxDDL = 20;
 
 AliMUONRawStreamTrackerHP::AliMUONRawStreamTrackerHP() :
 	TObject(),
-fEnableErrorLogger(kFALSE),
+	fEnableErrorLogger(kFALSE),
 	fDecoder(),
 	fDDL(0),
 	fBufferSize(8192),
@@ -77,9 +77,10 @@ fEnableErrorLogger(kFALSE),
 	fHadError(kFALSE),
 	fDone(kFALSE),
 	fDDLObject(NULL),
-fTotalNumberOfGlitchErrors(0),
-fTotalNumberOfParityErrors(0),
-fTotalNumberOfPaddingErrors(0)
+	fTotalNumberOfGlitchErrors(0),
+	fTotalNumberOfParityErrors(0),
+	fTotalNumberOfPaddingErrors(0),
+	fTotalNumberOfTokenLostErrors(0)
 {
 	///
 	/// Default constructor.
@@ -99,8 +100,8 @@ fTotalNumberOfPaddingErrors(0)
 
 
 AliMUONRawStreamTrackerHP::AliMUONRawStreamTrackerHP(AliRawReader* rawReader) :
-TObject(),
-fEnableErrorLogger(kFALSE),
+	TObject(),
+	fEnableErrorLogger(kFALSE),
 	fDecoder(),
 	fDDL(0),
 	fBufferSize(8192),
@@ -110,10 +111,11 @@ fEnableErrorLogger(kFALSE),
 	fkEndOfData(NULL),
 	fHadError(kFALSE),
 	fDone(kFALSE),
-fDDLObject(NULL),
-fTotalNumberOfGlitchErrors(0),
-fTotalNumberOfParityErrors(0),
-fTotalNumberOfPaddingErrors(0)
+	fDDLObject(NULL),
+	fTotalNumberOfGlitchErrors(0),
+	fTotalNumberOfParityErrors(0),
+	fTotalNumberOfPaddingErrors(0),
+	fTotalNumberOfTokenLostErrors(0)
 {
 	///
 	/// Constructor with AliRawReader as argument.
@@ -129,8 +131,8 @@ fTotalNumberOfPaddingErrors(0)
 			fDecoder.MaxDSPs(),
 			fDecoder.MaxBusPatches()
 		);
-  
-  fDecoder.GetHandler().SetReader(rawReader);
+	
+	fDecoder.GetHandler().SetReader(rawReader);
 }
 
 
@@ -161,9 +163,10 @@ void AliMUONRawStreamTrackerHP::First()
 	fDDL = 0;
 	fDone = kFALSE;
 	NextDDL();
-  fTotalNumberOfGlitchErrors = 0;
-  fTotalNumberOfPaddingErrors = 0;
-  fTotalNumberOfParityErrors = 0;
+	fTotalNumberOfGlitchErrors = 0;
+	fTotalNumberOfPaddingErrors = 0;
+	fTotalNumberOfParityErrors = 0;
+	fTotalNumberOfTokenLostErrors = 0;
 }
 
 
@@ -251,9 +254,10 @@ Bool_t AliMUONRawStreamTrackerHP::NextDDL()
 		// handler we need to trap any memory allocation exception to be robust.
 		result = fDecoder.Decode(fBuffer, dataSize);
 		fHadError = (result == true ? kFALSE : kTRUE);
-    fTotalNumberOfGlitchErrors += fDecoder.GetHandler().GlitchErrorCount();
-    fTotalNumberOfParityErrors += fDecoder.GetHandler().ParityErrorCount();
+		fTotalNumberOfGlitchErrors += fDecoder.GetHandler().GlitchErrorCount();
+		fTotalNumberOfParityErrors += fDecoder.GetHandler().ParityErrorCount();
 		fTotalNumberOfPaddingErrors += fDecoder.GetHandler().PaddingErrorCount();
+		fTotalNumberOfTokenLostErrors += fDecoder.GetHandler().TokenLostCount();
 	}
 	catch (const std::bad_alloc&)
 	{
@@ -301,8 +305,8 @@ Bool_t AliMUONRawStreamTrackerHP::Next(Int_t& busPatchId,
 	/// [out] \param manuId      This is filled with the MANU ID of the digit.
 	/// [out] \param manuChannel This is filled with the MANU channel ID of the digit.
 	/// [out] \param adc         This is filled with the ADC signal value of the digit.
-  /// [in] \param skipParityErrors If this is kTRUE, we'll skip the buspatches that
-  ///                              have some parity errors
+	/// [in] \param skipParityErrors If this is kTRUE, we'll skip the buspatches that
+	///                              have some parity errors
 	/// \return kTRUE if we read another digit and kFALSE if we have read all the
 	///    digits already, i.e. at the end of the iteration.
 	
@@ -330,15 +334,15 @@ retry:
 			{
 				fkCurrentData = fkCurrentBusPatch->GetData();
 				fkEndOfData = fkCurrentData + fkCurrentBusPatch->GetDataCount();
-        if ( skipParityErrors ) 
-        {
-          Bool_t ok(kTRUE);
-          for ( Int_t i = 0; i < fkCurrentBusPatch->GetLength() && ok; ++ i )
-          {
-            ok = fkCurrentBusPatch->IsParityOk(i);
-          }
-          if (!ok) fkCurrentData = fkEndOfData;
-        }
+				if ( skipParityErrors )
+				{
+					Bool_t ok(kTRUE);
+					for ( Int_t i = 0; i < fkCurrentBusPatch->GetLength() && ok; ++ i )
+					{
+						ok = fkCurrentBusPatch->IsParityOk(i);
+					}
+					if (!ok) fkCurrentData = fkEndOfData;
+				}
 				goto retry;
 			}
 		}
@@ -526,7 +530,7 @@ void AliMUONRawStreamTrackerHP::AliBusPatch::Print(const Option_t* opt) const
 ///////////////////////////////////////////////////////////////////////////////
 
 AliMUONRawStreamTrackerHP::AliDecoderEventHandler::AliDecoderEventHandler() :
-fRawReader(0x0),
+	fRawReader(0x0),
 	fBufferStart(NULL),
 	fBlockCount(0),
 	fBlocks(NULL),
@@ -542,10 +546,11 @@ fRawReader(0x0),
 	fParityErrors(0),
 	fGlitchErrors(0),
 	fPaddingErrors(0),
+	fTokenLostErrors(0),
 	fWarnings(kTRUE),
-  fMaxBlocks(),
-  fMaxDsps(),
-  fMaxBusPatches()
+	fMaxBlocks(),
+	fMaxDsps(),
+	fMaxBusPatches()
 {
 	/// Default constructor initialises the internal parity flags buffer to
 	/// store 8192 elements. This array will grow dynamically if needed.
@@ -595,9 +600,9 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::SetMaxStructs(
 	fBusPatches = new AliBusPatch[maxBlocks*maxDsps*maxBusPatches];
 	fEndOfBusPatches = fBusPatches;
 
-  fMaxBlocks = maxBlocks;
-  fMaxDsps = maxDsps;
-  fMaxBusPatches = maxBusPatches;
+	fMaxBlocks = maxBlocks;
+	fMaxDsps = maxDsps;
+	fMaxBusPatches = maxBusPatches;
 }
 
 
@@ -617,6 +622,7 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnNewBuffer(
 	fParityErrors = 0;
 	fGlitchErrors = 0;
 	fPaddingErrors = 0;
+	fTokenLostErrors = 0;
 
 	// Check if we will have enough space in the fParityOk array.
 	// If we do not then we need to resize the array.
@@ -669,8 +675,8 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 	case kGlitchFound:
 		fGlitchErrors++;
 		message = Form(
-			"Glitch error detected in DSP %d, skipping event ",
-			fCurrentBlock->GetDspId()
+			"Glitch error detected in DSP %d (0x%X), skipping event ",
+			fCurrentBlock->GetDspId(), fCurrentBlock->GetDspId()
 		);
 		fRawReader->AddMajorErrorLog(error, message);
 		break;
@@ -702,6 +708,18 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 			fCurrentBusPatch->GetManuId(word),
 			fCurrentBusPatch->GetChannelId(word),
 			fCurrentBusPatch->GetBusPatchId()
+		);
+		fRawReader->AddMinorErrorLog(error, message);
+		break;
+		
+	case kTokenLost:
+		fTokenLostErrors++;
+		word = *reinterpret_cast<const UInt_t*>(location);
+		message = Form(
+			"Lost token error detected in DSP %d (0x%X) with address 0x%X and code %d.",
+			fCurrentBlock->GetDspId(), fCurrentBlock->GetDspId(),
+			((word & 0xFFFF0000) >> 16),
+			(word & 0xF)
 		);
 		fRawReader->AddMinorErrorLog(error, message);
 		break;

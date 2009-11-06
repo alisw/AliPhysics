@@ -38,9 +38,9 @@ public:
 	/// Default destructor.
 	virtual ~AliMUONRawStreamTrackerHP();
 	
-  /// Get object for reading the raw data
-  virtual AliRawReader* GetReader();
-
+	/// Get object for reading the raw data
+	virtual AliRawReader* GetReader();
+	
 	/// Initialize iterator
 	virtual void First();
 	
@@ -92,22 +92,28 @@ public:
 	/// check error/Warning presence
 	virtual Bool_t IsErrorMessage() const { return fHadError; }
 	
-	/// Get number of parity errors
+	/// Get number of parity errors in the DDL last decoded.
 	Int_t   GetParityErrors() const
 	{
 		return (Int_t) fDecoder.GetHandler().ParityErrorCount();
 	}
 
-	/// Get number of glitch errors
+	/// Get number of glitch errors in the DDL last decoded.
 	Int_t   GetGlitchErrors() const
 	{
 		return (Int_t) fDecoder.GetHandler().GlitchErrorCount();
 	}
 
-	/// Get number of padding word errors
+	/// Get number of padding word errors in the DDL last decoded.
 	Int_t   GetPaddingErrors() const
 	{
 		return (Int_t) fDecoder.GetHandler().PaddingErrorCount();
+	}
+
+	/// Get number of token lost errors in the DDL last decoded.
+	Int_t   GetTokenLostErrors() const
+	{
+		return (Int_t) fDecoder.GetHandler().TokenLostCount();
 	}
 
 	/// Set warnings flag to disable warnings on data errors.
@@ -508,33 +514,39 @@ public:
 		const AliDspHeader* dsp = CurrentDspHeader();
 		return (dsp != NULL) ? dsp->GetBlockHeader() : NULL;
 	}
-
-  /// Set the raw reader
-  void SetReader(AliRawReader* reader);
-  
-  /// Enable error info logger
-  virtual void EnabbleErrorLogger() { fEnableErrorLogger = kTRUE; }
-  
-  /// Check if error info logger enable
-  virtual Bool_t IsErrorLogger() const {return fEnableErrorLogger; }
-    
-  /// Number of glitch errors since First() was called
-  Int_t NumberOfGlitchErrors() const { return fTotalNumberOfGlitchErrors; }
-
-  /// Number of padding errors since First() was called
-  Int_t NumberOfPaddingErrors() const { return fTotalNumberOfPaddingErrors; }
-
-  /// Number of parity errors since First() was called
-  Int_t NumberOfParityErrors() const { return fTotalNumberOfParityErrors; }
-
-  /// Whether we got glitch errors or not
-  Bool_t HasGlitchError() const { return NumberOfGlitchErrors() > 0; }
-
-  /// Whether we got padding errors or not
-  Bool_t HasPaddingError() const { return NumberOfPaddingErrors() > 0; }
-
-  /// Whether we got parity errors or not
-  Bool_t HasParityError() const { return NumberOfParityErrors() > 0; }
+	
+	/// Set the raw reader
+	void SetReader(AliRawReader* reader);
+	
+	/// Enable error info logger
+	virtual void EnabbleErrorLogger() { fEnableErrorLogger = kTRUE; }
+	
+	/// Check if error info logger enable
+	virtual Bool_t IsErrorLogger() const {return fEnableErrorLogger; }
+	
+	/// Number of glitch errors since First() was called
+	UInt_t NumberOfGlitchErrors() const { return fTotalNumberOfGlitchErrors; }
+	
+	/// Number of padding errors since First() was called
+	UInt_t NumberOfPaddingErrors() const { return fTotalNumberOfPaddingErrors; }
+	
+	/// Number of parity errors since First() was called
+	UInt_t NumberOfParityErrors() const { return fTotalNumberOfParityErrors; }
+	
+	/// Number of token lost errors since First() was called
+	UInt_t NumberOfTokenLostErrors() const { return fTotalNumberOfTokenLostErrors; }
+	
+	/// Whether we got glitch errors or not
+	Bool_t HasGlitchError() const { return NumberOfGlitchErrors() > 0; }
+	
+	/// Whether we got padding errors or not
+	Bool_t HasPaddingError() const { return NumberOfPaddingErrors() > 0; }
+	
+	/// Whether we got parity errors or not
+	Bool_t HasParityError() const { return NumberOfParityErrors() > 0; }
+	
+	/// Whether we got token lost errors or not
+	Bool_t HasTokenLostError() const { return NumberOfTokenLostErrors() > 0; }
 
 private:
 
@@ -583,6 +595,8 @@ private:
 		UInt_t GlitchErrorCount() const { return fGlitchErrors; }
 		/// Returns the number of padding errors found in the DDL.
 		UInt_t PaddingErrorCount() const { return fPaddingErrors; }
+		/// Returns the number of token lost errors found in the DDL.
+		UInt_t TokenLostCount() const { return fTokenLostErrors; }
 
 		/// Returns the warnings flag.
 		Bool_t Warnings() const { return fWarnings; }
@@ -625,12 +639,12 @@ private:
 		/// Error handler.
 		void OnError(ErrorCode error, const void* location);
 	
-    /// Set reader
-    void SetReader(AliRawReader* reader) { fRawReader = reader; }
-    
-    /// Get reader
-    AliRawReader* GetReader() const { return fRawReader; }
-    
+		/// Set reader
+		void SetReader(AliRawReader* reader) { fRawReader = reader; }
+		
+		/// Get reader
+		AliRawReader* GetReader() const { return fRawReader; }
+	
 	private:
 	
 		// Do not allow copying of this class.
@@ -639,7 +653,7 @@ private:
                 /// Not implemented
 		AliDecoderEventHandler& operator = (const AliDecoderEventHandler& /*obj*/);
 
-    AliRawReader* fRawReader; //!< Pointer to the raw reader
+		AliRawReader* fRawReader; //!< Pointer to the raw reader
 		const void* fBufferStart;   //!< Pointer to the start of the current DDL payload buffer.
 		UInt_t fBlockCount;  //!< Number of blocks filled in fBlocks.
 		AliBlockHeader* fBlocks;  //!< Array of blocks. [0..fMaxBlocks-1]
@@ -655,14 +669,14 @@ private:
 		UInt_t fParityErrors;   //!< Number of parity errors found in DDL.
 		UInt_t fGlitchErrors;   //!< Number of glitch errors found in DDL.
 		UInt_t fPaddingErrors;  //!< Number of padding errors found in DDL.
+		UInt_t fTokenLostErrors;  //!< Number of token lost errors found in DDL.
 		Bool_t fWarnings;       //!< Flag indicating if we should generate a warning for errors.
-    UInt_t fMaxBlocks; //!< max number of blocks
-    UInt_t fMaxDsps; //!< max number of dsps per block
-    UInt_t fMaxBusPatches; //!< max number of buspatches per dsp
-
+		UInt_t fMaxBlocks; //!< max number of blocks
+		UInt_t fMaxDsps; //!< max number of dsps per block
+		UInt_t fMaxBusPatches; //!< max number of buspatches per dsp
 	};
 
-  Bool_t fEnableErrorLogger; //!< whether or not we log errors
+	Bool_t fEnableErrorLogger; //!< whether or not we log errors
 	AliMUONTrackerDDLDecoder<AliDecoderEventHandler> fDecoder;  //!< The decoder for the DDL payload.
 	Int_t fDDL;         //!< The current DDL number being handled.
 	Int_t fBufferSize;  //!< This is the buffer size in bytes of fBuffer.
@@ -673,11 +687,12 @@ private:
 	Bool_t fHadError;   //!< Flag indicating if there was a decoding error or not.
 	Bool_t fDone;       //!< Flag indicating if the iteration is done or not.
 	mutable AliMUONDDLTracker* fDDLObject; //!< Temporary DDL object used by GetDDLTracker() for caching.
-  Int_t fTotalNumberOfGlitchErrors; //!< number of glitch errors since First() was called
-  Int_t fTotalNumberOfParityErrors; //!< number of glitch errors since First() was called
-  Int_t fTotalNumberOfPaddingErrors; //!< number of glitch errors since First() was called
-  
-  static const Int_t fgkMaxDDL; //!< max number of tracker DDLs
+	UInt_t fTotalNumberOfGlitchErrors; //!< number of glitch errors since First() was called
+	UInt_t fTotalNumberOfParityErrors; //!< number of parity errors since First() was called
+	UInt_t fTotalNumberOfPaddingErrors; //!< number of padding errors since First() was called
+	UInt_t fTotalNumberOfTokenLostErrors; //!< number of token lost errors since First() was called
+	
+	static const Int_t fgkMaxDDL; //!< max number of tracker DDLs
 
 	ClassDef(AliMUONRawStreamTrackerHP, 0) // High performance decoder for reading MUON raw digits from tracking chamber DDL data.
 };

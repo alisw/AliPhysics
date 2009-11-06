@@ -77,7 +77,11 @@ AliMUONRawStreamTriggerHP::AliMUONRawStreamTriggerHP() :
 	fkCurrentLocalStruct(NULL),
 	fHadError(kFALSE),
 	fDone(kFALSE),
-	fDDLObject(NULL)
+	fDDLObject(NULL),
+	fTotalNumberOfDarcEoWErrors(0),
+	fTotalNumberOfGlobalEoWErrors(0),
+	fTotalNumberOfRegEoWErrors(0),
+	fTotalNumberOfLocalEoWErrors(0)
 {
 	///
 	/// Default constructor.
@@ -103,7 +107,11 @@ AliMUONRawStreamTriggerHP::AliMUONRawStreamTriggerHP(AliRawReader* rawReader) :
 	fkCurrentLocalStruct(NULL),
 	fHadError(kFALSE),
 	fDone(kFALSE),
-	fDDLObject(NULL)
+	fDDLObject(NULL),
+	fTotalNumberOfDarcEoWErrors(0),
+	fTotalNumberOfGlobalEoWErrors(0),
+	fTotalNumberOfRegEoWErrors(0),
+	fTotalNumberOfLocalEoWErrors(0)
 {
 	///
 	/// Constructor with AliRawReader as argument.
@@ -147,6 +155,10 @@ void AliMUONRawStreamTriggerHP::First()
 	fDDL = 0;
 	fDone = kFALSE;
 	NextDDL();
+	fTotalNumberOfDarcEoWErrors = 0;
+	fTotalNumberOfGlobalEoWErrors = 0;
+	fTotalNumberOfRegEoWErrors = 0;
+	fTotalNumberOfLocalEoWErrors = 0;
 }
 
 
@@ -235,6 +247,10 @@ Bool_t AliMUONRawStreamTriggerHP::NextDDL()
 		// handler we need to trap any memory allocation exception to be robust.
 		result = fDecoder.Decode(fBuffer, dataSize, scalerEvent);
 		fHadError = (result == true ? kFALSE : kTRUE);
+		fTotalNumberOfDarcEoWErrors += fDecoder.GetHandler().GetDarcEoWErrors();
+		fTotalNumberOfGlobalEoWErrors += fDecoder.GetHandler().GetGlobalEoWErrors();
+		fTotalNumberOfRegEoWErrors += fDecoder.GetHandler().GetRegEoWErrors();
+		fTotalNumberOfLocalEoWErrors += fDecoder.GetHandler().GetLocalEoWErrors();
 	}
 	catch (const std::bad_alloc&)
 	{

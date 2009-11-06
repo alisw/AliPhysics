@@ -126,6 +126,8 @@ public:
 		kBusPatchLengthMismatch = 28,  /// The bus patch length and total length fields do not correspond. One or both of these values is incorrect.
 		kNoDDLTrailerWords = 29,       /// No end of DDL markers found in the trailer words.
 		kTooFewDDLTrailerWords = 30,   /// Only one end of DDL marker trailer word found but expected two.
+		kUnknownDspError = 31,         /// The DSP error code is non-zero but of an unrecognised format.
+		kTokenLost = 32,               /// The DSP contains a token lost error code that can affect the deadtime.
 		// match up error codes with AliMUONRawStreamTracker:
 		kGlitchFound = 1,              /// Found a glitch. This means a 1 byte word has been randomly inserted into the raw data by mistake.
 		kBadPaddingWord = 2,           /// The padding word does not contain the correct value.
@@ -314,6 +316,8 @@ inline const char* AliMUONTrackerDDLDecoderEventHandler::ErrorCodeToString(Error
 	case kBusPatchLengthMismatch: return "kBusPatchLengthMismatch";
 	case kNoDDLTrailerWords: return "kNoDDLTrailerWords";
 	case kTooFewDDLTrailerWords: return "kTooFewDDLTrailerWords";
+	case kUnknownDspError: return "kUnknownDspError";
+	case kTokenLost: return "kTokenLost";
 	case kGlitchFound: return "kGlitchFound";
 	case kBadPaddingWord: return "kBadPaddingWord";
 	case kParityError: return "kParityError";
@@ -384,6 +388,10 @@ inline const char* AliMUONTrackerDDLDecoderEventHandler::ErrorCodeToMessage(Erro
 		return "No end of DDL data key found in the trailer words.";
 	case kTooFewDDLTrailerWords:
 		return "Only one end of DDL data key word found in the trailer but expected two.";
+	case kUnknownDspError:
+		return "The DSP error code is non-zero but of an unrecognised format.";
+	case kTokenLost:
+		return "The DSP contains a token lost error code that can affect the deadtime.";
 	case kGlitchFound:
 		return "Found a glitch. This means a 1 byte word has been randomly"
 		       " inserted into the raw data by mistake.";

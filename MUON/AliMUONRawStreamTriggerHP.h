@@ -82,17 +82,41 @@ public:
 	/// Set warnings flag to enable warnings on data errors.
 	virtual void EnableWarnings() { fDecoder.GetHandler().Warnings(kTRUE); }
 	
-	/// Get number of end of DARC word errors.
+	/// Get number of end of DARC word errors in the DDL last decoded.
 	UInt_t GetDarcEoWErrors() const {return fDecoder.GetHandler().GetDarcEoWErrors();}
 	
-	/// Get number of end of Global word errors.
+	/// Get number of end of Global word errors in the DDL last decoded.
 	UInt_t GetGlobalEoWErrors() const {return fDecoder.GetHandler().GetGlobalEoWErrors();}
 	
-	/// Get number of end of regional word errors.
+	/// Get number of end of regional word errors in the DDL last decoded.
 	UInt_t GetRegEoWErrors() const {return fDecoder.GetHandler().GetRegEoWErrors();}
 	
-	/// Get number of end of local word errors.
+	/// Get number of end of local word errors in the DDL last decoded.
 	UInt_t GetLocalEoWErrors() const {return fDecoder.GetHandler().GetLocalEoWErrors();}
+	
+	/// Number of end of DARC word errors since First() was called.
+	UInt_t NumberOfDarcEoWErrors() const { return fTotalNumberOfDarcEoWErrors; }
+	
+	/// Number of end of global word errors since First() was called.
+	UInt_t NumberOfGlobalEoWErrors() const { return fTotalNumberOfGlobalEoWErrors; }
+	
+	/// Number of end of regional word errors since First() was called.
+	UInt_t NumberOfRegEoWErrors() const { return fTotalNumberOfRegEoWErrors; }
+	
+	/// Number of end of local word errors since First() was called.
+	UInt_t NumberOfLocalEoWErrors() const { return fTotalNumberOfLocalEoWErrors; }
+	
+	/// Whether we got any end of DARC word errors or not since calling First().
+	Bool_t HasDarcEoWError() const { return NumberOfDarcEoWErrors() > 0; }
+	
+	/// Whether we got any end of global word errors or not since calling First().
+	Bool_t HasGlobalEoWError() const { return NumberOfGlobalEoWErrors() > 0; }
+	
+	/// Whether we got any end of regional word errors or not since calling First().
+	Bool_t HasRegEoWError() const { return NumberOfRegEoWErrors() > 0; }
+	
+	/// Whether we got any end of local word errors or not since calling First().
+	Bool_t HasLocalEoWError() const { return NumberOfLocalEoWErrors() > 0; }
 	
 	/// Returns the "try to recover from errors" flag.
 	Bool_t TryRecover() const { return Bool_t(fDecoder.TryRecover()); }
@@ -731,6 +755,10 @@ private:
 	Bool_t fHadError;   //!< Flag indicating if there was a decoding error or not.
 	Bool_t fDone;       //!< Flag indicating if the iteration is done or not.
 	mutable AliMUONDDLTrigger* fDDLObject; //!< Temporary DDL object used by GetDDLTrigger() for caching.
+	UInt_t fTotalNumberOfDarcEoWErrors; //!< The total number of end of DARC word errors since the last call to First().
+	UInt_t fTotalNumberOfGlobalEoWErrors; //!< The total number of end of global word errors since the last call to First().
+	UInt_t fTotalNumberOfRegEoWErrors; //!< The total number of end of regional word errors since the last call to First().
+	UInt_t fTotalNumberOfLocalEoWErrors; //!< The total number of end of local word errors since the last call to First().
 	
 	static const Int_t  fgkMaxDDL;     //!< Maximum number of DDLs
 	

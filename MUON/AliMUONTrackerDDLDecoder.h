@@ -639,15 +639,29 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::DecodeBlockData(
 		fHandler.OnNewDSP(dspHeader, dataStart);
 		
 		// Check the error word in the header.
-		if (dspHeader->fErrorWord == (0x000000B1 | blockHeader->fDSPId)
-		    or dspHeader->fErrorWord == (0x00000091 | blockHeader->fDSPId)
-		   )
+		if (dspHeader->fErrorWord != 0x0)
 		{
-			// An event with a glitch in the readout has been detected.
-			// It means that somewhere a 1 byte word has been randomly
-			// inserted and all the readout sequence is shifted until
-			// the next event.
-			fHandler.OnError(EventHandler::kGlitchFound, &dspHeader->fErrorWord);
+			if (dspHeader->fErrorWord == (0x000000B1 | blockHeader->fDSPId)
+			    or dspHeader->fErrorWord == (0x00000091 | blockHeader->fDSPId)
+			   )
+			{
+				// An event with a glitch in the readout has been detected.
+				// It means that somewhere a 1 byte word has been randomly
+				// inserted and all the readout sequence is shifted until
+				// the next event.
+				fHandler.OnError(EventHandler::kGlitchFound, &dspHeader->fErrorWord);
+			}
+			else if ((dspHeader->fErrorWord & 0x0000FFF0) == 0x220)
+			{
+				// Detected a TOKEN_LOST error which can affect the dead time in the DAQ.
+				fHandler.OnError(EventHandler::kTokenLost, &dspHeader->fErrorWord);
+			}
+			else
+			{
+				// The DSP error code is non-zero but has an unknown code.
+				fHandler.OnError(EventHandler::kUnknownDspError, &dspHeader->fErrorWord);
+			}
+			
 			fHadError = true;
 			if (fExitOnError)
 			{
