@@ -302,7 +302,6 @@ int AliHLTITSTrackerComponent::DoInit( int argc, const char** argv )
     field->SetFactorSol(fSolenoidBz/initialFieldStrengh); 
     TGeoGlobalMagField::Instance()->SetField(field);  
   }
-
   fTracker = new AliITStrackerHLT(0);
 
   return ret;
@@ -435,6 +434,12 @@ int AliHLTITSTrackerComponent::DoEvent
       AliHLTExternalTrackParam* currOutTrack = outPtr->fTracklets;
 
       blockSize =   ( ( AliHLTUInt8_t * )currOutTrack ) -  ( ( AliHLTUInt8_t * )outPtr );
+
+      if ( size + blockSize  > maxBufferSize ) {
+	HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), tracks are not stored", maxBufferSize, size + blockSize );
+	iResult = -ENOSPC;
+	break;
+      }
 
       outPtr->fCount = 0;
       
