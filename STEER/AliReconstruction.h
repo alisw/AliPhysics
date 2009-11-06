@@ -145,7 +145,10 @@ public:
   void    InitQA();
   void    MergeQA(const char *fileName = NULL); 
   void    SetWriteQAExpert() { fWriteQAExpertData = kTRUE ; }
-
+  Bool_t  IsRunQA() { return fRunQA ; } 
+  Bool_t  IsRunGlobalQA() { return fRunGlobalQA ; }
+  Bool_t  IsInTasks(AliQAv1::TASKINDEX_t tsk) { return fQATasks.Contains(Form("%d", tsk)) ; }
+  
   // Plane Efficiency Evaluation
   void    SetRunPlaneEff(Bool_t flag=kFALSE)  {fRunPlaneEff = flag;}
 
