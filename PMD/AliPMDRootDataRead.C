@@ -1,64 +1,15 @@
 // To read PMD raw root data and fetch the adc value for each cell
-void AliPMDRootDataRead(Int_t NEVT = 10)
+void AliPMDRootDataRead(Char_t *file="rawfile.root",Int_t runNr = 0,
+			Int_t NEVT = 10)
 {
   TObjArray pmdddlcont;
 
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  man->SetRun(runNr);
+
   gBenchmark->Start("");
   gStyle->SetOptStat(0);
-
-  TFile *pedfile = new TFile("PMD_PED.root");
-
-  if(!pedfile)
-    {
-      printf("ERROR --- NO PEDESTAL (PMD_PED.root) FILE IS FOUND IN THE CURRENT DIRECTORY--- STOP GAIN DA\n");
-      return -3;
-    }
-
-
-  Float_t fPedMeanRMS[2][24][48][96];
-
-  for(Int_t i = 0; i < 2; i++)
-  {
-      for(Int_t j = 0; j < 24; j++)
-      {
-	  for(Int_t k = 0; k < 48; k++)
-	  {
-	      for(Int_t l = 0; l < 96; l++)
-	      {
-		  fPedMeanRMS[i][j][k][l] = 0.;
-	      }
-	  }
-      }
-  }
-
-  Int_t det, sm, row, col;
-  Float_t mean, rms;
-
-  TTree *ped =(TTree*)pedfile->Get("ped");
-
-  ped->SetBranchAddress("det",&det);
-  ped->SetBranchAddress("sm",&sm);
-  ped->SetBranchAddress("row",&row);
-  ped->SetBranchAddress("col",&col);
-  ped->SetBranchAddress("mean",&mean);
-  ped->SetBranchAddress("rms",&rms);
-
-  Int_t nentries = (Int_t)ped->GetEntries();
-
-  for (Int_t ient = 0; ient < nentries; ient++)
-  {
-      ped->GetEntry(ient);
-      fPedMeanRMS[det][sm][row][col] = mean + 10.*rms;
-      //printf("Mean= %f, RMS= %f, PedMeanRMS=%f\n",mean,rms,fPedMeanRMS[det][sm][row][col]);
-
-    }
-
-
-  pedfile->Close();
-  delete pedfile;
-  pedfile = 0x0;
-
-
 
   Int_t   xpad, ypad;
   Float_t xx, yy;
@@ -69,77 +20,71 @@ void AliPMDRootDataRead(Int_t NEVT = 10)
   TH1F *h1 = new TH1F("h1","",200,0.,200.);
 
 
-  for(Int_t ievt=3; ievt < NEVT; ievt++)
-  {
+  for(Int_t ievt=495; ievt < NEVT; ievt++)
+    {
   
-  AliRawReaderRoot reader("08000042184000.10.root",ievt);
+      //AliRawReaderRoot reader("09000095029017.10.root",ievt);
+      AliRawReaderRoot reader(file,ievt);
 
-  cout<<" Processing Event No  : "<<ievt<<endl;
+      cout<<" Processing Event No  : "<<ievt<<endl;
 
-  AliPMDRawStream stream(&reader);
-
-  Int_t iddl = -1;
-
-  while((iddl = stream.DdlData(&pmdddlcont)) >= 0)
-  {
-
-      Int_t ientries = pmdddlcont.GetEntries();
-
-      //cout << "iddl = " << iddl << " ientries = " << ientries << endl;
-
-      for (Int_t ient = 0; ient < ientries; ient++)
+      AliPMDRawStream stream(&reader);
+      
+      Int_t iddl = -1;
+      
+      while((iddl = stream.DdlData(&pmdddlcont)) >= 0)
 	{
-	  AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont.UncheckedAt(ient);
+
+	  Int_t ientries = pmdddlcont.GetEntries();
 	  
-	  det = pmdddl->GetDetector();
-	  Int_t smn = pmdddl->GetSMN();
-	  Int_t mcm = pmdddl->GetMCM();
-	  Int_t pbus = pmdddl->GetPatchBusId();
-	  //Int_t chno = pmdddl->GetChannel();
-
-	  row = pmdddl->GetRow();
-	  col = pmdddl->GetColumn();
-	  Int_t sig = pmdddl->GetSignal();
-
-	  if(mcm == 0) continue;
-
-	  Int_t sig1 = sig - (Int_t)fPedMeanRMS[det][smn][row][col];
-
-
-	  if (sig1 > 0)
-	      sig = sig1;
-	  else
-	      sig = 0;
-
-	  if (ievt == 159 && sig > 0) cout << row << " " << col << " " << sig << endl;
-
-
-	  if(smn <12)
-	  {
-	      xpad = col;
-	      ypad = row;
-	  }
-	  else if(smn >=12 && smn < 24)
-	  {
-	      xpad = row;
-	      ypad = col;
-	  }
+	  cout << "iddl = " << iddl << " ientries = " << ientries << endl;
 	  
-	  if (det == 0)
-	  {
-	      cc.RectGeomCellPos(smn,xpad,ypad,xx,yy);
-	      h2->Fill(xx,yy,sig); 
-	      h1->Fill(sig);
-	  }
+	  for (Int_t ient = 0; ient < ientries; ient++)
+	    {
+	      AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont.UncheckedAt(ient);
 	  
-	}
+	      Int_t det = pmdddl->GetDetector();
+	      Int_t smn = pmdddl->GetSMN();
+	      Int_t mcm = pmdddl->GetMCM();
+	      Int_t pbus = pmdddl->GetPatchBusId();
+	      //Int_t chno = pmdddl->GetChannel();
+	      
+	      Int_t row = pmdddl->GetRow();
+	      Int_t col = pmdddl->GetColumn();
+	      Int_t sig = pmdddl->GetSignal();
 
+	      //if (iddl == 5)
+	      //printf("%d %d %d %d %d %d\n",iddl,det,smn,pbus,row,col);
+	      
+	      if(mcm == 0) continue;
+	      
+
+	      if(smn <12)
+		{
+		  xpad = col;
+		  ypad = row;
+		}
+	      else if(smn >=12 && smn < 24)
+		{
+		  xpad = row;
+		  ypad = col;
+		}
+	      
+	      if (det == 0)
+		{
+		  cc.RectGeomCellPos(smn,xpad,ypad,xx,yy);
+		  h2->Fill(xx,yy,sig); 
+		  h1->Fill(sig);
+		}
+	      
+	    }
+	  
       pmdddlcont.Delete();
-    }
-
-  }//event loop
+	}
+      
+    }//event loop
   h2->Draw();
-  cc.SetWriteModule(1);
-  cc.DrawPMDModule();
+  cc.SetWriteModule(1);  // set here 0 not to print the module no
+  cc.DrawPMDModule(0);   // 0 : for preshower, 1:for CPV plane
   gBenchmark->Show("");
 }

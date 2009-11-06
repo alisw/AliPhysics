@@ -354,7 +354,7 @@ void AliPMDUtility::GenerateBoundaryPoints(Int_t ism, Float_t &x1ism,
 }
 // ------------------------------------------------------------------- //
 
-void AliPMDUtility::DrawPMDModule()
+void AliPMDUtility::DrawPMDModule(Int_t idet)
 {
 
     Float_t x1ism, x2ism, y1ism, y2ism;
@@ -378,7 +378,14 @@ void AliPMDUtility::DrawPMDModule()
 	deltaY = (y2ism - y1ism)/2.;
 	if (fWriteModule == 1)
 	{
-	    sprintf(smnumber,"%d",ism);
+	  if(idet == 0)
+	    {
+	      sprintf(smnumber,"%d",ism);
+	    }
+	  else if (idet == 1)
+	    {
+	      sprintf(smnumber,"%d",24+ism);
+	    }
 	    tt.DrawText(x1ism+deltaX,y1ism+deltaY,smnumber);
 	}
 	t.DrawLine(x1ism, y1ism, x1ism, y2ism);

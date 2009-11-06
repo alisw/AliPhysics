@@ -31,7 +31,7 @@ class AliPMDUtility
   void GenerateBoundaryPoints(Int_t ism, Float_t &x1ism, Float_t &y1ism
 			      , Float_t &x2ism, Float_t &y2ism);
 
-  void DrawPMDModule(); 
+  void DrawPMDModule(Int_t idet); 
 
   void ApplyVertexCorrection(Float_t vertex[], 
 			     Float_t xpos, Float_t ypos, Float_t zpos);
@@ -59,7 +59,7 @@ class AliPMDUtility
   Float_t fPhi;    // Azimuthal angle in radian
   Int_t   fWriteModule;  // Module number writing 
   
-  ClassDef(AliPMDUtility,4) // Utility class for the detector set:PMD
+  ClassDef(AliPMDUtility,5) // Utility class for the detector set:PMD
 };
 
 #endif
