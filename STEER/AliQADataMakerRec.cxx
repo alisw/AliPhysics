@@ -39,6 +39,7 @@
 
 #include "AliLog.h"
 #include "AliQADataMakerRec.h"
+#include "AliQAManager.h"
 #include "AliESDEvent.h"
 #include "AliRawReader.h"
 
@@ -163,6 +164,7 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
     return ; 
   //DefaultEndOfDetectorCycle(task) ;
 	EndOfDetectorCycle(task, list) ;
+  
   fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 
   if (!fDetectorDir)
     fDetectorDir = fOutput->mkdir(GetDetectorDirName()) ; 
@@ -378,7 +380,8 @@ void AliQADataMakerRec::StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const
 		ResetCycle() ;
 		if (fOutput) 
 			fOutput->Close() ; 
-		fOutput = AliQAv1::GetQADataFile(GetName(), fRun) ; 	
+		if (AliQAManager::QAManager(AliQAv1::kRECMODE)->IsSaveData())
+      fOutput = AliQAv1::GetQADataFile(GetName(), fRun) ; 	
 	}	
 	AliDebug(AliQAv1::GetQADebugLevel(), Form(" Run %d Cycle %d task %s file %s", 
 				 fRun, fCurrentCycle, AliQAv1::GetTaskName(task).Data(), fOutput->GetName() )) ;

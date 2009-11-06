@@ -54,6 +54,7 @@ public:
 	AliQADataMaker * GetQADataMaker(const Int_t iDet) ; 
 	void             Increment(const AliQAv1::TASKINDEX_t taskIndex = AliQAv1::kNULLTASKINDEX) ;
 	void             InitQADataMaker(UInt_t run, TObjArray * detArray=0x0) ;
+  Bool_t           IsSaveData() { return fSaveData ; } 
 	Bool_t           IsSelected(const Char_t * detName)  ;
 	Bool_t           Merge(Int_t runNumber = -1, const char *fileName = NULL) const ;  
   void             MergeCustom() const ;
@@ -79,6 +80,7 @@ public:
   void             SetPrintImage(Bool_t opt = kTRUE) { fPrintImage = opt ; }
 	void             SetRecoParam(const Int_t det, const AliDetectorRecoParam *par) ;
 	void             SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
+  void             SetSaveData(Bool_t opt = kTRUE ) { fSaveData = opt ; }
 	void             SetTasks(TString tasks) { fTasks = tasks ; }
   void             SetWriteExpert() ; 
   void             ShowQA() ; 
@@ -118,9 +120,10 @@ private:
 	Int_t                       fQACycles[fgkNDetectors];       //! array of QA cycle length
 	Bool_t                      fQAWriteExpert[fgkNDetectors];  //! array of QA cycle length
   AliRecoParam::EventSpecie_t fEventSpecie ;                  //! type of event 
-  Bool_t                      fPrintImage ;                    //! flag to print the images or not
+  Bool_t                      fPrintImage ;                   //! flag to print the images or not
+  Bool_t                      fSaveData ;                     //! flag to sve the QA data or not   
     
-  ClassDef(AliQAManager, 1)      // class for running the QA makers
+  ClassDef(AliQAManager, 2)      // class for running the QA makers
 };
 
 #endif

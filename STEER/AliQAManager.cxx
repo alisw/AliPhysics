@@ -90,7 +90,8 @@ AliQAManager::AliQAManager() :
   fRunLoader(NULL), 
   fTasks(""),  
   fEventSpecie(AliRecoParam::kDefault), 
-  fPrintImage(kTRUE) 
+  fPrintImage(kTRUE), 
+  fSaveData(kTRUE) 
 {
 	// default ctor
 	fMaxEvents = fNumberOfEvents ; 
@@ -125,7 +126,8 @@ AliQAManager::AliQAManager(AliQAv1::MODE_t mode, const Char_t* gAliceFilename) :
 	fRunLoader(NULL), 
   fTasks(""), 
   fEventSpecie(AliRecoParam::kDefault), 
-  fPrintImage(kTRUE) 
+  fPrintImage(kTRUE), 
+  fSaveData(kTRUE) 
 {
 	// default ctor
 	fMaxEvents = fNumberOfEvents ; 
@@ -160,7 +162,8 @@ AliQAManager::AliQAManager(const AliQAManager & qas) :
 	fRunLoader(NULL), 
   fTasks(qas.fTasks), 
   fEventSpecie(qas.fEventSpecie), 
-  fPrintImage(qas.fPrintImage) 
+  fPrintImage(qas.fPrintImage), 
+  fSaveData(qas.fSaveData) 
 
 {
 	// cpy ctor
@@ -534,10 +537,12 @@ void  AliQAManager::EndOfCycle(TObjArray * detArray)
 			}
       qac->SetPrintImage(fPrintImage) ;
       
-			for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
-				if ( fTasks.Contains(Form("%d", taskIndex)) ) 
-					qadm->EndOfCycle(AliQAv1::GetTaskIndex(AliQAv1::GetTaskName(taskIndex))) ;
-			}
+      if (IsSaveData()) {
+        for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
+          if ( fTasks.Contains(Form("%d", taskIndex)) ) 
+            qadm->EndOfCycle(AliQAv1::GetTaskIndex(AliQAv1::GetTaskName(taskIndex))) ;
+        }
+      }
 			qadm->Finish();
 		}
 	}
@@ -563,10 +568,12 @@ void  AliQAManager::EndOfCycle(TString detectors)
       if (!detectors.Contains(AliQAv1::GetDetName(iDet))) 
         continue ;
       qac->SetPrintImage(fPrintImage) ;
-   		for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
-				if ( fTasks.Contains(Form("%d", taskIndex)) ) 
-					qadm->EndOfCycle(AliQAv1::GetTaskIndex(AliQAv1::GetTaskName(taskIndex))) ;
-			}
+      if (IsSaveData()) {
+        for (UInt_t taskIndex = 0; taskIndex < AliQAv1::kNTASKINDEX; taskIndex++) {
+          if ( fTasks.Contains(Form("%d", taskIndex)) ) 
+            qadm->EndOfCycle(AliQAv1::GetTaskIndex(AliQAv1::GetTaskName(taskIndex))) ;
+        }
+      }
 			qadm->Finish();
 		}
 	}
