@@ -33,6 +33,9 @@ public:
 
    virtual void SetModel(TObject* obj);
 
+   void DoActivate();
+   void DoDeactivate();
+
    void DoPrev();
    void DoNext();
    void DoSetEvent();
@@ -46,7 +49,9 @@ public:
 protected:
    AliEveTrackCounter *fM; // Model object.
 
-   // Declare widgets
+   TGCompositeFrame *fAF;  // Active frame.
+   TGCompositeFrame *fDF;  // Non-active frame.
+
    TGComboBox       *fClickAction;
    TGLabel          *fInfoLabelTracks;
    TGLabel          *fInfoLabelTracklets;

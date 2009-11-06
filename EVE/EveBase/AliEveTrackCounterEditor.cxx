@@ -41,7 +41,7 @@ ClassImp(AliEveTrackCounterEditor)
 AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t width, Int_t height,
                                                UInt_t options, Pixel_t back) :
    TGedFrame(p, width, height, options | kVerticalFrame, back),
-   fM(0),
+   fM(0), fAF(0), fDF(0),
    fClickAction(0),
    fInfoLabelTracks   (0),
    fInfoLabelTracklets(0),
@@ -53,8 +53,22 @@ AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t widt
 
    Int_t labelW = 42;
 
+
+   // Active frame
+
+   fAF = new TGVerticalFrame(this);
+
+   { // Deactivate button
+      TGHorizontalFrame* f = new TGHorizontalFrame(fAF, 210, 20, kFixedWidth);
+
+      TGTextButton* b = new TGTextButton(f, "Deactivate");
+      f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 4));
+      b->Connect("Clicked()", "AliEveTrackCounterEditor", this, "DoDeactivate()");
+
+      fAF->AddFrame(f, new TGLayoutHints(kLHintsLeft, 0, 0, 0, 0));
+   }
    { // ClickAction
-      TGHorizontalFrame* f = new TGHorizontalFrame(this);
+      TGHorizontalFrame* f = new TGHorizontalFrame(fAF);
       TGLabel* lab = new TGLabel(f, "Click:");
       f->AddFrame(lab, new TGLayoutHints(kLHintsLeft|kLHintsBottom, 1, 10, 1, 2));
       fClickAction = new TGComboBox(f);
@@ -67,32 +81,30 @@ AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t widt
                             "DoClickAction(Int_t)");
       f->AddFrame(fClickAction, new TGLayoutHints(kLHintsLeft, 1, 2, 1, 1));
 
-      AddFrame(f);
+      fAF->AddFrame(f);
    }
-
    { // fInfoLabelTracks
-      TGHorizontalFrame* f = new TGHorizontalFrame(this);
+      TGHorizontalFrame* f = new TGHorizontalFrame(fAF);
       TGLabel* lab = new TGLabel(f, "Tracks:");
       f->AddFrame(lab, new TGLayoutHints(kLHintsLeft, 1, 5, 1, 2));
 
       fInfoLabelTracks = new TGLabel(f);
       f->AddFrame(fInfoLabelTracks, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 9, 1, 2));
 
-      AddFrame(f);
+      fAF->AddFrame(f);
    }
    { // fInfoLabelTracklets
-      TGHorizontalFrame* f = new TGHorizontalFrame(this);
+      TGHorizontalFrame* f = new TGHorizontalFrame(fAF);
       TGLabel* lab = new TGLabel(f, "Tracklets:");
       f->AddFrame(lab, new TGLayoutHints(kLHintsLeft, 1, 5, 1, 2));
 
       fInfoLabelTracklets = new TGLabel(f);
       f->AddFrame(fInfoLabelTracklets, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 9, 1, 2));
 
-      AddFrame(f);
+      fAF->AddFrame(f);
    }
-
    {
-      TGHorizontalFrame* f = new TGHorizontalFrame(this, 210, 20, kFixedWidth);
+      TGHorizontalFrame* f = new TGHorizontalFrame(fAF, 210, 20, kFixedWidth);
 
       TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
       TGLabel* l = new TGLabel(g, "Event:");
@@ -114,11 +126,10 @@ AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t widt
       f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
       b->Connect("Clicked()", "AliEveTrackCounterEditor", this, "DoNext()");
 
-      AddFrame(f);
+      fAF->AddFrame(f);
    }
-
    {
-      TGHorizontalFrame* f = new TGHorizontalFrame(this, 210, 20, kFixedWidth);
+      TGHorizontalFrame* f = new TGHorizontalFrame(fAF, 210, 20, kFixedWidth);
 
       TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
       TGLabel* l = new TGLabel(g, "Report:");
@@ -135,10 +146,10 @@ AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t widt
       f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
       b->Connect("Clicked()", "AliEveTrackCounterEditor", this, "DoFileReport()");
 
-      AddFrame(f, new TGLayoutHints(kLHintsLeft, 0, 0, 4, 0));
+      fAF->AddFrame(f, new TGLayoutHints(kLHintsLeft, 0, 0, 4, 0));
    }
    {
-      TGHorizontalFrame* f = new TGHorizontalFrame(this, 210, 20, kFixedWidth);
+      TGHorizontalFrame* f = new TGHorizontalFrame(fAF, 210, 20, kFixedWidth);
 
       TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
       TGLabel* l = new TGLabel(g, "Histos:");
@@ -151,11 +162,29 @@ AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t widt
       f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
       b->Connect("Clicked()", "AliEveTrackCounterEditor", this, "DoShowHistos()");
 
-      AddFrame(f, new TGLayoutHints(kLHintsLeft, 0, 0, 0, 0));
+      fAF->AddFrame(f, new TGLayoutHints(kLHintsLeft, 0, 0, 0, 0));
    }
 
-  AliEveEventManager::GetMaster()->Connect("NewEventLoaded()",
-                        "AliEveTrackCounterEditor", this, "UpdateModel()");
+   AddFrame(fAF, new TGLayoutHints(kLHintsNormal|kLHintsExpandX|kLHintsExpandY));
+
+
+   // Disabled frame
+
+   fDF = new TGVerticalFrame(this);
+
+   { // Activate button
+      TGHorizontalFrame* f = new TGHorizontalFrame(fDF, 210, 20, kFixedWidth);
+
+      TGTextButton* b = new TGTextButton(f, "Activate");
+      f->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
+      b->Connect("Clicked()", "AliEveTrackCounterEditor", this, "DoActivate()");
+
+      fDF->AddFrame(f, new TGLayoutHints(kLHintsLeft, 0, 0, 0, 0));
+   }
+
+   AddFrame(fDF, new TGLayoutHints(kLHintsNormal|kLHintsExpandX|kLHintsExpandY));
+
+   AliEveEventManager::GetMaster()->Connect("NewEventLoaded()", "AliEveTrackCounterEditor", this, "UpdateModel()");
 }
 
 AliEveTrackCounterEditor::~AliEveTrackCounterEditor()
@@ -182,10 +211,40 @@ void AliEveTrackCounterEditor::SetModel(TObject* obj)
 
    fM = dynamic_cast<AliEveTrackCounter*>(obj);
 
-   fClickAction->Select(fM->fClickAction, kFALSE);
-   fInfoLabelTracks   ->SetText(Form("All: %3d; Primaries: %3d", fM->fAllTracks,    fM->fGoodTracks));
-   fInfoLabelTracklets->SetText(Form("All: %3d; Primaries: %3d", fM->fAllTracklets, fM->fGoodTracklets));
-   fEventId->SetNumber(fM->GetEventId());
+   if (fM->GetActive())
+   {
+      ShowFrame(fAF); HideFrame(fDF);
+ 
+      fClickAction->Select(fM->fClickAction, kFALSE);
+      fInfoLabelTracks   ->SetText(Form("All: %3d; Primaries: %3d", fM->fAllTracks,    fM->fGoodTracks));
+      fInfoLabelTracklets->SetText(Form("All: %3d; Primaries: %3d", fM->fAllTracklets, fM->fGoodTracklets));
+      fEventId->SetNumber(fM->GetEventId());
+   }
+   else
+   {
+     ShowFrame(fDF); HideFrame(fAF);
+   }
+
+   Layout();
+}
+
+/******************************************************************************/
+
+void AliEveTrackCounterEditor::DoActivate()
+{
+   // Activate track-counter
+
+   fM->SetActive(kTRUE);
+   AliEveEventManager::GetMaster()->GotoEvent(AliEveEventManager::GetMaster()->GetEventId());
+   fGedEditor->Layout();
+}
+
+void AliEveTrackCounterEditor::DoDeactivate()
+{
+   // Deactivate track-counter.
+
+   fM->SetActive(kFALSE);
+   AliEveEventManager::GetMaster()->GotoEvent(AliEveEventManager::GetMaster()->GetEventId());
 }
 
 /******************************************************************************/
@@ -210,6 +269,7 @@ void AliEveTrackCounterEditor::DoNext()
 void AliEveTrackCounterEditor::DoSetEvent()
 {
    // Slot for SetEvent.
+
    AliEveEventManager::GetMaster()->GotoEvent((Int_t) fEventId->GetNumber());
 }
 
@@ -236,51 +296,8 @@ void AliEveTrackCounterEditor::DoShowHistos()
 {
   // Slot for ShowHistos.
 
-  static const TEveException kEH("AliEveTrackCounterEditor::DoShowHistos ");
-
+  TEveUtil::Macro("make_scan_results.C");
   TEveUtil::Macro("show_scan_results.C");
-
-  TTree* t = (TTree*) gDirectory->Get("SR");
-
-  if (t == 0)
-    throw kEH + "Tree 'SR' with scan results not found.";
-
-  TCanvas *c = 0;
-
-  //----------------------------------------------------------------------------
-  // Tracks
-  //----------------------------------------------------------------------------
-
-  c = new TCanvas("Tracks", "Track Scanning Results", 800, 600);
-  c->Divide(2, 3);
-
-  c->cd(1);
-  t->Draw("Sum$(T.fLabel & 1)");
-
-  c->cd(2);
-  t->Draw("T.GetSign()", "T.fLabel & 1");
-
-  c->cd(3);
-  t->Draw("T.GetSign()", "T.fLabel & 1");
-
-  c->cd(4);
-  t->Draw("T.Eta()", "T.fLabel & 1");
-
-  c->cd(5);
-  t->Draw("T.Phi()", "T.fLabel & 1");
-
-  c->Modified();
-  c->Update();
-
-  //----------------------------------------------------------------------------
-  // Trackelts
-  //----------------------------------------------------------------------------
-
-  c = new TCanvas("Tracklets", "Tracklet Scanning Results", 800, 600);
-  (new TLatex(0.2, 0.4, "Not yet available"))->Draw();
-
-  c->Modified();
-  c->Update();
 }
 
 /******************************************************************************/

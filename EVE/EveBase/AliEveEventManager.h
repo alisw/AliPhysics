@@ -116,6 +116,7 @@ public:
   Bool_t        IsUnderExternalControl() const { return fExternalCtrl; }
 
   virtual void  AfterNewEventLoaded();
+  void          NewEventDataLoaded();  // *SIGNAL*
   void          NewEventLoaded();      // *SIGNAL*
 
   AliEveMacroExecutor* GetExecutor() const { return fExecutor; }

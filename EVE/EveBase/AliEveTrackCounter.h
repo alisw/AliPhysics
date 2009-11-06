@@ -48,7 +48,12 @@ public:
   void OutputEventTracks();
   void PrintEventTracks();
 
+  Bool_t GetActive() const { return fActive; }
+  void   SetActive(Bool_t a) { fActive = a; }
+
   static AliEveTrackCounter* fgInstance;
+
+  static Bool_t IsActive();
 
 protected:
   Int_t fBadLineStyle;  // TEveLine-style used for secondary/bad tracks.
@@ -63,6 +68,8 @@ protected:
 
   TList fTrackLists;    // List of track-lists registered for management.
   TList fTrackletLists; // List of tracklet-lists registered for management.
+
+  Bool_t fActive;
 
 private:
   AliEveTrackCounter(const AliEveTrackCounter&);            // Not implemented

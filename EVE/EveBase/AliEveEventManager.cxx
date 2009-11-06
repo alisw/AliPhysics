@@ -1294,6 +1294,8 @@ void AliEveEventManager::AfterNewEventLoaded()
 
   static const TEveException kEH("AliEveEventManager::AfterNewEventLoaded ");
 
+  NewEventDataLoaded();
+
   if (fExecutor)
     fExecutor->ExecMacros();
 
@@ -1321,6 +1323,13 @@ void AliEveEventManager::AfterNewEventLoaded()
     fgCurrent = fgMaster;
     gEve->SetCurrentEvent(fgMaster);
   }
+}
+
+void AliEveEventManager::NewEventDataLoaded()
+{
+  // Emit NewEventDataLoaded signal.
+
+  Emit("NewEventDataLoaded()");
 }
 
 void AliEveEventManager::NewEventLoaded()

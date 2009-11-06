@@ -211,48 +211,6 @@ void visscan_init(const TString& cdburi = "",
 
 void on_new_event()
 {
-  AliEveTrackCounter* g_trkcnt = AliEveTrackCounter::fgInstance;
-  g_trkcnt->Reset();
-  g_trkcnt->SetEventId(AliEveEventManager::GetMaster()->GetEventId());
-
-  if (g_esd_tracks_by_category_container != 0)
-  {
-    TEveElementList* cont = g_esd_tracks_by_category_container;
-
-    // Here we expect several TEveTrackList containers.
-    // First two have reasonable primaries (sigma-to-prim-vertex < 5).
-    // Others are almost certainly secondaries.
-    Int_t count = 1;
-    TEveElement::List_i i = cont->BeginChildren();
-    while (i != cont->EndChildren())
-    {
-      TEveTrackList* l = dynamic_cast<TEveTrackList*>(*i);
-      if (l != 0)
-      {
-	g_trkcnt->RegisterTracks(l, (count <= 2));
-	++count;
-      }
-      ++i;
-    }
-
-    // Set it to zero, so that we do not reuse an old one.
-    g_esd_tracks_by_category_container = 0;
-  }
-  else
-  {
-    Warning("on_new_event", "g_esd_tracks_by_category_container not initialized.");
-  }
-
-  TEveTrackList *tracklets = dynamic_cast<TEveTrackList*>(gEve->GetCurrentEvent()->FindChild("SPD Tracklets"));
-  if (tracklets)
-  {
-    g_trkcnt->RegisterTracklets(tracklets, kTRUE);
-  }
-  else
-  {
-    Warning("on_new_event", "'SPD Tracklets' not found.");
-  }
-
   Double_t x[3] = { 0, 0, 0 };
 
   if (AliEveEventManager::HasESD())

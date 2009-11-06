@@ -435,6 +435,17 @@ TEveElementList* esd_tracks_by_category()
     tlist->SetTitle(Form("N tracks=%d", tc[ti]));
 
     tlist->MakeTracks();
+
+    Bool_t good_cont = ti <= 1;
+    if (AliEveTrackCounter::IsActive())
+    {
+      AliEveTrackCounter::fgInstance->RegisterTracks(tlist, good_cont);
+    }
+    else
+    {
+      if ( ! good_cont)
+        tlist->SetLineStyle(6);
+    }
   }
   cont->SetTitle(Form("N all tracks = %d", count));
   // ??? The following does not always work:

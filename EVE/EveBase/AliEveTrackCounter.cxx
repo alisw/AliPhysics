@@ -42,6 +42,13 @@ ClassImp(AliEveTrackCounter)
 //______________________________________________________________________________
 AliEveTrackCounter* AliEveTrackCounter::fgInstance = 0;
 
+Bool_t AliEveTrackCounter::IsActive()
+{
+  // Check if instance exists and is active.
+
+  return fgInstance && fgInstance->fActive;
+}
+
 //______________________________________________________________________________
 AliEveTrackCounter::AliEveTrackCounter(const Text_t* name, const Text_t* title) :
   TEveElement(),
@@ -52,7 +59,8 @@ AliEveTrackCounter::AliEveTrackCounter(const Text_t* name, const Text_t* title) 
   fEventId      (-1),
   fAllTracks    (0), fGoodTracks   (0),
   fAllTracklets (0), fGoodTracklets(0),
-  fTrackLists   (),  fTrackletLists()
+  fTrackLists   (),  fTrackletLists(),
+  fActive       (kFALSE)
 {
   // Constructor.
   // Connects to global signal "AliEveTrack", "SecSelected(AliEveTrack*)".
@@ -63,6 +71,8 @@ AliEveTrackCounter::AliEveTrackCounter(const Text_t* name, const Text_t* title) 
                     "AliEveTrackCounter", this, "DoTrackAction(AliEveTrack*)");
   TQObject::Connect("AliEveTracklet", "SecSelectedTracklet(AliEveTracklet*)",
                     "AliEveTrackCounter", this, "DoTrackletAction(AliEveTracklet*)");
+
+  AliEveEventManager::GetMaster()->Connect("NewEventDataLoaded()", "AliEveTrackCounter", this, "Reset()");
 }
 
 //______________________________________________________________________________
@@ -70,6 +80,8 @@ AliEveTrackCounter::~AliEveTrackCounter()
 {
   // Destructor.
   // Disconnect from the global track signals.
+
+  AliEveEventManager::GetMaster()->Disconnect("NewEventDataLoaded()", this);
 
   TQObject::Disconnect("AliEveTrack", "DoTrackAction(AliEveTrack*)");
   TQObject::Disconnect("AliEveTracklet", "DoTrackletAction(AliEveTracklet*)");
@@ -99,6 +111,8 @@ void AliEveTrackCounter::Reset()
       tlist->DecDenyDestroy();
     fTrackletLists.Clear("nodelete");
   }
+
+  fEventId = AliEveEventManager::GetMaster()->GetEventId();
 }
 
 //______________________________________________________________________________
@@ -150,10 +164,12 @@ void AliEveTrackCounter::RegisterTracklets(TEveTrackList* tlist, Bool_t goodTrac
     AliEveTracklet* t = dynamic_cast<AliEveTracklet*>(*i);
     if (t != 0)
     {
-      if (goodTracks && mul->GetLabel(t->GetIndex(), 0) == 3)
+      if (goodTracks)
       {
+	mul->SetLabel(t->GetIndex(), 0, 3);
         ++fGoodTracklets;
       } else {
+	mul->SetLabel(t->GetIndex(), 0, 0);
         t->SetLineStyle(fBadLineStyle);
       }
       ++fAllTracklets;
@@ -176,6 +192,9 @@ void AliEveTrackCounter::DoTrackAction(AliEveTrack* track)
 
    static const TEveException eh("AliEveTrackCounter::DoTrackAction ");
 
+   if (!fActive)
+     return;
+
    switch (fClickAction)
    {
 
@@ -186,7 +205,6 @@ void AliEveTrackCounter::DoTrackAction(AliEveTrack* track)
          const TEveVector &p = track->GetMomentum();;
          printf("  Vx=%f, Vy=%f, Vz=%f; Pt=%f, Pz=%f, phi=%f)\n",
                 v.fX, v.fY, v.fZ, p.Perp(), p.fZ, TMath::RadToDeg()*p.Phi());
-         printf("  <other information should be printed ... full AliESDtrack>\n");
          break;
       }
 
@@ -206,8 +224,8 @@ void AliEveTrackCounter::DoTrackAction(AliEveTrack* track)
          track->ElementChanged();
          gEve->Redraw3D();
 
-         printf("AliEveTrackCounter::DoTrackAction All=%d, Good=%d, Bad=%d\n",
-                fAllTracks, fGoodTracks, fAllTracks-fGoodTracks);
+         //printf("AliEveTrackCounter::DoTrackAction All=%d, Good=%d, Bad=%d\n",
+         //       fAllTracks, fGoodTracks, fAllTracks-fGoodTracks);
 
          if (gEve->GetEditor()->GetModel() == GetObject(eh))
             gEve->EditElement(this);
@@ -232,6 +250,9 @@ void AliEveTrackCounter::DoTrackletAction(AliEveTracklet* track)
 
    static const TEveException eh("AliEveTrackCounter::DoTrackletAction ");
 
+   if (!fActive)
+     return;
+
    switch (fClickAction)
    {
 
@@ -242,7 +263,6 @@ void AliEveTrackCounter::DoTrackletAction(AliEveTracklet* track)
          const TEveVector &p = track->GetMomentum();;
          printf("  Vx=%f, Vy=%f, Vz=%f; Pt=%f, Pz=%f, phi=%f)\n",
                 v.fX, v.fY, v.fZ, p.Perp(), p.fZ, TMath::RadToDeg()*p.Phi());
-         printf("  <other information should be printed ... full AliESDtrack>\n");
          break;
       }
 
@@ -264,8 +284,8 @@ void AliEveTrackCounter::DoTrackletAction(AliEveTracklet* track)
          track->ElementChanged();
          gEve->Redraw3D();
 
-         printf("AliEveTrackCounter::DoTrackletAction All=%d, Good=%d, Bad=%d\n",
-                fAllTracklets, fGoodTracklets, fAllTracklets-fGoodTracklets);
+         // printf("AliEveTrackCounter::DoTrackletAction All=%d, Good=%d, Bad=%d\n",
+         //        fAllTracklets, fGoodTracklets, fAllTracklets-fGoodTracklets);
 
          if (gEve->GetEditor()->GetModel() == GetObject(eh))
             gEve->EditElement(this);

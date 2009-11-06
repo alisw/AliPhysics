@@ -1,4 +1,4 @@
-// Label is used to store scanning result for tracks and trackelts.
+// Display some histograms from scanning.
 //
 // BIT(1) stores the original selection.
 // BIT(0) stores the user selection (set to same value as b1 at init).
@@ -8,47 +8,75 @@
 
 void show_scan_results()
 {
-  TFile *f = TFile::Open("scan_results.root", "UPDATE");
+  TFile *f = TFile::Open("scan_results.root");
 
-  f->Delete("SR;*");
+  TTree* t = (TTree*) gDirectory->Get("SR");
 
-  T = new TTree("SR", "Scanning results");
+  if (t == 0)
+    Error("show_scan_results", "Tree 'SR' with scan results not found.");
 
-  TClonesArray* clones = new TClonesArray("AliESDtrack", 32);
-  TBranch * tb = T->Branch("T", &clones);
-
-  AliMultiplicity *mult = 0;
-  TBranch *mb = T->Branch("M", &mult);
+  TCanvas *c = 0;
 
 
-  for (Int_t i=0; i<=9999; ++i)
-  {
-    TString name;
+  //----------------------------------------------------------------------------
+  // Tracks
+  //----------------------------------------------------------------------------
 
-    name.Form("Tracks_%04d", i);
-    TClonesArray* ts = (TClonesArray*) f->Get(name);
+  c = new TCanvas("Tracks", "Track Scanning Results", 800, 600);
+  c->Divide(2, 3);
 
-    name.Form("Tracklets_%04d", i);
-    AliMultiplicity* ms =  (AliMultiplicity*) f->Get(name);
+  c->cd(1);
+  t->Draw("Sum$(T.fLabel & 1)");
 
-    if (ts && ms)
-    {
-      tb->SetAddress(&ts);
-      mb->SetAddress(&ms);
-      T->Fill();
-    }
-    else if ((ts && !ms) || (!ts && ms))
-    {
-      Error("show_scan_results", "Only one of tracks/tracklets exists for index %d.", i);
-    }
+  c->cd(2);
+  t->Draw("T.GetSign()", "T.fLabel & 1");
 
-  }
+  c->cd(3);
+  t->Draw("T.Pt()", "T.fLabel & 1");
 
-  T->Write();
+  c->cd(4);
+  t->Draw("T.Eta()", "T.fLabel & 1");
+
+  c->cd(5);
+  t->Draw("T.Phi()", "T.fLabel & 1");
+
+  c->Modified();
+  c->Update();
+
+
+  //----------------------------------------------------------------------------
+  // Trackelts
+  //----------------------------------------------------------------------------
+
+  c = new TCanvas("Tracklets", "Tracklet Scanning Results", 800, 600);
+  c->Divide(2, 3);
+
+  c->cd(1);
+  t->Draw("Sum$(M.fLabels & 1)");
+
+  c->cd(2);
+  t->Draw("M.fNsingle");
+
+  c->cd(3);
+  t->Draw("M.fFiredChips[1]:Sum$(M.fLabels & 1)");
+
+  c->cd(4);
+  t->Draw("M.fDeltTh", "M.fLabels & 1");
+
+  c->cd(5);
+  t->Draw("M.fDeltPhi", "M.fLabels & 1");
+
+  c->cd(6);
+  t->Draw("M.fPhi", "M.fLabels & 1");
+
+  c->Modified();
+  c->Update();
+
+
+  //----------------------------------------------------------------------------
+  // End
+  //----------------------------------------------------------------------------
 
   f->Close();
   delete f;
-
-  // Reopen in read mode.
-  TFile::Open("scan_results.root");
 }
