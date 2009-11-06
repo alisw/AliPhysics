@@ -38,69 +38,98 @@ void AliGlobalQADataMaker::InitRecPoints() {
   // as a part of global QA
   //------------------------------------------------------
   const Char_t *name[]={
+    "hGlobalSPD1ResidualsY","SPD1ResidualsZ",
+    "hGlobalSPD2ResidualsY","SPD2ResidualsZ",
+    "hGlobalSDD1ResidualsY","SDD1ResidualsZ",
+    "hGlobalSDD2ResidualsY","SDD2ResidualsZ",
+    "hGlobalSSD1ResidualsY","SSD1ResidualsZ",
+    "hGlobalSSD2ResidualsY","SSD2ResidualsZ",
+    
+    "hGlobalTPC1ResidualsY","TPC1ResidualsZ",
+    "hGlobalTPC2ResidualsY","TPC2ResidualsZ",
+    
+    "hGlobalTRD1ResidualsY","TRD1ResidualsZ",
+    "hGlobalTRD2ResidualsY","TRD2ResidualsZ",
+    "hGlobalTRD3ResidualsY","TRD3ResidualsZ",
+    "hGlobalTRD4ResidualsY","TRD4ResidualsZ",
+    "hGlobalTRD5ResidualsY","TRD5ResidualsZ",
+    "hGlobalTRD6ResidualsY","TRD6ResidualsZ",
+    
+    "hGlobalTOFResidualsY","TOFResidualsZ",
+    
+    "hGlobalPHOS1ResidualsY","PHOS1ResidualsZ",
+    "hGlobalPHOS2ResidualsY","PHOS2ResidualsZ",
+    
+    "hGlobalHMPIDResidualsY","HMPIDResidualsZ",
+    
+    "hGlobalMUONResidualsY","MUONResidualsZ",
+    
+    "hGlobalEMCALResidualsY","EMCALResidualsZ"
+  };
+  const Char_t *title[]={
     "SPD1 residuals Y","SPD1 residuals Z",
     "SPD2 residuals Y","SPD2 residuals Z",
     "SDD1 residuals Y","SDD1 residuals Z",
     "SDD2 residuals Y","SDD2 residuals Z",
     "SSD1 residuals Y","SSD1 residuals Z",
     "SSD2 residuals Y","SSD2 residuals Z",
-
+    
     "TPC1 residuals Y","TPC1 residuals Z",
     "TPC2 residuals Y","TPC2 residuals Z",
-
+    
     "TRD1 residuals Y","TRD1 residuals Z",
     "TRD2 residuals Y","TRD2 residuals Z",
     "TRD3 residuals Y","TRD3 residuals Z",
     "TRD4 residuals Y","TRD4 residuals Z",
     "TRD5 residuals Y","TRD5 residuals Z",
     "TRD6 residuals Y","TRD6 residuals Z",
-
+    
     "TOF residuals Y","TOF residuals Z",
-
+    
     "PHOS1 residuals Y","PHOS1 residuals Z",
     "PHOS2 residuals Y","PHOS2 residuals Z",
-
+    
     "HMPID residuals Y","HMPID residuals Z",
-
+    
     "MUON residuals Y","MUON residuals Z",
-
+    
     "EMCAL residuals Y","EMCAL residuals Z"
   };
-
+  
   for (Int_t m=1; m<AliGeomManager::kLastLayer; m++) {
     Int_t i=2*m-2;
-    TH1F *h=new TH1F(name[i],name[i],100,-5.,5.);
+    TH1F *h=new TH1F(name[i],title[i],100,-5.,5.);
     Add2RecPointsList(h,i);    
-    h=new TH1F(name[i+1],name[i+1],100,-5.,5.);
+    h=new TH1F(name[i+1],title[i+1],100,-5.,5.);
     Add2RecPointsList(h,i+1);    
   }
 
   Add2RecPointsList(
-  new TH1F("SSD1 absolute residuals Y for Z<0 (cm)",
-           "SSD1 absolute residuals Y for Z<0 (cm)",100,-2.,2.),40);
+  new TH1F("hGlobalSSD1AbsoluteResidualsYNegZ",
+           "SSD1 Absolute Residuals Y Neg Z",100,-2.,2.),40);
   Add2RecPointsList(
-  new TH1F("SSD1 absolute residuals Z for Z<0 (cm)",
-           "SSD1 absolute residuals Z for Z<0 (cm)",100,-2.,2.),41);
+  new TH1F("hGlobalSSD1AbsoluteResidualsZNegZ",
+           "SSD1 Absolute Residuals Z Neg Z",100,-2.,2.),41);
   Add2RecPointsList(
-  new TH1F("SSD1 absolute residuals Y for Z>0 (cm)",
-           "SSD1 absolute residuals Y for Z>0 (cm)",100,-2.,2.),42);
+  new TH1F("hGlobalSSD1AbsoluteResidualsYPosZ",
+           "SSD1 Absolute Residuals Y Pos Z",100,-2.,2.),42);
   Add2RecPointsList(
-  new TH1F("SSD1 absolute residuals Z for Z>0 (cm)",
-           "SSD1 absolute residuals Z for Z>0 (cm)",100,-2.,2.),43);
+  new TH1F("hGlobalSSD1AbsoluteResidualsZPosZ",
+           "SSD1 Absolute Residuals Z Pos Z",100,-2.,2.),43);
 
 
   Add2RecPointsList(
-  new TH1F("SSD2 absolute residuals Y for Z<0 (cm)",
-           "SSD2 absolute residuals Y for Z<0 (cm)",100,-3.,3.),44);
+  new TH1F("hGlobalSSD2AbsoluteResidualsYNegZ",
+           "SSD2 Absolute Residuals Y Neg Z",100,-3.,3.),44);
   Add2RecPointsList(
-  new TH1F("SSD2 absolute residuals Z for Z<0 (cm)",
-           "SSD2 absolute residuals Z for Z<0 (cm)",100,-3.,3.),45);
+  new TH1F("hGlobalSSD2AbsoluteResidualsZNegZ",
+           "SSD2 Absolute Residuals Z Neg Z",100,-3.,3.),45);
   Add2RecPointsList(
-  new TH1F("SSD2 absolute residuals Y for Z>0 (cm)",
-           "SSD2 absolute residuals Y for Z>0 (cm)",100,-3.,3.),46);
+  new TH1F("hGlobalSSD2AbsoluteResidualsYPosZ",
+           "SSD2 Absolute Residuals Y Pos Z",100,-3.,3.),46);
   Add2RecPointsList(
-  new TH1F("SSD2 absolute residuals Z for Z>0 (cm)",
-           "SSD2 absolute residuals Z for Z>0 (cm)",100,-3.,3.),47);
+  new TH1F("hGlobalSSD2AbsoluteResidualsZPosZ",
+           "SSD2Absolute Residuals Z Pos Z",100,-3.,3.),47);
   
 }
 
@@ -112,57 +141,82 @@ void AliGlobalQADataMaker::InitESDs() {
   //------------------------------------------------------
 
   {// Cluster related QA
-  const Char_t *name[]={
-    "Fraction of the assigned clusters in ITS",
-    "Fraction of the assigned clusters in TPC",
-    "Fraction of the assigned clusters in TRD"
-  };
-  Add2ESDsList(new TH1F(name[0],name[0],100,0.,2.),kClr0);
-  Add2ESDsList(new TH1F(name[1],name[1],100,0.,2.),kClr1);
-  Add2ESDsList(new TH1F(name[2],name[2],100,0.,2.),kClr2);
+    const Char_t *name[]={
+      "hGlobalFractionAssignedClustersITS",
+      "hGlobalFractionAssignedClustersTPC",
+      "hGlobalFractionAssignedClustersTRD"
+    };
+    const Char_t *title[]={
+      "Fraction of the assigned clusters in ITS",
+      "Fraction of the assigned clusters in TPC",
+      "Fraction of the assigned clusters in TRD"
+    };
+    Add2ESDsList(new TH1F(name[0],title[0],100,0.,2.),kClr0);
+    Add2ESDsList(new TH1F(name[1],title[1],100,0.,2.),kClr1);
+    Add2ESDsList(new TH1F(name[2],title[2],100,0.,2.),kClr2);
   }
 
   {// Track related QA
-  const Char_t *name[]={
-    "Track azimuthal distribution (rad)",                   // kTrk0
-    "Track pseudo-rapidity distribution",                   // kTrk1
-    "TPC: track momentum distribution (GeV)",               // kTrk2
-    "TPC-ITS matched: track momentum distribution (GeV)",   // kTrk3
-    "TPC-TOF matched: track momentum distribution (GeV)",   // kTrk4
-    "TPC-ITS track-matching probability",                   // kTrk5
-    "TPC-TOF track-matching probability"                    // kTrk6
+    const Char_t *name[]={
+      "hGlobalTrackAzimuthe",                               // kTrk0
+      "hGlobalTrackEta",                                    // kTrk1
+      "hGlobalTPCTrackpT",                                  // kTrk2
+      "hGlobalTPCITSMatchedpT",                             // kTrk3
+      "hGlobalTPCTOFMatchedpT",                             // kTrk4
+      "hGlobalTPCITSMatchingProbability",                   // kTrk5
+      "hGlobalTPCTOFMatchingProbability"                    // kTrk6
   };
-  Add2ESDsList(new TH1F(name[0],name[0],100, 0.,TMath::TwoPi()),kTrk0);
-  Add2ESDsList(new TH1F(name[1],name[1],100,-2.00,2.00),kTrk1);
-  Add2ESDsList(new TH1F(name[2],name[2],50,  0.20,5.00),kTrk2);
-  Add2ESDsList(new TH1F(name[3],name[3],50,  0.20,5.00),kTrk3);
-  Add2ESDsList(new TH1F(name[4],name[4],50,  0.20,5.00),kTrk4);
-  Add2ESDsList(new TH1F(name[5],name[5],50,  0.20,5.00),kTrk5);
-  Add2ESDsList(new TH1F(name[6],name[6],50,  0.20,5.00),kTrk6);
+    const Char_t *title[]={
+      "Track azimuthal distribution (rad)",                   // kTrk0
+      "Track pseudo-rapidity distribution",                   // kTrk1
+      "TPC: track momentum distribution (GeV)",               // kTrk2
+      "TPC-ITS matched: track momentum distribution (GeV)",   // kTrk3
+      "TPC-TOF matched: track momentum distribution (GeV)",   // kTrk4
+      "TPC-ITS track-matching probability",                   // kTrk5
+      "TPC-TOF track-matching probability"                    // kTrk6
+    };
+  Add2ESDsList(new TH1F(name[0],title[0],100, 0.,TMath::TwoPi()),kTrk0);
+  Add2ESDsList(new TH1F(name[1],title[1],100,-2.00,2.00),kTrk1);
+  Add2ESDsList(new TH1F(name[2],title[2],50,  0.20,5.00),kTrk2);
+  Add2ESDsList(new TH1F(name[3],title[3],50,  0.20,5.00),kTrk3);
+  Add2ESDsList(new TH1F(name[4],title[4],50,  0.20,5.00),kTrk4);
+  Add2ESDsList(new TH1F(name[5],title[5],50,  0.20,5.00),kTrk5);
+  Add2ESDsList(new TH1F(name[6],title[6],50,  0.20,5.00),kTrk6);
   }
 
   {// V0 related QA
-  const Char_t *name[]={
-    "On-the-fly K0s mass (GeV)",
-    "Offline K0s mass (GeV)",
-    "On-the-fly Lambda0 + Lambda0Bar mass (GeV)",
-    "Offline Lambda0 + Lambda0Bar mass (GeV)"
-  };
-  Add2ESDsList(new TH1F(name[0],name[0],50,  0.4477,0.5477),kK0on);
-  Add2ESDsList(new TH1F(name[1],name[1],50,  0.4477,0.5477),kK0off);
-  Add2ESDsList(new TH1F(name[2],name[2],50,  1.0657,1.1657),kL0on);
-  Add2ESDsList(new TH1F(name[3],name[3],50,  1.0657,1.1657),kL0off);
+    const Char_t *name[]={
+      "hGlobalPromptK0sMass",
+      "hGlobalOfflineK0sMass",
+      "hGlobalPromptLambda0Lambda0BarMass",
+      "hGlobalOfflineLambda0Lambda0BarMass"
+    };
+    const Char_t *title[]={
+      "On-the-fly K0s mass (GeV)",
+      "Offline K0s mass (GeV)",
+      "On-the-fly Lambda0 + Lambda0Bar mass (GeV)",
+      "Offline Lambda0 + Lambda0Bar mass (GeV)"
+    };
+    Add2ESDsList(new TH1F(name[0],title[0],50,  0.4477,0.5477),kK0on);
+    Add2ESDsList(new TH1F(name[1],title[1],50,  0.4477,0.5477),kK0off);
+    Add2ESDsList(new TH1F(name[2],title[2],50,  1.0657,1.1657),kL0on);
+    Add2ESDsList(new TH1F(name[3],title[3],50,  1.0657,1.1657),kL0off);
   }
 
   {// PID related QA
   const Char_t *name[]={
-    "ITS: dEdx (ADC) for particles with momentum 0.4 - 0.5 (GeV)",
-    "TPC: dEdx (ADC) for particles with momentum 0.4 - 0.5 (GeV)",
-    "TOF: tracking - measured (ps)"
+    "ITSdEdx",
+    "TPCdEdx",
+    "TOFTrackingvsMeasured"
   };
-  Add2ESDsList(new TH1F(name[0],name[0],50,0.00,200.),kPid0);
-  Add2ESDsList(new TH1F(name[1],name[1],50,0.00,100.),kPid1);
-  Add2ESDsList(new TH1F(name[2],name[2],50,-3500.,3500.),kPid2);
+    const Char_t *title[]={
+      "ITS: dEdx (ADC) for particles with momentum 0.4 - 0.5 (GeV)",
+      "TPC: dEdx (ADC) for particles with momentum 0.4 - 0.5 (GeV)",
+      "TOF: tracking - measured (ps)"
+    };
+    Add2ESDsList(new TH1F(name[0],title[0],50,0.00,200.),kPid0);
+    Add2ESDsList(new TH1F(name[1],title[1],50,0.00,100.),kPid1);
+    Add2ESDsList(new TH1F(name[2],title[2],50,-3500.,3500.),kPid2);
   }
 
 }
