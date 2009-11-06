@@ -205,9 +205,9 @@ void AliGlobalQADataMaker::InitESDs() {
 
   {// PID related QA
   const Char_t *name[]={
-    "ITSdEdx",
-    "TPCdEdx",
-    "TOFTrackingvsMeasured"
+    "hGlobalITSdEdx",
+    "hGlobalTPCdEdx",
+    "hGlobalTOFTrackingvsMeasured"
   };
     const Char_t *title[]={
       "ITS: dEdx (ADC) for particles with momentum 0.4 - 0.5 (GeV)",
@@ -238,6 +238,7 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
   // Check id histograms already created for this Event Specie
   if ( ! GetESDsData(kClr0) )
     InitESDs() ;
+
 
   const AliESDEvent *esd=event;
 
