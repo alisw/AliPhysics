@@ -1291,9 +1291,12 @@ void AliQAManager::RunOneEventInOneDetector(Int_t det, TTree * tree)
       AliQADataMaker *qadm = GetQADataMaker(det);  
       if (qadm) { 
         qadm->SetEventSpecie(fEventSpecie) ;  
-        if ( qadm->GetRecoParam() ) 
+        if ( qadm->GetRecoParam() ) {
           if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
-            qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ;         
+            qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
+          else
+            AliFatal(Form("%d is not an event specie", qadm->GetRecoParam()->GetEventSpecie())) ; 
+        }                    
         if ( qadm->IsCycleDone() ) {
           qadm->EndOfCycle() ;
         }
