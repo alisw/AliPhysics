@@ -38,13 +38,15 @@ AliAnalysisTask *AddTaskHFE(){
 
   //find input container
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+  TString containerName = mgr->GetCommonFileName();
+  containerName += ":PWG3_hfe";
   
   task->ConnectOutput(0, mgr->CreateContainer("nEvents", TH1I::Class(),
-					      AliAnalysisManager::kOutputContainer, "HFEtask.root"));
+					      AliAnalysisManager::kOutputContainer, containerName.Data()));
   task->ConnectOutput(1, mgr->CreateContainer("Results", TList::Class(),
-					      AliAnalysisManager::kOutputContainer, "HFEtask.root"));
+					      AliAnalysisManager::kOutputContainer, containerName.Data()));
   task->ConnectOutput(2, mgr->CreateContainer("QA", TList::Class(),
-					      AliAnalysisManager::kOutputContainer, "HFEtask.root"));
+					      AliAnalysisManager::kOutputContainer, containerName.Data()));
   mgr->ConnectInput  (task,  0, cinput );
   
   return task;
