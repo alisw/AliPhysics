@@ -63,6 +63,9 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 
   //Keep pi0 in the list and not the 2 photon if decay angle is small.
   reader->SwitchOffOverlapCheck();        	
+
+  //Remove the temporal AODs we create.	
+  reader->SwitchOffWriteStdAOD();	
 	
   reader->Print("");
   

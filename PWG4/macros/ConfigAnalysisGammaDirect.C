@@ -52,6 +52,20 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	reader->SetCTSPtMin(0.2);
 	
 	reader->SetFidutialCut(fidCut);
+	
+	//     //We want tracks fitted in the detectors:
+	//     ULong_t status=AliAODTrack::kTPCrefit;
+	//     status|=AliAODTrack::kITSrefit; //(default settings)
+	
+	//     We want tracks whose PID bit is set:
+	//     ULong_t status =AliAODTrack::kITSpid;
+	//     status|=AliAODTrack::kTPCpid;	
+	
+	//	reader->SetTrackStatus(status);
+		
+	//Remove the temporal AODs we create.	
+	reader->SwitchOffWriteStdAOD();	
+	
 	reader->Print("");
 	
 	
