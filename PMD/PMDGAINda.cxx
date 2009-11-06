@@ -7,7 +7,7 @@ Reference run:/afs/cern.ch/user/s/sjena/public/run83496.raw
 Run Type: PHYSICS
 DA Type: MON
 Number of events needed: 1 million for PB+PB, 200 milion for p+p
-Input Files: Run0_999999999_v0_s0.root,PMD_PED.root, PMD_GAIN_CONFIGFILE, pmd_gain_tempfile.dat
+Input Files: PMD/Calib/Mapping, PMD_PED.root, PMD_GAIN_CONFIGFILE, pmd_gain_tempfile.dat
 Output Files: PMDGAINS.root, to be exported to the DAQ FES
 Trigger types used: PHYSICS_EVENT
 
@@ -173,13 +173,17 @@ int main(int argc, char **argv) {
 
     // Get run number
 
+    int runNr = 0;
+
     if (getenv("DATE_RUN_NUMBER")==0) {
       printf("DATE_RUN_NUMBER not properly set.\n");
-      return -1;
+      printf("Run Number set to Zero \n");
+      //return -1;
     }
-    int runNr = atoi(getenv("DATE_RUN_NUMBER"));
-
-    //int runNr = 0;
+    else
+      {
+	runNr = atoi(getenv("DATE_RUN_NUMBER"));
+      }
 
     if (gSystem->AccessPathName("localOCDB/PMD/Calib/Mapping",kFileExists))
       {

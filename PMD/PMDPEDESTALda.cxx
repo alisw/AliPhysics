@@ -7,7 +7,7 @@ Reference Run:/afs/cern.ch/user/s/sjena/public/run83496.raw
 Run Type: PEDESTAL
 DA Type: LDC
 Number of events needed: 1000
-Input Files: Run0_999999999_v0_s0.root from the DAQ DB for mapping
+Input Files: PMD/Calib/Mapping
 Output Files: pmd_ped.root, to be exported to the DAQ FXS, pedestal230*.ped
 Trigger types used: PHYSICS_EVENT
 
@@ -99,14 +99,16 @@ int main(int argc, char **argv) {
 
     // Get run number
 
+    int runNr = 0;
     if (getenv("DATE_RUN_NUMBER")==0) {
       printf("DATE_RUN_NUMBER not properly set.\n");
-      return -1;
+      //return -1;
+      printf("Run Number is set to Zero \n");
     }
-    int runNr = atoi(getenv("DATE_RUN_NUMBER"));
-
-    //int runNr = 0;
-
+    else
+      {
+	runNr = atoi(getenv("DATE_RUN_NUMBER"));
+      }
 
     if (gSystem->AccessPathName("localOCDB/PMD/Calib/Mapping",kFileExists))
       {
