@@ -355,7 +355,7 @@ void AliCaloTrackReader::InitParameters()
   fSecondInputFirstEvent = 0 ;
   fReadStack             = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file
   fReadAODMCParticles    = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file
-  fWriteOutputStdAOD     = kFALSE;
+  fWriteOutputStdAOD     = kTRUE;  // Leave it kTRUE in case we run different tasks at the same time after the filter, when running alone better switch it off.
   fDeltaAODFileName      = "deltaAODPartCorr.root";
 }
 
