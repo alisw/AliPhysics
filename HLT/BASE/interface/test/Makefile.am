@@ -3,7 +3,8 @@
 
 AM_CPPFLAGS			= -I$(top_srcdir)/BASE \
 				  -I$(top_srcdir)/BASE/interface \
-				  -DBASE_PATH=\"$(top_builddir)/BASE/interface/test/\"
+				  -DBASE_PATH=\"$(top_builddir)/BASE/interface/test/\" \
+				  -I$(ALICE_ROOT)/STEER
 
 EXTRA_DIST			= 
 
@@ -22,7 +23,10 @@ testAliHLTExternalInterface_SOURCES 	= testAliHLTExternalInterface.C \
 # Maybe an issue with the RTLD_NOW used in the dlopen from the
 # AliHLTComponentHandler
 testAliHLTExternalInterface_LDADD = $(top_builddir)/BASE/libHLTbase.la
-
+testAliHLTExternalInterface_LDFLAGS  = -L@ROOTLIBDIR@ \
+				  	@ROOTLIBS@ \
+				  	@ALIROOT_LDFLAGS@ \
+				  	@ALIROOT_LIBS@
 
 libAliHLTTest_la_SOURCES = AliHLTTestProcessor.cxx AliHLTTestAgent.cxx
 libAliHLTTest_la_LIBADD	 =

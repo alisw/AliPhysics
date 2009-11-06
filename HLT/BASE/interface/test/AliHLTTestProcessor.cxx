@@ -23,6 +23,8 @@
  */
 
 #include "AliHLTTestProcessor.h"
+#include "TMath.h"
+#include "AliTracker.h"
 
 AliHLTTestProcessor::AliHLTTestProcessor()
   : AliHLTProcessor()
@@ -63,6 +65,11 @@ int AliHLTTestProcessor::DoEvent( const AliHLTComponentEventData& /*evtData*/, A
     return -ENODEV;
   }
 
+  if (!CheckMagneticField(-5)) {
+    HLTError("initialization of magnetic field failed");
+    return -EFAULT;
+  }  
+
   HLTInfo("processing event");
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock();
 	 pBlock!=NULL; 
@@ -94,5 +101,12 @@ bool AliHLTTestProcessor::CheckDataType(const char* id, const char* origin) cons
   for (unsigned i=0; i<fProcessedTypes.size(); i++) {
     if (MatchExactly(dt, fProcessedTypes[i])) return true;
   }
+  return false;
+}
+
+bool AliHLTTestProcessor::CheckMagneticField(float bz)
+{
+  if (TMath::Abs(AliTracker::GetBz()-bz)<0.01) return true;
+  HLTError("mismatch in magnetic field: %f, expecting %f", AliTracker::GetBz(), bz);
   return false;
 }

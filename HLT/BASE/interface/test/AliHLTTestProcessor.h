@@ -25,8 +25,9 @@
 
 #include <vector>
 #include "AliHLTProcessor.h"
+#include "AliHLTTest.h"
 
-class AliHLTTestProcessor : public AliHLTProcessor
+class AliHLTTestProcessor : public AliHLTProcessor, public AliHLTTest
 {
 public:
   AliHLTTestProcessor();
@@ -47,6 +48,7 @@ public:
   bool CheckRunNo(unsigned runNo) const;
   bool CheckChainId(const char* chainId) const;
   bool CheckDataType(const char* id, const char* origin) const;
+  bool CheckMagneticField(float bz);
 
 private:
   int DoInit( int argc, const char** argv );
