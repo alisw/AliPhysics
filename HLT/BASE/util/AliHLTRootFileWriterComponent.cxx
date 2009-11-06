@@ -46,6 +46,8 @@ AliHLTRootFileWriterComponent::AliHLTRootFileWriterComponent()
 
   // all blocks of one event go into the same file
   SetMode(kConcatenateBlocks);
+  // write all events by default
+  SetMode(kWriteAllEvents);
 }
 
 AliHLTRootFileWriterComponent::~AliHLTRootFileWriterComponent()
