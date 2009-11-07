@@ -38,6 +38,7 @@
 #include "AliCDBMetaData.h"
 #include "AliCDBStorage.h"
 #include "AliGRPObject.h"
+#include "AliGRPManager.h"
 #include "AliHLTSystem.h"
 #include "AliHLTPluginBase.h"
 #include "AliRawReaderFile.h"
@@ -45,10 +46,11 @@
 #include "AliRawReaderRoot.h"
 #include "AliESDEvent.h"
 #include "AliHLTOUTComponent.h"
-#include "AliMagF.h"
+#include "AliTracker.h"
 #include "TGeoGlobalMagField.h"
 #include "TSystem.h"
 #include "TMath.h"
+#include "TGeoGlobalMagField.h"
 
 #if ALIHLTSIMULATION_LIBRARY_VERSION != LIBHLTSIM_VERSION
 #error library version in header file and lib*.pkg do not match
@@ -170,68 +172,20 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
     int runNo=pRunLoader->GetHeader()->GetRun();
 
     // init solenoid field
-    Double_t solenoidBz=0;
-    AliMagF *field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-    if (field) {
-      // this field definition is rather awkward: AliMagF::SolenoidField returns
-      // a signed value, the amazing thing is that the sign is opposite to that
-      // one in the factor. So the abs value has to be used. Lets assume, there
-      // is a reason for that confusing implementation ...
-      solenoidBz=TMath::Abs(field->SolenoidField())*field->Factor();
-      AliDebug(0,Form("magnetic field: %f %f", field->SolenoidField(),field->Factor()));
+    // 2009-11-07 magnetic field handling fo HLT components has been switched to the
+    // global AliMagF instance, the HLT/ConfigHLT/SolenoidBz entry is obsolete
+    // The global instance is either established by the AliRoot environment or the
+    // component external interface.
+    if (TGeoGlobalMagField::Instance()->GetField()) {
+      AliDebug(0, Form("magnetic field: %f", AliTracker::GetBz()));
     } else {
       // workaround for bug #51285
-      AliError("can not get the AliMagF instance, falling back to GRP entry");
-      AliCDBEntry *pGRPEntry = man->Get("GRP/GRP/Data", runNo);
-      if (pGRPEntry) {
-	AliGRPObject* pGRPData=dynamic_cast<AliGRPObject*>(pGRPEntry->GetObject());
-	assert(pGRPData!=NULL);
-	if (pGRPData) {
-	  // this is just a workaround at the moment, common functionality in AliReconstruction
-	  // is needed to reconstruct the magnetic field in a common way
-	  // the code is partly taken from AliReconstruction::InitGRP
-	  Bool_t ok = kTRUE;
-	  Float_t l3Current = pGRPData->GetL3Current((AliGRPObject::Stats)0);
-	  if (l3Current == AliGRPObject::GetInvalidFloat()) {
-	    AliError("GRP/GRP/Data entry:  missing value for the L3 current !");
-	    ok = kFALSE;
-	  }
-    
-	  Char_t l3Polarity = pGRPData->GetL3Polarity();
-	  if (l3Polarity == AliGRPObject::GetInvalidChar()) {
-	    AliError("GRP/GRP/Data entry:  missing value for the L3 polarity !");
-	    ok = kFALSE;
-	  }
-	  
-	  if (ok) {
-	    solenoidBz=l3Current/6000;
-	    if (l3Polarity) solenoidBz*=-1;
-	  } else {
-	    AliError("invalid L3 field information in GRP entry");
-	  }
-	}
+      AliGRPManager grpman;
+      if (grpman.ReadGRPEntry() &&
+	  grpman.SetMagField()) {
+	// nothing to do any more
       }
-    }
-    const char* cdbSolenoidPath="HLT/ConfigHLT/SolenoidBz";
-    TString cdbSolenoidParam;
-    cdbSolenoidParam.Form("-solenoidBz %f", solenoidBz);
-
-    // check if the entry is already there
-    AliCDBEntry *pEntry = man->Get(cdbSolenoidPath, runNo);
-    TObjString* pString=NULL;
-    if (pEntry) pString=dynamic_cast<TObjString*>(pEntry->GetObject());
-
-    if (!pEntry || !pString || pString->GetString().CompareTo(cdbSolenoidParam)!=0) {
-      TObjString obj(cdbSolenoidParam);
-      AliCDBPath cdbSolenoidEntry(cdbSolenoidPath);
-      AliCDBId cdbSolenoidId(cdbSolenoidEntry, runNo, runNo, 0, 0);
-      AliCDBMetaData cdbMetaData;
-      cdbMetaData.SetResponsible("Matthias.Richter@cern.ch");
-      cdbMetaData.SetComment("Automatically produced GRP entry (AliHLTSimulation) for the magnetic field initialization of HLT components");
-      man->Put(&obj, cdbSolenoidId, &cdbMetaData);
-
-      // unload the cache due to bug #51281
-      man->UnloadFromCache(cdbSolenoidPath);
+      AliError(Form("can not get the AliMagF instance, falling back to GRP entry (%f)", AliTracker::GetBz()));
     }
   } else if (man) {
     AliError("OCDB default storage not yet set, can not prepare OCDB entries");    
@@ -349,7 +303,6 @@ int AliHLTSimulationSetup(AliHLTSimulation* /*pHLTSim*/, AliSimulation* pSim, co
 
   if (!pSim) return -EINVAL;
   const char* entries[]={
-    "HLT/ConfigHLT/SolenoidBz",
     NULL
   };
 
