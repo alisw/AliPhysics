@@ -136,7 +136,7 @@ void AliHLTITSTrackerComponent::GetOutputDataSize( unsigned long& constBase, dou
 {
   // define guess for the output data size
   constBase = 200;       // minimum size
-  inputMultiplier = 1.; // size relative to input
+  inputMultiplier = 2.; // size relative to input
 }
 
 AliHLTComponent* AliHLTITSTrackerComponent::Spawn()
