@@ -272,7 +272,7 @@ public:
    * @param format     format string of printf style
    * @return const char string with the formatted message 
    */
-  static const char* SetLogString(const char *format, ... );
+  static const char* SetLogString(const void* p, const char* pfmt, const char *format, ... );
 
   /**
    * Get parameter given by the external caller.

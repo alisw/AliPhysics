@@ -864,7 +864,7 @@ int AliHLTTask::LoggingVarargs(AliHLTComponentLogSeverity severity,
   va_list args;
   va_start(args, line);
 
-  AliHLTLogging::SetLogString("%s (%p): ", GetName(), this);
+  AliHLTLogging::SetLogString(this, " (%p)", "%s_pfmt_: ", GetName());
   iResult=SendMessage(severity, originClass, originFunc, file, line, AliHLTLogging::BuildLogString(NULL, args, true /*append*/));
   va_end(args);
 

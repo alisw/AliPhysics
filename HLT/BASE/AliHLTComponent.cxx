@@ -2408,9 +2408,9 @@ int AliHLTComponent::LoggingVarargs(AliHLTComponentLogSeverity severity,
   // without problems. But at this point we face the problem with virtual members which
   // are not necessarily const.
   AliHLTComponent* nonconst=const_cast<AliHLTComponent*>(this);
-  AliHLTLogging::SetLogString("%s (%s, %p): ", 
+  AliHLTLogging::SetLogString(this, ", %p", "%s (%s_pfmt_): ", 
 			      fChainId[0]!=0?fChainId.c_str():nonconst->GetComponentID(),
-			      nonconst->GetComponentID(), this);
+			      nonconst->GetComponentID());
   iResult=SendMessage(severity, originClass, originFunc, file, line, AliHLTLogging::BuildLogString(NULL, args, true /*append*/));
   va_end(args);
 

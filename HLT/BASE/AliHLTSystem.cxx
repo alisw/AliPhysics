@@ -1556,7 +1556,7 @@ int AliHLTSystem::LoggingVarargs(AliHLTComponentLogSeverity severity,
   va_start(args, line);
 
   if (!fName.IsNull())
-    AliHLTLogging::SetLogString("%s (%p): ", fName.Data(), this);
+    AliHLTLogging::SetLogString(this, " (%p)", "%s_pfmt_: ", fName.Data());
   iResult=SendMessage(severity, originClass, originFunc, file, line, AliHLTLogging::BuildLogString(NULL, args, !fName.IsNull() /*append if non empty*/));
   va_end(args);
 

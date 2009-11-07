@@ -302,13 +302,19 @@ const char* AliHLTLogging::BuildLogString(const char *format, va_list ap, bool b
   return fgAliHLTLoggingTarget.GetArray();
 }
 
-const char* AliHLTLogging::SetLogString(const char *format, ...)
+const char* AliHLTLogging::SetLogString(const void* p, const char* pfmt, const char *format, ...)
 {
   // see header file for class documentation
+  TString formatstr=format;
+  TString pstr; 
+#ifdef __DEBUG
+  pstr.Form(pfmt, p);
+#endif
+  formatstr.ReplaceAll("_pfmt_", pstr);
   va_list args;
   va_start(args, format);
 
-  const char* message=BuildLogString(format, args);
+  const char* message=BuildLogString(formatstr.Data(), args);
   va_end(args);
 
   return message;
