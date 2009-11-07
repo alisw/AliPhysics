@@ -274,6 +274,8 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit **
   // Cluster will be fitted as a superposition of nPar/3 electromagnetic showers
 
   
+  if(!gMinuit) //it was deleted by someone else
+    gMinuit = new TMinuit(100) ;
   gMinuit->mncler();                     // Reset Minuit's list of paramters
   gMinuit->SetPrintLevel(-1) ;           // No Printout
   gMinuit->SetFCN(AliPHOSClusterizerv1::UnfoldingChiSquare) ;  
