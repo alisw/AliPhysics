@@ -33,6 +33,10 @@ class AliHLTMiscImplementation : public AliHLTMisc
 
   AliHLTUInt64_t GetTriggerMask(AliRawReader* rawReader) const;
 
+  Double_t GetBz();
+  Double_t GetBz(const Double_t *r);
+  void GetBxByBz(const Double_t r[3], Double_t b[3]);
+
  private:
 
   ClassDef(AliHLTMiscImplementation, 0)

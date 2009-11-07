@@ -44,6 +44,10 @@ class AliHLTMisc : public TObject {
 
   virtual AliHLTUInt64_t GetTriggerMask(AliRawReader* rawReader) const;
 
+  virtual Double_t GetBz();
+  virtual Double_t GetBz(const Double_t *r);
+  virtual void GetBxByBz(const Double_t r[3], Double_t b[3]);
+
  private:
   static AliHLTMisc* fgInstance;
 

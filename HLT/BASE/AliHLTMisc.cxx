@@ -124,6 +124,24 @@ AliHLTUInt64_t AliHLTMisc::GetTriggerMask(AliRawReader* /*rawReader*/) const
   return 0;
 }
 
+Double_t AliHLTMisc::GetBz()
+{
+  // default method, functionality is implemented in the child class
+  return 0.0;
+}
+
+Double_t AliHLTMisc::GetBz(const Double_t *r)
+{
+  // default method, functionality is implemented in the child class
+  return 0.0;
+}
+
+void AliHLTMisc::GetBxByBz(const Double_t r[3], Double_t b[3])
+{
+  // default method, functionality is implemented in the child class
+  return;
+}
+
 ostream  &operator<<(ostream &out, const AliHLTComponentDataType &dt)
 {
   // printout of AliHLTComponentDataType struct

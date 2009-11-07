@@ -28,6 +28,7 @@
 #include "AliCDBEntry.h"
 #include "AliGRPManager.h"
 #include "AliRawReader.h"
+#include "AliTracker.h"
 #include "TGeoGlobalMagField.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -143,4 +144,22 @@ AliHLTUInt64_t AliHLTMiscImplementation::GetTriggerMask(AliRawReader* rawReader)
     trgMask|=pattern[0]; // 32 lower bits of the mask
   }
   return trgMask;
+}
+
+Double_t AliHLTMiscImplementation::GetBz()
+{
+  // Returns Bz.
+  return AliTracker::GetBz();
+}
+
+Double_t AliHLTMiscImplementation::GetBz(const Double_t *r)
+{
+  // Returns Bz (kG) at the point "r" .
+  return AliTracker::GetBz(r);
+}
+
+void AliHLTMiscImplementation::GetBxByBz(const Double_t r[3], Double_t b[3])
+{
+  // Returns Bx, By and Bz (kG) at the point "r" .
+  return AliTracker::GetBxByBz(r, b);
 }

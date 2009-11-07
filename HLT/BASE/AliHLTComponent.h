@@ -1415,6 +1415,19 @@ class AliHLTComponent : public AliHLTLogging {
   bool EvaluateCTPTriggerClass(const char* expression, AliHLTComponentTriggerData& trigData) const;
 
   /**
+   * Get the overall solenoid field.
+   */
+  Double_t GetBz();
+  /**
+   * Get the solenoid field at point r.
+   */
+  Double_t GetBz(const Double_t *r);
+  /**
+   * Get the solenoid field components at point r.
+   */
+  void GetBxByBz(const Double_t r[3], Double_t b[3]);
+
+  /**
    * Check whether the current event is a valid data event.
    * @param pTgt    optional pointer to get the event type
    * @return true if the current event is a real data event

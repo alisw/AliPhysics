@@ -2490,3 +2490,21 @@ bool AliHLTComponent::EvaluateCTPTriggerClass(const char* expression, AliHLTComp
 
   return fpCTPData->EvaluateCTPTriggerClass(expression, trigData);
 }
+
+Double_t AliHLTComponent::GetBz()
+{
+  // Returns Bz.
+  return AliHLTMisc::Instance().GetBz();
+}
+
+Double_t AliHLTComponent::GetBz(const Double_t *r)
+{
+  // Returns Bz (kG) at the point "r" .
+  return AliHLTMisc::Instance().GetBz(r);
+}
+
+void AliHLTComponent::GetBxByBz(const Double_t r[3], Double_t b[3])
+{
+  // Returns Bx, By and Bz (kG) at the point "r" .
+  AliHLTMisc::Instance().GetBxByBz(r, b);
+}
