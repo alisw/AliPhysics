@@ -469,6 +469,8 @@ int AliHLTTRDTrackerV1Component::SetParams()
       HLTError("Could not load geometry");
       return -EINVAL;
     }
+    HLTInfo("Applying Alignment from CDB object");
+    AliGeomManager::ApplyAlignObjsFromCDB("TRD");
   }
   else{
     HLTInfo("Geometry Already Loaded!");

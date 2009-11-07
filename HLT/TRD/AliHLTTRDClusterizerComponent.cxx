@@ -511,6 +511,8 @@ int AliHLTTRDClusterizerComponent::SetParams()
       HLTError("Could not load geometry");
       return -EINVAL;
     }
+    HLTInfo("Applying Alignment from CDB object");
+    AliGeomManager::ApplyAlignObjsFromCDB("TRD");
   }
   else{
     HLTInfo("Geometry Already Loaded!");
