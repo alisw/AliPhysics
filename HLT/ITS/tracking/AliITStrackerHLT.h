@@ -21,19 +21,20 @@ class AliITSRecoParam;
 #include "AliITSRecPoint.h"
 #include "AliTracker.h"
 #include "AliHLTITSTrack.h"
-#include <vector>
 
 //-------------------------------------------------------------------------
 class AliITStrackerHLT : public AliTracker {
 public:
 
   
-  void StartLoadClusters( Int_t guessForNClusters=0 );
+  void StartLoadClusters( Int_t NClusters );
   void LoadCluster( const AliITSRecPoint &cluster);
-  void Reconstruct( std::vector<AliExternalTrackParam> tracksTPC );
+  void Reconstruct( AliExternalTrackParam *tracksTPC, int nTPCTracks );
 
-  std::vector< AliHLTITSTrack > &Tracks(){ return fTracks;}
-  std::vector< AliHLTITSTrack > &ITSOutTracks(){ return fITSOutTracks;}
+  AliHLTITSTrack *Tracks(){ return fTracks;}
+  Int_t NTracks(){ return fNTracks;}
+  AliHLTITSTrack *ITSOutTracks(){ return fITSOutTracks;}
+  Int_t NITSOutTracks(){ return fNITSOutTracks;}
 
   Bool_t TransportToX( AliExternalTrackParam *t, double x ) const;
   Bool_t TransportToPhiX( AliExternalTrackParam *t, double phi, double x ) const;
@@ -98,7 +99,6 @@ protected:
 
   AliHLTITSLayer* fLayers; //!
   
-  AliESDEvent  * fEsd;                   //! pointer to the ESD event
   Double_t fSPDdetzcentre[4];            // centres of SPD modules in z
   
   Int_t fUseTGeo;                        // use TGeo to get material budget
@@ -110,14 +110,15 @@ protected:
   Float_t fxOverX0Layer[6];              // material budget
   Float_t fxTimesRhoLayer[6];            // material budget
 
-  AliITSChannelStatus *fITSChannelStatus;//! bitmaps with channel status for SPD and SDD
-  std::vector< AliHLTITSTrack > fTracks; // array of its-updated tracks
-  std::vector< AliHLTITSTrack > fITSOutTracks; // array of tracks, fitted outward with ITS only
-
+  AliHLTITSTrack *fTracks; // array of its-updated tracks
+  AliHLTITSTrack *fITSOutTracks; // array of tracks, fitted outward with ITS only
+  int fNTracks;// n tracks
+  int fNITSOutTracks;// n out tracks
   double fLoadTime;
   double fRecoTime;
   int fNEvents;
-  std::vector<AliITSRecPoint> fClusters;
+  AliITSRecPoint *fClusters;
+  int fNClusters;
 
 private:
   AliITStrackerHLT(const AliITStrackerHLT &tracker);

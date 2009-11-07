@@ -59,6 +59,7 @@
 #include "TStopwatch.h"
 //#include "AliHLTTPCCATrackParam.h"
 //#include "AliHLTVertexer.h"
+#include <vector>
 
 
 ClassImp(AliITStrackerHLT)
@@ -79,17 +80,18 @@ AliITStrackerHLT::AliITStrackerHLT()
   :AliTracker(),
    fRecoParam(0),
    fLayers(new AliHLTITSLayer[AliITSgeomTGeo::kNLayers]),
-   fEsd(0),
    fUseTGeo(2),
    fxOverX0Pipe(-1.),
    fxTimesRhoPipe(-1.), 
-   fITSChannelStatus(0),
-   fTracks(),
-   fITSOutTracks(),
+   fTracks(0),
+   fITSOutTracks(0),
+   fNTracks(0),
+   fNITSOutTracks(0),
    fLoadTime(0),
    fRecoTime(0),
    fNEvents(0),
-   fClusters()
+   fClusters(0),
+   fNClusters(0)
 {
   //Default constructor
   Int_t i;
@@ -101,18 +103,19 @@ AliITStrackerHLT::AliITStrackerHLT()
 AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom) 
 : AliTracker(),
   fRecoParam(0),
-  fLayers(new AliHLTITSLayer[AliITSgeomTGeo::kNLayers]),
-  fEsd(0),
+  fLayers(new AliHLTITSLayer[AliITSgeomTGeo::kNLayers]),  
   fUseTGeo(2),
   fxOverX0Pipe(-1.),
   fxTimesRhoPipe(-1.),
-  fITSChannelStatus(0),
-  fTracks(),
-  fITSOutTracks(),
+  fTracks(0),
+  fITSOutTracks(0),
+  fNTracks(0),
+  fNITSOutTracks(0),
   fLoadTime(0),
    fRecoTime(0),
   fNEvents(0),
-  fClusters()
+  fClusters(0),
+  fNClusters(0)
 {
   //--------------------------------------------------------------------
   //This is the AliITStrackerHLT constructor
@@ -216,18 +219,19 @@ AliITStrackerHLT::AliITStrackerHLT(const Char_t *geom)
 AliITStrackerHLT::AliITStrackerHLT(const AliITStrackerHLT &tracker)
 :AliTracker(tracker),
  fRecoParam( tracker.fRecoParam),
- fLayers(new AliHLTITSLayer[AliITSgeomTGeo::kNLayers]),
- fEsd(tracker.fEsd),
+ fLayers(new AliHLTITSLayer[AliITSgeomTGeo::kNLayers]), 
  fUseTGeo(tracker.fUseTGeo),
  fxOverX0Pipe(tracker.fxOverX0Pipe),
  fxTimesRhoPipe(tracker.fxTimesRhoPipe), 
- fITSChannelStatus(tracker.fITSChannelStatus),
- fTracks(),
- fITSOutTracks(),
+ fTracks(0),
+ fITSOutTracks(0),
+ fNTracks(0),
+ fNITSOutTracks(0),
   fLoadTime(0),
    fRecoTime(0),
  fNEvents(0),
- fClusters()
+ fClusters(0),
+ fNClusters(0)
 {
   //Copy constructor
   Int_t i;
@@ -257,8 +261,10 @@ AliITStrackerHLT::~AliITStrackerHLT()
   //
   //destructor
   //
-  if(fITSChannelStatus) delete fITSChannelStatus;
-  delete [] fLayers;
+  delete[] fLayers;
+  delete[] fTracks;
+  delete[] fITSOutTracks;
+  delete[] fClusters;
 }
 
 void AliITStrackerHLT::Init()
@@ -269,16 +275,17 @@ void AliITStrackerHLT::Init()
 }
 
 
-void AliITStrackerHLT::StartLoadClusters( Int_t guessForNClusters )
+void AliITStrackerHLT::StartLoadClusters( Int_t NOfClusters )
 {
   // !
-  fClusters.clear();
-  fClusters.reserve( guessForNClusters );
+  delete[] fClusters;
+  fClusters = new AliITSRecPoint[NOfClusters];
+  fNClusters = 0;
 }
 
 void AliITStrackerHLT::LoadCluster( const AliITSRecPoint &cluster) 
 {
-  fClusters.push_back( cluster );
+  fClusters[fNClusters++] = cluster ;
 }
 
 
@@ -289,7 +296,6 @@ Int_t AliITStrackerHLT::LoadClusters(TTree *cTree) {
   //This function loads ITS clusters
   //--------------------------------------------------------------------
 
-  StartLoadClusters();
 
   TBranch *branch=cTree->GetBranch("ITSRecPoints");
   if (!branch) { 
@@ -300,20 +306,36 @@ Int_t AliITStrackerHLT::LoadClusters(TTree *cTree) {
   static TClonesArray dummy("AliITSRecPoint",10000), *clusters=&dummy;
   branch->SetAddress(&clusters);
 
-  Int_t i=0,j=0,ndet=0;
-  for (i=0; i<AliITSgeomTGeo::GetNLayers(); i++) {
-    ndet=fLayers[i].GetNdetectors();
-    Int_t jmax = j + fLayers[i].GetNladders()*ndet;
-    for (; j<jmax; j++) {           
-      if (!cTree->GetEvent(j)) continue;
-      Int_t ncl=clusters->GetEntriesFast(); 
-      while (ncl--) {
-        LoadCluster( *( (AliITSRecPoint*)clusters->UncheckedAt(ncl)));
+  int nClustersTotal = 0;
+  {
+    Int_t j=0;
+    for (int i=0; i<AliITSgeomTGeo::GetNLayers(); i++) {
+      int ndet=fLayers[i].GetNdetectors();
+      Int_t jmax = j + fLayers[i].GetNladders()*ndet;
+      for (; j<jmax; j++) {           
+	if (!cTree->GetEvent(j)) continue;
+	nClustersTotal+=clusters->GetEntriesFast();      
+	clusters->Delete();
       }
-      clusters->Delete();
     }
   }
-  
+  StartLoadClusters(nClustersTotal);
+  {
+    Int_t j=0;
+    for (int i=0; i<AliITSgeomTGeo::GetNLayers(); i++) {
+      int ndet=fLayers[i].GetNdetectors();
+      Int_t jmax = j + fLayers[i].GetNladders()*ndet;
+      for (; j<jmax; j++) {           
+	if (!cTree->GetEvent(j)) continue;
+	Int_t ncl=clusters->GetEntriesFast(); 
+	while (ncl--) {
+	  LoadCluster( *( (AliITSRecPoint*)clusters->UncheckedAt(ncl)));
+	}
+	clusters->Delete();
+      }
+    }
+  }
+
   dummy.Clear();
 
   return 0;
@@ -325,13 +347,15 @@ void AliITStrackerHLT::UnloadClusters() {
   //This function unloads ITS clusters
   //--------------------------------------------------------------------
   for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fLayers[i].ResetClusters();
-  fClusters.clear();
+  delete[] fClusters;
+  fClusters = 0;
+  fNClusters=0;
 }
 
 
 
 
-void AliITStrackerHLT::Reconstruct( std::vector<AliExternalTrackParam> tracksTPC )
+void AliITStrackerHLT::Reconstruct( AliExternalTrackParam *tracksTPC, int nTPCTracks )
 {
 
   //--------------------------------------------------------------------
@@ -348,7 +372,7 @@ void AliITStrackerHLT::Reconstruct( std::vector<AliExternalTrackParam> tracksTPC
     fLayers[i].ResetClusters();
   }
 
-  for( unsigned int icl=0; icl<fClusters.size(); icl++ ){   
+  for( int icl=0; icl<fNClusters; icl++ ){   
     AliITSRecPoint &cl = fClusters[icl];
     if (!cl.Misalign()) AliWarning("Can't misalign this cluster !"); 
     fLayers[cl.GetLayer()].InsertCluster(&cl); 
@@ -365,10 +389,13 @@ void AliITStrackerHLT::Reconstruct( std::vector<AliExternalTrackParam> tracksTPC
   TStopwatch timer;
 
   Double_t pimass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
-  fTracks.clear();
-  fITSOutTracks.clear();
-
-  for( unsigned int itr=0; itr<tracksTPC.size(); itr++ ){
+  delete[] fTracks;
+  delete[] fITSOutTracks;
+  fTracks = new AliHLTITSTrack[nTPCTracks];
+  fITSOutTracks = new AliHLTITSTrack[nTPCTracks];
+  fNTracks = 0;
+  fNITSOutTracks = 0;
+  for( int itr=0; itr<nTPCTracks; itr++ ){
 
     AliHLTITSTrack tMI( tracksTPC[itr] );
     AliHLTITSTrack *t = &tMI;
@@ -397,11 +424,11 @@ void AliITStrackerHLT::Reconstruct( std::vector<AliExternalTrackParam> tracksTPC
     //CorrectForPipeMaterial(t);
    
     TransportToX(t, 0 );
-    fTracks.push_back( *t );  
+    fTracks[fNTracks++] = *t;  
     if(  nclu>0 ){ // construct ITSOut track
       AliHLTITSTrack tOut(*t);
       if( FitOutward( &tOut ) ){
-	fITSOutTracks.push_back( *t );  	
+	fITSOutTracks[fNITSOutTracks++] = *t;  
       }
     }
   }
@@ -420,10 +447,8 @@ Int_t AliITStrackerHLT::Clusters2Tracks(AliESDEvent *event) {
   //--------------------------------------------------------------------
   
   
-  fEsd = event;         // store pointer to the esd 
   std::vector<AliExternalTrackParam> tracksTPC;
   tracksTPC.reserve(event->GetNumberOfTracks());
-  fTracks.reserve(event->GetNumberOfTracks());
 
   for( int itr=0; itr<event->GetNumberOfTracks(); itr++ ){
 
@@ -439,10 +464,10 @@ Int_t AliITStrackerHLT::Clusters2Tracks(AliESDEvent *event) {
     tracksTPC.push_back( t );
   }
   //for( int iter=0; iter<100; iter++){
-  Reconstruct( tracksTPC );
+  Reconstruct( &(tracksTPC[0]), tracksTPC.size() );
   //}
 
-  for( unsigned int itr=0; itr<fTracks.size(); itr++ ){
+  for( int itr=0; itr<fNTracks; itr++ ){
     AliHLTITSTrack &t = fTracks[itr];    
     UpdateESDtrack(event->GetTrack(t.TPCtrackId()), &t, AliESDtrack::kITSin);          
     //event->GetTrack(t.TPCtrackId())->myITS = t;

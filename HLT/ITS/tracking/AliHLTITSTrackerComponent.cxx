@@ -340,7 +340,7 @@ int AliHLTITSTrackerComponent::DoEvent
 
   AliHLTUInt32_t maxBufferSize = size;
   size = 0; // output size
-
+  
   if (!IsDataEvent()) return 0;
 
   if ( evtData.fBlockCnt <= 0 ) {
@@ -361,10 +361,23 @@ int AliHLTITSTrackerComponent::DoEvent
   vector< AliExternalTrackParam > tracksTPC;
   vector< int > tracksTPCId;
 
-  fTracker->StartLoadClusters();
   int nClustersTotal = 0;
 
-  //int currentTrackID = 0;
+  for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
+
+    const AliHLTComponentBlockData* iter = blocks+ndx;
+ 
+    if ( (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD) ) || 
+	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD) ) ||
+	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD) ) 
+	 ){      
+      AliHLTITSClusterData *inPtr=reinterpret_cast<AliHLTITSClusterData*>( iter->fPtr );
+      nClustersTotal+=inPtr->fSpacePointCnt;
+    }         
+  }
+
+
+  fTracker->StartLoadClusters(nClustersTotal);
 
   for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
 
@@ -402,24 +415,18 @@ int AliHLTITSTrackerComponent::DoEvent
 	Int_t info[3] = { d.fNy, d.fNz, d.fLayer };
 	Float_t hit[6] = { d.fY, d.fZ, d.fSigmaY2, d.fSigmaZ2, d.fQ, d.fSigmaYZ };
 	if( d.fLayer==4 ) hit[5] = -hit[5];
-
 	fTracker->LoadCluster( AliITSRecPoint( lab, hit, info ) );
-	nClustersTotal++;
       }   
     }
     
   }// end read input blocks
   
-  // set clusters to tracker
-
-
-  //timer.Stop();
   // Reconstruct the event
 
   TStopwatch timerReco;
   
-  fTracker->Reconstruct( tracksTPC );
-
+  fTracker->Reconstruct( &(tracksTPC[0]), tracksTPC.size() );
+  
   timerReco.Stop();
   
   // Fill output tracks
@@ -442,10 +449,15 @@ int AliHLTITSTrackerComponent::DoEvent
       }
 
       outPtr->fCount = 0;
-      
-      std::vector< AliHLTITSTrack > &tracks = (iOut==0)?fTracker->Tracks() :fTracker->ITSOutTracks();
-
-      int nTracks = tracks.size();
+       AliHLTITSTrack *tracks=0;
+      int nTracks = 0;
+      if( iOut==0 ){
+	tracks = fTracker->Tracks();
+	nTracks = fTracker->NTracks();
+      } else{
+	tracks = fTracker->ITSOutTracks();
+	nTracks = fTracker->NITSOutTracks();
+      }
       
       for ( int itr = 0; itr < nTracks; itr++ ) {
 	AliHLTITSTrack &t = tracks[itr];
