@@ -76,9 +76,11 @@ void makeGRPObject(float l3Current,
   grpObj->SetPolarityConventionLHC();                    // LHC convention +/+ current -> -/- field main components
 
   if (bVerbose) {
-    AliGRPManager grpman;
-    grpman.SetGRPEntry(grpObj);
-    grpman.SetMagField();
+    // do not use the AliGRPManager until bug
+    // https://savannah.cern.ch/bugs/index.php?58403 is fixed
+//     AliGRPManager grpman;
+//     grpman.SetGRPEntry(grpObj);
+//     grpman.SetMagField();
   }
 
   // write object to OCDB
