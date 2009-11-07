@@ -67,8 +67,6 @@ AliHLTTRDCalibrationComponent::AliHLTTRDCalibrationComponent()
     fOutArray(NULL),
     fAfterRunArray(NULL),
     fDisplayArray(NULL),
-    fNevent(0),
-    feveryNevent(1000),
     fRecievedTimeBins(kFALSE),
     fTrgStrings(NULL),
     fAccRejTrg(0)
@@ -161,13 +159,7 @@ Int_t AliHLTTRDCalibrationComponent::ScanArgument( int argc, const char** argv )
               return ENOTSUP;
             }
           HLTDebug("argv[%d+1] == %s", i, argv[i+1] );
-          fOutputSize = strtoul( argv[i+1], &cpErr, 0 );
-          if ( *cpErr )
-            {
-              HLTError("Cannot convert everyNevent parameter '%s'", argv[i+1] );
-              return EINVAL;
-            }
-          HLTInfo("Pushing back every %d event", feveryNevent);
+          HLTInfo("Option -everyNevent depreceated");
           i += 2;
           continue;
         }
@@ -357,13 +349,10 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
 
       if(!fOutArray->At(0))FormOutput(0);
       if(!fDisplayArray->At(0))FormOutput(1);
-      if (fNevent%feveryNevent==0 && fOutArray) {
-	PushBack(fDisplayArray, AliHLTTRDDefinitions::fgkCalibrationDataType);
-      }
-
+      PushBack(fDisplayArray, AliHLTTRDDefinitions::fgkCalibrationDataType);
+      
       fTracksArray->Delete();
-      fNevent++;
-
+      
     }
  
   return 0;

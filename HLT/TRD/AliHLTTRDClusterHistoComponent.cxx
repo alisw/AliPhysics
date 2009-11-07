@@ -50,8 +50,6 @@ AliHLTTRDClusterHistoComponent::AliHLTTRDClusterHistoComponent()
 : AliHLTProcessor(),
   fOutputSize(100000),
   fClusterArray(NULL),
-  fNevent(0),
-  feveryNevent(20),
   fNClsDet(NULL),
   fClsAmp(NULL),
   fClsAmpDrift(NULL),
@@ -268,19 +266,16 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
 
   fNScls->Fill(nSClusters);
 
-  if(fNevent%feveryNevent==0){
-    PushBack((TObject*)fNClsDet, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);   
-    PushBack((TObject*)fClsAmp, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
-    //  PushBack((TObject*)fClsAmpDrift, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);   
-    //  PushBack((TObject*)fClsTB, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
-    //  PushBack((TObject*)fClsAmpDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
-    PushBack((TObject*)fNScls, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
-    PushBack((TObject*)fSClsDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
-    PushBack((TObject*)fClusterDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);
-    PushBack((TObject*)fClusterCandCharge, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);
-  }
-  
-  fNevent++;
+  PushBack((TObject*)fNClsDet, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);   
+  PushBack((TObject*)fClsAmp, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
+  //  PushBack((TObject*)fClsAmpDrift, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);   
+  //  PushBack((TObject*)fClsTB, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
+  //  PushBack((TObject*)fClsAmpDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
+  PushBack((TObject*)fNScls, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
+  PushBack((TObject*)fSClsDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
+  PushBack((TObject*)fClusterDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);
+  PushBack((TObject*)fClusterCandCharge, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);
+
   return 0;
 }
 
@@ -306,8 +301,7 @@ int AliHLTTRDClusterHistoComponent::Configure(const char* arguments){
       } 
       if (argument.CompareTo("-everyNevent")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTInfo("Pushing back every %s event.", ((TObjString*)pTokens->At(i))->GetString().Data());
-	feveryNevent=((TObjString*)pTokens->At(i))->GetString().Atoi();
+	HLTInfo("Option -everyNevent depreceated");
 	continue;
       } 
       else {

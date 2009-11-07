@@ -80,8 +80,6 @@ private:
 
   AliHLTUInt32_t fOutputSize;   // output size
   TClonesArray* fClusterArray;  // input array
-  UInt_t fNevent;               // number of processed events
-  UInt_t feveryNevent;          // push back every nth event
 
   TH1D *fNClsDet;
   TH1D *fClsAmp;

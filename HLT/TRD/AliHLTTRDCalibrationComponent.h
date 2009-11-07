@@ -85,13 +85,11 @@ private:
   TObjArray* fOutArray;          // array containing the output
   TObjArray* fAfterRunArray;     // array with after run processing output 
   TObjArray* fDisplayArray;        //array with online display histos
-  UInt_t fNevent;                 // number of processed events
-  UInt_t feveryNevent;            // push back every nth event
   Bool_t fRecievedTimeBins;      // already recived the number of time bins?
   TObjArray *fTrgStrings;        // name of trigger classes to accept or reject
   Int_t  fAccRejTrg;             // do we actually accept or reject the trigger strings?
   
-  ClassDef(AliHLTTRDCalibrationComponent, 1)
+  ClassDef(AliHLTTRDCalibrationComponent, 2)
 
 };
 #endif
