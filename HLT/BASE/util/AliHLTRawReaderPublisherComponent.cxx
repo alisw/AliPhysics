@@ -293,6 +293,11 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
       // add further empty data blocks
       AliRawDataHeader header;
       header.fSize=sizeof(AliRawDataHeader);
+      const UInt_t* triggermask=pRawReader->GetTriggerPattern();
+      if (triggermask) {
+	header.fTriggerClassLow=triggermask[0];
+	header.fROILowTriggerClassHigh=triggermask[1];
+      }
       processedIds.sort();
       list<int>::iterator curr=processedIds.begin();
       for (int id=fMinEquId; id<=fMaxEquId; id++) {
