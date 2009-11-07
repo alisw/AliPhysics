@@ -227,6 +227,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoInit(int argc, const char** argv)
     HLTError("decision parameter not initialized");
     iResult=-ENODEV;
   }
+  fSolenoidBz=GetBz();
 
   return iResult;
 }
@@ -241,9 +242,8 @@ int AliHLTTriggerBarrelGeomMultiplicity::ReadPreprocessorValues(const char* /*mo
 {
     // see header file for function documentation
 
-  // TODO 2009-10-10: implementation
-  // for the moment very quick, just reload the magnetic field
-  return ConfigureFromCDBTObjString(kAliHLTCDBSolenoidBz);
+  // nothing to do for the moment
+  return 0;
 }
 
 int AliHLTTriggerBarrelGeomMultiplicity::GetDetectorGeomsFromCDBObject(const char *cdbEntry, const char* chainId)

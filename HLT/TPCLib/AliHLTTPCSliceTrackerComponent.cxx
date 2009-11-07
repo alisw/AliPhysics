@@ -48,6 +48,7 @@ using namespace std;
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
+#include "TGeoGlobalMagField.h"
 //#include "AliHLTTPC.h"
 //#include <stdlib.h>
 //#include <cerrno>
@@ -704,6 +705,12 @@ int AliHLTTPCSliceTrackerComponent::Configure(const char* arguments)
   int iResult=0;
   if (!arguments) return iResult;
   
+  // Check field
+  if (!TGeoGlobalMagField::Instance()) {
+    HLTError("magnetic field not initialized, please set up TGeoGlobalMagField and AliMagF");
+    return -ENODEV;
+  }
+
   TString allArgs=arguments;
   TString argument;
   int bMissingParam=0;
@@ -748,16 +755,12 @@ int AliHLTTPCSliceTrackerComponent::Configure(const char* arguments)
       } 
       else if (argument.CompareTo("-solenoidBz")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	fBField=((TObjString*)pTokens->At(i))->GetString().Atof();
-	fBField=fBField/10.0;
-	HLTInfo("Magnetic field set to: %.1f", fBField);
+	HLTWarning("parameter -solenoidBz deprecated, magnetic field handled by global AliMagF object and TGeoGlobalMagField");
 	continue;
       } 
       else if (argument.CompareTo("-bfield")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	fBField=((TObjString*)pTokens->At(i))->GetString().Atof();
-	HLTWarning("'-bfield' is deprecated, use -solenoidBz %.1f. Please note the different convention.", 10*fBField);
-	HLTInfo("Magnetic field set to: %.1f", fBField);
+	HLTWarning("parameter -bfield deprecated, magnetic field handled by global AliMagF object and TGeoGlobalMagField");
 	continue;
       } 
       else if (argument.CompareTo("-etarange")==0) {
@@ -820,6 +823,7 @@ int AliHLTTPCSliceTrackerComponent::Configure(const char* arguments)
     HLTError("missing parameter for argument %s", argument.Data());
     iResult=-EINVAL;
   }
+  fBField=GetBz()/10.0;
   if (fBField == 0.){
     // parameter for B=0 T 
     fDoPP = kTRUE;
@@ -845,7 +849,7 @@ int AliHLTTPCSliceTrackerComponent::ReadPreprocessorValues(const char* modules)
   TString str(modules);
   if(str.Contains("HLT") || str.Contains("TPC") || str.Contains("GRP")){
   
-    const char* pathBField=kAliHLTCDBSolenoidBz;
+    const char* pathBField=NULL;
     if (pathBField) {
 
       HLTInfo("reconfigure B-Field from entry %s, modules %s", pathBField,(modules!=NULL && modules[0]!=0)?modules:"<none>");
@@ -903,7 +907,7 @@ int AliHLTTPCSliceTrackerComponent::Reconfigure(const char* cdbEntry, const char
     }
   }
 
-  const char* pathBField=kAliHLTCDBSolenoidBz;
+  const char* pathBField=NULL;
 
   if (pathBField) {
     HLTInfo("reconfigure B-Field from entry %s, chain id %s", path,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");

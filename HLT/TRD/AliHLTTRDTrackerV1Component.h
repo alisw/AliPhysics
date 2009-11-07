@@ -67,7 +67,6 @@ protected:
   
   int Configure(const char* arguments);
   int SetParams();
-  int ReconfigureField();
 	
 private:
   /** copy constructor prohibited */

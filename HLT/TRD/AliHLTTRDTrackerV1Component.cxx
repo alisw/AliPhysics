@@ -206,7 +206,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
   HLTDebug("NofBlocks %i", evtData.fBlockCnt );
   
   fESD->Reset();
-  //fESD->SetMagneticField(fSolenoidBz);
+  //fESD->SetMagneticField(GetBz());
 
   AliHLTUInt32_t totalSize = 0, offset = 0;
 
@@ -341,8 +341,7 @@ int AliHLTTRDTrackerV1Component::Configure(const char* arguments){
       } 
       else if (argument.CompareTo("-solenoidBz")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	fieldStrength=((TObjString*)pTokens->At(i))->GetString().Atof();
-	HLTInfo("Setting Magnetic field to %.1f KGauss", fieldStrength);
+	HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
 	continue;
       } 
       else if (argument.CompareTo("-NTimeBins")==0) {
@@ -523,83 +522,6 @@ int AliHLTTRDTrackerV1Component::SetParams()
   HLTDebug("Reconstructor options are: %s",recoOptions.Data());
   fReconstructor->SetOption(recoOptions.Data());
 
-  if (fMagneticField >= 0)
-    {
-      HLTWarning("Setting magnetic field by hand!");
-    }
-  if (!TGeoGlobalMagField::Instance()->IsLocked()) {
-    AliMagF* field;
-    if (fMagneticField == 0){
-      // magnetic field OFF
-      field = new AliMagF("Maps","Maps",0.,0.,AliMagF::k5kGUniform);
-      TGeoGlobalMagField::Instance()->SetField(field);
-      HLTDebug("Magnetic field is OFF.");
-    }else{
-      // magnetic field ON
-      field = new AliMagF("Maps","Maps",-1.,-1.,AliMagF::k5kG);
-      TGeoGlobalMagField::Instance()->SetField(field);
-      HLTDebug("Magnetic field is ON.");
-      if( fMagneticField < 0 )
-	iResult=ReconfigureField();
-    }
-  }else{
-    HLTError("Magnetic field is already set and locked, cannot redefine it." );
-  }
-  return iResult;
-}
-
-int AliHLTTRDTrackerV1Component::ReconfigureField()
-{
-  int iResult=0;
-  if(fieldStrength<-100){
-    const char* pathBField=kAliHLTCDBSolenoidBz;
-
-    if (pathBField) {
-      HLTInfo("reconfigure B-Field from entry %s", pathBField);
-      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(pathBField/*,GetRunNo()*/);
-      if (pEntry) {
-	TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
-	if (pString) {
-	  HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
-	  TObjArray* pTokens=pString->GetString().Tokenize(" ");
-	  TString argument;
-	  int bMissingParam=0;
-	  if (pTokens) {
-	    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
-	      argument=((TObjString*)pTokens->At(i))->GetString();
-	      if (argument.IsNull()) continue;
-      
-	      if (argument.CompareTo("-solenoidBz")==0) {
-		if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-		HLTDebug("Magnetic field in CDB: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-		fieldStrength=((TObjString*)pTokens->At(i))->GetString().Atof();
-		continue;
-	      } else {
-		HLTError("unknown argument %s", argument.Data());
-		iResult=-EINVAL;
-		break;
-	      }
-	    }
-	    delete pTokens;
-	  }
-	} else {
-	  HLTError("configuration object \"%s\" has wrong type, required TObjString", pathBField);
-	}
-      } else {
-	HLTError("cannot fetch object \"%s\" from CDB", pathBField);
-      }
-    }
-  }
-
-  if(fieldStrength>=-100){
-    AliMagF* field = (AliMagF *) TGeoGlobalMagField::Instance()->GetField();
-    HLTDebug("Magnetic field before change: %f KGauss", field->SolenoidField());
-    field->SetFactorSol(1);
-    Double_t initialFieldStrengh=field->SolenoidField();
-    field->SetFactorSol(fieldStrength/initialFieldStrengh);
-    field->SetFactorDip((fieldStrength/initialFieldStrengh>=0) ? 1 : -1);
-    HLTDebug("Magnetic field was changed to %f KGauss.", field->SolenoidField());
-  }
   return iResult;
 }
 
@@ -630,24 +552,6 @@ int AliHLTTRDTrackerV1Component::Reconfigure(const char* cdbEntry, const char* c
     }
   }
 
-  const char* pathBField=kAliHLTCDBSolenoidBz;
-
-  if (pathBField) {
-    HLTInfo("reconfigure B-Field from entry %s, chain id %s", pathBField,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
-    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(pathBField/*,GetRunNo()*/);
-    if (pEntry) {
-      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
-      if (pString) {
-	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
-	iResult=Configure(pString->GetString().Data());
-      } else {
-	HLTError("configuration object \"%s\" has wrong type, required TObjString", pathBField);
-      }
-    } else {
-      HLTError("cannot fetch object \"%s\" from CDB", pathBField);
-    }
-  }
-  
   return iResult;
 
 }
@@ -660,33 +564,6 @@ int AliHLTTRDTrackerV1Component::ReadPreprocessorValues(const char* modules)
   TString str(modules);
   if(str.Contains("HLT") || str.Contains("TRD") || str.Contains("GRP")){
   
-    const char* pathBField=kAliHLTCDBSolenoidBz;
-    if (pathBField) {
-
-      HLTInfo("reconfigure B-Field from entry %s, modules %s", pathBField,(modules!=NULL && modules[0]!=0)?modules:"<none>");
-      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(pathBField/*,GetRunNo()*/);
-      
-      // AliCDBPath path(pathBField);
-      
-      // AliCDBStorage *stor = AliCDBManager::Instance()->GetDefaultStorage();
-      // Int_t version    = stor->GetLatestVersion(pathBField, GetRunNo());
-      // Int_t subVersion = stor->GetLatestSubVersion(pathBField, GetRunNo(), version);
-      // AliCDBEntry *pEntry = stor->Get(path,GetRunNo(), version, subVersion);
-      
-      // HLTInfo("RunNo %d, Version %d, subversion %d", GetRunNo(), version, subVersion);
-      
-      if (pEntry) {
-    	TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
-    	if (pString) {
-   	  HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
-   	  iResult=Configure(pString->GetString().Data());
-    	} else {
-   	  HLTError("configuration object \"%s\" has wrong type, required TObjString", pathBField);
-    	}
-      } else {
-    	HLTError("cannot fetch object \"%s\" from CDB", pathBField);
-      }
-    }
   }  
   return iResult;
 }

@@ -227,13 +227,14 @@ int AliHLTTriggerBarrelMultiplicity::DoInit(int argc, const char** argv)
 
   // first configure the default
   int iResult=0;
-  iResult=ConfigureFromCDBTObjString(kAliHLTCDBSolenoidBz);
-  if (iResult>=0) iResult=ConfigureFromCDBTObjString(fgkOCDBEntry);
+  iResult=ConfigureFromCDBTObjString(fgkOCDBEntry);
 
   // configure from the command line parameters if specified
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
   return iResult;
+
+  fSolenoidBz=GetBz();
 }
 
 int AliHLTTriggerBarrelMultiplicity::DoDeinit()
@@ -249,7 +250,6 @@ int AliHLTTriggerBarrelMultiplicity::Reconfigure(const char* cdbEntry, const cha
   // configure from the specified antry or the default one
   const char* entry=cdbEntry;
   if (!entry || entry[0]==0) {
-    ConfigureFromCDBTObjString(kAliHLTCDBSolenoidBz);
     entry=fgkOCDBEntry;
   }
 
@@ -260,9 +260,8 @@ int AliHLTTriggerBarrelMultiplicity::ReadPreprocessorValues(const char* /*module
 {
   // see header file for class documentation
 
-  // TODO 2009-09-10: implementation
-  // for the moment very quick, just reload the magnetic field
-  return ConfigureFromCDBTObjString(kAliHLTCDBSolenoidBz);
+  // nothing to do for the moment
+  return 0;
 }
 
 int AliHLTTriggerBarrelMultiplicity::ScanConfigurationArgument(int argc, const char** argv)
@@ -352,8 +351,7 @@ int AliHLTTriggerBarrelMultiplicity::ScanConfigurationArgument(int argc, const c
   // -solenoidBz
   if (argument.CompareTo("-solenoidBz")==0) {
     if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    fSolenoidBz=argument.Atof();
+    HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
     return 2;
   }
 

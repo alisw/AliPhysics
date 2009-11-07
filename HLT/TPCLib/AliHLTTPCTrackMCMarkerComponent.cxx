@@ -114,13 +114,6 @@ int AliHLTTPCTrackMCMarkerComponent::ReadConfigurationString(  const char* argum
     argument = ( ( TObjString* )pTokens->At( i ) )->GetString();
     if ( argument.IsNull() ) continue;
 
-    //if ( argument.CompareTo( "-solenoidBz" ) == 0 ) {
-    //if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
-    //fSolenoidBz = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
-    //HLTInfo( "Magnetic Field set to: %f", fSolenoidBz );
-    //continue;
-    //}
-
     HLTError( "Unknown option \"%s\"", argument.Data() );
     iResult = -EINVAL;
   }

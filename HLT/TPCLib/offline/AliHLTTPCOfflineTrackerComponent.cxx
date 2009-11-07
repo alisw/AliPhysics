@@ -296,66 +296,8 @@ int AliHLTTPCOfflineTrackerComponent::Configure(const char* arguments)
       if (argument.IsNull()) continue;
 
       if (argument.CompareTo("-solenoidBz")==0) {
-#ifndef HAVE_NOT_ALIMAGF30848
-	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	// TODO: Matthias 2009-05-08 this changes below look weird to me
-	// maybe this was not correctly done by Federico in r 30849
-	float SolenoidBz=((TObjString*)pTokens->At(i))->GetString().Atof();
-	if (SolenoidBz<kAlmost0Field) SolenoidBz=kAlmost0Field;
-	float factor=SolenoidBz/5;
-	//
-	AliMagF::BMap_t map = AliMagF::k5kG;
-	if (SolenoidBz<3.) {
-	  map=AliMagF::k2kG;
-	  factor=SolenoidBz/2;
-	} /*else if (SolenoidBz>=3. && SolenoidBz<4.5) {
-	  map=AliMagFMaps::k4kG;
-	  factor=SolenoidBz/4;
-	  }
-	else {
-	  map=AliMagFMaps::k5kG;
-	  factor=SolenoidBz/5;
-	  } */
-	// the magnetic field map is not supposed to change
-	// field initialization should be done once in the beginning
-	// TODO: does the factor need adjustment?
-	const AliMagF* currentMap = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-	if (!currentMap) {
-	  AliMagF* field = new AliMagF("MagneticFieldMap", "BMap", 1., 1., map);
-	  TGeoGlobalMagField::Instance()->SetField(field);
-	  HLTInfo("Solenoid Field set to: %f map %d", SolenoidBz, map);
-	} else if (currentMap->GetMapType()!=map) {
-	  HLTWarning("omitting request to override field map %d with %d", currentMap->GetMapType(), map);
-	}
-#else // keeping the <30489 code for backward compatibility, to be merged at some point
-	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	// TODO: check if there is common functionality in the AliMagF* classes
-	float SolenoidBz=((TObjString*)pTokens->At(i))->GetString().Atof();
-	if (SolenoidBz<kAlmost0Field) SolenoidBz=kAlmost0Field;
-	float factor=1.;
-	int map=AliMagFMaps::k2kG;
-	if (SolenoidBz<3.) {
-	  map=AliMagFMaps::k2kG;
-	  factor=SolenoidBz/2;
-	} else if (SolenoidBz>=3. && SolenoidBz<4.5) {
-	  map=AliMagFMaps::k4kG;
-	  factor=SolenoidBz/4;
-	} else {
-	  map=AliMagFMaps::k5kG;
-	  factor=SolenoidBz/5;
-	}
-	// the magnetic field map is not supposed to change
-	// field initialization should be done once in the beginning
-	// TODO: does the factor need adjustment?
-	const AliMagF* currentMap=AliTracker::GetFieldMap();
-	if (!currentMap) {
-	  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., map);
-	  AliTracker::SetFieldMap(field,kFALSE);
-	  HLTInfo("Solenoid Field set to: %f map %d", SolenoidBz, map);
-	} else if (currentMap->Map()!=map) {
-	  HLTWarning("omitting request to override field map %s with %s", currentMap->Map(), map);
-	}
-#endif
+	if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+	HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
 	continue;
       } else {
 	HLTError("unknown argument %s", argument.Data());

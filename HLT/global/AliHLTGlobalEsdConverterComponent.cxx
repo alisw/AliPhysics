@@ -88,8 +88,7 @@ int AliHLTGlobalEsdConverterComponent::Configure(const char* arguments)
       
       if (argument.CompareTo("-solenoidBz")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-	fSolenoidBz=((TObjString*)pTokens->At(i))->GetString().Atof();
+	HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
 	continue;
       } else {
 	HLTError("unknown argument %s", argument.Data());
@@ -111,7 +110,7 @@ int AliHLTGlobalEsdConverterComponent::Reconfigure(const char* cdbEntry, const c
 {
   // see header file for class documentation
   int iResult=0;
-  const char* path=kAliHLTCDBSolenoidBz;
+  const char* path=NULL;
   const char* defaultNotify="";
   if (cdbEntry) {
     path=cdbEntry;
@@ -201,6 +200,8 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
     HLTError("missing parameter for argument %s", argument.Data());
     iResult=-EINVAL;
   }
+
+  fSolenoidBz=GetBz();
 
   if (iResult>=0) {
     fESD = new AliESDEvent;

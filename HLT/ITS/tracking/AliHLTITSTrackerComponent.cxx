@@ -177,8 +177,7 @@ int AliHLTITSTrackerComponent::ReadConfigurationString(  const char* arguments )
 
     if ( argument.CompareTo( "-solenoidBz" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
-      fSolenoidBz = ( ( TObjString* )pTokens->At( i ) )->GetString().Atof();
-      HLTInfo( "Magnetic Field set to: %f", fSolenoidBz );
+      HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
       continue;
     }
 
@@ -253,7 +252,8 @@ int AliHLTITSTrackerComponent::Configure( const char* cdbEntry, const char* chai
 
   //* read magnetic field
 
-  int iResult2 = ReadCDBEntry( kAliHLTCDBSolenoidBz, chainId );
+  int iResult2 = true; //ReadCDBEntry( kAliHLTCDBSolenoidBz, chainId );
+  fSolenoidBz = GetBz();
 
   //* read the actual CDB entry if required
 
@@ -279,7 +279,7 @@ int AliHLTITSTrackerComponent::DoInit( int argc, const char** argv )
 {
   // Configure the ITS tracker component
 
-  if ( fTracker ) return EINPROGRESS;
+  if ( fTracker ) return -EINPROGRESS;
 
   if(AliGeomManager::GetGeometry()==NULL){
     AliGeomManager::LoadGeometry();
@@ -294,14 +294,13 @@ int AliHLTITSTrackerComponent::DoInit( int argc, const char** argv )
 
   int ret = Configure( NULL, NULL, arguments.Data() );
 
-  // set field
-  if (!TGeoGlobalMagField::Instance()->IsLocked()) {
-    AliMagF* field = new AliMagF("Maps","Maps",1.,1.,AliMagF::k5kG);
-    field->SetFactorSol(1);
-    Double_t initialFieldStrengh=field->SolenoidField();
-    field->SetFactorSol(fSolenoidBz/initialFieldStrengh); 
-    TGeoGlobalMagField::Instance()->SetField(field);  
+  // Check field
+  if (!TGeoGlobalMagField::Instance()) {
+    HLTError("magnetic field not initialized, please set up TGeoGlobalMagField and AliMagF");
+    return -ENODEV;
   }
+  fSolenoidBz=GetBz();
+
   fTracker = new AliITStrackerHLT(0);
 
   return ret;

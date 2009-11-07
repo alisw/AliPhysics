@@ -51,6 +51,7 @@ using namespace std;
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
+#include "TGeoGlobalMagField.h"
 
 #include <sys/time.h>
 
@@ -209,6 +210,12 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     return -ENOENT;
   }
 
+  // Check field
+  if (!TGeoGlobalMagField::Instance()) {
+    HLTError("magnetic field not initialized, please set up TGeoGlobalMagField and AliMagF");
+    return -ENODEV;
+  }
+
   fClusterFinder = new AliHLTTPCClusterFinder();
 
   // first configure the default
@@ -232,11 +239,6 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
   // return iResult;
-
-  if(iResult>=0){
-    //initialize the magnetic field from CDB
-    iResult = ConfigureFromCDBTObjString(kAliHLTCDBSolenoidBz);
-  }
 
   /*
   Int_t iResult=0;
@@ -529,15 +531,16 @@ int AliHLTTPCClusterFinderComponent::ScanConfigurationArgument(int argc, const c
 
   if (argument.CompareTo("-solenoidBz")==0){
     if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
-    if(!calib){
-      HLTError("CalibDB not availible");
-    }
-    Float_t magneticField = argument.Atof();
-    calib->SetExBField(magneticField);
-    HLTInfo("SolenoidBz is set to %f in the calibDB",magneticField);
+    HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
     return 2;
+  }
+
+  AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
+  if(!calib){
+    HLTError("CalibDB not availible");
+  } else {
+    calib->SetExBField(GetBz());
+    HLTInfo("SolenoidBz is set to %f in the calibDB", GetBz());
   }
 
   if (argument.CompareTo("-update-calibdb")==0 || argument.CompareTo("-update-transform")==0 ){

@@ -45,6 +45,7 @@
 #include "AliHLTExternalTrackParam.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTTrackMCLabel.h"
+#include "TGeoGlobalMagField.h"
 
 #include <vector>
 
@@ -155,6 +156,8 @@ int AliHLTTPCEsdWriterComponent::AliWriter::DumpEvent( const AliHLTComponentEven
     if (fESD) {
       AliESDEvent* pESD=fESD;
 
+      pESD->Reset(); 
+      pESD->SetMagneticField(GetBz());
       iResult=fBase->ProcessBlocks(pTree, pESD, blocks, (int)evtData.fBlockCnt);
 
     } else {
@@ -182,8 +185,6 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
   int iAddedDataBlocks=0;
   
   if (pESD && blocks) {
-      pESD->Reset(); 
-      pESD->SetMagneticField(fSolenoidBz);
       const AliHLTComponentBlockData* iter = NULL;
       int bIsTrackSegs=0;
 
@@ -331,6 +332,12 @@ int AliHLTTPCEsdWriterComponent::Configure(const char* arguments)
   int iResult=0;
   if (!arguments) return iResult;
 
+  // Check field
+  if (!TGeoGlobalMagField::Instance()) {
+    HLTError("magnetic field not initialized, please set up TGeoGlobalMagField and AliMagF");
+    return -ENODEV;
+  }
+
   TString allArgs=arguments;
   TString argument;
   int bMissingParam=0;
@@ -343,8 +350,7 @@ int AliHLTTPCEsdWriterComponent::Configure(const char* arguments)
       
       if (argument.CompareTo("-solenoidBz")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-	fSolenoidBz=((TObjString*)pTokens->At(i))->GetString().Atof();
+	HLTWarning("parameter -solenoidBz deprecated, magnetic field handled by global AliMagF object and TGeoGlobalMagField");
 	continue;
       } else {
 	HLTError("unknown argument %s", argument.Data());
@@ -366,7 +372,7 @@ int AliHLTTPCEsdWriterComponent::Reconfigure(const char* cdbEntry, const char* c
 {
   // see header file for class documentation
   int iResult=0;
-  const char* path=kAliHLTCDBSolenoidBz;
+  const char* path=NULL;
   const char* defaultNotify="";
   if (cdbEntry) {
     path=cdbEntry;
@@ -455,9 +461,7 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoInit(int argc, const char** arg
 
       // -solenoidBz
     } else if (argument.CompareTo("-solenoidBz")==0) {
-      TString tmp="-solenoidBz ";
-      tmp+=argv[++i];
-      fBase->Configure(tmp.Data());
+      HLTWarning("parameter -solenoidBz deprecated, magnetic field handled by global AliMagF object and TGeoGlobalMagField");
     } else {
       HLTError("unknown argument %s", argument.Data());
       break;
@@ -519,6 +523,8 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
       pTree->SetDirectory(0);
     }
 
+    pESD->Reset(); 
+    pESD->SetMagneticField(GetBz());
     if ((iResult=fBase->ProcessBlocks(pTree, pESD, blocks, (int)evtData.fBlockCnt))>0) {
       // TODO: set the specification correctly
       if (pTree) {
