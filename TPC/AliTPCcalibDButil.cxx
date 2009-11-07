@@ -46,6 +46,7 @@
 #include "AliTPCcalibDButil.h"
 #include "AliTPCPreprocessorOnline.h"
 #include "AliTPCCalibVdrift.h"
+#include "AliMathBase.h"
 
 ClassImp(AliTPCcalibDButil)
 AliTPCcalibDButil::AliTPCcalibDButil() :
@@ -2172,11 +2173,15 @@ Double_t AliTPCcalibDButil::GetLaserTime0(Int_t run, Int_t timeStamp, Int_t delt
 
 
 
-void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t deltaT, Double_t cutSigma, TTreeSRedirector *pcstream){
+void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t deltaT, Double_t cutSigma, Double_t minVd, Double_t maxVd, TTreeSRedirector *pcstream){
   //
   // Filter Goofie data
+  // goofieArray - points will be filtered
+  // deltaT      - smmothing time window 
+  // cutSigma    - outler sigma cut in rms
+  // minVn, maxVd- range absolute cut for variable vd/pt
+  //             - to be tuned
   //
-  // 
   // Ignore goofie if not enough points
   //
   const Int_t kMinPoints = 3;
@@ -2200,20 +2205,38 @@ void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t d
   //    area far  peak
   //
   Double_t medianpt=0;
-  Double_t medianvd=0;
+  Double_t medianvd=0, sigmavd=0;
   Double_t medianan=0;
   Double_t medianaf=0;
-  Int_t entries=graphvd->GetN();
-  TGraph * graphvd0 = AliTPCcalibDButil::FilterGraphMedianAbs(graphvd,0.03,medianvd);
-  TGraph * graphvd1 = AliTPCcalibDButil::FilterGraphMedian(graphvd0,2,medianvd);
+  Int_t    entries=graphvd->GetN();
+  Double_t yvdn[10000];
+  Int_t nvd=0;
+  //
+  for (Int_t ipoint=0; ipoint<entries; ipoint++){
+    if (graphpt->GetY()[ipoint]<=0.0000001) continue;
+    if (graphvd->GetY()[ipoint]/graphpt->GetY()[ipoint]<minVd) continue;
+    if (graphvd->GetY()[ipoint]/graphpt->GetY()[ipoint]>maxVd) continue;
+    yvdn[nvd++]=graphvd->GetY()[ipoint];
+  }
+  if (nvd<kMinPoints){
+    delete graphvd;
+    goofieArray->GetSensorNum(2)->SetGraph(0);
+    return;
+  }
+  //
+  Int_t nuni = TMath::Min(TMath::Nint(nvd*0.4+2), nvd-1);
+  if (nuni>=kMinPoints){
+    AliMathBase::EvaluateUni(nvd, yvdn, medianvd,sigmavd,nuni); 
+  }else{
+    medianvd = TMath::Median(nvd, yvdn);
+  }
+  
   TGraph * graphpt0 = AliTPCcalibDButil::FilterGraphMedianAbs(graphpt,10,medianpt);
   TGraph * graphpt1 = AliTPCcalibDButil::FilterGraphMedian(graphpt0,2,medianpt);
   TGraph * graphan0 = AliTPCcalibDButil::FilterGraphMedianAbs(graphan,10,medianan);
   TGraph * graphan1 = AliTPCcalibDButil::FilterGraphMedian(graphan0,2,medianan);
   TGraph * graphaf0 = AliTPCcalibDButil::FilterGraphMedianAbs(graphaf,10,medianaf);
   TGraph * graphaf1 = AliTPCcalibDButil::FilterGraphMedian(graphaf0,2,medianaf);
-  delete graphvd0;
-  delete graphvd1;
   delete graphpt0;
   delete graphpt1;
   delete graphan0;
@@ -2223,19 +2246,27 @@ void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t d
   //
   // 2. Make outlyer graph
   //
-  Int_t nOut=0;
+  Int_t nOK=0;
   TGraph graphOut(*graphvd);
   for (Int_t i=0; i<entries;i++){
     //
     Bool_t isOut=kFALSE;
-    if (TMath::Abs(graphvd->GetY()[i]/medianvd-1.)>0.02) isOut|=kTRUE;
+    if (graphpt->GetY()[i]<=0.0000001) {  graphOut.GetY()[i]=1; continue;}
+    if (graphvd->GetY()[i]/graphpt->GetY()[i]<minVd || graphvd->GetY()[i]/graphpt->GetY()[i]>maxVd) {  graphOut.GetY()[i]=1; continue;}
+ 
+    if (TMath::Abs((graphvd->GetY()[i]/graphpt->GetY()[i])/medianvd-1.)<0.05) 
+      isOut|=kTRUE;
     if (TMath::Abs(graphpt->GetY()[i]/medianpt-1.)>0.02) isOut|=kTRUE;
-    if (TMath::Abs(graphan->GetY()[i]/medianan-1.)>0.03) isOut|=kTRUE;
-    if (TMath::Abs(graphaf->GetY()[i]/medianaf-1.)>0.03) isOut|=kTRUE;
+    if (TMath::Abs(graphan->GetY()[i]/medianan-1.)>0.2) isOut|=kTRUE;
+    if (TMath::Abs(graphaf->GetY()[i]/medianaf-1.)>0.2) isOut|=kTRUE;
     graphOut.GetY()[i]= (isOut)?1:0;
-    if (isOut) nOut++;
+    if (!isOut) nOK++;
   }
-  if (nOut<kMinPoints) return; 
+  if (nOK<kMinPoints) {
+    delete graphvd;
+    goofieArray->GetSensorNum(2)->SetGraph(0);
+    return;
+  } 
   //
   // 3. Filter out outlyers - and smooth 
   //
@@ -2273,15 +2304,15 @@ void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t d
 	junk.AddLast(graphNew0);
 	graphNew1  = AliTPCcalibDButil::FilterGraphMedian(graphNew0,cutSigma,median);
 	if (graphNew1!=0){
-	  junk.AddLast(graphNew1);
+	  junk.AddLast(graphNew1);	  
 	  graphNew2  = AliTPCcalibDButil::FilterGraphMedian(graphNew1,cutSigma,median);
 	  if (graphNew2!=0) {
+	    vrmsArray[isensor]   =TMath::RMS(graphNew2->GetN(),graphNew2->GetY());
 	    AliTPCcalibDButil::SmoothGraph(graphNew2,deltaT);
 	    AliTPCcalibDButil::SmoothGraph(graphNew2,deltaT);
 	    AliTPCcalibDButil::SmoothGraph(graphNew2,deltaT);
-	    printf("%d\t%f\n",isensor, median);
+	    printf("%d\t%f\t%f\n",isensor, median,vrmsArray[isensor]);
 	    vmedianArray[isensor]=median;
-	    vrmsArray[isensor]   =median;
 	    //
 	  }
 	}
@@ -2298,12 +2329,13 @@ void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t d
       Form("gr0_%d.=",isensor)<<graphNew0<<
       Form("gr1_%d.=",isensor)<<graphNew1<<
       Form("gr2_%d.=",isensor)<<graphNew2;
-      sensor->SetGraph(graphNew2);
-    }
-    (*pcstream)<<"goofieA"<<
-      "vmed.="<<&vmedianArray<<
-      "\n";
-    junk.Delete();   // delete temoprary graphs
+    if (isOK) sensor->SetGraph(graphNew2);
+  }
+  (*pcstream)<<"goofieA"<<
+    "vmed.="<<&vmedianArray<<
+    "vrms.="<<&vrmsArray<<
+    "\n";
+  junk.Delete();   // delete temoprary graphs
   
 }
 

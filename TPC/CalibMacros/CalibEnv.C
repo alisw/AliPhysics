@@ -111,7 +111,7 @@ void CalibEnv(const char * runList, Int_t first=1, Int_t last=-1){
     //dbutil->FilterCE(120., 3., 4.,pcstream);
     //dbutil->FilterTracks(irun, 10.,pcstream);
     AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(irun);		 
-    if (goofieArray) dbutil->FilterGoofie(goofieArray,0.5,4.,pcstream);
+    if (goofieArray) dbutil->FilterGoofie(goofieArray,0.5,4.,6.8,7.05,pcstream);
     // don't filter goofie for the moment
     ProcessRun(irun, startTime,endTime);
   }
@@ -210,7 +210,7 @@ void ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
   //production information
   //
   Int_t nalien=0,nRawAlien=0,nlocal=0,nRawLocal=0;
-  //     GetProductionInfo(irun, nalien, nRawAlien, nlocal,nRawLocal);
+  GetProductionInfo(irun, nalien, nRawAlien, nlocal,nRawLocal);
   //run type
   TObjString runType(AliTPCcalibDB::GetRunType(irun).Data());
   //
@@ -434,18 +434,18 @@ void GetProductionInfo(Int_t run, Int_t &nalien, Int_t &nRawAlien, Int_t &nlocal
   command += " | grep raw | grep -v tag | wc -l";
   sNlines = gSystem->GetFromPipe(command.Data());
   nRawAlien=sNlines.Atoi();
-  //find number of ESDs local
-  command="find /lustre/alice/alien/alice/data/2009 -name AliESDs.root | grep ";
-  command += Form("%09d",run);
-  command += " | wc -l";
-  sNlines = gSystem->GetFromPipe(command.Data());
-  nlocal=sNlines.Atoi();
-  //find number of local raw data files
-  command="find /lustre/alice/alien/alice/data/2009 -name \"*.root\" | grep ";
-  command += Form("%09d",run);
-  command += " | grep raw | grep -v tag | wc -l";
-  sNlines = gSystem->GetFromPipe(command.Data());
-  nRawLocal=sNlines.Atoi();
+ //  //find number of ESDs local
+//   command="find /lustre/alice/alien/alice/data/2009 -name AliESDs.root | grep ";
+//   command += Form("%09d",run);
+//   command += " | wc -l";
+//   sNlines = gSystem->GetFromPipe(command.Data());
+//   nlocal=sNlines.Atoi();
+//   //find number of local raw data files
+//   command="find /lustre/alice/alien/alice/data/2009 -name \"*.root\" | grep ";
+//   command += Form("%09d",run);
+//   command += " | grep raw | grep -v tag | wc -l";
+//   sNlines = gSystem->GetFromPipe(command.Data());
+//   nRawLocal=sNlines.Atoi();
 }
 
 
