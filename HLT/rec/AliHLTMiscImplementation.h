@@ -31,6 +31,8 @@ class AliHLTMiscImplementation : public AliHLTMisc
 
   int InitMagneticField() const;
 
+  AliHLTUInt64_t GetTriggerMask(AliRawReader* rawReader) const;
+
  private:
 
   ClassDef(AliHLTMiscImplementation, 0)

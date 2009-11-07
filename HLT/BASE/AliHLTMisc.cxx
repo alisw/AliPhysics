@@ -118,6 +118,12 @@ int AliHLTMisc::InitMagneticField() const
   return -EFAULT;
 }
 
+AliHLTUInt64_t AliHLTMisc::GetTriggerMask(AliRawReader* /*rawReader*/) const
+{
+  // default method, functionality is implemented in the child class
+  return 0;
+}
+
 ostream  &operator<<(ostream &out, const AliHLTComponentDataType &dt)
 {
   // printout of AliHLTComponentDataType struct

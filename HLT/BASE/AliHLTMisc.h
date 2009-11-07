@@ -15,9 +15,11 @@
 
 #include "TObject.h"
 #include "AliHLTStdIncludes.h"
+#include "AliHLTDataTypes.h"
 
 class AliCDBManager;
 class AliCDBEntry;
+class AliRawReader;
 class AliHLTComponentDataType;
 
 class AliHLTMisc : public TObject {
@@ -39,6 +41,8 @@ class AliHLTMisc : public TObject {
   virtual TObject* ExtractObject(AliCDBEntry* entry);
 
   virtual int InitMagneticField() const;
+
+  virtual AliHLTUInt64_t GetTriggerMask(AliRawReader* rawReader) const;
 
  private:
   static AliHLTMisc* fgInstance;

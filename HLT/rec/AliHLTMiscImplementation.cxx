@@ -27,6 +27,7 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliGRPManager.h"
+#include "AliRawReader.h"
 #include "TGeoGlobalMagField.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -128,4 +129,18 @@ int AliHLTMiscImplementation::InitMagneticField() const
   }
 
   return -ENOENT;
+}
+
+AliHLTUInt64_t AliHLTMiscImplementation::GetTriggerMask(AliRawReader* rawReader) const
+{
+  // see header file for function documentation
+  if (!rawReader) return 0;
+  AliHLTUInt64_t trgMask=0;
+  if (rawReader) {
+    const UInt_t* pattern=rawReader->GetTriggerPattern();
+    trgMask=pattern[1]&0xfffffff; // 28 upper bits of the 50 bit mask
+    trgMask<<=32;
+    trgMask|=pattern[0]; // 32 lower bits of the mask
+  }
+  return trgMask;
 }
