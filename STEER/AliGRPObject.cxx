@@ -133,7 +133,7 @@ AliGRPObject::AliGRPObject():
 //-----------------------------------------------------------------------------
 
 AliGRPObject::AliGRPObject(const AliGRPObject &obj):
-	TObject(),
+	TObject(obj),
 	fPoints(obj.fPoints),
 	fDimension(obj.fDimension),
 	fTimeStart(obj.fTimeStart),
@@ -165,6 +165,8 @@ AliGRPObject::AliGRPObject(const AliGRPObject &obj):
 	// AliGRPObject copy ctor
 	//
 
+	fHallProbes = new Float_t[fDimension]; 
+
 	for (Int_t nhp=0; nhp< fDimension; nhp++){
 		fHallProbes[nhp] = obj.fHallProbes[nhp];
 	}
@@ -188,6 +190,9 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 	// AliGRPObject assignment operator
 	//
 
+	if (&obj == this) return *this; 
+
+	TObject::operator=(obj);
 	this->fTimeStart = obj.GetTimeStart();
 	this->fTimeEnd = obj.GetTimeEnd();
 	this->fBeamEnergy = obj.GetBeamEnergy();
@@ -213,6 +218,7 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 	this->fDipoleCurrent = new Float_t[fPoints];
 	this->fCavernTemperature = new Float_t[fPoints];
 	
+	if (this->fHallProbes==NULL) this->fHallProbes = new Float_t[this->fDimension]; 
 	for (Int_t nhp=0; nhp< fDimension; nhp++){
 		this->fHallProbes[nhp] = obj.GetHallProbes(nhp);
 
