@@ -48,6 +48,9 @@
 #pragma link C++ class AliPerformanceTPC+;
 #pragma link C++ class AliPerformanceMC+;
 #pragma link C++ class AliPerformanceMatch+;
+#pragma link C++ class AliPerformancePtCalib+;
+#pragma link C++ class AliPerformancePtCalibMC+;
+#pragma link C++ class AliPerfAnalyzeInvPt+;
 
 #pragma link C++ class AliAlignmentDataFilterITS+;
 #pragma link C++ class AliTrackMatchingTPCITSCosmics+;
