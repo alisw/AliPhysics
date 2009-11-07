@@ -101,7 +101,7 @@ void AliHLTV0HistoComponent::GetOutputDataSize( unsigned long& constBase, double
   // see header file for class documentation
   // XXX TODO: Find more realistic values.
   constBase = 80000;
-  inputMultiplier = 1;
+  inputMultiplier = 0;
 }
 
 AliHLTComponent* AliHLTV0HistoComponent::Spawn()
@@ -128,7 +128,7 @@ int AliHLTV0HistoComponent::DoInit( int argc, const char** argv )
   fPi0->SetFillColor(kGreen);
   fPi0->SetStats(0);
   
-  fAP = new TH2F("hAP","HLT:  Armenteros-Podolanski plot",60,-1.,1.,60,0.,0.3);
+  fAP = new TH2F("hAP","HLT:  Armenteros-Podolanski plot",60,-1.,1.,60,-0.02,0.3);
   fAP->SetMarkerStyle(8);
   fAP->SetMarkerSize(0.4);
   fAP->SetYTitle("p_{t}[GeV]");
@@ -268,6 +268,38 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
       double dy = v0.GetY()-primVtx.GetY();
       double r = sqrt(dx*dx + dy*dy);
 
+      // AP plot
+
+      double pt=0, ap=0;
+      {
+	AliKFParticle kf01 = kf1, kf02 = kf2;
+	kf01.SetProductionVertex(v0);
+	kf02.SetProductionVertex(v0);
+	kf01.TransportToProductionVertex();
+	kf02.TransportToProductionVertex();      
+	double px1=kf01.GetPx(), py1=kf01.GetPy(), pz1=kf01.GetPz();
+	double px2=kf02.GetPx(), py2=kf02.GetPy(), pz2=kf02.GetPz();
+	double px = px1+px2, py = py1+py2, pz = pz1+pz2;
+	double p = sqrt(px*px+py*py+pz*pz);
+	double l1 = (px*px1 + py*py1 + pz*pz1)/p;
+	double l2 = (px*px2 + py*py2 + pz*pz2)/p;
+	pt = sqrt(px1*px1+py1*py1+pz1*pz1 - l1*l1);
+	ap = (l1-l2)/(l1+l2);
+      }
+      
+      if( 
+	 t1->GetTPCNcls()>=fAPCuts[0]
+	 && t2->GetTPCNcls()>=fAPCuts[0]
+	 && dev1>=fAPCuts[1]
+	 && dev2>=fAPCuts[1]
+	 && devPrim <= fAPCuts[2]
+	 && length >= fAPCuts[3]*sigmaLength
+	 && length >= fAPCuts[4]
+	 && r <= fAPCuts[5]
+	 ){	
+	if( fAP ) fAP->Fill( ap, pt );
+      } 
+
       // Gamma finder
 
       bool isGamma = 0;
@@ -300,38 +332,6 @@ int AliHLTV0HistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/,
       }
       
       if( isGamma ) continue;
-
-      // AP plot
-
-      double pt=0, ap=0;
-      {
-	AliKFParticle kf01 = kf1, kf02 = kf2;
-	kf01.SetProductionVertex(v0);
-	kf02.SetProductionVertex(v0);
-	kf01.TransportToProductionVertex();
-	kf02.TransportToProductionVertex();      
-	double px1=kf01.GetPx(), py1=kf01.GetPy(), pz1=kf01.GetPz();
-	double px2=kf02.GetPx(), py2=kf02.GetPy(), pz2=kf02.GetPz();
-	double px = px1+px2, py = py1+py2, pz = pz1+pz2;
-	double p = sqrt(px*px+py*py+pz*pz);
-	double l1 = (px*px1 + py*py1 + pz*pz1)/p;
-	double l2 = (px*px2 + py*py2 + pz*pz2)/p;
-	pt = sqrt(px1*px1+py1*py1+pz1*pz1 - l1*l1);
-	ap = (l1-l2)/(l1+l2);
-      }
-
-      if( 
-	 t1->GetTPCNcls()>=fAPCuts[0]
-	 && t2->GetTPCNcls()>=fAPCuts[0]
-	 && dev1>=fAPCuts[1]
-	 && dev2>=fAPCuts[1]
-	 && devPrim <= fAPCuts[2]
-	 && length >= fAPCuts[3]*sigmaLength
-	 && length >= fAPCuts[4]
-	 && r <= fAPCuts[5]
-	 ){	
-	if( fAP ) fAP->Fill( ap, pt );
-      } 
 
 
       // KShort finder
