@@ -42,7 +42,7 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
 
   /// inherited from AliKalmanTrack
   Int_t GetClusterIndex(Int_t i) const { 
-    return (i<fPoints.size()) ?fPoints[i] :0;
+    return (i<(int)fPoints.size()) ?fPoints[i] :0;
   } 
 
   /// Get the x position of the last assigned point
