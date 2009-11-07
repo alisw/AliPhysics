@@ -2424,6 +2424,17 @@ int AliHLTComponent::ScanECSParam(const char* ecsParam)
   // format of the parameter string from ECS
   // <command>;<parameterkey>=<parametervalue>;<parameterkey>=<parametervalue>;...
   // search for a subset of the parameterkeys
+  //   RUN_TYPE=
+  //   RUN_NUMBER=
+  //   HLT_IN_DDL_LIST=
+  //   CTP_TRIGGER_CLASS=
+  //   DATA_FORMAT_VERSION=
+  //   BEAM_TYPE=
+  //   HLT_OUT_DDL_LIST=
+  //   HLT_TRIGGER_CODE=
+  //   DETECTOR_LIST=
+  //   HLT_MODE=
+  // The command apears not to be sent by the online framework
   int iResult=0;
   TString string=ecsParam;
   TObjArray* parameter=string.Tokenize(";");

@@ -42,6 +42,11 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliHLTMessage.h"
+#include "AliCentralTrigger.h"
+#include "AliTriggerConfiguration.h"
+#include "AliTriggerClass.h"
+#include "AliTriggerCluster.h"
+#include "AliDAQ.h"
 
 class AliCDBEntry;
 
@@ -159,6 +164,19 @@ void AliHLTReconstructor::Init()
       }
     }
     delete pTokens;
+  }
+
+  TString ecsParam;
+  TString ctpParam;
+  if (BuildCTPTriggerClassString(ctpParam)>=0) {
+    if (!ecsParam.IsNull()) ecsParam+=";";
+    ecsParam+="CTP_TRIGGER_CLASS=";
+    ecsParam+=ctpParam;
+  }
+
+  if (!ecsParam.IsNull()) {
+    option+=" ECS=";
+    option+=ecsParam;
   }
 
   if (!libs.IsNull() &&
@@ -544,4 +562,56 @@ void AliHLTReconstructor::PrintHLTOUTContent(AliHLTOUT* pHLTOUT) const
     }
     AliInfo(Form("   %s  0x%x: size %d", AliHLTComponent::DataType2Text(dt).c_str(), spec, size));
   }
+}
+
+int AliHLTReconstructor::BuildCTPTriggerClassString(TString& triggerclasses) const
+{
+  // build the CTP trigger class string from the OCDB entry of the CTP trigger
+  int iResult=0;
+  
+  triggerclasses.Clear();
+  AliCentralTrigger* pCTP = new AliCentralTrigger();
+  AliTriggerConfiguration *config=NULL;
+  TString configstr("");
+  if (pCTP->LoadConfiguration(configstr) && 
+      (config = pCTP->GetConfiguration())!=NULL) {
+    const TObjArray& classesArray = config->GetClasses();
+    int nclasses = classesArray.GetEntriesFast();
+    for( int iclass=0; iclass < nclasses; iclass++ ) {
+      AliTriggerClass* trclass = NULL;
+      if (classesArray.At(iclass) && (trclass=dynamic_cast<AliTriggerClass*>(classesArray.At(iclass)))!=NULL) {
+	TString entry;
+	int trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
+	entry.Form("%02d:%s:", trindex, trclass->GetName());
+	AliTriggerCluster* cluster=NULL;
+	TObject* clusterobj=config->GetClusters().FindObject(trclass->GetCluster());
+	if (clusterobj && (cluster=dynamic_cast<AliTriggerCluster*>(clusterobj))!=NULL) {
+	  TString detectors=cluster->GetDetectorsInCluster();
+	  TObjArray* pTokens=detectors.Tokenize(" ");
+	  if (pTokens) {
+	    for (int dix=0; dix<pTokens->GetEntriesFast(); dix++) {
+	      int id=AliDAQ::DetectorID(((TObjString*)pTokens->At(dix))->GetString());
+	      if (id>=0) {
+		TString detstr; detstr.Form("%s%02d", dix>0?"-":"", id);
+		entry+=detstr;
+	      } else {
+		AliError(Form("invalid detector name extracted from trigger cluster: %s (%s)", ((TObjString*)pTokens->At(dix))->GetString().Data(), detectors.Data()));
+		iResult=-EPROTO;
+		break;
+	      }
+	    }
+	    delete pTokens;
+	  }
+	} else {
+	  AliError(Form("can not find trigger cluster %s in config", trclass->GetCluster()));
+	  iResult=-EPROTO;
+	  break;
+	}
+	if (!triggerclasses.IsNull()) triggerclasses+=",";
+	triggerclasses+=entry;
+      }
+    }
+  }
+
+  return iResult;
 }

@@ -445,7 +445,7 @@ int AliHLTTask::EndRun()
   return iResult;
 }
 
-int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
+int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt64_t trgMask)
 {
   // see header file for function documentation
   int iResult=0;
@@ -574,11 +574,9 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType)
       trigData.fDataSize=sizeof(AliHLTEventTriggerData);
       memset(&evtTrigData, 0, trigData.fDataSize);
       evtTrigData.fCommonHeaderWordCnt=gkAliHLTCommonHeaderCount;
-      // TODO 2009-09-30
-      // Whenever the trigger framework is implemented and provides more than
-      // just a dummy CT_TRIGGER_CLASS, this needs to be changed. Now for
-      // all events the first bit in the trigger mask is set
-      evtTrigData.fCommonHeader[5]=0x1;
+      evtTrigData.fCommonHeader[5]=trgMask&0xffffffff;
+      trgMask>>=32;
+      evtTrigData.fCommonHeader[6]=trgMask&0xfffffff;
       trigData.fData=&evtTrigData;
       iLastOutputDataSize=iOutputDataSize;
       AliHLTUInt32_t size=iOutputDataSize;

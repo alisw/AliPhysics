@@ -41,6 +41,7 @@ using namespace std;
 #include "AliHLTOUTTask.h"
 #include "AliHLTControlTask.h"
 #include "AliHLTDataBuffer.h"
+#include "AliHLTMisc.h"
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TStopwatch.h>
@@ -83,6 +84,7 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel, const char* name
   fpHLTOUTTask(NULL),
   fpControlTask(NULL),
   fName(name)
+  , fECSParams()
 {
   // see header file for class documentation
   // or
@@ -381,7 +383,7 @@ void AliHLTSystem::PrintTaskList()
   }
 }
 
-int AliHLTSystem::Run(Int_t iNofEvents, int bStop)
+int AliHLTSystem::Run(Int_t iNofEvents, int bStop, AliHLTUInt64_t trgMask)
 {
   // see header file for class documentation
   int iResult=0;
@@ -405,7 +407,7 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop)
 	  // reset and prepare for new data
 	  fpHLTOUTTask->Reset();
 	}
-	if ((iResult=ProcessTasks(i))>=0) {
+	if ((iResult=ProcessTasks(i, trgMask))>=0) {
 	  fGoodEvents++;
 	  iCount++;
 	} else {
@@ -617,7 +619,7 @@ int AliHLTSystem::StartTasks()
   return iResult;
 }
 
-int AliHLTSystem::ProcessTasks(Int_t eventNo)
+int AliHLTSystem::ProcessTasks(Int_t eventNo, AliHLTUInt64_t trgMask)
 {
   // see header file for class documentation
   int iResult=0;
@@ -627,7 +629,7 @@ int AliHLTSystem::ProcessTasks(Int_t eventNo)
     TObject* obj=lnk->GetObject();
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
-      iResult=pTask->ProcessTask(eventNo);
+      iResult=pTask->ProcessTask(eventNo, gkAliEventTypeData, trgMask);
 //       ProcInfo_t ProcInfo;
 //       gSystem->GetProcInfo(&ProcInfo);
 //       HLTInfo("task %s processed (%d), current memory usage %d %d", pTask->GetName(), iResult, ProcInfo.fMemResident, ProcInfo.fMemVirtual);
@@ -698,12 +700,12 @@ int AliHLTSystem::SendControlEvent(AliHLTComponentDataType dt)
   bd.fSpecification=kAliHLTVoidDataSpec;
   controlBlocks.push_back(bd);
 
-  // ECS parameter dummy of type kAliHLTDataTypeECSParam
-  // to be filled at some point from the trigger framework
+  // ECS parameter of type kAliHLTDataTypeECSParam
+  if (fECSParams.IsNull())
+    fECSParams="CTP_TRIGGER_CLASS=00:DUMMY-TRIGGER-ALL:00-01-02-03-04-05-06-07-08-09-10-11-12-13-14-15-16-17";
   AliHLTComponent::FillBlockData(bd);
-  TString ecsParam="CTP_TRIGGER_CLASS=00:DUMMY-TRIGGER-ALL:00-01-02-03-04-05-06-07-08-09-10-11-12-13-14-15-16-17";
-  bd.fPtr=(void*)ecsParam.Data();
-  bd.fSize=ecsParam.Length()+1;
+  bd.fPtr=(void*)fECSParams.Data();
+  bd.fSize=fECSParams.Length()+1;
   bd.fDataType=kAliHLTDataTypeECSParam;
   bd.fSpecification=kAliHLTVoidDataSpec;
   controlBlocks.push_back(bd);  
@@ -841,9 +843,10 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
 	}
       } else {
       if ((iResult=AliHLTOfflineInterface::SetParamsToComponents(runLoader, rawReader))>=0) {
+	AliHLTUInt64_t trgMask=AliHLTMisc::Instance().GetTriggerMask(rawReader);
 	// the system always remains started after event processing, a specific
 	// call with nofEvents==0 is needed to execute the stop sequence
-	if ((iResult=Run(nofEvents, 0))<0) SetStatusFlags(kError);
+	if ((iResult=Run(nofEvents, 0, trgMask))<0) SetStatusFlags(kError);
       }
       }
     } else {
@@ -1213,6 +1216,8 @@ int AliHLTSystem::ScanOptions(const char* options)
 	      HLTWarning("wrong argument for option \'libmode=\', use \'static\' or \'dynamic\'");
 	    }
 	  }
+	} else if (token.BeginsWith("ECS=")) {
+	  fECSParams=token.ReplaceAll("ECS=", "");
 	} else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
 	  libs+=token;
 	  libs+=" ";

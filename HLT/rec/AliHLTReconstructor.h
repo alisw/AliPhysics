@@ -218,6 +218,11 @@ public:
   int InitStreamerInfos(TObjArray* pSchemas) const;
 
   /**
+   * Build the CTP_TRIGGER_CLASSES string from CTP trigger configuration
+   */
+  int BuildCTPTriggerClassString(TString& triggerclasses) const;
+
+  /**
    * This Reconstructor function is not applicable for the AliHLTReconstructor
    * as it gets a detector specific digits tree. But HLT processes all detectors.
    * Furthermore it's purely simulated data. <br>
