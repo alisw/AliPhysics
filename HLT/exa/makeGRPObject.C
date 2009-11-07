@@ -18,10 +18,22 @@
  * the TGeoGlobalMagField container. AliMagF contains the field maps
  * for both the L3 and dipole magnets.
  * 
- * Using the LHC convention for magnetic fields leads to the little bit
- * confusing fact that positive currents of either magnet correspond to
- * negative main field components. Furthermore, negative polarity
- * corresponds to the value '1' in the GRP, while positive to '0'.
+ * The following conventions for magnetic field polarity are known:
+ * 1) kConvMap2005: used for the field mapping in 2005
+ *    positive L3  current -> negative Bz
+ *    positive Dip current -> positive Bx 
+ * 2) kConvMapDCS2008: defined by the microswitches/cabling of power
+ *                     converters as of 2008 - 1st half 2009
+ *    positive L3  current -> positive Bz
+ *    positive Dip current -> positive Bx
+ * 3) kConvLHC : defined by LHC
+ *    positive L3  current -> positive Bz
+ *    positive Dip current -> negative Bx
+ * 
+ * For current data taking, only the last convention is relevant.
+ *
+ * Negative polarity corresponds to the value '1' in the GRP, while
+ * positive to '0'.
  *
  * Parameters: <br>
  *      arguments      off, default, l3=current, l3=off,
@@ -76,11 +88,9 @@ void makeGRPObject(float l3Current,
   grpObj->SetPolarityConventionLHC();                    // LHC convention +/+ current -> -/- field main components
 
   if (bVerbose) {
-    // do not use the AliGRPManager until bug
-    // https://savannah.cern.ch/bugs/index.php?58403 is fixed
-//     AliGRPManager grpman;
-//     grpman.SetGRPEntry(grpObj);
-//     grpman.SetMagField();
+    AliGRPManager grpman;
+    grpman.SetGRPEntry(grpObj);
+    grpman.SetMagField();
   }
 
   // write object to OCDB
@@ -115,9 +125,9 @@ void makeGRPObject(const char* arguments="",
 	  dipolePolarity=0;
       } else if (arg.CompareTo("default", TString::kIgnoreCase)==0) {
 	  l3Current=30000;
-	  l3Polarity=1;
+	  l3Polarity=0;  // positive for positive field
 	  dipoleCurrent=6000;
-	  dipolePolarity=1;	
+	  dipolePolarity=1; // negative for positive field
       } else if (arg.BeginsWith("l3=")) {
 	arg.ReplaceAll("l3=", "");
 	if (arg.CompareTo("off", TString::kIgnoreCase)==0) {
