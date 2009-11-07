@@ -38,7 +38,7 @@ const UShort_t AliMagF::fgkPolarityConvention = kConvLHC;
  positive L3  current -> positive Bz
  positive Dip current -> positive Bx
  3) kConvLHC : defined by LHC
- positive L3  current -> negative Bz
+ positive L3  current -> positive Bz
  positive Dip current -> negative Bx
  
  Note: only "negative Bz(L3) with postive Bx(Dipole)" and its inverse was mapped in 2005. Hence 
