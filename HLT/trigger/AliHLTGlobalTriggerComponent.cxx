@@ -685,7 +685,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   for (Int_t i = 0; i < symbols.GetEntriesFast(); i++)
   {
     AliHLTTriggerMenuSymbol* symbol = static_cast<AliHLTTriggerMenuSymbol*>( symbols.UncheckedAt(i) );
-    code << "      if (strcmp(symbol->Name(), \"" << symbol->Name() << "\") == 0) {" << endl;
+    code << "      if (strcmp(symbol->Name(), \"" << symbol->RealName() << "\") == 0) {" << endl;
     if (fDebugMode)
     {
       code << "        HLTDebug(Form(\"Assinging domain entry value corresponding with symbol '%s' to '%s'.\","
@@ -788,7 +788,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
     if (isTrigDecision)
     {
       code << "strcmp(" << symbol->Name() << "_object_->Name(), \""
-           << symbol->Name() << "\") == 0 && ";
+           << symbol->RealName() << "\") == 0 && ";
     }
     code << symbol->Name() << "DomainEntry == _type_spec_) {" << endl;
     TString fullname = symbol->Name();
