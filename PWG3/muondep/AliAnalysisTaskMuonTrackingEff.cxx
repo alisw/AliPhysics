@@ -268,11 +268,13 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
 // -Input slot 0 works with a TChain:
     DefineInput(0, TChain::Class());
 
-// -Output slot 0 writes into a TClonesArray:
+// -Output slots 0 to 5 writes into a TClonesArray:
     DefineOutput(0, TClonesArray::Class());
     DefineOutput(1, TClonesArray::Class());
     DefineOutput(2, TClonesArray::Class());
     DefineOutput(3, TClonesArray::Class());
+    DefineOutput(4, TClonesArray::Class());
+    DefineOutput(5, TClonesArray::Class());
 }
 
 
