@@ -215,6 +215,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     HLTError("magnetic field not initialized, please set up TGeoGlobalMagField and AliMagF");
     return -ENODEV;
   }
+  calib->SetExBField(GetBz());
 
   fClusterFinder = new AliHLTTPCClusterFinder();
 
@@ -533,14 +534,6 @@ int AliHLTTPCClusterFinderComponent::ScanConfigurationArgument(int argc, const c
     if (++i>=argc) return -EPROTO;
     HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
     return 2;
-  }
-
-  AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
-  if(!calib){
-    HLTError("CalibDB not availible");
-  } else {
-    calib->SetExBField(GetBz());
-    HLTInfo("SolenoidBz is set to %f in the calibDB", GetBz());
   }
 
   if (argument.CompareTo("-update-calibdb")==0 || argument.CompareTo("-update-transform")==0 ){
