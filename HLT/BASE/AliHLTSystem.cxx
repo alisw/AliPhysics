@@ -843,7 +843,15 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
 	}
       } else {
       if ((iResult=AliHLTOfflineInterface::SetParamsToComponents(runLoader, rawReader))>=0) {
-	AliHLTUInt64_t trgMask=AliHLTMisc::Instance().GetTriggerMask(rawReader);
+	AliHLTUInt64_t trgMask=0x1;
+	if (runLoader==NULL) {
+	  // this is a quick workaround for the case of simulation
+	  // the trigger framework is still under development, secondly, AliHLTSimulation
+	  // does not yet add the emulated ECS parameters, so no CTP trigger is known in the HLT
+	  // AliHLTTask will initialize one dummy CTP trigger class with bit 0, that's why the
+	  // default trigger mask is 0x1
+	  trgMask=AliHLTMisc::Instance().GetTriggerMask(rawReader);
+	}
 	// the system always remains started after event processing, a specific
 	// call with nofEvents==0 is needed to execute the stop sequence
 	if ((iResult=Run(nofEvents, 0, trgMask))<0) SetStatusFlags(kError);
