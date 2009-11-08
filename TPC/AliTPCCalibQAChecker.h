@@ -75,7 +75,7 @@ public:
   virtual void Draw(Option_t *option="");
   virtual void Print(Option_t *option="") const;  
 
-// private:
+ private:
   //alarm decision variables
   TTree   **fTreePtr;                    //! Pointer to the Tree pointer
   TH1     **fHistPtr;                    //! Pointer to the hist pointer
