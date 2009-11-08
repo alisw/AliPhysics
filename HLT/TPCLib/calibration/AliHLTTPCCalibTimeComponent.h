@@ -24,6 +24,9 @@
 class AliTPCcalibTime;
 class AliExternalTrackParam;
 class AliESDEvent;
+class AliESDtrack;
+class AliESDfriend;
+class AliESDfriendTrack;
 class TObjArray;
 
 /**
@@ -79,9 +82,11 @@ class AliHLTTPCCalibTimeComponent : public AliHLTCalibrationProcessor
       /** assignment operator prohibited */
       AliHLTTPCCalibTimeComponent& operator=(const AliHLTTPCCalibTimeComponent&);
 
-      AliTPCcalibTime *fCalibTime; //!transient
-      AliESDEvent     *fESDEvent;  //!transient
-      TObjArray       *fSeedArray; //!transient
+      AliTPCcalibTime   *fCalibTime; //!transient
+      AliESDEvent       *fESDevent;  //!transient
+      AliESDtrack       *fESDtrack;  //!transient
+      AliESDfriendTrack *fESDfriendTrack;  //!transient
+      TObjArray         *fSeedArray; //!transient
       
       AliHLTUInt8_t  fMinPartition;  // see above
       AliHLTUInt8_t  fMaxPartition;  // see above
@@ -92,6 +97,6 @@ class AliHLTTPCCalibTimeComponent : public AliHLTCalibrationProcessor
       /** Analyze calibration data before shipping to FXS */
       Bool_t fEnableAnalysis;  // see above
 
-      ClassDef(AliHLTTPCCalibTimeComponent, 0)
+      ClassDef(AliHLTTPCCalibTimeComponent, 1)
     };
 #endif
