@@ -45,7 +45,6 @@
 #include "AliTPCseed.h"
 #include "AliTPCclusterMI.h"
 #include "TGeoGlobalMagField.h"
-#include "AliMagF.h"
 
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -269,13 +268,10 @@ int AliHLTTPCdEdxComponent::DoInit( int argc, const char** argv )
 
   int ret = Configure( NULL, NULL, arguments.Data() );
 
-  // set field
-  if (!TGeoGlobalMagField::Instance()->IsLocked()) {
-    AliMagF* field = new AliMagF("Maps","Maps",1.,1.,AliMagF::k5kG);
-    field->SetFactorSol(1);
-    Double_t initialFieldStrengh=field->SolenoidField();
-    field->SetFactorSol(fSolenoidBz/initialFieldStrengh); 
-    TGeoGlobalMagField::Instance()->SetField(field);  
+  // Check field
+  if (!TGeoGlobalMagField::Instance()) {
+    HLTError("magnetic field not initialized, please set up TGeoGlobalMagField and AliMagF");
+    return -ENODEV;
   }
   
   //AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform();

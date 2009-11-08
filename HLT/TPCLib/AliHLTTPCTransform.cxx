@@ -10,7 +10,6 @@
 
 #ifdef use_aliroot
 #include <AliRun.h>
-#include <AliMagF.h>
 #include <AliTPCParamSR.h>
 #include <AliTPCPRF2D.h>
 #include <AliTPCRF1D.h>

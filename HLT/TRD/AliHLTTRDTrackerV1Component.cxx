@@ -40,7 +40,6 @@ using namespace std;
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliESDEvent.h"
-#include "AliMagF.h"
 #include "AliESDfriend.h"
 
 #include "AliTRDcalibDB.h"

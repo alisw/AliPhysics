@@ -30,11 +30,6 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliGeomManager.h"
-#ifndef HAVE_NOT_ALIMAGF30848
-#include "AliMagF.h"
-#else // keeping the <30489 code for backward compatibility, to be merged at some point
-#include "AliMagFMaps.h"
-#endif
 #include "AliTPCReconstructor.h"
 #include "AliTPCParam.h"
 #include "AliTPCRecoParam.h"
