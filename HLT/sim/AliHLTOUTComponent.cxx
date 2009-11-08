@@ -135,6 +135,14 @@ int AliHLTOUTComponent::DoInit( int argc, const char** argv )
   if (iResult>=0) {
   }
 
+  // Make sure there is no library manager before we try and create a new one.
+  if (fpLibManager) {
+    delete fpLibManager;
+    fpLibManager=NULL;
+  }
+  
+  // Create a new library manager and allocate the appropriate number of
+  // HOMER writers for the HLTOUT component.
   fpLibManager=new AliHLTHOMERLibManager;
   if (fpLibManager) {
     int writerNo=0;
@@ -168,16 +176,17 @@ int AliHLTOUTComponent::DoDeinit()
       // wanted to have a dynamic_cast<AliHLTHOMERWriter*> here, but this results into
       // undefined symbol when loading the library
       if (*element!=NULL) {
-	// this ia a quick fix for bug https://savannah.cern.ch/bugs/?58247
-	// it is unclear why the pointer is not valid any more, for more
-	// details: https://savannah.cern.ch/bugs/?58083
-	//(*element)->Clear();
-	//fpLibManager->DeleteWriter((AliHLTHOMERWriter*)(*element));
+	(*element)->Clear();
+	fpLibManager->DeleteWriter((AliHLTHOMERWriter*)(*element));
       } else {
 	HLTError("writer instance is NULL");
       }
       element=fWriters.erase(element);
     }
+  }
+  if (fpLibManager) {
+    delete fpLibManager;
+    fpLibManager=NULL;
   }
 
   if (fpDigitTree) {

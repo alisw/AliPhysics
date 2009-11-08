@@ -739,7 +739,7 @@ int AliHLTSystem::DeinitTasks()
 {
   // see header file for class documentation
   int iResult=0;
-  TObjLink *lnk=fTaskList.FirstLink();
+  TObjLink *lnk=fTaskList.LastLink();
   while (lnk) {
     TObject* obj=lnk->GetObject();
     if (obj) {
@@ -751,7 +751,7 @@ int AliHLTSystem::DeinitTasks()
 //       HLTInfo("task %s cleaned (%d), current memory usage %d %d", pTask->GetName(), iResult, ProcInfo.fMemResident, ProcInfo.fMemVirtual);
     } else {
     }
-    lnk = lnk->Next();
+    lnk = lnk->Prev();
   }
   fEventCount=-1;
   fGoodEvents=-1;

@@ -32,11 +32,18 @@
 #include "AliHLTHOMERLibManager.h"
 #include "AliHLTHOMERReader.h"
 #include "AliHLTHOMERWriter.h"
+#include "AliHLTLogging.h"
 #include "TString.h"
 #include "TSystem.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTHOMERLibManager)
+
+// This list must be NULL terminated, since we use it as a marker to identify
+// the end of the list.
+const char* AliHLTHOMERLibManager::fgkLibraries[] = {"libAliHLTHOMER.so", "libHOMER.so", NULL};
+// The size of the list of reference counts must be one less than fgkLibraries.
+int AliHLTHOMERLibManager::fgkLibRefCount[] = {0, 0};
 
 AliHLTHOMERLibManager::AliHLTHOMERLibManager()
   :
@@ -46,7 +53,8 @@ AliHLTHOMERLibManager::AliHLTHOMERLibManager()
   fFctCreateReaderFromBuffer(NULL),
   fFctDeleteReader(NULL),
   fFctCreateWriter(NULL),
-  fFctDeleteWriter(NULL)
+  fFctDeleteWriter(NULL),
+  fLoadedLib(NULL)
 {
   // see header file for class documentation
   // or
@@ -58,6 +66,7 @@ AliHLTHOMERLibManager::AliHLTHOMERLibManager()
 AliHLTHOMERLibManager::~AliHLTHOMERLibManager()
 {
   // see header file for class documentation
+  UnloadHOMERLibrary();
 }
 
 AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(const char* hostname, unsigned short port )
@@ -164,16 +173,23 @@ int AliHLTHOMERLibManager::LoadHOMERLibrary()
 {
   // see header file for class documentation
   int iResult=-EBADF;
-  const char* libraries[]={"libAliHLTHOMER.so", "libHOMER.so", NULL};
-  const char** library=&libraries[0];
+  const char** library=&fgkLibraries[0];
+  int* refcount = &fgkLibRefCount[0];
   do {
     TString libs = gSystem->GetLibraries();
-    if (libs.Contains(*library) ||
-	(gSystem->Load(*library)) >= 0) {
+    if (libs.Contains(*library)) {
       iResult=1;
       break;
     }
-  } while (*(++library)!=NULL);
+    if ((gSystem->Load(*library)) >= 0) {
+      ++(*refcount);
+      fLoadedLib = *library;
+      iResult=1;
+      break;
+    }
+    ++library;
+    ++refcount;
+  } while ((*library)!=NULL);
 
   if (iResult>0 && *library!=NULL) {
     // print compile info
@@ -214,6 +230,74 @@ int AliHLTHOMERLibManager::LoadHOMERLibrary()
     fFctCreateWriter=NULL;
     fFctDeleteWriter=NULL;
   }
+
+  return iResult;
+}
+
+int AliHLTHOMERLibManager::UnloadHOMERLibrary()
+{
+  // see header file for class documentation
+  int iResult=0;
+  
+  if (fLoadedLib != NULL)
+  {
+    // Find the corresponding reference count.
+    const char** library=&fgkLibraries[0];
+    int* refcount = &fgkLibRefCount[0];
+    while (*library != NULL)
+    {
+      if (strcmp(*library, fLoadedLib) == 0) break;
+      ++library;
+      ++refcount;
+    }
+    
+    // Decrease the reference count and remove the library if it is zero.
+    if (*refcount >= 0) --(*refcount);
+    if (*refcount == 0)
+    {
+      // Check that the library we are trying to unload is actually the last library
+      // in the gSystem->GetLibraries() list. If not then we must abort the removal.
+      // This is because of a ROOT bug/feature/limitation. If we try unload the library
+      // then ROOT will also wipe all libraries in the gSystem->GetLibraries() list
+      // following the library we want to unload.
+      TString libstring = gSystem->GetLibraries();
+      TString token, lastlib;
+      Ssiz_t from = 0;
+      Int_t numOfLibs = 0, posOfLib = -1;
+      while (libstring.Tokenize(token, from, " "))
+      {
+        ++numOfLibs;
+        lastlib = token;
+        if (token.Contains(fLoadedLib)) posOfLib = numOfLibs;
+      }
+      if (numOfLibs == posOfLib)
+      {
+        gSystem->Unload(fLoadedLib);
+
+        // Check that the library is gone, since Unload() does not return a status code.
+        libstring = gSystem->GetLibraries();
+        if (libstring.Contains(fLoadedLib)) iResult = -EBADF;
+      }
+      else
+      {
+        AliHLTLogging log;
+        log.LoggingVarargs(kHLTLogWarning, Class_Name(), FUNCTIONNAME(), __FILE__, __LINE__,
+          Form("ROOT limitation! Cannot properly cleanup and unload the shared"
+            " library '%s' since another library '%s' was loaded afterwards. Trying to"
+            " unload this library will remove the others and lead to serious memory faults.",
+            fLoadedLib, lastlib.Data()
+        ));
+      }
+    }
+  }
+
+  // Clear the function pointers.
+  fFctCreateReaderFromTCPPort = NULL;
+  fFctCreateReaderFromTCPPorts = NULL;
+  fFctCreateReaderFromBuffer = NULL;
+  fFctDeleteReader = NULL;
+  fFctCreateWriter = NULL;
+  fFctDeleteWriter = NULL;
 
   return iResult;
 }

@@ -260,6 +260,7 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   double fBufferSizeMultiplier; //! Buffer size multiplier estimate for GetOutputDataSize.
   TClonesArray fIncludePaths; //! Paths specified by the -includepath command line option.
   TClonesArray fIncludeFiles; //! Files specified by the -include command line option.
+  TString fLibStateAtLoad; //! This stores the loaded libraries just before we tell CINT to load the interpreted file.
 
   static const char* fgkTriggerMenuCDBPath; //! The path string to read the trigger menu from the CDB.
   

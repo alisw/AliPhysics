@@ -29,12 +29,7 @@
 #include "TArrayL64.h"
 #include "TClass.h"
 #include "TInterpreter.h"
-
-#ifdef R__BUILDING_CINT7
-#include "cint7/Api.h"
-#else
-#include "Api.h"
-#endif
+#include "TCint.h"
 
 ClassImp(AliHLTGlobalTriggerWrapper)
 
@@ -132,7 +127,7 @@ AliHLTGlobalTriggerWrapper::AliHLTGlobalTriggerWrapper(const char* classname) :
   fFuncPtr = AliHLTOnErrorInCINT;
   if (sizeof(fPtr) == sizeof(fFuncPtr))
   {
-    G__set_errmsgcallback(fPtr);
+    gInterpreter->SetErrmsgcallback(fPtr);
   }
   else
   {

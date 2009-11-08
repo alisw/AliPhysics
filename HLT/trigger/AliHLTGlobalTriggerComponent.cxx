@@ -38,7 +38,7 @@
 #include "TRegexp.h"
 #include "TClonesArray.h"
 #include "TObjString.h"
-#include "TSystem.h"
+#include "TString.h"
 #include "TInterpreter.h"
 #include "TDatime.h"
 #include "TClass.h"
@@ -78,7 +78,8 @@ AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
 	fBufferSizeConst(2*(sizeof(AliHLTGlobalTriggerDecision) + sizeof(AliHLTReadoutList))),
 	fBufferSizeMultiplier(1.),
 	fIncludePaths(TObjString::Class()),
-	fIncludeFiles(TObjString::Class())
+	fIncludeFiles(TObjString::Class()),
+	fLibStateAtLoad()
 {
   // Default constructor.
   
@@ -1127,6 +1128,9 @@ int AliHLTGlobalTriggerComponent::LoadTriggerClass(
   }
   else
   {
+    // Store the library state to be checked later in UnloadTriggerClass.
+    fLibStateAtLoad = gSystem->GetLibraries();
+    
     // If we do not support the compiler then try interpret the class instead.
     TString cmd = ".L ";
     cmd += filename;
@@ -1155,11 +1159,40 @@ int AliHLTGlobalTriggerComponent::UnloadTriggerClass(const char* filename)
   TString compiler = gSystem->GetBuildCompilerVersion();
   if (fRuntimeCompile && (compiler.Contains("gcc") or compiler.Contains("icc")))
   {
+    // Generate the library name.
     TString libname = filename;
     Ssiz_t dotpos = libname.Last('.');
     if (0 <= dotpos and dotpos < libname.Length()) libname[dotpos] = '_';
     libname += ".";
     libname += gSystem->GetSoExt();
+    
+    // This is a workaround for a problem with unloading shared libraries in ROOT.
+    // If the trigger logic library is loaded before the libAliHLTHOMER.so library
+    // or any other library is loaded afterwards, then during the gInterpreter->UnloadFile
+    // call all the subsequent libraries get unloded. This means that any objects created
+    // from classes implemented in the libAliHLTHOMER.so library will generate segfaults
+    // since the executable code has been unloaded.
+    // We need to check if there are any more libraries loaded after the class we
+    // are unloading and in that case don't unload the class.
+    TString libstring = gSystem->GetLibraries();
+    TString token, lastlib;
+    Ssiz_t from = 0;
+    Int_t numOfLibs = 0, posOfLib = -1;
+    while (libstring.Tokenize(token, from, " "))
+    {
+      ++numOfLibs;
+      lastlib = token;
+      if (token.Contains(libname)) posOfLib = numOfLibs;
+    }
+    if (numOfLibs != posOfLib)
+    {
+      HLTWarning(Form("ROOT limitation! Cannot properly cleanup and unload the shared"
+          " library '%s' since another library '%s' was loaded afterwards. Trying to"
+          " unload this library will remove the others and lead to serious memory faults.",
+          libname.Data(), lastlib.Data()
+      ));
+      return 0;
+    }
     
     char* path = NULL;
     int result = 0;
@@ -1172,7 +1205,30 @@ int AliHLTGlobalTriggerComponent::UnloadTriggerClass(const char* filename)
   }
   else
   {
-    // If we do not support the compiler then try interpret the class instead.
+    // This is again a workaround for the problem with unloading files in ROOT.
+    // If the trigger logic class is loaded before the libAliHLTHOMER.so library
+    // or any other library is loaded afterwards, then during the gInterpreter->UnloadFile
+    // call all the subsequent libraries get unloded.
+    // We need to check if the list of loaded libraries has changed since the last
+    // call to LoadTriggerClass. If it has then don't unload the class.
+    if (fLibStateAtLoad != gSystem->GetLibraries())
+    {
+      TString libstring = gSystem->GetLibraries();
+      TString token;
+      Ssiz_t from = 0;
+      while (libstring.Tokenize(token, from, " "))
+      {
+        if (not fLibStateAtLoad.Contains(token)) break;
+      }
+      HLTWarning(Form("ROOT limitation! Cannot properly cleanup and unload the file"
+          " '%s' since another library '%s' was loaded afterwards. Trying to unload"
+          " this file will remove the other library and lead to serious memory faults.",
+          filename, token.Data()
+      ));
+      return 0;
+    }
+  
+    // If we did not compile the trigger logic then remove the interpreted class.
     TString cmd = ".U ";
     cmd += filename;
     Int_t errorcode = TInterpreter::kNoError;

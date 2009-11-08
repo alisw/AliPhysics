@@ -134,6 +134,11 @@ class AliHLTHOMERLibManager {
    */
   int LoadHOMERLibrary();
 
+  /**
+   * Unloads the HOMER library.
+   */
+  int UnloadHOMERLibrary();
+
   /** status of the loading of the HOMER library */
   int fLibraryStatus; //!transient
 
@@ -154,6 +159,12 @@ class AliHLTHOMERLibManager {
 
   /** entry in the HOMER library */
   void (*fFctDeleteWriter)(); //!transient
+
+  /** Indicates the library that was actually (and if) loaded in LoadHOMERLibrary(). */
+  const char* fLoadedLib;  //!transient
+
+  static const char* fgkLibraries[]; /// List of libraries to try and load.
+  static int fgkLibRefCount[]; /// The library reference count to control when to unload the library.
 
   ClassDef(AliHLTHOMERLibManager, 0)
 };
