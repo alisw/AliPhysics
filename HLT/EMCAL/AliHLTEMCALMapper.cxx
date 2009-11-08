@@ -25,7 +25,7 @@ using namespace EmcalHLTConst;
 
 
 
-AliHLTEMCALMapper::AliHLTEMCALMapper(const unsigned long specification ) : AliHLTCaloMapper(specification)
+AliHLTEMCALMapper::AliHLTEMCALMapper(const unsigned long specification ) : AliHLTCaloMapper(specification, "EMCAL")
 {
   fCellSize = 6;
   InitAltroMapping(specification);
