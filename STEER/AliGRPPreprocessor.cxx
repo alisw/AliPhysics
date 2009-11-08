@@ -983,50 +983,40 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 	TGraph* graph = sensorCavernP2->GetGraph();
 	AliDebug(2,Form("graph = %p",graph));
 	AliDebug(3,Form("sensorCavernP2 = %p", sensorCavernP2));
-	if(((sensorCavernP2->GetFit()) || (GetEndTimeDCSQuery() - GetStartTimeDCSQuery() < 60)) && graph) {
+	if(sensorCavernP2->GetFit() || graph) {
 		if (sensorCavernP2->GetFit()){
-			Log(Form("Fit for Sensor %s found",fgkDCSDataPoints[indexDP]));
+			Log(Form("Fit for sensor %s found",fgkDCSDataPoints[indexDP]));
 		}
 		else {
-			Log(Form("Fit for sensor %s not found, but the query to the DCS archive lasted less than 60s and we have entries for the sensor - NOT going into error",fgkDCSDataPoints[indexDP]));
+			Log(Form("Fit for sensor %s not found, but the graph is there - NOT going into error",fgkDCSDataPoints[indexDP]));
 		}
 		grpObj->SetCavernAtmosPressure(sensorCavernP2);
 		nEnvEntries++;
 	} 
 	//if (sensorP2) delete sensorP2;
 	else {
-		if (!graph){
-			Log(Form("ERROR!!! No graph found for Sensor %s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
-		}
-		else{
-			Log(Form("ERROR!!! Fit for %s not found for a run lasting more than 60s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
-		}
+		Log(Form("ERROR!!! Neither graph nor fit found for sensor %s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
 	}
-
+	
 	AliInfo(Form("==========SurfaceAtmosPressure==========="));
 	indexDP = kSurfaceAtmosPressure;
 	AliDCSSensor* sensorP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
 	graph = sensorP2->GetGraph();
 	AliDebug(2,Form("graph = %p",graph));	
 	AliDebug(3,Form("sensorP2 = %p", sensorP2));
-	if(((sensorP2->GetFit()) || (GetEndTimeDCSQuery() - GetStartTimeDCSQuery() < 60)) && graph) {
+	if(sensorP2->GetFit() || graph) {
 		if (sensorP2->GetFit()){
-			Log(Form("Fit for Sendor %s found",fgkDCSDataPoints[indexDP]));
+			Log(Form("Fit for sensor %s found",fgkDCSDataPoints[indexDP]));
 		}
 		else {
-			Log(Form("Fit for sensor %s not found, but the query to the DCS archive lasted less than 60s and we have entries for the sensor - NOT going into error",fgkDCSDataPoints[indexDP]));
+			Log(Form("Fit for sensor %s not found, but the graph is there - NOT going into error",fgkDCSDataPoints[indexDP]));
 		}
 		grpObj->SetSurfaceAtmosPressure(sensorP2);
 		nEnvEntries++;
 	} 
 	//if (sensorP2) delete sensorP2;
 	else {
-		if (!graph){
-			Log(Form("ERROR!!! No graph found for Sensor %s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
-		}
-		else {
-			Log(Form("ERROR!!! Fit for %s not found for a run lasting more than 60s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
-		}
+		Log(Form("ERROR!!! Neither graph nor fit found for sensor %s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
 	}
 
 	AliInfo(Form("==========CavernAtmosPressure2==========="));
@@ -1035,24 +1025,19 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 	graph = sensorP2->GetGraph();
 	AliDebug(2,Form("graph = %p",graph));	
 	AliDebug(3,Form("sensorCavernP2_2 = %p", sensorCavernP22));
-	if(((sensorCavernP22->GetFit()) || (GetEndTimeDCSQuery() - GetStartTimeDCSQuery() < 60)) && graph) {
+	if(sensorCavernP22->GetFit() || graph) {
 		if (sensorCavernP22->GetFit()){
-			Log(Form("Fit for Sensor %s found",fgkDCSDataPoints[indexDP]));
+			Log(Form("Fit for sensor %s found",fgkDCSDataPoints[indexDP]));
 		}
 		else {
-			Log(Form("Fit for sensor %s not found, but the query to the DCS archive lasted less than 60s and we have entries for the sensor - NOT going into error",fgkDCSDataPoints[indexDP]));
+			Log(Form("Fit for sensor %s not found, but the graph is there - NOT going into error",fgkDCSDataPoints[indexDP]));
 		}
 		grpObj->SetCavernAtmosPressure2(sensorCavernP22);
 		nEnvEntries++;
 	} 
 	//if (sensorP2) delete sensorP2;
 	else {
-		if (!graph){
-			Log(Form("ERROR!!! No graph found for Sensor %s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
-		}
-		else {
-			Log(Form("ERROR!!! Fit for %s not found for a run lasting more than 60s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
-		}
+		Log(Form("ERROR!!! Neither graph nor fit found for sensor %s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
 	}
 	
 	
