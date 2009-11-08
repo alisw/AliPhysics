@@ -7,56 +7,42 @@
 ////////////////////////////////////////
 
 TH1F *alltte,    *alltrk,    *allemc;
-TH1F *sumtte,    *sumtrk,    *sumemc;
-TH1F *sumHFemc,  *sumHFmc;
-TH1F *btte,      *btrk,      *bptemc;
-TH1F *ctte,      *ctrk,      *cptemc;
+TH1F *btte,      *btrk,      *bemc;
+TH1F *ctte,      *ctrk,      *cemc;
 TH1F *cbtte,     *cbtrk,     *cbemc;
 TH1F *convtte,   *convtrk,   *convemc;
 TH1F *daltte,    *daltrk,    *dalemc;
-TH1F *wztte,     *wzpttrk,   *wzemc;
+TH1F *wztte,     *wztrk,     *wzemc;
 TH1F *othtte,    *othtrk,    *othemc;
 TH1F *htte,      *htrk,      *hemc;
 
-TH1F *allmc;
-TH1F *sigemc, *bkgemc, *wallemc, *hijemc;
-TH1F* belemc, *celemc, *candbmc;
-TH1F *convmc, *dalmc, *wzmc, *othermc;
-TH1F* mchad;
+TH1F *allMC;
+TH1F *bMC, *cMC, *cbMC;
+TH1F *convMC, *dalMC, *wzMC;
+TH1F *mchad;
+TH1F *allheratio, *behratio;
 
-void makeData(char* hijfname = "data/scaled25Oct09/histosLHC08d6.root",
-              char* jjfname = "data/scaled25Oct09/TOTALhistosscaled-LHC09b2-0.root",
+void makeData(char* jjfname = "data/scaled25Oct09/TOTALhistosscaled-LHC09b2-0.root",
               char* bfname = "data/scaled25Oct09/histosscaledLHC09b4AODc.root",
               char* wfname = "data/scaled25Oct09/histosWboson.root") {
 
+  //TO AVOID DOUBLE-COUNTING ELECTRONS:
+  //NOTE:  Jet-Jet events are "minimum bias" which means that there
+  //are B-Jets included and for the higher pThard bins the B-jets will
+  //play a more important role.  So to AVOID DOUBLE-COUNTING
+  //B-electrons, we will suppress the electrons in the Jet-Jet events
+  //that come from B->e or B->C->e when we combine the productions
+  //into the total histograms
 
-  //For HIJING need to divide by the number of events, which we
-  //can get from the file and do when we perform scaling
-  double hijscale = 0.05*(1.E6)*0.5*7700; //0-5% * seconds*lumi*PbPb
-					  //x-section                      
+  //TO AVOID DOUBLE-COUNTING HADRONS:
+  //For the hadron yields, we need to use only the yields from the
+  //Jet-Jet events + W events and NOT USE the hadrons from the B-Jet events
+
   //For bjet and jet-jet events
   double pyscale = (1.E6)*0.5*208*208*100/360; //seconds*lumi*Pb*Pb*acceptance
   double bscale = pyscale; //Do we need to scale by Branching ratio
-			   //for forced                      
-  //semi-leptonic decays?                                             
+			   //for forced semi-leptonic decays?
   double wscale = pyscale;
-
-  TFile* hijfile = new TFile(hijfname);
-  if(!hijfile) { printf("NO HIJING FILE\n"); return; }
-  TList* hijlist = (TList*)hijfile->Get("histos");
-  TH2F* hijtte = (TH2F*)histos->FindObject("AnaElectron_hPtNPEleTTE");
-  TH2F* hijemc2d = (TH2F*)histos->FindObject("AnaElectron_hPtNPEleEMCAL");
-  TH2F* hijtrk = (TH2F*)histos->FindObject("AnaElectron_hPtNPEleTPCTRD");
-  TH1F* hijmult = (TH1F*)histos->FindObject("AnaElectron_hRefMult");
-  Int_t nEvt = hijmult->GetEntries();
-  if(nEvt == 0) { printf("NO HIJING EVENTS\n"); return; }
-  hijtte->Scale(hijscale/nEvt);
-  hijemc2d->Scale(hijscale/nEvt);
-  hijtrk->Scale(hijscale/nEvt);
-  TH2F* hijmcele = (TH2F*)histos->FindObject("AnaElectron_hPtMCElectron");
-  TH1F* hijmchad = (TH1F*)histos->FindObject("AnaElectron_hPtMCHadron");
-  hijmcele->Scale(hijscale/nEvt);
-  hijmchad->Scale(hijscale/nEvt);
 
   TFile* jjfile = new TFile(jjfname);
   if(!jjfile) { printf("NO JET-JET FILE\n"); return; }
@@ -103,210 +89,63 @@ void makeData(char* hijfname = "data/scaled25Oct09/histosLHC08d6.root",
   wjmcele->Scale(wscale);
   wjmchad->Scale(wscale);
 
-  printf("Event statistics: %d (HIJING)  %d (JET-JET)  %d (B-JET)  %d (W-Boson)\n",nEvt,nEvtJJ,nEvtB,nEvtW);
+  printf("Event statistics: %d (JET-JET)  %d (B-JET)  %d (W-Boson)\n",nEvtJJ,nEvtB,nEvtW);
 
-  TH2F* combined = (TH2F*)hijmcele->Clone();
-  combined->Add(jjmcele);
-  combined->Add(bjmcele);  
-  combined->Add(wjmcele);
-  combined->SetTitle("MC electrons in Pb+Pb in EMCAL acceptance");
-  combined->SetName("CombinedMCEle");
-  combined->SetXTitle("p_T (GeV/c)");
-
-  mchad = (TH1F*)hijmchad->Clone();
-  mchad->Add(jjmchad);
-  mchad->Add(bjmchad);
-  mchad->Add(wjmchad);
-  mchad->SetTitle("MC hadrons in Pb+Pb in EMCAL acceptance");
-  mchad->SetName("CombinedMCHad");
-  mchad->SetXTitle("p_T (GeV/c)");
-
-  allmc = (TH1F*)combined->ProjectionX("allmc",1,1);
-  belemc = (TH1F*)combined->ProjectionX("bmc",2,2);
-  celemc = (TH1F*)combined->ProjectionX("cmc",3,3);
-  candbmc = (TH1F*)combined->ProjectionX("candbmc",4,4);
-  convmc = (TH1F*)combined->ProjectionX("convmc",5,5);
-  dalmc = (TH1F*)combined->ProjectionX("dalmc",6,6);
-  wzmc = (TH1F*)combined->ProjectionX("wzmc",7,7);
-  othermc = (TH1F*)combined->ProjectionX("othermc",8,8);
-
-  //For comparing contributions                        
-  wallemc = (TH1F*)wjmcele->ProjectionX("wallemc",7,7);
-  sigemc = (TH1F*)bjmcele->ProjectionX("sigemc",1,1);
-  bkgemc = (TH1F*)jjmcele->ProjectionX("bkgemc",1,1);
-  hijemc = (TH1F*)hijmcele->ProjectionX("hijemc",1,1);
-
-  double myscale = 1.; //we already scaled them       
-  ScaleAndConfigure(allmc,myscale,kBlack,kFALSE);
-  ScaleAndConfigure(belemc,myscale,kRed,kFALSE);
-  ScaleAndConfigure(sigemc,myscale,kRed,kFALSE);
-  ScaleAndConfigure(celemc,myscale,kBlue,kFALSE);
-  ScaleAndConfigure(candbmc,myscale,kViolet,kFALSE);
-  ScaleAndConfigure(convmc,myscale,kOrange-3,kFALSE);
-  ScaleAndConfigure(bkgemc,myscale,kOrange-3,kFALSE);
-  ScaleAndConfigure(dalmc,myscale,kGreen-3,kFALSE);
-  ScaleAndConfigure(wzmc,myscale,kOrange-7,kFALSE);
-  ScaleAndConfigure(wallemc,myscale,kOrange-7,kFALSE);
-  ScaleAndConfigure(mchad,myscale,kGreen+2,kFALSE);
-  ScaleAndConfigure(hijemc,myscale,kGreen+2,kFALSE);
-
-  TH2F* combTTE = (TH2F*)hijtte->Clone();
-  combTTE->Add(jjtte);
-  combTTE->Add(bjtte);
-  combTTE->Add(wjtte);
-  combTTE->SetTitle("Identified non-phot. electrons (TPC+TRD+EMCAL)");
-  combTTE->SetName("CombinedEleTTE");
-  combTTE->SetXTitle("p_T (GeV/c)");
-
-  alltte = (TH1F*)combTTE->ProjectionX("alltte",1,1);
-  btte = (TH1F*)combTTE->ProjectionX("btte",2,2);
-  ctte = (TH1F*)combTTE->ProjectionX("ctte",3,3);
-  cbtte = (TH1F*)combTTE->ProjectionX("cbtte",4,4);
-  convtte = (TH1F*)combTTE->ProjectionX("convtte",5,5);
-  daltte = (TH1F*)combTTE->ProjectionX("daltte",6,6);
-  wztte = (TH1F*)combTTE->ProjectionX("wztte",7,7);
-  othtte = (TH1F*)combTTE->ProjectionX("othtte",8,8);
-  sumtte = (TH1F*)btte->Clone(); sumtte->SetName("sumtte");
-  sumtte->Add(ctte); sumtte->Add(cbtte); sumtte->Add(convtte);
-  sumtte->Add(daltte); sumtte->Add(wztte); //sumtte->Add(othtte);  
-  htte = (TH1F*)combTTE->ProjectionX("htte",9,9);
-
-  ScaleAndConfigure(alltte,myscale,kBlack,kFALSE);
-  ScaleAndConfigure(sumtte,myscale,kBlack,kFALSE);
-  ScaleAndConfigure(btte,myscale,kRed,kFALSE);
-  ScaleAndConfigure(ctte,myscale,kBlue,kFALSE);
-  ScaleAndConfigure(cbtte,myscale,kViolet,kFALSE);
-  ScaleAndConfigure(convtte,myscale,kOrange-3,kFALSE);
-  ScaleAndConfigure(daltte,myscale,kGreen-3,kFALSE);
-  ScaleAndConfigure(htte,myscale,kGreen+2,kFALSE);
-  ScaleAndConfigure(wztte,myscale,kOrange-7,kFALSE);
-
-  TH2F* combEMC = (TH2F*)hijemc2d->Clone();
-  combEMC->Add(jjemc);
-  combEMC->Add(bjemc);
-  combEMC->Add(wjemc);
-  combEMC->SetTitle("Identified non-phot. electrons (EMCAL)");
-  combEMC->SetName("CombinedEleEMC");
-  combEMC->SetXTitle("p_T (GeV/c)");
-
-  allemc = (TH1F*)combEMC->ProjectionX("allemc",1,1);
-  bemc = (TH1F*)combEMC->ProjectionX("bemc",2,2);
-  cemc = (TH1F*)combEMC->ProjectionX("cemc",3,3);
-  cbemc = (TH1F*)combEMC->ProjectionX("cbemc",4,4);
-  convemc = (TH1F*)combEMC->ProjectionX("convemc",5,5);
-  dalemc = (TH1F*)combEMC->ProjectionX("dalemc",6,6);
-  wzemc = (TH1F*)combEMC->ProjectionX("wzemc",7,7);
-  othemc = (TH1F*)combEMC->ProjectionX("othemc",8,8);
-  hemc = (TH1F*)combEMC->ProjectionX("hemc",9,9);
-
-  sumemc = (TH1F*)bemc->Clone(); sumemc->SetName("sumemc");
-  sumemc->Add(cemc); sumemc->Add(cbemc); sumemc->Add(convemc);
-  sumemc->Add(dalemc); //sumemc->Add(othemc);
-  sumemc->Add(wzemc);
-  sumHFemc = (TH1F*)bemc->Clone(); sumHFemc->SetName("sumHFemc");
-  sumHFemc->Add(cemc); sumHFemc->Add(cbemc); sumHFemc->Add(wzemc);
-
-  ScaleAndConfigure(allemc,myscale,kBlack,kFALSE);
-  ScaleAndConfigure(sumemc,myscale,kBlack,kFALSE);
-  ScaleAndConfigure(sumHFemc,myscale,kBlack,kFALSE);
-  ScaleAndConfigure(bemc,myscale,kRed,kFALSE);
-  ScaleAndConfigure(cemc,myscale,kBlue,kFALSE);
-  ScaleAndConfigure(cbemc,myscale,kViolet,kFALSE);
-  ScaleAndConfigure(convemc,myscale,kOrange-3,kFALSE);
-  ScaleAndConfigure(dalemc,myscale,kGreen-3,kFALSE);
-  ScaleAndConfigure(hemc,myscale,kGreen+2,kFALSE);
-  ScaleAndConfigure(wzemc,myscale,kOrange-7,kFALSE);
-
-  TH2F* combTRK = (TH2F*)hijtrk->Clone();
-  combTRK->Add(jjtrk);
-  combTRK->Add(bjtrk);
-  combTRK->Add(wjtrk);
-  combTRK->SetTitle("Identified non-phot. electrons (TPC+TRD)");
-  combTRK->SetName("CombinedEleTRK");
-  combTRK->SetXTitle("p_T (GeV/c)");
-
-  alltrk = (TH1F*)combTRK->ProjectionX("alltrk",1,1);
-  btrk = (TH1F*)combTRK->ProjectionX("btrk",2,2);
-  ctrk = (TH1F*)combTRK->ProjectionX("ctrk",3,3);
-  cbtrk = (TH1F*)combTRK->ProjectionX("cbtrk",4,4);
-  convtrk = (TH1F*)combTRK->ProjectionX("convtrk",5,5);
-  daltrk = (TH1F*)combTRK->ProjectionX("daltrk",6,6);
-  wztrk = (TH1F*)combTRK->ProjectionX("wztrk",7,7);
-  othtrk = (TH1F*)combTRK->ProjectionX("othtrk",8,8);
-  sumtrk = (TH1F*)btrk->Clone(); sumtrk->SetName("sumtrk");
-  sumtrk->Add(ctrk); sumtrk->Add(cbtrk); sumtrk->Add(convtrk);
-  sumtrk->Add(daltrk); //sumtrk->Add(othtrk);  sumtrk->Add(wztrk);
-  htrk = (TH1F*)combTRK->ProjectionX("htrk",9,9);
-
-  for(Int_t i = 1; i <= alltrk->GetNbinsX(); i++) {
-    Double_t myall = alltrk->GetBinContent(i);
-    Double_t partsum = btrk->GetBinContent(i) +
-      ctrk->GetBinContent(i) + cbtrk->GetBinContent(i) +
-      convtrk->GetBinContent(i) + daltrk->GetBinContent(i) +
-      wztrk->GetBinContent(i) + othtrk->GetBinContent(i);
-    Double_t mysum = partsum + htrk->GetBinContent(i);
-    printf("<%d> Compare bins All: %d, Sum: %d   Had: %d partSum: %d\n",i,myall,mysum,htrk->GetBinContent(i),partsum);
-  }
-
-  ScaleAndConfigure(alltrk,myscale,kBlack,kFALSE);
-  ScaleAndConfigure(sumtrk,myscale,kBlack,kFALSE);
-  ScaleAndConfigure(btrk,myscale,kRed,kFALSE);
-  ScaleAndConfigure(ctrk,myscale,kBlue,kFALSE);
-  ScaleAndConfigure(cbtrk,myscale,kViolet,kFALSE);
-  ScaleAndConfigure(convtrk,myscale,kOrange-3,kFALSE);
-  ScaleAndConfigure(daltrk,myscale,kGreen-3,kFALSE);
-  ScaleAndConfigure(htrk,myscale,kGreen+2,kFALSE);
-  ScaleAndConfigure(wztrk,myscale,kOrange-7,kFALSE);
+  makeMCElectrons(jjmcele,bjmcele,wjmcele,jjmchad,wjmchad);
+  makeTTEElectrons(jjtte,bjtte,wjtte);
+  makeEMCElectrons(jjemc,bjemc,wjemc);
+  makeTRKElectrons(jjtrk,bjtrk,wjtrk);
 
   TFile* fout = new TFile("CombinedCocktailHistograms.root","RECREATE");
   fout->cd();
-  combined->Write();
-  combTTE->Write();
-  combTRK->Write();
-  combEMC->Write();
   alltte->Write();
   alltrk->Write();
   allemc->Write();
-  sumtte->Write();
-  sumtrk->Write();
-  sumemc->Write();
+
   btte->Write();
   btrk->Write();
   bemc->Write();
+
   ctte->Write();
   ctrk->Write();
   cemc->Write();
+
   cbtte->Write();
   cbtrk->Write();
   cbemc->Write();
+
   convtte->Write();
   convtrk->Write();
   convemc->Write();
+
   daltte->Write();
   daltrk->Write();
   dalemc->Write();
+
   othtte->Write();
   othtrk->Write();
   othemc->Write();
+
   wztte->Write();
   wztrk->Write();
   wzemc->Write();
+
   htte->Write();
   htrk->Write();
   hemc->Write();
-  allmc->Write();
-  belemc->Write();
-  celemc->Write();
-  candbmc->Write();
-  convmc->Write();
-  dalmc->Write();
-  wzmc->Write();
-  othermc->Write();
+
+  allMC->Write();
+  bMC->Write();
+  cMC->Write();
+  cbMC->Write();
+  convMC->Write();
+  dalMC->Write();
+  wzMC->Write();
   mchad->Write();
-  sigemc->Write();
-  bkgemc->Write();
-  wallemc->Write();
-  hijemc->Write();
+
+  allheratio->Write();
+  behratio->Write();
+
   fout->Close();
 
 }
@@ -355,13 +194,404 @@ TH1F* GetPtCutHisto(TH1F* input)
   TH1F* result = (TH1F*)input->Clone();
   char name[100];
   sprintf(name,"%s_ptCut",result->GetName());
+  //  printf("####### %s #########\n",name);
   result->SetNameTitle(name,name);
   for(Int_t i = 1; i <= result->GetNbinsX(); i++) {
     Double_t val = input->Integral(i,result->GetNbinsX());
+    //printf("<Bin %d> value %.2f integral above %.2f\n",i,input->GetBinContent(i),val);
     result->SetBinContent(i,val);
     result->SetBinError(i,0.);
   }
-
+  //printf("################\n");
   return result;
 
 }
+
+void makeMCElectrons(TH2F* jjmcele, TH2F* bjmcele, TH2F* wjmcele, TH1F* jjmchad, TH1F* wjmchad) {
+
+  //Jet-Jet MC electrons
+  TH1F* jjallmc = (TH1F*)jjmcele->ProjectionX("jjallmc",1,1);
+  TH1F* jjbmc = (TH1F*)jjmcele->ProjectionX("jjbmc",2,2);
+  TH1F* jjcmc = (TH1F*)jjmcele->ProjectionX("jjcmc",3,3);
+  TH1F* jjcandbmc = (TH1F*)jjmcele->ProjectionX("jjcandbmc",4,4);
+  TH1F* jjconvmc = (TH1F*)jjmcele->ProjectionX("jjconvmc",5,5);
+  TH1F* jjdalmc = (TH1F*)jjmcele->ProjectionX("jjdalmc",6,6);
+  TH1F* jjothermc = (TH1F*)jjmcele->ProjectionX("jjothermc",8,8);
+
+  //Bottom-Jet MC electrons
+  TH1F* bjallmc = (TH1F*)bjmcele->ProjectionX("bjallmc",1,1);
+  TH1F* bjbmc = (TH1F*)bjmcele->ProjectionX("bjbmc",2,2);
+  TH1F* bjcmc = (TH1F*)bjmcele->ProjectionX("bjcmc",3,3);
+  TH1F* bjcandbmc = (TH1F*)bjmcele->ProjectionX("bjcandbmc",4,4);
+  TH1F* bjconvmc = (TH1F*)bjmcele->ProjectionX("bjconvmc",5,5);
+  TH1F* bjdalmc = (TH1F*)bjmcele->ProjectionX("bjdalmc",6,6);
+  TH1F* bjothermc = (TH1F*)bjmcele->ProjectionX("bjothermc",8,8);
+
+  //W-Jet MC electrons
+  TH1F* wjallmc = (TH1F*)wjmcele->ProjectionX("wjallmc",1,1);
+  TH1F* wjbmc = (TH1F*)wjmcele->ProjectionX("wjbmc",2,2);
+  TH1F* wjcmc = (TH1F*)wjmcele->ProjectionX("wjcmc",3,3);
+  TH1F* wjcandbmc = (TH1F*)wjmcele->ProjectionX("wjcandbmc",4,4);
+  TH1F* wjconvmc = (TH1F*)wjmcele->ProjectionX("wjconvmc",5,5);
+  TH1F* wjdalmc = (TH1F*)wjmcele->ProjectionX("wjdalmc",6,6);
+  TH1F* wjwzmc = (TH1F*)wjmcele->ProjectionX("wjwzmc",7,7);
+  TH1F* wjothermc = (TH1F*)wjmcele->ProjectionX("wjothermc",8,8);
+
+  //MC Hadrons (from jj events only)
+  TCanvas *ctemp = new TCanvas("ctemp");
+  ctemp->Divide(2,3);
+  ctemp->cd(1); gPad->SetLogy(); jjmchad->Draw();
+  mchad = (TH1F*)jjmchad->Clone(); mchad->SetName("mchad");
+  smoothWithFit(mchad,1e5,-3,10,60,100);  
+  for(Int_t i = 10; i<= mchad->GetNbinsX(); i++) {
+    Double_t pt = mchad->GetBinCenter(i);
+    mchad->SetBinContent(i,mchad->GetFunction("fpow")->Eval(pt));
+  }
+  jjmchad->Draw();
+  mchad->Draw("same");
+  mchad->SetTitle("MC hadrons in Pb+Pb in EMCAL acceptance");
+  mchad->SetName("mchad");
+  mchad->SetXTitle("p_T (GeV/c)");
+
+  bMC = (TH1F*)bjbmc->Clone(); bMC->SetName("bMC");  //B-Jet + W-jet
+  bMC->Add(wjbmc);
+  ctemp->cd(2); gPad->SetLogy(); bMC->Draw();
+  TH1F* foob = (TH1F*)bMC->Clone(); foob->SetName("foob");
+  smoothWithFit(foob,1e6,-3,15,50,100);  
+  for(Int_t i = 10; i<= bMC->GetNbinsX(); i++) bMC->SetBinContent(i,foob->GetBinContent(i));
+  bMC->Draw();
+  foob->Draw("same");
+
+  cMC = (TH1F*)jjcmc->Clone(); cMC->SetName("cMC"); //Jet-Jet + W-jet
+  cMC->Add(wjcmc);
+  ctemp->cd(3); gPad->SetLogy(); cMC->Draw();
+  TH1F* fooc = (TH1F*)cMC->Clone(); fooc->SetName("fooc");
+  smoothWithFit(fooc,1e6,-3,5,30,100);  
+  for(Int_t i = 5; i<= cMC->GetNbinsX(); i++) cMC->SetBinContent(i,fooc->GetBinContent(i));
+  cMC->Draw();
+  fooc->Draw("same");
+
+  cbMC = (TH1F*)bjcandbmc->Clone(); cbMC->SetName("cbMC"); //B-Jet + W-jet
+  cbMC->Add(wjcandbmc);
+  ctemp->cd(4); gPad->SetLogy(); cbMC->Draw();
+  TH1F* foocb = (TH1F*)cbMC->Clone(); foocb->SetName("foocb");
+  smoothWithFit(foocb,1e6,-3,8,35,100);  
+  for(Int_t i = 8; i<= cbMC->GetNbinsX(); i++) cbMC->SetBinContent(i,foocb->GetBinContent(i));
+  cbMC->Draw();
+  foocb->Draw("same");
+
+  convMC = (TH1F*)jjconvmc->Clone(); convMC->SetName("convMC"); //Jet-Jet + W-jet
+  convMC->Add(wjconvmc);
+  ctemp->cd(5); gPad->SetLogy(); convMC->Draw();
+  TH1F* fooconv = (TH1F*)convMC->Clone(); fooconv->SetName("fooconv");
+  smoothWithFit(fooconv,1e6,-3,6,40,100);  
+  for(Int_t i = 6; i<= convMC->GetNbinsX(); i++) convMC->SetBinContent(i,fooconv->GetBinContent(i));
+  convMC->Draw();
+  fooconv->Draw("same");
+
+  dalMC = (TH1F*)jjdalmc->Clone(); dalMC->SetName("dalMC"); //Jet-Jet + W-jet
+  dalMC->Add(wjdalmc);
+  ctemp->cd(6); gPad->SetLogy(); dalMC->Draw();
+  TH1F* foodal = (TH1F*)dalMC->Clone(); foodal->SetName("foodal");
+  smoothWithFit(foodal,1e6,-3,3,20,100);  
+  for(Int_t i = 3; i<= dalMC->GetNbinsX(); i++) dalMC->SetBinContent(i,foodal->GetBinContent(i));
+  dalMC->Draw();
+  foodal->Draw("same");
+
+  wzMC = (TH1F*)wjwzmc->Clone(); wzMC->SetName("wzMC"); //W-jet only
+  TCanvas* cw= new TCanvas();
+  cw->cd(); gPad->SetLogy(); wzMC->GetYaxis()->SetRangeUser(1,1e3); wzMC->Draw();
+  TH1F* foowz = (TH1F*)wzMC->Clone(); foowz->SetName("foowz");
+  TF1* fws = new TF1("fws","[0]*(1+exp((x-[1])/[2]))^-1",39,100);
+  fws->SetParameters(100,30,5);
+  foowz->Fit(fws,"R");
+  TF1* fwzexp = new TF1("fwzexp","[0]+[1]*log(x/[2])^2",4,40);
+  fwzexp->SetParameters(100,10,3);
+  foowz->Fit(fwzexp,"R");
+  for(Int_t i = 8; i<= wzMC->GetNbinsX(); i++) {
+    Double_t pt = wzMC->GetBinCenter(i);
+    if(pt < 40) wzMC->SetBinContent(i,fwzexp->Eval(pt));
+    if(pt > 40) wzMC->SetBinContent(i,fws->Eval(pt));
+  }
+  wzMC->GetYaxis()->SetRangeUser(1,1e3);
+  wzMC->Draw();
+  fws->Draw("same");
+  foowz->Draw("same");
+
+  //All mc electrons is the sum of 
+  //Jet-Jet: conversions + direct charm + dalitz + other
+  //Bottom-Jet: direct bottom + indirect bottom
+  //W-Jet: all (because these events are exclusive of the others)
+  allMC = (TH1F*)wzMC->Clone(); allMC->SetNameTitle("allMC","All MC Electrons");
+  allMC->Add(convMC); allMC->Add(cMC); allMC->Add(dalMC);
+  allMC->Add(bMC); allMC->Add(cbMC);
+
+  //Hadron/electron ratios
+  allheratio = (TH1F*)allMC->Clone(); allheratio->SetName("allheratio");
+  behratio = (TH1F*)bMC->Clone(); behratio->SetName("behratio");
+  allheratio->SetTitle("MC hadrons and electrons in Pb+Pb, 5.5 TeV");
+  allheratio->SetXTitle("p_{T} (GeV/c)");
+  allheratio->SetYTitle("Hadrons/Electrons");
+  for(Int_t i = 1; i <= allheratio->GetNbinsX(); i++) {
+    Double_t vale = allMC->GetBinContent(i);
+    Double_t valb = bMC->GetBinContent(i);
+    Double_t valh = mchad->GetBinContent(i);
+    //printf("pT %.2f, Hadron %.1f, Electron %.1f, B-electron
+    //%.1f\n",all->GetBinCenter(i),valh,vale,valb);             
+    if(vale>0) allheratio->SetBinContent(i,valh/vale);
+    else allheratio->SetBinContent(i,0.);
+    
+    if(valb>0) behratio->SetBinContent(i,valh/valb);
+    else behratio->SetBinContent(i,0.);
+    
+    allheratio->SetBinError(i,0.);
+    behratio->SetBinError(i,0.);
+  }
+
+  double myscale = 1.; //we already scaled them       
+  ScaleAndConfigure(allMC,myscale,kBlack,kFALSE);
+  ScaleAndConfigure(bMC,myscale,kRed,kFALSE);
+  ScaleAndConfigure(cMC,myscale,kBlue,kFALSE);
+  ScaleAndConfigure(cbMC,myscale,kViolet,kFALSE);
+  ScaleAndConfigure(convMC,myscale,kOrange-3,kFALSE);
+  ScaleAndConfigure(dalMC,myscale,kGreen-3,kFALSE);
+  ScaleAndConfigure(wzMC,myscale,kOrange-7,kFALSE);
+  ScaleAndConfigure(mchad,myscale,kGreen+2,kFALSE);
+
+  return;
+}
+
+void makeTTEElectrons(TH2F* jjtte, TH2F* bjtte, TH2F* wjtte) {
+  
+  //Jet-Jet TTE Electrons
+  TH1F* jjalltte = (TH1F*)jjtte->ProjectionX("jjalltte",1,1);
+  TH1F* jjbtte = (TH1F*)jjtte->ProjectionX("jjbtte",2,2);
+  TH1F* jjctte = (TH1F*)jjtte->ProjectionX("jjctte",3,3);
+  TH1F* jjcbtte = (TH1F*)jjtte->ProjectionX("jjcbtte",4,4);
+  TH1F* jjconvtte = (TH1F*)jjtte->ProjectionX("jjconvtte",5,5);
+  TH1F* jjdaltte = (TH1F*)jjtte->ProjectionX("jjdaltte",6,6);
+  TH1F* jjwztte = (TH1F*)jjtte->ProjectionX("jjwztte",7,7);
+  TH1F* jjothtte = (TH1F*)jjtte->ProjectionX("jjothtte",8,8);
+  TH1F* jjhtte = (TH1F*)jjtte->ProjectionX("jjhtte",9,9);
+
+  //B-Jet TTE Electrons
+  TH1F* bjalltte = (TH1F*)bjtte->ProjectionX("bjalltte",1,1);
+  TH1F* bjbtte = (TH1F*)bjtte->ProjectionX("bjbtte",2,2);
+  TH1F* bjctte = (TH1F*)bjtte->ProjectionX("bjctte",3,3);
+  TH1F* bjcbtte = (TH1F*)bjtte->ProjectionX("bjcbtte",4,4);
+  TH1F* bjconvtte = (TH1F*)bjtte->ProjectionX("bjconvtte",5,5);
+  TH1F* bjdaltte = (TH1F*)bjtte->ProjectionX("bjdaltte",6,6);
+  TH1F* bjwztte = (TH1F*)bjtte->ProjectionX("bjwztte",7,7);
+  TH1F* bjothtte = (TH1F*)bjtte->ProjectionX("bjothtte",8,8);
+  TH1F* bjhtte = (TH1F*)bjtte->ProjectionX("bjhtte",9,9);
+
+  //W-Jet TTE Electrons
+  TH1F* wjalltte = (TH1F*)wjtte->ProjectionX("wjalltte",1,1);
+  TH1F* wjbtte = (TH1F*)wjtte->ProjectionX("wjbtte",2,2);
+  TH1F* wjctte = (TH1F*)wjtte->ProjectionX("wjctte",3,3);
+  TH1F* wjcbtte = (TH1F*)wjtte->ProjectionX("wjcbtte",4,4);
+  TH1F* wjconvtte = (TH1F*)wjtte->ProjectionX("wjconvtte",5,5);
+  TH1F* wjdaltte = (TH1F*)wjtte->ProjectionX("wjdaltte",6,6);
+  TH1F* wjwztte = (TH1F*)wjtte->ProjectionX("wjwztte",7,7);
+  TH1F* wjothtte = (TH1F*)wjtte->ProjectionX("wjothtte",8,8);
+  TH1F* wjhtte = (TH1F*)wjtte->ProjectionX("wjhtte",9,9);
+
+  //All TTE electrons is the sum of 
+  //Jet-Jet: conversions + direct charm + dalitz + other + misid
+  //Bottom-Jet: direct bottom + indirect bottom
+  //W-Jet: all (because these events are exclusive of the others)
+  alltte = (TH1F*)wjalltte->Clone(); alltte->SetName("alltte");
+  alltte->Add(jjconvtte); alltte->Add(jjctte); alltte->Add(jjdaltte); alltte->Add(jjothtte); alltte->Add(jjhtte);
+  alltte->Add(bjbtte); alltte->Add(bjcbtte);
+
+  btte = (TH1F*)bjbtte->Clone(); btte->SetName("btte");  //B-Jet + W-jet
+  btte->Add(wjbtte);
+  ctte = (TH1F*)jjctte->Clone(); ctte->SetName("ctte"); //Jet-Jet + W-jet
+  ctte->Add(wjctte);
+  cbtte = (TH1F*)bjbtte->Clone(); cbtte->SetName("cbtte"); //B-Jet + W-jet
+  cbtte->Add(wjcbtte);
+  convtte = (TH1F*)jjconvtte->Clone(); convtte->SetName("convtte"); //Jet-Jet + W-jet
+  convtte->Add(wjconvtte);
+  daltte = (TH1F*)jjdaltte->Clone(); daltte->SetName("daltte"); //Jet-Jet + W-jet
+  daltte->Add(wjdaltte);
+  wztte = (TH1F*)wjwztte->Clone(); wztte->SetName("wztte"); //W-jet only
+  othtte = (TH1F*)jjothtte->Clone(); othtte->SetName("othtte"); //Jet-Jet + W-jet
+  othtte->Add(wjothtte);
+  htte = (TH1F*)jjhtte->Clone(); htte->SetName("htte");
+  htte->Add(wjhtte);
+
+  double myscale = 1.; //we already scaled them       
+  ScaleAndConfigure(alltte,myscale,kBlack,kFALSE);
+  ScaleAndConfigure(btte,myscale,kRed,kFALSE);
+  ScaleAndConfigure(ctte,myscale,kBlue,kFALSE);
+  ScaleAndConfigure(cbtte,myscale,kViolet,kFALSE);
+  ScaleAndConfigure(convtte,myscale,kOrange-3,kFALSE);
+  ScaleAndConfigure(daltte,myscale,kGreen-3,kFALSE);
+  ScaleAndConfigure(htte,myscale,kGreen+2,kFALSE);
+  ScaleAndConfigure(wztte,myscale,kOrange-7,kFALSE);
+
+  return;
+}
+
+
+void makeEMCElectrons(TH2F* jjemc, TH2F* bjemc, TH2F* wjemc) {
+  
+  //Jet-Jet EMC Electrons
+  TH1F* jjallemc = (TH1F*)jjemc->ProjectionX("jjallemc",1,1);
+  TH1F* jjbemc = (TH1F*)jjemc->ProjectionX("jjbemc",2,2);
+  TH1F* jjcemc = (TH1F*)jjemc->ProjectionX("jjcemc",3,3);
+  TH1F* jjcbemc = (TH1F*)jjemc->ProjectionX("jjcbemc",4,4);
+  TH1F* jjconvemc = (TH1F*)jjemc->ProjectionX("jjconvemc",5,5);
+  TH1F* jjdalemc = (TH1F*)jjemc->ProjectionX("jjdalemc",6,6);
+  TH1F* jjwzemc = (TH1F*)jjemc->ProjectionX("jjwzemc",7,7);
+  TH1F* jjothemc = (TH1F*)jjemc->ProjectionX("jjothemc",8,8);
+  TH1F* jjhemc = (TH1F*)jjemc->ProjectionX("jjhemc",9,9);
+
+  //B-Jet EMC Electrons
+  TH1F* bjallemc = (TH1F*)bjemc->ProjectionX("bjallemc",1,1);
+  TH1F* bjbemc = (TH1F*)bjemc->ProjectionX("bjbemc",2,2);
+  TH1F* bjcemc = (TH1F*)bjemc->ProjectionX("bjcemc",3,3);
+  TH1F* bjcbemc = (TH1F*)bjemc->ProjectionX("bjcbemc",4,4);
+  TH1F* bjconvemc = (TH1F*)bjemc->ProjectionX("bjconvemc",5,5);
+  TH1F* bjdalemc = (TH1F*)bjemc->ProjectionX("bjdalemc",6,6);
+  TH1F* bjwzemc = (TH1F*)bjemc->ProjectionX("bjwzemc",7,7);
+  TH1F* bjothemc = (TH1F*)bjemc->ProjectionX("bjothemc",8,8);
+  TH1F* bjhemc = (TH1F*)bjemc->ProjectionX("bjhemc",9,9);
+
+  //W-Jet EMC Electrons
+  TH1F* wjallemc = (TH1F*)wjemc->ProjectionX("wjallemc",1,1);
+  TH1F* wjbemc = (TH1F*)wjemc->ProjectionX("wjbemc",2,2);
+  TH1F* wjcemc = (TH1F*)wjemc->ProjectionX("wjcemc",3,3);
+  TH1F* wjcbemc = (TH1F*)wjemc->ProjectionX("wjcbemc",4,4);
+  TH1F* wjconvemc = (TH1F*)wjemc->ProjectionX("wjconvemc",5,5);
+  TH1F* wjdalemc = (TH1F*)wjemc->ProjectionX("wjdalemc",6,6);
+  TH1F* wjwzemc = (TH1F*)wjemc->ProjectionX("wjwzemc",7,7);
+  TH1F* wjothemc = (TH1F*)wjemc->ProjectionX("wjothemc",8,8);
+  TH1F* wjhemc = (TH1F*)wjemc->ProjectionX("wjhemc",9,9);
+
+  //All EMC electrons is the sum of 
+  //Jet-Jet: conversions + direct charm + dalitz + other + misid
+  //Bottom-Jet: direct bottom + indirect bottom
+  //W-Jet: all (because these events are exclusive of the others)
+  allemc = (TH1F*)wjallemc->Clone(); allemc->SetName("allemc");
+  allemc->Add(jjconvemc); allemc->Add(jjcemc); allemc->Add(jjdalemc); allemc->Add(jjothemc); allemc->Add(jjhemc);
+  allemc->Add(bjbemc); allemc->Add(bjcbemc);
+
+  bemc = (TH1F*)bjbemc->Clone(); bemc->SetName("bemc");  //B-Jet + W-jet
+  bemc->Add(wjbemc);
+  cemc = (TH1F*)jjcemc->Clone(); cemc->SetName("cemc"); //Jet-Jet + W-jet
+  cemc->Add(wjcemc);
+  cbemc = (TH1F*)bjbemc->Clone(); cbemc->SetName("cbemc"); //B-Jet + W-jet
+  cbemc->Add(wjcbemc);
+  convemc = (TH1F*)jjconvemc->Clone(); convemc->SetName("convemc"); //Jet-Jet + W-jet
+  convemc->Add(wjconvemc);
+  dalemc = (TH1F*)jjdalemc->Clone(); dalemc->SetName("dalemc"); //Jet-Jet + W-jet
+  dalemc->Add(wjdalemc);
+  wzemc = (TH1F*)wjwzemc->Clone(); wzemc->SetName("wzemc"); //W-jet only
+  othemc = (TH1F*)jjothemc->Clone(); othemc->SetName("othemc"); //Jet-Jet + W-jet
+  othemc->Add(wjothemc);
+  hemc = (TH1F*)jjhemc->Clone(); hemc->SetName("hemc");
+  hemc->Add(wjhemc);
+
+  double myscale = 1.; //we already scaled them       
+  ScaleAndConfigure(allemc,myscale,kBlack,kFALSE);
+  ScaleAndConfigure(bemc,myscale,kRed,kFALSE);
+  ScaleAndConfigure(cemc,myscale,kBlue,kFALSE);
+  ScaleAndConfigure(cbemc,myscale,kViolet,kFALSE);
+  ScaleAndConfigure(convemc,myscale,kOrange-3,kFALSE);
+  ScaleAndConfigure(dalemc,myscale,kGreen-3,kFALSE);
+  ScaleAndConfigure(hemc,myscale,kGreen+2,kFALSE);
+  ScaleAndConfigure(wzemc,myscale,kOrange-7,kFALSE);
+
+  return;
+}
+
+
+void makeTRKElectrons(TH2F* jjtrk, TH2F* bjtrk, TH2F* wjtrk) {
+  
+  //Jet-Jet TRK Electrons
+  TH1F* jjalltrk = (TH1F*)jjtrk->ProjectionX("jjalltrk",1,1);
+  TH1F* jjbtrk = (TH1F*)jjtrk->ProjectionX("jjbtrk",2,2);
+  TH1F* jjctrk = (TH1F*)jjtrk->ProjectionX("jjctrk",3,3);
+  TH1F* jjcbtrk = (TH1F*)jjtrk->ProjectionX("jjcbtrk",4,4);
+  TH1F* jjconvtrk = (TH1F*)jjtrk->ProjectionX("jjconvtrk",5,5);
+  TH1F* jjdaltrk = (TH1F*)jjtrk->ProjectionX("jjdaltrk",6,6);
+  TH1F* jjwztrk = (TH1F*)jjtrk->ProjectionX("jjwztrk",7,7);
+  TH1F* jjothtrk = (TH1F*)jjtrk->ProjectionX("jjothtrk",8,8);
+  TH1F* jjhtrk = (TH1F*)jjtrk->ProjectionX("jjhtrk",9,9);
+
+  //B-Jet TRK Electrons
+  TH1F* bjalltrk = (TH1F*)bjtrk->ProjectionX("bjalltrk",1,1);
+  TH1F* bjbtrk = (TH1F*)bjtrk->ProjectionX("bjbtrk",2,2);
+  TH1F* bjctrk = (TH1F*)bjtrk->ProjectionX("bjctrk",3,3);
+  TH1F* bjcbtrk = (TH1F*)bjtrk->ProjectionX("bjcbtrk",4,4);
+  TH1F* bjconvtrk = (TH1F*)bjtrk->ProjectionX("bjconvtrk",5,5);
+  TH1F* bjdaltrk = (TH1F*)bjtrk->ProjectionX("bjdaltrk",6,6);
+  TH1F* bjwztrk = (TH1F*)bjtrk->ProjectionX("bjwztrk",7,7);
+  TH1F* bjothtrk = (TH1F*)bjtrk->ProjectionX("bjothtrk",8,8);
+  TH1F* bjhtrk = (TH1F*)bjtrk->ProjectionX("bjhtrk",9,9);
+
+  //W-Jet TRK Electrons
+  TH1F* wjalltrk = (TH1F*)wjtrk->ProjectionX("wjalltrk",1,1);
+  TH1F* wjbtrk = (TH1F*)wjtrk->ProjectionX("wjbtrk",2,2);
+  TH1F* wjctrk = (TH1F*)wjtrk->ProjectionX("wjctrk",3,3);
+  TH1F* wjcbtrk = (TH1F*)wjtrk->ProjectionX("wjcbtrk",4,4);
+  TH1F* wjconvtrk = (TH1F*)wjtrk->ProjectionX("wjconvtrk",5,5);
+  TH1F* wjdaltrk = (TH1F*)wjtrk->ProjectionX("wjdaltrk",6,6);
+  TH1F* wjwztrk = (TH1F*)wjtrk->ProjectionX("wjwztrk",7,7);
+  TH1F* wjothtrk = (TH1F*)wjtrk->ProjectionX("wjothtrk",8,8);
+  TH1F* wjhtrk = (TH1F*)wjtrk->ProjectionX("wjhtrk",9,9);
+
+  //All TRK electrons is the sum of 
+  //Jet-Jet: conversions + direct charm + dalitz + other + misid
+  //Bottom-Jet: direct bottom + indirect bottom
+  //W-Jet: all (because these events are exclusive of the others)
+  alltrk = (TH1F*)wjalltrk->Clone(); alltrk->SetName("alltrk");
+  alltrk->Add(jjconvtrk); alltrk->Add(jjctrk); alltrk->Add(jjdaltrk); alltrk->Add(jjothtrk); alltrk->Add(jjhtrk);
+  alltrk->Add(bjbtrk); alltrk->Add(bjcbtrk);
+
+  btrk = (TH1F*)bjbtrk->Clone(); btrk->SetName("btrk");  //B-Jet + W-jet
+  btrk->Add(wjbtrk);
+  ctrk = (TH1F*)jjctrk->Clone(); ctrk->SetName("ctrk"); //Jet-Jet + W-jet
+  ctrk->Add(wjctrk);
+  cbtrk = (TH1F*)bjbtrk->Clone(); cbtrk->SetName("cbtrk"); //B-Jet + W-jet
+  cbtrk->Add(wjcbtrk);
+  convtrk = (TH1F*)jjconvtrk->Clone(); convtrk->SetName("convtrk"); //Jet-Jet + W-jet
+  convtrk->Add(wjconvtrk);
+  daltrk = (TH1F*)jjdaltrk->Clone(); daltrk->SetName("daltrk"); //Jet-Jet + W-jet
+  daltrk->Add(wjdaltrk);
+  wztrk = (TH1F*)wjwztrk->Clone(); wztrk->SetName("wztrk"); //W-jet only
+  othtrk = (TH1F*)jjothtrk->Clone(); othtrk->SetName("othtrk"); //Jet-Jet + W-jet
+  othtrk->Add(wjothtrk);
+  htrk = (TH1F*)jjhtrk->Clone(); htrk->SetName("htrk");
+  htrk->Add(wjhtrk);
+
+  double myscale = 1.; //we already scaled them       
+  ScaleAndConfigure(alltrk,myscale,kBlack,kFALSE);
+  ScaleAndConfigure(btrk,myscale,kRed,kFALSE);
+  ScaleAndConfigure(ctrk,myscale,kBlue,kFALSE);
+  ScaleAndConfigure(cbtrk,myscale,kViolet,kFALSE);
+  ScaleAndConfigure(convtrk,myscale,kOrange-3,kFALSE);
+  ScaleAndConfigure(daltrk,myscale,kGreen-3,kFALSE);
+  ScaleAndConfigure(htrk,myscale,kGreen+2,kFALSE);
+  ScaleAndConfigure(wztrk,myscale,kOrange-7,kFALSE);
+
+  return;
+}
+
+void smoothWithFit(TH1F* hist, Double_t p0, Double_t p1, Double_t min, Double_t max,Double_t remax) {
+
+  TF1* fpow = new TF1("fpow","[0]*pow(x,[1])",min,max);
+  fpow->SetParameters(p0,p1);
+  hist->Fit(fpow,"R");  
+  for(Int_t i = (Int_t)min; i < (Int_t)remax; i++) {
+    Double_t pt = hist->GetBinCenter(i);
+    Double_t val = fpow->Eval(pt);
+    hist->SetBinContent(i,val);
+    hist->SetBinError(i,sqrt(val));
+  }
+
+  return;
+}
+
+
