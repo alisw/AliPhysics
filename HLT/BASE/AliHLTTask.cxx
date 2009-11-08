@@ -576,7 +576,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
       evtTrigData.fCommonHeaderWordCnt=gkAliHLTCommonHeaderCount;
       evtTrigData.fCommonHeader[5]=trgMask&0xffffffff;
       trgMask>>=32;
-      evtTrigData.fCommonHeader[6]=trgMask&0xfffffff;
+      evtTrigData.fCommonHeader[6]=trgMask&0x3ffff;
       trigData.fData=&evtTrigData;
       iLastOutputDataSize=iOutputDataSize;
       AliHLTUInt32_t size=iOutputDataSize;
