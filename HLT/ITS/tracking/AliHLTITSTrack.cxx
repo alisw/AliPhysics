@@ -399,12 +399,17 @@ Bool_t AliHLTITSTrack::GetYZAtPhiX( double phi, double x,
 {
   double bz = GetBz();
   AliExternalTrackParam t(*this);
-  if( !t.Propagate( phi, x, bz ) ) return 0;
 
-  // rotate
-  
+  // check for the angle to suppress call of AliError() in AliExternalTrackParam::Rotate()
+  {
+    double da = phi - GetAlpha();
+    Double_t ca=TMath::Cos(da), sa=TMath::Sin(da);
+    Double_t sf=GetSnp(), cf=TMath::Sqrt(1.- sf*sf);
+    Double_t tmp=sf*ca - cf*sa;
+    if (TMath::Abs(tmp) >= kAlmost1) return 0;
+  }
+
   if (!t.Rotate(phi)) return 0;
-
   if (!t.PropagateTo(x,bz)) return 0;  
 
   y = t.GetY();
