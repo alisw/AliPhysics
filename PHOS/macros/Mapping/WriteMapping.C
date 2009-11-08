@@ -16,7 +16,9 @@ WriteMapping()
   // Max address: 1 1110 100 1111 = 3919
   // 
   // Author: Yuri Kharlov
-  // Date  : 15 August 2009
+  // Date  : 29 October 2009
+  // $Id$
+
 
   char string[128];
   UInt_t xcell,zcell,csp,altro,chanHG,chanLG;
@@ -61,7 +63,7 @@ WriteMapping()
 	    fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",
 		    hwAddress,
 		    xcell+iRCU*16,
-		    zcell+27+(2*iBranch-1)+(iFEE-1)*2*(2*iBranch-1),1);
+		    zcell+27+(1-2*iBranch)+(iFEE-1)*2*(1-2*iBranch),1);
 	    // Low gain
 	    hwAddress = chanLG | (altro<<4) | (iFEE<<7) | (iBranch<<11);
 	    if (hwAddress > maxHWAddress[iRCU]) maxHWAddress[iRCU]=hwAddress;
@@ -69,7 +71,7 @@ WriteMapping()
 	    fprintf(fRCU[iRCU],"%4d %4d %4d %4d\n",
 		    hwAddress,
 		    xcell+iRCU*16,
-		    zcell+27+(2*iBranch-1)+(iFEE-1)*2*(2*iBranch-1),0);
+		    zcell+27+(1-2*iBranch)+(iFEE-1)*2*(1-2*iBranch),0);
 	  }
 	}
       }
