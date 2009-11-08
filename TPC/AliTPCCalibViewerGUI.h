@@ -33,6 +33,7 @@
 class TROOTt;
 class AliTPCCalibViewer;
 class AliTPCPreprocessorOnline;
+class TGTextEntry;
 
 
 // class TGListBox;
@@ -71,7 +72,12 @@ public:
    TString* GetSectorString();                                  // create the sector string out of selection
    AliTPCCalibViewer* GetViewer() {return fViewer;}             // returns the internal AliTPCCalibViewer object, which does the work
    static TObjArray* ShowGUI(const char* fileName = 0);             // initialize and show GUI for presentation, standalone
-   
+  //
+  TGTextEntry* GetDrawEntry() {return fComboCustom->GetTextEntry();}
+  TGTextEntry* GetCutsEntry() {return fComboAddCuts->GetTextEntry();}
+  TGTextEntry* GetDrawOptEntry() {return fComboAddDrawOpt->GetTextEntry();}
+  TGTextEntry* GetFitEntry()  {return fComboCustomFit->GetTextEntry();}
+  //
    void HandleButtonsGeneral(Int_t id = -1); // handles mutual radio button exclusions for general Tab
    void HandleButtons1D(Int_t id = -1);      // handles mutual radio button exclusions for 1D Tab
    void HandleButtonsStat(Int_t id = -1);    // handles statistic check boxes 

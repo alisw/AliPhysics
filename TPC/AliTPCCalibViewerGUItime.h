@@ -22,15 +22,7 @@
 #include "TGFrame.h"
 #endif
 
-// #include <TGButton.h>
-// #include <TGListBox.h>
-// #include <TGComboBox.h>
-// #include <TGNumberEntry.h>
-// #include <TRootEmbeddedCanvas.h>
-// #include <TGSplitter.h>
-// #include <TGButtonGroup.h>
-// #include <TGLabel.h>
-// #include <TGTab.h>
+#include <TGComboBox.h>
 #include <TString.h>
 #include <TVectorT.h>
 
@@ -41,8 +33,8 @@ class TGListBox;
 class TGRadioButton;
 class TGGroupFrame;
 class TGLabel;
-class TGComboBox;
 class TGTabElement;
+class TGTextEntry;
 
 class TFile;
 class TTree;
@@ -84,6 +76,10 @@ public:
   const char* GetCustomDrawString() const {return fComboCustomDraw->GetTextEntry()?fComboCustomDraw->GetTextEntry()->GetText():"";}
   void GetCutString(TString &cutStr);
   TChain* GetChain() const {return fTree;}
+  //
+  TGTextEntry* GetDrawEntry() {return fComboCustomDraw->GetTextEntry();}
+  TGTextEntry* GetCutsEntry() {return fComboCustomCuts->GetTextEntry();}
+  TGTextEntry* GetDrawOptEntry() {return fComboAddDrawOpt->GetTextEntry();}
   //Slots
   void DoDraw();
   void DoDumpRuns();

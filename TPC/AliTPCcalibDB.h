@@ -32,6 +32,7 @@ class AliDCSSensorArray;
 class AliTPCCalibVdrift;
 class AliGRPObject;
 class AliTPCCalibRaw;
+class AliTPCdataQA;
 class TMap;
 class AliMagF;
 class AliTPCcalibDButil;
@@ -87,6 +88,8 @@ class AliTPCcalibDB : public TObject
   static Float_t GetCEchargeTime(Int_t run, Int_t sector, Double_t timeStamp=-1., Int_t *entries=0);
   //Raw calibration
   AliTPCCalibRaw* GetCalibRaw() const {return fCalibRaw;}
+  //QA object
+  AliTPCdataQA*   GetDataQA() const {return fDataQA;}
   //
   AliTPCSensorTempArray* GetTemperature() {return fTemperature;}
   AliTPCParam*  GetParameters(){return fParam;}
@@ -143,6 +146,7 @@ class AliTPCcalibDB : public TObject
 
   AliGRPObject * MakeGRPObjectFromMap(TMap *map);
   //Create a tree suited for diplaying with the AliTPCCalibViewerGUI
+  Bool_t CreateGUITree(const char* filename="");
   static Bool_t CreateGUITree(Int_t run, const char* filename="");
   static Bool_t CreateRefFile(Int_t run, const char* filename="");
   //
@@ -162,9 +166,13 @@ protected:
   AliTPCCalPad* fPadNoise;        // Noise calibration entry
   AliTPCCalPad* fPedestals;       // Pedestal calibration entry
   AliTPCCalibRaw *fCalibRaw;      // raw data calibration entry
+  AliTPCdataQA  *fDataQA;         // qa object
   TObjArray *fALTROConfigData;    // ALTRO configuration data
   TObjArray *fPulserData;         // Calibration Pulser data
   TObjArray *fCEData;             // CE data
+  //
+  //
+  //
   //
   AliTPCSensorTempArray* fTemperature; // Temperature calibration entry
   AliTPCAltroMapping **fMapping;   // Altro mapping   
@@ -184,7 +192,6 @@ protected:
   TObjArray      fTemperatureArray;			//! array of temperature sensors - per run
   TObjArray      fVdriftArray;					//! array of v drift interfaces
   TObjArray      fDriftCorrectionArray;                //! array of drift correction
-  
 
   TArrayI        fRunList;							//! run list - indicates try to get the run param
   //

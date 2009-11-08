@@ -14,12 +14,15 @@
 #include <TObject.h>
 #include <TArrayI.h>
 
+class TGraph;
+class TMap;
 class AliDCSSensorArray;
 class AliTPCcalibDB;
 class AliTPCCalPad;
 class AliTPCmapper;
 class AliTPCCalibRaw;
-class TGraph;
+class AliCDBEntry;
+class AliTPCdataQA;
 class TGraphErrors;
 class TTreeSRedirector;
 
@@ -42,14 +45,41 @@ public:
   void ProcessPulser(TVectorD &vMeanTime);
   void ProcessALTROConfig(Int_t &nMasked);
   void ProcessGoofie(TVectorD & vecEntries, TVectorD & vecMedian, TVectorD &vecMean, TVectorD &vecRMS);
+  
   //processing functions using reference data
   void ProcessPedestalVariations(TVectorF &pedestalDeviations);
   void ProcessNoiseVariations(TVectorF &noiseDeviations);
   void ProcessPulserVariations(TVectorF &pulserQdeviations, Float_t &varQMean, Int_t &npadsOutOneTB, Int_t &npadsOffAdd);
+  
   //getter preprocess information
   Int_t GetNPulserOutliers() const {return fNpulserOutliers;}
   Float_t GetMeanAltro(const AliTPCCalROC *roc, const Int_t row, const Int_t pad, AliTPCCalROC *rocOut=0x0);
   AliTPCCalPad *GetPulserOutlierMap() const {return fPulserOutlier;}
+
+  //getters ref data
+  TMap *GetReferenceMap() const {return fRefMap;}
+  const Int_t GetReferenceRun(const char* type) const;
+  const char* GetRefValidity() const {return fRefValidity.Data();}
+  
+  AliTPCCalPad* GetRefPadNoise() const {return fRefPadNoise;}
+  AliTPCCalPad* GetRefPedestals() const {return fRefPedestals;}
+  AliTPCCalPad* GetRefPedestalMasked() const {return fRefPedestalMasked;}
+  AliTPCCalPad* GetRefPulserTmean() const {return fRefPulserTmean;}
+  AliTPCCalPad* GetRefPulserTrms() const {return fRefPulserTrms;}
+  AliTPCCalPad* GetRefPulserQmean() const {return fRefPulserQmean;}
+  AliTPCCalPad* GetRefPulserOutlier() const {return fRefPulserOutlier;}
+  AliTPCCalPad* GetRefPulserMasked() const {return fRefPulserMasked;}
+  AliTPCCalPad* GetRefCETmean() const {return fRefCETmean;}
+  AliTPCCalPad* GetRefCETrms() const {return fRefCETrms;}
+  AliTPCCalPad* GetRefCEQmean() const {return fRefCEQmean;}
+  AliTPCCalPad* GetRefCEMasked() const {return fRefCEMasked;}
+  AliTPCCalPad* GetRefALTROFPED() const {return fRefALTROFPED;}
+  AliTPCCalPad* GetRefALTROZsThr() const {return fRefALTROZsThr;}
+  AliTPCCalPad* GetRefALTROAcqStart() const {return fRefALTROAcqStart;}
+  AliTPCCalPad* GetRefALTROAcqStop() const {return fRefALTROAcqStop;}
+  AliTPCCalPad* GetRefALTROMasked() const {return fRefALTROMasked;}
+  
+  
   //setters for pad by pad information
   void SetPulserData(AliTPCCalPad *tmean, AliTPCCalPad *trms=0x0, AliTPCCalPad *qmean=0x0)
                 {fPulserTmean=tmean; fPulserTrms=trms; fPulserQmean=qmean;}
@@ -60,8 +90,11 @@ public:
   void SetALTROData(AliTPCCalPad *masked)
                 {fALTROMasked=masked;}
   void SetGoofieArray(AliDCSSensorArray *arr) {fGoofieArray=arr;}
+  
   //setters for pad by pad information
   void SetRefFile(const char* filename);
+  void SetReferenceRun(Int_t run=-1);
+  void UpdateRefDataFromOCDB();
   void SetRefPulserData(AliTPCCalPad *tmean, AliTPCCalPad *trms=0x0, AliTPCCalPad *qmean=0x0)
                 {fRefPulserTmean=tmean; fRefPulserTrms=trms; fRefPulserQmean=qmean;}
   void SetRefCEData(AliTPCCalPad *tmean, AliTPCCalPad *trms=0x0, AliTPCCalPad *qmean=0x0)
@@ -86,6 +119,9 @@ public:
   void UpdateRefPulserOutlierMap();
   void PulserOutlierMap(AliTPCCalPad *pulOut, const AliTPCCalPad *pulT, const AliTPCCalPad *pulQ);
 
+  const char* GetGUIRefTreeDefaultName();
+  
+  Bool_t CreateGUIRefTree(const char* filename="");
   //
   // graph tools
   //
@@ -129,20 +165,34 @@ private:
   AliTPCCalPad  *fALTROMasked;        //ALTRO masked channels information
   //
   AliTPCCalibRaw *fCalibRaw;          //raw calibration object
+  //
+  AliTPCdataQA   *fDataQA;            //data qa
   //reference data
+  TMap *fRefMap;                        // latest map to reference information
+  TMap *fCurrentRefMap;                 // reference data map of entries currently loaded
+  TString fRefValidity;                 // validity range of reference data
+  //  
   AliTPCCalPad  *fRefPadNoise;           //Reference noise information
   AliTPCCalPad  *fRefPedestals;          //Reference pedestal information
+  AliTPCCalPad  *fRefPedestalMasked;     //Reference masked channels in pedestal run
   AliTPCCalPad  *fRefPulserTmean;        //Reference pulser mean time information
   AliTPCCalPad  *fRefPulserTrms;         //Reference pulser rms time information
   AliTPCCalPad  *fRefPulserQmean;        //Reference pulser mean q information
   AliTPCCalPad  *fRefPulserOutlier;      //Reference pulser outlier map
+  AliTPCCalPad  *fRefPulserMasked;       //Reference masked channels in pulser run
   AliTPCCalPad  *fRefCETmean;            //Reference central electrode mean time information
   AliTPCCalPad  *fRefCETrms;             //Reference central electrode rms time information
   AliTPCCalPad  *fRefCEQmean;            //Reference central electrode mean q information
+  AliTPCCalPad  *fRefCEMasked;           //Reference masked channels in laser run
+  AliTPCCalPad  *fRefALTROFPED;          //Reference fixed pedestal value
+  AliTPCCalPad  *fRefALTROZsThr;         //Reference zero suppression threshol
+  AliTPCCalPad  *fRefALTROAcqStart;      //Reference accquistion start time bin
+  AliTPCCalPad  *fRefALTROAcqStop;       //Reference accquistion stop time bin
   AliTPCCalPad  *fRefALTROMasked;        //Reference ALTRO masked channels information
   //
   AliTPCCalibRaw *fRefCalibRaw;          //Reference raw calibration object
-  
+  //
+  AliTPCdataQA   *fRefDataQA;            //Reference data QA
   //
   AliDCSSensorArray* fGoofieArray;    //Goofie Data
   //
@@ -168,7 +218,13 @@ private:
   AliTPCcalibDButil (const AliTPCcalibDButil& );
   AliTPCcalibDButil& operator= (const AliTPCcalibDButil& );
 
-    
+  AliTPCCalPad* GetRefCalPad(AliCDBEntry *entry, const char* objName);
+  AliTPCCalPad* GetRefCalPad(AliCDBEntry *entry);
+  AliTPCCalPad* GetAltroMasked(const char* cdbPath, const char* name);
+  Bool_t HasRefChanged(const char *cdbPath);
+  const Int_t GetCurrentReferenceRun(const char* type);
+  AliCDBEntry* GetRefEntry(const char* cdbPath);
+  
   ClassDef(AliTPCcalibDButil,0)
 };
 

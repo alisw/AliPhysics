@@ -82,11 +82,13 @@
 
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
+#include <AliCDBId.h>
 #include <AliLog.h>
 #include <AliMagF.h>
 #include <AliSplineFit.h>
 
 #include "AliTPCcalibDB.h"
+#include "AliTPCdataQA.h"
 #include "AliTPCcalibDButil.h"
 #include "AliTPCAltroMapping.h"
 #include "AliTPCExB.h"
@@ -176,6 +178,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fPadNoise(0),
   fPedestals(0),
   fCalibRaw(0),
+  fDataQA(0),
   fALTROConfigData(0),
   fPulserData(0),
   fCEData(0),
@@ -213,6 +216,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fPadNoise(0),
   fPedestals(0),
   fCalibRaw(0),
+  fDataQA(0),
   fALTROConfigData(0),
   fPulserData(0),
   fCEData(0),
@@ -391,6 +395,12 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     TObjArray *arr=(TObjArray*)(entry->GetObject());
     if (arr) fCalibRaw=(AliTPCCalibRaw*)arr->At(0);
+  }
+  //QA calibration data
+  entry          = GetCDBEntry("TPC/Calib/QA");
+  if (entry){
+    entry->SetOwner(kTRUE);
+    fDataQA=dynamic_cast<AliTPCdataQA*>(entry->GetObject());
   }
   
   entry          = GetCDBEntry("TPC/Calib/Mapping");
@@ -1509,27 +1519,58 @@ Bool_t AliTPCcalibDB::CreateGUITree(Int_t run, const char* filename)
   AliTPCcalibDB *db=AliTPCcalibDB::Instance();
   // retrieve cal pad objects
   db->SetRun(run);
+  db->CreateGUITree(filename);
+}
+
+Bool_t AliTPCcalibDB::CreateGUITree(const char* filename){
+  //
+  //
+  //
+  if (!AliCDBManager::Instance()->GetDefaultStorage()){
+    AliError("Default Storage not set. Cannot create calibration Tree!");
+    return kFALSE;
+  }
+  
   AliTPCPreprocessorOnline prep;
   //noise and pedestals
-  prep.AddComponent(db->GetPedestals());
-  prep.AddComponent(db->GetPadNoise());
+  if (GetPedestals()) prep.AddComponent(new AliTPCCalPad(*(GetPedestals())));
+  if (GetPadNoise() ) prep.AddComponent(new AliTPCCalPad(*(GetPadNoise())));
   //pulser data
-  prep.AddComponent(db->GetPulserTmean());
-  prep.AddComponent(db->GetPulserTrms());
-  prep.AddComponent(db->GetPulserQmean());
+  if (GetPulserTmean()) prep.AddComponent(new AliTPCCalPad(*(GetPulserTmean())));
+  if (GetPulserTrms() ) prep.AddComponent(new AliTPCCalPad(*(GetPulserTrms())));
+  if (GetPulserQmean()) prep.AddComponent(new AliTPCCalPad(*(GetPulserQmean())));
   //CE data
-  prep.AddComponent(db->GetCETmean());
-  prep.AddComponent(db->GetCETrms());
-  prep.AddComponent(db->GetCEQmean());
+  if (GetCETmean()) prep.AddComponent(new AliTPCCalPad(*(GetCETmean())));
+  if (GetCETrms() ) prep.AddComponent(new AliTPCCalPad(*(GetCETrms())));
+  if (GetCEQmean()) prep.AddComponent(new AliTPCCalPad(*(GetCEQmean())));
   //Altro data
-  prep.AddComponent(db->GetALTROAcqStart() );
-  prep.AddComponent(db->GetALTROZsThr()    );
-  prep.AddComponent(db->GetALTROFPED()     );
-  prep.AddComponent(db->GetALTROAcqStop()  );
-  prep.AddComponent(db->GetALTROMasked()   );
+  if (GetALTROAcqStart() ) prep.AddComponent(new AliTPCCalPad(*(GetALTROAcqStart() )));
+  if (GetALTROZsThr()    ) prep.AddComponent(new AliTPCCalPad(*(GetALTROZsThr()    )));
+  if (GetALTROFPED()     ) prep.AddComponent(new AliTPCCalPad(*(GetALTROFPED()     )));
+  if (GetALTROAcqStop()  ) prep.AddComponent(new AliTPCCalPad(*(GetALTROAcqStop()  )));
+  if (GetALTROMasked()   ) prep.AddComponent(new AliTPCCalPad(*(GetALTROMasked()   )));
+  //QA
+  AliTPCdataQA *dataQA=GetDataQA();
+  if (dataQA) {
+    if (dataQA->GetNLocalMaxima())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetNLocalMaxima())));
+    if (dataQA->GetMaxCharge())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetMaxCharge())));
+    if (dataQA->GetMeanCharge())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetMeanCharge())));
+    if (dataQA->GetNoThreshold())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetNoThreshold())));
+    if (dataQA->GetNTimeBins())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetNTimeBins())));
+    if (dataQA->GetNPads())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetNPads())));
+    if (dataQA->GetTimePosition())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetTimePosition())));
+  }
+  
   //
   TString file(filename);
-  if (file.IsNull()) file=Form("guiTreeRun_%d.root",run);
+  if (file.IsNull()) file=Form("guiTreeRun_%d.root",fRun);
   prep.DumpToFile(file.Data());
   return kTRUE;
 }
@@ -1673,3 +1714,4 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   }
   return -result/250.; //normalized before
 }
+

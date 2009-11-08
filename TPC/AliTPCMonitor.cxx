@@ -54,6 +54,7 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 #include "AliTPCMonitorMappingHandler.h"
 #include "AliTPCMonitorFFT.h"
 #include "AliRawReader.h"
+#include "AliRawReaderRoot.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliAltroRawStreamV3.h"
 #include "TH2F.h" 
@@ -567,7 +568,10 @@ Int_t AliTPCMonitor::ReadDataNew(Int_t secid)
   while(skip && GetProcNextEvent())
   {
     if(fVerb) cout << "AliTPCMonitor::ReadDataNew get event " << endl;
-    if(!fRawReader->NextEvent()) { AliError("Could not get next Event"); return 11 ;}
+    if(fRawReader->IsA()==AliRawReaderRoot::Class()){
+      printf("Root, NextEvent: %d\n",GetEventID());
+      if (!fRawReader->GotoEvent(GetEventID())){AliError("Could not get next Event"); return 11 ;}
+    } else if(!fRawReader->NextEvent()) { AliError("Could not get next Event"); return 11 ;}
     // skip all events but physics, calibration and software trigger events!
     UInt_t eventType=fRawReader->GetType();
     if ( !(eventType==AliRawEventHeaderBase::kPhysicsEvent ||

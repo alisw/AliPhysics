@@ -30,10 +30,16 @@
 #include <TGraph.h>
 #include <TFile.h>
 #include <TDirectory.h>
+#include <TMap.h>
+#include <TGraphErrors.h>
 #include <AliCDBStorage.h>
 #include <AliDCSSensorArray.h>
 #include <AliTPCSensorTempArray.h>
 #include <AliDCSSensor.h>
+#include <AliLog.h>
+#include <AliCDBEntry.h>
+#include <AliCDBManager.h>
+#include <AliCDBId.h>
 #include "AliTPCcalibDB.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
@@ -41,10 +47,10 @@
 #include "AliTPCmapper.h"
 #include "AliTPCParam.h"
 #include "AliTPCCalibRaw.h"
-#include "TGraphErrors.h"
+#include "AliTPCPreprocessorOnline.h"
+#include "AliTPCdataQA.h"
 #include "AliLog.h"
 #include "AliTPCcalibDButil.h"
-#include "AliTPCPreprocessorOnline.h"
 #include "AliTPCCalibVdrift.h"
 #include "AliMathBase.h"
 
@@ -63,17 +69,29 @@ AliTPCcalibDButil::AliTPCcalibDButil() :
   fCEQmean(0x0),
   fALTROMasked(0x0),
   fCalibRaw(0x0),
+  fDataQA(0x0),
+  fRefMap(0x0),
+  fCurrentRefMap(0x0),
+  fRefValidity(""),
   fRefPadNoise(0x0),
   fRefPedestals(0x0),
+  fRefPedestalMasked(0x0),
   fRefPulserTmean(0x0),
   fRefPulserTrms(0x0),
   fRefPulserQmean(0x0),
   fRefPulserOutlier(new AliTPCCalPad("RefPulserOutliers","RefPulserOutliers")),
+  fRefPulserMasked(0x0),
   fRefCETmean(0x0),
   fRefCETrms(0x0),
   fRefCEQmean(0x0),
+  fRefCEMasked(0x0),
+  fRefALTROFPED(0x0),
+  fRefALTROZsThr(0x0),
+  fRefALTROAcqStart(0x0),
+  fRefALTROAcqStop(0x0),
   fRefALTROMasked(0x0),
   fRefCalibRaw(0x0),
+  fRefDataQA(0x0),
   fGoofieArray(0x0),
   fMapper(new AliTPCmapper(0x0)),
   fNpulserOutliers(-1),
@@ -101,15 +119,22 @@ AliTPCcalibDButil::~AliTPCcalibDButil()
   delete fMapper;
   if (fRefPadNoise) delete fRefPadNoise;
   if (fRefPedestals) delete fRefPedestals;
+  if (fRefPedestalMasked) delete fRefPedestalMasked;
   if (fRefPulserTmean) delete fRefPulserTmean;
   if (fRefPulserTrms) delete fRefPulserTrms;
   if (fRefPulserQmean) delete fRefPulserQmean;
+  if (fRefPulserMasked) delete fRefPulserMasked;
   if (fRefCETmean) delete fRefCETmean;
   if (fRefCETrms) delete fRefCETrms;
   if (fRefCEQmean) delete fRefCEQmean;
+  if (fRefCEMasked) delete fRefCEMasked;
+  if (fRefALTROFPED) delete fRefALTROFPED;
+  if (fRefALTROZsThr) delete fRefALTROZsThr;
+  if (fRefALTROAcqStart) delete fRefALTROAcqStart;
+  if (fRefALTROAcqStop) delete fRefALTROAcqStop;
   if (fRefALTROMasked) delete fRefALTROMasked;
   if (fRefCalibRaw) delete fRefCalibRaw;
-    
+  if (fCurrentRefMap) delete fCurrentRefMap;    
 }
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::UpdateFromCalibDB()
@@ -129,7 +154,10 @@ void AliTPCcalibDButil::UpdateFromCalibDB()
   fALTROMasked=fCalibDB->GetALTROMasked();
   fGoofieArray=fCalibDB->GetGoofieSensors(fCalibDB->GetRun());
   fCalibRaw=fCalibDB->GetCalibRaw();
+  fDataQA=fCalibDB->GetDataQA();
   UpdatePulserOutlierMap();
+  SetReferenceRun();
+  UpdateRefDataFromOCDB();
 }
 //_____________________________________________________________________________________
 void AliTPCcalibDButil::ProcessCEdata(const char* fitFormula, TVectorD &fitResultsA, TVectorD &fitResultsC,
@@ -954,10 +982,296 @@ void AliTPCcalibDButil::SetRefFile(const char* filename)
   f.Close();
   currDir->cd();
 }
+//_____________________________________________________________________________________
+void AliTPCcalibDButil::UpdateRefDataFromOCDB()
+{
+  //
+  // set reference data from OCDB Reference map
+  //
+  if (!fRefMap) {
+    AliWarning("Referenc map not set!");
+    return;
+  }
+  
+  TString cdbPath;
+  AliCDBEntry* entry = 0x0;
+  Bool_t hasAnyChanged=kFALSE;
 
+  //pedestals
+  cdbPath="TPC/Calib/Pedestals";
+  if (HasRefChanged(cdbPath.Data())){
+    hasAnyChanged=kTRUE;
+    //delete old entries
+    if (fRefPedestals) delete fRefPedestals;
+    if (fRefPedestalMasked) delete fRefPedestalMasked;
+    fRefPedestals=fRefPedestalMasked=0x0;
+    //get new entries
+    entry=GetRefEntry(cdbPath.Data());
+    if (entry){
+      entry->SetOwner(kTRUE);
+      fRefPedestals=GetRefCalPad(entry);
+      delete entry;
+      fRefPedestalMasked=GetAltroMasked(cdbPath, "MaskedPedestals");
+    }
+  }
 
+  //noise
+  cdbPath="TPC/Calib/PadNoise";
+  if (HasRefChanged(cdbPath.Data())){
+    hasAnyChanged=kTRUE;
+    //delete old entry
+    if (fRefPadNoise) delete fRefPadNoise;
+    fRefPadNoise=0x0;
+    //get new entry
+    entry=GetRefEntry(cdbPath.Data());
+    if (entry){
+      entry->SetOwner(kTRUE);
+      fRefPadNoise=GetRefCalPad(entry);
+      delete entry;
+    }
+  }
+  
+  //pulser
+  cdbPath="TPC/Calib/Pulser";
+  if (HasRefChanged(cdbPath.Data())){
+    hasAnyChanged=kTRUE;
+    //delete old entries
+    if (fRefPulserTmean) delete fRefPulserTmean;
+    if (fRefPulserTrms) delete fRefPulserTrms;
+    if (fRefPulserQmean) delete fRefPulserQmean;
+    if (fRefPulserMasked) delete fRefPulserMasked;
+    fRefPulserTmean=fRefPulserTrms=fRefPulserQmean=fRefPulserMasked=0x0;
+    //get new entries
+    entry=GetRefEntry(cdbPath.Data());
+    if (entry){
+      entry->SetOwner(kTRUE);
+      fRefPulserTmean=GetRefCalPad(entry,"PulserTmean");
+      fRefPulserTrms=GetRefCalPad(entry,"PulserTrms");
+      fRefPulserQmean=GetRefCalPad(entry,"PulserQmean");
+      delete entry;
+      fRefPulserMasked=GetAltroMasked(cdbPath, "MaskedPulser");
+    }
+  }
 
+  //ce
+  cdbPath="TPC/Calib/CE";
+  if (HasRefChanged(cdbPath.Data())){
+    hasAnyChanged=kTRUE;
+    //delete old entries
+    if (fRefCETmean) delete fRefCETmean;
+    if (fRefCETrms) delete fRefCETrms;
+    if (fRefCEQmean) delete fRefCEQmean;
+    if (fRefCEMasked) delete fRefCEMasked;
+    fRefCETmean=fRefCETrms=fRefCEQmean=fRefCEMasked=0x0;
+    //get new entries
+    entry=GetRefEntry(cdbPath.Data());
+    if (entry){
+      entry->SetOwner(kTRUE);
+      fRefCETmean=GetRefCalPad(entry,"CETmean");
+      fRefCETrms=GetRefCalPad(entry,"CETrms");
+      fRefCEQmean=GetRefCalPad(entry,"CEQmean");
+      delete entry;
+      fRefCEMasked=GetAltroMasked(cdbPath, "MaskedCE");
+    }
+  }
+  
+  //altro data
+  cdbPath="TPC/Calib/AltroConfig";
+  if (HasRefChanged(cdbPath.Data())){
+    hasAnyChanged=kTRUE;
+    //delete old entries
+    if (fRefALTROFPED) delete fRefALTROFPED;
+    if (fRefALTROZsThr) delete fRefALTROZsThr;
+    if (fRefALTROAcqStart) delete fRefALTROAcqStart;
+    if (fRefALTROAcqStop) delete fRefALTROAcqStop;
+    if (fRefALTROMasked) delete fRefALTROMasked;
+    fRefALTROFPED=fRefALTROZsThr=fRefALTROAcqStart=fRefALTROAcqStop=fRefALTROMasked=0x0;
+    //get new entries
+    entry=GetRefEntry(cdbPath.Data());
+    if (entry){
+      entry->SetOwner(kTRUE);
+      fRefALTROFPED=GetRefCalPad(entry,"FPED");
+      fRefALTROZsThr=GetRefCalPad(entry,"ZsThr");
+      fRefALTROAcqStart=GetRefCalPad(entry,"AcqStart");
+      fRefALTROAcqStop=GetRefCalPad(entry,"AcqStop");
+      fRefALTROMasked=GetRefCalPad(entry,"Masked");
+      delete entry;
+    }
+  }
+  
+  //raw data
+  /*
+  cdbPath="TPC/Calib/Raw";
+  if (HasRefChanged(cdbPath.Data())){
+    hasAnyChanged=kTRUE;
+    //delete old entry
+    if (fRefCalibRaw) delete fRefCalibRaw;
+    //get new entry
+    entry=GetRefEntry(cdbPath.Data());
+    if (entry){
+      entry->SetOwner(kTRUE);
+      TObjArray *arr=(TObjArray*)entry->GetObject();
+      if (!arr){
+        AliError(Form("Could not get object from entry '%s'\nPlese check!!!",entry->GetId().GetPath().Data()));
+      } else {
+        fRefCalibRaw=(AliTPCCalibRaw*)arr->At(0)->Clone();
+      }
+    }
+  }
+  */
 
+  //data qa
+  cdbPath="TPC/Calib/QA";
+  if (HasRefChanged(cdbPath.Data())){
+    hasAnyChanged=kTRUE;
+    //delete old entry
+    if (fRefDataQA) delete fRefDataQA;
+    //get new entry
+    entry=GetRefEntry(cdbPath.Data());
+    if (entry){
+      entry->SetOwner(kTRUE);
+      fDataQA=dynamic_cast<AliTPCdataQA*>(entry->GetObject());
+      if (!fDataQA){
+        AliError(Form("Could not get object from entry '%s'\nPlese check!!!",entry->GetId().GetPath().Data()));
+      } else {
+        fRefDataQA=(AliTPCdataQA*)fDataQA->Clone();
+      }
+      delete entry;
+    }
+  }
+  
+  
+//update current reference maps
+  if (hasAnyChanged){
+    if (fCurrentRefMap) delete fCurrentRefMap;
+    fCurrentRefMap=(TMap*)fRefMap->Clone();
+  }
+}
+//_____________________________________________________________________________________
+AliTPCCalPad* AliTPCcalibDButil::GetRefCalPad(AliCDBEntry *entry, const char* objName)
+{
+  //
+  // TObjArray object type case
+  // find 'objName' in 'arr' cast is to a calPad and store it in 'pad'
+  //
+  AliTPCCalPad *pad=0x0;
+  TObjArray *arr=(TObjArray*)entry->GetObject();
+  if (!arr){
+    AliError(Form("Could not get object from entry '%s'\nPlese check!!!",entry->GetId().GetPath().Data()));
+    return pad;
+  }
+  pad=(AliTPCCalPad*)arr->FindObject(objName);
+  if (!pad) {
+    AliError(Form("Could not get '%s' from TObjArray in entry '%s'\nPlese check!!!",objName,entry->GetId().GetPath().Data()));
+    return pad;
+  }
+  return (AliTPCCalPad*)pad->Clone();
+}
+//_____________________________________________________________________________________
+AliTPCCalPad* AliTPCcalibDButil::GetRefCalPad(AliCDBEntry *entry)
+{
+  //
+  // AliTPCCalPad object type case
+  // cast object to a calPad and store it in 'pad'
+  //
+  AliTPCCalPad *pad=(AliTPCCalPad*)entry->GetObject();
+  if (!pad) {
+    AliError(Form("Could not get object from entry '%s'\nPlese check!!!",entry->GetId().GetPath().Data()));
+    return 0x0;
+  }
+  pad=(AliTPCCalPad*)pad->Clone();
+  return pad;
+}
+//_____________________________________________________________________________________
+AliTPCCalPad* AliTPCcalibDButil::GetAltroMasked(const char* cdbPath, const char* name)
+{
+  //
+  // set altro masked channel map for 'cdbPath'
+  //
+  AliTPCCalPad* pad=0x0;
+  const Int_t run=GetReferenceRun(cdbPath);
+  if (run<0) {
+    AliError(Form("Could not get reference run number for object '%s'\nPlese check availability!!!",cdbPath));
+    return pad;
+  }
+  AliCDBEntry *entry=AliCDBManager::Instance()->Get("TPC/Calib/AltroConfig", run);
+  if (!entry) {
+    AliError(Form("Could not get reference object '%s'\nPlese check availability!!!",cdbPath));
+    return pad;
+  }
+  pad=GetRefCalPad(entry,"Masked");
+  if (pad) pad->SetNameTitle(name,name);
+  entry->SetOwner(kTRUE);
+  delete entry;
+  return pad;
+}
+//_____________________________________________________________________________________
+void AliTPCcalibDButil::SetReferenceRun(Int_t run){
+  //
+  // Get Reference map
+  //
+  if (run<0) run=fCalibDB->GetRun();
+  TString cdbPath="TPC/Calib/Ref";
+  AliCDBEntry *entry=AliCDBManager::Instance()->Get(cdbPath.Data(), run);
+  if (!entry) {
+    AliError(Form("Could not get reference object '%s'\nPlese check availability!!!",cdbPath.Data()));
+    fRefMap=0;
+    return;
+  }  
+  entry->SetOwner(kTRUE);
+  fRefMap=(TMap*)(entry->GetObject());
+  AliCDBId &id=entry->GetId();
+  fRefValidity.Form("%d_%d_v%d_s%d",id.GetFirstRun(),id.GetLastRun(),id.GetVersion(),id.GetSubVersion());
+}
+//_____________________________________________________________________________________
+Bool_t AliTPCcalibDButil::HasRefChanged(const char *cdbPath)
+{
+  //
+  // check whether a reference cdb entry has changed
+  //
+  if (!fCurrentRefMap) return kTRUE;
+  if (GetReferenceRun(cdbPath)!=GetCurrentReferenceRun(cdbPath)) return kTRUE;
+  return kFALSE;
+}
+//_____________________________________________________________________________________
+AliCDBEntry* AliTPCcalibDButil::GetRefEntry(const char* cdbPath)
+{
+  //
+  // get the reference AliCDBEntry for 'cdbPath'
+  //
+  const Int_t run=GetReferenceRun(cdbPath);
+  if (run<0) {
+    AliError(Form("Could not get reference run number for object '%s'\nPlese check availability!!!",cdbPath));
+    return 0;
+  }
+  AliCDBEntry *entry=AliCDBManager::Instance()->Get(cdbPath, run);
+  if (!entry) {
+    AliError(Form("Could not get reference object '%s'\nPlese check availability!!!",cdbPath));
+    return 0;
+  }
+  return entry;
+}
+//_____________________________________________________________________________________
+const Int_t AliTPCcalibDButil::GetCurrentReferenceRun(const char* type){
+  //
+  // Get reference run number for the specified OCDB path
+  //
+  if (!fCurrentRefMap) return -2;
+  TObjString *str=dynamic_cast<TObjString*>(fCurrentRefMap->GetValue(type));
+  if (!str) return -2;
+  return str->GetString().Atoi();
+}
+//_____________________________________________________________________________________
+const Int_t AliTPCcalibDButil::GetReferenceRun(const char* type) const{
+  //
+  // Get reference run number for the specified OCDB path
+  //
+  if (!fRefMap) return -1;
+  TObjString *str=dynamic_cast<TObjString*>(fRefMap->GetValue(type));
+  if (!str) return -1;
+  return str->GetString().Atoi();
+}
+//_____________________________________________________________________________________
 AliTPCCalPad *AliTPCcalibDButil::CreateCEOutlyerMap( Int_t & noutliersCE, AliTPCCalPad *ceOut, Float_t minSignal, Float_t cutTrmsMin,  Float_t cutTrmsMax, Float_t cutMaxDistT){
   //
   // Author:  marian.ivanov@cern.ch
@@ -1416,6 +1730,74 @@ Double_t  AliTPCcalibDButil::GetVDriftTPC(Double_t &dist, Int_t run, Int_t timeS
 
   */
   
+}
+
+const char* AliTPCcalibDButil::GetGUIRefTreeDefaultName()
+{
+  //
+  // Create a default name for the gui file
+  //
+  
+  return Form("guiRefTreeRun%s.root",GetRefValidity());
+}
+
+Bool_t AliTPCcalibDButil::CreateGUIRefTree(const char* filename)
+{
+  //
+  // Create a gui reference tree
+  // if dirname and filename are empty default values will be used
+  // this is the recommended way of using this function
+  // it allows to check whether a file with the given run validity alredy exists
+  //
+  if (!AliCDBManager::Instance()->GetDefaultStorage()){
+    AliError("Default Storage not set. Cannot create reference calibration Tree!");
+    return kFALSE;
+  }
+  
+  TString file=filename;
+  if (file.IsNull()) file=GetGUIRefTreeDefaultName();
+  
+  AliTPCPreprocessorOnline prep;
+  //noise and pedestals
+  if (fRefPedestals) prep.AddComponent(new AliTPCCalPad(*(fRefPedestals)));
+  if (fRefPadNoise ) prep.AddComponent(new AliTPCCalPad(*(fRefPadNoise)));
+  if (fRefPedestalMasked) prep.AddComponent(new AliTPCCalPad(*fRefPedestalMasked));
+  //pulser data
+  if (fRefPulserTmean) prep.AddComponent(new AliTPCCalPad(*(fRefPulserTmean)));
+  if (fRefPulserTrms ) prep.AddComponent(new AliTPCCalPad(*(fRefPulserTrms)));
+  if (fRefPulserQmean) prep.AddComponent(new AliTPCCalPad(*(fRefPulserQmean)));
+  if (fRefPulserMasked) prep.AddComponent(new AliTPCCalPad(*fRefPulserMasked));
+  //CE data
+  if (fRefCETmean) prep.AddComponent(new AliTPCCalPad(*(fRefCETmean)));
+  if (fRefCETrms ) prep.AddComponent(new AliTPCCalPad(*(fRefCETrms)));
+  if (fRefCEQmean) prep.AddComponent(new AliTPCCalPad(*(fRefCEQmean)));
+  if (fRefCEMasked) prep.AddComponent(new AliTPCCalPad(*fRefCEMasked));
+  //Altro data
+  if (fRefALTROAcqStart ) prep.AddComponent(new AliTPCCalPad(*(fRefALTROAcqStart )));
+  if (fRefALTROZsThr    ) prep.AddComponent(new AliTPCCalPad(*(fRefALTROZsThr    )));
+  if (fRefALTROFPED     ) prep.AddComponent(new AliTPCCalPad(*(fRefALTROFPED     )));
+  if (fRefALTROAcqStop  ) prep.AddComponent(new AliTPCCalPad(*(fRefALTROAcqStop  )));
+  if (fRefALTROMasked   ) prep.AddComponent(new AliTPCCalPad(*(fRefALTROMasked   )));
+  //QA
+  AliTPCdataQA *dataQA=fRefDataQA;
+  if (dataQA) {
+    if (dataQA->GetNLocalMaxima())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetNLocalMaxima())));
+    if (dataQA->GetMaxCharge())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetMaxCharge())));
+    if (dataQA->GetMeanCharge())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetMeanCharge())));
+    if (dataQA->GetNoThreshold())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetNoThreshold())));
+    if (dataQA->GetNTimeBins())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetNTimeBins())));
+    if (dataQA->GetNPads())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetNPads())));
+    if (dataQA->GetTimePosition())
+      prep.AddComponent(new AliTPCCalPad(*(dataQA->GetTimePosition())));
+  }
+  prep.DumpToFile(file.Data());
+  return kTRUE;
 }
 
 Double_t  AliTPCcalibDButil::GetVDriftTPCLaserTracks(Double_t &dist, Int_t run, Int_t timeStamp, Double_t deltaT, Int_t side){
@@ -2338,9 +2720,5 @@ void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t d
   junk.Delete();   // delete temoprary graphs
   
 }
-
-
-
-
 
 

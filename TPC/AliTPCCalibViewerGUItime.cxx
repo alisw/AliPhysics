@@ -66,6 +66,7 @@
 #include "AliTPCCalibViewerGUI.h"
 #include "AliTPCCalibViewer.h"
 #include "AliTPCcalibDB.h"
+#include "AliTPCcalibDButil.h"
 #include "AliTPCConfigParser.h"
 
 #include "AliTPCCalibViewerGUItime.h"
@@ -628,7 +629,7 @@ void AliTPCCalibViewerGUItime::Reload(Int_t first)
     if (!active){
       TString s=branchName;
       if (branchName.EndsWith(".")) s+="*";
-      fTree->SetBranchStatus(s.Data(),0);
+//       fTree->SetBranchStatus(s.Data(),0);
       continue;
     }
 //     fListVariables->AddEntry(SubstituteUnderscores(branchTitle.Data()),id);
@@ -1190,13 +1191,15 @@ void AliTPCCalibViewerGUItime::SetGuiTree(Int_t run)
   // retrieve file from this directory if it already exists
   //
 
+  //
+  //Create and set GUI tree  
+  //
   //try to find file for run in fOutputCacheDir
   TString fileName=fOutputCacheDir;
   if (!fileName.EndsWith("/")) fileName+="/";
   fileName+=Form("guiTreeRun_%d.root",run);
   Bool_t load=kTRUE;
-  TFile f(fileName.Data());
-  if (!f.IsOpen()){
+  if (gSystem->AccessPathName(fileName.Data())){
     load=AliTPCcalibDB::CreateGUITree(run,fileName.Data());
     if (!load){
       fCalibViewerGUI->Reset();
@@ -1204,11 +1207,31 @@ void AliTPCCalibViewerGUItime::SetGuiTree(Int_t run)
       return;
     }
   }
-  f.Close();
   fCalibViewerGUI->Initialize(fileName.Data());
   if (fCalibViewerGUItab) fCalibViewerGUItab->SetText(new TGString(Form("Detail - %05d",run)));
+  
+  //
+  //Create and set Reference GUI tree
+  //
+  AliTPCcalibDButil util;
+  util.SetReferenceRun(run);
+  fileName=fOutputCacheDir;
+  if (!fileName.EndsWith("/")) fileName+="/";
+  fileName+=util.GetGUIRefTreeDefaultName();
+  //only update if file does not exist
+  if (gSystem->AccessPathName(fileName.Data())){
+    util.UpdateRefDataFromOCDB();
+    util.CreateGUIRefTree(fileName.Data());
+  }
+  
+  fCalibViewerGUI->GetViewer()->AddReferenceTree(fileName.Data(),"calPads","Ref");
+  
+  //
+  // Process additional reference trees
+  //
   TIter nextRefTree(fMapRefTrees);
   TObject *o=0x0;
+  //Set static reference data
   while ( (o=nextRefTree()) ){
     fCalibViewerGUI->GetViewer()->AddReferenceTree(fMapRefTrees->GetValue(o)->GetName(),"calPads",o->GetName());
   }
