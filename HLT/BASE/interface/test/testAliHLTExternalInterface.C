@@ -241,6 +241,18 @@ int main(int /*argc*/, const char** /*argv*/)
   }
 #endif //HLT_RCU
 
+#ifdef HLT_GLOBAL
+  module="Global";
+  libraryPath="../../../";
+  libraryPath+="global";
+  libraryPath+="/.libs/libAliHLT";
+  libraryPath+=module;
+  libraryPath+=".so";
+  if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
+    return iResult;
+  }
+#endif //HLT_GLOBAL
+
   libraryPath=".libs/libAliHLTTest.so";
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
     return iResult;
