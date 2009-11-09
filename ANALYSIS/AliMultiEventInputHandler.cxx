@@ -100,14 +100,20 @@ Bool_t AliMultiEventInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 {
     // Initialisation necessary for each new tree
     fTree = tree;
-    fTree->GetEntry(0);
-    
     if (!fTree) return kFALSE;
-    // Get pointer to AOD event
-    fEventBuffer[0]->ReadFromTree(fTree, "");
+    for (Int_t i = 0; i < fBufferSize; i++) 
+	fEventBuffer[i]->Clear();
     fIndex     = 0;
     fNBuffered = 1;
     return kTRUE;
+}
+
+
+Bool_t AliMultiEventInputHandler::Notify(const char */*path*/)
+{
+    // Connect to new tree
+    fEventBuffer[0]->ReadFromTree(fTree, "");
+    return (kTRUE);
 }
 
 Bool_t AliMultiEventInputHandler::BeginEvent(Long64_t /*entry*/)
@@ -130,7 +136,7 @@ Bool_t AliMultiEventInputHandler::FinishEvent()
     
     fIndex %= fBufferSize;
     AliInfo(Form("Connecting buffer entry %5d", fIndex));
-
+    fEventBuffer[fIndex]->Clear();
     fEventBuffer[fIndex]->ReadFromTree(fTree, "reconnect");
 
     fNBuffered++;
@@ -138,7 +144,6 @@ Bool_t AliMultiEventInputHandler::FinishEvent()
 
     return (kTRUE);
 }
-
 
 AliVEvent* AliMultiEventInputHandler::GetEvent(Int_t iev) const
 {

@@ -37,7 +37,8 @@ class AliMultiEventInputHandler : public AliInputEventHandler {
     virtual Bool_t Init(TTree* tree, Option_t* /*opt*/);
     virtual Bool_t FinishEvent();
     virtual Bool_t BeginEvent(Long64_t /*entry*/);
-    
+    virtual Bool_t Notify() { return AliInputEventHandler::Notify();}
+    virtual Bool_t Notify(const char */*path*/);
  private:
     AliMultiEventInputHandler(const AliMultiEventInputHandler& handler);             
     AliMultiEventInputHandler& operator=(const AliMultiEventInputHandler& handler);  
