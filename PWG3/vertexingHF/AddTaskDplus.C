@@ -1,12 +1,11 @@
 AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE)
 {
   //                                                                                                                                    
-  // Test macro for the AliAnalysisTaskSE for heavy-flavour candidates                                                                  
+  // Test macro for the AliAnalysisTaskSE for D+ candidates 
+
+  //Invariant mass histogram and                                                 
   // association with MC truth (using MC info in AOD)                                                                                   
-                                                                                               
-  //                                                                                                                                    
-
-
+  //  R. Bala, bala@to.infn.it                                                                                                                                  
   // Get the pointer to the existing analysis manager via the static access method.                                                     
   //==============================================================================                                                      
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -18,6 +17,8 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE)
 
   // Aanalysis task                                                                                                                     
   AliAnalysisTaskSEDplus *dplusTask = new AliAnalysisTaskSEDplus("DplusAnalysis",storeNtuple);
+  dplusTask->SetReadMC(kTRUE);
+  dplusTask->SetDoLikeSign(kTRUE);
   dplusTask->SetDebugLevel(0);
   mgr->AddTask(dplusTask);
 
@@ -32,11 +33,8 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE)
     AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer("coutputDplus2",TNtuple::Class(),
                                                            AliAnalysisManager::kOutputContainer,
 								 "InvMassDplus_nt1.root");
-    AliAnalysisDataContainer *coutputDplus3 = mgr->CreateContainer("coutputDplus3",TNtuple::Class(),
-                                                           AliAnalysisManager::kOutputContainer,
-								 "InvMassDplus_nt2.root");
+
     coutputDplus2->SetSpecialOutput();
-    coutputDplus3->SetSpecialOutput();
   }
   mgr->ConnectInput(dplusTask,0,mgr->GetCommonInputContainer());
 
@@ -44,7 +42,6 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE)
   
   if(storeNtuple){
     mgr->ConnectOutput(dplusTask,2,coutputDplus2);
-    mgr->ConnectOutput(dplusTask,3,coutputDplus3);
   }
   return dplusTask;
 }
