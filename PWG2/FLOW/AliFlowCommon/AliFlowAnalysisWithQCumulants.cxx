@@ -794,14 +794,11 @@ void AliFlowAnalysisWithQCumulants::Finish()
   // correction terms for non-uniform acceptance:
   //this->CrossCheckDiffFlowCorrectionTermsForNUA("RP","Pt"); // to be improved (enabled eventually)      
   //this->CrossCheckDiffFlowCorrectionTermsForNUA("RP","Eta"); // to be improved (enabled eventually)      
-  this->CrossCheckDiffFlowCorrectionTermsForNUA("POI","Pt");      
-  this->CrossCheckDiffFlowCorrectionTermsForNUA("POI","Eta");      
   if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)) 
   {
-  } else
-    {
-     // ...
-    }
+   this->CrossCheckDiffFlowCorrectionTermsForNUA("POI","Pt");      
+   this->CrossCheckDiffFlowCorrectionTermsForNUA("POI","Eta");      
+  } 
  } // end of if(fEvaluateDiffFlowNestedLoops)
                                                                                                                                                                                                                                                                                                                                    
 } // end of AliFlowAnalysisWithQCumulants::Finish()
@@ -7275,9 +7272,9 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelationsUsingParticleWe
            * fImRPQ1dEBE[2][pe][1][1]->GetBinEntries(fImRPQ1dEBE[2][pe][1][1]->GetBin(b));
        
    // s_{1,1}, s_{1,2} and s_{1,3} // to be improved (add explanation)  
-   s1p1k = pow(fs1dEBE[2][pe][1]->GetBinContent(b),1.); 
-   s1p2k = pow(fs1dEBE[2][pe][2]->GetBinContent(b),1.); 
-   s1p3k = pow(fs1dEBE[2][pe][3]->GetBinContent(b),1.); 
+   s1p1k = pow(fs1dEBE[2][pe][1]->GetBinContent(b)*fs1dEBE[2][pe][1]->GetBinEntries(b),1.); 
+   s1p2k = pow(fs1dEBE[2][pe][2]->GetBinContent(b)*fs1dEBE[2][pe][2]->GetBinEntries(b),1.); 
+   s1p3k = pow(fs1dEBE[2][pe][3]->GetBinContent(b)*fs1dEBE[2][pe][3]->GetBinEntries(b),1.); 
      
    // M0111 from Eq. (118) in QC2c (to be improved (notation)):
    dM0111 = mp*(dSM3p1k-3.*dSM1p1k*dSM1p2k+2.*dSM1p3k)
@@ -7297,9 +7294,9 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelationsUsingParticleWe
             * fImRPQ1dEBE[0][pe][1][1]->GetBinEntries(fImRPQ1dEBE[0][pe][1][1]->GetBin(b));
 
     // s_{1,1}, s_{1,2} and s_{1,3} // to be improved (add explanation)  
-    s1p1k = pow(fs1dEBE[0][pe][1]->GetBinContent(b),1.); 
-    s1p2k = pow(fs1dEBE[0][pe][2]->GetBinContent(b),1.); 
-    s1p3k = pow(fs1dEBE[0][pe][3]->GetBinContent(b),1.); 
+    s1p1k = pow(fs1dEBE[0][pe][1]->GetBinContent(b)*fs1dEBE[0][pe][1]->GetBinEntries(b),1.); 
+    s1p2k = pow(fs1dEBE[0][pe][2]->GetBinContent(b)*fs1dEBE[0][pe][2]->GetBinEntries(b),1.); 
+    s1p3k = pow(fs1dEBE[0][pe][3]->GetBinContent(b)*fs1dEBE[0][pe][3]->GetBinEntries(b),1.); 
     
     // to be improved (cross-checked):
     p1n0kRe = fReRPQ1dEBE[0][pe][0][0]->GetBinContent(fReRPQ1dEBE[0][pe][0][0]->GetBin(b))
