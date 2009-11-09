@@ -100,7 +100,7 @@ class AliVZEROCalibData: public TNamed {
   Float_t  fTimeResolution[kNCIUBoards]; // Time Resolution of the TDC (ns / channel)
   Float_t  fWidthResolution[kNCIUBoards]; // Time Width Resolution of the TDC (ns / channel)
 
-  ClassDef(AliVZEROCalibData,3)    // VZERO Calibration data
+  ClassDef(AliVZEROCalibData,4)    // VZERO Calibration data
 };
 
 #endif

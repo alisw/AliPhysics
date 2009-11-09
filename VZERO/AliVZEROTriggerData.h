@@ -215,7 +215,7 @@ private:
 	void SetParameter(TString name, Float_t val);
 	
 	
-	ClassDef( AliVZEROTriggerData, 1 )  
+	ClassDef( AliVZEROTriggerData, 2 )  
 
 };
 
