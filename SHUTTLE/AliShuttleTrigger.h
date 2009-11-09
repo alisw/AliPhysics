@@ -63,6 +63,7 @@ private:
 	AliShuttleTrigger& operator= (const AliShuttleTrigger& other);
 
 	Bool_t SendMailDiskSpace(Short_t percentage);
+	void CheckTerminate();
 
 	const AliShuttleConfig* fConfig;
 

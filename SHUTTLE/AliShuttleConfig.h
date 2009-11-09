@@ -69,6 +69,8 @@ public:
 	UInt_t GetDCSDelay() const { return fDCSDelay; }
 	Int_t GetPPMaxMem() const { return fPPMaxMem; }
 
+	const char* GetTerminateFilePath() const { return fTerminateFilePath; }
+
 	Bool_t KeepDCSMap() const { return fKeepDCSMap; }
 	Bool_t KeepTempFolder() const { return fKeepTempFolder; }
 	
@@ -218,6 +220,8 @@ private:
 	TString fFXSdbPass[3]; 		// password of the [DAQ, DCS, HLT] FXS database
 	TString fFXSdbName[3]; 		// name of the [DAQ, DCS, HLT] FXS database
 	TString fFXSdbTable[3]; 	// Table name of the [DAQ, DCS, HLT] FXS database
+
+	TString	fTerminateFilePath;     // File for inter-process communcation to terminate the Shuttle
 
 	Int_t fMaxRetries;        	// number of retries of a failed preprocessor
 	

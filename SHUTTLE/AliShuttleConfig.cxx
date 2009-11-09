@@ -537,7 +537,8 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fShuttlelbTable(""), 
 	fRunTypelbTable(""),
 	fPasswdFilePath(""),
-	fMaxRetries(0), 
+	fTerminateFilePath(""), 
+	fMaxRetries(0),
 	fPPTimeOut(0), 
 	fDCSTimeOut(0), 
 	fDCSRetries(0), 
@@ -989,6 +990,11 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 	}
 	TString tmpStr = anAttribute->GetValue();
 	fMaxRetries = tmpStr.Atoi();
+
+	anAttribute = anEntry->GetAttribute("terminateFilePath");
+	if (anAttribute) {
+		fTerminateFilePath = anAttribute->GetValue();
+	}
 
 	anAttribute = anEntry->GetAttribute("ppTimeOut");
 	if (!anAttribute) {
@@ -1518,10 +1524,10 @@ void AliShuttleConfig::Print(Option_t* option) const
 	result += Form("Logbook Configuration \n\n \tHost: %s:%d; \tUser: %s; ",
 		fDAQlbHost.Data(), fDAQlbPort, fDAQlbUser.Data());
 
-//	result += "Password: ";
-//	result.Append('*', fDAQlbPass.Length());
 	result += Form("\tDB: %s; \tTables: %s, %s, %s\n",
 		fDAQlbDB.Data(), fDAQlbTable.Data(), fShuttlelbTable.Data(), fRunTypelbTable.Data());
+
+	result += Form("Terminate file path: %s\n", fTerminateFilePath.Data());
 
 	result += "\n\n";
 	
@@ -1533,10 +1539,8 @@ void AliShuttleConfig::Print(Option_t* option) const
 		result += Form("\tDB  host: %s:%d; \tUser: %s; \tName: %s; \tTable: %s\n",
 						fFXSdbHost[iSys].Data(), fFXSdbPort[iSys], fFXSdbUser[iSys].Data(),
 						fFXSdbName[iSys].Data(), fFXSdbTable[iSys].Data());
-		// result += Form("DB Password:",fFXSdbPass[iSys].Data());
 		result += Form("\tFXS host: %s:%d; \tUser: %s\n", fFXSHost[iSys].Data(), fFXSPort[iSys],
 						fFXSUser[iSys].Data());
-		// result += Form("FXS Password:",fFXSPass[iSys].Data());
 		const TObjArray* fxsAdmins = GetAdmins(iSys);
 		if (fxsAdmins->GetEntries() != 0)
 		{

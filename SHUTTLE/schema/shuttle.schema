@@ -82,6 +82,7 @@ attributetype ( GLOBAL_CONFIG:24 NAME 'DCSQueryOffset'	DESC 'DCS Query Offset (s
 attributetype ( GLOBAL_CONFIG:25 NAME 'DCSDelay'	DESC 'DCS Delay (s)'	             EQUALITY caseIgnoreMatch SUP name SINGLE-VALUE )
 attributetype ( GLOBAL_CONFIG:26 NAME 'ShuttleFileSystem'        DESC 'file system where the shuttle runs/writes/reads'   
 											   EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:27 NAME 'terminateFilePath' DESC 'Terminate File Path (inter-process communication)'	             EQUALITY caseIgnoreMatch SUP name SINGLE-VALUE )
 attributetype ( GLOBAL_CONFIG:28 NAME 'FreeDiskWarningThreshold' DESC 'threshold for the free disk to send a warning mail'   
 											   EQUALITY integerMatch    SUP uidNumber SINGLE-VALUE )
 attributetype ( GLOBAL_CONFIG:29 NAME 'FreeDiskFatalThreshold'   DESC 'threshold for the free disk to send a terminate signal to the Shuttle trigger'   
@@ -92,7 +93,7 @@ objectclass ( GLOBAL_CONFIG
         DESC 'ALICE: settings for DAQ logbook access'
         SUP top
         MUST (name $ passwdFilePath $ AlienPath $ daqLbHost $ daqLbUser $ daqLbDB $ daqLbTable $ shuttleLbTable $ runTypeLbTable $ ppMaxRetries $ ppTimeOut $ ppMaxMem $ dcsTimeOut $ nDCSretries $ DCSQueryOffset $ DCSDelay $ monitorHost $ monitorTable)
-        MAY ( daqLbPort $ triggerWait $ mode $ keepDCSMap $ keepTempFolder $ shuttleAdmin $ amandaAdmin $ sendMail $ ShuttleFileSystem $ FreeDiskWarningThreshold $ FreeDiskFatalThreshold) )
+        MAY ( daqLbPort $ triggerWait $ mode $ keepDCSMap $ keepTempFolder $ shuttleAdmin $ amandaAdmin $ sendMail $ ShuttleFileSystem $ terminateFilePath $ FreeDiskWarningThreshold $ FreeDiskFatalThreshold ) )
 
 
 objectidentifier INSTANCE_CONFIG SHUTTLE_BASE:5

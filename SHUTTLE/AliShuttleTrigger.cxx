@@ -207,6 +207,24 @@ void AliShuttleTrigger::Terminate() {
 }
 
 //______________________________________________________________________________________________
+void AliShuttleTrigger::CheckTerminate() 
+{
+	// 
+	// Checks if the Shuttle got an external terminate request by a created file 
+	// This is an alternative to the signal which causes problems with the API libraries
+	//
+
+	if (strlen(fConfig->GetTerminateFilePath()) == 0)
+		return;
+
+	if (gSystem->AccessPathName(fConfig->GetTerminateFilePath()))
+	{
+		AliInfo("Terminate file exists. Terminating Shuttle...");
+		fTerminate = kTRUE;
+	}
+}
+
+//______________________________________________________________________________________________
 void AliShuttleTrigger::Run() {
 	//
 	// AliShuttleTrigger main loop for asynchronized (listen) mode.
@@ -230,6 +248,7 @@ void AliShuttleTrigger::Run() {
 
 		while (!(fNotified || fTerminate)) {
 			received=fCondition.TimedWaitRelative(1000*fConfig->GetTriggerWait());
+			CheckTerminate();
 			if (received==1) break; // 1 = timeout
 		}
 
