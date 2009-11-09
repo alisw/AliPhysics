@@ -157,7 +157,7 @@ void AliFMDQADataMakerRec::InitRaws()
 				 1024,0,1023);
       
       Int_t index1 = GetHalfringIndex(det, ring, 0,1);
-      Add2RawsList(hADCCounts, index1, expert, !image, !saveCorr);
+      Add2RawsList(hADCCounts, index1, !expert, image, !saveCorr);
       
       for(Int_t b = 0; b<=1;b++) {
 	
@@ -172,7 +172,7 @@ void AliFMDQADataMakerRec::InitRaws()
 	hADCCounts->SetXTitle("ADC counts");
 	hADCCounts->SetYTitle("");
 	Int_t index2 = GetHalfringIndex(det, ring, board/16,0);
-	Add2RawsList(hADCCounts, index2, !expert, image, !saveCorr);
+	Add2RawsList(hADCCounts, index2, expert, !image, !saveCorr);
 
       }
     }

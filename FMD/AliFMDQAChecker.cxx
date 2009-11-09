@@ -31,19 +31,67 @@
 #include <TIterator.h> 
 #include <TKey.h> 
 #include <TFile.h> 
+#include <iostream>
 
 // --- AliRoot header files ---
 #include "AliLog.h"
 #include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliFMDQAChecker.h"
+#include "AliRecoParam.h"
 
 ClassImp(AliFMDQAChecker)
 #if 0
 ; // This is for Emacs! - do not delete
 #endif
-
 //__________________________________________________________________
+Double_t* AliFMDQAChecker::Check(AliQAv1::ALITASK_t what, TObjArray ** list) {
+  
+  Double_t* rv = new Double_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    rv[specie] = 0.0 ; 
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
+      continue ;
+    
+    if(!list[specie]) continue;
+    
+    TIter next1(list[specie]);
+    TH1F*  hist = 0;
+    
+    for(Int_t i= 0; i<list[specie]->GetEntriesFast(); i++) {
+      
+      hist = (TH1F*)list[specie]->At(i);
+      if(!hist) continue;
+      
+      if(what == AliQAv1::kESD) {
+	if(hist->GetMean() > 0)
+	  rv[specie] = 1.;
+	else rv[specie] = 0.;
+      }
+      if(what == AliQAv1::kRAW) {
+	if(hist->GetMean() > 0)
+	  rv[specie] = 1.;
+	else rv[specie] = 0.;
+      }
+      if(what == AliQAv1::kSIM) {
+	if(hist->GetMean() > 0)
+	  rv[specie] = 1.;
+	else rv[specie] = 0.;
+      }
+      if(what == AliQAv1::kREC) {
+	if(hist->GetMean() > 0)
+	  rv[specie] = 1.;
+	else rv[specie] = 0.;
+      }
+      
+    }
+  }
+  
+  return rv;
+  
+}
+
+
 
 //__________________________________________________________________
 //
