@@ -52,6 +52,7 @@
 #pragma link C++ class AliPerformancePtCalibMC+;
 #pragma link C++ class AliPerfAnalyzeInvPt+;
 
+#pragma link C++ class AliAnalysisTaskVertexESD+;
 #pragma link C++ class AliAlignmentDataFilterITS+;
 #pragma link C++ class AliTrackMatchingTPCITSCosmics+;
 #pragma link C++ class AliAnalysisTaskV0QA+;

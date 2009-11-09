@@ -30,6 +30,7 @@ set(SRCS
 	AliPerformanceDEdx.cxx
 	AliPerformanceDCA.cxx
 	AliPerformanceTPC.cxx
+	AliAnalysisTaskVertexESD.cxx
 	AliAlignmentDataFilterITS.cxx
 	AliTrackMatchingTPCITSCosmics.cxx
         AliRelAlignerKalmanArray.cxx
