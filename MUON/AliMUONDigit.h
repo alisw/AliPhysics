@@ -39,6 +39,8 @@ class AliMUONDigit : public AliMUONVDigit
     
     virtual Int_t Hit() const          {return fHit;}        ///< Return MC hit number
     
+    virtual Float_t Time() const       {return fTime;}       /// Return MC hit age
+
     virtual Int_t Ntracks() const { return fNtracks; }       ///< Return MC tracks making to this digit
     virtual void AddTrack(Int_t trackNumber, Float_t trackCharge);
     virtual Int_t Track(Int_t i) const;
@@ -60,6 +62,7 @@ class AliMUONDigit : public AliMUONVDigit
     virtual void SetPadXY(Int_t padx, Int_t pady)        {fPadX = padx; fPadY=pady; }      ///< Set pad number along x
     virtual void SetCharge(Float_t q)        {fSignal = q;}    ///< Set charge
     virtual void SetHit(Int_t n)           {fHit = n;}         ///< Set MC hit number
+    virtual void SetTime(Float_t t) {fTime = t;}               ///< Set MC hit age
     virtual void SetStatusMap(UInt_t statusMap) { fStatusMap = statusMap; } ///< Set status map
     
     virtual void Copy(TObject& digit) const;
@@ -104,6 +107,7 @@ private:
     Int_t* fTracks;       //[fNtracks]  primary MC tracks making this digit
 
     Int_t fHit;           ///< MC hit number - temporary solution
+    Float_t fTime;        ///< MC hit age
   
     UInt_t fStatusMap; ///< Neighbouring pad status (whether ped, gains, hv were ok or not)
     
@@ -113,7 +117,7 @@ private:
     static const UInt_t fgkNoiseOnlyMask = 0x1000; ///< indicate a simulated digit due to noise only
     static const UInt_t fgkEfficiencyMask = 0x2000; ///< indicate chamber efficiency has been applied to a simulated digit
     
-    ClassDef(AliMUONDigit,9)  //Digits for MUON
+    ClassDef(AliMUONDigit,10)  //Digits for MUON
 };
 
 #endif

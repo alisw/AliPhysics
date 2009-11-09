@@ -51,6 +51,7 @@ fNtracks(0),
 fTcharges(0x0),
 fTracks(0x0),
 fHit(0),
+fTime(0),
 fStatusMap(0)
 {
   /// Default constructor
@@ -74,6 +75,7 @@ fNtracks(0),
 fTcharges(0x0),
 fTracks(0x0),
 fHit(0),
+fTime(0),
 fStatusMap(0)
 {
   /// Normal constructor
@@ -96,6 +98,7 @@ fNtracks(0),
 fTcharges(0x0),
 fTracks(0x0),
 fHit(0),
+fTime(0),
 fStatusMap(0)
 {
   /// Copy constructor
@@ -204,6 +207,7 @@ AliMUONDigit::Copy(TObject& obj) const
   }
   
   digit.fHit = fHit;
+  digit.fTime = fTime;
   digit.fStatusMap = fStatusMap;
 }
 

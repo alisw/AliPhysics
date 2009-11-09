@@ -109,6 +109,10 @@ public:
   virtual Int_t Hit() const { return 0; }
   /// Set the hit number
   virtual void SetHit(Int_t /*n*/) { }
+  /// Hit age
+    virtual Float_t Time() const       {return 0;}
+  /// Set hit age
+      virtual void SetTime(Float_t /*t*/) { } 
   /// Number of tracks contributing to this digit
   virtual Int_t Ntracks() const { return 0; }
   /// Add a track (and its charge) to the list of tracks we handle

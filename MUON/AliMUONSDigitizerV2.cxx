@@ -161,6 +161,8 @@ AliMUONSDigitizerV2::Exec(Option_t*)
       while ( ( hit = static_cast<AliMUONHit*>(next()) ) )       
       {
         Int_t chamberId = hit->Chamber()-1;
+ 	Float_t age = hit->Age();
+
         AliMUONChamber& chamber = muon->Chamber(chamberId);
         AliMUONResponse* response = chamber.ResponseModel();
         
@@ -175,6 +177,7 @@ AliMUONSDigitizerV2::Exec(Option_t*)
           // Update some sdigit information that could not be known
           // by the DisIntegrate method
           d->SetHit(ihit);
+	  d->SetTime(age);
           d->AddTrack(hit->GetTrack(),d->Charge());
           tdlist.Add(d);
         }
