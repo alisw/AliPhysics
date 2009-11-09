@@ -208,7 +208,15 @@ class AliHLTSystem : public AliHLTLogging {
    * @param bStop      stop the chain after processing
    * @return number of reconstructed events, neg error code if failed
    */
-  int Run(Int_t iNofEvents=1, int bStop=1, AliHLTUInt64_t trgMask=0);
+  int Run(Int_t iNofEvents, int bStop, AliHLTUInt64_t trgMask);
+
+  /**
+   * Run the tasklist
+   * Somehow the 64bit variable/default value did not work out on mac.
+   * Re-introducing the original function, and forwarding it.
+   */
+  int Run(Int_t iNofEvents=1, int bStop=1)
+  {return Run(iNofEvents, bStop, 0);}
 
   /**
    * Init all tasks from the list.
