@@ -600,7 +600,7 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
       delete track; continue;
     }
 
-    Bool_t propagateOK = kFALSE;
+    Bool_t propagateOK = kFALSE, cutond0z0 = kTRUE;
     // propagate track to vertex
     if(optImpParCut<2 || fOnlyFitter) { // optImpParCut==1 or 0
       propagateOK = track->PropagateToDCA(initVertex,GetFieldkG(),100.,d0z0,covd0z0);
@@ -608,11 +608,15 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
       fCurrentVertex->GetSigmaXYZ(sigmaCurr);
       normdistx = TMath::Abs(fCurrentVertex->GetXv()-fNominalPos[0])/TMath::Sqrt(sigmaCurr[0]*sigmaCurr[0]+fNominalCov[0]);
       normdisty = TMath::Abs(fCurrentVertex->GetYv()-fNominalPos[1])/TMath::Sqrt(sigmaCurr[1]*sigmaCurr[1]+fNominalCov[2]);
+      AliDebug(1,Form("normdistx %f  %f    %f",fCurrentVertex->GetXv(),fNominalPos[0],TMath::Sqrt(sigmaCurr[0]*sigmaCurr[0]+fNominalCov[0])));
+      AliDebug(1,Form("normdisty %f  %f    %f",fCurrentVertex->GetYv(),fNominalPos[1],TMath::Sqrt(sigmaCurr[1]*sigmaCurr[1]+fNominalCov[2])));
+      AliDebug(1,Form("sigmaCurr %f %f    %f",sigmaCurr[0],sigmaCurr[1],TMath::Sqrt(fNominalCov[0])+TMath::Sqrt(fNominalCov[2])));
       if(normdistx < 3. && normdisty < 3. &&
 	 (sigmaCurr[0]+sigmaCurr[1])<(TMath::Sqrt(fNominalCov[0])+TMath::Sqrt(fNominalCov[2]))) {
 	propagateOK = track->PropagateToDCA(fCurrentVertex,GetFieldkG(),100.,d0z0,covd0z0);
       } else {
 	propagateOK = track->PropagateToDCA(initVertex,GetFieldkG(),100.,d0z0,covd0z0);
+	if(fConstraint) cutond0z0=kFALSE;
       }
     }
 
@@ -625,8 +629,7 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
     maxd0rphi = fNSigma*sigmad0;
     if(optImpParCut==1) maxd0rphi *= 5.;
     maxd0rphi = TMath::Min(maxd0rphi,fFiducialR); 
-    //sigmad0z0 = TMath::Sqrt(covd0z0[0]+covd0z0[2]); // for future improvement
-    //maxd0z0 = 10.*fNSigma*sigmad0z0;
+    //sigmad0z0 = TMath::Sqrt(covd0z0[0]+covd0z0[2]);
 
     AliDebug(1,Form("trk %d; id %d; |d0| = %f;  d0 cut = %f; |z0| = %f; |d0|oplus|z0| = %f; d0z0 cut = %f",i,(Int_t)idOrig[i],TMath::Abs(d0z0[0]),maxd0rphi,TMath::Abs(d0z0[1]),TMath::Sqrt(d0z0[0]*d0z0[0]+d0z0[1]*d0z0[1]),fMaxd0z0));
 
@@ -649,7 +652,7 @@ Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
     // if fConstraint=kTRUE, during iteration 2,
     // select tracks with d0oplusz0 < fMaxd0z0
     if((!fConstraint && optImpParCut>0 && fVert.GetNContributors()>0) ||
-       ( fConstraint && optImpParCut==2)) {
+       ( fConstraint && optImpParCut==2 && cutond0z0)) {
       if(nTrksOrig>=3 && 
 	 TMath::Sqrt(d0z0[0]*d0z0[0]+d0z0[1]*d0z0[1])>fMaxd0z0) { 
 	AliDebug(1,"     rejected");
