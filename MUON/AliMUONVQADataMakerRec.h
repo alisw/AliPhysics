@@ -80,7 +80,9 @@ protected:
   Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE, const Bool_t saveForCorr = kFALSE);  
   
 private:
+  /// Not implemented
   AliMUONVQADataMakerRec(const AliMUONVQADataMakerRec& rhs);
+  /// Not implemented
   AliMUONVQADataMakerRec& operator=(const AliMUONVQADataMakerRec& rhs);
   
   AliQADataMakerRec* fMaster; ///< master to get access to its methods

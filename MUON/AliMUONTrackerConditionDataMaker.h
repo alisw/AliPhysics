@@ -10,7 +10,7 @@
 /// \class AliMUONTrackerConditionDataMaker
 /// \brief Producer of AliMUONVTrackerData from OCDB or ASCII condition files
 /// 
-/// Author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ALIMUONVTRACKERDATAMAKER_H
 #  include "AliMUONVTrackerDataMaker.h"
@@ -67,8 +67,9 @@ public:
   virtual Long64_t Merge(TCollection* li);
 
 private:
-
+  /// Not implemented
   AliMUONTrackerConditionDataMaker(const AliMUONTrackerConditionDataMaker& rhs);
+  /// Not implemented
   AliMUONTrackerConditionDataMaker& operator=(const AliMUONTrackerConditionDataMaker& rhs);
   
   static AliMUONVStore* CreateHVStore(TMap& m);

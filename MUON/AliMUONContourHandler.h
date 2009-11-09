@@ -43,8 +43,9 @@ public:
   void Print(Option_t* opt="") const;
   
 private:
-  
+  /// Not implemented
   AliMUONContourHandler(const AliMUONContourHandler& rhs);
+  /// Not implemented
   AliMUONContourHandler& operator=(const AliMUONContourHandler& rhs);
   
   AliMpExMap* GenerateTransformations(Bool_t exploded);
@@ -54,9 +55,9 @@ private:
   void GenerateAllContours(const TObjArray& manuContours);  
   
 private:
-  AliMpExMap* fTransformations; //< transformations used to go from local to global coordinates
-  TMap* fAllContourMap; //< all (i.e. manus,  buspatches, detection elements, etc..) contours
-  TObjArray* fAllContourArray; //< all contours, ordered by hierarchy level
+  AliMpExMap* fTransformations; ///< transformations used to go from local to global coordinates
+  TMap* fAllContourMap; ///< all (i.e. manus,  buspatches, detection elements, etc..) contours
+  TObjArray* fAllContourArray; ///< all contours, ordered by hierarchy level
   
   ClassDef(AliMUONContourHandler,1) // MUON tracker contour holder
 };

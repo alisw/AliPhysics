@@ -3,7 +3,7 @@
 
 // $Id$
 
-/// \file MUONcalign.h
+/// \file MUONcalignLinkDef.h
 /// \brief The CINT link definitions for \ref calign 
 
 

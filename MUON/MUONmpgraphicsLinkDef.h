@@ -3,8 +3,8 @@
 
 // $Id$
 
-/// \file MUONmappingLinkDef.h
-/// \brief The CINT link definitions for \ref mapping 
+/// \file MUONmpgraphicsLinkDef.h
+/// \brief The CINT link definitions for \ref mpgraphics
 
 #pragma link C++ nestedclasses;
 #pragma link C++ nestedtypedef;

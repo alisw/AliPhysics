@@ -49,9 +49,6 @@ public:
                   const TObjArray* horizontals=0x0) const;
   
 private:
-
-  TString NameIt(const AliMpMotifPosition& motifPosition) const;
-
   ClassDef(AliMUONContourMakerTest,1) // Test of AliMUONContourMaker
 };
 
