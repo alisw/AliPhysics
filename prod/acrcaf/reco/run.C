@@ -9,14 +9,8 @@ void run(Int_t runNumber, Int_t nev = 10000, Int_t firstev = 0, const char* root
   TProof::Open("aliprod@alicecaf");
 
   // Enable AliRoot
-  if(!strcmp(rootVersion,"ROOT_new") || !strcmp(rootVersion,"ROOT_pro")) {
-    cout << "Loading " << rootVersion << endl;
-    gProof->UploadPackage(Form("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-17-Release.rec/%s.par",rootVersion));
-    gProof->EnablePackage(Form("%s.par",rootVersion));
-  } else {
-    gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-17-Release.rec/AF-v4-17-rec.par");
-    gProof->EnablePackage("AF-v4-17-rec.par");
-  }
+  gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-17-Release.rec/AF-v4-17-rec.par");
+  gProof->EnablePackage("AF-v4-17-rec.par");
 
   gSystem->Load("libMonaLisa.so");
   TMonaLisaWriter monalisa("pcalishuttle02.cern.ch",
