@@ -224,8 +224,6 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal, Int_t nEvts=440)
    // qc->SetHarmonic(2); // default is v2
    // qc->SetApplyCorrectionForNUA(kTRUE); // default
    // qc->SetCalculate2DFlow(kFALSE); // default  
-   qc->SetEvaluateNestedLoopsForIntFlow(kFALSE);
-   qc->SetEvaluateNestedLoopsForDiffFlow(kFALSE);
    qc->Init();  
  }
   
