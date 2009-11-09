@@ -16,15 +16,22 @@ qname=$1
 mydir=`pwd`
 for adir in `cat run.list`; do
     cd $adir
-    bsub -q $qname  aliroot -b -q  $ALICE_ROOT/TPC/macros/filterRAW.C
+    up=`cat  raw.txt | grep -c .root`
+    if [ $up -gt 0 ] ; then
+	echo bsub -q $qname  aliroot -b -q  $ALICE_ROOT/TPC/macros/filterRAW.C 
+	bsub -q $qname  aliroot -b -q  $ALICE_ROOT/TPC/macros/filterRAW.C
+    fi;	
     cd $mydir
 done     
 
 mydir=`pwd`
 for adir in `cat run.list`; do
     cd $adir
-    echo bsub -q $qname  aliroot -b -q  $ALICE_ROOT/TPC/macros/filterESD.C
-    bsub -q $qname  aliroot -b -q  $ALICE_ROOT/TPC/macros/filterESD.C
+    up=`cat  esd.txt | grep -c .root`
+    if [ $up -gt 1 ] ; then
+	echo bsub -q $qname  aliroot -b -q  $ALICE_ROOT/TPC/macros/filterESD.C
+	bsub -q $qname  aliroot -b -q  $ALICE_ROOT/TPC/macros/filterESD.C
+    fi;
     cd $mydir
 done
  
