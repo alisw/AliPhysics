@@ -37,8 +37,9 @@ AliAnalysisTaskSPDdNdEta *AddTaskSPDdNdEta()
   // arguments of the AddTaskXXX() function.
   //===========================================================================
   taskSPDdNdEta->SetReadMC(kTRUE); // MC
-  taskSPDdNdEta->SetppAnalysis(kTRUE); //pp analysis
-  taskSPDdNdEta->SetTrigger(0);  //no trigger
+//  taskSPDdNdEta->SetppAnalysis(kTRUE); //pp analysis
+  taskSPDdNdEta->SetTrigger(1);  //no trigger
+  taskSPDdNdEta->SetEvtGen(kTRUE);  //to read Pythia data (kFALSE for Phojet)
   
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
