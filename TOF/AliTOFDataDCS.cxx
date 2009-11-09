@@ -202,8 +202,11 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
   if(!(fAliasNames[0])) Init();
 
   Float_t val=0;
+  Float_t val0=0;
   Float_t val1=0;
   Float_t time=0; 
+  Float_t time0=0; 
+  Float_t time1=0; 
   Float_t delta[2];
   Float_t timedelta[2];
 
@@ -219,6 +222,7 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
 
   TObjArray *aliasArr;
   AliDCSValue* aValue;
+  AliDCSValue* aValue0;
   AliDCSValue* aValue1;
 
   // starting loop on aliases
@@ -241,9 +245,76 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
 
     Introduce(j, aliasArr);
     
-    if(aliasArr->GetEntries()<3){
-      AliError(Form("Alias %s has just %d entries!",
+    if(aliasArr->GetEntries()==0){
+      AliError(Form("Alias %s has no entries! Nothing will be stored",
+		    fAliasNames[j].Data()));
+      continue;
+    }
+    if(aliasArr->GetEntries() == 1){
+      AliWarning(Form("Alias %s has just %d entries! Only first value will be stored",
 		    fAliasNames[j].Data(),aliasArr->GetEntries()));
+      aValue0 = (AliDCSValue*) aliasArr->At(0);
+      val0 = aValue0->GetFloat();
+      time0 = (Float_t) (aValue0->GetTimeStamp());
+      if (j<kNHV){
+	fHVvp[j]->SetFloat(0,val0);
+	fHVvp[j]->SetTimeStampFloat(0,time0);
+      }
+      else if (j<kNHV*2){
+	fHVvn[j-kNHV]->SetFloat(0,val0);
+	fHVvn[j-kNHV]->SetTimeStampFloat(0,time0);
+      }
+      else if (j<kNHV*3){
+	fHVip[j-2*kNHV]->SetFloat(0,val0);
+	fHVip[j-2*kNHV]->SetTimeStampFloat(0,time0);
+      }
+      else if (j<kNHV*4){
+	fHVin[j-3*kNHV]->SetFloat(0,val0);
+	fHVin[j-3*kNHV]->SetTimeStampFloat(0,time0);
+      }
+      continue;
+    }
+    if(aliasArr->GetEntries()==2){
+      AliWarning(Form("Alias %s has just %d entries! Storing first and second entry only and the delta between these two",
+		    fAliasNames[j].Data(),aliasArr->GetEntries()));
+      aValue0 = (AliDCSValue*) aliasArr->At(0);
+      val0 = aValue0->GetFloat();
+      time0 = (Float_t) (aValue0->GetTimeStamp());
+      aValue1 = (AliDCSValue*) aliasArr->At(1);
+      val1 = aValue1->GetFloat();
+      time1 = (Float_t) (aValue1->GetTimeStamp());
+      if (j<kNHV){
+	fHVvp[j]->SetFloat(0,val0);
+	fHVvp[j]->SetTimeStampFloat(0,time0);
+	fHVvp[j]->SetFloat(1,val1);
+	fHVvp[j]->SetTimeStampFloat(1,time1);
+	fHVvp[j]->SetDelta(0,TMath::Abs(val1-val0));
+	fHVvp[j]->SetTimeStampDelta(0,time1-time0);
+      }
+      else if (j<kNHV*2){
+	fHVvn[j-kNHV]->SetFloat(0,val0);
+	fHVvn[j-kNHV]->SetTimeStampFloat(0,time0);
+	fHVvn[j-kNHV]->SetFloat(1,val1);
+	fHVvn[j-kNHV]->SetTimeStampFloat(1,time1);
+	fHVvn[j-kNHV]->SetDelta(0,TMath::Abs(val1-val0));
+	fHVvn[j-kNHV]->SetTimeStampDelta(0,time1-time0);
+      }
+      else if (j<kNHV*3){
+	fHVip[j-2*kNHV]->SetFloat(0,val0);
+	fHVip[j-2*kNHV]->SetTimeStampFloat(0,time0);
+	fHVip[j-2*kNHV]->SetFloat(1,val1);
+	fHVip[j-2*kNHV]->SetTimeStampFloat(1,time1);
+	fHVip[j-2*kNHV]->SetDelta(0,TMath::Abs(val1-val0));
+	fHVip[j-2*kNHV]->SetTimeStampDelta(0,time1-time0);
+      }
+      else if (j<kNHV*4){
+	fHVin[j-3*kNHV]->SetFloat(0,val0);
+	fHVin[j-3*kNHV]->SetTimeStampFloat(0,time0);
+	fHVin[j-3*kNHV]->SetFloat(1,val1);
+	fHVin[j-3*kNHV]->SetTimeStampFloat(1,time1);
+	fHVin[j-3*kNHV]->SetDelta(0,TMath::Abs(val1-val0));
+	fHVin[j-3*kNHV]->SetTimeStampDelta(0,time1-time0);
+      }
       continue;
     }
     
