@@ -91,15 +91,17 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fPTrackParamArr1(new AliExternalTrackParam[fgkNTracksPerMeasurement]),
     fPTrackParamArr2(new AliExternalTrackParam[fgkNTracksPerMeasurement]),
     fMagField(0.),
+    fNMeasurementParams(4),
     fPX(new TVectorD( fgkNSystemParams )),
     fPXcov(new TMatrixDSym( fgkNSystemParams )),
-    fPH(new TMatrixD( fgkNMeasurementParams, fgkNSystemParams )),
+    fPH(new TMatrixD( fNMeasurementParams, fgkNSystemParams )),
     fQ(1.e-15),
-    fPMeasurement(new TVectorD( fgkNMeasurementParams )),
-    fPMeasurementCov(new TMatrixDSym( fgkNMeasurementParams )),
-    fPMeasurementPrediction(new TVectorD( fgkNMeasurementParams )),
+    fPMeasurement(new TVectorD( fNMeasurementParams )),
+    fPMeasurementCov(new TMatrixDSym( fNMeasurementParams )),
+    fPMeasurementPrediction(new TVectorD( fNMeasurementParams )),
     fOutRejSigmas(1.),
     //fDelta(new Double_t[fgkNSystemParams]),
+    fYZOnly(kFALSE),
     fNumericalParanoia(kTRUE),
     fRejectOutliers(kTRUE),
     fRequireMatchInTPC(kFALSE),
@@ -138,6 +140,7 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
     fPTrackParamArr1(new AliExternalTrackParam[fgkNTracksPerMeasurement]),
     fPTrackParamArr2(new AliExternalTrackParam[fgkNTracksPerMeasurement]),
     fMagField(a.fMagField),
+    fNMeasurementParams(a.fNMeasurementParams),
     fPX(new TVectorD( *a.fPX )),
     fPXcov(new TMatrixDSym( *a.fPXcov )),
     fPH(new TMatrixD( *a.fPH )),
@@ -147,6 +150,7 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
     fPMeasurementPrediction(new TVectorD( *a.fPMeasurement )),
     fOutRejSigmas(a.fOutRejSigmas),
     //fDelta(new Double_t[fgkNSystemParams]),
+    fYZOnly(a.fYZOnly),
     fNumericalParanoia(a.fNumericalParanoia),
     fRejectOutliers(a.fRejectOutliers),
     fRequireMatchInTPC(a.fRequireMatchInTPC),
@@ -205,6 +209,7 @@ AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a
   //*fPMeasurementCov=*a.fPMeasurementCov;
   fOutRejSigmas=a.fOutRejSigmas;
   memcpy(fDelta,a.fDelta,fgkNSystemParams*sizeof(Double_t));
+  fYZOnly=a.fYZOnly;
   fNumericalParanoia=a.fNumericalParanoia;
   fRejectOutliers=a.fRejectOutliers;
   fRequireMatchInTPC=a.fRequireMatchInTPC;
@@ -376,6 +381,21 @@ Bool_t AliRelAlignerKalman::AddCosmicEvent( const AliESDEvent* pEvent )
 }
 
 //______________________________________________________________________________
+void AliRelAlignerKalman::SetPoint2Track( Bool_t set )
+{
+  fNMeasurementParams = (set)?2:4;
+  if (fPH) delete fPH;
+  fPH = new TMatrixD( fNMeasurementParams, fgkNSystemParams );
+  if (fPMeasurement) delete fPMeasurement;
+  fPMeasurement = new TVectorD( fNMeasurementParams );
+  if (fPMeasurementCov) delete fPMeasurementCov;
+  fPMeasurementCov = new TMatrixDSym( fNMeasurementParams );
+  if (fPMeasurementPrediction) delete fPMeasurementPrediction;
+  fPMeasurementPrediction = new TVectorD( fNMeasurementParams );
+  fYZOnly = set;
+}
+
+//______________________________________________________________________________
 void AliRelAlignerKalman::Print(Option_t*) const
 {
   //Print some useful info
@@ -403,7 +423,7 @@ void AliRelAlignerKalman::PrintSystemMatrix()
 {
   //Print the system matrix for this measurement
   printf("Kalman system matrix:\n");
-  for ( Int_t i=0; i<fgkNMeasurementParams; i++ )
+  for ( Int_t i=0; i<fNMeasurementParams; i++ )
   {
     for ( Int_t j=0; j<fgkNSystemParams; j++ )
     {
@@ -431,16 +451,6 @@ Bool_t AliRelAlignerKalman::SetTrackParams( const AliExternalTrackParam* exparam
     return kTRUE;
   }
   return kFALSE;
-}
-
-//______________________________________________________________________________
-void AliRelAlignerKalman::SetRefSurface( const Double_t radius, const Double_t alpha )
-{
-  //sets the reference surface by setting the radius (localx)
-  //and rotation angle wrt the global frame of reference
-  //locally the reference surface becomes a plane with x=r;
-  fLocalX = radius;
-  fAlpha = alpha;
 }
 
 //______________________________________________________________________________
@@ -497,44 +507,50 @@ Bool_t AliRelAlignerKalman::PrepareMeasurement()
     Int_t x = i*4;
     (*fPMeasurement)(x+0) = pararr2[0]-pararr1[0];
     (*fPMeasurement)(x+1) = pararr2[1]-pararr1[1];
-    (*fPMeasurement)(x+2) = pararr2[2]-pararr1[2];
-    (*fPMeasurement)(x+3) = pararr2[3]-pararr1[3];
+    if (!fYZOnly)
+    {
+      (*fPMeasurement)(x+2) = pararr2[2]-pararr1[2];
+      (*fPMeasurement)(x+3) = pararr2[3]-pararr1[3];
+    }
 
     //the covariance
     const Double_t* parcovarr1 = fPTrackParamArr1[i].GetCovariance();
     const Double_t* parcovarr2 = fPTrackParamArr2[i].GetCovariance();
     (*fPMeasurementCov)(x+0,x+0)=parcovarr1[0];
     (*fPMeasurementCov)(x+0,x+1)=parcovarr1[1];
-    (*fPMeasurementCov)(x+0,x+2)=parcovarr1[3];
-    (*fPMeasurementCov)(x+0,x+3)=parcovarr1[6];
     (*fPMeasurementCov)(x+1,x+0)=parcovarr1[1];
     (*fPMeasurementCov)(x+1,x+1)=parcovarr1[2];
-    (*fPMeasurementCov)(x+1,x+2)=parcovarr1[4];
-    (*fPMeasurementCov)(x+1,x+3)=parcovarr1[7];
-    (*fPMeasurementCov)(x+2,x+0)=parcovarr1[3];
-    (*fPMeasurementCov)(x+2,x+1)=parcovarr1[4];
-    (*fPMeasurementCov)(x+2,x+2)=parcovarr1[5];
-    (*fPMeasurementCov)(x+2,x+3)=parcovarr1[8];
-    (*fPMeasurementCov)(x+3,x+0)=parcovarr1[6];
-    (*fPMeasurementCov)(x+3,x+1)=parcovarr1[7];
-    (*fPMeasurementCov)(x+3,x+2)=parcovarr1[8];
-    (*fPMeasurementCov)(x+3,x+3)=parcovarr1[9];
     (*fPMeasurementCov)(x+0,x+0)+=parcovarr2[0];
     (*fPMeasurementCov)(x+0,x+1)+=parcovarr2[1];
-    (*fPMeasurementCov)(x+0,x+2)+=parcovarr2[3];
-    (*fPMeasurementCov)(x+0,x+3)+=parcovarr2[6];
     (*fPMeasurementCov)(x+1,x+0)+=parcovarr2[1];
     (*fPMeasurementCov)(x+1,x+1)+=parcovarr2[2];
-    (*fPMeasurementCov)(x+1,x+2)+=parcovarr2[4];
-    (*fPMeasurementCov)(x+1,x+3)+=parcovarr2[7];
-    (*fPMeasurementCov)(x+2,x+0)+=parcovarr2[3];
-    (*fPMeasurementCov)(x+2,x+1)+=parcovarr2[4];
-    (*fPMeasurementCov)(x+2,x+2)+=parcovarr2[5];
-    (*fPMeasurementCov)(x+2,x+3)+=parcovarr2[8];
-    (*fPMeasurementCov)(x+3,x+0)+=parcovarr2[6];
-    (*fPMeasurementCov)(x+3,x+1)+=parcovarr2[7];
-    (*fPMeasurementCov)(x+3,x+2)+=parcovarr2[8];
-    (*fPMeasurementCov)(x+3,x+3)+=parcovarr2[9];
+    if (!fYZOnly)
+    {
+      (*fPMeasurementCov)(x+0,x+2)=parcovarr1[3];
+      (*fPMeasurementCov)(x+0,x+3)=parcovarr1[6];
+      (*fPMeasurementCov)(x+1,x+2)=parcovarr1[4];
+      (*fPMeasurementCov)(x+1,x+3)=parcovarr1[7];
+      (*fPMeasurementCov)(x+2,x+0)=parcovarr1[3];
+      (*fPMeasurementCov)(x+2,x+1)=parcovarr1[4];
+      (*fPMeasurementCov)(x+2,x+2)=parcovarr1[5];
+      (*fPMeasurementCov)(x+2,x+3)=parcovarr1[8];
+      (*fPMeasurementCov)(x+3,x+0)=parcovarr1[6];
+      (*fPMeasurementCov)(x+3,x+1)=parcovarr1[7];
+      (*fPMeasurementCov)(x+3,x+2)=parcovarr1[8];
+      (*fPMeasurementCov)(x+3,x+3)=parcovarr1[9];
+      (*fPMeasurementCov)(x+0,x+2)+=parcovarr2[3];
+      (*fPMeasurementCov)(x+0,x+3)+=parcovarr2[6];
+      (*fPMeasurementCov)(x+1,x+2)+=parcovarr2[4];
+      (*fPMeasurementCov)(x+1,x+3)+=parcovarr2[7];
+      (*fPMeasurementCov)(x+2,x+0)+=parcovarr2[3];
+      (*fPMeasurementCov)(x+2,x+1)+=parcovarr2[4];
+      (*fPMeasurementCov)(x+2,x+2)+=parcovarr2[5];
+      (*fPMeasurementCov)(x+2,x+3)+=parcovarr2[8];
+      (*fPMeasurementCov)(x+3,x+0)+=parcovarr2[6];
+      (*fPMeasurementCov)(x+3,x+1)+=parcovarr2[7];
+      (*fPMeasurementCov)(x+3,x+2)+=parcovarr2[8];
+      (*fPMeasurementCov)(x+3,x+3)+=parcovarr2[9];
+    }
     
     fNTracks++; //count added track sets
   }
@@ -549,8 +565,8 @@ Bool_t AliRelAlignerKalman::PrepareSystemMatrix()
   //Calculate the system matrix for the Kalman filter
   //approximate the system using as reference the track in the first volume
 
-  TVectorD z1( fgkNMeasurementParams );
-  TVectorD z2( fgkNMeasurementParams );
+  TVectorD z1( fNMeasurementParams );
+  TVectorD z2( fNMeasurementParams );
   TVectorD x1( fgkNSystemParams );
   TVectorD x2( fgkNSystemParams );
   //get the derivatives
@@ -562,7 +578,7 @@ Bool_t AliRelAlignerKalman::PrepareSystemMatrix()
     x2(i) = x2(i) + fDelta[i]/(2.0);
     if (!PredictMeasurement( z1, x1 )) return kFALSE;
     if (!PredictMeasurement( z2, x2 )) return kFALSE;
-    for (Int_t j=0; j<fgkNMeasurementParams; j++ )
+    for (Int_t j=0; j<fNMeasurementParams; j++ )
     {
       (*fPH)(j,i) = ( z2(j)-z1(j) ) / fDelta[i];
     }
@@ -600,8 +616,11 @@ Bool_t AliRelAlignerKalman::PredictMeasurement( TVectorD& pred, const TVectorD& 
       //calculate the predicted residual
       pred(x+0) = oldparam[0] - newparam[0];
       pred(x+1) = oldparam[1] - newparam[1];
-      pred(x+2) = oldparam[2] - newparam[2];
-      pred(x+3) = oldparam[3] - newparam[3];
+      if (!fYZOnly)
+      {
+        pred(x+2) = oldparam[2] - newparam[2];
+        pred(x+3) = oldparam[3] - newparam[3];
+      }
       return kTRUE;
     }
   }
@@ -619,8 +638,11 @@ Bool_t AliRelAlignerKalman::PredictMeasurement( TVectorD& pred, const TVectorD& 
       //calculate the predicted residual
       pred(x+0) = newparam[0] - oldparam[0];
       pred(x+1) = newparam[1] - oldparam[1];
-      pred(x+2) = newparam[2] - oldparam[2];
-      pred(x+3) = newparam[3] - oldparam[3];
+      if (!fYZOnly)
+      {
+        pred(x+2) = newparam[2] - oldparam[2];
+        pred(x+3) = newparam[3] - oldparam[3];
+      }
       return kTRUE;
     }
   }
@@ -1389,7 +1411,7 @@ Int_t AliRelAlignerKalman::Compare(const TObject *obj) const
 //{
 //  //Print the measurement covariance correction matrix
 //  printf("Covariance correction matrix:\n");
-//  for ( Int_t i=0; i<fgkNMeasurementParams; i++ )
+//  for ( Int_t i=0; i<fNMeasurementParams; i++ )
 //  {
 //    for ( Int_t j=0; j<i+1; j++ )
 //    {
@@ -1500,4 +1522,5 @@ Int_t AliRelAlignerKalman::Compare(const TObject *obj) const
 //
 //  return kTRUE;
 //}
+
 

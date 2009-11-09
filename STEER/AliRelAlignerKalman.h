@@ -77,7 +77,6 @@ public:
     Double_t GetMagField() const { return fMagField; }
     Bool_t FindCosmicTrackletNumbersInEvent( TArrayI& outITStracksTArr, TArrayI& outTPCtracksTArr, const AliESDEvent* pEvent );
     Bool_t Update();
-    void SetRefSurface( const Double_t x, const Double_t alpha );
     void PrintCorrelationMatrix();
     //void PrintCovarianceCorrection();
     void PrintSystemMatrix();
@@ -118,6 +117,10 @@ public:
     Int_t GetRunNumber() const {return fRunNumber;}
     Int_t Compare(const TObject *obj) const;
     Bool_t IsSortable() const { return kTRUE; }
+    Int_t GetNTracks() const {return fNTracks;}
+    Int_t GetNUpdates() const {return fNUpdates;}
+    Int_t GetNOutliers() const {return fNOutliers;}
+    void SetPoint2Track( Bool_t o );
     
 protected:
     Bool_t UpdateEstimateKalman();
@@ -129,7 +132,6 @@ protected:
 
 private:
     static const Int_t fgkNTracksPerMeasurement=1;        //how many tracks for one update
-    static const Int_t fgkNMeasurementParams=4;           //how many measurables
     static const Int_t fgkNSystemParams=9;                //how many fit parameters
     
     //Track parameters
@@ -140,6 +142,7 @@ private:
     Double_t fMagField; //!magnetic field
 
     //Kalman filter related stuff
+    Int_t fNMeasurementParams;           //how many measurables
     TVectorD* fPX; //System (fit) parameters (phi, theta, psi, x, y, z, driftcorr, driftoffset )
     TMatrixDSym* fPXcov; //covariance matrix of system parameters
     TMatrixD* fPH;      //!System measurement matrix
@@ -151,6 +154,7 @@ private:
     Double_t fDelta[fgkNSystemParams]; //array with differentials for calculating derivatives for every parameter(see PrepareSystemMatrix())
 
     //Control
+    Bool_t fYZOnly;   //whether to consider only yz without directions.
     Bool_t fNumericalParanoia; //!whether to perform additional checks for numerical stability
     Bool_t fRejectOutliers; //!whether to do outlier rejection in the Kalman filter
     Bool_t fRequireMatchInTPC;  //!when looking for a cosmic in event, require that TPC has 2 matching segments
@@ -183,4 +187,5 @@ private:
 };
 
 #endif
+
 
