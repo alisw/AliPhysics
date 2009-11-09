@@ -7,7 +7,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-TEveElementList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=3,
+TEveElementList* esd_spd_tracklets(Float_t radius=8, Width_t line_width=2,
 				   Float_t dPhiWindow=0.080, Float_t dThetaWindow=0.025, 
 				   Float_t dPhiShift05T=0.0045)
 {
