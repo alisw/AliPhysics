@@ -299,7 +299,7 @@ int main(int argc, char **argv) {
     }
   }
   
-  for(Int_t i = 0; i < 4; i++) delete mapping[i];  
+  for(Int_t i = 0; i < 20; i++) delete mapping[i];  
   
   /* Be sure that all histograms are saved */
   

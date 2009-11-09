@@ -6,7 +6,7 @@ run type: PHYSICS
 DA type: MON 
 number of events needed: 1000
 input files: Mod0RCU0.data Mod0RCU1.data Mod0RCU2.data Mod0RCU3.data Mod1RCU0.data Mod1RCU1.data Mod1RCU2.data Mod1RCU3.data Mod2RCU0.data Mod2RCU1.data Mod2RCU2.data Mod2RCU3.data Mod3RCU0.data Mod3RCU1.data Mod3RCU2.data Mod3RCU3.data Mod4RCU0.data Mod4RCU1.data Mod4RCU2.data Mod4RCU3.data zs.txt
-Output files: PHOS_ModuleN_Calib.root, where N is the module number (0-5), PHOS_Calib.root 
+Output files: PHOS_Calib.root 
 Trigger types used: PHYSICS
 */
 
@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
 	    fitter.Eval(stream.GetSignals(),sigStart,sigLength);
 	  } // End of NextBunch()
 	  
-	  if (nBunches>1) continue;
+	  if (nBunches != 1) continue;
 	  
 	  e[cellX][cellZ][caloFlag] = fitter.GetEnergy();
 	  t[cellX][cellZ][caloFlag] = fitter.GetTime();
@@ -258,7 +258,7 @@ int main(int argc, char **argv) {
 	if(dAs[stream.GetModule()])
 	  dAs[stream.GetModule()]->FillHistograms(e,t);
 	else {
-	  dAs[stream.GetModule()] = new AliPHOSRcuDA1(stream.GetModule(),-1);
+	  dAs[stream.GetModule()] = new AliPHOSRcuDA1(stream.GetModule(),-1,0);
 	  dAs[stream.GetModule()]->FillHistograms(e,t);
 	}
 	
@@ -295,16 +295,7 @@ int main(int argc, char **argv) {
   for(Int_t i = 0; i < 20; i++) delete mapping[i];  
   
   /* Be sure that all histograms are saved */
-  
-  for(Int_t iMod=0; iMod<5; iMod++) {
-    if(!dAs[iMod]) continue;
-    
-    printf("DA1 for module %d detected.\n",iMod);
-    
-    dAs[iMod]->UpdateHistoFile();
-    dAs[iMod]->SetWriteToFile(kFALSE);       
-  }
-  
+
   const TH2F* h2=0;
   const TH1F* h1=0;
   char localfile[128];
@@ -314,6 +305,8 @@ int main(int argc, char **argv) {
   
   for(Int_t iMod=0; iMod<5; iMod++) {
     if(!dAs[iMod]) continue;
+    
+    printf("DA1 for module %d detected.\n",iMod);
     
     for(Int_t iX=0; iX<64; iX++) {
       for(Int_t iZ=0; iZ<56; iZ++) {
