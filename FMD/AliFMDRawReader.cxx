@@ -112,6 +112,7 @@ AliFMDRawReader::Exec(Option_t*)
   Int_t nWrite = fTree->Fill();
   AliFMDDebug(1, ("Got a grand total of %d digits, wrote %d bytes to tree", 
 		   array->GetEntriesFast(), nWrite));
+  delete array;
 }
 
 //____________________________________________________________________
