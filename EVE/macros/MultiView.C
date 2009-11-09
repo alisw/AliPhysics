@@ -136,13 +136,8 @@ public:
       fGeomGentleRPhi = grphi; fGeomGentleRPhi->IncDenyDestroy();
       fGeomGentleRhoZ = grhoz; fGeomGentleRhoZ->IncDenyDestroy();
 
-      fRPhiMgr->SetCurrentDepth(-10);
       ImportGeomRPhi(fGeomGentleRPhi);
-      fRPhiMgr->SetCurrentDepth(0);
-
-      fRhoZMgr->SetCurrentDepth(-10);
       ImportGeomRhoZ(fGeomGentleRhoZ);
-      fRhoZMgr->SetCurrentDepth(0);
    }
 
    void InitGeomGentleTrd(TEveGeoShape* gtrd)
@@ -157,6 +152,14 @@ public:
       fGeomGentleMuon = gmuon;
       if (showRPhi) ImportGeomRPhi(fGeomGentleMuon);
       if (showRhoZ) ImportGeomRhoZ(fGeomGentleMuon);
+   }
+
+   //-------------------------------------------------------------------------
+
+   void SetDepth(Float_t d)
+   {
+      fRPhiMgr->SetCurrentDepth(d);
+      fRhoZMgr->SetCurrentDepth(d);
    }
 
    //-------------------------------------------------------------------------

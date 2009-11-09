@@ -31,10 +31,11 @@ public:
   AliEveTrack(const AliEveTrack& t);
   virtual ~AliEveTrack();
 
-  virtual void ImportHits();      // *MENU*
-  virtual void ImportClusters();  // *MENU*
-
+  void ImportHits();      // *MENU*
+  
+  void ImportClustersFromLabel(); // *MENU*
   void ImportClustersFromIndex(); // *MENU*
+
   void ImportKine();              // *MENU*
   void ImportKineWithArgs(Bool_t importMother=kTRUE, Bool_t impDaugters=kTRUE,
 			  Bool_t colorPdg    =kTRUE, Bool_t recurse    =kTRUE); // *MENU*

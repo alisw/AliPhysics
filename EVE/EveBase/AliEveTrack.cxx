@@ -119,7 +119,7 @@ void AliEveTrack::ImportHits()
 }
 
 //______________________________________________________________________________
-void AliEveTrack::ImportClusters()
+void AliEveTrack::ImportClustersFromLabel()
 {
   // Import clusters with same label as the track.
   // Uses macro "clusters_from_label.C".

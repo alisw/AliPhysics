@@ -48,21 +48,20 @@ TEvePointSet* clusters_from_index(Int_t index=0, TEveElement* cont=0)
   }
 
   clusters->SetMarkerStyle(2);
-  clusters->SetMarkerSize(0.5);
+  clusters->SetMarkerSize(2);
   clusters->SetMarkerColor(4);
 
-  //PH The line below is replaced waiting for a fix in Root
-  //PH which permits to use variable siza arguments in CINT
-  //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-  //PH  clusters->SetName(Form("Clusters idx=%d", index));
-  char form[1000];
-  sprintf(form,"Clusters idx=%d", index);
-  clusters->SetName(form);
+  clusters->SetName(Form("Clusters idx=%d", index));
+  clusters->SetTitle(Form("N=%d", clusters->Size()));
 
-  char tip[1000];
-  sprintf(tip,"N=%d", clusters->Size());
-  clusters->SetTitle(tip);
   gEve->AddElement(clusters);
+
+  if (gMultiView)
+  {
+    gMultiView->ImportEventRPhi(clusters);
+    gMultiView->ImportEventRhoZ(clusters);
+  }
+
   gEve->Redraw3D();
 
   return clusters;

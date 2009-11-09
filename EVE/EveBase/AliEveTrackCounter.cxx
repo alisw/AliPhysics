@@ -316,6 +316,10 @@ void AliEveTrackCounter::OutputEventTracks()
     trk->Write(TString::Format("Tracks_%04d",    fEventId), kWriteDelete | kSingleKey);
     mul->Write(TString::Format("Tracklets_%04d", fEventId), kWriteDelete);
 
+    esd->GetPrimaryVertexTracks()->Write(TString::Format("PrimVertTracks_%04d", fEventId), kWriteDelete);
+    esd->GetPrimaryVertexTPC()   ->Write(TString::Format("PrimVertTPC_%04d",    fEventId), kWriteDelete);
+    esd->GetPrimaryVertexSPD()   ->Write(TString::Format("PrimVertSPD_%04d",    fEventId), kWriteDelete);
+
     f->Close();
   }
 }

@@ -61,6 +61,8 @@ void visscan_init(const TString& cdburi = "",
 
   gMultiView = new MultiView;
 
+  gMultiView->SetDepth(-10);
+
   TEveUtil::LoadMacro("geom_gentle.C");
   gMultiView->InitGeomGentle(geom_gentle(),
                              geom_gentle_rphi(), 
@@ -76,6 +78,7 @@ void visscan_init(const TString& cdburi = "",
     gMultiView->InitGeomGentleMuon(geom_gentle_muon(kFALSE), gShowMuonRPhi, gShowMuonRhoZ);
   }
 
+  gMultiView->SetDepth(0);
 
   //==============================================================================
   // Registration of per-event macros
