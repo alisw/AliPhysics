@@ -142,7 +142,7 @@ void AliPHOSRcuDA1::FillHistograms(Float_t e[64][56][2], Float_t t[64][56][2])
     for (Int_t iZ=0; iZ<56; iZ++) {
       
       // HG/LG
-      if(e[iX][iZ][0]>1 && e[iX][iZ][1]>1 ) {
+      if(e[iX][iZ][0]>10. && e[iX][iZ][1]>10. && e[iX][iZ][1]<900.) {
 	
 	if(fHgLgRatio[iX][iZ]) {
 	  //printf("iX=%d iZ=%d,e[iX][iZ][1]=%.3f,e[iX][iZ][0]=%.3f, t1=%.3f,t0=%.3f\n",
@@ -172,7 +172,7 @@ void AliPHOSRcuDA1::FillHistograms(Float_t e[64][56][2], Float_t t[64][56][2])
 	else {
 	  sprintf(hname,"%d_%d_%d_%d",fMod,iX,iZ,iGain);
 	  sprintf(htitl,"Energy vs TOF for crystal %d_%d_%d and gain %d",fMod,iX,iZ,iGain);
-	  fTimeEnergy[iX][iZ][iGain] = new TH2F(hname,htitl,100,0.,1024.,100,0.,100);
+	  fTimeEnergy[iX][iZ][iGain] = new TH2F(hname,htitl,100,0.,1024.,50,0.,50.);
 	  fTimeEnergy[iX][iZ][iGain]->Fill(e[iX][iZ][iGain],t[iX][iZ][iGain]);
 	  fHistoArray.Add(fTimeEnergy[iX][iZ][iGain]);
 	}
