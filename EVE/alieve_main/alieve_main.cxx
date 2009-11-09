@@ -19,6 +19,7 @@
 #include <TEveUtil.h>
 #include <TEveManager.h>
 #include <TEveSelection.h>
+#include <TEveBrowser.h>
 
 #include <Getline.h>
 
@@ -52,6 +53,8 @@ int main(int argc, char **argv)
   }
   {
     // TabCom fails on double-colon in macro-path.
+    // I fixed this in ROOT sometime ago ... could be removed
+    // when we go to 5.26.
     TPMERegexp doubleColon(":{2,}", "og");
     doubleColon.Substitute(macPath, ":");
   }
@@ -62,13 +65,14 @@ int main(int argc, char **argv)
   TRint  *app = new TRint("App", &argc, argv);
 
   TEveManager::Create();
-  gEve->GetSelection()->SetPickToSelect(TEveSelection::kPS_Projectable);
-  gEve->GetHighlight()->SetPickToSelect(TEveSelection::kPS_Projectable);
+  gEve->GetSelection()->SetPickToSelect(TEveSelection::kPS_PableCompound);
+  gEve->GetHighlight()->SetPickToSelect(TEveSelection::kPS_PableCompound);
 
   gEve->RegisterGeometryAlias("Default", Form("%s/alice-data/default_geo.root", evedir.Data()));
 
   app->Run(kTRUE);
 
+  gEve->GetBrowser()->UnmapWindow();
   TEveManager::Terminate();
 
   app->Terminate(0);

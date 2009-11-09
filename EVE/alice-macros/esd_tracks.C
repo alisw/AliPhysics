@@ -332,8 +332,6 @@ Float_t get_sigma_to_vertex(AliESDtrack* esdTrack)
   return d;
 }
 
-TEveElementList* g_esd_tracks_by_category_container = 0;
-
 TEveElementList* esd_tracks_by_category()
 {
   // Import ESD tracks, separate them into several containers
@@ -343,8 +341,6 @@ TEveElementList* esd_tracks_by_category()
 
   TEveElementList* cont = new TEveElementList("ESD Tracks by category");
   gEve->AddElement(cont);
-
-  g_esd_tracks_by_category_container = cont;
 
   const Int_t   nCont = 7;
   const Float_t maxR  = 520;
@@ -424,7 +420,7 @@ TEveElementList* esd_tracks_by_category()
     ++count;
 
     AliEveTrack* track = esd_make_track(at, tlist);
-    track->SetName(Form("AliEveTrack idx=%d, sigma=%5.3f", at->GetID(), s));
+    track->SetName(Form("ESD Track idx=%d, sigma=%5.3f", at->GetID(), s));
     tlist->AddElement(track);
   }
 
@@ -437,6 +433,94 @@ TEveElementList* esd_tracks_by_category()
     tlist->MakeTracks();
 
     Bool_t good_cont = ti <= 1;
+    if (AliEveTrackCounter::IsActive())
+    {
+      AliEveTrackCounter::fgInstance->RegisterTracks(tlist, good_cont);
+    }
+    else
+    {
+      if ( ! good_cont)
+        tlist->SetLineStyle(6);
+    }
+  }
+  cont->SetTitle(Form("N all tracks = %d", count));
+  // ??? The following does not always work:
+  cont->FindListTreeItem(gEve->GetListTree())->SetOpen(kTRUE);
+
+  gEve->Redraw3D();
+
+  return cont;
+}
+
+
+//==============================================================================
+// esd_tracks_by_anal_cuts
+//==============================================================================
+
+AliESDtrackCuts* g_esd_tracks_anal_cuts = 0;
+
+TEveElementList* esd_tracks_by_anal_cuts()
+{
+  AliESDEvent* esd = AliEveEventManager::AssertESD();
+
+  if (g_esd_tracks_anal_cuts == 0)
+  {
+    gSystem->Load("libPWG0base");
+    gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/CreateStandardCuts.C");
+    AliPWG0Helper::AnalysisMode mode = AliPWG0Helper::kTPCITS;
+    if (TMath::Abs(esd->GetMagneticField()) > 0.01)
+      mode |= AliPWG0Helper::kFieldOn;
+    g_esd_tracks_anal_cuts = CreateTrackCuts(mode, kFALSE);
+  }
+
+  TEveElementList* cont = new TEveElementList("ESD Tracks by Analysis Cuts");
+  gEve->AddElement(cont);
+
+  const Int_t   nCont = 2;
+  const Float_t maxR  = 520;
+  const Float_t magF  = 0.1*esd->GetMagneticField();
+
+  TEveTrackList *tl[nCont];
+  Int_t          tc[nCont];
+  Int_t          count = 0;
+
+  tl[0] = new TEveTrackList("Passed");
+  tc[0] = 0;
+  esd_track_propagator_setup(tl[0]->GetPropagator(), magF, maxR);
+  tl[0]->SetMainColor(3);
+  cont->AddElement(tl[0]);
+
+  tl[1] = new TEveTrackList("Rejected");
+  tc[1] = 0;
+  esd_track_propagator_setup(tl[1]->GetPropagator(), magF, maxR);
+  tl[1]->SetMainColor(kRed);
+  cont->AddElement(tl[1]);
+
+  for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+  {
+    AliESDtrack* at = esd->GetTrack(n);
+
+    Float_t s  = get_sigma_to_vertex(at);
+    Int_t   ti = (g_esd_tracks_anal_cuts->AcceptTrack(at)) ? 0 : 1;
+
+    TEveTrackList* tlist = tl[ti];
+    ++tc[ti];
+    ++count;
+
+    AliEveTrack* track = esd_make_track(at, tlist);
+    track->SetName(Form("ESD Track idx=%d, sigma=%5.3f", at->GetID(), s));
+    tlist->AddElement(track);
+  }
+
+  for (Int_t ti = 0; ti < nCont; ++ti)
+  {
+    TEveTrackList* tlist = tl[ti];
+    tlist->SetName(Form("%s [%d]", tlist->GetName(), tlist->NumChildren()));
+    tlist->SetTitle(Form("N tracks=%d", tc[ti]));
+
+    tlist->MakeTracks();
+
+    Bool_t good_cont = ti < 1;
     if (AliEveTrackCounter::IsActive())
     {
       AliEveTrackCounter::fgInstance->RegisterTracks(tlist, good_cont);
