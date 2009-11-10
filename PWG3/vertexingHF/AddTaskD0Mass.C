@@ -17,15 +17,17 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   }   
 
   TString filename="",out1name="",out2name="",out3name="",out4name="",inname="";
+  filename = AliAnalysisManager::GetCommonFileName();
+  filename += ":PWG3_D2H_";
   if(flag==0){
-    filename="D0InvMass.root"; 
+    filename+="D0InvMass"; 
     out1name="coutputmassD01";
     out2name="coutputmassD02";
     out3name="nEntriesD0";
     out4name="coutputmassD0distr";
     inname="cinputmassD0_0";
   } else {
-    filename="D0InvMassLikeSign.root";
+    filename+="D0InvMassLikeSign";
     out1name="coutputmassLS1";
     out2name="coutputmassLS2";
     out3name="nEntriesLS";

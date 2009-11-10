@@ -25,12 +25,14 @@ AliAnalysisTaskSEBkgLikeSignD0 *AddTaskBkgLikeSignD0()
   // Create containers for input/output
   AliAnalysisDataContainer *cinputLSD0 = mgr->CreateContainer("cinputLikeSignD0",TChain::Class(), 
 							  AliAnalysisManager::kInputContainer);
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  outputfile += ":PWG3_D2H_CmpLikeSignD0";
   AliAnalysisDataContainer *coutput1LSD0 = mgr->CreateContainer("coutput1LikeSignD0",TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,
-                                                           "CmpLikeSignD0.root");
+								outputfile.Data());
   AliAnalysisDataContainer *coutput2LSD0 = mgr->CreateContainer("coutput2LikeSignD0",TH1F::Class(),
                                                            AliAnalysisManager::kOutputContainer,
-                                                           "CmpLikeSignD0.root");
+								outputfile.Data());
 
   mgr->ConnectInput(lsD0Task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(lsD0Task,1,coutput1LSD0);

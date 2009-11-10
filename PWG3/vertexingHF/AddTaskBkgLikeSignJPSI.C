@@ -26,9 +26,11 @@ AliAnalysisTaskSEBkgLikeSignJPSI *AddTaskBkgLikeSignJPSI()
   // Create containers for input/output
   AliAnalysisDataContainer *cinputLS = mgr->CreateContainer("cinputLikeSignJPSI",TChain::Class(), 
 							  AliAnalysisManager::kInputContainer);
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  outputfile += ":PWG3_D2H_CmpLikesignJPSI";
   AliAnalysisDataContainer *coutputLS = mgr->CreateContainer("coutputLikeSignJPSI",TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,
-                                                           "CmpLikeSignJPSI.root");
+							     outputfile.Data());
 
   mgr->ConnectInput(lsTask,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(lsTask,1,coutputLS);

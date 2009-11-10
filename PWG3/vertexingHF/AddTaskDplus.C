@@ -26,9 +26,11 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE)
   // Create containers for input/output                                                                                                 
   AliAnalysisDataContainer *cinputDplus = mgr->CreateContainer("cinputDplus",TChain::Class(),
                                                           AliAnalysisManager::kInputContainer);
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  outputfile += ":PWG3_D2H_InvMassDplus";
   AliAnalysisDataContainer *coutputDplus = mgr->CreateContainer("coutputDplus",TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,
-                                                           "InvMassDplus.root");
+								outputfile.Data());
   if(storeNtuple){
     AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer("coutputDplus2",TNtuple::Class(),
                                                            AliAnalysisManager::kOutputContainer,
