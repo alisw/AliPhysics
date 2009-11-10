@@ -148,6 +148,9 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
 {
   //Makes the job.
   //TClonesArray *digits and raw data fitter should be provided by calling function.
+printf("Make Digits! \n") ;
+
+  fitter->SetAmpOffset(4) ;
 
   digits->Clear();
  
@@ -173,7 +176,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
   
   while (fRawStream->NextDDL()) {
     while (fRawStream->NextChannel()) {
-      relId[0] = fRawStream->GetModule() + 1; // counts from 1 to 5
+      relId[0] = 5 - fRawStream->GetModule() ; // counts from 1 to 5
       relId[1] = 0;
       relId[2] = fRawStream->GetCellX()  + 1; // counts from 1 to 64
       relId[3] = fRawStream->GetCellZ()  + 1; // counts from 1 to 56
@@ -182,6 +185,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
       if(caloFlag!=0 && caloFlag!=1) continue; //TRU data!
       
       fitter->SetChannelGeo(relId[0],relId[2],relId[3],caloFlag);
+
       if(fitter->GetAmpOffset()==0 && fitter->GetAmpThreshold()==0) {
 	short value = fRawStream->GetAltroCFG1();
 	bool ZeroSuppressionEnabled = (value >> 15) & 0x1;

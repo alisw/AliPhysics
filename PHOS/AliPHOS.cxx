@@ -492,7 +492,7 @@ void AliPHOS::Digits2Raw()
 
     Int_t relId[4];
     geom->AbsToRelNumbering(digit->GetId(), relId);
-    Int_t module = relId[0];
+    Int_t module = 5-relId[0];
  
     // Begin FIXME 
     if (relId[1] != 0) 
@@ -518,8 +518,8 @@ void AliPHOS::Digits2Raw()
     
     
     // PHOS EMCA has 4 DDL per module. Splitting is based on the (row,column) numbers.
-    // PHOS internal convention: 1<module<5.
-    Int_t iDDL = 4 * (module - 1) + iRCU;
+    // here module already in PHOS online convention: 0<module<4 and inverse order.
+    Int_t iDDL = 4 * module  + iRCU;
 
     // new DDL
     if (iDDL != prevDDL) {
@@ -548,10 +548,9 @@ void AliPHOS::Digits2Raw()
     // calculate the time response function
     } else {
       Double_t energy = 0 ;
-      module = relId[0];
       if (digit->GetId() <= geom->GetNModules() * geom->GetNCristalsInModule()) {
 	energy=digit->GetEnergy();
-	if(energy>eMax) {eMax=energy; modMax=module; colMax=col; rowMax=row;}
+	if(energy>eMax) {eMax=energy; modMax=relId[0]; colMax=col; rowMax=row;}
       }
       else {
  	energy = 0; // CPV raw data format is now know yet
