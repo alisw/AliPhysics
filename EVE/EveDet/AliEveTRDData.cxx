@@ -22,6 +22,7 @@
 #include "AliEveTRDLoader.h"
 #include "AliEveTRDLoaderImp.h"
 
+#include "AliGeomManager.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliPID.h"
@@ -91,14 +92,20 @@ void AliEveTRDDigits::ComputeRepresentation()
   Int_t nrows = fData.GetNrow(),
         ncols = fData.GetNcol(),
         ntbs  = fData.GetNtime(),
-        det   = fParent->GetID();
+        det   = fParent->GetID(),
+        ly    = AliTRDgeometry::GetLayer(det),
+        stk   = AliTRDgeometry::GetStack(det),
+        sec   = AliTRDgeometry::GetSector(det),
+        vid   = AliGeomManager::LayerToVolUID(AliGeomManager::kTRD1 + ly, stk + AliTRDgeometry::Nstack() * sec);
   Float_t threshold = fParent->GetDigitsThreshold();
+  Short_t sig[7]={0,0,0,10,0,0,0};
 
   AliTRDtransform transform(det);
   AliTRDgeometry *geo = fParent->fGeo;
   AliTRDpadPlane *pp = geo->GetPadPlane(geo->GetLayer(det), geo->GetStack(det));
 
   // express position in tracking coordinates
+  AliTRDcluster c;
   fData.Expand();
   for (Int_t ir = 0; ir < nrows; ir++) {
     dz = pp->GetRowSize(ir);
@@ -107,16 +114,19 @@ void AliEveTRDDigits::ComputeRepresentation()
       for (Int_t it = 0; it < ntbs; it++) {
         q = fData.GetData(ir, ic, it);
         if (q < threshold) continue;
-
-        Double_t x[6] = {0., 0., Double_t(q), 0., 0., 0.}; 
-        //Int_t  roc[3] = {ir, ic, 0}; 
-        //Bool_t    out = kTRUE;
-        //transform.Transform(&x[0], &roc[0], UInt_t(it), out, 0);
+        
+/*        Double_t x[6] = {0., 0., Double_t(q), 0., 0., 0.}; 
+        Int_t  roc[3] = {ir, ic, 0}; 
+        Bool_t    out = kTRUE;*/
+        
+        new (&c) AliTRDcluster(det, ic, ir, it, sig, vid);
+        transform.Transform(&c);
 
         scale = q < 512 ? q/512. : 1.;
         color  = 50+int(scale*50.);
-    
-        AddQuad(x[1]-.45*dy, x[2]-.5*dz*scale, x[0], .9*dy, dz*scale);
+        
+        AliDebug(4, Form("y[%f] z[%f] x[%f] w[%f] h[%f]\n", c.GetY(), c.GetZ(), c.GetX(), .9*dy, dz*scale));
+        AddQuad(c.GetY(), c.GetZ(), c.GetX(), .9*dy, dz*scale);
         QuadValue(q);
         QuadColor(color);
         QuadId(new TNamed(Form("Charge%d", q), "dummy title"));
@@ -128,7 +138,7 @@ void AliEveTRDDigits::ComputeRepresentation()
   // rotate to global coordinates
   //RefitPlex();
   TEveTrans& t = RefMainTrans();
-  t.SetRotByAngles((geo->GetSector(det)+.5)*AliTRDgeometry::GetAlpha(), 0.,0.);
+  t.SetRotByAngles((sec+.5)*AliTRDgeometry::GetAlpha(), 0.,0.);
 }
 
 //______________________________________________________________________________
@@ -136,7 +146,7 @@ void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
 {
   // Set data source.
 
-  Int_t det = fParent->GetID();
+  Int_t det(fParent->GetID());
   AliTRDarrayADC *data = digits->GetDigits(det);
   if(!data->GetDim()) return;
   data->Expand();
@@ -167,14 +177,14 @@ void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
 }
 
 
-//______________________________________________________________________________
-void AliEveTRDDigits::Paint(Option_t *option)
-{
-  // Paint the object.
-
-  if(fParent->GetDigitsBox()) fBoxes.Paint(option);
-  else TEveQuadSet::Paint(option);
-}
+// //______________________________________________________________________________
+// void AliEveTRDDigits::Paint(Option_t *option)
+// {
+//   // Paint the object.
+// 
+//   if(fParent->GetDigitsBox()) fBoxes.Paint(option);
+//   else TEveQuadSet::Paint(option);
+// }
 
 //______________________________________________________________________________
 void AliEveTRDDigits::Reset()
