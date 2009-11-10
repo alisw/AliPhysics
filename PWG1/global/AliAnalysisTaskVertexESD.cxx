@@ -44,9 +44,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
-#include "AliESDfriend.h"
 #include "AliESDInputHandler.h"
-#include "AliTrackPointArray.h"
 #include "AliTrackReference.h"
 
 #include "AliMCEventHandler.h"
@@ -65,10 +63,8 @@ AliAnalysisTaskVertexESD::AliAnalysisTaskVertexESD(const char *name) :
 AliAnalysisTask(name, "VertexESDTask"), 
 fReadMC(kFALSE),
 fESD(0), 
-fESDfriend(0), 
 fOutput(0), 
 fNtupleVertexESD(0),
-fhTrackPoints(0),
 fhTrackRefs(0)
 {
   // Constructor
@@ -103,21 +99,15 @@ void AliAnalysisTaskVertexESD::ConnectInputData(Option_t *)
   if (!tree) {
     Printf("ERROR: Could not read chain from input slot 0");
   } else {
-    // Disable all branches and enable only the needed ones
-    // The next two lines are different when data produced as AliESDEvent is read
-    //    tree->SetBranchStatus("*", kFALSE);
-    tree->SetBranchStatus("fTriggerMask", 1);
-    tree->SetBranchStatus("fSPDVertex*", 1);
-    tree->SetBranchStatus("fSPDMult*", 1);
-    
-    tree->SetBranchStatus("ESDfriend*", 1);
-    tree->SetBranchAddress("ESDfriend.",&fESDfriend);
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     
     if (!esdH) {
       Printf("ERROR: Could not get ESDInputHandler");
-    } else fESD = esdH->GetEvent();
+    } else {
+      fESD = esdH->GetEvent();
+    }
+
   }
   
   return;
@@ -137,8 +127,6 @@ void AliAnalysisTaskVertexESD::CreateOutputObjects()
 
   fOutput->Add(fNtupleVertexESD);
 
-  fhTrackPoints = new TH2F("fhTrackPoints","Track points; x; y",1000,-4,4,1000,-4,4);
-  fOutput->Add(fhTrackPoints);
   fhTrackRefs = new TH2F("fhTrackRefs","Track references; x; y",1000,-4,4,1000,-4,4);
   fOutput->Add(fhTrackRefs);
 
@@ -219,11 +207,6 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
   } 
   // ***********  MC info ***************
 
-  // ***********  ESD friends ***********
-  fESD->SetESDfriend(fESDfriend); //Attach the friend to the ESD
-  // ***********  ESD friends ***********
-
-  //
     
   // Trigger
   ULong64_t triggerMask;
@@ -248,16 +231,6 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
     if(t->GetNcls(1)>0 && TMath::Abs(t->GetD(0,0,fESD->GetMagneticField()))<2.8 && TMath::Abs(z0)<20) {
       nTPCin++;
       if(TMath::Abs(t->GetTgl())<1.5) nTPCinEta09++;
-    }
-    // tracks with two SPD points
-    if(!TESTBIT(t->GetITSClusterMap(),0) ||
-       !TESTBIT(t->GetITSClusterMap(),1)) continue; 
-    // AliTrackPoints
-    const AliTrackPointArray *array = t->GetTrackPointArray();
-    AliTrackPoint point;
-    for(Int_t ipt=0; ipt<array->GetNPoints(); ipt++) {
-      array->GetPoint(point,ipt);
-      fhTrackPoints->Fill(point.GetX(),point.GetY());
     }
   }
 
