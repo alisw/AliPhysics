@@ -17,7 +17,7 @@
 
 #endif
 
-void CheckPedestal( Int_t optPlot = 1, const char * histoFName = "ZDCPedHisto.root")
+void CheckPedestal(const char * histoFName = "ZDCPedHisto.root", Int_t optPlot = 1)
 {
 
   int const kNChannels = 24;
@@ -53,13 +53,13 @@ void CheckPedestal( Int_t optPlot = 1, const char * histoFName = "ZDCPedHisto.ro
        sprintf(namhist3lg,"PedCorrZPClg_%d",j-5);       
      }
      else if(j==10 || j==11){ // ZEM
-       sprintf(namhist1hg,"PedZEMhg_%d",j-10);
-       sprintf(namhist2hg,"PedZEMhgOutOfTime_%d",j-10);
-       sprintf(namhist3hg,"PedCorrZEMhg_%d",j-10);
+       sprintf(namhist1hg,"PedZEMhg_%d",j-9);
+       sprintf(namhist2hg,"PedZEMhgOutOfTime_%d",j-9);
+       sprintf(namhist3hg,"PedCorrZEMhg_%d",j-9);
        //
-       sprintf(namhist1lg,"PedZEMlg_%d",j-10);
-       sprintf(namhist2lg,"PedZEMlgOutOfTime_%d",j-10);
-       sprintf(namhist3lg,"PedCorrZEMlg_%d",j-10);
+       sprintf(namhist1lg,"PedZEMlg_%d",j-9);
+       sprintf(namhist2lg,"PedZEMlgOutOfTime_%d",j-9);
+       sprintf(namhist3lg,"PedCorrZEMlg_%d",j-9);
      }
      else if(j>=12 && j<=16){ // ZNA
        sprintf(namhist1hg,"PedZNAhg_%d",j-12);
@@ -79,7 +79,7 @@ void CheckPedestal( Int_t optPlot = 1, const char * histoFName = "ZDCPedHisto.ro
        sprintf(namhist2lg,"PedZPAlgOutOfTime_%d",j-17);
        sprintf(namhist3lg,"PedCorrZPAlg_%d",j-17);
      }
-     else if(j==22 || j==24){ //Reference PMs
+     else if(j==22 || j==23){ //Reference PMs
        sprintf(namhist1hg,"PedRefhg_%d",j-22);
        sprintf(namhist2hg,"PedRefhgOutOfTime_%d",j-22);
        sprintf(namhist3hg,"PedCorrRefhg_%d",j-22);
