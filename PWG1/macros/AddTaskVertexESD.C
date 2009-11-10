@@ -25,7 +25,7 @@ AliAnalysisTaskVertexESD *AddTaskVertexESD()
   // Create containers for input/output
   AliAnalysisDataContainer *cInputVtxESD = mgr->CreateContainer("cInputVtxESD",TChain::Class(),AliAnalysisManager::kInputContainer);
 
-  AliAnalysisDataContainer *cOutputVtxESD = mgr->CreateContainer("cOutputVtxESD",TList::Class(),AliAnalysisManager::kOutputContainer,"VertexESD.root");
+  AliAnalysisDataContainer *cOutputVtxESD = mgr->CreateContainer("cOutputVtxESD",TList::Class(),AliAnalysisManager::kOutputContainer,"Vertex.Performance.root");
 
 
   // Attach input

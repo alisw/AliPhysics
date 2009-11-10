@@ -15,7 +15,7 @@
 #endif
 
 void PlotVertexESD(TString vtxtype="SPD",
-		   TString fname="VertexESD.root",
+		   TString fname="Vertex.Performance.root",
 		   TString ntname="fNtupleVertexESD",
 		   Bool_t useztrue=kTRUE,
 		   Int_t optgif=0) {
