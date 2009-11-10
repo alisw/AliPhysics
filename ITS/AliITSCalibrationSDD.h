@@ -140,6 +140,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual void SetZeroSupp(Bool_t opt=kTRUE) {fZeroSupp=opt;}
     virtual Bool_t GetZeroSupp() const {return fZeroSupp;}
 
+    virtual void SetAMAt40MHz() {fAMAt20MHz=kFALSE;}
     virtual void SetAMAt20MHz() {fAMAt20MHz=kTRUE;}
     virtual Bool_t IsAMAt20MHz() const {return fAMAt20MHz;}
 
