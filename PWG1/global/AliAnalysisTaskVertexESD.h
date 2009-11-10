@@ -19,7 +19,6 @@
 class TNtuple;
 class TH2F;
 class AliESDEvent;
-class AliESDfriend;
 class AliESDVertex;
 
 #include "AliAnalysisTask.h"
@@ -41,10 +40,8 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
  protected:
   Bool_t       fReadMC;         // read Monte Carlo
   AliESDEvent *fESD;            // ESD object
-  AliESDfriend *fESDfriend;     // ESD friend object
   TList       *fOutput;         //! list send on output slot 0
   TNtuple     *fNtupleVertexESD;//! output ntuple
-  TH2F        *fhTrackPoints;   //! output histo
   TH2F        *fhTrackRefs;     //! output histo
 
  private:    
