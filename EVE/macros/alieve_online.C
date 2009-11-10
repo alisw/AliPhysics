@@ -27,14 +27,16 @@ void alieve_online_init()
   // Gentle-geom loading changes gGeoManager.
   TEveGeoManagerHolder mgrRestore;
 
-  gMultiView = new MultiView;
+  AliEveMultiView* mv = new AliEveMultiView;
+
+  mv->SetDepth(-10);
 
   TEveUtil::LoadMacro("geom_gentle.C");
-  gMultiView->InitGeomGentle(geom_gentle(),
-                             geom_gentle_rphi(), 
-                             geom_gentle_rhoz());
+  mv->InitGeomGentle(geom_gentle(), geom_gentle_rphi(), geom_gentle_rhoz());
 
   // See visscan_init.C for how to add TRD / MUON geometry.
+
+  mv->SetDepth(0);
 
   //============================================================================
   // Standard macros to execute -- not all are enabled by default.
@@ -114,7 +116,7 @@ void alieve_online_init()
 
   gEve->FullRedraw3D(kTRUE);
 
-  TGLViewer *glv = gMultiView->f3DView->GetGLViewer();
+  TGLViewer *glv = mv->Get3DView()->GetGLViewer();
   glv->CurrentCamera().RotateRad(-0.4, 1);
   glv->DoDraw();
 }
@@ -127,13 +129,15 @@ void alieve_online_on_new_event()
 
   TEveElement* top = gEve->GetCurrentEvent();
 
-  gMultiView->DestroyEventRPhi();
-  if (gCenterProjectionsAtPrimaryVertex)
-    gMultiView->SetCenterRPhi(x[0], x[1], x[2]);
-  gMultiView->ImportEventRPhi(top);
+  AliEveMultiView* mv = AliEveMultiView::Instance();
 
-  gMultiView->DestroyEventRhoZ();
+  mv->DestroyEventRPhi();
   if (gCenterProjectionsAtPrimaryVertex)
-    gMultiView->SetCenterRhoZ(x[0], x[1], x[2]);
-  gMultiView->ImportEventRhoZ(top);
+    mv->SetCenterRPhi(x[0], x[1], x[2]);
+  mv->ImportEventRPhi(top);
+
+  mv->DestroyEventRhoZ();
+  if (gCenterProjectionsAtPrimaryVertex)
+    mv->SetCenterRhoZ(x[0], x[1], x[2]);
+  mv->ImportEventRhoZ(top);
 }

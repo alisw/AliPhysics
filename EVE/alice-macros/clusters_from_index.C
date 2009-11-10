@@ -56,10 +56,10 @@ TEvePointSet* clusters_from_index(Int_t index=0, TEveElement* cont=0)
 
   gEve->AddElement(clusters);
 
-  if (gMultiView)
+  if (AliEveMultiView::Instance())
   {
-    gMultiView->ImportEventRPhi(clusters);
-    gMultiView->ImportEventRhoZ(clusters);
+    AliEveMultiView::Instance()->ImportEventRPhi(clusters);
+    AliEveMultiView::Instance()->ImportEventRhoZ(clusters);
   }
 
   gEve->Redraw3D();

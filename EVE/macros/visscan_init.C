@@ -8,7 +8,6 @@
  **************************************************************************/
 
 class AliEveMacroExecutor;
-class MultiView;
 class TEveProjectionManager;
 class TEveGeoShape;
 class TEveUtil;
@@ -28,12 +27,6 @@ void visscan_init(const TString& cdburi = "",
   {
     gEnv->SetValue("Root.Stacktrace", "no");
     Fatal("visscan_init.C", "OCDB path MUST be specified as the first argument.");
-  }
-
-  if (gROOT->LoadMacro("MultiView.C+") != 0)
-  {
-    gEnv->SetValue("Root.Stacktrace", "no");
-    Fatal("visscan_init.C", "Failed loading MultiView.C in compiled mode.");
   }
 
   if (!show_extra_geo)
@@ -59,26 +52,24 @@ void visscan_init(const TString& cdburi = "",
   // Geometry, scenes, projections and viewers
   //==============================================================================
 
-  gMultiView = new MultiView;
+  AliEveMultiView *mv = new AliEveMultiView;
 
-  gMultiView->SetDepth(-10);
+  mv->SetDepth(-10);
 
   TEveUtil::LoadMacro("geom_gentle.C");
-  gMultiView->InitGeomGentle(geom_gentle(),
-                             geom_gentle_rphi(), 
-                             geom_gentle_rhoz());
+  mv->InitGeomGentle(geom_gentle(), geom_gentle_rphi(), geom_gentle_rhoz());
 
   if (gShowTrd) {
     TEveUtil::LoadMacro("geom_gentle_trd.C");
-    gMultiView->InitGeomGentleTrd(geom_gentle_trd());
+    mv->InitGeomGentleTrd(geom_gentle_trd());
   }
 
   if (gShowMuonRPhi || gShowMuonRhoZ) {
     TEveUtil::LoadMacro("geom_gentle_muon.C");
-    gMultiView->InitGeomGentleMuon(geom_gentle_muon(kFALSE), gShowMuonRPhi, gShowMuonRhoZ);
+    mv->InitGeomGentleMuon(geom_gentle_muon(kFALSE), gShowMuonRPhi, gShowMuonRhoZ);
   }
 
-  gMultiView->SetDepth(0);
+  mv->SetDepth(0);
 
   //==============================================================================
   // Registration of per-event macros
@@ -129,7 +120,7 @@ void visscan_init(const TString& cdburi = "",
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_tracks.C", "esd_tracks_by_category",  "", kTRUE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_tracks.C", "esd_tracks_by_anal_cuts", "", kFALSE));
 
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracklet", "esd_spd_tracklets.C", "esd_spd_tracklets", "", kTRUE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracklet", "esd_spd_tracklets.C", "esd_spd_tracklets", "", kFALSE));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC ZDC",      "esd_zdc.C", "esd_zdc", "", kFALSE));
 
@@ -232,13 +223,15 @@ void on_new_event()
 
   TEveElement* top = gEve->GetCurrentEvent();
 
-  gMultiView->DestroyEventRPhi();
-  if (gCenterProjectionsAtPrimaryVertex)
-    gMultiView->SetCenterRPhi(x[0], x[1], x[2]);
-  gMultiView->ImportEventRPhi(top);
+  AliEveMultiView *mv = AliEveMultiView::Instance();
 
-  gMultiView->DestroyEventRhoZ();
+  mv->DestroyEventRPhi();
   if (gCenterProjectionsAtPrimaryVertex)
-    gMultiView->SetCenterRhoZ(x[0], x[1], x[2]);
-  gMultiView->ImportEventRhoZ(top);
+    mv->SetCenterRPhi(x[0], x[1], x[2]);
+  mv->ImportEventRPhi(top);
+
+  mv->DestroyEventRhoZ();
+  if (gCenterProjectionsAtPrimaryVertex)
+    mv->SetCenterRhoZ(x[0], x[1], x[2]);
+  mv->ImportEventRhoZ(top);
 }

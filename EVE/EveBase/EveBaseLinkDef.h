@@ -26,9 +26,11 @@
 #pragma link C++ class AliEveMacroExecutor+;
 #pragma link C++ class AliEveMacroExecutorWindow+;
 
+// Various
 #pragma link C++ class AliEveKineTools+;
 #pragma link C++ class AliEveMagField+;
 #pragma link C++ class AliEveVSDCreator+;
+#pragma link C++ class AliEveMultiView+;
 
 // AliEveTrack
 #pragma link C++ class AliEveTrack+;
