@@ -15,22 +15,6 @@
 //
 ///////////////////////////////////////////////////////
 
-/* #ifndef ALITRDRECOTASK_H */
-/* #include "AliTRDrecoTask.h" */
-/* #endif */
-
-/* #ifndef ALIPID_H */
-/* #include "AliPID.h" */
-/* #endif */
-
-/* #ifndef ALITRDCALPID_H */
-/* #include "../Cal/AliTRDCalPID.h" */
-/* #endif */
-
-/* #ifndef ALITRDGEOMETRY_H */
-/* #include "../AliTRDgeometry.h" */
-/* #endif */
-
 #ifndef ALITRDPIDREFMAKER_H
 #include "AliTRDpidRefMaker.h"
 #endif
@@ -42,14 +26,18 @@ class AliTRDpidRefMakerNN : public AliTRDpidRefMaker
 
 public:
   enum ETRDpidRefMakerNNgraph {
-    kGraphTrain = 0
-    ,kGraphTest = 1
+    kGraphTrain = 1
+    ,kGraphTest = 2
   };
 
   enum ETRDpidRefMakerNNmoni {
     kMoniTrain = 50
   };
 
+  enum ETRDpidRefMakerNNsteer{
+    kMaxStat    = 20000 // maximum statistics/PID bin
+   ,kMinStat    = 50     // minimum statistics/PID bin
+  };
   AliTRDpidRefMakerNN();
 
   virtual ~AliTRDpidRefMakerNN();
@@ -68,10 +56,10 @@ public:
   void    SetDoTraining(Bool_t train) {fDoTraining = train;};
   void    SetContinueTraining(Bool_t continTrain) {fContinueTraining = continTrain;};
   void    SetTrainPath(Int_t path) {fTrainPath = path;};
-  void    LoadFile(const Char_t *InFileNN);
+  Bool_t    LoadFile(const Char_t *InFileNN);
   void    SetScaledEdx(Float_t s) {fScale = s;};
 
-  void    MakeTrainingLists();                                 // build the training and the test list
+  void    MakeTrainingLists(Int_t mombin = 0);                                 // build the training and the test list
   void    MonitorTraining(Int_t mombin);                       // monitor training process
 
 protected:
@@ -81,9 +69,9 @@ private:
   AliTRDpidRefMakerNN(const AliTRDpidRefMakerNN&);              // not implemented
   AliTRDpidRefMakerNN& operator=(const AliTRDpidRefMakerNN&);   // not implemented
 
-  TEventList *fTrain[AliTRDCalPID::kNMom][AliTRDgeometry::kNlayer];          // Training list for each momentum 
-  TEventList *fTest[AliTRDCalPID::kNMom][AliTRDgeometry::kNlayer];           // Test list for each momentum 
-  TMultiLayerPerceptron *fNet[AliTRDgeometry::kNlayer]; // artificial neural network
+  TEventList *fTrain[AliTRDCalPID::kNMom];          // Training list for each momentum
+  TEventList *fTest[AliTRDCalPID::kNMom];           // Test list for each momentum
+  TMultiLayerPerceptron *fNet; // artificial neural network
 
   Int_t         fTrainMomBin;              // momentum bin for the training
   Int_t         fEpochs;                   // Number of epochs for the training of the NNs
@@ -93,9 +81,13 @@ private:
   Bool_t        fContinueTraining;         // checks if training from an older run should be continued
   Int_t         fTrainPath;                // sets the path for continuing the training
 
-  Float_t fScale;
+  Float_t       fScale;
+  Int_t         fLy;                       // TRD layer
+  Int_t         fNtrkl;                    // No. tracklets
+  TTree         *fTrainData[AliTRDCalPID::kNMom]; 
+  TFile         *fRef;
 
-  ClassDef(AliTRDpidRefMakerNN, 2); // TRD reference  maker for NN
+  ClassDef(AliTRDpidRefMakerNN, 3); // TRD reference  maker for NN
 };
 
 #endif
