@@ -155,7 +155,7 @@ void AliAnalysisTaskMEVertexingHF::UserExec(Option_t *)
   fMixedEvent->Reset();
   TString primTitle;
   TString primTitleFirst;
-  
+  AliAODVertex *vtxCopy=0;
 
   TObjArray *vertices=new TObjArray(nev);
   for (Int_t iev = 0; iev < nev; iev++) {
@@ -170,7 +170,7 @@ void AliAnalysisTaskMEVertexingHF::UserExec(Option_t *)
       return;
     }
 
-    AliAODVertex *vtxCopy=new AliAODVertex(*evtVtx);
+    vtxCopy=new AliAODVertex(*evtVtx);
     primTitleFirst=evtVtx->GetTitle();
         
 
@@ -185,13 +185,20 @@ void AliAnalysisTaskMEVertexingHF::UserExec(Option_t *)
   Int_t nContributors[1]={0};
   Double_t chi2=0;
   Bool_t primaryOk=fMixedEvent->ComputeVtx(vertices,vtxPos,vtxSigma,nContributors);
-  if(!primaryOk) {delete vertices;return;}
+  if(!primaryOk) {
+    delete vertices;
+    delete vtxCopy;
+    vtxCopy=NULL;
+    return;
+  }
   Int_t contribCopy=nContributors[0];
   AliVVertex* newVertex=new AliESDVertex(vtxPos,vtxSigma,chi2,contribCopy);
   newVertex->SetTitle(primTitleFirst.Data());
   fMixedEvent->SetPrimaryVertex(newVertex);
 
   delete vertices;
+  delete vtxCopy;
+  vtxCopy=NULL;
 
   fvHF->FindCandidates(fMixedEvent,
 		       fVerticesHFTClArr,
@@ -203,6 +210,7 @@ void AliAnalysisTaskMEVertexingHF::UserExec(Option_t *)
 		       fLikeSign2ProngTClArr,
 		       fLikeSign3ProngTClArr);
 
+  delete newVertex;
   return;
 }      
 
