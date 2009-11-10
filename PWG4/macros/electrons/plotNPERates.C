@@ -9,11 +9,10 @@
 
 TLegend* leg;
 
-void plotNPERates(const char* which = "TTE") {
+void plotNPERates(const char* which = "EMC") {
 
   gROOT->LoadMacro("makeCombinedData.C");
-  makeData("data/scaled25Oct09/histosLHC08d6.root",
-           "data/scaled25Oct09/TOTALhistosscaled-LHC09b2-0.root",
+  makeData("data/scaled25Oct09/TOTALhistosscaled-LHC09b2-0.root",
            "data/scaled25Oct09/histosscaledLHC09b4AODc.root",
            "data/scaled25Oct09/histosWboson.root");
 
@@ -29,11 +28,12 @@ void plotNPERates(const char* which = "TTE") {
   leg->AddEntry(daltte,"Dalitz e","l");
   leg->AddEntry(convtte,"Conversion e","l");
   leg->AddEntry(wztte,"W Boson e","l");
+  //  leg->AddEntry(htte,"Misidentified hadrons","l");
 
   gStyle->SetOptStat(0);
   drawAnnualYields(which);
   drawPtCutRates(which);
-  drawCompareTruth();
+  //drawCompareTruth();
 
 }
 
@@ -50,29 +50,27 @@ void drawAnnualYields(char* which = "EMC") {
   gPad->SetLogy();
 
   if(strcmp(which,"EMC")==0) {
-    /*
     allemc->SetXTitle("p_{T} (GeV/c)");
     allemc->SetYTitle("Annual yield");
     allemc->SetTitle("Annual yield of non-phot. electron candidates (EMCAL pid)");
-    allemc->Rebin(2); allemc->Scale(0.5);
-    */
+    allemc->Rebin(5); allemc->Scale(0.2);
+
     sumemc->SetXTitle("p_{T} (GeV/c)");
     sumemc->SetYTitle("Annual yield");
     sumemc->SetTitle("Annual yield of non-phot. electrons (EMCAL pid)");
-    sumemc->Rebin(2); sumemc->Scale(0.5);
+    sumemc->Rebin(5); sumemc->Scale(0.2);
 
-    bemc->Rebin(2); bemc->Scale(0.5);
-    cemc->Rebin(2); cemc->Scale(0.5);
-    cbemc->Rebin(2); cbemc->Scale(0.5);
-    convemc->Rebin(2); convemc->Scale(0.5);
-    dalemc->Rebin(2); dalemc->Scale(0.5);
-    wzemc->Rebin(2); wzemc->Scale(0.5);
-    hemc->Rebin(2); hemc->Scale(0.5);
-    /*
+    bemc->Rebin(5); bemc->Scale(0.2);
+    cemc->Rebin(5); cemc->Scale(0.2);
+    cbemc->Rebin(5); cbemc->Scale(0.2);
+    convemc->Rebin(5); convemc->Scale(0.2);
+    dalemc->Rebin(5); dalemc->Scale(0.2);
+    wzemc->Rebin(5); wzemc->Scale(0.2);
+    hemc->Rebin(5); hemc->Scale(0.2);
+
     allemc->GetYaxis()->SetRangeUser(1.,2.e6);
     allemc->GetXaxis()->SetRangeUser(10.,49.);
-    allemc->Draw();
-    */
+    //allemc->Draw();
     sumemc->GetYaxis()->SetRangeUser(1.,2.e6);
     sumemc->GetXaxis()->SetRangeUser(10.,49.);
     sumemc->Draw();
@@ -82,31 +80,65 @@ void drawAnnualYields(char* which = "EMC") {
     convemc->Draw("same");
     dalemc->Draw("same");
     wzemc->Draw("same");
-    //hemc->Draw("same");
+    //    hemc->Draw("same");
     leg->Draw();
     crates->Print("NPERates_EMC_all.pdf");
   }
+  if(strcmp(which,"TRK")==0) {
+    alltrk->SetXTitle("p_{T} (GeV/c)");
+    alltrk->SetYTitle("Annual yield");
+    alltrk->SetTitle("Annual yield of non-phot. electron candidates (TPC+TRD pid)");
+    alltrk->Rebin(5); alltrk->Scale(0.2);
+    sumtrk->SetXTitle("p_{T} (GeV/c)");
+    sumtrk->SetYTitle("Annual yield");
+    sumtrk->SetTitle("Annual yield of non-phot. electrons (TPC+TRD pid)");
+    sumtrk->Rebin(5); sumtrk->Scale(0.2);
+
+    btrk->Rebin(5); btrk->Scale(0.2);
+    ctrk->Rebin(5); ctrk->Scale(0.2);
+    cbtrk->Rebin(5); cbtrk->Scale(0.2);
+    convtrk->Rebin(5); convtrk->Scale(0.2);
+    daltrk->Rebin(5); daltrk->Scale(0.2);
+    wztrk->Rebin(5); wztrk->Scale(0.2);
+    htrk->Rebin(5); htrk->Scale(0.2);
+
+    alltrk->GetYaxis()->SetRangeUser(1.,6.e6);
+    alltrk->GetXaxis()->SetRangeUser(10.,49.);
+    //    alltrk->Draw();
+    sumtrk->GetYaxis()->SetRangeUser(1.,6.e6);
+    sumtrk->GetXaxis()->SetRangeUser(10.,49.);
+    sumtrk->Draw();
+    btrk->Draw("same");
+    ctrk->Draw("same");
+    cbtrk->Draw("same");
+    convtrk->Draw("same");
+    daltrk->Draw("same");
+    wztrk->Draw("same");
+    //    htrk->Draw("same");
+    leg->Draw();
+    crates->Print("NPERates_TRK_all.pdf");
+  }
   if(strcmp(which,"TTE")==0) {
-    /*    alltte->SetXTitle("p_{T} (GeV/c)");
+    alltte->SetXTitle("p_{T} (GeV/c)");
     alltte->SetYTitle("Annual yield");
     alltte->SetTitle("Annual yield of non-phot. electron candidates (Tracking+EMCAL pid)");
-    alltte->Rebin(2); alltte->Scale(0.5);
-    */
+    alltte->Rebin(5); alltte->Scale(0.2);
     sumtte->SetXTitle("p_{T} (GeV/c)");
     sumtte->SetYTitle("Annual yield");
     sumtte->SetTitle("Annual yield of non-phot. electrons (Tracking+EMCAL pid)");
-    sumtte->Rebin(2); sumtte->Scale(0.5);
-    btte->Rebin(2); btte->Scale(0.5);
-    ctte->Rebin(2); ctte->Scale(0.5);
-    cbtte->Rebin(2); cbtte->Scale(0.5);
-    convtte->Rebin(2); convtte->Scale(0.5);
-    daltte->Rebin(2); daltte->Scale(0.5);
-    wztte->Rebin(2); wztte->Scale(0.5);
-    htte->Rebin(2); htte->Scale(0.5);
-    /*    alltte->GetYaxis()->SetRangeUser(1.,2.e6);
+    sumtte->Rebin(5); sumtte->Scale(0.2);
+
+    btte->Rebin(5); btte->Scale(0.2);
+    ctte->Rebin(5); ctte->Scale(0.2);
+    cbtte->Rebin(5); cbtte->Scale(0.2);
+    convtte->Rebin(5); convtte->Scale(0.2);
+    daltte->Rebin(5); daltte->Scale(0.2);
+    wztte->Rebin(5); wztte->Scale(0.2);
+    htte->Rebin(5); htte->Scale(0.2);
+
+    alltte->GetYaxis()->SetRangeUser(1.,2.e6);
     alltte->GetXaxis()->SetRangeUser(10.,49.);
-    alltte->Draw();
-    */
+    //    alltte->Draw();
     sumtte->GetYaxis()->SetRangeUser(1.,2.e6);
     sumtte->GetXaxis()->SetRangeUser(10.,49.);
     sumtte->Draw();
@@ -116,7 +148,7 @@ void drawAnnualYields(char* which = "EMC") {
     convtte->Draw("same");
     daltte->Draw("same");
     wztte->Draw("same");
-    //htte->Draw("same");
+    htte->Draw("same");
     leg->Draw();
     crates->Print("NPERates_TTE_all.pdf");
   }
@@ -159,6 +191,32 @@ void drawPtCutRates(char* which = "EMC") {
     leg->Draw();
     cptcut->Print("NPERates_EMC_ptcut_all.pdf");
   }
+  if(strcmp(which,"TRK")==0) {
+    //    TH1F* alleptcut = GetPtCutHisto(alltrk);
+    TH1F* alleptcut = GetPtCutHisto(sumtrk);
+    TH1F* beleptcut = GetPtCutHisto(btrk);
+    TH1F* celeptcut = GetPtCutHisto(ctrk);
+    TH1F* cbeleptcut = GetPtCutHisto(cbtrk);
+    TH1F* dalitzptcut = GetPtCutHisto(daltrk);
+    TH1F* convptcut = GetPtCutHisto(convtrk);
+    TH1F* wzptcut = GetPtCutHisto(wztrk);
+    TH1F* misidptcut = GetPtCutHisto(htrk);
+    alleptcut->SetXTitle("p_{T}^{cut} (GeV/c)");
+    alleptcut->SetYTitle("Annual Yield in EMCAL for p_{T}>p_{T}^{cut}");
+    alleptcut->SetTitle("Pb+Pb, 5.5 TeV reconstructed N-P electrons (TPC+TRD pid)");
+    alleptcut->GetXaxis()->SetRangeUser(10.,49.);
+    alleptcut->GetYaxis()->SetRangeUser(1,6.e6);
+    alleptcut->Draw();
+    beleptcut->Draw("same");
+    celeptcut->Draw("same");
+    cbeleptcut->Draw("same");
+    dalitzptcut->Draw("same");
+    convptcut->Draw("same");
+    wzptcut->Draw("same");
+    //misidptcut->Draw("same");
+    leg->Draw();
+    cptcut->Print("NPERates_TRK_ptcut_all.pdf");
+  }
   if(strcmp(which,"TTE")==0) {
     //    TH1F* alleptcut = GetPtCutHisto(alltte);
     TH1F* alleptcut = GetPtCutHisto(sumtte);
@@ -181,7 +239,7 @@ void drawPtCutRates(char* which = "EMC") {
     dalitzptcut->Draw("same");
     convptcut->Draw("same");
     wzptcut->Draw("same");
-    //misidptcut->Draw("same");
+    misidptcut->Draw("same");
 
     leg->Draw();
     cptcut->Print("NPERates_TTE_ptcut_all.pdf");
