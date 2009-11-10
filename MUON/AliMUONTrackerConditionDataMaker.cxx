@@ -235,13 +235,13 @@ AliMUONTrackerConditionDataMaker::CreateHVStore(TMap& m)
     
     Int_t hvIndex = hvNamer.DCSIndexFromDCSAlias(name.Data());
 
-    if ( hvIndex >= 0 )
+    Int_t detElemId = hvNamer.DetElemIdFromDCSAlias(name.Data());
+    
+    if ( hvIndex >= 0 && detElemId < 0 )
     {
       // skip switches
       continue;      
     }
-
-    Int_t detElemId = hvNamer.DetElemIdFromDCSAlias(name.Data());
     
     if ( !AliMpDEManager::IsValidDetElemId(detElemId) )
     {
@@ -249,9 +249,15 @@ AliMUONTrackerConditionDataMaker::CreateHVStore(TMap& m)
                          detElemId,name.Data()));
       continue;
     }
+
+    if ( hvIndex > 1 && AliMpDEManager::GetStationType(detElemId) == AliMp::kStation12 )
+    {
+      // skip all but first sector (as we'll loop on the 3 sectors below
+      continue;      
+    }
     
     Int_t nPCBs = hvNamer.NumberOfPCBs(detElemId);
-    Int_t nindex = nPCBs ? nPCBs : 1;
+    Int_t nindex = nPCBs ? nPCBs : 3;
     
     AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
     
