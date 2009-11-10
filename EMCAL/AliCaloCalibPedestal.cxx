@@ -311,7 +311,12 @@ void AliCaloCalibPedestal::Reset()
 // Parameter/cut handling
 //_____________________________________________________________________
 void AliCaloCalibPedestal::SetParametersFromFile(const char *parameterFile)
-{
+{  
+  // Note: this method is a bit more complicated than it really has to be
+  // - allowing for multiple entries per line, arbitrary order of the
+  // different variables etc. But I wanted to try and do this in as
+  // correct a C++ way as I could (as an exercise).
+
   static const string delimitor("::");
 	
   // open, check input file
@@ -321,10 +326,6 @@ void AliCaloCalibPedestal::SetParametersFromFile(const char *parameterFile)
     return;
   } 
 
-  // Note: this method is a bit more complicated than it really has to be
-  // - allowing for multiple entries per line, arbitrary order of the
-  // different variables etc. But I wanted to try and do this in as
-  // correct a C++ way as I could (as an exercise).
 
   // read in
   char readline[1024];
@@ -390,6 +391,8 @@ void AliCaloCalibPedestal::SetParametersFromFile(const char *parameterFile)
 //_____________________________________________________________________
 void AliCaloCalibPedestal::WriteParametersToFile(const char *parameterFile)
 {
+  //Write parameters in file.
+	
   static const string delimitor("::");
   ofstream out( parameterFile );
   out << "// " << parameterFile << endl;
@@ -831,3 +834,24 @@ void AliCaloCalibPedestal::ComputeDeadTowers(int threshold, const char * deadMap
  fResurrectedTowers = countRes;
 }
 
+//_____________________________________________________________________
+Bool_t AliCaloCalibPedestal::IsBadChannel(int imod, int icol, int irow) const
+{
+	//Check if channel is dead or hot.
+	
+	Int_t status =  ((TH2D*)fDeadMap[imod])->GetBinContent(icol,irow);
+	if(status == kAlive)
+		return kFALSE;
+	else 
+		return kTRUE;
+	
+}
+
+//_____________________________________________________________________
+void AliCaloCalibPedestal::SetChannelStatus(int imod, int icol, int irow, int status)
+{
+	//Set status of channel dead, hot, alive ...
+	
+	((TH2D*)fDeadMap[imod])->SetBinContent(icol,irow, status);
+	
+}

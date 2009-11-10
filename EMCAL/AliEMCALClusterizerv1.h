@@ -30,6 +30,7 @@ class AliEMCALDigit ;
 class AliEMCALDigitizer ;
 class AliEMCALGeometry ;
 class AliEMCALCalibData ;
+class AliCaloCalibPedestal ;
 
 class AliEMCALClusterizerv1 : public AliEMCALClusterizer {
   
@@ -37,7 +38,7 @@ public:
   
   AliEMCALClusterizerv1() ;         
   AliEMCALClusterizerv1(AliEMCALGeometry* geometry);
-  AliEMCALClusterizerv1(AliEMCALGeometry* geometry, AliEMCALCalibData * calib);
+  AliEMCALClusterizerv1(AliEMCALGeometry* geometry, AliEMCALCalibData * calib, AliCaloCalibPedestal * pedestal);
 	
   virtual ~AliEMCALClusterizerv1()  ;
 
@@ -71,8 +72,9 @@ public:
   virtual const char * Version() const { return "clu-v1" ; }  
 
   void   PrintRecoInfo();                        //*MENU*
-  void   SetCalibrationParameters(AliEMCALCalibData * calib) { fCalibData = calib ; }
-	
+  void   SetCalibrationParameters(AliEMCALCalibData * calib)   { fCalibData = calib ; }
+  void   SetCaloCalibPedestal(AliCaloCalibPedestal  * caloped) { fCaloPed   = caloped ; }
+
 protected:
 
   virtual void   MakeClusters();            
@@ -82,7 +84,8 @@ private:
   AliEMCALClusterizerv1 & operator = (const AliEMCALClusterizerv1 &);
 
   void    GetCalibrationParameters(void) ;
-  
+  void    GetCaloCalibPedestal(void) ;
+
   Bool_t  FindFit(AliEMCALRecPoint * emcRP, AliEMCALDigit ** MaxAt, const Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit
   void Init() ;
@@ -103,7 +106,9 @@ private:
 
   //Calibration parameters... to be replaced by database 
 
-  AliEMCALCalibData * fCalibData  ;   //! Calibration database if aval
+  AliEMCALCalibData    * fCalibData ;   //! Calibration database if aval
+  AliCaloCalibPedestal * fCaloPed   ;   //! Tower status map if aval
+
   Float_t fADCchannelECA ;          // width of one ADC channel for EC section (GeV)
   Float_t fADCpedestalECA ;         // pedestal of ADC for EC section (GeV) 
  
@@ -113,7 +118,7 @@ private:
   Float_t fTimeCut ;                // Maximum time difference between the digits in ont EMC cluster
   Float_t fMinECut;                  // Minimum energy for a digit to be a member of a cluster
 
-  ClassDef(AliEMCALClusterizerv1,7)   // Clusterizer implementation version 1
+  ClassDef(AliEMCALClusterizerv1,8)   // Clusterizer implementation version 1
 
 };
 

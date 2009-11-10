@@ -10,6 +10,12 @@
 //*--
 //*-- Author: Yves Schutz (SUBATECH) 
 //*--         Dmitri Peressounko (SUBATECH & Kurchatov Institute)
+// Reconstruction class. Redesigned from the old AliReconstructionner class and 
+// derived from STEER/AliReconstructor. 
+// 
+//-- Aleksei Pavlinov : added staf for EMCAL jet trigger 9Apr 25, 2008)
+//                    : fgDigitsArr should read just once at event
+
 
 // --- ROOT system ---
 class TList;
@@ -32,6 +38,7 @@ class AliRawReader ;
 class AliEMCALRawUtils;
 class AliEMCALGeometry;
 class AliEMCALCalibData ;
+class AliCaloCalibPedestal ;
 
 // --- Standard library ---
 
@@ -63,7 +70,7 @@ public:
 
   void   ReadDigitsArrayFromTree(TTree *digitsTree) const;
 
-  TList *GetList() {return fList;}
+  TList *GetList() const {return fList;}
 
   static const AliEMCALRecParam* GetRecParam() { 
     return dynamic_cast<const AliEMCALRecParam*>(AliReconstructor::GetRecoParam(6)); }
@@ -88,9 +95,10 @@ private:
   static AliEMCALRawUtils*   fgRawUtils;  // raw utilities class -
 					  // only need one per reco
   static TClonesArray*       fgDigitsArr; // Array with EMCAL digits
-  AliEMCALCalibData * fCalibData  ;   //! Calibration database if aval
+  AliEMCALCalibData    * fCalibData   ;   //! Calibration database if aval
+  AliCaloCalibPedestal * fPedestalData ;   //! Tower status database if aval
 
-  ClassDef(AliEMCALReconstructor,7)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliEMCALReconstructor,8)  // Reconstruction algorithm class (Base Class)
 
 }; 
 

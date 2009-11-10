@@ -57,7 +57,8 @@
 ClassImp(AliEMCALLoader)
   
 const TString AliEMCALLoader::fgkECARecPointsBranchName("EMCALECARP");//Name for branch with ECA Reconstructed Points
-AliEMCALCalibData* AliEMCALLoader::fgCalibData = 0; //calibation data
+AliEMCALCalibData*    AliEMCALLoader::fgCalibData = 0; //calibation data
+AliCaloCalibPedestal* AliEMCALLoader::fgCaloPed   = 0; //dead map data
 
 //____________________________________________________________________________ 
 AliEMCALLoader::AliEMCALLoader()
@@ -139,6 +140,26 @@ AliEMCALCalibData* AliEMCALLoader::CalibData()
   
   return fgCalibData;
   
+}
+
+//____________________________________________________________________________ 
+AliCaloCalibPedestal* AliEMCALLoader::PedestalData()
+{ 
+	// Check if the instance of AliCaloCalibPedestal exists, if not, create it if 
+	// the OCDB is available, and finally return it.
+	
+	if(!fgCaloPed && (AliCDBManager::Instance()->IsDefaultStorageSet()))
+    {
+		AliCDBEntry *entry = (AliCDBEntry*) 
+		AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+		if (entry) fgCaloPed =  (AliCaloCalibPedestal*) entry->GetObject();
+    }
+	
+	if(!fgCaloPed)
+		AliFatal("Pedestal info not found in CDB!");
+	
+	return fgCaloPed;
+	
 }
 
 

@@ -67,7 +67,7 @@ AliEMCALClusterizer* AliEMCALReconstructor::fgClusterizer = 0;   // EMCAL cluste
 TClonesArray*     AliEMCALReconstructor::fgDigitsArr = 0;  // shoud read just once at event
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
-  : fDebug(kFALSE), fList(0), fGeom(0),fCalibData(0) 
+  : fDebug(kFALSE), fList(0), fGeom(0),fCalibData(0),fPedestalData(0) 
 {
   // ctor
 
@@ -94,8 +94,20 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   if(!fCalibData)
 		AliFatal("Calibration parameters not found in CDB!");
 	
+  //Get calibration parameters	
+  if(!fPedestalData)
+    {
+		AliCDBEntry *entry = (AliCDBEntry*) 
+		AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+		if (entry) fPedestalData =  (AliCaloCalibPedestal*) entry->GetObject();
+    }
+	
+	if(!fPedestalData)
+		AliFatal("Dead map not found in CDB!");
+	
+	
   //Init the clusterizer with geometry and calibration pointers, avoid doing it twice.
-  fgClusterizer = new AliEMCALClusterizerv1(fGeom, fCalibData); 
+  fgClusterizer = new AliEMCALClusterizerv1(fGeom, fCalibData,fPedestalData); 
 	
   if(!fGeom) AliFatal(Form("Could not get geometry!"));
 
@@ -294,8 +306,10 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     const AliEMCALDigit * dig = (const AliEMCALDigit*)digits->At(idig);
     if(dig->GetAmp() > 0 ){
 	  energy = (static_cast<AliEMCALClusterizerv1*> (fgClusterizer))->Calibrate(dig->GetAmp(),dig->GetId());
-      emcCells.SetCell(idignew,dig->GetId(),energy, dig->GetTime());   
-      idignew++;
+	  if(energy > 0){ //Digits tagged as bad (dead, hot, not alive) are set to 0 in calibrate, remove them	
+		  emcCells.SetCell(idignew,dig->GetId(),energy, dig->GetTime());   
+		  idignew++;
+	  }
     }
   }
   emcCells.SetNumberOfCells(idignew);
@@ -383,6 +397,10 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       ec->SetClusterType(AliESDCaloCluster::kEMCALClusterv1);
       ec->SetPosition(xyz);
       ec->SetE(clust->GetEnergy());
+		
+	  //Distance to the nearest bad crystal
+	  ec->SetDistanceToBadChannel(clust->GetDistanceToBadTower()); 
+
       ec->SetNCells(newCellMult);
       //Change type of list from short to ushort
       UShort_t *newAbsIdList  = new UShort_t[newCellMult];

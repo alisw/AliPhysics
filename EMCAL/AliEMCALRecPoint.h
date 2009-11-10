@@ -4,7 +4,9 @@
  * See cxx source for full Copyright notice                               */
 //_________________________________________________________________________
 //  Base Class for EMCAL Reconstructed Points  
-//  A recpoint being equivalent to a cluster in encal terminology                 
+//  A recpoint being equivalent to a cluster in EMCAL terminology
+//  
+//  
 //*-- Author: Yves Schutz (SUBATECH)
 //*-- Author: Dmitri Peressounko (RRC KI & SUBATECH)
 //*-- Author: Heather Gray (LBL): merged AliEMCALRecPoint and AliEMCALTowerRecPoint 02/04
@@ -17,7 +19,6 @@ class TPad;
 class TPaveText;
 class TGraph;
 class Riostream;
-
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -26,7 +27,8 @@ class Riostream;
 class AliEMCALDigit;
 class AliDigitNew;
 class AliEMCALGeometry;
-class  AliEMCALHit;
+class AliEMCALHit;
+class AliCaloCalibPedestal;
 
 class AliEMCALRecPoint : public AliCluster {
 
@@ -98,7 +100,7 @@ class AliEMCALRecPoint : public AliCluster {
   Int_t       GetAbsIdMaxDigit() const {return GetAbsId(fDigitIndMax);}
   Int_t       GetIndMaxDigit() const {return fDigitIndMax;}
   void        SetIndMaxDigit(const Int_t ind) {fDigitIndMax = ind;}
-  void            SetIndexInList(Int_t val) { fIndexInList = val ; }
+  void        SetIndexInList(Int_t val) { fIndexInList = val ; }
 
   virtual Int_t GetSuperModuleNumber(void) const { return fSuperModuleNumber;}
 
@@ -124,11 +126,14 @@ class AliEMCALRecPoint : public AliCluster {
   
   static Double_t TmaxInCm(const Double_t e=0.0, const Int_t key=0);
 
+  Float_t     GetDistanceToBadTower() const {return fDistToBadTower;}
+  void        EvalDistanceToBadChannels(AliCaloCalibPedestal* caloped);
+
 protected:
-          void  EvalCoreEnergy(Float_t logWeight,TClonesArray * digits) ;             
+	  void  EvalCoreEnergy(Float_t logWeight,TClonesArray * digits) ;             
 	  virtual void  EvalDispersion(Float_t logWeight,TClonesArray * digits) ;   // computes the dispersion of the shower
 	  virtual void  EvalElipsAxis(Float_t logWeight, TClonesArray * digits );   // computes the axis of shower ellipsoide
-          void  EvalTime( TClonesArray * digits );
+	  void  EvalTime( TClonesArray * digits );
 	  virtual Bool_t AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * digit2 ) const;
 	  Float_t ThetaToEta(Float_t arg) const;  //Converts Theta (Radians) to Eta(Radians)
 	  Float_t EtaToTheta(Float_t arg) const;  //Converts Eta (Radians) to Theta(Radians)
@@ -136,40 +141,41 @@ protected:
 private:
 
   //JLK do we need this?
-          AliEMCALGeometry* fGeomPtr;  //! Pointer to geometry for utilities
+	  AliEMCALGeometry* fGeomPtr;  //! Pointer to geometry for utilities
 
-          Float_t fAmp ;            // summed amplitude of digits   
-          Int_t   fIndexInList ;    // the index of this RecPoint in the
-			            // list stored in TreeR (to be set by analysis)
-          TVector3    fLocPos ;     // local position in the sub-detector coordinate
-          TMatrixF *  fLocPosM ;    // covariance matrix ;
-          Int_t       fMaxDigit ;   //! max initial size of digits array (not saved)
-          Int_t       fMulDigit ;   // total multiplicity of digits       
-          Int_t       fMaxTrack ;   //! max initial size of tracks array (not saved)
-          Int_t       fMulTrack ;   // total multiplicity of tracks
-          Int_t *     fDigitsList ; //[fMulDigit] list of digit's indexes from which the point was reconstructed
-          Int_t *     fTracksList ; //[fMulTrack] list of tracks to which the point was assigned
+	  Float_t fAmp ;            // summed amplitude of digits   
+	  Int_t   fIndexInList ;    // the index of this RecPoint in the
+	                            // list stored in TreeR (to be set by analysis)
+	  TVector3    fLocPos ;     // local position in the sub-detector coordinate
+	  TMatrixF *  fLocPosM ;    // covariance matrix ;
+	  Int_t       fMaxDigit ;   //! max initial size of digits array (not saved)
+	  Int_t       fMulDigit ;   // total multiplicity of digits       
+	  Int_t       fMaxTrack ;   //! max initial size of tracks array (not saved)
+	  Int_t       fMulTrack ;   // total multiplicity of tracks
+	  Int_t *     fDigitsList ; //[fMulDigit] list of digit's indexes from which the point was reconstructed
+	  Int_t *     fTracksList ; //[fMulTrack] list of tracks to which the point was assigned
 
-          Int_t   fClusterType;    // type of cluster stored: pseudocluster or v1
+	  Int_t   fClusterType;    // type of cluster stored: pseudocluster or v1
 	  Float_t fCoreEnergy ;       // energy in a shower core 
 	  Float_t fLambda[2] ;        // shower ellipse axes
 	  Float_t fDispersion ;       // shower dispersion
 	  Float_t *fEnergyList ;      //[fMulDigit] energy of digits
 	  Float_t *fTimeList ;        //[fMulDigit] time of digits
-          Int_t   *fAbsIdList;        //[fMulDigit] absId  of digits
+	  Int_t   *fAbsIdList;        //[fMulDigit] absId  of digits
 	  Float_t fTime ;             // Time of the digit with maximal energy deposition
 	  Short_t fNExMax ;           // number of (Ex-)maxima before unfolding
 	  Float_t fCoreRadius;        // The radius in which the core energy is evaluated
 	  Float_t *fDETracksList ;    //[fMulTrack] list of tracks to which the point was assigned
 	  Int_t fMulParent;           // Multiplicity of the parents
-          Int_t fMaxParent;           // Maximum number of parents allowed
-          Int_t * fParentsList;       // [fMulParent] list of the parents of the digits
-          Float_t * fDEParentsList;   // [fMulParent] list of the parents of the digits
-          Int_t   fSuperModuleNumber; // number identifying supermodule containing recpoint
-          // Aug 16, 2007
-          Int_t   fDigitIndMax;       // Index of digit with max energy in array fAbsIdList
+	  Int_t fMaxParent;           // Maximum number of parents allowed
+	  Int_t * fParentsList;       // [fMulParent] list of the parents of the digits
+	  Float_t * fDEParentsList;   // [fMulParent] list of the parents of the digits
+	  Int_t   fSuperModuleNumber; // number identifying supermodule containing recpoint
+	  // Aug 16, 2007
+	  Int_t   fDigitIndMax;       // Index of digit with max energy in array fAbsIdList
+	  Float_t fDistToBadTower;  // Distance to nearest bad tower
 
-  ClassDef(AliEMCALRecPoint,11) // RecPoint for EMCAL (Base Class)
+  ClassDef(AliEMCALRecPoint,12) // RecPoint for EMCAL (Base Class)
  
 };
 

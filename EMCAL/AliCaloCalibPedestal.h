@@ -36,7 +36,7 @@ class AliCaloCalibPedestal : public TObject {
  public:
 
   enum kDetType {kPhos, kEmCal, kNone};//The detector types
-  enum kDeadMapEntry{kAlive = 0, kDead, kResurrected, kRecentlyDeceased, kNumDeadMapStates};//The entries being put to the deadmap
+  enum kDeadMapEntry{kAlive = 0, kDead, kHot, kResurrected, kRecentlyDeceased, kNumDeadMapStates};//The entries being put to the deadmap
   
   AliCaloCalibPedestal(kDetType detectorType = kPhos);
   virtual ~AliCaloCalibPedestal();
@@ -80,8 +80,15 @@ class AliCaloCalibPedestal : public TObject {
   TProfile2D * GetPeakProfileLowGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedLowGainRatio[i];};	// Return a pointer to the low-gain peak-pedestal profile ratio
   TProfile2D * GetPeakProfileHighGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedHighGainRatio[i];};	// Return a pointer to the high-gain peak-pedestal profile ratio
   
-  TH2D * GetDeadMap(int i) const {return (TH2D*)fDeadMap[i];};
-
+  TH2D * GetDeadMap(int i) const {return (TH2D*)fDeadMap[i];}
+  //void SetDeadMap(int i, TH2D *h) const {((TH2D*)fDeadMap[i])=h;}
+	
+  Bool_t IsBadChannel(int imod, int icol, int irow) const; 
+  void SetChannelStatus(int imod, int icol, int irow, int status); 
+	
+  TObjArray GetDeadMap()  const {return fDeadMap;}
+  void SetDeadMap(TObjArray map) {fDeadMap = map;}
+	
   // Basic info: getters  
   kDetType GetDetectorType() const {return fDetType;};//Returns if this is a PHOS or EMCAL object
   TString GetCaloString() const {return fCaloString;}; //Returns if this is a PHOS or EMCAL object
@@ -112,6 +119,7 @@ class AliCaloCalibPedestal : public TObject {
   
   /////////////////////////////
   //Analysis functions
+  void SetDeadTowerCount(Int_t dead)  {fDeadTowers = dead;};//Returns the number of dead towers, by counting the bins in peak-pedestal smaller than threshold
   int GetDeadTowerCount() const {return fDeadTowers;};//Returns the number of dead towers, by counting the bins in peak-pedestal smaller than threshold
   double GetDeadTowerRatio() const {return fDeadTowers/(double)(fRows*fColumns);}; //returns the percentage of dead towers, relative to a full module
   int GetDeadTowerNew() const {return fNewDeadTowers;}; //return the new dead towers compared to the reference
@@ -163,7 +171,7 @@ class AliCaloCalibPedestal : public TObject {
   int fNChanFills; //# total channel fills (NChan * NEvents if not zero-suppressed)
 
   //The dead tower counts
-  int fDeadTowers; //!
+  int fDeadTowers; // Number of towers found dead.
   int fNewDeadTowers; //! Towers that have died since the reference run
   int fResurrectedTowers; //! Towers that have been resurrected from the dead, compared to the reference
   
@@ -188,7 +196,7 @@ class AliCaloCalibPedestal : public TObject {
   static const int fgkPhosCols = 56; // number of columns per module for PHOS
   static const int fgkPhosModules = 5; // number of modules for PHOS
   
-  ClassDef(AliCaloCalibPedestal, 5)
+  ClassDef(AliCaloCalibPedestal, 6)
 
 };
     

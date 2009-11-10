@@ -16,6 +16,8 @@
 //_________________________________________________________________________
 //  Reconstructed Points for the EMCAL
 //  A RecPoint is a cluster of digits
+//  
+//  
 //*-- Author: Yves Schutz (SUBATECH)
 //*-- Author: Dmitri Peressounko (RRC KI & SUBATECH)
 //*-- Author: Heather Gray (LBL) merged AliEMCALRecPoint and AliEMCALTowerRecPoint 02/04
@@ -43,6 +45,8 @@ class AliEMCAL;
 #include "AliEMCALHit.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALRecPoint.h"
+#include "AliCaloCalibPedestal.h"
+#include "AliEMCALGeoParams.h"
 
 ClassImp(AliEMCALRecPoint)
 
@@ -58,7 +62,7 @@ AliEMCALRecPoint::AliEMCALRecPoint()
     fTime(0.), fNExMax(0), fCoreRadius(10),  //HG check this 
     fDETracksList(0), fMulParent(0), fMaxParent(0),
     fParentsList(0), fDEParentsList(0), fSuperModuleNumber(0),
-    fDigitIndMax(-1)
+    fDigitIndMax(-1), fDistToBadTower(-1)
 {
   // ctor
   fGeomPtr = AliEMCALGeometry::GetInstance();
@@ -80,7 +84,7 @@ AliEMCALRecPoint::AliEMCALRecPoint(const char *)
     fAbsIdList(new Int_t[fMaxDigit]), fTime(-1.), fNExMax(0), fCoreRadius(10),
     fDETracksList(new Float_t[fMaxTrack]), fMulParent(0), fMaxParent(1000),
     fParentsList(new Int_t[fMaxParent]), fDEParentsList(new Float_t[fMaxParent]),
-    fSuperModuleNumber(0), fDigitIndMax(-1)
+    fSuperModuleNumber(0), fDigitIndMax(-1), fDistToBadTower(-1)
 {
   // ctor
   for (Int_t i = 0; i < fMaxTrack; i++)
@@ -110,7 +114,8 @@ AliEMCALRecPoint::AliEMCALRecPoint(const AliEMCALRecPoint & rp)
     fDETracksList(new Float_t[rp.fMaxTrack]), fMulParent(rp.fMulParent), 
     fMaxParent(rp.fMaxParent), fParentsList(new Int_t[rp.fMaxParent]), 
     fDEParentsList(new Float_t[rp.fMaxParent]),
-    fSuperModuleNumber(rp.fSuperModuleNumber), fDigitIndMax(rp.fDigitIndMax)
+    fSuperModuleNumber(rp.fSuperModuleNumber), fDigitIndMax(rp.fDigitIndMax), 
+    fDistToBadTower(rp.fDistToBadTower)
 {
   //copy ctor
   fLambda[0] = rp.fLambda[0];
@@ -193,7 +198,9 @@ AliEMCALRecPoint& AliEMCALRecPoint::operator= (const AliEMCALRecPoint &rp)
 
   fLambda[0] = rp.fLambda[0];
   fLambda[1] = rp.fLambda[1];
-
+	
+  fDistToBadTower = rp.fDistToBadTower;
+	
   return *this;
 
 }
@@ -430,7 +437,7 @@ void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits)
   EvalTime(digits) ;
   EvalPrimaries(digits) ;
   EvalParents(digits);
-
+	
   //Called last because it sets the global position of the cluster?
   EvalLocal2TrackingCSTransform();
 
@@ -496,6 +503,49 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
 
   fDispersion = TMath::Sqrt(d) ;
 }
+
+//____________________________________________________________________________
+void AliEMCALRecPoint::EvalDistanceToBadChannels(AliCaloCalibPedestal* caloped)
+{
+	//For each EMC rec. point set the distance to the nearest bad channel.
+	//AliInfo(Form("%d bad channel(s) found.\n", caloped->GetDeadTowerCount()));
+    //Needs to be carefully checked!!! Gustavo 10-11-2009
+	
+	if(!caloped->GetDeadTowerCount()) return;
+	
+	//Number of supermodule this cluster belongs.
+	Int_t iSM = GetSuperModuleNumber();
+	
+	//Get channels map of the supermodule where the cluster is
+	TH2D* hMap = caloped->GetDeadMap(iSM);
+	
+	TVector3 dR;	
+	TVector3 cellpos;
+
+	Int_t minDist = 100000;
+	Int_t dist = 0;
+	Int_t absId = -1;
+	
+	//Loop on tower status map 
+	for(Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++){
+		for(Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++){
+			//Check if tower is bad.
+			if(hMap->GetBinContent(icol,irow)==AliCaloCalibPedestal::kAlive) continue;
+			//printf("AliEMCALRecPoint::EvalDistanceToBadChannels() - Bad channel in SM %d, col %d, row %d\n",iSM,icol, irow);
+			//Tower is bad, get the absId of the index.
+			absId = fGeomPtr->GetAbsCellIdFromCellIndexes(iSM, irow, icol); 
+			//Get the position of this tower.
+			fGeomPtr->RelPosCellInSModule(absId,cellpos);
+			//Calculate distance between this tower and cluster, set if is smaller than previous.
+			dR = cellpos-fLocPos;
+			dist = dR.Mag();
+			if(dist<minDist) minDist = dist;
+		}
+	}
+	fDistToBadTower = minDist;
+	//printf("AliEMCALRecPoint::EvalDistanceToBadChannel() - Distance to Bad is %f \n",fDistToBadTower);
+}
+
 
 //____________________________________________________________________________
 void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digits)
@@ -663,6 +713,7 @@ Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(TClonesArray *digits, TArra
 //_____________________________________________________________________________
 Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(const Double_t esum, const Double_t deff, const Double_t w0, TClonesArray *digits, TArrayD &ed, TVector3 &locPos)
 {
+  //Evaluate position of digits in supermodule.
   static AliEMCALDigit *digit;
 
   Int_t i=0, nstat=0, idMax=-1;

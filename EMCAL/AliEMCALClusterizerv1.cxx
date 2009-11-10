@@ -76,6 +76,7 @@ class TSystem;
 #include "AliEMCALRecParam.h"
 #include "AliEMCALReconstructor.h"
 #include "AliCDBManager.h"
+#include "AliCaloCalibPedestal.h"
 
 class AliCDBStorage;
 #include "AliCDBEntry.h"
@@ -88,7 +89,7 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1()
     fGeom(0),
     fDefaultInit(kFALSE),
     fToUnfold(kFALSE),
-    fNumberOfECAClusters(0),fCalibData(0),
+    fNumberOfECAClusters(0),fCalibData(0),fCaloPed(0),
     fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
     fECAW0(0.),fTimeCut(0.),fMinECut(0.)
 {
@@ -103,7 +104,7 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry)
     fGeom(geometry),
     fDefaultInit(kFALSE),
     fToUnfold(kFALSE),
-    fNumberOfECAClusters(0),fCalibData(0),
+    fNumberOfECAClusters(0),fCalibData(0), fCaloPed(0),
     fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
     fECAW0(0.),fTimeCut(0.),fMinECut(0.)
 {
@@ -127,12 +128,12 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry)
 }
 
 //____________________________________________________________________________
-AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry, AliEMCALCalibData * calib)
+AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry, AliEMCALCalibData * calib, AliCaloCalibPedestal * caloped)
 : AliEMCALClusterizer(),
 fGeom(geometry),
 fDefaultInit(kFALSE),
 fToUnfold(kFALSE),
-fNumberOfECAClusters(0),fCalibData(calib),
+fNumberOfECAClusters(0),fCalibData(calib), fCaloPed(caloped),
 fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
 fECAW0(0.),fTimeCut(0.),fMinECut(0.)
 {
@@ -181,7 +182,13 @@ Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp, Int_t AbsId)
     }
 
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
-
+	  
+	// Check if channel is bad (dead, hot ...), in this case return 0.	
+	if(fCaloPed->IsBadChannel(iSupMod,ieta,iphi)) {
+		  AliDebug(2,Form("Tower from SM %d, ieta %d, iphi %d is BAD!!!\n",iSupMod,ieta,iphi));
+		  return 0;
+	}
+	  
     fADCchannelECA  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
     fADCpedestalECA = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
   
@@ -208,7 +215,9 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
   //Get calibration parameters from file or digitizer default values.
   GetCalibrationParameters() ;
 
-
+  //Get dead channel map from file or digitizer default values.
+  GetCaloCalibPedestal() ;
+	
   fNumberOfECAClusters = 0;
 
   MakeClusters() ;  //only the real clusters
@@ -221,6 +230,8 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
   //Evaluate position, dispersion and other RecPoint properties for EC section                      
   for(index = 0; index < fRecPoints->GetEntries(); index++) {
       dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->EvalAll(fECAW0,fDigitsArr) ;
+	  //For each rec.point set the distance to the nearest bad crystal
+	  dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->EvalDistanceToBadChannels(fCaloPed);
   }
 
   fRecPoints->Sort() ;
@@ -360,6 +371,32 @@ void AliEMCALClusterizerv1::GetCalibrationParameters()
 }
 
 //____________________________________________________________________________
+void AliEMCALClusterizerv1::GetCaloCalibPedestal() 
+{
+	// Set calibration parameters:
+	// if calibration database exists, they are read from database,
+	// otherwise, they are taken from digitizer.
+	//
+	// It is a user responsilibity to open CDB before reconstruction, 
+	// for example: 
+	// AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
+	
+	//Check if calibration is stored in data base
+	
+	if(!fCaloPed)
+    {
+		AliCDBEntry *entry = (AliCDBEntry*) 
+		AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+		if (entry) fCaloPed =  (AliCaloCalibPedestal*) entry->GetObject();
+    }
+	
+	if(!fCaloPed)
+		AliFatal("Pedestal info not found in CDB!");
+	
+}
+
+
+//____________________________________________________________________________
 void AliEMCALClusterizerv1::Init()
 {
   // Make all memory allocations which can not be done in default constructor.
@@ -386,7 +423,8 @@ void AliEMCALClusterizerv1::InitParameters()
   fTimeCut = 300e-9 ; // 300 ns time cut (to be tuned) 
 
   fCalibData               = 0 ;
-
+  fCaloPed                 = 0 ;
+	
   const AliEMCALRecParam* recParam = AliEMCALReconstructor::GetRecParam();
   if(!recParam) {
     AliFatal("Reconstruction parameters for EMCAL not set!");
