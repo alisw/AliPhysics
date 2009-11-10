@@ -1215,7 +1215,8 @@ Bool_t AliShuttle::ContinueProcessing()
 		Bool_t increaseCount = kTRUE;
 		if (status->GetStatus() == AliShuttleStatus::kDCSError || 
 		    status->GetStatus() == AliShuttleStatus::kDCSStarted ||
-		    status->GetStatus() == AliShuttleStatus::kFXSError)
+		    status->GetStatus() == AliShuttleStatus::kFXSError ||
+		    status->GetStatus() == AliShuttleStatus::kOCDBError)
 				increaseCount = kFALSE;
 				
 		UpdateShuttleStatus(AliShuttleStatus::kStarted, increaseCount);
@@ -1607,7 +1608,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			else if (success == 0)
 			{
 				Log("SHUTTLE", 
-					Form("\t\t\t****** run %d - %s: PP ERROR ******",
+					Form("\t\t\t****** run %d - %s: ERROR ******",
 						GetCurrentRun(), aDetector->GetName()));
 			}
 
@@ -1705,6 +1706,15 @@ Int_t AliShuttle::ProcessCurrentDetector()
 		return 2;
 	}
 	
+	// checking if OCDB is reachable
+	AliCDBEntry* testEntry = GetFromOCDB("SHUTTLE","GRP/CTP/DummyConfig");
+	if (!testEntry){
+		// OCDB is not accessible, going in OCDBError for current detector
+		AliError("OCDB Test entry not accessible");
+		UpdateShuttleStatus(AliShuttleStatus::kOCDBError);
+		return 0;
+	}
+
 	TMap* dcsMap = new TMap();
 	
 	aPreprocessor->Initialize(GetCurrentRun(), GetCurrentStartTime(), GetCurrentEndTime());

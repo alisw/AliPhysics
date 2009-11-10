@@ -139,6 +139,7 @@ const char* AliShuttleStatus::GetStatusName(Status status)
     case kStoreDelayed: return "StoreDelayed";
     case kFXSError: return "FXSError";
     case kSkipped: return "Skipped";
+    case kOCDBError: return "OCDBError";
   }
 
   return 0;
