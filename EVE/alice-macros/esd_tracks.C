@@ -9,21 +9,27 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
-#include "TString.h"
-#include "TMath.h"
-#include "TGListTree.h"
-#include "TEveVSDStructs.h"
-#include "TEveManager.h"
-#include "TEveTrackPropagator.h"
+#include <TString.h>
+#include <TSystem.h>
+#include <TROOT.h>
+#include <TMath.h>
+#include <TGListTree.h>
 
-#include "AliESDEvent.h"
-#include "AliESDtrackCuts.h"
-#include "AliESDtrack.h"
-#include "AliExternalTrackParam.h"
+#include <TEveVSDStructs.h>
+#include <TEveManager.h>
+#include <TEveTrackPropagator.h>
 
-#include "EVE/EveBase/AliEveTrack.h"
-#include "EVE/EveBase/AliEveMagField.h"
-#include "EVE/EveBase/AliEveEventManager.h"
+#include <EveBase/AliEveTrack.h>
+#include <EveBase/AliEveTrackCounter.h>
+#include <EveBase/AliEveMagField.h>
+#include <EveBase/AliEveEventManager.h>
+
+#include <AliESDEvent.h>
+#include <AliESDtrackCuts.h>
+#include <AliESDtrack.h>
+#include <AliExternalTrackParam.h>
+
+#include <PWG0/AliPWG0Helper.h>
 
 #endif
 
@@ -467,10 +473,10 @@ TEveElementList* esd_tracks_by_anal_cuts()
   {
     gSystem->Load("libPWG0base");
     gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/CreateStandardCuts.C");
-    AliPWG0Helper::AnalysisMode mode = AliPWG0Helper::kTPCITS;
+    Int_t mode = AliPWG0Helper::kTPCITS;
     if (TMath::Abs(esd->GetMagneticField()) > 0.01)
       mode |= AliPWG0Helper::kFieldOn;
-    g_esd_tracks_anal_cuts = CreateTrackCuts(mode, kFALSE);
+    gROOT->ProcessLine(Form("g_esd_tracks_anal_cuts = CreateTrackCuts(%d, kFALSE)", mode));
   }
 
   TEveElementList* cont = new TEveElementList("ESD Tracks by Analysis Cuts");
