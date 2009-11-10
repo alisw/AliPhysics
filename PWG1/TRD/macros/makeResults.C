@@ -66,7 +66,7 @@
 #include "helper.C"
 //#include "../../PWG1/macros/AddPerformanceTask.h"
 
-Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libTRDqaRec.so"};
+Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libPWG1.so"};
 // define setup
 TCanvas *c = 0x0;
 Bool_t mc(kFALSE), friends(kFALSE);
