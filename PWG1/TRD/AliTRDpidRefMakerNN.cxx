@@ -1,17 +1,17 @@
 /*************************************************************************
-* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
-*                                                                        *
-* Author: The ALICE Off-line Project.                                    *
-* Contributors are mentioned in the code where appropriate.              *
-*                                                                        *
-* Permission to use, copy, modify and distribute this software and its   *
-* documentation strictly for non-commercialf purposes is hereby granted  *
-* without fee, provided that the above copyright notice appears in all   *
-* copies and that both the copyright notice and this permission notice   *
-* appear in the supporting documentation. The authors make no claims     *
-* about the suitability of this software for any purpose. It is          *
-* provided "as is" without express or implied warranty.                  *
-**************************************************************************/
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercialf purposes is hereby granted  *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 /* $Id: AliTRDpidRefMakerNN.cxx 27496 2008-07-22 08:35:45Z cblume $ */
 
@@ -49,26 +49,29 @@
 
 ClassImp(AliTRDpidRefMakerNN)
 
-//________________________________________________________________________
-AliTRDpidRefMakerNN::AliTRDpidRefMakerNN() 
-  :AliTRDpidRefMaker("PidRefMakerNN", "PID(NN) Reference Maker")
-//   :AliTRDrecoTask("PidRefMakerNN", "PID(NN) Reference Maker")
-  ,fTrainMomBin(kAll)
-  ,fEpochs(1000)
-  ,fMinTrain(100)
-  ,fDate(0)
-  ,fDoTraining(0)
-  ,fContinueTraining(0)
-  ,fTrainPath(0x0)
-  ,fScale(0)
+  //________________________________________________________________________
+  AliTRDpidRefMakerNN::AliTRDpidRefMakerNN() 
+    :AliTRDpidRefMaker("PIDrefMakerNN", "PID(NN) Reference Maker")
+    ,fNet(0x0)
+    ,fTrainMomBin(kAll)
+    ,fEpochs(1000)
+    ,fMinTrain(100)
+    ,fDate(0)
+    ,fDoTraining(0)
+    ,fContinueTraining(0)
+    ,fTrainPath(0x0)
+    ,fScale(0)
+    ,fLy(0)
+    ,fNtrkl(0)
+    ,fRef(0x0)
 {
   //
   // Default constructor
   //
 
-  memset(fTrain, 0, AliTRDCalPID::kNMom*AliTRDgeometry::kNlayer*sizeof(TEventList*));
-  memset(fTest, 0, AliTRDCalPID::kNMom*AliTRDgeometry::kNlayer*sizeof(TEventList*));
-  memset(fNet, 0, AliTRDgeometry::kNlayer*sizeof(TMultiLayerPerceptron*));
+  memset(fTrain, 0, AliTRDCalPID::kNMom*sizeof(TEventList*));
+  memset(fTest, 0, AliTRDCalPID::kNMom*sizeof(TEventList*));
+  memset(fTrainData, 0, AliTRDCalPID::kNMom*sizeof(TTree*));
 
   SetAbundance(.67);
   SetScaledEdx(Float_t(AliTRDCalPIDNN::kMLPscale));
@@ -89,24 +92,21 @@ AliTRDpidRefMakerNN::~AliTRDpidRefMakerNN()
 //________________________________________________________________________
 void AliTRDpidRefMakerNN::CreateOutputObjects()
 {
-  // Create histograms
+  // Create output file and tree
   // Called once
 
-  AliTRDpidRefMaker::CreateOutputObjects();
-  TGraphErrors *gEffisTrain = new TGraphErrors(kMoniTrain);
-  gEffisTrain -> SetLineColor(4);
-  gEffisTrain -> SetMarkerColor(4);
-  gEffisTrain -> SetMarkerStyle(29);
-  gEffisTrain -> SetMarkerSize(1);
+  fRef = new TFile(Form("TRD.Calib%s.root", GetName()), "RECREATE");
+  for(Int_t ip = 0; ip < AliTRDCalPID::kNMom; ip++){
+    fTrainData[ip] = new TTree(Form("fTrainData_%d", ip), Form("NN Reference Data for MomBin %d", ip));
+    fTrainData[ip] -> Branch("fdEdx", fdEdx, Form("fdEdx[%d]/F", AliTRDpidUtil::kNNslices));
+    fTrainData[ip] -> Branch("fPID", fPID, Form("fPID[%d]/F", AliPID::kSPECIES));
+    fTrainData[ip] -> Branch("fLy", &fLy, "fLy/I");
+    fTrainData[ip] -> Branch("fNtrkl", &fNtrkl, "fNtrkl/I");
+    
+    fTrain[ip] = new TEventList(Form("fTrainMom%d", ip), Form("Training list for momentum intervall %d", ip));
+    fTest[ip] = new TEventList(Form("fTestMom%d", ip), Form("Test list for momentum intervall %d", ip));
+  }
 
-  TGraphErrors *gEffisTest = new TGraphErrors(kMoniTrain);
-  gEffisTest -> SetLineColor(2);
-  gEffisTest -> SetMarkerColor(2);
-  gEffisTest -> SetMarkerStyle(29);
-  gEffisTest -> SetMarkerSize(1);
-
-  fContainer -> AddAt(gEffisTrain,kGraphTrain);
-  fContainer -> AddAt(gEffisTest,kGraphTest);
 }
 
 
@@ -117,33 +117,100 @@ Bool_t AliTRDpidRefMakerNN::PostProcess()
   // Draw result to the screen
   // Called once at the end of the query
 
-  // build the training andthe test list for the neural networks
-  MakeTrainingLists();        
+  TFile *fCalib = TFile::Open(Form("TRD.CalibPIDrefMaker.root"));
+  if (!fCalib) {
+    AliError("Calibration file not available");
+    return kFALSE;
+  }
+  fData = (TTree*)fCalib->Get("PIDrefMaker");
+  if (!fData) {
+    AliError("Calibration data not available");
+    return kFALSE;
+  }
+  TObjArray *o = 0x0;
+  if(!(o = (TObjArray*)fCalib->Get(Form("MoniPIDrefMaker")))){
+    AliWarning("Missing monitoring container.");
+    return kFALSE;
+  }
+  fContainer = (TObjArray*)o->Clone("monitor");
+
+  
+  if (!fRef) {
+    AliDebug(2, Form("Loading file %s", Form("TRD.Calib%s.root", GetName())));
+    LoadFile(Form("TRD.Calib%s.root", GetName()));
+  }
+  else AliDebug(2, "file available");
+
+  if (!fRef) {
+    CreateOutputObjects();
+  
+    // Convert the CaliPIDrefMaker tree to 11 (different momentum bin) trees for NN training
+
+    LinkPIDdata();
+    for(Int_t ip=0; ip < AliTRDCalPID::kNMom; ip++){ 
+      for(Int_t is=0; is < AliPID::kSPECIES; is++) {
+	memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
+	fPID[is] = 1;
+	Int_t n(0); // index of data
+	for(Int_t itrk = 0; itrk<fData->GetEntries() && n<kMaxStat; itrk++){
+	  if(!(fData->GetEntry(itrk))) continue;
+	  if(fPIDbin!=is) continue;
+	  for(Int_t ily=fPIDdataArray->fNtracklets; ily--;){
+	    fLy = ily;
+	    fNtrkl = fPIDdataArray->fNtracklets;
+	    if((fPIDdataArray->fData[ily].fPLbin & 0xf)!= ip) continue;
+	    memset(fdEdx, 0, AliTRDpidUtil::kNNslices*sizeof(Float_t));
+	    for(Int_t islice=AliTRDCalPID::kNSlicesNN; islice--;){
+	      fdEdx[islice]+=fPIDdataArray->fData[ily].fdEdx[islice];
+	      fdEdx[islice]/=fScale;
+	    }
+	    fTrainData[ip] -> Fill();
+	    n++;
+	  }
+	}
+	AliDebug(2, Form("%d %d %d", ip, is, n));
+      }
+    }
+
+  
+    fRef -> cd();
+    for(Int_t ip = 0; ip < AliTRDCalPID::kNMom; ip++){
+      fTrainData[ip] -> Write();
+    }
+
+  }
+  else AliDebug(2, "file available");
+
+
+  // build the training and the test list for the neural networks
+  for(Int_t ip = 0; ip < AliTRDCalPID::kNMom; ip++){
+    MakeTrainingLists(ip);        
+  }
   if(!fDoTraining) return kTRUE;
 
-  // train the neural networks and build the refrence histos for 2-dim LQ
+
+
+  // train the neural networks
   gSystem->Exec(Form("mkdir ./Networks_%d/",fDate));
   AliDebug(2, Form("TrainMomBin [%d] [%d]", fTrainMomBin, kAll));
 
   // train single network for a single momentum (recommended)
   if(!(fTrainMomBin == kAll)){
-    if(fTrain[fTrainMomBin][0] -> GetN() < fMinTrain){
-      AliDebug(2, Form("Warning in AliTRDpidRefMakerNN::PostProcess : Not enough events for training available! Please check Data sample!"));
+    if(fTrain[fTrainMomBin] -> GetN() < fMinTrain){
+      AliError("Warning in AliTRDpidRefMakerNN::PostProcess : Not enough events for training available! Please check Data sample!");
       return kFALSE;
     }
     MakeRefs(fTrainMomBin);
-//     TrainNetworks(fTrainMomBin);
     MonitorTraining(fTrainMomBin);
   }
   // train all momenta
   else{
     for(Int_t iMomBin = 0; iMomBin < AliTRDCalPID::kNMom; iMomBin++){
-      if(fTrain[iMomBin][0] -> GetN() < fMinTrain){
-        AliDebug(2, Form("Warning in AliTRDpidRefMakerNN::PostProcess : Not enough events for training available for momentum bin [%d]! Please check Data sample!", iMomBin));
-  continue;
+      if(fTrain[iMomBin] -> GetN() < fMinTrain){
+	AliError(Form("Warning in AliTRDpidRefMakerNN::PostProcess : Not enough events for training available for momentum bin [%d]! Please check Data sample!", iMomBin));
+	continue;
       }
       MakeRefs(fTrainMomBin);
-//       TrainNetworks(iMomBin);
       MonitorTraining(iMomBin);
     }
   }
@@ -153,89 +220,98 @@ Bool_t AliTRDpidRefMakerNN::PostProcess()
 
 
 //________________________________________________________________________
-void AliTRDpidRefMakerNN::MakeTrainingLists() 
+void AliTRDpidRefMakerNN::MakeTrainingLists(Int_t mombin) 
 {
   //
   // build the training lists for the neural networks
   //
 
-  if (!fData) {
-    LoadFile("TRD.CalibPidRefMakerNN.root");
+  if (!fRef) {
+    LoadFile(Form("TRD.Calib%s.root", GetName()));
   }
 
-  if (!fData) {
-    Printf("ERROR tree for training list not available");
+  if (!fRef) {
+    AliError("ERROR file for building training list not available");
     return;
   }
 
-  AliDebug(2, "  Making training lists! \n");
+  AliDebug(2, "\n Making training lists! \n");
 
-  Int_t nPart[AliPID::kSPECIES][AliTRDCalPID::kNMom];
-  memset(nPart, 0, AliPID::kSPECIES*AliTRDCalPID::kNMom*sizeof(Int_t));
+  Int_t nPart[AliPID::kSPECIES];
+  memset(nPart, 0, AliPID::kSPECIES*sizeof(Int_t));
 
   // set needed branches
-  LinkPIDdata();
-
+  fTrainData[mombin] -> SetBranchAddress("fdEdx", fdEdx);
+  fTrainData[mombin] -> SetBranchAddress("fPID", fPID);
+  fTrainData[mombin] -> SetBranchAddress("fLy", &fLy);
+  fTrainData[mombin] -> SetBranchAddress("fNtrkl", &fNtrkl);
+  
   // start first loop to check total number of each particle type
-  for(Int_t iEv=0; iEv < fData -> GetEntries(); iEv++){
-    fData -> GetEntry(iEv);
+  for(Int_t iEv=0; iEv < fTrainData[mombin] -> GetEntries(); iEv++){
+    fTrainData[mombin] -> GetEntry(iEv);
 
     // use only events with goes through 6 layers TRD
-    if(fPIDdataArray->fNtracklets != AliTRDgeometry::kNlayer) continue;
+    if(fNtrkl != AliTRDgeometry::kNlayer) continue;
 
-    for(Int_t ily=AliTRDgeometry::kNlayer; ily--;) nPart[fPIDbin][fPIDdataArray->fData[ily].fPLbin & 0xf]++;
+    if(fPID[AliPID::kElectron] == 1)
+      nPart[AliPID::kElectron]++;
+    else if(fPID[AliPID::kMuon] == 1)
+      nPart[AliPID::kMuon]++;
+    else if(fPID[AliPID::kPion] == 1)
+      nPart[AliPID::kPion]++;
+    else if(fPID[AliPID::kKaon] == 1)
+      nPart[AliPID::kKaon]++;
+    else if(fPID[AliPID::kProton] == 1)
+      nPart[AliPID::kProton]++;
   }
 
   AliDebug(2, "Particle multiplicities:");
-  for(Int_t iMomBin = 0; iMomBin <AliTRDCalPID::kNMom; iMomBin++)
-    AliDebug(2, Form("Momentum[%d]  Elecs[%d] Muons[%d] Pions[%d] Kaons[%d] Protons[%d]", iMomBin, nPart[AliPID::kElectron][iMomBin], nPart[AliPID::kMuon][iMomBin], nPart[AliPID::kPion][iMomBin], nPart[AliPID::kKaon][iMomBin], nPart[AliPID::kProton][iMomBin]));
+  AliDebug(2, Form("Momentum[%d]  Elecs[%d] Muons[%d] Pions[%d] Kaons[%d] Protons[%d]", mombin, nPart[AliPID::kElectron], nPart[AliPID::kMuon], nPart[AliPID::kPion], nPart[AliPID::kKaon], nPart[AliPID::kProton]));
 
-  // implement counter of training and test sample size
-  Int_t iTrain[AliTRDCalPID::kNMom], iTest[AliTRDCalPID::kNMom];
-  memset(iTrain, 0, AliTRDCalPID::kNMom*sizeof(Int_t));
-  memset(iTest, 0, AliTRDCalPID::kNMom*sizeof(Int_t));
+  
+
+  //   // implement counter of training and test sample size
+  Int_t iTrain = 0, iTest = 0;
 
   // set training sample size per momentum interval to 2/3 
   // of smallest particle counter and test sample to 1/3
-  for(Int_t iMomBin = 0; iMomBin < AliTRDCalPID::kNMom; iMomBin++){
-    iTrain[iMomBin] = nPart[0][iMomBin];
-    for(Int_t iPart = 1; iPart < AliPID::kSPECIES; iPart++){
-      if(iTrain[iMomBin] > nPart[iPart][iMomBin])
-  iTrain[iMomBin] = nPart[iPart][iMomBin];
-    } 
-    iTrain[iMomBin] = Int_t(iTrain[iMomBin] * .66);
-    iTest[iMomBin] = Int_t( iTrain[iMomBin] * .5);
-    AliDebug(2, Form("Momentum[%d]  Train[%d] Test[%d]", iMomBin, iTrain[iMomBin], iTest[iMomBin]));
-  }
+  iTrain = nPart[0];
+  for(Int_t iPart = 1; iPart < AliPID::kSPECIES; iPart++){
+    // exclude muons and kaons if not availyable
+    // this is neeeded since we do not have v0 candiates
+    if((iPart == AliPID::kMuon || iPart == AliPID::kKaon) && (nPart[AliPID::kMuon] == 0 || nPart[AliPID::kKaon] == 0)) continue;
+    if(iTrain > nPart[iPart])
+      iTrain = nPart[iPart];
+  } 
+  iTest = Int_t( iTrain * (1-fFreq));
+  iTrain = Int_t(iTrain * fFreq);
+  AliDebug(2, Form("Momentum[%d]  Train[%d] Test[%d]", mombin, iTrain, iTest));
+
 
 
   // reset couters
-  memset(nPart, 0, AliPID::kSPECIES*AliTRDCalPID::kNMom*sizeof(Int_t));
+  memset(nPart, 0, AliPID::kSPECIES*sizeof(Int_t));
 
   // start second loop to set the event lists
-  for(Int_t iEv = 0; iEv < fData -> GetEntries(); iEv++){
-    fData -> GetEntry(iEv);
+  for(Int_t iEv = 0; iEv < fTrainData[mombin] -> GetEntries(); iEv++){
+    fTrainData[mombin] -> GetEntry(iEv);
 
-    // use only events with goes through 6 layers TRD
-    if(fPIDdataArray->fNtracklets != AliTRDgeometry::kNlayer) continue;
-
-    for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){ 
-      Int_t iMomBin = fPIDdataArray->fData[ily].fPLbin & 0xf;
-    
-      // set event list
-      if(nPart[fPIDbin][iMomBin] < iTrain[iMomBin]){
-        fTrain[iMomBin][ily] -> Enter(iEv + ily);
-        nPart[fPIDbin][iMomBin]++;
-      } else if(nPart[fPIDbin][iMomBin] < iTest[iMomBin]+iTrain[iMomBin]){
-        fTest[iMomBin][ily] -> Enter(iEv + ily);
-        nPart[fPIDbin][iMomBin]++;
+    // set event list
+    for(Int_t is = 0; is < AliPID::kSPECIES; is++){
+      if(nPart[is] < iTrain && fPID[is] == 1){
+       fTrain[mombin] -> Enter(iEv);
+        nPart[is]++;
+      } else if(nPart[is] < iTest+iTrain && fPID[is] == 1){
+        fTest[mombin] -> Enter(iEv);
+        nPart[is]++;
       } else continue;
     }
   }
   
   AliDebug(2, "Particle multiplicities in both lists:");
-  for(Int_t iMomBin = 0; iMomBin <AliTRDCalPID::kNMom; iMomBin++)
-    AliDebug(2, Form("Momentum[%d]  Elecs[%d] Muons[%d] Pions[%d] Kaons[%d] Protons[%d]", iMomBin, nPart[AliPID::kElectron][iMomBin], nPart[AliPID::kMuon][iMomBin], nPart[AliPID::kPion][iMomBin], nPart[AliPID::kKaon][iMomBin], nPart[AliPID::kProton][iMomBin]));
+  AliDebug(2, Form("Momentum[%d]  Elecs[%d] Muons[%d] Pions[%d] Kaons[%d] Protons[%d]", mombin, nPart[AliPID::kElectron], nPart[AliPID::kMuon], nPart[AliPID::kPion], nPart[AliPID::kKaon], nPart[AliPID::kProton]));
+
+  return;
 }
 
 
@@ -247,9 +323,9 @@ void AliTRDpidRefMakerNN::MakeRefs(Int_t mombin)
   //
   
   
-  if (!fData) LoadFile(Form("TRD.Calib%s.root", GetName()));
+  if (!fTrainData[mombin]) LoadFile(Form("TRD.Calib%s.root", GetName()));
 
-  if (!fData) {
+  if (!fTrainData[mombin]) {
     AliError("Tree for training list not available");
     return;
   }
@@ -268,43 +344,38 @@ void AliTRDpidRefMakerNN::MakeRefs(Int_t mombin)
   gSystem->Exec(Form("mkdir ./Networks_%d/MomBin_%d",fDate, mombin));
 
   // variable to check if network can load weights from previous training
-  Bool_t bFirstLoop[AliTRDgeometry::kNlayer];
-  memset(bFirstLoop, kTRUE, AliTRDgeometry::kNlayer*sizeof(Bool_t));
+  Bool_t bFirstLoop = kTRUE;
 
   // train networks over several loops and save them after each loop
   for(Int_t iLoop = 0; iLoop < kMoniTrain; iLoop++){
-    // loop over chambers
-    for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
-      // set the event lists
-      fData -> SetEventList(fTrain[mombin][iChamb]);
-      fData -> SetEventList(fTest[mombin][iChamb]);
+    fTrainData[mombin] -> SetEventList(fTrain[mombin]);
+    fTrainData[mombin] -> SetEventList(fTest[mombin]);
       
-      AliDebug(2, Form("Trainingloop[%d] Chamber[%d]", iLoop, iChamb));
+    AliDebug(2, Form("Momentum[%d] Trainingloop[%d]", mombin, iLoop));
       
-      // check if network is already implemented
-      if(bFirstLoop[iChamb] == kTRUE){
-  fNet[iChamb] = new TMultiLayerPerceptron("fdEdx[0],fdEdx[1],fdEdx[2],fdEdx[3],fdEdx[4],fdEdx[5],fdEdx[6],fdEdx[7]:15:7:fPID[0],fPID[1],fPID[2],fPID[3],fPID[4]!",fData,fTrain[mombin][iChamb],fTest[mombin][iChamb]);
-  fNet[iChamb] -> SetLearningMethod(TMultiLayerPerceptron::kStochastic);       // set learning method
-  fNet[iChamb] -> TMultiLayerPerceptron::SetEta(0.001);                        // set learning speed
-  if(!fContinueTraining){
-    if(DebugLevel()>=2) fNet[iChamb] -> Train(nEpochs,"text update=10, graph");
-    else fNet[iChamb] -> Train(nEpochs,"");
-  }
-  else{
-    fNet[iChamb] -> LoadWeights(Form("./Networks_%d/MomBin_%d/Net%d_%d",fTrainPath, mombin, iChamb, kMoniTrain - 1));
-    if(DebugLevel()>=2) fNet[iChamb] -> Train(nEpochs,"text update=10, graph+");      
-    else fNet[iChamb] -> Train(nEpochs,"+");                   
-  }
-  bFirstLoop[iChamb] = kFALSE;
+    // check if network is already implemented
+    if(bFirstLoop == kTRUE){
+      fNet = new TMultiLayerPerceptron("fdEdx[0],fdEdx[1],fdEdx[2],fdEdx[3],fdEdx[4],fdEdx[5],fdEdx[6],fdEdx[7]:15:7:fPID[0],fPID[1],fPID[2],fPID[3],fPID[4]!",fTrainData[mombin],fTrain[mombin],fTest[mombin]);
+      fNet -> SetLearningMethod(TMultiLayerPerceptron::kStochastic);       // set learning method
+      fNet -> TMultiLayerPerceptron::SetEta(0.001);                        // set learning speed
+      if(!fContinueTraining){
+	if(AliLog::GetDebugLevel("","AliTRDpidRefMakerNN")>=2) fNet -> Train(nEpochs,"text update=10, graph");
+	else fNet -> Train(nEpochs,"");
       }
-      else{    
-  if(DebugLevel()>=2) fNet[iChamb] -> Train(nEpochs,"text update=10, graph+");      
-  else fNet[iChamb] -> Train(nEpochs,"+");                   
+      else{
+	fNet -> LoadWeights(Form("./Networks_%d/MomBin_%d/Net_%d",fTrainPath, mombin, kMoniTrain - 1));
+	if(AliLog::GetDebugLevel("","AliTRDpidRefMakerNN")>=2) fNet -> Train(nEpochs,"text update=10, graph+");      
+	else fNet -> Train(nEpochs,"+");                   
       }
+      bFirstLoop = kFALSE;
+    }
+    else{    
+      if(AliLog::GetDebugLevel("","AliTRDpidRefMakerNN")>=2) fNet -> Train(nEpochs,"text update=10, graph+");      
+      else fNet -> Train(nEpochs,"+");                   
+    }
       
-      // save weights for monitoring of the training
-      fNet[iChamb] -> DumpWeights(Form("./Networks_%d/MomBin_%d/Net%d_%d",fDate, mombin, iChamb, iLoop));
-    } // end chamber loop
+    // save weights for monitoring of the training
+    fNet -> DumpWeights(Form("./Networks_%d/MomBin_%d/Net_%d",fDate, mombin, iLoop));
   }   // end training loop
 }
 
@@ -317,17 +388,17 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
   // train the neural networks
   //
   
-  if (!fData) LoadFile(Form("TRD.Calib%s.root", GetName()));
-  if (!fData) {
+  if (!fTrainData[mombin]) LoadFile(Form("TRD.Calib%s.root", GetName()));
+  if (!fTrainData[mombin]) {
     AliError("Tree for training list not available");
     return;
   }
 
   // init networks and set event list
   for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
-  fNet[iChamb] = new TMultiLayerPerceptron("fdEdx[0],fdEdx[1],fdEdx[2],fdEdx[3],fdEdx[4],fdEdx[5],fdEdx[6],fdEdx[7]:15:7:fPID[0],fPID[1],fPID[2],fPID[3],fPID[4]!",fData,fTrain[mombin][iChamb],fTest[mombin][iChamb]);   
-  fData -> SetEventList(fTrain[mombin][iChamb]);
-  fData -> SetEventList(fTest[mombin][iChamb]);
+  fNet = new TMultiLayerPerceptron("fdEdx[0],fdEdx[1],fdEdx[2],fdEdx[3],fdEdx[4],fdEdx[5],fdEdx[6],fdEdx[7]:15:7:fPID[0],fPID[1],fPID[2],fPID[3],fPID[4]!",fTrainData[mombin],fTrain[mombin],fTest[mombin]);   
+  fTrainData[mombin] -> SetEventList(fTrain[mombin]);
+  fTrainData[mombin] -> SetEventList(fTest[mombin]);
   }
 
   // implement variables for likelihoods
@@ -348,9 +419,17 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
   hElecs = new TH1F("hElecs","Likelihood for electrons", AliTRDpidUtil::kBins, 0.-epsilon, 1.+epsilon);
   hPions = new TH1F("hPions","Likelihood for pions", AliTRDpidUtil::kBins, 0.-epsilon, 1.+epsilon);
 
-  TGraphErrors *gEffisTrain=0x0, *gEffisTest=0x0;
-  gEffisTrain = (TGraphErrors*)fContainer->At(kGraphTrain);
-  gEffisTest = (TGraphErrors*)fContainer->At(kGraphTest);
+  TGraphErrors *gEffisTrain = new TGraphErrors(kMoniTrain);
+  gEffisTrain -> SetLineColor(4);
+  gEffisTrain -> SetMarkerColor(4);
+  gEffisTrain -> SetMarkerStyle(29);
+  gEffisTrain -> SetMarkerSize(1);
+
+  TGraphErrors *gEffisTest = new TGraphErrors(kMoniTrain);
+  gEffisTest -> SetLineColor(2);
+  gEffisTest -> SetMarkerColor(2);
+  gEffisTest -> SetMarkerStyle(29);
+  gEffisTest -> SetMarkerSize(1);
 
   AliTRDpidUtil *util = new AliTRDpidUtil();
   
@@ -358,46 +437,59 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
   for(Int_t iLoop = 0; iLoop < kMoniTrain; iLoop++){
 
     // load weights
-    for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
-      fNet[iChamb] -> LoadWeights(Form("./Networks_%d/MomBin_%d/Net%d_%d",fDate, mombin, iChamb, iLoop));
-    }
+    fNet -> LoadWeights(Form("./Networks_%d/MomBin_%d/Net_%d",fDate, mombin, iLoop));
+    AliDebug(2, Form("./Networks_%d/MomBin_%d/Net_%d",fDate, mombin, iLoop));
 
     // event loop training list
-    for(Int_t iEvent = 0; iEvent < fTrain[mombin][0] -> GetN(); iEvent++ ){
 
+    for(Int_t is = 0; is < AliPID::kSPECIES; is++){
+
+      if(!((is == AliPID::kElectron) || (is == AliPID::kPion))) continue;
+
+      Int_t iChamb = 0;
       // reset particle probabilities
       for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-  likeAll[iPart] = 1./AliPID::kSPECIES;
+	likeAll[iPart] = 1./AliPID::kSPECIES;
       }
       totProb = 0.;
 
-      fData -> GetEntry(fTrain[mombin][0] -> GetEntry(iEvent));
-      // use event only if it is electron or pion
-      if(!((fPID[AliPID::kElectron] == 1.0) || (fPID[AliPID::kPion] == 1.0))) continue;
+      AliDebug(2, Form("%d",fTrain[mombin] -> GetN()));
+      for(Int_t iEvent = 0; iEvent < fTrain[mombin] -> GetN(); iEvent++ ){
+	fTrainData[mombin] -> GetEntry(fTrain[mombin] -> GetEntry(iEvent));
+	// use event only if it is electron or pion
+	if(!(fPID[is] == 1.0)) continue;
+	// get the probabilities for each particle type in each chamber
+	for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+	  like[iPart][iChamb] = fNet -> Result(fTrain[mombin] -> GetEntry(iEvent), iPart);
+	  likeAll[iPart] *=  like[iPart][iChamb];
+	}
+	//end chamber loop
+	iChamb++;
 
-      // get the probabilities for each particle type in each chamber
-      for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
-  for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-    like[iPart][iChamb] = fNet[iChamb] -> Result(fTrain[mombin][iChamb] -> GetEntry(iEvent), iPart);
-    likeAll[iPart] *=  like[iPart][iChamb];
-  }
-      }
+	// get total probability and normalize it
+	for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+	  totProb += likeAll[iPart];
+	}
+	for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+	  likeAll[iPart] /= totProb;
+	}
 
-      // get total probability and normalize it
-      for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-  totProb += likeAll[iPart];
-      }
-      for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-  likeAll[iPart] /= totProb;
-      }
-
-      // fill likelihood distributions
-      if(fPID[AliPID::kElectron] == 1)      
-  hElecs -> Fill(likeAll[AliPID::kElectron]);
-      if(fPID[AliPID::kPion] == 1)      
-  hPions -> Fill(likeAll[AliPID::kElectron]);
-    } // end event loop
-
+	if(iChamb == 5){
+	  // fill likelihood distributions
+	  if(fPID[AliPID::kElectron] == 1)      
+	    hElecs -> Fill(likeAll[AliPID::kElectron]);
+	  if(fPID[AliPID::kPion] == 1)      
+	    hPions -> Fill(likeAll[AliPID::kElectron]);
+	  iChamb = 0;
+	  // reset particle probabilities
+	  for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+	    likeAll[iPart] = 1./AliPID::kSPECIES;
+	  }
+	  totProb = 0.;
+	}
+      } // end event loop
+    } // end species loop
+    
 
     // calculate the pion efficiency and fill the graph
     util -> CalculatePionEffi(hElecs, hPions);
@@ -413,42 +505,54 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
     
 
 
-    // event loop test list
-    for(Int_t iEvent = 0; iEvent < fTest[mombin][0] -> GetN(); iEvent++ ){
+    // monitor validation progress
+    for(Int_t is = 0; is < AliPID::kSPECIES; is++){
 
+      if(!((is == AliPID::kElectron) || (is == AliPID::kPion))) continue;
+
+      Int_t iChamb = 0;
       // reset particle probabilities
       for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-  likeAll[iPart] = 1./AliTRDgeometry::kNlayer;
+	likeAll[iPart] = 1./AliPID::kSPECIES;
       }
       totProb = 0.;
 
-      fData -> GetEntry(fTest[mombin][0] -> GetEntry(iEvent));
-      // use event only if it is electron or pion
-      if(!((fPID[AliPID::kElectron] == 1.0) || (fPID[AliPID::kPion] == 1.0))) continue;
+      for(Int_t iEvent = 0; iEvent < fTest[mombin] -> GetN(); iEvent++ ){
+	fTrainData[mombin] -> GetEntry(fTest[mombin] -> GetEntry(iEvent));
+	// use event only if it is electron or pion
+	if(!(fPID[is] == 1.0)) continue;
 
-      // get the probabilities for each particle type in each chamber
-      for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
-  for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-    like[iPart][iChamb] = fNet[iChamb] -> Result(fTest[mombin][iChamb] -> GetEntry(iEvent), iPart);
-    likeAll[iPart] *=  like[iPart][iChamb];
-  }
-      }
+	// get the probabilities for each particle type in each chamber
+	for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+	  like[iPart][iChamb] = fNet -> Result(fTest[mombin] -> GetEntry(iEvent), iPart);
+	  likeAll[iPart] *=  like[iPart][iChamb];
+	}
+	iChamb++;
 
-      // get total probability and normalize it
-      for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-  totProb += likeAll[iPart];
-      }
-      for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
-  likeAll[iPart] /= totProb;
-      }
+	// get total probability and normalize it
+	for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+	  totProb += likeAll[iPart];
+	}
+	for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+	  likeAll[iPart] /= totProb;
+	}
 
-      // fill likelihood distributions
-      if(fPID[AliPID::kElectron] == 1)      
-  hElecs -> Fill(likeAll[AliPID::kElectron]);
-      if(fPID[AliPID::kPion] == 1)      
-  hPions -> Fill(likeAll[AliPID::kElectron]);
-    } // end event loop
-
+	if(iChamb == 5){
+	  // fill likelihood distributions
+	  if(fPID[AliPID::kElectron] == 1)      
+	    hElecs -> Fill(likeAll[AliPID::kElectron]);
+	  if(fPID[AliPID::kPion] == 1)      
+	    hPions -> Fill(likeAll[AliPID::kElectron]);
+	  iChamb = 0;
+	  // reset particle probabilities
+	  for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
+	    likeAll[iPart] = 1./AliPID::kSPECIES;
+	  }
+	  totProb = 0.;
+	}
+      } // end event loop
+    } // end species loop
+    
     // calculate the pion efficiency and fill the graph
     util -> CalculatePionEffi(hElecs, hPions);
     pionEffiTest[iLoop] = util -> GetPionEfficiency();
@@ -460,7 +564,7 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
     hPions -> Reset();
     AliDebug(2, Form("TestLoop[%d] PionEfficiency[%f +/- %f] \n", iLoop, pionEffiTest[iLoop], pionEffiErrTest[iLoop]));
     
-  } //   end training loop
+  } //   end validation loop
 
   util -> Delete();
 
@@ -471,66 +575,25 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
 
 
 //________________________________________________________________________
-void AliTRDpidRefMakerNN::LoadFile(const Char_t *InFileNN) 
+Bool_t AliTRDpidRefMakerNN::LoadFile(const Char_t *InFileNN) 
 {
   //
   // Loads the files and sets the event list
-  // for neural network training and 
-  // building of the 2-dim reference histograms.
+  // for neural network training.
   // Useable for training outside of the makeResults.C macro
   //
 
-  TFile *fInFileNN;
-  fInFileNN = new TFile(InFileNN, "READ");
-  fData = (TTree*)fInFileNN -> Get("NN");
+  fRef = TFile::Open(Form("%s", InFileNN));
+  if(!fRef) return 0;
+  for(Int_t ip = 0; ip < AliTRDCalPID::kNMom; ip++){
+    fTrainData[ip] = (TTree*)fRef -> Get(Form("fTrainData_%d", ip));
+  }
 
   for(Int_t iMom = 0; iMom < AliTRDCalPID::kNMom; iMom++){
-    for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
-      fTrain[iMom][ily] = new TEventList(Form("fTrainMom%d_%d", iMom, ily), Form("Training list for momentum intervall %d and plane %d", iMom, ily));
-      fTest[iMom][ily] = new TEventList(Form("fTestMom%d_%d", iMom, ily), Form("Test list for momentum intervall %d and plane %d", iMom, ily));
-    }
+      fTrain[iMom] = new TEventList(Form("fTrainMom%d", iMom), Form("Training list for momentum intervall %d", iMom));
+      fTest[iMom] = new TEventList(Form("fTestMom%d", iMom), Form("Test list for momentum intervall %d", iMom));
   }
+  return 1;
 }
 
-
-// //________________________________________________________________________
-// void AliTRDpidRefMakerNN::LoadContainer(const Char_t *InFileCont) 
-// {
-
-//   //
-//   // Loads the container if no container is there.
-//   // Useable for training outside of the makeResults.C macro
-//   //
-
-//   TFile *fInFileCont;
-//   fInFileCont = new TFile(InFileCont, "READ");
-//   fContainer = (TObjArray*)fInFileCont -> Get("PidRefMaker");
-
-// }
-
-
-// //________________________________________________________________________
-// void AliTRDpidRefMakerNN::CreateGraphs()
-// {
-//   // Create histograms
-//   // Called once
-
-//   OpenFile(0, "RECREATE");
-//   fContainer = new TObjArray();
-//   fContainer->AddAt(new TH1F("hPDG","hPDG",AliPID::kSPECIES,-0.5,5.5),0);
-
-//   TGraphErrors *gEffisTrain = new TGraphErrors(kMoniTrain);
-//   gEffisTrain -> SetLineColor(4);
-//   gEffisTrain -> SetMarkerColor(4);
-//   gEffisTrain -> SetMarkerStyle(29);
-//   gEffisTrain -> SetMarkerSize(2);
-
-//   TGraphErrors *gEffisTest = new TGraphErrors(kMoniTrain);
-//   gEffisTest -> SetLineColor(2);
-//   gEffisTest -> SetMarkerColor(2);
-//   gEffisTest -> SetMarkerSize(2);
-
-//   fContainer -> AddAt(gEffisTrain,kGraphTrain);
-//   fContainer -> AddAt(gEffisTest,kGraphTest);
-// }
 
