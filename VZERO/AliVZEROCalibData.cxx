@@ -33,11 +33,26 @@ ClassImp(AliVZEROCalibData)
 //________________________________________________________________
 AliVZEROCalibData::AliVZEROCalibData()
 {
-  // 
-  	for(int i=0; i<kNCIUBoards ;i++) {
-		fTimeResolution[i] = 25./256.; // Default time resolution
-		fWidthResolution[i] = 25./64.;     // Default time width resolution
-	}
+  // default constructor
+  
+    for(int t=0; t<64; t++) {
+        fMeanHV[t]      = 100.0;
+        fWidthHV[t]     = 0.0; 
+	fTimeOffset[t]  = 0.0;
+        fTimeGain[t]    = 1.0;
+	fDeadChannel[t]= kFALSE;
+    }
+    for(int t=0; t<128; t++) {
+        fPedestal[t]    = 0.0;     
+        fSigma[t]       = 0.0;        
+        fADCmean[t]     = 0.0;      
+        fADCsigma[t]    = 0.0;
+        fGain[t]        = 1.0;
+    }
+    for(int i=0; i<kNCIUBoards ;i++) {
+	fTimeResolution[i]  = 25./256.;     // Default time resolution
+	fWidthResolution[i] = 25./64.;     // Default time width resolution
+    }
 
 }
 
@@ -50,14 +65,28 @@ void AliVZEROCalibData::Reset()
 //________________________________________________________________
 AliVZEROCalibData::AliVZEROCalibData(const char* name)
 {
-  TString namst = "Calib_";
-  namst += name;
-  SetName(namst.Data());
-  SetTitle(namst.Data());
-  for(int i=0; i<kNCIUBoards ;i++) {
-	fTimeResolution[i] = 25./256.; // Default time resolution in ns / channel
-	fWidthResolution[i] = 25./64.;     // Default time width resolution in ns / channel
-  }
+   TString namst = "Calib_";
+   namst += name;
+   SetName(namst.Data());
+   SetTitle(namst.Data());
+   for(int t=0; t<64; t++) {
+       fMeanHV[t]      = 100.0;
+       fWidthHV[t]     = 0.0; 
+       fTimeOffset[t]  = 0.0;
+       fTimeGain[t]    = 1.0;
+       fDeadChannel[t]= kFALSE;
+    }
+   for(int t=0; t<128; t++) {
+       fPedestal[t]    = 0.0;     
+       fSigma[t]       = 0.0;        
+       fADCmean[t]     = 0.0;      
+       fADCsigma[t]    = 0.0;
+       fGain[t]        = 1.0;
+   }
+   for(int i=0; i<kNCIUBoards ;i++) {
+       fTimeResolution[i]  = 25./256.;    // Default time resolution in ns / channel
+       fWidthResolution[i] = 25./64.;     // Default time width resolution in ns / channel
+   }
 
 }
 
@@ -82,14 +111,13 @@ AliVZEROCalibData::AliVZEROCalibData(const AliVZEROCalibData& calibda) :
       fWidthHV[t]      = calibda.GetWidthHV(t);        
       fTimeOffset[t]   = calibda.GetTimeOffset(t);
       fTimeGain[t]     = calibda.GetTimeGain(t); 
-	  fDeadChannel[t]  = calibda.IsChannelDead(t);
+      fDeadChannel[t]  = calibda.IsChannelDead(t);
   }  
   
-  	for(int i=0; i<kNCIUBoards ;i++) {
-		fTimeResolution[i]  = calibda.GetTimeResolution(i);
-		fWidthResolution[i] = calibda.GetWidthResolution(i);	  
-	}
-
+  for(int i=0; i<kNCIUBoards ;i++) {
+      fTimeResolution[i]  = calibda.GetTimeResolution(i);
+      fWidthResolution[i] = calibda.GetWidthResolution(i);	  
+  }
   
 }
 
@@ -113,12 +141,12 @@ AliVZEROCalibData &AliVZEROCalibData::operator =(const AliVZEROCalibData& calibd
       fWidthHV[t]      = calibda.GetWidthHV(t);        
       fTimeOffset[t]   = calibda.GetTimeOffset(t);
       fTimeGain[t]     = calibda.GetTimeGain(t); 
-  	  fDeadChannel[t]  = calibda.IsChannelDead(t);
+      fDeadChannel[t]  = calibda.IsChannelDead(t);
   }   
-  	for(int i=0; i<kNCIUBoards ;i++) {
-		fTimeResolution[i]  = calibda.GetTimeResolution(i);
-		fWidthResolution[i] = calibda.GetWidthResolution(i);	  
-	}
+  for(int i=0; i<kNCIUBoards ;i++) {
+      fTimeResolution[i]  = calibda.GetTimeResolution(i);
+      fWidthResolution[i] = calibda.GetWidthResolution(i);	  
+  }
    
   return *this;
   
