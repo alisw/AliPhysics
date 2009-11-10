@@ -305,7 +305,13 @@ void AliAnalysisTaskStrange::UserExec(Option_t *)
 	if (!pTrack || !nTrack) {
 	  Printf("ERROR: Could not retreive one of the daughter track");
 	  continue;
-	}	
+	}
+
+	// Remove like-sign
+	if ( pTrack->GetSign() == nTrack->GetSign()){
+	  //cout<< "like sign, continue"<< endl;
+	  continue;
+	} 
 
 	// Tracks quality cuts 
 	if ( ( (pTrack->GetTPCNcls()) < 80 ) || ( (nTrack->GetTPCNcls()) < 80 ) ) continue;
