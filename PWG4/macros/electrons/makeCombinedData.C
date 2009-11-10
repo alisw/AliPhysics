@@ -7,13 +7,13 @@
 ////////////////////////////////////////
 
 TH1F *alltte,    *alltrk,    *allemc;
+TH1F *sumtte,    *sumtrk,    *sumemc;  //all but misid'ed hadrons
 TH1F *btte,      *btrk,      *bemc;
 TH1F *ctte,      *ctrk,      *cemc;
 TH1F *cbtte,     *cbtrk,     *cbemc;
 TH1F *convtte,   *convtrk,   *convemc;
 TH1F *daltte,    *daltrk,    *dalemc;
 TH1F *wztte,     *wztrk,     *wzemc;
-TH1F *othtte,    *othtrk,    *othemc;
 TH1F *htte,      *htrk,      *hemc;
 
 TH1F *allMC;
@@ -21,6 +21,8 @@ TH1F *bMC, *cMC, *cbMC;
 TH1F *convMC, *dalMC, *wzMC;
 TH1F *mchad;
 TH1F *allheratio, *behratio;
+
+TF1* fpow;
 
 void makeData(char* jjfname = "data/scaled25Oct09/TOTALhistosscaled-LHC09b2-0.root",
               char* bfname = "data/scaled25Oct09/histosscaledLHC09b4AODc.root",
@@ -102,6 +104,10 @@ void makeData(char* jjfname = "data/scaled25Oct09/TOTALhistosscaled-LHC09b2-0.ro
   alltrk->Write();
   allemc->Write();
 
+  sumtte->Write();
+  sumtrk->Write();
+  sumemc->Write();
+
   btte->Write();
   btrk->Write();
   bemc->Write();
@@ -121,10 +127,6 @@ void makeData(char* jjfname = "data/scaled25Oct09/TOTALhistosscaled-LHC09b2-0.ro
   daltte->Write();
   daltrk->Write();
   dalemc->Write();
-
-  othtte->Write();
-  othtrk->Write();
-  othemc->Write();
 
   wztte->Write();
   wztrk->Write();
@@ -216,7 +218,6 @@ void makeMCElectrons(TH2F* jjmcele, TH2F* bjmcele, TH2F* wjmcele, TH1F* jjmchad,
   TH1F* jjcandbmc = (TH1F*)jjmcele->ProjectionX("jjcandbmc",4,4);
   TH1F* jjconvmc = (TH1F*)jjmcele->ProjectionX("jjconvmc",5,5);
   TH1F* jjdalmc = (TH1F*)jjmcele->ProjectionX("jjdalmc",6,6);
-  TH1F* jjothermc = (TH1F*)jjmcele->ProjectionX("jjothermc",8,8);
 
   //Bottom-Jet MC electrons
   TH1F* bjallmc = (TH1F*)bjmcele->ProjectionX("bjallmc",1,1);
@@ -225,7 +226,6 @@ void makeMCElectrons(TH2F* jjmcele, TH2F* bjmcele, TH2F* wjmcele, TH1F* jjmchad,
   TH1F* bjcandbmc = (TH1F*)bjmcele->ProjectionX("bjcandbmc",4,4);
   TH1F* bjconvmc = (TH1F*)bjmcele->ProjectionX("bjconvmc",5,5);
   TH1F* bjdalmc = (TH1F*)bjmcele->ProjectionX("bjdalmc",6,6);
-  TH1F* bjothermc = (TH1F*)bjmcele->ProjectionX("bjothermc",8,8);
 
   //W-Jet MC electrons
   TH1F* wjallmc = (TH1F*)wjmcele->ProjectionX("wjallmc",1,1);
@@ -235,19 +235,20 @@ void makeMCElectrons(TH2F* jjmcele, TH2F* bjmcele, TH2F* wjmcele, TH1F* jjmchad,
   TH1F* wjconvmc = (TH1F*)wjmcele->ProjectionX("wjconvmc",5,5);
   TH1F* wjdalmc = (TH1F*)wjmcele->ProjectionX("wjdalmc",6,6);
   TH1F* wjwzmc = (TH1F*)wjmcele->ProjectionX("wjwzmc",7,7);
-  TH1F* wjothermc = (TH1F*)wjmcele->ProjectionX("wjothermc",8,8);
 
   //MC Hadrons (from jj events only)
   TCanvas *ctemp = new TCanvas("ctemp");
   ctemp->Divide(2,3);
   ctemp->cd(1); gPad->SetLogy(); jjmchad->Draw();
   mchad = (TH1F*)jjmchad->Clone(); mchad->SetName("mchad");
-  smoothWithFit(mchad,1e5,-3,10,60,100);  
+  TH1F* temphad = (TH1F*)mchad->Clone(); temphad->SetName("temphad");
+  smoothWithFit(temphad,1e5,-3,10,60,100);  
   for(Int_t i = 10; i<= mchad->GetNbinsX(); i++) {
     Double_t pt = mchad->GetBinCenter(i);
-    mchad->SetBinContent(i,mchad->GetFunction("fpow")->Eval(pt));
+    mchad->SetBinContent(i,temphad->GetFunction("fpow")->Eval(pt));
   }
   jjmchad->Draw();
+  temphad->Draw("same");
   mchad->Draw("same");
   mchad->SetTitle("MC hadrons in Pb+Pb in EMCAL acceptance");
   mchad->SetName("mchad");
@@ -285,7 +286,7 @@ void makeMCElectrons(TH2F* jjmcele, TH2F* bjmcele, TH2F* wjmcele, TH1F* jjmchad,
   ctemp->cd(5); gPad->SetLogy(); convMC->Draw();
   TH1F* fooconv = (TH1F*)convMC->Clone(); fooconv->SetName("fooconv");
   smoothWithFit(fooconv,1e6,-3,6,40,100);  
-  for(Int_t i = 6; i<= convMC->GetNbinsX(); i++) convMC->SetBinContent(i,fooconv->GetBinContent(i));
+  //  for(Int_t i = 6; i<= convMC->GetNbinsX(); i++) convMC->SetBinContent(i,fooconv->GetBinContent(i));
   convMC->Draw();
   fooconv->Draw("same");
 
@@ -299,7 +300,7 @@ void makeMCElectrons(TH2F* jjmcele, TH2F* bjmcele, TH2F* wjmcele, TH1F* jjmchad,
   foodal->Draw("same");
 
   wzMC = (TH1F*)wjwzmc->Clone(); wzMC->SetName("wzMC"); //W-jet only
-  TCanvas* cw= new TCanvas();
+  TCanvas* cw= new TCanvas("cw");
   cw->cd(); gPad->SetLogy(); wzMC->GetYaxis()->SetRangeUser(1,1e3); wzMC->Draw();
   TH1F* foowz = (TH1F*)wzMC->Clone(); foowz->SetName("foowz");
   TF1* fws = new TF1("fws","[0]*(1+exp((x-[1])/[2]))^-1",39,100);
@@ -319,7 +320,7 @@ void makeMCElectrons(TH2F* jjmcele, TH2F* bjmcele, TH2F* wjmcele, TH1F* jjmchad,
   foowz->Draw("same");
 
   //All mc electrons is the sum of 
-  //Jet-Jet: conversions + direct charm + dalitz + other
+  //Jet-Jet: conversions + direct charm + dalitz
   //Bottom-Jet: direct bottom + indirect bottom
   //W-Jet: all (because these events are exclusive of the others)
   allMC = (TH1F*)wzMC->Clone(); allMC->SetNameTitle("allMC","All MC Electrons");
@@ -371,7 +372,6 @@ void makeTTEElectrons(TH2F* jjtte, TH2F* bjtte, TH2F* wjtte) {
   TH1F* jjconvtte = (TH1F*)jjtte->ProjectionX("jjconvtte",5,5);
   TH1F* jjdaltte = (TH1F*)jjtte->ProjectionX("jjdaltte",6,6);
   TH1F* jjwztte = (TH1F*)jjtte->ProjectionX("jjwztte",7,7);
-  TH1F* jjothtte = (TH1F*)jjtte->ProjectionX("jjothtte",8,8);
   TH1F* jjhtte = (TH1F*)jjtte->ProjectionX("jjhtte",9,9);
 
   //B-Jet TTE Electrons
@@ -382,7 +382,6 @@ void makeTTEElectrons(TH2F* jjtte, TH2F* bjtte, TH2F* wjtte) {
   TH1F* bjconvtte = (TH1F*)bjtte->ProjectionX("bjconvtte",5,5);
   TH1F* bjdaltte = (TH1F*)bjtte->ProjectionX("bjdaltte",6,6);
   TH1F* bjwztte = (TH1F*)bjtte->ProjectionX("bjwztte",7,7);
-  TH1F* bjothtte = (TH1F*)bjtte->ProjectionX("bjothtte",8,8);
   TH1F* bjhtte = (TH1F*)bjtte->ProjectionX("bjhtte",9,9);
 
   //W-Jet TTE Electrons
@@ -393,35 +392,73 @@ void makeTTEElectrons(TH2F* jjtte, TH2F* bjtte, TH2F* wjtte) {
   TH1F* wjconvtte = (TH1F*)wjtte->ProjectionX("wjconvtte",5,5);
   TH1F* wjdaltte = (TH1F*)wjtte->ProjectionX("wjdaltte",6,6);
   TH1F* wjwztte = (TH1F*)wjtte->ProjectionX("wjwztte",7,7);
-  TH1F* wjothtte = (TH1F*)wjtte->ProjectionX("wjothtte",8,8);
   TH1F* wjhtte = (TH1F*)wjtte->ProjectionX("wjhtte",9,9);
+  
+  btte = (TH1F*)bjbtte->Clone(); btte->SetName("btte");  //B-Jet + W-jet
+  btte->Add(wjbtte)
+  TCanvas * ctemptte = new TCanvas("ctemptte");
+  ctemptte->Divide(2,3);
+  ctemptte->cd(1); gPad->SetLogy(); btte->Draw();
+  TH1F* foobtte = (TH1F*)btte->Clone(); foobtte->SetName("foobtte");
+  smoothWithFit(foobtte,1e5,-3,8,40,100);
+  btte->Draw(); foobtte->Draw("same");
+
+  ctte = (TH1F*)jjctte->Clone(); ctte->SetName("ctte"); //Jet-Jet + W-jet
+  ctte->Add(wjctte);
+  ctemptte->cd(2); gPad->SetLogy(); ctte->Draw();
+  TH1F* fooctte = (TH1F*)ctte->Clone(); fooctte->SetName("fooctte");
+  smoothWithFit(fooctte,1e5,-3,3,12,100);
+  ctte->Draw(); fooctte->Draw("same");
+
+  cbtte = (TH1F*)bjcbtte->Clone(); cbtte->SetName("cbtte"); //B-Jet + W-jet
+  cbtte->Add(wjcbtte);
+  ctemptte->cd(3); gPad->SetLogy(); cbtte->Draw();
+  TH1F* foocbtte = (TH1F*)cbtte->Clone(); foocbtte->SetName("foocbtte");
+  smoothWithFit(foocbtte,1e5,-3,5,20,100);
+  cbtte->Draw(); foocbtte->Draw("same");
+
+  convtte = (TH1F*)jjconvtte->Clone(); convtte->SetName("convtte"); //Jet-Jet + W-jet
+  convtte->Add(wjconvtte);
+  ctemptte->cd(4); gPad->SetLogy(); convtte->Draw();
+  TH1F* fooconvtte = (TH1F*)convtte->Clone(); fooconvtte->SetName("fooconvtte");
+  smoothWithFit(fooconvtte,1e5,-3,6,13,100);
+  convtte->Draw(); fooconvtte->Draw("same");
+
+  daltte = (TH1F*)jjdaltte->Clone(); daltte->SetName("daltte"); //Jet-Jet + W-jet
+  daltte->Add(wjdaltte);
+  ctemptte->cd(5); gPad->SetLogy(); daltte->Draw();
+  TH1F* foodaltte = (TH1F*)daltte->Clone(); foodaltte->SetName("foodaltte");
+  smoothWithFit(foodaltte,1e2,-5,2,10,100);
+  daltte->Draw(); foodaltte->Draw("same");
+
+  htte = (TH1F*)jjhtte->Clone(); htte->SetName("htte");
+  htte->Add(wjhtte);
+  ctemptte->cd(6); gPad->SetLogy(); htte->Draw();
+  TH1F* foohtte = (TH1F*)htte->Clone(); foohtte->SetName("foohtte");
+  smoothWithFit(foohtte,1e5,-3,10,40,100);
+  htte->Draw(); foohtte->Draw("same");
+
+  wztte = (TH1F*)wjwztte->Clone(); wztte->SetName("wztte"); //W-jet only
+  TCanvas* ctempwztte = new TCanvas("ctempwztte");
+  ctempwztte->cd(); gPad->SetLogy(); wztte->Draw();
+  TH1F* foowztte = (TH1F*)wztte->Clone(); foowztte->SetName("foowztte");
+  smoothWithFit(foowztte,1e5,-3,10,40,100);
+  wztte->Draw(); foowztte->Draw("same");
 
   //All TTE electrons is the sum of 
-  //Jet-Jet: conversions + direct charm + dalitz + other + misid
+  //Jet-Jet: conversions + direct charm + dalitz + misid
   //Bottom-Jet: direct bottom + indirect bottom
   //W-Jet: all (because these events are exclusive of the others)
   alltte = (TH1F*)wjalltte->Clone(); alltte->SetName("alltte");
-  alltte->Add(jjconvtte); alltte->Add(jjctte); alltte->Add(jjdaltte); alltte->Add(jjothtte); alltte->Add(jjhtte);
+  alltte->Add(jjconvtte); alltte->Add(jjctte); alltte->Add(jjdaltte); alltte->Add(jjhtte);
   alltte->Add(bjbtte); alltte->Add(bjcbtte);
-
-  btte = (TH1F*)bjbtte->Clone(); btte->SetName("btte");  //B-Jet + W-jet
-  btte->Add(wjbtte);
-  ctte = (TH1F*)jjctte->Clone(); ctte->SetName("ctte"); //Jet-Jet + W-jet
-  ctte->Add(wjctte);
-  cbtte = (TH1F*)bjbtte->Clone(); cbtte->SetName("cbtte"); //B-Jet + W-jet
-  cbtte->Add(wjcbtte);
-  convtte = (TH1F*)jjconvtte->Clone(); convtte->SetName("convtte"); //Jet-Jet + W-jet
-  convtte->Add(wjconvtte);
-  daltte = (TH1F*)jjdaltte->Clone(); daltte->SetName("daltte"); //Jet-Jet + W-jet
-  daltte->Add(wjdaltte);
-  wztte = (TH1F*)wjwztte->Clone(); wztte->SetName("wztte"); //W-jet only
-  othtte = (TH1F*)jjothtte->Clone(); othtte->SetName("othtte"); //Jet-Jet + W-jet
-  othtte->Add(wjothtte);
-  htte = (TH1F*)jjhtte->Clone(); htte->SetName("htte");
-  htte->Add(wjhtte);
+  sumtte = (TH1F*)wjalltte->Clone(); sumtte->SetName("sumtte");
+  sumtte->Add(jjconvtte); sumtte->Add(jjctte); sumtte->Add(jjdaltte);
+  sumtte->Add(bjbtte); sumtte->Add(bjcbtte);
 
   double myscale = 1.; //we already scaled them       
   ScaleAndConfigure(alltte,myscale,kBlack,kFALSE);
+  ScaleAndConfigure(sumtte,myscale,kBlack,kFALSE);
   ScaleAndConfigure(btte,myscale,kRed,kFALSE);
   ScaleAndConfigure(ctte,myscale,kBlue,kFALSE);
   ScaleAndConfigure(cbtte,myscale,kViolet,kFALSE);
@@ -433,7 +470,6 @@ void makeTTEElectrons(TH2F* jjtte, TH2F* bjtte, TH2F* wjtte) {
   return;
 }
 
-
 void makeEMCElectrons(TH2F* jjemc, TH2F* bjemc, TH2F* wjemc) {
   
   //Jet-Jet EMC Electrons
@@ -444,7 +480,6 @@ void makeEMCElectrons(TH2F* jjemc, TH2F* bjemc, TH2F* wjemc) {
   TH1F* jjconvemc = (TH1F*)jjemc->ProjectionX("jjconvemc",5,5);
   TH1F* jjdalemc = (TH1F*)jjemc->ProjectionX("jjdalemc",6,6);
   TH1F* jjwzemc = (TH1F*)jjemc->ProjectionX("jjwzemc",7,7);
-  TH1F* jjothemc = (TH1F*)jjemc->ProjectionX("jjothemc",8,8);
   TH1F* jjhemc = (TH1F*)jjemc->ProjectionX("jjhemc",9,9);
 
   //B-Jet EMC Electrons
@@ -455,7 +490,6 @@ void makeEMCElectrons(TH2F* jjemc, TH2F* bjemc, TH2F* wjemc) {
   TH1F* bjconvemc = (TH1F*)bjemc->ProjectionX("bjconvemc",5,5);
   TH1F* bjdalemc = (TH1F*)bjemc->ProjectionX("bjdalemc",6,6);
   TH1F* bjwzemc = (TH1F*)bjemc->ProjectionX("bjwzemc",7,7);
-  TH1F* bjothemc = (TH1F*)bjemc->ProjectionX("bjothemc",8,8);
   TH1F* bjhemc = (TH1F*)bjemc->ProjectionX("bjhemc",9,9);
 
   //W-Jet EMC Electrons
@@ -466,35 +500,123 @@ void makeEMCElectrons(TH2F* jjemc, TH2F* bjemc, TH2F* wjemc) {
   TH1F* wjconvemc = (TH1F*)wjemc->ProjectionX("wjconvemc",5,5);
   TH1F* wjdalemc = (TH1F*)wjemc->ProjectionX("wjdalemc",6,6);
   TH1F* wjwzemc = (TH1F*)wjemc->ProjectionX("wjwzemc",7,7);
-  TH1F* wjothemc = (TH1F*)wjemc->ProjectionX("wjothemc",8,8);
   TH1F* wjhemc = (TH1F*)wjemc->ProjectionX("wjhemc",9,9);
+  
+  bemc = (TH1F*)bjbemc->Clone(); bemc->SetName("bemc");  //B-Jet + W-jet
+  bemc->Add(wjbemc);
+  TCanvas * ctempemc = new TCanvas("ctempemc","",0,0,800,800);
+  ctempemc->Divide(2,3);
+  ctempemc->cd(1); gPad->SetLogy(); bemc->Draw();
+  TH1F* foobemc = (TH1F*)bemc->Clone(); foobemc->SetName("foobemc");
+  smoothWithFit(foobemc,1e5,-3,8,40,100);
+  TRandom rand;
+  for(Int_t i = 8; i<= bemc->GetNbinsX(); i++) {
+    Double_t dither = rand.Gaus(0.,foobemc->GetBinContent(i)/2.);
+    if(dither + foobemc->GetBinContent(i) < foobemc->GetBinContent(i)/100.) dither = 0.;   
+    bemc->SetBinContent(i,foobemc->GetBinContent(i)+dither);    
+    bemc->SetBinError(i,sqrt(foobemc->GetBinContent(i)));    
+  }
+  bemc->Draw(); foobemc->Draw("same");
+
+  cemc = (TH1F*)jjcemc->Clone(); cemc->SetName("cemc"); //Jet-Jet + W-jet
+  cemc->Add(wjcemc);
+  ctempemc->cd(2); gPad->SetLogy(); cemc->Draw();
+  TH1F* foocemc = (TH1F*)cemc->Clone(); foocemc->SetName("foocemc");
+  smoothWithFit(foocemc,1e5,-3,5,14,100);
+  for(Int_t i = 5; i<= cemc->GetNbinsX(); i++) {
+    Double_t dither = rand.Gaus(0.,foocemc->GetBinContent(i)/2.);
+    if(dither + foocemc->GetBinContent(i) < foocemc->GetBinContent(i)/100.) dither = 0.;   
+    cemc->SetBinContent(i,foocemc->GetBinContent(i)+dither);    
+    cemc->SetBinError(i,sqrt(foocemc->GetBinContent(i)));    
+  }
+  cemc->Draw(); foocemc->Draw("same");
+
+  cbemc = (TH1F*)bjcbemc->Clone(); cbemc->SetName("cbemc"); //B-Jet + W-jet
+  cbemc->Add(wjcbemc);
+  ctempemc->cd(3); gPad->SetLogy(); cbemc->Draw();
+  TH1F* foocbemc = (TH1F*)cbemc->Clone(); foocbemc->SetName("foocbemc");
+  smoothWithFit(foocbemc,1e5,-3,8,20,100);
+  for(Int_t i = 8; i<= cbemc->GetNbinsX(); i++) {
+    Double_t dither = rand.Gaus(0.,foocbemc->GetBinContent(i)/2.);
+    if(dither + foocbemc->GetBinContent(i) < foocbemc->GetBinContent(i)/100.) dither = 0.;   
+    cbemc->SetBinContent(i,foocbemc->GetBinContent(i)+dither);    
+    cbemc->SetBinError(i,sqrt(foocbemc->GetBinContent(i)));    
+  }
+  cbemc->Draw(); foocbemc->Draw("same");
+
+  convemc = (TH1F*)jjconvemc->Clone(); convemc->SetName("convemc"); //Jet-Jet + W-jet
+  convemc->Add(wjconvemc);
+  ctempemc->cd(4); gPad->SetLogy(); convemc->Draw();
+  TH1F* fooconvemc = (TH1F*)convemc->Clone(); fooconvemc->SetName("fooconvemc");
+  smoothWithFit(fooconvemc,1e6,-3,5,15,100);
+  for(Int_t i = 5; i<= convemc->GetNbinsX(); i++) {
+    Double_t dither = rand.Gaus(0.,fooconvemc->GetBinContent(i)/2.);
+    if(dither + fooconvemc->GetBinContent(i) < fooconvemc->GetBinContent(i)/100.) dither = 0.;   
+    convemc->SetBinContent(i,fooconvemc->GetBinContent(i)+dither);    
+    convemc->SetBinError(i,sqrt(fooconvemc->GetBinContent(i)));    
+  }
+  convemc->Draw(); fooconvemc->Draw("same");
+
+  dalemc = (TH1F*)jjdalemc->Clone(); dalemc->SetName("dalemc"); //Jet-Jet + W-jet
+  dalemc->Add(wjdalemc);
+  ctempemc->cd(5); gPad->SetLogy(); dalemc->Draw();
+  TH1F* foodalemc = (TH1F*)dalemc->Clone(); foodalemc->SetName("foodalemc");
+  for(Int_t i = 18; i <= dalemc->GetNbinsX(); i++) {
+    dalemc->SetBinContent(i,0);
+    dalemc->SetBinError(i,0);
+    foodalemc->SetBinContent(i,0);
+    foodalemc->SetBinError(i,0);
+  }
+  //  smoothWithFit(foodalemc,1e6,-3,8.,12.,100);
+  dalemc->Draw(); //foodalemc->Draw("same");
+
+  hemc = (TH1F*)jjhemc->Clone(); hemc->SetName("hemc");
+  hemc->Add(wjhemc);
+  ctempemc->cd(6); gPad->SetLogy(); hemc->Draw();
+  TH1F* foohemc = (TH1F*)hemc->Clone(); foohemc->SetName("foohemc");
+  smoothWithFit(foohemc,1e5,-3,10,40,100);
+  for(Int_t i = 10; i<= hemc->GetNbinsX(); i++) {
+    Double_t dither = rand.Gaus(0.,foohemc->GetBinContent(i)/2.);
+    if(dither + foohemc->GetBinContent(i) < foohemc->GetBinContent(i)/100.) dither = 0.;   
+    hemc->SetBinContent(i,foohemc->GetBinContent(i)+dither);    
+    hemc->SetBinError(i,sqrt(foohemc->GetBinContent(i)));    
+  }
+  hemc->Draw(); foohemc->Draw("same");
+
+  wzemc = (TH1F*)wjwzemc->Clone(); wzemc->SetName("wzemc"); //W-jet only
+  TCanvas* ctempwzemc = new TCanvas("ctempwzemc");
+  ctempwzemc->cd(); gPad->SetLogy(); wzemc->Draw();
+  TH1F* foowzemc = (TH1F*)wzemc->Clone(); foowzemc->SetName("foowzemc");
+  TF1* fwsemc = new TF1("fwsemc","[0]*(1+exp((x-[1])/[2]))^-1",30,50);
+  fwsemc->SetParameters(10,30,3);
+  foowzemc->Fit(fwsemc,"R");
+  TF1* fwzexpemc = new TF1("fwzexpemc","[0]+[1]*log(x/[2])^2",5,20);
+  fwzexpemc->SetParameters(10,10,3);
+  //  foowzemc->Fit(fwzexpemc,"R");
+  /*
+  for(Int_t i = 8; i<= wzMC->GetNbinsX(); i++) {
+    Double_t pt = wzMC->GetBinCenter(i);
+    if(pt < 40) wzMC->SetBinContent(i,fwzexp->Eval(pt));
+    if(pt > 40) wzMC->SetBinContent(i,fws->Eval(pt));
+  }
+  */
+  wzemc->Draw(); foowzemc->Draw("same");
+  fwzexpemc->Draw("same");
 
   //All EMC electrons is the sum of 
-  //Jet-Jet: conversions + direct charm + dalitz + other + misid
+  //Jet-Jet: conversions + direct charm + dalitz + misid
   //Bottom-Jet: direct bottom + indirect bottom
   //W-Jet: all (because these events are exclusive of the others)
   allemc = (TH1F*)wjallemc->Clone(); allemc->SetName("allemc");
-  allemc->Add(jjconvemc); allemc->Add(jjcemc); allemc->Add(jjdalemc); allemc->Add(jjothemc); allemc->Add(jjhemc);
+  allemc->Add(jjconvemc); allemc->Add(jjcemc); allemc->Add(jjdalemc); allemc->Add(jjhemc);
   allemc->Add(bjbemc); allemc->Add(bjcbemc);
-
-  bemc = (TH1F*)bjbemc->Clone(); bemc->SetName("bemc");  //B-Jet + W-jet
-  bemc->Add(wjbemc);
-  cemc = (TH1F*)jjcemc->Clone(); cemc->SetName("cemc"); //Jet-Jet + W-jet
-  cemc->Add(wjcemc);
-  cbemc = (TH1F*)bjbemc->Clone(); cbemc->SetName("cbemc"); //B-Jet + W-jet
-  cbemc->Add(wjcbemc);
-  convemc = (TH1F*)jjconvemc->Clone(); convemc->SetName("convemc"); //Jet-Jet + W-jet
-  convemc->Add(wjconvemc);
-  dalemc = (TH1F*)jjdalemc->Clone(); dalemc->SetName("dalemc"); //Jet-Jet + W-jet
-  dalemc->Add(wjdalemc);
-  wzemc = (TH1F*)wjwzemc->Clone(); wzemc->SetName("wzemc"); //W-jet only
-  othemc = (TH1F*)jjothemc->Clone(); othemc->SetName("othemc"); //Jet-Jet + W-jet
-  othemc->Add(wjothemc);
-  hemc = (TH1F*)jjhemc->Clone(); hemc->SetName("hemc");
-  hemc->Add(wjhemc);
+  sumemc = (TH1F*)wjallemc->Clone(); sumemc->SetName("sumemc");
+  sumemc->Add(jjconvemc); sumemc->Add(jjcemc); sumemc->Add(jjdalemc);
+  sumemc->Add(bjbemc); sumemc->Add(bjcbemc);
 
   double myscale = 1.; //we already scaled them       
   ScaleAndConfigure(allemc,myscale,kBlack,kFALSE);
+  ScaleAndConfigure(sumemc,myscale,kBlack,kFALSE);
   ScaleAndConfigure(bemc,myscale,kRed,kFALSE);
   ScaleAndConfigure(cemc,myscale,kBlue,kFALSE);
   ScaleAndConfigure(cbemc,myscale,kViolet,kFALSE);
@@ -506,7 +628,6 @@ void makeEMCElectrons(TH2F* jjemc, TH2F* bjemc, TH2F* wjemc) {
   return;
 }
 
-
 void makeTRKElectrons(TH2F* jjtrk, TH2F* bjtrk, TH2F* wjtrk) {
   
   //Jet-Jet TRK Electrons
@@ -517,7 +638,6 @@ void makeTRKElectrons(TH2F* jjtrk, TH2F* bjtrk, TH2F* wjtrk) {
   TH1F* jjconvtrk = (TH1F*)jjtrk->ProjectionX("jjconvtrk",5,5);
   TH1F* jjdaltrk = (TH1F*)jjtrk->ProjectionX("jjdaltrk",6,6);
   TH1F* jjwztrk = (TH1F*)jjtrk->ProjectionX("jjwztrk",7,7);
-  TH1F* jjothtrk = (TH1F*)jjtrk->ProjectionX("jjothtrk",8,8);
   TH1F* jjhtrk = (TH1F*)jjtrk->ProjectionX("jjhtrk",9,9);
 
   //B-Jet TRK Electrons
@@ -528,7 +648,6 @@ void makeTRKElectrons(TH2F* jjtrk, TH2F* bjtrk, TH2F* wjtrk) {
   TH1F* bjconvtrk = (TH1F*)bjtrk->ProjectionX("bjconvtrk",5,5);
   TH1F* bjdaltrk = (TH1F*)bjtrk->ProjectionX("bjdaltrk",6,6);
   TH1F* bjwztrk = (TH1F*)bjtrk->ProjectionX("bjwztrk",7,7);
-  TH1F* bjothtrk = (TH1F*)bjtrk->ProjectionX("bjothtrk",8,8);
   TH1F* bjhtrk = (TH1F*)bjtrk->ProjectionX("bjhtrk",9,9);
 
   //W-Jet TRK Electrons
@@ -539,35 +658,122 @@ void makeTRKElectrons(TH2F* jjtrk, TH2F* bjtrk, TH2F* wjtrk) {
   TH1F* wjconvtrk = (TH1F*)wjtrk->ProjectionX("wjconvtrk",5,5);
   TH1F* wjdaltrk = (TH1F*)wjtrk->ProjectionX("wjdaltrk",6,6);
   TH1F* wjwztrk = (TH1F*)wjtrk->ProjectionX("wjwztrk",7,7);
-  TH1F* wjothtrk = (TH1F*)wjtrk->ProjectionX("wjothtrk",8,8);
   TH1F* wjhtrk = (TH1F*)wjtrk->ProjectionX("wjhtrk",9,9);
+  
+  btrk = (TH1F*)bjbtrk->Clone(); btrk->SetName("btrk");  //B-Jet + W-jet
+  btrk->Add(wjbtrk);
+  TCanvas * ctemptrk = new TCanvas("ctemptrk","",0,0,800,800);
+  ctemptrk->Divide(2,3);
+  ctemptrk->cd(1); gPad->SetLogy(); btrk->Draw();
+  TH1F* foobtrk = (TH1F*)btrk->Clone(); foobtrk->SetName("foobtrk");
+  smoothWithFit(foobtrk,1e5,-3,8,40,100);
+  TRandom rand2;
+  for(Int_t i = 8; i<= btrk->GetNbinsX(); i++) {
+    Double_t dither = rand2.Gaus(0.,foobtrk->GetBinContent(i)/2.);
+    if(dither + foobtrk->GetBinContent(i) < foobtrk->GetBinContent(i)/100.) dither = 0.;   
+    btrk->SetBinContent(i,foobtrk->GetBinContent(i)+dither);    
+    btrk->SetBinError(i,sqrt(foobtrk->GetBinContent(i)));    
+  }
+  btrk->Draw(); foobtrk->Draw("same");
+
+  ctrk = (TH1F*)jjctrk->Clone(); ctrk->SetName("ctrk"); //Jet-Jet + W-jet
+  ctrk->Add(wjctrk);
+  ctemptrk->cd(2); gPad->SetLogy(); ctrk->Draw();
+  TH1F* fooctrk = (TH1F*)ctrk->Clone(); fooctrk->SetName("fooctrk");
+  smoothWithFit(fooctrk,1e5,-3,5,20,100);
+  for(Int_t i = 5; i<= ctrk->GetNbinsX(); i++) {
+    Double_t dither = rand2.Gaus(0.,fooctrk->GetBinContent(i)/2.);
+    if(dither + fooctrk->GetBinContent(i) < fooctrk->GetBinContent(i)/100.) dither = 0.;   
+    ctrk->SetBinContent(i,fooctrk->GetBinContent(i)+dither);    
+    ctrk->SetBinError(i,sqrt(fooctrk->GetBinContent(i)));    
+  }
+  ctrk->Draw(); fooctrk->Draw("same");
+
+  cbtrk = (TH1F*)bjcbtrk->Clone(); cbtrk->SetName("cbtrk"); //B-Jet + W-jet
+  cbtrk->Add(wjcbtrk);
+  ctemptrk->cd(3); gPad->SetLogy(); cbtrk->Draw();
+  TH1F* foocbtrk = (TH1F*)cbtrk->Clone(); foocbtrk->SetName("foocbtrk");
+  smoothWithFit(foocbtrk,1e5,-3,5,20,100);
+  for(Int_t i = 5; i<= cbtrk->GetNbinsX(); i++) {
+    Double_t dither = rand2.Gaus(0.,foocbtrk->GetBinContent(i)/2.);
+    if(dither + foocbtrk->GetBinContent(i) < foocbtrk->GetBinContent(i)/100.) dither = 0.;   
+    cbtrk->SetBinContent(i,foocbtrk->GetBinContent(i)+dither);    
+    cbtrk->SetBinError(i,sqrt(foocbtrk->GetBinContent(i)));    
+  }
+  cbtrk->Draw(); foocbtrk->Draw("same");
+
+  convtrk = (TH1F*)jjconvtrk->Clone(); convtrk->SetName("convtrk"); //Jet-Jet + W-jet
+  convtrk->Add(wjconvtrk);
+  ctemptrk->cd(4); gPad->SetLogy(); convtrk->Draw();
+  TH1F* fooconvtrk = (TH1F*)convtrk->Clone(); fooconvtrk->SetName("fooconvtrk");
+  smoothWithFit(fooconvtrk,1e6,-3,5,20,100);
+  for(Int_t i = 5; i<= convtrk->GetNbinsX(); i++) {
+    Double_t dither = rand2.Gaus(0.,fooconvtrk->GetBinContent(i)/2.);
+    if(dither + fooconvtrk->GetBinContent(i) < fooconvtrk->GetBinContent(i)/100.) dither = 0.;   
+    //    convtrk->SetBinContent(i,fooconvtrk->GetBinContent(i)+dither);    
+    //convtrk->SetBinError(i,sqrt(fooconvtrk->GetBinContent(i)));    
+  }
+  convtrk->Draw(); fooconvtrk->Draw("same");
+
+  daltrk = (TH1F*)jjdaltrk->Clone(); daltrk->SetName("daltrk"); //Jet-Jet + W-jet
+  daltrk->Add(wjdaltrk);
+  ctemptrk->cd(5); gPad->SetLogy(); daltrk->Draw();
+  TH1F* foodaltrk = (TH1F*)daltrk->Clone(); foodaltrk->SetName("foodaltrk");
+  smoothWithFit(foodaltrk,1e6,-3,5.,40.,100);
+  for(Int_t i = 5; i<= daltrk->GetNbinsX(); i++) {
+    Double_t dither = rand2.Gaus(0.,foodaltrk->GetBinContent(i)/2.);
+    if(dither + foodaltrk->GetBinContent(i) < foodaltrk->GetBinContent(i)/100.) dither = 0.;   
+    daltrk->SetBinContent(i,foodaltrk->GetBinContent(i)+dither);    
+    daltrk->SetBinError(i,sqrt(foodaltrk->GetBinContent(i)));    
+  }
+  daltrk->Draw(); foodaltrk->Draw("same");
+
+  htrk = (TH1F*)jjhtrk->Clone(); htrk->SetName("htrk");
+  htrk->Add(wjhtrk);
+  ctemptrk->cd(6); gPad->SetLogy(); htrk->Draw();
+  TH1F* foohtrk = (TH1F*)htrk->Clone(); foohtrk->SetName("foohtrk");
+  smoothWithFit(foohtrk,1e5,-3,5,80,100);
+  for(Int_t i = 5; i<= htrk->GetNbinsX(); i++) {
+    Double_t dither = rand2.Gaus(0.,foohtrk->GetBinContent(i)/2.);
+    if(dither + foohtrk->GetBinContent(i) < foohtrk->GetBinContent(i)/100.) dither = 0.;   
+    htrk->SetBinContent(i,foohtrk->GetBinContent(i)+dither);    
+    htrk->SetBinError(i,sqrt(foohtrk->GetBinContent(i)));    
+  }
+  htrk->Draw(); foohtrk->Draw("same");
+
+  wztrk = (TH1F*)wjwztrk->Clone(); wztrk->SetName("wztrk"); //W-jet only
+  TCanvas* ctempwztrk = new TCanvas("ctempwztrk");
+  ctempwztrk->cd(); gPad->SetLogy(); wztrk->Draw();
+  TH1F* foowztrk = (TH1F*)wztrk->Clone(); foowztrk->SetName("foowztrk");
+  TF1* fwstrk = new TF1("fwstrk","[0]*(1+exp((x-[1])/[2]))^-1",30,50);
+  fwstrk->SetParameters(10,30,3);
+  foowztrk->Fit(fwstrk,"R");
+  TF1* fwzexptrk = new TF1("fwzexptrk","[0]+[1]*log(x/[2])^2",8,40);
+  fwzexptrk->SetParameters(10,10,3);
+  //  foowztrk->Fit(fwzexptrk,"R");
+  /*
+  for(Int_t i = 8; i<= wzMC->GetNbinsX(); i++) {
+    Double_t pt = wzMC->GetBinCenter(i);
+    if(pt < 40) wzMC->SetBinContent(i,fwzexp->Eval(pt));
+    if(pt > 40) wzMC->SetBinContent(i,fws->Eval(pt));
+  }
+  */
+  wztrk->Draw(); foowztrk->Draw("same");
 
   //All TRK electrons is the sum of 
-  //Jet-Jet: conversions + direct charm + dalitz + other + misid
+  //Jet-Jet: conversions + direct charm + dalitz + misid
   //Bottom-Jet: direct bottom + indirect bottom
   //W-Jet: all (because these events are exclusive of the others)
   alltrk = (TH1F*)wjalltrk->Clone(); alltrk->SetName("alltrk");
-  alltrk->Add(jjconvtrk); alltrk->Add(jjctrk); alltrk->Add(jjdaltrk); alltrk->Add(jjothtrk); alltrk->Add(jjhtrk);
+  alltrk->Add(jjconvtrk); alltrk->Add(jjctrk); alltrk->Add(jjdaltrk); alltrk->Add(jjhtrk);
   alltrk->Add(bjbtrk); alltrk->Add(bjcbtrk);
-
-  btrk = (TH1F*)bjbtrk->Clone(); btrk->SetName("btrk");  //B-Jet + W-jet
-  btrk->Add(wjbtrk);
-  ctrk = (TH1F*)jjctrk->Clone(); ctrk->SetName("ctrk"); //Jet-Jet + W-jet
-  ctrk->Add(wjctrk);
-  cbtrk = (TH1F*)bjbtrk->Clone(); cbtrk->SetName("cbtrk"); //B-Jet + W-jet
-  cbtrk->Add(wjcbtrk);
-  convtrk = (TH1F*)jjconvtrk->Clone(); convtrk->SetName("convtrk"); //Jet-Jet + W-jet
-  convtrk->Add(wjconvtrk);
-  daltrk = (TH1F*)jjdaltrk->Clone(); daltrk->SetName("daltrk"); //Jet-Jet + W-jet
-  daltrk->Add(wjdaltrk);
-  wztrk = (TH1F*)wjwztrk->Clone(); wztrk->SetName("wztrk"); //W-jet only
-  othtrk = (TH1F*)jjothtrk->Clone(); othtrk->SetName("othtrk"); //Jet-Jet + W-jet
-  othtrk->Add(wjothtrk);
-  htrk = (TH1F*)jjhtrk->Clone(); htrk->SetName("htrk");
-  htrk->Add(wjhtrk);
+  sumtrk = (TH1F*)wjalltrk->Clone(); sumtrk->SetName("sumtrk");
+  sumtrk->Add(jjconvtrk); sumtrk->Add(jjctrk); sumtrk->Add(jjdaltrk);
+  sumtrk->Add(bjbtrk); sumtrk->Add(bjcbtrk);
 
   double myscale = 1.; //we already scaled them       
   ScaleAndConfigure(alltrk,myscale,kBlack,kFALSE);
+  ScaleAndConfigure(sumtrk,myscale,kBlack,kFALSE);
   ScaleAndConfigure(btrk,myscale,kRed,kFALSE);
   ScaleAndConfigure(ctrk,myscale,kBlue,kFALSE);
   ScaleAndConfigure(cbtrk,myscale,kViolet,kFALSE);
@@ -581,10 +787,10 @@ void makeTRKElectrons(TH2F* jjtrk, TH2F* bjtrk, TH2F* wjtrk) {
 
 void smoothWithFit(TH1F* hist, Double_t p0, Double_t p1, Double_t min, Double_t max,Double_t remax) {
 
-  TF1* fpow = new TF1("fpow","[0]*pow(x,[1])",min,max);
+  fpow = new TF1("fpow","[0]*pow(x,[1])",min,max);
   fpow->SetParameters(p0,p1);
   hist->Fit(fpow,"R");  
-  for(Int_t i = (Int_t)min; i < (Int_t)remax; i++) {
+  for(Int_t i = (Int_t)min; i <= (Int_t)remax; i++) {
     Double_t pt = hist->GetBinCenter(i);
     Double_t val = fpow->Eval(pt);
     hist->SetBinContent(i,val);

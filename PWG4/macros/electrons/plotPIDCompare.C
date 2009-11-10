@@ -7,11 +7,10 @@
 //
 /////////////////////////////////////////////////
 
-void plotPIDCompare(char* which = "TTE") {
+void plotPIDCompare(char* which = "EMC") {
 
   gROOT->LoadMacro("makeCombinedData.C");
-  makeData("data/scaled25Oct09/histosLHC08d6.root",
-	   "data/scaled25Oct09/TOTALhistosscaled-LHC09b2-0.root",
+  makeData("data/scaled25Oct09/TOTALhistosscaled-LHC09b2-0.root",
 	   "data/scaled25Oct09/histosscaledLHC09b4AODc.root",
 	   "data/scaled25Oct09/histosWboson.root");
 
@@ -19,8 +18,8 @@ void plotPIDCompare(char* which = "TTE") {
   TLegend* leg = new TLegend(0.5,0.6,0.9,0.9);
   leg->SetFillColor(0);
   leg->SetTextSize(leg->GetTextSize()*1.2);
-  //leg->AddEntry(alltte,"All N-P e candidates","l");
-  leg->AddEntry(sumtte,"All N-P electrons","l");
+  leg->AddEntry(alltte,"All N-P e candidates","l");
+  //leg->AddEntry(sumtte,"All N-P electrons","l");
   leg->AddEntry(btte,"Bottom e","l");
   leg->AddEntry(ctte,"Charm e","l");
   leg->AddEntry(cbtte,"B-->C e","l");
@@ -43,24 +42,22 @@ void plotPIDCompare(char* which = "TTE") {
   alltrk->SetXTitle("p_{T} (GeV/c)");
   alltrk->SetYTitle("Annual yield in EMCAL dN/dp_{T} (GeV/c)^{-1}");
   alltrk->SetTitle("PID comparison: Tracking only vs. EMCAL only");
-  alltrk->Smooth(2);
-  alltrk->Rebin(2); alltrk->Scale(0.5);
+  alltrk->Rebin(5); alltrk->Scale(0.2);
   alltrk->GetYaxis()->SetRangeUser(10.,alltrk->GetMaximum()*2.);
   alltrk->GetXaxis()->SetRangeUser(10.,49.);
   alltrk->Draw();
-  htrk->Smooth(2);
-  htrk->Rebin(2); htrk->Scale(0.5);
+  htrk->Rebin(5); htrk->Scale(0.2);
   htrk->Draw("same");
   TH1F* tempallemc = (TH1F*)allemc->Clone();
   tempallemc->SetNameTitle("tempallemc","tempallemc");
   tempallemc->SetLineColor(kBlue);
-  tempallemc->Rebin(2); tempallemc->Scale(0.5);
+  tempallemc->Rebin(5); tempallemc->Scale(0.2);
   tempallemc->Draw("same");
   
   TH1F* temphemc = (TH1F*)hemc->Clone();
   temphemc->SetNameTitle("temphemc","temphemc");
   temphemc->SetLineColor(kOrange-3);
-  temphemc->Rebin(2); temphemc->Scale(0.5);
+  temphemc->Rebin(5); temphemc->Scale(0.2);
   temphemc->Draw("same");
 
   TLegend* leg2 = new TLegend(0.35,0.6,0.9,0.9);
@@ -89,8 +86,6 @@ void plotPIDCompare(char* which = "TTE") {
   subtrk->SetLineColor(kRed);
   subtrk->SetMarkerStyle(20); subtrk->SetMarkerColor(kRed);
   subtrk->Draw();
-  //  sumtrk->Rebin(2); sumtrk->Scale(0.5);
-  //sumtrk->Draw("same");
 
   TH1F* subemc = (TH1F*)tempallemc->Clone();
   for(Int_t i = 1; i <= tempallemc->GetNbinsX(); i++) {
@@ -106,7 +101,7 @@ void plotPIDCompare(char* which = "TTE") {
 
   TFile* effic = new TFile("elec_eff.root");
   TH1F* heff = (TH1F*)effic->Get("h111");
-  heff->Rebin(2); heff->Scale(0.5);
+  heff->Rebin(5); heff->Scale(0.2);
   TH1F* hcorr = (TH1F*)subemc->Clone();
   hcorr->SetName("hcorr");
   for(Int_t i = 1; i < heff->GetNbinsX(); i++) {
@@ -131,7 +126,7 @@ void plotPIDCompare(char* which = "TTE") {
   hcorr->SetLineColor(kBlue);
   hcorr->Draw("same");
   
-  allmc->Draw("same");
+  allMC->Draw("same");
   mchad->Draw("same");
 
   TLegend *legx = new TLegend(0.3,0.7,0.9,0.9);
@@ -139,14 +134,14 @@ void plotPIDCompare(char* which = "TTE") {
   legx->AddEntry(subtrk,"Signal (candidates - contam) (Tracking PID only)","pl");
   legx->AddEntry(hcorr,"Eff. corrected signal (EMCAL PID)","pl");
   legx->AddEntry(eerr,"Systematic uncertainty","f");
-  legx->AddEntry(allmc,"MC Electrons","l");
+  legx->AddEntry(allMC,"MC Electrons","l");
   legx->AddEntry(mchad,"MC Hadrons","l");
   legx->Draw();
 
   
   TLatex* latex = new TLatex(0.5,0.6,"Unc = #frac{S}{#sqrt{S+2B}}");
   latex->SetNDC();
-  latex->Draw();
+  //  latex->Draw();
 
   crates->Print("NPERates_PIDCompare_all.pdf");
 }
