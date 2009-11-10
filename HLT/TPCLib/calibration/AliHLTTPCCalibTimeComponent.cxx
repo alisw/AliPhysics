@@ -37,6 +37,7 @@ using namespace std;
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "AliESDfriend.h"
 
 #include "AliTPCcalibTime.h"
 #include "AliTPCseed.h"
@@ -189,6 +190,9 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
     fESDevent = dynamic_cast<AliESDEvent*>(iter);
     fESDevent->CreateStdContent();
     
+    AliESDfriend *f = new AliESDfriend();
+    fESDevent->AddObject(f);
+    
     //fESDevent->SetTimeStamp(1256910155);
     //fESDevent->SetRunNumber(84714);
     //HLTInfo("time stamp and event number -----: %d, %d\n", fESDevent->GetTimeStamp(), fESDevent->GetRunNumber());
@@ -204,15 +208,16 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
         if(!seed) continue; 
                     
         fESDtrack = fESDevent->GetTrack(i);
+	if(!fESDtrack) continue;
         fESDfriendTrack = const_cast<AliESDfriendTrack*>(fESDtrack->GetFriendTrack());
+	if(!fESDfriendTrack) continue;
       
         cal->RefitTrack(fESDtrack, seed, GetBz());
 
         AliTPCseed *seedCopy = new AliTPCseed(*seed, kTRUE); 
-        fESDtrack->AddCalibObject(seedCopy);      
-        //fESDfriendTrack->AddCalibObject(seed);
-      
-        fCalibTime->ProcessAlignITS(fESDtrack,fESDfriendTrack);
+        //fESDtrack->AddCalibObject(seedCopy);      
+        fESDfriendTrack->AddCalibObject(seedCopy);
+        
     }
   } 
     
