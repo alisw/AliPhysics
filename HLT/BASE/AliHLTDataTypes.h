@@ -249,6 +249,11 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTDAQRDOUTDataTypeID "DAQRDOUT"
 
+/** HLT readout list.
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTReadoutListDataTypeID {'H','L','T','R','D','L','S','T'}
+
 /** EventType event 
  * - empty payload, specification gives eventType
  * @ingroup alihlt_component_datatypes
@@ -965,6 +970,12 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeTriggerDecision;   // {TRIG_DEC:HLT }
+
+  /** Trigger decision
+   * - origin : kAliHLTDataOriginOut ( HLT )
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeReadoutList;   // {HLTRDLST:HLT }
 
   /** Global trigger decision
    * - origin : kAliHLTDataOriginOut ( HLT )

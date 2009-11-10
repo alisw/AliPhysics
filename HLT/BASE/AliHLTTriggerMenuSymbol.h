@@ -84,12 +84,12 @@ class AliHLTTriggerMenuSymbol : public TObject
   const char* RealName() const;
   
   /**
-   * Returns the symbol name.
+   * Returns the valid C++ symbol name.
    */
   const char* Name() const { return fName.Data(); }
 
   /**
-   * Set the symbol name.
+   * Set the symbol name. It can contain '-' characters.
    */
   void Name(const char* value);
   
@@ -172,7 +172,9 @@ class AliHLTTriggerMenuSymbol : public TObject
   /**
    * Set the expression to assign the symbol value.
    * The keyword 'this' is used as the place holder of the object in the matched
-   * data block.
+   * data block. For example if we want to get a public attribute names xyz from
+   * the object to assign to the symbol we would write the assignment expression
+   * as "this->xyz".
    */
   void AssignExpression(const char* value) { fAssignExpr = value; }
   
@@ -188,7 +190,7 @@ class AliHLTTriggerMenuSymbol : public TObject
 
  private:
   
-  TString fName;  /// The name of the symbol (Must be a valid C++ variable name).
+  TString fName;  /// The name of the symbol (Must be a valid C++ variable name but can contain the '-' character as an extention).
   TString fType;  /// The data type of the symbol (Must be a valid C++ type name).
   AliHLTDomainEntry fBlockType;  /// The data block type and specification this symbol is fetched from.
   TString fClass;  /// The class name of the object to read from (Must be a valid C++ class name).

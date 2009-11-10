@@ -53,6 +53,20 @@ AliHLTTrigger::~AliHLTTrigger()
 }
 
 
+void AliHLTTrigger::GetInputDataTypes(AliHLTComponentDataTypeList& list) const
+{
+  // Returns the kAliHLTAnyDataType type as input.
+  list.push_back(kAliHLTAnyDataType);
+}
+
+
+void AliHLTTrigger::GetOutputDataTypes(AliHLTComponentDataTypeList& list) const
+{
+  // Returns the kAliHLTDataTypeTriggerDecision type as output.
+  list.push_back(kAliHLTDataTypeTriggerDecision);
+}
+
+
 void AliHLTTrigger::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
   // Returns output data size estimate.
@@ -109,7 +123,7 @@ int AliHLTTrigger::TriggerEvent(bool value)
   AliHLTTriggerDecision triggerResult(value, GetTriggerName(), fTriggerDomain, fDescription);
   // Append the readout list if it contains anything.
   triggerResult.TriggerDomain().Add(fReadoutList);
-  return TriggerEvent(&triggerResult, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
+  return TriggerEvent(&triggerResult, kAliHLTDataTypeTriggerDecision);
 }
 
 
@@ -124,7 +138,7 @@ int AliHLTTrigger::TriggerEvent(
   if (fTriggerEventResult != 0) return fTriggerEventResult;  // Do not do anything if a previous call failed.
   fTriggerEventResult = PushBack(result, type, spec);
   if (fTriggerEventResult == 0) {
-    fTriggerEventResult = PushBack(result->ReadoutList().Buffer(), result->ReadoutList().BufferSize(), "HLTRDLST", "HLT "/*kAliHLTDataTypeDAQRDOUT|kAliHLTDataOriginOut*/);
+    fTriggerEventResult = PushBack(result->ReadoutList().Buffer(), result->ReadoutList().BufferSize(), kAliHLTDataTypeReadoutList);
   }
   
   if (fTriggerEventResult == 0) fDecisionMade = true;
@@ -151,7 +165,7 @@ int AliHLTTrigger::GetOutputDataTypes(AliHLTComponentDataTypeList& list)
   // of the GetOutputDataTypes method.
   const AliHLTTrigger* t = this;
   t->GetOutputDataTypes(list);
-  list.push_back(kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
+  list.push_back(kAliHLTDataTypeReadoutList);
   return list.size();
 }
 

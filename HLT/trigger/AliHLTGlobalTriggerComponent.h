@@ -98,6 +98,13 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    * @return string containing the global trigger name.
    */
   virtual const char* GetTriggerName() const { return "HLTGlobalTrigger"; };
+
+  /**
+   * Inherited from AliHLTTrigger.
+   * This returns kAliHLTDataTypeGlobalTrigger by default.
+   * @param list <i>[out]</i>: The list of data types to be filled.
+   */
+  virtual void GetOutputDataTypes(AliHLTComponentDataTypeList& list) const;
   
   /**
    * Get a ratio by how much the data volume is shrunk or enhanced.

@@ -100,6 +100,13 @@ AliHLTGlobalTriggerComponent::~AliHLTGlobalTriggerComponent()
 }
 
 
+void AliHLTGlobalTriggerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& list) const
+{
+  // Returns the kAliHLTDataTypeGlobalTrigger type as output.
+  list.push_back(kAliHLTDataTypeGlobalTrigger);
+}
+
+
 void AliHLTGlobalTriggerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
   // Returns the output data size estimate.
@@ -404,7 +411,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
 
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 3);
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 4);
-  if (TriggerEvent(&decision) == -ENOSPC)
+  if (TriggerEvent(&decision, kAliHLTDataTypeGlobalTrigger) == -ENOSPC)
   {
     // Increase the estimated buffer space required if the PushBack methods in TriggerEvent
     // returned the "no buffer space" error code. Also remember to set the trigger counters
@@ -686,11 +693,11 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   for (Int_t i = 0; i < symbols.GetEntriesFast(); i++)
   {
     AliHLTTriggerMenuSymbol* symbol = static_cast<AliHLTTriggerMenuSymbol*>( symbols.UncheckedAt(i) );
-    code << "      if (strcmp(symbol->Name(), \"" << symbol->RealName() << "\") == 0) {" << endl;
+    code << "      if (strcmp(symbol->RealName(), \"" << symbol->RealName() << "\") == 0) {" << endl;
     if (fDebugMode)
     {
       code << "        HLTDebug(Form(\"Assinging domain entry value corresponding with symbol '%s' to '%s'.\","
-              " symbol->Name(), symbol->BlockType().AsString().Data()));" << endl;
+              " symbol->RealName(), symbol->BlockType().AsString().Data()));" << endl;
     }
     code << "        " << symbol->Name() << "DomainEntry = symbol->BlockType();" << endl;
     code << "        continue;" << endl;
@@ -1268,6 +1275,12 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
   // implementation class.
   // See header for more details.
   
+  // Note: when we build the symbol list we must use the symbol name as returned
+  // by the Name() method and not the RealName() method when using FindSymbol.
+  // This is so that we avoid problems with the generated code not compiling
+  // because names like "abc-xyz" and "abc_xyz" are synonymous.
+  // Name() returns the converted C++ symbol name as used in the generated code.
+  
   for (UInt_t i = 0; i < menu->NumberOfSymbols(); i++)
   {
     const AliHLTTriggerMenuSymbol* symbol = menu->Symbol(i);
@@ -1323,14 +1336,16 @@ int AliHLTGlobalTriggerComponent::BuildSymbolList(const AliHLTTriggerMenu* menu,
         continue;
       }
 
-      if (FindSymbol(s.Data(), list) == -1)
+      // Need to create the symbols first and check if its name is in the list
+      // before actually adding it to the symbols list.
+      AliHLTTriggerMenuSymbol newSymbol;
+      newSymbol.Name(s.Data());
+      newSymbol.Type("bool");
+      newSymbol.ObjectClass("AliHLTTriggerDecision");
+      newSymbol.AssignExpression("this->Result()");
+      newSymbol.DefaultValue("false");
+      if (FindSymbol(newSymbol.Name(), list) == -1)
       {
-        AliHLTTriggerMenuSymbol newSymbol;
-        newSymbol.Name(s.Data());
-        newSymbol.Type("bool");
-        newSymbol.ObjectClass("AliHLTTriggerDecision");
-        newSymbol.AssignExpression("this->Result()");
-        newSymbol.DefaultValue("false");
         new (list[list.GetEntriesFast()]) AliHLTTriggerMenuSymbol(newSymbol);
       }
     }

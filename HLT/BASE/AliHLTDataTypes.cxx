@@ -138,6 +138,10 @@ const AliHLTComponentDataType kAliHLTDataTypeRunSummary = AliHLTComponentDataTyp
 const char kAliHLTTriggerDecisionDataTypeIDstring[8] = kAliHLTTriggerDecisionDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeTriggerDecision = AliHLTComponentDataTypeInitializer(kAliHLTTriggerDecisionDataTypeIDstring, kAliHLTDataOriginOut);
 
+/** HLT readout list from trigger component */
+const char kAliHLTReadoutListDataTypeIDstring[8] = kAliHLTReadoutListDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeReadoutList = AliHLTComponentDataTypeInitializer(kAliHLTReadoutListDataTypeIDstring, kAliHLTDataOriginOut);
+
 /** Global trigger decision */
 const char kAliHLTGlobalTriggerDataTypeIDstring[8] = kAliHLTGlobalTriggerDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeGlobalTrigger = AliHLTComponentDataTypeInitializer(kAliHLTGlobalTriggerDataTypeIDstring, kAliHLTDataOriginOut);

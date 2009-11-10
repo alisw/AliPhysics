@@ -74,6 +74,11 @@ class AliHLTTrigger : public AliHLTProcessor
    * Returns the name of the trigger. This must be unique across the system.
    * This method is pure virtual and must be implemented by child classes.
    * @return string containing the trigger name.
+   * \note The name returned by this method should be a valid C++ symbol name.
+   *    Otherwise the global trigger component will not be able to handle the
+   *    derived trigger component properly.
+   *    As an extention the '-' character is allowed in the symbol name,
+   *    but not as the first character.
    */
   virtual const char* GetTriggerName() const = 0;
   
@@ -88,19 +93,16 @@ class AliHLTTrigger : public AliHLTProcessor
    * This method returns kAliHLTAnyDataType by default.
    * @param list <i>[out]</i>: The list of data types to be filled.
    */
-  virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list) const
-  {
-    list.push_back(kAliHLTAnyDataType);
-  }
+  virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list) const;
 
   /**
    * Returns extra output data types this trigger generates.
-   * This returns an empty list by default.
+   * This returns kAliHLTDataTypeTriggerDecision by default.
    * @param list <i>[out]</i>: The list of data types to be filled.
    * \note The underlying non const version of GetOutputDataTypes adds the value
-   *    kAliHLTDataTypeTObject to the list.
+   *    kAliHLTDataTypeReadoutList to the list automatically.
    */
-  virtual void GetOutputDataTypes(AliHLTComponentDataTypeList& /*list*/) const {}
+  virtual void GetOutputDataTypes(AliHLTComponentDataTypeList& list) const;
 
   /**
    * Get a ratio by how much the data volume is shrunk or enhanced.
