@@ -57,7 +57,7 @@ public:
 
   void			ComputeRepresentation();
   const AliTRDarrayADC*	GetData() const {return fData.HasData() ? &fData : 0x0;}
-  void			Paint(Option_t *opt="");
+  //void			Paint(Option_t *opt="");
   void			Reset();
   void			SetData(AliTRDdigitsManager *digits);
 
