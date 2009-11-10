@@ -29,7 +29,7 @@ public:
   enum HRawType_t { 
     // first normal Low Gain and High Gain info
     kNsmodLG,kNsmodHG,kTimeLG,kTimeHG,
-    kSigLG,kSigHG,kNtotLG,kNtotHG,kNEventsPerTower,
+    kSigLG,kSigHG,kNtotLG,kNtotHG,kTowerHG,kTowerLG,
     kPedLG,kPedHG,
     kPedRMSLG,kPedRMSHG,
     // then TRU info

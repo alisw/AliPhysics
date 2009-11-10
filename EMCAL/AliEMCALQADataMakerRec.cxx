@@ -94,9 +94,9 @@ void AliEMCALQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
 {
   //Detector specific actions at end of cycle
 	
-  if(fCycleCounter)
-	  GetRawsData(kNEventsPerTower)->Scale(1./fCycleCounter);
-	
+//  if(fCycleCounter)
+//	  GetRawsData(kNEventsPerTower)->Scale(1./fCycleCounter);
+
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQAv1::kEMCAL, task, list) ;  
 }
@@ -108,7 +108,7 @@ void AliEMCALQADataMakerRec::InitESDs()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F * h1 = new TH1F("hESDCaloClusterE",  "ESDs CaloCluster energy in EMCAL;Energy [MeV];Counts",    200, 0., 20.) ; 
+  TH1F * h1 = new TH1F("hESDCaloClusterE",  "ESDs CaloCluster energy in EMCAL;Energy [GeV];Counts",    200, 0., 100.) ; 
   h1->Sumw2() ;
   Add2ESDsList(h1, kESDCaloClusE, !expert, image)  ;                                                     
 
@@ -116,7 +116,7 @@ void AliEMCALQADataMakerRec::InitESDs()
   h2->Sumw2() ;
   Add2ESDsList(h2, kESDCaloClusM, !expert, image)  ;
 
-  TH1F * h3 = new TH1F("hESDCaloCellA",  "ESDs CaloCell amplitude in EMCAL;Energy [MeV];Counts",    500, 0., 250.) ; 
+  TH1F * h3 = new TH1F("hESDCaloCellA",  "ESDs CaloCell amplitude in EMCAL;Energy [GeV];Counts",    500, 0., 50.) ; 
   h3->Sumw2() ;
   Add2ESDsList(h3, kESDCaloCellA, !expert, image)  ;  
  
@@ -148,7 +148,7 @@ void AliEMCALQADataMakerRec::InitRecPoints()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F* h0 = new TH1F("hEMCALRpE","EMCAL RecPoint energies;Energy [MeV];Counts",200, 0.,20.); //GeV
+  TH1F* h0 = new TH1F("hEMCALRpE","EMCAL RecPoint energies;Energy [GeV];Counts",200, 0.,20.); //GeV
   h0->Sumw2();
   Add2RecPointsList(h0,kRecPE, !expert, image);
 
@@ -222,11 +222,12 @@ void AliEMCALQADataMakerRec::InitRaws()
   Add2RawsList(h11, kPedRMSHG, expert, image, !saveCorr) ;
 	
  //number of events per tower, for shifter fast check  	
-  TH1I * h12 = new TH1I("hNEventsPerTower", "Number of events per tower;Tower", 200,0, nTot) ;
+  TH1I * h12 = new TH1I("hTowerHG", "High Gains on the Tower;Tower", nTot,0, nTot) ;
   h12->Sumw2() ;
-  Add2RawsList(h12, kNEventsPerTower, !expert, image, !saveCorr) ;
-	
-	
+  Add2RawsList(h12, kTowerHG, !expert, image, !saveCorr) ;
+  TH1I * h13 = new TH1I("hTowerLG", "Low Gains on the Tower;Tower", nTot,0, nTot) ;
+  h13->Sumw2() ;
+  Add2RawsList(h13, kTowerLG, !expert, image, !saveCorr) ;		
 
   // now repeat the same for TRU and LEDMon data
   int nTot2x2 = fSuperModules * AliEMCALGeoParams::fgkEMCALTRUsPerSM * AliEMCALGeoParams::fgkEMCAL2x2PerTRU; // max number of TRU channels for all SuperModules
@@ -454,14 +455,13 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	if ( in.IsLowGain() || in.IsHighGain() ) { // regular towers
 	  int towerId = iSM*nTowersPerSM + in.GetColumn()*nRows + in.GetRow();
 	
-		GetRawsData(kNEventsPerTower)->Fill(towerId);
-	
 
 	  if ( in.IsLowGain() ) { 
 	    //fill the low gain histograms, and counters
 	    nTotalSMLG[iSM]++; // one more channel found
 	    GetRawsData(kSigLG)->Fill(towerId, max - min);
 	    GetRawsData(kTimeLG)->Fill(towerId, maxTime);
+		GetRawsData(kTowerLG)->Fill(towerId);
 	    if (nSum>0) { // only fill pedestal info in case it could be calculated
 	      GetRawsData(kPedLG)->Fill(towerId, meanPed);
 	      GetRawsData(kPedRMSLG)->Fill(towerId, rmsPed);
@@ -476,6 +476,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	    if ( (signal > fMinSignalHG) && (signal < fMaxSignalHG) ) { 
 	      GetRawsData(kSigHG)->Fill(towerId, signal);
 	      GetRawsData(kTimeHG)->Fill(towerId, maxTime);
+		  GetRawsData(kTowerHG)->Fill(towerId);
 	    } // signal
 	    if (nSum>0) { // only fill pedestal info in case it could be calculated
 	      GetRawsData(kPedHG)->Fill(towerId, meanPed);
