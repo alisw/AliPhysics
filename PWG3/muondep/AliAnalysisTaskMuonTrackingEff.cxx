@@ -57,7 +57,6 @@ const Int_t AliAnalysisTaskMuonTrackingEff::fTotNbrOfChamber  = 10;
 //________________________________________________________________________
 AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff()
   :
-  fIsCosmicData(kFALSE),
   AliAnalysisTask(),
   fTransformer(0x0),
   fESD(0x0),
@@ -66,14 +65,14 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff()
   fDetEltTTHistList(0x0),
   fChamberEffHistList(0x0),
   fChamberTDHistList(0x0),
-  fChamberTTHistList(0x0)
+  fChamberTTHistList(0x0),
+  fIsCosmicData(kFALSE)
 {
 /// Default constructor
 }
 //________________________________________________________________________
 AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const AliAnalysisTaskMuonTrackingEff& src)
   :
-  fIsCosmicData(kFALSE),
   AliAnalysisTask(src),
   fTransformer(0x0),
   fESD(0x0),
@@ -82,7 +81,8 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const AliAnalysis
   fDetEltTTHistList(0x0),
   fChamberEffHistList(0x0),
   fChamberTDHistList(0x0),
-  fChamberTTHistList(0x0)
+  fChamberTTHistList(0x0),
+  fIsCosmicData(kFALSE)
 {
   /// copy ctor
   src.Copy(*this);
@@ -103,7 +103,6 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
 							       const AliMUONGeometryTransformer* transformer,
 							       Bool_t isCosmic)
   :
-  fIsCosmicData(kFALSE),
   AliAnalysisTask(name, "AnalysisTaskESD"),
   fTransformer(transformer),
   fESD(0x0),
@@ -112,7 +111,8 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
   fDetEltTTHistList(0x0),
   fChamberEffHistList(0x0),
   fChamberTDHistList(0x0),
-  fChamberTTHistList(0x0)
+  fChamberTTHistList(0x0),
+  fIsCosmicData(kFALSE)
 {
 //Constructor
 //-----------
