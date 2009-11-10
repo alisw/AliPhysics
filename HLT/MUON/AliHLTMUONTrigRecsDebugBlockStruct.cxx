@@ -13,12 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 /**
  * @file   AliHLTMUONTrigRecsDebugBlockStruct.cxx
  * @author Artur Szostak <artursz@iafrica.com>
- * @date   
+ * @date   19 May 2007
  * @brief  Implementation of useful stream and comparison operators.
  */
 

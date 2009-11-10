@@ -1,7 +1,7 @@
 #ifndef ALIHLTMUONRECHITSSOURCE_H
 #define ALIHLTMUONRECHITSSOURCE_H
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
@@ -12,16 +12,16 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 ///
 /// @file   AliHLTMUONRecHitsSource.h
 /// @author Artur Szostak <artursz@iafrica.com>
-/// @date   
+/// @date   28 May 2007
 /// @brief  Class for generating reconstructed hits data blocks from AliRoot data.
 ///
 

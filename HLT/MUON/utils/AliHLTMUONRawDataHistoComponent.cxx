@@ -14,7 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
+// $Id: $
 
 ///
 ///  @file   AliHLTMUONRawDataHistoComponent.cxx
@@ -22,7 +22,8 @@
 ///  @date   30 April 2008
 ///  @brief  Implementation of the raw data histogramming component for dHLT.
 ///
-/// The class implements 
+/// The class implements a component for checking basic statistics and errors in
+/// raw data from the muon spectrometer. It is useful for basic monitoring.
 
 #include "AliHLTMUONRawDataHistoComponent.h"
 #include "AliHLTMUONConstants.h"
@@ -290,8 +291,8 @@ int AliHLTMUONRawDataHistoComponent::DoDeinit()
 
 
 int AliHLTMUONRawDataHistoComponent::DoEvent(
-		const AliHLTComponentEventData& /*evtData*/,
-		AliHLTComponentTriggerData& /*trigData*/
+		const AliHLTComponentEventData& evtData,
+		AliHLTComponentTriggerData& trigData
 	)
 {
 	/// Inherited from AliHLTProcessor.
@@ -312,11 +313,21 @@ int AliHLTMUONRawDataHistoComponent::DoEvent(
 
 		if (AliHLTMUONUtils::IsTrackerDDL(block->fSpecification))
 		{
-			ProcessTrackerDDL(block);
+			bool decodeOk = ProcessTrackerDDL(block);
+			if (not decodeOk and DumpDataOnError())
+			{
+				DumpEvent(evtData, trigData);
+				return -EIO;
+			}
 		}
 		else if (AliHLTMUONUtils::IsTriggerDDL(block->fSpecification))
 		{
-			ProcessTriggerDDL(block);
+			bool decodeOk = ProcessTriggerDDL(block);
+			if (not decodeOk and DumpDataOnError())
+			{
+				DumpEvent(evtData, trigData);
+				return -EIO;
+			}
 		}
 		else
 		{
@@ -364,7 +375,7 @@ int AliHLTMUONRawDataHistoComponent::DoEvent(
 }
 
 
-void AliHLTMUONRawDataHistoComponent::ProcessTrackerDDL(const AliHLTComponentBlockData* block)
+bool AliHLTMUONRawDataHistoComponent::ProcessTrackerDDL(const AliHLTComponentBlockData* block)
 {
 	/// Processes a raw data block from the tracker stations.
 	
@@ -380,7 +391,7 @@ void AliHLTMUONRawDataHistoComponent::ProcessTrackerDDL(const AliHLTComponentBlo
 		AliHLTUInt8_t* payload = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr)
 			+ sizeof(AliRawDataHeader);
 		UInt_t payloadSize = UInt_t(block->fSize) - sizeof(AliRawDataHeader);
-		fTrackerDecoder.Decode(payload, payloadSize);
+		return fTrackerDecoder.Decode(payload, payloadSize);
 	}
 	else
 	{
@@ -390,10 +401,11 @@ void AliHLTMUONRawDataHistoComponent::ProcessTrackerDDL(const AliHLTComponentBlo
 		);
 		fErrorHist[ddl]->Fill(40);
 	}
+	return false;
 }
 
 
-void AliHLTMUONRawDataHistoComponent::ProcessTriggerDDL(const AliHLTComponentBlockData* block)
+bool AliHLTMUONRawDataHistoComponent::ProcessTriggerDDL(const AliHLTComponentBlockData* block)
 {
 	/// Processes a raw data block from the trigger stations.
 	
@@ -408,7 +420,7 @@ void AliHLTMUONRawDataHistoComponent::ProcessTriggerDDL(const AliHLTComponentBlo
 		AliHLTUInt8_t* payload = reinterpret_cast<AliHLTUInt8_t*>(header+1);
 		UInt_t payloadSize = UInt_t(block->fSize) - sizeof(AliRawDataHeader);
 		bool scalarEvent = ((header->GetL1TriggerMessage() & 0x1) == 0x1);
-		fTriggerDecoder.Decode(payload, payloadSize, scalarEvent);
+		return fTriggerDecoder.Decode(payload, payloadSize, scalarEvent);
 	}
 	else
 	{
@@ -418,6 +430,7 @@ void AliHLTMUONRawDataHistoComponent::ProcessTriggerDDL(const AliHLTComponentBlo
 		);
 		fErrorHist[ddl]->Fill(40);
 	}
+	return false;
 }
 
 

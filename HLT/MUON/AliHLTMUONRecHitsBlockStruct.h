@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+// $Id$
 
 /**
  * @file   AliHLTMUONRecHitsBlockStruct.h
@@ -11,7 +11,7 @@
  *         Artur Szostak <artursz@iafrica.com>
  * @date   17 May 2007
  * @brief  Definition of internal dimuon HLT reconstructed hit data block structure.
- * 
+ *
  * The structures are defined with C linkage since C generally gives us more
  * binary compatibility between compilers.
  */

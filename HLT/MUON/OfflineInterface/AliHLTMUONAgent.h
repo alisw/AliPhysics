@@ -3,14 +3,13 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+// $Id$
 
 ///
 /// @file   AliHLTMUONAgent.h
 /// @author Artur Szostak <artursz@iafrica.com>
 /// @date   28 May 2007
-/// @brief  The HLT module agent for libAliHLTMUON.so which interfaces HLT
-///         components with offline.
+/// @brief  The HLT module agent for libAliHLTMUON.so which interfaces HLT components with offline.
 ///
 
 #include "AliHLTModuleAgent.h"

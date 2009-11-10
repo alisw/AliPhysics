@@ -4,7 +4,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+// $Id$
 
 ///
 /// @file   AliHLTMUONRootifierComponent.h
@@ -16,7 +16,52 @@
 #include "AliHLTMUONProcessor.h"
 
 /**
- * Converts dHLT raw data blocks into ROOT objects.
+ * \class AliHLTMUONRootifierComponent
+ * \brief Converts dHLT raw data blocks into ROOT objects.
+ *
+ * This component class is used to convert all internal raw dHLT data blocks into
+ * ROOT object that can be stored in '.root' files in a platform independant manner.
+ * This can also make some of the analysis easier because the dHLT internal data
+ * will be available in TObjects.
+ *
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b MUONRootifier <br>
+ * Library: \b libAliHLTMUON.so <br>
+ * Input Data Types:  kAliHLTAnyDataType = "*******:***" <br>
+ * Output Data Types: AliHLTMUONConstants::RootifiedEventDataType() = "ROOTEVNT:MUON" <br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * None.
+ *
+ * <h2>Optional arguments:</h2>
+ * \li -warn_on_unexpected_block <br>
+ *      This will cause the component to generate warnings when it receives data block
+ *      types it does not know how to handle. Without this option the component only
+ *      generates debug messages when they are compiled in. <br>
+ * \li -dumponerror <br>
+ *      This flag will cause the component to dump the data blocks it received if
+ *      an error occurs during the processing of an event. <br>
+ * \li -dumppath <i>path</i> <br>
+ *      Allows one to specify the path in which to dump the received data blocks
+ *      if an error occurs. <br>
+ *
+ * <h2>Standard configuration:</h2>
+ * There is no special configuration for this component.
+ *
+ * <h2>Default CDB entries:</h2>
+ * None.
+ *
+ * <h2>Performance:</h2>
+ * A few milliseconds per event.
+ *
+ * <h2>Memory consumption:</h2>
+ * A few MBytes.
+ *
+ * <h2>Output size:</h2>
+ * A few kBytes.
+ *
+ * @ingroup alihlt_dimuon_component
  */
 class AliHLTMUONRootifierComponent : public AliHLTMUONProcessor
 {

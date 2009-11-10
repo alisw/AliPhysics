@@ -1,5 +1,5 @@
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
@@ -10,11 +10,11 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 ///
 /// @file   AliHLTMUONRootifierComponent.cxx
@@ -22,6 +22,7 @@
 /// @date   29 Sep 2007
 /// @brief  Implementation of the AliHLTMUONRootifierComponent component.
 ///
+/// Implements a component to convert dHLT raw data into TObjects.
 
 #include "AliHLTMUONRootifierComponent.h"
 #include "AliHLTMUONEvent.h"
@@ -139,7 +140,7 @@ int AliHLTMUONRootifierComponent::GetOutputDataTypes(AliHLTComponentDataTypeList
 {
 	/// Inherited from AliHLTComponent. Returns the output data types.
 	
-	tgtList.push_back(kAliHLTAnyDataType);
+	tgtList.push_back(AliHLTMUONConstants::RootifiedEventDataType());
 	return tgtList.size();
 }
 

@@ -14,7 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 /**
  * \ingroup macros
@@ -105,6 +105,18 @@ using std::endl;
  *      for consistency with the AliHLTMUONDataCheckerComponent.
  * @param rawDataPath  The path of the raw data (i.e. path to the rawXX directories)
  *      or can be the file name if using the "rawreader" option for dataSource.
+ * @param runNumber  Specifies the run number to use. If it is set to -1 then the
+ *      run number is not set if the CDB manager already has a run number set,
+ *      otherwise a default run number of 0 is used. The default value is -1.
+ * @param cdbPath  This gives the CDB path to use. If it is set to NULL then
+ *      the CDB path is not set if the CDB manager already has a default storage
+ *      CDB path set, otherwise a default value of "local://$ALICE_ROOT/OCDB" is used.
+ *      The default value is NULL.
+ * @param tryrecover  If this is true then the "-tryrecover" flag is set in the
+ *      raw data reconstruction components. This is useful if when running RunChain
+ *      log messages appear indicating that there was a problem decoding the raw data.
+ *      The "-tryrecover" flag will turn on recovery logic in the raw data decoders
+ *      to try and overcome errors in the data.
  */
 void RunChain(
 		const char* chainType = "full",
@@ -115,7 +127,10 @@ void RunChain(
 		const char* logLevel = "normal",
 		const char* lutDir = "CDB",
 		bool checkData = false,
-		const char* rawDataPath = "./"
+		const char* rawDataPath = "./",
+		Int_t runNumber = -1,
+		const char* cdbPath = NULL,
+		bool tryrecover = false
 	)
 {
 	// Setup the CDB default storage and run number if nothing was set.
@@ -125,13 +140,27 @@ void RunChain(
 		cerr << "ERROR: Global CDB manager object does not exist." << endl;
 		return;
 	}
-	if (cdbManager->GetDefaultStorage() == NULL)
+	if (runNumber != -1)
+	{
+		cdbManager->SetRun(runNumber);
+	}
+	else if (cdbManager->GetRun() == -1)
+	{
+		cdbManager->SetRun(0);
+	}
+	if (cdbPath != NULL)
+	{
+		cdbManager->SetDefaultStorage(cdbPath);
+	}
+	else if (cdbManager->GetDefaultStorage() == NULL)
 	{
 		cdbManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 	}
-	if (cdbManager->GetRun() == -1)
+	
+	if (cdbManager->GetDefaultStorage() == NULL)
 	{
-		cdbManager->SetRun(0);
+		cerr << "ERROR: There is no value for the default CDB storage, cannot continue." << endl;
+		return;
 	}
 
 	// Make sure that the lastEvent is greater than firstEvent.
@@ -388,31 +417,31 @@ void RunChain(
 	// these components if we are are building the ddlreco or full chains.
 	if (buildDDLRecoComps)
 	{
-		if (TString(lutDir) == "CDB")
+		const char* recoverFlag = tryrecover ? "-tryrecover" : "";
+		for (int k = 13; k <= 22; k++)
 		{
-			AliHLTConfiguration recDDL13("recDDL13", "MUONHitReconstructor", "pubDDL13", TString("-ddl 13 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
-			AliHLTConfiguration recDDL14("recDDL14", "MUONHitReconstructor", "pubDDL14", TString("-ddl 14 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
-			AliHLTConfiguration recDDL15("recDDL15", "MUONHitReconstructor", "pubDDL15", TString("-ddl 15 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
-			AliHLTConfiguration recDDL16("recDDL16", "MUONHitReconstructor", "pubDDL16", TString("-ddl 16 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
-			AliHLTConfiguration recDDL17("recDDL17", "MUONHitReconstructor", "pubDDL17", TString("-ddl 17 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
-			AliHLTConfiguration recDDL18("recDDL18", "MUONHitReconstructor", "pubDDL18", TString("-ddl 18 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
-			AliHLTConfiguration recDDL19("recDDL19", "MUONHitReconstructor", "pubDDL19", TString("-ddl 19 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
-			AliHLTConfiguration recDDL20("recDDL20", "MUONHitReconstructor", "pubDDL20", TString("-ddl 20 -cdbpath local://$ALICE_ROOT/OCDB -run 0"));
-			AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", TString("-ddl 21 -cdbpath local://$ALICE_ROOT/OCDB -run 0 -suppress_partial_triggers"));
-			AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", TString("-ddl 22 -cdbpath local://$ALICE_ROOT/OCDB -run 0 -suppress_partial_triggers"));
-		}
-		else
-		{
-			AliHLTConfiguration recDDL13("recDDL13", "MUONHitReconstructor", "pubDDL13", TString("-ddl 13 -lut ") + lutDir + TString("/Lut13.dat"));
-			AliHLTConfiguration recDDL14("recDDL14", "MUONHitReconstructor", "pubDDL14", TString("-ddl 14 -lut ") + lutDir + TString("/Lut14.dat"));
-			AliHLTConfiguration recDDL15("recDDL15", "MUONHitReconstructor", "pubDDL15", TString("-ddl 15 -lut ") + lutDir + TString("/Lut15.dat"));
-			AliHLTConfiguration recDDL16("recDDL16", "MUONHitReconstructor", "pubDDL16", TString("-ddl 16 -lut ") + lutDir + TString("/Lut16.dat"));
-			AliHLTConfiguration recDDL17("recDDL17", "MUONHitReconstructor", "pubDDL17", TString("-ddl 17 -lut ") + lutDir + TString("/Lut17.dat"));
-			AliHLTConfiguration recDDL18("recDDL18", "MUONHitReconstructor", "pubDDL18", TString("-ddl 18 -lut ") + lutDir + TString("/Lut18.dat"));
-			AliHLTConfiguration recDDL19("recDDL19", "MUONHitReconstructor", "pubDDL19", TString("-ddl 19 -lut ") + lutDir + TString("/Lut19.dat"));
-			AliHLTConfiguration recDDL20("recDDL20", "MUONHitReconstructor", "pubDDL20", TString("-ddl 20 -lut ") + lutDir + TString("/Lut20.dat"));
-			AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", TString("-ddl 21 -lut ") + lutDir + TString("/Lut21.dat -suppress_partial_triggers"));
-			AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", TString("-ddl 22 -lut ") + lutDir + TString("/Lut22.dat -suppress_partial_triggers"));
+			string compId = Form("recDDL%d", k);
+			string name = (k <= 20) ? "MUONHitReconstructor" : "MUONTriggerReconstructor";
+			string parent = Form("pubDDL%d", k);
+			string cmd;
+			if (TString(lutDir) == "CDB")
+			{
+				const char* path = cdbManager->GetDefaultStorage()->GetURI().Data();
+				cmd = Form("-ddl %d -cdbpath %s -run %d %s",
+					k, path, cdbManager->GetRun(), recoverFlag
+				);
+			}
+			else
+			{
+				cmd = Form("-ddl %d -lut %s/Lut%d.dat %s",
+					k, lutDir, k, recoverFlag
+				);
+			}
+			if (k >= 21)
+			{
+				cmd += " -suppress_partial_triggers -dont_use_crateid -dont_use_localid";
+			}
+			AliHLTConfiguration recDDL(compId.c_str(), name.c_str(), parent.c_str(), cmd.c_str());
 		}
 	}
 
@@ -521,6 +550,7 @@ void RunChain(
 			return;
 		}
 		AliHLTOfflineInterface::SetParamsToComponents(NULL, rawReader);
+		rawReader->NextEvent(); // Need to call this once here or we will start at the wrong event.
 		// Now step through the events.
 		for (int i = 0; i < firstEvent; i++) rawReader->NextEvent();
 		for (int i = firstEvent; i <= lastEvent; i++)

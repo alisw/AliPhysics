@@ -31,9 +31,10 @@ class AliHLTGlobalTrigger;
  * Component ID: \b HLTGlobalTrigger <br>
  * Library: \b libAliHLTTrigger.so   <br>
  * Input Data Types: ::kAliHLTAnyDataType <br>
- * Output Data Types: kAliHLTDataTypeTObject|kAliHLTDataOriginOut <br>
+ * Output Data Types: kAliHLTDataTypeGlobalTrigger and kAliHLTDataTypeReadoutList <br>
  *
  * <h2>Mandatory arguments:</h2>
+ * None.
  *
  * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -59,8 +60,7 @@ class AliHLTGlobalTrigger;
  *      Indicates that the CTP data should not be added to the global HLT trigger decision.
  *
  * <h2>Configuration:</h2>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- * Configuration by component arguments.
+ * Configured from CDB but can be overridden with the -config argument.
  *
  * <h2>Default CDB entries:</h2>
  * HLT/ConfigHLT/HLTGlobalTrigger - Contains the global trigger menu.

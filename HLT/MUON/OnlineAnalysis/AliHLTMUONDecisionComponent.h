@@ -4,7 +4,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: $ */
+// $Id: $
 
 ///
 ///  @file   AliHLTMUONDecisionComponent.h
@@ -43,6 +43,86 @@ extern "C" struct AliHLTMUONPairsDecisionBlockStruct;
  * are applied. The number of pairs that pass the low or high mass cut are then
  * counted. The results are encoded into two data blocks, one for trigger decisions
  * for single tracks and another for the track pairs.
+ *
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b MUONDecisionComponent <br>
+ * Library: \b libAliHLTMUON.so <br>
+ * Input Data Types: AliHLTMUONConstants::MansoTracksBlockDataType() = "MANTRACK:MUON" <br>
+ * Output Data Types: \li AliHLTMUONConstants::SinglesDecisionBlockDataType() = "DECIDSIN:MUON"
+ *                    \li AliHLTMUONConstants::PairsDecisionBlockDataType() = "DECIDPAR:MUON" <br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * None.
+ *
+ * <h2>Optional arguments:</h2>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -lowptcut <i>value</i> <br>
+ *      Sets the low pT cut value to use when applying the decision. The <i>value</i>
+ *      should be a floating point number and has units GeV/c. If this parameter is
+ *      specified then it will not be loaded from CDB. <br>
+ * \li -highptcut <i>value</i> <br>
+ *      Sets the high pT cut value to use when applying the decision. The <i>value</i>
+ *      should be a floating point number and has units GeV/c. If this parameter is
+ *      specified then it will not be loaded from CDB. <br>
+ * \li -lowmasscut <i>value</i> <br>
+ *      Sets the low invariant mass cut value to use when applying the decision.
+ *      The <i>value</i> should be a floating point number and has units GeV/c^2.
+ *      If this parameter is specified then it will not be loaded from CDB. <br>
+ * \li -highmasscut <i>value</i> <br>
+ *      Sets the high invariant mass cut value to use when applying the decision.
+ *      The <i>value</i> should be a floating point number and has units GeV/c^2.
+ *      If this parameter is specified then it will not be loaded from CDB. <br>
+ * \li -no_singles_detail <br>
+ *      If specified the detailed decision information for tracks is not added to
+ *      the output. Only the scalar values are then present in the output data block
+ *      for decisions on single tracks. <br>
+ * \li -no_pairs_detail <br>
+ *      If specified the detailed decision information for track pairs is not added
+ *      to the output. Only the scalar values are then present in the output data
+ *      block for decisions for track pairs. <br>
+ * \li -warn_on_unexpected_block <br>
+ *      This will cause the component to generate warnings when it receives data block
+ *      types it does not know how to handle. Without this option the component only
+ *      generates debug messages when they are compiled in. <br>
+ * \li -cdbpath <i>path</i> <br>
+ *      This allows one to override the path to use for the CDB location.
+ *      <i>path</i> must be a valid CDB URI. By default the HLT system framework
+ *      sets the CDB path. <br>
+ * \li -run <i>number</i> <br>
+ *      This allows one to override the run number to use. <i>number</i> must be
+ *      a positive integer number. By default the HLT system framework sets the
+ *      run number. <br>
+ * \li -delaysetup <br>
+ *      If indicated then part of the initialisation of the component is forcefully
+ *      delayed to the first event received, i.e. the Start-of-Run event. <br>
+ * \li -dumponerror <br>
+ *      This flag will cause the component to dump the data blocks it received if
+ *      an error occurs during the processing of an event. <br>
+ * \li -dumppath <i>path</i> <br>
+ *      Allows one to specify the path in which to dump the received data blocks
+ *      if an error occurs. <br>
+ *
+ * <h2>Standard configuration:</h2>
+ * The configuration is taken from the CDB by default. It can be overridden with
+ * the command line arguments.
+ *
+ * <h2>Default CDB entries:</h2>
+ * HLT/ConfigMUON/DecisionComponent - Contains a TMap with the cut parameters.
+ *
+ * <h2>Performance:</h2>
+ * For worst case numbers of tracks the decision component requires less than a
+ * millisecond to process an event.
+ *
+ * <h2>Memory consumption:</h2>
+ * This is a linear function of the input data size, but only a fraction. Thus the
+ * memory usage is minimal. It should be under 1 MBytes.
+ *
+ * <h2>Output size:</h2>
+ * This will depend linearly on the number of tracks found. But for nominal
+ * multiplicities this should be less than 16 kBytes.
+ *
+ * @ingroup alihlt_dimuon_component
  */
 class AliHLTMUONDecisionComponent : public AliHLTMUONProcessor
 {

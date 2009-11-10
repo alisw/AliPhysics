@@ -4,7 +4,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: $ */
+// $Id: $
 
 ///
 /// @file   AliHLTMUONESDMaker.h
@@ -17,6 +17,8 @@
 
 /**
  * @class AliHLTMUONESDMaker
+ * \brief Component for converting dHLT results into ESD format.
+ *
  * The component is used to convert dHLT reconstructed data into AliESDEvent
  * objects which can be stored in ROOT files during offline reconstruction.
  * Only the dHLT track and trigger record data is converted, then filled in the ESD.
@@ -32,9 +34,18 @@
  * \li -make_minimal_esd <br>
  *       Indicates that AliESDEvent objects should be created with only the TClonesArray
  *       for the muon tracks created. (default is to generate all standard ESD objects)<br>
+ * \li -add_rootified_objects <br>
+ *       If specified then the any rootified dHLT event data that is found is added to the
+ *       ESD list of objects as a custom data object.<br>
  * \li -warn_on_unexpected_block <br>
  *       If set, then warning messages are generated for any data block types that
  *       were not expected. (default is to generate only debug messages)<br>
+ * \li -dumponerror <br>
+ *      This flag will cause the component to dump the data blocks it received if
+ *      an error occurs during the processing of an event. <br>
+ * \li -dumppath <i>path</i> <br>
+ *      Allows one to specify the path in which to dump the received data blocks
+ *      if an error occurs. <br>
  *
  * @ingroup alihlt_dimuon_component
  */

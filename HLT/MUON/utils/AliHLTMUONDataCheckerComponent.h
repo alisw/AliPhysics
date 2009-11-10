@@ -4,7 +4,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliHLTMUONDataCheckerComponent.h 26179 2008-05-29 22:27:27Z aszostak $ */
+// $Id: AliHLTMUONDataCheckerComponent.h 26179 2008-05-29 22:27:27Z aszostak $
 
 ///
 /// @file   AliHLTMUONDataCheckerComponent.h
@@ -67,6 +67,20 @@ extern "C" struct AliHLTMUONMansoTrackStruct;
  *       would tell the framework that processing of the event failed. Otherwise
  *       errors are just logged but the data is considered to be processed successfully.
  *       (default behaviour is not to return errors)<br>
+ * \li -cdbpath <i>path</i> <br>
+ *      This allows one to override the path to use for the CDB location.
+ *      <i>path</i> must be a valid CDB URI. By default the HLT system framework
+ *      sets the CDB path. <br>
+ * \li -run <i>number</i> <br>
+ *      This allows one to override the run number to use. <i>number</i> must be
+ *      a positive integer number. By default the HLT system framework sets the
+ *      run number. <br>
+ * \li -dumponerror <br>
+ *      This flag will cause the component to dump the data blocks it received if
+ *      an error occurs during the processing of an event. <br>
+ * \li -dumppath <i>path</i> <br>
+ *      Allows one to specify the path in which to dump the received data blocks
+ *      if an error occurs. <br>
  *
  * @ingroup alihlt_dimuon_component
  */
@@ -101,6 +115,7 @@ protected:
 			AliHLTUInt32_t& size,
 			AliHLTComponentBlockDataList& outputBlocks
 		);
+	virtual bool IgnoreArgument(const char* arg) const;
 	
 	using AliHLTProcessor::DoEvent;
 	

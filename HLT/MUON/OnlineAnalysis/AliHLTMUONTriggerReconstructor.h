@@ -4,7 +4,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+// $Id$
 
 /**********************************************************************
  Created on : 16/05/2007

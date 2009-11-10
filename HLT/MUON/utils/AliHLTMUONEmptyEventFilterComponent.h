@@ -4,7 +4,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+// $Id$
 
 ///
 /// @file   AliHLTMUONEmptyEventFilterComponent.h
@@ -21,6 +21,7 @@
 
 /**
  * @class AliHLTMUONEmptyEventFilterComponent
+ * \brief Component for filtering on empty events.
  * This component class is a utility component for debugging. It is used to filter
  * empty dHLT events. (Specifically built for the Dec 2007 Cosmic tests where the
  * muon spectrometer should not see any hits. Therefor we would be interested to
@@ -36,11 +37,45 @@
  * A dump subscriber can then connect to the empty event filter component to
  * make sure it only receives events that are not empty.
  *
- * command line parameters:
- *   -sendempty  This parameter causes the component to behave like an anti-filter
- *        meaning that it will send all events for which the dHLT results data
- *        blocks were empty. This is useful for collecting those events where dHLT
- *        is not finding anything but perhaps it should.
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b MUONEmptyEventFilter <br>
+ * Library: \b libAliHLTMUON.so <br>
+ * Input Data Types:  kAliHLTAnyDataType = "*******:***" <br>
+ * Output Data Types: kAliHLTAnyDataType|kAliHLTDataOriginMUON = "*******:MUON" <br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * None.
+ *
+ * <h2>Optional arguments:</h2>
+ * \li -sendempty <br>
+ *      This parameter causes the component to behave like an anti-filter
+ *      meaning that it will send all events for which the dHLT results data
+ *      blocks were empty. This is useful for collecting those events where dHLT
+ *      is not finding anything but perhaps it should. <br>
+ * \li -dumponerror <br>
+ *      This flag will cause the component to dump the data blocks it received if
+ *      an error occurs during the processing of an event. <br>
+ * \li -dumppath <i>path</i> <br>
+ *      Allows one to specify the path in which to dump the received data blocks
+ *      if an error occurs. <br>
+ *
+ * <h2>Standard configuration:</h2>
+ * There is no special configuration for this component.
+ *
+ * <h2>Default CDB entries:</h2>
+ * None.
+ *
+ * <h2>Performance:</h2>
+ * Less than a milliseconds per event.
+ *
+ * <h2>Memory consumption:</h2>
+ * Minimal, under 1 MBytes.
+ *
+ * <h2>Output size:</h2>
+ * The maximum is the same size as the input data size.
+ *
+ * @ingroup alihlt_dimuon_component
  */
 class AliHLTMUONEmptyEventFilterComponent : public AliHLTMUONProcessor
 {

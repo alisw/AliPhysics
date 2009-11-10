@@ -14,12 +14,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 /**
  * @file   AliHLTMUONTriggerRecordsSource.cxx
  * @author Artur Szostak <artursz@iafrica.com>
- * @date   
+ * @date   16 Sep 2007
  * @brief  Implementation of the AliHLTMUONTriggerRecordsSource component.
  */
 

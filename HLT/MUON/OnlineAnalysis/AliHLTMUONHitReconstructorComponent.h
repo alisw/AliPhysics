@@ -4,7 +4,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+// $Id$
 
 ///
 ///  @file   AliHLTMUONHitReconstructorComponent.h
@@ -60,7 +60,7 @@ extern "C" struct AliHLTMUONHitRecoLutRow;
  *      process in DoEvent.
  *      If -ddl or -ddlid were not used, then the DDL number will be taken from
  *      the first block's specification during runtime from the first
- *      event (Start-of-Run event).
+ *      event (i.e. Start-of-Run event).
  *      Using the -lut or -dccut arguments will override loading from CDB for a
  *      delayed setup. <br>
  *
@@ -114,6 +114,12 @@ extern "C" struct AliHLTMUONHitRecoLutRow;
  * \li -warnifpadskipped <br>
  *      If this option is set the a warning message is generated for every pad that
  *      is skipped because it contains invalid value markers in the calibration data. <br>
+ * \li -dumponerror <br>
+ *      This flag will cause the component to dump the data blocks it received if
+ *      an error occurs during the processing of an event. <br>
+ * \li -dumppath <i>path</i> <br>
+ *      Allows one to specify the path in which to dump the received data blocks
+ *      if an error occurs. <br>
  *
  * <h2>Standard configuration:</h2>
  * This component should normally be configured with either of the two sets of

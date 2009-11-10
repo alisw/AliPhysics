@@ -15,14 +15,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 /**
  * @file   AliHLTMUONList.h
  * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Declaration of a singly linked-list class which preallocates memory
- *         to give faster online performance.
+ * @date   29 May 2007
+ * @brief  Declaration of a singly linked-list class which preallocates memory to give faster online performance.
  */
 
 #include "AliHLTDataTypes.h"

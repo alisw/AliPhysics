@@ -3,14 +3,14 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+// $Id$
 
 /**
  * @file   AliHLTMUONTriggerRecordsBlockStruct.h
  * @author Artur Szostak <artursz@iafrica.com>
- * @date   
+ * @date   18 May 2007
  * @brief  Definition of internal dimuon HLT trigger record data block structure.
- * 
+ *
  * The structures are defined with C linkage since C generally gives us more
  * binary compatibility between compilers.
  */

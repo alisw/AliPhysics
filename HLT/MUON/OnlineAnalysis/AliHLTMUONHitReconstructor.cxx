@@ -14,7 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 ///////////////////////////////////////////////
 //Author : Indranil Das, SINP, INDIA

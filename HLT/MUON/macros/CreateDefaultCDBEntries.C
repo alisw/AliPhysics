@@ -14,7 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: $ */
+// $Id: $
 
 /**
  * \ingroup macros
@@ -28,7 +28,7 @@
  * $ALICE_ROOT/HLT/MUON/macros into your current working directory, then from
  * the shell command prompt run the following command:
  * \code
- *   > aliroot -b -q -l $ALICE_ROOT/HLT/MUON/macros/CreateDefaultCDBEntries.C+
+ *   > aliroot -b -q -l $ALICE_ROOT/HLT/MUON/macros/CreateDefaultCDBEntries.C
  * \endcode
  *
  * \author Artur Szostak <artursz@iafrica.com>
@@ -50,9 +50,36 @@ using std::endl;
 /**
  * Generates default CDB entries in the given CDB storage (local by default)
  * \param cdbPath  The path to the local storage.
+ * \param version = 0,
+ * \param firstRun = 0,
+ * \param lastRun = AliCDBRunRange::Infinity()
+ * \param zmiddle  The middle of the dipole field (cm) used by AliHLTMUONTriggerReconstructorComponent and AliHLTMUONMansoTrackerFSMComponent.
+ * \param bfieldintegral  The dipole magnetic field integral (T.m) used by AliHLTMUONTriggerReconstructorComponent and AliHLTMUONMansoTrackerFSMComponent.
+ * \param dccut  DC cut applied to channels by AliHLTMUONHitReconstructorComponent.
+ * \param roiParamAchamber7  Region of interest parameter A for chamber 7 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param roiParamBchamber7  Region of interest parameter B for chamber 7 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param roiParamAchamber8  Region of interest parameter A for chamber 8 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param roiParamBchamber8  Region of interest parameter B for chamber 8 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param roiParamAchamber9  Region of interest parameter A for chamber 9 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param roiParamBchamber9  Region of interest parameter B for chamber 9 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param roiParamAchamber10 Region of interest parameter A for chamber 10 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param roiParamBchamber10 Region of interest parameter B for chamber 10 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param lowptcut    The low pT cut applied to tracks (GeV/c) used by the AliHLTMUONDecisionComponent.
+ * \param highptcut   The hight pT cut applied to tracks (GeV/c) used by the AliHLTMUONDecisionComponent.
+ * \param lowmasscut  The low invariant mass cut applied to track pairs (GeV/c^2) used by the AliHLTMUONDecisionComponent.
+ * \param highmasscut The hight invariant mass cut applied to track pairs (GeV/c^2) used by the AliHLTMUONDecisionComponent.
+ * \param chamber7postion  Nominal position for chamber 7 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param chamber8postion  Nominal position for chamber 8 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param chamber9postion  Nominal position for chamber 9 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param chamber10postion Nominal position for chamber 10 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param chamber11postion Nominal position for chamber 11 used by AliHLTMUONMansoTrackerFSMComponent.
+ * \param chamber13postion Nominal position for chamber 13 used by AliHLTMUONMansoTrackerFSMComponent.
  */
 void CreateDefaultCDBEntries(
 		const char* cdbPath = "local://$ALICE_ROOT/OCDB",
+		Int_t version = 0,
+		Int_t firstRun = 0,
+		Int_t lastRun = AliCDBRunRange::Infinity(),
 		float zmiddle = -975.,
 		float bfieldintegral = -3.,
 		int dccut = 50,
@@ -90,10 +117,6 @@ void CreateDefaultCDBEntries(
 		cerr << "ERROR: Could not get storage for: " << cdbPath << endl;
 		return;
 	}
-	
-	Int_t version = 0;
-	Int_t firstRun = 0;
-	Int_t lastRun = AliCDBRunRange::Infinity();
 	
 	const char* path = NULL;
 	AliCDBMetaData* metaData = NULL;

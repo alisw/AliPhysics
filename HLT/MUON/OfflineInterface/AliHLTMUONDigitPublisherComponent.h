@@ -4,7 +4,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliHLTMUONDigitPublisherComponent.h 26179 2008-05-29 22:27:27Z aszostak $ */
+// $Id: AliHLTMUONDigitPublisherComponent.h 26179 2008-05-29 22:27:27Z aszostak $
 
 ///
 /// @file   AliHLTMUONDigitPublisherComponent.h

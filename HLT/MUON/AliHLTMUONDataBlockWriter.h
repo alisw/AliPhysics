@@ -15,12 +15,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 /**
  * @file   AliHLTMUONDataBlockWriter.h
  * @author Artur Szostak <artursz@iafrica.com>
- * @date   
+ * @date   19 May 2007
  * @brief  Definition of a writer class for internal dimuon HLT raw data blocks.
  */
 

@@ -4,7 +4,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: $ */
+// $Id: $
 
 ///
 ///  @file   AliHLTMUONRawDataHistoComponent.h
@@ -22,6 +22,59 @@
 /**
  * @class AliHLTMUONRawDataHistoComponent
  * @brief Dimuon HLT component for generating basic monitoring histograms for raw data.
+ *
+ * This component is useful for performing basic monitoring tasks on the raw data
+ * from the muon spectrometer. It will try and decode the data and histogram the
+ * following information:
+ * \li The distribution of signals per DDL.
+ * \li The number of ADC values found per MANU for each DDL.
+ * \li The error codes found by the decoders while trying to decode the data for each DDL.
+ *
+ * <h2>General properties:</h2>
+ *
+ * Component ID: \b MUONRawDataHistogrammer <br>
+ * Library: \b libAliHLTMUON.so <br>
+ * Input Data Types:  AliHLTMUONConstants::DDLRawDataType() = "DDL_RAW :MUON" <br>
+ * Output Data Types: AliHLTMUONConstants::HistogramDataType() = "ROOTHIST:MUON" <br>
+ *
+ * <h2>Mandatory arguments:</h2>
+ * None.
+ *
+ * <h2>Optional arguments:</h2>
+ * \li -pubdelay <i>delay</i> <br>
+ *      Indicates the number of seconds to wait between publishing the histograms.
+ *      The default is zero seconds. <i>delay</i> must be a positive floating point
+ *      number. <br>
+ * \li -noemptyhists <br>
+ *      If indicated then any histograms that are empty will not be published.
+ *      By default all events are processed. <br>
+ * \li -onlydataevents <br>
+ *      If indicated then only data events are processed.
+ *      By default all events are processed. <br>
+ * \li -clearafterpub <br>
+ *      If specified then all the internal histograms are cleared after they are
+ *      published, so they will not accumilate statistics over the whole run.
+ *      This is off by default. <br>
+ * \li -tryrecover <br>
+ *      This is a special option to the raw data decoder to turn on logic which will
+ *      try and recover from corrupt raw DDL data. This is off by default. <br>
+ *
+ * <h2>Standard configuration:</h2>
+ * There is no special configuration for this component.
+ *
+ * <h2>Default CDB entries:</h2>
+ * None.
+ *
+ * <h2>Performance:</h2>
+ * A few milliseconds per event.
+ *
+ * <h2>Memory consumption:</h2>
+ * Minimal, under 1 MBytes.
+ *
+ * <h2>Output size:</h2>
+ * A few kBytes.
+ *
+ * @ingroup alihlt_dimuon_component
  */
 class AliHLTMUONRawDataHistoComponent : public AliHLTMUONProcessor
 {
@@ -157,8 +210,23 @@ private:
 	AliHLTMUONRawDataHistoComponent(const AliHLTMUONRawDataHistoComponent& /*obj*/);
 	AliHLTMUONRawDataHistoComponent& operator = (const AliHLTMUONRawDataHistoComponent& /*obj*/);
 
-	void ProcessTrackerDDL(const AliHLTComponentBlockData* block);
-	void ProcessTriggerDDL(const AliHLTComponentBlockData* block);
+	/**
+	 * Decodes the tracker DDL data block and fills the histograms.
+	 * \param block  The data block to decode.
+	 * \returns true if the block could be decoded and false if there was an error in the data.
+	 */
+	bool ProcessTrackerDDL(const AliHLTComponentBlockData* block);
+	
+	/**
+	 * Decodes the trigger DDL data block and fills the histograms.
+	 * \param block  The data block to decode.
+	 * \returns true if the block could be decoded and false if there was an error in the data.
+	 */
+	bool ProcessTriggerDDL(const AliHLTComponentBlockData* block);
+	
+	/**
+	 * Deletes all the histograms and resets the pointers.
+	 */
 	void FreeObjects();
 	
 	AliMUONTrackerDDLDecoder<AliTrackerDecoderHandler> fTrackerDecoder;  // Raw data decoder for the tracker data.

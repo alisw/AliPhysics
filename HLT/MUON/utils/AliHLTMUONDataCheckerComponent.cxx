@@ -14,7 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliHLTMUONDataCheckerComponent.cxx 26179 2008-05-29 22:27:27Z aszostak $ */
+// $Id: AliHLTMUONDataCheckerComponent.cxx 26179 2008-05-29 22:27:27Z aszostak $
 
 ///
 /// @file   AliHLTMUONDataCheckerComponent.cxx
@@ -154,6 +154,22 @@ AliHLTComponent* AliHLTMUONDataCheckerComponent::Spawn()
 	/// Inherited from AliHLTComponent. Creates a new object instance.
 	
 	return new AliHLTMUONDataCheckerComponent;
+}
+
+
+bool AliHLTMUONDataCheckerComponent::IgnoreArgument(const char* arg) const
+{
+	/// Return true if the argument is -delaysetup
+	/// to prevent the parent class from parsing these arguments in DoInit.
+	
+	if (strcmp(arg, "-delaysetup") == 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 

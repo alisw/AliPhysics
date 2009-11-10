@@ -14,12 +14,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 ///
 /// @file   AliHLTMUONRecHitsSource.cxx
 /// @author Artur Szostak <artursz@iafrica.com>
-/// @date   
+/// @date   28 May 2007
 /// @brief  Implementation of the AliHLTMUONRecHitsSource component.
 ///
 

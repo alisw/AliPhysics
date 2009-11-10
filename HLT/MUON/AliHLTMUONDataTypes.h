@@ -15,12 +15,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+// $Id$
 
 /**
  * @file   AliHLTMUONDataTypes.h
  * @author Artur Szostak <artursz@iafrica.com>
- * @date   
+ * @date   18 May 2007
  * @brief  Declaration of basic data types used in HLT/MUON module.
  *
  * The types and structs are defined with C linkage since C generally gives us

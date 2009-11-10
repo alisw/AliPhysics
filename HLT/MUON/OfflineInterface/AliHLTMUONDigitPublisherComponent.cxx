@@ -14,7 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliHLTMUONDigitPublisherComponent.cxx 26179 2008-05-29 22:27:27Z aszostak $ */
+// $Id: AliHLTMUONDigitPublisherComponent.cxx 26179 2008-05-29 22:27:27Z aszostak $
 
 ///
 /// @file   AliHLTMUONDigitPublisherComponent.cxx
