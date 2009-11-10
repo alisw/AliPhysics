@@ -2,6 +2,7 @@
 
 ORGSRCS  := $(wildcard PWG1/*.cxx)
 ORGSRCS  += $(wildcard PWG1/global/*.cxx)
+ORGSRCS  += $(wildcard PWG1/tender/*.cxx)
 ORGSRCS  += $(wildcard PWG1/ITS/*.cxx)
 ORGSRCS  += $(wildcard PWG1/TPC/*.cxx)
 ORGSRCS  += $(wildcard PWG1/TRD/*.cxx)
@@ -11,7 +12,7 @@ SRCS:= $(patsubst PWG1/%, %, ${ORGSRCS})
 HDRS:= $(SRCS:.cxx=.h)
 DHDR:= PWG1LinkDef.h
 
-EINCLUDE:= STEER TPC ITS TRD
+EINCLUDE:= STEER TPC ITS TRD ANALYSIS/Tender
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
