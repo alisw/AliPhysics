@@ -27,7 +27,12 @@
 ClassImp(AliVZERORecoParam)
 
 //_____________________________________________________________________________
-AliVZERORecoParam::AliVZERORecoParam() : AliDetectorRecoParam()
+AliVZERORecoParam::AliVZERORecoParam() : AliDetectorRecoParam(),
+  fNSigmaPed(2.0),
+  fStartClock(8),
+  fEndClock(12),
+  fNPreClocks(2),
+  fNPostClocks(1)
 {
   //
   // constructor

@@ -17,6 +17,7 @@
 
 #include "AliLog.h"
 #include "AliESDVZERO.h"
+#include "AliVZERORecoParam.h"
 
 class AliVZEROCalibData;
 class AliESDEvent;
@@ -43,6 +44,8 @@ public:
   virtual Bool_t HasDigitConversion() const { return kTRUE; }
   virtual void   ConvertDigits(AliRawReader* rawReader,
 			       TTree* digitsTree) const;
+
+  static const AliVZERORecoParam* GetRecoParam() { return dynamic_cast<const AliVZERORecoParam*>(AliReconstructor::GetRecoParam(12)); }
                  		 
   AliCDBStorage     *SetStorage(const char* uri);
   void GetCollisionMode();
