@@ -859,10 +859,14 @@ double AliTRDalignment::SurveyChi2(int i, const double * const a) {
   if (!IsGeoLoaded()) return 0;
   printf("Survey of supermodule %d\n",i);
   AliAlignObjParams al(GetSmName(i),0,a[0],a[1],a[2],a[3],a[4],a[5],0);
+
   TGeoPNEntry      *pne  = gGeoManager->GetAlignableEntry(GetSmName(i));
   if (!pne) AliError(Form("no such physical node entry: %s",GetSmName(i)));
   TGeoPhysicalNode *node = pne->GetPhysicalNode();
-  if (!node) AliError(Form("physical node entry %s has no physical node",GetSmName(i))); 
+  if (!node) {
+    AliWarning(Form("physical node entry %s has no physical node; making a new one",GetSmName(i))); 
+    node = gGeoManager->MakeAlignablePN(pne);
+  }
 
   //  al.ApplyToGeometry();    
   //  node = pne->GetPhysicalNode(); // changed in the meantime
