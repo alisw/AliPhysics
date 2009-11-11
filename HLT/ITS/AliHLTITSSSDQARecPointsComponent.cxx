@@ -37,6 +37,7 @@ using namespace std;
 #include "TH1.h"
 #include "TH2.h"
 #include "AliITSgeomTGeo.h"
+#include "AliGeomManager.h"
 
 //#include <stdlib.h>
 //#include <cerrno>
@@ -97,6 +98,13 @@ AliHLTComponent* AliHLTITSSSDQARecPointsComponent::Spawn()
 
 int AliHLTITSSSDQARecPointsComponent::DoInit(int /*argc*/, const char** /*argv*/) {
   //Inititalization of histograms for the SSD QA component
+  
+  
+  if(AliGeomManager::GetGeometry()==NULL){
+     AliGeomManager::LoadGeometry();
+  }
+  
+  
   fHistSSDArray = new TObjArray();  
   fHistSSDArray->SetName("ssdArray");
 
