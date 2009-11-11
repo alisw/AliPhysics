@@ -209,15 +209,14 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
                     
         fESDtrack = fESDevent->GetTrack(i);
 	if(!fESDtrack) continue;
-        fESDfriendTrack = const_cast<AliESDfriendTrack*>(fESDtrack->GetFriendTrack());
-	if(!fESDfriendTrack) continue;
+        
+	//fESDfriendTrack = const_cast<AliESDfriendTrack*>(fESDtrack->GetFriendTrack());
+	//if(!fESDfriendTrack) continue;
       
         cal->RefitTrack(fESDtrack, seed, GetBz());
-
+	
         AliTPCseed *seedCopy = new AliTPCseed(*seed, kTRUE); 
-        //fESDtrack->AddCalibObject(seedCopy);      
-        fESDfriendTrack->AddCalibObject(seedCopy);
-        
+	fESDtrack->AddCalibObject(seedCopy);        
     }
   } 
     
