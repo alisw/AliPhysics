@@ -36,15 +36,18 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
   Double_t *  test   = new Double_t[AliRecoParam::kNSpecies] ;
   Int_t *     ntests = new Int_t[AliRecoParam::kNSpecies]  ; 
   const char* taskName = AliQAv1::GetAliTaskName(index);
+  printf("\n\tAliZDCQAChecker -> checking QA histos for task %s\n",taskName);
   //
-  for(Int_t specie = 0; specie < AliRecoParam::kNSpecies; specie++) {
+  for(Int_t specie = 0; specie<AliRecoParam::kNSpecies; specie++){
     test[specie] = 1.0; 
     ntests[specie] = 0; 
-    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) )  continue ; 
+    printf("\tAliZDCQAChecker -> specie %d\n\n",specie);
+    
+    if(!AliQAv1::Instance()->IsEventSpecieSet(specie))  continue; 
     // ====================================================================
     // 	Checks for p-p events
     // ====================================================================
-    if (specie == AliRecoParam::kLowMult) {
+    if(specie == AliRecoParam::kLowMult){
       if(list[specie]->GetEntries()==0){  
         AliWarning("\t The list to be checked is empty!"); // nothing to check
         return test;
@@ -235,6 +238,66 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
 	      }
 	    }
 	    irawHisto++;	    
+          } 
+          // -------------------------------------------------------------------
+	  else if(index == AliQAv1::kREC) {
+            Float_t sumZNA=0., sumZNC=0., sumZPA=0., sumZPC=0.;
+            Float_t pmCZNA=0., pmCZNC=0., pmCZPA=0., pmCZPC=0.;
+            Float_t pmQZNA=0., pmQZNC=0., pmQZPA=0., pmQZPC=0.;
+	    Int_t irecHisto=0;
+	    //
+            // Check REC HIGH GAIN CHAIN histos
+            if(hdata->GetEntries()>0){
+	      if(irecHisto==0)       sumZNC = hdata->GetMean();
+	      else if(irecHisto==1)  sumZNA = hdata->GetMean();
+	      else if(irecHisto==2)  sumZPC = hdata->GetMean();
+	      else if(irecHisto==3)  sumZPA = hdata->GetMean();
+	      else if(irecHisto==4)  pmQZNC = hdata->GetMean();
+	      else if(irecHisto==5)  pmQZNA = hdata->GetMean();
+	      else if(irecHisto==6)  pmQZPC = hdata->GetMean();
+	      else if(irecHisto==7)  pmQZPA = hdata->GetMean();
+	      else if(irecHisto==8)  pmCZNC = hdata->GetMean();
+	      else if(irecHisto==9)  pmCZNA = hdata->GetMean();
+	      else if(irecHisto==10) pmCZPC = hdata->GetMean();
+	      else if(irecHisto==11) pmCZPA = hdata->GetMean();
+	    }
+	    //
+	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
+	    if(irecHisto==11){
+	      if(sumZNC!=0){
+            	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumZNA!=0){
+            	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumZPC!=0){
+            	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumZPA!=0){
+            	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	    }
+	    irecHisto++;	    
           } 
           // -------------------------------------------------------------------
 	  else if(index == AliQAv1::kESD) {
@@ -560,6 +623,86 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
 	    rawInd++;	 
 	  }   
           // -------------------------------------------------------------------
+          else if(index == AliQAv1::kREC){
+            Float_t sumZNA=0., sumZNC=0., sumZPA=0., sumZPC=0.;
+            Float_t pmCZNA=0., pmCZNC=0., pmCZPA=0., pmCZPC=0.;
+            Float_t pmQZNA=0., pmQZNC=0., pmQZPA=0., pmQZPC=0.;
+	    Int_t recInd=0;
+	    //
+            // Check RAW HIGH GAIN CHAIN histos
+            if(hdata->GetEntries()>0){
+	      if(recInd==0)       sumZNC = hdata->GetMean();
+	      else if(recInd==1)  sumZNA = hdata->GetMean();
+	      else if(recInd==2)  sumZPC = hdata->GetMean();
+	      else if(recInd==3)  sumZPA = hdata->GetMean();
+	      else if(recInd==4)  pmQZNC = hdata->GetMean();
+	      else if(recInd==5)  pmQZNA = hdata->GetMean();
+	      else if(recInd==6)  pmQZPC = hdata->GetMean();
+	      else if(recInd==7)  pmQZPA = hdata->GetMean();
+	      else if(recInd==8)  pmCZNC = hdata->GetMean();
+	      else if(recInd==9)  pmCZNA = hdata->GetMean();
+	      else if(recInd==10) pmCZPC = hdata->GetMean();
+	      else if(recInd==11) pmCZPA = hdata->GetMean();
+	    }
+            //
+	    // --- Check whether 2*|Mean ZNA - Mean ZNC|/(Mean ZNA + Mean ZNC) < percentageDiff
+	    // --- and 2*|Mean ZPA - Mean ZPC|/(Mean ZPA + Mean ZPC) < 2*percentageDiff
+	    if(recInd==3){
+	      if(sumZNC!=0 && sumZNA!=0){
+            	if((2*TMath::Abs(sumZNC-sumZNA)/(sumZNA+sumZNC))<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumZPC!=0 && sumZPA!=0){
+            	if((TMath::Abs(sumZPC-sumZPA)/(sumZPA+sumZPC))<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+            }
+	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
+	    if(recInd==11){
+	      if(sumZNC!=0){
+            	if((TMath::Abs(pmQZNC-pmCZNC)/pmCZNC)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumZNA!=0){
+            	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumZPC!=0){
+            	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	      if(sumZPA!=0){
+            	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
+            	  res=1.;
+            	else 
+            	  res=.5;
+            	test[specie] += res;
+            	ntests[specie]++;
+	      }
+	    }
+	    recInd++;	 
+	  }   
+          // -------------------------------------------------------------------
           else if(index == AliQAv1::kESD){
             Float_t sumADCZNA=0., sumADCZNC=0., sumADCZPA=0., sumADCZPC=0.;
             Float_t pmCZNA=0., pmCZNC=0., pmCZPA=0., pmCZPC=0.;
@@ -647,11 +790,20 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
 	else AliError("\t  No histos found for ZDC!!!\n");
       }
     } // HighMult (Pb-Pb) 
-    else {
-       AliError(Form("Checking not implemented for %s, %s", 
-                    AliRecoParam::GetEventSpecieName(AliRecoParam::kCosmic), 
-                    AliRecoParam::GetEventSpecieName(AliRecoParam::kCalib))) ; 
-    }
+    // ====================================================================
+    // 	Checks for Calibration events
+    // ====================================================================
+    else if (specie == AliRecoParam::kCalib) {
+      AliWarning(Form("\n\t No check implemented in ZDC QA for %s task\n",taskName)); 
+      return test;
+    } // Calibration
+    // ====================================================================
+    // 	Checks for cosmic events
+    // ====================================================================
+    else if (specie == AliRecoParam::kCosmic) {
+      AliWarning(Form("\n\t No check implemented in ZDC QA for %s task\n",taskName)); 
+      return test;
+    } // Cosmic
   } // Loop on species
    
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {

@@ -33,6 +33,7 @@
 // --- AliRoot header files ---
 #include "AliLog.h"
 #include "AliQAChecker.h"
+#include "AliZDCReco.h"
 #include "AliRawReader.h"
 #include "AliZDCQADataMakerRec.h"
 #include "AliZDCRawStream.h"
@@ -67,71 +68,6 @@ AliZDCQADataMakerRec& AliZDCQADataMakerRec::operator = (const AliZDCQADataMakerR
   this->~AliZDCQADataMakerRec();
   new(this) AliZDCQADataMakerRec(qadm);
   return *this;
-}
-
-//____________________________________________________________________________
-
-void AliZDCQADataMakerRec::InitRaws()
-{
-  // create Digits histograms in Digits subdir
-  const Bool_t expert   = kTRUE ; 
-  const Bool_t image    = kTRUE ; 
-  //
-  // ------------------- HIGH GAIN CHAIN ---------------------------
-  TH1F * hRawZNCTot = new TH1F("hRawZNCTot", "Raw signal in ZNC;Amplitude [ADC counts];Counts", 100, 0., 6000.);
-  TH1F * hRawZNATot = new TH1F("hRawZNATot", "Raw signal in ZNA;Amplitude [ADC counts];Counts", 100, 0., 6000.);
-  TH1F * hRawZPCTot = new TH1F("hRawZPCTot", "Raw signal in ZPC;Amplitude [ADC counts];Counts", 100, 0., 10000.);
-  TH1F * hRawZPATot = new TH1F("hRawZPATot", "Raw signal in ZPA;Amplitude [ADC counts];Counts", 100, 0., 10000.);
-  Add2RawsList(hRawZNCTot, 0, !expert, image);
-  Add2RawsList(hRawZNATot, 1, !expert, image);
-  Add2RawsList(hRawZPCTot, 2, !expert, image);
-  Add2RawsList(hRawZPATot, 3, !expert, image);
-  //
-  TH1F * hRawSumQZNC = new TH1F("hRawSumQZNC", "Raw summed 4 ZNC quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  TH1F * hRawSumQZNA = new TH1F("hRawSumQZNA", "Raw summed 4 ZNA quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  TH1F * hRawSumQZPC = new TH1F("hRawSumQZPC", "Raw summed 4 ZPC quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  TH1F * hRawSumQZPA = new TH1F("hRawSumQZPA", "Raw summed 4 ZPA quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  Add2RawsList(hRawSumQZNC, 4, expert, !image);
-  Add2RawsList(hRawSumQZNA, 5, expert, !image);
-  Add2RawsList(hRawSumQZPC, 6, expert, !image);
-  Add2RawsList(hRawSumQZPA, 7, expert, !image);
-  //
-  TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw common ZNC PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw common ZNA PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw common ZPC PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw common ZPA PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  Add2RawsList(hRawPMCZNC, 8 , expert, !image);
-  Add2RawsList(hRawPMCZNA, 9 , expert, !image);
-  Add2RawsList(hRawPMCZPC, 10, expert, !image);
-  Add2RawsList(hRawPMCZPA, 11, expert, !image);
-  // 
-  // ------------------- LOW GAIN CHAIN ---------------------------
-  TH1F * hRawZNCTotlg = new TH1F("hRawZNCTotlg", "Rawit lg signal in ZNC", 100, 0., 6000.);
-  TH1F * hRawZNATotlg = new TH1F("hRawZNATotlg", "Rawit lg signal in ZNA", 100, 0., 6000.);
-  TH1F * hRawZPCTotlg = new TH1F("hRawZPCTotlg", "Rawit lg signal in ZPC", 100, 0., 10000.);
-  TH1F * hRawZPATotlg = new TH1F("hRawZPATotlg", "Rawit lg signal in ZPA", 100, 0., 10000.);
-  Add2RawsList(hRawZNCTotlg, 12, !expert, image);
-  Add2RawsList(hRawZNATotlg, 13, !expert, image);
-  Add2RawsList(hRawZPCTotlg, 14, !expert, image);
-  Add2RawsList(hRawZPATotlg, 15, !expert, image);
-  //
-  TH1F * hRawSumQZNClg = new TH1F("hRawSumQZNClg", "Raw summed 4 lg ZNC quadrants",100, 0., 4000.);
-  TH1F * hRawSumQZNAlg = new TH1F("hRawSumQZNAlg", "Raw summed 4 lg ZNA quadrants",100, 0., 4000.);
-  TH1F * hRawSumQZPClg = new TH1F("hRawSumQZPClg", "Raw summed 4 lg ZPC quadrants",100, 0., 4000.);
-  TH1F * hRawSumQZPAlg = new TH1F("hRawSumQZPAlg", "Raw summed 4 lg ZPA quadrants",100, 0., 4000.);
-  Add2RawsList(hRawSumQZNClg, 16, kTRUE, expert, !image);
-  Add2RawsList(hRawSumQZNAlg, 17, kTRUE, expert, !image);
-  Add2RawsList(hRawSumQZPClg, 18, kTRUE, expert, !image);
-  Add2RawsList(hRawSumQZPAlg, 19, kTRUE, expert, !image);
-  //
-  TH1F * hRawPMCZNClg = new TH1F("hRawPMCZNClg", "Raw common lg ZNC PMT",100, 0., 4000.);
-  TH1F * hRawPMCZNAlg = new TH1F("hRawPMCZNAlg", "Raw common lg ZNA PMT",100, 0., 4000.);
-  TH1F * hRawPMCZPClg = new TH1F("hRawPMCZPClg", "Raw common lg ZPC PMT",100, 0., 4000.);
-  TH1F * hRawPMCZPAlg = new TH1F("hRawPMCZPAlg", "Raw common lg ZPA PMT",100, 0., 4000.);
-  Add2RawsList(hRawPMCZNClg, 20, kTRUE, expert, !image);
-  Add2RawsList(hRawPMCZNAlg, 21, kTRUE, expert, !image);
-  Add2RawsList(hRawPMCZPClg, 22, kTRUE, expert, !image);
-  Add2RawsList(hRawPMCZPAlg, 23, kTRUE, expert, !image);
 }
 
 //____________________________________________________________________________ 
@@ -201,6 +137,107 @@ void AliZDCQADataMakerRec::InitDigits()
 }
 
 //____________________________________________________________________________
+void AliZDCQADataMakerRec::InitRecPoints()
+{
+  // create Digits histograms in Digits subdir
+  const Bool_t expert = kTRUE ; 
+  const Bool_t image  = kTRUE ; 
+  //
+  // ------------------- HIGH GAIN CHAIN ---------------------------
+  TH1F * hRecZNCTot = new TH1F("hRecZNCTot", "Rec signal in ZNC;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hRecZNATot = new TH1F("hRecZNATot", "Rec signal in ZNA;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hRecZPCTot = new TH1F("hRecZPCTot", "Rec signal in ZPC;Amplitude [ADC counts];Counts", 100, 0., 10000.);
+  TH1F * hRecZPATot = new TH1F("hRecZPATot", "Rec signal in ZPA;Amplitude [ADC counts];Counts", 100, 0., 10000.);
+  Add2RecPointsList(hRecZNCTot, 0, expert, !image);
+  Add2RecPointsList(hRecZNATot, 1, expert, !image);
+  Add2RecPointsList(hRecZPCTot, 2, expert, !image);
+  Add2RecPointsList(hRecZPATot, 3, expert, !image);
+  //
+  TH1F * hRecSumQZNC = new TH1F("hRecSumQZNC", "Rec summed 4 ZNC quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRecSumQZNA = new TH1F("hRecSumQZNA", "Rec summed 4 ZNA quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRecSumQZPC = new TH1F("hRecSumQZPC", "Rec summed 4 ZPC quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRecSumQZPA = new TH1F("hRecSumQZPA", "Rec summed 4 ZPA quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  Add2RecPointsList(hRecSumQZNC, 4, expert, !image);
+  Add2RecPointsList(hRecSumQZNA, 5, expert, !image);
+  Add2RecPointsList(hRecSumQZPC, 6, expert, !image);
+  Add2RecPointsList(hRecSumQZPA, 7, expert, !image);
+  //
+  TH1F * hRecPMCZNC = new TH1F("hRecPMCZNC", "Rec common ZNC PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRecPMCZNA = new TH1F("hRecPMCZNA", "Rec common ZNA PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRecPMCZPC = new TH1F("hRecPMCZPC", "Rec common ZPC PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRecPMCZPA = new TH1F("hRecPMCZPA", "Rec common ZPA PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  Add2RecPointsList(hRecPMCZNC, 8 , !expert, image);
+  Add2RecPointsList(hRecPMCZNA, 9 , !expert, image);
+  Add2RecPointsList(hRecPMCZPC, 10, !expert, image);
+  Add2RecPointsList(hRecPMCZPA, 11, !expert, image); 
+}
+
+
+//____________________________________________________________________________
+void AliZDCQADataMakerRec::InitRaws()
+{
+  // create Digits histograms in Digits subdir
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  //
+  // ------------------- HIGH GAIN CHAIN ---------------------------
+  TH1F * hRawZNCTot = new TH1F("hRawZNCTot", "Raw signal in ZNC;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hRawZNATot = new TH1F("hRawZNATot", "Raw signal in ZNA;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hRawZPCTot = new TH1F("hRawZPCTot", "Raw signal in ZPC;Amplitude [ADC counts];Counts", 100, 0., 10000.);
+  TH1F * hRawZPATot = new TH1F("hRawZPATot", "Raw signal in ZPA;Amplitude [ADC counts];Counts", 100, 0., 10000.);
+  Add2RawsList(hRawZNCTot, 0, expert, !image);
+  Add2RawsList(hRawZNATot, 1, expert, !image);
+  Add2RawsList(hRawZPCTot, 2, expert, !image);
+  Add2RawsList(hRawZPATot, 3, expert, !image);
+  //
+  TH1F * hRawSumQZNC = new TH1F("hRawSumQZNC", "Raw summed 4 ZNC quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawSumQZNA = new TH1F("hRawSumQZNA", "Raw summed 4 ZNA quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawSumQZPC = new TH1F("hRawSumQZPC", "Raw summed 4 ZPC quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawSumQZPA = new TH1F("hRawSumQZPA", "Raw summed 4 ZPA quadrants;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  Add2RawsList(hRawSumQZNC, 4, expert, !image);
+  Add2RawsList(hRawSumQZNA, 5, expert, !image);
+  Add2RawsList(hRawSumQZPC, 6, expert, !image);
+  Add2RawsList(hRawSumQZPA, 7, expert, !image);
+  //
+  TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw common ZNC PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw common ZNA PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw common ZPC PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw common ZPA PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  Add2RawsList(hRawPMCZNC, 8 , !expert, image);
+  Add2RawsList(hRawPMCZNA, 9 , !expert, image);
+  Add2RawsList(hRawPMCZPC, 10, !expert, image);
+  Add2RawsList(hRawPMCZPA, 11, !expert, image);
+  // 
+  // ------------------- LOW GAIN CHAIN ---------------------------
+  TH1F * hRawZNCTotlg = new TH1F("hRawZNCTotlg", "Rawit lg signal in ZNC", 100, 0., 6000.);
+  TH1F * hRawZNATotlg = new TH1F("hRawZNATotlg", "Rawit lg signal in ZNA", 100, 0., 6000.);
+  TH1F * hRawZPCTotlg = new TH1F("hRawZPCTotlg", "Rawit lg signal in ZPC", 100, 0., 10000.);
+  TH1F * hRawZPATotlg = new TH1F("hRawZPATotlg", "Rawit lg signal in ZPA", 100, 0., 10000.);
+  Add2RawsList(hRawZNCTotlg, 12, expert, !image);
+  Add2RawsList(hRawZNATotlg, 13, expert, !image);
+  Add2RawsList(hRawZPCTotlg, 14, expert, !image);
+  Add2RawsList(hRawZPATotlg, 15, expert, !image);
+  //
+  TH1F * hRawSumQZNClg = new TH1F("hRawSumQZNClg", "Raw summed 4 lg ZNC quadrants",100, 0., 4000.);
+  TH1F * hRawSumQZNAlg = new TH1F("hRawSumQZNAlg", "Raw summed 4 lg ZNA quadrants",100, 0., 4000.);
+  TH1F * hRawSumQZPClg = new TH1F("hRawSumQZPClg", "Raw summed 4 lg ZPC quadrants",100, 0., 4000.);
+  TH1F * hRawSumQZPAlg = new TH1F("hRawSumQZPAlg", "Raw summed 4 lg ZPA quadrants",100, 0., 4000.);
+  Add2RawsList(hRawSumQZNClg, 16, expert, !image);
+  Add2RawsList(hRawSumQZNAlg, 17, expert, !image);
+  Add2RawsList(hRawSumQZPClg, 18, expert, !image);
+  Add2RawsList(hRawSumQZPAlg, 19, expert, !image);
+  //
+  TH1F * hRawPMCZNClg = new TH1F("hRawPMCZNClg", "Raw common lg ZNC PMT",100, 0., 4000.);
+  TH1F * hRawPMCZNAlg = new TH1F("hRawPMCZNAlg", "Raw common lg ZNA PMT",100, 0., 4000.);
+  TH1F * hRawPMCZPClg = new TH1F("hRawPMCZPClg", "Raw common lg ZPC PMT",100, 0., 4000.);
+  TH1F * hRawPMCZPAlg = new TH1F("hRawPMCZPAlg", "Raw common lg ZPA PMT",100, 0., 4000.);
+  Add2RawsList(hRawPMCZNClg, 20, expert, !image);
+  Add2RawsList(hRawPMCZNAlg, 21, expert, !image);
+  Add2RawsList(hRawPMCZPClg, 22, expert, !image);
+  Add2RawsList(hRawPMCZPAlg, 23, expert, !image);
+}
+
+//____________________________________________________________________________
 void AliZDCQADataMakerRec::InitESDs()
 {
   //Booking ESDs histograms
@@ -218,10 +255,10 @@ void AliZDCQADataMakerRec::InitESDs()
   TH1F * hESDZNATot = new TH1F("hESDZNATot", "Energy in ZNA", 100, 0., 6000.);
   TH1F * hESDZPCTot = new TH1F("hESDZPCTot", "Energy in ZPC", 100, 0., 10000.);
   TH1F * hESDZPATot = new TH1F("hESDZPATot", "Energy in ZPA", 100, 0., 10000.);
-  Add2ESDsList(hESDZNCTot, 2, !expert, image);
-  Add2ESDsList(hESDZNATot, 3, !expert, image);
-  Add2ESDsList(hESDZPCTot, 4, !expert, image);
-  Add2ESDsList(hESDZPATot, 5, !expert, image);
+  Add2ESDsList(hESDZNCTot, 2, expert, !image);
+  Add2ESDsList(hESDZNATot, 3, expert, !image);
+  Add2ESDsList(hESDZPCTot, 4, expert, !image);
+  Add2ESDsList(hESDZPATot, 5, expert, !image);
   //
   TH1F * hESDSumQZNC = new TH1F("hESDSumQZNC", "Sum of 4 ZNC energy",100, 0., 4000.);
   TH1F * hESDSumQZNA = new TH1F("hESDSumQZNA", "Sum of 4 ZNA energy",100, 0., 4000.);
@@ -236,20 +273,20 @@ void AliZDCQADataMakerRec::InitESDs()
   TH1F * hESDPMCZNA = new TH1F("hESDPMCZNA", "Energy in common ZNA PMT",100, 0., 4000.);
   TH1F * hESDPMCZPC = new TH1F("hESDPMCZPC", "Energy in common ZPC PMT",100, 0., 4000.);
   TH1F * hESDPMCZPA = new TH1F("hESDPMCZPA", "Energy in common ZPA PMT",100, 0., 4000.);
-  Add2ESDsList(hESDPMCZNC, 10, expert, !image);
-  Add2ESDsList(hESDPMCZNA, 11, expert, !image);
-  Add2ESDsList(hESDPMCZPC, 12, expert, !image);
-  Add2ESDsList(hESDPMCZPA, 13, expert, !image);
+  Add2ESDsList(hESDPMCZNC, 10, !expert, image);
+  Add2ESDsList(hESDPMCZNA, 11, !expert, image);
+  Add2ESDsList(hESDPMCZPC, 12, !expert, image);
+  Add2ESDsList(hESDPMCZPA, 13, !expert, image);
   // 
   // ------------------- LOW GAIN CHAIN ---------------------------
   TH1F * hESDZNCTotlg = new TH1F("hESDZNCTotlg", "ESD lg signal in ZNC", 100, 0., 6000.);
   TH1F * hESDZNATotlg = new TH1F("hESDZNATotlg", "ESD lg signal in ZNA", 100, 0., 6000.);
   TH1F * hESDZPCTotlg = new TH1F("hESDZPCTotlg", "ESD lg signal in ZPC", 100, 0., 10000.);
   TH1F * hESDZPATotlg = new TH1F("hESDZPATotlg", "ESD lg signal in ZPA", 100, 0., 10000.);
-  Add2ESDsList(hESDZNCTotlg, !expert, image);
-  Add2ESDsList(hESDZNATotlg, !expert, image);
-  Add2ESDsList(hESDZPCTotlg, !expert, image);
-  Add2ESDsList(hESDZPATotlg, !expert, image);
+  Add2ESDsList(hESDZNCTotlg, expert, !image);
+  Add2ESDsList(hESDZNATotlg, expert, !image);
+  Add2ESDsList(hESDZPCTotlg, expert, !image);
+  Add2ESDsList(hESDZPATotlg, expert, !image);
   //
   TH1F * hESDSumQZNClg = new TH1F("hESDSumQZNClg", "Sum of 4 lg ZNC sectors",100, 0., 4000.);
   TH1F * hESDSumQZNAlg = new TH1F("hESDSumQZNAlg", "Sum of 4 lg ZNA sectors",100, 0., 4000.);
@@ -269,103 +306,9 @@ void AliZDCQADataMakerRec::InitESDs()
   Add2ESDsList(hESDPMCZPClg, 24, expert, !image);
   Add2ESDsList(hESDPMCZPAlg, 25, expert, !image);
 }
-  
-//____________________________________________________________________________
-
-void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
-{
-  // Filling Raws QA histos
-  //
-  // Check if histograms already created for this Event Specie
-  if ( ! GetRawsData(0) )
-    InitRaws();
-
-	rawReader->Reset() ; 
-  Float_t sum_ZNC=0., sum_ZNA=0., sum_ZPC=0., sum_ZPA=0.;
-  Float_t sumQ_ZNC=0., sumQ_ZNA=0., sumQ_ZPC=0., sumQ_ZPA=0.;
-  Float_t sum_ZNC_lg=0., sum_ZNA_lg=0., sum_ZPC_lg=0., sum_ZPA_lg=0.;
-  Float_t sumQ_ZNC_lg=0., sumQ_ZNA_lg=0., sumQ_ZPC_lg=0., sumQ_ZPA_lg=0.;
-  //
-  AliZDCRawStream stream(rawReader);
-  while(stream.Next()){
-    if(stream.IsADCDataWord() && 
-     (stream.GetADCModule()==0 || stream.GetADCModule()==1)){
-       if(stream.GetSector(0)==1){
-         if(stream.GetADCGain()==0){
-	   sum_ZNC += stream.GetADCValue();
-	   if(stream.GetSector(1)!=0) sumQ_ZNC += stream.GetADCValue();
-	   else GetRawsData(8)->Fill(stream.GetADCValue());
-	 }
-	 else{
-	   sum_ZNC_lg += stream.GetADCValue();
-	   if(stream.GetSector(1)!=0) sumQ_ZNC_lg += stream.GetADCValue();
-	   else GetRawsData(20)->Fill(stream.GetADCValue());
-	 }
-       }
-       else if(stream.GetSector(0)==2){
-         if(stream.GetADCGain()==0){
-	   sum_ZPC += stream.GetADCValue();
-	   if(stream.GetSector(1)!=0) sumQ_ZPC += stream.GetADCValue();
-	   else GetRawsData(10)->Fill(stream.GetADCValue());
-	 }
-	 else{
-	   sum_ZPC_lg += stream.GetADCValue();
-	   if(stream.GetSector(1)!=0) sumQ_ZPC_lg += stream.GetADCValue();
-	   else GetRawsData(22)->Fill(stream.GetADCValue());
-	 }
-       }
-       else if(stream.GetSector(0)==4){
-         if(stream.GetADCGain()==0){
-	   sum_ZNA += stream.GetADCValue();
-	   if(stream.GetSector(1)!=0) sumQ_ZNA += stream.GetADCValue();
-	   else GetRawsData(9)->Fill(stream.GetADCValue());
-	 }
-	 else{
-	   sum_ZNA_lg += stream.GetADCValue();
-	   if(stream.GetSector(1)!=0) sumQ_ZNA_lg += stream.GetADCValue();
-	   else GetRawsData(21)->Fill(stream.GetADCValue());
-	 }
-       }
-       else if(stream.GetSector(0)==5){
-         if(stream.GetADCGain()==0){
-	   sum_ZPA += stream.GetADCValue();
-	   if(stream.GetSector(1)!=0) sumQ_ZPA += stream.GetADCValue();
-	   else GetRawsData(11)->Fill(stream.GetADCValue());
-	 }
-	 else{
-	   sum_ZPA_lg += stream.GetADCValue();
-	   if(stream.GetSector(1)!=0) sumQ_ZPA_lg += stream.GetADCValue();
-	   else GetRawsData(23)->Fill(stream.GetADCValue());
-	 }
-       }
-    }
-  }
-  //
-  GetRawsData(0)->Fill(sum_ZNC);
-  GetRawsData(1)->Fill(sum_ZNA);
-  GetRawsData(2)->Fill(sum_ZPC);
-  GetRawsData(3)->Fill(sum_ZPA);
-  //
-  GetRawsData(4)->Fill(sumQ_ZNC);
-  GetRawsData(5)->Fill(sumQ_ZNA);
-  GetRawsData(6)->Fill(sumQ_ZPC);
-  GetRawsData(7)->Fill(sumQ_ZPA);
-  //
-  GetRawsData(12)->Fill(sum_ZNC_lg);
-  GetRawsData(13)->Fill(sum_ZNA_lg);
-  GetRawsData(14)->Fill(sum_ZPC_lg);
-  GetRawsData(15)->Fill(sum_ZPA_lg);
-  //
-  GetRawsData(16)->Fill(sumQ_ZNC_lg);
-  GetRawsData(17)->Fill(sumQ_ZNA_lg);
-  GetRawsData(18)->Fill(sumQ_ZPC_lg);
-  GetRawsData(19)->Fill(sumQ_ZPA_lg);
-  //
-//   stream.Delete();
-}
 
 //___________________________________________________________________________
-void AliZDCQADataMakerRec::MakeDigits(TTree *digitTree )
+void AliZDCQADataMakerRec::MakeDigits(TTree *digitTree)
 {
   TBranch * branch = digitTree->GetBranch("ZDC");
   if(!branch){
@@ -374,8 +317,7 @@ void AliZDCQADataMakerRec::MakeDigits(TTree *digitTree )
   } 
   
   // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
+  if(!GetDigitsData(0)) InitDigits() ;
   
   branch->SetAddress(&fDigit);
   
@@ -461,6 +403,149 @@ void AliZDCQADataMakerRec::MakeDigits(TTree *digitTree )
   GetDigitsData(17)->Fill(adcSumQ_ZNA_lg);
   GetDigitsData(18)->Fill(adcSumQ_ZPC_lg);
   GetDigitsData(19)->Fill(adcSumQ_ZPA_lg);
+}
+
+//____________________________________________________________________________
+void AliZDCQADataMakerRec::MakeRecPoints(TTree * clustersTree)
+{
+  // Filling QA histos from RecPoints
+
+  TBranch *branch = clustersTree->GetBranch("ZDC");
+  if(!branch){ 
+    AliError("Can't get the ZDC branch for rec points!");
+    return;
+  }
+  
+  if(!GetRecPointsData(0)) InitRecPoints() ;
+
+  Float_t sum_ZNC=0., sum_ZNA=0., sum_ZPC=0., sum_ZPA=0.;
+  Float_t sumQ_ZNC=0., sumQ_ZNA=0., sumQ_ZPC=0., sumQ_ZPA=0.;
+
+  AliZDCReco reco;
+  AliZDCReco* preco = &reco;
+  clustersTree->SetBranchAddress("ZDC", &preco);
+
+  clustersTree->GetEntry(0);
+  for(Int_t i=0; i<5; i++){
+    sum_ZNC += reco.GetZN1HREnTow(i);
+    sum_ZPC += reco.GetZN2HREnTow(i);
+    sum_ZNA += reco.GetZP1HREnTow(i);
+    sum_ZPA += reco.GetZP2HREnTow(i);
+    if(i==0){
+      GetRecPointsData(8)->Fill(reco.GetZN1HREnTow(i));
+      GetRecPointsData(9)->Fill(reco.GetZN2HREnTow(i));
+      GetRecPointsData(10)->Fill(reco.GetZP1HREnTow(i));
+      GetRecPointsData(11)->Fill(reco.GetZP2HREnTow(i));
+    }
+    else{
+      sumQ_ZNC += reco.GetZN1HREnTow(i);
+      sumQ_ZPC += reco.GetZN2HREnTow(i);
+      sumQ_ZNA += reco.GetZP1HREnTow(i);
+      sumQ_ZPA += reco.GetZP2HREnTow(i);
+    }
+  }
+  
+  GetRecPointsData(0)->Fill(sum_ZNC);
+  GetRecPointsData(1)->Fill(sum_ZPC);
+  GetRecPointsData(2)->Fill(sum_ZNA);
+  GetRecPointsData(3)->Fill(sum_ZPA);
+  //
+  GetRecPointsData(4)->Fill(sumQ_ZNC);
+  GetRecPointsData(5)->Fill(sumQ_ZPC);
+  GetRecPointsData(6)->Fill(sumQ_ZNA);
+  GetRecPointsData(7)->Fill(sumQ_ZPA);
+  
+}  
+
+//____________________________________________________________________________
+void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
+{
+  // Filling Raws QA histos
+  //
+  // Check if histograms already created for this Event Specie
+  if(!GetRawsData(0)) InitRaws();
+
+  Float_t sum_ZNC=0., sum_ZNA=0., sum_ZPC=0., sum_ZPA=0.;
+  Float_t sumQ_ZNC=0., sumQ_ZNA=0., sumQ_ZPC=0., sumQ_ZPA=0.;
+  Float_t sum_ZNC_lg=0., sum_ZNA_lg=0., sum_ZPC_lg=0., sum_ZPA_lg=0.;
+  Float_t sumQ_ZNC_lg=0., sumQ_ZNA_lg=0., sumQ_ZPC_lg=0., sumQ_ZPA_lg=0.;
+  //
+  AliZDCRawStream stream(rawReader);
+  while(stream.Next()){
+    if(stream.IsADCDataWord() && 
+     (stream.GetADCModule()==0 || stream.GetADCModule()==1)){
+       if(stream.GetSector(0)==1){
+         if(stream.GetADCGain()==0){
+	   sum_ZNC += stream.GetADCValue();
+	   if(stream.GetSector(1)!=0) sumQ_ZNC += stream.GetADCValue();
+	   else GetRawsData(8)->Fill(stream.GetADCValue());
+	 }
+	 else{
+	   sum_ZNC_lg += stream.GetADCValue();
+	   if(stream.GetSector(1)!=0) sumQ_ZNC_lg += stream.GetADCValue();
+	   else GetRawsData(20)->Fill(stream.GetADCValue());
+	 }
+       }
+       else if(stream.GetSector(0)==2){
+         if(stream.GetADCGain()==0){
+	   sum_ZPC += stream.GetADCValue();
+	   if(stream.GetSector(1)!=0) sumQ_ZPC += stream.GetADCValue();
+	   else GetRawsData(10)->Fill(stream.GetADCValue());
+	 }
+	 else{
+	   sum_ZPC_lg += stream.GetADCValue();
+	   if(stream.GetSector(1)!=0) sumQ_ZPC_lg += stream.GetADCValue();
+	   else GetRawsData(22)->Fill(stream.GetADCValue());
+	 }
+       }
+       else if(stream.GetSector(0)==4){
+         if(stream.GetADCGain()==0){
+	   sum_ZNA += stream.GetADCValue();
+	   if(stream.GetSector(1)!=0) sumQ_ZNA += stream.GetADCValue();
+	   else GetRawsData(9)->Fill(stream.GetADCValue());
+	 }
+	 else{
+	   sum_ZNA_lg += stream.GetADCValue();
+	   if(stream.GetSector(1)!=0) sumQ_ZNA_lg += stream.GetADCValue();
+	   else GetRawsData(21)->Fill(stream.GetADCValue());
+	 }
+       }
+       else if(stream.GetSector(0)==5){
+         if(stream.GetADCGain()==0){
+	   sum_ZPA += stream.GetADCValue();
+	   if(stream.GetSector(1)!=0) sumQ_ZPA += stream.GetADCValue();
+	   else GetRawsData(11)->Fill(stream.GetADCValue());
+	 }
+	 else{
+	   sum_ZPA_lg += stream.GetADCValue();
+	   if(stream.GetSector(1)!=0) sumQ_ZPA_lg += stream.GetADCValue();
+	   else GetRawsData(23)->Fill(stream.GetADCValue());
+	 }
+       }
+    }
+  }
+  //
+  GetRawsData(0)->Fill(sum_ZNC);
+  GetRawsData(1)->Fill(sum_ZNA);
+  GetRawsData(2)->Fill(sum_ZPC);
+  GetRawsData(3)->Fill(sum_ZPA);
+  //
+  GetRawsData(4)->Fill(sumQ_ZNC);
+  GetRawsData(5)->Fill(sumQ_ZNA);
+  GetRawsData(6)->Fill(sumQ_ZPC);
+  GetRawsData(7)->Fill(sumQ_ZPA);
+  //
+  GetRawsData(12)->Fill(sum_ZNC_lg);
+  GetRawsData(13)->Fill(sum_ZNA_lg);
+  GetRawsData(14)->Fill(sum_ZPC_lg);
+  GetRawsData(15)->Fill(sum_ZPA_lg);
+  //
+  GetRawsData(16)->Fill(sumQ_ZNC_lg);
+  GetRawsData(17)->Fill(sumQ_ZNA_lg);
+  GetRawsData(18)->Fill(sumQ_ZPC_lg);
+  GetRawsData(19)->Fill(sumQ_ZPA_lg);
+  //
+//   stream.Delete();
 }
 
 //____________________________________________________________________________
