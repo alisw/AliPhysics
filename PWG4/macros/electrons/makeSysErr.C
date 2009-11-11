@@ -75,6 +75,7 @@ void makeSysErr() {
     Double_t ed03 = (e0 - e3)/(e0+e1+e2+e3);
 
     Double_t eave = (TMath::Abs(ed01) + TMath::Abs(ed02) + TMath::Abs(ed03))/2.;
+    printf("%d Average unc = %2.2f\n",i,eave);
     esum += eave;
   }
   Double_t tfinal = tsum/alltte0->GetNbinsX();

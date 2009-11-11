@@ -112,7 +112,7 @@ void plotPIDCompare(char* which = "EMC") {
     hcorr->SetBinContent(i,corr);
   }
 
-  Double_t efinal = 0.258;
+  Double_t efinal = 0.4;
   TGraphErrors* eerr = new TGraphErrors();
   eerr->SetName("emcErr");
   int count=0;
@@ -122,7 +122,7 @@ void plotPIDCompare(char* which = "EMC") {
     cout <<"bin:"<< i << ", bin-center:"<< hcorr->GetBinCenter(i)<< endl;
     eerr->SetPoint(count,hcorr->GetBinCenter(i),hcorr->GetBinContent(i));
     eerr->SetPointError(count,0.,efinal*hcorr->GetBinContent(i));
-    if(hcorr->GetBinCenter(i) <20.0) eerr->SetPointError(count,0.,1.5*efinal*hcorr->GetBinContent(i));
+    //    if(hcorr->GetBinCenter(i) <20.0) eerr->SetPointError(count,0.,1.5*efinal*hcorr->GetBinContent(i));
     count++;
   }
   eerr->SetFillColor(kRed-8);
@@ -214,7 +214,7 @@ void plotPIDCompare(char* which = "EMC") {
     if (hmcratio->GetBinCenter(i) >50.0) break;
     rerr->SetPoint(count,hmcratio->GetBinCenter(i),hmcratio->GetBinContent(i));
     rerr->SetPointError(count,0.,efinal*hmcratio->GetBinContent(i));
-    if(hmcratio->GetBinCenter(i) <20.0) rerr->SetPointError(count,0.,1.5*efinal*hmcratio->GetBinContent(i));
+    //if(hmcratio->GetBinCenter(i) <20.0) rerr->SetPointError(count,0.,1.5*efinal*hmcratio->GetBinContent(i));
     count++;
   }
   rerr->SetFillColor(kRed-8);
