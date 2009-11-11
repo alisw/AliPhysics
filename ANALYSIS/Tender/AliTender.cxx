@@ -67,8 +67,20 @@ AliTender::AliTender(const char* name):
 AliTender::~AliTender()
 {
 // Destructor
+  if (fSupplies) {
+    fSupplies->Delete();
+    delete fSupplies;
+  }
 }
 
+//______________________________________________________________________________
+void AliTender::AddSupply(AliTenderSupply *supply)
+{
+// Addition of supplies.
+  if (!fSupplies) fSupplies = new TObjArray();
+  fSupplies->Add(supply);
+}
+   
 //______________________________________________________________________________
 void AliTender::ConnectInputData(Option_t* /*option*/)
 {

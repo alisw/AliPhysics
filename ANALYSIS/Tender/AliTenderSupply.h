@@ -19,11 +19,11 @@ class AliTender;
 class AliTenderSupply : public TNamed {
 
 private:
-  AliTender                *fTender;         // Tender car
+  const AliTender          *fTender;         // Tender car
   
 public:  
   AliTenderSupply();
-  AliTenderSupply(const char *name, AliTender *tender);
+  AliTenderSupply(const char *name, const AliTender *tender);
   AliTenderSupply(const AliTenderSupply &other);
   virtual ~AliTenderSupply();
   AliTenderSupply& operator=(const AliTenderSupply &other);

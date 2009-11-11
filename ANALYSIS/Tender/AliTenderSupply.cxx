@@ -29,7 +29,7 @@ AliTenderSupply::AliTenderSupply()
 }
 
 //______________________________________________________________________________
-AliTenderSupply::AliTenderSupply(const char* name, AliTender *tender)
+AliTenderSupply::AliTenderSupply(const char* name, const AliTender *tender)
                 :TNamed(name, "ESD analysis tender car"),
                  fTender(tender)
 {

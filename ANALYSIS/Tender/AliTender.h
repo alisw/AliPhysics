@@ -20,6 +20,7 @@
 class AliCDBManager;
 class AliESDEvent;
 class AliESDInputHandler;
+class AliTenderSupply;
 
 class AliTender : public AliAnalysisTask {
 
@@ -42,7 +43,7 @@ public:
   AliTender(const char *name);
   virtual ~AliTender();
 
-  // Getters
+  void                      AddSupply(AliTenderSupply *supply);
   Int_t                     GetRun() const {return fRun;}
   AliCDBManager            *GetCDBManager() const {return fCDB;}
   AliESDInputHandler       *GetESDhandler() const {return fESDhandler;}
