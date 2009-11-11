@@ -26,6 +26,9 @@ AliEveMultiView* AliEveMultiView::Instance()
 }
 
 AliEveMultiView::AliEveMultiView() :
+  fRPhiMgr(0), fRhoZMgr(0),
+  f3DView(0), fRPhiView(0), fRhoZView(0),
+  fRPhiGeomScene(0), fRhoZGeomScene(0), fRPhiEventScene(0), fRhoZEventScene(0),
   fGeomGentle(0), fGeomGentleRPhi(0), fGeomGentleRhoZ(0),
   fGeomGentleTrd(0), fGeomGentleMuon(0)
 {
