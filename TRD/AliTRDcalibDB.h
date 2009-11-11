@@ -27,6 +27,7 @@ class AliTRDCalMonitoring;
 class AliTRDCalROC;
 class AliTRDCalDet;
 class AliTRDCalSingleChamberStatus;
+class TString;
 class AliTRDcalibDB : public TObject {
 
  public:
@@ -70,6 +71,8 @@ class AliTRDcalibDB : public TObject {
   Float_t                             GetPRFhi() const      { return fPRFhi;  };
 
   Int_t                               GetNumberOfTimeBins();
+  Int_t                               GetNumberOfTimeBinsDCS();
+  void                                GetFilterType(TString &filterType);
 
   Char_t                              GetPadStatus(Int_t det, Int_t col, Int_t row);
   AliTRDCalSingleChamberStatus       *GetPadStatusROC(Int_t det);
@@ -106,6 +109,7 @@ class AliTRDcalibDB : public TObject {
        , kIDNoisePad
        , kIDPRFWidth
        , kIDFEE
+       , kIDDCS
        , kIDChamberPos
        , kIDStackPos
        , kIDSuperModulePos
