@@ -10,10 +10,10 @@ void RunAnalysisITS() {
   gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -g"); 
 
   //
-  TString analysisMode = "grid"; // "local", "grid", or "proof" (not yet)
+  TString analysisMode = "local"; // "local", "grid", or "proof" (not yet)
 
   Long64_t nentries=1000000000000000,firstentry=0;
-  Bool_t useAlienPlugin=kTRUE;
+  Bool_t useAlienPlugin=kFALSE;
   Bool_t uselibPWG1=kTRUE;
   TString pluginmode="full";
   TString loadMacroPath="./";
@@ -62,6 +62,7 @@ void RunAnalysisITS() {
   AliESDInputHandler *esdH = new AliESDInputHandler();
   if(readHLT) esdH->SetReadHLT();
   mgr->SetInputEventHandler(esdH);
+
   //-------------------------------------------------------------------
 
   
@@ -69,7 +70,7 @@ void RunAnalysisITS() {
   // Analysis tasks (wagons of the train)   
   //
   TString taskName;
-    
+  
   if(!uselibPWG1) gROOT->LoadMacro("AliAlignmentDataFilterITS.cxx++g");
   taskName="AddTaskAlignmentDataFilterITS.C"; 
   taskName.Prepend(loadMacroPath.Data());
@@ -82,7 +83,26 @@ void RunAnalysisITS() {
   gROOT->LoadMacro(taskName.Data());
   AliTrackMatchingTPCITSCosmics *tpcitsTask = AddTaskTrackMatchingTPCITS();
   if(readHLT) tpcitsTask->SetReadHLTESD(kTRUE);  
-  
+  /*
+  Bool_t readMC=kTRUE;
+
+  if(!uselibPWG1) gROOT->LoadMacro("AliAnalysisTaskVertexESD.cxx++g");
+  taskName="AddTaskVertexESD.C"; 
+  taskName.Prepend(loadMacroPath.Data());
+  gROOT->LoadMacro(taskName.Data());
+  AliAnalysisTaskVertexESD *vtxTask = AddTaskVertexESD(readMC);
+    
+  if(!uselibPWG1) gROOT->LoadMacro("AliAnalysisTaskITSTrackingCheck.cxx++g");
+  taskName="AddTaskPerformanceITS.C"; 
+  taskName.Prepend(loadMacroPath.Data());
+  gROOT->LoadMacro(taskName.Data());
+  AliAnalysisTaskITSTrackingCheck *itsTask = AddTaskPerformanceITS(readMC);
+
+  if(readMC) {
+    AliMCEventHandler  *mcH = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mcH); 
+  }
+  */
   //
   // Run the analysis
   //    
