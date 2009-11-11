@@ -710,8 +710,8 @@ void makeTRKElectrons(TH2F* jjtrk, TH2F* bjtrk, TH2F* wjtrk) {
   for(Int_t i = 5; i<= convtrk->GetNbinsX(); i++) {
     Double_t dither = rand2.Gaus(0.,fooconvtrk->GetBinContent(i)/2.);
     if(dither + fooconvtrk->GetBinContent(i) < fooconvtrk->GetBinContent(i)/100.) dither = 0.;   
-    //    convtrk->SetBinContent(i,fooconvtrk->GetBinContent(i)+dither);    
-    //convtrk->SetBinError(i,sqrt(fooconvtrk->GetBinContent(i)));    
+    convtrk->SetBinContent(i,fooconvtrk->GetBinContent(i)+dither);    
+    convtrk->SetBinError(i,sqrt(fooconvtrk->GetBinContent(i)));    
   }
   convtrk->Draw(); fooconvtrk->Draw("same");
 
