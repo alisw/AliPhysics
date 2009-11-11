@@ -1015,11 +1015,14 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
   if(kGCoutputFileAppendix.Contains(".root")){
     kGCoutputFileAppendix.ReplaceAll(".root","");
   }
-  TString fileOut = kGCoutputFileName + kGCoutputFileAppendix + ".root";
+  //TString fileOut = kGCoutputFileName + kGCoutputFileAppendix + ".root";
+
+  TString outputfile = AliAnalysisManager::GetCommonFileName();  
+  outputfile += ":PWG4GammaConversion";
 	
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histogramsAliGammaConversion", TList::Class(),AliAnalysisManager::kOutputContainer, fileOut);
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histogramsAliGammaConversion", TList::Class(),AliAnalysisManager::kOutputContainer, outputfile);
   // for CF
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("ccontainer0",AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,fileOut);
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("ccontainer0",AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
 	
   //------------------------ END: Define input/output handlers ---------------------------------------------------
 	

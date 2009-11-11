@@ -203,14 +203,16 @@ void AliV0Reader::Initialize(){
   fMCTruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
   if(fMCTruth == NULL){
     //print warning here
+    fDoMC = kFALSE;
   }
 	
   //Get pointer to the mc stack
-  fMCStack = fMCTruth->MCEvent()->Stack();
-  if(fMCStack == NULL){
-    //print warning here
+  if(fMCTruth){
+    fMCStack = fMCTruth->MCEvent()->Stack();
+    if(fMCStack == NULL){
+      //print warning here
+    }
   }
-	
 	
   // for CF
   //Get pointer to the mc event
