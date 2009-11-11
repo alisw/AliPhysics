@@ -20,8 +20,6 @@
 void CheckLaser(const char * histoFName = "ZDCLaserHisto.root", Int_t optPlot = 1)
 {
 
-  int const kNChannels = 24;
-  //
   TFile * file = new TFile(histoFName, "READ");
   file->cd();
   TH1F::AddDirectory(0);
@@ -32,6 +30,10 @@ void CheckLaser(const char * histoFName = "ZDCLaserHisto.root", Int_t optPlot = 
   TH1F *hPMRefClg = new TH1F("hPMRefClg","hPMRefClg", 100,0.,4000.);
   TH1F *hPMRefAlg = new TH1F("hPMRefAlg","hPMRefAlg", 100,0.,4000.);
   //
+  hPMRefChg = (TH1F*) file->Get("hPMRefChg");
+  hPMRefAhg = (TH1F*) file->Get("hPMRefAhg");
+  hPMRefClg = (TH1F*) file->Get("hPMRefClg");
+  hPMRefAlg = (TH1F*) file->Get("hPMRefAlg");
   // --- Histos for detector PMTs 
   TH1F *hZNChg[5], *hZPChg[5], *hZNAhg[5], *hZPAhg[5], *hZEMhg[2];
   TH1F *hZNClg[5], *hZPClg[5], *hZNAlg[5], *hZPAlg[5], *hZEMlg[2];
@@ -66,6 +68,18 @@ void CheckLaser(const char * histoFName = "ZDCLaserHisto.root", Int_t optPlot = 
       hZEMhg[j] = new TH1F(hnamZEMhg, hnamZEMhg, 100, 0., 1000.);      
       hZEMlg[j] = new TH1F(hnamZEMlg, hnamZEMlg, 100, 0., 4000.);      
     }
+    //
+    hZNChg[j] = (TH1F*) file->Get(hnamZNChg);
+    hZPChg[j] = (TH1F*) file->Get(hnamZPChg);
+    hZNAhg[j] = (TH1F*) file->Get(hnamZNAhg);
+    hZPAhg[j] = (TH1F*) file->Get(hnamZPAhg);
+    //
+    hZNClg[j] = (TH1F*) file->Get(hnamZNClg);
+    hZPClg[j] = (TH1F*) file->Get(hnamZPClg);
+    hZNAlg[j] = (TH1F*) file->Get(hnamZNAlg);
+    hZPAlg[j] = (TH1F*) file->Get(hnamZPAlg);
+    
+    
   }
 
  if(optPlot==1){
@@ -132,5 +146,18 @@ void CheckLaser(const char * histoFName = "ZDCLaserHisto.root", Int_t optPlot = 
     hZPAlg[y]->Draw();
   }
   c5->Print("ZPALaser.ps");
+  //
+  TCanvas *c6 = new TCanvas("c6","Ref",400,0,400,400);
+  c6->Divide(2,2);
+  c6->cd(1);
+  hPMRefChg->Draw();
+  c6->cd(2);
+  hPMRefAhg->Draw();
+  c6->cd(3);
+  hPMRefClg->Draw();
+  c6->cd(4);
+  hPMRefAlg->Draw();
+ //
+  c6->Print("RefLaser.ps");
  }
 }
