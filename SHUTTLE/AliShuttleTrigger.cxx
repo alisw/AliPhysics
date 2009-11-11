@@ -217,7 +217,7 @@ void AliShuttleTrigger::CheckTerminate()
 	if (strlen(fConfig->GetTerminateFilePath()) == 0)
 		return;
 
-	if (gSystem->AccessPathName(fConfig->GetTerminateFilePath()))
+	if (gSystem->AccessPathName(fConfig->GetTerminateFilePath()) == kFALSE)
 	{
 		AliInfo("Terminate file exists. Terminating Shuttle...");
 		fTerminate = kTRUE;
@@ -287,6 +287,7 @@ void AliShuttleTrigger::Run() {
 		}
 	
 		Collect();
+		CheckTerminate();
 	}
 
 	delete notifier;
