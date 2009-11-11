@@ -22,14 +22,10 @@
 #include "AliCDBEntry.h"
 #endif
 
-/*  $Id$    */
-
-
 
 //====================================================================//
 void Noise(AliCDBManager * man);
 void Pedestal(AliCDBManager * man);
-void BadChannelMap(AliCDBManager * man);
 void GainCalibration(AliCDBManager * man);
 void ReadOldSSDPedestal(TObjArray *array, AliITSPedestalSSDv2 *pedestalSSD);
 void ReadOldSSDNoise(TObjArray *array, AliITSNoiseSSDv2 *noiseSSD);
@@ -40,32 +36,34 @@ void drawPedestalDistributions(Int_t runNumber);
 //====================================================================//
 
 //_____________________________________________________________________//
-void readSSDOCDBEntry(const char* type = "alien", Int_t runNumber = 0) {
-  //This macro allows to visualize the bad channels in the OCDB
-  //The type can be either "local" or "alien" (where the OCDB file comes from)
-  //The run nmber is the pedestal one
-  gStyle->SetPalette(1,0);
+void correlateOCDBforSSD(const char* type = "alien", Int_t runNumber = 0) {
+  //This macro allows to read the pedestal values from the reference 
+  //directory and correlate them with the bad channel list.
+  //It also allows to correlate the noise values in the OCDB with 
+  //the bad channel list.
   TString gType = type;
   
-  AliCDBManager * man = AliCDBManager::Instance();
+  AliCDBManager *man1 = AliCDBManager::Instance();
   
   if(gType == "alien") {
-    //man->SetDefaultStorage("alien://folder=/alice/data/2009/Reference/");
-    man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB/");
+    man1->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB/");
+    man1->SetSpecificStorage("ITS/Ref/PedestalSSD",
+			     "alien://folder=/alice/data/2009/Reference/");
   }
-  else if(gType == "local") 
-    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  else if(gType == "local") {
+    man1->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    man1->SetSpecificStorage("ITS/Ref/PedestalSSD",
+			     "local://$ALICE_ROOT/");
+  }
   else {
     cout<<"Allowed types: local or alien!!!"<<endl;
     abort();
   }
   
-  man->SetRun(runNumber);
+  man1->SetRun(runNumber);
     
-  //Pedestal(man);
-  Noise(man);
-  BadChannelMap(man);
-  GainCalibration(man);
+  Pedestal(man1);
+  Noise(man1);
 }
 
 //_____________________________________________________________________//
@@ -82,22 +80,34 @@ void drawNoiseDistributions(Int_t runNumber) {
   TCanvas *c1 = new TCanvas("c1","Noise distribution (P-side, Layer 5)",
 			    0,0,400,400);
   c1->SetFillColor(10); c1->SetHighLightColor(10); c1->SetLogy();
-  gHistNoisePSideLayer5->SetStats(kFALSE); gHistNoisePSideLayer5->Draw();
+  gHistNoisePSideLayer5->SetStats(kFALSE); 
+  gHistNoisePSideLayer5->GetXaxis()->SetRangeUser(0.0,20.);
+  gHistNoisePSideLayer5->Draw();
+  c1->SaveAs("Noise-PSide-Layer5.eps");
 
   TCanvas *c2 = new TCanvas("c2","Noise distribution (N-side, Layer 5)",
 			    400,0,400,400);
   c2->SetFillColor(10); c2->SetHighLightColor(10); c2->SetLogy();
-  gHistNoiseNSideLayer5->SetStats(kFALSE); gHistNoiseNSideLayer5->Draw();
+  gHistNoiseNSideLayer5->SetStats(kFALSE); 
+  gHistNoiseNSideLayer5->GetXaxis()->SetRangeUser(0.0,20.);
+  gHistNoiseNSideLayer5->Draw();
+  c2->SaveAs("Noise-NSide-Layer5.eps");
 
   TCanvas *c3 = new TCanvas("c3","Noise distribution (P-side, Layer 6)",
 			    0,400,400,400);
   c3->SetFillColor(10); c3->SetHighLightColor(10); c3->SetLogy();
-  gHistNoisePSideLayer6->SetStats(kFALSE); gHistNoisePSideLayer6->Draw();
+  gHistNoisePSideLayer6->SetStats(kFALSE); 
+  gHistNoisePSideLayer6->GetXaxis()->SetRangeUser(0.0,20.);
+  gHistNoisePSideLayer6->Draw();
+  c3->SaveAs("Noise-PSide-Layer6.eps");
 
   TCanvas *c4 = new TCanvas("c4","Noise distribution (N-side, Layer 6)",
 			    400,400,400,400);
   c4->SetFillColor(10); c4->SetHighLightColor(10); c4->SetLogy();
-  gHistNoiseNSideLayer6->SetStats(kFALSE); gHistNoiseNSideLayer6->Draw();
+  gHistNoiseNSideLayer6->SetStats(kFALSE); 
+  gHistNoiseNSideLayer6->GetXaxis()->SetRangeUser(0.0,20.);
+  gHistNoiseNSideLayer6->Draw();
+  c4->SaveAs("Noise-NSide-Layer6.eps");
 }
 
 //_____________________________________________________________________//
@@ -115,78 +125,105 @@ void drawPedestalDistributions(Int_t runNumber) {
 			    0,0,400,400);
   c1->SetFillColor(10); c1->SetHighLightColor(10); c1->SetLogy();
   gHistPedestalPSideLayer5->SetStats(kFALSE); gHistPedestalPSideLayer5->Draw();
-  
+  c1->SaveAs("Pedestal-PSide-Layer5.eps");
+
   TCanvas *c2 = new TCanvas("c2","Pedestal distribution (N-side, Layer 5)",
 			    400,0,400,400);
   c2->SetFillColor(10); c2->SetHighLightColor(10); c2->SetLogy();
   gHistPedestalNSideLayer5->SetStats(kFALSE); gHistPedestalNSideLayer5->Draw();
+  c2->SaveAs("Pedestal-NSide-Layer5.eps");
   
   TCanvas *c3 = new TCanvas("c3","Pedestal distribution (P-side, Layer 6)",
 			    0,400,400,400);
   c3->SetFillColor(10); c3->SetHighLightColor(10); c3->SetLogy();
   gHistPedestalPSideLayer6->SetStats(kFALSE); gHistPedestalPSideLayer6->Draw();
-  
+  c3->SaveAs("Pedestal-PSide-Layer6.eps");
+
   TCanvas *c4 = new TCanvas("c4","Pedestal distribution (N-side, Layer 6)",
 			    400,400,400,400);
   c4->SetFillColor(10); c4->SetHighLightColor(10); c4->SetLogy();
   gHistPedestalNSideLayer6->SetStats(kFALSE); gHistPedestalNSideLayer6->Draw();
+  c4->SaveAs("Pedestal-NSide-Layer6.eps");
 }
 
 //_____________________________________________________________________//
 void Pedestal(AliCDBManager * man) {
   //Reads the noise OCDB file
   const Int_t fgkSSDMODULES = 1698;
-  const Int_t fgkSSDSTRIPSPERMODULE = 1536;
   static const Int_t fgkDefaultNStripsSSD = 768;
 
   Int_t runNumber = man->GetRun();
 
+  //=========================================================//
   //pedestal histograms
   TH1F *gHistPedestalPSideLayer5 = new TH1F("gHistPedestalPSideLayer5",
 					    "Pedestal values (P-side, Layer5); ADC counts; Entries;",
-					    1000,-100,100);
+					    1000,-500,500);
   TH1F *gHistPedestalNSideLayer5 = new TH1F("gHistPedestalNSideLayer5",
 					    "Pedestal values (N-side, Layer5); ADC counts; Entries;",
-					    1000,-100,100);
+					    1000,-500,500);
   TH1F *gHistPedestalPSideLayer6 = new TH1F("gHistPedestalPSideLayer6",
 					    "Pedestal values (P-side, Layer6); ADC counts; Entries;",
-					    1000,-100,100);
+					    1000,-500,500);
   TH1F *gHistPedestalNSideLayer6 = new TH1F("gHistPedestalNSideLayer6",
 					    "Pedestal values (N-side, Layer6); ADC counts; Entries;",
-					    1000,-100,100);
+					    1000,-500,500);
 
+  //=========================================================//
   Int_t fLayer = 0,fLadder = 0, fModule = 0;
   
+  //=========================================================//
+  AliITSBadChannelsSSDv2 *badChannelsSSD = new AliITSBadChannelsSSDv2();
+  AliCDBEntry *entryBadChannelsSSD = man->Get("ITS/Calib/BadChannelsSSD");
+  TObject *emptyBadChannel = (TObject *)entryBadChannelsSSD->GetObject();
+  TString objectnameBadChannel = emptyBadChannel->GetName();
+  if(objectnameBadChannel=="TObjArray") {
+    TObjArray *badChannelsSSDOld = (TObjArray *)entryBadChannelsSSD->GetObject();
+    ReadOldSSDBadChannels(badChannelsSSDOld, badChannelsSSD);
+  }
+  else if(objectnameBadChannel=="AliITSBadChannelsSSDv2") {
+    cout<<"Reading the new format of the calibration file..."<<endl;
+    badChannelsSSD = (AliITSBadChannelsSSDv2 *)entryBadChannelsSSD->GetObject();
+  }
+
+  //=========================================================//
   AliITSPedestalSSDv2 *pedestalSSD = new AliITSPedestalSSDv2();
   AliCDBEntry *entryPedestalSSD = man->Get("ITS/Ref/PedestalSSD");
-  TObject *empty = (TObject *)entryPedestalSSD->GetObject();
-  TString objectname = empty->GetName();
-  if(objectname=="TObjArray") {
+  TObject *emptyPedestal = (TObject *)entryPedestalSSD->GetObject();
+  TString objectnamePedestal = emptyPedestal->GetName();
+  if(objectnamePedestal=="TObjArray") {
     TObjArray *pedestalSSDOld = (TObjArray *)entryPedestalSSD->GetObject();
     ReadOldSSDPedestal(pedestalSSDOld, pedestalSSD);
   }
-  else if(objectname=="AliITSPedestalSSDv2") {
+  else if(objectnamePedestal=="AliITSPedestalSSDv2") {
     cout<<"Reading the new format of the calibration file..."<<endl;
     pedestalSSD = (AliITSPedestalSSDv2 *)entryPedestalSSD->GetObject();
   }
 
-  Double_t pedestal = 0.0;
+  Double_t pedestalPSide = 0.0, pedestalNSide = 0.0;
+  Int_t badChannelPSide = 0, badChannelNSide = 0;
   for (Int_t i = 0; i < fgkSSDMODULES; i++) {
     AliITSgeomTGeo::GetModuleId(i+500,fLayer,fLadder,fModule);      
     //cout<<"Pedestal for module: "<<i+500<<" - Layer: "<<fLayer<<endl;
     for(Int_t j = 0; j < fgkDefaultNStripsSSD; j++) {
-      pedestal = pedestalSSD->GetPedestalP(i,j);
-      //Printf("Pedestal value: %lf",pedestal);
-      if(fLayer == 5) 
-	gHistPedestalPSideLayer5->Fill(pedestal);
-      if(fLayer == 6) 
-	gHistPedestalPSideLayer6->Fill(pedestal);
+      badChannelPSide = (Int_t)(badChannelsSSD->GetBadChannelP(i,j));
+      pedestalPSide = pedestalSSD->GetPedestalP(i,j);
+      if(badChannelPSide == 0) {
+	//Printf("Pedestal value: %lf",pedestal);
+	if(fLayer == 5) 
+	  gHistPedestalPSideLayer5->Fill(pedestalPSide);
+	if(fLayer == 6) 
+	  gHistPedestalPSideLayer6->Fill(pedestalPSide);
+      }
       
-      pedestal = pedestalSSD->GetPedestalN(i,j);
-      if(fLayer == 5) 
-	gHistPedestalNSideLayer5->Fill(pedestal);
-      if(fLayer == 6) 
-	gHistPedestalNSideLayer6->Fill(pedestal);
+      badChannelNSide = (Int_t)(badChannelsSSD->GetBadChannelN(i,j));
+      pedestalNSide = pedestalSSD->GetPedestalN(i,j);
+      if(badChannelNSide == 0) {
+	if(fLayer == 5) 
+	  gHistPedestalNSideLayer5->Fill(pedestalNSide);
+	if(fLayer == 6) 
+	  gHistPedestalNSideLayer6->Fill(pedestalNSide);
+      }
     }//loop over strips
   }//loop over modules
 
@@ -212,16 +249,16 @@ void Noise(AliCDBManager * man) {
   //noise histograms
   TH1F *gHistNoisePSideLayer5 = new TH1F("gHistNoisePSideLayer5",
 					 "Noise values (P-side, Layer5); ADC counts; Entries;",
-					 1000,0,1000);
+					 1000,0,100);
   TH1F *gHistNoiseNSideLayer5 = new TH1F("gHistNoiseNSideLayer5",
 					 "Noise values (N-side, Layer5); ADC counts; Entries;",
-					 1000,0,1000);
+					 1000,0,100);
   TH1F *gHistNoisePSideLayer6 = new TH1F("gHistNoisePSideLayer6",
 					 "Noise values (P-side, Layer6); ADC counts; Entries;",
-					 1000,0,1000);
+					 1000,0,100);
   TH1F *gHistNoiseNSideLayer6 = new TH1F("gHistNoiseNSideLayer6",
 					 "Noise values (N-side, Layer6); ADC counts; Entries;",
-					 1000,0,1000);
+					 1000,0,100);
 
   Int_t fLayer = 0,fLadder = 0, fModule = 0;
   Int_t fHistCounter = 0;
@@ -242,37 +279,60 @@ void Noise(AliCDBManager * man) {
     fHistCounter += 1;
   }
   
+  //=========================================================//
+  AliITSBadChannelsSSDv2 *badChannelsSSD = new AliITSBadChannelsSSDv2();
+  AliCDBEntry *entryBadChannelsSSD = man->Get("ITS/Calib/BadChannelsSSD");
+  TObject *emptyBadChannel = (TObject *)entryBadChannelsSSD->GetObject();
+  TString objectnameBadChannel = emptyBadChannel->GetName();
+  if(objectnameBadChannel=="TObjArray") {
+    TObjArray *badChannelsSSDOld = (TObjArray *)entryBadChannelsSSD->GetObject();
+    ReadOldSSDBadChannels(badChannelsSSDOld, badChannelsSSD);
+  }
+  else if(objectnameBadChannel=="AliITSBadChannelsSSDv2") {
+    cout<<"Reading the new format of the calibration file..."<<endl;
+    badChannelsSSD = (AliITSBadChannelsSSDv2 *)entryBadChannelsSSD->GetObject();
+  }
+
+  //=========================================================//
   AliITSNoiseSSDv2 *noiseSSD = new AliITSNoiseSSDv2();
   AliCDBEntry *entryNoiseSSD = man->Get("ITS/Calib/NoiseSSD");
-  TObject *empty = (TObject *)entryNoiseSSD->GetObject();
-  TString objectname = empty->GetName();
-  if(objectname=="TObjArray") {
+  TObject *emptyNoise = (TObject *)entryNoiseSSD->GetObject();
+  TString objectnameNoise = emptyNoise->GetName();
+  if(objectnameNoise=="TObjArray") {
     TObjArray *noiseSSDOld = (TObjArray *)entryNoiseSSD->GetObject();
     ReadOldSSDNoise(noiseSSDOld, noiseSSD);
   }
-  else if(objectname=="AliITSNoiseSSDv2") {
+  else if(objectnameNoise=="AliITSNoiseSSDv2") {
     cout<<"Reading the new format of the calibration file..."<<endl;
     noiseSSD = (AliITSNoiseSSDv2 *)entryNoiseSSD->GetObject();
   }
   
-  Double_t noise = 0.0;
+  Double_t noisePSide = 0.0, noiseNSide = 0.0;
+  Int_t badChannelPSide = 0, badChannelNSide = 0;
   for (Int_t i = 0; i < fgkSSDMODULES; i++) {
     AliITSgeomTGeo::GetModuleId(i+500,fLayer,fLadder,fModule);      
     //cout<<"Noise for module: "<<i+500<<" - Layer: "<<fLayer<<endl;
     for(Int_t j = 0; j < fgkDefaultNStripsSSD; j++) {
-      noise = noiseSSD->GetNoiseP(i,j);
-      hNoiseModule[i]->SetBinContent(j+1,noise);
-      if(fLayer == 5) 
-	gHistNoisePSideLayer5->Fill(noise);
-      if(fLayer == 6) 
-	gHistNoisePSideLayer6->Fill(noise);
+      badChannelPSide = (Int_t)(badChannelsSSD->GetBadChannelP(i,j));
+      noisePSide = noiseSSD->GetNoiseP(i,j);
+      hNoiseModule[i]->SetBinContent(j+1,noisePSide);
       
-      noise = noiseSSD->GetNoiseN(i,j);
-      hNoiseModule[i]->SetBinContent(fgkSSDSTRIPSPERMODULE-j,noise);
-      if(fLayer == 5) 
-	gHistNoiseNSideLayer5->Fill(noise);
-      if(fLayer == 6) 
-	gHistNoiseNSideLayer6->Fill(noise);
+      badChannelNSide = (Int_t)(badChannelsSSD->GetBadChannelN(i,j));
+      noiseNSide = noiseSSD->GetNoiseN(i,j);
+      hNoiseModule[i]->SetBinContent(fgkSSDSTRIPSPERMODULE-j,noiseNSide);
+
+      if(badChannelPSide == 0) {
+	if(fLayer == 5) 
+	  gHistNoisePSideLayer5->Fill(noisePSide);
+	if(fLayer == 6) 
+	  gHistNoisePSideLayer6->Fill(noisePSide);
+      }
+      if(badChannelNSide == 0) {
+	if(fLayer == 5) 
+	  gHistNoiseNSideLayer5->Fill(noiseNSide);
+	if(fLayer == 6) 
+	  gHistNoiseNSideLayer6->Fill(noiseNSide);
+      }
     }//loop over strips
   }//loop over modules
   
@@ -289,183 +349,6 @@ void Noise(AliCDBManager * man) {
   gHistNoisePSideLayer6->Write();
   gHistNoiseNSideLayer6->Write();
   f2->Close();
-}
-
-//_____________________________________________________________________//
-void BadChannelMap(AliCDBManager * man) {
-  const Int_t fgkSSDMODULES = 1698;
-  static const Int_t fgkDefaultNStripsSSD = 768;
-
-  //_____________________________________________________________________________//
-  TH2F *fHistPSideBadChannelMapLayer5 = new TH2F("fHistPSideBadChannelMapLayer5",
-						 "Layer 5;N_{module};N_{ladder}",
-						 22,1,23,
-						 34,500,534);
-  fHistPSideBadChannelMapLayer5->GetXaxis()->SetTitleColor(1);
-  fHistPSideBadChannelMapLayer5->GetZaxis()->SetRangeUser(0.,100.);
-  fHistPSideBadChannelMapLayer5->SetStats(kFALSE);
-  fHistPSideBadChannelMapLayer5->GetYaxis()->SetTitleOffset(1.8);
-  fHistPSideBadChannelMapLayer5->GetXaxis()->SetNdivisions(22);
-  fHistPSideBadChannelMapLayer5->GetYaxis()->SetNdivisions(34);
-  fHistPSideBadChannelMapLayer5->GetXaxis()->SetLabelSize(0.03);
-  fHistPSideBadChannelMapLayer5->GetYaxis()->SetLabelSize(0.03);
-  fHistPSideBadChannelMapLayer5->GetZaxis()->SetTitleOffset(1.6);
-  fHistPSideBadChannelMapLayer5->GetZaxis()->SetTitle("Bad channels (p-side)[%]");
-  TH2F *fHistNSideBadChannelMapLayer5 = new TH2F("fHistNSideBadChannelMapLayer5",
-						 "Layer 5;N_{module};N_{ladder}",
-						 22,1,23,
-						 34,500,534);
-  fHistNSideBadChannelMapLayer5->GetXaxis()->SetTitleColor(1);
-  fHistNSideBadChannelMapLayer5->GetZaxis()->SetRangeUser(0.,100.);
-  fHistNSideBadChannelMapLayer5->SetStats(kFALSE);
-  fHistNSideBadChannelMapLayer5->GetYaxis()->SetTitleOffset(1.8);
-  fHistNSideBadChannelMapLayer5->GetXaxis()->SetNdivisions(22);
-  fHistNSideBadChannelMapLayer5->GetYaxis()->SetNdivisions(34);
-  fHistNSideBadChannelMapLayer5->GetXaxis()->SetLabelSize(0.03);
-  fHistNSideBadChannelMapLayer5->GetYaxis()->SetLabelSize(0.03);
-  fHistNSideBadChannelMapLayer5->GetZaxis()->SetTitleOffset(1.6);
-  fHistNSideBadChannelMapLayer5->GetZaxis()->SetTitle("Bad channels (n-side)[%]");
-
-  TH2F *fHistPSideBadChannelMapLayer6 = new TH2F("fHistPSideBadChannelMapLayer6",
-					    "Layer 6;N_{module};N_{ladder}",
-					    25,1,26,
-					    38,600,638);
-  fHistPSideBadChannelMapLayer6->GetXaxis()->SetTitleColor(1);
-  fHistPSideBadChannelMapLayer6->GetZaxis()->SetRangeUser(0.,100.);
-  fHistPSideBadChannelMapLayer6->SetStats(kFALSE);
-  fHistPSideBadChannelMapLayer6->GetYaxis()->SetTitleOffset(1.8);
-  fHistPSideBadChannelMapLayer6->GetXaxis()->SetNdivisions(25);
-  fHistPSideBadChannelMapLayer6->GetYaxis()->SetNdivisions(38);
-  fHistPSideBadChannelMapLayer6->GetXaxis()->SetLabelSize(0.03);
-  fHistPSideBadChannelMapLayer6->GetYaxis()->SetLabelSize(0.03);
-  fHistPSideBadChannelMapLayer6->GetZaxis()->SetTitleOffset(1.6);
-  fHistPSideBadChannelMapLayer6->GetZaxis()->SetTitle("Bad channels (p-side)[%]");
-  TH2F *fHistNSideBadChannelMapLayer6 = new TH2F("fHistNSideBadChannelMapLayer6",
-					    "Layer 6;N_{module};N_{ladder}",
-					    25,1,26,
-					    38,600,638);
-  fHistNSideBadChannelMapLayer6->GetXaxis()->SetTitleColor(1);
-  fHistNSideBadChannelMapLayer6->GetZaxis()->SetRangeUser(0.,100.);
-  fHistNSideBadChannelMapLayer6->SetStats(kFALSE);
-  fHistNSideBadChannelMapLayer6->GetYaxis()->SetTitleOffset(1.8);
-  fHistNSideBadChannelMapLayer6->GetXaxis()->SetNdivisions(25);
-  fHistNSideBadChannelMapLayer6->GetYaxis()->SetNdivisions(38);
-  fHistNSideBadChannelMapLayer6->GetXaxis()->SetLabelSize(0.03);
-  fHistNSideBadChannelMapLayer6->GetYaxis()->SetLabelSize(0.03);
-  fHistNSideBadChannelMapLayer6->GetZaxis()->SetTitleOffset(1.6);
-  fHistNSideBadChannelMapLayer6->GetZaxis()->SetTitle("Bad channels (n-side)[%]");
-  //_____________________________________________________________________________//
-  
-  //_____________________________________________________________________________//
-  AliITSBadChannelsSSDv2 *badChannelsSSD = new AliITSBadChannelsSSDv2();
-  AliCDBEntry *entryBadChannelsSSD = man->Get("ITS/Calib/BadChannelsSSD");
-  TObject *empty = (TObject *)entryBadChannelsSSD->GetObject();
-  TString objectname = empty->GetName();
-  if(objectname=="TObjArray") {
-    TObjArray *badChannelsSSDOld = (TObjArray *)entryBadChannelsSSD->GetObject();
-    ReadOldSSDBadChannels(badChannelsSSDOld, badChannelsSSD);
-  }
-  else if(objectname=="AliITSBadChannelsSSDv2") {
-    cout<<"Reading the new format of the calibration file..."<<endl;
-    badChannelsSSD = (AliITSBadChannelsSSDv2 *)entryBadChannelsSSD->GetObject();
-  }
-  //_____________________________________________________________________________//
-
-  //_____________________________________________________________________________//
-  Int_t nPSideChannelsTotal = 0, nNSideChannelsTotal = 0;
-  Int_t nBadPSideChannelsTotal = 0, nBadNSideChannelsTotal = 0;
-  Int_t nBadPSideChannels = 0, nBadNSideChannels = 0;
-  Int_t layer = 0, ladder = 0, module = 0;
-  Int_t nPSideChannelsLayer5 = 0, nNSideChannelsLayer5 = 0;
-  Int_t nPSideChannelsLayer6 = 0, nNSideChannelsLayer6 = 0;
-  //_____________________________________________________________________________//
-
-  for(Int_t i = 0; i < fgkSSDMODULES; i++) {
-    //for(Int_t i = 0; i < 1; i++) {
-    AliITSgeomTGeo::GetModuleId(i+500,layer,ladder,module);
-    nBadPSideChannels = 0, nBadNSideChannels = 0;
-    nPSideChannelsLayer5 = 0, nNSideChannelsLayer5 = 0;
-    nPSideChannelsLayer6 = 0, nNSideChannelsLayer6 = 0;
-
-    Int_t badChannel = 0;
-    for(Int_t j = 0; j < fgkDefaultNStripsSSD; j++) {
-      badChannel = (Int_t)(badChannelsSSD->GetBadChannelP(i,j));
-      //cout<<"Module: "<<i+500<< " Strip: "<<j<<" - "<<badChannel<<endl;
-      if(badChannel != 0) {
-	if(layer == 5)
-	  nPSideChannelsLayer5 += 1;
-	if(layer == 6)
-	  nPSideChannelsLayer6 += 1;
-	nBadPSideChannels += 1;
-      }
-      badChannel = (Int_t)(badChannelsSSD->GetBadChannelN(i,j));
-      //cout<<"Module: "<<i+500<< " Strip: "<<fgkDefaultNStripsSSD+j+1<<" - "<<badChannel<<endl;
-      if(badChannel != 0) {
-	if(layer == 5)                                                    
-	  nNSideChannelsLayer5 += 1;
-	if(layer == 6)
-	  nNSideChannelsLayer6 += 1;
-	nBadNSideChannels += 1;
-      }
-    }
-    if(layer == 5) {
-      if(nPSideChannelsLayer5 > 0)
-	fHistPSideBadChannelMapLayer5->Fill(module,499+ladder,
-					    100.*nPSideChannelsLayer5/fgkDefaultNStripsSSD);
-      else fHistPSideBadChannelMapLayer5->Fill(module,499+ladder,0.0001);
-      if(nNSideChannelsLayer5 > 0)
-	fHistNSideBadChannelMapLayer5->Fill(module,499+ladder,
-					    100.*nNSideChannelsLayer5/fgkDefaultNStripsSSD);
-      else fHistNSideBadChannelMapLayer5->Fill(module,499+ladder,0.0001);
-    }//layer 5
-    if(layer == 6) {
-      if(nPSideChannelsLayer6 > 0) 
-	fHistPSideBadChannelMapLayer6->Fill(module,599+ladder,
-					    100.*nPSideChannelsLayer6/fgkDefaultNStripsSSD);
-      else fHistPSideBadChannelMapLayer6->Fill(module,599+ladder,0.0001);
-      if(nNSideChannelsLayer6 > 0) 
-	fHistNSideBadChannelMapLayer6->Fill(module,599+ladder,
-					    100.*nNSideChannelsLayer6/fgkDefaultNStripsSSD);
-      else fHistNSideBadChannelMapLayer6->Fill(module,599+ladder,0.0001);
-    }//layer 6
-      
-    nBadPSideChannelsTotal += nBadPSideChannels;
-    nBadNSideChannelsTotal += nBadNSideChannels;
-    nPSideChannelsTotal += fgkDefaultNStripsSSD;
-    nNSideChannelsTotal += fgkDefaultNStripsSSD;
-  }
-
-  cout<<"================================="<<endl;
-  cout<<"Bad p-Side channels: "<<100.*nBadPSideChannelsTotal/nPSideChannelsTotal<<endl;
-  cout<<"Bad n-Side channels: "<<100.*nBadNSideChannelsTotal/nNSideChannelsTotal<<endl;
-  cout<<"================================="<<endl;
-
-  TCanvas *cBadChannel = new TCanvas("cBadChannel",
-				     "Bad channel list",0,0,900,900);
-  cBadChannel->SetHighLightColor(10); cBadChannel->SetFillColor(10); 
-  cBadChannel->Divide(2,2);
-
-  cBadChannel->cd(1)->SetBottomMargin(.2); 
-  cBadChannel->cd(1)->SetLeftMargin(.15);
-  cBadChannel->cd(1)->SetRightMargin(.2);
-  cBadChannel->cd(1)->SetGridx(); cBadChannel->cd(1)->SetGridy();
-  cBadChannel->cd(1); fHistPSideBadChannelMapLayer5->Draw("colz"); 
-  cBadChannel->cd(2)->SetBottomMargin(.2); 
-  cBadChannel->cd(2)->SetLeftMargin(.15);
-  cBadChannel->cd(2)->SetRightMargin(.2);
-  cBadChannel->cd(2)->SetGridx(); cBadChannel->cd(2)->SetGridy();
-  cBadChannel->cd(2); fHistPSideBadChannelMapLayer6->Draw("colz");
-  cBadChannel->cd(3)->SetBottomMargin(.2); 
-  cBadChannel->cd(3)->SetLeftMargin(.15);
-  cBadChannel->cd(3)->SetRightMargin(.2);
-  cBadChannel->cd(3)->SetGridx(); cBadChannel->cd(3)->SetGridy();
-  cBadChannel->cd(3); fHistNSideBadChannelMapLayer5->Draw("colz"); 
-  cBadChannel->cd(4)->SetBottomMargin(.2); 
-  cBadChannel->cd(4)->SetLeftMargin(.15);
-  cBadChannel->cd(4)->SetRightMargin(.2);
-  cBadChannel->cd(4)->SetGridx(); cBadChannel->cd(4)->SetGridy();
-  cBadChannel->cd(4); fHistNSideBadChannelMapLayer6->Draw("colz");
-  cBadChannel->SaveAs("Run-BadChannels.gif");
 }
 
 //_____________________________________________________________________//

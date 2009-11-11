@@ -37,6 +37,7 @@ static const Int_t fgkNumberOfPSideStrips = 768; //number of P-side strips
 
 TList *initCM();
 void makeCM(const char* filename, Int_t nEvents, TList *list);
+void checkCM(const char* filename);
 
 //__________________________________________________________//
 void readSSDCommonMode(const char* filename = "raw.root",
@@ -357,4 +358,79 @@ void drawSSDCM(const char* filename = "SSD.CM.root") {
   c2->cd(4);
   TH2F *fHistNSideRMSCMMapLayer6 = dynamic_cast<TH2F *>(f->Get("fHistNSideRMSCMMapLayer6"));
   fHistNSideRMSCMMapLayer6->Draw("colz");
+}
+
+//__________________________________________________________//
+void checkCM(const char* filename) {
+  //Reads the SSD.CM.root file as an input.
+  //For every chip checks the mean and the rms of the CM distributions.
+  //If the absolute value of the mean is beyond 5 ADC counts or/and the 
+  //rms is beyond 10, the corresponding histogram is added to the list 
+  //of suspicious chips. This list is written to the output file having 
+  //the name: SSD.FaultyChips.root
+
+  //Hardcoded check values
+  const Double_t meanMax = 5.;
+  const Double_t rmsMax = 10.;
+
+  //output list
+  TList *listOfSuspiciousChips = new TList();
+
+  //Input file
+  TFile *fInput = TFile::Open(filename);
+
+  Int_t gLayer = 0,gLadder = 0, gModule = 0;
+  TString gTitle;
+  //Double_t meanValue = 0.0, rmsValue = 0.0;
+  TH1F *gHistSSDCMModule = 0x0;
+  //P-side
+  for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
+    AliITSgeomTGeo::GetModuleId(iModule,gLayer,gLadder,gModule);
+    for(Int_t iChip = 0; iChip < fgkNumOfChips; iChip++) {
+      gTitle = "SSD_CM_PSide_Layer"; gTitle += gLayer;
+      gTitle += "_Ladder"; gTitle += gLadder;
+      gTitle += "_Module"; gTitle += gModule;
+      gTitle += "_Chip"; gTitle += iChip+1;
+      gHistSSDCMModule = dynamic_cast<TH1F *>(fInput->Get(gTitle.Data()));
+      if((TMath::Abs(gHistSSDCMModule->GetMean(1)) > meanMax)||
+	 (TMath::Abs(gHistSSDCMModule->GetRMS(1)) > rmsMax)) {
+	Printf("Name: %s, Mean: %lf - rms: %lf",
+	       gHistSSDCMModule->GetName(),
+	       TMath::Abs(gHistSSDCMModule->GetMean(1)),
+	       TMath::Abs(gHistSSDCMModule->GetRMS(1)));
+	listOfSuspiciousChips->Add(gHistSSDCMModule);
+      }
+    }//chip loop
+  }//module loop
+
+  //N-side
+  for(Int_t iModule = 500; iModule < fgkSSDMODULES + 500; iModule++) {
+    AliITSgeomTGeo::GetModuleId(iModule,gLayer,gLadder,gModule);
+    for(Int_t iChip = 0; iChip < fgkNumOfChips; iChip++) {
+      gTitle = "SSD_CM_NSide_Layer"; gTitle += gLayer;
+      gTitle += "_Ladder"; gTitle += gLadder;
+      gTitle += "_Module"; gTitle += gModule;
+      gTitle += "_Chip"; gTitle += iChip+1;
+      gHistSSDCMModule = dynamic_cast<TH1F *>(fInput->Get(gTitle.Data()));
+      if((TMath::Abs(gHistSSDCMModule->GetMean(1)) > meanMax)||
+	 (TMath::Abs(gHistSSDCMModule->GetRMS(1)) > rmsMax)) {
+	Printf("Name: %s, Mean: %lf - rms: %lf",
+	       gHistSSDCMModule->GetName(),
+	       TMath::Abs(gHistSSDCMModule->GetMean(1)),
+	       TMath::Abs(gHistSSDCMModule->GetRMS(1)));
+	listOfSuspiciousChips->Add(gHistSSDCMModule);
+      }
+      //Printf("Name: %s",gHistSSDCMModule->GetName());
+    }//chip loop
+  }//module loop
+
+  Printf("===============================================");
+  Printf("%d suspicious chips were put in the list",
+	 listOfSuspiciousChips->GetEntries());
+  Printf("===============================================");
+  TFile *fOutput = new TFile("SSD.FaultyChips.root","recreate");
+  listOfSuspiciousChips->Write();
+  fOutput->Close();
+
+  fInput->Close();
 }
