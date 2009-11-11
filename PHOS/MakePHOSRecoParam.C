@@ -1,4 +1,4 @@
-void MakePHOSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kDefault)
+void MakePHOSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult)
 {
   //========================================================================
   //
@@ -10,27 +10,14 @@ void MakePHOSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kDefaul
   // $Id$ */
 
   const char* macroname = "MakePHOSRecoParam.C";
-  const Int_t firstRun = 85779;
+  const Int_t firstRun = 0;
 
   // Activate CDB storage and load geometry from CDB
   AliCDBManager* cdb = AliCDBManager::Instance();
   if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://OCDB");
   
   TObjArray *recoParamArray = new TObjArray();
-
-  {
-    // Default reconstruction parameters
-    AliPHOSRecoParam * phosRecoParam = AliPHOSRecoParam::GetDefaultParameters();
-    phosRecoParam->SetEventSpecie(AliRecoParam::kDefault);
-    phosRecoParam->SetEMCSubtractPedestals(kFALSE);
-    phosRecoParam->SetEMCRawDigitThreshold(2);
-    phosRecoParam->SetEMCMinE(0.012);
-    phosRecoParam->SetEMCClusteringThreshold(0.20);
-    phosRecoParam->SetEMCFitterVersion("v0");
-    phosRecoParam->SetEMCSampleQualityCut(10.);
-    phosRecoParam->SetName("Default");
-    recoParamArray->AddLast(phosRecoParam);
-  }
+  
   {
     // Reconstruction parameters for cosmic run 2009
     AliPHOSRecoParam * phosRecoParam = AliPHOSRecoParam::GetDefaultParameters();
@@ -54,6 +41,7 @@ void MakePHOSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kDefaul
     phosRecoParam->SetEMCClusteringThreshold(0.22);
     phosRecoParam->SetEMCFitterVersion("v0");
     phosRecoParam->SetEMCUnfolding(kTRUE);
+    phosRecoParam->SetEMCSampleQualityCut(10.);
     phosRecoParam->SetName("LowMult2009");
     recoParamArray->AddLast(phosRecoParam);
   }
@@ -68,6 +56,18 @@ void MakePHOSRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kDefaul
     phosRecoParam->SetEMCFitterVersion("v0");
     phosRecoParam->SetEMCUnfolding(kTRUE);
     phosRecoParam->SetName("HighMult2009");
+    recoParamArray->AddLast(phosRecoParam);
+  }
+  { // Reconstruction parameters for "calibration" events
+    AliPHOSRecoParam * phosRecoParam = AliPHOSRecoParam::GetDefaultParameters();
+    phosRecoParam->SetEventSpecie(AliRecoParam::kCalib);
+    phosRecoParam->SetEMCSubtractPedestals(kFALSE);
+    phosRecoParam->SetEMCMinE(0.025);
+    phosRecoParam->SetEMCClusteringThreshold(0.05);
+    phosRecoParam->SetEMCFitterVersion("v0");
+    phosRecoParam->SetEMCUnfolding(kFALSE);
+    phosRecoParam->SetEMCEnergyCorrectionOn(kFALSE);
+    phosRecoParam->SetName("Calib2009");
     recoParamArray->AddLast(phosRecoParam);
   }
 
