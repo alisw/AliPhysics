@@ -359,6 +359,7 @@ void AliAnalysisTaskGammaConversion::ConnectInputData(Option_t */*option*/){
     // Write warning here cuts and so on are default if this ever happens
   }
   fV0Reader->Initialize();
+  fDoMCTruth = fV0Reader->GetDoMCTruth();
 }
 
 

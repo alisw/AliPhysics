@@ -536,6 +536,11 @@ class AliV0Reader : public TObject {
    * Sets the flag to enable/disable the usage of MC information. 
    */
   void SetDoMCTruth(Bool_t doMC){fDoMC = doMC;}
+
+  /*
+   * Sets the flag to enable/disable the usage of MC information. 
+   */
+  Bool_t GetDoMCTruth(){return fDoMC;}
 	
   /*
    * Sets the flag to enable/disable the cut dedx N sigma 
