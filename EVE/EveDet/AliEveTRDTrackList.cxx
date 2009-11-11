@@ -268,8 +268,14 @@ void AliEveTRDTrackList::AddStandardContent()
   // use the return value of AddMacro (NOT_EXIST_ERROR is returned, if file does not exist)
   // (-> You can also check for other return values (see AddMacro(...)))
 
-  if(gSystem->Load("libANALYSIS.so")<0) return;
-  if(gSystem->Load("libTRDqaRec.so")<0) return;
+  Char_t *libs[] = {"libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libPWG1.so"};
+  Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
+  for(Int_t ilib=0; ilib<nlibs; ilib++){
+    if(gSystem->Load(libs[ilib]) >= 0) continue;
+    AliError(Form("Fail loading %s.", libs[ilib]));
+    return;
+  }
+
   AliTRDrecoTask *task = 0x0;
   TList *fPlots = 0x0;
   for(Int_t it=2; it<NTRDQATASKS; it++){
