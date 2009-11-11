@@ -36,8 +36,6 @@ class AliTRDdigitsManager : public TObject {
   virtual void                Copy(TObject &m) const;
 
   virtual void                CreateArrays();
-  virtual void                ResetArrays();
-  virtual void                ResetArrays(Int_t det);
   void                        ClearArrays(Int_t det);
   virtual Bool_t              BuildIndexes(Int_t det);
 
