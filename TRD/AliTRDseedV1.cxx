@@ -512,7 +512,8 @@ Float_t AliTRDseedV1::GetdQdl(Int_t ic, Float_t *dl) const
   }
   dx *= TMath::Sqrt(1. + fYfit[1]*fYfit[1] + fZref[1]*fZref[1]);
   if(dl) (*dl) = dx;
-  return dq/dx;
+  if(dx>1.e-9) return dq/dx;
+  else return 0.;
 }
 
 //____________________________________________________________
