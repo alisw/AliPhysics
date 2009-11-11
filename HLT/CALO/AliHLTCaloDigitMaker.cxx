@@ -120,12 +120,12 @@ AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channelDataH
 //   Int_t zMod = -1;
   
   UShort_t coord1[4];
-  UShort_t coord2[4];
+  //  UShort_t coord2[4];
   Float_t locCoord[3];
   
   
   AliHLTCaloChannelDataStruct* currentchannel = 0;
-  AliHLTCaloChannelDataStruct* currentchannelLG = 0;  
+  //  AliHLTCaloChannelDataStruct* currentchannelLG = 0;  
   AliHLTCaloChannelDataStruct* tmpchannel = 0;
   
   fShmPtr->SetMemory(channelDataHeader);

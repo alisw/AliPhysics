@@ -54,12 +54,16 @@ AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():
   AliHLTLogging(),
   fRecPointDataPtr(0),
   fDigitDataPtr(0),
+  fCurrentDigit(0),
+  fStartDigit(0),
+  fPreviousDigit(0),
   fEmcClusteringThreshold(0),
   fEmcMinEnergyThreshold(0),
   fEmcTimeGate(0),
   fDigitsInCluster(0),
   fDigitContainerPtr(0),
   fMaxDigitIndexDiff(2*NZROWSMOD),
+  fAvailableSize(0),
   fDigitReader(0)
 {
   //See header file for documentation

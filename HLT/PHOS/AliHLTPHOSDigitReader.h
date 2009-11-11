@@ -83,7 +83,12 @@ private:
 
   /** Pointer to the first digit */
   AliHLTPHOSDigitDataStruct *fFirstDigit;    //COMMENT
-  };
+
+  AliHLTPHOSDigitReader (const AliHLTPHOSDigitReader  & );
+  AliHLTPHOSDigitReader & operator = (const AliHLTPHOSDigitReader &);
+
+
+};
 
 
 #endif

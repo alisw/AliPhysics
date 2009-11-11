@@ -290,7 +290,7 @@ AliHLTPHOSClusterizerComponent::ScanConfigurationArgument(int argc, const char *
       fClusterizerPtr->SetEmcClusteringThreshold(argument.Atof());
       return 1;
     }
-
+  return 0;
 }
 
 int
@@ -304,7 +304,7 @@ AliHLTPHOSClusterizerComponent::DoInit(int argc, const char** argv )
   fNoCrazyness = false;
   //
 
-  const char *path = "HLT/ConfigPHOS/ClusterizerComponent";
+  //  const char *path = "HLT/ConfigPHOS/ClusterizerComponent";
 
   //  ConfigureFromCDBTObjString(path);
 

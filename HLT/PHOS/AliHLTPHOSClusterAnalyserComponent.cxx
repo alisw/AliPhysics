@@ -287,7 +287,7 @@ AliHLTPHOSClusterAnalyserComponent::GetGeometryFromCDB()
   AliCDBPath path("GRP","Geometry","Data");
   if(path.GetPath())
     {
-      HLTInfo("configure from entry %s", path.GetPath());
+      //      HLTInfo("configure from entry %s", path.GetPath());
       AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
       if (pEntry) 
 	{
@@ -305,7 +305,7 @@ AliHLTPHOSClusterAnalyserComponent::GetGeometryFromCDB()
 	}
       else
 	{
-	  HLTError("can not fetch object \"%s\" from OCDB", path);
+	  //	  HLTError("can not fetch object \"%s\" from OCDB", path);
 	}
     }
   return 0;

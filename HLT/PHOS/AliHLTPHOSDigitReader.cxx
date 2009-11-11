@@ -18,7 +18,11 @@
 
 
 AliHLTPHOSDigitReader::AliHLTPHOSDigitReader() :
-  fDigitHeader(0)
+  fDigitHeader(0),
+  fCurrentDigit(0),
+  fNextDigit(0),
+  fPrevDigit(0),
+  fFirstDigit(0)
 {
   // See header file for documentation
 }

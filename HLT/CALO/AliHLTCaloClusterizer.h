@@ -166,6 +166,10 @@ protected:
 private:
   AliHLTCaloClusterizer();
 
+  AliHLTCaloClusterizer (const AliHLTCaloClusterizer  & );
+  //  AliHLTCaloClusterizer & operator = (const AliHLTCaloClusterizer &);
+
+
   ClassDef(AliHLTCaloClusterizer, 0);
 
 

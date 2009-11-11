@@ -42,6 +42,7 @@
 AliHLTPHOSHistoProdMatchedTracks::AliHLTPHOSHistoProdMatchedTracks() :
   fClusterReader(NULL),
   fHistArrayPtr(0),
+  fHistMatchQuality(0),
   fHistMatchedEnergy(0),
   fHistUnMatchedEnergy(0)
 {

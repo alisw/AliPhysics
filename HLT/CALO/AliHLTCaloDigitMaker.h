@@ -184,6 +184,8 @@ private:
   /** Channel book keeping variable */
   AliHLTCaloDigitDataStruct ***fChannelBook;                     //! transient
 
+  AliHLTCaloDigitMaker (const AliHLTCaloDigitMaker  & );
+  //  AliHLTCaloDigitMaker & operator = (const AliHLTCaloDigitMaker &);
 
   ClassDef(AliHLTCaloDigitMaker, 0); 
 

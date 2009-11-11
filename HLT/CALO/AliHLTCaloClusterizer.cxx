@@ -40,8 +40,8 @@
 
 //#include "AliHLTCaloConstants.h"
 
-#include "AliHLTCaloConstantsHandler.h";
-#include "AliHLTCaloConstants.h";
+#include "AliHLTCaloConstantsHandler.h"
+#include "AliHLTCaloConstants.h"
 
 //#include "AliHLTCaloClusterHandler.h"
 //#include "AliPHOSDigit.h"

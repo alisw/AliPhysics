@@ -120,7 +120,7 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
     AliHLTPHOSProcessor(),
     fAllDigitsPtr(0),
     fClusterizerPtr(0),
-    fRecPointStructArrayPtr(0),
+    //    fRecPointStructArrayPtr(0),
     fDigitCount(0),
     fNoCrazyness(0)
   {
@@ -178,8 +178,8 @@ protected:
   /** Pointer to the clusterizer it self */
   AliHLTPHOSClusterizer* fClusterizerPtr;                       //! transient
 
-  /** Pointer to rec points used in clusterization */
-  AliHLTPHOSRecPointDataStruct* fRecPointStructArrayPtr;        //! transient
+//   /** Pointer to rec points used in clusterization */
+//   AliHLTPHOSRecPointDataStruct* fRecPointStructArrayPtr;        //! transient
 
   /** Number of digits in event */
   Int_t fDigitCount;                                            //COMMENT

@@ -51,10 +51,12 @@ AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
   AliHLTLogging(),
   fShmPtr(0),
   fDigitStructPtr(0),
+  fDigitHeaderPtr(0),
   fDigitCount(0),
   fOrdered(true),
   fMapperPtr(0),
-  fDigitPtrArray(0)
+  fDigitPtrArray(0),
+  fAvailableSize(0)
 {
   // See header file for documentation
 

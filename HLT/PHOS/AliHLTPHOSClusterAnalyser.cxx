@@ -52,7 +52,8 @@ AliHLTPHOSClusterAnalyser::AliHLTPHOSClusterAnalyser() :
   fDoClusterFit(false),
   fHaveCPVInfo(false),
   fDoPID(false),
-  fHaveDistanceToBadChannel(false)
+  fHaveDistanceToBadChannel(false),
+  fDigitHeaderPtr(0)
 {
   //See header file for documentation
 }
@@ -90,7 +91,7 @@ AliHLTPHOSClusterAnalyser::CalculateCenterOfGravity()
 
   AliHLTPHOSRecPointDataStruct *recPoint = fRecPointDataPtr;
 
-  UInt_t iDigit = 0;
+  //  UInt_t iDigit = 0;
 
   for(Int_t iRecPoint=0; iRecPoint < fNRecPoints; iRecPoint++) 
     {

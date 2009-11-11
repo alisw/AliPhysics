@@ -71,9 +71,12 @@ public:
     AliHLTLogging(),
     fShmPtr(0),
     fDigitStructPtr(0),
+    fDigitHeaderPtr(0),
     fDigitCount(0),
     fOrdered(true),
-    fMapperPtr(0)
+    fMapperPtr(0),
+    fDigitPtrArray(0),
+    fAvailableSize(0)
   {
     //Copy constructor not implemented
   }
@@ -187,6 +190,7 @@ private:
     fDigitPtrArray[fDigitCount] = fDigitStructPtr;
     fDigitCount++;
     fDigitStructPtr++;
+    return true;
   }
 
   /** Pointer to shared memory interface */

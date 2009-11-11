@@ -69,7 +69,16 @@ class AliHLTPHOSHistogramProducerComponent: public AliHLTPHOSProcessor
   AliHLTPHOSHistogramProducerComponent(const AliHLTPHOSHistogramProducerComponent & ) : 
     AliHLTPHOSProcessor(),
     fPhysicsHistogramProducerPtr(0),
-    fPushModulo(0)
+    fPushModulo(0),
+    fCellEnergy(0),
+    fClusterEnergy(0),
+    fInvariantMass(0),
+    fMatchedTracks(0),
+    fCellEnergyHistProducer(0),
+    fClusterEnergyHistProducer(0),
+    fInvariantMassHistProducer(0),
+    fMatchedTracksHistProducer(0)
+
   {
     //Copy constructor not implemented
   }

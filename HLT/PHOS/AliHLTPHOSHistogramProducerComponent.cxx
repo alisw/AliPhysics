@@ -48,7 +48,16 @@ AliHLTPHOSHistogramProducerComponent gAliHLTPHOSHistogramProducerComponent;
 AliHLTPHOSHistogramProducerComponent::AliHLTPHOSHistogramProducerComponent() :
   AliHLTPHOSProcessor(),
   fPhysicsHistogramProducerPtr(0),
-  fPushModulo(1)
+  fPushModulo(1),
+  fCellEnergy(0),
+  fClusterEnergy(0),
+  fInvariantMass(0),
+  fMatchedTracks(0),
+  fCellEnergyHistProducer(0),
+  fClusterEnergyHistProducer(0),
+  fInvariantMassHistProducer(0),
+  fMatchedTracksHistProducer(0)
+
 {
   //see header file for documentation
 }

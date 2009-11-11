@@ -76,8 +76,8 @@ public:
     fDoClusterFit(false),
     fHaveCPVInfo(false),
     fDoPID(false),
-    fHaveDistanceToBadChannel(false)
-    
+    fHaveDistanceToBadChannel(false),
+    fDigitHeaderPtr(0)
   {
     //Copy constructor not implemented
   }
