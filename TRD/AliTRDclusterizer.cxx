@@ -782,7 +782,6 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     return kFALSE;
   }
 
-
   fMaxThresh            = fReconstructor->GetRecoParam()->GetClusMaxThresh();
   fSigThresh            = fReconstructor->GetRecoParam()->GetClusSigThresh();
   fMinMaxCutSigma       = fReconstructor->GetRecoParam()->GetMinMaxCutSigma();
@@ -796,7 +795,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
   fDet  = AliTRDgeometry::GetDetector(fLayer,istack,isector);
   if (fDet != det) {
-    AliError("Strange Detector number Missmatch!");
+    AliError("Strange Detector number mismatch!");
     return kFALSE;
   }
 
@@ -815,6 +814,12 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   fColMax    = fDigits->GetNcol();
   //Int_t nRowMax    = fDigits->GetNrow();
   fTimeTotal = fDigits->GetNtime();
+
+  // Check consistency between OCDB and raw data
+  if (fTimeTotal != calibration->GetNumberOfTimeBinsDCS()) {
+    AliError(Form("Number of timebins does not match OCDB value (raw:%d, OCDB:%d)"
+		 ,fTimeTotal,calibration->GetNumberOfTimeBinsDCS()));
+  }
 
   // Detector wise calibration object for the gain factors
   const AliTRDCalDet *calGainFactorDet = calibration->GetGainFactorDet();
