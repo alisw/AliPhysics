@@ -473,7 +473,7 @@ TEveElementList* esd_tracks_by_anal_cuts()
   {
     gSystem->Load("libPWG0base");
     gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/CreateStandardCuts.C");
-    Int_t mode = AliPWG0Helper::kTPCITS;
+    Int_t mode = AliPWG0Helper::kTPC;
     if (TMath::Abs(esd->GetMagneticField()) > 0.01)
       mode |= AliPWG0Helper::kFieldOn;
     gROOT->ProcessLine(Form("g_esd_tracks_anal_cuts = CreateTrackCuts(%d, kFALSE)", mode));
