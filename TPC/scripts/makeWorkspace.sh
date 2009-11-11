@@ -1,5 +1,6 @@
 #
 # marian.ivanov@cern.ch
+# argument 1  - run.list
 #
 # Make workspace structure
 # Create a list for each run 
@@ -7,9 +8,10 @@
 # This is fast procedure
 #
 mydir=`pwd`
+runlist=$1
 touch raw.list
 touch esd.list
-for adir in `cat run.list`; do
+for adir in `cat $runlist`; do
     echo Creating dir $adir
     mkdirhier $adir;
     rm -f raw${adir}.txt

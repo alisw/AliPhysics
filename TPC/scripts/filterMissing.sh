@@ -40,3 +40,20 @@ for adir in `cat run.list`; do
     echo $adir   >>ocdbPresent.list
    fi
 done; 
+
+wdir=`pwd`
+rm runMissing.list
+touch runMissing.list
+
+for adir in `cat run.list`; do
+  cd $wdir/$adir  
+  nesd=`cat esd.txt.Good| grep -c root`
+  if [ $nesd -gt 0 ] ; then  
+     ncalib=`find $wdir/$adir/ | grep -c CalibObjects`
+     if [ $ncalib -lt 1 ] ; then
+        echo Missing $adir
+        echo $adir >> $wdir/runMissing.list
+     fi;
+  fi;
+  cd $wdir
+done;

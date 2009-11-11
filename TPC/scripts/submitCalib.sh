@@ -18,7 +18,7 @@ mydir=`pwd`
 for adir in `cat $runlist`; do
     cd $mydir
     up=`cat  $adir/esd.txt.Good | grep -c .root`
-    if [ $up -gt 1 ] ; then
+    if [ $up -gt 0 ] ; then
 	myvar=0;
 	cd $adir
 	echo SUBMITING DIRECTORY $adir

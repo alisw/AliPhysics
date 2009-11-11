@@ -5,14 +5,20 @@
 # 3 argument      - input file list
 # 4 argument      - run number used for ConfigOCDB
 
+fstart=$1
+fend=$2
+cdbrun=$4
+run=$4
+echo $1   $2  $3 $4
+
 echo Hallo world
 echo Hostname $HOSTNAME
+echo RUN $4
 df /tmp
-
-echo $1   $2  $3
 source ../balice.sh
 source ../alienSetup.sh
-moval
+
+
 mkdir $1_$2
 cp *.C $1_$2 
 cd $1_$2
@@ -21,17 +27,14 @@ cp $3 esd.txt
 dname=`basename \`pwd\``
 basename=`pwd`/${fstart}_${fend}
 mkdirhier $basename
-tmpname=/tmp/$USER/$dname/${fstart}_${fend}
+tmpname=/tmp/$USER/$run/$dname/${fstart}_${fend}
 mkdirhier $tmpname
 cp * $tmpname
 ls -al $tmpname
 cd $tmpname
+echo Working directory  $tmpname
 
 
-
-fstart=$1
-fend=$2
-cdbrun=$4
 echo start aliroot
 echo command aliroot -q -b CalibrateTPC.C\($fstart,$fend,$cdbrun\)
 echo PWD `pwd`
