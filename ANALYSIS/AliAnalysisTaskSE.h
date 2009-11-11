@@ -16,7 +16,7 @@ class AliMCEvent;
 class AliInputEventHandler;
 
 class TTree;
-
+class TList;
 
 
 class AliAnalysisTaskSE : public AliAnalysisTask
@@ -33,9 +33,13 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual void Exec(Option_t* option);
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     virtual void Init() {;}
+    virtual Bool_t Notify();
     // To be implemented by user
     virtual void UserCreateOutputObjects()  {;}
     virtual void UserExec(Option_t* /*option*/) {;}
+    virtual Bool_t UserNotify() {return kTRUE;}
+    virtual void   NotifyRun()  {;}
+
     // Helpers for adding branches to the AOD
    virtual void AddAODBranch(const char* cname, void* addobj, const char *fname="");
 // Getters
@@ -47,14 +51,20 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual Long64_t     Entry()       {return fEntry;     }
     virtual const char*  CurrentFileName();
     virtual Bool_t       IsStandardAOD() const;
+    virtual TList*       GetQAHistos()   const {return fHistosQA;}
   protected:
     Int_t                 fDebug;           //  Debug flag
+    // IO
     Int_t                 fEntry;           //  Current entry in the chain
     AliVEvent*            fInputEvent;      //! VEvent Input
     AliInputEventHandler* fInputHandler;    //! Input Handler
     AliAODEvent*          fOutputAOD;       //! AOD out 
     AliMCEvent*           fMCEvent;         //! MC
     TTree*                fTreeA;           //  AOD output Tree
+    Int_t                 fCurrentRunNumber;//! Current run number
+    // Output histos for QA
+    TList*                fHistosQA;        //! Output histos for QA
+    // Provisions for replication
     static AliAODHeader*    fgAODHeader;        //! Header for replication
     static TClonesArray*    fgAODTracks;        //! Tracks for replication
     static TClonesArray*    fgAODVertices;      //! Vertices for replication

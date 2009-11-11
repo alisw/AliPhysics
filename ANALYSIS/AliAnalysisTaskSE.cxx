@@ -80,7 +80,9 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const char* name):
     fInputHandler(0x0),
     fOutputAOD(0x0),
     fMCEvent(0x0),
-    fTreeA(0x0)
+    fTreeA(0x0),
+    fCurrentRunNumber(-1),
+    fHistosQA(0x0)
 {
   // Default constructor
     DefineInput (0, TChain::Class());
@@ -95,16 +97,20 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
     fInputHandler(0x0),
     fOutputAOD(0x0),
     fMCEvent(0x0),
-    fTreeA(0x0)
+    fTreeA(0x0),
+    fCurrentRunNumber(-1),
+    fHistosQA(0x0)
 {
 // Copy constructor
-    fDebug        = obj.fDebug;
-    fEntry        = obj.fEntry;
-    fInputEvent   = obj.fInputEvent;
-    fInputHandler = obj.fInputHandler;
-    fOutputAOD    = obj.fOutputAOD;
-    fMCEvent      = obj.fMCEvent;
-    fTreeA        = obj.fTreeA;    
+    fDebug            = obj.fDebug;
+    fEntry            = obj.fEntry;
+    fInputEvent       = obj.fInputEvent;
+    fInputHandler     = obj.fInputHandler;
+    fOutputAOD        = obj.fOutputAOD;
+    fMCEvent          = obj.fMCEvent;
+    fTreeA            = obj.fTreeA;    
+    fCurrentRunNumber = obj.fCurrentRunNumber;
+    fHistosQA         = obj.fHistosQA;
 }
 
 
@@ -112,13 +118,15 @@ AliAnalysisTaskSE& AliAnalysisTaskSE::operator=(const AliAnalysisTaskSE& other)
 {
 // Assignment
     AliAnalysisTask::operator=(other);
-    fDebug        = other.fDebug;
-    fEntry        = other.fEntry;
-    fInputEvent   = other.fInputEvent;
-    fInputHandler = other.fInputHandler;
-    fOutputAOD    = other.fOutputAOD;
-    fMCEvent      = other.fMCEvent;
-    fTreeA        = other.fTreeA;    
+    fDebug            = other.fDebug;
+    fEntry            = other.fEntry;
+    fInputEvent       = other.fInputEvent;
+    fInputHandler     = other.fInputHandler;
+    fOutputAOD        = other.fOutputAOD;
+    fMCEvent          = other.fMCEvent;
+    fTreeA            = other.fTreeA;    
+    fCurrentRunNumber = other.fCurrentRunNumber;
+    fHistosQA         = other.fHistosQA;
     return *this;
 }
 
@@ -438,3 +446,15 @@ Bool_t AliAnalysisTaskSE::IsStandardAOD() const
     }
     return handler->IsStandard();   
 }
+
+Bool_t AliAnalysisTaskSE::Notify()
+{
+    // Called for every change of input file
+    if (InputEvent()->GetRunNumber() != fCurrentRunNumber) {
+	fCurrentRunNumber = InputEvent()->GetRunNumber();
+	NotifyRun();
+    }
+    UserNotify();
+}
+
+
