@@ -148,9 +148,6 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
 {
   //Makes the job.
   //TClonesArray *digits and raw data fitter should be provided by calling function.
-printf("Make Digits! \n") ;
-
-  fitter->SetAmpOffset(4) ;
 
   digits->Clear();
  
