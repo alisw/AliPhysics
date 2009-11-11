@@ -31,8 +31,8 @@ void plotNPERates(const char* which = "EMC") {
   //  leg->AddEntry(htte,"Misidentified hadrons","l");
 
   gStyle->SetOptStat(0);
-  drawAnnualYields(which);
-  drawPtCutRates(which);
+  //  drawAnnualYields(which);
+  // drawPtCutRates(which);
   //drawCompareTruth();
 
 }

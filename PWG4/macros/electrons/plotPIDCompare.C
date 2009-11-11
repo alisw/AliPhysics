@@ -115,9 +115,15 @@ void plotPIDCompare(char* which = "EMC") {
   Double_t efinal = 0.258;
   TGraphErrors* eerr = new TGraphErrors();
   eerr->SetName("emcErr");
+  int count=0;
   for(Int_t i = 1; i <= hcorr->GetNbinsX(); i++) {
-    eerr->SetPoint(i-1,hcorr->GetBinCenter(i),hcorr->GetBinContent(i));
-    eerr->SetPointError(i-1,0.,efinal*hcorr->GetBinContent(i));
+    if (hcorr->GetBinCenter(i) <10.0) continue;
+    if (hcorr->GetBinCenter(i) >50.0) break;
+    cout <<"bin:"<< i << ", bin-center:"<< hcorr->GetBinCenter(i)<< endl;
+    eerr->SetPoint(count,hcorr->GetBinCenter(i),hcorr->GetBinContent(i));
+    eerr->SetPointError(count,0.,efinal*hcorr->GetBinContent(i));
+    if(hcorr->GetBinCenter(i) <20.0) eerr->SetPointError(count,0.,1.5*efinal*hcorr->GetBinContent(i));
+    count++;
   }
   eerr->SetFillColor(kRed-8);
   eerr->Draw("3same");
@@ -144,5 +150,80 @@ void plotPIDCompare(char* which = "EMC") {
   //  latex->Draw();
 
   crates->Print("NPERates_PIDCompare_all.pdf");
+
+  TCanvas* ccomp = new TCanvas("ccomp","",0,0,600,800);
+  ccomp->SetFillColor(0);
+  ccomp->SetBorderMode(0);
+  ccomp->SetBorderSize(2);
+  ccomp->SetFrameBorderMode(0);
+  ccomp->SetFrameBorderMode(0);
+  TPad*    upperPad = new TPad("upperPad", "upperPad", 
+			       .005, .2525, .995, .995);
+  upperPad->SetFillColor(0);
+  upperPad->SetBorderMode(0);
+  upperPad->SetBorderSize(2);
+  upperPad->SetFrameBorderMode(0);
+  upperPad->SetFrameBorderMode(0);
+  TPad*    lowerPad = new TPad("lowerPad", "lowerPad", 
+			       .005, .005, .995, .2525);
+  lowerPad->SetFillColor(0);
+  lowerPad->SetFillColor(0);
+  lowerPad->SetBorderMode(0);
+  lowerPad->SetBorderSize(2);
+  lowerPad->SetFrameBorderMode(0);
+  lowerPad->SetFrameBorderMode(0);
+  upperPad->Draw();        
+  lowerPad->Draw(); 
+  upperPad->cd();
+  gPad->SetLogy();
+  hcorr->SetTitle("Efficiency corrected non-photonic electrons");
+  hcorr->SetYTitle("Annual yield in EMCAL dN/dp_{T} (GeV/c)^{-1}");
+  hcorr->SetXTitle("p_{T} (GeV/c)");
+  hcorr->GetXaxis()->SetRangeUser(10.,49.);
+  hcorr->GetYaxis()->SetTitleOffset(1.2);
+  hcorr->Draw();
+  eerr->Draw("3same");
+  hcorr->Draw("same");
+  allMC->Draw("same");
+  TLegend *myleg = new TLegend(0.3,0.7,0.9,0.9);
+  myleg->SetFillColor(0);
+  myleg->AddEntry(allMC,"MC Electrons","l");
+  myleg->AddEntry(hcorr,"Eff. corrected EMCAL N-P electrons","pl");
+  myleg->AddEntry(eerr,"Systematic uncertainty","f");
+  myleg->Draw();
+  lowerPad->cd();
+  TH1F* hmc = (TH1F*)allMC->Clone(); hmc->SetName("hmc");
+  hmc->Rebin(5); hmc->Scale(0.2);
+  TH1F* hmcratio = (TH1F*)hcorr->Clone();  hmcratio->SetName("hmcratio");
+  hmcratio->Divide(hmc);
+  hmcratio->SetTitle();
+  hmcratio->SetYTitle("MC/Data");
+  hmcratio->GetYaxis()->SetRangeUser(0.,2.);
+  hmcratio->GetYaxis()->SetNdivisions(505);
+  hmcratio->GetYaxis()->SetLabelSize(2.*hmcratio->GetYaxis()->GetLabelSize());
+  hmcratio->GetYaxis()->SetTitleSize(3.*hmcratio->GetYaxis()->GetTitleSize());
+  hmcratio->GetYaxis()->SetTitleOffset(0.3);
+  hmcratio->SetXTitle("");
+  hmcratio->GetXaxis()->SetLabelSize(2.*hmcratio->GetXaxis()->GetLabelSize());
+  hmcratio->Draw();
+  TGraphErrors* rerr = new TGraphErrors();
+  rerr->SetName("ratioErr");
+  count=0;
+  for(Int_t i = 1; i <= hmcratio->GetNbinsX(); i++) {
+    if (hmcratio->GetBinCenter(i) <10.0) continue;
+    if (hmcratio->GetBinCenter(i) >50.0) break;
+    rerr->SetPoint(count,hmcratio->GetBinCenter(i),hmcratio->GetBinContent(i));
+    rerr->SetPointError(count,0.,efinal*hmcratio->GetBinContent(i));
+    if(hmcratio->GetBinCenter(i) <20.0) rerr->SetPointError(count,0.,1.5*efinal*hmcratio->GetBinContent(i));
+    count++;
+  }
+  rerr->SetFillColor(kRed-8);
+  rerr->Draw("3same");
+  hmcratio->Draw("same");
+  TLine* line = new TLine(10.,1.,50.,1.);
+  line->SetLineStyle(2);
+  line->Draw();
+  ccomp->Print("EMCAL_NPE.pdf");
+  crates->cd();
 }
 
