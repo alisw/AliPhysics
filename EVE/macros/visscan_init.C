@@ -190,6 +190,7 @@ void visscan_init(const TString& cdburi = "",
   //==============================================================================
 
   // A refresh to show proper window.
+  gEve->GetViewers()->SwitchColorSet();
   gEve->Redraw3D(kTRUE);
   gSystem->ProcessEvents();
 
