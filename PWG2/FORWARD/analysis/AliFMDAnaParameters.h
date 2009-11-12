@@ -120,6 +120,8 @@ public:
   void     SetCollisionSystem(Species collsystem) {fSpecies = collsystem;}
   void     PrintStatus() const;
   void     Print(Option_t* /* option */) const { PrintStatus(); }
+  char*    GetDndetaAnalysisName() {return "FORWARD_DnDeta";}
+  
 protected:
   
   AliFMDAnaParameters(const AliFMDAnaParameters& o) 
