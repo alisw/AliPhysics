@@ -101,9 +101,6 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
   //
   if (fDebug > 1) printf("AnalysisTaskJets::CreateOutPutData() \n");
 
-  // we already have a non standard output, need not to book a new file... 
-  if (!IsStandardAOD())fNonStdFile  = "";
-
   if(fNonStdBranch.Length()==0)
     {
       //  Connec default AOD to jet finder
