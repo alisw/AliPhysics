@@ -110,11 +110,11 @@ void LoadLibraries(const anaModes mode) {
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libXMLIO.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libXMLIO");
+  gSystem->Load("libPhysics");
   
   //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
@@ -129,12 +129,12 @@ void LoadLibraries(const anaModes mode) {
     gSystem->Load("libAOD");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
-    gSystem->Load("libCORRFW.so");
-    cerr<<"libCORRFW.so loaded..."<<endl;
-    gSystem->Load("libPWG2flowCommon.so");
-    cerr<<"libPWG2flowCommon.so loaded..."<<endl;
-    gSystem->Load("libPWG2flowTasks.so");
-    cerr<<"libPWG2flowTasks.so loaded..."<<endl;
+    gSystem->Load("libCORRFW");
+    cerr<<"libCORRFW loaded..."<<endl;
+    gSystem->Load("libPWG2flowCommon");
+    cerr<<"libPWG2flowCommon loaded..."<<endl;
+    gSystem->Load("libPWG2flowTasks");
+    cerr<<"libPWG2flowTasks loaded..."<<endl;
   }
   
   else if (mode == mLocalPAR || mode == mGRID) {

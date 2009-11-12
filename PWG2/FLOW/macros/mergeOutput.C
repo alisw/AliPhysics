@@ -1877,11 +1877,11 @@ void LoadLibrariesMO(const libModes mode) {
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libXMLIO.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libXMLIO");
+  gSystem->Load("libPhysics");
   
   //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
@@ -1895,13 +1895,13 @@ void LoadLibrariesMO(const libModes mode) {
   //==================================================================================  
   //load needed libraries:
   gSystem->AddIncludePath("-I$ROOTSYS/include");
-  gSystem->Load("libTree.so");
+  gSystem->Load("libTree");
 
   // for AliRoot
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libPWG2flowCommon.so");
-  //cerr<<"libPWG2flowCommon.so loaded ..."<<endl;
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libPWG2flowCommon");
+  //cerr<<"libPWG2flowCommon loaded ..."<<endl;
   
   }
   
