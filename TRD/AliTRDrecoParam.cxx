@@ -154,6 +154,7 @@ AliTRDrecoParam *AliTRDrecoParam::GetLowFluxParam()
   AliTRDrecoParam *rec = new AliTRDrecoParam();
   rec->fkdNchdy = 12.; // pp in TRD
   rec->SetVertexConstrained();
+  rec->SetCheckTimeConsistency();
   return rec;
 
 }
@@ -168,6 +169,7 @@ AliTRDrecoParam *AliTRDrecoParam::GetHighFluxParam()
   AliTRDrecoParam *rec = new AliTRDrecoParam();
   rec->fkdNchdy = 4000.; // PbPb in TRD
   rec->SetVertexConstrained();
+  rec->SetCheckTimeConsistency();
   return rec;
 
 }
@@ -193,7 +195,7 @@ AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
   par->fkRoadzMultiplicator = 3.;
   par->fADCBaseline = 10;
   par->fStreamLevel[kTracker] = 1;
-  par->SetArgon();
+  par->SetCheckTimeConsistency();
   return par;
 
 }

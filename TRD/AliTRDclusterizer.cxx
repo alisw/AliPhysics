@@ -616,6 +616,7 @@ Bool_t AliTRDclusterizer::MakeClusters()
     fDigitsManager->RemoveDictionaries(i);      
     fDigitsManager->ClearIndexes(i);  
   }
+  fReconstructor->SetDigitsParam(fDigitsManager->GetDigitsParam());
   
   if(fReconstructor->IsWritingClusters()) WriteClusters(-1);
 
@@ -685,6 +686,7 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
     if (!fReconstructor->IsWritingTracklets()) continue;
     if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det);
   }
+  fReconstructor->SetDigitsParam(fDigitsManager->GetDigitsParam());
   
   if (fTrackletContainer){
     delete [] fTrackletContainer[0];
@@ -782,6 +784,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     return kFALSE;
   }
 
+
   fMaxThresh            = fReconstructor->GetRecoParam()->GetClusMaxThresh();
   fSigThresh            = fReconstructor->GetRecoParam()->GetClusSigThresh();
   fMinMaxCutSigma       = fReconstructor->GetRecoParam()->GetMinMaxCutSigma();
@@ -795,7 +798,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
   fDet  = AliTRDgeometry::GetDetector(fLayer,istack,isector);
   if (fDet != det) {
-    AliError("Strange Detector number mismatch!");
+    AliError("Strange Detector number Missmatch!");
     return kFALSE;
   }
 
@@ -817,8 +820,8 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
   // Check consistency between OCDB and raw data
   if (fTimeTotal != calibration->GetNumberOfTimeBinsDCS()) {
-    AliError(Form("Number of timebins does not match OCDB value (raw:%d, OCDB:%d)"
-		 ,fTimeTotal,calibration->GetNumberOfTimeBinsDCS()));
+    AliError(Form("Number of timebins does not match OCDB value (RAW[%d] OCDB[%d])"
+                ,fTimeTotal,calibration->GetNumberOfTimeBinsDCS()));
   }
 
   // Detector wise calibration object for the gain factors

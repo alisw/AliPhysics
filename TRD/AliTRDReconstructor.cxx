@@ -40,9 +40,10 @@
 
 ClassImp(AliTRDReconstructor)
 
-TClonesArray *AliTRDReconstructor::fgClusters = 0x0;
-TClonesArray *AliTRDReconstructor::fgTracklets = 0x0;
-Char_t* AliTRDReconstructor::fgSteerNames[kNsteer] = {
+TClonesArray *AliTRDReconstructor::fgClusters = NULL;
+TClonesArray *AliTRDReconstructor::fgTracklets = NULL;
+AliTRDdigitsParam *AliTRDReconstructor::fgDigitsParam = NULL;
+Char_t const * AliTRDReconstructor::fgSteerNames[kNsteer] = {
   "DigitsConversion       "
  ,"Write Clusters         "
  ,"Write Online Tracklets "
@@ -51,7 +52,7 @@ Char_t* AliTRDReconstructor::fgSteerNames[kNsteer] = {
  ,"Process Online Tracklets"
  ,"Debug Streaming        "
 };
-Char_t* AliTRDReconstructor::fgSteerFlags[kNsteer] = {
+Char_t const * AliTRDReconstructor::fgSteerFlags[kNsteer] = {
   "dc"// digits conversion [false]
  ,"cw"// write clusters [true]
  ,"tw"// write online tracklets [false]
@@ -60,12 +61,12 @@ Char_t* AliTRDReconstructor::fgSteerFlags[kNsteer] = {
  ,"tp"// also use online tracklets for reconstruction [false]
  ,"deb"// Write debug stream [false]
 };
-Char_t* AliTRDReconstructor::fgTaskNames[AliTRDrecoParam::kTRDreconstructionTasks] = {
+Char_t const * AliTRDReconstructor::fgTaskNames[AliTRDrecoParam::kTRDreconstructionTasks] = {
   "Clusterizer"
  ,"Tracker"
  ,"PID"
 };
-Char_t* AliTRDReconstructor::fgTaskFlags[AliTRDrecoParam::kTRDreconstructionTasks] = {
+Char_t const * AliTRDReconstructor::fgTaskFlags[AliTRDrecoParam::kTRDreconstructionTasks] = {
   "cl"
  ,"tr"
  ,"pd"
@@ -94,6 +95,7 @@ AliTRDReconstructor::~AliTRDReconstructor()
   // Destructor
   //
 
+  if(fgDigitsParam) delete fgDigitsParam;
   if(fgClusters) {
     fgClusters->Delete(); delete fgClusters;
   }
@@ -232,6 +234,13 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
   // Fill ESD
   //
 
+}
+
+//_____________________________________________________________________________
+void AliTRDReconstructor::SetDigitsParam(AliTRDdigitsParam const *par)
+{ 
+  if(fgDigitsParam) (*fgDigitsParam) = (*par);
+  else fgDigitsParam = new AliTRDdigitsParam(*par);
 }
 
 

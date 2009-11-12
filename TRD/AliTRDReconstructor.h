@@ -16,6 +16,7 @@
 #include "AliDetectorRecoParam.h"
 #include "AliTRDpidUtil.h"
 #include "AliTRDrecoParam.h"
+#include "AliTRDdigitsParam.h"
 
 class TClonesArray;
 class TTreeSRedirector;
@@ -49,8 +50,10 @@ public:
   static TClonesArray* GetTracklets() {return fgTracklets;}
   Int_t               GetNdEdxSlices() const     { return (Int_t)AliTRDpidUtil::GetNdEdxSlices(GetPIDMethod());}
   AliTRDpidUtil::ETRDPIDMethod       GetPIDMethod() const       { return GetRecoParam()->IsPIDNeuralNetwork() ? AliTRDpidUtil::kNN : AliTRDpidUtil::kLQ;}
+  static AliTRDdigitsParam* GetDigitsParam() { return fgDigitsParam;}
   static const AliTRDrecoParam* GetRecoParam() { return dynamic_cast<const AliTRDrecoParam*>(AliReconstructor::GetRecoParam(2)); }
   virtual Bool_t      HasDigitConversion() const { return fSteerParam&kDigitsConversion;  };
+  Bool_t              HasDigitsParam() const { return Bool_t(fgDigitsParam);}
   Bool_t              IsCosmic() const { return GetRecoParam()->GetEventSpecie() & AliRecoParam::kCosmic;}
   Bool_t              IsWritingClusters() const  { return fSteerParam&kWriteClusters;}
   Bool_t              IsWritingTracklets() const { return fSteerParam&kWriteTracklets;}
@@ -63,21 +66,23 @@ public:
   virtual void        Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;
   virtual void        Reconstruct(TTree *digitsTree, TTree *clusterTree) const;
 
-  static void         SetClusters(TClonesArray *clusters) {fgClusters = clusters;} 
-  static void         SetTracklets(TClonesArray *tracklets) {fgTracklets = tracklets;}
+  static void         SetClusters(TClonesArray *clusters)  { fgClusters = clusters;} 
+  static void         SetTracklets(TClonesArray *tracklets) { fgTracklets = tracklets;}
+  static void         SetDigitsParam(AliTRDdigitsParam const *par);
   void	              SetOption(Option_t *opt);
 
 private:
   AliTRDReconstructor(const AliTRDReconstructor &r); //Not implemented
   AliTRDReconstructor& operator = (const AliTRDReconstructor&); //Not implemented
 
-  static Char_t    *fgSteerNames[kNsteer];//! steering names
-  static Char_t    *fgSteerFlags[kNsteer];//! steering flags
-  static Char_t    *fgTaskNames[AliTRDrecoParam::kTRDreconstructionTasks]; //! tasks names
-  static Char_t    *fgTaskFlags[AliTRDrecoParam::kTRDreconstructionTasks]; //! tasks flags
+  static Char_t const *fgSteerNames[kNsteer];//! steering names
+  static Char_t const *fgSteerFlags[kNsteer];//! steering flags
+  static Char_t const   *fgTaskNames[AliTRDrecoParam::kTRDreconstructionTasks]; //! tasks names
+  static Char_t const   *fgTaskFlags[AliTRDrecoParam::kTRDreconstructionTasks]; //! tasks flags
   UInt_t            fSteerParam;          // steering bits
   TTreeSRedirector *fDebugStream[AliTRDrecoParam::kTRDreconstructionTasks];// Debug Streamer container;
  
+  static AliTRDdigitsParam *fgDigitsParam; // Digits Param information
   static TClonesArray *fgClusters;    // list of clusters for local reconstructor
   static TClonesArray *fgTracklets;   // list of online tracklets for local reconstructor
 

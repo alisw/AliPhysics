@@ -49,6 +49,7 @@
 #include "AliTRDrecoParam.h"
 
 #include "AliTRDcluster.h" 
+#include "AliTRDdigitsParam.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
 #include "AliTRDtrackerV1.h"
@@ -111,13 +112,6 @@ AliTRDtrackerV1::AliTRDtrackerV1(AliTRDReconstructor *rec)
     matrix->LocalToMaster(loc, glb);
     fR[ily] = glb[0]+ AliTRDgeometry::AnodePos()-.5*AliTRDgeometry::AmThick() - AliTRDgeometry::DrThick();
   }
-
-  // initialize calibration values
-  AliTRDcalibDB *trd = NULL;
-  if (!(trd = AliTRDcalibDB::Instance())) {
-    AliFatal("Could not get calibration.");
-  }
-  if(!fgNTimeBins) fgNTimeBins = trd->GetNumberOfTimeBins();
 
   // initialize cluster containers
   for (Int_t isector = 0; isector < AliTRDgeometry::kNsector; isector++) new(&fTrSec[isector]) AliTRDtrackingSector(fGeom, isector);
@@ -271,7 +265,8 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
 
   AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance(); // Calibration monitor
   if (!calibra) AliInfo("Could not get Calibra instance\n");
-  
+  if(!fgNTimeBins) CookNTimeBins();
+
   // Define scalers
   Int_t nFound   = 0, // number of tracks found
         nSeeds   = 0, // total number of ESD seeds
@@ -2044,6 +2039,33 @@ AliTRDseedV1* AliTRDtrackerV1::SetTracklet(const AliTRDseedV1 * const tracklet)
   }
   Int_t nentries = fTracklets->GetEntriesFast();
   return new ((*fTracklets)[nentries]) AliTRDseedV1(*tracklet);
+}
+
+//____________________________________________________________________
+void AliTRDtrackerV1::CookNTimeBins()
+{ 
+  // Initialize number of time bins
+
+  if(fgNTimeBins){
+    // first look if set by hand
+    AliDebug(2, Form("NTimeBins [%d] (set by user)", fgNTimeBins));
+  } else if(fkReconstructor && fkReconstructor->HasDigitsParam()) {
+    // second look into digits param to avoid DB query
+    fgNTimeBins = fkReconstructor->GetDigitsParam()->GetNTimeBins();
+    AliDebug(2, Form("NTimeBins [%d] (set from digits param)", fgNTimeBins));
+  } else { // third query DB
+    AliTRDcalibDB *trd(NULL);
+    if((trd = AliTRDcalibDB::Instance())) {
+      if((fgNTimeBins = trd->GetNumberOfTimeBinsDCS()) <= 0){
+        AliError("Corrupted DCS Object in OCDB");
+        fgNTimeBins = 24;
+        AliDebug(2, Form("NTimeBins [%d] (set to default)", fgNTimeBins));
+      } else AliDebug(2, Form("NTimeBins [%d] (set from DB)", fgNTimeBins));
+    } else AliFatal("Could not get DB.");
+  }
+  if(fgNTimeBins<=0){
+    AliFatal("Could not get number of time bins.");
+  }
 }
 
 //____________________________________________________________________
