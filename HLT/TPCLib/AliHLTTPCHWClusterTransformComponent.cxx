@@ -46,10 +46,13 @@ using namespace std;
 
 ClassImp(AliHLTTPCHWClusterTransformComponent) //ROOT macro for the implementation of ROOT specific class methods
 
+const char* AliHLTTPCHWClusterTransformComponent::fgkOCDBEntryHWTransform="HLT/ConfigTPC/TPCHWClusterTransform";
+
 AliHLTTPCHWClusterTransformComponent::AliHLTTPCHWClusterTransformComponent()
 :
 fOfflineTransform(NULL),
-fDataId(kFALSE)
+fDataId(kFALSE),
+fOfflineTPCRecoParam()
 {
   // see header file for class documentation
   // or
@@ -110,12 +113,26 @@ int AliHLTTPCHWClusterTransformComponent::DoInit( int argc, const char** argv ) 
     HLTError("Cannot retrieve offline transform from AliTPCcalibDB (%p)", pCalib);
     return -ENOENT;
   }
-
+  // set the flags in the reco param
+  fOfflineTPCRecoParam.SetUseExBCorrection(1);
+  fOfflineTPCRecoParam.SetUseTOFCorrection(1);
+  fOfflineTransform->SetCurrentRecoParam(&fOfflineTPCRecoParam);
+  
+  pCalib->SetExBField(GetBz());
+  
   //Int_t i = 0;
   //Char_t* cpErr;
 
   int iResult=0;
 
+  iResult = ConfigureFromCDBTObjString(fgkOCDBEntryHWTransform);
+
+  if (iResult>=0 && argc>0)
+    iResult=ConfigureFromArgumentString(argc, argv);
+
+  return iResult;
+
+  /*
   TString configuration="";
   TString argument="";
   for(int j=0; j<argc && iResult>=0; j++){
@@ -130,8 +147,9 @@ int AliHLTTPCHWClusterTransformComponent::DoInit( int argc, const char** argv ) 
   else {
     //iResult=Reconfigure(NULL, NULL);
   }
-
+  
   return 0;
+  */
 } // end DoInit()
 
 int AliHLTTPCHWClusterTransformComponent::DoDeinit() { 
@@ -146,12 +164,10 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 					          AliHLTUInt32_t& size, 
 					          vector<AliHLTComponentBlockData>& outputBlocks ){
   // see header file for class documentation
-    
   if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )){
      size = 0;
      return 0;
   }
-
   const AliHLTComponentBlockData *iter = NULL;    
   unsigned long ndx;
 
@@ -232,6 +248,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
     	// check if bit 31 and 30 of the 32-bit word is 11 -> cluster (10 is RCU trailer)
 	AliHLTUInt32_t bit3130 = (buffer[nWords]>>30); // shift 30 to the right
        
+
 	if(bit3130 == 0x3){ //beginning of a cluster
 
 	   //PrintDebug(&buffer[nWords], 5);
@@ -243,13 +260,16 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	   
 	   AliHLTTPCSpacePointData cluster = { 0.,0.,0.,0,0,0.,0.,0,0,kFALSE,0 };
               
+
 	   //get the first word
     	   AliHLTUInt32_t  rowCharge = buffer[nWords];
     	   AliHLTUInt8_t  *rowPtr    = reinterpret_cast<AliHLTUInt8_t*>(&rowCharge);	  
 	   rowPtr+=3; // this is to run for little endian architecture, the word is read from right to left
+
 	
     	   cluster.fPadRow  = (UChar_t)((*rowPtr)&0x3f);
   	   cluster.fCharge  = ((UInt_t)rowCharge&0xFFFFFF)>>6; //24-bit mask to get out the charge and division with 64(>>6) for the gain correction
+
 
 	   Float_t tmpPad   = *((Float_t*)&buffer[nWords+1]);
 	   Float_t tmpTime  = *((Float_t*)&buffer[nWords+2]);
@@ -257,15 +277,17 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
     	   //cluster.fSigmaZ2 = *((Float_t*)&buffer[nWords+4]);
 	   
 	   // correct expressions for the error calculation
+	   // Kenneth: 12.11.2009 I'm not sure if this is a correct calculation. Leave it out for now since it is anyway not used later since it caused segfaults.
+	   // cluster.fSigmaY2 = TMath::Sqrt( *((Float_t*)&buffer[nWords+3]) - *((Float_t*)&buffer[nWords+1])* (*((Float_t*)&buffer[nWords+1])) );
+	   // cluster.fSigmaZ2 = TMath::Sqrt( *((Float_t*)&buffer[nWords+3]) - *((Float_t*)&buffer[nWords+1])* (*((Float_t*)&buffer[nWords+1])) );
 
-  	   cluster.fSigmaY2 = TMath::Sqrt( *((Float_t*)&buffer[nWords+3]) - *((Float_t*)&buffer[nWords+1])* (*((Float_t*)&buffer[nWords+1])) );
-  	   cluster.fSigmaZ2 = TMath::Sqrt( *((Float_t*)&buffer[nWords+3]) - *((Float_t*)&buffer[nWords+1])* (*((Float_t*)&buffer[nWords+1])) );
-    	  
     	   Float_t xyz[3]; xyz[0] = xyz[1] = xyz[2] = -99.;
     	  	   
 	   HLTDebug("padrow: %d, charge: %f, pad: %f, time: %f, errY: %f, errZ: %f \n", cluster.fPadRow, (Float_t)cluster.fCharge, tmpPad, tmpTime, cluster.fSigmaY2, cluster.fSigmaZ2);        	   
 	   
+
 	   if(fOfflineTransform == NULL){	   	   
+
 	      cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);             	   
 	      AliHLTTPCTransform::Slice2Sector(minSlice, cluster.fPadRow, sector, thisrow);	      
     	      AliHLTTPCTransform::Raw2Local(xyz, sector, thisrow, tmpPad, tmpTime); 
@@ -274,6 +296,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
     	      cluster.fY = xyz[1];
     	      cluster.fZ = xyz[2]; 
 	      
+
      	   } else {
 	     cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);             	   
 	     AliHLTTPCTransform::Slice2Sector(minSlice, (UInt_t)cluster.fPadRow, sector, thisrow);	      
@@ -285,6 +308,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	     cluster.fZ = x[2];	      
  	   }
 	   
+
 	   HLTDebug("cluster X: %f, Y: %f, Z: %f \n", cluster.fX, cluster.fY, cluster.fZ);
 	   spacePoints[nAddedClusters] = cluster;
 	   	   
@@ -322,6 +346,39 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
    size = tSize;
    return 0;
 } // end DoEvent()
+
+int AliHLTTPCHWClusterTransformComponent::ScanConfigurationArgument(int argc, const char** argv){
+
+  // see header file for class documentation
+
+  if (argc<=0) return 0;
+  int i=0;
+  TString argument=argv[i];
+
+  if (argument.CompareTo("-solenoidBz")==0){
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
+    if(!calib){
+      HLTError("CalibDB not availible");
+    }
+    Float_t magneticField = argument.Atof();
+    calib->SetExBField(magneticField);
+    HLTInfo("SolenoidBz is set to %f in the calibDB",magneticField);
+    return 2;
+  }
+
+  if (argument.CompareTo("-change-dataId")==0){
+    HLTDebug("Change data ID received.");
+    fDataId = kTRUE;
+    return 1;
+  }
+
+  // unknown argument
+  return -EINVAL;
+}
+
+
   
 int AliHLTTPCHWClusterTransformComponent::Configure(const char* arguments) { 
   // see header file for class documentation
@@ -362,33 +419,9 @@ int AliHLTTPCHWClusterTransformComponent::Configure(const char* arguments) {
   return iResult;
 }
 
-int AliHLTTPCHWClusterTransformComponent::Reconfigure(const char* cdbEntry, const char* chainId) { 
+int AliHLTTPCHWClusterTransformComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/) { 
   // see header file for class documentation
-
-  int iResult=0;
-  const char* path="HLT/ConfigTPC/TPCHWClusterTransform";
-  const char* defaultNotify="";
-  if (cdbEntry) {
-    path=cdbEntry;
-    defaultNotify=" (default)";
-  }
-  
-  if (path) {
-    HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
-    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
-    if (pEntry) {
-      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
-      if (pString) {
-	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
-	iResult=Configure(pString->GetString().Data());
-      } else {
-	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
-      }
-    } else {
-      HLTError("cannot fetch object \"%s\" from CDB", path);
-    }
-  }
-  return iResult;
+  return ConfigureFromCDBTObjString(fgkOCDBEntryHWTransform);
 }
 
 void AliHLTTPCHWClusterTransformComponent::PrintDebug(AliHLTUInt32_t *buffer, Int_t size){
