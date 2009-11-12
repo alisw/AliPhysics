@@ -1209,3 +1209,4 @@ Bool_t AliTRDcheckDET::MakeBarPlot(TH1 *histo, Int_t color){
   histo->Draw("bar1");
   return kTRUE;
 }
+
