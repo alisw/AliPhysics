@@ -99,6 +99,7 @@ void run(Char_t *trd="ALL", const Char_t *files=0x0, Long64_t nev=1234567890, Lo
   AliLog::SetGlobalLogLevel(AliLog::kError);
   if(gSystem->Load("libANALYSIS.so")<0) return;
   if(gSystem->Load("libANALYSISalice.so")<0) return;
+  if(gSystem->Load("libTENDER.so")<0) return;
   if(gSystem->Load("libPWG1.so")<0) return;
 
   Bool_t fHasMCdata =  HasReadMCData(trd);

@@ -76,6 +76,7 @@ AliTRDcheckDET::AliTRDcheckDET():
   ,fTriggerNames(0x0)
   ,fReconstructor(0x0)
   ,fGeo(0x0)
+  ,fFlags(0)
 {
   //
   // Default constructor
@@ -873,7 +874,7 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
     Int_t detector = tracklet->GetDetector();
     tracklet->ResetClusterIter();
     while((c = tracklet->NextCluster())){
-      if(!c->IsInChamber()) continue;
+      if(!IsUsingClustersOutsideChamber() && !c->IsInChamber()) continue;
       Int_t localtime        = c->GetLocalTimeBin();
       Double_t absoluteCharge = TMath::Abs(c->GetQ());
       h->Fill(localtime, absoluteCharge);
@@ -936,7 +937,7 @@ TH1 *AliTRDcheckDET::PlotPHx(const AliTRDtrackV1 *track){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !(tracklet->IsOK())) continue;
     tracklet->ResetClusterIter();
     while((c = tracklet->NextCluster())){
-      if(!c->IsInChamber()) continue;
+      if(!IsUsingClustersOutsideChamber() && !c->IsInChamber()) continue;
       x = c->GetX()-AliTRDcluster::GetXcorr(c->GetLocalTimeBin());
       y = c->GetY()-AliTRDcluster::GetYcorr(AliTRDgeometry::GetLayer(c->GetDetector()), c->GetCenter());
 

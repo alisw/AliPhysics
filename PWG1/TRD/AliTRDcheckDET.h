@@ -75,9 +75,14 @@ public:
   virtual Bool_t PostProcess();
   virtual Bool_t GetRefFigure(Int_t ifig);
   
+  Bool_t IsUsingClustersOutsideChamber() const {return TESTBIT(fFlags, kUseClustersOutsideChamber);}
+  void UseClustersOutsideChamber(Bool_t b = kTRUE) {if(b) SETBIT(fFlags, kUseClustersOutsideChamber); else CLRBIT(fFlags, kUseClustersOutsideChamber);}
   void SetRecoParam(AliTRDrecoParam *r);
 
 private:
+  enum{
+    kUseClustersOutsideChamber
+  };
   AliTRDcheckDET(const AliTRDcheckDET &);
   AliTRDcheckDET& operator=(const AliTRDcheckDET &);
   void GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 * const tracklet, AliTRDcluster * const c);
@@ -90,8 +95,8 @@ private:
   TMap *fTriggerNames;                 //! Containing trigger class names
   AliTRDReconstructor *fReconstructor; // TRD Reconstructor
   AliTRDgeometry *fGeo;                // TRD Geometry object
+  UChar_t fFlags;                      // Flags for setting
     
   ClassDef(AliTRDcheckDET, 1)
 };
 #endif
-
