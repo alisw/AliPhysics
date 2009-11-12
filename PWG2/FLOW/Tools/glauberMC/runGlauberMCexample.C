@@ -1,6 +1,9 @@
 {
   //load libraries
-  gROOT->Macro("initGlauberMC.C");
+  gROOT->LoadMacro("AliGlauberNucleon.cxx+");
+  gROOT->LoadMacro("AliGlauberNucleus.cxx+");
+  gROOT->LoadMacro("AliGlauberMC.cxx+");
+
 
   Int_t nevents = 10000; // number of events to simulate 
   // supported systems are e.g. "p", "d", "Si", "Au", "Pb", "U" 
