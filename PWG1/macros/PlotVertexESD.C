@@ -259,13 +259,13 @@ void PlotVertexESD(TString vtxtype="SPD",
   TFile *f=new TFile(fname.Data());
   TList *cOutput = (TList*)f->Get("cOutput");
   TNtuple *nt=(TNtuple*)cOutput->FindObject(ntname.Data());
-  Int_t NNNev=nt->GetEntries();
-  printf("Events = %d\n",NNNev);
+  Int_t nnnev=nt->GetEntries();
+  printf("Events = %d\n",nnnev);
   Float_t xVtx,xdiffVtx,xerrVtx;
   Float_t yVtx,ydiffVtx,yerrVtx;
   Float_t zVtx,zdiffVtx,zerrVtx;
   Float_t ntrklets,ncontrVtx,dndy,triggered,vtx3D;
-  Float_t ztrue,zref;
+  Float_t xtrue,ytrue,ztrue,zref;
   
   TString sxx="x"; sxx.Append(vtxtype.Data());
   nt->SetBranchAddress(sxx.Data(),&xVtx);
@@ -274,13 +274,6 @@ void PlotVertexESD(TString vtxtype="SPD",
   TString szz="z"; szz.Append(vtxtype.Data());
   nt->SetBranchAddress(szz.Data(),&zVtx);
   
-  TString xdiff="xdiff"; xdiff.Append(vtxtype.Data());
-  nt->SetBranchAddress(xdiff.Data(),&xdiffVtx);
-  TString ydiff="ydiff"; ydiff.Append(vtxtype.Data());
-  nt->SetBranchAddress(ydiff.Data(),&ydiffVtx);
-  TString zdiff="zdiff"; zdiff.Append(vtxtype.Data());
-  nt->SetBranchAddress(zdiff.Data(),&zdiffVtx);
-    
   TString xerr="xerr"; xerr.Append(vtxtype.Data());
   nt->SetBranchAddress(xerr.Data(),&xerrVtx);
   TString yerr="yerr"; yerr.Append(vtxtype.Data());
@@ -300,6 +293,8 @@ void PlotVertexESD(TString vtxtype="SPD",
   nt->SetBranchAddress(ntrks.Data(),&ncontrVtx);
   nt->SetBranchAddress("dndygen",&dndy);
   
+  nt->SetBranchAddress("xtrue",&xtrue);
+  nt->SetBranchAddress("ytrue",&ytrue);
   nt->SetBranchAddress("ztrue",&ztrue);
 
   nt->SetBranchAddress("triggered",&triggered);
@@ -308,8 +303,14 @@ void PlotVertexESD(TString vtxtype="SPD",
 
 
   // loop on events
-  for(Int_t iev=0;iev<NNNev;iev++){
+  for(Int_t iev=0;iev<nnnev;iev++){
     nt->GetEvent(iev);
+
+    xdiffVtx=10000.*(xVtx-xtrue);
+    ydiffVtx=10000.*(yVtx-ytrue);
+    zdiffVtx=10000.*(zVtx-ztrue);
+
+
     zref = (useztrue ? ztrue : zVtx);
     if(!vtxtype.Contains("SPD")) vtx3D=1.;
     if(triggered<0.5) continue; // not triggered
@@ -383,7 +384,7 @@ void PlotVertexESD(TString vtxtype="SPD",
       }
     }
   }
-  totev+=NNNev;
+  totev+=nnnev;
 
   if(totev==0){
     printf("Total number of events = 0\n");
@@ -1019,11 +1020,11 @@ void PlotVertexESD(TString vtxtype="SPD",
   return;
 }
 //----------------------------------------------------------------------------
-void ComputeVtxMean(TString vtxtype="TPC",
-		    TString fname="VertexESDwithMC.root",
+void ComputeVtxMean(TString vtxtype="TRK",
+		    TString fname="Vertex.Performance.root",
 		    TString ntname="fNtupleVertexESD",
 		    Int_t nEventsToUse=10000,
-		    Int_t mincontr=10) {
+		    Int_t mincontr=1) {
   //-----------------------------------------------------------------------
   // Compute weighted mean and cov. matrix from the ntuple
   //-----------------------------------------------------------------------
@@ -1053,10 +1054,10 @@ void ComputeVtxMean(TString vtxtype="TPC",
   Double_t covyz=0.;
   Double_t eavx,eavy,eavz,ewgtavx,ewgtavy,ewgtavz;
 
-  TH1F* hx = new TH1F("hx","",200,-1,1);
+  TH1F* hx = new TH1F("hx","",200,-0.1,0.1);
   hx->SetXTitle("vertex x [#mu m]");
   hx->SetYTitle("events");
-  TH1F* hy = new TH1F("hy","",200,-1,1);
+  TH1F* hy = new TH1F("hy","",200,-0.1,0.1);
   hy->SetXTitle("vertex y [#mu m]");
   hy->SetYTitle("events");
   TH1F* hz = new TH1F("hz","",200,-20,20);
@@ -1067,8 +1068,8 @@ void ComputeVtxMean(TString vtxtype="TPC",
   TFile *f=new TFile(fname.Data());
   TList *cOutput = (TList*)f->Get("cOutput");
   TNtuple *nt=(TNtuple*)cOutput->FindObject(ntname.Data());
-  Int_t NNNev=nt->GetEntries();
-  printf("Events = %d\n",NNNev);
+  Int_t nnnev=nt->GetEntries();
+  printf("Events = %d\n",nnnev);
   Float_t xVtx,xdiffVtx,xerrVtx;
   Float_t yVtx,ydiffVtx,yerrVtx;
   Float_t zVtx,zdiffVtx,zerrVtx;
@@ -1082,13 +1083,6 @@ void ComputeVtxMean(TString vtxtype="TPC",
   TString szz="z"; szz.Append(vtxtype.Data());
   nt->SetBranchAddress(szz.Data(),&zVtx);
   
-  TString xdiff="xdiff"; xdiff.Append(vtxtype.Data());
-  nt->SetBranchAddress(xdiff.Data(),&xdiffVtx);
-  TString ydiff="ydiff"; ydiff.Append(vtxtype.Data());
-  nt->SetBranchAddress(ydiff.Data(),&ydiffVtx);
-  TString zdiff="zdiff"; zdiff.Append(vtxtype.Data());
-  nt->SetBranchAddress(zdiff.Data(),&zdiffVtx);
-    
   TString xerr="xerr"; xerr.Append(vtxtype.Data());
   nt->SetBranchAddress(xerr.Data(),&xerrVtx);
   TString yerr="yerr"; yerr.Append(vtxtype.Data());
@@ -1116,14 +1110,14 @@ void ComputeVtxMean(TString vtxtype="TPC",
 
   Int_t total=0;
 
-  Int_t divider=(Int_t)(NNNev/nEventsToUse);
+  Int_t divider=(Int_t)(nnnev/nEventsToUse);
   // first loop on events
-  for(Int_t iev=0;iev<NNNev;iev++) {
+  for(Int_t iev=0;iev<nnnev;iev++) {
     if(iev%divider!=0) continue;
     total++;
     nt->GetEvent(iev);
     if(!vtxtype.Contains("SPD")) vtx3D=1.;
-    if(vtx3D<0.5) continue;
+    //if(vtx3D<0.5) continue;
     if(triggered<0.5) continue; // not triggered
     if(ncontrVtx<=0) continue; // no vertex
 
@@ -1157,7 +1151,7 @@ void ComputeVtxMean(TString vtxtype="TPC",
   
 
   // second loop on events
-  for(Int_t iev=0;iev<NNNev;iev++){
+  for(Int_t iev=0;iev<nnnev;iev++){
     if(iev%divider!=0) continue;
     nt->GetEvent(iev);
     if(!vtxtype.Contains("SPD")) vtx3D=1.;

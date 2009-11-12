@@ -123,7 +123,7 @@ void AliAnalysisTaskVertexESD::CreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
 
-  fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","xtrue:ytrue:ztrue:xSPD:xdiffSPD:xerrSPD:ySPD:ydiffSPD:yerrSPD:zSPD:zdiffSPD:zerrSPD:ntrksSPD:xTPC:xdiffTPC:xerrTPC:yTPC:ydiffTPC:yerrTPC:zTPC:zdiffTPC:zerrTPC:ntrksTPC:xTRK:xdiffTRK:xerrTRK:yTRK:ydiffTRK:yerrTRK:zTRK:zdiffTRK:zerrTRK:ntrksTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:dndygen:triggered:SPD3D:SPD0cls:constrTRK");
+  fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","run:tstamp:xtrue:ytrue:ztrue:xSPD:xerrSPD:ySPD:yerrSPD:zSPD:zerrSPD:ntrksSPD:xTPC:xerrTPC:yTPC:yerrTPC:zTPC:zerrTPC:ntrksTPC:xTRK:xerrTRK:yTRK:yerrTRK:zTRK:zerrTRK:ntrksTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:dndygen:triggered:SPD3D:SPD0cls:constrTRK:constrTPC");
 
   fOutput->Add(fNtupleVertexESD);
 
@@ -240,6 +240,7 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
   const AliESDVertex *trkv=fESD->GetPrimaryVertex();
 
   //Float_t tpccontrorig=tpcv->GetNContributors();
+
   //tpcv = 0;
   //tpcv = ReconstructPrimaryVertexTPC();
 
@@ -254,66 +255,66 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
   }
 
 
-  Float_t xnt[43];
+  Int_t isize=36;
+  Float_t xnt[36];
   
-  xnt[0]=mcVertex[0];
-  xnt[1]=mcVertex[1];
-  xnt[2]=mcVertex[2];
+  Int_t index=0;
+
+  xnt[index++]=(Float_t)fESD->GetRunNumber();
+  xnt[index++]=(Float_t)fESD->GetTimeStamp();
+
+  xnt[index++]=mcVertex[0];
+  xnt[index++]=mcVertex[1];
+  xnt[index++]=mcVertex[2];
   
-  xnt[3]=spdv->GetXv();
-  xnt[4]=(spdv->GetXv()-mcVertex[0])*10000.;
-  xnt[5]=spdv->GetXRes();
-  xnt[6]=spdv->GetYv();
-  xnt[7]=(spdv->GetYv()-mcVertex[1])*10000.;
-  xnt[8]=spdv->GetYRes();
-  xnt[9]=spdv->GetZv();
-  xnt[10]=(spdv->GetZv()-mcVertex[2])*10000.;
-  xnt[11]=spdv->GetZRes();
-  xnt[12]=spdv->GetNContributors();
+  xnt[index++]=spdv->GetXv();
+  xnt[index++]=spdv->GetXRes();
+  xnt[index++]=spdv->GetYv();
+  xnt[index++]=spdv->GetYRes();
+  xnt[index++]=spdv->GetZv();
+  xnt[index++]=spdv->GetZRes();
+  xnt[index++]=spdv->GetNContributors();
   
-  xnt[13]=tpcv->GetXv();
-  xnt[14]=(tpcv->GetXv()-mcVertex[0])*10000.;
-  xnt[15]=tpcv->GetXRes();
-  xnt[16]=tpcv->GetYv();
-  xnt[17]=(tpcv->GetYv()-mcVertex[1])*10000.;
-  xnt[18]=tpcv->GetYRes();
-  xnt[19]=tpcv->GetZv();
-  xnt[20]=(tpcv->GetZv()-mcVertex[2])*10000.;
-  xnt[21]=tpcv->GetZRes();
-  xnt[22]=tpcv->GetNContributors();
+  xnt[index++]=tpcv->GetXv();
+  xnt[index++]=tpcv->GetXRes();
+  xnt[index++]=tpcv->GetYv();
+  xnt[index++]=tpcv->GetYRes();
+  xnt[index++]=tpcv->GetZv();
+  xnt[index++]=tpcv->GetZRes();
+  xnt[index++]=tpcv->GetNContributors();
   
-  xnt[23]=trkv->GetXv();
-  xnt[24]=(trkv->GetXv()-mcVertex[0])*10000.;
-  xnt[25]=trkv->GetXRes();
-  xnt[26]=trkv->GetYv();
-  xnt[27]=(trkv->GetYv()-mcVertex[1])*10000.;
-  xnt[28]=trkv->GetYRes();
-  xnt[29]=trkv->GetZv();
-  xnt[30]=(trkv->GetZv()-mcVertex[2])*10000.;
-  xnt[31]=trkv->GetZRes();
-  xnt[32]=trkv->GetNContributors();// tpccontrorig;
+  xnt[index++]=trkv->GetXv();
+  xnt[index++]=trkv->GetXRes();
+  xnt[index++]=trkv->GetYv();
+  xnt[index++]=trkv->GetYRes();
+  xnt[index++]=trkv->GetZv();
+  xnt[index++]=trkv->GetZRes();
+  xnt[index++]=trkv->GetNContributors();// tpccontrorig;
   
 
-  xnt[33]=float(ntrklets);
-  xnt[34]=float(ntracks);
-  xnt[35]=float(nITS5or6);
-  xnt[36]=float(nTPCin);
-  xnt[37]=float(nTPCinEta09);
+  xnt[index++]=float(ntrklets);
+  xnt[index++]=float(ntracks);
+  xnt[index++]=float(nITS5or6);
+  xnt[index++]=float(nTPCin);
+  xnt[index++]=float(nTPCinEta09);
 
-  xnt[38]=float(dNchdy);
+  xnt[index++]=float(dNchdy);
 
-  xnt[39]=0.; 
-  if(eventTriggered) xnt[39]=1.;
+  xnt[index++]=(eventTriggered ? 1. : 0.);
 
-  xnt[40]=0.; 
   TString spdtitle = spdv->GetTitle();
-  if(spdtitle.Contains("vertexer: 3D")) xnt[40]=1.;
+  xnt[index++]=(spdtitle.Contains("vertexer: 3D") ? 1. : 0.);
 
-  xnt[42]=0.; 
+  xnt[index++]=spd0cls;
+
   TString trktitle = trkv->GetTitle();
-  if(trktitle.Contains("WithConstraint")) xnt[42]=1.;
+  xnt[index++]=(trktitle.Contains("WithConstraint") ? 1. : 0.);
 
-  xnt[41]=spd0cls;
+  TString tpctitle = tpcv->GetTitle();
+  xnt[index++]=(tpctitle.Contains("WithConstraint") ? 1. : 0.);
+
+
+  if(index!=isize) printf("AliAnalysisTaskVertexESD: ERROR, index!=isize\n");
 
   fNtupleVertexESD->Fill(xnt);
     
@@ -340,18 +341,18 @@ void AliAnalysisTaskVertexESD::Terminate(Option_t *)
 }
 
 //_________________________________________________________________________
-AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexTPC() {
+AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexTPC() const {
   // On the fly reco of TPC vertex from ESD
 
   AliVertexerTracks vertexer(fESD->GetMagneticField());
-  vertexer.SetTPCMode(0.1,1.0,5.,0,1,3.,0.1,1.5); // defaults
-  //vertexer.SetTPCMode(0.1,1.0,5.,0,1,3.,0.1,1.5); // defaults
+  vertexer.SetTPCMode(); // defaults
+  //vertexer.SetTPCMode(0.1,1.0,5.,0,1,3.,0.1,1.5);
   Double_t pos[3]={+0.0220,-0.0340,+0.270}; 
   Double_t err[3]={0.0200,0.0200,7.5};
   AliESDVertex *initVertex = new AliESDVertex(pos,err);
   vertexer.SetVtxStart(initVertex);
   delete initVertex;
-  //vertexer.SetConstraintOff();
+  vertexer.SetConstraintOff();
 
   return vertexer.FindPrimaryVertex(fESD);
 }
