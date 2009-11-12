@@ -99,6 +99,18 @@ AliTPCcalibTrigger::AliTPCcalibTrigger(const char * name, const char * title):
   fHisMap = new TMap;
 }
 
+AliTPCcalibTrigger::~AliTPCcalibTrigger(){
+  //
+  // delete histograms
+  // class is owner of all histograms
+  //
+  if (!fHisMap) return;
+  fHisMap->SetOwner(kTRUE);
+  fHisMap->DeleteAll();
+  delete fHisMap;
+}
+
+
 Long64_t AliTPCcalibTrigger::Merge(TCollection *li) {
   //
   // Merge histograms

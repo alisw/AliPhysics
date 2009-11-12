@@ -262,6 +262,9 @@ AliTPCcalibTimeGain::~AliTPCcalibTimeGain(){
   //
   //
   //
+  delete fHistGainTime;
+  delete fGainVsTime;
+  delete fHistDeDxTotal;
 }
 
 
