@@ -477,7 +477,6 @@ void AliDAJetFinder::StoreJets(Int_t nk,Double_t **xData,  Int_t *xx,  TMatrixD 
 				}
 			}
 			AddJet(jet);
-			printf("jet %d, Eta: %f, Phi: %f, Et: %f\n",iClust,jet.Eta(),jet.Phi(),jet.Pt());
 		}
 	}
 	delete [] dDeltaEta; delete [] dDeltaPhi;

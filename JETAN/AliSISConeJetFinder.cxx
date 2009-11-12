@@ -267,20 +267,21 @@ void AliSISConeJetFinder::FindJets()
       // If the correction is > jet energy px = py = pz = e = 0
       if (corrJets[j].px() == 0 && corrJets[j].py() == 0 && corrJets[j].pz() == 0 && corrJets[j].E() == 0) continue;
 
-      cout<<"********************************** Reconstructed jet(s) (non corrected)"<<endl;
-      cout<<"Jet number "<<j+1<<" : "<<"Rapidity : "<<jets[j].rap()<<" Phi : "<<jets[j].phi()<<" pT : "<<jets[j].perp()<<" area : "<<clustSeq.area(jets[j])<<endl;
-//     cout<<"px = "<<jets[j].px()<<endl;
-//     cout<<"py = "<<jets[j].py()<<endl;
-//     cout<<"pz = "<<jets[j].pz()<<endl;
-      cout<<"e = "<<jets[j].E()<<endl;
-
-      cout<<"********************************** Corrected jet(s)"<<endl;
-      cout<<"Jet number "<<j+1<<" : "<<"Rapidity : "<<corrJets[j].rap()<<" Phi : "<<corrJets[j].phi()<<" pT : "<<corrJets[j].perp()<<endl;
-//     cout<<"px = "<<corrJets[j].px()<<endl;
-//     cout<<"py = "<<corrJets[j].py()<<endl;
-//     cout<<"pz = "<<corrJets[j].pz()<<endl;
-      cout<<"e = "<<corrJets[j].E()<<endl;
-    
+      if(debug){
+	cout<<"********************************** Reconstructed jet(s) (non corrected)"<<endl;
+	cout<<"Jet number "<<j+1<<" : "<<"Rapidity : "<<jets[j].rap()<<" Phi : "<<jets[j].phi()<<" pT : "<<jets[j].perp()<<" area : "<<clustSeq.area(jets[j])<<endl;
+	//     cout<<"px = "<<jets[j].px()<<endl;
+	//     cout<<"py = "<<jets[j].py()<<endl;
+	//     cout<<"pz = "<<jets[j].pz()<<endl;
+	cout<<"e = "<<jets[j].E()<<endl;
+	
+	cout<<"********************************** Corrected jet(s)"<<endl;
+	cout<<"Jet number "<<j+1<<" : "<<"Rapidity : "<<corrJets[j].rap()<<" Phi : "<<corrJets[j].phi()<<" pT : "<<corrJets[j].perp()<<endl;
+	//     cout<<"px = "<<corrJets[j].px()<<endl;
+	//     cout<<"py = "<<corrJets[j].py()<<endl;
+	//     cout<<"pz = "<<corrJets[j].pz()<<endl;
+	cout<<"e = "<<corrJets[j].E()<<endl;
+      }
       // Go to write AOD info
       AliAODJet aodjet (corrJets[j].px(), corrJets[j].py(), corrJets[j].pz(), corrJets[j].E());
       if(debug) aodjet.Print("");
@@ -304,13 +305,14 @@ void AliSISConeJetFinder::FindJets()
 
     for (size_t k = 0; k < jets.size(); k++)
     {
-      cout<<"********************************** Reconstructed jet(s) (non corrected)"<<endl;
-      cout<<"Jet number "<<k+1<<" : "<<"Rapidity : "<<jets[k].rap()<<" Phi : "<<jets[k].phi()<<" pT : "<<jets[k].perp()<<endl;
-//     cout<<"px = "<<jets[k].px()<<endl;
-//     cout<<"py = "<<jets[k].py()<<endl;
-//     cout<<"pz = "<<jets[k].pz()<<endl;
-      cout<<"e = "<<jets[k].E()<<endl;
-
+      if(debug){
+	cout<<"********************************** Reconstructed jet(s) (non corrected)"<<endl;
+	cout<<"Jet number "<<k+1<<" : "<<"Rapidity : "<<jets[k].rap()<<" Phi : "<<jets[k].phi()<<" pT : "<<jets[k].perp()<<endl;
+	//     cout<<"px = "<<jets[k].px()<<endl;
+	//     cout<<"py = "<<jets[k].py()<<endl;
+	//     cout<<"pz = "<<jets[k].pz()<<endl;
+	cout<<"e = "<<jets[k].E()<<endl;
+      }
       // Go to write AOD info
       AliAODJet aodjet (jets[k].px(), jets[k].py(), jets[k].pz(), jets[k].E());
       if(debug) aodjet.Print("");

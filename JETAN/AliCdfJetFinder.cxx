@@ -4,7 +4,7 @@
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
+ * Permission to usec, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
@@ -335,7 +335,7 @@ void AliCdfJetFinder::FindJets()
 //  * Go to the next highest PT particle (not already included in a jet) and include in the "jet" all particles
 //     (not already included in a jet) within the radius R =0.7.
 //  * Continue until all particles are in a "jet".
-
+  if (fDebug) { printf("AliCDJetfinder::FindJets() %d \n", __LINE__ ); }
 AliCdfJetHeader *header = (AliCdfJetHeader*)fHeader;
 
   if (header)
@@ -364,7 +364,10 @@ FindCones();
 
 ComputeConesWeight();
 
-if (fAODwrite) { cout << "Writing AOD" << endl ; WriteJets(); }
+if (fAODwrite) { 
+  if(fDebug)cout << "Writing AOD" << endl ; 
+  WriteJets();
+ }
 
 if (fAnalyseJets) AnalizeJets();
 
@@ -586,10 +589,10 @@ for(  Int_t jetnr = 0 ; jetnr < fNJets ; jetnr++ )
   if (fDebug) jet.Print("");
 
   if (fFromAod && fAODtracksWrite)
-  {
+    {
       for (  Int_t jetTrack = 0; jetTrack < fNPart; jetTrack++ )
-      { if ( fVectParticle[jetTrack]->njet == jetnr ) { jet.AddTrack(fRefArr->At(jetTrack)) ; } }
-  }
+	{ if ( fVectParticle[jetTrack]->njet == jetnr ) { jet.AddTrack(fRefArr->At(jetTrack)) ; } }
+    }
   // tracks REFs written in AOD
   AddJet(jet);
   }
