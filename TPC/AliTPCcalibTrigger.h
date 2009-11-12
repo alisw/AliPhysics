@@ -28,7 +28,7 @@ class AliTPCcalibTrigger:public AliTPCcalibBase {
 public:
   AliTPCcalibTrigger(); 
   AliTPCcalibTrigger(const Text_t *name, const Text_t *title); 
-  virtual ~AliTPCcalibTrigger(){;}
+  virtual ~AliTPCcalibTrigger();
   virtual void           Process(AliESDEvent *event);
   virtual Long64_t       Merge(TCollection *li);
   virtual void           Analyze(){;}
