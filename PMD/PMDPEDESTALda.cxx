@@ -2,12 +2,12 @@
 PMD DA for online calibration
 
 contact: basanta@phy.iitb.ac.in
-Link:
+Link: https://twiki.cern.ch/twiki/bin/view/ALICE/DA
 Reference Run:/afs/cern.ch/user/s/sjena/public/run83496.raw
 Run Type: PEDESTAL
 DA Type: LDC
 Number of events needed: 1000
-Input Files: PMD/Calib/Mapping
+Input Files: Run0_999999999_v0_s0.root
 Output Files: pmd_ped.root, to be exported to the DAQ FXS, pedestal230*.ped
 Trigger types used: PHYSICS_EVENT
 
