@@ -48,8 +48,10 @@ public:
   const Double_t * GetZP1TowerEnergyLR() const {return fZP1TowerEnergyLR;}
   const Double_t * GetZP2TowerEnergyLR() const {return fZP2TowerEnergyLR;}
   //
-  Double32_t * GetZNCCentroid();
-  Double32_t * GetZNACentroid();
+  const Double_t * GetZNCCentroidInPbPb(Float_t beamEne);
+  const Double_t * GetZNACentroidInPbPb(Float_t beamEne);
+  const Double_t * GetZNCCentroidInpp();
+  const Double_t * GetZNACentroidInpp();
   //
   void  SetZDC(Double_t n1Energy, Double_t p1Energy, 
   	       Double_t emEnergy0, Double_t emEnergy1,
@@ -63,31 +65,31 @@ public:
 	 fImpactParameter=b; fImpactParamSideA=bA, fImpactParamSideC=bC,
 	 fESDQuality=recoFlag;}
   //
-  void  SetZN1TowerEnergy(Float_t tow1[5])
+  void  SetZN1TowerEnergy(const Float_t tow1[5])
           {for(Int_t i=0; i<5; i++) fZN1TowerEnergy[i] = tow1[i];}
-  void  SetZN2TowerEnergy(Float_t tow2[5])
+  void  SetZN2TowerEnergy(const Float_t tow2[5])
           {for(Int_t i=0; i<5; i++) fZN2TowerEnergy[i] = tow2[i];}
-  void  SetZP1TowerEnergy(Float_t tow1[5])
+  void  SetZP1TowerEnergy(const Float_t tow1[5])
           {for(Int_t i=0; i<5; i++) fZP1TowerEnergy[i] = tow1[i];}
-  void  SetZP2TowerEnergy(Float_t tow2[5])
+  void  SetZP2TowerEnergy(const Float_t tow2[5])
           {for(Int_t i=0; i<5; i++) fZP2TowerEnergy[i] = tow2[i];}
-  void  SetZN1TowerEnergyLR(Float_t tow1[5])
+  void  SetZN1TowerEnergyLR(const Float_t tow1[5])
           {for(Int_t i=0; i<5; i++) fZN1TowerEnergyLR[i] = tow1[i];}
-  void  SetZN2TowerEnergyLR(Float_t tow2[5])
+  void  SetZN2TowerEnergyLR(const Float_t tow2[5])
           {for(Int_t i=0; i<5; i++) fZN2TowerEnergyLR[i] = tow2[i];}
-  void  SetZP1TowerEnergyLR(Float_t tow1[5])
+  void  SetZP1TowerEnergyLR(const Float_t tow1[5])
           {for(Int_t i=0; i<5; i++) fZP1TowerEnergyLR[i] = tow1[i];}
-  void  SetZP2TowerEnergyLR(Float_t tow2[5])
+  void  SetZP2TowerEnergyLR(const Float_t tow2[5])
           {for(Int_t i=0; i<5; i++) fZP2TowerEnergyLR[i] = tow2[i];}
-  void  SetZNACentroid(Float_t centrCoord[2])
+  void  SetZNACentroid(const Float_t centrCoord[2])
   	   {for(Int_t i=0; i<2; i++) fZNACentrCoord[i] = centrCoord[i];}
-  void  SetZNCCentroid(Float_t centrCoord[2])
+  void  SetZNCCentroid(const Float_t centrCoord[2])
   	   {for(Int_t i=0; i<2; i++) fZNCCentrCoord[i] = centrCoord[i];}
 
   UInt_t GetZDCScaler(Int_t i)  const {return fVMEScaler[i];}
   const UInt_t* GetZDCScaler()  const {return fVMEScaler;}
   
-  void SetZDCScaler(UInt_t count[32]) 
+  void SetZDCScaler(const UInt_t count[32]) 
        {for(Int_t k=0; k<32; k++) fVMEScaler[k] = count[k];}
 
   void    Reset();
@@ -121,7 +123,7 @@ private:
   //
   UInt_t fVMEScaler[32]; // counts from VME scaler
 
-  ClassDef(AliESDZDC,11)
+  ClassDef(AliESDZDC,12)
 };
 
 #endif

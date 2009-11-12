@@ -414,7 +414,7 @@ void AliZDCQADataMakerRec::MakeDigits(TTree *digitTree)
   
   branch->SetAddress(&fDigit);
   
-  Int_t ndig = digitTree->GetEntries();
+  Long64_t ndig = digitTree->GetEntries();
 
   for(Int_t i=0; i<ndig; i++){
     digitTree->GetEntry(i);
@@ -702,7 +702,7 @@ void AliZDCQADataMakerRec::MakeESDs(AliESDEvent * esd)
   AliESDZDC * zdcESD =  esd->GetESDZDC();
   //
   TString beamType = esd->GetBeamType();
-  Float_t * centr_ZNC, * centr_ZNA;
+  const Double_t *centr_ZNC, *centr_ZNA;
   if(((beamType.CompareTo("pp"))==0) || ((beamType.CompareTo("p-p"))==0)
      ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)){
     Float_t beamEne = esd->GetBeamEnergy();

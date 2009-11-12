@@ -191,54 +191,113 @@ void AliESDZDC::Print(const Option_t *) const
 }
 
 //______________________________________________________________________________
-Double32_t * AliESDZDC::GetZNCCentroid() 
+const Double_t * AliESDZDC::GetZNCCentroidInPbPb(Float_t beamEne) 
 {
   // Provide coordinates of centroid over ZN (side C) front face
-  Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
-  Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
+  const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+  const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
   Float_t numX=0., numY=0., den=0.;
-  Float_t c, alpha=0.395, w;
+  Float_t c, w; 
+  const Float_t alpha=0.395;
   //
-  for(Int_t i=0; i<4; i++){
-    if(fZN1TowerEnergy[i+1]<0.) fZN1TowerEnergy[i+1]=0.;
-    w = TMath::Power(fZN1TowerEnergy[i+1], alpha);
-    numX += x[i]*w;
-    numY += y[i]*w;
-    den += w;
-  }
+  for(Int_t i=0; i<4; i++)
+    if(fZN1TowerEnergy[i+1]>0.) {
+      w = TMath::Power(fZN1TowerEnergy[i+1], alpha);
+      numX += x[i]*w;
+      numY += y[i]*w;
+      den += w;
+    }
   if(den!=0){
-    // ATTENTION! Needs to be changed if E_beam(A-A) != 2.76 A TeV !!!!
-    Float_t nSpecn = fZDCN1Energy/2760.;
+    Float_t nSpecn = fZDCN1Energy/beamEne;
     c = 1.89358-0.71262/(nSpecn+0.71789);
     fZNCCentrCoord[0] = c*numX/den;
     fZNCCentrCoord[1] = c*numY/den;
+  } else {
+    fZNCCentrCoord[0] = fZNCCentrCoord[1] = 0;
   }
   return fZNCCentrCoord;
 }
 
 //______________________________________________________________________________
-Double32_t * AliESDZDC::GetZNACentroid() 
+const Double_t * AliESDZDC::GetZNACentroidInPbPb(Float_t beamEne) 
 {
   // Provide coordinates of centroid over ZN (side A) front face
-  Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
-  Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
+  const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+  const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
   Float_t numX=0., numY=0., den=0.;
-  Float_t c, alpha=0.395, w;
+  Float_t c, w;
+  const Float_t alpha=0.395;
 
-  for(Int_t i=0; i<4; i++){
-    if(fZN2TowerEnergy[i+1]<0.) fZN2TowerEnergy[i+1]=0.;
-    w = TMath::Power(fZN2TowerEnergy[i+1], alpha);
-    numX += x[i]*w;
-    numY += y[i]*w;
-    den += w;
-  }
+  for(Int_t i=0; i<4; i++)
+    if(fZN2TowerEnergy[i+1]>0.) {
+      w = TMath::Power(fZN2TowerEnergy[i+1], alpha);
+      numX += x[i]*w;
+      numY += y[i]*w;
+      den += w;
+    }
   //
   if(den!=0){
-    // ATTENTION! Needs to be changed if E_beam(A-A) != 2.76 A TeV !!!!
-    Float_t nSpecn = fZDCN2Energy/2760.;
+    Float_t nSpecn = fZDCN2Energy/beamEne;
     c = 1.89358-0.71262/(nSpecn+0.71789);
     fZNACentrCoord[0] = c*numX/den;
     fZNACentrCoord[1] = c*numY/den;
+  } else {
+    fZNACentrCoord[0] = fZNACentrCoord[1] = 0;
   }
+  return fZNACentrCoord;
+}
+
+//______________________________________________________________________________
+const Double_t * AliESDZDC::GetZNCCentroidInpp() 
+{
+  // Provide coordinates of centroid over ZN (side C) front face
+  const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+  const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
+  Float_t numX=0., numY=0., den=0.;
+  const Float_t alpha=0.5;
+  Float_t w;
+  //
+  for(Int_t i=0; i<4; i++)
+    if(fZN1TowerEnergy[i+1]>0.) {
+      w = TMath::Power(fZN1TowerEnergy[i+1], alpha);
+      numX += x[i]*w;
+      numY += y[i]*w;
+      den += w;
+    }
+
+  if(den!=0){
+    fZNCCentrCoord[0] = numX/den;
+    fZNCCentrCoord[1] = numY/den;
+  } else {
+    fZNCCentrCoord[0] = fZNCCentrCoord[1] = 0;
+  }
+  return fZNCCentrCoord;
+}
+
+//______________________________________________________________________________
+const Double_t * AliESDZDC::GetZNACentroidInpp() 
+{
+  // Provide coordinates of centroid over ZN (side A) front face
+  const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+  const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
+  Float_t numX=0., numY=0., den=0.;
+  const Float_t alpha=0.395;
+  Float_t w;
+
+  for(Int_t i=0; i<4; i++)
+    if(fZN2TowerEnergy[i+1]>0.) {
+      w = TMath::Power(fZN2TowerEnergy[i+1], alpha);
+      numX += x[i]*w;
+      numY += y[i]*w;
+      den += w;
+    }
+  //
+  if(den!=0){
+    fZNACentrCoord[0] = numX/den;
+    fZNACentrCoord[1] = numY/den;
+  } else {
+    fZNACentrCoord[0] = fZNACentrCoord[1] = 0;
+  }
+    
   return fZNACentrCoord;
 }

@@ -168,13 +168,13 @@ public:
   Double_t GetZDCN2Energy() const {return fESDZDC->GetZDCN2Energy();}
   Double_t GetZDCP2Energy() const {return fESDZDC->GetZDCP2Energy();}
   Double_t GetZDCEMEnergy(Int_t i=0) const {return fESDZDC->GetZDCEMEnergy(i);}
-  Int_t   GetZDCParticipants() const {return fESDZDC->GetZDCParticipants();}
-  void    SetZDC(Float_t n1Energy, Float_t p1Energy, Float_t em1Energy, Float_t em2Energy,
-                 Float_t n2Energy, Float_t p2Energy, Int_t participants, Int_t nPartA,
-		 Int_t nPartC, Double_t b, Double_t bA, Double_t bC, UInt_t recoflag)
-  {fESDZDC->SetZDC(n1Energy, p1Energy, em1Energy, em2Energy, n2Energy, p2Energy, 
-   participants, nPartA, nPartC, b, bA, bC,  recoflag);}
-  void    SetZDCScaler(UInt_t *counts) {fESDZDC->SetZDCScaler(counts);}
+  Int_t    GetZDCParticipants() const {return fESDZDC->GetZDCParticipants();}
+  void     SetZDC(Float_t n1Energy, Float_t p1Energy, Float_t em1Energy, Float_t em2Energy,
+                  Float_t n2Energy, Float_t p2Energy, Int_t participants, Int_t nPartA,
+	 	  Int_t nPartC, Double_t b, Double_t bA, Double_t bC, UInt_t recoflag)
+           {fESDZDC->SetZDC(n1Energy, p1Energy, em1Energy, em2Energy, n2Energy, p2Energy, 
+            participants, nPartA, nPartC, b, bA, bC,  recoflag);}
+  void     SetZDCScaler(UInt_t *counts) {fESDZDC->SetZDCScaler(counts);}
 
 
   // FMD
@@ -356,7 +356,7 @@ public:
   Int_t GetNumberOfCaloClusters() const {return fCaloClusters->GetEntriesFast();}
 
   void SetUseOwnList(Bool_t b){fUseOwnList = b;}
-  Bool_t GetUseOwnList(){return fUseOwnList;}
+  Bool_t GetUseOwnList() const {return fUseOwnList;}
   
   // Remove this stuff CKB?
   //---------------------------------------------------
