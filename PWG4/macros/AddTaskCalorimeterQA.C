@@ -45,7 +45,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
 		}
    }
    reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
-
+	
+   //Do not keep the temporal AOD in file.
+   //reader->SwitchOnCleanStdAOD();
+	
   // ##### Analysis algorithm settings ####
 
   AliFidutialCut * fidCut = new AliFidutialCut();

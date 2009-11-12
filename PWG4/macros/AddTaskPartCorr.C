@@ -49,9 +49,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   reader->SetCTSPtMin(0.2);
   if(kPrintSettings) reader->Print("");
 	
-  //Needed line, do not clear standard output AODs, we are not writing there
-  reader->SwitchOnWriteStdAOD();
-	
   // ##### Analysis algorithm settings ####
 
   // --------------------

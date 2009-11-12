@@ -53,7 +53,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	reader->SetFidutialCut(fidCut);
 	
 	//Remove the temporal AODs we create.	
-	reader->SwitchOffWriteStdAOD();	
+	reader->SwitchOnCleanStdAOD();	
 	
 	reader->Print("");
 	
