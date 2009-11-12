@@ -34,7 +34,7 @@ void RunAnalysisITS() {
   // Load analysis libraries
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
-  if(uselibPWG1) gSystem->Load("libPWG1.so");
+  if(uselibPWG1) {gSystem->Load("libTENDER.so"); gSystem->Load("libPWG1.so");}
 
   // Create Alien plugin, if requested
   if(useAlienPlugin) {  
@@ -171,7 +171,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",
    if(!uselibPWG1) {
      plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx AliTrackMatchingTPCITSCosmics.h AliTrackMatchingTPCITSCosmics.cxx libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
    } else {
-     plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so libTPCbase.so libTPCrec.so libTRDbase.so libTRDrec.so libPWG1.so");
+     plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so libTPCbase.so libTPCrec.so libTRDbase.so libTRDrec.so libTENDER.so libPWG1.so");
    }
    // Declare the output file names separated by blancs.
    // (can be like: file.root or file.root@ALICE::Niham::File)
