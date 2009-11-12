@@ -175,10 +175,14 @@ void AliFMDDndeta::Init(const Char_t* filename) {
     AliWarning("No file - aborting !");
     return;
   }
-  fList = (TList*)fin->Get("BackgroundCorrected");
   AliFMDAnaParameters* pars =  AliFMDAnaParameters::Instance();
-  pars->Init();
+  //pars->Init();
   
+  fList = (TList*)fin->Get(Form("%s/BackgroundCorrected",pars->GetDndetaAnalysisName()));
+  
+  if(!fList) //an old file ? Perhaps...
+    fList = (TList*)fin->Get("BackgroundCorrected");
+    
   fIsGenerated[kHits]      = kFALSE;
   fIsGenerated[kMult]      = kFALSE;  
   fIsGenerated[kMultTrVtx] = kFALSE;
@@ -283,9 +287,9 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
 	    nNonZero++;
 	}
 	Int_t nBinsOld = fNbinsToCut;
-      	if(det == 2 && ringChar =='I') {
-	  fNbinsToCut = 1;
-	}
+	//	if(det == 2 && ringChar =='I') {
+	//  fNbinsToCut = 1;
+	//	}
 	TH1F* hRingMult = (TH1F*)fMultList.FindObject(Form("hRingMult_FMD%d%c",det,ringChar));
 	
 	for(Int_t i=1; i<=hRingMult->GetNbinsX(); i++) {
