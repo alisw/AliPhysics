@@ -72,7 +72,7 @@ AliEMCALRawUtils::AliEMCALRawUtils()
   fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
   fOrder = 2;                         // order of gamma fn
   fTau = 2.35;                        // in units of timebin, from CERN 2007 testbeam
-  fNoiseThreshold = 3;
+  fNoiseThreshold = 4;
   fNPedSamples = 5;
 
   //Get Mapping RCU files from the AliEMCALRecParam                                 
@@ -333,6 +333,11 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   while (in.NextDDL()) {
     while (in.NextChannel()) {
       
+		//Check if the signal  is high or low gain and then do the fit, 
+		//if it  is from TRU do not fit
+		caloFlag = in.GetCaloFlag();
+		if (caloFlag != 0 && caloFlag != 1) continue; 
+		
       // There can be zero-suppression in the raw data, 
       // so set up the TGraph in advance
       for (i=0; i < GetRawFormatTimeBins(); i++) {
@@ -340,6 +345,8 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
       }
 		
       Int_t maxTime = 0;
+	  Int_t min = 0x3ff; // init to 10-bit max
+	  Int_t max = 0; // init to 10-bit min
       int nsamples = 0;
       while (in.NextBunch()) {
 	const UShort_t *sig = in.GetSignals();
@@ -356,20 +363,21 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 	nsamples += in.GetBunchLength();
 	for (i = 0; i < in.GetBunchLength(); i++) {
 	  time = startBin--;
-	  gSig->SetPoint(time, time, sig[i]) ;
+	  gSig->SetPoint(time, time, (Double_t) sig[i]) ;
+	  if (max < sig[i]) max= sig[i];
+	  if (min > sig[i]) min = sig[i];
 	}
       } // loop over bunches
     
       if (nsamples > 0) { // this check is needed for when we have zero-supp. on, but not sparse readout
 
       id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
-      caloFlag = in.GetCaloFlag();
       lowGain = in.IsLowGain();
 
       gSig->Set(maxTime+1);
-      FitRaw(gSig, signalF, amp, time) ; 
+       if ( (max - min) > fNoiseThreshold) FitRaw(gSig, signalF, amp, time) ; 
     
-      if (caloFlag == 0 || caloFlag == 1) { // low gain or high gain 
+      //if (caloFlag == 0 || caloFlag == 1) { // low gain or high gain 
 	if (amp > 0 && amp < 2000) {  //check both high and low end of
 	//result, 2000 is somewhat arbitrary - not nice with magic numbers in the code..
 	  AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
@@ -377,7 +385,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 	  AddDigit(digitsArr, id, lowGain, (Int_t)amp, time);
 	}
 	
-      }
+      //}
 
       // Reset graph
       for (Int_t index = 0; index < gSig->GetN(); index++) {
@@ -438,7 +446,7 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
 void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_t & time) const 
 {
   // Fits the raw signal time distribution; from AliEMCALGetter 
-
+  printf("*********************** FIT Signal\n");
   amp = time = 0. ; 
   Double_t ped = 0;
   Int_t nPed = 0;
@@ -459,6 +467,7 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
     ped = 10; // put some small value as first guess
   }
 
+
   Int_t maxFound = 0;
   Int_t iMax = 0;
   Float_t max = -1;
@@ -472,7 +481,7 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
 
   for (Int_t i=fNPedSamples; i < gSig->GetN(); i++) {
     Double_t ttime, signal;
-    gSig->GetPoint(i, ttime, signal) ; 
+    gSig->GetPoint(i, ttime, signal) ;
     if (!maxFound && signal > max) {
       iMax = i;
       max = signal;
