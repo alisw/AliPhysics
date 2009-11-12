@@ -111,7 +111,7 @@ public:
   Int_t           ReadClusters(TClonesArray* &array, TTree *in) const;
   Int_t           RefitInward(AliESDEvent *event);
   static void     SetNTimeBins(Int_t nTimeBins){fgNTimeBins = nTimeBins; }
-  void            SetReconstructor(const AliTRDReconstructor *rec){ fkReconstructor = rec; }
+  void            SetReconstructor(const AliTRDReconstructor *rec) {fkReconstructor = rec;}
   void            UnloadClusters();
 
   class AliTRDLeastSquare{
@@ -128,7 +128,7 @@ public:
     Double_t	GetFunctionValue(const Double_t * const xpos) const;
     void		GetCovarianceMatrix(Double_t *storage) const;
   private:
-          AliTRDLeastSquare(const AliTRDLeastSquare &);
+    AliTRDLeastSquare(const AliTRDLeastSquare &);
     AliTRDLeastSquare& operator=(const AliTRDLeastSquare &);
     Double_t 	fParams[2];						// Fitparameter	
     Double_t 	fCovarianceMatrix[3];			// Covariance Matrix
@@ -190,8 +190,9 @@ protected:
 private:
   AliTRDtrackerV1(const AliTRDtrackerV1 &tracker);
   AliTRDtrackerV1 &operator=(const AliTRDtrackerV1 &tracker);
-  Double_t       	CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4]);
-  Double_t       	CalculateTrackLikelihood(const AliTRDseedV1 *const tracklets, Double_t *chi2);
+  Double_t       CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4]);
+  void           CookNTimeBins();
+  Double_t       CalculateTrackLikelihood(const AliTRDseedV1 *const tracklets, Double_t *chi2);
   Int_t          	ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDseedV1 *tracklet);
   static Float_t	CalculateReferenceX(const AliTRDseedV1 *const tracklets);
   void        ResetSeedTB();
