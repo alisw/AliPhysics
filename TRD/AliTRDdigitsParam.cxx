@@ -122,13 +122,18 @@ Bool_t AliTRDdigitsParam::SetNTimeBins(Int_t ntb)
 
   if (fCheckOCDB) {
     Int_t nTimeBinsOCDB = AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS();
-    if (fNTimeBins == nTimeBinsOCDB) {
-      return kTRUE;
+    if (nTimeBinsOCDB > -1) {
+      if (fNTimeBins == nTimeBinsOCDB) {
+        return kTRUE;
+      }
+      else {
+        AliError(Form("Number of timebins does not match OCDB value (raw:%d, OCDB:%d)"
+                     ,fNTimeBins,nTimeBinsOCDB));
+        return kFALSE;
+      }
     }
     else {
-      AliError(Form("Number of timebins does not match OCDB value (raw:%d, OCDB:%d)"
-                   ,fNTimeBins,nTimeBinsOCDB));
-      return kFALSE;
+      return kTRUE;
     }
   }
   else {

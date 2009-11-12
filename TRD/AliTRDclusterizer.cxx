@@ -819,7 +819,9 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   fTimeTotal = fDigits->GetNtime();
 
   // Check consistency between OCDB and raw data
-  if (fTimeTotal != calibration->GetNumberOfTimeBinsDCS()) {
+  Int_t nTimeOCDB = calibration->GetNumberOfTimeBinsDCS();
+  if ((nTimeOCDB  >         -1) &&
+      (fTimeTotal != nTimeOCDB)) {
     AliError(Form("Number of timebins does not match OCDB value (RAW[%d] OCDB[%d])"
                 ,fTimeTotal,calibration->GetNumberOfTimeBinsDCS()));
   }
