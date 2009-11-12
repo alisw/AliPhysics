@@ -71,7 +71,7 @@ public:
   
   /** Constructor */
   AliHLTCaloClusterizer(TString det);    
-  
+
   /** Destructor */
   virtual ~AliHLTCaloClusterizer();
 
@@ -97,7 +97,7 @@ public:
     //Assignment
     return *this; 
   }
-  
+
   /** Set digit container */
   void SetDigitContainer(AliHLTCaloDigitContainerDataStruct* digitContainerPtr)
   { fDigitContainerPtr = digitContainerPtr; }
@@ -164,9 +164,10 @@ protected:
   Int_t fMaxDigitIndexDiff;                                    //COMMENT
 
 private:
+
   AliHLTCaloClusterizer();
 
-  AliHLTCaloClusterizer (const AliHLTCaloClusterizer  & );
+  //  AliHLTCaloClusterizer (const AliHLTCaloClusterizer  & );
   //  AliHLTCaloClusterizer & operator = (const AliHLTCaloClusterizer &);
 
 

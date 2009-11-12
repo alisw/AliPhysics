@@ -119,7 +119,7 @@ public:
    * it is added to the current rec point
    * @param recPoint pointer to the current rec point
    */
-  virtual Int_t ScanForNeighbourDigits(AliHLTPHOSRecPointDataStruct* recPoint);
+  virtual Int_t ScanForNeighbourDigits(AliHLTPHOSRecPointDataStruct* recPoint, AliHLTPHOSDigitDataStruct *digit);
 
   /**
    * Checks if two digits are neighbours

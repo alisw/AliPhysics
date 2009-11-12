@@ -231,7 +231,7 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSChannelDataHeaderStruct* channelDataH
 	    }
 	}
     }
-
+  if(fDigitCount > 1) SortDigits();
   return fDigitCount; 
 }
 
@@ -296,16 +296,26 @@ AliHLTPHOSDigitMaker::SortDigits()
   // See header file for documentation
 
   //  Int_t (*funcPtr)(const void*, const void*)  = &AliHLTPHOSDigitMaker::CompareDigits;
-
+  //  HLTError("fDigitPtrArray[0]: %lu, fDigitHeaderPtr: %lu, sizeof(AliHLTPHOSDigitHeaderStruct): %d", fDigitPtrArray[0], fDigitHeaderPtr, sizeof(AliHLTPHOSDigitHeaderStruct));
+  //  HLTError("First digit offset: %d, first digit ptr: %ld, sizeof(AliHLTPHOSDigitDataStruct) = %d", fDigitHeaderPtr->fFirstDigitOffset, fDigitPtrArray[0], sizeof(AliHLTPHOSDigitDataStruct));
   qsort(fDigitPtrArray, fDigitCount, sizeof(AliHLTPHOSDigitDataStruct*), CompareDigits);
 
-  fDigitHeaderPtr->fFirstDigitOffset = reinterpret_cast<Long_t>(fDigitPtrArray[0]) - reinterpret_cast<Long_t>(fDigitHeaderPtr) + sizeof(AliHLTPHOSDigitHeaderStruct);
+  //  HLTError("fDigitPtrArray[0]: %lu, fDigitHeaderPtr: %lu, sizeof(AliHLTPHOSDigitHeaderStruct): %d", fDigitPtrArray[0], fDigitHeaderPtr, sizeof(AliHLTPHOSDigitHeaderStruct));
+  //  fDigitHeaderPtr->fFirstDigitOffset = reinterpret_cast<Long_t>(fDigitPtrArray[0]) - reinterpret_cast<Long_t>(fDigitHeaderPtr) + sizeof(AliHLTPHOSDigitHeaderStruct);
+  fDigitHeaderPtr->fFirstDigitOffset = reinterpret_cast<Long_t>(fDigitPtrArray[0]) - reinterpret_cast<Long_t>(fDigitHeaderPtr);
+  //  HLTError("First digit offset: %d, first digit ptr: %ld, sizeof(AliHLTPHOSDigitDataStruct) = %d", fDigitHeaderPtr->fFirstDigitOffset, fDigitPtrArray[0], sizeof(AliHLTPHOSDigitDataStruct));
   for(Int_t i = 0; i < fDigitCount-1; i++)
     {
-      fDigitPtrArray[0]->fMemOffsetNext = fDigitPtrArray[i+1] - fDigitPtrArray[i];
+      fDigitPtrArray[i]->fMemOffsetNext = reinterpret_cast<Long_t>(fDigitPtrArray[i+1]) - reinterpret_cast<Long_t>(fDigitPtrArray[i]);
+      //      HLTError("Adding digit with energy: %f, ID: %d, offset: %d and pointer %lu", fDigitPtrArray[i]->fEnergy, fDigitPtrArray[i]->fID, fDigitPtrArray[i]->fMemOffsetNext, fDigitPtrArray[i]);
     }
-  fDigitHeaderPtr->fLastDigitOffset = reinterpret_cast<Long_t>(fDigitPtrArray[fDigitCount-1]) - (reinterpret_cast<Long_t>(fDigitHeaderPtr) + sizeof(AliHLTPHOSDigitHeaderStruct));
+  //  fDigitHeaderPtr->fLastDigitOffset = reinterpret_cast<Long_t>(fDigitPtrArray[fDigitCount-1]) - (reinterpret_cast<Long_t>(fDigitHeaderPtr) + sizeof(AliHLTPHOSDigitHeaderStruct));
+  fDigitHeaderPtr->fLastDigitOffset = reinterpret_cast<Long_t>(fDigitPtrArray[fDigitCount-1]) - reinterpret_cast<Long_t>(fDigitHeaderPtr);
+  //  HLTError("Last digit offset: %d, last digit ptr: %ld", fDigitHeaderPtr->fLastDigitOffset, fDigitPtrArray[fDigitCount-1]);
   fDigitPtrArray[fDigitCount-1]->fMemOffsetNext = 0;
+  //  HLTError("Number of digits: %d", fDigitCount);
+  fDigitHeaderPtr->fNDigits = fDigitCount;
+
 }
 
 Int_t

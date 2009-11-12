@@ -189,8 +189,10 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 
   // Then comes the channel data
   AliHLTPHOSChannelDataStruct *channelDataPtr = reinterpret_cast<AliHLTPHOSChannelDataStruct*>(outputPtr+sizeof(AliHLTPHOSChannelDataHeaderStruct)); 
+  
   //Adding to the total size of data written
   totSize += sizeof( AliHLTPHOSChannelDataHeaderStruct );
+
 
   fRawReaderMemoryPtr->SetMemory(reinterpret_cast<UChar_t*>(iter->fPtr), static_cast<ULong_t>(iter->fSize));
   fRawReaderMemoryPtr->SetEquipmentID(fMapperPtr->GetDDLFromSpec(iter->fSpecification) + 1792);
@@ -201,14 +203,16 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 //     {
 //       fRawDataWriter->NewEvent( );
 //     }
+
   if(fAltroRawStreamPtr != NULL)
     {
       delete fAltroRawStreamPtr;
       fAltroRawStreamPtr=NULL;
     }
+
+  fAltroRawStreamPtr = new AliAltroRawStreamV3(fRawReaderMemoryPtr);
   
   //  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("PHOS"));
-  fAltroRawStreamPtr = new AliAltroRawStreamV3(fRawReaderMemoryPtr);
 
   if(fAltroRawStreamPtr->NextDDL())
     {
@@ -232,13 +236,16 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 // 		}
 	      while( fAltroRawStreamPtr->NextBunch() == true )
 		{
-		  nSamples = fAltroRawStreamPtr->GetBunchLength();
-		  
+
 // 		  if( fDoPushRawData == true)
 // 		    {
 // 		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
 // 		    }
+
 		  firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
+		  
+		  nSamples = fAltroRawStreamPtr->GetBunchLength();
+
 		}
 	      if(firstBunchPtr)
 		{	      

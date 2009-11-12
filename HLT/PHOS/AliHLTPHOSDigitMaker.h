@@ -157,11 +157,15 @@ private:
    */
   bool AddDigit(AliHLTPHOSChannelDataStruct* channelData, UShort_t* channelCoordinates, Float_t* localCoordinates)
   {
+    //    HLTError("Available size: %d", fAvailableSize);
+
     if(fAvailableSize < sizeof(AliHLTPHOSDigitDataStruct))
       {
-	HLTError("Output buffer is full, stopping digit making");
+	HLTError("Output buffer is full, stopping digit making.");
 	return false;
       }
+
+
 
     fAvailableSize -= sizeof(AliHLTPHOSDigitDataStruct);
 
@@ -176,12 +180,12 @@ private:
     if(channelCoordinates[2] == HIGHGAIN)
       {
 	fDigitStructPtr->fEnergy = channelData->fEnergy*fHighGainFactors[channelCoordinates[0]][channelCoordinates[1]];
-	//	HLTDebug("HG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f \n", channelCoordinates[0], channelCoordinates[1], channelData->fEnergy, fDigitStructPtr->fEnergy);
+	//	HLTError("HG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f \n", channelCoordinates[0], channelCoordinates[1], channelData->fEnergy, fDigitStructPtr->fEnergy);
       }
     else
       {
 	fDigitStructPtr->fEnergy = channelData->fEnergy*fLowGainFactors[channelCoordinates[0]][channelCoordinates[1]];
-	//	HLTDebug("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", channelCoordinates[0], channelCoordinates[1], channelData->fEnergy, fDigitStructPtr->fEnergy); 
+	//	HLTError("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", channelCoordinates[0], channelCoordinates[1], channelData->fEnergy, fDigitStructPtr->fEnergy); 
       }
     fDigitStructPtr->fTime = channelData->fTime * 0.0000001; //TODO
     fDigitStructPtr->fCrazyness = channelData->fCrazyness;

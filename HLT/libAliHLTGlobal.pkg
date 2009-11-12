@@ -7,7 +7,14 @@ CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
 		AliHLTGlobalAgent.h \
 		AliHLTGlobalVertexerComponent.h \
 		AliHLTGlobalTrackMatcher.h \
-		physics/AliHLTV0HistoComponent.h
+		physics/AliHLTV0HistoComponent.h 
+# 	        physics/AliHLTPHOSHistoProdInvMass.h \
+# 		physics/AliHLTPHOSHistoProdMatchedTracks.h \
+# 		physics/AliHLTPHOSHistoProdClusterEnergy.h \
+# 		physics/AliHLTPHOSHistoProdCellEnergy.h
+
+#	        physics/AliHLTPHOSHistogramProducerComponent.h \
+#physics/AliHLTPHOSHistogramProducerComponent.h 
 
 # 		
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)

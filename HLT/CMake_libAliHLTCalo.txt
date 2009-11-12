@@ -1,5 +1,5 @@
 # -*- mode: cmake -*-
-# $Id: CMake_libAliHLTCALO.txt 34927 2009-09-22 12:48:47Z richterm $
+# $Id$
 
 set(SRCS
 CALO/AliHLTCaloMapper.cxx

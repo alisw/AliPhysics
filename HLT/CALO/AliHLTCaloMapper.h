@@ -35,7 +35,7 @@ class AliHLTCaloConstants;
 class AliHLTCaloMapper : public AliHLTLogging, public AliHLTCaloConstantsHandler
 {
 public:
-  AliHLTCaloMapper(TString det);
+  
   AliHLTCaloMapper(const unsigned long specification, TString det);
   virtual ~AliHLTCaloMapper();
   virtual void InitAltroMapping( const unsigned long specification ) = 0; 

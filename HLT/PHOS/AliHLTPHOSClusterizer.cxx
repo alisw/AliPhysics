@@ -99,16 +99,20 @@ AliHLTPHOSClusterizer::ClusterizeEvent(AliHLTPHOSDigitHeaderStruct *digitHeader,
 
   //  UInt_t maxRecPointSize = sizeof(AliHLTPHOSRecPointDataStruct) + (sizeof(AliHLTPHOSDigitDataStruct) << 7); //Reasonable estimate... 
 
+  //  HLTError("Starting clusterisation");
+
   //Clusterization starts
   while((fCurrentDigit = fDigitReader->NextDigit()) != 0)
     { 
-
+      //      HLTError("Digit with energy: %f", fCurrentDigit->fEnergy); 
       fDigitsInCluster = 0;
       
       if(fCurrentDigit->fEnergy < fEmcClusteringThreshold)
 	{
 	  continue;
 	}
+
+      //      HLTError("Have cluster candidate (x,z): %d, %d, with energy: %f", fCurrentDigit->fX, fCurrentDigit->fZ, fCurrentDigit->fEnergy); 
 
       if(fAvailableSize < (sizeof(AliHLTPHOSRecPointDataStruct)))
 	{
@@ -121,6 +125,8 @@ AliHLTPHOSClusterizer::ClusterizeEvent(AliHLTPHOSDigitHeaderStruct *digitHeader,
       fPreviousDigit = fStartDigit;
       // Get the offset of the digit starting the cluster relative to the start of the digit block
       fRecPointDataPtr->fStartDigitOffset = fDigitReader->GetCurrentDigitOffset();
+      //      HLTError("Start digit offset: %d", fRecPointDataPtr->fStartDigitOffset);
+      //      cout << "Start digit offset: " <<  fRecPointDataPtr->fStartDigitOffset << endl;
       fDigitReader->DropDigit();
 
       fRecPointDataPtr->fAmp = 0;
@@ -132,24 +138,28 @@ AliHLTPHOSClusterizer::ClusterizeEvent(AliHLTPHOSDigitHeaderStruct *digitHeader,
       nRecPoints++;
 
       // Scanning for the neighbours
-      if(ScanForNeighbourDigits(fRecPointDataPtr) < 0)
+      if(ScanForNeighbourDigits(fRecPointDataPtr, fCurrentDigit) < 0)
 	{
 	  return -1;
 	}
+
+      fPreviousDigit->fMemOffsetNext = 0;
 
       totSize += sizeof(AliHLTPHOSRecPointDataStruct) + (fDigitsInCluster-1)*sizeof(AliHLTPHOSDigitDataStruct);   
       HLTDebug("Initial available size: %d, used size: %d, remaining available size: %d, should be: %d", availableSize, totSize, fAvailableSize, availableSize-totSize);
       
       fRecPointDataPtr->fMultiplicity = fDigitsInCluster;     
-
+      HLTDebug("Number of digits in cluster: %d", fDigitsInCluster);
       fRecPointDataPtr++;
+
+      fDigitReader->Rewind(); // TODO: jump to the next instead of rewind
     }//end of clusterization
 
-   return nRecPoints;
+  return nRecPoints;
 }
 
 Int_t
-AliHLTPHOSClusterizer::ScanForNeighbourDigits(AliHLTPHOSRecPointDataStruct* recPoint)
+AliHLTPHOSClusterizer::ScanForNeighbourDigits(AliHLTPHOSRecPointDataStruct* recPoint, AliHLTPHOSDigitDataStruct *digit)
 {
   //see header file for documentation
 
@@ -159,19 +169,32 @@ AliHLTPHOSClusterizer::ScanForNeighbourDigits(AliHLTPHOSRecPointDataStruct* recP
   //  Int_t max = fDigitContainerPtr->fNDigits;
   //  Int_t min = 0;
 
+  AliHLTPHOSDigitDataStruct *tmpDigit = 0;
+
   fDigitReader->Rewind();
 
-  while((fCurrentDigit = fDigitReader->NextDigit()))
+  while((tmpDigit = fDigitReader->NextDigit()))
     {
-      if(fCurrentDigit->fEnergy > fEmcMinEnergyThreshold)
+      //HLTError("Checking digit (x,z): %d, %d, with energy: %f", tmpDigit->fX, tmpDigit->fZ, tmpDigit->fEnergy); 
+      //      HLTError("Checking digit (x,z): %d, %d, with energy: %f for neighbourship of digit (x,z): %d, %d", tmpDigit->fX, tmpDigit->fZ, tmpDigit->fEnergy, digit->fX, digit->fZ); 
+      //      if(tmpDigit->fEnergy > fEmcMinEnergyThreshold)
+      if(tmpDigit->fEnergy > 0.2)
 	{
-	  if(AreNeighbours(fStartDigit, fCurrentDigit))
+	  //HLTError("Checking digit (x,z): %d, %d, with energy: %f for neighbourship of digit (x,z): %d, %d", tmpDigit->fX, tmpDigit->fZ, tmpDigit->fEnergy, digit->fX, digit->fZ); 
+
+	  //	  if(AreNeighbours(fStartDigit, tmpDigit))
+	  if(AreNeighbours(digit, tmpDigit))
 	    {
+	      //	      HLTError("Adding digit (x,z): %d, %d, with energy: %f", tmpDigit->fX, tmpDigit->fZ, tmpDigit->fEnergy);
 	      fDigitReader->DropDigit();
-	      fPreviousDigit->fMemOffsetNext = reinterpret_cast<Long_t>(fCurrentDigit) - reinterpret_cast<Long_t>(fPreviousDigit);
-	      recPoint->fAmp += fCurrentDigit->fEnergy;
+	      fPreviousDigit->fMemOffsetNext = reinterpret_cast<Long_t>(tmpDigit) - reinterpret_cast<Long_t>(fPreviousDigit);
+	      //	      cout << "Digit offset: " << fPreviousDigit->fMemOffsetNext << endl;
+	      //   fPreviousDigit->fMemOffsetNext += tmpDigit->fMemOffsetNext;
+	      recPoint->fAmp += tmpDigit->fEnergy;
+	      fPreviousDigit = tmpDigit;
 	      fDigitsInCluster++;
-	      ScanForNeighbourDigits(recPoint);
+	      ScanForNeighbourDigits(recPoint, tmpDigit);
+	      fDigitReader->SetCurrentDigit(tmpDigit);
 	    }
 	}
     }
@@ -187,12 +210,13 @@ AliHLTPHOSClusterizer::AreNeighbours(AliHLTPHOSDigitDataStruct* digit1,
     { 
       Int_t rowdiff = TMath::Abs( digit1->fZ - digit2->fZ );  
       Int_t coldiff = TMath::Abs( digit1->fX - digit2->fX ); 
+      //      HLTError("coldiff: %d, rowdiff: %d, timediff: %f", coldiff, rowdiff, TMath::Abs(digit1->fTime - digit2->fTime ));
       if (( coldiff <= 1   &&  rowdiff == 0 ) || ( coldiff == 0 &&  rowdiff <= 1 ))
 	{
 	  //	  cout << "Are neighbours: digit (E = "  << digit1->fEnergy << ") with x = " << digit1->fX << " and z = " << digit1->fZ << 
 	    //	    " is neighbour with digit (E = " << digit2->fEnergy << ") with x = " << digit2->fX << " and z = " << digit2->fZ << endl;
 
-	  if(TMath::Abs(digit1->fTime - digit2->fTime ) < fEmcTimeGate)
+	  //	  if(TMath::Abs(digit1->fTime - digit2->fTime ) < fEmcTimeGate)
 	    {
 	      return 1; 
 	    }

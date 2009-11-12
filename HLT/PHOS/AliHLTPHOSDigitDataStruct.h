@@ -67,10 +67,10 @@ struct AliHLTPHOSDigitHeaderStruct
 struct AliHLTPHOSDigitDataStruct
 {
   /** The x coordinate */
-  Float_t fX;
+  Int_t fX;
 
   /** The z coordinate */
-  Float_t fZ;
+  Int_t fZ;
 
   /** The local x coordinate */
   Float_t fLocX;

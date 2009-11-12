@@ -28,7 +28,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-
+#include "AliHLTLogging.h"
 #include "AliHLTPHOSDigitDataStruct.h"
 
 /** 
@@ -37,7 +37,7 @@
  * the list of digits following the header
  * @ingroup alihlt_phos
  */
-class AliHLTPHOSDigitReader
+class AliHLTPHOSDigitReader : public AliHLTLogging
 {
 
 public:
@@ -49,7 +49,7 @@ public:
     fDigitHeader = digitHeader; 
     if(fDigitHeader->fNDigits != 0)
       {
-	fFirstDigit = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Long_t>(fDigitHeader) + sizeof(AliHLTPHOSDigitHeaderStruct) + fDigitHeader->fFirstDigitOffset);
+	fFirstDigit = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Long_t>(fDigitHeader) + fDigitHeader->fFirstDigitOffset);
       }
     else 
       {
@@ -58,15 +58,31 @@ public:
     fNextDigit = fFirstDigit;
   }
     
-  void SetCurrentDigit(AliHLTPHOSDigitDataStruct *currentDigit) { fCurrentDigit = currentDigit; }
+  void SetCurrentDigit(AliHLTPHOSDigitDataStruct *currentDigit) 
+  { 
+    fCurrentDigit = currentDigit; 
+    //    fNextDigit = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<UChar_t*>(fCurrentDigit) + fCurrentDigit->fMemOffsetNext);
+  }
+  void SetNextDigit(AliHLTPHOSDigitDataStruct *nextDigit) 
+  { 
+    fNextDigit = nextDigit; 
+    //    fNextDigit = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<UChar_t*>(fCurrentDigit) + fCurrentDigit->fMemOffsetNext);
+  }
 
   AliHLTPHOSDigitDataStruct* NextDigit();
 
   void DropDigit();
 
-  void Rewind() { fCurrentDigit = fFirstDigit; }
+  void Rewind() 
+  { 
+    fNextDigit = fFirstDigit; 
+    fPrevDigit = 0;
+  }
 
-  Int_t GetCurrentDigitOffset() { return reinterpret_cast<Long_t>(fCurrentDigit) - reinterpret_cast<Long_t>(fDigitHeader) + sizeof(AliHLTPHOSDigitHeaderStruct); }
+  //  Int_t GetCurrentDigitOffset() { return reinterpret_cast<Long_t>(fCurrentDigit) - reinterpret_cast<Long_t>(fDigitHeader) + sizeof(AliHLTPHOSDigitHeaderStruct); }
+
+  Int_t GetCurrentDigitOffset() { return reinterpret_cast<Long_t>(fCurrentDigit) - reinterpret_cast<Long_t>(fDigitHeader); }
+
 private:
   
   /** Pointer to the digit header */

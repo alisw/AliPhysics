@@ -36,15 +36,9 @@ CLASS_HDRS:=	  AliHLTPHOSClusterizer.h \
 		  AliHLTPHOSRcuDAComponent.h \
 		  AliHLTPHOSUtilities.h \
 		  AliHLTPHOSHistogramProducer.h \
-		  AliHLTPHOSHistogramProducerComponent.h \
 		  AliHLTPHOSMonitorTriggerComponent.h \
 		  AliHLTPHOSESDEntriesMakerComponent.h \
 		  AliHLTPHOSESDCaloClusterWriterComponent.h \
-		  AliHLTPHOSHistoProdInvMass.h \
-		  AliHLTPHOSHistoProdMatchedTracks.h \
-		  AliHLTPHOSHistoProdClusterEnergy.h \
-		  AliHLTPHOSHistoProdCellEnergy.h \
-		  AliHLTPHOSPhysicsHistogramProducer.h \
 		  AliHLTPHOSFourier.h \
 		  AliHLTPHOSDigitReader.h
 

@@ -72,6 +72,7 @@ void
 AliHLTPHOSClusterAnalyser::SetRecPointDataPtr(AliHLTPHOSRecPointHeaderStruct *recPointDataPtr, AliHLTPHOSDigitHeaderStruct *digitHeaderPtr)
 { 
   fNRecPoints = recPointDataPtr->fNRecPoints;
+
   fRecPointDataPtr = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(reinterpret_cast<Char_t*>(recPointDataPtr)+sizeof(AliHLTPHOSRecPointHeaderStruct)); 
   fDigitHeaderPtr = digitHeaderPtr;
 }
@@ -90,19 +91,20 @@ AliHLTPHOSClusterAnalyser::CalculateCenterOfGravity()
   //AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   AliHLTPHOSRecPointDataStruct *recPoint = fRecPointDataPtr;
-
-  //  UInt_t iDigit = 0;
-
+  UInt_t iDigit = 0;
+  if(!recPoint) return 0;
   for(Int_t iRecPoint=0; iRecPoint < fNRecPoints; iRecPoint++) 
     {
-      digit = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Long_t>(fDigitHeaderPtr) + recPoint->fStartDigitOffset);
+      //      cout << "CA: start digit offset: " << recPoint->fStartDigitOffset << endl;
+      digit = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<UChar_t*>(fDigitHeaderPtr) + recPoint->fStartDigitOffset);
+  //      cout << "CA: digit offset: " << digit->fMemOffsetNext << endl;
       AliHLTPHOSDigitReader reader;
-      reader.SetCurrentDigit(digit);
+      reader.SetNextDigit(digit);
       while(digit)
 	{
 	  xi = digit->fX;
 	  zi = digit->fZ;
-	  //  cout << "COG digits (x:z:E:time): " << xi << " : " << zi << " : " << digit->fEnergy << " : " << digit->fTime << endl;
+	  //	  cout << "COG digits (x:z:E:time): " << xi << " : " << zi << " : " << digit->fEnergy << " : " << digit->fTime << endl;
 	  if (recPoint->fAmp > 0 && digit->fEnergy > 0) 
 	    {
 	      Float_t w = TMath::Max( 0., fLogWeight + TMath::Log( digit->fEnergy / recPoint->fAmp ) ) ;
@@ -117,12 +119,15 @@ AliHLTPHOSClusterAnalyser::CalculateCenterOfGravity()
 	  recPoint->fX = x/wtot ;
 	  recPoint->fZ = z/wtot ;
 	}
+
       else
 	{
 	  recPoint->fAmp = 0;
 	}
-      recPoint = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(digit);
-    }
+     recPoint++;
+}
+
+
   return 0;
 }
 
@@ -171,7 +176,7 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
   for(Int_t i = 0; i < fNRecPoints; i++) //TODO needs fix when we start unfolding (number of clusters not necessarily same as number of recpoints gotten from the clusterizer
     {
       digitPtr = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Long_t>(fDigitHeaderPtr) + recPointPtr->fStartDigitOffset);
-      reader.SetCurrentDigit(digitPtr);
+      reader.SetNextDigit(digitPtr);
   
       if(availableSize < (totSize + maxClusterSize)) 
 	{
@@ -182,7 +187,7 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
       caloClusterPtr->fGlobalPos[0] = globalPos[0];
       caloClusterPtr->fGlobalPos[1] = globalPos[1];
       caloClusterPtr->fGlobalPos[2] = globalPos[2];
-
+      cout << "Global position: " << globalPos[0] << ", " << globalPos[1] << ", " << globalPos[2] << endl;
       caloClusterPtr->fNCells = recPointPtr->fMultiplicity;
   
       cellIDPtr = &(caloClusterPtr->fCellsAbsId);
@@ -245,7 +250,8 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
       totSize += sizeof(AliHLTCaloClusterDataStruct) + (caloClusterPtr->fNCells-1)*(sizeof(Short_t) + sizeof(Float_t));   
 
       caloClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(cellIDPtr);
-      recPointPtr = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(digitPtr);
+      //      recPointPtr = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(digitPtr);
+      recPointPtr++; 
  
     }
 

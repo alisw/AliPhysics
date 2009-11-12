@@ -136,6 +136,8 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   AliHLTPHOSDigitHeaderStruct *digitHeaderPtr = 0;
   AliHLTPHOSDigitHeaderStruct *outputDigitHeaderPtr = reinterpret_cast<AliHLTPHOSDigitHeaderStruct*>(outBPtr);
 
+  //  HLTError("Header pointer before screwing around: 0x%x", outputDigitHeaderPtr);
+
   AliHLTPHOSDigitDataStruct *firstDigitPtr = 0;
   AliHLTPHOSDigitDataStruct *lastDigitPtr = 0;
   
@@ -145,14 +147,14 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       iter = blocks+ndx;
       if (iter->fDataType == AliHLTPHOSDefinitions::fgkDigitDataType)
 	{
+	  // Get the digit header
+	  digitHeaderPtr = reinterpret_cast<AliHLTPHOSDigitHeaderStruct*>(iter->fPtr);
+
 	  // Update the number of digits
 	  nDigits += digitHeaderPtr->fNDigits;
 
 	  // Get the specification
 	  specification = specification|iter->fSpecification;
-	  
-	  // Get the digit header
-	  digitHeaderPtr = reinterpret_cast<AliHLTPHOSDigitHeaderStruct*>(iter->fPtr);
 	  
 	  // Check if we have the first buffer in the event
 	  if(!firstDigitPtr)
@@ -167,9 +169,11 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	      memcpy(outBPtr, iter->fPtr, digitHeaderPtr->fNDigits*sizeof(AliHLTPHOSDigitDataStruct) + sizeof(AliHLTPHOSDigitHeaderStruct));
 
 	      // Set the pointer to the first digit in the list
-	      firstDigitPtr = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outBPtr + sizeof(AliHLTPHOSDigitHeaderStruct) + digitHeaderPtr->fFirstDigitOffset);
+	      //	      firstDigitPtr = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outBPtr + sizeof(AliHLTPHOSDigitHeaderStruct) + digitHeaderPtr->fFirstDigitOffset);
+	      firstDigitPtr = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outBPtr + digitHeaderPtr->fFirstDigitOffset);
 
-	      lastDigitPtr = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outBPtr + sizeof(AliHLTPHOSDigitHeaderStruct) + digitHeaderPtr->fLastDigitOffset);
+	      //	      lastDigitPtr = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outBPtr + sizeof(AliHLTPHOSDigitHeaderStruct) + digitHeaderPtr->fLastDigitOffset);
+	      lastDigitPtr = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outBPtr + digitHeaderPtr->fLastDigitOffset);
 	      
 	      // Update the amount of the output buffer we have used
 	      mysize += digitHeaderPtr->fNDigits*sizeof(AliHLTPHOSDigitDataStruct) + sizeof(AliHLTPHOSDigitHeaderStruct);
@@ -184,26 +188,32 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 		}
 
 	      // If we already have copied the first buffer to the output copy only the digits
-	      memcpy(outBPtr, reinterpret_cast<const void*>(reinterpret_cast<Long_t>(iter->fPtr)+sizeof(AliHLTPHOSDigitHeaderStruct)), digitHeaderPtr->fNDigits*sizeof(AliHLTPHOSDigitDataStruct));
+	      memcpy(outBPtr, reinterpret_cast<const void*>(reinterpret_cast<UChar_t*>(iter->fPtr)+sizeof(AliHLTPHOSDigitHeaderStruct)), digitHeaderPtr->fNDigits*sizeof(AliHLTPHOSDigitDataStruct));
 
 	      // Check if the first digit in this buffer has a ID less than the first digit in the previous
-	      if(firstDigitPtr->fID > reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Long_t>(iter->fPtr) + sizeof(AliHLTPHOSDigitDataStruct) + digitHeaderPtr->fFirstDigitOffset)->fID)
+	      //	      if(firstDigitPtr->fID > reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<UChar_t*>(iter->fPtr) + sizeof(AliHLTPHOSDigitDataStruct) + digitHeaderPtr->fFirstDigitOffset)->fID)
+	      AliHLTPHOSDigitDataStruct *thisFirst = 
+		reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<UChar_t*>(iter->fPtr) + digitHeaderPtr->fFirstDigitOffset);
+	      if(firstDigitPtr->fID > thisFirst->fID)
 		{
 		  // If that is the case we have to take care of the ordering
 		  		  
+		  HLTError("Re-ordering digit blocks...");
 		  // The last digit in the current buffer has to link to the first digit in the previous buffer
- 		  lastDigitPtr->fMemOffsetNext = reinterpret_cast<Long_t>(outBPtr) + digitHeaderPtr->fFirstDigitOffset - reinterpret_cast<Long_t>(lastDigitPtr);
+		  //		  AliHLTPHOSDigitDataStruct *thisLast = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outBPtr + sizeof(AliHLTPHOSDigitHeaderStruct) + digitHeaderPtr->fLastDigitOffset);
+		  AliHLTPHOSDigitDataStruct *thisLast = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outBPtr - sizeof(AliHLTPHOSDigitHeaderStruct) + digitHeaderPtr->fLastDigitOffset);
+		  thisLast->fMemOffsetNext = reinterpret_cast<Long_t>(firstDigitPtr) - reinterpret_cast<Long_t>(thisLast);
 
 		  // Setting the pointer to the new first digit
-		  firstDigitPtr = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outBPtr + digitHeaderPtr->fFirstDigitOffset);
+		  firstDigitPtr = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(outBPtr + digitHeaderPtr->fFirstDigitOffset - sizeof(AliHLTPHOSDigitHeaderStruct));
 		}
 	      else
 		{
 		  // Previous last digit need to link to the current first digit
-		  lastDigitPtr->fMemOffsetNext = reinterpret_cast<Long_t>(outBPtr) + digitHeaderPtr->fFirstDigitOffset;		  
+		  lastDigitPtr->fMemOffsetNext = reinterpret_cast<Long_t>(lastDigitPtr) - (reinterpret_cast<Long_t>(outBPtr) + digitHeaderPtr->fFirstDigitOffset - sizeof(AliHLTPHOSDigitHeaderStruct));		  
 		  
 		  // We need to change the last digit pointer
-		  lastDigitPtr = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Long_t>(outBPtr) + digitHeaderPtr->fLastDigitOffset);
+		  lastDigitPtr = reinterpret_cast<AliHLTPHOSDigitDataStruct*>(reinterpret_cast<Long_t>(outBPtr) + digitHeaderPtr->fLastDigitOffset - sizeof(AliHLTPHOSDigitHeaderStruct));
 		}
 	      // Update the amount of the output buffer we have used
 	      mysize += digitHeaderPtr->fNDigits*sizeof(AliHLTPHOSDigitDataStruct);
@@ -213,26 +223,35 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	}
     }
   
-  // The digit header in the output needs to know about the position of the new first digit (the last digit is still the same)
-  outputDigitHeaderPtr->fFirstDigitOffset = reinterpret_cast<Long_t>(firstDigitPtr) - reinterpret_cast<Long_t>(outputDigitHeaderPtr) + sizeof(AliHLTPHOSDigitHeaderStruct);
+  // The digit header in the output needs to know about the position of the new first digit
+  //  outputDigitHeaderPtr->fFirstDigitOffset = reinterpret_cast<Long_t>(firstDigitPtr) - reinterpret_cast<Long_t>(outputDigitHeaderPtr) + sizeof(AliHLTPHOSDigitHeaderStruct);
+  outputDigitHeaderPtr->fFirstDigitOffset = reinterpret_cast<Long_t>(firstDigitPtr) - reinterpret_cast<Long_t>(outputDigitHeaderPtr);
   
-  // The digit header in the output needs to know about the position of the new last digit (the first digit is still the same)
-  outputDigitHeaderPtr->fLastDigitOffset = reinterpret_cast<Long_t>(lastDigitPtr) - reinterpret_cast<Long_t>(outputDigitHeaderPtr) + sizeof(AliHLTPHOSDigitHeaderStruct);
-		  
+  // The digit header in the output needs to know about the position of the new last digit
+  //  outputDigitHeaderPtr->fLastDigitOffset = reinterpret_cast<Long_t>(lastDigitPtr) - reinterpret_cast<Long_t>(outputDigitHeaderPtr) + sizeof(AliHLTPHOSDigitHeaderStruct);
+  outputDigitHeaderPtr->fLastDigitOffset = reinterpret_cast<Long_t>(lastDigitPtr) - reinterpret_cast<Long_t>(outputDigitHeaderPtr);
+  if(firstDigitPtr)
+    {
+      //      HLTError("Header pointer after screwing around: 0x%x", outputDigitHeaderPtr);
+      //      HLTError("First/last offset: %d / %d, first digit ID: %d, energy: %f", outputDigitHeaderPtr->fFirstDigitOffset, outputDigitHeaderPtr->fLastDigitOffset, firstDigitPtr->fID, firstDigitPtr->fEnergy);
+    }
 
   HLTDebug("Number of digits: %d", nDigits);
 
-  AliHLTPHOSRecPointHeaderStruct* recPointHeaderPtr = reinterpret_cast<AliHLTPHOSRecPointHeaderStruct*>(outBPtr);
+  if(nDigits > 0)
+    {
 
-  fClusterizerPtr->SetRecPointDataPtr(reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(outBPtr+sizeof(AliHLTPHOSRecPointHeaderStruct)));
+      AliHLTPHOSRecPointHeaderStruct* recPointHeaderPtr = reinterpret_cast<AliHLTPHOSRecPointHeaderStruct*>(outBPtr);
 
-  nRecPoints = fClusterizerPtr->ClusterizeEvent(outputDigitHeaderPtr, availableSize, mysize);
-  recPointHeaderPtr->fNRecPoints = nRecPoints;
+      fClusterizerPtr->SetRecPointDataPtr(reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(outBPtr+sizeof(AliHLTPHOSRecPointHeaderStruct)));
 
-  mysize += sizeof(AliHLTPHOSRecPointHeaderStruct);
+      nRecPoints = fClusterizerPtr->ClusterizeEvent(outputDigitHeaderPtr, availableSize, mysize);
+      recPointHeaderPtr->fNRecPoints = nRecPoints;
+
+      mysize += sizeof(AliHLTPHOSRecPointHeaderStruct);
   
-  HLTDebug("Number of clusters: %d", nRecPoints);
-
+      HLTDebug("Number of clusters: %d", nRecPoints);
+    }
   AliHLTComponentBlockData clusterBd;
   FillBlockData( clusterBd );
   clusterBd.fOffset = offset;

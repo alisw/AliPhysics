@@ -144,7 +144,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   
   mysize += digitCount*sizeof(AliHLTPHOSDigitDataStruct);
 
-  //  HLTDebug("# of digits: %d, used memory size: %d, available size: %d", digitCount, mysize, size);
+  HLTDebug("# of digits: %d, used memory size: %d, available size: %d", digitCount, mysize, size);
 
   if(mysize > 0) 
     {

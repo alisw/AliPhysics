@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTPHOSConstants.h 34622 2009-09-04 13:22:01Z odjuvsla $
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *

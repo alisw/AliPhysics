@@ -27,8 +27,8 @@ namespace PhosHLTConst
   const int MAXHOSTS = 20;
   const int DEFAULTEVENTPORT = 42001;
   const int MAXBINVALUE = 1023;
-  const int HIGHGAIN    =   1;
-  const int LOWGAIN     =   0;
+  const int HIGHGAIN    =   0;
+  const int LOWGAIN     =   1;
 
   const int ALTROMAXSAMPLES = 1008;                           /**<The maximum number of samples of the ALTRO*/
   const int ALTROMAXPRESAMPLES = 15;        

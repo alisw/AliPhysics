@@ -1,4 +1,4 @@
-// $Id: AliHLTPHOSOnlineDisplayTH2D.cxx 31490 2009-03-15 16:27:11Z odjuvsla $
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
