@@ -24,11 +24,12 @@
 //#ifndef ALIANALYSISTASKMUONDISTRIBUTIONS_CXX
 //#define ALIANALYSISTASKMUONDISTRIBUTIONS_CXX
 
-#include <TList.h>
 #include <TCanvas.h>
+#include <TF1.h>
 #include <TH1.h>
-#include <TStyle.h>
 #include <TLatex.h>
+#include <TList.h>
+#include <TStyle.h>
 
 #include "AliAnalysisTaskMuonDistributions.h"
 #include "AliAnalysisTaskSE.h"

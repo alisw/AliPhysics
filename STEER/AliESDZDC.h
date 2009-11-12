@@ -14,9 +14,6 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
-#include <TMath.h>
-#include <TF1.h>
-
 
 class AliESDZDC: public TObject {
 public:
