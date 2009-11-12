@@ -43,7 +43,7 @@ ClassImp(AliCaloTrackAODReader)
 
 //____________________________________________________________________________
 AliCaloTrackAODReader::AliCaloTrackAODReader() : 
-  AliCaloTrackReader()
+  AliCaloTrackReader(), fWriteOutputStdAOD(kFALSE)
 {
   //Default Ctor
   
@@ -59,7 +59,7 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
 
 //____________________________________________________________________________
 AliCaloTrackAODReader::AliCaloTrackAODReader(const AliCaloTrackAODReader & aodr) :   
-  AliCaloTrackReader(aodr)
+  AliCaloTrackReader(aodr), fWriteOutputStdAOD(aodr.fWriteOutputStdAOD)
 {
   // cpy ctor
 }
@@ -345,3 +345,16 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent*
   SetMC(mc);
   
 }
+
+//________________________________________________________________
+void AliCaloTrackAODReader::Print(const Option_t * opt) const
+{
+	
+	//Print some relevant parameters set for the analysis
+	AliCaloTrackReader::Print(opt);
+	
+	printf("Write std AOD       =     %d\n", fWriteOutputStdAOD) ;
+	
+	printf("    \n") ;
+} 
+

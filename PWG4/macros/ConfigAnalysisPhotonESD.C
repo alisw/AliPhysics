@@ -68,6 +68,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	
   //	reader->SetTrackStatus(status);
 	
+  reader->SwitchOnCleanStdAOD();
 	
   reader->Print("");
   

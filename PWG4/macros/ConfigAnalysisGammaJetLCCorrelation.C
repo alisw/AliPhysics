@@ -62,7 +62,7 @@ AliAnaPartCorrMaker*  ConfigAnalysis()
 	//	reader->SetTrackStatus(status);
 	
 	//Remove the temporal AODs we create.	
-	reader->SwitchOffWriteStdAOD();	
+	reader->SwitchOnCleanStdAOD();	
 	
 	reader->Print("");
 	
