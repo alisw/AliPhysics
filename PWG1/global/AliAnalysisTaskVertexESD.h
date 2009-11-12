@@ -48,7 +48,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
 
   AliAnalysisTaskVertexESD(const AliAnalysisTaskVertexESD&); // not implemented
   AliAnalysisTaskVertexESD& operator=(const AliAnalysisTaskVertexESD&); // not implemented
-  AliESDVertex* ReconstructPrimaryVertexTPC();
+  AliESDVertex* ReconstructPrimaryVertexTPC() const;
   
   ClassDef(AliAnalysisTaskVertexESD,1); // primary vertex analysis
 };
