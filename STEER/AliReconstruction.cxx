@@ -1250,8 +1250,14 @@ void AliReconstruction::InitRawReader(const char* input)
   // set the input in case of raw data
   if (input) fRawInput = input;
   fRawReader = AliRawReader::Create(fRawInput.Data());
-  if (!fRawReader)
-    AliInfo("Reconstruction will run over digits");
+  if (!fRawReader) {
+    if (fRawInput.IsNull()) {
+      AliInfo("Reconstruction will run over digits");
+    }
+    else {
+      AliFatal("Can not create raw-data reader ! Exiting..."); 
+    }
+  }
 
   if (!fEquipIdMap.IsNull() && fRawReader)
     fRawReader->LoadEquipmentIdsMap(fEquipIdMap);
