@@ -63,6 +63,9 @@ class AliFlowEventSimpleMaker {
   void  SetMaxMult(Int_t multmax) {this->fMaxMult = multmax; }
   Int_t GetMaxMult() const        {return this->fMaxMult; }
 
+  void SetSubeventEtaRange(Double_t minA,Double_t maxA,Double_t minB,Double_t maxB) 
+    {this->fEtaMinA = minA; this->fEtaMaxA = maxA;this->fEtaMinB = minB; this->fEtaMaxB = maxB;};
+
  private:
   AliFlowEventSimpleMaker(const AliFlowEventSimpleMaker& anAnalysis);            //copy constructor
   AliFlowEventSimpleMaker& operator=(const AliFlowEventSimpleMaker& anAnalysis); //assignment operator
@@ -77,7 +80,11 @@ class AliFlowEventSimpleMaker {
   Int_t     fMinMult;              // Minimum multiplicity from tracks selected using CORRFW
   Int_t     fMaxMult;              // Maximum multiplicity from tracks selected using CORRFW
 
-     
+  Double_t  fEtaMinA;              // minimum eta of subevent A eta range
+  Double_t  fEtaMaxA;              // maximum eta of subevent A eta range
+  Double_t  fEtaMinB;              // minimum eta of subevent B eta range
+  Double_t  fEtaMaxB;              // maximum eta of subevent B eta range
+
   ClassDef(AliFlowEventSimpleMaker,0)    // macro for rootcint
 };
  

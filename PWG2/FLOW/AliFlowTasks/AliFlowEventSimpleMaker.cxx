@@ -50,7 +50,11 @@ AliFlowEventSimpleMaker::AliFlowEventSimpleMaker() :
   fEllipticFlowValue(0.),
   fMultiplicityOfEvent(1000000000),
   fMinMult(0),
-  fMaxMult(1000000000)
+  fMaxMult(1000000000),
+  fEtaMinA(-1.0),
+  fEtaMaxA(-0.01),
+  fEtaMinB(0.01),
+  fEtaMaxB(1.0)
 {
   //constructor
 }
@@ -191,19 +195,29 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
 	AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
 	pTrack->SetPt(pParticle->Pt() );
 	pTrack->SetEta(pParticle->Eta() );
-	pTrack->SetPhi(pParticle->Phi() );
-	
+	if (fEllipticFlowValue!=0.) 
+	  { pTrack->SetPhi(pParticle->Phi()-fEllipticFlowValue*TMath::Sin(2*(pParticle->Phi()-fMCReactionPlaneAngle))); cout<<"Added flow to particle"<<endl; }
+	else { pTrack->SetPhi(pParticle->Phi() ); }	
+
 	//marking the particles used for int. flow:
 	if(bPassedRPFlowCuts) {  
 	  pTrack->SetForRPSelection(kTRUE);
 	  iSelParticlesRP++;
+	  // assign particles to subevents
+	  if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) {
+	    pTrack->SetForSubevent(0);
+	  }
+	  if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) {
+	    pTrack->SetForSubevent(1);
+	  }
+
 	}
 	//marking the particles used for diff. flow:
 	if(bPassedPOIFlowCuts) {
 	  pTrack->SetForPOISelection(kTRUE);
 	  iSelParticlesPOI++;
 	}
-	//adding a particles which were used either for int. or diff. flow to the list
+	//adding particles which were used either for int. or diff. flow to the list
 	pEvent->TrackCollection()->Add(pTrack);
 	iGoodTracks++;
       }//end of if(bPassedIntFlowCuts || bPassedDiffFlowCuts) 
