@@ -522,9 +522,9 @@ void AliEMCALRecPoint::EvalDistanceToBadChannels(AliCaloCalibPedestal* caloped)
 	TVector3 dR;	
 	TVector3 cellpos;
 
-	Int_t minDist = 100000;
-	Int_t dist = 0;
-	Int_t absId = -1;
+	Float_t minDist = 100000;
+	Float_t    dist = 0;
+	Int_t     absId =-1;
 	
 	//Loop on tower status map 
 	for(Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++){
