@@ -45,6 +45,7 @@
 #pragma link C++ class AliITSVertexerFixed+;
 #pragma link C++ class  AliITSMeanVertexer+;
 #pragma link C++ class  AliITSZPoint+;
+#pragma link C++ class  AliITSRecPointContainer+;
 
 // Tasks
 #pragma link C++ class AliITSreconstruction+;

@@ -13,12 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <TTree.h>
+#include "AliRunLoader.h"
 #include "AliESDVertex.h"
 #include "AliLog.h"
 #include "AliStrLine.h"
 #include "AliTracker.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSRecPoint.h"
+#include "AliITSRecPointContainer.h"
 #include "AliITSgeomTGeo.h"
 #include "AliVertexerTracks.h"
 #include "AliITSVertexer3D.h"
@@ -467,11 +469,6 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   // considered. Straight lines (=tracklets)are formed. 
   // The tracklets are processed in Prepare3DVertex
 
-  if(!GetDetTypeRec())AliFatal("DetTypeRec pointer has not been set");
-
-  TTree *tR = itsClusterTree;
-  fDetTypeRec->ResetRecPoints();
-  fDetTypeRec->SetTreeAddressR(tR);
   TClonesArray *itsRec  = 0;
   if(optCuts==0) fZHisto->Reset();
  // gc1 are local and global coordinates for layer 1
@@ -480,12 +477,10 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   // gc2 are local and global coordinates for layer 2
   Float_t gc2f[3]={0.,0.,0.};
   Double_t gc2[3]={0.,0.,0.};
-
-  itsRec = fDetTypeRec->RecPoints();
-  TBranch *branch = NULL;
-  branch = tR->GetBranch("ITSRecPoints");
-  if(!branch){
-    AliWarning("Null pointer for RecPoints branch, vertex not calculated");
+  AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
+  itsRec=rpcont->FetchClusters(0,itsClusterTree);
+  if(!rpcont->IsSPDActive()){
+    AliWarning("No SPD rec points found, 3D vertex not calculated");
     return -1;
   }
 
@@ -521,17 +516,15 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   Int_t firstL1 = AliITSgeomTGeo::GetModuleIndex(1,1,1);
   Int_t lastL1 = AliITSgeomTGeo::GetModuleIndex(2,1,1)-1;
   for(Int_t module= firstL1; module<=lastL1;module++){  // count number of recopints on layer 1
-    branch->GetEvent(module);
+    itsRec=rpcont->UncheckedGetClusters(module);
     nrpL1+= itsRec->GetEntries();
-    fDetTypeRec->ResetRecPoints();
   }
   //By default firstL2=80 and lastL2=239
   Int_t firstL2 = AliITSgeomTGeo::GetModuleIndex(2,1,1);
   Int_t lastL2 = AliITSgeomTGeo::GetModuleIndex(3,1,1)-1;
   for(Int_t module= firstL2; module<=lastL2;module++){  // count number of recopints on layer 2
-    branch->GetEvent(module);
+    itsRec=rpcont->UncheckedGetClusters(module);
     nrpL2+= itsRec->GetEntries();
-    fDetTypeRec->ResetRecPoints();
   }
   if(nrpL1 == 0 || nrpL2 == 0){
     AliDebug(1,Form("No RecPoints in at least one SPD layer (%d %d)",nrpL1,nrpL2));
@@ -550,20 +543,13 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   for(Int_t modul1= firstL1; modul1<=lastL1;modul1++){   // Loop on modules of layer 1
     if(!fUseModule[modul1]) continue;
     UShort_t ladder=int(modul1/4)+1; // ladders are numbered starting from 1
-    branch->GetEvent(modul1);
-    Int_t nrecp1 = itsRec->GetEntries();
-    static TClonesArray prpl1("AliITSRecPoint",nrecp1);
-    prpl1.SetOwner();
-    for(Int_t j=0;j<nrecp1;j++){
-      AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);
-      new(prpl1[j])AliITSRecPoint(*recp);
-    }
-    fDetTypeRec->ResetRecPoints();
+    TClonesArray *prpl1=rpcont->UncheckedGetClusters(modul1);
+    Int_t nrecp1 = prpl1->GetEntries();
     for(Int_t j=0;j<nrecp1;j++){
       if(j>kMaxCluPerMod) continue;
       UShort_t idClu1=modul1*kMaxCluPerMod+j;
       if(fUsedCluster.TestBitNumber(idClu1)) continue;
-      AliITSRecPoint *recp1 = (AliITSRecPoint*)prpl1.At(j);
+      AliITSRecPoint *recp1 = (AliITSRecPoint*)prpl1->At(j);
       recp1->GetGlobalXYZ(gc1f);
       for(Int_t ico=0;ico<3;ico++)gc1[ico]=gc1f[ico];
 
@@ -575,7 +561,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
  	  if(ladmod>AliITSgeomTGeo::GetNLadders(2)) ladmod=ladmod-AliITSgeomTGeo::GetNLadders(2);
 	  Int_t modul2=AliITSgeomTGeo::GetModuleIndex(2,ladmod,k+1);
 	  if(!fUseModule[modul2]) continue;
-	  branch->GetEvent(modul2);
+	  itsRec=rpcont->UncheckedGetClusters(modul2);
 	  Int_t nrecp2 = itsRec->GetEntries();
 	  for(Int_t j2=0;j2<nrecp2;j2++){
 	    if(j2>kMaxCluPerMod) continue;
@@ -652,11 +638,9 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	    new(fLines[nolines++])AliStrLine(gc1,sigmasq,wmat,gc2,kTRUE,idClu1,idClu2);
 
 	  }
-	  fDetTypeRec->ResetRecPoints();
 	}
       }
     }
-    prpl1.Clear();
   }
   if(nolines == 0)return -2;
   return nolines;

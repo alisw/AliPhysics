@@ -20,8 +20,8 @@
 #include<TTree.h>
 #include "AliESDVertex.h"
 #include "AliITSgeomTGeo.h"
-#include "AliITSDetTypeRec.h"
 #include "AliITSRecPoint.h"
+#include "AliITSRecPointContainer.h"
 #include "AliITSZPoint.h"
 
 /////////////////////////////////////////////////////////////////
@@ -189,11 +189,6 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   // Defines the AliESDVertex for the current event
   fCurrentVertex = 0;
   ResetVertex();
-
-  if(!GetDetTypeRec())AliFatal("DetTypeRec pointer has not been set");
-
-  TTree *tR = itsClusterTree;
-  fDetTypeRec->SetTreeAddressR(tR);
   TClonesArray *itsRec  = 0;
   // lc1 and gc1 are local and global coordinates for layer 1
   Float_t lc1[3]; for(Int_t ii=0; ii<3; ii++) lc1[ii]=0.;
@@ -201,11 +196,9 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   // lc2 and gc2 are local and global coordinates for layer 2
   Float_t lc2[3]; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
   Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
-
-  itsRec = fDetTypeRec->RecPoints();
-  TBranch *branch;
-  branch = tR->GetBranch("ITSRecPoints");
-  if(!branch){
+  AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
+  itsRec=rpcont->FetchClusters(0,itsClusterTree);
+  if(!rpcont->IsSPDActive()){
     AliWarning("Null pointer for RecPoints branch, vertex not calculated");
     ResetHistograms();
     fCurrentVertex = new AliESDVertex(0.,5.3,-2);
@@ -217,15 +210,13 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
 
   // By default fFirstL1=0 and fLastL1=79
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
-    branch->GetEvent(module);
+    itsRec=rpcont->UncheckedGetClusters(module);
     nrpL1+= itsRec->GetEntries();
-    fDetTypeRec->ResetRecPoints();
   }
   //By default fFirstL2=80 and fLastL2=239
   for(Int_t module= fFirstL2; module<=fLastL2;module++){
-    branch->GetEvent(module);
+    itsRec=rpcont->UncheckedGetClusters(module);
     nrpL2+= itsRec->GetEntries();
-    fDetTypeRec->ResetRecPoints();
   }
   if(nrpL1 == 0 || nrpL2 == 0){
     AliDebug(1,Form("No RecPoints in at least one SPD layer (%d %d)",nrpL1,nrpL2));
@@ -258,23 +249,10 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   for(Int_t modul1= fFirstL1; modul1<=fLastL1;modul1++){   // Loop on modules of layer 1
     if(!fUseModule[modul1]) continue;
     UShort_t ladder=int(modul1/4)+1;  // ladders are numbered starting from 1
-    branch->GetEvent(modul1);
-    Int_t nrecp1 = itsRec->GetEntries();
-    static TClonesArray prpl1("AliITSRecPoint",nrecp1);
-    prpl1.SetOwner();
-    for(Int_t j=0;j<nrecp1;j++){
-      AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);
-      new(prpl1[j])AliITSRecPoint(*recp);
-    }
-    fDetTypeRec->ResetRecPoints();
+    TClonesArray *prpl1=rpcont->UncheckedGetClusters(modul1);
+    Int_t nrecp1 = prpl1->GetEntries();
     for(Int_t j1=0;j1<nrecp1;j1++){
-      AliITSRecPoint *recp = (AliITSRecPoint*)prpl1.At(j1);
-      /*
-      lc1[0]=recp->GetDetLocalX();
-      lc1[2]=recp->GetDetLocalZ();
-      geom->LtoG(modul1,lc1,gc1);
-      // Global coordinates of this recpoints
-      */
+      AliITSRecPoint *recp = (AliITSRecPoint*)prpl1->At(j1);
       recp->GetGlobalXYZ(gc1);
       gc1[0]-=GetNominalPos()[0]; // Possible beam offset in the bending plane
       gc1[1]-=GetNominalPos()[1]; //   "               "
@@ -289,15 +267,10 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
 	  if(ladmod>AliITSgeomTGeo::GetNLadders(2)) ladmod=ladmod-AliITSgeomTGeo::GetNLadders(2);
 	  Int_t modul2=AliITSgeomTGeo::GetModuleIndex(2,ladmod,k+1);
 	  if(!fUseModule[modul2]) continue;
-	  branch->GetEvent(modul2);
+	  itsRec=rpcont->UncheckedGetClusters(modul2);
 	  Int_t nrecp2 = itsRec->GetEntries();
 	  for(Int_t j2=0;j2<nrecp2;j2++){
 	    recp = (AliITSRecPoint*)itsRec->At(j2);
-	    /*
-	    lc2[0]=recp->GetDetLocalX();
-	    lc2[2]=recp->GetDetLocalZ();
-	    geom->LtoG(modul2,lc2,gc2);
-	    */
 	    recp->GetGlobalXYZ(gc2);
 	    gc2[0]-=GetNominalPos()[0];
 	    gc2[1]-=GetNominalPos()[1];
@@ -322,11 +295,9 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
 	      fZCombc->Fill(zr0);
 	    }
 	  }
-	  fDetTypeRec->ResetRecPoints();
 	}
       }
     }
-    prpl1.Clear(); 
   }
 
   points.Sort();

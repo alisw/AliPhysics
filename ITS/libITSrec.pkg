@@ -99,7 +99,8 @@ SRCS = 	AliITSDetTypeRec.cxx \
                 AliITSQASDDChecker.cxx \
                 AliITSQASSDChecker.cxx \
                 AliITSQASSDRefData.cxx \
-		AliITSTrackleterSPDEff.cxx 
+		AliITSTrackleterSPDEff.cxx \
+		AliITSRecPointContainer.cxx 
 
 
 HDRS:=  $(SRCS:.cxx=.h)

@@ -287,7 +287,8 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   param->SetExtendedEtaAcceptance(kFALSE);
   // allow to skip layer if no cluster and no bad
   param->SetAllowProlongationWithEmptyRoad(kFALSE);
-
+  // set event specie
+  param->SetEventSpecie(AliRecoParam::kHighMult);
 
   param->fMaxSnp = 0.95;
 
@@ -389,7 +390,8 @@ AliITSRecoParam *AliITSRecoParam::GetLowFluxParam()
   param->SetExtendedEtaAcceptance(kTRUE);
   // allow to skip layer if no cluster and no bad
   param->SetAllowProlongationWithEmptyRoad(kTRUE);
-
+  // set event specie
+  param->SetEventSpecie(AliRecoParam::kLowMult);
 
   param->fMaxSnp = 0.95;
 
@@ -505,6 +507,9 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
   param->SetFindV0s(kFALSE);
   param->SetAddVirtualClustersInDeadZone(kFALSE);
   param->SetUseAmplitudeInfo(kFALSE);
+
+  // set event specie
+  param->SetEventSpecie(AliRecoParam::kCosmic);
 
   // full use of bads from OCDB
   param->SetUseBadZonesFromOCDB(kTRUE);
