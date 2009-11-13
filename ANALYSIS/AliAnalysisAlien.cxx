@@ -1986,7 +1986,8 @@ void AliAnalysisAlien::WriteExecutable()
       out << "echo \"############## which aliroot : ##############\"" << endl;
       out << "which aliroot" << endl;
       out << "echo \"=========================================\"" << endl << endl;
-//      if (TestBit(AliAnalysisGrid::kTest)) out << "root ";
+      // Make sure we can properly compile par files
+      if (TObject::TestBit(AliAnalysisGrid::kUsePars)) out << "export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH" << endl;
       out << fExecutableCommand << " "; 
       out << fAnalysisMacro.Data() << endl << endl;
       out << "echo \"======== " << fAnalysisMacro.Data() << " finished ========\"" << endl;
