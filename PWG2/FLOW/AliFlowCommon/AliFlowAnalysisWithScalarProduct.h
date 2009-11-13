@@ -39,9 +39,7 @@ class AliFlowAnalysisWithScalarProduct {
    void    Finish();                                     //saves histograms
    void    WriteHistograms(TString* outputFileName);     //writes histograms locally
    void    WriteHistograms(TString outputFileName);      //writes histograms locally
-
-   void    SetSubEventEtaRange(Double_t min, Double_t max) {this->fEtaMin = min; this->fEtaMax = max; };
-
+   
    void    SetDebug(Bool_t kt)   { this->fDebug = kt ; }
    Bool_t  GetDebug() const      { return this->fDebug ; }
 
@@ -73,8 +71,6 @@ class AliFlowAnalysisWithScalarProduct {
    AliFlowAnalysisWithScalarProduct& operator=(const AliFlowAnalysisWithScalarProduct& anAnalysis); //assignment operator 
       
    Int_t      fEventNumber;      // event counter
-   Double_t   fEtaMin;           // eta range
-   Double_t   fEtaMax;           // eta range
    Bool_t     fDebug ;           // flag for analysis: more print statements
 
    TList*     fHistList;         //list to hold all output histograms  
