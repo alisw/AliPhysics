@@ -177,14 +177,14 @@ void AliZDCReco::Print(Option_t *) const {
   //
   printf(" ****************** AliZDCReco object ******************\n"
   	 "       ---------------   side A ---------------\n"
-	 " E_{ZN} = %f TeV, E_{ZP} = %f TeV, "
-	 " E_{ZEM1} =  %f TeV,  E_{ZEM2} = %f TeV\n "
-	 " N_{spec n}^{DET} = %d, N_{spec p}^{DET} = %d,"
-	 " N_{part} = %d, b = %1.4f fm\n"
+	 " E_ZN = %1.2f TeV, E_ZP = %1.2f TeV, "
+	 " E_ZEM1 =  %1.2f TeV,  E_ZEM2 = %1.2f TeV\n "
+	 " N_spec_n = %d, N_spec_p = %d,"
+	 " N_part = %d, b = %1.4f fm\n"
   	 "       ---------------   side C ---------------\n"
-	 " E_{ZN} = %f TeV, E_{ZP} = %f TeV\n "
-	 " N_{spec n}^{DET} = %d, N_{spec p}^{DET} = %d,"
-	 " N_{part} = %d, b = %1.4f fm\n"
+	 " E_ZN = %1.2f TeV, E_ZP = %1.2f TeV, "
+	 " N_spec_n = %d, N_spec_p = %d,"
+	 " N_part = %d, b = %1.4f fm\n"
          " *******************************************************\n",
 	 fZN2Energy[0]/1000., fZP2Energy[0]/1000.,
 	 fZEM1signal[0]/1000.,fZEM2signal[0]/1000.,

@@ -1150,7 +1150,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
 		    
   const Int_t kBufferSize = 4000;
   clustersTree->Branch("ZDC", "AliZDCReco", &reco, kBufferSize);
-  reco->Print("");
+  //reco->Print("");
   // write the output tree
   clustersTree->Fill();
 }

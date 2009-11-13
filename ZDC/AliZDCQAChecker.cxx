@@ -41,7 +41,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
   for(Int_t specie = 0; specie<AliRecoParam::kNSpecies; specie++){
     test[specie] = 1.0; 
     ntests[specie] = 0; 
-    printf("\tAliZDCQAChecker -> specie %d\n\n",specie);
+    //printf("\tAliZDCQAChecker -> specie %d\n\n",specie);
     
     if(!AliQAv1::Instance()->IsEventSpecieSet(specie))  continue; 
     // ====================================================================

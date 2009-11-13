@@ -241,12 +241,12 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hRawPMZEM2, 5, !expert, image);
   // 
   // ------------------- LOW GAIN CHAIN ---------------------------
-  TH1F * hRawPMCZNClg = new TH1F("hRawPMCZNClg", "Raw common lg ZNC PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  TH1F * hRawPMCZNAlg = new TH1F("hRawPMCZNAlg", "Raw common lg ZNA PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  TH1F * hRawPMCZPClg = new TH1F("hRawPMCZPClg", "Raw common lg ZPC PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  TH1F * hRawPMCZPAlg = new TH1F("hRawPMCZPAlg", "Raw common lg ZPA PMT;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  TH1F * hRawPMZEM1lg = new TH1F("hRawPMZEM1lg", "Raw ZEM1 PMT lg;Amplitude [ADC counts];Counts",100, 0., 4000.);
-  TH1F * hRawPMZEM2lg = new TH1F("hRawPMZEM2lg", "Raw ZEM2 PMT lg;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hRawPMCZNClg = new TH1F("hRawPMCZNClg", "Raw common lg ZNC PMT;Amplitude [ADC counts];Counts",100, 0., 1000.);
+  TH1F * hRawPMCZNAlg = new TH1F("hRawPMCZNAlg", "Raw common lg ZNA PMT;Amplitude [ADC counts];Counts",100, 0., 1000.);
+  TH1F * hRawPMCZPClg = new TH1F("hRawPMCZPClg", "Raw common lg ZPC PMT;Amplitude [ADC counts];Counts",100, 0., 1000.);
+  TH1F * hRawPMCZPAlg = new TH1F("hRawPMCZPAlg", "Raw common lg ZPA PMT;Amplitude [ADC counts];Counts",100, 0., 1000.);
+  TH1F * hRawPMZEM1lg = new TH1F("hRawPMZEM1lg", "Raw ZEM1 PMT lg;Amplitude [ADC counts];Counts",100, 0., 1000.);
+  TH1F * hRawPMZEM2lg = new TH1F("hRawPMZEM2lg", "Raw ZEM2 PMT lg;Amplitude [ADC counts];Counts",100, 0., 1000.);
   Add2RawsList(hRawPMCZNClg, 6, expert, !image);
   Add2RawsList(hRawPMCZNAlg, 7, expert, !image);
   Add2RawsList(hRawPMCZPClg, 8, expert, !image);
