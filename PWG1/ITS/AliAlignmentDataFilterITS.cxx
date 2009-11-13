@@ -22,6 +22,8 @@
 /////////////////////////////////////////////////////////////
 
 #include <TTree.h>
+#include <TFile.h>
+#include <TSystem.h>
 #include <TChain.h>
 #include <TNtuple.h>
 #include <TList.h>
@@ -32,8 +34,10 @@
 #include <TGeoManager.h>
 
 #include "AliLog.h"
+#include "AliCDBEntry.h"
 #include "AliGeomManager.h"
 #include "AliITSReconstructor.h"
+#include "AliITSAlignMille2Module.h"
 #include "AliITSgeomTGeo.h"
 #include "AliTrackPointArray.h"
 #include "AliESDInputHandler.h"
@@ -284,17 +288,16 @@ void AliAlignmentDataFilterITS::CreateOutputObjects()
   fListOfHistos->Add(fntCosmicMatching);
 
   fspTree = new TTree("spTree","Tree with ITS track points");
-  const AliTrackPointArray *array = 0;
-  Float_t curv,curverr,runNumber;
-  const TObjString *itsaligndata = 0;
-  const TObjString *itscalibrespsdd = 0;
+  AliTrackPointArray *array = 0;
+  Float_t curv=0,curverr=0,runNumber=0;
+  TObjString *itsaligndata = 0;
+  TObjString *itscalibrespsdd = 0;
   fspTree->Branch("SP","AliTrackPointArray",&array);
   fspTree->Branch("curv",&curv);
   fspTree->Branch("curverr",&curverr);
   fspTree->Branch("run",&runNumber);
   fspTree->Branch("ITSAlignData",&itsaligndata);
   fspTree->Branch("ITSCalibRespSDD",&itscalibrespsdd);
-  
 
   return;
 }
@@ -919,4 +922,233 @@ void AliAlignmentDataFilterITS::Terminate(Option_t */*option*/)
 
   return;
 }
+//-------------------------------------------------------------------------------
+const AliITSRecoParam *AliAlignmentDataFilterITS::GetRecoParam() const 
+{
+  //
+  // Return the ITSRecoParam object
+  //
+  if(AliITSReconstructor::GetRecoParam()) {
+    return AliITSReconstructor::GetRecoParam();
+  } else if(fITSRecoParam) {
+    return fITSRecoParam;
+  } else return NULL;
+}
+//--------------------------------------------------------------------------------
+Int_t AliAlignmentDataFilterITS::WriteTrackPointsInIdealGeom(Char_t *fin, 
+							     Char_t *fout,
+							     Char_t *fmis,
+							     Char_t *fgeo,
+							     Bool_t prn)
+{
+  //
+  // Convert AliTrackPoints in fin, reconstructed with fmis, back
+  // to ideal geometry
+  //
+  // M. Lunardon
+  //
 
+
+  TGeoHMatrix deltahm;
+  TGeoHMatrix hcov;
+
+  // Load geometry
+  if (gSystem->AccessPathName(fgeo)) {
+    printf("couldn't find geometry file %s - skipping...\n",fmis);
+    return -1;
+  }
+  
+  TFile *geofile=TFile::Open(fgeo);
+  TGeoManager *fgGeometry=NULL;
+
+  fgGeometry=(TGeoManager*)geofile->Get("ALICE");
+
+  if (!fgGeometry)
+    fgGeometry=(TGeoManager*)geofile->Get("Geometry");
+
+  if (!fgGeometry) {
+    AliCDBEntry *entry = (AliCDBEntry*)geofile->Get("AliCDBEntry");
+    if (entry)
+      fgGeometry = (TGeoManager*)entry->GetObject();
+  }
+
+  if (!fgGeometry) return -1;
+  AliGeomManager::SetGeometry(fgGeometry);
+  if(!AliGeomManager::GetGeometry()) return -1;
+  
+  
+  // open alignment file
+  if (gSystem->AccessPathName(fmis)) {
+    printf("couldn't open alignment file %s - skipping...\n",fmis);
+    return -2;
+  }
+  TFile *pref = TFile::Open(fmis);
+  if (!pref->IsOpen()) return -2;
+  
+  
+  /// apply alignment to ideal geometry
+  TClonesArray *prea=(TClonesArray*)pref->Get("ITSAlignObjs");
+  if (!prea) {
+    if (pref->Get("AliCDBEntry"))
+      prea = (TClonesArray*) ((AliCDBEntry*)pref->Get("AliCDBEntry"))->GetObject();
+  }
+  if (!prea) return -3;  
+  Int_t nprea=prea->GetEntriesFast();
+  printf("Array of input misalignments with %d entries\n",nprea);
+  AliGeomManager::ApplyAlignObjsToGeom(*prea); // apply all levels of objs
+  
+  AliTrackPointArray *tpain=NULL;
+  TFile *tpainfile=NULL;
+  TTree *treein=NULL;
+  AliTrackPoint point; 
+  AliITSAlignMille2Module *m2[2200];
+  for (Int_t i=0; i<2198; i++)
+    m2[i]=new AliITSAlignMille2Module(AliITSAlignMille2Module::GetVolumeIDFromIndex(i));  
+  
+  // open input file
+  if (gSystem->AccessPathName(fin)) {
+    printf("couldn't open file %s - skipping...\n",fin);
+    return -4;
+  }
+  tpainfile = TFile::Open(fin);
+  if (!tpainfile->IsOpen()) return -4;
+  
+  treein=(TTree*)tpainfile->Get("spTree");
+  if (!treein) return -5;
+  Float_t curv,curverr,runNumber;
+  TObjString *itsaligndata=0;
+  TObjString *itscalibrespsdd = 0;
+  treein->SetBranchAddress("SP", &tpain);
+  treein->SetBranchAddress("curv", &curv);
+  treein->SetBranchAddress("curverr", &curverr);
+  treein->SetBranchAddress("run",&runNumber);
+  treein->SetBranchAddress("ITSAlignData",&itsaligndata);
+  treein->SetBranchAddress("ITSCalibRespSDD",&itscalibrespsdd);
+
+  int ntrks=treein->GetEntries();
+  printf("Reading %d tracks from %s\n",ntrks,fin);
+  
+  
+  // open output file
+  TFile *pointsFile = TFile::Open(fout,"RECREATE");
+  if (!pointsFile || !pointsFile->IsOpen()) {
+    printf("Can't open output file %s !",fout);
+    return -6;
+  }
+  AliTrackPointArray *array = new AliTrackPointArray();
+  
+  // new!
+  TTree *treeout=(TTree*)treein->Clone("spTree");
+  treeout->Reset();
+  treeout->SetBranchAddress("SP", &array);
+  treeout->SetBranchAddress("curv", &curv);
+  treeout->SetBranchAddress("curverr", &curverr);
+  treeout->SetBranchAddress("run",&runNumber);
+  treeout->SetBranchAddress("ITSAlignData",&itsaligndata);
+  treeout->SetBranchAddress("ITSCalibRespSDD",&itscalibrespsdd);
+
+  // tracks main loop
+  for (Int_t it=0; it<ntrks; it++) {    
+    if (!(it%5000) ) printf("...processing track n. %d\n",it);
+    
+    treein->GetEvent(it);
+    
+    //////////////////////////////
+    
+    AliTrackPointArray *atp=tpain;
+    AliTrackPointArray *atps=NULL;
+    Int_t npts=atp->GetNPoints();
+    
+    AliTrackPoint p;
+    // check points in specific places
+    
+    // build a new track
+    atps=new AliTrackPointArray(npts);
+        
+    Int_t npto=0;
+    for (int i=0; i<npts; i++) {
+      atp->GetPoint(p,i);
+      
+      UShort_t volid=atp->GetVolumeID()[i];
+      Int_t index=AliITSAlignMille2Module::GetIndexFromVolumeID(volid);
+      
+      
+      // dealign point
+      // get MODIFIED matrix
+      TGeoHMatrix *svMatrix = m2[index]->GetSensitiveVolumeMatrix(p.GetVolumeID());
+      //TGeoHMatrix *svOrigMatrix = mm->GetSensitiveVolumeOrigGlobalMatrix(p.GetVolumeID());
+      
+      Double_t pg[3],pl[3];
+      pg[0]=p.GetX();
+      pg[1]=p.GetY();
+      pg[2]=p.GetZ();
+      if (prn) printf("Global coordinates of measured point : X=%f  Y=%f  Z=%f \n",pg[0],pg[1],pg[2]);
+      svMatrix->MasterToLocal(pg,pl);
+      
+      // check that things went OK: local y should be 0.
+      if(TMath::Abs(pl[1])>1.e-6) {
+	printf("AliAlignmentDataFilterITS::WriteTrackPointsInIdealGeom: ERROR, local y = %f (should be zero)\n",pl[1]);
+	return -7;
+      }
+
+      if (prn) printf("Local coordinates of measured point : X=%f  Y=%f  Z=%f \n",pl[0],pl[1],pl[2]);
+      
+      // update covariance matrix
+      TGeoHMatrix hcov;
+      Double_t hcovel[9];
+      hcovel[0]=(Double_t)(p.GetCov()[0]);
+      hcovel[1]=(Double_t)(p.GetCov()[1]);
+      hcovel[2]=(Double_t)(p.GetCov()[2]);
+      hcovel[3]=(Double_t)(p.GetCov()[1]);
+      hcovel[4]=(Double_t)(p.GetCov()[3]);
+      hcovel[5]=(Double_t)(p.GetCov()[4]);
+      hcovel[6]=(Double_t)(p.GetCov()[2]);
+      hcovel[7]=(Double_t)(p.GetCov()[4]);
+      hcovel[8]=(Double_t)(p.GetCov()[5]);
+      hcov.SetRotation(hcovel);
+      // now rotate in local system
+      hcov.Multiply(svMatrix);
+      hcov.MultiplyLeft(&svMatrix->Inverse());
+      // now hcov is LOCAL COVARIANCE MATRIX
+      
+      /// get original matrix of sens. vol.
+      TGeoHMatrix *svOrigMatrix = m2[index]->GetSensitiveVolumeOrigGlobalMatrix(p.GetVolumeID());
+      // modify global coordinates according with pre-aligment
+      svOrigMatrix->LocalToMaster(pl,pg);
+      // now rotate in local system
+      hcov.Multiply(&svOrigMatrix->Inverse());
+      hcov.MultiplyLeft(svOrigMatrix);
+      // hcov is back in GLOBAL RF
+      Float_t pcov[6];
+      pcov[0]=hcov.GetRotationMatrix()[0];
+      pcov[1]=hcov.GetRotationMatrix()[1];
+      pcov[2]=hcov.GetRotationMatrix()[2];
+      pcov[3]=hcov.GetRotationMatrix()[4];
+      pcov[4]=hcov.GetRotationMatrix()[5];
+      pcov[5]=hcov.GetRotationMatrix()[8];
+      
+      p.SetXYZ(pg[0],pg[1],pg[2],pcov);
+      if (prn) printf("New global coordinates of measured point : X=%f  Y=%f  Z=%f \n",pg[0],pg[1],pg[2]);
+      atps->AddPoint(npto,&p);
+      if (prn) printf("Adding point[%d] = ( %f , %f , %f )     volid = %d\n",npto,atps->GetX()[npto],atps->GetY()[npto],atps->GetZ()[npto],atps->GetVolumeID()[npto] );
+      if (prn) p.Print("");
+      
+      npto++;
+    }
+    
+    
+    ////////////////////////////////////////////////////////////
+    array = atps;
+    treeout->Fill();
+    
+    delete atps;
+    atps=NULL;
+    
+  } // end loop on tracks
+  
+  pointsFile->Write();
+  pointsFile->Close();
+  tpainfile->Close();
+  
+  return 0;
+}
