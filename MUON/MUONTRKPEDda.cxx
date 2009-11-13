@@ -240,7 +240,7 @@ int main(Int_t argc, const char **argv)
   status=daqDA_DB_getFile(dbfile,dbfile);
   if(status) {printf(" Failed  : Configuration file %s is missing, status = %d\n",dbfile,status); return -1; }
   else printf(" *** Copy ascii config file: %s from DetDB to working directory and reading ...*** \n",dbfile);
-  muonPedestal->Load_config(dbfile);  
+  muonPedestal->LoadConfig(dbfile);  
     } 
 
   // Rawdeader, RawStreamHP
