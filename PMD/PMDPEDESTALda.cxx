@@ -7,7 +7,7 @@ Reference Run:/afs/cern.ch/user/s/sjena/public/run83496.raw
 Run Type: PEDESTAL
 DA Type: LDC
 Number of events needed: 1000
-Input Files: Run0_999999999_v0_s0.root
+Input Files: PMD/Calib/Mapping/Run0_999999999_v0_s0.root
 Output Files: pmd_ped.root, to be exported to the DAQ FXS, pedestal230*.ped
 Trigger types used: PHYSICS_EVENT
 
@@ -118,10 +118,10 @@ int main(int argc, char **argv) {
 	    return -1;
 	  }
       }
-    status = daqDA_DB_getFile("PMD/Calib/Mapping","localOCDB/PMD/Calib/Mapping/Run0_999999999_v0_s0.root");
+    status = daqDA_DB_getFile("PMD/Calib/Mapping/Run0_999999999_v0_s0.root","localOCDB/PMD/Calib/Mapping/Run0_999999999_v0_s0.root");
     if (status)
       {
-	printf("Failed to get PMD-Mapping file (PMD/Calib/Mapping) from DAQdetDB, status=%d\n", status);
+	printf("Failed to get PMD-Mapping file (PMD/Calib/Mapping/Run0_999999999_v0_s0.root) from DAQdetDB, status=%d\n", status);
 	return -1;
       }
 
