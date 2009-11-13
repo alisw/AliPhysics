@@ -20,7 +20,7 @@
 #include "AliMUONVStore.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
-
+#include "AliMpConstants.h"
 #include <TString.h>
 #include <TTimeStamp.h>
 #include <TMath.h>
@@ -49,26 +49,25 @@ ClassImp(AliMUONPedestal)
 //______________________________________________________________________________
 AliMUONPedestal::AliMUONPedestal()
 : TObject(),
-fN(0),
+//fN(0),
 fNEvents(0),
 fRunNumber(0),
 fNChannel(0),
 fNManu(0),
-fNManu_config(0),
+fNManuConfig(0),
 fConfig(1),
 fErrorBuspatchTable(new AliMUON2DMap(kFALSE)),
 fManuBuspatchTable(new AliMUON2DMap(kFALSE)),
 fManuBPoutofconfigTable(new AliMUON2DMap(kFALSE)),
 fDate(new TTimeStamp()),
 fFilcout(0),
+fHistoFileName(),
 fPedestalStore(new AliMUON2DMap(kTRUE)),
-fIndex(-1)
+fIndex(-1),
+fPrefixDA()
 {
 /// Default constructor
-  sprintf(fHistoFileName," ");
-  sprintf(fprefixDA," "); 
 }
-//  AliMUONPedestal& operator=(const AliMUONPedestal& other); Copy ctor
 
 //______________________________________________________________________________
 AliMUONPedestal::~AliMUONPedestal()
@@ -81,26 +80,48 @@ AliMUONPedestal::~AliMUONPedestal()
 }
 
 //______________________________________________________________________________
-void AliMUONPedestal::Load_config(char* dbfile)
+const char* 
+AliMUONPedestal::GetHistoFileName() const
+{
+  /// Return the name of file we use to store histograms
+  return fHistoFileName.Data();
+}
+
+//______________________________________________________________________________
+void AliMUONPedestal::LoadConfig(const char* dbfile)
 {
   /// Load MUONTRK configuration from ascii file "dbfile" (in DetDB)
 
   Int_t manuId;
   Int_t busPatchId;
 
-  ifstream fileinit(dbfile,ios::in);
-  while (!fileinit.eof())
+  ifstream filein(dbfile,ios::in);
+
+  // check if the 1st caracter of the 1st line is # (Config read from the OCDB => OffLine)
+  string line; 
+  getline(filein, line, '\n');
+  cout << " line 1: " << line ;
+  if ( int(line[0]) == 35 )  // ascii code of # character
+    {
+      cout << " ==>  1st caracter = " << line[0] << " (ascii code =" << int(line[0]) << ")" << endl;    
+    }
+  else  
+    { filein.clear();  filein.seekg(0);  // rewind
+      cout << " ==> rewind configuration file: "<< dbfile << endl;           
+    } 
+  
+  while (!filein.eof())
     { 
-      fileinit >> busPatchId >> manuId;
+      filein >> busPatchId >> manuId;
 
       AliMUONErrorCounter* manuCounter;
       AliMUONVCalibParam* ped = 
 	static_cast<AliMUONVCalibParam*>(fPedestalStore ->FindObject(busPatchId, manuId));
 
       if (!ped) {
-	fNManu_config++;
+	fNManuConfig++;
 	fNChannel+=64;
-	ped = new AliMUONCalibParamND(2, kNChannels,busPatchId, manuId, -1.); // put default wise -1, not connected channel
+  ped = new AliMUONCalibParamND(2, AliMpConstants::ManuNofChannels(),busPatchId, manuId, -1.); // put default wise -1, not connected channel
 	fPedestalStore ->Add(ped);  
 
 	if (!(manuCounter = static_cast<AliMUONErrorCounter*>(fManuBuspatchTable->FindObject(busPatchId,manuId))))
@@ -130,7 +151,7 @@ void AliMUONPedestal::MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, I
       else {fNManu++;}
       fNChannel+=64;
       // put default wise -1, not connected channel
-      ped = new AliMUONCalibParamND(2, kNChannels,busPatchId, manuId, -1.); 
+      ped = new AliMUONCalibParamND(2, AliMpConstants::ManuNofChannels(),busPatchId, manuId, -1.); 
       fPedestalStore ->Add(ped);  
     }
 
@@ -164,6 +185,8 @@ void AliMUONPedestal::MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, I
 //______________________________________________________________________________
 void AliMUONPedestal::Finalize()
 {
+  /// final polishing of the store
+  
   Double_t pedMean;
   Double_t pedSigma;
   Int_t busPatchId;
@@ -232,20 +255,20 @@ void AliMUONPedestal::Finalize()
 	      ped->SetValueAsDouble(channelId, 1, TMath::Sqrt(TMath::Abs(pedSigma/(Double_t)eventCounter - pedMean*pedMean)));
 	      if(manuId == 0)
 		{
-		  ped->SetValueAsDouble(channelId, 0, kADCMax);
-		  ped->SetValueAsDouble(channelId, 1, kADCMax);
+		  ped->SetValueAsDouble(channelId, 0, ADCMax());
+		  ped->SetValueAsDouble(channelId, 1, ADCMax());
 		}
 	      if(occupancy>1)
 		{
-		  ped->SetValueAsDouble(channelId, 0, kADCMax);
-		  ped->SetValueAsDouble(channelId, 1, kADCMax);
-		  if(channelId==0)ped->SetValueAsDouble(channelId, 0, kADCMax+occupancy);
+		  ped->SetValueAsDouble(channelId, 0, ADCMax());
+		  ped->SetValueAsDouble(channelId, 1, ADCMax());
+		  if(channelId==0)ped->SetValueAsDouble(channelId, 0, ADCMax()+occupancy);
 		}
 	    }
 	  else
 	    {
-	      ped->SetValueAsDouble(channelId, 0, kADCMax);
-	      ped->SetValueAsDouble(channelId, 1, kADCMax);
+	      ped->SetValueAsDouble(channelId, 0, ADCMax());
+	      ped->SetValueAsDouble(channelId, 1, ADCMax());
 	    }
 	}
     }
@@ -256,13 +279,13 @@ void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
   /// put pedestal store in the output stream
 
   out<<"//===========================================================================" << endl;
-  out<<"//                 Pedestal file calculated by "<< fprefixDA << endl;
+  out<<"//                 Pedestal file calculated by "<< fPrefixDA.Data() << endl;
   out<<"//===========================================================================" << endl;
   out<<"//       * Run           : " << fRunNumber << endl; 
   out<<"//       * Date          : " << fDate->AsString("l") <<endl;
   out<<"//       * Statictics    : " << fNEvents << endl;
   if(fConfig)
-    out<<"//       * # of MANUS    : " << fNManu_config << " read in the Det. config. " << endl;
+    out<<"//       * # of MANUS    : " << fNManuConfig << " read in the Det. config. " << endl;
   out<<"//       * # of MANUS    : " << fNManu << " read in raw data " << endl;
   out<<"//       * # of MANUS    : " << fNChannel/64 << " written in pedestal file " << endl;
   out<<"//       * # of channels : " << fNChannel << endl;
@@ -278,31 +301,41 @@ void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
 	}
     }  
 
-  out<<"//"<<endl;
-  out<<"//    * Puzzling (Buspatch,Manu) read in raw data ?"<<endl;
-  Int_t occupancy=1; 
-  if(occupancy){
-  TIter next(fPedestalStore ->CreateIterator());
-  AliMUONVCalibParam* ped;
-  while ( ( ped = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
+//   out<<"//"<<endl;
+//   out<<"//    * Puzzling (Buspatch,Manu) read in raw data ?"<<endl;
+  Int_t writitle=0;
+  Int_t occupancy=1;
+  if(occupancy)
     {
-      Int_t busPatchId = ped->ID0();
-      Int_t manuId = ped->ID1();
-      Double_t pedMean  = ped->ValueAsDouble(0, 0); // check pedestal value for channelId=0
-
-      if(pedMean>kADCMax) 
+      TIter next(fPedestalStore ->CreateIterator());
+      AliMUONVCalibParam* ped;
+      while ( ( ped = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
 	{
-	  occupancy=pedMean-kADCMax;
-	  ped->SetValueAsDouble(0, 0, kADCMax);
-	  out<<"//      BusPatch = "<< busPatchId <<"\t ManuId =  "<< manuId << "\t occupancy = " << occupancy  <<endl;
-	}
+	  Int_t busPatchId = ped->ID0();
+	  Int_t manuId = ped->ID1();
+	  Double_t pedMean  = ped->ValueAsDouble(0, 0); // check pedestal value for channelId=0
 
-      if (manuId==0 || (fConfig && static_cast<AliMUONErrorCounter*>(fManuBPoutofconfigTable->FindObject(busPatchId,manuId))))
-	{
-	  out<<"//      BusPatch = "<< busPatchId <<"\t ManuId =  "<< manuId << "\t missing in the mapping" << endl;
+	  if(pedMean>ADCMax()) 
+	    {
+	      writitle++;
+	      if(writitle==1){ 
+		out<<"//"<<endl;
+		out<<"//    * Puzzling (Buspatch,Manu) read in raw data ?"<<endl;}
+	      occupancy=pedMean-ADCMax();
+	      ped->SetValueAsDouble(0, 0, ADCMax());
+	      out<<"//      BusPatch = "<< busPatchId <<"\t ManuId =  "<< manuId << "\t occupancy = " << occupancy  <<endl;
+	    }
+
+	  if (manuId==0 || (fConfig && static_cast<AliMUONErrorCounter*>(fManuBPoutofconfigTable->FindObject(busPatchId,manuId))))
+	    {
+	      writitle++;
+	      if(writitle==1){ 
+		out<<"//"<<endl;
+		out<<"//    * Puzzling (Buspatch,Manu) read in raw data ?"<<endl;}
+	      out<<"//      BusPatch = "<< busPatchId <<"\t ManuId =  "<< manuId << "\t missing in the mapping" << endl;
+	    }
 	}
     }
-}
 
 
   out<<"//"<<endl;
@@ -333,7 +366,7 @@ void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
 //______________________________________________________________________________
 void AliMUONPedestal::MakeControlHistos()
 {
-
+  /// Create control histograms
   if (fIndex>=0) return; // Pedestal run (fIndex=-1)
 
   Double_t pedMean;
@@ -348,16 +381,16 @@ void AliMUONPedestal::MakeControlHistos()
   TH1F* pedMeanHisto = 0;
   TH1F* pedSigmaHisto = 0;
     
-  sprintf(fHistoFileName,"%s.root",fprefixDA);
+  fHistoFileName=Form("%s.root",fPrefixDA.Data());
   histoFile = new TFile(fHistoFileName,"RECREATE","MUON Tracking pedestals");
 
   Char_t name[255];
   Char_t title[255];
   sprintf(name,"pedmean_allch");
   sprintf(title,"Pedestal mean all channels");
-  Int_t nx = kADCMax+1;
+  Int_t nx = ADCMax()+1;
   Int_t xmin = 0;
-  Int_t xmax = kADCMax; 
+  Int_t xmax = ADCMax(); 
   pedMeanHisto = new TH1F(name,title,nx,xmin,xmax);
   pedMeanHisto->SetDirectory(histoFile);
 

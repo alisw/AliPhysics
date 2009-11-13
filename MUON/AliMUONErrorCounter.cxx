@@ -73,7 +73,7 @@ void AliMUONErrorCounter::Print(const Option_t* option) const
 }
 
 //______________________________________________________________________________
-void AliMUONErrorCounter::Print_uncal(const Option_t* option) const
+void AliMUONErrorCounter::PrintUncal(const Option_t* option) const
 {
   TNamed::Print(option);
   cout<<"bp =  "<<fBusPatch<< "  manu = " << fManuId << " uncal = "<< fEvents <<endl;

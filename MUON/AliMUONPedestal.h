@@ -12,17 +12,16 @@
 /// 
 //  Author Alberto Baldisseri, JL Charvet 
 
-#include <TObject.h>
-
-#include "AliMpConstants.h"
+#ifndef ROOT_TObject
+#  include <TObject.h>
+#endif
+#ifndef ROOT_TString
+#  include <TString.h>
+#endif
 
 class AliMUONVStore;
 
 class TTimeStamp;
-
-// global variables
-const Int_t kNChannels = AliMpConstants::ManuNofChannels();
-const Int_t kADCMax    = 4095;
 
 class AliMUONPedestal : public TObject
 {
@@ -39,20 +38,20 @@ class AliMUONPedestal : public TObject
     /// output .log file of DAs
     void SetAlifilcout(ofstream* stream) {fFilcout = stream;}
     /// return date and time
-    TTimeStamp* GetDate() {return fDate;}
+    TTimeStamp* GetDate() const {return fDate;}
     /// Count parity errors per Buspatch
-    AliMUONVStore* GetErrorBuspatchTable() {return fErrorBuspatchTable;}
+    AliMUONVStore* GetErrorBuspatchTable() const {return fErrorBuspatchTable;}
     /// return the name of DAPedestal .root file
-    Char_t* GetHistoFileName() {return fHistoFileName;}
+    const char* GetHistoFileName() const;
     /// load MuonTrk configuration from ascii dbfile
-    void Load_config(char* dbfile);
+    void LoadConfig(const char* dbfile);
     /// sum pedestal values for mean and sigma determination
     void MakePed(Int_t bp,Int_t manu,Int_t ch,Int_t charge);
 
     /// set config flag
     void SetconfigDA(Int_t ind) {fConfig = ind;}
     /// set specific  DA prefixname
-    void SetprefixDA(char* folder) {sprintf(fprefixDA,"%s",folder);}
+    void SetprefixDA(const char* folder) { fPrefixDA=folder;}
     /// set the index of calibration runs
     void SetAliIndex(Int_t ind) {fIndex = ind;}
     /// Compute the pedestal data (mean, sigma)
@@ -62,13 +61,15 @@ class AliMUONPedestal : public TObject
     /// Fill Histograms
     void MakeControlHistos();
 
-  protected:
-    Int_t fN; ///<
+  Int_t ADCMax() const { return 4095; }
+
+protected:
+    //    Int_t fN; ///<
     Int_t fNEvents; ///< Number of events
     Int_t fRunNumber; ///< run number
     Int_t fNChannel; ///< Nb of channels (pads)
     Int_t fNManu; ///<  Nb of Manu
-    Int_t fNManu_config; ///<  Nb of Manu in the current detector configuration
+    Int_t fNManuConfig; ///<  Nb of Manu in the current detector configuration
     Int_t fConfig; ///< flag 1(0) for reading(or not) configuration ascii file
     AliMUONVStore* fErrorBuspatchTable; ///< Table for buspatches with parity errors 
     AliMUONVStore* fManuBuspatchTable; ///< Occupancy rate for each (buspatch, manu)
@@ -76,18 +77,20 @@ class AliMUONPedestal : public TObject
  
     TTimeStamp* fDate; ///< date
     ofstream* fFilcout; ///< .log output file
-    Char_t fHistoFileName[256]; ///< .root histo file
-    AliMUONVStore* fPedestalStore; ///< 
+    TString fHistoFileName; ///< .root histo file
+    AliMUONVStore* fPedestalStore; ///< data container:  (Pedmean,sigma) values for each (BP,manuId)
     Int_t fIndex; ///< calibration run index
-    Char_t fprefixDA[256]; ///< specific DA prefixname
+    TString fPrefixDA; ///< specific DA prefixname
 
+  static const Int_t fgkADCMax; ///< max channel count
+  
   private:
     /// Not implemented
     AliMUONPedestal(const AliMUONPedestal& rhs);
     /// Not implemented
     AliMUONPedestal& operator = (const AliMUONPedestal& rhs);
 
-  ClassDef(AliMUONPedestal,3) // 
+  ClassDef(AliMUONPedestal,4) // Pedestal computing for DA 
 };
 
 #endif

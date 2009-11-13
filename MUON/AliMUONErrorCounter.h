@@ -19,22 +19,24 @@ class AliMUONErrorCounter : public TNamed
   public :
     AliMUONErrorCounter(Int_t bp = 0, Int_t manu = 0, Int_t ev = 1);
     
-    ///
+    /// Increment nb of erroneous event 
     void Increment() {fEvents++;}
-    ///
+    /// return Buspatch value
     Int_t BusPatch() const {return fBusPatch;}
-    ///
+    /// return ManuId value
     Int_t ManuId() const {return fManuId;}
-    ///
+    /// return  nb of erroneous events
     Int_t Events() const {return fEvents;}
     Int_t Compare(const TObject* obj) const;
+    /// Print Buspatch , Nb of erroneous events
     void Print(const Option_t* option="") const;
-    void Print_uncal(const Option_t* option="") const;
+    /// Print Buspatch, ManuId , Nb of erroneous events
+    void PrintUncal(const Option_t* option="") const;
 
   private :
     Int_t fBusPatch; ///< Buspath ID
     Int_t fManuId;   ///< Manu ID
-    Int_t fEvents;   ///< Events with error in this buspatch
+    Int_t fEvents;   ///< counter of erroneous events
 
   ClassDef(AliMUONErrorCounter,1) // 
 };

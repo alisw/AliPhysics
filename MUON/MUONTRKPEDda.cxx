@@ -1,13 +1,13 @@
 /*
-Contact: Jean-Luc Charvet <jean-luc.charvet@cea.fr>
-Link: http://aliceinfo.cern.ch/static/Offline/dimuon/muon_html/README_Mchda
-Run Type: PEDESTAL
-	DA Type: LDC
-	Number of events needed: 400 events for pedestal run
-	Input Files: Rawdata file (DATE format)
-	Output Files: local dir (not persistent) -> MUONTRKPEDda_<run#>.ped 
-	FXS -> run<#>_MCH_<ldc>_PEDESTALS
-	Trigger types used:
+  Contact: Jean-Luc Charvet <jean-luc.charvet@cern.ch>
+  Link: http://aliceinfo.cern.ch/static/Offline/dimuon/muon_html/README_mchda.html
+  Reference Run:
+  Run Type: PEDESTAL
+  DA Type: LDC
+  Number of events needed: 400 events for pedestal run
+  Input Files: mutrkpedvalues and config_ldc-MTRK-S3-0 
+  Output Files: local dir (not persistent) -> MUONTRKPEDda.ped  FXS -> run<#>_MCH_<ldc>_PEDESTALS
+  Trigger types used:
 */
 
 /**************************************************************************
@@ -29,7 +29,7 @@ Run Type: PEDESTAL
 
 /*
 	-------------------------------------------------------------------------
-        2009-10-06 New version: MUONTRKPEDda.cxx,v 1.3
+        2009-11-05 New version: MUONTRKPEDda.cxx,v 1.4
 	-------------------------------------------------------------------------
 
 	Version for MUONTRKPEDda MUON tracking
@@ -95,12 +95,14 @@ extern "C" {
 
 
 // main routine
-int main(Int_t argc, Char_t **argv) 
+int main(Int_t argc, const char **argv) 
 {
-
   Int_t status=0;
   TStopwatch timers;
   timers.Start(kTRUE); 
+
+  const char* prefixDA = "MUONTRKPEDda"; // program prefix
+  printf(" ######## Begin execution : %s ######## \n\n",prefixDA); 
 
   // needed for streamer application
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
@@ -108,21 +110,18 @@ int main(Int_t argc, Char_t **argv)
 					"TStreamerInfo",
 					"RIO",
 					"TStreamerInfo()"); 
-
   // needed for Minuit plugin
   gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer",
 					"Minuit",
 					"TMinuitMinimizer",
 					"Minuit",
 					"TMinuitMinimizer(const char*)");
-
-  Char_t prefixDA[256]="MUONTRKPEDda"; // program prefix
 //   cout << argv[0];
  
   Int_t skipEvents = 0;
   Int_t maxEvents  = 1000000;
   Int_t maxDateEvents  = 1000000;
-  Char_t inputFile[256]="";
+  TString inputFile;
 
   Int_t  nDateEvents = 0;
   Int_t nGlitchErrors= 0;
@@ -138,12 +137,13 @@ int main(Int_t argc, Char_t **argv)
   Int_t nEventsRecovered = 0;
   Int_t nEvents = 0;
   UInt_t runNumber   = 0;
+  Int_t nConfig = 1; 
   ofstream filcout;
 
   // decode the input line
   for (Int_t i = 1; i < argc; i++) // argument 0 is the executable name
     {
-      Char_t* arg;
+      const char* arg = argv[i];
 
       arg = argv[i];
       if (arg[0] != '-') 
@@ -151,7 +151,7 @@ int main(Int_t argc, Char_t **argv)
 	  // If only one argument and no "-" => DA calling from ECS
 	  if (argc == 2)
 	    {
-	      sprintf(inputFile,argv[i]);
+        inputFile=argv[i];
 	    }
 	  continue;
 	}
@@ -159,7 +159,8 @@ int main(Int_t argc, Char_t **argv)
 	{
 	case 'f' : 
 	  i++;
-	  sprintf(inputFile,argv[i]);
+      inputFile=argv[i];
+	  nConfig=0;
 	  break;
 	case 'a' : 
 	  i++;
@@ -181,11 +182,12 @@ int main(Int_t argc, Char_t **argv)
 	  i++;
 	  printf("\n******************* %s usage **********************",argv[0]);
 	  printf("\nOnline (called from ECS) : %s <raw data file> (no inline options)\n",argv[0]);
+	  printf("\n%s can be used locally only with options (without DiMuon configuration file)",argv[0]);
 	  printf("\n%s -options, the available options are :",argv[0]);
 	  printf("\n-h help                    (this screen)");
 	  printf("\n");
 	  printf("\n Input");
-	  printf("\n-f <raw data file>         (default = %s)",inputFile); 
+	  printf("\n-f <raw data file>         (default = %s)",inputFile.Data()); 
 	  printf("\n");
 	  printf("\n Output");
 	  printf("\n-a <Flat ASCII file>       (default = %s)",shuttleFile.Data()); 
@@ -213,26 +215,32 @@ int main(Int_t argc, Char_t **argv)
   AliMUONPedestal* muonPedestal = new AliMUONPedestal();
   muonPedestal->SetprefixDA(prefixDA);
 
-  // Reading configuration status via "mutrkpedvalues" file located in DetDB
-  // config=1: config ascii file read from DetDB, otherwise: config=0
-  Int_t nConfig = 1; 
-  Char_t *dbfile;
-  dbfile="mutrkpedvalues";
-  cout << "\n *** Copy: " << dbfile << " from DetDB to working directory  *** \n" << endl;
+  Char_t dbfile[256]="";
+  // nConfig=1 : Reading configuration (or not) status via "mutrkpedvalues" file located in DetDB
+  if(nConfig)
+    { 
+  sprintf(dbfile,"mutrkpedvalues");
   status=daqDA_DB_getFile(dbfile,dbfile);
+  if(status) {printf(" Failed  : input file %s is missing, status = %d\n",dbfile,status); return -1; } 
   ifstream filein(dbfile,ios::in);
   filein >> nConfig;
-  cout << "       Config= " << nConfig << endl;
+  printf(" *** Copy: %s from DetDB to working directory  ***      Config= %d\n",dbfile,nConfig);
+    }
+  else
+    {
+      printf(" ***  Config= %d: no configuration ascii file is used \n",nConfig);
+    }
   muonPedestal->SetconfigDA(nConfig);
 
+  // nConfig=1: configuration ascii file read from DetDB
   if(nConfig)
     {
-  // MuonTrk Configuration ascii file (initCROCUS.dat -> ascii file = mutrkconfig)
-  Char_t dbfil[256]="";
-  sprintf(dbfil,"config_%s",getenv("DATE_ROLE_NAME"));
-  cout << "\n *** Copy ascii config file: " << dbfil << " from DetDB to working directory and reading ...*** \n" << endl;
-  status=daqDA_DB_getFile(dbfil,dbfil);
-  muonPedestal->Load_config(dbfil);  
+  // MuonTrk Configuration ascii file (initCROCUS.dat -> ascii file = config_$DATE_ROLE_NAME)
+  sprintf(dbfile,"config_%s",getenv("DATE_ROLE_NAME"));
+  status=daqDA_DB_getFile(dbfile,dbfile);
+  if(status) {printf(" Failed  : Configuration file %s is missing, status = %d\n",dbfile,status); return -1; }
+  else printf(" *** Copy ascii config file: %s from DetDB to working directory and reading ...*** \n",dbfile);
+  muonPedestal->Load_config(dbfile);  
     } 
 
   // Rawdeader, RawStreamHP
@@ -241,7 +249,7 @@ int main(Int_t argc, Char_t **argv)
   rawStream->DisableWarnings();
   rawStream->EnabbleErrorLogger();
 
-  cout << "\n" << prefixDA << " : Reading data from file " << inputFile  << endl;
+  printf("\n %s : Reading data from file %s\n",prefixDA,inputFile.Data());
 
   while (rawReader->NextEvent())
     {
@@ -478,26 +486,21 @@ int main(Int_t argc, Char_t **argv)
   unsigned int nLastVersions=90;
   cout << "\n ***  Local DataBase: " << dir << " (Max= " << nLastVersions << ") ***" << endl;
   status = daqDA_localDB_storeFile(muonPedestal->GetHistoFileName(),nLastVersions);
-  printf(" Store file : %s   status = %d\n",muonPedestal->GetHistoFileName(),status);
+  if(status)printf(" Store file : %s   status = %d\n",muonPedestal->GetHistoFileName(),status);
   status = daqDA_localDB_storeFile(shuttleFile.Data(),nLastVersions);
-  printf(" Store file : %s   status = %d\n",shuttleFile.Data(),status);
+  if(status)printf(" Store file : %s   status = %d\n",shuttleFile.Data(),status);
   status = daqDA_localDB_storeFile(logOutputFile.Data(),nLastVersions);
-  printf(" Store file : %s   status = %d\n",logOutputFile.Data(),status);
-
-  // Transferring to OCDB via the SHUTTLE
-  printf("\n *****  STORE FILE in FES ****** \n");
-
-  // be sure that env variable DAQDALIB_PATH is set in script file
-  //       gSystem->Setenv("DAQDALIB_PATH", "$DATE_SITE/infoLogger");
-
-  status = daqDA_FES_storeFile(shuttleFile.Data(),"PEDESTALS");
-  if (status) 
-    {
-      printf(" Failed to export file : %d\n",status);
-    }
-  else printf(" %s successfully exported to FES  \n",shuttleFile.Data());
+  if(status)printf(" Store file : %s   status = %d\n",logOutputFile.Data(),status);
 
   filcout.close();
+
+  // Transferring to OCDB via the SHUTTLE (be sure that env variable DAQDALIB_PATH is set)
+  printf("\n *****  STORE FILE in FES ****** \n");
+  status = daqDA_FES_storeFile(shuttleFile.Data(),"PEDESTALS");
+  if (status) { printf(" Failed to export file : %s , status = %d\n",shuttleFile.Data(),status); return -1; }
+  else printf(" %s successfully exported to FES  \n",shuttleFile.Data());
+
+  printf("\n ######## End execution : %s ######## \n",prefixDA); 
   timers.Stop();
   printf("\nExecution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
   return status;

@@ -53,33 +53,35 @@
 
 // functions
 
-
-//______________________________________________________________________________
-Double_t funcLin (const Double_t *x, const Double_t *par)
-{
-  /// Linear function
-  return par[0] + par[1]*x[0];
+namespace {
+  
+  //______________________________________________________________________________
+  Double_t funcLin (const Double_t *x, const Double_t *par)
+  {
+    /// Linear function
+    return par[0] + par[1]*x[0];
+  }
+  
+  //______________________________________________________________________________
+  Double_t funcParabolic (const Double_t *x, const Double_t *par)
+  {
+    /// Parabolic function
+    return par[0]*x[0]*x[0];
+  }
+  
+  //______________________________________________________________________________
+  Double_t funcCalib (const Double_t *x, const Double_t *par)  
+  {
+    /// Calibration function
+    Double_t xLim= par[3];
+    
+    if(x[0] <= xLim) return par[0] + par[1]*x[0];
+    
+    Double_t yLim = par[0]+ par[1]*xLim;
+    return yLim + par[1]*(x[0] - xLim) + par[2]*(x[0] - xLim)*(x[0] - xLim);
+  }
+  
 }
-
-//______________________________________________________________________________
-Double_t funcParabolic (const Double_t *x, const Double_t *par)
-{
-  /// Parabolic function
-  return par[0]*x[0]*x[0];
-}
-
-//______________________________________________________________________________
-Double_t funcCalib (const Double_t *x, const Double_t *par)  
-{
-  /// Calibration function
-  Double_t xLim= par[3];
-
-  if(x[0] <= xLim) return par[0] + par[1]*x[0];
-
-  Double_t yLim = par[0]+ par[1]*xLim;
-  return yLim + par[1]*(x[0] - xLim) + par[2]*(x[0] - xLim)*(x[0] - xLim);
-}
-
 
 /// \cond CLASSIMP
 ClassImp(AliMUONGain)
@@ -89,6 +91,7 @@ ClassImp(AliMUONGain)
 AliMUONGain::AliMUONGain()
 : AliMUONPedestal(),
 fInjCharge(0), 
+fRootDataFileName(),
 fnInit(1),
 fnEntries(11),
 fnbpf1(6),
@@ -97,9 +100,7 @@ fPlotLevel(0)
 {
 /// Default constructor
 
-  sprintf(fRootDataFileName," "); //Gain
 }
-//  AliMUONPedestal& operator=(const AliMUONPedestal& other); Copy ctor
   
 //______________________________________________________________________________
 AliMUONGain::~AliMUONGain()
@@ -115,7 +116,7 @@ TString AliMUONGain::WriteDummyHeader(void)
   ostringstream stream;
   stream<<"//DUMMY FILE (to prevent Shuttle failure)"<< endl;
   stream<<"//================================================" << endl;
-  stream<<"//       MUONTRKda: Calibration run  " << endl;
+  stream<<"//       MUONTRKGAINda: Calibration run  " << endl;
   stream<<"//================================================" << endl;
   stream<<"//   * Run           : " << fRunNumber << endl; 
   stream<<"//   * Date          : " << fDate->AsString("l") <<endl;
@@ -128,11 +129,11 @@ TString AliMUONGain::WriteDummyHeader(void)
 //______________________________________________________________________________
 void AliMUONGain::MakePedStoreForGain(TString shuttleFile)
 {
-///
+/// Store Pedmean and sigma to pedestal-like ascii file
 
   ofstream fileout;
   TString tempstring;
-  Char_t flatFile[256]="";
+  TString flatFile;
   TString outputFile;
   
   // Store pedestal map in root file
@@ -141,15 +142,12 @@ void AliMUONGain::MakePedStoreForGain(TString shuttleFile)
   // write dummy ascii file -> Shuttle
   if(fIndex<fnEntries)
     {  
-      //     fileout.open(shuttleFile.Data());
-      //     tempstring = WriteDummyHeader();
-      //     fileout << tempstring;
       FILE *pfilew=0;
       pfilew = fopen (shuttleFile,"w");
 
       fprintf(pfilew,"//DUMMY FILE (to prevent Shuttle failure)\n");
       fprintf(pfilew,"//================================================\n");
-      fprintf(pfilew,"//       MUONTRKda: Calibration run  \n");
+      fprintf(pfilew,"//       MUONTRKGAINda: Calibration run  \n");
       fprintf(pfilew,"//=================================================\n");
       fprintf(pfilew,"//   * Run           : %d \n",fRunNumber); 
       fprintf(pfilew,"//   * Date          : %s \n",fDate->AsString("l"));
@@ -165,9 +163,9 @@ void AliMUONGain::MakePedStoreForGain(TString shuttleFile)
   if(fPrintLevel>0)
     {
       // compute and store mean DAC values (like pedestals)
-      sprintf(flatFile,"%s.ped",fprefixDA);
+      flatFile = Form("%s.ped",fPrefixDA.Data());
       outputFile=flatFile;
-      cout << "\n" << fprefixDA << " : Flat file  generated  : " << flatFile << "\n";
+      cout << "\n" << fPrefixDA.Data() << " : Flat file  generated  : " << flatFile.Data() << "\n";
       if (!outputFile.IsNull())  
       {
         ofstream out(outputFile.Data());
@@ -181,7 +179,7 @@ void AliMUONGain::MakePedStoreForGain(TString shuttleFile)
   if (fIndex==1) {
     mode = "RECREATE";
   }
-  TFile* histoFile = new TFile(fRootDataFileName, mode.Data(), "MUON Tracking Gains");
+  TFile* histoFile = new TFile(fRootDataFileName.Data(), mode.Data(), "MUON Tracking Gains");
 
   // second argument should be the injected charge, taken from config crocus file
   // put also info about run number could be usefull
@@ -217,13 +215,13 @@ TString AliMUONGain::WriteGainHeader(Int_t nInit, Int_t nEntries, Int_t nbpf2, I
 
 
   stream<<"//=======================================================" << endl;
-  stream<<"//      Calibration file calculated by " << fprefixDA <<endl;
+  stream<<"//      Calibration file calculated by " << fPrefixDA.Data() <<endl;
   stream<<"//=======================================================" << endl;
   stream<<"//   * Run           : " << fRunNumber << endl; 
   stream<<"//   * Date          : " << fDate->AsString("l") <<endl;
   stream<<"//   * Statictics    : " << fNEvents << endl;
   if(fConfig)
-  stream<<"//   * # of MANUS    : " << fNManu_config << " read in the Det. config. " << endl;
+  stream<<"//   * # of MANUS    : " << fNManuConfig << " read in the Det. config. " << endl;
   stream<<"//   * # of MANUS    : " << fNManu << " read in raw data " << endl;
   stream<<"//   * # of MANUS    : " << fNChannel/64 << " written in calibration file " << endl;
   stream<<"//   * # of channels : " << fNChannel << endl;
@@ -233,6 +231,8 @@ TString AliMUONGain::WriteGainHeader(Int_t nInit, Int_t nEntries, Int_t nbpf2, I
     stream<<"//  "<< nEntries <<" DAC values  fit: "<< fnbpf1 << " pts (1st order) " << nbpf2 << " pts (2nd order)" << endl;
   if(nInit==1)
     stream<<"//  "<< nEntries <<" DAC values  fit: "<< fnbpf1 << " pts (1st order) " << nbpf2 << " pts (2nd order) DAC=0 excluded" << endl;
+  stream<<"//   *  nInit = " << nInit << "  *  f1nbp = " << fnbpf1 << "  *  f2nbp = " <<  nbpf2 << endl; 
+  stream<<"//" << endl; 
 
   stream<<"//   RUN     DAC   " << endl;
   stream<<"//-----------------" << endl;
@@ -264,14 +264,14 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   ofstream fileout;
   ofstream filcouc;
   TString tempstring;	
-  Char_t filename[256]; 
+  TString filename; 
 
   Double_t goodA1Min =  0.5;
   Double_t goodA1Max =  2.;
-  //     Double_t goodA1Min =  0.7;
-  //     Double_t goodA1Max =  1.7;
-  Double_t goodA2Min = -0.5E-03;
-  Double_t goodA2Max =  1.E-03;
+//   Double_t goodA2Min = -0.5E-03;
+//   Double_t goodA2Max =  1.E-03;
+  Double_t goodA2Min = -0.5E-01; // changed 28/10/2009 (JLC) <=> no condition on a2
+  Double_t goodA2Max =  1.E-01;
   // Table for uncalibrated  buspatches and manus
   THashList* uncalBuspatchManuTable = new THashList(1000,2);
 
@@ -284,8 +284,8 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   // Fit with a polynomial fct
   // store the result in a flat file.
 
-  if(fIndex==0)cout << " Root data file = " << fRootDataFileName << endl;  
-  TFile*  histoFile = new TFile(fRootDataFileName);
+  if(fIndex==0)cout << " Root data file = " << fRootDataFileName.Data() << endl;  
+  TFile*  histoFile = new TFile(fRootDataFileName.Data());
 
   AliMUON2DMap* map[11];
   AliMUONVCalibParam* ped[11];
@@ -318,7 +318,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   for ( Int_t i=0 ; i<11 ; i++) {injCharge[i]=0.;injChargeErr[i]=1.;};
 
   // some print
-  cout<<"\n ********  MUONTRKda for Gain computing (Last Run = " << fRunNumber << ") ********\n" << endl;
+  cout<<"\n ********  MUONTRKGAINda for Gain computing (Last Run = " << fRunNumber << ") ********\n" << endl;
   cout<<" * Date          : " << fDate->AsString("l") << "\n" << endl;
   cout << " Entries = " << nEntries << " DAC values \n" << endl; 
   for (Int_t i = 0; i < nEntries; ++i) {
@@ -333,8 +333,8 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   //  print out in .log file
 
   (*fFilcout)<<"\n\n//=================================================" << endl;
-  (*fFilcout)<<"//    MUONTRKda: Gain Computing  Run = " << fRunNumber << endl;
-  (*fFilcout)<<"//    RootDataFile  = "<< fRootDataFileName << endl;
+  (*fFilcout)<<"//    MUONTRKGAINda: Gain Computing  Run = " << fRunNumber << endl;
+  (*fFilcout)<<"//    RootDataFile  = "<< fRootDataFileName.Data() << endl;
   (*fFilcout)<<"//=================================================" << endl;
   (*fFilcout)<<"//* Date          : " << fDate->AsString("l") << "\n" << endl;
 
@@ -344,9 +344,9 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
     FILE *pfilen = 0;
     if(fPrintLevel>1)
       {
-        sprintf(filename,"%s.param",fprefixDA);
-        cout << " Second fit parameter file        = " << filename << "\n";
-        pfilen = fopen (filename,"w");
+        filename=Form("%s.param",fPrefixDA.Data());
+        cout << " Second fit parameter file        = " << filename.Data() << "\n";
+        pfilen = fopen (filename.Data(),"w");
 
         fprintf(pfilen,"//===================================================================\n");
         fprintf(pfilen,"//  BP MANU CH. par[0]     [1]     [2]     [3]      xlim          P(chi2) p1        P(chi2)2  p2\n");
@@ -367,7 +367,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   FILE *pfilep = 0;
   if(fPrintLevel>1)
     {
-      sprintf(filename,"%s.peak",fprefixDA);
+      filename=Form("%s.peak",fPrefixDA.Data());
       cout << " File containing Peak mean values = " << filename << "\n";
       pfilep = fopen (filename,"w");
 
@@ -393,7 +393,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   Int_t q = 0;
   Int_t p1 =0;
   Int_t p2 =0;
-  Double_t gain=0; 
+  Double_t gain=10.; // max value (= bad value)
   Double_t capa=0.2; // internal capacitor (pF)
 
   //  plot out 
@@ -402,8 +402,8 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   TTree* tg = 0x0;
   if(fPlotLevel>0)
     {
-      sprintf(fHistoFileName,"%s.root",fprefixDA);
-     gainFile = new TFile(fHistoFileName,"RECREATE","MUON Tracking gains");
+      fHistoFileName=Form("%s.root",fPrefixDA.Data());
+      gainFile = new TFile(fHistoFileName.Data(),"RECREATE","MUON Tracking gains");
       tg = new TTree("tg","TTree avec class Manu_DiMu");
 
       tg->Branch("bp",&busPatchId, "busPatchId/I");
@@ -490,16 +490,22 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 
 	  // 1. - linear fit over gAlinbpf1 points
 
-	  Double_t par[4] = {0.,0.5,0.,kADCMax};
+	  Double_t par[4] = {0.,0.5,0.,ADCMax()};
 	  Int_t nbs   = nEntries - fnInit;
 	  if(nbs < fnbpf1)fnbpf1=nbs;
 
 	  Int_t fitproceed=1;
+	  Int_t nbpf2Dynamic=nbpf2;
 	  for (Int_t j = 0; j < nbs; ++j)
 	    {
 	      Int_t k = j + fnInit;
 	      x[j]    = pedMean[k];
-	      if(x[j]<=0. || x[j]== kADCMax)fitproceed=0;
+	      if(x[j]<=0.){fitproceed=0; break;}
+	      if(x[j]== ADCMax())
+		{
+		  if(j < nbs-1){fitproceed=0; break;}
+		  else  nbpf2Dynamic=nbpf2-1;
+		}
 	      xErr[j] = pedSigma[k];
 	      y[j]    = injCharge[k];
 	      yErr[j] = injChargeErr[k];
@@ -512,7 +518,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	  if(fitproceed)
 	    {
 		      
-	      TF1 *f1 = new TF1("f1",funcLin,0.,kADCMax,2);
+	      TF1 *f1 = new TF1("f1",funcLin,0.,ADCMax(),2);
 	      graphErr = new TGraphErrors(fnbpf1, x, y, xErr, yErr);
 
 	      f1->SetParameters(0,0);
@@ -536,9 +542,9 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 
 	      // 2. - Translation : new origin (xLim, yLim) + parabolic fit over nbf2 points
 
-	      if(nbpf2 > 1)
+	      if(nbpf2Dynamic > 1)
 		{
-		  for (Int_t j = 0; j < nbpf2; j++)
+		  for (Int_t j = 0; j < nbpf2Dynamic; j++)
 		    {
 		      Int_t k  = j + (fnInit + fnbpf1) - 1;
 		      xp[j]    = pedMean[k] - xLim;
@@ -548,8 +554,8 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 		      ypErr[j] = injChargeErr[k];
 		    }
 
-		  TF1 *f2 = new TF1("f2",funcParabolic,0.,kADCMax,1);
-		  graphErr = new TGraphErrors(nbpf2, xp, yp, xpErr, ypErr);
+		  TF1 *f2 = new TF1("f2",funcParabolic,0.,ADCMax(),1);
+		  graphErr = new TGraphErrors(nbpf2Dynamic, xp, yp, xpErr, ypErr);
 
 		  graphErr->Fit(f2,"RQ");
 		  chi2P2 = f2->GetChisquare();
@@ -559,7 +565,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 		  graphErr=0;
 		  delete f2;
 
-		  prChi2P2 = TMath::Prob(chi2P2, nbpf2-1);
+		  prChi2P2 = TMath::Prob(chi2P2, nbpf2Dynamic-1);
 		  a2 = par[0];
 		}
 
@@ -604,7 +610,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 	      q=0;  
 	      par[1]=0.5; a1=0.5; p1=0;
 	      par[2]=0.;  a2=0.;  p2=0;
-	      threshold=kADCMax;	
+	      threshold=ADCMax();	
 
 	      // bad calibration counter
 	      char bpmanuname[256];
@@ -633,13 +639,14 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 		{
 		  //		      if(q==0  and  nplot < 100)
 		  // 	  if(p1>1 && p2==0  and  nplot < 100)
-		  	    if(p1>10 && p2>10  and  nplot < 100)
+		  //		  	    if(p1>10 && p2>10  and  nplot < 100)
 		  //	if(p1>=1 and p1<=2  and  nplot < 100)
 //		  if((p1==1 || p2==1) and  nplot < 100)
+		  	    if(nbpf2Dynamic<nbpf2  and  nplot < 100)
 		    {
 		      nplot++;
 		      // 	      cout << " nplot = " << nplot << endl;
-		      TF1 *f2Calib = new TF1("f2Calib",funcCalib,0.,kADCMax,NFITPARAMS);
+		      TF1 *f2Calib = new TF1("f2Calib",funcCalib,0.,ADCMax(),NFITPARAMS);
 
 		      graphErr = new TGraphErrors(nEntries,pedMean,injCharge,pedSigma,injChargeErr);
 

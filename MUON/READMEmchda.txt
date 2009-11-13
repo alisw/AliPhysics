@@ -21,26 +21,28 @@ The Muon tracking chambers needs three types of calibration in order to work pro
 
 The front-end electronics performs an online zero suppression using a threshold level.
 Those threshold levels for all channels (~ 1 million) have to be computed in a dedicated
-PEDESTALS runs. During this runs the zero suppression is OFF and the pedestal level and the noise is obtained for each channel. The threshold for the FEE is obtained adding the pedestal
-level to 3 sigmas of the noise. 
+PEDESTALS runs. During this runs the zero suppression is OFF and the pedestal level and the noise is obtained for each channel. The threshold for the FEE is obtained adding the pedestal level to 3 sigmas of the noise. 
 
 The typical ECS sequence for pedestals is :
 
 - Switch ON the electronics LV
 - Boot the CROCUS 
 - Configuration 
+- Saving Configuration in an ascii file then transferring in the File eXchange Server (FXS)
 - Zero suppression OFF
 - Data taking (typically 400 events)
 - The DA computes the mean and sigma (it runs in each LDC)
 - The DA writes one ASCII file per LDC with the results in the File Exchange Server
 
-Then the SHUTTLE process the ASCII files and store the result on the OCDB
+Then the SHUTTLE process the ASCII files and store the result on the OCDB (Keyword=PEDESTALS)
+Only configuration files corresponding to a change of the Muon Tracker configuration are written in the FXS (Keyword=CONFIG).
+
 
 \subsection da_ss2 Electronics gain
 
 In order to perform the required spatial resolution or the tracking chambers (~ 100 microns),
 we need to calibrate the gain of each channel. The gain is computed using dedicated runs where
-a signal is send to the chambers FEE. 
+a signal (DAC) is send to the chambers FEE. 
 
 The typical ECS sequence for calibration is :
 
@@ -48,12 +50,11 @@ The typical ECS sequence for calibration is :
 - Boot the CROCUS 
 - Configuration 
 - Zero suppression OFF
-- Loop of 10 data taking (typically 400 events) each with a different signal
+- Loop of 11 data taking (typically 400 events) each with a different signal (DAC=0-200- 400-800-1200-1600-2000-2500-3000-3500-4000)
 - The DA computes the mean and sigma (it runs in each LDC) for each run
-- The DA write one ASCII file per LDC with the results in the File Exchange Server at the
-end of the 10 runs sequence
+- At the end of the last run, the DA computes, by using a fitting procedure, linear and parabolic gain parameters, and writes results in one ASCII file per LDC. Every ascii files are transferred in the FXS.
 
-Then the SHUTTLE process the ASCII files and store the result on the OCDB
+Then the SHUTTLE process the ASCII files and store the result on the OCDB (KEYWORD=GAINS)
 
 \subsection da_ss3 Occupancy
 
@@ -63,55 +64,95 @@ For PHYSICS (or STANDALONE) runs, the MUONTRKOCCda, which is a monitoring DA, ke
 
 \section da_s2 Using the DA Online
 
+\subsection da_ss1 Pedestals
+
+The syntax is: MUONTRKPEDda.exe "raw data file"
+
+Two input files located in the DAQ Detector database (DetDB) are needed:
+
+- muontrkpedvalues containing only one parameter "config"
+  config = 1 if configuration file has to be used (OnLine case)
+  config - 0 if not (OffLine case for the time being)
+
+- config_ldc-MTRK-S3-0 : typical configuration file corresponding to MuonTracker Station 3 if (for example) DA is running on ldc-MTRK-S3-0
+
+\subsection da_ss2 Electonics gain
+
+The syntax is: MUONTRKGAINda.exe "raw data file"
+
+Two input files located in the DAQ Detector database (DetDB) are needed:
+
+- muontrkcalibvalues: which attributes to each the run index (1->11) its corrresponding DAC value. The other parameters are used to tune the fit procedure (for expert). The last parameter indicates the number of events to be read: if "0" all events in the run are read, if not the parameter indicates the maximum number of events to be read. 
+Default values are listed below
+
+\verbatim
+1 0			
+2 200
+3 400
+4 800
+5 1200
+6 1600
+7 2000
+8 2500
+9 3000
+10 3500
+11 4000
+1						
+6
+0
+1
+1
+0
+\verbatim
+
+ - config_ldc-MTRK-S3-0 : configuration file corresponding to MuonTracker station 3 if (for example) DA is running on ldc-MTRK-S3-0 
+
+
+\section da_s3 Using the DA Offline
+ 
+The DAs normally runs with a RAW data DATE format as input
+The development of an Offline version is under way.
+
+Nevertheless, Pedestal runs can be analysed locally, but without detector configuration file.  If you get a file in root format (e.g. from alien), you can de-rootify it using the
+  "deroot" program which is part of aliroot. 
+Note that PED and GAIN DAs work with ROOT input files as well.
+
 You have a line command help. To have it just type :
 
 \verbatim
 > MUONTRKPEDda.exe -h
 
 ******************* ./MUONTRKPEDda.exe usage **********************
+Online (called from ECS) : ./MUONTRKPEDda.exe <raw data file> (no inline options)
+
+./MUONTRKPEDda.exe can be used locally only with options (without DiMuon configuration file)
 ./MUONTRKPEDda.exe -options, the available options are :
--h help                   (this screen)
+-h help                    (this screen)
 
  Input
--f <raw data file>        (default = )
+-f <raw data file>         (default = )
 
  Output
--a <Flat ASCII file>      (default = )
+-a <Flat ASCII file>       (default = MUONTRKPEDda.ped)
 
  Options
--b <output directory>     (default = .)
--c <FES switch>           (default = 1)
--d <print level>          (default = 1)
--g <plot level>           (default = 0)
--i <nb linear points>     (default = 6)
--l <DAC level>            (default = 0)
--m <max date events>      (default = 1000000)
--s <skip events>          (default = 0)
--n <max events>           (default = 1000000)
--r root file data for gain(default = MUONTRKda_gain.data)
--e <execute ped/gain>     (default = ped)
--e <gain create>           make gain & create a new root file
--e <gain>                  make gain & update root file
--e <gain compute>          make gain & compute gains
+-m <max date events>       (default = 1000000)
+-s <skip events>           (default = 0)
+-n <max events>            (default = 1000000)
+
 \endverbatim
 
- 
-\section da_s3 Using the DA Offline
- 
-The DAs normally runs with a RAW data DATE format as input
- If you get a file in root format (e.g. from alien), you can de-rootify it using the
-  "deroot" program which is part of aliroot. Note that PED and GAIN DAs work with ROOT input files as well.
   
 \section da_s4 In case of trouble
 
 Please contact :
 
-Jean-Luc Charvet : jean-luc.charvet@cea.fr 
+Jean-Luc Charvet : jean-luc.charvet@cern.ch 
 or
 Alberto Baldisseri : a.baldisseri@cea.fr
 or
 Laurent Aphecetche : laurent.aphecetche@subatech.in2p3.fr (for OCC DA)
 
-This chapter is defined in the READMEMchda.txt file.
+This chapter is defined in the READMEmchda.txt file.
 */
 
