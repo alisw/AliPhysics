@@ -16,6 +16,7 @@
 #pragma link C++ class AliCorrectionMatrix3D+;
 
 #pragma link C++ class AliPWG0Helper+;
+#pragma link C++ class AliOfflineTrigger+;
 
 #pragma link C++ class AliCorrection+;
 #pragma link C++ class AliUnfolding+;

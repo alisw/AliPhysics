@@ -12,7 +12,8 @@ HDRS = dNdEta/AlidNdEtaTask.h \
        TPC/AliROCClusterAnalysisSelector.h \
        highMultiplicity/AliHighMultiplicitySelector.h \
        multiplicity/AliMultiplicityTask.h \
-       esdTrackCuts/AliCutTask.h
+       esdTrackCuts/AliCutTask.h \
+       trigger/AliTriggerTask.h
 
 SRCS = $(HDRS:.h=.cxx)
 
