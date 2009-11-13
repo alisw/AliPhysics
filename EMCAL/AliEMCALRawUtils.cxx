@@ -446,7 +446,6 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
 void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_t & time) const 
 {
   // Fits the raw signal time distribution; from AliEMCALGetter 
-  printf("*********************** FIT Signal\n");
   amp = time = 0. ; 
   Double_t ped = 0;
   Int_t nPed = 0;
