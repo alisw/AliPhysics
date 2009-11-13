@@ -1,5 +1,4 @@
-#ifndef ALIHLTEMCALRAWANALYZERCOMPONENT_H
-#define ALIHLTEMCALRAWANALYZERCOMPONENT_H
+// $Id: AliHLTCaloRcuProcessor.cxx 35109 2009-09-30 02:48:41Z phille $
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -18,35 +17,19 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include "AliHLTCaloRcuProcessor.h"
 
-#include "AliHLTCaloRawAnalyzerComponentv3.h"
- 
-//class AliHLTCaloMapper;
-
-class  AliHLTEMCALRawAnalyzerComponent : public AliHLTCaloRawAnalyzerComponentv3
+AliHLTCaloRcuProcessor::AliHLTCaloRcuProcessor():AliHLTCaloProcessor()
+					
 {
- public:
-  AliHLTEMCALRawAnalyzerComponent();
-  virtual ~AliHLTEMCALRawAnalyzerComponent();
-  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
-  virtual AliHLTComponentDataType GetOutputDataType();
-  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
-  virtual void DoInit();
 
-  virtual const char* GetComponentID() = 0;
-  virtual AliHLTComponent* Spawn() = 0; 
+}
 
- protected:
-  virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );  
 
-  virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype);
- 
- private:
-  AliHLTEMCALRawAnalyzerComponent(const AliHLTEMCALRawAnalyzerComponent & );
-  AliHLTEMCALRawAnalyzerComponent & operator = (const AliHLTEMCALRawAnalyzerComponent  &);
-  virtual void InitMapping( const int specification );
-};
+AliHLTCaloRcuProcessor::~AliHLTCaloRcuProcessor()
+{
 
-#endif
+}
+
+
+

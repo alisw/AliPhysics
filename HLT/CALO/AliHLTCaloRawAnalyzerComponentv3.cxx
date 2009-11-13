@@ -24,17 +24,15 @@
 #include "AliRawReaderMemory.h"
 #include "AliAltroRawStreamV3.h"
 #include "AliCaloRawStreamV3.h"
-#include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloConstants.h"
+#include "AliHLTCaloRcuProcessor.h"
 
 AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
-  AliHLTCaloConstantsHandler(det),
-  AliHLTProcessor(),
+  AliHLTCaloRcuProcessor(),
+  fCaloEventCount(0),
   fAnalyzerPtr(0),
   fMapperPtr(0),     
-  //  fkDoPushRawData(false),
-   fkDoPushRawData(false),
-  fPhosEventCount(0),
+  fkDoPushRawData(false),
   fSanityInspectorPtr(0),
   fRawReaderMemoryPtr(0),
   fAltroRawStreamPtr(0),
@@ -43,24 +41,27 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
   fBunchSizeCut(0),
   fMinPeakPosition(0),
   fMaxPeakPosition(100),
+  fCaloConstants(NULL),
   fRawDataWriter(0) 
 {
   //comment
 
   //  fMapperPtr = new AliHLTCaloMapper();
-
+  
+  fCaloConstants = new AliHLTCaloConstants(det);
+  
   fRawReaderMemoryPtr = new AliRawReaderMemory();
-
+  
   fAltroRawStreamPtr = new AliAltroRawStreamV3(fRawReaderMemoryPtr);
-
+  
   fSanityInspectorPtr = new AliHLTCaloSanityInspector();
- 
-  // if( fkDoPushRawData == true  )
-    {
-      fRawDataWriter  = new RawDataWriter(fCaloConstants); 
-    }
-
-    fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, TString("EMCAL"));  
+  
+  if( fkDoPushRawData == true  )
+  {
+    fRawDataWriter  = new RawDataWriter(fCaloConstants); 
+  }
+  
+  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, det);  
 
 }
 
@@ -68,49 +69,102 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
 AliHLTCaloRawAnalyzerComponentv3::~AliHLTCaloRawAnalyzerComponentv3()
 {
   //comment
-  Deinit();
+  DoDeinit();
 }
 
 
 
+int
+AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
+{ 
+
+  //See base class for documentation
+  //  fPrintInfo = kFALSE;
+
+  int iResult=0;
+  
+  //  fMapperPtr = new AliHLTCaloMapper();
+  
+  //InitMapping(); 
+
+  for(int i = 0; i < argc; i++)
+    {
+      if(!strcmp("-offset", argv[i]))
+	{
+	  fOffset = atoi(argv[i+1]);
+	}
+      if(!strcmp("-bunchsizecut", argv[i]))
+	{
+	  fBunchSizeCut = atoi(argv[i+1]);
+	}
+      if(!strcmp("-minpeakposition", argv[i]))
+	{
+	  fMinPeakPosition = atoi(argv[i+1]);
+	}
+      if(!strcmp("-maxpeakposition", argv[i]))
+	{
+	  fMaxPeakPosition = atoi(argv[i+1]);
+	}  
+    }
+ 
+  /*
+  if( fMapperPtr->GetIsInitializedMapping() == false)
+    {
+      Logging(kHLTLogFatal, __FILE__ , IntToChar(  __LINE__ ) , "AliHLTCaloMapper::Could not initialise mapping from file %s, aborting", fMapperPtr->GetFilePath());
+      return -4;
+    }
+  */
+
+  return iResult;
+}
+
+
+
+
+
 int 
-AliHLTCaloRawAnalyzerComponentv3::Deinit()
+AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
 {
   //comment
+
   if(fAnalyzerPtr)
     {
       delete fAnalyzerPtr;
       fAnalyzerPtr = 0;
     }
+
   if(fMapperPtr)
     {
       delete  fMapperPtr;
       fMapperPtr = 0;
     }
+
   if(fRawReaderMemoryPtr)
     {
       delete fRawReaderMemoryPtr;
       fRawReaderMemoryPtr = 0;
     }
+
   if(fAltroRawStreamPtr)
     {
       delete fAltroRawStreamPtr;
       fAltroRawStreamPtr = 0;
     }
+
   return 0;
 }
 
-/*
+
 const char* 
 AliHLTCaloRawAnalyzerComponentv3::GetComponentID()
 {
   //comment
   return "CaloRawAnalyzerv3";
 }
-*/
 
 
- /*
+
+ 
 void
 AliHLTCaloRawAnalyzerComponentv3::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
@@ -118,14 +172,15 @@ AliHLTCaloRawAnalyzerComponentv3::GetInputDataTypes( vector<AliHLTComponentDataT
   list.clear();
   list.push_back( AliHLTCaloDefinitions::fgkDDLPackedRawDataType | kAliHLTDataOriginPHOS);
 }
- */
+ 
 
-AliHLTComponentDataType 
+AliHLTComponentDataType
 AliHLTCaloRawAnalyzerComponentv3::GetOutputDataType()
 {
   //comment
   return AliHLTCaloDefinitions::fgkChannelDataType;
 }
+
 
 void
 AliHLTCaloRawAnalyzerComponentv3::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
@@ -135,69 +190,6 @@ AliHLTCaloRawAnalyzerComponentv3::GetOutputDataSize(unsigned long& constBase, do
   inputMultiplier = 0.5;
 }
 
-
-int 
-AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& /*trigData*/, 
-					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
-{
-
-  /*
-
-  if( fPhosEventCount%300 == 0 )
-    {
-      cout << __FILE__<<__LINE__<< " Processing event " << fPhosEventCount << endl;
-    }
-  */
-
-  //  Int_t blockSize          = 0;
- 
-  Int_t blockSize          = -1;
-  UInt_t totSize           = 0;
-  const AliHLTComponentBlockData* iter = NULL; 
-  unsigned long ndx;
-
-  for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
-    {
-      iter = blocks+ndx;
-      if( CheckInputDataType(  iter->fDataType ) == false )
-	{
-	  continue;
-	}
-      else
-	{
-	  InitMapping( iter->fSpecification); 
-	  
-	  blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
-	  
-	  //  blockSize = 1;
-
-	  if(blockSize == -1) // If the processing returns -1 we are out of buffer and return an error msg.
-	    {
-	      return -ENOBUFS;
-	    }
-	  
-	  totSize += blockSize; //Keeping track of the used size
-	  AliHLTComponentBlockData bdChannelData;
-	  FillBlockData( bdChannelData );
-	  bdChannelData.fOffset = 0; //FIXME
-	  bdChannelData.fSize = blockSize;
-	  
-	  //	  bdChannelData.fDataType = AliHLTPHOSDefinitions::fgkChannelDataType;
-	  bdChannelData.fDataType = AliHLTCaloDefinitions::fgkChannelDataType;
-
-	  bdChannelData.fSpecification = iter->fSpecification;
-	  outputBlocks.push_back(bdChannelData);
-	  outputPtr += blockSize; //Updating position of the output buffer
-	}
-
-      fPhosEventCount++; 
-      size = totSize; //telling the framework how much buffer space we have used.
-    }
-
-  
-return 0;
-  
-}//end DoEvent
 
 
 
@@ -282,7 +274,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	     totSize += sizeof( AliHLTCaloChannelDataStruct );
 	    if(totSize > size)
 	      {
-		HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
+		//HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
 		return -1;
 	      }
 
@@ -339,52 +331,6 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 
 }
 
-
-
-
-int
-AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
-{ 
-
-  //See base class for documentation
-  //  fPrintInfo = kFALSE;
-
-  int iResult=0;
-  
-  //  fMapperPtr = new AliHLTCaloMapper();
-  
-  //InitMapping(); 
-
-  for(int i = 0; i < argc; i++)
-    {
-      if(!strcmp("-offset", argv[i]))
-	{
-	  fOffset = atoi(argv[i+1]);
-	}
-      if(!strcmp("-bunchsizecut", argv[i]))
-	{
-	  fBunchSizeCut = atoi(argv[i+1]);
-	}
-      if(!strcmp("-minpeakposition", argv[i]))
-	{
-	  fMinPeakPosition = atoi(argv[i+1]);
-	}
-      if(!strcmp("-maxpeakposition", argv[i]))
-	{
-	  fMaxPeakPosition = atoi(argv[i+1]);
-	}  
-    }
- 
-  /*
-  if( fMapperPtr->GetIsInitializedMapping() == false)
-    {
-      Logging(kHLTLogFatal, __FILE__ , IntToChar(  __LINE__ ) , "AliHLTCaloMapper::Could not initialise mapping from file %s, aborting", fMapperPtr->GetFilePath());
-      return -4;
-    }
-  */
-
-  return iResult;
-}
 
 
 

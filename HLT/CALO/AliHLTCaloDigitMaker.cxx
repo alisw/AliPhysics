@@ -41,7 +41,6 @@
 #include "AliHLTCaloSharedMemoryInterfacev2.h" // added by PTH
 //#include "AliPHOSEMCAGeometry.h"
 #include "TH2F.h"
-#include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloConstants.h"
 
 ClassImp(AliHLTCaloDigitMaker);
@@ -49,7 +48,6 @@ ClassImp(AliHLTCaloDigitMaker);
 //using namespace CaloHLTConst;
 
 AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
-  AliHLTCaloConstantsHandler(det),
   fShmPtr(0),
   fDigitStructPtr(0),
   fDigitCount(0),
@@ -58,12 +56,9 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
   fHighGainFactors(0),
   fLowGainFactors(0),
   fBadChannelMask(0),
-  fChannelBook(0)
+  fChannelBook(0),
+  fCaloConstants(NULL)
 {
-  //BALLE BALLE
-  
-  //Must set this in the child instance
-  
   // See header file for documentation
 
   fShmPtr = new AliHLTCaloSharedMemoryInterfacev2();
@@ -100,9 +95,27 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
     }	  
   
   //Must be set in child instance
-//fMapperPtr = new AliHLTCaloMapper(det);
+  //fMapperPtr = new AliHLTCaloMapper(det);
+  fCaloConstants = new AliHLTCaloConstants(det);
+
 }
-   
+
+AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(const AliHLTCaloDigitMaker &) :
+  fShmPtr(0),
+  fDigitStructPtr(0),
+  fDigitCount(0),
+  fOrdered(true),
+  fMapperPtr(0),
+  fHighGainFactors(0),
+  fLowGainFactors(0),
+  fBadChannelMask(0),
+  fChannelBook(0),
+  fCaloConstants(NULL)
+{
+  // Dummy copy constructor
+
+}
+
 AliHLTCaloDigitMaker::~AliHLTCaloDigitMaker() 
 {
   //See header file for documentation

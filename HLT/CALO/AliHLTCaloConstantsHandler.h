@@ -34,7 +34,7 @@ private:
   AliHLTCaloConstantsHandler();
 
   /** Keep the copy constructor private since it should not be used */
-  //  AliHLTCaloConstantsHandler(const AliHLTCaloConstantsHandler & );
+  AliHLTCaloConstantsHandler(const AliHLTCaloConstantsHandler & );
 
   /** Keep the assignement operator private since it should not be used */
     AliHLTCaloConstantsHandler & operator = (const AliHLTCaloConstantsHandler &);

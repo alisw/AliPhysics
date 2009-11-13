@@ -22,11 +22,11 @@ AliHLTCaloSanityInspector.h \
 AliHLTCaloSharedMemoryInterfacev2.h \
 AliHLTCaloFourier.h \
 AliHLTCaloConstants.h \
-AliHLTCaloConstantsHandler.h \
 AliHLTCaloClusterizer.h \
 AliHLTCaloDigitMaker.h \
-AliHLTCaloClusterAnalyser.h 
-
+AliHLTCaloClusterAnalyser.h \
+AliHLTCaloRcuProcessor.h \
+AliHLTCaloProcessor.h 
 
 ## all source files of this module
 ## all source files corresponding to the class headers

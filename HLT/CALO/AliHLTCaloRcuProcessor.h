@@ -16,6 +16,7 @@ class AliHLTCaloRcuProcessor:public AliHLTCaloProcessor
 public:
   AliHLTCaloRcuProcessor();
   virtual ~AliHLTCaloRcuProcessor();
+  virtual AliHLTComponentDataType GetOutputDataType() =0;
   
 private:
   AliHLTCaloRcuProcessor (const AliHLTCaloRcuProcessor & );

@@ -20,7 +20,7 @@
 #include "AliHLTEMCALRawAnalyzerComponent.h"
 #include "AliHLTEMCALMapper.h"
 #include "AliHLTEMCALDefinitions.h"
-
+#include "AliHLTCaloChannelDataHeaderStruct.h"
 
 AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent() : 
 AliHLTCaloRawAnalyzerComponentv3("EMCAL")
@@ -45,6 +45,30 @@ AliHLTEMCALRawAnalyzerComponent::GetInputDataTypes( vector <AliHLTComponentDataT
 }
 
 
+
+AliHLTComponentDataType
+AliHLTEMCALRawAnalyzerComponent::GetOutputDataType()
+{
+  //comment
+  return AliHLTEMCALDefinitions::fgkChannelDataType;
+}
+
+
+void
+AliHLTEMCALRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
+{
+  //comment
+  constBase = sizeof(AliHLTCaloChannelDataHeaderStruct);
+  inputMultiplier = 0.5;
+}
+
+
+void 
+AliHLTEMCALRawAnalyzerComponent::DoInit() 
+{
+  
+}
+
 bool 
 AliHLTEMCALRawAnalyzerComponent::CheckInputDataType(const AliHLTComponentDataType &datatype)
 {
@@ -57,6 +81,8 @@ AliHLTEMCALRawAnalyzerComponent::CheckInputDataType(const AliHLTComponentDataTyp
        return false;
      }
 }
+
+
 
 
 void 
@@ -74,3 +100,67 @@ AliHLTEMCALRawAnalyzerComponent::InitMapping( const int specification )
       exit(-2);
     }
 }
+
+int 
+AliHLTEMCALRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& /*trigData*/, 
+					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
+{
+
+  /*
+
+  if( fPhosEventCount%300 == 0 )
+    {
+      cout << __FILE__<<__LINE__<< " Processing event " << fPhosEventCount << endl;
+    }
+  */
+
+  //  Int_t blockSize          = 0;
+ 
+  Int_t blockSize          = -1;
+  UInt_t totSize           = 0;
+  const AliHLTComponentBlockData* iter = NULL; 
+  unsigned long ndx;
+
+  for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
+    {
+      iter = blocks+ndx;
+      if(  ! CheckInputDataType(iter->fDataType) )
+	{
+	  continue;
+	}
+      else
+	{
+	  InitMapping( iter->fSpecification); 
+	  
+	  blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
+	  
+	  //  blockSize = 1;
+
+	  if(blockSize == -1) // If the processing returns -1 we are out of buffer and return an error msg.
+	    {
+	      return -ENOBUFS;
+	    }
+	  
+	  totSize += blockSize; //Keeping track of the used size
+	  AliHLTComponentBlockData bdChannelData;
+	  FillBlockData( bdChannelData );
+	  bdChannelData.fOffset = 0; //FIXME
+	  bdChannelData.fSize = blockSize;
+	  
+	  //	  bdChannelData.fDataType = AliHLTPHOSDefinitions::fgkChannelDataType;
+	  bdChannelData.fDataType = AliHLTEMCALDefinitions::fgkChannelDataType;
+
+	  bdChannelData.fSpecification = iter->fSpecification;
+	  outputBlocks.push_back(bdChannelData);
+	  outputPtr += blockSize; //Updating position of the output buffer
+	}
+
+      fCaloEventCount++; 
+      size = totSize; //telling the framework how much buffer space we have used.
+    }
+
+  
+return 0;
+  
+}//end DoEvent
+

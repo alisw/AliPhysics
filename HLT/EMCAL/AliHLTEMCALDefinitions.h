@@ -31,7 +31,7 @@ public:
   static const AliHLTComponentDataType fgkESDDataType; // global ESD data type - may change!!!
   static const AliHLTComponentDataType fgkEMCALESDDataType; // ESD data type after emcal processing
   static const AliHLTComponentDataType fgkCalibrationDataType; // Calibration
-
+  static const AliHLTComponentDataType fgkChannelDataType;
   ClassDef(AliHLTEMCALDefinitions, 0)
     
 };

@@ -40,7 +40,6 @@
 #include "AliHLTCaloChannelDataStruct.h"
 #include "AliHLTDataTypes.h"
 #include "TString.h"
-#include "AliHLTCaloConstantsHandler.h"
 
 /**
  * @class AliHLTCaloDigitMaker
@@ -60,7 +59,7 @@ class TString;
 
 
 
-class AliHLTCaloDigitMaker : public AliHLTCaloConstantsHandler
+class AliHLTCaloDigitMaker
 {
 
 public:
@@ -184,7 +183,10 @@ private:
   /** Channel book keeping variable */
   AliHLTCaloDigitDataStruct ***fChannelBook;                     //! transient
 
-  //  AliHLTCaloDigitMaker (const AliHLTCaloDigitMaker  & );
+  /** Constants class */
+  AliHLTCaloConstants* fCaloConstants;
+
+  AliHLTCaloDigitMaker(const AliHLTCaloDigitMaker &);
   //  AliHLTCaloDigitMaker & operator = (const AliHLTCaloDigitMaker &);
 
   ClassDef(AliHLTCaloDigitMaker, 0); 

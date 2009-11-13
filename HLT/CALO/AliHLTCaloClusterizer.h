@@ -42,8 +42,8 @@
 #include "AliHLTCaloRecPointDataStruct.h"
 #include "AliHLTCaloDigitContainerDataStruct.h"
 #include "AliHLTCaloDigitDataStruct.h"
-#include "AliHLTCaloConstantsHandler.h"
 #include "TString.h"
+#include "AliHLTCaloConstants.h"
 
 //#include "AliPHOSGeometry.h"
 
@@ -64,7 +64,7 @@ class TClonesArray;
 
 
 
-class AliHLTCaloClusterizer : public AliHLTCaloConstantsHandler
+class AliHLTCaloClusterizer
 {
   
 public:
@@ -78,7 +78,7 @@ public:
 //   /** Copy constructor */  
 //   AliHLTCaloClusterizer(const AliHLTCaloClusterizer &) : 
 //     //    AliHLTCaloBase(),
-//     AliHLTCaloConstantsHandler(new TString("BALLE")),
+//     AliHLTCaloConstants(NULL),
 //     fRecPointDataPtr(0),
 //     fDigitDataPtr(0),
 //     fEmcClusteringThreshold(0),
@@ -163,12 +163,18 @@ protected:
   /** Maximum difference in index to be a neighbour */
   Int_t fMaxDigitIndexDiff;                                    //COMMENT
 
+  /** Instance of calorimeter constants            */
+  AliHLTCaloConstants* fCaloConstants;
+
 private:
 
   AliHLTCaloClusterizer();
 
-  //  AliHLTCaloClusterizer (const AliHLTCaloClusterizer  & );
-  //  AliHLTCaloClusterizer & operator = (const AliHLTCaloClusterizer &);
+  AliHLTCaloClusterizer (const AliHLTCaloClusterizer &);
+//   AliHLTCaloClusterizer & operator = (const AliHLTCaloClusterizer &)
+//   {
+//     return *this;
+//   }
 
 
   ClassDef(AliHLTCaloClusterizer, 0);

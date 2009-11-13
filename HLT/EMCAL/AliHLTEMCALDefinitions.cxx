@@ -37,6 +37,8 @@ const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkEMCALESDDataType = { si
 
 const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkCalibrationDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','I','B','R','A','H'},{'E','M','C','A'}};;
 
+const AliHLTComponentDataType AliHLTEMCALDefinitions::fgkChannelDataType = { sizeof(AliHLTComponentDataType), {'C','H','A','N','N','E','L','T'},{'E','M','C','A'}};;
+
 AliHLTEMCALDefinitions::AliHLTEMCALDefinitions()
 {
   // see header file for class documentation

@@ -27,12 +27,12 @@
 #include "AliHLTCaloConstants.h"
 #include "Rtypes.h"
 #include "AliHLTLogging.h"
-#include "AliHLTCaloConstantsHandler.h"
+#include "AliHLTCaloConstants.h"
 
 class AliHLTCaloCoordinate;
 class AliHLTCaloConstants;
 
-class AliHLTCaloMapper : public AliHLTLogging, public AliHLTCaloConstantsHandler
+class AliHLTCaloMapper : public AliHLTLogging
 {
 public:
   
@@ -72,7 +72,8 @@ protected:
   int fSpecification;
   bool fIsInitializedMapping;
   fDDLSpecificationMap* fSpecificationMapPtr;
-  
+  AliHLTCaloConstants* fCaloConstants;
+
  private:
   AliHLTCaloMapper();
   AliHLTCaloMapper(const AliHLTCaloMapper & );

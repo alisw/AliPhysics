@@ -37,14 +37,8 @@
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTCaloDigitContainerDataStruct.h"
 #include "TClonesArray.h"
-
-//#include "AliHLTCaloConstants.h"
-
-#include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloConstants.h"
 
-//#include "AliHLTCaloClusterHandler.h"
-//#include "AliPHOSDigit.h"
 
 //#ifndef HAVENOT__PHOSRECOPARAMEMC // set from configure if EMC functionality not available in AliPHOSRecoParam
 //#include "AliPHOSRecoParam.h"
@@ -59,7 +53,6 @@ using namespace std;
 ClassImp(AliHLTCaloClusterizer);
 
 AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
-  AliHLTCaloConstantsHandler(det),
   fRecPointDataPtr(0),
   fDigitDataPtr(0),
   fEmcClusteringThreshold(0),
@@ -67,7 +60,8 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
   fEmcTimeGate(0),
   fDigitsInCluster(0),
   fDigitContainerPtr(0),
-  fMaxDigitIndexDiff(0)
+  fMaxDigitIndexDiff(0),
+  fCaloConstants(NULL)
 {
   //See header file for documentation
   fEmcClusteringThreshold = 0.2;
@@ -75,6 +69,22 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
   fEmcTimeGate = 1.e-6 ;
   
   fMaxDigitIndexDiff = 2*fCaloConstants->GetNZROWSMOD();
+
+  fCaloConstants = new AliHLTCaloConstants(det);
+}//end
+
+AliHLTCaloClusterizer::AliHLTCaloClusterizer(const AliHLTCaloClusterizer &) :
+  fRecPointDataPtr(0),
+  fDigitDataPtr(0),
+  fEmcClusteringThreshold(0),
+  fEmcMinEnergyThreshold(0),
+  fEmcTimeGate(0),
+  fDigitsInCluster(0),
+  fDigitContainerPtr(0),
+  fMaxDigitIndexDiff(0),
+  fCaloConstants(NULL)
+{
+  // dummy copy constructor
 }//end
 
 

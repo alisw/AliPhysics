@@ -267,7 +267,7 @@ AliHLTPHOSClusterAnalyserComponent::DoInit(int argc, const char** argv )
 
   fClusterAnalyserPtr = new AliHLTPHOSClusterAnalyser();
 
-  const char *path = "HLT/ConfigPHOS/ClusterAnalyserComponent";
+  //  const char *path = "HLT/ConfigPHOS/ClusterAnalyserComponent";
 
   GetGeometryFromCDB();
 
