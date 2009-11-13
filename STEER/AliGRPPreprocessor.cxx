@@ -27,7 +27,9 @@
 #include <TList.h>
 #include <TMap.h>
 #include <TObjString.h>
+#include <TObjArray.h>
 #include <TGraph.h>
+#include <TString.h>
 
 #include <float.h>
 
@@ -196,7 +198,7 @@ ClassImp(AliGRPPreprocessor)
 //_______________________________________________________________
 
 AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
-	AliPreprocessor("GRP",shuttle),  fPressure(0), fmaxFloat(0), fminFloat(0),fmaxDouble(0), fminDouble(0), fmaxInt(0), fminInt(0), fmaxUInt(0), fminUInt(0),fdaqStartEndTimeOk(kTRUE)
+	AliPreprocessor("GRP",shuttle),  fPressure(0), fmaxFloat(0), fminFloat(0),fmaxDouble(0), fminDouble(0), fmaxInt(0), fminInt(0), fmaxUInt(0), fminUInt(0),fdaqStartEndTimeOk(kTRUE),ffailedDPs(new TObjArray(fgknDCSDP))
 {
 	// constructor - shuttle must be instantiated!
 
@@ -234,6 +236,7 @@ AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
 	AliInfo(Form("Max allowed unsigned integer = %u",(Int_t)fmaxUInt));
 	AliInfo(Form("Min allowed unsigned integer = %u",(Int_t)fminUInt));
 
+	ffailedDPs->SetOwner(kTRUE);
 }
 
 //_______________________________________________________________
@@ -243,6 +246,8 @@ AliGRPPreprocessor::~AliGRPPreprocessor()
 	//destructor
 	
 	delete fPressure;
+	delete ffailedDPs;
+
 }
 
 //_______________________________________________________________
@@ -264,6 +269,12 @@ void AliGRPPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 	AliInfo(Form("Pressure Entries: %d",array->GetEntries()));
 	
 	fPressure = new AliDCSSensorArray(GetStartTimeDCSQuery(), GetEndTimeDCSQuery(), array);
+
+	for (Int_t iDP=0; iDP < fgknDCSDP; iDP++){
+		TObjString* dp = new TObjString(fgkDCSDataPoints[iDP]);
+		ffailedDPs->AddAt(dp,iDP);
+	}
+
 }
 
 //_______________________________________________________________
@@ -329,8 +340,21 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	Int_t entries = ProcessDcsDPs( valueMap, grpobj );
 	Log(Form("entries found = %d (should be %d)",entries, fgknDCSDP-4));
 	if (fdaqStartEndTimeOk){
-		if( entries < fgknDCSDP-4 ) { // FIXME (!= ) LHState, LHCLuminosity, BeamIntensity, LH3_BSF4_H3 are not working yet...  
+		if( entries < fgknDCSDP-4 ) { // FIXME (!= ) LHState, LHCLuminosity, BeamIntensity, L3_BSF4_H3 are not working yet...  
 			Log(Form("Problem with the DCS data points!!! Only %d/%d entries found",entries,fgknDCSDP-4));
+			Log(Form("The DPs giving problems were:"));
+			for (Int_t iDP = 0; iDP < fgknDCSDP; iDP++){
+				TObjString *dpString = (TObjString*)ffailedDPs->At(iDP);
+				if (dpString){
+					TString name = dpString->String();
+					if (name != "LHCState" && name != "LHCLuminosity" && name != "BeamIntensity" && name != "L3_BSF4_H3"){
+						Log(Form("******** %s ******** not present, but foreseen --> causing an ERROR",name.Data()));
+					}
+					else {
+						Log(Form(" %s is not present, but was not generating any error since it is not ready in DCS - check the other DPs in this list!",name.Data()));
+					}
+				}
+			}
 			error |= 8;
 		}
 		else  Log(Form("DCS data points, successful!"));
@@ -776,6 +800,7 @@ Int_t AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, AliGRPObject* grpObj)
 	nEnvEntries = ProcessEnvDPs(valueMap, grpObj);
 	nHallProbesEntries = ProcessHPDPs(valueMap, grpObj);
 	grpObj->SetPolarityConventionLHC();  // after the dipole cables swap we comply with LHC convention
+	Log(Form("nLHCEntries = %d, L3Entries = %d, nDipoleEntries =%d, nEnvEntries = %d, nHallProbesEntries = %d", nLHCEntries, nL3Entries, nDipoleEntries, nEnvEntries, nHallProbesEntries));
 	entries = nLHCEntries + nL3Entries + nDipoleEntries + nEnvEntries + nHallProbesEntries;
 	return entries;
 
@@ -791,6 +816,7 @@ Int_t AliGRPPreprocessor::ProcessL3DPs(const TMap* valueMap, AliGRPObject* grpOb
 	// L3 info
 
 	Int_t nL3Entries = 0;
+
 	TObjArray *array = 0x0;
 	Int_t indexDP = -1;
 	Bool_t isZero = kTRUE; // flag to monitor L3Current. If set to true, the magnet is OFF, and the polarity can change
@@ -819,7 +845,10 @@ Int_t AliGRPPreprocessor::ProcessL3DPs(const TMap* valueMap, AliGRPObject* grpOb
 				floatDCS = 0x0;
 			}
 		}
-		if (!outOfRange) nL3Entries++;
+		if (!outOfRange) {
+			nL3Entries++;
+			ffailedDPs->RemoveAt(indexDP);
+		}
 	}
 
 	if (array) array = 0x0;
@@ -840,10 +869,12 @@ Int_t AliGRPPreprocessor::ProcessL3DPs(const TMap* valueMap, AliGRPObject* grpOb
 			if (change == kFALSE){
 				grpObj->SetL3Polarity(charDCS);
 				AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetL3Polarity())));
+				ffailedDPs->RemoveAt(indexDP);
 				nL3Entries++;
 			}
 			else if (isZero){
 				AliInfo(Form("%s set to invalid, but magnet was OFF (according to the current), DP not considered wrong",fgkDCSDataPoints[indexDP]));
+				ffailedDPs->RemoveAt(indexDP);
 				nL3Entries++;
 			}
 			else {
@@ -892,7 +923,10 @@ Int_t AliGRPPreprocessor::ProcessDipoleDPs(const TMap* valueMap, AliGRPObject* g
 				floatDCS = 0x0;
 			}
 		}
-		if (!outOfRange) nDipoleEntries++;
+		if (!outOfRange) {
+			nDipoleEntries++;
+			ffailedDPs->RemoveAt(indexDP);
+		}
 	}
 
 	if (array) array = 0x0;
@@ -913,10 +947,12 @@ Int_t AliGRPPreprocessor::ProcessDipoleDPs(const TMap* valueMap, AliGRPObject* g
 			if (!change){
 				grpObj->SetDipolePolarity(charDCS);
 				AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetDipolePolarity())));
+				ffailedDPs->RemoveAt(indexDP);
 				nDipoleEntries++;
 			}
 			else if (isZero){
 				AliInfo(Form("%s set to invalid, but magnet was OFF (according to the current), DP not considered wrong",fgkDCSDataPoints[indexDP]));
+				ffailedDPs->RemoveAt(indexDP);
 				nDipoleEntries++;
 			}
 			else{
@@ -964,7 +1000,10 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 				floatDCS = 0x0;
 			}
 		}
-		if (!outOfRange) nEnvEntries++;
+		if (!outOfRange) {
+			ffailedDPs->RemoveAt(indexDP);
+			nEnvEntries++;
+		}
 	}
 
 	if (array) array = 0x0;
@@ -991,6 +1030,7 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 			Log(Form("Fit for sensor %s not found, but the graph is there - NOT going into error",fgkDCSDataPoints[indexDP]));
 		}
 		grpObj->SetCavernAtmosPressure(sensorCavernP2);
+		ffailedDPs->RemoveAt(indexDP);
 		nEnvEntries++;
 	} 
 	//if (sensorP2) delete sensorP2;
@@ -1012,6 +1052,7 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 			Log(Form("Fit for sensor %s not found, but the graph is there - NOT going into error",fgkDCSDataPoints[indexDP]));
 		}
 		grpObj->SetSurfaceAtmosPressure(sensorP2);
+		ffailedDPs->RemoveAt(indexDP);
 		nEnvEntries++;
 	} 
 	//if (sensorP2) delete sensorP2;
@@ -1033,6 +1074,7 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 			Log(Form("Fit for sensor %s not found, but the graph is there - NOT going into error",fgkDCSDataPoints[indexDP]));
 		}
 		grpObj->SetCavernAtmosPressure2(sensorCavernP22);
+		ffailedDPs->RemoveAt(indexDP);
 		nEnvEntries++;
 	} 
 	//if (sensorP2) delete sensorP2;
@@ -1087,7 +1129,10 @@ Int_t AliGRPPreprocessor::ProcessHPDPs(const TMap* valueMap, AliGRPObject* grpOb
 					floatDCS = 0x0;
 				}
 			}
-			if (!outOfRange) nHPEntries++;
+			if (!outOfRange) {
+				ffailedDPs->RemoveAt(indexDP + 7);  // 7 = shift in the complete list of DPs to get to the Hall Probes
+				nHPEntries++;
+			}
 		}
 	}
 		
@@ -1146,6 +1191,7 @@ Int_t AliGRPPreprocessor::ProcessLHCDPs(const TMap* valueMap, AliGRPObject* grpO
 				grpObj->SetLHCState(AliGRPObject::GetInvalidString());
 			}	  
 		}
+		ffailedDPs->RemoveAt(indexDP);
 		nLHCEntries++;
 	}
 	
@@ -1178,7 +1224,10 @@ Int_t AliGRPPreprocessor::ProcessLHCDPs(const TMap* valueMap, AliGRPObject* grpO
 				floatDCS = 0x0;
 			}
 		}
-		if (!outOfRange) nLHCEntries++;
+		if (!outOfRange) {
+			ffailedDPs->RemoveAt(indexDP);
+			nLHCEntries++;
+		}
 	}
 
 	if (array) array = 0x0;
@@ -1210,7 +1259,10 @@ Int_t AliGRPPreprocessor::ProcessLHCDPs(const TMap* valueMap, AliGRPObject* grpO
 				floatDCS = 0x0;
 			}
 		}
-		if (!outOfRange) nLHCEntries++;
+		if (!outOfRange) {
+			nLHCEntries++;
+			ffailedDPs->RemoveAt(indexDP);
+		}
 	}
 
 	return nLHCEntries;

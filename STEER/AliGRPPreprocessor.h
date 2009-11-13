@@ -25,6 +25,7 @@
 
 class TList;
 class TString;
+class TObjArray;
 class AliDCSSensorArray;
 class AliGRPObject;
 class AliSplineFit;
@@ -125,6 +126,8 @@ class AliGRPPreprocessor: public AliPreprocessor {
   UInt_t fmaxUInt; // maximum uint accepted
   UInt_t fminUInt; // minimum uint accepted
   Bool_t fdaqStartEndTimeOk; // flag to set whether the DAQ_time_start/end fields are set
+
+  TObjArray* ffailedDPs; //TObjArray of failed DPs names
 
   ClassDef(AliGRPPreprocessor, 0);
 };
