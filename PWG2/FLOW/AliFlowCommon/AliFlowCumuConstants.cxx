@@ -13,16 +13,49 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <TNamed.h>
 #include "AliFlowCumuConstants.h"  
 
-
+ClassImp(AliFlowCumuConstants)
 // Description: constants for the Cumulant flow analysis
 
-  
-Double_t AliFlowCumuConstants::fgBinWidth =  0.1 ;
-Double_t AliFlowCumuConstants::fgR0       =  2.2 ;
-Double_t AliFlowCumuConstants::fgPtMax    =  3.1 ;
-Double_t AliFlowCumuConstants::fgPtMin    =  0.0 ;
+AliFlowCumuConstants* AliFlowCumuConstants::fgPMasterConfig = NULL;
 
-Bool_t AliFlowCumuConstants::fgOtherEquations  =  kFALSE ;
+//______________________________________________________________________________
+AliFlowCumuConstants::AliFlowCumuConstants():
+  TNamed(),
+  fQmax(11),
+  fPmax(5),
+  fQmax4(5),
+  fPmax4(2),     
+  fQmax6(7),
+  fPmax6(3),   
+  fQmax8(9),
+  fPmax8(4), 
+  fQmax16(17),
+  fPmax16(8),     
+  fFlow(2),  
+  fMltpl(1),
+  fBinWidth(0.1),   
+  fR0(2.2),
+  fPtMax(3.1),
+  fPtMin(0.0),
+  fOtherEquations(kFALSE)
+{
+  //def ctor
+}
+
+//______________________________________________________________________________
+AliFlowCumuConstants::~AliFlowCumuConstants()
+{
+  //dtor
+}
+
+//______________________________________________________________________________
+AliFlowCumuConstants* AliFlowCumuConstants::GetMaster()
+{
+  //get global master config
+  if (!fgPMasterConfig) fgPMasterConfig = new AliFlowCumuConstants();
+  return fgPMasterConfig;
+}
 

@@ -17,44 +17,55 @@
 $Log$
 */ 
 
+#include <TNamed.h> 
+#include <TMath.h>
 #include "AliFlowCommonConstants.h" 
-#include "TMath.h" 
-
 // AliFlowCommonConstants:
 //
 // Constants for the common histograms in the flow analysis
+// semi "singleton" mode: apart from any objects instantiated via
+// the constructor there may be a global Master object. get it with
+// AliFlowCommonConstants::GetMaster()->GetMaster() static method.
 //
 // Author: Naomi van der Kolk (kolk@nikhef.nl)
+// mod: Mikolaj Krzewicki, Nikhef (mikolaj.krzewicki@cern.ch)
 
-//ClassImp(AliFlowCommonConstants)
+ClassImp(AliFlowCommonConstants)
 
-Double_t AliFlowCommonConstants::fgMultMin =  0.;            
-Double_t AliFlowCommonConstants::fgMultMax = 10000.;
-Double_t AliFlowCommonConstants::fgPtMin   =  0.;	     
-Double_t AliFlowCommonConstants::fgPtMax   = 10.;
-Double_t AliFlowCommonConstants::fgPhiMin  =  0.;	     
-Double_t AliFlowCommonConstants::fgPhiMax  =  TMath::TwoPi();
-Double_t AliFlowCommonConstants::fgEtaMin  = -2.;	     
-Double_t AliFlowCommonConstants::fgEtaMax  =  2.;	     
-Double_t AliFlowCommonConstants::fgQMin    =  0.;	     
-Double_t AliFlowCommonConstants::fgQMax    =  3.;
+AliFlowCommonConstants* AliFlowCommonConstants::fgPMasterConfig = NULL;
 
-//getters
-Int_t AliFlowCommonConstants::GetNbinsMult() { return kNbinsMult; }
-Int_t AliFlowCommonConstants::GetNbinsPt()   { return kNbinsPt; }
-Int_t AliFlowCommonConstants::GetNbinsPhi()  { return kNbinsPhi; }
-Int_t AliFlowCommonConstants::GetNbinsEta()  { return kNbinsEta; }
-Int_t AliFlowCommonConstants::GetNbinsQ()    { return kNbinsQ; }
- 
-//getters
-Double_t AliFlowCommonConstants::GetMultMin() { return fgMultMin; }
-Double_t AliFlowCommonConstants::GetMultMax() { return fgMultMax; }
-Double_t AliFlowCommonConstants::GetPtMin()   { return fgPtMin; }
-Double_t AliFlowCommonConstants::GetPtMax()   { return fgPtMax; }
-Double_t AliFlowCommonConstants::GetPhiMin()  { return fgPhiMin; }
-Double_t AliFlowCommonConstants::GetPhiMax()  { return fgPhiMax; }
-Double_t AliFlowCommonConstants::GetEtaMin()  { return fgEtaMin; }
-Double_t AliFlowCommonConstants::GetEtaMax()  { return fgEtaMax; }
-Double_t AliFlowCommonConstants::GetQMin()    { return fgQMin; }
-Double_t AliFlowCommonConstants::GetQMax()    { return fgQMax; }
-  
+//______________________________________________________________________________
+AliFlowCommonConstants::AliFlowCommonConstants():
+  TNamed(),
+  fNbinsMult(10000),
+  fNbinsPt(100),   
+  fNbinsPhi(72),
+  fNbinsEta(80),
+  fNbinsQ(500),
+  fMultMin(0.),            
+  fMultMax(10000.),
+  fPtMin(0.),	     
+  fPtMax(10.),
+  fPhiMin(0.),	     
+  fPhiMax(TMath::TwoPi()),
+  fEtaMin(-2.),	     
+  fEtaMax(2.),	     
+  fQMin(0.),	     
+  fQMax(3.)
+{
+  //def ctor
+}
+
+//______________________________________________________________________________
+AliFlowCommonConstants::~AliFlowCommonConstants()
+{
+  //dtor
+}
+
+//______________________________________________________________________________
+AliFlowCommonConstants* AliFlowCommonConstants::GetMaster()
+{
+  //return pointer to master config object
+  if (!fgPMasterConfig) fgPMasterConfig = new AliFlowCommonConstants();
+  return fgPMasterConfig;
+}

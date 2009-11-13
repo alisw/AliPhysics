@@ -71,13 +71,13 @@ ClassImp(AliFlowLYZHist2)
   if (useSum) { addlast = "LYZSUM"; }
   else { addlast = "LYZPROD"; }
 
-  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-  Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
+  Int_t iNbinsPt = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
+  Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
 
-  Double_t  dPtMin = AliFlowCommonConstants::GetPtMin();	     
-  Double_t  dPtMax = AliFlowCommonConstants::GetPtMax();
-  Double_t  dEtaMin = AliFlowCommonConstants::GetEtaMin();	     
-  Double_t  dEtaMax = AliFlowCommonConstants::GetEtaMax();
+  Double_t  dPtMin = AliFlowCommonConstants::GetMaster()->GetPtMin();	     
+  Double_t  dPtMax = AliFlowCommonConstants::GetMaster()->GetPtMax();
+  Double_t  dEtaMin = AliFlowCommonConstants::GetMaster()->GetEtaMin();	     
+  Double_t  dEtaMax = AliFlowCommonConstants::GetMaster()->GetEtaMax();
     
   //fHistProReNumer
   name = "Second_FlowPro_ReNumer";

@@ -137,25 +137,25 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fWeightsList = new TList();
  fWeightsList->SetName("Weights");
  fWeightsList->SetOwner(kTRUE);
- fR0=AliFlowCumuConstants::fgR0;
+ fR0=AliFlowCumuConstants::GetMaster()->GetR0();
  //Pt:
- fPtMax=AliFlowCommonConstants::GetPtMax(); 
- fPtMin=AliFlowCommonConstants::GetPtMin();
- fgknBinsPt=AliFlowCommonConstants::GetNbinsPt();
+ fPtMax=AliFlowCommonConstants::GetMaster()->GetPtMax(); 
+ fPtMin=AliFlowCommonConstants::GetMaster()->GetPtMin();
+ fgknBinsPt=AliFlowCommonConstants::GetMaster()->GetNbinsPt();
  if(fgknBinsPt)
  {
   fBinWidthPt=(fPtMax-fPtMin)/fgknBinsPt;  
  } 
  //Eta: 
- fEtaMax=AliFlowCommonConstants::GetEtaMax(); 
- fEtaMin=AliFlowCommonConstants::GetEtaMin();
- fgknBinsEta=AliFlowCommonConstants::GetNbinsEta();
+ fEtaMax=AliFlowCommonConstants::GetMaster()->GetEtaMax(); 
+ fEtaMin=AliFlowCommonConstants::GetMaster()->GetEtaMin();
+ fgknBinsEta=AliFlowCommonConstants::GetMaster()->GetNbinsEta();
  if(fgknBinsEta)
  {
   fBinWidthEta=(fEtaMax-fEtaMin)/fgknBinsEta;  
  } 
  
- fOtherEquations=AliFlowCumuConstants::fgOtherEquations;
+ fOtherEquations=AliFlowCumuConstants::GetMaster()->GetOtherEquations();
 }
 
 AliFlowAnalysisWithCumulants::~AliFlowAnalysisWithCumulants()

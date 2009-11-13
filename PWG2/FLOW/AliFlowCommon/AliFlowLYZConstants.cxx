@@ -17,20 +17,38 @@
 $Log$
 */ 
 
+#include <TNamed.h> 
 #include "AliFlowLYZConstants.h" 
 
-
+ClassImp(AliFlowLYZConstants)
 // AliFlowLYZConstant:
 // Description: constants for the LYZ flow analysis
 // Author: Naomi van der Kolk (kolk@nikhef.nl)
+// modified: Mikolaj Krzewicki, Nikhef (mikolaj.krzewicki@cern.ch)
 
-  
-Double_t AliFlowLYZConstants::fgMaxSUM       =  120.; 
-Double_t AliFlowLYZConstants::fgMaxPROD      =  1.; 
+AliFlowLYZConstants* AliFlowLYZConstants::fgPMasterConfig = NULL;
 
-  
+//______________________________________________________________________________
+AliFlowLYZConstants::AliFlowLYZConstants():
+  TNamed(),
+  fNtheta(5),
+  fNbins(1200),
+  fMaxSUM(120.),
+  fMaxPROD(1.)
+{
+  //def ctor
+}
 
+//______________________________________________________________________________
+AliFlowLYZConstants::~AliFlowLYZConstants()
+{
+  //dtor
+}
 
-  
-
-
+//______________________________________________________________________________
+AliFlowLYZConstants* AliFlowLYZConstants::GetMaster()
+{
+  //get global master config
+  if (!fgPMasterConfig) fgPMasterConfig = new AliFlowLYZConstants();
+  return fgPMasterConfig;
+}

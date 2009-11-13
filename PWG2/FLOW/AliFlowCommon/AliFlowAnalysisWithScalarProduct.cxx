@@ -103,12 +103,12 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   //Define all histograms
   cout<<"---Analysis with the Scalar Product Method--- Init"<<endl;
 
-  Int_t iNbinsPt   = AliFlowCommonConstants::GetNbinsPt();
-  Double_t dPtMin  = AliFlowCommonConstants::GetPtMin();	     
-  Double_t dPtMax  = AliFlowCommonConstants::GetPtMax();
-  Int_t iNbinsEta  = AliFlowCommonConstants::GetNbinsEta();
-  Double_t dEtaMin = AliFlowCommonConstants::GetEtaMin();	     
-  Double_t dEtaMax = AliFlowCommonConstants::GetEtaMax();
+  Int_t iNbinsPt   = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
+  Double_t dPtMin  = AliFlowCommonConstants::GetMaster()->GetPtMin();	     
+  Double_t dPtMax  = AliFlowCommonConstants::GetMaster()->GetPtMax();
+  Int_t iNbinsEta  = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
+  Double_t dEtaMin = AliFlowCommonConstants::GetMaster()->GetEtaMin();	     
+  Double_t dEtaMax = AliFlowCommonConstants::GetMaster()->GetEtaMax();
 
   fHistProUQetaRP = new TProfile("Flow_UQetaRP_SP","Flow_UQetaRP_SP",iNbinsEta,dEtaMin,dEtaMax);
   fHistProUQetaRP->SetXTitle("{eta}");
@@ -263,8 +263,8 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   cout<<"         Scalar product              "<<endl;
   cout<<endl;
   
-  Int_t iNbinsPt  = AliFlowCommonConstants::GetNbinsPt();
-  Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
+  Int_t iNbinsPt  = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
+  Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
 
   Double_t dMmin1    = fHistProM->GetBinContent(1);  //average over M-1
   Double_t dMmin1Err = fHistProM->GetBinError(1);    //error on average over M-1

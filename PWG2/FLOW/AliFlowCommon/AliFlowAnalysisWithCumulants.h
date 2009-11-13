@@ -176,18 +176,18 @@ class AliFlowAnalysisWithCumulants{
   AliFlowAnalysisWithCumulants(const AliFlowAnalysisWithCumulants& afawc);
   AliFlowAnalysisWithCumulants& operator=(const AliFlowAnalysisWithCumulants& afawc);
   AliFlowTrackSimple* fTrack;                                   //track
-  static const Int_t fgkQmax = AliFlowCumuConstants::kQmax;     //needed for numerics
-  static const Int_t fgkPmax = AliFlowCumuConstants::kPmax;     //needed for numerics  
-  static const Int_t fgkQmax4 = AliFlowCumuConstants::kQmax4;   //needed for numerics (only for different system of Eq.)
-  static const Int_t fgkPmax4 = AliFlowCumuConstants::kPmax4;   //needed for numerics (only for different system of Eq.) 
-  static const Int_t fgkQmax6 = AliFlowCumuConstants::kQmax6;   //needed for numerics (only for different system of Eq.)
-  static const Int_t fgkPmax6 = AliFlowCumuConstants::kPmax6;   //needed for numerics (only for different system of Eq.) 
-  static const Int_t fgkQmax8 = AliFlowCumuConstants::kQmax8;   //needed for numerics (only for different system of Eq.)
-  static const Int_t fgkPmax8 = AliFlowCumuConstants::kPmax8;   //needed for numerics (only for different system of Eq.)  
-  static const Int_t fgkQmax16 = AliFlowCumuConstants::kQmax16; //needed for numerics (only for different system of Eq.)
-  static const Int_t fgkPmax16 = AliFlowCumuConstants::kPmax16; //needed for numerics (only for different system of Eq.)
-  static const Int_t fgkFlow = AliFlowCumuConstants::kFlow;     //integrated flow coefficient to be calculated
-  static const Int_t fgkMltpl = AliFlowCumuConstants::kMltpl;   //the multiple in p=m*n (diff. flow) 
+  static const Int_t fgkQmax = AliFlowCumuConstants::fgkQmax;     //needed for numerics
+  static const Int_t fgkPmax = AliFlowCumuConstants::fgkPmax;     //needed for numerics  
+  static const Int_t fgkQmax4 = AliFlowCumuConstants::fgkQmax4;   //needed for numerics (only for different system of Eq.)
+  static const Int_t fgkPmax4 = AliFlowCumuConstants::fgkPmax4;   //needed for numerics (only for different system of Eq.) 
+  static const Int_t fgkQmax6 = AliFlowCumuConstants::fgkQmax6;   //needed for numerics (only for different system of Eq.)
+  static const Int_t fgkPmax6 = AliFlowCumuConstants::fgkPmax6;   //needed for numerics (only for different system of Eq.) 
+  static const Int_t fgkQmax8 = AliFlowCumuConstants::fgkQmax8;   //needed for numerics (only for different system of Eq.)
+  static const Int_t fgkPmax8 = AliFlowCumuConstants::fgkPmax8;   //needed for numerics (only for different system of Eq.)  
+  static const Int_t fgkQmax16 = AliFlowCumuConstants::fgkQmax16; //needed for numerics (only for different system of Eq.)
+  static const Int_t fgkPmax16 = AliFlowCumuConstants::fgkPmax16; //needed for numerics (only for different system of Eq.)
+  static const Int_t fgkFlow = AliFlowCumuConstants::fgkFlow;     //integrated flow coefficient to be calculated
+  static const Int_t fgkMltpl = AliFlowCumuConstants::fgkMltpl;   //the multiple in p=m*n (diff. flow) 
   TList* fHistList;                                             //list to hold all output histograms
   TList* fWeightsList;                                          //list to hold all histograms with weights
 
