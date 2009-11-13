@@ -380,7 +380,6 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
   // ***********  ESD friends ***********
   fESD->SetESDfriend(fESDfriend); //Attach the friend to the ESD
   // ***********  ESD friends ***********
-
   if(!fESDfriend) printf("no ESD friend\n");
 
   //
@@ -492,6 +491,9 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
     // number of associated ITS clusters
     iITSflag += 1000*track->GetNcls(0);
      
+    // number of associated TPC clusters
+    iITSflag += 100000*track->GetNcls(1);
+     
     // if MC info and is available
     // write the number of ITS clusters produced by this track
     Int_t nITSclsMC=0;
@@ -515,18 +517,25 @@ void AliAnalysisTaskITSTrackingCheck::Exec(Option_t *)
       d0MC=ParticleImpParMC(part,vertexMC,0.1*fESD->GetMagneticField());
       track->PropagateToDCA(vertexMC,fESD->GetMagneticField(),100.,d0z0MCv,covd0z0MCv);
       if(covd0z0MCv[0]<0. || covd0z0MCv[2]<0.) continue;
-
+      // flag fake tracks
+      if(track->GetLabel()<0) iITSflag *= -1;
     }
+
+    Double_t sigmad0MCv=TMath::Sqrt(covd0z0MCv[0]);
+    if(!itsrefit) sigmad0MCv *= -1.;
 
     // fill ntuple with track properties
     if(SelectPt(track->Pt())) {
-      Float_t fillArray[19]={track->Pt(),track->Eta(),track->Phi(),d0z0[0],d0z0[1],TMath::Sqrt(covd0z0[0]),TMath::Sqrt(covd0z0[2]),ptMC,pdgMC,d0MC,d0z0MCv[0],d0z0MCv[1],TMath::Sqrt(covd0z0MCv[0]),TMath::Sqrt(covd0z0MCv[2]),(Float_t)iITSflag};
+      Float_t fillArray[19]={track->Pt(),track->Eta(),track->Phi(),d0z0[0],d0z0[1],TMath::Sqrt(covd0z0[0]),TMath::Sqrt(covd0z0[2]),ptMC,pdgMC,d0MC,d0z0MCv[0],d0z0MCv[1],sigmad0MCv,TMath::Sqrt(covd0z0MCv[2]),(Float_t)iITSflag};
       fNtupleESDTracks->Fill(fillArray);
     }
 
     //---------------------------------------------    
     // AliTrackPoints: alignment checks
     // 
+    if(!fESDfriend) continue;
+
+
     const AliTrackPointArray *array = track->GetTrackPointArray();
     AliTrackPoint point;
     Int_t pointOnLayer[6]={0,0,0,0,0,0};
@@ -713,11 +722,11 @@ Bool_t AliAnalysisTaskITSTrackingCheck::SelectPt(Double_t pt)
   //
   // Keep only tracks in given pt bins
   // 
-  Double_t ptlower[10]={0.29,0.49,0.75,0.9,1.9,3.5,6.5,9.,19.,27.};
+  Double_t ptlower[10]={0.29,0.49,0.75,0.9,1.9,3.5,6.5, 9.,19.,27.};
   Double_t ptupper[10]={0.31,0.51,0.85,1.1,2.1,4.5,7.5,11.,21.,33.};
 
   for(Int_t i=0; i<10; i++) {
-    if(pt<ptlower[i] && pt<ptupper[i]) {
+    if(pt>ptlower[i] && pt<ptupper[i]) {
       fCountsPerPtBin[i]++;
       return kTRUE;
     }
