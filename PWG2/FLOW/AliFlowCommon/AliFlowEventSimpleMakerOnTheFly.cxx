@@ -67,7 +67,11 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fPhiDistribution(NULL),
   fMyTRandom3(NULL),
   fCount(0),
-  fNoOfLoops(1)
+  fNoOfLoops(1),
+  fEtaMinA(-1.0),
+  fEtaMaxA(-0.01),
+  fEtaMinB(0.01),
+  fEtaMaxB(1.0)
 {
   // constructor
   fMyTRandom3 = new TRandom3(iseed);   
@@ -219,6 +223,13 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
        pTrack->SetPhi(dTmpPhi); 
        pTrack->SetForRPSelection(kTRUE); 
        iSelParticlesRP++; 
+       // assign particles to subevents
+       if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) {
+	 pTrack->SetForSubevent(0);
+       }
+       if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) {
+	 pTrack->SetForSubevent(1);
+       }
        pTrack->SetForPOISelection(kTRUE); 
        iSelParticlesPOI++; 
        pEvent->TrackCollection()->Add(pTrack); 
@@ -234,6 +245,13 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
         pTrack->SetPhi(dTmpPhi);
         pTrack->SetForRPSelection(kTRUE);
         iSelParticlesRP++;
+	// assign particles to subevents
+	if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) {
+	  pTrack->SetForSubevent(0);
+	}
+	if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) {
+	  pTrack->SetForSubevent(1);
+	}
         pTrack->SetForPOISelection(kTRUE);
         iSelParticlesPOI++;
         pEvent->TrackCollection()->Add(pTrack);
@@ -250,6 +268,14 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
         pTrack->SetPhi(dTmpPhi);
         pTrack->SetForRPSelection(kTRUE);
         iSelParticlesRP++;
+	// assign particles to subevents
+	if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) {
+	  pTrack->SetForSubevent(0);
+	}
+	if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) {
+	  pTrack->SetForSubevent(1);
+	}
+	
         pTrack->SetForPOISelection(kTRUE);
         iSelParticlesPOI++;
         pEvent->TrackCollection()->Add(pTrack);
@@ -262,6 +288,13 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly()
          pTrack->SetPhi(dTmpPhi);
          pTrack->SetForRPSelection(kTRUE);
          iSelParticlesRP++;
+	 // assign particles to subevents
+	 if (pTrack->Eta()>=fEtaMinA && pTrack->Eta()<=fEtaMaxA) {
+	   pTrack->SetForSubevent(0);
+	 }
+	 if (pTrack->Eta()>=fEtaMinB && pTrack->Eta()<=fEtaMaxB) {
+	   pTrack->SetForSubevent(1);
+	 }
          pTrack->SetForPOISelection(kTRUE);
          iSelParticlesPOI++;
          pEvent->TrackCollection()->Add(pTrack);
