@@ -337,7 +337,7 @@ Bool_t AliESDInputHandler::GetCutSummaryForChain(Int_t *aTotal, Int_t *aAccepted
   Int_t iTotList=0, iAccList=0, iRejList=0;
 
   TObject *cobj;
-  while (cobj = tIter->Next()) {
+  while ((cobj = tIter->Next())) {
     TObjString *kstr = (TObjString *) cobj;
     TObjString *vstr = (TObjString *) fTagCutSumm->GetValue(kstr->GetString().Data());
     //    printf("Got object value %s %s\n", kstr->GetString().Data(), vstr->GetString().Data());
@@ -385,7 +385,7 @@ Int_t AliESDInputHandler::GetNFilesEmpty()
   Int_t iFilesEmpty = 0;
 
   TObject *cobj;
-  while (cobj = tIter->Next()) {
+  while ((cobj = tIter->Next())) {
     TObjString *kstr = (TObjString *) cobj;
     TObjString *vstr = (TObjString *) fTagCutSumm->GetValue(kstr->GetString().Data());
     //    printf("Got object value %s %s\n", kstr->GetString().Data(), vstr->GetString().Data());

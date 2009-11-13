@@ -67,7 +67,9 @@ AliAnalysisTaskSE::AliAnalysisTaskSE():
     fInputHandler(0x0),
     fOutputAOD(0x0),
     fMCEvent(0x0),
-    fTreeA(0x0)
+    fTreeA(0x0),
+    fCurrentRunNumber(-1),
+    fHistosQA(0x0)
 {
   // Default constructor
 }
@@ -454,7 +456,7 @@ Bool_t AliAnalysisTaskSE::Notify()
 	fCurrentRunNumber = InputEvent()->GetRunNumber();
 	NotifyRun();
     }
-    UserNotify();
+    return (UserNotify());
 }
 
 
