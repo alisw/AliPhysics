@@ -255,8 +255,8 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
   }
 
 
-  Int_t isize=36;
-  Float_t xnt[36];
+  Int_t isize=37;
+  Float_t xnt[37];
   
   Int_t index=0;
 
