@@ -39,6 +39,7 @@
 #include "AliQAChecker.h"
 #include "AliT0RawReader.h"
 #include "AliT0RecoParam.h"
+#include "THnSparse.h"
 
 #include "Riostream.h"
 ClassImp(AliT0QADataMakerRec)
@@ -155,8 +156,8 @@ void AliT0QADataMakerRec::InitRaws()
   for (Int_t i=0; i<500; i++){
     //    low[i]  = GetRecoParam()->GetLow(i);
     ///   high[i]  = GetRecoParam()->GetHigh(i);
-    low[i] = -5000;
-    high[i] = 20000;
+    low[i] = 0;
+    high[i] = 10000;
 
   }
 
@@ -165,10 +166,14 @@ void AliT0QADataMakerRec::InitRaws()
   TString qt1name, qt0name, qt1Calname, qt0Calname;
   TString nhits;
 
-  TH1F* fhRefPoint = new TH1F("hRefPoint","Ref Point",high[0]-low[0],low[0],high[0]);
+  TH1F* fhRefPoint = new TH1F("hRefPoint","Ref Point", 20000, 575000 ,595000);
   Add2RawsList( fhRefPoint,0, expert, !image, !saveCorr);
-   
-  TH1F *fhRawCFD[24]; TH1F * fhRawLEDamp[24];
+
+  TH1F* fhRefPointcal = new TH1F("hRefPointcal","Ref Point laser", 10000, 18000 ,28000);
+  Add2RawsList( fhRefPointcal,358, expert, !image, !saveCorr);
+
+  TH1F *fhRawCFD[24]; 
+  TH1F * fhRawLEDamp[24];
   TH1F *fhRawQTC[24]; TH1F * fhRawLED[24];
   TH1F *fhRawCFDcal[24]; TH1F * fhRawLEDampcal[24]; 
   TH1F *fhRawCFDcalpmt[24];  
@@ -177,7 +182,7 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F *fhRawQT0cal[24]; TH1F *fhRawQT1cal[24];
   TH1F *fhRawQT1[24]; TH1F *fhRawQT0[24];
   TH1F* fhRawNhits[24];
-  
+ 
   for (Int_t i=0; i<24; i++)
     {
       timename ="hRawCFD";
@@ -194,17 +199,18 @@ void AliT0QADataMakerRec::InitRaws()
       qt1name += i+1;
       ledname += i+1;
       nhits   += i+1;
-      fhRawCFD[i] = new TH1F(timename.Data(), Form("%s;CFD [#channels];Counts", timename.Data()),high[i+1]-low[i+1],low[i+1],high[i+1]);
+      // fhRawCFD[i] = new THnSparseF(timename.Data(), Form("%s;CFD [#channels];Counts", timename.Data()),1,spabins,spaxmin,spaxmax);
+      fhRawCFD[i] = new TH1F(timename.Data(), Form("%s;CFD [#channels];Counts", timename.Data()),Int_t(high[i+1]-low[i+1]),low[i+1],high[i+1]);
         Add2RawsList( fhRawCFD[i],i+1, expert, !image, !saveCorr);
-      fhRawLED[i] = new TH1F(ledname.Data(),  Form("%s;LED[#channels];Counts", ledname.Data()),high[i+24+1]-low[i+24+1],low[i+24+1],high[i]);
+	fhRawLED[i] = new TH1F(ledname.Data(),  Form("%s;LED[#channels];Counts", ledname.Data()),Int_t(high[i+24+1]-low[i+24+1]),low[i+24+1],high[i]);
       Add2RawsList( fhRawLED[i],i+24+1, expert, !image, !saveCorr);
       fhRawLEDamp[i] = new TH1F(ampname.Data(),  Form("%s;LED-CFD [#channels];Counts", ampname.Data()),1000,0,1000);
      Add2RawsList( fhRawLEDamp[i],i+48+1, expert, !image, !saveCorr);
       fhRawQTC[i] = new TH1F(qtcname.Data(),  Form("%s;QTC[#channels];Counts", qtcname.Data()),10000,0,10000);
       Add2RawsList( fhRawQTC[i],i+72+1, expert, !image, !saveCorr);
-      fhRawQT1[i] = new TH1F(qt1name.Data(),  Form("%s;QT1[#channels];Counts", qtcname.Data()),high[270+i]-low[270+i],low[270+i],high[270+i]);
+      fhRawQT1[i] = new TH1F(qt1name.Data(),  Form("%s;QT1[#channels];Counts", qtcname.Data()),Int_t(high[270+i]-low[270+i]),low[270+i],high[270+i]);
        Add2RawsList( fhRawQT1[i],270+i, expert, !image, !saveCorr);
-      fhRawQT0[i] = new TH1F(qt0name.Data(),  Form("%s;QT0[#channels];Counts", qtcname.Data()),high[270+24+i]-low[270+24+i],low[270+24+i],high[270+24+i]);
+       fhRawQT0[i] = new TH1F(qt0name.Data(),  Form("%s;QT0[#channels];Counts", qtcname.Data()),Int_t(high[270+24+i]-low[270+24+i]),low[270+24+i],high[270+24+i]);
      Add2RawsList( fhRawQT0[i],270+24+i, expert, !image, !saveCorr);
 
       fhRawNhits[i] = new TH1F(nhits.Data(),  Form("%s;#Hits;Events", nhits.Data()),10, 0, 10);
@@ -214,15 +220,15 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F* fhRawTrigger = new TH1F("hRawTrigger"," phys triggers;Trigger #;Counts",5,0,5);
   Add2RawsList(fhRawTrigger ,97, expert, !image, !saveCorr);
 
-  TH1F* fhRawMean = new TH1F("hRawMean","online mean signal, physics event;",high[98]-low[98],low[98],high[98]);
+  TH1F* fhRawMean = new TH1F("hRawMean","online mean signal, physics event;",Int_t(high[98]-low[98]),low[98],high[98]);
   Add2RawsList( fhRawMean,98, expert, !image, !saveCorr);
 
-  TH1F* fhRawVertex = new TH1F("hRawVertex","online vertex signal; counts",high[100]-low[99],low[99],high[99]);
+  TH1F* fhRawVertex = new TH1F("hRawVertex","online vertex signal; counts",Int_t(high[100]-low[99]),low[99],high[99]);
   Add2RawsList( fhRawVertex,99, expert, !image, !saveCorr);
 
-  TH1F* fhRawORA = new TH1F("hRawORA","online OR A; counts", high[100]-low[100],low[100],high[100]);
+  TH1F* fhRawORA = new TH1F("hRawORA","online OR A; counts",Int_t(high[100]-low[100]),low[100],high[100]);
   Add2RawsList( fhRawORA,100, expert, !image, !saveCorr);
-  TH1F* fhRawORC = new TH1F("hRawORC","online OR C;counts", high[101]-low[101],low[101],high[101]);
+  TH1F* fhRawORC = new TH1F("hRawORC","online OR C;counts",Int_t( high[101]-low[101]),low[101],high[101]);
   Add2RawsList( fhRawORC,101, expert, !image, !saveCorr);
 
 
@@ -242,10 +248,10 @@ void AliT0QADataMakerRec::InitRaws()
       qt0Calname += i+1;
       qt1Calname += i+1;
  
-      fhRawCFDcal[i] = new TH1F(timeCalname.Data(),  Form("%s;Time ;Counts", timeCalname.Data()),high[101+i+1]-low[101+i+1],low[101+i+1],high[101+i+1]);
+      fhRawCFDcal[i] = new TH1F(timeCalname.Data(),  Form("%s;Time ;Counts", timeCalname.Data()),Int_t(high[101+i+1]-low[101+i+1]),low[101+i+1],high[101+i+1]);
       Add2RawsList( fhRawCFDcal[i],101+i+1, expert, !image, !saveCorr);
  
-     fhRawLEDcal[i] = new TH1F(ledCalname.Data(),  Form("%s;Time ;Counts", ledCalname.Data()),high[101+i+24+1]-low[101+i+24+1],low[101+i+24+1],high[101+i+24+1]);
+      fhRawLEDcal[i] = new TH1F(ledCalname.Data(),  Form("%s;Time ;Counts", ledCalname.Data()),Int_t(high[101+i+24+1]-low[101+i+24+1]),low[101+i+24+1],high[101+i+24+1]);
       Add2RawsList( fhRawLEDcal[i],101+i+24+1, expert, !image, !saveCorr);
 
       fhRawLEDampcal[i] = new TH1F(ampCalname.Data(), Form("%s;Amplitude [ADC counts];Counts", ampCalname.Data()),1000,0,1000);
@@ -254,10 +260,10 @@ void AliT0QADataMakerRec::InitRaws()
       fhRawQTCcal[i] = new TH1F(qtcCalname.Data(), Form("%s;Charge ;Counts",qtcCalname.Data()),10000,0,10000);
       Add2RawsList( fhRawQTCcal[i],101+i+72+1, expert, !image, !saveCorr);
 
-      fhRawQT0cal[i] = new TH1F(qt0Calname.Data(), Form("%s;Charge ;Counts",qt0Calname.Data()),high[371+i]-low[371+i],low[371+i],high[371+i]);
+      fhRawQT0cal[i] = new TH1F(qt0Calname.Data(), Form("%s;Charge ;Counts",qt0Calname.Data()),Int_t(high[371+i]-low[371+i]),low[371+i],high[371+i]);
       Add2RawsList( fhRawQT0cal[i],371+i, expert, !image, !saveCorr);
 
-      fhRawQT1cal[i] = new TH1F(qt1Calname.Data(), Form("%s;Charge ;Counts",qt1Calname.Data()),high[i+371+24]-low[i+371+24],low[i+371+24],high[i+371+24]);
+      fhRawQT1cal[i] = new TH1F(qt1Calname.Data(), Form("%s;Charge ;Counts",qt1Calname.Data()),Int_t(high[i+371+24]-low[i+371+24]),low[i+371+24],high[i+371+24]);
       Add2RawsList( fhRawQT1cal[i],i+371+24, expert, !image, !saveCorr);
 
       }
@@ -282,35 +288,35 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F* fhRawTriggerCal = new TH1F("hRawTriggerCal"," laser triggers",6,0,6);
   Add2RawsList(fhRawTriggerCal ,420 , !expert, image, !saveCorr);
  
-  TH1F* fhRawMeanCal = new TH1F("hRawMeanCal","online mean signal, calibration event",high[198]-low[198],low[198],high[198]);
+  TH1F* fhRawMeanCal = new TH1F("hRawMeanCal","online mean signal, calibration event",Int_t(high[198]-low[198]),low[198],high[198]);
   Add2RawsList( fhRawMeanCal,198, expert, !image, !saveCorr);
  
-  TH1F* fhRawVertexCal = new TH1F("hRawVertexCal","online vertex signal, calibration event ", high[199]-low[199],low[199],high[199] );
+  TH1F* fhRawVertexCal = new TH1F("hRawVertexCal","online vertex signal, calibration event ",Int_t( high[199]-low[199]),low[199],high[199] );
    Add2RawsList( fhRawVertexCal,199, expert, !image, !saveCorr);
  
  
-  TH1F* fhRawORAcal = new TH1F("hRawORAcal","laser OR A; counts", high[200]-low[200],low[200],high[200]);
+   TH1F* fhRawORAcal = new TH1F("hRawORAcal","laser OR A; counts",Int_t( high[200]-low[200]),low[200],high[200]);
    Add2RawsList( fhRawORAcal,200, expert, !image, !saveCorr );
  
  
-  TH1F* fhRawORCcal = new TH1F("hRawORCcal","laserOR C;counts ", high[201]-low[201],low[201],high[201]);
+   TH1F* fhRawORCcal = new TH1F("hRawORCcal","laserOR C;counts ",Int_t( high[201]-low[201]),low[201],high[201]);
    Add2RawsList( fhRawORCcal,201, expert, !image, !saveCorr);
  
 
   //multiplicity trigger
-  TH1F* fhMultcal = new TH1F("hMultcal","full mulltiplicity;Multiplicity;Entries", high[202]-low[202],low[202],high[202]);
+   TH1F* fhMultcal = new TH1F("hMultcal","full mulltiplicity;Multiplicity;Entries",Int_t( high[202]-low[202]),low[202],high[202]);
   Add2RawsList( fhMultcal,202, expert, !image, !saveCorr );
    TH1F* fhMultScal = new TH1F("hMultSemical","full multiplicity with semi-central trigger;Multiplicity;Entries",
-			     high[203]-low[203],low[203],high[203] );
+			       Int_t( high[203]-low[203]),low[203],high[203] );
   Add2RawsList( fhMultScal,203, expert, !image, !saveCorr);
   TH1F* fhMultCcal = new TH1F("hMultCentrcal","full multiplicity with central trigger;Multiplicity;Entries", 
-			     high[204]-low[204],low[204],high[204]);
+			      Int_t( high[204]-low[204]),low[204],high[204]);
   Add2RawsList( fhMultCcal,204, expert, !image, !saveCorr);
  
   TH1F* fhMult = new TH1F("hMult","full mulltiplicity;Multiplicity;Entries", high[216]-low[216],low[216],high[216]);
   Add2RawsList( fhMult,216, expert, !image, !saveCorr );
    TH1F* fhMultS = new TH1F("hMultSemi","full multiplicity with semi-central trigger;Multiplicity;Entries",
-			     high[217]-low[217],low[217],high[217] );
+			    Int_t( high[217]-low[217]),low[217],high[217] );
   Add2RawsList( fhMultS,217, expert, !image, !saveCorr);
   TH1F* fhMultC = new TH1F("hMultCentr","full multiplicity with central trigger;Multiplicity;Entries", 
 			     high[218]-low[218],low[218],high[218]);
@@ -326,20 +332,24 @@ void AliT0QADataMakerRec::InitRaws()
   Add2RawsList( fhEffQTC,207, !expert, image, !saveCorr);
 
   
-  TH2F* fhCFDcal = new TH2F("hCFDcal","CFD laser; #PMT; CFD {#channnels}",25, 0 ,25,high[208]-low[208],low[208],high[208]);
+  TH2F* fhCFDcal = new TH2F("hCFDcal","CFD laser; #PMT; CFD {#channnels}",25, 0 ,25,Int_t(high[208]-low[208]),low[208],high[208]);
   fhCFDcal->SetOption("COLZ");
   Add2RawsList( fhCFDcal,208, !expert, image, !saveCorr);
 
 
-  TH2F* fhLEDcal = new TH2F("hLEDcal","LED laser; #PMT; LED [#channnels]",25, 0 ,25, high[209]-low[209],low[209],high[209]);
+  TH2F* fhLEDcal = new TH2F("hLEDcal","LED laser; #PMT; LED [#channnels]",25, 0 ,25,Int_t( high[209]-low[209]),low[209],high[209]);
   fhLEDcal->SetOption("COLZ");
   Add2RawsList( fhLEDcal,209, !expert, image, !saveCorr);
 
+  TH2F* fhQTCcal = new TH2F("hQTCcal","QTC laser; #PMT; QTC [#channnels]",25, 0 ,25,Int_t( high[209]-low[209]),low[209],high[209]);
+  fhQTCcal->SetOption("COLZ");
+  Add2RawsList( fhQTCcal,210, !expert, image, !saveCorr);
 
-  TH1F* fhNumPMTA= new TH1F("hNumPMTA","number of PMT hitted per event",12, 0 ,12);
+
+  TH1F* fhNumPMTA= new TH1F("hNumPMTA","number of PMT hitted per event",13, 0 ,13);
   Add2RawsList(fhNumPMTA ,211, expert, !image, !saveCorr);
 
-  TH1F* fhNumPMTC= new TH1F("hNumPMTC","number of PMT hitted per event",12, 0 ,12);
+  TH1F* fhNumPMTC= new TH1F("hNumPMTC","number of PMT hitted per event",13, 0 ,13);
   Add2RawsList(fhNumPMTC ,212, expert, !image, !saveCorr);
 
   TH1F* fhHitsOrA= new TH1F("fhHitsOrA","T0_OR A hit multiplicitie",10, 0 ,10);
@@ -348,8 +358,35 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F* fhHitsOrC= new TH1F("fhHitsOrC","T0_OR C hit multiplicitie",10, 0 ,10);
   Add2RawsList(fhHitsOrC ,214, expert, !image, !saveCorr);
 
-  TH1F* fhOrCminOrA= new TH1F("fhOrCminOrA","T0_OR C - T0_OR A", high[215]-low[215],low[215],high[215]);
+  TH1F* fhOrCminOrA= new TH1F("fhOrCminOrA","T0_OR C - T0_OR A",Int_t( high[215]-low[215]),low[215],high[215]);
   Add2RawsList( fhOrCminOrA,215, expert, !image, !saveCorr);
+
+  TH1F* fhOrCminOrAcal= new TH1F("fhOrCminOrAcal","T0_OR C - T0_OR A",Int_t( high[219]-low[219]),low[219],high[219]);
+  Add2RawsList( fhOrCminOrAcal,219, expert, !image, !saveCorr);
+
+  TH1F* fhOrCminOrATvdcOn= new TH1F("fhOrCminOrATvdcOn","T0_OR C - T0_OR A TVDC on",Int_t( high[350]-low[350]),low[350],high[350]);
+  Add2RawsList( fhOrCminOrATvdcOn,350, expert, !image, !saveCorr);
+
+  TH1F* fhOrCminOrATvdcOncal= new TH1F("fhOrCminOrATvdcOncal","T0_OR C - T0_OR A TVDC on laser",Int_t( high[351]-low[351]),low[351],high[351]);
+  Add2RawsList( fhOrCminOrATvdcOncal,351, expert, !image, !saveCorr);
+
+  TH1F* fhOrCminOrATvdcOff= new TH1F("fhOrCminOrATvdcOff","T0_OR C - T0_OR A TVDC off",Int_t( high[352]-low[352]),low[352],high[352]);
+  Add2RawsList( fhOrCminOrATvdcOff,352, expert, !image, !saveCorr);
+
+  TH1F* fhOrCminOrATvdcOffcal= new TH1F("fhOrCminOrATvdcOffcal","T0_OR C - T0_OR ATVDC off laser",Int_t( high[353]-low[353]),low[353],high[353]);
+  Add2RawsList( fhOrCminOrATvdcOffcal,353, expert, !image, !saveCorr);
+
+  TH1F* fhCFD1abs= new TH1F("fhCFD1abs"," CFD 1 pure ( L1) ", 20000, 575000, 595000 );
+  Add2RawsList(fhCFD1abs ,354, expert, !image, !saveCorr);
+
+  TH1F* fhCFD2abs= new TH1F("fhCFD2abs"," CFD 2 pure ( L1)  ", 20000, 575000, 595000 );
+  Add2RawsList( fhCFD2abs,355, expert, !image, !saveCorr);
+
+  TH1F* fhCFD1abscal= new TH1F("fhCFD1abscal"," CFD 1 pure ( L1)laser ", 10000, 18000 ,28000 );
+  Add2RawsList(fhCFD1abscal,356, expert, !image, !saveCorr);
+
+  TH1F* fhCFD2abscal= new TH1F("fhCFD2abscal"," CFD 2 pure ( L1)laser ", 10000, 18000 ,28000 );
+  Add2RawsList( fhCFD2abscal,357, expert, !image, !saveCorr);
 
  const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
   for (Int_t itr=0; itr<6; itr++) {
@@ -385,12 +422,12 @@ void AliT0QADataMakerRec::InitRecPoints()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
 
-  TH2F* fhRecCFD = new TH2F("hRecCFD"," CFD time;Time [ns];Counts",24, 0 ,24, 
+  TH2F* fhRecCFD = new TH2F("hRecCFD"," CFD time;#PMT; CFD Time [ns];",24, 0 ,24, 
 			      100,-50,50);
   fhRecCFD->SetOption("COLZ");
   Add2RecPointsList ( fhRecCFD,0, !expert, image);
 
-  TH2F* fhRecAmpDiff = new TH2F("hRecAmpDiff"," LED-CFD  min QTC amplitude;Amplitude [ADC counts];Counts",
+  TH2F* fhRecAmpDiff = new TH2F("hRecAmpDiff"," LED-CFD  min QTC amplitude;#PMT; difference [MIPs];",
 				24, 0 ,24, 200,-10,10);
   fhRecAmpDiff->SetOption("COLZ");
   Add2RecPointsList (fhRecAmpDiff, 1, !expert, image);
@@ -445,7 +482,8 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	for (Int_t iHit=0; iHit<5; iHit++)
 	  allData[i][iHit]= start->GetData(i,iHit);
       
-      if (allData[0][0] > 0 ) GetRawsData(0) -> Fill( allData[0][0]);
+      if ( type == 7  && allData[0][0] > 0 ) GetRawsData(0) -> Fill( allData[0][0]);
+      if ( type == 8  && allData[0][0] > 0 ) GetRawsData(358) -> Fill( allData[0][0]);
  
       refpoint = allData[refPointParam][0];
       if (refPointParam <  0 ) refpoint=0; 
@@ -465,7 +503,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	    if(allData[1][0]>0) 
 	    GetRawsData(shift+ik+220) -> Fill(allData[ik+1][iHt]-allData[1][0]);
 	    //	    cout<<"C  cfd "<<ik<<" "<<iHt<<" "<<allData[ik+1][iHt]<<" -RF "<<refpoint<<"  "<<allData[ik+1][iHt]-refpoint<<endl;
-	    if(type == 8  ) {
+	    if(type == 8 && iHt==0 ) {
 	      feffC[ik]++;
 	      GetRawsData(208)->Fill(ik+1, allData[ik+1][iHt]-refpoint);
 	    } 
@@ -476,7 +514,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	  if(allData[ik+13][iHt] > 0) { 
 	    GetRawsData(shift+ik+24+1)->  Fill(allData[ik+13][iHt]-refpoint);
 	    //	    cout<<"C  led "<<ik<<" "<<iHt<<" "<<allData[ik+1][iHt]<<" -RF "<<refpoint<<"  "<<allData[ik+13][iHt]-refpoint<<endl;
-	    if(type == 8  ) {
+	    if(type == 8   && iHt==0) {
 	      feffA[ik]++;
 	      GetRawsData(209)->Fill(ik+1, allData[ik+13][iHt]-refpoint);
 	    }
@@ -494,7 +532,10 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	    GetRawsData(shift+ik+270)->Fill(allData[2*ik+26][iHt] - refpoint);
 	    GetRawsData(shift+ik+24+270)->Fill(allData[2*ik+25][iHt] - refpoint);
 
-	    if(type == 8  ) feffqtc[ik]++;
+	    if(type == 8  && iHt==0 ) {
+	      feffqtc[ik]++;
+	      GetRawsData(210)->Fill(allData[2*ik+25][iHt]-allData[2*ik+26][iHt]);
+	    }
 	  }
 	}
 	if(type == 7  ) GetRawsData(ik+244)->Fill(nhitsPMT);
@@ -537,7 +578,10 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	      GetRawsData(shift+ik+72+1)-> Fill(allData[2*ik+57][iHt]-allData[2*ik+58][iHt]);
 	      GetRawsData(shift+ik+270)->Fill(allData[2*ik+58][iHt]-refpoint);
 	      GetRawsData(shift+ik+24+270)->Fill(allData[2*ik+57][iHt]-refpoint);
-	      if(type == 8  )  feffqtc[ik]++;
+	      if(type == 8  ){
+		feffqtc[ik]++;
+		GetRawsData(210)->Fill(allData[2*ik+57][iHt]-allData[2*ik+58][iHt]);
+	      }
 	    } 
 	  //led-cfd
 	  if(allData[ik+57][iHt] > 0 &&allData[ik+45][iHt]>0)
@@ -556,6 +600,16 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	  Int_t nhitsOrA=0;
 	  Int_t nhitsOrC=0;
 	  for (Int_t iHt=0; iHt<5; iHt++) {
+	    // pure CFD1 & CFD2 for trigger needs
+	    if(allData[1][iHt]>0) GetRawsData(354)->Fill(allData[1][iHt]);
+	    if(allData[2][iHt]>0) GetRawsData(355)->Fill(allData[2][iHt]);
+
+	    //orA-orC phys tvdc 1 
+	    if((allData[51][iHt]>0 && allData[52][iHt]>0) && allData[50][iHt]>0)
+	      GetRawsData(350)->Fill(allData[52][iHt]-allData[51][iHt]);
+	    //orA-orC phys tvdc 0 
+	    if((allData[51][iHt]>0 && allData[52][iHt]>0) && allData[50][iHt]<=0)
+	      GetRawsData(352)->Fill(allData[52][iHt]-allData[51][iHt]);
 	    for (Int_t itr=0; itr<6; itr++) {
 	      if (allData[trChannel[itr]][iHt] >0) {
 		fNumTriggers[itr]++;
@@ -582,6 +636,20 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       if(type == 8)
 	  {
 	    for (Int_t iHt=0; iHt<5; iHt++) {
+	      //pure CFD 1 & 2
+	    if(allData[1][iHt]>0) GetRawsData(356)->Fill(allData[1][iHt]);
+	    if(allData[2][iHt]>0) GetRawsData(357)->Fill(allData[2][iHt]);
+
+	      //orA-orC laser
+	    if(allData[51][iHt]>0 && allData[52][iHt]>0)
+	      GetRawsData(219)->Fill(allData[52][iHt]-allData[51][iHt]);
+	    //orA-orC laser tvdc 1 
+	    if((allData[51][iHt]>0 && allData[52][iHt]>0) && allData[50][iHt]>0)
+	      GetRawsData(351)->Fill(allData[52][iHt]-allData[51][iHt]);
+	    //orA-orC laser tvdc 0 
+	    if((allData[51][iHt]>0 && allData[52][iHt]>0) && allData[50][iHt]<=0)
+	      GetRawsData(353)->Fill(allData[52][iHt]-allData[51][iHt]);
+	    //trigger laser
 	      for (Int_t itr=0; itr<6; itr++) {
 		if(allData[trChannel[itr]][iHt]>0)
 		  {
@@ -591,6 +659,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 		    fNumTriggersCal[itr]++;
 		  }
 	      }
+	      //mult trigger signals laser
 	      if(allData[53][iHt]>0 && allData[54][iHt]>0) {
 		GetRawsData(202)->Fill(allData[53][iHt]-allData[54][iHt]);
 		if(allData[55][iHt]>0) GetRawsData(202)->Fill(allData[53][iHt]-allData[54][iHt]);
