@@ -463,7 +463,7 @@ void AliAnalysisTaskThreeJets::UserCreateOutputObjects()
   fhdPhiThrustRecALL->Sumw2();
   fList->Add(fhdPhiThrustRecALL);
     
-  Printf("UserCreateOutputObjects finished\n");
+  if(fDebug)Printf("UserCreateOutputObjects finished\n");
 }
 
 //__________________________________________________________________________________________________________________________________________
@@ -714,12 +714,12 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
     }
 
   if(nAccTr == 0) return;
-  Printf("*********** Number of Jets : %d ***************\n", nGenSel);  
+  if(fDebug)Printf("*********** Number of Jets : %d ***************\n", nGenSel);  
   Double_t pTav[kMaxJets];
   for(Int_t i = 0; i < nGenSel; i++)
     {
       Double_t pTsum = 0;
-      Printf("*********** Number of particles in Jet %d = %d *******************\n", i+3, nInJet[i]);
+      if(fDebug)Printf("*********** Number of particles in Jet %d = %d *******************\n", i+3, nInJet[i]);
       for(Int_t iT = 0; iT < nInJet[i]; iT++)
 	{
 	  Double_t pt = inJetPartV[i][iT].Pt();
@@ -744,7 +744,7 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
     { 
 //       if(fGlobVar == 1)
 // 	{
-      Printf("**************Shapes for MC*************");
+      if(fDebug)Printf("**************Shapes for MC*************");
       AliAnalysisHelperJetTasks::GetEventShapes(n01MC, pTrackMC, nAllTracksMC, eventShapes);
 // 	}
       if(eventShapes[0] < 2/TMath::Pi()){
@@ -853,9 +853,9 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
 	  xGen[i] = 2*vRestGen[i].E()/eSumGen;
 	}
       
-      Printf("***************** Values of Dalitz variables are : %f, %f, %f ****************\n", xGen[0], xGen[1], xGen[2]);
+      if(fDebug)Printf("***************** Values of Dalitz variables are : %f, %f, %f ****************\n", xGen[0], xGen[1], xGen[2]);
       
-      Printf("***************** fXSection = %f ******************\n", fXsection);
+      if(fDebug)Printf("***************** fXSection = %f ******************\n", fXsection);
       if(eSumGen <= 60)
 	fhX3X4Gen60->Fill(xGen[0], xGen[1], fXsection);
       
@@ -1006,7 +1006,7 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
     {
 //       if(fGlobVar == 1)
 // 	{
-      Printf("*********Shapes for AOD********");
+      if(fDebug)Printf("*********Shapes for AOD********");
       AliAnalysisHelperJetTasks::GetEventShapes(n01, pTrack, nTracksALL, eventShapesRec);
       // 	}
       if(eventShapesRec[0] < 2/TMath::Pi()){
@@ -1137,18 +1137,18 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
 	  
 	  FillTopology(fhX3X4Rec, fhMu34Rec, fhMu45Rec, fhMu35Rec, xRec, pRestRec, fXsection);
     }
-  Printf("%s:%d",(char*)__FILE__,__LINE__);
+  if(fDebug)Printf("%s:%d",(char*)__FILE__,__LINE__);
   
   PostData(1, fList);
 
-  Printf("%s:%d Data Posted",(char*)__FILE__,__LINE__);
+  if(fDebug)Printf("%s:%d Data Posted",(char*)__FILE__,__LINE__);
   
 }
 
 //__________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskThreeJets::Terminate(Option_t *)
 {
-  printf("AnalysisJetCorrelation::Terminate()");
+  if(fDebug)printf(" AliAnalysisTaskThreeJets::Terminate()");
 
 } 
 
