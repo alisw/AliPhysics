@@ -72,7 +72,7 @@ AliEMCALRawUtils::AliEMCALRawUtils()
   fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
   fOrder = 2;                         // order of gamma fn
   fTau = 2.35;                        // in units of timebin, from CERN 2007 testbeam
-  fNoiseThreshold = 4;
+  fNoiseThreshold = 3;
   fNPedSamples = 5;
 
   //Get Mapping RCU files from the AliEMCALRecParam                                 
