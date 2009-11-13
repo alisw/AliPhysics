@@ -53,7 +53,7 @@ Preliminary test version (T.Malkiewicz)
 #include <TNamed.h>
 #include "AliT0Dqclass.h"
 
-#include "iostream.h"
+#include "iostream"
 
 
 ClassImp(AliT0Preprocessor)
