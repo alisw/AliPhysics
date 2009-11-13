@@ -30,8 +30,8 @@ class AliMultiplicity : public TObject {
   else {Error("GetEta","Invalid track number %d",i); return -9999.;}}
   Double_t GetPhi(Int_t i) const { if(i>=0 && i<fNtracks) {return fPhi[i];}
   else {Error("GetPhi","Invalid track number %d",i); return -9999.;}}
-  Double_t GetDeltaTheta(Int_t i) const {if(i>=0 && i<fNtracks) {return fDeltTh[i];}
-  else {Error("GetDeltaTheta","Invalid track number %d",i); return -9999.;}}
+  Double_t GetDeltaTheta(Int_t i) const {if(fDeltTh && i>=0 && i<fNtracks) {return fDeltTh[i];}
+  else {Error("GetDeltaTheta","DeltaTheta not available in data or Invalid track number %d(max %d)",i, fNtracks); return -9999.;}}
   Double_t GetDeltaPhi(Int_t i) const {if(i>=0 && i<fNtracks) {return fDeltPhi[i];}
   else {Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;}}
 
