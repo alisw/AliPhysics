@@ -612,7 +612,7 @@ Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
 
   Double_t tmp=sf*ca - cf*sa;
   if (TMath::Abs(tmp) >= kAlmost1) {
-     AliError(Form("Rotation failed ! %.10e",tmp)); 
+     AliWarning(Form("Rotation failed ! %.10e",tmp)); 
      return kFALSE;
   }
 
