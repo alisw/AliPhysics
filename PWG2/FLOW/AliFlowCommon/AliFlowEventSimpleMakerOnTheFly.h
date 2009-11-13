@@ -117,6 +117,9 @@ class AliFlowEventSimpleMakerOnTheFly {
   void SetNoOfLoops(Int_t noofl) {this->fNoOfLoops = noofl;}
   Int_t GetNoOfLoops() const {return this->fNoOfLoops;} 
 
+  void SetSubeventEtaRange(Double_t minA,Double_t maxA,Double_t minB,Double_t maxB) 
+  {this->fEtaMinA = minA; this->fEtaMaxA = maxA;this->fEtaMinB = minB; this->fEtaMaxB = maxB;};
+
  private:
  
   AliFlowEventSimpleMakerOnTheFly(const AliFlowEventSimpleMakerOnTheFly& anAnalysis);            // copy constructor
@@ -170,7 +173,11 @@ class AliFlowEventSimpleMakerOnTheFly {
   TRandom3* fMyTRandom3; // our TRandom3 generator
   Int_t     fCount;      // count number of events 
   Int_t     fNoOfLoops;  // number of times to use the same particle (nonflow)
-  
+  Double_t  fEtaMinA;              // minimum eta of subevent A eta range
+  Double_t  fEtaMaxA;              // maximum eta of subevent A eta range
+  Double_t  fEtaMinB;              // minimum eta of subevent B eta range
+  Double_t  fEtaMaxB;              // maximum eta of subevent B eta range  
+
   ClassDef(AliFlowEventSimpleMakerOnTheFly,0) // macro for rootcint
 };
  
