@@ -698,7 +698,6 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   Float_t pt       = TMath::Sqrt(TMath::Power(p[0],2) + TMath::Power(p[1],2));
   Float_t energy   = TMath::Sqrt(TMath::Power(esdTrack->GetMass(),2) + TMath::Power(momentum,2));
 
-
   //y-eta related calculations
   Float_t eta = -100.;
   Float_t y   = -100.;
@@ -707,6 +706,11 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   if((energy != TMath::Abs(p[2]))&&(momentum != 0))
     y = 0.5*TMath::Log((energy + p[2])/(energy - p[2]));
     
+  if (extCov[14] < 0) 
+  {
+    Printf("AliESDtrackCuts::AcceptTrack: WARNING: GetSigma1Pt2() returns negative value for external covariance matrix element fC[14]: %f. Corrupted track information, track will not be accepted!", extCov[14]);
+    return kFALSE;
+  }
   Float_t relUncertainty1Pt = TMath::Sqrt(extCov[14])*pt;
   
   //########################################################################
