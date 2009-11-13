@@ -14,7 +14,6 @@
 
 #include <AliHeader.h>
 #include <AliStack.h>
-#include <AliLog.h>
 
 #include <AliLog.h>
 #include <AliESD.h>
@@ -29,83 +28,35 @@
 #include <AliGenDPMjetEventHeader.h>
 #include <AliESDVZERO.h>
 
+#include <AliOfflineTrigger.h>
+
 //____________________________________________________________________
 ClassImp(AliPWG0Helper)
 
 Int_t AliPWG0Helper::fgLastProcessType = -1;
+AliOfflineTrigger* AliPWG0Helper::fgOfflineTrigger = 0;
+
+//____________________________________________________________________
+AliOfflineTrigger* AliPWG0Helper::GetOfflineTrigger()
+{
+  // returns the current AliOfflineTrigger object
+  // creates one if needed
+  
+  if (!fgOfflineTrigger)
+    fgOfflineTrigger = new AliOfflineTrigger;
+    
+  return fgOfflineTrigger;
+}
 
 //____________________________________________________________________
 Bool_t AliPWG0Helper::IsEventTriggered(const AliESDEvent* aEsd, Trigger trigger)
 {
   // checks if an event has been triggered
-  // this function implements the "offline" methods that use the ESD, other trigger requests are passed to the function prototype with ULong_t
 
-  Int_t firedChips = 0;
-  Bool_t v0A = kFALSE;
-  Bool_t v0C = kFALSE;
-
-  // offline triggers have to be dealt with here, because we need the esd pointer
-  if (trigger == kOfflineFASTOR || trigger == kOfflineMB1 || trigger == kOfflineMB2 || trigger == kOfflineMB3)
-  {
-      const AliMultiplicity* mult = aEsd->GetMultiplicity();
-      if (!mult)
-      {
-        Printf("AliPWG0Helper::IsEventTriggered: ERROR: AliMultiplicity not available");
-        return kFALSE;
-      }
-      firedChips = mult->GetNumberOfFiredChips(0) + mult->GetNumberOfFiredChips(1);
-  }
-  if (trigger == kOfflineMB1 || trigger == kOfflineMB2 || trigger == kOfflineMB3)
-  {
-    AliESDVZERO* v0Data = aEsd->GetVZEROData();
-    if (!v0Data)
-    {
-      Printf("AliPWG0Helper::IsEventTriggered: ERROR: AliESDVZERO not available");
-      return kFALSE;
-    }
-    for (Int_t i=0; i<32; i++)
-    {
-      if (v0Data->BBTriggerV0A(i))
-        v0A = kTRUE;
-      if (v0Data->BBTriggerV0C(i))
-        v0C = kTRUE;
-    }
-  }
-      
-  switch (trigger)
-  {
-    case kOfflineFASTOR:
-    {
-      if (firedChips > 0)
-        return kTRUE;
-      break;
-    }
-    case kOfflineMB1:
-    {
-      if ((firedChips > 0) || v0A || v0C)
-        return kTRUE;
-      break;
-    }
-    case kOfflineMB2:
-    {
-      if ((firedChips > 0) && (v0A || v0C))
-        return kTRUE;
-      break;
-    }
-    case kOfflineMB3:
-    {
-      if ((firedChips > 0) && v0A && v0C)
-        return kTRUE;
-      break;
-    }
-    default:
-    {
-      return IsEventTriggered(aEsd->GetTriggerMask(), trigger);
-      break;
-    }
-  }
-  
-  return kFALSE;
+  if (trigger & kOfflineFlag)
+    return GetOfflineTrigger()->IsEventTriggered(aEsd, trigger);
+    
+  return IsEventTriggered(aEsd->GetTriggerMask(), trigger);
 }
 
 //____________________________________________________________________
@@ -145,7 +96,7 @@ Bool_t AliPWG0Helper::IsEventTriggered(ULong64_t triggerMask, Trigger trigger)
         return kTRUE;
       break;
     }
-    case kSPDFASTOR:
+    case kSPDGFO:
     {
       if (triggerMask & spdFO)
         return kTRUE;
@@ -630,6 +581,37 @@ void AliPWG0Helper::NormalizeToBinWidth(TH2* hist)
 }
 
 //____________________________________________________________________
+const char* AliPWG0Helper::GetTriggerName(Trigger trigger) 
+{
+  // returns the name of the requested trigger
+  // the returned string will only be valid until the next call to this function [not thread-safe]
+  
+  static TString str;
+  
+  UInt_t triggerNoFlags = (UInt_t) trigger % (UInt_t) kStartOfFlags;
+  
+  switch (triggerNoFlags)
+  {
+    case kAcceptAll : str = "ACCEPT ALL (bypass!)"; break;
+    case kMB1 : str = "MB1"; break;
+    case kMB2 : str = "MB2"; break;
+    case kMB3 : str = "MB3"; break;
+    case kSPDGFO : str = "SPD GFO"; break;
+    case kV0A : str = "V0 A"; break;
+    case kV0C : str = "V0 C"; break;
+    case kZDCA : str = "ZDC A"; break;
+    case kZDCC : str = "ZDC C"; break;
+    case kFMD : str = "FMD"; break;
+    default: str = ""; break;
+  }
+   
+  if (trigger & kOfflineFlag)
+    str += " OFFLINE";  
+  
+  return str;
+}
+
+//____________________________________________________________________
 void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, Trigger trigger)
 {
   //
@@ -655,20 +637,7 @@ void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, Trigger trigger)
      str += " (WITHOUT field)";
   
   str += "< and trigger >";
-
-  switch (trigger)
-  {
-    case kAcceptAll : str += "ACCEPT ALL (bypass!)"; break;
-    case kMB1 : str += "MB1"; break;
-    case kMB2 : str += "MB2"; break;
-    case kMB3 : str += "MB3"; break;
-    case kSPDFASTOR : str += "SPD FASTOR"; break;
-    case kOfflineMB1 : str += "Offline MB1"; break;
-    case kOfflineMB2 : str += "Offline MB2"; break;
-    case kOfflineMB3 : str += "Offline MB3"; break;
-    case kOfflineFASTOR : str += "Offline SPD FASTOR"; break;
-  }
-
+  str += GetTriggerName(trigger);
   str += "< <<<<";
 
   Printf("%s", str.Data());

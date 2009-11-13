@@ -129,7 +129,7 @@ void AlidNdEtaTask::ConnectInputData(Option_t *)
     
     TString branches("AliESDHeader Vertex ");
 
-    if (fAnalysisMode & AliPWG0Helper::kSPD || fTrigger == AliPWG0Helper::kOfflineMB1 || fTrigger == AliPWG0Helper::kOfflineMB2 || fTrigger == AliPWG0Helper::kOfflineMB3 || fTrigger == AliPWG0Helper::kOfflineFASTOR)
+    if (fAnalysisMode & AliPWG0Helper::kSPD || fTrigger & AliPWG0Helper::kOfflineFlag)
       branches += "AliMultiplicity ";
       
     if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
@@ -279,15 +279,15 @@ void AlidNdEtaTask::Exec(Option_t*)
       Printf("ERROR: esdHeader could not be retrieved");
       return;
     }
+    
+    Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
 
-    /*
-    UInt_t eventType = esdHeader->GetEventType();
-    if (eventType != 7)
-    {
-      Printf("Skipping event because it is of type %d", eventType);
-      return;
-    }
-    */
+//    UInt_t eventType = esdHeader->GetEventType();
+//     if (eventType != 7)
+//     {
+//       Printf("Skipping event because it is of type %d", eventType);
+//       return;
+//     }
 
     // trigger definition
     eventTriggered = AliPWG0Helper::IsEventTriggered(fESD, fTrigger);
@@ -296,6 +296,8 @@ void AlidNdEtaTask::Exec(Option_t*)
 
     // get the ESD vertex
     vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
+    
+    //Printf("vertex is: %s", fESD->GetPrimaryVertex()->GetTitle());
 
     Double_t vtx[3];
 
@@ -749,8 +751,11 @@ void AlidNdEtaTask::Exec(Option_t*)
           fdNdEtaAnalysisTrVtx->FillTrack(vtxMC[2], eta, thirdDim);
       }
 
-      if (TMath::Abs(eta) < 1.0 && particle->Pt() > 0)
-        fPartPt->Fill(particle->Pt());
+      if (TMath::Abs(eta) < 1.0 && particle->Pt() > 0 && particle->P() > 0)
+      {
+        Float_t value = 1. / TMath::TwoPi() / particle->Pt() * particle->Energy() / particle->P();
+        fPartPt->Fill(particle->Pt(), value);
+      }
     }
 
     fdNdEtaAnalysis->FillEvent(vtxMC[2], nAcceptedParticles);
