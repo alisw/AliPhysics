@@ -67,9 +67,7 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask){
   const char *cReader[3] = {"AOD","AODMC","AODMC2"};  
 
   for(int i = 0; i< 7;i++){
-    if(i!=4)continue;
-    for(int ib = 0;ib<3;ib++){
-      
+    for(int ib = 0;ib<3;ib++){      
       if(flag[i]&(1<<ib)){
 	jetana = AddTaskJets(cReader[ib],cJF[i],radius[i],filterMask);
 	if(jetana){
