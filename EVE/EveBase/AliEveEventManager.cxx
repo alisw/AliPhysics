@@ -303,9 +303,6 @@ void AliEveEventManager::Open()
       // We use TFile::Open() instead of gSystem->AccessPathName
       // as it seems to work better when attachine alieve to a
       // running reconstruction process with auto-save on.
-      // There was also a problem with TTree::Refresh() - it didn't
-      // save the friend branch on a separate file, fixed in 5.22.2 -
-      // so we might want to try the old way again soon.
       TString p(Form("%s/AliESDfriends.root", fPath.Data()));
       TFile *esdFriendFile = TFile::Open(p);
       if (esdFriendFile)
@@ -692,10 +689,8 @@ void AliEveEventManager::GotoEvent(Int_t event)
   Int_t maxEvent = 0;
   if (fESDTree)
   {
-    // Refresh crashes with root-5.21.1-alice.
-    // Fixed by Philippe 5.8.2008 r25053, can be reactivated
-    // when we move to a newer root.
-    // fESDTree->Refresh();
+    if (event >= fESDTree->GetEntries())
+      fESDTree->Refresh();
     maxEvent = fESDTree->GetEntries() - 1;
     if (event < 0)
       event = fESDTree->GetEntries() + event;
