@@ -45,8 +45,6 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
  
  AliFlowAnalysisWithScalarProduct::AliFlowAnalysisWithScalarProduct():
    fEventNumber(0),
-   fEtaMin(0.01),
-   fEtaMax(1.),
    fDebug(kFALSE),
    fHistList(NULL),
    fHistProUQetaRP(NULL),
