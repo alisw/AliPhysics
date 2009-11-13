@@ -117,8 +117,9 @@ public:
   void     SetPhiSlope(Double_t phiSlope)                     {fkPhiSlope = phiSlope;}
   void     SetNMeanClusters(Double_t meanNclusters)           {fkNMeanClusters = meanNclusters;}
   void     SetNSigmaClusters(Double_t sigmaNclusters)         {fkNSigmaClusters = sigmaNclusters;} 
-  void     SetRawStreamVersion(const Char_t *version)         { fRawStreamVersion = version; }
-  void     SetADCBaseline(Int_t baseline)                  { fADCBaseline = baseline; }
+  void     SetRawStreamVersion(const Char_t *version)         {fRawStreamVersion = version; }
+  void     SetRoadzMultiplicator(Double_t mult)               {fkRoadzMultiplicator = mult; } 
+  void     SetADCBaseline(Int_t baseline)                     { fADCBaseline = baseline; }
   void     SetMinMaxCutSigma(Float_t minMaxCutSigma)          { fMinMaxCutSigma   = minMaxCutSigma; }
   void     SetMinLeftRightCutSigma(Float_t minLeftRightCutSigma) { fMinLeftRightCutSigma   = minLeftRightCutSigma; };
   void     SetClusMaxThresh(Float_t thresh)                   { fClusMaxThresh   = thresh; };
