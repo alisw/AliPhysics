@@ -40,7 +40,7 @@ AliUnicorAnalHighpt::AliUnicorAnalHighpt(Char_t *nam, Double_t emi, Double_t ema
 
   Double_t ewi = ema-emi; // width of the pseudorapidity range
   double pi = TMath::Pi();
-  TAxis *ax[8];
+  TAxis *ax[9];
   ax[0] = new TAxis(2,-0.5,1.5);   ax[0]->SetTitle("trumix");
   ax[1] = new TAxis(2,-0.5,1.5);   ax[1]->SetTitle("weigth"); // 1 or ass pt
   ax[2] = new TAxis(5,0,0.5);      ax[2]->SetTitle("centrality");
