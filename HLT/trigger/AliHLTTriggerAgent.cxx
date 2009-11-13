@@ -45,6 +45,7 @@
 #include "AliHLTTriggerPhosMip.h"
 #include "AliHLTTriggerTrdClusterMultiplicity.h"
 #include "AliHLTTriggerGammaConversion.h"
+#include "AliHLTMuonSpectroTriggerComponent.h"
 
 /** global instance for agent registration */
 AliHLTTriggerAgent gAliHLTTriggerAgent;
@@ -83,6 +84,7 @@ int AliHLTTriggerAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
   pHandler->AddComponent(new AliHLTTriggerPhosMip); 
   pHandler->AddComponent(new AliHLTTriggerTrdClusterMultiplicity);
   pHandler->AddComponent(new AliHLTTriggerGammaConversion);
+  pHandler->AddComponent(new AliHLTMuonSpectroTriggerComponent);
   return 0;
 }
 
@@ -126,6 +128,30 @@ int AliHLTTriggerAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandle
   } else {
     HLTWarning("No inputs for %s found, skipping component", configurationId.Data());
   }
+  
+  /////////////////////////////////////////////////////////////////////////////////////
+  // The muon spectrometer trigger
+  configurationId = "TRIGGER-Muon-Spectrometer";
+
+  // define the inputsfor the muon spectrometer trigger.
+  if (pHandler->FindConfiguration("dHLT-sim-fromRaw")) {
+    triggerInputs = "dHLT-sim-fromRaw";
+  }
+  else if (pHandler->FindConfiguration("dHLT-sim")) {
+    triggerInputs = "dHLT-sim";
+  }
+  else if (pHandler->FindConfiguration("dHLT-sim-fromMC")) {
+    triggerInputs = "dHLT-sim-fromMC";
+  }
+
+  if (triggerInputs.Length() > 0) {
+    HLTInfo("Configuring inputs for %s: %s", configurationId.Data(), triggerInputs.Data());
+    pHandler->CreateConfiguration(configurationId.Data(), "MuonSpectroTrigger", triggerInputs.Data(), "-makestats");
+    if (triggerOutputs.Length() > 0) triggerOutputs += " ";
+    triggerOutputs += configurationId;
+  } else {
+    HLTWarning("No inputs for %s found, skipping component.", configurationId.Data());
+  }
 
   /////////////////////////////////////////////////////////////////////////////////////
   //
@@ -156,7 +182,7 @@ const char* AliHLTTriggerAgent::GetRequiredComponentLibraries() const
 {
   // see header file for class documentation
 
-  return "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so libAliHLTITS.so libAliHLTGlobal.so";
+  return "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so libAliHLTITS.so libAliHLTGlobal.so libAliHLTMUON.so";
 }
 
 int AliHLTTriggerAgent::GetHandlerDescription(AliHLTComponentDataType dt,

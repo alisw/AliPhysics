@@ -17,6 +17,8 @@ trigger/AliHLTTriggerSelectiveReadoutComponent.cxx
 trigger/AliHLTTriggerMonitoringComponent.cxx
 trigger/AliHLTTriggerPhosClusterEnergy.cxx
 trigger/AliHLTTriggerPhosMip.cxx
+trigger/AliHLTMuonSpectroScalars.cxx
+trigger/AliHLTMuonSpectroTriggerComponent.cxx
 )
 
 # fill list of header files from list of source files

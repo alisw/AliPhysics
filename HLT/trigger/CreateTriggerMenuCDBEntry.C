@@ -58,6 +58,9 @@ void CreateTriggerMenuCDBEntry(
 		Int_t lastRun = AliCDBRunRange::Infinity()
 	)
 {
+	gSystem->Load("libAliHLTUtil.so");
+	gSystem->Load("libAliHLTTRD.so");
+	gSystem->Load("libAliHLTMUON.so");
 	gSystem->Load("libAliHLTTrigger.so");
 
 	// Setup the CDB default storage and run number.
@@ -94,6 +97,7 @@ void CreateTriggerMenuCDBEntry(
 	// NOTE: always make sure that the global HLT output and the HLT DDLs are included
 	// in the readout, i.e. add domainHLTOUT|domainHLTDDL to the trigger domain
 	config.AddItem("BarrelMultiplicityTrigger", "BarrelMultiplicityTrigger|domainHLTOUT|domainALLDDL", "charged barrel track multiplicity triggered");
+	config.AddItem("MuonSpectroTrigger", "MuonSpectroTrigger|domainHLTOUT|domainALLDDL", "Muon spectrometer triggered");
 	
 	///////////////////////////////////////////////////////////////////////////////////////////	
 	// default domain in case there is no global trigger

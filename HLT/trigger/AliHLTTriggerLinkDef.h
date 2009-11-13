@@ -28,4 +28,7 @@
 #pragma link C++ class AliHLTTriggerDetectorGeomRectangle+;
 #pragma link C++ class AliHLTTriggerDecisionParameters+;
 #pragma link C++ class AliHLTTriggerGammaConversion+;
+#pragma link C++ class AliHLTMuonSpectroScalars+;
+#pragma link C++ class AliHLTMuonSpectroScalars::AliScalar+;
+#pragma link C++ class AliHLTMuonSpectroTriggerComponent+;
 #endif
