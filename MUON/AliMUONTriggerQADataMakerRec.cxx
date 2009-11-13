@@ -213,9 +213,9 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
     Add2RawsList(histoCalibNorm, kTriggerCalibSummaryNorm, !expert,  image, !saveCorr);
   } // Calibration reco param
 	
-  Char_t *globalXaxisName[6] = {"US HPt", "US LPt", "LS HPt", "LS LPt", "SGL HPt", "SGL LPt"};
-  Char_t *allLevelXaxisName[kNtrigAlgoErrorBins] = {"Local algo X", "Local algo Y", "Local LUT","Local Y Copy" , "Local2Regional", "Regional", "Regional2Global", "GlobalFromInGlobal", "GlobalFromInLocal", "GlobalFromOutLocal"};
-  Char_t *readoutErrNames[kNtrigStructErrorBins]={"Local","Regional","Global","DARC"};
+  const char *globalXaxisName[6] = {"US HPt", "US LPt", "LS HPt", "LS LPt", "SGL HPt", "SGL LPt"};
+  const char *allLevelXaxisName[kNtrigAlgoErrorBins] = {"Local algo X", "Local algo Y", "Local LUT","Local Y Copy" , "Local2Regional", "Regional", "Regional2Global", "GlobalFromInGlobal", "GlobalFromInLocal", "GlobalFromOutLocal"};
+  const char *readoutErrNames[kNtrigStructErrorBins]={"Local","Regional","Global","DARC"};
 
   TString errorAxisTitle = "Number of errors";
 
@@ -995,15 +995,15 @@ AliMUONTriggerQADataMakerRec::GetDCSValues(Int_t iMeas, Int_t detElemId,
 
   if (!triggerDcsPair)
   {
-    printf(Form("Did not find expected alias (%s) for DE %d\n",
-		currAlias.Data(),detElemId));
+    AliError(Form("Did not find expected alias (%s) for DE %d\n",
+                  currAlias.Data(),detElemId));
     return 0x0;
   }
 
   TObjArray* values = static_cast<TObjArray*>(triggerDcsPair->Value());
   if (!values)
   {
-    printf(Form("Could not get values for alias %s\n",currAlias.Data()));
+    AliError(Form("Could not get values for alias %s\n",currAlias.Data()));
     return 0x0;
   }
 
