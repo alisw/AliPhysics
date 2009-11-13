@@ -326,7 +326,7 @@ void AliAnalysisTaskFlowEvent::Exec(Option_t *)
     if (fMyTRandom3) {  
       xRPangle = TMath::TwoPi()*(fMyTRandom3->Rndm());
       xNewFlowValue = fMyTRandom3->Gaus(fEllipticFlowValue,fSigmaEllipticFlowValue);
-      nNewMultOfEvent = fMyTRandom3->Gaus(fMultiplicityOfEvent,fSigmaMultiplicityOfEvent);
+      nNewMultOfEvent =  TMath::Nint(fMyTRandom3->Gaus(fMultiplicityOfEvent,fSigmaMultiplicityOfEvent));
     }
     else {
       cout << "no random generator pointer initialized " << endl;
