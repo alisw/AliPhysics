@@ -33,7 +33,7 @@
 #include <Riostream.h>
 #include <TSpectrum.h>
 #include <TProfile.h>
-
+#include <TF1.h>
 
 ClassImp(AliT0CalibWalk)
 
@@ -115,7 +115,7 @@ void AliT0CalibWalk::SetWalk(Int_t ipmt)
     i++;
   }
   inFile.close();
-  cout<<" number of data "<<i<<endl;
+  //  cout<<" number of data "<<i<<endl;
  
   TMath::Sort(i, y, index,down);
   Int_t amp=0, iin=0, isum=0, sum=0;
@@ -194,67 +194,84 @@ void AliT0CalibWalk::SetAmpLEDRec(Int_t ipmt)
 void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 {
   //make walk corerction for preprocessor
-  
+  Int_t nmips=14;
   gFile = TFile::Open(laserFile);
   if(!gFile) {
     AliError("No input laser data found ");
   }
   else
     {
-      gFile->ls();
-      Float_t x1[10], y1[10]; 
-      Float_t x2[10], y2[10];
-      
-      Float_t xx1[10],yy1[10], xx[10];
-      for (Int_t ii=0; ii<10; ii++)
+      //      gFile->ls();
+
+      Float_t x1[14], y1[14]; 
+      Float_t x2[14], y2[14];
+  
+      Float_t mips[14] = {1.,2,3,4,5,6,7,8,9,10,20,30,40,50};
+     
+      Float_t xx1[14],yy1[14], xx[14];
+      for (Int_t ii=0; ii<14; ii++)
 	{      x1[ii]=0; y1[ii]=0; x2[ii]=0; y2[ii]=0; }
       
       
-      TH2F*  hCFDvsQTC[24][10]; TH2F*  hCFDvsLED[24][10];
+      TH2F*  hCFDvsQTC[24][14]; TH2F*  hCFDvsLED[24][14];
       
       for (Int_t i=0; i<24; i++)
 	{
-	  for (Int_t im=0; im<10; im++)
-	    {
-	      
+	  for (Int_t im=0; im<nmips; im++)
+	    {	      
 	      TString qtc = Form("CFDvsQTC%i_%i",i+1,im+1);
 	      TString led = Form("CFDvsLED%i_%i",i+1,im+1);
-	      cout<<qtc<<" "<<led<<endl;
 	      hCFDvsQTC[i][im] = (TH2F*) gFile->Get(qtc.Data()) ;
 	      hCFDvsLED[i][im] = (TH2F*) gFile->Get(led.Data());
 	      
-	      //	      if(!hCFDvsQTC[i][im] || !hCFDvsLED[i][im]) 
-	      //		AliWarning(Form(" no walk correction data in LASER DA for channel %i for amplitude %i MIPs",i,im));
+	      if(!hCFDvsQTC[i][im] || !hCFDvsLED[i][im]) 
+	      	AliWarning(Form(" no walk correction data in LASER DA for channel %i for amplitude %f MIPs",i,mips[im]));
 	      
-	      if(hCFDvsQTC[i][im] && hCFDvsLED[i][im])
+	      if(hCFDvsQTC[i][im])
 		{	  
 		  x1[im] = hCFDvsQTC[i][im]->GetMean(1);
 		  y1[im] = hCFDvsQTC[i][im]->GetMean(2);
+		}
+	      if( hCFDvsLED[i][im]){
 		  x2[im] = hCFDvsLED[i][im]->GetMean(1);
 		  y2[im] = hCFDvsLED[i][im]->GetMean(2);
 		}
-	      xx[im]=im+1;
+	      xx[im]=mips[im];
 	    }
-	  for (Int_t imi=0; imi<10; imi++)
+	  for (Int_t imi=0; imi<nmips; imi++)
 	    {
-	      yy1[imi] = Float_t (10-imi);
-	      xx1[imi]=x2[10-imi-1]; 
+	      yy1[imi] = Float_t (mips[nmips-imi-1]);
+	      xx1[imi] = x2[nmips-imi-1]; 
 	    }
-	  if(i==0){	
-	 cout<<"Making graphs..."<<endl;
+	  if(i==0) cout<<"Making graphs..."<<endl;
+	  
+	  TGraph *grwalkqtc = new TGraph (nmips,x1,y1);
+	  TGraph *grwalkled = new TGraph (nmips,x2,y2);
+	  fWalk.AddAtAndExpand(grwalkqtc,i);
+	  fAmpLEDRec.AddAtAndExpand(grwalkled,i);
+	 
+	  //fit amplitude graphs to make comparison wth new one	  
+	  TGraph *grampled = new TGraph (nmips,xx1,yy1);
+	  TGraph *grqtc = new TGraph (nmips,x1,xx);
+	  fQTC.AddAtAndExpand(grqtc,i);	 
+	  fAmpLED.AddAtAndExpand(grampled,i);
+
+	  //fit amplitude graphs
+	  Double_t parled [2], parqtc[2];
+
+	  TF1 *fuled = new TF1("fuled","expo",x1[0],x1[nmips]);
+	  TF1 *fuqtc = new TF1 ("fuqtc","pol1",x1[0],x1[nmips]);
+	  grqtc->Fit("fuqtc","Q"," ",x1[0],x1[nmips]);
+	  grampled->Fit("fuled","Q"," ",xx1[0],xx1[nmips]);
+	  fuled->GetParameters(&parled[0]);
+	  fuqtc->GetParameters(&parqtc[0]);
+
+	  for(Int_t ipar=0; ipar<2; ipar++) {
+	    SetQTCpar(i,ipar,parqtc[ipar]);
+	    SetAmpLEDpar(i,ipar,parled[ipar]);
+	    //	    cout<<" pars :::: "<<i<<" "<<ipar<<" qtc "<<parqtc[ipar]<<" led "<<parled[ipar]<<endl;
 	  }
-	  TGraph *gr1 = new TGraph (10,x1,y1);
-	  TGraph *gr2 = new TGraph (10,x2,y2);
-	  fWalk.AddAtAndExpand(gr1,i);
-	  fAmpLEDRec.AddAtAndExpand(gr2,i);
-	  
-	  
-	  
-	  TGraph *gr4 = new TGraph (10,xx1,yy1);
-	  TGraph *gr3 = new TGraph (10,x1,xx);
-	  fQTC.AddAtAndExpand(gr3,i);	 
-	  fAmpLED.AddAtAndExpand(gr4,i);
-	  //      for (Int_t im=0; im<10; im++) { x2[im]=0;  y2[im]=0;  xx1[im]=0; xx[im]=0;}
+
 	  if(i==23){
 	    cout<<"Graphs created..."<<endl;
 	  }

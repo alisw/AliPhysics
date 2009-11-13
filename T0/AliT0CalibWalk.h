@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 ////////////////////////////////////////////////
-//  class for T0 calibration                 //
+//  class for T0 amplitude calibration                 //
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
@@ -27,27 +27,35 @@ class AliT0CalibWalk: public TNamed {
   TObjArray* GetfWalk() {return &fWalk;}    
 
   TGraph *GetQTC(Int_t ipmt )  const {return (TGraph*)fQTC.At(ipmt);}
-  // void SetQTC(Int_t ipmt) ;
-  
+  Float_t  GetQTCpar(Int_t channel, Int_t ipar)    const 
+  {return fQTCpar[channel][ ipar ];}
+  void SetQTCpar(Int_t channel,Int_t ipar, Float_t val) 
+  {fQTCpar[channel][ipar]=val;}
+ 
   TGraph *GetAmpLED(Int_t ipmt )  const {return (TGraph*)fAmpLED.At(ipmt);}
-  //  void SetAmpLED(Int_t ipmt) ;
+  Float_t  GetLEDpar(Int_t channel, Int_t ipar)    const 
+  {return fAmpLEDpar[channel][ ipar ];}
+  void SetAmpLEDpar(Int_t channel,Int_t ipar, Float_t val)
+  {fAmpLEDpar[channel][ipar]=val;}
  
   void MakeWalkCorrGraph(const char *laserFile);
   
   
 
   TGraph *  GetAmpLEDRec(Int_t ipmt) const   {return (TGraph*)fAmpLEDRec.At(ipmt);}
-  void     SetAmpLEDRec(Int_t ipmt) ;
+  void      SetAmpLEDRec(Int_t ipmt) ;
    
  protected:
    
    TObjArray   fWalk;  //time - amp. walk
-   TObjArray fAmpLEDRec;  //time - amp. LED-CFD for reconstruction
+   TObjArray   fAmpLEDRec;  //time - amp. LED-CFD for reconstruction
    TObjArray   fQTC;  //time - amp. walk
-   TObjArray fAmpLED;  //time - amp. LED-CFD for reconstruction
+   TObjArray   fAmpLED;  //time - amp. LED-CFD for reconstruction
+   Float_t   fQTCpar[24][2]; // fitted parameters QTC amplitude
+   Float_t   fAmpLEDpar[24][2]; // fitted parameters fAmpLEDpar amplitude
   
    //
-   ClassDef(AliT0CalibWalk,2)    // T0 Sensor Calibration data
+   ClassDef(AliT0CalibWalk,4)    // T0 Amplitude Calibration data
      };
 
      typedef AliT0CalibWalk AliSTARTCalibWalk; // for backward compatibility

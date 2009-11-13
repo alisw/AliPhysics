@@ -44,6 +44,7 @@ Preliminary test version (T.Malkiewicz)
 
 #include "AliCDBMetaData.h"
 #include "AliDCSValue.h"
+#include "AliCDBEntry.h"
 #include "AliLog.h"
 
 #include <TTimeStamp.h>
@@ -51,6 +52,8 @@ Preliminary test version (T.Malkiewicz)
 #include <TObjString.h>
 #include <TNamed.h>
 #include "AliT0Dqclass.h"
+
+#include "iostream.h"
 
 
 ClassImp(AliT0Preprocessor)
@@ -92,8 +95,8 @@ Bool_t AliT0Preprocessor::ProcessDCS(){
 	if((runType == "STANDALONE")||
 	   (runType == "PHYSICS")||
 	   (runType == "LASER")){
-	  //		return kFALSE;
-		return kTRUE;
+	  return kFALSE;
+	  //	return kTRUE;
 	}else{
 	return kFALSE;
 	}
@@ -140,13 +143,37 @@ UInt_t AliT0Preprocessor::ProcessDCSDataPoints(TMap* dcsAliasMap){
 
 UInt_t AliT0Preprocessor::ProcessLaser(){
 	// Processing data from DAQ Standalone run
-	Log("Processing Laser calibration - Walk Correction");
-	
-	Bool_t resultLaser=kFALSE;
-	//processing DAQ
-        TList* list = GetFileSources(kDAQ, "LASER");
-        if (list)
-        {
+  Log("Processing Laser calibration - Walk Correction");
+  
+  //Retrieve the last T0 calibration object
+
+  Float_t parqtcold[24][2], parledold[24][2],parqtcnew[24][2], parlednew[24][2] , goodled[24][2], goodqtc[24][2];
+
+
+  AliT0CalibWalk* clb=0;
+  AliCDBEntry* entryCalib = GetFromOCDB("Calib", "Slewing_Walk");
+  if(!entryCalib)
+    Log(Form("Cannot find any AliCDBEntry for [Calib, SlewingWalk]!"));
+  else {
+    clb = (AliT0CalibWalk*)entryCalib->GetObject();
+
+    for(Int_t i=0; i<24; i++)
+      {
+	for(Int_t ipar=0; ipar<2; ipar++)
+	  {
+	    parqtcold[i][ipar] = clb->GetQTCpar(i,ipar);
+	    parledold[i][ipar] = clb->GetLEDpar(i, ipar);
+	    goodqtc[i][ipar] = 999;
+	    goodled[i][ipar] = 999;
+	    //	    cout<<" old "<<i<<" "<<ipar<<" qtc "<< parqtcold[i][ipar]<<" led "<<parledold[i][ipar]<<endl;
+	  }
+      }
+  }
+  Bool_t resultLaser=kFALSE;
+  //processing DAQ
+  TList* list = GetFileSources(kDAQ, "LASER");
+  if (list)
+    {
             TIter iter(list);
             TObjString *source;
             while ((source = dynamic_cast<TObjString *> (iter.Next())))
@@ -157,11 +184,40 @@ UInt_t AliT0Preprocessor::ProcessLaser(){
                 Log(Form("File with Id LASER found in source %s!", source->GetName()));
                 AliT0CalibWalk *laser = new AliT0CalibWalk();
                 laser->MakeWalkCorrGraph(laserFile);
-                AliCDBMetaData metaData;
-                metaData.SetBeamPeriod(0);
+		Int_t iStore=0;
+		//check difference with what was before
+		if(laser && clb){
+	        iStore = 1;				
+		  for(Int_t i=0; i<24; i++)
+		    {
+		      for(Int_t ifit=0; ifit<2; ifit++)
+			{
+			  parqtcnew[i][ifit] = laser->GetQTCpar(i,ifit);
+			  if( parqtcold[i][ifit] != 0 && parqtcnew[i][ifit] !=0) 
+			    {
+			      goodqtc[i][ifit] = 
+				(parqtcnew[i][ifit] - parqtcold[i][ifit])/parqtcold[i][ifit];
+			      //			      cout<<"qtc "<<i<<" "<<ifit<<" "<< goodqtc[i][ifit]<<endl;
+			    }
+			  parlednew[i][ifit] = laser->GetLEDpar(i,ifit);
+			  if(parledold[i][ifit] != 0 ) 
+			    {
+			      goodled[i][ifit]= 
+				(parlednew[i][ifit] - parledold[i][ifit])/parledold[i][ifit];   
+			      //			      cout<<"led "<<i<<" "<<ifit<<" "<< goodled[i][ifit]<<endl;
+			    }			
+			  if(TMath::Abs(goodqtc[i][ifit])>0.1 || 
+			     TMath::Abs(goodled[i][ifit])>0.1) 
+			    iStore = 0;
+			}
+		    }
+		}
+		AliCDBMetaData metaData;
+		metaData.SetBeamPeriod(0);
                 metaData.SetResponsible("Tomek&Michal");
                 metaData.SetComment("Walk correction from laser runs.");
-		resultLaser=Store("Calib","Slewing_Walk", laser, &metaData, 0, 1);
+		if( iStore>0)
+		  resultLaser=Store("Calib","Slewing_Walk", laser, &metaData, 0, 1);
                 delete laser;
 		Log(Form("resultLaser = %d",resultLaser));
               }
