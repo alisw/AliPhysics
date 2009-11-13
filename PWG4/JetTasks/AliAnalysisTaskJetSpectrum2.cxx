@@ -205,15 +205,6 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     }
   }
   
-  const Int_t nBinEta = 26;
-  Double_t binLimitsEta[nBinEta+1] = {
-    -1.6,-1.4,-1.2,-1.0,
-    -0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,
-    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
-    1.0, 1.2, 1.4, 1.6
-  };
-
-
   const Int_t nBinPhi = 30;
   Double_t binLimitsPhi[nBinPhi+1];
   for(Int_t iPhi = 0;iPhi<=nBinPhi;iPhi++){
@@ -355,8 +346,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   AliAODJet recJets[kMaxJets];
   Int_t nRecJets = 0;
   ///////////////////////////
-  Int_t nTracks = 0;
-  //////////////////////////  
+
 
   Double_t eventW = 1;
   Double_t ptHard = 0; 
