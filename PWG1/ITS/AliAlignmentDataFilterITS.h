@@ -16,6 +16,9 @@ class TNtuple;
 class TList;
 class TH1F;
 class TH2F;
+class TObjString;
+
+class AliTrackPointArray;
 
 #include <TString.h>
 #include "AliITSReconstructor.h"
@@ -40,18 +43,17 @@ class AliAlignmentDataFilterITS : public AliAnalysisTask
   void SetOnlySPDFO(Bool_t set=kTRUE) {fOnlySPDFO=set;}
   void SetGeometryFileName(TString name="geometry.root") {fGeometryFileName=name;}
   void SetITSRecoParam(AliITSRecoParam *rp) {fITSRecoParam=rp;}
+  static Int_t WriteTrackPointsInIdealGeom(Char_t *fin="AliTrackPoints.root", 
+					   Char_t *fout="AliTrackPoints_IdGeom.root",
+					   Char_t *fmis="Run0_999999999_v3_s0.root",
+					   Char_t *fgeo="geometry.root",
+					   Bool_t prn=0);
 
  private:
 
   void FilterCosmic(const AliESDEvent *esd);
   void FilterCollision(const AliESDEvent *esd);
-  const AliITSRecoParam *GetRecoParam() const {
-    if(AliITSReconstructor::GetRecoParam()) {
-      return AliITSReconstructor::GetRecoParam();
-    } else if(fITSRecoParam) {
-      return fITSRecoParam;
-    } else return NULL;
-  }
+  const AliITSRecoParam *GetRecoParam() const;
 
   AliAlignmentDataFilterITS(const AliAlignmentDataFilterITS &);
   AliAlignmentDataFilterITS& operator=(const AliAlignmentDataFilterITS&);
