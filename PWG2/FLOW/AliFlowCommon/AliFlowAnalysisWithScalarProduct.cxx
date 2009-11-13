@@ -45,6 +45,8 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
  
  AliFlowAnalysisWithScalarProduct::AliFlowAnalysisWithScalarProduct():
    fEventNumber(0),
+   fEtaMin(0.01),
+   fEtaMax(1.),
    fDebug(kFALSE),
    fHistList(NULL),
    fHistProUQetaRP(NULL),
@@ -158,8 +160,10 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
     fCommonHists->FillControlHistograms(anEvent);
         
     //get Q vectors for the eta-subevents
-    AliFlowVector vQa = anEvent->GetQsub(-1.,-0.01);  
-    AliFlowVector vQb = anEvent->GetQsub(0.01,1.);
+    AliFlowVector* vQarray = new AliFlowVector[2];
+    anEvent->GetQsub(vQarray);
+    AliFlowVector vQa = vQarray[0];
+    AliFlowVector vQb = vQarray[1];
     //get total Q vector
     AliFlowVector vQ = vQa + vQb;
     
@@ -190,9 +194,11 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	  TVector2 vQm = vQ;
 	  //subtract particle from the flowvector if used to define it
 	  if (pTrack->InRPSelection()) {
-	    Double_t dQmX = vQm.X() - dUX;
-	    Double_t dQmY = vQm.Y() - dUY;
-	    vQm.Set(dQmX,dQmY);
+	    if (pTrack->InSubevent(0) || pTrack->InSubevent(1)) { 
+	      Double_t dQmX = vQm.X() - dUX;
+	      Double_t dQmY = vQm.Y() - dUY;
+	      vQm.Set(dQmX,dQmY);
+	    }
 	  }
 
 	  //dUQ = scalar product of vU and vQm
@@ -213,6 +219,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	 
     fEventNumber++;
     //    cout<<"@@@@@ "<<fEventNumber<<" events processed"<<endl;
+    delete [] vQarray;
   }
 }
 

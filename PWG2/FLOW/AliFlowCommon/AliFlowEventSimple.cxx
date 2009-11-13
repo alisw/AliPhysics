@@ -223,16 +223,13 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
 }
 
 //-----------------------------------------------------------------------   
-AliFlowVector AliFlowEventSimple::GetQsub(Double_t etaMin, Double_t etaMax, Int_t n, TList *weightsList, Bool_t usePhiWeights, Bool_t usePtWeights, Bool_t useEtaWeights) 
+void AliFlowEventSimple::GetQsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, Bool_t usePhiWeights, Bool_t usePtWeights, Bool_t useEtaWeights) 
 {
-  //for eta subevents
   
   // calculate Q-vector in harmonic n without weights (default harmonic n=2)  
   Double_t dQX = 0.;
   Double_t dQY = 0.;
-  AliFlowVector vQ;
-  vQ.Set(0.,0.);
-  
+    
   Int_t iOrder = n;
   Double_t iUsedTracks = 0;
   Double_t dPhi = 0.;
@@ -282,51 +279,59 @@ AliFlowVector AliFlowEventSimple::GetQsub(Double_t etaMin, Double_t etaMax, Int_
    }          
   } // end of if(weightsList)
   
-  // loop over tracks    
-  for(Int_t i=0;i<fNumberOfTracks;i++)                               
-  {
-   pTrack = (AliFlowTrackSimple*)TrackCollection()->At(i); 
-   if(pTrack)
-   {
-    if(pTrack->InRPSelection())
+  //loop over the two subevents
+  for (Int_t s=0;s<2;s++)  
     {
-     dPhi = pTrack->Phi();
-     dPt  = pTrack->Pt();
-     dEta = pTrack->Eta();
-     if (dEta>etaMin && dEta<etaMax) {
-       // determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
-       if(phiWeights && nBinsPhi)
-	 {
-	   wPhi = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())));
-	 }
-       // determine v'(pt) weight:    
-       if(ptWeights && dBinWidthPt)
-	 {
-	   wPt=ptWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-dPtMin)/dBinWidthPt))); 
-	 }            
-       // determine v'(eta) weight:    
-       if(etaWeights && dBinWidthEta)
-	 {
-	   wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-dEtaMin)/dBinWidthEta))); 
-	 } 
-
-       // building up the weighted Q-vector:       
-       dQX += wPhi*wPt*wEta*TMath::Cos(iOrder*dPhi);
-       dQY += wPhi*wPt*wEta*TMath::Sin(iOrder*dPhi); 
-    
-       // weighted multiplicity:
-       iUsedTracks+=wPhi*wPt*wEta;
-           
-     } // end of if dEta in eta range
-    } // end of if (pTrack->InRPSelection())
-   } // end of if (pTrack)
-   else {cerr << "no particle!!!"<<endl;}
-  } // loop over particles
-    
-  vQ.Set(dQX,dQY);
-  vQ.SetMult(iUsedTracks);
+      // loop over tracks    
+      for(Int_t i=0;i<fNumberOfTracks;i++)                               
+	{
+	  pTrack = (AliFlowTrackSimple*)TrackCollection()->At(i); 
+	  if(pTrack)
+	    {
+	      if(pTrack->InRPSelection())
+		{
+		  if (pTrack->InSubevent(s)) {
+		    dPhi = pTrack->Phi();
+		    dPt  = pTrack->Pt();
+		    dEta = pTrack->Eta();
+		  
+		    // determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
+		    if(phiWeights && nBinsPhi)
+		      {
+			wPhi = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*nBinsPhi/TMath::TwoPi())));
+		      }
+		    // determine v'(pt) weight:    
+		    if(ptWeights && dBinWidthPt)
+		      {
+			wPt=ptWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-dPtMin)/dBinWidthPt))); 
+		      }            
+		    // determine v'(eta) weight:    
+		    if(etaWeights && dBinWidthEta)
+		      {
+			wEta=etaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-dEtaMin)/dBinWidthEta))); 
+		      } 
+		    
+		    // building up the weighted Q-vector:       
+		    dQX += wPhi*wPt*wEta*TMath::Cos(iOrder*dPhi);
+		    dQY += wPhi*wPt*wEta*TMath::Sin(iOrder*dPhi); 
+		    
+		    // weighted multiplicity:
+		    iUsedTracks+=wPhi*wPt*wEta;
+		    		    
+		  } // end of subevent 
+		} // end of if (pTrack->InRPSelection())
+	    } // end of if (pTrack)
+	  else {cerr << "no particle!!!"<<endl;}
+	} // loop over particles
+      Qarray[s].Set(dQX,dQY);
+      Qarray[s].SetMult(iUsedTracks);
+      //reset
+      iUsedTracks = 0;
+      dQX = 0.;
+      dQY = 0.;
+    }
   
-  return vQ;
+  //return vQ;
   
 }
 
