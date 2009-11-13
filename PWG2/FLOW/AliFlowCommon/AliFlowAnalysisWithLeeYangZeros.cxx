@@ -163,14 +163,14 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Init()
   if (fDebug) cout<<"****AliFlowAnalysisWithLeeYangZeros::Init()****"<<endl;
 
   // Book histograms
-  Int_t iNtheta = AliFlowLYZConstants::kTheta;
-  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-  Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
+  Int_t iNtheta = AliFlowLYZConstants::GetMaster()->GetNtheta();
+  Int_t iNbinsPt = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
+  Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
 
-  Double_t  dPtMin = AliFlowCommonConstants::GetPtMin();	     
-  Double_t  dPtMax = AliFlowCommonConstants::GetPtMax();
-  Double_t  dEtaMin = AliFlowCommonConstants::GetEtaMin();	     
-  Double_t  dEtaMax = AliFlowCommonConstants::GetEtaMax();
+  Double_t  dPtMin = AliFlowCommonConstants::GetMaster()->GetPtMin();	     
+  Double_t  dPtMax = AliFlowCommonConstants::GetMaster()->GetPtMax();
+  Double_t  dEtaMin = AliFlowCommonConstants::GetMaster()->GetEtaMin();	     
+  Double_t  dEtaMax = AliFlowCommonConstants::GetMaster()->GetEtaMax();
     
   //for control histograms
   if (fFirstRun){ 
@@ -353,7 +353,7 @@ Bool_t AliFlowAnalysisWithLeeYangZeros::Make(AliFlowEventSimple* anEvent)
 void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHistos) {
  // get the pointers to all output histograms before calling Finish()
  
-  const Int_t iNtheta = AliFlowLYZConstants::kTheta;
+  const Int_t iNtheta = AliFlowLYZConstants::GetMaster()->GetNtheta();
   
   if (outputListHistos) {
 
@@ -369,9 +369,18 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
     TProfile* pHistProVPtRP   = NULL;
     TProfile* pHistProVPtPOI  = NULL;
     TH1F* pHistQsumforChi = NULL;
-    AliFlowLYZHist1 *pLYZHist1[iNtheta] = {NULL};      //array of pointers to AliFlowLYZHist1
-    AliFlowLYZHist2 *pLYZHist2RP[iNtheta] = {NULL};    //array of pointers to AliFlowLYZHist2
-    AliFlowLYZHist2 *pLYZHist2POI[iNtheta] = {NULL};   //array of pointers to AliFlowLYZHist2
+    //AliFlowLYZHist1 *pLYZHist1[iNtheta] = {NULL};      //array of pointers to AliFlowLYZHist1
+    //AliFlowLYZHist2 *pLYZHist2RP[iNtheta] = {NULL};    //array of pointers to AliFlowLYZHist2
+    //AliFlowLYZHist2 *pLYZHist2POI[iNtheta] = {NULL};   //array of pointers to AliFlowLYZHist2
+    AliFlowLYZHist1 **pLYZHist1 = new AliFlowLYZHist1*[iNtheta];      //array of pointers to AliFlowLYZHist1
+    AliFlowLYZHist2 **pLYZHist2RP = new AliFlowLYZHist2*[iNtheta];    //array of pointers to AliFlowLYZHist2
+    AliFlowLYZHist2 **pLYZHist2POI = new AliFlowLYZHist2*[iNtheta];   //array of pointers to AliFlowLYZHist2
+    for (Int_t i=0; i<iNtheta; i++)
+    {
+      pLYZHist1[i] = NULL;
+      pLYZHist2RP[i] = NULL;
+      pLYZHist2POI[i] = NULL;
+    }
 
     if (GetFirstRun()) { //first run
       //Get the common histograms from the output list
@@ -575,6 +584,9 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
       }
     } //secondrun
     //outputListHistos->Print(); 
+    delete [] pLYZHist1;
+    delete [] pLYZHist2RP;
+    delete [] pLYZHist2POI;
   } //listhistos
   else { 
     cout << "histogram list pointer is empty in method AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms() " << endl;}
@@ -588,7 +600,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
   
   //define variables for both runs
   Double_t  dJ01 = 2.405; 
-  Int_t iNtheta = AliFlowLYZConstants::kTheta;
+  Int_t iNtheta = AliFlowLYZConstants::GetMaster()->GetNtheta();
   //set the event number
   SetEventNumber((int)fCommonHists->GetHistMultOrig()->GetEntries());
   //cout<<"number of events processed is "<<fEventNumber<<endl; 
@@ -618,8 +630,8 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 
 	//for estimating systematic error resulting from d0
 	Double_t dBinsize =0.;
-	if (fUseSum){ dBinsize = (AliFlowLYZConstants::fgMaxSUM)/(AliFlowLYZConstants::kNbins);}
-	else { dBinsize = (AliFlowLYZConstants::fgMaxPROD)/(AliFlowLYZConstants::kNbins);}
+	if (fUseSum){ dBinsize = (AliFlowLYZConstants::GetMaster()->GetMaxSUM())/(AliFlowLYZConstants::GetMaster()->GetNbins());}
+	else { dBinsize = (AliFlowLYZConstants::GetMaster()->GetMaxPROD())/(AliFlowLYZConstants::GetMaster()->GetNbins());}
 	Double_t dVplus = -1.;
 	Double_t dVmin  = -1.;
 	if (dR0+dBinsize!=0.) {dVplus = dJ01/(dR0+dBinsize);}
@@ -723,8 +735,8 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
     Int_t m = 1;
     TComplex i = TComplex::I();
     Double_t dBesselRatio[3] = {1., 1.202, 2.69};
-    Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-    Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
+    Int_t iNbinsPt = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
+    Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
 
     Double_t dEtaRP, dPtRP, dReRatioRP, dVetaRP, dVPtRP, dEtaPOI, dPtPOI, dReRatioPOI, dVetaPOI, dVPtPOI;
          
@@ -1094,8 +1106,8 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
    
   //define variables
   TComplex cExpo, cGtheta, cGthetaNew, cZ;
-  Int_t iNtheta = AliFlowLYZConstants::kTheta;
-  Int_t iNbins = AliFlowLYZConstants::kNbins;
+  Int_t iNtheta = AliFlowLYZConstants::GetMaster()->GetNtheta();
+  Int_t iNbins = AliFlowLYZConstants::GetMaster()->GetNbins();
    
 
   //calculate flow
@@ -1175,7 +1187,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
   Double_t dCosTermPOI = 0.;
   Double_t m = 1.;
   Double_t dOrder = 2.;
-  Int_t iNtheta = AliFlowLYZConstants::kTheta;
+  Int_t iNtheta = AliFlowLYZConstants::GetMaster()->GetNtheta();
   
    
   //get the Q vector 
@@ -1337,7 +1349,7 @@ TComplex AliFlowAnalysisWithLeeYangZeros::GetDiffFlow(AliFlowEventSimple* const 
 
   Int_t iNumberOfTracks = anEvent->NumberOfTracks();
   
-  Int_t iNtheta = AliFlowLYZConstants::kTheta;
+  Int_t iNtheta = AliFlowLYZConstants::GetMaster()->GetNtheta();
   Double_t dTheta = ((double)theta/iNtheta)*TMath::Pi()/dOrder;
   
   //for the denominator (use all RP selected particles)

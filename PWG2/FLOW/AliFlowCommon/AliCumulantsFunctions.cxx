@@ -29,6 +29,8 @@
 #include "TFile.h"
 #include "TList.h"
 #include "TParticle.h"
+#include <TMatrixD.h>
+#include <TVectorD.h>
 
 #include "TProfile.h"
 #include "TProfile2D.h" 
@@ -173,28 +175,28 @@ AliCumulantsFunctions::AliCumulantsFunctions(TProfile2D *intGenFun, TProfile2D *
 void AliCumulantsFunctions::Calculate()
 {
  //calculate cumulants and final integrated and differential flow estimates and store the results into output histograms
- static const Int_t fgkQmax=AliFlowCumuConstants::kQmax;     //needed for numerics
- static const Int_t fgkPmax=AliFlowCumuConstants::kPmax;     //needed for numerics  
- static const Int_t fgkQmax4=AliFlowCumuConstants::kQmax4;   //needed for numerics
- static const Int_t fgkPmax4=AliFlowCumuConstants::kPmax4;   //needed for numerics
- static const Int_t fgkQmax6=AliFlowCumuConstants::kQmax6;   //needed for numerics
- static const Int_t fgkPmax6=AliFlowCumuConstants::kPmax6;   //needed for numerics
- static const Int_t fgkQmax8=AliFlowCumuConstants::kQmax8;   //needed for numerics
- static const Int_t fgkPmax8=AliFlowCumuConstants::kPmax8;   //needed for numerics
- static const Int_t fgkQmax16=AliFlowCumuConstants::kQmax16; //needed for numerics
- static const Int_t fgkPmax16=AliFlowCumuConstants::kPmax16; //needed for numerics
+ const Int_t cQmax=AliFlowCumuConstants::GetMaster()->GetQmax();     //needed for numerics
+ const Int_t cPmax=AliFlowCumuConstants::GetMaster()->GetPmax();     //needed for numerics  
+ const Int_t cQmax4=AliFlowCumuConstants::GetMaster()->GetQmax4();   //needed for numerics
+ const Int_t cPmax4=AliFlowCumuConstants::GetMaster()->GetPmax4();   //needed for numerics
+ const Int_t cQmax6=AliFlowCumuConstants::GetMaster()->GetQmax6();   //needed for numerics
+ const Int_t cPmax6=AliFlowCumuConstants::GetMaster()->GetPmax6();   //needed for numerics
+ const Int_t cQmax8=AliFlowCumuConstants::GetMaster()->GetQmax8();   //needed for numerics
+ const Int_t cPmax8=AliFlowCumuConstants::GetMaster()->GetPmax8();   //needed for numerics
+ const Int_t cQmax16=AliFlowCumuConstants::GetMaster()->GetQmax16(); //needed for numerics
+ const Int_t cPmax16=AliFlowCumuConstants::GetMaster()->GetPmax16(); //needed for numerics
  
- static const Int_t fgkFlow=AliFlowCumuConstants::kFlow;   //integrated flow coefficient to be calculated
- static const Int_t fgkMltpl=AliFlowCumuConstants::kMltpl; //the multiple in p=m*n (diff. flow) 
- static const Int_t fgknBinsPt=100;                        //number of pt bins //to be improved
- static const Int_t fgknBinsEta=80;                        //number of eta bins //to be improved
+ const Int_t cFlow=AliFlowCumuConstants::GetMaster()->GetFlow();   //integrated flow coefficient to be calculated
+ const Int_t cMltpl=AliFlowCumuConstants::GetMaster()->GetMltpl(); //the multiple in p=m*n (diff. flow) 
+ const Int_t cnBinsPt=100;                        //number of pt bins //to be improved
+ const Int_t cnBinsEta=80;                        //number of eta bins //to be improved
  
- Double_t fR0=AliFlowCumuConstants::fgR0;              //needed for numerics
- //Double_t fPtMax=AliFlowCommonConstants::GetPtMax(); //maximum pt
- //Double_t fPtMin=AliFlowCommonConstants::GetPtMin(); //minimum pt
- //Double_t fBinWidthPt=(fPtMax-fPtMin)/fgknBinsPt;    //width of pt bin (in GeV)   
+ Double_t fR0=AliFlowCumuConstants::GetMaster()->GetR0();              //needed for numerics
+ //Double_t fPtMax=AliFlowCommonConstants::GetMaster()->GetPtMax(); //maximum pt
+ //Double_t fPtMin=AliFlowCommonConstants::GetMaster()->GetPtMin(); //minimum pt
+ //Double_t fBinWidthPt=(fPtMax-fPtMin)/cnBinsPt;    //width of pt bin (in GeV)   
  
- Bool_t fOtherEquations=AliFlowCumuConstants::fgOtherEquations;     //numerical equations for cumulants solved up to different highest order 
+ Bool_t fOtherEquations=AliFlowCumuConstants::GetMaster()->GetOtherEquations();     //numerical equations for cumulants solved up to different highest order 
  
  //avarage selected multiplicity
  Double_t dAvM=0.;
@@ -234,16 +236,16 @@ void AliCumulantsFunctions::Calculate()
  }  
  
  //<G[p][q]>
- Double_t dAvG[fgkPmax][fgkQmax]={{0.}}; 
+ TMatrixD dAvG(cPmax, cQmax); 
  Bool_t someAvGEntryIsNegative=kFALSE;
  if(fIntGenFun)
  {   
-  for(Int_t p=0;p<fgkPmax;p++)
+  for(Int_t p=0;p<cPmax;p++)
   {
-   for(Int_t q=0;q<fgkQmax;q++)
+   for(Int_t q=0;q<cQmax;q++)
    {
-    dAvG[p][q]=fIntGenFun->GetBinContent(p+1,q+1);
-    if(dAvG[p][q]<0.)
+    dAvG(p,q)=fIntGenFun->GetBinContent(p+1,q+1);
+    if(dAvG(p,q)<0.)
     {
      someAvGEntryIsNegative=kTRUE;
     } 
@@ -255,14 +257,14 @@ void AliCumulantsFunctions::Calculate()
  //////////////////gen. function for the cumulants////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
     
- Double_t dC[fgkPmax][fgkQmax]={{0.}};//C[p][q]
+ TMatrixD dC(cPmax, cQmax);//C[p][q]
  if(dAvM>0 && someAvGEntryIsNegative==kFALSE)
  {
-  for(Int_t p=0;p<fgkPmax;p++)
+  for(Int_t p=0;p<cPmax;p++)
   {
-   for(Int_t q=0;q<fgkQmax;q++)
+   for(Int_t q=0;q<cQmax;q++)
    {
-    dC[p][q]=1.*dAvM*(pow(dAvG[p][q],(1./dAvM))-1.); 
+    dC(p,q)=1.*dAvM*(pow(dAvG(p,q),(1./dAvM))-1.); 
    }
   }
  }
@@ -271,23 +273,23 @@ void AliCumulantsFunctions::Calculate()
  ///////avaraging the gen. function for the cumulants over azimuth////////////
  /////////////////////////////////////////////////////////////////////////////
   
- Double_t dAvC[fgkPmax]={0.};//<C[p][q]>
+ TVectorD dAvC(cPmax);//<C[p][q]>
  Double_t tempHere=0.; 
- for(Int_t p=0;p<fgkPmax;p++)
+ for(Int_t p=0;p<cPmax;p++)
  {
   tempHere=0.; 
-  for(Int_t q=0;q<fgkQmax;q++)
+  for(Int_t q=0;q<cQmax;q++)
   {
-   tempHere+=1.*dC[p][q];
+   tempHere+=1.*dC(p,q);
   } 
-  dAvC[p]=1.*tempHere/fgkQmax;
+  dAvC[p]=1.*tempHere/cQmax;
  }
  
  /////////////////////////////////////////////////////////////////////////////
  //////////////////////////////////final results//////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
  
- Double_t cumulant[fgkPmax];//array to store various order cumulants
+ TVectorD cumulant(cPmax);//array to store various order cumulants
  
  //system of eq. for the cumulants  
  cumulant[0] = (-1./(60*fR0*fR0))*((-300.)*dAvC[0]+300.*dAvC[1]-200.*dAvC[2]+75.*dAvC[3]-12.*dAvC[4]);
@@ -300,11 +302,11 @@ void AliCumulantsFunctions::Calculate()
  cout<<endl;
  cout<<"*********************************"<<endl;
  cout<<"cumulants:"<<endl; 
- cout<<" c_"<<fgkFlow<<"{2} = "<<cumulant[0]<<endl; 
- cout<<" c_"<<fgkFlow<<"{4} = "<<cumulant[1]<<endl;
- cout<<" c_"<<fgkFlow<<"{6} = "<<cumulant[2]<<endl;
- cout<<" c_"<<fgkFlow<<"{8} = "<<cumulant[3]<<endl; 
- cout<<"c_"<<fgkFlow<<"{10} = "<<cumulant[4]<<endl;  
+ cout<<" c_"<<cFlow<<"{2} = "<<cumulant[0]<<endl; 
+ cout<<" c_"<<cFlow<<"{4} = "<<cumulant[1]<<endl;
+ cout<<" c_"<<cFlow<<"{6} = "<<cumulant[2]<<endl;
+ cout<<" c_"<<cFlow<<"{8} = "<<cumulant[3]<<endl; 
+ cout<<"c_"<<cFlow<<"{10} = "<<cumulant[4]<<endl;  
  cout<<endl;
  */
  
@@ -351,8 +353,8 @@ void AliCumulantsFunctions::Calculate()
   {  
    sdQ[0]=pow(((1./(2.*dAvM*nEvents))*((1.+2.*pow(chiQ[0],2))/(2.*pow(chiQ[0],2)))),0.5);
   }
-  cout<<"   v_"<<fgkFlow<<"{2} = "<<dV2<<" +/- "<<sdQ[0]<<endl;
-  //cout<<" v_"<<fgkFlow<<"{2} = "<<dV2<<" +/- "<<sdQ[0]<<", chi{2} = "<<chiQ[0]<<endl;//printing also the chi
+  cout<<"   v_"<<cFlow<<"{2} = "<<dV2<<" +/- "<<sdQ[0]<<endl;
+  //cout<<" v_"<<cFlow<<"{2} = "<<dV2<<" +/- "<<sdQ[0]<<", chi{2} = "<<chiQ[0]<<endl;//printing also the chi
   fifr->SetBinContent(1,dV2);
   fifr->SetBinError(1,sdQ[0]);
   //filling common histograms:
@@ -368,7 +370,7 @@ void AliCumulantsFunctions::Calculate()
  } 
  else 
  {
-  cout<<"   v_"<<fgkFlow<<"{2} = Im"<<endl; 
+  cout<<"   v_"<<cFlow<<"{2} = Im"<<endl; 
  }
    
  //v_2{4}   
@@ -382,8 +384,8 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQ[1]=(1./(pow(2.*dAvM*nEvents,0.5)))*pow((1.+4.*pow(chiQ[1],2)+1.*pow(chiQ[1],4.)+2.*pow(chiQ[1],6.))/(2.*pow(chiQ[1],6.)),0.5);
   }
-  cout<<"   v_"<<fgkFlow<<"{4} = "<<dV4<<" +/- "<<sdQ[1]<<endl;
-  //cout<<" v_"<<fgkFlow<<"{4} = "<<dV4<<" +/- "<<sdQ[1]<<", chi{4} = "<<chiQ[1]<<endl;//printing also the chi
+  cout<<"   v_"<<cFlow<<"{4} = "<<dV4<<" +/- "<<sdQ[1]<<endl;
+  //cout<<" v_"<<cFlow<<"{4} = "<<dV4<<" +/- "<<sdQ[1]<<", chi{4} = "<<chiQ[1]<<endl;//printing also the chi
   fifr->SetBinContent(2,dV4);
   fifr->SetBinError(2,sdQ[1]);
   //filling common histograms:
@@ -399,7 +401,7 @@ void AliCumulantsFunctions::Calculate()
  } 
  else 
  {
-  cout<<"   v_"<<fgkFlow<<"{4} = Im"<<endl;  
+  cout<<"   v_"<<cFlow<<"{4} = Im"<<endl;  
  } 
   
  //v_2{6}
@@ -413,8 +415,8 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQ[2]=(1./(pow(2.*dAvM*nEvents,0.5)))*pow((3.+18.*pow(chiQ[2],2)+9.*pow(chiQ[2],4.)+28.*pow(chiQ[2],6.)+12.*pow(chiQ[2],8.)+24.*pow(chiQ[2],10.))/(24.*pow(chiQ[2],10.)),0.5);
   } 
-  cout<<"   v_"<<fgkFlow<<"{6} = "<<dV6<<" +/- "<<sdQ[2]<<endl;
-  //cout<<" v_"<<fgkFlow<<"{6} = "<<dV6<<" +/- "<<sdQ[2]<<", chi{6} = "<<chiQ[2]<<endl;//printing also the chi
+  cout<<"   v_"<<cFlow<<"{6} = "<<dV6<<" +/- "<<sdQ[2]<<endl;
+  //cout<<" v_"<<cFlow<<"{6} = "<<dV6<<" +/- "<<sdQ[2]<<", chi{6} = "<<chiQ[2]<<endl;//printing also the chi
   fifr->SetBinContent(3,dV6);
   fifr->SetBinError(3,sdQ[2]);
   //filling common histograms:
@@ -431,7 +433,7 @@ void AliCumulantsFunctions::Calculate()
  }
  else
  {
-  cout<<"   v_"<<fgkFlow<<"{6} = Im"<<endl;  
+  cout<<"   v_"<<cFlow<<"{6} = Im"<<endl;  
  }
   
  //v_2{8}
@@ -445,8 +447,8 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQ[3]=(1./(pow(2.*dAvM*nEvents,0.5)))*pow((12.+96.*pow(chiQ[3],2.)+72.*pow(chiQ[3],4.)+304.*pow(chiQ[3],6.)+257.*pow(chiQ[3],8.)+804.*pow(chiQ[3],10.)+363.*pow(chiQ[3],12.)+726.*pow(chiQ[3],14.))/(726.*pow(chiQ[3],14.)),0.5);
   } 
-  cout<<"   v_"<<fgkFlow<<"{8} = "<<dV8<<" +/- "<<sdQ[3]<<endl;
-  //cout<<" v_"<<fgkFlow<<"{8} = "<<dV8<<" +/- "<<sdQ[3]<<", chi{8} = "<<chiQ[3]<<endl;//printing also the chi
+  cout<<"   v_"<<cFlow<<"{8} = "<<dV8<<" +/- "<<sdQ[3]<<endl;
+  //cout<<" v_"<<cFlow<<"{8} = "<<dV8<<" +/- "<<sdQ[3]<<", chi{8} = "<<chiQ[3]<<endl;//printing also the chi
   fifr->SetBinContent(4,dV8);
   fifr->SetBinError(4,sdQ[3]);
   //filling common histograms:
@@ -461,18 +463,18 @@ void AliCumulantsFunctions::Calculate()
  } 
  else 
  {
-  cout<<"   v_"<<fgkFlow<<"{8} = Im"<<endl;     
+  cout<<"   v_"<<cFlow<<"{8} = Im"<<endl;     
  }
   
  /*
  //v_2{10}
  if (dAvM && cumulant[4]>=0.)
  {
-  cout<<"v_"<<fgkFlow<<"{10} = "<<dV10<<endl;
+  cout<<"v_"<<cFlow<<"{10} = "<<dV10<<endl;
  }
  else 
  {
-  cout<<"v_"<<fgkFlow<<"{10} = Im"<<endl; 
+  cout<<"v_"<<cFlow<<"{10} = Im"<<endl; 
  }
  */
  
@@ -490,55 +492,55 @@ void AliCumulantsFunctions::Calculate()
  ///////////////////////DIFFERENTIAL FLOW CALCULATIONS////////////////////////
  /////////////////////////////////////////////////////////////////////////////
   
-  Double_t ptXRP[fgknBinsPt][fgkPmax][fgkQmax]={{{0.}}};
-  Double_t ptYRP[fgknBinsPt][fgkPmax][fgkQmax]={{{0.}}};
-  Double_t ptBinRPNoOfParticles[fgknBinsPt]={0.};
+  TVectorD ptXRP(cnBinsPt * cPmax * cQmax);
+  TVectorD ptYRP(cnBinsPt * cPmax * cQmax);
+  TVectorD ptBinRPNoOfParticles(cnBinsPt);
   
   //3D profiles (for pt)
-  for(Int_t b=0;b<fgknBinsPt;b++)
+  for(Int_t b=0;b<cnBinsPt;b++)
   {
    ptBinRPNoOfParticles[b]=fPtBinRPNoOfParticles->GetBinEntries(b+1);
      
-   for(Int_t p=0;p<fgkPmax;p++)
+   for(Int_t p=0;p<cPmax;p++)
    {
-    for(Int_t q=0;q<fgkQmax;q++)
+    for(Int_t q=0;q<cQmax;q++)
     {
-     if(dAvG[p][q])
+     if(dAvG(p,q))
      {   
       if(fDiffPtRPGenFunRe)
       {
-       ptXRP[b][p][q]=fDiffPtRPGenFunRe->GetBinContent(b+1,p+1,q+1)/dAvG[p][q];
+       ptXRP[index3d(b,p,q,cnBinsPt,cPmax)]=fDiffPtRPGenFunRe->GetBinContent(b+1,p+1,q+1)/dAvG(p,q);
       }
       if(fDiffPtRPGenFunIm)
       {  
-       ptYRP[b][p][q]=fDiffPtRPGenFunIm->GetBinContent(b+1,p+1,q+1)/dAvG[p][q];
+       ptYRP[index3d(b,p,q,cnBinsPt,cPmax)]=fDiffPtRPGenFunIm->GetBinContent(b+1,p+1,q+1)/dAvG(p,q);
       } 
      } 
     }
    }   
   }   
   
-  Double_t etaXRP[fgknBinsEta][fgkPmax][fgkQmax]={{{0.}}};
-  Double_t etaYRP[fgknBinsEta][fgkPmax][fgkQmax]={{{0.}}};
-  Double_t etaBinRPNoOfParticles[fgknBinsEta]={0.};
+  TVectorD etaXRP(cnBinsEta*cPmax*cQmax);
+  TVectorD etaYRP(cnBinsEta*cPmax*cQmax);
+  TVectorD etaBinRPNoOfParticles(cnBinsEta);
            
   //3D profiles (for eta)
-  for(Int_t b=0;b<fgknBinsEta;b++)
+  for(Int_t b=0;b<cnBinsEta;b++)
   {
    etaBinRPNoOfParticles[b]=fEtaBinRPNoOfParticles->GetBinEntries(b);
-   for(Int_t p=0;p<fgkPmax;p++)
+   for(Int_t p=0;p<cPmax;p++)
    {
-    for(Int_t q=0;q<fgkQmax;q++)
+    for(Int_t q=0;q<cQmax;q++)
     {
-     if(dAvG[p][q])
+     if(dAvG(p,q))
      {   
       if(fDiffEtaRPGenFunRe)
       {
-       etaXRP[b][p][q]=fDiffEtaRPGenFunRe->GetBinContent(b+1,p+1,q+1)/dAvG[p][q];
+       etaXRP[index3d(b,p,q,cnBinsEta,cPmax)]=fDiffEtaRPGenFunRe->GetBinContent(b+1,p+1,q+1)/dAvG(p,q);
       }
       if(fDiffEtaRPGenFunIm)
       {  
-       etaYRP[b][p][q]=fDiffEtaRPGenFunIm->GetBinContent(b+1,p+1,q+1)/dAvG[p][q];
+       etaYRP[index3d(b,p,q,cnBinsEta,cPmax)]=fDiffEtaRPGenFunIm->GetBinContent(b+1,p+1,q+1)/dAvG(p,q);
       } 
      } 
     }
@@ -548,51 +550,51 @@ void AliCumulantsFunctions::Calculate()
   
   //-------------------------------------------------------------------------------------------------------------------------------
   //final results for differential flow (in pt):
-  Double_t ptDRP[fgknBinsPt][fgkPmax]={{0.}};
+  TMatrixD ptDRP(cnBinsPt, cPmax);
   Double_t tempSumForptDRP=0.;
-  for (Int_t b=0;b<fgknBinsPt;b++)
+  for (Int_t b=0;b<cnBinsPt;b++)
   {
-   for (Int_t p=0;p<fgkPmax;p++)
+   for (Int_t p=0;p<cPmax;p++)
    {
     tempSumForptDRP=0.; 
-    for (Int_t q=0;q<fgkQmax;q++)
+    for (Int_t q=0;q<cQmax;q++)
     {
-     tempSumForptDRP+=cos(fgkMltpl*2.*q*TMath::Pi()/fgkQmax)*ptXRP[b][p][q] + sin(fgkMltpl*2.*q*TMath::Pi()/fgkQmax)*ptYRP[b][p][q];
+     tempSumForptDRP+=cos(cMltpl*2.*q*TMath::Pi()/cQmax)*ptXRP[index3d(b,p,q,cnBinsPt,cPmax)] + sin(cMltpl*2.*q*TMath::Pi()/cQmax)*ptYRP[index3d(b,p,q,cnBinsPt,cPmax)];
     } 
-     ptDRP[b][p]=1.*(pow(fR0*pow(p+1.0,0.5),fgkMltpl)/fgkQmax)*tempSumForptDRP;
+     ptDRP(b,p)=1.*(pow(fR0*pow(p+1.0,0.5),cMltpl)/cQmax)*tempSumForptDRP;
    }
   } 
   
-  Double_t ptRPDiffCumulant2[fgknBinsPt]={0.};
-  Double_t ptRPDiffCumulant4[fgknBinsPt]={0.};
-  Double_t ptRPDiffCumulant6[fgknBinsPt]={0.};
-  Double_t ptRPDiffCumulant8[fgknBinsPt]={0.};
-  Double_t ptRPDiffCumulant10[fgknBinsPt]={0.};
+  Double_t ptRPDiffCumulant2[cnBinsPt]={0.};
+  Double_t ptRPDiffCumulant4[cnBinsPt]={0.};
+  Double_t ptRPDiffCumulant6[cnBinsPt]={0.};
+  Double_t ptRPDiffCumulant8[cnBinsPt]={0.};
+  Double_t ptRPDiffCumulant10[cnBinsPt]={0.};
   
-  for (Int_t b=0;b<fgknBinsPt;b++)
+  for (Int_t b=0;b<cnBinsPt;b++)
   {
-   ptRPDiffCumulant2[b]=(1./(fR0*fR0))*(5.*ptDRP[b][0]-5.*ptDRP[b][1]+(10./3.)*ptDRP[b][2]-(5./4.)*ptDRP[b][3]+(1./5.)*ptDRP[b][4]); 
-   ptRPDiffCumulant4[b]=(1./pow(fR0,4.))*((-77./6.)*ptDRP[b][0]+(107./6.)*ptDRP[b][1]-(13./1.)*ptDRP[b][2]+(61./12.)*ptDRP[b][3]-(5./6.)*ptDRP[b][4]);
-   ptRPDiffCumulant6[b]=(1./pow(fR0,6.))*((71./2.)*ptDRP[b][0]-59.*ptDRP[b][1]+49.*ptDRP[b][2]-(41./2.)*ptDRP[b][3]+(7./2.)*ptDRP[b][4]);
-   ptRPDiffCumulant8[b]=(1./pow(fR0,8.))*(-84.*ptDRP[b][0]+156.*ptDRP[b][1]-144.*ptDRP[b][2]+66.*ptDRP[b][3]-12.*ptDRP[b][4]);
-   ptRPDiffCumulant10[b]=(1./pow(fR0,10.))*(120.*ptDRP[b][0]-240.*ptDRP[b][1]+240.*ptDRP[b][2]-120.*ptDRP[b][3]+24.*ptDRP[b][4]);
+   ptRPDiffCumulant2[b]=(1./(fR0*fR0))*(5.*ptDRP(b,0)-5.*ptDRP(b,1)+(10./3.)*ptDRP(b,2)-(5./4.)*ptDRP(b,3)+(1./5.)*ptDRP(b,4)); 
+   ptRPDiffCumulant4[b]=(1./pow(fR0,4.))*((-77./6.)*ptDRP(b,0)+(107./6.)*ptDRP(b,1)-(13./1.)*ptDRP(b,2)+(61./12.)*ptDRP(b,3)-(5./6.)*ptDRP(b,4));
+   ptRPDiffCumulant6[b]=(1./pow(fR0,6.))*((71./2.)*ptDRP(b,0)-59.*ptDRP(b,1)+49.*ptDRP(b,2)-(41./2.)*ptDRP(b,3)+(7./2.)*ptDRP(b,4));
+   ptRPDiffCumulant8[b]=(1./pow(fR0,8.))*(-84.*ptDRP(b,0)+156.*ptDRP(b,1)-144.*ptDRP(b,2)+66.*ptDRP(b,3)-12.*ptDRP(b,4));
+   ptRPDiffCumulant10[b]=(1./pow(fR0,10.))*(120.*ptDRP(b,0)-240.*ptDRP(b,1)+240.*ptDRP(b,2)-120.*ptDRP(b,3)+24.*ptDRP(b,4));
   }
   
   //diff. flow values per pt bin:
-  Double_t v2ptRP[fgknBinsPt]={0.};
-  Double_t v4ptRP[fgknBinsPt]={0.};
-  Double_t v6ptRP[fgknBinsPt]={0.};
-  Double_t v8ptRP[fgknBinsPt]={0.};
+  Double_t v2ptRP[cnBinsPt]={0.};
+  Double_t v4ptRP[cnBinsPt]={0.};
+  Double_t v6ptRP[cnBinsPt]={0.};
+  Double_t v8ptRP[cnBinsPt]={0.};
   
   //errrors:
-  Double_t sdRPDiff2pt[fgknBinsPt]={0.};
-  Double_t sdRPDiff4pt[fgknBinsPt]={0.};
-  //Double_t sdDiff6pt[fgknBinsPt]={0.};//to be improved (calculation needed)
-  //Double_t sdDiff8pt[fgknBinsPt]={0.};//to be improved (calculation needed)
+  Double_t sdRPDiff2pt[cnBinsPt]={0.};
+  Double_t sdRPDiff4pt[cnBinsPt]={0.};
+  //Double_t sdDiff6pt[cnBinsPt]={0.};//to be improved (calculation needed)
+  //Double_t sdDiff8pt[cnBinsPt]={0.};//to be improved (calculation needed)
 
-  //cout<<"number of pt bins: "<<fgknBinsPt<<endl;
+  //cout<<"number of pt bins: "<<cnBinsPt<<endl;
   //cout<<"****************************************"<<endl;
-  for (Int_t b=0;b<fgknBinsPt;b++){ 
+  for (Int_t b=0;b<cnBinsPt;b++){ 
     //cout<<"pt bin: "<<b*fBinWidthPt<<"-"<<(b+1)*fBinWidthPt<<" GeV"<<endl;
     
     //v'_{2/2}{2}
@@ -707,7 +709,7 @@ void AliCumulantsFunctions::Calculate()
  Double_t dV2RP=0., dV4RP=0., dV6RP=0., dV8RP=0.;
  Double_t dV2RPError=0., dV4RPError=0., dV6RPError=0., dV8RPError=0.;
  Double_t dSumOfYieldRP=0.;
- for (Int_t b=1;b<fgknBinsPt+1;b++)
+ for (Int_t b=1;b<cnBinsPt+1;b++)
  { 
   if(fch->GetHistPtRP())
   {  
@@ -757,10 +759,10 @@ void AliCumulantsFunctions::Calculate()
  cout<<"flow estimates from GF-cumulants (RP):"<<endl;
  cout<<endl;     
 
- cout<<"   v_"<<fgkFlow<<"{2} = "<<dV2RP<<" +/- "<<pow(dV2RPError,0.5)<<endl;
- cout<<"   v_"<<fgkFlow<<"{4} = "<<dV4RP<<" +/- "<<pow(dV4RPError,0.5)<<endl;
- cout<<"   v_"<<fgkFlow<<"{6} = "<<dV6RP<<" +/- "<<pow(dV6RPError,0.5)<<endl;
- cout<<"   v_"<<fgkFlow<<"{8} = "<<dV8RP<<" +/- "<<pow(dV8RPError,0.5)<<endl;
+ cout<<"   v_"<<cFlow<<"{2} = "<<dV2RP<<" +/- "<<pow(dV2RPError,0.5)<<endl;
+ cout<<"   v_"<<cFlow<<"{4} = "<<dV4RP<<" +/- "<<pow(dV4RPError,0.5)<<endl;
+ cout<<"   v_"<<cFlow<<"{6} = "<<dV6RP<<" +/- "<<pow(dV6RPError,0.5)<<endl;
+ cout<<"   v_"<<cFlow<<"{8} = "<<dV8RP<<" +/- "<<pow(dV8RPError,0.5)<<endl;
 
  cout<<endl;
  cout<<"      nEvts = "<<(fch->GetHistMultRP())->GetEntries()<<", AvM = "<<(fch->GetHistMultRP())->GetMean()<<endl; 
@@ -798,51 +800,51 @@ void AliCumulantsFunctions::Calculate()
  
  //-------------------------------------------------------------------------------------------------------------------------------
   //final results for differential flow (in eta):
-  Double_t etaDRP[fgknBinsEta][fgkPmax]={{0.}};
+  TMatrixD etaDRP(cnBinsEta,cPmax);
   Double_t tempSumForEtaDRP=0.;
-  for (Int_t b=0;b<fgknBinsEta;b++)
+  for (Int_t b=0;b<cnBinsEta;b++)
   {
-   for (Int_t p=0;p<fgkPmax;p++)
+   for (Int_t p=0;p<cPmax;p++)
    {
     tempSumForEtaDRP=0.; 
-    for (Int_t q=0;q<fgkQmax;q++)
+    for (Int_t q=0;q<cQmax;q++)
     {
-     tempSumForEtaDRP+=cos(fgkMltpl*2.*q*TMath::Pi()/fgkQmax)*etaXRP[b][p][q] + sin(fgkMltpl*2.*q*TMath::Pi()/fgkQmax)*etaYRP[b][p][q];
+     tempSumForEtaDRP+=cos(cMltpl*2.*q*TMath::Pi()/cQmax)*etaXRP[index3d(b,p,q,cnBinsEta,cPmax)] + sin(cMltpl*2.*q*TMath::Pi()/cQmax)*etaYRP[index3d(b,p,q,cnBinsEta,cPmax)];
     } 
-     etaDRP[b][p]=1.*(pow(fR0*pow(p+1.,.5),fgkMltpl)/fgkQmax)*tempSumForEtaDRP;
+     etaDRP(b,p)=1.*(pow(fR0*pow(p+1.,.5),cMltpl)/cQmax)*tempSumForEtaDRP;
    }
   } 
   
-  Double_t etaRPDiffCumulant2[fgknBinsEta]={0.};
-  Double_t etaRPDiffCumulant4[fgknBinsEta]={0.};
-  Double_t etaRPDiffCumulant6[fgknBinsEta]={0.};
-  Double_t etaRPDiffCumulant8[fgknBinsEta]={0.};
-  Double_t etaRPDiffCumulant10[fgknBinsEta]={0.};
+  Double_t etaRPDiffCumulant2[cnBinsEta]={0.};
+  Double_t etaRPDiffCumulant4[cnBinsEta]={0.};
+  Double_t etaRPDiffCumulant6[cnBinsEta]={0.};
+  Double_t etaRPDiffCumulant8[cnBinsEta]={0.};
+  Double_t etaRPDiffCumulant10[cnBinsEta]={0.};
   
-  for (Int_t b=0;b<fgknBinsEta;b++)
+  for (Int_t b=0;b<cnBinsEta;b++)
   {
-   etaRPDiffCumulant2[b]=(1./(fR0*fR0))*(5.*etaDRP[b][0]-5.*etaDRP[b][1]+(10./3.)*etaDRP[b][2]-(5./4.)*etaDRP[b][3]+(1./5.)*etaDRP[b][4]);
-   etaRPDiffCumulant4[b]=(1./pow(fR0,4.))*((-77./6.)*etaDRP[b][0]+(107./6.)*etaDRP[b][1]-(13./1.)*etaDRP[b][2]+(61./12.)*etaDRP[b][3]-(5./6.)*etaDRP[b][4]);
-   etaRPDiffCumulant6[b]=(1./pow(fR0,6.))*((71./2.)*etaDRP[b][0]-59.*etaDRP[b][1]+49.*etaDRP[b][2]-(41./2.)*etaDRP[b][3]+(7./2.)*etaDRP[b][4]);
-   etaRPDiffCumulant8[b]=(1./pow(fR0,8.))*(-84.*etaDRP[b][0]+156.*etaDRP[b][1]-144.*etaDRP[b][2]+66.*etaDRP[b][3]-12.*etaDRP[b][4]);
-   etaRPDiffCumulant10[b]=(1./pow(fR0,10.))*(120.*etaDRP[b][0]-240.*etaDRP[b][1]+240.*etaDRP[b][2]-120.*etaDRP[b][3]+24.*etaDRP[b][4]);
+   etaRPDiffCumulant2[b]=(1./(fR0*fR0))*(5.*etaDRP(b,0)-5.*etaDRP(b,1)+(10./3.)*etaDRP(b,2)-(5./4.)*etaDRP(b,3)+(1./5.)*etaDRP(b,4));
+   etaRPDiffCumulant4[b]=(1./pow(fR0,4.))*((-77./6.)*etaDRP(b,0)+(107./6.)*etaDRP(b,1)-(13./1.)*etaDRP(b,2)+(61./12.)*etaDRP(b,3)-(5./6.)*etaDRP(b,4));
+   etaRPDiffCumulant6[b]=(1./pow(fR0,6.))*((71./2.)*etaDRP(b,0)-59.*etaDRP(b,1)+49.*etaDRP(b,2)-(41./2.)*etaDRP(b,3)+(7./2.)*etaDRP(b,4));
+   etaRPDiffCumulant8[b]=(1./pow(fR0,8.))*(-84.*etaDRP(b,0)+156.*etaDRP(b,1)-144.*etaDRP(b,2)+66.*etaDRP(b,3)-12.*etaDRP(b,4));
+   etaRPDiffCumulant10[b]=(1./pow(fR0,10.))*(120.*etaDRP(b,0)-240.*etaDRP(b,1)+240.*etaDRP(b,2)-120.*etaDRP(b,3)+24.*etaDRP(b,4));
   }
   
   //diff. flow values per eta bin:
-  Double_t v2etaRP[fgknBinsEta]={0.};
-  Double_t v4etaRP[fgknBinsEta]={0.};
-  Double_t v6etaRP[fgknBinsEta]={0.};
-  Double_t v8etaRP[fgknBinsEta]={0.};
+  Double_t v2etaRP[cnBinsEta]={0.};
+  Double_t v4etaRP[cnBinsEta]={0.};
+  Double_t v6etaRP[cnBinsEta]={0.};
+  Double_t v8etaRP[cnBinsEta]={0.};
   
   //errrors:
-  Double_t sdRPDiff2eta[fgknBinsEta]={0.};
-  Double_t sdRPDiff4eta[fgknBinsEta]={0.};
-  //Double_t sdDiff6eta[fgknBinsEta]={0.};//to be improved (calculation needed)
-  //Double_t sdDiff8eta[fgknBinsEta]={0.};//to be improved (calculation needed)
+  Double_t sdRPDiff2eta[cnBinsEta]={0.};
+  Double_t sdRPDiff4eta[cnBinsEta]={0.};
+  //Double_t sdDiff6eta[cnBinsEta]={0.};//to be improved (calculation needed)
+  //Double_t sdDiff8eta[cnBinsEta]={0.};//to be improved (calculation needed)
 
-  //cout<<"number of eta bins: "<<fgknBinsEta<<endl;
+  //cout<<"number of eta bins: "<<cnBinsEta<<endl;
   //cout<<"****************************************"<<endl;
-  for (Int_t b=0;b<fgknBinsEta;b++){ 
+  for (Int_t b=0;b<cnBinsEta;b++){ 
     //cout<<"eta bin: "<<b*fBinWidthPt<<"-"<<(b+1)*fBinWidthPt<<" GeV"<<endl;
     
     //v'_{2/2}{2}
@@ -1000,54 +1002,54 @@ void AliCumulantsFunctions::Calculate()
  ///////////////////////DIFFERENTIAL FLOW CALCULATIONS////////////////////////
  /////////////////////////////////////////////////////////////////////////////
   
-  Double_t ptX[fgknBinsPt][fgkPmax][fgkQmax]={{{0.}}};
-  Double_t ptY[fgknBinsPt][fgkPmax][fgkQmax]={{{0.}}};
-  Double_t ptBinPOINoOfParticles[fgknBinsPt]={0.};
+  TVectorD ptX(cnBinsPt*cPmax*cQmax);
+  TVectorD ptY(cnBinsPt*cPmax*cQmax);
+  TVectorD ptBinPOINoOfParticles(cnBinsPt);
   
   //3D profiles (for pt)
-  for(Int_t b=0;b<fgknBinsPt;b++)
+  for(Int_t b=0;b<cnBinsPt;b++)
   {
    ptBinPOINoOfParticles[b]=fPtBinPOINoOfParticles->GetBinEntries(b+1);
-   for(Int_t p=0;p<fgkPmax;p++)
+   for(Int_t p=0;p<cPmax;p++)
    {
-    for(Int_t q=0;q<fgkQmax;q++)
+    for(Int_t q=0;q<cQmax;q++)
     {
-     if(dAvG[p][q])
+     if(dAvG(p,q))
      {   
       if(fDiffPtPOIGenFunRe)
       {
-       ptX[b][p][q]=fDiffPtPOIGenFunRe->GetBinContent(b+1,p+1,q+1)/dAvG[p][q];
+       ptX[index3d(b,p,q,cnBinsPt,cPmax)]=fDiffPtPOIGenFunRe->GetBinContent(b+1,p+1,q+1)/dAvG(p,q);
       }
       if(fDiffPtPOIGenFunIm)
       {  
-       ptY[b][p][q]=fDiffPtPOIGenFunIm->GetBinContent(b+1,p+1,q+1)/dAvG[p][q];
+       ptY[index3d(b,p,q,cnBinsPt,cPmax)]=fDiffPtPOIGenFunIm->GetBinContent(b+1,p+1,q+1)/dAvG(p,q);
       } 
      } 
     }
    }   
   }   
   
-  Double_t etaX[fgknBinsEta][fgkPmax][fgkQmax]={{{0.}}};
-  Double_t etaY[fgknBinsEta][fgkPmax][fgkQmax]={{{0.}}};
-  Double_t etaBinPOINoOfParticles[fgknBinsEta]={0.};
+  TVectorD etaX(cnBinsEta*cPmax*cQmax);
+  TVectorD etaY(cnBinsEta*cPmax*cQmax);
+  TVectorD etaBinPOINoOfParticles(cnBinsEta);
            
   //3D profiles (for eta)
-  for(Int_t b=0;b<fgknBinsEta;b++)
+  for(Int_t b=0;b<cnBinsEta;b++)
   {
    etaBinPOINoOfParticles[b]=fEtaBinPOINoOfParticles->GetBinEntries(b+1);
-   for(Int_t p=0;p<fgkPmax;p++)
+   for(Int_t p=0;p<cPmax;p++)
    {
-    for(Int_t q=0;q<fgkQmax;q++)
+    for(Int_t q=0;q<cQmax;q++)
     {
-     if(dAvG[p][q])
+     if(dAvG(p,q))
      {   
       if(fDiffEtaPOIGenFunRe)
       {
-       etaX[b][p][q]=fDiffEtaPOIGenFunRe->GetBinContent(b+1,p+1,q+1)/dAvG[p][q];
+       etaX[index3d(b,p,q,cnBinsEta,cPmax)]=fDiffEtaPOIGenFunRe->GetBinContent(b+1,p+1,q+1)/dAvG(p,q);
       }
       if(fDiffEtaPOIGenFunIm)
       {  
-       etaY[b][p][q]=fDiffEtaPOIGenFunIm->GetBinContent(b+1,p+1,q+1)/dAvG[p][q];
+       etaY[index3d(b,p,q,cnBinsEta,cPmax)]=fDiffEtaPOIGenFunIm->GetBinContent(b+1,p+1,q+1)/dAvG(p,q);
       } 
      } 
     }
@@ -1056,10 +1058,10 @@ void AliCumulantsFunctions::Calculate()
 
   /*
   if(dAvM){
-  for(Int_t b=0;b<fgknBinsPt;b++){cout<<"***************************************"<<endl;
+  for(Int_t b=0;b<cnBinsPt;b++){cout<<"***************************************"<<endl;
  cout<<"***************************************"<<endl;
-    //for(Int_t p=0;p<fgkPmax;p++){
-      for(Int_t q=0;q<fgkQmax;q++){
+    //for(Int_t p=0;p<cPmax;p++){
+      for(Int_t q=0;q<cQmax;q++){
 	X[b][0][q]=fdRe0->GetBinContent(b+1,q+1)/AvG[0][q];
 	Y[b][0][q]=fdIm0->GetBinContent(b+1,q+1)/AvG[0][q];
 	//--------------------------------------------------
@@ -1091,53 +1093,53 @@ void AliCumulantsFunctions::Calculate()
   
   //-------------------------------------------------------------------------------------------------------------------------------
   //final results for differential flow (in pt):
-  Double_t ptD[fgknBinsPt][fgkPmax]={{0.}};
+  TMatrixD ptD(cnBinsPt,cPmax);
   Double_t tempSumForPtD=0.;
-  for (Int_t b=0;b<fgknBinsPt;b++)
+  for (Int_t b=0;b<cnBinsPt;b++)
   {
-   for (Int_t p=0;p<fgkPmax;p++)
+   for (Int_t p=0;p<cPmax;p++)
    {
     tempSumForPtD=0.; 
-    for (Int_t q=0;q<fgkQmax;q++)
+    for (Int_t q=0;q<cQmax;q++)
     {
-     tempSumForPtD+=cos(fgkMltpl*2.*q*TMath::Pi()/fgkQmax)*ptX[b][p][q] + sin(fgkMltpl*2.*q*TMath::Pi()/fgkQmax)*ptY[b][p][q];
+     tempSumForPtD+=cos(cMltpl*2.*q*TMath::Pi()/cQmax)*ptX[index3d(b,p,q,cnBinsPt,cPmax)] + sin(cMltpl*2.*q*TMath::Pi()/cQmax)*ptY[index3d(b,p,q,cnBinsPt,cPmax)];
     } 
-     ptD[b][p]=1.*(pow(fR0*pow(p+1.0,0.5),fgkMltpl)/fgkQmax)*tempSumForPtD;
+     ptD(b,p)=1.*(pow(fR0*pow(p+1.0,0.5),cMltpl)/cQmax)*tempSumForPtD;
    }
   } 
   
-  Double_t ptDiffCumulant2[fgknBinsPt]={0.};
-  Double_t ptDiffCumulant4[fgknBinsPt]={0.};
-  Double_t ptDiffCumulant6[fgknBinsPt]={0.};
-  Double_t ptDiffCumulant8[fgknBinsPt]={0.};
-  Double_t ptDiffCumulant10[fgknBinsPt]={0.};
+  Double_t ptDiffCumulant2[cnBinsPt]={0.};
+  Double_t ptDiffCumulant4[cnBinsPt]={0.};
+  Double_t ptDiffCumulant6[cnBinsPt]={0.};
+  Double_t ptDiffCumulant8[cnBinsPt]={0.};
+  Double_t ptDiffCumulant10[cnBinsPt]={0.};
   
-  for (Int_t b=0;b<fgknBinsPt;b++)
+  for (Int_t b=0;b<cnBinsPt;b++)
   {
-   ptDiffCumulant2[b]=(1./(fR0*fR0))*(5.*ptD[b][0]-5.*ptD[b][1]+(10./3.)*ptD[b][2]-(5./4.)*ptD[b][3]+(1./5.)*ptD[b][4]);
-   ptDiffCumulant4[b]=(1./pow(fR0,4.))*((-77./6.)*ptD[b][0]+(107./6.)*ptD[b][1]-(13./1.)*ptD[b][2]+(61./12.)*ptD[b][3]-(5./6.)*ptD[b][4]);
-   ptDiffCumulant6[b]=(1./pow(fR0,6.))*((71./2.)*ptD[b][0]-59.*ptD[b][1]+49.*ptD[b][2]-(41./2.)*ptD[b][3]+(7./2.)*ptD[b][4]);
-   ptDiffCumulant8[b]=(1./pow(fR0,8.))*(-84.*ptD[b][0]+156.*ptD[b][1]-144.*ptD[b][2]+66.*ptD[b][3]-12.*ptD[b][4]);
-   ptDiffCumulant10[b]=(1./pow(fR0,10.))*(120.*ptD[b][0]-240.*ptD[b][1]+240.*ptD[b][2]-120.*ptD[b][3]+24.*ptD[b][4]);
+   ptDiffCumulant2[b]=(1./(fR0*fR0))*(5.*ptD(b,0)-5.*ptD(b,1)+(10./3.)*ptD(b,2)-(5./4.)*ptD(b,3)+(1./5.)*ptD(b,4));
+   ptDiffCumulant4[b]=(1./pow(fR0,4.))*((-77./6.)*ptD(b,0)+(107./6.)*ptD(b,1)-(13./1.)*ptD(b,2)+(61./12.)*ptD(b,3)-(5./6.)*ptD(b,4));
+   ptDiffCumulant6[b]=(1./pow(fR0,6.))*((71./2.)*ptD(b,0)-59.*ptD(b,1)+49.*ptD(b,2)-(41./2.)*ptD(b,3)+(7./2.)*ptD(b,4));
+   ptDiffCumulant8[b]=(1./pow(fR0,8.))*(-84.*ptD(b,0)+156.*ptD(b,1)-144.*ptD(b,2)+66.*ptD(b,3)-12.*ptD(b,4));
+   ptDiffCumulant10[b]=(1./pow(fR0,10.))*(120.*ptD(b,0)-240.*ptD(b,1)+240.*ptD(b,2)-120.*ptD(b,3)+24.*ptD(b,4));
   }
   
   //diff. flow values per pt bin:
-  Double_t v2pt[fgknBinsPt]={0.};
-  Double_t v4pt[fgknBinsPt]={0.};
-  Double_t v6pt[fgknBinsPt]={0.};
-  Double_t v8pt[fgknBinsPt]={0.};
+  Double_t v2pt[cnBinsPt]={0.};
+  Double_t v4pt[cnBinsPt]={0.};
+  Double_t v6pt[cnBinsPt]={0.};
+  Double_t v8pt[cnBinsPt]={0.};
   
   //errrors:
-  Double_t sdDiff2pt[fgknBinsPt]={0.};
-  Double_t sdDiff4pt[fgknBinsPt]={0.};
-  //Double_t sdDiff6pt[fgknBinsPt]={0.};//to be improved (calculation needed)
-  //Double_t sdDiff8pt[fgknBinsPt]={0.};//to be improved (calculation needed)
+  Double_t sdDiff2pt[cnBinsPt]={0.};
+  Double_t sdDiff4pt[cnBinsPt]={0.};
+  //Double_t sdDiff6pt[cnBinsPt]={0.};//to be improved (calculation needed)
+  //Double_t sdDiff8pt[cnBinsPt]={0.};//to be improved (calculation needed)
 
-  //cout<<"number of pt bins: "<<fgknBinsPt<<endl;
+  //cout<<"number of pt bins: "<<cnBinsPt<<endl;
   //cout<<"****************************************"<<endl;
    
     
-    for (Int_t b=0;b<fgknBinsPt;b++){ 
+    for (Int_t b=0;b<cnBinsPt;b++){ 
     //cout<<"pt bin: "<<b*fBinWidthPt<<"-"<<(b+1)*fBinWidthPt<<" GeV"<<endl;
     
     
@@ -1256,7 +1258,7 @@ void AliCumulantsFunctions::Calculate()
  Double_t dV2POI=0., dV4POI=0., dV6POI=0., dV8POI=0.;
  Double_t dV2POIError=0., dV4POIError=0., dV6POIError=0., dV8POIError=0.;
  Double_t dSumOfYieldPOI=0.;
- for (Int_t b=1;b<fgknBinsPt+1;b++)
+ for (Int_t b=1;b<cnBinsPt+1;b++)
  { 
   if(fch->GetHistPtPOI())
   {  
@@ -1306,10 +1308,10 @@ void AliCumulantsFunctions::Calculate()
  cout<<"flow estimates from GF-cumulants (POI):"<<endl;
  cout<<endl;     
 
- cout<<"   v_"<<fgkFlow<<"{2} = "<<dV2POI<<" +/- "<<pow(dV2POIError,0.5)<<endl;
- cout<<"   v_"<<fgkFlow<<"{4} = "<<dV4POI<<" +/- "<<pow(dV4POIError,0.5)<<endl;
- cout<<"   v_"<<fgkFlow<<"{6} = "<<dV6POI<<" +/- "<<pow(dV6POIError,0.5)<<endl;
- cout<<"   v_"<<fgkFlow<<"{8} = "<<dV8POI<<" +/- "<<pow(dV8POIError,0.5)<<endl;
+ cout<<"   v_"<<cFlow<<"{2} = "<<dV2POI<<" +/- "<<pow(dV2POIError,0.5)<<endl;
+ cout<<"   v_"<<cFlow<<"{4} = "<<dV4POI<<" +/- "<<pow(dV4POIError,0.5)<<endl;
+ cout<<"   v_"<<cFlow<<"{6} = "<<dV6POI<<" +/- "<<pow(dV6POIError,0.5)<<endl;
+ cout<<"   v_"<<cFlow<<"{8} = "<<dV8POI<<" +/- "<<pow(dV8POIError,0.5)<<endl;
 
  cout<<endl;
  cout<<"      nEvts = "<<(fch->GetHistMultPOI())->GetEntries()<<", AvM = "<<(fch->GetHistMultPOI())->GetMean()<<endl; 
@@ -1319,51 +1321,51 @@ void AliCumulantsFunctions::Calculate()
  
   //-------------------------------------------------------------------------------------------------------------------------------
   //final results for differential flow (in eta):
-  Double_t etaD[fgknBinsEta][fgkPmax]={{0.}};
+  TMatrixD etaD(cnBinsEta, cPmax);
   Double_t tempSumForEtaD=0.;
-  for (Int_t b=0;b<fgknBinsEta;b++)
+  for (Int_t b=0;b<cnBinsEta;b++)
   {
-   for (Int_t p=0;p<fgkPmax;p++)
+   for (Int_t p=0;p<cPmax;p++)
    {
     tempSumForEtaD=0.; 
-    for (Int_t q=0;q<fgkQmax;q++)
+    for (Int_t q=0;q<cQmax;q++)
     {
-     tempSumForEtaD+=cos(fgkMltpl*2.*q*TMath::Pi()/fgkQmax)*etaX[b][p][q] + sin(fgkMltpl*2.*q*TMath::Pi()/fgkQmax)*etaY[b][p][q];
+     tempSumForEtaD+=cos(cMltpl*2.*q*TMath::Pi()/cQmax)*etaX[index3d(b,p,q,cnBinsEta,cPmax)] + sin(cMltpl*2.*q*TMath::Pi()/cQmax)*etaY[index3d(b,p,q,cnBinsEta,cPmax)];
     } 
-     etaD[b][p]=1.*(pow(fR0*pow(p+1.,.5),fgkMltpl)/fgkQmax)*tempSumForEtaD;
+     etaD(b,p)=1.*(pow(fR0*pow(p+1.,.5),cMltpl)/cQmax)*tempSumForEtaD;
    }
   } 
   
-  Double_t etaDiffCumulant2[fgknBinsEta]={0.};
-  Double_t etaDiffCumulant4[fgknBinsEta]={0.};
-  Double_t etaDiffCumulant6[fgknBinsEta]={0.};
-  Double_t etaDiffCumulant8[fgknBinsEta]={0.};
-  Double_t etaDiffCumulant10[fgknBinsEta]={0.};
+  Double_t etaDiffCumulant2[cnBinsEta]={0.};
+  Double_t etaDiffCumulant4[cnBinsEta]={0.};
+  Double_t etaDiffCumulant6[cnBinsEta]={0.};
+  Double_t etaDiffCumulant8[cnBinsEta]={0.};
+  Double_t etaDiffCumulant10[cnBinsEta]={0.};
   
-  for (Int_t b=0;b<fgknBinsEta;b++)
+  for (Int_t b=0;b<cnBinsEta;b++)
   {
-   etaDiffCumulant2[b]=(1./(fR0*fR0))*(5.*etaD[b][0]-5.*etaD[b][1]+(10./3.)*etaD[b][2]-(5./4.)*etaD[b][3]+(1./5.)*etaD[b][4]);
-   etaDiffCumulant4[b]=(1./pow(fR0,4.))*((-77./6.)*etaD[b][0]+(107./6.)*etaD[b][1]-(13./1.)*etaD[b][2]+(61./12.)*etaD[b][3]-(5./6.)*etaD[b][4]);
-   etaDiffCumulant6[b]=(1./pow(fR0,6.))*((71./2.)*etaD[b][0]-59.*etaD[b][1]+49.*etaD[b][2]-(41./2.)*etaD[b][3]+(7./2.)*etaD[b][4]);
-   etaDiffCumulant8[b]=(1./pow(fR0,8.))*(-84.*etaD[b][0]+156.*etaD[b][1]-144.*etaD[b][2]+66.*etaD[b][3]-12.*etaD[b][4]);
-   etaDiffCumulant10[b]=(1./pow(fR0,10.))*(120.*etaD[b][0]-240.*etaD[b][1]+240.*etaD[b][2]-120.*etaD[b][3]+24.*etaD[b][4]);
+   etaDiffCumulant2[b]=(1./(fR0*fR0))*(5.*etaD(b,0)-5.*etaD(b,1)+(10./3.)*etaD(b,2)-(5./4.)*etaD(b,3)+(1./5.)*etaD(b,4));
+   etaDiffCumulant4[b]=(1./pow(fR0,4.))*((-77./6.)*etaD(b,0)+(107./6.)*etaD(b,1)-(13./1.)*etaD(b,2)+(61./12.)*etaD(b,3)-(5./6.)*etaD(b,4));
+   etaDiffCumulant6[b]=(1./pow(fR0,6.))*((71./2.)*etaD(b,0)-59.*etaD(b,1)+49.*etaD(b,2)-(41./2.)*etaD(b,3)+(7./2.)*etaD(b,4));
+   etaDiffCumulant8[b]=(1./pow(fR0,8.))*(-84.*etaD(b,0)+156.*etaD(b,1)-144.*etaD(b,2)+66.*etaD(b,3)-12.*etaD(b,4));
+   etaDiffCumulant10[b]=(1./pow(fR0,10.))*(120.*etaD(b,0)-240.*etaD(b,1)+240.*etaD(b,2)-120.*etaD(b,3)+24.*etaD(b,4));
   }
   
   //diff. flow values per eta bin:
-  Double_t v2eta[fgknBinsEta]={0.};
-  Double_t v4eta[fgknBinsEta]={0.};
-  Double_t v6eta[fgknBinsEta]={0.};
-  Double_t v8eta[fgknBinsEta]={0.};
+  Double_t v2eta[cnBinsEta]={0.};
+  Double_t v4eta[cnBinsEta]={0.};
+  Double_t v6eta[cnBinsEta]={0.};
+  Double_t v8eta[cnBinsEta]={0.};
   
   //errrors:
-  Double_t sdDiff2eta[fgknBinsEta]={0.};
-  Double_t sdDiff4eta[fgknBinsEta]={0.};
-  //Double_t sdDiff6eta[fgknBinsEta]={0.};//to be improved (calculation needed)
-  //Double_t sdDiff8eta[fgknBinsEta]={0.};//to be improved (calculation needed)
+  Double_t sdDiff2eta[cnBinsEta]={0.};
+  Double_t sdDiff4eta[cnBinsEta]={0.};
+  //Double_t sdDiff6eta[cnBinsEta]={0.};//to be improved (calculation needed)
+  //Double_t sdDiff8eta[cnBinsEta]={0.};//to be improved (calculation needed)
 
-  //cout<<"number of eta bins: "<<fgknBinsEta<<endl;
+  //cout<<"number of eta bins: "<<cnBinsEta<<endl;
   //cout<<"****************************************"<<endl;
-  for (Int_t b=0;b<fgknBinsEta;b++){ 
+  for (Int_t b=0;b<cnBinsEta;b++){ 
     //cout<<"eta bin: "<<b*fBinWidthPt<<"-"<<(b+1)*fBinWidthPt<<" GeV"<<endl;
     
     //v'_{2/2}{2}
@@ -1498,14 +1500,14 @@ void AliCumulantsFunctions::Calculate()
   nEvents4=(Int_t)(fAvMult4->GetBinEntries(1));
  }
  
- Double_t dAvG4[fgkPmax4][fgkQmax4]={{0.}}; 
+ TMatrixD dAvG4(cPmax4,cQmax4); 
  Bool_t someAvGEntryIsNegative4=kFALSE;   
- for(Int_t p=0;p<fgkPmax4;p++)
+ for(Int_t p=0;p<cPmax4;p++)
  {
-  for(Int_t q=0;q<fgkQmax4;q++)
+  for(Int_t q=0;q<cQmax4;q++)
   {
-   dAvG4[p][q]=fIntGenFun4->GetBinContent(p+1,q+1);
-   if(dAvG4[p][q]<0.)
+   dAvG4(p,q)=fIntGenFun4->GetBinContent(p+1,q+1);
+   if(dAvG4(p,q)<0.)
    {
     someAvGEntryIsNegative4=kTRUE;
    } 
@@ -1515,14 +1517,14 @@ void AliCumulantsFunctions::Calculate()
  //////////////////gen. function for the cumulants////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
   
- Double_t dC4[fgkPmax4][fgkQmax4]={{0.}};//C[p][q]
+ TMatrixD dC4(cPmax4,cQmax4);//C[p][q]
  if(dAvM4>0 && someAvGEntryIsNegative4==kFALSE)
  {
-  for (Int_t p=0;p<fgkPmax4;p++)
+  for (Int_t p=0;p<cPmax4;p++)
   {
-   for (Int_t q=0;q<fgkQmax4;q++)
+   for (Int_t q=0;q<cQmax4;q++)
    {
-    dC4[p][q]=1.*dAvM4*(pow(dAvG4[p][q],(1./dAvM4))-1.); 
+    dC4(p,q)=1.*dAvM4*(pow(dAvG4(p,q),(1./dAvM4))-1.); 
    }
   }
  }
@@ -1530,22 +1532,22 @@ void AliCumulantsFunctions::Calculate()
  ///////avaraging the gen. function for the cumulants over azimuth////////////
  /////////////////////////////////////////////////////////////////////////////
   
- Double_t dAvC4[fgkPmax4]={0.};//<C[p][q]>
- for (Int_t p=0;p<fgkPmax4;p++)
+ TVectorD dAvC4(cPmax4);//<C[p][q]>
+ for (Int_t p=0;p<cPmax4;p++)
  {
   Double_t tempHere4=0.; 
-  for (Int_t q=0;q<fgkQmax4;q++)
+  for (Int_t q=0;q<cQmax4;q++)
   {
-   tempHere4+=1.*dC4[p][q];
+   tempHere4+=1.*dC4(p,q);
   } 
-  dAvC4[p]=1.*tempHere4/fgkQmax4;
+  dAvC4[p]=1.*tempHere4/cQmax4;
  }
  
  /////////////////////////////////////////////////////////////////////////////
  //////////////////////////////////final results//////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
  
- Double_t cumulant4[fgkPmax4];//array to store various order cumulants
+ TVectorD cumulant4(cPmax4);//array to store various order cumulants
   
  cumulant4[0]=(1./(fR0*fR0))*(2.*dAvC[0]-(1./2.)*dAvC[1]);
  cumulant4[1]=(2./pow(fR0,4.))*((-2.)*dAvC[0]+1.*dAvC[1]);
@@ -1554,8 +1556,8 @@ void AliCumulantsFunctions::Calculate()
  cout<<endl;
  cout<<"*********************************"<<endl;
  cout<<"cumulants:"<<endl;
- cout<<" c_"<<fgkFlow<<"{2} = "<<cumulant4[0]<<endl; 
- cout<<" c_"<<fgkFlow<<"{4} = "<<cumulant4[1]<<endl;
+ cout<<" c_"<<cFlow<<"{2} = "<<cumulant4[0]<<endl; 
+ cout<<" c_"<<cFlow<<"{4} = "<<cumulant4[1]<<endl;
  cout<<endl;
  */ 
    
@@ -1588,12 +1590,12 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo4[0]=pow(((1./(2.*dAvM4*nEvents4))*((1.+2.*pow(chiQo4[0],2))/(2.*pow(chiQo4[0],2)))),0.5);
   }
-  cout<<" v_"<<fgkFlow<<"{2} = "<<dV2o4<<" +/- "<<sdQo4[0]<<endl;
-  //cout<<" v_"<<fgkFlow<<"{2} = "<<dV2o4<<" +/- "<<sdQo4[0]<<", chi{2} = "<<chiQo4[0]<<endl;//printing also the chi
+  cout<<" v_"<<cFlow<<"{2} = "<<dV2o4<<" +/- "<<sdQo4[0]<<endl;
+  //cout<<" v_"<<cFlow<<"{2} = "<<dV2o4<<" +/- "<<sdQo4[0]<<", chi{2} = "<<chiQo4[0]<<endl;//printing also the chi
  } 
  else 
  {
-  cout<<" v_"<<fgkFlow<<"{2} = Im"<<endl; 
+  cout<<" v_"<<cFlow<<"{2} = Im"<<endl; 
  }
    
  //v_2{4}   
@@ -1604,12 +1606,12 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo4[1]=(1./(pow(2.*dAvM4*nEvents4,0.5)))*pow((1.+4.*pow(chiQo4[1],2)+1.*pow(chiQo4[1],4.)+2.*pow(chiQo4[1],6.))/(2.*pow(chiQo4[1],6.)),0.5);
   }
-  cout<<" v_"<<fgkFlow<<"{4} = "<<dV4o4<<" +/- "<<sdQo4[1]<<endl;   
-  //cout<<" v_"<<fgkFlow<<"{4} = "<<dV4o4<<" +/- "<<sdQo4[1]<<", chi{4} = "<<chiQo4[1]<<endl;//printing also the chi 
+  cout<<" v_"<<cFlow<<"{4} = "<<dV4o4<<" +/- "<<sdQo4[1]<<endl;   
+  //cout<<" v_"<<cFlow<<"{4} = "<<dV4o4<<" +/- "<<sdQo4[1]<<", chi{4} = "<<chiQo4[1]<<endl;//printing also the chi 
  } 
  else 
  {
-  cout<<" v_"<<fgkFlow<<"{4} = Im"<<endl;  
+  cout<<" v_"<<cFlow<<"{4} = Im"<<endl;  
  } 
   
  cout<<endl;
@@ -1634,14 +1636,14 @@ void AliCumulantsFunctions::Calculate()
   nEvents6=(Int_t)(fAvMult6->GetBinEntries(1));
  }
  
- Double_t dAvG6[fgkPmax6][fgkQmax6]={{0.}};  
+ TMatrixD dAvG6(cPmax6,cQmax6);  
  Bool_t someAvGEntryIsNegative6=kFALSE;   
- for(Int_t p=0;p<fgkPmax6;p++)
+ for(Int_t p=0;p<cPmax6;p++)
  {
-  for(Int_t q=0;q<fgkQmax6;q++)
+  for(Int_t q=0;q<cQmax6;q++)
   {
-   dAvG6[p][q]=fIntGenFun6->GetBinContent(p+1,q+1);
-   if(dAvG6[p][q]<0.)
+   dAvG6(p,q)=fIntGenFun6->GetBinContent(p+1,q+1);
+   if(dAvG6(p,q)<0.)
    {
     someAvGEntryIsNegative6=kTRUE;
    } 
@@ -1651,14 +1653,14 @@ void AliCumulantsFunctions::Calculate()
  //////////////////gen. function for the cumulants////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
   
- Double_t dC6[fgkPmax6][fgkQmax6]={{0.}};//C[p][q]
+ TMatrixD dC6(cPmax6,cQmax6);//C[p][q]
  if(dAvM6>0 && someAvGEntryIsNegative6==kFALSE)
  {
-  for (Int_t p=0;p<fgkPmax6;p++)
+  for (Int_t p=0;p<cPmax6;p++)
   {
-   for (Int_t q=0;q<fgkQmax6;q++)
+   for (Int_t q=0;q<cQmax6;q++)
    {
-    dC6[p][q]=1.*dAvM6*(pow(dAvG6[p][q],(1./dAvM6))-1.); 
+    dC6(p,q)=1.*dAvM6*(pow(dAvG6(p,q),(1./dAvM6))-1.); 
    }
   }
  }
@@ -1667,21 +1669,21 @@ void AliCumulantsFunctions::Calculate()
  ///////avaraging the gen. function for the cumulants over azimuth////////////
  /////////////////////////////////////////////////////////////////////////////
   
- Double_t dAvC6[fgkPmax6]={0.};//<etBinContent(1)C[p][q]>
+ TVectorD dAvC6(cPmax6);//<etBinContent(1)C[p][q]>
  Double_t tempHere6=0.;
- for (Int_t p=0;p<fgkPmax6;p++){
+ for (Int_t p=0;p<cPmax6;p++){
   tempHere6=0.; 
-  for (Int_t q=0;q<fgkQmax6;q++){
-   tempHere6+=1.*dC6[p][q];
+  for (Int_t q=0;q<cQmax6;q++){
+   tempHere6+=1.*dC6(p,q);
   } 
-  dAvC6[p]=1.*tempHere6/fgkQmax6;
+  dAvC6[p]=1.*tempHere6/cQmax6;
  }
  
  /////////////////////////////////////////////////////////////////////////////
  //////////////////////////////////final results//////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
  
- Double_t cumulant6[fgkPmax6];//array to store various order cumulants
+ TVectorD cumulant6(cPmax6);//array to store various order cumulants
  cumulant6[0] = (1./(fR0*fR0))*(3.*dAvC[0]-(3./2.)*dAvC[1]+(1./3.)*dAvC[2]);
  cumulant6[1] = (2./pow(fR0,4.))*((-5.)*dAvC[0]+4.*dAvC[1]-1.*dAvC[2]);
  cumulant6[2] = (6./pow(fR0,6.))*(3.*dAvC[0]-3.*dAvC[1]+1.*dAvC[2]);
@@ -1690,9 +1692,9 @@ void AliCumulantsFunctions::Calculate()
  cout<<endl;
  cout<<"*********************************"<<endl;
  cout<<"cumulants:"<<endl; 
- cout<<" c_"<<fgkFlow<<"{2} = "<<cumulant6[0]<<endl; 
- cout<<" c_"<<fgkFlow<<"{4} = "<<cumulant6[1]<<endl;
- cout<<" c_"<<fgkFlow<<"{6} = "<<cumulant6[2]<<endl;
+ cout<<" c_"<<cFlow<<"{2} = "<<cumulant6[0]<<endl; 
+ cout<<" c_"<<cFlow<<"{4} = "<<cumulant6[1]<<endl;
+ cout<<" c_"<<cFlow<<"{6} = "<<cumulant6[2]<<endl;
  cout<<endl;
  */
  
@@ -1729,12 +1731,12 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo6[0]=pow(((1./(2.*dAvM6*nEvents6))*((1.+2.*pow(chiQo6[0],2))/(2.*pow(chiQo6[0],2)))),0.5);
   }
-  cout<<" v_"<<fgkFlow<<"{2} = "<<dV2o6<<" +/- "<<sdQo6[0]<<endl;
-  //cout<<" v_"<<fgkFlow<<"{2} = "<<dV2o6<<" +/- "<<sdQo6[0]<<", chi{2} = "<<chiQo6[0]<<endl;//printing also the chi
+  cout<<" v_"<<cFlow<<"{2} = "<<dV2o6<<" +/- "<<sdQo6[0]<<endl;
+  //cout<<" v_"<<cFlow<<"{2} = "<<dV2o6<<" +/- "<<sdQo6[0]<<", chi{2} = "<<chiQo6[0]<<endl;//printing also the chi
  } 
  else 
  {
-  cout<<" v_"<<fgkFlow<<"{2} = Im"<<endl; 
+  cout<<" v_"<<cFlow<<"{2} = Im"<<endl; 
  }
    
  //v_2{4}   
@@ -1745,12 +1747,12 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo6[1]=(1./(pow(2.*dAvM6*nEvents6,0.5)))*pow((1.+4.*pow(chiQo6[1],2)+1.*pow(chiQo6[1],4.)+2.*pow(chiQo6[1],6.))/(2.*pow(chiQo6[1],6.)),0.5);
   }
-  cout<<" v_"<<fgkFlow<<"{4} = "<<dV4o6<<" +/- "<<sdQo6[1]<<endl;    
-  //cout<<" v_"<<fgkFlow<<"{4} = "<<dV4o6<<" +/- "<<sdQo6[1]<<", chi{4} = "<<chiQo6[1]<<endl;//printing also the chi 
+  cout<<" v_"<<cFlow<<"{4} = "<<dV4o6<<" +/- "<<sdQo6[1]<<endl;    
+  //cout<<" v_"<<cFlow<<"{4} = "<<dV4o6<<" +/- "<<sdQo6[1]<<", chi{4} = "<<chiQo6[1]<<endl;//printing also the chi 
  } 
  else 
  {
-  cout<<" v_"<<fgkFlow<<"{4} = Im"<<endl;  
+  cout<<" v_"<<cFlow<<"{4} = Im"<<endl;  
  }   
   
  //v_2{6}
@@ -1761,12 +1763,12 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo6[2]=(1./(pow(2.*dAvM6*nEvents6,0.5)))*pow((3.+18.*pow(chiQo6[2],2.)+9.*pow(chiQo6[2],4.)+28.*pow(chiQo6[2],6.)+12.*pow(chiQo6[2],8.)+24.*pow(chiQo6[2],10.))/(24.*pow(chiQo6[2],10.)),0.5);
   } 
-   cout<<" v_"<<fgkFlow<<"{6} = "<<dV6o6<<" +/- "<<sdQo6[2]<<endl;   
-   //cout<<" v_"<<fgkFlow<<"{6} = "<<dV6o6<<" +/- "<<sdQo6[2]<<", chi{6} = "<<chiQo6[2]<<endl;//printing also the chi
+   cout<<" v_"<<cFlow<<"{6} = "<<dV6o6<<" +/- "<<sdQo6[2]<<endl;   
+   //cout<<" v_"<<cFlow<<"{6} = "<<dV6o6<<" +/- "<<sdQo6[2]<<", chi{6} = "<<chiQo6[2]<<endl;//printing also the chi
  }
  else
  {
-  cout<<" v_"<<fgkFlow<<"{6} = Im"<<endl;  
+  cout<<" v_"<<cFlow<<"{6} = Im"<<endl;  
  }
  
  cout<<endl;
@@ -1791,14 +1793,14 @@ void AliCumulantsFunctions::Calculate()
   nEvents8=(Int_t)(fAvMult8->GetBinEntries(1));
  }
  
- Double_t dAvG8[fgkPmax8][fgkQmax8]={{0.}}; 
+ TMatrixD dAvG8(cPmax8,cQmax8); 
  Bool_t someAvGEntryIsNegative8=kFALSE;   
- for(Int_t p=0;p<fgkPmax8;p++)
+ for(Int_t p=0;p<cPmax8;p++)
  {
-  for(Int_t q=0;q<fgkQmax8;q++)
+  for(Int_t q=0;q<cQmax8;q++)
   {
-   dAvG8[p][q]=fIntGenFun8->GetBinContent(p+1,q+1);
-   if(dAvG8[p][q]<0.)
+   dAvG8(p,q)=fIntGenFun8->GetBinContent(p+1,q+1);
+   if(dAvG8(p,q)<0.)
    {
     someAvGEntryIsNegative8=kTRUE;
    } 
@@ -1808,14 +1810,14 @@ void AliCumulantsFunctions::Calculate()
  //////////////////gen. function for the cumulants////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
   
- Double_t dC8[fgkPmax8][fgkQmax8]={{0.}};//C[p][q]
+ TMatrixD dC8(cPmax8,cQmax8);//C[p][q]
  if(dAvM8>0 && someAvGEntryIsNegative8==kFALSE)
  {
-  for (Int_t p=0;p<fgkPmax8;p++)
+  for (Int_t p=0;p<cPmax8;p++)
   {
-   for (Int_t q=0;q<fgkQmax8;q++)
+   for (Int_t q=0;q<cQmax8;q++)
    {
-    dC8[p][q]=1.*dAvM8*(pow(dAvG8[p][q],(1./dAvM8))-1.); 
+    dC8(p,q)=1.*dAvM8*(pow(dAvG8(p,q),(1./dAvM8))-1.); 
    }
   }
  }
@@ -1824,23 +1826,23 @@ void AliCumulantsFunctions::Calculate()
  ///////avaraging the gen. function for the cumulants over azimuth////////////
  /////////////////////////////////////////////////////////////////////////////
   
- Double_t dAvC8[fgkPmax8]={0.};//<C[p][q]>
+ TVectorD dAvC8(cPmax8);//<C[p][q]>
  Double_t tempHere8=0.;
- for (Int_t p=0;p<fgkPmax8;p++)
+ for (Int_t p=0;p<cPmax8;p++)
  {
   tempHere8=0.; 
-  for (Int_t q=0;q<fgkQmax8;q++)
+  for (Int_t q=0;q<cQmax8;q++)
   {
-   tempHere8+=1.*dC8[p][q];
+   tempHere8+=1.*dC8(p,q);
   } 
-  dAvC8[p]=1.*tempHere8/fgkQmax8;
+  dAvC8[p]=1.*tempHere8/cQmax8;
  }
  
  /////////////////////////////////////////////////////////////////////////////
  //////////////////////////////////final results//////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
  
- Double_t cumulant8[fgkPmax8];//array to store various order cumulants
+ TVectorD cumulant8(cPmax8);//array to store various order cumulants
  cumulant8[0] = (1./(fR0*fR0))*(4.*dAvC[0]-3.*dAvC[1]+(4./3.)*dAvC[2]-(1./4.)*dAvC[3]);
  cumulant8[1] = (1./pow(fR0,4.))*((-52./3.)*dAvC[0]+19.*dAvC[1]-(28./3.)*dAvC[2]+(11./6.)*dAvC[3]);
  cumulant8[2] = (3./pow(fR0,6.))*(18.*dAvC[0]-24.*dAvC[1]+14.*dAvC[2]-3.*dAvC[3]);
@@ -1864,10 +1866,10 @@ void AliCumulantsFunctions::Calculate()
  cout<<endl;
  cout<<"*********************************"<<endl;
  cout<<"cumulants8:"<<endl; 
- cout<<" c_"<<fgkFlow<<"{2} = "<<cumulant8[0]<<endl; 
- cout<<" c_"<<fgkFlow<<"{4} = "<<cumulant8[1]<<endl;
- cout<<" c_"<<fgkFlow<<"{6} = "<<cumulant8[2]<<endl;
- cout<<" c_"<<fgkFlow<<"{8} = "<<cumulant8[3]<<endl; 
+ cout<<" c_"<<cFlow<<"{2} = "<<cumulant8[0]<<endl; 
+ cout<<" c_"<<cFlow<<"{4} = "<<cumulant8[1]<<endl;
+ cout<<" c_"<<cFlow<<"{6} = "<<cumulant8[2]<<endl;
+ cout<<" c_"<<cFlow<<"{8} = "<<cumulant8[3]<<endl; 
  cout<<endl;
  */
  
@@ -1908,12 +1910,12 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo8[0]=pow(((1./(2.*dAvM8*nEvents8))*((1.+2.*pow(chiQo8[0],2.))/(2.*pow(chiQo8[0],2)))),0.5);
   }
-  cout<<" v_"<<fgkFlow<<"{2} = "<<dV2o8<<" +/- "<<sdQo8[0]<<endl;    
-  //cout<<" v_"<<fgkFlow<<"{2} = "<<dV2o8<<" +/- "<<sdQo8[0]<<", chi{2} = "<<chiQo8[0]<<endl;//printing also the chi
+  cout<<" v_"<<cFlow<<"{2} = "<<dV2o8<<" +/- "<<sdQo8[0]<<endl;    
+  //cout<<" v_"<<cFlow<<"{2} = "<<dV2o8<<" +/- "<<sdQo8[0]<<", chi{2} = "<<chiQo8[0]<<endl;//printing also the chi
  } 
  else 
  {
-  cout<<" v_"<<fgkFlow<<"{2} = Im"<<endl; 
+  cout<<" v_"<<cFlow<<"{2} = Im"<<endl; 
  }
    
  //v_2{4}   
@@ -1924,12 +1926,12 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo8[1]=(1./(pow(2.*dAvM8*nEvents8,0.5)))*pow((1.+4.*pow(chiQo8[1],2)+1.*pow(chiQo8[1],4.)+2.*pow(chiQo8[1],6.))/(2.*pow(chiQo8[1],6.)),0.5);
   }
-  cout<<" v_"<<fgkFlow<<"{4} = "<<dV4o8<<" +/- "<<sdQo8[1]<<endl;    
-  //cout<<" v_"<<fgkFlow<<"{4} = "<<dV4o8<<" +/- "<<sdQo8[1]<<", chi{4} = "<<chiQo8[1]<<endl;//printing also the chi 
+  cout<<" v_"<<cFlow<<"{4} = "<<dV4o8<<" +/- "<<sdQo8[1]<<endl;    
+  //cout<<" v_"<<cFlow<<"{4} = "<<dV4o8<<" +/- "<<sdQo8[1]<<", chi{4} = "<<chiQo8[1]<<endl;//printing also the chi 
  } 
  else 
  {
-  cout<<" v_"<<fgkFlow<<"{4} = Im"<<endl;  
+  cout<<" v_"<<cFlow<<"{4} = Im"<<endl;  
  } 
   
  //v_2{6}
@@ -1940,12 +1942,12 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo8[2]=(1./(pow(2.*dAvM8*nEvents8,0.5)))*pow((3.+18.*pow(chiQo8[2],2)+9.*pow(chiQo8[2],4.)+28.*pow(chiQo8[2],6.)+12.*pow(chiQo8[2],8.)+24.*pow(chiQo8[2],10.))/(24.*pow(chiQo8[2],10.)),0.5);
   }
-  cout<<" v_"<<fgkFlow<<"{6} = "<<dV6o8<<" +/- "<<sdQo8[2]<<endl;
-  //cout<<" v_"<<fgkFlow<<"{6} = "<<dV6o8<<" +/- "<<sdQo8[2]<<", chi{6} = "<<chiQo8[2]<<endl;//printing also the chi 
+  cout<<" v_"<<cFlow<<"{6} = "<<dV6o8<<" +/- "<<sdQo8[2]<<endl;
+  //cout<<" v_"<<cFlow<<"{6} = "<<dV6o8<<" +/- "<<sdQo8[2]<<", chi{6} = "<<chiQo8[2]<<endl;//printing also the chi 
  }
  else
  {
-  cout<<" v_"<<fgkFlow<<"{6} = Im"<<endl;  
+  cout<<" v_"<<cFlow<<"{6} = Im"<<endl;  
  }
   
  //v_2{8}
@@ -1956,12 +1958,12 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo8[3]=(1./(pow(2.*dAvM8*nEvents8,0.5)))*pow((12.+96.*pow(chiQo8[3],2)+72.*pow(chiQo8[3],4.)+304.*pow(chiQo8[3],6.)+257.*pow(chiQo8[3],8.)+804.*pow(chiQo8[3],10.)+363.*pow(chiQo8[3],12.)+726.*pow(chiQo8[3],14.))/(726.*pow(chiQo8[3],14.)),0.5);
   } 
-  cout<<" v_"<<fgkFlow<<"{8} = "<<dV8o8<<" +/- "<<sdQo8[3]<<endl;  
-  //cout<<" v_"<<fgkFlow<<"{8} = "<<dV8o8<<" +/- "<<sdQo8[3]<<", chi{8} = "<<chiQo8[3]<<endl;//printing also the chi 
+  cout<<" v_"<<cFlow<<"{8} = "<<dV8o8<<" +/- "<<sdQo8[3]<<endl;  
+  //cout<<" v_"<<cFlow<<"{8} = "<<dV8o8<<" +/- "<<sdQo8[3]<<", chi{8} = "<<chiQo8[3]<<endl;//printing also the chi 
  } 
  else 
  {
-  cout<<" v_"<<fgkFlow<<"{8} = Im"<<endl;     
+  cout<<" v_"<<cFlow<<"{8} = Im"<<endl;     
  }
   
  cout<<endl;
@@ -1985,14 +1987,14 @@ void AliCumulantsFunctions::Calculate()
   nEvents16=(Int_t)(fAvMult16->GetBinEntries(1));
  }
  
- Double_t dAvG16[fgkPmax16][fgkQmax16]={{0.}};  
+ TMatrixD dAvG16(cPmax16,cQmax16);  
  Bool_t someAvGEntryIsNegative16=kFALSE; 
- for(Int_t p=0;p<fgkPmax16;p++)
+ for(Int_t p=0;p<cPmax16;p++)
  {
-  for(Int_t q=0;q<fgkQmax16;q++)
+  for(Int_t q=0;q<cQmax16;q++)
   {
-   dAvG16[p][q]=fIntGenFun16->GetBinContent(p+1,q+1);
-   if(dAvG16[p][q]<0.)
+   dAvG16(p,q)=fIntGenFun16->GetBinContent(p+1,q+1);
+   if(dAvG16(p,q)<0.)
    {
     someAvGEntryIsNegative16=kTRUE;
    } 
@@ -2003,14 +2005,14 @@ void AliCumulantsFunctions::Calculate()
  //////////////////gen. function for the cumulants////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
   
- Double_t dC16[fgkPmax16][fgkQmax16]={{0.}};//C16[p][q]
+ TMatrixD dC16(cPmax16,cQmax16);//C16[p][q]
  if(dAvM16>0 && someAvGEntryIsNegative16==kFALSE)
  {
-  for(Int_t p=0;p<fgkPmax16;p++)
+  for(Int_t p=0;p<cPmax16;p++)
   {
-   for(Int_t q=0;q<fgkQmax16;q++)
+   for(Int_t q=0;q<cQmax16;q++)
    {
-    dC16[p][q]=1.*dAvM16*(pow(dAvG16[p][q],(1./dAvM16))-1.); 
+    dC16(p,q)=1.*dAvM16*(pow(dAvG16(p,q),(1./dAvM16))-1.); 
    }
   }
  }
@@ -2019,23 +2021,23 @@ void AliCumulantsFunctions::Calculate()
  ///////avaraging the gen. function for the cumulants over azimuth////////////
  /////////////////////////////////////////////////////////////////////////////
   
- Double_t dAvC16[fgkPmax16]={0.};//<C16[p][q]>
+ TVectorD dAvC16(cPmax16);//<C16[p][q]>
  Double_t tempHere16=0.; 
- for (Int_t p=0;p<fgkPmax16;p++)
+ for (Int_t p=0;p<cPmax16;p++)
  {
   tempHere16=0.; 
-  for (Int_t q=0;q<fgkQmax16;q++)
+  for (Int_t q=0;q<cQmax16;q++)
   {
-   tempHere16+=1.*dC16[p][q];
+   tempHere16+=1.*dC16(p,q);
   } 
-  dAvC16[p]=1.*tempHere16/fgkQmax16;
+  dAvC16[p]=1.*tempHere16/cQmax16;
  }
  
  /////////////////////////////////////////////////////////////////////////////
  //////////////////////////////////final results//////////////////////////////
  /////////////////////////////////////////////////////////////////////////////
  
- Double_t cumulant16[fgkPmax16];//array to store various order cumulants
+ TVectorD cumulant16(cPmax16);//array to store various order cumulants
   
  cumulant16[0] = (1./(fR0*fR0)) * (8.*dAvC16[0] - 14.*dAvC16[1] + (56./3.)*dAvC16[2] - (35./2.)*dAvC16[3] + 
 			      (56./5.)*dAvC16[4] - (14./3.)*dAvC16[5] + (8./7.)*dAvC16[6] - (1./8.)*dAvC16[7]);
@@ -2068,14 +2070,14 @@ void AliCumulantsFunctions::Calculate()
  cout<<endl;
  cout<<"*********************************"<<endl;
  cout<<"cumulants:"<<endl;
- cout<<" c_"<<fgkFlow<<"{2} = "<<cumulant16[0]<<endl; 
- cout<<" c_"<<fgkFlow<<"{4} = "<<cumulant16[1]<<endl;
- cout<<" c_"<<fgkFlow<<"{6} = "<<cumulant16[2]<<endl;
- cout<<" c_"<<fgkFlow<<"{8} = "<<cumulant16[3]<<endl; 
- cout<<"c_"<<fgkFlow<<"{10} = "<<cumulant16[4]<<endl; 
- cout<<"c_"<<fgkFlow<<"{12} = "<<cumulant16[5]<<endl;
- cout<<"c_"<<fgkFlow<<"{14} = "<<cumulant16[6]<<endl; 
- cout<<"c_"<<fgkFlow<<"{16} = "<<cumulant16[7]<<endl; 
+ cout<<" c_"<<cFlow<<"{2} = "<<cumulant16[0]<<endl; 
+ cout<<" c_"<<cFlow<<"{4} = "<<cumulant16[1]<<endl;
+ cout<<" c_"<<cFlow<<"{6} = "<<cumulant16[2]<<endl;
+ cout<<" c_"<<cFlow<<"{8} = "<<cumulant16[3]<<endl; 
+ cout<<"c_"<<cFlow<<"{10} = "<<cumulant16[4]<<endl; 
+ cout<<"c_"<<cFlow<<"{12} = "<<cumulant16[5]<<endl;
+ cout<<"c_"<<cFlow<<"{14} = "<<cumulant16[6]<<endl; 
+ cout<<"c_"<<cFlow<<"{16} = "<<cumulant16[7]<<endl; 
  cout<<endl;
  */
  
@@ -2132,12 +2134,12 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo16[0]=pow(((1./(2.*dAvM16*nEvents16))*((1.+2.*pow(chiQo16[0],2))/(2.*pow(chiQo16[0],2)))),0.5);
   }
-  cout<<" v_"<<fgkFlow<<"{2} = "<<dV2o16<<" +/- "<<sdQo16[0]<<endl;
-  //cout<<" v_"<<fgkFlow<<"{2} = "<<dV2o16<<" +/- "<<sdQo16[0]<<", chi{2} = "<<chiQo16[0]<<endl;//printing also the chi
+  cout<<" v_"<<cFlow<<"{2} = "<<dV2o16<<" +/- "<<sdQo16[0]<<endl;
+  //cout<<" v_"<<cFlow<<"{2} = "<<dV2o16<<" +/- "<<sdQo16[0]<<", chi{2} = "<<chiQo16[0]<<endl;//printing also the chi
  } 
  else 
  {
-  cout<<" v_"<<fgkFlow<<"{2} = Im"<<endl; 
+  cout<<" v_"<<cFlow<<"{2} = Im"<<endl; 
  }
    
  //v_2{4}   
@@ -2148,12 +2150,12 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo16[1]=(1./(pow(2.*dAvM16*nEvents16,0.5)))*pow((1.+4.*pow(chiQo16[1],2.)+1.*pow(chiQo16[1],4.)+2.*pow(chiQo16[1],6.))/(2.*pow(chiQo16[1],6.)),0.5);
   }
-  cout<<" v_"<<fgkFlow<<"{4} = "<<dV4o16<<" +/- "<<sdQo16[1]<<endl; 
-  //cout<<" v_"<<fgkFlow<<"{4} = "<<dV4o16<<" +/- "<<sdQo16[1]<<", chi{4} = "<<chiQo16[1]<<endl;//printing also the chi
+  cout<<" v_"<<cFlow<<"{4} = "<<dV4o16<<" +/- "<<sdQo16[1]<<endl; 
+  //cout<<" v_"<<cFlow<<"{4} = "<<dV4o16<<" +/- "<<sdQo16[1]<<", chi{4} = "<<chiQo16[1]<<endl;//printing also the chi
  } 
  else 
  {
-  cout<<" v_"<<fgkFlow<<"{4} = Im"<<endl;  
+  cout<<" v_"<<cFlow<<"{4} = Im"<<endl;  
  } 
   
  //v_2{6}
@@ -2164,12 +2166,12 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo16[2]=(1./(pow(2.*dAvM16*nEvents16,0.5)))*pow((3.+18.*pow(chiQo16[2],2)+9.*pow(chiQo16[2],4.)+28.*pow(chiQo16[2],6.)+12.*pow(chiQo16[2],8.)+24.*pow(chiQo16[2],10.))/(24.*pow(chiQo16[2],10.)),0.5);
   }
-  cout<<" v_"<<fgkFlow<<"{6} = "<<dV6o16<<" +/- "<<sdQo16[2]<<endl;
-  //cout<<" v_"<<fgkFlow<<"{6} = "<<dV6o16<<" +/- "<<sdQo16[2]<<", chi{6} = "<<chiQo16[2]<<endl;//printing also the chi
+  cout<<" v_"<<cFlow<<"{6} = "<<dV6o16<<" +/- "<<sdQo16[2]<<endl;
+  //cout<<" v_"<<cFlow<<"{6} = "<<dV6o16<<" +/- "<<sdQo16[2]<<", chi{6} = "<<chiQo16[2]<<endl;//printing also the chi
  }
  else
  {
-  cout<<" v_"<<fgkFlow<<"{6} = Im"<<endl;  
+  cout<<" v_"<<cFlow<<"{6} = Im"<<endl;  
  }
   
  //v_2{8}
@@ -2180,52 +2182,52 @@ void AliCumulantsFunctions::Calculate()
   {
    sdQo16[3]=(1./(pow(2.*dAvM16*nEvents16,0.5)))*pow((12.+96.*pow(chiQo16[3],2)+72.*pow(chiQo16[3],4.)+304.*pow(chiQo16[3],6.)+257.*pow(chiQo16[3],8.)+804.*pow(chiQo16[3],10.)+363.*pow(chiQo16[3],12.)+726.*pow(chiQo16[3],14.))/(726.*pow(chiQo16[3],14.)),0.5);
   } 
-  cout<<" v_"<<fgkFlow<<"{8} = "<<dV8o16<<" +/- "<<sdQo16[3]<<endl;
-  //cout<<" v_"<<fgkFlow<<"{8} = "<<dV8o16<<" +/- "<<sdQo16[3]<<", chi{8} = "<<chiQo16[3]<<endl;//printing also the chi
+  cout<<" v_"<<cFlow<<"{8} = "<<dV8o16<<" +/- "<<sdQo16[3]<<endl;
+  //cout<<" v_"<<cFlow<<"{8} = "<<dV8o16<<" +/- "<<sdQo16[3]<<", chi{8} = "<<chiQo16[3]<<endl;//printing also the chi
  } 
  else 
  {
-  cout<<" v_"<<fgkFlow<<"{8} = Im"<<endl;     
+  cout<<" v_"<<cFlow<<"{8} = Im"<<endl;     
  }
   
  //v_2{10}
  if(nEvents16 && dAvM16 && cumulant16[4]>=0.)
  {
-  cout<<"v_"<<fgkFlow<<"{10} = "<<V10o16<<endl;
+  cout<<"v_"<<cFlow<<"{10} = "<<V10o16<<endl;
  } 
  else 
  {
-  cout<<"v_"<<fgkFlow<<"{10} = Im"<<endl; 
+  cout<<"v_"<<cFlow<<"{10} = Im"<<endl; 
  }
   
  //v_2{12}
  if(nEvents16 && dAvM16 && cumulant16[5]<=0.)
  {
-  cout<<"v_"<<fgkFlow<<"{12} = "<<V12o16<<endl;
+  cout<<"v_"<<cFlow<<"{12} = "<<V12o16<<endl;
  } 
  else 
  {
-  cout<<"v_"<<fgkFlow<<"{12} = Im"<<endl; 
+  cout<<"v_"<<cFlow<<"{12} = Im"<<endl; 
  }
   
  //v_2{14}
  if(nEvents16 && dAvM16 && cumulant16[6]>=0.)
  {
-  cout<<"v_"<<fgkFlow<<"{14} = "<<V14o16<<endl;
+  cout<<"v_"<<cFlow<<"{14} = "<<V14o16<<endl;
  } 
  else 
  {
-  cout<<"v_"<<fgkFlow<<"{14} = Im"<<endl;  
+  cout<<"v_"<<cFlow<<"{14} = Im"<<endl;  
  }
   
  //v_2{16}
  if(nEvents16 && dAvM16 && cumulant16[7]<=0.)
  {
-  cout<<"v_"<<fgkFlow<<"{16} = "<<V16o16<<endl;
+  cout<<"v_"<<cFlow<<"{16} = "<<V16o16<<endl;
  } 
  else 
  {
-  cout<<"v_"<<fgkFlow<<"{16} = Im"<<endl;  
+  cout<<"v_"<<cFlow<<"{16} = Im"<<endl;  
  }
   
  cout<<endl;

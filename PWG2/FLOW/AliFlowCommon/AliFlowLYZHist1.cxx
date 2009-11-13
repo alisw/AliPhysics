@@ -56,9 +56,9 @@ ClassImp(AliFlowLYZHist1)
 {
 
   //constructor creating histograms 
-  Int_t iNbins      = AliFlowLYZConstants::kNbins;
-  Double_t dMaxSUM  = AliFlowLYZConstants::fgMaxSUM;
-  Double_t dMaxPROD = AliFlowLYZConstants::fgMaxPROD;
+  Int_t iNbins      = AliFlowLYZConstants::GetMaster()->GetNbins();
+  Double_t dMaxSUM  = AliFlowLYZConstants::GetMaster()->GetMaxSUM();
+  Double_t dMaxPROD = AliFlowLYZConstants::GetMaster()->GetMaxPROD();
   Double_t dMin     = 0.;
 
   TString name, addlast;

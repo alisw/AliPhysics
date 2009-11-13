@@ -96,6 +96,8 @@ class AliCumulantsFunctions{
   TProfile2D *fdRe0,*fdRe1,*fdRe2,*fdRe3,*fdRe4,*fdRe5,*fdRe6,*fdRe7;//differential flow 
   TProfile2D *fdIm0,*fdIm1,*fdIm2,*fdIm3,*fdIm4,*fdIm5,*fdIm6,*fdIm7;//differential flow
   */
+
+  Int_t index3d(Int_t i, Int_t j, Int_t k, Int_t maxi, Int_t maxj) {return (i*maxj+j+maxi*maxj*k);} //for indexing 3d arrays
   
   ClassDef(AliCumulantsFunctions, 0);
 };

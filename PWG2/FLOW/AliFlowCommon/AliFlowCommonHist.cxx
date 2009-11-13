@@ -133,23 +133,23 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
  {
 
   //constructor creating histograms 
-  Int_t iNbinsMult = AliFlowCommonConstants::GetNbinsMult();
-  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-  Int_t iNbinsPhi = AliFlowCommonConstants::GetNbinsPhi();
-  Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
-  Int_t iNbinsQ = AliFlowCommonConstants::GetNbinsQ();
+  Int_t iNbinsMult = AliFlowCommonConstants::GetMaster()->GetNbinsMult();
+  Int_t iNbinsPt = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
+  Int_t iNbinsPhi = AliFlowCommonConstants::GetMaster()->GetNbinsPhi();
+  Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
+  Int_t iNbinsQ = AliFlowCommonConstants::GetMaster()->GetNbinsQ();
   TString sName;
 
-  Double_t  dMultMin = AliFlowCommonConstants::GetMultMin();            
-  Double_t  dMultMax = AliFlowCommonConstants::GetMultMax();
-  Double_t  dPtMin = AliFlowCommonConstants::GetPtMin();	     
-  Double_t  dPtMax = AliFlowCommonConstants::GetPtMax();
-  Double_t  dPhiMin = AliFlowCommonConstants::GetPhiMin();	     
-  Double_t  dPhiMax = AliFlowCommonConstants::GetPhiMax();
-  Double_t  dEtaMin = AliFlowCommonConstants::GetEtaMin();	     
-  Double_t  dEtaMax = AliFlowCommonConstants::GetEtaMax();	     
-  Double_t  dQMin = AliFlowCommonConstants::GetQMin();	     
-  Double_t  dQMax = AliFlowCommonConstants::GetQMax();	
+  Double_t  dMultMin = AliFlowCommonConstants::GetMaster()->GetMultMin();            
+  Double_t  dMultMax = AliFlowCommonConstants::GetMaster()->GetMultMax();
+  Double_t  dPtMin = AliFlowCommonConstants::GetMaster()->GetPtMin();	     
+  Double_t  dPtMax = AliFlowCommonConstants::GetMaster()->GetPtMax();
+  Double_t  dPhiMin = AliFlowCommonConstants::GetMaster()->GetPhiMin();	     
+  Double_t  dPhiMax = AliFlowCommonConstants::GetMaster()->GetPhiMax();
+  Double_t  dEtaMin = AliFlowCommonConstants::GetMaster()->GetEtaMin();	     
+  Double_t  dEtaMax = AliFlowCommonConstants::GetMaster()->GetEtaMax();	     
+  Double_t  dQMin = AliFlowCommonConstants::GetMaster()->GetQMin();	     
+  Double_t  dQMax = AliFlowCommonConstants::GetMaster()->GetQMax();	
   
   cout<<"The settings for the common histograms are as follows:"<<endl;
   cout<<"Multiplicity: "<<iNbinsMult<<" bins between "<<dMultMin<<" and "<<dMultMax<<endl;

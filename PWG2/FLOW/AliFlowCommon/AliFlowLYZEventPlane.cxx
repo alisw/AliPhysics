@@ -84,7 +84,7 @@ void AliFlowLYZEventPlane::Init()
 void AliFlowLYZEventPlane::CalculateRPandW(AliFlowVector aQ)
 {
   //declare variables
-  Int_t iNtheta = AliFlowLYZConstants::kTheta;
+  Int_t iNtheta = AliFlowLYZConstants::GetMaster()->GetNtheta();
   Double_t dCosTerm = 0;
   Double_t dSinTerm = 0;
   TComplex cDtheta;

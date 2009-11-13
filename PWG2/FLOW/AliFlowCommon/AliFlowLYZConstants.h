@@ -8,26 +8,37 @@
 
 #include <TROOT.h>
 
-
 // Description: constants for the LYZ flow makers
 
+#include <TNamed.h>
 
-namespace AliFlowLYZConstants {
+class AliFlowLYZConstants : public TNamed {
 
+public:
+  AliFlowLYZConstants();
+  virtual ~AliFlowLYZConstants();
 
- // Enumerators
-  enum {
-    kTheta       = 5,     // number of reference angles theta
-    kNbins       = 1200   // number of bins in fHistGtheta (AliFlowLYZHist1)
-  };
- 
+  static AliFlowLYZConstants* GetMaster();
 
- // Histograms limits
-  extern Double_t  fgMaxSUM ;   // upper limit for fHistGtheta (AliFlowLYZHist1)
-  extern Double_t  fgMaxPROD ;   // upper limit for fHistGtheta (AliFlowLYZHist1)
-   
- 
-}
+  const Int_t GetNtheta() const {return fNtheta;}
+  const Int_t GetNbins() const {return fNbins;}
+  const Double_t GetMaxSUM() const {return fMaxSUM;}
+  const Double_t GetMaxPROD() const {return fMaxPROD;}
+
+private:
+  AliFlowLYZConstants& operator= (const AliFlowLYZConstants& c);
+  AliFlowLYZConstants(const AliFlowLYZConstants& a);
+
+  //data members
+  Int_t fNtheta;     // number of reference angles theta
+  Int_t fNbins;      // number of bins in fHistGtheta (AliFlowLYZHist1)
+  Double_t  fMaxSUM;   // upper limit for fHistGtheta (AliFlowLYZHist1)
+  Double_t  fMaxPROD;   // upper limit for fHistGtheta (AliFlowLYZHist1)
+
+  static AliFlowLYZConstants* fgPMasterConfig;
+  
+  ClassDef(AliFlowLYZConstants,1)  // macro for rootcint 
+};
 
 #endif
 

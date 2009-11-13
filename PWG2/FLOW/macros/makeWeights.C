@@ -115,9 +115,9 @@ void makeWeights(TString type="ESD", TString method="GFC", TString cumulantOrder
  // pt weights linear and quadratic in pt:
  if(useFunctionOfPt)
  {
-  Double_t ptMin = AliFlowCommonConstants::GetPtMin();
-  Double_t ptMax = AliFlowCommonConstants::GetPtMax();
-  Int_t nBinsPt  = AliFlowCommonConstants::GetNbinsPt();
+  Double_t ptMin = AliFlowCommonConstants::GetMaster()->GetPtMin();
+  Double_t ptMax = AliFlowCommonConstants::GetMaster()->GetPtMax();
+  Int_t nBinsPt  = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
   Double_t ptCutOff = 2.0; // for pt > ptCutOff use constant weights 
   if(nBinsPt==0) 
   { 

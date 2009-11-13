@@ -112,13 +112,13 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   //Define all histograms
   cout<<"---Analysis with the real MC Event Plane---"<<endl;
 
-  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-  Double_t dPtMin = AliFlowCommonConstants::GetPtMin();	     
-  Double_t dPtMax = AliFlowCommonConstants::GetPtMax();
+  Int_t iNbinsPt = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
+  Double_t dPtMin = AliFlowCommonConstants::GetMaster()->GetPtMin();	     
+  Double_t dPtMax = AliFlowCommonConstants::GetMaster()->GetPtMax();
   
-  Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
-  Double_t dEtaMin = AliFlowCommonConstants::GetEtaMin();	     
-  Double_t dEtaMax = AliFlowCommonConstants::GetEtaMax();  
+  Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
+  Double_t dEtaMin = AliFlowCommonConstants::GetMaster()->GetEtaMin();	     
+  Double_t dEtaMax = AliFlowCommonConstants::GetMaster()->GetEtaMax();  
 
   fCommonHists = new AliFlowCommonHist("AliFlowCommonHistMCEP");
   fHistList->Add(fCommonHists);
@@ -317,8 +317,8 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   //*************make histograms etc. 
   if (fDebug) cout<<"AliFlowAnalysisWithMCEventPlane::Terminate()"<<endl;
    
-  Int_t iNbinsPt  = AliFlowCommonConstants::GetNbinsPt();  
-  Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta(); 
+  Int_t iNbinsPt  = AliFlowCommonConstants::GetMaster()->GetNbinsPt();  
+  Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta(); 
   
   // access harmonic:
   if(fCommonHists && fCommonHists->GetHarmonic())

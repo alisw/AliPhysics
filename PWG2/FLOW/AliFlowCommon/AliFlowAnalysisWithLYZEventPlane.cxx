@@ -156,12 +156,12 @@ void AliFlowAnalysisWithLYZEventPlane::Init() {
   fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsLYZEP"); 
   fHistList->Add(fCommonHistsRes); 
     
-  Int_t iNbinsPt = AliFlowCommonConstants::GetNbinsPt();
-  Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
-  Double_t  dPtMin  = AliFlowCommonConstants::GetPtMin();	     
-  Double_t  dPtMax  = AliFlowCommonConstants::GetPtMax();
-  Double_t  dEtaMin = AliFlowCommonConstants::GetEtaMin();	     
-  Double_t  dEtaMax = AliFlowCommonConstants::GetEtaMax();
+  Int_t iNbinsPt = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
+  Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
+  Double_t  dPtMin  = AliFlowCommonConstants::GetMaster()->GetPtMin();	     
+  Double_t  dPtMax  = AliFlowCommonConstants::GetMaster()->GetPtMax();
+  Double_t  dEtaMin = AliFlowCommonConstants::GetMaster()->GetEtaMin();	     
+  Double_t  dEtaMax = AliFlowCommonConstants::GetMaster()->GetEtaMax();
 
   fHistProVetaRP = new TProfile("FlowPro_VetaRP_LYZEP","FlowPro_VetaRP_LYZEP",iNbinsEta,dEtaMin,dEtaMax);
   fHistProVetaRP->SetXTitle("rapidity");
@@ -354,9 +354,9 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   
   //constants:
   Double_t  dJ01 = 2.405; 
-  Int_t iNtheta   = AliFlowLYZConstants::kTheta;
-  Int_t iNbinsPt  = AliFlowCommonConstants::GetNbinsPt();
-  Int_t iNbinsEta = AliFlowCommonConstants::GetNbinsEta();
+  Int_t iNtheta   = AliFlowLYZConstants::GetMaster()->GetNtheta();
+  Int_t iNbinsPt  = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
+  Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
   //set the event number
   if (fCommonHists) {
   SetEventNumber((int)fCommonHists->GetHistMultOrig()->GetEntries());
