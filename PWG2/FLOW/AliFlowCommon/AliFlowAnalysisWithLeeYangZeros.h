@@ -122,6 +122,10 @@ class AliFlowAnalysisWithLeeYangZeros {
    void       SetFirstRunList(TList* const list) { this->fFirstRunList = list; }
    TList*     GetFirstRunList() const            { return this->fFirstRunList; }
 
+   TComplex   GetGrtheta(AliFlowEventSimple* anEvent, Double_t aR, Double_t aTheta);
+   TComplex   GetDiffFlow(AliFlowEventSimple* anEvent, Double_t aR, Int_t theta); 
+	
+
  private:
 
    AliFlowAnalysisWithLeeYangZeros(const AliFlowAnalysisWithLeeYangZeros& aAnalysis);            // copy constructor
@@ -131,10 +135,6 @@ class AliFlowAnalysisWithLeeYangZeros {
    Bool_t   FillFromFlowEvent(AliFlowEventSimple* anEvent);
    Bool_t   SecondFillFromFlowEvent(AliFlowEventSimple* anEvent);
 
-   TComplex GetGrtheta(AliFlowEventSimple* anEvent, Double_t aR, Double_t aTheta);
-   TComplex GetDiffFlow(AliFlowEventSimple* anEvent, Double_t aR, Int_t theta); 
-   Double_t GetR0(TH1D* fHistGtheta);
-   
 #ifndef __CINT__
    
    TVector2*  fQsum;         // flow vector sum              
@@ -177,7 +177,7 @@ class AliFlowAnalysisWithLeeYangZeros {
   AliFlowCommonHistResults* fCommonHistsRes;  //final results histograms
  
   ClassDef(AliFlowAnalysisWithLeeYangZeros,1)  // macro for rootcint
-    };
+};
  
      
 #endif
