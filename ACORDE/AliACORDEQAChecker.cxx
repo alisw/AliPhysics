@@ -19,6 +19,7 @@
 //	Mario Rodriguez Cahuantzi <mrodrigu@mail.cern.ch> (FCFM-BUAP) 
 //	Luciano Diaz Gonzalez <luciano.diaz@nucleares.unam.mx> (ICN-UNAM)
 //	Arturo Fernandez <afernan@mail.cern.ch> (FCFM-BUAP)
+//  Last update: Nov. 14t 2009 --> MRC <mrodrigu@mail.cern.ch> (FCFM-BUAP) 
 //...
 
 // --- ROOT system ---
@@ -41,116 +42,92 @@
 
 ClassImp(AliACORDEQAChecker)
 
-//__________________________________________________________________
+//____________________________________________________________________________
+Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/)
+{
+  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+    rv[specie] = 0.0 ; 
+  return rv ;  
+}
+//____________________________________________________________________________
 Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list, AliDetectorRecoParam * /*recoParam*/)
 {
 
-	Double_t * test = new Double_t[AliRecoParam::kNSpecies] ; 
-  	Int_t * count   = new Int_t[AliRecoParam::kNSpecies] ; 
-  	Double_t * acoTest = new Double_t[AliRecoParam::kNSpecies];
- 
+// Close version to the final one for the ACORDE QA Checker
 
-	// Look at the QAref data for ACORDE
-
-	char * acoOCDBDir = Form("ACORDE/%s/%s",AliQAv1::GetRefOCDBDirName(),AliQAv1::GetRefDataDirName());
-	AliCDBEntry *acoQARefDir = AliQAManager::QAManager()->Get(acoOCDBDir);
-
-	// Check variables set to 0
-
-  	for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-	{
-    		test[specie] = 0.0 ; 
-    		count[specie] = 0 ; 
-		acoTest[specie] = 0.0;
-  	}
+  Double_t * test = new Double_t[AliRecoParam::kNSpecies]  ; 
+  Double_t * acoTest = new Double_t[AliRecoParam::kNSpecies] ;
   
-  	for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+// Loop over the run species (for specie!= cosmic by now we set QA to INFO) 
+  
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
+  {
+	if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) continue ; 
+	if (list[specie]->GetEntries() == 0) acoTest[specie] = 1.; // Nothing to check
+	else 
 	{
-    		if (list[specie]->GetEntries() == 0)
-		{  
-      			test[specie] = 1. ; // nothing to check
-			acoTest[specie] = 1.;
-    		}
-    		else 
+		TIter next(list[specie]) ; 
+		TH1 * hdata ; // Data created by the AliACORDEQADataMakerXXX (Sim/Rec)
+		while ( (hdata = dynamic_cast<TH1 *>(next())) ) 
 		{
-      			TIter next(list[specie]) ; 
-      			TH1 * hdata ;
-      			while ( (hdata = dynamic_cast<TH1 *>(next())) ) 
-			{
-        			if (hdata) 
-				{ 
-          				Double_t rv = 0.0 ; 
-          				if(hdata->GetEntries()>0) rv=1; 
-          				AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv)) ; 
-          				count[specie]++ ; 
-          				test[specie] += rv ; 
-					Double_t acoHitsNorm;
-					if (hdata->GetMaximum()==1) acoHitsNorm = 1;
-					else acoHitsNorm = (hdata->GetMaximum() - 0.50)/hdata->GetMaximum();
-					// here we implement the second version for ACORDEQAChecker
-					// by the moment we only compare the Mean between the QA histograms and the Reference data 
-					if  (acoQARefDir)
-					{
-						//AliWarning("Using the QA Reference data for ACORDE !!!");
-						Double_t acoHistChecked = CheckAcordeRefHits(list[specie],(TObjArray *)acoQARefDir->GetObject());
-						if ( (acoHistChecked>0.75) && (acoHistChecked<=1) ) acoTest[specie] = 0.86;
-						if ( (acoHistChecked>0.0020) && (acoHistChecked<=0.75) ) acoTest[specie] = 0.251;
-						if ( (acoHistChecked>0.0) && (acoHistChecked<=0.0020) ) acoTest[specie] = 0.0010;
-						if ( (acoHistChecked>-1.0) && (acoHistChecked<=0.0) ) acoTest[specie] = -0.5;
-	
-					}else
-					{
-						//AliWarning("Using the inner ACORDE QA Checker !!!");
-						if ( (acoHitsNorm>0.40) && (acoHitsNorm<=1) ) acoTest[specie] = 0.86;
-						if ( (acoHitsNorm>0.0020) && (acoHitsNorm<=0.40) ) acoTest[specie] = 0.251;
-						if ( (acoHitsNorm>0.0) && (acoHitsNorm<=0.0020) ) acoTest[specie] = 0.0010;
-						if ( (acoHitsNorm>-1.0) && (acoHitsNorm<=0.0) ) acoTest[specie] = -0.5;
-					}
-        			}
-        			else
-				{
-          				AliError("Data type cannot be processed") ;
-        			}
-      			}
-      			if (count[specie] != 0) 
+			if (hdata) 
 			{ 
-        			if (test[specie]==0) 
+				Double_t rv = 0.0 ; 
+				if(hdata->GetEntries()>0) rv=1; 
+				AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv)) ; 
+				TString hdataName = hdata->GetName();
+				
+				// Here we use the QAref ACORDE data from fRefOCDBSubDir
+				
+				if ( (fRefOCDBSubDir[specie]) && (hdataName.Contains("ACORDEBitPattern")) ) 
 				{
-          				test[specie] = 0.5;  //upper limit value to set kWARNING flag for a task
-        			}
-        			else 
+					TH1 * href = NULL;
+					if (fRefSubDir) href = static_cast<TH1*>(fRefSubDir->Get(hdata->GetName()));
+					else if (fRefOCDBSubDir[specie]) href = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(hdata->GetName()));
+					acoTest[specie] = CheckAcordeRefHits(href,hdata);
+				}else if (hdataName.Contains("ACORDEBitPattern"))
+				// Here we use an inner QA Checher without the QAref data
 				{
-					if (acoQARefDir) test[specie] = acoTest[specie];
-					else
+					Float_t acoDataMax = hdata->GetMaximum();
+					Int_t flagAcoQA = 0;
+					for(Int_t i=0;i<60;i++)
 					{
-						test[specie] = acoTest[specie];
+						if ((hdata->GetBinContent(i)/acoDataMax) < 0.75) flagAcoQA++; 
 					}
-        			}
-      			}
-    		}
-  	}
+					Double_t simpleFlag = 1.-flagAcoQA/60.;
+					if ( (simpleFlag >= 0.90) && (simpleFlag <= 1.0) ) acoTest[specie] = 0.75; // INFO
+					if ( (simpleFlag >= 0.70) && (simpleFlag < 0.90) ) acoTest[specie] = 0.50; // WARNING
+					if ( (simpleFlag >= 0.25) && (simpleFlag < 0.70) ) acoTest[specie] = 0.25; // ERROR
+					if ( (simpleFlag >= 0.0) && (simpleFlag < 0.25) )  acoTest[specie] = -1.0; // FATAL
+				}	
+				// Setting Warning message for possible Empty Events with the ACORDE-Trigger
+					
+				if (hdataName.Contains("ACORDEMultiplicity") && (hdata->GetBinContent(0)!=0)) AliWarning("Empty event registered with ACORDE Trigger !!!");
+					
+				
+			}else AliError("Data type cannot be processed") ;
+        			
+		}
+	}
+	if ( (specie == AliRecoParam::kHighMult) || (specie == AliRecoParam::kLowMult) || (specie == AliRecoParam::kCalib) ) acoTest[specie] = 0.75;
+	test[specie] = acoTest[specie]; // Assign of the acoTest to the test for final QAChecker value	
+  }
   	return test ; 
 }
-Double_t AliACORDEQAChecker::CheckAcordeRefHits(TObjArray *HistAcordeList, TObjArray *AcordeRef) const
+//____________________________________________________________________________
+Double_t AliACORDEQAChecker::CheckAcordeRefHits(const TH1 * href, const TH1 * hdata) const
 {
-	Double_t acordeTest = 0;
-	TIter next(AcordeRef);
-	TIter next1(HistAcordeList);
-	TH1 *histoAcordeRef;
-	TH1 *histoAcorde;
-	Float_t acordeHistoQAMaker=0;
-	Float_t meanACOQAReference=0;
-	Float_t meanACOQAMaker=0;
-	Float_t test1ACORDE = 0;
-	while((histoAcordeRef=(TH1*)next()) && (histoAcorde=(TH1*)next1())) 
+	Double_t acoTest = 0.;
+	Int_t flag=0;
+	for (Int_t i=0;i<60;i++)
 	{
-		for(Int_t i=0;i<60;i++) acordeHistoQAMaker=acordeHistoQAMaker + histoAcorde->GetBinContent(i)/histoAcorde->GetMaximum();
-		meanACOQAReference = histoAcordeRef->GetMean();
-		meanACOQAMaker = acordeHistoQAMaker/60;
-		test1ACORDE = TMath::Abs(meanACOQAReference-meanACOQAMaker);
-		if (test1ACORDE<0.45) acordeTest = 0.86;
-		if (test1ACORDE > 0.45) acordeTest = 0.50;
-		if (test1ACORDE > 0.70) acordeTest = 0.25;
+		if (TMath::Abs(href->GetBinContent(i)-hdata->GetBinContent(i))) flag++;
+		flag++;
 	}
-	return acordeTest;
+	if ((flag/60>50)&&(flag/60<=60)) acoTest = -1.;
+	if ((flag/60>30)&&(flag/60<=50)) acoTest = 0.25;
+	if ((flag/60>10)&&(flag/60<=30)) acoTest = 0.5;
+	if ((flag/60>0)&&(flag/60<=10)) acoTest = 0.75;
+	return acoTest;
 }

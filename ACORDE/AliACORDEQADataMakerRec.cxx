@@ -26,6 +26,9 @@
 //  Created: June 13th 2008
 //---
 // Last Update: Aug. 27th 2008 --> Implementation to declare QA expert histogram
+//  Last update: Nov. 14t 2009 --> MRC <mrodrigu@mail.cern.ch> (FCFM-BUAP) 
+//			|--> Change in Multiplicity histogram for AMORE (to detect empty triggers events of ACORDE)
+
 
 
 // --- ROOT system ---
@@ -99,8 +102,8 @@ void AliACORDEQADataMakerRec::InitRaws()
   TH1F *fhACORDEBitPattern[4];
   fhACORDEBitPattern[0] = new TH1F("ACORDEBitPatternfromRAWSingle","Distribution of ACORDE fired modules from RAW-Single;Modules;Counts",60,1,60);//AcordeSingleMuon BitPattern
   fhACORDEBitPattern[1] = new TH1F("ACORDEBitPatternfromRAWMulti","Distribution of ACORDE fired modules from RAW-Multi;Modules;Counts",60,1,60);//AcordeMultiMuon BitPattern
-  fhACORDEBitPattern[2] = new TH1F("ACORDEMultiplicityfromRAWSingle","Number of fired ACORDE modules;No. of fired ACORDE modules;No. of events in ACORDE",60,1,60);//AcordeSingleMuon Multiplicity
-  fhACORDEBitPattern[3] = new TH1F("ACORDEMultiplicityfromRAWMulti","Number of fired ACORDE modules; No. of fired ACORDE modules;No. of events in ACORDE",60,1,60);//AcordeMultiMuon Multiplicity
+  fhACORDEBitPattern[2] = new TH1F("ACORDEMultiplicityfromRAWSingle","Number of fired ACORDE modules;No. of fired ACORDE modules;No. of events in ACORDE",60,-0.5,60);//AcordeSingleMuon Multiplicity
+  fhACORDEBitPattern[3] = new TH1F("ACORDEMultiplicityfromRAWMulti","Number of fired ACORDE modules; No. of fired ACORDE modules;No. of events in ACORDE",60,-0.5,60);//AcordeMultiMuon Multiplicity
   for(Int_t i=0;i<4;i++) 
     Add2RawsList(fhACORDEBitPattern[i],i,!expert, image, !saveCorr);
   
@@ -150,6 +153,7 @@ void AliACORDEQADataMakerRec::InitESDs()
   
   TH1F *    fhESDsSingle;
   TH1F *    fhESDsMulti;
+  TH1F *	fhESDsMultiplicity;
    char *acoModule[60]={"0_0","0_1","0_2","0_3","0_4","0_5","0_6","0_7","0_8","0_9",
                         "1_0","1_1","1_2","1_3","1_4","1_5","1_6","1_7","1_8","1_9",
                         "2_0","2_1","2_2","2_3","2_4","2_5","2_6","2_7","2_8","2_9",
@@ -163,7 +167,9 @@ void AliACORDEQADataMakerRec::InitESDs()
 
    fhESDsMulti = new TH1F("ACORDEBitPatternfromESDsMulti","Distribution of ACORDE fired modules from ESDs-Multi;Modules;Counts",60,1,60);
    Add2ESDsList(fhESDsMulti,1,!expert,image);
-	
+   
+   fhESDsMultiplicity = new TH1F("ACORDEMultiplicityfromESD","Number of fired ACORDE modules; No. of fired ACORDE modules;No. of events in ACORDE",60,-0.5,60);
+   Add2ESDsList(fhESDsMultiplicity,2,!expert,image);	
    for (Int_t i=0;i<60;i++)
    {
 	fhESDsSingle->GetXaxis()->SetBinLabel(i+1,acoModule[i]);
@@ -222,16 +228,16 @@ if(rawStream.Next())
 	contMulti=0;
         for(Int_t r=0;r<60;r++)
         {
-                if(kroSingle[r]==1)
-                {
-                        GetRawsData(0)->Fill(r+1);
-                        contSingle++;
-                }
-		if(kroMulti[r]==1)
-		{
-			GetRawsData(1)->Fill(r+1);
-			contMulti++;
-		}
+			if(kroSingle[r]==1)
+			{
+				GetRawsData(0)->Fill(r+1);
+				contSingle=contSingle+1;
+			}
+			if(kroMulti[r]==1)
+			{
+				GetRawsData(1)->Fill(r+1);
+				contMulti++;
+			}
 
         }GetRawsData(2)->Fill(contSingle);GetRawsData(3)->Fill(contMulti);
 }
@@ -269,14 +275,15 @@ void AliACORDEQADataMakerRec::MakeESDs(AliESDEvent * esd)
   //fills QA histos for ESD
 
   AliESDACORDE * fESDACORDE= esd->GetACORDEData();
-       
+  Int_t acoMulti=0;
   for(int i=0;i<60;i++)
   {
   	if(fESDACORDE->GetHitChannel(i)) 
 	{
-		GetESDsData(0)->Fill(i);
-		GetESDsData(1)->Fill(i);
+		GetESDsData(0)->Fill(i+1);
+		GetESDsData(1)->Fill(i+1);
+		acoMulti++;
 	}
-  }
+  }GetESDsData(2)->Fill(acoMulti);
 
 }

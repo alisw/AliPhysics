@@ -5,12 +5,14 @@
 
 //
 //  Checks the quality assurance for ACORDE. 
-//  Default implementation
+//  Default implementation from Yves skeleton
 //
 //  Authors:
 //      Mario Rodriguez Cahuantzi <mrodrigu@mail.cern.ch> (FCFM-BUAP)
 //      Luciano Diaz Gonzalez <luciano.diaz@nucleares.unam.mx> (ICN-UNAM)
 //      Arturo Fernandez <afernan@mail.cern.ch> (FCFM-BUAP)
+//  Last update: Nov. 14t 2009 --> MRC <mrodrigu@mail.cern.ch> (FCFM-BUAP) 
+//...
 
 
 // --- ROOT system ---
@@ -27,12 +29,11 @@ class AliACORDEQAChecker: public AliQACheckerBase {
 
 public:
   AliACORDEQAChecker() : AliQACheckerBase("ACORDE","ACORDE Quality Assurance Data Checker") {;}          // constructor
-//  AliACORDEQAChecker(const AliACORDEQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // constructor   
   virtual ~AliACORDEQAChecker() {;} // destructor
+  virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/) ;
+  virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list, AliDetectorRecoParam */* recoParam*/) ;
 
-  virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * recoParam) ;
-
-  Double_t CheckAcordeRefHits(TObjArray *AcordeList, TObjArray *AcordeRef) const;
+  Double_t CheckAcordeRefHits(const TH1 * href, const TH1 * hdata) const;
 
 private:
 
