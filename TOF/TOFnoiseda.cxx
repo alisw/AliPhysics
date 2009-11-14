@@ -207,7 +207,7 @@ int main(int argc, char **argv) {
 	  //start decoding
 	  if (!rawReader->ReadNext(data, kDataSize)) {
 	    rawReader->AddMajorErrorLog(AliTOFRawStream::kDDLdataReading);
-	    printf("Error while reading DDL data. Go to next equipment \n");
+	    printf("Error while reading DDL data (DDL # %d). Go to next equipment \n",currentDDL);
 	    delete [] data;
 	    data = 0x0;
 	    continue;
@@ -294,9 +294,6 @@ int main(int argc, char **argv) {
   delete rawStreamTOF;
   rawStreamTOF = 0x0;
 
-  delete geom;
-  geom = 0x0;
-
   Int_t noisyChannels = 0;
   Int_t checkedChannels = 0;
   Float_t time = nevents_physics; // acquisition time in number of events
@@ -306,20 +303,21 @@ int main(int argc, char **argv) {
     Float_t cont = htofNoise->GetBinContent(ibin);
     if (cont!=-1) {
       checkedChannels++;
-      //debugging printings
-      if (debugFlag && cont) printf(" content = %f \n", cont); 
       htofNoise->SetBinContent(ibin,cont/time);
       //debugging printings
-      if (debugFlag && cont) printf(" scaled content = %f \n", cont/time);
+      Int_t volume[5] = {-1,-1,-1,-1,-1};
+      geom->GetVolumeIndices(ibin-1,volume); // N.B. the number of the channel correspond to the index of the bin -1
+      if (debugFlag && cont) printf(" content for channel corresponding to sector %d, plate %d, strip %d, padz %d, padx %d scaled by the number of events = %f \n", volume[0], volume[1], volume[2], volume[3], volume[4], cont/time);
       if (cont != 0) noisyChannels++;
 
     }
   }  
 
-  if (debugFlag) {
-    printf("Number of checked channels = %i\n",checkedChannels);
-    printf("Number of noisy channels (before applying threshold) = %i\n",noisyChannels);
-  }
+  delete geom;
+  geom = 0x0;
+
+  printf("Number of checked channels = %i\n",checkedChannels);
+  printf("Number of noisy channels (before applying threshold) = %i\n",noisyChannels);
 
   //write the Run level file   
   char filename[100];
