@@ -22,7 +22,7 @@ class AliOfflineTrigger;
 class AliPWG0Helper : public TObject
 {
   public:
-    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kV0A, kV0C, kZDCA, kZDCC, kFMD, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000 }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
+    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kV0A, kV0C, kZDC, kZDCA, kZDCC, kFMD, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000 }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AnalysisMode { kInvalid = -1, kSPD = 0x1, kTPC = 0x2, kTPCITS = 0x4, kFieldOn = 0x8 };
     // in case we want to use bitmaps...
     enum MCProcessType { kInvalidProcess = -1, kND = 0x1, kDD = 0x2, kSD = 0x4 };

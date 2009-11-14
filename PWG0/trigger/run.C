@@ -19,13 +19,41 @@ void Load(const char* taskName, Bool_t debug)
     AliLog::SetClassDebugLevel(taskName, AliLog::kWarning);
 }
 
-void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, const char* option = "")
+void GetTimes(UInt_t run, UInt_t* startTime = 0, UInt_t* endTime = 0)
+{
+  gSystem->Load("libXMLParser");
+  gSystem->Load("libXMLIO");
+  gSystem->Load("libCDB");
+  gSystem->Load("libSTEER");
+  
+  AliCDBManager * man = AliCDBManager::Instance();
+  man->SetDefaultStorage("raw://");
+  man->SetRun(run);
+  AliCDBPath cdb("GRP", "GRP", "Data");
+  obj = man->Get(cdb);
+  grp = (AliGRPObject*) obj->GetObject();
+  
+  if (startTime)
+    *startTime = grp->GetTimeStart();
+  if (endTime)
+    *endTime = grp->GetTimeEnd();
+  
+  Printf("Got start and endtime from OCDB: %d, %d", grp->GetTimeStart(), grp->GetTimeEnd());
+}
+
+void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, UInt_t startTime = 0, UInt_t endTime = 0, const char* option = "")
 {
   // aProof option: 0 no proof
   //                1 proof with chain
   //                2 proof with dataset
   //
   // option is passed to the task(s)
+
+/*
+ .x run.C("/PWG0/jgrosseo/ERP_run98097", -1, 0, kFALSE, 2, 1258045012, 1258045458)
+ .x run.C("/PWG0/jgrosseo/ERP_run98576", -1, 0, kFALSE, 2, 1258123911, 1258124103)
+ .x run.C("/PWG0/jgrosseo/ERP_run98569", -1, 0, kFALSE, 2, 1258122187, 1258122524)
+*/
   
   if (nRuns < 0)
     nRuns = 1234567890;
@@ -71,6 +99,14 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libPWG0base");
   }
+  
+  if (startTime == endTime && startTime > 0)
+  {
+    // get times from OCDB, startTime must be run number
+
+    // WARNING only works if your par files loaded above are compatible with the libraries loaded here...
+    GetTimes(startTime, &startTime, &endTime);
+  }
 
   // Create the analysis manager
   mgr = new AliAnalysisManager;
@@ -85,6 +121,7 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
   Load("AliTriggerTask", aDebug);
   TString optStr(option);
   task = new AliTriggerTask(optStr);
+  task->SetTimes(startTime, endTime);
 
   mgr->AddTask(task);
 

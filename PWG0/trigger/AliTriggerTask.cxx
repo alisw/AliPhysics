@@ -23,6 +23,8 @@ AliTriggerTask::AliTriggerTask(const char* opt) :
   fESD(0),
   fOutput(0),
   fOption(opt),
+  fStartTime(0),
+  fEndTime(0),
   fNTriggers(0),
   fTriggerList(0),
   fStats(0)
@@ -35,9 +37,9 @@ AliTriggerTask::AliTriggerTask(const char* opt) :
   DefineInput(0, TChain::Class());
   DefineOutput(0, TList::Class());
   
-  fNTriggers = 6;
+  fNTriggers = 10;
   
-  static AliPWG0Helper::Trigger triggerList[] = { AliPWG0Helper::kMB1, AliPWG0Helper::kMB2, AliPWG0Helper::kMB3, AliPWG0Helper::kSPDGFO, AliPWG0Helper::kV0A, AliPWG0Helper::kV0C };
+  static AliPWG0Helper::Trigger triggerList[] = { AliPWG0Helper::kAcceptAll, AliPWG0Helper::kMB1, AliPWG0Helper::kMB2, AliPWG0Helper::kMB3, AliPWG0Helper::kSPDGFO, AliPWG0Helper::kV0A, AliPWG0Helper::kV0C, AliPWG0Helper::kZDC, AliPWG0Helper::kZDCA, AliPWG0Helper::kZDCC };
   fTriggerList = triggerList;
   
   fStats = new TH1*[fNTriggers];
@@ -90,10 +92,16 @@ void AliTriggerTask::CreateOutputObjects()
 
   fOutput = new TList;
   fOutput->SetOwner();
+  
+  if (fStartTime == fEndTime)
+    AliWarning("Start and endtime not set. Automatic binning will be used. This does not work in parallel systems");
 
+  Int_t nBins = 1000;
+  if (fEndTime - fStartTime > 0)
+    nBins = fEndTime - fStartTime;
   for (Int_t i=0; i<fNTriggers; i++)
   {
-    fStats[i] = new TH1F(Form("fStats_%d", i), Form("%s;time;counts", AliPWG0Helper::GetTriggerName(fTriggerList[i])), 100, 0, 0);
+    fStats[i] = new TH1F(Form("fStats_%d", i), Form("%s;time;counts", AliPWG0Helper::GetTriggerName(fTriggerList[i])), nBins, 0, fEndTime - fStartTime);
     fOutput->Add(fStats[i]);
   }
 }
@@ -128,7 +136,7 @@ void AliTriggerTask::Exec(Option_t*)
 
   //Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
   
-  UInt_t timeStamp = fESD->GetTimeStamp() - 1257961181;
+  UInt_t timeStamp = fESD->GetTimeStamp() - fStartTime;
   //Printf("%d", timeStamp);
   
   for (Int_t i = 0; i < fNTriggers; i++)
@@ -165,14 +173,28 @@ void AliTriggerTask::Terminate(Option_t *)
   fout->Write();
   fout->Close();
   
+  Int_t nX = (Int_t) TMath::Sqrt(fNTriggers);
+  Int_t nY = nX;
+  
+  while (nX * nY < fNTriggers)
+  {
+    if (nX == nY)
+      nX++;
+    else
+      nY++;
+  }
+  
   TCanvas* c = new TCanvas("c", "c", 800, 800);
-  c->Divide((Int_t) TMath::Sqrt(fNTriggers) + 1, (Int_t) TMath::Sqrt(fNTriggers));
+  c->Divide(nX, nY);
+  
+  Printf("+++++++++ TRIGGER STATS:");
   
   for (Int_t i=0; i<fNTriggers; i++)
     if (fStats[i])
     {
       c->cd(i+1);
       fStats[i]->Draw();
+      Printf("%s: %d triggers", AliPWG0Helper::GetTriggerName(fTriggerList[i]), (UInt_t) fStats[i]->Integral());
     }
 
   Printf("Writting result to trigger.root");
