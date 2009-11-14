@@ -20,12 +20,15 @@ class AliTriggerTask : public AliAnalysisTask {
     virtual void   Terminate(Option_t*);
 
     void SetOption(const char* opt) { fOption = opt; }
+    void SetTimes(UInt_t start, UInt_t end) { fStartTime = start; fEndTime = end; }
 
  protected:
     AliESDEvent *fESD;    //! ESD object
     TList* fOutput;                  //! list send on output slot 0
 
     TString fOption;      // option string
+    UInt_t fStartTime;    // run start time
+    UInt_t fEndTime;      // run end time
 
     Int_t fNTriggers;     //! number triggers
     AliPWG0Helper::Trigger* fTriggerList;  //! list of triggers

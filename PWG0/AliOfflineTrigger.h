@@ -11,7 +11,7 @@ class AliESDEvent;
 class AliOfflineTrigger : public TObject
 {
   public:
-    enum AliceSide { kASide = 1, kCSide };
+    enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
     
     AliOfflineTrigger();
     virtual ~AliOfflineTrigger() {}

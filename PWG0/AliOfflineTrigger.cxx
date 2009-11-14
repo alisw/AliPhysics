@@ -8,6 +8,7 @@
 
 #include <AliMultiplicity.h>
 #include <AliESDVZERO.h>
+#include <AliESDZDC.h>
 
 ClassImp(AliOfflineTrigger)
 
@@ -64,6 +65,12 @@ Bool_t AliOfflineTrigger::IsEventTriggered(const AliESDEvent* aEsd, AliPWG0Helpe
     case AliPWG0Helper::kV0C:
     {
       if (V0Trigger(aEsd, kCSide))
+        return kTRUE;
+      break;
+    }
+    case AliPWG0Helper::kZDC:
+    {
+      if (ZDCTrigger(aEsd, kASide) || ZDCTrigger(aEsd, kCentralBarrel) || ZDCTrigger(aEsd, kCSide))
         return kTRUE;
       break;
     }
@@ -140,11 +147,33 @@ Bool_t AliOfflineTrigger::V0Trigger(const AliESDEvent* aEsd, AliceSide side) con
   return kFALSE;  
 }
 
-Bool_t AliOfflineTrigger::ZDCTrigger(const AliESDEvent* /* aEsd */, AliceSide /* side */) const
+Bool_t AliOfflineTrigger::ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const
 {
   // Returns if ZDC triggered
   
-  AliFatal("Not implemented");
+  AliESDZDC* zdcData = aEsd->GetESDZDC();
+  if (!zdcData)
+  {
+    AliError("AliESDZDC not available");
+    return kFALSE;
+  }
+  
+  UInt_t quality = zdcData->GetESDQuality();
+  
+  // from Nora's presentation, general first physics meeting 16.10.09
+  static UInt_t zpc  = 0x20;
+  static UInt_t znc  = 0x10;
+  static UInt_t zem1 = 0x08;
+  static UInt_t zem2 = 0x04;
+  static UInt_t zpa  = 0x02;
+  static UInt_t zna  = 0x01;
+  
+  if (side == kASide && ((quality & zpa) || (quality & zna)))
+    return kTRUE;
+  if (side == kCentralBarrel && ((quality & zem1) || (quality & zem2)))
+    return kTRUE;
+  if (side == kCSide && ((quality & zpc) || (quality & znc)))
+    return kTRUE;
   
   return kFALSE;
 }
