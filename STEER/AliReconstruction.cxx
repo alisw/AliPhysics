@@ -2677,7 +2677,7 @@ Bool_t AliReconstruction::FillTriggerScalers(AliESDEvent*& esd)
      //AliTimeStamp* timestamp = new AliTimeStamp(10308000, 0, (ULong64_t)486238);
      AliESDHeader* esdheader = fesd->GetHeader();
      for(Int_t i=0;i<50;i++){
-          if((1<<i) & esd->GetTriggerMask()){
+          if((1ull<<i) & esd->GetTriggerMask()){
           AliTriggerScalersESD* scalesd = fRunScalers->GetScalersForEventClass( timestamp, i+1);
           if(scalesd)esdheader->SetTriggerScalersRecord(scalesd);
         }
