@@ -202,7 +202,7 @@ void AliTPCCalibViewerGUIAlarms::UpdateBrowser()
   fAlarmTree->ClearViewPort();
 }
 //______________________________________________________________________________
-void AliTPCCalibViewerGUIAlarms::OnDoubleClick(TGListTreeItem* item, Int_t id)
+void AliTPCCalibViewerGUIAlarms::OnDoubleClick(TGListTreeItem* item, Int_t /*id*/)
 {
   //
   //
@@ -226,7 +226,7 @@ void AliTPCCalibViewerGUIAlarms::OnDoubleClick(TGListTreeItem* item, Int_t id)
   opt->SetText(((AliTPCCalibQAChecker*)item->GetUserData())->GetDrawOptString());
 }
 //______________________________________________________________________________
-void AliTPCCalibViewerGUIAlarms::OnClick(TGListTreeItem* item, Int_t id)
+void AliTPCCalibViewerGUIAlarms::OnClick(TGListTreeItem* item, Int_t /*id*/)
 {
   //
   //

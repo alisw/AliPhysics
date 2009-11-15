@@ -8,7 +8,7 @@
 #include <TH1.h>
 
 class TTree;
-class TIter;
+class TIterator;
 class TGraph;
 class TObjArray;
 class TPad;

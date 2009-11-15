@@ -13,19 +13,25 @@
 
 #include <TObject.h>
 #include <TArrayI.h>
+#include <TVectorD.h>
+#include <TVectorF.h>
 
 class TGraph;
 class TMap;
 class AliDCSSensorArray;
 class AliTPCcalibDB;
 class AliTPCCalPad;
+class AliTPCCalROC;
 class AliTPCmapper;
 class AliTPCCalibRaw;
 class AliCDBEntry;
+class AliDCSSensor;
+class AliDCSSensorArray;
+class AliTPCSensorTempArray;
 class AliTPCdataQA;
 class TGraphErrors;
 class TTreeSRedirector;
-
+class AliTPCCalROC;
 class AliTPCcalibDButil : public TObject
 {
 public:

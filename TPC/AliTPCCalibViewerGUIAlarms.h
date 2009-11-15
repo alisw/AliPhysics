@@ -44,7 +44,7 @@ public:
   void OnDoubleClick(TGListTreeItem* item, Int_t id);
   void OnClick(TGListTreeItem* item, Int_t id);
     
-// protected:
+protected:
   AliTPCCalibQAChecker *fCalibChecker;           //Calibration checker
   TGListTree           *fAlarmTree;              //tree representation of alarms
   TCanvas              *fMainCanvas;             //canvas for alarm histogram displaying
