@@ -351,8 +351,10 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
   //Loop over two systems: DAQ and HLT.
   //For each system the same algorithm implemented in DoCalibrateEmc() invokes.
 
+  AliPHOSEmcCalibData*   lastCalib=0;
   const AliPHOSEmcBadChannelsMap* badMap=0;
   AliCDBEntry* entryBCM=0;
+  AliCDBEntry* entryEmc=0;
   TList* list=0;
   TString path;
   
@@ -394,13 +396,29 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
     if(!badMap)
       Log(Form("WARNING!! Nothing for %s in AliCDBEntry. All cells considered GOOD!",sysn[i]));
 
-    result[i] *= DoCalibrateEmc(system[i],list,badMap,calibData);
+    // Retrieve  the last EMC calibration object
+    
+    entryEmc = GetFromOCDB(path.Data(), "EmcGainPedestals");
+    
+    if(!entryEmc) 
+      Log(Form("Cannot find any EmcGainPedestals entry for this run and path %s",path.Data()));
+    else
+      lastCalib = (AliPHOSEmcCalibData*)entryEmc->GetObject();
+
+    if(lastCalib)
+      result[i] *= DoCalibrateEmc(system[i],list,badMap,*lastCalib);
+    else
+      result[i] *= DoCalibrateEmc(system[i],list,badMap,calibData);
 
     //Store EMC calibration data
 
     AliCDBMetaData emcMetaData;
-    result[i] *= Store(path.Data(), "EmcGainPedestals", &calibData, &emcMetaData, 0, kTRUE);
-  
+    
+    if(lastCalib)
+      result[i] *= Store(path.Data(), "EmcGainPedestals", lastCalib, &emcMetaData, fRun, kTRUE);
+    else
+      result[i] *= Store(path.Data(), "EmcGainPedestals", &calibData, &emcMetaData, fRun, kTRUE);
+    
   }
   
   if(result[0] || result[1]) return kTRUE;
@@ -418,6 +436,7 @@ Bool_t AliPHOSPreprocessor::DoCalibrateEmc(Int_t system, TList* list, const AliP
   // It is a responsibility of the SHUTTLE framework to form the fileName.
 
   gRandom->SetSeed(0); //the seed is set to the current  machine clock!
+  Int_t minEntries=100; // recalculate calibration coeff. if Nentries > minEntries.
 
   TIter iter(list);
   TObjString *source;
@@ -472,9 +491,9 @@ Bool_t AliPHOSPreprocessor::DoCalibrateEmc(Int_t system, TList* list, const AliP
 	TString htitl = h2->GetTitle();
 	if(htitl.Contains("and gain 1")) {
 	  hRef = h2->ProjectionX();
-	  hRef->GetXaxis()->SetRange(10,1000); // to cut off saturation peak and noise
+	  hRef->GetXaxis()->SetRangeUser(10.,1000.); // to cut off saturation peak and noise
 	  // Check if the reference histogram has too little statistics
-	  if(hRef->GetMean() && hRef->GetEntries()>2) ok=kTRUE;
+	  if(hRef->GetMean() && hRef->GetEntries()>minEntries) ok=kTRUE;
 
 	  const TString delim = "_";
 	  TString str = hRef->GetName();
@@ -520,13 +539,14 @@ Bool_t AliPHOSPreprocessor::DoCalibrateEmc(Int_t system, TList* list, const AliP
 	  //TODO: dead channels exclusion!
 	  if(h2) {
 	    h1 = h2->ProjectionX();
-	    h1->GetXaxis()->SetRange(10,1000); //to cut off saturation peak and noise
+	    h1->GetXaxis()->SetRangeUser(10.,1000.); //to cut off saturation peak and noise
 	    coeff = h1->GetMean()/refMean;
-	    if(coeff>0)
+	    if(coeff>0 && h1->GetEntries()>minEntries) {
 	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,0.005/coeff);
+	      AliInfo(Form("mod %d col %d row %d  coeff %f\n",mod,col,row,coeff));
+	    }
 	    else 
 	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,0.005);
-	    AliInfo(Form("mod %d col %d row %d  coeff %f\n",mod,col,row,coeff));
 	  }
 	  else
 	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,0.005); 
