@@ -164,6 +164,7 @@ AliEMCALQAChecker::CheckRaws(TObjArray ** list)
 //  During the recalutation of the average, we count how many towers are used for the calculation.
 //  From the fraction of towers used, we decide whether each SM works fine or not
 //  From the divation of average, we set the QA flag for the full detetcor as INFO, WARNING, ERROR or FATAL.
+  
 //  -- Yaxian Mao, CCNU/CERN/LPSC
 					
   Float_t kThreshold = 80. ; 
@@ -233,107 +234,111 @@ AliEMCALQAChecker::CheckRaws(TObjArray ** list)
        mean=proj->GetFunction("gaus")->GetParameter(1); // ! mean should be peaked at 0 in principal
        width=proj->GetFunction("gaus")->GetParameter(2);
        AliInfo(Form("aver = %f, mean = %f, sigma =%f\n",aver,mean, width));
+        
+       if(aver) init=TMath::Abs(mean/aver);  //calculate the divation from the average 
        
        //if mean or sigma is too huge or the sigma is too small, the fitting failed 
-       if((aver+mean) <= 0 || width/aver >2. || width < 1.e-3) 
-	 flag = -1 ;
+        if((aver+mean) < 1. || width/aver >2. || width < 1.e-3) 
+          flag = -1 ;
        else {   //recalculate the average if the fitting didn't give the initial average  
-	 init=TMath::Abs(mean/aver);  //calculate the divation from the average
-	 aver+=mean;  //average corrected after fitting is fitting works
-	 if(aver <= 1. ) break ;
-	 // if divation is too large, we conside to recalate the average by excluding channels too far from the average
-	 while(init>0.1 ){
-	   for(Int_t iTower = iSM*nTower ; iTower < (iSM+1)*nTower ; iTower++){
-	     if(flag) flag = 0 ;    //for each time recalculation, reset flag 
-	     if(hdata->GetBinContent(iTower)>(aver-width) && hdata->GetBinContent(iTower)<(aver+width)){
-	       flag++ ;
-	       recal += hdata->GetBinContent(iTower);
-	     }  
-	   }  //end of channels loop 
-	   
-	   if(flag == 0 || recal < 1.) {
-	     flag = -1 ;
-	     break ;
-	   }
-	   else {
-	     recal/=flag ;
-	     init=(aver-recal)/(aver+recal) ; //difference between the new average and the pervious one
-	     aver =(aver+recal)/2 ; //recalculate the average by the last two values  
-	   }  
-	 } //out of while condition
+	       aver+=mean;  //average corrected after fitting is fitting works
+	     //if(aver <= 1. ) break ;
+	    // if divation is too large, we conside to recalate the average by excluding channels too far from the average
+         while(init>0.01 && aver >= 1.){
+          if(flag) flag = 0 ;    //for each time recalculation, reset flag 
+           for(Int_t iTower = iSM*nTower ; iTower < (iSM+1)*nTower ; iTower++){
+             if(hdata->GetBinContent(iTower)>(aver-width) && hdata->GetBinContent(iTower)<(aver+width)){
+               flag++ ;
+	             recal += hdata->GetBinContent(iTower);
+             }  
+           }  //end of channels loop 
+           
+           if(flag == 0 || recal < 1.) {
+             flag = -1 ;
+             break ;
+           }
+           else {
+             recal/=flag ;
+	           init=(aver-recal)/(aver+recal) ; //difference between the new average and the pervious one
+            aver =(aver+recal)/2 ; //recalculate the average by the last two values  
+           }  
+         } //out of while condition
           
-	 ratio=100.0*flag/nTower ;  //counting how many towers used for average recalculation
-	 rv+=TMath::Abs((aver-recal)/(aver+recal)) ; //define the deviation from the final average
-	 AliInfo(Form("SM %d has %2.2f %% chanhel works \n", iSM, ratio));
+         ratio=100.0*flag/nTower ;  //counting how many towers used for average recalculation
+	       AliInfo(Form("SM %d has %2.2f %% chanhel works \n", iSM, ratio));
        }  // end of recalculation
-       
-       //define the average line on each SM
+        
+        rv+=init ; //define the deviation from the final average
+    
+        //define the average line on each SM
        fHref[iSM] = dynamic_cast<TLine*>(hdata->GetListOfFunctions()->FindObject(fHref[iSM]));
        if(!fHref[iSM]) {
-	 fHref[iSM] = new TLine(iSM*nTower,aver,(iSM+1)*nTower,aver);
-	 hdata->GetListOfFunctions()->Add(fHref[iSM]);  
-	 list[specie]->AddAt(hdata, kTowerHG) ; 
+         fHref[iSM] = new TLine(iSM*nTower,aver,(iSM+1)*nTower,aver);
+	       hdata->GetListOfFunctions()->Add(fHref[iSM]);  
+	       list[specie]->AddAt(hdata, kTowerHG) ; 
        }          
        else {
-	 fHref[iSM]->Clear() ; 
-	 fHref[iSM]->SetX1(iSM*nTower) ; 
-	 fHref[iSM]->SetY1(aver) ; 
-	 fHref[iSM]->SetX2((iSM+1)*nTower) ; 
-	 fHref[iSM]->SetY2(aver) ; 
-       } 
-       hdata->Paint() ; 
-       if (flag == -1 || flag == 0 ) {  //fitting failed or recalculation didn't called
-	 fText->SetFillColor(2);
-	 fHref[iSM]->SetLineColor(2);
-	 fHref[iSM]->SetLineWidth(2);
-	 fText->SetFillColor(2);
-	 fText->AddText(Form("SM %d: NOK Fitting failed",iSM,ratio));
-	 //fText[iSM]->AddText(Form("SM %d has %5.2f %% towers wok normally",iSM,flag/nTower));
-       }  
-       // if channels used for average recalculation smaller than the threshold, then too much noise channels or channels didn't work 
-       else if(ratio<= kThreshold && flag >0){                             
-	 //fText->SetFillColor(2);
-	 fHref[iSM]->SetLineColor(2);
-	 fHref[iSM]->SetLineWidth(2);
-	 fText->SetFillColor(2);
-	 fText->AddText(Form("SM %d: NOK = %2.0f %% channels OK!!!",iSM,ratio));
-	 //fText[iSM]->AddText(Form("SM %d NOT OK, only %5.2f %% works!!!",iSM,flag/nTower));
-       }  else {
-	 fText->SetFillColor(3);
-	 fHref[iSM]->SetLineColor(3);
-	 fHref[iSM]->SetLineWidth(2);
-	 fText->AddText(Form("SM %d: OK = %2.0f %% channels OK",iSM,ratio));
-	 //fText[iSM]->AddText(Form("SM %d has %5.2f %% towers wok normally",iSM,flag/nTower));
+         fHref[iSM]->Clear() ; 
+	       fHref[iSM]->SetX1(iSM*nTower) ; 
+         fHref[iSM]->SetY1(aver) ; 
+         fHref[iSM]->SetX2((iSM+1)*nTower) ; 
+         fHref[iSM]->SetY2(aver) ; 
        }
-       hdata->Paint() ; 
+        
+        hdata->Paint() ; 
+ 
+        // if channels used for average recalculation smaller than the threshold,
+        // then too much noise channels or channels didn't work 
+        if(ratio<= kThreshold && flag >0){                             
+          //fText->SetFillColor(2);
+          fHref[iSM]->SetLineColor(2);
+	        fHref[iSM]->SetLineWidth(2);
+	        fText->SetFillColor(2);
+	        fText->AddText(Form("SM %d: NOK = %2.0f %% channels OK!!!",iSM,ratio));
+	        //fText[iSM]->AddText(Form("SM %d NOT OK, only %5.2f %% works!!!",iSM,flag/nTower));
+        }         
+        else if (flag == -1 || flag == 0 ) {  //fitting failed or recalculation didn't call
+          fText->SetFillColor(2);
+          fHref[iSM]->SetLineColor(2);
+          fHref[iSM]->SetLineWidth(2);
+          fText->SetFillColor(2);
+          fText->AddText(Form("SM %d: NOK Fitting failed",iSM,ratio));
+	        //fText[iSM]->AddText(Form("SM %d has %5.2f %% towers wok normally",iSM,flag/nTower));
+        }  
+        else {
+          fText->SetFillColor(3);
+	        fHref[iSM]->SetLineColor(3);
+	        fHref[iSM]->SetLineWidth(2);
+	        fText->AddText(Form("SM %d: OK = %2.0f %% channels OK",iSM,ratio));
+	        //fText[iSM]->AddText(Form("SM %d has %5.2f %% towers wok normally",iSM,flag/nTower));
+        }
+        hdata->Paint() ; 
        //hdata->GetListOfFunctions()->Add(fText[iSM]);
        delete proj ; 
       }  // end of SM loop
       rv/=fknSM;
       hdata->GetListOfFunctions()->Add(fText);
       hdata->Paint() ;  
-      if ( rv <=0.1 ) 
-	{
-	  AliInfo(Form("The deviation rv = %f is small compared to average, detector works fine",rv));
-	  test[specie] =  0.05;
-	}
+      if ( rv <=0.1 ) {
+        AliInfo(Form("The deviation rv = %2.2f is small compared to average, detector works fine",rv));
+        test[specie] =  0.05;
+      }
       
-      if ( rv <=0.5 && rv >0.1 ) 
-	{
-	  AliWarning(Form("The deviation rv = %f is acceptable from average,  the detector works not perfect!",rv));
-	  test[specie] =  0.3;
-	}
+      if ( rv <=0.5 && rv >0.1 )  {
+        AliWarning(Form("The deviation rv = %2.2f is acceptable from average,  the detector works not perfect!",rv));
+        test[specie] =  0.3;
+      }
       
-      if ( rv <=0.5 && rv >0.8 ) 
-	{
-	  AliError(Form("Got a large deviation of %f from average, some error on the detector!!!",rv));
-	  test[specie] =  0.7;
-	}
-      if ( rv >0.8 ) 
-	{
-	  AliError(Form("Got too large deviation of %f from average, detector out of control???!!!",rv));
-	  test[specie] =  0.9;
-	}
+      if ( rv <=0.8 && rv >0.5 ) {
+        AliError(Form("Got a large deviation of %2.2f from average, some error on the detector!!!",rv));
+        test[specie] =  0.7;
+      }
+      
+      if ( rv >0.8 ) {
+        AliError(Form("Got too large deviation of %2.2f from average, detector out of control???!!!",rv));
+        test[specie] =  0.9; 
+      }
+    
     } //end of checking raw
     
   }  //species loop 
@@ -349,8 +354,8 @@ void AliEMCALQAChecker::Init(const AliQAv1::DETECTORINDEX_t det)
 	Float_t lowValue[AliQAv1::kNBIT] ;
 	lowValue[AliQAv1::kINFO]      = 0.0   ; 
 	hiValue[AliQAv1::kINFO]       = 0.1 ; 
-	hiValue[AliQAv1::kWARNING]    = 0.5; 
 	lowValue[AliQAv1::kWARNING]   = 0.1 ; 
+  hiValue[AliQAv1::kWARNING]    = 0.5 ; 
 	lowValue[AliQAv1::kERROR]     = 0.5   ; 
 	hiValue[AliQAv1::kERROR]      = 0.8 ; 
 	lowValue[AliQAv1::kFATAL]     = 0.8   ; 
