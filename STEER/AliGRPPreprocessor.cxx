@@ -1063,7 +1063,7 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 	AliInfo(Form("==========CavernAtmosPressure2==========="));
 	indexDP = kCavernAtmosPressure2;
 	AliDCSSensor* sensorCavernP22 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
-	graph = sensorP2->GetGraph();
+	graph = sensorCavernP22->GetGraph();
 	AliDebug(2,Form("graph = %p",graph));	
 	AliDebug(3,Form("sensorCavernP2_2 = %p", sensorCavernP22));
 	if(sensorCavernP22->GetFit() || graph) {
