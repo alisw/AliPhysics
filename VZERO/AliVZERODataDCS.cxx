@@ -52,7 +52,11 @@ AliVZERODataDCS::AliVZERODataDCS():
 
 {
   // Default constructor
-  for(int i=0;i<kNHvChannel;i++) fDeadChannel[i] = kFALSE;
+	for(int i=0;i<kNHvChannel;i++) {
+		fDeadChannel[i] = kFALSE;
+		fMeanHV[i]      = 100.0;
+		fWidthHV[i]     = 0.0; 
+	}
 }
 
 //_____________________________________________________________________________
@@ -68,8 +72,11 @@ AliVZERODataDCS::AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime):
 {
 
   // constructor with arguments
-  	for(int i=0;i<kNHvChannel;i++) fDeadChannel[i] = kFALSE;
-
+  	for(int i=0;i<kNHvChannel;i++) {
+	 fDeadChannel[i] = kFALSE;        
+	 fMeanHV[i]      = 100.0;
+     fWidthHV[i]     = 0.0; 
+	}
 	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
 		TTimeStamp(startTime).AsString(),
 		TTimeStamp(endTime).AsString()));
