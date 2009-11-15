@@ -142,6 +142,10 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 	   Int_t end = imax + GetRecoParam()->GetNPostClocks();
 	   if (end > 20) end = 20;
 	   for(Int_t iClock = start; iClock <= end; iClock++) {
+	     if (iClock >= imax) {
+	       BBFlag[j] |= rawStream.GetBBFlag(i,iClock);
+	       BGFlag[j] |= rawStream.GetBGFlag(i,iClock);
+	     }
 	     if (iClock == imax)
 	       adc[j] += rawStream.GetPedestal(i,iClock);
 	     else 
@@ -154,8 +158,6 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 	   Int_t board   = j / 8;
 	   time[j]       =  rawStream.GetTime(i)/ (25./256.) * fCalibData->GetTimeResolution(board);
 	   width[j]      =  rawStream.GetWidth(i) / 0.4 * fCalibData->GetWidthResolution(board);
-	   BBFlag[j]     =  rawStream.GetBBFlag(i,imax);
-	   BGFlag[j]     =  rawStream.GetBGFlag(i,imax); 
 	   integrator[j] =  rawStream.GetIntegratorFlag(i,imax); 
 	 }
 
@@ -248,7 +250,8 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
         Int_t  pmNumber      = digit->PMNumber(); 
         // Pedestal retrieval and suppression: 
 	Bool_t   integrator  = digit->Integrator();
-        Float_t  pedestal    = fCalibData->GetPedestal(d + 64*integrator);
+	Int_t k = pmNumber+64*integrator;
+        Float_t  pedestal    = fCalibData->GetPedestal(k);
         adc[pmNumber]   =  digit->ADC() - pedestal; 
         time[pmNumber]  =  digit->Time();
 	width[pmNumber] =  digit->Width();
@@ -257,7 +260,6 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
 
 	AliDebug(2,Form("PM = %d ADC = %f TDC %f",pmNumber, digit->ADC(),digit->Time()));
 
-	Int_t k = pmNumber+64*integrator;
 	if(adc[pmNumber] > (fCalibData->GetPedestal(k) + GetRecoParam()->GetNSigmaPed()*fCalibData->GetSigma(k))) {
 	    mult[pmNumber] += adc[pmNumber]*fCalibData->GetMIPperADC(pmNumber);
         } 	    
