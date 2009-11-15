@@ -711,7 +711,7 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
       }
     }
   }
-  else if (type == kTrackAODMCCharged || type == kTrackAODMCCharged ) {
+  else if (type == kTrackAODMCCharged || type == kTrackAODMCAll ) {
     AliAODEvent *aod = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!aod){
       return iCount;
@@ -721,7 +721,7 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
     for(int it = 0;it < tca->GetEntriesFast();++it){
       AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(tca->At(it));
       if(!part->IsPhysicalPrimary())continue;
-      if(type == kTrackAODMCCharged){
+      if(type == kTrackAODMCAll){
 	list->Add(part);
 	iCount++;
       }
@@ -732,8 +732,6 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
       }
     }
   }// AODMCparticle
-
-
-    return iCount;
+  return iCount;
 
 }
