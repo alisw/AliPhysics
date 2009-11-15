@@ -82,20 +82,35 @@ int main(int argc, char **argv) {
 //___________________________________________________
 // Get cuts from V00DA.config file
 
+  Int_t    kClockMin;   // = 16;   LHC Clock Min for pedestal calculation
+  Int_t    kClockMax;   // = 19;   LHC Clock Max for pedestal calculation
   Int_t    kLowCut;     // = 60;   low cut on signal distribution - to be tuned
   Int_t    kHighCut;    // = 50;   high cut on pedestal distribution - to be tuned
   
   status = daqDA_DB_getFile("V00DA.config","./V00DA.config");
   if (status) {
-      printf("Failed to get config file (V00DA.config) from DAQ DB, status=%d\n", status);
-      return -1;   
+      printf("Failed to get Config file (V00DA.config) from DAQ DB, status=%d\n", status);
+      printf("Take default values of parameters for pedestal calculation \n");
+      kClockMin  =  16; 
+      kClockMax  =  19; 
+      kLowCut    =  60;   
+      kHighCut   =  50;  
+  } else {
+      /* open the config file and retrieve cuts */
+      FILE *fpConfig = fopen("V00DA.config","r");
+      int res = fscanf(fpConfig,"%d %d %d %d ",&kClockMin,&kClockMax,&kLowCut,&kHighCut);
+      if(res!=4) {
+	    printf("Failed to get values from Config file (V00DA.config): wrong file format - 4 integers are expected - \n");
+	    kClockMin  =  16; 
+            kClockMax  =  19; 
+            kLowCut    =  60;   
+            kHighCut   =  50; 
+      }
+      fclose(fpConfig);
   }
-  /* open the config file and retrieve cuts */
-  FILE *fpConfig = fopen("V00DA.config","r");
-  fscanf(fpConfig,"%d %d",&kLowCut,&kHighCut);
-  fclose(fpConfig);
   
-  printf("LowCut on signal = %d ; HighCut on pedestal = %d\n",kLowCut,kHighCut);
+  printf("LHC Clock Min for pedestal calculation = %d; LHC Clock Max for pedestal calculation = %d; LowCut on signal = %d ; HighCut on pedestal = %d\n",
+          kClockMin, kClockMax, kLowCut, kHighCut);
 
 //___________________________________________________
 // Book HISTOGRAMS - dynamics of p-p collisions -
@@ -196,11 +211,11 @@ int main(int argc, char **argv) {
 	   rawStream->Next();	
            for(Int_t i=0; i<64; i++) {
 	   	Int_t nFlag = 0;
-		for(Int_t j=0; j<21; j++) {
+		for(Int_t j=kClockMin; j <= kClockMax; j++) {  // Check flags on clock range used for pedestal calculation
 		   if((rawStream->GetBBFlag(i,j)) || (rawStream->GetBGFlag(i,j))) nFlag++; 
 		}
-		if(nFlag == 0){       // Pedestal
-		   for(Int_t j=5;j<16;j++){
+		if(nFlag == 0){       // Fill 64*2 pedestal histograms  - 2 integrators -
+		   for(Int_t j=kClockMin;j <= kClockMax;j++){
 		       Int_t Integrator = rawStream->GetIntegratorFlag(i,j);
 		       Float_t pedestal = (float)(rawStream->GetPedestal(i,j));
 		       hPEDname[i + 64 * Integrator]->Fill(pedestal);
@@ -208,7 +223,7 @@ int main(int argc, char **argv) {
 		} 
 		if((rawStream->GetBBFlag(i,10)) || (rawStream->GetBGFlag(i,10))){ // Charge
 		    Int_t Integrator = rawStream->GetIntegratorFlag(i,10);
-		    Float_t charge = (float)(rawStream->GetADC(i));
+		    Float_t charge = (float)(rawStream->GetADC(i));   // Fill 64*2 ADCmax histograms 
 		    hADCname[i + 64 * Integrator]->Fill(charge);
 		}   			   
            }    
