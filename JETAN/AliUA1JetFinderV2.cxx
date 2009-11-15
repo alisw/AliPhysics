@@ -94,8 +94,8 @@ void AliUA1JetFinderV2::FindJetsC()
   Float_t* ptT    = new Float_t[nIn];
   Float_t* etaT   = new Float_t[nIn];
   Float_t* phiT   = new Float_t[nIn];
-  Float_t* cFlagT = new Float_t[nIn]; // Temporarily added
-  Float_t* sFlagT = new Float_t[nIn]; // Temporarily added
+  Int_t*   cFlagT = new Int_t[nIn]; // Temporarily added
+  Int_t*   sFlagT = new Int_t[nIn]; // Temporarily added
   Int_t*   injet  = new Int_t[nIn];
   
   //total energy in array
@@ -187,7 +187,7 @@ void AliUA1JetFinderV2::FindJetsC()
     if(header->GetBackgMode() == 4) //statistic
       SubtractBackgStat(nIn,nj,etbgTotalN,ptT,etaT,phiT,cFlagT,sFlagT,etJet,etaJet,phiJet,etsigJet,multJet,injet);
     //calc precision
-    if(etbgTotalN != 0.0)
+    if(TMath::Abs(etbgTotalN) > 0.001)
       bgprec = (etbgTotal - etbgTotalN)/etbgTotalN;
     else
       bgprec = 0;
@@ -333,9 +333,9 @@ void AliUA1JetFinderV2::FindJets()
   Int_t*     detT      = new Int_t[nCandidate]; 
   Float_t*   etaT      = new Float_t[nCandidate];
   Float_t*   phiT      = new Float_t[nCandidate];
-  Float_t*   cFlagT    = new Float_t[nCandidate];
-  Float_t*   cFlag2T   = new Float_t[nCandidate];
-  Float_t*   sFlagT    = new Float_t[nCandidate];
+  Int_t*     cFlagT    = new Int_t[nCandidate];
+  Int_t*     cFlag2T   = new Int_t[nCandidate];
+  Int_t*     sFlagT    = new Int_t[nCandidate];
   Float_t*   cClusterT = new Float_t[nCandidate];
   Int_t*     vectT     = new Int_t[nCandidate];
   Int_t      loop1     = 0;
@@ -742,7 +742,7 @@ void AliUA1JetFinderV2::FindJets()
 void AliUA1JetFinderV2::RunAlgoritm(Int_t nIn, Float_t* etCell, Float_t* etaCell, Float_t* phiCell, 
 				    Int_t* flagCell, const Float_t* etCell2, const Float_t* etaCell2, 
 				    const Float_t* phiCell2, const Int_t* flagCell2, Float_t etbgTotal, 
-				    Double_t dEtTotal, Int_t& nJets, Float_t* etJet,Float_t* etaJet, 
+				    Double_t dEtTotal, Int_t& nJets, Float_t* etJet, Float_t* etaJet, 
 				    Float_t* phiJet, Float_t* etallJet, Int_t* ncellsJet)
 {
   //
@@ -1143,8 +1143,8 @@ void AliUA1JetFinderV2::RunAlgoritmC(Float_t etbgTotal, Double_t dEtTotal, Int_t
 
 ////////////////////////////////////////////////////////////////////////
 void AliUA1JetFinderV2::SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&etbgTotalN, const Float_t* ptT, 
-				      const Int_t*vectT, const Float_t* etaT, const Float_t* phiT, const Float_t* cFlagT, 
-				      const Float_t* cFlag2T, const Float_t* sFlagT, Float_t* etJet, const Float_t* etaJet, 
+				      const Int_t*vectT, const Float_t* etaT, const Float_t* phiT, const Int_t* cFlagT, 
+				      const Int_t* cFlag2T, const Int_t* sFlagT, Float_t* etJet, const Float_t* etaJet, 
 				      const Float_t* phiJet, Float_t* etsigJet, Int_t* multJet, Int_t* injet)
 {
   //
@@ -1415,8 +1415,8 @@ void AliUA1JetFinderV2::SubtractBackgC(const Int_t& nIn, const Int_t&nJ, Float_t
 
 ////////////////////////////////////////////////////////////////////////
 void AliUA1JetFinderV2::SubtractBackgStat(const Int_t& nIn, const Int_t&nJ,Float_t&etbgTotalN,
-		      const Float_t* ptT, const Float_t* etaT, const Float_t* phiT, const Float_t* cFlagT, 
-		      const Float_t* sFlagT, Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, 
+		      const Float_t* ptT, const Float_t* etaT, const Float_t* phiT, const Int_t* cFlagT, 
+		      const Int_t* sFlagT, Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, 
 		      Float_t* etsigJet, Int_t* multJet, Int_t* injet)
 {
 
@@ -1480,7 +1480,7 @@ void AliUA1JetFinderV2::SubtractBackgStat(const Int_t& nIn, const Int_t&nJ,Float
 
 ////////////////////////////////////////////////////////////////////////
 void AliUA1JetFinderV2::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float_t& etbgTotalN, Float_t* ptT,
-					  Float_t* etaT, const Float_t* phiT, const Float_t* cFlagT, const Float_t* sFlagT,
+					  Float_t* etaT, const Float_t* phiT, const Int_t* cFlagT, const Int_t* sFlagT,
 					  Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet,
 					  Int_t* multJet, Int_t* injet)
 {
@@ -1594,7 +1594,7 @@ void AliUA1JetFinderV2::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float
 
 ////////////////////////////////////////////////////////////////////////
 void AliUA1JetFinderV2::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ,Float_t& etbgTotalN,
-		      Float_t* ptT, Float_t* etaT, const Float_t* phiT, const Float_t* cFlagT, const Float_t* sFlagT,
+		      Float_t* ptT, Float_t* etaT, const Float_t* phiT, const Int_t* cFlagT, const Int_t* sFlagT,
 		      Float_t* etJet, const Float_t* etaJet, const Float_t* phiJet, Float_t* etsigJet,
 		      Int_t* multJet, Int_t* injet)
 {
@@ -1715,7 +1715,7 @@ void AliUA1JetFinderV2::Reset()
 }
 
 ////////////////////////////////////////////////////////////////////////
-void AliUA1JetFinderV2::WriteJHeaderToFile()
+void AliUA1JetFinderV2::WriteJHeaderToFile() const
 {
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
   header->Write();

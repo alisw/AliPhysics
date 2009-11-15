@@ -840,7 +840,7 @@ void AliUA1JetFinderV1::Reset()
 
 ////////////////////////////////////////////////////////////////////////
 
-void AliUA1JetFinderV1::WriteJHeaderToFile()
+void AliUA1JetFinderV1::WriteJHeaderToFile() const
 {
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
   header->Write();

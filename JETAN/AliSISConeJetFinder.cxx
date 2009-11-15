@@ -344,7 +344,7 @@ void AliSISConeJetFinder::InitTask(TChain *tree)
 
 //____________________________________________________________________________
 
-void AliSISConeJetFinder::WriteJHeaderToFile()
+void AliSISConeJetFinder::WriteJHeaderToFile() const
 {
   fHeader->Write();
 }

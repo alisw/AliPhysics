@@ -50,7 +50,7 @@ class AliUA1JetFinderV1 : public AliJetFinder
 			 Float_t* etsigJet, Int_t* multJet, Int_t* injet);
   void Reset();
   void Init();
-  void WriteJHeaderToFile();
+  void WriteJHeaderToFile() const;
 
  protected:
   AliUA1JetFinderV1(const AliUA1JetFinderV1& rJetF1);

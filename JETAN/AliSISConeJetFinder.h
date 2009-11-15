@@ -45,7 +45,7 @@ class AliSISConeJetFinder : public AliJetFinder
 
   // others
  
-  void    WriteJHeaderToFile();
+  void    WriteJHeaderToFile() const;
   Float_t EtaToTheta(Float_t arg);
   void    InitTask(TChain* tree);
 

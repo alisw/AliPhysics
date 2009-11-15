@@ -50,7 +50,7 @@ class AliJetFinder : public TObject
   virtual void          Reset() {fNAODjets = 0;}
   virtual void          FindJets() {}
   virtual void          FindJetsC(){}
-  virtual void          WriteJHeaderToFile() {}
+  virtual void          WriteJHeaderToFile() const {}
   // some methods to allow steering from the outside
   virtual Bool_t        ProcessEvent();
   virtual Bool_t        ProcessEvent2();

@@ -29,7 +29,7 @@ class AliPxconeJetFinder : public AliJetFinder
   // others
   void Reset();
   void FindJets();
-  void WriteJHeaderToFile();
+  void WriteJHeaderToFile() const;
 
  protected:
   AliPxconeJetFinder(const AliPxconeJetFinder& rPxJet);

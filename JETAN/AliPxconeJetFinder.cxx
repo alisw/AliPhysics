@@ -126,7 +126,7 @@ void AliPxconeJetFinder::FindJets()
 
 ////////////////////////////////////////////////////////////////////////
 
-void AliPxconeJetFinder::WriteJHeaderToFile()
+void AliPxconeJetFinder::WriteJHeaderToFile() const
 {
 // Write Header to file
 
