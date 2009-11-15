@@ -72,7 +72,7 @@ void AliAnalysisTaskESDMuonFilter::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event					    
   Long64_t ientry = Entry();
-  printf("Muon Filter: Analysing event # %5d\n", (Int_t) ientry);
+  if(fDebug)printf("Muon Filter: Analysing event # %5d\n", (Int_t) ientry);
   
   ConvertESDtoAOD();
 }
@@ -109,7 +109,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   
   // Read primary vertex from AOD event 
   AliAODVertex *primary = AODEvent()->GetPrimaryVertex();
-  primary->Print();
+  if(fDebug)primary->Print();
   
   // Loop on muon tracks to fill the AOD track branch
   Int_t nMuTracks = esd->GetNumberOfMuonTracks();
