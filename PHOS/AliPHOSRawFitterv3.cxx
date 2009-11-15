@@ -152,9 +152,7 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
 
   if (fEnergy < kBaseLine) fEnergy = 0;
   //Evaluate time
-  Int_t iStart = 0;
-  while(iStart<sigLength && samples->At(iStart)-pedestal <kBaseLine) iStart++ ;
-  fTime = sigStart+iStart; 
+  fTime = sigStart; 
   
   //calculate time and energy
   Int_t    maxBin=0 ;
@@ -163,8 +161,6 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   Double_t aMean =0. ;
   Double_t aRMS  =0. ;
   Double_t wts   =0 ;
-  Int_t    tStart=0 ;
-
   for (Int_t i=0; i<sigLength; i++){
     if(signal[i] > pedestal){
       Double_t de = signal[i] - pedestal ;
@@ -173,8 +169,6 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
 	aRMS  += de*i*i ;
 	wts   += de; 
       }
-      if(de > 2 && tStart==0) 
-	tStart = i ;
       if(signal[i] >  maxAmp){
         maxAmp = signal[i]; 
         nMax=0;
@@ -210,19 +204,28 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   
   //do not test quality of too soft samples
   if (fEnergy < maxEtoFit){
-    fTime = tStart;
     if (aRMS < 2.) //sigle peak
       fQuality = 999. ;
     else
       fQuality =   0. ;
+    //Evaluate time of signal arriving
+    Int_t i=0;
+    while(signal[sigLength-i-1]<pedestal+kBaseLine  && i<sigLength)
+     i++ ;
+    fTime+=i ;
     return kTRUE ;
   }
       
   // if sample has reasonable mean and RMS, try to fit it with gamma2
+  //This method can not analyse overflow samples
+  if(fOverflow){
+    fQuality = 99. ;
+    return kTRUE ;
+  }
   // First estimate t0
   Double_t a=0,b=0,c=0 ;
   for(Int_t i=0; i<sigLength; i++){
-    if(samples->At(i)<pedestal)
+    if(samples->At(i)<=pedestal)
       continue ;
     Double_t t= times->At(i) ;
     Double_t f02 = TMath::Exp(-2.*t);
@@ -257,21 +260,25 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
 //    Double_t t2 = (-b - det) / a; //second root is wrong one
     Double_t amp1=0., den1=0. ;
     for(Int_t i=0; i<sigLength; i++){
-       Double_t dt1 = times->At(i) - t1;
-       Double_t f01 = dt1*dt1*TMath::Exp(-2.*dt1);
-       amp1 += f01*(samples->At(i)-pedestal);
-       den1 += f01*f01;
-     }
-     if(den1>0.0) amp1 /= den1;
-     Double_t chi1=0.; // chi2=0. ;
-     for(Int_t i=0; i<sigLength; i++){
-       Double_t dt1 = times->At(i)- t1;
-       Double_t dy1 = samples->At(i)-pedestal- amp1*dt1*dt1*TMath::Exp(-2.*dt1) ;
-       chi1 += dy1*dy1;
-     }
-     fEnergy=amp1*TMath::Exp(-2.) ; ; 
-     fTime=t1*tau ;
-     fQuality=chi1/sigLength ;
+      if(samples->At(i)<pedestal)
+        continue ;
+      Double_t dt1 = times->At(i) - t1;
+      Double_t f01 = dt1*dt1*TMath::Exp(-2.*dt1);
+      amp1 += f01*(samples->At(i)-pedestal);
+      den1 += f01*f01;
+    }
+    if(den1>0.0) amp1 /= den1;
+    Double_t chi1=0.; // chi2=0. ;
+    for(Int_t i=0; i<sigLength; i++){
+      if(samples->At(i)<=pedestal)
+        continue ;
+      Double_t dt1 = times->At(i)- t1;
+      Double_t dy1 = samples->At(i)-pedestal- amp1*dt1*dt1*TMath::Exp(-2.*dt1) ;
+      chi1 += dy1*dy1;
+    }
+    fEnergy=amp1*TMath::Exp(-2.) ; ; 
+    fTime+=t1*tau ;
+    fQuality=chi1/sigLength ;
   } 
   else { 
     Double_t t1 ;
@@ -281,22 +288,26 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       t1=-c/b ;
     Double_t amp=0.,den=0.; ;
     for(Int_t i=0; i<sigLength; i++){
-       Double_t dt = times->At(i) - t1;
-       Double_t f = dt*dt*TMath::Exp(-2.*dt);
-       amp += f*samples->At(i);
-       den += f*f;
-     }
-     if(den>0.0) amp /= den;
-     // chi2 calculation
-     fQuality=0.;
-     for(Int_t i=0; i<sigLength; i++){
-       Double_t t = times->At(i)- t1;
-       Double_t dy = samples->At(i)- amp*t*t*TMath::Exp(-2.*t) ;
-       fQuality += dy*dy;
-     }
-     fTime=t1*tau ;
-     fEnergy = amp*TMath::Exp(-2.);
-     fQuality/= sigLength ;
+      if(samples->At(i)<=pedestal)
+        continue ;
+      Double_t dt = times->At(i) - t1;
+      Double_t f = dt*dt*TMath::Exp(-2.*dt);
+      amp += f*samples->At(i);
+      den += f*f;
+    }
+    if(den>0.0) amp /= den;
+    // chi2 calculation
+    fQuality=0.;
+    for(Int_t i=0; i<sigLength; i++){
+      if(samples->At(i)<=pedestal)
+        continue ;
+      Double_t t = times->At(i)- t1;
+      Double_t dy = samples->At(i)- amp*t*t*TMath::Exp(-2.*t) ;
+      fQuality += dy*dy;
+    }
+    fTime+=t1*tau ;
+    fEnergy = amp*TMath::Exp(-2.);
+    fQuality/= sigLength ; //If we have overflow the number of actually fitted points is smaller, but chi2 in this case is not important.
   }
 
   //Impose cut on quality
@@ -314,17 +325,17 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
         h->SetBinContent(i,samples->At(i)) ;
       }
       TF1 * fffit = new TF1("fffit","[0]+[1]*((x-[2])/[3])^2*exp(2.-2.*(x-[2])/[3])",0.,200.) ;
-      fffit->SetParameters(pedestal,fEnergy,fTime,tau) ;
+      fffit->SetParameters(pedestal,fEnergy,fTime-sigStart,tau) ;
       fffit->SetLineColor(2) ;
-      TCanvas * c = (TCanvas*)gROOT->FindObjectAny("cSamples") ;
-      if(!c){
-        c = new TCanvas("cSamples","cSamples",10,10,400,400) ;
-        c->SetFillColor(0) ;
-        c->SetFillStyle(0) ;
-        c->Range(0,0,1,1);
-        c->SetBorderSize(0);
+      TCanvas * can = (TCanvas*)gROOT->FindObjectAny("cSamples") ;
+      if(!can){
+        can = new TCanvas("cSamples","cSamples",10,10,400,400) ;
+        can->SetFillColor(0) ;
+        can->SetFillStyle(0) ;
+        can->Range(0,0,1,1);
+        can->SetBorderSize(0);
       }
-      c->cd() ;
+      can->cd() ;
   
       TPad * spectrum_1 = new TPad("spectrum_1", "spectrum_1",0.001,0.32,0.99,0.99);
       spectrum_1->Draw();
@@ -349,7 +360,7 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       h->Write(title);
       fout.Close() ;
 
-      c->cd() ;
+      can->cd() ;
       TPad *spectrum_2 = new TPad("spectrum_2", "spectrum_2",0.001,0.01,0.99,0.32);
       spectrum_2->SetFillColor(0) ;
       spectrum_2->SetFillStyle(0) ;
@@ -372,7 +383,7 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       }
       hd->Draw();
  
-      c->Update() ;
+      can->Update() ;
       printf("Press <enter> to continue\n") ;
       getchar();
 

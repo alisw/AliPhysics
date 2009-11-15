@@ -159,7 +159,7 @@ Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       pedMean += signal[i];
       pedRMS  += signal[i]*signal[i] ;
     }
-    if(signal[i] >  maxSample) maxSample = signal[i];
+    if(signal[i] >  maxSample){ maxSample = signal[i]; nMax=0;}
     if(signal[i] == maxSample) nMax++;
 
   }
@@ -195,9 +195,7 @@ Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   if (fEnergy < kBaseLine) fEnergy = 0;
 
   //Evaluate time
-  Int_t iStart = sigLength-1;
-  while(iStart>=0 && signal[iStart]-pedestal <kBaseLine) iStart-- ;
-  fTime = sigStart-iStart-2; //2: 1 due to oversubtraction in line above, another 1 due to signal started before amp increased
+  fTime = sigStart; 
   const Int_t nLine= 6 ;        //Parameters of fitting
   const Float_t eMinTOF = 10. ; //Choosed from beam-test and cosmic analyis
   const Float_t kAmp=0.35 ;     //Result slightly depends on them, so no getters
