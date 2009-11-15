@@ -602,7 +602,9 @@ const char* AliPWG0Helper::GetTriggerName(Trigger trigger)
     case kZDC : str = "ZDC"; break;
     case kZDCA : str = "ZDC A"; break;
     case kZDCC : str = "ZDC C"; break;
-    case kFMD : str = "FMD"; break;
+    case kFMDA : str = "FMD A"; break;
+    case kFMDC : str = "FMD C"; break;
+    case kFPANY : str = "SPD GFO | V0 | ZDC | FMD"; break;
     default: str = ""; break;
   }
    

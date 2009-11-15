@@ -1,5 +1,26 @@
 /* $Id: AliOfflineTrigger.cxx 35782 2009-10-22 11:54:31Z jgrosseo $ */
 
+/**************************************************************************
+ * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//-------------------------------------------------------------------------
+//                      Implementation of   Class AliOfflineTrigger
+//   This class provides offline triggers from data in the ESD
+//   Origin: Jan Fiete Grosse-Oetringhaus, CERN
+//-------------------------------------------------------------------------
+
 #include <AliOfflineTrigger.h>
 
 #include <AliLog.h>
@@ -9,13 +30,16 @@
 #include <AliMultiplicity.h>
 #include <AliESDVZERO.h>
 #include <AliESDZDC.h>
+#include <AliESDFMD.h>
 
 ClassImp(AliOfflineTrigger)
 
 AliOfflineTrigger::AliOfflineTrigger() :
   fSPDGFOThreshold(1),
   fV0AThreshold(1),
-  fV0CThreshold(1)
+  fV0CThreshold(1),
+  fFMDLowCut(0.2),
+  fFMDHitCut(0.5)
 {
 }
 
@@ -86,9 +110,21 @@ Bool_t AliOfflineTrigger::IsEventTriggered(const AliESDEvent* aEsd, AliPWG0Helpe
         return kTRUE;
       break;
     }
-    case AliPWG0Helper::kFMD:
+    case AliPWG0Helper::kFMDA:
     {
-      if (FMDTrigger(aEsd))
+      if (FMDTrigger(aEsd, kASide))
+        return kTRUE;
+      break;
+    }
+    case AliPWG0Helper::kFMDC:
+    {
+      if (FMDTrigger(aEsd, kCSide))
+        return kTRUE;
+      break;
+    }
+    case AliPWG0Helper::kFPANY:
+    {
+      if (SPDGFOTrigger(aEsd) || V0Trigger(aEsd, kASide) || V0Trigger(aEsd, kCSide) || ZDCTrigger(aEsd, kASide) || ZDCTrigger(aEsd, kCentralBarrel) || ZDCTrigger(aEsd, kCSide) || FMDTrigger(aEsd, kASide) || FMDTrigger(aEsd, kCSide))
         return kTRUE;
       break;
     }
@@ -178,11 +214,47 @@ Bool_t AliOfflineTrigger::ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) co
   return kFALSE;
 }
 
-Bool_t AliOfflineTrigger::FMDTrigger(const AliESDEvent* /* aEsd */) const
+Bool_t AliOfflineTrigger::FMDTrigger(const AliESDEvent* aEsd, AliceSide side) const
 {
   // Returns if the FMD triggered
+  //
+  // Authors: FMD team, Hans Dalsgaard (code merged from FMD/AliFMDOfflineTrigger)
 
-  AliFatal("Not implemented");
-  
+  // Workaround for AliESDEvent::GetFMDData is not const!
+  const AliESDFMD* fmdData = (const_cast<AliESDEvent*>(aEsd))->GetFMDData();
+  if (!fmdData)
+  {
+    AliError("AliESDFMD not available");
+    return kFALSE;
+  }
+
+  Int_t detFrom = (side == kASide) ? 1 : 3;
+  Int_t detTo   = (side == kASide) ? 2 : 3;
+
+  Float_t totalMult = 0;
+  for (UShort_t det=detFrom;det<=detTo;det++) {
+    Int_t nRings = (det == 1 ? 1 : 2);
+    for (UShort_t ir = 0; ir < nRings; ir++) {
+      Char_t   ring = (ir == 0 ? 'I' : 'O');
+      UShort_t nsec = (ir == 0 ? 20  : 40);
+      UShort_t nstr = (ir == 0 ? 512 : 256);
+      for (UShort_t sec =0; sec < nsec;  sec++)  {
+	for (UShort_t strip = 0; strip < nstr; strip++) {
+	  Float_t mult = fmdData->Multiplicity(det,ring,sec,strip);
+	  if (mult == AliESDFMD::kInvalidMult) continue;
+	  
+	  if (mult > fFMDLowCut)
+	    totalMult = totalMult + mult;
+	  else
+	    {
+	      if( totalMult > fFMDHitCut) {
+		return kTRUE;
+	      }
+	      else totalMult = 0 ;
+	    }
+	}
+      }
+    }
+  }
   return kFALSE;
 }
