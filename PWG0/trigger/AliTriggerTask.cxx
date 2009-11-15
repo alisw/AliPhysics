@@ -200,7 +200,7 @@ void AliTriggerTask::Terminate(Option_t *)
     {
       c->cd(i+1);
       fStats[i]->Draw();
-      Printf("%s: %d triggers | %f %% of all triggered | Rate: %f Hz", AliPWG0Helper::GetTriggerName(fTriggerList[i]), (UInt_t) fStats[i]->Integral(), fStats[i]->Integral() / base, (length > 0) ? (fStats[i]->Integral() / length) : -1);
+      Printf("%s: %d triggers | %f %% of all triggered | Rate: %f Hz", AliPWG0Helper::GetTriggerName(fTriggerList[i]), (UInt_t) fStats[i]->Integral(), 100.0 * fStats[i]->Integral() / base, (length > 0) ? (fStats[i]->Integral() / length) : -1);
     }
 
   Printf("Writting result to trigger.root");
