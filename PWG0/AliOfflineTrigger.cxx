@@ -238,21 +238,21 @@ Bool_t AliOfflineTrigger::FMDTrigger(const AliESDEvent* aEsd, AliceSide side) co
       Char_t   ring = (ir == 0 ? 'I' : 'O');
       UShort_t nsec = (ir == 0 ? 20  : 40);
       UShort_t nstr = (ir == 0 ? 512 : 256);
-      for (UShort_t sec =0; sec < nsec;  sec++)  {
-	for (UShort_t strip = 0; strip < nstr; strip++) {
-	  Float_t mult = fmdData->Multiplicity(det,ring,sec,strip);
-	  if (mult == AliESDFMD::kInvalidMult) continue;
-	  
-	  if (mult > fFMDLowCut)
-	    totalMult = totalMult + mult;
-	  else
-	    {
-	      if( totalMult > fFMDHitCut) {
-		return kTRUE;
-	      }
-	      else totalMult = 0 ;
-	    }
-	}
+      for (UShort_t sec =0; sec < nsec;  sec++) {
+        for (UShort_t strip = 0; strip < nstr; strip++) {
+          Float_t mult = fmdData->Multiplicity(det,ring,sec,strip);
+          if (mult == AliESDFMD::kInvalidMult) continue;
+          
+          if (mult > fFMDLowCut)
+            totalMult = totalMult + mult;
+          else
+            {
+              if( totalMult > fFMDHitCut) {
+          return kTRUE;
+              }
+              else totalMult = 0 ;
+            }
+        }
       }
     }
   }
