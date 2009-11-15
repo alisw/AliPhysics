@@ -11,6 +11,8 @@
 /// @brief  Class containing constants for PHOS and EMCAL
 ///         loaded libraries
 
+#include "Rtypes.h"
+
 #ifndef ALIHLTCALOCONSTANTS_H
 #define ALIHLTCALOCONSTANTS_H
 
@@ -22,97 +24,97 @@ public:
   
   AliHLTCaloConstants(TString det);
   virtual ~AliHLTCaloConstants();
-    
-  inline int GetMAXHOSTS() {return fMAXHOSTS; }
-  inline int GetDEFAULTEVENTPORT() { return fDEFAULTEVENTPORT; }  
-  inline int GetMAXBINVALUE() { return fMAXBINVALUE; }	   	 
-  inline int GetHIGHGAIN() { return fHIGHGAIN; }		 
-  inline int GetLOWGAIN() { return fLOWGAIN; }		 
-  inline int GetALTROMAXSAMPLES() { return fALTROMAXSAMPLES; }	 
-  inline int GetALTROMAXPRESAMPLES() { return fALTROMAXPRESAMPLES; }   
-  inline int GetNZROWSRCU() { return fNZROWSRCU; }	   	 
-  inline int GetNXCOLUMNSRCU() { return fNXCOLUMNSRCU; }	 
-  inline int GetNZROWSMOD() { return fNZROWSMOD; }	   	 
-  inline int GetNXCOLUMNSMOD() { return fNXCOLUMNSMOD; }	 
-  inline int GetNGAINS() { return fNGAINS; }		 
-  inline int GetNDATATYPES() { return fNDATATYPES; }	   	 
-  inline int GetPFMAXPATHLENGTH() { return fPFMAXPATHLENGTH; }	 
-  inline int GetPFDEFAULTNSAMPLES() { return fPFDEFAULTNSAMPLES; } 
-  inline int GetPFDEFAULTSTARTINDEX() { return fPFDEFAULTSTARTINDEX; }  
-  inline double GetDEFAULTTAU() { return fDEFAULTTAU; }	   	 
-  inline int GetDEFAULTFS() { return fDEFAULTFS; }	   	 
-  inline int GetMODULE0() { return fMODULE0; }		 
-  inline int GetMODULE1() { return fMODULE1; }		 
-  inline int GetMODULE2() { return fMODULE2; }  	 
-  inline int GetMODULE3() { return fMODULE3; }		 
-  inline int GetMODULE4() { return fMODULE4; }		 
-  inline int GetCSPSPERFEE() { return fCSPSPERFEE; }	   	 
-  inline int GetRCU0() { return fRCU0; }		 
-  inline int GetRCU1() { return fRCU1; }		 
-  inline int GetRCU2() { return fRCU2; }		 
-  inline int GetRCU3() { return fRCU3; }		 
-  inline int GetZ0() { return fZ0; }		   	 
-  inline int GetZ1() { return fZ1; }		   	 
-  inline int GetX0() { return fX0; }		   	 
-  inline int GetX1() { return fX1; }		   	 
-  inline int GetNMODULES() { return fNMODULES; }		 
-  inline int GetNRCUS() { return fNRCUS; }		 
-  inline int GetNRCUSPERMODULE() { return fNRCUSPERMODULE; }	 
-  inline int GetNRCUSPERTOTAL() { return fNRCUSPERTOTAL; }	 
-  inline int GetNFEECS() { return fNFEECS; }		 
-  inline int GetNALTROS() { return fNALTROS; }		 
-  inline int GetNALTROCHANNELS() { return fNALTROCHANNELS; }	 
-  inline int GetNBRANCHES() { return fNBRANCHES; }	   	
-  inline float GetCELLSTEP() {return fCELLSTEP; }
-  inline int GetNRCUSPERSECTOR() {return fNRCUSPERSECTOR; }
+  
+  Int_t GetMAXHOSTS() const {return fkMAXHOSTS; } 
+  Int_t GetDEFAULTEVENTPORT() const { return fkDEFAULTEVENTPORT; }  
+  Int_t GetMAXBINVALUE() const { return fkMAXBINVALUE; }	   	 
+  Int_t GetHIGHGAIN() const { return fkHIGHGAIN; }		 
+  Int_t GetLOWGAIN() const { return fkLOWGAIN; }		 
+  Int_t GetALTROMAXSAMPLES() const { return fkALTROMAXSAMPLES; }	 
+  Int_t GetALTROMAXPRESAMPLES() const { return fkALTROMAXPRESAMPLES; }   
+  Int_t GetNZROWSRCU() const { return fkNZROWSRCU; }	   	 
+  Int_t GetNXCOLUMNSRCU() const { return fkNXCOLUMNSRCU; }	 
+  Int_t GetNZROWSMOD() const { return fkNZROWSMOD; }	   	 
+  Int_t GetNXCOLUMNSMOD() const { return fkNXCOLUMNSMOD; }	 
+  Int_t GetNGAINS() const{ return fkNGAINS; }		 
+  Int_t GetNDATATYPES() const { return fkNDATATYPES; }	   	 
+  Int_t GetPFMAXPATHLENGTH() const { return fkPFMAXPATHLENGTH; }	 
+  Int_t GetPFDEFAULTNSAMPLES() const { return fkPFDEFAULTNSAMPLES; } 
+  Int_t GetPFDEFAULTSTARTINDEX() const { return fkPFDEFAULTSTARTINDEX; }  
+  Double_t GetDEFAULTTAU() const { return fkDEFAULTTAU; }	   	 
+  Int_t GetDEFAULTFS() const { return fkDEFAULTFS; }	   	 
+  Int_t GetMODULE0() const { return fkMODULE0; }		 
+  Int_t GetMODULE1() const { return fkMODULE1; }		 
+  Int_t GetMODULE2() const { return fkMODULE2; }  	 
+  Int_t GetMODULE3() const { return fkMODULE3; }		 
+  Int_t GetMODULE4() const { return fkMODULE4; }		 
+  Int_t GetCSPSPERFEE() const { return fkCSPSPERFEE; }	   	 
+  Int_t GetRCU0() const { return fkRCU0; }		 
+  Int_t GetRCU1() const { return fkRCU1; }		 
+  Int_t GetRCU2() const { return fkRCU2; }		 
+  Int_t GetRCU3() const { return fkRCU3; }		 
+  Int_t GetZ0() const { return fkZ0; }		   	 
+  Int_t GetZ1() const { return fkZ1; }		   	 
+  Int_t GetX0() const { return fkX0; }		   	 
+  Int_t GetX1() const { return fkX1; }		   	 
+  Int_t GetNMODULES() const { return fkNMODULES; }		 
+  Int_t GetNRCUS() const { return fkNRCUS; }		 
+  Int_t GetNRCUSPERMODULE() const { return fkNRCUSPERMODULE; }	 
+  Int_t GetNRCUSPERTOTAL() const { return fkNRCUSPERTOTAL; }	 
+  Int_t GetNFEECS() const { return fkNFEECS; }		 
+  Int_t GetNALTROS() const { return fkNALTROS; }		 
+  Int_t GetNALTROCHANNELS() const { return fkNALTROCHANNELS; }	 
+  Int_t GetNBRANCHES() const { return fkNBRANCHES; }	   	
+  Float_t GetCELLSTEP() const {return fkCELLSTEP; }
+  Int_t GetNRCUSPERSECTOR() const {return fkNRCUSPERSECTOR; }
 
 
 private:
 
   AliHLTCaloConstants();
 
-  const int fMAXHOSTS;
-  const int fDEFAULTEVENTPORT;
-  const int fMAXBINVALUE; // 1023;
-  const int fHIGHGAIN; //   1;
-  const int fLOWGAIN; //   0;
-  const int fALTROMAXSAMPLES; // 1008;                           /**<The maximum number of samples of the ALTRO*/
-  const int fALTROMAXPRESAMPLES; // 15;        
-  const int fNZROWSRCU; //   56;                    /**<Number of rows per module*/       
-  const int fNXCOLUMNSRCU; //   16; 
-  const int fNZROWSMOD; //  48;            /**<Number of rows per module*/       
-  const int fNXCOLUMNSMOD; //  24;            /**<Number of columns per module*/ 
-  const int fNGAINS; //   2;                             /**<Number of gains per ALTRO channel*/
-  const int fNDATATYPES; //   10;    
-  const int fPFMAXPATHLENGTH; // 256;
-  const int fPFDEFAULTNSAMPLES; // 70;
-  const int fPFDEFAULTSTARTINDEX; // 0;
-  const double fDEFAULTTAU; // 0.2;                /**<Assume that the signal rise time of the altrp pulses is 2 us (nominal value of the electronics)*/
-  const int fDEFAULTFS; // 10;   /**<Assume that the signal is samples with 10 MHZ samle rate*/
-  const int fMODULE0; // 0;
-  const int fMODULE1; // 1;
-  const int fMODULE2; // 2;
-  const int fMODULE3; // 3;
-  const int fMODULE4; // 4;
-  const int fCSPSPERFEE; // 32;
-  const int fRCU0; // 0;
-  const int fRCU1; // 1;
-  const int fRCU2; // 2;
-  const int fRCU3; // 3;
-  const int fZ0; // 0;
-  const int fZ1; // 1;
-  const int fX0; // 0;
-  const int fX1; // 1;
-  const int fNMODULES; //      13;                            /**<Number of modules of the EMCAL detector*/
-  const int fNRCUS; //      4;                             /**<Number of RCUs per Module*/
-  const int fNRCUSPERMODULE; //  2;                            /**<Number of RCUs per Module*/
-  const int fNRCUSPERTOTAL; //  NMODULES*NRCUSPERMODULE;        /**<Total number of RCUs for EMCAL*/
-  const int fNFEECS; //  9;                             /**<Number of Frontend cards per branch*/
-  const int fNALTROS; //   4;                            /**<Number of ALTROs per frontend card*/
-  const int fNALTROCHANNELS; //  16;
-  const int fNBRANCHES; //   2;      
-  const float fCELLSTEP;   // Obsolete variable? Called in Calomapper!
-  const int fNRCUSPERSECTOR; // 4;
+  const Int_t fkMAXHOSTS; // soon to be obsolete
+  const Int_t fkDEFAULTEVENTPORT; // soon to be obsolete
+  const Int_t fkMAXBINVALUE; // 1023;
+  const Int_t fkHIGHGAIN; //   1;
+  const Int_t fkLOWGAIN; //   0;
+  const Int_t fkALTROMAXSAMPLES; // 1008;                           /**<The maximum number of samples of the ALTRO*/
+  const Int_t fkALTROMAXPRESAMPLES; // 15;        
+  const Int_t fkNZROWSRCU; //   56;                    /**<Number of rows per module*/       
+  const Int_t fkNXCOLUMNSRCU; //   16; 
+  const Int_t fkNZROWSMOD; //  48;            /**<Number of rows per module*/       
+  const Int_t fkNXCOLUMNSMOD; //  24;            /**<Number of columns per module*/ 
+  const Int_t fkNGAINS; //   2;                             /**<Number of gains per ALTRO channel*/
+  const Int_t fkNDATATYPES; //   10;    
+  const Int_t fkPFMAXPATHLENGTH; // 256;
+  const Int_t fkPFDEFAULTNSAMPLES; // 70;
+  const Int_t fkPFDEFAULTSTARTINDEX; // 0;
+  const Double_t fkDEFAULTTAU; // 0.2;                /**<Assume that the signal rise time of the altrp pulses is 2 us (nominal value of the electronics)*/
+  const Int_t fkDEFAULTFS; // 10;   /**<Assume that the signal is samples with 10 MHZ samle rate*/
+  const Int_t fkMODULE0; // 0;
+  const Int_t fkMODULE1; // 1;
+  const Int_t fkMODULE2; // 2;
+  const Int_t fkMODULE3; // 3;
+  const Int_t fkMODULE4; // 4;
+  const Int_t fkCSPSPERFEE; // 32;
+  const Int_t fkRCU0; // 0;
+  const Int_t fkRCU1; // 1;
+  const Int_t fkRCU2; // 2;
+  const Int_t fkRCU3; // 3;
+  const Int_t fkZ0; // 0;
+  const Int_t fkZ1; // 1;
+  const Int_t fkX0; // 0;
+  const Int_t fkX1; // 1;
+  const Int_t fkNMODULES; //      13;                            /**<Number of modules of the EMCAL detector*/
+  const Int_t fkNRCUS; //      4;                             /**<Number of RCUs per Module*/
+  const Int_t fkNRCUSPERMODULE; //  2;                            /**<Number of RCUs per Module*/
+  const Int_t fkNRCUSPERTOTAL; //  NMODULES*NRCUSPERMODULE;        /**<Total number of RCUs for EMCAL*/
+  const Int_t fkNFEECS; //  9;                             /**<Number of frontend cards per branch*/
+  const Int_t fkNALTROS; //   4;                            /**<Number of ALTROs per fkrontend card*/
+  const Int_t fkNALTROCHANNELS; //  16;
+  const Int_t fkNBRANCHES; //   2;      
+  const Float_t fkCELLSTEP;   // Obsolete variable? Called in Calomapper!
+  const Int_t fkNRCUSPERSECTOR; // 4;
 
 };
 #endif
