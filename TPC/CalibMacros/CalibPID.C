@@ -1,21 +1,43 @@
 /*
-  .x ConfigOCDB.C
 
-  .x ~/rootlogon.C
-  .x ~/UliStyle.C
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libTPCcalib");
-  gSystem->Load("libSTAT.so");
+//
+// 1. dump information to the tree
+//
+gSystem->Load("libANALYSIS");
+gSystem->Load("libTPCcalib");
+gSystem->Load("libSTAT.so");
 
-  .L $ALICE_ROOT/TPC/CalibMacros/CalibPID.C+
-  paramCl = AliTPCcalibDB::Instance()->GetClusterParam();
-  // init
-  Init("calibPID06");
-  SetRange(6,100,160);
-  SetRange(0,0.5,10);
-  SetRange(4,0,200);
-  SetType(1);
-  pid->MakeReport();
+.L $ALICE_ROOT/TPC/CalibMacros/CalibPID.C+
+.x ../ConfigOCDB.C
+paramCl = AliTPCcalibDB::Instance()->GetClusterParam();
+Init("calibPID06");
+LookupHisto() // change SetRange in LookupHisto if needed !, check with pid->GetHistQtot()->Projection(0,1)->Draw("colz")
+
+// exit aliroot
+
+//
+// 2. update the OCDB
+//
+
+gSystem->Load("libANALYSIS");
+gSystem->Load("libTPCcalib");
+gSystem->Load("libSTAT.so");
+
+.L $ALICE_ROOT/TPC/CalibMacros/CalibPID.C+
+.x ../ConfigOCDB.C
+paramCl = AliTPCcalibDB::Instance()->GetClusterParam();
+
+TFile fff("lookupdEdx.root")
+TTree * treeDump =0;
+TObjArray fitArr;
+treeDump = (TTree*)fff.Get("dumpdEdx");
+
+TCut cutAll = "meangTot>0.0&&sumMax>150&&sumTot>150&&rmsgMax/rmsMax<1.5&&abs(p3)<1&&isOK";
+treeDump->Draw("meanTotP:ipad","meangTot>0&&isOK"+cutAll,"*")
+
+FitFit(kTRUE)
+StoreParam("local:///lustre/alice/akalweit/OCDBforMC") // specify corresponding location before !!
+
 
 */  
 #include "TMath.h"
@@ -62,9 +84,9 @@ Int_t kmimarkers[10]={21,22,23,24,25,26,27,28,29,30};
 void Init(char* name="calibPID06"){
   //
   //
-  TFile fcalib("CalibObjects.root");
-  TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
-  pid = ( AliTPCcalibPID *)array->FindObject(name);
+  TFile fcalib("CalibObjectsTrain2.root");
+  //TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib"); // old interface
+  pid = ( AliTPCcalibPID *) fcalib.Get(name);
   TString axisName[9];
   axisName[0]  ="dE/dx"; axisName[1]  ="z (cm)";
   axisName[2]  ="sin(#phi)"; axisName[3]  ="tan(#theta)";
@@ -91,16 +113,16 @@ void Init(char* name="calibPID06"){
 }
 
 
-void StoreParam(){
+void StoreParam(char* localStorage = "local:///lustre/alice/akalweit/OCDB"){
   Int_t runNumber = 0;
   AliCDBMetaData *metaData= new AliCDBMetaData();
   metaData->SetObjectClassName("AliTPCClusterParam");
-  metaData->SetResponsible("Marian Ivanov");
+  metaData->SetResponsible("Alexander Kalweit");
   metaData->SetBeamPeriod(1);
-  metaData->SetAliRootVersion("05-23-02"); 
+  metaData->SetAliRootVersion("05-24-00"); 
   metaData->SetComment("October runs calibration");
   AliCDBId id1("TPC/Calib/ClusterParam", runNumber, AliCDBRunRange::Infinity());
-  AliCDBStorage *gStorage = AliCDBManager::Instance()->GetStorage("local:///u/miranov/OCDB/TPCmc");
+  AliCDBStorage *gStorage = AliCDBManager::Instance()->GetStorage(localStorage);
   gStorage->Put(paramCl, id1, metaData);
 
 }
@@ -149,7 +171,7 @@ void ReadTrees(){
 
 
 
-void Fit(){
+void Fit(Bool_t updateParam=kFALSE){
   //
   // align pads
   //
@@ -235,8 +257,14 @@ void Fit(){
     for (Int_t icorr=1;icorr<4;icorr++) {
       paramMax[ipad][icorr]+=(paramMax[3][icorr]+paramMax[ipad][icorr])*0.5;
       paramTot[ipad][icorr]+=(paramTot[3][icorr]+paramTot[ipad][icorr])*0.5;
+      if (updateParam){
+	(*paramCl->fQNormCorr)(ipad+6,icorr) = paramTot[ipad][icorr+1];
+	(*paramCl->fQNormCorr)(ipad+9,icorr) = paramMax[ipad][icorr+1];
+      }
+
     }
   }
+
 
 //  for (Int_t ipad=0;ipad<3;ipad++){
 //    TVectorD *vecMax =  (TVectorD*)(paramCl->fQNormGauss->At(3*1+ipad));
@@ -276,9 +304,9 @@ void LookupHisto(Int_t minTracks=200, Float_t minp=20, Float_t maxp=10000){
   TF1 f1("myg","gaus",0,10);
   Int_t dim[4]={0,1,2,3};
   pid->GetHistQtot()->GetAxis(6)->SetRangeUser(100,160);
-  pid->GetHistQtot()->GetAxis(0)->SetRangeUser(0.1,2.5);
+  pid->GetHistQtot()->GetAxis(0)->SetRangeUser(0.1,6.); // important adaption to be done here ...
   pid->GetHistQmax()->GetAxis(6)->SetRangeUser(100,160);
-  pid->GetHistQmax()->GetAxis(0)->SetRangeUser(0.1,2.5);
+  pid->GetHistQmax()->GetAxis(0)->SetRangeUser(0.1,6);  // important adaption to be done here ...
 
   pid->GetHistQmax()->GetAxis(4)->SetRangeUser(minp,maxp);
   pid->GetHistQtot()->GetAxis(4)->SetRangeUser(minp,maxp);
@@ -471,8 +499,8 @@ void FitFit(Bool_t updateParam=kFALSE){
   //strFit+="sqrt(dri*tz)++";
   //strFit+="sqrt(ty*tz)++";
   
-  TCut cutAll = "meangTot>0.0&&sumMax>150&&sumTot>150&&rmsgMax/rmsMax<1.5&&abs(p3)<1";
-  for (Int_t ipad=0;ipad<4;ipad++){
+  TCut cutAll = "meangTot>0.0&&sumMax>150&&sumTot>150&&rmsgMax/rmsMax<1.5&&abs(p3)<1&&isOK"; // MY MODIFICATION ! isOK added
+  for (Int_t ipad=0;ipad<3;ipad++){ // MY MODIFICATION ! <3 instead of 4
     cutPads[ipad]=Form("ipad==%d",ipad);
     //
     strQT[ipad] = toolkit.FitPlane(treeDump,"meangTot/meanTotP",strFit.Data(),cutAll+cutPads[ipad],chi2Tot[ipad],npoints,paramTot[ipad],covar);
@@ -491,6 +519,8 @@ void FitFit(Bool_t updateParam=kFALSE){
     treeDump->SetAlias(Form("fitQM%d",ipad),strQM[ipad]->Data());
     treeDump->SetAlias(Form("fitQTM%d",ipad),strQM[ipad]->Data());
   }
+
+
   TMatrixD mat(6,6);
   for (Int_t ipad=0; ipad<3; ipad++){
     for (Int_t icorr=0; icorr<3; icorr++){
@@ -502,6 +532,45 @@ void FitFit(Bool_t updateParam=kFALSE){
       mat(ipad+3,icorr) = paramMax[ipad][icorr+1];
     }
   }
+
+  Float_t normShortTot;
+  Float_t normMedTot;
+  Float_t normLongTot;
+  Float_t normTotMean;
+  //
+  Float_t normShortMax;
+  Float_t normMedMax;
+  Float_t normLongMax;
+  Float_t normMaxMean;
+  TH1D * dummyHist = new TH1D("dummyHist","absolute gain alignment of pads",100,0,10);
+  //
+  treeDump->Draw("meanTotP>>dummyHist","meangTot>0&&isOK&&ipad==0"+cutAll,"");
+  normShortTot = dummyHist->GetMean();
+  treeDump->Draw("meanTotP>>dummyHist","meangTot>0&&isOK&&ipad==1"+cutAll,"");
+  normMedTot = dummyHist->GetMean();
+  treeDump->Draw("meanTotP>>dummyHist","meangTot>0&&isOK&&ipad==2"+cutAll,"");
+  normLongTot = dummyHist->GetMean();
+  normTotMean = (normShortTot+normMedTot+normLongTot)/3.;
+  //
+  treeDump->Draw("meanMaxP>>dummyHist","meangTot>0&&isOK&&ipad==0"+cutAll,"");
+  normShortMax = dummyHist->GetMean();
+  treeDump->Draw("meanMaxP>>dummyHist","meangTot>0&&isOK&&ipad==1"+cutAll,"");
+  normMedMax = dummyHist->GetMean();
+  treeDump->Draw("meanMaxP>>dummyHist","meangTot>0&&isOK&&ipad==2"+cutAll,"");
+  normLongMax = dummyHist->GetMean();
+  normMaxMean = (normShortMax+normMedMax+normLongMax)/3.;
+  
+  cout << "Tot: " << normShortTot << " " << normMedTot << " " << normLongTot << endl;
+  cout << "Max: " << normShortMax << " " << normMedMax << " " << normLongMax << endl;
+
+  // hand alignment of pads to be improved:
+  (*paramCl->fQNormCorr)(0,5) *= (normShortTot/normTotMean);
+  (*paramCl->fQNormCorr)(1,5) *= (normMedTot/normTotMean);
+  (*paramCl->fQNormCorr)(2,5) *= (normLongTot/normTotMean);
+  //
+  (*paramCl->fQNormCorr)(3,5) *= (normShortMax/normMaxMean);
+  (*paramCl->fQNormCorr)(4,5) *= (normMedMax/normMaxMean);
+  (*paramCl->fQNormCorr)(5,5) *= (normLongMax/normMaxMean);
 
 
 }

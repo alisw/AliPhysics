@@ -579,6 +579,7 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
   //-----------------------------------------------------------------
   // This funtion calculates dE/dX within the "low" and "up" cuts.
   //-----------------------------------------------------------------
+  // CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Int_t returnVal)
   AliTPCParam *param = AliTPCcalibDB::Instance()->GetParameters();
   
   Int_t row0 = param->GetNRowLow();
@@ -590,20 +591,20 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
   //
   //
   //
-  fDEDX[0]      = CookdEdxNorm(low,up,useTot ,i1  ,i2,  kTRUE,kFALSE,2,0);
-  fDEDX[1]      = CookdEdxNorm(low,up,useTot ,0   ,row0,kTRUE,kFALSE,2,0);
-  fDEDX[2]      = CookdEdxNorm(low,up,useTot ,row0,row1,kTRUE,kFALSE,2,0);
-  fDEDX[3]      = CookdEdxNorm(low,up,useTot ,row1,row2,kTRUE,kFALSE,2,0);
+  fDEDX[0]      = CookdEdxAnalytical(low,up,useTot ,i1  ,i2,   0);
+  fDEDX[1]      = CookdEdxAnalytical(low,up,useTot ,0   ,row0, 0);
+  fDEDX[2]      = CookdEdxAnalytical(low,up,useTot ,row0,row1, 0);
+  fDEDX[3]      = CookdEdxAnalytical(low,up,useTot ,row1,row2, 0);
   //
-  fSDEDX[0]     = CookdEdxNorm(low,up,useTot ,i1  ,i2,  kTRUE,kFALSE,2,1);
-  fSDEDX[1]     = CookdEdxNorm(low,up,useTot ,0   ,row0,kTRUE,kFALSE,2,1);
-  fSDEDX[2]     = CookdEdxNorm(low,up,useTot ,row0,row1,kTRUE,kFALSE,2,1);
-  fSDEDX[3]     = CookdEdxNorm(low,up,useTot ,row1,row2,kTRUE,kFALSE,2,1);
+  fSDEDX[0]     = CookdEdxAnalytical(low,up,useTot ,i1  ,i2,   1);
+  fSDEDX[1]     = CookdEdxAnalytical(low,up,useTot ,0   ,row0, 1);
+  fSDEDX[2]     = CookdEdxAnalytical(low,up,useTot ,row0,row1, 1);
+  fSDEDX[3]     = CookdEdxAnalytical(low,up,useTot ,row1,row2, 1);
   //
-  fNCDEDX[0]    = TMath::Nint(CookdEdxNorm(low,up,useTot ,i1  ,i2,  kTRUE,kFALSE,2,2));
-  fNCDEDX[1]    = TMath::Nint(CookdEdxNorm(low,up,useTot ,0   ,row0,kTRUE,kFALSE,2,2));
-  fNCDEDX[2]    = TMath::Nint(CookdEdxNorm(low,up,useTot ,row0,row1,kTRUE,kFALSE,2,2));
-  fNCDEDX[3]    = TMath::Nint(CookdEdxNorm(low,up,useTot ,row1,row2,kTRUE,kFALSE,2,2));
+  fNCDEDX[0]    = TMath::Nint(CookdEdxAnalytical(low,up,useTot ,i1  ,i2,   2));
+  fNCDEDX[1]    = TMath::Nint(CookdEdxAnalytical(low,up,useTot ,0   ,row0, 2));
+  fNCDEDX[2]    = TMath::Nint(CookdEdxAnalytical(low,up,useTot ,row0,row1, 2));
+  fNCDEDX[3]    = TMath::Nint(CookdEdxAnalytical(low,up,useTot ,row1,row2, 2));
 
   SetdEdx(fDEDX[0]);
   return fDEDX[0];
