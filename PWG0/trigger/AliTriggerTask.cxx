@@ -37,9 +37,9 @@ AliTriggerTask::AliTriggerTask(const char* opt) :
   DefineInput(0, TChain::Class());
   DefineOutput(0, TList::Class());
   
-  fNTriggers = 10;
+  fNTriggers = 13;
   
-  static AliPWG0Helper::Trigger triggerList[] = { AliPWG0Helper::kAcceptAll, AliPWG0Helper::kMB1, AliPWG0Helper::kMB2, AliPWG0Helper::kMB3, AliPWG0Helper::kSPDGFO, AliPWG0Helper::kV0A, AliPWG0Helper::kV0C, AliPWG0Helper::kZDC, AliPWG0Helper::kZDCA, AliPWG0Helper::kZDCC };
+  static AliPWG0Helper::Trigger triggerList[] = { AliPWG0Helper::kAcceptAll, AliPWG0Helper::kFPANY, AliPWG0Helper::kMB1, AliPWG0Helper::kMB2, AliPWG0Helper::kMB3, AliPWG0Helper::kSPDGFO, AliPWG0Helper::kV0A, AliPWG0Helper::kV0C, AliPWG0Helper::kZDC, AliPWG0Helper::kZDCA, AliPWG0Helper::kZDCC, AliPWG0Helper::kFMDA, AliPWG0Helper::kFMDC };
   fTriggerList = triggerList;
   
   fStats = new TH1*[fNTriggers];
@@ -188,13 +188,19 @@ void AliTriggerTask::Terminate(Option_t *)
   c->Divide(nX, nY);
   
   Printf("+++++++++ TRIGGER STATS:");
+
+  Int_t base = 1;
+  if (fStats[0])
+    base = (Int_t) fStats[0]->Integral();
+
+  Int_t length = fEndTime - fStartTime;
   
   for (Int_t i=0; i<fNTriggers; i++)
     if (fStats[i])
     {
       c->cd(i+1);
       fStats[i]->Draw();
-      Printf("%s: %d triggers", AliPWG0Helper::GetTriggerName(fTriggerList[i]), (UInt_t) fStats[i]->Integral());
+      Printf("%s: %d triggers | %f %% of all triggered | Rate: %f Hz", AliPWG0Helper::GetTriggerName(fTriggerList[i]), (UInt_t) fStats[i]->Integral(), fStats[i]->Integral() / base, (length > 0) ? (fStats[i]->Integral() / length) : -1);
     }
 
   Printf("Writting result to trigger.root");
