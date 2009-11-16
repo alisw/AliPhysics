@@ -1,31 +1,59 @@
-#include "TList.h"
+//------------------------------------------------------------------------------
+// Implementation of AliPerformancePtCalibMC class. It compares ESD, TPC track
+// momenta with MC information.
+// The output can be analysed with AliPerfAnalyzeInvPt* via AliPerformancePtCalibMC::Analyse():
+// Projection of 1/pt vs theta and vs phi resp. histoprams will be fitted with either
+// polynomial or gaussian fit function to extract minimum position of 1/pt.
+// Fit options and theta, phi bins can be set by user.
+// Attention: use the Set* functions of AliPerformancePtCalibMC when running
+// AliPerformancePtCalibMC::Analyse()
+// The result of the analysis (histograms/graphs) are stored in the folder which is
+// a data member of AliPerformancePtCalib*.
+//
+// Author: S.Schuchmann 11/13/2009 
+//------------------------------------------------------------------------------
+
+/*
+ 
+// after running comparison task, read the file, and get component
+gROOT->LoadMacro("$ALICE_ROOT/PWG1/Macros/LoadMyLibs.C");
+LoadMyLibs();
+
+TFile f("Output.root");
+AliPerformancePtCalib * compObj = (AliPerformancePtCalibMC*)coutput->FindObject("AliPerformancePtCalibMC");
+ 
+// analyse comparison data
+compObj->Analyse();
+
+// the output histograms/graphs will be stored in the folder "folderRes" 
+compObj->GetAnalysisFolder()->ls("*");
+
+// user can save whole comparison object (or only folder with anlysed histograms) 
+// in the seperate output file (e.g.)
+TFile fout("Analysed_InvPt.root","recreate");
+compObj->Write(); // compObj->GetAnalysisFolder()->Write();
+fout.Close();
+
+*/
+
+
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TH3F.h"
-#include "TCanvas.h"
+#include "TList.h"
 #include "TMath.h"
-#include "TVector3.h"
+#include "TFolder.h"
 
-
-#include "AliESDVertex.h"
 #include "AliESDEvent.h"
-
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-
-
-#include "AliAnalysisTask.h"
-#include "AliAnalysisManager.h"
-#include "AliESDInputHandler.h"
-#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-
+#include "AliESDfriendTrack.h"
+#include "AliESDfriend.h"
 
 #include "AliPerformancePtCalibMC.h"
 #include "AliPerfAnalyzeInvPt.h"
-#include "AliRecInfoCuts.h"
-#include "AliMCInfoCuts.h"
+
 
 using namespace std;
 
@@ -34,30 +62,36 @@ ClassImp(AliPerformancePtCalibMC)
 //________________________________________________________________________
    AliPerformancePtCalibMC::AliPerformancePtCalibMC() :
       AliPerformanceObject("AliPerformancePtCalibMC"),
-      // option parameter for Analyse()
+      // option parameter for AliPerformancePtCalibMC::Analyse()
       fNThetaBins(0), 
       fNPhiBins(0),
       fRange(0),
       fExclRange(0),
       fFitGaus(0) ,
       fAnaMC(0),
-      // option for user defined 1/pt shift
+      // option parameter for user defined charge/pt shift
       fShift(0),
-      fDeltaInvP (0),
+      fDeltaInvP(0),
       //options for cuts
       fOptTPC(0),
       fESDcuts(0),
       fRefitTPC(0),
       fRefitITS(0),
       fDCAcut(0),
+      fEtaAcceptance(0),
       fMinPt(0),
       fMaxPt(0),
       fMinNClustersTPC(0),
       fMaxChi2PerClusterTPC(0),
       fMaxDCAtoVertexXY(0),
       fMaxDCAtoVertexZ(0),
+      fAcceptKinkDaughters(0),
+      fRequireSigmaToVertex(0),
+      fDCAToVertex2D(0),
+      
       fCutsRC(0),
       fCutsMC(0),
+      
       fList(0),
       // histograms
       fHistInvPtTheta(0),
@@ -100,8 +134,8 @@ ClassImp(AliPerformancePtCalibMC)
    // Dummy constructor
    
    
-   fShift = kFALSE;
-   fDeltaInvP = 0.00;
+   fShift = kFALSE;                       // shift in charge/pt yes/no
+   fDeltaInvP = 0.00;                     // shift value
    //options for cuts
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
    fESDcuts = kTRUE;                      // read ESD track cuts
@@ -111,37 +145,39 @@ ClassImp(AliPerformancePtCalibMC)
    
    fCutsRC = NULL;
    fCutsMC = NULL;
-   
+   fEtaAcceptance = 0.8;
    fMinPt=0.15;  // GeV/c
    fMaxPt=1.e10; // GeV/c 
    fMinNClustersTPC = 50;
    fMaxChi2PerClusterTPC = 4.0;
    fMaxDCAtoVertexXY = 2.4; // cm
    fMaxDCAtoVertexZ  = 3.0; // cm
-
-   // options for function Analyse()
-   fFitGaus = kFALSE;
-   fNThetaBins = 0;
-   fNPhiBins =0  ;
-   fRange =0;
-   fExclRange =0;
-   fFitGaus =0;
-   fAnaMC = kTRUE;
+   fAcceptKinkDaughters = kFALSE;
+   fRequireSigmaToVertex = kFALSE;
+   fDCAToVertex2D = kTRUE;
+   
+   // options for function AliPerformancePtCalibMC::Analyse()
+   fFitGaus = kFALSE;// use gaussian function for fitting charge/pt yes/no
+   fNThetaBins = 0; //number of theta bins
+   fNPhiBins = 0; //number of phi bins
+   fRange = 0; //fit range around 0
+   fExclRange =0; //range of rejection of points around 0
+   fAnaMC = kTRUE; // analyse MC tracks yes/no
    
    Init();
 } 
 
 //________________________________________________________________________
-AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name= "AliPerformancePtCalibMC", const char *title="AliPerformancePtCalibMC") :
+AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name= "AliPerformancePtCalibMC", const char *title="AliPerformancePtCalibMC")://,Int_t analysisMode=0,Bool_t hptGenerator=kFALSE) :
    AliPerformanceObject(name,title),
-   // option parameter for Analyse()
+   // option parameter for AliPerformancePtCalibMC::Analyse()
    fNThetaBins(0), 
    fNPhiBins(0),
    fRange(0),
    fExclRange(0),
    fFitGaus(0) ,
    fAnaMC(0),
-   // option for user defined 1/pt shift
+   // option parameter for user defined 1/pt shift
    fShift(0),
    fDeltaInvP (0),
    //options for cuts
@@ -150,14 +186,20 @@ AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name= "AliPerforman
    fRefitTPC(0),
    fRefitITS(0),
    fDCAcut(0),
+   fEtaAcceptance(0),
    fMinPt(0),
    fMaxPt(0),
    fMinNClustersTPC(0),
    fMaxChi2PerClusterTPC(0),
    fMaxDCAtoVertexXY(0),
    fMaxDCAtoVertexZ(0),
+   fAcceptKinkDaughters(0),
+   fRequireSigmaToVertex(0),
+   fDCAToVertex2D(0),
+   
    fCutsRC(0),
    fCutsMC(0),
+
    fList(0),
    // histograms
    fHistInvPtTheta(0),
@@ -201,8 +243,8 @@ AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name= "AliPerforman
 {
    // Constructor
     
-   fShift = kFALSE;
-   fDeltaInvP = 0.00;
+   fShift = kFALSE;                       // shift in charge/pt yes/no
+   fDeltaInvP = 0.00;                     // shift value
    //options for cuts
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
    fESDcuts = kTRUE;                      // read ESD track cuts
@@ -212,32 +254,34 @@ AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name= "AliPerforman
  
    fCutsRC = NULL;
    fCutsMC = NULL;
-
+   fEtaAcceptance = 0.8;
    fMinPt=0.15;  // GeV/c
    fMaxPt=1.e10; // GeV/c 
    fMinNClustersTPC = 50;
    fMaxChi2PerClusterTPC = 4.0;
    fMaxDCAtoVertexXY = 2.4; // cm
    fMaxDCAtoVertexZ  = 3.0; // cm
-
-   // options for function Analyse()
-   fFitGaus = kFALSE;
-   fNThetaBins = 0;
-   fNPhiBins =0  ;
-   fRange =0;
-   fExclRange =0;
-   fFitGaus =0;
-   fAnaMC = kTRUE;
+   fAcceptKinkDaughters = kFALSE;
+   fRequireSigmaToVertex = kFALSE;
+   fDCAToVertex2D = kTRUE;
+   
+   // options for function AliPerformancePtCalibMC::Analyse()
+   fFitGaus = kFALSE;// use gaussian function for fitting charge/pt yes/no
+   fNThetaBins = 0; //number of theta bins
+   fNPhiBins = 0; //number of phi bins
+   fRange = 0; //fit range around 0
+   fExclRange =0; //range of rejection of points around 0
+   fAnaMC = kTRUE; // analyse MC tracks yes/no
 
    Init();
 }
 
 //________________________________________________________________________
 AliPerformancePtCalibMC::~AliPerformancePtCalibMC() { 
-//
-// destructor
-//
-if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0; 
+   //
+   // destructor
+   //
+   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0; 
 }
 
 //________________________________________________________________________
@@ -337,242 +381,250 @@ void AliPerformancePtCalibMC::Init()
    // esd track cuts  
    fESDTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
   
- //   //fESDTrackCuts->DefineHistoqgrams(1);
-       fESDTrackCuts->SetRequireSigmaToVertex(kFALSE);
-   fESDTrackCuts->SetRequireTPCRefit(kTRUE);
-   fESDTrackCuts->SetAcceptKinkDaughters(kTRUE);
+   //   //fESDTrackCuts->DefineHistoqgrams(1);
+ 
+   fESDTrackCuts->SetRequireSigmaToVertex(fRequireSigmaToVertex);
+   fESDTrackCuts->SetRequireTPCRefit(fRefitTPC);
+   fESDTrackCuts->SetAcceptKinkDaughters(fAcceptKinkDaughters);
    fESDTrackCuts->SetMinNClustersTPC((Int_t)fMinNClustersTPC);
    fESDTrackCuts->SetMaxChi2PerClusterTPC(fMaxChi2PerClusterTPC);
    fESDTrackCuts->SetMaxDCAToVertexXY(fMaxDCAtoVertexXY);
    fESDTrackCuts->SetMaxDCAToVertexZ(fMaxDCAtoVertexZ);
-   fESDTrackCuts->SetDCAToVertex2D(kTRUE);
+   fESDTrackCuts->SetDCAToVertex2D(fDCAToVertex2D);
    fESDTrackCuts->SetPtRange(fMinPt,fMaxPt); 
-  
  
   
 }
 
 //________________________________________________________________________
-void AliPerformancePtCalibMC::SetPtShift(Double_t shiftVal ) { 
-   if(!(shiftVal==0)) { fShift=kTRUE; fDeltaInvP = shiftVal; } 
+void AliPerformancePtCalibMC::SetPtShift(const Double_t shiftVal ) {
+
+   //set user defined shift in charge/pt
+   
+   if(shiftVal) { fShift=kTRUE; fDeltaInvP = shiftVal; } 
 }
 
 //________________________________________________________________________
 void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent* const esdEvent , AliESDfriend*, Bool_t, Bool_t) 
 {
-  AliStack* stack;
+   //exec: read MC and esd or tpc tracks
+   
+   AliStack* stack;
  
-  if (!esdEvent) {
-    Printf("ERROR: Event not available");
-    return;
-  }
+   if (!esdEvent) {
+      Printf("ERROR: Event not available");
+      return;
+   }
 
-  if (!(esdEvent->GetNumberOfTracks())) {
-    Printf(" PtCalibMC task: There is no track in this event");
-    return;
-  }
-  fHistTrackMultiplicity->Fill(esdEvent->GetNumberOfTracks());
+   if (!(esdEvent->GetNumberOfTracks())) {
+      Printf(" PtCalibMC task: There is no track in this event");
+      return;
+   }
+   fHistTrackMultiplicity->Fill(esdEvent->GetNumberOfTracks());
 
-  if (!mcEvent) {
-    Printf("ERROR: Could not retrieve MC event");
-    return;
-  }    
-  stack = mcEvent->Stack();
-  if (!stack) {
-    Printf("ERROR: Could not retrieve stack");
-    return;
-  }
+   if (!mcEvent) {
+      Printf("ERROR: Could not retrieve MC event");
+      return;
+   }    
+   stack = mcEvent->Stack();
+   if (!stack) {
+      Printf("ERROR: Could not retrieve stack");
+      return;
+   }
 
-  if(fShift) fHistUserPtShift->Fill(fDeltaInvP);
+   if(fShift) fHistUserPtShift->Fill(fDeltaInvP);
   
-  // read primary vertex info
-  Double_t tPrimaryVtxPosition[3];
-  // Double_t tPrimaryVtxCov[3];
-  const AliESDVertex *primaryVtx = esdEvent->GetPrimaryVertexTPC();
+   // read primary vertex info
+   Double_t tPrimaryVtxPosition[3];
+   // Double_t tPrimaryVtxCov[3];
+   const AliESDVertex *primaryVtx = esdEvent->GetPrimaryVertexTPC();
  
-  tPrimaryVtxPosition[0] = primaryVtx->GetXv();
-  tPrimaryVtxPosition[1] = primaryVtx->GetYv();
-  tPrimaryVtxPosition[2] = primaryVtx->GetZv();
+   tPrimaryVtxPosition[0] = primaryVtx->GetXv();
+   tPrimaryVtxPosition[1] = primaryVtx->GetYv();
+   tPrimaryVtxPosition[2] = primaryVtx->GetZv();
   
-  fHistPrimaryVertexPosX->Fill(tPrimaryVtxPosition[0]);
-  fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
-  fHistPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
+   fHistPrimaryVertexPosX->Fill(tPrimaryVtxPosition[0]);
+   fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
+   fHistPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
  
 
-  //fill histos for pt spectra and shift of transverse momentum
-  Int_t count=0;
+   //fill histos for pt spectra and shift of transverse momentum
+   Int_t count=0;
  
-  for(Int_t j = 0;j<esdEvent->GetNumberOfTracks();j++){
-    AliESDtrack *ESDTrack = esdEvent->GetTrack(j);
-    if(!ESDTrack) continue;
+   for(Int_t j = 0;j<esdEvent->GetNumberOfTracks();j++){
+      AliESDtrack *esdTrack = esdEvent->GetTrack(j);
+      if(!esdTrack) continue;
 
       //esd track cuts
-    if(fESDcuts == kTRUE){
-             if(!fESDTrackCuts->AcceptTrack(ESDTrack)) continue;
-    }
+      if(fESDcuts){Printf("esd cuts aplied");
+	 if(!fESDTrackCuts->AcceptTrack(esdTrack)) continue;
+      }
     
-    //more track cuts
-    if(fRefitTPC) if(AddTPCcuts(ESDTrack)) continue;
-    if(fRefitITS) if(AddITScuts(ESDTrack)) continue;
-    if(fDCAcut)   if(AddDCAcuts(ESDTrack)) continue ;
+      //more track cuts
+      if(fRefitTPC) if(AddTPCcuts(esdTrack)) continue;
+      if(fRefitITS) if(AddITScuts(esdTrack)) continue;
+      if(fDCAcut)   if(AddDCAcuts(esdTrack)) continue ;
     
-    // get MC info 
-    Int_t esdLabel =ESDTrack->GetLabel();
-    if(esdLabel<0) continue;	
-    TParticle *  partMC = stack->Particle(esdLabel);
-    if (!partMC) continue;
+      // get MC info 
+      Int_t esdLabel = esdTrack->GetLabel();
+      if(esdLabel<0) continue;	
+      TParticle *  partMC = stack->Particle(esdLabel);
+      if (!partMC) continue;
   
-    // fill correlation histos MC ESD
-    Double_t pESD  = ESDTrack->GetP();
-    Double_t ptESD = ESDTrack->GetSignedPt();
+      // fill correlation histos MC ESD
+      Double_t pESD  = esdTrack->GetP();
+      Double_t ptESD = esdTrack->GetSignedPt();
     
-    if(ptESD==0 || partMC->Pt()==0 ) continue;
-    Double_t mcPt = partMC->Pt();
-    Double_t invPtMC = 1.0/mcPt;
-    Int_t signMC = partMC->GetPdgCode();
-    //MC only
-    if(signMC>0) signMC = 1; 
-    else signMC = -1;
-    //fill MC histos
-    fHistInvPtThetaMC->Fill(signMC*fabs(invPtMC),partMC->Theta());
-    fHistInvPtPhiMC->Fill(signMC*fabs(invPtMC),partMC->Phi());
-    fHistPtThetaMC->Fill(fabs(mcPt),partMC->Theta(),fabs(invPtMC));
-    fHistPtPhiMC->Fill(fabs(mcPt),partMC->Phi(),fabs(invPtMC));
-    //correlation histos MC ESD
-    fHistInvPtMCESD->Fill(fabs(invPtMC),fabs(1.0/ptESD));
-    fHistPtMCESD->Fill(fabs(mcPt),fabs(ptESD));
+      if(!ptESD || !(partMC->Pt()) ) continue;
+      Double_t mcPt = partMC->Pt();
+      Double_t invPtMC = 1.0/mcPt;
+      Int_t signMC = partMC->GetPdgCode();
+      //MC only
+      if(signMC>0) signMC = 1; 
+      else signMC = -1;
+
+      //fill MC histos
+      fHistInvPtThetaMC->Fill(signMC*fabs(invPtMC),partMC->Theta());
+      fHistInvPtPhiMC->Fill(signMC*fabs(invPtMC),partMC->Phi());
+      fHistPtThetaMC->Fill(fabs(mcPt),partMC->Theta(),fabs(invPtMC));
+      fHistPtPhiMC->Fill(fabs(mcPt),partMC->Phi(),fabs(invPtMC));
+
+      //correlation histos MC ESD
+      fHistInvPtMCESD->Fill(fabs(invPtMC),fabs(1.0/ptESD));
+      fHistPtMCESD->Fill(fabs(mcPt),fabs(ptESD));
 
 
-    // fill histos
-    if(fOptTPC == kTRUE){ //TPC tracks
-      const AliExternalTrackParam *TPCTrack = ESDTrack->GetTPCInnerParam(); 
-      if(!TPCTrack) continue;
-      if(fabs(TPCTrack->Eta())> 0.8) continue;
+      // fill histos
+      if(fOptTPC){
+	 //TPC tracks and MC tracks
+	 const AliExternalTrackParam *tpcTrack = esdTrack->GetTPCInnerParam(); 
+	 if(!tpcTrack) continue;
+	 if(fabs(tpcTrack->Eta())>  fEtaAcceptance) continue;
       
-      Double_t signedPt = TPCTrack->GetSignedPt();
-      Double_t invPt = 0.0;
-      if(!signedPt==0) {
-	invPt = 1.0/signedPt;
+	 Double_t signedPt = tpcTrack->GetSignedPt();
+	 Double_t invPt = 0.0;
+	 if(signedPt) {
+	    invPt = 1.0/signedPt;
 	
-	fHistPtShift0->Fill(fabs(signedPt));
+	    fHistPtShift0->Fill(fabs(signedPt));
 
-	if(fShift == kTRUE ){
-	  invPt += fDeltaInvP; //shift momentum for tests
-	  if(!invPt==0) signedPt = 1.0/invPt;
-	  else continue;
-	}
+	    if(fShift){
+	       invPt += fDeltaInvP; //shift momentum for tests
+	       if(invPt) signedPt = 1.0/invPt;
+	       else continue;
+	    }
 
-	fHistInvPtTheta->Fill(invPt,TPCTrack->Theta());
-	fHistInvPtPhi->Fill(invPt,TPCTrack->Phi());
-	fHistPtTheta->Fill(fabs(signedPt),TPCTrack->Theta());
-	fHistPtPhi->Fill(fabs(signedPt),TPCTrack->Phi());
+	    fHistInvPtTheta->Fill(invPt,tpcTrack->Theta());
+	    fHistInvPtPhi->Fill(invPt,tpcTrack->Phi());
+	    fHistPtTheta->Fill(fabs(signedPt),tpcTrack->Theta());
+	    fHistPtPhi->Fill(fabs(signedPt),tpcTrack->Phi());
 
 
-	//correlation histos MC TPC
-	fHistInvPtMCTPC->Fill(fabs(invPtMC),fabs(invPt));
-	fHistPtMCTPC->Fill(fabs(mcPt),fabs(signedPt));
+	    //correlation histos MC TPC
+	    fHistInvPtMCTPC->Fill(fabs(invPtMC),fabs(invPt));
+	    fHistPtMCTPC->Fill(fabs(mcPt),fabs(signedPt));
 	
-	//compare to MC info
-	Double_t  ptDiffESD = (fabs(ptESD)-fabs(mcPt))/pow(mcPt,2);
-	Double_t  ptDiffTPC = (fabs(signedPt)-fabs(mcPt))/pow(mcPt,2);
-	Double_t  invPtDiffESD = fabs(1.0/ptESD)-1.0/fabs(mcPt);
-	Double_t  invPtDiffTPC = fabs(invPt)-1.0/fabs(mcPt);
-	Double_t pTPC  = TPCTrack->GetP();
+	    //compare to MC info
+	    Double_t  ptDiffESD = (fabs(ptESD)-fabs(mcPt))/pow(mcPt,2);
+	    Double_t  ptDiffTPC = (fabs(signedPt)-fabs(mcPt))/pow(mcPt,2);
+	    Double_t  invPtDiffESD = fabs(1.0/ptESD)-1.0/fabs(mcPt);
+	    Double_t  invPtDiffTPC = fabs(invPt)-1.0/fabs(mcPt);
+	    Double_t pTPC  = tpcTrack->GetP();
 	
-	if(ESDTrack->GetSign()>0){//compare momenta ESD track and TPC track
-	  fHistTPCMomentaPosP->Fill(fabs(pESD),fabs(pTPC));
-	  fHistTPCMomentaPosPt->Fill(fabs(ptESD),fabs(signedPt));
-	  fHistTPCMomentaPosInvPtMC->Fill(invPtDiffESD,invPtDiffTPC);
-	  fHistTPCMomentaPosPtMC->Fill(ptDiffESD,ptDiffTPC);
- 	}
- 	else{
- 	  fHistTPCMomentaNegP->Fill(fabs(pESD),fabs(pTPC));
- 	  fHistTPCMomentaNegPt->Fill(fabs(ptESD),fabs(signedPt));
-	  fHistTPCMomentaNegInvPtMC->Fill(invPtDiffESD,invPtDiffTPC);
-	  fHistTPCMomentaNegPtMC->Fill(ptDiffESD,ptDiffTPC);
-	}
-	fHistMomresMCESD->Fill((fabs(mcPt)-fabs(ptESD))/fabs(mcPt),fabs(mcPt));
-	fHistMomresMCTPC->Fill((fabs(mcPt)-fabs(signedPt))/fabs(mcPt),fabs(mcPt));
-	count++;
+	    if(esdTrack->GetSign()>0){//compare momenta ESD track and TPC track
+	       fHistTPCMomentaPosP->Fill(fabs(pESD),fabs(pTPC));
+	       fHistTPCMomentaPosPt->Fill(fabs(ptESD),fabs(signedPt));
+	       fHistTPCMomentaPosInvPtMC->Fill(invPtDiffESD,invPtDiffTPC);
+	       fHistTPCMomentaPosPtMC->Fill(ptDiffESD,ptDiffTPC);
+	    }
+	    else{
+	       fHistTPCMomentaNegP->Fill(fabs(pESD),fabs(pTPC));
+	       fHistTPCMomentaNegPt->Fill(fabs(ptESD),fabs(signedPt));
+	       fHistTPCMomentaNegInvPtMC->Fill(invPtDiffESD,invPtDiffTPC);
+	       fHistTPCMomentaNegPtMC->Fill(ptDiffESD,ptDiffTPC);
+	    }
+	    fHistMomresMCESD->Fill((fabs(mcPt)-fabs(ptESD))/fabs(mcPt),fabs(mcPt));
+	    fHistMomresMCTPC->Fill((fabs(mcPt)-fabs(signedPt))/fabs(mcPt),fabs(mcPt));
+	    count++;
+	 }
+	 else continue;
       }
-      else continue;
-    }
    
-    else{// ESD tracks
-      Double_t invPt = 0.0;
+      else{
+	 // ESD tracks and MC tracks
+	 Double_t invPt = 0.0;
       
-      if(!ptESD==0) {
-	invPt = 1.0/ptESD; 
-	fHistPtShift0->Fill(fabs(ptESD));
+	 if(ptESD) {
+	    invPt = 1.0/ptESD; 
+	    fHistPtShift0->Fill(fabs(ptESD));
 	
-	if(fShift == kTRUE ){
-	  invPt += fDeltaInvP; //shift momentum for tests
-	  if(!invPt==0) ptESD = 1.0/invPt; 
-	  else continue;
-	}
-	fHistInvPtTheta->Fill(invPt,ESDTrack->Theta());
-	fHistInvPtPhi->Fill(invPt,ESDTrack->Phi());
-	fHistPtTheta->Fill(ptESD,ESDTrack->Theta());
-	fHistPtPhi->Fill(ptESD,ESDTrack->Phi());
+	    if(fShift){
+	       invPt += fDeltaInvP; //shift momentum for tests
+	       if(invPt) ptESD = 1.0/invPt; 
+	       else continue;
+	    }
+	    fHistInvPtTheta->Fill(invPt,esdTrack->Theta());
+	    fHistInvPtPhi->Fill(invPt,esdTrack->Phi());
+	    fHistPtTheta->Fill(ptESD,esdTrack->Theta());
+	    fHistPtPhi->Fill(ptESD,esdTrack->Phi());
 
-	//differences MC ESD tracks
-	Double_t ptDiffESD = (fabs(ptESD)-fabs(mcPt))/pow(mcPt,2);
-	Double_t invPtdiffESD = fabs(1.0/ptESD)-1.0/fabs(mcPt);
-	if(ESDTrack->GetSign()>0){   
-	  fHistESDMomentaPosInvPtMC->Fill(invPtdiffESD);
-	  fHistESDMomentaPosPtMC->Fill(ptDiffESD);
-	}
-	else{
-	  fHistESDMomentaNegInvPtMC->Fill(invPtdiffESD);
-	  fHistESDMomentaNegPtMC->Fill(ptDiffESD);
-	}	
+	    //differences MC ESD tracks
+	    Double_t ptDiffESD = (fabs(ptESD)-fabs(mcPt))/pow(mcPt,2);
+	    Double_t invPtdiffESD = fabs(1.0/ptESD)-1.0/fabs(mcPt);
+	    if(esdTrack->GetSign()>0){   
+	       fHistESDMomentaPosInvPtMC->Fill(invPtdiffESD);
+	       fHistESDMomentaPosPtMC->Fill(ptDiffESD);
+	    }
+	    else{
+	       fHistESDMomentaNegInvPtMC->Fill(invPtdiffESD);
+	       fHistESDMomentaNegPtMC->Fill(ptDiffESD);
+	    }	
 	
-	fHistMomresMCESD->Fill((fabs(mcPt)-fabs(ptESD))/fabs(mcPt),fabs(mcPt));
-	count++;
+	    fHistMomresMCESD->Fill((fabs(mcPt)-fabs(ptESD))/fabs(mcPt),fabs(mcPt));
+	    count++;
+	 }
       }
-    }
-  }
+   }
     
-  fHistTrackMultiplicityCuts->Fill(count);
+   fHistTrackMultiplicityCuts->Fill(count);
   
 }    
 
-
-
 //______________________________________________________________________________________________________________________
-Bool_t AliPerformancePtCalibMC::AddTPCcuts(AliESDtrack *ESDTrack){
+const Bool_t AliPerformancePtCalibMC::AddTPCcuts(const AliESDtrack *esdTrack){
+   // apply TPC cuts
+   
+   Bool_t cut = kFALSE;
   
-  Bool_t cut = kFALSE;
-  
-  if ((ESDTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) cut=kTRUE; // TPC refit
-  if (ESDTrack->GetTPCNcls()<50) cut=kTRUE; // min. nb. TPC clusters
-  if(cut) return kTRUE;
-  return kFALSE;
+   if (!(esdTrack->GetStatus()&AliESDtrack::kTPCrefit)) cut=kTRUE; // TPC refit
+   if (esdTrack->GetTPCNcls()<fMinNClustersTPC) cut=kTRUE; // min. nb. TPC clusters
+   if(cut) return kTRUE;
+   return kFALSE;
 }
 //______________________________________________________________________________________________________________________
-Bool_t AliPerformancePtCalibMC::AddDCAcuts(AliESDtrack *ESDTrack){
+const Bool_t AliPerformancePtCalibMC::AddDCAcuts(const AliESDtrack *esdTrack){
+   //apply DCA cuts
+   Bool_t cut = kFALSE;
   
-  Bool_t cut = kFALSE;
-  
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z and impact parameters:
-  ESDTrack->GetImpactParameters(dca,cov);
-  if(TMath::Abs(dca[0])>3. || TMath::Abs(dca[1])>3.) cut=kTRUE;
-  if(ESDTrack->GetKinkIndex(0)>0) cut=kTRUE;
-  if(cut) return kTRUE;
-  return kFALSE;
+   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z and impact parameters:
+   esdTrack->GetImpactParameters(dca,cov);
+   if(TMath::Abs(dca[0])>fMaxDCAtoVertexXY || TMath::Abs(dca[1])>fMaxDCAtoVertexZ) cut=kTRUE;
+   if(esdTrack->GetKinkIndex(0)>0) cut=kTRUE;
+   if(cut) return kTRUE;
+   return kFALSE;
 }
 
 //______________________________________________________________________________________________________________________
-Bool_t AliPerformancePtCalibMC::AddITScuts(AliESDtrack *ESDTrack){
-
-  Bool_t cut = kFALSE;
+const Bool_t AliPerformancePtCalibMC::AddITScuts(const AliESDtrack *esdTrack){
+   //apply ITS cuts
+   Bool_t cut = kFALSE;
   
-  if ((ESDTrack->GetStatus()&AliESDtrack::kITSrefit)==0) cut=kTRUE; // ITS refit
-  Int_t clusterITS[200]; 
-  if(ESDTrack->GetITSclusters(clusterITS)<2) cut=kTRUE;  // min. nb. ITS clusters //3
+   if (!(esdTrack->GetStatus()&AliESDtrack::kITSrefit)) cut=kTRUE; // ITS refit
+   Int_t clusterITS[200]; 
+   if(esdTrack->GetITSclusters(clusterITS)<2) cut=kTRUE;  // min. nb. ITS clusters //3
   
-  if(cut) return kTRUE;
-  return kFALSE;
+   if(cut) return kTRUE;
+   return kFALSE;
 }
 
 //______________________________________________________________________________________________________________________
@@ -580,169 +632,182 @@ Bool_t AliPerformancePtCalibMC::AddITScuts(AliESDtrack *ESDTrack){
 void AliPerformancePtCalibMC::Analyse()
 {
   
+   // analyse charge/pt spectra in bins of theta and phi. Bins can be set by user
+   
+   AliPerfAnalyzeInvPt *ana = new  AliPerfAnalyzeInvPt("AliPerfAnalyzeInvPt","AliPerfAnalyzeInvPt");
   
-  AliPerfAnalyzeInvPt *ana = new  AliPerfAnalyzeInvPt("AliPerfAnalyzeInvPt","AliPerfAnalyzeInvPt");
-  
-  TH1::AddDirectory(kFALSE);
+   TH1::AddDirectory(kFALSE);
  
-  ana->SetProjBinsTheta(fThetaBins,fNThetaBins);
-  ana->SetProjBinsPhi(fPhiBins,fNPhiBins);
-  ana->SetMakeFitOption(fFitGaus,fExclRange,fRange);
+   ana->SetProjBinsTheta(fThetaBins,fNThetaBins);
+   ana->SetProjBinsPhi(fPhiBins,fNPhiBins);
+   ana->SetMakeFitOption(fFitGaus,fExclRange,fRange);
   
-  TObjArray *aFolderObj = new TObjArray;
-  if(fAnaMC){
-     Printf("AliPerformancePtCalibMC: analysing MC!");
-     ana->StartAnalysis(fHistInvPtThetaMC,fHistInvPtPhiMC, aFolderObj);
-  }
-  else {
-     Printf("AliPerformancePtCalibMC: analysing data!");
-     ana->StartAnalysis(fHistInvPtTheta,fHistInvPtPhi, aFolderObj);
-  }
+   TObjArray *aFolderObj = new TObjArray;
+   if(fAnaMC){
+      Printf("AliPerformancePtCalibMC: analysing MC!");
+      ana->StartAnalysis(fHistInvPtThetaMC,fHistInvPtPhiMC, aFolderObj);
+   }
+   else {
+      Printf("AliPerformancePtCalibMC: analysing data!");
+      ana->StartAnalysis(fHistInvPtTheta,fHistInvPtPhi, aFolderObj);
+   }
   
-  // export objects to analysis folder
-  fAnalysisFolder = ExportToFolder(aFolderObj);
+   // export objects to analysis folder
+   fAnalysisFolder = ExportToFolder(aFolderObj);
 
-  // delete only TObjArray
-  if(aFolderObj) delete aFolderObj;
-  if(ana) delete ana;
+   // delete only TObjArray
+   if(aFolderObj) delete aFolderObj;
+   if(ana) delete ana;
   
 }
 
 //______________________________________________________________________________________________________________________
 TFolder* AliPerformancePtCalibMC::ExportToFolder(TObjArray * array) 
 {
-  // recreate folder avery time and export objects to new one
-  //
-  AliPerformancePtCalibMC * comp=this;
-  TFolder *folder = comp->GetAnalysisFolder();
+   // recreate folder avery time and export objects to new one
+   //
+   AliPerformancePtCalibMC * comp=this;
+   TFolder *folder = comp->GetAnalysisFolder();
 
-  TString name, title;
-  TFolder *newFolder = 0;
-  Int_t i = 0;
-  Int_t size = array->GetSize();
+   TString name, title;
+   TFolder *newFolder = 0;
+   Int_t i = 0;
+   Int_t size = array->GetSize();
 
-  if(folder) { 
-    // get name and title from old folder
-    name = folder->GetName();  
-    title = folder->GetTitle();  
+   if(folder) { 
+      // get name and title from old folder
+      name = folder->GetName();  
+      title = folder->GetTitle();  
 
-    // delete old one
-    delete folder;
+      // delete old one
+      delete folder;
 
-    // create new one
-    newFolder = CreateFolder(name.Data(),title.Data());
-    newFolder->SetOwner();
+      // create new one
+      newFolder = CreateFolder(name.Data(),title.Data());
+      newFolder->SetOwner();
 
-    // add objects to folder
-    while(i < size) {
-      newFolder->Add(array->At(i));
-      i++;
-    }
-  }
+      // add objects to folder
+      while(i < size) {
+	 newFolder->Add(array->At(i));
+	 i++;
+      }
+   }
 
-  return newFolder;
+   return newFolder;
 }
 
 //______________________________________________________________________________________________________________________
 Long64_t AliPerformancePtCalibMC::Merge(TCollection* const list) 
 {
-  // Merge list of objects (needed by PROOF)
+   // Merge list of objects (needed by PROOF)
 
-  if (!list)
-    return 0;
+   if (!list)
+      return 0;
 
-  if (list->IsEmpty())
-    return 1;
+   if (list->IsEmpty())
+      return 1;
 
-  TIterator* iter = list->MakeIterator();
-  TObject* obj = 0;
+   TIterator* iter = list->MakeIterator();
+   TObject* obj = 0;
 
-  // collection of generated histograms
-  Int_t count=0;
-  while((obj = iter->Next()) != 0) 
-    {
-      AliPerformancePtCalibMC* entry = dynamic_cast<AliPerformancePtCalibMC*>(obj);
-      if (entry == 0) continue; 
+   // collection of generated histograms
+   Int_t count=0;
+   while((obj = iter->Next()) != 0) 
+      {
+	 AliPerformancePtCalibMC* entry = dynamic_cast<AliPerformancePtCalibMC*>(obj);
+	 if (!entry) continue; 
   
-      fHistInvPtTheta->Add(entry->fHistInvPtTheta);
-      fHistInvPtPhi->Add(entry-> fHistInvPtPhi);
-      fHistPtTheta->Add(entry->fHistPtTheta);
-      fHistPtPhi->Add(entry->fHistPtPhi);
+	 fHistInvPtTheta->Add(entry->fHistInvPtTheta);
+	 fHistInvPtPhi->Add(entry-> fHistInvPtPhi);
+	 fHistPtTheta->Add(entry->fHistPtTheta);
+	 fHistPtPhi->Add(entry->fHistPtPhi);
 
-      fHistInvPtThetaMC->Add(entry->fHistInvPtThetaMC);
-      fHistInvPtPhiMC->Add(entry->fHistInvPtPhiMC);
-      fHistPtThetaMC->Add(entry->fHistPtThetaMC);
-      fHistPtPhiMC->Add(entry->fHistPtPhiMC);
-      fHistInvPtMCESD->Add(entry->fHistInvPtMCESD);
-      fHistPtMCESD->Add(entry->fHistPtMCESD);
-      fHistInvPtMCTPC->Add(entry->fHistInvPtMCTPC);
-      fHistPtMCTPC->Add(entry->fHistPtMCTPC);
-      fHistMomresMCESD->Add(entry->fHistMomresMCESD);
-      fHistMomresMCTPC->Add(entry->fHistMomresMCTPC);
+	 fHistInvPtThetaMC->Add(entry->fHistInvPtThetaMC);
+	 fHistInvPtPhiMC->Add(entry->fHistInvPtPhiMC);
+	 fHistPtThetaMC->Add(entry->fHistPtThetaMC);
+	 fHistPtPhiMC->Add(entry->fHistPtPhiMC);
+	 fHistInvPtMCESD->Add(entry->fHistInvPtMCESD);
+	 fHistPtMCESD->Add(entry->fHistPtMCESD);
+	 fHistInvPtMCTPC->Add(entry->fHistInvPtMCTPC);
+	 fHistPtMCTPC->Add(entry->fHistPtMCTPC);
+	 fHistMomresMCESD->Add(entry->fHistMomresMCESD);
+	 fHistMomresMCTPC->Add(entry->fHistMomresMCTPC);
 
-      fHistPtShift0->Add(entry->fHistPtShift0);
-      fHistPrimaryVertexPosX->Add(entry->fHistPrimaryVertexPosX);
-      fHistPrimaryVertexPosY->Add(entry->fHistPrimaryVertexPosY);
-      fHistPrimaryVertexPosZ->Add(entry->fHistPrimaryVertexPosZ);
-      fHistTrackMultiplicity->Add(entry->fHistTrackMultiplicity);
-      fHistTrackMultiplicityCuts->Add(entry->fHistTrackMultiplicityCuts);
+	 fHistPtShift0->Add(entry->fHistPtShift0);
+	 fHistPrimaryVertexPosX->Add(entry->fHistPrimaryVertexPosX);
+	 fHistPrimaryVertexPosY->Add(entry->fHistPrimaryVertexPosY);
+	 fHistPrimaryVertexPosZ->Add(entry->fHistPrimaryVertexPosZ);
+	 fHistTrackMultiplicity->Add(entry->fHistTrackMultiplicity);
+	 fHistTrackMultiplicityCuts->Add(entry->fHistTrackMultiplicityCuts);
       
-      fHistTPCMomentaPosP->Add(entry->fHistTPCMomentaPosP);
-      fHistTPCMomentaNegP->Add(entry->fHistTPCMomentaNegP);
-      fHistTPCMomentaPosPt->Add(entry->fHistTPCMomentaPosPt);
-      fHistTPCMomentaNegPt->Add(entry->fHistTPCMomentaNegPt);
-      fHistTPCMomentaPosInvPtMC->Add(entry->fHistTPCMomentaPosInvPtMC);
-      fHistTPCMomentaNegInvPtMC->Add(entry->fHistTPCMomentaNegInvPtMC);
-      fHistTPCMomentaPosPtMC->Add(entry->fHistTPCMomentaPosPtMC);
-      fHistTPCMomentaNegPtMC->Add(entry->fHistTPCMomentaNegPtMC);
-      fHistESDMomentaPosInvPtMC->Add(entry->fHistESDMomentaPosInvPtMC);
-      fHistESDMomentaNegInvPtMC->Add(entry->fHistESDMomentaNegInvPtMC);
-      fHistESDMomentaPosPtMC->Add(entry->fHistESDMomentaPosPtMC);
-      fHistESDMomentaNegPtMC->Add(entry->fHistESDMomentaNegPtMC);
-      count++;
-    }
+	 fHistTPCMomentaPosP->Add(entry->fHistTPCMomentaPosP);
+	 fHistTPCMomentaNegP->Add(entry->fHistTPCMomentaNegP);
+	 fHistTPCMomentaPosPt->Add(entry->fHistTPCMomentaPosPt);
+	 fHistTPCMomentaNegPt->Add(entry->fHistTPCMomentaNegPt);
+	 fHistTPCMomentaPosInvPtMC->Add(entry->fHistTPCMomentaPosInvPtMC);
+	 fHistTPCMomentaNegInvPtMC->Add(entry->fHistTPCMomentaNegInvPtMC);
+	 fHistTPCMomentaPosPtMC->Add(entry->fHistTPCMomentaPosPtMC);
+	 fHistTPCMomentaNegPtMC->Add(entry->fHistTPCMomentaNegPtMC);
+	 fHistESDMomentaPosInvPtMC->Add(entry->fHistESDMomentaPosInvPtMC);
+	 fHistESDMomentaNegInvPtMC->Add(entry->fHistESDMomentaNegInvPtMC);
+	 fHistESDMomentaPosPtMC->Add(entry->fHistESDMomentaPosPtMC);
+	 fHistESDMomentaNegPtMC->Add(entry->fHistESDMomentaNegPtMC);
+	 count++;
+      }
   
-  return count;
+   return count;
 }
 
 //______________________________________________________________________________________________________________________
 TFolder* AliPerformancePtCalibMC::CreateFolder(TString name,TString title) { 
-  // create folder for analysed histograms
-  //
-  TFolder *folder = 0;
-  folder = new TFolder(name.Data(),title.Data());
+   // create folder for analysed histograms
+   //
+   TFolder *folder = 0;
+   folder = new TFolder(name.Data(),title.Data());
 
-  return folder;
+   return folder;
 }
 
 
 // set variables for Analyse()
 
 //______________________________________________________________________________________________________________________
-void AliPerformancePtCalibMC::SetProjBinsPhi(const Double_t *phiBinArray,Int_t nphBins){
-   
-   fNPhiBins = nphBins;
-  
-   for(Int_t k = 0;k<fNPhiBins;k++){
-      fPhiBins[k] = phiBinArray[k];
-   }
-   Printf("AliPerformancePtCalibMC: number of bins in phi set to %i",fNPhiBins);
+void AliPerformancePtCalibMC::SetProjBinsPhi(const Double_t *phiBinArray,const Int_t nphBins){
 
+   // set phi bins for Analyse()
+   //set phi bins as array and set number of this array which is equal to number of bins analysed
+   //the last analysed bin will always be the projection from first to last bin in the array
+   if(nphBins){
+      fNPhiBins = nphBins;
+  
+      for(Int_t k = 0;k<fNPhiBins;k++){
+	 fPhiBins[k] = phiBinArray[k];
+      }
+      Printf("AliPerformancePtCalibMC: number of bins in phi set to %i",fNPhiBins);
+   }
+   else  Printf("Warning AliPerformancePtCalibMC::SetProjBinsPhi:  number of bins in phi NOT set!!! Default values are taken.");
 }
 //____________________________________________________________________________________________________________________________________________
-void AliPerformancePtCalibMC::SetProjBinsTheta(const Double_t *thetaBinArray, Int_t nthBins){
-  
-   fNThetaBins = nthBins;
-   for(Int_t k = 0;k<fNThetaBins;k++){
-      fThetaBins[k] = thetaBinArray[k];
+void AliPerformancePtCalibMC::SetProjBinsTheta(const Double_t *thetaBinArray, const Int_t nthBins){
+   // set theta bins for Analyse()
+   //set theta bins as array and set number of this array which is equal to number of bins analysed
+   //the last analysed bin will always be the projection from first to last bin in the array
+   if(nthBins){
+      fNThetaBins = nthBins;
+      for(Int_t k = 0;k<fNThetaBins;k++){
+	 fThetaBins[k] = thetaBinArray[k];
+      }
+      Printf("AliPerformancePtCalibMC: number of bins in theta set to %i",fNThetaBins);
    }
-   Printf("AliPerformancePtCalibMC: number of bins in theta set to %i",fNThetaBins);
-
+   else  Printf("Warning AliPerformancePtCalibMC::SetProjBinsTheta:  number of bins in theta NOT set!!! Default values are taken.");
 }
 //____________________________________________________________________________________________________________________________________________
 void AliPerformancePtCalibMC::SetMakeFitOption(const Bool_t setGausFit, const Double_t exclusionR,const Double_t fitR ){
 
-  
+   //set the fit options:
+   //for usage of gaussian function instead of polynomial (default) set setGausFit=kTRUE
+   //set the range of rejection of points around 0 via exclusionR
+   //set the fit range around 0 with fitR
    
    fFitGaus = setGausFit;
    fExclRange  = exclusionR;
@@ -751,4 +816,15 @@ void AliPerformancePtCalibMC::SetMakeFitOption(const Bool_t setGausFit, const Do
    if(fFitGaus) Printf("AliPerformancePtCalibMC:set MakeGausFit with fit range %2.3f and exclusion range in 1/pt: %2.3f",fRange,fExclRange);
    else  Printf("AliPerformancePtCalibMC: set standard polynomial fit with fit range %2.3f and exclusion range in 1/pt: %2.3f",fRange,fExclRange);
  
+}
+//____________________________________________________________________________________________________________________________________________
+void AliPerformancePtCalibMC::SetESDcutValues(const Double_t * esdCutValues){
+   // set ESD cut values as an array of size 6
+    
+   fMinPt                = esdCutValues[0]; 
+   fMaxPt                = esdCutValues[1];
+   fMinNClustersTPC      = esdCutValues[2];
+   fMaxChi2PerClusterTPC = esdCutValues[3];
+   fMaxDCAtoVertexXY     = esdCutValues[4];
+   fMaxDCAtoVertexZ      = esdCutValues[5];
 }

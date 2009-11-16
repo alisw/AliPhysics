@@ -1,73 +1,96 @@
-#ifndef AliPerfAnalyzeInvPt_h
-#define AliPerfAnalyzeInvPt_h
+#ifndef ALIPERFANALYZEINVPT_H
+#define ALIPERFANALYZEINVPT_H
 
+//----------------------------------------------------------------------------------------------------
+// Class to analyse output of AliPerformancePtCalib.cxx and AliPerformancePtCalibMC.cxx:
+// Projection of 1/pt vs theta and vs phi resp. histoprams will be fitted with either
+// polynomial or gaussian fit function to extract minimum position of 1/pt.
+// Fit options and theta, phi bins can be set by user.
+// Attention: use the Set* functions of AliPerformancePtCalib.h and AliPerformancePtCalibMC.h
+// when running AliPerformancePtCalib*::Analyse().
+//
+// Author: S. Schuchmann 11/13/2009 
+//----------------------------------------------------------------------------------------------------
 
 class TNamed;
 class TString;
 class TList;
+class TF1;
 class TH1F;
 class TH2F;
+class TH3F;
 class TGraphErrors;
+//class TMath;
+class TH1D;
+class TH2D;
+class TCanvas;
+class TObjArray;
+
 
 class AliPerfAnalyzeInvPt : public TNamed {
 
- public:
-  AliPerfAnalyzeInvPt();
-  AliPerfAnalyzeInvPt(Char_t* name, Char_t* title);
+public:
+   AliPerfAnalyzeInvPt();
+   AliPerfAnalyzeInvPt(Char_t* name, Char_t* title);
    virtual ~AliPerfAnalyzeInvPt(){;}
-  void InitHistos(Double_t *binsXTheta,Double_t *fitParamTheta,Double_t *errFitParamTheta,Double_t *binsXPhi,Double_t *fitParamPhi,Double_t *errFitParamPhi);
+   void InitGraphs(Double_t *binsXTheta,Double_t *fitParamTheta,Double_t *errFitParamTheta,Double_t *binsXPhi,Double_t *fitParamPhi,Double_t *errFitParamPhi);
    void InitFitFcn();
-  void StartAnalysis(TH2F *histThetaInvPt, TH2F *histPhiInvPt, TObjArray* aFolderObj);
-  void StartAnalysis(TObjArray *aFolderObj);
-  void SetProjBinsPhi(const Double_t *pBins,Int_t sizep);
-  void SetProjBinsTheta(const Double_t *tBins, Int_t sizet);
-  void SetMakeFitOption(const Bool_t setGausFit, const Double_t exclusionR,const Double_t fitR );
+   void StartAnalysis(const TH2F *histThetaInvPt, const TH2F *histPhiInvPt, TObjArray* aFolderObj);
+   void SetProjBinsPhi(const Double_t *pBins,const Int_t sizep);
+   void SetProjBinsTheta(const Double_t *tBins, const Int_t sizet);
+   void SetMakeFitOption(const Bool_t setGausFit, const Double_t exclusionR,const Double_t fitR );
  
   
-   protected:
-  Double_t fThetaBins[100];
-  Double_t fPhiBins[100];
+protected:
+   Double_t fThetaBins[100];// array of theta bins for projection and fit
+   Double_t fPhiBins[100];// array of phi bins for projection and fit
   
-  Int_t fNThetaBins;
-  Int_t fNPhiBins ;
-  Double_t fRange;
-  Double_t fExclRange ;
-  Bool_t fFitGaus ;
+   Int_t fNThetaBins;// number of theta bins for projection and fit
+   Int_t fNPhiBins; // number of phi bins for projection and fit
+   Double_t fRange;// fit range of 1/pt spectrum
+   Double_t fExclRange ;// range of exlusion of points around 0 when fitting 1/pt
+   Bool_t fFitGaus;// set this flag for usage of gaussian fit function instead of polynomial (default)
+   
+   // projection histos
+   TH1F *fHistFitTheta[100];// projection histos for analysis in theta bins
+   TH1F *fHistFitPhi[100];// projection histos for analysis in phi bins
 
- // projection histos
-  TH1F *fHistFitTheta[100];
-  TH1F *fHistFitPhi[100];
-
-  TH2F *fHistH2InvPtTheta;
-  TH2F *fHistH2InvPtPhi; 
-  TGraphErrors *fGrMinPosTheta;
-  TGraphErrors *fGrMinPosPhi;
+   //histos for copy of input histos
+   TH2F *fHistH2InvPtTheta; // for copy of input histos 
+   TH2F *fHistH2InvPtPhi; // for copy of input histos
+   
+   //graphs for displaying the fit parameters (minimum position of 1/pt and error)
+   TGraphErrors *fGrMinPosTheta;
+   TGraphErrors *fGrMinPosPhi;
 
  
 
- private:
-  TF1 *fFitMinPos;
-  TF1 *fFitMinPosRejP;
-  TF1 *fFitInvGauss;
-  TF1 *fFitInvGaussRejP;
+private:
+   //fit functions
+   TF1 *fFitMinPos;//fit function for first fit with polynomial
+   TF1 *fFitMinPosRejP;//fit function for second fit with polynomial to improve result
+   TF1 *fFitInvGauss;//fit functionfor first fit with gaussian
+   TF1 *fFitInvGaussRejP;//fit function for second fit with gaussian to improve result
 
- static Double_t Polynomial(Double_t *x, Double_t *par);
- static Double_t PolynomialRejP(Double_t *x, Double_t *par);
- static Double_t InvGauss(Double_t *x, Double_t *par);
- static Double_t InvGaussRejP(Double_t *x, Double_t *par);
- 
-  void MakeFit(TH1 *dmproy, TF1 * fitpb, Double_t &mean, Double_t &ErrMean,  Double_t &excl,Double_t &range);
-  void MakeFitBetter(TH1 *dmproy, TF1 * fitpb2, Double_t &mean, Double_t &ErrMean, Double_t &f, Double_t &excl, Double_t &range);
-  void MakeFitInvGauss(TH1 *dmproy, TF1 * fitpb2, Double_t &mean, Double_t &ErrMean,Double_t &excl , Double_t &range);
-  void MakeFitInvGaussBetter(TH1 *dmproy, TF1 * fitpb2, Double_t &mean, Double_t &ErrMean, Double_t &f,Double_t &excl,  Double_t &range);
+   // infput for fit functions
+   static Double_t Polynomial(Double_t *x, const Double_t *par);
+   static Double_t PolynomialRejP(Double_t *x, const Double_t *par);
+   static Double_t InvGauss(Double_t *x, const Double_t *par);
+   static Double_t InvGaussRejP(Double_t *x, const Double_t *par);
+
+   //functions for fitting procedure
+   void MakeFit(TH1F *dmproy, TF1 * fitpb, Double_t &mean, Double_t &ErrMean,  Double_t &excl,Double_t &range);
+   void MakeFitBetter(TH1F *dmproy, TF1 * fitpb2, Double_t &mean, Double_t &ErrMean, Double_t &f, Double_t &excl, Double_t &range);
+   void MakeFitInvGauss(TH1F *dmproy, TF1 * fitpb2, Double_t &mean, Double_t &ErrMean,Double_t &excl , Double_t &range);
+   void MakeFitInvGaussBetter(TH1F *dmproy, TF1 * fitpb2, Double_t &mean, Double_t &ErrMean, Double_t &f,Double_t &excl,  Double_t &range);
  
 
   
 
-  AliPerfAnalyzeInvPt(const AliPerfAnalyzeInvPt&);            // not implemented 
-  AliPerfAnalyzeInvPt& operator=(const AliPerfAnalyzeInvPt&); // not implemented 
+   AliPerfAnalyzeInvPt(const AliPerfAnalyzeInvPt&);            // not implemented 
+   AliPerfAnalyzeInvPt& operator=(const AliPerfAnalyzeInvPt&); // not implemented 
 
-  ClassDef(AliPerfAnalyzeInvPt, 1); 
+   ClassDef(AliPerfAnalyzeInvPt, 1); 
 };
 
 #endif
