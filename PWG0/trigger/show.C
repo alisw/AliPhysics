@@ -12,6 +12,7 @@ void show(const char* fileName = "trigger.root")
     c = new TCanvas;
     hist->Draw();
     c->SaveAs(Form("trigger_%d.png", count));
+    Printf("%s: %d", hist->GetTitle(), (Int_t) hist->GetEntries());
     
     count++;
   }
