@@ -62,6 +62,10 @@ public:
   //
   void SetBeamParameters(TVectorD& meanOffset, TVectorD& meanSlope,
 			 TVectorD& sectorArray, Int_t option);
+  void SetFixedDriftVConstant(Double_t aside0, Double_t aside1,
+			      Double_t cside0, Double_t cside1)
+    {fUseFixedDriftV = 1; fFixedFitAside0=aside0; fFixedFitAside1=aside1;
+    fFixedFitCside0=cside0; fFixedFitCside1=cside1;}
 
   AliESDEvent  * fESD;             //! ESD event  - not OWNER
   AliESDfriend * fESDfriend;       //! ESD event  - not OWNER
@@ -141,7 +145,9 @@ public:
   TObjArray      fDeltaYres2;       //-> array of histograms of delta y residuals for each track
   TObjArray      fDeltaZres2;       //-> array of histograms of delta z residuals for each track
   TObjArray      fDeltaYresAbs; //-> array of histograms of absolute delta y residuals for each track
+  TH1F           *fHisYAbsErrors; //-> Number of errors (wrongly assigned tracks) per beam
   TObjArray      fDeltaZresAbs; //-> array of histograms of absolute delta z residuals for each track
+  TH1F           *fHisZAbsErrors; //-> Number of errors (wrongly assigned tracks or missing drift velocity) per beam
   //  TObjArray      fDeltaYres3;       //-> array of histograms of delta y residuals for each track
   //TObjArray      fDeltaZres3;       //-> array of histograms of delta z residuals for each track
 
@@ -165,9 +171,14 @@ public:
   TVectorD       fBeamOffsetZInner; //! absolute z beam offset in inner sectror 
   TVectorD       fBeamSlopeZInner;  //! absolute z beam slope  in inner sector
   Bool_t         fInverseSlopeZ;    //! invert slope in z - mismatch between database and lasers
+  Int_t          fUseFixedDriftV;   // flag for fixed drift velocity for abs res
+  Double_t       fFixedFitAside0;   // Fixed drift v constant 0 - A side
+  Double_t       fFixedFitAside1;   // Fixed drift v constant 1 - A side
+  Double_t       fFixedFitCside0;   // Fixed drift v constant 0 - C side
+  Double_t       fFixedFitCside1;   // Fixed drift v constant 1 - C side
   //
 private:
-  ClassDef(AliTPCcalibLaser,4)
+  ClassDef(AliTPCcalibLaser,5)
 };
 
 
