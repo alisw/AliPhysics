@@ -112,7 +112,7 @@ void AliVZEROTriggerSimulator::GenerateBGWindows()
 AliVZEROTriggerData * AliVZEROTriggerSimulator::LoadTriggerData() const 
 {
 	// Gets Trigger object for VZERO set
-	AliInfo("Loading Trigger parameters");
+        AliDebug(1,"Loading Trigger parameters");
 	AliCDBManager *man = AliCDBManager::Instance();
 	
 	
