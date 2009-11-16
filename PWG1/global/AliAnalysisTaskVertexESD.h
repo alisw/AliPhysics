@@ -36,6 +36,8 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
   virtual void   Terminate(Option_t *);
   Bool_t         GetReadMC() const { return fReadMC; }
   void           SetReadMC(Bool_t flag=kTRUE) { fReadMC=flag; }
+  void           SetRerecoVertexTPC(Bool_t flag=kTRUE) { fRecoVtxTPC=flag; }
+  void           SetRerecoVertexITSTPC(Bool_t flag=kTRUE) { fRecoVtxITSTPC=flag; }
   
  protected:
   Bool_t       fReadMC;         // read Monte Carlo
