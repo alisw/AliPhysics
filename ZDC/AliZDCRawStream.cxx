@@ -588,7 +588,7 @@ Bool_t AliZDCRawStream::Next()
   }
   else if(fPosition==fDeadfaceOffset && fReadOutCard==0){
     if(fBuffer != 0xdeadface){
-      AliWarning(" NO deadface after DARC data");
+      //AliWarning(" NO deadface after DARC data");
       fRawReader->AddMajorErrorLog(kDARCError); 
     }
     else{
@@ -602,7 +602,7 @@ Bool_t AliZDCRawStream::Next()
   }
   else if(fPosition==fDeadbeefOffset && fReadOutCard==0){
     if(fBuffer != 0xdeadbeef){
-      AliWarning(" NO deadbeef after DARC global data");
+      //AliWarning(" NO deadbeef after DARC global data");
       fRawReader->AddMajorErrorLog(kDARCError);  
       fPosition++;
       return kFALSE;
