@@ -62,6 +62,8 @@ ClassImp(AliAnalysisTaskVertexESD)
 AliAnalysisTaskVertexESD::AliAnalysisTaskVertexESD(const char *name) : 
 AliAnalysisTask(name, "VertexESDTask"), 
 fReadMC(kFALSE),
+fRecoVtxTPC(kFALSE),
+fRecoVtxITSTPC(kFALSE),
 fESD(0), 
 fOutput(0), 
 fNtupleVertexESD(0),
@@ -241,8 +243,14 @@ void AliAnalysisTaskVertexESD::Exec(Option_t *)
 
   //Float_t tpccontrorig=tpcv->GetNContributors();
 
-  //tpcv = 0;
-  //tpcv = ReconstructPrimaryVertexTPC();
+  if(fRecoVtxTPC) {
+    tpcv = 0;
+    tpcv = ReconstructPrimaryVertexTPC();
+  }
+  if(fRecoVtxITSTPC) {
+    trkv = 0;
+    trkv = ReconstructPrimaryVertexITSTPC();
+  }
 
   const AliMultiplicity *alimult = fESD->GetMultiplicity();
   Int_t ntrklets=0,spd0cls=0;
@@ -346,6 +354,23 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexTPC() const {
 
   AliVertexerTracks vertexer(fESD->GetMagneticField());
   vertexer.SetTPCMode(); // defaults
+  //vertexer.SetTPCMode(0.1,1.0,5.,0,1,3.,0.1,1.5);
+  Double_t pos[3]={+0.0220,-0.0340,+0.270}; 
+  Double_t err[3]={0.0200,0.0200,7.5};
+  AliESDVertex *initVertex = new AliESDVertex(pos,err);
+  vertexer.SetVtxStart(initVertex);
+  delete initVertex;
+  vertexer.SetConstraintOff();
+
+  return vertexer.FindPrimaryVertex(fESD);
+}
+
+//_________________________________________________________________________
+AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC() const {
+  // On the fly reco of ITS+TPC vertex from ESD
+
+  AliVertexerTracks vertexer(fESD->GetMagneticField());
+  vertexer.SetITSMode(); // defaults
   //vertexer.SetTPCMode(0.1,1.0,5.,0,1,3.,0.1,1.5);
   Double_t pos[3]={+0.0220,-0.0340,+0.270}; 
   Double_t err[3]={0.0200,0.0200,7.5};
