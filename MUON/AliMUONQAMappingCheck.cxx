@@ -47,6 +47,8 @@
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 
+#include "AliMpManuIterator.h"
+
 /// \cond CLASSIMP
 ClassImp(AliMUONQAMappingCheck)
 /// \endcond
@@ -65,6 +67,18 @@ fNumberOfLegitimateMonoCathodeClusters(0)
   /// Ctor
   
   fGeometryTransformer->LoadGeometryData();
+  
+  // Init the store with all the manus. Note that this is not strictly necessary, 
+  // but it helps not to get its growth (that would otherwise happen in
+  // AddClusterLocation each time we get a cluster associated with a manu where
+  // we got no cluster yet) confused with a memory leak...
+  AliMpManuIterator it;
+  Int_t detElemId, manuId;
+  
+  while (it.Next(detElemId,manuId))
+  {
+    fStore->Add(new AliMUONCalibParamND(4,AliMpConstants::ManuNofChannels(),detElemId,manuId,0.0));
+  }
 }
 
 //_____________________________________________________________________________
