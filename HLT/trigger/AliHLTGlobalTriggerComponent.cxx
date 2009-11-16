@@ -387,9 +387,9 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   
   static UInt_t lastTime=0;
   TDatime time;
-  if (time.Get()-lastTime>5) {
+  if (time.Get()-lastTime>60) {
     lastTime=time.Get();
-    PrintStatistics(fTrigger);
+    PrintStatistics(fTrigger, kHLTLogImportant);
   }
   
   // Add the input objects used to the global decision.
