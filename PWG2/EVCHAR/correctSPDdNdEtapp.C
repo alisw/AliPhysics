@@ -328,8 +328,8 @@ void correctSPDdNdEtapp (Char_t* fileRaw, Char_t* fileCorr, Char_t* fileMC, Char
   TH1F *hdNdEtaNSD = (TH1F*)l_MC->At(51);
   hdNdEtaNSD->Sumw2();
   Double_t nEvtsNSD=0;
-  TH1F *hproctype = (TH1F*)l_MC->At(52); 
-  nEvtsNSD =hproctype->GetBinContent(2);
+  TH1F *hProcessType = (TH1F*)l_MC->At(52); 
+  nEvtsNSD =hProcessType->GetBinContent(2);
 //   cout<<"NSD"<<endl;
   cout<<"Number of generated NSD events in +-20cm: "<<nEvtsNSD <<endl;
   hdNdEtaNSD->Scale(10./nEvtsNSD);
@@ -487,7 +487,7 @@ void correctSPDdNdEtapp (Char_t* fileRaw, Char_t* fileCorr, Char_t* fileMC, Char
   hSPDEta_2D_NSDEvts->Divide(hTrigCorrEtaNSD);
 
   //...event level
-  Double_t evtTrigNoTracklets = hESDVertexvsNtracklets_trigEvts->ProjectionY("_y",1,1,"e")->Integral(0,hESDVertexvsNtracklets_trigEvts->GetNbinsX()+1); 
+  Double_t evtTrigNoTracklets = hESDVertexvsNtracklets_trigEvts->ProjectionY("_y",1,1,"e")->Integral(0,hESDVertexvsNtracklets_trigEvts->GetNbinsY()+1); 
   cout<<"Number of events triggered with tracklet multiplicity = 0: "<<evtTrigNoTracklets<<endl;
   for (Int_t ivtx=0;ivtx<20;ivtx++) { 
     hESDVertexvsNtracklets_trigEvts->SetBinContent(1,ivtx+1,(hprod->GetBinContent(ivtx+1))*(evtTrigNoTracklets));
@@ -608,7 +608,7 @@ void correctSPDdNdEtapp (Char_t* fileRaw, Char_t* fileCorr, Char_t* fileMC, Char
   hRatiodNdEta_vertex->Divide(hdNdEta_RV,hdNdEta_fullyCorr,1.,1.);
   hRatiodNdEta_triggered->Divide(hdNdEta_Trigg,hdNdEta_triggeredEvts,1.,1.);
  
-  Float_t max = 14 ;
+  Float_t max = 14.;
 
   //Draw a canvas with correction maps at track level
   TCanvas *ccorr = new TCanvas("c1","Tracklet level corrections and data");
@@ -818,10 +818,12 @@ void correctSPDdNdEtapp (Char_t* fileRaw, Char_t* fileCorr, Char_t* fileMC, Char
   Float_t nNDTriggered = hProcessTypeTriggered->GetBinContent(1);
   Float_t nSDTriggered = hProcessTypeTriggered->GetBinContent(4);
   Float_t nDDTriggered = hProcessTypeTriggered->GetBinContent(5);
-  Float_t nND = hproctype->GetBinContent(1);
-  Float_t nSD = hproctype->GetBinContent(4);
-  Float_t nDD = hproctype->GetBinContent(5);
- 
+  Float_t nND = hProcessType->GetBinContent(1);
+  Float_t nSD = hProcessType->GetBinContent(4);
+  Float_t nDD = hProcessType->GetBinContent(5);
+  
+  cout<<"Number of events: Inel-->"<<hProcessType->GetBinContent(3)<<" ND-->"<<nND<<" SD-->"<<nSD<<" DD-->"<<nDD<<endl;
+  
   cout<<"Trigger efficiencies: Inel-->"<<nInelTriggered/nEvtsTot<<" ND-->"<<nNDTriggered/nND<<" SD-->"<<nSDTriggered/nSD<<" DD-->"<<nDDTriggered/nDD<<endl;
 
   new TCanvas();
