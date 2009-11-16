@@ -19,12 +19,17 @@ AliAnalysisTaskJFSystematics *AddTaskJFSystematics(char *jf1 = "jetsMC",char *jf
    // Create the task and configure it.
    //===========================================================================
    
-   AliAnalysisTaskJFSystematics* pwg4jfs = new  AliAnalysisTaskJFSystematics("Jet Spectrum");
+   AliAnalysisTaskJFSystematics* pwg4jfs = new  AliAnalysisTaskJFSystematics("JF Systematics");
       
    // or a config file
    pwg4jfs->SetAnalysisType(AliAnalysisTaskJFSystematics::kSysJetOrder);
    //      if(iAODanalysis)pwg4spec->SetAODInput(kTRUE);
-   // pwg4spec->SetDebugLevel(11); 
+   //   pwg4jfs->SetDebugLevel(11); 
+   TString type = mgr->GetInputEventHandler()->GetDataType();
+   if(type == "AOD"){
+     pwg4jfs->SetAODInput(kTRUE);
+   }
+
    pwg4jfs->SetBranchGen(jf1); 
    pwg4jfs->SetBranchRec(jf2); 
    mgr->AddTask(pwg4jfs);

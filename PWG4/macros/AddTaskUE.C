@@ -30,7 +30,7 @@ AliAnalysisTaskUE *AddTaskUE()
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_UE = mgr->CreateContainer("histosUE", TList::Class(),AliAnalysisManager::kOutputContainer,"pwg4UE.root");
+   AliAnalysisDataContainer *coutput1_UE = mgr->CreateContainer("histosUE", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_UE",AliAnalysisManager::GetCommonFileName()));
    
    mgr->ConnectInput  (ueana, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (ueana,     0, coutput1_UE );

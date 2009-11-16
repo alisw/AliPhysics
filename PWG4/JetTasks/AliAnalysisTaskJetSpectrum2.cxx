@@ -713,9 +713,8 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
   }
   else if (type == kTrackAODMCCharged || type == kTrackAODMCAll ) {
     AliAODEvent *aod = dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!aod){
-      return iCount;
-    }
+    if(!aod) aod = AODEvent();
+    if(!aod)return iCount;
     TClonesArray *tca = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
     if(!tca)return iCount;
     for(int it = 0;it < tca->GetEntriesFast();++it){
