@@ -38,7 +38,7 @@ AliAnalysisTaskSPDdNdEta *AddTaskSPDdNdEta()
   //===========================================================================
   taskSPDdNdEta->SetReadMC(kTRUE); // MC
 //  taskSPDdNdEta->SetppAnalysis(kTRUE); //pp analysis
-  taskSPDdNdEta->SetTrigger(1);  //no trigger
+  taskSPDdNdEta->SetTrigger(1);  // 0 = notrigger, 1 = MB1 trigger
   taskSPDdNdEta->SetEvtGen(kTRUE);  //to read Pythia data (kFALSE for Phojet)
   
   // E. Create ONLY the output containers for the data produced by the task.
