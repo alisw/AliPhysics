@@ -347,7 +347,7 @@ Bool_t AliMUONTrackerDataMaker::ProcessEvent()
   AliMUONRawStreamTrackerHP stream(fRawReader);
   
   stream.DisableWarnings();
-//  stream.EnabbleErrorLogger();
+  stream.EnabbleErrorLogger();
   
   const Int_t nddls = AliDAQ::NumberOfDdls("MUONTRK");
   TArrayI nevents(nddls);
