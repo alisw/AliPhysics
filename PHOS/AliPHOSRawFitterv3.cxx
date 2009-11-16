@@ -109,16 +109,16 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   //fixed decay time for all channels.
   const Double_t tau=21. ;
 
-  TArrayD *samples = new TArrayD(sigLength); // array of sample amplitudes
-  TArrayD *times   = new TArrayD(sigLength); // array of sample time stamps
+  TArrayD samples(sigLength); // array of sample amplitudes
+  TArrayD times(sigLength); // array of sample time stamps
   for (Int_t i=0; i<sigLength; i++) {
     if (i<kPreSamples) {
       nPed++;
       pedMean += signal[i];
       pedRMS  += signal[i]*signal[i] ;
     }
-    samples->AddAt(signal[i],sigLength-i-1);
-    times  ->AddAt(i/tau ,i);
+    samples.AddAt(signal[i],sigLength-i-1);
+    times.AddAt(i/tau ,i);
   }
 
   fEnergy = -111;
@@ -225,9 +225,9 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   // First estimate t0
   Double_t a=0,b=0,c=0 ;
   for(Int_t i=0; i<sigLength; i++){
-    if(samples->At(i)<=pedestal)
+    if(samples.At(i)<=pedestal)
       continue ;
-    Double_t t= times->At(i) ;
+    Double_t t= times.At(i) ;
     Double_t f02 = TMath::Exp(-2.*t);
     Double_t f12 = t*f02;
     Double_t f22 = t*f12;
@@ -235,9 +235,9 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
     Double_t f02d = -2.*f02;
     Double_t f12d = f02 - 2.*f12;
     Double_t f22d = 2.*(f12 - f22);
-    a += f02d * (samples->At(i)-pedestal) ;
-    b -= f12d * (samples->At(i)-pedestal) ;
-    c += f22d * (samples->At(i)-pedestal) ;
+    a += f02d * (samples.At(i)-pedestal) ;
+    b -= f12d * (samples.At(i)-pedestal) ;
+    c += f22d * (samples.At(i)-pedestal) ;
   }
   
   //Find 2 roots
@@ -260,20 +260,20 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
 //    Double_t t2 = (-b - det) / a; //second root is wrong one
     Double_t amp1=0., den1=0. ;
     for(Int_t i=0; i<sigLength; i++){
-      if(samples->At(i)<pedestal)
+      if(samples.At(i)<pedestal)
         continue ;
-      Double_t dt1 = times->At(i) - t1;
+      Double_t dt1 = times.At(i) - t1;
       Double_t f01 = dt1*dt1*TMath::Exp(-2.*dt1);
-      amp1 += f01*(samples->At(i)-pedestal);
+      amp1 += f01*(samples.At(i)-pedestal);
       den1 += f01*f01;
     }
     if(den1>0.0) amp1 /= den1;
     Double_t chi1=0.; // chi2=0. ;
     for(Int_t i=0; i<sigLength; i++){
-      if(samples->At(i)<=pedestal)
+      if(samples.At(i)<=pedestal)
         continue ;
-      Double_t dt1 = times->At(i)- t1;
-      Double_t dy1 = samples->At(i)-pedestal- amp1*dt1*dt1*TMath::Exp(-2.*dt1) ;
+      Double_t dt1 = times.At(i)- t1;
+      Double_t dy1 = samples.At(i)-pedestal- amp1*dt1*dt1*TMath::Exp(-2.*dt1) ;
       chi1 += dy1*dy1;
     }
     fEnergy=amp1*TMath::Exp(-2.) ; ; 
@@ -288,21 +288,21 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       t1=-c/b ;
     Double_t amp=0.,den=0.; ;
     for(Int_t i=0; i<sigLength; i++){
-      if(samples->At(i)<=pedestal)
+      if(samples.At(i)<=pedestal)
         continue ;
-      Double_t dt = times->At(i) - t1;
+      Double_t dt = times.At(i) - t1;
       Double_t f = dt*dt*TMath::Exp(-2.*dt);
-      amp += f*samples->At(i);
+      amp += f*samples.At(i);
       den += f*f;
     }
     if(den>0.0) amp /= den;
     // chi2 calculation
     fQuality=0.;
     for(Int_t i=0; i<sigLength; i++){
-      if(samples->At(i)<=pedestal)
+      if(samples.At(i)<=pedestal)
         continue ;
-      Double_t t = times->At(i)- t1;
-      Double_t dy = samples->At(i)- amp*t*t*TMath::Exp(-2.*t) ;
+      Double_t t = times.At(i)- t1;
+      Double_t dy = samples.At(i)- amp*t*t*TMath::Exp(-2.*t) ;
       fQuality += dy*dy;
     }
     fTime+=t1*tau ;
@@ -322,7 +322,7 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       if(!h) h = new TH1I("h","Samples",50,0.,50.) ;
       h->Reset() ;
       for (Int_t i=0; i<sigLength; i++) {
-        h->SetBinContent(i,samples->At(i)) ;
+        h->SetBinContent(i,samples.At(i)) ;
       }
       TF1 * fffit = new TF1("fffit","[0]+[1]*((x-[2])/[3])^2*exp(2.-2.*(x-[2])/[3])",0.,200.) ;
       fffit->SetParameters(pedestal,fEnergy,fTime-sigStart,tau) ;
@@ -379,7 +379,7 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       if(!hd) hd = new TH1I("hd","Samples",50,0.,50.) ;
       hd->Reset() ;
       for (Int_t i=0; i<sigLength; i++) {
-        hd->SetBinContent(i,TMath::Max(-1023.,TMath::Min(1023.,samples->At(i)-fffit->Eval(i)))) ;
+        hd->SetBinContent(i,TMath::Max(-1023.,TMath::Min(1023.,samples.At(i)-fffit->Eval(i)))) ;
       }
       hd->Draw();
  
@@ -394,7 +394,5 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
     }
   }
   
-  delete samples ;
-  delete times ;
   return kTRUE;
 }
