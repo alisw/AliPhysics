@@ -32,7 +32,7 @@ TObjArray* CreateRecoParamObject()
   rec->SetRawStreamVersion("FAST");
   rec->SetXenon();
   rec->SetVertexConstrained();
-  Double_t cov[3] = {2.,2.,0}
+  Double_t cov[5] = {2.,2.,0.,0.,0.}
   rec->SetSysCovMatrix(cov);
   rec->SetChi2YSlope(0.11853);
   rec->SetChi2ZSlope(0.04527);
@@ -42,7 +42,7 @@ TObjArray* CreateRecoParamObject()
   rec->SetMaxPhi(2.7475);
   rec->SetNMeanClusters(12.89);
   rec->SetNSigmaClusters(2.095);
-  rec->SetRoadzMultiplicator = 3.;
+  rec->SetRoadzMultiplicator(3.);
   rec->SetStreamLevel(AliTRDrecoParam::kTracker, 1);
 
   recos->AddLast(rec = AliTRDrecoParam::GetLowFluxParam());
