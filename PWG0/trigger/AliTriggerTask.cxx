@@ -15,6 +15,7 @@
 #include <AliAnalysisManager.h>
 #include <AliESDInputHandler.h>
 #include <AliESDHeader.h>
+#include <AliOfflineTrigger.h>
 
 ClassImp(AliTriggerTask)
 
@@ -27,7 +28,8 @@ AliTriggerTask::AliTriggerTask(const char* opt) :
   fEndTime(0),
   fNTriggers(0),
   fTriggerList(0),
-  fStats(0)
+  fStats(0),
+  fOfflineTrigger(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -43,6 +45,9 @@ AliTriggerTask::AliTriggerTask(const char* opt) :
   fTriggerList = triggerList;
   
   fStats = new TH1*[fNTriggers];
+  
+  fOfflineTrigger = new AliOfflineTrigger;
+  fOfflineTrigger->EnableHistograms();
   
   AliLog::SetClassDebugLevel("AliTriggerTask", AliLog::kWarning);
 }
@@ -104,6 +109,8 @@ void AliTriggerTask::CreateOutputObjects()
     fStats[i] = new TH1F(Form("fStats_%d", i), Form("%s;time;counts", AliPWG0Helper::GetTriggerName(fTriggerList[i])), nBins, 0, fEndTime - fStartTime);
     fOutput->Add(fStats[i]);
   }
+  
+  fOutput->Add(fOfflineTrigger);
 }
 
 void AliTriggerTask::Exec(Option_t*)
@@ -136,12 +143,14 @@ void AliTriggerTask::Exec(Option_t*)
 
   //Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
   
+  fOfflineTrigger->FillHistograms(fESD);
+  
   UInt_t timeStamp = fESD->GetTimeStamp() - fStartTime;
   //Printf("%d", timeStamp);
   
   for (Int_t i = 0; i < fNTriggers; i++)
   {
-    Bool_t triggered = AliPWG0Helper::IsEventTriggered(fESD, (AliPWG0Helper::Trigger) (fTriggerList[i] | AliPWG0Helper::kOfflineFlag));
+    Bool_t triggered = fOfflineTrigger->IsEventTriggered(fESD, fTriggerList[i]);
     if (triggered)
       fStats[i]->Fill(timeStamp);
     //Printf("%s: %d", AliPWG0Helper::GetTriggerName(fTriggerList[i]), triggered);
@@ -162,6 +171,7 @@ void AliTriggerTask::Terminate(Option_t *)
   {
     for (Int_t i=0; i<fNTriggers; i++)
       fStats[i] = dynamic_cast<TH1*> (fOutput->FindObject(Form("fStats_%d", i)));
+    fOfflineTrigger = dynamic_cast<AliOfflineTrigger*> (fOutput->FindObject("AliOfflineTrigger"));
   }
 
   TFile* fout = new TFile("trigger.root", "RECREATE");
@@ -169,7 +179,9 @@ void AliTriggerTask::Terminate(Option_t *)
   for (Int_t i=0; i<fNTriggers; i++)
     if (fStats[i])
       fStats[i]->Write();
-
+  if (fOfflineTrigger)
+    fOfflineTrigger->WriteHistograms();
+    
   fout->Write();
   fout->Close();
   

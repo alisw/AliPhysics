@@ -8,6 +8,7 @@
 
 class TH1;
 class AliESDEvent;
+class AliOfflineTrigger;
 
 class AliTriggerTask : public AliAnalysisTask {
   public:
@@ -26,13 +27,15 @@ class AliTriggerTask : public AliAnalysisTask {
     AliESDEvent *fESD;    //! ESD object
     TList* fOutput;                  //! list send on output slot 0
 
-    TString fOption;      // option string
+    TString fOption;      // option string  
     UInt_t fStartTime;    // run start time
     UInt_t fEndTime;      // run end time
 
     Int_t fNTriggers;     //! number triggers
     AliPWG0Helper::Trigger* fTriggerList;  //! list of triggers
     TH1** fStats;                 //! trigger stats
+    
+    AliOfflineTrigger* fOfflineTrigger; // offline trigger object
 
  private:
     AliTriggerTask(const AliTriggerTask&);
