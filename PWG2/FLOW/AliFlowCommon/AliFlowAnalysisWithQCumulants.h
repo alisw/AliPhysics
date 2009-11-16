@@ -74,9 +74,9 @@ class AliFlowAnalysisWithQCumulants{
     // ...  
     virtual void CalculateIntFlowCorrelationsUsingParticleWeights();
     virtual void CalculateWeightedQProductsForIntFlow();
-    virtual void EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* anEvent); 
-    virtual void EvaluateIntFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent); 
-    virtual void EvaluateIntFlowCorrectionsForNUAWithNestedLoops(AliFlowEventSimple* anEvent);  
+    virtual void EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent); 
+    virtual void EvaluateIntFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent); 
+    virtual void EvaluateIntFlowCorrectionsForNUAWithNestedLoops(AliFlowEventSimple* const anEvent);  
     // 2c.) differential flow:
     virtual void CalculateDiffFlowCorrelations(TString type, TString ptOrEta); // type = RP or POI
     virtual void CalculateDiffFlowCorrelationsUsingParticleWeights(TString type, TString ptOrEta); // type = RP or POI 
@@ -89,9 +89,9 @@ class AliFlowAnalysisWithQCumulants{
     //virtual void CalculateCorrelationsForDifferentialFlow2D(TString type); // type = RP or POI
     //virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowCosTerms(TString type); // type = RP or POI  
     //virtual void CalculateCorrectionsForNonUniformAcceptanceForDifferentialFlowSinTerms(TString type); // type = RP or POI
-    virtual void EvaluateDiffFlowCorrelationsWithNestedLoops(AliFlowEventSimple* anEvent, TString type, TString ptOrEta);
-    virtual void EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent, TString type, TString ptOrEta); 
-    virtual void EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoops(AliFlowEventSimple* anEvent, TString type, TString ptOrEta);
+    virtual void EvaluateDiffFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
+    virtual void EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta); 
+    virtual void EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoops(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
   // 3.) method Finish() and methods called within Finish():
   virtual void Finish();
     // 3a.) integrated flow:
@@ -170,7 +170,7 @@ class AliFlowAnalysisWithQCumulants{
   TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
   
   // 2.) particle weights:
-  void SetWeightsList(TList* wlist) {this->fWeightsList = (TList*)wlist->Clone();}
+  void SetWeightsList(TList* const wlist) {this->fWeightsList = (TList*)wlist->Clone();}
   TList* GetWeightsList() const {return this->fWeightsList;}  
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
@@ -204,7 +204,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile* GetIntFlowExtraCorrelationsPro() const {return this->fIntFlowExtraCorrelationsPro;};  
   void SetIntFlowProductOfCorrelationsPro(TProfile* const intFlowProductOfCorrelationsPro) {this->fIntFlowProductOfCorrelationsPro = intFlowProductOfCorrelationsPro;};
   TProfile* GetIntFlowProductOfCorrelationsPro() const {return this->fIntFlowProductOfCorrelationsPro;};  
-  void SetIntFlowCorrectionTermsForNUAPro(TProfile* const ifctfnp, Int_t sc) {this->fIntFlowCorrectionTermsForNUAPro[sc] = ifctfnp;};
+  void SetIntFlowCorrectionTermsForNUAPro(TProfile* const ifctfnp, Int_t const sc) {this->fIntFlowCorrectionTermsForNUAPro[sc] = ifctfnp;};
   TProfile* GetIntFlowCorrectionTermsForNUAPro(Int_t sc) const {return this->fIntFlowCorrectionTermsForNUAPro[sc];};  
   // integrated flow histograms holding all results:
   void SetIntFlowCorrelationsHist(TH1D* const intFlowCorrelationsHist) {this->fIntFlowCorrelationsHist = intFlowCorrelationsHist;};
@@ -214,11 +214,11 @@ class AliFlowAnalysisWithQCumulants{
   // to be improved (removed:)
   //void SetIntFlowProductOfCorrelationsHist(TH1D* const intFlowProductOfCorrelationsHist) {this->fIntFlowProductOfCorrelationsHist = intFlowProductOfCorrelationsHist;};
   //TH1D* GetIntFlowProductOfCorrelationsHist() const {return this->fIntFlowProductOfCorrelationsHist;};  
-  void SetIntFlowCorrectionTermsForNUAHist(TH1D* const ifctfnh, Int_t sc) {this->fIntFlowCorrectionTermsForNUAHist[sc] = ifctfnh;};
+  void SetIntFlowCorrectionTermsForNUAHist(TH1D* const ifctfnh, Int_t const sc) {this->fIntFlowCorrectionTermsForNUAHist[sc] = ifctfnh;};
   TH1D* GetIntFlowCorrectionTermsForNUAHist(Int_t sc) const {return this->fIntFlowCorrectionTermsForNUAHist[sc];};  
   void SetIntFlowCovariances(TH1D* const intFlowCovariances) {this->fIntFlowCovariances = intFlowCovariances;};
   TH1D* GetIntFlowCovariances() const {return this->fIntFlowCovariances;};
-  void SetIntFlowSumOfEventWeights(TH1D* const intFlowSumOfEventWeights, Int_t power) {this->fIntFlowSumOfEventWeights[power] = intFlowSumOfEventWeights;};
+  void SetIntFlowSumOfEventWeights(TH1D* const intFlowSumOfEventWeights, Int_t const power) {this->fIntFlowSumOfEventWeights[power] = intFlowSumOfEventWeights;};
   TH1D* GetIntFlowSumOfEventWeights(Int_t power) const {return this->fIntFlowSumOfEventWeights[power];};
   void SetIntFlowSumOfProductOfEventWeights(TH1D* const intFlowSumOfProductOfEventWeights) {this->fIntFlowSumOfProductOfEventWeights = intFlowSumOfProductOfEventWeights;};
   TH1D* GetIntFlowSumOfProductOfEventWeights() const {return this->fIntFlowSumOfProductOfEventWeights;}; 
@@ -235,37 +235,37 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t GetCalculate2DFlow() const {return this->fCalculate2DFlow;};
   // profiles:
   // 1D:
-  void SetDiffFlowCorrelationsPro(TProfile* const diffFlowCorrelationsPro, Int_t i, Int_t j, Int_t k) {this->fDiffFlowCorrelationsPro[i][j][k] = diffFlowCorrelationsPro;};
+  void SetDiffFlowCorrelationsPro(TProfile* const diffFlowCorrelationsPro, Int_t const i, Int_t const j, Int_t const k) {this->fDiffFlowCorrelationsPro[i][j][k] = diffFlowCorrelationsPro;};
   TProfile* GetDiffFlowCorrelationsPro(Int_t i, Int_t j, Int_t k) const {return this->fDiffFlowCorrelationsPro[i][j][k];};
-  void SetDiffFlowProductOfCorrelationsPro(TProfile* const dfpocp, Int_t i, Int_t j, Int_t k, Int_t l) {this->fDiffFlowProductOfCorrelationsPro[i][j][k][l] = dfpocp;};
+  void SetDiffFlowProductOfCorrelationsPro(TProfile* const dfpocp, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fDiffFlowProductOfCorrelationsPro[i][j][k][l] = dfpocp;};
   TProfile* GetDiffFlowProductOfCorrelationsPro(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowProductOfCorrelationsPro[i][j][k][l];};
-  void SetDiffFlowCorrectionTermsForNUAPro(TProfile* const dfctfnp, Int_t i, Int_t j, Int_t k, Int_t l) {this->fDiffFlowCorrectionTermsForNUAPro[i][j][k][l] = dfctfnp;};
+  void SetDiffFlowCorrectionTermsForNUAPro(TProfile* const dfctfnp, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fDiffFlowCorrectionTermsForNUAPro[i][j][k][l] = dfctfnp;};
   TProfile* GetDiffFlowCorrectionTermsForNUAPro(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowCorrectionTermsForNUAPro[i][j][k][l];};  
   // 2D:
-  void SetCorrelationsPro(TProfile2D* const correlPro, Int_t i, Int_t j, Int_t k, Int_t l) {this->fCorrelationsPro[i][j][k][l] = correlPro;};
+  void SetCorrelationsPro(TProfile2D* const correlPro, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fCorrelationsPro[i][j][k][l] = correlPro;};
   TProfile2D* GetCorrelationsPro(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fCorrelationsPro[i][j][k][l];};
-  void SetProductsOfCorrelationsPro(TProfile2D* const proOfcorrelPro, Int_t i, Int_t j, Int_t k, Int_t l) {this->fProductsOfCorrelationsPro[i][j][k][l] = proOfcorrelPro;};
+  void SetProductsOfCorrelationsPro(TProfile2D* const proOfcorrelPro, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fProductsOfCorrelationsPro[i][j][k][l] = proOfcorrelPro;};
   TProfile2D* GetProductsOfCorrelationsPro(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fProductsOfCorrelationsPro[i][j][k][l];};
-  void SetCorrectionTermsPro(TProfile2D* const correctTermsPro, Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) {this->fCorrectionTermsPro[i][j][k][l][m] = correctTermsPro;};
+  void SetCorrectionTermsPro(TProfile2D* const correctTermsPro, Int_t const i, Int_t const j, Int_t const k, Int_t const l, Int_t const m) {this->fCorrectionTermsPro[i][j][k][l][m] = correctTermsPro;};
   TProfile2D* GetCorrectionTermsPro(Int_t i, Int_t j, Int_t k, Int_t l, Int_t m) const {return this->fCorrectionTermsPro[i][j][k][l][m];};  
   // histograms:
-  void SetDiffFlowCorrelationsHist(TH1D* const diffFlowCorrelationsHist, Int_t i, Int_t j, Int_t k) {this->fDiffFlowCorrelationsHist[i][j][k] = diffFlowCorrelationsHist;};
+  void SetDiffFlowCorrelationsHist(TH1D* const diffFlowCorrelationsHist, Int_t const i, Int_t const j, Int_t const k) {this->fDiffFlowCorrelationsHist[i][j][k] = diffFlowCorrelationsHist;};
   TH1D* GetDiffFlowCorrelationsHist(Int_t i, Int_t j, Int_t k) const {return this->fDiffFlowCorrelationsHist[i][j][k];};
-  void SetDiffFlowCovariances(TH1D* const diffFlowCovariances, Int_t i, Int_t j, Int_t k) {this->fDiffFlowCovariances[i][j][k] = diffFlowCovariances;};
+  void SetDiffFlowCovariances(TH1D* const diffFlowCovariances, Int_t const i, Int_t const j, Int_t const k) {this->fDiffFlowCovariances[i][j][k] = diffFlowCovariances;};
   TH1D* GetDiffFlowCovariances(Int_t i, Int_t j, Int_t k) const {return this->fDiffFlowCovariances[i][j][k];};  
-  void SetDiffFlowCumulants(TH1D* const diffFlowCumulants, Int_t i, Int_t j, Int_t k) {this->fDiffFlowCumulants[i][j][k] = diffFlowCumulants;};
+  void SetDiffFlowCumulants(TH1D* const diffFlowCumulants, Int_t const i, Int_t const j, Int_t const k) {this->fDiffFlowCumulants[i][j][k] = diffFlowCumulants;};
   TH1D* GetDiffFlowCumulants(Int_t i, Int_t j, Int_t k) const {return this->fDiffFlowCumulants[i][j][k];};
-  void SetDiffFlow(TH1D* const diffFlow, Int_t i, Int_t j, Int_t k) {this->fDiffFlow[i][j][k] = diffFlow;};
+  void SetDiffFlow(TH1D* const diffFlow, Int_t const i, Int_t const j, Int_t const k) {this->fDiffFlow[i][j][k] = diffFlow;};
   TH1D* GetDiffFlow(Int_t i, Int_t j, Int_t k) const {return this->fDiffFlow[i][j][k];};
-  void SetDiffFlowSumOfEventWeights(TH1D* const dfsoew, Int_t i, Int_t j, Int_t k, Int_t l) {this->fDiffFlowSumOfEventWeights[i][j][k][l] = dfsoew;};
+  void SetDiffFlowSumOfEventWeights(TH1D* const dfsoew, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fDiffFlowSumOfEventWeights[i][j][k][l] = dfsoew;};
   TH1D* GetDiffFlowSumOfEventWeights(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowSumOfEventWeights[i][j][k][l];};
-  void SetDiffFlowSumOfProductOfEventWeights(TH1D* const dfsopoew, Int_t i, Int_t j, Int_t k, Int_t l) {this->fDiffFlowSumOfProductOfEventWeights[i][j][k][l] = dfsopoew;};
+  void SetDiffFlowSumOfProductOfEventWeights(TH1D* const dfsopoew, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fDiffFlowSumOfProductOfEventWeights[i][j][k][l] = dfsopoew;};
   TH1D* GetDiffFlowSumOfProductOfEventWeights(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowSumOfProductOfEventWeights[i][j][k][l];};
-  void SetDiffFlowCorrectionTermsForNUAHist(TH1D* const dfctfnh, Int_t i, Int_t j, Int_t k, Int_t l) {this->fDiffFlowCorrectionTermsForNUAHist[i][j][k][l] = dfctfnh;};
+  void SetDiffFlowCorrectionTermsForNUAHist(TH1D* const dfctfnh, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fDiffFlowCorrectionTermsForNUAHist[i][j][k][l] = dfctfnh;};
   TH1D* GetDiffFlowCorrectionTermsForNUAHist(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowCorrectionTermsForNUAHist[i][j][k][l];};  
   
   // x.) debugging and cross-checking:
-  void SetNestedLoopsList(TList* nllist) {this->fNestedLoopsList = nllist;};
+  void SetNestedLoopsList(TList* const nllist) {this->fNestedLoopsList = nllist;};
   TList* GetNestedLoopsList() const {return this->fNestedLoopsList;}; 
   void SetEvaluateIntFlowNestedLoops(Bool_t const eifnl) {this->fEvaluateIntFlowNestedLoops = eifnl;};
   Bool_t GetEvaluateIntFlowNestedLoops() const {return this->fEvaluateIntFlowNestedLoops;};
@@ -279,15 +279,15 @@ class AliFlowAnalysisWithQCumulants{
   TProfile* GetIntFlowDirectCorrelations() const {return this->fIntFlowDirectCorrelations;};
   void SetIntFlowExtraDirectCorrelations(TProfile* const ifedc) {this->fIntFlowExtraDirectCorrelations = ifedc;};
   TProfile* GetIntFlowExtraDirectCorrelations() const {return this->fIntFlowExtraDirectCorrelations;};
-  void SetIntFlowDirectCorrectionTermsForNUA(TProfile* const ifdctfn, Int_t sc) {this->fIntFlowDirectCorrectionTermsForNUA[sc] = ifdctfn;};
+  void SetIntFlowDirectCorrectionTermsForNUA(TProfile* const ifdctfn, Int_t const sc) {this->fIntFlowDirectCorrectionTermsForNUA[sc] = ifdctfn;};
   TProfile* GetIntFlowDirectCorrectionTermsForNUA(Int_t sc) const {return this->fIntFlowDirectCorrectionTermsForNUA[sc];};  
   void SetCrossCheckInPtBinNo(Int_t const crossCheckInPtBinNo) {this->fCrossCheckInPtBinNo = crossCheckInPtBinNo;};
   Int_t GetCrossCheckInPtBinNo() const {return this->fCrossCheckInPtBinNo;};
   void SetCrossCheckInEtaBinNo(Int_t const crossCheckInEtaBinNo) {this->fCrossCheckInEtaBinNo = crossCheckInEtaBinNo;};
   Int_t GetCrossCheckInEtaBinNo() const {return this->fCrossCheckInEtaBinNo;};
-  void SetDiffFlowDirectCorrelations(TProfile* const diffFlowDirectCorrelations,Int_t i,Int_t j,Int_t k){this->fDiffFlowDirectCorrelations[i][j][k]=diffFlowDirectCorrelations;};
+  void SetDiffFlowDirectCorrelations(TProfile* const diffFlowDirectCorrelations,Int_t const i,Int_t const j,Int_t const k){this->fDiffFlowDirectCorrelations[i][j][k]=diffFlowDirectCorrelations;};
   TProfile* GetDiffFlowDirectCorrelations(Int_t i, Int_t j, Int_t k) const {return this->fDiffFlowDirectCorrelations[i][j][k];};
-  void SetDiffFlowDirectCorrectionTermsForNUA(TProfile* const dfdctfn, Int_t i, Int_t j, Int_t k, Int_t l) {this->fDiffFlowDirectCorrectionTermsForNUA[i][j][k][l] = dfdctfn;};
+  void SetDiffFlowDirectCorrectionTermsForNUA(TProfile* const dfdctfn, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fDiffFlowDirectCorrectionTermsForNUA[i][j][k][l] = dfdctfn;};
   TProfile* GetDiffFlowDirectCorrectionTermsForNUA(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowDirectCorrectionTermsForNUA[i][j][k][l];};  
         
  private:
