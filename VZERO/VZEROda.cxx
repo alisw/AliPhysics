@@ -208,8 +208,8 @@ int main(int argc, char **argv) {
 	   AliRawReader *rawReader = new AliRawReaderDate((void*)event);
   
 	   AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
-	   if (rawStream.Next()) { 	
-             for(Int_t i=0; i<64; i++) {
+	   if (rawStream->Next()) {	
+           for(Int_t i=0; i<64; i++) {
 	   	Int_t nFlag = 0;
 		for(Int_t j=kClockMin; j <= kClockMax; j++) {  // Check flags on clock range used for pedestal calculation
 		   if((rawStream->GetBBFlag(i,j)) || (rawStream->GetBGFlag(i,j))) nFlag++; 
