@@ -78,9 +78,15 @@ ClassImp( AliAnalysisTaskUE)
 //____________________________________________________________________
 AliAnalysisTaskUE:: AliAnalysisTaskUE(const char* name):
 AliAnalysisTask(name, ""),
-fDebug(kFALSE),          
+fDebug(kFALSE),
+fDeltaAOD(kFALSE),
+fDeltaAODBranch(""),
+  fArrayJets(0x0),           
 fAOD(0x0),            
 fAODjets(0x0),
+//fArrayJets(0x0),
+//fDeltaAOD(kFALSE),
+//fDeltaAODBranch("jetsAOD"),
 fListOfHistos(0x0),  
 fBinsPtInHist(30),     
 fMinJetPtInHist(0.),
@@ -108,7 +114,7 @@ fJet2RatioPtCut(0.8),
 fJet3PtCut(15.),
 fTrackPtCut(0.),
 fTrackEtaCut(0.9),
-  fAvgTrials(1),
+fAvgTrials(1),
 fhNJets(0x0),
 fhEleadingPt(0x0),
 fhMinRegPtDist(0x0),
@@ -149,8 +155,6 @@ Bool_t AliAnalysisTaskUE::Notify()
   // Implemented Notify() to read the cross sections
   // and number of trials from pyxsec.root
   // Copy from AliAnalysisTaskJFSystematics
-  // 
-
   fAvgTrials = 1;
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   Float_t xsection = 0;
@@ -165,12 +169,13 @@ Bool_t AliAnalysisTaskUE::Notify()
       Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
       return kFALSE;
     }
-    AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,ftrials);
+    AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,ftrials); 
     fh1Xsec->Fill("<#sigma>",xsection);
-    // construct average trials 
-    Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
-    if(ftrials>=nEntries)fAvgTrials = ftrials/nEntries; 
-  }  
+   // construct average trials
+   Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
+   if(ftrials>=nEntries)fAvgTrials = ftrials/nEntries;
+  }
+  
   return kTRUE;
 }
 
@@ -184,33 +189,36 @@ void AliAnalysisTaskUE::ConnectInputData(Option_t* /*option*/)
   // or to the OutputEventHandler ( AOD is create by a previus task in the train )
   // we need to check where it is and get the pointer to AODEvent in the right way
   
-  if (fDebug > 1) AliInfo("ConnectInputData() \n");
+  // Delta AODs are also implemented
+  
+ 
+  if (fDebug > 1) AliInfo("ConnectInputData() ");
   
   TObject* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   
-  if( handler && handler->InheritsFrom("AliAODInputHandler") ) {
-    fAOD  =  ((AliAODInputHandler*)handler)->GetEvent();
-    if (fDebug > 1) AliInfo("  ==== Tracks from AliAODInputHandler");
-    // Case when jets are reconstructed on the fly from AOD tracks
-    // (the Jet Finder is using the AliJetAODReader) of InputEventHandler
-    // and put in the OutputEventHandler AOD. Useful whe you want to reconstruct jets with
-    // different parameters to default ones stored in the AOD or to use a different algorithm
-    if( fJetsOnFly ) {
-      handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
-      if( handler && handler->InheritsFrom("AliAODHandler") ) {
-        fAODjets = ((AliAODHandler*)handler)->GetAOD();
-        if (fDebug > 1) AliInfo("  ==== Jets from AliAODHandler");
-      }
-    } else {
-      fAODjets = fAOD;
-      if (fDebug > 1) AliInfo("  ==== Jets from AliAODInputHandler");
-    }
-  } else {
+  if( handler && handler->InheritsFrom("AliAODInputHandler") ) { // input AOD
+    fAOD = ((AliAODInputHandler*)handler)->GetEvent();
+    if (fDebug > 1) AliInfo(" ==== Tracks from AliAODInputHandler");
+    	// Case when jets are reconstructed on the fly from AOD tracks
+    	// (the Jet Finder is using the AliJetAODReader) of InputEventHandler
+    	// and put in the OutputEventHandler AOD. Useful whe you want to reconstruct jets with
+    	// different parameters to default ones stored in the AOD or to use a different algorithm
+    	if( fJetsOnFly ) {
+      	handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
+      	if( handler && handler->InheritsFrom("AliAODHandler") ) {
+		fAODjets = ((AliAODHandler*)handler)->GetAOD();
+		if (fDebug > 1) AliInfo(" ==== Jets from AliAODHandler (on the fly)");
+      	}
+   	 } else {
+      	fAODjets = fAOD;
+      	if (fDebug > 1) AliInfo(" ==== Jets from AliAODInputHandler");
+   	 }
+  } else {  //output AOD
     handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
     if( handler && handler->InheritsFrom("AliAODHandler") ) {
-      fAOD  = ((AliAODHandler*)handler)->GetAOD();
+      fAOD = ((AliAODHandler*)handler)->GetAOD();
       fAODjets = fAOD;
-      if (fDebug > 1) AliInfo("  ==== Tracks and Jets from AliAODHandler");
+      if (fDebug > 1) AliInfo(" ==== Tracks and Jets from AliAODHandler");
     } else {
       AliFatal("I can't get any AOD Event Handler");
       return;
@@ -241,24 +249,20 @@ void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
   // Execute analysis for current event
   //
   if ( fDebug > 3 ) AliInfo( " Processing event..." );
-
   // fetch the pythia header info and get the trials
   AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   Float_t nTrials = 1;
-  if (mcHandler) {  
-    AliMCEvent* mcEvent = mcHandler->MCEvent();
-    if (mcEvent) {
-      AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
-      if(pythiaGenHeader){
-	nTrials = pythiaGenHeader->Trials();
+  if (mcHandler) {
+       AliMCEvent* mcEvent = mcHandler->MCEvent();
+       if (mcEvent) {
+         AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
+         if(pythiaGenHeader){
+           nTrials = pythiaGenHeader->Trials();
+         }
       }
     }
-  }
-
-  fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
-    
-
-  AnalyseUE();
+ fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
+ AnalyseUE();
   
   // Post the data
   PostData(0, fListOfHistos);
@@ -284,36 +288,71 @@ void  AliAnalysisTaskUE::AnalyseUE()
   TVector3 jetVect[3];
   Int_t nJets = 0;
   
+  
   if( !fUseChPartJet ) {
     
     // Use AOD Jets
-    nJets = fAODjets->GetNJets();
-    //  printf("AOD %d jets \n", nJets);
+    if(fDeltaAOD){
+      if (fDebug > 1) AliInfo(" ==== Jets From  Delta-AODs !");
+      if (fDebug > 1) AliInfo(Form(" ====  Reading Branch: %s  ",fDeltaAODBranch.Data()));
+ 	fArrayJets =
+	  (TClonesArray*)fAODjets->GetList()->FindObject(fDeltaAODBranch.Data());
+	if (!fArrayJets){
+		AliFatal(" No jet-array! ");
+		return;
+	}
+	nJets=fArrayJets->GetEntries();
+    }else{
+      if (fDebug > 1) AliInfo(" ==== Read Standard-AODs !");
+      nJets = fAODjets->GetNJets();
+    }
+    //printf("AOD %d jets \n", nJets);
+
     for( Int_t i=0; i<nJets; ++i ) {
-      AliAODJet* jet = fAODjets->GetJet(i);
-      Double_t jetPt = jet->Pt();//*1.666;  // FIXME Jet Pt Correction ?????!!!
+       AliAODJet* jet;
+      if (fDeltaAOD){
+      jet =(AliAODJet*)fArrayJets->At(i);
+      }else{
+      jet = fAODjets->GetJet(i);
+      }
+      Double_t jetPt = jet->Pt();//*1.666; // FIXME Jet Pt Correction ?????!!!
       if( jetPt > maxPtJet1 ) {
-        maxPtJet3 = maxPtJet2; index3 = index2;
-        maxPtJet2 = maxPtJet1; index2 = index1;
-        maxPtJet1 = jetPt; index1 = i;
+	maxPtJet3 = maxPtJet2; index3 = index2;
+	maxPtJet2 = maxPtJet1; index2 = index1;
+	maxPtJet1 = jetPt; index1 = i;
       } else if( jetPt > maxPtJet2 ) {
-        maxPtJet3 = maxPtJet2; index3 = index2;
-        maxPtJet2 = jetPt; index2 = i;
+	maxPtJet3 = maxPtJet2; index3 = index2;
+	maxPtJet2 = jetPt; index2 = i;
       } else if( jetPt > maxPtJet3 ) {
-        maxPtJet3 = jetPt; index3 = i;
+	maxPtJet3 = jetPt; index3 = i;
       }
     }
     if( index1 != -1 ) {
-      AliAODJet* jet = fAODjets->GetJet(index1);
+      AliAODJet *jet = 0;
+      if (fDeltaAOD) {
+      	jet =(AliAODJet*) fArrayJets->At(index1);
+      }else{
+      	jet = fAODjets->GetJet(index1);
+      }
       jetVect[0].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
     }
     if( index2 != -1 ) {
-      AliAODJet* jet = fAODjets->GetJet(index2);
+      AliAODJet* jet = 0;
+      if (fDeltaAOD) {
+      	jet= (AliAODJet*) fArrayJets->At(index2);
+	}else{
+      	jet= fAODjets->GetJet(index2);
+	}
       jetVect[1].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
     }
     if( index3 != -1 ) {
-      AliAODJet* jet = fAODjets->GetJet(index3);
-      jetVect[2].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+      AliAODJet* jet = 0;
+      if (fDeltaAOD) {
+      	jet= (AliAODJet*) fArrayJets->At(index3);
+     }else{
+     	fAODjets->GetJet(index3);
+     }
+     jetVect[2].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
     }
     
   } else {
@@ -323,22 +362,22 @@ void  AliAnalysisTaskUE::AnalyseUE()
     if( jets ) {
       nJets = jets->GetEntriesFast();
       if( nJets > 0 ) {
-        index1 = 0;
-        AliAODJet* jet = (AliAODJet*)jets->At(0);
-        maxPtJet1 = jet->Pt();
-        jetVect[0].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+	index1 = 0;
+	AliAODJet* jet = (AliAODJet*)jets->At(0);
+	maxPtJet1 = jet->Pt();
+	jetVect[0].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
       }
       if( nJets > 1 ) {
-        index2 = 1;
-        AliAODJet* jet = (AliAODJet*)jets->At(1);
-        maxPtJet1 = jet->Pt();
-        jetVect[1].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+	index2 = 1;
+	AliAODJet* jet = (AliAODJet*)jets->At(1);
+	maxPtJet1 = jet->Pt();
+	jetVect[1].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
       }
       if( nJets > 2 ) {
-        index3 = 2;
-        AliAODJet* jet = (AliAODJet*)jets->At(2);
-        maxPtJet1 = jet->Pt();
-        jetVect[2].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+	index3 = 2;
+	AliAODJet* jet = (AliAODJet*)jets->At(2);
+	maxPtJet1 = jet->Pt();
+	jetVect[2].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
       }
       
       jets->Delete();
@@ -346,7 +385,8 @@ void  AliAnalysisTaskUE::AnalyseUE()
     }
   }
   
-  fhNJets->Fill(nJets);
+
+fhNJets->Fill(nJets);
   
   if( fDebug > 1 ) {
     if( index1 < 0 ) {

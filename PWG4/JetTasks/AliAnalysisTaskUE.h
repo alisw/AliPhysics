@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTask.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -35,6 +35,11 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
       fMinJetPtInHist = min; 
       fMaxJetPtInHist = max; 
     }
+
+    // Read deltaAODs
+    void   ReadDeltaAOD()                   { fDeltaAOD = kTRUE; }
+    void   SelectDeltaAODBranch(const char* val)     { fDeltaAODBranch = val;   }
+
     // Setters for MC
     void  SetUseMCBranch(){fUseMCParticleBranch = kTRUE;}
     void  SetConstrainDistance(Bool_t val1, Double_t val2){ fMinDistance = val2; fConstrainDistance = val1;}
@@ -76,7 +81,11 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     void   QSortTracks(TObjArray &a, Int_t first, Int_t last);
     void   WriteSettings();
     
-    Int_t   fDebug;           //  Debug flag
+    Int_t      fDebug;           //  Debug flag
+    Bool_t      fDeltaAOD;        //  Read jets from delta AOD 
+    TString     fDeltaAODBranch;  //  Jet branch name from delta AOD
+    TClonesArray*  fArrayJets;       //  Array of Jets from delta AOD
+
     AliAODEvent*  fAOD;             //! AOD Event 
     AliAODEvent*  fAODjets;         //! AOD Event for reconstructed on the fly (see ConnectInputData()
     TList*  fListOfHistos;    //  Output list of histograms
@@ -154,7 +163,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     Double_t   fTrackPtCut;       // Pt cut of tracks in the regions
     Double_t   fTrackEtaCut;      // Eta cut on tracks in the regions (fRegionType=1)
     Double_t   fAvgTrials;        // average trials used to fill the fh1Triasl histogram in case we do not have trials on a event by event basis
-    
+    	  	 
     // Histograms    ( are owned by fListOfHistos TList )
     TH1F*  fhNJets;                  //!
     TH1F*  fhEleadingPt;             //!
@@ -191,7 +200,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     
     
     
-    ClassDef( AliAnalysisTaskUE, 2); // Analysis task for Underlying Event analysis
+    ClassDef( AliAnalysisTaskUE, 3); // Analysis task for Underlying Event analysis
   };
 
 #endif
