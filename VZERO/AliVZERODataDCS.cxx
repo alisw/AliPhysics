@@ -181,7 +181,7 @@ void AliVZERODataDCS::Init(){
 			sindex.Form("%d/RING%d",iSector,iRing);
 			fAliasNames[iAlias] += sindex;
 			
-			fHv[iAlias] = new TH1F(fAliasNames[iAlias].Data(),fAliasNames[iAlias].Data(), 2000, kHvMin, kHvMax);
+			fHv[iAlias] = new TH1F(fAliasNames[iAlias].Data(),fAliasNames[iAlias].Data(), 3000, kHvMin, kHvMax);
 			fHv[iAlias]->GetXaxis()->SetTitle("Hv");
 			iAlias++;
   		}

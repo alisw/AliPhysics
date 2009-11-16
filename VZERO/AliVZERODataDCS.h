@@ -21,7 +21,7 @@ class TH1F;
 class AliVZERODataDCS : public TObject {
 public:
   enum {kNAliases=80,kNGraphs=64,kNHvChannel=64,kNLvChannel=16,kNCIUBoards = 8};
-  enum {kHvMin=0, kHvMax=2000};
+  enum {kHvMin=0, kHvMax=3000};
   
   AliVZERODataDCS();
   AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime);
