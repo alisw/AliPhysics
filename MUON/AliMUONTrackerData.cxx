@@ -1665,6 +1665,8 @@ AliMUONTrackerData::MakeHistogramForDimension(Int_t index, Bool_t value, Double_
     return;
   }
   
+  AliWarning(Form("Will %s make histogram for data %s index %d : that might ressemble a memory leak depending on the input data",
+                  value ? "":"not", GetName(),index));
   fHistogramming[index] = value;
   fXmin = xmin;
   fXmax = xmax;
