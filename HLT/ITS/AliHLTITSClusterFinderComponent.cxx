@@ -193,9 +193,9 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int /*argc*/, const char** /*argv
   //set dettype
   fDettype = new AliITSDetTypeRec();
   fDettype->SetITSgeom(fgeom);
-  fDettype->SetDefaultClusterFindersV2(kTRUE);
   fDettype->SetDefaults();
-  
+  fDettype->SetDefaultClusterFindersV2(kTRUE); 
+
   if ( fRawReader )
     return -EINPROGRESS;
 
