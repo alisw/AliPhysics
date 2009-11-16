@@ -230,7 +230,7 @@ AliMUONManuContourMaker::GenerateManuContours(Bool_t stopAtError)
     ++nok;
   }
   
-  AliInfo(Form("%d manus. %d contours successfully created",nmanus,nok));
+  AliDebug(1,Form("%d manus. %d contours successfully created",nmanus,nok));
   
   return manuContours;
 }
