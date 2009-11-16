@@ -68,6 +68,7 @@ int main(int argc, char **argv) {
   int status = 0;
   int const kNChannels = 24;
   int const kNScChannels = 32;
+  Int_t kFirstADCGeo=0, kLastADCGeo=3;
   
   Int_t ich=0;
   Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
@@ -299,7 +300,7 @@ int main(int argc, char **argv) {
          }
          else{
             printf("ZDCPEDESTALda.cxx -> NO STANDALONE_PEDESTAL RUN raw data found\n");
-    	    printf("   Attributes: %x\n", message);
+    	    printf("   CDH attributes: %x\n", message);
             return -1;
          }
         }
@@ -339,7 +340,8 @@ int main(int argc, char **argv) {
 	 //printf(" rawData: det %d sec %d  value %d\n", 
 	 //	detector, sector,rawStreamZDC->GetADCGain(),rawStreamZDC->GetADCValue() );
 	 
-  	 if(rawStreamZDC->IsADCDataWord() && (detector!=-1)){
+  	 if((rawStreamZDC->IsADCDataWord()) && (detector!=-1) &&
+            (rawStreamZDC->GetADCModule()>=kFirstADCGeo && rawStreamZDC->GetADCModule()<=kLastADCGeo)){
 	  if(sector!=5){ // Physics signals
     	    if(detector==1) index = sector; // *** ZNC
 	    else if(detector==2) index = sector+5; // *** ZPC

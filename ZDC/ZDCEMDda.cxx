@@ -74,6 +74,7 @@ int main(int argc, char **argv) {
   // No. of ZDC cabled ch.
   int const kNChannels = 24;
   int const kNScChannels = 32;
+  Int_t kFirstADCGeo=0, kLastADCGeo=3;
 
   /* log start of process */
   printf("ZDC EMD program started\n");  
@@ -347,7 +348,8 @@ int main(int argc, char **argv) {
         
 	if(rawStreamZDC->IsADCDataWord() && !(rawStreamZDC->IsUnderflow())
 	     && !(rawStreamZDC->IsOverflow()) && det!=-1
-	     && (rawStreamZDC->GetADCGain() == 1)){ // Selecting LOW RES ch.s
+	     && (rawStreamZDC->GetADCGain() == 1 && // Selecting LOW RES ch.s
+             rawStreamZDC->GetADCModule()>=kFirstADCGeo && rawStreamZDC->GetADCModule()<=kLastADCGeo)){
 
 	  //printf("  IsADCWord %d, IsUnderflow %d, IsOverflow %d\n",
 	  //  rawStreamZDC->IsADCDataWord(),rawStreamZDC->IsUnderflow(),rawStreamZDC->IsOverflow());

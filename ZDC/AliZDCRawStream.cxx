@@ -406,7 +406,7 @@ Bool_t AliZDCRawStream::Next()
     
     if(fPosition>=fDataOffset){
       if((fBuffer&0xff000001) == 0xff000001){ // ************** Mapping
-        // DARC 1st datum @ fDataOffset+1 \ ZRC 1st valid datum fDataOffset=0
+        // DARC 1st datum @ fDataOffset+1 \ ZRC 1st valid datum @ fDataOffset=0
         if((fPosition==fDataOffset+1) || (fPosition==fDataOffset)){ 
 	   printf("\n\n ------ AliZDCRawStream -> Reading mapping from StartOfData event ------\n");
 	   fCurrentCh=0; fCurrScCh=0;	
@@ -782,7 +782,7 @@ Bool_t AliZDCRawStream::Next()
     // ********************************** VME SCALER DATA **********************************
     //  Reading VME scaler data 
     if(fIsScHeaderRead && fPosition>=fScStartCounter+1){ // *** Scaler word
-      fADCModule = kScalerGeo;
+      fADCModule = kScalerGeo; fIsADCDataWord = kFALSE;	
       fScEvCounter = fBuffer;
       Int_t nWords = (Int_t) (fScNWords);
       if(fPosition == fScStartCounter+nWords) fIsScHeaderRead = kFALSE;
@@ -792,7 +792,7 @@ Bool_t AliZDCRawStream::Next()
     // ******************************** TRIGGER SCALER DATA ********************************
     //  Reading trigger scaler data 
     if(fIsTriggerScaler && fPosition>=fTrigCountStart+1){
-      fADCModule = kTrigScales;
+      fADCModule = kTrigScales; fIsADCDataWord = kFALSE;	
       if(fPosition == fTrigCountStart+1)      fMBTrigInput = fBuffer;		    
       else if(fPosition == fTrigCountStart+2) fCentralTrigInput = fBuffer;		    
       else if(fPosition == fTrigCountStart+3) fSCentralTrigInput = fBuffer;
@@ -811,7 +811,7 @@ Bool_t AliZDCRawStream::Next()
     // ******************************* TRIGGER HISTORY WORDS ******************************
     //  Reading trigger history
     if(fIsTriggerHistory && fPosition>=fTrigHistStart+1){
-	fADCModule = kTrigHistory;	
+	fADCModule = kTrigHistory; fIsADCDataWord = kFALSE;	
 	if(fPosition == fTrigHistStart+1){
 	  fPileUpBit1stWord = (fBuffer & 0x80000000) >> 31;
 	  fL0Bit1stWord = (fBuffer & 0x40000000) >> 30;        

@@ -66,6 +66,7 @@ int main(int argc, char **argv) {
   int status = 0;
   int const kNChannels = 24;
   int const kNScChannels = 32;
+  Int_t kFirstADCGeo=0, kLastADCGeo=3;
   
   Int_t ich=0;
   Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
@@ -337,8 +338,9 @@ int main(int argc, char **argv) {
 	  Int_t detector = rawStreamZDC->GetSector(0);
 	  Int_t sector = rawStreamZDC->GetSector(1);
 	  
-  	  if(rawStreamZDC->IsADCDataWord() && !(rawStreamZDC->IsUnderflow())
-	     && !(rawStreamZDC->IsOverflow()) && detector!=-1){
+  	  if(rawStreamZDC->IsADCDataWord() && !(rawStreamZDC->IsUnderflow()) && 
+	     !(rawStreamZDC->IsOverflow()) && detector!=-1 &&
+             rawStreamZDC->GetADCModule()>=kFirstADCGeo && rawStreamZDC->GetADCModule()<=kLastADCGeo){
 	    
  	    if(sector!=5){ // Physics signals
     	      if(detector==1)      index = sector;   // *** ZNC
