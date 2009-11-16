@@ -152,7 +152,8 @@ void AliTRDSimParam::Init()
   fPRFOn             = kTRUE;
 
   // The number of time bins
-  fNTimeBins         = 30;
+  //fNTimeBins         = 30;
+  fNTimeBins         = 24;
 
   ReInit();
 
