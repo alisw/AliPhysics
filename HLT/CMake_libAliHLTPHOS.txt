@@ -1,24 +1,35 @@
 # -*- mode: cmake -*-
 
+# Taken out 
+# PHOS/AliHLTPHOSBase.cxx
+# PHOS/AliHLTPHOSDataCorruptor.cxx
+# PHOS/AliHLTPHOSPulseGenerator.cxx
+# PHOS/AliHLTPHOSRawAnalyzerComponent.cxx
+# PHOS/AliHLTPHOSRawAnalyzerComponentv2.cxx
+# PHOS/AliHLTPHOSRawAnalyzerKLevel.cxx
+# PHOS/AliHLTPHOSRawAnalyzerLMS.cxx
+# PHOS/AliHLTPHOSConfig.cxx
+# PHOS/AliHLTPHOSAltroConfig.cxx
+# PHOS/AliHLTPHOSSharedMemoryInterface.cxx
+# PHOS/AliHLTPHOSRcuCalibrationProcessorComponent.cxx
+# PHOS/AliHLTPHOSRcuCalibrationProcessor.cxx
+# PHOS/AliHLTPHOSModuleCalibrationProcessorComponent.cxx
+# PHOS/AliHLTPHOSRcuProperties.cxx
+# PHOS/AliHLTPHOSHistogramProducerComponent.cxx
+# PHOS/AliHLTPHOSPhysicsHistogramProducer.cxx
+
 set(SRCS
-PHOS/AliHLTPHOSBase.cxx
 PHOS/AliHLTPHOSClusterizer.cxx
 PHOS/AliHLTPHOSClusterizerComponent.cxx
-PHOS/AliHLTPHOSDataCorruptor.cxx
 PHOS/AliHLTPHOSDefinitions.cxx
 PHOS/AliHLTPHOSEmcCalibData.cxx
 PHOS/AliHLTPHOSPhysicsAnalyzer.cxx
 PHOS/AliHLTPHOSProcessor.cxx
-PHOS/AliHLTPHOSPulseGenerator.cxx
 PHOS/AliHLTPHOSRawAnalyzer.cxx
 PHOS/AliHLTPHOSRawAnalyzerChiSquareFit.cxx
-PHOS/AliHLTPHOSRawAnalyzerComponent.cxx
-PHOS/AliHLTPHOSRawAnalyzerComponentv2.cxx
 PHOS/AliHLTPHOSRawAnalyzerComponentv3.cxx 
 PHOS/AliHLTPHOSRawAnalyzerCrude.cxx
 PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.cxx
-PHOS/AliHLTPHOSRawAnalyzerKLevel.cxx
-PHOS/AliHLTPHOSRawAnalyzerLMS.cxx
 PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx
 PHOS/AliHLTPHOSRcuHistogramProducer.cxx
 PHOS/AliHLTPHOSRcuHistogramProducerComponent.cxx
@@ -28,27 +39,19 @@ PHOS/AliHLTPHOSRawAnalyzerPeakFinder.cxx
 PHOS/AliHLTPHOSSanityInspector.cxx
 PHOS/AliHLTPHOSDigitMaker.cxx
 PHOS/AliHLTPHOSDigitMakerComponent.cxx
-PHOS/AliHLTPHOSConfig.cxx
-PHOS/AliHLTPHOSAltroConfig.cxx
-PHOS/AliHLTPHOSSharedMemoryInterface.cxx
 PHOS/AliHLTPHOSSharedMemoryInterfacev2.cxx
 PHOS/AliHLTPHOSClusterAnalyser.cxx
 PHOS/AliHLTPHOSClusterAnalyserComponent.cxx
 PHOS/AliHLTPHOSESDMaker.cxx
 PHOS/AliHLTPHOSESDMakerComponent.cxx
-PHOS/AliHLTPHOSRcuCalibrationProcessorComponent.cxx
-PHOS/AliHLTPHOSRcuCalibrationProcessor.cxx
-PHOS/AliHLTPHOSModuleCalibrationProcessorComponent.cxx
 PHOS/AliHLTPHOSRcuDAComponent.cxx
-PHOS/AliHLTPHOSRcuProperties.cxx
 PHOS/AliHLTPHOSUtilities.cxx
 PHOS/AliHLTPHOSHistogramProducer.cxx
-PHOS/AliHLTPHOSHistogramProducerComponent.cxx
 PHOS/AliHLTPHOSMonitorTriggerComponent.cxx
 PHOS/AliHLTPHOSESDEntriesMakerComponent.cxx
 PHOS/AliHLTPHOSESDCaloClusterWriterComponent.cxx
-PHOS/AliHLTPHOSPhysicsHistogramProducer.cxx
 PHOS/AliHLTPHOSFourier.cxx
+PHOS/AliHLTPHOSDigitReader.cxx
 )
 
 # fill list of header files from list of source files

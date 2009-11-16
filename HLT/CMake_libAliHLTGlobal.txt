@@ -4,6 +4,9 @@ set(SRCS
 global/AliHLTGlobalTrackMergerComponent.cxx
 global/AliHLTGlobalTrackMerger.cxx
 global/AliHLTGlobalAgent.cxx
+global/AliHLTGlobalVertexerComponent.cxx
+global/AliHLTGlobalTrackMatcher.cxx
+global/physics/AliHLTV0HistoComponent.cxx
 )
 
 # fill list of header files from list of source files
