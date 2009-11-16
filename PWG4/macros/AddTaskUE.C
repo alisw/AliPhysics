@@ -1,7 +1,7 @@
 
 void ConfigTaskUE(AliAnalysisTaskUE * ueana); // common config, extend with different cases
                   
-AliAnalysisTaskUE *AddTaskUE()
+AliAnalysisTaskUE *AddTaskUE(char *jetBranch = "")
 {
 // Creates a jet fider task, configures it and adds it to the analysis manager.
 
@@ -25,12 +25,22 @@ AliAnalysisTaskUE *AddTaskUE()
    
    AliAnalysisTaskUE* ueana = new  AliAnalysisTaskUE("Underlying Event");
    ConfigTaskUE(ueana);
+
+   TString jb(jetBranch);
+
+   if(jb.Length()>0){
+     ueana->ReadDeltaAOD(kTRUE);
+     ueana->SelectDeltaAODBranch(jb.Data());
+   }
+
    mgr->AddTask(ueana);
    
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_UE = mgr->CreateContainer("histosUE", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_UE",AliAnalysisManager::GetCommonFileName()));
+   AliAnalysisDataContainer *coutput1_UE = 0;
+   if(jb.Length()==0)coutput1_UE = mgr->CreateContainer("histosUE", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_UE",AliAnalysisManager::GetCommonFileName()));
+   else coutput1_UE = mgr->CreateContainer(Form("histosUE_%s",jb.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_UE_%s",AliAnalysisManager::GetCommonFileName(),jb.Data()));
    
    mgr->ConnectInput  (ueana, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (ueana,     0, coutput1_UE );
@@ -48,7 +58,7 @@ void ConfigTaskUE(AliAnalysisTaskUE * ueana){
   Double_t rad=0.7; 
   Double_t deltaPhiCut = 2.616;
   
-  ueana->SetDebugLevel(10); 
+  ueana->SetDebugLevel(0); 
   ueana->SetPtRangeInHist(25, 0., 250.);
   ueana->SetAnaTopology(anaType);      
   ueana->SetRegionType(regType);        

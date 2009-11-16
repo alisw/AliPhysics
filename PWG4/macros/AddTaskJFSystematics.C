@@ -1,4 +1,4 @@
-AliAnalysisTaskJFSystematics *AddTaskJFSystematics(char *jf1 = "jetsMC",char *jf2 = "jets")
+AliAnalysisTaskJFSystematics *AddTaskJFSystematics(char *jf1 = "jets",char *jf2 = "jetsAODMC_UA104")
 {
 
    // Get the pointer to the existing analysis manager via the static access method.
@@ -30,8 +30,8 @@ AliAnalysisTaskJFSystematics *AddTaskJFSystematics(char *jf1 = "jetsMC",char *jf
      pwg4jfs->SetAODInput(kTRUE);
    }
 
-   pwg4jfs->SetBranchGen(jf1); 
-   pwg4jfs->SetBranchRec(jf2); 
+   pwg4jfs->SetBranchGen(jf2); 
+   pwg4jfs->SetBranchRec(jf1); 
    mgr->AddTask(pwg4jfs);
       
    // Create ONLY the output containers for the data produced by the task.
