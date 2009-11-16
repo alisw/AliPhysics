@@ -293,7 +293,7 @@ Float_t AliVZEROCalibData::GetMIPperADC(Int_t channel) const {
 	Float_t  HV = fMeanHV[channel];  
 	Float_t MIP = -1;
 	if (HV>0)
-	  MIP = 0.5/TMath::Exp((TMath::Log(HV) - P0[channel] )/P1[channel]);
+	  MIP = 0.6/TMath::Exp((TMath::Log(HV) - P0[channel] )/P1[channel]);
 	return MIP; 
 	
 }
