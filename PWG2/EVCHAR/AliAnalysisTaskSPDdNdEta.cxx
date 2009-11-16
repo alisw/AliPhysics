@@ -589,7 +589,7 @@ void AliAnalysisTaskSPDdNdEta::Exec(Option_t *)
       Float_t thetaTr= multESD->GetTheta(itracklet);
       Float_t phiTr= multESD->GetPhi(itracklet);
       Float_t dePhiTr= multESD->GetDeltaPhi(itracklet);
-      Double_t deThetaTr= multESD->GetDeltaTheta(itracklet);
+//      Double_t deThetaTr= multESD->GetDeltaTheta(itracklet);
       Float_t recEtaSPD =multESD->GetEta(itracklet);
       recEtaSPDcl1[itracklet] = recEtaSPD;
 
@@ -601,7 +601,7 @@ void AliAnalysisTaskSPDdNdEta::Exec(Option_t *)
       fHistSPDtheta->Fill(thetaTr);
       fHistSPDcl1theta->Fill(thetaTr);
       fHistSPDdePhi->Fill(dePhiTr);
-      fHistSPDdeTheta->Fill(deThetaTr);
+//      fHistSPDdeTheta->Fill(deThetaTr);
  
       if (strcmp(vtxESD->GetTitle(),"vertexer: Z") == 0) fHistSPDdePhiZ->Fill(dePhiTr);
       if (strcmp(vtxESD->GetTitle(),"vertexer: 3D") == 0) fHistSPDdePhi3D->Fill(dePhiTr);
@@ -702,22 +702,27 @@ void AliAnalysisTaskSPDdNdEta::Exec(Option_t *)
     AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
 
     AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(genHeader);
-    if (fpythia) { 
+
+    if (fpythia&&pythiaGenHeader) { 
       processType = pythiaGenHeader->ProcessType();
       if (processType!=91&&processType!=92&&processType!=93&&processType!=94)  ndEv = kTRUE; // non difffractive
       if (processType!=91&&processType!=92&&processType!=93)  nsdEv = kTRUE;                 // non single diffractive
-      if (processType==92||processType==93)  sdEv = kTRUE;                       //single diffractive
-      if (processType==94)  ddEv = kTRUE;                                        //double diffractive
-      if (processType!=91)  inelEv = kTRUE;                                      //inelastic
+      if (processType==92||processType==93)  sdEv = kTRUE;                                   //single diffractive
+      if (processType==94)  ddEv = kTRUE;                                                    //double diffractive
+      if (processType!=91)  inelEv = kTRUE;                                                  //inelastic
       
-    } else {
+    } else if (!fpythia&&dpmHeader) {
       processType = dpmHeader->ProcessType(); 
       if (processType==1)  ndEv = kTRUE;                                         // non diffractive
       if (processType!=2&&processType!=5&&processType!=6)  nsdEv = kTRUE;        // non single diffractive
-      if (processType==5||processType==6)  sdEv = kTRUE;                         //single diffractive
-      if (processType==4||processType==7)  ddEv = kTRUE;                         //double diffractive
-      if (processType!=2)  inelEv = kTRUE;                                       //inelastic 
+      if (processType==5||processType==6)  sdEv = kTRUE;                         // single diffractive
+      if (processType==4||processType==7)  ddEv = kTRUE;                         // double diffractive
+      if (processType!=2)  inelEv = kTRUE;                                       // inelastic 
+    } else if (!pythiaGenHeader&&!dpmHeader) {
+      printf("Unknown header type: neither DPMjet nor Pythia. \n");
+      return ;
     }
+
     if (ndEv) {
       fHistoProcessType->Fill(0);
       if (eventTriggered) fHistoProcessTypeTriggered->Fill(0);
