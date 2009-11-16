@@ -438,12 +438,8 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     //}
 
     AliMUONDigitStoreV2R digitStore;
-    digitStore.Create();
-    digitStore.Clear();
 
     AliMUONDigitStoreV2R digitStoreAll;
-    digitStoreAll.Create();
-    digitStoreAll.Clear();
     TArrayS xyPatternAll[2];
     for(Int_t icath=0; icath<AliMpConstants::NofCathodes(); icath++){
       xyPatternAll[icath].Set(AliMpConstants::NofTriggerChambers());
@@ -451,12 +447,8 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     }
     
     AliMUONTriggerStoreV1 recoTriggerStore;
-    recoTriggerStore.Create();
-    recoTriggerStore.Clear();
 
     AliMUONTriggerStoreV1 inputTriggerStore;
-    inputTriggerStore.Create();
-    inputTriggerStore.Clear();
 
     AliMUONGlobalTrigger inputGlobalTrigger;
 
@@ -690,7 +682,6 @@ void AliMUONTriggerQADataMakerRec::MakeDigits(TTree* digitsTree)
   while ( ( dig = static_cast<AliMUONVDigit*>(next()) ) )
     {
     GetDigitsData(0)->Fill(dig->DetElemId());
-    GetDigitsData(1)->Fill(dig->ADC());
     }
 }
 
