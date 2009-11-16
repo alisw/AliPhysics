@@ -4,7 +4,8 @@
 # 2  - batch queues
 # 3  - number of chunks per calibration job
 # 0. Find runs with esd but missing calibration
-#
+# Example:
+# $ALICE_ROOT/TPC/scripts/resubmitMissing.sh run.list alice-t3 10
 
 runlist=$1
 bqueue=$2

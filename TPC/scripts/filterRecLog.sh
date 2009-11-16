@@ -34,10 +34,9 @@ for efile in `cat errRec.log`  ;do
   echo $efile
   ofile=`echo $efile| sed s_err_out_`
   cat $ofile   >> abortout.log
-  cat $sysfile | grep -v hname\/C:sname\/C: >> syswatchAbort.log
+  #cat $sysfile | grep -v hname\/C:sname\/C: >> syswatchAbort.log
  fi
-  cat $sysfile | grep -v hname\/C:sname\/ >> syswatchAll.log
-  
+  #cat $sysfile | grep -v hname\/C:sname\/ >> syswatchAll.log 
 done; 
 
 #

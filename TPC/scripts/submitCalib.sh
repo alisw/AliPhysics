@@ -17,6 +17,8 @@ echo
 mydir=`pwd`
 for adir in `cat $runlist`; do
     cd $mydir
+    rm -f *.log
+    rm -f core*
     up=`cat  $adir/esd.txt.Good | grep -c .root`
     if [ $up -gt 0 ] ; then
 	myvar=0;
@@ -25,7 +27,6 @@ for adir in `cat $runlist`; do
 	cp ../ConfigOCDB.C .
 	cp ../CalibrateTPC.C .
 	rm -rf *_*
-	rm *.log
 	rm -rf */V3/
 	while [ $myvar -le ${up} ] ; do
         bsub -q $bqueues  -oo out$myvar.log -eo err$myvar.log $ALICE_ROOT/TPC/scripts/submitCalibJob.sh $myvar $(($myvar+step))  `pwd`/esd.txt.Good $adir; 
