@@ -78,15 +78,12 @@ ClassImp( AliAnalysisTaskUE)
 //____________________________________________________________________
 AliAnalysisTaskUE:: AliAnalysisTaskUE(const char* name):
 AliAnalysisTask(name, ""),
-fDebug(kFALSE),
+fDebug(0),
 fDeltaAOD(kFALSE),
 fDeltaAODBranch(""),
-  fArrayJets(0x0),           
+fArrayJets(0x0),           
 fAOD(0x0),            
 fAODjets(0x0),
-//fArrayJets(0x0),
-//fDeltaAOD(kFALSE),
-//fDeltaAODBranch("jetsAOD"),
 fListOfHistos(0x0),  
 fBinsPtInHist(30),     
 fMinJetPtInHist(0.),
@@ -1239,7 +1236,7 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
     Double_t xsec = fh1Xsec->GetBinContent(1);
     Double_t ntrials = fh1Trials->GetBinContent(1);
     Double_t normFactor = xsec/ntrials;
-    Printf("xSec %f nTrials %f Norm %f \n",xsec,ntrials,normFactor);
+    if(fDebug > 1)Printf("xSec %f nTrials %f Norm %f \n",xsec,ntrials,normFactor);
     
     
     TCanvas* c2 = new TCanvas("c2","Jet Pt dist",160,160,1200,800);

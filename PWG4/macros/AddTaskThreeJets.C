@@ -20,7 +20,7 @@ AliAnalysisTaskThreeJets * AddTaskThreeJets(char *bRec = "jets",char * bGen = "j
   
   threeJets->SetBranchRec(bRec);
   threeJets->SetBranchGen(bGen); 
-  threeJets->SetDebugLevel(10);
+  //  threeJets->SetDebugLevel(10);
   threeJets->SetR(.5); 
   
   TString type = mgr->GetInputEventHandler()->GetDataType();
