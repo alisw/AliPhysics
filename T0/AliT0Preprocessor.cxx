@@ -164,24 +164,20 @@ UInt_t AliT0Preprocessor::ProcessLaser(){
     Log(Form("Cannot find any AliCDBEntry for [Calib, SlewingWalk]!"));
   else {
     clb =dynamic_cast<AliT0CalibWalk*>(entryCalib->GetObject());
-    if(entryCalib->GetObject()->Class()->GetClassVersion() >3)
+    for(Int_t i=0; i<24; i++)
       {
-	//   std::cout<<" clb->Class()->GetClassVersion() < 4  "<<entryCalib->GetObject()->Class()->GetClassVersion()<<std::endl;
-	clbold=false;
-	for(Int_t i=0; i<24; i++)
+	for(Int_t ipar=0; ipar<2; ipar++)
 	  {
-	    for(Int_t ipar=0; ipar<2; ipar++)
-	      {
-		//    std::cout<<"parqtcold "<<parqtcold[i][ipar]<<std::endl;
-		parqtcold[i][ipar] = clb->GetQTCpar(i,ipar);
-		parledold[i][ipar] = clb->GetLEDpar(i, ipar);
-		goodqtc[i][ipar] = 999;
-		goodled[i][ipar] = 999;
-		//	    cout<<" old "<<i<<" "<<ipar<<" qtc "<< parqtcold[i][ipar]<<" led "<<parledold[i][ipar]<<endl;
-	      }
+	    //    std::cout<<"parqtcold "<<parqtcold[i][ipar]<<std::endl;
+	    parqtcold[i][ipar] = clb->GetQTCpar(i,ipar);
+	    parledold[i][ipar] = clb->GetLEDpar(i, ipar);
+	    goodqtc[i][ipar] = 999;
+	    goodled[i][ipar] = 999;
+	    //	    cout<<" old "<<i<<" "<<ipar<<" qtc "<< parqtcold[i][ipar]<<" led "<<parledold[i][ipar]<<endl;
 	  }
       }
-  } // object in existing OCDB
+  }
+
 
     Bool_t resultLaser=kFALSE;
     //processing DAQ
@@ -199,7 +195,7 @@ UInt_t AliT0Preprocessor::ProcessLaser(){
                 AliT0CalibWalk *laser = new AliT0CalibWalk();
                 laser->MakeWalkCorrGraph(laserFile);
 		//check difference with what was before
-		if(laser && clb && !clbold){
+		if(laser && clb ){
 		  iStore = 1;				
 		  for(Int_t i=0; i<24; i++)
 		    {

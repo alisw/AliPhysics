@@ -227,14 +227,16 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	      if(!hCFDvsQTC[i][im] || !hCFDvsLED[i][im]) 
 	      	AliWarning(Form(" no walk correction data in LASER DA for channel %i for amplitude %f MIPs",i,mips[im]));
 	      
+	      Float_t qtc0 = hCFDvsQTC[i][0]->GetMean(2);	      
 	      if(hCFDvsQTC[i][im])
 		{	  
 		  x1[im] = hCFDvsQTC[i][im]->GetMean(1);
-		  y1[im] = hCFDvsQTC[i][im]->GetMean(2);
+		  y1[im] =  hCFDvsQTC[i][im]->GetMean(2) - qtc0;
 		}
+	      Float_t led0 = hCFDvsLED[i][0]->GetMean(2);
 	      if( hCFDvsLED[i][im]){
 		  x2[im] = hCFDvsLED[i][im]->GetMean(1);
-		  y2[im] = hCFDvsLED[i][im]->GetMean(2);
+		  y2[im] =  hCFDvsLED[i][im]->GetMean(2) - led0;
 		}
 	      xx[im]=mips[im];
 	    }
