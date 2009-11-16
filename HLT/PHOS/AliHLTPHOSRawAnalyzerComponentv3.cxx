@@ -216,6 +216,7 @@ AliHLTPHOSRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 
   if(fAltroRawStreamPtr->NextDDL())
     {
+      fOffset = (fAltroRawStreamPtr->GetAltroCFG1() >> 10) & 0xf;
       int cnt = 0;
       while( fAltroRawStreamPtr->NextChannel()  )
 	{ 
