@@ -513,20 +513,8 @@ void AliAnalysisTaskJetSpectrum::UserExec(Option_t */*option*/)
     return;
   }
 
-
-  //  aodH->SelectEvent(kTRUE);
-
-  // ========= These pointers need to be valid in any case ======= 
-
-
-  /*
-  AliUA1JetHeaderV1 *jhRec = dynamic_cast<AliUA1JetHeaderV1*>(fJetFinderRec->GetHeader());
-  if(!jhRec){
-    Printf("%s:%d No Jet Header found",(char*)__FILE__,__LINE__);
-    return;
-  }
-  */
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
+
   TClonesArray *aodRecJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchRec.Data()));
   if(!aodRecJets){
     Printf("%s:%d no reconstructed Jet array with name %s in AOD",(char*)__FILE__,__LINE__,fBranchRec.Data());
