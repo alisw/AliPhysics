@@ -1285,7 +1285,7 @@ void AliFlowAnalysisWithQCumulants::BookAndFillWeightsHistograms()
   if(fWeightsList->FindObject("phi_weights"))
   {
    fPhiWeights = dynamic_cast<TH1F*>(fWeightsList->FindObject("phi_weights"));
-   if(fPhiWeights->GetBinWidth(1) != fPhiBinWidth)
+   if((fPhiWeights->GetBinWidth(1) > fPhiBinWidth) || (fPhiWeights->GetBinWidth(1) < fPhiBinWidth))
    {
     cout<<"WARNING: fPhiWeights->GetBinWidth(1) != fPhiBinWidth in AFAWQC::BAFWH() !!!!        "<<endl;
     cout<<"         This indicates inconsistent binning in phi histograms throughout the code."<<endl;
@@ -1303,7 +1303,7 @@ void AliFlowAnalysisWithQCumulants::BookAndFillWeightsHistograms()
   if(fWeightsList->FindObject("pt_weights"))
   {
    fPtWeights = dynamic_cast<TH1D*>(fWeightsList->FindObject("pt_weights"));
-   if(fPtWeights->GetBinWidth(1) != fPtBinWidth)
+   if((fPtWeights->GetBinWidth(1) > fPtBinWidth) || (fPtWeights->GetBinWidth(1) < fPtBinWidth))
    {
     cout<<"WARNING: fPtWeights->GetBinWidth(1) != fPtBinWidth in AFAWQC::BAFWH() !!!!         "<<endl;
     cout<<"         This indicates insconsistent binning in pt histograms throughout the code."<<endl;
@@ -1321,7 +1321,7 @@ void AliFlowAnalysisWithQCumulants::BookAndFillWeightsHistograms()
   if(fWeightsList->FindObject("eta_weights"))
   {
    fEtaWeights = dynamic_cast<TH1D*>(fWeightsList->FindObject("eta_weights"));
-   if(fEtaWeights->GetBinWidth(1) != fEtaBinWidth)
+   if((fEtaWeights->GetBinWidth(1) > fEtaBinWidth) || (fEtaWeights->GetBinWidth(1) < fEtaBinWidth))
    {
     cout<<"WARNING: fEtaWeights->GetBinWidth(1) != fEtaBinWidth in AFAWQC::BAFWH() !!!!        "<<endl;
     cout<<"         This indicates insconsistent binning in eta histograms throughout the code."<<endl;
@@ -2833,7 +2833,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlow()
  Double_t v8ErrorSquared = 0.; // squared statistical error of v{8,QC} 
  
  // calculate squared statistical errors of integrated flow estimates:
- if(two != 0.) 
+ if(two > 0.) 
  { 
   v2ErrorSquared = (1./(4.*two))*pow(twoError,2.);
  } 
@@ -5476,7 +5476,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, T
   {
    denominator = 1.-term1/(term2*term3);
    prefactor = term1/(term2*term3);
-   if(denominator!=0.)
+   if(denominator!=0)
    {
     covTwoTwoReduced = (twoTwoReduced-two*twoReduced)/denominator;            
     wCovTwoTwoReduced = covTwoTwoReduced*prefactor; 
@@ -5491,7 +5491,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, T
   {
    denominator = 1.-term1/(term2*term3);
    prefactor = term1/(term2*term3);
-   if(denominator!=0.)
+   if(denominator!=0)
    {
     covTwoFourReduced = (twoFourReduced-two*fourReduced)/denominator;            
     wCovTwoFourReduced = covTwoFourReduced*prefactor; 
@@ -5506,7 +5506,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, T
   {
    denominator = 1.-term1/(term2*term3);
    prefactor = term1/(term2*term3);
-   if(denominator!=0.)
+   if(denominator!=0)
    {
     covFourTwoReduced = (fourTwoReduced-four*twoReduced)/denominator;            
     wCovFourTwoReduced = covFourTwoReduced*prefactor; 
@@ -5521,7 +5521,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, T
   {
    denominator = 1.-term1/(term2*term3);
    prefactor = term1/(term2*term3);
-   if(denominator!=0.)
+   if(denominator!=0)
    {
     covFourFourReduced = (fourFourReduced-four*fourReduced)/denominator;            
     wCovFourFourReduced = covFourFourReduced*prefactor; 
@@ -5536,7 +5536,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, T
   {
    denominator = 1.-term1/(term2*term3);
    prefactor = term1/(term2*term3);
-   if(denominator!=0.)
+   if(denominator!=0)
    {
     covTwoReducedFourReduced = (twoReducedFourReduced-twoReduced*fourReduced)/denominator;            
     wCovTwoReducedFourReduced = covTwoReducedFourReduced*prefactor; 
@@ -9007,8 +9007,8 @@ void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrelations(TString type,
  Int_t t = typeFlag;
  Int_t pe = ptEtaFlag;
       
- TString RPorPOIString[2] = {"RP ","POI"}; // to be improved (name in the same way as in the other methods, eventually promote to data member) 
- TString PtOrEtaString[2] = {"pt","eta"}; // to be improved (name in the same way as in the other methods, eventually promote to data member) 
+ TString rpORpoiString[2] = {"RP ","POI"}; // to be improved (name in the same way as in the other methods, eventually promote to data member) 
+ TString ptORetaString[2] = {"pt","eta"}; // to be improved (name in the same way as in the other methods, eventually promote to data member) 
  TString reducedCorrelations[4] = {"<<cos(n(psi1-phi2))>>","<<cos(n(psi1+phi2-phi3-phi4))>>","",""}; // to be improved (access this from pro or hist)
  Double_t lowerPtEtaEdge[2] = {fPtMin+(fCrossCheckInPtBinNo-1)*fPtBinWidth,fEtaMin+(fCrossCheckInEtaBinNo-1)*fEtaBinWidth};
  Double_t upperPtEtaEdge[2] = {fPtMin+fCrossCheckInPtBinNo*fPtBinWidth,fEtaMin+fCrossCheckInEtaBinNo*fEtaBinWidth};
@@ -9020,10 +9020,10 @@ void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrelations(TString type,
  cout<<"   *****************************************"<<endl;
  cout<<"   **** cross-checking the correlations ****"<<endl;
  cout<<"   ****      for differential flow      ****"<<endl;
- cout<<"   ****               "<<RPorPOIString[t]<<"               ****"<<endl;
+ cout<<"   ****               "<<rpORpoiString[t]<<"               ****"<<endl;
  cout<<"   *****************************************"<<endl; 
  cout<<endl;
- cout<<"           "<<PtOrEtaString[pe]<<" bin: "<<lowerPtEtaEdge[pe]<<" <= "<<PtOrEtaString[pe]<<" < "<<upperPtEtaEdge[pe]<<endl;
+ cout<<"           "<<ptORetaString[pe]<<" bin: "<<lowerPtEtaEdge[pe]<<" <= "<<ptORetaString[pe]<<" < "<<upperPtEtaEdge[pe]<<endl;
  cout<<endl;
  
  for(Int_t rci=0;rci<2;rci++) // to be improved (calculate 6th and 8th order)
@@ -9320,8 +9320,8 @@ void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrectionTermsForNUA(TStr
  Int_t t = typeFlag;
  Int_t pe = ptEtaFlag;
       
- TString RPorPOIString[2] = {"RP ","POI"}; // to be improved (name in the same way as in the other methods, eventually promote to data member) 
- TString PtOrEtaString[2] = {"pt","eta"}; // to be improved (name in the same way as in the other methods, eventually promote to data member) 
+ TString rpORpoiString[2] = {"RP ","POI"}; // to be improved (name in the same way as in the other methods, eventually promote to data member) 
+ TString ptORetaString[2] = {"pt","eta"}; // to be improved (name in the same way as in the other methods, eventually promote to data member) 
  //TString sinCosFlag[2] = {"sin","cos"}; // to be improved (eventually promote to data member)
  TString reducedCorrectionSinTerms[4] = {"<<sin(n(psi1))>>","<<sin(n(psi1+phi2))>>","<<sin(n*(psi1+phi2-phi3))>>","<<sin(n*(psi1-phi2-phi3))>>"}; // to be improved (access this from pro or hist)
  TString reducedCorrectionCosTerms[4] = {"<<cos(n(psi1))>>","<<cos(n(psi1+phi2))>>","<<cos(n*(psi1+phi2-phi3))>>","<<cos(n*(psi1-phi2-phi3))>>"}; // to be improved (access this from pro or hist)
@@ -9335,10 +9335,10 @@ void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrectionTermsForNUA(TStr
  cout<<"   ****  cross-checking the correction   ****"<<endl;
  cout<<"   **** terms for non-uniform acceptance ****"<<endl;
  cout<<"   ****      for differential flow       ****"<<endl;
- cout<<"   ****              "<<RPorPOIString[t]<<"                 ****"<<endl;
+ cout<<"   ****              "<<rpORpoiString[t]<<"                 ****"<<endl;
  cout<<"   ******************************************"<<endl; 
  cout<<endl;
- cout<<"           "<<PtOrEtaString[pe]<<" bin: "<<lowerPtEtaEdge[pe]<<" <= "<<PtOrEtaString[pe]<<" < "<<upperPtEtaEdge[pe]<<endl;
+ cout<<"           "<<ptORetaString[pe]<<" bin: "<<lowerPtEtaEdge[pe]<<" <= "<<ptORetaString[pe]<<" < "<<upperPtEtaEdge[pe]<<endl;
  cout<<endl;
  
  for(Int_t cti=0;cti<4;cti++) // correction term index
