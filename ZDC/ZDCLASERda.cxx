@@ -375,7 +375,9 @@ int main(int argc, char **argv) {
 	        else if(detector==4) hZNAhg[sector]->Fill(CorrADC);
 	        else if(detector==5) hZPAhg[sector]->Fill(CorrADC);
 	        // ---- ZEM
-		else if(detector==3) hZEMhg[sector-1]->Fill(CorrADC);
+		else if(detector==3){
+		  hZEMhg[sector-1]->Fill(CorrADC);
+		}
 	      }
 	      else if(rawStreamZDC->GetADCGain()==1){ // --- Low gain chain ---
 	        // ---- side C
@@ -456,7 +458,7 @@ int main(int argc, char **argv) {
     if(maxXval[k]-150.<0.) xlow[k]=0.;
     else xlow[k] = maxXval[k]-150.;
     // checking if at least one histo is fitted
-    if(hZNChg[k]->GetEntries() != 0){
+    if(hZNChg[k]->GetEntries()!=0 && hZNChg[k]->GetMean()>0){
       atLeastOneHisto=1;
       //
       hZNChg[k]->Fit("gaus","Q","",xlow[k],maxXval[k]+150.);
@@ -473,7 +475,7 @@ int main(int argc, char **argv) {
     if(nBin[k+5]!=0) maxXval[k+5] = maxBin[k+5]*xMax[k+5]/nBin[k+5];
     if(maxXval[k+5]-150.<0.) xlow[k+5]=0.;
     else xlow[k+5] = maxXval[k+5]-150.;
-    if(hZPChg[k]->GetEntries() != 0){
+    if(hZPChg[k]->GetEntries()!=0 && hZPChg[k]->GetMean()>0){
       atLeastOneHisto=1; 
       //
       hZPChg[k]->Fit("gaus","Q","",xlow[k+5],maxXval[k+5]+150.);
@@ -491,9 +493,9 @@ int main(int argc, char **argv) {
       if(nBin[k+10]!=0) maxXval[k+10] = maxBin[k+10]*xMax[k+10]/nBin[k+10];
       if(maxXval[k+10]-150.<0.) xlow[k+10]=0.;
       else xlow[k+10] = maxXval[k+10]-150.;
-      if(hZEMhg[k]->GetEntries() != 0){
+      if(hZEMhg[k]->GetEntries()!=0 && hZEMhg[k]->GetMean()>0){
         atLeastOneHisto=1; 
-       //
+        //
         hZEMhg[k]->Fit("gaus","Q","",xlow[k+10],maxXval[k+10]+150.);
         fun[k+10] = hZEMhg[k]->GetFunction("gaus");
         mean[k+10]  = (Float_t) (fun[k+10]->GetParameter(1));
@@ -509,7 +511,7 @@ int main(int argc, char **argv) {
     if(nBin[k+12]!=0) maxXval[k+12] = maxBin[k+12]*xMax[k+12]/nBin[k+12];
     if(maxXval[k+12]-150.<0.) xlow[k+12]=0.;
     else xlow[k+12] = maxXval[k+12]-150.;
-    if(hZNAhg[k]->GetEntries() != 0){
+    if(hZNAhg[k]->GetEntries()!=0 && hZNAhg[k]->GetMean()>0){
       atLeastOneHisto=1; 
       //
       hZNAhg[k]->Fit("gaus","Q","",xlow[k+12],maxXval[k+12]+150.);
@@ -526,7 +528,7 @@ int main(int argc, char **argv) {
     if(nBin[k+17]!=0) maxXval[k+17] = maxBin[k+17]*xMax[k+17]/nBin[k+17];
     if(maxXval[k+17]-150.<0.) xlow[k+17]=0.;
     else xlow[k+17] = maxXval[k+17]-150.;
-    if(hZPAhg[k]->GetEntries() != 0){
+    if(hZPAhg[k]->GetEntries()!=0 && hZPAhg[k]->GetMean()>0){
       atLeastOneHisto=1; 
       //
       hZPAhg[k]->Fit("gaus","Q","",xlow[k+17],maxXval[k+17]+150.);
@@ -544,7 +546,7 @@ int main(int argc, char **argv) {
   if(nBin[22]!=0) maxXval[22] = maxBin[22]*xMax[22]/nBin[22];
   if(maxXval[22]-150.<0.) xlow[22]=0.;
   else xlow[22] = maxXval[22]-150.;
-  if(hPMRefChg->GetEntries() != 0){
+  if(hPMRefChg->GetEntries()!=0 && hPMRefChg->GetMean()>0){
     atLeastOneHisto=1; 
     //
     hPMRefChg->Fit("gaus","Q","",xlow[22],maxXval[22]+150.);
@@ -561,7 +563,7 @@ int main(int argc, char **argv) {
   if(nBin[23]!=0) maxXval[23] = maxBin[23]*xMax[23]/nBin[23];
   if(maxXval[23]-100.<0.) xlow[23]=0.;
   else xlow[23] = maxXval[23]-150.;
-  if(hPMRefAhg->GetEntries() != 0){
+  if(hPMRefAhg->GetEntries()!=0 && hPMRefAhg->GetMean()>0){
     atLeastOneHisto=1; 
     //
     hPMRefAhg->Fit("gaus","Q","",xlow[23],maxXval[23]+100.);
@@ -582,7 +584,7 @@ int main(int argc, char **argv) {
     if(nBin[k+kOffset]!=0) maxXval[k+kOffset] = maxBin[k+kOffset]*xMax[k+kOffset]/nBin[k+kOffset];
     if(maxXval[k+kOffset]-150.<0.) xlow[k+kOffset]=0.;
     else xlow[k+kOffset] = maxXval[k+kOffset]-150.;
-    if(hZNClg[k]->GetEntries() != 0){
+    if(hZNClg[k]->GetEntries()!=0 && hZNClg[k]->GetMean()>0){
       atLeastOneHisto=1; 
       //
       hZNClg[k]->Fit("gaus","Q","",xlow[k+kOffset],maxXval[k+kOffset]+150.);
@@ -599,7 +601,7 @@ int main(int argc, char **argv) {
     if(nBin[k+kOffset+5]!=0) maxXval[k+kOffset+5] = maxBin[k+kOffset+5]*xMax[k+kOffset+5]/nBin[k+kOffset+5];
     if(maxXval[k+kOffset+5]-150.<0.) xlow[k+kOffset+5]=0.;
     else xlow[k+kOffset+5] = maxXval[k+kOffset+5]-150.;
-    if(hZPClg[k]->GetEntries() != 0){
+    if(hZPClg[k]->GetEntries()!=0 && hZPClg[k]->GetMean()>0){
       atLeastOneHisto=1;  
       //
       hZPClg[k]->Fit("gaus","Q","",xlow[k+kOffset+5],maxXval[k+kOffset+5]+150.);
@@ -617,7 +619,7 @@ int main(int argc, char **argv) {
       if(nBin[k+kOffset+10]!=0) maxXval[k+kOffset+10] = maxBin[k+kOffset+10]*xMax[k+kOffset+10]/nBin[k+kOffset+10];
       if(maxXval[k+kOffset+10]-150.<0.) xlow[k+kOffset+10]=0.;
       else xlow[k+kOffset+10] = maxXval[k+kOffset+10]-150.;
-      if(hZEMlg[k]->GetEntries() != 0){
+      if(hZEMlg[k]->GetEntries()!=0 && hZEMlg[k]->GetMean()>0){
         atLeastOneHisto=1;  
         //
         hZEMlg[k]->Fit("gaus","Q","",xlow[k+kOffset+10],maxXval[k+kOffset+10]+150.);
@@ -635,7 +637,7 @@ int main(int argc, char **argv) {
     if(nBin[k+kOffset+12]!=0) maxXval[k+kOffset+12] = maxBin[k+kOffset+12]*xMax[k+kOffset+12]/nBin[k+kOffset+12];
     if(maxXval[k+kOffset+12]-150.<0.) xlow[k+kOffset+12]=0.;
     else xlow[k+kOffset+12] = maxXval[k+kOffset+12]-150.;
-    if(hZNAlg[k]->GetEntries() != 0){
+    if(hZNAlg[k]->GetEntries()!=0 && hZNAlg[k]->GetMean()>0){
       atLeastOneHisto=1;
       //
       hZNAlg[k]->Fit("gaus","Q","",xlow[k+kOffset+12],maxXval[k+kOffset+12]+150.);
@@ -652,7 +654,7 @@ int main(int argc, char **argv) {
     if(nBin[k+kOffset+17]!=0) maxXval[k+kOffset+17] = maxBin[k+kOffset+17]*xMax[k+kOffset+17]/nBin[k+kOffset+17];
     if(maxXval[k+kOffset+17]-150.<0.) xlow[k+kOffset+17]=0.;
     else xlow[k+kOffset+17] = maxXval[k+kOffset+17]-150.;
-    if(hZPAlg[k]->GetEntries() != 0){
+    if(hZPAlg[k]->GetEntries()!=0 && hZPAlg[k]->GetMean()>0){
       atLeastOneHisto=1;  
       //
       hZPAlg[k]->Fit("gaus","Q","",xlow[k+kOffset+17],maxXval[k+kOffset+17]+150.);
@@ -670,7 +672,7 @@ int main(int argc, char **argv) {
   if(nBin[46]!=0) maxXval[46] = maxBin[46]*xMax[46]/nBin[46];
   if(maxXval[46]-150.<0.) xlow[46]=0.;
   else xlow[46] = maxXval[46]-150.;
-  if(hPMRefClg->GetEntries() != 0){
+  if(hPMRefClg->GetEntries()!=0 && hPMRefClg->GetMean()>0){
     atLeastOneHisto=1; 
     //
     hPMRefClg->Fit("gaus","Q","",xlow[46],maxXval[46]+150.);
@@ -687,7 +689,7 @@ int main(int argc, char **argv) {
   if(nBin[47]!=0) maxXval[47] = maxBin[47]*xMax[47]/nBin[47];
   if(maxXval[47]-100.<0.) xlow[47]=0.;
   else xlow[47] = maxXval[47]-150.;
-  if(hPMRefAlg->GetEntries() != 0){
+  if(hPMRefAlg->GetEntries()!=0 && hPMRefAlg->GetMean()>0){
     atLeastOneHisto=1;  
     //
     hPMRefAlg->Fit("gaus","Q","",xlow[47],maxXval[47]+100.);
