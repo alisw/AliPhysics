@@ -40,7 +40,6 @@ AliCdfJetHeader::AliCdfJetHeader() :
     fRadius (0.7),
     fMinPartJet (1),
     fJetPtCut (0.),
-    fDebugCDF (false),
     fAODwrite (false),
     fAODtracksWrite (false)
   {

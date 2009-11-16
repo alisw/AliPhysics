@@ -339,7 +339,7 @@ AliCdfJetHeader *header = (AliCdfJetHeader*)fHeader;
 
   if (header)
     {
-    fDebug            = header->IsDebugCDF();
+    fDebug            = header->GetDebug();
     fAODwrite         = header->IsAODwrite() ;       // write jets to AOD
     fAODtracksWrite   = header->IsAODtracksWrite() ; // write jet tracks to AOD
     fRadius           = header->GetRadius();      // get Radius from jet finder header

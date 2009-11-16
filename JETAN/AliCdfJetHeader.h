@@ -26,14 +26,12 @@ class AliCdfJetHeader : public AliJetHeader
   // Setters
   void SetRadius         ( Double_t radius )          { fRadius = radius; }
   void SetJetPtCut       ( Double_t jetptcut )        { fJetPtCut = jetptcut; }
-  void SetDebugCDF       ( Bool_t debug )             { fDebugCDF = debug; }
   void SetAODwrite       ( Bool_t aodwrite )          { fAODwrite = aodwrite ; }
   void SetAODtracksWrite ( Bool_t aodtrackswrite )    { fAODtracksWrite = aodtrackswrite ; }
   void SetMinPartJet     ( Int_t npart )              { fMinPartJet = npart ; }
 
 //  void SetCDFJetHeader   () { fCDFheader = (AliCdfJetHeader*)fHeader; }
 
-  Bool_t IsDebugCDF() const { return fDebugCDF ; }
   Bool_t IsAODwrite() const { return fAODwrite ; }
   Bool_t IsAODtracksWrite() const { return fAODtracksWrite ; }
 
@@ -51,7 +49,6 @@ class AliCdfJetHeader : public AliJetHeader
   // JET Pt cut
   Double_t fJetPtCut ;  // pt cut of jets
 
-  Bool_t fDebugCDF ;         // debug flag for CDF
   Bool_t fAODwrite ;         // flag for writing to AOD
   Bool_t fAODtracksWrite ;   // flag for writing tracks to AOD
 
