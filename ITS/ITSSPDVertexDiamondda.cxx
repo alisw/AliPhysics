@@ -1,13 +1,13 @@
 /*
 Contact: cvetan.cheshkov@cern.ch
-Link: http://alisoft.cern.ch/viewvc/trunk/ITS/ITSSPDVertexDiamondda.cxx?root=AliRoot&view=log , /afs/cern.ch/user/c/cheshkov/public/08000058338016.30.root.date.gz
+Link: http://alisoft.cern.ch/viewvc/trunk/ITS/ITSSPDVertexDiamondda.cxx?root=AliRoot&view=log , /afs/cern.ch/user/c/cheshkov/public/08000058338016.30.root.date.gz , /afs/cern.ch/user/c/cheshkov/public/ITS/VD_da_test.date
 Reference Run: 58338
 Run Type: PHYSICS
 DA Type: MON
 Number of events needed: 100
-Input Files: GRP/Geometry/Data , ITS/Align/Data , spd_noisy_ocdb , spd_dead_ocdb
+Input Files: GRP/Geometry/Data , ITS/Align/Data , spd_noisy_ocdb , spd_dead_ocdb (all the files are taken from DQM OCDB snapshot)
 Output Files: SPDVertexDiamondDA.root
-Trigger types used: PHYSICS
+Trigger types used: All SPD F0 triggers 
 */
 
 #define OUTPUT_FILE "SPDVertexDiamondDA.root"
@@ -86,6 +86,7 @@ int main(int argc, char **argv) {
   }
   int runNr = atoi(getenv("DATE_RUN_NUMBER"));
 
+  /*
   // Get the necessary OCDB files from the DAQ detector DB
   if (gSystem->AccessPathName("localOCDB/GRP/Geometry/Data",kFileExists)) {
     if (gSystem->mkdir("localOCDB/GRP/Geometry/Data",kTRUE) != 0) {
@@ -135,10 +136,16 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+  */
+
   // Global initializations
   AliLog::SetGlobalLogLevel(AliLog::kError);
+  if (gSystem->AccessPathName("/local/cdb",kFileExists)) {
+    printf("Local OCDB directory (/local/cdb) does not exist");
+    return -1;
+  }
   AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://localOCDB");
+  man->SetDefaultStorage("local:///local/cdb");
   man->SetRun(runNr);
 
   // Init mean vertexer
