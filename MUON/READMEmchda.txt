@@ -103,7 +103,7 @@ Default values are listed below
 1
 1
 0
-\verbatim
+\endverbatim
 
  - config_ldc-MTRK-S3-0 : configuration file corresponding to MuonTracker station 3 if (for example) DA is running on ldc-MTRK-S3-0 
 

@@ -28,7 +28,7 @@
 ///
 /// For more information, please see READMEcalib
 ///
-// \author Laurent Aphecetche
+/// \author Laurent Aphecetche
 //-----------------------------------------------------------------------------
 
 #include "AliMUONCDB.h"
