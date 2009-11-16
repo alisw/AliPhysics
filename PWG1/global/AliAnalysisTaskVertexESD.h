@@ -39,6 +39,8 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
   
  protected:
   Bool_t       fReadMC;         // read Monte Carlo
+  Bool_t       fRecoVtxTPC;     // reco TPC vertex on the flight
+  Bool_t       fRecoVtxITSTPC;  // reco ITS+TPC vertex on the flight
   AliESDEvent *fESD;            // ESD object
   TList       *fOutput;         //! list send on output slot 0
   TNtuple     *fNtupleVertexESD;//! output ntuple
@@ -49,8 +51,9 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTask
   AliAnalysisTaskVertexESD(const AliAnalysisTaskVertexESD&); // not implemented
   AliAnalysisTaskVertexESD& operator=(const AliAnalysisTaskVertexESD&); // not implemented
   AliESDVertex* ReconstructPrimaryVertexTPC() const;
+  AliESDVertex* ReconstructPrimaryVertexITSTPC() const;
   
-  ClassDef(AliAnalysisTaskVertexESD,1); // primary vertex analysis
+  ClassDef(AliAnalysisTaskVertexESD,2); // primary vertex analysis
 };
 
 #endif
