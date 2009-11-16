@@ -25,7 +25,7 @@ const Double_t hbarc_squared = hbarc * hbarc;
 
 void IsotropicR3(Double_t r, Double_t *x, Double_t *y, Double_t *z) {
   Double_t pZ  = 1. - 2.*(gRandom->Rndm());
-  Double_t st  = TMath::Sqrt(1. - pZ * pZ) * r;
+  Double_t st  = TMath::Sqrt((1.-pZ)*(1.+pZ)) * r;
   Double_t phi = 2. * TMath::Pi() * (gRandom->Rndm());
 
   *x = st * cos(phi);
@@ -35,7 +35,7 @@ void IsotropicR3(Double_t r, Double_t *x, Double_t *y, Double_t *z) {
 
 void IsotropicR3(Double_t r, TVector3 &pos) {
   Double_t pZ  = 1. - 2.* (gRandom->Rndm());  
-  Double_t st  = TMath::Sqrt(1. - pZ * pZ) * r;
+  Double_t st  = TMath::Sqrt((1.-pZ)*(1.+pZ)) * r;
   Double_t phi = 2. * TMath::Pi() * (gRandom->Rndm());
 
   pos.SetX(st * TMath::Cos(phi));

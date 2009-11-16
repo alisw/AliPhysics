@@ -1142,12 +1142,13 @@ void AliMC::FixParticleDecaytime()
 	// Maximum and minimum decay time
 	//
 	// Check for curlers first
-	if (fRDecayMax * fRDecayMax / rho / rho / 2. > 1.) return;
+	const Double_t kOvRhoSqr2 = 1./(rho*TMath::Sqrt(2.));
+	if (fRDecayMax * kOvRhoSqr2 > 1.) return;
 	
 	//
  
-	tmax  = TMath::ACos(1. - fRDecayMax * fRDecayMax / rho / rho / 2.) / omega;   // [ct]
-	tmin  = TMath::ACos(1. - fRDecayMin * fRDecayMin / rho / rho / 2.) / omega;   // [ct]
+	tmax  = TMath::ACos((1.-fRDecayMax*kOvRhoSqr2)*(1.+fRDecayMax*kOvRhoSqr2)) / omega;   // [ct]
+	tmax  = TMath::ACos((1.-fRDecayMin*kOvRhoSqr2)*(1.+fRDecayMin*kOvRhoSqr2)) / omega;   // [ct]
     } else {
 	tmax =  fRDecayMax / vt;                                                      // [ct] 
 	tmin =  fRDecayMin / vt;	                                              // [ct]

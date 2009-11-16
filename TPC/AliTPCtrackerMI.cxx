@@ -1061,8 +1061,8 @@ Bool_t   AliTPCtrackerMI::GetProlongation(Double_t x1, Double_t x2, Double_t x[5
     return kFALSE;
   }
 
-  Double_t c1=x[4]*x1 - x[2], r1=sqrt((1.-c1)*(1.+c1));
-  Double_t c2=x[4]*x2 - x[2], r2=sqrt((1.-c2)*(1.+c2));  
+  Double_t c1=x[4]*x1 - x[2], r1=TMath::Sqrt((1.-c1)*(1.+c1));
+  Double_t c2=x[4]*x2 - x[2], r2=TMath::Sqrt((1.-c2)*(1.+c2));  
   y = x[0];
   z = x[1];
   
@@ -6738,7 +6738,7 @@ void  AliTPCtrackerMI::GetShape(AliTPCseed * seed, Int_t row)
   Float_t zdrift = TMath::Abs((fkParam->GetZLength(0)-TMath::Abs(seed->GetZ())));
   Int_t type = (seed->GetSector() < fkParam->GetNSector()/2) ? 0: (row>126) ? 1:2;
   Double_t angulary  = seed->GetSnp();
-  angulary = angulary*angulary/(1.-angulary*angulary);
+  angulary = angulary*angulary/((1.-angulary)*(1.+angulary));
   Double_t angularz  = seed->GetTgl()*seed->GetTgl()*(1.+angulary);
   
   Double_t sigmay =  clparam->GetRMS0(0,type,zdrift,TMath::Sqrt(TMath::Abs(angulary)));

@@ -741,7 +741,7 @@ void AliGenCorrHF::GetHadronPair(TFile* fG, Int_t idq, Double_t y1, Double_t y2,
       y3 = 0.5 * TMath::Log((e1 + pz3 + 1.e-13)/(e1 - pz3 + 1.e-13));
       y4 = 0.5 * TMath::Log((e2 + pz4 + 1.e-13)/(e2 - pz4 + 1.e-13));
       if(TMath::Abs(y3)<ycorr && TMath::Abs(y4)<ycorr && rand[0]>0.5) {
-	ptemp = TMath::Sqrt(e1*e1 - pz3*pz3);
+	ptemp = TMath::Sqrt((e1-pz3)*(e1+pz3));
 	y3  = 4*(1 - 2*rand[1]);
 	pz3 = ptemp*TMath::SinH(y3);
 	pz4 = pz3;

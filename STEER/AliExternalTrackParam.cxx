@@ -294,8 +294,8 @@ Double_t AliExternalTrackParam::GetD(Double_t x,Double_t y,Double_t b) const {
   y = -x*sn + y*cs; x=a;
   xt-=x; yt-=y;
 
-  sn=rp4*xt - fP[2]; cs=rp4*yt + TMath::Sqrt(1.- fP[2]*fP[2]);
-  a=2*(xt*fP[2] - yt*TMath::Sqrt(1.- fP[2]*fP[2]))-rp4*(xt*xt + yt*yt);
+  sn=rp4*xt - fP[2]; cs=rp4*yt + TMath::Sqrt((1.- fP[2])*(1.+fP[2]));
+  a=2*(xt*fP[2] - yt*TMath::Sqrt((1.-fP[2])*(1.+fP[2])))-rp4*(xt*xt + yt*yt);
   return  -a/(1 + TMath::Sqrt(sn*sn + cs*cs));
 }
 
@@ -307,7 +307,7 @@ GetDZ(Double_t x, Double_t y, Double_t z, Double_t b, Float_t dz[2]) const {
   // with respect to a point with global coordinates (x,y)
   // in the magnetic field "b" (kG)
   //------------------------------------------------------------------
-  Double_t f1 = fP[2], r1 = TMath::Sqrt(1. - f1*f1);
+  Double_t f1 = fP[2], r1 = TMath::Sqrt((1.-f1)*(1.+f1));
   Double_t xt=fX, yt=fP[0];
   Double_t sn=TMath::Sin(fAlpha), cs=TMath::Cos(fAlpha);
   Double_t a = x*cs + y*sn;
@@ -325,7 +325,7 @@ GetDZ(Double_t x, Double_t y, Double_t z, Double_t b, Float_t dz[2]) const {
   a=2*(xt*f1 - yt*r1)-rp4*(xt*xt + yt*yt);
   Double_t rr=TMath::Sqrt(sn*sn + cs*cs);
   dz[0] = -a/(1 + rr);
-  Double_t f2 = -sn/rr, r2 = TMath::Sqrt(1. - f2*f2);
+  Double_t f2 = -sn/rr, r2 = TMath::Sqrt((1.-f2)*(1.+f2));
   dz[1] = fP[1] + fP[3]/rp4*TMath::ASin(f2*r1 - f1*r2) - z;
 }
 
@@ -340,7 +340,7 @@ Double_t AliExternalTrackParam::GetLinearD(Double_t xv,Double_t yv) const {
   Double_t x= xv*cs + yv*sn;
   Double_t y=-xv*sn + yv*cs;
 
-  Double_t d = (fX-x)*fP[2] - (fP[0]-y)*TMath::Sqrt(1.- fP[2]*fP[2]);
+  Double_t d = (fX-x)*fP[2] - (fP[0]-y)*TMath::Sqrt((1.-fP[2])*(1.+fP[2]));
 
   return -d;
 }
@@ -365,7 +365,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
 
   //Apply angle correction, if requested
   if(anglecorr) {
-    Double_t angle=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
+    Double_t angle=TMath::Sqrt((1.+ fP3*fP3)/((1-fP2)*(1.+fP2)));
     xOverX0 *=angle;
     xTimesRho *=angle;
   } 
@@ -383,7 +383,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
      Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(xOverX0);
      //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
      if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
-     cC22 = theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
+     cC22 = theta2*((1.-fP2)*(1.+fP2))*(1. + fP3*fP3);
      cC33 = theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
      cC43 = theta2*fP3*fP4*(1. + fP3*fP3);
      cC44 = theta2*fP3*fP4*fP3*fP4;
@@ -440,7 +440,7 @@ Bool_t AliExternalTrackParam::CorrectForMaterial
   Double_t p=GetP();
   Double_t p2=p*p;
   Double_t beta2=p2/(p2 + mass*mass);
-  d*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
+  d*=TMath::Sqrt((1.+ fP3*fP3)/((1.-fP2)*(1.+fP2)));
 
   //Multiple scattering******************
   Double_t cC22 = 0.;
@@ -451,7 +451,7 @@ Bool_t AliExternalTrackParam::CorrectForMaterial
      Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(d);
      //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
      if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
-     cC22 = theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
+     cC22 = theta2*(1.-fP2)*(1.+fP2)*(1. + fP3*fP3);
      cC33 = theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
      cC43 = theta2*fP3*fP4*(1. + fP3*fP3);
      cC44 = theta2*fP3*fP4*fP3*fP4;
@@ -608,10 +608,10 @@ Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
 
   Double_t x=fX;
   Double_t ca=TMath::Cos(alpha-fAlpha), sa=TMath::Sin(alpha-fAlpha);
-  Double_t sf=fP2, cf=TMath::Sqrt(1.- fP2*fP2);
+  Double_t sf=fP2, cf=TMath::Sqrt((1.- fP2)*(1.+fP2)); // Improve precision
 
   Double_t tmp=sf*ca - cf*sa;
-  if (TMath::Abs(tmp) >= kAlmost1) {
+  if (TMath::Abs(tmp) > 1.) {   // 1 is a quite acceptable value for tmp
      if (TMath::Abs(tmp) > 1.+ Double_t(FLT_EPSILON))
         AliWarning(Form("Rotation failed ! %.10e",tmp)); 
      return kFALSE;
@@ -664,7 +664,7 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
   &fC30=fC[6],   &fC31=fC[7],   &fC32=fC[8],   &fC33=fC[9],  
   &fC40=fC[10],  &fC41=fC[11],  &fC42=fC[12],  &fC43=fC[13], &fC44=fC[14];
 
-  Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
+  Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
 
   fX=xk;
   fP0 += dx*(f1+f2)/(r1+r2);
@@ -875,7 +875,7 @@ GetPredictedChi2(Double_t p[3],Double_t covyz[3],Double_t covxyz[3]) const {
 
   Double_t f=GetSnp();
   if (TMath::Abs(f) >= kAlmost1) return kVeryBig;
-  Double_t r=TMath::Sqrt(1.- f*f);
+  Double_t r=TMath::Sqrt((1.-f)*(1.+f));
   Double_t a=f/r, b=GetTgl()/r;
 
   Double_t s2=333.*333.;  //something reasonably big (cm^2)
@@ -968,7 +968,7 @@ PropagateTo(Double_t p[3],Double_t covyz[3],Double_t covxyz[3],Double_t bz) {
 
   Double_t f=GetSnp();
   if (TMath::Abs(f) >= kAlmost1) return kFALSE;
-  Double_t r=TMath::Sqrt(1.- f*f);
+  Double_t r=TMath::Sqrt((1.-f)*(1.+f));
   Double_t a=f/r, b=GetTgl()/r;
 
   Double_t s2=333.*333.;  //something reasonably big (cm^2)
@@ -1294,15 +1294,15 @@ Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]) {
   x-=xv; y-=yv;
 
   //Estimate the impact parameter neglecting the track curvature
-  Double_t d=TMath::Abs(x*snp - y*TMath::Sqrt(1.- snp*snp));
+  Double_t d=TMath::Abs(x*snp - y*TMath::Sqrt((1.-snp)*(1.+snp)));
   if (d > maxd) return kFALSE; 
 
   //Propagate to the DCA
   Double_t crv=GetC(b);
   if (TMath::Abs(b) < kAlmost0Field) crv=0.;
 
-  Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt(1.-snp*snp));
-  sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv); cs=TMath::Sqrt(1.- sn*sn);
+  Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt((1.-snp)*(1.+snp)));
+  sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv); cs=TMath::Sqrt((1.-sn)*(1.+sn));
   if (TMath::Abs(tgfv)>0.) cs = sn/tgfv;
   else cs=1.;
 
@@ -1352,15 +1352,15 @@ Double_t b[3], Double_t maxd, Double_t dz[2], Double_t covar[3]) {
   x-=xv; y-=yv;
 
   //Estimate the impact parameter neglecting the track curvature
-  Double_t d=TMath::Abs(x*snp - y*TMath::Sqrt(1.- snp*snp));
+  Double_t d=TMath::Abs(x*snp - y*TMath::Sqrt((1.-snp)*(1.+snp)));
   if (d > maxd) return kFALSE; 
 
   //Propagate to the DCA
   Double_t crv=GetC(b[2]);
   if (TMath::Abs(b[2]) < kAlmost0Field) crv=0.;
 
-  Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt(1.-snp*snp));
-  sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv); cs=TMath::Sqrt(1.- sn*sn);
+  Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt((1.-snp)*(1.+snp)));
+  sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv); cs=TMath::Sqrt((1.-sn)*(1.+sn));
   if (TMath::Abs(tgfv)>0.) cs = sn/tgfv;
   else cs=1.;
 
@@ -1395,7 +1395,7 @@ void AliExternalTrackParam::GetDirection(Double_t d[3]) const {
   //----------------------------------------------------------------
   Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
   Double_t snp=fP[2];
-  Double_t csp =TMath::Sqrt((1.- snp)*(1.+snp));
+  Double_t csp =TMath::Sqrt((1.-snp)*(1.+snp));
   Double_t norm=TMath::Sqrt(1.+ fP[3]*fP[3]);
   d[0]=(csp*cs - snp*sn)/norm; 
   d[1]=(snp*cs + csp*sn)/norm; 
@@ -1806,6 +1806,7 @@ void AliExternalTrackParam::g3helx3(Double_t qfield,
  *                                                                *
  ******************************************************************/
   const Int_t ix=0, iy=1, iz=2, ipx=3, ipy=4, ipz=5, ipp=6;
+  const Double_t kOvSqSix=TMath::Sqrt(1./6.);
 
   Double_t cosx=vect[ipx], cosy=vect[ipy], cosz=vect[ipz];
 
@@ -1821,7 +1822,7 @@ void AliExternalTrackParam::g3helx3(Double_t qfield,
      cos1t = 2*t*t/tet;
   } else {
      tsint = tet*tet/6.;
-     sintt = 1.- tsint;
+     sintt = (1.-tet*kOvSqSix)*(1.+tet*kOvSqSix); // 1.- tsint;
      sint  = tet*sintt;
      cos1t = 0.5*tet; 
   }
@@ -1869,7 +1870,7 @@ Bool_t AliExternalTrackParam::PropagateToBxByBz(Double_t xk, const Double_t b[3]
   &fC30=fC[6],   &fC31=fC[7],   &fC32=fC[8],   &fC33=fC[9],  
   &fC40=fC[10],  &fC41=fC[11],  &fC42=fC[12],  &fC43=fC[13], &fC44=fC[14];
 
-  Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
+  Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
 
   //f = F - 1
   Double_t f02=    dx/(r1*r1*r1);            Double_t cc=crv/fP4;

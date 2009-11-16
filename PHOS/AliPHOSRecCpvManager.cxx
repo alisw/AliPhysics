@@ -171,11 +171,15 @@ Float_t AliPHOSRecCpvManager::GradX(Float_t x, Float_t y)
 
   Float_t skv      = kb*kb + x*x + y*y;
 
-  Float_t gradient = y*(1.-x*x/skv)*  kb*TMath::Sqrt(skv)/( kb*kb*skv+x*x*y*y)
-    - y*(1.-x*x/skv)*3*kb*TMath::Sqrt(skv)/((3*kb)*(3*kb)*skv+x*x*y*y)
-    + y*(1.-x*x/skv)*5*kb*TMath::Sqrt(skv)/((5*kb)*(5*kb)*skv+x*x*y*y)
-    - y*(1.-x*x/skv)*7*kb*TMath::Sqrt(skv)/((7*kb)*(7*kb)*skv+x*x*y*y)
-    + y*(1.-x*x/skv)*9*kb*TMath::Sqrt(skv)/((9*kb)*(9*kb)*skv+x*x*y*y);
+  Float_t sqskv=TMath::Sqrt(skv);
+  Float_t yxskv=y*(1.-x/sqskv)*(1.+x/sqskv);
+  
+  Float_t gradient = 
+      yxskv*  kb*sqskv/( kb*kb*skv+x*x*y*y)
+    - yxskv*3*kb*sqskv/((3*kb)*(3*kb)*skv+x*x*y*y)
+    + yxskv*5*kb*sqskv/((5*kb)*(5*kb)*skv+x*x*y*y)
+    - yxskv*7*kb*sqskv/((7*kb)*(7*kb)*skv+x*x*y*y)
+    + yxskv*9*kb*sqskv/((9*kb)*(9*kb)*skv+x*x*y*y);
       
   Float_t grad    = ka*gradient/TMath::TwoPi();
   return grad;
@@ -190,11 +194,16 @@ Float_t AliPHOSRecCpvManager::GradY(Float_t x, Float_t y)
   const Float_t kb = 0.70;
  
   Float_t skv      = kb*kb + x*x + y*y;
-  Float_t gradient = x*(1.-y*y/skv)*  kb*TMath::Sqrt(skv)/( kb*kb*skv+x*x*y*y)
-    - x*(1.-y*y/skv)*3*kb*TMath::Sqrt(skv)/((3*kb)*(3*kb)*skv+x*x*y*y)
-    + x*(1.-y*y/skv)*5*kb*TMath::Sqrt(skv)/((5*kb)*(5*kb)*skv+x*x*y*y)
-    - x*(1.-y*y/skv)*7*kb*TMath::Sqrt(skv)/((7*kb)*(7*kb)*skv+x*x*y*y)
-    + x*(1.-y*y/skv)*9*kb*TMath::Sqrt(skv)/((9*kb)*(9*kb)*skv+x*x*y*y);
+
+  Float_t sqskv=TMath::Sqrt(skv);
+  Float_t xyskv=x*(1.-y/sqskv)*(1.+y/sqskv);
+
+  Float_t gradient = 
+      xyskv*  kb*sqskv/( kb*kb*skv+x*x*y*y)
+    - xyskv*3*kb*sqskv/((3*kb)*(3*kb)*skv+x*x*y*y)
+    + xyskv*5*kb*sqskv/((5*kb)*(5*kb)*skv+x*x*y*y)
+    - xyskv*7*kb*sqskv/((7*kb)*(7*kb)*skv+x*x*y*y)
+    + xyskv*9*kb*sqskv/((9*kb)*(9*kb)*skv+x*x*y*y);
   
   Float_t grad    = ka*gradient/TMath::TwoPi();
   return grad;

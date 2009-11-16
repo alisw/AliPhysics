@@ -239,9 +239,9 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
                
 	    Double_t php0 = TMath::TwoPi() * gRandom->Rndm();
 	    Double_t ctp0 = 2. * gRandom->Rndm() - 1.;
-	    Double_t stp0 = TMath::Sqrt(1. - ctp0 * ctp0); 
+	    Double_t stp0 = TMath::Sqrt((1.-ctp0)*(1.+ctp0)); 
 	    e = mass + (eMax - mass) * arrayFunctDistE(); 
-	    Double_t pp0 = TMath::Sqrt(e * e - mass * mass);
+	    Double_t pp0 = TMath::Sqrt((e-mass)*(e+mass));
 	    px0 = pp0 * stp0 * TMath::Sin(php0); 
 	    py0 = pp0 * stp0 * TMath::Cos(php0);
 	    pz0 = pp0 * ctp0;

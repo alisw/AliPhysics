@@ -301,7 +301,7 @@ void AliTRDseedV1::Update(const AliTRDtrackV1 *trk)
   Double_t fSnp = trk->GetSnp();
   Double_t fTgl = trk->GetTgl();
   fPt = trk->Pt();
-  Double_t norm =1./TMath::Sqrt(1. - fSnp*fSnp); 
+  Double_t norm =1./TMath::Sqrt((1.-fSnp)*(1.+fSnp)); 
   fYref[1] = fSnp*norm;
   fZref[1] = fTgl*norm;
   SetCovRef(trk->GetCovariance());

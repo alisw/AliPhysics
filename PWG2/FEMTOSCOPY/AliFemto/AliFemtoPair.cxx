@@ -7,6 +7,7 @@
 // the pair.                                                             //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
+#include <TMath.h>
 #include "AliFemtoPair.h"
 
 double AliFemtoPair::fgMaxDuInner = .8;
@@ -423,7 +424,7 @@ double AliFemtoPair::QLongCMS() const
     double tt = tmp1.t() + tmp2.t();
 
     double beta = zz/tt;
-    double gamma = 1.0/::sqrt(1.0 - beta*beta);
+    double gamma = 1.0/TMath::Sqrt((1.-beta)*(1.+beta));
 
     double temp = gamma*(dz - beta*dt);
     return (temp);
@@ -444,9 +445,9 @@ double AliFemtoPair::QOutPf() const
   
   double k1 = ::sqrt(xt*xt + yt*yt);
   double bOut = k1/tt;
-  double gOut = 1.0/::sqrt(1.0 - bOut*bOut);
+  double gOut = 1.0/TMath::Sqrt((1.-bOut)*(1.+bOut));
   
-  double temp = gOut*(this->QOutCMS() - bOut*dt);
+  double temp = gOut*(QOutCMS() - bOut*dt);
   return (temp);
 }
 
@@ -492,7 +493,7 @@ double AliFemtoPair::QLongBf(double beta) const
     double dz = tmp1.z() - tmp2.z();
     double dt = tmp1.t() + tmp2.t();
 
-    double gamma = 1.0/::sqrt(1.0 - beta*beta);
+    double gamma = 1.0/::sqrt((1.-beta)*(1.+beta));
 
     double temp = gamma*(dz - beta*dt);
     return (temp);

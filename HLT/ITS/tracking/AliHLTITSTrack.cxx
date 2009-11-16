@@ -379,7 +379,7 @@ GetLocalXPhiZat(Double_t r,Double_t &xloc, double &phi, double &z ) const
   Double_t f1=s, f2= s + k*dx;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
 
-  Double_t c2=TMath::Sqrt(1.- f2*f2);
+  Double_t c2=TMath::Sqrt((1.-f2)*(1.+f2));
   
   double yloc = GetY() + dx*(f1+f2)/(c+c2);
   double zloc = GetZ() + dx*(c2 + f2*(f1+f2)/(c+c2))*GetTgl();
@@ -404,7 +404,7 @@ Bool_t AliHLTITSTrack::GetYZAtPhiX( double phi, double x,
   {
     double da = phi - GetAlpha();
     Double_t ca=TMath::Cos(da), sa=TMath::Sin(da);
-    Double_t sf=GetSnp(), cf=TMath::Sqrt(1.- sf*sf);
+    Double_t sf=GetSnp(), cf=TMath::Sqrt((1.-sf)*(1.+sf));
     Double_t tmp=sf*ca - cf*sa;
     if (TMath::Abs(tmp) >= kAlmost1) return 0;
   }

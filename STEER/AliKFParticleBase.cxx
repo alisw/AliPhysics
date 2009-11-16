@@ -960,7 +960,8 @@ Double_t AliKFParticleBase::GetDStoPointBz( Double_t B, const Double_t xyz[] )
 	cB= (1-c)/bq;     
 	sB= s/bq;  
       }else{
-	sB = (1. - bs*bs/6.)*ss[i];
+	const Double_t kOvSqr6 = 1./TMath::Sqrt(6.);
+	sB = (1.-bs*kOvSqr6)*(1.+bs*kOvSqr6)*ss[i];
 	cB = .5*sB*bs;
       }
       g[i][0] = fP[0] + sB*px + cB*py;
@@ -1082,7 +1083,8 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
       cB= (1-c)/bq;     
       sB= sss/bq;  
     }else{
-      sB = (1. - bs*bs/6.)*ss[i];
+      const Double_t kOvSqr6 = 1./TMath::Sqrt(6.);
+      sB = (1.-bs*kOvSqr6)*(1.+bs*kOvSqr6)*ss[i];
       cB = .5*sB*bs;
     }
     g[i][0] = fP[0] + sB*px + cB*py;
@@ -1097,7 +1099,8 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
       cB= (1-c)/bq1;   
       sB= sss/bq1;  
     }else{
-      sB = (1. - bs*bs/6.)*ss1[i];
+      const Double_t kOvSqr6 = 1./TMath::Sqrt(6.);
+      sB = (1.-bs*kOvSqr6)*(1.+bs*kOvSqr6)*ss1[i];
       cB = .5*sB*bs;
     }
       
@@ -1289,7 +1292,8 @@ void AliKFParticleBase::TransportBz( Double_t b, Double_t ss,
     sB= s/b;
     cB= (1-c)/b;
   }else{
-    sB = (1. - bs*bs/6.)*ss;
+    const Double_t kOvSqr6 = 1./TMath::Sqrt(6.);
+    sB = (1.-bs*kOvSqr6)*(1.+bs*kOvSqr6)*ss;
     cB = .5*sB*bs;
   }
   

@@ -407,8 +407,10 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
     Double_t dummy = 4/r2 - GetC()*GetC();
     if (dummy < 0) return kFALSE;
     Double_t parp = 0.5*(GetC()*GetX() + dy*TMath::Sqrt(dummy));
-    Double_t sigma2p = theta2*(1.- GetSnp()*GetSnp())*(1. + GetTgl()*GetTgl());
-    sigma2p += Cov(0)/r2*(1.- dy*dy/r2)*(1.- dy*dy/r2);
+    Double_t sigma2p = theta2*(1.-GetSnp())*(1.+GetSnp())*(1. + GetTgl()*GetTgl());
+    Double_t ovSqr2 = 1./TMath::Sqrt(r2);
+    Double_t tfact = ovSqr2*(1.-dy*ovSqr2)*(1.+dy*ovSqr2);
+    sigma2p += Cov(0)*tfact*tfact;
     sigma2p += ers[1]*ers[1]/r2;
     sigma2p += 0.25*Cov(14)*cnv*cnv*GetX()*GetX();
     Double_t eps2p=sigma2p/(Cov(5) + sigma2p);

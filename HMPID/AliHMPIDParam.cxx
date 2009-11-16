@@ -342,7 +342,7 @@ Double_t AliHMPIDParam::SigGeom(Double_t trkTheta,Double_t trkPhi,Double_t theta
   if (k<0) return 1e10;
 
   Double_t eTr = 0.5*RadThick()*betaM*TMath::Sqrt(k)/(GapThick()*alpha);     // formula (14)
-  Double_t lambda = 1.-sint*sint*sinf*sinf;                                                  // formula (15)
+  Double_t lambda = (1.-sint*sinf)*(1.+sint*sinf);                                                  // formula (15)
 
   Double_t c1 = 1./(1.+ eTr*k/(alpha*alpha*costheta*costheta));                              // formula (13.a)
   Double_t c2 = betaM*TMath::Power(k,1.5)*tantheta*lambda/(GapThick()*alpha*alpha);  // formula (13.b)
