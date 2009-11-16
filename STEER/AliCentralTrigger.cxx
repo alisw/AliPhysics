@@ -227,7 +227,6 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader, const char *detec
 
    // Process each event
    for( Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++ ) {
-      AliInfo( Form("Processing event %d", iEvent) );
       runLoader->GetEvent( iEvent );
       // Get detectors involve
       TString detStr = GetDetectors();
@@ -296,7 +295,7 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader, const char *detec
 
       // Save trigger mask
       tree->Fill();
-      AliInfo( Form("Trigger Class Mask:0x%X", fClassMask ) );
+      AliDebug(1, Form("Event:%d  Class Mask:0x%X", iEvent,fClassMask ) );
    } // end event loop
 
    Reset();
