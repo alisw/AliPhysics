@@ -11,7 +11,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERBaseLinkDef.h 32242 2009-05-07 10:50:59Z hristov
+// From STEERBaseLinkDef.h 34435 2009-08-27 13:32:45Z morsch
 
     enum  AliLog::EType_t {};
  
@@ -49,6 +49,7 @@
     class AliCollisionGeometry {};
     class AliGenDPMjetEventHeader {};
     class AliGenGeVSimEventHeader {};
+    class AliGenEposEventHeader {};
     class AliStack {};
     class AliMCEventHandler {};
     class AliInputEventHandler {};
@@ -84,7 +85,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERLinkDef.h 32918 2009-06-15 10:54:49Z cvetan
+// From STEERLinkDef.h 36069 2009-10-28 17:17:04Z shahoian
 
     enum VertexSmear_t {};
     enum VertexSource_t {};
@@ -231,9 +232,15 @@
     class AliVectorSparse {};
     class AliMatrixSq {};
     class AliSymMatrix {};
+    class AliSymBDMatrix {};
     class AliRectMatrix {};
+    class AliParamSolver {};
 
     class AliGRPManager {};
+    class AliDCSArray {};
+    class AliLHCReader {};
+    class AliCTPTimeParams {};
+    class AliCTPInputTimeParams {};
 /** @} */
 
 /** @defgroup ESD ESD
@@ -241,7 +248,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From ESDLinkDef.h 32939 2009-06-16 10:44:00Z cvetan
+// From ESDLinkDef.h 35648 2009-10-17 10:12:51Z morsch
 
     enum   AliESDEvent::ESDListIndex {};
 
@@ -366,7 +373,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From AODLinkDef.h 32064 2009-04-27 14:11:50Z agheata
+// From AODLinkDef.h 36380 2009-11-04 16:04:01Z morsch
 
     enum   AliAODVertex::AODVtx_t {};
     enum   AliAODTrack::AODTrk_t {};
@@ -384,6 +391,7 @@
     class AliAODPmdCluster {};
     class AliAODFmdCluster {};
     class AliAODJet {};
+    class AliAODJetEventBackground {};
     class AliAODPhoton {};
     class AliAODRedCov<3> {};
     class AliAODRedCov<4> {};
@@ -394,7 +402,6 @@
     class AliAODHandler {};
     class AliAODExtension {};
     class AliAODInputHandler {};
-    class AliMultiAODInputHandler {};
     class AliAODTracklets {};
     class AliAODTagCreator {};
     class AliAODCaloCells {};
