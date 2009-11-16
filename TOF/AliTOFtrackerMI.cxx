@@ -603,7 +603,8 @@ Int_t AliTOFtrackerMI::LoadClusters(TTree *cTree) {
   for (Int_t i=0; i<nc; i++) {
     AliTOFcluster *c=(AliTOFcluster*)clusters->UncheckedAt(i);
 
-    fClusters[i]=new AliTOFcluster(*c); fN++;
+//PH    fClusters[i]=new AliTOFcluster(*c); fN++;
+    fClusters[i]=c; fN++;
 
     //AliInfo(Form("%4i %4i  %f %f %f  %f %f   %2i %1i %2i %1i %2i",i, fClusters[i]->GetIndex(),fClusters[i]->GetZ(),fClusters[i]->GetR(),fClusters[i]->GetPhi(), fClusters[i]->GetTDC(),fClusters[i]->GetADC(),fClusters[i]->GetDetInd(0),fClusters[i]->GetDetInd(1),fClusters[i]->GetDetInd(2),fClusters[i]->GetDetInd(3),fClusters[i]->GetDetInd(4)));
     //AliInfo(Form("%i %f",i, fClusters[i]->GetZ()));
@@ -619,7 +620,7 @@ void AliTOFtrackerMI::UnloadClusters() {
   //This function unloads TOF clusters
   //--------------------------------------------------------------------
   for (Int_t i=0; i<fN; i++) {
-    delete fClusters[i];
+//PH    delete fClusters[i];
     fClusters[i] = 0x0;
   }
   fN=0;

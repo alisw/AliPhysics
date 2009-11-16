@@ -579,7 +579,8 @@ Int_t AliTOFtrackerV1::LoadClusters(TTree *cTree) {
 
   for (Int_t i=0; i<nc; i++) {
     AliTOFcluster *c=(AliTOFcluster*)clusters->UncheckedAt(i);
-    fClusters[i]=new AliTOFcluster(*c); fN++;
+//PH    fClusters[i]=new AliTOFcluster(*c); fN++;
+    fClusters[i]=c; fN++;
 
   // Fill Digits QA histos
  
@@ -629,7 +630,7 @@ void AliTOFtrackerV1::UnloadClusters() {
   //This function unloads TOF clusters
   //--------------------------------------------------------------------
   for (Int_t i=0; i<fN; i++) {
-    delete fClusters[i];
+//PH    delete fClusters[i];
     fClusters[i] = 0x0;
   }
   fN=0;
