@@ -42,6 +42,8 @@
 // MUON includes
 #include "AliMUONRawStreamTrackerHP.h"
 #include "TStopwatch.h"
+#include "AliRawDataErrorLog.h"
+#include "Riostream.h"
 
 #endif
 
@@ -332,6 +334,20 @@ void MUONRawStreamTrackerSimple(TString fileName = "./", Int_t maxEvent = 1000)
 }
 
 
+void ShowErrors(const AliRawReader& rawReader)
+{
+  for ( Int_t i = 0; i < rawReader.GetNumberOfErrorLogs(); ++i )
+  {
+    AliRawDataErrorLog* error = rawReader.GetErrorLog(i);
+    error->Print();
+  }
+
+  cout << Form("Number of error logs : %d (%d events)",
+               rawReader.GetNumberOfErrorLogs(),
+               rawReader.GetNumberOfEvents()) << endl;
+}
+
+
 void MUONRawStreamTrackerSimple2(TString fileName = "./", Int_t maxEvent = 1000)
 {
   /// This routine is an alternative to MUONRawStreamTrackerSimple() which is even faster.
@@ -369,6 +385,42 @@ void MUONRawStreamTrackerSimple2(TString fileName = "./", Int_t maxEvent = 1000)
       }
     }
   }
+
+  ShowErrors(*rawReader);
+  
+  delete rawReader;
+  timer.Print();
+}
+
+void MUONRawStreamTrackerErrorCount(TString fileName = "collection://filelist", Int_t maxEvent = -1)
+{
+  /// This routine is just a loop to get the error log at the end
+  
+  TStopwatch timer;
+  timer.Start(kTRUE);
+  
+  AliRawReader* rawReader = AliRawReader::Create(fileName.Data());
+  
+  // raw stream
+  AliMUONRawStreamTrackerHP rawStream(rawReader);    
+  
+  //   Loop over events  
+  Int_t iEvent = 0;
+  
+  while (rawReader->NextEvent()) 
+  {    
+    if (iEvent == maxEvent) break;
+    
+    rawStream.First();
+
+    const AliMUONRawStreamTrackerHP::AliBusPatch* buspatch = NULL;
+    
+    while ((buspatch = rawStream.Next()) != NULL)
+    {
+    }
+  }
+  
+  ShowErrors(*rawReader);
   
   delete rawReader;
   timer.Print();
