@@ -62,8 +62,6 @@
 #pragma link C++ class AliITSFOSignalsSPD+;
 
 #pragma link C++ class AliITSTrigger+;
-#pragma link C++ class AliITSTriggerConditions+;
-#pragma link C++ class AliITSTriggerAlgorithmConditions+;
 #pragma link C++ class AliITSTriggerFOProcessor+;
 #pragma link C++ class AliITSQADataMakerSim+;
 #pragma link C++ class AliITSQASPDDataMakerSim+;

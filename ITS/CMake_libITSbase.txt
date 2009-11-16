@@ -75,6 +75,8 @@ set(SRCS
 		AliITSPedestalSSD.cxx
 		AliITSPedestalSSDv2.cxx
 		AliITSSurveyToAlign.cxx
+		AliITSTriggerConditions.cxx
+		AliITSTriggerAlgorithmConditions.cxx
 )
 
 # fill list of header files from list of source files

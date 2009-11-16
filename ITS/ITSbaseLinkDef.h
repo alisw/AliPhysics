@@ -106,5 +106,7 @@
 #pragma link C++ class AliITSPedestalSSD+;
 #pragma link C++ class AliITSPedestalSSDv2+;
 #pragma link C++ class AliITSSurveyToAlign+;
+#pragma link C++ class AliITSTriggerConditions+;
+#pragma link C++ class AliITSTriggerAlgorithmConditions+;
 
 #endif

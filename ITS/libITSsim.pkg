@@ -30,8 +30,6 @@ SRCS = 	AliITS.cxx \
 		AliITSFOSignalsSPD.cxx \
 		AliITSTrigger.cxx \
 		AliITSTriggerFOProcessor.cxx \
-		AliITSTriggerConditions.cxx \
-		AliITSTriggerAlgorithmConditions.cxx \
 		AliITSv11.cxx \
 		AliITSv11Geometry.cxx \
 		AliITSv11GeomCable.cxx \
