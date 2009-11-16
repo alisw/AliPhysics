@@ -455,16 +455,19 @@ void AliDAJetFinder::StoreJets(Int_t nk,Double_t **xData,  Int_t *xx,  TMatrixD 
 	delete [] surf;
 	
 //now add selected jets to the list
-	Int_t *inJet = new Int_t[fNin];
+	Int_t *iSort = new Int_t[nk];
+    TMath::Sort(nk,etNoBg,iSort,true);
+    Int_t iCl = 0;
 	TRefArray *refs = 0;
 	Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
 	if (fromAod) refs = fReader->GetReferences();
 	for (Int_t iClust=0; iClust<nk; iClust++){									//clusters loop
-		if (isJet[iClust]){														//choose cluster
+		iCl=iSort[iClust];
+		if (isJet[iCl]){														//choose cluster
 			Float_t px,py,pz,en;
-			px = (*mY)(3,iClust)*TMath::Cos((*mY)(1,iClust));
-			py = (*mY)(3,iClust)*TMath::Sin((*mY)(1,iClust));
-			pz = (*mY)(3,iClust)/TMath::Tan(2.0 * TMath::ATan(TMath::Exp(-(*mY)(0,iClust))));
+			px = (*mY)(3,iCl)*TMath::Cos((*mY)(1,iCl));
+			py = (*mY)(3,iCl)*TMath::Sin((*mY)(1,iCl));
+			pz = (*mY)(3,iCl)/TMath::Tan(2.0 * TMath::ATan(TMath::Exp(-(*mY)(0,iCl))));
 			en = TMath::Sqrt(px * px + py * py + pz * pz);
 			AliAODJet jet(px, py, pz, en);
 			if (fromAod){
@@ -472,7 +475,7 @@ void AliDAJetFinder::StoreJets(Int_t nk,Double_t **xData,  Int_t *xx,  TMatrixD 
 				Int_t nEntr = fReader->GetMomentumArray()->GetEntries();
 				for (Int_t iEn=0; iEn<nEntr; iEn++){
 					if (fReader->GetCutFlag(iEn)==0) continue;
-					if (xx[iIn]==iClust) jet.AddTrack(refs->At(iEn));
+					if (xx[iIn]==iCl) jet.AddTrack(refs->At(iEn));
 					iIn++;
 				}
 			}
@@ -482,7 +485,7 @@ void AliDAJetFinder::StoreJets(Int_t nk,Double_t **xData,  Int_t *xx,  TMatrixD 
 	delete [] dDeltaEta; delete [] dDeltaPhi;
 	delete [] etNoBg;
 	delete [] isJet;
-	delete [] inJet;
+	delete [] iSort;
 }
 
 //-----------------------------------------------------------------------------------
