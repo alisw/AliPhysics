@@ -136,10 +136,6 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt():
    fExclRange = 0;
    fFitGaus = 0;
    
-   // projection histos
-   TH1D *fHistFitTheta[100];
-   TH1D *fHistFitPhi[100];
-
    for(Int_t i=0;i<100;i++){
       
       fHistFitTheta[i] = NULL;
@@ -172,10 +168,6 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt(Char_t* name="AliAnalyzeInvPt",Char_t* 
    fRange = 0;
    fExclRange = 0;
    fFitGaus = 0;
-
-   // projection histos
-   TH1D *fHistFitTheta[100];
-   TH1D *fHistFitPhi[100];
 
    for(Int_t i=0;i<100;i++){
     
@@ -320,7 +312,7 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
       fHistFitTheta[i] =  (TH1F*)fHistH2InvPtTheta->ProjectionX("_px",firstBin,lastBin,"e");
       
       Char_t titleTheta[50];
-      if(fabs(i-(fNThetaBins-1))<0.5) sprintf(titleTheta,"1/pt (GeV/c) integrated over #theta");
+      if(TMath::Abs(i-(fNThetaBins-1))<0.5) sprintf(titleTheta,"1/pt (GeV/c) integrated over #theta");
       else  sprintf(titleTheta,"1/pt (GeV/c) for #theta range: %1.3f - %1.3f",fThetaBins[i],fThetaBins[i+1]);
       
       fHistFitTheta[i]->SetTitle(titleTheta);
@@ -377,14 +369,14 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
       Int_t  firstBin = fHistH2InvPtPhi->GetYaxis()->FindBin(fPhiBins[i]);
       if(i>0) firstBin +=1;
       Int_t   lastBin =  fHistH2InvPtPhi->GetYaxis()->FindBin(fPhiBins[i+1]);
-      if(fabs(i-(fNPhiBins-1))<0.5){
+      if(TMath::Abs(i-(fNPhiBins-1))<0.5){
 	 firstBin = fHistH2InvPtPhi->GetYaxis()->FindBin(fPhiBins[0]);
 	 lastBin =  fHistH2InvPtPhi->GetYaxis()->FindBin(fPhiBins[i]);
       }
       fHistFitPhi[i] =  (TH1F*) fHistH2InvPtPhi->ProjectionX("_px",firstBin,lastBin,"e");
       
       Char_t titlePhi[50];
-      if(fabs(i-(fNPhiBins-1))<0.5) sprintf(titlePhi,"1/pt (GeV/c) integrated over #phi");
+      if(TMath::Abs(i-(fNPhiBins-1))<0.5) sprintf(titlePhi,"1/pt (GeV/c) integrated over #phi");
       else  sprintf(titlePhi,"1/pt (GeV/c) for #phi range: %1.3f - %1.3f",fPhiBins[i],fPhiBins[i+1]);
      
       fHistFitPhi[i]->SetTitle(titlePhi);
