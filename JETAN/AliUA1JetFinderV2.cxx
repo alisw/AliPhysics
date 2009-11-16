@@ -50,7 +50,6 @@ ClassImp(AliUA1JetFinderV2)
 AliUA1JetFinderV2::AliUA1JetFinderV2() :
   AliJetFinder(),
   fLego(0),  
-  fDebug(0),
   fOpt(0)
 {
   //

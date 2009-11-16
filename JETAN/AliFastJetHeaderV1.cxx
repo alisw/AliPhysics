@@ -50,7 +50,6 @@ AliFastJetHeaderV1::AliFastJetHeaderV1():
     fRapMin(0.),
     fPhiMax(TMath::TwoPi()),
     fPhiMin(0),
-    fDebug(0),
     fBGMode(0)
 {
   // Constructor

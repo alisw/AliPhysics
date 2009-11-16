@@ -60,6 +60,7 @@ void AliDAJetFinder::FindJets()
 // Find the jets in current event
 // 
 	Float_t betaStop=100.;
+    fDebug = fHeader->GetDebug();
 
 	Double_t dEtSum=0;
 	Double_t *xData[2];
@@ -480,6 +481,7 @@ void AliDAJetFinder::StoreJets(Int_t nk,Double_t **xData,  Int_t *xx,  TMatrixD 
 				}
 			}
 			AddJet(jet);
+			if (fDebug > 0) printf("jet %d, Eta: %f, Phi: %f, Et: %f\n",iCl,jet.Eta(),jet.Phi(),jet.Pt());
 		}
 	}
 	delete [] dDeltaEta; delete [] dDeltaPhi;

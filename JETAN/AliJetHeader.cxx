@@ -29,7 +29,8 @@ AliJetHeader::AliJetHeader():
   TNamed("AliJetHeader", "Jet Header"),
   fComment("No comment"),
   fJetEtaMax(0.5),
-  fJetEtaMin(-0.5)    
+  fJetEtaMin(-0.5),
+  fDebug(0)
 {
   //
   // Default constructor
@@ -43,7 +44,8 @@ AliJetHeader::AliJetHeader(const char * name):
   TNamed(name, "Jet Header"),
   fComment("No comment"),
   fJetEtaMax(0.5),
-  fJetEtaMin(-0.5)    
+  fJetEtaMin(-0.5),
+  fDebug(0)
 {
   //
   // Constructor

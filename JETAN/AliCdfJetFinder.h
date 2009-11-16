@@ -50,7 +50,6 @@ class AliCdfJetFinder : public AliJetFinder
     AliCdfJetFinder& operator = ( const AliCdfJetFinder& jf );
 
     TList         *fHistos;    // List of histograms
-    Bool_t        fDebug;      //  enables debugging
 
     Bool_t fFromAod ;          // is the data taken from AOD (or ESD filter) 
     Bool_t fAODwrite ;         // write jets to AOD

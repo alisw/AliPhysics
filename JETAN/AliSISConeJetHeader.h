@@ -25,7 +25,6 @@ class AliSISConeJetHeader : public AliJetHeader
 
   // Getters
   Bool_t                       GetBGMode()                     const {return fBGMode;}
-  Bool_t                       GetDebug()                      const {return fDebug;}
 
   Int_t                        GetActiveAreaRepeats()          const {return fActiveAreaRepeats;}
   Int_t                        GetAreaTypeNumber()             const {return fAreaTypeNumber;}
@@ -53,7 +52,6 @@ class AliSISConeJetHeader : public AliJetHeader
   // Setters
   void SetBGAlgorithm(Int_t value)                     {fBGAlgo = value;}
   void SetBGMode(Bool_t value)                         {fBGMode = value;}
-  void SetDebug(Bool_t value)                          {fDebug = value;}
   void SetCaching(Bool_t value)                        {fCaching = value;}
   void SetComment(TString com)                         {fComment=com;}
   void SetComment(const char* com)                     {AliJetHeader::SetComment(com);}
@@ -87,7 +85,6 @@ class AliSISConeJetHeader : public AliJetHeader
   Bool_t   fBGMode;                   // Do we subtract BG or not?
   Bool_t   fCaching;                  // Do we record found cones for this set of data?
   Double_t fConeRadius;               // Cone radius
-  Bool_t   fDebug;                    // Debug option
   Double_t fEffectiveRFact;           // Radius for Voronoi diagram
   Double_t fGhostEtaMax;              // Maximum eta in which a ghost can be generated
   Double_t fGhostArea;                // Area of one ghost

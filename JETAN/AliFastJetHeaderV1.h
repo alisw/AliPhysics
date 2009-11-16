@@ -41,7 +41,6 @@ class AliFastJetHeaderV1 : public AliJetHeader
   Double_t                     GetPhiMin()            const {return fPhiMin;}
   // Added temporarily !!! To be removed if not necessary
   Float_t                      GetMinCellEt()         const {return fMinCellEt;} 
-  Bool_t                       GetDebug()             const {return fDebug;}
   Bool_t                       GetBGMode()            const {return fBGMode;}
   Double_t                     GetRparamBkg()            const {return fRparamBkg;}
 
@@ -57,7 +56,6 @@ class AliFastJetHeaderV1 : public AliJetHeader
   void SetRapRange(Double_t fmin, Double_t fmax)       {fRapMin = fmin; fRapMax = fmax;}
   void SetPhiRange(Double_t fmin, Double_t fmax)       {fPhiMin = fmin; fPhiMax = fmax;}
   void SetPtMin(Double_t ptmin)                        {fPtMin = ptmin;}
-  void SetDebug(Bool_t debug)                          {fDebug = debug;}
   void SetBGMode(Bool_t bgmode)                        {fBGMode = bgmode;}
   
   void SetComment(TString com) {fComment=com;}
@@ -92,7 +90,6 @@ class AliFastJetHeaderV1 : public AliJetHeader
   //fastjet::RangeDefinition parameters 
   Double_t fRapMax, fRapMin; // rapidity range of background sub 
   Double_t fPhiMax, fPhiMin; // phi range of background sub
-  Bool_t   fDebug;           // debug option  
   Bool_t   fBGMode;          // Do we subtract BG or not?
   
   ClassDef(AliFastJetHeaderV1,2)

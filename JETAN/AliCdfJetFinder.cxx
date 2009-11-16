@@ -59,7 +59,6 @@ ClassImp(AliCdfJetFinder)
 AliCdfJetFinder::AliCdfJetFinder():
     AliJetFinder(),
     fHistos(0),
-    fDebug(0),
     fFromAod(0),
     fAODwrite(0),
     fAODtracksWrite(0),

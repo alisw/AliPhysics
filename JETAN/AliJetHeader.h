@@ -25,20 +25,23 @@ class AliJetHeader : public TNamed
   // Getters
   virtual TString GetComment() const {return fComment;} 
   virtual Float_t GetJetEtaMax() const {return fJetEtaMax;}
-  virtual Float_t GetJetEtaMin() const {return fJetEtaMin;}  
-  
+  virtual Float_t GetJetEtaMin() const {return fJetEtaMin;}
+  virtual Int_t   GetDebug() const     {return fDebug;    }
+
   // Setters
   virtual void SetComment(const char* com) {fComment=TString(com);}
   virtual void SetJetEtaMax(Float_t eta= 0.5) {fJetEtaMax = eta;}
-  virtual void SetJetEtaMin(Float_t eta= -0.5) {fJetEtaMin = eta;}  
+  virtual void SetJetEtaMin(Float_t eta= -0.5) {fJetEtaMin = eta;}
+  virtual void SetDebug(Int_t debug) {fDebug = debug;}
   
 
   // others
   
 protected:
-  TString fComment; // a comment 
-  Float_t fJetEtaMax; // maximum eta for the jet
-  Float_t fJetEtaMin; // minimum eta for the jet
+  TString fComment;         // a comment 
+  Float_t fJetEtaMax;       // maximum eta for the jet
+  Float_t fJetEtaMin;       // minimum eta for the jet
+  Int_t   fDebug;           // debug option
   
   ClassDef(AliJetHeader,1)
 };

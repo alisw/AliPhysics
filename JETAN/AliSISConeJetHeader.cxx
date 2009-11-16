@@ -41,7 +41,6 @@ AliSISConeJetHeader::AliSISConeJetHeader():
     fBGMode(1),
     fCaching(0),
     fConeRadius(0.7),
-    fDebug(0),
     fEffectiveRFact(1),
     fGhostEtaMax(4.0),
     fGhostArea(0.05),

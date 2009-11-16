@@ -69,7 +69,6 @@ class AliUA1JetFinderV2 : public AliJetFinder
   AliUA1JetFinderV2(const AliUA1JetFinderV2& rJetF1);
   AliUA1JetFinderV2& operator = (const AliUA1JetFinderV2& rhsf);
   TH2F           * fLego;           // Lego Histo
-  Int_t fDebug;                     // Debug option
   Int_t fOpt;                       // Detector option (charged only or charged+neutral)
 
   ClassDef(AliUA1JetFinderV2,1)

@@ -67,6 +67,8 @@ class AliJetFinder : public TObject
   TClonesArray*             fAODjets;        //! reconstructed jets
   Int_t                     fNAODjets;       //! number of reconstructed jets
   AliAODJetEventBackground* fAODEvBkg;       //! bkg object to be store
+  Int_t                     fDebug;          //  debug option, set through the header
+
   ClassDef(AliJetFinder,2)
 };
 

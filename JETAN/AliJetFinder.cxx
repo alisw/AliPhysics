@@ -42,7 +42,8 @@ AliJetFinder::AliJetFinder():
     fHeader(0x0),
     fAODjets(0x0),
     fNAODjets(0),
-    fAODEvBkg(0)
+    fAODEvBkg(0),
+    fDebug(0)
 {
   //
   // Constructor
