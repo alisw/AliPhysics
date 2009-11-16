@@ -10,6 +10,10 @@ ALICEINC      = -I.
 
 ### define include dir for local case and par case
 
+ifneq ($(STEERBase_INCLUDE),)
+  ALICEINC += -I../$(STEERBase_INCLUDE)
+endif
+
 ifneq ($(EMCALUtils_INCLUDE),)
   ALICEINC += -I../$(EMCALUtils_INCLUDE)
 endif
