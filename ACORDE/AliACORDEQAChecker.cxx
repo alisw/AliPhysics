@@ -91,9 +91,12 @@ Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** 
 				{
 					Float_t acoDataMax = hdata->GetMaximum();
 					Int_t flagAcoQA = 0;
-					for(Int_t i=0;i<60;i++)
+					if (acoDataMax!=0)
 					{
-						if ((hdata->GetBinContent(i)/acoDataMax) < 0.75) flagAcoQA++; 
+						for(Int_t i=0;i<60;i++)
+						{
+							if ((hdata->GetBinContent(i)/acoDataMax) < 0.75) flagAcoQA++; 
+						}
 					}
 					Double_t simpleFlag = 1.-flagAcoQA/60.;
 					if ( (simpleFlag >= 0.90) && (simpleFlag <= 1.0) ) acoTest[specie] = 0.75; // INFO
@@ -123,7 +126,6 @@ Double_t AliACORDEQAChecker::CheckAcordeRefHits(const TH1 * href, const TH1 * hd
 	for (Int_t i=0;i<60;i++)
 	{
 		if (TMath::Abs(href->GetBinContent(i)-hdata->GetBinContent(i))) flag++;
-		flag++;
 	}
 	if ((flag/60>50)&&(flag/60<=60)) acoTest = -1.;
 	if ((flag/60>30)&&(flag/60<=50)) acoTest = 0.25;
