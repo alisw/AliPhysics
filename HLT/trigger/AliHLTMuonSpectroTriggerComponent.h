@@ -29,7 +29,8 @@
  *
  * Component ID: \b MuonSpectroTrigger <br>
  * Library: \b libAliHLTTrigger.so <br>
- * Input Data Types: \li AliHLTMUONConstants::TriggerRecordsBlockDataType()  = "TRIGRECS:MUON" <br>
+ * Input Data Types: \li AliHLTMUONConstants::DDLRawDataType()               = "DDL_RAW :MUON" <br>
+ *                   \li AliHLTMUONConstants::TriggerRecordsBlockDataType()  = "TRIGRECS:MUON" <br>
  *                   \li AliHLTMUONConstants::RecHitsBlockDataType()         = "RECHITS :MUON" <br>
  *                   \li AliHLTMUONConstants::MansoTracksBlockDataType()     = "MANTRACK:MUON" <br>
  *                   \li AliHLTMUONConstants::SinglesDecisionBlockDataType() = "DECIDSIN:MUON" <br>
@@ -45,6 +46,9 @@
  * \li -makestats <br>
  *      If specified then the summary statistics scalars object is generated as output.
  *      The default is not to generate the statistics object. <br>
+ * \li -triggerddls <br>
+ *      Indicates that the component should trigger if any ddls are found in the muon
+ *      spectrometer. <br>
  * \li -triggerhits <br>
  *      Indicates that the component should trigger if any hits are found in the muon
  *      spectrometer tracking chambers. This option requires that this trigger component
@@ -177,6 +181,7 @@ private:
 	unsigned long fBufferSizeConst; //! Constant size estimate for GetOutputDataSize.
 	double fBufferSizeMultiplier; //! Buffer size multiplier estimate for GetOutputDataSize.
 	bool fMakeStats; //! Indicates if the statistics scalars object should be generated or not.
+	bool fTriggerDDLs; //! If true then the component will trigger on any dll in the tracking and trigger chambers.
 	bool fTriggerHits; //! If true then the component will trigger on any hits in the tracking chambers.
 	bool fTriggerTrigRecs; //! If true then the component will trigger on any trigger records.
 	bool fTriggerTracks; //! If true then the component will trigger on any tracks found.

@@ -57,7 +57,7 @@ AliHLTMuonSpectroTriggerComponent::~AliHLTMuonSpectroTriggerComponent()
 void AliHLTMuonSpectroTriggerComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list) const
 {
 	// Returns the list of input types expected.
-	
+	list.push_back(AliHLTMUONConstants::DDLRawDataType());	
 	list.push_back(AliHLTMUONConstants::TriggerRecordsBlockDataType());
 	list.push_back(AliHLTMUONConstants::RecHitsBlockDataType());
 	list.push_back(AliHLTMUONConstants::MansoTracksBlockDataType());
@@ -97,16 +97,22 @@ Int_t AliHLTMuonSpectroTriggerComponent::DoInit(int argc, const char** argv)
 	// Initialise the component.
 	
 	fMakeStats = false;
+	fTriggerDDLs = false;
 	fTriggerHits = false;
 	fTriggerTrigRecs = false;
 	fTriggerTracks = false;
 	fTriggerDimuons = false;
-	
+ 
 	for (int i = 0; i < argc; i++)
 	{
 		if (strcmp(argv[i], "-makestats") == 0)
 		{
 			fMakeStats = true;
+			continue;
+		}
+		if (strcmp(argv[i], "-triggerddls") == 0)
+		{
+			fTriggerDDLs = true;
 			continue;
 		}
 		if (strcmp(argv[i], "-triggerhits") == 0)
@@ -168,12 +174,14 @@ int AliHLTMuonSpectroTriggerComponent::DoTrigger()
 	// Applies the trigger for the HLT.
 	
 	int result = 0;
-	
+
+	bool gotddls = false;	
 	bool gothits = false;
 	bool gottrigrecs = false;
 	bool gottracks = false;
 	bool gotsingles = false;
 	bool gotpairs = false;
+	UInt_t nL0 = 0;
 	UInt_t nhits = 0;
 	UInt_t nhitsMTR = 0;
 	UInt_t nhitsMCH = 0;
@@ -200,8 +208,18 @@ int AliHLTMuonSpectroTriggerComponent::DoTrigger()
 	Double_t minmass = -1;
 	Double_t maxmass = -1;
 	
+
+	AliHLTComponentDataType blockType = AliHLTMUONConstants::DDLRawDataType();
+	for (const AliHLTComponentBlockData* block = GetFirstInputBlock(blockType);
+	     block != NULL;
+	     block = GetNextInputBlock()
+	    )
+	{  
+	  gotddls = true; 	
+	  nL0 = 1;
+	}
 	
-	AliHLTComponentDataType blockType = AliHLTMUONConstants::TriggerRecordsBlockDataType();
+	blockType = AliHLTMUONConstants::TriggerRecordsBlockDataType();
 	for (const AliHLTComponentBlockData* block = GetFirstInputBlock(blockType);
 	     block != NULL;
 	     block = GetNextInputBlock()
@@ -377,6 +395,7 @@ int AliHLTMuonSpectroTriggerComponent::DoTrigger()
 	// from singles decision blocks.
 	UInt_t ntracks = ntracksSD > ntracksMT ? ntracksSD : ntracksMT;
 	
+	bool triggeredOnDDLs = fTriggerDDLs and nL0 > 0;
 	bool triggeredOnHits = fTriggerHits and nhitsMCH > 0;
 	bool triggeredOnTrigRecs = fTriggerTrigRecs and ntrigrecs > 0;
 	bool triggeredOnTracks = fTriggerTracks and ntracks > 0;
@@ -413,13 +432,19 @@ int AliHLTMuonSpectroTriggerComponent::DoTrigger()
 		SetReadoutList(AliHLTReadoutList(AliHLTReadoutList::kMUONTRK));
 		SetTriggerDomain(AliHLTTriggerDomain("RECHITS :MUON"));
 	}
+	else if (triggeredOnDDLs)
+	{
+		SetDescription("DDL in muon tracking chambers");
+		SetReadoutList(AliHLTReadoutList(AliHLTReadoutList::kMUONTRG | AliHLTReadoutList::kMUONTRK));
+		SetTriggerDomain(AliHLTTriggerDomain("DDL_RAW :MUON"));
+	}
 	else
 	{
 		SetDescription("Not triggered");
 		SetTriggerDomain(AliHLTTriggerDomain());
 	}
 	
-	if (triggeredOnDimuons or triggeredOnTracks or triggeredOnTrigRecs or triggeredOnHits)
+	if (triggeredOnDimuons or triggeredOnTracks or triggeredOnTrigRecs or triggeredOnHits or triggeredOnDDLs)
 	{
 		result = TriggerEvent();
 		if (result == -ENOSPC) goto increaseBuffer;
@@ -429,6 +454,7 @@ int AliHLTMuonSpectroTriggerComponent::DoTrigger()
 	if (fMakeStats)
 	{
 		AliHLTMuonSpectroScalars scalars;
+		if (gotddls) scalars.Add("NL0", "Number of L0 triggered event", nL0);
 		if (gothits and gottrigrecs) scalars.Add("NHits", "Total number of hits", nhits);
 		if (gottrigrecs) scalars.Add("NHitsMTR", "Number of hits in trigger chambers", nhitsMTR);
 		if (gothits)
