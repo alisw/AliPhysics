@@ -313,7 +313,7 @@ AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hbp,
   while ( ( bp = static_cast<AliMpBusPatch*>(next())) )
   {
     Int_t bin = hbp.FindBin(bp->GetId());
-    Int_t n = hnpads.GetBinContent(bin);
+    Int_t n = TMath::Nint(hnpads.GetBinContent(bin));
     
     ++nBusPatches;
     
