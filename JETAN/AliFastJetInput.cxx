@@ -91,8 +91,8 @@ void AliFastJetInput::FillInput(){
   fInputParticles.clear();
   fInputParticlesCh.clear();
 
-  Bool_t debug  = header->GetDebug();     // debug option
-  Int_t fOpt    = fReader->GetReaderHeader()->GetDetector();
+  Int_t debug  = header->GetDebug();     // debug option
+  Int_t fOpt   = fReader->GetReaderHeader()->GetDetector();
 
   // check if we are reading AOD jets
   TRefArray *refs = 0;

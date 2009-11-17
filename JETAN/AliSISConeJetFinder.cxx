@@ -85,7 +85,7 @@ void AliSISConeJetFinder::FindJets()
 
   // Pick up siscone header
   AliSISConeJetHeader *header = (AliSISConeJetHeader*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
+  Int_t debug  = header->GetDebug();     // debug option
   Int_t fOpt    = fReader->GetReaderHeader()->GetDetector();
 
   // Check if we are reading AOD jets

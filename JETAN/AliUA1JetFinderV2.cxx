@@ -86,6 +86,7 @@ void AliUA1JetFinderV2::FindJetsC()
   AliUA1JetHeaderV1* header  = (AliUA1JetHeaderV1*) fHeader;
   TClonesArray*      lvArray = fReader->GetMomentumArray();
   Int_t              nIn     = lvArray->GetEntries();
+  fDebug   = fHeader->GetDebug();
   
   if (nIn == 0) return;
   
@@ -315,7 +316,6 @@ void AliUA1JetFinderV2::FindJets()
   Int_t              nIn      = fUnit->GetEntries();
   Float_t            ptMin   = fReader->GetReaderHeader()->GetPtCut();
 
-  fDebug   = fReader->GetReaderHeader()->GetDebug();
   if (nIn == 0) return;
 
   Int_t nCandidateCut = 0;
@@ -749,8 +749,7 @@ void AliUA1JetFinderV2::RunAlgoritm(Int_t nIn, Float_t* etCell, Float_t* const e
   // UA1 base cone finder
   //
 
-  Int_t nCell  = nIn; 
-  fDebug = fReader->GetReaderHeader()->GetDebug();
+  Int_t nCell  = nIn;
 
   // Dump lego
   // Check enough space! *to be done*
@@ -1154,7 +1153,6 @@ void AliUA1JetFinderV2::SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&
   //calculate energy inside and outside cones
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
   fOpt = fReader->GetReaderHeader()->GetDetector();
-  fDebug = fReader->GetReaderHeader()->GetDebug();
   Float_t rc= header->GetRadius();
   Float_t etIn[30];
   Float_t etOut = 0;
@@ -1732,7 +1730,7 @@ void AliUA1JetFinderV2::InitTask(TChain* tree)
 		   header->GetLegoEtaMax(),  header->GetLegoNbinPhi(),
 		   header->GetLegoPhiMin(),  header->GetLegoPhiMax());
   
-  fDebug = fReader->GetReaderHeader()->GetDebug();
+  fDebug = fHeader->GetDebug();
   fOpt = fReader->GetReaderHeader()->GetDetector();
   
   // Tasks initialization

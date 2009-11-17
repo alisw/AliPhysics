@@ -88,7 +88,7 @@ void AliFastJetFinder::FindJets()
 
   //pick up fastjet header
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
-  Bool_t debug  = header->GetDebug();     // debug option
+  Int_t  debug  = header->GetDebug();     // debug option
   Bool_t bgMode = header->GetBGMode();    // choose to subtract BG or not
   if(debug)cout<<"----------in AliFastJetFinder::FindJets() ------------------"<<endl;
 
