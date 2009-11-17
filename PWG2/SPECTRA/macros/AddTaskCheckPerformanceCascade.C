@@ -27,7 +27,7 @@ AliAnalysisTaskCheckPerformanceCascade *AddTaskCheckPerformanceCascade(Short_t l
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   outname += ":PWG2CheckPerformanceCascade";
+   outputFileName += ":PWG2CheckPerformanceCascade";
    if (lCollidingSystems) outputFileName += "_AA";
    else outputFileName += "_PP";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";

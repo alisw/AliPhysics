@@ -27,7 +27,7 @@ AliAnalysisTaskCheckV0 *AddTaskCheckV0(Short_t lCollidingSystems=0  /*0 = pp, 1 
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   outname += ":PWG2CheckV0";
+   outputFileName += ":PWG2CheckV0";
    if (lCollidingSystems) outputFileName += "_AA";
    else outputFileName += "_PP";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";

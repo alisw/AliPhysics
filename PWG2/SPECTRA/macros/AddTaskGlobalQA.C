@@ -13,7 +13,7 @@ AliAnalysisTaskGlobalQA *AddTaskGlobalQA()
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   outname += ":PWG2GlobalQA";
+   outputFileName += ":PWG2GlobalQA";
    if (lCollidingSystems) outputFileName += "_AA";
    else outputFileName += "_PP";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
