@@ -2866,7 +2866,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
   }
   dglabels[0]=trk0->GetLabel();
   dglabels[1]=trk1->GetLabel();
-  if(dglabels[0]==-1||dglabels[1]==-1){
+  if(dglabels[0]<0 || dglabels[1]<0){
     AliDebug(2,"HERE I AM \n");
 
     //fake tracks
@@ -2880,9 +2880,15 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
   b1=(AliAODMCParticle*)arrayMC->At(trk0->GetLabel());
   b2=(AliAODMCParticle*)arrayMC->At(trk1->GetLabel());
   
-  if(b1->GetMother()==-1||b2->GetMother()==-1){
+  if(!b1 || !b2) {
     //Tracks with no mother  ????? FAKE DECAY VERTEX
- 
+    
+    signaltype=10;
+    return aodDMC;
+  }
+
+  if(b1->GetMother()<0||b2->GetMother()<0){
+    //Tracks with no mother  ????? FAKE DECAY VERTEX
     
     signaltype=10;
     return aodDMC;
@@ -2939,7 +2945,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
    
   }
   
-  if(mum1->GetMother()==-1){
+  if(mum1->GetMother()<0){
     // A particle coming from nothing
     signaltype=10;
     return aodDMC;
@@ -2965,7 +2971,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
   */
   //	  if(fcheckMCD0){//THIS CHECK IS NEEDED TO AVOID POSSIBLE FAILURE IN THE SECOND WHILE, FOR DEBUGGING
   while(TMath::Abs(grandmoth1->GetPdgCode())!=4&&TMath::Abs(grandmoth1->GetPdgCode())!=5){
-    if(grandmoth1->GetMother()==-1){
+    if(grandmoth1->GetMother()<0){
       //### THE FOLLOWING IN CASE OF DEBUGGING ##########à
       /*printf("mother=-1, pdgcode: %d \n",grandmoth1->GetPdgCode());
 	Int_t son=grandmoth1->GetDaughter(0);
