@@ -1,4 +1,10 @@
-void AddD2HTrain() {
+Int_t AddD2HTrain(Int_t addD0Mass=1,
+		  Int_t addD0MassLS=1,
+		  Int_t addDplus=1,
+		  Int_t addLSD0=1,
+		  Int_t addLSJpsi=1,
+		  Int_t addCFD0=1,
+		  Int_t addPromptD0=1) {
   // 
   // Task of the D2H subgroup of PWG3 that can run in the Official Train
   //
@@ -13,45 +19,68 @@ void AddD2HTrain() {
   //
 
   TString taskName="",loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/";
-  
+  Int_t ntasks=0;
+
   //taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
   //gROOT->LoadMacro(taskName.Data());
   //AliAnalysisTaskSECompareHF *cmpTask = AddTaskCompareHF();
   
-  taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass();
-  AliAnalysisTaskSED0Mass *d0massLikeSignTask = AddTaskD0Mass(1); 
-  
-  taskName="AddTaskDplus.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSEDplus *dplusTask = AddTaskDplus();
-  
+  if(addD0Mass || addD0MassLS) {
+    taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    if(addD0Mass) {
+      AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass();
+      ntasks++;
+    }
+    if(addD0MassLS) {
+      AliAnalysisTaskSED0Mass *d0massLikeSignTask = AddTaskD0Mass(1); 
+      ntasks++;
+    }
+  }
+
+  if(addDplus) {
+    taskName="AddTaskDplus.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSEDplus *dplusTask = AddTaskDplus();
+    ntasks++;
+  }  
+
   //taskName="AddTaskSelectHF.C"; taskName.Prepend(loadMacroPath.Data());
   //gROOT->LoadMacro(taskName.Data());
   //AliAnalysisTaskSESelectHF *seleTask = AddTaskSelectHF();
   
-  taskName="AddTaskBkgLikeSignD0.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSEBkgLikeSignD0 *lsD0Task = AddTaskBkgLikeSignD0();
-  
-  taskName="AddTaskBkgLikeSignJPSI.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSEBkgLikeSignJPSI *lsJPSITask = AddTaskBkgLikeSignJPSI();
-  
+  if(addLSD0) {
+    taskName="AddTaskBkgLikeSignD0.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSEBkgLikeSignD0 *lsD0Task = AddTaskBkgLikeSignD0();
+    ntasks++;
+  }
+
+  if(addLSJpsi) {
+    taskName="AddTaskBkgLikeSignJPSI.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSEBkgLikeSignJPSI *lsJPSITask = AddTaskBkgLikeSignJPSI();
+    ntasks++;
+  }
+
   //taskName="AddTaskBtoJPSItoEle.C"; taskName.Prepend(loadMacroPath.Data());
   //gROOT->LoadMacro(taskName.Data());
   //AliAnalysisTaskSEBtoJPSItoEle *jpsiTask = AddTaskBtoJPSItoEle();
   
-  taskName="AddTaskCFMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliCFHeavyFlavourTaskMultiVarMultiStep *cfmvmsTask = AddTaskCFMultiVarMultiStep();
-  
-  taskName="AddTaskCharmFraction.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  Int_t switchMC[5]={1,1,1,1,1};
-  AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0.root",switchMC);
-  
+  if(addCFD0) {
+    taskName="AddTaskCFMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliCFHeavyFlavourTaskMultiVarMultiStep *cfmvmsTask = AddTaskCFMultiVarMultiStep();
+    ntasks++;
+  }
 
-  return;
+  if(addPromptD0) {
+    taskName="AddTaskCharmFraction.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    Int_t switchMC[5]={1,1,1,1,1};
+    AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0.root",switchMC);
+    ntasks++;
+  }
+
+  return ntasks;
 }
