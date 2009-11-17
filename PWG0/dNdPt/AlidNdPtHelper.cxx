@@ -1192,7 +1192,7 @@ return h1_clone;
 TH1* AlidNdPtHelper::CalcRelativeDifferenceFun(TH1 *hist1, TF1 *fun) 
 {
 //
-// calculate rel. difference
+// calculate rel. difference
 // between histogram and function
 //
  if(!hist1) return 0;
