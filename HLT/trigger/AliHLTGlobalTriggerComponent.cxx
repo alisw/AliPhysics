@@ -70,7 +70,6 @@ AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
 	fTrigger(NULL),
 	fDebugMode(false),
 	fRuntimeCompile(true),
-	fSkipCTPCounters(false),
 	fDeleteCodeFile(false),
 	fCodeFileName(),
 	fClassName(),
@@ -79,7 +78,8 @@ AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
 	fBufferSizeMultiplier(1.),
 	fIncludePaths(TObjString::Class()),
 	fIncludeFiles(TObjString::Class()),
-	fLibStateAtLoad()
+	fLibStateAtLoad(),
+	fBits(0)
 {
   // Default constructor.
   
@@ -128,6 +128,7 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   const char* codeFileName = NULL;
   fIncludePaths.Clear();
   fIncludeFiles.Clear();
+  SetBit(kIncludeInput);
   
   for (int i = 0; i < argc; i++)
   {
@@ -216,7 +217,47 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
     if (strcmp(argv[i], "-skipctp") == 0)
     {
       HLTInfo("Skipping CTP counters in trigger decision");
-      fSkipCTPCounters=true;
+      SetBit(kSkipCTP);
+      continue;
+    }
+
+    if (strcmp(argv[i], "-forward-input") == 0)
+    {
+      HLTInfo("Forwarding input objects and trigger decisions");
+      SetBit(kForwardInput);
+      SetBit(kIncludeShort);
+      SetBit(kIncludeInput, false);
+      continue;
+    }
+
+    if (strcmp(argv[i], "-include-input") == 0)
+    {
+      SetBit(kForwardInput,false);
+      TString param=argv[i];
+      param.ReplaceAll("-include-input", "");
+      if (param.CompareTo("=none")==0) 
+      {
+        HLTInfo("skipping objects and trigger decisions");
+        SetBit(kIncludeShort, false);
+        SetBit(kIncludeInput, false);
+      }
+      else if (param.CompareTo("=short")==0) 
+      {
+        HLTWarning("short info on objects and trigger decisions not yet implemented");
+        //HLTInfo("including short info on objects and trigger decisions");
+        SetBit(kIncludeShort);
+        SetBit(kIncludeInput, false);
+      }
+      else if (param.CompareTo("=objects")==0 || param.IsNull())
+      {
+        HLTInfo("including input objects and trigger decisions");
+        SetBit(kIncludeShort, false);
+        SetBit(kIncludeInput);
+      }
+      else
+      {
+        HLTError("unknown parameter '%s' for argument '-include-input'", param.Data());
+      }
       continue;
     }
         
@@ -393,9 +434,16 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   }
   
   // Add the input objects used to the global decision.
+  if (TestBit(kIncludeShort)) {
+    // short info to be implemented
+  }
   obj = GetFirstInputObject();
   while (obj != NULL)
   {
+    if (TestBit(kForwardInput)) {
+      Forward(obj);
+    }
+    if (TestBit(kIncludeInput)) {
     if (obj->IsA() == AliHLTTriggerDecision::Class())
     {
       decision.AddTriggerInput( *static_cast<const AliHLTTriggerDecision*>(obj) );
@@ -404,10 +452,11 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     {
       decision.AddInputObject(obj);
     }
+    }
     obj = GetNextInputObject();
   }
 
-  if (!fSkipCTPCounters && CTPData()) decision.AddInputObject(CTPData());
+  if (!TestBit(kSkipCTP) && CTPData()) decision.AddInputObject(CTPData());
 
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 3);
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 4);

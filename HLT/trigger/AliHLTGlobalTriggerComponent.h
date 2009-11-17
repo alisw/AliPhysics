@@ -58,6 +58,15 @@ class AliHLTGlobalTrigger;
  *      <i>filename</i>.
  * \li -skipctp <br>
  *      Indicates that the CTP data should not be added to the global HLT trigger decision.
+ * \li -forward-input <br>
+ *      Forward the input objects instead of adding them to the global HLT trigger decision.
+ *      This will also add a short info on the input objects and decisions, like
+ *      -include-input=short, to switch off -include-input=none can be placed after the
+ *      parameter
+ * \li -include-input[=none,short,objects] <br>
+ *      Steer adding of input objects to the global HLT trigger decision.
+ *      Options: none - include nothing, short - include a short TNames array,
+ *               objects - include objects, by default on
  *
  * <h2>Configuration:</h2>
  * Configured from CDB but can be overridden with the -config argument.
@@ -135,6 +144,21 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    * @return new class instance.
    */
   virtual AliHLTComponent* Spawn();
+
+  enum StatusBits {
+    kForwardInput       = BIT(14),  // forward input objects instead of adding them to the decision object
+    kIncludeInput       = BIT(15),  // include input objects in the decision object
+    kIncludeShort       = BIT(16),  // include short description of input objects: name, title, decision
+    kSkipCTP            = BIT(17),  // skip CTP data object in the decision object
+  };
+
+  void   SetBit(AliHLTUInt32_t f, bool set) {
+    if (set) SetBit(f);
+    else ResetBit(f);
+  }
+  void   SetBit(AliHLTUInt32_t f) { fBits |= f; }
+  void   ResetBit(AliHLTUInt32_t f) { fBits &= ~f; }
+  bool   TestBit(AliHLTUInt32_t f) const { return (bool) ((fBits & f) != 0); }
 
  protected:
 
@@ -258,7 +282,6 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   AliHLTGlobalTrigger* fTrigger;  //! Trigger object which implements the global trigger menu.
   bool fDebugMode;  //! Indicates if the generated global trigger class should be in debug mode.
   bool fRuntimeCompile;  //! Indicates if the generated global trigger class should be compiled
-  bool fSkipCTPCounters; //! Indicates whether to ship CTP info with the trigger decision
   bool fDeleteCodeFile; //! If true then the code file indicated by fCodeFileName should be deleted during DoDeinit.
   TString fCodeFileName; //! base file name of the generated code for the global trigger
   TString fClassName;  //! The generated/loaded trigger class name.
@@ -268,6 +291,7 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   TClonesArray fIncludePaths; //! Paths specified by the -includepath command line option.
   TClonesArray fIncludeFiles; //! Files specified by the -include command line option.
   TString fLibStateAtLoad; //! This stores the loaded libraries just before we tell CINT to load the interpreted file.
+  AliHLTUInt32_t fBits; //! Status bits
 
   static const char* fgkTriggerMenuCDBPath; //! The path string to read the trigger menu from the CDB.
   
