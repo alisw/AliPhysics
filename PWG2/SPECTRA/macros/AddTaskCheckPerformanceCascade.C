@@ -26,15 +26,17 @@ AliAnalysisTaskCheckPerformanceCascade *AddTaskCheckPerformanceCascade(Short_t l
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   TString outname = "PP-CheckPerf-";
-   if (lCollidingSystems) outname = "AA-";
-   if (mgr->GetMCtruthEventHandler()) outname += "MC";
-   outname += "-CascadeList.root";
- 
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCascMC",
-								   TList::Class(),
-								   AliAnalysisManager::kOutputContainer,
-								   outname );
+   TString outputFileName = AliAnalysisManager::GetCommonFileName();
+   outname += ":PWG2CheckPerformanceCascade";
+   if (lCollidingSystems) outputFileName += "_AA";
+   else outputFileName += "_PP";
+   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCascMC",
+							     TList::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     outputFileName );
+
    mgr->ConnectInput( taskCheckPerfCascade, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskCheckPerfCascade, 1, coutput1);
    return taskCheckPerfCascade;
