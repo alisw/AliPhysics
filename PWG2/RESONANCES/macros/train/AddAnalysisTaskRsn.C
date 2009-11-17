@@ -55,11 +55,17 @@ Bool_t AddAnalysisTaskRsn
   if (sourceESD) mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   else mgr->ConnectInput(task, 0, mgr->GetCommonOutputContainer());
 
-  // define and connect output containers
-  AliAnalysisDataContainer *outputInfo = mgr->CreateContainer("RsnInfo", TList::Class(), AliAnalysisManager::kOutputContainer, "info.root");
+  // create paths for the output in the common file
+  Char_t infoPath[500], phiPath[500], kstarPath[500];
+  sprintf(infoPath , "%s:PWG2RSNINFO" , AliAnalysisManager::GetCommonFileName());
+  sprintf(phiPath  , "%s:PWG2RSNPHI"  , AliAnalysisManager::GetCommonFileName());
+  sprintf(kstarPath, "%s:PWG2RSNKSTAR", AliAnalysisManager::GetCommonFileName());
+
+  // create containers for output
+  AliAnalysisDataContainer *outputInfo = mgr->CreateContainer("RsnInfo", TList::Class(), AliAnalysisManager::kOutputContainer, infoPath);
   AliAnalysisDataContainer *outputRsn[2];
-  outputRsn[0] = mgr->CreateContainer("PHI"  , TList::Class(), AliAnalysisManager::kOutputContainer, "phi.root");
-  outputRsn[1] = mgr->CreateContainer("KSTAR", TList::Class(), AliAnalysisManager::kOutputContainer, "kstar.root");
+  outputRsn[0] = mgr->CreateContainer("PHI"  , TList::Class(), AliAnalysisManager::kOutputContainer, phiPath);
+  outputRsn[1] = mgr->CreateContainer("KSTAR", TList::Class(), AliAnalysisManager::kOutputContainer, kstarPath);
 
   mgr->ConnectOutput(task, 1, outputInfo);
   mgr->ConnectOutput(task, 2, outputRsn[0]);
