@@ -2168,10 +2168,10 @@ void drawEfficiencies(const char *filename,
   TH1D *gPtPrimariesESDAntiProtons = (TH1D *)f->Get("gPtPrimariesESDAntiProtons");	
   TH1D *gPtESDAntiProtonsFromWeak = (TH1D *)f->Get("gPtESDAntiProtonsFromWeak");	
   TH1D *gPtESDAntiProtonsFromHadronic = (TH1D *)f->Get("gPtESDAntiProtonsFromHadronic");	
-  TH1D *gYESDIdProtons = (TH1D *)f->Get("gYESDIdProtons");
-  TH1D *gYESDContamProtons = (TH1D *)f->Get("gYESDContamProtons");
-  TH1D *gPtESDIdProtons = (TH1D *)f->Get("gPtESDIdProtons");
-  TH1D *gPtESDContamProtons = (TH1D *)f->Get("gPtESDContamProtons");	
+  TH1D *gYESDIdProtons = (TH1D *)f->Get("gHistESDIdYPtProtons_x");
+  TH1D *gYESDContamProtons = (TH1D *)f->Get("gHistESDContamYPtProtons_x");
+  TH1D *gPtESDIdProtons = (TH1D *)f->Get("gHistESDIdYPtProtons_y");
+  TH1D *gPtESDContamProtons = (TH1D *)f->Get("gHistESDContamYPtProtons_y");	
 
   //Reconstruction efficiencies - protons
   TCanvas *c1 = new TCanvas("c1","Reconstruction efficiencies - Protons",

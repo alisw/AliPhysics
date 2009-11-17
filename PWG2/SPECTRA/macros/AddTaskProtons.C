@@ -33,7 +33,9 @@ AliAnalysisTaskProtons *AddTaskProtons(const char *analysisType="Hybrid",
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  AliAnalysisDataContainer *cout_proton = mgr->CreateContainer("protonhist", TList::Class(),AliAnalysisManager::kOutputContainer,"outputProtonRatioAnalysis.root");                              
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  outputFileName += ":PWG2BaryonRatio_outputProtonRatioAnalysis.root";
+  AliAnalysisDataContainer *cout_proton = mgr->CreateContainer("protonhist", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectInput(taskproton, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskproton, 0, cout_proton);
   

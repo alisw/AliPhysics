@@ -1,5 +1,5 @@
 void runProtonAnalysisQA(const char* esdAnalysisType = "Hybrid",
-			 const char* pidMode = "Bayesian") {
+			 const char* pidMode = "Sigma1") {
   //Macro to run the proton QA analysis tested for local, proof & GRID.
   //Local: Takes four arguments, the analysis mode, the type of the ESD 
   //       analysis, the PID mode and the path where the tag and ESD or 
@@ -23,7 +23,7 @@ void runProtonAnalysisQA(const char* esdAnalysisType = "Hybrid",
   timer.Start();
   
   //runLocal("ESD",esdAnalysisType,pidMode,"/home/pchrist/ALICE/Baryons/QA/Local");
-  runProof("ESD",esdAnalysisType,pidMode,300000,"/COMMON/COMMON/LHC09a4_run8100X#esdTree");
+  runProof("ESD",esdAnalysisType,pidMode,300000,"/COMMON/COMMON/LHC09a4_run8159X#esdTree");
   //runInteractive("ESD",esdAnalysisType,pidMode,"wn.xml");
   //runBatch("ESD",esdAnalysisType,pidMode,"wn.xml");
 
@@ -44,11 +44,11 @@ void runLocal(const char* mode = "ESD",
   outputFilename2 += ".root"; //MC process QA
   TString outputFilename3 = "Protons.QA.Histograms."; 
   outputFilename3 += analysisType;
-  outputFilename3 += "."; outputFilename2 += pidMode; 
+  outputFilename3 += "."; outputFilename3 += pidMode; 
   outputFilename3 += ".root"; //Accepted cut distributions
   TString outputFilename4 = "Protons.Efficiency."; 
   outputFilename4 += analysisType;
-  outputFilename4 += "."; outputFilename2 += pidMode; 
+  outputFilename4 += "."; outputFilename4 += pidMode; 
   outputFilename4 += ".root"; //Reco and PID efficiency
   TString outputFilename5 = "Vertex.QA.root"; //vertex QA
 

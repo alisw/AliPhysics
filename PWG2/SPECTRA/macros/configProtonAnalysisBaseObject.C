@@ -28,16 +28,18 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
     case "Hybrid":
       baseAnalysis->SetAnalysisMode(AliProtonAnalysisBase::kHybrid);
       baseAnalysis->SetPhaseSpace(10, -0.5, 0.5, 16, 0.5, 0.9);
+      //baseAnalysis->SetPhaseSpace(18, -0.9, 0.9, 32, 0.5, 1.3);
       baseAnalysis->SetTPCpid();
-      baseAnalysis->SetMaxSigmaToVertex(2.0);
+      //baseAnalysis->SetMaxSigmaToVertex(2.0);
+      baseAnalysis->SetMaxSigmaToVertexTPC(2.0);
       /*baseAnalysis->SetMaxDCAXY(1.5);
 	baseAnalysis->SetMaxDCAZ(1.5);*/
       baseAnalysis->SetPointOnITSLayer6();
       baseAnalysis->SetPointOnITSLayer5();
-      //baseAnalysis->SetPointOnITSLayer4();
-      //baseAnalysis->SetPointOnITSLayer3();
-      baseAnalysis->SetPointOnITSLayer2();
-      baseAnalysis->SetPointOnITSLayer1();
+      baseAnalysis->SetPointOnITSLayer4();
+      baseAnalysis->SetPointOnITSLayer3();
+      /*baseAnalysis->SetPointOnITSLayer2();
+	baseAnalysis->SetPointOnITSLayer1();*/
       baseAnalysis->SetMinITSClusters(4);
       break;
     case "Global":
