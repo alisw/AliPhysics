@@ -45,7 +45,7 @@ AliGlauberMC::AliGlauberMC(Option_t* NA, Option_t* NB, Double_t xsect) :
    fMeanYParts(0),fMeanXSystem(0),fMeanYSystem(0),  
    fMeanX_A(0),fMeanY_A(0),fMeanX_B(0),fMeanY_B(0),fB_MC(0),
    fEvents(0),fTotalEvents(0),fBMin(0),fBMax(0),fMaxNpartFound(0),
-   fNpart(0),fNcoll(0),fSx2(0),fSy2(0),fSxy(0)
+   fNpart(0),fNcoll(0),fSx2(0),fSy2(0),fSxy(0), fX(0.13), fNpp(8.)
 {
    fBMin = 0;
    fBMax = 20;
@@ -252,12 +252,34 @@ TObjArray *AliGlauberMC::GetNucleons()
 }
 
 //______________________________________________________________________________
+Double_t AliGlauberMC::GetdNdEta() const
+{
+  //Get particle density per unit of rapidity
+  //using the two component model
+  return (fNpp*((1.-fX)*fNpart/2.)+fX*fNcoll);
+}
+
+//______________________________________________________________________________
+Double_t AliGlauberMC::GetEccentricityPart() const
+{
+  //get participant eccentricity
+  return (TMath::Sqrt((fSy2-fSx2)*(fSy2-fSx2)+4*fSxy*fSxy)/(fSy2+fSx2));
+}
+
+//______________________________________________________________________________
+Double_t AliGlauberMC::GetEccentricity() const
+{
+  //get standard eccentricity
+  return ((fSy2-fSx2)/(fSy2+fSx2));
+}
+//______________________________________________________________________________
 Bool_t AliGlauberMC::NextEvent(Double_t bgen)
 {
-   if(bgen<0) 
-      bgen = TMath::Sqrt((fBMax*fBMax-fBMin*fBMin)*gRandom->Rndm()+fBMin*fBMin);
+  //Make a new event
+  if(bgen<0) 
+     bgen = TMath::Sqrt((fBMax*fBMax-fBMin*fBMin)*gRandom->Rndm()+fBMin*fBMin);
 
-   return CalcEvent(bgen);
+  return CalcEvent(bgen);
 }
 
 //______________________________________________________________________________
@@ -267,7 +289,7 @@ void AliGlauberMC::Run(Int_t nevents)
    TString title(Form("%s + %s (x-sect = %d mb)",fANucleus.GetName(),fBNucleus.GetName(),(Int_t) fXSect));
    if (fnt == 0) {
       fnt = new TNtuple(name,title,
-                        "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB");
+                        "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:VarEpart:Mult");
       fnt->SetDirectory(0);
    }
 
@@ -275,7 +297,7 @@ void AliGlauberMC::Run(Int_t nevents)
 
       while(!NextEvent()) {}
 
-      Float_t v[17];
+      Float_t v[21];
       v[0]  = GetNpart();
       v[1]  = GetNcoll();
       v[2]  = fB_MC;
@@ -291,8 +313,11 @@ void AliGlauberMC::Run(Int_t nevents)
       v[12] = fMeanYSystem;
       v[13] = fMeanX_A;
       v[14] = fMeanY_A;
-      v[16] = fMeanX_B;
-      v[17] = fMeanY_B;
+      v[15] = fMeanX_B;
+      v[16] = fMeanY_B;
+      v[17] = GetEccentricity();
+      v[18] = GetEccentricityPart();
+      v[19] = GetdNdEta();
 
       fnt->Fill(v);
 
