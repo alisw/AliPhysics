@@ -86,6 +86,7 @@
 #include <AliLog.h>
 #include <AliMagF.h>
 #include <AliSplineFit.h>
+#include <AliCTPTimeParams.h>
 
 #include "AliTPCcalibDB.h"
 #include "AliTPCdataQA.h"
@@ -196,7 +197,8 @@ AliTPCcalibDB::AliTPCcalibDB():
   fVdriftArray(100000),                 //! array of v drift interfaces
   fDriftCorrectionArray(100000),  //! array of drift correction
   fRunList(100000),              //! run list - indicates try to get the run param 
-  fDButil(0)
+  fDButil(0),
+  fCTPTimeParams(0)
 {
   //
   // constructor
@@ -234,7 +236,8 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fVdriftArray(0),         //! array of v drift interfaces
   fDriftCorrectionArray(0),         //! array of v drift interfaces
   fRunList(0),              //! run list - indicates try to get the run param 
-  fDButil(0)
+  fDButil(0),
+  fCTPTimeParams(0)
 {
   //
   // Copy constructor invalid -- singleton implementation
@@ -416,7 +419,13 @@ void AliTPCcalibDB::Update(){
     }
   }
 
-
+  //QA calibration data
+  entry          = GetCDBEntry("GRP/CTP/CTPtiming");
+  if (entry){
+    entry->SetOwner(kTRUE);
+    fCTPTimeParams=dynamic_cast<AliCTPTimeParams*>(entry->GetObject());
+  }
+  
 
   //entry          = GetCDBEntry("TPC/Calib/ExB");
   //if (entry) {
@@ -741,7 +750,44 @@ void AliTPCcalibDB::MakeTree(const char * fileName, TObjArray * array, const cha
    }
 }
 
+Int_t AliTPCcalibDB::GetRCUTriggerConfig() const
+{
+  //
+  // return the RCU trigger configuration register
+  //
+  TMap *map=GetRCUconfig();
+  if (!map) return -1;
+  TVectorF *v=(TVectorF*)map->GetValue("TRGCONF_TRG_MODE");
+  Float_t mode=-1;
+  for (Int_t i=0; i<v->GetNrows(); ++i){
+    Float_t newmode=v->GetMatrixArray()[i];
+    if (newmode>-1){
+      if (mode>-1&&newmode!=mode) AliWarning("Found different RCU trigger configurations!!!");
+      mode=newmode;
+    }
+  }
+  return (Int_t)mode;
+}
 
+Bool_t AliTPCcalibDB::IsTrgL0() 
+{
+  //
+  // return if the FEE readout was triggered on L0
+  //
+  Int_t mode=GetRCUTriggerConfig();
+  if (mode<0) return kFALSE;
+  return ((mode&(1<<13))>>13)==1;
+}
+
+Bool_t AliTPCcalibDB::IsTrgL1()
+{
+  //
+  // return if the FEE readout was triggered on L1
+  //
+  Int_t mode=GetRCUTriggerConfig();
+  if (mode<0) return kFALSE;
+  return ((mode&(1<<13))>>13)==0;
+}
 
 void AliTPCcalibDB::RegisterExB(Int_t index, Float_t bz, Bool_t bdelete){
   //
@@ -1714,4 +1760,6 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   }
   return -result/250.; //normalized before
 }
+
+
 

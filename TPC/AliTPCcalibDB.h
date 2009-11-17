@@ -36,6 +36,7 @@ class AliTPCdataQA;
 class TMap;
 class AliMagF;
 class AliTPCcalibDButil;
+class AliCTPTimeParams;
 //class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
@@ -70,6 +71,12 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetALTROFPED()     const {return fALTROConfigData?static_cast<AliTPCCalPad*>(fALTROConfigData->FindObject("FPED")):0;}
   AliTPCCalPad* GetALTROAcqStop()  const {return fALTROConfigData?static_cast<AliTPCCalPad*>(fALTROConfigData->FindObject("AcqStop")):0;}
   AliTPCCalPad* GetALTROMasked()   const {return fALTROConfigData?static_cast<AliTPCCalPad*>(fALTROConfigData->FindObject("Masked")):0;}
+  TMap* GetRCUconfig() const {return fALTROConfigData?(TMap*)(fALTROConfigData->FindObject("RCUconfig")):0;}
+  Int_t GetRCUTriggerConfig() const;
+  Bool_t IsTrgL0();
+  Bool_t IsTrgL1();
+    
+    
   //Pulser data
   TObjArray*    GetPulserData()  const {return fPulserData;}
   AliTPCCalPad* GetPulserTmean() const {return fPulserData?static_cast<AliTPCCalPad*>(fPulserData->FindObject("PulserTmean")):0;}
@@ -143,8 +150,9 @@ class AliTPCcalibDB : public TObject
   static void RegisterExB(Int_t index, Float_t bz, Bool_t bdelete);
   //
   //
-
+  
   AliGRPObject * MakeGRPObjectFromMap(TMap *map);
+  AliCTPTimeParams* GetCTPTimeParams() const {return fCTPTimeParams;}
   //Create a tree suited for diplaying with the AliTPCCalibViewerGUI
   Bool_t CreateGUITree(const char* filename="");
   static Bool_t CreateGUITree(Int_t run, const char* filename="");
@@ -199,6 +207,9 @@ protected:
   static Bool_t       fgTerminated;  // termination control 
   static TObjArray    fgExBArray;    // array of ExB corrections
   AliTPCcalibDButil   *fDButil;       // utility class
+  //ctp info
+  AliCTPTimeParams *fCTPTimeParams;   //CTP timing parameters
+  
   ClassDef(AliTPCcalibDB, 0)
  private:
    AliTPCcalibDB (const AliTPCcalibDB& );
