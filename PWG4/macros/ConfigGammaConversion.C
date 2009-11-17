@@ -981,7 +981,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
   AliAnalysisDataContainer *cinput1 = NULL;
   if(kGCusePWG4PartCorr){
     if(kGCrunOnTrain == kFALSE){
-      cinput1 = mgr->CreateContainer("Chain",TChain::Class(),AliAnalysisManager::kInputContainer);
+      cinput1 = mgr->CreateContainer("GammaConvChain",TChain::Class(),AliAnalysisManager::kInputContainer);
     }
     else{
       cinput1 = cin_esd;
@@ -1000,7 +1000,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
   // Common Output Tree in common âdefaultâ output file
   AliAnalysisDataContainer *coutput1 = NULL;
   if(kGCusePWG4PartCorr){
-    coutput1 = mgr->CreateContainer("tree",TTree::Class(),AliAnalysisManager::kOutputContainer, "default");
+    coutput1 = mgr->CreateContainer("GammaConvTree",TTree::Class(),AliAnalysisManager::kOutputContainer, "default");
   }
   else{
     if(fWriteStandardAOD){
@@ -1022,7 +1022,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
 	
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histogramsAliGammaConversion", TList::Class(),AliAnalysisManager::kOutputContainer, outputfile);
   // for CF
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("ccontainer0",AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("GammaConvccontainer0",AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
 	
   //------------------------ END: Define input/output handlers ---------------------------------------------------
 	
