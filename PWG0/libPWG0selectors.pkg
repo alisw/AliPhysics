@@ -13,7 +13,16 @@ HDRS = dNdEta/AlidNdEtaTask.h \
        highMultiplicity/AliHighMultiplicitySelector.h \
        multiplicity/AliMultiplicityTask.h \
        esdTrackCuts/AliCutTask.h \
-       trigger/AliTriggerTask.h
+       trigger/AliTriggerTask.h \
+       dNdPt/AlidNdPtTask.h \
+       dNdPt/AlidNdPtAcceptanceCuts.h \
+       dNdPt/AlidNdPtEventCuts.h \
+       dNdPt/AlidNdPtHelper.h \
+       dNdPt/AlidNdPt.h \
+       dNdPt/AlidNdPtAnalysis.h \
+       dNdPt/AlidNdPtCorrection.h \
+       dNdPt/AlidNdPtCutAnalysis.h
+
 
 SRCS = $(HDRS:.h=.cxx)
 
