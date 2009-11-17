@@ -92,9 +92,11 @@ void AliAnalysisTaskESDfilter::UserExec(Option_t */*option*/)
 //
 					    
   Long64_t ientry = Entry();
-  if (fDebug > 0) printf("Filter: Analysing event # %5d\n", (Int_t) ientry);
-  if (fHighPthreshold == 0) AliInfo("detector PID signals are stored in each track");
-  if (!fPtshape) AliInfo("detector PID signals are not stored below the pt threshold");
+  if (fDebug > 0) {
+    printf("Filter: Analysing event # %5d\n", (Int_t) ientry);
+    if (fHighPthreshold == 0) AliInfo("detector PID signals are stored in each track");
+    if (!fPtshape) AliInfo("detector PID signals are not stored below the pt threshold");
+  }
 
   ConvertESDtoAOD();
 }
