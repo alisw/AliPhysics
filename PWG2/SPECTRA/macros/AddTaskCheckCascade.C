@@ -26,16 +26,18 @@ AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t lCollidingSystems=0  /*
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   TString outname = "PP";
-   if (lCollidingSystems) outname = "AA";
-   if (mgr->GetMCtruthEventHandler()) outname += "-MC-";
-   outname += "CascadeList.root";
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCasc",
-								   TList::Class(),
-								   AliAnalysisManager::kOutputContainer,
-								   outname );
-                           
-	mgr->ConnectInput(taskcheckcascade, 0, mgr->GetCommonInputContainer());
+   TString outputFileName = AliAnalysisManager::GetCommonFileName();
+   outname += ":PWG2CheckCascade";
+   if (lCollidingSystems) outputFileName += "_AA";
+   else outputFileName += "_PP";
+   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCasc",
+							     TList::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     outputFileName );
+   
+   mgr->ConnectInput(taskcheckcascade, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskcheckcascade, 1, coutput1);
    return taskcheckcascade;
 }   

@@ -28,14 +28,16 @@ AliAnalysisTaskStrange *AddTaskStrange(Short_t lCollidingSystems=0,  /*0 = pp, 1
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   TString outname = "PP";
-   if (lCollidingSystems) outname = "AA";
-   if (mgr->GetMCtruthEventHandler()) outname += "-MC-";
-   outname += "StrangeList.root";
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistStrange",
-								   TList::Class(),
-								   AliAnalysisManager::kOutputContainer,
-								   outname );
+   TString outputFileName = AliAnalysisManager::GetCommonFileName();
+   outname += ":PWG2Strange";
+   if (lCollidingSystems) outputFileName += "_AA";
+   else outputFileName += "_PP";
+   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistStrange",
+							     TList::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     outputFileName );
                            
    mgr->ConnectInput(taskstrange, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskstrange, 1, coutput1);

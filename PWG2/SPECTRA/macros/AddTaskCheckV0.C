@@ -26,16 +26,18 @@ AliAnalysisTaskCheckV0 *AddTaskCheckV0(Short_t lCollidingSystems=0  /*0 = pp, 1 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   TString outname = "PP";
-   if (lCollidingSystems) outname = "AA";
-   if (mgr->GetMCtruthEventHandler()) outname += "-MC-";
-   outname += "V0List.root";
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistV0",
-								   TList::Class(),
-								   AliAnalysisManager::kOutputContainer,
-								   outname );
+   TString outputFileName = AliAnalysisManager::GetCommonFileName();
+   outname += ":PWG2CheckV0";
+   if (lCollidingSystems) outputFileName += "_AA";
+   else outputFileName += "_PP";
+   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistV0",
+							     TList::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     outputFileName );
                            
-	mgr->ConnectInput(taskcheckv0, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectInput(taskcheckv0, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskcheckv0, 1, coutput1);
    return taskcheckv0;
 }   
