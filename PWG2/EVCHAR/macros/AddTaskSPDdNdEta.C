@@ -44,8 +44,10 @@ AliAnalysisTaskSPDdNdEta *AddTaskSPDdNdEta()
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
+  TString outputfile = AliAnalysisManager::GetCommonFileName();  
+  outputfile += ":PWG2EVCHAR";
 
-  AliAnalysisDataContainer *cout_SPDdNdEta= mgr->CreateContainer("cOutput", TList::Class(), AliAnalysisManager::kOutputContainer, "SPDdNdEtaData.root");  
+  AliAnalysisDataContainer *cout_SPDdNdEta= mgr->CreateContainer("evcharlist", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
 
 
    mgr->ConnectInput(taskSPDdNdEta, 0, mgr->GetCommonInputContainer());
