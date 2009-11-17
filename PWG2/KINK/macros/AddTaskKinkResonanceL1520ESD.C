@@ -51,14 +51,16 @@ mgr->AddTask(taskresonanceL1520ESD);
 // Create ONLY the output containers for the data produced by the task.
 // Get and connect other common input/output containers via the manager as below
 //==============================================================================
-TString outname = "PP";
-if (lCollidingSystems) outname = "AA";
-if (mgr->GetMCtruthEventHandler()) outname += "-MC-";
-outname += "KinkResonanceList.root";
-AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("KinkResL1520ESD",
-							   TList::Class(),
-							   AliAnalysisManager::kOutputContainer,
-						 	   outname );
+   TString outputFileName = AliAnalysisManager::GetCommonFileName();
+   outputFileName += ":PWG2KINKResonanceL1520ESD";
+   if (lCollidingSystems) outputFileName += "_AA";
+   else outputFileName += "_PP";
+   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("KinkResL1520ESD",
+							     TList::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     outputFileName );
 
 mgr->ConnectInput(taskresonanceL1520ESD, 0, mgr->GetCommonInputContainer());
 mgr->ConnectOutput(taskresonanceL1520ESD, 1, coutput1);
