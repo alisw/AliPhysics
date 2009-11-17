@@ -16,8 +16,11 @@
 #  include <TGFrame.h>
 #endif
 
+class AliMUONAttPainter;
 class AliMUONPainterDataSourceItem;
+class AliMUONPainterMatrix;
 class AliMUONVTrackerDataMaker;
+class AliMUONVTrackerData;
 class TGCheckButton;
 class TGComboBox;
 class TGGroupFrame;
@@ -55,6 +58,15 @@ public:
 
   void StopRunning();
 
+  static void CreatePedestalCanvases(AliMUONVTrackerData* data,
+                                     Double_t pedMin=0, Double_t pedMax=500,
+                                     Double_t sigmaMin=0, Double_t sigmaMax=5);
+  
+  static AliMUONPainterMatrix* CreateFullTracker(AliMUONVTrackerData* data, 
+                                                 Int_t dim, 
+                                                 Double_t xmin, Double_t xmax, 
+                                                 const AliMUONAttPainter& att);
+
 private:
   /// Not implemented
   AliMUONPainterDataSourceFrame(const AliMUONPainterDataSourceFrame& rhs);
@@ -72,6 +84,8 @@ private:
   void CreateACFDataSource(const TString& uri);
 
   void CreateACFDataSource(const TString& acfPath, const TString& type);
+  
+  void RegisterDataSource(AliMUONVTrackerDataMaker* reader, const char* dsName);
   
 private:
     

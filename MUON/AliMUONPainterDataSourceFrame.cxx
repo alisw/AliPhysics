@@ -19,14 +19,19 @@
 #include "AliMUONPainterDataSourceFrame.h"
 
 #include "AliLog.h"
+#include "AliMUONChamberPainter.h"
+#include "AliMUONMchViewApplication.h"
+#include "AliMUONPainterDataRegistry.h"
 #include "AliMUONPainterDataSourceItem.h"
 #include "AliMUONPainterEnv.h"
 #include "AliMUONPainterHelper.h"
-#include "AliMUONPainterDataRegistry.h"
+#include "AliMUONPainterMatrix.h"
+#include "AliMUONPainterRegistry.h"
 #include "AliMUONRecoParam.h"
 #include "AliMUONTrackerConditionDataMaker.h"
 #include "AliMUONTrackerDataMaker.h"
 #include "AliRawReader.h"
+#include <TCanvas.h>
 #include <TGButton.h>
 #include <TGComboBox.h>
 #include <TGFileDialog.h>
@@ -35,6 +40,7 @@
 #include <TGrid.h>
 #include <TObjArray.h>
 #include <TObjString.h>
+#include <TMath.h>
 #include <TRegexp.h>
 #include <TString.h>
 #include <TSystem.h>
@@ -379,15 +385,19 @@ AliMUONPainterDataSourceFrame::CreateOCDBDataSource(const TString& uri)
 
 //_____________________________________________________________________________
 void
-AliMUONPainterDataSourceFrame::CreateACFDataSource(const TString& acfPath, const TString& type)
+AliMUONPainterDataSourceFrame::RegisterDataSource(AliMUONVTrackerDataMaker* reader,
+                                                  const char* dsName)
 {
-  /// Create an ACF data source for a given (path,type) 
-
-  AliMUONVTrackerDataMaker* reader = new AliMUONTrackerConditionDataMaker(acfPath.Data(),
-                                                                          type.Data());
-  
-  if ( reader->IsValid() ) 
+  /// Register a new data source
+ 
+  if ( reader && reader->IsValid() ) 
   {
+    AliMUONMchViewApplication* app = dynamic_cast<AliMUONMchViewApplication*>(gApplication);
+    if (!app)
+    {
+      AliError("Could not cast application to the expected type ! CHECK THAT !");
+    }
+    
     AliMUONPainterDataRegistry::Instance()->Register(reader);
     
     AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
@@ -396,15 +406,115 @@ AliMUONPainterDataSourceFrame::CreateACFDataSource(const TString& acfPath, const
     
     env->Set(fgkNumberOfDataSourcesKey,n+1);
     
-    TString ds(Form("ACF;%s;%s",acfPath.Data(),type.Data()));
-    
-    env->Set(Form(fgkDataSourceURIKey,n),ds.Data());
+    env->Set(Form(fgkDataSourceURIKey,n),dsName);
     
     env->Save();
     
-    AddRecentSource(ds.Data());
+    AddRecentSource(dsName);
+    
+    if ( app ) 
+    {
+      
+      TString name(dsName);
+      name.ToUpper();
+      
+      if ( name.Contains("PED") )
+      {
+        CreatePedestalCanvases(reader->Data());
+      }
+    }
+  }  
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPainterDataSourceFrame::CreatePedestalCanvases(AliMUONVTrackerData* data,
+                                                      Double_t pedMin, Double_t pedMax,
+                                                      Double_t sigmaMin, Double_t sigmaMax)
+{
+  /// Create 4 canvases with the pedestals contained in data
+  /// to show mean and sigma, for bending and non bending, with given limits
+                                                 
+  TList matrices;
+  
+  AliMUONAttPainter att[2];
+  
+  att[0].SetViewPoint(kTRUE,kFALSE);
+  att[0].SetCathode(kFALSE,kFALSE);
+  att[0].SetPlane(kTRUE,kFALSE);
+  
+  att[1].SetViewPoint(kTRUE,kFALSE);
+  att[1].SetCathode(kFALSE,kFALSE);
+  att[1].SetPlane(kFALSE,kTRUE);
+  
+  for ( Int_t iatt = 0; iatt < 2; ++iatt ) 
+  {
+    matrices.Add(CreateFullTracker(data,0,pedMin,pedMax,att[iatt]));
+    matrices.Add(CreateFullTracker(data,1,sigmaMin,sigmaMax,att[iatt]));
   }
   
+  TIter next(&matrices);
+  AliMUONPainterMatrix* matrix;
+  
+  Int_t w = TMath::Nint(gClient->GetDisplayWidth()*0.9);
+  Int_t h = TMath::Nint(gClient->GetDisplayHeight()*0.9);
+  
+  Int_t x[] = { 0, 0, 20 + w/2, 20 + w/2 };
+  Int_t y[] = { 0, h/2+30, 0, h/2+30 };
+  
+  Int_t i(0);
+  
+  while ( ( matrix = static_cast<AliMUONPainterMatrix*>(next())) )
+  {
+    TCanvas* c = matrix->CreateCanvas(x[i],y[i],w/2,h/2);
+    c->Draw();
+    c->SaveAs(Form("%s.png",c->GetName()));
+    ++i;
+  }
+}
+
+//_____________________________________________________________________________
+AliMUONPainterMatrix*
+AliMUONPainterDataSourceFrame::CreateFullTracker(AliMUONVTrackerData* data, 
+                                                 Int_t dim, 
+                                                 Double_t xmin, Double_t xmax,
+                                                 const AliMUONAttPainter& att)
+{
+  /// Generate, draw and register a matrix of 10 painters to show all the tracker
+  /// chambers
+    
+  AliMUONPainterMatrix* matrix = new AliMUONPainterMatrix("Tracker",5,2);
+  
+  for ( Int_t ichamber = 0; ichamber < 10; ++ichamber )
+  {
+    AliMUONVPainter* painter = new AliMUONChamberPainter(att,ichamber);
+    
+    painter->SetResponder("BUSPATCH");
+    
+    painter->SetOutlined("*",kFALSE);
+    
+    matrix->Adopt(painter);    
+  }
+  
+  matrix->SetData("MANU",data,dim);    
+  matrix->SetDataRange(xmin,xmax);    
+  
+  AliMUONPainterRegistry::Instance()->Register(matrix);
+    
+  return matrix;
+}
+
+
+//_____________________________________________________________________________
+void
+AliMUONPainterDataSourceFrame::CreateACFDataSource(const TString& acfPath, const TString& type)
+{
+  /// Create an ACF data source for a given (path,type) 
+
+  AliMUONVTrackerDataMaker* reader = new AliMUONTrackerConditionDataMaker(acfPath.Data(),
+                                                                          type.Data());
+  
+  RegisterDataSource(reader,Form("ACF;%s;%s",acfPath.Data(),type.Data()));
 }
 
 //_____________________________________________________________________________
@@ -419,24 +529,7 @@ AliMUONPainterDataSourceFrame::CreateOCDBDataSource(const TString& cdbPath,
                                                                           cdbPath.Data(),
                                                                           type.Data());
   
-  if ( reader->IsValid() ) 
-  {
-    AliMUONPainterDataRegistry::Instance()->Register(reader);
-    
-    AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
-    
-    Int_t n = env->Integer(fgkNumberOfDataSourcesKey);
-    
-    env->Set(fgkNumberOfDataSourcesKey,n+1);
-    
-    TString ds(Form("OCDB;%s;%d;%s",cdbPath.Data(),runNumber,type.Data()));
-    
-    env->Set(Form(fgkDataSourceURIKey,n),ds.Data());
-    
-    env->Save();
-    
-    AddRecentSource(ds.Data());
-  }
+  RegisterDataSource(reader,Form("OCDB;%s;%d;%s",cdbPath.Data(),runNumber,type.Data()));
 }
 
 //_____________________________________________________________________________
@@ -598,23 +691,11 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
   {
     reader = new AliMUONTrackerDataMaker(rawReader,histogram);
   }
-  
-  reader->SetSource(filename.Data());
-  
-  AliMUONPainterDataRegistry::Instance()->Register(reader);
-  
-  AliMUONPainterEnv* env = AliMUONPainterHelper::Instance()->Env();
-  
-  Int_t n = env->Integer(fgkNumberOfDataSourcesKey);
-  
-  env->Set(fgkNumberOfDataSourcesKey,n+1);
-  
-  env->Set(Form(fgkDataSourceURIKey,n),uri.Data());
-  
-  AddRecentSource(uri.Data());
-  
-  env->Save();
 
+  reader->SetSource(filename.Data());
+
+  RegisterDataSource(reader,uri.Data());
+                       
   return kTRUE;
 }
 

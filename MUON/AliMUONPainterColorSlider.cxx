@@ -54,7 +54,7 @@ AliMUONPainterColorSlider::AliMUONPainterColorSlider(const TGWindow* p,
   
   Double_t step = (max-min)/ndivisions;
   
-  for ( Int_t i = -1; i <= ndivisions+1; ++i ) 
+  for ( Int_t i = -1; i < ndivisions+1; ++i ) 
   {
     Double_t value = max - (min + step*i);
     
@@ -75,9 +75,6 @@ AliMUONPainterColorSlider::AliMUONPainterColorSlider(const TGWindow* p,
   fEntryMin = new TGNumberEntry(this);
   
   AddFrame(fEntryMin,new TGLayoutHints(kLHintsExpandX,0,0,topBorder,0));
-  
-//  fEntryMin->SetFormat(TGNumberFormat::kNESRealOne);
-//  fEntryMax->SetFormat(TGNumberFormat::kNESRealOne);
   
   AddFrame(fAutoButton,new TGLayoutHints(kLHintsExpandX,0,0,topBorder,0));
   

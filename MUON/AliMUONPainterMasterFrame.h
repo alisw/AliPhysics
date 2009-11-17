@@ -33,7 +33,7 @@ class TObjArray;
 class AliMUONPainterMasterFrame : public TGCompositeFrame
 {
 public:
-  AliMUONPainterMasterFrame(const TGWindow* p, UInt_t w, UInt_t h);
+  AliMUONPainterMasterFrame(const TGWindow* p, UInt_t w, UInt_t h, AliMUONPainterMatrix* matrix);
   virtual ~AliMUONPainterMasterFrame();
 
   void Backward();
@@ -54,6 +54,10 @@ public:
   
   void SaveAs(const char* filename = "", Option_t* option = "") const;
   
+  void PrintAs() const;
+
+  void PrintMe() const;
+  
 private:
   /// not implemented
   AliMUONPainterMasterFrame(const AliMUONPainterMasterFrame& rhs);
@@ -61,12 +65,12 @@ private:
   AliMUONPainterMasterFrame& operator=(const AliMUONPainterMasterFrame& rhs);
   
   void AddPainterMatrix(AliMUONPainterMatrix* group);
-  void MakeTopPainterMatrix(UInt_t w, UInt_t h);
+  void MakeTopPainterMatrix(UInt_t w, UInt_t h, AliMUONPainterMatrix* matrix);
   void SetNavigation(Int_t i);
   void ShowPainterMatrix(AliMUONPainterMatrix* group);  
   void UpdateNavigation();
   void UpdateAttributes(const AliMUONPainterMatrix& painterMatrix);
-
+  
 private:
   TGHorizontalFrame* fNavigationFrame; ///< top frame for navigation
   AliMUONPainterMatrixFrame* fPainterMatrixFrame; ///< main frame with painters
@@ -74,6 +78,8 @@ private:
   TGButton* fBackButton; ///< navigation back 
   TGButton* fForwardButton; ///< navigation forward
   TGLabel* fGroupTitle; ///< top title
+  TGButton* fPrintMeButton; ///< print button
+  TGButton* fPrintAsButton; ///< print... button
   
   TArrayI fNavigation; ///< navigation "history"
     

@@ -32,11 +32,13 @@
 #include <TCanvas.h>
 #include <TEnv.h>
 #include <TGComboBox.h>
+#include <TGFileDialog.h>
 #include <TGLabel.h>
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TGButtonGroup.h>
 #include <TGMsgBox.h>
+#include <TSystem.h>
 
 /// \class AliMUONPainterMasterFrame
 ///
@@ -71,16 +73,18 @@ const Int_t AliMUONPainterMasterFrame::fgkBorderSize = 10;
 
 //_____________________________________________________________________________
 AliMUONPainterMasterFrame::AliMUONPainterMasterFrame(const TGWindow* p, 
-                                                     UInt_t w, UInt_t h)
+                                                     UInt_t w, UInt_t h, AliMUONPainterMatrix* matrix)
 : TGCompositeFrame(p,w,h,kVerticalFrame),
-  fNavigationFrame(0x0),
-  fPainterMatrixFrame(0x0),
-  fBackButton(0x0),
-  fForwardButton(0x0),
-  fGroupTitle(0x0),
-  fNavigation(),
-  fCurrentNavigationPosition(-1),
-  fAttPainterSelectorFrame(0x0)
+fNavigationFrame(0x0),
+fPainterMatrixFrame(0x0),
+fBackButton(0x0),
+fForwardButton(0x0),
+fGroupTitle(0x0),
+fPrintMeButton(0x0),
+fPrintAsButton(0x0),
+fNavigation(),
+fCurrentNavigationPosition(-1),
+fAttPainterSelectorFrame(0x0)
 {  
   /// ctor
     
@@ -92,12 +96,15 @@ AliMUONPainterMasterFrame::AliMUONPainterMasterFrame(const TGWindow* p,
   AddFrame(fNavigationFrame,new TGLayoutHints(kLHintsExpandX|kLHintsTop,
                                               fgkBorderSize,fgkBorderSize,
                                               fgkBorderSize,fgkBorderSize));
-    
+  
   fBackButton = new TGPictureButton(fNavigationFrame,
-                                       gClient->GetPicture("tb_back.xpm"));
+                                    gClient->GetPicture("tb_back.xpm"));
   
   fForwardButton = new TGPictureButton(fNavigationFrame,
-                                       gClient->GetPicture("tb_forw.xpm"));
+                                       gClient->GetPicture("tb_forw.xpm"));    
+
+  fPrintMeButton = new TGTextButton(fNavigationFrame,"Print");
+  fPrintAsButton = new TGTextButton(fNavigationFrame,"Print As...");
 
   fAttPainterSelectorFrame = new AliMUONAttPainterSelectorFrame(fNavigationFrame,w/2,20);
   
@@ -107,7 +114,10 @@ AliMUONPainterMasterFrame::AliMUONPainterMasterFrame(const TGWindow* p,
   fNavigationFrame->AddFrame(fForwardButton,new TGLayoutHints(kLHintsCenterY));
   
   fNavigationFrame->AddFrame(fAttPainterSelectorFrame,new TGLayoutHints(kLHintsCenterY,10));
-  
+
+  fNavigationFrame->AddFrame(fPrintMeButton,new TGLayoutHints(kLHintsCenterY,10));
+  fNavigationFrame->AddFrame(fPrintAsButton,new TGLayoutHints(kLHintsCenterY,10));
+
   fAttPainterSelectorFrame->Connect("Clicked(AliMUONAttPainter*)",
                                     "AliMUONPainterMasterFrame",
                                     this,
@@ -123,13 +133,19 @@ AliMUONPainterMasterFrame::AliMUONPainterMasterFrame(const TGWindow* p,
                           this,
                           "Backward()");
     
+  fPrintMeButton->Connect("Clicked()","AliMUONPainterMasterFrame",
+                        this,
+                        "PrintMe()");
+
+  fPrintAsButton->Connect("Clicked()","AliMUONPainterMasterFrame",
+                        this,
+                        "PrintAs()");
   
-                                                                   
   UInt_t w1 = wi;
   //  UInt_t h1 = hi - fNavigationFrame->GetHeight() - 3*fgkBorderSize;
   UInt_t h1 = hi - 7*12;
   
-  MakeTopPainterMatrix(w1,h1);
+  MakeTopPainterMatrix(w1,h1,matrix);
 
   AddFrame(fPainterMatrixFrame,new TGLayoutHints(kLHintsExpandX,
                                                 fgkBorderSize,fgkBorderSize,
@@ -145,7 +161,7 @@ AliMUONPainterMasterFrame::AliMUONPainterMasterFrame(const TGWindow* p,
                                               this,
                                               "PainterMatrixWantToShow(AliMUONPainterMatrix*)");
   
-  fPainterMatrixFrame->DataSourceWasChanged("*",0x0,-1);
+  fPainterMatrixFrame->DataSourceWasChanged(matrix->DataPattern().Data(),matrix->Data(),matrix->DataIndex());
 }
 
 //_____________________________________________________________________________
@@ -197,7 +213,33 @@ AliMUONPainterMasterFrame::PainterMatrixWantToShow(AliMUONPainterMatrix* group)
   
   ShowPainterMatrix(group);  
 }
-                                                
+     
+//_____________________________________________________________________________
+void
+AliMUONPainterMasterFrame::PrintAs() const
+{
+  /// Handle the PrintAs button
+  
+  TGFileInfo fileInfo;
+  
+  new TGFileDialog(gClient->GetRoot(),gClient->GetRoot(),
+                   kFDSave,&fileInfo);
+  
+  if ( fileInfo.fFilename ) 
+  {
+    SaveAs(gSystem->ExpandPathName(Form("%s",fileInfo.fFilename)),"RECREATE");
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPainterMasterFrame::PrintMe() const
+{
+  /// Handle the PrintMe button
+  
+  SaveAs(gSystem->ExpandPathName(Form("%s.png",fPainterMatrixFrame->Matrix()->GetName())),"RECREATE");
+}
+
 //_____________________________________________________________________________
 void
 AliMUONPainterMasterFrame::SetNavigation(Int_t i)
@@ -320,7 +362,7 @@ AliMUONPainterMasterFrame::ShiftClicked(AliMUONVPainter* painter, Double_t*)
   
   TString basename(Form("%s-DUAL",painter->GetName()));
   
-  TString newName = AliMUONPainterMatrix::NameIt(basename.Data(),a);
+  TString newName = AliMUONPainterMatrix::NameIt(currentMatrix->Whatname(),basename.Data(),a);
   
   AliMUONPainterMatrix* matrix = AliMUONPainterRegistry::Instance()->PainterMatrix(newName.Data());
   
@@ -410,6 +452,7 @@ AliMUONPainterMasterFrame::Update()
   /// Update ourselves
   
   fPainterMatrixFrame->Update();
+  fPainterMatrixFrame->UpdateInterface(kFALSE);
 }
 
 //_____________________________________________________________________________
@@ -423,32 +466,20 @@ AliMUONPainterMasterFrame::UpdateAttributes(const AliMUONPainterMatrix& painterM
 
 //_____________________________________________________________________________
 void
-AliMUONPainterMasterFrame::MakeTopPainterMatrix(UInt_t w, UInt_t h)
+AliMUONPainterMasterFrame::MakeTopPainterMatrix(UInt_t w, UInt_t h, AliMUONPainterMatrix* matrix)
 {
   /// Create the first painter matrix that appears when we are create
   /// FIXME: how to make this more flexible ?
   
   fPainterMatrixFrame = new AliMUONPainterMatrixFrame(this,w,h);
 
-  AliMUONAttPainter att;
-  
-  att.SetPlane(kTRUE,kFALSE);
-//  att.SetCathode(kTRUE,kFALSE);
-  att.SetViewPoint(kTRUE,kFALSE);
-    
-  TString name = AliMUONPainterMatrix::NameIt("Tracker",att);
-  
-  AliMUONPainterMatrix* painterMatrix = AliMUONPainterRegistry::Instance()->PainterMatrix(name);
-  
-  if (!painterMatrix)
+  if (matrix)
   {
-    AliError(Form("Could not get pre-defined painter matrix %s : check that !",name.Data()));
+    PainterMatrixWantToShow(matrix);
   }
   else
   {
-    PainterMatrixWantToShow(painterMatrix);
-//    fPainterMatrixFrame->Use(painterMatrix);
-//    ShowPainterMatrix(painterMatrix);
+    AliError("Cannot work without a painterMatrix");
   }
 }
 
@@ -493,7 +524,7 @@ AliMUONPainterMasterFrame::AttributesChanged(AliMUONAttPainter* newValues)
   
   // First check if we already have this matrix available
   
-  TString newName = AliMUONPainterMatrix::NameIt(currentMatrix->Basename(),a);
+  TString newName = AliMUONPainterMatrix::NameIt(currentMatrix->Whatname(),currentMatrix->Basename(),a);
   
   AliMUONPainterMatrix* matrix = AliMUONPainterRegistry::Instance()->PainterMatrix(newName.Data());
 

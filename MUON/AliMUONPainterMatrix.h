@@ -25,6 +25,7 @@
 class AliMUONVPainter;
 class AliMUONVTrackerData;
 class TObjArray;
+class TCanvas;
 
 class AliMUONPainterMatrix : public TObject
 {
@@ -50,17 +51,17 @@ public:
   
   /// Get the data range for this matrix
   void GetDataRange(Double_t& dataMin, Double_t& dataMax) const;
-  
+
+  /// Get matrix name
+  virtual const char* GetName() const { return Name(); }
+
   /// Get our name
-  virtual const char* GetName() const { return Name().Data(); }
+  virtual const char* Name() const;
 
-  static TString NameIt(const TString& basename, const AliMUONAttPainter& att);
-
-  /// Matrix name
-  virtual TString Name() const { return fName; }
-  
   /// Base name (short name)
-  virtual TString Basename() const { return fBasename; }
+  const char* Basename() const { return fBasename.Data(); }
+  
+  const char* Whatname() const { return fWhatname.Data(); }
   
   void GetTypes(TObjArray& types) const;
 
@@ -97,6 +98,12 @@ public:
   /// Normalize attributes
   AliMUONAttPainter Validate(const AliMUONAttPainter& att) const;
   
+  static TString NameIt(const char* what, const char* basename, const AliMUONAttPainter& att);
+
+  void Draw(Option_t* opt="");
+  
+  TCanvas* CreateCanvas(Int_t x=0, Int_t y=0, Int_t w=-1, Int_t h=-1);
+
 private:
   /// Not implemented
   AliMUONPainterMatrix(const AliMUONPainterMatrix& rhs);
@@ -107,13 +114,13 @@ private:
   
 private:
   TString fBasename; ///< base name of that matrix
-  TString fName; ///< complete name
+  TString fWhatname; ///< data name
   Int_t fNx; ///< number of rows
   Int_t fNy; ///< number of columns
   TObjArray* fPainters; ///< painters in that matrix
   AliMUONAttPainter fAttributes; ///< attributes of our painter(s)
   
-  ClassDef(AliMUONPainterMatrix,1) // Matrix of AliMUONVPainter
+  ClassDef(AliMUONPainterMatrix,2) // Matrix of AliMUONVPainter
 };
 
 #endif

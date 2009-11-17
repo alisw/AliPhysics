@@ -17,13 +17,22 @@
 
 #include "AliMUONPainterMatrix.h"
 
-#include "AliMUONPainterGroup.h"
-#include "AliMUONVPainter.h"
 #include "AliLog.h"
+#include "AliMUONPainterGroup.h"
+#include "AliMUONPainterHelper.h"
+#include "AliMUONVPainter.h"
+#include "AliMUONVTrackerData.h"
+#include "TCanvas.h"
+#include "TGClient.h"
+#include "TPaveLabel.h"
 #include <Riostream.h>
+#include <TBox.h>
+#include <TMath.h>
 #include <TObjArray.h>
-#include <float.h>
 #include <TObjString.h>
+#include <TROOT.h>
+#include <TVirtualPad.h>
+#include <float.h>
 
 ///\class AliMUONPainterMatrix
 ///
@@ -31,7 +40,7 @@
 ///
 ///\author Laurent Aphecetche, Subatech
 
-///\cond CLASSIMP
+///\cond CLASSIMP 
 ClassImp(AliMUONPainterMatrix)
 ///\endcond
 
@@ -39,21 +48,19 @@ ClassImp(AliMUONPainterMatrix)
 AliMUONPainterMatrix::AliMUONPainterMatrix(const char* name, Int_t nx, Int_t ny)
 : TObject(),
   fBasename(name),
-  fName(""),
+  fWhatname(""),
   fNx(nx),
   fNy(ny),
   fPainters(new TObjArray(fNx*fNy)),
   fAttributes()
 {
-    /// ctor
-
-    fPainters->SetOwner(kTRUE);
-    if ( fNx*fNy > 1 ) 
-    {
-      fAttributes.SetSingle(kFALSE);
-    }
-    
-    fName = NameIt(name,fAttributes);
+  /// ctor
+  
+  fPainters->SetOwner(kTRUE);
+  if ( fNx*fNy > 1 ) 
+  {
+    fAttributes.SetSingle(kFALSE);
+  }
 }
 
 //_____________________________________________________________________________
@@ -116,21 +123,30 @@ AliMUONPainterMatrix::UpdateAttributes()
   fAttributes.SetViewPoint(front,back);
   fAttributes.SetCathodeAndPlaneMutuallyExclusive(cathplaneexclusive);
   fAttributes.SetCathodeAndPlaneDisabled(cathplanedisabled);
+}
+
+//_____________________________________________________________________________
+const char*
+AliMUONPainterMatrix::Name() const
+{
+  /// Build our name
   
-  fName = NameIt(fBasename,fAttributes);
+  return NameIt(fWhatname.Data(),fBasename.Data(),fAttributes).Data();
 }
 
 //_____________________________________________________________________________
 TString
-AliMUONPainterMatrix::NameIt(const TString& basename, const AliMUONAttPainter& att)
+AliMUONPainterMatrix::NameIt(const char* whatname, const char* basename, const AliMUONAttPainter& att)
 {
   /// Build a name 
-  TString name(basename);
-  
-  name += "-";
-  name += att.Name();
-  
-  return name;
+  if ( strlen(whatname) > 0 ) 
+  {
+    return Form("%s-%s-%s",whatname,basename,att.Name().Data());
+  }
+  else
+  {
+    return Form("noda-%s-%s",basename,att.Name().Data());
+  }
 }
 
 //_____________________________________________________________________________
@@ -195,6 +211,143 @@ AliMUONPainterMatrix::Connect(const char* sourceMethod, const char* destClassNam
 }
 
 //_____________________________________________________________________________
+TCanvas*
+AliMUONPainterMatrix::CreateCanvas(Int_t x, Int_t y, Int_t w, Int_t h)
+{
+  /// Generate a canvas to show the painter matrix.
+  ///
+  /// Layout is the following :
+  ///
+  /// ----------------------------------------------------
+  /// |    title describing what is plotted              |
+  /// ----------------------------------------------------
+  /// |                                        |         |
+  /// |                                        |         |
+  /// |                                        |         |
+  /// |                                        |         |
+  /// |                                        |         |
+  /// |             painter themselves         | color   |
+  /// |                                        | range   |
+  /// |                                        |         |
+  /// |                                        |         |
+  /// ----------------------------------------------------
+  ///
+  
+  Int_t mw = ( w <= 0 ? TMath::Nint(gClient->GetDisplayWidth()*0.9) : w );
+  Int_t mh = ( h <= 0 ? TMath::Nint(gClient->GetDisplayHeight()*0.9) : h );
+  
+  TString name(Name());
+  
+  TCanvas* d = new TCanvas(name.Data(),name.Data(),x,y,mw,mh);
+
+  TVirtualPad* pTitle = new TPad(Form("%s-title",name.Data()),Form("%s-title",name.Data()),0,0.9,1.0,0.99);
+  
+  pTitle->Draw();
+  
+  pTitle->cd();
+  
+  TPaveLabel* text = new TPaveLabel(0,0,1,1,"");
+  text->SetFillStyle(0);
+  text->SetFillColor(0);
+  text->SetTextColor(4);
+  text->SetBorderSize(0);
+  
+  text->SetLabel(name.Data());
+  
+  text->Draw();
+  
+  d->cd();
+  
+  TVirtualPad* pMatrix = new TPad(Form("%s-matrix",name.Data()),Form("%s-matrix",name.Data()),0,0,0.9,0.89);
+  
+  pMatrix->Draw();
+  pMatrix->cd();
+  
+  Draw();
+  
+  d->cd();
+  
+  TVirtualPad* pColor = new TPad(Form("%s-color",name.Data()),Form("%s-color",name.Data()),0.91,0.01,0.99,0.89);
+    
+  pColor->Range(0,0,1,1);
+
+  pColor->Draw();
+  
+  pColor->cd();
+  
+  Int_t ndivisions(20);
+  
+  Double_t rangeXmin(0.1);
+  Double_t rangeXmax(0.9);
+  
+  Double_t ymin, ymax;
+  
+  GetDataRange(ymin,ymax);
+    
+  Double_t min(0.0);
+  Double_t max(1.0);
+  
+  Double_t step = (max-min)/ndivisions;
+
+  Double_t hsize = 1.0/(ndivisions+2);
+
+  Double_t ypos = 1.0;
+  
+  for ( Int_t i = -1; i < ndivisions+1; ++i ) 
+  {
+    Double_t value = max - (min + step*i);
+    
+    Int_t color = AliMUONPainterHelper::Instance()->ColorFromValue(value,min,max);
+    
+    Bool_t limit(kFALSE);
+    
+    TString label;
+    TString sign;
+    
+    Double_t yvalue(0.0);
+    
+    if ( i == -1 )
+    {
+      yvalue = ymax;
+      limit = kTRUE;
+      sign = ">";
+    }
+    else if ( i == ndivisions )
+    {
+      yvalue = ymin;
+      limit = kTRUE;
+      sign = "<=";
+    }
+    
+    if (limit)
+    {
+      if ( TMath::Abs(yvalue) < 1E5 ) 
+      {
+        label = Form("%s %7.2f",sign.Data(),yvalue);    
+      }
+      else
+      {
+        label = Form("%s %e",sign.Data(),yvalue);
+      }
+    }
+
+    TPaveLabel* box = new TPaveLabel(rangeXmin,TMath::Max(0.001,ypos-hsize),rangeXmax,ypos,label.Data(),"");    
+    
+    ypos -= hsize;
+    
+    box->SetFillColor(color);
+    box->SetTextColor( i == -1 ? 0 : 1 );
+    box->SetBorderSize(1);
+    box->SetLineColor(1);
+    box->Draw();
+  }  
+  
+  d->SetEditable(kFALSE);
+  
+  return d;
+}
+
+//_____________________________________________________________________________
 void
 AliMUONPainterMatrix::GetDataRange(Double_t& dataMin, Double_t& dataMax) const
 {
@@ -242,6 +395,32 @@ AliMUONPainterMatrix::GetTypes(TObjArray& types) const
       }
     }
   }  
+}
+
+
+//_____________________________________________________________________________
+void
+AliMUONPainterMatrix::Draw(Option_t*)
+{
+  /// Append our painters to the current pad
+
+  if (!gPad) 
+  {
+    gROOT->MakeDefCanvas();
+  }
+  
+  TVirtualPad* pad = gPad;
+
+  gPad->Divide(Nx(),Ny());
+  
+  for ( Int_t i = 0; i < Size(); ++i ) 
+  {
+    AliMUONVPainter* painter = Painter(i);
+    pad->cd(i+1);
+    painter->Draw("R");
+  }  
+  
+  AppendPad("");
 }
 
 //_____________________________________________________________________________
@@ -296,6 +475,15 @@ AliMUONPainterMatrix::SetData(const char* pattern, AliMUONVTrackerData* d,
     AliMUONVPainter* painter = Painter(i);
     painter->SetData(pattern,d,indexInData);
   }
+  
+  if ( d ) 
+  {
+    fWhatname = Form("%s-%s",d->GetName(),d->DimensionName(indexInData).Data());
+  }
+  else
+  {
+    fWhatname = "";
+  }
 }
 
 //_____________________________________________________________________________
@@ -328,7 +516,7 @@ void
 AliMUONPainterMatrix::Print(Option_t*) const
 {
   /// Printout
-  cout << "Basename=" << fBasename.Data() << " Name=" << fName.Data() 
+  cout << "Whatname=" << fWhatname.Data() << "Basename=" << fBasename.Data() 
   << " Nx=" << fNx << " Ny=" << fNy << " Att=" << fAttributes.GetName() << endl;
 }
 
@@ -352,7 +540,7 @@ AliMUONPainterMatrix::Clone(const AliMUONAttPainter& attributes) const
 {
   /// Clone with given attributes
   
-  AliMUONPainterMatrix* clone = new AliMUONPainterMatrix(Basename().Data(),Nx(),Ny());
+  AliMUONPainterMatrix* clone = new AliMUONPainterMatrix(Basename(),Nx(),Ny());
 
   for ( Int_t i = 0; i < Size(); ++i ) 
   {
@@ -419,5 +607,3 @@ AliMUONPainterMatrix::Validate(const AliMUONAttPainter& att) const
   }
   return a;
 }
-
-

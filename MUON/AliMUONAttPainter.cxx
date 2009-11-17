@@ -74,11 +74,12 @@ AliMUONAttPainter::Name() const
     if ( name.Length() > 0 ) name += "-";
     name += PlaneName();
   }
-  if ( ViewPointName().Length() > 0 ) 
-  {
-    if ( name.Length() > 0 ) name += "-";
-    name += ViewPointName();
-  }
+
+//  if ( ViewPointName().Length() > 0 ) 
+//  {
+//    if ( name.Length() > 0 ) name += "-";
+//    name += ViewPointName();
+//  }
   
   return name;
 }
@@ -125,8 +126,8 @@ AliMUONAttPainter::PlaneName() const
   /// Return plane name in short form
   if ( IsBendingPlane() && IsNonBendingPlane() ) return "Both";
   else if ( !IsBendingPlane() && !IsNonBendingPlane() ) return "";
-  else if ( IsBendingPlane() ) return "B";
-  else if ( IsNonBendingPlane() ) return "NB";
+  else if ( IsBendingPlane() ) return "Bending";
+  else if ( IsNonBendingPlane() ) return "NonBending";
   return "";
 }
 

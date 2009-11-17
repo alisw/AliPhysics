@@ -128,8 +128,6 @@ int main(int argc, char** argv)
     return Usage();
   }
   
-  AliWarningGeneral("main","FIXME ? Remove default storage and run number from here...");
-  
   AliCDBManager::Instance()->SetDefaultStorage(defaultOCDB.Data());
   AliCDBManager::Instance()->SetRun(0);
  
@@ -179,8 +177,6 @@ int main(int argc, char** argv)
   
   AliMUONMchViewApplication* theApp = new AliMUONMchViewApplication("mchview", &argc, argv, w,h,gox,goy);
    
-  AliCodeTimer::Instance()->Print();
-
   TIter next(&filesToOpen);
   TObjString* s;
   while ( ( s = static_cast<TObjString*>(next()) ) )

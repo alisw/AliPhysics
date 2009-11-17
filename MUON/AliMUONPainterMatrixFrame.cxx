@@ -476,7 +476,12 @@ void
 AliMUONPainterMatrixFrame::SaveAs(const char* filename, Option_t* option) const
 {
   /// Save painter matrix (in the sense of "print") in filename
-  fView->GetCanvas()->SaveAs(filename,option);
+  
+  TCanvas* d = fPainterMatrix->CreateCanvas();
+  
+  d->SaveAs(filename,option);
+  
+  delete d;
 }
 
 //_____________________________________________________________________________

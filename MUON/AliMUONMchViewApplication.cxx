@@ -26,7 +26,9 @@
 #include "AliMUONPainterDataSourceFrame.h"
 #include "AliMUONPainterEnv.h"
 #include "AliMUONPainterHelper.h"
+#include "AliMUONPainterGroup.h"
 #include "AliMUONPainterMasterFrame.h"
+#include "AliMUONPainterMatrix.h"
 #include "AliMUONPainterRegistry.h"
 #include "AliMUONTrackerDataCompareDialog.h"
 #include "AliMUONTrackerDataWrapper.h"
@@ -77,7 +79,8 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
                                                      UInt_t ox, UInt_t oy) 
 : TRint(name,argc,argv),
   fMainFrame(0x0),
-  fPainterMasterFrame(0x0)
+  fPainterMasterFrameList(new TList),
+  fTabs(0x0)
 {
 
   /// ctor
@@ -92,38 +95,41 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
 
   fMainFrame = new TGMainFrame(gClient->GetRoot(),w,h);
 
-  AliMUONPainterHelper::Instance()->GenerateDefaultMatrices();
-
   CreateMenuBar(w);
 
   const Int_t kbs = 2;
   
 //  h -= 60; // menubar
   
-  TGTab* tabs = new TGTab(fMainFrame,w,h);
+  fTabs = new TGTab(fMainFrame,w,h);
   
-  TGCompositeFrame* t = tabs->AddTab("Painter Master Frame");
+  TGCompositeFrame* t = fTabs->AddTab("Painter Master Frame");
 
-  fPainterMasterFrame =
-    new AliMUONPainterMasterFrame(t,t->GetWidth()-kbs*2,t->GetHeight()-kbs*2);
+  fPainterMasterFrameList->SetOwner(kTRUE);
   
-  t->AddFrame(fPainterMasterFrame, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,kbs,kbs,kbs,kbs));
+  
+  AliMUONPainterMasterFrame* pmf = new AliMUONPainterMasterFrame(t,t->GetWidth()-kbs*2,t->GetHeight()-kbs*2,
+                                                                 GenerateStartupMatrix());
 
-  t = tabs->AddTab("Data Sources");
+  fPainterMasterFrameList->Add(pmf);
+  
+  t->AddFrame(pmf, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,kbs,kbs,kbs,kbs));
+
+  t = fTabs->AddTab("Data Sources");
   
   AliMUONPainterDataSourceFrame* dsf = 
     new AliMUONPainterDataSourceFrame(t,t->GetWidth()-kbs*2,t->GetHeight()-kbs*2);
   
   t->AddFrame(dsf,new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,kbs,kbs,kbs,kbs));
   
-  fMainFrame->AddFrame(tabs,new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,0,0,0,0));
+  fMainFrame->AddFrame(fTabs,new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,0,0,0,0));
 
   fMainFrame->SetWindowName("mchview - Visualization of MUON Tracker detector");
 
   fMainFrame->MapSubwindows();
   fMainFrame->Resize();
   
-  fPainterMasterFrame->Update();
+  pmf->Update();
   
   fMainFrame->MapWindow();
   
@@ -190,9 +196,9 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
   
   if ( painter ) 
   {
-    fPainterMasterFrame->ShiftClicked(painter,0x0);
+    pmf->ShiftClicked(painter,0x0);
     
-    fPainterMasterFrame->Update();
+    pmf->Update();
   }
       
 }
@@ -201,6 +207,44 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
 AliMUONMchViewApplication::~AliMUONMchViewApplication()
 {
   /// dtor
+  delete fPainterMasterFrameList;
+}
+
+//_____________________________________________________________________________
+AliMUONPainterMatrix*
+AliMUONMchViewApplication::GenerateStartupMatrix()
+{
+  /// Kind of bootstrap method to trigger the generation of all contours
+  
+  AliCodeTimerAuto("",0);
+  
+  AliMUONAttPainter att;
+  
+  att.SetViewPoint(kTRUE,kFALSE);
+  att.SetCathode(kFALSE,kFALSE);
+  att.SetPlane(kTRUE,kFALSE);
+
+  AliMUONPainterMatrix* matrix = new AliMUONPainterMatrix("Tracker",5,2);
+    
+  for ( Int_t i = 0; i < 10; ++i )
+  {
+    AliMUONVPainter* painter = new AliMUONChamberPainter(att,i);
+    
+    painter->SetResponder("Chamber");
+    
+    painter->SetOutlined("*",kFALSE);
+    
+    painter->SetOutlined("MANU",kTRUE);
+    
+    for ( Int_t j = 0; j < 3; ++j ) 
+    {
+      painter->SetLine(j,1,4-j);
+    }
+    
+    matrix->Adopt(painter);    
+  }
+  AliMUONPainterRegistry::Instance()->Register(matrix);
+  return matrix;
 }
 
 //______________________________________________________________________________
@@ -222,8 +266,7 @@ AliMUONMchViewApplication::CompareData()
   t->SetWindowName("mchview compare data tool");
   t->SetIconName("mchview compare data tool");
   
-  t->MapRaised();
-  
+  t->MapRaised();  
 }
 
 //______________________________________________________________________________
@@ -398,7 +441,16 @@ AliMUONMchViewApplication::PrintAs()
   new TGFileDialog(gClient->GetRoot(),gClient->GetRoot(),
                    kFDSave,&fileInfo);
   
-  fPainterMasterFrame->SaveAs(gSystem->ExpandPathName(Form("%s",fileInfo.fFilename)));
+  TIter next(fPainterMasterFrameList);
+  AliMUONPainterMasterFrame* pmf;
+  Bool_t first(kTRUE);
+  
+  while ( ( pmf = static_cast<AliMUONPainterMasterFrame*>(next()) ) )
+  {
+    pmf->SaveAs(gSystem->ExpandPathName(Form("%s",fileInfo.fFilename)),
+                first ? "RECREATE" : "UPDATE");
+    first = kFALSE;
+  }
 }
 
 //______________________________________________________________________________
@@ -414,6 +466,15 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.03");
+  rn->AddLine("");
+  rn->AddLine("Add Print buttons");
+  rn->AddLine("Add the automatic creation of often used canvases when using pedestal source");
+  // Internal reorganization to allow several independent tabs to be created to 
+  // show different master frames (not used yet). Important for the moment
+  // is the ability to create a PainterMatrix and pass it to the PainterMasterFrame
+  rn->AddLine("");
+  
   rn->AddLine("1.02");
   rn->AddLine("");
   rn->AddLine("Internal change (merging of AliMUONTrackerACFDataMaker and AliMUONTrackerOCDBDataMaker into AliMUONTrackerConditionDataMaker)");

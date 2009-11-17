@@ -16,9 +16,11 @@
 #   include <TRint.h>
 #endif
 
-class AliMUONPainterMasterFrame;
+class TList;
 class TDirectory;
 class TGMainFrame;
+class AliMUONPainterMatrix;
+class TGTab;
 
 class AliMUONMchViewApplication : public TRint
 {
@@ -30,7 +32,7 @@ public:
   void HandleMenu(Int_t i);
 
   /// Return the version number of the mchview application
-  static const char* Version() { return "1.02"; }
+  static const char* Version() { return "1.03"; }
   
   /// Return the SVN revision  and version number of the mchview application
   static const char* FullVersion() { return Form("mchview Version %s ($Id$)",Version()); }
@@ -51,10 +53,12 @@ private:
   void PrintAs();
   void ReleaseNotes();
   void ReadDir(TDirectory& dir);
-	
+	AliMUONPainterMatrix* GenerateStartupMatrix();
+
 private:
   TGMainFrame* fMainFrame; ///< pointer to our mainframe
-  AliMUONPainterMasterFrame* fPainterMasterFrame; ///< pointer to our main object
+  TList* fPainterMasterFrameList; ///< list of painterMasterFrame objects
+  TGTab* fTabs; ///< our tabs
   
   static const Int_t fgkFILESAVEAS; ///< File/Save As... menu
   static const Int_t fgkFILEOPEN; ///< File/Open... menu
@@ -65,7 +69,7 @@ private:
   
   static const char* fgkFileTypes[]; ///< For the open menu
   
-  ClassDef(AliMUONMchViewApplication,4) // mchview application
+  ClassDef(AliMUONMchViewApplication,5) // mchview application
 };
 
 #endif

@@ -66,6 +66,8 @@ public:
   
   void SaveAs(const char* filename="", Option_t* option="") const;
 
+  void UpdateInterface(Bool_t fromScratch);
+  
 private:
   /// not implemented
   AliMUONPainterMatrixFrame(const AliMUONPainterMatrixFrame& rhs);
@@ -81,8 +83,6 @@ private:
   
   void UpdateDataRange();
   
-  void UpdateInterface(Bool_t fromScratch);
-
   void ViewModified();
   
 private:
