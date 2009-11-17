@@ -30,7 +30,8 @@ void loadlibs ()
   gSystem->Load("libMinuit");
   gSystem->Load("libTree");
   gSystem->Load("libProofPlayer");
-  
+  gSystem->Load("libXMLParser");
+
   gSystem->Load("libSTEERBase"); 
   gSystem->Load("libESD");
   gSystem->Load("libAOD");
