@@ -30,12 +30,11 @@
 #include <TSystem.h>
 #endif
 
-void runDataReconstruction(const char* input = "alien:///alice/data/2009/LHC09a/000067138/raw/09000067138031.10.root",
-                           const char* ocdbPath = "alien://folder=/alice/data/2009/OCDB",
-                           const char* recoptions="SAVEDIGITS")
+void runDataReconstruction(const char* input = "raw://run86102",
+                           const char* ocdbPath = "raw://",
+                           const char* recoptions="SAVEDIGITS",
+                           Int_t numberOfEvents=-1)
 { 
-  TGrid::Connect("alien://");
-  
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdbPath);
 
@@ -52,6 +51,10 @@ void runDataReconstruction(const char* input = "alien:///alice/data/2009/LHC09a/
   MuonRec.SetRunQA("MUON:ALL");
   MuonRec.SetQAWriteExpert(AliQAv1::kMUON);
 
+  if ( numberOfEvents > 0 )
+  {
+    MuonRec.SetEventRange(0,numberOfEvents);
+  }
   MuonRec.Run();
   
 }
