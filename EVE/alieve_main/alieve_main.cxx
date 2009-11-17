@@ -13,6 +13,7 @@
 #include <TPRegexp.h>
 #include <TSystem.h>
 #include <TError.h>
+#include <RVersion.h>
 
 #include <AliLog.h>
 
@@ -63,6 +64,10 @@ int main(int argc, char **argv)
   // How to hadle AliLog properly?
   AliLog *log = new AliLog;
   TRint  *app = new TRint("App", &argc, argv);
+
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,25,4) || defined XXX_LATEST_ROOT
+  TEveGListTreeEditorFrame::SetEditorClass("AliEveGedEditor");
+#endif
 
   TEveManager::Create();
   gEve->GetSelection()->SetPickToSelect(TEveSelection::kPS_PableCompound);

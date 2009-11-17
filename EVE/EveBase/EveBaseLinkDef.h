@@ -26,6 +26,10 @@
 #pragma link C++ class AliEveMacroExecutor+;
 #pragma link C++ class AliEveMacroExecutorWindow+;
 
+// Special GED editor for VizDB interaction.
+#pragma link C++ class AliEveGedEditor+;
+#pragma link C++ class AliEveGedFrame+;
+
 // Various
 #pragma link C++ class AliEveKineTools+;
 #pragma link C++ class AliEveMagField+;
