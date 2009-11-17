@@ -178,11 +178,11 @@ fChannels(new AliMUON2DMap(kTRUE))
 {
   /// normal ctor
   memset(fDEIds,0,fMaxNofDEs*sizeof(UInt_t));
-  memset(fDEProbas,0.0,fMaxNofDEs*sizeof(Float_t));
+  memset(fDEProbas,0,fMaxNofDEs*sizeof(Float_t));
   memset(fBPIds,0,fMaxNofBPs*sizeof(UInt_t));
-  memset(fBPProbas,0.0,fMaxNofBPs*sizeof(Float_t));
+  memset(fBPProbas,0,fMaxNofBPs*sizeof(Float_t));
   memset(fManuIds,0,fMaxNofManus*sizeof(UInt_t));
-  memset(fManuProbas,0.0,fMaxNofManus*sizeof(Float_t));
+  memset(fManuProbas,0,fMaxNofManus*sizeof(Float_t));
 }
 
 //_____________________________________________________________________________
