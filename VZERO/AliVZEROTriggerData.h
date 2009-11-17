@@ -95,37 +95,37 @@ public:
 	// ----- Getters -----
 	
 	UShort_t * GetClk1Win1() const {return (UShort_t*)fClk1Win1;};
-	UShort_t GetClk1Win1(Int_t board ) const {return (board<kNCIUBoards?fClk1Win1[board]:0);};
+	UShort_t GetClk1Win1(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fClk1Win1[board]:0);};
 	UShort_t * GetClk2Win1() const {return (UShort_t*)fClk2Win1;};
-	UShort_t GetClk2Win1(Int_t board ) const {return (board<kNCIUBoards?fClk2Win1[board]:0);};
+	UShort_t GetClk2Win1(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fClk2Win1[board]:0);};
 
 	UShort_t * GetClk1Win2() const {return (UShort_t*)fClk1Win2;};
-	UShort_t GetClk1Win2(Int_t board ) const {return (board<kNCIUBoards?fClk1Win2[board]:0);};
+	UShort_t GetClk1Win2(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fClk1Win2[board]:0);};
 	UShort_t * GetClk2Win2() const {return (UShort_t*)fClk2Win2;};
-	UShort_t GetClk2Win2(Int_t board ) const {return (board<kNCIUBoards?fClk2Win2[board]:0);};
+	UShort_t GetClk2Win2(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fClk2Win2[board]:0);};
 
 	UShort_t * GetDelayClk1Win1() const {return (UShort_t*)fDelayClk1Win1;};
-	UShort_t GetDelayClk1Win1(Int_t board ) const {return (board<kNCIUBoards?fDelayClk1Win1[board]:0);};
+	UShort_t GetDelayClk1Win1(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fDelayClk1Win1[board]:0);};
 	UShort_t * GetDelayClk2Win1() const {return (UShort_t*)fDelayClk2Win1;};
-	UShort_t GetDelayClk2Win1(Int_t board ) const {return (board<kNCIUBoards?fDelayClk2Win1[board]:0);};
+	UShort_t GetDelayClk2Win1(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fDelayClk2Win1[board]:0);};
 	
 	UShort_t * GetDelayClk1Win2() const {return (UShort_t*)fDelayClk1Win2;};
-	UShort_t GetDelayClk1Win2(Int_t board ) const {return (board<kNCIUBoards?fDelayClk1Win2[board]:0);};
+	UShort_t GetDelayClk1Win2(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fDelayClk1Win2[board]:0);};
 	UShort_t * GetDelayClk2Win2() const {return (UShort_t*)fDelayClk2Win2;};
-	UShort_t GetDelayClk2Win2(Int_t board ) const {return (board<kNCIUBoards?fDelayClk2Win2[board]:0);};
+	UShort_t GetDelayClk2Win2(Int_t board ) const {return ((board>=0 && board<kNCIUBoards)?fDelayClk2Win2[board]:0);};
 	
 	UShort_t * GetLatchWin1() const {return (UShort_t*)fLatchWin1;};
-	UShort_t GetLatchWin1(Int_t board ) const  {return (board<kNCIUBoards?fLatchWin1[board]:0);};
+	UShort_t GetLatchWin1(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fLatchWin1[board]:0);};
 	UShort_t * GetLatchWin2() const {return (UShort_t*)fLatchWin2;};
-	UShort_t GetLatchWin2(Int_t board ) const  {return (board<kNCIUBoards?fLatchWin2[board]:0);};
+	UShort_t GetLatchWin2(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fLatchWin2[board]:0);};
 	
 	UShort_t * GetResetWin1() const {return (UShort_t*)fResetWin1;};
-	UShort_t GetResetWin1(Int_t board ) const  {return (board<kNCIUBoards?fResetWin1[board]:0);};
+	UShort_t GetResetWin1(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fResetWin1[board]:0);};
 	UShort_t * GetResetWin2() const {return (UShort_t*)fResetWin2;};
-	UShort_t GetResetWin2(Int_t board ) const  {return (board<kNCIUBoards?fResetWin2[board]:0);};
+	UShort_t GetResetWin2(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fResetWin2[board]:0);};
 	
 	Bool_t * GetPedestalSubtraction() const {return (Bool_t*) fPedestalSubtraction;};
-	Bool_t GetPedestalSubtraction(Int_t board ) const  {return (board<kNCIUBoards?fPedestalSubtraction[board]:0);};
+	Bool_t GetPedestalSubtraction(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fPedestalSubtraction[board]:0);};
 
 	UShort_t GetBBAThreshold() const {return fBBAThreshold;};
 	UShort_t GetBBCThreshold() const {return fBBCThreshold;};
@@ -148,7 +148,7 @@ public:
 	UShort_t GetMultV0CThrLow() const {return fMultV0CThrLow;};
 	UShort_t GetMultV0CThrHigh() const {return fMultV0CThrHigh;};
 
-	UShort_t GetTriggerSelected(Int_t output) const {return (output<kNTriggerOutputs?fTriggerSelected[output]:0);};
+	UShort_t GetTriggerSelected(Int_t output) const {return ((output>=0 && output<kNTriggerOutputs)?fTriggerSelected[output]:0);};
 	
 	Bool_t GetEnableCharge(Int_t board, Int_t channel);
 	Bool_t GetEnableTiming(Int_t board, Int_t channel);

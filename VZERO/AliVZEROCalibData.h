@@ -50,10 +50,10 @@ class AliVZEROCalibData: public TNamed {
   Float_t* GetTimeGain()   const {return (float*)fTimeGain;}
 
   Float_t* GetTimeResolution() const {return (Float_t*) fTimeResolution;};
-  Float_t  GetTimeResolution(Int_t board ) const  {return (board<kNCIUBoards?fTimeResolution[board]:0);};
+  Float_t  GetTimeResolution(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fTimeResolution[board]:0);};
 
   Float_t* GetWidthResolution() const {return (Float_t*) fWidthResolution;};
-  Float_t  GetWidthResolution(Int_t board ) const  {return (board<kNCIUBoards?fWidthResolution[board]:0);};
+  Float_t  GetWidthResolution(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fWidthResolution[board]:0);};
     
   void     SetPedestal(Float_t val, Int_t channel) {fPedestal[channel]=val;}
   void     SetPedestal(Float_t* Pedestal);

@@ -169,7 +169,7 @@ void AliVZEROCalibData::FillDCSData(AliVZERODataDCS * data){
 		Float_t val;
 		if(aValue) {
 			val = aValue->GetFloat();
-			//AliInfo(Form("%s : %f",aliasName->String().Data(), val));
+			AliInfo(Form("%s : %f",aliasName->String().Data(), val));
 			SetParameter(aliasName->String(),val);
 		}
 	}	
@@ -189,8 +189,8 @@ void AliVZEROCalibData::SetParameter(TString name, Float_t val){
 	TObjString * boardName = (TObjString *)nameSplit->At(2);
 	sscanf(boardName->String().Data(),"CIU%d",&iBoard);
 		
-	if(name.Contains("TimeResolution")) SetTimeResolution((UShort_t) val,iBoard-1);
-	else if(name.Contains("WidthResolution")) SetWidthResolution((UShort_t) val,iBoard-1);
+	if(name.Contains("TimeResolution")) SetTimeResolution((UShort_t) val,iBoard);
+	else if(name.Contains("WidthResolution")) SetWidthResolution((UShort_t) val,iBoard);
 	else AliError(Form("No Setter found for FEE parameter : %s",name.Data()));
 }
 
@@ -301,14 +301,14 @@ Float_t AliVZEROCalibData::GetMIPperADC(Int_t channel) const {
 void AliVZEROCalibData::SetTimeResolution(UShort_t *resols){
 	// Set Time Resolution of the TDC
 	if(resols)  for(int t=0; t<kNCIUBoards; t++) SetTimeResolution(resols[t],t);
-	else AliFatal("Time Resolution not defined.");
+	else AliError("Time Resolution not defined.");
 	
 }
 //________________________________________________________________
 void AliVZEROCalibData::SetTimeResolution(UShort_t resol, Int_t board)
 {
 	// Set Time Resolution of the TDC
-	if((board<kNCIUBoards)) {
+	if((board>=0) && (board<kNCIUBoards)) {
 		switch(resol){
 			case 0:
 				fTimeResolution[board] = 25./256.;
@@ -335,20 +335,21 @@ void AliVZEROCalibData::SetTimeResolution(UShort_t resol, Int_t board)
 				fTimeResolution[board] = 12.5;
 				break;
 		}
+		AliInfo(Form("Time Resolution of board %d set to %f",board,fTimeResolution[board]));
 	} else AliError(Form("Board %d is not valid",board));
 }
 //________________________________________________________________
 void AliVZEROCalibData::SetWidthResolution(UShort_t *resols){
 	// Set Time Width Resolution of the TDC
 	if(resols)  for(int t=0; t<kNCIUBoards; t++) SetWidthResolution(resols[t],t);
-	else AliFatal("Width Resolution not defined.");
+	else AliError("Width Resolution not defined.");
 	
 }
 //________________________________________________________________
 void AliVZEROCalibData::SetWidthResolution(UShort_t resol, Int_t board)
 {
 	// Set Time Width Resolution of the TDC
-	if((board<kNCIUBoards)){
+	if((board>=0) && (board<kNCIUBoards)){
 		switch(resol){
 			case 0:
 				fWidthResolution[board] = 25./256.;
@@ -394,6 +395,7 @@ void AliVZEROCalibData::SetWidthResolution(UShort_t resol, Int_t board)
 				break;
 				
 		}
+		AliInfo(Form("Width Resolution of board %d set to %f",board,fWidthResolution[board]));
 	}else AliError(Form("Board %d is not valid",board));
 }
 
