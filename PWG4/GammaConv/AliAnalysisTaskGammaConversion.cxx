@@ -352,9 +352,11 @@ void AliAnalysisTaskGammaConversion::Exec(Option_t */*option*/)
 	
 }
 
-void AliAnalysisTaskGammaConversion::ConnectInputData(Option_t */*option*/){
+void AliAnalysisTaskGammaConversion::ConnectInputData(Option_t *option){
   // see header file for documentation
-	
+
+  AliAnalysisTaskSE::ConnectInputData(option);
+
   if(fV0Reader == NULL){
     // Write warning here cuts and so on are default if this ever happens
   }
