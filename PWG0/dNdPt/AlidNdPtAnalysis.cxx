@@ -19,7 +19,6 @@
 #include "TCint.h"
 #include "TH1.h"
 #include "TH2.h"
-//#include "THnSparse.h"
 #include "TCanvas.h"
 
 #include "AliHeader.h"  
@@ -1008,8 +1007,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
      //
      // track-event level corrections (zv,pt,eta)
      //
-     Int_t nPart  = stack->GetNtrack();
-     for (Int_t iMc = 0; iMc < nPart; ++iMc) 
+     for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc) 
      {
        TParticle* particle = stack->Particle(iMc);
        if (!particle)
@@ -1108,8 +1106,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
        //
        // MC histograms for track efficiency studies
        //
-       Int_t nPart  = stack->GetNtrack();
-       for (Int_t iMc = 0; iMc < nPart; ++iMc) 
+       for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc) 
        {
          TParticle* particle = stack->Particle(iMc);
          if (!particle)
@@ -2135,7 +2132,6 @@ void AlidNdPtAnalysis::Analyse()
 
   fRecMCTrackHist1->GetAxis(0)->SetRange(1,fRecMCTrackHist1->GetAxis(0)->GetNbins()); 
 
- 
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);
 
