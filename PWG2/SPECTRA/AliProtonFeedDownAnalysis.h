@@ -35,7 +35,7 @@ class AliProtonFeedDownAnalysis : public TObject
 			kNSteps=5
 		};
 		AliProtonFeedDownAnalysis();
-		AliProtonFeedDownAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY,Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
+		//AliProtonFeedDownAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY,Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt);
 		virtual ~AliProtonFeedDownAnalysis();
 		
 		void SetBaseAnalysis(AliProtonAnalysisBase * const baseAnalysis) {fProtonAnalysisBase = baseAnalysis;}
@@ -51,17 +51,17 @@ class AliProtonFeedDownAnalysis : public TObject
 		
 		void SetWeightFunction(TF1* weightfunction){fweightfunction=weightfunction;}
 		TF1* GetWeightFunction() const{return fweightfunction;}	
-		TH1F* GetLambdaHist() const{return fLambda;}
-		TH1F* GetLambdaweightedHist() const{return fLambdaweighted;}
-		TH1F* GetAntiLambdaHist() const{return fAntiLambda;}
-		TH1F* GetAntiLambdaweightedHist() const{return fAntiLambdaweighted;}
+		TH2F* GetLambdaHist() const{return fLambda;}
+		TH2F* GetLambdaweightedHist() const{return fLambdaweighted;}
+		TH2F* GetAntiLambdaHist() const{return fAntiLambda;}
+		TH2F* GetAntiLambdaweightedHist() const{return fAntiLambdaweighted;}
  	private:
 		AliProtonFeedDownAnalysis(const AliProtonFeedDownAnalysis&); // Not implemented
 		AliProtonFeedDownAnalysis& operator=(const AliProtonFeedDownAnalysis&); // Not implemented
 		
 		AliProtonAnalysisBase *fProtonAnalysisBase;//base analysis object
 		Int_t LambdaIsMother(Int_t numbe, AliStack *stack); 
-		Float_t GetWeightforProton(Int_t numbe, AliStack *stack);
+		Float_t GetWeightforProton(Int_t number, AliStack *stack);
 		Float_t GetWeightforLambda(Float_t pt);
 		
 		Int_t fNBinsY; //number of bins in y or eta
@@ -74,12 +74,12 @@ class AliProtonFeedDownAnalysis : public TObject
 		AliCFContainer *fAntiProtonContainer; //container for antiprotons
 		
 		TF1*fweightfunction; 
-		TH1F *fLambda;
-		TH1F *fLambdaweighted;
-		TH1F *fAntiLambda;
-		TH1F *fAntiLambdaweighted;
+		TH2F *fLambda;
+		TH2F *fLambdaweighted;
+		TH2F *fAntiLambda;
+		TH2F *fAntiLambdaweighted;
 		
-  ClassDef(AliProtonFeedDownAnalysis,1);
+  ClassDef(AliProtonFeedDownAnalysis,2);
 };
 
 #endif
