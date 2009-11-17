@@ -76,6 +76,7 @@ AM_CPPFLAGS			= -DMODULE=$(MODULE) \
 # are added by default.
 # Also the version of the library 
 libAliHLTTrigger_la_LIBADD	= $(top_builddir)/BASE/util/libAliHLTUtil.la \
+				  $(top_builddir)/MUON/libAliHLTMUON.la \
 				  $(top_builddir)/TRD/libAliHLTTRD.la
 
 libAliHLTTrigger_la_LDFLAGS	= -L@ROOTLIBDIR@ \
