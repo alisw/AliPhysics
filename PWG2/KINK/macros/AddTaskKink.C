@@ -31,16 +31,17 @@ AliAnalysisKinkESDMC *AddTaskKink(Short_t lCollidingSystems=0  /*0 = pp, 1 = AA*
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   TString outname = "PP";
-   if (lCollidingSystems) outname = "AA";
-   if (mgr->GetMCtruthEventHandler()) outname += "-MC-";
-   outname += "KinkList.root";
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("KinkESDMC",
-								   TList::Class(),
-								   AliAnalysisManager::kOutputContainer,
-								   outname );
-                           
-	mgr->ConnectInput(taskkink, 0, mgr->GetCommonInputContainer());
+   TString outputFileName = AliAnalysisManager::GetCommonFileName();
+   outputFileName += ":PWG2KINKESDMC";
+   if (lCollidingSystems) outputFileName += "_AA";
+   else outputFileName += "_PP";
+   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("KinkESDMC",
+							     TList::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     outputFileName );
+   mgr->ConnectInput(taskkink, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskkink, 1, coutput1);
    return taskkink;
 }   
