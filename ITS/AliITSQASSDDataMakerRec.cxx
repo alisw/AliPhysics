@@ -421,37 +421,31 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
   TH1D *fHistSSDEventType = new TH1D("fHistSSDEventType",
 				     "SSD Event Type;Event type;Events",
 				     31,-1,30);
-  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDEventType)), 
+  rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDEventType, 
 					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
   fSSDRawsOffset += 1;
-  delete fHistSSDEventType;
   //cout<<"(AliITSQASSDDataMakerRec::InitRaws): "<<fGenRawsOffset[specie]+fSSDRawsOffset-1<<" - Name: "<<(fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]))->GetName()<<endl;
   TH1D *fHistSSDDataSize = new TH1D("fHistSSDDataSize",
 				    "SSD Data Size;(SSD data size) [KB];Events",
 				    1000,0,500);
-  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSize)), 
-					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
-  delete fHistSSDDataSize;
+  rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSize, 
+       fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizePercentage = new TH1D("fHistSSDDataSizePercentage",
 					      "SSD Data Size Percentage;SSD data size [%];Events",
 					      1000,0,100);
-  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizePercentage)), 
-					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
-  delete fHistSSDDataSizePercentage;
+  rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePercentage, 
+       fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDDLId = new TH1D("fHistSSDDDLId",
 				 "SSD DDL Id;DDL id;Events",16,511.5,527.5);
-  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDDLId)), 
+  rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDDLId, 
 					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
-  delete fHistSSDDDLId;
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizePerDDL = new TH1D("fHistSSDDataSizePerDDL",
-					  "SSD Data Size Per DDL;DDL id;<SSD data size> [KB]",
-					  16,511.5,527.5);
-  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizePerDDL)), 
+					  "SSD Data Size Per DDL;DDL id;<SSD data size> [KB]",16,511.5,527.5);
+  rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePerDDL, 
 					   fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);
-  delete fHistSSDDataSizePerDDL;
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizeDDL[fgkNumOfDDLs];
   for(Int_t i = 1; i < fgkNumOfDDLs+1; i++) {
@@ -460,23 +454,20 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
     fHistSSDDataSizeDDL[i-1] = new TH1D(gName.Data(),
 					Form("%s;(SSD data size) [KB];Events", gTitle.Data()),
 					100,0,50);
-    rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizeDDL[i-1])), 
+    rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizeDDL[i-1], 
 					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
     fSSDRawsOffset += 1;
   }
-  for(Int_t i = 1; i < fgkNumOfDDLs+1; i++) delete fHistSSDDataSizeDDL[i-1];
   
   TH1D *fHistSSDLDCId = new TH1D("fHistSSDLDCId","SSD LDC Id;LDC id;Events",8,169.5,177.5);
-  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDLDCId)), 
+  rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDLDCId, 
 					   fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
-  delete fHistSSDLDCId;
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizePerLDC = new TH1D("fHistSSDDataSizePerLDC",
 					  "SSD Data Size Per LDC;LDC id;<SSD data size> [KB]",
 					  8,169.5,177.5);
-  rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizePerLDC)), 
+  rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePerLDC, 
 					   fGenRawsOffset[specie]+fSSDRawsOffset, !expert, image, !saveCorr);
-  delete fHistSSDDataSizePerLDC;
   fSSDRawsOffset += 1;
   TH1D *fHistSSDDataSizeLDC[fgkNumOfLDCs];
   for(Int_t i = 1; i < fgkNumOfLDCs+1; i++) {
@@ -494,11 +485,10 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
     fHistSSDDataSizeLDC[i-1] = new TH1D(gName.Data(),
 					Form("%s;SSD data size [KB];Events", gTitle.Data()),
 					1000,0,100);
-    rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*fHistSSDDataSizeLDC[i-1])), 
+    rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizeLDC[i-1], 
 					     fGenRawsOffset[specie]+fSSDRawsOffset, expert, !image, !saveCorr);
     fSSDRawsOffset += 1;
   }
-  for(Int_t i = 1; i < fgkNumOfLDCs+1; i++) delete fHistSSDDataSizeLDC[i-1];
   fSSDRawsCommonLevelOffset = fSSDRawsOffset;
   
   if(fkOnline) {

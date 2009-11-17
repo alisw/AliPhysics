@@ -200,23 +200,20 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   TH1D *h0 = new TH1D("SDDModPattern","HW Modules pattern",fgknSDDmodules,239.5,499.5); //0
   h0->GetXaxis()->SetTitle("Module Number");
   h0->GetYaxis()->SetTitle("Counts");
-   rv = fAliITSQADataMakerRec->Add2RawsList((new TH1D(*h0)),0+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);
-  delete h0;
+  rv = fAliITSQADataMakerRec->Add2RawsList(h0,0+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);
   fSDDhRawsTask++;
   
   //zPhi distribution using ladder and modules numbers
   TH2D *hphil3 = new TH2D("SDDphizL3","SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);
   hphil3->GetXaxis()->SetTitle("z[#Module L3 ]");
   hphil3->GetYaxis()->SetTitle("#varphi[#Ladder L3]");
-   rv = fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hphil3)),1+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, saveCorr); 
-  delete hphil3;
+  rv = fAliITSQADataMakerRec->Add2RawsList(hphil3,1+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, saveCorr); 
   fSDDhRawsTask++;
   
   TH2D *hphil4 = new TH2D("SDDphizL4","SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5); 
   hphil4->GetXaxis()->SetTitle("z[#Module L4]");
   hphil4->GetYaxis()->SetTitle("#varphi[#Ladder L4]");
-   rv = fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hphil4)),2+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, saveCorr); 
-  delete hphil4;
+   rv = fAliITSQADataMakerRec->Add2RawsList(hphil4,2+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, saveCorr); 
   fSDDhRawsTask++;
   
 
@@ -227,8 +224,7 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
       TH2D *hddl = new TH2D("SDDDDLPattern","SDD DDL Pattern ",24,-0.5,11.5,24,-0.5,23.5); 
       hddl->GetXaxis()->SetTitle("Channel");
       hddl->GetYaxis()->SetTitle("#DDL");
-      rv = fAliITSQADataMakerRec->Add2RawsList((new TH2D(*hddl)),3+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);
-      delete hddl;
+      rv = fAliITSQADataMakerRec->Add2RawsList(hddl,3+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);
       fSDDhRawsTask++;
       Int_t indexlast1 = 0;
   
@@ -275,8 +271,7 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
       TH1F *hsize = new TH1F("SDDEventSize","SDD Event Size ",1000,-0.5,999.5); 
       hsize->GetXaxis()->SetTitle("Event Size [kB]");
       hsize->GetYaxis()->SetTitle("Entries");
-      rv = fAliITSQADataMakerRec->Add2RawsList((new TH1F(*hsize)),indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);
-      delete hsize;
+      rv = fAliITSQADataMakerRec->Add2RawsList(hsize,indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);
       fSDDhRawsTask++;
 	  
     }  // kONLINE
@@ -530,72 +525,62 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   TH1F *h0 = new TH1F("SDDLay3TotCh","Layer 3 total charge",1000/nOnline,-0.5, 499.5); //position number 0
   h0->GetXaxis()->SetTitle("ADC value");
   h0->GetYaxis()->SetTitle("Entries");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h0)), 0 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
-  //delete h0;
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h0, 0 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
   fSDDhRecPointsTask++;
  
   TH1F *h1 = new TH1F("SDDLay4TotCh","Layer 4 total charge",1000/nOnline,-0.5, 499.5);//position number 1
   h1->GetXaxis()->SetTitle("ADC value");
   h1->GetYaxis()->SetTitle("Entries");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h1)), 1 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
-  delete h1;
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h1, 1 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
   fSDDhRecPointsTask++;
 
   char hisnam[50];
   TH2F *h2 = new TH2F("SDDGlobalCoordDistribYX","YX Global Coord Distrib",5600/nOnline2,-28,28,5600/nOnline2,-28,28);//position number 2
   h2->GetYaxis()->SetTitle("Y[cm]");
   h2->GetXaxis()->SetTitle("X[cm]");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH2F(*h2)),2+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, !image);
-  delete h2;
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h2,2+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, !image);
   fSDDhRecPointsTask++;
 
   TH2F *h3 = new TH2F("SDDGlobalCoordDistribRZ","RZ Global Coord Distrib",6400/nOnline3,-32,32,1400/nOnline4,12,26);//position number 3
   h3->GetYaxis()->SetTitle("R[cm]");
   h3->GetXaxis()->SetTitle("Z[cm]");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH2F(*h3)),3+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, !image);
-  delete h3;
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h3,3+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, !image);
   fSDDhRecPointsTask++;
   
   TH2F *h4 = new TH2F("SDDGlobalCoordDistribL3PHIZ","#varphi Z Global Coord Distrib L3",6400/nOnline3,-32,32,360/nOnline,-TMath::Pi(),TMath::Pi());//position number 4
   h4->GetYaxis()->SetTitle("#phi[rad]");
   h4->GetXaxis()->SetTitle("Z[cm]");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH2F(*h4)),4+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
-  delete h4;
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h4,4+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
   fSDDhRecPointsTask++;
 
   TH2F *h5 = new TH2F("SDDGlobalCoordDistribL4PHIZ","#varphi Z Global Coord Distrib L4",6400/nOnline3,-32,32,360/nOnline,-TMath::Pi(),TMath::Pi());//position number 5
   h5->GetYaxis()->SetTitle("#phi[rad]");
   h5->GetXaxis()->SetTitle("Z[cm]");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH2F(*h5)),5+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
-  delete h5;
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h5,5+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
   fSDDhRecPointsTask++;
   
   TH1F *h6 = new TH1F("SDDModPatternRP","Modules pattern RP",fgknSDDmodules,239.5,499.5); //position number 6
   h6->GetXaxis()->SetTitle("Module number"); //spd offset = 240
   h6->GetYaxis()->SetTitle("Entries");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h6)),6 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
-  delete h6;
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h6,6 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
   fSDDhRecPointsTask++;
 
   TH1F *h7 = new TH1F("SDDLadPatternL3RP","Ladder pattern L3 RP",14,0.5,14.5);  //position number 7
   h7->GetXaxis()->SetTitle("Ladder #, Layer 3");
   h7->GetYaxis()->SetTitle("Entries");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h7)),7 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
-  delete h7;
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h7,7 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
   fSDDhRecPointsTask++;
 
   TH1F *h8 = new TH1F("SDDLadPatternL4RP","Ladder pattern L4 RP",22,0.5,22.5); //position number 8
   h8->GetXaxis()->SetTitle("Ladder #, Layer 4");
   h8->GetYaxis()->SetTitle("Entries");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h8)),8 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
-  delete h8;
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h8,8 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
   fSDDhRecPointsTask++;
 
   TH2F *h9 = new TH2F("SDDLocalCoordDistrib","Local Coord Distrib",1000/nOnline,-4,4,1000/nOnline,-4,4);//position number 9
   h9->GetXaxis()->SetTitle("X local coord, drift, cm");
   h9->GetYaxis()->SetTitle("Z local coord, anode, cm");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH2F(*h9)),9 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
-  delete h9;
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h9,9 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
   fSDDhRecPointsTask++;
   
   //AliInfo("Create SDD recpoints histos\n");
@@ -604,16 +589,14 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   h10->GetXaxis()->SetTitle("r[cm]");
   h10->GetXaxis()->CenterTitle();
   h10->GetYaxis()->SetTitle("Entries");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h10)),10 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
-  delete h10;
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h10,10 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
   fSDDhRecPointsTask++;
   
   TH1F *h11 = new TH1F("SDDrdistrib_Layer4" ,"SDD r distribution Layer4" ,100,22.,26.);// and position number 11 (L4)
   h11->GetXaxis()->SetTitle("r[cm]");
   h11->GetXaxis()->CenterTitle();
   h11->GetYaxis()->SetTitle("Entries");
-  rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h11)),11 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
-  delete h11;
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(h11,11 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
   fSDDhRecPointsTask++;
   
   for(Int_t iLay=0; iLay<=1; iLay++){
@@ -622,8 +605,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
     h12->GetXaxis()->SetTitle("#varphi[rad]");
     h12->GetXaxis()->CenterTitle();
     h12->GetYaxis()->SetTitle("Entries");
-    rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h12)),iLay+12+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
-    delete h12;
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(h12,iLay+12+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
     fSDDhRecPointsTask++;
   }
   
@@ -633,8 +615,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
     h14->GetXaxis()->SetTitle("#varphi[rad]");
     h14->GetXaxis()->CenterTitle();
     h14->GetYaxis()->SetTitle("Entries");
-    rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH1F(*h14)),iLay+14+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
-    delete h14;
+    rv = fAliITSQADataMakerRec->Add2RecPointsList(h14,iLay+14+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);
     fSDDhRecPointsTask++;
   }
   
@@ -643,15 +624,13 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
       TH2F *h16 = new TH2F("SDDGlobalCoordDistribYXFSE","YX Global Coord Distrib FSE",5600/nOnline2,-28,28,5600/nOnline2,-28,28);//position number 16
       h16->GetYaxis()->SetTitle("Y[cm]");
       h16->GetXaxis()->SetTitle("X[cm]");
-      rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH2F(*h16)),16+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
-      delete h16;
+      rv = fAliITSQADataMakerRec->Add2RecPointsList(h16,16+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
       fSDDhRecPointsTask++;
       
       TH2F *h17 = new TH2F("SDDGlobalCoordDistribRZFSE","RZ Global Coord Distrib FSE",Int_t(6400/nOnline3),-32,32,1400/nOnline4,12,26);//position number 17
       h17->GetYaxis()->SetTitle("R[cm]");
       h17->GetXaxis()->SetTitle("Z[cm]");
-      rv = fAliITSQADataMakerRec->Add2RecPointsList((new TH2F(*h17)),17+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
-      delete h17;
+      rv = fAliITSQADataMakerRec->Add2RecPointsList(h17,17+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
       fSDDhRecPointsTask++;
       
     }//online
