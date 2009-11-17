@@ -1,0 +1,7 @@
+
+You have to pass in the cmake step some parameter to the script
+otherwise the CMakeLists.txt in the subdirectories are not created.
+
+   cmake <path_to_source> -DGENERATE_FILES=TRUE
+
+   is the correct command.
