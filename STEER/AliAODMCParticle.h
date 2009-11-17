@@ -68,6 +68,7 @@ class AliAODMCParticle: public AliVParticle {
     virtual Double_t GetCalcMass() const;
     virtual void SetDaughter(Int_t i,Int_t id){if(i<2)fDaughter[i] = id;}
     virtual Int_t GetDaughter(Int_t i) const {return fDaughter[i];}
+    virtual Int_t GetNDaughters  () const { return fDaughter[1]>0 ? fDaughter[1]-fDaughter[0]+1 : 0;}
     virtual void SetMother(Int_t im){fMother = im;}
     virtual Int_t GetMother() const {return fMother;}
     virtual void Print(const Option_t *opt = "") const;
