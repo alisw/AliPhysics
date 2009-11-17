@@ -53,7 +53,7 @@ class AliTRDCalDCSGTU : public TNamed {
 
   AliTRDCalDCSGTUTgu* fTgu; // this points to an object containing tgu configuration data
 
-  ClassDef(AliTRDCalDCSGTU,1)      //  TRD calibration class for TRD GTU parameters
+  ClassDef(AliTRDCalDCSGTU,2)      //  TRD calibration class for TRD GTU parameters
 
 };
 #endif
