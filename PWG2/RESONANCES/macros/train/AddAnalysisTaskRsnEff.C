@@ -194,10 +194,15 @@ Bool_t AddAnalysisTaskRsnEff
     mgr->AddTask(task[i]);
     mgr->ConnectInput(task[i], 0, mgr->GetCommonInputContainer());
 
+    // create paths for the output in the common file
+    Char_t infoPath[500], effPath[500];
+    sprintf(infoPath , "%s:PWG2RSNINFO" , AliAnalysisManager::GetCommonFileName());
+    sprintf(effPath  , "%s:PWG2RSNEFF%s", AliAnalysisManager::GetCommonFileName(), suf[i].Data());
+
     // initialize and connect container for the output
     AliAnalysisDataContainer *info = 0x0, *out = 0x0;
-    info = mgr->CreateContainer(Form("EffInfo_%s", suf[i].Data()), TList::Class(), AliAnalysisManager::kOutputContainer, "info.root");
-    out  = mgr->CreateContainer(Form("EFF_%s", suf[i].Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s_%s.root", outFile, suf[i].Data()));
+    info = mgr->CreateContainer(Form("EffInfo_%s", suf[i].Data()), TList::Class(), AliAnalysisManager::kOutputContainer, infoPath);
+    out  = mgr->CreateContainer(Form("EFF_%s", suf[i].Data()), TList::Class(), AliAnalysisManager::kOutputContainer, effPath);
 
     mgr->ConnectOutput(task[i], 1, info);
     mgr->ConnectOutput(task[i], 2, out);
