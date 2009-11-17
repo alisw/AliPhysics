@@ -1,5 +1,5 @@
 
-void ProofEnableAliRoot(const char* location = "/usr/local/grid/AliRoot/v4-05-Release")
+void ProofEnableAliRootGSI(const char* location = "/usr/local/grid/AliRoot/v4-05-Release")
 {
   // enables a locally deployed AliRoot in a PROOF cluster
 
