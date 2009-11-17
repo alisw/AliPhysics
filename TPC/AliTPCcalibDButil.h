@@ -144,8 +144,11 @@ public:
   // Filter sensors
   //
   static Float_t FilterSensor(AliDCSSensor * sensor, Double_t ymin, Double_t ymax, Double_t maxdy, Double_t sigmaCut); 
-
-  
+  //
+  // Filter AliRelAlignmentKalman - Alignment/Drift velocity
+  //
+  static TMatrixD* MakeStatRelKalman(TObjArray *array, Float_t minFraction, Int_t minStat, Float_t maxvd);
+  static TObjArray *SmoothRelKalman(TObjArray *array,TMatrixD & stat, Bool_t direction, Float_t sigmaCut);
   static void FilterCE(Double_t deltaT=100, Double_t cutAbs=10, Double_t cutSigma=4., TTreeSRedirector *pcstream=0);
   static void FilterTracks(Int_t run, Double_t cutSigma=20., TTreeSRedirector *pcstream=0);
   static Float_t FilterTemperature(AliTPCSensorTempArray *tempArray, Double_t ymin=15, Double_t ymax=22, Double_t sigmaCut=5); 

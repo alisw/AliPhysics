@@ -53,6 +53,7 @@
 #include "AliTPCcalibDButil.h"
 #include "AliTPCCalibVdrift.h"
 #include "AliMathBase.h"
+#include "AliRelAlignerKalman.h"
 
 ClassImp(AliTPCcalibDButil)
 AliTPCcalibDButil::AliTPCcalibDButil() :
@@ -1112,7 +1113,7 @@ void AliTPCcalibDButil::UpdateRefDataFromOCDB()
       entry->SetOwner(kTRUE);
       TObjArray *arr=(TObjArray*)entry->GetObject();
       if (!arr){
-        AliError(Form("Could not get object from entry '%s'\nPlese check!!!",entry->GetId().GetPath().Data()));
+        AliError(Form("Could not get object from entry '%s'\nPlease check!!!",entry->GetId().GetPath().Data()));
       } else {
         fRefCalibRaw=(AliTPCCalibRaw*)arr->At(0)->Clone();
       }
@@ -1132,7 +1133,7 @@ void AliTPCcalibDButil::UpdateRefDataFromOCDB()
       entry->SetOwner(kTRUE);
       fDataQA=dynamic_cast<AliTPCdataQA*>(entry->GetObject());
       if (!fDataQA){
-        AliError(Form("Could not get object from entry '%s'\nPlese check!!!",entry->GetId().GetPath().Data()));
+        AliError(Form("Could not get object from entry '%s'\nPlease check!!!",entry->GetId().GetPath().Data()));
       } else {
         fRefDataQA=(AliTPCdataQA*)fDataQA->Clone();
       }
@@ -1157,12 +1158,12 @@ AliTPCCalPad* AliTPCcalibDButil::GetRefCalPad(AliCDBEntry *entry, const char* ob
   AliTPCCalPad *pad=0x0;
   TObjArray *arr=(TObjArray*)entry->GetObject();
   if (!arr){
-    AliError(Form("Could not get object from entry '%s'\nPlese check!!!",entry->GetId().GetPath().Data()));
+    AliError(Form("Could not get object from entry '%s'\nPlease check!!!",entry->GetId().GetPath().Data()));
     return pad;
   }
   pad=(AliTPCCalPad*)arr->FindObject(objName);
   if (!pad) {
-    AliError(Form("Could not get '%s' from TObjArray in entry '%s'\nPlese check!!!",objName,entry->GetId().GetPath().Data()));
+    AliError(Form("Could not get '%s' from TObjArray in entry '%s'\nPlease check!!!",objName,entry->GetId().GetPath().Data()));
     return pad;
   }
   return (AliTPCCalPad*)pad->Clone();
@@ -1176,7 +1177,7 @@ AliTPCCalPad* AliTPCcalibDButil::GetRefCalPad(AliCDBEntry *entry)
   //
   AliTPCCalPad *pad=(AliTPCCalPad*)entry->GetObject();
   if (!pad) {
-    AliError(Form("Could not get object from entry '%s'\nPlese check!!!",entry->GetId().GetPath().Data()));
+    AliError(Form("Could not get object from entry '%s'\nPlease check!!!",entry->GetId().GetPath().Data()));
     return 0x0;
   }
   pad=(AliTPCCalPad*)pad->Clone();
@@ -1191,12 +1192,12 @@ AliTPCCalPad* AliTPCcalibDButil::GetAltroMasked(const char* cdbPath, const char*
   AliTPCCalPad* pad=0x0;
   const Int_t run=GetReferenceRun(cdbPath);
   if (run<0) {
-    AliError(Form("Could not get reference run number for object '%s'\nPlese check availability!!!",cdbPath));
+    AliError(Form("Could not get reference run number for object '%s'\nPlease check availability!!!",cdbPath));
     return pad;
   }
   AliCDBEntry *entry=AliCDBManager::Instance()->Get("TPC/Calib/AltroConfig", run);
   if (!entry) {
-    AliError(Form("Could not get reference object '%s'\nPlese check availability!!!",cdbPath));
+    AliError(Form("Could not get reference object '%s'\nPlease check availability!!!",cdbPath));
     return pad;
   }
   pad=GetRefCalPad(entry,"Masked");
@@ -1214,7 +1215,7 @@ void AliTPCcalibDButil::SetReferenceRun(Int_t run){
   TString cdbPath="TPC/Calib/Ref";
   AliCDBEntry *entry=AliCDBManager::Instance()->Get(cdbPath.Data(), run);
   if (!entry) {
-    AliError(Form("Could not get reference object '%s'\nPlese check availability!!!",cdbPath.Data()));
+    AliError(Form("Could not get reference object '%s'\nPlease check availability!!!",cdbPath.Data()));
     fRefMap=0;
     return;
   }  
@@ -1241,12 +1242,12 @@ AliCDBEntry* AliTPCcalibDButil::GetRefEntry(const char* cdbPath)
   //
   const Int_t run=GetReferenceRun(cdbPath);
   if (run<0) {
-    AliError(Form("Could not get reference run number for object '%s'\nPlese check availability!!!",cdbPath));
+    AliError(Form("Could not get reference run number for object '%s'\nPlease check availability!!!",cdbPath));
     return 0;
   }
   AliCDBEntry *entry=AliCDBManager::Instance()->Get(cdbPath, run);
   if (!entry) {
-    AliError(Form("Could not get reference object '%s'\nPlese check availability!!!",cdbPath));
+    AliError(Form("Could not get reference object '%s'\nPlease check availability!!!",cdbPath));
     return 0;
   }
   return entry;
@@ -2721,4 +2722,102 @@ void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t d
   
 }
 
+
+
+
+
+TMatrixD* AliTPCcalibDButil::MakeStatRelKalman(TObjArray *array, Float_t minFraction, Int_t minStat, Float_t maxvd){
+  //
+  // Make a statistic matrix
+  // Input parameters:
+  //   array        - TObjArray of AliRelKalmanAlign 
+  //   minFraction  - minimal ration of accepted tracks
+  //   minStat      - minimal statistic (number of accepted tracks)
+  //   maxvd        - maximal deviation for the 1
+  // Output matrix:
+  //    columns    - Mean, Median, RMS
+  //    row        - parameter type (rotation[3], translation[3], drift[3])
+  if (!array) return 0;
+  if (array->GetEntries()<=0) return 0;
+  Int_t entries = array->GetEntries();
+  Int_t entriesFast = array->GetEntriesFast();
+  TVectorD state(9);
+  TVectorD *valArray[9];
+  for (Int_t i=0; i<9; i++){
+    valArray[i] = new TVectorD(entriesFast);
+  }
+  Int_t naccept=0;
+  for (Int_t ikalman=0; ikalman<entriesFast; ikalman++){
+    AliRelAlignerKalman * kalman = (AliRelAlignerKalman *) array->UncheckedAt(ikalman);
+    if (!kalman) continue;
+    if (TMath::Abs(kalman->GetTPCvdCorr()-1)>maxvd) continue;
+    if (kalman->GetNUpdates()<minStat) continue;
+    if (kalman->GetNUpdates()/kalman->GetNTracks()<minFraction) continue;
+    kalman->GetState(state);
+    for (Int_t ipar=0; ipar<9; ipar++)
+      (*valArray[ipar])[naccept]=state[ipar];
+    naccept++;
+  }
+  TMatrixD *pstat=new TMatrixD(9,3);
+  TMatrixD &stat=*pstat;
+  for (Int_t ipar=0; ipar<9; ipar++){
+    stat(ipar,0)=TMath::Mean(naccept, valArray[ipar]->GetMatrixArray());
+    stat(ipar,1)=TMath::Median(naccept, valArray[ipar]->GetMatrixArray());
+    stat(ipar,2)=TMath::RMS(naccept, valArray[ipar]->GetMatrixArray());
+  }
+  return pstat;
+}
+
+
+TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray *array,TMatrixD & stat, Bool_t direction, Float_t sigmaCut){
+  //
+  // Smooth the array of AliRelKalmanAlign - detector alignment and drift calibration)
+  // Input:
+  //   array     - input array
+  //   stat      - mean parameters statistic
+  //   direction - 
+  //   sigmaCut  - maximal allowed deviation from mean in terms of RMS 
+  if (!array) return 0;
+  if (array->GetEntries()<=0) return 0;
+  const Double_t errvd = 0.0001;
+  const Double_t errt0 = 0.001;
+  const Double_t errvy = 0.0001;
+
+  Int_t entries = array->GetEntriesFast();
+  TObjArray *sArray= new TObjArray(entries);
+  AliRelAlignerKalman * sKalman =0;
+  TVectorD state(9);
+  for (Int_t i=0; i<entries; i++){
+    Int_t index=(direction)? entries-i-1:i;
+    AliRelAlignerKalman * kalman = (AliRelAlignerKalman *) array->UncheckedAt(index);
+    if (!kalman) continue;
+    Bool_t isOK=kTRUE;
+    kalman->GetState(state);
+    for (Int_t ipar=0; ipar<9; ipar++){
+      if (TMath::Abs(state[ipar]-stat(ipar,1))>sigmaCut*stat(ipar,2)) isOK=kFALSE;
+    }
+    if (!sKalman &&isOK) {
+      sKalman=new AliRelAlignerKalman(*kalman);
+      sKalman->SetRejectOutliers(kFALSE);
+      sKalman->SetRunNumber(kalman->GetRunNumber());
+      sKalman->SetTimeStamp(kalman->GetTimeStamp());      
+    }
+    if (!sKalman) continue;
+    Double_t deltaT=TMath::Abs(Int_t(kalman->GetTimeStamp())-Int_t(sKalman->GetTimeStamp()))/3600.;
+    (*(sKalman->GetStateCov()))(6,6)+=deltaT*errvd*errvd;
+    (*(sKalman->GetStateCov()))(7,7)+=deltaT*errt0*errt0;
+    (*(sKalman->GetStateCov()))(8,8)+=deltaT*errvy*errvy;  
+    sKalman->SetRunNumber(kalman->GetRunNumber());
+    if (!isOK) sKalman->SetRunNumber(0);
+    sArray->AddAt(new AliRelAlignerKalman(*sKalman),index);
+    if (!isOK) continue;
+    sKalman->SetRejectOutliers(kFALSE);
+    sKalman->SetRunNumber(kalman->GetRunNumber());
+    sKalman->SetTimeStamp(kalman->GetTimeStamp()); 
+    sKalman->Merge(kalman);
+    sArray->AddAt(new AliRelAlignerKalman(*sKalman),index);
+    //sKalman->Print();
+  }
+  return sArray;
+}
 
