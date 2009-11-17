@@ -31,7 +31,7 @@ t0_hits(const char *varexp    = "T0.fX:T0.fY:T0.fZ",
     // printf("Found %d hits in track %d.\n", nHits, it);
 
   }
-  TEvePointSet* points = new TEvePointSet(Form("T0 Hits '%s'", selection));
+  TEvePointSet* points = new TEvePointSet(Form("SIM Hits T0 '%s'", selection));
   points->SetSourceCS(TEvePointSelectorConsumer::kTVT_XYZ);
 
   TEvePointSelector ps(ht, points, varexp, selection);
@@ -40,6 +40,14 @@ t0_hits(const char *varexp    = "T0.fX:T0.fY:T0.fZ",
   points->SetTitle(Form("N=%d", points->Size()));
   points->SetMarkerSize(.5);
   points->SetMarkerColor(3);
+
+  // PD - added tags
+  
+  points->SetName(Form("SIM Hits T0"));
+  const TString viz_tag("SIM Hits T0");
+  points->ApplyVizTag(viz_tag, "Hits");
+
+  // PD
 
   gEve->AddElement(points);
   gEve->Redraw3D();

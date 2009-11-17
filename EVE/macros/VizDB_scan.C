@@ -3,34 +3,75 @@ void VizDB_scan()
   TEvePointSet        *ps = 0;
   TEveStraightLineSet *ls = 0;
 
+  //============================================================================
+  // Hits
+  //============================================================================
+
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(2);
+  ps->SetMarkerSize(0.5);
+  ps->SetMarkerStyle(2);
+  gEve->InsertVizDBEntry("Hits", ps);
+
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(2);
+  ps->SetMarkerSize(0.5);
+  ps->SetMarkerStyle(2);
+  gEve->InsertVizDBEntry("SIM Hits ITS", ps);
+  
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(3);
+  ps->SetMarkerSize(0.5);
+  ps->SetMarkerStyle(2);
+  gEve->InsertVizDBEntry("SIM Hits TPC", ps);
+
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(3);
+  ps->SetMarkerSize(0.5);
+  ps->SetMarkerStyle(4);
+  gEve->InsertVizDBEntry("SIM Hits T0", ps);
+
+  ps = new TEvePointSet();
+  ps->SetMarkerColor(2);
+  ps->SetMarkerSize(0.5);
+  ps->SetMarkerStyle(4);
+  gEve->InsertVizDBEntry("SIM Hits FMD", ps);
+
 
   //============================================================================
   // Clusters
   //============================================================================
 
   ps = new TEvePointSet();
+  ps->SetMarkerColor(2);
+  ps->SetMarkerSize(0.5);
+  ps->SetMarkerStyle(2);
+  gEve->InsertVizDBEntry("Clusters", ps);
+
+  ps = new TEvePointSet();
   ps->SetMarkerColor(5);
   ps->SetMarkerSize(0.2);
   ps->SetMarkerStyle(2);
-  gEve->InsertVizDBEntry("ITS Clusters", ps);
+  gEve->InsertVizDBEntry("REC Clusters ITS", ps);
   
   ps = new TEvePointSet();
   ps->SetMarkerColor(4);
   ps->SetMarkerSize(0.2);
   ps->SetMarkerStyle(2);
-  gEve->InsertVizDBEntry("TPC Clusters", ps);
+  gEve->InsertVizDBEntry("REC Clusters TPC", ps);
 
   ps = new TEvePointSet();
   ps->SetMarkerColor(7);
   ps->SetMarkerSize(0.5);
   ps->SetMarkerStyle(4);
-  gEve->InsertVizDBEntry("TRD Clusters", ps);
+  gEve->InsertVizDBEntry("REC Clusters TRD", ps);
 
   ps = new TEvePointSet();
   ps->SetMarkerColor(kOrange);
   ps->SetMarkerSize(0.5);
   ps->SetMarkerStyle(4);
-  gEve->InsertVizDBEntry("TOF Clusters", ps);
+  gEve->InsertVizDBEntry("REC Clusters TOF", ps);
+
 
   //============================================================================
   // Primary vertex
