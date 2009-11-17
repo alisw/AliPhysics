@@ -85,6 +85,7 @@ AliHLTCTPData& AliHLTCTPData::operator=(const AliHLTCTPData& src)
     fClassIds.Delete();
     fClassIds.ExpandCreate(gkNCTPTriggerClasses);
     for (int i=0; i<gkNCTPTriggerClasses; i++) {
+      if (i>src.fClassIds.GetLast()) break;
       ((TNamed*)fClassIds.At(i))->SetName(src.fClassIds.At(i)->GetName());
       ((TNamed*)fClassIds.At(i))->SetTitle(src.fClassIds.At(i)->GetTitle());
     }
