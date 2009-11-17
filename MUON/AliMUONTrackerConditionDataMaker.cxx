@@ -69,8 +69,8 @@ fSource(Form("%s-%010d-%s",ocdbPath,runNumber,type))
 
   Int_t startOfValidity;
   AliMUONVStore* store = CreateStore(runNumber,ocdbPath,type,startOfValidity);
-  AliInfo(Form("runNumber=%d ocdbPath=%s type=%s startOfValidity=%d store=%p",
-               runNumber,ocdbPath,type,startOfValidity,store));
+  AliDebug(1,Form("runNumber=%d ocdbPath=%s type=%s startOfValidity=%d store=%p",
+                  runNumber,ocdbPath,type,startOfValidity,store));
   if ( store )
   {
     fData = CreateData(type,*store,startOfValidity);
@@ -250,18 +250,13 @@ AliMUONTrackerConditionDataMaker::CreateHVStore(TMap& m)
       continue;
     }
 
-    if ( hvIndex > 1 && AliMpDEManager::GetStationType(detElemId) == AliMp::kStation12 )
-    {
-      // skip all but first sector (as we'll loop on the 3 sectors below
-      continue;      
-    }
-    
     Int_t nPCBs = hvNamer.NumberOfPCBs(detElemId);
-    Int_t nindex = nPCBs ? nPCBs : 3;
+    Int_t indexMin = nPCBs ? 0 : hvIndex;
+    Int_t indexMax = nPCBs ? nPCBs : hvIndex+1;
     
     AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
     
-    for ( int i = 0 ; i < nindex; ++i )
+    for ( int i = indexMin ; i < indexMax; ++i )
     {
       Float_t switchValue(1.0);
       
