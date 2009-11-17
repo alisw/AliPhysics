@@ -138,7 +138,7 @@ void AliEveTrack::ImportClustersFromIndex()
   static const TEveException kEH("AliEveTrack::ImportClustersFromIndex ");
 
   if (fIndex == kMinInt)
-    throw(kEH + "index not set.");
+    throw kEH + "index not set.";
 
   TEveUtil::LoadMacro("clusters_from_index.C");
   gROOT->ProcessLine(Form("clusters_from_index(%d, (TEveElement*)%p);",
@@ -156,7 +156,7 @@ void AliEveTrack::ImportKine()
    static const TEveException kEH("AliEveTrack::ImportKine ");
 
    if (fLabel == kMinInt)
-      throw(kEH + "label not set.");
+      throw kEH + "label not set.";
 
    Int_t label;
    if (fLabel < 0) {
@@ -187,7 +187,7 @@ void AliEveTrack::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters,
   static const TEveException kEH("AliEveTrack::ImportKineWithArgs ");
 
   if (fLabel == kMinInt)
-    throw(kEH + "label not set.");
+    throw kEH + "label not set.";
 
   Int_t label;
   if (fLabel < 0) {
@@ -211,7 +211,7 @@ void AliEveTrack::PrintKineStack()
   static const TEveException kEH("AliEveTrack::PrintKineStack ");
 
   if (fLabel == kMinInt)
-    throw(kEH + "label not set.");
+    throw kEH + "label not set.";
 
   Int_t label;
   if (fLabel < 0) {
