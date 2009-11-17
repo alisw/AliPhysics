@@ -4,7 +4,7 @@ AliProtonAnalysis *GetProtonAnalysisObject(const char* analysisLevel = "ESD",
 					   const char* pidMode = "Bayesian") {
 					   
 					   
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/configProtonAnalysisBaseObject.C");  
+  gROOT->LoadMacro("configProtonAnalysisBaseObject.C");  
   //Function to setup the AliProtonAnalysis object and return it
   AliProtonAnalysisBase *baseAnalysis = GetProtonAnalysisBaseObject(analysisLevel,esdAnalysisType,pidMode);
 
@@ -32,7 +32,7 @@ AliProtonAnalysis *GetProtonAnalysisObject(const char* analysisLevel = "ESD",
 AliProtonQAAnalysis *GetProtonQAAnalysisObject(const char* analysisLevel = "ESD",
 					       const char* esdAnalysisType = "Hybrid",
 					       const char* pidMode = "Bayesian") {
-					       gROOT->LoadMacro(" $ALICE_ROOT/PWG2/SPECTRA/macros/configProtonAnalysisBaseObject.C"); 
+  gROOT->LoadMacro("configProtonAnalysisBaseObject.C"); 
   //Function to setup the AliProtonQAAnalysis object and return it
   AliProtonAnalysisBase *baseAnalysis = GetProtonAnalysisBaseObject(analysisLevel,esdAnalysisType,pidMode);
 
@@ -41,7 +41,7 @@ AliProtonQAAnalysis *GetProtonQAAnalysisObject(const char* analysisLevel = "ESD"
   analysis->SetRunMCAnalysis();
   //analysis->SetMCProcessId(4);//4: weak decay - 13: hadronic interaction
   //analysis->SetMotherParticlePDGCode(3122);//3122: Lambda
-  analysis->SetRunEfficiencyAnalysis(kFALSE);//use cuts in the eff. analysis
+  analysis->SetRunEfficiencyAnalysis(kTRUE);//use cuts in the eff. analysis
   analysis->SetQAYPtBins(baseAnalysis->GetNBinsX(),
 			 baseAnalysis->GetMinX(),
 			 baseAnalysis->GetMaxX(),
