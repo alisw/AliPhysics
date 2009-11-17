@@ -12,6 +12,7 @@
 #include "AliITSClusterFinder.h"
 #include "AliITSDetTypeRec.h"
 
+class TBits;
 class TClonesArray;
 class AliRawReader;
 class AliITSRawStream;
@@ -21,7 +22,7 @@ class AliITSsegmentationSDD;
 class AliITSClusterFinderV2SDD : public AliITSClusterFinder {
 public:
   AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp);
-  virtual ~AliITSClusterFinderV2SDD(){;}
+  virtual ~AliITSClusterFinderV2SDD();
   virtual void FindRawClusters(Int_t mod);
   virtual void RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters);
 
@@ -29,9 +30,9 @@ public:
   enum {kModulesPerDDL = 12};   // number of modules in each DDL 
 
  protected:
-  Bool_t NoiseSuppress(Int_t k, Int_t sid, Int_t nzBins, AliBin* bins, AliITSCalibrationSDD* cal) const;
+  Bool_t NoiseSuppress(Int_t k, Int_t sid, AliBin* bins, AliITSCalibrationSDD* cal) const;
   void FindClustersSDD(TClonesArray *digits);
-  void FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nMaxZ,
+  void FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 		       TClonesArray *dig, TClonesArray *clusters=0x0, Int_t jitter=0);
 
   void FindClustersSDD(AliITSRawStream* input,TClonesArray** clusters);
@@ -40,8 +41,13 @@ public:
   virtual AliITSsegmentationSDD* GetSeg()const{
     return (AliITSsegmentationSDD*)fDetTypeRec->GetSegmentationModel(1);} 
 
+  Int_t fNAnodes;                   // number of anodes
+  Int_t fNTimeBins;                 // number of time bins
+  Int_t fNZbins;                    // number of cells along anodes
+  Int_t fNXbins;                    // number of cells along time
+  AliBin* fDDLBins[kHybridsPerDDL]; // container for digits for 1 DDL
 
-  ClassDef(AliITSClusterFinderV2SDD,4)  // ITS cluster finder V2 for SDD
+  ClassDef(AliITSClusterFinderV2SDD,5)  // ITS cluster finder V2 for SDD
 };
 
 #endif
