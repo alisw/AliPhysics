@@ -30,8 +30,15 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else if(data=="ESD") reader = new AliCaloTrackESDReader();
   else if(data=="MC" && dataType == "ESD") reader = new AliCaloTrackMCReader();
   reader->SetDebug(-1);//10 for lots of messages
-  if(calorimeter == "EMCAL") reader->SwitchOnEMCALCells();
-  if(calorimeter == "PHOS")  reader->SwitchOnPHOSCells();
+  reader->SwitchOnCTS();
+  if(calorimeter == "EMCAL") {
+	  reader->SwitchOnEMCALCells();  
+	  reader->SwitchOnEMCAL();
+  }
+  if(calorimeter == "PHOS") { 
+	  reader->SwitchOnPHOSCells();  
+	  reader->SwitchOnPHOS();
+  }
   if(kUseKinematics){
 	if(inputDataType == "ESD"){
 		reader->SwitchOnStack();          
