@@ -8,6 +8,8 @@ DHDR= THbtpLinkDef.h
 
 EXPORT:=HBTprocCOMMON.h THBTprocessor.h
 
+EINCLUDE = EVGEN
+
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEER -lEVGEN -lSTEERBase -lmicrocern \

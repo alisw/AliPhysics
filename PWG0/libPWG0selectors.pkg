@@ -5,30 +5,30 @@
 # this library contains the selectors, which are loaded on the fly when one uses a given selector
 # thus this library is never used, it just exists for the build system to check if everything compiles
 
-HDRS = dNdEta/AlidNdEtaTask.h \
-       dNdEta/AlidNdEtaCorrectionTask.h \
-       TPC/AliROCESDAnalysisSelector.h \
-       TPC/AliROCRawAnalysisSelector.h \
-       TPC/AliROCClusterAnalysisSelector.h \
-       highMultiplicity/AliHighMultiplicitySelector.h \
-       multiplicity/AliMultiplicityTask.h \
-       esdTrackCuts/AliCutTask.h \
-       trigger/AliTriggerTask.h \
-       dNdPt/AlidNdPtTask.h \
-       dNdPt/AlidNdPtAcceptanceCuts.h \
-       dNdPt/AlidNdPtEventCuts.h \
-       dNdPt/AlidNdPtHelper.h \
-       dNdPt/AlidNdPt.h \
-       dNdPt/AlidNdPtAnalysis.h \
-       dNdPt/AlidNdPtCorrection.h \
-       dNdPt/AlidNdPtCutAnalysis.h
+SRCS = dNdEta/AlidNdEtaTask.cxx \
+       dNdEta/AlidNdEtaCorrectionTask.cxx \
+       TPC/AliROCESDAnalysisSelector.cxx \
+       TPC/AliROCRawAnalysisSelector.cxx \
+       TPC/AliROCClusterAnalysisSelector.cxx \
+       highMultiplicity/AliHighMultiplicitySelector.cxx \
+       multiplicity/AliMultiplicityTask.cxx \
+       esdTrackCuts/AliCutTask.cxx \
+       trigger/AliTriggerTask.cxx \
+       dNdPt/AlidNdPtTask.cxx \
+       dNdPt/AlidNdPtAcceptanceCuts.cxx \
+       dNdPt/AlidNdPtEventCuts.cxx \
+       dNdPt/AlidNdPtHelper.cxx \
+       dNdPt/AlidNdPt.cxx \
+       dNdPt/AlidNdPtAnalysis.cxx \
+       dNdPt/AlidNdPtCorrection.cxx \
+       dNdPt/AlidNdPtCutAnalysis.cxx
 
+HDRS = $(SRCS:.cxx=.h)
 
-SRCS = $(HDRS:.h=.cxx)
 
 DHDR= PWG0selectorsLinkDef.h
 
-EINCLUDE=TPC RAW ITS
+EINCLUDE= TPC RAW ITS PWG0/dNdEta PWG0/TPC PWG0/highMultiplicity PWG0/multiplicity PWG0/esdTrackCuts PWG0/trigger ANALYSIS
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \

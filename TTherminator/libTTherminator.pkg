@@ -20,7 +20,7 @@ DHDR:=TTherminatorLinkDef.h
 
 EXPORT:=AliGenTherminator.h TTherminator.h
 
-EINCLUDE:= TTherminator/Therminator TTherminator
+EINCLUDE:= TTherminator/Therminator TTherminator EVGEN
 
 PACKCXXFLAGS:=$(filter-out -Weffc++,$(CXXFLAGS))
 PACKDCXXFLAGS:=$(filter-out -Weffc++,$(CXXFLAGSNO))

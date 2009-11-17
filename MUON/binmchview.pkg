@@ -28,8 +28,8 @@ MUONcore
 
 ifneq (,$(findstring macosx,$(ALICE_TARGET)))
 ELIBS+=\
-lhapdf \
-pythia6 \
-microcern
+#lhapdf \
+#pythia6 \
+#microcern
 endif
 

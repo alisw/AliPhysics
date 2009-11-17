@@ -42,6 +42,7 @@ Function (AddLibrary LIB SRCS DHDRS)
 
 # Adds an AliRoot library as a target
 
+  Message(STATUS Debug ${LIB})
   Set(_path)
   List(LENGTH SRCS _len)
   If(_len GREATER 0)
@@ -61,16 +62,27 @@ Function (AddLibrary LIB SRCS DHDRS)
     Endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_path}/${LIB}LinkDef.h)
   Endif(_path)
 
+  Message(STATUS Debug - ${CMAKE_CURRENT_SOURCE_DIR} - ${LIB} - ${LDEF})
+
   Set(DICT)
+  Message(STATUS Debug ${LDEF})
   If(LDEF)
 # even with no cxx files, one may want to build an empty lib as a placeholder
 # in AliRoot this is signalled by the existence of an (empty) ${LIB}LinkDef.h
     Set(DICT "G__${LIB}.cxx")
     Set(ASRCS ${SRCS} ${DICT})
     Root_Generate_Dictionary("${DHDRS}" "${LDEF}" "${DICT}" "${INCLUDE_DIRECTORIES}")
+    If(ALICE_STATIC_BUILD)
+      Set(STATIC_DICT "G__${LIB}_a.cxx")
+      Set(STATIC_ASRCS ${SRCS} ${STATIC_DICT})
+      Root_Generate_Dictionary("${DHDRS}" "${LDEF}" "${STATIC_DICT}" "${INCLUDE_DIRECTORIES}")
+    EndIf(ALICE_STATIC_BUILD)
   Else(LDEF)
     Message(STATUS "No ${LIB}LinkDef.h found... building lib with no ROOT dict")
     Set(ASRCS ${SRCS})
+    If(ALICE_STATIC_BUILD)
+      Set(STATIC_ASRCS ${SRCS})
+    EndIf(ALICE_STATIC_BUILD)
   Endif(LDEF)
 
   Add_Library(${LIB} SHARED ${ASRCS})
@@ -81,7 +93,7 @@ Function (AddLibrary LIB SRCS DHDRS)
     COMPONENT shared)
 
   If(ALICE_STATIC_BUILD)
-    Add_Library(${LIB}_a STATIC ${ASRCS})
+    Add_Library(${LIB}_a STATIC ${STATIC_ASRCS})
     Install(TARGETS ${LIB}_a DESTINATION ${ALIROOT_INSTALL_DIR}/lib/static)
   EndIf(ALICE_STATIC_BUILD)
 
@@ -92,6 +104,75 @@ Function (AddLibrary LIB SRCS DHDRS)
   CheckViols(${LIB} "${SRCS}")
 
 EndFunction (AddLibrary)
+#_______________________________________________________________________________
+Function (AddHLTLibrary LIB SRCS DHDRS)
+
+# Adds an AliRoot library as a target
+
+  Set(_path)
+  List(LENGTH SRCS _len)
+  If(_len GREATER 0)
+    List(GET SRCS 0 _file)
+    Get_filename_component(_path ${_file} PATH)
+    #Message(STATUS Debug ${_file} ${_path})
+  Endif(_len GREATER 0)
+
+  Set(LDEF)
+  If(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${LIB}LinkDef.h)
+    Set(LDEF "${CMAKE_CURRENT_BINARY_DIR}/${LIB}LinkDef.h")
+  Endif(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${LIB}LinkDef.h)
+  
+  If(NOT LDEF)
+    If(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${LIB}LinkDef.h)
+      Set(LDEF "${LIB}LinkDef.h")
+    Endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${LIB}LinkDef.h)
+  EndIf(NOT LDEF)
+
+  If(_path AND NOT LDEF)
+    If(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_path}/${LIB}LinkDef.h)
+      Set(LDEF "${_path}/${LIB}LinkDef.h")
+    Endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_path}/${LIB}LinkDef.h)
+  Endif(_path AND NOT LDEF)
+
+  Set(DICT)
+  If(LDEF)
+# even with no cxx files, one may want to build an empty lib as a placeholder
+# in AliRoot this is signalled by the existence of an (empty) ${LIB}LinkDef.h
+    Set(DICT "G__${LIB}.cxx")
+    Set(ASRCS ${SRCS} ${DICT})
+    Root_Generate_Dictionary("${DHDRS}" "${LDEF}" "${DICT}" "${INCLUDE_DIRECTORIES}")
+    If(ALICE_STATIC_BUILD)
+      Set(STATIC_DICT "G__${LIB}_a.cxx")
+      Set(STATIC_ASRCS ${SRCS} ${STATIC_DICT})
+      Root_Generate_Dictionary("${DHDRS}" "${LDEF}" "${STATIC_DICT}" "${INCLUDE_DIRECTORIES}")
+    EndIf(ALICE_STATIC_BUILD)
+  Else(LDEF)
+    Message(STATUS "No ${LIB}LinkDef.h found... building lib with no ROOT dict")
+    Set(ASRCS ${SRCS})
+    If(ALICE_STATIC_BUILD)
+      Set(STATIC_ASRCS ${SRCS})
+    EndIf(ALICE_STATIC_BUILD)
+  Endif(LDEF)
+
+  Add_Library(${LIB} SHARED ${ASRCS})
+  Target_Link_Libraries(${LIB} ${ALIROOT_LIBRARIES})
+  Set_Target_Properties(${LIB} PROPERTIES ${ALIROOT_LIBRARY_PROPERTIES})
+  
+  Install(TARGETS ${LIB} DESTINATION ${ALIROOT_INSTALL_DIR}/lib
+    COMPONENT shared)
+
+  If(ALICE_STATIC_BUILD)
+    Add_Library(${LIB}_a STATIC ${STATIC_ASRCS})
+    Install(TARGETS ${LIB}_a DESTINATION ${ALIROOT_INSTALL_DIR}/lib/static)
+  EndIf(ALICE_STATIC_BUILD)
+
+  If(ARGV3)
+    Install(FILES ${ARGV3} DESTINATION ${ALIROOT_INSTALL_DIR}/include)
+  Endif(ARGV3)
+
+  CheckViols(${LIB} "${SRCS}")
+
+EndFunction (AddHLTLibrary)
 
 #_______________________________________________________________________________
 Macro (SetModule)
@@ -107,20 +188,27 @@ Function (AddExecutable BIN SRCS LIBS)
 
 # Adds an AliRoot executable as a target
 
+  String(REGEX REPLACE "(.*)exe" "\\1" executable_name "${BIN}")
+  MESSAGE("EXECUTABLE: ${executable_name}")
+
   Add_Executable(${BIN} ${SRCS})
   Target_Link_Libraries(${BIN} ${ROOT_LIBRARIES} ${LIBS})
+  set_target_properties(${BIN} PROPERTIES OUTPUT_NAME ${executable_name})
   Install(TARGETS ${BIN} DESTINATION ${ALIROOT_INSTALL_DIR}/bin)
 
   If(ALICE_STATIC_BUILD)
     Add_Executable(${BIN}_a ${SRCS})
     Set(_ar_libs)
+    # There are no static libs for external libraries, so we have to filter
+    # here. This is an ugly way how to do it, so this has to be improved.
     Foreach(_lib ${LIBS})
-      Set(_ar_libs ${_ar_libs} ${_lib}_a)
+      If(${_lib} STREQUAL GLU OR ${_lib} STREQUAL XMLParser)
+        Set(_ar_libs ${_ar_libs} ${_lib})
+      Else(${_lib} STREQUAL GLU OR ${_lib} STREQUAL XMLParser)
+        Set(_ar_libs ${_ar_libs} ${_lib}_a)
+      EndIf(${_lib} STREQUAL GLU OR ${_lib} STREQUAL XMLParser)
     EndForeach(_lib ${LIBS})
-    Foreach(_lib ${LIBS})
-      Set(_ar_libs ${_ar_libs} ${_lib}_a)
-    EndForeach(_lib ${LIBS})
-    Target_Link_Libraries(${BIN}_a ${ROOT_LIBRARIES} ${_ar_libs})
+    Target_Link_Libraries(${BIN}_a ${ALIROOT_LIBRARIES} ${_ar_libs})
     Install(TARGETS ${BIN}_a DESTINATION ${ALIROOT_INSTALL_DIR}/bin)
   EndIf(ALICE_STATIC_BUILD)
 
@@ -183,7 +271,7 @@ If(ALICE_TARGET STREQUAL macosx64)
 
 # I think this is useless
 #  Set(ALIROOT_LIBRARIES "${ROOT_LIBRARIES} -L/usr/X11R6/lib -lX11")
-  Set(ALIROOT_LIBRARIES "${ROOT_LIBRARIES}")
+  Set(ALIROOT_LIBRARIES "${ROOT_LIBRARIES} -L/usr/X11/lib")
 
 # Would like to use this, but did not manage on the Mac
 #Include(FindOpenGL)

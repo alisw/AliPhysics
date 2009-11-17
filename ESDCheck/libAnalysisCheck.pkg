@@ -19,7 +19,7 @@ DHDR:= AnalysisCheckLinkDef.h
 
 EXPORT:=$(SRCS:.cxx=.h)
 
-EINCLUDE:=PMD
+EINCLUDE:=PMD ANALYSIS
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \

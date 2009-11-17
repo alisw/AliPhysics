@@ -2,22 +2,22 @@
 
 # $Id$
 
-HDRS = dNdEta/dNdEtaAnalysis.h \
-      dNdEta/AlidNdEtaCorrection.h \
-      AliCorrectionMatrix.h \
-      AliCorrectionMatrix2D.h \
-      AliCorrectionMatrix3D.h \
-      AliCorrection.h \
-      AliPWG0Helper.h \
-      AliOfflineTrigger.h \
-      AliUnfolding.h \
-      multiplicity/AliMultiplicityCorrection.h
+SRCS = dNdEta/dNdEtaAnalysis.cxx \
+      dNdEta/AlidNdEtaCorrection.cxx \
+      AliCorrectionMatrix.cxx \
+      AliCorrectionMatrix2D.cxx \
+      AliCorrectionMatrix3D.cxx \
+      AliCorrection.cxx \
+      AliPWG0Helper.cxx \
+      AliUnfolding.cxx \
+      multiplicity/AliMultiplicityCorrection.cxx \
+      AliOfflineTrigger.cxx
 
-SRCS = $(HDRS:.h=.cxx)
+HDRS = $(SRCS:.cxx=.h)
 
 DHDR= PWG0baseLinkDef.h
 
-EINCLUDE= 
+EINCLUDE= PWG0/dNdEta PWG0/multiplicity
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \

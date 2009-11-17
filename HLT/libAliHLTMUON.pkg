@@ -3,7 +3,8 @@
 
 ###############################################################################
 
-CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
+CLASS_HDRS := 	AliHLTMUONUtils.h \
+		OfflineInterface/AliHLTMUONAgent.h \
 		OfflineInterface/AliHLTMUONTriggerRecordsSource.h \
 		OfflineInterface/AliHLTMUONRecHitsSource.h \
 		OfflineInterface/AliHLTMUONDigitPublisherComponent.h \
@@ -17,7 +18,6 @@ CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
 		utils/AliHLTMUONEmptyEventFilterComponent.h \
 		utils/AliHLTMUONDataCheckerComponent.h \
 		utils/AliHLTMUONRawDataHistoComponent.h \
-		AliHLTMUONUtils.h \
 		AliHLTMUONConstants.h \
 		AliHLTMUONProcessor.h \
 		AliHLTMUONRecHit.h \

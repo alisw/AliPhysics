@@ -12,7 +12,7 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONcalignLinkDef.h
 
-EINCLUDE:= MUON/mapping
+EINCLUDE:= MUON/mapping ANALYSIS
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \

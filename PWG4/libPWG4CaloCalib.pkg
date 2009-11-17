@@ -8,7 +8,7 @@ DHDR:= PWG4CaloCalibLinkDef.h
 
 EXPORT:=$(SRCS:.cxx=.h)
 
-EINCLUDE= PHOS EMCAL
+EINCLUDE= PHOS EMCAL PWG4/CaloCalib
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \

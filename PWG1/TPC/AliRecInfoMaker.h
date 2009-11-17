@@ -23,8 +23,13 @@
 #include "AliITStrackMI.h"
 #include "AliTRDtrack.h"
 class AliTPCseed;
-
-
+class AliTPCParam;
+class AliMCInfo;
+class AliGenKinkInfo;
+class AliGenV0Info;
+class AliESDRecInfo;
+class AliESDRecKinkInfo;
+class AliESDRecV0Info;
 
 
 ////////////////////////////////////////////////////////////////////////

@@ -24,6 +24,8 @@ DHDR= ANALYSISaliceLinkDef.h
 
 EXPORT:=$(SRCS:.cxx=.h)
 
+EINCLUDE:=ANALYSIS/Aliengui
+
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lANALYSIS -lSTEERBase -lAOD -lESD \

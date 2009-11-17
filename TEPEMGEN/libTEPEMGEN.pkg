@@ -13,6 +13,8 @@ PACKFFLAGS      := $(filter-out -O%,$(FFLAGS))
 
 EXPORT:=TEpEmGen.h
 
+EINCLUDE = EVGEN
+
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEER -lSTEERBase -lEVGEN -lmicrocern \

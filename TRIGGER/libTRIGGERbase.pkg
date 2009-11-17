@@ -6,9 +6,9 @@ CINTHDRS:= $(SRCS:.cxx=.h)
 
 HDRS:= $(SRCS:.cxx=.h)
 
-DHDR:= TRIGGERLinkDef.h
+DHDR:= TRIGGERbaseLinkDef.h
 
-EINCLUDE:= ITS STEER
+EINCLUDE:= TRIGGER ITS STEER
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \

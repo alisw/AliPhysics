@@ -1,8 +1,8 @@
 SRCS:=AliStructFuncType.cxx lhapdf5.5.1/src/version.cxx  lhapdf5.5.1/src/getdatapath.cxx
 
-HDRS:= $(SRCS:.cxx=.h) 
-HDRS:= $(filter-out lhapdf5.5.1/src/version.h,$(HDRS)) 
-HDRS:= $(filter-out lhapdf5.5.1/src/getdatapath.h,$(HDRS)) 
+HDRS:= AliStructFuncType.h
+#HDRS:= $(filter-out lhapdf5.5.1/src/version.h,$(HDRS)) 
+#HDRS:= $(filter-out lhapdf5.5.1/src/getdatapath.h,$(HDRS)) 
 
 DHDR:=lhapdfLinkDef.h
 
@@ -62,6 +62,6 @@ else
 PACKFFLAGS = $(FFLAGS) -ffree-form
 endif
 endif
-PACKCXXFLAGS = $(CXXFLAGS) -DDEFAULTPREFIXPATH=\"NONE\" -DDEFAULTLHAPATH=\"$(ALICE_ROOT)/LHAPDF/PDFsets\"
+PACKCXXFLAGS = $(CXXFLAGS) -DDEFAULTPREFIXPATH=\"NONE\" -DDEFAULTLHAPATH=\"../AliRoot/LHAPDF/PDFsets\"
 EXPORT:=AliStructFuncType.h
 

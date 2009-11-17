@@ -22,6 +22,8 @@ HDRS		=  $(SRCS:.cxx=.h) 			\
 
 DHDR		:= flow/FMDflowLinkDef.h
 
+EINCLUDE = FMD/flow
+
 #
 # EOF
 #

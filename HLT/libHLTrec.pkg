@@ -21,7 +21,7 @@ MODULE_DHDR:=
 
 EINCLUDE := HLT/rec HLT/BASE HLT/BASE/HOMER STEER RAW
 
-LIBRARY_DEP := -lHLTbase -lCDB -lESD -lSTEERbase -lSTEER -lRAWDatarec -lRAWDatabase
+LIBRARY_DEP := -lHLTbase -lCDB -lESD -lSTEERbase -lSTEER -lRAWDatarec -lRAWDatabase 
 
 include $(MODDIR)/hlt.conf
 

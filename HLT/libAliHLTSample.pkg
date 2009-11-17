@@ -36,7 +36,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # enable automatic generation. 
 MODULE_DHDR:=
 
-EINCLUDE := HLT/BASE HLT/shuttle
+EINCLUDE := HLT/BASE HLT/shuttle HLT/SampleLib
 
 LIBRARY_DEP := -lHLTbase -lCDB -lSTEERBase
 

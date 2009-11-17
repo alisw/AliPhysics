@@ -12,6 +12,7 @@ MODULE_DHDR:=
 EINCLUDE 	:= HLT/TPCLib \
 		   HLT/TPCLib/offline \
 		   HLT/BASE \
+                   HLT/TPCLib/EVE \
 		   EVE
 
 LIBRARY_DEP := -lHLTbase -lAliHLTTPC

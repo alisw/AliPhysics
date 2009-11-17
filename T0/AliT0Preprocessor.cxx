@@ -54,8 +54,7 @@ Preliminary test version (T.Malkiewicz)
 #include "AliT0Dqclass.h"
 #include "TClass.h"
 
-#include "iostream"
-
+// #include "iostream.h"
 
 ClassImp(AliT0Preprocessor)
 

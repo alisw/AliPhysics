@@ -72,7 +72,7 @@ HDRS= $(SRCS:.cxx=.h)
 
 DHDR= TRDbaseLinkDef.h
 
-EINCLUDE= RAW
+EINCLUDE:= RAW TRD/Cal
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \

@@ -35,5 +35,5 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEER -lSTEERBase -lESD \
                          -lTPCbase -lTPCrec -lTPCsim \
                          -lITSbase -lITSrec -lRAWDatarec \
-                         -L$(ROOTLIBDIR) -lGui
+                         -L$(shell root-config --libdir) -lGui
 endif

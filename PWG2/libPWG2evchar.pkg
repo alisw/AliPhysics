@@ -8,7 +8,7 @@ DHDR:=PWG2evcharLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= 
+EINCLUDE:= PWG2/EVCHAR
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \

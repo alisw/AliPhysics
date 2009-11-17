@@ -6,7 +6,7 @@ HDRS     := $(SRCS:.cxx=.h)
 
 DHDR     := EveBase/EveBaseLinkDef.h
 
-EINCLUDE := RAW ITS TPC
+EINCLUDE := RAW ITS TPC EVE/EveBase
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKCXXFLAGS:= $(CXXFLAGS) -I/usr/X11R6/include

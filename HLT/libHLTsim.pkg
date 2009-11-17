@@ -3,11 +3,13 @@
 
 LIBHLTSIM_VERSION := 1
 
-MODULE_SRCS= 	AliHLTSimulation.cxx \
-		AliHLTAgentSim.cxx \
-		AliHLTOUTComponent.cxx
 
-CLASS_HDRS:=  	$(MODULE_SRCS:.cxx=.h)
+
+CLASS_HDRS:= 	AliHLTSimulation.h \
+		AliHLTAgentSim.h \
+		AliHLTOUTComponent.h
+
+MODULE_SRCS=  	$(CLASS_HDRS:.h=.cxx)
 
 MODULE_HDRS:= 	$(CLASS_HDRS)
 

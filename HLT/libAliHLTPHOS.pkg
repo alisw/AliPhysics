@@ -60,7 +60,7 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 ##Left empty for auto generation:
 MODULE_DHDR:=	  
 
-EINCLUDE     := HLT/BASE HLT/BASE/util STEER RAW PHOS
+EINCLUDE     := HLT/BASE HLT/BASE/util HLT/PHOS STEER RAW PHOS
 
 LIBRARY_DEP := -lHLTbase -lPHOSbase -lPHOSshuttle -lESD \
                -lSTEER -lRAWDatarec
