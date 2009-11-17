@@ -9,18 +9,20 @@ Project(AliRoot NONE)
 # Set AliRoot variables
 Set(ALICE_ROOT $ENV{ALICE_ROOT})
 Set(ALICE      $ENV{ALICE})
-Set(ALICE_STATIC_BUILD ON CACHE BOOL "Build also statics libs")
+Set(ALICE_STATIC_BUILD OFF CACHE BOOL "Build also statics libs")
 
-#Set(CMAKE_VERBOSE_MAKEFILE ON)
+MESSAGE("ALICE_ROOT: ${ALICE_ROOT}")
+Set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ 
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 Set(CMAKE_MODULE_PATH "${ALICE_ROOT}/cmake/modules")
 
 # To fix a hack that has been introduced for the Mac
 If(APPLE)
   Set(CMAKE_INSTALL_NAME_TOOL CMAKE_INSTALL_NAME_TOOL-NOTFOUND)
 Endif(APPLE)
-
 
 # Setup ROOT
 Find_package(ROOT 5.0.0 REQUIRED)
@@ -58,6 +60,13 @@ Find_Package(DATE)
 # Setup system dependent flags 
 SetupSystem()
 
+
+Option(GENERATE_FILES "Generate CMake input files from package files" OFF)
+if(GENERATE_FILES)
+  Include(CreateSubCMakeFiles)
+  CreateSubCMakeFiles()
+endif(GENERATE_FILES)
+
 # Set the library version in the main CMakeLists.txt
 SET(ALIROOT_MAJOR_VERSION 0)
 SET(ALIROOT_MINOR_VERSION 0)
@@ -92,15 +101,49 @@ String(REPLACE "/" "\\\\/"
 Add_Custom_Target(check-all COMMENT "Checking coding conventions")
 
 # Configure special include file
+# Only if there is  a change in the file
 If(UNIX)
   Set(_in ${CMAKE_CURRENT_SOURCE_DIR}/STEER/ARVersion.h.in)
   Set(_out ${CMAKE_CURRENT_BINARY_DIR}/STEER/ARVersion.h)
-  Add_custom_target(ARversion ALL
-    COMMAND sed < ${_in}
+  If(NOT EXISTS ${_out})
+    Add_custom_target(ARversion ALL
+      COMMAND sed < ${_in}
                 -e "s/\\@ALIROOT_SVN_REVISION\\@/${ALIROOT_SVN_REVISION}/" 
                 -e "s/\\@ALIROOT_SVN_BRANCH\\@/${ALIROOT_SVN_BRANCH}/" 
                 -e "s/\\@ALIROOT_VERSION\\@/${ALIROOT_VERSION}/" >  ${_out})
-  Install(FILES ${_out} DESTINATION ${ALIROOT_INSTALL_DIR}/include)
+    Install(FILES ${_out} DESTINATION ${ALIROOT_INSTALL_DIR}/include)
+  Else(NOT EXISTS ${_out})
+    FILE(READ "${_out}" contents)
+    STRING(REGEX REPLACE ";" "\\\\;" contents "${contents}")
+    STRING(REGEX REPLACE "\n" ";" contents "${contents}")
+    Foreach(line ${contents})
+      If(line MATCHES "^.*ALIROOT_SVN_REVISION.*$")
+        STRING(REGEX REPLACE "^.*ALIROOT_SVN_REVISION[ ](.*)$" "\\1" _result_svn_rev "${line}")
+      EndIf(line MATCHES "^.*ALIROOT_SVN_REVISION.*$")
+      If(line MATCHES "^.*ALIROOT_SVN_BRANCH.*$")
+        STRING(REGEX REPLACE "^.*ALIROOT_SVN_BRANCH[ ]\"(.*)\"$" "\\1" _result_svn_branch "${line}")
+      EndIf(line MATCHES "^.*ALIROOT_SVN_BRANCH.*$")
+      If(line MATCHES "^.*ALIROOT_VERSION.*$")
+        STRING(REGEX REPLACE "^.*ALIROOT_VERSION[ ](.*)$" "\\1" _result_aliroot_version "${line}")
+      EndIf(line MATCHES "^.*ALIROOT_VERSION.*$")
+    EndForeach(line ${contents})
+    If(_result_aliroot_version STREQUAL ${ALIROOT_VERSION} AND _result_svn_rev STREQUAL ${ALIROOT_SVN_REVISION} AND _result_svn_branch STREQUAL ${ALIROOT_SVN_BRANCH})
+#      MESSAGE("VERSION: ${_result_aliroot_version}")
+#      MESSAGE("VERSION: ${ALIROOT_VERSION}")
+#      MESSAGE("REVISION: ${_result_svn_rev}")
+#      MESSAGE("REVISION: ${ALIROOT_SVN_REVISION}")
+#      MESSAGE("BRANCH: ${_result_svn_branch}")
+#      MESSAGE("BRANCH: ${ALIROOT_SVN_BRANCH}")
+    Else(_result_aliroot_version STREQUAL ${ALIROOT_VERSION} AND _result_svn_rev STREQUAL ${ALIROOT_SVN_REVISION} AND _result_svn_branch STREQUAL ${ALIROOT_SVN_BRANCH})
+    Add_custom_target(ARversion ALL
+      COMMAND sed < ${_in}
+                -e "s/\\@ALIROOT_SVN_REVISION\\@/${ALIROOT_SVN_REVISION}/" 
+                -e "s/\\@ALIROOT_SVN_BRANCH\\@/${ALIROOT_SVN_BRANCH}/" 
+                -e "s/\\@ALIROOT_VERSION\\@/${ALIROOT_VERSION}/" >  ${_out})
+      Install(FILES ${_out} DESTINATION ${ALIROOT_INSTALL_DIR}/include)
+    EndIf(_result_aliroot_version STREQUAL ${ALIROOT_VERSION} AND _result_svn_rev STREQUAL ${ALIROOT_SVN_REVISION} AND _result_svn_branch STREQUAL ${ALIROOT_SVN_BRANCH})
+  EndIf(NOT EXISTS ${_out})
+
 Endif(UNIX)
 
 # This would work, but just once... we want this to happen at every make
@@ -162,10 +205,11 @@ Add_subdirectory(TOF)
 Add_subdirectory(TPC)
 Add_subdirectory(TPHIC) 
 Add_subdirectory(TRD) 
+Add_subdirectory(TRIGGER) 
 Add_subdirectory(TTherminator) 
 Add_subdirectory(TUHKMgen) 
 Add_subdirectory(VZERO) 
 Add_subdirectory(ZDC) 
-
+#
 Add_subdirectory(ALIROOT)
 

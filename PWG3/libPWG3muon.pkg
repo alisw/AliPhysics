@@ -21,7 +21,7 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= PWG3muonLinkDef.h
 
-EINCLUDE:= PWG3/base
+EINCLUDE:= PWG3/base PWG3/muon ANALYSIS
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \

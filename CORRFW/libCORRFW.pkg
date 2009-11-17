@@ -39,6 +39,8 @@ DHDR= CORRFWLinkDef.h
 
 EXPORT:=$(SRCS:.cxx=.h)
 
+EINCLUDE:= ANALYSIS
+
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEERBase -lANALYSIS -lESD -lAOD \

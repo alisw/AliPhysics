@@ -31,6 +31,8 @@ SRCS = 	AliJetHeader.cxx \
 HDRS:= $(SRCS:.cxx=.h) 
 DHDR= JETANLinkDef.h
 
+EINCLUDE:= ANALYSIS
+
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice \

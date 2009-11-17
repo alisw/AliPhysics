@@ -17,7 +17,7 @@ DHDR:=PWG2flowTasksLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= PWG2/FLOW/AliFlowCommon 
+EINCLUDE:= PWG2/FLOW/AliFlowCommon PWG2/FLOW/AliFlowTasks
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \

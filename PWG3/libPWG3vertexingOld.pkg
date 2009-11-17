@@ -7,7 +7,7 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= PWG3vertexingOldLinkDef.h
 
-EINCLUDE:= 
+EINCLUDE:= PWG3/vertexingOld
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \

@@ -8,7 +8,7 @@
 //    Origin: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 ///////////////////////////////////////////////////////////////////////////
 
-class AliAnalysisTask;
+#include<AliAnalysisTask.h>
 class TTree;
 class AliESDEvent;
 class AliRelAlignerKalman;

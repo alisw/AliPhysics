@@ -27,7 +27,7 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= PWG3vertexingHFLinkDef.h
 
-EINCLUDE:=  PWG3/base CORRFW
+EINCLUDE:=  PWG3/base PWG3/vertexingHF CORRFW
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \

@@ -13,6 +13,8 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= PWG4PartCorrBaseLinkDef.h
 
+EINCLUDE = PWG4/PartCorrBase
+
 EXPORT:=$(SRCS:.cxx=.h)
 
 ifeq (win32gcc,$(ALICE_TARGET))
