@@ -51,6 +51,8 @@ private:
    Double_t     fSx2;            //Variance of x of wounded nucleons
    Double_t     fSy2;            //Variance of y of wounded nucleons
    Double_t     fSxy;            //Covariance of x and y of wounded nucleons
+   Double_t     fX;              //hard particle production fraction
+   Double_t     fNpp;            //Multiplicity normalization
 
    Bool_t       CalcResults(Double_t bgen);
    Bool_t       CalcEvent(Double_t bgen);
@@ -60,6 +62,13 @@ public:
    virtual     ~AliGlauberMC() {Reset();}
 
    void         Draw(Option_t* option);
+   Double_t     GetdNdEta()          const;
+   Double_t     GetEccentricity()    const;
+   Double_t     GetEccentricityPart()const;
+   Double_t     GetX()               const {return fX;}
+   Double_t     GetNpp()             const {return fNpp;}
+   void SetX( const Double_t x ) {fX = x;}
+   void SetNpp( const Double_t n ) {fNpp = n;}
    Double_t     GetB()               const {return fB_MC;}
    Double_t     GetBMin()            const {return fBMin;}
    Double_t     GetBMax()            const {return fBMax;}
