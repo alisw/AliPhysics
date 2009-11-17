@@ -179,7 +179,7 @@ public:
 
   // FMD
   void SetFMDData(AliESDFMD * obj);
-  AliESDFMD *GetFMDData(){ return fESDFMD; }
+  AliESDFMD *GetFMDData() const { return fESDFMD; }
 
 
   // TZERO CKB: put this in the header?
