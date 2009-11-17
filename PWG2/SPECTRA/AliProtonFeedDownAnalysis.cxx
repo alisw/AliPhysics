@@ -35,7 +35,7 @@ AliProtonFeedDownAnalysis::AliProtonFeedDownAnalysis() :
   //Default constructor
  }
 //____________________________________________________________________//
-AliProtonFeedDownAnalysis::AliProtonFeedDownAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY,Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt) : 
+/*AliProtonFeedDownAnalysis::AliProtonFeedDownAnalysis(Int_t nbinsY, Float_t fLowY, Float_t fHighY,Int_t nbinsPt, Float_t fLowPt, Float_t fHighPt) : 
   TObject(), fProtonAnalysisBase(0),
   fNBinsY(nbinsY), fMinY(fLowY), fMaxY(fHighY),
   fNBinsPt(nbinsPt), fMinPt(fLowPt), fMaxPt(fHighPt),
@@ -62,7 +62,8 @@ AliProtonFeedDownAnalysis::AliProtonFeedDownAnalysis(Int_t nbinsY, Float_t fLowY
 	fAntiProtonContainer->SetBinLimits(0,binLimY); //rapidity or eta
 	fAntiProtonContainer->SetBinLimits(1,binLimPt); //pT
 	
-}
+	
+}*/
 //____________________________________________________________________//
 AliProtonFeedDownAnalysis::~AliProtonFeedDownAnalysis() 
 {
@@ -106,10 +107,32 @@ void AliProtonFeedDownAnalysis::InitAnalysisHistograms(Int_t nbinsY, Float_t fLo
 	fAntiProtonContainer = new AliCFContainer("containerAntiProtons","container for antiprotons",kNSteps,2,iBin);
 	fAntiProtonContainer->SetBinLimits(0,binLimY); //rapidity
 	fAntiProtonContainer->SetBinLimits(1,binLimPt); //pT
-	fLambda=new TH1F("Lambda","Lambda",35,0.5,4.0);
+	/*fLambda=new TH1F("Lambda","Lambda",35,0.5,4.0);
 	fLambdaweighted=new TH1F("Lambdaweighted","Lambdaweighted",35,0.5,4.0);
 	fAntiLambda=new TH1F("AntiLambda","AntiLambda",35,0.5,4.0);
-	fAntiLambdaweighted=new TH1F("AntiLambdaweighted","AntiLambdaweighted",35,0.5,4.0);
+	fAntiLambdaweighted=new TH1F("AntiLambdaweighted","AntiLambdaweighted",35,0.5,4.0);*/
+	fLambda=new TH2F("Lambda","Lambda",fNBinsY,fMinY,fMaxY,fNBinsPt,fMinPt,fMaxPt);
+	fLambdaweighted=new TH2F("Lambdaweighted","Lambdaweighted",fNBinsY,fMinY,fMaxY,fNBinsPt,fMinPt,fMaxPt);
+	fAntiLambda=new TH2F("AntiLambda","AntiLambda",fNBinsY,fMinY,fMaxY,fNBinsPt,fMinPt,fMaxPt);
+	fAntiLambdaweighted=new TH2F("AntiLambdaweighted","AntiLambdaweighted",fNBinsY,fMinY,fMaxY,fNBinsPt,fMinPt,fMaxPt);
+	fLambda->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+	fLambdaweighted->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+	fAntiLambda->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+	fAntiLambdaweighted->GetYaxis()->SetTitle("P_{T} [GeV/c]");
+	if(fProtonAnalysisBase->GetEtaMode())
+	{
+		fLambda->GetXaxis()->SetTitle("#eta");
+		fLambdaweighted->GetXaxis()->SetTitle("#eta");
+		fAntiLambda->GetXaxis()->SetTitle("#eta");
+		fAntiLambdaweighted->GetXaxis()->SetTitle("#eta");
+	}
+	else
+	{
+		fLambda->GetXaxis()->SetTitle("y");
+		fLambdaweighted->GetXaxis()->SetTitle("y");
+		fAntiLambda->GetXaxis()->SetTitle("y");
+		fAntiLambdaweighted->GetXaxis()->SetTitle("y");
+	}	  
 }
 //_________________________________________________________________________//
 void AliProtonFeedDownAnalysis::Analyze(AliESDEvent *esd, const AliESDVertex *vertex,AliStack *stack)
@@ -171,7 +194,20 @@ void AliProtonFeedDownAnalysis::Analyze(AliESDEvent *esd, const AliESDVertex *ve
 					fProtonContainer->Fill(containerInput,kSelected,weight);   
 					//Feed-down check
 					if (trackflag==1)
-						fProtonContainer->Fill(containerInput,kSelectedfromLambda,weight); 
+					{
+						fProtonContainer->Fill(containerInput,kSelectedfromLambda,weight);
+						TParticle *particle  = stack->Particle(label);
+						Int_t lmother=particle->GetFirstMother();
+						TParticle *mparticle=stack->Particle(lmother);
+						Double_t ptlambda= mparticle->Pt();
+						Double_t eta_or_y=0.0;
+						if(fProtonAnalysisBase->GetEtaMode())
+						 	eta_or_y=mparticle->Eta();
+						else
+							eta_or_y=0.5*TMath::Log((mparticle->Energy()+mparticle->Pz())/(mparticle->Energy()-mparticle->Pz()));
+						fLambda->Fill(eta_or_y, ptlambda);
+						fLambdaweighted->Fill(eta_or_y, ptlambda,weight);												 
+					}	 
 					
 				}//protons
 				else if(tpcTrack->Charge() < 0) 
@@ -195,7 +231,20 @@ void AliProtonFeedDownAnalysis::Analyze(AliESDEvent *esd, const AliESDVertex *ve
 					fAntiProtonContainer->Fill(containerInput,kSelected,weight);
 					//Feed-down check							
 					if(trackflag==-1)
-						fAntiProtonContainer->Fill(containerInput,kSelectedfromLambda,weight);					
+					{
+						fAntiProtonContainer->Fill(containerInput,kSelectedfromLambda,weight);
+						TParticle *particle  = stack->Particle(label);
+						Int_t lmother=particle->GetFirstMother();
+						TParticle *mparticle=stack->Particle(lmother);
+						Double_t ptlambda= mparticle->Pt();
+						Double_t eta_or_y=0.0;
+						if(fProtonAnalysisBase->GetEtaMode())
+						 	eta_or_y=mparticle->Eta();
+						else
+							eta_or_y=0.5*TMath::Log((mparticle->Energy()+mparticle->Pz())/(mparticle->Energy()-mparticle->Pz()));
+						fAntiLambda->Fill(eta_or_y, ptlambda);
+						fAntiLambdaweighted->Fill(eta_or_y, ptlambda,weight);	
+					}						
 				}//antiprotons   
 			}//proton check
 		}//TPC only tracks
@@ -231,7 +280,20 @@ void AliProtonFeedDownAnalysis::Analyze(AliESDEvent *esd, const AliESDVertex *ve
 					fProtonContainer->Fill(containerInput,kSelected,weight);  
 					 //Feed-down check
 					if (trackflag==1)
-						fProtonContainer->Fill(containerInput,kSelectedfromLambda,weight); 
+					{
+						fProtonContainer->Fill(containerInput,kSelectedfromLambda,weight);
+						TParticle *particle  = stack->Particle(label);
+						Int_t lmother=particle->GetFirstMother();
+						TParticle *mparticle=stack->Particle(lmother);
+						Double_t ptlambda= mparticle->Pt();
+						Double_t eta_or_y=0.0;
+						if(fProtonAnalysisBase->GetEtaMode())
+						 	eta_or_y=mparticle->Eta();
+						else
+							eta_or_y=0.5*TMath::Log((mparticle->Energy()+mparticle->Pz())/(mparticle->Energy()-mparticle->Pz()));
+						fLambda->Fill(eta_or_y, ptlambda);
+						fLambdaweighted->Fill(eta_or_y, ptlambda,weight);		
+					}	 
 				}//protons
 				else if(track->Charge() < 0) 
 				{
@@ -253,7 +315,20 @@ void AliProtonFeedDownAnalysis::Analyze(AliESDEvent *esd, const AliESDVertex *ve
 					containerInput[1] = gPt;
 					fAntiProtonContainer->Fill(containerInput,kSelected,weight);   
 					if(trackflag==-1)
+					{
 						fAntiProtonContainer->Fill(containerInput,kSelectedfromLambda,weight);
+						TParticle *particle  = stack->Particle(label);
+						Int_t lmother=particle->GetFirstMother();
+						TParticle *mparticle=stack->Particle(lmother);
+						Double_t ptlambda= mparticle->Pt();
+						Double_t eta_or_y=0.0;
+						if(fProtonAnalysisBase->GetEtaMode())
+						 	eta_or_y=mparticle->Eta();
+						else
+							eta_or_y=0.5*TMath::Log((mparticle->Energy()+mparticle->Pz())/(mparticle->Energy()-mparticle->Pz()));
+						fAntiLambda->Fill(eta_or_y, ptlambda);
+						fAntiLambdaweighted->Fill(eta_or_y, ptlambda,weight);
+					}	
 				}//antiprotons
 			}//proton check 
 		}//combined tracking
@@ -280,7 +355,7 @@ void AliProtonFeedDownAnalysis::Analyze(AliStack *stack)
 	{ 
 		TParticle *particle  = stack->Particle(ipart);
 		Int_t code=particle->GetPdgCode();
-		if (code==3122)
+		/*if (code==3122)
 		{
 			fLambda->Fill(particle->Pt());
 			fLambdaweighted->Fill(particle->Pt(),GetWeightforLambda(particle->Pt()));			
@@ -289,7 +364,7 @@ void AliProtonFeedDownAnalysis::Analyze(AliStack *stack)
 		{
 			fAntiLambda->Fill(particle->Pt());
 			fAntiLambdaweighted->Fill(particle->Pt(),GetWeightforLambda(particle->Pt()));			
-		}
+		}*/
 		if (TMath::Abs(code)==2212)
 		{
 			Int_t trackflag=LambdaIsMother(ipart,stack);//1 mother lambda -1 mother anti lambda 0 mother something else 
