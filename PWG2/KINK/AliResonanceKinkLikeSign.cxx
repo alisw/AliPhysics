@@ -58,11 +58,11 @@ AliResonanceKinkLikeSign::AliResonanceKinkLikeSign(const char *name)
 }
 
 //________________________________________________________________________
-void AliResonanceKinkLikeSign::ConnectInputData(Option_t *) 
+void AliResonanceKinkLikeSign::ConnectInputData(Option_t *option) 
 {
   // Connect ESD or AOD here
   // Called once
-
+  AliAnalysisTaskSE::ConnectInputData(option);
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
   if (!tree) {
     Printf("ERROR: Could not read chain from input slot 0");
@@ -110,7 +110,7 @@ void AliResonanceKinkLikeSign::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliResonanceKinkLikeSign::Exec(Option_t *) 
+void AliResonanceKinkLikeSign::Exec(Option_t *option) 
 {
   // Main loop
   // Called for each event
@@ -277,7 +277,7 @@ void AliResonanceKinkLikeSign::Exec(Option_t *)
 }      
 
 //________________________________________________________________________
-void AliResonanceKinkLikeSign::Terminate(Option_t *) 
+void AliResonanceKinkLikeSign::Terminate(Option_t *option) 
 {
  
 }
