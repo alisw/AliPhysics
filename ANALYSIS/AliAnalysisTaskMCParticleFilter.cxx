@@ -409,11 +409,6 @@ void AliAnalysisTaskMCParticleFilter::Terminate(Option_t */*option*/){
     return;
   }
 
-  if(!tree){
-    Printf("%s:%d Output tree not found",(char*)__FILE__,__LINE__);
-    return;
-  }
-
   TProfile *hXsec = ((TProfile*)(fHistList->FindObject("h1Xsec")));
   TH1F* hTrials  = ((TH1F*)(fHistList->FindObject("h1Trials")));
   if(!hXsec)return;
@@ -426,6 +421,10 @@ void AliAnalysisTaskMCParticleFilter::Terminate(Option_t */*option*/){
   // This only works if the tree is not a special output
   // in this case it is already written
   /*
+  if(!tree){
+    Printf("%s:%d Output tree not found",(char*)__FILE__,__LINE__);
+    return;
+  }
   TParameter<float> *x = new TParameter<float>("xsection",xsec);
   tree->GetUserInfo()->Add(x);
   TParameter<float> *t = new TParameter<float>("trials",trials);
