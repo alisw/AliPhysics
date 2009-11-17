@@ -11,7 +11,7 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
     proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)1000);
 
     // -- Load AliRoot Libraries
-    gROOT->LoadMacro("ProofEnableAliRoot.C");
+    gROOT->LoadMacro("ProofEnableAliRootGSI.C");
     ProofEnableAliRoot("/u/jacek/alice/AliRoot/trunk");
   }
 
@@ -38,7 +38,7 @@ void rundNdPt(const char *fileList ="inputList.txt",const char *outFile = "outpu
   accCuts->SetMaxDCAz(30.0);
 
   // Create standard esd track cuts
-  gROOT->LoadMacro("CreateStandardCuts.C");
+  gROOT->LoadMacro("CreatedNdPtTrackCuts.C");
   AliESDtrackCuts* esdTrackCuts = CreateTrackCuts(cutMode);
   if (!esdTrackCuts) {
     printf("ERROR: esdTrackCuts could not be created\n");
