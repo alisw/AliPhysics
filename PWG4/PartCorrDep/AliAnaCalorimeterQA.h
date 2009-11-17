@@ -13,7 +13,6 @@
 // --- Root system ---
 class TH2F;
 class TH1F;
-//class TH3F;
 
 // --- Analysis system --- 
 #include "AliAnaPartCorrBaseClass.h"
@@ -27,15 +26,21 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & g) ;//cpy assignment
   virtual ~AliAnaCalorimeterQA() {;} //virtual dtor
   
+  void ClusterHistograms(const TLorentzVector mom, const Int_t nCaloCellsPerCluster,
+						 const Int_t nTracksMatched, const TObject* track, 
+						 const Int_t * labels, const Int_t nLabels);
+	
   TList * GetCreateOutputObjects();
-  
+
   void Init();
   void InitParameters();
   
   void Print(const Option_t * opt) const;
     
   void MakeAnalysisFillHistograms() ; 
-	
+  
+  void MCHistograms(const TLorentzVector mom, const Int_t pdg);
+
   TString GetCalorimeter() const {return fCalorimeter ;}
   void SetCalorimeter( TString calo ) {fCalorimeter = calo; }
   TString GetStyleMacro() const {return fStyleMacro ;}
@@ -43,16 +48,16 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   
   void SwithOnPlotsMaking()  {fMakePlots = kTRUE;}
   void SwithOffPlotsMaking() {fMakePlots = kFALSE;}
-
+	
   void Terminate(TList * outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
 
  private:
   
-  TString fCalorimeter ; //Calorimeter selection
-  TString fStyleMacro  ; //Location of macro for plots style
-  Bool_t fMakePlots    ; //Print plots
-  
+  TString fCalorimeter ;   //Calorimeter selection
+  TString fStyleMacro  ;   //Location of macro for plots style
+  Bool_t fMakePlots    ;   //Print plots
+	
   //Histograms
   //CaloClusters 
   TH1F * fhE  ; //! E distribution, Reco
