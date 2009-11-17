@@ -49,7 +49,7 @@ class AlidNdPtHelper : public TObject
 
     static const AliESDVertex* GetTPCVertexZ(AliESDEvent* aEsd, Float_t sigmaXYcut=3., Float_t distXYcut=3., Float_t distZcut=30., Int_t nclCut=50, Float_t fraction=0.8, Int_t ntracksMin=2);
 
-    static const Bool_t TestVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
+    static Bool_t TestVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
 
     static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t adebug = kFALSE);
     static Bool_t IsPrimaryParticle(AliStack *stack, Int_t idx, AnalysisMode analysisMode);
