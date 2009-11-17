@@ -41,11 +41,18 @@ public:
 		     kMCElectron, kMCEFromCFromB, kMCEFromC, kMCEFromB, kMCZDecay, kMCWDecay,
 		     kMCMuon, kMCPion, kMCPi0, kMCKaon, kMCEta, kMCProton,
 		     kMCOther, kMCUnknown};
-
-	Int_t   CheckOrigin(const Int_t label, AliCaloTrackReader * reader, const Int_t input) ;
-	Int_t   CheckOriginInStack(const Int_t label, AliStack * stack) ;
-	Int_t   CheckOriginInAOD(const Int_t label, TClonesArray* mcparticles) ;
 	
+	//Check only the label of the most significant particle
+	Int_t   CheckOrigin(const Int_t label, AliCaloTrackReader * reader, const Int_t input) ;
+	//Check the label of the most significant particle but do checks on the rest of the contributing labels
+	Int_t   CheckOrigin(const Int_t *label, const Int_t nlabels, AliCaloTrackReader * reader, const Int_t input) ;
+	
+	Int_t   CheckOriginInStack(const Int_t *labels, const Int_t nlabels, AliStack * stack) ;
+	Int_t   CheckOriginInAOD  (const Int_t *labels, const Int_t nlabels, TClonesArray* mcparticles) ;
+	
+	void   CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, AliStack * stack, Int_t & tag);
+	void   CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, TClonesArray* mcparticles, Int_t & tag);
+
 	TList * GetJets(AliCaloTrackReader * const reader) ;
 	
 	void SetTagBit(Int_t &tag, const UInt_t set) const {

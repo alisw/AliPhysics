@@ -84,23 +84,40 @@ AliMCAnalysisUtils::~AliMCAnalysisUtils()
 
 
 //_________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliCaloTrackReader* reader, const Int_t input = 0) {
+Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, const Int_t nlabels, AliCaloTrackReader* reader, const Int_t input = 0) {
 	//Play with the montecarlo particles if available
 	Int_t tag = 0;
 	
 	//Select where the information is, ESD-galice stack or AOD mcparticles branch
 	if(reader->ReadStack()){
-		tag = CheckOriginInStack(label, reader->GetStack());
+		tag = CheckOriginInStack(label, nlabels, reader->GetStack());
 	}
 	else if(reader->ReadAODMCParticles()){
-		tag = CheckOriginInAOD(label, reader->GetAODMCParticles(input));
+		tag = CheckOriginInAOD(label, nlabels, reader->GetAODMCParticles(input));
+	}
+	
+	return tag ;
+}
+
+//_________________________________________________________________________
+Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliCaloTrackReader* reader, const Int_t input = 0) {
+	//Play with the montecarlo particles if available
+	Int_t tag = 0;
+	Int_t labels[]={label};
+	
+	//Select where the information is, ESD-galice stack or AOD mcparticles branch
+	if(reader->ReadStack()){
+		tag = CheckOriginInStack(labels, 1,reader->GetStack());
+	}
+	else if(reader->ReadAODMCParticles()){
+		tag = CheckOriginInAOD(labels, 1,reader->GetAODMCParticles(input));
 	}
 	
 	return tag ;
 }	
 
 //_________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack) {
+Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nlabels, AliStack* stack) {
   // Play with the MC stack if available. Tag particles depending on their origin.
   // Do same things as in CheckOriginInAOD but different input.
   
@@ -115,9 +132,12 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack)
   }
 
   Int_t tag = 0;
+  Int_t label=labels[0];//Most significant particle contributing to the cluster
+	
   if(label >= 0 && label < stack->GetNtrack()){
     //MC particle of interest is the "mom" of the entity
     TParticle * mom = stack->Particle(label);
+	Int_t iMom = label;
     Int_t mPdg = TMath::Abs(mom->GetPdgCode());
     Int_t mStatus =  mom->GetStatusCode() ;
     Int_t iParent =  mom->GetFirstMother() ;
@@ -134,33 +154,54 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack)
     }
     else if(fDebug > 0 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Parent with label %d\n",iParent);
     
+	if(fDebug > 2 ) {
+		  printf("AliMCAnalysisUtils::CheckOriginInStack() - Cluster most contributing mother and its parent: \n");
+		  printf("\t Mother label %d, pdg %d, status %d\n",iMom, mPdg, mStatus);
+		  printf("\t Parent label %d, pdg %d, status %d\n",iParent, pPdg, pStatus);
+	}
+	  
     //Check if "mother" of entity is converted, if not, get the first non converted mother
     if((mPdg == 22 || mPdg == 11) && (pPdg == 22 || pPdg == 11) && mStatus == 0){
       SetTagBit(tag,kMCConversion);
       //Check if the mother is photon or electron with status not stable
       while ((pPdg == 22 || pPdg == 11) && mStatus != 1) {
 	//Mother
-	mom = stack->Particle(mom->GetFirstMother());
+	iMom = mom->GetFirstMother();
+	mom = stack->Particle(iMom);
 	mPdg = TMath::Abs(mom->GetPdgCode());
 	mStatus =  mom->GetStatusCode() ;
 	iParent =  mom->GetFirstMother() ;
 	if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Mother is parton %d\n",iParent);
 	
 	//GrandParent
-	if(iParent > 0){
+	if(iParent >= 0){
 	  parent = stack->Particle(iParent);
 	  pPdg = TMath::Abs(parent->GetPdgCode());
 	  pStatus = parent->GetStatusCode();  
 	}
       }//while	  
+		if(fDebug > 2 ) {
+			printf("AliMCAnalysisUtils::CheckOriginInStack() - Converted photon/electron: \n");
+			printf("\t Mother label %d, pdg %d, status %d\n",iMom, mPdg, mStatus);
+			printf("\t Parent label %d, pdg %d, status %d\n",iParent, pPdg, pStatus);
+		}
+		
     }//mother and parent are electron or photon and have status 0
-    else if(mStatus == 0){	
-      //Still a conversion but only one electron/photon generated. Just from hadrons
-      if(pPdg == 2112 ||  pPdg == 211 ||  
-	 pPdg == 321 ||  pPdg == 2212  ||  pPdg == 130  ||  pPdg == 13 ) 
-	SetTagBit(tag,kMCConversion);
-      mom = stack->Particle(mom->GetFirstMother());
-      mPdg = TMath::Abs(mom->GetPdgCode());
+    else if((mPdg == 22 || mPdg == 11) && mStatus == 0){	
+      //Still a conversion but only one electron/photon generated. Just from hadrons but not decays.
+      if(pPdg == 2112 ||  pPdg == 211  ||  pPdg == 321 ||
+		 pPdg == 2212 ||  pPdg == 130  ||  pPdg == 13 ) {
+		  SetTagBit(tag,kMCConversion);
+		  iMom = mom->GetFirstMother();
+		  mom  = stack->Particle(iMom);
+		  mPdg = TMath::Abs(mom->GetPdgCode());
+		
+		  if(fDebug > 2 ) {
+			  printf("AliMCAnalysisUtils::CheckOriginInStack() - Converted hadron: \n");
+			  printf("\t Mother label %d, pdg %d, status %d\n",iMom, mPdg, mStatus);
+		  }
+	  }//hadron converted
+		
       //Comment for the next lines, we do not check the parent of the hadron for the moment.
       //iParent =  mom->GetFirstMother() ;
       //if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Mother is parton %d\n",iParent);
@@ -171,7 +212,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack)
       //	pPdg = TMath::Abs(parent->GetPdgCode());
       //}
     }  	  
-    // conversion fo electrons/photons checked  	  
+    // conversion into electrons/photons checked  	  
     
     //first check for typical charged particles
     if(mPdg == 13) SetTagBit(tag,kMCMuon);
@@ -179,8 +220,16 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack)
     else if(mPdg == 321) SetTagBit(tag,kMCKaon);
     else if(mPdg == 2212) SetTagBit(tag,kMCProton);
     //check for pi0 and eta (shouldn't happen unless their decays were turned off)
-    else if(mPdg == 111)  SetTagBit(tag,kMCPi0);
-    else if(mPdg == 221)  SetTagBit(tag,kMCEta);    
+    else if(mPdg == 111)  {
+		SetTagBit(tag,kMCPi0Decay);
+		if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - First mother is directly pi0, not decayed by generator \n");
+		CheckOverlapped2GammaDecay(labels,nlabels, iMom, stack, tag); //set to kMCPi0 if 2 gammas in same cluster
+	}
+    else if(mPdg == 221) {
+		SetTagBit(tag,kMCEtaDecay);
+		if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - First mother is directly eta, not decayed by generator \n");
+		CheckOverlapped2GammaDecay(labels,nlabels, iMom, stack, tag); //set to kMCEta if 2 gammas in same cluster
+	}
     //Photons  
     else if(mPdg == 22){
       SetTagBit(tag,kMCPhoton);
@@ -194,9 +243,17 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack)
 	    SetTagBit(tag, kMCISR); //Initial state radiation
 	  }
 	  else if(pStatus == 11){//Decay
-	    if(pPdg == 111) SetTagBit(tag,kMCPi0Decay);
-	    else if (pPdg == 221) SetTagBit(tag, kMCEtaDecay);
-	    else SetTagBit(tag,kMCOtherDecay);
+		  if(pPdg == 111) {
+			  SetTagBit(tag,kMCPi0Decay);
+			  if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - PYTHIA pi0 decay photon,  parent pi0 with status 11 \n");
+			  CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCPi0 if 2 gammas in same cluster
+		  }
+		  else if (pPdg == 221) {
+			  SetTagBit(tag, kMCEtaDecay);
+			  if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - PYTHIA eta decay photon,  parent pi0 with status 11 \n");
+			  CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag);//set to kMCEta if 2 gammas in same cluster
+		  }
+		  else SetTagBit(tag,kMCOtherDecay);
 	  }//Decay
 	  else {
 	    printf("AliMCAnalysisUtils::ChecOrigingInAOD() - what is it? Mother mPdg %d, status %d \n    Parent  iParent %d, pPdg %d %s, status %d\n",
@@ -212,7 +269,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack)
 	      iParent = parent->GetFirstMother();
 	      parent=stack->Particle(iParent);
 	      pStatus= parent->GetStatusCode();
-	      pPdg = parent->GetPdgCode();
+			pPdg = TMath::Abs(parent->GetPdgCode());
 	    }//Look for the parton
 	    
 	    if(iParent < 8 && iParent > 5) {
@@ -222,8 +279,16 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack)
 	    else SetTagBit(tag,kMCISR);//Initial state radiation
 	  }//Not decay
 	  else{//Decay
-	    if(pPdg == 111) SetTagBit(tag,kMCPi0Decay); 
-	    else if (pPdg == 221) SetTagBit(tag,kMCEtaDecay);
+		  if(pPdg == 111) {
+			  SetTagBit(tag,kMCPi0Decay);
+			  if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - HERWIG pi0 decay photon \n");
+			  CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCPi0 if 2 gammas in same cluster
+		  }
+		  else if (pPdg == 221) {
+			  SetTagBit(tag,kMCEtaDecay);
+			  if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - HERWIG eta decay photon \n");
+			  CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCEta if 2 gammas in same cluster
+		  }
 	    else SetTagBit(tag,kMCOtherDecay);
 	  }//Decay
 	}//HERWIG
@@ -233,8 +298,16 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack)
       }//Status 1 : created by event generator
       
       else if(mStatus == 0){ // geant
-	if(pPdg == 111) SetTagBit(tag,kMCPi0Decay); 
-	else if (pPdg == 221) SetTagBit(tag,kMCEtaDecay);
+	if(pPdg == 111) {
+		SetTagBit(tag,kMCPi0Decay);
+		if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Transport MC pi0 decay photon \n");
+		CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCPi0 if 2 gammas in same cluster
+	}
+	else if (pPdg == 221) {
+		SetTagBit(tag,kMCEtaDecay);
+		if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Transport MC eta decay photon \n");
+		CheckOverlapped2GammaDecay(labels,nlabels, iParent, stack, tag); //set to kMCEta if 2 gammas in same cluster
+	}
 	else  SetTagBit(tag,kMCOtherDecay);	
       }//status 0 : geant generated
       
@@ -253,7 +326,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack)
         }
       }
       SetTagBit(tag,kMCElectron);	
-      if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInStack() - Checking ancestors of electrons");
+      if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInStack() - Checking ancestors of electrons\n");
       if (pPdg == 111) { SetTagBit(tag,kMCPi0Decay); } //Pi0 Dalitz decay
       else if (pPdg == 221) { SetTagBit(tag,kMCEtaDecay); } //Eta Dalitz decay
       else if((499 < pPdg && pPdg < 600)||(4999 < pPdg && pPdg < 6000)) { SetTagBit(tag,kMCEFromB); } //b-->e decay
@@ -269,18 +342,21 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack)
 	//if it is not from any of the above, where is it from?
 	if(pPdg > 10000) SetTagBit(tag,kMCUnknown);
 	else SetTagBit(tag,kMCOtherDecay);
-	if(fDebug > 0) printf("STACK Status %d Electron from other origin: %s (pPdg = %d) %s (mpdg = %d)\n",mStatus,parent->GetName(),pPdg,mom->GetName(),mPdg);
+	if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInStack() - Status %d Electron from other origin: %s (pPdg = %d) %s (mpdg = %d)\n",mStatus,parent->GetName(),pPdg,mom->GetName(),mPdg);
       }
     }//electron check
     //Cluster was made by something else
     else {
-      if(fDebug > 0) printf("\tSetting kMCUnknown for cluster from %s (pdg = %d, Parent pdg = %d)\n",mom->GetName(),mPdg,pPdg);
+      if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInStack() - \tSetting kMCUnknown for cluster from %s (pdg = %d, Parent pdg = %d)\n",mom->GetName(),mPdg,pPdg);
       SetTagBit(tag,kMCUnknown);
     }
   }//Good label value
-  else{
-    if(label < 0 ) printf("AliMCAnalysisUtils::CheckOriginInStack() *** bad label or no stack ***:  label %d \n", label);
-    if(label >=  stack->GetNtrack()) printf("AliMCAnalysisUtils::CheckOriginInStack() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
+  else{// Bad label 
+	  
+    if(label < 0 && (fDebug >= 0)) 
+		printf("AliMCAnalysisUtils::CheckOriginInStack() *** bad label or no stack ***:  label %d \n", label);
+    if(label >=  stack->GetNtrack() &&  (fDebug >= 0)) 
+		printf("AliMCAnalysisUtils::CheckOriginInStack() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
     SetTagBit(tag,kMCUnknown);
   }//Bad label
   
@@ -290,7 +366,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t label, AliStack* stack)
 
 
 //_________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcparticles) {
+Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, const Int_t nlabels, TClonesArray *mcparticles) {
   // Play with the MCParticles in AOD if available. Tag particles depending on their origin.
   // Do same things as in CheckOriginInStack but different input.
   if(!mcparticles) {
@@ -299,10 +375,13 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
   }
 	
   Int_t tag = 0;
+  Int_t label=labels[0];//Most significant particle contributing to the cluster
+
   Int_t nprimaries = mcparticles->GetEntriesFast();
   if(label >= 0 && label < nprimaries){
     //Mother
     AliAODMCParticle * mom = (AliAODMCParticle *) mcparticles->At(label);
+	Int_t iMom = label;
     Int_t mPdg = TMath::Abs(mom->GetPdgCode());
     Int_t iParent =  mom->GetMother() ;
     if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent);
@@ -316,13 +395,20 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
     }
     else if(fDebug > 0 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Parent with label %d\n",iParent);
  
+	if(fDebug > 2 ) {
+		  printf("AliMCAnalysisUtils::CheckOriginInAOD() - Cluster most contributing mother and its parent: \n");
+		  printf("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d\n",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary());
+		  printf("\t Parent label %d, pdg %d, Primary? %d, Physical Primary? %d\n",iParent, pPdg, parent->IsPrimary(), parent->IsPhysicalPrimary());
+	}
+	  
     //Check if mother is converted, if not, get the first non converted mother
     if((mPdg == 22 || mPdg == 11) && (pPdg == 22 || pPdg == 11) && !mom->IsPrimary()){
       SetTagBit(tag,kMCConversion);
       //Check if the mother is photon or electron with status not stable
       while ((pPdg == 22 || pPdg == 11) && !mom->IsPhysicalPrimary()) {
 	//Mother
-	mom = (AliAODMCParticle *) mcparticles->At(mom->GetMother());
+	iMom = mom->GetMother();
+	mom = (AliAODMCParticle *) mcparticles->At(iMom);
 	mPdg = TMath::Abs(mom->GetPdgCode());
 	iParent =  mom->GetMother() ;
 	if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent);
@@ -332,15 +418,33 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
 	  parent = (AliAODMCParticle *) mcparticles->At(iParent);
 	  pPdg = TMath::Abs(parent->GetPdgCode());
 	}
-      }//while	  
+		 // printf("\t While Mother label %d, pdg %d, Primary? %d, Physical Primary? %d\n",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary());
+		 // printf("\t While Parent label %d, pdg %d, Primary? %d, Physical Primary? %d\n",iParent, pPdg, parent->IsPrimary(), parent->IsPhysicalPrimary()); 
+		  
+      }//while	
+		
+		if(fDebug > 2 ) {
+			printf("AliMCAnalysisUtils::CheckOriginInAOD() - Converted photon/electron : \n");
+			printf("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d\n",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary());
+			printf("\t Parent label %d, pdg %d, Primary? %d, Physical Primary? %d\n",iParent, pPdg, parent->IsPrimary(), parent->IsPhysicalPrimary());
+		}
+		
     }//mother and parent are electron or photon and have status 0 and parent is photon or electron
-    else if(!mom->IsPrimary()){	
+    else if((mPdg == 22 || mPdg == 11) && !mom->IsPrimary()){	
       //Still a conversion but only one electron/photon generated. Just from hadrons
-      if(pPdg == 2112 ||  pPdg == 211 ||  
-	 pPdg == 321 ||  pPdg == 2212  ||  pPdg == 130  ||  pPdg == 13 ) 
-	SetTagBit(tag,kMCConversion);
-      mom = (AliAODMCParticle *) mcparticles->At(mom->GetMother());
-      mPdg = TMath::Abs(mom->GetPdgCode());
+      if(pPdg == 2112 ||  pPdg == 211 ||  pPdg == 321 ||  
+		 pPdg == 2212 ||  pPdg == 130 ||  pPdg == 13 ) {
+		  SetTagBit(tag,kMCConversion);
+		  iMom = mom->GetMother();
+		  mom = (AliAODMCParticle *) mcparticles->At(iMom);
+		  mPdg = TMath::Abs(mom->GetPdgCode());
+		
+		if(fDebug > 2 ) {
+			printf("AliMCAnalysisUtils::CheckOriginInAOD() - Converted hadron : \n");
+			printf("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d\n",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary());
+		}
+	  }//hadron converted
+		
       //Comment for next lines, we do not check the parent of the hadron for the moment.
       //iParent =  mom->GetMother() ;
       //if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent);
@@ -360,8 +464,16 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
     else if(mPdg == 321) SetTagBit(tag,kMCKaon);
     else if(mPdg == 2212) SetTagBit(tag,kMCProton);
     //check for pi0 and eta (shouldn't happen unless their decays were turned off)
-    else if(mPdg == 111)  SetTagBit(tag,kMCPi0);
-    else if(mPdg == 221)  SetTagBit(tag,kMCEta);    
+    else if(mPdg == 111)  {
+		SetTagBit(tag,kMCPi0Decay);
+		if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - First mother is directly pi0, not decayed by generator \n");
+		CheckOverlapped2GammaDecay(labels,nlabels, iMom, mcparticles, tag); //set to kMCPi0 if 2 gammas in same cluster
+	}
+    else if(mPdg == 221)  {
+		SetTagBit(tag,kMCEtaDecay);   
+		if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - First mother is directly eta, not decayed by generator \n");
+		CheckOverlapped2GammaDecay(labels,nlabels, iMom, mcparticles, tag); //set to kMCEta if 2 gammas in same cluster
+	}
     //Photons  
     else if(mPdg == 22){
       SetTagBit(tag,kMCPhoton);
@@ -374,8 +486,16 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
 	  SetTagBit(tag, kMCISR); //Initial state radiation
 	}
 	else if(parent->IsPrimary() && !parent->IsPhysicalPrimary()){//Decay
-	  if(pPdg == 111) SetTagBit(tag,kMCPi0Decay);
-	  else if (pPdg == 221) SetTagBit(tag, kMCEtaDecay);
+	  if(pPdg == 111){
+			SetTagBit(tag,kMCPi0Decay);
+			if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Generator pi0 decay photon \n");
+			CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcparticles, tag); //set to kMCPi0 if 2 gammas in same cluster
+	  }
+	  else if (pPdg == 221) {
+		  SetTagBit(tag, kMCEtaDecay);
+		  if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Generator eta decay photon \n");
+		  CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcparticles, tag); //set to kMCEta if 2 gammas in same cluster
+	  }
 	  else SetTagBit(tag,kMCOtherDecay);
 	}//Decay
 	else {
@@ -385,8 +505,16 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
 	}
       }// Pythia generated
       else if(!mom->IsPrimary()){	//Decays
-	if(pPdg == 111) SetTagBit(tag,kMCPi0Decay); 
-	else if (pPdg == 221) SetTagBit(tag,kMCEtaDecay);
+		if(pPdg == 111){ 
+		  SetTagBit(tag,kMCPi0Decay); 
+		  if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Transport MC pi0 decay photon \n");
+		  CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcparticles, tag); //set to kMCPi0 if 2 gammas in same cluster
+		}
+		else if (pPdg == 221) {
+			SetTagBit(tag,kMCEtaDecay);
+			if(fDebug > 2 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Transport MC eta decay photon \n");
+			CheckOverlapped2GammaDecay(labels,nlabels, iParent, mcparticles, tag); //set to kMCEta if 2 gammas in same cluster
+		}
 	else  SetTagBit(tag,kMCOtherDecay);
       }//not primary : geant generated, decays
       else  {
@@ -424,28 +552,237 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t label, TClonesArray *mcpa
       } else { //prompt or other decay
 	TParticlePDG* foo = TDatabasePDG::Instance()->GetParticle(pPdg);
 	TParticlePDG* foo1 = TDatabasePDG::Instance()->GetParticle(mPdg);
-	if(fDebug > 0) printf("AOD Electron from other origin: %s (pPdg = %d) %s (mPdg = %d)\n",foo->GetName(),pPdg,foo1->GetName(),mPdg);
+	if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Electron from other origin: %s (pPdg = %d) %s (mPdg = %d)\n",foo->GetName(), pPdg,foo1->GetName(),mPdg);
 	if(pPdg > 10000) SetTagBit(tag,kMCUnknown);
 	else SetTagBit(tag,kMCOtherDecay);
       }      
     }//electron check
     //cluster was made by something else
     else {
-      if(fDebug > 0) printf("\tSetting kMCUnknown for cluster from %s (pdg = %d, Parent pdg = %d)\n",mom->GetName(),mPdg,pPdg);
+      if(fDebug > 0) printf("AliMCAnalysisUtils::CheckOriginInAOD() - \tSetting kMCUnknown for cluster with pdg = %d, Parent pdg = %d\n",mPdg,pPdg);
       SetTagBit(tag,kMCUnknown);
     }
   }//Good label value
-  else{
-    if(label < 0 && (fDebug >= 0) ) printf("AliMCAnalysisUtils::CheckOriginInAOD() *** bad label or no stack ***:  label %d \n", label);
-    if(label >=  mcparticles->GetEntriesFast() &&  (fDebug > 0) ) printf("AliMCAnalysisUtils::CheckOriginInAOD() *** large label ***:  label %d, n tracks %d \n", label, mcparticles->GetEntriesFast());
+  else{//Bad label
+	  
+    if(label < 0 && (fDebug >= 0) ) 
+		printf("AliMCAnalysisUtils::CheckOriginInAOD() *** bad label or no mcparticles ***:  label %d \n", label);
+    if(label >=  mcparticles->GetEntriesFast() &&  (fDebug >= 0) ) 
+		printf("AliMCAnalysisUtils::CheckOriginInAOD() *** large label ***:  label %d, n tracks %d \n", label, mcparticles->GetEntriesFast());
     SetTagBit(tag,kMCUnknown);
+  
   }//Bad label
   
   return tag;
   
 }
 
+//_________________________________________________________________________
+void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, 
+														AliStack *stack, Int_t &tag) {
+	//Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. Input in stack
+	
+	if(labels[0] < 0 || labels[0] > stack->GetNtrack() || nlabels <= 1) {
+		if(fDebug > 2) printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(stack) - Exit : label[0] %d, n primaries %d, nlabels %d \n",
+			   labels[0],stack->GetNtrack(), nlabels);
+		return;
+	}
+	
+	TParticle * meson = stack->Particle(mesonIndex);
+	Int_t mesonPdg    = meson->GetPdgCode();
+	if(mesonPdg!=111 && mesonPdg!=221){ 
+		printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(stack) - Wrong pi0/eta PDG : %d \n",mesonPdg);
+		return;
+	}
+	
+	if(fDebug > 2) printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(stack) - %s, label %d\n",meson->GetName(), mesonIndex);
 
+	//Check if meson decayed into 2 daughters or if both were kept.
+	if(meson->GetNDaughters() != 2){
+		if(fDebug > 2) 
+			printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(stack) - Not overalapped. Number of daughters is %d, not 2 \n",meson->GetNDaughters());
+		return;
+	}
+	
+	//Get the daughters
+	Int_t iPhoton0 = meson->GetDaughter(0);
+	Int_t iPhoton1 = meson->GetDaughter(1);
+	TParticle *photon0 = stack->Particle(iPhoton0);
+	TParticle *photon1 = stack->Particle(iPhoton1);
+	
+	//Check if both daughters are photons
+	if(photon0->GetPdgCode() != 22 || photon1->GetPdgCode()!=22){
+		if(fDebug > 2) 
+			printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(stack) - Not overalapped. PDG:  daughter 1 = %d, of daughter 2 = %d \n",photon0->GetPdgCode(),photon1->GetPdgCode());
+		return;
+	}
+	
+	if(fDebug > 2) 
+		printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(stack) - Daughter labels : photon0 = %d, photon1 = %d \n",iPhoton0,iPhoton1);
+	
+	//Check if both photons contribute to the cluster
+	Bool_t okPhoton0 = kFALSE;
+	Bool_t okPhoton1 = kFALSE;
+	
+	if(fDebug > 3) printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(stack) - Labels loop:\n");
+	
+	for(Int_t i = 0; i < nlabels; i++){
+		if(fDebug > 3) printf("\t  at begin:label %d/%d: %d, ok? photon1 %d, photon2 %d\n", i+1, nlabels, labels[i], okPhoton0, okPhoton1);
+		
+		//If we already found both, break the loop
+		if(okPhoton0 && okPhoton1) break;
+		
+		Int_t index = 	labels[i];
+		if      (iPhoton0 == index) {
+			okPhoton0 = kTRUE;
+			continue;
+		}
+		else if (iPhoton1 == index) {
+			okPhoton1 = kTRUE;
+			continue;
+		}
+		
+		//Trace back the mother in case it was a conversion
+		TParticle * daught = stack->Particle(index);
+		Int_t tmpindex = daught->GetFirstMother();		
+		if(fDebug > 3) printf("\t Conversion? : mother %d\n",tmpindex);
+		while(tmpindex>=0){
+			//MC particle of interest is the mother
+			if(fDebug > 3) printf("\t \t parent index %d\n",tmpindex);
+			daught   = stack->Particle(tmpindex);
+			if      (iPhoton0 == tmpindex) {
+				okPhoton0 = kTRUE;
+				break;
+			}
+			else if (iPhoton1 == tmpindex) {
+				okPhoton1 = kTRUE;
+				break;
+			}
+			tmpindex = daught->GetFirstMother();
+		}//While to check if pi0/eta daughter was one of these contributors to the cluster
+		
+		if(i == 0 && (!okPhoton0 && !okPhoton1) && fDebug>=0) 
+			printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(stack) - Something happens, first label should be from a photon decay!\n");
+		
+	}//loop on list of labels
+	
+	//If both photons contribute tag as the corresponding meson.
+	if(okPhoton0 && okPhoton1){
+		if(fDebug > 2) 
+			printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(stack) - %s OVERLAPPED DECAY \n", meson->GetName());
+		
+		if(mesonPdg == 111) SetTagBit(tag,kMCPi0);
+		else  SetTagBit(tag,kMCEta);
+	}
+	
+}	
+
+//_________________________________________________________________________
+void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, 
+														TClonesArray *mcparticles, Int_t &tag) {
+	//Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. Input in AODMCParticles
+
+	if(labels[0] < 0 || labels[0] > mcparticles->GetEntriesFast() || nlabels <= 1) {
+		if(fDebug > 2) printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Exit : label[0] %d, n primaries %d, nlabels %d \n",
+							  labels[0],mcparticles->GetEntriesFast(), nlabels);
+		return;
+	}
+	
+	
+    AliAODMCParticle * meson = (AliAODMCParticle *) mcparticles->At(mesonIndex);
+	Int_t mesonPdg = meson->GetPdgCode();
+	if(mesonPdg != 111 && mesonPdg != 221) {
+		printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Wrong pi0/eta PDG : %d \n",mesonPdg);
+		return;
+	}
+	
+	if(fDebug > 2) printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - pdg %d, label %d, ndaughters %d\n", mesonPdg, mesonIndex, meson->GetNDaughters());
+	
+	
+	//Get the daughters
+	if(meson->GetNDaughters() != 2){
+		if(fDebug > 2) 
+			printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(stack) - Not overalapped. Number of daughters is %d, not 2 \n",meson->GetNDaughters());
+		return;
+	}
+	Int_t iPhoton0 = meson->GetDaughter(0);
+	Int_t iPhoton1 = meson->GetDaughter(1);
+	//if((iPhoton0 == -1) || (iPhoton1 == -1)){
+	//	if(fDebug > 2) 
+	//		printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Exit : Not overalapped. At least a daughter do not exists : d1 %d, d2 %d \n", iPhoton0, iPhoton1);
+	//	return;
+	//}	
+	AliAODMCParticle *photon0 = (AliAODMCParticle *) mcparticles->At(iPhoton0);
+	AliAODMCParticle *photon1 = (AliAODMCParticle *) mcparticles->At(iPhoton1);
+	
+	//Check if both daughters are photons
+	if(photon0->GetPdgCode() != 22 && photon1->GetPdgCode()!=22){
+		printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Not overalapped. PDG:  daughter 1 = %d, of daughter 2 = %d \n",photon0->GetPdgCode(),photon1->GetPdgCode());
+		return;
+	}
+	
+	if(fDebug > 2) 
+		printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Daughter labels : photon0 = %d, photon1 = %d \n",iPhoton0,iPhoton1);
+	
+	//Check if both photons contribute to the cluster
+	Bool_t okPhoton0 = kFALSE;
+	Bool_t okPhoton1 = kFALSE;
+	
+	if(fDebug > 3) printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Labels loop:\n");
+	
+	for(Int_t i = 0; i < nlabels; i++){
+		if(fDebug > 3) printf("\t label %d/%d: %d, ok? %d, %d\n", i, nlabels, labels[i], okPhoton0, okPhoton1);
+
+		//If we already found both, break the loop
+		if(okPhoton0 && okPhoton1) break;
+		
+		Int_t index = 	labels[i];
+		if      (iPhoton0 == index) {
+			okPhoton0 = kTRUE;
+			continue;
+		}
+		else if (iPhoton1 == index) {
+			okPhoton1 = kTRUE;
+			continue;
+		}
+		
+		//Trace back the mother in case it was a conversion
+		AliAODMCParticle * daught = (AliAODMCParticle*) mcparticles->At(index);
+		Int_t tmpindex = daught->GetMother();
+		if(fDebug > 3) printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Conversion? : mother %d\n",tmpindex);
+
+		while(tmpindex>=0){
+			
+			//MC particle of interest is the mother
+			if(fDebug > 3) printf("\t parent index %d\n",tmpindex);
+			daught   = (AliAODMCParticle*) mcparticles->At(tmpindex);
+			//printf("tmpindex %d\n",tmpindex);
+			if      (iPhoton0 == tmpindex) {
+				okPhoton0 = kTRUE;
+				break;
+			}
+			else if (iPhoton1 == tmpindex) {
+				okPhoton1 = kTRUE;
+				break;
+			}		
+			tmpindex = daught->GetMother();
+		}//While to check if pi0/eta daughter was one of these contributors to the cluster
+		
+		if(i == 0 && (!okPhoton0 && !okPhoton1) && fDebug>=0 ) 
+			printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - Something happens, first label should be from a photon decay!\n");
+		
+	}//loop on list of labels
+	
+	//If both photons contribute tag as the corresponding meson.
+	if(okPhoton0 && okPhoton1){
+		if(fDebug > 2) 
+			printf("AliMCAnalysisUtils::CheckOverlapped2GammaDecay(AOD) - %s OVERLAPPED DECAY \n",(TDatabasePDG::Instance()->GetParticle(mesonPdg))->GetName());
+		
+		if(mesonPdg == 111) SetTagBit(tag,kMCPi0);
+		else  SetTagBit(tag,kMCEta);
+	}	
+	
+}
 
 //_________________________________________________________________________
 TList * AliMCAnalysisUtils::GetJets(AliCaloTrackReader * const reader){

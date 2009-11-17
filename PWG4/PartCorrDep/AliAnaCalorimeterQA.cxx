@@ -39,11 +39,18 @@
 #include "AliCaloTrackReader.h"
 #include "AliStack.h"
 #include "AliAODCaloCells.h"
+#include "AliESDCaloCells.h"
 #include "AliAODCaloCluster.h"
 #include "AliFidutialCut.h"
 #include "AliESDtrack.h"
+#include "AliAODTrack.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliVEventHandler.h"
+#include "AliAnalysisManager.h"
+#include "AliAODMCParticle.h"
+#include "AliMCAnalysisUtils.h"
 
 ClassImp(AliAnaCalorimeterQA)
   
@@ -131,10 +138,10 @@ AliAnaCalorimeterQA & AliAnaCalorimeterQA::operator = (const AliAnaCalorimeterQA
   if(this == &qa)return *this;
   ((AliAnaPartCorrBaseClass *)this)->operator=(qa);
 
-  fCalorimeter  = qa.fCalorimeter;
-  fStyleMacro   = qa.fStyleMacro;	
-  fMakePlots  = qa.fMakePlots;
-  
+  fCalorimeter     = qa.fCalorimeter;
+  fStyleMacro      = qa.fStyleMacro;	
+  fMakePlots       = qa.fMakePlots;
+	
   fhE      = qa.fhE;
   fhPt     = qa.fhPt;
   fhPhi    = qa.fhPhi;
@@ -856,460 +863,661 @@ void AliAnaCalorimeterQA::Print(const Option_t * opt) const
 //__________________________________________________________________
 void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms() 
 {
-	//Do analysis and fill histograms
+	//Fill Calorimeter QA histograms
+	
 	TLorentzVector mom ;
 	TLorentzVector mom2 ;
-	//Play with the MC stack if available
-	AliStack * stack = 0x0;
-	TParticle * primary = 0x0;
-	if(IsDataMC()) { 
-		stack =  GetMCStack() ;
-		if(!stack) {
-			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Stack not available, have you switched on the MC data?\n");
-			return;
+	TRefArray * caloClusters = new TRefArray();
+	Int_t nLabel = 0;
+	Int_t *labels=0x0;
+	Int_t nCaloClusters = 0;
+	Int_t nCaloCellsPerCluster = 0;
+	Int_t nTracksMatched = 0;
+	Int_t trackIndex = 0;
+	
+	//Play with the MC stack if available	
+	//Get the MC arrays and do some checks
+	if(IsDataMC()){
+		if(GetReader()->ReadStack()){
+
+			if(!GetMCStack()) {
+				printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called? STOP\n");
+				abort();
+			}
+			//Fill some pure MC histograms, only primaries.
+			for(Int_t i=0 ; i<GetMCStack()->GetNprimary(); i++){//Only primary particles, for all MC transport put GetNtrack()
+				TParticle *primary = GetMCStack()->Particle(i) ;
+				//printf("i %d, %s: status = %d, primary? %d\n",i, primary->GetName(), primary->GetStatusCode(), primary->IsPrimary());
+				if (primary->GetStatusCode() > 11) continue; //Working for PYTHIA and simple generators, check for HERWIG 
+				primary->Momentum(mom);
+				MCHistograms(mom,TMath::Abs(primary->GetPdgCode()));
+			} //primary loop
+		}
+		else if(GetReader()->ReadAODMCParticles()){
+
+			if(!GetReader()->GetAODMCParticles(0)) 	{
+				printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  AODMCParticles not available!\n");
+				abort();
+			}
+			//Fill some pure MC histograms, only primaries.
+			for(Int_t i=0 ; i < (GetReader()->GetAODMCParticles(0))->GetEntriesFast(); i++){
+				AliAODMCParticle *aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(0))->At(i) ;
+				//printf("i %d, %s: primary? %d physical primary? %d, flag %d\n",
+				//	   i,(TDatabasePDG::Instance()->GetParticle(aodprimary->GetPdgCode()))->GetName(), 
+				//	   aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary(), aodprimary->GetFlag());
+				if (!aodprimary->IsPrimary()) continue; //accept all which is not MC transport generated. Don't know how to avoid partons
+				//aodprimary->Momentum(mom);
+				mom.SetPxPyPzE(aodprimary->Px(),aodprimary->Py(),aodprimary->Pz(),aodprimary->E());
+				MCHistograms(mom,TMath::Abs(aodprimary->GetPdgCode()));
+			} //primary loop
+			
+		}
+	}// is data and MC	
+	
+	
+	//Get List with CaloClusters  
+	
+	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+		if     (fCalorimeter == "EMCAL") ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALClusters(caloClusters);//GetAODEMCAL();
+		else if(fCalorimeter == "PHOS")  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSClusters (caloClusters);//GetAODPHOS();
+		else {
+			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data());
+			abort();
+		}
+	}
+	else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD) {
+		if     (fCalorimeter == "EMCAL") ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALClusters(caloClusters);//GetAODEMCAL();
+		else if(fCalorimeter == "PHOS")  ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSClusters (caloClusters);//GetAODPHOS();
+		else {
+			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data());
+			abort();
 		}
 	}
 	
-	//Get List with clusters  
-	TObjArray * partList = new TObjArray();
-	if(fCalorimeter == "EMCAL") partList = GetAODEMCAL();
-	else if(fCalorimeter == "PHOS") partList = GetAODPHOS();
-	else {
-		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data());
+	if(!caloClusters) {
+		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters available\n");
 		abort();
 	}
 	
-	if(!partList || partList->GetEntriesFast() == 0) return ;
-	
-	Int_t nclusters = partList->GetEntriesFast() ; 
-	fhNClusters->Fill(nclusters);
-	
+	nCaloClusters = caloClusters->GetEntriesFast() ; 
+	fhNClusters->Fill(nCaloClusters);
+
 	if(GetDebug() > 0)
-		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In %s there are %d clusters \n", fCalorimeter.Data(), nclusters);
+		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In %s there are %d clusters \n", fCalorimeter.Data(), nCaloClusters);
 	
 	//Get vertex for photon momentum calculation
 	Double_t v[3] ; //vertex ;
 	GetReader()->GetVertex(v);
-
-	for(Int_t iclus = 0; iclus < partList->GetEntriesFast(); iclus++){
-		//printf(" cluster %d\n",iclus);
-		AliAODCaloCluster * calo =  (AliAODCaloCluster*) (partList->At(iclus));
-		//if(calo->GetNCells() <= 2) continue;
-		//Get cluster kinematics
-		calo->GetMomentum(mom,v);
-		Float_t e   = mom.E();
-		//if(e < 0.5) continue;
-		//printf("e %2.2f, n %f\n",e, calo->GetNCells());
-		Float_t pt  = mom.Pt();
-		Float_t eta = mom.Eta();
-		Float_t phi = mom.Phi();
-		if(phi < 0) phi +=TMath::TwoPi();
-		if(GetDebug() > 0) printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - cluster %d: E %2.3f, pT %2.3f, eta %2.3f, phi %2.3f \n",iclus,e,pt,eta,phi*TMath::RadToDeg());
-		fhE     ->Fill(e);		
-		fhPt    ->Fill(pt);
-		fhPhi   ->Fill(phi);
-		fhEta   ->Fill(eta);
-		fhEtaPhi->Fill(eta,phi);
+	TObject * track = 0x0;
+	//Loop over CaloClusters
+	for(Int_t iclus = 0; iclus < nCaloClusters; iclus++){
 		
-		//matched cluster with tracks
-		Int_t ntracksmatched = calo->GetNTracksMatched();
-
-		//Fill histograms only possible when simulation
-		if(IsDataMC()){
-	        //Play with the MC stack if available
-		    Int_t label = calo->GetLabel(0);
-			
-	        if(label < 0 || !stack) {
-				if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() *** bad label or no stack ***:  label %d \n", label);
-				continue;
-	        }
-	        
-	        if(label >=  stack->GetNtrack()) {
-				if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
-				continue ;
-	        }
-			
-	        //cout<<"LABEL  "<<label<<endl;
-	        primary = GetMCStack()->Particle(label);
-
-		    Int_t pdg = primary->GetPdgCode();
-		    Float_t vx = primary->Vx();
-		    Float_t vy = primary->Vy();
-		    //Float_t vz = primary->Vz();
-		    Float_t r = TMath::Sqrt(vx*vx + vy*vy);
-		    if((pdg == 22 || TMath::Abs(pdg)==11) && primary->GetStatusCode()!=1) {
-				fhEMVxyz   ->Fill(vx,vy);//,vz);
-				fhEMR      ->Fill(e,r);
-		    }
-		    
-		    //printf("reco e %f, pt %f, phi %f, eta %f \n", e, pt, phi, eta);
-		    //printf("prim e %f, pt %f, phi %f, eta %f \n", primary->Energy(),primary->Pt() ,primary->Phi() ,primary->Eta() );
-		    //printf("vertex: vx %f, vy %f, vz %f, r %f \n", vx, vy, vz, r);
-		    
-		    //Get final particle, no conversion products
-		    Int_t status =  primary->GetStatusCode();
-		    Int_t mother= primary->GetFirstMother();
-		    if(status == 0){
-				while(mother >= 0){
-					primary = GetMCStack()->Particle(mother);
-					status = primary->GetStatusCode();
-					mother= primary->GetFirstMother();
-					if(status == 1) break;		   
-					//printf("mother %d\n",mother);
-				}	
-		    }
-		    
-			fh2E      ->Fill(e, primary->Energy());
-			fh2Pt     ->Fill(pt, primary->Pt());
-			fh2Phi    ->Fill(phi, primary->Phi());
-			fh2Eta    ->Fill(eta, primary->Eta());
-			fhDeltaE  ->Fill(primary->Energy()-e);
-			fhDeltaPt ->Fill(primary->Pt()-pt);
-			fhDeltaPhi->Fill(primary->Phi()-phi);
-			fhDeltaEta->Fill(primary->Eta()-eta);
-			if(primary->Energy() > 0) fhRatioE  ->Fill(e/primary->Energy());
-		    if(primary->Pt()     > 0) fhRatioPt ->Fill(pt/primary->Pt());
-		    if(primary->Phi()    > 0) fhRatioPhi->Fill(phi/primary->Phi());
-		    if(primary->Eta()    > 0) fhRatioEta->Fill(eta/primary->Eta());			
-			
-		    //cout<<"Final Label "<<finallabel<<" mother "<<mother<<endl;
-		    pdg = primary->GetPdgCode();
-	            Double_t  charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-			
-		    if(pdg == 22){
-				//cout<<"pdg "<<pdg<<" status "<<status<<" "<<primary->GetStatusCode()<<endl;	
-				TParticle *pi0 = 0x0;
-				TParticle *p1 = 0x0;
-				TParticle *p2 = 0x0;
-				TParticle * tmp = 0x0;
-				Int_t pdgpi0 = 0;
-				Int_t mothertmp = 0;
-				//Check if it is a decay photon from pi0, in this case, check if both decay contribute cluster
-				Bool_t ok1 = kFALSE;
-				Bool_t ok2 = kFALSE;
-				
-				if(calo->GetNLabel() > 1){
-					if(pdg !=111){
-						while(mother >= 0){
-							pi0 = GetMCStack()->Particle(mother);
-							pdgpi0 = pi0->GetPdgCode();
-							if(pdgpi0 == 111) {
-							  //cout<<"pi0!!!"<<endl;
-							  break;
-							}
-							mother= pi0->GetFirstMother();
-							//printf("mother %d\n",mother);
-						}
-					}
-					else   pi0 = primary;
-				
-					if(!pi0 || mother < 0 ) continue ;
-					//cout<<"pi0 pointer "<<pi0<<" pdg "<<pdgpi0<<" "<<pi0->GetPdgCode()<<endl;
-					//cout<<"MOTHER PI0 LABEL "<<mother<<" pt" << pi0->Pt()<<" status "<<pi0->GetStatusCode()<<endl;
-					if(pi0->GetNDaughters() == 2){
-					  //cout<<"pi0, 2 daughters "<<endl;
-						Int_t id1 = pi0->GetFirstDaughter();
-						Int_t id2 = pi0->GetFirstDaughter()+1;
-						p1=GetMCStack()->Particle(id1);
-						p2=GetMCStack()->Particle(id2);
-						
-						//if(p1->GetFirstMother()!=p2->GetFirstMother()) cout <<"Decay photon mothers are not the same!!"<<endl;
-						if(p1->GetPdgCode()==22 && p2->GetPdgCode()==22){
-							// cout<<"2 photons, labels "<< id1<<" "<<id2<<endl;
-							for(UInt_t ilabel = 0; ilabel < calo->GetNLabel(); ilabel++){
-								Int_t iprim = calo->GetLabel(ilabel);
-								//cout<<"iprim "<<iprim<<endl;
-								if (iprim == id1) ok1 = kTRUE;
-								else if (iprim == id2) ok2 = kTRUE;
-								mothertmp = iprim;
-								while(mothertmp >= 0){
-									tmp = GetMCStack()->Particle(mothertmp);				    
-									mothertmp= tmp->GetFirstMother();
-									//	cout<<"mothertmp "<<mothertmp<<" "<<tmp->GetName()<< " pt "<<tmp->Pt()<<endl;
-									if (mothertmp == id1) ok1 = kTRUE;
-									else if (mothertmp == id2) ok2 = kTRUE;
-									if(ok1 && ok2) break;
-									//printf("mother %d\n",mother);
-								}
-							} 
-						}//2 photon daughters
-					}////mother pi0, 2 daughers
-				}//more than one contribution to clust
-				
-				if(ok1 && ok2){
-					//cout<<"Fill pi0"<< "E  "<< e <<" prim E "<<primary->Energy()<<endl;
-					fhPi0E     ->Fill(e,primary->Energy());	
-					fhPi0Pt    ->Fill(pt,primary->Pt());
-					fhPi0Eta   ->Fill(eta,primary->Eta());	
-					fhPi0Phi   ->Fill(phi,primary->Phi());
-					if( ntracksmatched > 0){
-						fhPi0ECharged     ->Fill(e,primary->Energy());		
-						fhPi0PtCharged    ->Fill(pt,primary->Pt());
-						fhPi0PhiCharged   ->Fill(phi,primary->Phi());
-						fhPi0EtaCharged   ->Fill(eta,primary->Eta());
-					}
-				}
-				else{
-					fhGamE     ->Fill(e,primary->Energy());	
-					fhGamPt    ->Fill(pt,primary->Pt());
-					fhGamEta   ->Fill(eta,primary->Eta());	
-					fhGamPhi   ->Fill(phi,primary->Phi());
-					fhGamDeltaE  ->Fill(primary->Energy()-e);
-					fhGamDeltaPt ->Fill(primary->Pt()-pt);	
-					fhGamDeltaPhi->Fill(primary->Phi()-phi);
-					fhGamDeltaEta->Fill(primary->Eta()-eta);
-					if(primary->Energy() > 0) fhGamRatioE  ->Fill(e/primary->Energy());
-					if(primary->Pt()     > 0) fhGamRatioPt ->Fill(pt/primary->Pt());
-					if(primary->Phi()    > 0) fhGamRatioPhi->Fill(phi/primary->Phi());
-					if(primary->Eta()    > 0) fhGamRatioEta->Fill(eta/primary->Eta());
-					if( ntracksmatched > 0){
-						fhGamECharged     ->Fill(e,primary->Energy());		
-						fhGamPtCharged    ->Fill(pt,primary->Pt());
-						fhGamPhiCharged   ->Fill(phi,primary->Phi());
-						fhGamEtaCharged   ->Fill(eta,primary->Eta());
-					}
-				}
-		    }//pdg == 22
-		    else if(TMath::Abs(pdg) == 11) {
-				fhEleE     ->Fill(e,primary->Energy());	
-				fhElePt    ->Fill(pt,primary->Pt());
-				fhEleEta   ->Fill(eta,primary->Eta());	
-				fhElePhi   ->Fill(phi,primary->Phi());
-				fhEMVxyz   ->Fill(vx,vy);//,vz);
-				fhEMR      ->Fill(e,r);
-				if( ntracksmatched > 0){
-					fhEleECharged     ->Fill(e,primary->Energy());		
-					fhElePtCharged    ->Fill(pt,primary->Pt());
-					fhElePhiCharged   ->Fill(phi,primary->Phi());
-					fhEleEtaCharged   ->Fill(eta,primary->Eta());
-				}
-		    }
-		    else if(pdg == 111) {
-				fhPi0E     ->Fill(e,primary->Energy());	
-				fhPi0Pt    ->Fill(pt,primary->Pt());
-				fhPi0Eta   ->Fill(eta,primary->Eta());	
-				fhPi0Phi   ->Fill(phi,primary->Phi());
-				if( ntracksmatched > 0){
-					fhPi0ECharged     ->Fill(e,primary->Energy());		
-					fhPi0PtCharged    ->Fill(pt,primary->Pt());
-					fhPi0PhiCharged   ->Fill(phi,primary->Phi());
-					fhPi0EtaCharged   ->Fill(eta,primary->Eta());
-				}
-		    }
-		    else if(charge == 0){
-				fhNeHadE     ->Fill(e,primary->Energy());	
-				fhNeHadPt    ->Fill(pt,primary->Pt());
-				fhNeHadEta   ->Fill(eta,primary->Eta());	
-				fhNeHadPhi   ->Fill(phi,primary->Phi());	
-				fhHaVxyz     ->Fill(vx,vy);//,vz);
-				fhHaR        ->Fill(e,r);
-				if( ntracksmatched > 0){
-					fhNeHadECharged     ->Fill(e,primary->Energy());		
-					fhNeHadPtCharged    ->Fill(pt,primary->Pt());
-					fhNeHadPhiCharged   ->Fill(phi,primary->Phi());
-					fhNeHadEtaCharged   ->Fill(eta,primary->Eta());
-				}
-		    }
-		    else if(charge!=0){
-				fhChHadE     ->Fill(e,primary->Energy());	
-				fhChHadPt    ->Fill(pt,primary->Pt());
-				fhChHadEta   ->Fill(eta,primary->Eta());	
-				fhChHadPhi   ->Fill(phi,primary->Phi());	
-				fhHaVxyz     ->Fill(vx,vy);//,vz);
-				fhHaR        ->Fill(e,r);
-				if( ntracksmatched > 0){
-					fhChHadECharged     ->Fill(e,primary->Energy());		
-					fhChHadPtCharged    ->Fill(pt,primary->Pt());
-					fhChHadPhiCharged   ->Fill(phi,primary->Phi());
-					fhChHadEtaCharged   ->Fill(eta,primary->Eta());
-				}
-		    }
-		}//Work with stack also
+		if(GetDebug() > 0) printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - cluster: %d/%d, data %d \n",
+									iclus+1,nCaloClusters,GetReader()->GetDataType());
 		
-		//matched cluster with tracks
-		if( ntracksmatched > 0){
-			fhECharged     ->Fill(e);		
-			fhPtCharged    ->Fill(pt);
-			fhPhiCharged   ->Fill(phi);
-			fhEtaCharged   ->Fill(eta);
-			fhEtaPhiCharged->Fill(eta,phi);				
-			if((!strcmp(GetReader()->GetInputEvent()->GetName(),"AliESDEvent"))) {
-				AliESDEvent *esd = (AliESDEvent*) GetReader()->GetInputEvent();
-				AliESDCaloCluster * esdcalo = (AliESDCaloCluster*) esd->GetCaloCluster(calo->GetID());
-				Int_t trackIndex = esdcalo->GetTrackMatched();
-				//printf("track index %d ntracks %d\n", trackIndex, esd->GetNumberOfTracks());
-				if(trackIndex >= 0){
-					AliESDtrack* track = (AliESDtrack*) esd->GetTrack(trackIndex);
-					if (track && track->GetOuterParam() ) {
+		if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
+			AliESDCaloCluster* clus =  (AliESDCaloCluster*) (caloClusters->At(iclus));
+			//Get cluster kinematics
+			clus->GetMomentum(mom,v);
+			//MC labels
+			nLabel = clus->GetNLabels();
+			if(clus->GetLabels()) labels =  (clus->GetLabels())->GetArray();
+			//Cells per cluster
+			nCaloCellsPerCluster =  clus->GetNCells();			
+			//matched cluster with tracks
+			nTracksMatched = clus->GetNTracksMatched();
+			trackIndex     = clus->GetTrackMatched();
+			if(trackIndex >= 0){
+				track = (AliESDtrack*) ((AliESDEvent*)GetReader()->GetInputEvent())->GetTrack(trackIndex);
+			}
+			else{
+				if(nTracksMatched == 1) nTracksMatched = 0;
+				track = 0;
+			}
+		}
+		else{
+			AliAODCaloCluster* clus =  (AliAODCaloCluster*) (caloClusters->At(iclus));
 
-						Double_t tphi = track->GetOuterParam()->Phi();
-						Double_t teta = track->GetOuterParam()->Eta();
-						Double_t tmom = track->GetOuterParam()->P();
+			//Get cluster kinematics
+			clus->GetMomentum(mom,v);
+			//MC labels
+			nLabel = clus->GetNLabel();
+			if(clus->GetLabels()) labels =  clus->GetLabels();
+			//Cells per cluster
+			nCaloCellsPerCluster = clus->GetNCells();
+			//matched cluster with tracks
+			nTracksMatched = clus->GetNTracksMatched();
+			if(nTracksMatched > 0)
+				track  = (AliAODTrack*)clus->GetTrackMatched(0);
+		}
 
-						Double_t deta = teta - eta;
-						Double_t dphi = tphi - phi;
-						if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
-						if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
-						Double_t dR = sqrt(dphi*dphi + deta*deta);
-						
-						Double_t pOverE = tmom/e;
-						
-						fh1pOverE->Fill(pOverE);
-						if(dR < 0.02) fh1pOverER02->Fill(pOverE);
-						
-						fh1dR->Fill(dR);
-						fh2MatchdEdx->Fill(track->P(),track->GetTPCsignal());
-					
-						if(IsDataMC() && primary){ 
-							 Int_t pdg = primary->GetPdgCode();
-							 Double_t  charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-							
-							if(TMath::Abs(pdg) == 11){
-								fhMCEle1pOverE->Fill(pOverE);
-								fhMCEle1dR->Fill(dR);
-								fhMCEle2MatchdEdx->Fill(track->P(),track->GetTPCsignal());		
-								if(dR < 0.02) fhMCEle1pOverER02->Fill(pOverE);
-							}
-							else if(charge!=0){
-								fhMCChHad1pOverE->Fill(pOverE);
-								fhMCChHad1dR->Fill(dR);
-								fhMCChHad2MatchdEdx->Fill(track->P(),track->GetTPCsignal());	
-								if(dR < 0.02) fhMCChHad1pOverER02->Fill(pOverE);
-							}
-							else if(charge == 0){
-								fhMCNeutral1pOverE->Fill(pOverE);
-								fhMCNeutral1dR->Fill(dR);
-								fhMCNeutral2MatchdEdx->Fill(track->P(),track->GetTPCsignal());	
-								if(dR < 0.02) fhMCNeutral1pOverER02->Fill(pOverE);
-							}
-						}
-						int nITS = track->GetNcls(0);
-						int nTPC = track->GetNcls(1);
-						if(dR < 0.02 && pOverE > 0.5 && pOverE < 1.5
-						   && calo->GetNCells() > 1 && nITS > 3 && nTPC > 20) {
-							fh2EledEdx->Fill(track->P(),track->GetTPCsignal());
-						}
-					} 
-					else if(!track->GetOuterParam()){
-						ULong_t status=AliESDtrack::kTPCrefit;
-						status|=AliESDtrack::kITSrefit;
-						//printf("track status %d\n", track->GetStatus() );
-						fhEChargedNoOut     ->Fill(e);		
-						fhPtChargedNoOut     ->Fill(pt);
-						fhPhiChargedNoOut    ->Fill(phi);
-						fhEtaChargedNoOut    ->Fill(eta);
-						fhEtaPhiChargedNoOut ->Fill(eta,phi);	
-						if(GetDebug() >= 0 && ((track->GetStatus() & status) == status)) printf("ITS+TPC\n");
-					}
-					else {
-						if(GetDebug() >= 0) printf("ERROR: Could not receive track %d\n", trackIndex);
-					}
-				}// non negative track index
-			}//do only if input are ESDs
-		}// at least one track matched		
-		
+        //Fill histograms related to single cluster or track matching
+		ClusterHistograms(mom, nCaloCellsPerCluster, nTracksMatched,  track, labels, nLabel);	
+			
 		//Invariant mass
-		if (nclusters > 1 ) {
-			for(Int_t jclus = iclus + 1 ; jclus < nclusters ; jclus++) {
-				AliAODCaloCluster * calo2 =  (AliAODCaloCluster*) (partList->At(jclus));
-				//Get cluster kinematics
-				calo2->GetMomentum(mom2,v);
+		if (nCaloClusters > 1 ) {
+			for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters-1 ; jclus++) {
+				if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
+					AliESDCaloCluster* clus2 =  (AliESDCaloCluster*) (caloClusters->At(jclus));
+					//Get cluster kinematics
+					clus2->GetMomentum(mom2,v);
+				}
+				if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD){
+					AliAODCaloCluster* clus2 =  (AliAODCaloCluster*) (caloClusters->At(jclus));
+					//Get cluster kinematics
+					clus2->GetMomentum(mom2,v);
+				}
+				
 				fhIM  ->Fill((mom+mom2).E(),(mom+mom2).M());
-				fhAsym->Fill((mom+mom2).E(),TMath::Abs((e-mom2.E())/(e+mom2.E())));
+				fhAsym->Fill((mom+mom2).E(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
+					
 			}// 2nd cluster loop
-		}////more than 1 cluster in calorimeter    
-		
-		//Cells per cluster
-		fhNCellsPerCluster->Fill(e,calo->GetNCells());
-		
-	}// 1st cluster loop
+		}////more than 1 cluster in calorimeter  	
+	}//cluster loop
 	
 	//CaloCells
-	AliAODCaloCells * cell = new AliAODCaloCells ;
-	if(fCalorimeter == "PHOS") 
-		cell = (AliAODCaloCells *) GetPHOSCells();
-	else  
-		cell = (AliAODCaloCells *) GetEMCALCells();	
+	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
+		AliESDCaloCells * cell = 0x0; 
+		Int_t ncells = 0;
+		if(fCalorimeter == "PHOS") cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
+		else					   cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
+		
+		if(!cell) {
+			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No CELLS available for analysis");
+			abort();
+		}
+		
+		ncells = cell->GetNumberOfCells() ;
+		fhNCells->Fill(ncells) ;
+		if(GetDebug() > 0) 
+			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In ESD %s cell entries %d\n", fCalorimeter.Data(), ncells);    
+		
+		for (Int_t iCell = 0; iCell < ncells; iCell++) {      
+			if(GetDebug() > 2)  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
+			fhAmplitude->Fill(cell->GetAmplitude(iCell));
+		}
+		
+	}//ESD
+	else{//AOD
+		AliESDCaloCells * cell = 0x0; 
+		Int_t ncells = 0;
+		
+		if(fCalorimeter == "PHOS") cell = (AliESDCaloCells *) ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
+		else					   cell = (AliESDCaloCells *) ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();	
+		
+		if(!cell) {
+			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No CELLS available for analysis");
+			abort();
+		}
+		
+		ncells = cell->GetNumberOfCells() ;
+		fhNCells->Fill(ncells) ;
+		if(GetDebug() > 0) 
+			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In ESD %s cell entries %d\n", fCalorimeter.Data(), ncells); 
 	
-	if(!cell) {
-		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No CELLS available for analysis");
-		abort();
-	}
+		for (Int_t iCell = 0; iCell < ncells; iCell++) {      
+			if(GetDebug() > 2 )  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
+			fhAmplitude->Fill(cell->GetAmplitude(iCell));
+		}
 	
-	//Some prints
-	if(GetDebug() > 0 && cell )
-		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In ESD %s cell entries %d\n", fCalorimeter.Data(), cell->GetNumberOfCells());    
-	
-	Int_t ncells = cell->GetNumberOfCells() ;
-	fhNCells->Fill(ncells) ;
-	
-	for (Int_t iCell = 0; iCell < ncells; iCell++) {      
-		if(GetDebug() > 0)  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
-		fhAmplitude->Fill(cell->GetAmplitude(iCell));
-	}
-	
-	//Monte Carlo
-	if(IsDataMC()){
-		//Play with the MC stack if available
-		for(Int_t i=8 ; i<stack->GetNprimary(); i++){
-			primary = stack->Particle(i) ;
-			
-			//if (!primary->IsPrimary()) continue;
-			if (TMath::Abs(primary->Eta()) > 1) continue;
-			
-			Int_t kf = primary->GetPdgCode();
-			//printf("kf %d\n",kf);
-			
-			Bool_t in = kTRUE;
-			primary->Momentum(mom);
-			if(IsFidutialCutOn()) in =  GetFidutialCut()->IsInFidutialCut(mom,fCalorimeter) ;
-			
-			if (kf==22) {
-				fhGenGamPt ->Fill(primary->Pt());
-				fhGenGamEta->Fill(primary->Eta());
-				fhGenGamPhi->Fill(primary->Phi());
-				if(in){
-					fhGenGamAccE  ->Fill(primary->Energy());
-					fhGenGamAccPt ->Fill(primary->Pt());
-					fhGenGamAccEta->Fill(primary->Eta());
-					fhGenGamAccPhi->Fill(primary->Phi());					
-				}
-			}
-			else if (kf==111) {
-				fhGenPi0Pt ->Fill(primary->Pt());
-				fhGenPi0Eta->Fill(primary->Eta());
-				fhGenPi0Phi->Fill(primary->Phi());
-				if(in){
-					fhGenPi0AccE  ->Fill(primary->Energy());					
-					fhGenPi0AccPt ->Fill(primary->Pt());
-					fhGenPi0AccEta->Fill(primary->Eta());
-					fhGenPi0AccPhi->Fill(primary->Phi());					
-				}
-			}
-			else if (kf==221) {
-				fhGenEtaPt ->Fill(primary->Pt());
-				fhGenEtaEta->Fill(primary->Eta());
-				fhGenEtaPhi->Fill(primary->Phi());
-			}
-			else if (kf==223) {
-				fhGenOmegaPt ->Fill(primary->Pt());
-				fhGenOmegaEta->Fill(primary->Eta());
-				fhGenOmegaPhi->Fill(primary->Phi());
-			}
-			else if (TMath::Abs(kf)==11) {
-				fhGenElePt ->Fill(primary->Pt());
-				fhGenEleEta->Fill(primary->Eta());
-				fhGenElePhi->Fill(primary->Phi());
-			}
-		} //primary loop
-	} //Is data MC
+	}//AOD
 	
 	if(GetDebug() > 0)
 		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - End \n");
-	
-	
 }
 
+//__________________________________
+void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Int_t nCaloCellsPerCluster,
+											const Int_t nTracksMatched, const TObject * track,  
+											const Int_t * labels, const Int_t nLabels){
+	//Fill CaloCluster related histograms
+	
+	AliAODMCParticle * aodprimary  = 0x0;
+	TParticle * primary = 0x0;
+    Int_t tag = 0;	
+	
+	Float_t e   = mom.E();
+	Float_t pt  = mom.Pt();
+	Float_t eta = mom.Eta();
+	Float_t phi = mom.Phi();
+	if(phi < 0) phi +=TMath::TwoPi();
+	if(GetDebug() > 0) {
+		printf("AliAnaCalorimeterQA::ClusterHistograms() - cluster: E %2.3f, pT %2.3f, eta %2.3f, phi %2.3f \n",e,pt,eta,phi*TMath::RadToDeg());
+		if(IsDataMC()) {
+			printf("\t Primaries: nlabels %d, labels pointer %p\n",nLabels,labels);
+			if(!nLabels || !labels) printf("\t Strange, no labels!!!\n");
+		}
+	}
+
+	fhE     ->Fill(e);		
+	fhPt    ->Fill(pt);
+	fhPhi   ->Fill(phi);
+	fhEta   ->Fill(eta);
+	fhEtaPhi->Fill(eta,phi);
+	//Cells per cluster
+	fhNCellsPerCluster->Fill(e, nCaloCellsPerCluster);
+
+	//Fill histograms only possible when simulation
+	if(IsDataMC() && nLabels > 0 && labels){
+
+		//Play with the MC stack if available
+		Int_t label = labels[0];
+
+		if(label < 0) {
+			if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::ClusterHistograms() *** bad label ***:  label %d \n", label);
+			return;
+		}
+
+		Int_t pdg  =-1; Int_t pdg0  =-1;Int_t status = -1; Int_t iMother = -1; Int_t iParent = -1;
+		Float_t vxMC= 0; Float_t vyMC = 0;	
+		Float_t eMC = 0; Float_t ptMC= 0; Float_t phiMC =0; Float_t etaMC = 0;
+		Int_t charge = 0;	
+		
+		//Check the origin.
+		tag = GetMCAnalysisUtils()->CheckOrigin(labels,nLabels, GetReader(),0);
+
+		if(GetReader()->ReadStack() && !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown)){ //it MC stack and known tag
+
+			if( label >= GetMCStack()->GetNtrack()) {
+				if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::ClusterHistograms() *** large label ***:  label %d, n tracks %d \n", label, GetMCStack()->GetNtrack());
+				return ;
+			}
+			
+			primary = GetMCStack()->Particle(label);
+			iMother = label;
+			pdg0    = TMath::Abs(primary->GetPdgCode());
+			pdg     = pdg0;
+			status  = primary->GetStatusCode();
+			vxMC    = primary->Vx();
+			vyMC    = primary->Vy();
+			iParent = primary->GetFirstMother();
+				
+			if(GetDebug() > 1 ) {
+				printf("AliAnaCalorimeterQA::ClusterHistograms() - Cluster most contributing mother: \n");
+				printf("\t Mother label %d, pdg %d, %s, status %d, parent %d \n",iMother, pdg0, primary->GetName(),status, iParent);
+			}
+				
+			//Get final particle, no conversion products
+			if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)){
+				//Get the parent
+				primary = GetMCStack()->Particle(iParent);
+				pdg = TMath::Abs(primary->GetPdgCode());
+				if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted cluster!. Find before conversion: \n");
+				while((pdg == 22 || pdg == 11) && status != 1){
+					iMother = iParent;
+					primary = GetMCStack()->Particle(iMother);
+					status  = primary->GetStatusCode();
+					iParent = primary->GetFirstMother();
+					pdg     = TMath::Abs(primary->GetPdgCode());
+					if(GetDebug() > 1 )printf("\t pdg %d, index %d, %s, status %d \n",pdg, iMother,  primary->GetName(),status);	
+				}	
+					
+				if(GetDebug() > 1 ) {
+					printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted Cluster mother before conversion: \n");
+					printf("\t Mother label %d, pdg %d, %s, status %d, parent %d \n",iMother, pdg, primary->GetName(), status, iParent);
+				}
+					
+			}
+				
+			//Overlapped pi0 (or eta, there will be very few), get the meson
+			if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0) || 
+				GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
+				if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped Meson decay!, Find it: \n");
+				while(pdg != 111 && pdg != 221){
+					iMother = iParent;
+					primary = GetMCStack()->Particle(iMother);
+					status  = primary->GetStatusCode();
+					iParent = primary->GetFirstMother();
+					pdg     = TMath::Abs(primary->GetPdgCode());
+					if(GetDebug() > 1 ) printf("\t pdg %d, %s, index %d\n",pdg,  primary->GetName(),iMother);
+					if(iMother==-1) {
+						printf("AliAnaCalorimeterQA::ClusterHistograms() - Tagged as Overlapped photon but meson not found, why?\n");
+						//break;
+					}
+				}
+
+				if(GetDebug() > 2 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped %s decay, label %d \n", 
+										primary->GetName(),iMother);
+			}
+				
+			eMC    = primary->Energy();
+			ptMC   = primary->Pt();
+			phiMC  = primary->Phi();
+			etaMC  = primary->Eta();
+			pdg    = TMath::Abs(primary->GetPdgCode());
+			charge = (Int_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+
+		}
+		else if(GetReader()->ReadAODMCParticles() && !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown)){//it MC AOD and known tag
+			//Get the list of MC particles
+			if(!GetReader()->GetAODMCParticles(0)) 	{
+				printf("AliAnaCalorimeterQA::ClusterHistograms() -  MCParticles not available!\n");
+				abort();
+			}		
+			
+			aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(0))->At(label);
+			iMother = label;
+			pdg0    = TMath::Abs(aodprimary->GetPdgCode());
+			pdg     = pdg0;
+			status  = aodprimary->IsPrimary();
+			vxMC    = aodprimary->Xv();
+			vyMC    = aodprimary->Yv();
+			iParent = aodprimary->GetMother();
+				
+			if(GetDebug() > 1 ) {
+				printf("AliAnaCalorimeterQA::ClusterHistograms() - Cluster most contributing mother: \n");
+				printf("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d, parent %d \n",
+					   iMother, pdg0, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary(), iParent);
+			}
+			
+			//Get final particle, no conversion products
+			if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)){
+				if(GetDebug() > 1 ) 
+					printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted cluster!. Find before conversion: \n");
+				//Get the parent
+				aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iParent);
+				pdg = TMath::Abs(aodprimary->GetPdgCode());
+				while ((pdg == 22 || pdg == 11) && !aodprimary->IsPhysicalPrimary()) {
+					iMother    = iParent;
+					aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iMother);
+					status     = aodprimary->IsPrimary();
+					iParent    = aodprimary->GetMother();
+					pdg        = TMath::Abs(aodprimary->GetPdgCode());
+					if(GetDebug() > 1 )
+						printf("\t pdg %d, index %d, Primary? %d, Physical Primary? %d \n",
+								pdg, iMother, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary());	
+				}	
+				
+				if(GetDebug() > 1 ) {
+					printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted Cluster mother before conversion: \n");
+					printf("\t Mother label %d, pdg %d, parent %d, Primary? %d, Physical Primary? %d \n",
+						   iMother, pdg, iParent, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary());
+				}
+				
+			}
+				
+			//Overlapped pi0 (or eta, there will be very few), get the meson
+			if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0) || 
+				GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
+				if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped Meson decay!, Find it: PDG %d, mom %d \n",pdg, iMother);
+				while(pdg != 111 && pdg != 221){
+					
+					iMother    = iParent;
+					aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iMother);
+					status     = aodprimary->IsPrimary();
+					iParent    = aodprimary->GetMother();
+					pdg        = TMath::Abs(aodprimary->GetPdgCode());
+
+					if(GetDebug() > 1 ) printf("\t pdg %d, index %d\n",pdg, iMother);
+					
+					if(iMother==-1) {
+						printf("AliAnaCalorimeterQA::ClusterHistograms() - Tagged as Overlapped photon but meson not found, why?\n");
+						//break;
+					}
+				}	
+				
+				if(GetDebug() > 2 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped %s decay, label %d \n", 
+										   aodprimary->GetName(),iMother);
+			}	
+						
+			status = aodprimary->IsPrimary();
+			eMC    = aodprimary->E();
+			ptMC   = aodprimary->Pt();
+			phiMC  = aodprimary->Phi();
+			etaMC  = aodprimary->Eta();
+			pdg    = TMath::Abs(aodprimary->GetPdgCode());
+			charge = aodprimary->Charge();
+				
+		}
+	
+		//Float_t vz = primary->Vz();
+		Float_t r = TMath::Sqrt(vxMC*vxMC + vyMC*vyMC);
+		if((pdg == 22 || TMath::Abs(pdg)==11) && status!=1) {
+			fhEMVxyz   ->Fill(vxMC,vyMC);//,vz);
+			fhEMR      ->Fill(e,r);
+		}
+		    
+		//printf("reco e %f, pt %f, phi %f, eta %f \n", e, pt, phi, eta);
+		//printf("prim e %f, pt %f, phi %f, eta %f \n", eMC,ptMC,phiMC ,etaMC );
+		//printf("vertex: vx %f, vy %f, vz %f, r %f \n", vxMC, vyMC, vz, r);
+			
+
+		fh2E      ->Fill(e, eMC);
+		fh2Pt     ->Fill(pt, ptMC);
+		fh2Phi    ->Fill(phi, phiMC);
+		fh2Eta    ->Fill(eta, etaMC);
+		fhDeltaE  ->Fill(eMC-e);
+		fhDeltaPt ->Fill(ptMC-pt);
+		fhDeltaPhi->Fill(phiMC-phi);
+		fhDeltaEta->Fill(etaMC-eta);
+		if(eMC   > 0) fhRatioE  ->Fill(e/eMC);
+		if(ptMC  > 0) fhRatioPt ->Fill(pt/ptMC);
+		if(phiMC > 0) fhRatioPhi->Fill(phi/phiMC);
+		if(etaMC > 0) fhRatioEta->Fill(eta/etaMC);			
+			
+			
+		//Overlapped pi0 (or eta, there will be very few)
+		if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0) || 
+			GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
+			//cout<<"Fill pi0"<< "E  "<< e <<" prim E "<<eMC<<endl;
+				fhPi0E     ->Fill(e,eMC);	
+				fhPi0Pt    ->Fill(pt,ptMC);
+				fhPi0Eta   ->Fill(eta,etaMC);	
+				fhPi0Phi   ->Fill(phi,phiMC);
+				if( nTracksMatched > 0){
+					fhPi0ECharged     ->Fill(e,eMC);		
+					fhPi0PtCharged    ->Fill(pt,ptMC);
+					fhPi0PhiCharged   ->Fill(phi,phiMC);
+					fhPi0EtaCharged   ->Fill(eta,etaMC);
+				}
+		}//Overlapped pizero decay
+		else if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)){
+				fhGamE     ->Fill(e,eMC);	
+				fhGamPt    ->Fill(pt,ptMC);
+				fhGamEta   ->Fill(eta,etaMC);	
+				fhGamPhi   ->Fill(phi,phiMC);
+				fhGamDeltaE  ->Fill(eMC-e);
+				fhGamDeltaPt ->Fill(ptMC-pt);	
+				fhGamDeltaPhi->Fill(phiMC-phi);
+				fhGamDeltaEta->Fill(etaMC-eta);
+				if(eMC > 0) fhGamRatioE  ->Fill(e/eMC);
+				if(ptMC     > 0) fhGamRatioPt ->Fill(pt/ptMC);
+				if(phiMC    > 0) fhGamRatioPhi->Fill(phi/phiMC);
+				if(etaMC    > 0) fhGamRatioEta->Fill(eta/etaMC);
+				if( nTracksMatched > 0){
+					fhGamECharged     ->Fill(e,eMC);		
+					fhGamPtCharged    ->Fill(pt,ptMC);
+					fhGamPhiCharged   ->Fill(phi,phiMC);
+					fhGamEtaCharged   ->Fill(eta,etaMC);
+				}
+		}//photon
+		else if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron)){
+			fhEleE     ->Fill(e,eMC);	
+			fhElePt    ->Fill(pt,ptMC);
+			fhEleEta   ->Fill(eta,etaMC);	
+			fhElePhi   ->Fill(phi,phiMC);
+			fhEMVxyz   ->Fill(vxMC,vyMC);//,vz);
+			fhEMR      ->Fill(e,r);
+			if( nTracksMatched > 0){
+				fhEleECharged     ->Fill(e,eMC);		
+				fhElePtCharged    ->Fill(pt,ptMC);
+				fhElePhiCharged   ->Fill(phi,phiMC);
+				fhEleEtaCharged   ->Fill(eta,etaMC);
+			}
+		}
+		else if(charge == 0){
+			fhNeHadE     ->Fill(e,eMC);	
+			fhNeHadPt    ->Fill(pt,ptMC);
+			fhNeHadEta   ->Fill(eta,etaMC);	
+			fhNeHadPhi   ->Fill(phi,phiMC);	
+			fhHaVxyz     ->Fill(vxMC,vyMC);//,vz);
+			fhHaR        ->Fill(e,r);
+			if( nTracksMatched > 0){
+				fhNeHadECharged     ->Fill(e,eMC);		
+				fhNeHadPtCharged    ->Fill(pt,ptMC);
+				fhNeHadPhiCharged   ->Fill(phi,phiMC);
+				fhNeHadEtaCharged   ->Fill(eta,etaMC);
+			}
+		}
+		else if(charge!=0){
+			fhChHadE     ->Fill(e,eMC);	
+			fhChHadPt    ->Fill(pt,ptMC);
+			fhChHadEta   ->Fill(eta,etaMC);	
+			fhChHadPhi   ->Fill(phi,phiMC);	
+			fhHaVxyz     ->Fill(vxMC,vyMC);//,vz);
+			fhHaR        ->Fill(e,r);
+			if( nTracksMatched > 0){
+				fhChHadECharged     ->Fill(e,eMC);		
+				fhChHadPtCharged    ->Fill(pt,ptMC);
+				fhChHadPhiCharged   ->Fill(phi,phiMC);
+				fhChHadEtaCharged   ->Fill(eta,etaMC);
+			}
+		}
+	}//Work with MC
+		
+	
+	//Match tracks and clusters
+	//To be Modified in case of AODs
+	
+	//if(ntracksmatched==1 && trackIndex==-1) ntracksmatched=0;
+	
+	if( nTracksMatched > 0){
+		fhECharged     ->Fill(e);		
+		fhPtCharged    ->Fill(pt);
+		fhPhiCharged   ->Fill(phi);
+		fhEtaCharged   ->Fill(eta);
+		fhEtaPhiCharged->Fill(eta,phi);		
+		
+		//printf("track index %d ntracks %d\n", esd->GetNumberOfTracks());
+		if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+			if (track && ((AliESDtrack*)track)->GetOuterParam() ) {
+				
+				Double_t tphi  = ((AliESDtrack*)track)->GetOuterParam()->Phi();
+				Double_t teta  = ((AliESDtrack*)track)->GetOuterParam()->Eta();
+				Double_t tmom  = ((AliESDtrack*)track)->GetOuterParam()->P();
+				
+				Double_t tmom2     = ((AliESDtrack*)track)->P();
+				Double_t tpcSignal = ((AliESDtrack*)track)->GetTPCsignal();
+				
+				Double_t deta = teta - eta;
+				Double_t dphi = tphi - phi;
+				if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
+				if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
+				Double_t dR = sqrt(dphi*dphi + deta*deta);
+				
+				Double_t pOverE = tmom/e;
+				
+				fh1pOverE->Fill(pOverE);
+				if(dR < 0.02) fh1pOverER02->Fill(pOverE);
+				
+				fh1dR->Fill(dR);
+				fh2MatchdEdx->Fill(tmom2,tpcSignal);
+				
+				if(IsDataMC() && primary){ 
+					Int_t pdg = primary->GetPdgCode();
+					Double_t  charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+					
+					if(TMath::Abs(pdg) == 11){
+						fhMCEle1pOverE->Fill(pOverE);
+						fhMCEle1dR->Fill(dR);
+						fhMCEle2MatchdEdx->Fill(tmom2,tpcSignal);		
+						if(dR < 0.02) fhMCEle1pOverER02->Fill(pOverE);
+					}
+					else if(charge!=0){
+						fhMCChHad1pOverE->Fill(pOverE);
+						fhMCChHad1dR->Fill(dR);
+						fhMCChHad2MatchdEdx->Fill(tmom2,tpcSignal);	
+						if(dR < 0.02) fhMCChHad1pOverER02->Fill(pOverE);
+					}
+					else if(charge == 0){
+						fhMCNeutral1pOverE->Fill(pOverE);
+						fhMCNeutral1dR->Fill(dR);
+						fhMCNeutral2MatchdEdx->Fill(tmom2,tpcSignal);	
+						if(dR < 0.02) fhMCNeutral1pOverER02->Fill(pOverE);
+					}
+				}//DataMC
+				int nITS = ((AliESDtrack*)track)->GetNcls(0);
+				int nTPC = ((AliESDtrack*)track)->GetNcls(1);
+				if(dR < 0.02 && pOverE > 0.5 && pOverE < 1.5
+				   && nCaloCellsPerCluster > 1 && nITS > 3 && nTPC > 20) {
+					fh2EledEdx->Fill(tmom2,tpcSignal);
+				}
+			}//Outer param available 
+			else if(!((AliESDtrack*)track)->GetOuterParam()){
+				ULong_t status=AliESDtrack::kTPCrefit;
+				status|=AliESDtrack::kITSrefit;
+				//printf("track status %d\n", track->GetStatus() );
+				fhEChargedNoOut     ->Fill(e);		
+				fhPtChargedNoOut     ->Fill(pt);
+				fhPhiChargedNoOut    ->Fill(phi);
+				fhEtaChargedNoOut    ->Fill(eta);
+				fhEtaPhiChargedNoOut ->Fill(eta,phi);	
+				if(GetDebug() >= 0 && ((((AliESDtrack*)track)->GetStatus() & status) == status)) printf("ITS+TPC\n");
+			}
+			else {
+				if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::ClusterHistograms() ERROR: Could not receive track %d\n", ((AliESDtrack*)track)->GetID());
+			}
+		}//do only if input are ESDs
+	}
+	
+}// Clusters
+	
+//______________________________________________________________________________
+void AliAnaCalorimeterQA::MCHistograms(const TLorentzVector mom, const Int_t pdg){
+	//Fill pure monte carlo related histograms
+	
+	Float_t eMC    = mom.E();
+	Float_t ptMC   = mom.Pt();
+	Float_t phiMC  = mom.Phi();
+	if(phiMC < 0) 
+		phiMC  += TMath::TwoPi();
+	Float_t etaMC  = mom.Eta();
+	
+	if (TMath::Abs(etaMC) > 1) return;
+
+	Bool_t in = kTRUE;
+	if(IsFidutialCutOn()) in =  GetFidutialCut()->IsInFidutialCut(mom,fCalorimeter) ;
+	
+	if (pdg==22) {
+		fhGenGamPt ->Fill(ptMC);
+		fhGenGamEta->Fill(etaMC);
+		fhGenGamPhi->Fill(phiMC);
+		if(in){
+			fhGenGamAccE  ->Fill(eMC);
+			fhGenGamAccPt ->Fill(ptMC);
+			fhGenGamAccEta->Fill(etaMC);
+			fhGenGamAccPhi->Fill(phiMC);					
+		}
+	}
+	else if (pdg==111) {
+		fhGenPi0Pt ->Fill(ptMC);
+		fhGenPi0Eta->Fill(etaMC);
+		fhGenPi0Phi->Fill(phiMC);
+		if(in){
+			fhGenPi0AccE  ->Fill(eMC);					
+			fhGenPi0AccPt ->Fill(ptMC);
+			fhGenPi0AccEta->Fill(etaMC);
+			fhGenPi0AccPhi->Fill(phiMC);					
+		}
+	}
+	else if (pdg==221) {
+		fhGenEtaPt ->Fill(ptMC);
+		fhGenEtaEta->Fill(etaMC);
+		fhGenEtaPhi->Fill(phiMC);
+	}
+	else if (pdg==223) {
+		fhGenOmegaPt ->Fill(ptMC);
+		fhGenOmegaEta->Fill(etaMC);
+		fhGenOmegaPhi->Fill(phiMC);
+	}
+	else if (TMath::Abs(pdg)==11) {
+		fhGenElePt ->Fill(ptMC);
+		fhGenEleEta->Fill(etaMC);
+		fhGenElePhi->Fill(phiMC);
+	}	
+	
+}
+	
 //________________________________________________________________________
 void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 {
@@ -1492,7 +1700,14 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 //__________________________________________________________________
 void  AliAnaCalorimeterQA::Terminate(TList* outputList) 
 {
-	//Do plots if requested
+	//Do plots if requested	
+	char line[1024] ; 
+
+	//if(fRemoveOutputAOD){
+	//	sprintf(line, ".!rm -fR %s",((AliVEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler()))->GetOutputFileName()); 
+	//	gROOT->ProcessLine(line);
+	//}
+	
 	if(!fMakePlots) return;
 	
 	//Do some plots to end
@@ -2801,7 +3016,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		
 	}
 	
-	char line[1024] ; 
+	
 	sprintf(line, ".!tar -zcf QA_%s_%s.tar.gz *%s*.eps", fCalorimeter.Data(), GetName(),fCalorimeter.Data()) ; 
 	gROOT->ProcessLine(line);
 	sprintf(line, ".!rm -fR *.eps"); 

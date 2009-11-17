@@ -22,17 +22,13 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
    //===========================================================================
   
   //Reader
+  //For this particular analysis few things done by the reader.
+  //Nothing else needs to be set.
   AliCaloTrackReader * reader = 0x0;
-  if(data=="AOD") reader = new AliCaloTrackAODReader();
+  if(data=="AOD")      reader = new AliCaloTrackAODReader();
   else if(data=="ESD") reader = new AliCaloTrackESDReader();
-  reader->SetDebug(-1);//10 for lots of messages
-  reader->SwitchOnEMCALCells();
-  reader->SwitchOnPHOSCells();
-  //Min particle pT
-  reader->SetEMCALPtMin(0.2); 
-  reader->SetPHOSPtMin(0.2);
-  reader->SetCTSPtMin(0.2);
-  if(kPrintSettings) reader->Print("");
+  //reader->SetDebug(10);//10 for lots of messages
+   if(kPrintSettings) reader->Print("");
   
   if(kUseKinematics){
 		if(inputDataType == "ESD"){
@@ -44,10 +40,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
 			reader->SwitchOnAODMCParticles(); 
 		}
    }
-   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
 	
-   //Do not keep the temporal AOD in file.
-   //reader->SwitchOnCleanStdAOD();
+   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
+
 	
   // ##### Analysis algorithm settings ####
 
@@ -57,24 +52,27 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   fidCut->DoPHOSFidutialCut(kTRUE) ;
 		
   AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
-  emcalQA->SetDebug(-1); //10 for lots of messages
+  //emcalQA->SetDebug(2); //10 for lots of messages
   emcalQA->SetCalorimeter("EMCAL");
-  if(kUseKinematics && inputDataType!="AOD") emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  if(kUseKinematics) emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else  emcalQA->SwitchOffDataMC() ;
   emcalQA->AddToHistogramsName("EMCAL_"); //Begining of histograms name
   emcalQA->SetFidutialCut(fidCut);
   emcalQA->SwitchOnFidutialCut();
   if(kPrintSettings) emcalQA->Print("");	
+  //emcalQA->GetMCAnalysisUtils()->SetDebug(10);
 	
   AliAnaCalorimeterQA *phosQA = new AliAnaCalorimeterQA();
-  phosQA->SetDebug(-1); //10 for lots of messages
+  //phosQA->SetDebug(2); //10 for lots of messages
   phosQA->SetCalorimeter("PHOS");
-  if(kUseKinematics && inputDataType!="AOD") phosQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  if(kUseKinematics) phosQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else  phosQA->SwitchOffDataMC() ;  
   phosQA->AddToHistogramsName("PHOS_");//Begining of histograms name
   phosQA->SetFidutialCut(fidCut);
   phosQA->SwitchOnFidutialCut();
   if(kPrintSettings)phosQA->Print("");	
+  //phosQA->GetMCAnalysisUtils()->SetDebug(10);
+
   
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
@@ -94,7 +92,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
    //===========================================================================
   AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation ("CalorimeterPerformance");
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
-  //task->SetDebugLevel(-1);
+  task->SetDebugLevel(0);
   task->SetAnalysisMaker(maker);				
   mgr->AddTask(task);
   
@@ -106,7 +104,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kU
   //==============================================================================
   mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
   // AOD output slot will be used in a different way in future
-  mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
+  //mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput (task, 1, cout_pc);
   
   return task;

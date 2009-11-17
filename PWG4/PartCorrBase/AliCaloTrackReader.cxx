@@ -344,9 +344,10 @@ void AliCaloTrackReader::InitParameters()
   fEMCALPtMin = 0.2 ;
   fPHOSPtMin  = 0.2 ;
 
-  fFillEMCAL      = kTRUE;
-  fFillPHOS       = kTRUE;
-  fFillCTS        = kTRUE;
+  //Do not filter the detectors input by default.
+  fFillEMCAL      = kFALSE;
+  fFillPHOS       = kFALSE;
+  fFillCTS        = kFALSE;
   fFillEMCALCells = kFALSE;
   fFillPHOSCells  = kFALSE;
 
@@ -397,15 +398,15 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
 //___________________________________________________
 Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * currentFileName) {
   //Fill the event counter and input lists that are needed, called by the analysis maker.
-  
+
   fEventNumber = iEntry;
   fCurrentFileName = TString(currentFileName);
 	
-  if((fDataType != kAOD) && ((fOutputEvent->GetCaloClusters())->GetEntriesFast()!=0 ||(fOutputEvent->GetTracks())->GetEntriesFast()!=0)){
+  if(fOutputEvent && (fDataType != kAOD) && ((fOutputEvent->GetCaloClusters())->GetEntriesFast()!=0 ||(fOutputEvent->GetTracks())->GetEntriesFast()!=0)){
     printf("AliCaloTrackReader::AODCaloClusters or AODTracks already filled by the filter, do not use the ESD reader, use the AOD reader, STOP\n");
     abort();
   }
-	
+
   //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
   if(fComparePtHardAndJetPt && GetStack()) {
 		if(!ComparePtHardAndJetPt()) return kFALSE ;
@@ -421,7 +422,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
 			 printf("AliCaloTrackReader::FillInputEvent() - Skip events from event %d, no more events in second AOD file \n", iEntry);
 		 return kFALSE;
 	 }
-	  
+	  printf("Reader 4 \n");
+
 	 //Get the Event
 	 Int_t nbytes = fSecondInputAODTree->GetEvent(iEntry+fSecondInputFirstEvent);
 	 if ( nbytes == 0 ) {//If nothing in AOD
@@ -430,7 +432,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
 	 }
 	  
   }
-  //if(iEntry > 10) return kFALSE;
+
   if(fFillCTS)   FillInputCTS();
   if(fFillEMCAL) FillInputEMCAL();
   if(fFillPHOS)  FillInputPHOS();
@@ -449,7 +451,7 @@ void AliCaloTrackReader::ResetLists() {
   if(fAODPHOS)  fAODPHOS -> Clear();
   if(fEMCALCells) fEMCALCells -> Clear();
   if(fPHOSCells)  fPHOSCells -> Clear();
-  if(fCleanOutputStdAOD){
+  if(fCleanOutputStdAOD && fOutputEvent ){
 	  //Only keep copied tracks and clusters if requested
 	  fOutputEvent->GetTracks()      ->Clear();
 	  fOutputEvent->GetCaloClusters()->Clear();

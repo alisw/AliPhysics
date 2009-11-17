@@ -228,21 +228,25 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
     abort();
   }
 	
-	if(fAnaDebug >= 0 ){ 
+  if(fAnaDebug >= 0 ){ 
 		printf("***  Event %d   ***  \n",iEntry);
-		if(fAnaDebug > 1 ) 
-		  printf("AliAnaPartCorrMaker::Current File Name : %s\n", currentFileName);
+	  if(fAnaDebug > 1 ) {
+		  printf("AliAnaPartCorrMaker::ProcessEvent() - Current File Name : %s\n", currentFileName);
+		  //printf("fAODBranchList %p, entries %d\n",fAODBranchList,fAODBranchList->GetEntries());
+	  }
   }
-  //Each event needs an empty branch	
-  for(Int_t iaod = 0; iaod < fAODBranchList->GetEntries(); iaod++)
-    fAODBranchList->At(iaod)->Clear();
-  
+  //Each event needs an empty branch
+  Int_t nAODBranches = fAODBranchList->GetEntries();
+  for(Int_t iaod = 0; iaod < nAODBranches; iaod++)
+		fAODBranchList->At(iaod)->Clear();
+
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
   if(!ok){
 	  printf("*** Skip event *** %d \n",iEntry);
 	  return ;
   }
+	
   //printf(">>>>>>>>>> BEFORE >>>>>>>>>>>\n");
   //gObjectTable->Print();
   //Loop on analysis algorithms
@@ -250,7 +254,7 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
   Int_t nana = fAnalysisContainer->GetEntries() ;
   for(Int_t iana = 0; iana <  nana; iana++){
     AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ; 
-    ana->ConnectInputOutputAODBranches(); //Sets branches for each analysis
+    if(nAODBranches) ana->ConnectInputOutputAODBranches(); //Sets branches for each analysis, if there is any branch.
     //Make analysis, create aods in aod branch or AODCaloClusters
     if(fMakeAOD) ana->MakeAnalysisFillAOD()  ;
     //Make further analysis with aod branch and fill histograms
