@@ -8,7 +8,8 @@ void RunMuonTrackingEffAnalysis (Bool_t alien = false,
 				 const char * geometryFileName = "geometry.root",
 				 const char * analysisParFile = "ANALYSIS",
 				 const char * pwg3ParFile = "PWG3",
-				 const Int_t run = 100)
+				 const Int_t run = 100
+				 const Bool_t isCosmicData = kFALSE)
 {
     if(alien)
     {
@@ -43,7 +44,7 @@ void RunMuonTrackingEffAnalysis (Bool_t alien = false,
     gROOT->LoadMacro(macro);
 //     gROOT->LoadMacro("./BatchMuonTrackingEffAnalysis.C++");
  
-    MuonTrackingEffAnalysis(alien,run,esdfileName,geometryFileName);
+    MuonTrackingEffAnalysis(alien,run,esdfileName,geometryFileName, isCosmicData);
 }
 
 

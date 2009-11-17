@@ -28,6 +28,7 @@
 #include <TH2F.h>
 #include <TH1F.h>
 #include <TMath.h>
+#include "Riostream.h"
 
 //ANALYSIS includes
 #include "AliAnalysisManager.h"
@@ -66,6 +67,7 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff()
   fChamberEffHistList(0x0),
   fChamberTDHistList(0x0),
   fChamberTTHistList(0x0),
+  fChamberEff(0x0),
   fIsCosmicData(kFALSE)
 {
 /// Default constructor
@@ -82,6 +84,7 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const AliAnalysis
   fChamberEffHistList(0x0),
   fChamberTDHistList(0x0),
   fChamberTTHistList(0x0),
+  fChamberEff(0x0),
   fIsCosmicData(kFALSE)
 {
   /// copy ctor
@@ -104,7 +107,7 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
 							       Bool_t isCosmic)
   :
   AliAnalysisTask(name, "AnalysisTaskESD"),
-  fTransformer(transformer),
+  fTransformer(0x0),
   fESD(0x0),
   fDetEltEffHistList(0x0),
   fDetEltTDHistList(0x0),
@@ -112,12 +115,14 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
   fChamberEffHistList(0x0),
   fChamberTDHistList(0x0),
   fChamberTTHistList(0x0),
+  fChamberEff(0x0),
   fIsCosmicData(kFALSE)
 {
 //Constructor
 //-----------
     
   fIsCosmicData = isCosmic;
+  fTransformer = transformer;
 
 //Define detection element efficiency histograms
 //----------------------------------------------
@@ -262,6 +267,12 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
     ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> Sumw2();    
     ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> SetOption("");    
 
+
+
+    //fChamberEff = new AliCheckMuonDetEltResponse(fTransformer, fESD, fDetEltTDHistList, fDetEltTTHistList, fChamberTDHistList, fChamberTTHistList);
+
+
+
 //Define input & output
 //---------------------
 
@@ -289,6 +300,7 @@ AliAnalysisTaskMuonTrackingEff::~AliAnalysisTaskMuonTrackingEff()
     delete fChamberEffHistList;
     delete fChamberTDHistList;
     delete fChamberTTHistList;
+    delete fChamberEff;
 }
 
 
@@ -323,10 +335,9 @@ void AliAnalysisTaskMuonTrackingEff::Exec(Option_t */*option*/)
 {
 //Execute analysis for current event
     
-   
-    AliCheckMuonDetEltResponse* chamberEff;
-    chamberEff = new AliCheckMuonDetEltResponse(fTransformer, fESD, fDetEltTDHistList, fDetEltTTHistList, fChamberTDHistList, fChamberTTHistList);
-    chamberEff->CheckDetEltResponse();
+  if (fChamberEff == 0x0)
+    fChamberEff = new AliCheckMuonDetEltResponse(fTransformer, fESD, fDetEltTDHistList, fDetEltTTHistList, fChamberTDHistList, fChamberTTHistList);
+  fChamberEff->CheckDetEltResponse();
 
 
     for( Int_t i = 0; i<156; ++i)
@@ -364,7 +375,6 @@ void AliAnalysisTaskMuonTrackingEff::Exec(Option_t */*option*/)
     ((TH1F*) fChamberEffHistList->UncheckedAt(12))-> Fill(0., ((Double_t)fESD -> GetNumberOfMuonTracks()));
 
     ComputeErrors();
-
 
 //Post the output data:
     PostData(0, fDetEltTDHistList);  

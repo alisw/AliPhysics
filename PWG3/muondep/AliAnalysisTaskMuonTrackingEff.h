@@ -11,7 +11,9 @@
 
 #include "AliAnalysisTask.h"
 #include "AliMUONGeometryTransformer.h"
-#include "AliAnalysisTaskMuonTrackingEff.h"
+
+#include "AliCheckMuonDetEltResponse.h"
+
 class AliESDEvent;
 class TClonesArray;
 class TH2F;
@@ -51,6 +53,8 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTask
   TClonesArray* fChamberEffHistList;
   TClonesArray* fChamberTDHistList;
   TClonesArray* fChamberTTHistList;
+
+  AliCheckMuonDetEltResponse* fChamberEff;
 
   Bool_t fIsCosmicData;
 
