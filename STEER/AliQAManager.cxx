@@ -257,15 +257,21 @@ Bool_t AliQAManager::DoIt(const AliQAv1::TASKINDEX_t taskIndex)
             } 
 						break ;
 						case AliQAv1::kSDIGITS :
-            if( loader ) {      
-              loader->LoadSDigits() ; 
-              data = loader->TreeS() ; 
-              if ( ! data ) {
-                AliWarning(Form(" SDigit Tree not found for  %s", AliQAv1::GetDetName(iDet))) ; 
-                break ; 
-              } 
-              qadm->Exec(taskIndex, data) ; 
+          {
+            
+            TString fileName(Form("%s.SDigits.root", AliQAv1::GetDetName(iDet))) ; 
+            if (gSystem->FindFile("./", fileName)) {
+              if( loader ) {      
+                loader->LoadSDigits() ; 
+                data = loader->TreeS() ; 
+                if ( ! data ) {
+                  AliWarning(Form(" SDigit Tree not found for  %s", AliQAv1::GetDetName(iDet))) ; 
+                  break ; 
+                } 
+                qadm->Exec(taskIndex, data) ; 
+              }
             }
+          }
 						break; 
 						case AliQAv1::kDIGITS :
               if( loader ) {      
