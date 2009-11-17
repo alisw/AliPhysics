@@ -29,7 +29,7 @@ AliAnalysisTaskStrange *AddTaskStrange(Short_t lCollidingSystems=0,  /*0 = pp, 1
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   outname += ":PWG2Strange";
+   outputFileName += ":PWG2Strange";
    if (lCollidingSystems) outputFileName += "_AA";
    else outputFileName += "_PP";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";

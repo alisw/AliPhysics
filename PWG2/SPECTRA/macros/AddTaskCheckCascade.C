@@ -27,7 +27,7 @@ AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t lCollidingSystems=0  /*
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   outname += ":PWG2CheckCascade";
+   outputFileName += ":PWG2CheckCascade";
    if (lCollidingSystems) outputFileName += "_AA";
    else outputFileName += "_PP";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
